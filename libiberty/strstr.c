@@ -6,8 +6,8 @@
 @deftypefn Supplemental char* strstr (const char *@var{string}, const char *@var{sub})
 
 This function searches for the substring @var{sub} in the string
-@var{string}, not including the terminating NUL characters.  A pointer
-to the first occurance of @var{sub} is returned, or NULL if the
+@var{string}, not including the terminating null characters.  A pointer
+to the first occurrence of @var{sub} is returned, or NULL if the
 substring is absent.  If @var{sub} points to a string with zero
 length, the function returns @var{string}.
 

@@ -147,7 +147,7 @@ between calls to @code{getpwd}.
 @c index.c:5
 @deftypefn Supplemental char* index (char *@var{s}, int @var{c})
 
-Returns a pointer to the first occurance of the character @var{c} in
+Returns a pointer to the first occurrence of the character @var{c} in
 the string @var{s}, or NULL if not found.  The use of @code{index} is
 deprecated in new programs in favor of @code{strchr}.
 
@@ -222,7 +222,7 @@ exists, it is removed.
 @c rindex.c:5
 @deftypefn Supplemental char* rindex (const char *@var{s}, int @var{c})
 
-Returns a pointer to the last occurance of the character @var{c} in
+Returns a pointer to the last occurrence of the character @var{c} in
 the string @var{s}, or NULL if not found.  The use of @code{rindex} is
 deprecated in new programs in favor of @code{strrchr}.
 
@@ -259,7 +259,7 @@ A case-insensitive @code{strcmp}.
 @c strchr.c:6
 @deftypefn Supplemental char* strchr (const char *@var{s}, int @var{c})
 
-Returns a pointer to the first occurance of the character @var{c} in
+Returns a pointer to the first occurrence of the character @var{c} in
 the string @var{s}, or NULL if not found.  If @var{c} is itself the
 null character, the results are undefined.
 
@@ -282,14 +282,14 @@ symbolic name of that error number, as found in @file{errno.h}.
 
 If the supplied error number is within the valid range of indices for
 symbolic names, but no name is available for the particular error
-number, then returns the string @samp{"Error NUM"}, where NUM is the
-error number.
+number, then returns the string @samp{"Error @var{num}"}, where @var{num}
+is the error number.
 
 If the supplied error number is not within the range of valid
 indices, then returns NULL.
 
 The contents of the location pointed to are only guaranteed to be
-valid until the next call to strerrno.
+valid until the next call to @code{strerrno}.
 
 @end deftypefn
 
@@ -303,8 +303,8 @@ strings will be the same as the ones used by @code{perror}.
 
 If the supplied error number is within the valid range of indices for
 the @code{sys_errlist}, but no message is available for the particular
-error number, then returns the string @samp{"Error NUM"}, where NUM is
-the error number.
+error number, then returns the string @samp{"Error @var{num}"}, where
+@var{num} is the error number.
 
 If the supplied error number is not a valid index into
 @code{sys_errlist}, returns NULL.
@@ -332,7 +332,7 @@ Compares the first @var{n} bytes of two strings, returning a value as
 @c strrchr.c:6
 @deftypefn Supplemental char* strrchr (const char *@var{s}, int @var{c})
 
-Returns a pointer to the last occurance of the character @var{c} in
+Returns a pointer to the last occurrence of the character @var{c} in
 the string @var{s}, or NULL if not found.  If @var{c} is itself the
 null character, the results are undefined.
 
@@ -342,8 +342,8 @@ null character, the results are undefined.
 @deftypefn Supplemental char* strstr (const char *@var{string}, const char *@var{sub})
 
 This function searches for the substring @var{sub} in the string
-@var{string}, not including the terminating NUL characters.  A pointer
-to the first occurance of @var{sub} is returned, or NULL if the
+@var{string}, not including the terminating null characters.  A pointer
+to the first occurrence of @var{sub} is returned, or NULL if the
 substring is absent.  If @var{sub} points to a string with zero
 length, the function returns @var{string}.
 
@@ -378,7 +378,7 @@ between 2 and 36 inclusive, or be the special value 0.  If @var{base}
 is 0, @code{strtol} will look for the prefixes @code{0} and @code{0x}
 to indicate bases 8 and 16, respectively, else default to base 10.
 When the base is 16 (either explicitly or implicitly), a prefix of
-@code{0x} is allowed.  The handling of endptr is as that of
+@code{0x} is allowed.  The handling of @var{endptr} is as that of
 @code{strtod} above.
 
 @end deftypefn
@@ -428,13 +428,13 @@ does the return value.  The third argument is unused in @libib{}.
 @deftypefun int xatexit (void (*@var{fn}) (void))
 
 Behaves as the standard @code{atexit} function, but with no limit on
-the number of registered funtions.  Returns 0 on success, or -1 on
+the number of registered functions.  Returns 0 on success, or -1 on
 failure.  If you use @code{xatexit} to register functions, you must use
 @code{xexit} to terminate your program.
 
 @end deftypefun
 
-@c xmalloc.c:37
+@c xmalloc.c:38
 @deftypefn Replacement void* xcalloc (size_t, size_t)
 
 Allocate memory without fail, and set it to zero.  This routine functions
@@ -447,7 +447,7 @@ cannot be found.
 @deftypefn Replacement void xexit (int @var{code})
 
 Terminates the program.  If any functions have been registered with
-the @code{xatexit} rpelacement function, they will be called first.
+the @code{xatexit} replacement function, they will be called first.
 Termination is handled via the system's normal @code{exit} call.
 
 @end deftypefn
@@ -456,13 +456,14 @@ Termination is handled via the system's normal @code{exit} call.
 @deftypefn Replacement void* xmalloc (size_t)
 
 Allocate memory without fail.  If @code{malloc} fails, this will print
-a message to stderr (using the name set by @code{xmalloc_set_program_name},
+a message to @code{stderr} (using the name set by
+@code{xmalloc_set_program_name},
 if any) and then call @code{xexit}.  Note that it is therefore safe for
 a program to contain @code{#define malloc xmalloc} in its source.
 
 @end deftypefn
 
-@c xmalloc.c:52
+@c xmalloc.c:53
 @deftypefn Replacement void xmalloc_failed (size_t)
 
 This function is not meant to be called by client code, and is listed
@@ -471,7 +472,7 @@ function will be called to print an error message and terminate execution.
 
 @end deftypefn
 
-@c xmalloc.c:45
+@c xmalloc.c:46
 @deftypefn Replacement void xmalloc_set_program_name (const char *@var{name})
 
 You can use this to set the name of the program used by
@@ -489,7 +490,7 @@ allocated, the remaining memory is zeroed.
 
 @end deftypefn
 
-@c xmalloc.c:31
+@c xmalloc.c:32
 @deftypefn Replacement void* xrealloc (void*, size_t)
 Reallocate memory without fail.  This routine functions like @code{realloc},
 but will behave the same as @code{xmalloc} if memory cannot be found.

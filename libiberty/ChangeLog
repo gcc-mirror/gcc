@@ -1,3 +1,21 @@
+2001-09-27  Eli Zaretskii  <eliz@is.elta.co.il>
+
+	* libiberty.texi: (Top level): Add syncodeindex pg.  Add
+	@dircategory and @direntry directives.  Add @finalout.
+	(many nodes): Lose the next,prev,up pointers on the @nide line.
+	(Using, Supplemental Functions, Replacement Functions): Fix
+	markup.
+	(Functions): Move around, to allow makeinfo to build the manual
+	without next,prev,up pointers in thye node lines.
+	(Licenses): Fix typos.
+
+	* index.c, rindex.c, strchr.c, strerror.c, strrchr.c, strstr.c,
+	strtol.c, xatexit.c, xexit.c, xmalloc.c: Fix spelling and markup.
+	* functions.texi: Regenerate.
+
+	* copying-lib.texi: Lose the next,prev,up pointers on the @node
+	line.
+
 2001-09-27  DJ Delorie  <dj@redhat.com>
 
 	* configure.in: Don't use in-tree texinfo, because libiberty must

@@ -22,7 +22,7 @@ Boston, MA 02111-1307, USA.  */
 @deftypefn Replacement void xexit (int @var{code})
 
 Terminates the program.  If any functions have been registered with
-the @code{xatexit} rpelacement function, they will be called first.
+the @code{xatexit} replacement function, they will be called first.
 Termination is handled via the system's normal @code{exit} call.
 
 @end deftypefn

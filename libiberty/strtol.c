@@ -38,7 +38,7 @@ between 2 and 36 inclusive, or be the special value 0.  If @var{base}
 is 0, @code{strtol} will look for the prefixes @code{0} and @code{0x}
 to indicate bases 8 and 16, respectively, else default to base 10.
 When the base is 16 (either explicitly or implicitly), a prefix of
-@code{0x} is allowed.  The handling of endptr is as that of
+@code{0x} is allowed.  The handling of @var{endptr} is as that of
 @code{strtod} above.
 
 @end deftypefn

@@ -6,6 +6,16 @@
 
 @syncodeindex fn cp
 @syncodeindex vr cp
+@syncodeindex pg cp
+
+@finalout
+@c %**end of header
+ 
+@dircategory GNU libraries
+@direntry
+* Libiberty: (libiberty).          Library of utility functions which
+                                   are missing or broken on some systems.
+@end direntry
 
 @macro libib
 @code{libiberty}
@@ -85,7 +95,7 @@ This edition accompanies GCC 3, September 2001.
 * Index::              Index of functions and categories.
 @end menu
 
-@node Using,Overview,Top,Top
+@node Using
 @chapter Using
 @cindex using libiberty
 @cindex libiberty usage
@@ -104,7 +114,7 @@ elsewhere on the system.
 
 Passing @option{--enable-install-libiberty} to the @command{configure}
 script when building @libib{} causes the header files and archive library
-to be installed when @samp{make install} is run.  This option also takes
+to be installed when @kbd{make install} is run.  This option also takes
 an (optional) argument to specify the installation location, in the same
 manner as @option{--prefix}.
 
@@ -121,7 +131,7 @@ necessary in the function descriptions.)  At link time, you will need to
 add @option{-liberty} to your link command invocation.
 
 
-@node Overview,Functions,Using,Top
+@node Overview
 @chapter Overview
 
 Functions contained in @libib{} can be divided into three general categories.
@@ -138,7 +148,7 @@ Functions contained in @libib{} can be divided into three general categories.
                                  or safety wrappers around existing code.
 @end menu
 
-@node Supplemental Functions,Replacement Functions,,Overview
+@node Supplemental Functions
 @section Supplemental Functions
 @cindex supplemental functions
 @cindex functions, supplemental
@@ -159,14 +169,14 @@ family of systems.
 Many such functions are provided in @libib{}.  They are quickly
 listed here with little description, as systems which lack them
 become less and less common.  Each function @var{foo} is implemented
-in @file{foo.c} but not declared in any @libib{} header file; more
+in @file{@var{foo}.c} but not declared in any @libib{} header file; more
 comments and caveats for each function's implementation are often
 available in the source file.  Generally, the function can simply
 be declared as @code{extern}.
 
 
 
-@node Replacement Functions,Extensions,Supplemental Functions,Overview
+@node Replacement Functions
 @section Replacement Functions
 @cindex replacement functions
 @cindex functions, replacement
@@ -196,7 +206,7 @@ functions may call one another.
 @subsection Memory Allocation
 @cindex memory allocation
 
-The functions beginning with the letter `x' are wrappers around
+The functions beginning with the letter @samp{x} are wrappers around
 standard functions; the functions provided by the system environment
 are called and their results checked before the results are passed back
 to client code.  If the standard functions fail, these wrappers will
@@ -223,7 +233,7 @@ contains a good deal of documentation for these functions.
 @c signal stuff
 
 
-@node Extensions,,Replacement Functions,Overview
+@node Extensions
 @section Extensions
 @cindex extensions
 @cindex functions, extension
@@ -238,32 +248,30 @@ central location from which to use, maintain, and distribute them.
 * Obstacks::                     Stacks of arbitrary objects.
 @end menu
 
-
-@node Functions,Obstacks,Overview,Top
-@chapter Function, Variable, and Macro Listing.
-@include functions.texi
-
 @c This is generated from the glibc manual using a make-obstacks-texi.sh
 @c script of Phil's.  Hope it's accurate.
 @include obstacks.texi
 
+@node Functions
+@chapter Function, Variable, and Macro Listing.
+@include functions.texi
 
-@node Licenses,Index,Obstacks,Top
+@node Licenses
 @appendix Licenses
 
 @menu
 
-* Library Copying::   The GNU Libary General Public License
+* Library Copying::   The GNU Library General Public License
 * BSD::               Regents of the University of California
 
 @end menu
 
 @c This takes care of Library Copying.  It is the copying-lib.texi from the
-@c GNU website, with its @node line altered to make makeinfo shut up.
+@c GNU web site, with its @node line altered to make makeinfo shut up.
 @include copying-lib.texi
 
 @page
-@node BSD,,,Licenses
+@node BSD
 @appendixsec BSD
 
 Copyright @copyright{} 1990 Regents of the University of California.
@@ -306,7 +314,7 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
-@node    Index,,Licenses,Top
+@node    Index
 @unnumbered Index
 
 @printindex cp

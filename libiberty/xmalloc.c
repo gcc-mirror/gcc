@@ -22,7 +22,8 @@ Boston, MA 02111-1307, USA.  */
 @deftypefn Replacement void* xmalloc (size_t)
 
 Allocate memory without fail.  If @code{malloc} fails, this will print
-a message to stderr (using the name set by @code{xmalloc_set_program_name},
+a message to @code{stderr} (using the name set by
+@code{xmalloc_set_program_name},
 if any) and then call @code{xexit}.  Note that it is therefore safe for
 a program to contain @code{#define malloc xmalloc} in its source.
 
