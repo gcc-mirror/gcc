@@ -1,3 +1,9 @@
+2001-07-23  David Edelsohn  <edelsohn@gnu.org>
+
+	* include/bits/limits_generic.h (int): Set digits and digits10
+	appropriately for word size.
+	(unsigned int,long,unsigned long): Likewise.
+
 2001-07-19  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 
         * include/bits/stl_algo.h : Fix typos.
