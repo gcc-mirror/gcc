@@ -78,6 +78,12 @@ namespace __gnu_test
   typedef const ClassType           cClassType;
   typedef volatile ClassType        vClassType;
   typedef const volatile ClassType  cvClassType;
+
+  enum EnumType { };
+
+  struct ConvType
+  { operator int() const; };
+  
 }; // namespace __gnu_test
 
 #endif // _GLIBCXX_TESTSUITE_TR1_H
