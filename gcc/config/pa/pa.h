@@ -1219,6 +1219,17 @@ extern union tree_node *current_function_decl;
 extern struct rtx_def *hppa_builtin_saveregs ();
 #define EXPAND_BUILTIN_SAVEREGS() hppa_builtin_saveregs ()
 
+/* Implement `va_start' for varargs and stdarg.  */
+
+extern void hppa_va_start();
+#define EXPAND_BUILTIN_VA_START(stdarg, valist, nextarg) \
+  hppa_va_start (stdarg, valist, nextarg)
+
+/* Implement `va_arg'.  */
+
+extern struct rtx_def *hppa_va_arg();
+#define EXPAND_BUILTIN_VA_ARG(valist, type) \
+  hppa_va_arg (valist, type)
 
 /* Addressing modes, and classification of registers for them. 
 

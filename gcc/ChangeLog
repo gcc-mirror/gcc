@@ -1,3 +1,12 @@
+Wed Jul 28 11:23:48 1999  Richard Henderson  <rth@cygnus.com>
+
+	* pa.c (hppa_builtin_saveregs):  Use get_varargs_alias_set
+	and tag the spill mems.
+	(hppa_va_start): New.
+	(hppa_va_arg): New.
+	* pa.h (EXPAND_BUILTIN_VA_START): New.
+	(EXPAND_BUILTIN_VA_ARG): New.
+
 Wed Jul 28 11:22:21 1999  Richard Henderson  <rth@cygnus.com>
 
 	* mn10300.c (mn10300_builtin_saveregs): Use get_varargs_alias_set
