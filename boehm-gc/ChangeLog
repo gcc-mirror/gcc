@@ -1,5 +1,17 @@
 2001-10-16  Loren J. Rittle  <ljrittle@acm.org>
 
+	* include/gc_pthread_redirects.h: Generalize test to use GC_PTHREADS.
+	* linux_threads.c (WRAP_FUNC(pthread_join)): Conditionalized on
+	GC_FREEBSD_THREADS, handle strange interaction between system
+	pthread implementation and boehm-gc signal-handler architecture.
+	* tests/test.c (main): Conditionalized on GC_FREEBSD_THREADS,
+	set stack.
+	* include/private/gcconfig.h (configuration keyed off FREEBSD):
+	Define SIG_SUSPEND, SIG_THR_RESTART.  Do not define
+	MPROTECT_VDB when GC_FREEBSD_THREADS is defined.
+
+2001-10-16  Loren J. Rittle  <ljrittle@acm.org>
+
 	* Makefile.am (test.o): Find tests/test.c in $(srcdir).
 	* Makefile.in: Rebuilt.
 
