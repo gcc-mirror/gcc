@@ -1,5 +1,6 @@
 Wed Dec 29 23:48:49 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* gcc.c-torture/compile/991229-3.c: New test.
 	* gcc.c-torture/compile/991229-2.c: New test.
 	* gcc.c-torture/compile/991229-1.c: New test.
 
