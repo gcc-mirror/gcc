@@ -2138,8 +2138,6 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	  break;
 
 	case NOTE_INSN_FUNCTION_BEG:
-	  if (write_symbols == NO_DEBUG)
-	    break;
 #if defined(SDB_DEBUGGING_INFO) && defined(MIPS_DEBUGGING_INFO)
 	  /* MIPS stabs require the parameter descriptions to be after the
 	     function entry point rather than before.  */
@@ -2148,7 +2146,6 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	      app_disable ();
 	      sdbout_begin_function (last_linenum);
 	    }
-	  else
 #endif
 #ifdef DWARF_DEBUGGING_INFO
 	  /* This outputs a marker where the function body starts, so it
