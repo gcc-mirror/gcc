@@ -73,6 +73,8 @@ extern int expand_block_move PARAMS ((rtx[]));
 extern int load_multiple_operation PARAMS ((rtx, enum machine_mode));
 extern int store_multiple_operation PARAMS ((rtx, enum machine_mode));
 extern int branch_comparison_operator PARAMS ((rtx, enum machine_mode));
+extern int branch_positive_comparison_operator 
+  PARAMS ((rtx, enum machine_mode));
 extern int scc_comparison_operator PARAMS ((rtx, enum machine_mode));
 extern int trap_comparison_operator PARAMS ((rtx, enum machine_mode));
 extern int boolean_operator PARAMS ((rtx, enum machine_mode));
@@ -87,6 +89,10 @@ extern enum reg_class secondary_reload_class PARAMS ((enum reg_class,
 extern int ccr_bit PARAMS ((rtx, int));
 extern void print_operand PARAMS ((FILE *, rtx, int));
 extern void print_operand_address PARAMS ((FILE *, rtx));
+extern enum rtx_code rs6000_reverse_condition PARAMS ((enum machine_mode,
+						       enum rtx_code));
+extern void rs6000_emit_sCOND PARAMS ((enum rtx_code, rtx));
+extern void rs6000_emit_cbranch PARAMS ((enum rtx_code, rtx));
 extern char * output_cbranch PARAMS ((rtx, const char *, int, rtx));
 extern void output_toc PARAMS ((FILE *, rtx, int, enum machine_mode));
 extern int rs6000_adjust_cost PARAMS ((rtx, rtx, rtx, int));

@@ -1,3 +1,35 @@
+2000-09-06  Geoff Keating  <geoffk@cygnus.com>
+
+	* config/rs6000/rs6000.c (validate_condition_mode): New function.
+	(branch_comparison_operator): Call validate_condition_mode to
+	abort rather than returning 0.
+	(branch_positive_comparison_operator): New function.
+	(scc_comparison_operator): Call validate_condition_mode to abort
+	rather than returning 0.
+	(ccr_bit): Call validate_condition_mode.  Update for
+	new branch scheme.
+	(print_operand): Delete %C modifier.  Update %E case
+	to use EQ bit not SO bit.
+	(rs6000_reverse_condition): New function.
+	(rs6000_generate_compare): New function.
+	(rs6000_emit_sCOND): New function.
+	(rs6000_emit_cbranch): New function.
+	(output_cbranch): The length of a long branch insn is
+	now only 8 bytes.  Add validate_condition_mode.  Use
+	rs6000_reverse_condition.  Remove cror generation.
+	* config/rs6000/rs6000.h: Update comments.
+	(PREDICATE_CODES): Add new predicate.  Update codes used
+	by branch_comparison_operator and scc_comparison_operator.
+	* config/rs6000/rs6000-protos.h: Add prototypes for
+	new external functions.
+	* config/rs6000/rs6000.md: Add new scheduling parameters
+	for cr_logical instructions.  Change length of branch
+	instructions.
+	(bCOND patterns): Call rs6000_emit_cbranch.
+	(sCOND patterns): Call rs6000_emit_sCOND.
+	(branch patterns): Change lengths to 4.
+	(cr logical patterns): New.
+
 2000-09-06  Richard Henderson  <rth@cygnus.com>
 
 	* config/i386/i386.md (call_pop): Fix test for setting
