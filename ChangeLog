@@ -3,6 +3,7 @@ Thu Sep 18 21:43:23 1997  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* Makefile.in (bootstrap2, bootstrap3): New targets.
 	(all-bootstrap): Remove outdated and confusing target.
+	(bootstrap, bootstrap2, bootstrap3): Don't pass BOOT_CFLAGS down.
 
 1997-09-15 02:37  Ulrich Drepper  <drepper@cygnus.com>
 

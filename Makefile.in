@@ -1288,13 +1288,13 @@ bootstrap bootstrap2 bootstrap3: all-texinfo all-bison all-byacc all-binutils al
 	@r=`pwd`; export r; \
 	s=`cd $(srcdir); pwd`; export s; \
 	$(SET_LIB_PATH) \
-	echo "Bootstrapping the compiler with -O2 -g"; \
-	cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) BOOT_CFLAGS="-O2 -g" $@
+	echo "Bootstrapping the compiler"; \
+	cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) $@
 	@r=`pwd`; export r; \
 	s=`cd $(srcdir); pwd`; export s; \
 	$(SET_LIB_PATH) \
 	echo "Comparing stage2 and stage3 of the compiler"; \
-	cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) BOOT_CFLAGS="-O2 -g" compare
+	cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) compare
 	@echo "Building runtime libraries"; \
 	$(MAKE) all
 
