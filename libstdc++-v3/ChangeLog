@@ -1,5 +1,9 @@
 2003-08-04  Phil Edwards  <pme@gcc.gnu.org>
 
+	* po/libstdc++.pot:  Re-extract/regenerate.
+
+2003-08-04  Phil Edwards  <pme@gcc.gnu.org>
+
 	* testsuite/Makefile.am (DEJATOOL,EXPECT,RUNTEST,RUNTESTFLAGS):
 	Remove unneeded variable assignments.  Leave them for automake.
 	* testsuite/lib/libstdc++-v3.exp:  Rename...

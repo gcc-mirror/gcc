@@ -1,18 +1,19 @@
 # Translations needed for GNU C++ library locale implementation.
 # Copyright (C) 2001 Free Software Foundation, Inc.
+# This file is distributed under the same license as the libstdc++-v3 package.
 # Benjamin Kosnik <bkoz@redhat.com>, 2001.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: libstdc++ 3.1.0\n"
-"POT-Creation-Date: 2001-07-31 08:49-0700\n"
+"Project-Id-Version: libstdc++ 3.4.0\n"
+"POT-Creation-Date: 2003-04-23 15:19-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-1\n"
-"Content-Transfer-Encoding: 8-bit\n"
+"Content-Transfer-Encoding: 8bit\n"
 
 #: string_literals.cc:23
 msgid "please"
@@ -28,4 +29,28 @@ msgstr ""
 
 #: string_literals.cc:28
 msgid "false"
+msgstr ""
+
+#: include/std/std_bitset.h:267 include/std/std_bitset.h:267
+msgid "bitset value is too large to fit in unsigned long"
+msgstr ""
+
+#: include/std/std_bitset.h:469 include/std/std_bitset.h:469
+msgid "bitset is zero-length"
+msgstr ""
+
+#: include/std/std_bitset.h:865 include/std/std_bitset.h:865
+msgid "bitset::set() argument too large"
+msgstr ""
+
+#: include/std/std_bitset.h:890 include/std/std_bitset.h:890
+msgid "bitset::reset() argument too large"
+msgstr ""
+
+#: include/std/std_bitset.h:914 include/std/std_bitset.h:914
+msgid "bitset::flip() argument too large"
+msgstr ""
+
+#: include/std/std_bitset.h:1017 include/std/std_bitset.h:1017
+msgid "bitset::test() argument too large"
 msgstr ""
