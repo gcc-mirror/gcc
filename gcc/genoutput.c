@@ -1,5 +1,5 @@
 /* Generate code from to output assembler insns as recognized from rtl.
-   Copyright (C) 1987-1991 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1991 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -424,12 +424,12 @@ scan_operands (part, this_address_p, this_strict_low)
 	max_opno = opno;
       if (max_opno >= MAX_MAX_OPERANDS)
 	{
-	  error ("Too many operands (%d) in instruction pattern %d.\n",
+	  error ("Too many operands (%d) in definition %d.\n",
 		 max_opno + 1, next_index_number);
 	  return;
 	}
       if (seen[opno])
-	error ("Insn pattern %d specified operand number %d more than once.\n",
+	error ("Definition %d specified operand number %d more than once.\n",
 	       next_index_number, opno);
       seen[opno] = 1;
       modes[opno] = GET_MODE (part);
@@ -450,12 +450,12 @@ scan_operands (part, this_address_p, this_strict_low)
 	max_opno = opno;
       if (max_opno >= MAX_MAX_OPERANDS)
 	{
-	  error ("Too many operands (%d) in instruction pattern %d.\n",
+	  error ("Too many operands (%d) in definition %d.\n",
 		 max_opno + 1, next_index_number);
 	  return;
 	}
       if (seen[opno])
-	error ("Insn pattern %d specified operand number %d more than once.\n",
+	error ("Definition %d specified operand number %d more than once.\n",
 	       next_index_number, opno);
       seen[opno] = 1;
       modes[opno] = GET_MODE (part);
@@ -477,12 +477,12 @@ scan_operands (part, this_address_p, this_strict_low)
 	max_opno = opno;
       if (max_opno >= MAX_MAX_OPERANDS)
 	{
-	  error ("Too many operands (%d) in instruction pattern %d.\n",
+	  error ("Too many operands (%d) in definition %d.\n",
 		 max_opno + 1, next_index_number);
 	  return;
 	}
       if (seen[opno])
-	error ("Insn pattern %d specified operand number %d more than once.\n",
+	error ("Definition %d specified operand number %d more than once.\n",
 	       next_index_number, opno);
       seen[opno] = 1;
       modes[opno] = GET_MODE (part);

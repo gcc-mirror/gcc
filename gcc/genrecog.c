@@ -1,5 +1,5 @@
 /* Generate code from machine description to recognize rtl as insns.
-   Copyright (C) 1987-1991 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1991 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -81,7 +81,7 @@ struct decision
   int test_elt_zero_int;	/* Nonzero if should test XINT (rtl, 0) */
   int elt_zero_int;		/* Required value for XINT (rtl, 0) */
   int test_elt_one_int;		/* Nonzero if should test XINT (rtl, 1) */
-  int elt_one_int;		/* Required value for XINT (rtl, 2) */
+  int elt_one_int;		/* Required value for XINT (rtl, 1) */
   char *tests;			/* If nonzero predicate to call */
   int pred;			/* `preds' index of predicate or -1 */
   char *c_test;			/* Additional test to perform */
@@ -824,11 +824,30 @@ merge_trees (oldh, addh)
 		    }
 		}
 
-	      old->success = merge_trees (old->success, add->success);
 	      if (old->insn_code_number >= 0 && add->insn_code_number >= 0)
-		fatal ("Two actions at one point in tree");
+		{
+		  /* If one node is for a normal insn and the second is
+		     for the base insn with clobbers stripped off, the
+		     second node should be ignored.  */
+
+		  if (old->num_clobbers_to_add == 0
+		      && add->num_clobbers_to_add > 0)
+		    /* Nothing to do here.  */
+		    ;
+		  else if (old->num_clobbers_to_add > 0
+			   && add->num_clobbers_to_add == 0)
+		    {
+		      /* In this case, replace OLD with ADD.  */
+		      old->insn_code_number = add->insn_code_number;
+		      old->num_clobbers_to_add = 0;
+		    }
+		  else
+		    fatal ("Two actions at one point in tree");
+		}
+
 	      if (old->insn_code_number == -1)
 		old->insn_code_number = add->insn_code_number;
+	      old->success = merge_trees (old->success, add->success);
 	      add = 0;
 	      break;
 	    }
@@ -1609,7 +1628,7 @@ fatal (s, a1, a2)
   fprintf (stderr, "genrecog: ");
   fprintf (stderr, s, a1, a2);
   fprintf (stderr, "\n");
-  fprintf (stderr, "after %d instruction definitions\n", next_index);
+  fprintf (stderr, "after %d definitions\n", next_index);
   exit (FATAL_EXIT_CODE);
 }
 
