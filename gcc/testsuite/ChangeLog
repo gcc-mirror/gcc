@@ -1,5 +1,7 @@
 2002-04-01  Richard Henderson  <rth@redhat.com>
 
+	* gcc.c-torture/compile/920625-1.x: XFAIL -O1.
+
 	* g++.dg/other/new1.C: Use __SIZE_TYPE__.
 
 2002-04-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>

@@ -17,7 +17,7 @@ set torture_eval_before_compile {
     set compiler_conditional_xfail_data {
         "missing .pred.rel.mutex directive" \
         "ia64-*-*" \
-        { "-O2" "-O3" "-Os" } \
+        { "-O1" "-O2" "-O3" "-Os" } \
         { "" }
     }
 }
