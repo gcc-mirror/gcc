@@ -454,6 +454,7 @@ static void move2add_note_store		PARAMS ((rtx, rtx, void *));
 #ifdef AUTO_INC_DEC
 static void add_auto_inc_notes		PARAMS ((rtx, rtx));
 #endif
+static void copy_eh_notes		PARAMS ((rtx, rtx));
 static HOST_WIDE_INT sext_for_mode	PARAMS ((enum machine_mode,
 						 HOST_WIDE_INT));
 static void failed_reload		PARAMS ((rtx, int));
@@ -6571,10 +6572,13 @@ emit_input_reload_insns (chain, rl, old, j)
 		  rl->when_needed);
     }
 
+  if (flag_non_call_exceptions)
+    copy_eh_notes (insn, get_insns ());
+
   /* End this sequence.  */
   *where = get_insns ();
   end_sequence ();
-
+				 
   /* Update reload_override_in so that delete_address_reloads_1
      can see the actual register usage.  */
   if (oldequiv_reg)
@@ -6788,6 +6792,9 @@ emit_output_reload_insns (chain, rl, j)
     }
   else
     output_reload_insns[rl->opnum] = get_insns ();
+
+  if (flag_non_call_exceptions)
+    copy_eh_notes (insn, get_insns ());
 
   end_sequence ();
 }
@@ -9437,3 +9444,23 @@ add_auto_inc_notes (insn, x)
     }
 }
 #endif
+
+/* Copy EH notes from an insn to its reloads.  */
+static void
+copy_eh_notes (insn, x)
+     rtx insn;
+     rtx x;
+{
+  rtx eh_note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
+  if (eh_note)
+    {
+      for (; x != 0; x = NEXT_INSN (x))
+	{
+	  if (may_trap_p (PATTERN (x)))
+	    REG_NOTES (x) 
+	      = gen_rtx_EXPR_LIST (REG_EH_REGION, XEXP (eh_note, 0),
+				   REG_NOTES (x));
+	}
+    }
+}
+

@@ -1,3 +1,9 @@
+2001-05-03  Andrew Haley  <aph@cambridge.redhat.com>
+
+	* reload1.c (copy_eh_notes): New function.
+	(emit_input_reload_insns): Call it.
+	(emit_output_reload_insns): Call it.
+
 2001-05-07  Zack Weinberg  <zackw@stanford.edu>
 
 	* config.gcc (i[34567]86-*-sco3.2v4*, i[34567]86-*-sco*):
