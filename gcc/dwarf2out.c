@@ -10723,6 +10723,9 @@ lookup_filename (file_name)
   file_table.in_use = i + 1;
   file_table.last_lookup_index = i;
 
+  if (DWARF2_ASM_LINE_DEBUG_INFO)
+    fprintf (asm_out_file, "\t.file %u \"%s\"\n", i, file_name);
+
   return i;
 }
 
@@ -10885,10 +10888,15 @@ dwarf2out_init (asm_out_file, main_input_filename)
      register FILE *asm_out_file;
      register const char *main_input_filename;
 {
+  init_file_table ();
+
   /* Remember the name of the primary input file.  */
   primary_filename = main_input_filename;
 
-  init_file_table ();
+  /* Add it to the file table first, under the assumption that we'll
+     be emitting line number data for it first, which avoids having
+     to add an initial DW_LNS_set_file.  */
+  lookup_filename (main_input_filename);
 
   /* Allocate the initial hunk of the decl_die_table.  */
   decl_die_table
