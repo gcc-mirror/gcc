@@ -1948,7 +1948,7 @@ install-headers-tar: stmp-headers $(STMP_FIXPROTO) install-include-dir
 
 # Install the include directory using cpio.
 install-headers-cpio: stmp-headers $(STMP_FIXPROTO) install-include-dir
-	(cd include; find . -print) | cpio -pdum $(libsubdir)/include
+	(cd include; find . -print) | (cd include; cpio -pdum $(libsubdir)/include)
 
 # Put assert.h where it won't override GNU libc's assert.h.
 # It goes in a dir that is searched after GNU libc's headers;
