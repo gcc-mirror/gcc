@@ -37,8 +37,7 @@ static void expand_aggr_vbase_init_1 PROTO((tree, tree, tree, tree));
 static void construct_virtual_bases PROTO((tree, tree, tree, tree, tree));
 static void expand_aggr_init_1 PROTO((tree, tree, tree, tree, int));
 static void expand_default_init PROTO((tree, tree, tree, tree, int));
-static tree build_vec_delete_1 PROTO((tree, tree, tree, tree, tree,
-				      int));
+static tree build_vec_delete_1 PROTO((tree, tree, tree, tree, int));
 static void perform_member_init PROTO((tree, tree, tree, int));
 static void sort_base_init PROTO((tree, tree *, tree *));
 static tree build_builtin_delete_call PROTO((tree));
@@ -2434,10 +2433,9 @@ build_new_1 (exp)
 }
 
 static tree
-build_vec_delete_1 (base, maxindex, type, auto_delete_vec, auto_delete,
-		    use_global_delete)
+build_vec_delete_1 (base, maxindex, type, auto_delete_vec, use_global_delete)
      tree base, maxindex, type;
-     tree auto_delete_vec, auto_delete;
+     tree auto_delete_vec;
      int use_global_delete;
 {
   tree virtual_size;
@@ -2481,29 +2479,10 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, auto_delete,
   controller = build (BIND_EXPR, void_type_node, tbase, NULL_TREE, NULL_TREE);
   TREE_SIDE_EFFECTS (controller) = 1;
 
-  if (auto_delete != integer_zero_node
-      && auto_delete != integer_two_node)
-    {
-      tree base_tbd = cp_convert (ptype,
-				  build_binary_op (MINUS_EXPR,
-						   cp_convert (ptr_type_node, base),
-						   BI_header_size));
-      /* This is the real size */
-      virtual_size = size_binop (PLUS_EXPR, virtual_size, BI_header_size);
-      body = build_expr_list (NULL_TREE,
-			      build_x_delete (base_tbd,
-					      2 | use_global_delete,
-					      virtual_size));
-      body = fold (build (COND_EXPR, void_type_node,
-			  fold (build (BIT_AND_EXPR, integer_type_node,
-				       auto_delete, integer_one_node)),
-			  body, integer_zero_node));
-    }
-  else
-    body = NULL_TREE;
+  body = NULL_TREE;
 
   body = tree_cons (NULL_TREE,
-		    build_delete (ptype, tbase, auto_delete,
+		    build_delete (ptype, tbase, integer_two_node,
 				  LOOKUP_NORMAL|LOOKUP_DESTRUCTOR, 1),
 		    body);
 
@@ -2909,7 +2888,6 @@ build_vec_init (decl, base, maxindex, init, from_array)
 					       iterator),
 			      type,
 			      /*auto_delete_vec=*/integer_zero_node,
-			      /*auto_delete=*/integer_zero_node,
 			      /*use_global_delete=*/0);
       finish_cleanup (e, try_block);
     }
@@ -3014,8 +2992,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	  return error_mark_node;
 	}
       return build_vec_delete (addr, array_type_nelts (type),
-			       auto_delete, integer_zero_node,
-			       use_global_delete);
+			       auto_delete, use_global_delete);
     }
   else
     {
@@ -3209,7 +3186,6 @@ build_vbase_delete (type, decl)
    BASE is the expression that should yield the store to be deleted.
    This function expands (or synthesizes) these calls itself.
    AUTO_DELETE_VEC says whether the container (vector) should be deallocated.
-   AUTO_DELETE say whether each item in the container should be deallocated.
 
    This also calls delete for virtual baseclasses of elements of the vector.
 
@@ -3221,10 +3197,9 @@ build_vbase_delete (type, decl)
    be worth bothering.)  */
 
 tree
-build_vec_delete (base, maxindex, auto_delete_vec, auto_delete,
-		  use_global_delete)
+build_vec_delete (base, maxindex, auto_delete_vec, use_global_delete)
      tree base, maxindex;
-     tree auto_delete_vec, auto_delete;
+     tree auto_delete_vec;
      int use_global_delete;
 {
   tree type;
@@ -3266,6 +3241,6 @@ build_vec_delete (base, maxindex, auto_delete_vec, auto_delete,
       return error_mark_node;
     }
 
-  return build_vec_delete_1 (base, maxindex, type, auto_delete_vec, auto_delete,
+  return build_vec_delete_1 (base, maxindex, type, auto_delete_vec,
 			     use_global_delete);
 }

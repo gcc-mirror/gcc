@@ -1,3 +1,13 @@
+1999-11-21  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* cp-tree.h (build_vec_delete): Remove `auto_delete' argument.
+	* init.c (build_vec_delete, build_vec_delete_1): Likewise.
+	Always destruct virtual bases of array components, but never
+	delete them.
+	(build_vec_init): Adjust invocations.
+	(build_delete): Likewise.
+	* decl2.c (delete_sanity): Likewise.
+
 1999-11-19  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (grok_method_quals): Return this pointer qualifiers.

@@ -1194,8 +1194,7 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
     return build1 (NOP_EXPR, void_type_node, t);
 
   if (doing_vec)
-    return build_vec_delete (t, maxindex, integer_one_node,
-			     integer_zero_node, use_global_delete);
+    return build_vec_delete (t, maxindex, integer_one_node, use_global_delete);
   else
     {
       if (IS_AGGR_TYPE (TREE_TYPE (type))
