@@ -716,7 +716,7 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  xgcc$(exeext) xcpp$(exeext) cc1$(exeext) cpp$(exeext) $(EXTRA_PASSES) \
  $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross$(exeext) cc1obj$(exeext) \
  enquire$(exeext) protoize$(exeext) unprotoize$(exeext) \
- specs collect2$(exeext) $(USE_COLLECT2) underscore.c \
+ specs collect2$(exeext) $(USE_COLLECT2) underscore.c tradcpp$(exeext) \
  gcov$(exeext) *.[0-9][0-9].* *.[si] libcpp.a libgcc libgcc.mk \
  $(LANG_STAGESTUFF)
 
@@ -869,7 +869,7 @@ native: config.status auto-host.h cpp$(exeext) intl.all $(LANGUAGES) \
 	$(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(USE_COLLECT2)
 
 # Define the names for selecting languages in LANGUAGES.
-C c: cc1$(exeext)
+C c: cc1$(exeext) tradcpp$(exeext)
 PROTO: proto
 
 # Tell GNU make these are phony targets.
@@ -1814,6 +1814,18 @@ cppdefault.o: cppdefault.c $(CONFIG_H) system.h cppdefault.h Makefile
 
 mkdeps.o: mkdeps.c $(CONFIG_H) system.h mkdeps.h
 
+# The traditional mode preprocessor, a separate program for ease of
+# maintenance.  Some code is shared with the ISO-C cpp.
+tradcpp$(exeext): tradcpp.o tradcif.o cppdefault.o $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o tradcpp$(exeext) \
+	tradcpp.o tradcif.o cppdefault.o version.o intl.o $(LIBS)
+
+tradcpp.o: tradcpp.c $(CONFIG_H) system.h version.h cppdefault.h
+tradcif.o: tradcif.c $(CONFIG_H) system.h
+
+$(srcdir)/tradcif.c: $(srcdir)/tradcif.y
+	cd $(srcdir); $(BISON) $(BISONFLAGS) -o tradcif.c tradcif.y
+
 # Note for the stamp targets, we run the program `true' instead of
 # having an empty command (nothing following the semicolon).
 
@@ -2339,6 +2351,8 @@ install-common: native installdirs $(EXTRA_PARTS) lang.install-common
 	fi
 	-rm -f $(libsubdir)/cpp$(exeext)
 	$(INSTALL_PROGRAM) cpp$(exeext) $(libsubdir)/cpp$(exeext)
+	-rm -f $(libsubdir)/tradcpp$(exeext)
+	$(INSTALL_PROGRAM) tradcpp$(exeext) $(libsubdir)/tradcpp$(exeext)
 # Install gcov if it was compiled.
 	-if [ -f gcov$(exeext) ]; \
 	then \

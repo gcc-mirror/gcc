@@ -1,5 +1,16 @@
 2000-07-06  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* tradcpp.c: New file.
+	* tradcif.y: New file.
+	* tradcif.c: New generated file.
+
+	* Makefile.in: Add rules to build tradcpp.o, tradcif.o,
+	$(srcdir)/tradcif.c.  Add tradcpp to STAGESTUFF and
+	dependencies of C.  Install tradcpp from install-common, in
+	$(libsubdir).
+
+2000-07-06  Zack Weinberg  <zack@wolery.cumb.org>
+
 	* cppinit.c: Include cppdefault.h.  Refer to
 	cpp_GCC_INCLUDE_DIR and cpp_GCC_INCLUDE_DIR_len, not directly
 	to GCC_INCLUDE_DIR and its length.
