@@ -1,5 +1,19 @@
 2003-04-27  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/std/std_fstream.h (basic_filebuf): _M_pback_destroy to
+	_M_destroy_pback. _M_pback_create to
+	_M_create_pback. _M_underflow_common to
+	_M_underflow. _M_really_overflow to _M_overflow.
+	* include/bits/fstream.tcc: Same.
+	* src/fstream.cc: Same.
+	* include/std/std_streambuf.h (basic_streambuf): _M_in_cur_move to
+	_M_move_in_cur.  _M_out_cur_move to _M_move_out_cur.
+	* include/bits/streambuf.tcc: Same.
+	* include/bits/fstream.tcc: Same.
+	* include/bits/sstream.tcc: Same.
+	
+2003-04-27  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* include/bits/locale_classes.h (locale::_Impl): Change _M_names
 	from fixed size array.
 	(locale): Change _S_categories as well.

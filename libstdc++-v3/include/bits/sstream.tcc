@@ -173,7 +173,7 @@ namespace std
 	  if ((__testout || __testboth)
 	      && __newoffo + __off >= 0 && __endo - __beg >= __newoffo + __off)
 	    {
-	      _M_out_cur_move(__newoffo + __off - (this->_M_out_cur - __beg));
+	      _M_move_out_cur(__newoffo + __off - (this->_M_out_cur - __beg));
 	      __ret = pos_type(__newoffo);
 	    }
 	}
@@ -217,7 +217,7 @@ namespace std
 	      if (__testposi)
 		this->_M_in_cur = this->_M_in_beg + __pos;
 	      if (__testposo)
-		_M_out_cur_move((__pos) - (this->_M_out_cur - __beg));
+		_M_move_out_cur((__pos) - (this->_M_out_cur - __beg));
 	      __ret = pos_type(off_type(__pos));
 	    }
 	}
