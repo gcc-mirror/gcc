@@ -1,5 +1,5 @@
 /* Utility to pick a temporary filename prefix.
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of the libiberty library.
 Libiberty is free software; you can redistribute it and/or
@@ -22,11 +22,16 @@ Boston, MA 02111-1307, USA.  */
 /* This file lives in at least two places: libiberty and gcc.
    Don't change one without the other.  */
 
-#ifdef IN_GCC
+#if defined (IN_GCC) || defined (HAVE_CONFIG_H)
 #include "config.h"
 #endif
 
-#ifdef HAVE_SYS_FILE_H
+/* If we are in gcc, or we have a config.h, we assume that
+   HAVE_SYS_FILE_H tells us whether to include sys/file.h.  However,
+   libiberty does not have a config.h, and instead arranges to define
+   NO_SYS_FILE_H on the command line when there is no sys/file.h.  */
+
+#if (defined (IN_GCC) || defined (HAVE_CONFIG_H)) ? defined (HAVE_SYS_FILE_H) : ! defined (NO_SYS_FILE_H)
 #include <sys/types.h>
 #include <sys/file.h>   /* May get R_OK, etc. on some systems.  */
 #endif

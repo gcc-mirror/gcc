@@ -1,3 +1,7 @@
+Mon Feb 23 14:33:15 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* choose-temp.c: Fix handling of sys/file.h to work in libiberty.
+
 Thu Feb 12 16:29:49 1998  Ian Lance Taylor  <ian@cygnus.com>
 
 	* getopt.c: Update to latest FSF version.
