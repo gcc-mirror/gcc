@@ -1,8 +1,14 @@
+2000-10-08  Philipp Thomas  <pthomas@suse.de>
+
+	* POTFILES.in: Remove the files from the nuked
+	dead ports.
+	* ChangeLog: Correct David's entry. 
+
 2000-09-28  David O'Brien  <obrien@FreeBSD.org>
 
-	* po/POTFILES.in: Adjust for move of freebsd.h -> freebsd-aout.h
-	* po/en_GB.po: Likewise.
-	* po/gcc.pot: Likewise.
+	* POTFILES.in: Adjust for move of freebsd.h -> freebsd-aout.h
+	* en_GB.po: Likewise.
+	* gcc.pot: Likewise.
 
 2000-09-26  Philipp Thomas  <pthomas@suse.de>
 
