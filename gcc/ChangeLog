@@ -1,3 +1,8 @@
+2003-01-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* combine.c (nonzero_bits): Revert 2003-01-25 change.
+	(num_sign_bit_copies): Likewise.
+
 2003-01-27  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* doc/passes.texi: Fix typo.
