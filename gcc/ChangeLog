@@ -1,5 +1,9 @@
 2001-09-15  Eric Christopher  <echristo@redhat.com>
 
+	* config/mips/abi64.h: Add support for MEABI.
+
+2001-09-15  Eric Christopher  <echristo@redhat.com>
+
 	* config/mips/mips.md: Add unspec #2.
 	(reload_indi): Use.
 	(reload_outdi): Ditto.
