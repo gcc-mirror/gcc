@@ -229,10 +229,6 @@ typedef struct page_entry
      context during collection.  */
   unsigned long *save_in_use_p;
 
-  /* Saved NUM_FREE_OBJECTS for pages that aren't in the topmost
-     context during collection.  */
-  unsigned short save_num_free_objects;
-
   /* Context depth of this page.  */
   unsigned short context_depth;
 
@@ -1123,24 +1119,11 @@ ggc_recalculate_in_use_p (p)
      page_entry *p;
 {
   unsigned int i;
-  size_t num_objects = OBJECTS_PER_PAGE (p->order);
-
-  /* If no objects were allocated on this page in the new context
-     (which is quite likely if there are lots of pages in play), then
-     the recalculation is easy.  This is merely an optimization; the
-     same results should be obtained with this code as with the code
-     that handles the general case below.  */
-  if (p->num_free_objects == num_objects)
-    {
-      memcpy (p->in_use_p, p->save_in_use_p, 
-	      BITMAP_SIZE (num_objects));
-      p->num_free_objects = p->save_num_free_objects;
-      return;
-   }
+  size_t num_objects;
 
   /* Because the past-the-end bit in in_use_p is always set, we 
      pretend there is one additional object.  */
-  ++num_objects;
+  num_objects = OBJECTS_PER_PAGE (p->order) + 1;
 
   /* Reset the free object count.  */
   p->num_free_objects = num_objects;
@@ -1165,9 +1148,6 @@ ggc_recalculate_in_use_p (p)
   if (p->num_free_objects >= num_objects)
     abort ();
 }
-
-int xxx;
-int yyy;
 
 /* Decrement the `GC context'.  All objects allocated since the 
    previous ggc_push_context are migrated to the outer context.  */
@@ -1234,7 +1214,7 @@ clear_marks ()
 	      memcpy (p->save_in_use_p, p->in_use_p, bitmap_size);
 	    }
 
-	  /* Reset the number of free objects and clear the
+	  /* Reset reset the number of free objects and clear the
              in-use bits.  These will be adjusted by mark_obj.  */
 	  p->num_free_objects = num_objects;
 	  memset (p->in_use_p, 0, bitmap_size);
