@@ -695,7 +695,7 @@ libgcc.a: $(LIBGCC1) $(LIBGCC2)
 objc-runtime: libobjc.a
 
 # Build the Objective C runtime library.
-libobjc.a: cc1obj libgcc2.ready
+libobjc.a: cc1obj libgcc2.ready $(USE_COLLECT2)
 	if [ -d objc ]; then true; else mkdir objc; fi
 	thisdir1=`pwd`; \
 	srcdir1=`cd $(srcdir); pwd`; \
