@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* The libgcc2.c implementation gets confused by our type setup and creates
    a directly recursive call, so we do our own implementation.  For
-   the H8/300, that's in lib1funcs.asm, for H8/300H and H8/S, it's here.  */
+   the H8/300, that's in lib1funcs.asm, for H8/300H and H8S, it's here.  */
 
 #ifndef __H8300__
 long
