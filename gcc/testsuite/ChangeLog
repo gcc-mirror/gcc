@@ -1,3 +1,9 @@
+2005-03-22  Richard Guenther <rguenth@tat.physik.uni-tuebingen.de>
+	    Jan Hubicka  <jh@suse.cz>
+	    Steven Bosscher <stevenb@suse.de
+
+	* gcc.dg/winline-6.c: Modify so inlined function have nonzero cost.
+
 2005-03-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/19980
