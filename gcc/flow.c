@@ -1667,7 +1667,8 @@ int
 regno_uninitialized (regno)
      int regno;
 {
-  if (n_basic_blocks == 0 || global_regs[regno])
+  if (n_basic_blocks == 0
+      || (regno < FIRST_PSEUDO_REGISTER && global_regs[regno]))
     return 0;
 
   return (basic_block_live_at_start[0][regno / REGSET_ELT_BITS]
