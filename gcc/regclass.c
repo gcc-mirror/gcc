@@ -1,5 +1,5 @@
 /* Compute register class preferences for pseudo-registers.
-   Copyright (C) 1987, 88, 91-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1224,9 +1224,15 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 		break;
 
 	      case '=':  case '+':  case '?':  case '!':  case '#':
-	      case '&':  case 'p':
+	      case '&':  
 	      case '0':  case '1':  case '2':  case '3':  case '4':
 	      case '5':  case '6':  case '7':  case '8':  case '9':
+		break;
+
+	      case 'p':
+		/* An address operand is considered valid before reload,
+		   so we consider it so here.  */
+		win = 1;
 		break;
 
 	      case 'm':  case 'o':  case 'V':
