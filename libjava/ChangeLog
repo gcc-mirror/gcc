@@ -1,5 +1,20 @@
 2005-02-15  Mark Wielaard  <mark@klomp.org>
 
+	* java/util/jar/Attributes.java (Name.CLASS_PATH): Document that
+	file path elements are separated by spaces.
+
+2005-02-15  Mark Wielaard  <mark@klomp.org>
+
+	* java/util/jar/Attributes.java (Attributes.Name): Add documentation
+	to describe attributes without a constant field value in this class.
+
+2005-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* java/util/jar/Attributes.java
+	(CREATED_BY, JAVA_BEAN, MAGIC): Removed.
+
+2005-02-15  Mark Wielaard  <mark@klomp.org>
+
 	* java/net/URLClassLoader.java (JarURLLoader.JarURLLoader): Just use
 	space for parsing CLASS_PATH attribute.
 

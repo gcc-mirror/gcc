@@ -1,5 +1,5 @@
 /* Attributes.java -- Represents attribute name/value pairs from a Manifest
-   Copyright (C) 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -98,14 +98,23 @@ public class Attributes implements Cloneable, Map
    * converted to lowercase. But you can get the original case sensitive
    * string with the <code>toString()</code> method.</p>
    *
+   * <p>Most important attributes have a constant defined in this
+   * class. Some other attributes used in Manifest files are:
+   * <ul>
+   * <li> "Created-By" - General main attribute, tool and version
+   * that created this Manifest file.</li>
+   * <li> "Java-Bean" - Bean objects attribute, whether the entry is a Bean.
+   * Value is either "true" or "false".</li>
+   * <li> "Magic" - Signing attribute, application specific signing attribute.
+   * Must be understood by the manifest parser when present to validate the
+   * jar (entry).</li>
+   * </ul>
+   *
    * @since 1.2
    * @author Mark Wielaard (mark@klomp.org)
    */
   public static class Name
   {
-
-    // Fields
-
     // General Main Attributes
 
     /**
@@ -113,21 +122,18 @@ public class Attributes implements Cloneable, Map
      * the version of this Manifest file.
      */
     public static final Name MANIFEST_VERSION = new Name("Manifest-Version");
-    /**
-     * General main attribute -
-     * tool and version that created this Manifest file.
-     */
-    public static final Name CREATED_BY = new Name("Created-By");
+    
     /**
      * General main attribute -
      * the version of the jar file signature.
      */
     public static final Name SIGNATURE_VERSION
       = new Name("Signature-Version");
+    
     /**
      * General main attribute -
-     * (relative) URLs of the libraries/classpaths that the Classes in
-     * this jar file depend on.
+     * (relative) file paths of the libraries/classpaths that the Classes in
+     * this jar file depend on. Paths are separated by spaces.
      */
     public static final Name CLASS_PATH = new Name("Class-Path");
 
@@ -164,6 +170,7 @@ public class Attributes implements Cloneable, Map
      * the name if the extension library contained in the jar.
      */
     public static final Name EXTENSION_NAME = new Name("Extension-Name");
+    
     /**
      * Extension identification attribute -
      * synonym for <code>EXTENSTION_NAME</code>.
@@ -171,48 +178,56 @@ public class Attributes implements Cloneable, Map
     public static final Name EXTENSION_INSTALLATION = EXTENSION_NAME;
 
     // Package versioning and sealing attributes
+    
     /**
      * Package versioning -
      * name of extension library contained in this jar.
      */
     public static final Name IMPLEMENTATION_TITLE
       = new Name("Implementation-Title");
+    
     /**
      * Package versioning -
      * version of the extension library contained in this jar.
      */
     public static final Name IMPLEMENTATION_VERSION
       = new Name("Implementation-Version");
+    
     /**
      * Package versioning -
      * name of extension library creator contained in this jar.
      */
     public static final Name IMPLEMENTATION_VENDOR
       = new Name("Implementation-Vendor");
+    
     /**
      * Package versioning -
      * unique id of extension library creator.
      */
     public static final Name IMPLEMENTATION_VENDOR_ID
       = new Name("Implementation-Vendor-Id");
+    
     /**
      * Package versioning -
      * location where this implementation can be downloaded.
      */
     public static final Name IMPLEMENTATION_URL
       = new Name("Implementation-URL");
+    
     /**
      * Package versioning -
      * title of the specification contained in this jar.
      */
     public static final Name SPECIFICATION_TITLE
       = new Name("Specification-Title");
+
     /**
      * Package versioning -
      * version of the specification contained in this jar.
      */
     public static final Name SPECIFICATION_VERSION
       = new Name("Specification-Version");
+
     /**
      * Package versioning -
      * organisation that maintains the specification contains in this
@@ -220,6 +235,7 @@ public class Attributes implements Cloneable, Map
      */
     public static final Name SPECIFICATION_VENDOR
       = new Name("Specification-Vendor");
+
     /**
      * Package sealing -
      * whether (all) package(s) is(/are) sealed. Value is either "true"
@@ -233,21 +249,9 @@ public class Attributes implements Cloneable, Map
      */
     public static final Name CONTENT_TYPE = new Name("Content-Type");
 
-    /**
-     * Bean objects attribute -
-     * whether the entry is a Java Bean. Value is either "true" or "false".
-     */
-    public static final Name JAVA_BEAN = new Name("Java-Bean");
-
-    /**
-     * Signing attribute -
-     * application specific signing attribute. Must be understood by
-     * the manifest parser when present to validate the jar (entry).
-     */
-    public static final Name MAGIC = new Name("Magic");
-
     /** The (lowercase) String representation of this Name */
     private final String name;
+
     /** The original String given to the constructor */
     private final String origName;
 
