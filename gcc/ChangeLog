@@ -1,3 +1,18 @@
+2003-05-11  Bruno Haible  <bruno@clisp.org>
+	
+	* cppfiles.c (find_or_create_entry): Preserve errno.
+
+2003-05-11  Neil Booth  <neil@cat.daikokuya.co.uk>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Move __STDC_HOSTED__ into
+	cpplib as it's a Standard Predefined Macro.
+	* c-opts.c (finish_options): Pass flag_hosted to cpp_init_builtins.
+	* cppinit.c (_cpp_init_builtins): Take HOSTED.  Define
+	__STDC_HOSTED__ appropriately.
+	* cpplib.h (_cpp_init_builtins): Update.
+	* fix-header.c (read_scan_file): Update.
+	* doc/cpp.texi, doc/cppopts.texi: Update documentation.
+
 2003-05-11  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	PR C++/689

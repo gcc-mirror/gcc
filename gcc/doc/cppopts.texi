@@ -40,8 +40,11 @@ provided with a @option{-D} option.
 
 @item -undef
 @opindex undef
-Do not predefine any system-specific macros.  The common predefined
-macros remain defined.
+Do not predefine any system-specific or GCC-specific macros.  The
+standard predefined macros remain defined.
+@ifset cppmanual
+@xref{Standard Predefined Macros}
+@end ifset
 
 @item -I @var{dir}
 @opindex I

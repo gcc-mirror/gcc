@@ -636,7 +636,7 @@ read_scan_file (in_fname, argc, argv)
     exit (FATAL_EXIT_CODE);
 
   cpp_change_file (scan_in, LC_RENAME, "<built-in>");
-  cpp_init_builtins (scan_in);
+  cpp_init_builtins (scan_in, true);
   cpp_change_file (scan_in, LC_RENAME, in_fname);
 
   /* Process switches after builtins so -D can override them.  */

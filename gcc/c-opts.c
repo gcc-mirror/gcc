@@ -1789,7 +1789,7 @@ finish_options ()
       size_t i;
 
       cpp_change_file (parse_in, LC_RENAME, _("<built-in>"));
-      cpp_init_builtins (parse_in);
+      cpp_init_builtins (parse_in, flag_hosted);
       c_cpp_builtins (parse_in);
       cpp_change_file (parse_in, LC_RENAME, _("<command line>"));
       for (i = 0; i < deferred_count; i++)

@@ -526,7 +526,7 @@ extern void cpp_set_callbacks PARAMS ((cpp_reader *, cpp_callbacks *));
 extern const char *cpp_read_main_file PARAMS ((cpp_reader *, const char *));
 
 /* Set up built-ins like __FILE__.  */
-extern void cpp_init_builtins PARAMS ((cpp_reader *));
+extern void cpp_init_builtins PARAMS ((cpp_reader *, int));
 
 /* Call this to finish preprocessing.  If you requested dependency
    generation, pass an open stream to write the information to,
