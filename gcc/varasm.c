@@ -3564,7 +3564,7 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
     }
 
   /* Now output the underlying data.  If we've handling the padding, return.
-     Otherwise, break and ensure THISSIZE is the size written.  */
+     Otherwise, break and ensure SIZE is the size written.  */
   switch (code)
     {
     case CHAR_TYPE:
@@ -3576,7 +3576,7 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
     case OFFSET_TYPE:
       if (! assemble_integer (expand_expr (exp, NULL_RTX, VOIDmode,
 					   EXPAND_INITIALIZER),
-			      size, align, 0))
+			      MIN (size, thissize), align, 0))
 	error ("initializer for integer value is too complicated");
       break;
 
