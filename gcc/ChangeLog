@@ -1,5 +1,15 @@
 2002-03-15  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
+	* config/m68hc11/m68hc11.c (m68hc11_small_indexed_indirect_p): Look
+	for reg_equiv_memory_loc when the operand is a register that does
+	not get a hard register (stack location).
+	(tst_operand): After reload, accept all memory operand.
+	(symbolic_memory_operand): Fix detection of symbolic references.
+	* config/m68hc11/m68hc11.h (VALID_CONSTANT_OFFSET_P): For 68HC12
+	accept symbols and any constant.
+
+2002-03-15  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
 	* config/m68hc11/m68hc11.c (emit_move_after_reload): Add a REG_INC
 	note on the insn that sets the soft frame register.
 	(must_parenthesize): ix and iy are also reserved names.
