@@ -238,6 +238,9 @@ namespace gcj
   
   /* Set to true by _Jv_CreateJavaVM. */
   extern bool runtimeInitialized;
+
+  /* Print out class names as they are initialized. */
+  extern bool verbose_class_flag;
 }
 
 /* Type of pointer used as finalizer.  */
