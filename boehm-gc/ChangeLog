@@ -1,3 +1,7 @@
+2000-12-23  Hans Boehm  <Hans_Boehm@hp.com>
+
+	* gcj_mlc.c (GC_gcj_malloc): Don't release allocation lock twice.
+
 2000-12-15  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* Makefile.dist: Renamed from Makefile.orig.

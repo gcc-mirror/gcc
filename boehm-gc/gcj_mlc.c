@@ -139,7 +139,6 @@ DCL_LOCK_STATE;
         } else {
             *opp = obj_link(op);
             GC_words_allocd += lw;
-            FASTUNLOCK();
         }
 	*(void **)op = ptr_to_struct_containing_descr;
 	UNLOCK();
