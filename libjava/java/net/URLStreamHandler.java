@@ -480,12 +480,8 @@ public abstract class URLStreamHandler
     if (host.length() != 0)
       sb.append("//").append(host);
 
-    // Note that this produces different results from JDK 1.2 as JDK 1.2
-    // ignores a non-default port if host is null or "".  That is inconsistent
-    // with the spec since the result of this method is spec'ed so it can be
-    // used to construct a new URL that is equivalent to the original.
-    boolean port_needed = port > 0 && port != getDefaultPort();
-    if (port_needed)
+    // Append port if port was in URL spec.
+    if (port != -1)
       sb.append(':').append(port);
 
     sb.append(file);
