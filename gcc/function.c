@@ -4564,7 +4564,7 @@ assign_parms (fndecl)
 		&& GET_CODE (XEXP (XVECEXP (entry_parm, 0, i), 0)) == REG
 		&& (GET_MODE (XEXP (XVECEXP (entry_parm, 0, i), 0))
 		    == passed_mode)
-		&& XINT (XEXP (XVECEXP (entry_parm, 0, i), 1), 0) == 0)
+		&& INTVAL (XEXP (XVECEXP (entry_parm, 0, i), 1)) == 0)
 	      {
 		entry_parm = XEXP (XVECEXP (entry_parm, 0, i), 0);
 		DECL_INCOMING_RTL (parm) = entry_parm;

@@ -1,9 +1,17 @@
+Fri Jan 19 13:02:56 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* alias.c (rtx_equal_for_memref_p, case ADDRESSOF): Don't assume
+	args are REG.
+	* expr.c (store_constructor): Don't look at MEM_ALIAS_SET unless MEM.
+	* function.c (assign_parms): Use INTVAL for a CONST_INT.
+
 2001-01-19  Jason Merrill  <jason@redhat.com>
 
 	* dwarf2out.c (gen_subprogram_die): Don't reuse the in-class decl
 	for the abstract instance of an inline function.
 
-Fri Jan 19 14:31:35 2001  Alexandre Oliva  <aoliva@redhat.com>, J"orn Rennecke <amylaar@redhat.com>
+Fri Jan 19 14:31:35 2001  Alexandre Oliva  <aoliva@redhat.com>
+			  J"orn Rennecke <amylaar@redhat.com>
 
 	* reload1.c (move2add_note_store): Treat all registers directly or
 	indirectly derived from a base register as members of the same set
@@ -19,7 +27,7 @@ Fri Jan 19 09:18:42 2001  J"orn Rennecke <amylaar@redhat.com>
 
 Thu Jan 18 06:43:04 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
-	* flow.c (mark_set_1, case PARALLEL): Now case; rework to allow
+	* flow.c (mark_set_1, case PARALLEL): New case; rework to allow
 	entry to be EXPR_LIST.
 	* rtlanal.c (reg_overlap_mentioned_p): Allow PARALLEL in SET to
 	be an EXPR_LIST (but not null, which other code doesn't allow).

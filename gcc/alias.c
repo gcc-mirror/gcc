@@ -1007,8 +1007,8 @@ rtx_equal_for_memref_p (x, y)
       return 0;
 
     case ADDRESSOF:
-      return (REGNO (XEXP (x, 0)) == REGNO (XEXP (y, 0))
-	      && XINT (x, 1) == XINT (y, 1));
+      return (XINT (x, 1) == XINT (y, 1)
+	      && rtx_equal_for_memref_p (XEXP (x, 0), XEXP (y, 0)));
 
     default:
       break;
