@@ -2930,7 +2930,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 ac_c_preproc_warn_flag=yes
 
 if test x$GCC = xyes; then
-  ac_libiberty_warn_cflags='-W -Wall -Wtraditional -pedantic'
+  ac_libiberty_warn_cflags='-W -Wall -pedantic'
 fi
 
 
