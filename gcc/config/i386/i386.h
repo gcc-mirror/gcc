@@ -640,6 +640,13 @@ extern int ix86_arch;
    aligned; the compiler cannot rely on having this alignment.  */
 #define PREFERRED_STACK_BOUNDARY ix86_preferred_stack_boundary
 
+/* As of July 2001, many runtimes to not align the stack properly when
+   entering main.  This causes expand_main_function to forcably align
+   the stack, which results in aligned frames for functions called from
+   main, though it does nothing for the alignment of main itself.  */
+#define FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN \
+  (ix86_preferred_stack_boundary > STACK_BOUNDARY)
+
 /* Allocation boundary for the code of a function. */
 #define FUNCTION_BOUNDARY 16
 
