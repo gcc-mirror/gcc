@@ -1,3 +1,7 @@
+2001-08-28  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/i386/cygwin.h (BIGGEST_FIELD_ALIGNMENT): Set to 64.
+
 2001-08-24  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_initialize_trampoline): Function

@@ -563,6 +563,10 @@ extern int i386_pe_dllimport_name_p PARAMS ((const char *));
 #undef	BIGGEST_ALIGNMENT
 #define BIGGEST_ALIGNMENT 128
 
+/* Native complier aligns internal doubles in structures on dword boundaries.  */
+#undef	BIGGEST_FIELD_ALIGNMENT
+#define BIGGEST_FIELD_ALIGNMENT 64
+
 /* A bitfield declared as `int' forces `int' alignment for the struct.  */
 #undef PCC_BITFIELDS_TYPE_MATTERS
 #define PCC_BITFIELDS_TYPE_MATTERS 1
