@@ -2110,9 +2110,7 @@ delete_if_ordinary (name)
 
   if (i == 'y' || i == 'Y')
 #endif /* DEBUG */
-    /* On VMS, more than one version of the temporary file may have been
-       created.  This ensures we delete all of them.  */
-    while (stat (name, &st) >= 0 && S_ISREG (st.st_mode))
+    if (stat (name, &st) >= 0 && S_ISREG (st.st_mode))
       if (unlink (name) < 0)
 	if (verbose_flag)
 	  perror_with_name (name);

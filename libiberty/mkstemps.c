@@ -121,7 +121,11 @@ mkstemps (template, suffix_len)
       v /= 62;
       XXXXXX[5] = letters[v % 62];
 
+#ifdef VMS
+      fd = open (template, O_RDWR|O_CREAT|O_EXCL, 0600, "fop=tmd");
+#else
       fd = open (template, O_RDWR|O_CREAT|O_EXCL, 0600);
+#endif
       if (fd >= 0)
 	/* The file does not exist.  */
 	return fd;
