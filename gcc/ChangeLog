@@ -1,3 +1,9 @@
+2003-06-23  Roger Sayle  <roger@eyesopen.com>
+            Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/contrib.texi (Contributors): Add a note on testing and
+	remove duplicates from testers list.
+
 2003-06-23  Nick Clifton  <nickc@redhat.com>
 
 	* read-rtl.c (read_braced_string): Check for EOF.  If
@@ -215,7 +221,7 @@ Sat Jun 21 13:41:00 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	compare:SI into shorter sequences so that they can deal with
 	signed comparisons.
 
-2003-06-14  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+2003-06-21  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/contrib.texi (Contributors): Use Windows instead of Win32.
 
