@@ -1,3 +1,20 @@
+2005-03-07  Jeff Law  <law@redhat.com>
+
+	* tree-cfg.c (find_taken_edge_computed_goto): New function.
+	(find_taken_edge): Call find_taken_edge_computed_goto as
+	appropriate.  Allow any gimple invariant rather than just
+	INTEGER_CST for VAL.
+	(cleanup_control_flow): Cleanup a computed goto which has turned
+	into a simple goto.
+	(tree_merge_blocks): If block B has any forced labels, move
+	them to the start of block A.
+	* tree-ssa-dom.c (thread_across_edge): Allow threading across
+	computed gotos as well.
+	* tree-ssa-threadupdate.c (remove_ctrl_stmt_and_useless_edges): Handle
+	removal of unnecessary computed gotos too.
+	(lookup_redirection_data): Fix type of INSERT argument.  Callers
+	updated.
+
 2005-03-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-ssa-phiopt.c: Update copyright.  Fix indentations.

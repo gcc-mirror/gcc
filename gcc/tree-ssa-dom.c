@@ -715,7 +715,8 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
      arm will be taken.  */
   if (stmt
       && (TREE_CODE (stmt) == COND_EXPR
-	  || TREE_CODE (stmt) == SWITCH_EXPR))
+	  || TREE_CODE (stmt) == SWITCH_EXPR
+	  || TREE_CODE (stmt) == GOTO_EXPR))
     {
       tree cond, cached_lhs;
 
@@ -723,6 +724,8 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
 	 expression in the hash tables.  */
       if (TREE_CODE (stmt) == COND_EXPR)
 	cond = COND_EXPR_COND (stmt);
+      else if (TREE_CODE (stmt) == GOTO_EXPR)
+	cond = GOTO_DESTINATION (stmt);
       else
 	cond = SWITCH_COND (stmt);
 
@@ -999,6 +1002,18 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
 	
     {
       thread_across_edge (walk_data, EDGE_SUCC (bb, 0));
+    }
+  else if ((last = last_stmt (bb))
+	   && TREE_CODE (last) == GOTO_EXPR
+	   && TREE_CODE (TREE_OPERAND (last, 0)) == SSA_NAME)
+    {
+      edge_iterator ei;
+      edge e;
+
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	{
+	  thread_across_edge (walk_data, e);
+	}
     }
   else if ((last = last_stmt (bb))
 	   && TREE_CODE (last) == COND_EXPR
