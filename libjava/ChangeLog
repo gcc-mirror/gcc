@@ -1,3 +1,9 @@
+2003-02-14  Mark Wielaard  <mark@klomp.org>
+
+	* java/math/BigDecimal.java (BigDecimal(String)): Always set scale to
+	zero when there is an exponent and the significant is zero.
+	(divide): Always set scale to newScale even in special ZERO case.
+
 2003-02-14  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/System.java (properties): Use Properties.clone.

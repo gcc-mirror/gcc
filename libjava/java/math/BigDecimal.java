@@ -189,7 +189,9 @@ public class BigDecimal extends Number implements Comparable
 	  {
 	    int exp = Integer.parseInt (num.substring (point));
 	    exp -= scale;
-	    if (exp > 0)
+	    if (signum () == 0)
+	      scale = 0;
+	    else if (exp > 0)
 	      {
 		intVal = intVal.multiply (BigInteger.valueOf (10).pow (exp));
 		scale = 0;
@@ -266,7 +268,7 @@ public class BigDecimal extends Number implements Comparable
       throw new ArithmeticException ("scale is negative: " + newScale);
 
     if (intVal.signum () == 0)	// handle special case of 0.0/0.0
-      return ZERO;
+      return newScale == 0 ? ZERO : new BigDecimal (ZERO.intVal, newScale);
     
     // Ensure that pow gets a non-negative value.
     int valScale = val.scale;
