@@ -1,3 +1,17 @@
+2002-12-05  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/Class.h (_Jv_SetVTableEntries): Updated declaration.
+	* resolve.cc: Don't include AbstractMethodError.h.
+	(_Jv_abstractMethodError): Removed.
+	* defineclass.cc (handleMethodsBegin): Initialize method index to
+	-1.
+	* java/lang/natClass.cc (_Jv_LayoutVTableMethods): Don't set
+	method index for "new" final method.
+	(_Jv_SetVTableEntries): Compare index against -1 instead of using
+	isVirtualMethod.  Added `flags' argument.
+	(_Jv_MakeVTable): Throw exception for abstract method in concrete
+	class.
+
 2002-12-04  Tom Tromey  <tromey@redhat.com>
 
 	* java/net/SocketPermission.java (hashCode): Rewrote.

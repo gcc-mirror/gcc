@@ -363,13 +363,6 @@ _Jv_SearchMethodInClass (jclass cls, jclass klass,
   return 0;
 }
 
-/* this is installed in place of abstract methods */
-static void
-_Jv_abstractMethodError ()
-{
-  throw new java::lang::AbstractMethodError;
-}
-
 void 
 _Jv_PrepareClass(jclass klass)
 {
