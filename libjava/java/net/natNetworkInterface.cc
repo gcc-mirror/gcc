@@ -70,7 +70,6 @@ java::net::NetworkInterface::getRealNetworkInterfaces ()
 ::java::util::Vector*
 java::net::NetworkInterface::getRealNetworkInterfaces ()
 {
-#if 0
   int fd;
   int num_interfaces = 0;
   struct ifconf if_data;
@@ -128,7 +127,7 @@ java::net::NetworkInterface::getRealNetworkInterfaces ()
     }
 
 #ifdef HAVE_INET6
-      // FIXME: read /proc/net/if_inet6
+      // FIXME: read /proc/net/if_inet6 (on Linux 2.4)
 #endif
 
   _Jv_Free (if_data.ifc_buf);
@@ -137,7 +136,6 @@ java::net::NetworkInterface::getRealNetworkInterfaces ()
     ::close (fd);
   
   return ht;
-#endif
 }
 
 #endif // DISABLE_JAVA_NET //
