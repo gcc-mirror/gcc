@@ -2718,6 +2718,8 @@ find_if_case_1 (test_bb, then_edge, else_edge)
     {
       new_bb->index = then_bb_index;
       BASIC_BLOCK (then_bb_index) = new_bb;
+      if (post_dominators)
+	add_to_dominance_info (post_dominators, new_bb);
     }
   /* We've possibly created jump to next insn, cleanup_cfg will solve that
      later.  */

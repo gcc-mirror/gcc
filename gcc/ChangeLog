@@ -1,3 +1,8 @@
+2003-03-21 Richard Earnshaw  <rearnsha@arm.com>
+
+	* ifcvt.c (find_if_case_1): If we add a new bb, update the dominance
+	information.
+
 2003-03-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
             Richard Henderson  <rth@redhat.com>
 
