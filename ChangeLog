@@ -1,3 +1,7 @@
+2004-01-17  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* MAINTAINERS: Remove entries without email address.
+
 2004-01-15  Daniel Jacobowitz  <drow@mvista.com>
 
 	* MAINTAINERS: Add myself to write-after-approval.
