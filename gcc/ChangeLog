@@ -1,3 +1,10 @@
+2003-03-22  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md ("movti", "*movdi_31", "*movdf_31"): Use 'o' instead
+	of 'm' constraint in forced-split alternatives.
+	("*adddi3_31", "*subdi3_31"): Likewise.  Also, pass 0 instead of 1 as
+	VALIDATE_ADDRESS parameter to operand_subword.
+
 2003-03-22  Svein E. Seldal  <Svein.Seldal@solidas.com>
 
 	* config/c4x/t-c4x (MULTILIB_MATCHES): Make gcc recognize a c33 as

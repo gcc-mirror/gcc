@@ -1,3 +1,7 @@
+2003-03-22  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* gcc.dg/20030321-1.c: New test.
+
 2003-03-22  Bud Davis  <bdavis9659@comcast.net>
 
 	* g77.f-torture/execute/select.f: New test.
