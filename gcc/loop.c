@@ -7654,7 +7654,7 @@ loop_iv_add_mult_emit_before (loop, b, m, a, reg, before_bb, before_insn)
     }
 
   /* Use copy_rtx to prevent unexpected sharing of these rtx.  */
-  seq = gen_add_mult (copy_rtx (b), m, copy_rtx (a), reg);
+  seq = gen_add_mult (copy_rtx (b), copy_rtx (m), copy_rtx (a), reg);
 
   /* Increase the lifetime of any invariants moved further in code.  */
   update_reg_last_use (a, before_insn);
@@ -7682,7 +7682,7 @@ loop_iv_add_mult_sink (loop, b, m, a, reg)
   rtx seq;
 
   /* Use copy_rtx to prevent unexpected sharing of these rtx.  */
-  seq = gen_add_mult (copy_rtx (b), m, copy_rtx (a), reg);
+  seq = gen_add_mult (copy_rtx (b), copy_rtx (m), copy_rtx (a), reg);
 
   /* Increase the lifetime of any invariants moved further in code.
      ???? Is this really necessary?  */
@@ -7711,7 +7711,7 @@ loop_iv_add_mult_hoist (loop, b, m, a, reg)
   rtx seq;
 
   /* Use copy_rtx to prevent unexpected sharing of these rtx.  */
-  seq = gen_add_mult (copy_rtx (b), m, copy_rtx (a), reg);
+  seq = gen_add_mult (copy_rtx (b), copy_rtx (m), copy_rtx (a), reg);
 
   loop_insn_hoist (loop, seq);
 
