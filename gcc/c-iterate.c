@@ -278,19 +278,22 @@ iterator_loop_prologue (idecl, start_note, end_note)
      tree idecl;
      rtx *start_note, *end_note;
 {
+  tree expr;
+
   /* Force the save_expr in DECL_INITIAL to be calculated
      if it hasn't been calculated yet.  */
-  expand_expr (DECL_INITIAL (idecl), 0, VOIDmode, 0);
+  expand_expr (DECL_INITIAL (idecl), const0_rtx, VOIDmode, 0);
 
   if (DECL_RTL (idecl) == 0)
     expand_decl (idecl);
 
   if (start_note)
     *start_note = emit_note (0, NOTE_INSN_DELETED);
+
   /* Initialize counter.  */
-  expand_expr (build (MODIFY_EXPR, TREE_TYPE (idecl),
-		      idecl, integer_zero_node),
-	       0, VOIDmode, 0);
+  expr = build (MODIFY_EXPR, TREE_TYPE (idecl), idecl, integer_zero_node);
+  TREE_SIDE_EFFECTS (expr) = 1;
+  expand_expr (expr, const0_rtx, VOIDmode, 0);
 
   expand_start_loop_continue_elsewhere (1);
 
@@ -329,8 +332,9 @@ iterator_loop_epilogue (idecl, start_note, end_note)
     *start_note = emit_note (0, NOTE_INSN_DELETED);
   expand_loop_continue_here ();
   incr = build_binary_op (PLUS_EXPR, idecl, integer_one_node, 0);
-  expand_expr (build (MODIFY_EXPR, TREE_TYPE (idecl), idecl, incr),
-	       0, VOIDmode, 0);
+  incr = build (MODIFY_EXPR, TREE_TYPE (idecl), idecl, incr);
+  TREE_SIDE_EFFECTS (incr) = 1;
+  expand_expr (incr, const0_rtx, VOIDmode, 0);
   test = build_binary_op (LT_EXPR, idecl, DECL_INITIAL (idecl), 0);
   expand_exit_loop_if_false (0, test);
   expand_end_loop ();
