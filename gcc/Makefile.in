@@ -596,6 +596,9 @@ OBJC objc: cc1obj objc-runtime
 OBJECTIVE-C objective-c: cc1obj objc-runtime
 PROTO: proto
 
+# Tell GNU make these are phony targets.
+.PHONY: C c OBJC objc OBJECTIVE-C objective-c PROTO proto
+
 # Really, really stupid make features, such as SUN's KEEP_STATE, may force
 # a target to build even if it is up-to-date.  So we must verify that
 # config.status does not exist before failing.
@@ -882,6 +885,7 @@ stmp-multilib: $(LIBGCC1) libgcc2.c libgcc2.ready $(CONFIG_H) \
 	    LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS) $${flags}" \
 	    LIBGCC1="$(LIBGCC1)" LIBGCC2="$(LIBGCC2)" \
 	    dir="$${dir}" stmp-multilib-sub; \
+	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
 	done
 	touch stmp-multilib
 
