@@ -1,3 +1,9 @@
+2004-08-16  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* solaris_threads.c: Remove ifdef around #include "private/gc_priv.h"
+	since they're not known at this time.
+	* solaris_pthreads.c: Likewise.
+
 2004-08-15  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	PR target/14931

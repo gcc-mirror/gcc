@@ -16,10 +16,7 @@
  */
 /* Boehm, September 14, 1994 4:44 pm PDT */
 
-# if defined(GC_SOLARIS_THREADS) || defined(GC_SOLARIS_PTHREADS) \
-     || defined(GC_THREADS)
-#   include "private/gc_priv.h"
-# endif
+#include "private/gc_priv.h"
 
 # if defined(GC_SOLARIS_THREADS) || defined(GC_SOLARIS_PTHREADS)
 # include "private/solaris_threads.h"
