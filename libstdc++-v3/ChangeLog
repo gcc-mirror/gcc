@@ -1,3 +1,8 @@
+2005-02-21  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/basic_string.tcc (_Rep::_M_destroy): Don't
+	check for this == &_S_empty_rep, it's always false, here.
+
 2005-02-19  Matt Austern  <austern@gmail.com>
 
 	* include/tr1/functional (tr1_hashtable_define_trivial_hash): Make
