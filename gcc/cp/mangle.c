@@ -1869,10 +1869,15 @@ write_expression (expr)
       || code == TEMPLATE_PARM_INDEX)
     write_template_param (expr);
   /* Handle literals.  */
-  else if (TREE_CODE_CLASS (code) == 'c')
+  else if (TREE_CODE_CLASS (code) == 'c' 
+	   || (abi_version_at_least (2) && code == CONST_DECL))
     write_template_arg_literal (expr);
   else if (DECL_P (expr))
     {
+      /* G++ 3.2 incorrectly mangled non-type template arguments of
+	 enumeration type using their names.  */
+      if (code == CONST_DECL)
+	G.need_abi_warning = 1;
       write_char ('L');
       write_mangled_name (expr);
       write_char ('E');
@@ -2105,15 +2110,20 @@ write_template_arg (node)
   else if (code == TEMPLATE_DECL)
     /* A template appearing as a template arg is a template template arg.  */
     write_template_template_arg (node);
+  else if ((TREE_CODE_CLASS (code) == 'c' && code != PTRMEM_CST)
+	   || (abi_version_at_least (2) && code == CONST_DECL))
+    write_template_arg_literal (node);
   else if (DECL_P (node))
     {
+      /* G++ 3.2 incorrectly mangled non-type template arguments of
+	 enumeration type using their names.  */
+      if (code == CONST_DECL)
+	G.need_abi_warning = 1;
       write_char ('L');
       write_char ('Z');
       write_encoding (node);
       write_char ('E');
     }
-  else if (TREE_CODE_CLASS (code) == 'c' && code != PTRMEM_CST)
-    write_template_arg_literal (node);
   else
     {
       /* Template arguments may be expressions.  */

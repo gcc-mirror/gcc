@@ -1,5 +1,8 @@
 2002-10-16  Mark Mitchell  <mark@codesourcery.com>
 
+	* g++.dg/abi/mangle16.C: New test.
+	* g++.dg/abi/mangle17.C: Likewise.
+
 	PR c++/7478
 	* g++.dg/template/ref1.C: New test.
 
