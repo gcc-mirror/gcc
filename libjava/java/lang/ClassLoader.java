@@ -360,11 +360,11 @@ public abstract class ClassLoader {
   protected native Class findLoadedClass(String name);
 
   public static final InputStream getSystemResourceAsStream(String name) {
-    return system.getResourceAsStream (name);
+    return getSystemClassLoader().getResourceAsStream (name);
   }
 
   public static final URL getSystemResource(String name) {
-    return system.getResource (name);
+    return getSystemClassLoader().getResource (name);
   }
 
   /**
