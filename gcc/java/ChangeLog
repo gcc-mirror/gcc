@@ -1,3 +1,7 @@
+1998-12-16  Tom Tromey  <tromey@cygnus.com>
+
+	* parse-scan.y (qualified_name): Use correct sprintf format.
+
 1998-12-15  Tom Tromey  <tromey@cygnus.com>
 
 	* gjavah.c (print_field_info): Changed how most negative number is

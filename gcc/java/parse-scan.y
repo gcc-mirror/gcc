@@ -250,7 +250,7 @@ qualified_name:
 	name DOT_TK identifier
 		{ 
 		  char *n = xmalloc (strlen ($1)+strlen ($3)+2);
-		  sprintf (n, "%s.s", $1, $3);
+		  sprintf (n, "%s.%s", $1, $3);
 		  $$ = n;
 		}
 ;
