@@ -468,17 +468,18 @@ public abstract class ClassLoader
       {
 	throw x;		// rethrow
       }
-    catch (java.lang.VirtualMachineError x)
+    catch (VirtualMachineError x)
       {
 	throw x;		// rethrow
       }
-    catch (java.lang.Throwable x)
+    catch (Throwable x)
       {
 	// This should never happen, or we are beyond spec.  
-      	throw new InternalError ("Unexpected exception "
-				 + "while defining class "
-				 + name + ": " 
-				 + x.toString ());
+      	InternalError r = new InternalError ("Unexpected exception "
+					     + "while defining class "
+					     + name);
+	r.initCause(x);
+	throw r;
       }
   }
 

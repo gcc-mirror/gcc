@@ -1,3 +1,35 @@
+2002-12-19  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natClassLoader.cc (defineClass0): Removed erroneous
+	comment.
+	* java/lang/ClassLoader.java (defineClass): Use chained
+	exception when rethrowing.
+	* defineclass.cc (handleClassBegin): Mark class as interpreted.
+	* java/lang/reflect/Modifier.java (INVISIBLE, INTERPRETED): New
+	constants.
+	* resolve.cc (_Jv_PrepareMissingMethods): New function.
+	(_Jv_PrepareClass): Use it.
+	* include/java-interp.h (_Jv_IsInterpretedClass): Rewrote.
+	(_Jv_InterpClass): _Jv_PrepareMissingMethods now friend.
+	* java/lang/Class.h (Class::getModifiers): Mask with ALL_FLAGS.
+	(Class): _Jv_PrepareMissingMethods now friend.
+	* java/lang/natClassLoader.cc (defineClass0): Use JvSynchronize.
+	Record `NULL' for system class loader.
+	(_Jv_RegisterInitiatingLoader): Use JvSynchronize.  Special case
+	system class loader.
+	(_Jv_FindClassInCache): Likewise.
+	(_Jv_UnregisterClass): Use JvSynchronize.  Free old loader info.
+	(_Jv_FindClass): Special case system class loader.
+	* java/lang/natClass.cc (_Jv_abstractMethodError): New function.
+	(_Jv_SetVTableEntries): Put _Jv_abstractMethodError into empty
+	vtable slots.
+	(_Jv_LayoutVTableMethods): Don't generate vtable slot for a method
+	in a final class.
+	(_getDeclaredMethod): Don't return synthetic methods.
+	(getDeclaredMethods): Likewise.
+	(_getMethod): Likewise.
+	(_getMethods): Likewise.
+
 2002-12-18  Raif Naffah  <raif@fl.net.au>
 
 	* java/math/BigInteger.java (euclidInv): Make sure quot and rem are in
