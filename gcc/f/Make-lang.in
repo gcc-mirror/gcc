@@ -170,7 +170,7 @@ f77.dvi: f/g77.dvi
 
 # g77 documentation.
 $(srcdir)/f/g77.info: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
-		$(srcdir)/f/ffe.texi \
+		$(srcdir)/f/ffe.texi $(srcdir)/f/invoke.texi \
 		$(srcdir)/f/news.texi  $(srcdir)/f/intdoc.texi \
 		$(srcdir)/f/root.texi $(srcdir)/doc/include/fdl.texi \
 		$(srcdir)/doc/include/gpl.texi \
@@ -185,7 +185,7 @@ $(srcdir)/f/g77.info: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 	else true; fi
 
 f/g77.dvi: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
-		$(srcdir)/f/ffe.texi \
+		$(srcdir)/f/ffe.texi $(srcdir)/f/invoke.texi \
 		$(srcdir)/f/news.texi  $(srcdir)/f/intdoc.texi \
 		$(srcdir)/f/root.texi $(srcdir)/doc/include/fdl.texi \
 		$(srcdir)/doc/include/gpl.texi \
