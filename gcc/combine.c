@@ -1,5 +1,5 @@
 /* Optimize by combining instructions for GNU compiler.
-   Copyright (C) 1987, 88, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2664,6 +2664,29 @@ find_split_point (loc, insn)
 		  SUBST (SET_SRC (x), extraction);
 		  return find_split_point (loc, insn);
 		}
+	    }
+	  break;
+
+	case NE:
+	  /* if STORE_FLAG_VALUE is -1, this is (NE X 0) and only one bit of X
+	     is known to be on, this can be converted into a NEG of a shift. */
+	  if (STORE_FLAG_VALUE == -1 && XEXP (SET_SRC (x), 1) == const0_rtx
+	      && GET_MODE (SET_SRC (x)) == GET_MODE (XEXP (SET_SRC (x), 0))
+	      && 1 <= (len = exact_log2
+		       (nonzero_bits (XEXP (SET_SRC (x), 0),
+				      GET_MODE (XEXP (SET_SRC (x), 0))))))
+	    {
+	      enum machine_mode mode = GET_MODE (XEXP (SET_SRC (x), 0));
+
+	      SUBST (SET_SRC (x),
+		     gen_rtx_combine (NEG, mode,
+				      gen_rtx_combine (LSHIFTRT, mode,
+						       XEXP (SET_SRC (x), 0),
+						       GEN_INT (len))));
+
+	      split = find_split_point (&SET_SRC (x), insn);
+	      if (split && split != &SET_SRC (x))
+		return split;
 	    }
 	  break;
 
@@ -6383,10 +6406,10 @@ force_to_mode (x, mode, mask, reg, just_select)
     case NE:
       /* (and (ne FOO 0) CONST) can be (and FOO CONST) if CONST is included
 	 in STORE_FLAG_VALUE and FOO has a single bit that might be nonzero,
-	 which is in CONST.  */
+	 which is equal to STORE_FLAG_VALUE.  */
       if ((mask & ~ STORE_FLAG_VALUE) == 0 && XEXP (x, 1) == const0_rtx
 	  && exact_log2 (nonzero_bits (XEXP (x, 0), mode)) >= 0
-	  && (nonzero_bits (XEXP (x, 0), mode) & ~ mask) == 0)
+	  && nonzero_bits (XEXP (x, 0), mode) == STORE_FLAG_VALUE)
 	return force_to_mode (XEXP (x, 0), mode, mask, reg, next_select);
 
       break;
