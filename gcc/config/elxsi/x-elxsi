@@ -1,0 +1,9 @@
+# Our make needs a little help...
+MAKE=make
+
+# We don't support -g yet, so don't try and use it.
+CFLAGS =
+LIBGCC2_CFLAGS = -O2 $(GCC_CFLAGS)
+
+# Hide xmalloc so that it does not conflict with the one in libc.a, Ick!
+X_CFLAGS = -Dxmalloc=my_xmalloc
