@@ -1,3 +1,15 @@
+2000-12-17  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cpplib.h (struct cpp_reader): Remove references to string_pool
+        and temp_string_pool.
+        * cppinit.c (cpp_create_reader, cpp_cleanup): Similarly; using
+        ident_pool in place.
+        * cpplex.c (parse_number, unescaped_terminator_p, parse_string,
+        save_comment, cpp_token_as_text): Similarly.
+        * cpplib.c (do_define, glue_header_name, parse_assertion): Similarly.
+        * cppmacro.c (make_number_token, builtin_macro, lock_pools,
+        unlock_pools, stringify_arg, paste_tokens): Similarly.
+
 Sun Dec 17 12:41:48 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* dwarf2out.c (loc_descriptor_from_tree, case NOP_EXPR): New case.

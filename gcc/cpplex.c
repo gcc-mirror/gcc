@@ -539,7 +539,7 @@ parse_number (pfile, number, c, leading_period)
      int leading_period;
 {
   cpp_buffer *buffer = pfile->buffer;
-  cpp_pool *pool = pfile->string_pool;
+  cpp_pool *pool = &pfile->ident_pool;
   unsigned char *dest, *limit;
 
   dest = POOL_FRONT (pool);
@@ -618,7 +618,7 @@ unescaped_terminator_p (pfile, dest)
   if (pfile->state.angled_headers)
     return 1;
 
-  start = POOL_FRONT (pfile->string_pool);
+  start = POOL_FRONT (&pfile->ident_pool);
 
   /* An odd number of consecutive backslashes represents an escaped
      terminator.  */
@@ -640,7 +640,7 @@ parse_string (pfile, token, terminator)
      cppchar_t terminator;
 {
   cpp_buffer *buffer = pfile->buffer;
-  cpp_pool *pool = pfile->string_pool;
+  cpp_pool *pool = &pfile->ident_pool;
   unsigned char *dest, *limit;
   cppchar_t c;
   unsigned int nulls = 0;
@@ -738,7 +738,7 @@ save_comment (pfile, token, from)
      line, which we don't want to save in the comment.  */
   if (pfile->buffer->read_ahead != EOF)
     len--;
-  buffer = _cpp_pool_alloc (pfile->string_pool, len);
+  buffer = _cpp_pool_alloc (&pfile->ident_pool, len);
   
   token->type = CPP_COMMENT;
   token->val.str.len = len;
@@ -1378,7 +1378,7 @@ cpp_token_as_text (pfile, token)
      const cpp_token *token;
 {
   unsigned int len = cpp_token_len (token);
-  unsigned char *start = _cpp_pool_alloc (&pfile->temp_string_pool, len), *end;
+  unsigned char *start = _cpp_pool_alloc (&pfile->ident_pool, len), *end;
 
   end = cpp_spell_token (pfile, token, start);
   end[0] = '\0';
