@@ -1,3 +1,7 @@
+Wed Feb 13 10:35:56 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (fop_*_comm_*): allow nonimmediate in the first operand.
+
 2002-02-12  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/rs6000.md: Use predicate altivec_register_operand
