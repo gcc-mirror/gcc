@@ -3718,8 +3718,9 @@ alpha_handle_trap_shadows (insns)
 		  switch (GET_CODE (i))
 		    {
 		    case INSN:
-		      /* Annoyingly, get_attr_trap will abort on USE.  */
-		      if (GET_CODE (PATTERN (i)) == USE)
+		      /* Annoyingly, get_attr_trap will abort on these.  */
+		      if (GET_CODE (PATTERN (i)) == USE
+			  || GET_CODE (PATTERN (i)) == CLOBBER)
 			break;
 
 		      summarize_insn (PATTERN (i), &sum, 0);
