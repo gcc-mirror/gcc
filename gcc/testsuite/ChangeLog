@@ -1,3 +1,7 @@
+2002-02-12  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/c90-const-expr-3.c, gcc.dg/c99-const-expr-3.c: New tests.
+
 2002-02-12  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gcc.dg/decl-1.c: New test.
