@@ -276,11 +276,12 @@ extern int target_flags;
    Make it clear that the fp regs could not hold a 16-byte float.  */
 
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
-  ((REGNO) < 2 ? 1							\
-   : (REGNO) < 4 ? 1							\
-   : (REGNO) >= 8 ? ((GET_MODE_CLASS (MODE) == MODE_FLOAT		\
-		      || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT)	\
-		     && GET_MODE_UNIT_SIZE (MODE) <= 8)			\
+  ((REGNO) < 2 ? 1						\
+   : (REGNO) < 4 ? 1						\
+   : FP_REGNO_P ((REGNO))					\
+   ? ((GET_MODE_CLASS (MODE) == MODE_FLOAT			\
+       || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT)		\
+      && GET_MODE_UNIT_SIZE (MODE) <= 8)			\
    : (MODE) != QImode)
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
