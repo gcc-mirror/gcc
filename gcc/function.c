@@ -3157,6 +3157,7 @@ assign_parms (fndecl, second_time)
 
       if ((TREE_CODE (TYPE_SIZE (passed_type)) != INTEGER_CST
 	   && contains_placeholder_p (TYPE_SIZE (passed_type)))
+	  || TYPE_NEEDS_CONSTRUCTING (passed_type)
 #ifdef FUNCTION_ARG_PASS_BY_REFERENCE
 	  || FUNCTION_ARG_PASS_BY_REFERENCE (args_so_far, passed_mode,
 					      passed_type, ! last_named)

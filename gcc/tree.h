@@ -615,6 +615,10 @@ struct tree_block
    If set in a SET_TYPE, indicates a bitstring type. */
 #define TYPE_STRING_FLAG(NODE) ((NODE)->type.string_flag)
 
+/* Indicates that objects of this type must be initialized by calling a
+   function when they are created.  */
+#define TYPE_NEEDS_CONSTRUCTING(NODE) ((NODE)->type.needs_constructing_flag)
+
 struct tree_type
 {
   char common[sizeof (struct tree_common)];
@@ -632,6 +636,7 @@ struct tree_type
 
   unsigned string_flag : 1;
   unsigned no_force_blk_flag : 1;
+  unsigned needs_constructing_flag : 1;
   unsigned lang_flag_0 : 1;
   unsigned lang_flag_1 : 1;
   unsigned lang_flag_2 : 1;
@@ -639,7 +644,7 @@ struct tree_type
   unsigned lang_flag_4 : 1;
   unsigned lang_flag_5 : 1;
   unsigned lang_flag_6 : 1;
-  /* room for 7 more bits */
+  /* room for 6 more bits */
 
   unsigned int align;
   union tree_node *pointer_to;
