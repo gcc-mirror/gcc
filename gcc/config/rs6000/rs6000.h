@@ -851,14 +851,20 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
 
 #define INITIALIZE_TRAMPOLINE(ADDR, FNADDR, CXT)		\
 {								\
-  emit_move_insn (gen_rtx (MEM, SImode, memory_address (SImode, ADDR)), \
-		  force_reg (SImode, FNADDR));			\
   emit_move_insn (gen_rtx (MEM, SImode,				\
-			   memory_address (SImode, plus_constant (ADDR, 4))), \
-		  gen_rtx (REG, SImode, 2));			\
+			   memory_address (SImode, (ADDR))),	\
+		  gen_rtx (MEM, SImode,				\
+			   memory_address (SImode, (FNADDR))));	\
   emit_move_insn (gen_rtx (MEM, SImode,				\
-			   memory_address (SImode, plus_constant (ADDR, 8))), \
-		  force_reg (SImode, CXT));			\
+			   memory_address (SImode,		\
+					   plus_constant ((ADDR), 4))), \
+		  gen_rtx (MEM, SImode,				\
+			   memory_address (SImode,		\
+					   plus_constant ((FNADDR), 4)))); \
+  emit_move_insn (gen_rtx (MEM, SImode,				\
+			   memory_address (SImode,		\
+					   plus_constant ((ADDR), 8))), \
+		  force_reg (SImode, (CXT)));			\
 }
 
 /* Definitions for register eliminations.
