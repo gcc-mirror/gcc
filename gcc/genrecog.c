@@ -372,7 +372,7 @@ add_to_sequence (pattern, last, position)
 
 	 Finally, if we know that the predicate does not allow CONST_INT, we
 	 know that the only way the predicate can match is if the modes match
-	 (here we use the kluge of relying on the fact that "address_operand"
+	 (here we use the kludge of relying on the fact that "address_operand"
 	 accepts CONST_INT; otherwise, it would have to be a special case),
 	 so we can test the mode (but we need not).  This fact should
 	 considerably simplify the generated code.  */

@@ -285,7 +285,7 @@ __objc_install_dispatch_table_for_class (Class class)
   if (super != 0 && (super->dtable == __objc_uninstalled_dtable))
     __objc_install_dispatch_table_for_class (super);
 
-  /* Allocate dtable if nessecary */
+  /* Allocate dtable if necessary */
   if (super == 0)
     {
       class->dtable = sarray_new (__objc_selector_max_index, 0);
@@ -331,7 +331,7 @@ void __objc_update_dispatch_table_for_class (Class class)
    such this function does not worry about thread safe issued.
 
    This one is only called for categories. Class objects have their
-   methods installed rightaway, and their selectors are made into
+   methods installed right away, and their selectors are made into
    SEL's by the function __objc_register_selectors_from_class. */ 
 void
 class_add_method_list (Class class, MethodList_t list)
@@ -351,7 +351,7 @@ class_add_method_list (Class class, MethodList_t list)
 
       if (method->method_name)  /* Sometimes these are NULL */
 	{
-	  /* This is where selector names are transmogriffed to SEL's */
+	  /* This is where selector names are transmogrified to SEL's */
 	  method->method_name = 
 	    sel_register_typed_name ((const char*)method->method_name,
 				     method->method_types);
@@ -475,7 +475,7 @@ __objc_block_forward (id rcv, SEL op, ...)
 }
 
 
-/* This fuction is installed in the dispatch table for all methods which are
+/* This function is installed in the dispatch table for all methods which are
    not implemented.  Thus, it is called when a selector is not recognized. */
 static retval_t
 __objc_forward (id object, SEL sel, arglist_t args)

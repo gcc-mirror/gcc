@@ -281,7 +281,7 @@ objc_promoted_size (const char* type)
 
 /*
   Skip type qualifiers.  These may eventually precede typespecs
-  occuring in method prototype encodings.
+  occurring in method prototype encodings.
 */
 
 inline const char*

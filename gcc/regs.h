@@ -53,7 +53,7 @@ extern short *reg_n_sets;
 
 extern short *reg_n_deaths;
 
-/* Indexed by N; says whether a psuedo register N was ever used
+/* Indexed by N; says whether a pseudo register N was ever used
    within a SUBREG that changes the size of the reg.  Some machines prohibit
    such objects to be in certain (usually floating-point) registers.  */
 

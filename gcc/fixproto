@@ -46,7 +46,7 @@
 #	files are copied.  An earlier version just included the original
 #	by "reference", using GNU cpp's #include_next mechanism.
 #	This is currently not done, partly because #include_next is
-#	fragile (susceptible to version incompatibilties, and depends
+#	fragile (susceptible to version incompatibilities, and depends
 #	and GCC-specific features), and partly for performance reasons.
 #
 # AUTHORS

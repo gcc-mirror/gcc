@@ -2811,7 +2811,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 
   last = get_last_insn ();
 
-  /* Promote floor rouding to trunc rounding for unsigned operations.  */
+  /* Promote floor rounding to trunc rounding for unsigned operations.  */
   if (unsignedp)
     {
       if (code == FLOOR_DIV_EXPR)

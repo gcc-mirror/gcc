@@ -275,9 +275,9 @@ class_pose_as (Class impostor, Class super_class)
 	    impostor->subclass_list = sub;
 
 	    /* It will happen that SUB is not a class object if it is 
-	       the top of the meta class hierachy chain.  (root
-	       meta-class objects inherit theit class object)  If that is
-	       the case... dont mess with the meta-meta class. */ 
+	       the top of the meta class hierarchy chain.  (root
+	       meta-class objects inherit their class object)  If that is
+	       the case... don't mess with the meta-meta class. */ 
 	    if (CLS_ISCLASS (sub))
 	      {
 		/* meta classes */
@@ -305,7 +305,7 @@ class_pose_as (Class impostor, Class super_class)
 
   /* This is how to update the lookup table. Regardless of
      what the keys of the hashtable is, change all values that are
-     suprecalss into impostor. */
+     superclass into impostor. */
 
   for (node = hash_next (__objc_class_hash, NULL); node;
        node = hash_next (__objc_class_hash, node))

@@ -2715,7 +2715,7 @@ expand_return (retval)
 	  /* Clobber REG and move each partword into it.  Ensure we don't
 	     go past the end of the structure.  Note that the loop below
 	     works because we've already verified that padding and
-	     endianness are compatable.  */
+	     endianness are compatible.  */
 	  emit_insn (gen_rtx (CLOBBER, VOIDmode, reg));
 
 	  for (bitpos = 0;
@@ -4330,7 +4330,7 @@ all_cases_count (type, spareness)
    has the given TYPE.
    SPARSENESS is as determined by all_cases_count.
 
-   The time needed is propotional to COUNT, unless
+   The time needed is proportional to COUNT, unless
    SPARSENESS is 2, in which case quadratic time is needed.  */
 
 void
@@ -4547,7 +4547,7 @@ check_for_full_enumeration_handling (type)
 #if 0
   /* ??? This optimization is disabled because it causes valid programs to
      fail.  ANSI C does not guarantee that an expression with enum type
-     will have a value that is the same as one of the enumation literals.  */
+     will have a value that is the same as one of the enumeration literals.  */
 
   /* If all values were found as case labels, make one of them the default
      label.  Thus, this switch will never fall through.  We arbitrarily pick

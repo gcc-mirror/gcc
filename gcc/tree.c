@@ -920,11 +920,11 @@ make_node (code)
       /* PARM_DECLs go on the context of the parent. If this is a nested
 	 function, then we must allocate the PARM_DECL on the parent's
 	 obstack, so that they will live to the end of the parent's
-	 closing brace.  This is neccesary in case we try to inline the
+	 closing brace.  This is necessary in case we try to inline the
 	 function into its parent.
 
 	 PARM_DECLs of top-level functions do not have this problem.  However,
-	 we allocate them where we put the FUNCTION_DECL for languauges such as
+	 we allocate them where we put the FUNCTION_DECL for languages such as
 	 Ada that need to consult some flags in the PARM_DECLs of the function
 	 when calling it. 
 
@@ -4306,7 +4306,7 @@ get_file_function_name (kind)
      constraints).  -- Raeburn@MIT.EDU, 10 Jan 1990.  */
   sprintf (buf, FILE_FUNCTION_FORMAT, p);
 
-  /* Don't need to pull wierd characters out of global names.  */
+  /* Don't need to pull weird characters out of global names.  */
   if (p != first_global_object_name)
     {
       for (p = buf+11; *p; p++)
@@ -4332,7 +4332,7 @@ get_file_function_name (kind)
   return get_identifier (buf);
 }
 
-/* Expand (the constant part of) a SET_TYPE CONTRUCTOR node.
+/* Expand (the constant part of) a SET_TYPE CONSTRUCTOR node.
    The result is placed in BUFFER (which has length BIT_SIZE),
    with one bit in each char ('\000' or '\001').
 
@@ -4390,7 +4390,7 @@ get_set_constructor_bits (init, buffer, bit_size)
   return non_const_bits;
 }
 
-/* Expand (the constant part of) a SET_TYPE CONTRUCTOR node.
+/* Expand (the constant part of) a SET_TYPE CONSTRUCTOR node.
    The result is placed in BUFFER (which is an array of bytes).
    If the constructor is constant, NULL_TREE is returned.
    Otherwise, a TREE_LIST of the non-constant elements is emitted. */

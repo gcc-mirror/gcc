@@ -1013,7 +1013,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
     }
 
   /* Normally no need to say anything here for external references,
-     since assemble_external is called by the langauge-specific code
+     since assemble_external is called by the language-specific code
      when a declaration is first seen.  */
 
   if (DECL_EXTERNAL (decl))

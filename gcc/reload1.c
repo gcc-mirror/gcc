@@ -923,7 +923,7 @@ reload (first, global, dumpfile)
 	      int did_elimination = 0;
 
 	      /* To compute the number of reload registers of each class 
-		 needed for an insn, we must similate what choose_reload_regs
+		 needed for an insn, we must simulate what choose_reload_regs
 		 can do.  We do this by splitting an insn into an "input" and
 		 an "output" part.  RELOAD_OTHER reloads are used in both. 
 		 The input part uses those reloads, RELOAD_FOR_INPUT reloads,
@@ -1546,7 +1546,7 @@ reload (first, global, dumpfile)
 
       /* Put all registers spilled so far back in potential_reload_regs, but
 	 put them at the front, since we've already spilled most of the
-	 psuedos in them (we might have left some pseudos unspilled if they
+	 pseudos in them (we might have left some pseudos unspilled if they
 	 were in a block that didn't need any spill registers of a conflicting
 	 class.  We used to try to mark off the need for those registers,
 	 but doing so properly is very complex and reallocating them is the
@@ -2800,7 +2800,7 @@ eliminate_regs (x, mem_mode, insn)
       /* If this is the product of an eliminable register and a 
 	 constant, apply the distribute law and move the constant out
 	 so that we have (plus (mult ..) ..).  This is needed in order
-	 to keep load-address insns valid.   This case is pathalogical.
+	 to keep load-address insns valid.   This case is pathological.
 	 We ignore the possibility of overflow here.  */
       if (GET_CODE (XEXP (x, 0)) == REG
 	  && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER
@@ -3374,7 +3374,7 @@ eliminate_regs_in_insn (insn, replace)
     }
 
  done:
-  /* If we changed something, perform elmination in REG_NOTES.  This is
+  /* If we changed something, perform elimination in REG_NOTES.  This is
      needed even when REPLACE is zero because a REG_DEAD note might refer
      to a register that we eliminate and could cause a different number
      of spill registers to be needed in the final reload pass than in

@@ -29,7 +29,7 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    the empty parameter list with the argument lust from sys-protos.h.
 
    * The program can be given a list of (names of) required standard
-   functions (such as fclose for stdio.h).  If a reqquired function
+   functions (such as fclose for stdio.h).  If a required function
    is not seen in the input, then a prototype for it will be
    written to the output.
 

@@ -102,7 +102,7 @@ long objc_get_stream_class_version (TypedStream* stream, Class class);
 
 
 /*
-** Convenience funtions
+** Convenience functions
 */
 
 int objc_write_array (TypedStream* stream, const char* type,
