@@ -1,22 +1,9 @@
-2001-11-30  Jason Merrill  <jason@redhat.com>
-
-	* dwarf2out.c (is_cxx): New fn.
-	(add_data_member_location_attribute): Check it.
-	* dbxout.c (dbxout_type): Only look at BINFO_VPTR_FIELD for C++.
-
 2001-11-27  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 	Bruce Korb <bkorb@gnu.org>
 
 	* inclhack.def (AAA_time): Delete.
 	(hpux_size_t): Revise select and fix for HP-UX 11.11.
 	(hpux11_vsnprintf): Adapt to above hack.
-
-2001-11-30  Jason Merrill  <jason@redhat.com>
-
-	* dwarf2out.c (add_data_member_location_attribute): Do the
-	right thing for virtual bases.
-	* dbxout.c (dbxout_type): For a virtual base, print the offset
-	within the vtable.
 
 2001-08-14  Steve Ellcey <sje@cup.hp.com>
 
