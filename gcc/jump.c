@@ -2074,6 +2074,7 @@ redirect_jump (jump, nlabel, delete_unused)
      int delete_unused;
 {
   rtx olabel = JUMP_LABEL (jump);
+  rtx note;
 
   if (nlabel == olabel)
     return 1;
@@ -2084,6 +2085,29 @@ redirect_jump (jump, nlabel, delete_unused)
   JUMP_LABEL (jump) = nlabel;
   if (nlabel)
     ++LABEL_NUSES (nlabel);
+
+  /* Update labels in any REG_EQUAL note.  */
+  if ((note = find_reg_note (jump, REG_EQUAL, NULL_RTX)) != NULL_RTX)
+    {
+      if (nlabel && olabel)
+	{
+	  rtx dest = XEXP (note, 0);
+
+	  if (GET_CODE (dest) == IF_THEN_ELSE)
+	    {
+	      if (GET_CODE (XEXP (dest, 1)) == LABEL_REF
+		  && XEXP (XEXP (dest, 1), 0) == olabel)
+		XEXP (XEXP (dest, 1), 0) = nlabel;
+	      if (GET_CODE (XEXP (dest, 2)) == LABEL_REF
+		  && XEXP (XEXP (dest, 2), 0) == olabel)
+		XEXP (XEXP (dest, 2), 0) = nlabel;
+	    }
+	  else
+	    remove_note (jump, note);
+	}
+      else
+        remove_note (jump, note);
+    }
 
   /* If we're eliding the jump over exception cleanups at the end of a
      function, move the function end note so that -Wreturn-type works.  */
@@ -2201,6 +2225,11 @@ invert_jump (jump, nlabel, delete_unused)
 
   if (redirect_jump (jump, nlabel, delete_unused))
     {
+      /* Remove REG_EQUAL note if we have one.  */
+      rtx note = find_reg_note (jump, REG_EQUAL, NULL_RTX);
+      if (note)
+	remove_note (jump, note);
+
       invert_br_probabilities (jump);
 
       return 1;

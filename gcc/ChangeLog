@@ -1,3 +1,18 @@
+2003-05-20  Roger Sayle  <roger@eyesopen.com>
+	    Kazu Hirata  <kazu@cs.umass.edu>
+	    Joern Rennecke  <joern.rennecke@superh.com>
+
+	* gcse.c (cprop_jump):  Make use of REG_EQUAL notes on both
+	setcc and jump, if they exist.  If substituted instruction
+	fails to validate, store current effort in a REG_EQUAL note.
+	(cprop_insn): Don't attempt further substitutions if the
+	current instruction has been deleted.
+	(local_cprop_pass): Likewise.
+
+	* jump.c (redirect_jump):  Also update REG_EQUAL note, if
+	one is attached to the jump instruction.
+	(invert_jump): Delete REG_EQUAL note on jump, if one exists.
+
 2003-05-21  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR c++/9738
