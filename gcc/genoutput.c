@@ -107,10 +107,10 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-static void fatal PVPROTO ((char *, ...))
+static void fatal PVPROTO ((const char *, ...))
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 void fancy_abort PROTO((void)) ATTRIBUTE_NORETURN;
-static void error PVPROTO ((char *, ...)) ATTRIBUTE_PRINTF_1;
+static void error PVPROTO ((const char *, ...)) ATTRIBUTE_PRINTF_1;
 static void mybcopy ();
 static void mybzero ();
 static int n_occurrences PROTO((int, char *));
@@ -415,7 +415,7 @@ static int max_opno;
 static int num_dups;
 static char *constraints[MAX_MAX_OPERANDS];
 static int op_n_alternatives[MAX_MAX_OPERANDS];
-static char *predicates[MAX_MAX_OPERANDS];
+static const char *predicates[MAX_MAX_OPERANDS];
 static char address_p[MAX_MAX_OPERANDS];
 static enum machine_mode modes[MAX_MAX_OPERANDS];
 static char strict_low[MAX_MAX_OPERANDS];
@@ -922,17 +922,17 @@ mybcopy (b1, b2, length)
 }
 
 static void
-fatal VPROTO ((char *format, ...))
+fatal VPROTO ((const char *format, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char *format;
+  const char *format;
 #endif
   va_list ap;
 
   VA_START (ap, format);
 
 #ifndef ANSI_PROTOTYPES
-  format = va_arg (ap, char *);
+  format = va_arg (ap, const char *);
 #endif
 
   fprintf (stderr, "genoutput: ");
@@ -952,17 +952,17 @@ fancy_abort ()
 }
 
 static void
-error VPROTO ((char *format, ...))
+error VPROTO ((const char *format, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char *format;
+  const char *format;
 #endif
   va_list ap;
 
   VA_START (ap, format);
 
 #ifndef ANSI_PROTOTYPES
-  format = va_arg (ap, char *);
+  format = va_arg (ap, const char *);
 #endif
 
   fprintf (stderr, "genoutput: ");

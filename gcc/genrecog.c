@@ -86,7 +86,7 @@ struct decision
   int elt_one_int;		/* Required value for XINT (rtl, 1) */
   int test_elt_zero_wide;	/* Nonzero if should test XWINT (rtl, 0) */
   HOST_WIDE_INT elt_zero_wide;	/* Required value for XWINT (rtl, 0) */
-  char *tests;			/* If nonzero predicate to call */
+  const char *tests;		/* If nonzero predicate to call */
   int pred;			/* `preds' index of predicate or -1 */
   char *c_test;			/* Additional test to perform */
   struct decision_head success;	/* Nodes to test on success */
@@ -137,7 +137,7 @@ static int max_depth;
 
 static struct pred_table
 {
-  char *name;
+  const char *name;
   RTX_CODE codes[NUM_RTX_CODE];
 } preds[]
   = {{"general_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,
@@ -167,7 +167,7 @@ static struct pred_table
 
 static struct decision_head make_insn_sequence PROTO((rtx, enum routine_type));
 static struct decision *add_to_sequence PROTO((rtx, struct decision_head *,
-					       char *));
+					       const char *));
 static int not_both_true	PROTO((struct decision *, struct decision *,
 				       int));
 static int position_merit	PROTO((struct decision *, enum machine_mode,
@@ -177,21 +177,21 @@ static struct decision_head merge_trees PROTO((struct decision_head,
 static int break_out_subroutines PROTO((struct decision_head,
 					enum routine_type, int));
 static void write_subroutine	PROTO((struct decision *, enum routine_type));
-static void write_tree_1	PROTO((struct decision *, char *,
+static void write_tree_1	PROTO((struct decision *, const char *,
 				       struct decision *, enum routine_type));
 static void print_code		PROTO((enum rtx_code));
 static int same_codes		PROTO((struct decision *, enum rtx_code));
 static void clear_codes		PROTO((struct decision *));
 static int same_modes		PROTO((struct decision *, enum machine_mode));
 static void clear_modes		PROTO((struct decision *));
-static void write_tree		PROTO((struct decision *, char *,
+static void write_tree		PROTO((struct decision *, const char *,
 				       struct decision *, int,
 				       enum routine_type));
-static void change_state	PROTO((char *, char *, int));
-static char *copystr		PROTO((char *));
+static void change_state	PROTO((const char *, const char *, int));
+static char *copystr		PROTO((const char *));
 static void mybzero		PROTO((char *, unsigned));
 static void mybcopy		PROTO((char *, char *, unsigned));
-static void fatal		PVPROTO((char *, ...))
+static void fatal		PVPROTO((const char *, ...))
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 void fancy_abort		PROTO((void)) ATTRIBUTE_NORETURN;
 
@@ -291,7 +291,7 @@ static struct decision *
 add_to_sequence (pattern, last, position)
      rtx pattern;
      struct decision_head *last;
-     char *position;
+     const char *position;
 {
   register RTX_CODE code;
   register struct decision *new
@@ -1031,7 +1031,7 @@ write_subroutine (tree, type)
    conditions or switch statements.  We only support small indentations
    and always indent at least two spaces.  */
 
-static char *indents[]
+static const char *indents[]
   = {"  ", "  ", "  ", "   ", "    ", "     ", "      ", "       ",
      "\t", "\t ", "\t  ", "\t   ", "\t    ", "\t     ", "\t      ",
      "\t\t", "\t\t ", "\t\t  ", "\t\t   ", "\t\t    ", "\t\t     "};
@@ -1060,7 +1060,7 @@ static char *indents[]
 static void
 write_tree_1 (tree, prevpos, afterward, type)
      struct decision *tree;
-     char *prevpos;
+     const char *prevpos;
      struct decision *afterward;
      enum routine_type type;
 {
@@ -1552,14 +1552,14 @@ clear_modes (p)
 static void
 write_tree (tree, prevpos, afterward, initial, type)
      struct decision *tree;
-     char *prevpos;
+     const char *prevpos;
      struct decision *afterward;
      int initial;
      enum routine_type type;
 {
   register struct decision *p;
-  char *name_prefix = (type == SPLIT ? "split" : "recog");
-  char *call_suffix = (type == SPLIT ? "" : ", pnum_clobbers");
+  const char *name_prefix = (type == SPLIT ? "split" : "recog");
+  const char *call_suffix = (type == SPLIT ? "" : ", pnum_clobbers");
 
   if (! initial && tree->subroutine_number > 0)
     {
@@ -1598,8 +1598,8 @@ write_tree (tree, prevpos, afterward, initial, type)
 
 static void
 change_state (oldpos, newpos, indent)
-     char *oldpos;
-     char *newpos;
+     const char *oldpos;
+     const char *newpos;
      int indent;
 {
   int odepth = strlen (oldpos);
@@ -1627,7 +1627,7 @@ change_state (oldpos, newpos, indent)
 
 static char *
 copystr (s1)
-     char *s1;
+  const char *s1;
 {
   register char *tem;
 
@@ -1681,17 +1681,17 @@ xmalloc (size)
 }
 
 static void
-fatal VPROTO ((char *format, ...))
+fatal VPROTO ((const char *format, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char *format;
+  const char *format;
 #endif
   va_list ap;
 
   VA_START (ap, format);
 
 #ifndef ANSI_PROTOTYPES
-  format = va_arg (ap, char *);
+  format = va_arg (ap, const char *);
 #endif
 
   fprintf (stderr, "genrecog: ");
