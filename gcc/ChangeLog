@@ -1,3 +1,17 @@
+2001-03-13  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppfiles.c (NO_INCLUDE_PATH): New macro.
+	(find_include_file): Decide here which part of the include
+	chain to start the search.  Complain about an empty include
+	chain in all cases apart from an abolsute file name.
+	(_cpp_execute_include): Don't choose the search chain here.
+	Don't call handle_missing_include in the case of an empty
+	include chain.
+	(_cpp_compare_file_date): Don't choose the search chain here.
+	* cpplib.c (do_include_next): Move the in-main-file diagnostic
+	here from _cpp_execute_include.  Behave like #include if
+	we're in the main file.
+
 2001-03-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* system.h (malloc, realloc, calloc, strdup): Only poison these

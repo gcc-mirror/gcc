@@ -619,7 +619,14 @@ do_include_next (pfile)
   cpp_token header;
 
   if (!parse_include (pfile, &header))
-    _cpp_execute_include (pfile, &header, 0, 1);
+    {
+      /* If this is the primary source file, warn and use the normal
+	 search logic.  */
+      if (! pfile->buffer->prev)
+	cpp_warning (pfile, "#include_next in primary source file");
+
+      _cpp_execute_include (pfile, &header, 0, pfile->buffer->prev != 0);
+    }
 }
 
 /* Subroutine of do_line.  Read possible flags after file name.  LAST
