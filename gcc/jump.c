@@ -54,6 +54,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "reload.h"
 #include "predict.h"
 #include "timevar.h"
+#include "diagnostic.h"
 
 /* Optimize jump y; x: ... y: jumpif... x?
    Don't know if it is worth bothering with.  */
@@ -1951,9 +1952,12 @@ never_reached_warning (avoided_insn, finish)
 	reached_end = 1;
     }
   if (two_avoided_lines && contains_insn)
-    warning_with_file_and_line (NOTE_SOURCE_FILE (a_line_note),
-				NOTE_LINE_NUMBER (a_line_note),
-				"will never be executed");
+    {
+      location_t locus;
+      locus.file = NOTE_SOURCE_FILE (a_line_note);
+      locus.line = NOTE_LINE_NUMBER (a_line_note);
+      warning ("%Hwill never be executed", &locus);
+    }
 }
 
 /* Throughout LOC, redirect OLABEL to NLABEL.  Treat null OLABEL or
