@@ -6,5 +6,3 @@
 #undef memcmp
 #undef memcpy
 #undef memset
-
-#include <xm-netbsd.h>
