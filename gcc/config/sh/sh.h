@@ -779,7 +779,9 @@ extern enum reg_class reg_class_from_letter[];
    ? FPUL_REGS								\
    : ((CLASS) == FPUL_REGS						\
       && (GET_CODE (X) == MEM						\
-	  || (GET_CODE (X) == REG && REGNO (X) >= FIRST_PSEUDO_REGISTER)))\
+	  || (GET_CODE (X) == REG					\
+	      && (REGNO (X) >= FIRST_PSEUDO_REGISTER			\
+		  || system_reg_operand (X, VOIDmode)))))		\
    ? GENERAL_REGS							\
    : (((CLASS) == MAC_REGS || (CLASS) == PR_REGS)			\
       && GET_CODE (X) == REG && REGNO (X) > 15				\
