@@ -1,3 +1,7 @@
+2004-04-04  Roger Sayle  <roger@eyesopen.com>
+
+	* df.h: Tidy up whitespace in the definitions of the DF_ flags.
+
 2004-04-03  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold) <PLUS_EXPR>: Guard (-A)+B -> B-A transformation
