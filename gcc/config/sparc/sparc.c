@@ -1832,6 +1832,20 @@ compute_frame_size (size, leaf_function)
   return actual_fsize;
 }
 
+/* If this were a leaf function, how far would we have to reach
+   from the stack pointer to the last arg on the stack?
+
+   If we don't know, return 4096 (i.e., "too far".)  */
+
+int
+compute_last_arg_offset ()
+{
+  if (GET_CODE (current_function_arg_offset_rtx) == CONST_INT)
+    return (compute_frame_size (get_frame_size (), 1)
+	    + INTVAL (current_function_arg_offset_rtx));
+  return 4096;
+}
+
 void
 output_function_prologue (file, size, leaf_function)
      FILE *file;
@@ -1863,11 +1877,14 @@ output_function_prologue (file, size, leaf_function)
     }
   else
     {
+      /* The rest of the support for this case hasn't been implemented,
+	 but FRAME_POINTER_REQUIRED is supposed to prevent it from arising,
+	 by checking the frame size.  */
+      abort ();
+
       /* Put pointer to parameters into %g4, and allocate
 	 frame space using result computed into %g1.  actual_fsize
 	 used instead of apparent_fsize for reasons stated above.  */
-      abort ();
-
       fprintf (file, "\tsethi %%hi(%d),%%g1\n\tor %%g1,%%lo(%d),%%g1\n",
 	       -actual_fsize, -actual_fsize);
       fprintf (file, "\tadd %%sp,64,%%g4\n\tadd %%sp,%%g1,%%sp\n");
