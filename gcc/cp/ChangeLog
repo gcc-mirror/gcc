@@ -1,3 +1,7 @@
+1998-09-20  Mark Mitchell  <mark@markmitchell.com>
+
+	* class.c (maybe_warn_about_overly_private_class): Reformat.
+
 1998-09-17  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* exception.cc (__cplus_type_matcher): realign some code.

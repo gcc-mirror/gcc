@@ -1910,129 +1910,132 @@ static void
 maybe_warn_about_overly_private_class (t)
      tree t;
 {
-  if (warn_ctor_dtor_privacy
+  int has_member_fn = 0;
+  int has_nonprivate_method = 0;
+  tree fn;
+
+  if (!warn_ctor_dtor_privacy
       /* If the class has friends, those entities might create and
 	 access instances, so we should not warn.  */
-      && !(CLASSTYPE_FRIEND_CLASSES (t)
-	   || DECL_FRIENDLIST (TYPE_MAIN_DECL (t)))
+      || (CLASSTYPE_FRIEND_CLASSES (t)
+	  || DECL_FRIENDLIST (TYPE_MAIN_DECL (t)))
       /* We will have warned when the template was declared; there's
 	 no need to warn on every instantiation.  */
-      && !CLASSTYPE_TEMPLATE_INSTANTIATION (t))
-    {
-      /* We only issue one warning, if more than one applies, because
-	 otherwise, on code like:
+      || CLASSTYPE_TEMPLATE_INSTANTIATION (t))
+    /* There's no reason to even consider warning about this 
+       class.  */
+    return;
+    
+  /* We only issue one warning, if more than one applies, because
+     otherwise, on code like:
 
-	   class A {
-	     // Oops - forgot `public:'
-	     A();
-	     A(const A&);
-	     ~A();
-	   };
+     class A {
+       // Oops - forgot `public:'
+       A();
+       A(const A&);
+       ~A();
+     };
 
-	 we warn several times about essentially the same problem.  */
+     we warn several times about essentially the same problem.  */
 
-      int has_member_fn = 0;
-      int has_nonprivate_method = 0;
-      tree fn;
-
-      /* Check to see if all (non-constructor, non-destructor) member
-	 functions are private.  (Since there are no friends or
-	 non-private statics, we can't ever call any of the private
-	 member functions.)  */
-      for (fn = TYPE_METHODS (t); fn; fn = TREE_CHAIN (fn))
-	/* We're not interested in compiler-generated methods; they
-	   don't provide any way to call private members.  */
-	if (!DECL_ARTIFICIAL (fn)) 
+  /* Check to see if all (non-constructor, non-destructor) member
+     functions are private.  (Since there are no friends or
+     non-private statics, we can't ever call any of the private member
+     functions.)  */
+  for (fn = TYPE_METHODS (t); fn; fn = TREE_CHAIN (fn))
+    /* We're not interested in compiler-generated methods; they don't
+       provide any way to call private members.  */
+    if (!DECL_ARTIFICIAL (fn)) 
+      {
+	if (!TREE_PRIVATE (fn))
 	  {
-	    if (!TREE_PRIVATE (fn))
-	      {
-		if (DECL_STATIC_FUNCTION_P (fn)) 
-		  /* A non-private static member function is just like a
-		     friend; it can create and invoke private member
-		     functions, and be accessed without a class
-		     instance.  */
-		  return;
+	    if (DECL_STATIC_FUNCTION_P (fn)) 
+	      /* A non-private static member function is just like a
+		 friend; it can create and invoke private member
+		 functions, and be accessed without a class
+		 instance.  */
+	      return;
 		
-		has_nonprivate_method = 1;
+	    has_nonprivate_method = 1;
+	    break;
+	  }
+	else
+	  has_member_fn = 1;
+      } 
+
+  if (!has_nonprivate_method && has_member_fn) 
+    {
+      int i;
+      tree binfos = BINFO_BASETYPES (TYPE_BINFO (t));
+      for (i = 0; i < CLASSTYPE_N_BASECLASSES (t); i++)
+	if (TREE_VIA_PUBLIC (TREE_VEC_ELT (binfos, i))
+	    || TREE_VIA_PROTECTED (TREE_VEC_ELT (binfos, i)))
+	  {
+	    has_nonprivate_method = 1;
+	    break;
+	  }
+      if (!has_nonprivate_method) 
+	{
+	  cp_warning ("all member functions in class `%T' are private", t);
+	  return;
+	}
+    }
+
+  /* Even if some of the member functions are non-private, the class
+     won't be useful for much if all the constructors or destructors
+     are private: such an object can never be created or destroyed.  */
+  if (TYPE_HAS_DESTRUCTOR (t))
+    {
+      tree dtor = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (t), 1);
+
+      if (TREE_PRIVATE (dtor))
+	{
+	  cp_warning ("`%#T' only defines a private destructor and has no friends",
+		      t);
+	  return;
+	}
+    }
+
+  if (TYPE_HAS_CONSTRUCTOR (t))
+    {
+      int nonprivate_ctor = 0;
+	  
+      /* If a non-template class does not define a copy
+	 constructor, one is defined for it, enabling it to avoid
+	 this warning.  For a template class, this does not
+	 happen, and so we would normally get a warning on:
+
+	   template <class T> class C { private: C(); };  
+	  
+	 To avoid this asymmetry, we check TYPE_HAS_INIT_REF.  All
+	 complete non-template or fully instantiated classes have this
+	 flag set.  */
+      if (!TYPE_HAS_INIT_REF (t))
+	nonprivate_ctor = 1;
+      else 
+	for (fn = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (t), 0);
+	     fn;
+	     fn = OVL_NEXT (fn)) 
+	  {
+	    tree ctor = OVL_CURRENT (fn);
+	    /* Ideally, we wouldn't count copy constructors (or, in
+	       fact, any constructor that takes an argument of the
+	       class type as a parameter) because such things cannot
+	       be used to construct an instance of the class unless
+	       you already have one.  But, for now at least, we're
+	       more generous.  */
+	    if (! TREE_PRIVATE (ctor))
+	      {
+		nonprivate_ctor = 1;
 		break;
 	      }
-	    else
-	      has_member_fn = 1;
-	  } 
+	  }
 
-      if (!has_nonprivate_method && has_member_fn) 
+      if (nonprivate_ctor == 0)
 	{
-	  int i;
-	  tree binfos = BINFO_BASETYPES (TYPE_BINFO (t));
-	  for (i = 0; i < CLASSTYPE_N_BASECLASSES (t); i++)
-	    if (TREE_VIA_PUBLIC (TREE_VEC_ELT (binfos, i))
-		|| TREE_VIA_PROTECTED (TREE_VEC_ELT (binfos, i)))
-	      {
-		has_nonprivate_method = 1;
-		break;
-	      }
-	  if (!has_nonprivate_method) 
-	    {
-	      cp_warning ("all member functions in class `%T' are private", t);
-	      return;
-	    }
-	}
-
-      /* Even if some of the member functions are non-private, the
-	 class won't be useful for much if all the constructors or
-	 destructors are private: such an object can never be created
-	 or destroyed.  */
-      if (TYPE_HAS_DESTRUCTOR (t))
-	{
-	  tree dtor = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (t), 1);
-
-	  if (TREE_PRIVATE (dtor))
-	    {
-	      cp_warning ("`%#T' only defines a private destructor and has no friends",
-			  t);
-	      return;
-	    }
-	}
-
-      if (TYPE_HAS_CONSTRUCTOR (t))
-	{
-	  int nonprivate_ctor = 0;
-	  
-	  /* If a non-template class does not define a copy
-	     constructor, one is defined for it, enabling it to avoid
-	     this warning.  For a template class, this does not
-	     happen, and so we would normally get a warning on:
-
-	       template <class T> class C { private: C(); };  
-	  
-	     To avoid this asymmetry, we check TYPE_HAS_INIT_REF.  */ 
-	  if (!TYPE_HAS_INIT_REF (t))
-	    nonprivate_ctor = 1;
-	  else 
-	    for (fn = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (t), 0);
-		 fn;
-		 fn = OVL_NEXT (fn)) 
-	      {
-		tree ctor = OVL_CURRENT (fn);
-		/* Ideally, we wouldn't count copy constructors (or, in
-		   fact, any constructor that takes an argument of the
-		   class type as a parameter) because such things cannot
-		   be used to construct an instance of the class unless
-		   you already have one.  But, for now at least, we're
-		   more generous.  */
-		if (! TREE_PRIVATE (ctor))
-		  {
-		    nonprivate_ctor = 1;
-		    break;
-		  }
-	      }
-
-	  if (nonprivate_ctor == 0)
-	    {
-	      cp_warning ("`%#T' only defines private constructors and has no friends",
-			  t);
-	      return;
-	    }
+	  cp_warning ("`%#T' only defines private constructors and has no friends",
+		      t);
+	  return;
 	}
     }
 }
