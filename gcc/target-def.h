@@ -49,6 +49,10 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_SET_DEFAULT_TYPE_ATTRIBUTES default_set_default_type_attributes
 #define TARGET_INSERT_ATTRIBUTES default_insert_attributes
 
+/* In builtins.c.  */
+#define TARGET_INIT_BUILTINS default_init_builtins
+#define TARGET_EXPAND_BUILTIN default_expand_builtin
+
 /* The whole shebang.  */
 #define TARGET_INITIALIZER			\
 {						\
@@ -59,5 +63,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
   TARGET_VALID_TYPE_ATTRIBUTE,			\
   TARGET_COMP_TYPE_ATTRIBUTES,			\
   TARGET_SET_DEFAULT_TYPE_ATTRIBUTES,		\
-  TARGET_INSERT_ATTRIBUTES			\
+  TARGET_INSERT_ATTRIBUTES,			\
+  TARGET_INIT_BUILTINS,				\
+  TARGET_EXPAND_BUILTIN				\
 }

@@ -3009,7 +3009,7 @@ c_common_nodes_and_builtins ()
 				 c_language != clk_cplusplus)
 			       ? const_string_type_node : const_ptr_type_node);
 
-  MD_INIT_BUILTINS;
+  (*targetm.init_builtins) ();
 
   /* This is special for C++ so functions can be overloaded.  */
   wchar_type_node = get_identifier (flag_short_wchar

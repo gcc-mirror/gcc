@@ -199,6 +199,12 @@ static void c4x_insert_attributes PARAMS ((tree, tree *));
 #undef TARGET_INSERT_ATTRIBUTES
 #define TARGET_INSERT_ATTRIBUTES c4x_insert_attributes
 
+#undef TARGET_INIT_BUILTINS
+#define TARGET_INIT_BUILTINS c4x_init_builtins
+
+#undef TARGET_EXPAND_BUILTIN
+#define TARGET_EXPAND_BUILTIN c4x_expand_builtin
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Called to register all of our global variables with the garbage
@@ -1925,7 +1931,7 @@ c4x_print_operand (file, op, letter)
           if (GET_CODE(op1) == CONST_INT || GET_CODE(op1) == SYMBOL_REF)
 	    {
 	      asm_fprintf (file, "\t%s\t@", TARGET_C3X ? "ldp" : "ldpk");
-	      output_address (XEXP (adjust_address (op, VOIDmodem, 1), 0));
+	      output_address (XEXP (adjust_address (op, VOIDmode, 1), 0));
 	      asm_fprintf (file, "\n");
 	    }
 	}
@@ -1947,7 +1953,7 @@ c4x_print_operand (file, op, letter)
       if (code == MEM && c4x_autoinc_operand (op, Pmode))
 	break;
       else if (code == MEM)
-	output_address (XEXP (adjust_address (op, 1), VOIDmode, 0));
+	output_address (XEXP (adjust_address (op, VOIDmode, 1), 0));
       else if (code == REG)
 	fprintf (file, "%s", reg_names[REGNO (op) + 1]);
       else
@@ -5037,9 +5043,10 @@ c4x_adjust_cost (insn, link, dep_insn, cost)
 }
 
 void
-c4x_init_builtins (endlink)
-     tree endlink;
+c4x_init_builtins ()
 {
+  tree endlink = void_list_node;
+
   builtin_function ("fast_ftoi",
 		    build_function_type 
 		    (integer_type_node,

@@ -2859,11 +2859,4 @@ enum fetchop_code {
   IA64_ADD_OP, IA64_SUB_OP, IA64_OR_OP, IA64_AND_OP, IA64_XOR_OP, IA64_NAND_OP
 };
 
-#define MD_INIT_BUILTINS do { \
-    ia64_init_builtins (); \
-  } while (0)
-
-#define MD_EXPAND_BUILTIN(EXP, TARGET, SUBTARGET, MODE, IGNORE) \
-    ia64_expand_builtin ((EXP), (TARGET), (SUBTARGET), (MODE), (IGNORE))
-
 /* End of ia64.h */

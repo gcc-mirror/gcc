@@ -2954,14 +2954,4 @@ enum arm_builtins
   ARM_BUILTIN_PREFETCH,
   ARM_BUILTIN_MAX
 };
-
-#define MD_INIT_BUILTINS	\
-  do				\
-    {				\
-      arm_init_builtins ();	\
-    }				\
-  while (0)
-
-#define MD_EXPAND_BUILTIN(EXP, TARGET, SUBTARGET, MODE, IGNORE) \
-    arm_expand_builtin ((EXP), (TARGET), (SUBTARGET), (MODE), (IGNORE))
 #endif /* ! GCC_ARM_H */

@@ -2744,10 +2744,3 @@ enum c4x_builtins
   C4X_BUILTIN_FRIEEE,	/*	frieee	   (only C4x)	*/
   C4X_BUILTIN_RCPF	/*	fast_invf  (only C4x)	*/
 };
-
-#define MD_INIT_BUILTINS do { \
-    c4x_init_builtins (void_list_node); \
-  } while (0)
-
-#define MD_EXPAND_BUILTIN(EXP, TARGET, SUBTARGET, MODE, IGNORE) \
-    c4x_expand_builtin ((EXP), (TARGET), (SUBTARGET), (MODE), (IGNORE))

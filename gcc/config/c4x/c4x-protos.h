@@ -69,10 +69,10 @@ extern void c4x_va_start PARAMS ((int, tree, rtx));
 
 extern struct rtx_def *c4x_va_arg PARAMS ((tree, tree));
 
-extern rtx c4x_expand_builtin PARAMS((tree, rtx, rtx,
-				      enum machine_mode, int));
+extern rtx c4x_expand_builtin PARAMS ((tree, rtx, rtx,
+				       enum machine_mode, int));
 
-extern void c4x_init_builtins PARAMS((tree));
+extern void c4x_init_builtins PARAMS ((void));
 
 #endif /* TREE_CODE and RTX_CODE*/
 
