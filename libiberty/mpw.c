@@ -705,9 +705,9 @@ mpw_access (char *filename, unsigned int cmd)
       errnum = errno;
       if (rslt >= 0)
 	{
-	  if (((st.st_mode & 004 == 0) && (cmd & R_OK))
-	      || ((st.st_mode & 002 == 0) && (cmd & W_OK))
-	      || ((st.st_mode & 001 == 0) && (cmd & X_OK)))
+	  if ((((st.st_mode & 004) == 0) && (cmd & R_OK))
+	      || (((st.st_mode & 002) == 0) && (cmd & W_OK))
+	      || (((st.st_mode & 001) == 0) && (cmd & X_OK)))
 	    {
 	      rslt = -1;
 	      errnum = EACCES;
