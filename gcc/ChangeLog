@@ -1,3 +1,8 @@
+2004-12-03  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* config/rs6000/rs6000.c (rs6000_override_options): Protect
+	darwin_one_byte_bool with #if.
+
 2004-12-03  Paolo Bonzini  <bonzini@gnu.org>
 
 	* doc/tm.texi (Misc): Document TARGET_FOLD_BUILTIN.
