@@ -37,22 +37,23 @@
 namespace std {
 
 // from fpos.h
-  typedef _IO_off_t  	streamoff;
   typedef _IO_ssize_t 	streamsize; // Signed integral type
-#if _GLIBCPP_USE_WCHAR_T
-  typedef _IO_off_t  	wstreamoff;
   typedef _IO_ssize_t 	wstreamsize;
-#endif
+
 #if defined(_G_IO_IO_FILE_VERSION) && _G_IO_IO_FILE_VERSION == 0x20001
-  typedef _IO_fpos64_t  __c_streampos;
+  typedef _IO_off64_t 	streamoff;
+  typedef _IO_fpos64_t 	__c_streampos;
+  typedef _IO_off64_t  	wstreamoff;
 #else
-  typedef _IO_fpos_t    __c_streampos;
+  typedef _IO_off_t 	streamoff;
+  typedef _IO_fpos_t 	__c_streampos;
+  typedef _IO_off_t  	wstreamoff;
 #endif
 
   typedef _IO_lock_t	__c_lock;
 
 // from basic_file.h
-  typedef _IO_FILE __c_file_type;
+  typedef _IO_FILE 	__c_file_type;
 #define _GLIBCPP_BASIC_FILE_INHERITANCE 1
 
 // from ios_base.h

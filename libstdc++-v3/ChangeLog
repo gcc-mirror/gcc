@@ -1,3 +1,30 @@
+2000-04-26  Nathan C. Myers  <ncm@cantrip.org>
+
+	* bits/basic_string.h: include <bits/atomicity.h> instead
+        of <atomicity.h>, and use the uglified names.
+        * config/cpu/*/atomicity.h: replace with bits/atomicity.h;
+        uglify names, eliminate dependence on <inttypes.h>.
+        * src/Makefile.in, src/Makefile.am: refer to correct place
+        for atomicity.h header.
+
+2000-04-25 Steven King <sxking@uswest.net>
+
+        * bits/basic_string.h: Fix syntax error.
+
+2000-04-25  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* acinclude.m4 (GLIBCPP_CHECK_MATH_SUPPORT): Improve checks for
+	USE_LONG_DOUBLE.
+	(GLIBCPP_ENABLE_DEBUG): If alpha, use -gdwarf-2.
+	* math/Makefile.am (EXTRA_LONG_DOUBLE_yes): Add all the long
+	versions to this as copysignl is needed anyway for these targets.
+	* math/Makefile.in: Regenerate.
+	
+	* bits/streambuf.tcc (streambuf::xsgetn): Tweak.
+	* bits/fstream.tcc (underflow): Cast to libio types.
+	* bits/basic_file.h (seekoff): Fixes for alpha: use __c_streamoff.
+	* config/c_io_libio.cc (seekoff): And here.
+	
 2000-04-24  Loren J. Rittle  <ljrittle@acm.org>
 
         * mkcheck.in: Report compiler version used for test.  Find

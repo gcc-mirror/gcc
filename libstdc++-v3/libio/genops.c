@@ -467,14 +467,23 @@ _IO_default_setbuf (fp, p, len)
     return fp;
 }
 
-_IO_pos_t
+#if defined(_G_IO_IO_FILE_VERSION) && _G_IO_IO_FILE_VERSION == 0x20001
+_IO_off64_t
 _IO_default_seekpos (fp, pos, mode)
      _IO_FILE *fp;
-     _IO_pos_t pos;
+     _IO_off64_t pos;
      int mode;
+#else
+_IO_off_t
+_IO_default_seekpos (fp, pos, mode)
+     _IO_FILE *fp;
+     _IO_off_t pos;
+     int mode;
+#endif
 {
-  return _IO_SEEKOFF (fp, _IO_pos_as_off (pos), 0, mode);
+  return _IO_SEEKOFF (fp, pos, 0, mode);
 }
+
 
 int
 _IO_default_doallocate (fp)
@@ -551,12 +560,21 @@ _IO_default_finish (fp, dummy)
   _IO_un_link (fp);
 }
 
-_IO_pos_t
+#if defined(_G_IO_IO_FILE_VERSION) && _G_IO_IO_FILE_VERSION == 0x20001
+_IO_off64_t
+_IO_default_seekoff (fp, offset, dir, mode)
+     _IO_FILE *fp;
+     _IO_off64_t offset;
+     int dir;
+     int mode;
+#else
+_IO_off_t
 _IO_default_seekoff (fp, offset, dir, mode)
      _IO_FILE *fp;
      _IO_off_t offset;
      int dir;
      int mode;
+#endif
 {
     return _IO_pos_BAD;
 }
@@ -882,11 +900,19 @@ _IO_default_pbackfail (fp, c)
   return (unsigned char) *fp->_IO_read_ptr;
 }
 
-_IO_pos_t
+#if defined(_G_IO_IO_FILE_VERSION) && _G_IO_IO_FILE_VERSION == 0x20001
+_IO_off64_t
+_IO_default_seek (fp, offset, dir)
+     _IO_FILE *fp;
+     _IO_off64_t offset;
+     int dir;
+#else
+_IO_off_t
 _IO_default_seek (fp, offset, dir)
      _IO_FILE *fp;
      _IO_off_t offset;
      int dir;
+#endif
 {
   return _IO_pos_BAD;
 }

@@ -188,7 +188,7 @@ AM_MAKEFLAGS = \
 	"NM=$(NM)" \
 	"NM_FOR_BUILD=$(NM_FOR_BUILD)" \
 	"NM_FOR_TARGET=$(NM_FOR_TARGET)" \
-	"DESTDIR=$(DESTDIR)"
+	"DESTDIR=$(DESTDIR)" 
 
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs

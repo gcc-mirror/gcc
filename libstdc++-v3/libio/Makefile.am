@@ -25,6 +25,12 @@ AUTOMAKE_OPTIONS = 1.3 cygnus
 
 noinst_LTLIBRARIES = libio.la
 
+if GLIBCPP_NEED_LIBIO_CONFIG_H
+LIBIO_CONFIG_H = _G_config.h
+else
+LIBIO_CONFIG_H = 
+endif
+
 includes = 
 
 libio_headers = \
@@ -37,16 +43,17 @@ else
 LIBIO_SRCS =
 endif
 
+
 EXTRA_DIST = iostreamP.h
 
 libio_la_LIBADD = $(LIBIO_SRCS) 
 libio_la_DEPENDENCIES = $(libio_la_LIBADD)
 libio_la_SOURCES = $(LIBIO_SRCS)
 
-LINK = $(LIBTOOL) --mode=link "$(CCLD)" $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
-
 # Specifying that *.o depend on this one header
-$(libio_la_OBJECTS): _G_config.h
+$(libio_la_OBJECTS): $(LIBIO_CONFIG_H)
+
+LINK = $(LIBTOOL) --mode=link "$(CCLD)" $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 
 # Generate this file.
 _G_config.h: $(srcdir)/gen-params

@@ -254,8 +254,8 @@ dnl Check to see what architecture we are compiling for. If it's
 dnl supported, use special hand-crafted routines to provide thread
 dnl primitives.
 dnl 
-dnl Depending on what is found, select various configure/cpu/*/atomicity.h 
-dnl If not found, select configure/cpu/generic/atomicity.h
+dnl Depending on what is found, select configure/cpu/*/bits/atomicity.h 
+dnl If not found, select configure/cpu/generic/bits/atomicity.h
 dnl
 dnl GLIBCPP_CHECK_CPU
 AC_DEFUN(GLIBCPP_CHECK_CPU, [
@@ -426,9 +426,9 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
   carg cargf nan hypot hypotf atan2f expf copysignf)
 
   dnl We compile the long double complex functions only if the function 
-  dnl provides the non-complex functions.
+  dnl provides the non-complex long double functions.
   USE_LONG_DOUBLE=no
-  AC_CHECK_FUNC(sinl,
+  AC_CHECK_FUNC(copysignl,
   USE_LONG_DOUBLE=yes
   AC_REPLACE_MATHFUNCS(ccoshl ccosl cexpl cpowl csinhl csinl \
   csqrtl ctanhl ctanl cargl hypotl signbitl c_logl clog10l))
@@ -616,10 +616,19 @@ changequote([, ])dnl
 enable_debug=GLIBCPP_ENABLE_DEBUG_DEFAULT)dnl
 dnl Option parsed, now set things appropriately
 case "$enable_debug" in
-    yes)  DEBUGFLAGS='-ggdb -O0'
-          ;;
-    no)   DEBUGFLAGS='-g'
-          ;;
+    yes)  
+        case "$target_cpu" in
+		alpha*)
+			DEBUGFLAGS='-O0 -gdwarf-2'
+			;;			
+		*)
+			DEBUGFLAGS='-O0 -g'			
+			;;
+	esac
+        ;;
+    no)   
+	DEBUGFLAGS='-g'
+        ;;
 esac
 AC_SUBST(DEBUGFLAGS)
 ])
@@ -740,6 +749,11 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
 		  need_libio=yes
   		fi
   		AC_SUBST(BUILD_LIBIO_INCLUDE)
+
+		# see if the _G_config.h header needs to be built. 
+		# NB: This replaces the _G_CONFIG_H machinery in libio-v2
+		AC_CHECK_HEADER(_G_config.h,  has_gconf_h=yes, has_gconf_h=no)
+  		AM_CONDITIONAL(GLIBCPP_NEED_LIBIO_CONFIG_H, test "$has_gconf_h" = no)
 		;;
         xwince)
                 CSTDIO_H=c_io_wince.h

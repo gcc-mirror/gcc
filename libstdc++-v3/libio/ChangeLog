@@ -1,3 +1,9 @@
+2000-04-25  Benjamin Kosnik  <bkoz@haight.constant.com>
+
+	* libio.h: Change decls for seekoff/seekpos.
+	* Makefile.am: Add bits to not generate _G_config.h on linux.
+	* gen-params: Remove sigset_t declaration.
+
 2000-02-29  Benjamin Kosnik  <bkoz@haight.constant.com>
 
 	* Makefile.am (libio_headers): Strip out deadweight.

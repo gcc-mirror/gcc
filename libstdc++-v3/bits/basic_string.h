@@ -35,7 +35,7 @@
 #define _CPP_BITS_STRING_H	1
 
 #include <bits/exception_support.h>
-#include <atomicity.h>
+#include <bits/atomicity.h>
 
 namespace std {
 
@@ -123,10 +123,6 @@ namespace std {
 	// Types:
 	typedef typename _Alloc::rebind<char>::other _Raw_bytes_alloc;
 
-	// NB: Would be better if atomicity.h defined type(s) itself.
-	typedef uint32_t _State_type; 
-	typedef int32_t _Signed_state_type;
-
 	// (Public) Data members: 
 
 	// The maximum number of individual char_type elements of an
@@ -145,19 +141,19 @@ namespace std {
 
 	size_type 		_M_length;
 	size_type 		_M_capacity;
-	_State_type		_M_state;
+	_Atomic_word		_M_state;
 	
         bool
 	_M_is_leaked() const
-        { return static_cast<_Signed_state_type>(_M_state) < 0; }
+        { return _M_state < 0; }
 
         bool
 	_M_is_shared() const
-        { return static_cast<_Signed_state_type>(_M_state) > 0; }
+        { return _M_state > 0; }
 
         void
 	_M_set_leaked() 
-        { _M_state = _State_type(-1); }
+        { _M_state = -1; }
 
         void
 	_M_set_sharable() 
@@ -183,7 +179,7 @@ namespace std {
 	void 
 	_M_dispose(const _Alloc& __a)
 	{ 
-	  if (_Signed_state_type(exchange_and_add(&_M_state, -1)) <= 0)  
+	  if (__exchange_and_add(&_M_state, -1) <= 0)  
 	    _M_destroy(__a); 
 	}  // XXX MT
 
@@ -193,7 +189,7 @@ namespace std {
 	_CharT* 
 	_M_refcopy() throw()
 	{ 
-	  atomic_add(&_M_state, 1); 
+	  __atomic_add(&_M_state, 1); 
 	  return _M_refdata(); 
 	}  // XXX MT
 
@@ -887,9 +883,10 @@ namespace std {
     inline basic_string<_CharT, _Traits, _Alloc>
     operator+(const basic_string<_CharT, _Traits, _Alloc>& __lhs, _CharT __rhs)
     {
-      typedef basic_string<_CharT, _Traits, _Alloc> __string_type;
+      typedef basic_string<_CharT, _Traits, _Alloc> 	__string_type;
+      typedef typename __string_type::size_type		__size_type;
       __string_type __str(__lhs);
-      __str.append(__string_type::size_type(1), __rhs);
+      __str.append(__size_type(1), __rhs);
       return __str;
     }
 

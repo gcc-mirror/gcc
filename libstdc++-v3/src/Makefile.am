@@ -166,7 +166,7 @@ generated_headers = \
 	bits/std_limits.h bits/c++config.h bits/c++threads.h bits/c++io.h
 
 cpu_headers = \
-	 $(top_srcdir)/@cpu_include_dir@/atomicity.h 
+	 $(top_srcdir)/@cpu_include_dir@/bits/atomicity.h 
 
 string_sources = \
 	stringMAIN.cc stringCTORNC.cc stringCTORAL.cc \
@@ -262,8 +262,8 @@ myinstallheaders: $(headers:%=$(myincludep)%)
           echo "$(INSTALL_DATA) $$i $(myincludep)"; \
                 $(INSTALL_DATA) $$i $(myincludep); \
 	done; \
-	echo "$(INSTALL_DATA) $(cpu_headers) $(myincludep)"; \
-	$(INSTALL_DATA) $(cpu_headers) $(myincludep); \
+	echo "$(INSTALL_DATA) $(cpu_headers) $(myincludep)bits/"; \
+	$(INSTALL_DATA) $(cpu_headers) $(myincludep)bits/; \
 	fi;
 
 $(headers:%=$(myincludep)%): $(myincludep)%: %

@@ -1,6 +1,6 @@
 // Wrapper of C-language FILE struct -*- C++ -*-
 
-// Copyright (C) 1999 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -49,8 +49,8 @@ namespace std {
 #endif
   {
 #if _GLIBCPP_BASIC_FILE_ENCAPSULATION
-    int _M_fileno;
-    __c_file_type* _M_cfile;
+    int 		_M_fileno;
+    __c_file_type* 	_M_cfile;
 #endif
 
   public:
@@ -110,15 +110,15 @@ namespace std {
     // A complex "seekoff" function that sets all of __c_file_type's
     // ponters and associated data members correctly and manages it's
     // relation to the external byte sequence.
-    virtual __c_streampos 
+    virtual streamoff
     seekoff(streamoff __off, ios_base::seekdir __way,
 	    ios_base::openmode __mode = ios_base::in | ios_base::out);
 
     // A complex "seekpos" function that sets all of __c_file_type's
     // pointers and associated data members correctly and manages it's
     // relation to the external byte sequence.
-    virtual __c_streampos 
-    seekpos(__c_streampos __pos, 
+    virtual streamoff
+    seekpos(streamoff __pos, 
 	    ios_base::openmode __mode = ios_base::in | ios_base::out);
 
     virtual streambuf* 
@@ -145,8 +145,8 @@ namespace std {
     // A simple seek function for the external byte sequence, that
     // does no mucking around with or setting of the pointers or flags
     // in __c_file_type.
-    virtual __c_streampos 
-    sys_seek(__c_streampos __off, ios_base::seekdir __way);
+    virtual streamoff
+    sys_seek(streamoff __off, ios_base::seekdir __way);
 
     virtual int 
     sys_close();

@@ -344,19 +344,16 @@ extern _IO_off64_t _IO_default_seekoff __P ((_IO_FILE *,
 					      _IO_off64_t, int, int));
 extern _IO_off64_t _IO_default_seekpos __P ((_IO_FILE *,
 					      _IO_off64_t, int));
+extern _IO_off64_t _IO_default_seek __P ((_IO_FILE *, _IO_off64_t, int));
 #else
 extern _IO_off_t _IO_default_seekoff __P ((_IO_FILE *, _IO_off_t, int, int));
 extern _IO_off_t _IO_default_seekpos __P ((_IO_FILE *, _IO_off_t, int));
+extern _IO_off_t _IO_default_seek __P ((_IO_FILE *, _IO_off_t, int));
 #endif
 extern _IO_ssize_t _IO_default_write __P ((_IO_FILE *, const void *,
 					   _IO_ssize_t));
 extern _IO_ssize_t _IO_default_read __P ((_IO_FILE *, void *, _IO_ssize_t));
 extern int _IO_default_stat __P ((_IO_FILE *, void *));
-#if defined(_G_IO_IO_FILE_VERSION) && _G_IO_IO_FILE_VERSION == 0x20001
-extern _IO_off64_t _IO_default_seek __P ((_IO_FILE *, _IO_off64_t, int));
-#else
-extern _IO_off_t _IO_default_seek __P ((_IO_FILE *, _IO_off_t, int));
-#endif
 extern int _IO_default_sync __P ((_IO_FILE *));
 #define _IO_default_close ((_IO_close_t) _IO_default_sync)
 
