@@ -458,7 +458,8 @@ private:
       if (key < reference_type || k.key < reference_type)
 	return key == k.key;
 
-      // The `null' type is convertible to any reference type.
+      // The `null' type is convertible to any initialized reference
+      // type.
       if (key == null_type || k.key == null_type)
 	return true;
 
@@ -1133,6 +1134,19 @@ private:
     match.promote ();
     type t = pop_raw ();
     if (! match.compatible (t, this))
+      verify_fail ("incompatible type on stack");
+    return t;
+  }
+
+  // Pop a reference which is guaranteed to be initialized.  MATCH
+  // doesn't have to be a reference type; in this case this acts like
+  // pop_type.
+  type pop_init_ref (type match)
+  {
+    type t = pop_raw ();
+    if (t.isreference () && ! t.isinitialized ())
+      verify_fail ("initialized reference required");
+    else if (! match.compatible (t, this))
       verify_fail ("incompatible type on stack");
     return t;
   }
@@ -2300,42 +2314,42 @@ private:
 	    break;
 	  case op_iaload:
 	    pop_type (int_type);
-	    push_type (require_array_type (pop_type (reference_type),
+	    push_type (require_array_type (pop_init_ref (reference_type),
 					   int_type));
 	    break;
 	  case op_laload:
 	    pop_type (int_type);
-	    push_type (require_array_type (pop_type (reference_type),
+	    push_type (require_array_type (pop_init_ref (reference_type),
 					   long_type));
 	    break;
 	  case op_faload:
 	    pop_type (int_type);
-	    push_type (require_array_type (pop_type (reference_type),
+	    push_type (require_array_type (pop_init_ref (reference_type),
 					   float_type));
 	    break;
 	  case op_daload:
 	    pop_type (int_type);
-	    push_type (require_array_type (pop_type (reference_type),
+	    push_type (require_array_type (pop_init_ref (reference_type),
 					   double_type));
 	    break;
 	  case op_aaload:
 	    pop_type (int_type);
-	    push_type (require_array_type (pop_type (reference_type),
+	    push_type (require_array_type (pop_init_ref (reference_type),
 					   reference_type));
 	    break;
 	  case op_baload:
 	    pop_type (int_type);
-	    require_array_type (pop_type (reference_type), byte_type);
+	    require_array_type (pop_init_ref (reference_type), byte_type);
 	    push_type (int_type);
 	    break;
 	  case op_caload:
 	    pop_type (int_type);
-	    require_array_type (pop_type (reference_type), char_type);
+	    require_array_type (pop_init_ref (reference_type), char_type);
 	    push_type (int_type);
 	    break;
 	  case op_saload:
 	    pop_type (int_type);
-	    require_array_type (pop_type (reference_type), short_type);
+	    require_array_type (pop_init_ref (reference_type), short_type);
 	    push_type (int_type);
 	    break;
 	  case op_istore:
@@ -2386,42 +2400,42 @@ private:
 	  case op_iastore:
 	    pop_type (int_type);
 	    pop_type (int_type);
-	    require_array_type (pop_type (reference_type), int_type);
+	    require_array_type (pop_init_ref (reference_type), int_type);
 	    break;
 	  case op_lastore:
 	    pop_type (long_type);
 	    pop_type (int_type);
-	    require_array_type (pop_type (reference_type), long_type);
+	    require_array_type (pop_init_ref (reference_type), long_type);
 	    break;
 	  case op_fastore:
 	    pop_type (float_type);
 	    pop_type (int_type);
-	    require_array_type (pop_type (reference_type), float_type);
+	    require_array_type (pop_init_ref (reference_type), float_type);
 	    break;
 	  case op_dastore:
 	    pop_type (double_type);
 	    pop_type (int_type);
-	    require_array_type (pop_type (reference_type), double_type);
+	    require_array_type (pop_init_ref (reference_type), double_type);
 	    break;
 	  case op_aastore:
 	    pop_type (reference_type);
 	    pop_type (int_type);
-	    require_array_type (pop_type (reference_type), reference_type);
+	    require_array_type (pop_init_ref (reference_type), reference_type);
 	    break;
 	  case op_bastore:
 	    pop_type (int_type);
 	    pop_type (int_type);
-	    require_array_type (pop_type (reference_type), byte_type);
+	    require_array_type (pop_init_ref (reference_type), byte_type);
 	    break;
 	  case op_castore:
 	    pop_type (int_type);
 	    pop_type (int_type);
-	    require_array_type (pop_type (reference_type), char_type);
+	    require_array_type (pop_init_ref (reference_type), char_type);
 	    break;
 	  case op_sastore:
 	    pop_type (int_type);
 	    pop_type (int_type);
-	    require_array_type (pop_type (reference_type), short_type);
+	    require_array_type (pop_init_ref (reference_type), short_type);
 	    break;
 	  case op_pop:
 	    pop32 ();
@@ -2759,7 +2773,7 @@ private:
 	    invalidate_pc ();
 	    break;
 	  case op_areturn:
-	    check_return_type (pop_type (reference_type));
+	    check_return_type (pop_init_ref (reference_type));
 	    invalidate_pc ();
 	    break;
 	  case op_return:
@@ -2841,7 +2855,7 @@ private:
 		  // This is only used for verifying the byte for
 		  // invokeinterface.
 		  nargs -= arg_types[i].depth ();
-		  pop_type (arg_types[i]);
+		  pop_init_ref (arg_types[i]);
 		}
 
 	      if (opcode == op_invokeinterface
@@ -2858,7 +2872,15 @@ private:
 		    }
 		  type raw = pop_raw ();
 		  bool ok = false;
-		  if (t.compatible (raw, this))
+		  if (! is_init && ! raw.isinitialized ())
+		    {
+		      // This is a failure.
+		    }
+		  else if (is_init && raw.isnull ())
+		    {
+		      // Another failure.
+		    }
+		  else if (t.compatible (raw, this))
 		    {
 		      ok = true;
 		    }
@@ -2914,7 +2936,7 @@ private:
 	    break;
 	  case op_arraylength:
 	    {
-	      type t = pop_type (reference_type);
+	      type t = pop_init_ref (reference_type);
 	      if (! t.isarray () && ! t.isnull ())
 		verify_fail ("array type expected");
 	      push_type (int_type);
@@ -2925,19 +2947,19 @@ private:
 	    invalidate_pc ();
 	    break;
 	  case op_checkcast:
-	    pop_type (reference_type);
+	    pop_init_ref (reference_type);
 	    push_type (check_class_constant (get_ushort ()));
 	    break;
 	  case op_instanceof:
-	    pop_type (reference_type);
+	    pop_init_ref (reference_type);
 	    check_class_constant (get_ushort ());
 	    push_type (int_type);
 	    break;
 	  case op_monitorenter:
-	    pop_type (reference_type);
+	    pop_init_ref (reference_type);
 	    break;
 	  case op_monitorexit:
-	    pop_type (reference_type);
+	    pop_init_ref (reference_type);
 	    break;
 	  case op_wide:
 	    {
@@ -2971,7 +2993,7 @@ private:
 		  set_variable (get_ushort (), pop_type (double_type));
 		  break;
 		case op_astore:
-		  set_variable (get_ushort (), pop_type (reference_type));
+		  set_variable (get_ushort (), pop_init_ref (reference_type));
 		  break;
 		case op_ret:
 		  handle_ret_insn (get_short ());

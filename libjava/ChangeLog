@@ -1,3 +1,16 @@
+2002-11-26  Tom Tromey  <tromey@redhat.com>
+
+	* verify.cc (pop_init_ref): New method.
+	(verify_instructions_0) [op_iaload, op_laload, op_faload,
+	op_daload, op_aaload, op_baload, op_caload, op_saload, op_iastore,
+	op_lastore, op_fastore, op_dastore, op_aastore, op_bastore,
+	op_castore, op_sastore, op_areturn, op_arraylength, op_checkcast,
+	op_instanceof, op_monitorenter, op_monitorexit]: Use it.
+	(verify_instructions_0) [op_invokevirtual, op_invokespecial,
+	op_invokestatic, op_invokeinterface]:  Use pop_init_ref.  Don't
+	let `this' argument be uninitialized.  Don't let `null' be passed
+	as `this' to construtor.
+
 2002-11-26  Mark Wielaard  <mark@klomp.org>
 
 	* javax/transaction/HeuristicCommitException.java: Classpath merge.
