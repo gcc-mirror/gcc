@@ -3577,9 +3577,52 @@ expand_builtin_strcat (tree arglist, rtx target, enum machine_mode mode)
 	src = TREE_VALUE (TREE_CHAIN (arglist));
       const char *p = c_getstr (src);
 
-      /* If the string length is zero, return the dst parameter.  */
-      if (p && *p == '\0')
-	return expand_expr (dst, target, mode, EXPAND_NORMAL);
+      if (p)
+	{
+	  /* If the string length is zero, return the dst parameter.  */
+	  if (*p == '\0')
+	    return expand_expr (dst, target, mode, EXPAND_NORMAL);
+	  else if (!optimize_size)
+	    {
+	      /* Otherwise if !optimize_size, see if we can store by
+                 pieces into (dst + strlen(dst)).  */
+	      tree newdst, arglist,
+		strlen_fn = implicit_built_in_decls[BUILT_IN_STRLEN];
+	      
+	      /* This is the length argument.  */
+	      arglist = build_tree_list (NULL_TREE,
+					 fold (size_binop (PLUS_EXPR,
+							   c_strlen (src, 0),
+							   ssize_int (1))));
+	      /* Prepend src argument.  */
+	      arglist = tree_cons (NULL_TREE, src, arglist);
+	      
+	      /* We're going to use dst more than once.  */
+	      dst = save_expr (dst);
+
+	      /* Create strlen (dst).  */
+	      newdst =
+		fold (build_function_call_expr (strlen_fn,
+						build_tree_list (NULL_TREE,
+								 dst)));
+	      /* Create (dst + strlen (dst)).  */
+	      newdst = fold (build (PLUS_EXPR, TREE_TYPE (dst), dst, newdst));
+
+	      /* Prepend the new dst argument.  */
+	      arglist = tree_cons (NULL_TREE, newdst, arglist);
+	      
+	      /* We don't want to get turned into a memcpy if the
+                 target is const0_rtx, i.e. when the return value
+                 isn't used.  That would produce pessimized code so
+                 pass in a target of zero, it should never actually be
+                 used.  If this was successful return the original
+                 dst, not the result of mempcpy.  */
+	      if (expand_builtin_mempcpy (arglist, /*target=*/0, mode, /*endp=*/0))
+		return expand_expr (dst, target, mode, EXPAND_NORMAL);
+	      else
+		return 0;
+	    }
+	}
 
       return 0;
     }
