@@ -1,3 +1,8 @@
+2004-01-21  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cpperror.c, cpptrad.c, longlong.h, params.def, rtl.def,
+	unwind-dw2-fde.h: Update copyright.
+
 2004-01-21  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa-protos.h: Update copyright.

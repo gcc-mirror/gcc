@@ -1,5 +1,5 @@
 /* Subroutines needed for unwinding stack frames for exception handling.  */
-/* Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+/* Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2004
    Free Software Foundation, Inc.
    Contributed by Jason Merrill <jason@cygnus.com>.
 

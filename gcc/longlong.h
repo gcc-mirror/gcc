@@ -1,5 +1,5 @@
 /* longlong.h -- definitions for mixed size 32/64 bit arithmetic.
-   Copyright (C) 1991, 1992, 1994, 1995, 1996, 1997, 1998, 1999, 2000
+   Copyright (C) 1991, 1992, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2004
    Free Software Foundation, Inc.
 
    This definition file is free software; you can redistribute it
