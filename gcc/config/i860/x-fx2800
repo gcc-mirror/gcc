@@ -1,0 +1,7 @@
+
+# The Alliant FX2800 is supposed to conform to the SysV R4 i860 ABI,
+# but apparently the native compiler generates non ABI-compliant
+# function prologues and epilogues, so we need the alloca from emacs.
+#  -- hyc@hanauma.jpl.nasa.gov
+
+ALLOCA=alloca.o
