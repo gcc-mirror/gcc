@@ -98,6 +98,12 @@ extern int mode_unit_size[];
 extern enum machine_mode mode_wider_mode[];
 #define GET_MODE_WIDER_MODE(MODE)	(mode_wider_mode[(int)(MODE)])
 
+/* Return the mode for data of a given size SIZE and mode class CLASS.
+   If LIMIT is nonzero, then don't use modes bigger than MAX_FIXED_MODE_SIZE.
+   The value is BLKmode if no other mode is found.  */
+
+extern enum machine_mode mode_for_size ();
+
 /* Find the best mode to use to access a bit field.  */
 
 extern enum machine_mode get_best_mode ();
