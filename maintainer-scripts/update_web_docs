@@ -94,7 +94,7 @@ cvs -Q co -r$RELEASE `cat FILES` gcc/gcc/doc/install.texi2html gcc/gcc/doc/inclu
 # and fdl.texi.
 includedir=gcc/gcc/doc/include
 
-MANUALS="cpp chill cppinternals gcc gccint gcj g77 gnat-style libiberty porting"
+MANUALS="cpp cppinternals gcc gccint gcj g77 gnat-style gnat_rm libiberty porting"
 
 # Now convert the relevant files from texi to HTML and PostScript.
 for file in $MANUALS; do
