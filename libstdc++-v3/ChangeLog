@@ -1,3 +1,11 @@
+2005-02-18  Matt Austern  <austern@apple.com>
+	* testsuite/tr1/6_containers/unordered/insert/array_syntax.cc: Fix
+	test case to use assignment instead of ==
+	* testsuite/tr1/6_containers/unordered/insert/map_range.cc: New test.
+	* testsuite/tr1/6_containers/unordered/insert/multimap_range.cc: New test.
+	* testsuite/tr1/6_containers/unordered/insert/multiset_range.cc: New test.
+	* testsuite/tr1/6_containers/unordered/insert/set_range.cc: New test.
+	
 2005-02-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* testsuite/thread/pthread1.cc: Do not invoke pthread_setconcurrency
