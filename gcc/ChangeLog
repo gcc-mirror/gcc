@@ -1,3 +1,8 @@
+Thu Sep 18 01:47:06 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.md (reload_peepholes): Don't allow addresses with side
+	effects for the memory operand.
+
 Wed Sep 17 18:19:53 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* libgcc2.c (find_exception_handler): Subtract one from our PC when

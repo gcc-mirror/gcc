@@ -4846,6 +4846,7 @@
    && GET_MODE (operands[0]) == DFmode
    && GET_CODE (operands[1]) == REG
    && GET_CODE (operands[2]) == REG
+   && ! side_effects_p (XEXP (operands[0], 0))
    && REGNO_REG_CLASS (REGNO (operands[1]))
       == REGNO_REG_CLASS (REGNO (operands[2]))"
   "*
@@ -4885,6 +4886,7 @@
    && GET_MODE (operands[0]) == DFmode
    && GET_CODE (operands[0]) == REG
    && GET_CODE (operands[2]) == REG
+   && ! side_effects_p (XEXP (operands[1], 0))
    && REGNO_REG_CLASS (REGNO (operands[0]))
       == REGNO_REG_CLASS (REGNO (operands[2]))"
   "*
