@@ -1,3 +1,10 @@
+2004-01-21  David Jee  <djee@redhat.com>
+
+	* java/awt/Container.java
+	(LightweightDispatcher.handleEvent): Add an extra check to avoid
+	dispatching MOUSE_ENTERED event twice. Translate the point for
+	the mouse event target before dispatching the event.
+
 2004-01-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.am (lib_org_w3c_dom_la_LIBADD,
