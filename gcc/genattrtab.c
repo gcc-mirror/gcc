@@ -235,7 +235,7 @@ struct function_unit
   struct function_unit_op *ops;	/* Pointer to first operation type.  */
   int needs_conflict_function;	/* Nonzero if a conflict function required.  */
   int needs_blockage_function;	/* Nonzero if a blockage function required.  */
-  int needs_range_function;	/* Nonzero if a blockage range function required.  */
+  int needs_range_function;	/* Nonzero if blockage range function needed.*/
   rtx default_cost;		/* Conflict cost, if constant.  */
   struct range issue_delay;	/* Range of issue delay values.  */
   int max_blockage;		/* Maximum time an insn blocks the unit.  */
@@ -249,6 +249,49 @@ static struct attr_desc *attrs[MAX_ATTRS_INDEX];
 static struct insn_def *defs;
 static struct delay_desc *delays;
 static struct function_unit *units;
+
+/* An expression where all the unknown terms are EQ_ATTR tests can be
+   rearranged into a COND provided we can enumerate all possible
+   combinations of the unknown values.  The set of combinations become the
+   tests of the COND; the value of the expression given that combination is
+   computed and becomes the corresponding value.  To do this, we must be
+   able to enumerate all values for each attribute used in the expression
+   (currently, we give up if we find a numeric attribute).
+   
+   If the set of EQ_ATTR tests used in an expression tests the value of N
+   different attributes, the list of all possible combinations can be made
+   by walking the N-dimensional attribute space defined by those
+   attributes.  We record each of these as a struct dimension.
+
+   The algorithm relies on sharing EQ_ATTR nodes: if two nodes in an
+   expression are the same, the will also have the same address.  We find
+   all the EQ_ATTR nodes by marking them MEM_VOLATILE_P.  This bit later
+   represents the value of an EQ_ATTR node, so once all nodes are marked,
+   they are also given an initial value of FALSE.
+
+   We then separate the set of EQ_ATTR nodes into dimensions for each
+   attribute and put them on the VALUES list.  Terms are added as needed by
+   `add_values_to_cover' so that all possible values of the attribute are
+   tested.
+
+   Each dimension also has a current value.  This is the node that is
+   currently considered to be TRUE.  If this is one of the nodes added by
+   `add_values_to_cover', all the EQ_ATTR tests in the original expression
+   will be FALSE.  Otherwise, only the CURRENT_VALUE will be true.
+
+   NUM_VALUES is simply the length of the VALUES list and is there for
+   convenience.
+
+   Once the dimensions are created, the algorithm enumerates all possible
+   values and computes the current value of the given expression.  */
+
+struct dimension 
+{
+  struct attr_desc *attr;	/* Attribute for this dimension.  */
+  rtx values;			/* List of attribute values used.  */
+  rtx current_value;		/* Position in the list for the TRUE value.  */
+  int num_values;		/* Length of the values list.  */
+};
 
 /* Other variables. */
 
@@ -310,83 +353,91 @@ static char *alternative_name;
 
 rtx frame_pointer_rtx, stack_pointer_rtx, arg_pointer_rtx;
 
+#if 0
+static rtx attr_rtx		PROTO((enum rtx_code, ...));
+static char *attr_printf	PROTO((int, char *, ...));
+#else
 static rtx attr_rtx ();
 static char *attr_printf ();
-static char *attr_string ();
-static rtx check_attr_test ();
-static rtx check_attr_value ();
-static rtx convert_set_attr_alternative ();
-static rtx convert_set_attr ();
-static void check_defs ();
-static rtx convert_const_symbol_ref ();
-static rtx make_canonical ();
-static struct attr_value *get_attr_value ();
-static rtx copy_rtx_unchanging ();
-static rtx copy_boolean ();
-static void expand_delays ();
-static rtx operate_exp ();
-static void expand_units ();
-static rtx simplify_knowing ();
-static rtx encode_units_mask ();
-static void fill_attr ();
-static rtx substitute_address ();
-static void make_length_attrs ();
-static rtx identity_fn ();
-static rtx zero_fn ();
-static rtx one_fn ();
-static rtx max_fn ();
-static rtx simplify_cond ();
-static rtx simplify_by_alternatives ();
-static rtx simplify_by_exploding ();
-static int find_and_mark_used_attributes ();
-static void unmark_used_attributes ();
-static int add_values_to_cover ();
-static int increment_current_value ();
-static rtx test_for_current_value ();
-static rtx simplify_with_current_value ();
-static rtx simplify_with_current_value_aux ();
-static void remove_insn_ent ();
-static void insert_insn_ent ();
-static rtx insert_right_side ();
-static rtx make_alternative_compare ();
-static int compute_alternative_mask ();
-static rtx evaluate_eq_attr ();
-static rtx simplify_and_tree ();
-static rtx simplify_or_tree ();
-static rtx simplify_test_exp ();
-static void optimize_attrs ();
-static void gen_attr ();
-static int count_alternatives ();
-static int compares_alternatives_p ();
-static int contained_in_p ();
-static void gen_insn ();
-static void gen_delay ();
-static void gen_unit ();
-static void write_test_expr ();
-static int max_attr_value ();
-static void walk_attr_value ();
-static void write_attr_get ();
-static rtx eliminate_known_true ();
-static void write_attr_set ();
-static void write_attr_case ();
-static void write_attr_value ();
-static void write_attr_valueq ();
-static void write_upcase ();
-static void write_indent ();
-static void write_eligible_delay ();
-static void write_function_unit_info ();
-static void write_complex_function ();
-static int n_comma_elts ();
-static char *next_comma_elt ();
-static struct attr_desc *find_attr ();
-static void make_internal_attr ();
-static struct attr_value *find_most_used ();
-static rtx find_single_value ();
-static rtx make_numeric_value ();
-static void extend_range ();
-char *xrealloc ();
-char *xmalloc ();
-static void fatal ();
+#endif
+
+static char *attr_string        PROTO((char *, int));
+static rtx check_attr_test	PROTO((rtx, int));
+static rtx check_attr_value	PROTO((rtx, struct attr_desc *));
+static rtx convert_set_attr_alternative PROTO((rtx, int, int, int));
+static rtx convert_set_attr	PROTO((rtx, int, int, int));
+static void check_defs		PROTO((void));
+static rtx convert_const_symbol_ref PROTO((rtx, struct attr_desc *));
+static rtx make_canonical	PROTO((struct attr_desc *, rtx));
+static struct attr_value *get_attr_value PROTO((rtx, struct attr_desc *, int));
+static rtx copy_rtx_unchanging	PROTO((rtx));
+static rtx copy_boolean		PROTO((rtx));
+static void expand_delays	PROTO((void));
+static rtx operate_exp		PROTO((enum operator, rtx, rtx));
+static void expand_units	PROTO((void));
+static rtx simplify_knowing	PROTO((rtx, rtx));
+static rtx encode_units_mask	PROTO((rtx));
+static void fill_attr		PROTO((struct attr_desc *));
+static rtx substitute_address	PROTO((rtx, rtx (*) (rtx), rtx (*) (rtx)));
+static void make_length_attrs	PROTO((void));
+static rtx identity_fn		PROTO((rtx));
+static rtx zero_fn		PROTO((rtx));
+static rtx one_fn		PROTO((rtx));
+static rtx max_fn		PROTO((rtx));
+static rtx simplify_cond	PROTO((rtx, int, int));
+static rtx simplify_by_alternatives PROTO((rtx, int, int));
+static rtx simplify_by_exploding PROTO((rtx));
+static int find_and_mark_used_attributes PROTO((rtx, rtx *, int *));
+static void unmark_used_attributes PROTO((rtx, struct dimension *, int));
+static int add_values_to_cover	PROTO((struct dimension *));
+static int increment_current_value PROTO((struct dimension *, int));
+static rtx test_for_current_value PROTO((struct dimension *, int));
+static rtx simplify_with_current_value PROTO((rtx, struct dimension *, int));
+static rtx simplify_with_current_value_aux PROTO((rtx));
+static void remove_insn_ent  PROTO((struct attr_value *, struct insn_ent *));
+static void insert_insn_ent  PROTO((struct attr_value *, struct insn_ent *));
+static rtx insert_right_side	PROTO((enum rtx_code, rtx, rtx, int, int));
+static rtx make_alternative_compare PROTO((int));
+static int compute_alternative_mask PROTO((rtx, enum rtx_code));
+static rtx evaluate_eq_attr	PROTO((rtx, rtx, int, int));
+static rtx simplify_and_tree	PROTO((rtx, rtx *, int, int));
+static rtx simplify_or_tree	PROTO((rtx, rtx *, int, int));
+static rtx simplify_test_exp	PROTO((rtx, int, int));
+static void optimize_attrs	PROTO((void));
+static void gen_attr		PROTO((rtx));
+static int count_alternatives	PROTO((rtx));
+static int compares_alternatives_p PROTO((rtx));
+static int contained_in_p	PROTO((rtx, rtx));
+static void gen_insn		PROTO((rtx));
+static void gen_delay		PROTO((rtx));
+static void gen_unit		PROTO((rtx));
+static void write_test_expr	PROTO((rtx, int));
+static int max_attr_value	PROTO((rtx));
+static void walk_attr_value	PROTO((rtx));
+static void write_attr_get	PROTO((struct attr_desc *));
+static rtx eliminate_known_true PROTO((rtx, rtx, int, int));
+static void write_attr_set	PROTO((struct attr_desc *, int, rtx, char *,
+				       char *, rtx, int, int));
+static void write_attr_case	PROTO((struct attr_desc *, struct attr_value *,
+				       int, char *, char *, int, rtx));
+static void write_attr_valueq	PROTO((struct attr_desc *, char *));
+static void write_attr_value	PROTO((struct attr_desc *, rtx));
+static void write_upcase	PROTO((char *));
+static void write_indent	PROTO((int));
+static void write_eligible_delay PROTO((char *));
+static void write_function_unit_info PROTO((void));
+static void write_complex_function PROTO((struct function_unit *, char *,
+					  char *));
+static int n_comma_elts		PROTO((char *));
+static char *next_comma_elt	PROTO((char **));
+static struct attr_desc *find_attr PROTO((char *, int));
+static void make_internal_attr	PROTO((char *, rtx, int));
+static struct attr_value *find_most_used  PROTO((struct attr_desc *));
+static rtx find_single_value	PROTO((struct attr_desc *));
+static rtx make_numeric_value	PROTO((int));
+static void extend_range	PROTO((struct range *, int, int));
+char *xrealloc			PROTO((char *, unsigned));
+char *xmalloc			PROTO((unsigned));
 
 #define oballoc(size) obstack_alloc (hash_obstack, size)
 
@@ -936,7 +987,7 @@ check_attr_test (exp, is_const)
 	  while ((p = next_comma_elt (&name_ptr)) != NULL)
 	    {
 	      newexp = attr_eq (XSTR (exp, 0), p);
-	      orexp = insert_right_side (IOR, orexp, newexp, -2);
+	      orexp = insert_right_side (IOR, orexp, newexp, -2, -2);
 	    }
 
 	  return check_attr_test (orexp, is_const);
@@ -1865,7 +1916,7 @@ expand_units ()
 	      if (op->ready <= 1)
 		break;
 	      else if (op->ready == value)
-		orexp = insert_right_side (IOR, orexp, op->condexp, -2);
+		orexp = insert_right_side (IOR, orexp, op->condexp, -2, -2);
 	      else
 		{
 		  XVECEXP (readycost, 0, nvalues * 2) = orexp;
@@ -2250,8 +2301,8 @@ make_length_attrs ()
   static char *new_names[] = {"*insn_default_length",
 			      "*insn_variable_length_p",
 			      "*insn_current_length"};
-  static rtx (*no_address_fn[]) () = {identity_fn, zero_fn, zero_fn};
-  static rtx (*address_fn[]) () = {max_fn, one_fn, identity_fn};
+  static rtx (*no_address_fn[]) PROTO((rtx)) = {identity_fn, zero_fn, zero_fn};
+  static rtx (*address_fn[]) PROTO((rtx)) = {max_fn, one_fn, identity_fn};
   int i;
   struct attr_desc *length_attr, *new_attr;
   struct attr_value *av, *new_av;
@@ -2495,7 +2546,7 @@ insert_insn_ent (av, ie)
 
 static rtx
 insert_right_side (code, exp, term, insn_code, insn_index)
-     RTX_CODE code;
+     enum rtx_code code;
      rtx exp;
      rtx term;
      int insn_code, insn_index;
@@ -2557,13 +2608,12 @@ insert_right_side (code, exp, term, insn_code, insn_index)
    If so, we can optimize.  Similarly for IOR's of EQ_ATTR.
 
    This routine is passed an expression and either AND or IOR.  It returns a
-   bitmask indicating which alternatives are present.
-   ??? What does "present" mean?  */
+   bitmask indicating which alternatives are mentioned within EXP.  */
 
 static int
 compute_alternative_mask (exp, code)
      rtx exp;
-     RTX_CODE code;
+     enum rtx_code code;
 {
   char *string;
   if (GET_CODE (exp) == code)
@@ -2611,9 +2661,10 @@ make_alternative_compare (mask)
    of "attr" for this insn code.  From that value, we can compute a test
    showing when the EQ_ATTR will be true.  This routine performs that
    computation.  If a test condition involves an address, we leave the EQ_ATTR
-   intact because addresses are only valid for the `length' attribute.  */
+   intact because addresses are only valid for the `length' attribute. 
 
-/* ??? Kenner, document the meanings of the arguments!!!  */
+   EXP is the EQ_ATTR expression and VALUE is the value of that attribute
+   for the insn corresponding to INSN_CODE and INSN_INDEX.  */
 
 static rtx
 evaluate_eq_attr (exp, value, insn_code, insn_index)
@@ -2663,8 +2714,10 @@ evaluate_eq_attr (exp, value, insn_code, insn_index)
 	  right = insert_right_side (AND, andexp, this,
 				     insn_code, insn_index);
 	  right = insert_right_side (AND, right,
-			evaluate_eq_attr (exp, XVECEXP (value, 0, i + 1),
-					   insn_code, insn_index),
+				     evaluate_eq_attr (exp,
+						       XVECEXP (value, 0,
+								i + 1),
+						       insn_code, insn_index),
 				     insn_code, insn_index);
 	  orexp = insert_right_side (IOR, orexp, right,
 				     insn_code, insn_index);
@@ -2678,7 +2731,7 @@ evaluate_eq_attr (exp, value, insn_code, insn_index)
       /* Handle the default case.  */
       right = insert_right_side (AND, andexp,
 				 evaluate_eq_attr (exp, XEXP (value, 1),
-						    insn_code, insn_index),
+						   insn_code, insn_index),
 				 insn_code, insn_index);
       newexp = insert_right_side (IOR, orexp, right, insn_code, insn_index);
     }
@@ -3340,49 +3393,6 @@ simplify_by_alternatives (exp, insn_code, insn_index)
 }
 #endif
 
-/* An expression where all the unknown terms are EQ_ATTR tests can be
-   rearranged into a COND provided we can enumerate all possible
-   combinations of the unknown values.  The set of combinations become the
-   tests of the COND; the value of the expression given that combination is
-   computed and becomes the corresponding value.  To do this, we must be
-   able to enumerate all values for each attribute used in the expression
-   (currently, we give up if we find a numeric attribute).
-   
-   If the set of EQ_ATTR tests used in an expression tests the value of N
-   different attributes, the list of all possible combinations can be made
-   by walking the N-dimensional attribute space defined by those
-   attributes.  We record each of these as a struct dimension.
-
-   The algorithm relies on sharing EQ_ATTR nodes: if two nodes in an
-   expression are the same, the will also have the same address.  We find
-   all the EQ_ATTR nodes by marking them MEM_VOLATILE_P.  This bit later
-   represents the value of an EQ_ATTR node, so once all nodes are marked,
-   they are also given an initial value of FALSE.
-
-   We then separate the set of EQ_ATTR nodes into dimensions for each
-   attribute and put them on the VALUES list.  Terms are added as needed by
-   `add_values_to_cover' so that all possible values of the attribute are
-   tested.
-
-   Each dimension also has a current value.  This is the node that is
-   currently considered to be TRUE.  If this is one of the nodes added by
-   `add_values_to_cover', all the EQ_ATTR tests in the original expression
-   will be FALSE.  Otherwise, only the CURRENT_VALUE will be true.
-
-   NUM_VALUES is simply the length of the VALUES list and is there for
-   convenience.
-
-   Once the dimensions are created, the algorithm enumerates all possible
-   values and computes the current value of the given expression.  */
-
-struct dimension 
-{
-  struct attr_desc *attr;	/* Attribute for this dimension.  */
-  rtx values;			/* List of attribute values used.  */
-  rtx current_value;		/* Position in the list for the TRUE value.  */
-  int num_values;		/* Length of the values list.  */
-};
-
 /* If EXP is a suitable expression, reorganize it by constructing an
    equivalent expression that is a COND with the tests being all combinations
    of attribute values and the values being simple constants.  */
@@ -3656,7 +3666,7 @@ add_values_to_cover (dim)
       prev = &dim->values;
       for (link = dim->values; link; link = *prev)
 	{
-	  orexp = insert_right_side (IOR, orexp, XEXP (link, 0), -2);
+	  orexp = insert_right_side (IOR, orexp, XEXP (link, 0), -2, -2);
 	  prev = &XEXP (link, 1);
 	}
       link = rtx_alloc (EXPR_LIST);
@@ -3700,7 +3710,8 @@ test_for_current_value (space, ndim)
   rtx exp = true_rtx;
 
   for (i = 0; i < ndim; i++)
-    exp = insert_right_side (AND, exp, XEXP (space[i].current_value, 0), -2);
+    exp = insert_right_side (AND, exp, XEXP (space[i].current_value, 0),
+			     -2, -2);
 
   return exp;
 }
@@ -4215,7 +4226,7 @@ gen_unit (def)
       int i;
 
       for (i = 0; i < XVECLEN (def, 6); i++)
-	orexp = insert_right_side (IOR, orexp, XVECEXP (def, 6, i), -2);
+	orexp = insert_right_side (IOR, orexp, XVECEXP (def, 6, i), -2, -2);
 
       op->conflict_exp = orexp;
       extend_range (&unit->issue_delay, 1, issue_delay);
@@ -4228,7 +4239,7 @@ gen_unit (def)
 
   /* Merge our conditional into that of the function unit so we can determine
      which insns are used by the function unit.  */
-  unit->condexp = insert_right_side (IOR, unit->condexp, op->condexp, -2);
+  unit->condexp = insert_right_side (IOR, unit->condexp, op->condexp, -2, -2);
 }
 
 /* Given a piece of RTX, print a C expression to test it's truth value.
@@ -4746,7 +4757,8 @@ write_attr_set (attr, indent, value, prefix, suffix, known_true,
 /* Write out the computation for one attribute value.  */
 
 static void
-write_attr_case (attr, av, write_case_lines, prefix, suffix, indent, known_true)
+write_attr_case (attr, av, write_case_lines, prefix, suffix, indent,
+		 known_true)
      struct attr_desc *attr;
      struct attr_value *av;
      int write_case_lines;
@@ -5137,7 +5149,7 @@ write_complex_function (unit, name, connection)
       /* If single value, just write it.  */
       value = find_single_value (attr);
       if (value)
-	write_attr_set (attr, 6, value, "return", ";\n", true_rtx, -2);
+	write_attr_set (attr, 6, value, "return", ";\n", true_rtx, -2, -2);
       else
 	{
 	  common_av = find_most_used (attr);
