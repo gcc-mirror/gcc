@@ -470,7 +470,7 @@ main (argc, argv)
 from the machine description file `md'.  */\n\n");
 
   printf ("#include \"config.h\"\n");
-  printf ("#include <stdio.h>\n");
+  printf ("#include \"system.h\"\n");
   printf ("#include \"rtl.h\"\n\n");
 
   /* This variable exists only so it can be the "location"
