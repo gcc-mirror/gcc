@@ -1,3 +1,7 @@
+2003-08-02  Neil Booth  <neil@daikokuya.co.uk>
+
+	* import1.c, import2.c: New tests.
+
 2003-08-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/eh/crossjump1.C: New test.

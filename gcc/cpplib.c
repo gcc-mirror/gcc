@@ -1167,7 +1167,7 @@ do_pragma_once (cpp_reader *pfile)
     cpp_error (pfile, DL_WARNING, "#pragma once in main file");
 
   check_eol (pfile);
-  _cpp_mark_file_once_only (pfile, pfile->buffer->file, false);
+  _cpp_mark_file_once_only (pfile, pfile->buffer->file);
 }
 
 /* Handle #pragma GCC poison, to poison one or more identifiers so
