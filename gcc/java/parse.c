@@ -14053,10 +14053,16 @@ check_final_assignment (lvalue, wfl)
       && JDECL_P (TREE_OPERAND (lvalue, 1)))
     lvalue = TREE_OPERAND (lvalue, 1);
 
-  if (TREE_CODE (lvalue) == FIELD_DECL
-      && FIELD_FINAL (lvalue)
-      && !DECL_CLINIT_P (current_function_decl)
-      && !DECL_FINIT_P (current_function_decl))
+  /* When generating class files, references to the `length' field
+     look a bit different.  */
+  if ((flag_emit_class_files
+       && TREE_CODE (lvalue) == COMPONENT_REF
+       && TYPE_ARRAY_P (TREE_TYPE (TREE_OPERAND (lvalue, 0)))
+       && FIELD_FINAL (TREE_OPERAND (lvalue, 1)))
+      || (TREE_CODE (lvalue) == FIELD_DECL
+	  && FIELD_FINAL (lvalue)
+	  && !DECL_CLINIT_P (current_function_decl)
+	  && !DECL_FINIT_P (current_function_decl)))
     {
       parse_error_context 
         (wfl, "Can't assign a value to the final variable `%s'",
