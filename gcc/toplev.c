@@ -2815,17 +2815,11 @@ rest_of_compilation (decl)
      for all references to such slots.  */
 /*   fixup_stack_slots (); */
 
-  /* Do jump optimization the first time, if -opt.
-     Also do it if -W, but in that case it doesn't change the rtl code,
-     it only computes whether control can drop off the end of the function.  */
-
-  if (optimize > 0 || extra_warnings || warn_return_type
-      /* If function is `noreturn', we should warn if it tries to return.  */
-      || TREE_THIS_VOLATILE (decl))
-    {
-      TIMEVAR (jump_time, reg_scan (insns, max_reg_num (), 0));
-      TIMEVAR (jump_time, jump_optimize (insns, 0, 0, 1));
-    }
+  /* Always do one jump optimization pass to ensure that JUMP_LABEL fields
+     are initialized and to compute whether control can drop off the end
+     of the function.  */
+  TIMEVAR (jump_time, reg_scan (insns, max_reg_num (), 0));
+  TIMEVAR (jump_time, jump_optimize (insns, 0, 0, 1));
 
   /* Now is when we stop if -fsyntax-only and -Wreturn-type.  */
   if (rtl_dump_and_exit || flag_syntax_only || DECL_DEFER_OUTPUT (decl))
