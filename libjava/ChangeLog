@@ -1,5 +1,83 @@
 2005-02-19  Michael Koch  <konqueror@gmx.de>
 
+	* Makefile.am: Added new files in gnu/java/beans and
+	java/beans/XMLDecoder.java.
+	* Makefile.in: Regenerated.
+
+2005-02-19  Robert Schuster  <thebohemian@gmx.net>
+
+	* gnu/java/beans/decoder/GrowableArrayContext.java: Fixed
+	assignment behavior by using java.lang.reflect.Array.set()
+	directly.
+
+2005-02-19  Dalibor Topic  <robilad@kaffe.org>
+
+	* gnu/java/beans/EmptyBeanInfo.java,
+	gnu/java/beans/info/ComponentBeanInfo.java:
+	Removed unused files.
+
+2005-02-19  Robert Schuster <thebohemian@gmx.net>
+
+	* gnu/java/beans/DummyAppletStub.java: Add dummy implementation
+	of AppletStub for java.beans.Beans.instantiate.
+	* gnu/java/beans/DummyAppletContext.java: Add dummy implementation
+	of AppletContext.
+	* java/beans/Beans: Added 1.4 functionality, fixed user documentation
+	to be conformant with Javadoc guidelines.
+	(instantiate): Added two more overloaded variants, reworked user
+	documentation, fixed exception behavior, fixed behavior when
+	deserializing null.
+
+2005-02-19  Mark Wielaard  <mark@klomp.org>
+
+	* gnu/java/beans/decoder/DummyHandler.java: Add return statements for
+	failing methods.
+	* gnu/java/beans/decoder/DummyContext.java: Likewise.
+
+2005-02-19  Robert Schuster  <theBohemian@gmx.net>
+
+	* gnu/java/beans/decoder/AbstractContext.java,
+	gnu/java/beans/decoder/AbstractCreatableContext.java,
+	gnu/java/beans/decoder/AbstractElementHandler.java,
+	gnu/java/beans/decoder/AbstractObjectContext.java,
+	gnu/java/beans/decoder/ArrayContext.java,
+	gnu/java/beans/decoder/ArrayHandler.java,
+	gnu/java/beans/decoder/AssemblyException.java,
+	gnu/java/beans/decoder/BooleanHandler.java,
+	gnu/java/beans/decoder/ByteHandler.java,
+	gnu/java/beans/decoder/CharHandler.java,
+	gnu/java/beans/decoder/ClassHandler.java,
+	gnu/java/beans/decoder/ConstructorContext.java,
+	gnu/java/beans/decoder/Context.java,
+	gnu/java/beans/decoder/DecoderContext.java,
+	gnu/java/beans/decoder/DefaultExceptionListener.java,
+	gnu/java/beans/decoder/DoubleHandler.java,
+	gnu/java/beans/decoder/DummyContext.java,
+	gnu/java/beans/decoder/DummyHandler.java,
+	gnu/java/beans/decoder/ElementHandler.java,
+	gnu/java/beans/decoder/FloatHandler.java,
+	gnu/java/beans/decoder/GrowableArrayContext.java,
+	gnu/java/beans/decoder/IndexContext.java,
+	gnu/java/beans/decoder/IntHandler.java,
+	gnu/java/beans/decoder/JavaHandler.java,
+	gnu/java/beans/decoder/LongHandler.java,
+	gnu/java/beans/decoder/MethodContext.java,
+	gnu/java/beans/decoder/MethodFinder.java,
+	gnu/java/beans/decoder/NullHandler.java,
+	gnu/java/beans/decoder/ObjectContext.java,
+	gnu/java/beans/decoder/ObjectHandler.java,
+	gnu/java/beans/decoder/PersistenceParser.java,
+	gnu/java/beans/decoder/PropertyContext.java,
+	gnu/java/beans/decoder/ShortHandler.java,
+	gnu/java/beans/decoder/SimpleHandler.java,
+	gnu/java/beans/decoder/StaticMethodContext.java,
+	gnu/java/beans/decoder/StringHandler.java,
+	gnu/java/beans/decoder/VoidHandler.java: New class
+	implementing java.beans.XMLDecoder decoding functionality.
+	* java/beans/XMLDecoder.java: New class.
+
+2005-02-19  Michael Koch  <konqueror@gmx.de>
+
 	* javax/swing/JTextField.java
 	(notfiyAction): Added javadoc.
 

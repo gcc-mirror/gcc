@@ -1312,6 +1312,43 @@ am__libgcj0_convenience_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	gnu/java/awt/peer/GLightweightPeer.java \
 	gnu/java/awt/peer/ClasspathFontPeer.java \
 	gnu/java/awt/peer/ClasspathTextLayoutPeer.java \
+	gnu/java/beans/decoder/AbstractContext.java \
+	gnu/java/beans/decoder/AbstractCreatableObjectContext.java \
+	gnu/java/beans/decoder/AbstractElementHandler.java \
+	gnu/java/beans/decoder/AbstractObjectContext.java \
+	gnu/java/beans/decoder/ArrayContext.java \
+	gnu/java/beans/decoder/ArrayHandler.java \
+	gnu/java/beans/decoder/AssemblyException.java \
+	gnu/java/beans/decoder/BooleanHandler.java \
+	gnu/java/beans/decoder/ByteHandler.java \
+	gnu/java/beans/decoder/CharHandler.java \
+	gnu/java/beans/decoder/ClassHandler.java \
+	gnu/java/beans/decoder/ConstructorContext.java \
+	gnu/java/beans/decoder/Context.java \
+	gnu/java/beans/decoder/DecoderContext.java \
+	gnu/java/beans/decoder/DefaultExceptionListener.java \
+	gnu/java/beans/decoder/DoubleHandler.java \
+	gnu/java/beans/decoder/DummyContext.java \
+	gnu/java/beans/decoder/DummyHandler.java \
+	gnu/java/beans/decoder/ElementHandler.java \
+	gnu/java/beans/decoder/FloatHandler.java \
+	gnu/java/beans/decoder/GrowableArrayContext.java \
+	gnu/java/beans/decoder/IndexContext.java \
+	gnu/java/beans/decoder/IntHandler.java \
+	gnu/java/beans/decoder/JavaHandler.java \
+	gnu/java/beans/decoder/LongHandler.java \
+	gnu/java/beans/decoder/MethodContext.java \
+	gnu/java/beans/decoder/MethodFinder.java \
+	gnu/java/beans/decoder/NullHandler.java \
+	gnu/java/beans/decoder/ObjectContext.java \
+	gnu/java/beans/decoder/ObjectHandler.java \
+	gnu/java/beans/decoder/PersistenceParser.java \
+	gnu/java/beans/decoder/PropertyContext.java \
+	gnu/java/beans/decoder/ShortHandler.java \
+	gnu/java/beans/decoder/SimpleHandler.java \
+	gnu/java/beans/decoder/StaticMethodContext.java \
+	gnu/java/beans/decoder/StringHandler.java \
+	gnu/java/beans/decoder/VoidHandler.java \
 	gnu/java/beans/editors/ColorEditor.java \
 	gnu/java/beans/editors/FontEditor.java \
 	gnu/java/beans/editors/NativeBooleanEditor.java \
@@ -1322,9 +1359,9 @@ am__libgcj0_convenience_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	gnu/java/beans/editors/NativeLongEditor.java \
 	gnu/java/beans/editors/NativeShortEditor.java \
 	gnu/java/beans/editors/StringEditor.java \
-	gnu/java/beans/info/ComponentBeanInfo.java \
 	gnu/java/beans/BeanInfoEmbryo.java \
-	gnu/java/beans/EmptyBeanInfo.java \
+	gnu/java/beans/DummyAppletContext.java \
+	gnu/java/beans/DummyAppletStub.java \
 	gnu/java/beans/ExplicitBeanInfo.java \
 	gnu/java/beans/IntrospectionIncubator.java \
 	java/applet/Applet.java java/applet/AppletStub.java \
@@ -1622,6 +1659,7 @@ am__libgcj0_convenience_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	java/beans/VetoableChangeListenerProxy.java \
 	java/beans/VetoableChangeSupport.java \
 	java/beans/Visibility.java java/beans/AppletInitializer.java \
+	java/beans/XMLDecoder.java \
 	javax/swing/border/AbstractBorder.java \
 	javax/swing/border/BevelBorder.java \
 	javax/swing/border/Border.java \
@@ -2877,6 +2915,43 @@ am__objects_11 = gnu/awt/LightweightRedirector.lo \
 	gnu/java/awt/peer/GLightweightPeer.lo \
 	gnu/java/awt/peer/ClasspathFontPeer.lo \
 	gnu/java/awt/peer/ClasspathTextLayoutPeer.lo \
+	gnu/java/beans/decoder/AbstractContext.lo \
+	gnu/java/beans/decoder/AbstractCreatableObjectContext.lo \
+	gnu/java/beans/decoder/AbstractElementHandler.lo \
+	gnu/java/beans/decoder/AbstractObjectContext.lo \
+	gnu/java/beans/decoder/ArrayContext.lo \
+	gnu/java/beans/decoder/ArrayHandler.lo \
+	gnu/java/beans/decoder/AssemblyException.lo \
+	gnu/java/beans/decoder/BooleanHandler.lo \
+	gnu/java/beans/decoder/ByteHandler.lo \
+	gnu/java/beans/decoder/CharHandler.lo \
+	gnu/java/beans/decoder/ClassHandler.lo \
+	gnu/java/beans/decoder/ConstructorContext.lo \
+	gnu/java/beans/decoder/Context.lo \
+	gnu/java/beans/decoder/DecoderContext.lo \
+	gnu/java/beans/decoder/DefaultExceptionListener.lo \
+	gnu/java/beans/decoder/DoubleHandler.lo \
+	gnu/java/beans/decoder/DummyContext.lo \
+	gnu/java/beans/decoder/DummyHandler.lo \
+	gnu/java/beans/decoder/ElementHandler.lo \
+	gnu/java/beans/decoder/FloatHandler.lo \
+	gnu/java/beans/decoder/GrowableArrayContext.lo \
+	gnu/java/beans/decoder/IndexContext.lo \
+	gnu/java/beans/decoder/IntHandler.lo \
+	gnu/java/beans/decoder/JavaHandler.lo \
+	gnu/java/beans/decoder/LongHandler.lo \
+	gnu/java/beans/decoder/MethodContext.lo \
+	gnu/java/beans/decoder/MethodFinder.lo \
+	gnu/java/beans/decoder/NullHandler.lo \
+	gnu/java/beans/decoder/ObjectContext.lo \
+	gnu/java/beans/decoder/ObjectHandler.lo \
+	gnu/java/beans/decoder/PersistenceParser.lo \
+	gnu/java/beans/decoder/PropertyContext.lo \
+	gnu/java/beans/decoder/ShortHandler.lo \
+	gnu/java/beans/decoder/SimpleHandler.lo \
+	gnu/java/beans/decoder/StaticMethodContext.lo \
+	gnu/java/beans/decoder/StringHandler.lo \
+	gnu/java/beans/decoder/VoidHandler.lo \
 	gnu/java/beans/editors/ColorEditor.lo \
 	gnu/java/beans/editors/FontEditor.lo \
 	gnu/java/beans/editors/NativeBooleanEditor.lo \
@@ -2887,9 +2962,9 @@ am__objects_11 = gnu/awt/LightweightRedirector.lo \
 	gnu/java/beans/editors/NativeLongEditor.lo \
 	gnu/java/beans/editors/NativeShortEditor.lo \
 	gnu/java/beans/editors/StringEditor.lo \
-	gnu/java/beans/info/ComponentBeanInfo.lo \
 	gnu/java/beans/BeanInfoEmbryo.lo \
-	gnu/java/beans/EmptyBeanInfo.lo \
+	gnu/java/beans/DummyAppletContext.lo \
+	gnu/java/beans/DummyAppletStub.lo \
 	gnu/java/beans/ExplicitBeanInfo.lo \
 	gnu/java/beans/IntrospectionIncubator.lo java/applet/Applet.lo \
 	java/applet/AppletStub.lo java/applet/AppletContext.lo \
@@ -3161,7 +3236,7 @@ am__objects_11 = gnu/awt/LightweightRedirector.lo \
 	java/beans/VetoableChangeListener.lo \
 	java/beans/VetoableChangeListenerProxy.lo \
 	java/beans/VetoableChangeSupport.lo java/beans/Visibility.lo \
-	java/beans/AppletInitializer.lo \
+	java/beans/AppletInitializer.lo java/beans/XMLDecoder.lo \
 	javax/swing/border/AbstractBorder.lo \
 	javax/swing/border/BevelBorder.lo javax/swing/border/Border.lo \
 	javax/swing/border/CompoundBorder.lo \
@@ -5402,6 +5477,43 @@ gnu/java/awt/peer/EmbeddedWindowPeer.java \
 gnu/java/awt/peer/GLightweightPeer.java \
 gnu/java/awt/peer/ClasspathFontPeer.java \
 gnu/java/awt/peer/ClasspathTextLayoutPeer.java \
+gnu/java/beans/decoder/AbstractContext.java \
+gnu/java/beans/decoder/AbstractCreatableObjectContext.java \
+gnu/java/beans/decoder/AbstractElementHandler.java \
+gnu/java/beans/decoder/AbstractObjectContext.java \
+gnu/java/beans/decoder/ArrayContext.java \
+gnu/java/beans/decoder/ArrayHandler.java \
+gnu/java/beans/decoder/AssemblyException.java \
+gnu/java/beans/decoder/BooleanHandler.java \
+gnu/java/beans/decoder/ByteHandler.java \
+gnu/java/beans/decoder/CharHandler.java \
+gnu/java/beans/decoder/ClassHandler.java \
+gnu/java/beans/decoder/ConstructorContext.java \
+gnu/java/beans/decoder/Context.java \
+gnu/java/beans/decoder/DecoderContext.java \
+gnu/java/beans/decoder/DefaultExceptionListener.java \
+gnu/java/beans/decoder/DoubleHandler.java \
+gnu/java/beans/decoder/DummyContext.java \
+gnu/java/beans/decoder/DummyHandler.java \
+gnu/java/beans/decoder/ElementHandler.java \
+gnu/java/beans/decoder/FloatHandler.java \
+gnu/java/beans/decoder/GrowableArrayContext.java \
+gnu/java/beans/decoder/IndexContext.java \
+gnu/java/beans/decoder/IntHandler.java \
+gnu/java/beans/decoder/JavaHandler.java \
+gnu/java/beans/decoder/LongHandler.java \
+gnu/java/beans/decoder/MethodContext.java \
+gnu/java/beans/decoder/MethodFinder.java \
+gnu/java/beans/decoder/NullHandler.java \
+gnu/java/beans/decoder/ObjectContext.java \
+gnu/java/beans/decoder/ObjectHandler.java \
+gnu/java/beans/decoder/PersistenceParser.java \
+gnu/java/beans/decoder/PropertyContext.java \
+gnu/java/beans/decoder/ShortHandler.java \
+gnu/java/beans/decoder/SimpleHandler.java \
+gnu/java/beans/decoder/StaticMethodContext.java \
+gnu/java/beans/decoder/StringHandler.java \
+gnu/java/beans/decoder/VoidHandler.java \
 gnu/java/beans/editors/ColorEditor.java	\
 gnu/java/beans/editors/FontEditor.java \
 gnu/java/beans/editors/NativeBooleanEditor.java	\
@@ -5412,9 +5524,9 @@ gnu/java/beans/editors/NativeIntEditor.java \
 gnu/java/beans/editors/NativeLongEditor.java \
 gnu/java/beans/editors/NativeShortEditor.java \
 gnu/java/beans/editors/StringEditor.java \
-gnu/java/beans/info/ComponentBeanInfo.java \
 gnu/java/beans/BeanInfoEmbryo.java \
-gnu/java/beans/EmptyBeanInfo.java \
+gnu/java/beans/DummyAppletContext.java \
+gnu/java/beans/DummyAppletStub.java \
 gnu/java/beans/ExplicitBeanInfo.java \
 gnu/java/beans/IntrospectionIncubator.java \
 java/applet/Applet.java \
@@ -5794,6 +5906,7 @@ java/beans/VetoableChangeListenerProxy.java \
 java/beans/VetoableChangeSupport.java \
 java/beans/Visibility.java \
 java/beans/AppletInitializer.java \
+java/beans/XMLDecoder.java \
 javax/swing/border/AbstractBorder.java \
 javax/swing/border/BevelBorder.java \
 javax/swing/border/Border.java \
@@ -11950,6 +12063,123 @@ gnu/java/awt/peer/ClasspathFontPeer.lo:  \
 gnu/java/awt/peer/ClasspathTextLayoutPeer.lo:  \
 	gnu/java/awt/peer/$(am__dirstamp) \
 	gnu/java/awt/peer/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/$(am__dirstamp):
+	@$(mkdir_p) gnu/java/beans/decoder
+	@: > gnu/java/beans/decoder/$(am__dirstamp)
+gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp):
+	@$(mkdir_p) gnu/java/beans/decoder/$(DEPDIR)
+	@: > gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/AbstractContext.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/AbstractCreatableObjectContext.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/AbstractElementHandler.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/AbstractObjectContext.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/ArrayContext.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/ArrayHandler.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/AssemblyException.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/BooleanHandler.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/ByteHandler.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/CharHandler.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/ClassHandler.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/ConstructorContext.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/Context.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/DecoderContext.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/DefaultExceptionListener.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/DoubleHandler.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/DummyContext.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/DummyHandler.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/ElementHandler.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/FloatHandler.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/GrowableArrayContext.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/IndexContext.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/IntHandler.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/JavaHandler.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/LongHandler.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/MethodContext.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/MethodFinder.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/NullHandler.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/ObjectContext.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/ObjectHandler.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/PersistenceParser.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/PropertyContext.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/ShortHandler.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/SimpleHandler.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/StaticMethodContext.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/StringHandler.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/decoder/VoidHandler.lo:  \
+	gnu/java/beans/decoder/$(am__dirstamp) \
+	gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
 gnu/java/beans/editors/$(am__dirstamp):
 	@$(mkdir_p) gnu/java/beans/editors
 	@: > gnu/java/beans/editors/$(am__dirstamp)
@@ -11986,15 +12216,6 @@ gnu/java/beans/editors/NativeShortEditor.lo:  \
 gnu/java/beans/editors/StringEditor.lo:  \
 	gnu/java/beans/editors/$(am__dirstamp) \
 	gnu/java/beans/editors/$(DEPDIR)/$(am__dirstamp)
-gnu/java/beans/info/$(am__dirstamp):
-	@$(mkdir_p) gnu/java/beans/info
-	@: > gnu/java/beans/info/$(am__dirstamp)
-gnu/java/beans/info/$(DEPDIR)/$(am__dirstamp):
-	@$(mkdir_p) gnu/java/beans/info/$(DEPDIR)
-	@: > gnu/java/beans/info/$(DEPDIR)/$(am__dirstamp)
-gnu/java/beans/info/ComponentBeanInfo.lo:  \
-	gnu/java/beans/info/$(am__dirstamp) \
-	gnu/java/beans/info/$(DEPDIR)/$(am__dirstamp)
 gnu/java/beans/$(am__dirstamp):
 	@$(mkdir_p) gnu/java/beans
 	@: > gnu/java/beans/$(am__dirstamp)
@@ -12003,7 +12224,9 @@ gnu/java/beans/$(DEPDIR)/$(am__dirstamp):
 	@: > gnu/java/beans/$(DEPDIR)/$(am__dirstamp)
 gnu/java/beans/BeanInfoEmbryo.lo: gnu/java/beans/$(am__dirstamp) \
 	gnu/java/beans/$(DEPDIR)/$(am__dirstamp)
-gnu/java/beans/EmptyBeanInfo.lo: gnu/java/beans/$(am__dirstamp) \
+gnu/java/beans/DummyAppletContext.lo: gnu/java/beans/$(am__dirstamp) \
+	gnu/java/beans/$(DEPDIR)/$(am__dirstamp)
+gnu/java/beans/DummyAppletStub.lo: gnu/java/beans/$(am__dirstamp) \
 	gnu/java/beans/$(DEPDIR)/$(am__dirstamp)
 gnu/java/beans/ExplicitBeanInfo.lo: gnu/java/beans/$(am__dirstamp) \
 	gnu/java/beans/$(DEPDIR)/$(am__dirstamp)
@@ -12925,6 +13148,8 @@ java/beans/VetoableChangeSupport.lo: java/beans/$(am__dirstamp) \
 java/beans/Visibility.lo: java/beans/$(am__dirstamp) \
 	java/beans/$(DEPDIR)/$(am__dirstamp)
 java/beans/AppletInitializer.lo: java/beans/$(am__dirstamp) \
+	java/beans/$(DEPDIR)/$(am__dirstamp)
+java/beans/XMLDecoder.lo: java/beans/$(am__dirstamp) \
 	java/beans/$(DEPDIR)/$(am__dirstamp)
 javax/swing/border/$(am__dirstamp):
 	@$(mkdir_p) javax/swing/border
@@ -16393,12 +16618,88 @@ mostlyclean-compile:
 	-rm -f gnu/java/awt/peer/gtk/lib_gnu_java_awt_peer_gtk_la-GtkWindowPeer.lo
 	-rm -f gnu/java/beans/BeanInfoEmbryo.$(OBJEXT)
 	-rm -f gnu/java/beans/BeanInfoEmbryo.lo
-	-rm -f gnu/java/beans/EmptyBeanInfo.$(OBJEXT)
-	-rm -f gnu/java/beans/EmptyBeanInfo.lo
+	-rm -f gnu/java/beans/DummyAppletContext.$(OBJEXT)
+	-rm -f gnu/java/beans/DummyAppletContext.lo
+	-rm -f gnu/java/beans/DummyAppletStub.$(OBJEXT)
+	-rm -f gnu/java/beans/DummyAppletStub.lo
 	-rm -f gnu/java/beans/ExplicitBeanInfo.$(OBJEXT)
 	-rm -f gnu/java/beans/ExplicitBeanInfo.lo
 	-rm -f gnu/java/beans/IntrospectionIncubator.$(OBJEXT)
 	-rm -f gnu/java/beans/IntrospectionIncubator.lo
+	-rm -f gnu/java/beans/decoder/AbstractContext.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/AbstractContext.lo
+	-rm -f gnu/java/beans/decoder/AbstractCreatableObjectContext.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/AbstractCreatableObjectContext.lo
+	-rm -f gnu/java/beans/decoder/AbstractElementHandler.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/AbstractElementHandler.lo
+	-rm -f gnu/java/beans/decoder/AbstractObjectContext.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/AbstractObjectContext.lo
+	-rm -f gnu/java/beans/decoder/ArrayContext.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/ArrayContext.lo
+	-rm -f gnu/java/beans/decoder/ArrayHandler.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/ArrayHandler.lo
+	-rm -f gnu/java/beans/decoder/AssemblyException.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/AssemblyException.lo
+	-rm -f gnu/java/beans/decoder/BooleanHandler.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/BooleanHandler.lo
+	-rm -f gnu/java/beans/decoder/ByteHandler.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/ByteHandler.lo
+	-rm -f gnu/java/beans/decoder/CharHandler.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/CharHandler.lo
+	-rm -f gnu/java/beans/decoder/ClassHandler.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/ClassHandler.lo
+	-rm -f gnu/java/beans/decoder/ConstructorContext.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/ConstructorContext.lo
+	-rm -f gnu/java/beans/decoder/Context.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/Context.lo
+	-rm -f gnu/java/beans/decoder/DecoderContext.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/DecoderContext.lo
+	-rm -f gnu/java/beans/decoder/DefaultExceptionListener.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/DefaultExceptionListener.lo
+	-rm -f gnu/java/beans/decoder/DoubleHandler.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/DoubleHandler.lo
+	-rm -f gnu/java/beans/decoder/DummyContext.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/DummyContext.lo
+	-rm -f gnu/java/beans/decoder/DummyHandler.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/DummyHandler.lo
+	-rm -f gnu/java/beans/decoder/ElementHandler.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/ElementHandler.lo
+	-rm -f gnu/java/beans/decoder/FloatHandler.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/FloatHandler.lo
+	-rm -f gnu/java/beans/decoder/GrowableArrayContext.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/GrowableArrayContext.lo
+	-rm -f gnu/java/beans/decoder/IndexContext.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/IndexContext.lo
+	-rm -f gnu/java/beans/decoder/IntHandler.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/IntHandler.lo
+	-rm -f gnu/java/beans/decoder/JavaHandler.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/JavaHandler.lo
+	-rm -f gnu/java/beans/decoder/LongHandler.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/LongHandler.lo
+	-rm -f gnu/java/beans/decoder/MethodContext.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/MethodContext.lo
+	-rm -f gnu/java/beans/decoder/MethodFinder.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/MethodFinder.lo
+	-rm -f gnu/java/beans/decoder/NullHandler.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/NullHandler.lo
+	-rm -f gnu/java/beans/decoder/ObjectContext.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/ObjectContext.lo
+	-rm -f gnu/java/beans/decoder/ObjectHandler.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/ObjectHandler.lo
+	-rm -f gnu/java/beans/decoder/PersistenceParser.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/PersistenceParser.lo
+	-rm -f gnu/java/beans/decoder/PropertyContext.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/PropertyContext.lo
+	-rm -f gnu/java/beans/decoder/ShortHandler.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/ShortHandler.lo
+	-rm -f gnu/java/beans/decoder/SimpleHandler.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/SimpleHandler.lo
+	-rm -f gnu/java/beans/decoder/StaticMethodContext.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/StaticMethodContext.lo
+	-rm -f gnu/java/beans/decoder/StringHandler.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/StringHandler.lo
+	-rm -f gnu/java/beans/decoder/VoidHandler.$(OBJEXT)
+	-rm -f gnu/java/beans/decoder/VoidHandler.lo
 	-rm -f gnu/java/beans/editors/ColorEditor.$(OBJEXT)
 	-rm -f gnu/java/beans/editors/ColorEditor.lo
 	-rm -f gnu/java/beans/editors/FontEditor.$(OBJEXT)
@@ -16419,8 +16720,6 @@ mostlyclean-compile:
 	-rm -f gnu/java/beans/editors/NativeShortEditor.lo
 	-rm -f gnu/java/beans/editors/StringEditor.$(OBJEXT)
 	-rm -f gnu/java/beans/editors/StringEditor.lo
-	-rm -f gnu/java/beans/info/ComponentBeanInfo.$(OBJEXT)
-	-rm -f gnu/java/beans/info/ComponentBeanInfo.lo
 	-rm -f gnu/java/io/ASN1ParsingException.$(OBJEXT)
 	-rm -f gnu/java/io/ASN1ParsingException.lo
 	-rm -f gnu/java/io/Base64InputStream.$(OBJEXT)
@@ -18261,6 +18560,8 @@ mostlyclean-compile:
 	-rm -f java/beans/VetoableChangeSupport.lo
 	-rm -f java/beans/Visibility.$(OBJEXT)
 	-rm -f java/beans/Visibility.lo
+	-rm -f java/beans/XMLDecoder.$(OBJEXT)
+	-rm -f java/beans/XMLDecoder.lo
 	-rm -f java/beans/beancontext/BeanContext.$(OBJEXT)
 	-rm -f java/beans/beancontext/BeanContext.lo
 	-rm -f java/beans/beancontext/BeanContextChild.$(OBJEXT)
@@ -21809,9 +22110,47 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkToolkit.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/peer/gtk/$(DEPDIR)/lib_gnu_java_awt_peer_gtk_la-GtkWindowPeer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/$(DEPDIR)/BeanInfoEmbryo.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/$(DEPDIR)/EmptyBeanInfo.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/$(DEPDIR)/DummyAppletContext.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/$(DEPDIR)/DummyAppletStub.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/$(DEPDIR)/ExplicitBeanInfo.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/$(DEPDIR)/IntrospectionIncubator.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/AbstractContext.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/AbstractCreatableObjectContext.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/AbstractElementHandler.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/AbstractObjectContext.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/ArrayContext.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/ArrayHandler.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/AssemblyException.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/BooleanHandler.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/ByteHandler.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/CharHandler.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/ClassHandler.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/ConstructorContext.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/Context.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/DecoderContext.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/DefaultExceptionListener.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/DoubleHandler.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/DummyContext.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/DummyHandler.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/ElementHandler.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/FloatHandler.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/GrowableArrayContext.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/IndexContext.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/IntHandler.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/JavaHandler.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/LongHandler.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/MethodContext.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/MethodFinder.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/NullHandler.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/ObjectContext.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/ObjectHandler.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/PersistenceParser.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/PropertyContext.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/ShortHandler.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/SimpleHandler.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/StaticMethodContext.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/StringHandler.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/decoder/$(DEPDIR)/VoidHandler.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/editors/$(DEPDIR)/ColorEditor.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/editors/$(DEPDIR)/FontEditor.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/editors/$(DEPDIR)/NativeBooleanEditor.Plo@am__quote@
@@ -21822,7 +22161,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/editors/$(DEPDIR)/NativeLongEditor.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/editors/$(DEPDIR)/NativeShortEditor.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/editors/$(DEPDIR)/StringEditor.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/beans/info/$(DEPDIR)/ComponentBeanInfo.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/io/$(DEPDIR)/ASN1ParsingException.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/io/$(DEPDIR)/Base64InputStream.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/io/$(DEPDIR)/ClassLoaderObjectInputStream.Plo@am__quote@
@@ -22743,6 +23081,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@java/beans/$(DEPDIR)/VetoableChangeListenerProxy.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/beans/$(DEPDIR)/VetoableChangeSupport.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/beans/$(DEPDIR)/Visibility.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@java/beans/$(DEPDIR)/XMLDecoder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/beans/beancontext/$(DEPDIR)/BeanContext.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/beans/beancontext/$(DEPDIR)/BeanContextChild.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/beans/beancontext/$(DEPDIR)/BeanContextChildComponentProxy.Plo@am__quote@
@@ -25265,8 +25604,8 @@ clean-libtool:
 	-rm -rf gnu/java/awt/peer/.libs gnu/java/awt/peer/_libs
 	-rm -rf gnu/java/awt/peer/gtk/.libs gnu/java/awt/peer/gtk/_libs
 	-rm -rf gnu/java/beans/.libs gnu/java/beans/_libs
+	-rm -rf gnu/java/beans/decoder/.libs gnu/java/beans/decoder/_libs
 	-rm -rf gnu/java/beans/editors/.libs gnu/java/beans/editors/_libs
-	-rm -rf gnu/java/beans/info/.libs gnu/java/beans/info/_libs
 	-rm -rf gnu/java/io/.libs gnu/java/io/_libs
 	-rm -rf gnu/java/lang/.libs gnu/java/lang/_libs
 	-rm -rf gnu/java/lang/reflect/.libs gnu/java/lang/reflect/_libs
@@ -25793,10 +26132,10 @@ distclean-generic:
 	-rm -f gnu/java/awt/peer/gtk/$(am__dirstamp)
 	-rm -f gnu/java/beans/$(DEPDIR)/$(am__dirstamp)
 	-rm -f gnu/java/beans/$(am__dirstamp)
+	-rm -f gnu/java/beans/decoder/$(DEPDIR)/$(am__dirstamp)
+	-rm -f gnu/java/beans/decoder/$(am__dirstamp)
 	-rm -f gnu/java/beans/editors/$(DEPDIR)/$(am__dirstamp)
 	-rm -f gnu/java/beans/editors/$(am__dirstamp)
-	-rm -f gnu/java/beans/info/$(DEPDIR)/$(am__dirstamp)
-	-rm -f gnu/java/beans/info/$(am__dirstamp)
 	-rm -f gnu/java/io/$(DEPDIR)/$(am__dirstamp)
 	-rm -f gnu/java/io/$(am__dirstamp)
 	-rm -f gnu/java/lang/$(DEPDIR)/$(am__dirstamp)
@@ -26099,7 +26438,7 @@ clean-am: clean-binPROGRAMS clean-generic clean-libtool clean-local \
 
 distclean: distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf ./$(DEPDIR) gnu/awt/$(DEPDIR) gnu/awt/j2d/$(DEPDIR) gnu/awt/xlib/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/awt/$(DEPDIR) gnu/java/awt/color/$(DEPDIR) gnu/java/awt/image/$(DEPDIR) gnu/java/awt/peer/$(DEPDIR) gnu/java/awt/peer/gtk/$(DEPDIR) gnu/java/beans/$(DEPDIR) gnu/java/beans/editors/$(DEPDIR) gnu/java/beans/info/$(DEPDIR) gnu/java/io/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/lang/reflect/$(DEPDIR) gnu/java/locale/$(DEPDIR) gnu/java/math/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/net/protocol/file/$(DEPDIR) gnu/java/net/protocol/ftp/$(DEPDIR) gnu/java/net/protocol/gcjlib/$(DEPDIR) gnu/java/net/protocol/http/$(DEPDIR) gnu/java/net/protocol/http/event/$(DEPDIR) gnu/java/net/protocol/jar/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) gnu/java/nio/charset/$(DEPDIR) gnu/java/rmi/$(DEPDIR) gnu/java/rmi/dgc/$(DEPDIR) gnu/java/rmi/registry/$(DEPDIR) gnu/java/rmi/rmic/$(DEPDIR) gnu/java/rmi/server/$(DEPDIR) gnu/java/security/$(DEPDIR) gnu/java/security/action/$(DEPDIR) gnu/java/security/ber/$(DEPDIR) gnu/java/security/der/$(DEPDIR) gnu/java/security/pkcs/$(DEPDIR) gnu/java/security/provider/$(DEPDIR) gnu/java/security/util/$(DEPDIR) gnu/java/security/x509/$(DEPDIR) gnu/java/security/x509/ext/$(DEPDIR) gnu/java/text/$(DEPDIR) gnu/java/util/$(DEPDIR) gnu/java/util/prefs/$(DEPDIR) gnu/regexp/$(DEPDIR) gnu/xml/aelfred2/$(DEPDIR) gnu/xml/dom/$(DEPDIR) gnu/xml/dom/ls/$(DEPDIR) gnu/xml/pipeline/$(DEPDIR) gnu/xml/transform/$(DEPDIR) gnu/xml/util/$(DEPDIR) gnu/xml/xpath/$(DEPDIR) java/applet/$(DEPDIR) java/awt/$(DEPDIR) java/awt/color/$(DEPDIR) java/awt/datatransfer/$(DEPDIR) java/awt/dnd/$(DEPDIR) java/awt/dnd/peer/$(DEPDIR) java/awt/event/$(DEPDIR) java/awt/font/$(DEPDIR) java/awt/geom/$(DEPDIR) java/awt/im/$(DEPDIR) java/awt/im/spi/$(DEPDIR) java/awt/image/$(DEPDIR) java/awt/image/renderable/$(DEPDIR) java/awt/peer/$(DEPDIR) java/awt/print/$(DEPDIR) java/beans/$(DEPDIR) java/beans/beancontext/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/math/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/nio/channels/spi/$(DEPDIR) java/nio/charset/$(DEPDIR) java/nio/charset/spi/$(DEPDIR) java/rmi/$(DEPDIR) java/rmi/activation/$(DEPDIR) java/rmi/dgc/$(DEPDIR) java/rmi/registry/$(DEPDIR) java/rmi/server/$(DEPDIR) java/security/$(DEPDIR) java/security/acl/$(DEPDIR) java/security/cert/$(DEPDIR) java/security/interfaces/$(DEPDIR) java/security/spec/$(DEPDIR) java/sql/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/jar/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/prefs/$(DEPDIR) java/util/regex/$(DEPDIR) java/util/zip/$(DEPDIR) javax/accessibility/$(DEPDIR) javax/crypto/$(DEPDIR) javax/crypto/interfaces/$(DEPDIR) javax/crypto/spec/$(DEPDIR) javax/imageio/$(DEPDIR) javax/imageio/event/$(DEPDIR) javax/imageio/metadata/$(DEPDIR) javax/imageio/spi/$(DEPDIR) javax/imageio/stream/$(DEPDIR) javax/naming/$(DEPDIR) javax/naming/directory/$(DEPDIR) javax/naming/event/$(DEPDIR) javax/naming/ldap/$(DEPDIR) javax/naming/spi/$(DEPDIR) javax/net/$(DEPDIR) javax/net/ssl/$(DEPDIR) javax/print/$(DEPDIR) javax/print/attribute/$(DEPDIR) javax/print/attribute/standard/$(DEPDIR) javax/print/event/$(DEPDIR) javax/security/auth/$(DEPDIR) javax/security/auth/callback/$(DEPDIR) javax/security/auth/login/$(DEPDIR) javax/security/auth/spi/$(DEPDIR) javax/security/auth/x500/$(DEPDIR) javax/security/cert/$(DEPDIR) javax/security/sasl/$(DEPDIR) javax/sql/$(DEPDIR) javax/swing/$(DEPDIR) javax/swing/border/$(DEPDIR) javax/swing/colorchooser/$(DEPDIR) javax/swing/event/$(DEPDIR) javax/swing/filechooser/$(DEPDIR) javax/swing/plaf/$(DEPDIR) javax/swing/plaf/basic/$(DEPDIR) javax/swing/plaf/metal/$(DEPDIR) javax/swing/table/$(DEPDIR) javax/swing/text/$(DEPDIR) javax/swing/text/html/$(DEPDIR) javax/swing/text/html/parser/$(DEPDIR) javax/swing/tree/$(DEPDIR) javax/swing/undo/$(DEPDIR) javax/transaction/$(DEPDIR) javax/transaction/xa/$(DEPDIR) javax/xml/$(DEPDIR) javax/xml/datatype/$(DEPDIR) javax/xml/namespace/$(DEPDIR) javax/xml/parsers/$(DEPDIR) javax/xml/transform/$(DEPDIR) javax/xml/transform/dom/$(DEPDIR) javax/xml/transform/sax/$(DEPDIR) javax/xml/transform/stream/$(DEPDIR) javax/xml/validation/$(DEPDIR) javax/xml/xpath/$(DEPDIR) jni/classpath/$(DEPDIR) jni/gtk-peer/$(DEPDIR) org/ietf/jgss/$(DEPDIR) sysdep/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) gnu/awt/$(DEPDIR) gnu/awt/j2d/$(DEPDIR) gnu/awt/xlib/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/awt/$(DEPDIR) gnu/java/awt/color/$(DEPDIR) gnu/java/awt/image/$(DEPDIR) gnu/java/awt/peer/$(DEPDIR) gnu/java/awt/peer/gtk/$(DEPDIR) gnu/java/beans/$(DEPDIR) gnu/java/beans/decoder/$(DEPDIR) gnu/java/beans/editors/$(DEPDIR) gnu/java/io/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/lang/reflect/$(DEPDIR) gnu/java/locale/$(DEPDIR) gnu/java/math/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/net/protocol/file/$(DEPDIR) gnu/java/net/protocol/ftp/$(DEPDIR) gnu/java/net/protocol/gcjlib/$(DEPDIR) gnu/java/net/protocol/http/$(DEPDIR) gnu/java/net/protocol/http/event/$(DEPDIR) gnu/java/net/protocol/jar/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) gnu/java/nio/charset/$(DEPDIR) gnu/java/rmi/$(DEPDIR) gnu/java/rmi/dgc/$(DEPDIR) gnu/java/rmi/registry/$(DEPDIR) gnu/java/rmi/rmic/$(DEPDIR) gnu/java/rmi/server/$(DEPDIR) gnu/java/security/$(DEPDIR) gnu/java/security/action/$(DEPDIR) gnu/java/security/ber/$(DEPDIR) gnu/java/security/der/$(DEPDIR) gnu/java/security/pkcs/$(DEPDIR) gnu/java/security/provider/$(DEPDIR) gnu/java/security/util/$(DEPDIR) gnu/java/security/x509/$(DEPDIR) gnu/java/security/x509/ext/$(DEPDIR) gnu/java/text/$(DEPDIR) gnu/java/util/$(DEPDIR) gnu/java/util/prefs/$(DEPDIR) gnu/regexp/$(DEPDIR) gnu/xml/aelfred2/$(DEPDIR) gnu/xml/dom/$(DEPDIR) gnu/xml/dom/ls/$(DEPDIR) gnu/xml/pipeline/$(DEPDIR) gnu/xml/transform/$(DEPDIR) gnu/xml/util/$(DEPDIR) gnu/xml/xpath/$(DEPDIR) java/applet/$(DEPDIR) java/awt/$(DEPDIR) java/awt/color/$(DEPDIR) java/awt/datatransfer/$(DEPDIR) java/awt/dnd/$(DEPDIR) java/awt/dnd/peer/$(DEPDIR) java/awt/event/$(DEPDIR) java/awt/font/$(DEPDIR) java/awt/geom/$(DEPDIR) java/awt/im/$(DEPDIR) java/awt/im/spi/$(DEPDIR) java/awt/image/$(DEPDIR) java/awt/image/renderable/$(DEPDIR) java/awt/peer/$(DEPDIR) java/awt/print/$(DEPDIR) java/beans/$(DEPDIR) java/beans/beancontext/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/math/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/nio/channels/spi/$(DEPDIR) java/nio/charset/$(DEPDIR) java/nio/charset/spi/$(DEPDIR) java/rmi/$(DEPDIR) java/rmi/activation/$(DEPDIR) java/rmi/dgc/$(DEPDIR) java/rmi/registry/$(DEPDIR) java/rmi/server/$(DEPDIR) java/security/$(DEPDIR) java/security/acl/$(DEPDIR) java/security/cert/$(DEPDIR) java/security/interfaces/$(DEPDIR) java/security/spec/$(DEPDIR) java/sql/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/jar/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/prefs/$(DEPDIR) java/util/regex/$(DEPDIR) java/util/zip/$(DEPDIR) javax/accessibility/$(DEPDIR) javax/crypto/$(DEPDIR) javax/crypto/interfaces/$(DEPDIR) javax/crypto/spec/$(DEPDIR) javax/imageio/$(DEPDIR) javax/imageio/event/$(DEPDIR) javax/imageio/metadata/$(DEPDIR) javax/imageio/spi/$(DEPDIR) javax/imageio/stream/$(DEPDIR) javax/naming/$(DEPDIR) javax/naming/directory/$(DEPDIR) javax/naming/event/$(DEPDIR) javax/naming/ldap/$(DEPDIR) javax/naming/spi/$(DEPDIR) javax/net/$(DEPDIR) javax/net/ssl/$(DEPDIR) javax/print/$(DEPDIR) javax/print/attribute/$(DEPDIR) javax/print/attribute/standard/$(DEPDIR) javax/print/event/$(DEPDIR) javax/security/auth/$(DEPDIR) javax/security/auth/callback/$(DEPDIR) javax/security/auth/login/$(DEPDIR) javax/security/auth/spi/$(DEPDIR) javax/security/auth/x500/$(DEPDIR) javax/security/cert/$(DEPDIR) javax/security/sasl/$(DEPDIR) javax/sql/$(DEPDIR) javax/swing/$(DEPDIR) javax/swing/border/$(DEPDIR) javax/swing/colorchooser/$(DEPDIR) javax/swing/event/$(DEPDIR) javax/swing/filechooser/$(DEPDIR) javax/swing/plaf/$(DEPDIR) javax/swing/plaf/basic/$(DEPDIR) javax/swing/plaf/metal/$(DEPDIR) javax/swing/table/$(DEPDIR) javax/swing/text/$(DEPDIR) javax/swing/text/html/$(DEPDIR) javax/swing/text/html/parser/$(DEPDIR) javax/swing/tree/$(DEPDIR) javax/swing/undo/$(DEPDIR) javax/transaction/$(DEPDIR) javax/transaction/xa/$(DEPDIR) javax/xml/$(DEPDIR) javax/xml/datatype/$(DEPDIR) javax/xml/namespace/$(DEPDIR) javax/xml/parsers/$(DEPDIR) javax/xml/transform/$(DEPDIR) javax/xml/transform/dom/$(DEPDIR) javax/xml/transform/sax/$(DEPDIR) javax/xml/transform/stream/$(DEPDIR) javax/xml/validation/$(DEPDIR) javax/xml/xpath/$(DEPDIR) jni/classpath/$(DEPDIR) jni/gtk-peer/$(DEPDIR) org/ietf/jgss/$(DEPDIR) sysdep/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-libtool distclean-local distclean-tags
@@ -26129,7 +26468,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf ./$(DEPDIR) gnu/awt/$(DEPDIR) gnu/awt/j2d/$(DEPDIR) gnu/awt/xlib/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/awt/$(DEPDIR) gnu/java/awt/color/$(DEPDIR) gnu/java/awt/image/$(DEPDIR) gnu/java/awt/peer/$(DEPDIR) gnu/java/awt/peer/gtk/$(DEPDIR) gnu/java/beans/$(DEPDIR) gnu/java/beans/editors/$(DEPDIR) gnu/java/beans/info/$(DEPDIR) gnu/java/io/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/lang/reflect/$(DEPDIR) gnu/java/locale/$(DEPDIR) gnu/java/math/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/net/protocol/file/$(DEPDIR) gnu/java/net/protocol/ftp/$(DEPDIR) gnu/java/net/protocol/gcjlib/$(DEPDIR) gnu/java/net/protocol/http/$(DEPDIR) gnu/java/net/protocol/http/event/$(DEPDIR) gnu/java/net/protocol/jar/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) gnu/java/nio/charset/$(DEPDIR) gnu/java/rmi/$(DEPDIR) gnu/java/rmi/dgc/$(DEPDIR) gnu/java/rmi/registry/$(DEPDIR) gnu/java/rmi/rmic/$(DEPDIR) gnu/java/rmi/server/$(DEPDIR) gnu/java/security/$(DEPDIR) gnu/java/security/action/$(DEPDIR) gnu/java/security/ber/$(DEPDIR) gnu/java/security/der/$(DEPDIR) gnu/java/security/pkcs/$(DEPDIR) gnu/java/security/provider/$(DEPDIR) gnu/java/security/util/$(DEPDIR) gnu/java/security/x509/$(DEPDIR) gnu/java/security/x509/ext/$(DEPDIR) gnu/java/text/$(DEPDIR) gnu/java/util/$(DEPDIR) gnu/java/util/prefs/$(DEPDIR) gnu/regexp/$(DEPDIR) gnu/xml/aelfred2/$(DEPDIR) gnu/xml/dom/$(DEPDIR) gnu/xml/dom/ls/$(DEPDIR) gnu/xml/pipeline/$(DEPDIR) gnu/xml/transform/$(DEPDIR) gnu/xml/util/$(DEPDIR) gnu/xml/xpath/$(DEPDIR) java/applet/$(DEPDIR) java/awt/$(DEPDIR) java/awt/color/$(DEPDIR) java/awt/datatransfer/$(DEPDIR) java/awt/dnd/$(DEPDIR) java/awt/dnd/peer/$(DEPDIR) java/awt/event/$(DEPDIR) java/awt/font/$(DEPDIR) java/awt/geom/$(DEPDIR) java/awt/im/$(DEPDIR) java/awt/im/spi/$(DEPDIR) java/awt/image/$(DEPDIR) java/awt/image/renderable/$(DEPDIR) java/awt/peer/$(DEPDIR) java/awt/print/$(DEPDIR) java/beans/$(DEPDIR) java/beans/beancontext/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/math/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/nio/channels/spi/$(DEPDIR) java/nio/charset/$(DEPDIR) java/nio/charset/spi/$(DEPDIR) java/rmi/$(DEPDIR) java/rmi/activation/$(DEPDIR) java/rmi/dgc/$(DEPDIR) java/rmi/registry/$(DEPDIR) java/rmi/server/$(DEPDIR) java/security/$(DEPDIR) java/security/acl/$(DEPDIR) java/security/cert/$(DEPDIR) java/security/interfaces/$(DEPDIR) java/security/spec/$(DEPDIR) java/sql/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/jar/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/prefs/$(DEPDIR) java/util/regex/$(DEPDIR) java/util/zip/$(DEPDIR) javax/accessibility/$(DEPDIR) javax/crypto/$(DEPDIR) javax/crypto/interfaces/$(DEPDIR) javax/crypto/spec/$(DEPDIR) javax/imageio/$(DEPDIR) javax/imageio/event/$(DEPDIR) javax/imageio/metadata/$(DEPDIR) javax/imageio/spi/$(DEPDIR) javax/imageio/stream/$(DEPDIR) javax/naming/$(DEPDIR) javax/naming/directory/$(DEPDIR) javax/naming/event/$(DEPDIR) javax/naming/ldap/$(DEPDIR) javax/naming/spi/$(DEPDIR) javax/net/$(DEPDIR) javax/net/ssl/$(DEPDIR) javax/print/$(DEPDIR) javax/print/attribute/$(DEPDIR) javax/print/attribute/standard/$(DEPDIR) javax/print/event/$(DEPDIR) javax/security/auth/$(DEPDIR) javax/security/auth/callback/$(DEPDIR) javax/security/auth/login/$(DEPDIR) javax/security/auth/spi/$(DEPDIR) javax/security/auth/x500/$(DEPDIR) javax/security/cert/$(DEPDIR) javax/security/sasl/$(DEPDIR) javax/sql/$(DEPDIR) javax/swing/$(DEPDIR) javax/swing/border/$(DEPDIR) javax/swing/colorchooser/$(DEPDIR) javax/swing/event/$(DEPDIR) javax/swing/filechooser/$(DEPDIR) javax/swing/plaf/$(DEPDIR) javax/swing/plaf/basic/$(DEPDIR) javax/swing/plaf/metal/$(DEPDIR) javax/swing/table/$(DEPDIR) javax/swing/text/$(DEPDIR) javax/swing/text/html/$(DEPDIR) javax/swing/text/html/parser/$(DEPDIR) javax/swing/tree/$(DEPDIR) javax/swing/undo/$(DEPDIR) javax/transaction/$(DEPDIR) javax/transaction/xa/$(DEPDIR) javax/xml/$(DEPDIR) javax/xml/datatype/$(DEPDIR) javax/xml/namespace/$(DEPDIR) javax/xml/parsers/$(DEPDIR) javax/xml/transform/$(DEPDIR) javax/xml/transform/dom/$(DEPDIR) javax/xml/transform/sax/$(DEPDIR) javax/xml/transform/stream/$(DEPDIR) javax/xml/validation/$(DEPDIR) javax/xml/xpath/$(DEPDIR) jni/classpath/$(DEPDIR) jni/gtk-peer/$(DEPDIR) org/ietf/jgss/$(DEPDIR) sysdep/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) gnu/awt/$(DEPDIR) gnu/awt/j2d/$(DEPDIR) gnu/awt/xlib/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/awt/$(DEPDIR) gnu/java/awt/color/$(DEPDIR) gnu/java/awt/image/$(DEPDIR) gnu/java/awt/peer/$(DEPDIR) gnu/java/awt/peer/gtk/$(DEPDIR) gnu/java/beans/$(DEPDIR) gnu/java/beans/decoder/$(DEPDIR) gnu/java/beans/editors/$(DEPDIR) gnu/java/io/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/lang/reflect/$(DEPDIR) gnu/java/locale/$(DEPDIR) gnu/java/math/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/net/protocol/file/$(DEPDIR) gnu/java/net/protocol/ftp/$(DEPDIR) gnu/java/net/protocol/gcjlib/$(DEPDIR) gnu/java/net/protocol/http/$(DEPDIR) gnu/java/net/protocol/http/event/$(DEPDIR) gnu/java/net/protocol/jar/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) gnu/java/nio/charset/$(DEPDIR) gnu/java/rmi/$(DEPDIR) gnu/java/rmi/dgc/$(DEPDIR) gnu/java/rmi/registry/$(DEPDIR) gnu/java/rmi/rmic/$(DEPDIR) gnu/java/rmi/server/$(DEPDIR) gnu/java/security/$(DEPDIR) gnu/java/security/action/$(DEPDIR) gnu/java/security/ber/$(DEPDIR) gnu/java/security/der/$(DEPDIR) gnu/java/security/pkcs/$(DEPDIR) gnu/java/security/provider/$(DEPDIR) gnu/java/security/util/$(DEPDIR) gnu/java/security/x509/$(DEPDIR) gnu/java/security/x509/ext/$(DEPDIR) gnu/java/text/$(DEPDIR) gnu/java/util/$(DEPDIR) gnu/java/util/prefs/$(DEPDIR) gnu/regexp/$(DEPDIR) gnu/xml/aelfred2/$(DEPDIR) gnu/xml/dom/$(DEPDIR) gnu/xml/dom/ls/$(DEPDIR) gnu/xml/pipeline/$(DEPDIR) gnu/xml/transform/$(DEPDIR) gnu/xml/util/$(DEPDIR) gnu/xml/xpath/$(DEPDIR) java/applet/$(DEPDIR) java/awt/$(DEPDIR) java/awt/color/$(DEPDIR) java/awt/datatransfer/$(DEPDIR) java/awt/dnd/$(DEPDIR) java/awt/dnd/peer/$(DEPDIR) java/awt/event/$(DEPDIR) java/awt/font/$(DEPDIR) java/awt/geom/$(DEPDIR) java/awt/im/$(DEPDIR) java/awt/im/spi/$(DEPDIR) java/awt/image/$(DEPDIR) java/awt/image/renderable/$(DEPDIR) java/awt/peer/$(DEPDIR) java/awt/print/$(DEPDIR) java/beans/$(DEPDIR) java/beans/beancontext/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/math/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/nio/channels/spi/$(DEPDIR) java/nio/charset/$(DEPDIR) java/nio/charset/spi/$(DEPDIR) java/rmi/$(DEPDIR) java/rmi/activation/$(DEPDIR) java/rmi/dgc/$(DEPDIR) java/rmi/registry/$(DEPDIR) java/rmi/server/$(DEPDIR) java/security/$(DEPDIR) java/security/acl/$(DEPDIR) java/security/cert/$(DEPDIR) java/security/interfaces/$(DEPDIR) java/security/spec/$(DEPDIR) java/sql/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/jar/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/prefs/$(DEPDIR) java/util/regex/$(DEPDIR) java/util/zip/$(DEPDIR) javax/accessibility/$(DEPDIR) javax/crypto/$(DEPDIR) javax/crypto/interfaces/$(DEPDIR) javax/crypto/spec/$(DEPDIR) javax/imageio/$(DEPDIR) javax/imageio/event/$(DEPDIR) javax/imageio/metadata/$(DEPDIR) javax/imageio/spi/$(DEPDIR) javax/imageio/stream/$(DEPDIR) javax/naming/$(DEPDIR) javax/naming/directory/$(DEPDIR) javax/naming/event/$(DEPDIR) javax/naming/ldap/$(DEPDIR) javax/naming/spi/$(DEPDIR) javax/net/$(DEPDIR) javax/net/ssl/$(DEPDIR) javax/print/$(DEPDIR) javax/print/attribute/$(DEPDIR) javax/print/attribute/standard/$(DEPDIR) javax/print/event/$(DEPDIR) javax/security/auth/$(DEPDIR) javax/security/auth/callback/$(DEPDIR) javax/security/auth/login/$(DEPDIR) javax/security/auth/spi/$(DEPDIR) javax/security/auth/x500/$(DEPDIR) javax/security/cert/$(DEPDIR) javax/security/sasl/$(DEPDIR) javax/sql/$(DEPDIR) javax/swing/$(DEPDIR) javax/swing/border/$(DEPDIR) javax/swing/colorchooser/$(DEPDIR) javax/swing/event/$(DEPDIR) javax/swing/filechooser/$(DEPDIR) javax/swing/plaf/$(DEPDIR) javax/swing/plaf/basic/$(DEPDIR) javax/swing/plaf/metal/$(DEPDIR) javax/swing/table/$(DEPDIR) javax/swing/text/$(DEPDIR) javax/swing/text/html/$(DEPDIR) javax/swing/text/html/parser/$(DEPDIR) javax/swing/tree/$(DEPDIR) javax/swing/undo/$(DEPDIR) javax/transaction/$(DEPDIR) javax/transaction/xa/$(DEPDIR) javax/xml/$(DEPDIR) javax/xml/datatype/$(DEPDIR) javax/xml/namespace/$(DEPDIR) javax/xml/parsers/$(DEPDIR) javax/xml/transform/$(DEPDIR) javax/xml/transform/dom/$(DEPDIR) javax/xml/transform/sax/$(DEPDIR) javax/xml/transform/stream/$(DEPDIR) javax/xml/validation/$(DEPDIR) javax/xml/xpath/$(DEPDIR) jni/classpath/$(DEPDIR) jni/gtk-peer/$(DEPDIR) org/ietf/jgss/$(DEPDIR) sysdep/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
