@@ -503,82 +503,6 @@ enum dwarf_call_frame_info
 #define DW_CFA_low_user   0x1c
 #define DW_CFA_high_user  0x3f
 
-/* SGI/MIPS call frame register usage information */
-enum dwarf_call_reg_usage
-  {
-    DW_FRAME_CFA_COL = 0,
-    DW_FRAME_REG1 = 1,
-    DW_FRAME_REG2 = 2,
-    DW_FRAME_REG3 = 3,
-    DW_FRAME_REG4 = 4,
-    DW_FRAME_REG5 = 5,
-    DW_FRAME_REG6 = 6,
-    DW_FRAME_REG7 = 7,
-    DW_FRAME_REG8 = 8,
-    DW_FRAME_REG9 = 9,
-    DW_FRAME_REG10 = 10,
-    DW_FRAME_REG11 = 11,
-    DW_FRAME_REG12 = 12,
-    DW_FRAME_REG13 = 13,
-    DW_FRAME_REG14 = 14,
-    DW_FRAME_REG15 = 15,
-    DW_FRAME_REG16 = 16,
-    DW_FRAME_REG17 = 17,
-    DW_FRAME_REG18 = 18,
-    DW_FRAME_REG19 = 19,
-    DW_FRAME_REG20 = 20,
-    DW_FRAME_REG21 = 21,
-    DW_FRAME_REG22 = 22,
-    DW_FRAME_REG23 = 23,
-    DW_FRAME_REG24 = 24,
-    DW_FRAME_REG25 = 25,
-    DW_FRAME_REG26 = 26,
-    DW_FRAME_REG27 = 27,
-    DW_FRAME_REG28 = 28,
-    DW_FRAME_REG29 = 29,
-    DW_FRAME_REG30 = 30,
-    DW_FRAME_REG31 = 31,
-    DW_FRAME_FREG0 = 32,
-    DW_FRAME_FREG1 = 33,
-    DW_FRAME_FREG2 = 34,
-    DW_FRAME_FREG3 = 35,
-    DW_FRAME_FREG4 = 36,
-    DW_FRAME_FREG5 = 37,
-    DW_FRAME_FREG6 = 38,
-    DW_FRAME_FREG7 = 39,
-    DW_FRAME_FREG8 = 40,
-    DW_FRAME_FREG9 = 41,
-    DW_FRAME_FREG10 = 42,
-    DW_FRAME_FREG11 = 43,
-    DW_FRAME_FREG12 = 44,
-    DW_FRAME_FREG13 = 45,
-    DW_FRAME_FREG14 = 46,
-    DW_FRAME_FREG15 = 47,
-    DW_FRAME_FREG16 = 48,
-    DW_FRAME_FREG17 = 49,
-    DW_FRAME_FREG18 = 50,
-    DW_FRAME_FREG19 = 51,
-    DW_FRAME_FREG20 = 52,
-    DW_FRAME_FREG21 = 53,
-    DW_FRAME_FREG22 = 54,
-    DW_FRAME_FREG23 = 55,
-    DW_FRAME_FREG24 = 56,
-    DW_FRAME_FREG25 = 57,
-    DW_FRAME_FREG26 = 58,
-    DW_FRAME_FREG27 = 59,
-    DW_FRAME_FREG28 = 60,
-    DW_FRAME_FREG29 = 61,
-    DW_FRAME_FREG30 = 62,
-    DW_FRAME_FREG31 = 63,
-    DW_FRAME_RA_COL = 64,
-    DW_FRAME_STATIC_LINK = 65
-  };
-
-/* This is the number of columns in the Frame Table. */
-#define DW_FRAME_LAST_REG_NUM   66
-
-
-
 #define DW_CHILDREN_no		     0x00
 #define DW_CHILDREN_yes		     0x01
 
@@ -605,7 +529,7 @@ enum dwarf_source_language
 #define DW_LANG_lo_user 0x8000	/* implementation-defined range start */
 #define DW_LANG_hi_user 0xffff	/* implementation-defined range start */
 
-/* Names and codes for GNU "macinfo" extension.  */
+/* Names and codes for macro information.  */
 
 enum dwarf_macinfo_record_type
   {
@@ -613,5 +537,5 @@ enum dwarf_macinfo_record_type
     DW_MACINFO_undef = 2,
     DW_MACINFO_start_file = 3,
     DW_MACINFO_end_file = 4,
-    DW_MACINFO_vend_ext = 255
+    DW_MACINFO_vendor_ext = 255
   };

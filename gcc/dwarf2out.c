@@ -310,9 +310,19 @@ extern char *language_string;
 #define DWARF_ARANGES_HEADER_SIZE \
   (DWARF_ROUND (2 * DWARF_OFFSET_SIZE + 4, PTR_SIZE * 2) - DWARF_OFFSET_SIZE)
 
-/* Fixed size portion of the Common Information Entry (including
-   the length field).  */
-#define DWARF_CIE_HEADER_SIZE (2 * DWARF_OFFSET_SIZE + 8)
+/* Length of the target-dependent instructions in the
+   Common Information Entry (CIE).
+   ??? This should be computed when the frame info is genericized.  */
+#ifdef MIPS_DEBUGGING_INFO
+#define DWARF_CIE_INSN_SIZE (2*3)
+#endif
+
+#ifndef DWARF_CIE_INSN_SIZE
+#define DWARF_CIE_INSN_SIZE 0
+#endif
+
+/* Fixed size portion of the CIE (including the length field).  */
+#define DWARF_CIE_HEADER_SIZE (2 * DWARF_OFFSET_SIZE + 5 + DWARF_CIE_INSN_SIZE)
 
 /* Fixed size of the Common Information Entry in the call frame
    information (.debug_frame) section rounded up to a word boundary.  */
@@ -828,6 +838,17 @@ char text_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
   while (0)
 #endif
 
+/* The DWARF 2 CFA column which tracks the return address.  Normally this
+   is the first column after all of the hard registers.  */
+#ifndef DWARF_FRAME_RETURN_COLUMN
+#define DWARF_FRAME_RETURN_COLUMN 	FIRST_PSEUDO_REGISTER
+#endif
+
+/* The mapping from gcc register number to DWARF 2 CFA column number.  By
+   default, we provide columns for all registers after the CFA column.  */
+#ifndef DWARF_FRAME_REGNUM
+#define DWARF_FRAME_REGNUM(REG) (DBX_REGISTER_NUMBER (REG) + 1)
+#endif
 
 /************************ general utility functions **************************/
 
@@ -3920,7 +3941,7 @@ output_call_frame_info ()
 	       ASM_COMMENT_START);
     }
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_FRAME_RA_COL);
+  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DWARF_FRAME_RETURN_COLUMN);
   if (flag_verbose_asm)
     {
       fprintf (asm_out_file, "\t%s CIE RA Column",
@@ -3932,12 +3953,21 @@ output_call_frame_info ()
 
 #ifdef MIPS_DEBUGGING_INFO
 
-  /* Set the RA on entry to be the contents of r31.  */
   bzero (&cfi_node, sizeof (dw_cfi_node));
   cfi = &cfi_node;
+
+  /* On entry, the Call Frame Address is in the stack pointer register.  */
+  cfi->dw_cfi_opc = DW_CFA_def_cfa;
+  cfi->dw_cfi_oprnd1.dw_cfi_reg_num
+    = DWARF_FRAME_REGNUM (STACK_POINTER_REGNUM);
+  cfi->dw_cfi_oprnd2.dw_cfi_offset = 0;
+  output_cfi (cfi);
+
+  /* Set the RA on entry to be the contents of r31.  */
   cfi->dw_cfi_opc = DW_CFA_register;
-  cfi->dw_cfi_oprnd1.dw_cfi_reg_num = DW_FRAME_RA_COL;
-  cfi->dw_cfi_oprnd2.dw_cfi_reg_num = DW_FRAME_REG31;
+  cfi->dw_cfi_oprnd1.dw_cfi_reg_num = DWARF_FRAME_RETURN_COLUMN;
+  cfi->dw_cfi_oprnd2.dw_cfi_reg_num
+    = DWARF_FRAME_REGNUM (GP_REG_FIRST + 31);
   output_cfi (cfi);
 
 #endif
@@ -7654,27 +7684,19 @@ dwarf2out_begin_function ()
 
 #ifdef MIPS_DEBUGGING_INFO
 
-  /* On entry, the Call Frame Address is in the stack pointer register.  */
-  cfi = new_cfi ();
-  cfi->dw_cfi_opc = DW_CFA_def_cfa;
-  cfi->dw_cfi_oprnd1.dw_cfi_reg_num
-    = DBX_REGISTER_NUMBER (STACK_POINTER_REGNUM);
-  cfi->dw_cfi_oprnd2.dw_cfi_offset = 0;
-  add_cfi (&fde->dw_fde_cfi, cfi);
-
   /* Set the location counter to the end of the function prolog.  */
   cfi = new_cfi ();
   cfi->dw_cfi_opc = DW_CFA_advance_loc4;
   cfi->dw_cfi_oprnd1.dw_cfi_addr = xstrdup (label);
   add_cfi (&fde->dw_fde_cfi, cfi);
 
-  /* Define the CFA as either an explicit frame pointer register,
-     or an offset from the stack pointer.  */
+  /* Define the CFA as an offset from either the frame pointer
+     or the stack pointer.  */
   cfi = new_cfi ();
   cfi->dw_cfi_opc = DW_CFA_def_cfa;
   cfi->dw_cfi_oprnd1.dw_cfi_reg_num
-    = DBX_REGISTER_NUMBER (frame_pointer_needed ? FRAME_POINTER_REGNUM
-			   : STACK_POINTER_REGNUM);
+    = DWARF_FRAME_REGNUM (frame_pointer_needed ? FRAME_POINTER_REGNUM
+			  : STACK_POINTER_REGNUM);
   offset = current_frame_info.total_size;
   cfi->dw_cfi_oprnd2.dw_cfi_offset = offset;
   add_cfi (&fde->dw_fde_cfi, cfi);
@@ -7690,9 +7712,9 @@ dwarf2out_begin_function ()
       cfi = new_cfi ();
       cfi->dw_cfi_opc = DW_CFA_register;
       cfi->dw_cfi_oprnd1.dw_cfi_reg_num
-	= DBX_REGISTER_NUMBER (STACK_POINTER_REGNUM);
+	= DWARF_FRAME_REGNUM (STACK_POINTER_REGNUM);
       cfi->dw_cfi_oprnd2.dw_cfi_reg_num
-	= DBX_REGISTER_NUMBER (FRAME_POINTER_REGNUM);
+	= DWARF_FRAME_REGNUM (FRAME_POINTER_REGNUM);
       add_cfi (&fde->dw_fde_cfi, cfi);
     }
 
@@ -7703,7 +7725,7 @@ dwarf2out_begin_function ()
       assert (offset >= 0);
       cfi = new_cfi ();
       cfi->dw_cfi_opc = DW_CFA_offset_extended;
-      cfi->dw_cfi_oprnd1.dw_cfi_reg_num = DW_FRAME_RA_COL;
+      cfi->dw_cfi_oprnd1.dw_cfi_reg_num = DWARF_FRAME_RETURN_COLUMN;
       cfi->dw_cfi_oprnd2.dw_cfi_offset = offset;
       add_cfi (&fde->dw_fde_cfi, cfi);
     }
@@ -7718,7 +7740,7 @@ dwarf2out_begin_function ()
       cfi = new_cfi ();
       cfi->dw_cfi_opc = DW_CFA_offset;
       cfi->dw_cfi_oprnd1.dw_cfi_reg_num
-	= DBX_REGISTER_NUMBER (FRAME_POINTER_REGNUM);
+	= DWARF_FRAME_REGNUM (FRAME_POINTER_REGNUM);
       cfi->dw_cfi_oprnd2.dw_cfi_offset = offset;
       add_cfi (&fde->dw_fde_cfi, cfi);
     }

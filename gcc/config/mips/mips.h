@@ -920,10 +920,17 @@ while (0)
    since the length can run past this up to a continuation point.  */
 #define DBX_CONTIN_LENGTH 1500
 
-
 /* How to renumber registers for dbx and gdb. */
 #define DBX_REGISTER_NUMBER(REGNO) mips_dbx_regno[ (REGNO) ]
 
+/* The mapping from gcc register number to DWARF 2 CFA column number.
+   This mapping does not allow for tracking DBX register 0, since column 0
+   is used for the frame address, but since register 0 is fixed this is
+   not really a problem.  */
+#define DWARF_FRAME_REGNUM(REG) (DBX_REGISTER_NUMBER (REG))
+
+/* The DWARF 2 CFA column which tracks the return address.  */
+#define DWARF_FRAME_RETURN_COLUMN (FP_REG_LAST + 1)
 
 /* Overrides for the COFF debug format.  */
 #define PUT_SDB_SCL(a)					\
