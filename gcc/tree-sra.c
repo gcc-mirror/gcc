@@ -1,7 +1,7 @@
 /* Scalar Replacement of Aggregates (SRA) converts some structure
    references into scalar references, exposing them to the scalar
    optimizers.
-   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -1569,23 +1569,9 @@ generate_element_zero (struct sra_elt *elt, tree *list_p)
 static void
 generate_one_element_init (tree var, tree init, tree *list_p)
 {
-  tree stmt;
-
   /* The replacement can be almost arbitrarily complex.  Gimplify.  */
-  stmt = build (MODIFY_EXPR, void_type_node, var, init);
-  gimplify_stmt (&stmt);
-
-  /* The replacement can expose previously unreferenced variables.  */
-  if (TREE_CODE (stmt) == STATEMENT_LIST)
-    {
-      tree_stmt_iterator i;
-      for (i = tsi_start (stmt); !tsi_end_p (i); tsi_next (&i))
-	find_new_referenced_vars (tsi_stmt_ptr (i));
-    }
-  else
-    find_new_referenced_vars (&stmt);
-
-  append_to_statement_list (stmt, list_p);
+  tree stmt = build (MODIFY_EXPR, void_type_node, var, init);
+  gimplify_and_add (stmt, list_p);
 }
 
 /* Generate a set of assignment statements in *LIST_P to set all instantiated
@@ -1595,7 +1581,7 @@ generate_one_element_init (tree var, tree init, tree *list_p)
    handle.  */
 
 static bool
-generate_element_init (struct sra_elt *elt, tree init, tree *list_p)
+generate_element_init_1 (struct sra_elt *elt, tree init, tree *list_p)
 {
   bool result = true;
   enum tree_code init_code;
@@ -1629,7 +1615,7 @@ generate_element_init (struct sra_elt *elt, tree init, tree *list_p)
 	  else
 	    t = (init_code == COMPLEX_EXPR
 		 ? TREE_OPERAND (init, 1) : TREE_IMAGPART (init));
-	  result &= generate_element_init (sub, t, list_p);
+	  result &= generate_element_init_1 (sub, t, list_p);
 	}
       break;
 
@@ -1639,7 +1625,7 @@ generate_element_init (struct sra_elt *elt, tree init, tree *list_p)
 	  sub = lookup_element (elt, TREE_PURPOSE (t), NULL, NO_INSERT);
 	  if (sub == NULL)
 	    continue;
-	  result &= generate_element_init (sub, TREE_VALUE (t), list_p);
+	  result &= generate_element_init_1 (sub, TREE_VALUE (t), list_p);
 	}
       break;
 
@@ -1649,6 +1635,37 @@ generate_element_init (struct sra_elt *elt, tree init, tree *list_p)
     }
 
   return result;
+}
+
+/* A wrapper function for generate_element_init_1 that handles cleanup after
+   gimplification.  */
+
+static bool
+generate_element_init (struct sra_elt *elt, tree init, tree *list_p)
+{
+  bool ret;
+
+  push_gimplify_context ();
+  ret = generate_element_init_1 (elt, init, list_p);
+  pop_gimplify_context (NULL);
+
+  /* The replacement can expose previously unreferenced variables.  */
+  if (ret && *list_p)
+    {
+      tree_stmt_iterator i;
+      size_t old, new, j;
+
+      old = num_referenced_vars;
+
+      for (i = tsi_start (*list_p); !tsi_end_p (i); tsi_next (&i))
+	find_new_referenced_vars (tsi_stmt_ptr (i));
+
+      new = num_referenced_vars;
+      for (j = old; j < new; ++j)
+	bitmap_set_bit (vars_to_rename, j);
+    }
+
+  return ret;
 }
 
 /* Insert STMT on all the outgoing edges out of BB.  Note that if BB
@@ -1846,9 +1863,7 @@ scalarize_init (struct sra_elt *lhs_elt, tree rhs, block_stmt_iterator *bsi)
     {
       /* Unshare the expression just in case this is from a decl's initial.  */
       rhs = unshare_expr (rhs);
-      push_gimplify_context ();
       result = generate_element_init (lhs_elt, rhs, &list);
-      pop_gimplify_context (NULL);
     }
 
   /* CONSTRUCTOR is defined such that any member not mentioned is assigned
