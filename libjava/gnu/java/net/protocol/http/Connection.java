@@ -48,10 +48,10 @@ import java.net.ProtocolException;
 import java.net.Socket;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 import java.util.Hashtable;
-import java.util.Enumeration;
 
 /**
  * This subclass of java.net.URLConnection models a URLConnection via
@@ -212,12 +212,14 @@ public final class Connection extends HttpURLConnection
       setRequestProperty ("Host", url.getHost());
     
     // Write all req_props name-value pairs to the output writer.
-    Enumeration reqKeys = requestProperties.keys();
-    Enumeration reqVals = requestProperties.elements();
-    
-    while (reqKeys.hasMoreElements())
-      outputWriter.print (reqKeys.nextElement() + ": " + reqVals.nextElement() + "\r\n");
-    
+    Iterator itr = getRequestProperties().entrySet().iterator();
+
+    while (itr.hasNext())
+      {
+        Map.Entry e = (Map.Entry) itr.next();
+        outputWriter.print (e.getKey() + ": " + e.getValue() + "\r\n");
+      }
+
     // One more CR-LF indicates end of header.
     outputWriter.print ("\r\n");
     outputWriter.flush();
@@ -234,6 +236,15 @@ public final class Connection extends HttpURLConnection
     return proxyInUse;
   }
 
+  /**
+   * Returns an InputStream for reading from this connection.  This stream
+   * will be "queued up" for reading just the contents of the requested file.
+   * Overrides URLConnection.getInputStream()
+   *
+   * @return An InputStream for this connection.
+   *
+   * @exception IOException If an error occurs
+   */
   public InputStream getInputStream() throws IOException
   {
     if (!connected)
@@ -254,6 +265,25 @@ public final class Connection extends HttpURLConnection
       throw new ProtocolException("Can't open OutputStream if doOutput is false");
     
     return socket.getOutputStream();
+  }
+
+  /**
+   * Overrides java.net.HttpURLConnection.setRequestMethod() in order to
+   * restrict the available methods to only those we support.
+   *
+   * @param method The RequestMethod to use
+   *
+   * @exception ProtocolException If the specified method is not valid
+   */
+  public void setRequestMethod (String method) throws ProtocolException
+  {
+    method = method.toUpperCase();
+    
+    if (method.equals("GET"))
+      super.setRequestMethod (method);
+    else
+      throw new ProtocolException ("Unsupported or unknown request method " +
+                                   method);
   }
 
   public String getHeaderField(String name)
@@ -286,6 +316,15 @@ public final class Connection extends HttpURLConnection
     return hdrHash;
   }
 
+  /**
+   * This method returns the header field value at the specified numeric
+   * index.
+   *
+   * @param n The index into the header field array
+   *
+   * @return The value of the specified header field, or <code>null</code>
+   * if the specified index is not valid.
+   */
   public String getHeaderField(int n)
   {
     if (!connected)
@@ -303,6 +342,15 @@ public final class Connection extends HttpURLConnection
     return null;
   }
 
+  /**
+   * This method returns the header field key at the specified numeric
+   * index.
+   *
+   * @param n The index into the header field array
+   *
+   * @return The name of the header field key, or <code>null</code> if the
+   * specified index is not valid.
+   */
   public String getHeaderFieldKey(int n)
   {
     if (!connected)
