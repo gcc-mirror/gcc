@@ -1,3 +1,13 @@
+2003-02-19  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_override_options): Initialize
+	align_jumps_max_skip and align_loops_max_skip.
+
+2003-02-19  Thierry Moreau  <thierry.moreau@connotech.com>
+
+	* config/rs6000/rs6000.c (rs6000_encode_section_info): Do not
+	test size if named section.
+
 2003-02-19  Daniel Jacobowitz  <drow@mvista.com>
 
 	* expr.c (expand_expr): Use gen_int_mode for the argument

@@ -753,6 +753,10 @@ rs6000_override_options (default_cpu)
       targetm.asm_out.unaligned_op.di = NULL;
     }
 
+  /* Set maximum branch target alignment at two instructions, eight bytes.  */
+  align_jumps_max_skip = 8;
+  align_loops_max_skip = 8;
+
   /* Arrange to save and restore machine status around nested functions.  */
   init_machine_status = rs6000_init_machine_status;
 }
@@ -12670,20 +12674,20 @@ rs6000_elf_encode_section_info (decl, first)
 	    abort ();
 	}
 
-      if ((size > 0 && size <= g_switch_value)
-	  || (name
-	      && ((len == sizeof (".sdata") - 1
-		   && strcmp (name, ".sdata") == 0)
-		  || (len == sizeof (".sdata2") - 1
-		      && strcmp (name, ".sdata2") == 0)
-		  || (len == sizeof (".sbss") - 1
-		      && strcmp (name, ".sbss") == 0)
-		  || (len == sizeof (".sbss2") - 1
-		      && strcmp (name, ".sbss2") == 0)
-		  || (len == sizeof (".PPC.EMB.sdata0") - 1
-		      && strcmp (name, ".PPC.EMB.sdata0") == 0)
-		  || (len == sizeof (".PPC.EMB.sbss0") - 1
-		      && strcmp (name, ".PPC.EMB.sbss0") == 0))))
+      if (name
+	  ? ((len == sizeof (".sdata") - 1
+	      && strcmp (name, ".sdata") == 0)
+	     || (len == sizeof (".sdata2") - 1
+		 && strcmp (name, ".sdata2") == 0)
+	     || (len == sizeof (".sbss") - 1
+		 && strcmp (name, ".sbss") == 0)
+	     || (len == sizeof (".sbss2") - 1
+		 && strcmp (name, ".sbss2") == 0)
+	     || (len == sizeof (".PPC.EMB.sdata0") - 1
+		 && strcmp (name, ".PPC.EMB.sdata0") == 0)
+	     || (len == sizeof (".PPC.EMB.sbss0") - 1
+		 && strcmp (name, ".PPC.EMB.sbss0") == 0))
+	  : (size > 0 && size <= g_switch_value))
 	{
 	  size_t len = strlen (XSTR (sym_ref, 0));
 	  char *str = alloca (len + 2);
