@@ -3296,7 +3296,7 @@ decode_field_reference (tree exp, HOST_WIDE_INT *pbitsize,
   /* If the number of bits in the reference is the same as the bitsize of
      the outer type, then the outer type gives the signedness. Otherwise
      (in case of a small bitfield) the signedness is unchanged.  */
-  if (outer_type && *pbitsize == tree_low_cst (TYPE_SIZE (outer_type), 1))
+  if (outer_type && *pbitsize == TYPE_PRECISION (outer_type))
     *punsignedp = TYPE_UNSIGNED (outer_type);
 
   /* Compute the mask to access the bitfield.  */

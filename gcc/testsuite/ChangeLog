@@ -1,3 +1,8 @@
+2004-07-11  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR tree-optimization/16437
+	* gcc.c-torture/execute/bitfld-4.c: New test.
+
 2004-07-10  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 	
 	* gfortran.fortran-torture/execute/common_2.f90: Add check for
