@@ -19,6 +19,8 @@ AC_SUBST(release_VERSION)
 libtool_VERSION=4:1:0
 AC_SUBST(libtool_VERSION)
 
+GLIBCPP_TOPREL_CONFIGURE
+
 # Gets build, host, target, *_vendor, *_cpu, *_os, etc.
 #
 # You will slowly go insane if you do not grok the following fact:  when
