@@ -9,16 +9,3 @@ X_CFLAGS= -I../hp-include
 
 # Version 5 of HPUX had a compiler bug that made it crash with -g.
 # You must set CFLAGS to empty on version 5.
-
-# You must get alloca.c from GNU Emacs.
-
-# Control how libgcc.a is made.
-LIBGCC1 = libgcc1.conv
-
-# Alas, we don't know where these programs can be found.
-# We can only guess.
-AR=/usr/local/gnubin/ar
-RANLIB=/usr/local/gnubin/ranlib
-RANLIB_TEST = [ -f /usr/local/gnubin/ranlib ]
-
-LIBCONVERT=/usr/local/bin/hpxt
