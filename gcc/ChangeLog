@@ -1,5 +1,9 @@
 1999-12-04  Mark Mitchell  <mark@codesourcery.com>
 
+	* function.h (insert_block_after_note): Declare.
+	* function.c (insert_block_after_note): Split out from ...
+	(retrofit_block): ... here.
+
 	* stmt.c (expand_fixup): Fix typo in comment.
 
 Sat Dec  4 14:13:38 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
