@@ -170,7 +170,7 @@ do {				\
 #define SHORT_TYPE_SIZE 	16
 #define INT_TYPE_SIZE 		(TARGET_INT32 ? 32 : 16)
 #define LONG_TYPE_SIZE 		32
-#define LONG_LONG_TYPE_SIZE 	32
+#define LONG_LONG_TYPE_SIZE   (TARGET_INT32 ? 64 : 32)
 #define FLOAT_TYPE_SIZE 	32
 #define DOUBLE_TYPE_SIZE 	32
 #define LONG_DOUBLE_TYPE_SIZE 	DOUBLE_TYPE_SIZE
@@ -611,13 +611,6 @@ struct cum_arg { int nbytes; struct rtx_def * libcall; };
 struct rtx_def *function_arg();
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
   function_arg (&CUM, MODE, TYPE, NAMED)
-
-/* Perform any needed actions needed for a function that is receiving a
-   variable number of arguments.  */
-
-extern int current_function_anonymous_args;
-#define SETUP_INCOMING_VARARGS(ASF, MODE, TYPE, PAS, ST) \
-  current_function_anonymous_args = 1;
 
 /* Generate assembly output for the start of a function.  */
 
