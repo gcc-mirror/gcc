@@ -39,6 +39,7 @@ Boston, MA 02111-1307, USA.  */
 			%{mmc:-D__i960MC}\
 			%{mca:-D__i960CA}%{mcc:-D__i960CC}\
 			%{mcf:-D__i960CF}}\
+	%{msoft-float:-D_SOFT_FLOAT}\
 	%{mka:-D__i960KA__ -D__i960_KA__}\
 	%{mkb:-D__i960KB__ -D__i960_KB__}\
 	%{msa:-D__i960SA__ -D__i960_SA__}\
