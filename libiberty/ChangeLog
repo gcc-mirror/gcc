@@ -1,3 +1,9 @@
+2002-07-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-demangle.c (demangle_operator_name): Add type_arg parameter.
+	Set it for the "st" operator.
+	(demangle_expression): Handle expressions with types as arguments.
+
 2002-05-31  Roman Lechtchinsky  <rl@cs.tu-berlin.de>
 
 	* configure.in: Fix typo in the code checking for sys_errlist.

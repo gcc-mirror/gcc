@@ -1,3 +1,8 @@
+2002-07-01  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/7112
+	* g++.dg/template/sizeof1.C: New test.
+
 2002-07-01  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/7177

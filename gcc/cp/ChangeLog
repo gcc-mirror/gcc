@@ -1,3 +1,10 @@
+2002-07-01  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/7112
+	* mangle.c (write_expression): Add mangling for sizeof when
+	applied to a type.
+	* operators.def: Remove stale comment.
+
 2002-06-27  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/6695
