@@ -1,3 +1,17 @@
+Tue Sep 14 20:26:02 1999  Richard Henderson  <rth@cygnus.com>
+
+	* rtl.def (match_insn, match_insn2): Remove match_insn; rename
+	match_insn2 to match_insn.
+
+Tue Sep 14 20:10:29 1999  Richard Henderson  <rth@cygnus.com>
+
+	* Makefile.in (USER_H): Remove va-foo.h.
+
+	* ginclude/{va-alpha.h,va-arc.h,va-c4x.h,va-clipper.h,va-h8300.h,
+	va-i860.h,va-i960.h,va-m32r.h,va-m88k.h,va-mips.h,va-mn10200.h,
+	va-mn10300.h,va-pa.h,va-ppc.h,va-pyr.h,va-sh.h,va-sparc.h,
+	va-spur.h,va-v850.h}: Remove.
+
 Tue Sep 14 19:43:16 1999  Richard Henderson  <rth@cygnus.com>
 
 	* sparc/sparc.md (eligible_for_return_delay): New attribute.
