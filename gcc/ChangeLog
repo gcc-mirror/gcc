@@ -1,3 +1,7 @@
+2001-02-15  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* version.c: Bump to "3.0 20010215 (prerelease)".
+	
 Thu Feb 15 15:15:29 2001  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sh/sh.h (BOOL_TYPE_SIZE): Don't define.
