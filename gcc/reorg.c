@@ -403,27 +403,27 @@ mark_referenced_resources (x, res, include_delayed_effects)
 	    if (global_regs[i])
 	      SET_HARD_REG_BIT (res->regs, i);
 
-	 {
-	   rtx link;
+	  {
+	    rtx link;
 
-           for (link = CALL_INSN_FUNCTION_USAGE (x);
-		link;
-		link = XEXP (link, 1))
-	     if (GET_CODE (XEXP (link, 0)) == USE)
-	       {
-	         for (i = 1; i < seq_size; i++)
-		   {
-		     rtx slot_pat = PATTERN (XVECEXP (sequence, 0, i));
-		     if (GET_CODE (slot_pat) == SET
-		         && rtx_equal_p (SET_DEST (slot_pat),
-				         SET_DEST (XEXP (link, 0))))
-		       break;
-		   }
-	         if (i >= seq_size)
-		   mark_referenced_resources (SET_DEST (XEXP (link, 0)),
-					      res, 0);
-	       }
-	 }
+	    for (link = CALL_INSN_FUNCTION_USAGE (x);
+		 link;
+		 link = XEXP (link, 1))
+	      if (GET_CODE (XEXP (link, 0)) == USE)
+		{
+		  for (i = 1; i < seq_size; i++)
+		    {
+		      rtx slot_pat = PATTERN (XVECEXP (sequence, 0, i));
+		      if (GET_CODE (slot_pat) == SET
+			  && rtx_equal_p (SET_DEST (slot_pat),
+					  SET_DEST (XEXP (link, 0))))
+			break;
+		    }
+		  if (i >= seq_size)
+		    mark_referenced_resources (SET_DEST (XEXP (link, 0)),
+					       res, 0);
+		}
+	  }
 	}
 
       /* ... fall through to other INSN processing ... */
