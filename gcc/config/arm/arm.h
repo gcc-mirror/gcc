@@ -129,7 +129,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 %(cpp_cpu_arch) %(cpp_apcs_pc) %(cpp_float) \
 %(cpp_endian) %(subtarget_cpp_spec) %(cpp_isa) %(cpp_interwork)"
 
-#define CPP_ISA_SPEC "%{mthumb:-Dthumb -D__thumb__} %{!mthumb:-Darm -D__arm__}"
+#define CPP_ISA_SPEC "%{mthumb:-D__thumb__} %{!mthumb:-D__arm__}"
 
 /* Set the architecture define -- if -march= is set, then it overrides
    the -mcpu= setting.  */

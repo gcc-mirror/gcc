@@ -105,7 +105,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef  CPP_PREDEFINES
 #define CPP_PREDEFINES \
-"-Dunix -D__arm__ -Dlinux -D__ELF__ \
+"-Dunix -Dlinux -D__ELF__ \
 -Asystem(unix) -Asystem(posix) -Acpu(arm) -Amachine(arm)"
 
 /* Allow #sccs in preprocessor.  */

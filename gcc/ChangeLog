@@ -1,3 +1,8 @@
+2000-09-10  Philip Blundell  <philb@gnu.org>
+
+	* config/arm/arm.h (CPP_ISA_SPEC): Don't define `arm' or `thumb'.
+	* config/arm/linux-elf.h (CPP_PREDEFINES): Don't define `__arm__'.
+
 Sun Sep 10 14:30:28 EDT 2000  John Wehle  (john@feith.com)
 
 	* alias.c (find_base_term): Handle ADDRESSOF.
