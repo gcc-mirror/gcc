@@ -261,16 +261,16 @@ public class SelectorImpl extends AbstractSelector
 //         return impl;
 //       }
 //     else
-	
+
     if (ch instanceof SocketChannelImpl)
-	    {
+      {
         SocketChannelImpl sc = (SocketChannelImpl) ch;
         SelectionKeyImpl impl = new SelectionKeyImpl (ch, this, sc.fd);
         add (impl);
         impl.interestOps (ops);
         impl.attach (att);
         return impl;
-	    }
+      }
     else if (ch instanceof DatagramChannelImpl)
       {
         DatagramChannelImpl dc = (DatagramChannelImpl) ch;
@@ -290,9 +290,9 @@ public class SelectorImpl extends AbstractSelector
         return impl;
       }
     else
-	    {
+      {
         System.err.println ("INTERNAL ERROR, no known channel type");
-	    }
+      }
 
     return null;
   }

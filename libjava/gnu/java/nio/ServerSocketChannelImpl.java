@@ -73,15 +73,15 @@ class ServerSocketChannelImpl extends ServerSocketChannel
   public void finalizer()
   {
     if (connected)
-	    {
+      {
         try
           {
-            close();
+            close ();
           }
         catch (Exception e)
           {
           }
-	    }
+      }
   }
 
   protected void implCloseSelectableChannel () throws IOException
@@ -91,12 +91,12 @@ class ServerSocketChannelImpl extends ServerSocketChannel
     fd = SocketChannelImpl.SocketCreate ();
   }
 
-  protected void implConfigureBlocking (boolean block) throws IOException
+  protected void implConfigureBlocking (boolean blocking) throws IOException
   {
-    blocking = block;
+    this.blocking = blocking;
   }
 
-  public SocketChannel accept ()
+  public SocketChannel accept () throws IOException
   {
     SocketChannelImpl result = new SocketChannelImpl (provider ());
     result.sa = new InetSocketAddress (0);

@@ -80,37 +80,36 @@ public class SocketChannelImpl extends SocketChannel
   public void finalizer()
   {
     if (connected)
-	    {
+      {
         try
           {
-            close();
+            close ();
           }
         catch (Exception e)
           {
           }
-	    }
+      }
   }
 
-  protected void implCloseSelectableChannel()
+  protected void implCloseSelectableChannel () throws IOException
   {
     connected = false;
     SocketClose(fd);
     fd = SocketCreate();
   }
 
-  protected void implConfigureBlocking(boolean  block)
+  protected void implConfigureBlocking (boolean blocking) throws IOException
   {
-    if (blocking == block)
-	    return;
+    if (this.blocking == blocking)
+      return;
   }   
 
-  public boolean connect(SocketAddress remote)
-    throws IOException
+  public boolean connect (SocketAddress remote) throws IOException
   {
     if (connected)
-	    {
-        throw new AlreadyConnectedException();
-	    }
+      {
+        throw new AlreadyConnectedException ();
+      }
 
     // ok, lets connect !
 	
@@ -130,17 +129,17 @@ public class SocketChannelImpl extends SocketChannel
     return blocking;
   }
     
-  public boolean finishConnect()
+  public boolean finishConnect ()
   {
     return false;
   }
 
-  public boolean isConnected()
+  public boolean isConnected ()
   {
     return connected;
   }
     
-  public boolean isConnectionPending()
+  public boolean isConnectionPending ()
   {
     if (blocking)
 	    return true;
@@ -148,7 +147,7 @@ public class SocketChannelImpl extends SocketChannel
     return false;
   }
     
-  public Socket socket()
+  public Socket socket ()
   {
     if (sock_object != null)
 	    {
@@ -158,7 +157,7 @@ public class SocketChannelImpl extends SocketChannel
     return sock_object;
   }
 
-  public int read(ByteBuffer dst)
+  public int read (ByteBuffer dst) throws IOException
   {
     int bytes = 0;
     int len = 1024;
@@ -168,27 +167,29 @@ public class SocketChannelImpl extends SocketChannel
     dst.put(b, 0, bytes);
 
     if (bytes == 0)
-	    {
+      {
         // we've hit eof ?
         return -1;
-	    }
+      }
 
     return bytes;
   }
     
-  public long read(ByteBuffer[] dsts, int offset, int length)
+  public long read (ByteBuffer[] dsts, int offset, int length)
+    throws IOException
   {
     long bytes = 0;
 
-    for (int i=offset; i<length; i++)
-	    {
-        bytes += read(dsts[i]);
-	    }
+    for (int i = offset; i < length; i++)
+      {
+        bytes += read (dsts [i]);
+      }
 
     return bytes;
   }
      
-  public int write(ByteBuffer src)
+  public int write (ByteBuffer src)
+    throws IOException
   {
     int bytes = 0;
     int len = src.position();
@@ -210,13 +211,14 @@ public class SocketChannelImpl extends SocketChannel
   }
 
   public long write (ByteBuffer[] srcs, int offset, int length)
+    throws IOException
   {
     long bytes = 0;
 
-    for (int i=offset; i<length; i++)
-	    {
-        bytes += write(srcs[i]);
-	    }
+    for (int i = offset; i < length; i++)
+      {
+        bytes += write (srcs [i]);
+      }
 
     return bytes;
   }

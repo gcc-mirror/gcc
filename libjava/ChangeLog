@@ -1,3 +1,26 @@
+2003-05-14  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/nio/FileLockImpl.java
+	(released): New member variable.
+	(FileLockImpl): Initialize released.
+	(releaseImpl): New native method.
+	(release): Implemented.
+	* gnu/java/nio/SelectorImpl.java: Reformatted.
+	* gnu/java/nio/SelectionKeyImpl.java: Reformatted.
+	* gnu/java/nio/ServerSocketChannelImpl.java: Reformatted.
+	(accept): Throws IOException.
+	* gnu/java/nio/SocketChannelImpl.java: Reformatted.
+	(implConfigureBlocking): Throws IOException.
+	(connect): Likewise.
+	(read): Likewise.
+	(write): Likewise.
+	* gnu/java/nio/natFileLockImpl.cc: New file.
+	* java/nio/channels/FileLock.java: Reformatted.
+	* Makefile.am:
+	(ordinary_java_source_files): Added gnu/java/nio/FileLockImpl.java.
+	(nat_source_files): Added gnu/java/nio/natFileLockImpl.cc.
+	* Makefile.in: Regenerated.
+
 2003-05-13  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/nio/CharViewBufferImpl.java

@@ -35,29 +35,41 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package gnu.java.nio;
 
+import java.io.FileDescriptor;
+import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 
 /**
  * @author Michael Koch
+ * @since 1.4
  */
 public class FileLockImpl extends FileLock
 {
-  public FileLockImpl (FileChannel channel, long position, long size,
-                       boolean shared)
+  private FileDescriptor fd;
+  private boolean released;
+  
+  public FileLockImpl (FileDescriptor fd, FileChannel channel, long position,
+                       long size, boolean shared)
   {
     super (channel, position, size, shared);
+    this.fd = fd;
+    this.released = false;
   }
   
   public boolean isValid ()
   {
-    throw new Error ("Not implemented");
+    return (released || !channel.isOpen ());
   }
 
-  public void release ()
+  private native void releaseImpl () throws IOException;
+
+  public synchronized void release () throws IOException
   {
-    throw new Error ("Not implemented");
+    releaseImpl ();
+    released = true;
   }
 }
