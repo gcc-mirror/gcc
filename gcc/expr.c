@@ -1959,18 +1959,6 @@ emit_group_load (dst, orig_src, ssize, align)
 
   tmps = (rtx *) alloca (sizeof (rtx) * XVECLEN (dst, 0));
 
-  /* If we won't be loading directly from memory, protect the real source
-     from strange tricks we might play.  */
-  src = orig_src;
-  if (GET_CODE (src) != MEM && ! CONSTANT_P (src))
-    {
-      if (GET_MODE (src) == VOIDmode)
-	src = gen_reg_rtx (GET_MODE (dst));
-      else
-	src = gen_reg_rtx (GET_MODE (orig_src));
-      emit_move_insn (src, orig_src);
-    }
-
   /* Process the pieces.  */
   for (i = start; i < XVECLEN (dst, 0); i++)
     {
@@ -1986,6 +1974,22 @@ emit_group_load (dst, orig_src, ssize, align)
 	  bytelen = ssize - bytepos;
 	  if (bytelen <= 0)
 	    abort ();
+	}
+
+      /* If we won't be loading directly from memory, protect the real source
+	 from strange tricks we might play; but make sure that the source can
+	 be loaded directly into the destination.  */
+      src = orig_src;
+      if (GET_CODE (orig_src) != MEM
+	  && (!CONSTANT_P (orig_src)
+	      || (GET_MODE (orig_src) != mode
+		  && GET_MODE (orig_src) != VOIDmode)))
+	{
+	  if (GET_MODE (orig_src) == VOIDmode)
+	    src = gen_reg_rtx (mode);
+	  else
+	    src = gen_reg_rtx (GET_MODE (orig_src));
+	  emit_move_insn (src, orig_src);
 	}
 
       /* Optimize the access just a bit.  */
@@ -2011,8 +2015,7 @@ emit_group_load (dst, orig_src, ssize, align)
 	  else
 	    abort ();
 	}
-      else if ((CONSTANT_P (src)
-		&& (GET_MODE (src) == VOIDmode || GET_MODE (src) == mode))
+      else if (CONSTANT_P (src)
 	       || (GET_CODE (src) == REG && GET_MODE (src) == mode))
 	tmps[i] = src;
       else
