@@ -2010,7 +2010,6 @@ handling.
 @item __NEXT_RUNTIME__
 This macro is defined, with value 1, when the NeXT runtime
 (as in @option{-fnext-runtime}) is in use for Objective-C.
-@end table
 
 @item __TARGET_BITS_ORDER__
 This macro describes the target's bits order in a byte.  Its value is
@@ -2053,6 +2052,7 @@ D-format for the double precision floating-point data type; non-zero
 @item __TARGET_USES_VAX_H_FLOAT__
 When non-zero, the target uses the VAX H-format for the extended
 precision floating-point data type.
+@end table
 
 @node System-specific Predefined Macros
 @subsection System-specific Predefined Macros
