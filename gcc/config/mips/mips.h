@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  MIPS version.
    Copyright (C) 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky (lich@inria.inria.fr).
    Changed by Michael Meissner	(meissner@osf.org).
    64 bit r4000 support by Ian Lance Taylor (ian@cygnus.com) and
@@ -72,9 +72,10 @@ enum processor_type {
   PROCESSOR_R5400,
   PROCESSOR_R5500,
   PROCESSOR_R8000,
-  PROCESSOR_R4KC,
-  PROCESSOR_R5KC,
-  PROCESSOR_R20KC,
+  PROCESSOR_4KC,
+  PROCESSOR_5KC,
+  PROCESSOR_20KC,
+  PROCESSOR_M4K,
   PROCESSOR_SR71000,
   PROCESSOR_SB1
 };
@@ -351,6 +352,7 @@ extern void		sbss_section PARAMS ((void));
 #define ISA_MIPS3                   (mips_isa == 3)
 #define ISA_MIPS4		    (mips_isa == 4)
 #define ISA_MIPS32		    (mips_isa == 32)
+#define ISA_MIPS32R2		    (mips_isa == 33)
 #define ISA_MIPS64                  (mips_isa == 64)
 
 /* Architecture target defines.  */
@@ -359,8 +361,8 @@ extern void		sbss_section PARAMS ((void));
 #define TARGET_MIPS4100             (mips_arch == PROCESSOR_R4100)
 #define TARGET_MIPS4120             (mips_arch == PROCESSOR_R4120)
 #define TARGET_MIPS4300             (mips_arch == PROCESSOR_R4300)
-#define TARGET_MIPS4KC              (mips_arch == PROCESSOR_R4KC)
-#define TARGET_MIPS5KC              (mips_arch == PROCESSOR_R5KC)
+#define TARGET_MIPS4KC              (mips_arch == PROCESSOR_4KC)
+#define TARGET_MIPS5KC              (mips_arch == PROCESSOR_5KC)
 #define TARGET_MIPS5400             (mips_arch == PROCESSOR_R5400)
 #define TARGET_MIPS5500             (mips_arch == PROCESSOR_R5500)
 #define TARGET_SB1                  (mips_arch == PROCESSOR_SB1)
@@ -456,11 +458,19 @@ extern void		sbss_section PARAMS ((void));
       else if (ISA_MIPS32)					\
 	{							\
 	  builtin_define ("__mips=32");				\
+	  builtin_define ("__mips_isa_rev=1");			\
+	  builtin_define ("_MIPS_ISA=_MIPS_ISA_MIPS32");	\
+	}							\
+      else if (ISA_MIPS32R2)					\
+	{							\
+	  builtin_define ("__mips=32");				\
+	  builtin_define ("__mips_isa_rev=2");			\
 	  builtin_define ("_MIPS_ISA=_MIPS_ISA_MIPS32");	\
 	}							\
       else if (ISA_MIPS64)					\
 	{							\
 	  builtin_define ("__mips=64");				\
+	  builtin_define ("__mips_isa_rev=1");			\
 	  builtin_define ("_MIPS_ISA=_MIPS_ISA_MIPS64");	\
 	}							\
 								\
@@ -707,13 +717,17 @@ extern void		sbss_section PARAMS ((void));
 #          if MIPS_ISA_DEFAULT == 32
 #            define MULTILIB_ISA_DEFAULT "mips32"
 #          else
-#            if MIPS_ISA_DEFAULT == 64
-#              define MULTILIB_ISA_DEFAULT "mips64"
+#            if MIPS_ISA_DEFAULT == 33
+#              define MULTILIB_ISA_DEFAULT "mips32r2"
 #            else
-#          define MULTILIB_ISA_DEFAULT "mips1"
-#         endif
+#              if MIPS_ISA_DEFAULT == 64
+#                define MULTILIB_ISA_DEFAULT "mips64"
+#              else
+#                define MULTILIB_ISA_DEFAULT "mips1"
+#              endif
+#            endif
+#          endif
 #        endif
-#       endif
 #      endif
 #    endif
 #  endif
@@ -770,6 +784,7 @@ extern void		sbss_section PARAMS ((void));
                                   || TARGET_MIPS5400                    \
                                   || TARGET_MIPS5500                    \
                                   || ISA_MIPS32	                        \
+                                  || ISA_MIPS32R2                       \
                                   || ISA_MIPS64)                        \
                                  && !TARGET_MIPS16)
 
@@ -806,6 +821,7 @@ extern void		sbss_section PARAMS ((void));
 /* ISA has the conditional move instructions introduced in mips4.  */
 #define ISA_HAS_CONDMOVE        ((ISA_MIPS4				\
 				  || ISA_MIPS32	                        \
+				  || ISA_MIPS32R2                       \
 				  || ISA_MIPS64)			\
                                  && !TARGET_MIPS5500                    \
 				 && !TARGET_MIPS16)
@@ -817,6 +833,7 @@ extern void		sbss_section PARAMS ((void));
    branch on CC, and move (both FP and non-FP) on CC.  */
 #define ISA_HAS_8CC		(ISA_MIPS4				\
                          	 || ISA_MIPS32	                        \
+                         	 || ISA_MIPS32R2                        \
 				 || ISA_MIPS64)
 
 /* This is a catch all for the other new mips4 instructions: indexed load and
@@ -832,6 +849,7 @@ extern void		sbss_section PARAMS ((void));
 
 /* ISA has integer multiply-accumulate instructions, madd and msub.  */
 #define ISA_HAS_MADD_MSUB       ((ISA_MIPS32				\
+				  || ISA_MIPS32R2			\
 				  || ISA_MIPS64				\
 				  ) && !TARGET_MIPS16)
 
@@ -843,6 +861,7 @@ extern void		sbss_section PARAMS ((void));
 
 /* ISA has count leading zeroes/ones instruction (not implemented).  */
 #define ISA_HAS_CLZ_CLO         ((ISA_MIPS32				\
+                                  || ISA_MIPS32R2			\
                                   || ISA_MIPS64				\
                                  ) && !TARGET_MIPS16)
 
@@ -879,22 +898,25 @@ extern void		sbss_section PARAMS ((void));
                                  )
 
 /* ISA has 32-bit rotate right instruction.  */
-#define ISA_HAS_ROTR_SI         (TARGET_MIPS5400                        \
-                                 || TARGET_MIPS5500                     \
-                                 || TARGET_SR71K                        \
-                                 )
+#define ISA_HAS_ROTR_SI         (!TARGET_MIPS16                         \
+                                 && (ISA_MIPS32R2                       \
+                                     || TARGET_MIPS5400                 \
+                                     || TARGET_MIPS5500                 \
+                                     || TARGET_SR71K                    \
+                                     ))
 
-/* ISA has 32-bit rotate right instruction.  */
+/* ISA has 64-bit rotate right instruction.  */
 #define ISA_HAS_ROTR_DI         (TARGET_64BIT                           \
+                                 && !TARGET_MIPS16                      \
                                  && (TARGET_MIPS5400                    \
                                      || TARGET_MIPS5500                 \
                                      || TARGET_SR71K                    \
                                      ))
 
-
 /* ISA has data prefetch instruction.  */
 #define ISA_HAS_PREFETCH	((ISA_MIPS4				\
 				  || ISA_MIPS32				\
+				  || ISA_MIPS32R2			\
 				  || ISA_MIPS64)	       		\
 				 && !TARGET_MIPS16)
 
@@ -902,6 +924,11 @@ extern void		sbss_section PARAMS ((void));
    instructions.  Both require TARGET_HARD_FLOAT, and trunc.w.d
    also requires TARGET_DOUBLE_FLOAT.  */
 #define ISA_HAS_TRUNC_W		(!ISA_MIPS1)
+
+/* ISA includes the MIPS32r2 seb and seh instructions.  */
+#define ISA_HAS_SEB_SEH         (!TARGET_MIPS16                        \
+                                 && (ISA_MIPS32R2                      \
+                                     ))
 
 /* CC1_SPEC causes -mips3 and -mips4 to set -mfp64 and -mgp64; -mips1 or
    -mips2 sets -mfp32 and -mgp32.  This can be overridden by an explicit
@@ -1066,7 +1093,8 @@ extern int mips_abi;
 
 #undef ASM_SPEC
 #define ASM_SPEC "\
-%{G*} %(endian_spec) %{mips1} %{mips2} %{mips3} %{mips4} %{mips32} %{mips64}\
+%{G*} %(endian_spec) %{mips1} %{mips2} %{mips3} %{mips4} \
+%{mips32} %{mips32r2} %{mips64} \
 %{mips16:%{!mno-mips16:-mips16}} %{mno-mips16:-no-mips16} \
 %(subtarget_asm_optimizing_spec) \
 %(subtarget_asm_debugging_spec) \
@@ -1123,7 +1151,7 @@ extern int mips_abi;
 #ifndef LINK_SPEC
 #define LINK_SPEC "\
 %(endian_spec) \
-%{G*} %{mips1} %{mips2} %{mips3} %{mips4} %{mips32} %{mips64} \
+%{G*} %{mips1} %{mips2} %{mips3} %{mips4} %{mips32} %{mips32r2} %{mips64} \
 %{bestGnum} %{shared} %{non_shared}"
 #endif  /* LINK_SPEC defined */
 

@@ -481,7 +481,8 @@ in the following sections.
 -membedded-pic  -mfp32  -mfp64  -mfused-madd  -mno-fused-madd @gol
 -mgas  -mgp32  -mgp64 @gol
 -mgpopt  -mhalf-pic  -mhard-float  -mint64  -mips1 @gol
--mips2  -mips3  -mips4  -mlong64  -mlong32  -mlong-calls  -mmemcpy @gol
+-mips2  -mips3  -mips4  -mips32  -mips32r2  -mips64 @gol
+-mlong64  -mlong32  -mlong-calls  -mmemcpy @gol
 -mmips-as  -mmips-tfile  -mno-abicalls @gol
 -mno-embedded-data  -mno-uninit-const-in-rodata @gol
 -mno-embedded-pic  -mno-gpopt  -mno-long-calls @gol
@@ -7298,13 +7299,19 @@ These @samp{-m} options are defined for the MIPS family of computers:
 @item -march=@var{arch}
 @opindex march
 Generate code that will run on @var{arch}, which can be the name of a
-generic MIPS ISA, or the name of a particular processor.  The ISA names
-are: @samp{mips1}, @samp{mips2}, @samp{mips3}, @samp{mips4}, @samp{mips32}
-and @samp{mips64}.  The processor names are: @samp{r2000},
-@samp{r3000}, @samp{r3900}, @samp{r4000}, @samp{vr4100}, @samp{vr4300},
-@samp{r4400}, @samp{r4600}, @samp{r4650}, @samp{vr5000}, @samp{r6000},
-@samp{r8000}, @samp{4kc}, @samp{4kp}, @samp{5kc}, @samp{20kc},
-@samp{orion}, and @samp{sb1}.  The special value @samp{from-abi} selects the
+generic MIPS ISA, or the name of a particular processor.
+The ISA names are:
+@samp{mips1}, @samp{mips2}, @samp{mips3}, @samp{mips4},
+@samp{mips32}, @samp{mips32r2}, and @samp{mips64}.
+The processor names are:
+@samp{4kc}, @samp{4kp}, @samp{5kc}, @samp{20kc},
+@samp{m4k},
+@samp{r2000}, @samp{r3000}, @samp{r3900}, @samp{r4000}, @samp{r4400},
+@samp{r4600}, @samp{r4650}, @samp{r6000}, @samp{r8000},
+@samp{orion},
+@samp{sb1},
+@samp{vr4100}, @samp{vr4300}, and @samp{vr5000}.
+The special value @samp{from-abi} selects the
 most compatible architecture for the selected ABI (that is,
 @samp{mips1} for 32-bit ABIs and @samp{mips3} for 64-bit ABIs)@.
 
@@ -7362,6 +7369,10 @@ Equivalent to @samp{-march=mips4}.
 @item -mips32
 @opindex mips32
 Equivalent to @samp{-march=mips32}.
+
+@item -mips32r2
+@opindex mips32r2
+Equivalent to @samp{-march=mips32r2}.
 
 @item -mips64
 @opindex mips64

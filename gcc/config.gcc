@@ -1,5 +1,5 @@
 # GCC build-, host- and target-specific configuration file.
-# Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+# Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -1829,6 +1829,11 @@ mipsisa32-*-elf* | mipsisa32el-*-elf*)
 	tm_file="${tm_file} mips/elf.h"
 	tmake_file=mips/t-isa3264
 	tm_defines="MIPS_ISA_DEFAULT=32 MIPS_ABI_DEFAULT=ABI_EABI"
+	;;
+mipsisa32r2-*-elf* | mipsisa32r2el-*-elf*)
+	tm_file="${tm_file} mips/elf.h"
+	tmake_file=mips/t-isa3264
+	tm_defines="MIPS_ISA_DEFAULT=33 MIPS_ABI_DEFAULT=ABI_EABI"
 	;;
 mipsisa64-*-elf* | mipsisa64el-*-elf*)
 	tm_file="${tm_file} mips/elf.h"
