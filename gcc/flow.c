@@ -3954,8 +3954,21 @@ insn_dead_p (pbi, x, call_ok, notes)
 	  temp = pbi->mem_set_list;
 	  while (temp)
 	    {
-	      if (rtx_equal_p (XEXP (temp, 0), r))
+	      rtx mem = XEXP (temp, 0);
+
+	      if (rtx_equal_p (mem, r))
 		return 1;
+#ifdef AUTO_INC_DEC
+	      /* Check if memory reference matches an auto increment. Only
+		 post increment/decrement or modify are valid.  */
+      	      if (GET_MODE (mem) == GET_MODE (r)
+	          && (GET_CODE (XEXP (mem, 0)) == POST_DEC
+	              || GET_CODE (XEXP (mem, 0)) == POST_INC
+	              || GET_CODE (XEXP (mem, 0)) == POST_MODIFY)
+		  && GET_MODE (XEXP (mem, 0)) == GET_MODE (r)
+		  && rtx_equal_p (XEXP (XEXP (mem, 0), 0), XEXP (r, 0)))
+		return 1;
+#endif
 	      temp = XEXP (temp, 1);
 	    }
 	}
