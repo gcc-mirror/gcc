@@ -6562,8 +6562,8 @@
 	(neg:TF (match_operand:TF 1 "register_operand" "")))]
   "TARGET_FPU
    && ! TARGET_V9
-   && sparc_absnegfloat_split_legitimate (operands[0], operands[1])
-   && reload_completed"
+   && reload_completed
+   && sparc_absnegfloat_split_legitimate (operands[0], operands[1])"
   [(set (match_dup 2) (neg:SF (match_dup 3)))
    (set (match_dup 4) (match_dup 5))
    (set (match_dup 6) (match_dup 7))]
@@ -6594,8 +6594,8 @@
 	(neg:TF (match_operand:TF 1 "register_operand" "")))]
   "TARGET_FPU
    && TARGET_V9
-   && sparc_absnegfloat_split_legitimate (operands[0], operands[1])
-   && reload_completed"
+   && reload_completed
+   && sparc_absnegfloat_split_legitimate (operands[0], operands[1])"
   [(set (match_dup 2) (neg:DF (match_dup 3)))
    (set (match_dup 4) (match_dup 5))]
   "if (GET_CODE (operands[0]) == SUBREG)
@@ -6628,8 +6628,8 @@
         (neg:DF (match_operand:DF 1 "register_operand" "")))]
   "TARGET_FPU
    && ! TARGET_V9
-   && sparc_absnegfloat_split_legitimate (operands[0], operands[1])
-   && reload_completed"
+   && reload_completed
+   && sparc_absnegfloat_split_legitimate (operands[0], operands[1])"
   [(set (match_dup 2) (neg:SF (match_dup 3)))
    (set (match_dup 4) (match_dup 5))]
   "if (GET_CODE (operands[0]) == SUBREG)
@@ -6679,8 +6679,8 @@
 	(abs:TF (match_operand:TF 1 "register_operand" "0,e")))]
   "TARGET_FPU
    && ! TARGET_V9
-   && sparc_absnegfloat_split_legitimate (operands[0], operands[1])
-   && reload_completed"
+   && reload_completed
+   && sparc_absnegfloat_split_legitimate (operands[0], operands[1])"
   [(set (match_dup 2) (abs:SF (match_dup 3)))
    (set (match_dup 4) (match_dup 5))
    (set (match_dup 6) (match_dup 7))]
@@ -6711,8 +6711,8 @@
 	(abs:TF (match_operand:TF 1 "register_operand" "0,e")))]
   "TARGET_FPU
    && TARGET_V9
-   && sparc_absnegfloat_split_legitimate (operands[0], operands[1])
-   && reload_completed"
+   && reload_completed
+   && sparc_absnegfloat_split_legitimate (operands[0], operands[1])"
   [(set (match_dup 2) (abs:DF (match_dup 3)))
    (set (match_dup 4) (match_dup 5))]
   "if (GET_CODE (operands[0]) == SUBREG)
@@ -6745,8 +6745,8 @@
 	(abs:DF (match_operand:DF 1 "register_operand" "0,e")))]
   "TARGET_FPU
    && ! TARGET_V9
-   && sparc_absnegfloat_split_legitimate (operands[0], operands[1])
-   && reload_completed"
+   && reload_completed
+   && sparc_absnegfloat_split_legitimate (operands[0], operands[1])"
   [(set (match_dup 2) (abs:SF (match_dup 3)))
    (set (match_dup 4) (match_dup 5))]
   "if (GET_CODE (operands[0]) == SUBREG)
