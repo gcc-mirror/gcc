@@ -7682,8 +7682,13 @@ ia64_in_small_data_p (tree exp)
   if (TREE_CODE (exp) == VAR_DECL && DECL_SECTION_NAME (exp))
     {
       const char *section = TREE_STRING_POINTER (DECL_SECTION_NAME (exp));
+
       if (strcmp (section, ".sdata") == 0
-	  || strcmp (section, ".sbss") == 0)
+	  || strncmp (section, ".sdata.", 7) == 0
+	  || strncmp (section, ".gnu.linkonce.s.", 16) == 0
+	  || strcmp (section, ".sbss") == 0
+	  || strncmp (section, ".sbss.", 6) == 0
+	  || strncmp (section, ".gnu.linkonce.sb.", 17) == 0)
 	return true;
     }
   else

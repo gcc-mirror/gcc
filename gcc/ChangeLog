@@ -1,3 +1,12 @@
+2005-01-10  Jan Beulich  <jbeulich@novell.com>
+
+	* config/ia64/ia64.c (ia64_in_small_data_p): Also handle the section
+	names resulting from -ffunction-sections/-fdata-sections and linkonce
+	ones.
+	* varasm.c (default_section_type_flags_1): Also set SECTION_SMALL
+	based on the section name. Rearrange the section name comparison logic
+	slightly so that each section name is compared against at most once.
+
 2005-01-10  Ben Elliston  <bje@au.ibm.com>
 
 	* doc/invoke.texi (Code Gen Options): Add PowerPC to the list of
