@@ -1043,12 +1043,12 @@ do_pragma (pfile)
   if (tok.type == CPP_NAME)
     {
       const cpp_hashnode *node = tok.val.node;
-      const U_CHAR *name = NODE_NAME (node);
       size_t len = NODE_LEN (node);
 
       while (p)
 	{
-	  if (strlen (p->name) == len && !memcmp (p->name, name, len))
+	  if (strlen (p->name) == len
+	      && !memcmp (p->name, NODE_NAME (node), len))
 	    {
 	      if (p->isnspace)
 		{
@@ -1403,7 +1403,7 @@ do_endif (pfile)
 
       buffer->if_stack = ifs->next;
       buffer->was_skipping = ifs->was_skipping;
-      obstack_free (pfile->buffer_ob, ifs);
+      obstack_free (&pfile->buffer_ob, ifs);
     }
 
   check_eol (pfile);
@@ -1423,7 +1423,7 @@ push_conditional (pfile, skip, type, cmacro)
   struct if_stack *ifs;
   cpp_buffer *buffer = pfile->buffer;
 
-  ifs = xobnew (pfile->buffer_ob, struct if_stack);
+  ifs = xobnew (&pfile->buffer_ob, struct if_stack);
   ifs->pos = pfile->directive_pos;
   ifs->next = buffer->if_stack;
   ifs->was_skipping = buffer->was_skipping;
@@ -1804,7 +1804,7 @@ cpp_push_buffer (pfile, buffer, len, type, filename)
      enum cpp_buffer_type type;
      const char *filename;
 {
-  cpp_buffer *new = xobnew (pfile->buffer_ob, cpp_buffer);
+  cpp_buffer *new = xobnew (&pfile->buffer_ob, cpp_buffer);
 
   if (type == BUF_FAKE)
     {
@@ -1905,21 +1905,16 @@ cpp_pop_buffer (pfile)
 		   buffer->nominal_fname);
     }
 
-  obstack_free (pfile->buffer_ob, buffer);
+  obstack_free (&pfile->buffer_ob, buffer);
   return pfile->buffer;
 }
 
-#define obstack_chunk_alloc xmalloc
-#define obstack_chunk_free free
 void
-_cpp_init_stacks (pfile)
+_cpp_init_directives (pfile)
      cpp_reader *pfile;
 {
   unsigned int i;
   cpp_hashnode *node;
-
-  pfile->buffer_ob = xnew (struct obstack);
-  obstack_init (pfile->buffer_ob);
 
   /* Register the directives.  */
   for (i = 0; i < (unsigned int) N_DIRECTIVES; i++)
@@ -1927,12 +1922,4 @@ _cpp_init_stacks (pfile)
       node = cpp_lookup (pfile, dtable[i].name, dtable[i].length);
       node->directive_index = i + 1;
     }
-}
-
-void
-_cpp_cleanup_stacks (pfile)
-     cpp_reader *pfile;
-{
-  obstack_free (pfile->buffer_ob, 0);
-  free (pfile->buffer_ob);
 }

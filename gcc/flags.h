@@ -146,7 +146,7 @@ extern int warn_cast_align;
    characters.  The value N is in `id_clash_len'.  */
 
 extern int warn_id_clash;
-extern int id_clash_len;
+extern unsigned int id_clash_len;
 
 /* Nonzero means warn about any objects definitions whose size is larger
    than N bytes.  Also want about function definitions whose returned

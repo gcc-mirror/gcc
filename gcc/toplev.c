@@ -1421,7 +1421,7 @@ int warn_cast_align;
    characters.  The value N is in `id_clash_len'.  */
 
 int warn_id_clash;
-int id_clash_len;
+unsigned int id_clash_len;
 
 /* Nonzero means warn about any objects definitions whose size is larger
    than N bytes.  Also want about function definitions whose returned
@@ -1610,29 +1610,6 @@ floor_log2_wide (x)
     log++,
     x >>= 1;
   return log;
-}
-
-/* Return the approximate positive square root of a number N.  This is for
-   statistical reports, not code generation.  */
-double
-approx_sqrt (x)
-     double x;
-{
-  double s, d;
-
-  if (x < 0)
-    abort ();
-  if (x == 0)
-    return 0;
-
-  s = x;
-  do
-    {
-      d = (s * s - x) / (2 * s);
-      s -= d;
-    }
-  while (d > .0001);
-  return s;
 }
 
 static int float_handler_set;

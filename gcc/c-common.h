@@ -23,6 +23,7 @@ Boston, MA 02111-1307, USA.  */
 #define GCC_C_COMMON_H
 
 #include "splay-tree.h"
+#include "cpplib.h"
 
 /* Usage of TREE_LANG_FLAG_?:
    0: COMPOUND_STMT_NO_SCOPE (in COMPOUND_STMT).
@@ -166,6 +167,17 @@ enum c_tree_index
     CTI_VOID_ZERO,
 
     CTI_MAX
+};
+
+#define C_RID_CODE(id)	(((struct c_common_identifier *) (id))->rid_code)
+
+/* Identifier part common to the C front ends.  Inherits from
+   tree_identifier, despite appearances.  */
+struct c_common_identifier
+{
+  struct tree_common common;
+  struct cpp_hashnode node;
+  ENUM_BITFIELD(rid) rid_code: CHAR_BIT;
 };
 
 #define wchar_type_node			c_global_trees[CTI_WCHAR_TYPE]

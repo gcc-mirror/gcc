@@ -729,16 +729,27 @@ struct tree_complex
   union tree_node *imag;
 };
 
+#include "hashtable.h"
+
 /* Define fields and accessors for some special-purpose tree nodes.  */
 
-#define IDENTIFIER_LENGTH(NODE) (IDENTIFIER_NODE_CHECK (NODE)->identifier.length)
-#define IDENTIFIER_POINTER(NODE) (IDENTIFIER_NODE_CHECK (NODE)->identifier.pointer)
+#define IDENTIFIER_LENGTH(NODE) \
+	(IDENTIFIER_NODE_CHECK (NODE)->identifier.id.len)
+#define IDENTIFIER_POINTER(NODE) \
+	((char *) IDENTIFIER_NODE_CHECK (NODE)->identifier.id.str)
+
+/* Translate a hash table identifier pointer to a tree_identifier
+   pointer, and vice versa.  */
+
+#define HT_IDENT_TO_GCC_IDENT(NODE) \
+	((tree) ((char *) (NODE) - sizeof (struct tree_common)))
+#define GCC_IDENT_TO_HT_IDENT(NODE) \
+	(&((struct tree_identifier *) (NODE))->id)
 
 struct tree_identifier
 {
   struct tree_common common;
-  int length;
-  const char *pointer;
+  struct ht_identifier id;
 };
 
 /* In a TREE_LIST node.  */
@@ -1946,6 +1957,10 @@ extern tree make_tree_vec		PARAMS ((int));
    The name is supplied as a char *.  */
 
 extern tree get_identifier		PARAMS ((const char *));
+
+/* NODE is an identifier known to the preprocessor.  Make it known to
+   the front ends as well.  */
+extern void make_identifier		PARAMS ((tree node));
 
 /* If an identifier with the name TEXT (a null-terminated string) has
    previously been referred to, return that node; otherwise return

@@ -270,13 +270,12 @@ extern int flag_huge_objects;
 
 struct lang_identifier
 {
-  struct tree_identifier ignore;
+  struct c_common_identifier ignore;
   tree namespace_bindings;
   tree bindings;
   tree class_value;
   tree class_template_info;
   struct lang_id2 *x;
-  enum rid rid_code;
 };
 
 /* In an IDENTIFIER_NODE, nonzero if this identifier is actually a
@@ -284,12 +283,9 @@ struct lang_identifier
    and C_RID_YYCODE is the token number wanted by Yacc.  */
 
 #define C_IS_RESERVED_WORD(id) TREE_LANG_FLAG_5 (id)
-#define C_RID_CODE(id) \
-  (((struct lang_identifier *) (id))->rid_code)
 
 extern const short rid_to_yy[RID_MAX];
-#define C_RID_YYCODE(id) \
-  rid_to_yy[((struct lang_identifier *) (id))->rid_code]
+#define C_RID_YYCODE(id) rid_to_yy[C_RID_CODE (id)]
 
 #define LANG_IDENTIFIER_CAST(NODE) \
 	((struct lang_identifier*)IDENTIFIER_NODE_CHECK (NODE))
@@ -1878,7 +1874,7 @@ struct lang_decl
   } u2;
 };
 
-#define DEFARG_POINTER(NODE) (DEFAULT_ARG_CHECK(NODE)->identifier.pointer)
+#define DEFARG_POINTER(NODE) (DEFAULT_ARG_CHECK(NODE)->identifier.id.str)
 
 /* Non-zero if NODE is a _DECL with TREE_READONLY set.  */
 #define TREE_READONLY_DECL_P(NODE) \

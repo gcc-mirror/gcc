@@ -479,22 +479,14 @@ parse_identifier (pfile, c)
 {
   cpp_hashnode *result;
   cpp_buffer *buffer = pfile->buffer;
-  unsigned char *dest, *limit;
-  unsigned int r = 0, saw_dollar = 0;
-
-  dest = POOL_FRONT (&pfile->ident_pool);
-  limit = POOL_LIMIT (&pfile->ident_pool);
+  unsigned int saw_dollar = 0, len;
+  struct obstack *stack = &pfile->hash_table->stack;
 
   do
     {
       do
 	{
-	  /* Need room for terminating null.  */
-	  if (dest + 1 >= limit)
-	    limit = _cpp_next_chunk (&pfile->ident_pool, 0, &dest);
-
-	  *dest++ = c;
-	  r = HASHSTEP (r, c);
+	  obstack_1grow (stack, c);
 
 	  if (c == '$')
 	    saw_dollar++;
@@ -524,11 +516,12 @@ parse_identifier (pfile, c)
     cpp_pedwarn (pfile, "'$' character(s) in identifier");
 
   /* Identifiers are null-terminated.  */
-  *dest = '\0';
+  len = obstack_object_size (stack);
+  obstack_1grow (stack, '\0');
 
   /* This routine commits the memory if necessary.  */
-  result = _cpp_lookup_with_hash (pfile,
-				  dest - POOL_FRONT (&pfile->ident_pool), r);
+  result = (cpp_hashnode *)
+    ht_lookup (pfile->hash_table, obstack_finish (stack), len, HT_ALLOCED);
 
   /* Some identifiers require diagnostics when lexed.  */
   if (result->flags & NODE_DIAGNOSTIC && !pfile->skipping)
@@ -1905,7 +1898,8 @@ cpp_interpret_charconst (pfile, token, warn_multi, traditional, pchars_seen)
   const unsigned char *limit = str + token->val.str.len;
   unsigned int chars_seen = 0;
   unsigned int width, max_chars, c;
-  HOST_WIDE_INT result = 0, mask;
+  unsigned HOST_WIDE_INT mask;
+  HOST_WIDE_INT result = 0;
 
 #ifdef MULTIBYTE_CHARS
   (void) local_mbtowc (NULL, NULL, 0);

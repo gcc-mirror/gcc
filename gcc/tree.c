@@ -238,26 +238,6 @@ init_obstacks ()
   lang_set_decl_assembler_name = set_decl_assembler_name;
 }
 
-void
-gcc_obstack_init (obstack)
-     struct obstack *obstack;
-{
-  /* Let particular systems override the size of a chunk.  */
-#ifndef OBSTACK_CHUNK_SIZE
-#define OBSTACK_CHUNK_SIZE 0
-#endif
-  /* Let them override the alloc and free routines too.  */
-#ifndef OBSTACK_CHUNK_ALLOC
-#define OBSTACK_CHUNK_ALLOC xmalloc
-#endif
-#ifndef OBSTACK_CHUNK_FREE
-#define OBSTACK_CHUNK_FREE free
-#endif
-  _obstack_begin (obstack, OBSTACK_CHUNK_SIZE, 0,
-		  (void *(*) PARAMS ((long))) OBSTACK_CHUNK_ALLOC,
-		  (void (*) PARAMS ((void *))) OBSTACK_CHUNK_FREE);
-}
-
 
 /* Allocate SIZE bytes in the permanent obstack
    and return a pointer to them.  */

@@ -84,6 +84,13 @@ extern void ggc_mark_rtvec_children PARAMS ((struct rtvec_def *));
       VARRAY_PUSH_TREE (ggc_pending_trees, t__);	\
   } while (0)
 
+#define ggc_mark_nonnull_tree(EXPR)			\
+  do {							\
+    tree t__ = (EXPR);					\
+    if (! ggc_set_mark (t__))				\
+      VARRAY_PUSH_TREE (ggc_pending_trees, t__);	\
+  } while (0)
+
 #define ggc_mark_rtvec(EXPR)                    \
   do {                                          \
     rtvec v__ = (EXPR);                         \

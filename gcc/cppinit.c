@@ -491,7 +491,8 @@ init_library ()
 
 /* Initialize a cpp_reader structure. */
 cpp_reader *
-cpp_create_reader (lang)
+cpp_create_reader (table, lang)
+     hash_table *table;
      enum c_lang lang;
 {
   struct spec_nodes *s;
@@ -536,8 +537,13 @@ cpp_create_reader (lang)
   /* Macro pool initially 8K.  Aligned, permanent pool.  */
   _cpp_init_pool (&pfile->macro_pool, 8 * 1024, 0, 0);
 
-  _cpp_init_hashtable (pfile);
-  _cpp_init_stacks (pfile);
+  /* Initialise the buffer obstack.  */
+  gcc_obstack_init (&pfile->buffer_ob);
+
+  /* Initialise the hashtable.  */
+  _cpp_init_hashtable (pfile, table);
+
+  _cpp_init_directives (pfile);
   _cpp_init_includes (pfile);
   _cpp_init_internal_pragmas (pfile);
 
@@ -577,11 +583,10 @@ cpp_destroy (pfile)
     }
 
   deps_free (pfile->deps);
+  obstack_free (&pfile->buffer_ob, 0);
 
+  _cpp_destroy_hashtable (pfile);
   _cpp_cleanup_includes (pfile);
-  _cpp_cleanup_stacks (pfile);
-  _cpp_cleanup_hashtable (pfile);
-
   _cpp_free_lookaheads (pfile);
 
   _cpp_free_pool (&pfile->ident_pool);
