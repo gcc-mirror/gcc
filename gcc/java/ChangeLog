@@ -1,3 +1,11 @@
+Tue Jul 20 13:20:05 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (resolve_and_layout): Check methods only once.
+	(resolve_qualified_expression_name): Verify thrown exceptions
+ 	compatibility.
+	(check_thrown_exceptions): Reject exceptions thrown in
+ 	initializer. Error message tuned.
+	
 1999-07-14  Andrew Haley  <aph@cygnus.com>
 
         * expr.c (expand_expr): Do not return the last statement in a

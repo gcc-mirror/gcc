@@ -6922,7 +6922,9 @@ resolve_and_layout (something, cl)
 
   /* Resolve and layout if necessary */
   layout_class_methods (TREE_TYPE (decl));
-  if (CLASS_FROM_SOURCE_P (TREE_TYPE (decl)))
+  /* Check methods, but only once */
+  if (CLASS_FROM_SOURCE_P (TREE_TYPE (decl)) 
+      && !CLASS_LOADED_P (TREE_TYPE (decl)))
     CHECK_METHODS (decl);
   if (TREE_TYPE (decl) != current_class && !CLASS_LOADED_P (TREE_TYPE (decl)))
     safe_layout_class (TREE_TYPE (decl));
@@ -9018,6 +9020,8 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
   for (q = EXPR_WFL_QUALIFICATION (wfl); q; q = TREE_CHAIN (q))
     {
       tree qual_wfl = QUAL_WFL (q);
+      tree ret_decl;		/* for EH checking */
+      int location;		/* for EH checking */
 
       /* 15.10.1 Field Access Using a Primary */
       switch (TREE_CODE (qual_wfl))
@@ -9036,13 +9040,20 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	  /* And code for the function call */
 	  if (complete_function_arguments (qual_wfl))
 	    return 1;
+	  
 	  if (from_super && TREE_CODE (qual_wfl) == CALL_EXPR)
 	    CALL_USING_SUPER (qual_wfl) = 1;
-	  *where_found = 
-	    patch_method_invocation (qual_wfl, decl, type, &is_static, NULL);
+	  location = (TREE_CODE (qual_wfl) == CALL_EXPR ?
+		      EXPR_WFL_LINECOL (TREE_OPERAND (qual_wfl, 0)) : 0);
+	  *where_found = patch_method_invocation (qual_wfl, decl, type, 
+						  &is_static, &ret_decl);
 	  if (*where_found == error_mark_node)
 	    return 1;
 	  *type_found = type = QUAL_DECL_TYPE (*where_found);
+
+	  /* EH check */
+	  if (location)
+	    check_thrown_exceptions (location, ret_decl);
 
 	  /* If the previous call was static and this one is too,
 	     build a compound expression to hold the two (because in
@@ -14040,11 +14051,20 @@ check_thrown_exceptions (location, decl)
 	  continue;
 #endif
 	EXPR_WFL_LINECOL (wfl_operator) = location;
-	parse_error_context 
-	  (wfl_operator, "Exception `%s' must be caught, or it must be "
-	   "declared in the `throws' clause of `%s'", 
-	   lang_printable_name (TREE_VALUE (throws), 0),
-	   IDENTIFIER_POINTER (DECL_NAME (current_function_decl)));
+	if (DECL_NAME (current_function_decl) == finit_identifier_node)
+	  parse_error_context
+            (wfl_operator, "Exception `%s' can't be thrown in initializer",
+	     lang_printable_name (TREE_VALUE (throws), 0));
+	else 
+	  {
+	    parse_error_context 
+	      (wfl_operator, "Exception `%s' must be caught, or it must be "
+	       "declared in the `throws' clause of `%s'", 
+	       lang_printable_name (TREE_VALUE (throws), 0),
+	       (DECL_NAME (current_function_decl) == init_identifier_node ?
+		IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (current_class))) :
+		IDENTIFIER_POINTER (DECL_NAME (current_function_decl))));
+	  }
       }
 }
 
