@@ -263,9 +263,9 @@ bc_init_mode_to_opcode_maps ()
   int mode;
 
   for (mode = 0; mode < (int) MAX_MACHINE_MODE; mode++)
-    mode_to_const_map[mode] =
-      mode_to_load_map[mode] =
-	mode_to_store_map[mode] = neverneverland;
+    mode_to_const_map[mode]
+      = mode_to_load_map[mode]
+      = mode_to_store_map[mode] = neverneverland;
       
 #define DEF_MODEMAP(SYM, CODE, UCODE, CONST, LOAD, STORE) \
   mode_to_const_map[(int) SYM] = CONST; \
@@ -1522,12 +1522,12 @@ move_by_pieces_1 (genfun, mode, data)
 							data->offset))));
       MEM_IN_STRUCT_P (to1) = data->to_struct;
 
-      from1 =
-	(data->autinc_from
-	 ? gen_rtx (MEM, mode, data->from_addr)
-	 : copy_rtx (change_address (data->from, mode,
-				     plus_constant (data->from_addr,
-						    data->offset))));
+      from1
+	= (data->autinc_from
+	   ? gen_rtx (MEM, mode, data->from_addr)
+	   : copy_rtx (change_address (data->from, mode,
+				       plus_constant (data->from_addr,
+						      data->offset))));
       MEM_IN_STRUCT_P (from1) = data->from_struct;
 
 #ifdef HAVE_PRE_DECREMENT

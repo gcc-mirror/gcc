@@ -7515,9 +7515,9 @@ gen_subprogram_die (decl, context_die)
       for (parm = arg_decls; parm; parm = TREE_CHAIN (parm))
 	if (TREE_CODE (parm) == PARM_DECL)
 	  {
-	    if (DECL_NAME (parm) &&
-		!strcmp (IDENTIFIER_POINTER (DECL_NAME (parm)),
-			 "__builtin_va_alist"))
+	    if (DECL_NAME (parm)
+		&& !strcmp (IDENTIFIER_POINTER (DECL_NAME (parm)),
+			    "__builtin_va_alist"))
 	      gen_unspecified_parameters_die (parm, subr_die);
 	    else
 	      gen_decl_die (parm, subr_die);

@@ -1899,8 +1899,8 @@ add_string (vp, hash_tbl, start, end_p1, ret_hash)
 
       if (vp->objects_last_page + len >= PAGE_USIZE)
 	{
-	  vp->num_allocated =
-	    ((vp->num_allocated + PAGE_USIZE - 1) / PAGE_USIZE) * PAGE_USIZE;
+	  vp->num_allocated
+	    = ((vp->num_allocated + PAGE_USIZE - 1) / PAGE_USIZE) * PAGE_USIZE;
 	  add_varray_page (vp);
 	}
 
@@ -2576,8 +2576,8 @@ add_file (file_start, file_end_p1)
       if (file_desc.objects_last_page == file_desc.objects_per_page)
 	add_varray_page (&file_desc);
 
-      file_ptr = cur_file_ptr =
-	&file_desc.last->datum->file[ file_desc.objects_last_page++ ];
+      file_ptr = cur_file_ptr
+	= &file_desc.last->datum->file[ file_desc.objects_last_page++ ];
       *file_ptr = init_file;
 
       file_ptr->file_index = file_desc.num_allocated++;

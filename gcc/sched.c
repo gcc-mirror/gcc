@@ -645,8 +645,8 @@ memrefs_conflict_p (xsize, x, ysize, y, c)
     y = canon_rtx (y);
 
   if (rtx_equal_for_memref_p (x, y))
-    return (xsize == 0 || ysize == 0 ||
-	    (c >= 0 && xsize > c) || (c < 0 && ysize+c > 0));
+    return (xsize == 0 || ysize == 0
+	    || (c >= 0 && xsize > c) || (c < 0 && ysize+c > 0));
 
   if (y == frame_pointer_rtx || y == hard_frame_pointer_rtx
       || y == stack_pointer_rtx)

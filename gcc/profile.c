@@ -499,8 +499,8 @@ branch_prob (f, dump_file)
 	else if ((prev_code == JUMP_INSN || prev_code == CALL_INSN
 		  || prev_code == CODE_LABEL || prev_code == BARRIER)
 		 && (GET_RTX_CLASS (code) == 'i'
-		     || (code == NOTE &&
-			 NOTE_LINE_NUMBER (insn) == NOTE_INSN_SETJMP)))
+		     || (code == NOTE
+			 && NOTE_LINE_NUMBER (insn) == NOTE_INSN_SETJMP)))
 	  {
 	    i += 1;
 
@@ -550,8 +550,8 @@ branch_prob (f, dump_file)
 		      {
 			if (last_bb_file_name)
 			  free (last_bb_file_name);
-			last_bb_file_name =
-			  xmalloc (strlen (NOTE_SOURCE_FILE (insn)) + 1);
+			last_bb_file_name
+			  = xmalloc (strlen (NOTE_SOURCE_FILE (insn)) + 1);
 			strcpy (last_bb_file_name, NOTE_SOURCE_FILE (insn));
 			output_gcov_string (NOTE_SOURCE_FILE (insn), (long)-1);
 		      }
@@ -662,8 +662,8 @@ branch_prob (f, dump_file)
 	else if ((prev_code == JUMP_INSN || prev_code == CALL_INSN
 		  || prev_code == CODE_LABEL || prev_code == BARRIER)
 		 && (GET_RTX_CLASS (code) == 'i'
-		     || (code == NOTE &&
-			 NOTE_LINE_NUMBER (insn) == NOTE_INSN_SETJMP)))
+		     || (code == NOTE
+			 && NOTE_LINE_NUMBER (insn) == NOTE_INSN_SETJMP)))
 	  {
 	    /* This is the first insn of the block.  */
 	    i += 1;

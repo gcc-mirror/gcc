@@ -1011,8 +1011,8 @@ final_start_function (first, file, optimize)
      of the function name.  */
   if (profile_block_flag)
     {
-      bb_func_label_num =
-	add_bb_string ((*decl_printable_name) (current_function_decl, 2), FALSE);
+      bb_func_label_num
+	= add_bb_string ((*decl_printable_name) (current_function_decl, 2), FALSE);
     }
 }
 

@@ -1301,8 +1301,8 @@ output_data ()
 	      /* In case the source file line is larger than our buffer, keep
 		 reading and outputing lines until we get a newline.  */
 	      len = strlen (string);
-	      while ((len == 0 || string[strlen (string) - 1] != '\n') &&
-		     retval != NULL)
+	      while ((len == 0 || string[strlen (string) - 1] != '\n')
+		     && retval != NULL)
 		{
 		  retval = fgets (string, STRING_SIZE, source_file);
 		  fputs (string, gcov_file);
@@ -1358,8 +1358,8 @@ output_data ()
 		/* In case the source file line is larger than our buffer, keep
 		   reading and outputing lines until we get a newline.  */
 		len = strlen (string);
-		while ((len == 0 || string[strlen (string) - 1] != '\n') &&
-		       retval != NULL)
+		while ((len == 0 || string[strlen (string) - 1] != '\n')
+		       && retval != NULL)
 		  {
 		    retval = fgets (string, STRING_SIZE, source_file);
 		    fputs (string, gcov_file);

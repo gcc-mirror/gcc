@@ -175,9 +175,9 @@ function_cannot_inline_p (fndecl)
   /* This is a hack, until the inliner is taught about eh regions at
      the start of the function.  */
   for (insn = get_insns ();
-       insn &&
-         ! (GET_CODE (insn) == NOTE
-	    && NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_BEG);
+       insn
+	 && ! (GET_CODE (insn) == NOTE
+	       && NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_BEG);
        insn = NEXT_INSN (insn))
     {
       if (insn && GET_CODE (insn) == NOTE
@@ -604,8 +604,8 @@ save_for_inline_copying (fndecl)
 	  copy = rtx_alloc (GET_CODE (insn));
 
 	  if (GET_CODE (insn) == CALL_INSN)
-	    CALL_INSN_FUNCTION_USAGE (copy) =
-	           copy_for_inline (CALL_INSN_FUNCTION_USAGE (insn));
+	    CALL_INSN_FUNCTION_USAGE (copy)
+	      = copy_for_inline (CALL_INSN_FUNCTION_USAGE (insn));
 
 	  PATTERN (copy) = copy_for_inline (PATTERN (insn));
 	  INSN_CODE (copy) = -1;
@@ -1896,8 +1896,8 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 
 	  /* Because the USAGE information potentially contains objects other
 	     than hard registers, we need to copy it.  */
-	  CALL_INSN_FUNCTION_USAGE (copy) =
-	     copy_rtx_and_substitute (CALL_INSN_FUNCTION_USAGE (insn), map);
+	  CALL_INSN_FUNCTION_USAGE (copy)
+	    = copy_rtx_and_substitute (CALL_INSN_FUNCTION_USAGE (insn), map);
 
 #ifdef HAVE_cc0
 	  if (cc0_insn)

@@ -2011,8 +2011,8 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 
 	  /* Because the USAGE information potentially contains objects other
 	     than hard registers, we need to copy it.  */
-	  CALL_INSN_FUNCTION_USAGE (copy) =
-	     copy_rtx_and_substitute (CALL_INSN_FUNCTION_USAGE (insn), map);
+	  CALL_INSN_FUNCTION_USAGE (copy)
+	    = copy_rtx_and_substitute (CALL_INSN_FUNCTION_USAGE (insn), map);
 
 #ifdef HAVE_cc0
 	  if (cc0_insn)

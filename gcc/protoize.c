@@ -1788,8 +1788,8 @@ save_def_or_dec (l, is_syscalls)
       const char *left_paren_p = find_corresponding_lparen (p);
 #ifndef UNPROTOIZE
       {
-        f_list_chain_item *cip =
-          (f_list_chain_item *) xmalloc (sizeof (f_list_chain_item));
+        f_list_chain_item *cip
+	  = (f_list_chain_item *) xmalloc (sizeof (f_list_chain_item));
 
         cip->formals_list
 	  = dupnstr (left_paren_p + 1, (size_t) (p - (left_paren_p+1)));
@@ -4362,8 +4362,8 @@ edit_file (hp)
 
   if (!nosave_flag)
     {
-      char *new_filename =
-          (char *) xmalloc (strlen (convert_filename) + strlen (save_suffix) + 2);
+      char *new_filename
+	= (char *) xmalloc (strlen (convert_filename) + strlen (save_suffix) + 2);
   
       strcpy (new_filename, convert_filename);
       strcat (new_filename, save_suffix);
@@ -4659,8 +4659,8 @@ main (argc, argv)
 
   /* Now actually make a list of the base source filenames.  */
 
-  base_source_filenames =
-    (const char **) xmalloc ((n_base_source_files + 1) * sizeof (char *));
+  base_source_filenames
+    = (const char **) xmalloc ((n_base_source_files + 1) * sizeof (char *));
   n_base_source_files = 0;
   for (; optind < argc; optind++)
     {

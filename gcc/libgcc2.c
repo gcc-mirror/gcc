@@ -1815,8 +1815,8 @@ gopen (char *fn, char *mode)
     return (FILE *) 0;
 
   p = fn + strlen (fn)-1;
-  use_gzip = ((p[-1] == '.' && (p[0] == 'Z' || p[0] == 'z')) ||
-              (p[-2] == '.' && p[-1] == 'g' && p[0] == 'z'));
+  use_gzip = ((p[-1] == '.' && (p[0] == 'Z' || p[0] == 'z'))
+	      || (p[-2] == '.' && p[-1] == 'g' && p[0] == 'z'));
 
   if (use_gzip)
     {
@@ -2195,15 +2195,15 @@ __bb_trace_func ()
     {
       struct bb_edge **startbucket, **oldnext;
 
-      oldnext = startbucket =
-          & bb_hashbuckets[ (((int) bb_src*8) ^ (int) bb_dst) % BB_BUCKETS ];
+      oldnext = startbucket
+	= & bb_hashbuckets[ (((int) bb_src*8) ^ (int) bb_dst) % BB_BUCKETS ];
       bucket = *startbucket;
 
       for (bucket = *startbucket; bucket; 
            oldnext = &(bucket->next), bucket = *oldnext)
         {
-          if ( bucket->src_addr == bb_src &&
-               bucket->dst_addr == bb_dst )
+          if (bucket->src_addr == bb_src
+	      && bucket->dst_addr == bb_dst)
             {
               bucket->count++;
               *oldnext = bucket->next;
@@ -2258,15 +2258,15 @@ __bb_trace_func_ret ()
     {
       struct bb_edge **startbucket, **oldnext;
 
-      oldnext = startbucket =
-          & bb_hashbuckets[ (((int) bb_dst * 8) ^ (int) bb_src) % BB_BUCKETS ];
+      oldnext = startbucket
+	= & bb_hashbuckets[ (((int) bb_dst * 8) ^ (int) bb_src) % BB_BUCKETS ];
       bucket = *startbucket;
 
       for (bucket = *startbucket; bucket; 
            oldnext = &(bucket->next), bucket = *oldnext)
         {
-          if ( bucket->src_addr == bb_dst &&
-               bucket->dst_addr == bb_src )
+          if (bucket->src_addr == bb_dst
+	       && bucket->dst_addr == bb_src)
             {
               bucket->count++;
               *oldnext = bucket->next;
@@ -2321,8 +2321,8 @@ __bb_init_file (struct bb *blocks)
   bb_head = blocks;
 
   blocks->flags = 0;
-  if (!bb_func_head ||
-      !(blocks->flags = (char *) malloc (sizeof (char) * blocks->ncounts)))
+  if (!bb_func_head
+      || !(blocks->flags = (char *) malloc (sizeof (char) * blocks->ncounts)))
     return;
 
   for (blk = 0; blk < ncounts; blk++)
@@ -2332,8 +2332,8 @@ __bb_init_file (struct bb *blocks)
     {
       for (p = bb_func_head; p; p = p->next)
         {
-          if (!strcmp (p->funcname, functions[blk]) &&
-              (!p->filename || !strcmp (p->filename, blocks->filename)))
+          if (!strcmp (p->funcname, functions[blk])
+	      && (!p->filename || !strcmp (p->filename, blocks->filename)))
             {
               blocks->flags[blk] |= p->mode;
             }

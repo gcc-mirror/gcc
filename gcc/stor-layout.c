@@ -949,9 +949,9 @@ layout_type (type)
 #define SET_WORD_SIZE BITS_PER_WORD
 #endif
 	  int alignment = set_alignment ? set_alignment : SET_WORD_SIZE;
-	  int size_in_bits =
-	    TREE_INT_CST_LOW (TYPE_MAX_VALUE (TYPE_DOMAIN (type)))
-	      - TREE_INT_CST_LOW (TYPE_MIN_VALUE (TYPE_DOMAIN (type))) + 1;
+	  int size_in_bits
+	    = (TREE_INT_CST_LOW (TYPE_MAX_VALUE (TYPE_DOMAIN (type)))
+	       - TREE_INT_CST_LOW (TYPE_MIN_VALUE (TYPE_DOMAIN (type))) + 1);
 	  int rounded_size
 	    = ((size_in_bits + alignment - 1) / alignment) * alignment;
 	  if (rounded_size > alignment)

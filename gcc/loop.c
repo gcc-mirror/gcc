@@ -1804,8 +1804,8 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 				     contains objects other than hard registers
 				     we need to copy it.  */
 				  if (CALL_INSN_FUNCTION_USAGE (temp))
-				    CALL_INSN_FUNCTION_USAGE (i1) =
-				      copy_rtx (CALL_INSN_FUNCTION_USAGE (temp));
+				    CALL_INSN_FUNCTION_USAGE (i1)
+				      = copy_rtx (CALL_INSN_FUNCTION_USAGE (temp));
 				}
 			      else
 				i1 = emit_insn_before (body, loop_start);
@@ -1848,8 +1848,8 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 			     contains objects other than hard registers
 			     we need to copy it.  */
 			  if (CALL_INSN_FUNCTION_USAGE (p))
-			    CALL_INSN_FUNCTION_USAGE (i1) =
-			      copy_rtx (CALL_INSN_FUNCTION_USAGE (p));
+			    CALL_INSN_FUNCTION_USAGE (i1)
+			      = copy_rtx (CALL_INSN_FUNCTION_USAGE (p));
 			}
 		      else
 			i1 = emit_insn_before (PATTERN (p), loop_start);
@@ -5920,8 +5920,8 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 
       if (GET_CODE (bl->initial_value) == CONST_INT
 	  && INTVAL (bl->initial_value) > 0
-	  && (INTVAL (bl->initial_value) %
-	      (-INTVAL (bl->biv->add_val))) == 0)
+	  && (INTVAL (bl->initial_value)
+	      % (-INTVAL (bl->biv->add_val))) == 0)
 	{
 	  /* register always nonnegative, add REG_NOTE to branch */
 	  REG_NOTES (PREV_INSN (loop_end))
