@@ -1,5 +1,5 @@
 # Makefile for GNU texinfo/libtxi.  -*- Indented-Text -*-
-# $Id: Makefile.in,v 1.1.1.1 1997/08/21 22:58:06 jason Exp $
+# $Id: Makefile.in,v 1.4 1998/01/13 20:31:57 law Exp $
 
 # Copyright (C) 1993, 96 Free Software Foundation, Inc.
 
@@ -58,7 +58,7 @@ libtxi.a: $(OBJS)
 getopt.o: getopt.c getopt.h
 getopt1.o: getopt1.c getopt.h
 alloca.o: alloca.c
-memcpy.o: c
+memcpy.o: memcpy.c
 memmove.o: memmove.c
 strdup.o: strdup.c
 
