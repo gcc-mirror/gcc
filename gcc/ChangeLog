@@ -1,3 +1,9 @@
+Tue Sep 17 13:40:13 2002  Nicola Pero  <n.pero@mi.flashnet.it>
+
+	* doc/objc.texi (Constant string objects): Extended documentation
+	to make clear that the constant string class ivar layout is
+	completely fixed.
+	
 2002-09-17  Roger Sayle  <roger@eyesopen.com>
 
 	* cfgrtl.c (flow_delete_block_noexpunge): Delete orphaned
