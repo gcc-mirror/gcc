@@ -55,6 +55,11 @@ extern struct obstack *saveable_obstack;
 extern struct obstack temporary_obstack;
 extern struct obstack permanent_obstack;
 
+/* This is true if the user specified a `.java' file on the command
+   line.  Otherwise it is 0.  FIXME: this is temporary, until our
+   .java parser is fully working.  */
+int saw_java_source = 0;
+
 /* The class we are currently processing. */
 tree current_class = NULL_TREE;
 
@@ -477,8 +482,13 @@ load_class (class_or_name, verbose)
   /* Search in current zip first.  */
   if (find_in_current_zip (IDENTIFIER_POINTER (name),
 			   IDENTIFIER_LENGTH (name), &jcf) == 0)
+    /* FIXME: until the `.java' parser is fully working, we only
+       look for a .java file when one was mentioned on the
+       command line.  This lets us test the .java parser fairly
+       easily, without compromising our ability to use the
+       .class parser without fear.  */
     if (find_class (IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name),
-		     &this_jcf, 1) == 0)
+		     &this_jcf, saw_java_source) == 0)
       {
 	if (verbose)
 	  {
@@ -739,7 +749,6 @@ yyparse ()
       if (list[0]) 
 	{
 	  char *value, len;
-	  extern int saw_java_source; /* FIXME: temporary.  */
 
 	  len = strlen (list);
 	  /* FIXME: this test is only needed until our .java parser is
@@ -961,7 +970,8 @@ DEFUN(jcf_figure_file_type, (jcf),
     return JCF_CLASS;
 
   /* FIXME: is it a system file?  */
-  if (!open_in_zip (jcf, input_filename, NULL, 0))
+  if (magic ==  (JCF_u4)ZIPMAGIC
+      && !open_in_zip (jcf, input_filename, NULL, 0))
     {
       localToFile = ALLOC (sizeof (struct ZipFileCache));
       bcopy (SeenZipFiles, localToFile, sizeof (struct ZipFileCache));

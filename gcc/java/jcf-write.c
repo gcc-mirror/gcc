@@ -410,7 +410,13 @@ put_linenumber (line, state)
      int line;
      struct jcf_partial *state;
 {
-  (get_jcf_label_here (state))->linenumber = line;
+  struct jcf_block *label = get_jcf_label_here (state);
+  if (label->linenumber > 0)
+    {
+      label = gen_jcf_label (state);
+      define_jcf_label (label, state);
+    }
+  label->linenumber = line;
   state->linenumber_count++;
 }
 
@@ -1276,12 +1282,15 @@ generate_bytecode_insns (exp, target, state)
     case EXPR_WITH_FILE_LOCATION:
       {
 	char *saved_input_filename = input_filename;
+	tree body = EXPR_WFL_NODE (exp);
 	int saved_lineno = lineno;
+	if (body == empty_stmt_node)
+	  break;
 	input_filename = EXPR_WFL_FILENAME (exp);
 	lineno = EXPR_WFL_LINENO (exp);
-	if (EXPR_WFL_EMIT_LINE_NOTE (exp))
-	  put_linenumber (EXPR_WFL_LINENO (exp), state);
-	generate_bytecode_insns (EXPR_WFL_NODE (exp), target, state);
+	if (EXPR_WFL_EMIT_LINE_NOTE (exp) && lineno > 0)
+	  put_linenumber (lineno, state);
+	generate_bytecode_insns (body, target, state);
 	input_filename = saved_input_filename;
 	lineno = saved_lineno;
       }
@@ -1703,7 +1712,7 @@ generate_bytecode_insns (exp, target, state)
 	  emit_dup (1, 0, state);
 	  /* Stack:  ..., objectref, objectref. */
 	  field_op (TREE_OPERAND (exp, 1), OPCODE_getfield, state);
-	  NOTE_PUSH (size);
+	  NOTE_PUSH (size-1);
 	  /* Stack:  ..., objectref, oldvalue. */
 	  offset = 1;
 	}
@@ -1742,7 +1751,9 @@ generate_bytecode_insns (exp, target, state)
       emit_binop (OPCODE_iadd + adjust_typed_op (type, 3), type, state);
       if (target != IGNORE_TARGET && ! post_op)
 	emit_dup (size, offset, state);
-      /* Stack:  ..., [result,] newvalue. */
+      /* Stack, if ARRAY_REF:  ..., [result, ] array, index, newvalue. */
+      /* Stack, if COMPONENT_REF:  ..., [result, ] objectref, newvalue. */
+      /* Stack, otherwise:  ..., [result, ] newvalue. */
       goto finish_assignment;
 
     case MODIFY_EXPR:
@@ -1817,11 +1828,10 @@ generate_bytecode_insns (exp, target, state)
 	  if (! FIELD_STATIC (field))
 	    NOTE_POP (1);
 	  field_op (field,
-		    FIELD_STATIC (field) ? OPCODE_putstatic
-		    : OPCODE_putfield,
+		    FIELD_STATIC (field) ? OPCODE_putstatic : OPCODE_putfield,
 		    state);
 
-	  NOTE_PUSH (TYPE_IS_WIDE (TREE_TYPE (field)) ? 2 : 1);
+	  NOTE_POP (TYPE_IS_WIDE (TREE_TYPE (field)) ? 2 : 1);
 	}
       else if (TREE_CODE (exp) == VAR_DECL
 	       || TREE_CODE (exp) == PARM_DECL)
@@ -1829,18 +1839,17 @@ generate_bytecode_insns (exp, target, state)
 	  if (FIELD_STATIC (exp))
 	    {
 	      field_op (exp, OPCODE_putstatic, state);
-	      NOTE_PUSH (TYPE_IS_WIDE (TREE_TYPE (exp)) ? 2 : 1);
+	      NOTE_POP (TYPE_IS_WIDE (TREE_TYPE (exp)) ? 2 : 1);
 	    }
 	  else
 	    emit_store (exp, state);
 	}
       else if (TREE_CODE (exp) == ARRAY_REF)
 	{
-	  NOTE_POP (2);
 	  jopcode = OPCODE_iastore + adjust_typed_op (TREE_TYPE (exp), 7);
 	  RESERVE(1);
 	  OP1 (jopcode);
-	  NOTE_PUSH (TYPE_IS_WIDE (TREE_TYPE (exp)) ? 2 : 1);
+	  NOTE_POP (TYPE_IS_WIDE (TREE_TYPE (exp)) ? 4 : 3);
 	}
       else
 	fatal ("internal error (bad lhs to MODIFY_EXPR)");
@@ -1883,8 +1892,11 @@ generate_bytecode_insns (exp, target, state)
 	  generate_bytecode_insns (arg0, target, state);
 	  generate_bytecode_insns (arg1, target, state);
 	}
+      /* For most binary operations, both operands and the result have the
+	 same type.  Shift operations are different.  Using arg1's type
+	 gets us the correct SP adjustment in all casesd. */
       if (target == STACK_TARGET)
-	emit_binop (jopcode, type, state);
+	emit_binop (jopcode, TREE_TYPE (arg1), state);
       break;
     }
     case TRUTH_NOT_EXPR:
@@ -2054,10 +2066,16 @@ generate_bytecode_insns (exp, target, state)
       break;
     case NEW_ARRAY_INIT:
       {
-	tree values;
+	tree values = CONSTRUCTOR_ELTS (TREE_OPERAND (exp, 0));
 	tree array_type = TREE_TYPE (TREE_TYPE (exp));
 	tree element_type = TYPE_ARRAY_ELEMENT (array_type);
 	HOST_WIDE_INT length = java_array_type_length (array_type);
+	if (target == IGNORE_TARGET)
+	  {
+	    for ( ;  values != NULL_TREE;  values = TREE_CHAIN (values))
+	      generate_bytecode_insns (TREE_VALUE (values), target, state);
+	    break;
+	  }
 	push_int_const (length, state);
 	NOTE_PUSH (1);
 	RESERVE (3);
@@ -2074,7 +2092,6 @@ generate_bytecode_insns (exp, target, state)
 	    OP1 (OPCODE_anewarray);
 	    OP2 (index);
 	  }
-	values = CONSTRUCTOR_ELTS (TREE_OPERAND (exp, 0));
 	offset = 0;
 	jopcode = OPCODE_iastore + adjust_typed_op (element_type, 7);
 	for ( ;  values != NULL_TREE;  values = TREE_CHAIN (values), offset++)
@@ -2082,6 +2099,7 @@ generate_bytecode_insns (exp, target, state)
 	    int save_SP = state->code_SP;
 	    emit_dup (1, 0, state);
 	    push_int_const (offset, state);
+	    NOTE_PUSH (1);
 	    generate_bytecode_insns (TREE_VALUE (values), STACK_TARGET, state);
 	    RESERVE (1);
 	    OP1 (jopcode);
@@ -2183,11 +2201,11 @@ generate_bytecode_insns (exp, target, state)
 	    int index = find_methodref_index (&state->cpool, f);
 	    int interface = 0;
 	    RESERVE (5);
-	    if (DECL_CONSTRUCTOR_P (f) || CALL_USING_SUPER (exp)
+	    if (METHOD_STATIC (f))
+	      OP1 (OPCODE_invokestatic);
+	    else if (DECL_CONSTRUCTOR_P (f) || CALL_USING_SUPER (exp)
 		|| METHOD_PRIVATE (f))
 	      OP1 (OPCODE_invokespecial);
-	    else if (METHOD_STATIC (f))
-	      OP1 (OPCODE_invokestatic);
 	    else if (CLASS_INTERFACE (TYPE_NAME (DECL_CONTEXT (f))))
 	      {
 		OP1 (OPCODE_invokeinterface);
@@ -2496,7 +2514,7 @@ generate_classfile (clas, state)
   for (part = TYPE_FIELDS (clas);  part;  part = TREE_CHAIN (part))
     {
       int have_value;
-      if (DECL_NAME (part) == NULL_TREE)
+      if (DECL_NAME (part) == NULL_TREE || DECL_ARTIFICIAL (part))
 	continue;
       ptr = append_chunk (NULL, 8, state);
       i = get_access_flags (part);  PUT2 (i);
@@ -2533,6 +2551,8 @@ generate_classfile (clas, state)
       tree name = DECL_CONSTRUCTOR_P (part) ? init_identifier_node
 	: DECL_NAME (part);
       tree type = TREE_TYPE (part);
+      tree save_function = current_function_decl;
+      current_function_decl = part;
       ptr = append_chunk (NULL, 8, state);
       i = get_access_flags (part);  PUT2 (i);
       i = find_utf8_constant (&state->cpool, name);  PUT2 (i);
@@ -2653,6 +2673,7 @@ generate_classfile (clas, state)
 	    }
 	}
       methods_count++;
+      current_function_decl = save_function;
     }
   ptr = methods_count_ptr;  PUT2 (methods_count);
 

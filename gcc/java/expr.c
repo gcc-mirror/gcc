@@ -1643,7 +1643,7 @@ expand_java_field_op (is_static, is_putting, field_ref_index)
      this is also needed to avoid circularities in the implementation
      of these fields in libjava. */
   if (field_name == TYPE_identifier_node && ! is_putting
-      && field_type == class_ptr_type
+      && ! flag_emit_class_files && field_type == class_ptr_type
       && strncmp (self_name, "java.lang.", 10) == 0)
     {
       tree typ = build_primtype_type_ref (self_name);
