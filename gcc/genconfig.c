@@ -98,7 +98,8 @@ walk_insn_part (rtx part, int recog_p, int non_pc_set_src)
       break;
 
     case LABEL_REF:
-      if (GET_CODE (XEXP (part, 0)) == MATCH_OPERAND)
+      if (GET_CODE (XEXP (part, 0)) == MATCH_OPERAND
+	  || GET_CODE (XEXP (part, 0)) == MATCH_DUP)
 	break;
       return;
 
