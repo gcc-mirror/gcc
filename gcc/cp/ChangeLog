@@ -1,3 +1,9 @@
+2005-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/20175
+	* decl.c (reshape_init): Don't warn about missing braces if STRING_CST
+	initializes a char/wchar_t array.
+
 2005-02-21  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/20028
