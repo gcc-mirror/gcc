@@ -1,3 +1,10 @@
+Tue Dec 30 00:04:49 1997  Richard Henderson  <rth@cygnus.com>
+
+	* sparc.h (ASM_OUTPUT_MI_THUNK): Move %o7 through %g1 instead of
+	save+restore.  Fix pic+big_offset delay slot.  Use "pic" case for
+	unix always, since we want to be able to thunk to functions in a
+	shared library from an application.
+
 Mon Dec 29 14:37:31 1997  Ian Lance Taylor  <ian@cygnus.com>
 
 	* mips/t-ecoff (CROSS_LIBGCC1): Define to libgcc1-asm.a.

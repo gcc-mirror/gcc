@@ -3017,11 +3017,15 @@ do {									\
   int big_delta = (DELTA) >= 4096 || (DELTA) < -4096;			\
   if (big_delta)							\
     fprintf (FILE, "\tset %d,%%g1\n\tadd %%o0,%%g1,%%o0\n", (DELTA));	\
-  if (flag_pic)								\
+  /* Don't use the jmp solution unless we know the target is local to	\
+     the application or shared object.  				\
+     XXX: Wimp out and don't actually check anything except if this is	\
+     an embedded target where we assume there are no shared libs.  */	\
+  if (!TARGET_CM_EMBMEDANY || flag_pic)					\
     {									\
       if (! big_delta)							\
 	fprintf (FILE, "\tadd %%o0,%d,%%o0\n", DELTA);			\
-      fprintf (FILE, "\tsave %%sp,-112,%%sp\n");			\
+      fprintf (FILE, "\tmov %%o7,%%g1\n");				\
       fprintf (FILE, "\tcall ");					\
       assemble_name							\
 	(FILE, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (FUNCTION)));	\
@@ -3044,10 +3048,10 @@ do {									\
 	(FILE, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (FUNCTION)));	\
       fprintf (FILE, ")\n");						\
     }									\
-  if (big_delta)							\
+  if (!TARGET_CM_EMBMEDANY || flag_pic)					\
+    fprintf (FILE, "\tmov %%g1,%%o7\n");				\
+  else if (big_delta)							\
     fprintf (FILE, "\tnop\n");						\
-  else if (flag_pic)							\
-    fprintf (FILE, "\trestore\n");					\
   else									\
     fprintf (FILE, "\tadd %%o0,%d,%%o0\n", DELTA);			\
 } while (0)
