@@ -1,3 +1,11 @@
+2001-02-12  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-decl.c (grokdeclarator): In C99 mode, give the more specific
+	"return type defaults" warning for functions with return type
+	defaulting to int.
+	* c-lang.c (c_init): In C99 mode, enable warnings for implicit
+	function declarations by default rather than only when pedantic.
+
 Mon Feb 12 17:28:48 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* regclass.c (init_reg_sets_1): Optimize calculation of move_cost

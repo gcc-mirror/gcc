@@ -70,10 +70,11 @@ c_init ()
 {
   c_common_lang_init ();
 
-  /* If still unspecified, make it match pedantic && -std=c99.  */
+  /* If still unspecified, make it match -std=c99
+     (allowing for -pedantic-errors).  */
   if (mesg_implicit_function_declaration < 0)
     {
-      if (pedantic && flag_isoc99)
+      if (flag_isoc99)
 	mesg_implicit_function_declaration = flag_pedantic_errors ? 2 : 1;
       else
 	mesg_implicit_function_declaration = 0;
