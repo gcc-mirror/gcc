@@ -126,6 +126,7 @@ extern int rs6000_valid_type_attribute_p PARAMS ((tree, tree, tree, tree));
 extern void rs6000_set_default_type_attributes PARAMS ((tree));
 extern void rs6000_encode_section_info PARAMS ((tree));
 extern void rs6000_select_section PARAMS ((tree, int));
+extern void rs6000_unique_section PARAMS ((tree, int));
 #ifdef ARGS_SIZE_RTX
 /* expr.h defines ARGS_SIZE_RTX and `enum direction' */
 extern enum direction function_arg_padding PARAMS ((enum machine_mode, tree));

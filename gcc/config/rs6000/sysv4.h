@@ -549,7 +549,19 @@ fini_section ()								\
 
 /* Override elfos.h definition.  */
 #undef	SELECT_SECTION
-#define	SELECT_SECTION(DECL,RELOC) rs6000_select_section (DECL, RELOC)
+#define	SELECT_SECTION(DECL, RELOC) rs6000_select_section (DECL, RELOC)
+
+/* A C statement to build up a unique section name, expressed as a
+   STRING_CST node, and assign it to DECL_SECTION_NAME (decl).
+   RELOC indicates whether the initial value of EXP requires
+   link-time relocations.  If you do not define this macro, GCC will use
+   the symbol name prefixed by `.' as the section name.  Note - this
+   macro can now be called for unitialised data items as well as
+   initialised data and functions.  */
+
+/* Override elfos.h definition.  */
+#undef	UNIQUE_SECTION
+#define UNIQUE_SECTION(DECL, RELOC) rs6000_unique_section (DECL, RELOC)
 
 /* Return non-zero if this entry is to be written into the constant pool
    in a special way.  We do so if this is a SYMBOL_REF, LABEL_REF or a CONST
