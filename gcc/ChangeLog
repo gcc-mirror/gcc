@@ -34,6 +34,10 @@
 	(compare_for_stack_reg): Remove local variable flags_user.
 	(convert_regs_1): Remove local variable deleted.
 
+	* tree-if-conv.c (tree_if_convert_cond_expr): Remove local
+	variable new_cond.
+	(combine_blocks): Remove local variables exits and new_e.
+
 2005-03-12  Geoffrey Keating  <geoffk@apple.com>
 
 	* c-lex.c (c_lex_with_flags): Add parameter to call to 
