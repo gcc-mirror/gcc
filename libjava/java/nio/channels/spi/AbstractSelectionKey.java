@@ -1,5 +1,5 @@
 /* AbstractSelectionKey.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,7 +45,7 @@ import java.nio.channels.SelectionKey;
 public abstract class AbstractSelectionKey
   extends SelectionKey
 {
-  boolean ok = true;
+  private boolean cancelled = false;
 
   /**
    * Initializes the key.
@@ -59,10 +59,12 @@ public abstract class AbstractSelectionKey
    */
   public final void cancel ()
   {
-    if (ok)
-      selector ().selectedKeys ().add (this);
-    
-    ok = false;
+    if (isValid())
+      {
+	// FIXME: implement this.
+	//selector().cancelledKeys().add (this);
+        cancelled = true;
+      }
   }
 
   /**
@@ -70,6 +72,6 @@ public abstract class AbstractSelectionKey
    */
   public final boolean isValid ()
   {
-    return ok;
+    return !cancelled;
   }
 }
