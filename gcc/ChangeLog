@@ -1,5 +1,27 @@
 2004-11-09  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* config/s390/s390.c (s390_select_ccmode): Return CCAPmode for
+	integer NEG and ABS.
+	* config/s390/s390.md ("*negdi2_64"): Fix op_type attribute.
+	("*negdi2_31"): Reimplement using a splitter.
+	("*negdi2_cc", "*negdi2_cconly"): New insns.
+	("*negdi2_sign", "*negdi2_sign_cc"): Likewise.
+	("*negsi2_cc", "*negsi2_cconly"): Likewise.
+	("*negdf2_cc", "*negdf2_cconly"): Likewise.
+	("*negsf2_cc", "*negsf2_cconly"): Likewise.
+	("*absdi2_cc", "*absdi2_cconly"): New insns.
+	("*absdi2_sign", "*absdi2_sign_cc"): Likewise.
+	("*abssi2_cc", "*abssi2_cconly"): Likewise.
+	("*absdf2_cc", "*absdf2_cconly"): Likewise.
+	("*abssf2_cc", "*abssf2_cconly"): Likewise.
+	("*negabsdi2_cc", "*negabsdi2_cconly"): New insns.
+	("*negabsdi2_sign", "*negabsdi2_sign_cc"): Likewise.
+	("*negabssi2_cc", "*negabssi2_cconly"): Likewise.
+	("*negabsdf2_cc", "*negabsdf2_cconly"): Likewise.
+	("*negabssf2_cc", "*negabssf2_cconly"): Likewise.
+
+2004-11-09  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* config/s390/s390.c (s390_canonicalize_comparison): Reverse condition
 	when eliminating an UNSPEC_CMPINT.
 	(s390_secondary_input_reload_class): Fix test for CC register reload.
