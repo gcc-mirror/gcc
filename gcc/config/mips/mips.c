@@ -5788,12 +5788,11 @@ static FILE *
 mips_make_temp_file ()
 {
   FILE *stream;
-  char *filename = make_temp_file (0);
 
+  temp_filename = make_temp_file (0);
   stream = fopen (filename, "w+");
   if (!stream)
-    fatal_io_error ("can't open %s", filename);
-  free (filename);
+    fatal_io_error ("can't open %s", temp_filename);
   return stream;
 }
 
@@ -6049,6 +6048,7 @@ mips_asm_file_end (file)
 	fatal_io_error ("can't close %s", temp_filename);
 
       unlink (temp_filename);
+      free (temp_filename);
     }
 }
 

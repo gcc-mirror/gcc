@@ -675,6 +675,7 @@ hppa*-*-linux*)
 	;;
 hppa*-*-openbsd*)
 	target_cpu_default="MASK_PA_11"
+	tmake_file=pa/t-openbsd
 	;;
 hppa1.1-*-rtems*)
 	tm_file="pa/pa-pro.h ${tm_file} pa/pa-pro-end.h libgloss.h pa/rtems.h"
@@ -2701,7 +2702,7 @@ romp-*-openbsd*)
 	# Nothing special
 	;;
 powerpc-*-openbsd*)
-	tmake_file="${tmake_file} rs6000/t-rs6000"
+	tmake_file="${tmake_file} rs6000/t-rs6000 rs6000/t-openbsd"
 	;;
 powerpc-*-beos*)
 	cpu_type=rs6000

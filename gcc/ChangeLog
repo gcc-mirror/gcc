@@ -1,3 +1,10 @@
+2001-02-25  Zack Weinberg  <zackw@stanford.edu>
+
+	* config.gcc: Put back pa/t-openbsd and rs6000/t-openbsd.
+	* config/mips/mips.c (mips_make_temp_file): Set temp_filename
+	properly.
+	(mips_asm_file_end): Free temp_filename here.
+
 Sun Feb 25 08:34:23 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/i386/i386-protos.h (ix86_set_move_mem_attrs): Move decl.
