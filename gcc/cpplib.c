@@ -1322,8 +1322,8 @@ _cpp_parse_assertion (pfile, answerp)
 
  lookup_node:
   *answerp = answer;
-  len = predicate->val.name.len + 1;
-  sym = alloca (len);
+  len = predicate->val.name.len;
+  sym = alloca (len + 1);
 
   /* Prefix '#' to get it out of macro namespace.  */
   sym[0] = '#';
