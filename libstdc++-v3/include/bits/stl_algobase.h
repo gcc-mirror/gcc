@@ -77,6 +77,57 @@
 
 namespace std
 {
+
+  /**
+   *  @brief Swaps two values.
+   *  @param  a  A thing of arbitrary type.
+   *  @param  b  Another thing of arbitrary type.
+   *  @return   Nothing.
+   *
+   *  This is the simple classic generic implementation.  It will work on
+   *  any type which has a copy constructor and an assignment operator.
+  */
+  template<typename _Tp>
+    inline void
+    swap(_Tp& __a, _Tp& __b)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_SGIAssignableConcept<_Tp>)
+
+      const _Tp __tmp = __a;
+      __a = __b;
+      __b = __tmp;
+    }
+
+  // See http://gcc.gnu.org/ml/libstdc++/2004-08/msg00167.html: in a
+  // nutshell, we are partially implementing the resolution of DR 187,
+  // when it's safe, i.e., the value_types are equal.
+  template<bool _BoolType>
+    struct __iter_swap
+    {
+      template<typename _ForwardIterator1, typename _ForwardIterator2>
+        static void
+        iter_swap(_ForwardIterator1 __a, _ForwardIterator2 __b)
+        {
+          typedef typename iterator_traits<_ForwardIterator1>::value_type
+            _ValueType1;
+          const _ValueType1 __tmp = *__a;
+          *__a = *__b;
+          *__b = __tmp; 
+	}
+    };
+
+  template<>
+    struct __iter_swap<true>
+    {
+      template<typename _ForwardIterator1, typename _ForwardIterator2>
+        static void 
+        iter_swap(_ForwardIterator1 __a, _ForwardIterator2 __b)
+        {
+          swap(*__a, *__b);
+        }
+    };
+
   /**
    *  @brief Swaps the contents of two iterators.
    *  @param  a  An iterator.
@@ -104,31 +155,8 @@ namespace std
 				  _ValueType2>)
       __glibcxx_function_requires(_ConvertibleConcept<_ValueType2,
 				  _ValueType1>)
-
-      const _ValueType1 __tmp = *__a;
-      *__a = *__b;
-      *__b = __tmp;
-    }
-
-  /**
-   *  @brief Swaps two values.
-   *  @param  a  A thing of arbitrary type.
-   *  @param  b  Another thing of arbitrary type.
-   *  @return   Nothing.
-   *
-   *  This is the simple classic generic implementation.  It will work on
-   *  any type which has a copy constructor and an assignment operator.
-  */
-  template<typename _Tp>
-    inline void
-    swap(_Tp& __a, _Tp& __b)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_SGIAssignableConcept<_Tp>)
-
-      const _Tp __tmp = __a;
-      __a = __b;
-      __b = __tmp;
+      std::__iter_swap<__are_same<_ValueType1, _ValueType2>::_M_type>::
+	iter_swap(__a, __b);
     }
 
   #undef min
