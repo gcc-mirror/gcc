@@ -1,3 +1,7 @@
+2004-06-08  Anil Paranjpe <anilp1@kpitcummins.com>
+
+	* h8300.md (ldm_h8300s_4): Fix condition for expander.
+
 2004-06-08  Jason Merrill  <jason@redhat.com>
 
 	Gimplify VA_ARG_EXPR into simpler forms.
