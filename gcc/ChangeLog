@@ -1,3 +1,8 @@
+2001-09-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/mips/mips.c (override_options): Allow abi32 with 64 bit
+	registers.
+
 2001-09-07  Andreas Jaeger  <aj@suse.de>
 
 	* i386.h (TARGET_SWITCHES): Fix descriptions.
