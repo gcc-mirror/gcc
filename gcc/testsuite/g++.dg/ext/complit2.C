@@ -1,17 +1,22 @@
 // PR c++/12726
+// Origin: Vladimir Zidar  <mr_W@mindnever.org>
+// Reduced version: Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 // { dg-options "" }
 
-#include <string>
- 
-struct foobar {
-  std::string s;
-};
- 
-int main(int argc, char **argv)
+struct A
 {
-  foobar fb;
+    A();
+    A(const A&);
+    A(int);
+};
 
-  fb = (foobar) { "abcd" };
+struct B
+{
+    A a;
+};
 
-  return 0;
+void foo()
+{
+    B b;
+    b = (B){0};
 }

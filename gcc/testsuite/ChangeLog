@@ -1,3 +1,9 @@
+2003-11-03  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/12726
+	* g++.dg/ext/complit2.C: Replace test with self-contained version.
+	* ChangeLog: Add missing first entry for above test.
+
 2003-11-02  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/9810
@@ -122,6 +128,11 @@
 	* g++.dg/inherit/covariant9.C: New test.
 	* g++.dg/inherit/covariant10.C: New test.
 	* g++.dg/inherit/covariant11.C: New test.
+
+2003-10-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/12726
+	* g++.dg/ext/complit2.C: New test.
 
 2003-10-20  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
 
