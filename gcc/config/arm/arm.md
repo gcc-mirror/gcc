@@ -6356,6 +6356,7 @@
 (define_peephole
   [(parallel [(call (mem:SI (match_operand:SI 0 "" "X"))
 			  (match_operand:SI 1 "general_operand" "g"))
+		    (use (match_operand:SI 2 "" ""))
 		    (clobber (reg:SI 14))])
    (return)]
   "(GET_CODE (operands[0]) == SYMBOL_REF && USE_RETURN_INSN (FALSE)
@@ -6384,6 +6385,7 @@
   [(parallel [(set (match_operand 0 "s_register_operand" "=rf")
 		   (call (mem:SI (match_operand:SI 1 "" "X"))
 			 (match_operand:SI 2 "general_operand" "g")))
+	      (use (match_operand:SI 3 "" ""))
 	      (clobber (reg:SI 14))])
    (return)]
   "(GET_CODE (operands[1]) == SYMBOL_REF && USE_RETURN_INSN (FALSE)
@@ -6415,6 +6417,7 @@
   [(parallel [(set (match_operand 0 "s_register_operand" "=rf")
 		   (call (mem:SI (match_operand:SI 1 "" "X"))
 			 (match_operand:SI 2 "general_operand" "g")))
+	      (use (match_operand:SI 3 "" ""))
 	      (clobber (reg:SI 14))])
    (use (match_dup 0))
    (return)]

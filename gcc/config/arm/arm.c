@@ -5781,8 +5781,7 @@ output_return_instruction (operand, really_return, reverse)
 {
   char instr[100];
   int reg, live_regs = 0;
-  int volatile_func = (optimize > 0 
-		       && TREE_THIS_VOLATILE (current_function_decl));
+  int volatile_func = arm_volatile_func ();
 
   return_used_this_function = 1;
 
@@ -5914,7 +5913,8 @@ output_return_instruction (operand, really_return, reverse)
 int
 arm_volatile_func ()
 {
-  return (optimize > 0 && TREE_THIS_VOLATILE (current_function_decl));
+  return (optimize > 0 && current_function_nothrow
+	  && TREE_THIS_VOLATILE (current_function_decl));
 }
 
 /* Write the function name into the code section, directly preceding
@@ -5977,8 +5977,7 @@ output_func_prologue (f, frame_size)
      int frame_size;
 {
   int reg, live_regs_mask = 0;
-  int volatile_func = (optimize > 0
-		       && TREE_THIS_VOLATILE (current_function_decl));
+  int volatile_func = arm_volatile_func ();
 
   /* Nonzero if we must stuff some register arguments onto the stack as if
      they were passed there.  */
@@ -6056,8 +6055,7 @@ arm_output_epilogue ()
   rtx operands[3];
   int frame_size = get_frame_size ();
   FILE *f = asm_out_file;
-  int volatile_func = (optimize > 0
-		       && TREE_THIS_VOLATILE (current_function_decl));
+  int volatile_func = arm_volatile_func ();
 
   if (use_return_insn (FALSE) && return_used_this_function)
     return "";
@@ -6408,8 +6406,7 @@ arm_expand_prologue ()
   int store_arg_regs = 0;
   /* If this function doesn't return, then there is no need to push
      the call-saved regs.  */
-  int volatile_func = (optimize > 0
-		       && TREE_THIS_VOLATILE (current_function_decl));
+  int volatile_func = arm_volatile_func ();
   rtx insn;
 
   /* Naked functions don't have prologues.  */
