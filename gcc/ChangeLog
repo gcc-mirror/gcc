@@ -1,3 +1,8 @@
+2003-04-19  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* README.Portability: Move to a new section and obsolete K+R
+	portability issues.
+
 Sat Apr 19 14:56:17 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* rtlanal.c (subreg_offset_representable_p):  Fix call of
