@@ -1160,7 +1160,8 @@ generate_bytecode_conditional (exp, true_label, false_label,
       }
       break;
     case TRUTH_NOT_EXPR:
-      generate_bytecode_conditional (TREE_OPERAND (exp, 0), false_label, true_label,
+      generate_bytecode_conditional (TREE_OPERAND (exp, 0), 
+				     false_label, true_label,
 				     ! true_branch_first, state);
       break;
     case TRUTH_ANDIF_EXPR:
@@ -1238,7 +1239,7 @@ generate_bytecode_conditional (exp, true_label, false_label,
 	    }
 	  if (integer_zerop (exp1) || integer_zerop (exp0))
 	    {
-	      generate_bytecode_insns (integer_zerop (exp1) ? exp0 : exp0,
+	      generate_bytecode_insns (integer_zerop (exp1) ? exp0 : exp1,
 				       STACK_TARGET, state);
 	      op = op + (OPCODE_ifnull - OPCODE_if_acmpeq);
 	      negop = (op & 1) ? op - 1 : op + 1;
@@ -1622,6 +1623,10 @@ generate_bytecode_insns (exp, target, state)
 	define_jcf_label (else_label, state);
 	generate_bytecode_insns (TREE_OPERAND (exp, 2), target, state);
 	define_jcf_label (end_label, state);
+
+	/* COND_EXPR can be used in a binop. The stack must be adjusted. */
+	if (TREE_TYPE (exp) != void_type_node)
+	  NOTE_POP (TYPE_PRECISION (TREE_TYPE (exp)) > 32 ? 2 : 1);
       }
       break;
     case CASE_EXPR:
