@@ -3284,7 +3284,6 @@ compile_file (name)
       vec[len - i - 1] = decl;
 
     wrapup_global_declarations (vec, len);
-    check_global_declarations (vec, len);
 
     /* This must occur after the loop to output deferred functions.  Else
        the profiler initializer would not be emitted if all the functions
@@ -3299,6 +3298,8 @@ compile_file (name)
        the exception table.  */
 
     output_exception_table ();
+
+    check_global_declarations (vec, len);
   }
 
   /* Write out any pending weak symbol declarations.  */
