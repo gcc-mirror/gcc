@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2650,10 +2650,7 @@ package body Sem_Ch4 is
                --  not make an actual subtype, we end up getting a direct
                --  reference to a discriminant which will not do.
 
-               --  Comment needs revision, "in all other cases" does not
-               --  reasonably describe the situation below with an elsif???
-
-               elsif Expander_Active then
+               else
                   Act_Decl :=
                     Build_Actual_Subtype_Of_Component (Etype (Comp), N);
                   Insert_Action (N, Act_Decl);
@@ -2675,9 +2672,6 @@ package body Sem_Ch4 is
                         Set_Etype (N, Subt);
                      end;
                   end if;
-
-               else
-                  Set_Etype (N, Etype (Comp));
                end if;
 
                return;
@@ -4400,7 +4394,7 @@ package body Sem_Ch4 is
                     and then not Is_Overloaded (R)
                     and then Base_Type (Etype (L)) = Base_Type (Etype (R))
                   then
-                     Error_Msg_Node_2 := Etype (R);
+                     Error_Msg_Node_2 := First_Subtype (Etype (R));
                      Error_Msg_N ("there is no applicable operator& for}", N);
 
                   else
@@ -4799,7 +4793,7 @@ package body Sem_Ch4 is
       begin
          Set_Name (Call_Node, New_Copy_Tree (Subprog));
          Set_Analyzed (Call_Node, False);
-         Replace (Node_To_Replace, Call_Node);
+         Rewrite (Node_To_Replace, Call_Node);
          Analyze (Node_To_Replace);
 
       end Complete_Object_Operation;
@@ -4830,8 +4824,19 @@ package body Sem_Ch4 is
          then
             Node_To_Replace := Parent_Node;
 
-            Append_List_To (Actuals,
-              New_Copy_List (Parameter_Associations (Parent_Node)));
+            --  Copy list of actuals in full before attempting to resolve call.
+            --  This is necessary to ensure that the chaining of named actuals
+            --  that happens during matching is done on a separate copy.
+
+            declare
+               Actual : Node_Id;
+            begin
+               Actual := First (Parameter_Associations (Parent_Node));
+               while Present (Actual) loop
+                  Append (New_Copy_Tree (Actual), Actuals);
+                  Next (Actual);
+               end loop;
+            end;
 
             if Nkind (Parent_Node) = N_Procedure_Call_Statement then
                Call_Node :=
