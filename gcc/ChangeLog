@@ -1,3 +1,8 @@
+2001-04-28  Stan Shebs  <shebs@apple.com>
+
+	* config/darwin.h (STANDARD_EXEC_PREFIX): Don't define.
+	(NEXT_OBJC_RUNTIME): Define.
+	
 Sat Apr 28 21:02:58 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* rtl.h (simplify_gen_relational): Add cmp_mode parameter.
