@@ -1,3 +1,8 @@
+Fri Jun 19 01:02:17 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* c-decl.c (duplicate_decls): Avoid setting TREE_ASM_WRITTEN for
+	duplicate declarations of a function.
+
 Fri Jun 19 00:33:33 1998  H.J. Lu  (hjl@gnu.org)
 
 	* config/float-i386.h: New.
