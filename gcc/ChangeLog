@@ -1,5 +1,12 @@
 2001-12-23  Richard Henderson  <rth@redhat.com>
 
+	* stmt.c (parse_input_constraint): Break out from ...
+	(expand_asm_operands): ... here.  Loop over the operands twice,
+	the first time only calling mark_addressable.  Correct and simplify
+	the conditions for spilling an output operand to memory.
+
+2001-12-23  Richard Henderson  <rth@redhat.com>
+
 	* config/alpha/alpha.c (call_operand) [OSF]: Disallow virtual regs.
 
 	* config/alpha/alpha.md (UNSPEC_SIBCALL): New.
@@ -46,13 +53,13 @@
 
 2001-12-22  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.h (rs6000_builtins): Add vsldoi variants.
+	* config/rs6000/rs6000.h (rs6000_builtins): Add vsldoi variants.
 
-        * config/rs6000/rs6000.md ("altivec_vsldoi_*"): Same.
+	* config/rs6000/rs6000.md ("altivec_vsldoi_*"): Same.
 
-        * config/rs6000/rs6000.c: Clean up some spacing and indentation.
-        (altivec_init_builtins): Add tree types for builtins with 4 bit
-        literals.
+	* config/rs6000/rs6000.c: Clean up some spacing and indentation.
+	(altivec_init_builtins): Add tree types for builtins with 4 bit
+	literals.
 	(bdesc_3arg): Add vsldoi variants.
 
 2001-12-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
@@ -248,16 +255,16 @@ Fri Dec 21 17:30:15 2001  Jeffrey A Law  (law@redhat.com)
 2001-12-20  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* config/arm/arm.c (arm_compute_save_reg0_reg12_mask):  New
-        function. Compute which of registers r0 through r12 should be
+	function. Compute which of registers r0 through r12 should be
 	saved onto the stack during a function's prologue.
-        (arm_compute_save_reg_mask): Use
-        arm_compute_save_reg0_reg12_mask.
-        (arm_compute_initial_elimination_offset): Use
-        arm_compute_save_reg0_reg12_mask.
+	(arm_compute_save_reg_mask): Use
+	arm_compute_save_reg0_reg12_mask.
+	(arm_compute_initial_elimination_offset): Use
+	arm_compute_save_reg0_reg12_mask.
 
-        (arm_expand_prologue): Do not mark as save of the IP register
-        for an interrupt handler as being part of the frame creation
-        code.
+	(arm_expand_prologue): Do not mark as save of the IP register
+	for an interrupt handler as being part of the frame creation
+	code.
 
 2001-12-20  Richard Henderson  <rth@redhat.com>
 
@@ -320,30 +327,30 @@ Thu Dec 20 16:58:46 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-12-19  Aldy Hernandez  <aldyh@redhat.com>
 
-        * doc/install.texi: Add documentation for --enable-altivec.
+	* doc/install.texi: Add documentation for --enable-altivec.
 
-        * config.gcc: Add support for --enable-altivec.
+	* config.gcc: Add support for --enable-altivec.
 
-        * config/rs6000/altivec.h: New.
+	* config/rs6000/altivec.h: New.
 
-        * config/rs6000/linuxaltivec.h (SUBSUBTARGET_OVERRIDE_OPTIONS):
-        Define.  Fix typo.
+	* config/rs6000/linuxaltivec.h (SUBSUBTARGET_OVERRIDE_OPTIONS):
+	Define.  Fix typo.
 
-        * config/rs6000/rs6000.c (vrsave_operation): Change unspec to
+	* config/rs6000/rs6000.c (vrsave_operation): Change unspec to
 	unspec_volatile.
-        (generate_set_vrsave): Generate the unspec here instead of calling
-        an .md pattern.
-        (generate_set_vrsave): Use gen_rtvec.
-        (rs6000_emit_prologue): Replace call to gen_get_vrsave with
-        gen_rtx_SET.
+	(generate_set_vrsave): Generate the unspec here instead of calling
+	an .md pattern.
+	(generate_set_vrsave): Use gen_rtvec.
+	(rs6000_emit_prologue): Replace call to gen_get_vrsave with
+	gen_rtx_SET.
 
-        * config/rs6000/rs6000.md ("*movsi_internal1"): Add constraints
+	* config/rs6000/rs6000.md ("*movsi_internal1"): Add constraints
 	for setting special registers.
-        ("*set_vrsave_internal"): Use unspec_volatile.
-        ("set_vrsave"): Remove.
-        ("get_vrsave"): Remove.
+	("*set_vrsave_internal"): Use unspec_volatile.
+	("set_vrsave"): Remove.
+	("get_vrsave"): Remove.
 
-        * config/rs6000/rs6000.h (REG_CLASS_CONTENTS): Add vrsave to
+	* config/rs6000/rs6000.h (REG_CLASS_CONTENTS): Add vrsave to
 	SPECIAL_REGS.
 
 2001-12-19  Bruce Korb  <bkorb@gnu.org>
