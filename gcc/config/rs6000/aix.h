@@ -264,3 +264,6 @@
    32-bit mode.  */
 #define OS_MISSING_POWERPC64 1
 #define OS_MISSING_ALTIVEC 1
+
+/* WINT_TYPE */
+#define WINT_TYPE "int"
