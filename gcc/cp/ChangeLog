@@ -1,5 +1,9 @@
 2000-05-22  Mark Mitchell  <mark@codesourcery.com>
 
+	* class.c (build_ctor_vtbl_group): Set inits.
+	* optimize.c (maybe_clone_body): Set DECL_INLINE and
+	DECL_THIS_INLINE appropriately for clones.
+
 	* cp-tree.h (IDENTIFIER_TYPENAME_P): Use a flag, not strncmp.
 	(DECL_CONV_FN_P): Simplify.
 	(DECL_OPERATOR): Remove.

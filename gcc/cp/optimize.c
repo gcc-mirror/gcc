@@ -900,6 +900,8 @@ maybe_clone_body (fn)
       /* Update CLONE's source position information to match FN's.  */
       DECL_SOURCE_FILE (clone) = DECL_SOURCE_FILE (fn);
       DECL_SOURCE_LINE (clone) = DECL_SOURCE_LINE (fn);
+      DECL_INLINE (clone) = DECL_INLINE (fn);
+      DECL_THIS_INLINE (clone) = DECL_THIS_INLINE (fn);
 
       /* Start processing the function.  */
       push_to_top_level ();

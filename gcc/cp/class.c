@@ -6666,6 +6666,7 @@ build_ctor_vtbl_group (binfo, t)
   list = build_tree_list (vtbl, NULL_TREE);
   accumulate_vtbl_inits (binfo, TYPE_BINFO (TREE_TYPE (binfo)),
 			 binfo, t, list);
+  inits = TREE_VALUE (list);
 
   /* Figure out the type of the construction vtable.  */
   type = build_index_type (size_int (list_length (inits)));
