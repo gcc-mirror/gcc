@@ -750,10 +750,7 @@ vect_create_addr_base_for_vector_ref (tree stmt,
 
   is_ptr_ref = TREE_CODE (data_ref_base_type) == POINTER_TYPE
 	       && TREE_CODE (data_ref_base) == SSA_NAME;
-  is_array_ref = TREE_CODE (data_ref_base_type) == ARRAY_TYPE
-		 && (TREE_CODE (data_ref_base) == VAR_DECL
-		     || TREE_CODE (data_ref_base) == COMPONENT_REF
-		     || TREE_CODE (data_ref_base) == ARRAY_REF);
+  is_array_ref = TREE_CODE (data_ref_base_type) == ARRAY_TYPE;
   is_addr_expr = TREE_CODE (data_ref_base) == ADDR_EXPR
                  || TREE_CODE (data_ref_base) == PLUS_EXPR
                  || TREE_CODE (data_ref_base) == MINUS_EXPR;
@@ -3456,6 +3453,8 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
   struct data_reference *dr;
   tree tag;
   tree address_base;
+  bool base_aligned_p;
+  tree offset;
 
   if (vect_debug_details (NULL))
     fprintf (dump_file, "\n<<vect_analyze_data_refs>>\n");
@@ -3565,7 +3564,10 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
 		{
 		case ARRAY_REF:
 		  dr = analyze_array (stmt, TREE_OPERAND (symbl, 0), DR_IS_READ(dr));
-		  STMT_VINFO_MEMTAG (stmt_info) = DR_BASE_NAME (dr);
+		  STMT_VINFO_MEMTAG (stmt_info) = 
+		     vect_get_base_and_bit_offset (dr, DR_BASE_NAME (dr), NULL_TREE,
+						   loop_vinfo, &offset, 
+						   &base_aligned_p);
 		  break;
 		  
 		case VAR_DECL: 
