@@ -146,7 +146,7 @@ namespace std
       // First check for sign.
       int __pos = 0;
       char_type  __c = *__beg;
-      bool __plus = __traits_type::eq(__c, __lit[_S_iplus]);
+      const bool __plus = __traits_type::eq(__c, __lit[_S_iplus]);
       if ((__plus || __traits_type::eq(__c, __lit[_S_iminus])) 
 	  && __beg != __end)
 	{
@@ -230,7 +230,7 @@ namespace std
 	      __c = *(++__beg);
 
 	      // Remove optional plus or minus sign, if they exist.
-	      bool __plus = __traits_type::eq(__c, __lit[_S_iplus]);
+	      const bool __plus = __traits_type::eq(__c, __lit[_S_iplus]);
 	      if (__plus || __traits_type::eq(__c, __lit[_S_iminus]))
 		{
 		  ++__pos;
@@ -453,7 +453,8 @@ namespace std
 	  bool __testt = false;
           for (size_t __n = 0; __beg != __end; ++__n)
             {
-              char_type __c = *__beg++;
+              const char_type __c = *__beg;
+	      ++__beg;
 
 	      if (__n <= __fn)
 		__testf = __traits_type::eq(__c, __lc->_M_falsename[__n]);
