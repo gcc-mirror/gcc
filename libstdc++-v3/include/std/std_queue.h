@@ -74,8 +74,9 @@
 #include <bits/stl_function.h>
 #include <bits/stl_queue.h>
 
-#endif /* _CPP_QUEUE */
+#ifdef _GLIBCPP_NO_TEMPLATE_EXPORT
+#  include <bits/deque.tcc>
+#  include <bits/vector.tcc>
+#endif
 
-// Local Variables:
-// mode:C++
-// End:
+#endif /* _CPP_QUEUE */
