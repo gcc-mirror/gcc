@@ -1,3 +1,9 @@
+2004-07-17  Richard Earnshaw  <rearnsha@arm.com>
+
+	* configure.in(ZIP, GCJH): Remove white space around '=' in variable
+	assignment.
+	* configure: Regenerated.
+
 2004-07-16  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.in: Use build_noncanonical rather than build_alias.

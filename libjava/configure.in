@@ -1089,8 +1089,8 @@ fi
 case "${which_gcj}" in
    built)
       GCJ="$built_gcc_dir/gcj -B`${PWDCMD-pwd}`/ -B$built_gcc_dir/"
-      GCJH = '$(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh'
-      ZIP = '$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/jar'
+      GCJH='$(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh'
+      ZIP='$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/jar'
    ;;
    cross)
       if test "x${with_newlib}" = "xyes"; then
@@ -1100,15 +1100,15 @@ case "${which_gcj}" in
       else
          GCJ="${target_noncanonical}-gcj -B`${PWDCMD-pwd}`/"
       fi
-      ZIP = jar
-      GCJH = '$(target_noncanonical)-gcjh'
+      ZIP=jar
+      GCJH='$(target_noncanonical)-gcjh'
    ;;
    path)
       GCJ="gcj -B`${PWDCMD-pwd}`/"
       ## In this case, gcj is found outside the build tree.  However, zip is
       ## found in the build tree.
-      ZIP = '$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/jar'
-      GCJH = gcjh
+      ZIP='$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/jar'
+      GCJH=gcjh
    ;;
 esac
 
