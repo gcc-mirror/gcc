@@ -2710,6 +2710,21 @@ assign_parms (fndecl, second_time)
       if (second_time)
 	continue;
 
+      /* If we can't trust the parm stack slot to be aligned enough
+	 for its ultimate type, don't use that slot after entry.
+	 We'll make another stack slot, if we need one.  */
+      {
+#ifdef FUNCTION_ARG_BOUNDARY
+	int thisparm_boundary
+	  = FUNCTION_ARG_BOUNDARY (passed_mode, passed_type);
+#else
+	int thisparm_boundary = PARM_BOUNDARY;
+#endif
+
+	if (GET_MODE_ALIGNMENT (nominal_mode) > thisparm_boundary)
+	  stack_parm = 0;
+      }
+
       /* Now adjust STACK_PARM to the mode and precise location
 	 where this parameter should live during execution,
 	 if we discover that it must live in the stack during execution.
@@ -2856,6 +2871,7 @@ assign_parms (fndecl, second_time)
 	     as we make here would screw up life analysis for it.  */
 	  if (nominal_mode == passed_mode
 	      && GET_CODE (entry_parm) == MEM
+	      && entry_parm == stack_parm
 	      && stack_offset.var == 0
 	      && reg_mentioned_p (virtual_incoming_args_rtx,
 				  XEXP (entry_parm, 0)))
@@ -3087,6 +3103,9 @@ locate_and_pad_parm (passed_mode, type, in_regs, fndecl,
   ADD_PARM_SIZE (*arg_size_ptr, sizetree);
 #endif /* ARGS_GROW_DOWNWARD */
 }
+
+/* Round the stack offset in *OFFSET_PTR up to a multiple of BOUNDARY.
+   BOUNDARY is measured in bits, but must be a multiple of a storage unit.  */
 
 static void
 pad_to_arg_alignment (offset_ptr, boundary)
