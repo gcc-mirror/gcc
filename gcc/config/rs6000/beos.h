@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for BeOS.
-   Copyright (C) 1997 Free Software Foundation, Inc.
+   Copyright (C) 1997, 2000 Free Software Foundation, Inc.
    Contributed by Fred Fish (fnf@cygnus.com), based on aix41.h
    from David Edelsohn (edelsohn@npac.syr.edu).
 
@@ -21,6 +21,9 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
+#include "rs6000/rs6000.h"
+#include "rs6000/aix.h"
+
 /* Enable AIX XL compiler calling convention breakage compatibility.  */
 #define MASK_XL_CALL		0x40000000
 #define	TARGET_XL_CALL		(target_flags & MASK_XL_CALL)
@@ -30,8 +33,6 @@ Boston, MA 02111-1307, USA.  */
   {"no-xl-call",	- MASK_XL_CALL}, \
   {"threads",		0},		\
   {"pe",		0},
-
-#include "rs6000/rs6000.h"
 
 #undef ASM_SPEC
 #define ASM_SPEC "-u %(asm_cpu)"
@@ -78,24 +79,6 @@ Boston, MA 02111-1307, USA.  */
 
 #undef	MULTILIB_DEFAULTS
 #define	MULTILIB_DEFAULTS { "mcpu=powerpc" }
-
-/* These are not necessary when we pass -u to the assembler, and undefining
-   them saves a great deal of space in object files.  */
-
-#undef ASM_OUTPUT_EXTERNAL
-#undef ASM_OUTPUT_EXTERNAL_LIBCALL
-#define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME)	\
-{ rtx _symref = XEXP (DECL_RTL (DECL), 0);	\
-  if ((TREE_CODE (DECL) == VAR_DECL		\
-       || TREE_CODE (DECL) == FUNCTION_DECL)	\
-      && (NAME)[strlen (NAME) - 1] != ']')	\
-    {						\
-      char *_name = (char *) permalloc (strlen (XSTR (_symref, 0)) + 5); \
-      strcpy (_name, XSTR (_symref, 0));	\
-      strcat (_name, TREE_CODE (DECL) == FUNCTION_DECL ? "[DS]" : "[RW]"); \
-      XSTR (_symref, 0) = _name;		\
-    }						\
-}
 
 /* These empty definitions get rid of the attempt to link in crt0.o
    and any libraries like libc.a.

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
-   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
-   Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
+   2000 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -22,13 +22,18 @@ Boston, MA 02111-1307, USA.  */
 
 
 /* Note that some other tm.h files include this one and then override
-   many of the definitions that relate to assembler syntax.  */
+   many of the definitions.  */
 
+/* Definitions for the object file format.  These are set at
+   compile-time.  */
 
-/* Names to predefine in the preprocessor for this target machine.  */
+#define OBJECT_XCOFF 1
+#define OBJECT_ELF 2
+#define OBJECT_PEF 3
 
-#define CPP_PREDEFINES "-D_IBMR2 -D_POWER -D_AIX -D_AIX32 -D_LONG_LONG \
--Asystem(unix) -Asystem(aix) -Acpu(rs6000) -Amachine(rs6000)"
+#define TARGET_ELF (TARGET_OBJECT_FORMAT == OBJECT_ELF)
+#define TARGET_AIX (TARGET_OBJECT_FORMAT == OBJECT_XCOFF)
+#define TARGET_MACOS (TARGET_OBJECT_FORMAT == OBJECT_PEF)
 
 /* Print subsidiary information on the compiler version in use.  */
 #define TARGET_VERSION ;
@@ -37,16 +42,6 @@ Boston, MA 02111-1307, USA.  */
 #ifndef TARGET_CPU_DEFAULT
 #define TARGET_CPU_DEFAULT ((char *)0)
 #endif
-
-/* Tell the assembler to assume that all undefined names are external.
-
-   Don't do this until the fixed IBM assembler is more generally available.
-   When this becomes permanently defined, the ASM_OUTPUT_EXTERNAL,
-   ASM_OUTPUT_EXTERNAL_LIBCALL, and RS6000_OUTPUT_BASENAME macros will no
-   longer be needed.  Also, the extern declaration of mcount in ASM_FILE_START
-   will no longer be needed.  */
-
-/* #define ASM_SPEC "-u %(asm_cpu)" */
 
 /* Define appropriate architecture macros for preprocessor depending on
    target switches.  */
@@ -89,25 +84,7 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=823: -D_ARCH_PPC} \
 %{mcpu=860: -D_ARCH_PPC}"
 
-#ifndef CPP_DEFAULT_SPEC
 #define CPP_DEFAULT_SPEC "-D_ARCH_PWR"
-#endif
-
-#ifndef CPP_SYSV_SPEC
-#define CPP_SYSV_SPEC ""
-#endif
-
-#ifndef CPP_ENDIAN_SPEC
-#define CPP_ENDIAN_SPEC ""
-#endif
-
-#ifndef CPP_ENDIAN_DEFAULT_SPEC
-#define CPP_ENDIAN_DEFAULT_SPEC ""
-#endif
-
-#ifndef CPP_SYSV_DEFAULT_SPEC
-#define CPP_SYSV_DEFAULT_SPEC ""
-#endif
 
 /* Common ASM definitions used by ASM_SPEC among the various targets
    for handling -mcpu=xxx switches.  */
@@ -145,9 +122,7 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=823: -mppc} \
 %{mcpu=860: -mppc}"
 
-#ifndef ASM_DEFAULT_SPEC
 #define ASM_DEFAULT_SPEC ""
-#endif
 
 /* This macro defines names of additional specifications to put in the specs
    that can be used in various specifications like CC1_SPEC.  Its definition
@@ -159,64 +134,17 @@ Boston, MA 02111-1307, USA.  */
 
    Do not define this macro if it does not need to do anything.  */
 
-#ifndef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS
-#endif
 
 #define EXTRA_SPECS							\
   { "cpp_cpu",			CPP_CPU_SPEC },				\
   { "cpp_default",		CPP_DEFAULT_SPEC },			\
-  { "cpp_sysv",			CPP_SYSV_SPEC },			\
-  { "cpp_sysv_default",		CPP_SYSV_DEFAULT_SPEC },		\
-  { "cpp_endian_default",	CPP_ENDIAN_DEFAULT_SPEC },		\
-  { "cpp_endian",		CPP_ENDIAN_SPEC },			\
   { "asm_cpu",			ASM_CPU_SPEC },				\
   { "asm_default",		ASM_DEFAULT_SPEC },			\
-  { "link_syscalls",		LINK_SYSCALLS_SPEC },			\
-  { "link_libg",		LINK_LIBG_SPEC },			\
   SUBTARGET_EXTRA_SPECS
-
-/* Default location of syscalls.exp under AIX */
-#ifndef CROSS_COMPILE
-#define LINK_SYSCALLS_SPEC "-bI:/lib/syscalls.exp"
-#else
-#define LINK_SYSCALLS_SPEC ""
-#endif
-
-/* Default location of libg.exp under AIX */
-#ifndef CROSS_COMPILE
-#define LINK_LIBG_SPEC "-bexport:/usr/lib/libg.exp"
-#else
-#define LINK_LIBG_SPEC ""
-#endif
-
-/* Define the options for the binder: Start text at 512, align all segments
-   to 512 bytes, and warn if there is text relocation.
-
-   The -bhalt:4 option supposedly changes the level at which ld will abort,
-   but it also suppresses warnings about multiply defined symbols and is
-   used by the AIX cc command.  So we use it here.
-
-   -bnodelcsect undoes a poor choice of default relating to multiply-defined
-   csects.  See AIX documentation for more information about this.
-
-   -bM:SRE tells the linker that the output file is Shared REusable.  Note
-   that to actually build a shared library you will also need to specify an
-   export list with the -Wl,-bE option.  */
-
-#define LINK_SPEC "-T512 -H512 %{!r:-btextro} -bhalt:4 -bnodelcsect\
-   %{static:-bnso %(link_syscalls) } \
-   %{!shared:%{g*: %(link_libg) }} %{shared:-bM:SRE}"
-
-/* Profiled library versions are used by linking with special directories.  */
-#define LIB_SPEC "%{pg:-L/lib/profiled -L/usr/lib/profiled}\
-   %{p:-L/lib/profiled -L/usr/lib/profiled} %{!shared:%{g*:-lg}} -lc"
 
 /* gcc must do the search itself to find libgcc.a, not use -l.  */
 #define LIBGCC_SPEC "libgcc.a%s"
-
-/* Don't turn -B into -L if the argument specifies a relative file name.  */
-#define RELATIVE_PREFIX_NOT_LINKDIR
 
 /* Architecture type.  */
 
@@ -280,12 +208,14 @@ extern int target_flags;
 /* Disable fused multiply/add operations */
 #define MASK_NO_FUSED_MADD	0x00020000
 
+/* Nonzero if we need to schedule the prolog and epilog.  */
+#define MASK_SCHED_PROLOG	0x00040000
+
 #define TARGET_POWER		(target_flags & MASK_POWER)
 #define TARGET_POWER2		(target_flags & MASK_POWER2)
 #define TARGET_POWERPC		(target_flags & MASK_POWERPC)
 #define TARGET_PPC_GPOPT	(target_flags & MASK_PPC_GPOPT)
 #define TARGET_PPC_GFXOPT	(target_flags & MASK_PPC_GFXOPT)
-#define TARGET_POWERPC64	(target_flags & MASK_POWERPC64)
 #define TARGET_NEW_MNEMONICS	(target_flags & MASK_NEW_MNEMONICS)
 #define TARGET_NO_FP_IN_TOC	(target_flags & MASK_NO_FP_IN_TOC)
 #define TARGET_NO_SUM_IN_TOC	(target_flags & MASK_NO_SUM_IN_TOC)
@@ -298,6 +228,7 @@ extern int target_flags;
 #define TARGET_STRING_SET	(target_flags & MASK_STRING_SET)
 #define TARGET_NO_UPDATE	(target_flags & MASK_NO_UPDATE)
 #define TARGET_NO_FUSED_MADD	(target_flags & MASK_NO_FUSED_MADD)
+#define TARGET_SCHED_PROLOG	(target_flags & MASK_SCHED_PROLOG)
 
 #define TARGET_32BIT		(! TARGET_64BIT)
 #define TARGET_HARD_FLOAT	(! TARGET_SOFT_FLOAT)
@@ -306,48 +237,16 @@ extern int target_flags;
 
 #ifdef IN_LIBGCC2
 /* For libgcc2 we make sure this is a compile time constant */
-#undef TARGET_POWERPC64
 #ifdef __64BIT__
 #define TARGET_POWERPC64	1
 #else
 #define TARGET_POWERPC64	0
 #endif
-#endif
-
-/* Pseudo target to indicate whether the object format is ELF
-   (to get around not having conditional compilation in the md file)  */
-#ifndef	TARGET_ELF
-#define	TARGET_ELF		0
-#endif
-
-/* If this isn't V.4, don't support -mno-toc.  */
-#ifndef TARGET_NO_TOC
-#define TARGET_NO_TOC		0
-#define	TARGET_TOC		1
-#endif
-
-/* Pseudo target to say whether this is Windows NT */
-#ifndef	TARGET_WINDOWS_NT
-#define	TARGET_WINDOWS_NT 0
-#endif
-
-/* Pseudo target to say whether this is MAC */
-#ifndef	TARGET_MACOS
-#define	TARGET_MACOS 0
-#endif
-
-/* Pseudo target to say whether this is AIX */
-#ifndef TARGET_AIX
-#if (TARGET_ELF || TARGET_WINDOWS_NT || TARGET_MACOS)
-#define TARGET_AIX 0
 #else
-#define TARGET_AIX 1
-#endif
+#define TARGET_POWERPC64	(target_flags & MASK_POWERPC64)
 #endif
 
-#ifndef TARGET_XL_CALL
 #define TARGET_XL_CALL 0
-#endif
 
 /* Run-time compilation parameters selecting different hardware subsets.
 
@@ -357,55 +256,95 @@ extern int target_flags;
    where VALUE is the bits to set or minus the bits to clear.
    An empty string NAME is used to identify the default VALUE.  */
 
-/* This is meant to be redefined in the host dependent files */
-#ifndef SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES
-#endif
-
 #define TARGET_SWITCHES							\
- {{"power",		MASK_POWER  | MASK_MULTIPLE | MASK_STRING},	\
+ {{"power",		MASK_POWER  | MASK_MULTIPLE | MASK_STRING,	\
+			"Use POWER instruction set"},			\
   {"power2",		(MASK_POWER | MASK_MULTIPLE | MASK_STRING	\
-			 | MASK_POWER2)},				\
-  {"no-power2",		- MASK_POWER2},					\
+			 | MASK_POWER2),				\
+			"Use POWER2 instruction set"},			\
+  {"no-power2",		- MASK_POWER2,					\
+			"Do not use POWER2 instruction set"},		\
   {"no-power",		- (MASK_POWER | MASK_POWER2 | MASK_MULTIPLE	\
-			   | MASK_STRING)},				\
-  {"powerpc",		MASK_POWERPC},					\
+			   | MASK_STRING),				\
+			"Do not use POWER instruction set"},		\
+  {"powerpc",		MASK_POWERPC,					\
+			"Use PowerPC instruction set"},			\
   {"no-powerpc",	- (MASK_POWERPC | MASK_PPC_GPOPT		\
-			   | MASK_PPC_GFXOPT | MASK_POWERPC64)},	\
-  {"powerpc-gpopt",	MASK_POWERPC | MASK_PPC_GPOPT},			\
-  {"no-powerpc-gpopt",	- MASK_PPC_GPOPT},				\
-  {"powerpc-gfxopt",	MASK_POWERPC | MASK_PPC_GFXOPT},		\
-  {"no-powerpc-gfxopt",	- MASK_PPC_GFXOPT},				\
-  {"powerpc64",		MASK_POWERPC64},				\
-  {"no-powerpc64",	- MASK_POWERPC64},				\
-  {"new-mnemonics",	MASK_NEW_MNEMONICS},				\
-  {"old-mnemonics",	-MASK_NEW_MNEMONICS},				\
+			   | MASK_PPC_GFXOPT | MASK_POWERPC64),		\
+			"Do not use PowerPC instruction set"},		\
+  {"powerpc-gpopt",	MASK_POWERPC | MASK_PPC_GPOPT,			\
+			"Use PowerPC General Purpose group optional instructions"},\
+  {"no-powerpc-gpopt",	- MASK_PPC_GPOPT,				\
+			"Don't use PowerPC General Purpose group optional instructions"},\
+  {"powerpc-gfxopt",	MASK_POWERPC | MASK_PPC_GFXOPT,			\
+			"Use PowerPC Graphics group optional instructions"},\
+  {"no-powerpc-gfxopt",	- MASK_PPC_GFXOPT,				\
+			"Don't use PowerPC Graphics group optional instructions"},\
+  {"powerpc64",		MASK_POWERPC64,					\
+			"Use PowerPC-64 instruction set"},		\
+  {"no-powerpc64",	- MASK_POWERPC64,				\
+			"Don't use PowerPC-64 instruction set"},	\
+  {"new-mnemonics",	MASK_NEW_MNEMONICS,				\
+			"Use new mnemonics for PowerPC architecture"},	\
+  {"old-mnemonics",	-MASK_NEW_MNEMONICS,				\
+			"Use old mnemonics for PowerPC architecture"},	\
   {"full-toc",		- (MASK_NO_FP_IN_TOC | MASK_NO_SUM_IN_TOC	\
-			   | MASK_MINIMAL_TOC)},			\
-  {"fp-in-toc",		- MASK_NO_FP_IN_TOC},				\
-  {"no-fp-in-toc",	MASK_NO_FP_IN_TOC},				\
-  {"sum-in-toc",	- MASK_NO_SUM_IN_TOC},				\
-  {"no-sum-in-toc",	MASK_NO_SUM_IN_TOC},				\
-  {"minimal-toc",	MASK_MINIMAL_TOC},				\
-  {"minimal-toc",	- (MASK_NO_FP_IN_TOC | MASK_NO_SUM_IN_TOC)},	\
-  {"no-minimal-toc",	- MASK_MINIMAL_TOC},				\
-  {"hard-float",	- MASK_SOFT_FLOAT},				\
-  {"soft-float",	MASK_SOFT_FLOAT},				\
-  {"multiple",		MASK_MULTIPLE | MASK_MULTIPLE_SET},		\
-  {"no-multiple",	- MASK_MULTIPLE},				\
-  {"no-multiple",	MASK_MULTIPLE_SET},				\
-  {"string",		MASK_STRING | MASK_STRING_SET},			\
-  {"no-string",		- MASK_STRING},					\
-  {"no-string",		MASK_STRING_SET},				\
-  {"update",		- MASK_NO_UPDATE},				\
-  {"no-update",		MASK_NO_UPDATE},				\
-  {"fused-madd",	- MASK_NO_FUSED_MADD},				\
-  {"no-fused-madd",	MASK_NO_FUSED_MADD},				\
+			   | MASK_MINIMAL_TOC),				\
+			"Put everything in the regular TOC"},		\
+  {"fp-in-toc",		- MASK_NO_FP_IN_TOC,				\
+			"Place floating point constants in TOC"},	\
+  {"no-fp-in-toc",	MASK_NO_FP_IN_TOC,				\
+			"Don't place floating point constants in TOC"},	\
+  {"sum-in-toc",	- MASK_NO_SUM_IN_TOC,				\
+			"Place symbol+offset constants in TOC"},	\
+  {"no-sum-in-toc",	MASK_NO_SUM_IN_TOC,				\
+			"Don't place symbol+offset constants in TOC"},	\
+  {"minimal-toc",	MASK_MINIMAL_TOC,				\
+			"Use only one TOC entry per procedure"},	\
+  {"minimal-toc",	- (MASK_NO_FP_IN_TOC | MASK_NO_SUM_IN_TOC),	\
+			""},				\
+  {"no-minimal-toc",	- MASK_MINIMAL_TOC,				\
+			"Place variable addresses in the regular TOC"},	\
+  {"hard-float",	- MASK_SOFT_FLOAT,				\
+			"Use hardware fp"},				\
+  {"soft-float",	MASK_SOFT_FLOAT,				\
+			"Do not use hardware fp"},			\
+  {"multiple",		MASK_MULTIPLE | MASK_MULTIPLE_SET,		\
+			"Generate load/store multiple instructions"},	\
+  {"no-multiple",	- MASK_MULTIPLE,				\
+			"Do not generate load/store multiple instructions"},\
+  {"no-multiple",	MASK_MULTIPLE_SET,				\
+			""},\
+  {"string",		MASK_STRING | MASK_STRING_SET,			\
+			"Generate string instructions for block moves"},\
+  {"no-string",		- MASK_STRING,					\
+			"Do not generate string instructions for block moves"},\
+  {"no-string",		MASK_STRING_SET,				\
+			""},\
+  {"update",		- MASK_NO_UPDATE,				\
+			"Generate load/store with update instructions"},\
+  {"no-update",		MASK_NO_UPDATE,					\
+			"Do not generate load/store with update instructions"},\
+  {"fused-madd",	- MASK_NO_FUSED_MADD,				\
+			"Generate fused multiply/add instructions"},	\
+  {"no-fused-madd",	MASK_NO_FUSED_MADD,				\
+			"Don't generate fused multiply/add instructions"},\
+  {"sched-prolog",      MASK_SCHED_PROLOG,                              \
+			""},						\
+  {"no-sched-prolog",   -MASK_SCHED_PROLOG,                             \
+			"Don't schedule the start and end of the procedure"},\
+  {"sched-epilog",      MASK_SCHED_PROLOG,                              \
+			""},						\
+  {"no-sched-epilog",   -MASK_SCHED_PROLOG,                             \
+			""},						\
   SUBTARGET_SWITCHES							\
-  {"",			TARGET_DEFAULT | SUBTARGET_DEFAULT}}
+  {"",			TARGET_DEFAULT | MASK_SCHED_PROLOG,		\
+			""}}
 
 #define TARGET_DEFAULT (MASK_POWER | MASK_MULTIPLE | MASK_STRING)
-#define SUBTARGET_DEFAULT 0
+
+/* This is meant to be redefined in the host dependent files */
+#define SUBTARGET_SWITCHES
 
 /* Processor type.  Order must match cpu attribute in MD file.  */
 enum processor_type
@@ -441,7 +380,7 @@ extern enum processor_type rs6000_cpu;
 
 /* Specify the dialect of assembler to use.  New mnemonics is dialect one
    and the old mnemonics are dialect zero.  */
-#define ASSEMBLER_DIALECT TARGET_NEW_MNEMONICS ? 1 : 0
+#define ASSEMBLER_DIALECT (TARGET_NEW_MNEMONICS ? 1 : 0)
 
 /* This macro is similar to `TARGET_SWITCHES' but defines names of
    command options that have values.  Its definition is an
@@ -461,17 +400,14 @@ extern enum processor_type rs6000_cpu;
 	#define TARGET_OPTIONS { { "short-data-", &m88k_short_data } }  */
 
 /* This is meant to be overridden in target specific files.  */
-#ifndef SUBTARGET_OPTIONS
 #define	SUBTARGET_OPTIONS
-#endif
 
-#define TARGET_OPTIONS				\
-{						\
-   {"cpu=",  &rs6000_select[1].string},		\
-   {"tune=", &rs6000_select[2].string},		\
-   {"debug-", &rs6000_debug_name},		\
-   {"debug=", &rs6000_debug_name},		\
-   SUBTARGET_OPTIONS				\
+#define TARGET_OPTIONS							\
+{									\
+   {"cpu=",  &rs6000_select[1].string, "Use features of and schedule code for given CPU" },\
+   {"tune=", &rs6000_select[2].string, "Schedule code for given CPU" },	\
+   {"debug=", &rs6000_debug_name, "Enable debug output" },		\
+   SUBTARGET_OPTIONS							\
 }
 
 /* rs6000_select[0] is reserved for the default cpu defined via --with-cpu */
@@ -685,9 +621,9 @@ extern int rs6000_debug_arg;		/* debug argument handling */
    many times greater than aligned accesses, for example if they are
    emulated in a trap handler.  */
 #define SLOW_UNALIGNED_ACCESS(MODE, ALIGN)			\
-   ((((MODE) == SFmode || (MODE) == DFmode || (MODE) == DImode)	\
-     && (ALIGN) < 4) ? 1 : 0)
-
+   ((STRICT_ALIGNMENT						\
+     || (((MODE) == SFmode || (MODE) == DFmode || (MODE) == DImode) \
+         && (ALIGN) < 4)) ? 1 : 0)
 
 /* Standard register usage.  */
 
@@ -722,10 +658,6 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 
    On System V implementations, r13 is fixed and not available for use.  */
 
-#ifndef FIXED_R13
-#define FIXED_R13 0
-#endif
-
 #define FIXED_REGISTERS  \
   {0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, FIXED_R13, 0, 0, \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
@@ -746,6 +678,15 @@ extern int rs6000_debug_arg;		/* debug argument handling */
    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1}
+
+#define MQ_REGNO     64
+#define CR0_REGNO    68
+#define CR1_REGNO    69
+#define CR2_REGNO    70
+#define CR3_REGNO    71
+#define CR4_REGNO    72
+#define MAX_CR_REGNO 75
+#define XER_REGNO    76
 
 /* List the order in which to allocate registers.  Each register must be
    listed once, even those in FIXED_REGISTERS.
@@ -768,7 +709,7 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 	mq		(not saved; best to use it if we can)
 	ctr		(not saved; when we have the choice ctr is better)
 	lr		(saved)
-        cr5, r1, r2, ap, fpmem (fixed)  */
+        cr5, r1, r2, ap, xer (fixed)  */
 
 #define REG_ALLOC_ORDER					\
   {32, 							\
@@ -791,18 +732,15 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 /* True if register is a condition register.  */
 #define CR_REGNO_P(N) ((N) >= 68 && (N) <= 75)
 
-/* True if register is condition register 0.  */
-#define CR0_REGNO_P(N) ((N) == 68)
-
 /* True if register is a condition register, but not cr0.  */
 #define CR_REGNO_NOT_CR0_P(N) ((N) >= 69 && (N) <= 75)
 
 /* True if register is an integer register.  */
-#define INT_REGNO_P(N) ((N) <= 31 || (N) == 67)
+#define INT_REGNO_P(N) ((N) <= 31 || (N) == ARG_POINTER_REGNUM)
 
 /* True if register is the temporary memory location used for int/float
    conversion.  */
-#define FPMEM_REGNO_P(N) ((N) == FPMEM_REGNUM)
+#define XER_REGNO_P(N) ((N) == XER_REGNO)
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
@@ -813,7 +751,7 @@ extern int rs6000_debug_arg;		/* debug argument handling */
    PowerPC64 GPRs and FPRs point register holds 64 bits worth.  */
 
 #define HARD_REGNO_NREGS(REGNO, MODE)					\
-  (FP_REGNO_P (REGNO) || FPMEM_REGNO_P (REGNO)				\
+  (FP_REGNO_P (REGNO)							\
    ? ((GET_MODE_SIZE (MODE) + UNITS_PER_FP_WORD - 1) / UNITS_PER_FP_WORD) \
    : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
@@ -829,7 +767,7 @@ extern int rs6000_debug_arg;		/* debug argument handling */
     || (GET_MODE_CLASS (MODE) == MODE_INT				\
 	&& GET_MODE_SIZE (MODE) == UNITS_PER_FP_WORD))			\
    : CR_REGNO_P (REGNO) ? GET_MODE_CLASS (MODE) == MODE_CC		\
-   : FPMEM_REGNO_P (REGNO) ? ((MODE) == DImode || (MODE) == DFmode)	\
+   : XER_REGNO_P (REGNO) ? (MODE) == PSImode				\
    : ! INT_REGNO_P (REGNO) ? (GET_MODE_CLASS (MODE) == MODE_INT		\
 			      && GET_MODE_SIZE (MODE) <= UNITS_PER_WORD) \
    : 1)
@@ -949,11 +887,11 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 /* Place to put static chain when calling a function that requires it.  */
 #define STATIC_CHAIN_REGNUM 11
 
-/* count register number for special purposes */
-#define COUNT_REGISTER_REGNUM 66
+/* Link register number. */
+#define LINK_REGISTER_REGNUM 65
 
-/* Special register that represents memory, used for float/int conversions.  */
-#define FPMEM_REGNUM 76
+/* Count register number. */
+#define COUNT_REGISTER_REGNUM 66
 
 /* Place that structure value return address is placed.
 
@@ -1013,8 +951,7 @@ enum reg_class
   CR0_REGS,
   CR_REGS,
   NON_FLOAT_REGS,
-  FPMEM_REGS,
-  FLOAT_OR_FPMEM_REGS,
+  XER_REGS,
   ALL_REGS,
   LIM_REG_CLASSES
 };
@@ -1039,8 +976,7 @@ enum reg_class
   "CR0_REGS",								\
   "CR_REGS",								\
   "NON_FLOAT_REGS",							\
-  "FPMEM_REGS",								\
-  "FLOAT_OR_FPMEM_REGS",						\
+  "XER_REGS",								\
   "ALL_REGS"								\
 }
 
@@ -1064,8 +1000,7 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x00000010 },	/* CR0_REGS */		\
   { 0x00000000, 0x00000000, 0x00000ff0 },	/* CR_REGS */		\
   { 0xffffffff, 0x00000000, 0x0000ffff },	/* NON_FLOAT_REGS */	\
-  { 0x00000000, 0x00000000, 0x00010000 },	/* FPMEM_REGS */	\
-  { 0x00000000, 0xffffffff, 0x00010000 },	/* FLOAT_OR_FPMEM_REGS */ \
+  { 0x00000000, 0x00000000, 0x00010000 },	/* XER_REGS */		\
   { 0xffffffff, 0xffffffff, 0x0001ffff }	/* ALL_REGS */		\
 }
 
@@ -1084,7 +1019,7 @@ enum reg_class
   : (REGNO) == 65 ? LINK_REGS		\
   : (REGNO) == 66 ? CTR_REGS		\
   : (REGNO) == 67 ? BASE_REGS		\
-  : (REGNO) == 76 ? FPMEM_REGS		\
+  : (REGNO) == 76 ? XER_REGS		\
   : NO_REGS)
 
 /* The class value for index registers, and the one for base regs.  */
@@ -1102,7 +1037,7 @@ enum reg_class
    : (C) == 'l' ? LINK_REGS	\
    : (C) == 'x' ? CR0_REGS	\
    : (C) == 'y' ? CR_REGS	\
-   : (C) == 'z' ? FPMEM_REGS	\
+   : (C) == 'z' ? XER_REGS	\
    : NO_REGS)
 
 /* The letters I, J, K, L, M, N, and P in a register constraint string
@@ -1122,7 +1057,7 @@ enum reg_class
 
 #define CONST_OK_FOR_LETTER_P(VALUE, C)					\
    ( (C) == 'I' ? (unsigned HOST_WIDE_INT) ((VALUE) + 0x8000) < 0x10000	\
-   : (C) == 'J' ? ((VALUE) & (~ (HOST_WIDE_INT) 0xffff0000)) == 0	\
+   : (C) == 'J' ? ((VALUE) & (~ (HOST_WIDE_INT) 0xffff0000u)) == 0	\
    : (C) == 'K' ? ((VALUE) & (~ (HOST_WIDE_INT) 0xffff)) == 0		\
    : (C) == 'L' ? (((VALUE) & 0xffff) == 0				\
 		   && ((VALUE) >> 31 == -1 || (VALUE) >> 31 == 0))	\
@@ -1195,15 +1130,14 @@ enum reg_class
    On RS/6000, this is the size of MODE in words,
    except in the FP regs, where a single reg is enough for two words.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)					\
- (((CLASS) == FLOAT_REGS || (CLASS) == FPMEM_REGS			\
-   || (CLASS) == FLOAT_OR_FPMEM_REGS)					\
+ (((CLASS) == FLOAT_REGS) 						\
   ? ((GET_MODE_SIZE (MODE) + UNITS_PER_FP_WORD - 1) / UNITS_PER_FP_WORD) \
   : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
 /* If defined, gives a class of registers that cannot be used as the
    operand of a SUBREG that changes the size of the object.  */
 
-#define CLASS_CANNOT_CHANGE_SIZE	FLOAT_OR_FPMEM_REGS
+#define CLASS_CANNOT_CHANGE_SIZE      FLOAT_REGS
 
 /* Stack layout; function entry, exit and calling.  */
 
@@ -1213,18 +1147,10 @@ enum rs6000_abi {
   ABI_AIX,			/* IBM's AIX */
   ABI_AIX_NODESC,		/* AIX calling sequence minus function descriptors */
   ABI_V4,			/* System V.4/eabi */
-  ABI_NT,			/* Windows/NT */
   ABI_SOLARIS			/* Solaris */
 };
 
 extern enum rs6000_abi rs6000_current_abi;	/* available for use by subtarget */
-
-/* Default ABI to compile code for */
-#ifndef DEFAULT_ABI
-#define DEFAULT_ABI ABI_AIX
-/* The prefix to add to user-visible assembler symbols. */
-#define USER_LABEL_PREFIX "."
-#endif
 
 /* Structure used to define the rs6000 stack */
 typedef struct rs6000_stack {
@@ -1235,9 +1161,6 @@ typedef struct rs6000_stack {
   int toc_save_p;		/* true if the TOC needs to be saved */
   int push_p;			/* true if we need to allocate stack space */
   int calls_p;			/* true if the function makes any calls */
-  int main_p;			/* true if this is main */
-  int main_save_p;		/* true if this is main and we need to save args */
-  int fpmem_p;			/* true if float/int conversion temp needed */
   enum rs6000_abi abi;		/* which ABI to use */
   int gp_save_offset;		/* offset to save GP regs from initial SP */
   int fp_save_offset;		/* offset to save FP regs from initial SP */
@@ -1245,20 +1168,16 @@ typedef struct rs6000_stack {
   int cr_save_offset;		/* offset to save CR from initial SP */
   int toc_save_offset;		/* offset to save the TOC pointer */
   int varargs_save_offset;	/* offset to save the varargs registers */
-  int main_save_offset;		/* offset to save main's args */
-  int fpmem_offset;		/* offset for float/int conversion temp */
   int reg_size;			/* register size (4 or 8) */
   int varargs_size;		/* size to hold V.4 args passed in regs */
   int vars_size;		/* variable save area size */
   int parm_size;		/* outgoing parameter size */
-  int main_size;		/* size to hold saving main's args */
   int save_size;		/* save area size */
   int fixed_size;		/* fixed size of stack frame */
   int gp_size;			/* size of saved GP registers */
   int fp_size;			/* size of saved FP registers */
   int cr_size;			/* size to hold CR if not in save_size */
   int lr_size;			/* size to hold LR if not in save_size */
-  int fpmem_size;		/* size to hold float/int conversion */
   int toc_size;			/* size to hold TOC if not in save_size */
   int total_size;		/* total bytes allocated for stack */
 } rs6000_stack_t;
@@ -1277,20 +1196,20 @@ typedef struct rs6000_stack {
 /* #define FRAME_GROWS_DOWNWARD */
 
 /* Size of the outgoing register save area */
-#define RS6000_REG_SAVE (TARGET_32BIT ? 32 : 64)
+#define RS6000_REG_SAVE ((DEFAULT_ABI == ABI_AIX			\
+			  || DEFAULT_ABI == ABI_AIX_NODESC)		\
+			 ? (TARGET_64BIT ? 64 : 32)			\
+			 : 0)
 
 /* Size of the fixed area on the stack */
-#define RS6000_SAVE_AREA (TARGET_32BIT ? 24 : 48)
+#define RS6000_SAVE_AREA \
+  (((DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_AIX_NODESC) ? 24 : 8)	\
+   << (TARGET_64BIT ? 1 : 0))
 
 /* MEM representing address to save the TOC register */
 #define RS6000_SAVE_TOC gen_rtx_MEM (Pmode, \
 				     plus_constant (stack_pointer_rtx, \
 						    (TARGET_32BIT ? 20 : 40)))
-
-/* Offset & size for fpmem stack locations used for converting between
-   float and integral types.  */
-extern int rs6000_fpmem_offset;
-extern int rs6000_fpmem_size;
 
 /* Size of the V.4 varargs area if needed */
 #define RS6000_VARARGS_AREA 0
@@ -1420,7 +1339,9 @@ extern int rs6000_sysv_varargs_p;
 #define FP_ARG_MIN_REG 33
 #define	FP_ARG_AIX_MAX_REG 45
 #define	FP_ARG_V4_MAX_REG  40
-#define FP_ARG_MAX_REG FP_ARG_AIX_MAX_REG
+#define	FP_ARG_MAX_REG ((DEFAULT_ABI == ABI_AIX				\
+			 || DEFAULT_ABI == ABI_AIX_NODESC)		\
+			? FP_ARG_AIX_MAX_REG : FP_ARG_V4_MAX_REG)
 #define FP_ARG_NUM_REG (FP_ARG_MAX_REG - FP_ARG_MIN_REG + 1)
 
 /* Return registers */
@@ -1429,13 +1350,10 @@ extern int rs6000_sysv_varargs_p;
 
 /* Flags for the call/call_value rtl operations set up by function_arg */
 #define CALL_NORMAL		0x00000000	/* no special processing */
-#define CALL_NT_DLLIMPORT	0x00000001	/* NT, this is a DLL import call */
+/* Bits in 0x00000001 are unused.  */
 #define CALL_V4_CLEAR_FP_ARGS	0x00000002	/* V.4, no FP args passed */
 #define CALL_V4_SET_FP_ARGS	0x00000004	/* V.4, FP args were passed */
 #define CALL_LONG		0x00000008	/* always call indirect */
-
-/* Define cutoff for using external functions to save floating point */
-#define FP_SAVE_INLINE(FIRST_REG) ((FIRST_REG) == 62 || (FIRST_REG) == 63)
 
 /* 1 if N is a possible register number for a function value
    as seen by the caller.
@@ -1561,8 +1479,7 @@ typedef struct rs6000_args
    the argument, `downward' to pad below, or `none' to inhibit
    padding.  */
 
-#define FUNCTION_ARG_PADDING(MODE, TYPE) \
-  (enum direction) function_arg_padding (MODE, TYPE)
+#define FUNCTION_ARG_PADDING(MODE, TYPE) function_arg_padding (MODE, TYPE)
 
 /* If defined, a C expression that gives the alignment boundary, in bits,
    of an argument with the specified mode and type.  If it is not defined,
@@ -1635,40 +1552,6 @@ typedef struct rs6000_args
    before returning.  */
 
 #define FUNCTION_EPILOGUE(FILE, SIZE) output_epilog (FILE, SIZE)
-
-/* A C compound statement that outputs the assembler code for a thunk function,
-   used to implement C++ virtual function calls with multiple inheritance.  The
-   thunk acts as a wrapper around a virtual function, adjusting the implicit
-   object parameter before handing control off to the real function.
-
-   First, emit code to add the integer DELTA to the location that contains the
-   incoming first argument.  Assume that this argument contains a pointer, and
-   is the one used to pass the `this' pointer in C++.  This is the incoming
-   argument *before* the function prologue, e.g. `%o0' on a sparc.  The
-   addition must preserve the values of all other incoming arguments.
-
-   After the addition, emit code to jump to FUNCTION, which is a
-   `FUNCTION_DECL'.  This is a direct pure jump, not a call, and does not touch
-   the return address.  Hence returning from FUNCTION will return to whoever
-   called the current `thunk'.
-
-   The effect must be as if FUNCTION had been called directly with the adjusted
-   first argument.  This macro is responsible for emitting all of the code for
-   a thunk function; `FUNCTION_PROLOGUE' and `FUNCTION_EPILOGUE' are not
-   invoked.
-
-   The THUNK_FNDECL is redundant.  (DELTA and FUNCTION have already been
-   extracted from it.)  It might possibly be useful on some targets, but
-   probably not.
-
-   If you do not define this macro, the target-independent code in the C++
-   frontend will generate a less efficient heavyweight thunk that calls
-   FUNCTION instead of jumping to it.  The generic approach does not support
-   varargs.  */
-#if TARGET_ELF
-#define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION) \
-  output_mi_thunk (FILE, THUNK_FNDECL, DELTA, FUNCTION)
-#endif
 
 /* TRAMPOLINE_TEMPLATE deleted */
 
@@ -1730,7 +1613,6 @@ typedef struct rs6000_args
    || DEFAULT_ABI == ABI_AIX_NODESC)	? 8 :				\
   (DEFAULT_ABI == ABI_V4						\
    || DEFAULT_ABI == ABI_SOLARIS)	? (TARGET_32BIT ? 4 : 8) :	\
-  (DEFAULT_ABI == ABI_NT)		? -4 :				\
   (fatal ("RETURN_ADDRESS_OFFSET not supported"), 0))
 
 /* The current return address is in link register (65).  The return address
@@ -1738,7 +1620,7 @@ typedef struct rs6000_args
    frame pointer.  */
 #define RETURN_ADDR_RTX(count, frame)			\
   ((count == -1)					\
-   ? gen_rtx_REG (Pmode, 65)				\
+   ? gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM)		\
    : gen_rtx_MEM (Pmode,				\
 		  memory_address			\
 		  (Pmode, 				\
@@ -1906,18 +1788,16 @@ typedef struct rs6000_args
    adjacent memory cells are accessed by adding word-sized offsets
    during assembly output.  */
 
-#define LEGITIMATE_CONSTANT_POOL_BASE_P(X)				\
-  (TARGET_TOC && GET_CODE (X) == SYMBOL_REF				\
-   && CONSTANT_POOL_ADDRESS_P (X)					\
-   && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (X)))
+#define CONSTANT_POOL_EXPR_P(X) (constant_pool_expr_p (X))
 
-/* AIX64 guaranteed to have 64 bit TOC alignment.  */
+#define TOC_RELATIVE_EXPR_P(X) (toc_relative_expr_p (X))
+
 #define LEGITIMATE_CONSTANT_POOL_ADDRESS_P(X)				\
-  (LEGITIMATE_CONSTANT_POOL_BASE_P (X)					\
-   || (TARGET_TOC							\
-       && GET_CODE (X) == CONST && GET_CODE (XEXP (X, 0)) == PLUS	\
-       && GET_CODE (XEXP (XEXP (X, 0), 1)) == CONST_INT			\
-       && LEGITIMATE_CONSTANT_POOL_BASE_P (XEXP (XEXP (X, 0), 0))))
+  (TARGET_TOC								\
+  && GET_CODE (X) == PLUS						\
+  && GET_CODE (XEXP (X, 0)) == REG					\
+  && (TARGET_MINIMAL_TOC || REGNO (XEXP (X, 0)) == TOC_REGISTER)	\
+  && CONSTANT_POOL_EXPR_P (XEXP (X, 1)))
 
 #define LEGITIMATE_SMALL_DATA_P(MODE, X)				\
   ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)		\
@@ -2012,43 +1892,13 @@ typedef struct rs6000_args
    Then check for the sum of a register and something not constant, try to
    load the other things into a register and return the sum.  */
 
-#define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)				\
-{ if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == REG		\
-    && GET_CODE (XEXP (X, 1)) == CONST_INT				\
-    && (unsigned HOST_WIDE_INT) (INTVAL (XEXP (X, 1)) + 0x8000) >= 0x10000) \
-    { HOST_WIDE_INT high_int, low_int;					\
-      rtx sum;								\
-      high_int = INTVAL (XEXP (X, 1)) & (~ (HOST_WIDE_INT) 0xffff);	\
-      low_int = INTVAL (XEXP (X, 1)) & 0xffff;				\
-      if (low_int & 0x8000)						\
-	high_int += 0x10000, low_int |= ((HOST_WIDE_INT) -1) << 16;	\
-      sum = force_operand (gen_rtx_PLUS (Pmode, XEXP (X, 0),		\
-					 GEN_INT (high_int)), 0);	\
-      (X) = gen_rtx_PLUS (Pmode, sum, GEN_INT (low_int));		\
-      goto WIN;								\
-    }									\
-  else if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == REG	\
-	   && GET_CODE (XEXP (X, 1)) != CONST_INT			\
-	   && (TARGET_HARD_FLOAT || TARGET_POWERPC64 || (MODE) != DFmode) \
-	   && (TARGET_POWERPC64 || (MODE) != DImode)			\
-	   && (MODE) != TImode)						\
-    {									\
-      (X) = gen_rtx_PLUS (Pmode, XEXP (X, 0),				\
-			  force_reg (Pmode, force_operand (XEXP (X, 1), 0))); \
-      goto WIN;								\
-    }									\
-  else if (TARGET_ELF && TARGET_32BIT && TARGET_NO_TOC			\
-	   && !flag_pic							\
-	   && GET_CODE (X) != CONST_INT					\
-	   && GET_CODE (X) != CONST_DOUBLE && CONSTANT_P (X)		\
-	   && (TARGET_HARD_FLOAT || (MODE) != DFmode)			\
-	   && (MODE) != DImode && (MODE) != TImode)			\
-    {									\
-      rtx reg = gen_reg_rtx (Pmode);					\
-      emit_insn (gen_elf_high (reg, (X)));				\
-      (X) = gen_rtx_LO_SUM (Pmode, reg, (X));				\
-      goto WIN;								\
-    }									\
+#define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)			\
+{  rtx result = rs6000_legitimize_address (X, OLDX, MODE);	\
+   if (result != NULL_RTX)					\
+     {								\
+       (X) = result;						\
+       goto WIN;						\
+     }								\
 }
 
 /* Try a machine-dependent way of reloading an illegitimate address
@@ -2082,7 +1932,7 @@ do {                                                                    \
       HOST_WIDE_INT val = INTVAL (XEXP (X, 1));                         \
       HOST_WIDE_INT low = ((val & 0xffff) ^ 0x8000) - 0x8000;           \
       HOST_WIDE_INT high                                                \
-        = (((val - low) & 0xffffffff) ^ 0x80000000) - 0x80000000;       \
+        = (((val - low) & 0xffffffffu) ^ 0x80000000u) - 0x80000000u;       \
                                                                         \
       /* Check for 32-bit overflow.  */                                 \
       if (high + low != val)                                            \
@@ -2101,6 +1951,13 @@ do {                                                                    \
                    OPNUM, TYPE);                                        \
       goto WIN;                                                         \
     }                                                                   \
+  else if (TARGET_TOC 							\
+	   && CONSTANT_POOL_EXPR_P (X)					\
+	   && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (X)))	\
+    {									\
+      (X) = create_TOC_reference (X);					\
+      goto WIN;								\
+    }									\
 } while (0)
 
 /* Go to LABEL if ADDR (a legitimate address expression)
@@ -2135,6 +1992,8 @@ do {                                                                    \
    to allocate such a register (if necessary).  */
 
 #define PIC_OFFSET_TABLE_REGNUM 30
+
+#define TOC_REGISTER (TARGET_MINIMAL_TOC ? 30 : 2)
 
 /* Define this macro if the register defined by
    `PIC_OFFSET_TABLE_REGNUM' is clobbered by calls.  Do not define
@@ -2172,12 +2031,9 @@ do {                                                                    \
 /* In rare cases, correct code generation requires extra machine
    dependent processing between the second jump optimization pass and
    delayed branch scheduling.  On those machines, define this macro
-   as a C statement to act on the code starting at INSN.
+   as a C statement to act on the code starting at INSN.  */
 
-   On the RS/6000, we use it to make sure the GOT_TOC register marker
-   that FINALIZE_PIC is supposed to remove actually got removed.  */
-
-#define MACHINE_DEPENDENT_REORG(INSN) rs6000_reorg (INSN)
+/* #define MACHINE_DEPENDENT_REORG(INSN) */
 
 
 /* Define this if some processing needs to be done immediately before
@@ -2232,38 +2088,6 @@ do {                                                                    \
 /* Define if loading short immediate values into registers sign extends.  */
 #define SHORT_IMMEDIATES_SIGN_EXTEND
 
-/* The RS/6000 uses the XCOFF format.  */
-
-#define XCOFF_DEBUGGING_INFO
-
-/* Define if the object format being used is COFF or a superset.  */
-#define OBJECT_FORMAT_COFF
-
-/* Define the magic numbers that we recognize as COFF.
-
-   AIX 4.3 adds U803XTOCMAGIC (0757) for 64-bit objects, but collect2.c
-   does not include files in the correct order to conditionally define
-   the symbolic name in this macro. 
-
-   The AIX linker accepts import/export files as object files,
-   so accept "#!" (0x2321) magic number.  */
-#define MY_ISCOFF(magic) \
-  ((magic) == U802WRMAGIC || (magic) == U802ROMAGIC \
-   || (magic) == U802TOCMAGIC || (magic) == 0757 || (magic) == 0x2321)
-
-/* This is the only version of nm that collect2 can work with.  */
-#define REAL_NM_FILE_NAME "/usr/ucb/nm"
-
-/* We don't have GAS for the RS/6000 yet, so don't write out special
-   .stabs in cc1plus.  */
-
-#define FASCIST_ASSEMBLER
-
-/* AIX does not have any init/fini or ctor/dtor sections, so create
-   static constructors and destructors as normal functions.  */
-/* #define ASM_OUTPUT_CONSTRUCTOR(file, name) */
-/* #define ASM_OUTPUT_DESTRUCTOR(file, name) */
-
 /* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
    is done just by pretending it is already truncated.  */
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
@@ -2467,21 +2291,6 @@ extern int rs6000_trunc_used;
 #define RS6000_ITRUNC "__itrunc"
 #define RS6000_UITRUNC "__uitrunc"
 
-/* Prefix and suffix to use to saving floating point */
-#ifndef SAVE_FP_PREFIX
-#define	SAVE_FP_PREFIX "._savef"
-#define SAVE_FP_SUFFIX ""
-#endif
-
-/* Prefix and suffix to use to restoring floating point */
-#ifndef RESTORE_FP_PREFIX
-#define	RESTORE_FP_PREFIX "._restf"
-#define RESTORE_FP_SUFFIX ""
-#endif
-
-/* Function name to call to do profiling.  */
-#define RS6000_MCOUNT ".__mcount"
-
 
 /* Control the assembler format that we output.  */
 
@@ -2489,55 +2298,6 @@ extern int rs6000_trunc_used;
    assembler language.  The compiler assumes that the comment will end at
    the end of the line.  */
 #define ASM_COMMENT_START " #"
-
-/* Output at beginning of assembler file.
-
-   Initialize the section names for the RS/6000 at this point.
-
-   Specify filename, including full path, to assembler.
-
-   We want to go into the TOC section so at least one .toc will be emitted.
-   Also, in order to output proper .bs/.es pairs, we need at least one static
-   [RW] section emitted.
-
-   We then switch back to text to force the gcc2_compiled. label and the space
-   allocated after it (when profiling) into the text section.
-
-   Finally, declare mcount when profiling to make the assembler happy.  */
-
-#define ASM_FILE_START(FILE)					\
-{								\
-  rs6000_gen_section_name (&xcoff_bss_section_name,		\
-			   main_input_filename, ".bss_");	\
-  rs6000_gen_section_name (&xcoff_private_data_section_name,	\
-			   main_input_filename, ".rw_");	\
-  rs6000_gen_section_name (&xcoff_read_only_section_name,	\
-			   main_input_filename, ".ro_");	\
-								\
-  fprintf (FILE, "\t.file\t\"%s\"\n", main_input_filename);	\
-  if (TARGET_64BIT)						\
-    fputs ("\t.machine\t\"ppc64\"\n", FILE);			\
-  toc_section ();						\
-  if (write_symbols != NO_DEBUG)				\
-    private_data_section ();					\
-  text_section ();						\
-  if (profile_flag)						\
-    fprintf (FILE, "\t.extern %s\n", RS6000_MCOUNT);		\
-  rs6000_file_start (FILE, TARGET_CPU_DEFAULT);			\
-}
-
-/* Output at end of assembler file.
-
-   On the RS/6000, referencing data should automatically pull in text.  */
-
-#define ASM_FILE_END(FILE)					\
-{								\
-  text_section ();						\
-  fputs ("_section_.text:\n", FILE);				\
-  data_section ();						\
-  fputs (TARGET_32BIT						\
-	 ? "\t.long _section_.text\n" : "\t.llong _section_.text\n", FILE); \
-}
 
 /* We define this to prevent the name mangler from putting dollar signs into
    function names.  */
@@ -2553,20 +2313,6 @@ extern int rs6000_trunc_used;
 /* Implicit library calls should use memcpy, not bcopy, etc.  */
 
 #define TARGET_MEM_FUNCTIONS
-
-/* Define the extra sections we need.  We define three: one is the read-only
-   data section which is used for constants.  This is a csect whose name is
-   derived from the name of the input file.  The second is for initialized
-   global variables.  This is a csect whose name is that of the variable.
-   The third is the TOC.  */
-
-#define EXTRA_SECTIONS \
-   read_only_data, private_data, read_only_private_data, toc, bss
-
-/* Define the name of our readonly data section.  */
-
-#define READONLY_DATA_SECTION read_only_data_section
-
 
 /* Define the name of the section to use for the exception tables.
    TODO: test and see if we can use read_only_data_section, if so,
@@ -2585,117 +2331,8 @@ extern int rs6000_trunc_used;
       && ! DECL_WEAK (DECL))				\
     SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;
 
-/* Indicate that jump tables go in the text section.  */
-
-#define JUMP_TABLES_IN_TEXT_SECTION 1
-
-/* Define the routines to implement these extra sections.
-   BIGGEST_ALIGNMENT is 64, so align the sections that much.  */
-
-#define EXTRA_SECTION_FUNCTIONS				\
-							\
-void							\
-read_only_data_section ()				\
-{							\
-  if (in_section != read_only_data)			\
-    {							\
-      fprintf (asm_out_file, "\t.csect %s[RO],3\n",	\
-	       xcoff_read_only_section_name);		\
-      in_section = read_only_data;			\
-    }							\
-}							\
-							\
-void							\
-private_data_section ()					\
-{							\
-  if (in_section != private_data)			\
-    {							\
-      fprintf (asm_out_file, "\t.csect %s[RW],3\n",	\
-	       xcoff_private_data_section_name);	\
-      in_section = private_data;			\
-    }							\
-}							\
-							\
-void							\
-read_only_private_data_section ()			\
-{							\
-  if (in_section != read_only_private_data)		\
-    {							\
-      fprintf (asm_out_file, "\t.csect %s[RO],3\n",	\
-	       xcoff_private_data_section_name);	\
-      in_section = read_only_private_data;		\
-    }							\
-}							\
-							\
-void							\
-toc_section ()						\
-{							\
-  if (TARGET_MINIMAL_TOC)				\
-    {							\
-      /* toc_section is always called at least once from ASM_FILE_START, \
-	 so this is guaranteed to always be defined once and only once   \
-	 in each file.  */						 \
-      if (! toc_initialized)				\
-	{						\
-	  fputs ("\t.toc\nLCTOC..0:\n", asm_out_file);	\
-	  fputs ("\t.tc toc_table[TC],toc_table[RW]\n", asm_out_file); \
-	  toc_initialized = 1;				\
-	}						\
-							\
-      if (in_section != toc)				\
-	fprintf (asm_out_file, "\t.csect toc_table[RW]%s\n",	\
-		 (TARGET_32BIT ? "" : ",3"));		\
-    }							\
-  else							\
-    {							\
-      if (in_section != toc)				\
-        fputs ("\t.toc\n", asm_out_file);		\
-    }							\
-  in_section = toc;					\
-}
-
 /* Flag to say the TOC is initialized */
 extern int toc_initialized;
-
-/* This macro produces the initial definition of a function name.
-   On the RS/6000, we need to place an extra '.' in the function name and
-   output the function descriptor.
-
-   The csect for the function will have already been created by the
-   `text_section' call previously done.  We do have to go back to that
-   csect, however.
-
-   The third and fourth parameters to the .function pseudo-op (16 and 044)
-   are placeholders which no longer have any use.  */
-
-#define ASM_DECLARE_FUNCTION_NAME(FILE,NAME,DECL)		\
-{ if (TREE_PUBLIC (DECL))					\
-    {								\
-      fputs ("\t.globl .", FILE);				\
-      RS6000_OUTPUT_BASENAME (FILE, NAME);			\
-      putc ('\n', FILE);					\
-    }								\
-  else								\
-    {								\
-      fputs ("\t.lglobl .", FILE);				\
-      RS6000_OUTPUT_BASENAME (FILE, NAME);			\
-      putc ('\n', FILE);					\
-    }								\
-  fputs ("\t.csect ", FILE);					\
-  RS6000_OUTPUT_BASENAME (FILE, NAME);				\
-  fputs (TARGET_32BIT ? "[DS]\n" : "[DS],3\n", FILE);		\
-  RS6000_OUTPUT_BASENAME (FILE, NAME);				\
-  fputs (":\n", FILE);						\
-  fputs (TARGET_32BIT ? "\t.long ." : "\t.llong .", FILE);	\
-  RS6000_OUTPUT_BASENAME (FILE, NAME);				\
-  fputs (", TOC[tc0], 0\n", FILE);				\
-  fputs (TARGET_32BIT						\
-	 ? "\t.csect .text[PR]\n." : "\t.csect .text[PR],3\n.", FILE); \
-  RS6000_OUTPUT_BASENAME (FILE, NAME);				\
-  fputs (":\n", FILE);						\
-  if (write_symbols == XCOFF_DEBUG)				\
-    xcoffout_declare_function (FILE, DECL, NAME);		\
-}
 
 /* Return non-zero if this entry is to be written into the constant pool
    in a special way.  We do so if this is a SYMBOL_REF, LABEL_REF or a CONST
@@ -2719,19 +2356,6 @@ extern int toc_initialized;
 	   && BITS_PER_WORD == HOST_BITS_PER_INT)))
 #endif
 
-/* Select section for constant in constant pool.
-
-   On RS/6000, all constants are in the private read-only data area.
-   However, if this is being placed in the TOC it must be output as a
-   toc entry.  */
-
-#define SELECT_RTX_SECTION(MODE, X)		\
-{ if (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (X))	\
-    toc_section ();				\
-  else						\
-    read_only_private_data_section ();		\
-}
-
 /* Macro to output a special constant pool entry.  Go to WIN if we output
    it.  Otherwise, it is written the usual way.
 
@@ -2745,114 +2369,38 @@ extern int toc_initialized;
     }						\
 }
 
-/* Select the section for an initialized data object.
-
-   On the RS/6000, we have a special section for all variables except those
-   that are static.  */
-
-#define SELECT_SECTION(EXP,RELOC)			\
-{							\
-  if ((TREE_CODE (EXP) == STRING_CST			\
-       && ! flag_writable_strings)			\
-      || (TREE_CODE_CLASS (TREE_CODE (EXP)) == 'd'	\
-	  && TREE_READONLY (EXP) && ! TREE_THIS_VOLATILE (EXP) \
-	  && DECL_INITIAL (EXP)				\
-	  && (DECL_INITIAL (EXP) == error_mark_node	\
-	      || TREE_CONSTANT (DECL_INITIAL (EXP)))	\
-	  && ! (RELOC)))				\
-    {							\
-      if (TREE_PUBLIC (EXP))				\
-        read_only_data_section ();			\
-      else						\
-        read_only_private_data_section ();		\
-    }							\
-  else							\
-    {							\
-      if (TREE_PUBLIC (EXP))				\
-        data_section ();				\
-      else						\
-        private_data_section ();			\
-    }							\
-}
-
-/* This outputs NAME to FILE up to the first null or '['.  */
-
-#define RS6000_OUTPUT_BASENAME(FILE, NAME)	\
-  {						\
-    const char *_p;				\
-						\
-    STRIP_NAME_ENCODING (_p, (NAME));		\
-    assemble_name ((FILE), _p);			\
-  }
-
-/* Remove any trailing [DS] or the like from the symbol name.  */
-
-#define STRIP_NAME_ENCODING(VAR,NAME)					\
-  do									\
-    {									\
-      const char *_name = (NAME);					\
-      int _len;								\
-      if (_name[0] == '*')						\
-	_name++;							\
-      _len = strlen (_name);						\
-      if (_name[_len - 1] != ']')					\
-	(VAR) = _name;							\
-      else								\
-	{								\
-	  char *_new_name = (char *) alloca (_len + 1);			\
-	  strcpy (_new_name, _name);					\
-	  _new_name[_len - 4] = '\0';					\
-	  (VAR) = _new_name;						\
-	}								\
-    }									\
-  while (0)
-
-/* Output something to declare an external symbol to the assembler.  Most
-   assemblers don't need this.
-
-   If we haven't already, add "[RW]" (or "[DS]" for a function) to the
-   name.  Normally we write this out along with the name.  In the few cases
-   where we can't, it gets stripped off.  */
-
-#define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME)	\
-{ rtx _symref = XEXP (DECL_RTL (DECL), 0);	\
-  if ((TREE_CODE (DECL) == VAR_DECL		\
-       || TREE_CODE (DECL) == FUNCTION_DECL)	\
-      && (NAME)[strlen (NAME) - 1] != ']')	\
-    {						\
-      char *_name = (char *) permalloc (strlen (XSTR (_symref, 0)) + 5); \
-      strcpy (_name, XSTR (_symref, 0));	\
-      strcat (_name, TREE_CODE (DECL) == FUNCTION_DECL ? "[DS]" : "[RW]"); \
-      XSTR (_symref, 0) = _name;		\
-    }						\
-  fputs ("\t.extern ", FILE);			\
-  assemble_name (FILE, XSTR (_symref, 0));	\
-  if (TREE_CODE (DECL) == FUNCTION_DECL)	\
-    {						\
-      fputs ("\n\t.extern .", FILE);		\
-      RS6000_OUTPUT_BASENAME (FILE, XSTR (_symref, 0));	\
-    }						\
-  putc ('\n', FILE);				\
-}
-
-/* Similar, but for libcall.  We only have to worry about the function name,
-   not that of the descriptor. */
-
-#define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, FUN)	\
-{ fputs ("\t.extern .", FILE);			\
-  assemble_name (FILE, XSTR (FUN, 0));		\
-  putc ('\n', FILE);				\
-}
-
 /* This is how we tell the assembler that two symbols have the same value.  */
 
-#define ASM_OUTPUT_DEF(FILE,NAME1,NAME2)	\
-do {						\
-  fputs("\t.set ", FILE);			\
-  assemble_name(FILE, NAME1);			\
-  fputc(',', FILE);				\
-  assemble_name(FILE, NAME2);			\
-  fputc('\n', FILE);				\
+#define SET_ASM_OP ".set"
+
+/* This implementes the `alias' attribute.  */
+
+#define ASM_OUTPUT_DEF_FROM_DECLS(FILE,decl,target)	\
+do {							\
+  char * alias = XSTR (XEXP (DECL_RTL (decl), 0), 0);	\
+  char * name = IDENTIFIER_POINTER (target);		\
+  if (TREE_CODE (decl) == FUNCTION_DECL			\
+      && DEFAULT_ABI == ABI_AIX)			\
+    {							\
+      if (TREE_PUBLIC (decl))				\
+	{						\
+	  fputs ("\t.globl .", FILE);			\
+	  assemble_name (FILE, alias);			\
+	  putc ('\n', FILE);				\
+	}						\
+      else						\
+	{						\
+	  fputs ("\t.lglobl .", FILE);			\
+	  assemble_name (FILE, alias);			\
+	  putc ('\n', FILE);				\
+	}						\
+      fputs ("\t.set .", FILE);				\
+      assemble_name (FILE, alias);			\
+      fputs (",.", FILE);				\
+      assemble_name (FILE, name);			\
+      fputc ('\n', FILE);				\
+    }							\
+  ASM_OUTPUT_DEF (FILE, alias, name);			\
 } while (0)
 
 /* Output to assembler file text saying following lines
@@ -2864,17 +2412,6 @@ do {						\
    no longer contain unusual constructs.  */
 
 #define ASM_APP_OFF ""
-
-/* Output before instructions.
-   Text section for 64-bit target may contain 64-bit address jump table.  */
-
-#define TEXT_SECTION_ASM_OP (TARGET_32BIT \
-			     ? "\t.csect .text[PR]" : "\t.csect .text[PR],3")
-
-/* Output before writable data.
-   Align entire section to BIGGEST_ALIGNMENT.  */
-
-#define DATA_SECTION_ASM_OP ".csect .data[RW],3"
 
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */
@@ -2963,7 +2500,7 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0). */
   &rs6000_reg_names[74][0],	/* cr6  */				\
   &rs6000_reg_names[75][0],	/* cr7  */				\
 									\
-  &rs6000_reg_names[76][0],	/* fpmem */				\
+  &rs6000_reg_names[76][0],	/* xer  */				\
 }
 
 /* print-rtl can't handle the above REGISTER_NAMES, so define the
@@ -2982,7 +2519,7 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0). */
     "f24", "f25", "f26", "f27", "f28", "f29", "f30", "f31",		\
      "mq",  "lr", "ctr",  "ap",						\
     "cr0", "cr1", "cr2", "cr3", "cr4", "cr5", "cr6", "cr7",		\
-  "fpmem"								\
+  "xer"									\
 }
 
 /* Table of additional register names to use in user input.  */
@@ -3017,52 +2554,6 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0). */
    the loader.  This depends on the AIX version.  */
 #define RS6000_CALL_GLUE "cror 31,31,31"
 
-/* This is how to output the definition of a user-level label named NAME,
-   such as the label on a static function or variable NAME.  */
-
-#define ASM_OUTPUT_LABEL(FILE,NAME)	\
-  do { RS6000_OUTPUT_BASENAME (FILE, NAME); fputs (":\n", FILE); } while (0)
-
-/* This is how to output a command to make the user-level label named NAME
-   defined for reference from other files.  */
-
-#define ASM_GLOBALIZE_LABEL(FILE,NAME)	\
-  do { fputs ("\t.globl ", FILE);	\
-       RS6000_OUTPUT_BASENAME (FILE, NAME); putc ('\n', FILE);} while (0)
-
-/* This is how to output a reference to a user-level label named NAME.
-   `assemble_name' uses this.  */
-
-#define ASM_OUTPUT_LABELREF(FILE,NAME)	\
-  fputs (NAME, FILE)
-
-/* This is how to output an internal numbered label where
-   PREFIX is the class of label and NUM is the number within the class.  */
-
-#define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
-  fprintf (FILE, "%s..%d:\n", PREFIX, NUM)
-
-/* This is how to output an internal label prefix.  rs6000.c uses this
-   when generating traceback tables.  */
-
-#define ASM_OUTPUT_INTERNAL_LABEL_PREFIX(FILE,PREFIX)	\
-  fprintf (FILE, "%s..", PREFIX)
-
-/* This is how to output a label for a jump table.  Arguments are the same as
-   for ASM_OUTPUT_INTERNAL_LABEL, except the insn for the jump table is
-   passed. */
-
-#define ASM_OUTPUT_CASE_LABEL(FILE,PREFIX,NUM,TABLEINSN)	\
-{ ASM_OUTPUT_ALIGN (FILE, 2); ASM_OUTPUT_INTERNAL_LABEL (FILE, PREFIX, NUM); }
-
-/* This is how to store into the string LABEL
-   the symbol_ref name of an internal numbered label where
-   PREFIX is the class of label and NUM is the number within the class.
-   This is suitable for output with `assemble_name'.  */
-
-#define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
-  sprintf (LABEL, "*%s..%d", PREFIX, NUM)
-
 /* This is how to output an assembler line defining a `double' constant.  */
 
 #define ASM_OUTPUT_DOUBLE(FILE, VALUE)			\
@@ -3070,7 +2561,7 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0). */
     long t[2];						\
     REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), t);		\
     fprintf (FILE, "\t.long 0x%lx\n\t.long 0x%lx\n",	\
-	     t[0] & 0xffffffff, t[1] & 0xffffffff);	\
+	     t[0] & 0xffffffffu, t[1] & 0xffffffffu);	\
   }
 
 /* This is how to output an assembler line defining a `float' constant.  */
@@ -3079,7 +2570,7 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0). */
   {							\
     long t;						\
     REAL_VALUE_TO_TARGET_SINGLE ((VALUE), t);		\
-    fprintf (FILE, "\t.long 0x%lx\n", t & 0xffffffff);	\
+    fprintf (FILE, "\t.long 0x%lx\n", t & 0xffffffffu);	\
   }
 
 /* This is how to output an assembler line defining an `int' constant.  */
@@ -3123,22 +2614,8 @@ do {									\
 #define ASM_OUTPUT_BYTE(FILE,VALUE)  \
   fprintf (FILE, "\t.byte 0x%x\n", (VALUE))
 
-/* This is how to output an assembler line to define N characters starting
-   at P to FILE.  */
-
-#define ASM_OUTPUT_ASCII(FILE, P, N)  output_ascii ((FILE), (P), (N))
-
-/* This is how to output an element of a case-vector that is absolute.
-   (RS/6000 does not use such vectors, but we must define this macro
-   anyway.)   */
-
-#define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)		\
-  do { char buf[100];					\
-       fputs ("\t.long ", FILE);			\
-       ASM_GENERATE_INTERNAL_LABEL (buf, "L", VALUE);	\
-       assemble_name (FILE, buf);			\
-       putc ('\n', FILE);				\
-     } while (0)
+/* This is used by the definition of ASM_OUTPUT_ADDR_ELT in defaults.h.  */
+#define ASM_LONG (TARGET_32BIT ? ".long" : ".quad")
 
 /* This is how to output an element of a case-vector that is relative.  */
 
@@ -3160,21 +2637,6 @@ do {									\
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
   if ((LOG) != 0)			\
     fprintf (FILE, "\t.align %d\n", (LOG))
-
-#define ASM_OUTPUT_SKIP(FILE,SIZE)  \
-  fprintf (FILE, "\t.space %d\n", (SIZE))
-
-/* This says how to output an assembler line
-   to define a global common symbol.  */
-
-#define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGNMENT)	\
-  do { fputs (".comm ", (FILE));			\
-       RS6000_OUTPUT_BASENAME ((FILE), (NAME));		\
-       if ( (SIZE) > 4)					\
-         fprintf ((FILE), ",%d,3\n", (SIZE));		\
-       else						\
-	 fprintf( (FILE), ",%d\n", (SIZE));		\
-  } while (0)
 
 /* This says how to output an assembler line
    to define a local common symbol.
@@ -3202,6 +2664,12 @@ do {									\
 
 #define ASM_OPEN_PAREN "("
 #define ASM_CLOSE_PAREN ")"
+
+/* Pick up the return address upon entry to a procedure. Used for
+   dwarf2 unwind information.  This also enables the table driven
+   mechanism.  */
+
+#define INCOMING_RETURN_ADDR_RTX   gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM)
 
 /* Define results of standard character escape sequences.  */
 #define TARGET_BELL 007
@@ -3240,6 +2708,7 @@ do {									\
   {"reg_or_neg_short_operand", {SUBREG, REG, CONST_INT}},	\
   {"reg_or_u_short_operand", {SUBREG, REG, CONST_INT}}, 	\
   {"reg_or_cint_operand", {SUBREG, REG, CONST_INT}}, 		\
+  {"reg_or_u_cint_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}}, \
   {"got_operand", {SYMBOL_REF, CONST, LABEL_REF}},		\
   {"got_no_const_operand", {SYMBOL_REF, LABEL_REF}},		\
   {"easy_fp_constant", {CONST_DOUBLE}},				\
@@ -3253,11 +2722,13 @@ do {									\
   {"and_operand", {SUBREG, REG, CONST_INT}},			\
   {"and64_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}},	\
   {"logical_operand", {SUBREG, REG, CONST_INT}}, 		\
+  {"logical_u_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}}, \
   {"non_logical_cint_operand", {CONST_INT}},			\
+  {"non_logical_u_cint_operand", {CONST_INT, CONST_DOUBLE}},	\
   {"mask_operand", {CONST_INT}},				\
   {"mask64_operand", {CONST_INT, CONST_DOUBLE}},		\
   {"count_register_operand", {REG}},				\
-  {"fpmem_operand", {REG}},					\
+  {"xer_operand", {REG}},					\
   {"call_operand", {SYMBOL_REF, REG}},				\
   {"current_file_function_operand", {SYMBOL_REF}},		\
   {"input_operand", {SUBREG, MEM, REG, CONST_INT, 		\
@@ -3285,109 +2756,3 @@ extern int flag_pic;
 extern int optimize;
 extern int flag_expensive_optimizations;
 extern int frame_pointer_needed;
-
-/* Declare functions in rs6000.c */
-extern void optimization_options ();
-extern void output_options ();
-extern void rs6000_override_options ();
-extern void rs6000_file_start ();
-extern struct rtx_def *rs6000_float_const ();
-extern struct rtx_def *rs6000_got_register ();
-extern struct rtx_def *find_addr_reg();
-extern int direct_return ();
-extern int get_issue_rate ();
-extern int any_operand ();
-extern int short_cint_operand ();
-extern int u_short_cint_operand ();
-extern int non_short_cint_operand ();
-extern int gpc_reg_operand ();
-extern int cc_reg_operand ();
-extern int cc_reg_not_cr0_operand ();
-extern int reg_or_short_operand ();
-extern int reg_or_neg_short_operand ();
-extern int reg_or_u_short_operand ();
-extern int reg_or_cint_operand ();
-extern int got_operand ();
-extern int got_no_const_operand ();
-extern int num_insns_constant ();
-extern int easy_fp_constant ();
-extern int volatile_mem_operand ();
-extern int offsettable_mem_operand ();
-extern int mem_or_easy_const_operand ();
-extern int add_operand ();
-extern int non_add_cint_operand ();
-extern int non_logical_cint_operand ();
-extern int logical_operand ();
-extern int mask_operand ();
-extern int mask64_operand ();
-extern int and64_operand ();
-extern int and_operand ();
-extern int count_register_operand ();
-extern int fpmem_operand ();
-extern int reg_or_mem_operand ();
-extern int lwa_operand ();
-extern int call_operand ();
-extern int current_file_function_operand ();
-extern int input_operand ();
-extern int small_data_operand ();
-extern void init_cumulative_args ();
-extern void function_arg_advance ();
-extern int function_arg_boundary ();
-extern struct rtx_def *function_arg ();
-extern int function_arg_partial_nregs ();
-extern int function_arg_pass_by_reference ();
-extern void setup_incoming_varargs ();
-extern union tree_node *rs6000_build_va_list ();
-extern void rs6000_va_start ();
-extern struct rtx_def *rs6000_va_arg ();
-extern struct rtx_def *rs6000_stack_temp ();
-extern int expand_block_move ();
-extern int load_multiple_operation ();
-extern int store_multiple_operation ();
-extern int branch_comparison_operator ();
-extern int scc_comparison_operator ();
-extern int trap_comparison_operator ();
-extern int includes_lshift_p ();
-extern int includes_rshift_p ();
-extern int registers_ok_for_quad_peep ();
-extern int addrs_ok_for_quad_peep ();
-extern enum reg_class secondary_reload_class ();
-extern int ccr_bit ();
-extern void rs6000_finalize_pic ();
-extern void rs6000_reorg ();
-extern void rs6000_save_machine_status ();
-extern void rs6000_restore_machine_status ();
-extern void rs6000_init_expanders ();
-extern void print_operand ();
-extern void print_operand_address ();
-extern int first_reg_to_save ();
-extern int first_fp_reg_to_save ();
-extern int rs6000_makes_calls ();
-extern rs6000_stack_t *rs6000_stack_info ();
-extern void output_prolog ();
-extern void output_epilog ();
-extern void output_mi_thunk ();
-extern void output_toc ();
-extern void output_ascii ();
-extern void rs6000_gen_section_name ();
-extern void output_function_profiler ();
-extern int rs6000_adjust_cost ();
-extern int rs6000_adjust_priority ();
-extern void rs6000_trampoline_template ();
-extern int rs6000_trampoline_size ();
-extern void rs6000_initialize_trampoline ();
-extern void rs6000_output_load_toc_table ();
-extern int rs6000_comp_type_attributes ();
-extern int rs6000_valid_decl_attribute_p ();
-extern int rs6000_valid_type_attribute_p ();
-extern void rs6000_set_default_type_attributes ();
-extern struct rtx_def *rs6000_dll_import_ref ();
-extern struct rtx_def *rs6000_longcall_ref ();
-extern int function_arg_padding ();
-extern void toc_section ();
-extern void private_data_section ();
-extern void rs6000_fatal_bad_address ();
-
-/* See nonlocal_goto_receiver for when this must be set.  */
-
-#define DONT_ACCESS_GBLS_AFTER_EPILOGUE (TARGET_TOC && TARGET_MINIMAL_TOC)

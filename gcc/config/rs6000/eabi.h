@@ -1,6 +1,6 @@
 /* Core target definitions for GNU compiler
    for IBM RS/6000 PowerPC targeted to embedded ELF systems.
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 2000 Free Software Foundation, Inc.
    Contributed by Cygnus Support.
 
 This file is part of GNU CC.
@@ -28,6 +28,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Invoke an initializer function to set up the GOT */
 #define NAME__MAIN "__eabi"
+#define INVOKE__main
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (PowerPC Embedded)");

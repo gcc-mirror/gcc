@@ -1,6 +1,6 @@
 /* Target definitions for GNU compiler for a little endian PowerPC
    running System V.4
-   Copyright (C) 1995, Free Software Foundation, Inc.
+   Copyright (C) 1995, 2000 Free Software Foundation, Inc.
    Contributed by Cygnus Support.
 
 This file is part of GNU CC.
@@ -34,7 +34,9 @@ Boston, MA 02111-1307, USA.  */
 #undef	LINK_TARGET_SPEC
 #define	LINK_TARGET_SPEC "\
 %{mbig: -oformat elf32-powerpc } %{mbig-endian: -oformat elf32-powerpc } \
-%{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: %{mcall-linux: -oformat elf32-powerpc}}}}}"
+%{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: \
+    %{mcall-linux: -oformat elf32-powerpc} \
+  }}}}"
 
 /* Define this macro as a C expression for the initializer of an
    array of string to tell the driver program which options are

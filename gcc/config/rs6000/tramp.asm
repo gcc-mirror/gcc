@@ -1,6 +1,6 @@
 /*  Special support for trampolines
  *
- *   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+ *   Copyright (C) 1996, 1997, 2000 Free Software Foundation, Inc.
  *   Written By Michael Meissner
  * 
  * This file is free software; you can redistribute it and/or modify it
@@ -33,21 +33,20 @@
  *    the executable file might be covered by the GNU General Public License.
  */ 
 
-/* Set up trampolines */
+/* Set up trampolines. */
 
 	.file	"tramp.asm"
 	.section ".text"
 	#include "ppc-asm.h"
 
-	.globl	__trampoline_initial
-	.type	__trampoline_initial,@object
+	.type	trampoline_initial,@object
 	.align	2
-__trampoline_initial:
+trampoline_initial:
 	mflr	r0
 	bl	1f
-.Lfunc = .-__trampoline_initial
+.Lfunc = .-trampoline_initial
 	.long	0			/* will be replaced with function address */
-.Lchain = .-__trampoline_initial
+.Lchain = .-trampoline_initial
 	.long	0			/* will be replaced with static chain */
 1:	mflr	r11
 	mtlr	r0
@@ -56,17 +55,9 @@ __trampoline_initial:
 	mtctr	r0
 	bctr
 
-__trampoline_size = .-__trampoline_initial
-	.size	__trampoline_initial,__trampoline_size
+trampoline_size = .-trampoline_initial
+	.size	trampoline_initial,trampoline_size
 
-        .section ".got2","aw"
-.LCTOC1 = .+32768
-.Ltramp = .-.LCTOC1
-        .long __trampoline_initial-4
-
-	.section ".text"
-.LCL0:
-        .long .LCTOC1-.LCF0
 
 /* R3 = stack address to store trampoline */
 /* R4 = length of trampoline area */
@@ -74,18 +65,16 @@ __trampoline_size = .-__trampoline_initial
 /* R6 = static chain */
 
 FUNC_START(__trampoline_setup)
-	mflr	r0			/* save return address */
-        bl	.LCF0			/* load up __trampoline_initial into r7 */
+	mflr	r0		/* save return address */
+        bl	.LCF0		/* load up __trampoline_initial into r7 */
 .LCF0:
         mflr	r11
-        lwz	r12,(.LCL0-.LCF0)(r11)
-        add	r11,r12,r11
-        lwz	r7,.Ltramp(r11)		/* trampoline address -4 */
+        addi	r7,r11,trampoline_initial-4-.LCF0 /* trampoline address -4 */
 
-	li	r8,__trampoline_size	/* verify that the trampoline is big enough */
+	li	r8,trampoline_size	/* verify that the trampoline is big enough */
 	cmpw	cr1,r8,r4
-	srwi	r4,r4,2			/* # words to move */
-	addi	r9,r3,-4		/* adjust pointer for lwzu */
+	srwi	r4,r4,2		/* # words to move */
+	addi	r9,r3,-4	/* adjust pointer for lwzu */
 	mtctr	r4
 	blt	cr1,.Labort
 
@@ -115,6 +104,6 @@ FUNC_START(__trampoline_setup)
 	blr
 
 .Labort:
-	bl	abort
+	bl	FUNC_NAME(abort)
 FUNC_END(__trampoline_setup)
-/* END CYGNUS LOCAL -- waiting for FSF sources to be restored/meissner */
+

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 running AIX version 3.1.
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 2000 Free Software Foundation, Inc.
    Contributed by David Reese (Dave.Reese@East.Sun.COM)
 
 This file is part of GNU CC.
@@ -64,9 +64,6 @@ Boston, MA 02111-1307, USA.  */
 
 #undef	CPP_ENDIAN_LITTLE_SPEC
 #define	CPP_ENDIAN_LITTLE_SPEC CPP_ENDIAN_SOLARIS_SPEC
-
-/* Don't turn -B into -L if the argument specifies a relative file name.  */
-#undef	RELATIVE_PREFIX_NOT_LINKDIR
 
 #define	DEFAULT_PCC_STRUCT_RETURN 0
 

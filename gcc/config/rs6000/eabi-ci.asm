@@ -1,6 +1,6 @@
 # crti.s for eabi
 
-#   Copyright (C) 1996 Free Software Foundation, Inc.
+#   Copyright (C) 1996, 2000 Free Software Foundation, Inc.
 #   Written By Michael Meissner
 # 
 # This file is free software; you can redistribute it and/or modify it
@@ -101,6 +101,11 @@ __SBSS2_START__:
 	.globl	__EXCEPT_START__
 	.type	__EXCEPT_START__,@object
 __EXCEPT_START__:
+
+	.section ".eh_frame","aw"
+	.globl	__EH_FRAME_BEGIN__
+	.type	__EH_FRAME_BEGIN__,@object
+__EH_FRAME_BEGIN__:
 
 # Head of __init function used for static constructors in Solaris
 	.section ".init","ax"

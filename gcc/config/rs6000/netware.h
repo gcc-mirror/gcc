@@ -1,6 +1,6 @@
 /* Core target definitions for GNU compiler
    for IBM RS/6000 PowerPC running NetWare
-   Copyright (C) 1994, 1995, 1996, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1998, 2000 Free Software Foundation, Inc.
    Contributed by Cygnus Support.
 
 This file is part of GNU CC.
@@ -34,23 +34,10 @@ Boston, MA 02111-1307, USA.  */
 #undef PROCESSOR_DEFAULT
 #define PROCESSOR_DEFAULT PROCESSOR_PPC601
 
-/* Don't generate XCOFF debugging information.  */
-
-#undef XCOFF_DEBUGGING_INFO
-
-/* Don't use the COFF object file format.  */
-
-#undef OBJECT_FORMAT_COFF
-
 /* The XCOFF support uses weird symbol suffixes, which we don't want
    for ELF.  */
 
 #undef STRIP_NAME_ENCODING
-
-/* Don't bother to output .extern pseudo-ops.  They are not needed by
-   ELF assemblers.  */
-
-#undef ASM_OUTPUT_EXTERNAL
 
 /* Undefine some things which are defined by the generic svr4.h.  */
 
