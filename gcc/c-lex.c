@@ -1338,7 +1338,7 @@ lex_charconst (token)
      const cpp_token *token;
 {
   HOST_WIDE_INT result;
-  tree value;
+  tree type, value;
   unsigned int chars_seen;
  
   result = cpp_interpret_charconst (parse_in, token, warn_multichar,
@@ -1346,7 +1346,7 @@ lex_charconst (token)
   if (token->type == CPP_WCHAR)
     {
       value = build_int_2 (result, 0);
-      TREE_TYPE (value) = wchar_type_node;
+      type = wchar_type_node;
     }
   else
     {
@@ -1358,10 +1358,24 @@ lex_charconst (token)
       /* In C, a character constant has type 'int'.
  	 In C++ 'char', but multi-char charconsts have type 'int'.  */
       if (c_language == clk_cplusplus && chars_seen <= 1)
- 	TREE_TYPE (value) = char_type_node;
+	type = char_type_node;
       else
- 	TREE_TYPE (value) = integer_type_node;
+	type = integer_type_node;
     }
- 
+
+  /* cpp_interpret_charconst issues a warning if the constant
+     overflows, but if the number fits in HOST_WIDE_INT anyway, it
+     will return it un-truncated, which may cause problems down the
+     line.  So set the type to widest_integer_literal_type, call
+     convert to truncate it to the proper type, then clear
+     TREE_OVERFLOW so we don't get a second warning.
+
+     FIXME: cpplib's assessment of overflow may not be accurate on a
+     platform where the final type can change at (compiler's) runtime.  */
+
+  TREE_TYPE (value) = widest_integer_literal_type_node;
+  value = convert (type, value);
+  TREE_OVERFLOW (value) = 0;
+
   return value;
 }
