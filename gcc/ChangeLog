@@ -1,3 +1,9 @@
+2000-04-30  Richard Henderson  <rth@cygnus.com>
+
+	* Makefile.in (TIMEVAR_H): New.
+	(ggc-simple.o, ggc-page.o, toplev.o, timevar.o): Use it.
+	(timevar.h): Remove rule.
+
 2000-04-29  Richard Henderson  <rth@cygnus.com>
 
 	* config/alpha/crtend.asm: Use C comments instead of #.
