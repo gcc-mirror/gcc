@@ -1668,7 +1668,7 @@ expand_errno_check (exp, target)
 {
   rtx lab;
 
-  if (flag_errno_math && errno_set && HONOR_NANS (GET_MODE (target)))
+  if (flag_errno_math && HONOR_NANS (GET_MODE (target)))
     {
       lab = gen_label_rtx ();
 
@@ -1806,7 +1806,8 @@ expand_builtin_mathfn (exp, target, subtarget)
       return 0;
     }
 
-  expand_errno_check (exp, target);
+  if (errno_set)
+    expand_errno_check (exp, target);
 
   /* Output the entire sequence.  */
   insns = get_insns ();
@@ -1903,7 +1904,8 @@ expand_builtin_mathfn_2 (exp, target, subtarget)
       return 0;
     }
 
-  expand_errno_check (exp, target);
+  if (errno_set)
+    expand_errno_check (exp, target);
 
   /* Output the entire sequence.  */
   insns = get_insns ();
