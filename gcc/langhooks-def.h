@@ -145,11 +145,14 @@ int lhd_tree_dump_type_quals			PARAMS ((tree));
   LANG_HOOKS_TREE_DUMP_TYPE_QUALS_FN \
 }
 
-/* Types hooks.  */
+/* Types hooks.  No default for LANG_HOOKS_TYPE_FOR_MODE or
+   LANG_HOOKS_TYPE_FOR_SIZE.  */
 #define LANG_HOOKS_MAKE_TYPE make_node
 
 #define LANG_HOOKS_FOR_TYPES_INITIALIZER { \
-  LANG_HOOKS_MAKE_TYPE \
+  LANG_HOOKS_MAKE_TYPE, \
+  LANG_HOOKS_TYPE_FOR_MODE, \
+  LANG_HOOKS_TYPE_FOR_SIZE \
 }
 
 /* Declaration hooks.  */

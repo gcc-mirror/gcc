@@ -4115,7 +4115,8 @@ expand_decl_cleanup (decl, cleanup)
 
 	  emit_move_insn (flag, const1_rtx);
 
-	  cond = build_decl (VAR_DECL, NULL_TREE, type_for_mode (word_mode, 1));
+	  cond = build_decl (VAR_DECL, NULL_TREE,
+			     (*lang_hooks.types.type_for_mode) (word_mode, 1));
 	  SET_DECL_RTL (cond, flag);
 
 	  /* Conditionalize the cleanup.  */
@@ -6310,7 +6311,7 @@ emit_case_nodes (index, node, default_label, index_type)
 	  else if (!low_bound && !high_bound)
 	    {
 	      /* Widen LOW and HIGH to the same width as INDEX.  */
-	      tree type = type_for_mode (mode, unsignedp);
+	      tree type = (*lang_hooks.types.type_for_mode) (mode, unsignedp);
 	      tree low = build1 (CONVERT_EXPR, type, node->low);
 	      tree high = build1 (CONVERT_EXPR, type, node->high);
 	      rtx low_rtx, new_index, new_bound;

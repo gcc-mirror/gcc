@@ -1,3 +1,47 @@
+2002-03-29  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* Makefile.in (convert.o, calls.o, expmed.o): Update.
+	* attribs.c (handle_mode_attribute, handle_vector_size_attribute):
+	Use new hooks.
+	* builtin-types.def (BT_PTRMODE): Update.
+	* c-common.c (type_for_size): Rename c_common_type_for_size.
+	(type_for_mode): Similarly.
+	(shorten_compare, pointer_int_sum, c_common_nodes_and_builtins):
+	Use new hook.
+	* c-bommon.h (c_common_type_for_size, c_common_type_for_mode): New.
+	* c-decl.c (finish_enum, build_enumerator): Use new hooks.
+	* c-lang.c (LANG_HOOKS_TYPE_FOR_MODE, LANG_HOOKS_TYPE_FOR_SIZE):
+	Redefine.
+	* c-typeck.c (common_type, comptypes, default_conversion):
+	Use new hooks.
+	* calls.c: Include langhooks.h.
+	(emit_library_call_value_1): Use new hooks.  Avoid redundant
+	calls.
+	* convert.c: Include langhooks.h
+	(convert_to_pointer, convert_to_integer): Use new hooks.
+	* except.c (init_eh): Similarly.
+	* expmed.c: Include langhooks.h.
+	(expand_mult_add): Use new hooks.
+	* expr.c (store_expr, store_constructor, expand_expr, do_jump,
+	try_casesi): Similarly.
+	* fold-const.c (optimize_bit_field_compare, make_range,
+	decode_field_reference, fold_truthop, fold): Similarly.
+	* function.c (assign_stack_local_1, assign_stack_temp_for_type,
+	put_var_into_stack): Similarly.
+	* langhooks-def.h (LANG_HOOKS_TYPE_FOR_MODE,
+	LANG_HOOKS_TYPE_FOR_SIZE): New.
+	(LANG_HOOKS_TYPES_INITIALIZER): Update.
+	* langhooks.h (lang_hooks_for_types): New hooks.
+	* stmt.c (expand_decl_cleanup, emit_case_nodes): Use new hooks.
+	* tree.c (get_unwidened, get_narrower): Similarly.
+	* tree.h (type_for_mode, type_for_size): Remove.
+	* varasm.c (force_const_mem): Use new hooks.
+	* utils2.c (nonbinary_modular_operation): Update.
+objc:
+	* objc-act.c (handle_impent): Update.
+	* objc-lang.c (LANG_HOOKS_TYPE_FOR_MODE, LANG_HOOKS_TYPE_FOR_SIaZE):
+	Redefine.
+
 2002-03-29  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/ia64.md (*ptr_extend_plus_1, *ptr_extend_plus_2): New.

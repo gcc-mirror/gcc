@@ -80,6 +80,11 @@ static void c_post_options PARAMS ((void));
 #define LANG_HOOKS_TREE_INLINING_CONVERT_PARM_FOR_INLINING \
   c_convert_parm_for_inlining
 
+#undef LANG_HOOKS_TYPE_FOR_MODE
+#define LANG_HOOKS_TYPE_FOR_MODE c_common_type_for_mode
+#undef LANG_HOOKS_TYPE_FOR_SIZE
+#define LANG_HOOKS_TYPE_FOR_SIZE c_common_type_for_size
+
 /* ### When changing hooks, consider if ObjC needs changing too!! ### */
 
 /* Each front end provides its own.  */

@@ -1302,7 +1302,7 @@ check_case_value (value)
    that is unsigned if UNSIGNEDP is nonzero, otherwise signed.  */
 
 tree
-type_for_size (bits, unsignedp)
+c_common_type_for_size (bits, unsignedp)
      unsigned bits;
      int unsignedp;
 {
@@ -1346,7 +1346,7 @@ type_for_size (bits, unsignedp)
    then UNSIGNEDP selects between signed and unsigned types.  */
 
 tree
-type_for_mode (mode, unsignedp)
+c_common_type_for_mode (mode, unsignedp)
      enum machine_mode mode;
      int unsignedp;
 {
@@ -1761,7 +1761,7 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
 	 values from it's underlying integral type, not the enumerated
 	 type itself.  */
       if (TREE_CODE (type) == ENUMERAL_TYPE)
-	type = type_for_size (TYPE_PRECISION (type), unsignedp0);
+	type = c_common_type_for_size (TYPE_PRECISION (type), unsignedp0);
 
       maxval = TYPE_MAX_VALUE (type);
       minval = TYPE_MIN_VALUE (type);
@@ -2065,8 +2065,8 @@ pointer_int_sum (resultcode, ptrop, intop)
 
   if (TYPE_PRECISION (TREE_TYPE (intop)) != TYPE_PRECISION (sizetype)
       || TREE_UNSIGNED (TREE_TYPE (intop)) != TREE_UNSIGNED (sizetype))
-    intop = convert (type_for_size (TYPE_PRECISION (sizetype), 
-				    TREE_UNSIGNED (sizetype)), intop);
+    intop = convert (c_common_type_for_size (TYPE_PRECISION (sizetype), 
+					     TREE_UNSIGNED (sizetype)), intop);
 
   /* Replace the integer argument with a suitable product by the object size.
      Do this multiplication as signed, then convert to the appropriate
@@ -2577,7 +2577,8 @@ c_common_nodes_and_builtins ()
   record_builtin_type (RID_MAX, "signed char", signed_char_type_node);
   record_builtin_type (RID_MAX, "unsigned char", unsigned_char_type_node);
 
-  /* These are types that type_for_size and type_for_mode use.  */
+  /* These are types that c_common_type_for_size and
+     c_common_type_for_mode use.  */
   (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL, NULL_TREE,
 					    intQI_type_node));
   (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL, NULL_TREE,

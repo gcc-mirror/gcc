@@ -4024,8 +4024,8 @@ get_unwidened (op, for_type)
     {
       unsigned int innerprec
 	= tree_low_cst (DECL_SIZE (TREE_OPERAND (op, 1)), 1);
-
-      type = type_for_size (innerprec, TREE_UNSIGNED (TREE_OPERAND (op, 1)));
+      int unsignedp = TREE_UNSIGNED (TREE_OPERAND (op, 1));
+      type = (*lang_hooks.types.type_for_size) (innerprec, unsignedp);
 
       /* We can get this structure field in the narrowest type it fits in.
 	 If FOR_TYPE is 0, do this only for a field that matches the
@@ -4035,8 +4035,7 @@ get_unwidened (op, for_type)
 
       if (innerprec < TYPE_PRECISION (TREE_TYPE (op))
 	  && (for_type || ! DECL_BIT_FIELD (TREE_OPERAND (op, 1)))
-	  && (! uns || final_prec <= innerprec
-	      || TREE_UNSIGNED (TREE_OPERAND (op, 1)))
+	  && (! uns || final_prec <= innerprec || unsignedp)
 	  && type != 0)
 	{
 	  win = build (COMPONENT_REF, type, TREE_OPERAND (op, 0),
@@ -4110,7 +4109,8 @@ get_narrower (op, unsignedp_ptr)
     {
       unsigned HOST_WIDE_INT innerprec
 	= tree_low_cst (DECL_SIZE (TREE_OPERAND (op, 1)), 1);
-      tree type = type_for_size (innerprec, TREE_UNSIGNED (op));
+      tree type = (*lang_hooks.types.type_for_size) (innerprec,
+						     TREE_UNSIGNED (op));
 
       /* We can get this structure field in a narrower type that fits it,
 	 but the resulting extension to its nominal type (a fullword type)

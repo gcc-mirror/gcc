@@ -677,7 +677,7 @@ cxx_init (filename)
 
   /* Create the built-in __null node.  */
   null_node = build_int_2 (0, 0);
-  TREE_TYPE (null_node) = type_for_size (POINTER_SIZE, 0);
+  TREE_TYPE (null_node) = c_common_type_for_size (POINTER_SIZE, 0);
   ridpointers[RID_NULL] = null_node;
 
   token_count = init_cpp_parse ();

@@ -556,7 +556,7 @@ assign_stack_local_1 (mode, size, align, function)
 
       /* Allow the target to (possibly) increase the alignment of this
 	 stack slot.  */
-      type = type_for_mode (mode, 0);
+      type = (*lang_hooks.types.type_for_mode) (mode, 0);
       if (type)
 	alignment = LOCAL_ALIGNMENT (type, alignment);
 
@@ -675,7 +675,7 @@ assign_stack_temp_for_type (mode, size, keep, type)
     align = GET_MODE_ALIGNMENT (mode);
 
   if (! type)
-    type = type_for_mode (mode, 0);
+    type = (*lang_hooks.types.type_for_mode) (mode, 0);
 
   if (type)
     align = LOCAL_ALIGNMENT (type, align);
@@ -1415,7 +1415,7 @@ put_var_into_stack (decl)
 	 to the whole CONCAT, lest we do double fixups for the latter
 	 references.  */
       enum machine_mode part_mode = GET_MODE (XEXP (reg, 0));
-      tree part_type = type_for_mode (part_mode, 0);
+      tree part_type = (*lang_hooks.types.type_for_mode) (part_mode, 0);
       rtx lopart = XEXP (reg, 0);
       rtx hipart = XEXP (reg, 1);
 #ifdef FRAME_GROWS_DOWNWARD

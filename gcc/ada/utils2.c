@@ -511,7 +511,7 @@ nonbinary_modular_operation (op_code, type, lhs, rhs)
       || TREE_UNSIGNED (op_type) != unsignedp)
     {
       /* Copy the node so we ensure it can be modified to make it modular.  */
-      op_type = copy_node (type_for_size (precision, unsignedp));
+      op_type = copy_node (gnat_type_for_size (precision, unsignedp));
       modulus = convert (op_type, modulus);
       TYPE_MODULUS (op_type) = modulus;
       TYPE_MODULAR_P (op_type) = 1;
@@ -527,7 +527,7 @@ nonbinary_modular_operation (op_code, type, lhs, rhs)
      possible size.  */
   if (op_code == MULT_EXPR)
     {
-      tree div_type = copy_node (type_for_size (needed_precision, 1));
+      tree div_type = copy_node (gnat_type_for_size (needed_precision, 1));
       modulus = convert (div_type, modulus);
       TYPE_MODULUS (div_type) = modulus;
       TYPE_MODULAR_P (div_type) = 1;

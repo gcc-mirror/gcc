@@ -2994,7 +2994,7 @@ tree_transform (gnat_node)
 		  gnu_actual
 		    = unchecked_convert
 		      (DECL_ARG_TYPE (get_gnu_tree (gnat_formal)),
-		       convert (type_for_size
+		       convert (gnat_type_for_size
 				(tree_low_cst (gnu_actual_size, 1), 1),
 				integer_zero_node));
 		else

@@ -118,6 +118,10 @@ static rtx gnat_expand_expr		PARAMS ((tree, rtx, enum machine_mode,
 #define LANG_HOOKS_PRINT_TYPE		gnat_print_type
 #undef LANG_HOOKS_DECL_PRINTABLE_NAME
 #define LANG_HOOKS_DECL_PRINTABLE_NAME	gnat_printable_name
+#undef LANG_HOOKS_TYPE_FOR_MODE
+#define LANG_HOOKS_TYPE_FOR_MODE	gnat_type_for_mode
+#undef LANG_HOOKS_TYPE_FOR_SIZE
+#define LANG_HOOKS_TYPE_FOR_SIZE	gnat_type_for_size
 
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 

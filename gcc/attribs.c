@@ -835,8 +835,8 @@ handle_mode_attribute (node, name, args, flags, no_add_attrs)
 
       if (mode == VOIDmode)
 	error ("unknown machine mode `%s'", p);
-      else if (0 == (typefm = type_for_mode (mode,
-					     TREE_UNSIGNED (type))))
+      else if (0 == (typefm = (*lang_hooks.types.type_for_mode)
+		     (mode, TREE_UNSIGNED (type))))
 	error ("no data type for mode `%s'", p);
       else
 	*node = typefm;
@@ -1343,7 +1343,8 @@ handle_vector_size_attribute (node, name, args, flags, no_add_attrs)
     {
       tree index, array, rt;
 
-      new_type = type_for_mode (new_mode, TREE_UNSIGNED (type));
+      new_type = (*lang_hooks.types.type_for_mode) (new_mode,
+						    TREE_UNSIGNED (type));
 
       if (!new_type)
 	{

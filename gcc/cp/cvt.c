@@ -256,7 +256,7 @@ cp_convert_to_pointer (type, expr, force)
     {
       if (TYPE_PRECISION (intype) == POINTER_SIZE)
 	return build1 (CONVERT_EXPR, type, expr);
-      expr = cp_convert (type_for_size (POINTER_SIZE, 0), expr);
+      expr = cp_convert (c_common_type_for_size (POINTER_SIZE, 0), expr);
       /* Modes may be different but sizes should be the same.  */
       if (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (expr)))
 	  != GET_MODE_SIZE (TYPE_MODE (type)))
@@ -1183,10 +1183,10 @@ type_promotes_to (type)
     {
       int precision = MAX (TYPE_PRECISION (type),
 			   TYPE_PRECISION (integer_type_node));
-      tree totype = type_for_size (precision, 0);
+      tree totype = c_common_type_for_size (precision, 0);
       if (TREE_UNSIGNED (type)
 	  && ! int_fits_type_p (TYPE_MAX_VALUE (type), totype))
-	type = type_for_size (precision, 1);
+	type = c_common_type_for_size (precision, 1);
       else
 	type = totype;
     }

@@ -5844,7 +5844,7 @@ finish_enum (enumtype, values, attributes)
 		   min_precision (maxnode, unsign));
   if (TYPE_PACKED (enumtype) || precision > TYPE_PRECISION (integer_type_node))
     {
-      tree narrowest = type_for_size (precision, unsign);
+      tree narrowest = c_common_type_for_size (precision, unsign);
       if (narrowest == 0)
 	{
 	  warning ("enumeration values exceed range of largest integer");
@@ -5857,7 +5857,7 @@ finish_enum (enumtype, values, attributes)
     precision = TYPE_PRECISION (integer_type_node);
 
   if (precision == TYPE_PRECISION (integer_type_node))
-    enum_value_type = type_for_size (precision, 0);
+    enum_value_type = c_common_type_for_size (precision, 0);
   else
     enum_value_type = enumtype;
 
@@ -5985,10 +5985,11 @@ build_enumerator (name, value)
   /* Now create a declaration for the enum value name.  */
 
   type = TREE_TYPE (value);
-  type = type_for_size (MAX (TYPE_PRECISION (type),
-			     TYPE_PRECISION (integer_type_node)),
-			(TYPE_PRECISION (type) >= TYPE_PRECISION (integer_type_node)
-			 && TREE_UNSIGNED (type)));
+  type = c_common_type_for_size (MAX (TYPE_PRECISION (type),
+				      TYPE_PRECISION (integer_type_node)),
+				 (TYPE_PRECISION (type)
+				  >= TYPE_PRECISION (integer_type_node)
+				  && TREE_UNSIGNED (type)));
 
   decl = build_decl (CONST_DECL, name, type);
   DECL_INITIAL (decl) = convert (type, value);

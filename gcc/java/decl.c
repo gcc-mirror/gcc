@@ -441,7 +441,7 @@ java_init_decl_processing ()
   set_sizetype (make_unsigned_type (POINTER_SIZE));
 
   /* Define these next since types below may used them.  */
-  integer_type_node = type_for_size (INT_TYPE_SIZE, 0);
+  integer_type_node = java_type_for_size (INT_TYPE_SIZE, 0);
   integer_zero_node = build_int_2 (0, 0);
   integer_one_node = build_int_2 (1, 0);
   integer_two_node = build_int_2 (2, 0);

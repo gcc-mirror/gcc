@@ -2426,8 +2426,8 @@ optimize_bit_field_compare (code, compare_type, lhs, rhs)
 
   /* Set signed and unsigned types of the precision of this mode for the
      shifts below.  */
-  signed_type = type_for_mode (nmode, 0);
-  unsigned_type = type_for_mode (nmode, 1);
+  signed_type = (*lang_hooks.types.type_for_mode) (nmode, 0);
+  unsigned_type = (*lang_hooks.types.type_for_mode) (nmode, 1);
 
   /* Compute the bit position and size for the new reference and our offset
      within it. If the new reference is the same size as the original, we
@@ -2590,7 +2590,7 @@ decode_field_reference (exp, pbitsize, pbitpos, pmode, punsignedp,
     return 0;
 
   /* Compute the mask to access the bitfield.  */
-  unsigned_type = type_for_size (*pbitsize, 1);
+  unsigned_type = (*lang_hooks.types.type_for_size) (*pbitsize, 1);
   precision = TYPE_PRECISION (unsigned_type);
 
   mask = build_int_2 (~0, ~0);
@@ -2960,7 +2960,8 @@ make_range (exp, pin_p, plow, phigh)
 	     be interpreted as positive.  */
 	  if (TREE_UNSIGNED (type) && ! TREE_UNSIGNED (TREE_TYPE (exp)))
 	    {
-	      tree equiv_type = type_for_mode (TYPE_MODE (type), 1);
+	      tree equiv_type = (*lang_hooks.types.type_for_mode)
+		(TYPE_MODE (type), 1);
 	      tree high_positive;
 
 	      /* A range without an upper bound is, naturally, unbounded.
@@ -3509,7 +3510,7 @@ fold_truthop (code, truth_type, lhs, rhs)
 
   lnbitsize = GET_MODE_BITSIZE (lnmode);
   lnbitpos = first_bit & ~ (lnbitsize - 1);
-  lntype = type_for_size (lnbitsize, 1);
+  lntype = (*lang_hooks.types.type_for_size) (lnbitsize, 1);
   xll_bitpos = ll_bitpos - lnbitpos, xrl_bitpos = rl_bitpos - lnbitpos;
 
   if (BYTES_BIG_ENDIAN)
@@ -3580,7 +3581,7 @@ fold_truthop (code, truth_type, lhs, rhs)
 
       rnbitsize = GET_MODE_BITSIZE (rnmode);
       rnbitpos = first_bit & ~ (rnbitsize - 1);
-      rntype = type_for_size (rnbitsize, 1);
+      rntype = (*lang_hooks.types.type_for_size) (rnbitsize, 1);
       xlr_bitpos = lr_bitpos - rnbitpos, xrr_bitpos = rr_bitpos - rnbitpos;
 
       if (BYTES_BIG_ENDIAN)
@@ -5720,7 +5721,7 @@ fold (expr)
 			|| integer_onep (folded_compare))
 		      return omit_one_operand (type, folded_compare, varop);
 
-		    unsigned_type = type_for_size (size, 1);
+		    unsigned_type = (*lang_hooks.types.type_for_size)(size, 1);
 		    precision = TYPE_PRECISION (unsigned_type);
 		    mask = build_int_2 (~0, ~0);
 		    TREE_TYPE (mask) = unsigned_type;
@@ -5781,7 +5782,7 @@ fold (expr)
 			|| integer_onep (folded_compare))
 		      return omit_one_operand (type, folded_compare, varop);
 
-		    unsigned_type = type_for_size (size, 1);
+		    unsigned_type = (*lang_hooks.types.type_for_size)(size, 1);
 		    precision = TYPE_PRECISION (unsigned_type);
 		    mask = build_int_2 (~0, ~0);
 		    TREE_TYPE (mask) = TREE_TYPE (varop);

@@ -183,7 +183,7 @@ incomplete_type_error (value, type)
    then UNSIGNEDP selects between signed and unsigned types.  */
 
 tree
-type_for_mode (mode, unsignedp)
+java_type_for_mode (mode, unsignedp)
      enum machine_mode mode;
      int unsignedp;
 {
@@ -207,7 +207,7 @@ type_for_mode (mode, unsignedp)
    that is unsigned if UNSIGNEDP is nonzero, otherwise signed.  */
 
 tree
-type_for_size (bits, unsignedp)
+java_type_for_size (bits, unsignedp)
      unsigned bits;
      int unsignedp;
 {

@@ -1,3 +1,11 @@
+Fri Mar 29 21:59:15 2002  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* com.c (LANG_HOOKS_TYPE_FOR_MODE, LANG_HOOKS_TYPE_FOR_SIZE):
+	Redefine.
+	(type_for_mode, type_for_size): Rename.
+	(signed_or_unsigned_type, signed_type, truthvalue_conversion,
+	unsigned_type):	Use new hooks.
+
 Tue Mar 26 10:30:05 2002  Andrew Cagney  <ac131313@redhat.com>
 
 	* invoke.texi (Warning Options): Mention -Wswitch-enum.

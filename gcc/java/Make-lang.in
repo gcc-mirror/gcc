@@ -261,7 +261,7 @@ java/boehm.o: java/boehm.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(JAVA_TREE_H) \
   java/parse.h toplev.h
 java/buffer.o: java/buffer.c $(CONFIG_H) java/buffer.h $(SYSTEM_H) toplev.h
 java/builtins.o: java/builtins.c $(CONFIG_H) $(SYSTEM_H) $(JAVA_TREE_H) \
-  $(GGC_H) flags.h
+  $(GGC_H) flags.h builtin-types.def langhooks.h
 java/check-init.o: java/check-init.c $(CONFIG_H) \
   $(JAVA_TREE_H) $(SYSTEM_H) toplev.h
 java/class.o: java/class.c $(CONFIG_H) $(JAVA_TREE_H) $(RTL_H) java/jcf.h \
