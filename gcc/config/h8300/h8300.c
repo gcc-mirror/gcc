@@ -148,30 +148,31 @@ byte_reg (x, b)
      rtx x;
      int b;
 {
-  static const char *const names_small[] =
-  {"r0l", "r0h", "r1l", "r1h", "r2l", "r2h", "r3l", "r3h",
-   "r4l", "r4h", "r5l", "r5h", "r6l", "r6h", "r7l", "r7h"};
+  static const char *const names_small[] = {
+    "r0l", "r0h", "r1l", "r1h", "r2l", "r2h", "r3l", "r3h",
+    "r4l", "r4h", "r5l", "r5h", "r6l", "r6h", "r7l", "r7h"
+  };
 
   return names_small[REGNO (x) * 2 + b];
 }
 
 /* REGNO must be saved/restored across calls if this macro is true.  */
 
-#define WORD_REG_USED(regno)					\
-  (regno < 7							\
-   /* No need to save registers if this function will not return.  */\
-   && ! TREE_THIS_VOLATILE (current_function_decl)		\
-   && (pragma_saveall						\
-       /* Save any call saved register that was used.  */	\
-       || (regs_ever_live[regno] && !call_used_regs[regno])	\
-       /* Save the frame pointer if it was used.  */		\
-       || (regno == FRAME_POINTER_REGNUM && regs_ever_live[regno])\
-       /* Save any register used in an interrupt handler.  */	\
-       || (interrupt_handler && regs_ever_live[regno])		\
-       /* Save call clobbered registers in non-leaf interrupt	\
-	  handlers.  */						\
-       || (interrupt_handler					\
-	   && call_used_regs[regno]				\
+#define WORD_REG_USED(regno)						\
+  (regno < 7								\
+   /* No need to save registers if this function will not return.  */	\
+   && ! TREE_THIS_VOLATILE (current_function_decl)			\
+   && (pragma_saveall							\
+       /* Save any call saved register that was used.  */		\
+       || (regs_ever_live[regno] && !call_used_regs[regno])		\
+       /* Save the frame pointer if it was used.  */			\
+       || (regno == FRAME_POINTER_REGNUM && regs_ever_live[regno])	\
+       /* Save any register used in an interrupt handler.  */		\
+       || (interrupt_handler && regs_ever_live[regno])			\
+       /* Save call clobbered registers in non-leaf interrupt		\
+	  handlers.  */							\
+       || (interrupt_handler						\
+	   && call_used_regs[regno]					\
 	   && !current_function_is_leaf)))
 
 /* Output assembly language to FILE for the operation OP with operand size
