@@ -2152,11 +2152,8 @@ write_node (struct decision *p, int depth,
 
       while ((test = test->next) != NULL)
 	{
-	  int uncond2;
-
 	  last_test = test;
-	  uncond2 = is_unconditional (test, subroutine_type);
-	  if (uncond2 != 0)
+	  if (is_unconditional (test, subroutine_type))
 	    break;
 
 	  printf ("\n      && ");
