@@ -21,35 +21,13 @@ can know your rights and responsibilities.  It should be in a
 file named COPYING.  Among other things, the copyright notice
 and this notice must be preserved on all copies.  */
 
-enum cp_rid
-{
-  RID_FRIEND = RID_MAX,
-  RID_VIRTUAL,
-  RID_EXPLICIT,
-  RID_EXPORT,
-  RID_MUTABLE,
-  RID_LAST_MODIFIER = RID_MUTABLE,
+#ifndef _CP_LEX_H
+#define _CP_LEX_H
 
-  RID_BOOL,
-  RID_WCHAR,
-
-  /* C++ extension */
-  RID_CLASS,
-  RID_RECORD,
-  RID_UNION,
-  RID_ENUM,
-  RID_LONGLONG,
-
-  RID_PUBLIC,
-  RID_PRIVATE,
-  RID_PROTECTED,
-  RID_EXCEPTION,
-  RID_TEMPLATE,
-  RID_NULL,
-  /* Before adding enough to get up to 64, the RIDBIT_* macros
-     will have to be changed a little.  */
-  CP_RID_MAX
-};
+#if 0
+/* Formerly, the RID_* values used as mask bits did not fit into a
+   single 32-bit word.  Now they do, but let's preserve the old logic
+   in case they ever stop fitting again.  -zw, 8 Aug 2000 */
 
 /* The type that can represent all values of RIDBIT.  */
 /* We assume that we can stick in at least 32 bits into this.  */
@@ -73,6 +51,18 @@ typedef struct { unsigned long idata[2]; }
 				   (V).idata[1] = 0;			      \
 				 } while (0)
 #define RIDBIT_ANY_SET(V) ((V).idata[0] || (V).idata[1])
+#else
+typedef unsigned long RID_BIT_TYPE;	/* assumed at least 32 bits */
+#define RIDBIT_OF(R) ((unsigned long)1 << (int) (R))
+
+#define RIDBIT_SETP(N, V) ((V) & RIDBIT_OF (N))
+#define RIDBIT_NOTSETP(N, V) (! ((V) & RIDBIT_OF (N)))
+#define RIDBIT_ANY_SET(V) (V)
+
+#define RIDBIT_SET(N, V) do { (V) |= RIDBIT_OF (N); } while (0)
+#define RIDBIT_RESET(N, V) do { (V) &= ~RIDBIT_OF (N); } while (0)
+#define RIDBIT_RESET_ALL(V) do { (V) = 0; } while (0)
+#endif
 
 /* the declaration found for the last IDENTIFIER token read in.
    yylex must look this up to detect typedefs, which get token type TYPENAME,
@@ -80,7 +70,9 @@ typedef struct { unsigned long idata[2]; }
    used in a context which makes it a reference to a variable.  */
 extern tree lastiddecl;
 
+#if !USE_CPPLIB
 extern char *token_buffer;	/* Pointer to token buffer.  */
+#endif
 
 /* Back-door communication channel to the lexer.  */
 extern int looking_for_typename;
@@ -97,3 +89,5 @@ extern int pending_lang_change;
 extern int yylex PARAMS ((void));
 
 extern struct lang_decl *free_lang_decl_chain;
+
+#endif /* _CP_LEX_H */

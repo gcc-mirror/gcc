@@ -503,7 +503,9 @@ c_decode_option (argc, argv)
   strings_processed = 0;
 #endif /* ! USE_CPPLIB */
 
-  if (!strcmp (p, "-ftraditional") || !strcmp (p, "-traditional"))
+  if (!strcmp (p, "-lang-objc"))
+    c_language = clk_objective_c;
+  else if (!strcmp (p, "-ftraditional") || !strcmp (p, "-traditional"))
     {
       flag_traditional = 1;
       flag_writable_strings = 1;
@@ -845,6 +847,14 @@ print_lang_identifier (file, node, indent)
   print_node (file, "implicit", IDENTIFIER_IMPLICIT_DECL (node), indent + 4);
   print_node (file, "error locus", IDENTIFIER_ERROR_LOCUS (node), indent + 4);
   print_node (file, "limbo value", IDENTIFIER_LIMBO_VALUE (node), indent + 4);
+  if (C_IS_RESERVED_WORD (node))
+    {
+      tree rid = ridpointers[C_RID_CODE (node)];
+      indent_to (file, indent + 4);
+      fprintf (file, "rid ");
+      fprintf (file, HOST_PTR_PRINTF, (void *)rid);
+      fprintf (file, " \"%s\"", IDENTIFIER_POINTER (rid));
+    }
 }
 
 /* Hook called at end of compilation to assume 1 elt
@@ -2896,6 +2906,7 @@ lookup_name (name)
      tree name;
 {
   register tree val;
+
   if (current_binding_level != global_binding_level
       && IDENTIFIER_LOCAL_VALUE (name))
     val = IDENTIFIER_LOCAL_VALUE (name);
@@ -3986,7 +3997,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 
   for (spec = declspecs; spec; spec = TREE_CHAIN (spec))
     {
-      register int i;
       register tree id = TREE_VALUE (spec);
 
       if (id == ridpointers[(int) RID_INT])
@@ -3994,29 +4004,29 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
       if (id == ridpointers[(int) RID_CHAR])
 	explicit_char = 1;
 
-      if (TREE_CODE (id) == IDENTIFIER_NODE)
-	for (i = (int) RID_FIRST_MODIFIER; i < (int) RID_MAX; i++)
-	  {
-	    if (ridpointers[i] == id)
-	      {
-		if (i == (int) RID_LONG && specbits & (1 << i))
-		  {
-		    if (longlong)
-		      error ("`long long long' is too long for GCC");
-		    else
-		      {
-			if (pedantic && !flag_isoc99 && ! in_system_header
-			    && warn_long_long)
-			  pedwarn ("ISO C89 does not support `long long'");
-			longlong = 1;
-		      }
-		  }
-		else if (specbits & (1 << i))
-		  pedwarn ("duplicate `%s'", IDENTIFIER_POINTER (id));
-		specbits |= 1 << i;
-		goto found;
-	      }
-	  }
+      if (TREE_CODE (id) == IDENTIFIER_NODE && C_IS_RESERVED_WORD (id))
+	{
+	  enum rid i = C_RID_CODE (id);
+	  if (i <= RID_LAST_MODIFIER)
+	    {
+	      if (i == RID_LONG && specbits & (1<<i))
+		{
+		  if (longlong)
+		    error ("`long long long' is too long for GCC");
+		  else
+		    {
+		      if (pedantic && !flag_isoc99 && ! in_system_header
+			  && warn_long_long)
+			pedwarn ("ISO C89 does not support `long long'");
+		      longlong = 1;
+		    }
+		}
+	      else if (specbits & (1 << i))
+		pedwarn ("duplicate `%s'", IDENTIFIER_POINTER (id));
+	      specbits |= 1 << i;
+	      goto found;
+	    }
+	}
       if (type)
 	error ("two or more data types in declaration of `%s'", name);
       /* Actual typedefs come to us as TYPE_DECL nodes.  */
@@ -4560,18 +4570,23 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 		{
 		  tree qualifier = TREE_VALUE (typemodlist);
 
-		  if (qualifier == ridpointers[(int) RID_CONST])
-		    constp++;
-		  else if (qualifier == ridpointers[(int) RID_VOLATILE])
-		    volatilep++;
-		  else if (qualifier == ridpointers[(int) RID_RESTRICT])
-		    restrictp++;
-		  else if (!erred)
+		  if (C_IS_RESERVED_WORD (qualifier))
 		    {
-		      erred = 1;
-		      error ("invalid type modifier within pointer declarator");
+		      if (C_RID_CODE (qualifier) == RID_CONST)
+			constp++;
+		      else if (C_RID_CODE (qualifier) == RID_VOLATILE)
+			volatilep++;
+		      else if (C_RID_CODE (qualifier) == RID_RESTRICT)
+			restrictp++;
+		      else
+			erred++;
 		    }
+		  else
+		    erred++;
 		}
+
+	      if (erred)
+		error ("invalid type modifier within pointer declarator");
 	      if (constp > 1 && ! flag_isoc99)
 		pedwarn ("duplicate `const'");
 	      if (volatilep > 1 && ! flag_isoc99)
@@ -6989,4 +7004,10 @@ set_current_function_name_declared (i)
      int i ATTRIBUTE_UNUSED;
 {
   abort ();
+}
+
+/* Dummy function in place of callback used by C++.  */
+void
+extract_interface_info ()
+{
 }

@@ -1,3 +1,16 @@
+2000-09-06  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* g++.old-deja/g++.benjamin/13478.C: Put meaningful tags on
+	ERROR markers.
+	* g++.old-deja/g++.brendan/crash8.C: Move ERROR marker up one line.
+	* gcc.dg/c99-array-nonobj-1.c: Don't expect func[] cases to fail.
+	* gcc.dg/wtr-label-1.c: Don't use unconstrained .* in error regexps.
+	* gcc.dg/wtr-suffix-1.c: Correct error regexps.
+	* gcc.dg/cpp/unc1.c, gcc.dg/cpp/unc2.c, gcc.dg/cpp/unc3.c:
+	Preprocess only.
+	* gcc.dg/cpp/unc4.c: Adjust line number in dg-error line.
+	* gcc.dg/noncompile/const-ll-1.c: Generalize error regexp.
+
 2000-09-06  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.pt/deduct2.C: New test.
@@ -57,7 +70,7 @@
 
 2000-09-01  Nathan Sidwell  <nathan@codesourcery.com>
 
-	* g++.old-deja/g++.other/nested4.C: New test.	
+	* g++.old-deja/g++.other/nested4.C: New test.
 
 2000-09-01  Nathan Sidwell  <nathan@codesourcery.com>
 
@@ -315,7 +328,7 @@ Sun Aug  6 11:41:51 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 2000-08-05  Zack Weinberg  <zack@wolery.cumb.org>
 
-	* gcc.c-torture/execute/20000731-1.x: Delete.  
+	* gcc.c-torture/execute/20000731-1.x: Delete.
 
 2000-08-04  Zack Weinberg  <zack@wolery.cumb.org>
 

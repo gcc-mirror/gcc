@@ -2041,8 +2041,7 @@ finish_class_definition (t, attributes, semi, pop_scope_p)
 void
 begin_inline_definitions ()
 {
-  if (pending_inlines 
-      && current_scope () == current_function_decl)
+  if (current_scope () == current_function_decl)
     do_pending_inlines ();
 }
 

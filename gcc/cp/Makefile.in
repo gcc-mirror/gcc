@@ -172,7 +172,7 @@ INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. -I$(srcdir)/../config -I$(srcdir)
 # Lists of files for various purposes.
 
 # Shared with C front end:
-C_OBJS = ../c-common.o ../c-pragma.o ../c-semantics.o
+C_OBJS = ../c-common.o ../c-pragma.o ../c-semantics.o ../c-lex.o
 
 # Language-specific object files for g++
 
@@ -237,16 +237,6 @@ $(PARSE_H) $(PARSE_C) : $(srcdir)/parse.y
 #	cp $(PARSE_C) y.tab.c
 #	touch stamp-parse
 
-# We used to try to protect people from having to rerun gperf.  But,
-# the C front-end already requires this if c-parse.gperf is changed,
-# so we should be consistent.
-$(srcdir)/hash.h: $(srcdir)/gxx.gperf
-	gperf -L C -F ', 0, 0' -p -j1 -g -o -t -N is_reserved_word \
-		'-k1,4,7,$$' $(srcdir)/gxx.gperf >$(srcdir)/hash.h || ( \
-	echo "Please update your 'gperf' from the GCC infrastructure" >&2 ; \
-	echo "	ftp://sourceware.cygnus.com/pub/egcs/infrastructure/gperf*" >&2 ; \
-	exit 1 )
-
 $(srcdir)/cfns.h: $(srcdir)/cfns.gperf
 	gperf -o -C -E -k '1-6,$$' -j1 -D -N 'libc_name_p' \
 		$(srcdir)/cfns.gperf > $(srcdir)/cfns.h
@@ -254,7 +244,7 @@ $(srcdir)/cfns.h: $(srcdir)/cfns.gperf
 spew.o : spew.c $(CXX_TREE_H) $(PARSE_H) $(srcdir)/../flags.h \
   lex.h $(srcdir)/../toplev.h
 lex.o : lex.c $(CXX_TREE_H) \
-  $(PARSE_H) input.c $(srcdir)/../flags.h hash.h lex.h \
+  $(PARSE_H) $(srcdir)/../flags.h lex.h \
   $(srcdir)/../c-pragma.h $(srcdir)/../toplev.h \
   $(srcdir)/../output.h $(srcdir)/../mbchar.h $(GGC_H) \
   $(srcdir)/../input.h $(srcdir)/../diagnostic.h operators.def

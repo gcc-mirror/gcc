@@ -20,7 +20,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-
 /* This file is the type analyzer for GNU C++.  To debug it, define SPEW_DEBUG
    when compiling parse.c and spew.c.  */
 
@@ -29,34 +28,121 @@ Boston, MA 02111-1307, USA.  */
 #include "input.h"
 #include "tree.h"
 #include "cp-tree.h"
+#include "cpplib.h"
+#include "c-lex.h"
 #include "lex.h"
 #include "parse.h"
 #include "flags.h"
 #include "obstack.h"
 #include "toplev.h"
+#include "ggc.h"
+#include "intl.h"
+#include "timevar.h"
+
+#ifdef SPEW_DEBUG
+#define SPEW_INLINE
+#else
+#define SPEW_INLINE inline
+#endif
+
+#if USE_CPPLIB
+extern cpp_reader parse_in;
+#endif
 
 /* This takes a token stream that hasn't decided much about types and
    tries to figure out as much as it can, with excessive lookahead and
    backtracking.  */
 
 /* fifo of tokens recognized and available to parser.  */
-struct token  {
+struct token
+{
   /* The values for YYCHAR will fit in a short.  */
   short		yychar;
-  short		end_of_file;
+  unsigned int	lineno;
   YYSTYPE	yylval;
 };
 
-static int do_aggr PARAMS ((void));
-static void scan_tokens PARAMS ((unsigned int));
+/* Since inline methods can refer to text which has not yet been seen,
+   we store the text of the method in a structure which is placed in the
+   DECL_PENDING_INLINE_INFO field of the FUNCTION_DECL.
+   After parsing the body of the class definition, the FUNCTION_DECL's are
+   scanned to see which ones have this field set.  Those are then digested
+   one at a time.
+
+   This function's FUNCTION_DECL will have a bit set in its common so
+   that we know to watch out for it.  */
+
+struct unparsed_text
+{
+  struct unparsed_text *next;	/* process this one next */
+  tree decl;		/* associated declaration */
+  const char *filename;	/* name of file we were processing */
+  int lineno;		/* line number we got the text from */
+  int interface;	/* remembering interface_unknown and interface_only */
+
+  struct token *pos;	/* current position, when rescanning */
+  struct token *limit;	/* end of saved text */
+};
+
+/* Stack of state saved off when we return to an inline method or
+   default argument that has been stored for later parsing.  */
+struct feed
+{
+  struct unparsed_text *input;
+  const char *filename;
+  int lineno;
+  int yychar;
+  YYSTYPE yylval;
+  int first_token;
+  struct obstack token_obstack;
+  struct feed *next;
+};  
+
+static struct obstack feed_obstack;
+static struct feed *feed;
+
+static SPEW_INLINE void do_aggr PARAMS ((void));
+static SPEW_INLINE int identifier_type PARAMS ((tree));
+static void scan_tokens PARAMS ((int));
+static void feed_defarg PARAMS ((tree));
+static void finish_defarg PARAMS ((void));
+static int read_token PARAMS ((struct token *));
+
+static SPEW_INLINE int num_tokens PARAMS ((void));
+static SPEW_INLINE struct token *nth_token PARAMS ((int));
+static SPEW_INLINE int add_token PARAMS ((struct token *));
+static SPEW_INLINE int shift_token PARAMS ((void));
+static SPEW_INLINE void push_token PARAMS ((struct token *));
+static SPEW_INLINE void consume_token PARAMS ((void));
+static SPEW_INLINE int read_process_identifier PARAMS ((YYSTYPE *));
+
+static SPEW_INLINE void feed_input PARAMS ((struct unparsed_text *));
+static SPEW_INLINE void end_input PARAMS ((void));
+static SPEW_INLINE void snarf_block PARAMS ((const char *, int));
+static tree snarf_defarg PARAMS ((void));
+
+/* The list of inline functions being held off until we reach the end of
+   the current class declaration.  */
+struct unparsed_text *pending_inlines;
+struct unparsed_text *pending_inlines_tail;
+
+/* The list of previously-deferred inline functions currently being parsed.
+   This exists solely to be a GC root.  */
+struct unparsed_text *processing_these_inlines;
+
+static void begin_parsing_inclass_inline PARAMS ((struct unparsed_text *));
+static void mark_pending_inlines PARAMS ((PTR));
 
 #ifdef SPEW_DEBUG
-static int num_tokens PARAMS ((void));
-static struct token *nth_token PARAMS ((int));
-static void add_token PARAMS ((struct token *));
-static void consume_token PARAMS ((void));
-static int debug_yychar PARAMS ((int));
+int spew_debug = 0;
+static unsigned int yylex_ctr = 0;
+
+static void debug_yychar PARAMS ((int));
+
+/* In parse.y: */
+extern char *debug_yytranslate PARAMS ((int));
 #endif
+static enum cpp_ttype last_token;
 
 /* From lex.c: */
 /* the declaration found for the last IDENTIFIER token read in.
@@ -67,31 +153,324 @@ extern tree lastiddecl;		/* let our brains leak out here too */
 extern int	yychar;		/*  the lookahead symbol		*/
 extern YYSTYPE	yylval;		/*  the semantic value of the		*/
 				/*  lookahead symbol			*/
-extern int end_of_file;
-
+/* The token fifo lives in this obstack.  */
 struct obstack token_obstack;
 int first_token;
-  
-#ifdef SPEW_DEBUG
-int spew_debug = 0;
-static unsigned int yylex_ctr = 0;
-static int debug_yychar ();
-#endif
 
-/* Initialize token_obstack. Called once, from init_parse.  */
+/* Sometimes we need to save tokens for later parsing.  If so, they are
+   stored on this obstack.  */
+struct obstack inline_text_obstack;
+char *inline_text_firstobj;
+
+/* When we see a default argument in a method declaration, we snarf it as
+   text using snarf_defarg.  When we get up to namespace scope, we then go
+   through and parse all of them using do_pending_defargs.  Since yacc
+   parsers are not reentrant, we retain defargs state in these two
+   variables so that subsequent calls to do_pending_defargs can resume
+   where the previous call left off.  */
+
+static tree defarg_fns;
+static tree defarg_parm;
+
+/* Initialize obstacks. Called once, from init_parse.  */
 
 void
 init_spew ()
 {
+  gcc_obstack_init (&inline_text_obstack);
+  inline_text_firstobj = (char *) obstack_alloc (&inline_text_obstack, 0);
   gcc_obstack_init (&token_obstack);
+  gcc_obstack_init (&feed_obstack);
+  ggc_add_tree_root (&defarg_fns, 1);
+  ggc_add_tree_root (&defarg_parm, 1);
+
+  ggc_add_root (&pending_inlines, 1, sizeof (struct unparsed_text *),
+		mark_pending_inlines);
+  ggc_add_root (&processing_these_inlines, 1, sizeof (struct unparsed_text *),
+		mark_pending_inlines);
 }
 
+void
+clear_inline_text_obstack ()
+{
+  obstack_free (&inline_text_obstack, inline_text_firstobj);
+}
+
+/* Subroutine of read_token.  */
+static SPEW_INLINE int
+read_process_identifier (pyylval)
+     YYSTYPE *pyylval;
+{
+  tree id = pyylval->ttype;
+
+  if (C_IS_RESERVED_WORD (id))
+    {
+      /* Possibly replace the IDENTIFIER_NODE with a magic cookie.
+	 Can't put yylval.code numbers in ridpointers[].  Bleah.  */
+
+      switch (C_RID_CODE (id))
+	{
+	case RID_BITAND: pyylval->code = BIT_AND_EXPR;	return '&';
+	case RID_AND_EQ: pyylval->code = BIT_AND_EXPR;	return ASSIGN;
+	case RID_BITOR:	 pyylval->code = BIT_IOR_EXPR;	return '|';
+	case RID_OR_EQ:	 pyylval->code = BIT_IOR_EXPR;	return ASSIGN;
+	case RID_XOR:	 pyylval->code = BIT_XOR_EXPR;	return '^';
+	case RID_XOR_EQ: pyylval->code = BIT_XOR_EXPR;	return ASSIGN;
+	case RID_NOT_EQ: pyylval->code = NE_EXPR;	return EQCOMPARE;
+
+	default:
+	  if (C_RID_YYCODE (id) == TYPESPEC)
+	    GNU_xref_ref (current_function_decl, IDENTIFIER_POINTER (id));
+
+	  pyylval->ttype = ridpointers[C_RID_CODE (id)];
+	  return C_RID_YYCODE (id);
+	}
+    }
+
+  GNU_xref_ref (current_function_decl, IDENTIFIER_POINTER (id));
+
+  /* Make sure that user does not collide with our internal naming
+     scheme.  This is not necessary if '.' is used to remove them from
+     the user's namespace, but is if '$' or double underscores are.  */
+
+#if !defined(JOINER) || JOINER == '$'
+  if (THIS_NAME_P (id)
+      || VPTR_NAME_P (id)
+      || DESTRUCTOR_NAME_P (id)
+      || VTABLE_NAME_P (id)
+      || TEMP_NAME_P (id)
+      || ANON_AGGRNAME_P (id)
+      || ANON_PARMNAME_P (id))
+     warning (
+"identifier name `%s' conflicts with GNU C++ internal naming strategy",
+	      IDENTIFIER_POINTER (id));
+#endif
+  return IDENTIFIER;
+}
+
+/* Read the next token from the input file.  The token is written into
+   T, and its type number is returned.  */
+static int
+read_token (t)
+     struct token *t;
+{
+ retry:
+
+  last_token = c_lex (&t->yylval.ttype);
+
+  switch (last_token)
+    {
+#define YYCHAR(yy)	t->yychar = yy;	break;
+#define YYCODE(c)	t->yylval.code = c;
+
+    case CPP_EQ:				YYCHAR('=');
+    case CPP_NOT:				YYCHAR('!');
+    case CPP_GREATER:	YYCODE(GT_EXPR);	YYCHAR('>');
+    case CPP_LESS:	YYCODE(LT_EXPR);	YYCHAR('<');
+    case CPP_PLUS:	YYCODE(PLUS_EXPR);	YYCHAR('+');
+    case CPP_MINUS:	YYCODE(MINUS_EXPR);	YYCHAR('-');
+    case CPP_MULT:	YYCODE(MULT_EXPR);	YYCHAR('*');
+    case CPP_DIV:	YYCODE(TRUNC_DIV_EXPR);	YYCHAR('/');
+    case CPP_MOD:	YYCODE(TRUNC_MOD_EXPR);	YYCHAR('%');
+    case CPP_AND:	YYCODE(BIT_AND_EXPR);	YYCHAR('&');
+    case CPP_OR:	YYCODE(BIT_IOR_EXPR);	YYCHAR('|');
+    case CPP_XOR:	YYCODE(BIT_XOR_EXPR);	YYCHAR('^');
+    case CPP_RSHIFT:	YYCODE(RSHIFT_EXPR);	YYCHAR(RSHIFT);
+    case CPP_LSHIFT:	YYCODE(LSHIFT_EXPR);	YYCHAR(LSHIFT);
+
+    case CPP_COMPL:				YYCHAR('~');
+    case CPP_AND_AND:				YYCHAR(ANDAND);
+    case CPP_OR_OR:				YYCHAR(OROR);
+    case CPP_QUERY:				YYCHAR('?');
+    case CPP_COLON:				YYCHAR(':');
+    case CPP_COMMA:				YYCHAR(',');
+    case CPP_OPEN_PAREN:			YYCHAR('(');
+    case CPP_CLOSE_PAREN:			YYCHAR(')');
+    case CPP_EQ_EQ:	YYCODE(EQ_EXPR);	YYCHAR(EQCOMPARE);
+    case CPP_NOT_EQ:	YYCODE(NE_EXPR);	YYCHAR(EQCOMPARE);
+    case CPP_GREATER_EQ:YYCODE(GE_EXPR);	YYCHAR(ARITHCOMPARE);
+    case CPP_LESS_EQ:	YYCODE(LE_EXPR);	YYCHAR(ARITHCOMPARE);
+
+    case CPP_PLUS_EQ:	YYCODE(PLUS_EXPR);	YYCHAR(ASSIGN);
+    case CPP_MINUS_EQ:	YYCODE(MINUS_EXPR);	YYCHAR(ASSIGN);
+    case CPP_MULT_EQ:	YYCODE(MULT_EXPR);	YYCHAR(ASSIGN);
+    case CPP_DIV_EQ:	YYCODE(TRUNC_DIV_EXPR);	YYCHAR(ASSIGN);
+    case CPP_MOD_EQ:	YYCODE(TRUNC_MOD_EXPR);	YYCHAR(ASSIGN);
+    case CPP_AND_EQ:	YYCODE(BIT_AND_EXPR);	YYCHAR(ASSIGN);
+    case CPP_OR_EQ:	YYCODE(BIT_IOR_EXPR);	YYCHAR(ASSIGN);
+    case CPP_XOR_EQ:	YYCODE(BIT_XOR_EXPR);	YYCHAR(ASSIGN);
+    case CPP_RSHIFT_EQ:	YYCODE(RSHIFT_EXPR);	YYCHAR(ASSIGN);
+    case CPP_LSHIFT_EQ:	YYCODE(LSHIFT_EXPR);	YYCHAR(ASSIGN);
+
+    case CPP_OPEN_SQUARE:			YYCHAR('[');
+    case CPP_CLOSE_SQUARE:			YYCHAR(']');
+    case CPP_OPEN_BRACE:			YYCHAR('{');
+    case CPP_CLOSE_BRACE:			YYCHAR('}');
+    case CPP_SEMICOLON:				YYCHAR(';');
+    case CPP_ELLIPSIS:				YYCHAR(ELLIPSIS);
+
+    case CPP_PLUS_PLUS:				YYCHAR(PLUSPLUS);
+    case CPP_MINUS_MINUS:			YYCHAR(MINUSMINUS);
+    case CPP_DEREF:				YYCHAR(POINTSAT);
+    case CPP_DOT:				YYCHAR('.');
+
+    /* These tokens are C++ specific.  */
+    case CPP_SCOPE:				YYCHAR(SCOPE);
+    case CPP_DEREF_STAR: 			YYCHAR(POINTSAT_STAR);
+    case CPP_DOT_STAR:				YYCHAR(DOT_STAR);
+    case CPP_MIN_EQ:	YYCODE(MIN_EXPR);	YYCHAR(ASSIGN);
+    case CPP_MAX_EQ:	YYCODE(MAX_EXPR);	YYCHAR(ASSIGN);
+    case CPP_MIN:	YYCODE(MIN_EXPR);	YYCHAR(MIN_MAX);
+    case CPP_MAX:	YYCODE(MAX_EXPR);	YYCHAR(MIN_MAX);
+#undef YYCHAR
+#undef YYCODE
+
+    case CPP_EOF:
+#if USE_CPPLIB
+      cpp_pop_buffer (&parse_in);
+      if (CPP_BUFFER (&parse_in))
+	goto retry;
+#endif
+      t->yychar = 0;
+      break;
+      
+    case CPP_NAME:
+      t->yychar = read_process_identifier (&t->yylval);
+      break;
+
+    case CPP_INT:
+    case CPP_FLOAT:
+    case CPP_NUMBER:
+    case CPP_CHAR:
+    case CPP_WCHAR:
+      t->yychar = CONSTANT;
+      break;
+
+    case CPP_STRING:
+    case CPP_WSTRING:
+      t->yychar = STRING;
+      break;
+
+      /* This token should not be generated in C++ mode.  */
+    case CPP_OSTRING:
+
+      /* These tokens should not survive translation phase 4.  */
+    case CPP_HASH:
+    case CPP_PASTE:
+      error ("syntax error before '#' token");
+      goto retry;
+
+    case CPP_BACKSLASH:
+      error ("syntax error before '\\' token");
+      goto retry;
+
+    default:
+      abort ();
+    }
+
+  t->lineno = lineno;
+  return t->yychar;
+}
+
+static SPEW_INLINE void
+feed_input (input)
+     struct unparsed_text *input;
+{
+  struct feed *f;
+#if 0
+  if (feed)
+    abort ();
+#endif
+
+  f = obstack_alloc (&feed_obstack, sizeof (struct feed));
+
+  /* The token list starts just after the struct unparsed_text in memory.  */
+  input->pos = (struct token *) (input + 1);
+
 #ifdef SPEW_DEBUG
-/* Use functions for debugging...  */
+  if (spew_debug)
+    fprintf (stderr, "\tfeeding %s:%d [%d tokens]\n",
+	     input->filename, input->lineno, input->limit - input->pos);
+#endif
+
+  f->input = input;
+  f->filename = input_filename;
+  f->lineno = lineno;
+  f->yychar = yychar;
+  f->yylval = yylval;
+  f->first_token = first_token;
+  f->token_obstack = token_obstack;
+  f->next = feed;
+
+  input_filename = input->filename;
+  lineno = input->lineno;
+  yychar = YYEMPTY;
+  yylval.ttype = NULL_TREE;
+  first_token = 0;
+  gcc_obstack_init (&token_obstack);
+  feed = f;
+}
+
+static SPEW_INLINE void
+end_input ()
+{
+  struct feed *f = feed;
+
+  input_filename = f->filename;
+  lineno = f->lineno;
+  yychar = f->yychar;
+  yylval = f->yylval;
+  first_token = f->first_token;
+  obstack_free (&token_obstack, 0);
+  token_obstack = f->token_obstack;
+  feed = f->next;
+
+  obstack_free (&feed_obstack, f);
+
+#ifdef SPEW_DEBUG
+  if (spew_debug)
+    fprintf (stderr, "\treturning to %s:%d\n", input_filename, lineno);
+#endif
+}
+
+/* GC callback to mark memory pointed to by the pending inline queue.  */
+static void
+mark_pending_inlines (pi)
+     PTR pi;
+{
+  struct unparsed_text *up = * (struct unparsed_text **)pi;
+
+  while (up)
+    {
+      struct token *t = (struct token *) (up + 1);
+      struct token *l = up->limit;
+
+      while (t < l)
+	{
+	  /* Some of the possible values for yychar use yylval.code
+	     instead of yylval.ttype.  We only have to worry about
+	     yychars that could have been returned by read_token.  */
+	  switch (t->yychar)
+	    {
+	    case '+':	    case '-':	    case '*':	    case '/':
+	    case '%':	    case '&':	    case '|':	    case '^':
+	    case '>':	    case '<':	    case LSHIFT:    case RSHIFT:
+	    case ASSIGN:    case MIN_MAX:   case EQCOMPARE: case ARITHCOMPARE:
+	      t++;
+	      continue;
+	    }
+	  if (t->yylval.ttype)
+	    ggc_mark_tree (t->yylval.ttype);
+	  t++;
+	}
+      up = up->next;
+    }
+}
+  
+/* Token queue management.  */
 
 /* Return the number of tokens available on the fifo.  */
-
-static int
+static SPEW_INLINE int
 num_tokens ()
 {
   return (obstack_object_size (&token_obstack) / sizeof (struct token))
@@ -100,28 +479,51 @@ num_tokens ()
 
 /* Fetch the token N down the line from the head of the fifo.  */
 
-static struct token*
+static SPEW_INLINE struct token*
 nth_token (n)
      int n;
 {
+#ifdef ENABLE_CHECKING
   /* could just have this do slurp_ implicitly, but this way is easier
      to debug...  */
-  my_friendly_assert (n < num_tokens (), 298);
+  my_friendly_assert (n >= 0 && n < num_tokens (), 298);
+#endif
   return ((struct token*)obstack_base (&token_obstack)) + n + first_token;
 }
 
-/* Add a token to the token fifo.  */
+static const struct token Teosi = { END_OF_SAVED_INPUT, 0 UNION_INIT_ZERO };
+static const struct token Tpad = { EMPTY, 0 UNION_INIT_ZERO };
 
-static void
+/* Copy the next token into T and return its value.  */
+static SPEW_INLINE int
 add_token (t)
-     struct token* t;
+     struct token *t;
 {
-  obstack_grow (&token_obstack, t, sizeof (struct token));
+  if (!feed)
+    return read_token (t);
+
+  if (feed->input->pos < feed->input->limit)
+    {
+      memcpy (t, feed->input->pos, sizeof (struct token));
+      return (feed->input->pos++)->yychar;
+    }
+  
+  memcpy (t, &Teosi, sizeof (struct token));
+  return END_OF_SAVED_INPUT;
+}
+
+/* Shift the next token onto the fifo.  */
+static SPEW_INLINE int
+shift_token ()
+{
+  size_t point = obstack_object_size (&token_obstack);
+  obstack_blank (&token_obstack, sizeof (struct token));
+  return add_token ((struct token *) (obstack_base (&token_obstack) + point));
 }
 
 /* Consume the next token out of the fifo.  */
 
-static void
+static SPEW_INLINE void
 consume_token ()
 {
   if (num_tokens () == 1)
@@ -133,139 +535,235 @@ consume_token ()
     first_token++;
 }
 
-#else
-/* ...otherwise use macros.  */
+/* Push a token at the head of the queue; it will be the next token read.  */
+static SPEW_INLINE void
+push_token (t)
+     struct token *t;
+{
+  if (first_token == 0)  /* We hope this doesn't happen often.  */
+    {
+      size_t active = obstack_object_size (&token_obstack);
+      obstack_blank (&token_obstack, sizeof (struct token));
+      if (active)
+	memmove (obstack_base (&token_obstack) + sizeof (struct token),
+		 obstack_base (&token_obstack), active);
+      first_token++;
+    }
+  first_token--;
+  memcpy (nth_token (0), t, sizeof (struct token));
+}
 
-#define num_tokens() \
-  ((obstack_object_size (&token_obstack) / sizeof (struct token)) - first_token)
 
-#define nth_token(N) \
-  (((struct token*)obstack_base (&token_obstack))+(N)+first_token)
-
-#define add_token(T) obstack_grow (&token_obstack, (T), sizeof (struct token))
-
-#define consume_token() \
-  (num_tokens () == 1							\
-   ? (obstack_free (&token_obstack, obstack_base (&token_obstack)),	\
-      (first_token = 0))						\
-   : first_token++)
-#endif
-
-/* Pull in enough tokens from real_yylex that the queue is N long beyond
-   the current token.  */
+/* Pull in enough tokens that the queue is N long beyond the current
+   token.  */
 
 static void
 scan_tokens (n)
-     unsigned int n;
+     int n;
 {
-  unsigned int i;
-  struct token *tmp;
+  int i;
+  int num = num_tokens ();
+  int yychar;
 
-  /* We cannot read past certain tokens, so make sure we don't.  */
-  i = num_tokens ();
-  if (i > n)
-    return;
-  while (i-- > 0)
+  /* First, prune any empty tokens at the end.  */
+  i = num;
+  while (i > 0 && nth_token (i - 1)->yychar == EMPTY)
+    i--;
+  if (i < num)
     {
-      tmp = nth_token (i);
-      /* Never read past these characters: they might separate
-	 the current input stream from one we save away later.  */
-      if (tmp->yychar == '{' || tmp->yychar == ':' || tmp->yychar == ';')
+      obstack_blank (&token_obstack, -((num - i) * sizeof (struct token)));
+      num = i;
+    }
+
+  /* Now, if we already have enough tokens, return.  */
+  if (num > n)
+    return;
+
+  /* Never read past these characters: they might separate
+     the current input stream from one we save away later.  */
+  for (i = 0; i < num; i++)
+    {
+      yychar = nth_token (i)->yychar;
+      if (yychar == '{' || yychar == ':' || yychar == ';')
 	goto pad_tokens;
     }
 
   while (num_tokens () <= n)
     {
-      obstack_blank (&token_obstack, sizeof (struct token));
-      tmp = ((struct token *)obstack_next_free (&token_obstack))-1;
-      tmp->yychar = real_yylex ();
-      tmp->end_of_file = end_of_file;
-      tmp->yylval = yylval;
-      end_of_file = 0;
-      if (tmp->yychar == '{'
-	  || tmp->yychar == ':'
-	  || tmp->yychar == ';')
-	{
-	pad_tokens:
-	  while (num_tokens () <= n)
-	    {
-	      obstack_blank (&token_obstack, sizeof (struct token));
-	      tmp = ((struct token *)obstack_next_free (&token_obstack))-1;
-	      tmp->yychar = EMPTY;
-	      tmp->end_of_file = 0;
-	    }
-	}
+      yychar = shift_token ();
+      if (yychar == '{' || yychar == ':' || yychar == ';')
+	goto pad_tokens;
     }
+  return;
+  
+ pad_tokens:
+  while (num_tokens () <= n)
+    obstack_grow (&token_obstack, &Tpad, sizeof (struct token));
 }
 
-/* from lex.c: */
-/* Value is 1 (or 2) if we should try to make the next identifier look like
-   a typename (when it may be a local variable or a class variable).
-   Value is 0 if we treat this name in a default fashion.  */
-extern int looking_for_typename;
+int looking_for_typename;
 int looking_for_template;
-extern int do_snarf_defarg;
+
+static int after_friend;
+static int after_new;
+static int do_snarf_defarg;
 
 tree got_scope;
 tree got_object;
 
-int
-peekyylex ()
+static SPEW_INLINE int
+identifier_type (decl)
+     tree decl;
 {
-  scan_tokens (0);
-  return nth_token (0)->yychar;
+  tree t;
+
+  if (TREE_CODE (decl) == TEMPLATE_DECL)
+    {
+      if (TREE_CODE (DECL_TEMPLATE_RESULT (decl)) == TYPE_DECL)
+	return PTYPENAME;
+      else if (looking_for_template) 
+	return PFUNCNAME;
+    }
+  if (looking_for_template && really_overloaded_fn (decl))
+    {
+      /* See through a baselink.  */
+      if (TREE_CODE (decl) == TREE_LIST)
+	decl = TREE_VALUE (decl);
+
+      for (t = decl; t != NULL_TREE; t = OVL_CHAIN (t))
+	if (DECL_FUNCTION_TEMPLATE_P (OVL_FUNCTION (t))) 
+	  return PFUNCNAME;
+    }
+  if (TREE_CODE (decl) == NAMESPACE_DECL)
+    return NSNAME;
+  if (TREE_CODE (decl) != TYPE_DECL)
+    return IDENTIFIER;
+  if (DECL_ARTIFICIAL (decl) && TREE_TYPE (decl) == current_class_type)
+    return SELFNAME;
+
+  /* A constructor declarator for a template type will get here as an
+     implicit typename, a TYPENAME_TYPE with a type.  */
+  t = got_scope;
+  if (t && TREE_CODE (t) == TYPENAME_TYPE)
+    t = TREE_TYPE (t);
+  decl = TREE_TYPE (decl);
+  if (TREE_CODE (decl) == TYPENAME_TYPE)
+    decl = TREE_TYPE (decl);
+  if (t && t == decl)
+    return SELFNAME;
+
+  return TYPENAME;
+}
+
+/* token[0] == AGGR (struct/union/enum)
+   Thus, token[1] is either a TYPENAME or a TYPENAME_DEFN.
+   If token[2] == '{' or ':' then it's TYPENAME_DEFN.
+   It's also a definition if it's a forward declaration (as in 'struct Foo;')
+   which we can tell if token[2] == ';' *and* token[-1] != FRIEND or NEW.  */
+
+static SPEW_INLINE void
+do_aggr ()
+{
+  int yc1, yc2;
+  
+  scan_tokens (2);
+  yc1 = nth_token (1)->yychar;
+  if (yc1 != TYPENAME && yc1 != IDENTIFIER && yc1 != PTYPENAME)
+    return;
+  yc2 = nth_token (2)->yychar;
+  if (yc2 == ';')
+    {
+      /* It's a forward declaration iff we were not preceded by
+         'friend' or `new'.  */
+      if (after_friend || after_new)
+	return;
+    }
+  else if (yc2 != '{' && yc2 != ':')
+    return;
+
+  switch (yc1)
+    {
+    case TYPENAME:
+      nth_token (1)->yychar = TYPENAME_DEFN;
+      break;
+    case PTYPENAME:
+      nth_token (1)->yychar = PTYPENAME_DEFN;
+      break;
+    case IDENTIFIER:
+      nth_token (1)->yychar = IDENTIFIER_DEFN;
+      break;
+    default:
+      my_friendly_abort (102);
+    }
+}  
+
+void
+see_typename ()
+{
+  /* Only types expected, not even namespaces. */
+  looking_for_typename = 2;
+  if (yychar < 0)
+    if ((yychar = yylex ()) < 0) yychar = 0;
+  looking_for_typename = 0;
+  if (yychar == IDENTIFIER)
+    {
+      lastiddecl = lookup_name (yylval.ttype, -2);
+      if (lastiddecl == 0)
+	{
+	  if (flag_labels_ok)
+	    lastiddecl = IDENTIFIER_LABEL_VALUE (yylval.ttype);
+	}
+      else
+	yychar = identifier_type (lastiddecl);
+    }
 }
 
 int
 yylex ()
 {
-  struct token tmp_token;
+  int yychr;
   tree trrr = NULL_TREE;
   int old_looking_for_typename = 0;
+
+  timevar_push (TV_LEX);
 
  retry:
 #ifdef SPEW_DEBUG
   if (spew_debug)
   {
     yylex_ctr ++;
-    fprintf (stderr, "\t\t## %d ##", yylex_ctr);
+    fprintf (stderr, "\t\t## %d @%d ", yylex_ctr, lineno);
   }
 #endif
 
   if (do_snarf_defarg)
     {
-      my_friendly_assert (num_tokens () == 0, 2837);
-      tmp_token.yychar = DEFARG;
-      tmp_token.yylval.ttype = snarf_defarg ();
-      tmp_token.end_of_file = 0;
       do_snarf_defarg = 0;
-      add_token (&tmp_token);
+      yylval.ttype = snarf_defarg ();
+      yychar = DEFARG;
+      got_object = NULL_TREE;
+      timevar_pop (TV_LEX);
+      return DEFARG;
     }
 
   /* if we've got tokens, send them */
   else if (num_tokens ())
-    tmp_token= *nth_token (0);
+    yychr = nth_token (0)->yychar;
   else
-    {
-      /* if not, grab the next one and think about it */
-      tmp_token.yychar = real_yylex ();
-      tmp_token.yylval = yylval;
-      tmp_token.end_of_file = end_of_file;
-      add_token (&tmp_token);
-    }
+    yychr = shift_token ();
 
   /* many tokens just need to be returned. At first glance, all we
      have to do is send them back up, but some of them are needed to
      figure out local context.  */
-  switch (tmp_token.yychar)
+  switch (yychr)
     {
     case EMPTY:
       /* This is a lexical no-op.  */
-      consume_token ();
 #ifdef SPEW_DEBUG    
       if (spew_debug)
-	debug_yychar (tmp_token.yychar);
+	debug_yychar (yychr);
 #endif
+      consume_token ();
       goto retry;
 
     case '(':
@@ -273,9 +771,8 @@ yylex ()
       if (nth_token (1)->yychar == ')')
 	{
 	  consume_token ();
-	  tmp_token.yychar = LEFT_RIGHT;
+	  yychr = LEFT_RIGHT;
 	}
-      consume_token ();
       break;
 
     case IDENTIFIER:
@@ -289,12 +786,12 @@ yylex ()
       else if (nth_token (1)->yychar == '<')
 	looking_for_template = 1;
 
-      trrr = lookup_name (tmp_token.yylval.ttype, -2);
+      trrr = lookup_name (nth_token (0)->yylval.ttype, -2);
 
       if (trrr)
 	{
-	  tmp_token.yychar = identifier_type (trrr);
-	  switch (tmp_token.yychar)
+	  yychr = identifier_type (trrr);
+	  switch (yychr)
 	    {
 	    case TYPENAME:
 	    case SELFNAME:
@@ -305,7 +802,7 @@ yylex ()
 	      /* If this got special lookup, remember it.  In these
 	         cases, we know it can't be a declarator-id. */
 	      if (got_scope || got_object)
-		tmp_token.yylval.ttype = trrr;
+		nth_token (0)->yylval.ttype = trrr;
 	      break;
 
 	    case PFUNCNAME:
@@ -326,7 +823,6 @@ yylex ()
     case TYPENAME_DEFN:
     case PTYPENAME:
     case PTYPENAME_DEFN:
-      consume_token ();
       /* If we see a SCOPE next, restore the old value.
 	 Otherwise, we got what we want. */
       looking_for_typename = old_looking_for_typename;
@@ -334,142 +830,581 @@ yylex ()
       break;
 
     case SCSPEC:
-      if (tmp_token.yylval.ttype == ridpointers[RID_EXTERN])
+      if (nth_token (0)->yylval.ttype == ridpointers[RID_EXTERN])
 	{
 	  scan_tokens (1);
 	  if (nth_token (1)->yychar == STRING)
 	    {
-	      tmp_token.yychar = EXTERN_LANG_STRING;
-	      tmp_token.yylval.ttype = get_identifier
+	      yychr = EXTERN_LANG_STRING;
+	      nth_token (1)->yylval.ttype = get_identifier
 		(TREE_STRING_POINTER (nth_token (1)->yylval.ttype));
 	      consume_token ();
 	    }
 	}
       /* If export, warn that it's unimplemented and go on. */
-      else if (tmp_token.yylval.ttype == ridpointers[RID_EXPORT])
+      else if (nth_token (0)->yylval.ttype == ridpointers[RID_EXPORT])
 	{
 	  warning ("keyword 'export' not implemented and will be ignored");
+#ifdef SPEW_DEBUG    
+	  if (spew_debug)
+	    debug_yychar (yychr);
+#endif
 	  consume_token ();
 	  goto retry;
 	}
-      /* do_aggr needs to check if the previous token was `friend',
-	 so just increment first_token instead of calling consume_token.  */
-      ++first_token;
+      /* do_aggr needs to know if the previous token was `friend'.  */
+      else if (nth_token (0)->yylval.ttype == ridpointers[RID_FRIEND])
+	after_friend = 1;
+
       break;
 
     case NEW:
-      /* do_aggr needs to check if the previous token was `new',
-	 so just increment first_token instead of calling consume_token.  */
-      ++first_token;
+      /* do_aggr needs to know if the previous token was `new'.  */
+      after_new = 1;
       break;
 
     case TYPESPEC:
+    case '{':
+    case ':':
+    case ';':
       /* If this provides a type for us, then revert lexical
 	 state to standard state.  */
       looking_for_typename = 0;
-      consume_token ();
       break;
 
     case AGGR:
-      *nth_token (0) = tmp_token;
       do_aggr ();
-      /* fall through to output...  */
+      after_friend = after_new = 0;
+      break;
+
     case ENUM:
       /* Set this again, in case we are rescanning.  */
       looking_for_typename = 2;
-      /* fall through...  */
+      break;
+
     default:
-      consume_token ();
+      break;
     }
 
   /* class member lookup only applies to the first token after the object
      expression, except for explicit destructor calls.  */
-  if (tmp_token.yychar != '~')
+  if (yychr != '~')
     got_object = NULL_TREE;
 
-  /* Clear looking_for_typename if we got 'enum { ... };'.  */
-  if (tmp_token.yychar == '{' || tmp_token.yychar == ':'
-      || tmp_token.yychar == ';')
-    looking_for_typename = 0;
+  yychar = yychr;
+  yylval = nth_token (0)->yylval;
+  lineno = nth_token (0)->lineno;
 
-  yylval = tmp_token.yylval;
-  yychar = tmp_token.yychar;
-  end_of_file = tmp_token.end_of_file;
 #ifdef SPEW_DEBUG    
   if (spew_debug)
-    debug_yychar (yychar);
+    debug_yychar (yychr);
 #endif
+  consume_token ();
 
-  return yychar;
+  timevar_pop (TV_LEX);
+  return yychr;
 }
 
-/* token[0] == AGGR (struct/union/enum)
-   Thus, token[1] is either a TYPENAME or a TYPENAME_DEFN.
-   If token[2] == '{' or ':' then it's TYPENAME_DEFN.
-   It's also a definition if it's a forward declaration (as in 'struct Foo;')
-   which we can tell if token[2] == ';' *and* token[-1] != FRIEND or NEW.  */
+/* Unget character CH from the input stream.
+   If RESCAN is non-zero, then we want to `see' this
+   character as the next input token.  */
 
-static int
-do_aggr ()
+void
+yyungetc (ch, rescan)
+     int ch;
+     int rescan;
 {
-  int yc1, yc2;
-  
-  scan_tokens (2);
-  yc1 = nth_token (1)->yychar;
-  if (yc1 != TYPENAME && yc1 != IDENTIFIER && yc1 != PTYPENAME)
-    return 0;
-  yc2 = nth_token (2)->yychar;
-  if (yc2 == ';')
+  /* Unget a character from the input stream.  */
+  if (yychar == YYEMPTY || rescan == 0)
     {
-      /* It's a forward declaration iff we were not preceded by
-         'friend' or `new'.  */
-      if (first_token > 0)
+      struct token fake;
+
+      /* If we're putting back a brace, undo the change in indent_level
+	 from the first time we saw it.  */
+      if (ch == '{')
+	indent_level--;
+      else if (ch == '}')
+	indent_level++;
+
+      fake.yychar = ch;
+      fake.yylval.ttype = 0;
+      fake.lineno = lineno;
+
+      push_token (&fake);
+    }
+  else
+    {
+      yychar = ch;
+    }
+}
+
+
+/* Set up the state required to correctly handle the definition of the
+   inline function whose preparsed state has been saved in PI.  */
+
+static void
+begin_parsing_inclass_inline (pi)
+     struct unparsed_text *pi;
+{
+  tree context;
+
+  /* Record that we are processing the chain of inlines starting at
+     PI in a special GC root.  */
+  processing_these_inlines = pi;
+
+  ggc_collect ();
+
+  /* If this is an inline function in a local class, we must make sure
+     that we save all pertinent information about the function
+     surrounding the local class.  */
+  context = decl_function_context (pi->decl);
+  if (context)
+    push_function_context_to (context);
+
+  feed_input (pi);
+  interface_unknown = pi->interface == 1;
+  interface_only  = pi->interface == 0;
+  DECL_PENDING_INLINE_P (pi->decl) = 0;
+  DECL_PENDING_INLINE_INFO (pi->decl) = 0;
+
+  /* Pass back a handle to the rest of the inline functions, so that they
+     can be processed later.  */
+  yychar = PRE_PARSED_FUNCTION_DECL;
+  yylval.pi = pi;
+
+  start_function (NULL_TREE, pi->decl, NULL_TREE,
+		  (SF_DEFAULT | SF_PRE_PARSED | SF_INCLASS_INLINE));
+}
+
+/* Called from the top level: if there are any pending inlines to
+   do, set up to process them now.  This function sets up the first function
+   to be parsed; after it has been, the rule for fndef in parse.y will
+   call process_next_inline to start working on the next one.  */
+
+void
+do_pending_inlines ()
+{
+  /* Oops, we're still dealing with the last batch.  */
+  if (yychar == PRE_PARSED_FUNCTION_DECL)
+    return;
+
+  if (pending_inlines)
+    {
+      /* Clear the chain, so that any inlines nested inside the batch
+	 we're to process now don't refer to this batch.  See e.g.
+	 g++.other/lookup6.C.  */
+      struct unparsed_text *first = pending_inlines;
+      pending_inlines = pending_inlines_tail = 0;
+
+      begin_parsing_inclass_inline (first);
+    }
+}
+
+/* Called from the fndecl rule in the parser when the function just parsed
+   was declared using a PRE_PARSED_FUNCTION_DECL (i.e. came from
+   do_pending_inlines).  */
+
+void
+process_next_inline (i)
+     struct unparsed_text *i;
+{
+  tree decl = i->decl;
+  tree context = decl_function_context (decl);
+
+  if (context)
+    pop_function_context_from (context);
+  if (yychar == YYEMPTY)
+    yychar = yylex ();
+  if (yychar != END_OF_SAVED_INPUT)
+    error ("parse error at end of saved function text");
+  end_input ();
+
+  i = i->next;
+  if (i)
+    begin_parsing_inclass_inline (i);
+  else
+    {
+      processing_these_inlines = 0;
+      extract_interface_info ();
+    }
+}
+
+
+/* Subroutine of snarf_method, deals with actual absorption of the block.  */
+
+static SPEW_INLINE void
+snarf_block (starting_file, starting_line)
+     const char *starting_file;
+     int starting_line;
+{
+  int blev = 1;
+  int look_for_semicolon = 0;
+  int look_for_lbrac = 0;
+  int look_for_catch = 0;
+  int yyc;
+  struct token tmp;
+  size_t point;
+
+  if (yychar == '{')
+    /* We incremented indent_level in yylex; undo that.  */
+    indent_level--;
+  else if (yychar == '=')
+    look_for_semicolon = 1;
+  else if (yychar == ':' || yychar == RETURN_KEYWORD || yychar == TRY)
+    {
+      if (yychar == TRY)
+	look_for_catch = 1;
+      look_for_lbrac = 1;
+      blev = 0;
+    }
+  else
+    yyerror ("parse error in method specification");
+
+  /* The current token is the first one to be recorded.  */
+  tmp.yychar = yychar;
+  tmp.yylval = yylval;
+  tmp.lineno = lineno;
+  obstack_grow (&inline_text_obstack, &tmp, sizeof (struct token));
+
+  for (;;)
+    {
+      point = obstack_object_size (&inline_text_obstack);
+      obstack_blank (&inline_text_obstack, sizeof (struct token));
+      yyc = add_token ((struct token *)
+		       (obstack_base (&inline_text_obstack) + point));
+
+      if (yyc == '{')
 	{
-	  if (nth_token (-1)->yychar == SCSPEC
-	      && nth_token (-1)->yylval.ttype == ridpointers[(int) RID_FRIEND])
-	    return 0;
-	  if (nth_token (-1)->yychar == NEW)
-	    return 0;
+	  look_for_lbrac = 0;
+	  blev++;
+	}
+      else if (yyc == '}')
+	{
+	  blev--;
+	  if (blev == 0 && !look_for_semicolon)
+	    {
+	      if (!look_for_catch)
+		break;
+	      
+	      if (add_token (&tmp) != CATCH)
+		{
+		  push_token (&tmp);
+		  break;
+		}
+
+	      look_for_lbrac = 1;
+	      obstack_grow (&inline_text_obstack, &tmp, sizeof (struct token));
+	    }
+	}
+      else if (yyc == ';')
+	{
+	  if (look_for_lbrac)
+	    {
+	      error ("function body for constructor missing");
+	      /* fake a { } to avoid further errors */
+	      tmp.yylval.ttype = 0;
+	      tmp.yychar = '{';
+	      obstack_grow (&inline_text_obstack, &tmp, sizeof (struct token));
+	      tmp.yychar = '}';
+	      obstack_grow (&inline_text_obstack, &tmp, sizeof (struct token));
+	      break;
+	    }
+	  else if (look_for_semicolon && blev == 0)
+	    break;
+	}
+      else if (yyc == 0)
+	{
+	  error_with_file_and_line (starting_file, starting_line,
+				    "end of file read inside definition");
+	  break;
 	}
     }
-  else if (yc2 != '{' && yc2 != ':')
-    return 0;
+}
 
-  switch (yc1)
+/* This function stores away the text for an inline function that should
+   be processed later (by do_pending_inlines).  */
+void
+snarf_method (decl)
+     tree decl;
+{
+  int starting_lineno = lineno;
+  const char *starting_filename = input_filename;
+  size_t len;
+
+  struct unparsed_text *meth;
+
+  /* Leave room for the header, then absorb the block.  */
+  obstack_blank (&inline_text_obstack, sizeof (struct unparsed_text));
+  snarf_block (starting_filename, starting_lineno);
+
+  len = obstack_object_size (&inline_text_obstack);
+  meth = (struct unparsed_text *) obstack_finish (&inline_text_obstack);
+
+  /* Happens when we get two declarations of the same function in the
+     same scope.  */
+  if (decl == void_type_node
+      || (current_class_type && TYPE_REDEFINED (current_class_type)))
     {
-    case TYPENAME:
-      nth_token (1)->yychar = TYPENAME_DEFN;
-      break;
-    case PTYPENAME:
-      nth_token (1)->yychar = PTYPENAME_DEFN;
-      break;
-    case IDENTIFIER:
-      nth_token (1)->yychar = IDENTIFIER_DEFN;
-      break;
-    default:
-      my_friendly_abort (102);
+      obstack_free (&inline_text_obstack, (char *)meth);
+      return;
     }
-  return 0;
-}  
+
+  meth->decl = decl;
+  meth->filename = starting_filename;
+  meth->lineno = starting_lineno;
+  meth->limit = (struct token *) ((char *)meth + len);
+  meth->interface = (interface_unknown ? 1 : (interface_only ? 0 : 2));
+  meth->next = 0;
+
+#ifdef SPEW_DEBUG
+  if (spew_debug)
+    fprintf (stderr, "\tsaved method of %d tokens from %s:%d\n",
+	     meth->limit - (struct token *) (meth + 1),
+	     starting_filename, starting_lineno);
+#endif
+
+  DECL_PENDING_INLINE_INFO (decl) = meth;
+  DECL_PENDING_INLINE_P (decl) = 1;
+
+  if (pending_inlines_tail)
+    pending_inlines_tail->next = meth;
+  else
+    pending_inlines = meth;
+  pending_inlines_tail = meth;
+}
+
+/* Consume a no-commas expression - a default argument - and save it
+   on the inline_text_obstack.  */
+
+static tree
+snarf_defarg ()
+{
+  int starting_lineno = lineno;
+  const char *starting_filename = input_filename;
+  int yyc;
+  int plev = 0;
+  size_t point;
+  size_t len;
+  struct unparsed_text *buf;
+  tree arg;
+
+  obstack_blank (&inline_text_obstack, sizeof (struct unparsed_text));
+
+  for (;;)
+    {
+      point = obstack_object_size (&inline_text_obstack);
+      obstack_blank (&inline_text_obstack, sizeof (struct token));
+      yyc = add_token ((struct token *)
+		       (obstack_base (&inline_text_obstack) + point));
+
+      if (plev <= 0 && (yyc == ')' || yyc == ','))
+	break;
+      else if (yyc == '(' || yyc == '[')
+	++plev;
+      else if (yyc == ']' || yyc == ')')
+	--plev;
+      else if (yyc == 0)
+	{
+	  error_with_file_and_line (starting_filename, starting_lineno,
+				    "end of file read inside default argument");
+	  goto done;
+	}
+    }
+
+  /* Unget the last token.  */
+  push_token ((struct token *) (obstack_base (&inline_text_obstack) + point));
+  /* This is the documented way to shrink a growing obstack block.  */
+  obstack_blank (&inline_text_obstack, - sizeof (struct token));
+
+ done:
+  len = obstack_object_size (&inline_text_obstack);
+  buf = (struct unparsed_text *) obstack_finish (&inline_text_obstack);
+
+  buf->decl = 0;
+  buf->filename = starting_filename;
+  buf->lineno = starting_lineno;
+  buf->limit = (struct token *) ((char *)buf + len);
+  buf->next = 0;
   
+#ifdef SPEW_DEBUG
+  if (spew_debug)
+    fprintf (stderr, "\tsaved defarg of %d tokens from %s:%d\n",
+	     buf->limit - (struct token *) (buf + 1),
+	     starting_filename, starting_lineno);
+#endif
+
+  arg = make_node (DEFAULT_ARG);
+  DEFARG_POINTER (arg) = (char *)buf;
+
+  return arg;
+}
+
+/* Decide whether the default argument we are about to see should be
+   gobbled up as text for later parsing.  */
+
+void
+maybe_snarf_defarg ()
+{
+  if (current_class_type && TYPE_BEING_DEFINED (current_class_type))
+    do_snarf_defarg = 1;
+}
+
+/* Called from grokfndecl to note a function decl with unparsed default
+   arguments for later processing.  Also called from grokdeclarator
+   for function types with unparsed defargs; the call from grokfndecl
+   will always come second, so we can overwrite the entry from the type.  */
+
+void
+add_defarg_fn (decl)
+     tree decl;
+{
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    TREE_VALUE (defarg_fns) = decl;
+  else
+    defarg_fns = tree_cons (current_class_type, decl, defarg_fns);  
+}
+
+/* Helper for do_pending_defargs.  Starts the parsing of a default arg.  */
+
+static void
+feed_defarg (p)
+     tree p;
+{
+  tree d = TREE_PURPOSE (p);
+
+  feed_input ((struct unparsed_text *)DEFARG_POINTER (d));
+  yychar = DEFARG_MARKER;
+  yylval.ttype = p;
+}
+
+/* Helper for do_pending_defargs.  Ends the parsing of a default arg.  */
+
+static void
+finish_defarg ()
+{
+  if (yychar == YYEMPTY)
+    yychar = yylex ();
+  if (yychar != END_OF_SAVED_INPUT)
+    error ("parse error at end of saved function text");
+
+  end_input ();
+}  
+
+/* Main function for deferred parsing of default arguments.  Called from
+   the parser.  */
+
+void
+do_pending_defargs ()
+{
+  if (defarg_parm)
+    finish_defarg ();
+
+  for (; defarg_fns; defarg_fns = TREE_CHAIN (defarg_fns))
+    {
+      tree defarg_fn = TREE_VALUE (defarg_fns);
+      if (defarg_parm == NULL_TREE)
+	{
+	  push_nested_class (TREE_PURPOSE (defarg_fns), 1);
+	  pushlevel (0);
+	  if (TREE_CODE (defarg_fn) == FUNCTION_DECL)
+	    maybe_begin_member_template_processing (defarg_fn);
+
+	  if (TREE_CODE (defarg_fn) == FUNCTION_DECL)
+	    defarg_parm = TYPE_ARG_TYPES (TREE_TYPE (defarg_fn));
+	  else
+	    defarg_parm = TYPE_ARG_TYPES (defarg_fn);
+	}
+      else
+	defarg_parm = TREE_CHAIN (defarg_parm);
+
+      for (; defarg_parm; defarg_parm = TREE_CHAIN (defarg_parm))
+	if (TREE_PURPOSE (defarg_parm)
+	    && TREE_CODE (TREE_PURPOSE (defarg_parm)) == DEFAULT_ARG)
+	  {
+	    feed_defarg (defarg_parm);
+
+	    /* Return to the parser, which will process this defarg
+	       and call us again.  */
+	    return;
+	  }
+
+      if (TREE_CODE (defarg_fn) == FUNCTION_DECL)
+	{
+	  maybe_end_member_template_processing ();
+	  check_default_args (defarg_fn);
+	}
+
+      poplevel (0, 0, 0);
+      pop_nested_class ();
+    }
+}
+
 #ifdef SPEW_DEBUG    
 /* debug_yychar takes a yychar (token number) value and prints its name.  */
 
-static int
+static void
 debug_yychar (yy)
      int yy;
 {
-  /* In parse.y: */
-  extern char *debug_yytranslate ();
-  
-  int i;
-  
-  if (yy<256) {
-    fprintf (stderr, "<%d: %c >\n", yy, yy);
-    return 0;
-  }
-  fprintf (stderr, "<%d:%s>\n", yy, debug_yytranslate (yy));
-  return 1;
+  if (yy<256)
+    fprintf (stderr, "->%d < %c >\n", lineno, yy);
+  else if (yy == IDENTIFIER || yy == TYPENAME)
+    {
+      const char *id;
+      if (TREE_CODE (yylval.ttype) == IDENTIFIER_NODE)
+	id = IDENTIFIER_POINTER (yylval.ttype);
+      else if (TREE_CODE_CLASS (TREE_CODE (yylval.ttype)) == 'd')
+	id = IDENTIFIER_POINTER (DECL_NAME (yylval.ttype));
+      else
+	id = "";
+      fprintf (stderr, "->%d <%s `%s'>\n", lineno, debug_yytranslate (yy), id);
+    }
+  else
+    fprintf (stderr, "->%d <%s>\n", lineno, debug_yytranslate (yy));
 }
 
 #endif
+
+#if USE_CPPLIB
+#define NAME(type) cpp_type2name (type)
+#else
+/* Bleah */
+#include "symcat.h"
+#define OP(e, s) s,
+#define TK(e, s) STRINGX(e),
+
+static const char *type2name[N_TTYPES] = { TTYPE_TABLE };
+#define NAME(type) type2name[type]
+#endif
+
+void
+yyerror (msgid)
+     const char *msgid;
+{
+  const char *string = _(msgid);
+
+  if (last_token == CPP_EOF)
+    error ("%s at end of input", string);
+  else if (last_token == CPP_CHAR || last_token == CPP_WCHAR)
+    {
+      unsigned int val = TREE_INT_CST_LOW (yylval.ttype);
+      const char *ell = (last_token == CPP_CHAR) ? "" : "L";
+      if (val <= UCHAR_MAX && ISGRAPH (val))
+	error ("%s before %s'%c'", string, ell, val);
+      else
+	error ("%s before %s'\\x%x'", string, ell, val);
+    }
+  else if (last_token == CPP_STRING
+	   || last_token == CPP_WSTRING
+	   || last_token == CPP_OSTRING)
+    error ("%s before string constant", string);
+  else if (last_token == CPP_NUMBER
+	   || last_token == CPP_INT
+	   || last_token == CPP_FLOAT)
+    error ("%s before numeric constant", string);
+  else if (last_token == CPP_NAME
+	   && TREE_CODE (yylval.ttype) == IDENTIFIER_NODE)
+    error ("%s before \"%s\"", string, IDENTIFIER_POINTER (yylval.ttype));
+  else
+    error ("%s before '%s' token", string, NAME(last_token));
+}

@@ -61,41 +61,20 @@ extern int add_weak PARAMS ((const char *, const char *));
 /* Define HANDLE_GENERIC_PRAGMAS if any kind of front-end pragma
    parsing is to be done.  The code in GCC's generic C source files
    will only look for the definition of this constant.  They will
-   ignore definitions of HANDLE_PRAGMA_PACK and so on. 
-   With #pragma poison, this is always set.  */
-#define HANDLE_GENERIC_PRAGMAS 1
-
+   ignore definitions of HANDLE_PRAGMA_PACK and so on.  */
+#if defined HANDLE_PRAGMA_PACK || defined HANDLE_PRAGMA_WEAK
+#define HANDLE_GENERIC_PRAGMAS
+#endif
 
 #ifdef HANDLE_GENERIC_PRAGMAS
-enum pragma_state
-{
-  ps_start,
-  ps_done,
-#ifdef HANDLE_PRAGMA_WEAK
-  ps_weak,
-  ps_name,
-  ps_equals,
-  ps_value,
-#endif
-#ifdef HANDLE_PRAGMA_PACK
-  ps_pack,
-  ps_left,
-  ps_align,
-  ps_right,
-#endif
-#ifdef HANDLE_PRAGMA_PACK_PUSH_POP
-  ps_push, ps_pushcomma, ps_pushid, ps_pushcomma2,
-  ps_pop, ps_popcomma,
-#endif
-  ps_poison,
-  ps_bad
-};
-
-/* Handle a C style pragma */
-extern int handle_pragma_token PARAMS ((const char *, tree));
-
-#endif /* HANDLE_GENERIC_PRAGMAS */
-
 extern void init_pragma PARAMS ((void));
+
+# if !USE_CPPLIB
+extern void dispatch_pragma PARAMS ((void));
+# endif
+
+#else
+# define init_pragma()
+#endif
 
 #endif /* _C_PRAGMA_H */

@@ -19,6 +19,9 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#ifndef GCC_FLAGS_H
+#define GCC_FLAGS_H
+
 /* Name of the input .c file being compiled.  */
 extern const char *main_input_filename;
 
@@ -590,3 +593,9 @@ extern int flag_no_ident;
 /* Nonzero means we should do dwarf2 duplicate elimination.  */
 
 extern int flag_eliminate_dwarf2_dups;
+
+/* Non-zero means to collect statistics which might be expensive
+   and to print them when we are done.  */
+extern int flag_detailed_statistics;
+
+#endif /* GCC_FLAGS_H */

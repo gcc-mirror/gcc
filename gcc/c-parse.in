@@ -43,6 +43,7 @@ end ifc
 #include "input.h"
 #include "c-lex.h"
 #include "c-tree.h"
+#include "c-pragma.h"
 #include "flags.h"
 #include "output.h"
 #include "toplev.h"
@@ -117,9 +118,6 @@ end ifc
 %token REALPART IMAGPART VA_ARG
 %token PTR_VALUE PTR_BASE PTR_EXTENT
 
-/* Used in c-lex.c for parsing pragmas.  */
-%token END_OF_LINE
-
 /* Add precedence rules to solve dangling else s/r conflict */
 %nonassoc IF
 %nonassoc ELSE
@@ -155,6 +153,8 @@ end ifc
 
 
 %type <code> unop
+%type <ttype> ENUM STRUCT UNION IF ELSE WHILE DO FOR SWITCH CASE DEFAULT
+%type <ttype> BREAK CONTINUE RETURN GOTO ASM_KEYWORD SIZEOF TYPEOF ALIGNOF
 
 %type <ttype> identifier IDENTIFIER TYPENAME CONSTANT expr nonnull_exprlist exprlist
 %type <ttype> expr_no_commas cast_expr unary_expr primary string STRING
@@ -254,7 +254,12 @@ end ifobjc
 /* Tell yyparse how to print a token's value, if yydebug is set.  */
 
 #define YYPRINT(FILE,YYCHAR,YYLVAL) yyprint(FILE,YYCHAR,YYLVAL)
-extern void yyprint			PARAMS ((FILE *, int, YYSTYPE));
+
+static void yyprint	  PARAMS ((FILE *, int, YYSTYPE));
+static void yyerror	  PARAMS ((const char *));
+static inline int _yylex  PARAMS ((void));
+static int  yylex	  PARAMS ((void));
+static void init_reswords PARAMS ((void));
 
 /* Add GC roots for variables local to this file.  */
 void
@@ -351,7 +356,7 @@ fndef:
 		{ if (! start_function (current_declspecs, $3,
 					prefix_attributes, NULL_TREE))
 		    YYERROR1;
-		  reinit_parse_for_function (); }
+		}
 	  old_style_parm_decls
 		{ store_parm_decls (); }
 	  compstmt_or_error
@@ -367,7 +372,7 @@ fndef:
 		{ if (! start_function (current_declspecs, $3,
 					prefix_attributes, NULL_TREE))
 		    YYERROR1;
-		  reinit_parse_for_function (); }
+		}
 	  old_style_parm_decls
 		{ store_parm_decls (); }
 	  compstmt_or_error
@@ -383,7 +388,7 @@ fndef:
 		{ if (! start_function (NULL_TREE, $2,
 					prefix_attributes, NULL_TREE))
 		    YYERROR1;
-		  reinit_parse_for_function (); }
+		}
 	  old_style_parm_decls
 		{ store_parm_decls (); }
 	  compstmt_or_error
@@ -1178,7 +1183,7 @@ nested_function:
 		      pop_function_context ();
 		      YYERROR1;
 		    }
-		  reinit_parse_for_function (); }
+		}
 	   old_style_parm_decls
 		{ store_parm_decls (); }
 /* This used to use compstmt_or_error.
@@ -1204,7 +1209,7 @@ notype_nested_function:
 		      pop_function_context ();
 		      YYERROR1;
 		    }
-		  reinit_parse_for_function (); }
+		}
 	  old_style_parm_decls
 		{ store_parm_decls (); }
 /* This used to use compstmt_or_error.
@@ -1696,8 +1701,7 @@ if_prefix:
 				       compstmt_count);
 		  $<itype>$ = stmt_count;
 		  if_stmt_file = $<filename>-1;
-		  if_stmt_line = $<lineno>0;
-		  position_after_white_space (); }
+		  if_stmt_line = $<lineno>0; }
 	;
 
 /* This is a subroutine of stmt.
@@ -1710,18 +1714,24 @@ do_stmt_start:
 		  emit_line_note ($<filename>-1, $<lineno>0);
 		  /* See comment in `while' alternative, above.  */
 		  emit_nop ();
-		  expand_start_loop_continue_elsewhere (1);
-		  position_after_white_space (); }
+		  expand_start_loop_continue_elsewhere (1); }
 	  lineno_labeled_stmt WHILE
 		{ expand_loop_continue_here (); }
 	;
 
+/* The forced readahead in here is because we might be at the end of a
+   line, and the line and file won't be bumped until yylex absorbs the
+   first token on the next line.  */
 save_filename:
-		{ $$ = input_filename; }
+		{ if (yychar == YYEMPTY)
+		    yychar = YYLEX;
+		  $$ = input_filename; }
 	;
 
 save_lineno:
-		{ $$ = lineno; }
+		{ if (yychar == YYEMPTY)
+		    yychar = YYLEX;
+		  $$ = lineno; }
 	;
 
 lineno_labeled_stmt:
@@ -1768,8 +1778,7 @@ stmt:
 		  expand_expr_stmt ($1); }
 	| simple_if ELSE
 		{ c_expand_start_else ();
-		  $<itype>1 = stmt_count;
-		  position_after_white_space (); }
+		  $<itype>1 = stmt_count; }
 	  lineno_labeled_stmt
 		{ c_expand_end_cond ();
 		  if (extra_warnings && stmt_count == $<itype>1)
@@ -1805,8 +1814,7 @@ stmt:
 		  expand_start_loop (1);
 		  emit_line_note (input_filename, lineno);
 		  expand_exit_loop_if_false (NULL_PTR,
-					     truthvalue_conversion ($4));
-		  position_after_white_space (); }
+					     truthvalue_conversion ($4)); }
 	  lineno_labeled_stmt
 		{ expand_end_loop (); }
 	| do_stmt_start
@@ -1845,8 +1853,7 @@ stmt:
 		    expand_exit_loop_if_false (NULL_PTR,
 					       truthvalue_conversion ($6));
 		  $<lineno>7 = lineno;
-		  $<filename>8 = input_filename;
-		  position_after_white_space (); }
+		  $<filename>8 = input_filename; }
 	  lineno_labeled_stmt
 		{ /* Emit the increment expression, with a line number.  */
 		  emit_line_note ($<filename>8, $<lineno>7);
@@ -1857,8 +1864,7 @@ stmt:
 	| SWITCH '(' expr ')'
 		{ stmt_count++;
 		  emit_line_note ($<filename>-1, $<lineno>0);
-		  c_expand_start_case ($3);
-		  position_after_white_space (); }
+		  c_expand_start_case ($3); }
 	  lineno_labeled_stmt
 		{ expand_end_case ($3); }
 	| BREAK ';'
@@ -1937,22 +1943,19 @@ label:	  CASE expr_no_commas ':'
                 { tree case_label_tree = build_case_label ($2, NULL_TREE);
 		  stmt_count++;
 		  genrtl_case_label(CASE_LOW(case_label_tree), CASE_HIGH(case_label_tree));
-		  position_after_white_space ();
 		}
 	| CASE expr_no_commas ELLIPSIS expr_no_commas ':'
                 { tree case_label_tree = build_case_label ($2, $4);
 		  stmt_count++;
 		  genrtl_case_label(CASE_LOW(case_label_tree), CASE_HIGH(case_label_tree));
-		  position_after_white_space ();
 		}
 	| DEFAULT ':'
                 { tree case_label_tree = build_case_label (NULL_TREE, NULL_TREE);
 		  stmt_count++;
 		  genrtl_case_label(CASE_LOW(case_label_tree), CASE_HIGH(case_label_tree));
-		  position_after_white_space ();
 		}
-	| identifier ':' save_filename save_lineno maybe_attribute
-		{ tree label = define_label ($3, $4, $1);
+	| identifier save_filename save_lineno ':' maybe_attribute
+		{ tree label = define_label ($2, $3, $1);
 		  stmt_count++;
 		  emit_nop ();
 		  if (label)
@@ -1960,7 +1963,7 @@ label:	  CASE expr_no_commas ':'
 		      expand_label (label);
 		      decl_attributes (label, $5, NULL_TREE);
 		    }
-		  position_after_white_space (); }
+		}
 	;
 
 /* Either a type-qualifier or nothing.  First thing in an `asm' statement.  */
@@ -2658,25 +2661,9 @@ selector:
 	;
 
 reservedwords:
-	  ENUM { $$ = get_identifier (token_buffer); }
-	| STRUCT { $$ = get_identifier (token_buffer); }
-	| UNION { $$ = get_identifier (token_buffer); }
-	| IF { $$ = get_identifier (token_buffer); }
-	| ELSE { $$ = get_identifier (token_buffer); }
-	| WHILE { $$ = get_identifier (token_buffer); }
-	| DO { $$ = get_identifier (token_buffer); }
-	| FOR { $$ = get_identifier (token_buffer); }
-	| SWITCH { $$ = get_identifier (token_buffer); }
-	| CASE { $$ = get_identifier (token_buffer); }
-	| DEFAULT { $$ = get_identifier (token_buffer); }
-	| BREAK { $$ = get_identifier (token_buffer); }
-	| CONTINUE { $$ = get_identifier (token_buffer); }
-	| RETURN  { $$ = get_identifier (token_buffer); }
-	| GOTO { $$ = get_identifier (token_buffer); }
-	| ASM_KEYWORD { $$ = get_identifier (token_buffer); }
-        | SIZEOF { $$ = get_identifier (token_buffer); }
-	| TYPEOF { $$ = get_identifier (token_buffer); }
-	| ALIGNOF { $$ = get_identifier (token_buffer); }
+	  ENUM | STRUCT	| UNION	| IF | ELSE | WHILE | DO | FOR
+	| SWITCH | CASE | DEFAULT | BREAK | CONTINUE | RETURN
+	| GOTO | ASM_KEYWORD | SIZEOF | TYPEOF | ALIGNOF
 	| TYPESPEC | TYPE_QUAL
 	;
 
@@ -2807,3 +2794,606 @@ objcencodeexpr:
 
 end ifobjc
 %%
+
+/* yylex() is a thin wrapper around c_lex(), all it does is translate
+   cpplib.h's token codes into yacc's token codes.  */
+#include "cpplib.h"
+#include "intl.h"
+#include "timevar.h"
+
+static enum cpp_ttype last_token;
+#if USE_CPPLIB
+extern cpp_reader parse_in;
+#endif
+
+/* The reserved keyword table.  */
+struct resword
+{
+  const char *word;
+  ENUM_BITFIELD(rid) rid : 16;
+  unsigned int disable   : 16;
+};
+
+/* Disable mask.  Keywords are disabled if (reswords[i].disable & mask) is
+   _true_.  */
+#define D_TRAD	0x01	/* not in traditional C */
+#define D_C89	0x02	/* not in C89 */
+#define D_EXT	0x04	/* GCC extension */
+#define D_EXT89	0x08	/* GCC extension incorporated in C99 */
+#define D_OBJC	0x10	/* Objective C only */
+#define D_YES	0x20	/* always starts disabled */
+
+static const struct resword reswords[] =
+{
+  { "__alignof",	RID_ALIGNOF,	0 },
+  { "__alignof__",	RID_ALIGNOF,	0 },
+  { "__asm",		RID_ASM,	0 },
+  { "__asm__",		RID_ASM,	0 },
+  { "__attribute",	RID_ATTRIBUTE,	0 },
+  { "__attribute__",	RID_ATTRIBUTE,	0 },
+  { "__bounded",	RID_BOUNDED,	0 },
+  { "__bounded__",	RID_BOUNDED,	0 },
+  { "__builtin_va_arg",	RID_VA_ARG,	0 },
+  { "__complex",	RID_COMPLEX,	0 },
+  { "__complex__",	RID_COMPLEX,	0 },
+  { "__const",		RID_CONST,	0 },
+  { "__const__",	RID_CONST,	0 },
+  { "__extension__",	RID_EXTENSION,	0 },
+  { "__imag",		RID_IMAGPART,	0 },
+  { "__imag__",		RID_IMAGPART,	0 },
+  { "__inline",		RID_INLINE,	0 },
+  { "__inline__",	RID_INLINE,	0 },
+  { "__label__",	RID_LABEL,	0 },
+  { "__ptrbase",	RID_PTRBASE,	0 },
+  { "__ptrbase__",	RID_PTRBASE,	0 },
+  { "__ptrextent",	RID_PTREXTENT,	0 },
+  { "__ptrextent__",	RID_PTREXTENT,	0 },
+  { "__ptrvalue",	RID_PTRVALUE,	0 },
+  { "__ptrvalue__",	RID_PTRVALUE,	0 },
+  { "__real",		RID_REALPART,	0 },
+  { "__real__",		RID_REALPART,	0 },
+  { "__restrict",	RID_RESTRICT,	0 },
+  { "__restrict__",	RID_RESTRICT,	0 },
+  { "__signed",		RID_SIGNED,	0 },
+  { "__signed__",	RID_SIGNED,	0 },
+  { "__typeof",		RID_TYPEOF,	0 },
+  { "__typeof__",	RID_TYPEOF,	0 },
+  { "__unbounded",	RID_UNBOUNDED,	0 },
+  { "__unbounded__",	RID_UNBOUNDED,	0 },
+  { "__volatile",	RID_VOLATILE,	0 },
+  { "__volatile__",	RID_VOLATILE,	0 },
+  { "asm",		RID_ASM,	D_EXT },
+  { "auto",		RID_AUTO,	0 },
+  { "break",		RID_BREAK,	0 },
+  { "case",		RID_CASE,	0 },
+  { "char",		RID_CHAR,	0 },
+  { "const",		RID_CONST,	D_TRAD },
+  { "continue",		RID_CONTINUE,	0 },
+  { "default",		RID_DEFAULT,	0 },
+  { "do",		RID_DO,		0 },
+  { "double",		RID_DOUBLE,	0 },
+  { "else",		RID_ELSE,	0 },
+  { "enum",		RID_ENUM,	0 },
+  { "extern",		RID_EXTERN,	0 },
+  { "float",		RID_FLOAT,	0 },
+  { "for",		RID_FOR,	0 },
+  { "goto",		RID_GOTO,	0 },
+  { "if",		RID_IF,		0 },
+  { "inline",		RID_INLINE,	D_TRAD|D_EXT89 },
+  { "int",		RID_INT,	0 },
+  { "long",		RID_LONG,	0 },
+  { "register",		RID_REGISTER,	0 },
+  { "restrict",		RID_RESTRICT,	D_TRAD|D_C89 },
+  { "return",		RID_RETURN,	0 },
+  { "short",		RID_SHORT,	0 },
+  { "signed",		RID_SIGNED,	D_TRAD },
+  { "sizeof",		RID_SIZEOF,	0 },
+  { "static",		RID_STATIC,	0 },
+  { "struct",		RID_STRUCT,	0 },
+  { "switch",		RID_SWITCH,	0 },
+  { "typedef",		RID_TYPEDEF,	0 },
+  { "typeof",		RID_TYPEOF,	D_TRAD|D_EXT },
+  { "union",		RID_UNION,	0 },
+  { "unsigned",		RID_UNSIGNED,	0 },
+  { "void",		RID_VOID,	0 },
+  { "volatile",		RID_VOLATILE,	D_TRAD },
+  { "while",		RID_WHILE,	0 },
+ifobjc
+  { "@class",		RID_AT_CLASS,		D_OBJC },
+  { "@compatibility_alias", RID_AT_ALIAS,	D_OBJC },
+  { "@defs",		RID_AT_DEFS,		D_OBJC },
+  { "@encode",		RID_AT_ENCODE,		D_OBJC },
+  { "@end",		RID_AT_END,		D_OBJC },
+  { "@implementation",	RID_AT_IMPLEMENTATION,	D_OBJC },
+  { "@interface",	RID_AT_INTERFACE,	D_OBJC },
+  { "@private",		RID_AT_PRIVATE,		D_OBJC },
+  { "@protected",	RID_AT_PROTECTED,	D_OBJC },
+  { "@protocol",	RID_AT_PROTOCOL,	D_OBJC },
+  { "@public",		RID_AT_PUBLIC,		D_OBJC },
+  { "@selector",	RID_AT_SELECTOR,	D_OBJC },
+  { "id",		RID_ID,			D_OBJC },
+  { "bycopy",		RID_BYCOPY,		D_OBJC|D_YES },
+  { "byref",		RID_BYREF,		D_OBJC|D_YES },
+  { "in",		RID_IN,			D_OBJC|D_YES },
+  { "inout",		RID_INOUT,		D_OBJC|D_YES },
+  { "oneway",		RID_ONEWAY,		D_OBJC|D_YES },
+  { "out",		RID_OUT,		D_OBJC|D_YES },
+end ifobjc
+};
+#define N_reswords (sizeof reswords / sizeof (struct resword))
+
+/* Table mapping from RID_* constants to yacc token numbers.
+   Unfortunately we have to have entries for all the keywords in all
+   three languages.  */
+static const short rid_to_yy[RID_MAX] =
+{
+  /* RID_STATIC */	SCSPEC,
+  /* RID_UNSIGNED */	TYPESPEC,
+  /* RID_LONG */	TYPESPEC,
+  /* RID_CONST */	TYPE_QUAL,
+  /* RID_EXTERN */	SCSPEC,
+  /* RID_REGISTER */	SCSPEC,
+  /* RID_TYPEDEF */	SCSPEC,
+  /* RID_SHORT */	TYPESPEC,
+  /* RID_INLINE */	SCSPEC,
+  /* RID_VOLATILE */	TYPE_QUAL,
+  /* RID_SIGNED */	TYPESPEC,
+  /* RID_AUTO */	SCSPEC,
+  /* RID_RESTRICT */	TYPE_QUAL,
+
+  /* C extensions */
+  /* RID_BOUNDED */	TYPE_QUAL,
+  /* RID_UNBOUNDED */	TYPE_QUAL,
+  /* RID_COMPLEX */	TYPESPEC,
+
+  /* C++ */
+  /* RID_FRIEND */	0,
+  /* RID_VIRTUAL */	0,
+  /* RID_EXPLICIT */	0,
+  /* RID_EXPORT */	0,
+  /* RID_MUTABLE */	0,
+
+  /* ObjC */
+  /* RID_IN */		TYPE_QUAL,
+  /* RID_OUT */		TYPE_QUAL,
+  /* RID_INOUT */	TYPE_QUAL,
+  /* RID_BYCOPY */	TYPE_QUAL,
+  /* RID_BYREF */	TYPE_QUAL,
+  /* RID_ONEWAY */	TYPE_QUAL,
+  
+  /* C */
+  /* RID_INT */		TYPESPEC,
+  /* RID_CHAR */	TYPESPEC,
+  /* RID_FLOAT */	TYPESPEC,
+  /* RID_DOUBLE */	TYPESPEC,
+  /* RID_VOID */	TYPESPEC,
+  /* RID_ENUM */	ENUM,
+  /* RID_STRUCT */	STRUCT,
+  /* RID_UNION */	UNION,
+  /* RID_IF */		IF,
+  /* RID_ELSE */	ELSE,
+  /* RID_WHILE */	WHILE,
+  /* RID_DO */		DO,
+  /* RID_FOR */		FOR,
+  /* RID_SWITCH */	SWITCH,
+  /* RID_CASE */	CASE,
+  /* RID_DEFAULT */	DEFAULT,
+  /* RID_BREAK */	BREAK,
+  /* RID_CONTINUE */	CONTINUE,
+  /* RID_RETURN */	RETURN,
+  /* RID_GOTO */	GOTO,
+  /* RID_SIZEOF */	SIZEOF,
+
+  /* C extensions */
+  /* RID_ASM */		ASM_KEYWORD,
+  /* RID_TYPEOF */	TYPEOF,
+  /* RID_ALIGNOF */	ALIGNOF,
+  /* RID_ATTRIBUTE */	ATTRIBUTE,
+  /* RID_VA_ARG */	VA_ARG,
+  /* RID_EXTENSION */	EXTENSION,
+  /* RID_IMAGPART */	IMAGPART,
+  /* RID_REALPART */	REALPART,
+  /* RID_LABEL */	LABEL,
+  /* RID_PTRBASE */	PTR_BASE,
+  /* RID_PTREXTENT */	PTR_EXTENT,
+  /* RID_PTRVALUE */	PTR_VALUE,
+
+  /* C++ */
+  /* RID_BOOL */	0,
+  /* RID_WCHAR */	0,
+  /* RID_CLASS */	0,
+  /* RID_PUBLIC */	0,
+  /* RID_PRIVATE */	0,
+  /* RID_PROTECTED */	0,
+  /* RID_TEMPLATE */	0,
+  /* RID_NULL */	0,
+  /* RID_CATCH */	0,
+  /* RID_DELETE */	0,
+  /* RID_FALSE */	0,
+  /* RID_NAMESPACE */	0,
+  /* RID_NEW */		0,
+  /* RID_OPERATOR */	0,
+  /* RID_THIS */	0,
+  /* RID_THROW */	0,
+  /* RID_TRUE */	0,
+  /* RID_TRY */		0,
+  /* RID_TYPENAME */	0,
+  /* RID_TYPEID */	0,
+  /* RID_USING */	0,
+
+  /* casts */
+  /* RID_CONSTCAST */	0,
+  /* RID_DYNCAST */	0,
+  /* RID_REINTCAST */	0,
+  /* RID_STATCAST */	0,
+
+  /* alternate spellings */
+  /* RID_AND */		0,
+  /* RID_AND_EQ */	0,
+  /* RID_NOT */		0,
+  /* RID_NOT_EQ */	0,
+  /* RID_OR */		0,
+  /* RID_OR_EQ */	0,
+  /* RID_XOR */		0,
+  /* RID_XOR_EQ */	0,
+  /* RID_BITAND */	0,
+  /* RID_BITOR */	0,
+  /* RID_COMPL */	0,
+
+  /* Objective C */
+  /* RID_ID */			OBJECTNAME,
+  /* RID_AT_ENCODE */		ENCODE,
+  /* RID_AT_END */		END,
+  /* RID_AT_CLASS */		CLASS,
+  /* RID_AT_ALIAS */		ALIAS,
+  /* RID_AT_DEFS */		DEFS,
+  /* RID_AT_PRIVATE */		PRIVATE,
+  /* RID_AT_PROTECTED */	PROTECTED,
+  /* RID_AT_PUBLIC */		PUBLIC,
+  /* RID_AT_PROTOCOL */		PROTOCOL,
+  /* RID_AT_SELECTOR */		SELECTOR,
+  /* RID_AT_INTERFACE */	INTERFACE,
+  /* RID_AT_IMPLEMENTATION */	IMPLEMENTATION
+};
+
+static void
+init_reswords ()
+{
+  unsigned int i;
+  tree id;
+  int mask = (D_YES
+	      | (doing_objc_thang ? 0 : D_OBJC)
+	      | (flag_isoc99 ? 0 : D_C89)
+	      | (flag_traditional ? D_TRAD : 0)
+	      | (flag_no_asm ? (flag_isoc99 ? D_EXT : D_EXT|D_EXT89) : 0));
+
+  /* It is not necessary to register ridpointers as a GC root, because
+     all the trees it points to are permanently interned in the
+     get_identifier hash anyway.  */
+  ridpointers = (tree *) xcalloc ((int) RID_MAX, sizeof (tree));
+  for (i = 0; i < N_reswords; i++)
+    {
+      id = get_identifier (reswords[i].word);
+      C_RID_CODE (id) = reswords[i].rid;
+      ridpointers [(int) reswords[i].rid] = id;
+      if (! (reswords[i].disable & mask))
+	C_IS_RESERVED_WORD (id) = 1;
+    }
+}
+
+const char *
+init_parse (filename)
+     const char *filename;
+{
+  add_c_tree_codes ();
+
+  /* Make identifier nodes long enough for the language-specific slots.  */
+  set_identifier_size (sizeof (struct lang_identifier));
+
+  init_reswords ();
+  init_pragma ();
+
+  return init_c_lex (filename);
+}
+
+void
+finish_parse ()
+{
+#if USE_CPPLIB
+  cpp_finish (&parse_in, 0 /* no printer */);
+  errorcount += parse_in.errors;
+#else
+  fclose (finput);
+#endif
+}
+
+#if USE_CPPLIB
+#define NAME(type) cpp_type2name (type)
+#else
+/* Bleah */
+#include "symcat.h"
+#define OP(e, s) s,
+#define TK(e, s) STRINGX(e),
+
+static const char *type2name[N_TTYPES] = { TTYPE_TABLE };
+#define NAME(type) type2name[type]
+#endif
+
+static void
+yyerror (msgid)
+     const char *msgid;
+{
+  const char *string = _(msgid);
+
+  if (last_token == CPP_EOF)
+    error ("%s at end of input", string);
+  else if (last_token == CPP_CHAR || last_token == CPP_WCHAR)
+    {
+      unsigned int val = TREE_INT_CST_LOW (yylval.ttype);
+      const char *ell = (last_token == CPP_CHAR) ? "" : "L";
+      if (val <= UCHAR_MAX && ISGRAPH (val))
+	error ("%s before %s'%c'", string, ell, val);
+      else
+	error ("%s before %s'\\x%x'", string, ell, val);
+    }
+  else if (last_token == CPP_STRING
+	   || last_token == CPP_WSTRING
+	   || last_token == CPP_OSTRING)
+    error ("%s before string constant", string);
+  else if (last_token == CPP_NUMBER
+	   || last_token == CPP_INT
+	   || last_token == CPP_FLOAT)
+    error ("%s before numeric constant", string);
+  else if (last_token == CPP_NAME)
+    error ("%s before \"%s\"", string, IDENTIFIER_POINTER (yylval.ttype));
+  else
+    error ("%s before '%s' token", string, NAME(last_token));
+}
+
+static inline int
+_yylex ()
+{
+ retry:
+  last_token = c_lex (&yylval.ttype);
+
+  switch (last_token)
+    {
+    case CPP_EQ:					return '=';
+    case CPP_NOT:					return '!';
+    case CPP_GREATER:	yylval.code = GT_EXPR;		return ARITHCOMPARE;
+    case CPP_LESS:	yylval.code = LT_EXPR;		return ARITHCOMPARE;
+    case CPP_PLUS:	yylval.code = PLUS_EXPR;	return '+';
+    case CPP_MINUS:	yylval.code = MINUS_EXPR;	return '-';
+    case CPP_MULT:	yylval.code = MULT_EXPR;	return '*';
+    case CPP_DIV:	yylval.code = TRUNC_DIV_EXPR;	return '/';
+    case CPP_MOD:	yylval.code = TRUNC_MOD_EXPR;	return '%';
+    case CPP_AND:	yylval.code = BIT_AND_EXPR;	return '&';
+    case CPP_OR:	yylval.code = BIT_IOR_EXPR;	return '|';
+    case CPP_XOR:	yylval.code = BIT_XOR_EXPR;	return '^';
+    case CPP_RSHIFT:	yylval.code = RSHIFT_EXPR;	return RSHIFT;
+    case CPP_LSHIFT:	yylval.code = LSHIFT_EXPR;	return LSHIFT;
+
+    case CPP_COMPL:					return '~';
+    case CPP_AND_AND:					return ANDAND;
+    case CPP_OR_OR:					return OROR;
+    case CPP_QUERY:					return '?';
+    case CPP_COLON:					return ':';
+    case CPP_COMMA:					return ',';
+    case CPP_OPEN_PAREN:				return '(';
+    case CPP_CLOSE_PAREN:				return ')';
+    case CPP_EQ_EQ:	yylval.code = EQ_EXPR;		return EQCOMPARE;
+    case CPP_NOT_EQ:	yylval.code = NE_EXPR;		return EQCOMPARE;
+    case CPP_GREATER_EQ:yylval.code = GE_EXPR;		return ARITHCOMPARE;
+    case CPP_LESS_EQ:	yylval.code = LE_EXPR;		return ARITHCOMPARE;
+
+    case CPP_PLUS_EQ:	yylval.code = PLUS_EXPR;	return ASSIGN;
+    case CPP_MINUS_EQ:	yylval.code = MINUS_EXPR;	return ASSIGN;
+    case CPP_MULT_EQ:	yylval.code = MULT_EXPR;	return ASSIGN;
+    case CPP_DIV_EQ:	yylval.code = TRUNC_DIV_EXPR;	return ASSIGN;
+    case CPP_MOD_EQ:	yylval.code = TRUNC_MOD_EXPR;	return ASSIGN;
+    case CPP_AND_EQ:	yylval.code = BIT_AND_EXPR;	return ASSIGN;
+    case CPP_OR_EQ:	yylval.code = BIT_IOR_EXPR;	return ASSIGN;
+    case CPP_XOR_EQ:	yylval.code = BIT_XOR_EXPR;	return ASSIGN;
+    case CPP_RSHIFT_EQ:	yylval.code = RSHIFT_EXPR;	return ASSIGN;
+    case CPP_LSHIFT_EQ:	yylval.code = LSHIFT_EXPR;	return ASSIGN;
+
+    case CPP_OPEN_SQUARE:				return '[';
+    case CPP_CLOSE_SQUARE:				return ']';
+    case CPP_OPEN_BRACE:				return '{';
+    case CPP_CLOSE_BRACE:				return '}';
+    case CPP_SEMICOLON:					return ';';
+    case CPP_ELLIPSIS:					return ELLIPSIS;
+
+    case CPP_PLUS_PLUS:					return PLUSPLUS;
+    case CPP_MINUS_MINUS:				return MINUSMINUS;
+    case CPP_DEREF:					return POINTSAT;
+    case CPP_DOT:					return '.';
+
+    case CPP_EOF:
+#if USE_CPPLIB
+      cpp_pop_buffer (&parse_in);
+      if (! CPP_BUFFER (&parse_in))
+#endif
+	return 0;
+      goto retry;
+
+    case CPP_NAME:
+      if (C_IS_RESERVED_WORD (yylval.ttype))
+	return rid_to_yy[C_RID_CODE (yylval.ttype)];
+
+      if (IDENTIFIER_POINTER (yylval.ttype)[0] == '@')
+	{
+	  error ("invalid identifier `%s'", IDENTIFIER_POINTER (yylval.ttype));
+	  return IDENTIFIER;
+	}
+
+      {
+	tree decl;
+
+	decl = lookup_name (yylval.ttype);
+
+	if (decl)
+	  {
+	    if (TREE_CODE (decl) == TYPE_DECL)
+	      return TYPENAME;
+	    /* A user-invisible read-only initialized variable
+	       should be replaced by its value.
+	       We handle only strings since that's the only case used in C.  */
+	    else if (TREE_CODE (decl) == VAR_DECL
+		     && DECL_IGNORED_P (decl)
+		     && TREE_READONLY (decl)
+		     && DECL_INITIAL (decl) != 0
+		     && TREE_CODE (DECL_INITIAL (decl)) == STRING_CST)
+	      {
+		tree stringval = DECL_INITIAL (decl);
+
+		/* Copy the string value so that we won't clobber anything
+		   if we put something in the TREE_CHAIN of this one.  */
+		yylval.ttype = build_string (TREE_STRING_LENGTH (stringval),
+					     TREE_STRING_POINTER (stringval));
+		return STRING;
+	      }
+	  }
+	else if (doing_objc_thang)
+	  {
+	    tree objc_interface_decl = is_class_name (yylval.ttype);
+
+	    if (objc_interface_decl)
+	      {
+		yylval.ttype = objc_interface_decl;
+		return CLASSNAME;
+	      }
+	  }
+
+	return IDENTIFIER;
+      }
+
+    case CPP_INT:
+    case CPP_FLOAT:
+    case CPP_NUMBER:
+    case CPP_CHAR:
+    case CPP_WCHAR:
+      return CONSTANT;
+
+    case CPP_STRING:
+    case CPP_WSTRING:
+      return STRING;
+      
+    case CPP_OSTRING:
+      return OBJC_STRING;
+
+      /* These tokens are C++ specific (and will not be generated
+         in C mode, but let's be cautious).  */
+    case CPP_SCOPE:
+    case CPP_DEREF_STAR:
+    case CPP_DOT_STAR:
+    case CPP_MIN_EQ:
+    case CPP_MAX_EQ:
+    case CPP_MIN:
+    case CPP_MAX:
+      /* These tokens should not survive translation phase 4.  */
+    case CPP_HASH:
+    case CPP_PASTE:
+    case CPP_BACKSLASH:
+      error ("syntax error before '%s' token", NAME(last_token));
+      goto retry;
+
+    default:
+      abort ();
+    }
+
+  /* NOTREACHED */
+}
+
+static int
+yylex()
+{
+  int r;
+  timevar_push (TV_LEX);
+  r = _yylex();
+  timevar_pop (TV_LEX);
+  return r;
+}
+
+/* Sets the value of the 'yydebug' variable to VALUE.
+   This is a function so we don't have to have YYDEBUG defined
+   in order to build the compiler.  */
+
+void
+set_yydebug (value)
+     int value;
+{
+#if YYDEBUG != 0
+  yydebug = value;
+#else
+  warning ("YYDEBUG not defined.");
+#endif
+}
+
+/* Function used when yydebug is set, to print a token in more detail.  */
+
+static void
+yyprint (file, yychar, yyl)
+     FILE *file;
+     int yychar;
+     YYSTYPE yyl;
+{
+  tree t = yyl.ttype;
+
+  fprintf (file, " [%s]", NAME(last_token));
+  
+  switch (yychar)
+    {
+    case IDENTIFIER:
+    case TYPENAME:
+    case OBJECTNAME:
+    case TYPESPEC:
+    case TYPE_QUAL:
+    case SCSPEC:
+      if (IDENTIFIER_POINTER (t))
+	fprintf (file, " `%s'", IDENTIFIER_POINTER (t));
+      break;
+
+    case CONSTANT:
+      fprintf (file, " %s", GET_MODE_NAME (TYPE_MODE (TREE_TYPE (t))));
+      if (TREE_CODE (t) == INTEGER_CST)
+	fprintf (file,
+#if HOST_BITS_PER_WIDE_INT == 64
+#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
+		 " 0x%x%016x",
+#else
+#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
+		 " 0x%lx%016lx",
+#else
+		 " 0x%llx%016llx",
+#endif
+#endif
+#else
+#if HOST_BITS_PER_WIDE_INT != HOST_BITS_PER_INT
+		 " 0x%lx%08lx",
+#else
+		 " 0x%x%08x",
+#endif
+#endif
+		 TREE_INT_CST_HIGH (t), TREE_INT_CST_LOW (t));
+      break;
+    }
+}
+
+/* This is not the ideal place to put these, but we have to get them out
+   of c-lex.c because cp/lex.c has its own versions.  */
+
+/* Return something to represent absolute declarators containing a *.
+   TARGET is the absolute declarator that the * contains.
+   TYPE_QUALS is a list of modifiers such as const or volatile
+   to apply to the pointer type, represented as identifiers.
+
+   We return an INDIRECT_REF whose "contents" are TARGET
+   and whose type is the modifier list.  */
+
+tree
+make_pointer_declarator (type_quals, target)
+     tree type_quals, target;
+{
+  return build1 (INDIRECT_REF, type_quals, target);
+}

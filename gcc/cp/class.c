@@ -153,7 +153,7 @@ static void check_bases PARAMS ((tree, int *, int *, int *));
 static void check_bases_and_members PARAMS ((tree, int *));
 static tree create_vtable_ptr PARAMS ((tree, int *, int *, tree *, tree *));
 static void layout_class_type PARAMS ((tree, int *, int *, tree *, tree *));
-static void fixup_pending_inline PARAMS ((struct pending_inline *));
+static void fixup_pending_inline PARAMS ((tree));
 static void fixup_inline_methods PARAMS ((tree));
 static void set_primary_base PARAMS ((tree, tree, int *));
 static void propagate_binfo_offsets PARAMS ((tree, tree));
@@ -4449,15 +4449,12 @@ create_vtable_ptr (t, empty_p, vfuns_p,
    complete.  */
 
 static void
-fixup_pending_inline (info)
-     struct pending_inline *info;
+fixup_pending_inline (fn)
+     tree fn;
 {
-  if (info)
+  if (DECL_PENDING_INLINE_INFO (fn))
     {
-      tree args;
-      tree fn = info->fndecl;
-
-      args = DECL_ARGUMENTS (fn);
+      tree args = DECL_ARGUMENTS (fn);
       while (args)
 	{
 	  DECL_CONTEXT (args) = fn;
@@ -4487,13 +4484,13 @@ fixup_inline_methods (type)
 
   /* Do inline member functions.  */
   for (; method; method = TREE_CHAIN (method))
-    fixup_pending_inline (DECL_PENDING_INLINE_INFO (method));
+    fixup_pending_inline (method);
 
   /* Do friends.  */
   for (method = CLASSTYPE_INLINE_FRIENDS (type); 
        method; 
        method = TREE_CHAIN (method))
-    fixup_pending_inline (DECL_PENDING_INLINE_INFO (TREE_VALUE (method)));
+    fixup_pending_inline (TREE_VALUE (method));
   CLASSTYPE_INLINE_FRIENDS (type) = NULL_TREE;
 }
 
@@ -5426,6 +5423,10 @@ init_class_processing ()
   access_public_virtual_node = build_int_2 (4 | ak_public, 0);
   access_protected_virtual_node = build_int_2 (4 | ak_protected, 0);
   access_private_virtual_node = build_int_2 (4 | ak_private, 0);
+
+  ridpointers[(int) RID_PUBLIC] = access_public_node;
+  ridpointers[(int) RID_PRIVATE] = access_private_node;
+  ridpointers[(int) RID_PROTECTED] = access_protected_node;
 }
 
 /* Set current scope to NAME. CODE tells us if this is a

@@ -56,7 +56,6 @@ Boston, MA 02111-1307, USA.  */
 #if USE_CPPLIB
 #include "cpplib.h"
 extern cpp_reader  parse_in;
-extern cpp_options parse_options;
 #endif
 
 /* This is the default way of generating a method name.  */
@@ -137,7 +136,6 @@ char *util_firstobj;
 
 /* for encode_method_def */
 #include "rtl.h"
-#include "c-parse.h"
 
 #define OBJC_VERSION	(flag_next_runtime ? 5 : 8)
 #define PROTOCOL_VERSION 2
@@ -693,17 +691,12 @@ generate_struct_by_value_array ()
   exit (0);
 }
 
-#if USE_CPPLIB
-extern char *yy_cur;
-#endif
-
 void
 lang_init_options ()
 {
 #if USE_CPPLIB
+  cpp_init ();
   cpp_reader_init (&parse_in);
-  parse_in.opts = &parse_options;
-  cpp_options_init (&parse_options);
 #endif
 }
 
@@ -715,16 +708,11 @@ lang_init ()
      With luck, we discover the real source file's name from that
      and put it in input_filename.  */
   ungetc (check_newline (), finput);
-#else
-  check_newline ();
-  yy_cur--;
-#endif 
-
-  /* The line number can be -1 if we had -g3 and the input file
-     had a directive specifying line 0.  But we want predefined
-     functions to have a line number of 0, not -1.  */
-  if (lineno == -1)
-    lineno = 0;
+#endif
+  /* Force the line number back to 0; check_newline will have
+     raised it to 1, which will make the builtin functions appear
+     not to be built in.  */
+  lineno = 0;
 
   /* If gen_declaration desired, open the output file.  */
   if (flag_gen_declaration)
@@ -800,9 +788,7 @@ lang_decode_option (argc, argv)
 {
   const char *p = argv[0];
 
-  if (!strcmp (p, "-lang-objc"))
-    c_language = clk_objective_c;
-  else if (!strcmp (p, "-gen-decls"))
+  if (!strcmp (p, "-gen-decls"))
     flag_gen_declaration = 1;
   else if (!strcmp (p, "-Wselector"))
     warn_selector = 1;
@@ -8631,4 +8617,27 @@ lookup_objc_ivar (id)
     }
   else
     return 0;
+}
+
+/* Parser callbacks.  */
+void
+forget_protocol_qualifiers ()
+{
+  C_IS_RESERVED_WORD (ridpointers[(int) RID_IN]) = 0;
+  C_IS_RESERVED_WORD (ridpointers[(int) RID_OUT]) = 0;
+  C_IS_RESERVED_WORD (ridpointers[(int) RID_INOUT]) = 0;
+  C_IS_RESERVED_WORD (ridpointers[(int) RID_BYCOPY]) = 0;
+  C_IS_RESERVED_WORD (ridpointers[(int) RID_BYREF]) = 0;
+  C_IS_RESERVED_WORD (ridpointers[(int) RID_ONEWAY]) = 0;
+}
+
+void
+remember_protocol_qualifiers ()
+{
+  C_IS_RESERVED_WORD (ridpointers[(int) RID_IN]) = 1;
+  C_IS_RESERVED_WORD (ridpointers[(int) RID_OUT]) = 1;
+  C_IS_RESERVED_WORD (ridpointers[(int) RID_INOUT]) = 1;
+  C_IS_RESERVED_WORD (ridpointers[(int) RID_BYCOPY]) = 1;
+  C_IS_RESERVED_WORD (ridpointers[(int) RID_BYREF]) = 1;
+  C_IS_RESERVED_WORD (ridpointers[(int) RID_ONEWAY]) = 1;
 }
