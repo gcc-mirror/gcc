@@ -5042,6 +5042,9 @@ arg_assoc (k, n)
       tree ctx;
       tree arg;
 
+      if (TREE_CODE (template) == COMPONENT_REF)
+        template = TREE_OPERAND (template, 1);
+      
       /* First, the template.  There may actually be more than one if
 	 this is an overloaded function template.  But, in that case,
 	 we only need the first; all the functions will be in the same
