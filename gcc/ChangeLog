@@ -1,3 +1,16 @@
+2004-07-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.md: Tweak formatting.
+	(asrandb, asrandw, lsrandb, lsrandw, moversideqi, movemsideqi)
+	(mover2side, moverside, movemside, movei, op3, andu): Replace
+	live define_peephole:s with define_peephole2 near-equivalents.
+	Delete the rest.
+ 	("*mov_sidesisf_biap"): Rename from "*mov_sidesi_biap".  Match all
+	word-size modes.
+	("*mov_sidesisf", "*mov_sidesisf_biap_mem", "*mov_sidesisf_mem"):
+	Similar for "*mov_sidesi", "*mov_sidesi_biap_mem" and
+	"*mov_sidesi_mem" respectively.
+
 2004-07-22  Paolo Bonzini  <bonzini@gnu.org>
 
 	* tree-cfg.c (gimplify_val): Move from tree-complex.c.
