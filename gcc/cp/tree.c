@@ -2871,7 +2871,7 @@ cplus_unsave_expr_now (expr)
      tree expr;
 {
   if (expr == NULL)
-    return expr;
+    return;
 
   else if (TREE_CODE (expr) == AGGR_INIT_EXPR)
     {
@@ -2887,10 +2887,10 @@ cplus_unsave_expr_now (expr)
 	    }
 	}
       unsave_expr_now (TREE_OPERAND (expr,2));
-      return expr;
+      return;
     }
 
   else
-    return expr;
+    return;
 }
 
