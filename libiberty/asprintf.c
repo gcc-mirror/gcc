@@ -22,11 +22,7 @@ Boston, MA 02111-1307, USA.  */
 #include "ansidecl.h"
 #include "libiberty.h"
 
-#ifdef ANSI_PROTOTYPES
 #include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
 
 /*
 
@@ -45,7 +41,7 @@ not be allocated, minus one is returned and @code{NULL} is stored in
 */
 
 int
-asprintf VPARAMS ((char **buf, const char *fmt, ...))
+asprintf (char **buf, const char *fmt, ...)
 {
   int status;
   VA_OPEN (ap, fmt);

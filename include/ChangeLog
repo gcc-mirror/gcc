@@ -1,3 +1,11 @@
+2005-03-26  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* demangle.h: Remove uses of PARAMS.
+
+	* libiberty.h (ANSI_PROTOTYPES): Remove guard since
+	ANSI_PROTOTYPES is always assumed.
+	Remove uses of PARAMS throughout.
+
 2005-03-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* libiberty.h (xstrndup): Declare.

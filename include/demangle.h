@@ -110,31 +110,31 @@ extern const struct demangler_engine
 } libiberty_demanglers[];
 
 extern char *
-cplus_demangle PARAMS ((const char *mangled, int options));
+cplus_demangle (const char *mangled, int options);
 
 extern int
-cplus_demangle_opname PARAMS ((const char *opname, char *result, int options));
+cplus_demangle_opname (const char *opname, char *result, int options);
 
 extern const char *
-cplus_mangle_opname PARAMS ((const char *opname, int options));
+cplus_mangle_opname (const char *opname, int options);
 
 /* Note: This sets global state.  FIXME if you care about multi-threading. */
 
 extern void
-set_cplus_marker_for_demangling PARAMS ((int ch));
+set_cplus_marker_for_demangling (int ch);
 
 extern enum demangling_styles 
-cplus_demangle_set_style PARAMS ((enum demangling_styles style));
+cplus_demangle_set_style (enum demangling_styles style);
 
 extern enum demangling_styles 
-cplus_demangle_name_to_style PARAMS ((const char *name));
+cplus_demangle_name_to_style (const char *name);
 
 /* V3 ABI demangling entry points, defined in cp-demangle.c.  */
 extern char*
-cplus_demangle_v3 PARAMS ((const char* mangled, int options));
+cplus_demangle_v3 (const char* mangled, int options);
 
 extern char*
-java_demangle_v3 PARAMS ((const char* mangled));
+java_demangle_v3 (const char* mangled);
 
 
 enum gnu_v3_ctor_kinds {
@@ -148,7 +148,7 @@ enum gnu_v3_ctor_kinds {
    gnu_v3_ctor_kinds' value indicating what kind of constructor
    it is.  */
 extern enum gnu_v3_ctor_kinds
-	is_gnu_v3_mangled_ctor PARAMS ((const char *name));
+	is_gnu_v3_mangled_ctor (const char *name);
 
 
 enum gnu_v3_dtor_kinds {
@@ -162,7 +162,7 @@ enum gnu_v3_dtor_kinds {
    gnu_v3_dtor_kinds' value, indicating what kind of destructor
    it is.  */
 extern enum gnu_v3_dtor_kinds
-	is_gnu_v3_mangled_dtor PARAMS ((const char *name));
+	is_gnu_v3_mangled_dtor (const char *name);
 
 /* The V3 demangler works in two passes.  The first pass builds a tree
    representation of the mangled name, and the second pass turns the
@@ -440,25 +440,25 @@ struct demangle_component
    unrecognized or inappropriate component type.  */
 
 extern int
-cplus_demangle_fill_component PARAMS ((struct demangle_component *fill,
-				       enum demangle_component_type,
-				       struct demangle_component *left,
-				       struct demangle_component *right));
+cplus_demangle_fill_component (struct demangle_component *fill,
+                               enum demangle_component_type,
+                               struct demangle_component *left,
+                               struct demangle_component *right);
 
 /* Fill in a DEMANGLE_COMPONENT_NAME.  Returns non-zero on success,
    zero for bad arguments.  */
 
 extern int
-cplus_demangle_fill_name PARAMS ((struct demangle_component *fill,
-				  const char *, int));
+cplus_demangle_fill_name (struct demangle_component *fill,
+                          const char *, int);
 
 /* Fill in a DEMANGLE_COMPONENT_BUILTIN_TYPE, using the name of the
    builtin type (e.g., "int", etc.).  Returns non-zero on success,
    zero if the type is not recognized.  */
 
 extern int
-cplus_demangle_fill_builtin_type PARAMS ((struct demangle_component *fill,
-					  const char *type_name));
+cplus_demangle_fill_builtin_type (struct demangle_component *fill,
+                                  const char *type_name);
 
 /* Fill in a DEMANGLE_COMPONENT_OPERATOR, using the name of the
    operator and the number of arguments which it takes (the latter is
@@ -467,33 +467,33 @@ cplus_demangle_fill_builtin_type PARAMS ((struct demangle_component *fill,
    not recognized.  */
 
 extern int
-cplus_demangle_fill_operator PARAMS ((struct demangle_component *fill,
-				      const char *opname, int args));
+cplus_demangle_fill_operator (struct demangle_component *fill,
+                              const char *opname, int args);
 
 /* Fill in a DEMANGLE_COMPONENT_EXTENDED_OPERATOR, providing the
    number of arguments and the name.  Returns non-zero on success,
    zero for bad arguments.  */
 
 extern int
-cplus_demangle_fill_extended_operator PARAMS ((struct demangle_component *fill,
-					       int numargs,
-					       struct demangle_component *nm));
+cplus_demangle_fill_extended_operator (struct demangle_component *fill,
+                                       int numargs,
+                                       struct demangle_component *nm);
 
 /* Fill in a DEMANGLE_COMPONENT_CTOR.  Returns non-zero on success,
    zero for bad arguments.  */
 
 extern int
-cplus_demangle_fill_ctor PARAMS ((struct demangle_component *fill,
-				  enum gnu_v3_ctor_kinds kind,
-				  struct demangle_component *name));
+cplus_demangle_fill_ctor (struct demangle_component *fill,
+                          enum gnu_v3_ctor_kinds kind,
+                          struct demangle_component *name);
 
 /* Fill in a DEMANGLE_COMPONENT_DTOR.  Returns non-zero on success,
    zero for bad arguments.  */
 
 extern int
-cplus_demangle_fill_dtor PARAMS ((struct demangle_component *fill,
-				  enum gnu_v3_dtor_kinds kind,
-				  struct demangle_component *name));
+cplus_demangle_fill_dtor (struct demangle_component *fill,
+                          enum gnu_v3_dtor_kinds kind,
+                          struct demangle_component *name);
 
 /* This function translates a mangled name into a struct
    demangle_component tree.  The first argument is the mangled name.
@@ -504,9 +504,7 @@ cplus_demangle_fill_dtor PARAMS ((struct demangle_component *fill,
    needed.  */
 
 extern struct demangle_component *
-cplus_demangle_v3_components PARAMS ((const char *mangled,
-				      int options,
-				      void **mem));
+cplus_demangle_v3_components (const char *mangled, int options, void **mem);
 
 /* This function takes a struct demangle_component tree and returns
    the corresponding demangled string.  The first argument is DMGL_*
@@ -521,10 +519,10 @@ cplus_demangle_v3_components PARAMS ((const char *mangled,
    memory allocation error.  */
 
 extern char *
-cplus_demangle_print PARAMS ((int options,
-			      const struct demangle_component *tree,
-			      int estimated_length,
-			      size_t *p_allocated_size));
+cplus_demangle_print (int options,
+                      const struct demangle_component *tree,
+                      int estimated_length,
+                      size_t *p_allocated_size);
 
 #ifdef __cplusplus
 }

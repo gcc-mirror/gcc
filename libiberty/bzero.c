@@ -14,9 +14,7 @@ is deprecated in favor of @code{memset}.
 
 
 void
-bzero (to, count)
-  char *to;
-  int count;
+bzero (char *to, int count)
 {
   while (count-- > 0)
     {

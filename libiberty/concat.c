@@ -51,11 +51,7 @@ NOTES
 #include "libiberty.h"
 #include <sys/types.h>		/* size_t */
 
-#ifdef ANSI_PROTOTYPES
 #include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
 
 # if HAVE_STRING_H
 #  include <string.h>
@@ -69,11 +65,9 @@ NOTES
 #include <stdlib.h>
 #endif
 
-static inline unsigned long vconcat_length PARAMS ((const char *, va_list));
+static inline unsigned long vconcat_length (const char *, va_list);
 static inline unsigned long
-vconcat_length (first, args)
-     const char *first;
-     va_list args;
+vconcat_length (const char *first, va_list args)
 {
   unsigned long length = 0;
   const char *arg;
@@ -84,12 +78,8 @@ vconcat_length (first, args)
   return length;
 }
 
-static inline char *vconcat_copy PARAMS ((char *, const char *, va_list));
 static inline char *
-vconcat_copy (dst, first, args)
-     char *dst;
-     const char *first;
-     va_list args;
+vconcat_copy (char *dst, const char *first, va_list args)
 {
   char *end = dst;
   const char *arg;
@@ -108,7 +98,7 @@ vconcat_copy (dst, first, args)
 /* @undocumented concat_length */
 
 unsigned long
-concat_length VPARAMS ((const char *first, ...))
+concat_length (const char *first, ...)
 {
   unsigned long length;
 
@@ -123,7 +113,7 @@ concat_length VPARAMS ((const char *first, ...))
 /* @undocumented concat_copy */
 
 char *
-concat_copy VPARAMS ((char *dst, const char *first, ...))
+concat_copy (char *dst, const char *first, ...)
 {
   char *save_dst;
 
@@ -142,7 +132,7 @@ char *libiberty_concat_ptr;
 /* @undocumented concat_copy2 */
 
 char *
-concat_copy2 VPARAMS ((const char *first, ...))
+concat_copy2 (const char *first, ...)
 {
   VA_OPEN (args, first);
   VA_FIXEDARG (args, const char *, first);
@@ -153,7 +143,7 @@ concat_copy2 VPARAMS ((const char *first, ...))
 }
 
 char *
-concat VPARAMS ((const char *first, ...))
+concat (const char *first, ...)
 {
   char *newstr;
 
@@ -190,7 +180,7 @@ loop:
 */
 
 char *
-reconcat VPARAMS ((char *optr, const char *first, ...))
+reconcat (char *optr, const char *first, ...)
 {
   char *newstr;
 
@@ -221,7 +211,7 @@ reconcat VPARAMS ((char *optr, const char *first, ...))
 #include <stdio.h>
 
 int
-main ()
+main (void)
 {
   printf ("\"\" = \"%s\"\n", concat (NULLP));
   printf ("\"a\" = \"%s\"\n", concat ("a", NULLP));
