@@ -1,3 +1,7 @@
+2001-10-01  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cpu/cris/bits/atomicity.h: Correct file header.
+
 2001-09-29  Hans-Peter Nilsson  <hp@axis.com>
 
 	* configure.target (LIMITSH): Set for cris.
