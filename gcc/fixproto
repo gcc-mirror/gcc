@@ -167,7 +167,7 @@ if [ `echo $* | wc -w` != 0 ] ; then
 	  echo $abs_target_file exists, $abs_source_file is ignored
 	else
 	  # echo doing $rel_source_file from $abs_source_dir
-	  rel_source_ident=`echo $rel_source_file | tr ./- ___`
+	  rel_source_ident=`echo $rel_source_file | tr ./--- ___`
 	  required_list=`eval echo '${required_'${rel_source_ident}'-}'`
 	  extra_check_list=`eval echo '${extra_check_'${rel_source_ident}'-}'`
 	  rm -f tmp.c tmp.i
@@ -221,7 +221,7 @@ do
   then true
   else
     echo Adding missing $rel_source_file
-    rel_source_ident=`echo $rel_source_file | tr ./- ___`
+    rel_source_ident=`echo $rel_source_file | tr ./--- ___`
     required_list=`eval echo '${required_'${rel_source_ident}'-}'`
     cat >tmp.h <<EOF
 #ifndef ${rel_source_ident}
