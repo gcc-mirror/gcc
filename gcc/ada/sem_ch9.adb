@@ -134,7 +134,7 @@ package body Sem_Ch9 is
       Formals   : constant List_Id   := Parameter_Specifications (N);
       Index     : constant Node_Id   := Entry_Index (N);
       Stats     : constant Node_Id   := Handled_Statement_Sequence (N);
-      Ityp      : Entity_Id;
+      Accept_Id : Entity_Id;
       Entry_Nam : Entity_Id;
       E         : Entity_Id;
       Kind      : Entity_Kind;
@@ -233,23 +233,25 @@ package body Sem_Ch9 is
 
       --  In order to process the parameters, we create a defining
       --  identifier that can be used as the name of the scope. The
-      --  name of the accept statement itself is not a defining identifier.
+      --  name of the accept statement itself is not a defining identifier,
+      --  and we cannot use its name directly because the task may have
+      --  any number of accept statements for the same entry.
 
       if Present (Index) then
-         Ityp := New_Internal_Entity
+         Accept_Id := New_Internal_Entity
            (E_Entry_Family, Current_Scope, Sloc (N), 'E');
       else
-         Ityp := New_Internal_Entity
+         Accept_Id := New_Internal_Entity
            (E_Entry, Current_Scope, Sloc (N), 'E');
       end if;
 
-      Set_Etype          (Ityp, Standard_Void_Type);
-      Set_Accept_Address (Ityp, New_Elmt_List);
+      Set_Etype          (Accept_Id, Standard_Void_Type);
+      Set_Accept_Address (Accept_Id, New_Elmt_List);
 
       if Present (Formals) then
-         New_Scope (Ityp);
+         New_Scope (Accept_Id);
          Process_Formals (Formals, N);
-         Create_Extra_Formals (Ityp);
+         Create_Extra_Formals (Accept_Id);
          End_Scope;
       end if;
 
@@ -257,14 +259,13 @@ package body Sem_Ch9 is
       --  need default expression functions. This is really more like a
       --  body entity than a spec entity anyway.
 
-      Set_Default_Expressions_Processed (Ityp);
+      Set_Default_Expressions_Processed (Accept_Id);
 
       E := First_Entity (Etype (Task_Nam));
-
       while Present (E) loop
          if Chars (E) = Chars (Nam)
-           and then (Ekind (E) = Ekind (Ityp))
-           and then Type_Conformant (Ityp, E)
+           and then (Ekind (E) = Ekind (Accept_Id))
+           and then Type_Conformant (Accept_Id, E)
          then
             Entry_Nam := E;
             exit;
@@ -306,8 +307,8 @@ package body Sem_Ch9 is
          end;
       end if;
 
-      Set_Convention (Ityp, Convention (Entry_Nam));
-      Check_Fully_Conformant (Ityp, Entry_Nam, N);
+      Set_Convention (Accept_Id, Convention (Entry_Nam));
+      Check_Fully_Conformant (Accept_Id, Entry_Nam, N);
 
       for J in reverse 0 .. Scope_Stack.Last loop
          exit when Task_Nam = Scope_Stack.Table (J).Entity;
@@ -391,13 +392,18 @@ package body Sem_Ch9 is
 
       --  Set Never_Set_In_Source and clear Is_True_Constant/Current_Value
       --  fields on all entry formals (this loop ignores all other entities).
+      --  Reset Set_Referenced and Has_Pragma_Unreferenced as well, so that
+      --  we can post accurate warnings on each accept statement for the same
+      --  entry.
 
       E := First_Entity (Entry_Nam);
       while Present (E) loop
          if Is_Formal (E) then
-            Set_Never_Set_In_Source (E, True);
-            Set_Is_True_Constant    (E, False);
-            Set_Current_Value       (E, Empty);
+            Set_Never_Set_In_Source     (E, True);
+            Set_Is_True_Constant        (E, False);
+            Set_Current_Value           (E, Empty);
+            Set_Referenced              (E, False);
+            Set_Has_Pragma_Unreferenced (E, False);
          end if;
 
          Next_Entity (E);
