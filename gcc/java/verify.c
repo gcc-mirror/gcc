@@ -411,7 +411,7 @@ verify_jvm_instructions (jcf, byte_ops, length)
   int PC;
   int oldpc = 0; /* PC of start of instruction. */
   int prevpc = 0;  /* If >= 0, PC of previous instruction. */
-  const char *message;
+  const char *message = 0;
   char *pmessage;
   int i;
   int index;

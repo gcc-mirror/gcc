@@ -314,7 +314,7 @@ find_compression_record_match (type, next_current)
      tree *next_current;
 {
   int i, match;
-  tree current, saved_current;
+  tree current, saved_current = NULL_TREE;
 
   /* Search from the beginning for something that matches TYPE, even
      partially. */
