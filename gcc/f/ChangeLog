@@ -1,3 +1,9 @@
+2003-05-31  Bud Davis  <bdavis9659@comcast.net>
+
+	PR fortran/10843
+	* sta.c (ffesta_second_): Parse GO TO correctly,
+	even in free source format.
+
 2003-05-31  Andreas Jaeger  <aj@suse.de>
 
 	* lex.c (ffelex_hash_): Remove HANDLE_PRAGMA and

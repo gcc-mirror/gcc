@@ -1,5 +1,5 @@
 /* sta.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 2003 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -952,6 +952,22 @@ ffesta_second_ (ffelexToken t)
       ffestb_args.dummy.badname = "FUNCTION";
       ffestb_args.dummy.is_subr = FALSE;
       ffesta_add_possible_nonexec_ ((ffelexHandler) ffestb_dummy);
+      break;
+
+    case FFESTR_firstGO:
+      if ((ffelex_token_type (ffesta_token_0_) == FFELEX_typeNAMES)
+	|| (ffelex_token_type (t) != FFELEX_typeNAME))
+	ffesta_add_possible_exec_ ((ffelexHandler) ffestb_goto);
+      else
+	switch (ffesta_second_kw)
+	  {
+	    case FFESTR_secondTO:
+	      ffesta_add_possible_exec_ ((ffelexHandler) ffestb_goto);
+              break;
+	    default:
+	      ffesta_add_possible_exec_ ((ffelexHandler) ffestb_goto);
+              break;
+	  }
       break;
 
     case FFESTR_firstGOTO:
