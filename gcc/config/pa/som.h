@@ -1,5 +1,5 @@
 /* Definitions for SOM assembler support.
-   Copyright (C) 1999, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -129,19 +129,6 @@ do {								\
 #endif
 
 
-/* NAME refers to the function's name.  If we are placing each function into
-   its own section, we need to switch to the section for this function.  Note
-   that the section name will have a "." prefix.  */
-#define ASM_OUTPUT_FUNCTION_PREFIX(FILE, NAME) \
-  {									\
-    const char *name = (*targetm.strip_name_encoding) (NAME);		\
-    if (TARGET_GAS && in_section == in_text) 				\
-      fputs ("\t.NSUBSPA $CODE$,QUAD=0,ALIGN=8,ACCESS=44,CODE_ONLY\n", FILE); \
-    else if (TARGET_GAS)						\
-      fprintf (FILE,							\
-	       "\t.SUBSPA .%s\n", name);				\
-  }
-    
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL) \
     do { tree fntype = TREE_TYPE (TREE_TYPE (DECL));			\
 	 tree tree_type = TREE_TYPE (DECL);				\
@@ -219,29 +206,14 @@ do {								\
 
 #define TARGET_ASM_FILE_START pa_som_file_start
 
-/* Output before code.  */
+/* String to output before text.  */
+#define TEXT_SECTION_ASM_OP som_text_section_asm_op ()
 
-/* Supposedly the assembler rejects the command if there is no tab!  */
-#define TEXT_SECTION_ASM_OP "\t.SPACE $TEXT$\n\t.SUBSPA $CODE$\n"
+/* String to output before writable data.  */
+#define DATA_SECTION_ASM_OP "\t.SPACE $PRIVATE$\n\t.SUBSPA $DATA$\n"
 
-/* Output before read-only data.  */
-
-/* Supposedly the assembler rejects the command if there is no tab!  */
-#define READONLY_DATA_ASM_OP "\t.SPACE $TEXT$\n\t.SUBSPA $LIT$\n"
-
-#define EXTRA_SECTIONS in_readonly_data
-
-#define EXTRA_SECTION_FUNCTIONS						\
-extern void readonly_data (void);					\
-void									\
-readonly_data (void)							\
-{									\
-  if (in_section != in_readonly_data)					\
-    {									\
-      in_section = in_readonly_data;					\
-      fprintf (asm_out_file, "%s\n", READONLY_DATA_ASM_OP);		\
-    }									\
-}
+/* String to output before uninitialized data.  */
+#define BSS_SECTION_ASM_OP "\t.SPACE $PRIVATE$\n\t.SUBSPA $BSS$\n"
 
 /* FIXME: HPUX ld generates incorrect GOT entries for "T" fixups
    which reference data within the $TEXT$ space (for example constant
@@ -255,17 +227,8 @@ readonly_data (void)							\
    $TEXT$ space during PIC generation.  Instead place all constant
    data into the $PRIVATE$ subspace (this reduces sharing, but it
    works correctly).  */
-
-#define READONLY_DATA_SECTION (flag_pic ? data_section : readonly_data)
-
-/* Output before writable data.  */
-
-/* Supposedly the assembler rejects the command if there is no tab!  */
-#define DATA_SECTION_ASM_OP "\t.SPACE $PRIVATE$\n\t.SUBSPA $DATA$\n"
-
-/* Output before uninitialized data.  */
-
-#define BSS_SECTION_ASM_OP "\t.SPACE $PRIVATE$\n\t.SUBSPA $BSS$\n"
+#define READONLY_DATA_SECTION \
+  (flag_pic ? data_section : som_readonly_data_section)
 
 /* We must not have a reference to an external symbol defined in a
    shared library in a readonly section, else the SOM linker will
@@ -361,11 +324,30 @@ do {						\
 #define SUPPORTS_WEAK 0
 #endif
 
-/* We can support one only if we support weak.  */
-#define SUPPORTS_ONE_ONLY SUPPORTS_WEAK
+/* CVS GAS as of 4/28/04 supports a comdat parameter for the .nsubspa
+   directive.  This provides one-only linkage semantics even though we
+   don't have weak support.  */
+#ifdef HAVE_GAS_NSUBSPA_COMDAT
+#define SUPPORTS_SOM_COMDAT (TARGET_GAS)
+#else
+#define SUPPORTS_SOM_COMDAT 0
+#endif
 
-/* Use weak (secondary definitions) to make one only declarations.  */
-#define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
+/* We can support one only if we support weak or comdat.  */
+#define SUPPORTS_ONE_ONLY (SUPPORTS_WEAK || SUPPORTS_SOM_COMDAT)
+
+/* We use DECL_COMMON for uninitialized one-only variables as we don't
+   have linkonce .bss.  We use SOM secondary definitions or comdat for
+   initialized variables and functions.  */
+#define MAKE_DECL_ONE_ONLY(DECL) \
+  do {									\
+    if (TREE_CODE (DECL) == VAR_DECL					\
+        && (DECL_INITIAL (DECL) == 0					\
+            || DECL_INITIAL (DECL) == error_mark_node))			\
+      DECL_COMMON (DECL) = 1;						\
+    else if (SUPPORTS_WEAK)						\
+      DECL_WEAK (DECL) = 1;						\
+  } while (0)
 
 /* This is how we tell the assembler that a symbol is weak.  The SOM
    weak implementation uses the secondary definition (sdef) flag.

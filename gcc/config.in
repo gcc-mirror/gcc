@@ -262,6 +262,9 @@
    skip when using the GAS .p2align command. */
 #undef HAVE_GAS_MAX_SKIP_P2ALIGN
 
+/* Define if your assembler supports .nsubspa comdat option. */
+#undef HAVE_GAS_NSUBSPA_COMDAT
+
 /* Define 0/1 if your assembler supports marking sections with SHF_MERGE flag.
    */
 #undef HAVE_GAS_SHF_MERGE
@@ -549,9 +552,11 @@
 /* Define to `int' if <sys/types.h> doesn't define. */
 #undef gid_t
 
-/* Define as `__inline' if that's what the C compiler calls it, or to nothing
-   if it is not supported. */
+/* Define to `__inline__' or `__inline' if that's what the C compiler
+   calls it, or to nothing if 'inline' is not supported under any name.  */
+#ifndef __cplusplus
 #undef inline
+#endif
 
 /* Define to `int' if <sys/types.h> does not define. */
 #undef pid_t

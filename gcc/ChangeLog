@@ -1,3 +1,36 @@
+2004-12-27  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR c++/14607.
+	Backported from main.
+	* configure.ac (HAVE_GAS_NSUBSPA_COMDAT): Add check for .NSUBSPA
+	COMDAT support.
+	* configure. config.in: Rebuilt.
+	* config/pa/pa-protos.h (som_text_section_asm_op,
+	som_readonly_data_section, som_one_only_readonly_data_section,
+	som_one_only_data_section, forget_section): Declare.
+	* pa.c (override_options): Set init_machine_status to
+	pa_init_machine_status.
+	(pa_init_machine_status): New function.
+	(pa_output_function_epilogue): Call forget_section if TARGET_SOM and
+	TARGET_GAS.
+	(pa_asm_output_mi_thunk): Likewise.
+	(som_text_section_asm_op): New function.
+	(pa_select_section): Call som_one_only_readonly_data_section and
+	som_one_only_data_section when appropriate.
+	* pa.h (struct machine_function): Define.
+	(EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS,
+	SOM_READONLY_DATA_SECTION_FUNCTION,
+	SOM_ONE_ONLY_READONLY_DATA_SECTION_FUNCTION
+	SOM_ONE_ONLY_DATA_SECTION_FUNCTION, FORGET_SECTION_FUNCTION): New
+	macros.
+	* som.h (ASM_OUTPUT_FUNCTION_PREFIX): Delete.
+	(TEXT_SECTION_ASM_OP): Call som_text_section_asm_op.
+	(READONLY_DATA_ASM_OP, EXTRA_SECTIONS, EXTRA_SECTION_FUNCTIONS): Delete.
+	(READONLY_DATA_SECTION): Call som_readonly_data_section when not PIC.
+	(SUPPORTS_SOM_COMDAT): New define.
+	(SUPPORTS_ONE_ONLY): True if SUPPORTS_WEAK or SUPPORTS_SOM_COMDAT.
+	(MAKE_DECL_ONE_ONLY): Rework common support.
+
 2004-12-26  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/17643

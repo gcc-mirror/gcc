@@ -1855,6 +1855,12 @@ gcc_GAS_CHECK_FEATURE([.weak], gcc_cv_as_weak,
  [	.weak foobar],,
 [AC_DEFINE(HAVE_GAS_WEAK, 1, [Define if your assembler supports .weak.])])
 
+gcc_GAS_CHECK_FEATURE([.nsubspa comdat], gcc_cv_as_nsubspa_comdat,
+ [2,15,91],,
+ [	.SPACE $TEXT$
+	.NSUBSPA $CODE$,COMDAT],,
+[AC_DEFINE(HAVE_GAS_NSUBSPA_COMDAT, 1, [Define if your assembler supports .nsubspa comdat option.])])
+
 # .hidden needs to be supported in both the assembler and the linker,
 # because GNU LD versions before 2.12.1 have buggy support for STV_HIDDEN.
 # This is irritatingly difficult to feature test for; we have to check the

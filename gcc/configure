@@ -10397,6 +10397,44 @@ _ACEOF
 
 fi
 
+echo "$as_me:$LINENO: checking assembler for .nsubspa comdat" >&5
+echo $ECHO_N "checking assembler for .nsubspa comdat... $ECHO_C" >&6
+if test "${gcc_cv_as_nsubspa_comdat+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  gcc_cv_as_nsubspa_comdat=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 15 \) \* 1000 + 91`
+  then gcc_cv_as_nsubspa_comdat=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    echo '	.SPACE $TEXT$
+	.NSUBSPA $CODE$,COMDAT' > conftest.s
+    if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }
+    then
+	gcc_cv_as_nsubspa_comdat=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+echo "$as_me:$LINENO: result: $gcc_cv_as_nsubspa_comdat" >&5
+echo "${ECHO_T}$gcc_cv_as_nsubspa_comdat" >&6
+if test $gcc_cv_as_nsubspa_comdat = yes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_GAS_NSUBSPA_COMDAT 1
+_ACEOF
+
+fi
+
 # .hidden needs to be supported in both the assembler and the linker,
 # because GNU LD versions before 2.12.1 have buggy support for STV_HIDDEN.
 # This is irritatingly difficult to feature test for; we have to check the
