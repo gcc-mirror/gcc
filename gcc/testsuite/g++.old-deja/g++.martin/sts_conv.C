@@ -14,7 +14,7 @@ private:
 
 int main(){
   CArray  a;
-  double *pa = a + 1; // gets bogus error - should convert - XFAIL
+  double *pa = a + 1; // gets bogus error - should convert
   return 0; 
 }
 
