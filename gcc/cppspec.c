@@ -103,6 +103,9 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
   int i, j, quote = 0;
   const char **new_argv;
   int new_argc;
+  extern int is_cpp_driver;
+
+  is_cpp_driver = 1;
 
   /* First pass.  If we see an -S or -c, barf.  If we see an input file,
      turn off read_stdin.  If we see a second input file, it is actually

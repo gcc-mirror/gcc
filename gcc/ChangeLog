@@ -1,3 +1,10 @@
+2001-12-05  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppspec.c (lang_specific_driver): Set is_cpp_driver.
+	* gcc.c (process_command): Ensure the cpp driver sees
+	--help and --target-help, and that the help is printed
+	exactly once.
+
 2001-12-04  DJ Delorie  <dj@redhat.com>
 
 	* fixinc/fixincl.c (initialize): Avoid problemsome macro
@@ -27,7 +34,7 @@
 2001-12-03  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	PR c/4988
-	* (process_command): Don't add a preprocessor option for
+	* gcc.c (process_command): Don't add a preprocessor option for
 	--help and --target-help; cc1 is enough.
 
 2001-12-03  Jason Merrill  <jason@redhat.com>

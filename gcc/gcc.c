@@ -99,6 +99,9 @@ static char dir_separator_str[] = { DIR_SEPARATOR, 0 };
 
 #define MIN_FATAL_STATUS 1
 
+/* Flag set by cppspec.c to 1.  */
+int is_cpp_driver;
+
 /* Flag saying to pass the greatest exit code returned by a sub-process
    to the calling program.  */
 static int pass_exit_codes;
@@ -3216,6 +3219,9 @@ process_command (argc, argv)
 	  n_infiles++;
 	  n_switches++;
 
+	  /* CPP driver cannot obtain switch from cc1_options.  */
+	  if (is_cpp_driver)
+	    add_preprocessor_option ("--help", 6);
 	  add_assembler_option ("--help", 6);
 	  add_linker_option ("--help", 6);
 	}
@@ -3228,6 +3234,9 @@ process_command (argc, argv)
           n_infiles++;
           n_switches++;
 
+	  /* CPP driver cannot obtain switch from cc1_options.  */
+	  if (is_cpp_driver)
+	    add_preprocessor_option ("--target-help", 13);
           add_assembler_option ("--target-help", 13);
           add_linker_option ("--target-help", 13);
         }
@@ -3671,41 +3680,10 @@ process_command (argc, argv)
 	;
       else if (! strcmp (argv[i], "-print-multi-directory"))
 	;
-      else if (strcmp (argv[i], "-ftarget-help") == 0)
-        {
-           /* Create a dummy input file, so that we can pass --target-help on to
-              the various sub-processes.  */
-           infiles[n_infiles].language = "c";
-           infiles[n_infiles++].name   = "target-dummy";
-
-           /* Preserve the --target-help switch so that it can be caught by
-              the cc1 spec string.  */
-           switches[n_switches].part1     = "--target-help";
-           switches[n_switches].args      = 0;
-           switches[n_switches].live_cond = SWITCH_OK;
-           switches[n_switches].validated = 0;
-
-           n_switches++;
-        }
-      else if (strcmp (argv[i], "-fhelp") == 0)
-	{
-	  if (verbose_flag)
-	    {
-	      /* Create a dummy input file, so that we can pass --help on to
-		 the various sub-processes.  */
-	      infiles[n_infiles].language = "c";
-	      infiles[n_infiles++].name   = "help-dummy";
-
-	      /* Preserve the --help switch so that it can be caught by the
-		 cc1 spec string.  */
-	      switches[n_switches].part1     = "--help";
-	      switches[n_switches].args      = 0;
-	      switches[n_switches].live_cond = SWITCH_OK;
-	      switches[n_switches].validated = 0;
-
-	      n_switches++;
-	    }
-	}
+      else if (! strcmp (argv[i], "-ftarget-help"))
+	;
+      else if (! strcmp (argv[i], "-fhelp"))
+	;
       else if (argv[i][0] == '+' && argv[i][1] == 'e')
 	{
 	  /* Compensate for the +e options to the C++ front-end;
@@ -3863,6 +3841,37 @@ process_command (argc, argv)
 
   if (n_infiles == last_language_n_infiles && spec_lang != 0)
     error ("Warning: `-x %s' after last input file has no effect", spec_lang);
+
+  /* Ensure we only invoke each subprocess once.  */
+  if (target_help_flag || print_help_list)
+    {
+      n_infiles = 1;
+
+      /* Create a dummy input file, so that we can pass --target-help on to
+	 the various sub-processes.  */
+      infiles[0].language = "c";
+      infiles[0].name   = "help-dummy";
+
+      if (target_help_flag)
+	{
+	  switches[n_switches].part1     = "--target-help";
+	  switches[n_switches].args      = 0;
+	  switches[n_switches].live_cond = SWITCH_OK;
+	  switches[n_switches].validated = 0;
+
+	  n_switches++;
+	}
+
+      if (print_help_list)
+	{
+	  switches[n_switches].part1     = "--help";
+	  switches[n_switches].args      = 0;
+	  switches[n_switches].live_cond = SWITCH_OK;
+	  switches[n_switches].validated = 0;
+
+	  n_switches++;
+	}
+    }
 
   switches[n_switches].part1 = 0;
   infiles[n_infiles].name = 0;
