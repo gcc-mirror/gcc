@@ -1,3 +1,7 @@
+2002-06-06  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* error.c (cp_error_at): Fix typo.
+
 2002-06-04  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* error.c (cp_diagnostic_starter): Adjust call.
