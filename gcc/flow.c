@@ -2517,6 +2517,7 @@ need_fake_edge_p (insn)
   if ((GET_CODE (insn) == CALL_INSN
        && !SIBLING_CALL_P (insn)
        && !find_reg_note (insn, REG_NORETURN, NULL)
+       && !find_reg_note (insn, REG_ALWAYS_RETURN, NULL)
        && !CONST_OR_PURE_CALL_P (insn)))
     return true;
 

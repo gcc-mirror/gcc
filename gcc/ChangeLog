@@ -1,3 +1,13 @@
+Wed Aug  8 21:06:43 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* calls.c (ECF_ALWAYS_RETURN): New constant.
+	(emit_call_1): Add REG_ALWAYS_RETURN note if needed.
+	(expand_call): Use LCF_ALWAYS_RETURN for __bb_fork_func.
+	(emit_library_call_value_1): Handle LCT_ALWAYS_RETRUN.
+	* flow.c (need_fake_edge_p): Handle REG_ALWAYS_RETURN.
+	* rtl.c (reg_note_name): New name.
+	* rtl.h (enum reg_note): Add REG_ALWAYS_RETURN.
+
 2001-08-07  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/mips/mips.c (mips_legitimate_address_p): Limit "la" addresses.
