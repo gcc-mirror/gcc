@@ -1,6 +1,6 @@
 // 2000-09-13 Benjamin Kosnik <bkoz@redhat.com>
 
-// Copyright (C) 2000, 2001 Free Software Foundation
+// Copyright (C) 2000, 2001, 2002 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -124,7 +124,6 @@ void test01()
   VERIFY (loc06 != loc02);  
   VERIFY (loc06.name() == "fr_FR");
   locale loc07("");
-  VERIFY (loc07 != loc01);  
   VERIFY (loc07 != loc02);  
   VERIFY (loc07.name() != "");
   try
