@@ -148,8 +148,8 @@ static void rest_of_handle_if_after_combine (tree, rtx);
 static void rest_of_handle_tracer (tree, rtx);
 static void rest_of_handle_combine (tree, rtx);
 static void rest_of_handle_regmove (tree, rtx);
-static void rest_of_handle_sched (tree, rtx);
 #ifdef INSN_SCHEDULING
+static void rest_of_handle_sched (tree, rtx);
 static void rest_of_handle_sched2 (tree, rtx);
 #endif
 static bool rest_of_handle_new_regalloc (tree, rtx, int *);
@@ -2647,12 +2647,12 @@ rest_of_handle_reorder_blocks (tree decl, rtx insns)
   timevar_pop (TV_REORDER_BLOCKS);
 }
 
+#ifdef INSN_SCHEDULING
 /* Run instruction scheduler.  */
 static void
 rest_of_handle_sched (tree decl, rtx insns)
 {
   timevar_push (TV_SCHED);
-#ifdef INSN_SCHEDULING
 
   /* Print function header into sched dump now
      because doing the sched analysis makes some of the dump.  */
@@ -2667,13 +2667,11 @@ rest_of_handle_sched (tree decl, rtx insns)
 
       close_dump_file (DFI_sched, print_rtl_with_bb, insns);
     }
-#endif
   timevar_pop (TV_SCHED);
 
   ggc_collect ();
 }
 
-#ifdef INSN_SCHEDULING
 /* Run second scheduling pass after reload.  */
 static void
 rest_of_handle_sched2 (tree decl, rtx insns)
@@ -3713,7 +3711,9 @@ rest_of_compilation (tree decl)
      (see handling of reg_known_equiv in init_alias_analysis).  */
   recompute_reg_usage (insns, !optimize_size);
 
+#ifdef INSN_SCHEDULING
   rest_of_handle_sched (decl, insns);
+#endif
 
   /* Determine if the current function is a leaf before running reload
      since this can impact optimizations done by the prologue and

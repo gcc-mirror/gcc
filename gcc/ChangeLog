@@ -1,3 +1,10 @@
+2003-06-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* toplev.c (rest_of_handle_sched): Hide the entire function if
+	INSN_SCHEDULING is not defined.
+	(rest_of_compilation): Call rest_of_handle_sched() only when
+	INSN_SCHEDULING is defined.
+
 2003-06-18  Stephen Clarke <stephen.clarke@superh.com>
             J"orn Rennecke <joern.rennecke@superh.com>
 
