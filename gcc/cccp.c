@@ -8429,20 +8429,8 @@ bzero (b, length)
      register char *b;
      register unsigned length;
 {
-#ifdef VMS
-  short zero = 0;
-  long max_str = 65535;
-
-  while (length > max_str) {
-    (void) LIB$MOVC5 (&zero, &zero, &zero, &max_str, b);
-    length -= max_str;
-    b += max_str;
-  }
-  (void) LIB$MOVC5 (&zero, &zero, &zero, &length, b);
-#else
   while (length-- > 0)
     *b++ = 0;
-#endif /* not VMS */
 }
 
 void
@@ -8451,20 +8439,8 @@ bcopy (b1, b2, length)
      register char *b2;
      register unsigned length;
 {
-#ifdef VMS
-  long max_str = 65535;
-
-  while (length > max_str) {
-    (void) LIB$MOVC3 (&max_str, b1, b2);
-    length -= max_str;
-    b1 += max_str;
-    b2 += max_str;
-  }
-  (void) LIB$MOVC3 (&length, b1, b2);
-#else
   while (length-- > 0)
     *b2++ = *b1++;
-#endif /* not VMS */
 }
 
 int
@@ -8473,18 +8449,11 @@ bcmp (b1, b2, length)	/* This could be a macro! */
      register char *b2;
      register unsigned length;
 {
-#ifdef VMS
-   struct dsc$descriptor_s src1 = {length, DSC$K_DTYPE_T, DSC$K_CLASS_S, b1};
-   struct dsc$descriptor_s src2 = {length, DSC$K_DTYPE_T, DSC$K_CLASS_S, b2};
-
-   return STR$COMPARE (&src1, &src2);
-#else
    while (length-- > 0)
      if (*b1++ != *b2++)
        return 1;
 
    return 0;
-#endif /* not VMS */
 }
 #endif /* not BSTRING */
 #endif /* USG or VMS */
