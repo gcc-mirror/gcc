@@ -60,4 +60,11 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_GENERATE_INTERNAL_LABEL(BUF,PREFIX,NUMBER)	\
   sprintf ((BUF), ".%s%ld", (PREFIX), (long)(NUMBER))
 
+/* GNU as expects alignment to be the number of bytes instead of the log for
+   COFF targets.  */
+
+#undef ASM_OUTPUT_ALIGN
+#define ASM_OUTPUT_ALIGN(FILE,LOG) \
+  if ((LOG)!=0) fprintf ((FILE), "\t.align %d\n", 1<<(LOG))
+
 /* end of i386-coff.h */
