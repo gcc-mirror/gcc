@@ -2113,6 +2113,38 @@ move\\t%0,%z4\\n\\
   [(set_attr "type"	"darith")
    (set_attr "mode"	"SI")
    (set_attr "length"	"2")])
+
+;; Combiner patterns to optimize truncate/zero_extend combinations.
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(zero_extend:SI (truncate:HI
+			 (match_operand:DI 1 "register_operand" "d"))))]
+  "TARGET_64BIT"
+  "andi\\t%0,%1,0xffff"
+  [(set_attr "type"	"darith")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"1")])
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(zero_extend:SI (truncate:QI
+			 (match_operand:DI 1 "register_operand" "d"))))]
+  "TARGET_64BIT"
+  "andi\\t%0,%1,0xff"
+  [(set_attr "type"	"darith")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"1")])
+
+(define_insn ""
+  [(set (match_operand:HI 0 "register_operand" "=d")
+	(zero_extend:HI (truncate:QI
+			 (match_operand:DI 1 "register_operand" "d"))))]
+  "TARGET_64BIT"
+  "andi\\t%0,%1,0xff"
+  [(set_attr "type"	"darith")
+   (set_attr "mode"	"HI")
+   (set_attr "length"	"1")])
 
 ;;
 ;;  ....................
