@@ -53,6 +53,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "flags.h"
 #include "lex.h"
 #include "cp-tree.h"
+#include "output.h"
 
 /* Since parsers are distinct for each language, put the language string
    definition here.  (fnf) */

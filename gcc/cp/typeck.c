@@ -37,6 +37,7 @@ extern void warning ();
 #include "rtl.h"
 #include "cp-tree.h"
 #include "flags.h"
+#include "output.h"
 
 int mark_addressable ();
 static tree convert_for_assignment ();
@@ -2665,8 +2666,7 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
 	    /* Convert `float' to `double'.  */
 	    result = tree_cons (NULL_TREE, convert (double_type_node, val), result);
 	  else if (TYPE_LANG_SPECIFIC (TREE_TYPE (val))
-		   && (! TYPE_HAS_INIT_REF (TREE_TYPE (val))
-		       || TYPE_HAS_COMPLEX_INIT_REF (TREE_TYPE (val))))
+		   && ! TYPE_HAS_TRIVIAL_INIT_REF (TREE_TYPE (val)))
 	    {
 	      cp_warning ("cannot pass objects of type `%T' through `...'",
 			  TREE_TYPE (val));
@@ -5454,6 +5454,26 @@ init_noncopied_parts (lhs, list)
   return parts;
 }
 
+tree
+expand_target_expr (t)
+     tree t;
+{
+  tree xval = make_node (RTL_EXPR);
+  rtx rtxval;
+
+  do_pending_stack_adjust ();
+  start_sequence_for_rtl_expr (xval);
+  emit_note (0, -1);
+  rtxval = expand_expr (t, NULL, VOIDmode, 0);
+  do_pending_stack_adjust ();
+  TREE_SIDE_EFFECTS (xval) = 1;
+  RTL_EXPR_SEQUENCE (xval) = get_insns ();
+  end_sequence ();
+  RTL_EXPR_RTL (xval) = rtxval;
+  TREE_TYPE (xval) = TREE_TYPE (t);
+  return xval;
+}
+
 /* Build an assignment expression of lvalue LHS from value RHS.
    MODIFYCODE is the code for a binary operator that we use
    to combine the old value of LHS with RHS to get the new value.
@@ -5586,7 +5606,7 @@ build_modify_expr (lhs, modifycode, rhs)
 	/* Do the default thing */;
       else if (! TYPE_HAS_CONSTRUCTOR (lhstype))
 	cp_error ("`%T' has no constructors", lhstype);
-      else if (! TYPE_NEEDS_CONSTRUCTING (lhstype)
+      else if (TYPE_HAS_TRIVIAL_INIT_REF (lhstype)
 	       && TYPE_MAIN_VARIANT (lhstype) == TYPE_MAIN_VARIANT (TREE_TYPE (newrhs)))
 	/* Do the default thing */;
       else
@@ -5607,8 +5627,7 @@ build_modify_expr (lhs, modifycode, rhs)
 	/* Do the default thing */;
       else if (! TYPE_HAS_ASSIGNMENT (lhstype))
 	cp_error ("`%T' does not define operator=", lhstype);
-      else if (! TYPE_HAS_REAL_ASSIGNMENT (lhstype)
-	       && ! TYPE_HAS_COMPLEX_ASSIGN_REF (lhstype)
+      else if (TYPE_HAS_TRIVIAL_ASSIGN_REF (lhstype)
 	       && TYPE_MAIN_VARIANT (lhstype) == TYPE_MAIN_VARIANT (TREE_TYPE (newrhs)))
 	/* Do the default thing */;
       else
@@ -6002,28 +6021,12 @@ build_modify_expr (lhs, modifycode, rhs)
 	  && TYPE_NEEDS_CONSTRUCTING (lhstype))
 	newrhs = build_cplus_new (lhstype, newrhs, 0);
 
+      /* Can't initialize directly from a TARGET_EXPR, since that would
+	 cause the lhs to be constructed twice.  So we force the
+	 TARGET_EXPR to be expanded.  expand_expr should really do this
+	 by itself.  */
       if (TREE_CODE (newrhs) == TARGET_EXPR)
-	{
-	  /* Can't initialize directly from a TARGET_EXPR, since that would
-	     cause the lhs to be constructed twice.  So we force the
-	     TARGET_EXPR to be expanded.  expand_expr should really do this
-	     by itself.  */
-
-	  tree xval = make_node (RTL_EXPR);
-	  rtx rtxval;
-
-	  do_pending_stack_adjust ();
-	  start_sequence_for_rtl_expr (xval);
-	  emit_note (0, -1);
-	  rtxval = expand_expr (newrhs, NULL, VOIDmode, 0);
-	  do_pending_stack_adjust ();
-	  TREE_SIDE_EFFECTS (xval) = 1;
-	  RTL_EXPR_SEQUENCE (xval) = get_insns ();
-	  end_sequence ();
-	  RTL_EXPR_RTL (xval) = rtxval;
-	  TREE_TYPE (xval) = lhstype;
-	  newrhs = xval;
-	}
+	newrhs = expand_target_expr (newrhs);
     }
 
   if (TREE_CODE (newrhs) == ERROR_MARK)
@@ -6964,6 +6967,8 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
 		rhs = build_cplus_new (type, TREE_OPERAND (rhs, 0), 0);
 	      return rhs;
 	    }
+	  else if (TYPE_HAS_TRIVIAL_INIT_REF (type))
+	    return rhs;
 	}
       if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (rhstype)
 	  || (IS_AGGR_TYPE (rhstype) && UNIQUELY_DERIVED_FROM_P (type, rhstype)))
@@ -7227,6 +7232,13 @@ c_expand_return (retval)
      (3) If an X(X&) constructor is defined, the return
      value must be returned via that.  */
 
+  /* If we're returning in a register, we can't initialize the
+     return value from a TARGET_EXPR.  */
+  if (TREE_CODE (retval) == TARGET_EXPR
+      && TYPE_MAIN_VARIANT (TREE_TYPE (retval)) == TYPE_MAIN_VARIANT (valtype)
+      && ! current_function_returns_struct)
+    retval = expand_target_expr (retval);
+
   if (retval == result
       /* Watch out for constructors, which "return" aggregates
 	 via initialization, but which otherwise "return" a pointer.  */
@@ -7243,12 +7255,8 @@ c_expand_return (retval)
 	  use_temp = obey_regdecls;
 	}
     }
-  else if (IS_AGGR_TYPE (valtype) && TYPE_NEEDS_CONSTRUCTING (valtype))
+  else if (IS_AGGR_TYPE (valtype) && current_function_returns_struct)
     {
-      /* Throw away the cleanup that `build_functional_cast' gave us.  */
-      if (TREE_CODE (retval) == WITH_CLEANUP_EXPR
-	  && TREE_CODE (TREE_OPERAND (retval, 0)) == TARGET_EXPR)
-	retval = TREE_OPERAND (retval, 0);
       expand_aggr_init (result, retval, 0, LOOKUP_ONLYCONVERTING);
       expand_cleanups_to (NULL_TREE);
       DECL_INITIAL (result) = NULL_TREE;

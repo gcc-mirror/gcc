@@ -540,11 +540,12 @@ store_init_value (decl, init)
   /* Take care of C++ business up here.  */
   type = TYPE_MAIN_VARIANT (type);
 
-  /* implicitly tests if IS_AGGR_TYPE.  */
-  if (TYPE_NEEDS_CONSTRUCTING (type) && TREE_CODE (init) != CONSTRUCTOR)
-    my_friendly_abort (109);
-  else if (IS_AGGR_TYPE (type))
+  if (IS_AGGR_TYPE (type))
     {
+      if (! TYPE_HAS_TRIVIAL_INIT_REF (type)
+	  && TREE_CODE (init) != CONSTRUCTOR)
+	my_friendly_abort (109);
+
       /* Although we are not allowed to declare variables of signature
 	 type, we complain about a possible constructor call in such a
 	 declaration as well.  */

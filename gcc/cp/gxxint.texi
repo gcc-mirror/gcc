@@ -1145,16 +1145,21 @@ independent representation for exceptions.
 The C++ front-end exceptions are mapping into the unwind-protect
 semantics by the C++ front-end.  The mapping is describe below.
 
-Objects with RTTI support should use the RTTI information to do mapping
-and checking.  Objects without RTTI, like int and const char *, have to
-use another means of matching.  Currently we use the normal mangling used in
-building functions names.  Int's are "i", const char * is PCc, etc...
+When -frtti is used, rtti is used to do exception object type checking,
+when it isn't used, the encoded name for the type of the object being
+thrown is used instead.  All code that originates exceptions, even code
+that throws exceptions as a side effect, like dynamic casting, and all
+code that catches exceptions must be compiled with either -frtti, or
+-fno-rtti.  It is not possible to mix rtti base exception handling
+objects with code that doesn't use rtti.  The exceptions to this, are
+code that doesn't catch or throw exceptions, catch (...), and code that
+just rethrows an exception.
 
-Unfortunately, the standard allows standard type conversions on throw
-parameters so they can match catch handlers.  This means we need a
-mechanism to handle type conversion at run time, ICK.  I read this part
-again, and it appears that we only have to be able to do a few of the
-conversions at run time, so we should be ok.
+Currently we use the normal mangling used in building functions names
+(int's are "i", const char * is PCc) to build the non-rtti base type
+descriptors for exception handling.  These descriptors are just plain
+NULL terminated strings, and internally they are passed around as char
+*.
 
 In C++, all cleanups should be protected by exception regions.  The
 region starts just after the reason why the cleanup is created has
@@ -1192,18 +1197,20 @@ throwing.  The only bad part, is that the stack remains large.
 The below points out some flaws in g++'s exception handling, as it now
 stands.
 
-Only exact type matching or reference matching of throw types works.
-Only works on a SPARC machines (like Suns), i386 machines, arm machines
-and rs6000 machines.  Partial support is also in for alpha, hppa, m68k
-and mips machines, but a stack unwinder called __unwind_function has to
-be written, and added to libgcc2 for them.  All completely constructed
-temps and local variables are cleaned up in all unwinded scopes.
-Completed parts of partially constructed objects are not cleaned up.
-Don't expect exception handling to work right if you optimize, in fact
-the compiler will probably core dump.  If two EH regions are the exact
-same size, the backend cannot tell which one is first.  It punts by
-picking the last one, if they tie.  This is usually right.  We really
-should stick in a nop, if they are the same size.
+Only exact type matching or reference matching of throw types works when
+-fno-rtti is used.  Only works on a SPARC (like Suns), i386, arm and
+rs6000 machines.  Partial support is also in for alpha, hppa, m68k and
+mips machines, but a stack unwinder called __unwind_function has to be
+written, and added to libgcc2 for them.  See below for details on
+__unwind_function.  All completely constructed temps and local variables
+are cleaned up in all unwinded scopes.  Completed parts of partially
+constructed objects are cleaned up with the exception that partially
+built arrays are not cleaned up as required.  Don't expect exception
+handling to work right if you optimize, in fact the compiler will
+probably core dump.  If two EH regions are the exact same size, the
+backend cannot tell which one is first.  It punts by picking the last
+one, if they tie.  This is usually right.  We really should stick in a
+nop, if they are the same size.
 
 When we invoke the copy constructor for an exception object because it
 is passed by value, and if we take a hit (exception) inside the copy
@@ -1231,6 +1238,52 @@ who has control over the exception object.
 When the backend returns a value, it can create new exception regions
 that need protecting.  The new region should rethrow the object in
 context of the last associated cleanup that ran to completion.
+
+The __unwind_function takes a pointer to the throw handler, and is
+expected to pop the stack frame that was built to call it, as well as
+the frame underneath and then jump to the throw handler.  It must not
+change the three registers allocated for the pointer to the exception
+object, the pointer to the type descriptor that identifies the type of
+the exception object, and the pointer to the code that threw.  On hppa,
+these are %r5, %r6, %r7.  On m68k these are a2, a3, a4.  On mips they
+are s0, s1, s2.  On Alpha these are $9, $10, $11.  It takes about a day
+to write this routine, if someone wants to volunteer to write this
+routine for any architecture, exception support for that architecture
+will be added to g++.  Please send in those code donations.
+
+
+The backend must be extended to fully support exceptions.  Right now
+there are a few hooks into the alpha exception handling backend that
+resides in the C++ frontend from that backend that allows exception
+handling to work in g++.  An exception region is a segment of generated
+code that has a handler associated with it.  The exception regions are
+denoted in the generated code as address ranges denoted by a starting PC
+value and an ending PC value of the region.  Some of the limitations
+with this scheme are:
+
+@itemize @bullet
+@item
+The backend replicates insns for such things as loop unrolling and
+function inlining.  Right now, there are no hooks into the frontend's
+exception handling backend to handle the replication of insns.  When
+replication happens, a new exception region descriptor needs to be
+generated for the new region.
+
+@item
+The backend expects to be able to rearrange code, for things like jump
+optimization.  Any rearranging of the code needs have exception region
+descriptors updated appropriately.
+
+@item
+The backend can eliminate dead code.  Any associated exception region
+descriptor that refers to fully contained code that has been eliminated
+should also be removed, although not doing this is harmless in terms of
+semantics.
+
+#end itemize
+
+The above is not meant to be exhaustive, but does include all things I
+have thought of so far.  I am sure other limitations exist.
 
 @node Free Store, Concept Index, Exception Handling, Top
 @section Free Store

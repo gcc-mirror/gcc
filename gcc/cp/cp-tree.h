@@ -1220,6 +1220,16 @@ struct lang_decl
    of ARRAY_TYPE is the type of the elements needs a destructor.  */
 #define TYPE_NEEDS_DESTRUCTOR(NODE) (TYPE_LANG_FLAG_4(NODE))
 
+/* Nonzero for class type means that initialization of this type can use
+   a bitwise copy.  */
+#define TYPE_HAS_TRIVIAL_INIT_REF(NODE) \
+  (TYPE_HAS_INIT_REF (NODE) && ! TYPE_HAS_COMPLEX_INIT_REF (NODE))
+
+/* Nonzero for class type means that assignment of this type can use
+   a bitwise copy.  */
+#define TYPE_HAS_TRIVIAL_ASSIGN_REF(NODE) \
+  (TYPE_HAS_ASSIGN_REF (NODE) && ! TYPE_HAS_COMPLEX_ASSIGN_REF (NODE))
+
 /* Nonzero for _TYPE node means that this type is a pointer to member
    function type. */
 #define TYPE_PTRMEMFUNC_P(NODE) (TREE_CODE(NODE) == RECORD_TYPE && TYPE_LANG_SPECIFIC(NODE)->type_flags.ptrmemfunc_flag)

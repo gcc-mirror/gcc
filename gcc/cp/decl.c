@@ -10827,6 +10827,7 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
 	     || (DECL_THIS_INLINE (decl1) && ! flag_implement_inlines));
       else
 	DECL_EXTERNAL (decl1) = 0;
+      DECL_NOT_REALLY_EXTERN (decl1) = 0;
       DECL_INTERFACE_KNOWN (decl1) = 1;
     }
   else

@@ -27,6 +27,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include <stdio.h>
 #include "cp-tree.h"
 #include "class.h"
+#include "output.h"
 #include "flags.h"
 
 #include "obstack.h"
@@ -1683,10 +1684,24 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	need_vtbl = (dtor_label || ctor_label)
 	  ? unneeded : maybe_needed;
 
-      instance = C_C_D;
-      instance_ptr = current_class_decl;
-      result = build_field_call (TYPE_BINFO (current_class_type),
-				 instance_ptr, name, parms);
+      /* If `this' is a signature pointer and `name' is not a constructor,
+	 we are calling a signature member function.  In that case, set the
+	 `basetype' to the signature type and dereference the `optr' field.  */
+      if (IS_SIGNATURE_POINTER (basetype)
+	  && TYPE_IDENTIFIER (basetype) != name)
+	{
+	  basetype = SIGNATURE_TYPE (basetype);
+	  instance_ptr = build_optr_ref (instance);
+	  instance_ptr = convert (TYPE_POINTER_TO (basetype), instance_ptr);
+	  basetype_path = TYPE_BINFO (basetype);
+	}
+      else
+	{
+	  instance = C_C_D;
+	  instance_ptr = current_class_decl;
+	  basetype_path = TYPE_BINFO (current_class_type);
+	}
+      result = build_field_call (basetype_path, instance_ptr, name, parms);
 
       if (result)
 	return result;

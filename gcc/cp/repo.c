@@ -33,14 +33,17 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 extern char * rindex ();
 extern char * getenv ();
+extern char * getpwd ();
 
 static tree pending_repo;
 static tree original_repo;
-static char repo_name[1024];
+static char *repo_name;
 static FILE *repo_file;
 
 extern int flag_use_repository;
 extern int errorcount, sorrycount;
+extern struct obstack temporary_obstack;
+extern struct obstack permanent_obstack;
 
 #define IDENTIFIER_REPO_USED(NODE)   (TREE_LANG_FLAG_3 (NODE))
 #define IDENTIFIER_REPO_CHOSEN(NODE) (TREE_LANG_FLAG_4 (NODE))
@@ -187,7 +190,6 @@ save_string (s, len)
      char *s;
      int len;
 {
-  extern struct obstack temporary_obstack;
   return obstack_copy0 (&temporary_obstack, s, len);
 }
 
@@ -244,36 +246,42 @@ open_repo_file (filename)
      char *filename;
 {
   register char *p, *q;
-  char *file = get_base_filename (filename);
-  char *s;
+  char *s = get_base_filename (filename);
 
-  if (file == NULL)
+  if (s == NULL)
     return;
 
-  s = rindex (file, '/');
-  if (s == NULL)
-    s = file;
-  else
-    ++s;
+  p = rindex (s, '/');
+  if (! p)
+    p = s;
+  p = rindex (p, '.');
+  if (! p)
+    p = s + strlen (s);
 
-  for (p = repo_name, q = file; q < s; )
-    *p++ = *q++;
-/*  *p++ = '.'; */
-  if ((s = rindex (q, '.')) == NULL)
-    strcpy (p, q);
-  else
-    for (; q < s;)
-      *p++ = *q++;
-  strcat (p, ".rpo");
+  obstack_grow (&permanent_obstack, s, p - s);
+  repo_name = obstack_copy0 (&permanent_obstack, ".rpo", 4);
 
   repo_file = fopen (repo_name, "r");
+}
+
+static char *
+afgets (stream)
+     FILE *stream;
+{
+  int c;
+  while ((c = getc (stream)) != EOF && c != '\n')
+    obstack_1grow (&temporary_obstack, c);
+  if (obstack_object_size (&temporary_obstack) == 0)
+    return NULL;
+  obstack_1grow (&temporary_obstack, '\0');
+  return obstack_finish (&temporary_obstack);
 }
 
 void
 init_repo (filename)
      char *filename;
 {
-  char buf[1024];
+  char *buf;
 
   if (! flag_use_repository)
     return;
@@ -283,23 +291,19 @@ init_repo (filename)
   if (repo_file == 0)
     return;
 
-  while (fgets (buf, 1024, repo_file))
+  while (buf = afgets (repo_file))
     {
       switch (buf[0])
 	{
 	case 'A':
-	case 'G':
+	case 'D':
 	case 'M':
 	  break;
 	case 'C':
 	case 'O':
 	  {
-	    char *q;
-	    tree id, orig;
-
-	    for (q = &buf[2]; *q && *q != ' ' && *q != '\n'; ++q) ;
-	    q = save_string (&buf[2], q - &buf[2]);
-	    id = get_identifier (q);
+	    tree id = get_identifier (buf + 2);
+	    tree orig;
 
 	    if (buf[0] == 'C')
 	      {
@@ -315,6 +319,7 @@ init_repo (filename)
 	default:
 	  error ("mysterious repository information in %s", repo_name);
 	}
+      obstack_free (&temporary_obstack, buf);
     }
 }
 
@@ -382,9 +387,8 @@ finish_repo ()
 
   fprintf (repo_file, "M %s\n", main_input_filename);
 
-  p = getenv ("COLLECT_GCC");
-  if (p != 0)
-    fprintf (repo_file, "G %s\n", p);
+  p = getpwd ();
+  fprintf (repo_file, "D %s\n", p);
 
   p = getenv ("COLLECT_GCC_OPTIONS");
   if (p != 0)
@@ -395,9 +399,7 @@ finish_repo ()
       tree val = TREE_VALUE (t);
       char type = IDENTIFIER_REPO_CHOSEN (val) ? 'C' : 'O';
 
-      fprintf (repo_file, "%c %s ", type, IDENTIFIER_POINTER (val));
-      ASM_OUTPUT_LABELREF (repo_file, IDENTIFIER_POINTER (val));
-      putc ('\n', repo_file);
+      fprintf (repo_file, "%c %s\n", type, IDENTIFIER_POINTER (val));
     }
 
  out:
