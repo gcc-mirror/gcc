@@ -1,0 +1,1 @@
+#include "lib/strrchr.c"

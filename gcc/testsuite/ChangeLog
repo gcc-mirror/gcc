@@ -1,3 +1,131 @@
+2004-07-02  Zack Weinberg  <zack@codesourcery.com>
+
+	* gcc.c-torture/execute/builtin-abs-1.c
+	* gcc.c-torture/execute/builtin-abs-2.c
+	* gcc.c-torture/execute/builtin-complex-1.c
+	* gcc.c-torture/execute/builtins/string-1-lib.c
+	* gcc.c-torture/execute/builtins/string-1.c
+	* gcc.c-torture/execute/builtins/string-2-lib.c
+	* gcc.c-torture/execute/builtins/string-2.c
+	* gcc.c-torture/execute/builtins/string-3-lib.c
+	* gcc.c-torture/execute/builtins/string-3.c
+	* gcc.c-torture/execute/builtins/string-4-lib.c
+	* gcc.c-torture/execute/builtins/string-4.c
+	* gcc.c-torture/execute/builtins/string-5-lib.c
+	* gcc.c-torture/execute/builtins/string-5.c
+	* gcc.c-torture/execute/builtins/string-6-lib.c
+	* gcc.c-torture/execute/builtins/string-6.c
+	* gcc.c-torture/execute/builtins/string-7-lib.c
+	* gcc.c-torture/execute/builtins/string-7.c
+	* gcc.c-torture/execute/builtins/string-8-lib.c
+	* gcc.c-torture/execute/builtins/string-8.c
+	* gcc.c-torture/execute/builtins/string-9-lib.c
+	* gcc.c-torture/execute/builtins/string-9.c
+	* gcc.c-torture/execute/builtins/string-asm-1-lib.c
+	* gcc.c-torture/execute/builtins/string-asm-1.c
+	* gcc.c-torture/execute/builtins/string-asm-2-lib.c
+	* gcc.c-torture/execute/builtins/string-asm-2.c
+	* gcc.c-torture/execute/stdio-opt-1.c
+	* gcc.c-torture/execute/stdio-opt-2.c
+	* gcc.c-torture/execute/stdio-opt-3.c
+	* gcc.c-torture/execute/string-opt-1.c
+	* gcc.c-torture/execute/string-opt-10.c
+	* gcc.c-torture/execute/string-opt-11.c
+	* gcc.c-torture/execute/string-opt-12.c
+	* gcc.c-torture/execute/string-opt-13.c
+	* gcc.c-torture/execute/string-opt-14.c
+	* gcc.c-torture/execute/string-opt-15.c
+	* gcc.c-torture/execute/string-opt-16.c
+	* gcc.c-torture/execute/string-opt-2.c
+	* gcc.c-torture/execute/string-opt-6.c
+	* gcc.c-torture/execute/string-opt-7.c
+	* gcc.c-torture/execute/string-opt-8.c:
+	Replace with ...
+
+	* gcc.c-torture/execute/builtins/abs-2.c
+	* gcc.c-torture/execute/builtins/abs-3.c
+	* gcc.c-torture/execute/builtins/complex-1.c
+	* gcc.c-torture/execute/builtins/fprintf.c
+	* gcc.c-torture/execute/builtins/fputs.c
+	* gcc.c-torture/execute/builtins/memcmp.c
+	* gcc.c-torture/execute/builtins/memmove.c
+	* gcc.c-torture/execute/builtins/memops-asm.c
+	* gcc.c-torture/execute/builtins/mempcpy-2.c
+	* gcc.c-torture/execute/builtins/mempcpy.c
+	* gcc.c-torture/execute/builtins/memset.c
+	* gcc.c-torture/execute/builtins/printf.c
+	* gcc.c-torture/execute/builtins/sprintf.c
+	* gcc.c-torture/execute/builtins/strcat.c
+	* gcc.c-torture/execute/builtins/strchr.c
+	* gcc.c-torture/execute/builtins/strcmp.c
+	* gcc.c-torture/execute/builtins/strcpy.c
+	* gcc.c-torture/execute/builtins/strcspn.c
+	* gcc.c-torture/execute/builtins/strlen-2.c
+	* gcc.c-torture/execute/builtins/strlen.c
+	* gcc.c-torture/execute/builtins/strncat.c
+	* gcc.c-torture/execute/builtins/strncmp-2.c
+	* gcc.c-torture/execute/builtins/strncmp.c
+	* gcc.c-torture/execute/builtins/strncpy.c
+	* gcc.c-torture/execute/builtins/strpbrk.c
+	* gcc.c-torture/execute/builtins/strpcpy-2.c
+	* gcc.c-torture/execute/builtins/strpcpy.c
+	* gcc.c-torture/execute/builtins/strrchr.c
+	* gcc.c-torture/execute/builtins/strspn.c
+	* gcc.c-torture/execute/builtins/strstr-asm.c
+	* gcc.c-torture/execute/builtins/strstr.c:
+	... these new files.
+
+	* gcc.c-torture/execute/builtins/abs-2-lib.c
+	* gcc.c-torture/execute/builtins/abs-3-lib.c
+	* gcc.c-torture/execute/builtins/complex-1-lib.c
+	* gcc.c-torture/execute/builtins/fprintf-lib.c
+	* gcc.c-torture/execute/builtins/fputs-lib.c
+	* gcc.c-torture/execute/builtins/memcmp-lib.c
+	* gcc.c-torture/execute/builtins/memmove-lib.c
+	* gcc.c-torture/execute/builtins/memops-asm-lib.c
+	* gcc.c-torture/execute/builtins/mempcpy-2-lib.c
+	* gcc.c-torture/execute/builtins/mempcpy-lib.c
+	* gcc.c-torture/execute/builtins/memset-lib.c
+	* gcc.c-torture/execute/builtins/printf-lib.c
+	* gcc.c-torture/execute/builtins/sprintf-lib.c
+	* gcc.c-torture/execute/builtins/strcat-lib.c
+	* gcc.c-torture/execute/builtins/strchr-lib.c
+	* gcc.c-torture/execute/builtins/strcmp-lib.c
+	* gcc.c-torture/execute/builtins/strcpy-lib.c
+	* gcc.c-torture/execute/builtins/strcspn-lib.c
+	* gcc.c-torture/execute/builtins/strlen-2-lib.c
+	* gcc.c-torture/execute/builtins/strlen-lib.c
+	* gcc.c-torture/execute/builtins/strncat-lib.c
+	* gcc.c-torture/execute/builtins/strncmp-2-lib.c
+	* gcc.c-torture/execute/builtins/strncmp-lib.c
+	* gcc.c-torture/execute/builtins/strncpy-lib.c
+	* gcc.c-torture/execute/builtins/strpbrk-lib.c
+	* gcc.c-torture/execute/builtins/strpcpy-2-lib.c
+	* gcc.c-torture/execute/builtins/strpcpy-lib.c
+	* gcc.c-torture/execute/builtins/strrchr-lib.c
+	* gcc.c-torture/execute/builtins/strspn-lib.c
+	* gcc.c-torture/execute/builtins/strstr-asm-lib.c
+	* gcc.c-torture/execute/builtins/strstr-lib.c
+	* gcc.c-torture/execute/builtins/lib/abs.c
+	* gcc.c-torture/execute/builtins/lib/fprintf.c
+	* gcc.c-torture/execute/builtins/lib/memset.c
+	* gcc.c-torture/execute/builtins/lib/printf.c
+	* gcc.c-torture/execute/builtins/lib/sprintf.c
+	* gcc.c-torture/execute/builtins/lib/strcpy.c
+	* gcc.c-torture/execute/builtins/lib/strcspn.c
+	* gcc.c-torture/execute/builtins/lib/strncat.c
+	* gcc.c-torture/execute/builtins/lib/strncmp.c
+	* gcc.c-torture/execute/builtins/lib/strncpy.c
+	* gcc.c-torture/execute/builtins/lib/strpbrk.c
+	* gcc.c-torture/execute/builtins/lib/strspn.c
+	* gcc.c-torture/execute/builtins/lib/strstr.c:
+	New files containing support routines.
+
+	* gcc.c-torture/execute/builtins/abs-1.c: Remove unnecessary
+	declaration.
+	* gcc.c-torture/execute/builtins/lib/main.c: Define link_error
+	when not optimizing.
+
 2004-07-02  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/16240

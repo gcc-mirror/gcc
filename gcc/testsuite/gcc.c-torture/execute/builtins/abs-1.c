@@ -9,7 +9,6 @@ int abs_called = 0;
 extern int abs (int);
 extern long labs (long);
 extern void abort (void);
-extern void exit (int);
 
 void
 main_test (void)
