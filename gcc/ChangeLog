@@ -26,6 +26,8 @@
 	* config/mcore/mcore.md: Include predicates.md.
 	* config/mcore/predicates.md: New.
 
+	* config/mcore/predicates.md: Fix a comment typo.
+
 2005-04-04  Andreas Krebbel  <krebbel1@de.ibm.com>
 	    Adrian Straetling  <straetling@de.ibm.com>
 
