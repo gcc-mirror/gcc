@@ -1,0 +1,8 @@
+2002-01-08  Andreas Jaeger  <aj@suse.de>
+
+	* gcse.c (gcse_main): Disable store_motion until it gets fixed.
+
+
+Local Variables:
+ mode:change-log
+End:
