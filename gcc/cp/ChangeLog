@@ -1,3 +1,9 @@
+2002-03-26  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/4884.
+	* init.c (build_new_1): Allow for the fact the result of
+	build_function_call may be a COMPOUND_EXPR.
+
 2002-03-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/6037
