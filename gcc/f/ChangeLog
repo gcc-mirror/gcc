@@ -1,3 +1,7 @@
+Thu Feb 28 07:53:46 2002  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* com.c (copy_lang_decl): Delete.
+
 2002-02-27  Zack Weinberg  <zack@codesourcery.com>
 
 	* com.c, lex.c, top.c: Delete traditional-mode-related code

@@ -1,3 +1,9 @@
+2002-02-28  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* decl.c (copy_lang_decl): Rename java_dup_lang_specific_decl.
+	* java-tree.h (java_dup_lang_specific_decl): New.
+	* lang.c (LANG_HOOKS_DUP_LANG_SPECIFIC_DECL): Redefine.
+
 2002-02-27  Zack Weinberg  <zack@codesourcery.com>
 
 	* builtins.c, decl.c: Delete traditional-mode-related code

@@ -2859,9 +2859,6 @@ extern tree fold_builtin		PARAMS ((tree));
 
 /* The language front-end must define these functions.  */
 
-/* Function to replace the DECL_LANG_SPECIFIC field of a DECL with a copy.  */
-extern void copy_lang_decl			PARAMS ((tree));
-
 /* Function called with no arguments to parse and compile the input.  */
 extern int yyparse				PARAMS ((void));
 /* Functions for processing symbol declarations.  */

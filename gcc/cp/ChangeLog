@@ -1,3 +1,12 @@
+2002-02-28  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* class.c (build_clone): Update.
+	* cp-lang.c (LANG_HOOKS_DUP_LANG_SPECIFIC_DECL): Redefine.
+	* cp-tree.h (cxx_dup_lang_specific_decl): New.
+	* lex.c (copy_lang_decl): Rename cxx_dup_lang_specific_decl.
+	(copy_decl): Update.
+	* method.c (make_thunk): Update.
+
 2002-02-27  Zack Weinberg  <zack@codesourcery.com>
 
 	* decl2.c: Delete traditional-mode-related code copied from

@@ -1,3 +1,19 @@
+2002-02-28  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* Makefile.in (integrate.o): Update.
+	* c-decl.c (copy_lang_decl): Rename.
+	* c-lang.c (LANG_HOOKS_DUP_LANG_SPECIFIC_DECL): Redefine.
+	* integrate.c: Include langhooks.h.
+	(copy_decl_for_inlining): Update to use langhook.
+	* langhooks-def.h (lhd_do_nothing_t,
+	LANG_HOOKS_DUP_LANG_SPECIFIC_DECL): New.
+	(LANG_HOOKS_INITIALIZER): Update.
+	* langhooks.c (lhd_do_nothing_t): New.
+	* langhooks.h (struct lang_hooks): Add dup_lang_specific_decl.
+	* tree.h (copy_lang_decl): Remove.
+objc:
+	* objc-lang.c (LANG_HOOKS_DUP_LANG_SPECIFIC_DECL): Redefine.
+
 2002-02-27  Andrew MacLeod  <amacleod@redhat.com>
 
 	* dwarf2out.c (stack_adjust_offset): Add support for POST_INC, 

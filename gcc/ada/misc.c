@@ -6,7 +6,7 @@
  *                                                                          *
  *                           C Implementation File                          *
  *                                                                          *
- *                             $Revision: 1.17 $
+ *                             $Revision: 1.18 $
  *                                                                          *
  *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
  *                                                                          *
@@ -404,15 +404,6 @@ maybe_build_cleanup (decl)
 {
   /* There are no cleanups in C.  */
   return NULL_TREE;
-}
-
-/* integrate_decl_tree calls this function, but since we don't use the
-   DECL_LANG_SPECIFIC field, this is a no-op.  */
-
-void
-copy_lang_decl (node)
-     tree node ATTRIBUTE_UNUSED;
-{
 }
 
 /* Hooks for print-tree.c:  */

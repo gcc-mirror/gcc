@@ -4038,7 +4038,7 @@ build_clone (fn, name)
       for (parms = DECL_ARGUMENTS (clone); parms; parms = TREE_CHAIN (parms))
 	{
 	  DECL_CONTEXT (parms) = clone;
-	  copy_lang_decl (parms);
+	  cxx_dup_lang_specific_decl (parms);
 	}
     }
 

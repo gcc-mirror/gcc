@@ -39,6 +39,14 @@ lhd_do_nothing ()
 {
 }
 
+/* Do nothing.  */
+
+void
+lhd_do_nothing_t (t)
+     tree t ATTRIBUTE_UNUSED;
+{
+}
+
 /* Do nothing (return the tree node passed).  */
 
 tree
