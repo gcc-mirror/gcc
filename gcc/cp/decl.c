@@ -3426,18 +3426,6 @@ duplicate_decls (newdecl, olddecl)
 	}
     }
 
-  /* Do not merge an implicit typedef with an explicit one.  In:
-
-       class A;
-       ...
-       typedef class A A __attribute__ ((foo));
-
-     the attribute should apply only to the typedef.  */
-  if (TREE_CODE (olddecl) == TYPE_DECL
-      && (DECL_IMPLICIT_TYPEDEF_P (olddecl)
-	  || DECL_IMPLICIT_TYPEDEF_P (newdecl)))
-    return 0;
-
   /* If new decl is `static' and an `extern' was seen previously,
      warn about it.  */
   warn_extern_redeclared_static (newdecl, olddecl);
@@ -5348,23 +5336,10 @@ lookup_tag (form, name, binding_level, thislevel_only)
 	    else
 	      old = BINDING_TYPE (old);
 
-	    /* If the declaration has an original type, it must a
-	       typedef.  When it is an explicit typedef of the form:
-
-		   typedef struct A A;
-
-	       the original type will be the tag that we want.
-	       We should not return any other kind of typedef.
-
-	       Detect the valid case by checking that the original
-	       type has the same name and context as the typedef.  */
+	    /* If it has an original type, it is a typedef, and we
+	       should not return it.  */
 	    if (old && DECL_ORIGINAL_TYPE (TYPE_NAME (old)))
-	      {
-		old = DECL_ORIGINAL_TYPE (TYPE_NAME (old));
-		if (TYPE_IDENTIFIER (old) != name
-		    || context_for_name_lookup (TYPE_NAME (old)) != tail)
-		  old = NULL_TREE;
-	      }
+	      old = NULL_TREE;
 	    if (old && TREE_CODE (old) != form
 		&& (form == ENUMERAL_TYPE || TREE_CODE (old) == ENUMERAL_TYPE))
 	      {
@@ -12791,23 +12766,27 @@ xref_tag (code_type_node, name, globalize)
     }
   else
     {
+      ref = lookup_tag (code, name, b, 0);
+
       if (t)
 	{
 	  /* [dcl.type.elab] If the identifier resolves to a
 	     typedef-name or a template type-parameter, the
 	     elaborated-type-specifier is ill-formed.  */
-	  if (t != TYPE_MAIN_VARIANT (t)
+	  if ((ref != TYPE_MAIN_VARIANT (t) && t != TYPE_MAIN_VARIANT (t))
 	      || (CLASS_TYPE_P (t) && TYPE_WAS_ANONYMOUS (t)))
-	    pedwarn ("using typedef-name `%D' after `%s'",
-			TYPE_NAME (t), tag_name (tag_code));
+	    {
+	      pedwarn ("using typedef-name `%D' after `%s'",
+		       TYPE_NAME (t), tag_name (tag_code));
+	      t = ref;
+	    }
 	  else if (TREE_CODE (t) == TEMPLATE_TYPE_PARM)
-	    error ("using template type parameter `%T' after `%s'",
-		      t, tag_name (tag_code));
-
-	  ref = t;
+	    {
+	      error ("using template type parameter `%T' after `%s'",
+		     t, tag_name (tag_code));
+	      t = ref;
+	    }
 	}
-      else
-	ref = lookup_tag (code, name, b, 0);
 
       if (! ref)
 	{
