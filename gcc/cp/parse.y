@@ -4115,72 +4115,19 @@ static tree
 parse_finish_call_expr (tree fn, tree args, int koenig)
 {
   bool disallow_virtual;
-  tree template_args;
-  tree template_id;
-  tree f;
 
   if (TREE_CODE (fn) == OFFSET_REF)
     return build_offset_ref_call_from_tree (fn, args);
 
   if (TREE_CODE (fn) == SCOPE_REF)
     {
-      tree scope;
-      tree name;
-
-      scope = TREE_OPERAND (fn, 0);
-      name = TREE_OPERAND (fn, 1);
+      tree scope = TREE_OPERAND (fn, 0);
+      tree name = TREE_OPERAND (fn, 1);
 
       if (scope == error_mark_node || name == error_mark_node)
 	return error_mark_node;
       if (!processing_template_decl)
-	{
-	  if (TREE_CODE (scope) == NAMESPACE_DECL)
-	    fn = lookup_namespace_name (scope, name);
-	  else
-	    {
-	      if (!COMPLETE_TYPE_P (scope) && !TYPE_BEING_DEFINED (scope))
-		{
-		  error ("incomplete type '%T' cannot be used to name a scope",
-			 scope);
-		  return error_mark_node;
-		}
-	      else if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
-		{
-		  template_id = name;
-		  template_args = TREE_OPERAND (name, 1);
-		  name = TREE_OPERAND (name, 0);
-		}
-	      else 
-	        {
-		  template_id = NULL_TREE;
-		  template_args = NULL_TREE;
-		}
-
-	      if (BASELINK_P (name))
-		fn = name;
-	      else 
-		{
-		  if (TREE_CODE (name) == OVERLOAD)
-		    name = DECL_NAME (get_first_fn (name));
-		  fn = lookup_member (scope, name, /*protect=*/1, 
-				      /*prefer_type=*/0);
-		  if (!fn)
-		    {
-		      error ("'%D' has no member named '%E'", scope, name);
-		      return error_mark_node;
-		    }
-		  
-		  if (BASELINK_P (fn) && template_id)
-		    BASELINK_FUNCTIONS (fn) 
-		      = build_nt (TEMPLATE_ID_EXPR,
-				  BASELINK_FUNCTIONS (fn),
-				  template_args);
-		}
-	      if (current_class_type)
-		fn = (adjust_result_of_qualified_name_lookup 
-		      (fn, scope, current_class_type));
-	    }
-	}
+	fn = resolve_scoped_fn_name (scope, name);
       disallow_virtual = true;
     }
   else
@@ -4188,6 +4135,8 @@ parse_finish_call_expr (tree fn, tree args, int koenig)
 
   if (koenig && TREE_CODE (fn) == IDENTIFIER_NODE)
     {
+      tree f;
+      
       /* Do the Koenig lookup.  */
       fn = do_identifier (fn, 2, args);
       /* If name lookup didn't find any matching declarations, we've
