@@ -2285,8 +2285,12 @@ make_relative_prefix (progname, bin_prefix, prefix)
       GET_ENV_PATH_LIST (temp, "PATH");
       if (temp)
 	{
-	  char *startp, *endp;
-	  char *nstore = (char *) alloca (strlen (temp) + strlen (progname) + 1);
+	  char *startp, *endp, *nstore;
+	  size_t prefixlen = strlen (temp) + 1;
+	  if (prefixlen < 2)
+	    prefixlen = 2;
+
+	  nstore = (char *) alloca (prefixlen + strlen (progname) + 1);
 
 	  startp = endp = temp;
 	  while (1)
