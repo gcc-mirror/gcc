@@ -425,8 +425,10 @@ DEFTREECODE (TARGET_EXPR, "target_expr", 'e', 4)
    Operand 0 is the condition.
    Operand 1 is the then-value.
    Operand 2 is the else-value.
-   Operand 0 may be of any type, but the types of operands 1 and 2
-   must be the same and the same as the type of this expression.  */
+   Operand 0 may be of any type.
+   Operand 1 must have the same type as the entire expression, unless
+   it unconditionally throws an exception, in which case it should
+   have VOID_TYPE.  The same constraints apply to operand 2.  */
 DEFTREECODE (COND_EXPR, "cond_expr", 'e', 3)
 
 /* Declare local variables, including making RTL and allocating space.
