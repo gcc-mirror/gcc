@@ -10589,7 +10589,7 @@ ffestb_R100110_ (ffelexToken t)
 	  return (ffelexHandler) ffestb_R100111_ (t);
 
 	default:
-	  assert (FALSE);
+	  assert ("bad format item" == NULL);
 	  err = FFEBAD_FORMAT_BAD_H_SPEC;
 	  pre = disallowed;
 	  post = disallowed;
