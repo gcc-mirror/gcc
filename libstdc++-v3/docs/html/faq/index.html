@@ -783,9 +783,11 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
       </p>
       <p>All library objects are safe to use in a multithreaded program as
          long as each thread carefully locks out access by any other thread
-         while it uses any object visible to another thread.  This requirement
-         includes both read and write access to objects; do not assume that
-         two threads may read a shared standard container at the same time.
+         while it uses any object visible to another thread.  In general,
+         this requirement includes both read and write access to objects;
+         unless otherwise documented as safe, do not assume that two
+         threads may access a shared standard library object at the
+         same time.
       </p>
       <p>See chapters <a href="../17_intro/howto.html#3">17</a> (library
          introduction), <a href="../23_containers/howto.html#3">23</a>
