@@ -70,7 +70,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Give methods pretty symbol names on NeXT. */
 
-#define OBJC_GEN_METHOD_LABEL(BUF,IS_INST,CLASS_NAME,CAT_NAME,SEL_NAME)	\
+#define OBJC_GEN_METHOD_LABEL(BUF,IS_INST,CLASS_NAME,CAT_NAME,SEL_NAME,NUM) \
   do { if (CAT_NAME)							\
 	 sprintf (BUF, "%c[%s(%s) %s]", (IS_INST) ? '-' : '+',		\
 		  (CLASS_NAME), (CAT_NAME), (SEL_NAME));		\
