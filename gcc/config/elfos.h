@@ -582,7 +582,8 @@ dtors_section ()						\
       								\
       size_directive_output = 0;				\
       								\
-      if (!flag_inhibit_size_directive && DECL_SIZE (DECL))	\
+      if (!flag_inhibit_size_directive				\
+	  && (DECL) && DECL_SIZE (DECL))			\
 	{							\
 	  size_directive_output = 1;				\
 	  fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);		\
