@@ -2961,6 +2961,7 @@ emit_insn (pattern)
 
 #ifdef ENABLE_RTL_CHECKING
   if (insn
+      && GET_RTX_CLASS (GET_CODE (insn)) == 'i'
       && (returnjump_p (insn)
 	  || (GET_CODE (insn) == SET
 	      && SET_DEST (insn) == pc_rtx)))

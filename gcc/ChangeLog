@@ -1,3 +1,8 @@
+2000-01-25  Nick Clifton  <nickc@redhat.com>
+
+	* emit-rtl.c (emit_insn): Only check machine class insns for
+	improper emission of a RETURN.
+
 2000-01-25  Richard Henderson  <rth@cygnus.com>
 
 	* Makefile.in (flow.o): Depend on $(EXPR_H).
