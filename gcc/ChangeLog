@@ -1,3 +1,8 @@
+2004-12-17  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.c (s390_gimplify_va_arg): Set alias set to 
+	s390_sr_alias_set.
+
 2004-12-17  Jan Beulich  <jbeulich@novell.com>
 
 	PR target/17603

@@ -7816,6 +7816,7 @@ s390_gimplify_va_arg (tree valist, tree type, tree *pre_p,
   lab_false = create_artificial_label ();
   lab_over = create_artificial_label ();
   addr = create_tmp_var (ptr_type_node, "addr");
+  DECL_POINTER_ALIAS_SET (addr) = s390_sr_alias_set;
 
   t = fold_convert (TREE_TYPE (reg), size_int (max_reg));
   t = build2 (GT_EXPR, boolean_type_node, reg, t);
