@@ -2610,6 +2610,14 @@ store_expr (exp, target, want_value)
        expression.  */
     {
       temp = expand_expr (exp, NULL_RTX, VOIDmode, 0);
+
+      /* If TEMP is a VOIDmode constant, use convert_modes to make
+	 sure that we properly convert it.  */
+      if (CONSTANT_P (temp) && GET_MODE (temp) == VOIDmode)
+	temp = convert_modes (GET_MODE (SUBREG_REG (target)),
+			      TYPE_MODE (TREE_TYPE (exp)), temp,
+			      SUBREG_PROMOTED_UNSIGNED_P (target));
+
       convert_move (SUBREG_REG (target), temp,
 		    SUBREG_PROMOTED_UNSIGNED_P (target));
       return want_value ? temp : NULL_RTX;
@@ -2632,6 +2640,15 @@ store_expr (exp, target, want_value)
 	  && (CONSTANT_P (temp) || want_value))
 	dont_return_target = 1;
     }
+
+  /* If TEMP is a VOIDmode constant and the mode of the type of EXP is not
+     the same as that of TARGET, adjust the constant.  This is needed, for
+     example, in case it is a CONST_DOUBLE and we want only a word-sized
+     value.  */
+  if (CONSTANT_P (temp) && GET_MODE (temp) == VOIDmode
+      && GET_MODE (target) != TYPE_MODE (TREE_TYPE (exp)))
+    temp = convert_modes (GET_MODE (target), TYPE_MODE (TREE_TYPE (exp)),
+			  temp, TREE_UNSIGNED (TREE_TYPE (exp)));
 
   /* If value was not generated in the target, store it there.
      Convert the value to TARGET's type first if nec.  */
@@ -5147,18 +5164,26 @@ expand_expr (exp, target, tmode, modifier)
    treating TRUTH_AND_EXPR like TRUTH_ANDIF_EXPR;
    but the question is how to recognize those cases.  */
 
+      /* TRUTH_AND_EXPR can have a result whose mode doesn't match
+	 th operands.  If so, don't use our target.  */
     case TRUTH_AND_EXPR:
+      if (mode != TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))))
+	subtarget = 0;
     case BIT_AND_EXPR:
       this_optab = and_optab;
       goto binop;
 
 /* See comment above about TRUTH_AND_EXPR; it applies here too.  */
     case TRUTH_OR_EXPR:
+      if (mode != TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))))
+	subtarget = 0;
     case BIT_IOR_EXPR:
       this_optab = ior_optab;
       goto binop;
 
     case TRUTH_XOR_EXPR:
+      if (mode != TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))))
+	subtarget = 0;
     case BIT_XOR_EXPR:
       this_optab = xor_optab;
       goto binop;
