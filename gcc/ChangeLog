@@ -1,5 +1,8 @@
 2003-05-03  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/rs6000/rs6000.h (REVERSIBLE_CC_MODE): Define.
+	(REVERSE_CONDITION): Define.
+
 	* config/rs6000/rs6000.c (scc_comparison_operator): Make equivalent
 	to branch_positive_comparison_operator.
 	(ccr_bit): Check that sCOND conditions are actually a positive bit.
