@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.84 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1996-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -609,12 +609,46 @@ procedure GNATCmd is
                                             "-gnatF";
 
    S_GCC_Valid   : aliased constant S := "/VALIDITY_CHECKING="             &
-                                            "RM "                          &
+                                            "DEFAULT "                     &
                                             "-gnatVd "                     &
+                                            "NODEFAULT "                   &
+                                            "-gnatVD "                     &
+                                            "COPIES "                      &
+                                            "-gnatVc "                     &
+                                            "NOCOPIES "                    &
+                                            "-gnatVC "                     &
+                                            "FLOATS "                      &
+                                            "-gnatVf "                     &
+                                            "NOFLOATS "                    &
+                                            "-gnatVF "                     &
+                                            "IN_PARAMS "                   &
+                                            "-gnatVi "                     &
+                                            "NOIN_PARAMS "                 &
+                                            "-gnatVI "                     &
+                                            "MOD_PARAMS "                  &
+                                            "-gnatVm "                     &
+                                            "NOMOD_PARAMS "                &
+                                            "-gnatVM "                     &
+                                            "OPERANDS "                    &
+                                            "-gnatVo "                     &
+                                            "NOOPERANDS "                  &
+                                            "-gnatVO "                     &
+                                            "RETURNS "                     &
+                                            "-gnatVr "                     &
+                                            "NORETURNS "                   &
+                                            "-gnatVR "                     &
+                                            "SUBSCRIPTS "                  &
+                                            "-gnatVs "                     &
+                                            "NOSUBSCRIPTS "                &
+                                            "-gnatVS "                     &
+                                            "TESTS "                       &
+                                            "-gnatVt "                     &
+                                            "NOTESTS "                     &
+                                            "-gnatVT "                     &
+                                            "ALL "                         &
+                                            "-gnatVa "                     &
                                             "NONE "                        &
-                                            "-gnatV0 "                     &
-                                            "FULL "                        &
-                                            "-gnatVf";
+                                            "-gnatVn";
 
    S_GCC_Verbose : aliased constant S := "/VERBOSE "                       &
                                             "-v";
