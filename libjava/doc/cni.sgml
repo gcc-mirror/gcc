@@ -6,7 +6,7 @@
 <authorgroup>
 <corpauthor>Cygnus Solutions</corpauthor>
 </authorgroup>
-<date>February, 1999</date>
+<date>March, 2000</date>
 </artheader>
 
 <abstract><para>
@@ -369,98 +369,6 @@ to private C++ fields and methods, but other fields and methods
 are mapped to public fields and methods.
 </para>
 </sect2>
-<sect2><title>Non-Java fields</title>
-<para>
-When you write a Java wrapper around an existing library, that library
-will often allocate and manage its own data structures.  These are
-<quote>objects</quote> that are not Java <literal>Object</literal>s;
-instead they are usually C <literal>struct</literal> instances.
-Typically, you will write a Java class, and use native CNI methods
-which call functions in the C library.  The problem is how to get
-from the Java wrapper object to the C <literal>struct</literal> instances.
-The obvious solution is to add a field to the Java object that
-points to the C structure.  The problem is that there is no Java
-type that we can give to this field.</para>
-<para>The GCJ solution is to define a special dummy class
-<literal>gnu.gcj.RawData</literal>.  This can be used as the type for fields,
-parameters, array elements, or local variables in Java code.
-It means that the field or variable is a pointer to a non-Java object.
-Nothing else is known about it, so it corresponds to a
-<literal>(void*)</literal> declaration is C or C++ code.</para>
-<para>
-The garbage collector will ignore a field that has type
-<literal>gnu.gcj.RawData</literal>.  You are responsible for
-freeing the C data structure when you are done with it, and
-performing any necessary cleanups.  In most cases, you should
-use a <literal>finalize</literal> method, and have it call
-the library's cleanup routine.  Also, the C data structure
-should not contain a pointer back to the Java object, since
-the garbage collector will not know about the pointer.
-If you need to save a pointer to a Java object inside some
-non-Java data structure, you first need to <quote>pin</quote>
-or <quote>globalize</quote> the pointer;  there is no CNI function
-to do this yet.
-(From the point of view of the
-implementation, a <literal>gnu.gcj.RawData</literal> value is
-the same as an integer that has the same size as a pointer.)</para>
-<para>
-Here is an example where we create a Java wrapper around C stdio:
-<programlisting>
-import gnu.gcj.RawData;
-
-public class StdioFile
-{
-  private RawData file;
-  public StdioFile (RawData file) { this.file = file; }
-  public StdioFile (String name, String mode)
-    throws FileNotFoundException
-  { init(name, mode); }
-  private native void init (String name, String mode)
-    throws FileNotFoundException;
-  public native int getc();
-  public native int close();
-  protected native void finalize();
-}
-</programlisting>
-This is the CNI implementation:
-<programlisting>
-jint
-StdioFile::getc()
-{
-  return getc((FILE*) file);
-}
-
-jint
-StdioFile::close()
-{
-  return fclose((FILE*) file);
-}
-
-void
-StdioFile::init(jstring name, jstring mode)
-{
-  int cname_len = JvGetStringUTFLength (name);
-  int cmode_len = JvGetStringUTFLength (mode);
-  char cname[cname_len + 1];
-  char cmode[cmode_len + 1];
-  JvGetStringUTFRegion (name, 0, name->length(), cname);
-  JvGetStringUTFRegion (mode, 0, mode->length(), cmode);
-  cname[cname_len] = '\0';
-  cmode[cmode_len] = '\0';
-  file = (gnu::gcj::RawData*) fopen(cname, cmode);
-  if (file == NULL)
-    JvThrow(new java::lang::FileNotFoundException(name));
-}
-
-void
-StdioFile::finalize()
-{
-  fclose((FILE*) file);
-}
-</programlisting>
-
-</sect2>
-
 </sect1>
 
 <sect1><title>Arrays</title>
@@ -640,7 +548,8 @@ During 1999, G++ will switch to a new ABI that is compatible with
 <acronym>gcj</acronym>.  Some platforms (including Linux) have already
 changed.  On other platforms, you will have to pass
 the <literal>-fvtable-thunks</literal> flag to g++ when
-compiling <acronym>CNI</acronym> code.
+compiling <acronym>CNI</acronym> code.  Note that you must also compile
+your C++ source code with <literal>-fno-rtti</literal>.
 </para>
 <para>
 Calling a Java instance method in <acronym>CNI</acronym> is done
@@ -850,33 +759,24 @@ initialized before you access a static field.</para>
 <sect1><title>Exception Handling</title>
 <para>
 While C++ and Java share a common exception handling framework,
-things are not quite as integrated as we would like, yet.
-The main issue is the incompatible exception <emphasis>values</emphasis>,
-and that the <quote>run-time type information</quote> facilities of the
-two languages are not integrated.</para>
+things are not yet perfectly integrated.  The main issue is that the
+<quote>run-time type information</quote> facilities of the two
+languages are not integrated.</para>
 <para>
-Basically, this means that you cannot in C++ catch an exception
-value (<classname>Throwable</classname>) thrown from Java code, nor
-can you use <literal>throw</literal> on a Java exception value from C++ code,
-and expect to be able to catch it in Java code.
-We do intend to change this.</para>
+Still, things work fairly well.  You can throw a Java exception from
+C++ using the ordinary <literal>throw</literal> construct, and this
+exception can be caught by Java code.  Similarly, you can catch an
+exception thrown from Java using the C++ <literal>catch</literal>
+construct.
 <para>
-You can throw a Java exception from C++ code by using
-the <literal>JvThrow</literal> <acronym>CNI</acronym> function.
-<funcsynopsis>
-   <funcdef>void <function>JvThrow</function></funcdef>
-   <paramdef>jobject <parameter>obj</parameter></paramdef>
-</funcsynopsis>
-  Throws an exception <parameter>obj</parameter>, in a way compatible 
-with the Java exception-handling functions.
-  The class of <parameter>obj</parameter> must be a subclass of
-  <literal>Throwable</literal>.
+Note that currently you cannot mix C++ catches and Java catches in
+a single C++ translation unit.  We do intend to fix this eventually.
 </para>
 <para>
 Here is an example:
 <programlisting>
 if (i >= count)
-   JvThrow (new java::lang::IndexOutOfBoundsException());
+   throw new java::lang::IndexOutOfBoundsException();
 </programlisting>
 </para>
 </sect1>
@@ -1044,7 +944,14 @@ as the names of classes for which headers should be generated.</para>
 <para>
 gcjh will generate all the required namespace declarations and
 <literal>#include</literal>'s for the header file.
-In some situations, gcjh will generate simple inline member functions.</para>
+In some situations, gcjh will generate simple inline member
+functions.  Note that, while gcjh puts <literal>#pragma
+interface</literal> in the generated header file, you should
+<emphasis>not</emphasis> put <literal>#pragma implementation</literal>
+into your C++ source file.  If you do, duplicate definitions of
+inline functions will sometimes be created, leading to link-time
+errors.
+</para>
 <para>
 There are a few cases where gcjh will fail to work properly:</para>
 <para>
