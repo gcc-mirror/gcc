@@ -1903,7 +1903,7 @@ try_to_integrate (fndecl, actparms, target, ignore, type, structure_value_addr)
       warning_with_decl (fndecl, "inlining failed in call to `%s'");
       warning ("called from here");
     }
-  mark_addressable (fndecl);
+  (*lang_hooks.mark_addressable) (fndecl);
   return (rtx) (size_t) - 1;
 }
 
@@ -2209,7 +2209,7 @@ expand_call (exp, target, ignore)
 	      warning_with_decl (fndecl, "can't inline call to `%s'");
 	      warning ("called from here");
 	    }
-	  mark_addressable (fndecl);
+	  (*lang_hooks.mark_addressable) (fndecl);
 	}
 
       flags |= flags_from_decl_or_type (fndecl);
@@ -2255,7 +2255,7 @@ expand_call (exp, target, ignore)
 	    /* In case this is a static function, note that it has been
 	       used.  */
 	    if (! TREE_ADDRESSABLE (fndecl))
-	      mark_addressable (fndecl);
+	      (*lang_hooks.mark_addressable) (fndecl);
 	    is_integrable = 0;
 	  }
       }

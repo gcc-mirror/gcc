@@ -944,7 +944,7 @@ finish_asm_stmt (cv_qualifier, string, output_operands,
 	     DECL_RTL for the OPERAND -- which we don't have at this
 	     point.  */
 	  if (!allows_reg && DECL_P (operand))
-	    mark_addressable (operand);
+	    cxx_mark_addressable (operand);
 	}
     }
 
@@ -2204,7 +2204,7 @@ simplify_aggr_init_exprs_r (tp, walk_subtrees, data)
     {
       /* Replace the first argument with the address of the third
 	 argument to the AGGR_INIT_EXPR.  */
-      mark_addressable (slot);
+      cxx_mark_addressable (slot);
       args = tree_cons (NULL_TREE, 
 			build1 (ADDR_EXPR, 
 				build_pointer_type (TREE_TYPE (slot)),

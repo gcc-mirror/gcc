@@ -263,10 +263,10 @@ java_unsigned_type (type)
 
 /* Mark EXP saying that we need to be able to take the
    address of it; it should not be allocated in a register.
-   Value is 1 if successful.  */
+   Value is true if successful.  */
 
-int
-mark_addressable (exp)
+bool
+java_mark_addressable (exp)
      tree exp;
 {
   register tree x = exp;
@@ -288,12 +288,12 @@ mark_addressable (exp)
 	break;
 
       case COND_EXPR:
-	return mark_addressable (TREE_OPERAND (x, 1))
-	  & mark_addressable (TREE_OPERAND (x, 2));
+	return java_mark_addressable (TREE_OPERAND (x, 1))
+	  && java_mark_addressable (TREE_OPERAND (x, 2));
 
       case CONSTRUCTOR:
 	TREE_ADDRESSABLE (x) = 1;
-	return 1;
+	return true;
 
       case INDIRECT_REF:
 	/* We sometimes add a cast *(TYPE*)&FOO to handle type and mode
@@ -309,7 +309,7 @@ mark_addressable (exp)
 	    x = TREE_OPERAND (x, 0);
 	    break;
 	  }
-	return 1;
+	return true;
 
       case VAR_DECL:
       case CONST_DECL:
@@ -323,7 +323,7 @@ mark_addressable (exp)
 #endif
 	/* drops through */
       default:
-	return 1;
+	return true;
     }
 }
 

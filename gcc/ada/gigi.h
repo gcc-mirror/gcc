@@ -727,8 +727,8 @@ extern tree build_allocator	PARAMS((tree, tree, tree, Entity_Id,
 extern tree fill_vms_descriptor PARAMS((tree, Entity_Id));
 
 /* Indicate that we need to make the address of EXPR_NODE and it therefore
-   should not be allocated in a register. Return 1 if successful.  */
-extern int mark_addressable	PARAMS((tree));
+   should not be allocated in a register.  Return true if successful.  */
+extern bool gnat_mark_addressable PARAMS((tree));
 
 /* These functions return the basic data type sizes and related parameters
    about the target machine.  */

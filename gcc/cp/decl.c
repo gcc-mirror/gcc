@@ -8546,7 +8546,7 @@ register_dtor_fn (decl)
   end_cleanup_fn ();
 
   /* Call atexit with the cleanup function.  */
-  mark_addressable (cleanup);
+  cxx_mark_addressable (cleanup);
   cleanup = build_unary_op (ADDR_EXPR, cleanup, 0);
   if (flag_use_cxa_atexit)
     {
@@ -14531,7 +14531,7 @@ cxx_maybe_build_cleanup (decl)
 	rval = decl;
       else
 	{
-	  mark_addressable (decl);
+	  cxx_mark_addressable (decl);
 	  rval = build_unary_op (ADDR_EXPR, decl, 0);
 	}
 

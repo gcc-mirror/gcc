@@ -218,6 +218,11 @@ struct lang_hooks
      through.  The default hook returns a negative number.  */
   int (*unsafe_for_reeval) PARAMS ((tree));
 
+  /* Mark EXP saying that we need to be able to take the address of
+     it; it should not be allocated in a register.  Return true if
+     successful.  */
+  bool (*mark_addressable) PARAMS ((tree));
+
   /* Hook called by staticp for language-specific tree codes.  */
   int (*staticp) PARAMS ((tree));
 

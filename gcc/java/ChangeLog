@@ -1,5 +1,11 @@
 2002-04-01  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	* java-tree.h (java_mark_addressable): New.
+	* lang.c (LANG_HOOKS_MARK_ADDRESSABLE): Redefine.
+	* typeck.c (mark_addressable): Rename, update.
+
+2002-04-01  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* expr.c (build_java_binop): Update.
 	* java-tree.h (java_signed_type, java_unsigned_type,
 	java_signed_or_unsigned_type): Update.

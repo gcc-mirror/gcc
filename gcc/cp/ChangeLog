@@ -1,3 +1,19 @@
+2002-04-01  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* call.c (build_addr_func): Update.
+	* class.c (resolve_address_of_overloaded_function): Update.
+	* cp-lang.c (LANG_HOOKS_MARK_ADDRESSABLE): Redefine.
+	* cp-tree.h (cxx_mark_addressable): New.
+	* decl.c (register_dtor_fn, cxx_maybe_build_cleanup): Update.
+	* decl2.c (build_cleanup): Update.
+	* except.c (build_throw): Update.
+	* init.c (resolve_offset_ref): Update.
+	* pt.c (convert_nontype_argument): Update.
+	* semantics.c (finish_asm_stmt, simplify_affr_init_exprs_r): Update.
+	* typeck.c (decay_conversion, build_array_ref, build_unary_op,
+	unary_complex_lvalue): Update.
+	(mark_addressable): Rename.
+
 2002-04-01  Roger Sayle  <roger@eyesopen.com>
 
 	PR c++/5998:

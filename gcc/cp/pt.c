@@ -3154,7 +3154,7 @@ convert_nontype_argument (type, expr)
 	      return error_mark_node;
 	  }
 
-	mark_addressable (expr);
+	cxx_mark_addressable (expr);
 	return build1 (ADDR_EXPR, type, expr);
       }
       break;

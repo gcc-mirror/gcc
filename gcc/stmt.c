@@ -1678,7 +1678,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	      || (DECL_P (val)
 		  && GET_CODE (DECL_RTL (val)) == REG
 		  && GET_MODE (DECL_RTL (val)) != TYPE_MODE (type))))
-	mark_addressable (val);
+	(*lang_hooks.mark_addressable) (val);
 
       if (is_inout)
 	ninout++;
@@ -1707,7 +1707,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	return;
 
       if (! allows_reg && allows_mem)
-	mark_addressable (TREE_VALUE (tail));
+	(*lang_hooks.mark_addressable) (TREE_VALUE (tail));
     }
 
   /* Second pass evaluates arguments.  */

@@ -932,7 +932,7 @@ default_function_array_conversion (exp)
 	     is not the target type of the type of the ADDR_EXPR itself.
 	     Question is, can this lossage be avoided?  */
 	  adr = build1 (ADDR_EXPR, ptrtype, exp);
-	  if (mark_addressable (exp) == 0)
+	  if (!c_mark_addressable (exp))
 	    return error_mark_node;
 	  TREE_CONSTANT (adr) = staticp (exp);
 	  TREE_SIDE_EFFECTS (adr) = 0;   /* Default would be, same as EXP.  */
@@ -1317,7 +1317,7 @@ build_array_ref (array, index)
 	  || (COMPLETE_TYPE_P (TREE_TYPE (TREE_TYPE (array)))
 	      && TREE_CODE (TYPE_SIZE (TREE_TYPE (TREE_TYPE (array)))) != INTEGER_CST))
 	{
-	  if (mark_addressable (array) == 0)
+	  if (!c_mark_addressable (array))
 	    return error_mark_node;
 	}
       /* An array that is indexed by a constant value which is not within
@@ -1328,7 +1328,7 @@ build_array_ref (array, index)
 	  && TYPE_VALUES (TREE_TYPE (array))
 	  && ! int_fits_type_p (index, TYPE_VALUES (TREE_TYPE (array))))
 	{
-	  if (mark_addressable (array) == 0)
+	  if (!c_mark_addressable (array))
 	    return error_mark_node;
 	}
 
@@ -2991,7 +2991,7 @@ build_unary_op (code, xarg, flag)
       /* For &x[y], return x+y */
       if (TREE_CODE (arg) == ARRAY_REF)
 	{
-	  if (mark_addressable (TREE_OPERAND (arg, 0)) == 0)
+	  if (!c_mark_addressable (TREE_OPERAND (arg, 0)))
 	    return error_mark_node;
 	  return build_binary_op (PLUS_EXPR, TREE_OPERAND (arg, 0),
 				  TREE_OPERAND (arg, 1), 1);
@@ -3046,7 +3046,7 @@ build_unary_op (code, xarg, flag)
 
       argtype = build_pointer_type (argtype);
 
-      if (mark_addressable (arg) == 0)
+      if (!c_mark_addressable (arg))
 	return error_mark_node;
 
       {
@@ -3265,13 +3265,14 @@ readonly_warning (arg, msgid)
 
 /* Mark EXP saying that we need to be able to take the
    address of it; it should not be allocated in a register.
-   Value is 1 if successful.  */
+   Returns true if successful.  */
 
-int
-mark_addressable (exp)
+bool
+c_mark_addressable (exp)
      tree exp;
 {
   tree x = exp;
+
   while (1)
     switch (TREE_CODE (x))
       {
@@ -3280,7 +3281,7 @@ mark_addressable (exp)
 	  {
 	    error ("cannot take address of bit-field `%s'",
 		   IDENTIFIER_POINTER (DECL_NAME (TREE_OPERAND (x, 1))));
-	    return 0;
+	    return false;
 	  }
 
 	/* ... fall through ...  */
@@ -3295,7 +3296,7 @@ mark_addressable (exp)
       case COMPOUND_LITERAL_EXPR:
       case CONSTRUCTOR:
 	TREE_ADDRESSABLE (x) = 1;
-	return 1;
+	return true;
 
       case VAR_DECL:
       case CONST_DECL:
@@ -3308,7 +3309,7 @@ mark_addressable (exp)
 	      {
 		error ("global register variable `%s' used in nested function",
 		       IDENTIFIER_POINTER (DECL_NAME (x)));
-		return 0;
+		return false;
 	      }
 	    pedwarn ("register variable `%s' used in nested function",
 		     IDENTIFIER_POINTER (DECL_NAME (x)));
@@ -3319,7 +3320,7 @@ mark_addressable (exp)
 	      {
 		error ("address of global register variable `%s' requested",
 		       IDENTIFIER_POINTER (DECL_NAME (x)));
-		return 0;
+		return false;
 	      }
 
 	    /* If we are making this addressable due to its having
@@ -3330,7 +3331,7 @@ mark_addressable (exp)
 	    else if (C_TYPE_FIELDS_VOLATILE (TREE_TYPE (x)))
 	      {
 		error ("cannot put object with volatile field into register");
-		return 0;
+		return false;
 	      }
 
 	    pedwarn ("address of register variable `%s' requested",
@@ -3347,7 +3348,7 @@ mark_addressable (exp)
 #endif
 
       default:
-	return 1;
+	return true;
     }
 }
 
@@ -4037,7 +4038,7 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
 	  error ("cannot pass rvalue to reference parameter");
 	  return error_mark_node;
 	}
-      if (mark_addressable (rhs) == 0)
+      if (!c_mark_addressable (rhs))
 	return error_mark_node;
       rhs = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (rhs)), rhs);
 

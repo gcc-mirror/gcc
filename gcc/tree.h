@@ -2947,7 +2947,6 @@ extern int lang_attribute_common;
 
 /* In front end.  */
 
-extern int mark_addressable		PARAMS ((tree));
 extern void incomplete_type_error	PARAMS ((tree, tree));
 extern tree truthvalue_conversion	PARAMS ((tree));
 

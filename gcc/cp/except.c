@@ -756,7 +756,7 @@ build_throw (exp)
 				     complete_dtor_identifier, 0);
 	  cleanup = TREE_VALUE (cleanup);
 	  mark_used (cleanup);
-	  mark_addressable (cleanup);
+	  cxx_mark_addressable (cleanup);
 	  /* Pretend it's a normal function.  */
 	  cleanup = build1 (ADDR_EXPR, cleanup_type, cleanup);
 	}

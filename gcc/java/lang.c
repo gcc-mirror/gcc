@@ -229,6 +229,8 @@ static int dependency_tracking = 0;
 #define LANG_HOOKS_PARSE_FILE java_parse_file
 #undef LANG_HOOKS_MARK_TREE
 #define LANG_HOOKS_MARK_TREE java_mark_tree
+#undef LANG_HOOKS_MARK_ADDRESSABLE
+#define LANG_HOOKS_MARK_ADDRESSABLE java_mark_addressable
 #undef LANG_HOOKS_EXPAND_EXPR
 #define LANG_HOOKS_EXPAND_EXPR java_expand_expr
 #undef LANG_HOOKS_DUP_LANG_SPECIFIC_DECL

@@ -1361,7 +1361,7 @@ create_var_decl (var_name, asm_name, type, var_init, const_flag, public_flag,
 
   /* If this is volatile, force it into memory.  */
   if (TREE_SIDE_EFFECTS (var_decl))
-    mark_addressable (var_decl);
+    gnat_mark_addressable (var_decl);
 
   if (TREE_CODE (var_decl) != CONST_DECL)
     rest_of_decl_compilation (var_decl, 0, global_bindings_p (), 0);

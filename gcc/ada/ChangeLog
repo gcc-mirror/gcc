@@ -1,5 +1,16 @@
 2002-04-01  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	* decl.c (gnat_to_gnu_entity): Update.
+	* gigi.h (mark_addressable): Rename.
+	* misc.c (LANG_HOOKS_MARK_ADDRESSABLE): Redefine.
+	* trans.c (tree_transform): Update.
+	* utils.c (create_var_decl): Update.
+	* util2.c (build_binary_op, build_unary_op,
+	fill_vms_descriptor): Update.
+	(mark_addressable): Rename, update.
+
+2002-04-01  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* gigi.h (unsigned_type, signed_type, signed_or_unsigned_type):
 	Rename.
 	* misc.c (LANG_HOOKS_SIGNED_TYPE, LANG_HOOKS_UNSIGNED_TYPE,
