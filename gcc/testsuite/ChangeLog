@@ -1,3 +1,7 @@
+2005-03-30  Alan Modra  <amodra@bigpond.net.au>
+
+	* gcc.c-torture/compile/pr20203.c: New test.
+
 2005-03-29  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR rtl-optimization/20532

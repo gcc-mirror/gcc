@@ -978,12 +978,8 @@ expand_builtin_prefetch (tree arglist)
 static rtx
 get_memory_rtx (tree exp)
 {
-  rtx addr = expand_expr (exp, NULL_RTX, ptr_mode, EXPAND_SUM);
-  rtx mem;
-
-  addr = convert_memory_address (Pmode, addr);
-
-  mem = gen_rtx_MEM (BLKmode, memory_address (BLKmode, addr));
+  rtx addr = expand_expr (exp, NULL_RTX, ptr_mode, EXPAND_NORMAL);
+  rtx mem = gen_rtx_MEM (BLKmode, memory_address (BLKmode, addr));
 
   /* Get an expression we can use to find the attributes to assign to MEM.
      If it is an ADDR_EXPR, use the operand.  Otherwise, dereference it if
