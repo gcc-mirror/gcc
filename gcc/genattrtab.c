@@ -1155,7 +1155,7 @@ check_attr_value (rtx exp, struct attr_desc *attr)
 	  have_error = 1;
 	  break;
 	}
-      /* FALLTHRU */
+      /* Fall through.  */
 
     case IOR:
     case AND:

@@ -1006,7 +1006,7 @@ df_uses_record (struct df *df, rtx *loc, enum df_ref_type ref_type,
 				  insn, DF_REF_READ_WRITE);
 		  break;
 		}
-	      /* ... FALLTHRU ...  */
+	      /* Fall through.  */
 	    case REG:
 	    case PARALLEL:
 	    case PC:

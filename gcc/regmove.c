@@ -375,7 +375,7 @@ static int perhaps_ends_bb_p (rtx insn)
 	 very conservative.  */
       if (nonlocal_goto_handler_labels)
 	return 1;
-      /* FALLTHRU */
+      /* Fall through.  */
     default:
       return can_throw_internal (insn);
     }

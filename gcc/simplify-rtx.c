@@ -3148,7 +3148,7 @@ simplify_subreg (enum machine_mode outermode, rtx op,
 	     pretend this is actually an integer.  */
 	  innermode = mode_for_size (HOST_BITS_PER_WIDE_INT, MODE_INT, 0);
 
-	  /* FALLTHROUGH */
+	  /* Fall through.  */
 	case CONST_INT:
 	  if (GET_CODE (op) == CONST_INT)
 	    val = INTVAL (op);

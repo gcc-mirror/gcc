@@ -2090,7 +2090,7 @@ copy_rtx_and_substitute (rtx orig, struct inline_remap *map, int for_lhs)
       if (NOTE_LINE_NUMBER (orig) != NOTE_INSN_DELETED_LABEL)
 	break;
 
-      /* ... FALLTHRU ...  */
+      /* Fall through.  */
     case CODE_LABEL:
       LABEL_PRESERVE_P (get_label_from_map (map, CODE_LABEL_NUMBER (orig)))
 	= LABEL_PRESERVE_P (orig);

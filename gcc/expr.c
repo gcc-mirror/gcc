@@ -5829,7 +5829,7 @@ safe_from_p (rtx x, tree exp, int top_p)
     case '<':
       if (!safe_from_p (x, TREE_OPERAND (exp, 1), 0))
 	return 0;
-      /* FALLTHRU */
+      /* Fall through.  */
 
     case '1':
       return safe_from_p (x, TREE_OPERAND (exp, 0), 0);

@@ -2100,7 +2100,7 @@ rest_of_handle_stack_regs (tree decl, rtx insns)
 #if defined (HAVE_ATTR_length)
   /* If flow2 creates new instructions which need splitting
      and scheduling after reload is not done, they might not be
-     splitten until final which doesn't allow splitting
+     split until final which doesn't allow splitting
      if HAVE_ATTR_length.  */
 #ifdef INSN_SCHEDULING
   if (optimize && !flag_schedule_insns_after_reload)

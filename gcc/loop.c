@@ -2643,7 +2643,7 @@ prescan_loop (struct loop *loop)
 		  loop_info->has_multiple_exit_targets = 1;
 		}
 	    }
-	  /* FALLTHRU */
+	  /* Fall through.  */
 
 	case INSN:
 	  if (volatile_refs_p (PATTERN (insn)))

@@ -512,7 +512,7 @@ collect_insn_data (rtx pattern, int *palt, int *pmax)
     case MATCH_OPERAND:
       i = n_alternatives (XSTR (pattern, 2));
       *palt = (i > *palt ? i : *palt);
-      /* FALLTHRU */
+      /* Fall through.  */
 
     case MATCH_OPERATOR:
     case MATCH_SCRATCH:
@@ -540,7 +540,7 @@ collect_insn_data (rtx pattern, int *palt, int *pmax)
 	case 'V':
 	  if (XVEC (pattern, i) == NULL)
 	    break;
-	  /* FALLTHRU */
+	  /* Fall through.  */
 	case 'E':
 	  for (j = XVECLEN (pattern, i) - 1; j >= 0; --j)
 	    collect_insn_data (XVECEXP (pattern, i, j), palt, pmax);
@@ -595,7 +595,7 @@ alter_predicate_for_insn (rtx pattern, int alt, int max_op, int lineno)
 	    XSTR (pattern, 2) = new_c;
 	  }
       }
-      /* FALLTHRU */
+      /* Fall through.  */
 
     case MATCH_OPERATOR:
     case MATCH_SCRATCH:

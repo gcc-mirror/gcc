@@ -1,5 +1,36 @@
 2004-01-06  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* alias.c: Fix comment typos.
+	* builtins.c: Likewise.
+	* cfg.c: Likewise.
+	* df.c: Likewise.
+	* dominance.c: Likewise.
+	* dwarf2out.c: Likewise.
+	* emit-rtl.c: Likewise.
+	* expr.c: Likewise.
+	* final.c: Likewise.
+	* fold-const.c: Likewise.
+	* gcse.c: Likewise.
+	* genattrtab.c: Likewise.
+	* genrecog.c: Likewise.
+	* gensupport.c: Likewise.
+	* ggc-zone.c: Likewise.
+	* integrate.c: Likewise.
+	* local-alloc.c: Likewise.
+	* loop.c: Likewise.
+	* recog.c: Likewise.
+	* regmove.c: Likewise.
+	* reg-stack.c: Likewise.
+	* reorg.c: Likewise.
+	* rtlanal.c: Likewise.
+	* rtl.h: Likewise.
+	* sched-ebb.c: Likewise.
+	* simplify-rtx.c: Likewise.
+	* toplev.c: Likewise.
+	* varasm.c: Likewise.
+
+2004-01-06  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* doc/install.texi: Fix typos.
 	* doc/invoke.texi: Likewise.
 	* doc/md.texi: Likewise.
