@@ -1552,7 +1552,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
       XVECEXP (body, 3, ninputs - ninout + i)      /* argvec */
 	= output_rtx[j];
       XVECEXP (body, 4, ninputs - ninout + i)      /* constraints */
-	= gen_rtx_ASM_INPUT (inout_mode[j], match[j]);
+	= gen_rtx_ASM_INPUT (inout_mode[i], match[j]);
     }
 
   /* Now, for each output, construct an rtx
