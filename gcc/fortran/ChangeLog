@@ -1,3 +1,8 @@
+2005-01-06  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortranspec.c (lang_specific_driver): Change year to 2005 in
+	output of 'gfortran --version'.
+
 2005-01-03  Steven G. Kargl  <kargls@comcast.net>
 
 	* arith.c: Add system.h; remove string.h
