@@ -5681,6 +5681,13 @@ override_options ()
       target_flags &= ~MASK_EXPLICIT_RELOCS;
     }
 
+  /* Explicit relocations for "old" ABIs are a GNU extension.  Unless
+     the user has said otherwise, assume that they are not available
+     with assemblers other than gas.  */
+  if (!TARGET_NEWABI && !TARGET_GAS
+      && (target_flags_explicit & MASK_EXPLICIT_RELOCS) == 0)
+    target_flags &= ~MASK_EXPLICIT_RELOCS;
+
   /* -mrnames says to use the MIPS software convention for register
      names instead of the hardware names (ie, $a0 instead of $4).
      We do this by switching the names in mips_reg_names, which the
