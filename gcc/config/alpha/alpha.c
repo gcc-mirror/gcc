@@ -5482,7 +5482,7 @@ alpha_va_start (stdarg_p, valist, nextarg)
   if (TREE_CODE (TREE_TYPE (valist)) == ERROR_MARK)
     return;
 
-  if (TARGET_ABI_OPEN_VMS || TARGET_ABI_UNICOSMK)
+  if (TARGET_ABI_UNICOSMK)
     std_expand_builtin_va_start (stdarg_p, valist, nextarg);
 
   /* For Unix, SETUP_INCOMING_VARARGS moves the starting address base
@@ -5495,28 +5495,41 @@ alpha_va_start (stdarg_p, valist, nextarg)
      in argsize above, but which are not actually stored on the stack.  */
 
   if (NUM_ARGS <= 5 + stdarg_p)
-    offset = 6 * UNITS_PER_WORD;
+    offset = TARGET_ABI_OPEN_VMS ? UNITS_PER_WORD : 6 * UNITS_PER_WORD;
   else
     offset = -6 * UNITS_PER_WORD;
 
-  base_field = TYPE_FIELDS (TREE_TYPE (valist));
-  offset_field = TREE_CHAIN (base_field);
+  if (TARGET_ABI_OPEN_VMS)
+    {
+      nextarg = plus_constant (nextarg, offset);
+      nextarg = plus_constant (nextarg, NUM_ARGS * UNITS_PER_WORD);
+      t = build (MODIFY_EXPR, TREE_TYPE (valist), valist,
+		 make_tree (ptr_type_node, nextarg));
+      TREE_SIDE_EFFECTS (t) = 1;
 
-  base_field = build (COMPONENT_REF, TREE_TYPE (base_field),
-		      valist, base_field);
-  offset_field = build (COMPONENT_REF, TREE_TYPE (offset_field),
-			valist, offset_field);
+      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+    }
+  else
+    {
+      base_field = TYPE_FIELDS (TREE_TYPE (valist));
+      offset_field = TREE_CHAIN (base_field);
 
-  t = make_tree (ptr_type_node, virtual_incoming_args_rtx);
-  t = build (PLUS_EXPR, ptr_type_node, t, build_int_2 (offset, 0));
-  t = build (MODIFY_EXPR, TREE_TYPE (base_field), base_field, t);
-  TREE_SIDE_EFFECTS (t) = 1;
-  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+      base_field = build (COMPONENT_REF, TREE_TYPE (base_field),
+			  valist, base_field);
+      offset_field = build (COMPONENT_REF, TREE_TYPE (offset_field),
+			    valist, offset_field);
 
-  t = build_int_2 (NUM_ARGS*UNITS_PER_WORD, 0);
-  t = build (MODIFY_EXPR, TREE_TYPE (offset_field), offset_field, t);
-  TREE_SIDE_EFFECTS (t) = 1;
-  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+      t = make_tree (ptr_type_node, virtual_incoming_args_rtx);
+      t = build (PLUS_EXPR, ptr_type_node, t, build_int_2 (offset, 0));
+      t = build (MODIFY_EXPR, TREE_TYPE (base_field), base_field, t);
+      TREE_SIDE_EFFECTS (t) = 1;
+      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+      t = build_int_2 (NUM_ARGS * UNITS_PER_WORD, 0);
+      t = build (MODIFY_EXPR, TREE_TYPE (offset_field), offset_field, t);
+      TREE_SIDE_EFFECTS (t) = 1;
+      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+    }
 }
 
 rtx
