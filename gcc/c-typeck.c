@@ -2234,11 +2234,6 @@ convert_arguments (tree typelist, tree values, tree function, tree fundecl)
 			/* Change in signedness doesn't matter
 			   if a constant value is unaffected.  */
 			;
-		      /* Likewise for a constant in a NOP_EXPR.  */
-		      else if (TREE_CODE (val) == NOP_EXPR
-			       && TREE_CODE (TREE_OPERAND (val, 0)) == INTEGER_CST
-			       && int_fits_type_p (TREE_OPERAND (val, 0), type))
-			;
 		      /* If the value is extended from a narrower
 			 unsigned type, it doesn't matter whether we
 			 pass it as signed or unsigned; the value
@@ -5204,21 +5199,6 @@ set_init_index (tree first, tree last)
       error_init ("array index in initializer not of integer type");
       return;
     }
-
-  while ((TREE_CODE (first) == NOP_EXPR
-	  || TREE_CODE (first) == CONVERT_EXPR
-	  || TREE_CODE (first) == NON_LVALUE_EXPR)
-	 && (TYPE_MODE (TREE_TYPE (first))
-	     == TYPE_MODE (TREE_TYPE (TREE_OPERAND (first, 0)))))
-    first = TREE_OPERAND (first, 0);
-
-  if (last)
-    while ((TREE_CODE (last) == NOP_EXPR
-	    || TREE_CODE (last) == CONVERT_EXPR
-	    || TREE_CODE (last) == NON_LVALUE_EXPR)
-	   && (TYPE_MODE (TREE_TYPE (last))
-	       == TYPE_MODE (TREE_TYPE (TREE_OPERAND (last, 0)))))
-      last = TREE_OPERAND (last, 0);
 
   if (TREE_CODE (first) != INTEGER_CST)
     error_init ("nonconstant array index in initializer");

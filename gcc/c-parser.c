@@ -5019,7 +5019,6 @@ c_parser_postfix_expression (c_parser *parser)
 	    tree c;
 
 	    c = fold (e1.value);
-	    STRIP_NOPS (c);
 	    if (TREE_CODE (c) != INTEGER_CST)
 	      error ("first argument to %<__builtin_choose_expr%> not"
 		     " a constant");
