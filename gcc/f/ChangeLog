@@ -1,3 +1,11 @@
+Fri Nov  2 10:51:34 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* com.c (ffecom_initialize_char_syntax_, U_CHAR, is_idchar,
+	is_idstart, is_hor_space, is_space, SKIP_WHITE_SPACE,
+	SKIP_ALL_WHITE_SPACE): Delete.
+	(read_filename_string, read_name_map): Don't use is_space or
+	is_hor_space.
+
 2001-10-29  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* news.texi: Document new ability to compile programs with
