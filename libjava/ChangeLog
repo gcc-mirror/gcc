@@ -1,3 +1,8 @@
+2003-12-18  Fernando Nasser  <fnasser@redhat.com>
+
+	* java/awt/List.java (replaceItem): Prevent selection to move with
+	replace and minimize flickering.
+ 
 2003-12-18  Michael Koch  <konqueror@gmx.de>
 
 	* libltdl/ltdl.c: Define __private_extern__ if needed.
