@@ -1026,7 +1026,235 @@ Wed Jan 29 17:19:34 1997  Bob Manson  <manson@charmed.cygnus.com>
 Wed Jan 29 00:36:25 1997  Bob Manson  <manson@charmed.cygnus.com>
 
 	* config/default.exp: Minimize. Delete the remainer of the files in
-	config;	this functionality is now i                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                1995  Jeffrey A. Law  <law@sethra.cygnus.com>
+	config;	this functionality is now in devo/dejagnu/config.
+
+	g++.*/*: Pass any additional flags used to compile to postbase;
+	delete CXXFLAGS.
+	
+	gcc.c-torture/*: Remove calls to gcc_init and gcc_finish; this
+	is now done by runtest.exp. Use gcc_target_compile instead of
+	compile.
+
+	lib/c-torture.exp: Use gcc_target_compile instead of compile.
+	Remove references to CFLAGS. Use remote_file instead of
+	calling rm -f.
+	(c-torture): Take a list of arguments to use to compile this
+	testcase.
+
+	lib/g++.exp: Simplify. Use target_compile instead of compile.
+	lib/gcc-dg.exp: Ditto.
+	lib/gcc.exp: Ditto.
+	lib/mike-{gcc,g++}.exp: Ditto.
+	lib/old-dejagnu.exp: Ditto.
+	lib/plumhall.exp: Ditto.
+	
+Wed Jan  8 14:43:07 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* lib/plumhall.exp (ph_make): Use CFLAGS and ANSICFLAGS when linking.
+	(ph_linker): Likewise.
+
+Wed Nov 13 16:04:19 1996  Joern Rennecke <amylaar@cygnus.com>
+
+        * gcc.c-torture/execute/{loop-2e.c,loop-2f.c}: Only use
+	MAP_ANON / MAP_ANONYMOUS if defined;
+	else try to map from /dev/zero .
+
+Tue Nov 12 23:30:12 1996  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/execute/{loop-2e.c,loop-2f.c}:  If MAP_ANON
+	isn't defined, then define it to MAP_ANONYMOUS.
+
+Tue Nov 12 11:57:49 1996  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture: Update to c-torture-1.42 release.
+
+Mon Nov 11 12:45:31 1996  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture: Update to c-torture-1.41 release.
+
+Sun Oct 27 18:56:18 1996  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/execute/enum-1.c: New test.  Will be in next
+	c-torture release.
+
+Thu Aug 15 11:09:36 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* lib/gcc.exp (gcc_init): Always append the target_info to CFLAGS
+	and LDFLAGS.  Fix second case to append the target_info ldflags
+	onto LDFLAGS, not CFLAGS.
+	* lib/g++.exp (g++_init): Add target_info stuff.
+	* lib/old-dejagnu.exp (old-dejagnu-init): Likewise.  Add inclusion
+	of libgloss and newlib flags for !native.
+
+	* config/proelf.exp: Load remote.exp and do `push_target hppro'.
+	(GDB): Fix relative path to go up another dir for finding gdb.
+
+Thu Aug  8 17:03:27 1996  Rob Savoye  <rob@chinadoll.cygnus.com>
+
+	* lib/gcc.exp(gcc_init): Set CFLAGS and LDFLAGS to their new
+	versions in the target_info array, if they don't exist.
+
+Fri Aug  2 15:39:03 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* config/vx.exp (${tool}_load): Fix syntax of `$shell_id < 0'.
+
+Mon Jul  8 15:45:58 1996  Jim Wilson  <wilson@cygnus.com>
+
+	* lib/g++.exp: Change all uses of $base_dir/ to $base_dir/../.
+	* lib/gcc.exp, lib/old-dejagnu.exp: Likewise.
+
+Mon Jul  1 15:53:00 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* lib/old-dejagnu.exp: Don't remove the output file before we've
+	actually tested it. Don't append pwd to the path of the executable
+	we're testing.
+
+Sun Jun 30 14:37:50 1996  Doug Evans  <dje@canuck.cygnus.com>
+
+	* lib/g++.exp (default_g++_start): Don't pass LDFLAGS, LIBS if -c.
+
+Wed Jun 26 14:15:55 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* lib/old-dejagnu.exp (old-dejagnu): Add $tmpdir to specify a
+ 	temporary directory for compiler files, and set it to a default
+ 	value of /tmp. Set $output as the name of the output file from
+ 	compiling the testcase. Add a -o option to $cflags_var so the
+ 	compiler writes the final output file as $output. Set $executable
+ 	to $output.
+
+	* lib/mike-g++.exp (postbase): Add $tmpdir to specify a temporary
+ 	directory for compiler files, and set it to /tmp if it doesn't
+ 	already have a value. Set $output_file to the name of the output
+ 	file from compiling the testcase. Add a -o option to CXXFLAGS so
+ 	the compiler writes the final output file as $output. Use $output
+ 	as the executable to be tested.
+
+Mon Jun 24 17:12:16 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* lib/g++.exp: Also add -Wl,-rpath,... for linux.
+
+Sat Jun  8 15:12:24 1996  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/execute/pending-1.c: New test.  Still
+	pending in Tege's queue.
+
+Wed Apr 24 18:13:45 1996  Jim Wilson  <wilson@chestnut.cygnus.com>
+
+	* lib/plumhall.exp (ph_summary): Add arguments name and exec_status.
+	Add variables local_failcnt and local_unresolvedcnt.  Call gcc_fail
+	if there were failures.  Call unresolved if there were unresolved
+	testcases.  Call gcc_fail if program did not run to completion.
+	(ph_make): Pass additional argument name to ph_execute.
+	(ph_execute): Add new argument.  Pass additional arguments to
+	ph_summary.  Call gcc_fail is there is no execution output.
+
+Wed Apr 24 13:39:23 1996  Jeffrey A Law  (law@cygnus.com)
+
+	* lib/plumhall.exp (proc_summary): Output relavent summary
+	lines into the log so specific failures in plumhall can be
+	investigated.
+
+Wed Apr 10 13:23:45 1996  Jeffrey A Law  (law@cygnus.com)
+
+	* lib/c-torture.exp: Provide a default value for $NO_LONG_LONG.
+	(c-torture-execute): Don't try to execute tests which use
+	"long long" types if $NO_LONG_LONG is nonzero.
+
+Mon Apr  8 08:52:29 1996  Doug Evans  <dje@canuck.cygnus.com>
+
+	* gcc.c-torture/execute/ieee/ieee.exp: Run c-torture-execute,
+	not c-torture.
+
+	* gcc.ieee: Move from here.
+	* gcc.c-torture/execute/ieee: To here.
+
+Tue Mar 26 23:41:18 1996  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture: Update to c-torture-1.41 release.
+
+Fri Mar 22 15:49:24 1996  Jeffrey A Law  (law@cygnus.com)
+
+	* lib/c-torture.exp (c-torture-execute): Remove "$executable",
+	not "$output".
+
+Thu Mar  7 12:37:08 1996  Doug Evans  <dje@charmed.cygnus.com>
+
+	* lib/gcc.exp (default_gcc_start): Don't pass $LDFLAGS $LIBS if
+	-c present.
+
+Sat Mar  2 22:36:37 1996  Jeffrey A Law  (law@cygnus.com)
+
+	* config/proelf.exp: Handle connecting to a simulator.
+
+Wed Jan 31 00:58:15 1996  Jeffrey A Law  (law@cygnus.com)
+
+	* config/proelf.exp: New file.  Enough framework that we can
+	run c-torture tests on the proelf targets (or any other target
+	that gdb can connect to for that matter).
+
+Mon Jan 29 08:57:46 1996  Doug Evans  <dje@canuck.cygnus.com>
+
+	* gcc.c-torture/special/special.exp: Delete libs arg to dg-runtest.
+	* gcc.ph/testing/limits/limits.exp: Likewise.  Don't pass $CFLAGS.
+
+	* lib/plumhall.exp (ph_execute): Always call ph_summary if
+	exec_output exists.
+
+Sun Jan 28 11:28:43 1996  Doug Evans  <dje@charmed.cygnus.com>
+
+	* config/sim.exp (SIM_TIME_LIMIT): New user settable variable.
+	(${tool}_load): Use 240 seconds if SIM_TIME_LIMIT not set.
+
+	* config/*.exp: Update FSF address.  Change result of ${tool}_load
+	to pass/fail/unresolved/unsupported/untested.  Caller must now
+	call unresolved/unsupported/untested.
+	* lib/*.exp: Update FSF address.  Update to handle new results of
+	${tool}_load.
+	* lib/chill.exp (verbose): Delete.
+
+Sat Jan 27 12:28:07 1996  Doug Evans  <dje@charmed.cygnus.com>
+
+	* lib/gcc.exp (default_gcc_start): Change order of args to
+	$LDFLAGS $CFLAGS $LIBS.
+	* lib/gcc-dg.exp (gcc-dg-test): Arguments have changed, update.
+	Save/set/restore CFLAGS.  Pass single arg to gcc_start.
+	* gcc.dg/dg.exp: Delete libs arg in call to dg-runtest.
+	(CC,CFLAGS,LIBS): Delete references. Don't pass $CFLAGS to dg-runtest.
+	* gcc.misc-tests/dg-test.exp: Likewise.
+	* gcc.misc-tests/msgs.exp: Likewise.
+	* gcc.prms/prms.exp: Likewise.
+	* gcc.misc-tests/gcov.exp: Delete libs arg in call to dg-runtest.
+	(CFLAGS,LIBS): Delete references.  Don't pass $CFLAGS to dg-runtest.
+
+	* lib/dg.exp: Deleted, moved to dejagnu/lib.
+
+Wed Jan 24 18:37:00 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* g++.old-deja/old-deja.exp: Add passing of $mathlib to old-dejagnu.
+
+	* g++.old-deja/old-deja.exp: Move setting of runshlib from here...
+	* lib/old-dejagnu.exp (old-dejagnu-init): ...to here.
+
+	* lib/g++.exp (g++_init): Take out use of -rpath for the sun4, not
+	necessary.
+
+Sat Jan 20 17:22:08 1996  Brendan Kehoe  <brendan@cygnus.com>
+
+	* g++.old-deja/old-deja.exp: Move setting of runshlib out of the
+	global for loop; add use of $mathlib.
+	* lib/old-dejagnu.exp (old-dejagnu-init): Put the runshlib
+	settings here; set mathlib for anything but VxWorks.
+
+Mon Jan 22 16:31:57 1996  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture: Update to c-torture-1.40 release.
+
+Wed Jan  3 00:54:33 1996  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.ph/testing/limits/limits.exp: Load ${tool}-dg.exp, not
+	dg.exp.
+
+Sun Dec  3 16:17:42 1995  Jeffrey A. Law  <law@sethra.cygnus.com>
 
 	* lib/c-torture.exp (c-torture-execute): Declare "output" as
 	global.
