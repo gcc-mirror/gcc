@@ -961,8 +961,12 @@ general_operand (op, mode)
 #endif
       /* Avoid memories with nonzero SUBREG_BYTE, as offsetting the memory
          may result in incorrect reference.  We should simplify all valid
-         subregs of MEM anyway.  */
-      if (SUBREG_BYTE (op) && GET_CODE (SUBREG_REG (op)) == MEM)
+         subregs of MEM anyway.  But allow this after reload because we
+	 might be called from cleanup_subreg_operands. 
+
+	 ??? This is a kludge.  */
+      if (!reload_completed && SUBREG_BYTE (op) != 0
+	  && GET_CODE (SUBREG_REG (op)) == MEM)
         return 0;
 
       op = SUBREG_REG (op);
