@@ -1,3 +1,11 @@
+2004-08-12  Jan Beulich  <jbeulich@novell.com>
+
+	* config/locale/generic/ctype_members.cc
+	(ctype<wchar_t>::_M_convert_to_wmask): Default case must not use 0 as
+	initializer for return value, as that is invalid for enumerated	types.
+	* config/locale/gnu/ctype_members.cc
+	(ctype<wchar_t>::_M_convert_to_wmask): Likewise.
+
 2004-08-11  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/27_io/basic_stringbuf/sbumpc/wchar_t/1.cc: Fix typo.

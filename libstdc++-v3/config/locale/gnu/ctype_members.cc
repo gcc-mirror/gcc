@@ -95,7 +95,7 @@ namespace std
 	__ret = __wctype_l("graph", _M_c_locale_ctype);
 	break;
       default:
-	__ret = 0;
+	__ret = __wmask_type();
       }
     return __ret;
   }

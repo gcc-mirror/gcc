@@ -91,7 +91,7 @@ namespace std
 	__ret = wctype("graph");
 	break;
       default:
-	__ret = 0;
+	__ret = __wmask_type();
       }
     return __ret;
   };
