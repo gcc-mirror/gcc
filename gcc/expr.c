@@ -6940,6 +6940,12 @@ expand_increment (exp, post)
 	  && (TREE_CODE (TREE_OPERAND (incremented, 0)) != INDIRECT_REF
 	      || DECL_BIT_FIELD (TREE_OPERAND (incremented, 1)))))
     incremented = stabilize_reference (incremented);
+  /* Nested *INCREMENT_EXPRs can happen in C++.  We must force innermost
+     ones into save exprs so that they don't accidentally get evaluated
+     more than once by the code below.  */
+  if (TREE_CODE (incremented) == PREINCREMENT_EXPR
+      || TREE_CODE (incremented) == PREDECREMENT_EXPR)
+    incremented = save_expr (incremented);
 
   /* Compute the operands as RTX.
      Note whether OP0 is the actual lvalue or a copy of it:
