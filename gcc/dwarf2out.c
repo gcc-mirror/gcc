@@ -36,22 +36,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* #define NDEBUG 1 */
 #include "assert.h"
-#if defined(DWARF_TIMESTAMPS)
-#if defined(POSIX)
-#include <time.h>
-#else /* !defined(POSIX) */
-#include <sys/types.h>
-#if defined(__STDC__)
-extern time_t time (time_t *);
-#else /* !defined(__STDC__) */
-extern time_t time ();
-#endif /* !defined(__STDC__) */
-#endif /* !defined(POSIX) */
-#endif /* defined(DWARF_TIMESTAMPS) */
 
 extern char *getpwd ();
-extern char *index ();
-extern char *rindex ();
 
 /* IMPORTANT NOTE: Please see the file README.DWARF for important details
    regarding the GNU implementation of DWARF.  */
@@ -59,8 +45,6 @@ extern char *rindex ();
 /* NOTE: In the comments in this file, many references are made to
    "Debugging Information Entries".  This term is abbreviated as `DIE'
    throughout the remainder of this file.  */
-
-/* NOTE: The implementation of C++ support is unfinished.  */
 
 #if defined(__GNUC__) && (NDEBUG == 1)
 #define inline static inline
@@ -6085,6 +6069,8 @@ gen_array_type_die (type, context_die)
 #endif
 
 #ifdef MIPS_DEBUGGING_INFO
+  /* The SGI compilers handle arrays of unknown bound by setting
+     AT_declaration and not emitting any subrange DIEs.  */
   if (! TYPE_DOMAIN (type))
     add_AT_unsigned (array_die, DW_AT_declaration, 1);
   else
@@ -6379,6 +6365,7 @@ gen_subprogram_die (decl, context_die)
   register tree fn_arg_types;
   register tree outer_scope;
   dw_die_ref old_die = lookup_decl_die (decl);
+  int declaration = (current_function_decl != decl);
 
   if (origin != NULL)
     {
@@ -6418,8 +6405,16 @@ gen_subprogram_die (decl, context_die)
     }
   else
     {
-      subr_die = new_die (DW_TAG_subprogram,
-			  scope_die_for (decl, context_die));
+      register dw_die_ref scope_die;
+
+      if (DECL_CONTEXT (decl))
+	scope_die = scope_die_for (decl, context_die);
+      else
+	/* Don't put block extern declarations under comp_unit_die.  */
+	scope_die = context_die;
+
+      subr_die = new_die (DW_TAG_subprogram, scope_die);
+			 
       if (TREE_PUBLIC (decl))
 	add_AT_flag (subr_die, DW_AT_external, 1);
       add_name_and_src_coords_attributes (subr_die, decl);
@@ -6432,14 +6427,8 @@ gen_subprogram_die (decl, context_die)
       add_pure_or_virtual_attribute (subr_die, decl);
       if (DECL_ARTIFICIAL (decl))
 	add_AT_flag (subr_die, DW_AT_artificial, 1);
-
-      /* The first time we see a member function, it is in the context of
-         the class to which it belongs.  We make sure of this by emitting
-         the class first.  The next time is the definition, which is
-         handled above.  The two may come from the same source text.  */
-      if (! DECL_INITIAL (decl))
-	add_AT_flag (subr_die, DW_AT_declaration, 1);
     }
+
   if (DECL_ABSTRACT (decl))
     {
       if (DECL_DEFER_OUTPUT (decl))
@@ -6452,13 +6441,25 @@ gen_subprogram_die (decl, context_die)
 	}
       else if (DECL_INLINE (decl))
 	add_AT_unsigned (subr_die, DW_AT_inline, DW_INL_inlined);
+      else if (declaration)
+	/* block extern declaration in an inline function.  */
+	add_AT_flag (subr_die, DW_AT_declaration, 1);
       else
 	abort ();
 
       equate_decl_number_to_die (decl, subr_die);
     }
-  else if (!DECL_INITIAL (decl))
-    equate_decl_number_to_die (decl, subr_die);
+  else if (declaration)
+    {
+      add_AT_flag (subr_die, DW_AT_declaration, 1);
+
+      /* The first time we see a member function, it is in the context of
+         the class to which it belongs.  We make sure of this by emitting
+         the class first.  The next time is the definition, which is
+         handled above.  The two may come from the same source text.  */
+      if (decl_class_context (decl))
+	equate_decl_number_to_die (decl, subr_die);
+    }
   else if (!DECL_EXTERNAL (decl))
     {
       if (origin == NULL)
@@ -6515,10 +6516,8 @@ gen_subprogram_die (decl, context_die)
      its formal parameters.  */
   if (debug_info_level <= DINFO_LEVEL_TERSE)
     /* do nothing */;
-  else if (DECL_INITIAL (decl) == NULL_TREE)
-    {
-      gen_formal_types_die (TREE_TYPE (decl), subr_die);
-    }
+  else if (declaration)
+    gen_formal_types_die (TREE_TYPE (decl), subr_die);
   else
     {
       /* Generate DIEs to represent all known formal parameters */
@@ -6587,7 +6586,7 @@ gen_subprogram_die (decl, context_die)
      node representing the function's outermost pair of curly braces, and
      any blocks used for the base and member initializers of a C++
      constructor function.  */
-  if (outer_scope && TREE_CODE (outer_scope) != ERROR_MARK)
+  if (! declaration && TREE_CODE (outer_scope) != ERROR_MARK)
     {
       current_function_has_inlines = 0;
       decls_for_scope (outer_scope, subr_die, 0);
@@ -6615,7 +6614,10 @@ gen_variable_die (decl, context_die)
   register tree origin = decl_ultimate_origin (decl);
   register dw_die_ref var_die = new_die (DW_TAG_variable, context_die);
   dw_die_ref old_die = lookup_decl_die (decl);
-  
+  int declaration
+    = (DECL_EXTERNAL (decl)
+       || current_function_decl != decl_function_context (decl));
+
   if (origin != NULL)
     {
       add_abstract_origin_attribute (var_die, origin);
@@ -6648,21 +6650,19 @@ gen_variable_die (decl, context_die)
       if (DECL_ARTIFICIAL (decl))
 	add_AT_flag (var_die, DW_AT_artificial, 1);
     }
-  if (DECL_ABSTRACT (decl))
-    {
-      equate_decl_number_to_die (decl, var_die);
-    }
-  else if (!DECL_EXTERNAL (decl))
+
+  if (declaration)
+    add_AT_flag (var_die, DW_AT_declaration, 1);
+  
+  if ((declaration && decl_class_context (decl)) || DECL_ABSTRACT (decl))
+    equate_decl_number_to_die (decl, var_die);
+
+  if (! declaration && ! DECL_ABSTRACT (decl))
     {
       if (TREE_STATIC (decl))
 	equate_decl_number_to_die (decl, var_die);
       add_location_or_const_value_attribute (var_die, decl);
       add_pubname (decl, var_die);
-    }
-  else if (decl_class_context (decl))
-    {
-      equate_decl_number_to_die (decl, var_die);
-      add_AT_flag (var_die, DW_AT_declaration, 1);
     }
 }
 
@@ -7379,9 +7379,10 @@ gen_decl_die (decl, context_die)
       break;
 
     case FUNCTION_DECL:
-      /* If we are in terse mode, don't output any DIEs to represent mere
-         function declarations, unless they are class members.  */
-      if (DECL_INITIAL (decl) == NULL_TREE && DECL_CONTEXT (decl) == NULL_TREE)
+      /* Don't output any DIEs to represent mere function declarations,
+	 unless they are class members or explicit block externs.  */
+      if (DECL_INITIAL (decl) == NULL_TREE && DECL_CONTEXT (decl) == NULL_TREE
+	  && (current_function_decl == NULL_TREE || ! DECL_ARTIFICIAL (decl)))
 	{
 	  break;
 	}
