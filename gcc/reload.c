@@ -4179,6 +4179,46 @@ copy_replacements (x, y)
 	}
 }
 
+/* If LOC was scheduled to be replaced by something, return the replacement.
+   Otherwise, return *LOC.  */
+
+rtx
+find_replacement (loc)
+     rtx *loc;
+{
+  struct replacement *r;
+
+  for (r = &replacements[0]; r < &replacements[n_replacements]; r++)
+    {
+      rtx reloadreg = reload_reg_rtx[r->what];
+
+      if (reloadreg && r->where == loc)
+	{
+	  if (r->mode != VOIDmode && GET_MODE (reloadreg) != r->mode)
+	    reloadreg = gen_rtx (REG, r->mode, REGNO (reloadreg));
+
+	  return reloadreg;
+	}
+      else if (reloadreg && r->subreg_loc == loc)
+	{
+	  /* RELOADREG must be either a REG or a SUBREG.
+
+	     ??? Is it actually still ever a SUBREG?  If so, why?  */
+
+	  if (GET_CODE (reloadreg) == REG)
+	    return gen_rtx (REG, GET_MODE (*loc),
+			    REGNO (reloadreg) + SUBREG_WORD (*loc));
+	  else if (GET_MODE (reloadreg) == GET_MODE (*loc))
+	    return reloadreg;
+	  else
+	    return gen_rtx (SUBREG, GET_MODE (*loc), SUBREG_REG (reloadreg),
+			    SUBREG_WORD (reloadreg) + SUBREG_WORD (*loc));
+	}
+    }
+
+  return *loc;
+}
+
 /* Return nonzero if register in range [REGNO, ENDREGNO)
    appears either explicitly or implicitly in X
    other than being stored into.

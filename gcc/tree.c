@@ -1742,10 +1742,12 @@ save_expr (expr)
 
   /* If the tree evaluates to a constant, then we don't want to hide that
      fact (i.e. this allows further folding, and direct checks for constants).
+     However, a read-only object that has side effects cannot be bypassed.
      Since it is no problem to reevaluate literals, we just return the 
      literal node. */
 
-  if (TREE_CONSTANT (t) || TREE_READONLY (t) || TREE_CODE (t) == SAVE_EXPR)
+  if (TREE_CONSTANT (t) || (TREE_READONLY (t) && ! TREE_SIDE_EFFECTS (t))
+      || TREE_CODE (t) == SAVE_EXPR)
     return t;
 
   t = build (SAVE_EXPR, TREE_TYPE (expr), t, current_function_decl, NULL);
@@ -1852,7 +1854,12 @@ stabilize_reference_1 (e)
   register int length;
   register enum tree_code code = TREE_CODE (e);
 
-  if (TREE_CONSTANT (e) || TREE_READONLY (e) || code == SAVE_EXPR)
+  /* We cannot ignore const expressions because it might be a reference
+     to a const array but whose index contains side-effects.  But we can
+     ignore things that are actual constant or that already have been
+     handled by this function.  */
+
+  if (TREE_CONSTANT (e) || code == SAVE_EXPR)
     return e;
 
   switch (TREE_CODE_CLASS (code))

@@ -5428,8 +5428,11 @@ gen_input_reload (reloadreg, in, before_insn)
 	 `insn_extract'and it is simpler to emit and then delete the insn if
 	 not valid than to dummy things up.  */
 
-      rtx move_operand, other_operand, insn;
+      rtx op0, op1, tem, insn;
       int code;
+
+      op0 = find_replacement (&XEXP (in, 0));
+      op1 = find_replacement (&XEXP (in, 1));
 
       /* Since constraint checking is strict, commutativity won't be
 	 checked, so we need to do that here to avoid spurious failure
@@ -5440,7 +5443,10 @@ gen_input_reload (reloadreg, in, before_insn)
 
       if (GET_CODE (XEXP (in, 1)) == REG
 	  && REGNO (reloadreg) == REGNO (XEXP (in, 1)))
-	in = gen_rtx (PLUS, GET_MODE (in), XEXP (in, 1), XEXP (in, 0));
+	tem = op0, op0 = op1, op1 = tem;
+
+      if (op0 != XEXP (in, 0) || op1 != XEXP (in, 1))
+	in = gen_rtx (PLUS, GET_MODE (in), op0, op1);
 
       insn = emit_insn_before (gen_rtx (SET, VOIDmode, reloadreg, in),
 				   before_insn);
@@ -5463,23 +5469,20 @@ gen_input_reload (reloadreg, in, before_insn)
 
       /* If that failed, we must use a conservative two-insn sequence.
 	 use move to copy constant, MEM, or pseudo register to the reload
-	 register since "move" will be able to handle arbitrary operand, unlike
-	 add which can't, in general.  Then add the registers.
+	 register since "move" will be able to handle an arbitrary operand,
+	 unlike add which can't, in general.  Then add the registers.
 
 	 If there is another way to do this for a specific machine, a
 	 DEFINE_PEEPHOLE should be specified that recognizes the sequence
 	 we emit below.  */
 
-      if (CONSTANT_P (XEXP (in, 1))
-	  || GET_CODE (XEXP (in, 1)) == MEM
-	  || (GET_CODE (XEXP (in, 1)) == REG
-	      && REGNO (XEXP (in, 1)) >= FIRST_PSEUDO_REGISTER))
-	move_operand = XEXP (in, 1), other_operand = XEXP (in, 0);
-      else
-	move_operand = XEXP (in, 0), other_operand = XEXP (in, 1);
+      if (CONSTANT_P (op1) || GET_CODE (op1) == MEM
+	  || (GET_CODE (op1) == REG
+	      && REGNO (op1) >= FIRST_PSEUDO_REGISTER))
+	tem = op0, op0 = op1, op1 = tem;
 
-      emit_insn_before (gen_move_insn (reloadreg, move_operand), before_insn);
-      emit_insn_before (gen_add2_insn (reloadreg, other_operand), before_insn);
+      emit_insn_before (gen_move_insn (reloadreg, op0), before_insn);
+      emit_insn_before (gen_add2_insn (reloadreg, op1), before_insn);
     }
 
   /* If IN is a simple operand, use gen_move_insn.  */
