@@ -464,17 +464,6 @@ powerpc*-*-* | rs6000*-*-*)
 	    esac
 	  done
 	fi
-	if [ x$enable_aix = xno ]
-	then
-	  old_multidirs="${multidirs}"
-	  multidirs=""
-	  for x in ${old_multidirs}; do
-	    case "$x" in
-	      *mcall-aix* ) : ;;
-	      *) multidirs="${multidirs} ${x}" ;;
-	    esac
-	  done
-	fi
 	;;
 sparc*-*-*)
 	case " $multidirs " in

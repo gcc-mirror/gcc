@@ -114,9 +114,6 @@ rs6000_cpu_cpp_builtins (pfile)
     case ABI_V4:
       builtin_define ("_CALL_SYSV");
       break;
-    case ABI_AIX_NODESC:
-      builtin_define ("_CALL_AIX");
-      break;
     case ABI_AIX:
       builtin_define ("_CALL_AIXDESC");
       builtin_define ("_CALL_AIX");

@@ -1,3 +1,8 @@
+2003-04-13  Nick Clifton  <nickc@redhat.com>
+
+	* config-ml.in: Remove support for --disable-aix removing
+	call-aix multilibs.
+
 2003-04-10  Alexandre Oliva  <aoliva@redhat.com>
 
 	* libtool.m4 (lt_cv_deplibs_check_method): Use pass_all on mips*.

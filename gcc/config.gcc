@@ -1961,10 +1961,6 @@ powerpc-*-chorusos*)
 		;;
 	esac
 	;;
-powerpc-*-eabiaix*)
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/eabi.h rs6000/eabiaix.h"
-	tmake_file="rs6000/t-fprules rs6000/t-ppcgas rs6000/t-ppccomm"
-	;;
 powerpc-*-eabispe*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/eabi.h rs6000/eabispe.h"
 	tmake_file="rs6000/t-fprules rs6000/t-ppcendian rs6000/t-ppccomm"

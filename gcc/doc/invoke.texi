@@ -420,7 +420,7 @@ in the following sections.
 -mno-relocatable  -mrelocatable-lib  -mno-relocatable-lib @gol
 -mtoc  -mno-toc  -mlittle  -mlittle-endian  -mbig  -mbig-endian @gol
 -mdynamic-no-pic @gol
--mcall-aix  -mcall-sysv  -mcall-netbsd @gol
+-mcall-sysv  -mcall-netbsd @gol
 -maix-struct-return  -msvr4-struct-return @gol
 -mabi=altivec  -mabi=no-altivec @gol
 -mabi=spe  -mabi=no-spe @gol
@@ -7219,12 +7219,6 @@ Specify both @option{-mcall-sysv} and @option{-meabi} options.
 @item -mcall-sysv-noeabi
 @opindex mcall-sysv-noeabi
 Specify both @option{-mcall-sysv} and @option{-mno-eabi} options.
-
-@item -mcall-aix
-@opindex mcall-aix
-On System V.4 and embedded PowerPC systems compile code using calling
-conventions that are similar to those used on AIX@.  This is the
-default if you configured GCC using @samp{powerpc-*-eabiaix}.
 
 @item -mcall-solaris
 @opindex mcall-solaris

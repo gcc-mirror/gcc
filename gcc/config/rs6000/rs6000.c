@@ -8185,7 +8185,6 @@ print_operand (file, x, code)
 	      break;
 
 	    case ABI_V4:
-	    case ABI_AIX_NODESC:
 	    case ABI_DARWIN:
 	      break;
 	    }
@@ -9293,8 +9292,7 @@ is_altivec_return_reg (reg, xyes)
    align the stack at program startup.  A happy side-effect is that
    -mno-eabi libraries can be used with -meabi programs.)
 
-   The EABI configuration defaults to the V.4 layout, unless
-   -mcall-aix is used, in which case the AIX layout is used.  However,
+   The EABI configuration defaults to the V.4 layout.  However,
    the stack alignment requirements may differ.  If -mno-eabi is not
    given, the required stack alignment is 8 bytes; if -mno-eabi is
    given, the required alignment is 16 bytes.  (But see V.4 comment
@@ -9447,7 +9445,6 @@ rs6000_stack_info ()
       abort ();
 
     case ABI_AIX:
-    case ABI_AIX_NODESC:
     case ABI_DARWIN:
       info_ptr->fp_save_offset   = - info_ptr->fp_size;
       info_ptr->gp_save_offset   = info_ptr->fp_save_offset - info_ptr->gp_size;
@@ -9663,8 +9660,7 @@ debug_stack_info (info)
     {
     default:		 abi_string = "Unknown";	break;
     case ABI_NONE:	 abi_string = "NONE";		break;
-    case ABI_AIX:
-    case ABI_AIX_NODESC: abi_string = "AIX";		break;
+    case ABI_AIX:	 abi_string = "AIX";		break;
     case ABI_DARWIN:	 abi_string = "Darwin";		break;
     case ABI_V4:	 abi_string = "V.4";		break;
     }
@@ -12447,9 +12443,6 @@ output_function_profiler (file, labelno)
 
     case ABI_V4:
       save_lr = 4;
-      /* Fall through.  */
-
-    case ABI_AIX_NODESC:
       if (!TARGET_32BIT)
 	{
 	  warning ("no profiling of 64-bit code for this ABI");
@@ -12493,19 +12486,8 @@ output_function_profiler (file, labelno)
 	  asm_fprintf (file, "@l(%s)\n", reg_names[12]);
 	}
 
-      if (current_function_needs_context && DEFAULT_ABI == ABI_AIX_NODESC)
-	{
-	  asm_fprintf (file, "\t{st|stw} %s,%d(%s)\n",
-		       reg_names[STATIC_CHAIN_REGNUM],
-		       12, reg_names[1]);
-	  fprintf (file, "\tbl %s\n", RS6000_MCOUNT);
-	  asm_fprintf (file, "\t{l|lwz} %s,%d(%s)\n",
-		       reg_names[STATIC_CHAIN_REGNUM],
-		       12, reg_names[1]);
-	}
-      else
-	/* ABI_V4 saves the static chain reg with ASM_OUTPUT_REG_PUSH.  */
-	fprintf (file, "\tbl %s\n", RS6000_MCOUNT);
+      /* ABI_V4 saves the static chain reg with ASM_OUTPUT_REG_PUSH.  */
+      fprintf (file, "\tbl %s\n", RS6000_MCOUNT);
       break;
 
     case ABI_AIX:
@@ -12748,7 +12730,6 @@ rs6000_trampoline_size ()
 
     case ABI_DARWIN:
     case ABI_V4:
-    case ABI_AIX_NODESC:
       ret = (TARGET_32BIT) ? 40 : 48;
       break;
     }
@@ -12796,7 +12777,6 @@ rs6000_initialize_trampoline (addr, fnaddr, cxt)
     /* Under V.4/eabi/darwin, __trampoline_setup does the real work.  */
     case ABI_DARWIN:
     case ABI_V4:
-    case ABI_AIX_NODESC:
       emit_library_call (gen_rtx_SYMBOL_REF (SImode, "__trampoline_setup"),
 			 FALSE, VOIDmode, 4,
 			 addr, pmode,
