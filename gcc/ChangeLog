@@ -1,5 +1,12 @@
 2003-11-27  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	PR optimization/13041
+	* final.c (frame_pointer_needed): Fix comment.
+	* reload1.c (reload): Decrease alignment of the frame
+	pointer if it was used for register allocation.
+
+2003-11-27  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	PR target/12900
 	* reg-stack (move_for_stack_reg): New prototype.  Return
 	whether a control flow insn was deleted.
