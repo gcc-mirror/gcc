@@ -1,3 +1,9 @@
+2004-09-01  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config.gcc (--with-cpu on ARM): Preserve the canonical cpu name
+	for use in configargs.h.  Put the cname in a separate variable.  Use
+	that to set target_cpu_default2.
+
 2004-09-01  J"orn Rennecke <joern.rennecke@superh.com>
 	    Nick Clifton  <nickc@redhat.com>
 
