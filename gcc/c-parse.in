@@ -148,7 +148,6 @@ do {									\
 %token BREAK CONTINUE RETURN GOTO ASM_KEYWORD TYPEOF ALIGNOF
 %token ATTRIBUTE EXTENSION LABEL
 %token REALPART IMAGPART VA_ARG CHOOSE_EXPR TYPES_COMPATIBLE_P
-%token PTR_VALUE PTR_BASE PTR_EXTENT
 %token FUNC_NAME OFFSETOF
 
 /* Add precedence rules to solve dangling else s/r conflict */
@@ -3093,12 +3092,6 @@ static const struct resword reswords[] =
   { "__inline",		RID_INLINE,	0 },
   { "__inline__",	RID_INLINE,	0 },
   { "__label__",	RID_LABEL,	0 },
-  { "__ptrbase",	RID_PTRBASE,	0 },
-  { "__ptrbase__",	RID_PTRBASE,	0 },
-  { "__ptrextent",	RID_PTREXTENT,	0 },
-  { "__ptrextent__",	RID_PTREXTENT,	0 },
-  { "__ptrvalue",	RID_PTRVALUE,	0 },
-  { "__ptrvalue__",	RID_PTRVALUE,	0 },
   { "__real",		RID_REALPART,	0 },
   { "__real__",		RID_REALPART,	0 },
   { "__restrict",	RID_RESTRICT,	0 },
@@ -3252,9 +3245,6 @@ static const short rid_to_yy[RID_MAX] =
   /* RID_IMAGPART */	IMAGPART,
   /* RID_REALPART */	REALPART,
   /* RID_LABEL */	LABEL,
-  /* RID_PTRBASE */	PTR_BASE,
-  /* RID_PTREXTENT */	PTR_EXTENT,
-  /* RID_PTRVALUE */	PTR_VALUE,
 
   /* RID_CHOOSE_EXPR */			CHOOSE_EXPR,
   /* RID_TYPES_COMPATIBLE_P */		TYPES_COMPATIBLE_P,

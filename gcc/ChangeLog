@@ -1,3 +1,14 @@
+2004-10-17  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-common.c (enum rid): Remove RID_PTRBASE, RID_PTREXTENT and
+	RID_PTRVALUE.
+	* c-parse.in (PTR_VALUE, PTR_BASE, PTR_EXTENT): Remove %token
+	declarations.
+	(reswords): Remove __ptrbase, __ptrbase__, __ptrextent,
+	__ptrextent__, __ptrvalue and __ptrvalue__.
+	(rid_to_yy): Remove RID_PTRBASE, RID_PTREXTENT and RID_PTRVALUE
+	entries.
+
 2004-10-16  Dale Johannesen  <dalej@apple.com>
 
 	* c-common.c (c_common_get_alias_set):  Use GGC for type_hash_table.
