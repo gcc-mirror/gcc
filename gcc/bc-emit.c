@@ -867,7 +867,7 @@ bc_emit_bytecode (bytecode)
   char byte;
   static int prev_lineno = -1;
 
-  byte = bytecode;
+  byte = (char) bytecode;
 
 #ifdef BCDEBUG_PRINT_CODE
   if (lineno != prev_lineno)
