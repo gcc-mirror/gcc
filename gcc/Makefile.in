@@ -1149,19 +1149,21 @@ libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(FPBIT) $(DPBIT) $(LIB2ADD) \
 #	else true; fi
 
 # Combine the various libraries into a single library, libgcc.a.
+# $(LIBGCC1) is added after $(LIBGCC2) so that routines written in
+# assembler will be used in preference to the C versions.
 libgcc.a: $(LIBGCC1) $(LIBGCC2)
 	-rm -rf tmplibgcc.a libgcc.a tmpcopy
 	mkdir tmpcopy
-	-if [ x$(LIBGCC1) != x ];			\
-	then (cd tmpcopy; $(AR_FOR_TARGET) x ../$(LIBGCC1));	\
-	else true;					\
-	fi
+	(cd tmpcopy; $(AR_FOR_TARGET) x ../$(LIBGCC2))
 # Some versions of ar (specifically the one in RISC/os 5.x), create an
 # unwritable table of contents file, and then print an error message when
 # the second ar command tries to overwrite this file.  To avoid the error
 # message from ar, we make sure all files are writable.
 	-(cd tmpcopy; chmod +w * > /dev/null 2>&1)
-	(cd tmpcopy; $(AR_FOR_TARGET) x ../$(LIBGCC2))
+	-if [ x$(LIBGCC1) != x ];			\
+	then (cd tmpcopy; $(AR_FOR_TARGET) x ../$(LIBGCC1));	\
+	else true;					\
+	fi
 	(cd tmpcopy; $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) ../tmplibgcc.a *$(objext))
 	rm -rf tmpcopy
 	-if $(RANLIB_TEST_FOR_TARGET) ; then \
@@ -1240,16 +1242,16 @@ stmp-multilib-sub:
 	fi
 	rm -rf tmplibgcc.a tmpcopy
 	mkdir tmpcopy
-	if [ x$(LIBGCC1) != x ]; \
-	then (cd tmpcopy; $(AR_FOR_TARGET) x ../$(LIBGCC1)); \
-	else true; \
-	fi
+	(cd tmpcopy; $(AR_FOR_TARGET) x ../$(LIBGCC2))
 # Some versions of ar (specifically the one in RISC/os 5.x), create an
 # unwritable table of contents file, and then print an error message when
 # the second ar command tries to overwrite this file.  To avoid the error
 # message from ar, we make sure all files are writable.
 	-(cd tmpcopy; chmod +w * > /dev/null 2>&1)
-	(cd tmpcopy; $(AR_FOR_TARGET) x ../$(LIBGCC2))
+	if [ x$(LIBGCC1) != x ]; \
+	then (cd tmpcopy; $(AR_FOR_TARGET) x ../$(LIBGCC1)); \
+	else true; \
+	fi
 	(cd tmpcopy; $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) ../tmplibgcc.a *$(objext))
 	rm -rf libgcc2.a tmpcopy
 	if $(RANLIB_TEST_FOR_TARGET) ; then \

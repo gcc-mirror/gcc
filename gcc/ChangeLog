@@ -1,3 +1,7 @@
+2000-02-05  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* Makefile.in (libgcc.a): Add $(LIBGCC1) to libgcc.a after $(LIBGCC2).
+
 2000-02-04  Neil Booth  <NeilB@earthling.net>
 
 	* cccp.c (main): Check 'dir' for a NULL pointer before passing
