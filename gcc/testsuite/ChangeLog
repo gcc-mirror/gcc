@@ -1,3 +1,8 @@
+2002-01-21  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* lib/g77.exp (g77_link_flags): Remove check for libg2c.so in setting
+	ld_library_path.
+
 2002-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/20020218-1.c: New test.
