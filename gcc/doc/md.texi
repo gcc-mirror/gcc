@@ -1750,6 +1750,98 @@ Integer constant in the range 1 to 4 for @code{shladd} instruction
 Memory operand except postincrement and postdecrement
 @end table
 
+@item FRV---@file{frv.h}
+@table @code
+@item a
+Register in the class ACC_REGS (@code{acc0} to @code{acc7}).
+
+@item b
+Register in the class EVEN_ACC_REGS (@code{acc0} to @code{acc7}).
+
+@item c
+Register in the class CC_REGS (@code{fcc0} to @code{fcc3} and @code{icc0} to @code{icc3}).
+
+@item d
+Register in the class GPR_REGS (@code{gr0} to @code{gr63}).
+
+@item e
+Register in the class EVEN_REGS (@code{gr0} to @code{gr63}).
+Odd registers are excluded not in the class but through the use of a machine
+mode larger than 4 bytes.
+
+@item f
+Register in the class FPR_REGS (@code{fr0} to @code{fr63}).
+
+@item h
+Register in the class FEVEN_REGS (@code{fr0} to @code{fr63}).
+Odd registers are excluded not in the class but through the use of a machine
+mode larger than 4 bytes.
+
+@item l
+Register in the class LR_REG (the @code{lr} register).
+
+@item q
+Register in the class QUAD_REGS (@code{gr2} to @code{gr63}).
+Register numbers not divisible by 4 are excluded not in the class but through
+the use of a machine mode larger than 8 bytes.
+
+@item t
+Register in the class ICC_REGS@ (@code{icc0} to @code{icc3}).
+
+@item u
+Register in the class FCC_REGS (@code{fcc0} to @code{fcc3}).
+
+@item v
+Register in the class ICR_REGS (@code{cc4} to @code{cc7}).
+
+@item w
+Register in the class FCR_REGS (@code{cc0} to @code{cc3}).
+
+@item x
+Register in the class QUAD_FPR_REGS (@code{fr0} to @code{fr63}).
+Register numbers not divisible by 4 are excluded not in the class but through
+the use of a machine mode larger than 8 bytes.
+
+@item z
+Register in the class SPR_REGS (@code{lcr} and @code{lr}).
+
+@item A
+Register in the class QUAD_ACC_REGS (@code{acc0} to @code{acc7}).
+
+@item B
+Register in the class ACCG_REGS (@code{accg0} to @code{accg7}).
+
+@item C
+Register in the class CR_REGS (@code{cc0} to @code{cc7}).
+
+@item G
+Floating point constant zero
+
+@item I
+6-bit signed integer constant
+
+@item J
+10-bit signed integer constant
+
+@item L
+16-bit signed integer constant
+
+@item M
+16-bit unsigned integer constant
+
+@item N
+12-bit signed integer constant that is negative - i.e. in the
+range of -2048 to -1
+
+@item O
+Constant zero
+
+@item P
+12-bit signed integer constant that is greater than zero - i.e. in the
+range of 1 to 2047.
+
+@end table
+
 @item IP2K---@file{ip2k.h}
 @table @code
 @item a

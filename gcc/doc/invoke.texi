@@ -678,6 +678,19 @@ in the following sections.
 -mtarget-align -mno-target-align @gol
 -mlongcalls -mno-longcalls}
 
+@emph{FRV Options}
+@gccoptlist{
+-mgpr-32 -mgpr-64 -mfpr-32 -mfpr-64 -mhard-float -msoft-float @gol
+-malloc-cc -mfixed-cc -mdword -mno-dword -mdouble -mno-double @gol
+-mmedia -mno-media -mmuladd -mno-muladd -mlibrary-pic -macc-4 @gol
+-macc-8 -mpack -mno-pack -mno-eflags -mcond-move -mno-cond-move @gol
+-mscc -mno-scc -mcond-exec -mno-cond-exec -mvliw-branch -mno-vliw-branch @gol
+-mmulti-cond-exec -mno-multi-cond-exec -mnested-cond-exec @gol
+-mno-nested-cond-exec -mtomcat-stats @gol
+-mcpu=@var{cpu}}
+
+
+
 @item Code Generation Options
 @xref{Code Gen Options,,Options for Code Generation Conventions}.
 @gccoptlist{
@@ -5214,6 +5227,7 @@ that macro, which enables you to change the defaults.
 * PDP-11 Options::
 * Xstormy16 Options::
 * Xtensa Options::
+* FRV Options::
 @end menu
 
 @node M680x0 Options
@@ -9937,6 +9951,233 @@ These options are defined for Xstormy16:
 @item -msim
 @opindex msim
 Choose startup files and linker script suitable for the simulator.
+@end table
+
+@node FRV Options
+@subsection FRV Options
+@cindex FRV Options
+
+@table @gcctabopt
+@item -mgpr-32
+@opindex mgpr-32
+
+Only use the first 32 general purpose registers.
+
+@item -mgpr-64
+@opindex mgpr-64
+
+Use all 64 general purpose registers.
+
+@item -mfpr-32
+@opindex mfpr-32
+
+Use only the first 32 floating point registers.
+
+@item -mfpr-64
+@opindex mfpr-64
+
+Use all 64 floating point registers
+
+@item -mhard-float
+@opindex mhard-float
+
+Use hardware instructions for floating point operations.
+
+@item -msoft-float
+@opindex msoft-float
+
+Use library routines for floating point operations.
+
+@item -malloc-cc
+@opindex malloc-cc
+
+Dynamically allocate condition code registers.
+
+@item -mfixed-cc
+@opindex mfixed-cc
+
+Do not try to dynamically allocate condition code registers, only
+use @code{icc0} and @code{fcc0}.
+
+@item -mdword
+@opindex mdword
+
+Change ABI to use double word insns.
+
+@item -mno-dword
+@opindex mno-dword
+
+Do not use double word instructions.
+
+@item -mdouble
+@opindex mdouble
+
+Use floating point double instructions.
+
+@item -mno-double
+@opindex mno-double
+
+Do not use floating point double instructions.
+
+@item -mmedia
+@opindex mmedia
+
+Use media instructions.
+
+@item -mno-media
+@opindex mno-media
+
+Do not use media instructions.
+
+@item -mmuladd
+@opindex mmuladd
+
+Use multiply and add/subtract instructions.
+
+@item -mno-muladd
+@opindex mno-muladd
+
+Do not use multiply and add/subtract instructions.
+
+@item -mlibrary-pic
+@opindex mlibrary-pic
+
+Enable PIC support for building libraries
+
+@item -macc-4
+@opindex macc-4
+
+Use only the first four media accumulator registers.
+
+@item -macc-8
+@opindex macc-8
+
+Use all eight media accumulator registers.
+
+@item -mpack
+@opindex mpack
+
+Pack VLIW instructions.
+
+@item -mno-pack
+@opindex mno-pack
+
+Do not pack VLIW instructions.
+
+@item -mno-eflags
+@opindex mno-eflags
+
+Do not mark ABI switches in e_flags.
+
+@item -mcond-move
+@opindex mcond-move
+
+Enable the use of conditional-move instructions (default).
+
+This switch is mainly for debugging the compiler and will likely be removed
+in a future version.
+
+@item -mno-cond-move
+@opindex mno-cond-move
+
+Disable the use of conditional-move instructions.
+
+This switch is mainly for debugging the compiler and will likely be removed
+in a future version.
+
+@item -mscc
+@opindex mscc
+
+Enable the use of conditional set instructions (default).
+
+This switch is mainly for debugging the compiler and will likely be removed
+in a future version.
+
+@item -mno-scc
+@opindex mno-scc
+
+Disable the use of conditional set instructions.
+
+This switch is mainly for debugging the compiler and will likely be removed
+in a future version.
+
+@item -mcond-exec
+@opindex mcond-exec
+
+Enable the use of conditional execution (default).
+
+This switch is mainly for debugging the compiler and will likely be removed
+in a future version.
+
+@item -mno-cond-exec
+@opindex mno-cond-exec
+
+Disable the use of conditional execution.
+
+This switch is mainly for debugging the compiler and will likely be removed
+in a future version.
+
+@item -mvliw-branch
+@opindex mvliw-branch
+
+Run a pass to pack branches into VLIW instructions (default).
+
+This switch is mainly for debugging the compiler and will likely be removed
+in a future version.
+
+@item -mno-vliw-branch
+@opindex mno-vliw-branch
+
+Do not run a pass to pack branches into VLIW instructions.
+
+This switch is mainly for debugging the compiler and will likely be removed
+in a future version.
+
+@item -mmulti-cond-exec
+@opindex mmulti-cond-exec
+
+Enable optimization of @code{&&} and @code{||} in conditional execution
+(default).
+
+This switch is mainly for debugging the compiler and will likely be removed
+in a future version.
+
+@item -mno-multi-cond-exec
+@opindex mno-multi-cond-exec
+
+Disable optimization of @code{&&} and @code{||} in conditional execution.
+
+This switch is mainly for debugging the compiler and will likely be removed
+in a future version.
+
+@item -mnested-cond-exec
+@opindex mnested-cond-exec
+
+Enable nested conditional execution optimizations (default).
+
+This switch is mainly for debugging the compiler and will likely be removed
+in a future version.
+
+@item -mno-nested-cond-exec
+@opindex mno-nested-cond-exec
+
+Disable nested conditional execution optimizations.
+
+This switch is mainly for debugging the compiler and will likely be removed
+in a future version.
+
+@item -mtomcat-stats
+@opindex mtomcat-stats
+
+Cause gas to print out tomcat statistics.
+
+@item -mcpu=@var{cpu}
+@opindex mcpu
+
+Select the processor type for which to generate code.  Possible values are
+@samp{simple}, @samp{tomcat}, @samp{fr500}, @samp{fr400}, @samp{fr300},
+@samp{frv}.
+
 @end table
 
 @node Xtensa Options
