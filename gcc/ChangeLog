@@ -1,3 +1,10 @@
+2004-06-19  Andrew Pinski  <apinski@apple.com>
+
+	PR c++/15721
+	* toplev.c (wrapup_global_declarations): Do not check
+	TREE_SYMBOL_REFERENCED of the DECL_ASSEMBLER_NAME but check
+	cgraph_varpool_node's needed field.
+
 2004-06-19  Jan Hubicka  <jh@suse.cz>
 	    Steven Bosscher  <stevenb@suse.de>
 

@@ -762,16 +762,17 @@ wrapup_global_declarations (tree *vec, int len)
 
 	  if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl))
 	    {
+	      struct cgraph_varpool_node *node;
 	      bool needed = 1;
+	      node = cgraph_varpool_node (decl);
 
-	      if (flag_unit_at_a_time
-		  && cgraph_varpool_node (decl)->finalized)
+	      if (flag_unit_at_a_time && node->finalized)
 		needed = 0;
 	      else if ((flag_unit_at_a_time && !cgraph_global_info_ready)
 		       && (TREE_USED (decl)
 			   || TREE_USED (DECL_ASSEMBLER_NAME (decl))))
 		/* needed */;
-	      else if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
+	      else if (node->needed)
 		/* needed */;
 	      else if (DECL_COMDAT (decl))
 		needed = 0;
