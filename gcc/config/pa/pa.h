@@ -1925,7 +1925,7 @@ while (0)
 			    CONST_DOUBLE, CONST, HIGH, CONSTANT_P_RTX}}, \
   {"symbolic_operand", {SYMBOL_REF, LABEL_REF, CONST}},			\
   {"symbolic_memory_operand", {SUBREG, MEM}},				\
-  {"reg_before_reload_operand", {SUBREG, MEM}},				\
+  {"reg_before_reload_operand", {REG, MEM}},				\
   {"reg_or_nonsymb_mem_operand", {SUBREG, REG, MEM}},			\
   {"reg_or_0_or_nonsymb_mem_operand", {SUBREG, REG, MEM, CONST_INT,	\
 				       CONST_DOUBLE}},			\

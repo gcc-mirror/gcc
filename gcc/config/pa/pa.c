@@ -387,6 +387,10 @@ reg_before_reload_operand (op, mode)
     register rtx op;
     enum machine_mode mode;
 {
+  /* Don't accept a SUBREG since it will need a reload.  */
+  if (GET_CODE (op) == SUBREG)
+    return 0;
+
   if (register_operand (op, mode))
     return 1;
 
