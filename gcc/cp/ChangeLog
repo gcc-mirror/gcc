@@ -4,6 +4,7 @@
 	* decl.c (destroy_local_var, hack_incomplete_structures): Update.
 	(maybe_build_cleanup): Rename cxx_maybe_build_cleanup.
 	* tree.c (build_target_expr): Update.
+	* cp-lang.c (LANG_HOOKS_MAYBE_BUILD_CLEANUP): Redefine.
 
 2002-03-24  Neil Booth  <neil@daikokuya.demon.co.uk>
 
