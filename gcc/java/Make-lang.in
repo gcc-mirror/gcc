@@ -268,7 +268,8 @@ java/jcf-write.o: java/jcf-write.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h \
 java/jv-scan.o: java/jv-scan.c $(CONFIG_H) $(SYSTEM_H) version.h
 java/jvgenmain.o: java/jvgenmain.c $(CONFIG_H) $(JAVA_TREE_H) $(SYSTEM_H)
 java/lang.o: java/lang.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h input.h \
-  toplev.h $(SYSTEM_H) $(RTL_H) $(EXPR_H) diagnostic.h langhooks.h
+  toplev.h $(SYSTEM_H) $(RTL_H) $(EXPR_H) diagnostic.h langhooks.h \
+  langhooks-def.h
 java/mangle.o: java/mangle.c $(CONFIG_H) java/jcf.h $(JAVA_TREE_H) $(SYSTEM_H) \
   toplev.h $(GGC_H)
 java/mangle_name.o: java/mangle_name.c $(CONFIG_H) java/jcf.h $(JAVA_TREE_H) \

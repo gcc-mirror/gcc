@@ -1,3 +1,8 @@
+2001-11-06  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
+
+	* lang.c: Include langhooks-def.h.
+	* Make-lang.in: Update.
+
 2001-10-31  Zack Weinberg  <zack@codesourcery.com>
 
 	* Make-lang.in: Replace $(INTL_TARGETS) with po-generated.

@@ -59,6 +59,7 @@ Boston, MA 02111-1307, USA.  */
 #include "debug.h"
 #include "target.h"
 #include "langhooks.h"
+#include "langhooks-def.h"
 
 /* This is the default way of generating a method name.  */
 /* I am not sure it is really correct.

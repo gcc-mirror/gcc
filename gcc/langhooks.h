@@ -1,6 +1,5 @@
-/* Default macros to initialize the lang_hooks data structure.
+/* The lang_hooks data structure.
    Copyright 2001 Free Software Foundation, Inc.
-   Contributed by Alexandre Oliva  <aoliva@redhat.com>
 
 This file is part of GNU CC.
 
@@ -22,92 +21,73 @@ Boston, MA 02111-1307, USA.  */
 #ifndef GCC_LANG_HOOKS_H
 #define GCC_LANG_HOOKS_H
 
-/* Provide a hook routine for alias sets that always returns 1.  This is
-   used by languages that haven't deal with alias sets yet.  */
-extern HOST_WIDE_INT hook_get_alias_set_0	PARAMS ((tree));
+/* The following hooks are documented in langhooks.c.  Must not be
+   NULL.  */
 
-/* Note to creators of new hooks:
+struct lang_hooks_for_tree_inlining
+{
+  union tree_node *(*walk_subtrees) PARAMS ((union tree_node **, int *,
+					     union tree_node *(*)
+					     (union tree_node **,
+					      int *, void *),
+					     void *, void *));
+  int (*cannot_inline_tree_fn) PARAMS ((union tree_node **));
+  int (*disregard_inline_limits) PARAMS ((union tree_node *));
+  union tree_node *(*add_pending_fn_decls) PARAMS ((void *,
+						    union tree_node *));
+  int (*tree_chain_matters_p) PARAMS ((union tree_node *));
+  int (*auto_var_in_fn_p) PARAMS ((union tree_node *, union tree_node *));
+  union tree_node *(*copy_res_decl_for_inlining) PARAMS ((union tree_node *,
+							  union tree_node *,
+							  union tree_node *,
+							  void *, int *,
+							  void *));
+  int (*anon_aggr_type_p) PARAMS ((union tree_node *));
+};
 
-   The macros in this file should NOT be surrounded by a
-   #ifdef...#endif pair, since this file declares the defaults.  Each
-   front end overrides any hooks it wishes to, in the file containing
-   its struct lang_hooks, AFTER including this file.  */
+/* Language-specific hooks.  See langhooks-def.h for defaults.  */
 
-/* See toplev.h for the definition and documentation of each hook.  */
+struct lang_hooks
+{
+  /* Called first, to initialize the front end.  */
+  void (*init) PARAMS ((void));
 
-extern void lang_hook_default_do_nothing PARAMS ((void));
-extern int lang_hook_default_decode_option PARAMS ((int, char **));
-extern HOST_WIDE_INT lang_hook_default_get_alias_set PARAMS ((tree));
-extern void lang_hook_default_clear_binding_stack PARAMS ((void));
+  /* Called last, as a finalizer.  */
+  void (*finish) PARAMS ((void));
 
-#define LANG_HOOKS_INIT			lang_hook_default_do_nothing
-#define LANG_HOOKS_FINISH		lang_hook_default_do_nothing
-#define LANG_HOOKS_CLEAR_BINDING_STACK	lang_hook_default_clear_binding_stack
-#define LANG_HOOKS_INIT_OPTIONS		lang_hook_default_do_nothing
-#define LANG_HOOKS_DECODE_OPTION	lang_hook_default_decode_option
-#define LANG_HOOKS_POST_OPTIONS		lang_hook_default_do_nothing
-#define LANG_HOOKS_GET_ALIAS_SET	lang_hook_default_get_alias_set
+  /* Called immediately after parsing to clear the binding stack.  */
+  void (*clear_binding_stack) PARAMS ((void));
 
-#define LANG_HOOKS_HONOR_READONLY	false
+  /* Called to initialize options, before any calls to decode_option.  */
+  void (*init_options) PARAMS ((void));
 
-/* Declarations of default tree inlining hooks.  */
-tree tree_inlining_default_hook_walk_subtrees		PARAMS ((tree *, int *,
-								 walk_tree_fn,
-								 void *,
-								 void *));
-int tree_inlining_default_hook_cannot_inline_tree_fn	PARAMS ((tree *));
-int tree_inlining_default_hook_disregard_inline_limits	PARAMS ((tree));
-tree tree_inlining_default_hook_add_pending_fn_decls	PARAMS ((void *,
-								 tree));
-int tree_inlining_default_hook_tree_chain_matters_p	PARAMS ((tree));
-int tree_inlining_default_hook_auto_var_in_fn_p		PARAMS ((tree, tree));
-tree tree_inlining_default_hook_copy_res_decl_for_inlining PARAMS ((tree, tree,
-								    tree,
-								    void *,
-								    int *,
-								    void *));
-int tree_inlining_default_hook_anon_aggr_type_p		PARAMS ((tree));
+  /* Function called with an option vector as argument, to decode a
+     single option (typically starting with -f or -W or +).  It should
+     return the number of command-line arguments it uses if it handles
+     the option, or 0 and not complain if it does not recognise the
+     option.  If this function returns a negative number, then its
+     absolute value is the number of command-line arguments used, but,
+     in addition, no language-independent option processing should be
+     done for this option.  */
+  int (*decode_option) PARAMS ((int, char **));
 
-/* Tree inlining hooks.  */
-#define LANG_HOOKS_TREE_INLINING_WALK_SUBTREES \
-  tree_inlining_default_hook_walk_subtrees
-#define LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN \
-  tree_inlining_default_hook_cannot_inline_tree_fn
-#define LANG_HOOKS_TREE_INLINING_DISREGARD_INLINE_LIMITS \
-  tree_inlining_default_hook_disregard_inline_limits
-#define LANG_HOOKS_TREE_INLINING_ADD_PENDING_FN_DECLS \
-  tree_inlining_default_hook_add_pending_fn_decls
-#define LANG_HOOKS_TREE_INLINING_TREE_CHAIN_MATTERS_P \
-  tree_inlining_default_hook_tree_chain_matters_p
-#define LANG_HOOKS_TREE_INLINING_AUTO_VAR_IN_FN_P \
-  tree_inlining_default_hook_auto_var_in_fn_p
-#define LANG_HOOKS_TREE_INLINING_COPY_RES_DECL_FOR_INLINING \
-  tree_inlining_default_hook_copy_res_decl_for_inlining
-#define LANG_HOOKS_TREE_INLINING_ANON_AGGR_TYPE_P \
-  tree_inlining_default_hook_anon_aggr_type_p
+  /* Called when all command line options have been processed.  */
+  void (*post_options) PARAMS ((void));
 
-#define LANG_HOOKS_TREE_INLINING_INITIALIZER { \
-  LANG_HOOKS_TREE_INLINING_WALK_SUBTREES, \
-  LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN, \
-  LANG_HOOKS_TREE_INLINING_DISREGARD_INLINE_LIMITS, \
-  LANG_HOOKS_TREE_INLINING_ADD_PENDING_FN_DECLS, \
-  LANG_HOOKS_TREE_INLINING_TREE_CHAIN_MATTERS_P, \
-  LANG_HOOKS_TREE_INLINING_AUTO_VAR_IN_FN_P, \
-  LANG_HOOKS_TREE_INLINING_COPY_RES_DECL_FOR_INLINING, \
-  LANG_HOOKS_TREE_INLINING_ANON_AGGR_TYPE_P \
-} \
+  /* Called to obtain the alias set to be used for an expression or type.
+     Returns -1 if the language does nothing special for it.  */
+  HOST_WIDE_INT (*get_alias_set) PARAMS ((tree));
 
-/* The whole thing.  The structure is defined in toplev.h.  */
-#define LANG_HOOKS_INITIALIZER { \
-  LANG_HOOKS_INIT, \
-  LANG_HOOKS_FINISH, \
-  LANG_HOOKS_CLEAR_BINDING_STACK, \
-  LANG_HOOKS_INIT_OPTIONS, \
-  LANG_HOOKS_DECODE_OPTION, \
-  LANG_HOOKS_POST_OPTIONS, \
-  LANG_HOOKS_GET_ALIAS_SET, \
-  LANG_HOOKS_HONOR_READONLY, \
-  LANG_HOOKS_TREE_INLINING_INITIALIZER \
-}
+  /* Nonzero if TYPE_READONLY and TREE_READONLY should always be honored.  */
+  bool honor_readonly;
+
+  struct lang_hooks_for_tree_inlining tree_inlining;
+
+  /* Whenever you add entries here, make sure you adjust langhooks.h
+     and langhooks.c accordingly.  */
+};
+
+/* Each front end provides its own.  */
+extern struct lang_hooks lang_hooks;
 
 #endif /* GCC_LANG_HOOKS_H */

@@ -35,6 +35,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "jcf.h"
 #include "toplev.h"
 #include "langhooks.h"
+#include "langhooks-def.h"
 #include "flags.h"
 #include "xref.h"
 #include "ggc.h"

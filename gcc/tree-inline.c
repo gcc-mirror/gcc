@@ -34,6 +34,7 @@ Boston, MA 02111-1307, USA.  */
 #include "varray.h"
 #include "hashtab.h"
 #include "splay-tree.h"
+#include "langhooks.h"
 
 /* This should be eventually be generalized to other languages, but
    this would require a shared function-as-trees infrastructure.  */
