@@ -312,6 +312,7 @@ static U_CHAR *skip_paren_group ();
 static char *check_precompiled ();
 /* static struct macrodef create_definition ();	[moved below] */
 static void dump_single_macro ();
+static void output_dots ();
 
 #ifndef FAILURE_EXIT_CODE
 #define FAILURE_EXIT_CODE 33	/* gnu cc command understands this */
@@ -4095,8 +4096,10 @@ get_filename:
     }   
 
     /* Handle -H option.  */
-    if (print_include_names)
+    if (print_include_names) {
+      output_dots (stderr, indepth);
       fprintf (stderr, "%s\n", fname);
+    }
 
     if (angle_brackets)
       system_include_depth++;
@@ -8943,6 +8946,18 @@ file_size_and_mode (fd, mode_pointer, size_pointer)
   if (size_pointer) *size_pointer = sbuf.st_size;
   return 0;
 }
+
+static void
+output_dots (fd, depth)
+     FILE* fd;
+     int depth;
+{
+  while (depth > 0) {
+    putc ('.', fd);
+    depth--;
+  }
+}
+  
 
 #ifdef VMS
 
