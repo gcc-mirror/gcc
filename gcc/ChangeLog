@@ -1,3 +1,10 @@
+2004-01-08  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.in: Rename configure.in to configure.ac
+	* doc/sourcebuild.texi: Likewise.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
 2004-01-08  Stuart Hastings  <stuart@apple.com>
 
 	* config/i386/i386.md: Typos in MMX/SSE immediate shifts.
