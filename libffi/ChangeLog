@@ -1,3 +1,8 @@
+2003-01-14  Andreas Jaeger  <aj@suse.de>
+
+	* src/ffitest.c (main): Only use ffi_closures if those are
+	supported.
+
 2003-01-13 Andreas Tobler <a.tobler@schweiz.ch>
 
 	* libffi/src/ffitest.c
