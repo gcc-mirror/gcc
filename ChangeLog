@@ -1,3 +1,7 @@
+2001-12-17  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* MAINTAINERS: Add self as docs co-maintainer.
+
 2001-12-11  Matthias Klose  <doko@debian.org>
 
 	* MAINTAINERS (Write After Approval): Add myself.
