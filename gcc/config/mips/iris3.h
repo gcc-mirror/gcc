@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Iris version.
-   Copyright (C) 1991 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -37,7 +37,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{.m:	-D_LANGUAGE_OBJECTIVE_C} \
 %{!.S: %{!.s: %{!.cc: %{!.cxx: %{!.C: %{!.m: -D_LANGUAGE_C %{!ansi:-DLANGUAGE_C}}}}}}}"
 
-#define LIB_SPEC	"%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p} crtn.o%s"
+#define LIB_SPEC	\
+	"%{!p:%{!pg:%{!static:%{!g*:-lc_s}} -lc}}%{p:-lc_p}%{pg:-lc_p} crtn.o%s"
 
 #define MACHINE_TYPE	"Silicon Graphics Mips"
 
