@@ -1,3 +1,12 @@
+2002-10-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* conflict.c (arc_hash): Change return type to hashval_t.
+	* cselib.c (get_value_hash): Likewise.
+	* genautomata.c (automaton_decl_hash, insn_decl_hash, decl_hash,
+	state_hash, automata_list_hash): Likewise.
+	* read-rtl.c (def_hash): Likewise.
+	* tree.c (type_hash_hash): Likewise.
+
 2002-10-08  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000.c (rs6000_ra_ever_killed): Call

@@ -119,7 +119,7 @@ static GTY ((if_marked ("type_hash_marked_p"), param_is (struct type_hash)))
 static void set_type_quals PARAMS ((tree, int));
 static void append_random_chars PARAMS ((char *));
 static int type_hash_eq PARAMS ((const void *, const void *));
-static unsigned int type_hash_hash PARAMS ((const void *));
+static hashval_t type_hash_hash PARAMS ((const void *));
 static void print_type_hash_statistics PARAMS((void));
 static void finish_vector_type PARAMS((tree));
 static tree make_vector PARAMS ((enum machine_mode, tree, int));
@@ -2936,7 +2936,7 @@ type_hash_eq (va, vb)
 
 /* Return the cached hash value.  */
 
-static unsigned int
+static hashval_t
 type_hash_hash (item)
      const void *item;
 {
