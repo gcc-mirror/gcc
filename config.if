@@ -3,7 +3,6 @@
 # determine:
 #
 #	1. libstcxx_incdir: the interface name for libstdc++.
-#	2. libc_interface: the interface name for libc.
 #
 
 # Get the top level src dir.
@@ -36,53 +35,3 @@ if test -z "$gcc_version"; then
 fi
 libstdcxx_incdir=c++/${gcc_version}
 
-# The trickiest part is libc_interface.
-if [ -z "${libc_interface}" ]
-then
-  case ${target_os} in
-  *linux*libc1*|*linux*libc5*)
-    case ${target_alias} in
-    *alpha*|*powerpc*)
-      libc_interface=-libc5.9-
-      ;;
-    *)
-      libc_interface=-libc5-
-      ;;
-    esac
-    ;;
-  *linux*gnu*)
-    # We have to work harder to figure it out.
-    if [ ${target_alias} = ${build_alias} ]
-    then
-      dummy=if$$
-      cat >$dummy.c <<EOF
-#include <features.h>                      
-main(argc, argv)
-     int argc;          
-     char *argv[];
-{
-  printf("%d\n", __GLIBC_MINOR__);
-  return 0;
-}
-EOF
-      ${CC-cc} $dummy.c -o $dummy 2>/dev/null
-      if [ "$?" = 0 ]
-      then
-	libc_interface=-libc6.`./$dummy`-
-	rm -f $dummy.c $dummy
-      else
-	# It should never happen.
-	echo "Cannot find the GNU C library minor version number." >&2
-	rm -f $dummy.c $dummy
-	exit 1
-      fi
-    else
-      # Cross compiling. Assume glibc 2.1.
-      libc_interface=-libc6.1-
-    fi
-    ;;
-  *)
-    libc_interface=-
-    ;;
-  esac
-fi
