@@ -26,7 +26,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    This gets us pretty close.  */
 #include "i386/i386.h"	/* Base i386 target machine definitions */
 #include "i386/att.h"	/* Use the i386 AT&T assembler syntax */
-#include "linux.h"	/* some common stuff */
+/* We cannot use "linux.h" here because that gets this file itself.  */
+#include "config/linux.h"	/* some common stuff */
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (i386 Linux/ELF)");
