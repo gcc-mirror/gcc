@@ -905,8 +905,7 @@ duplicate_decls (tree newdecl, tree olddecl, int different_binding_level,
 	  return 0;
 	}
     }
-  else if (TREE_CODE (olddecl) == FUNCTION_DECL
-	   && DECL_SOURCE_LINE (olddecl) == 0)
+  else if (TREE_CODE (olddecl) == FUNCTION_DECL && !TREE_LOCUS_SET_P (olddecl))
     {
       /* A function declaration for a predeclared function
 	 that isn't actually built in.  */
@@ -1175,7 +1174,7 @@ duplicate_decls (tree newdecl, tree olddecl, int different_binding_level,
     }
 
   /* Optionally warn about more than one declaration for the same name.  */
-  if (errmsg == 0 && warn_redundant_decls && DECL_SOURCE_LINE (olddecl) != 0
+  if (errmsg == 0 && warn_redundant_decls && TREE_LOCUS_SET_P (olddecl)
       /* Don't warn about a function declaration
 	 followed by a definition.  */
       && !(TREE_CODE (newdecl) == FUNCTION_DECL && DECL_INITIAL (newdecl) != 0
@@ -1272,10 +1271,7 @@ duplicate_decls (tree newdecl, tree olddecl, int different_binding_level,
 	 information so that meaningful diagnostics can be given.  */
       if (DECL_INITIAL (newdecl) == 0 && DECL_INITIAL (olddecl) != 0
 	  && ! different_binding_level)
-	{
-	  DECL_SOURCE_LINE (newdecl) = DECL_SOURCE_LINE (olddecl);
-	  DECL_SOURCE_FILE (newdecl) = DECL_SOURCE_FILE (olddecl);
-	}
+	copy_tree_locus (newdecl, olddecl);
 
       /* Merge the unused-warning information.  */
       if (DECL_IN_SYSTEM_HEADER (olddecl))
@@ -1525,7 +1521,7 @@ warn_if_shadowing (tree x, tree old)
       /* Shadow warnings not wanted?  */
       || !warn_shadow
       /* No shadow warnings for internally generated vars.  */
-      || DECL_SOURCE_LINE (x) == 0
+      || !TREE_LOCUS_SET_P (x)
       /* No shadow warnings for vars made for inlining.  */
       || DECL_FROM_INLINE (x)
       /* Don't warn about the parm names in function declarator
@@ -1593,7 +1589,7 @@ warn_if_shadowing (tree x, tree old)
 static void
 clone_underlying_type (tree x)
 {
-  if (DECL_SOURCE_LINE (x) == 0)
+  if (!TREE_LOCUS_SET_P (x))
     {
       if (TYPE_NAME (TREE_TYPE (x)) == 0)
 	TYPE_NAME (TREE_TYPE (x)) = x;
@@ -1948,7 +1944,7 @@ make_label (tree name, location_t location)
 
   DECL_CONTEXT (label) = current_function_decl;
   DECL_MODE (label) = VOIDmode;
-  DECL_SOURCE_LOCATION (label) = location;
+  set_tree_locus (label, location);
 
   return label;
 }
@@ -1995,7 +1991,7 @@ lookup_label (tree name)
 	 location to point here, for better diagnostics if it
 	 turns out not to have been defined.  */
       if (!TREE_USED (label))
-	DECL_SOURCE_LOCATION (label) = input_location;
+	set_tree_locus (label, input_location);
       return label;
     }
 
@@ -2074,7 +2070,7 @@ define_label (location_t location, tree name)
       /* The label has been used or declared already in this function,
 	 but not defined.  Update its location to point to this
 	 definition.  */
-      DECL_SOURCE_LOCATION (label) = location;
+      set_tree_locus (label, location);
     }
   else
     {
@@ -5462,7 +5458,7 @@ start_function (tree declspecs, tree declarator, tree attributes)
       && TYPE_ARG_TYPES (TREE_TYPE (decl1)) == 0)
     {
       TREE_TYPE (decl1) = TREE_TYPE (old_decl);
-      current_function_prototype_locus = DECL_SOURCE_LOCATION (old_decl);
+      current_function_prototype_locus = TREE_LOCUS (old_decl);
     }
 
   /* Optionally warn of old-fashioned def with no previous prototype.  */
@@ -5755,7 +5751,7 @@ store_parm_decls_oldstyle (void)
 	{
 	  decl = build_decl (PARM_DECL, TREE_VALUE (parm), integer_type_node);
 	  DECL_ARG_TYPE (decl) = TREE_TYPE (decl);
-	  DECL_SOURCE_LOCATION (decl) = DECL_SOURCE_LOCATION (fndecl);
+	  copy_tree_locus (decl, fndecl);
 	  pushdecl (decl);
 
 	  if (flag_isoc99)

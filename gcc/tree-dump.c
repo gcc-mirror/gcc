@@ -321,18 +321,18 @@ dequeue_and_dump (dump_info_p di)
       queue_and_dump_type (di, t);
       dump_child ("scpe", DECL_CONTEXT (t));
       /* And a source position.  */
-      if (DECL_SOURCE_FILE (t))
+      if (TREE_FILENAME (t))
 	{
-	  const char *filename = strrchr (DECL_SOURCE_FILE (t), '/');
+	  const char *filename = strrchr (TREE_FILENAME (t), '/');
 	  if (!filename)
-	    filename = DECL_SOURCE_FILE (t);
+	    filename = TREE_FILENAME (t);
 	  else
 	    /* Skip the slash.  */
 	    ++filename;
 
 	  dump_maybe_newline (di);
 	  fprintf (di->stream, "srcp: %s:%-6d ", filename,
-		   DECL_SOURCE_LINE (t));
+		   TREE_LINENO (t));
 	  di->column += 6 + strlen (filename) + 8;
 	}
       /* And any declaration can be compiler-generated.  */

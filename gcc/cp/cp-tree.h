@@ -390,7 +390,7 @@ typedef enum cp_id_kind
 /* The IDENTIFIER_VALUE is the value of the IDENTIFIER_BINDING, or
    NULL_TREE if there is no binding.  */
 #define IDENTIFIER_VALUE(NODE)			\
-  (IDENTIFIER_BINDING (NODE) ? IDENTIFIER_BINDING (NODE)->value : NULL)
+  (IDENTIFIER_BINDING (NODE) ? IDENTIFIER_BINDING (NODE)->value : NULL_TREE)
 
 /* If IDENTIFIER_CLASS_VALUE is set, then NODE is bound in the current
    class, and IDENTIFIER_CLASS_VALUE is the value binding.  This is

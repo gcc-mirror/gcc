@@ -802,6 +802,29 @@ struct tree_vec GTY(())
 #define TREE_OPERAND(NODE, I) TREE_OPERAND_CHECK (NODE, I)
 #define TREE_COMPLEXITY(NODE) (EXPR_CHECK (NODE)->exp.complexity)
 
+/* These macros access the location of a declaration.  For 3.4, this is
+   only defined for DECLs, but for 3.5 it will be valid on EXPRs as well;
+   thus the name is not decl specific.  The values accessed from the 
+   uppercase macros are intentionally read-only.  Use the setter functions
+   to write to this field.  */
+
+#define TREE_LOCUS(NODE) \
+  (*(const location_t *)&DECL_CHECK (NODE)->decl.locus)
+#define TREE_FILENAME(NODE)	(TREE_LOCUS (NODE).file)
+#define TREE_LINENO(NODE)	(TREE_LOCUS (NODE).line)
+#define TREE_LOCUS_SET_P(NODE)	(TREE_LINENO (NODE) != 0)
+
+#define set_tree_locus(NODE, LOC) \
+  ((void)(DECL_CHECK (NODE)->decl.locus = (LOC)))
+#define copy_tree_locus(DEST, SRC) \
+  ((void)(DECL_CHECK (DEST)->decl.locus = DECL_CHECK (SRC)->decl.locus))
+#define set_tree_file_line(NODE, FILE, LINE)		\
+  do { 							\
+    location_t *l_ = &DECL_CHECK (NODE)->decl.locus;	\
+    l_->file = (FILE);					\
+    l_->line = (LINE);					\
+  } while (0)
+
 /* In a LABELED_BLOCK_EXPR node.  */
 #define LABELED_BLOCK_LABEL(NODE) \
   TREE_OPERAND_CHECK_CODE (NODE, LABELED_BLOCK_EXPR, 0)
@@ -1309,13 +1332,6 @@ struct tree_type GTY(())
 /* For a FIELD_DECL in a QUAL_UNION_TYPE, records the expression, which
    if nonzero, indicates that the field occupies the type.  */
 #define DECL_QUALIFIER(NODE) (FIELD_DECL_CHECK (NODE)->decl.initial)
-/* These two fields describe where in the source code the declaration
-   was.  If the declaration appears in several places (as for a C
-   function that is declared first and then defined later), this
-   information should refer to the definition.  */
-#define DECL_SOURCE_LOCATION(NODE) (DECL_CHECK (NODE)->decl.locus)
-#define DECL_SOURCE_FILE(NODE) (DECL_SOURCE_LOCATION (NODE).file)
-#define DECL_SOURCE_LINE(NODE) (DECL_SOURCE_LOCATION (NODE).line)
 /* Holds the size of the datum, in bits, as a tree expression.
    Need not be constant.  */
 #define DECL_SIZE(NODE) (DECL_CHECK (NODE)->decl.size)

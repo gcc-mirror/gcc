@@ -2392,8 +2392,8 @@ ffeste_labeldef_branch (ffelab label)
   assert (DECL_INITIAL (glabel) == NULL_TREE);
 
   DECL_INITIAL (glabel) = error_mark_node;
-  DECL_SOURCE_FILE (glabel) = ffelab_definition_filename (label);
-  DECL_SOURCE_LINE (glabel) = ffelab_definition_filelinenum (label);
+  set_tree_file_line (glabel, ffelab_definition_filename (label),
+		      ffelab_definition_filelinenum (label));
 
   emit_nop ();
 

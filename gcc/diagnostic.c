@@ -139,7 +139,7 @@ text_specifies_location (text_info *text, location_t *locus)
   else if (p[0] == '%' && p[1] == 'J')
     {
       tree t = va_arg (*text->args_ptr, tree);
-      *locus = DECL_SOURCE_LOCATION (t);
+      *locus = TREE_LOCUS (t);
       text->format_spec = p + 2;
       return true;
     }

@@ -856,13 +856,13 @@ entity.
 @item TREE_TYPE
 This macro returns the type of the entity declared.
 
-@item DECL_SOURCE_FILE
+@item TREE_FILENAME
 This macro returns the name of the file in which the entity was
 declared, as a @code{char*}.  For an entity declared implicitly by the
 compiler (like @code{__builtin_memcpy}), this will be the string
 @code{"<internal>"}.
 
-@item DECL_SOURCE_LINE
+@item TREE_LINENO
 This macro returns the line number at which the entity was declared, as
 an @code{int}.
 

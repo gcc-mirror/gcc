@@ -1,3 +1,8 @@
+2003-09-21  Richard Henderson  <rth@redhat.com>
+
+	* com.c, ste.c: Update for DECL_SOURCE_LOCATION rename and
+	change to const.
+
 2003-09-21  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* news.texi: Update with fixed PR's.
