@@ -1,3 +1,24 @@
+2003-10-07  Dorit Naishlos <dorit@il.ibm.com>
+
+	* sched-int.h (sched_info): New field 
+	sched_max_insns_priority.
+	* sched-rgn.c (init_ready_list): Add invocations to
+        targetm.sched.adjust_priority.  
+	(sched_max_insns_priority): Init new field.
+	* sched-ebb.c (sched_max_insns_priority): Init new field.
+        * haifa-sched.c (set_priorities): Set
+	sched_info->sched_max_insns_priority. 
+        * config/rs6000/rs6000.h:
+        (rs6000_sched_restricted_insns_priority_str): Support new
+        flag -mprioritize-restricted-insns.
+        (DEFAULT_RESTRICTED_INSNS_PRIORITY): Define.
+        * config/rs6000/rs6000.c (is_dispatch_slot_restricted): New
+        function.
+        (rs6000_adjust_priority): Change priority of restricted
+        insns, using above new function and new flag.
+        * doc/invoke.texi (-mprioritize-restricted-insns): Document
+        new option.
+	
 2003-10-07  Zack Weinberg  <zack@codesourcery.com>
 
 	* expr.c (cmpstr_optab, cmpmem_optab): New.

@@ -1756,7 +1756,13 @@ init_ready_list (struct ready_list *ready)
   for (insn = NEXT_INSN (prev_head); insn != next_tail; insn = NEXT_INSN (insn))
     {
       if (INSN_DEP_COUNT (insn) == 0)
-	ready_add (ready, insn);
+	{
+	  ready_add (ready, insn);
+
+	  if (targetm.sched.adjust_priority)
+	    INSN_PRIORITY (insn) =
+	      (*targetm.sched.adjust_priority) (insn, INSN_PRIORITY (insn));
+	}
       target_n_insns++;
     }
 
@@ -1792,7 +1798,13 @@ init_ready_list (struct ready_list *ready)
 			&& check_live (insn, bb_src)
 			&& is_exception_free (insn, bb_src, target_bb))))
 	      if (INSN_DEP_COUNT (insn) == 0)
-		ready_add (ready, insn);
+		{
+		  ready_add (ready, insn); 
+
+		  if (targetm.sched.adjust_priority)
+		    INSN_PRIORITY (insn) =
+		      (*targetm.sched.adjust_priority) (insn, INSN_PRIORITY (insn));
+		}
 	  }
       }
 }
@@ -1982,7 +1994,7 @@ static struct sched_info region_sched_info =
 
   NULL, NULL,
   NULL, NULL,
-  0, 0
+  0, 0, 0
 };
 
 /* Determine if PAT sets a CLASS_LIKELY_SPILLED_P register.  */

@@ -431,6 +431,7 @@ in the following sections.
 -mno-relocatable  -mrelocatable-lib  -mno-relocatable-lib @gol
 -mtoc  -mno-toc  -mlittle  -mlittle-endian  -mbig  -mbig-endian @gol
 -mdynamic-no-pic @gol
+-mprioritize-restricted-insns=@var{priority} @gol
 -mcall-sysv  -mcall-netbsd @gol
 -maix-struct-return  -msvr4-struct-return @gol
 -mabi=altivec  -mabi=no-altivec @gol
@@ -7525,6 +7526,14 @@ On Darwin and Mac OS X systems, compile code so that it is not
 relocatable, but that its external references are relocatable.  The
 resulting code is suitable for applications, but not shared
 libraries.
+
+@item -mprioritize-restricted-insns=@var{priority}
+@opindex mprioritize-restricted-insns
+This option controls the priority that is assigned to 
+dispatch-slot restricted instructions during the second scheduling 
+pass.  The argument @var{priority} takes the value @var{0/1/2} to assign 
+@var{no/highest/second-highest} priority to dispatch slot restricted 
+instructions.
 
 @item -mcall-sysv
 @opindex mcall-sysv
