@@ -2479,8 +2479,12 @@ free_data_refs (varray_type datarefs)
     {
       struct data_reference *dr = (struct data_reference *) 
 	VARRAY_GENERIC_PTR (datarefs, i);
-      if (dr && DR_ACCESS_FNS (dr))
-	varray_clear (DR_ACCESS_FNS (dr));
+      if (dr)
+	{
+	  if (DR_ACCESS_FNS (dr))
+	    varray_clear (DR_ACCESS_FNS (dr));
+	  free (dr);
+	}
     }
   varray_clear (datarefs);
 }

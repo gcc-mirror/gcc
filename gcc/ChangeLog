@@ -1,4 +1,9 @@
-2004-12-02  Jeff Law  <law@redhat.com>
+2004-12-10  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-data-ref.c (free_data_refs): Free each data_reference
+	object.
+
+2004-12-10  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-alias.c (setup_pointers_and_addressables): Remove
 	redundant test of v_ann->mem_tag_kind.
