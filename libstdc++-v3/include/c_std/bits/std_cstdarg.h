@@ -39,6 +39,11 @@
 #pragma GCC system_header
 #include <stdarg.h>
 
+// Adhere to section 17.4.1.2 clause 5 of ISO 14882:1998
+#ifndef va_end
+#define va_end(ap) va_end (ap)
+#endif
+
 namespace std
 {
   using ::va_list;
