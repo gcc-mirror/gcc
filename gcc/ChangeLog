@@ -1,5 +1,10 @@
 2004-08-29  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.c (mips_init_builtins): Simplify.  Only create
+	V2SF_type_node if it will be needed.
+
+2004-08-29  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.h (MIPS_CMP_MOVT, MIPS_CMP_MOVF): Delete.
 	* config/mips/mips.c (mips_prepare_builtin_arg): New function.
 	(mips_prepare_builtin_target): New function.
