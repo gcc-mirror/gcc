@@ -5018,15 +5018,8 @@ assign_parms (fndecl)
       if (parm == function_result_decl)
 	{
 	  tree result = DECL_RESULT (fndecl);
-	  rtx addr = DECL_RTL (parm);
-	  rtx x;
+	  rtx x = gen_rtx_MEM (DECL_MODE (result), DECL_RTL (parm));
 
-#ifdef POINTERS_EXTEND_UNSIGNED
-	  if (GET_MODE (addr) != Pmode)
-	    addr = convert_memory_address (Pmode, addr);
-#endif
-
-	  x = gen_rtx_MEM (DECL_MODE (result), addr);
 	  set_mem_attributes (x, result, 1);
 	  SET_DECL_RTL (result, x);
 	}
