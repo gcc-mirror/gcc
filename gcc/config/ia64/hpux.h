@@ -86,7 +86,7 @@ do {							\
 #ifndef CROSS_COMPILE
 #undef LIBGCC_SPEC
 #define LIBGCC_SPEC \
-  "%{shared-libgcc:%{!mlp64:-lgcc_s_hpux32}%{mlp64:-lgcc_s_hpux64} -lgcc} \
+  "%{shared-libgcc:%{!mlp64:-lgcc_s}%{mlp64:-lgcc_s_hpux64} -lgcc} \
    %{!shared-libgcc:-lgcc}"
 #endif
 
@@ -94,6 +94,8 @@ do {							\
 #define SUBTARGET_SWITCHES \
   { "ilp32",    MASK_ILP32,     "Generate ILP32 code" }, \
   { "lp64",    -MASK_ILP32,     "Generate LP64 code" },
+
+#define MULTILIB_DEFAULTS { "milp32" }
 
 /* A C expression whose value is zero if pointers that need to be extended
    from being `POINTER_SIZE' bits wide to `Pmode' are sign-extended and
