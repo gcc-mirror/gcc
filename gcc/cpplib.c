@@ -2530,7 +2530,7 @@ initialize_builtins (pfile)
     {
       char directive[2048];
       register struct directive *dp = &directive_table[0];
-      struct tm *timebuf = timestamp ();
+      struct tm *timebuf = timestamp (pfile);
       cpp_buffer *pbuffer = CPP_BUFFER (pfile);
 
       while (CPP_PREV_BUFFER (pbuffer))
