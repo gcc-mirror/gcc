@@ -1,3 +1,13 @@
+2005-04-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcov-io.h (GCOV_CHECK, GCOV_CHECK_READING,
+	GCOV_CHECK_WRITING): Remove.
+	(gcov_position, gcov_rewrite): Use gcc_assert.
+	* gcov-io.c (gcov_open, gcov_write_words, gcov_write_length,
+	gcov_read_words, gcov_sync, gcov_seek): Use gcc_assert.
+	* libgcov.c (__gcov_merge_single, __gcov_merge_delta): Use
+	gcc_assert.
+
 2005-04-01  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-inline.c: Fix a typo.

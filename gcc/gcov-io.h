@@ -546,26 +546,12 @@ GCOV_LINKAGE void gcov_write_length (gcov_position_t /*position*/);
 GCOV_LINKAGE time_t gcov_time (void);
 #endif
 
-/* Make sure the library is used correctly.  */
-#if IN_LIBGCOV
-#if ENABLE_CHECKING
-#define GCOV_CHECK(EXPR) (!(EXPR) ? abort (), 0 : 0)
-#else
-/* Include EXPR, so that unused variable warnings do not occur.  */
-#define GCOV_CHECK(EXPR) ((void)(0 && (EXPR)))
-#endif
-#else
-#define GCOV_CHECK(EXPR) gcc_assert (EXPR)
-#endif
-#define GCOV_CHECK_READING() GCOV_CHECK(gcov_var.mode > 0)
-#define GCOV_CHECK_WRITING() GCOV_CHECK(gcov_var.mode < 0)
-
 /* Save the current position in the gcov file.  */
 
 static inline gcov_position_t
 gcov_position (void)
 {
-  GCOV_CHECK_READING ();
+  gcc_assert (gcov_var.mode > 0);
   return gcov_var.start + gcov_var.offset;
 }
 
@@ -583,7 +569,7 @@ gcov_is_error (void)
 static inline void
 gcov_rewrite (void)
 {
-  GCOV_CHECK_READING ();
+  gcc_assert (gcov_var.mode > 0);
   gcov_var.mode = -1;
   gcov_var.start = 0;
   gcov_var.offset = 0;
