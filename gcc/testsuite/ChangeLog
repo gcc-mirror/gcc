@@ -1,3 +1,8 @@
+2003-12-05  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/13256
+	* gcc.c-torture/execute/20031201-1.c: New test.
+
 2003-12-05  Arnaud Charlet  <charlet@act-europe.fr>
 
 	* ada/acats/run_acats: Add checks against missing gnatlib/gnattools.
