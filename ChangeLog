@@ -1,3 +1,7 @@
+Fri Jan 23 00:29:28 1998  Philip Blundell  <pb@nexus.co.uk>
+
+	* config.guess: Add support for Linux/ARM.
+
 Thu Jan 22 01:38:33 1998  Richard Henderson  <rth@cygnus.com>
 
 	* configure.in: Revert 3 Jan change for alpha-linux-gnulibc1.
