@@ -38,7 +38,7 @@ static void print_location (cpp_reader *, fileline, unsigned int);
 static void
 print_location (cpp_reader *pfile, fileline line, unsigned int col)
 {
-  if (!pfile->buffer || line == 0)
+  if (line == 0)
     fprintf (stderr, "%s: ", progname);
   else
     {
@@ -131,24 +131,19 @@ cpp_error (cpp_reader * pfile, int level, const char *msgid, ...)
   
   va_start (ap, msgid);
 
-  if (pfile->buffer)
+  if (CPP_OPTION (pfile, traditional))
     {
-      if (CPP_OPTION (pfile, traditional))
-	{
-	  if (pfile->state.in_directive)
-	    line = pfile->directive_line;
-	  else
-	    line = pfile->line;
-	  column = 0;
-	}
+      if (pfile->state.in_directive)
+	line = pfile->directive_line;
       else
-	{
-	  line = pfile->cur_token[-1].line;
-	  column = pfile->cur_token[-1].col;
-	}
+	line = pfile->line;
+      column = 0;
     }
   else
-    line = column = 0;
+    {
+      line = pfile->cur_token[-1].line;
+      column = pfile->cur_token[-1].col;
+    }
 
   if (_cpp_begin_message (pfile, level, line, column))
     v_message (msgid, ap);
