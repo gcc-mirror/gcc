@@ -270,10 +270,24 @@ for ml in $MULTILIBS; do
     shlib_deps="$shlib_deps $dir/$f"
   done
 
+  libgcc_a_objs="$libgcc_objs $libgcc_st_objs"
+
+  if [ "@libgcc_visibility@" = yes ]; then
+    libgcc_a_objs=`echo "${libgcc_a_objs} " | sed s~${objext}' ~.oS ~g'`
+
+    # .oS objects will have all non-local symbol definitions .hidden
+    echo ""
+    echo "$libgcc_a_objs: libgcc/${dir}/%.oS: libgcc/${dir}/%${objext}"
+    echo "	@\$(NM_FOR_TARGET) $SHLIB_NM_FLAGS \$^" \\
+    echo "	 | \$(AWK) 'NF == 3 { printf \".hidden %s\\n\", \$\$3 }'" \\
+    echo '	 | $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -Wl,-r -nostdinc' \\ 
+    echo '	   -nostdlib -o $@ $^ -xassembler -'
+  fi
+
   echo ""
-  echo "${dir}/libgcc.a: $libgcc_objs $libgcc_st_objs"
+  echo "${dir}/libgcc.a: $libgcc_a_objs"
   echo "	-rm -rf ${dir}/libgcc.a"
-  echo '	$(AR_CREATE_FOR_TARGET)' ${dir}/libgcc.a $libgcc_objs $libgcc_st_objs
+  echo '	$(AR_CREATE_FOR_TARGET)' ${dir}/libgcc.a $libgcc_a_objs
   echo '	if $(RANLIB_TEST_FOR_TARGET) ; then' \\
   echo '	  $(RANLIB_FOR_TARGET)' ${dir}/libgcc.a ';' \\
   echo '	else true; fi;'
