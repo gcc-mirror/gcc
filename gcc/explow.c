@@ -1445,8 +1445,8 @@ probe_stack_range (first, size)
 	abort ();
 
       emit_label (test_lab);
-      emit_cmp_insn (test_addr, last_addr, CMP_OPCODE, NULL_RTX, Pmode, 1, 0);
-      emit_jump_insn ((*bcc_gen_fctn[(int) CMP_OPCODE]) (loop_lab));
+      emit_cmp_and_jump_insns (test_addr, last_addr, CMP_OPCODE,
+			       NULL_RTX, Pmode, 1, 0, loop_lab);
       emit_jump (end_lab);
       emit_note (NULL_PTR, NOTE_INSN_LOOP_END);
       emit_label (end_lab);

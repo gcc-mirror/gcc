@@ -4574,9 +4574,6 @@ do_cmp_and_jump (arg1, arg2, op, mode, label)
     }
   else
     {
-      emit_cmp_insn(arg1, arg2, op, NULL_RTX, mode, 0, 0);
-      if (bcc_gen_fctn[(int) op] == 0)
-	abort ();
-      emit_jump_insn ((*bcc_gen_fctn[(int) op]) (label));
+      emit_cmp_and_jump_insns (arg1, arg2, op, NULL_RTX, mode, 0, 0, label);
     }
 }

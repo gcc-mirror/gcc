@@ -1767,9 +1767,9 @@ start_catch_handler (rtime)
                                           0, SImode, 1, rtime_address, Pmode);
 
       /* Did the function return true? */
-      emit_cmp_insn (call_rtx, const0_rtx, EQ, NULL_RTX,
-                                                GET_MODE (call_rtx), 0 ,0);
-      emit_jump_insn (gen_beq (catchstack.top->entry->false_label));
+      emit_cmp_and_jump_insns (call_rtx, const0_rtx, EQ, NULL_RTX,
+                               GET_MODE (call_rtx), 0, 0,
+			       catchstack.top->entry->false_label);
     }
 }
 
