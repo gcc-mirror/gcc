@@ -6640,6 +6640,7 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl)
 	  /* 2- Do the layout of the class where the last field
 	     was found, so we can search it. */
 	  class_decl = resolve_and_layout (type, NULL_TREE);
+	  if (class_decl != NULL_TREE)
 	  type = TREE_TYPE (class_decl);
 
 	  /* 3- Retrieve a filtered list of method matches, Refine
@@ -10855,6 +10856,11 @@ check_thrown_exceptions (location, decl)
        throws = TREE_CHAIN (throws)) 
     if (!check_thrown_exceptions_do (TREE_VALUE (throws)))
       {
+#if 1
+	/* Temporary hack to suppresses errors about cloning arrays. FIXME */
+	if (DECL_NAME (decl) == get_identifier ("clone"))
+	  continue;
+#endif
 	EXPR_WFL_LINECOL (wfl_operator) = location;
 	parse_error_context 
 	  (wfl_operator, "Exception `%s' must be caught, or it must be "
