@@ -1,3 +1,10 @@
+2002-11-25  Wolfgang Bangerth  <bangerth@ticam.utexas.edu>
+
+	* include/std/std_complex.h
+	(operator<<(basic_ostream&, const complex&)): Prefer 'x'
+	to "x" for efficiency sake.
+	* src/locale.cc (locale::locale(const char*)): Ditto.
+
 2002-11-24  Paolo Carlini  <pcarlini@unitus.it>
 
 	* src/locale.cc (locale::locale(const char*)):

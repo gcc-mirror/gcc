@@ -235,14 +235,14 @@ namespace std
 		    for (size_t __j = 0; __j < __i; ++__j)
 		      {
 			__str += _S_categories[__j];
-			__str += "=";
+			__str += '=';
 			__str += __res;
-			__str += ";";
+			__str += ';';
 		      }
 		    __str += _S_categories[__i];
-		    __str += "=";
+		    __str += '=';
 		    __str += __env;
-		    __str += ";";
+		    __str += ';';
 		    __i++;
 		    for (; __i < _S_categories_size
 			   + _S_extra_categories_size; ++__i)
@@ -251,9 +251,9 @@ namespace std
 			if (!__env || strcmp(__env, "") == 0)
 			  {
 			    __str += _S_categories[__i];
-			    __str += "=";
+			    __str += '=';
 			    __str += __res;
-			    __str += ";";
+			    __str += ';';
 			  }
 			else if (strcmp(__env, "C") == 0
 				 || strcmp(__env, "POSIX") == 0)
@@ -264,9 +264,9 @@ namespace std
 			else
 			  {
 			    __str += _S_categories[__i];
-			    __str += "=";
+			    __str += '=';
 			    __str += __env;
-			    __str += ";";
+			    __str += ';';
 			  }
 		      }
 		    __str.erase(__str.end() - 1);
@@ -347,15 +347,15 @@ namespace std
     else
       {
 	__ret += _S_categories[0];
-	__ret += "=";
+	__ret += '=';
 	__ret += _M_impl->_M_names[0]; 
 	for (size_t __i = 1; 
 	     __i < _S_categories_size + _S_extra_categories_size; 
 	     ++__i)
 	  {
-	    __ret += ";";
+	    __ret += ';';
 	    __ret += _S_categories[__i];
-	    __ret += "=";
+	    __ret += '=';
 	    __ret += _M_impl->_M_names[__i];
 	  }
       }
