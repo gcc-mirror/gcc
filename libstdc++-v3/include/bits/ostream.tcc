@@ -487,11 +487,11 @@ namespace std
 	  // Pad after 0[xX], if there is one.
 	  // Who came up with these rules, anyway? Jeeze.
 	  typedef _Format_cache<_CharT> __cache_type;
-	  __cache_type const* __fmt = __cache_type::_S_get(__ios);
+	  __cache_type const* __lfmt = __cache_type::_S_get(__ios);
 	  const char_type* __minus = traits_type::find(__olds, __oldlen, 
-						       __fmt->_S_minus);
+						       __lfmt->_S_minus);
 	  const char_type* __plus = traits_type::find(__olds, __oldlen, 
-						      __fmt->_S_plus);
+						      __lfmt->_S_plus);
 	  bool __testsign = __minus || __plus;
 	  bool __testhex = __olds[0] == '0' 
 	    		   && (__olds[1] == 'x' || __olds[1] == 'X');

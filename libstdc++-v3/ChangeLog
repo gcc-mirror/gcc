@@ -1,3 +1,8 @@
+2002-01-28  Jens Rehsack <rehsack@web.de>
+
+	libstdc++/3561
+	* include/bits/ostream.tcc (__pad_char): Support -Wshadow -Werror.
+
 2002-01-23  Richard Henderson  <rth@redhat.com>
 
 	PR libstdc++/5198
