@@ -101,7 +101,8 @@ Boston, MA 02111-1307, USA.  */
 
 #undef INIT_SECTION_ASM_OP
 #define INIT_SECTION_ASM_OP_ELF		"\t.section\t.init"
-#define INIT_SECTION_ASM_OP_COFF	"\t.section\t.init ,\"x\""
+/* Rename these for COFF becuase crt1.o will try to run them. */
+#define INIT_SECTION_ASM_OP_COFF	"\t.section\t.ctor ,\"x\""
 #define INIT_SECTION_ASM_OP	\
   ((TARGET_ELF) ? INIT_SECTION_ASM_OP_ELF : INIT_SECTION_ASM_OP_COFF)
 
@@ -927,6 +928,13 @@ dtors_section ()							\
 
 #define MAX_OFILE_ALIGNMENT (32768*8)
 
+/* Define the `__builtin_va_list' type for the ABI.  On OpenServer, this
+   type is `char *'.  */
+#undef BUILD_VA_LIST_TYPE
+#define BUILD_VA_LIST_TYPE(VALIST) \
+  (VALIST) = build_pointer_type (char_type_node)
+
+
 /*
 Here comes some major hackery to get the crt stuff to compile properly.
 Since we can (and do) compile for both COFF and ELF environments, we
@@ -960,7 +968,7 @@ compiler at the end of the day. Onward we go ...
 #  define FINI_SECTION_ASM_OP FINI_SECTION_ASM_OP_COFF
 #  define DTORS_SECTION_ASM_OP DTORS_SECTION_ASM_OP_COFF
 #  define CTORS_SECTION_ASM_OP CTORS_SECTION_ASM_OP_COFF
-#  define EH_FRAME_SECTION_ASM_OP ""
+#  define EH_FRAME_SECTION_ASM_OP EH_FRAME_SECTION_ASM_OP_COFF
 #  define CTOR_LIST_BEGIN asm (INIT_SECTION_ASM_OP); asm ("pushl $0")
 #  define CTOR_LIST_END CTOR_LIST_BEGIN
 #  define DO_GLOBAL_CTORS_BODY						\
