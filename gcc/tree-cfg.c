@@ -1954,15 +1954,16 @@ find_taken_edge (basic_block bb, tree val)
 
   gcc_assert (stmt);
   gcc_assert (is_ctrl_stmt (stmt));
+  gcc_assert (val);
 
   /* If VAL is a predicate of the form N RELOP N, where N is an
      SSA_NAME, we can usually determine its truth value.  */
-  if (val && COMPARISON_CLASS_P (val))
+  if (COMPARISON_CLASS_P (val))
     val = fold (val);
 
   /* If VAL is not a constant, we can't determine which edge might
      be taken.  */
-  if (val == NULL || !really_constant_p (val))
+  if (!really_constant_p (val))
     return NULL;
 
   if (TREE_CODE (stmt) == COND_EXPR)

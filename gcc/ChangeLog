@@ -1,5 +1,11 @@
 2004-11-04  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* tree-cfg.c (find_taken_edge): Reject VAL begin NULL.
+	* tree-ssa-ccp.c (visit_cond_stmt): Don't call find_taken_edge
+	with VAL being NULL.
+
+2004-11-04  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* cfghooks.c (delete_basic_block): Remove code to truncate
 	edge vectors.
 

@@ -1123,7 +1123,7 @@ visit_cond_stmt (tree stmt, edge *taken_edge_p)
      to the worklist.  If no single edge can be determined statically,
      return SSA_PROP_VARYING to feed all the outgoing edges to the
      propagation engine.  */
-  *taken_edge_p = find_taken_edge (block, val.const_val);
+  *taken_edge_p = val.const_val ? find_taken_edge (block, val.const_val) : 0;
   if (*taken_edge_p)
     return SSA_PROP_INTERESTING;
   else
