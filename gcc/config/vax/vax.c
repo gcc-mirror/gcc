@@ -648,8 +648,6 @@ check_float_value (mode, d, overflow)
   return 0;
 }
 
-#ifdef VMS
-
 /* Linked list of all externals that are to be emitted when optimizing
    for the global pointer if they haven't been declared by the end of
    the program with an appropriate .comm or initialization.  */
@@ -659,11 +657,11 @@ struct extern_list {
   struct extern_list *next;	/* next external */
   char *name;			/* name of the external */
   int size;			/* external's actual size */
-  int in_const;		/* section type flag */
+  int in_const;			/* section type flag */
 } *extern_head = 0, *pending_head = 0;
 
 /* Check whether NAME is already on the external definition list.  If not,
-   Add it to either that list of the pending definition list.  */
+   add it to either that list or the pending definition list.  */
 
 void
 vms_check_external (decl, name, pending)
@@ -744,7 +742,8 @@ vms_flush_pending_externals (file)
     }
 }
 
-/* Additional support code for VMS. */
+#ifdef VMS
+/* Additional support code for VMS host. */
 
 #ifdef QSORT_WORKAROUND
   /*
