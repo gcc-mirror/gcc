@@ -1,3 +1,7 @@
+2004-06-14  Andreas Jaeger  <aj@suse.de>
+
+	* gcc_update: boehm-gc/configure.in -> configure.ac.
+
 2004-06-16  Paolo Bonzini  <bonzini@gnu.org>
 
 	* gcc_update (boehm-gc/configure): Depend on
