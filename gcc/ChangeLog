@@ -1,3 +1,8 @@
+Tue Feb 18 20:15:54 2003  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.c (calc_live_regs): Also check GET_CODE when checking if initial value
+	for PR_REG is still the PR_REG register.
+
 2003-02-18  Jim Wilson  <wilson@redhat.com>
 
 	* config/ia64/ia64.md (floatdidf2, floatdisf2): Add %, before second
