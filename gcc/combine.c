@@ -5068,7 +5068,8 @@ make_extraction (mode, inner, pos, pos_rtx, len,
      ignore the POS lowest bits, etc.  */
   enum machine_mode is_mode = GET_MODE (inner);
   enum machine_mode inner_mode;
-  enum machine_mode wanted_mem_mode = byte_mode;
+  enum machine_mode wanted_inner_mode = byte_mode;
+  enum machine_mode wanted_inner_reg_mode = word_mode;
   enum machine_mode pos_mode = word_mode;
   enum machine_mode extraction_mode = word_mode;
   enum machine_mode tmode = mode_for_size (len, MODE_INT, 1);
@@ -5208,12 +5209,12 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 	  || (pos_rtx != 0 && len != 1)))
     return 0;
 
-  /* Get the mode to use should INNER be a MEM, the mode for the position,
+  /* Get the mode to use should INNER not be a MEM, the mode for the position,
      and the mode for the result.  */
 #ifdef HAVE_insv
   if (in_dest)
     {
-      wanted_mem_mode = insn_operand_mode[(int) CODE_FOR_insv][0];
+      wanted_inner_reg_mode = insn_operand_mode[(int) CODE_FOR_insv][0];
       pos_mode = insn_operand_mode[(int) CODE_FOR_insv][2];
       extraction_mode = insn_operand_mode[(int) CODE_FOR_insv][3];
     }
@@ -5222,7 +5223,7 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 #ifdef HAVE_extzv
   if (! in_dest && unsignedp)
     {
-      wanted_mem_mode = insn_operand_mode[(int) CODE_FOR_extzv][1];
+      wanted_inner_reg_mode = insn_operand_mode[(int) CODE_FOR_extzv][1];
       pos_mode = insn_operand_mode[(int) CODE_FOR_extzv][3];
       extraction_mode = insn_operand_mode[(int) CODE_FOR_extzv][0];
     }
@@ -5231,7 +5232,7 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 #ifdef HAVE_extv
   if (! in_dest && ! unsignedp)
     {
-      wanted_mem_mode = insn_operand_mode[(int) CODE_FOR_extv][1];
+      wanted_inner_reg_mode = insn_operand_mode[(int) CODE_FOR_extv][1];
       pos_mode = insn_operand_mode[(int) CODE_FOR_extv][3];
       extraction_mode = insn_operand_mode[(int) CODE_FOR_extv][0];
     }
@@ -5247,13 +5248,15 @@ make_extraction (mode, inner, pos, pos_rtx, len,
       && GET_MODE_SIZE (pos_mode) < GET_MODE_SIZE (GET_MODE (pos_rtx)))
     pos_mode = GET_MODE (pos_rtx);
 
-  /* If this is not from memory or we have to change the mode of memory and
-     cannot, the desired mode is EXTRACTION_MODE.  */
-  if (GET_CODE (inner) != MEM
-      || (inner_mode != wanted_mem_mode
-	  && (mode_dependent_address_p (XEXP (inner, 0))
-	      || MEM_VOLATILE_P (inner))))
-    wanted_mem_mode = extraction_mode;
+  /* If this is not from memory, the desired mode is wanted_inner_reg_mode;
+     if we have to change the mode of memory and cannot, the desired mode is
+     EXTRACTION_MODE.  */
+  if (GET_CODE (inner) != MEM)
+    wanted_inner_mode = wanted_inner_reg_mode;
+  else if (inner_mode != wanted_inner_mode
+	   && (mode_dependent_address_p (XEXP (inner, 0))
+	       || MEM_VOLATILE_P (inner)))
+    wanted_inner_mode = extraction_mode;
 
   orig_pos = pos;
 
@@ -5262,14 +5265,11 @@ make_extraction (mode, inner, pos, pos_rtx, len,
       /* If position is constant, compute new position.  Otherwise,
 	 build subtraction.  */
       if (pos_rtx == 0)
-	pos = (MAX (GET_MODE_BITSIZE (is_mode),
-		    GET_MODE_BITSIZE (wanted_mem_mode))
-	       - len - pos);
+	pos = GET_MODE_BITSIZE (wanted_inner_mode) - len - pos;
       else
 	pos_rtx
 	  = gen_rtx_combine (MINUS, GET_MODE (pos_rtx),
-			     GEN_INT (MAX (GET_MODE_BITSIZE (is_mode),
-					   GET_MODE_BITSIZE (wanted_mem_mode))
+			     GEN_INT (GET_MODE_BITSIZE (wanted_inner_mode)
 				      - len),
 			     pos_rtx);
     }
@@ -5277,10 +5277,10 @@ make_extraction (mode, inner, pos, pos_rtx, len,
   /* If INNER has a wider mode, make it smaller.  If this is a constant
      extract, try to adjust the byte to point to the byte containing
      the value.  */
-  if (wanted_mem_mode != VOIDmode
-      && GET_MODE_SIZE (wanted_mem_mode) < GET_MODE_SIZE (is_mode)
+  if (wanted_inner_mode != VOIDmode
+      && GET_MODE_SIZE (wanted_inner_mode) < GET_MODE_SIZE (is_mode)
       && ((GET_CODE (inner) == MEM
-	   && (inner_mode == wanted_mem_mode
+	   && (inner_mode == wanted_inner_mode
 	       || (! mode_dependent_address_p (XEXP (inner, 0))
 		   && ! MEM_VOLATILE_P (inner))))))
     {
@@ -5301,18 +5301,18 @@ make_extraction (mode, inner, pos, pos_rtx, len,
       if (pos_rtx == 0)
 	{
 	  offset += pos / BITS_PER_UNIT;
-	  pos %= GET_MODE_BITSIZE (wanted_mem_mode);
+	  pos %= GET_MODE_BITSIZE (wanted_inner_mode);
 	}
 
       if (BYTES_BIG_ENDIAN != BITS_BIG_ENDIAN
 	  && ! spans_byte
-	  && is_mode != wanted_mem_mode)
+	  && is_mode != wanted_inner_mode)
 	offset = (GET_MODE_SIZE (is_mode)
-		  - GET_MODE_SIZE (wanted_mem_mode) - offset);
+		  - GET_MODE_SIZE (wanted_inner_mode) - offset);
 
-      if (offset != 0 || inner_mode != wanted_mem_mode)
+      if (offset != 0 || inner_mode != wanted_inner_mode)
 	{
-	  rtx newmem = gen_rtx (MEM, wanted_mem_mode,
+	  rtx newmem = gen_rtx (MEM, wanted_inner_mode,
 				plus_constant (XEXP (inner, 0), offset));
 	  RTX_UNCHANGING_P (newmem) = RTX_UNCHANGING_P (inner);
 	  MEM_VOLATILE_P (newmem) = MEM_VOLATILE_P (inner);
@@ -5323,7 +5323,7 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 
   /* If INNER is not memory, we can always get it into the proper mode. */
   else if (GET_CODE (inner) != MEM)
-    inner = force_to_mode (inner, extraction_mode,
+    inner = force_to_mode (inner, wanted_inner_mode,
 			   pos_rtx || len + orig_pos >= HOST_BITS_PER_WIDE_INT
 			   ? GET_MODE_MASK (extraction_mode)
 			   : (((HOST_WIDE_INT) 1 << len) - 1) << orig_pos,
@@ -9156,24 +9156,19 @@ simplify_comparison (code, pop0, pop1)
 	  /* If we are extracting a single bit from a variable position in
 	     a constant that has only a single bit set and are comparing it
 	     with zero, we can convert this into an equality comparison 
-	     between the position and the location of the single bit.  We can't
-	     do this if bit endian and we don't have an extzv since we then
-	     can't know what mode to use for the endianness adjustment.  */
+	     between the position and the location of the single bit.  */
 
 	  if (GET_CODE (XEXP (op0, 0)) == CONST_INT
 	      && XEXP (op0, 1) == const1_rtx
 	      && equality_comparison_p && const_op == 0
-	      && (i = exact_log2 (INTVAL (XEXP (op0, 0)))) >= 0
-	      && (! BITS_BIG_ENDIAN
-#ifdef HAVE_extzv
-		  || HAVE_extzv
-#endif
-		  ))
+	      && (i = exact_log2 (INTVAL (XEXP (op0, 0)))) >= 0)
 	    {
-#ifdef HAVE_extzv
 	      if (BITS_BIG_ENDIAN)
+#ifdef HAVE_extzv
 		i = (GET_MODE_BITSIZE
 		     (insn_operand_mode[(int) CODE_FOR_extzv][1]) - 1 - i);
+#else
+	        i = BITS_PER_WORD - 1 - i;
 #endif
 
 	      op0 = XEXP (op0, 2);
