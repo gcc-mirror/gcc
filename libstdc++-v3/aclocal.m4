@@ -746,7 +746,7 @@ dnl GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT
 AC_DEFUN(GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT, [
   dnl Check for complex versions of math functions of platform.
   AC_CHECK_LIB(m, main)
-  AC_REPLACE_MATHFUNCS(nan hypot hypotf atan2f expf copysignf)
+  AC_REPLACE_MATHFUNCS(nan hypot hypotf copysignf)
 
   dnl Compile the long double complex functions only if the function 
   dnl provides the non-complex long double functions that are needed.
