@@ -1,3 +1,8 @@
+Sun Jan 25 12:30:18 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* objc/Make-lang.in (objc.stage1): Depend on stage1-start.
+	(objc.stage2, objc.stage3, objc.stage4): Likewise.
+
 Sun Jan 25 12:13:47 1998  Michael Tiemann  <michael@tiemann.org>
 
 	* cse.c (simplify_ternary_operation): Don't try to simplify

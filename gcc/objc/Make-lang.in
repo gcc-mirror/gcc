@@ -279,19 +279,19 @@ objc.maintainer-clean:
 #
 # Stage hooks:
 
-objc.stage1:
+objc.stage1: stage1-start
 	-mv objc/*$(objext) stage1/objc
 	-mv cc1obj$(exeext) stage1
 	-mv libobjc.a stage1
-objc.stage2:
+objc.stage2: stage2-start
 	-mv objc/*$(objext) stage2/objc
 	-mv cc1obj$(exeext) stage2
 	-mv libobjc.a stage2
-objc.stage3:
+objc.stage3: stage3-start
 	-mv objc/*$(objext) stage3/objc
 	-mv cc1obj$(exeext) stage3
 	-mv libobjc.a stage3
-objc.stage4:
+objc.stage4: stage4-start
 	-mv objc/*$(objext) stage4/objc
 	-mv cc1obj$(exeext) stage4
 	-mv libobjc.a stage4
