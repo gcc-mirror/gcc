@@ -1426,6 +1426,14 @@ characters.  If this is undefined, the default is
 largest value that @code{WCHAR_TYPE_SIZE} can have at run-time.  This is
 used in @code{cpp}.
 
+@findex GCOV_TYPE_SIZE
+@item GCOV_TYPE_SIZE
+A C expression for the size in bits of the type used for gcov counters on the
+target machine.  If you don't define this, the default is one
+@code{LONG_TYPE_SIZE} in case it is greater or equal to 64-bit and
+@code{LONG_LONG_TYPE_SIZE} otherwise.  You may want to re-define the type to
+ensure atomicity for counters in multithreaded programs.
+
 @findex WINT_TYPE
 @item WINT_TYPE
 A C expression for a string describing the name of the data type to

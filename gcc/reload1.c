@@ -1567,7 +1567,7 @@ static void
 count_pseudo (reg)
      int reg;
 {
-  int n_refs = REG_N_REFS (reg);
+  int freq = REG_FREQ (reg);
   int r = reg_renumber[reg];
   int nregs;
 
@@ -1580,11 +1580,11 @@ count_pseudo (reg)
   if (r < 0)
     abort ();
 
-  spill_add_cost[r] += n_refs;
+  spill_add_cost[r] += freq;
 
   nregs = HARD_REGNO_NREGS (r, PSEUDO_REGNO_MODE (reg));
   while (nregs-- > 0)
-    spill_cost[r + nregs] += n_refs;
+    spill_cost[r + nregs] += freq;
 }
 
 /* Calculate the SPILL_COST and SPILL_ADD_COST arrays and determine the
@@ -1654,9 +1654,9 @@ count_spilled_pseudo (spilled, spilled_nregs, reg)
 
   SET_REGNO_REG_SET (&spilled_pseudos, reg);
 
-  spill_add_cost[r] -= REG_N_REFS (reg);
+  spill_add_cost[r] -= REG_FREQ (reg);
   while (nregs-- > 0)
-    spill_cost[r + nregs] -= REG_N_REFS (reg);
+    spill_cost[r + nregs] -= REG_FREQ (reg);
 }
 
 /* Find reload register to use for reload number ORDER.  */

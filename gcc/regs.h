@@ -67,6 +67,7 @@ typedef struct reg_info_def
 
 				/* fields set by flow_analysis */
   int refs;			/* # of times (REG n) is used or set */
+  int freq;			/* # estimated frequency (REG n) is used or set */
   int deaths;			/* # of times (REG n) dies */
   int live_length;		/* # of instructions (REG n) is live */
   int calls_crossed;		/* # of calls (REG n) is live across */
@@ -77,10 +78,13 @@ typedef struct reg_info_def
 
 extern varray_type reg_n_info;
 
-/* Indexed by n, gives number of times (REG n) is used or set.
-   References within loops may be counted more times.  */
+/* Indexed by n, gives number of times (REG n) is used or set.  */
 
 #define REG_N_REFS(N) (VARRAY_REG (reg_n_info, N)->refs)
+
+/* Estimate frequency of references to register N.  */
+
+#define REG_FREQ(N) (VARRAY_REG (reg_n_info, N)->freq)
 
 /* Indexed by n, gives number of times (REG n) is set.
    ??? both regscan and flow allocate space for this.  We should settle

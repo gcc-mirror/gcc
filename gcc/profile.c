@@ -43,11 +43,11 @@ Boston, MA 02111-1307, USA.  */
 #include "regs.h"
 #include "expr.h"
 #include "function.h"
-#include "gcov-io.h"
 #include "toplev.h"
 #include "ggc.h"
 #include "hard-reg-set.h"
 #include "basic-block.h"
+#include "gcov-io.h"
 
 /* Additional information about the edges we need.  */
 struct edge_info
@@ -59,8 +59,8 @@ struct edge_info
 struct bb_info
   {
     unsigned int count_valid : 1;
-    int succ_count;
-    int pred_count;
+    gcov_type succ_count;
+    gcov_type pred_count;
   };
 
 #define EDGE_INFO(e)  ((struct edge_info *) (e)->aux)
@@ -256,8 +256,8 @@ compute_branch_probabilities ()
 	    num_edges++;
 	    if (da_file)
 	      {
-		long value;
-		__read_long (&value, da_file, 8);
+		gcov_type value;
+		__read_gcov_type (&value, da_file, 8);
 		e->count = value;
 	      }
 	    else
@@ -265,11 +265,18 @@ compute_branch_probabilities ()
 	    EDGE_INFO (e)->count_valid = 1;
 	    BB_INFO (bb)->succ_count--;
 	    BB_INFO (e->dest)->pred_count--;
+	    if (rtl_dump_file)
+	      {
+		fprintf (rtl_dump_file, "\nRead edge from %i to %i, count:",
+			 bb->index, e->dest->index);
+		fprintf (rtl_dump_file, HOST_WIDEST_INT_PRINT_DEC,
+			 (HOST_WIDEST_INT) e->count);
+	      }
 	  }
     }
 
   if (rtl_dump_file)
-    fprintf (rtl_dump_file, "%d edge counts read\n", num_edges);
+    fprintf (rtl_dump_file, "\n%d edge counts read\n", num_edges);
 
   /* For every block in the file,
      - if every exit/entrance edge has a known count, then set the block count
@@ -303,7 +310,7 @@ compute_branch_probabilities ()
 	      if (bi->succ_count == 0)
 		{
 		  edge e;
-		  int total = 0;
+		  gcov_type total = 0;
 
 		  for (e = bb->succ; e; e = e->succ_next)
 		    total += e->count;
@@ -314,7 +321,7 @@ compute_branch_probabilities ()
 	      else if (bi->pred_count == 0)
 		{
 		  edge e;
-		  int total = 0;
+		  gcov_type total = 0;
 
 		  for (e = bb->pred; e; e = e->pred_next)
 		    total += e->count;
@@ -328,7 +335,7 @@ compute_branch_probabilities ()
 	      if (bi->succ_count == 1)
 		{
 		  edge e;
-		  int total = 0;
+		  gcov_type total = 0;
 
 		  /* One of the counts will be invalid, but it is zero,
 		     so adding it in also doesn't hurt.  */
@@ -355,7 +362,7 @@ compute_branch_probabilities ()
 	      if (bi->pred_count == 1)
 		{
 		  edge e;
-		  int total = 0;
+		  gcov_type total = 0;
 
 		  /* One of the counts will be invalid, but it is zero,
 		     so adding it in also doesn't hurt.  */
@@ -411,7 +418,7 @@ compute_branch_probabilities ()
       basic_block bb = BASIC_BLOCK (i);
       edge e;
       rtx insn;
-      int total;
+      gcov_type total;
       rtx note;
 
       total = bb->count;
@@ -1036,14 +1043,14 @@ static rtx
 gen_edge_profiler (edgeno)
      int edgeno;
 {
-  enum machine_mode mode = mode_for_size (LONG_TYPE_SIZE, MODE_INT, 0);
+  enum machine_mode mode = mode_for_size (GCOV_TYPE_SIZE, MODE_INT, 0);
   rtx mem_ref, tmp;
   rtx sequence;
 
   start_sequence ();
 
   tmp = force_reg (Pmode, profiler_label);
-  tmp = plus_constant (tmp, LONG_TYPE_SIZE / BITS_PER_UNIT * edgeno);
+  tmp = plus_constant (tmp, GCOV_TYPE_SIZE / BITS_PER_UNIT * edgeno);
   mem_ref = validize_mem (gen_rtx_MEM (mode, tmp));
 
   tmp = expand_binop (mode, add_optab, mem_ref, const1_rtx,
@@ -1068,7 +1075,7 @@ output_func_start_profiler ()
   char buf[20];
   const char *cfnname;
   rtx table_address;
-  enum machine_mode mode = mode_for_size (LONG_TYPE_SIZE, MODE_INT, 0);
+  enum machine_mode mode = mode_for_size (GCOV_TYPE_SIZE, MODE_INT, 0);
   int save_flag_inline_functions = flag_inline_functions;
   int save_flag_test_coverage = flag_test_coverage;
   int save_profile_arc_flag = profile_arc_flag;

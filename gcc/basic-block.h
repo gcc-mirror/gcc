@@ -111,6 +111,9 @@ do {									\
    be done, other than zero the statistics on the first allocation.  */
 #define MAX_REGNO_REG_SET(NUM_REGS, NEW_P, RENUMBER_P) 
 
+/* Type we use to hold basic block counters.  Should be at least 64bit.  */
+typedef HOST_WIDEST_INT gcov_type;
+
 /* Control flow edge information.  */
 typedef struct edge_def {
   /* Links through the predecessor and successor lists.  */
@@ -127,7 +130,7 @@ typedef struct edge_def {
 
   int flags;			/* see EDGE_* below  */
   int probability;		/* biased by REG_BR_PROB_BASE */
-  int count;			/* Expected number of executions calculated
+  gcov_type count;		/* Expected number of executions calculated
 				   in profile.c  */
 } *edge;
 
@@ -201,7 +204,7 @@ typedef struct basic_block_def {
   int loop_depth;
 
   /* Expected number of executions: calculated in profile.c.  */
-  int count;
+  gcov_type count;
  
   /* Expected frequency.  Normalized to be in range 0 to BB_FREQ_MAX.  */
   int frequency;

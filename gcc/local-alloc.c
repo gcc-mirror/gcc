@@ -85,6 +85,10 @@ struct qty
 
   int n_refs;
 
+  /* The frequency of uses of quantity Q.  */
+
+  int freq;
+
   /* Insn number (counting from head of basic block)
      where quantity Q was born.  -1 if birth has not been recorded.  */
 
@@ -321,6 +325,7 @@ alloc_qty (regno, mode, size, birth)
   qty[qtyno].min_class = reg_preferred_class (regno);
   qty[qtyno].alternate_class = reg_alternate_class (regno);
   qty[qtyno].n_refs = REG_N_REFS (regno);
+  qty[qtyno].freq = REG_FREQ (regno);
   qty[qtyno].changes_mode = REG_CHANGES_MODE (regno);
 }
 
@@ -1127,6 +1132,7 @@ update_equiv_regs ()
 
 		  remove_death (regno, insn);
 		  REG_N_REFS (regno) = 0;
+		  REG_FREQ (regno) = 0;
 		  PUT_CODE (equiv_insn, NOTE);
 		  NOTE_LINE_NUMBER (equiv_insn) = NOTE_INSN_DELETED;
 		  NOTE_SOURCE_FILE (equiv_insn) = 0;
@@ -1697,7 +1703,7 @@ block_alloc (b)
    QTY_CMP_PRI is also used by qty_sugg_compare.  */
 
 #define QTY_CMP_PRI(q)		\
-  ((int) (((double) (floor_log2 (qty[q].n_refs) * qty[q].n_refs * qty[q].size) \
+  ((int) (((double) (floor_log2 (qty[q].n_refs) * qty[q].freq * qty[q].size) \
 	  / (qty[q].death - qty[q].birth)) * 10000))
 
 static int
@@ -1966,6 +1972,7 @@ combine_regs (usedreg, setreg, may_save_copy, insn_number, insn, already_dead)
       /* Update info about quantity SQTY.  */
       qty[sqty].n_calls_crossed += REG_N_CALLS_CROSSED (sreg);
       qty[sqty].n_refs += REG_N_REFS (sreg);
+      qty[sqty].freq += REG_FREQ (sreg);
       if (usize < ssize)
 	{
 	  register int i;

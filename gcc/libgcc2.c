@@ -1263,12 +1263,19 @@ __eprintf (const char *string, const char *expression,
 
 #ifdef L_bb
 
+#if LONG_TYPE_SIZE == GCOV_TYPE_SIZE
+typedef long gcov_type;
+#else
+typedef long long gcov_type;
+#endif
+
+
 /* Structure emitted by -a  */
 struct bb
 {
   long zero_word;
   const char *filename;
-  long *counts;
+  gcov_type *counts;
   long ncounts;
   struct bb *next;
   const unsigned long *addresses;
@@ -1415,9 +1422,9 @@ __bb_exit_func (void)
 
 		  for (i = 0; i < n_counts; i++)
 		    {
-		      long v = 0;
+		      gcov_type v = 0;
 
-		      if (__read_long (&v, da_file, 8) != 0)
+		      if (__read_gcov_type (&v, da_file, 8) != 0)
 			{
 			  fprintf (stderr, "arc profiling: Can't read output file %s.\n",
 				   ptr->filename);
@@ -1439,7 +1446,7 @@ __bb_exit_func (void)
 	     That way we can easily verify that the proper source/executable/
 	     data file combination is being used from gcov.  */
 
-	  if (__write_long (ptr->ncounts, da_file, 8) != 0)
+	  if (__write_gcov_type (ptr->ncounts, da_file, 8) != 0)
 	    {
 	      
 	      fprintf (stderr, "arc profiling: Error writing output file %s.\n",
@@ -1448,11 +1455,11 @@ __bb_exit_func (void)
 	  else
 	    {
 	      int j;
-	      long *count_ptr = ptr->counts;
+	      gcov_type *count_ptr = ptr->counts;
 	      int ret = 0;
 	      for (j = ptr->ncounts; j > 0; j--)
 		{
-		  if (__write_long (*count_ptr, da_file, 8) != 0)
+		  if (__write_gcov_type (*count_ptr, da_file, 8) != 0)
 		    {
 		      ret=1;
 		      break;

@@ -48,6 +48,7 @@ Boston, MA 02111-1307, USA.  */
 #include "intl.h"
 #undef abort
 
+typedef HOST_WIDEST_INT gcov_type;
 #include "gcov-io.h"
 
 /* The .bb file format consists of several lists of 4-byte integers
@@ -104,7 +105,7 @@ struct sourcefile *sources;
 struct adj_list {
   int source;
   int target;
-  int arc_count;
+  gcov_type arc_count;
   unsigned int count_valid : 1;
   unsigned int on_tree : 1;
   unsigned int fake : 1;
@@ -123,9 +124,9 @@ struct adj_list {
 struct bb_info {
   struct adj_list *succ;
   struct adj_list *pred;
-  int succ_count;
-  int pred_count;
-  int exec_count;
+  gcov_type succ_count;
+  gcov_type pred_count;
+  gcov_type exec_count;
   unsigned int count_valid : 1;
   unsigned int on_tree : 1;
 #if 0
@@ -579,8 +580,8 @@ create_program_flow_graph (bptr)
     for (arcptr = bb_graph[i].succ; arcptr; arcptr = arcptr->succ_next)
       if (! arcptr->on_tree)
 	{
-	  long tmp_count = 0;
-	  if (da_file && __read_long (&tmp_count, da_file, 8))
+	  gcov_type tmp_count = 0;
+	  if (da_file && __read_gcov_type (&tmp_count, da_file, 8))
 	    abort();
 
 	  arcptr->arc_count = tmp_count;
@@ -594,7 +595,8 @@ static void
 solve_program_flow_graph (bptr)
      struct bb_info_list *bptr;
 {
-  int passes, changes, total;
+  int passes, changes;
+  gcov_type total;
   int i;
   struct adj_list *arcptr;
   struct bb_info *bb_graph;
@@ -975,7 +977,7 @@ output_data ()
   int this_file;
   /* An array indexed by line number which indicates how many times that line
      was executed.  */
-  long *line_counts;
+  gcov_type *line_counts;
   /* An array indexed by line number which indicates whether the line was
      present in the bb file (i.e. whether it had code associate with it).
      Lines never executed are those which both exist, and have zero execution
@@ -1035,7 +1037,7 @@ output_data ()
       else
 	source_file_name = s_ptr->name;
 
-      line_counts = (long *) xcalloc (sizeof (long), s_ptr->maxlineno);
+      line_counts = (gcov_type *) xcalloc (sizeof (gcov_type), s_ptr->maxlineno);
       line_exists = xcalloc (1, s_ptr->maxlineno);
       if (output_branch_probs)
 	branch_probs = (struct arcdata **)
@@ -1324,8 +1326,12 @@ output_data ()
 	      if (line_exists[count])
 		{
 		  if (line_counts[count])
-		    fprintf (gcov_file, "%12ld    %s", line_counts[count],
-			     string);
+		    {
+		      char c[20];
+		      sprintf (c, HOST_WIDEST_INT_PRINT_DEC, (HOST_WIDEST_INT)line_counts[count]);
+		      fprintf (gcov_file, "%12s    %s", c,
+			       string);
+		    }
 		  else
 		    fprintf (gcov_file, "      ######    %s", string);
 		}

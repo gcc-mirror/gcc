@@ -298,12 +298,13 @@ end_final (filename)
       struct bb_list *ptr;
       struct bb_str *sptr;
       int long_bytes = LONG_TYPE_SIZE / BITS_PER_UNIT;
+      int gcov_type_bytes = GCOV_TYPE_SIZE / BITS_PER_UNIT;
       int pointer_bytes = POINTER_SIZE / BITS_PER_UNIT;
 
       if (profile_block_flag)
 	size = long_bytes * count_basic_blocks;
       else
-	size = long_bytes * count_instrumented_edges;
+	size = gcov_type_bytes * count_instrumented_edges;
       rounded = size;
 
       rounded += (BIGGEST_ALIGNMENT / BITS_PER_UNIT) - 1;
