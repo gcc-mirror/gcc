@@ -1,3 +1,10 @@
+1999-02-10  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (grokdeclarator): Catch wierd declarators.
+	* decl2.c (finish_file): Don't abort because of namespace parsing
+	failure.
+	(check_decl_namespace): Remove.
+
 1999-02-09  Mark Mitchell  <mark@markmitchell.com>
 
 	* cp-tree.h (get_template_base): Don't declare.

@@ -58,7 +58,6 @@ static int is_namespace_ancestor PROTO((tree, tree));
 static void add_using_namespace PROTO((tree, tree, int));
 static tree ambiguous_decl PROTO((tree, tree, tree,int));
 static tree build_anon_union_vars PROTO((tree, tree*, int, int));
-static void check_decl_namespace PROTO((void));
 
 extern int current_class_depth;
 
@@ -3228,10 +3227,8 @@ finish_file ()
   at_eof = 1;
 
   /* Bad parse errors.  Just forget about it.  */
-  if (! global_bindings_p () || current_class_type)
+  if (! global_bindings_p () || current_class_type || decl_namespace_list)
     return;
-
-  check_decl_namespace ();
 
   start_time = get_run_time ();
 
@@ -4286,12 +4283,6 @@ void
 pop_decl_namespace ()
 {
   decl_namespace_list = TREE_CHAIN (decl_namespace_list);
-}
-
-static void 
-check_decl_namespace ()
-{
-  my_friendly_assert (decl_namespace_list == NULL_TREE, 980711);
 }
 
 /* Enter a class or namespace scope. */

@@ -10574,6 +10574,20 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	}
     }
 
+  if (declarator == NULL_TREE
+      || TREE_CODE (declarator) == IDENTIFIER_NODE
+      || (TREE_CODE (declarator) == TEMPLATE_ID_EXPR
+	  && (TREE_CODE (type) == FUNCTION_TYPE
+	      || TREE_CODE (type) == METHOD_TYPE)))
+    /* OK */;
+  else if (TREE_CODE (declarator) == TEMPLATE_ID_EXPR)
+    {
+      cp_error ("template-id `%D' used as a declarator", declarator);
+      declarator = dname;
+    }
+  else
+    my_friendly_abort (990210);
+
   if (RIDBIT_SETP (RID_TYPEDEF, specbits) && decl_context != TYPENAME)
     {
       tree decl;
