@@ -288,15 +288,22 @@ maybe_apply_pragma_weak (decl)
 {
   tree *p, t, id;
 
-  /* Copied from the check in set_decl_assembler_name.  */
-  if (TREE_CODE (decl) == FUNCTION_DECL
-      || (TREE_CODE (decl) == VAR_DECL 
-          && (TREE_STATIC (decl) 
-              || DECL_EXTERNAL (decl) 
-              || TREE_PUBLIC (decl))))
-    id = DECL_ASSEMBLER_NAME (decl);
-  else
+  /* Avoid asking for DECL_ASSEMBLER_NAME when it's not needed.  */
+
+  /* No weak symbols pending, take the short-cut.  */
+  if (!pending_weaks)
     return;
+  /* If it's not visible outside this file, it doesn't matter whether
+     it's weak.  */
+  if (!DECL_EXTERNAL (decl) && !TREE_PUBLIC (decl))
+    return;
+  /* If it's not a function or a variable, it can't be weak.
+     FIXME: what kinds of things are visible outside this file but
+     aren't functions or variables?   Should this be an abort() instead?  */
+  if (TREE_CODE (decl) != FUNCTION_DECL && TREE_CODE (decl) != VAR_DECL)
+    return;
+
+  id = DECL_ASSEMBLER_NAME (decl);
 
   for (p = &pending_weaks; (t = *p) ; p = &TREE_CHAIN (t))
     if (id == TREE_PURPOSE (t))

@@ -1,3 +1,9 @@
+2003-08-01  Geoffrey Keating  <geoffk@apple.com>
+
+	PR 11313
+	* c-pragma.c (maybe_apply_pragma_weak): Don't get DECL_ASSEMBLER_NAME
+	when it's not needed.
+
 2003-07-29  Richard Henderson  <rth@redhat.com>
 
 	PR target/10681
