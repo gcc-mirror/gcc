@@ -6,6 +6,9 @@
 
 2003-07-17  Zack Weinberg  <zack@codesourcery.com>
 
+	* objc/objc-lang.c: Override LANG_HOOKS_WRITE_GLOBALS to
+	c_write_global_declarations.
+
 	* c-decl.c: Fix typos in several comments.  Remove all
 	#if 0 blocks; reindent as needed.  Remove unused argument
 	to declare_parm_level; all callers changed.
