@@ -49,6 +49,8 @@ struct elt_loc_list GTY(())
   rtx loc;
   /* The insn that made the equivalence.  */
   rtx setting_insn;
+  /* True when setting insn is inside libcall.  */
+  bool in_libcall;
 };
 
 /* A list of cselib_val structures.  */

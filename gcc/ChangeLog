@@ -1,3 +1,20 @@
+Wed Jan  8 19:53:56 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	PR target/8322
+	* i386.c (ix86_init_mmx_sse_builtins): Constify arguments of loads.
+	* xmmintrin.h (_mm_load*_si128. _mm_store*_si128): Add casts.
+
+	PR target/7782
+	* reload1.c (delete_output_reload): Avoid repeated attempts
+	to delete insn.
+
+	* cselib.c (cselib_current_insn_in_libcall): New static variable.
+	(new_elt_loc_list, cselib_process_insn, cselib_init): Keep track on whether
+	we are inside libcall.
+	* cselib.h (elt_loc_list): Add in_libcall.
+	* gcse.c (do_local_cprop): Do not copy propagate using insns
+	in libcalls.
+
 2003-01-07  Janis Johnson  <janis187@us.ibm.com>
 
 	PR other/8947

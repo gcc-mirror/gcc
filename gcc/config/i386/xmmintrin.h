@@ -1586,13 +1586,13 @@ _mm_ucomineq_sd (__m128d __A, __m128d __B)
 static __inline __m128i
 _mm_load_si128 (__m128i const *__P)
 {
-  return (__m128i) __builtin_ia32_loaddqa (__P);
+  return (__m128i) __builtin_ia32_loaddqa ((char const *)__P);
 }
 
 static __inline __m128i
 _mm_loadu_si128 (__m128i const *__P)
 {
-  return (__m128i) __builtin_ia32_loaddqu (__P);
+  return (__m128i) __builtin_ia32_loaddqu ((char const *)__P);
 }
 
 static __inline __m128i
@@ -1604,13 +1604,13 @@ _mm_loadl_epi64 (__m128i const *__P)
 static __inline void
 _mm_store_si128 (__m128i *__P, __m128i __B)
 {
-  __builtin_ia32_storedqa (__P, (__v16qi)__B);
+  __builtin_ia32_storedqa ((char *)__P, (__v16qi)__B);
 }
 
 static __inline void
 _mm_storeu_si128 (__m128i *__P, __m128i __B)
 {
-  __builtin_ia32_storedqu (__P, (__v16qi)__B);
+  __builtin_ia32_storedqu ((char *)__P, (__v16qi)__B);
 }
 
 static __inline void
