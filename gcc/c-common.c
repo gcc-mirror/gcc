@@ -275,6 +275,8 @@ decl_attributes (decl, attributes)
 	int format_num = TREE_INT_CST_LOW (TREE_PURPOSE (TREE_VALUE (list)));
 	int first_arg_num = TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (list)));
 	int is_scan;
+	tree argument;
+	int arg_num;
 	
 	if (TREE_CODE (decl) != FUNCTION_DECL)
 	  {
@@ -297,6 +299,34 @@ decl_attributes (decl, attributes)
 	  {
 	    error_with_decl (decl,
 		"format string arg follows the args to be formatted, for `%s'");
+	    return;
+	  }
+
+	/* Verify that the format_num argument is actually a string, in case
+	   the format attribute is in error.  */
+	argument = TYPE_ARG_TYPES (TREE_TYPE (decl));
+	for (arg_num = 1; ; ++arg_num)
+	  {
+	    if (argument == 0 || arg_num == format_num)
+	      break;
+	    argument = TREE_CHAIN (argument);
+	  }
+	if (! argument
+	    || TREE_CODE (TREE_VALUE (argument)) != POINTER_TYPE
+	    || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_VALUE (argument)))
+		!= char_type_node))
+	  {
+	    error_with_decl (decl,
+			     "format string arg not a string type, for `%s'");
+	    return;
+	  }
+	/* Verify that first_arg_num points to the last argument, the ... */
+	while (argument)
+	  arg_num++, argument = TREE_CHAIN (argument);
+	if (arg_num != first_arg_num)
+	  {
+	    error_with_decl (decl,
+			     "args to be formatted is not ..., for `%s'");
 	    return;
 	  }
 	
