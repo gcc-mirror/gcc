@@ -732,10 +732,17 @@ optimize_unexecutable_edges (edges, executable_edges)
 	      while (PHI_NODE_P (insn))
 		{
 		  remove_phi_alternative (PATTERN (insn), edge->src);
+		  if (rtl_dump_file)
+		    fprintf (rtl_dump_file,
+			     "Removing alternative for bb %d of phi %d\n", 
+			     edge->src->index, SSA_NAME (PATTERN (insn)));
 		  insn = NEXT_INSN (insn);
 		}
 	    }
-
+	  if (rtl_dump_file)
+	    fprintf (rtl_dump_file,
+		     "Removing unexecutable edge from %d to %d\n",
+		     edge->src->index, edge->dest->index);
 	  /* Since the edge was not executable, remove it from the CFG.  */
 	  remove_edge (edge);
 	}
@@ -835,6 +842,10 @@ ssa_ccp_substitute_constants ()
 	     are consecutive at the start of the basic block.  */
 	  if (! PHI_NODE_P (def))
 	    {
+	      if (rtl_dump_file)
+		fprintf (rtl_dump_file,
+			 "Register %d is now set to a constant\n",
+			 SSA_NAME (PATTERN (def)));
 	      SET_SRC (set) = values[i].const_value;
 	      INSN_CODE (def) = -1;
 	      df_insn_modify (df_analyzer, BLOCK_FOR_INSN (def), def);
@@ -858,15 +869,22 @@ ssa_ccp_substitute_constants ()
 		  && (GET_CODE (useinsn) == INSN
 		      || GET_CODE (useinsn) == JUMP_INSN))
 		{
-		  validate_replace_src (regno_reg_rtx [i],
+		  
+		  if (validate_replace_src (regno_reg_rtx [i],
 					values[i].const_value,
-					useinsn);
-		  INSN_CODE (useinsn) = -1;
-		  df_insn_modify (df_analyzer,
-				  BLOCK_FOR_INSN (useinsn),
-				  useinsn);
+					    useinsn))
+		    {
+		      if (rtl_dump_file)
+			fprintf (rtl_dump_file, 
+				 "Register %d in insn %d replaced with constant\n",
+				 i, INSN_UID (useinsn));
+		      INSN_CODE (useinsn) = -1;
+		      df_insn_modify (df_analyzer,
+				      BLOCK_FOR_INSN (useinsn),
+				      useinsn);
+		    }
+		  
 		}
-
 	    }
 	}
     }
