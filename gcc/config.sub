@@ -1,6 +1,6 @@
 #! /bin/sh
 # Configuration validation subroutine script, version 1.1.
-#   Copyright (C) 1991, 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
+#   Copyright (C) 1991, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
 # This file is (in principle) common to ALL GNU software.
 # The presence of a machine in this file suggests that SOME GNU software
 # can handle that machine.  It does not imply ALL GNU software can. 
@@ -87,6 +87,10 @@ case $os in
 		;;
 	-hiux*)
 		os=-hiuxwe2
+		;;
+	-sco5)
+		os=sco3.2v5
+		basic_machine=`echo $1 | sed -e 's/86-.*/86-unknown/'`
 		;;
 	-sco4)
 		os=-sco3.2v4
