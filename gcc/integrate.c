@@ -1746,7 +1746,15 @@ copy_rtx_and_substitute (orig, map, for_lhs)
 	{
 	  /* Some hard registers are also mapped,
 	     but others are not translated.  */
-	  if (map->reg_map[regno] != 0)
+	  if (map->reg_map[regno] != 0
+	      /* We shouldn't usually have reg_map set for return
+		 register, but it may happen if we have leaf-register
+		 remapping and the return register is used in one of
+		 the calling sequences of a call_placeholer.  In this
+		 case, we'll end up with a reg_map set for this
+		 register, but we don't want to use for registers
+		 marked as return values.  */
+	      && ! REG_FUNCTION_VALUE_P (orig))
 	    return map->reg_map[regno];
 
 	  /* If this is the virtual frame pointer, make space in current
@@ -1757,7 +1765,7 @@ copy_rtx_and_substitute (orig, map, for_lhs)
 	     equivalence for it to be the address.  This will substitute the
 	     address into insns where it can be substituted and use the new
 	     pseudo where it can't.  */
-	  if (regno == VIRTUAL_STACK_VARS_REGNUM)
+	  else if (regno == VIRTUAL_STACK_VARS_REGNUM)
 	    {
 	      rtx loc, seq;
 	      int size = get_func_frame_size (DECL_SAVED_INSNS (map->fndecl));
@@ -1844,7 +1852,26 @@ copy_rtx_and_substitute (orig, map, for_lhs)
 	      else
 		return map->inline_target;
 	    }
-	  return orig;
+#if defined (LEAF_REGISTERS) && defined (LEAF_REG_REMAP)
+	  /* If leaf_renumber_regs_insn() might remap this register to
+	     some other number, make sure we don't share it with the
+	     inlined function, otherwise delayed optimization of the
+	     inlined function may change it in place, breaking our
+	     reference to it.  We may still shared it within the
+	     function, so create an entry for this register in the
+	     reg_map.  */
+	  if (map->integrating && regno < FIRST_PSEUDO_REGISTER
+	      && LEAF_REGISTERS[regno] && LEAF_REG_REMAP (regno) != regno)
+	    {
+	      temp = gen_rtx_REG (mode, regno);
+	      map->reg_map[regno] = temp;
+	      return temp;
+	    }
+#endif
+	  else
+	    return orig;
+
+	  abort ();
 	}
       if (map->reg_map[regno] == NULL)
 	{
