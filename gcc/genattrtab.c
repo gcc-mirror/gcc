@@ -352,7 +352,8 @@ static char *alternative_name;
 /* These are referenced by rtlanal.c and hence need to be defined somewhere.
    They won't actually be used.  */
 
-rtx frame_pointer_rtx, stack_pointer_rtx, arg_pointer_rtx;
+rtx frame_pointer_rtx, hard_frame_pointer_rtx, stack_pointer_rtx;
+rtx arg_pointer_rtx;
 
 #if 0
 static rtx attr_rtx		PROTO((enum rtx_code, ...));
