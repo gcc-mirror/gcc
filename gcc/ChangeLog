@@ -1,3 +1,9 @@
+2004-01-12  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR debug/13539
+	* dbxout.c (dbxout_type): Protected inheritance is not
+	private but protected.
+
 2004-01-12  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_symbolic_constant_p): Revert last patch.
