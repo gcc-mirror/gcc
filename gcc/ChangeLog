@@ -1,3 +1,7 @@
+2002-05-28  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* cfgloop.c (flow_loops_cfg_dump): Use bb->index, not i.
+
 2002-05-28  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (ix86_compute_frame_layout): Do not add

@@ -62,7 +62,7 @@ flow_loops_cfg_dump (loops, file)
       fprintf (file, ";; %d succs { ", bb->index);
       for (succ = bb->succ; succ; succ = succ->succ_next)
 	fprintf (file, "%d ", succ->dest->index);
-      flow_nodes_print ("} dom", loops->cfg.dom[i], file);
+      flow_nodes_print ("} dom", loops->cfg.dom[bb->index], file);
     }
 
   /* Dump the DFS node order.  */
