@@ -1141,8 +1141,12 @@ update_equiv_regs ()
 		  rtx new_insn;
 
 		  new_insn = emit_insn_before (PATTERN (equiv_insn), insn);
-		  REG_NOTES (PREV_INSN (insn)) = REG_NOTES (equiv_insn);
+		  REG_NOTES (new_insn) = REG_NOTES (equiv_insn);
 		  REG_NOTES (equiv_insn) = 0;
+
+		  /* Make sure this insn is recognized before reload begins,
+		     otherwise eliminate_regs_in_insn will abort.  */
+		  INSN_CODE (new_insn) = INSN_CODE (equiv_insn);
 
 		  PUT_CODE (equiv_insn, NOTE);
 		  NOTE_LINE_NUMBER (equiv_insn) = NOTE_INSN_DELETED;
