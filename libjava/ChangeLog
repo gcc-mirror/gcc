@@ -1,3 +1,25 @@
+2000-11-27  Warren Levy  <warrenl@cygnus.com>
+
+	* Makefile.am: Added natTimeZone.cc.
+	* Makefile.in: Rebuilt.
+	* gnu/gcj/text/LocaleData_en.java: Added DateFormat entries.
+	* java/text/DateFormatSymbols.java (ampms): Made package private.
+	(eras): Made package private.
+	(months): Made package private.
+	(shortMonths): Made package private.
+	(shortWeekdays): Made package private.
+	(weekdays): Made package private.
+	(formatPrefixes): New private field.
+	(localPatternCharsDefault): Made private.
+	(dateFormats): New package private field.
+	(timeFormats): New package private field.
+	(formatsForKey): New private method.
+	(DateFormatSymbols(Locale)): Set dateFormats and timeFormats.
+	(DateFormatSymbols(DateFormatSymbols)): Ditto.
+	* java/text/SimpleDateFormat.java: Merged with Classpath.
+	* java/util/TimeZone.java: Merged with Classpath.
+	* java/util/natTimeZone.cc: New file.
+
 2000-11-27  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/util/Vector.java (ensureCapacity): Don't increment modCount.

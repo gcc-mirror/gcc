@@ -68,6 +68,16 @@ public final class LocaleData_en extends ListResourceBundle
     { "shortWeekdays", shortWeekdaysDefault },
     { "weekdays", weekdaysDefault },
 
+    // These are for DateFormat.
+    { "shortDateFormat", "M/d/yy" },	      // Java's Y2K bug.
+    { "mediumDateFormat", "d-MMM-yy" },
+    { "longDateFormat", "MMMM d, yyyy" },
+    { "fullDateFormat", "EEEE MMMM d, yyyy G" },
+    { "shortTimeFormat", "h:mm a" },
+    { "mediumTimeFormat", "h:mm:ss a" },
+    { "longTimeFormat", "h:mm:ss a z" },
+    { "fullTimeFormat", "h:mm:ss;S 'o''clock' a z" },
+
     // For RuleBasedCollator.
     // FIXME: this is nowhere near complete.
     // In particular we must mark accents as ignorable,
