@@ -624,7 +624,7 @@ visit_expression (insn, block)
 /* Iterate over the FLOW_EDGES work list.  Simulate the target block
    for each edge.  */
 static void
-examine_flow_edges (void)
+examine_flow_edges ()
 {
   while (flow_edges != NULL)
     {
@@ -981,7 +981,7 @@ ssa_ccp_df_delete_unreachable_insns ()
    operate on so that it can be called for sub-graphs.  */
 
 void
-ssa_const_prop (void)
+ssa_const_prop ()
 {
   unsigned int i;
   edge curredge;

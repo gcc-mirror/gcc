@@ -1,3 +1,9 @@
+Sat Nov 10 08:50:50 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* ssa-ccp.c (examine_flow_edges): Use old-style definition, not
+	an ANSI/ISO definitino.
+	(ssa_const_prop): Likewise.
+
 2001-11-10  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000.c (rs6000_reg_names): Remove leading "v" or
