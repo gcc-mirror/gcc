@@ -1,3 +1,18 @@
+2002-08-06  Chris Demetriou  <cgd@broadcom.com>
+
+	* config/mips/mips.c (override_options): Set MASK_BRANCHLIKELY
+	in target_flags based on ISA, if it was not set on the command
+	line.  Warn if MASK_BRANCHLIKLEY is set but the ISA does not
+	support Branch Likely instructions.
+	* config/mips/mips.h (MASK_BRANCHLIKLEY): New macro.
+	(TARGET_BRANCHLIKELY): Likewise.
+	(TARGET_SWITCHES): Add -mbranch-likely and -mno-branch-likely.
+	(GENERATE_BRANCHLIKELY): Use TARGET_BRANCHLIKELY rather than
+	ISA_HAS_BRANCHLIKELY.
+	(ISA_HAS_BRANCHLIKELY): Do not include MIPS16 check.
+	* doc/invoke.texi: Document new MIPS -mbranch-likely and
+	-mno-branch-likely options.
+
 2002-08-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* ip2k.c (ip2k_set_compare): Add missing iteration variable.
