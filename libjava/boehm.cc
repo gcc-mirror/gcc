@@ -260,7 +260,7 @@ call_finalizer (GC_PTR obj, GC_PTR client_data)
 void
 _Jv_RegisterFinalizer (void *object, _Jv_FinalizerFunc *meth)
 {
-  GC_REGISTER_FINALIZER_NO_ORDER (object, call_finalizer, (GC_PTR)meth,
+  GC_REGISTER_FINALIZER_NO_ORDER (object, call_finalizer, (GC_PTR) meth,
 				  NULL, NULL);
 }
 
