@@ -367,16 +367,6 @@ xfree (ptr)
   free (ptr);
 }
 
-/* Avoid error if config defines abort as fancy_abort.
-   It's not worth "really" implementing this because ordinary
-   compiler users never run fix-header.  */
-
-void
-fancy_abort ()
-{
-  abort ();
-}
-
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free xfree
 struct obstack scan_file_obstack;
