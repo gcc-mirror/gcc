@@ -1,5 +1,5 @@
 /* Configuration for GNU compiler for processor running Windows NT 3.x.
-   Copyright (C) 1993, 1995, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1997, 1999 Free Software Foundation, Inc.
    Contributed by Douglas B. Rupp (drupp@cs.washington.edu)
 
 This file is part of GNU CC.
@@ -47,7 +47,12 @@ Boston, MA 02111-1307, USA.  */
 #define OBJECT_SUFFIX ".obj"
 #define EXECUTABLE_SUFFIX ".exe"
 #define PATH_SEPARATOR ';'
+
 #define DIR_SEPARATOR '\\'
+#define DIR_SEPARATOR_2 '/'
+
+/* Allows checks for drive names.  */
+#define HAVE_DOS_BASED_FILE_SYSTEM
 
 #define S_IRUSR 0000400
 #define S_IWUSR 0000200

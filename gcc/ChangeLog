@@ -1,3 +1,35 @@
+Sat Apr 10 05:14:50 1999  Mark Elbrecht  <snowball3@usa.net>
+
+	* collect2.c (find_a_file): Use HAVE_DOS_BASED_FILE_SYSTEM in place
+	of the DIR_SEPARATOR test.
+	Consider any file starting with a drivename to be absolute.
+	If the absolute filename test fails and EXECUTABLE_SUFFIX is 
+	defined, append EXECUTABLE_SUFFIX to the file and try again.
+	* cppinit.c (base_name): Use HAVE_DOS_BASED_FILE_SYSTEM 
+	in place of __MSDOS__ and _WIN32.
+	* cppfiles.c (simplify_pathname): Likewise.
+	* gcc.c (IS_DIR_SEPARATOR): Define new macro. Returns true if a
+	character is a directory separator.
+	(find_a_file): Use it.
+	(convert_filename): Likewise.
+	(process_command): Likewise.
+	(do_spec_1): Likewise.
+	(is_directory): Likewise.
+	(main): Likewise.
+	* prefix.c (IS_DIR_SEPARATOR): Define. Tests whether a character is
+	a directory separator.
+	(translate_name): Use it.
+	(update_path): Change DIR_SEPARATOR_2 to DIR_SEPARATOR. Fix 
+	warning in block where '/' is changed to DIR_SEPARATOR.
+	* i386/xm-djgpp.h (DIR_SEPARATOR): Set to '/'.
+	(DIR_SEPARATOR_2): New macro. Set to '\'.
+	(HAVE_DOS_BASED_FILESYS): Define.
+	* i386/xm-mingw32.h: Updated copyright. Set 
+	DIR_SEPARATOR_2 to '/'. Define HAVE_DOS_BASED_FILE_SYSTEM.
+	* i386/xm-os2.h: Likewise.
+	* winnt/xm-winnt.h: Likewise.
+	* i386/xm-dos.h: Likewise.  Add copyright.
+
 1999-04-10  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* pdp11.h (TARGET_SWITCHES): Add option to vary assembler syntax.
