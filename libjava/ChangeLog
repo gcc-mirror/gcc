@@ -1,3 +1,10 @@
+2002-11-26  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* java/net/natPlainDatagramSocketImpl.cc (socklen_t): Don't
+	define.
+	* java/net/natPlainSocketImpl.cc (socklen_t): Don't define.
+	* include/posix.h (socklen_t): Define if not already defined.
+
 2002-11-25  Tom Tromey  <tromey@redhat.com>
 
 	* verify.cc (type::compatible): Backed out broken change.

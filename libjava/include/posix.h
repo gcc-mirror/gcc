@@ -58,6 +58,10 @@ _Jv_platform_close_on_exec (jint fd)
 
 #ifndef DISABLE_JAVA_NET
 
+#ifndef HAVE_SOCKLEN_T
+#define socklen_t int
+#endif
+
 static inline int
 _Jv_socket (int domain, int type, int protocol)
 {

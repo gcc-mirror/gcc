@@ -151,9 +151,6 @@ java::net::PlainDatagramSocketImpl::getOption (jint)
 
 #else /* DISABLE_JAVA_NET */
 
-#ifndef HAVE_SOCKLEN_T
-typedef int socklen_t;
-#endif
 
 union SockAddr
 {
