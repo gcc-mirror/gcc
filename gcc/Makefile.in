@@ -1013,7 +1013,7 @@ $(srcdir)/objc-parse.c : $(srcdir)/objc-parse.y
 $(srcdir)/objc-parse.y: $(srcdir)/c-parse.in
 	sed -e "/^ifc$$/,/^end ifc$$/d" \
 	  -e "/^ifobjc$$/d" -e "/^end ifobjc$$/d" \
-	  $(srcdir)/c-parse.in >tmp-objc-prse.y
+	  $(srcdir)/c-parse.in >tmp-objc-prs.y
 	$(srcdir)/move-if-change tmp-objc-prs.y $(srcdir)/objc-parse.y
 
 objc-act.o : objc-act.c $(CONFIG_H) $(TREE_H) $(RTL_H) c-tree.h c-lex.h \
