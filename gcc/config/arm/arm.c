@@ -8344,7 +8344,10 @@ arm_expand_prologue ()
 	    }
 
 	  insn = gen_rtx_SET (SImode, ip_rtx, insn);
-	  (void) emit_insn (insn);
+	  insn = emit_insn (insn);
+	  /* Add a reg note to stop propogate_one_insn() from barfing.  */
+	  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD, ip_rtx,
+						REG_NOTES (insn));
 	}
     }
 
