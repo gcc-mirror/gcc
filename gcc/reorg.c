@@ -2674,7 +2674,7 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
      int own_thread, own_opposite_thread;
      int slots_to_fill, *pslots_filled;
 {
-  rtx new_thread = thread;
+  rtx new_thread;
   rtx delay_list = 0;
   struct resources opposite_needed, set, needed;
   rtx trial;
@@ -2697,6 +2697,12 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
     CLEAR_RESOURCE (&opposite_needed);
   else
     mark_target_live_regs (opposite_thread, &opposite_needed);
+
+  /* If the insn at THREAD can be split, do it here to avoid having to
+     update THREAD and NEW_THREAD if it is done in the loop below.  Also
+     initialize NEW_THREAD.  */
+
+  new_thread = thread = try_split (PATTERN (thread), thread);
 
   /* Scan insns at THREAD.  We are looking for an insn that can be removed
      from THREAD (it neither sets nor references resources that were set
@@ -2895,7 +2901,8 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 
   /* If we haven't found anything for this delay slot and it is very
      likely that the branch will be taken, see if the insn at our target
-     increments or decrements a register.  If so, try to place the opposite
+     increments or decrements a register with an increment that does not
+     depend on the destination register.  If so, try to place the opposite
      arithmetic insn after the jump insn and put the arithmetic insn in the
      delay slot.  If we can't do this, return.  */
   if (delay_list == 0 && likely && new_thread && GET_CODE (new_thread) == INSN)
@@ -2904,7 +2911,7 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
       rtx dest;
       rtx src;
 
-      trial = try_split (pat, new_thread, 0);
+      trial = new_thread;
       pat = PATTERN (trial);
 
       if (GET_CODE (trial) != INSN || GET_CODE (pat) != SET
@@ -2913,7 +2920,8 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 
       dest = SET_DEST (pat), src = SET_SRC (pat);
       if ((GET_CODE (src) == PLUS || GET_CODE (src) == MINUS)
-	  && rtx_equal_p (XEXP (src, 0), dest))
+	  && rtx_equal_p (XEXP (src, 0), dest)
+	  && ! reg_overlap_mentioned_p (dest, XEXP (src, 1)))
 	{
 	  rtx other = XEXP (src, 1);
 	  rtx new_arith;
