@@ -544,10 +544,6 @@ typedef struct iq2000_args
 #define EXPAND_BUILTIN_VA_START(valist, nextarg) \
   iq2000_va_start (valist, nextarg)
 
-/* Implement `va_arg'.  */
-#define EXPAND_BUILTIN_VA_ARG(valist, type) \
-  iq2000_va_arg (valist, type)
-
 
 /* Trampolines for Nested Functions.  */
 
