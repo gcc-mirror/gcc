@@ -1,3 +1,7 @@
+2001-06-25  Tom Tromey  <tromey@redhat.com>
+
+	* libjava.lang/stub.xfail: Removed.
+
 2001-06-24  Andreas Jaeger  <aj@suse.de>
 
 	* libjava.jni/jni.exp (gcj_jni_compile_c_to_so): Fix path for
