@@ -1,3 +1,7 @@
+2004-05-16  Steve Kargl  <sgk@troutmask.apl.washington.edu>
+
+	* arith.c: Fix comment typos.
+
 2004-05-15  Tobias Schlueter <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/13742
