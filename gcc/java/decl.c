@@ -592,7 +592,7 @@ init_decl_processing ()
 
   /* This section has to be updated as items are added to the previous
      section. */
-  predef_filenames_size = 6;
+  predef_filenames_size = 7;
   predef_filenames = (tree *)xmalloc (predef_filenames_size * sizeof (tree));
   predef_filenames [0] = get_identifier ("java/lang/Class.java");
   predef_filenames [1] = get_identifier ("java/lang/Error.java");
@@ -600,6 +600,7 @@ init_decl_processing ()
   predef_filenames [3] = get_identifier ("java/lang/RuntimeException.java");
   predef_filenames [4] = get_identifier ("java/lang/String.java");
   predef_filenames [5] = get_identifier ("java/lang/Throwable.java");
+  predef_filenames [6] = get_identifier ("gnu/gcj/RawData.java");
 
   methodtable_type = make_node (RECORD_TYPE);
   layout_type (methodtable_type);

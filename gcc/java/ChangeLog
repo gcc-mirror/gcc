@@ -1,3 +1,8 @@
+2000-05-05  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* decl.c (predef_filenames_size): Now 7.
+	(predef_filenames): New seventh entry.
+
 2000-05-04  Tom Tromey  <tromey@cygnus.com>
 
 	* boehm.c (mark_reference_fields): Don't mark RawData fields.
