@@ -1,3 +1,7 @@
+2004-01-04  Zack Weinberg  <zack@codesourcery.com>
+
+	* .cvsignore: Add autom4te.cache.
+
 2004-01-04  Richard Sandiford  <rsandifo@redhat.com>
 
 	* doc/invoke.texi: Revamp documentation of MIPS options.  Remove
@@ -35,9 +39,9 @@
 	with modern equivalents.
 	* configure: Regenerate.
 
-        * configure.ac: Replace gcc_AC_CHECK_TYPE with AC_CHECK_TYPE.
-        * aclocal.m4 (gcc_AC_CHECK_TYPE): Remove.
-        * configure: Regenerate.
+	* configure.ac: Replace gcc_AC_CHECK_TYPE with AC_CHECK_TYPE.
+	* aclocal.m4 (gcc_AC_CHECK_TYPE): Remove.
+	* configure: Regenerate.
 
 	* doc/install.texi: Note that 'gcc' is now a 2.57 directory.
 
@@ -65,9 +69,9 @@
 
 	* loop.c (loop_optimize): Free all loops_info's mems.
 
-	* c-typeck.c (finish_init): Free spelling_base before 
+	* c-typeck.c (finish_init): Free spelling_base before
 	setting it again.
-	
+
 	* cfgloop.c (flow_loops_find): Always free the sbitmap
 	headers.
 
