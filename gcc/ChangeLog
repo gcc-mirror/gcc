@@ -1,3 +1,7 @@
+Thu Sep  4 09:58:53 1997  Joel Sherrill  (joel@OARcorp.com)
+
+	* i960/i960.h: Added default for SUBTARGET_SWITCHES macro.
+
 Thu Sep  4 09:53:20 1997  Jim Wilson  (wilson@cygnus.com)
 
 	* profile.c (output_arc_profiler): Verify next_insert_after is an

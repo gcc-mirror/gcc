@@ -272,6 +272,9 @@ extern int target_flags;
     SUBTARGET_SWITCHES                                                  \
     { "", TARGET_DEFAULT}}
 
+/* This are meant to be redefined in the host dependent files */
+#define SUBTARGET_SWITCHES
+
 /* Override conflicting target switch options.
    Doesn't actually detect if more than one -mARCH option is given, but
    does handle the case of two blatantly conflicting -mARCH options.  */
