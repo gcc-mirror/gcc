@@ -73,6 +73,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Every structure or union's size must be a multiple of 2 bytes.  */
 
 #define STRUCTURE_SIZE_BOUNDARY 16
+
+/* Follow sysV68 cc regarding alignment imposed by char:0; */
+
+#define PCC_BITFIELD_TYPE_MATTERS 1
   
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
 /* Be compatible with native compiler.  */
