@@ -1,3 +1,9 @@
+2000-05-31  Russell Davidson  <russell@ehess.cnrs-mrs.fr> 
+
+	* bits/locale_facets.tcc (num_get<char>::_M_extract): Fix signage,
+	exponent, scientific formatting issues.
+	* testsuite/27_io/istream_extractor_arith.cc (test09): Add tests.
+	
 2000-05-31  Branko Cibej  <branko.cibej@hermes.si>
 
         * bits/limits_generic.h (numeric_limits<wchar_t>): Use WCHAR_MIN
@@ -13,6 +19,8 @@
 	
 	* acinclude.m4 (GLIBCPP_ENABLE_LONG_LONG): Add strtoull checks...
 
+	* mkcheck.in (SH_FLAG): Add in -Wl,--rpath -Wl,$LIB_PATH. Tweaks.
+	
 2000-05-31 Steven King <sxking@uswest.net>
 
         * shadow/time.h: fix typo

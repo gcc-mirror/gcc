@@ -355,6 +355,29 @@ void test08()
 #endif
 }
 
+
+bool test09()
+{
+   bool test = true;
+
+   std::string st("2.456e3-+0.567e-2");
+   std::stringbuf sb(st);
+   std::istream is(&sb);
+   double f1 = 0, f2 = 0;
+   char c;
+   (is>>std::ws) >> f1;
+   (is>>std::ws) >> c;
+   (is>>std::ws) >> f2;
+   test = f1 == 2456;
+   test &= f2 == 0.00567;
+   test &= c == '-';
+#ifdef DEBUG_ASSERT
+  assert(test);
+#endif
+ 
+  return test;
+}
+
 int main()
 {
   test01();
@@ -364,6 +387,7 @@ int main()
   test06();
   test07();
   test08();
+  test09();
   return 0;
 }
 
