@@ -34,8 +34,8 @@ Boston, MA 02111-1307, USA. */
 #undef CPP_PREDEFINES
 #endif
 
-#define CPP_PREDEFINES "-Di386 -D__WIN32__ \
-  -DPOSIX -D__CYGWIN32__ -DWINNT  -D_X86_=1 -D__STDC__=1\
+#define CPP_PREDEFINES "-Di386 -DWIN32 \
+  -DPOSIX -DCYGWIN32 -DWINNT  -D_X86_=1 -D__STDC__=1\
   -D__stdcall=__attribute__((__stdcall__)) \
   -D__cdecl=__attribute__((__cdecl__)) \
   -Asystem(winnt) -Acpu(i386) -Amachine(i386)"
