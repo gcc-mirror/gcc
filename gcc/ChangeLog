@@ -1,3 +1,9 @@
+Sat Oct 26 01:44:46 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* toplev.c (dump_file_index): Add DFI_ce3.
+	(dump_file_info): Likewise.
+	(rest_of_compilation): Run first ifcvt pass before tracer.
+
 2002-10-25  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/hpux.h (BITS_BIG_ENDIAN): Remove.
