@@ -318,7 +318,7 @@ static int gcov_read_counter (gcov_type *);
 static int gcov_read_string (char **);
 #endif
 static int gcov_read_summary (struct gcov_summary *);
-static __inline__ unsigned long gcov_save_position (void);
+static unsigned long gcov_save_position (void);
 static int gcov_resync (unsigned long /*base*/, unsigned /*length */);
 static unsigned long gcov_seek_end (void);
 static int gcov_skip (unsigned /*length*/);
