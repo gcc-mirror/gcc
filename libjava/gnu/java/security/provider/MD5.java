@@ -1,5 +1,5 @@
 /* MD5.java -- Class implementing the MD5 algorithm as specified in RFC1321.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,14 +37,14 @@ exception statement from your version. */
 
 
 package gnu.java.security.provider;
-import java.security.MessageDigestSpi;
+import java.security.MessageDigest;
 
 /**
    This class implements the MD5 algorithm as described in RFC1321.
 
    @see java.security.MessageDigest
 */
-public class MD5 extends MessageDigestSpi implements Cloneable
+public class MD5 extends MessageDigest implements Cloneable
 {
   private final int W[] = new int[16];
   private long bytecount;
@@ -55,7 +55,7 @@ public class MD5 extends MessageDigestSpi implements Cloneable
 
   public MD5()
   {
-    super();
+    super("MD5");
     engineReset ();
   }
 

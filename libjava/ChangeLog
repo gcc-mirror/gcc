@@ -1,3 +1,8 @@
+2002-07-23  Mark Wielaard  <mark@klomp.org>
+
+	* gnu/java/security/provider/MD5.java: Extends MessageDigest, not
+	MessageDigestSpi (fixes Classpath bug #783).
+
 2002-07-21  Mark Wielaard  <mark@klomp.org>
 
 	* gnu/java/security/provider/Gnu.java: Reference all implementation
