@@ -1,4 +1,6 @@
 Thu Nov 27 12:20:19 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
 	
 	* flow.c (find_basic_blocks): Handle cfg issues for rethrows and
 	nested exceptions correctly.
