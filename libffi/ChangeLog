@@ -1,3 +1,7 @@
+2002-10-02  Andreas Jaeger  <aj@suse.de>
+
+	* src/x86/ffi64.c (ffi_prep_cif_machdep): Remove debug output.
+
 2002-10-01  Bo Thorsen  <bo@smetana.suse.de>
 
 	* include/ffi.h.in: Fix i386 win32 compilation.

@@ -438,8 +438,6 @@ ffi_prep_cif_machdep (ffi_cif *cif)
       break;
     }
 
-  puts ("prep_machdep\n");
-
   return FFI_OK;
 }
 
