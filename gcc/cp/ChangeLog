@@ -1,3 +1,40 @@
+2002-11-03  Mark Mitchell  <mark@codesourcery.com>
+
+	* call.c (build_special_member_call): Do not try to lookup VTTs by
+	name.
+	* class.c (vtbl_init_data): Add generate_vcall_entries.
+	(get_vtable_decl): Do not look up virtual tables by name.
+	(copy_virtuals): Do not use BV_USE_VCALL_INDEX_P.
+	(set_primary_base): Do not set CLASSTYPE_RTTI.
+	(determine_primary_base): Likewise.
+	(get_matching_virtual): Remove.
+	(get_vcall_index): New function.
+	(update_vtable_entry_for_fn): Do not try to use virtual thunks
+	when they are not required.  Assign vcall indices at this point.
+	(finish_struct_1): Do not set CLASSTYPE_NEEDS_VIRTUAL_REINIT.
+	Do update dynamic_classes.
+	(build_vtt): Do not add VTTs to the symbol table.
+	(build_ctor_vtbl_group): Likewise.
+	(build_vtbl_initializer): Simplify handling of vcall indices.
+	(build_vcall_offset_vtbl_entries): Pretend to build vcall offsets
+	for the most derived class.
+	(add_vcall_offset_vtbl_entries_1): But do not actually add them to
+	the vtable.
+	* cp-tree.h (dynamic_classes): New macro.
+	(lang_type_class): Remove rtti.  Add vtables.  Add vcall_indices.
+	(CLASSTYPE_RTTI): Remove.
+	(CLASSTYPE_NEEDS_VIRTUAL_REINIT): Remove.
+	(CLASSTYPE_VCALL_INDICES): New macro.
+	(CLASSTYPE_VTABLES): Likewise.
+	(BV_USE_VCALL_INDEX_P): Remove.
+	(build_vtable_path): Remove.
+	* decl2.c (finish_vtable_vardecl): Remove.
+	(key_method): Remove #if 0'd code.
+	(finish_vtable_vardecl): Rename to ...
+	(maybe_emit_vtables): ... this.
+	(finish_file): Use it.
+	* search.c (look_for_overrides_here): Update comment.
+
 2002-11-01  Zack Weinberg  <zack@codesourcery.com>
 
 	PR c/7353 redux

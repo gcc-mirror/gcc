@@ -47,7 +47,6 @@ struct diagnostic_context;
       ICS_USER_FLAG (in _CONV)
       CLEANUP_P (in TRY_BLOCK)
       AGGR_INIT_VIA_CTOR_P (in AGGR_INIT_EXPR)
-      BV_USE_VCALL_INDEX_P (in the BINFO_VIRTUALS TREE_LIST)
       PTRMEM_OK_P (in ADDR_EXPR, OFFSET_REF)
       PARMLIST_ELLIPSIS_P (in PARMLIST)
    1: IDENTIFIER_VIRTUAL_P.
@@ -133,9 +132,7 @@ struct diagnostic_context;
      of the base class.
 
      The BV_VCALL_INDEX of each node, if non-NULL, gives the vtable
-     index of the vcall offset for this entry.  If
-     BV_USE_VCALL_INDEX_P then the corresponding vtable entry should
-     use a virtual thunk, as opposed to an ordinary thunk.
+     index of the vcall offset for this entry.  
 
      The BV_FN is the declaration for the virtual function itself.
 
@@ -615,6 +612,8 @@ enum cp_tree_index
     CPTI_DSO_HANDLE,
     CPTI_DCAST,
 
+    CPTI_DYNAMIC_CLASSES,
+
     CPTI_MAX
 };
 
@@ -744,6 +743,10 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 /* The type of the vtt parameter passed to subobject constructors and
    destructors.  */
 #define vtt_parm_type                   cp_global_trees[CPTI_VTT_PARM_TYPE]
+
+/* A TREE_LIST of all of the dynamic classes in the program.  */
+
+#define dynamic_classes                 cp_global_trees[CPTI_DYNAMIC_CLASSES]
 
 /* Global state.  */
 
@@ -1153,12 +1156,13 @@ struct lang_type_class GTY(())
 
   tree primary_base;
   tree vfields;
+  tree vcall_indices;
+  tree vtables;
   tree vbases;
   tree tags;
   tree as_base;
   tree pure_virtuals;
   tree friend_classes;
-  tree rtti;
   tree methods;
   tree decl_list;
   tree template_info;
@@ -1256,9 +1260,6 @@ struct lang_type GTY(())
 /* Nonzero means that this type has been redefined.  In this case, if
    convenient, don't reprocess any methods that appear in its redefinition.  */
 #define TYPE_REDEFINED(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->redefined)
-
-/* The is the basetype that contains NODE's rtti.  */
-#define CLASSTYPE_RTTI(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->rtti)
 
 /* Nonzero means that this _CLASSTYPE node overloads operator().  */
 #define TYPE_OVERLOADS_CALL_EXPR(NODE) \
@@ -1430,13 +1431,6 @@ struct lang_type GTY(())
 
 /* Nonzero means that this aggr type has been `closed' by a semicolon.  */
 #define CLASSTYPE_GOT_SEMICOLON(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->got_semicolon)
-
-/* Nonzero means that the main virtual function table pointer needs to be
-   set because base constructors have placed the wrong value there.
-   If this is zero, it means that they placed the right value there,
-   and there is no need to change it.  */
-#define CLASSTYPE_NEEDS_VIRTUAL_REINIT(NODE) \
-  (LANG_TYPE_CLASS_CHECK (NODE)->needs_virtual_reinit)
 
 /* Nonzero means that this type has an X() constructor.  */
 #define TYPE_HAS_DEFAULT_CONSTRUCTOR(NODE) \
@@ -1629,6 +1623,19 @@ struct lang_type GTY(())
 /* Used by various search routines.  */
 #define IDENTIFIER_MARKED(NODE) TREE_LANG_FLAG_0 (NODE)
 
+/* A TREE_LIST of the vcall indices associated with the class NODE.
+   The TREE_PURPOSE of each node is a FUNCTION_DECL for a virtual
+   function.  The TREE_VALUE is the index into the virtual table where
+   the vcall offset for that function is stored, when NODE is a
+   virtual base.  */
+#define CLASSTYPE_VCALL_INDICES(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->vcall_indices)
+
+/* The various vtables for the class NODE.  The primary vtable will be
+   first, followed by the construction vtables and VTT, if any.  */
+#define CLASSTYPE_VTABLES(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->vtables)
+
 /* Accessor macros for the vfield slots in structures.  */
 
 /* List of virtual table fields that this type contains (both the primary
@@ -1664,8 +1671,6 @@ struct lang_type GTY(())
 /* The function to call.  */
 #define BV_FN(NODE) (TREE_VALUE (NODE))
 
-/* Nonzero if we should use a virtual thunk for this entry.  */
-#define BV_USE_VCALL_INDEX_P(NODE) (TREE_LANG_FLAG_0 (NODE))
 
 /* Nonzero for TREE_LIST node means that this list of things
    is a list of parameters, as opposed to a list of expressions.  */
@@ -3546,7 +3551,6 @@ extern tree perform_implicit_conversion         PARAMS ((tree, tree));
 /* in class.c */
 extern tree build_base_path			PARAMS ((enum tree_code, tree, tree, int));
 extern tree convert_to_base                     (tree, tree, bool);
-extern tree build_vbase_path			PARAMS ((enum tree_code, tree, tree, tree, int));
 extern tree build_vtbl_ref			PARAMS ((tree, tree));
 extern tree build_vfn_ref			PARAMS ((tree, tree));
 extern tree get_vtable_decl                     PARAMS ((tree, int));
