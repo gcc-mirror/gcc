@@ -2,9 +2,10 @@
 # Deduce values of standard ANSI and POSIX types (e.g. size_t, pid_t).
 # Emits macros definitions for these, and some other types.
 # Intended to be used to massage the sys-protos.h file.
+# Expects one arg, which is the GCC source directory.
 
-CC=${CC-./xgcc}
-CPP=${CPP-`echo ${CC} -E`}
+CC=${CC-"./xgcc -B$1/"}
+CPP=${CPP-`echo ${CC} -E -I"$1/"`}
 SED=sed
 
 # Generate definitions for the standard types (such as mode_t)
@@ -14,8 +15,8 @@ SED=sed
 
 cat >dummy.c <<!EOF!
 #include <sys/types.h>
-#include <stddef.h>
-#include <stdarg.h>
+#include "gstddef.h"
+#include "gstdarg.h"
 #include <stdio.h>
 #include <time.h>
 #include <signal.h>
