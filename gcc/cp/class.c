@@ -255,6 +255,7 @@ build_base_path (enum tree_code code,
   int fixed_type_p;
   int want_pointer = TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE;
   bool has_empty = false;
+  bool virtual_access;
 
   if (expr == error_mark_node || binfo == error_mark_node || !binfo)
     return error_mark_node;
@@ -296,21 +297,24 @@ build_base_path (enum tree_code code,
   offset = BINFO_OFFSET (binfo);
   fixed_type_p = resolves_to_fixed_type_p (expr, &nonnull);
 
-  if (want_pointer && !nonnull
-      && (!integer_zerop (offset) || (v_binfo && fixed_type_p <= 0)))
+  /* Do we need to look in the vtable for the real offset?  */
+  virtual_access = (v_binfo && fixed_type_p <= 0);
+
+  /* Do we need to check for a null pointer?  */
+  if (want_pointer && !nonnull && (virtual_access || !integer_zerop (offset)))
     null_test = error_mark_node;
 
-  if (TREE_SIDE_EFFECTS (expr)
-      && (null_test || (v_binfo && fixed_type_p <= 0)))
+  /* Protect against multiple evaluation if necessary.  */
+  if (TREE_SIDE_EFFECTS (expr) && (null_test || virtual_access))
     expr = save_expr (expr);
 
+  /* Now that we've saved expr, build the real null test.  */
   if (null_test)
     null_test = fold (build2 (NE_EXPR, boolean_type_node,
 			      expr, integer_zero_node));
 
   /* If this is a simple base reference, express it as a COMPONENT_REF.  */
-  if (code == PLUS_EXPR
-      && (v_binfo == NULL_TREE || fixed_type_p > 0)
+  if (code == PLUS_EXPR && !virtual_access
       /* We don't build base fields for empty bases, and they aren't very
 	 interesting to the optimizers anyway.  */
       && !has_empty)
@@ -323,7 +327,7 @@ build_base_path (enum tree_code code,
       goto out;
     }
 
-  if (v_binfo && fixed_type_p <= 0)
+  if (virtual_access)
     {
       /* Going via virtual base V_BINFO.  We need the static offset
          from V_BINFO to BINFO, and the dynamic offset from D_BINFO to
