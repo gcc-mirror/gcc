@@ -1,3 +1,7 @@
+2003-05-17  Zack Weinberg  <zack@codesourcery.com>
+
+	* doc/install.texi: Remove information about desupported targets.
+
 2003-05-17  Andreas Schwab  <schwab@suse.de>
 
 	* config/m68k/coff.h: Remove support for Sun FPA and Sun SKY board.
@@ -93,12 +97,12 @@
 
 	* arc.c (arc_output_function_prologue,
 	arc_output_function_epilogue): Fix format specifier warnings.
-	* arc.h (LARGE_INT): Fix signed/unsigned warnings.	
+	* arc.h (LARGE_INT): Fix signed/unsigned warnings.
 
 	* v850.c (print_operand): Fix format specifier warnings.
 
 	* ns32k.c (ADJSP, ns32k_output_function_prologue): Fix format
-	specifier warnings. 
+	specifier warnings.
 
 	* mcore.c (mcore_print_operand_address, mcore_print_operand): Fix
 	format specifier warnings.
@@ -139,7 +143,7 @@
 	* rs6000.c (rs6000_va_start, print_operand_address): Likewise.
 	* s390.c (s390_assemble_integer): Likewise.
 	* sparc.c (sparc_flat_function_prologue,
-	sparc_flat_function_epilogue): Likewise. 
+	sparc_flat_function_epilogue): Likewise.
 	* stormy16.c (xstormy16_print_operand_address, xstormy16_print_operand): Likewise.
 	* vax.c (vax_output_mi_thunk): Likewise.
 
@@ -181,8 +185,8 @@
 
 2003-05-15 Eric Christopher <echristo@redhat.com>
 
-        * combine.c (expand_compound_operation): Make sure
-        that zero_extend operation is profitable.
+	* combine.c (expand_compound_operation): Make sure
+	that zero_extend operation is profitable.
 
 2003-05-15  Richard Henderson  <rth@redhat.com>
 
