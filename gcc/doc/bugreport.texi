@@ -1,0 +1,394 @@
+@c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+@c 1999, 2000, 2001 Free Software Foundation, Inc.
+@c This is part of the GCC manual.
+@c For copying conditions, see the file gcc.texi.
+
+@node Bugs
+@chapter Reporting Bugs
+@cindex bugs
+@cindex reporting bugs
+
+Your bug reports play an essential role in making GCC reliable.
+
+When you encounter a problem, the first thing to do is to see if it is
+already known.  @xref{Trouble}.  If it isn't known, then you should
+report the problem.
+
+Reporting a bug may help you by bringing a solution to your problem, or
+it may not.  (If it does not, look in the service directory; see
+@ref{Service}.)  In any case, the principal function of a bug report is
+to help the entire community by making the next version of GCC work
+better.  Bug reports are your contribution to the maintenance of GCC@.
+
+Since the maintainers are very overloaded, we cannot respond to every
+bug report.  However, if the bug has not been fixed, we are likely to
+send you a patch and ask you to tell us whether it works.
+
+In order for a bug report to serve its purpose, you must include the
+information that makes for fixing the bug.
+
+@menu
+* Criteria:  Bug Criteria.   Have you really found a bug?
+* Where: Bug Lists.	     Where to send your bug report.
+* Reporting: Bug Reporting.  How to report a bug effectively.
+* GNATS: gccbug.             You can use a bug reporting tool.
+* Known: Trouble.            Known problems.
+* Help: Service.             Where to ask for help.
+@end menu
+
+@node Bug Criteria,Bug Lists,,Bugs
+@section Have You Found a Bug?
+@cindex bug criteria
+
+If you are not sure whether you have found a bug, here are some guidelines:
+
+@itemize @bullet
+@cindex fatal signal
+@cindex core dump
+@item
+If the compiler gets a fatal signal, for any input whatever, that is a
+compiler bug.  Reliable compilers never crash.
+
+@cindex invalid assembly code
+@cindex assembly code, invalid
+@item
+If the compiler produces invalid assembly code, for any input whatever
+(except an @code{asm} statement), that is a compiler bug, unless the
+compiler reports errors (not just warnings) which would ordinarily
+prevent the assembler from being run.
+
+@cindex undefined behavior
+@cindex undefined function value
+@cindex increment operators
+@item
+If the compiler produces valid assembly code that does not correctly
+execute the input source code, that is a compiler bug.
+
+However, you must double-check to make sure, because you may have run
+into an incompatibility between GNU C and traditional C
+(@pxref{Incompatibilities}).  These incompatibilities might be considered
+bugs, but they are inescapable consequences of valuable features.
+
+Or you may have a program whose behavior is undefined, which happened
+by chance to give the desired results with another C or C++ compiler.
+
+For example, in many nonoptimizing compilers, you can write @samp{x;}
+at the end of a function instead of @samp{return x;}, with the same
+results.  But the value of the function is undefined if @code{return}
+is omitted; it is not a bug when GCC produces different results.
+
+Problems often result from expressions with two increment operators,
+as in @code{f (*p++, *p++)}.  Your previous compiler might have
+interpreted that expression the way you intended; GCC might
+interpret it another way.  Neither compiler is wrong.  The bug is
+in your code.
+
+After you have localized the error to a single source line, it should
+be easy to check for these things.  If your program is correct and
+well defined, you have found a compiler bug.
+
+@item
+If the compiler produces an error message for valid input, that is a
+compiler bug.
+
+@cindex invalid input
+@item
+If the compiler does not produce an error message for invalid input,
+that is a compiler bug.  However, you should note that your idea of
+``invalid input'' might be my idea of ``an extension'' or ``support
+for traditional practice''.
+
+@item
+If you are an experienced user of one of the languages GCC supports, your
+suggestions for improvement of GCC are welcome in any case.
+@end itemize
+
+@node Bug Lists,Bug Reporting,Bug Criteria,Bugs
+@section Where to Report Bugs
+@cindex bug report mailing lists
+@kindex gcc-bugs@@gcc.gnu.org or bug-gcc@@gnu.org
+Send bug reports for the GNU Compiler Collection to
+@email{gcc-bugs@@gcc.gnu.org}.  In accordance with the GNU-wide
+convention, in which bug reports for tool ``foo'' are sent
+to @samp{bug-foo@@gnu.org}, the address @email{bug-gcc@@gnu.org}
+may also be used; it will forward to the address given above.
+
+Please read @uref{http://gcc.gnu.org/bugs.html} for additional and/or
+more up-to-date bug reporting instructions before you post a bug report.
+
+@node Bug Reporting,gccbug,Bug Lists,Bugs
+@section How to Report Bugs
+@cindex compiler bugs, reporting
+
+The fundamental principle of reporting bugs usefully is this:
+@strong{report all the facts}.  If you are not sure whether to state a
+fact or leave it out, state it!
+
+Often people omit facts because they think they know what causes the
+problem and they conclude that some details don't matter.  Thus, you might
+assume that the name of the variable you use in an example does not matter.
+Well, probably it doesn't, but one cannot be sure.  Perhaps the bug is a
+stray memory reference which happens to fetch from the location where that
+name is stored in memory; perhaps, if the name were different, the contents
+of that location would fool the compiler into doing the right thing despite
+the bug.  Play it safe and give a specific, complete example.  That is the
+easiest thing for you to do, and the most helpful.
+
+Keep in mind that the purpose of a bug report is to enable someone to
+fix the bug if it is not known.  It isn't very important what happens if
+the bug is already known.  Therefore, always write your bug reports on
+the assumption that the bug is not known.
+
+Sometimes people give a few sketchy facts and ask, ``Does this ring a
+bell?''  This cannot help us fix a bug, so it is basically useless.  We
+respond by asking for enough details to enable us to investigate.
+You might as well expedite matters by sending them to begin with.
+
+Try to make your bug report self-contained.  If we have to ask you for
+more information, it is best if you include all the previous information
+in your response, as well as the information that was missing.
+
+Please report each bug in a separate message.  This makes it easier for
+us to track which bugs have been fixed and to forward your bugs reports
+to the appropriate maintainer.
+
+To enable someone to investigate the bug, you should include all these
+things:
+
+@itemize @bullet
+@item
+The version of GCC@.  You can get this by running it with the
+@option{-v} option.
+
+Without this, we won't know whether there is any point in looking for
+the bug in the current version of GCC@.
+
+@item
+A complete input file that will reproduce the bug.  If the bug is in the
+C preprocessor, send a source file and any header files that it
+requires.  If the bug is in the compiler proper (@file{cc1}), send the
+preprocessor output generated by adding @option{-save-temps} to the
+compilation command (@pxref{Debugging Options}).  When you do this, use
+the same @option{-I}, @option{-D} or @option{-U} options that you used in
+actual compilation.  Then send the @var{input}.i or @var{input}.ii files
+generated.
+
+A single statement is not enough of an example.  In order to compile it,
+it must be embedded in a complete file of compiler input; and the bug
+might depend on the details of how this is done.
+
+Without a real example one can compile, all anyone can do about your bug
+report is wish you luck.  It would be futile to try to guess how to
+provoke the bug.  For example, bugs in register allocation and reloading
+frequently depend on every little detail of the function they happen in.
+
+Even if the input file that fails comes from a GNU program, you should
+still send the complete test case.  Don't ask the GCC maintainers to
+do the extra work of obtaining the program in question---they are all
+overworked as it is.  Also, the problem may depend on what is in the
+header files on your system; it is unreliable for the GCC maintainers
+to try the problem with the header files available to them.  By sending
+CPP output, you can eliminate this source of uncertainty and save us
+a certain percentage of wild goose chases.
+
+@item
+The command arguments you gave GCC to compile that example
+and observe the bug.  For example, did you use @option{-O}?  To guarantee
+you won't omit something important, list all the options.
+
+If we were to try to guess the arguments, we would probably guess wrong
+and then we would not encounter the bug.
+
+@item
+The type of machine you are using, and the operating system name and
+version number.
+
+@item
+The operands you gave to the @code{configure} command when you installed
+the compiler.
+
+@item
+A complete list of any modifications you have made to the compiler
+source.  (We don't promise to investigate the bug unless it happens in
+an unmodified compiler.  But if you've made modifications and don't tell
+us, then you are sending us on a wild goose chase.)
+
+Be precise about these changes.  A description in English is not
+enough---send a context diff for them.
+
+Adding files of your own (such as a machine description for a machine we
+don't support) is a modification of the compiler source.
+
+@item
+Details of any other deviations from the standard procedure for installing
+GCC@.
+
+@item
+A description of what behavior you observe that you believe is
+incorrect.  For example, ``The compiler gets a fatal signal,'' or,
+``The assembler instruction at line 208 in the output is incorrect.''
+
+Of course, if the bug is that the compiler gets a fatal signal, then one
+can't miss it.  But if the bug is incorrect output, the maintainer might
+not notice unless it is glaringly wrong.  None of us has time to study
+all the assembler code from a 50-line C program just on the chance that
+one instruction might be wrong.  We need @emph{you} to do this part!
+
+Even if the problem you experience is a fatal signal, you should still
+say so explicitly.  Suppose something strange is going on, such as, your
+copy of the compiler is out of synch, or you have encountered a bug in
+the C library on your system.  (This has happened!)  Your copy might
+crash and the copy here would not.  If you @i{said} to expect a crash,
+then when the compiler here fails to crash, we would know that the bug
+was not happening.  If you don't say to expect a crash, then we would
+not know whether the bug was happening.  We would not be able to draw
+any conclusion from our observations.
+
+If the problem is a diagnostic when compiling GCC with some other
+compiler, say whether it is a warning or an error.
+
+Often the observed symptom is incorrect output when your program is run.
+Sad to say, this is not enough information unless the program is short
+and simple.  None of us has time to study a large program to figure out
+how it would work if compiled correctly, much less which line of it was
+compiled wrong.  So you will have to do that.  Tell us which source line
+it is, and what incorrect result happens when that line is executed.  A
+person who understands the program can find this as easily as finding a
+bug in the program itself.
+
+@item
+If you send examples of assembler code output from GCC,
+please use @option{-g} when you make them.  The debugging information
+includes source line numbers which are essential for correlating the
+output with the input.
+
+@item
+If you wish to mention something in the GCC source, refer to it by
+context, not by line number.
+
+The line numbers in the development sources don't match those in your
+sources.  Your line numbers would convey no useful information to the
+maintainers.
+
+@item
+Additional information from a debugger might enable someone to find a
+problem on a machine which he does not have available.  However, you
+need to think when you collect this information if you want it to have
+any chance of being useful.
+
+@cindex backtrace for bug reports
+For example, many people send just a backtrace, but that is never
+useful by itself.  A simple backtrace with arguments conveys little
+about GCC because the compiler is largely data-driven; the same
+functions are called over and over for different RTL insns, doing
+different things depending on the details of the insn.
+
+Most of the arguments listed in the backtrace are useless because they
+are pointers to RTL list structure.  The numeric values of the
+pointers, which the debugger prints in the backtrace, have no
+significance whatever; all that matters is the contents of the objects
+they point to (and most of the contents are other such pointers).
+
+In addition, most compiler passes consist of one or more loops that
+scan the RTL insn sequence.  The most vital piece of information about
+such a loop---which insn it has reached---is usually in a local variable,
+not in an argument.
+
+@findex debug_rtx
+What you need to provide in addition to a backtrace are the values of
+the local variables for several stack frames up.  When a local
+variable or an argument is an RTX, first print its value and then use
+the GDB command @code{pr} to print the RTL expression that it points
+to.  (If GDB doesn't run on your machine, use your debugger to call
+the function @code{debug_rtx} with the RTX as an argument.)  In
+general, whenever a variable is a pointer, its value is no use
+without the data it points to.
+@end itemize
+
+Here are some things that are not necessary:
+
+@itemize @bullet
+@item
+A description of the envelope of the bug.
+
+Often people who encounter a bug spend a lot of time investigating
+which changes to the input file will make the bug go away and which
+changes will not affect it.
+
+This is often time consuming and not very useful, because the way we
+will find the bug is by running a single example under the debugger with
+breakpoints, not by pure deduction from a series of examples.  You might
+as well save your time for something else.
+
+Of course, if you can find a simpler example to report @emph{instead} of
+the original one, that is a convenience.  Errors in the output will be
+easier to spot, running under the debugger will take less time, etc.
+Most GCC bugs involve just one function, so the most straightforward
+way to simplify an example is to delete all the function definitions
+except the one where the bug occurs.  Those earlier in the file may be
+replaced by external declarations if the crucial function depends on
+them.  (Exception: inline functions may affect compilation of functions
+defined later in the file.)
+
+However, simplification is not vital; if you don't want to do this,
+report the bug anyway and send the entire test case you used.
+
+@item
+In particular, some people insert conditionals @samp{#ifdef BUG} around
+a statement which, if removed, makes the bug not happen.  These are just
+clutter; we won't pay any attention to them anyway.  Besides, you should
+send us cpp output, and that can't have conditionals.
+
+@item
+A patch for the bug.
+
+A patch for the bug is useful if it is a good one.  But don't omit the
+necessary information, such as the test case, on the assumption that a
+patch is all we need.  We might see problems with your patch and decide
+to fix the problem another way, or we might not understand it at all.
+
+Sometimes with a program as complicated as GCC it is very hard to
+construct an example that will make the program follow a certain path
+through the code.  If you don't send the example, we won't be able to
+construct one, so we won't be able to verify that the bug is fixed.
+
+And if we can't understand what bug you are trying to fix, or why your
+patch should be an improvement, we won't install it.  A test case will
+help us to understand.
+
+See @uref{http://gcc.gnu.org/contribute.html}
+for guidelines on how to make it easy for us to
+understand and install your patches.
+
+@item
+A guess about what the bug is or what it depends on.
+
+Such guesses are usually wrong.  Even I can't guess right about such
+things without first using the debugger to find the facts.
+
+@item
+A core dump file.
+
+We have no way of examining a core dump for your type of machine
+unless we have an identical system---and if we do have one,
+we should be able to reproduce the crash ourselves.
+@end itemize
+
+@node gccbug,, Bug Reporting, Bugs
+@section The gccbug script
+@cindex gccbug script
+
+To simplify creation of bug reports, and to allow better tracking of
+reports, we use the GNATS bug tracking system.  Part of that system is
+the @code{gccbug} script.  This is a Unix shell script, so you need a
+shell to run it.  It is normally installed in the same directory where
+@code{gcc} is installed.
+
+The gccbug script is derived from send-pr, @pxref{using
+send-pr,,Creating new Problem Reports,send-pr,Reporting Problems}.  When
+invoked, it starts a text editor so you can fill out the various fields
+of the report.  When the you quit the editor, the report is automatically
+send to the bug reporting address.
+
+A number of fields in this bug report form are specific to GCC, and are
+explained at @uref{http://gcc.gnu.org/gnats.html}.

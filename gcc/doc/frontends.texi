@@ -1,0 +1,70 @@
+@c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+@c 1999, 2000, 2001 Free Software Foundation, Inc.
+@c This is part of the GCC manual.
+@c For copying conditions, see the file gcc.texi.
+
+@node G++ and GCC
+@chapter Compile C, C++, Objective-C, Ada, CHILL, Fortran, or Java
+
+@cindex Objective-C
+@cindex Fortran
+@cindex Java
+@cindex CHILL
+@cindex Ada
+Several versions of the compiler (C, C++, Objective-C, Ada, CHILL,
+Fortran, and Java) are integrated; this is why we use the name
+``GNU Compiler Collection''.  GCC can compile programs written in any of these
+languages.  The Ada, CHILL, Fortran, and Java compilers are described in
+separate manuals.
+
+@cindex GCC
+``GCC'' is a common shorthand term for the GNU Compiler Collection.  This is both
+the most general name for the compiler, and the name used when the
+emphasis is on compiling C programs (as the abbreviation formerly
+stood for ``GNU C Compiler'').
+
+@cindex C++
+@cindex G++
+When referring to C++ compilation, it is usual to call the compiler
+``G++''.  Since there is only one compiler, it is also accurate to call
+it ``GCC'' no matter what the language context; however, the term
+``G++'' is more useful when the emphasis is on compiling C++ programs.
+
+@cindex Ada
+@cindex GNAT
+Similarly, when we talk about Ada compilation, we usually call the
+compiler ``GNAT'', for the same reasons.
+
+We use the name ``GCC'' to refer to the compilation system as a
+whole, and more specifically to the language-independent part of the
+compiler.  For example, we refer to the optimization options as
+affecting the behavior of ``GCC'' or sometimes just ``the compiler''.
+
+Front ends for other languages, such as Mercury and Pascal exist but
+have not yet been integrated into GCC@.  These front ends, like that for C++,
+are built in subdirectories of GCC and link to it.  The result is an
+integrated compiler that can compile programs written in C, C++,
+Objective-C, or any of the languages for which you have installed front
+ends.
+
+In this manual, we only discuss the options for the C, Objective-C, and
+C++ compilers and those of the GCC core.  Consult the documentation
+of the other front ends for the options to use when compiling programs
+written in other languages.
+
+@cindex compiler compared to C++ preprocessor
+@cindex intermediate C version, nonexistent
+@cindex C intermediate output, nonexistent
+G++ is a @emph{compiler}, not merely a preprocessor.  G++ builds object
+code directly from your C++ program source.  There is no intermediate C
+version of the program.  (By contrast, for example, some other
+implementations use a program that generates a C program from your C++
+source.)  Avoiding an intermediate C representation of the program means
+that you get better object code, and better debugging information.  The
+GNU debugger, GDB, works with this information in the object code to
+give you comprehensive C++ source-level editing capabilities
+(@pxref{C,,C and C++,gdb.info, Debugging with GDB}).
+
+@c FIXME!  Someone who knows something about Objective-C ought to put in
+@c a paragraph or two about it here, and move the index entry down when
+@c there is more to point to than the general mention in the 1st par.
