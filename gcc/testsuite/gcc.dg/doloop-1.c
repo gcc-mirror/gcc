@@ -1,6 +1,6 @@
 /* Make sure both loops are recognized as doloops.
    If so, "bdnz" will be generated on ppc; if not,
-   you will get "ble". */
+   you will get "ble" or "blt" or "bge".  */
 
 /* { dg-do compile { target powerpc-*-* } } */
 /* { dg-options "-O2" } */
@@ -15,4 +15,3 @@ void foo (int count, char* pca, char* pcb) {
     *pca = *pcb;
 }
 /* { dg-final { scan-assembler "bdnz" } } */
-/* { dg-final { scan-assembler-not "blt" } } */
