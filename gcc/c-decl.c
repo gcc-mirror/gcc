@@ -4071,9 +4071,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	    volatilep = constp = 0;
 	  }
 
-	if (initialized)
-	  error ("parameter `%s' is initialized", name);
-
 	decl = build_decl (PARM_DECL, declarator, type);
 	if (size_varies)
 	  C_DECL_VARIABLE_SIZE (decl) = 1;
