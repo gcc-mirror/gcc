@@ -1,3 +1,9 @@
+2004-09-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.md (cmove splitter): Fix formatting.
+	(conditional_trap expander): Reject inappropriate CCmodes.
+	(conditional trap expander): Use V9 syntax if possible.
+
 2004-09-22  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/16566
