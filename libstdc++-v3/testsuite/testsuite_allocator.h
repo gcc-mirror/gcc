@@ -38,6 +38,13 @@
 #include <cstddef>
 #include <limits>
 
+namespace 
+{
+  bool         new_called = false;
+  bool         delete_called = false;
+  std::size_t  requested = 0;
+};
+
 namespace __gnu_test
 {
   class allocation_tracker
@@ -170,9 +177,24 @@ namespace __gnu_test
     operator!=(const tracker_alloc<T1>&, const tracker_alloc<T2>&) throw()
     { return false; }
 
-   bool
-   check_construct_destroy(const char* tag, int expected_c, int expected_d);
+  bool
+  check_construct_destroy(const char* tag, int expected_c, int expected_d);
 
+  template<typename Alloc, bool uses_global_new_and_delete>
+  bool check_new()
+  {
+    bool test __attribute__((unused)) = true;
+    Alloc  a;
+    typename Alloc::pointer p = a.allocate(10);
+    if (uses_global_new_and_delete)  
+      test &= ( requested >= (10 * 15 * sizeof(long)) );
+
+    test &= ( new_called == uses_global_new_and_delete );
+    a.deallocate(p, 10);
+    test &= ( delete_called == uses_global_new_and_delete );
+  
+    return test;
+  }
 }; // namespace __gnu_test
 
 #endif // _GLIBCXX_TESTSUITE_ALLOCATOR_H

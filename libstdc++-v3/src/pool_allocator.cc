@@ -32,8 +32,7 @@
 //
 
 #include <bits/c++config.h>
-#include <memory>
-#include <ext/mt_allocator.h>
+#include <cstdlib>
 #include <ext/pool_allocator.h>
 
 namespace __gnu_internal
@@ -166,4 +165,8 @@ namespace __gnu_cxx
   char* __pool_alloc_base::_S_end_free = 0;
   
   size_t __pool_alloc_base::_S_heap_size = 0;
+
+  // Instantiations.
+  template class __pool_alloc<char>;
+  template class __pool_alloc<wchar_t>;
 } // namespace __gnu_cxx

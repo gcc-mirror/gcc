@@ -42,10 +42,12 @@ initially developed specifically to suit the needs of multi threaded
 applications [hereinafter referred to as an MT application]. Over time
 the allocator has evolved and been improved in many ways, one of the
 being that it now also does a good job in single threaded applications
-[hereinafter referred to as a ST application].  (Note: In this
+[hereinafter referred to as a ST application]. (Note: In this
 document, when referring to single threaded applications this also
 includes applications that are compiled with gcc without thread
-support enabled. This is accomplished using ifdef's on __GTHREADS)
+support enabled. This is accomplished using ifdef's on
+__GTHREADS). This allocator is tunable, very flexible, and capable of
+high-performance.
 </p>
 
 <p>
@@ -54,11 +56,66 @@ view - the "inner workings" of the allocator.
 </p>
 
 <h3 class="left">
+  <a name="design">Design Overview</a>
+</h3>
+
+<p> There are three general components to the allocator: a datum
+describing the characteristics of the memory pool, a policy class
+containing this pool that links instantiation types to common or
+individual pools, and a class inheriting from the policy class that is
+the actual allocator.
+</p>
+
+<p>The datum describing pools characteristics is 
+<pre>
+  template&lt;bool _Thread&gt;
+    class __pool
+</pre>
+This class is parametrized on thread support, and is explicitly
+specialized for both multiple threads (with <code>bool==true</code>)
+and single threads (via <code>bool==false</code>.)
+</p>
+
+<p> There are two distinct policy classes, each of which can be used
+with either type of underlying pool datum.
+</p>
+
+<pre>
+  template&lt;bool _Thread&gt;
+    struct __common_pool_policy
+
+  template&lt;typename _Tp, bool _Thread&gt;
+    struct __per_type_pool_policy
+</pre>
+
+<p> The first policy, <code>__common_pool_policy</code>, implements a
+common pool. This means that allocators that are instantiated with
+different types, say <code>char</code> and <code>long</code> will both
+use the same pool. This is the default policy.
+</p>
+
+<p> The second policy, <code>__per_type_pool_policy</code>, implements
+a separate pool for each instantiating type. Thus, <code>char</code>
+and <code>long</code> will use separate pools. This allows per-type
+tuning, for instance.
+</p>
+
+<p> Putting this all together, the actual allocator class is
+<pre>
+  template&lt;typename _Tp, typename _Poolp = __default_policy&gt;
+    class __mt_alloc : public __mt_alloc_base&lt;_Tp&gt;,  _Poolp
+</pre>
+This class has the interface required for standard library allocator
+classes, namely member functions <code>allocate</code> and
+<code>deallocate</code>, plus others.
+</p>
+
+<h3 class="left">
   <a name="init">Tunable parameters</a>
 </h3>
 
-<p>Certain allocation parameters can be modified on a per-type
-basis. There exists a nested <pre>struct _Tune</pre> that contains all
+<p>Certain allocation parameters can be modified, or tuned. There
+exists a nested <pre>struct __pool_base::_Tune</pre> that contains all
 these parameters, which include settings for
 </p>
    <ul>
@@ -87,16 +144,16 @@ int main()
 {
   typedef pod value_type;
   typedef __gnu_cxx::__mt_alloc&lt;value_type&gt; allocator_type;
-  typedef allocator_type::_Tune tune_type;
+  typedef __gnu_cxx::__pool_base::_Tune tune_type;
 
   tune_type t_default;
   tune_type t_opt(16, 5120, 32, 5120, 20, 10, false);
   tune_type t_single(16, 5120, 32, 5120, 1, 10, false);
 
   tune_type t;
-  t = allocator_type::_S_get_options();  
-  allocator_type::_S_set_options(t_opt);
-  t = allocator_type::_S_get_options();  
+  t = allocator_type::_M_get_options();  
+  allocator_type::_M_set_options(t_opt);
+  t = allocator_type::_M_get_options();  
 
   allocator_type a;
   allocator_type::pointer p1 = a.allocate(128);
@@ -119,14 +176,15 @@ are initialized as above, or are set to the global defaults.
 </p>
 
 <p>
-The very first allocate() call will always call the _S_init() function. 
-In order to make sure that this function is called exactly once we make use
-of a __gthread_once (with _S_once_mt and _S_init as arguments) call in MT 
-applications and check a static bool (_S_initialized) in ST applications.
+The very first allocate() call will always call the
+_S_initialize_once() function.  In order to make sure that this
+function is called exactly once we make use of a __gthread_once call
+in MT applications and check a static bool (_S_init) in ST
+applications.
 </p>
 
 <p>
-The _S_init() function:
+The _S_initialize() function:
 - If the GLIBCXX_FORCE_NEW environment variable is set, it sets the bool
   _S_force_new to true and then returns. This will cause subsequent calls to
   allocate() to return memory directly from a new() call, and deallocate will
