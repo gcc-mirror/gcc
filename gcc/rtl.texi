@@ -2057,6 +2057,34 @@ it may not be apparent why this is so.  Therefore, the compiler will
 not attempt to delete previous instructions whose only effect is to
 store a value in @var{x}.  @var{x} must be a @code{reg} expression.
 
+In some situations, it may be tempting to add a @code{use} of a
+register in a @code{parallel} to describe a situation where the value
+of a special register will modify the behaviour of the instruction.
+An hypothetical example might be a pattern for an addition that can
+either wrap around or use saturating addition depending on the value
+of a special control register:
+
+@example
+(parallel [(set (reg:SI 2) (unspec:SI [(reg:SI 3) (reg:SI 4)] 0))
+           (use (reg:SI 1))])
+@end example
+
+@noindent
+
+This will not work, several of the optimizers only look at expressions
+locally; it is very likely that if you have multiple insns with
+identical inputs to the @code{unspec}, they will be optimized away even
+if register 1 changes in between.
+
+This means that @code{use} can @emph{only} be used to describe
+that the register is live.  You should think twice before adding
+@code{use} statements, more often you will want to use @code{unspec}
+instead.  The @code{use} RTX is most commonly useful to describe that
+a fixed register is implicitly used in an insn.  It is also safe to use
+in patterns where the compiler knows for other reasons that the result
+of the whole pattern is variable, such as @samp{movstr@var{m}} or
+@samp{call} patterns.
+
 During the reload phase, an insn that has a @code{use} as pattern
 can carry a reg_equal note.  These @code{use} insns will be deleted
 before the reload phase exits.
