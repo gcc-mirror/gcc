@@ -2863,7 +2863,7 @@ gen_mem_addressof (reg, decl)
 			     REGNO (reg), decl);
 
   /* Calculate this before we start messing with decl's RTL.  */
-  HOST_WIDE_INT set = get_alias_set (decl);
+  HOST_WIDE_INT set = decl ? get_alias_set (decl) : 0;
 
   /* If the original REG was a user-variable, then so is the REG whose
      address is being taken.  Likewise for unchanging.  */
