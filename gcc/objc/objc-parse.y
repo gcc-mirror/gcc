@@ -163,6 +163,7 @@ char *language_string = "GNU Obj-C";
 %type <ttype> structsp component_decl_list component_decl_list2
 %type <ttype> component_decl components component_declarator
 %type <ttype> enumlist enumerator
+%type <ttype> struct_head union_head enum_head
 %type <ttype> typename absdcl absdcl1 type_quals
 %type <ttype> xexpr parms parm identifiers
 
@@ -1367,42 +1368,63 @@ notype_declarator:
 	| IDENTIFIER
 	;
 
+struct_head:
+	  STRUCT
+		{ $$ = NULL_TREE; }
+	| STRUCT attributes
+		{ $$ = $2; }
+	;
+
+union_head:
+	  UNION
+		{ $$ = NULL_TREE; }
+	| UNION attributes
+		{ $$ = $2; }
+	;
+
+enum_head:
+	  ENUM
+		{ $$ = NULL_TREE; }
+	| ENUM attributes
+		{ $$ = $2; }
+	;
+
 structsp:
-	  STRUCT identifier '{'
+	  struct_head identifier '{'
 		{ $$ = start_struct (RECORD_TYPE, $2);
 		  /* Start scope of tag before parsing components.  */
 		}
 	  component_decl_list '}' maybe_attribute 
-		{ $$ = finish_struct ($<ttype>4, $5, $7); }
-	| STRUCT '{' component_decl_list '}' maybe_attribute
+		{ $$ = finish_struct ($<ttype>4, $5, chainon ($1, $7)); }
+	| struct_head '{' component_decl_list '}' maybe_attribute
 		{ $$ = finish_struct (start_struct (RECORD_TYPE, NULL_TREE),
-				      $3, $5);
+				      $3, chainon ($1, $5));
 		}
-	| STRUCT identifier
+	| struct_head identifier
 		{ $$ = xref_tag (RECORD_TYPE, $2); }
-	| UNION identifier '{'
+	| union_head identifier '{'
 		{ $$ = start_struct (UNION_TYPE, $2); }
 	  component_decl_list '}' maybe_attribute
-		{ $$ = finish_struct ($<ttype>4, $5, $7); }
-	| UNION '{' component_decl_list '}' maybe_attribute
+		{ $$ = finish_struct ($<ttype>4, $5, chainon ($1, $7)); }
+	| union_head '{' component_decl_list '}' maybe_attribute
 		{ $$ = finish_struct (start_struct (UNION_TYPE, NULL_TREE),
-				      $3, $5);
+				      $3, chainon ($1, $5));
 		}
-	| UNION identifier
+	| union_head identifier
 		{ $$ = xref_tag (UNION_TYPE, $2); }
-	| ENUM identifier '{'
+	| enum_head identifier '{'
 		{ $<itype>3 = suspend_momentary ();
 		  $$ = start_enum ($2); }
 	  enumlist maybecomma_warn '}' maybe_attribute
-		{ $$ = finish_enum ($<ttype>4, nreverse ($5), $8);
+		{ $$= finish_enum ($<ttype>4, nreverse ($5), chainon ($1, $8));
 		  resume_momentary ($<itype>3); }
-	| ENUM '{'
+	| enum_head '{'
 		{ $<itype>2 = suspend_momentary ();
 		  $$ = start_enum (NULL_TREE); }
 	  enumlist maybecomma_warn '}' maybe_attribute
-		{ $$ = finish_enum ($<ttype>3, nreverse ($4), $7);
+		{ $$= finish_enum ($<ttype>3, nreverse ($4), chainon ($1, $7));
 		  resume_momentary ($<itype>2); }
-	| ENUM identifier
+	| enum_head identifier
 		{ $$ = xref_tag (ENUMERAL_TYPE, $2); }
 	;
 

@@ -1,5 +1,9 @@
 Mon Jul  6 22:50:48 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* c-parse.in (struct_head, union_head, enum_head): New nonterminals.
+	(structsp): Use them.  Update files generated from c-parse.in.
+	* extend.texi (Type Attributes): Document it.
+
 	* c-decl.c: Add warn_multichar.
 	(c_decode_option): Handle -Wno-multichar.
 	* c-lex.c (yylex): Check it.
