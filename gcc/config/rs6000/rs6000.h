@@ -127,7 +127,7 @@ extern int target_flags;
 
 /* Processor type.  */
 enum processor_type
- {PROCESSOR_RIOS,
+ {PROCESSOR_RIOS1,
   PROCESSOR_RIOS2,
   PROCESSOR_PPC601,
   PROCESSOR_PPC603,
@@ -140,7 +140,7 @@ extern enum processor_type rs6000_cpu;
 #define rs6000_cpu_attr ((enum attr_cpu)rs6000_cpu)
 
 /* Define the default processor.  This is overridden by other tm.h files.  */
-#define PROCESSOR_DEFAULT PROCESSOR_RIOS
+#define PROCESSOR_DEFAULT PROCESSOR_RIOS1
 
 /* This macro is similar to `TARGET_SWITCHES' but defines names of
    command options that have values.  Its definition is an
