@@ -9,134 +9,126 @@ details.  */
 #include <config.h>
 #include <platform.h>
 
-#ifdef WIN32
-
-#include <windows.h>
-#include <winsock.h>
 #undef STRICT
 
-#else /* WIN32 */
-
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-#include <string.h>
-#include <errno.h>
-#include <stdlib.h>
-
-#include <sys/param.h>
-#include <sys/types.h>
-#ifdef HAVE_NETINET_IN_H
-#include <netinet/in.h>
-#endif
-#ifdef HAVE_ARPA_INET_H
-#include <arpa/inet.h>
-#endif
-#ifdef HAVE_NETDB_H
-#include <netdb.h>
-#endif
-#ifdef HAVE_SYS_IOCTL_H
-#define BSD_COMP /* Get FIONREAD on Solaris2. */
-#include <sys/ioctl.h>
-#endif
-#ifdef HAVE_NET_IF_H
-#include <net/if.h>
-#endif
-
-#endif /* WIN32 */
-
-#include <gcj/cni.h>
-#include <jvm.h>
 #include <java/net/NetworkInterface.h>
 #include <java/net/Inet4Address.h>
 #include <java/net/SocketException.h>
 #include <java/util/Vector.h>
 
-#ifdef DISABLE_JAVA_NET
+/* As of this writing, NetworkInterface.java has
+   getName() == getDisplayName() and only one IP address
+   per interface. If this changes, we'll need to use
+   iphlpapi (not supported on Win95) to retrieve richer
+   adapter information via GetAdaptersInfo(). In this
+   module, we provide the necessary hooks to detect the
+   presence of iphlpapi and use it if necessary, but
+   comment things out for now to avoid compiler warnings. */
 
-::java::util::Vector*
-java::net::NetworkInterface::getRealNetworkInterfaces ()
+enum {MAX_INTERFACES = 50};
+
+typedef int
+(*PfnGetRealNetworkInterfaces) (jstring* pjstrName,
+  java::net::InetAddress** ppAddress);
+
+static int
+winsock2GetRealNetworkInterfaces (jstring* pjstrName,
+  java::net::InetAddress** ppAddress)
 {
-  ::java::util::Vector* ht = new ::java::util::Vector();
-  return ht;
-}
+  // FIXME: Add IPv6 support.
+  
+  INTERFACE_INFO arInterfaceInfo[MAX_INTERFACES];
 
-#else /* DISABLE_JAVA_NET */
-
-::java::util::Vector*
-java::net::NetworkInterface::getRealNetworkInterfaces ()
-{
-#ifdef WIN32
-  throw new ::java::net::SocketException;
-#else
-  int fd;
-  int num_interfaces = 0;
-  struct ifconf if_data;
-  struct ifreq* if_record;
-  ::java::util::Vector* ht = new ::java::util::Vector ();
-
-  if_data.ifc_len = 0;
-  if_data.ifc_buf = NULL;
-
-  // Open a (random) socket to have a file descriptor for the ioctl calls.
-  fd = _Jv_socket (PF_INET, SOCK_DGRAM, htons (IPPROTO_IP));
-
-  if (fd < 0)
-    throw new ::java::net::SocketException;
-
-  // Get all interfaces. If not enough buffers are available try it
-  // with a bigger buffer size.
-  do
-    {
-      num_interfaces += 16;
-      
-      if_data.ifc_len = sizeof (struct ifreq) * num_interfaces;
-      if_data.ifc_buf =
-        (char*) _Jv_Realloc (if_data.ifc_buf, if_data.ifc_len);
-
-      // Try to get all local interfaces.
-      if (::ioctl (fd, SIOCGIFCONF, &if_data) < 0)
-        throw new java::net::SocketException;
-    }
-  while (if_data.ifc_len >= (sizeof (struct ifreq) * num_interfaces));
-
+  // Open a (random) socket to have a file descriptor for the WSAIoctl call.
+  SOCKET skt = ::socket (AF_INET, SOCK_DGRAM, 0);
+  if (skt == INVALID_SOCKET) 
+    _Jv_ThrowSocketException ();
+    
+  DWORD dwOutBufSize;
+  int nRetCode = ::WSAIoctl (skt, SIO_GET_INTERFACE_LIST,
+    NULL, 0, &arInterfaceInfo, sizeof(arInterfaceInfo),
+    &dwOutBufSize, NULL, NULL);
+    
+  if (nRetCode == SOCKET_ERROR)
+  {
+    DWORD dwLastErrorCode = WSAGetLastError ();
+    ::closesocket (skt);
+    _Jv_ThrowSocketException (dwLastErrorCode);
+  }
+  
   // Get addresses of all interfaces.
-  if_record = if_data.ifc_req;
-
-  for (int n = 0; n < if_data.ifc_len; n += sizeof (struct ifreq))
+  int nNbInterfaces = dwOutBufSize / sizeof(INTERFACE_INFO);
+  int nCurETHInterface = 0;
+  for (int i=0; i < nNbInterfaces; ++i) 
     {
-      struct ifreq ifr;
-      
-      memset (&ifr, 0, sizeof (ifr));
-      strcpy (ifr.ifr_name, if_record->ifr_name);
-
-      // Try to get the IPv4-address of the local interface
-      if (::ioctl (fd, SIOCGIFADDR, &ifr) < 0)
-        throw new java::net::SocketException;
-
       int len = 4;
-      struct sockaddr_in sa = *((sockaddr_in*) &(ifr.ifr_addr));
-
       jbyteArray baddr = JvNewByteArray (len);
-      memcpy (elements (baddr), &(sa.sin_addr), len);
-      jstring if_name = JvNewStringLatin1 (if_record->ifr_name);
-      Inet4Address* address =
+      SOCKADDR_IN* pAddr = (SOCKADDR_IN*) &arInterfaceInfo[i].iiAddress;
+      memcpy (elements (baddr), &(pAddr->sin_addr), len);
+
+      // Concoct a name for this interface. Since we don't
+      // have access to the real name under Winsock 2, we use
+      // "lo" for the loopback interface and ethX for the
+      // real ones.
+      char szName[30];
+      u_long lFlags = arInterfaceInfo[i].iiFlags;
+
+      if (lFlags & IFF_LOOPBACK)
+        strcpy (szName, "lo");
+      else
+        {
+          strcpy (szName, "eth");
+          wsprintf(szName+3, "%d", nCurETHInterface++);
+        }
+
+      jstring if_name = JvNewStringLatin1 (szName);
+      java::net::Inet4Address* address =
         new java::net::Inet4Address (baddr, JvNewStringLatin1 (""));
-      ht->add (new NetworkInterface (if_name, address));
-      if_record++;
+      pjstrName[i] = if_name;
+      ppAddress[i] = address;
     }
 
-#ifdef HAVE_INET6
-      // FIXME: read /proc/net/if_inet6 (on Linux 2.4)
-#endif
-
-  _Jv_Free (if_data.ifc_buf);
+  ::closesocket (skt);
   
-  if (fd >= 0)
-    _Jv_close (fd);
-  
-  return ht;
-#endif /* WIN32 */
+  return nNbInterfaces;
 }
 
-#endif // DISABLE_JAVA_NET //
+/*
+static int
+iphlpapiGetRealNetworkInterfaces (jstring* pjstrName,
+  java::net::InetAddress** ppAddress)
+{
+  return 0;
+}
+*/
+
+static PfnGetRealNetworkInterfaces
+determineGetRealNetworkInterfacesFN ()
+{
+  /* FIXME: Try to dynamically load iphlpapi.dll and
+     detect the presence of GetAdaptersInfo() using
+     GetProcAddress(). If successful, return
+     iphlpapiGetRealNetworkInterfaces; if not,
+     return winsock2GetRealNetworkInterfaces */
+  return &winsock2GetRealNetworkInterfaces;
+}
+
+::java::util::Vector*
+java::net::NetworkInterface::getRealNetworkInterfaces ()
+{
+  static PfnGetRealNetworkInterfaces pfn =
+    determineGetRealNetworkInterfacesFN ();
+    
+  jstring arIFName[MAX_INTERFACES];
+  InetAddress* arpInetAddress[MAX_INTERFACES];
+  ::java::util::Vector* ht = new ::java::util::Vector ();
+  
+  int nNbInterfaces = (*pfn) (arIFName, arpInetAddress);
+  for (int i=0; i < nNbInterfaces; ++i) 
+    {
+      ht->add (new java::net::NetworkInterface (arIFName[i],
+        arpInetAddress[i]));
+    }
+    
+  return ht;
+}

@@ -11,11 +11,14 @@ details.  */
 #ifndef __JV_WIN32_H__
 #define __JV_WIN32_H__
 
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#undef WIN32_LEAN_AND_MEAN
 #undef STRICT
 
 #include <ws2tcpip.h>
 #include <gcj/cni.h>
+#include <jvm.h>
 #include <java/util/Properties.h>
 
 #include <io.h>
@@ -40,21 +43,58 @@ details.  */
 // with the JNICALL definition in jni.h
 #define _Jv_platform_ffi_abi FFI_STDCALL
 
-#ifndef DISABLE_JAVA_NET
+/* Useful helper classes and methods. */
 
-// these errors cannot occur on Win32
-#define ENOTCONN 0
-#define ECONNRESET 0
+/* A C++ wrapper around a WSAEVENT which closes the event
+	 in its destructor. If dwSelFlags is non-zero, we also
+	 issue an WSAEventSelect on the socket descriptor with
+	 the given flags; this is undone by a corresponding call
+	 to WSAEventSelect(fd, 0, 0) in our destructor. */
+class WSAEventWrapper
+{
+public:
+	WSAEventWrapper(int fd, DWORD dwSelFlags);
+	~WSAEventWrapper();
 
-#ifndef ENOPROTOOPT
-#define ENOPROTOOPT 109
-#endif
+	WSAEVENT getEventHandle()
+	{
+		return m_hEvent;
+	}
 
-#endif // DISABLE_JAVA_NET
+private:
+	WSAEVENT m_hEvent;
+	int m_fd;
+	DWORD m_dwSelFlags;
+};
 
+// Error string text. The int argument is compatible
+// with both int WSAGetLastError() and DWORD GetLastError()
+// I tried avoiding having to pass the error explicitly, but
+// it didn't work this was invoked with say
+// throw new SomeException(_Jv_WinStrError()).
+extern jstring
+_Jv_WinStrError (LPCTSTR lpszPrologue, int nErrorCode);
+
+extern jstring
+_Jv_WinStrError (int nErrorCode);
+
+extern void
+_Jv_ThrowIOException (DWORD dwErrorCode);
+
+extern void
+_Jv_ThrowIOException ();
+
+extern void
+_Jv_ThrowSocketException (DWORD dwErrorCode);
+
+extern void
+_Jv_ThrowSocketException ();
+
+// Platform implementation
 extern void _Jv_platform_initialize (void);
 extern void _Jv_platform_initProperties (java::util::Properties*);
 extern jlong _Jv_platform_gettimeofday ();
+extern int _Jv_select (int n, fd_set *, fd_set *, fd_set *, struct timeval *);
 
 inline void
 _Jv_platform_close_on_exec (jint)
@@ -76,58 +116,6 @@ _Jv_platform_usleep (unsigned long usecs)
     }
 }
 #endif /* JV_HASH_SYNCHRONIZATION */
-
-#ifndef DISABLE_JAVA_NET
-
-static inline int
-_Jv_socket (int domain, int type, int protocol)
-{
-  return ::socket (domain, type, protocol);
-}
-
-inline int
-_Jv_connect (jint fd, sockaddr *ptr, int len)
-{
-  return ::connect (fd, ptr, len);
-}
-
-inline int
-_Jv_close (jint fd)
-{
-  return ::closesocket (fd);
-}
-
-inline int
-_Jv_bind (int fd, struct sockaddr *addr, int addrlen)
-{
-  return ::bind (fd, addr, addrlen);
-}
-
-inline int
-_Jv_accept (int fd, struct sockaddr *addr, socklen_t *addrlen)
-{
-  return ::accept (fd, addr, addrlen);
-}
-
-inline int
-_Jv_listen (int fd, int backlog)
-{
-  return ::listen (fd, backlog);
-}
-
-inline int
-_Jv_write(int s, void *buf, int len)
-{
-  return ::send (s, (char*) buf, len, 0);
-}
-
-inline int
-_Jv_read(int s, void *buf, int len)
-{
-  return ::recv (s, (char*) buf, len, 0);
-}
-
-#endif /* DISABLE_JAVA_NET */
 
 /* Store up to SIZE return address of the current program state in
    ARRAY and return the exact number of values stored.  */
