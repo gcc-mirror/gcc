@@ -1,3 +1,8 @@
+2002-02-07  Tom Tromey  <tromey@redhat.com>
+
+	* configure: Rebuilt.
+	* configure.in: Removed unnecessary parens.
+
 2002-02-06  Adam Megacz <adam@xwt.org>
 
        * configure.in: Changed mingw) to *mingw*).
