@@ -1988,7 +1988,7 @@ struct lang_decl
    && DECL_NAME (NODE) == base_dtor_identifier)
 
 /* Nonzero if NODE (a FUNCTION_DECL) is a destructor for a complete
-   object.  */
+   object that deletes the object after it has been destroyed.  */
 #define DECL_DELETING_DESTRUCTOR_P(NODE)		\
   (DECL_DESTRUCTOR_P (NODE) 				\
    && DECL_NAME (NODE) == deleting_dtor_identifier)
@@ -3218,12 +3218,21 @@ typedef enum access_kind {
   ak_private = 3           /* Accessible, as a `private' thing.  */
 } access_kind;
 
+/* The various kinds of special functions.  If you add to this list,
+   you should update special_function_p as well.  */
 typedef enum special_function_kind {
-  sfk_none,                /* Not a special function.  */
+  sfk_none = 0,            /* Not a special function.  This enumeral
+			      must have value zero; see
+			      special_function_p.  */
   sfk_constructor,         /* A constructor.  */
   sfk_copy_constructor,    /* A copy constructor.  */
   sfk_assignment_operator, /* An assignment operator.  */
   sfk_destructor,          /* A destructor.  */
+  sfk_complete_destructor, /* A destructor for complete objects.  */
+  sfk_base_destructor,     /* A destructor for base subobjects.  */
+  sfk_deleting_destructor, /* A destructor for complete objects that
+			      deletes the object after it has been
+			      destroyed.  */
   sfk_conversion           /* A conversion operator.  */
 } special_function_kind;
 
@@ -4527,6 +4536,7 @@ extern void remap_save_expr                     PARAMS ((tree *, splay_tree, tre
 #define cp_build_qualified_type(TYPE, QUALS) \
   cp_build_qualified_type_real ((TYPE), (QUALS), /*complain=*/1)
 extern tree build_shared_int_cst                PARAMS ((int));
+extern special_function_kind special_function_p PARAMS ((tree));
 
 /* in typeck.c */
 extern int string_conv_p			PARAMS ((tree, tree, int));

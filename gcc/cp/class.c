@@ -2284,18 +2284,21 @@ static int
 overrides (fndecl, base_fndecl)
      tree fndecl, base_fndecl;
 {
-  /* Destructors have special names.  */
-  if (DECL_DESTRUCTOR_P (base_fndecl) && DECL_DESTRUCTOR_P (fndecl))
+  /* One destructor overrides another if they are the same kind of
+     destructor.  */
+  if (DECL_DESTRUCTOR_P (base_fndecl) && DECL_DESTRUCTOR_P (fndecl)
+      && special_function_p (base_fndecl) == special_function_p (fndecl))
     return 1;
+  /* But a non-destructor never overrides a destructor, nor vice
+     versa, nor do different kinds of destructors override
+     one-another.  For example, a complete object destructor does not
+     override a deleting destructor.  */
   if (DECL_DESTRUCTOR_P (base_fndecl) || DECL_DESTRUCTOR_P (fndecl))
     return 0;
+
   if (DECL_NAME (fndecl) == DECL_NAME (base_fndecl))
     {
       tree types, base_types;
-#if 0
-      retypes = TREE_TYPE (TREE_TYPE (fndecl));
-      base_retypes = TREE_TYPE (TREE_TYPE (base_fndecl));
-#endif
       types = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
       base_types = TYPE_ARG_TYPES (TREE_TYPE (base_fndecl));
       if ((TYPE_QUALS (TREE_TYPE (TREE_VALUE (base_types)))

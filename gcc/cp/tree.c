@@ -2413,3 +2413,34 @@ cp_unsave (tp)
   /* Clean up.  */
   splay_tree_delete (st);
 }
+
+/* Returns the kind of special function that DECL (a FUNCTION_DECL)
+   is.  Note that this sfk_none is zero, so this function can be used
+   as a predicate to test whether or not DECL is a special function.  */
+
+special_function_kind
+special_function_p (decl)
+     tree decl;
+{
+  /* Rather than doing all this stuff with magic names, we should
+     probably have a field of type `special_function_kind' in
+     DECL_LANG_SPECIFIC.  */
+  if (DECL_COPY_CONSTRUCTOR_P (decl))
+    return sfk_copy_constructor;
+  if (DECL_CONSTRUCTOR_P (decl))
+    return sfk_constructor;
+  if (DECL_NAME (decl) == ansi_opname[(int) MODIFY_EXPR])
+    return sfk_assignment_operator;
+  if (DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (decl))
+    return sfk_destructor;
+  if (DECL_COMPLETE_DESTRUCTOR_P (decl))
+    return sfk_complete_destructor;
+  if (DECL_BASE_DESTRUCTOR_P (decl))
+    return sfk_base_destructor;
+  if (DECL_DELETING_DESTRUCTOR_P (decl))
+    return sfk_deleting_destructor;
+  if (DECL_CONV_FN_P (decl))
+    return sfk_conversion;
+
+  return sfk_none;
+}

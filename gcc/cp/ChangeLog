@@ -1,3 +1,14 @@
+2000-05-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (special_function_kind): Add various kinds of
+	destructors.
+	(special_function_p): New function.
+	* class.c (overrides): Don't let one kind of destructor override
+	another.
+	* decl2.c (mark_used): Use DECL_NON_THUNK_FUNCTION_P when deciding
+	whether or not to instantiate a template.
+	* tree.c (special_function_p): Define.
+
 2000-05-03  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.def (THUNK_DECL): Remove.
