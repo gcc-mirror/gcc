@@ -487,7 +487,7 @@ BYTECODE_H = bytecode.h bc-emit.h bc-optab.h
 
 Makefile: $(srcdir)/Makefile.in $(srcdir)/configure $(srcdir)/version.c \
    $(srcdir)/config/$(xmake_file) $(srcdir)/config/$(tmake_file)
-	sh config.status
+	$(SHELL) config.status
 
 all.internal: start.encap rest.encap
 # This is what to compile if making a cross-compiler.
@@ -1543,7 +1543,7 @@ stmp-fixinc: $(srcdir)/$(FIXINCLUDES) gsyslimits.h fixinc.ready
 	  for dir in $(SYSTEM_HEADER_DIR) $(OTHER_FIXINCLUDES_DIRS); do \
 	    if [ -d $$dir ]; \
 	    then \
-	      $(srcdir)/$(FIXINCLUDES) include $$dir $(srcdir) "`pwd`/xgcc -B`pwd`/"; \
+	      $(SHELL) $(srcdir)/$(FIXINCLUDES) include $$dir $(srcdir) "`pwd`/xgcc -B`pwd`/"; \
 	    else true; fi; \
 	  done; \
 	else true; \
@@ -1575,7 +1575,7 @@ objc-headers: stmp-fixinc
 deduced.h: $(GCC_PASSES) $(srcdir)/scan-types.sh stmp-int-hdrs
 	CC="$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) -I. -I$(srcdir) -Iinclude -I${SYSTEM_HEADER_DIR}"; \
 	  export CC; \
-	  $(srcdir)/scan-types.sh "$(srcdir)" >tmp-deduced.h
+	  $(SHELL) $(srcdir)/scan-types.sh "$(srcdir)" >tmp-deduced.h
 	mv tmp-deduced.h deduced.h
 
 gen-protos: gen-protos.o scan.o $(HOST_LIBDEPS)
@@ -1625,7 +1625,7 @@ stmp-fixproto: fixhdr.ready fixproto stmp-headers
 	if [ -f include/fixed ] ; then true; \
 	else \
 	  CPP="$(GCC_FOR_TARGET) -E"; export CPP; \
-	    ${srcdir}/fixproto include include $(SYSTEM_HEADER_DIR); \
+	    $(SHELL) ${srcdir}/fixproto include include $(SYSTEM_HEADER_DIR); \
 	  touch include/fixed; \
 	fi
 	touch stmp-fixproto
