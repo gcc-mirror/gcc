@@ -1,3 +1,8 @@
+Fri May 15 17:42:52 1998  Bob Manson  <manson@charmed.cygnus.com>
+
+	* config/rs6000/rs6000.c (rs6000_stack_info): Align the stack bottom
+	to an 8-byte boundary if info_ptr->fpmem_p.
+
 Fri May 15 17:36:11 1998  Bill Moyer <ttk@cygnus.com>
 
         * loop.c (basic_induction_var): Added test preventing

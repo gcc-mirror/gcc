@@ -3205,6 +3205,13 @@ rs6000_stack_info ()
 	info_ptr->cr_size = reg_size;
     }
 
+  /* Ensure that fp_save_offset will be aligned to an 8-byte boundary. */
+  if (info_ptr->fpmem_p)
+    {
+      info_ptr->gp_size = RS6000_ALIGN (info_ptr->gp_size, 8);
+      info_ptr->main_size = RS6000_ALIGN (info_ptr->main_size, 8);
+    }
+
   /* Determine various sizes */
   info_ptr->reg_size     = reg_size;
   info_ptr->fixed_size   = RS6000_SAVE_AREA;
