@@ -1,3 +1,11 @@
+2003-07-25  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/rs6000.c (is_ev64_opaque_type): Only check pointer
+	equality.
+	(spe_init_builtins): Declare __ev64_opaque__ as a builtin type.
+
+	* config/rs6000/spe.h: Remove __ev64_opaque__ definition.
+
 2003-07-25  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* doc/passes.texi (Passes): Mention pretty-printing and

@@ -45,7 +45,6 @@ typedef unsigned 		__vector __ev64_u32__;
 typedef long long 		__vector __ev64_s64__;
 typedef unsigned long long 	__vector __ev64_u64__;
 typedef float 			__vector __ev64_fs__;
-typedef int 			__vector __ev64_opaque__;
 
 #define __v2si __ev64_opaque__
 #define __v2sf __ev64_fs__
