@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include "reload.h"
 #include "output.h"
 #include "defaults.h"
+#include "dwarfout.h"
 #include "toplev.h"
 
 #if defined(DWARF_TIMESTAMPS)

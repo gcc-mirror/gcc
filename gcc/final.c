@@ -72,6 +72,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Get N_SLINE and N_SOL from stab.h if we can expect the file to exist.  */
 #if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
+#include "dbxout.h"
 #if defined (USG) || defined (NO_STAB_H)
 #include "gstab.h"  /* If doing DBX on sysV, use our own stab.h.  */
 #else
@@ -81,6 +82,18 @@ Boston, MA 02111-1307, USA.  */
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"
+#endif
+
+#ifdef DWARF_DEBUGGING_INFO
+#include "dwarfout.h"
+#endif
+
+#if defined (DWARF2_UNWIND_INFO) || defined (DWARF2_DEBUGGING_INFO)
+#include "dwarf2out.h"
+#endif
+
+#ifdef SDB_DEBUGGING_INFO
+#include "sdbout.h"
 #endif
 
 /* .stabd code for line number.  */

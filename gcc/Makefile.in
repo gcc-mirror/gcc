@@ -1385,7 +1385,8 @@ stor-layout.o : stor-layout.c $(CONFIG_H) system.h $(TREE_H) flags.h \
 fold-const.o : fold-const.c $(CONFIG_H) system.h $(TREE_H) flags.h toplev.h
 toplev.o : toplev.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) \
    flags.h input.h insn-attr.h xcoffout.h defaults.h output.h \
-   insn-codes.h insn-config.h recog.h Makefile toplev.h \
+   insn-codes.h insn-config.h recog.h Makefile toplev.h dwarfout.h \
+   dwarf2out.h sdbout.h dbxout.h \
    $(lang_options_files)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(MAYBE_USE_COLLECT2) \
 	  -DTARGET_NAME=\"$(target_alias)\" \
@@ -1420,15 +1421,15 @@ explow.o : explow.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
 optabs.o : optabs.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h  \
    insn-flags.h insn-config.h insn-codes.h expr.h $(RECOG_H) reload.h
 dbxout.o : dbxout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) flags.h regs.h \
-   insn-config.h reload.h gstab.h xcoffout.h defaults.h output.h
+   insn-config.h reload.h gstab.h xcoffout.h defaults.h output.h dbxout.h
 sdbout.o : sdbout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) flags.h except.h \
    function.h expr.h output.h hard-reg-set.h regs.h defaults.h real.h \
-   insn-config.h obstack.h xcoffout.h c-pragma.h
+   insn-config.h obstack.h xcoffout.h c-pragma.h sdbout.h
 dwarfout.o : dwarfout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) dwarf.h \
-   flags.h insn-config.h reload.h output.h defaults.h toplev.h
+   flags.h insn-config.h reload.h output.h defaults.h toplev.h dwarfout.h
 dwarf2out.o : dwarf2out.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) dwarf2.h \
    flags.h insn-config.h insn-codes.h reload.h output.h defaults.h \
-   hard-reg-set.h regs.h expr.h toplev.h
+   hard-reg-set.h regs.h expr.h toplev.h dwarf2out.h
 xcoffout.o : xcoffout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) xcoffout.h \
    flags.h
 emit-rtl.o : emit-rtl.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
@@ -1490,7 +1491,7 @@ $(SCHED_PREFIX)sched.o : $(SCHED_PREFIX)sched.c $(CONFIG_H) system.h $(RTL_H) \
 final.o : final.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h regs.h \
    $(RECOG_H) conditions.h insn-config.h insn-attr.h except.h real.h output.h \
    hard-reg-set.h insn-flags.h insn-codes.h gstab.h xcoffout.h defaults.h \
-   toplev.h reload.h
+   toplev.h reload.h dwarfout.h dwarf2out.h sdbout.h dbxout.h
 recog.o : recog.c $(CONFIG_H) system.h $(RTL_H)  \
    regs.h $(RECOG_H) hard-reg-set.h flags.h insn-config.h insn-attr.h \
    insn-flags.h insn-codes.h real.h
