@@ -1,5 +1,7 @@
 2000-07-09  Jason Merrill  <jason@redhat.com>
 
+	* expr.c (expand_expr): Bail earlier if we get an error_mark_node.
+
 	* tree.h (STRIP_NOPS): Check for error_mark_node.
 	(STRIP_SIGN_NOPS, STRIP_TYPE_NOPS): Likewise.
 	(dwarf2out_*): Remove duplicate declarations.
