@@ -1,3 +1,7 @@
+2002-12-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* doc/include/gcc-common.texi: Change version number to 3.4.
+
 2002-12-16  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/fixlib.h: add: #include <signal.h>
