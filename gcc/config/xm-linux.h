@@ -25,6 +25,12 @@ Boston, MA 02111-1307, USA.  */
 #undef  HAVE_POPEN
 #define HAVE_POPEN
 
+#undef  HAVE_PUTENV
+#define HAVE_PUTENV
+
+#undef  HAVE_ATEXIT
+#define HAVE_ATEXIT
+
 #undef  POSIX
 #define POSIX
 
