@@ -298,9 +298,9 @@ bmp_iter_single_init (bitmap_iterator *bi, bitmap bmp, unsigned min)
    were processed.  */
 
 static inline bool
-bmp_iter_end_p (bitmap_iterator bi)
+bmp_iter_end_p (const bitmap_iterator *bi)
 {
-  return bi.ptr1 == NULL;
+  return bi->ptr1 == NULL;
 }
 
 /* Moves the iterator BI to the next bit of bitmap and returns the bit
@@ -319,7 +319,7 @@ bmp_iter_single_next (bitmap_iterator *bi)
 
 #define EXECUTE_IF_SET_IN_BITMAP(BITMAP, MIN, BITNUM, ITER)		\
   for ((BITNUM) = bmp_iter_single_init (&(ITER), (BITMAP), (MIN));	\
-       !bmp_iter_end_p (ITER);					\
+       !bmp_iter_end_p (&(ITER));					\
        (BITNUM) = bmp_iter_single_next (&(ITER)))
 
 /* Moves the iterator BI to the first set bit on or after the current
@@ -448,7 +448,7 @@ bmp_iter_and_not_next (bitmap_iterator *bi)
 
 #define EXECUTE_IF_AND_COMPL_IN_BITMAP(BMP1, BMP2, MIN, BITNUM, ITER)	\
   for ((BITNUM) = bmp_iter_and_not_init (&(ITER), (BMP1), (BMP2), (MIN)); \
-       !bmp_iter_end_p (ITER);						\
+       !bmp_iter_end_p (&(ITER));						\
        (BITNUM) = bmp_iter_and_not_next (&(ITER)))
 
 /* Moves the iterator BI to the first set bit on or after the current
@@ -592,7 +592,7 @@ bmp_iter_and_next (bitmap_iterator *bi)
 
 #define EXECUTE_IF_AND_IN_BITMAP(BMP1, BMP2, MIN, BITNUM, ITER)		\
   for ((BITNUM) = bmp_iter_and_init (&(ITER), (BMP1), (BMP2), (MIN));	\
-       !bmp_iter_end_p (ITER);						\
+       !bmp_iter_end_p (&(ITER));						\
        (BITNUM) = bmp_iter_and_next (&(ITER)))
 
 #endif /* GCC_BITMAP_H */
