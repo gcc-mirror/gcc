@@ -1,3 +1,30 @@
+2001-11-19  Phil Edwards  <pme@gcc.gnu.org>
+
+	* docs/doxygen/Intro.3:  More notes.
+	* docs/doxygen/style.css:  Update to default style from Doxygen 1.2.10.
+	* include/bits/stl_algobase.h:  Add doxygen hooks for functions.
+	* include/ext/hash_map:  Add @file hook.
+	* include/ext/hash_set:  Likewise.
+	* include/ext/rope:  Likewise.
+	* include/ext/ropeimpl.h:  Likewise.
+	* include/ext/slist:  Likewise.
+	* include/ext/stl_hash_fun.h:  Likewise.
+	* include/ext/stl_hashtable.h:  Likewise.
+	* include/ext/stl_rope.h:  Likewise.
+
+	* docs/html/17_intro/license.html:  Remove "experimental" sentence.
+	* docs/html/19_diagnostics/howto.html:  Document new verbose
+	terminate handler.
+	* testsuite/27_io/filebuf.cc:  Fix comment, move tweakable parameter
+	to more visible (closer to description) position.
+
+	* libsupc++/eh_type.cc:  Formatting tweak.
+	* libsupc++/exception:  Likewise.
+	* src/vterminate.cc:  Likewise.
+
+	* docs/html/17_intro/porting.html:  Regenerate.
+	* docs/html/faq/index.txt:  Regenerate.
+
 2001-11-18  Jason Merrill  <jason@redhat.com>
 
 	* libsupc++/eh_personality.cc (__cxa_call_unexpected): Take void*.

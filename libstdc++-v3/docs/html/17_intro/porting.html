@@ -115,8 +115,8 @@ stream (or one hooked to a pipe) is not allowed by the OS.  In this
 case, getc()/ungetc() will be used at some key locations in the library
 implementation instead of fseek().  Currently, the code path to avoid
 fseek() is only enabled when the seek size is 1 character away from the
-current stream position.  This is known to improve *-unknown-freebsd*
-and sparc-sun-solaris2.*.
+current stream position.  This is known to improve *-unknown-freebsd*,
+sparc-sun-solaris2.* and *-*-mingw32*.
 
 <p>Finally, you should bracket the entire file in an include-guard, like
 this:

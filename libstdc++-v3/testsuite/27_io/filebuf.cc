@@ -19,11 +19,15 @@
 // USA.
 
 // NB: this test assumes that _M_buf_size == 40, and not the usual
-// buffer_size length of 8092, so that overflow/underflow can be
+// buffer_size length of BUFSIZ (8192), so that overflow/underflow can be
 // simulated a bit more readily.
+// NRB (Nota Really Bene): setting it to 40 breaks the test, as intended.
 
 // @require@ %-*.tst %-*.txt
 // @diff@ %-*.tst %*.txt
+
+const int buffer_size = 8192;
+//const int buffer_size = 40;
 
 #include <fstream>
 #include <iostream>
@@ -45,8 +49,6 @@ class derived_filebuf: public std::filebuf
 derived_filebuf fb_01; // in 
 derived_filebuf fb_02; // out
 derived_filebuf fb_03; // in | out
-
-const int buffer_size = 8192;
 
 
 // initialize filebufs to be the same size regardless of platform
