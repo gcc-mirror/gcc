@@ -1,6 +1,6 @@
 // ostream classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -388,7 +388,7 @@ namespace std
 	  if (traits_type::eq_int_type(__put, traits_type::eof()))
 	    this->setstate(ios_base::badbit);
 	}
-      return *this;
+      return *this;  
     }
 
   template<typename _CharT, typename _Traits>
@@ -397,11 +397,7 @@ namespace std
     {
       sentry __cerb(*this);
       if (__cerb)
-	{
-	  streamsize __put = this->rdbuf()->sputn(__s, __n);
-	  if ( __put != __n)
-	    this->setstate(ios_base::badbit);
-	}
+	_M_write(__s, __n);
       return *this;
     }
 
@@ -488,7 +484,7 @@ namespace std
 						 &__c, __w, __len, false);
 		  __len = __w;
 		}
-	      __out.write(__pads, __len);
+	      __out._M_write(__pads, __len);
 	      __out.width(0);
 	    }
 	  catch(exception& __fail)
@@ -524,7 +520,7 @@ namespace std
 					       &__c, __w, __len, false);
 		  __len = __w;
 		}
-	      __out.write(__pads, __len);
+	      __out._M_write(__pads, __len);
 	      __out.width(0);
 	    }
 	  catch(exception& __fail)
@@ -559,7 +555,7 @@ namespace std
 		  __s = __pads;
 		  __len = __w;
 		}
-	      __out.write(__s, __len);
+	      __out._M_write(__s, __len);
 	      __out.width(0);
 	    }
 	  catch(exception& __fail)
@@ -608,7 +604,7 @@ namespace std
 		  __str = __pads;
 		  __len = __w;
 		}
-	      __out.write(__str, __len);
+	      __out._M_write(__str, __len);
 	      __out.width(0);
 	    }
 	  catch(exception& __fail)
@@ -647,7 +643,7 @@ namespace std
 		  __s = __pads;
 		  __len = __w;
 		}
-	      __out.write(__s, __len);
+	      __out._M_write(__s, __len);
 	      __out.width(0);
 	    }
 	  catch(exception& __fail)
@@ -688,10 +684,8 @@ namespace std
 	      __s = __pads;
 	      __len = __w;
 	    }
-	  streamsize __res = __out.rdbuf()->sputn(__s, __len);
+	  __out._M_write(__s, __len);
 	  __out.width(0);
-	  if (__res != __len)
-	    __out.setstate(ios_base::failbit);
 	}
       return __out;
     }

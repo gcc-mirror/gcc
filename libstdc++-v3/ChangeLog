@@ -1,3 +1,14 @@
+2003-02-04  Jerry Quinn  <jlquinn@optonline.net>
+
+	* include/std/std_ostream.h (ostream::_M_write): Declare.	
+        * ostream.tcc (ostream::_M_write): Define.
+	(basic_ostream::write): Use it.
+	(operator<<(basic_ostream, _CharT)): Ditto.
+	(operator<<(basic_ostream, char)): Ditto.
+	(operator<<(basic_ostream, _CharT*)): Ditto.
+	(operator<<(basic_ostream, char*)): Ditto.
+	(operator<<(basic_ostream, basic_string)): Ditto.
+
 2003-02-04  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/26_numerics/valarray_name_lookup.cc: Fix.
@@ -67,7 +78,8 @@
 	* include/bits/valarray_before.h (_UnBase::operator[]): Apply unary
 	operator.
 
-	* include/bits/valarray_before.h (__not_equal_to): Use != instead of ==.
+	* include/bits/valarray_before.h (__not_equal_to): Use != instead
+	of ==.
 
 	* testsuite/26_numerics/valarray_operators.cc: New test.
 
