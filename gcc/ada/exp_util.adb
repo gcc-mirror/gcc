@@ -969,6 +969,42 @@ package body Exp_Util is
       return New_Copy_Tree (Exp);
    end Duplicate_Subexpr;
 
+   ---------------------------------
+   -- Duplicate_Subexpr_No_Checks --
+   ---------------------------------
+
+   function Duplicate_Subexpr_No_Checks
+     (Exp      : Node_Id;
+      Name_Req : Boolean := False)
+      return     Node_Id
+   is
+      New_Exp : Node_Id;
+
+   begin
+      Remove_Side_Effects (Exp, Name_Req);
+      New_Exp := New_Copy_Tree (Exp);
+      Remove_Checks (New_Exp);
+      return New_Exp;
+   end Duplicate_Subexpr_No_Checks;
+
+   -----------------------------------
+   -- Duplicate_Subexpr_Move_Checks --
+   -----------------------------------
+
+   function Duplicate_Subexpr_Move_Checks
+     (Exp      : Node_Id;
+      Name_Req : Boolean := False)
+      return     Node_Id
+   is
+      New_Exp : Node_Id;
+
+   begin
+      Remove_Side_Effects (Exp, Name_Req);
+      New_Exp := New_Copy_Tree (Exp);
+      Remove_Checks (Exp);
+      return New_Exp;
+   end Duplicate_Subexpr_Move_Checks;
+
    --------------------
    -- Ensure_Defined --
    --------------------
@@ -2310,7 +2346,8 @@ package body Exp_Util is
         Make_Op_Subtract (Loc,
           Left_Opnd =>
             Make_Attribute_Reference (Loc,
-              Prefix         => OK_Convert_To (T, Duplicate_Subexpr (E)),
+              Prefix =>
+                OK_Convert_To (T, Duplicate_Subexpr_No_Checks (E)),
               Attribute_Name => Name_Size),
           Right_Opnd =>
             Make_Attribute_Reference (Loc,
@@ -2452,7 +2489,9 @@ package body Exp_Util is
          Utyp        := Underlying_Type (Unc_Typ);
          Full_Subtyp := Make_Defining_Identifier (Loc,
                           New_Internal_Name ('C'));
-         Full_Exp    := Unchecked_Convert_To (Utyp, Duplicate_Subexpr (E));
+         Full_Exp    :=
+           Unchecked_Convert_To
+             (Utyp, Duplicate_Subexpr_No_Checks (E));
          Set_Parent (Full_Exp, Parent (E));
 
          Priv_Subtyp :=
@@ -2490,13 +2529,14 @@ package body Exp_Util is
               Make_Range (Loc,
                 Low_Bound =>
                   Make_Attribute_Reference (Loc,
-                    Prefix => Duplicate_Subexpr (E),
+                    Prefix => Duplicate_Subexpr_No_Checks (E),
                     Attribute_Name => Name_First,
                     Expressions => New_List (
                       Make_Integer_Literal (Loc, J))),
+
                 High_Bound =>
                   Make_Attribute_Reference (Loc,
-                    Prefix         => Duplicate_Subexpr (E),
+                    Prefix         => Duplicate_Subexpr_No_Checks (E),
                     Attribute_Name => Name_Last,
                     Expressions    => New_List (
                       Make_Integer_Literal (Loc, J)))));
@@ -2530,7 +2570,7 @@ package body Exp_Util is
 
             Append_To (List_Constr,
               Make_Selected_Component (Loc,
-                Prefix        => Duplicate_Subexpr (E),
+                Prefix        => Duplicate_Subexpr_No_Checks (E),
                 Selector_Name => New_Reference_To (D, Loc)));
 
             Next_Discriminant (D);

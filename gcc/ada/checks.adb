@@ -2918,6 +2918,104 @@ package body Checks is
         or else Vax_Float (E);
    end Range_Checks_Suppressed;
 
+   -------------------
+   -- Remove_Checks --
+   -------------------
+
+   procedure Remove_Checks (Expr : Node_Id) is
+      Discard : Traverse_Result;
+
+      function Process (N : Node_Id) return Traverse_Result;
+      --  Process a single node during the traversal
+
+      function Traverse is new Traverse_Func (Process);
+      --  The traversal function itself
+
+      -------------
+      -- Process --
+      -------------
+
+      function Process (N : Node_Id) return Traverse_Result is
+      begin
+         if Nkind (N) not in N_Subexpr then
+            return Skip;
+         end if;
+
+         Set_Do_Range_Check (N, False);
+
+         case Nkind (N) is
+            when N_And_Then =>
+               Discard := Traverse (Left_Opnd (N));
+               return Skip;
+
+            when N_Attribute_Reference =>
+               Set_Do_Access_Check (N, False);
+               Set_Do_Overflow_Check (N, False);
+
+            when N_Explicit_Dereference =>
+               Set_Do_Access_Check (N, False);
+
+            when N_Function_Call =>
+               Set_Do_Tag_Check (N, False);
+
+            when N_Indexed_Component =>
+               Set_Do_Access_Check (N, False);
+
+            when N_Op =>
+               Set_Do_Overflow_Check (N, False);
+
+               case Nkind (N) is
+                  when N_Op_Divide =>
+                     Set_Do_Division_Check (N, False);
+
+                  when N_Op_And =>
+                     Set_Do_Length_Check (N, False);
+
+                  when N_Op_Mod =>
+                     Set_Do_Division_Check (N, False);
+
+                  when N_Op_Or =>
+                     Set_Do_Length_Check (N, False);
+
+                  when N_Op_Rem =>
+                     Set_Do_Division_Check (N, False);
+
+                  when N_Op_Xor =>
+                     Set_Do_Length_Check (N, False);
+
+                  when others =>
+                     null;
+               end case;
+
+            when N_Or_Else =>
+               Discard := Traverse (Left_Opnd (N));
+               return Skip;
+
+            when N_Selected_Component =>
+               Set_Do_Access_Check (N, False);
+               Set_Do_Discriminant_Check (N, False);
+
+            when N_Slice =>
+               Set_Do_Access_Check (N, False);
+
+            when N_Type_Conversion =>
+               Set_Do_Length_Check (N, False);
+               Set_Do_Overflow_Check (N, False);
+               Set_Do_Tag_Check (N, False);
+
+            when others =>
+               null;
+         end case;
+
+         return OK;
+      end Process;
+
+   --  Start of processing for Remove_Checks
+
+   begin
+      Discard := Traverse (Expr);
+   end Remove_Checks;
+
    ----------------------------
    -- Selected_Length_Checks --
    ----------------------------

@@ -32,6 +32,7 @@ with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
 with Eval_Fat; use Eval_Fat;
+with Exp_Util; use Exp_Util;
 with Nmake;    use Nmake;
 with Nlists;   use Nlists;
 with Opt;      use Opt;
@@ -126,14 +127,6 @@ package body Sem_Eval is
    -----------------------
    -- Local Subprograms --
    -----------------------
-
-   function Constant_Array_Ref (Op : Node_Id) return Node_Id;
-   --  The caller has checked that Op is an array reference (i.e. that its
-   --  node kind is N_Indexed_Component). If the array reference is constant
-   --  at compile time, and yields a constant value of a discrete type, then
-   --  the expression node for the constant value is returned. otherwise Empty
-   --  is returned. This is used by Compile_Time_Known_Value, as well as by
-   --  Expr_Value and Expr_Rep_Value.
 
    function From_Bits (B : Bits; T : Entity_Id) return Uint;
    --  Converts a bit string of length B'Length to a Uint value to be used
@@ -730,7 +723,6 @@ package body Sem_Eval is
    function Compile_Time_Known_Value (Op : Node_Id) return Boolean is
       K      : constant Node_Kind := Nkind (Op);
       CV_Ent : CV_Entry renames CV_Cache (Nat (Op) mod CV_Cache_Size);
-      Val    : Node_Id;
 
    begin
       --  Never known at compile time if bad type or raises constraint error
@@ -800,17 +792,6 @@ package body Sem_Eval is
 
          elsif K = N_Attribute_Reference then
             return Attribute_Name (Op) = Name_Null_Parameter;
-
-         --  A reference to an element of a constant array may be constant.
-
-         elsif K = N_Indexed_Component then
-            Val := Constant_Array_Ref (Op);
-
-            if Present (Val) then
-               CV_Ent.N := Op;
-               CV_Ent.V := Expr_Value (Val);
-               return True;
-            end if;
          end if;
       end if;
 
@@ -907,58 +888,6 @@ package body Sem_Eval is
 
       end if;
    end Compile_Time_Known_Value_Or_Aggr;
-
-   ------------------------
-   -- Constant_Array_Ref --
-   ------------------------
-
-   function Constant_Array_Ref (Op : Node_Id) return Node_Id is
-   begin
-      if List_Length (Expressions (Op)) = 1
-        and then Is_Entity_Name (Prefix (Op))
-        and then Ekind (Entity (Prefix (Op))) = E_Constant
-      then
-         declare
-            Arr : constant Node_Id := Constant_Value (Entity (Prefix (Op)));
-            Sub : constant Node_Id := First (Expressions (Op));
-            Aty : constant Node_Id := Etype (Arr);
-
-            Lin : Nat;
-            --  Linear one's origin subscript value for array reference
-
-            Lbd : Node_Id;
-            --  Lower bound of the first array index
-
-            Elm : Node_Id;
-            --  Value from constant array
-
-         begin
-            if Ekind (Aty) = E_String_Literal_Subtype then
-               Lbd := String_Literal_Low_Bound (Aty);
-            else
-               Lbd := Type_Low_Bound (Etype (First_Index (Aty)));
-            end if;
-
-            if Compile_Time_Known_Value (Sub)
-              and then Nkind (Arr) = N_Aggregate
-              and then Compile_Time_Known_Value (Lbd)
-              and then Is_Discrete_Type (Component_Type (Aty))
-            then
-               Lin := UI_To_Int (Expr_Value (Sub) - Expr_Value (Lbd)) + 1;
-
-               if List_Length (Expressions (Arr)) >= Lin then
-                  Elm := Pick (Expressions (Arr), Lin);
-
-                  if Compile_Time_Known_Value (Elm) then
-                     return Elm;
-                  end if;
-               end if;
-            end if;
-         end;
-      end if;
-
-      return Empty;
-   end Constant_Array_Ref;
 
    -----------------
    -- Eval_Actual --
@@ -1140,7 +1069,6 @@ package body Sem_Eval is
       end if;
 
       Set_Is_Static_Expression (N, Stat);
-
    end Eval_Arithmetic_Op;
 
    ----------------------------
@@ -1344,8 +1272,9 @@ package body Sem_Eval is
    -- Eval_Indexed_Component --
    ----------------------------
 
-   --  Indexed components are never static, so the only required processing
-   --  is to perform the check for non-static context on the index values.
+   --  Indexed components are never static, so we need to perform the check
+   --  for non-static context on the index values. Then, we check if the
+   --  value can be obtained at compile time, even though it is non-static.
 
    procedure Eval_Indexed_Component (N : Node_Id) is
       Expr : Node_Id;
@@ -1357,6 +1286,74 @@ package body Sem_Eval is
          Next (Expr);
       end loop;
 
+      --  See if this is a constant array reference
+
+      if List_Length (Expressions (N)) = 1
+        and then Is_Entity_Name (Prefix (N))
+        and then Ekind (Entity (Prefix (N))) = E_Constant
+        and then Present (Constant_Value (Entity (Prefix (N))))
+      then
+         declare
+            Loc : constant Source_Ptr := Sloc (N);
+            Arr : constant Node_Id    := Constant_Value (Entity (Prefix (N)));
+            Sub : constant Node_Id    := First (Expressions (N));
+
+            Atyp : Entity_Id;
+            --  Type of array
+
+            Lin : Nat;
+            --  Linear one's origin subscript value for array reference
+
+            Lbd : Node_Id;
+            --  Lower bound of the first array index
+
+            Elm : Node_Id;
+            --  Value from constant array
+
+         begin
+            Atyp := Etype (Arr);
+
+            if Is_Access_Type (Atyp) then
+               Atyp := Designated_Type (Atyp);
+            end if;
+
+            --  If we have an array type (we should have but perhaps there
+            --  are error cases where this is not the case), then see if we
+            --  can do a constant evaluation of the array reference.
+
+            if Is_Array_Type (Atyp) then
+               if Ekind (Atyp) = E_String_Literal_Subtype then
+                  Lbd := String_Literal_Low_Bound (Atyp);
+               else
+                  Lbd := Type_Low_Bound (Etype (First_Index (Atyp)));
+               end if;
+
+               if Compile_Time_Known_Value (Sub)
+                 and then Nkind (Arr) = N_Aggregate
+                 and then Compile_Time_Known_Value (Lbd)
+                 and then Is_Discrete_Type (Component_Type (Atyp))
+               then
+                  Lin := UI_To_Int (Expr_Value (Sub) - Expr_Value (Lbd)) + 1;
+
+                  if List_Length (Expressions (Arr)) >= Lin then
+                     Elm := Pick (Expressions (Arr), Lin);
+
+                     --  If the resulting expression is compile time known,
+                     --  then we can rewrite the indexed component with this
+                     --  value, being sure to mark the result as non-static.
+                     --  We also reset the Sloc, in case this generates an
+                     --  error later on (e.g. 136'Access).
+
+                     if Compile_Time_Known_Value (Elm) then
+                        Rewrite (N, Duplicate_Subexpr_No_Checks (Elm));
+                        Set_Is_Static_Expression (N, False);
+                        Set_Sloc (N, Loc);
+                     end if;
+                  end if;
+               end if;
+            end if;
+         end;
+      end if;
    end Eval_Indexed_Component;
 
    --------------------------
@@ -2465,7 +2462,6 @@ package body Sem_Eval is
    function Expr_Rep_Value (N : Node_Id) return Uint is
       Kind : constant Node_Kind := Nkind (N);
       Ent  : Entity_Id;
-      Vexp : Node_Id;
 
    begin
       if Is_Entity_Name (N) then
@@ -2506,14 +2502,8 @@ package body Sem_Eval is
       then
          return Uint_0;
 
-      --  Array reference case
-
-      elsif Kind = N_Indexed_Component then
-         Vexp := Constant_Array_Ref (N);
-         pragma Assert (Present (Vexp));
-         return Expr_Rep_Value (Vexp);
-
       --  Otherwise must be character literal
+
       else
          pragma Assert (Kind = N_Character_Literal);
          Ent := Entity (N);
@@ -2541,7 +2531,6 @@ package body Sem_Eval is
       CV_Ent : CV_Entry renames CV_Cache (Nat (N) mod CV_Cache_Size);
       Ent    : Entity_Id;
       Val    : Uint;
-      Vexp   : Node_Id;
 
    begin
       --  If already in cache, then we know it's compile time known and
@@ -2592,13 +2581,6 @@ package body Sem_Eval is
         and then Attribute_Name (N) = Name_Null_Parameter
       then
          Val := Uint_0;
-
-      --  Array reference case
-
-      elsif Kind = N_Indexed_Component then
-         Vexp := Constant_Array_Ref (N);
-         pragma Assert (Present (Vexp));
-         Val := Expr_Value (Vexp);
 
       --  Otherwise must be character literal
 

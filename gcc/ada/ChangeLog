@@ -1,3 +1,50 @@
+2001-03-28  Robert Dewar <dewar@gnat.com>
+
+	* checks.ads:
+	(Remove_Checks): New procedure
+
+	* checks.adb:
+	(Remove_Checks): New procedure
+
+	* exp_util.adb:
+	Use new Duplicate_Subexpr functions
+	(Duplicate_Subexpr_No_Checks): New procedure
+	(Duplicate_Subexpr_No_Checks_Orig): New procedure
+	(Duplicate_Subexpr): Restore original form (checks duplicated)
+	(Duplicate_Subexpr): Call Remove_Checks
+
+	* exp_util.ads: 
+	(Duplicate_Subexpr_No_Checks): New procedure
+	(Duplicate_Subexpr_No_Checks_Orig): New procedure
+	Add 2002 to copyright notice
+
+	* sem_util.adb: Use new Duplicate_Subexpr functions
+
+	* sem_eval.adb: 	
+	(Eval_Indexed_Component): This is the place to call
+	Constant_Array_Ref and to replace the value. We simply merge
+	the code of this function in here, since it is now no longer
+	used elsewhere. This fixes the problem of the back end not
+	realizing we were clever enough to see that this was
+	constant.
+	(Expr_Val): Remove call to Constant_Array_Ref
+	(Expr_Rep_Val): Remove call to Constant_Array_Ref
+	Minor reformatting
+	(Constant_Array_Ref): Deal with string literals (patch
+	suggested by Zack Weinberg on the gcc list)
+
+2001-03-28  Ed Schonberg <schonber@gnat.com>
+
+	* exp_util.adb: Duplicate_Subexpr_No_Checks_Orig => 
+	Duplicate_Subexpr_Move_Checks.
+
+	* exp_util.ads: Duplicate_Subexpr_No_Checks_Orig => 
+	Duplicate_Subexpr_Move_Checks.
+
+	* sem_eval.adb: (Constant_Array_Ref): Verify that constant 
+	value of array exists before retrieving it (it may a private 
+	protected component in a function).
+
 2002-03-28   Geert Bosch <bosch@gnat.com>
 
 	* prj-pp.adb : New file.
