@@ -5,7 +5,7 @@
 
 2004-07-05  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
-	* tree-cfg.c (verify_expr): Use CHECK_OK in binary case.
+	* tree-cfg.c (verify_expr): Use CHECK_OP in binary case.
 
 	* function.c, langhooks-def.h, langhooks.h: Move max_size hook
 	to type hooks; remove bogus PARAMS.
