@@ -3745,27 +3745,23 @@ expand_assignment (tree to, tree from)
    with no sequence point.  Will other languages need this to
    be more thorough?
 
-   If WANT_VALUE & 2 is set, this is a store into a call param on the
+   If CALL_PARAM_P is nonzero, this is a store into a call param on the
    stack, and block moves may need to be treated specially.  */
 
 rtx
-store_expr (tree exp, rtx target, int want_value)
+store_expr (tree exp, rtx target, int call_param_p)
 {
   rtx temp;
   rtx alt_rtl = NULL_RTX;
   int dont_return_target = 0;
   int dont_store_target = 0;
 
-  /* The bit 0 of WANT_VALUE used to be used to request a value of the
-     expression.  This feature has been removed.  */
-  gcc_assert ((want_value & 1) == 0);
-
   if (VOID_TYPE_P (TREE_TYPE (exp)))
     {
       /* C++ can generate ?: expressions with a throw expression in one
 	 branch and an rvalue in the other. Here, we resolve attempts to
 	 store the throw expression's nonexistent result.  */
-      gcc_assert (!want_value);
+      gcc_assert (!call_param_p);
       expand_expr (exp, const0_rtx, VOIDmode, 0);
       return NULL_RTX;
     }
@@ -3774,8 +3770,8 @@ store_expr (tree exp, rtx target, int want_value)
       /* Perform first part of compound expression, then assign from second
 	 part.  */
       expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode,
-		   want_value & 2 ? EXPAND_STACK_PARM : EXPAND_NORMAL);
-      return store_expr (TREE_OPERAND (exp, 1), target, want_value);
+		   call_param_p ? EXPAND_STACK_PARM : EXPAND_NORMAL);
+      return store_expr (TREE_OPERAND (exp, 1), target, call_param_p);
     }
   else if (TREE_CODE (exp) == COND_EXPR && GET_MODE (target) == BLKmode)
     {
@@ -3789,11 +3785,11 @@ store_expr (tree exp, rtx target, int want_value)
       do_pending_stack_adjust ();
       NO_DEFER_POP;
       jumpifnot (TREE_OPERAND (exp, 0), lab1);
-      store_expr (TREE_OPERAND (exp, 1), target, want_value & 2);
+      store_expr (TREE_OPERAND (exp, 1), target, call_param_p);
       emit_jump_insn (gen_jump (lab2));
       emit_barrier ();
       emit_label (lab1);
-      store_expr (TREE_OPERAND (exp, 2), target, want_value & 2);
+      store_expr (TREE_OPERAND (exp, 2), target, call_param_p);
       emit_label (lab2);
       OK_DEFER_POP;
 
@@ -3834,7 +3830,7 @@ store_expr (tree exp, rtx target, int want_value)
 	}
 
       temp = expand_expr (exp, inner_target, VOIDmode,
-			  want_value & 2 ? EXPAND_STACK_PARM : EXPAND_NORMAL);
+			  call_param_p ? EXPAND_STACK_PARM : EXPAND_NORMAL);
 
       /* If TEMP is a VOIDmode constant, use convert_modes to make
 	 sure that we properly convert it.  */
@@ -3855,7 +3851,7 @@ store_expr (tree exp, rtx target, int want_value)
   else
     {
       temp = expand_expr_real (exp, target, GET_MODE (target),
-			       (want_value & 2
+			       (call_param_p
 				? EXPAND_STACK_PARM : EXPAND_NORMAL),
 			       &alt_rtl);
       /* Return TARGET if it's a specified hardware register.
@@ -3943,7 +3939,7 @@ store_expr (tree exp, rtx target, int want_value)
 	  if (GET_CODE (size) == CONST_INT
 	      && INTVAL (size) < TREE_STRING_LENGTH (exp))
 	    emit_block_move (target, temp, size,
-			     (want_value & 2
+			     (call_param_p
 			      ? BLOCK_OP_CALL_PARM : BLOCK_OP_NORMAL));
 	  else
 	    {
@@ -3954,7 +3950,7 @@ store_expr (tree exp, rtx target, int want_value)
 			      size_int (TREE_STRING_LENGTH (exp)));
 	      rtx copy_size_rtx
 		= expand_expr (copy_size, NULL_RTX, VOIDmode,
-			       (want_value & 2
+			       (call_param_p
 				? EXPAND_STACK_PARM : EXPAND_NORMAL));
 	      rtx label = 0;
 
@@ -3962,7 +3958,7 @@ store_expr (tree exp, rtx target, int want_value)
 	      copy_size_rtx = convert_to_mode (ptr_mode, copy_size_rtx,
 					       TYPE_UNSIGNED (sizetype));
 	      emit_block_move (target, temp, copy_size_rtx,
-			       (want_value & 2
+			       (call_param_p
 				? BLOCK_OP_CALL_PARM : BLOCK_OP_NORMAL));
 
 	      /* Figure out how much is left in TARGET that we have to clear.
@@ -4006,7 +4002,7 @@ store_expr (tree exp, rtx target, int want_value)
 			 int_size_in_bytes (TREE_TYPE (exp)));
       else if (GET_MODE (temp) == BLKmode)
 	emit_block_move (target, temp, expr_size (exp),
-			 (want_value & 2
+			 (call_param_p
 			  ? BLOCK_OP_CALL_PARM : BLOCK_OP_NORMAL));
       else
 	{
@@ -7131,7 +7127,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    /* Store data into beginning of memory target.  */
 	    store_expr (TREE_OPERAND (exp, 0),
 			adjust_address (target, TYPE_MODE (valtype), 0),
-			modifier == EXPAND_STACK_PARM ? 2 : 0);
+			modifier == EXPAND_STACK_PARM);
 
 	  else
 	    {
@@ -7902,13 +7898,13 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
        op1 = gen_label_rtx ();
        jumpifnot (TREE_OPERAND (exp, 0), op0);
        store_expr (TREE_OPERAND (exp, 1), temp,
- 		  modifier == EXPAND_STACK_PARM ? 2 : 0);
+ 		  modifier == EXPAND_STACK_PARM);
 
        emit_jump_insn (gen_jump (op1));
        emit_barrier ();
        emit_label (op0);
        store_expr (TREE_OPERAND (exp, 2), temp,
- 		  modifier == EXPAND_STACK_PARM ? 2 : 0);
+ 		  modifier == EXPAND_STACK_PARM);
 
        emit_label (op1);
        OK_DEFER_POP;

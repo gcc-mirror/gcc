@@ -1,3 +1,8 @@
+2004-10-21  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* expr.c (store_expr): Clean up by renaming want_value to
+	call_param_p.
+
 2004-10-21  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/linux-unwind.h (sh_fallback_frame_state): Don't
