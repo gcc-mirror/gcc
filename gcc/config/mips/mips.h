@@ -1723,7 +1723,7 @@ extern enum reg_class	mips_secondary_reload_class ();
 #define RETURN_ADDR_RTX(count, frame)			\
   ((count == 0)						\
    ? gen_rtx (MEM, Pmode, gen_rtx (REG, Pmode, RETURN_ADDRESS_POINTER_REGNUM))\
-   : (fatal ("RETURN_ADDR_RTX not supported for count != 0"), (rtx) 0))
+   : (rtx) 0)
 
 /* Structure to be filled in by compute_frame_size with register
    save masks, and offsets for the current function.  */
