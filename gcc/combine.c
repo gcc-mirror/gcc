@@ -560,10 +560,25 @@ combine_validate_cost (rtx i1, rtx i2, rtx i3, rtx newpat, rtx newi2pat)
       new_i2_cost = 0;
     }
 
+  if (undobuf.other_insn)
+    {
+      int old_other_cost, new_other_cost;
+
+      old_other_cost = (INSN_UID (undobuf.other_insn) <= last_insn_cost
+			? uid_insn_cost[INSN_UID (undobuf.other_insn)] : 0);
+      new_other_cost = insn_rtx_cost (PATTERN (undobuf.other_insn));
+      if (old_other_cost > 0 && new_other_cost > 0)
+	{
+	  old_cost += old_other_cost;
+	  new_cost += new_other_cost;
+	}
+      else
+	old_cost = 0;
+    }
+
   /* Disallow this recombination if both new_cost and old_cost are
      greater than zero, and new_cost is greater than old cost.  */
-  if (!undobuf.other_insn
-      && old_cost > 0
+  if (old_cost > 0
       && new_cost > old_cost)
     {
       if (dump_file)

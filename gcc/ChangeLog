@@ -1,3 +1,9 @@
+2004-12-14  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* combine.c (combine_validate_cost): Consider cost of
+	undobuf.other_insn rather than always allowing the recombination
+	if it is set.
+
 2004-12-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa-host.c (MAP_FAILED): Define if not defined.
