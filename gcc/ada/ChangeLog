@@ -1,3 +1,355 @@
+To: gcc-patches@gcc.gnu.org
+Subject: [Ada] Reflect 2001-10-22 changes
+
+2001-12-05  Ed Schonberg <schonber@gnat.com>
+
+	* sem_ch12.adb (Instantiate_Package_Body): if instance is a compilation
+	 unit, always replace instance node with new body, for ASIS use.
+
+2001-12-05  Vincent Celier <celier@gnat.com>
+	
+	* prj-nmsc.adb (Language_Independent_Check): Issue a warning if 
+	libraries are not supported and both attributes Library_Name and 
+	Library_Dir are specified.
+	
+	* prj-proc.adb (Expression): Set location of Result to location of 
+	first term.
+	
+	* Makefile.in: Add mlib.o, mlib-fil.o, mlib-tgt and mlib-utl to GNATLS.
+	(prj-nmsc is now importing MLib.Tgt)
+	
+	* prj-proc.adb: Put the change indicated above that was forgotten.
+
+*** sem_ch12.adb	2001/10/14 14:08:26	1.790
+--- sem_ch12.adb	2001/10/22 17:38:58	1.791
+***************
+*** 2550,2566 ****
+  
+           Set_Instance_Spec (N, Act_Decl);
+  
+!          --  Case of not a compilation unit
+  
+           if Nkind (Parent (N)) /= N_Compilation_Unit then
+              Mark_Rewrite_Insertion (Act_Decl);
+              Insert_Before (N, Act_Decl);
+              Analyze (Act_Decl);
+- 
+-          --  Case of compilation unit that is generic instantiation
+  
+!          --  Place declaration on current node so context is complete
+!          --  for analysis (including nested instantiations).
+  
+           else
+              if Cunit_Entity (Current_Sem_Unit) = Defining_Entity (N) then
+--- 2550,2570 ----
+  
+           Set_Instance_Spec (N, Act_Decl);
+  
+!          --  If not a compilation unit, insert the package declaration
+!          --  after the instantiation node.
+  
+           if Nkind (Parent (N)) /= N_Compilation_Unit then
+              Mark_Rewrite_Insertion (Act_Decl);
+              Insert_Before (N, Act_Decl);
+              Analyze (Act_Decl);
+  
+!          --  For an instantiation that is a compilation unit, place
+!          --  declaration on current node so context is complete
+!          --  for analysis (including nested instantiations). It this
+!          --  is the main unit, the declaration eventually replaces the
+!          --  instantiation node. If the instance body is later created, it
+!          --  replaces the instance node, and the declation is attached to
+!          --  it (see Build_Instance_Compilation_Unit_Nodes).
+  
+           else
+              if Cunit_Entity (Current_Sem_Unit) = Defining_Entity (N) then
+***************
+*** 2602,2608 ****
+             First_Private_Entity (Act_Decl_Id));
+  
+           if Nkind (Parent (N)) = N_Compilation_Unit
+!            and  then not Needs_Body
+           then
+              Rewrite (N, Act_Decl);
+           end if;
+--- 2606,2612 ----
+             First_Private_Entity (Act_Decl_Id));
+  
+           if Nkind (Parent (N)) = N_Compilation_Unit
+!            and then not Needs_Body
+           then
+              Rewrite (N, Act_Decl);
+           end if;
+***************
+*** 3321,3326 ****
+--- 3325,3337 ----
+        Set_Library_Unit  (Decl_Cunit, Body_Cunit);
+        Set_Library_Unit  (Body_Cunit, Decl_Cunit);
+  
++       --  If the instance is not the main unit, its context, categorization,
++       --  and elaboration entity are not relevant to the compilation.
++ 
++       if Parent (N) /= Cunit (Main_Unit) then
++          return;
++       end if;
++ 
+        --  The context clause items on the instantiation, which are now
+        --  attached to the body compilation unit (since the body overwrote
+        --  the original instantiation node), semantically belong on the spec,
+***************
+*** 6581,6590 ****
+  
+           if Nkind (Parent (Inst_Node)) = N_Compilation_Unit then
+  
+              if Parent (Inst_Node) = Cunit (Main_Unit) then
+-                Build_Instance_Compilation_Unit_Nodes
+-                  (Inst_Node, Act_Body, Act_Decl);
+-                Analyze (Inst_Node);
+  
+                 --  If the instance is a child unit itself, then set the
+                 --  scope of the expanded body to be the parent of the
+--- 6592,6605 ----
+  
+           if Nkind (Parent (Inst_Node)) = N_Compilation_Unit then
+  
++             --  Replace instance node with body of instance, and create
++             --  new node for corresponding instance declaration.
++ 
++             Build_Instance_Compilation_Unit_Nodes
++               (Inst_Node, Act_Body, Act_Decl);
++             Analyze (Inst_Node);
++ 
+              if Parent (Inst_Node) = Cunit (Main_Unit) then
+  
+                 --  If the instance is a child unit itself, then set the
+                 --  scope of the expanded body to be the parent of the
+***************
+*** 6597,6606 ****
+                    Set_Scope
+                      (Defining_Entity (Inst_Node), Scope (Act_Decl_Id));
+                 end if;
+- 
+-             else
+-                Set_Parent (Act_Body, Parent (Inst_Node));
+-                Analyze (Act_Body);
+              end if;
+  
+           --  Case where instantiation is not a library unit
+--- 6612,6617 ----
+
+*** prj-nmsc.adb	2001/10/20 04:14:18	1.29
+--- prj-nmsc.adb	2001/10/22 21:55:07	1.30
+***************
+*** 34,39 ****
+--- 34,40 ----
+  with GNAT.Case_Util;             use GNAT.Case_Util;
+  with GNAT.Directory_Operations;  use GNAT.Directory_Operations;
+  with GNAT.OS_Lib;                use GNAT.OS_Lib;
++ with MLib.Tgt;
+  with Namet;                      use Namet;
+  with Osint;                      use Osint;
+  with Output;                     use Output;
+***************
+*** 1948,2008 ****
+             Data.Library_Name /= No_Name;
+  
+           if Data.Library then
+-             if Current_Verbosity = High then
+-                Write_Line ("This is a library project file");
+-             end if;
+  
+!             pragma Assert (Lib_Version.Kind = Single);
+  
+!             if Lib_Version.Value = Empty_String then
+                 if Current_Verbosity = High then
+!                   Write_Line ("No library version specified");
+                 end if;
+  
+!             else
+!                Stringt.String_To_Name_Buffer (Lib_Version.Value);
+!                Data.Lib_Internal_Name := Name_Find;
+!             end if;
+  
+!             pragma Assert (The_Lib_Kind.Kind = Single);
+  
+!             if The_Lib_Kind.Value = Empty_String then
+!                if Current_Verbosity = High then
+!                   Write_Line ("No library kind specified");
+                 end if;
+  
+!             else
+!                Stringt.String_To_Name_Buffer (The_Lib_Kind.Value);
+  
+!                declare
+!                   Kind_Name : constant String :=
+!                     To_Lower (Name_Buffer (1 .. Name_Len));
+  
+!                   OK : Boolean := True;
+  
+!                begin
+  
+!                   if Kind_Name = "static" then
+!                      Data.Library_Kind := Static;
+  
+!                   elsif Kind_Name = "dynamic" then
+!                      Data.Library_Kind := Dynamic;
+  
+!                   elsif Kind_Name = "relocatable" then
+!                      Data.Library_Kind := Relocatable;
+  
+!                   else
+!                      Error_Msg
+!                        ("illegal value for Library_Kind",
+!                         The_Lib_Kind.Location);
+!                      OK := False;
+!                   end if;
+  
+!                   if Current_Verbosity = High and then OK then
+!                      Write_Str ("Library kind = ");
+!                      Write_Line (Kind_Name);
+!                   end if;
+!                end;
+              end if;
+           end if;
+        end;
+--- 1949,2016 ----
+             Data.Library_Name /= No_Name;
+  
+           if Data.Library then
+  
+!             if not MLib.Tgt.Libraries_Are_Supported then
+!                Error_Msg ("?libraries are not supported on this platform",
+!                            Lib_Name.Location);
+  
+!             else
+                 if Current_Verbosity = High then
+!                   Write_Line ("This is a library project file");
+                 end if;
+  
+!                pragma Assert (Lib_Version.Kind = Single);
+  
+!                if Lib_Version.Value = Empty_String then
+!                   if Current_Verbosity = High then
+!                      Write_Line ("No library version specified");
+!                   end if;
+  
+!                else
+!                   Stringt.String_To_Name_Buffer (Lib_Version.Value);
+!                   Data.Lib_Internal_Name := Name_Find;
+                 end if;
+  
+!                pragma Assert (The_Lib_Kind.Kind = Single);
+  
+!                if The_Lib_Kind.Value = Empty_String then
+!                   if Current_Verbosity = High then
+!                      Write_Line ("No library kind specified");
+!                   end if;
+  
+!                else
+!                   Stringt.String_To_Name_Buffer (The_Lib_Kind.Value);
+  
+!                   declare
+!                      Kind_Name : constant String :=
+!                        To_Lower (Name_Buffer (1 .. Name_Len));
+  
+!                      OK : Boolean := True;
+  
+!                   begin
+  
+!                      if Kind_Name = "static" then
+!                         Data.Library_Kind := Static;
+  
+!                      elsif Kind_Name = "dynamic" then
+!                         Data.Library_Kind := Dynamic;
+  
+!                      elsif Kind_Name = "relocatable" then
+!                         Data.Library_Kind := Relocatable;
+! 
+!                      else
+!                         Error_Msg
+!                           ("illegal value for Library_Kind",
+!                            The_Lib_Kind.Location);
+!                         OK := False;
+!                      end if;
+! 
+!                      if Current_Verbosity = High and then OK then
+!                         Write_Str ("Library kind = ");
+!                         Write_Line (Kind_Name);
+!                      end if;
+!                   end;
+!                end if;
+              end if;
+           end if;
+        end;
+
+*** prj-proc.adb	2001/10/05 16:11:38	1.18
+--- prj-proc.adb	2001/10/22 21:59:35	1.19
+***************
+*** 662,667 ****
+--- 662,668 ----
+  
+        if Data.Modifies /= No_Project
+          and then Projects.Table (Data.Modifies).Name = With_Name
++ 
+        then
+           return Data.Modifies;
+  
+
+*** Makefile.in	2001/10/22 00:45:45	1.1415
+--- Makefile.in	2001/10/22 22:07:09	1.1416
+***************
+*** 488,493 ****
+--- 488,497 ----
+   hostparm.o \
+   krunch.o   \
+   lib.o      \
++  mlib.o     \
++  mlib-fil.o \
++  mlib-tgt.o \
++  mlib-utl.o \
+   namet.o    \
+   nlists.o   \
+   opt.o      \
+
+*** prj-proc.adb	2001/10/22 21:59:35	1.19
+--- prj-proc.adb	2001/10/22 22:11:00	1.20
+***************
+*** 246,252 ****
+        --  Reference to the last string elements in Result, when Kind is List.
+  
+     begin
+!       Result.Location := Location_Of (From_Project_Node);
+  
+        --  Process each term of the expression, starting with First_Term
+  
+--- 246,252 ----
+        --  Reference to the last string elements in Result, when Kind is List.
+  
+     begin
+!       Result.Location := Location_Of (First_Term);
+  
+        --  Process each term of the expression, starting with First_Term
+  
+***************
+*** 639,645 ****
+           end case;
+  
+           The_Term := Next_Term (The_Term);
+- 
+        end loop;
+  
+        return Result;
+--- 639,644 ----
+***************
+*** 662,668 ****
+  
+        if Data.Modifies /= No_Project
+          and then Projects.Table (Data.Modifies).Name = With_Name
+- 
+        then
+           return Data.Modifies;
+  
+--- 661,666 ----
 2001-12-05  Robert Dewar <dewar@gnat.com>
 
 	* Makefile.in: Add dependencies for System.IO for GNAT.Regexp
