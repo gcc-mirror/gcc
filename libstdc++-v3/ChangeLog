@@ -1,3 +1,9 @@
+2003-07-25  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/char_traits.h: Update copyright, tweak.
+	* testsuite/ext/pod_char_traits.cc: Explicitly qualifiy namespace
+	std types.
+
 2003-07-24  Matt Austern  <austern@apple.com>
 
 	* /include/bits/char_traits.h (class char_traits): Put all the
