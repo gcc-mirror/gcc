@@ -725,8 +725,6 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	field:
 	  {
 	    int index = IMMEDIATE_u2;
-	    tree self_type = get_class_constant
-	      (jcf, COMPONENT_REF_CLASS_INDEX (&current_jcf->cpool, index));
 	    tree field_signature = COMPONENT_REF_SIGNATURE (&current_jcf->cpool, index);
 	    tree field_type = get_type_from_signature (field_signature);
 	    if (is_putting)

@@ -1,3 +1,15 @@
+Sun Mar 28 22:12:10 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* class.c (maybe_add_interface): Remove unused variable
+	`interface_binfo'.
+	(make_class_data): Use = for assignment, not ==.  Likewise.
+	(emit_register_classes): Remove unused variable `decl'.
+
+	* lex.c: Fix comment so as not to contain an embedded `/*'.
+
+	* verify.c (verify_jvm_instructions): Remove unused variable
+	`self_type'.	
+
 Sat Mar 27 15:49:18 1999  Per Bothner  <bothner@cygnus.com>
 
 	* parse.y (complete_loop_body):  Rename to finish_loop_body.
