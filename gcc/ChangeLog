@@ -1,3 +1,10 @@
+2002-09-04  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/invoke.texi (-fshort-wchar): Move to Code Generation Options.
+	(-fpcc-struct-return, -freg-struct-return, -fshort-enums,
+	-fshort-double, -fshort-wchar, -fpack-struct, -fleading-underscore):
+	Warn that these options can break ABI compatibility.
+
 2002-09-04  Richard Henderson  <rth@redhat.com>
 
 	* real.c (ereal_to_decimal): Add digits parameter.
