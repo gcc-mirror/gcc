@@ -216,6 +216,10 @@ package body Switch.C is
                Ptr := Ptr + 1;
                Operating_Mode := Check_Semantics;
 
+               if Tree_Output then
+                  ASIS_Mode := True;
+               end if;
+
             --  Processing for d switch
 
             when 'd' =>
@@ -638,7 +642,11 @@ package body Switch.C is
             when 't' =>
                Ptr := Ptr + 1;
                Tree_Output := True;
-               ASIS_Mode := True;
+
+               if Operating_Mode = Check_Semantics then
+                  ASIS_Mode := True;
+               end if;
+
                Back_Annotate_Rep_Info := True;
 
             --  Processing for T switch

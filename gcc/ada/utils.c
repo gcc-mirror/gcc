@@ -2825,10 +2825,10 @@ convert_to_fat_pointer (type, expr)
       else
 	expr = build1 (INDIRECT_REF, TREE_TYPE (etype), expr);
 
-      template = build_component_ref (expr, NULL_TREE, fields);
+      template = build_component_ref (expr, NULL_TREE, fields, 0);
       expr = build_unary_op (ADDR_EXPR, NULL_TREE,
 			     build_component_ref (expr, NULL_TREE,
-						  TREE_CHAIN (fields)));
+						  TREE_CHAIN (fields), 0));
     }
   else
     /* Otherwise, build the constructor for the template.  */
@@ -2872,7 +2872,8 @@ convert_to_thin_pointer (type, expr)
 
   /* We get the pointer to the data and use a NOP_EXPR to make it the
      proper GCC type.  */
-  expr = build_component_ref (expr, NULL_TREE, TYPE_FIELDS (TREE_TYPE (expr)));
+  expr
+    = build_component_ref (expr, NULL_TREE, TYPE_FIELDS (TREE_TYPE (expr)), 0);
   expr = build1 (NOP_EXPR, type, expr);
 
   return expr;
@@ -2927,7 +2928,7 @@ convert (type, expr)
 	return TREE_VALUE (CONSTRUCTOR_ELTS (expr));
       else
 	return convert (type, build_component_ref (expr, NULL_TREE,
-						   TYPE_FIELDS (etype)));
+						   TYPE_FIELDS (etype), 0));
     }
   else if (code == RECORD_TYPE && TYPE_IS_PADDING_P (type))
     {
@@ -2977,7 +2978,7 @@ convert (type, expr)
   if (ecode == RECORD_TYPE && TYPE_LEFT_JUSTIFIED_MODULAR_P (etype)
       && code != UNCONSTRAINED_ARRAY_TYPE)
     return convert (type, build_component_ref (expr, NULL_TREE,
-					       TYPE_FIELDS (etype)));
+					       TYPE_FIELDS (etype), 0));
 
   /* If converting to a type that contains a template, convert to the data
      type and then build the template. */
@@ -3051,7 +3052,7 @@ convert (type, expr)
       expr = build_unary_op (INDIRECT_REF, NULL_TREE,
 			     build_component_ref (TREE_OPERAND (expr, 0),
 						  get_identifier ("P_ARRAY"),
-						  NULL_TREE));
+						  NULL_TREE, 0));
       etype = TREE_TYPE (expr);
       ecode = TREE_CODE (etype);
       break;
@@ -3146,7 +3147,7 @@ convert (type, expr)
 	 array and then convert it.  */
       else if (TYPE_FAT_POINTER_P (etype))
 	expr = build_component_ref (expr, get_identifier ("P_ARRAY"),
-				    NULL_TREE);
+				    NULL_TREE, 0);
 
       return fold (convert_to_pointer (type, expr));
 
@@ -3278,7 +3279,7 @@ maybe_unconstrained_array (exp)
 	    = build_unary_op (INDIRECT_REF, NULL_TREE,
 			      build_component_ref (TREE_OPERAND (exp, 0),
 						   get_identifier ("P_ARRAY"),
-						   NULL_TREE));
+						   NULL_TREE, 0));
 	  TREE_READONLY (new) = TREE_STATIC (new) = TREE_READONLY (exp);
 	  return new;
 	}
@@ -3306,12 +3307,13 @@ maybe_unconstrained_array (exp)
 	      && TYPE_CONTAINS_TEMPLATE_P (TREE_TYPE (new)))
 	    return
 	      build_component_ref (new, NULL_TREE,
-				   TREE_CHAIN (TYPE_FIELDS (TREE_TYPE (new))));
+				   TREE_CHAIN (TYPE_FIELDS (TREE_TYPE (new))),
+				   0);
 	}
       else if (TYPE_CONTAINS_TEMPLATE_P (TREE_TYPE (exp)))
 	return
 	  build_component_ref (exp, NULL_TREE,
-			       TREE_CHAIN (TYPE_FIELDS (TREE_TYPE (exp))));
+			       TREE_CHAIN (TYPE_FIELDS (TREE_TYPE (exp))), 0);
       break;
 
     default:
@@ -3399,7 +3401,7 @@ unchecked_convert (type, expr, notrunc_p)
       layout_type (rec_type);
 
       expr = unchecked_convert (rec_type, expr, notrunc_p);
-      expr = build_component_ref (expr, NULL_TREE, field);
+      expr = build_component_ref (expr, NULL_TREE, field, 0);
     }
 
   /* Similarly for integral input type whose precision is not equal to its

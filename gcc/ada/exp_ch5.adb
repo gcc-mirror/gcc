@@ -98,15 +98,17 @@ package body Exp_Ch5 is
    function Maybe_Bit_Aligned_Large_Component (N : Node_Id) return Boolean;
    --  This function is used in processing the assignment of a record or
    --  indexed component. The back end can handle such assignments fine
-   --  if the object involved is small (64-bits) or if it is aligned on
+   --  if the objects involved are small (64-bits) or are both aligned on
    --  a byte boundary (starts on a byte, and ends on a byte). However,
    --  problems arise for large components that are not byte aligned,
-   --  since the assignment may clobber other components that share
-   --  bit positions in the starting or ending bytes. This function is
-   --  used to detect such situations, so that the assignment can be
-   --  handled component-wise. A value of False means that either the
-   --  object is known to be greater than 64 bits, or that it is known
-   --  to be byte aligned. True is returned if the object is known to
+   --  since the assignment may clobber other components that share bit
+   --  positions in the starting or ending bytes, and in the case of
+   --  components not starting on a byte boundary, the back end cannot
+   --  even manage to extract the value. This function is used to detect
+   --  such situations, so that the assignment can be handled component-wise.
+   --  A value of False means that either the object is known to be greater
+   --  than 64 bits, or that it is known to be byte aligned (and occupy an
+   --  integral number of bytes. True is returned if the object is known to
    --  be greater than 64 bits, and is known to be unaligned. As implied
    --  by the name, the result is conservative, in that if the compiler
    --  cannot determine these conditions at compile time, True is returned.
@@ -366,6 +368,14 @@ package body Exp_Ch5 is
       if Crep then
          Act_Rhs := Get_Referenced_Object (Rhs);
          R_Type  := Get_Actual_Subtype (Act_Rhs);
+         Loop_Required := True;
+
+      --  We require a loop if the left side is possibly bit unaligned
+
+      elsif Maybe_Bit_Aligned_Large_Component (Lhs)
+              or else
+            Maybe_Bit_Aligned_Large_Component (Rhs)
+      then
          Loop_Required := True;
 
       --  Arrays with controlled components are expanded into a loop
@@ -1016,7 +1026,10 @@ package body Exp_Ch5 is
       --  clobbering of other components sharing bits in the first or
       --  last byte of the component to be assigned.
 
-      elsif Maybe_Bit_Aligned_Large_Component (Lhs) then
+      elsif Maybe_Bit_Aligned_Large_Component (Lhs)
+              or
+            Maybe_Bit_Aligned_Large_Component (Rhs)
+      then
          null;
 
       --  If neither condition met, then nothing special to do, the back end

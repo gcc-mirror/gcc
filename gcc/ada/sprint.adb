@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2490,7 +2490,12 @@ package body Sprint is
 
             else
                if First_Name (Node) or else not Dump_Original_Only then
-                  Write_Indent_Str ("with ");
+                  if Limited_Present (Node) then
+                     Write_Indent_Str ("limited with ");
+                  else
+                     Write_Indent_Str ("with ");
+                  end if;
+
                else
                   Write_Str (", ");
                end if;

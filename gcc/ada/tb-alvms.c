@@ -89,6 +89,10 @@ typedef struct
 #define RA_UNKNOWN ((REG)~0)
 #define RA_STOP    ((REG)0)
 
+/* Compute Procedure Value from a live Frame Pointer value.  */
+#define PV_FOR(FP) \
+  ((REG_AT (FP) & 0x7) == 0) ? *(PDSCDEF **)(FP) : (PDSCDEF *)(FP);
+
 /**********
  * unwind *
  **********/
@@ -127,10 +131,7 @@ unwind (frame_state_t * fs)
   if (fs->fp == 0)
     return;
 
-  if ((REG_AT (fs->fp) & 0x7) == 0)
-    pv = *(PDSCDEF **)fs->fp;
-  else
-    pv = (PDSCDEF *) fs->fp;
+  pv = PV_FOR (fs->fp);
 
   if (pv == 0
       || pv->pdsc$w_flags & PDSC$M_BASE_FRAME)
@@ -190,18 +191,15 @@ unwind (frame_state_t * fs)
 }
 
 /* Structure representing a traceback entry in the tracebacks array to be
-   filled by __gnat_backtrace below. This should match the declaration of
-   Traceback_Entry in System.Traceback_Entries.
+   filled by __gnat_backtrace below.
 
    The use of a structure is motivated by the potential necessity of having
    several fields to fill for each entry, for instance if later calls to VMS
    system functions need more than just a mere PC to compute info on a frame
    (e.g. for non-symbolic->symbolic translation purposes).  */
-
 typedef struct {
-  void * pc;  /* Address of the call instruction in the chain.  */
-  void * sp;  /* Stack Pointer value at the point of this call.  */
-  void * fp;  /* Frame Pointer value at the point of this call.  */
+  void * pc;
+  void * pv;
 } tb_entry_t;
 
 /********************
@@ -249,8 +247,7 @@ __gnat_backtrace (array, size, exclude_min, exclude_max, skip_frames)
 	  || frame_state.pc > exclude_max)
 	{
 	  tbe->pc = frame_state.pc;
-	  tbe->sp = frame_state.sp;
-	  tbe->fp = frame_state.fp;
+	  tbe->pv = PV_FOR (frame_state.fp);
 	
 	  cnt ++;
 	  tbe ++;

@@ -67,10 +67,6 @@ ifndef MAIN
    MAIN=ada
 endif
 
-ifndef CC
-   CC=gcc
-endif
-
 ifndef ADA_SPEC
    ADA_SPEC=.ads
 endif

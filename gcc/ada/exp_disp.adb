@@ -922,10 +922,11 @@ package body Exp_Disp is
 
       --        Register_Tag (Dt_Ptr);
 
-      --  Skip this if routine not available
+      --  Skip this if routine not available, or in No_Run_Time mode
 
          if RTE_Available (RE_Register_Tag)
            and then Is_RTE (Generalized_Tag, RE_Tag)
+           and then not No_Run_Time_Mode
          then
             Append_To (Elab_Code,
               Make_Procedure_Call_Statement (Loc,

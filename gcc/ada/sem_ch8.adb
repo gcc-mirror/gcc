@@ -789,8 +789,14 @@ package body Sem_Ch8 is
       end if;
 
       if Etype (Old_P) = Any_Type then
-            Error_Msg_N
-             ("expect package name in renaming", Name (N));
+         Error_Msg_N
+           ("expect package name in renaming", Name (N));
+
+      elsif Ekind (Old_P) = E_Package
+        and then From_With_Type (Old_P)
+      then
+         Error_Msg_N
+           ("limited withed package cannot be renamed", Name (N));
 
       elsif Ekind (Old_P) /= E_Package
         and then not (Ekind (Old_P) = E_Generic_Package
@@ -810,11 +816,6 @@ package body Sem_Ch8 is
 
          Set_Ekind (New_P, E_Package);
          Set_Etype (New_P, Standard_Void_Type);
-
-      elsif Ekind (Old_P) = E_Package
-        and then From_With_Type (Old_P)
-      then
-         Error_Msg_N ("imported package cannot be renamed", Name (N));
 
       else
          --  Entities in the old package are accessible through the
@@ -3397,7 +3398,8 @@ package body Sem_Ch8 is
             null;
          else
             Error_Msg_N
-              ("imported package can only be used to access imported type",
+              ("limited withed package can only be used to access "
+               & " incomplete types",
                 N);
          end if;
       end if;
@@ -5285,7 +5287,7 @@ package body Sem_Ch8 is
       Set_In_Use (P);
 
       if From_With_Type (P) then
-         Error_Msg_N ("imported package cannot appear in use clause", N);
+         Error_Msg_N ("limited withed package cannot appear in use clause", N);
       end if;
 
       --  Find enclosing instance, if any.

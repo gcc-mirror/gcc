@@ -35,34 +35,25 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the Alpha/OpenVMS version of this package.
+--  This is the Alpha/OpenVMS version of this package
 
 package System.Traceback_Entries is
 
-   type Traceback_Entry is private;
-
-   Null_TB_Entry : constant Traceback_Entry;
-
-   function PC_For (TB_Entry : Traceback_Entry) return System.Address;
-   function SP_For (TB_Entry : Traceback_Entry) return System.Address;
-   function FP_For (TB_Entry : Traceback_Entry) return System.Address;
-
-   function TB_Entry_For (PC : System.Address) return Traceback_Entry;
-
-private
-
    type Traceback_Entry is record
       PC : System.Address;
-      SP : System.Address;
-      FP : System.Address;
+      PV : System.Address;
    end record;
 
    pragma Suppress_Initialization (Traceback_Entry);
 
-   Null_TB_Entry : constant Traceback_Entry
-     := (PC => System.Null_Address,
-         SP => System.Null_Address,
-         FP => System.Null_Address);
+   Null_TB_Entry : constant Traceback_Entry :=
+                     (PC => System.Null_Address,
+                      PV => System.Null_Address);
+
+   function PC_For (TB_Entry : Traceback_Entry) return System.Address;
+   function PV_For (TB_Entry : Traceback_Entry) return System.Address;
+
+   function TB_Entry_For (PC : System.Address) return Traceback_Entry;
 
 end System.Traceback_Entries;
 

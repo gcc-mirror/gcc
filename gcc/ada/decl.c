@@ -946,7 +946,7 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
 		    gnu_expr
 		      = build_component_ref
 			(gnu_expr, NULL_TREE,
-			 TREE_CHAIN (TYPE_FIELDS (TREE_TYPE (gnu_expr))));
+			 TREE_CHAIN (TYPE_FIELDS (TREE_TYPE (gnu_expr))), 0);
 		  }
 
 		if (TREE_CODE (TYPE_SIZE_UNIT (gnu_alloc_type)) == INTEGER_CST
@@ -990,7 +990,7 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
 		(build_binary_op
 		 (MODIFY_EXPR, NULL_TREE,
 		  build_component_ref (gnu_new_var, NULL_TREE,
-				       TYPE_FIELDS (gnu_new_type)),
+				       TYPE_FIELDS (gnu_new_type), 0),
 		  gnu_expr));
 
 	    gnu_type = build_reference_type (gnu_type);
@@ -998,7 +998,7 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
 	      = build_unary_op
 		(ADDR_EXPR, gnu_type,
 		 build_component_ref (gnu_new_var, NULL_TREE,
-				      TYPE_FIELDS (gnu_new_type)));
+				      TYPE_FIELDS (gnu_new_type), 0));
 
 	    gnu_size = 0;
 	    used_by_ref = 1;
@@ -3534,6 +3534,13 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
 
 	/* ??? For now, don't consider nested functions pure.  */
 	if (! global_bindings_p ())
+	  pure_flag = 0;
+
+	/* A subprogram (something that doesn't return anything) shouldn't
+	   be considered Pure since there would be no reason for such a
+	   subprogram.  Note that procedures with Out (or In Out) parameters
+	   have already been converted into a function with a return type. */
+	if (TREE_CODE (gnu_return_type) == VOID_TYPE)
 	  pure_flag = 0;
 
 	gnu_type

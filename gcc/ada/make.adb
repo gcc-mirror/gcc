@@ -3623,10 +3623,12 @@ package body Make is
                      if not At_Least_One_Main then
 
                         --  First make sure that the binder and the linker
-                        --  will not be invoked.
+                        --  will not be invoked if -z is not used.
 
-                        Do_Bind_Step := False;
-                        Do_Link_Step := False;
+                        if not No_Main_Subprogram then
+                           Do_Bind_Step := False;
+                           Do_Link_Step := False;
+                        end if;
 
                         --  Put all the sources in the queue
 
