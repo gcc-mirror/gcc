@@ -54,7 +54,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 /* A `struct pending_option' remembers one -D, -A, -U, -include, or
    -imacros switch.  */
-
 typedef void (* cl_directive_handler) PARAMS ((cpp_reader *, const char *));
 struct pending_option
 {
@@ -158,7 +157,6 @@ END
 
 /* Given a colon-separated list of file names PATH,
    add all the names to the search path for include files.  */
-
 static void
 path_include (pfile, list, path)
      cpp_reader *pfile;
@@ -200,7 +198,9 @@ path_include (pfile, list, path)
 }
 
 /* Append DIR to include path PATH.  DIR must be allocated on the
-   heap; this routine takes responsibility for freeing it.  */
+   heap; this routine takes responsibility for freeing it.  CXX_AWARE
+   is non-zero if the header contains extern "C" guards for C++,
+   otherwise it is zero.  */
 static void
 append_include_chain (pfile, dir, path, cxx_aware)
      cpp_reader *pfile;
@@ -331,11 +331,7 @@ remove_dup_dirs (pfile, head)
    system, after.  Remove duplicate dirs (as determined by
    INO_T_EQ()).  The system_include and after_include chains are never
    referred to again after this function; all access is through the
-   bracket_include path.
-
-   For the future: Check if the directory is empty (but
-   how?) and possibly preload the include hash.  */
-
+   bracket_include path.  */
 static void
 merge_include_chains (pfile)
      cpp_reader *pfile;
@@ -389,9 +385,8 @@ merge_include_chains (pfile)
   CPP_OPTION (pfile, bracket_include) = brack;
 }
 
-/* Sets internal flags correctly for a given language, and defines
-   macros if necessary.  */
-
+/* A set of booleans indicating what CPP features each source language
+   requires.  */
 struct lang_flags
 {
   char c99;
@@ -419,6 +414,7 @@ static const struct lang_flags lang_defaults[] =
   /* ASM    */  { 0,  0,   0,  1,   0,   0,     1,      0     }
 };
 
+/* Sets internal flags correctly for a given language.  */
 static void
 set_lang (pfile, lang)
      cpp_reader *pfile;
@@ -453,7 +449,6 @@ opt_comp (p1, p2)
 
 /* init initializes library global state.  It might not need to
    do anything depending on the platform and compiler.  */
-
 static void
 init_library ()
 {
@@ -540,7 +535,7 @@ cpp_create_reader (lang)
 }
 
 /* Free resources used by PFILE.  Accessing PFILE after this function
-   returns leads to undefined behaviour.  */
+   returns leads to undefined behaviour.  Returns the error count.  */
 int
 cpp_destroy (pfile)
      cpp_reader *pfile;
@@ -613,7 +608,6 @@ cpp_destroy (pfile)
    ULP		value is the global user_label_prefix
 
    Also, macros with CPLUS set in the flags field are entered only for C++.  */
-
 struct builtin
 {
   const U_CHAR *name;
@@ -689,7 +683,7 @@ static const struct builtin builtin_array[] =
  builtin_array + sizeof(builtin_array)/sizeof(struct builtin)
 
 /* Subroutine of cpp_read_main_file; reads the builtins table above and
-   enters the macros into the hash table.  */
+   enters them, and language-specific macros, into the hash table.  */
 static void
 init_builtins (pfile)
      cpp_reader *pfile;
@@ -865,7 +859,7 @@ init_standard_includes (pfile)
     }
 }
 
-/* Pushes a -imacro and -include file given on the command line onto
+/* Pushes a command line -imacro and -include file indicated by P onto
    the buffer stack.  Returns non-zero if successful.  */
 static bool
 push_include (pfile, p)
@@ -1126,6 +1120,7 @@ cpp_finish (pfile)
     _cpp_report_missing_guards (pfile);
 }
 
+/* Add a directive to be handled later in the initialization phase.  */
 static void
 new_pending_directive (pend, text, handler)
      struct cpp_pending *pend;
@@ -1318,7 +1313,6 @@ parse_option (input)
 /* Handle one command-line option in (argc, argv).
    Can be called multiple times, to handle multiple sets of options.
    Returns number of strings consumed.  */
-
 int
 cpp_handle_option (pfile, argc, argv)
      cpp_reader *pfile;
@@ -1871,6 +1865,7 @@ init_dependency_output (pfile)
     }
 }
 
+/* Handle --help output.  */
 static void
 print_help ()
 {

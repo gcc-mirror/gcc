@@ -1,5 +1,5 @@
 /* CPP Library - lexical analysis.
-   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -97,7 +97,6 @@ static _cpp_buff *new_buff PARAMS ((size_t));
 
    Compares, the token TOKEN to the NUL-terminated string STRING.
    TOKEN must be a CPP_NAME.  Returns 1 for equal, 0 for unequal.  */
-
 int
 cpp_ideq (token, string)
      const cpp_token *token;
@@ -414,7 +413,6 @@ name_p (pfile, string)
    Poisson-like).  Second most common case is a new identifier, not
    split and no dollar sign.  The other possibilities are rare and
    have been relegated to parse_identifier_slow.  */
-
 static cpp_hashnode *
 parse_identifier (pfile)
      cpp_reader *pfile;
@@ -517,7 +515,9 @@ parse_identifier_slow (pfile, cur)
     ht_lookup (pfile->hash_table, obstack_finish (stack), len, HT_ALLOCED);
 }
 
-/* Parse a number, skipping embedded backslash-newlines.  */
+/* Parse a number, beginning with character C, skipping embedded
+   backslash-newlines.  LEADING_PERIOD is non-zero if there was a "."
+   before C.  Place the result in NUMBER.  */
 static void
 parse_number (pfile, number, c, leading_period)
      cpp_reader *pfile;
@@ -1289,7 +1289,7 @@ _cpp_lex_direct (pfile)
   return result;
 }
 
-/* An upper bound on the number of bytes needed to spell a token,
+/* An upper bound on the number of bytes needed to spell TOKEN,
    including preceding whitespace.  */
 unsigned int
 cpp_token_len (token)
@@ -1383,8 +1383,8 @@ cpp_spell_token (pfile, token, buffer)
   return buffer;
 }
 
-/* Returns a token as a null-terminated string.  The string is
-   temporary, and automatically freed later.  Useful for diagnostics.  */
+/* Returns TOKEN spelt as a null-terminated string.  The string is
+   freed when the reader is destroyed.  Useful for diagnostics.  */
 unsigned char *
 cpp_token_as_text (pfile, token)
      cpp_reader *pfile;
@@ -1399,7 +1399,8 @@ cpp_token_as_text (pfile, token)
   return start;
 }
 
-/* Used by C front ends.  Should really move to using cpp_token_as_text.  */
+/* Used by C front ends, which really should move to using
+   cpp_token_as_text.  */
 const char *
 cpp_type2name (type)
      enum cpp_ttype type;
@@ -1508,7 +1509,6 @@ _cpp_equiv_tokens (a, b)
    accidental token paste for output.  For simplicity, it is
    conservative, and occasionally advises a space where one is not
    needed, e.g. "." and ".2".  */
-
 int
 cpp_avoid_paste (pfile, token1, token2)
      cpp_reader *pfile;
@@ -1689,7 +1689,6 @@ maybe_read_ucs (pfile, pstr, limit, pc)
    interpret escapes that did not exist in traditional C.
 
    Handles all relevant diagnostics.  */
-
 unsigned int
 cpp_parse_escape (pfile, pstr, limit, mask, traditional)
      cpp_reader *pfile;

@@ -1,5 +1,5 @@
 /* Definitions for CPP library.
-   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001
+   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002
    Free Software Foundation, Inc.
    Written by Per Bothner, 1994-95.
 
@@ -152,7 +152,7 @@ enum cpp_ttype
 enum c_lang {CLK_GNUC89 = 0, CLK_GNUC99, CLK_STDC89, CLK_STDC94, CLK_STDC99,
 	     CLK_GNUCXX, CLK_CXX98, CLK_OBJC, CLK_OBJCXX, CLK_ASM};
 
-/* Payload of a NUMBER, FLOAT, STRING, or COMMENT token.  */
+/* Payload of a NUMBER, STRING, CHAR or COMMENT token.  */
 struct cpp_string
 {
   unsigned int len;

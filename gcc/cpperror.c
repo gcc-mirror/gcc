@@ -1,6 +1,6 @@
 /* Default error handlers for CPP Library.
-   Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1998, 1999, 2000
-   Free Software Foundation, Inc.
+   Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1998, 1999, 2000,
+   2001, 2002  Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -36,6 +36,8 @@ static void print_location PARAMS ((cpp_reader *, unsigned int, unsigned int));
 #define v_message(msgid, ap) \
  do { vfprintf (stderr, _(msgid), ap); putc ('\n', stderr); } while (0)
 
+/* Print the logical file location (LINE, COL) in preparation for a
+   diagnostic.  Outputs the #include chain if it has changed.  */
 static void
 print_location (pfile, line, col)
      cpp_reader *pfile;
@@ -77,7 +79,6 @@ print_location (pfile, line, col)
    counter, etc.  LINE is the logical line number; zero means to print
    at the location of the previously lexed token, which tends to be the
    correct place by default.  Returns 0 if the error has been suppressed.  */
-
 int
 _cpp_begin_message (pfile, code, line, column)
      cpp_reader *pfile;
@@ -137,7 +138,6 @@ _cpp_begin_message (pfile, code, line, column)
 
 /* For reporting internal errors.  Prints "internal error: " for you,
    otherwise identical to cpp_fatal.  */
-
 void
 cpp_ice VPARAMS ((cpp_reader *pfile, const char *msgid, ...))
 {  
@@ -156,7 +156,6 @@ cpp_ice VPARAMS ((cpp_reader *pfile, const char *msgid, ...))
    (We do not exit, to support use of cpplib as a library.
    Instead, it is the caller's responsibility to check
    CPP_FATAL_ERRORS.  */
-
 void
 cpp_fatal VPARAMS ((cpp_reader *pfile, const char *msgid, ...))
 {  
@@ -170,6 +169,7 @@ cpp_fatal VPARAMS ((cpp_reader *pfile, const char *msgid, ...))
   VA_CLOSE (ap);
 }
 
+/* Print an error at the location of the previously lexed token.  */
 void
 cpp_error VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
 {
@@ -183,6 +183,7 @@ cpp_error VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
   VA_CLOSE (ap);
 }
 
+/* Print an error at a specific location.  */
 void
 cpp_error_with_line VPARAMS ((cpp_reader *pfile, int line, int column,
 			     const char *msgid, ...))
@@ -208,6 +209,7 @@ cpp_error_from_errno (pfile, name)
   cpp_error (pfile, "%s: %s", name, xstrerror (errno));
 }
 
+/* Print a warning at the location of the previously lexed token.  */
 void
 cpp_warning VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
 {
@@ -221,6 +223,7 @@ cpp_warning VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
   VA_CLOSE (ap);
 }
 
+/* Print a warning at a specific location.  */
 void
 cpp_warning_with_line VPARAMS ((cpp_reader * pfile, int line, int column,
 			       const char *msgid, ...))
@@ -237,6 +240,7 @@ cpp_warning_with_line VPARAMS ((cpp_reader * pfile, int line, int column,
   VA_CLOSE (ap);
 }
 
+/* Pedwarn at the location of the previously lexed token.  */
 void
 cpp_pedwarn VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
 {
@@ -250,6 +254,7 @@ cpp_pedwarn VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
   VA_CLOSE (ap);
 }
 
+/* Pedwarn at a specific location.  */
 void
 cpp_pedwarn_with_line VPARAMS ((cpp_reader * pfile, int line, int column,
 			       const char *msgid, ...))
@@ -266,7 +271,7 @@ cpp_pedwarn_with_line VPARAMS ((cpp_reader * pfile, int line, int column,
   VA_CLOSE (ap);
 }
 
-/* Print an error message not associated with a file.  */
+/* Print an error message not associated with the translation unit.  */
 void
 cpp_notice VPARAMS ((cpp_reader *pfile, const char *msgid, ...))
 {
@@ -282,6 +287,8 @@ cpp_notice VPARAMS ((cpp_reader *pfile, const char *msgid, ...))
   VA_CLOSE (ap);
 }
 
+/* Print an error message originating from ERRNO and not associated
+   with the translation unit.  */
 void
 cpp_notice_from_errno (pfile, name)
      cpp_reader *pfile;
