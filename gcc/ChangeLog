@@ -1,3 +1,9 @@
+2003-12-12  Roger Sayle  <roger@eyesopen.com>
+
+	PR optimization/13037
+	* loop.c (update_giv_derive): Ignore redundant sets of a biv when
+	calculating how to derive a giv from a biv.
+
 2003-12-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/ia64/linux.h (IA64_GATE_AREA_END): Increase by 64K.

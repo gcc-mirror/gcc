@@ -6172,6 +6172,10 @@ update_giv_derive (loop, p)
       if (GET_CODE (p) == CODE_LABEL || GET_CODE (p) == JUMP_INSN
 	  || biv->insn == p)
 	{
+	  /* Skip if location is the same as a previous one.  */
+	  if (biv->same)
+	    continue;
+
 	  for (giv = bl->giv; giv; giv = giv->next_iv)
 	    {
 	      /* If cant_derive is already true, there is no point in
