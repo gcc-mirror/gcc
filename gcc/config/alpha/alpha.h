@@ -1317,8 +1317,7 @@ extern struct alpha_compare alpha_compare;
    The trampoline should set the static chain pointer to value placed
    into the trampoline and should branch to the specified routine.  
    Note that $27 has been set to the address of the trampoline, so we can
-   use it for addressability of the two data items.  Trampolines are always
-   aligned to FUNCTION_BOUNDARY, which is 64 bits.  */
+   use it for addressability of the two data items.  */
 
 #define TRAMPOLINE_TEMPLATE(FILE)		\
 do {						\
@@ -1337,6 +1336,10 @@ do {						\
 /* Length in units of the trampoline for entering a nested function.  */
 
 #define TRAMPOLINE_SIZE    32
+
+/* The alignment of a trampoline, in bits.  */
+
+#define TRAMPOLINE_ALIGNMENT  64
 
 /* Emit RTL insns to initialize the variable parts of a trampoline.
    FNADDR is an RTX for the address of the function's pure code.

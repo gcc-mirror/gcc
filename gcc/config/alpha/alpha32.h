@@ -71,6 +71,11 @@ Boston, MA 02111-1307, USA.  */
 #undef TRAMPOLINE_SIZE
 #define TRAMPOLINE_SIZE    24
 
+/* The alignment of a trampoline, in bits.  */
+
+#undef TRAMPOLINE_ALIGNMENT
+#define TRAMPOLINE_ALIGNMENT  32
+
 /* Emit RTL insns to initialize the variable parts of a trampoline.
    FNADDR is an RTX for the address of the function's pure code.
    CXT is an RTX for the static chain value for the function.  */
