@@ -1,3 +1,14 @@
+2000-12-05  Benjamin Kosnik  <bkoz@haight.redhat.com>
+
+	* acinclude.m4 (EXTRA_CXX_FLAGS): And here.
+	* include/c/bits/std_cstdlib.h (std ): Change macro to
+	_GLIBCPP_NEED_LLDIV_T.
+	* acconfig.h: Remove unused MBSTATE_T bits.
+	* configure.in: Same.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	
 2000-12-05  Benjamin Kosnik  <bkoz@fillmore.redhat.com>
 
 	* acinclude.m4: Change up to reflect new directory organization.
