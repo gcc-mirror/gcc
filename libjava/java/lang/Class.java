@@ -80,13 +80,41 @@ public final class Class implements Serializable
   public native int getModifiers ();
   public native String getName ();
 
-  // FIXME: can't implement this until we have java.net.
-  // public URL getResource (String resourceName);
-
-  // FIXME: implement.
-  public InputStream getResourceAsStream (String resourceName)
+  public java.net.URL getResource (String resourceName)
   {
-    return null;
+    String name = resourcePath (resourceName);
+    ClassLoader loader = getClassLoader ();
+    if (loader == null)
+      return ClassLoader.getSystemResource (name);
+    else
+      return loader.getResource (name);
+  }
+
+  public java.io.InputStream getResourceAsStream (String resourceName)
+  {
+    String name = resourcePath (resourceName);
+    ClassLoader loader = getClassLoader ();
+    if (loader == null)
+      return ClassLoader.getSystemResourceAsStream (name);
+    else
+      return loader.getResourceAsStream (name);
+  }
+
+  private String resourcePath (String resourceName)
+  {
+    if (resourceName.startsWith ("/"))
+      return resourceName.substring (1);
+
+    Class c = this;
+    while (c.isArray ())
+      c = c.getComponentType ();
+
+    String packageName = c.getName ().replace ('.', '/');
+    int end = packageName.lastIndexOf ('/');
+    if (end == -1)
+      return resourceName;
+    else
+      return packageName.substring (0, end+1) + resourceName;
   }
 
   // FIXME: implement.  Requires java.security.

@@ -109,22 +109,25 @@ static inline void dupx (_Jv_word *&sp, int n, int x)
 };
 
 
-#define PUSHA(V)  \
- ({ jobject __v=(V); (sp++)->o = __v; })
-#define PUSHI(V)  \
- ({ jint __v=(V); (sp++)->i = __v; })
-#define PUSHF(V)  \
- ({ jfloat __v=(V); (sp++)->f = __v; })
-#define PUSHL(V)  \
- ({ jlong __v=(V); _Jv_storeLong(sp,__v); sp+=2; })
-#define PUSHD(V)  \
- ({ jdouble __v=(V); _Jv_storeDouble(sp,__v); sp+=2; })
+#define PUSHA(V)  (sp++)->o = (V)
+#define PUSHI(V)  (sp++)->i = (V)
+#define PUSHF(V)  (sp++)->f = (V)
+#define PUSHL(V)  ({ _Jv_word2 w2; w2.l=(V); \
+                     (sp++)->ia[0] = w2.ia[0]; \
+                     (sp++)->ia[0] = w2.ia[1]; })
+#define PUSHD(V)  ({ _Jv_word2 w2; w2.d=(V); \
+                     (sp++)->ia[0] = w2.ia[0]; \
+                     (sp++)->ia[0] = w2.ia[1]; })
 
 #define POPA()    ((--sp)->o)
 #define POPI()    ((jint) (--sp)->i) // cast since it may be promoted
 #define POPF()    ((jfloat) (--sp)->f)
-#define POPL()    ({ sp-=2; _Jv_loadLong (sp); })
-#define POPD()    ({ sp-=2; _Jv_loadDouble (sp); })
+#define POPL()    ({ _Jv_word2 w2; \
+                     w2.ia[1] = (--sp)->ia[0]; \
+                     w2.ia[0] = (--sp)->ia[0]; w2.l; })
+#define POPD()    ({ _Jv_word2 w2; \
+                     w2.ia[1] = (--sp)->ia[0]; \
+                     w2.ia[0] = (--sp)->ia[0]; w2.d; })
 
 #define LOADA(I)  (sp++)->o = locals[I].o
 #define LOADI(I)  (sp++)->i = locals[I].i
@@ -456,17 +459,6 @@ dump_time ()
   
 void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 {
-  /* for some reason, which I do not understand, the compiler on x86
-   * allocates almost 4k stack space for this function!  Even though
-   * there are many local variables, they are all nicely contained
-   * within a block scope, except for the few declared right below
-   * here.  What's going on??  It could well be, that there in fact is
-   * on the order of 1000 local variables, including all those inlined
-   * and expanded from macros...   Compiling with -O0, it allocates a
-   * "modest" 300 bytes of stack space.   Among all those options of
-   * gcc, why isn't there a -fpack-stack, allowing reuse of stack
-   * locations?  */
-  
   _Jv_word      *sp     = inv->sp;
   unsigned char *pc     = inv->pc;
   _Jv_word      *locals = inv->local_base ();
@@ -541,9 +533,6 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 
 #endif
   opcode = *pc++;
-
-  /* we special-case the single opcode aload_0 -- it makes 
-     up 10% of the time spent in the main loop. */
 
   switch (opcode)
     {
@@ -1359,63 +1348,63 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       goto next_insn;
 
     case op_i2l:
-      PUSHL ((jlong)POPI ());
+      {jlong value = POPI(); PUSHL (value);}
       goto next_insn;
 
     case op_i2f:
-      PUSHF ((jfloat)POPI ());
+      {jfloat value = POPI(); PUSHF (value);}
       goto next_insn;
 
     case op_i2d:
-      PUSHD ((jdouble)POPI ());
+      {jdouble value = POPI(); PUSHD (value);}
       goto next_insn;
 
     case op_l2i:
-      PUSHI ((jint)POPL ());
+      {jint value = POPL(); PUSHI (value);}
       goto next_insn;
 
     case op_l2f:
-      PUSHF ((jfloat)POPL ());
+      {jfloat value = POPL(); PUSHF (value);}
       goto next_insn;
 
     case op_l2d:
-      PUSHD ((jdouble)POPL ());
+      {jdouble value = POPL(); PUSHD (value);}
       goto next_insn;
 
     case op_f2i:
-      PUSHI ((jint)POPF ());
+      { jint value = (jint)POPF (); PUSHI(value); }
       goto next_insn;
 
     case op_f2l:
-      PUSHL ((jlong)POPF ());
+      { jlong value = (jlong)POPF (); PUSHL(value); }
       goto next_insn;
 
     case op_f2d:
-      PUSHD ((jdouble)POPF ());
+      { jdouble value = POPF (); PUSHD(value); }
       goto next_insn;
 
     case op_d2i:
-      PUSHI ((jint)POPD ());
+      { jint value = (jint)POPD (); PUSHI(value); }
       goto next_insn;
 
     case op_d2l:
-      PUSHL ((jlong)POPD ());
+      { jlong value = (jlong)POPD (); PUSHL(value); }
       goto next_insn;
 
     case op_d2f:
-      PUSHF ((jfloat)POPD ());
+      { jfloat value = POPD (); PUSHF(value); }
       goto next_insn;
 
     case op_i2b:
-      PUSHI ((jbyte)POPI ());
+      { jbyte value = POPI (); PUSHI(value); }
       goto next_insn;
 
     case op_i2c:
-      PUSHI ((jchar)POPI ());
+      { jchar value = POPI (); PUSHI(value); }
       goto next_insn;
 
     case op_i2s:
-      PUSHI ((jshort)POPI ());
+      { jshort value = POPI (); PUSHI(value); }
       goto next_insn;
 
     case op_lcmp:

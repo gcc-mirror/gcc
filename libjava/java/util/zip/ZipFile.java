@@ -22,12 +22,14 @@ public class ZipFile implements ZipConstants
   {
     file = new RandomAccessFile(fname, "r");
     name = fname;
+    readDirectory ();
   }
 
   public ZipFile (File f) throws IOException
   {
     file = new RandomAccessFile(f, "r");
     name = f.getName();
+    readDirectory ();
   }
 
   void readDirectory () throws IOException

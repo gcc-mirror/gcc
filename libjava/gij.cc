@@ -23,5 +23,5 @@ int main (int argc, const char **argv)
       exit (1);
     }
 
-  JvRunMain (0, argc, argv);
+  _Jv_RunMain (argv[1], argc-1, argv+1);
 }

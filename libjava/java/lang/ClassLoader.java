@@ -26,6 +26,13 @@ import java.util.Stack;
 public abstract class ClassLoader {
 
   static private ClassLoader system;
+  private ClassLoader parent;
+
+  public ClassLoader getParent ()
+  {
+    /* FIXME: security */
+    return parent;
+  }
     
   private static native ClassLoader getVMClassLoader0 ();
 
@@ -36,17 +43,29 @@ public abstract class ClassLoader {
   }
 
   /**
-   * Creates a <code>ClassLoader</code>.   The only thing this
+   * Creates a <code>ClassLoader</code> with no parent.
+   * @exception java.lang.SecurityException if not allowed
+   */
+  protected ClassLoader() 
+  {
+    this (null);
+  }
+
+  /**
+   * Creates a <code>ClassLoader</code> with the given parent.   
+   * The parent may be <code>null</code>.
+   * The only thing this 
    * constructor does, is to call
    * <code>checkCreateClassLoader</code> on the current 
    * security manager. 
    * @exception java.lang.SecurityException if not allowed
    */
-  protected ClassLoader() 
+  protected ClassLoader(ClassLoader parent) 
   {
     SecurityManager security = System.getSecurityManager ();
     if (security != null)
       security.checkCreateClassLoader ();
+    this.parent = parent;
   }
 
   /** 
@@ -59,22 +78,68 @@ public abstract class ClassLoader {
   public Class loadClass(String name) 
     throws java.lang.ClassNotFoundException, java.lang.LinkageError
   { 
-    return loadClass (name, true);
+    return loadClass (name, false);
   }
 
   /** 
-   * Loads the class by the given name.  
-   * As per java 1.1, this has been deprecated.  Use 
-   * <code>loadClass(String)</code>
-   * instead.
+   * Loads the class by the given name.  The default implementation
+   * will search for the class in the following order (similar to jdk 1.2)
+   * <ul>
+   *  <li> First <code>findLoadedClass</code>.
+   *  <li> If parent is non-null, <code>parent.loadClass</code>;
+   *       otherwise <code>findSystemClass</code>.
+   *  <li> <code>findClass</code>.
+   * </ul>
+   * If <code>link</code> is true, <code>resolveClass</code> is then
+   * called.  <p> Normally, this need not be overridden; override
+   * <code>findClass</code> instead.
    * @param     name the name of the class.
    * @param     link if the class should be linked.
    * @return    the class loaded.
    * @exception java.lang.ClassNotFoundException 
    * @deprecated 
    */ 
-  protected abstract Class loadClass(String name, boolean link)
-    throws java.lang.ClassNotFoundException, java.lang.LinkageError;
+  protected Class loadClass(String name, boolean link)
+    throws java.lang.ClassNotFoundException, java.lang.LinkageError
+  {
+    Class c = findLoadedClass (name);
+
+    if (c == null)
+      {
+	try {
+	  if (parent != null)
+	    return parent.loadClass (name, link);
+	  else
+	    c = findSystemClass (name);
+	} catch (ClassNotFoundException ex) {
+	  /* ignore, we'll try findClass */;
+	}
+      }
+
+    if (c == null)
+      c = findClass (name);
+
+    if (c == null)
+      throw new ClassNotFoundException (name);
+
+    if (link)
+      resolveClass (c);
+
+    return c;
+  }
+
+  /** Find a class.  This should be overridden by subclasses; the
+   *  default implementation throws ClassNotFoundException.
+   *
+   * @param name Name of the class to find.
+   * @return     The class found.
+   * @exception  java.lang.ClassNotFoundException
+   */
+  protected Class findClass (String name)
+    throws ClassNotFoundException
+  {
+    throw new ClassNotFoundException ();
+  }
 
   /** 
    * Defines a class, given the class-data.  According to the JVM, this
@@ -251,7 +316,7 @@ public abstract class ClassLoader {
   }
 
   /** Internal method.  Calls _Jv_PrepareClass and
-   * _Jv_InternClassStrings.  This is only called from resolveClass.  */ 
+   * _Jv_PrepareCompiledClass.  This is only called from resolveClass.  */ 
   private static native void linkClass0(Class clazz)
     throws java.lang.LinkageError;
 
@@ -263,15 +328,19 @@ public abstract class ClassLoader {
 
   /** 
    * Returns a class found in a system-specific way, typically
-   * via the <code>java.class.path</code> system property.  
+   * via the <code>java.class.path</code> system property.  Loads the 
+   * class if necessary.
    *
    * @param     name the class to resolve.
    * @return    the class loaded.
    * @exception java.lang.LinkageError 
    * @exception java.lang.ClassNotFoundException 
    */
-  protected native Class findSystemClass(String name) 
-    throws java.lang.ClassNotFoundException, java.lang.LinkageError;
+  protected Class findSystemClass(String name) 
+    throws java.lang.ClassNotFoundException, java.lang.LinkageError
+  {
+    return getSystemClassLoader ().loadClass (name);
+  }
 
   /*
    * Does currently nothing.
@@ -280,10 +349,11 @@ public abstract class ClassLoader {
     /* claz.setSigners (signers); */
   }
 
-  /*
+  /**
    * If a class named <code>name</code> was previously loaded using
    * this <code>ClassLoader</code>, then it is returned.  Otherwise
-   * it returns <code>null</code>.
+   * it returns <code>null</code>.  (Unlike the JDK this is native,
+   * since we implement the class table internally.)
    * @param     name  class to find.
    * @return    the class loaded, or null.
    */ 
@@ -297,10 +367,6 @@ public abstract class ClassLoader {
     return system.getResource (name);
   }
 
-  public static final byte[] getSystemResourceAsBytes(String name) {
-    return system.getResourceAsBytes (name);
-  }
-
   /**
    *   Return an InputStream representing the resource name.  
    *   This is essentially like 
@@ -309,7 +375,6 @@ public abstract class ClassLoader {
    * @param   name  resource to load
    * @return  an InputStream, or null
    * @see     java.lang.ClassLoader#getResource(String)
-   * @see     java.lang.ClassLoader#getResourceAsBytes(String)
    * @see     java.io.InputStream
    */
   public InputStream getResourceAsStream(String name) 
@@ -324,41 +389,8 @@ public abstract class ClassLoader {
   }
  
   /**
-   *  Return a byte array <code>byte[]</code> representing the
-   *  resouce <code>name</code>.  This only works for resources
-   *  that have a known <code>content-length</code>, and
-   *  it will block while loading the resource.  Returns null
-   *  for error conditions.<p>
-   *  Since it is synchroneous, this is only convenient for 
-   *  resources that are "readily" available.  System resources
-   *  can conveniently be loaded this way, and the runtime
-   *  system uses this to load class files.  <p>
-   *  To find the class data for a given class, use
-   *  something like the following:
-   *  <ul><code>
-   *  String res = clazz.getName().replace ('.', '/')) + ".class";<br>
-   *  byte[] data = getResourceAsBytes (res);
-   *  </code></ul>
-   * @param   name  resource to load
-   * @return  a byte array, or null
-   * @see     java.lang.ClassLoader#getResource(String)
-   * @see     java.lang.ClassLoader#getResourceAsStream(String)
-   */
-  public byte[] getResourceAsBytes(String name) {
-    try {
-      URL res = getResource (name);
-      if (res == null) return null;
-      URLConnection conn = res.openConnection ();
-      int len = conn.getContentLength ();
-      if (len == -1) return null;
-      return readbytes (conn.getInputStream (), len);
-    } catch (java.io.IOException x) {
-       return null;
-     }
-  }
- 
-  /**
    * Return an java.io.URL representing the resouce <code>name</code>.  
+   * The default implementation just returns <code>null</code>.
    * @param   name  resource to load
    * @return  a URL, or null if there is no such resource.
    * @see     java.lang.ClassLoader#getResourceAsBytes(String)
@@ -369,31 +401,5 @@ public abstract class ClassLoader {
     return null;
   }
 
-  /**
-   * Utility routine to read a resource fully, even if the given
-   * InputStream only provides partial results.
-   */
-  private static byte[] readbytes (InputStream is, int length)
-  {
-    try {
-
-      byte[] data = new byte[length];
-      int read; 
-      int off = 0;
-	    
-      while (off != length)
-	{
-	  read = is.read (data, off, (int) (length-off));
-
-	  if (read == -1) 
-	    return null;
-
-	  off += read;
-	}
-	    
-      return data;
-    } catch (java.io.IOException x) {
-      return null;
-    }
-  }
 }
+

@@ -20,8 +20,9 @@ details.  */
 #include <java/lang/Character.h>
 #include <java/lang/Thread.h>
 #include <java/lang/ClassLoader.h>
-#include <java/lang/VMClassLoader.h>
+#include <gnu/gcj/runtime/VMClassLoader.h>
 #include <java/lang/InternalError.h>
+#include <java/lang/IllegalAccessError.h>
 #include <java/lang/LinkageError.h>
 #include <java/lang/ClassFormatError.h>
 #include <java/lang/NoClassDefFoundError.h>
@@ -46,7 +47,7 @@ extern java::lang::Class ClassLoaderClass;
 /////////// java.lang.ClassLoader native methods ////////////
 
 #ifdef INTERPRETER
-java::lang::VMClassLoader *redirect = 0;
+gnu::gcj::runtime::VMClassLoader *redirect = 0;
 #endif
 
 java::lang::ClassLoader*
@@ -54,7 +55,7 @@ java::lang::ClassLoader::getVMClassLoader0 ()
 {
 #ifdef INTERPRETER
     if (redirect == 0)
-	redirect = new java::lang::VMClassLoader;
+	redirect = new gnu::gcj::runtime::VMClassLoader;
     return redirect;
 #else
     return 0;
@@ -144,7 +145,7 @@ _Jv_WaitForState (jclass klass, int state)
   if (state == JV_STATE_LINKED)
     {
       _Jv_MonitorExit (klass);
-      _Jv_InternClassStrings (klass);
+      _Jv_PrepareCompiledClass (klass);
       return;
     }
 	
@@ -179,7 +180,7 @@ java::lang::ClassLoader::linkClass0 (java::lang::Class *klass)
     }
 #endif
 
-  _Jv_InternClassStrings (klass);
+  _Jv_PrepareCompiledClass (klass);
 }
 
 void
@@ -193,7 +194,7 @@ java::lang::ClassLoader::markClassErrorState0 (java::lang::Class *klass)
 /** this is the only native method in VMClassLoader, so 
     we define it here. */
 jclass
-java::lang::VMClassLoader::findBootClass (jstring name)
+gnu::gcj::runtime::VMClassLoader::findSystemClass (jstring name)
 {
   return _Jv_FindClassInCache (_Jv_makeUtf8Const (name), 0);
 }
@@ -204,22 +205,27 @@ java::lang::ClassLoader::findLoadedClass (jstring name)
   return _Jv_FindClassInCache (_Jv_makeUtf8Const (name), this);
 }
 
-jclass
-java::lang::ClassLoader::findSystemClass (jstring name)
-{
-  return _Jv_FindClass (_Jv_makeUtf8Const (name), 0);
-}
+static const int PUBLIC       = 0x001;
+static const int PRIVATE      = 0x002;
+static const int PROTECTED    = 0x004;
+static const int STATIC       = 0x008;
+static const int FINAL        = 0x010;
+static const int SYNCHRONIZED = 0x020;
+static const int VOLATILE     = 0x040;
+static const int TRANSIENT    = 0x080;
+static const int NATIVE       = 0x100;
+static const int INTERFACE    = 0x200;
+static const int ABSTRACT     = 0x400;
+static const int ALL_FLAGS    = 0x7FF; 
 
 
-/* This is the final step of linking, internalizing the constant strings
- * of a class.  This is called for both compiled and interpreted
- * classes, and it is *only* called from ClassLoader::linkClass0,
- * which is always in a context where the current thread has a lock on
- * the class in question.  We define it here, and not in resolve.cc, so that
- * the entire resolve.cc can be #ifdef'ed away when not using the
- * interpreter.   */
+/** This function does class-preparation for compiled classes.  
+    NOTE: This function replicates functionality from
+    _Jv_ResolvePoolEntry, and this is intentional, since that function
+    is 
+ */
 void
-_Jv_InternClassStrings(jclass klass)
+_Jv_PrepareCompiledClass(jclass klass)
 {
   if (klass->state >= JV_STATE_LINKED)
     return;
@@ -228,14 +234,44 @@ _Jv_InternClassStrings(jclass klass)
   klass->state = JV_STATE_LINKED;
 
   _Jv_Constants *pool = &klass->constants;
-  for (int i = 1; i < pool->size; ++i)
+  for (int index = 1; index < pool->size; ++index)
     {
-      if (pool->tags[i] == JV_CONSTANT_String)
+      if (pool->tags[index] == JV_CONSTANT_Class)
+	{
+	  _Jv_Utf8Const *name = pool->data[index].utf8;
+	  
+	  jclass found;
+	  if (name->data[0] == '[')
+	    found = _Jv_FindClassFromSignature (&name->data[0],
+						klass->loader);
+	  else
+	    found = _Jv_FindClass (name, klass->loader);
+		
+	  if (! found)
+	    {
+	      jstring str = _Jv_NewStringUTF (name->data);
+	      JvThrow (new java::lang::ClassNotFoundException (str));
+	    }
+
+	  if ((found->accflags & PUBLIC) == PUBLIC
+	      || (_Jv_ClassNameSamePackage (found->name,
+					    klass->name)))
+	    {
+	      pool->data[index].clazz = found;
+	      pool->tags[index] |= JV_CONSTANT_ResolvedFlag;
+	    }
+	  else
+	    {
+	      JvThrow (new java::lang::IllegalAccessError (found->getName()));
+	    }
+	}
+	    
+      else if (pool->tags[index] == JV_CONSTANT_String)
 	{
 	  jstring str;
-	  str = _Jv_NewStringUtf8Const (pool->data[i].utf8);
-	  pool->data[i].string = str;
-	  pool->tags[i] |= JV_CONSTANT_ResolvedFlag;
+	  str = _Jv_NewStringUtf8Const (pool->data[index].utf8);
+	  pool->data[index].o = str;
+	  pool->tags[index] |= JV_CONSTANT_ResolvedFlag;
 	}
     }
 
@@ -443,7 +479,7 @@ jclass _Jv_FindClass (_Jv_Utf8Const *name,
 	    }
 
 	  // Load using the bootstrap loader jmspec 5.3.1
-	  klass = redirect -> loadClassInternal (sname, false, true); 
+	  klass = redirect -> loadClass (sname, false); 
 
 	  // register that we're an initiating loader
 	  if (klass)

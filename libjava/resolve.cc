@@ -12,8 +12,6 @@ details.  */
 
 #include <java-interp.h>
 
-#ifdef INTERPRETER
-
 #include <cni.h>
 #include <jvm.h>
 #include <string.h>
@@ -29,6 +27,8 @@ details.  */
 #include <java/lang/AbstractMethodError.h>
 #include <java/lang/ClassNotFoundException.h>
 #include <java/lang/IncompatibleClassChangeError.h>
+
+#ifdef INTERPRETER
 
 static void throw_internal_error (char *msg)
 	__attribute__ ((__noreturn__));
@@ -123,6 +123,7 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
       pool->tags[index] |= JV_CONSTANT_ResolvedFlag;
     }
     break;
+
 
   case JV_CONSTANT_Fieldref:
     {
@@ -315,6 +316,7 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
 
   return pool->data[index];
 }
+
 
 void
 _Jv_ResolveField (_Jv_Field *field, java::lang::ClassLoader *loader)
