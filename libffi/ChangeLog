@@ -1,3 +1,8 @@
+2002-05-27  Bo Thorsen  <bo@suse.de>
+
+	* src/x86/ffi.c (ffi_prep_args): Remove unused variable and
+	fix formatting.
+
 2002-05-13  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* src/powerpc/ffi_darwin.c (ffi_prep_closure): Declare fd at
