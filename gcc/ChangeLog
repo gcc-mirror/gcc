@@ -1,5 +1,8 @@
 Fri Feb 23 15:28:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* convert.c (convert_to_integer): Don't do unsigned unless result or
+	both inputs are unsigned.
+
 	* fold-const.c (fold_convert): Don't call size_int_type_wide if
 	input overflows.
 
