@@ -1,3 +1,10 @@
+2001-11-15  Dale Johannesen  <dalej@apple.com>
+
+	* config/darwin.h (SELECT_RTX_SECTION):  Force address
+	initializers into 'const' section
+	* config/rs6000/rs6000.c (rs6000_emit_cmove):  Fix mode of
+	if_then_else to match result, not operands
+
 Thu Nov 15 17:57:48 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* alias.c (nonoverlapping_memrefs): Use REGNO_PTR_FRAME_P.
