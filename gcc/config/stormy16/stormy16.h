@@ -1614,7 +1614,7 @@ enum reg_class
    This declaration must be present, but it can be an abort if profiling is
    not implemented.  */
      
-#define FUNCTION_PROFILER(FILE, LABELNO) abort ()
+#define FUNCTION_PROFILER(FILE, LABELNO) xstormy16_function_profiler ()
 
 /* Define this macro if the code for function profiling should come before the
    function prologue.  Normally, the profiling code comes after.  */

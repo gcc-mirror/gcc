@@ -1,3 +1,9 @@
+2003-05-06  DJ Delorie  <dj@redhat.com>
+
+	* config/stormy16/stormy16.c (xstormy16_function_profiler): New.
+	* config/stormy16/stormy16.h (FUNCTION_PROFILER): Call it.
+	* config/stormy16/stormy16-protos.h (xstormy16_function_profiler): New.
+
 2003-05-06    <neil@cat.daikokuya.co.uk>
 
 	* c-opts.c (COMMAND_LINE_OPTIONS): Reject -Wmissing-prototypes

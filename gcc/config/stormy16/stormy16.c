@@ -1222,6 +1222,13 @@ xstormy16_epilogue_uses (regno)
     }
   return 0;
 }
+
+void
+xstormy16_function_profiler ()
+{
+  sorry ("function_profiler support");
+}
+
 
 /* Return an updated summarizer variable CUM to advance past an
    argument in the argument list.  The values MODE, TYPE and NAMED
