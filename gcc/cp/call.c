@@ -189,7 +189,7 @@ check_dtor_name (basetype, name)
 
   if (TREE_CODE (name) == TYPE_DECL)
     name = TREE_TYPE (name);
-  else if (TREE_CODE_CLASS (TREE_CODE (name)) == 't')
+  else if (TYPE_P (name))
     /* OK */;
   else if (TREE_CODE (name) == IDENTIFIER_NODE)
     {
@@ -4192,7 +4192,7 @@ build_new_method_call (instance, name, args, basetype_path, flags)
     {
       explicit_targs = TREE_OPERAND (name, 1);
       name = TREE_OPERAND (name, 0);
-      if (TREE_CODE_CLASS (TREE_CODE (name)) == 'd')
+      if (DECL_P (name))
 	name = DECL_NAME (name);
       else
 	{

@@ -95,7 +95,7 @@ static tree
 repo_get_id (t)
      tree t;
 {
-  if (TREE_CODE_CLASS (TREE_CODE (t)) == 't')
+  if (TYPE_P (t))
     {
       /* If we're not done setting up the class, we may not have set up
 	 the vtable, so going ahead would give the wrong answer.
@@ -126,12 +126,12 @@ repo_template_used (t)
   if (id == NULL_TREE)
     return;
   
-  if (TREE_CODE_CLASS (TREE_CODE (t)) == 't')
+  if (TYPE_P (t))
     {
       if (IDENTIFIER_REPO_CHOSEN (id))
 	mark_class_instantiated (t, 0);
     }
-  else if (TREE_CODE_CLASS (TREE_CODE (t)) == 'd')
+  else if (DECL_P (t))
     {
       if (IDENTIFIER_REPO_CHOSEN (id))
 	mark_decl_instantiated (t, 0);

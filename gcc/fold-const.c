@@ -3181,7 +3181,7 @@ simple_operand_p (exp)
     exp = TREE_OPERAND (exp, 0);
 
   return (TREE_CODE_CLASS (TREE_CODE (exp)) == 'c'
-	  || (TREE_CODE_CLASS (TREE_CODE (exp)) == 'd'
+	  || (DECL_P (exp)
 	      && ! TREE_ADDRESSABLE (exp)
 	      && ! TREE_THIS_VOLATILE (exp)
 	      && ! DECL_NONLOCAL (exp)
@@ -6968,10 +6968,10 @@ fold (expr)
 
       /* If the second operand is simpler than the third, swap them
 	 since that produces better jump optimization results.  */
-      if ((TREE_CONSTANT (arg1) || TREE_CODE_CLASS (TREE_CODE (arg1)) == 'd'
+      if ((TREE_CONSTANT (arg1) || DECL_P (arg1)
 	   || TREE_CODE (arg1) == SAVE_EXPR)
 	  && ! (TREE_CONSTANT (TREE_OPERAND (t, 2))
-		|| TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (t, 2))) == 'd'
+		|| DECL_P (TREE_OPERAND (t, 2))
 		|| TREE_CODE (TREE_OPERAND (t, 2)) == SAVE_EXPR))
 	{
 	  /* See if this can be inverted.  If it can't, possibly because

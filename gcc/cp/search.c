@@ -644,7 +644,7 @@ lookup_field_1 (type, name)
 #ifdef GATHER_STATISTICS
       n_fields_searched++;
 #endif /* GATHER_STATISTICS */
-      my_friendly_assert (TREE_CODE_CLASS (TREE_CODE (field)) == 'd', 0);
+      my_friendly_assert (DECL_P (field), 0);
       if (DECL_NAME (field) == NULL_TREE
 	  && ANON_AGGR_TYPE_P (TREE_TYPE (field)))
 	{

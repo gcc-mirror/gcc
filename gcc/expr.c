@@ -5094,7 +5094,7 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
       exp = TREE_OPERAND (exp, 0);
     }
 
-  if (TREE_CODE_CLASS (TREE_CODE (exp)) == 'd')
+  if (DECL_P (exp))
     alignment = MIN (alignment, DECL_ALIGN (exp));
   else if (TREE_TYPE (exp) != 0)
     alignment = MIN (alignment, TYPE_ALIGN (TREE_TYPE (exp)));

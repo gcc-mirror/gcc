@@ -1217,7 +1217,7 @@ decl_class_context (decl)
     context = TYPE_MAIN_VARIANT
       (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (decl)))));
 
-  if (context && TREE_CODE_CLASS (TREE_CODE (context)) != 't')
+  if (context && !TYPE_P (context))
     context = NULL_TREE;
 
   return context;
@@ -4287,7 +4287,7 @@ output_type (type, containing_scope)
      written out yet, writing it out will cover this one, too.  */
 
   if (TYPE_CONTEXT (type)
-      && TREE_CODE_CLASS (TREE_CODE (TYPE_CONTEXT (type))) == 't'
+      && TYPE_P (TYPE_CONTEXT (type))
       && ! TREE_ASM_WRITTEN (TYPE_CONTEXT (type)))
     {
       output_type (TYPE_CONTEXT (type), containing_scope);

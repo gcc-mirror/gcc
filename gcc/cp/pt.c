@@ -321,7 +321,7 @@ push_inline_template_parms_recursive (parmlist, levels)
   for (i = 0; i < TREE_VEC_LENGTH (parms); ++i) 
     {
       tree parm = TREE_VALUE (TREE_VEC_ELT (parms, i));
-      my_friendly_assert (TREE_CODE_CLASS (TREE_CODE (parm)) == 'd', 0);
+      my_friendly_assert (DECL_P (parm), 0);
 
       switch (TREE_CODE (parm))
 	{
@@ -1666,8 +1666,7 @@ check_template_shadow (decl)
      that OLDDECL might be an OVERLOAD (or perhaps even an
      ERROR_MARK), so we can't just blithely assume it to be a _DECL
      node.  */
-  if (TREE_CODE_CLASS (TREE_CODE (olddecl)) != 'd'
-      || !DECL_TEMPLATE_PARM_P (olddecl))
+  if (!DECL_P (olddecl) || !DECL_TEMPLATE_PARM_P (olddecl))
     return;
 
   /* We check for decl != olddecl to avoid bogus errors for using a
@@ -2118,7 +2117,7 @@ process_partial_specialization (decl)
     {
       tree arg = TREE_VEC_ELT (inner_args, i);
       if (/* These first two lines are the `non-type' bit.  */
-	  TREE_CODE_CLASS (TREE_CODE (arg)) != 't'
+	  !TYPE_P (arg)
 	  && TREE_CODE (arg) != TEMPLATE_DECL
 	  /* This next line is the `argument expression is not just a
 	     simple identifier' condition and also the `specialized
@@ -3166,7 +3165,7 @@ convert_template_argument (parm, arg, args, complain, i, in_decl)
   else if (is_tmpl_type && TREE_CODE (arg) == RECORD_TYPE)
     arg = CLASSTYPE_TI_TEMPLATE (arg);
 
-  is_type = TREE_CODE_CLASS (TREE_CODE (arg)) == 't' || is_tmpl_type;
+  is_type = TYPE_P (arg) || is_tmpl_type;
 
   if (requires_type && ! is_type && TREE_CODE (arg) == SCOPE_REF
       && TREE_CODE (TREE_OPERAND (arg, 0)) == TEMPLATE_TYPE_PARM)
@@ -3420,7 +3419,7 @@ template_args_equal (ot, nt)
   if (TREE_CODE (nt) == TREE_VEC)
     /* For member templates */
     return comp_template_args (ot, nt);
-  else if (TREE_CODE_CLASS (TREE_CODE (ot)) == 't')
+  else if (TYPE_P (ot))
     return same_type_p (ot, nt);
   else
     return (cp_tree_equal (ot, nt) > 0);
@@ -3575,12 +3574,7 @@ static void
 add_pending_template (d)
      tree d;
 {
-  tree ti;
-
-  if (TREE_CODE_CLASS (TREE_CODE (d)) == 't')
-    ti = CLASSTYPE_TEMPLATE_INFO (d);
-  else
-    ti = DECL_TEMPLATE_INFO (d);
+  tree ti = (TYPE_P (d)) ? CLASSTYPE_TEMPLATE_INFO (d) : DECL_TEMPLATE_INFO (d);
 
   if (TI_PENDING_TEMPLATE_FLAG (ti))
     return;
@@ -3699,8 +3693,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 	}
     }
   else if (TREE_CODE (d1) == ENUMERAL_TYPE 
-	   || (TREE_CODE_CLASS (TREE_CODE (d1)) == 't' 
-	       && IS_AGGR_TYPE (d1)))
+	   || (TYPE_P (d1) && IS_AGGR_TYPE (d1)))
     {
       template = TYPE_TI_TEMPLATE (d1);
       d1 = DECL_NAME (template);
@@ -3864,8 +3857,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 		 scopes.  */
 	      for (ctx = current_class_type; 
 		   ctx; 
-		   ctx = (TREE_CODE_CLASS (TREE_CODE (ctx)) == 't') 
-		     ? TYPE_CONTEXT (ctx) : DECL_CONTEXT (ctx))
+		   ctx = (TYPE_P (ctx)) ? TYPE_CONTEXT (ctx) : DECL_CONTEXT (ctx))
 		if (same_type_p (ctx, template_type))
 		  break;
 	      
@@ -4065,7 +4057,7 @@ for_each_template_parm_r (tp, walk_subtrees, d)
   tree_fn_t fn = pfd->fn;
   void *data = pfd->data;
   
-  if (TREE_CODE_CLASS (TREE_CODE (t)) == 't'
+  if (TYPE_P (t)
       && for_each_template_parm (TYPE_CONTEXT (t), fn, data))
     return error_mark_node;
 
@@ -5136,8 +5128,7 @@ maybe_fold_nontype_arg (arg)
   if (! processing_template_decl)
     return arg;
 
-  if (TREE_CODE_CLASS (TREE_CODE (arg)) != 't'
-      && !uses_template_parms (arg))
+  if (!TYPE_P (arg) && !uses_template_parms (arg))
     {
       /* Sometimes, one of the args was an expression involving a
 	 template constant parameter, like N - 1.  Now that we've
@@ -6161,7 +6152,7 @@ tsubst (t, args, complain, in_decl)
   if (type == error_mark_node)
     return error_mark_node;
 
-  if (TREE_CODE_CLASS (TREE_CODE (t)) == 'd')
+  if (DECL_P (t))
     return tsubst_decl (t, args, type, in_decl);
 
   switch (TREE_CODE (t))
@@ -6283,8 +6274,7 @@ tsubst (t, args, complain, in_decl)
 	      {
 		if (TREE_CODE (t) == TEMPLATE_TYPE_PARM)
 		  {
-		    my_friendly_assert (TREE_CODE_CLASS (TREE_CODE (arg))
-					== 't', 0);
+		    my_friendly_assert (TYPE_P (arg), 0);
 		    return cp_build_qualified_type_real
 		      (arg, CP_TYPE_QUALS (arg) | CP_TYPE_QUALS (t),
 		       complain);
@@ -7430,7 +7420,7 @@ instantiate_template (tmpl, targ_ptr)
   while (i--)
     {
       tree t = TREE_VEC_ELT (inner_args, i);
-      if (TREE_CODE_CLASS (TREE_CODE (t)) == 't')
+      if (TYPE_P (t))
 	{
 	  tree nt = target_type (t);
 	  if (IS_AGGR_TYPE (nt) && decl_function_context (TYPE_MAIN_DECL (nt)))
@@ -7750,7 +7740,7 @@ type_unification_real (tparms, targs, parms, args, subr,
 	{
 	  tree type;
 
-	  if (TREE_CODE_CLASS (TREE_CODE (arg)) != 't')
+	  if (!TYPE_P (arg))
 	    type = TREE_TYPE (arg);
 	  else
 	    {
@@ -7772,7 +7762,7 @@ type_unification_real (tparms, targs, parms, args, subr,
 	  return 1;
 	}
 	
-      if (TREE_CODE_CLASS (TREE_CODE (arg)) != 't')
+      if (!TYPE_P (arg))
 	{
 	  my_friendly_assert (TREE_TYPE (arg) != NULL_TREE, 293);
 	  if (type_unknown_p (arg))
@@ -8246,7 +8236,7 @@ unify (tparms, targs, parm, arg, strict)
   /* Immediately reject some pairs that won't unify because of
      cv-qualification mismatches.  */
   if (TREE_CODE (arg) == TREE_CODE (parm)
-      && TREE_CODE_CLASS (TREE_CODE (arg)) == 't'
+      && TYPE_P (arg)
       /* We check the cv-qualifiers when unifying with template type
 	 parameters below.  We want to allow ARG `const T' to unify with
 	 PARM `T' for example, when computing which of two templates
@@ -9649,7 +9639,7 @@ instantiate_pending_templates ()
 	  input_filename = SRCLOC_FILE (srcloc);
 	  lineno = SRCLOC_LINE (srcloc);
 
-	  if (TREE_CODE_CLASS (TREE_CODE (instantiation)) == 't')
+	  if (TYPE_P (instantiation))
 	    {
 	      tree fn;
 
@@ -9960,7 +9950,7 @@ set_mangled_name_for_template_decl (decl)
      mangled name. Unfortunately, build_decl_overload_real does not
      get the decl to mangle, so it relies on the current
      namespace. Therefore, we set that here temporarily. */
-  my_friendly_assert (TREE_CODE_CLASS (TREE_CODE (decl)) == 'd', 980702);
+  my_friendly_assert (DECL_P (decl), 980702);
   saved_namespace = current_namespace;
   current_namespace = CP_DECL_CONTEXT (decl);  
 

@@ -494,13 +494,13 @@ decl_attributes (node, attributes, prefix_attributes)
   if (attrtab_idx == 0)
     init_attributes ();
 
-  if (TREE_CODE_CLASS (TREE_CODE (node)) == 'd')
+  if (DECL_P (node))
     {
       decl = node;
       type = TREE_TYPE (decl);
       is_type = TREE_CODE (node) == TYPE_DECL;
     }
-  else if (TREE_CODE_CLASS (TREE_CODE (node)) == 't')
+  else if (TYPE_P (node))
     type = node, is_type = 1;
 
 #ifdef PRAGMA_INSERT_ATTRIBUTES
@@ -1954,8 +1954,7 @@ check_format_info (info, params)
 	  && (TYPE_READONLY (cur_type)
 	      || (cur_param != 0
 		  && (TREE_CODE_CLASS (TREE_CODE (cur_param)) == 'c'
-		      || (TREE_CODE_CLASS (TREE_CODE (cur_param)) == 'd'
-			  && TREE_READONLY (cur_param))))))
+		      || (DECL_P (cur_param) && TREE_READONLY (cur_param))))))
 	warning ("writing into constant object (arg %d)", arg_num);
 
       /* Check the type of the "real" argument, if there's a type we want.  */
@@ -2882,7 +2881,7 @@ truthvalue_conversion (expr)
     case ADDR_EXPR:
       /* If we are taking the address of a external decl, it might be zero
 	 if it is weak, so we cannot optimize.  */
-      if (TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (expr, 0))) == 'd'
+      if (DECL_P (TREE_OPERAND (expr, 0))
 	  && DECL_EXTERNAL (TREE_OPERAND (expr, 0)))
 	break;
 
@@ -3315,8 +3314,7 @@ c_get_alias_set (t)
   if (t == error_mark_node)
     return 0;
 
-  type = (TREE_CODE_CLASS (TREE_CODE (t)) == 't')
-    ? t : TREE_TYPE (t);
+  type = (TYPE_P (t)) ? t : TREE_TYPE (t);
 
   if (type == error_mark_node)
     return 0;

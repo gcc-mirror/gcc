@@ -1514,7 +1514,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
       real_output_rtx[i] = NULL_RTX;
       if ((TREE_CODE (val) == INDIRECT_REF
 	   && allows_mem)
-	  || (TREE_CODE_CLASS (TREE_CODE (val)) == 'd'
+	  || (DECL_P (val)
 	      && (allows_mem || GET_CODE (DECL_RTL (val)) == REG)
 	      && ! (GET_CODE (DECL_RTL (val)) == REG
 		    && GET_MODE (DECL_RTL (val)) != TYPE_MODE (type)))
@@ -1990,7 +1990,7 @@ warn_if_unused_value (exp)
       
     default:
       /* Referencing a volatile value is a side effect, so don't warn.  */
-      if ((TREE_CODE_CLASS (TREE_CODE (exp)) == 'd'
+      if ((DECL_P (exp)
 	   || TREE_CODE_CLASS (TREE_CODE (exp)) == 'r')
 	  && TREE_THIS_VOLATILE (exp))
 	return 0;

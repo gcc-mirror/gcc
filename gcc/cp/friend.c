@@ -42,7 +42,7 @@ is_friend (type, supplicant)
   if (supplicant == NULL_TREE || type == NULL_TREE)
     return 0;
 
-  declp = (TREE_CODE_CLASS (TREE_CODE (supplicant)) == 'd');
+  declp = DECL_P (supplicant);
 
   if (declp)
     /* It's a function decl.  */

@@ -2148,7 +2148,7 @@ void
 note_got_semicolon (type)
      tree type;
 {
-  if (TREE_CODE_CLASS (TREE_CODE (type)) != 't')
+  if (!TYPE_P (type))
     my_friendly_abort (60);
   if (CLASS_TYPE_P (type))
     CLASSTYPE_GOT_SEMICOLON (type) = 1;
@@ -2163,7 +2163,7 @@ note_list_got_semicolon (declspecs)
   for (link = declspecs; link; link = TREE_CHAIN (link))
     {
       tree type = TREE_VALUE (link);
-      if (TREE_CODE_CLASS (TREE_CODE (type)) == 't')
+      if (TYPE_P (type))
 	note_got_semicolon (type);
     }
   clear_anon_tags ();
@@ -3418,7 +3418,7 @@ is_global (d)
       case OVERLOAD: d = OVL_FUNCTION (d); continue;
       case TREE_LIST: d = TREE_VALUE (d); continue;
       default:
-        my_friendly_assert (TREE_CODE_CLASS (TREE_CODE (d)) == 'd', 980629);
+        my_friendly_assert (DECL_P (d), 980629);
 
 	return DECL_NAMESPACE_SCOPE_P (d);
       }

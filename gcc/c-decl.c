@@ -1380,7 +1380,7 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
   tree newtype = TREE_TYPE (newdecl);
   int errmsg = 0;
 
-  if (TREE_CODE_CLASS (TREE_CODE (olddecl)) == 'd')
+  if (DECL_P (olddecl))
     DECL_MACHINE_ATTRIBUTES (newdecl)
       =  merge_machine_decl_attributes (olddecl, newdecl);
 

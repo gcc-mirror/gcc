@@ -1676,8 +1676,7 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
 		 static, since references are initialized with the address.  */
 	      if (TREE_CODE (TREE_TYPE (value)) != REFERENCE_TYPE
 		  || (TREE_STATIC (init) == 0
-		      && (TREE_CODE_CLASS (TREE_CODE (init)) != 'd'
-			  || DECL_EXTERNAL (init) == 0)))
+		      && (!DECL_P (init) || DECL_EXTERNAL (init) == 0)))
 		{
 		  error ("field initializer is not constant");
 		  init = error_mark_node;
@@ -3878,7 +3877,7 @@ build_expr_from_tree (t)
     case ALIGNOF_EXPR:
       {
 	tree r = build_expr_from_tree (TREE_OPERAND (t, 0));
-	if (TREE_CODE_CLASS (TREE_CODE (r)) != 't')
+	if (!TYPE_P (r))
 	  r = TREE_TYPE (r);
 	return TREE_CODE (t) == SIZEOF_EXPR ? c_sizeof (r) : c_alignof (r);
       }
@@ -4046,7 +4045,7 @@ build_expr_from_tree (t)
       }
 
     case TYPEID_EXPR:
-      if (TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (t, 0))) == 't')
+      if (TYPE_P (TREE_OPERAND (t, 0)))
 	return get_typeid (TREE_OPERAND (t, 0));
       return build_typeid (build_expr_from_tree (TREE_OPERAND (t, 0)));
 
@@ -4473,9 +4472,9 @@ decl_namespace (decl)
       decl = DECL_CONTEXT (decl);
       if (TREE_CODE (decl) == NAMESPACE_DECL)
 	return decl;
-      if (TREE_CODE_CLASS (TREE_CODE (decl)) == 't')
+      if (TYPE_P (decl))
 	decl = TYPE_STUB_DECL (decl);
-      my_friendly_assert (TREE_CODE_CLASS (TREE_CODE (decl)) == 'd', 390);
+      my_friendly_assert (DECL_P (decl), 390);
     }
 
   return global_namespace;
@@ -4656,7 +4655,7 @@ arg_assoc_template_arg (k, arg)
     }
   /* It's not a template template argument, but it is a type template
      argument.  */
-  else if (TREE_CODE_CLASS (TREE_CODE (arg)) == 't')
+  else if (TYPE_P (arg))
     return arg_assoc_type (k, arg);
   /* It's a non-type template argument.  */
   else
@@ -4794,7 +4793,7 @@ arg_assoc (k, n)
   if (n == error_mark_node)
     return 0;
 
-  if (TREE_CODE_CLASS (TREE_CODE (n)) == 't')
+  if (TYPE_P (n))
     return arg_assoc_type (k, n);
 
   if (! type_unknown_p (n))
@@ -4959,7 +4958,7 @@ validate_nonmember_using_decl (decl, scope, name)
     }
   else
     my_friendly_abort (382);
-  if (TREE_CODE_CLASS (TREE_CODE (*name)) == 'd')
+  if (DECL_P (*name))
     *name = DECL_NAME (*name);
   /* Make a USING_DECL. */
   return push_using_decl (*scope, *name);
@@ -5136,7 +5135,7 @@ do_class_using_decl (decl)
   tree name, value;
 
   if (TREE_CODE (decl) != SCOPE_REF
-      || TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (decl, 0))) != 't')
+      || !TYPE_P (TREE_OPERAND (decl, 0)))
     {
       cp_error ("using-declaration for non-member at class scope");
       return NULL_TREE;

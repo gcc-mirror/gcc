@@ -950,8 +950,7 @@ default_conversion (exp)
       int constp = 0;
       int volatilep = 0;
 
-      if (TREE_CODE_CLASS (TREE_CODE (exp)) == 'r'
-	  || TREE_CODE_CLASS (TREE_CODE (exp)) == 'd')
+      if (TREE_CODE_CLASS (TREE_CODE (exp)) == 'r' || DECL_P (exp))
 	{
 	  constp = TREE_READONLY (exp);
 	  volatilep = TREE_THIS_VOLATILE (exp);
@@ -2987,8 +2986,7 @@ build_unary_op (code, xarg, noconvert)
          to which the address will point.  Note that you can't get a
 	 restricted pointer by taking the address of something, so we
 	 only have to deal with `const' and `volatile' here.  */
-      if (TREE_CODE_CLASS (TREE_CODE (arg)) == 'd'
-	  || TREE_CODE_CLASS (TREE_CODE (arg)) == 'r')
+      if (DECL_P (arg) || TREE_CODE_CLASS (TREE_CODE (arg)) == 'r')
 	{
 	  if (TREE_READONLY (arg) || TREE_THIS_VOLATILE (arg))
 	    argtype = c_build_type_variant (argtype,

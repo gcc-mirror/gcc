@@ -541,9 +541,9 @@ static const char *
 classname (cls)
      tree cls;
 {
-  if (cls && TREE_CODE_CLASS (TREE_CODE (cls)) == 't')
+  if (cls && TYPE_P (cls))
     cls = TYPE_NAME (cls);
-  if (cls && TREE_CODE_CLASS (TREE_CODE (cls)) == 'd')
+  if (cls && DECL_P (cls))
     cls = DECL_NAME (cls);
   if (cls && TREE_CODE (cls) == IDENTIFIER_NODE)
     return IDENTIFIER_POINTER (cls);

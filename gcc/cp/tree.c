@@ -1262,7 +1262,7 @@ walk_tree (tp, func, data)
 	{
 	  if (code == DECL_STMT 
 	      && DECL_STMT_DECL (*tp) 
-	      && TREE_CODE_CLASS (TREE_CODE (DECL_STMT_DECL (*tp))) == 'd')
+	      && DECL_P (DECL_STMT_DECL (*tp)))
 	    {
 	      /* Walk the DECL_INITIAL and DECL_SIZE.  We don't want to walk
 		 into declarations that are just mentioned, rather than
@@ -1730,7 +1730,7 @@ get_type_decl (t)
 {
   if (TREE_CODE (t) == TYPE_DECL)
     return t;
-  if (TREE_CODE_CLASS (TREE_CODE (t)) == 't')
+  if (TYPE_P (t))
     return TYPE_STUB_DECL (t);
   
   my_friendly_abort (42);
@@ -1915,7 +1915,7 @@ cp_tree_equal (t1, t2)
     case ALIGNOF_EXPR:
       if (TREE_CODE (TREE_OPERAND (t1, 0)) != TREE_CODE (TREE_OPERAND (t2, 0)))
 	return 0;
-      if (TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (t1, 0))) == 't')
+      if (TYPE_P (TREE_OPERAND (t1, 0)))
 	return same_type_p (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
       break;
 
@@ -2051,8 +2051,8 @@ int
 member_p (decl)
      tree decl;
 {
-  tree ctx = DECL_CONTEXT (decl);
-  return (ctx && TREE_CODE_CLASS (TREE_CODE (ctx)) == 't');
+  const tree ctx = DECL_CONTEXT (decl);
+  return (ctx && TYPE_P (ctx));
 }
 
 /* Create a placeholder for member access where we don't actually have an

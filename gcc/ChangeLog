@@ -1,3 +1,20 @@
+2000-03-22  Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
+
+        * builtin.c (get_pointer_alignment): Use DECL_P and TYPE_P macros.
+	* c-common.c (decl_attributes,check_format_info,truthvalue_conversion,
+	  c_get_alias_set): Likewise.
+	* c-decl.c (duplicate_decls): Likewise.
+	* c-typeck.c (default_conversion,build_unary_op): Likewise.
+	* calls.c (initialize_argument_information): Likewise.
+	* dwarf2out.c (decl_class_context,add_abstract_origin_attribute):
+	Likewise.
+	* dwarfout.c (decl_class_context,output_type): Likewise.
+	* expr.c (get_inner_reference): Likewise.
+	* fold-const.c (simple_operand_p,fold): Likewise.
+	* function.c (aggregate_value_p): Likewise.
+	* stmt.c (expand_asm_operands): Likewise.
+	* varasm.c (named_section): Likewise.
+
 2000-03-22  Jason Merrill  <jason@casey.cygnus.com>
 
 	Implement dwarf2 exception handling for the ARM.

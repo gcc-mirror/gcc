@@ -158,7 +158,7 @@ get_pointer_alignment (exp, max_align)
 	  exp = TREE_OPERAND (exp, 0);
 	  if (TREE_CODE (exp) == FUNCTION_DECL)
 	    align = FUNCTION_BOUNDARY;
-	  else if (TREE_CODE_CLASS (TREE_CODE (exp)) == 'd')
+	  else if (DECL_P (exp))
 	    align = DECL_ALIGN (exp);
 #ifdef CONSTANT_ALIGNMENT
 	  else if (TREE_CODE_CLASS (TREE_CODE (exp)) == 'c')
