@@ -264,8 +264,8 @@ emit_call_1 (funexp, funtype, stack_size, struct_value_size, next_arg_reg,
      rtx use_insns;
      int is_const;
 {
-  rtx stack_size_rtx = gen_rtx (CONST_INT, VOIDmode, stack_size);
-  rtx struct_value_size_rtx = gen_rtx (CONST_INT, VOIDmode, struct_value_size);
+  rtx stack_size_rtx = GEN_INT (stack_size);
+  rtx struct_value_size_rtx = GEN_INT (struct_value_size);
   rtx call_insn;
   int already_popped = 0;
 
@@ -280,8 +280,7 @@ emit_call_1 (funexp, funtype, stack_size, struct_value_size, next_arg_reg,
   if (HAVE_call_pop && HAVE_call_value_pop
       && (RETURN_POPS_ARGS (funtype, stack_size) > 0 || stack_size == 0))
     {
-      rtx n_pop = gen_rtx (CONST_INT, VOIDmode, 
-			   RETURN_POPS_ARGS (funtype, stack_size));
+      rtx n_pop = GEN_INT (RETURN_POPS_ARGS (funtype, stack_size));
       rtx pat;
 
       /* If this subroutine pops its own args, record that in the call insn
@@ -346,7 +345,7 @@ emit_call_1 (funexp, funtype, stack_size, struct_value_size, next_arg_reg,
       if (!already_popped)
 	emit_insn (gen_rtx (CLOBBER, VOIDmode, stack_pointer_rtx));
       stack_size -= RETURN_POPS_ARGS (funtype, stack_size);
-      stack_size_rtx = gen_rtx (CONST_INT, VOIDmode, stack_size);
+      stack_size_rtx = GEN_INT (stack_size);
     }
 
   if (stack_size != 0)
@@ -652,13 +651,12 @@ expand_call (exp, target, ignore)
 #endif
 		  start_sequence ();
 		  emit_stack_save (SAVE_BLOCK, &old_stack_level, 0);
-		  allocate_dynamic_stack_space (gen_rtx (CONST_INT, VOIDmode,
-							 adjust),
-						0, BITS_PER_UNIT);
+		  allocate_dynamic_stack_space (GEN_INT (adjust),
+						NULL_RTX, BITS_PER_UNIT);
 		  seq = get_insns ();
 		  end_sequence ();
 		  emit_insns_before (seq, NEXT_INSN (before_call));
-		  emit_stack_restore (SAVE_BLOCK, old_stack_level, 0);
+		  emit_stack_restore (SAVE_BLOCK, old_stack_level, NULL_RTX);
 		}
 	    }
 #endif
@@ -767,7 +765,7 @@ expand_call (exp, target, ignore)
   push_temp_slots ();
 
   /* Start updating where the next arg would go.  */
-  INIT_CUMULATIVE_ARGS (args_so_far, funtype, 0);
+  INIT_CUMULATIVE_ARGS (args_so_far, funtype, NULL_PTR);
 
   /* If struct_value_rtx is 0, it means pass the address
      as if it were an extra parameter.  */
@@ -877,18 +875,18 @@ expand_call (exp, target, ignore)
 	    {
 	      /* This is a variable-sized object.  Make space on the stack
 		 for it.  */
-	      rtx size_rtx = expand_expr (size_in_bytes (type), 0,
+	      rtx size_rtx = expand_expr (size_in_bytes (type), NULL_RTX,
 					  VOIDmode, 0);
 
 	      if (old_stack_level == 0)
 		{
-		  emit_stack_save (SAVE_BLOCK, &old_stack_level, 0);
+		  emit_stack_save (SAVE_BLOCK, &old_stack_level, NULL_RTX);
 		  old_pending_adj = pending_stack_adjust;
 		  pending_stack_adjust = 0;
 		}
 
 	      copy = gen_rtx (MEM, BLKmode,
-			      allocate_dynamic_stack_space (size_rtx, 0,
+			      allocate_dynamic_stack_space (size_rtx, NULL_RTX,
 							    TYPE_ALIGN (type)));
 	    }
 	  else
@@ -1122,7 +1120,7 @@ expand_call (exp, target, ignore)
 	    && calls_alloca (args[i].tree_value)))
       {
 	args[i].initial_value = args[i].value
-	  = expand_expr (args[i].tree_value, 0, VOIDmode, 0);
+	  = expand_expr (args[i].tree_value, NULL_RTX, VOIDmode, 0);
 	preserve_temp_slots (args[i].value);
 	free_temp_slots ();
 
@@ -1143,7 +1141,7 @@ expand_call (exp, target, ignore)
     {
       if (old_stack_level == 0)
 	{
-	  emit_stack_save (SAVE_BLOCK, &old_stack_level, 0);
+	  emit_stack_save (SAVE_BLOCK, &old_stack_level, NULL_RTX);
 	  old_pending_adj = pending_stack_adjust;
 	  pending_stack_adjust = 0;
 #ifdef ACCUMULATE_OUTGOING_ARGS
@@ -1235,7 +1233,7 @@ expand_call (exp, target, ignore)
       if (needed == 0)
 	argblock = virtual_outgoing_args_rtx;
       else
-	argblock = push_block (gen_rtx (CONST_INT, VOIDmode, needed), 0, 0);
+	argblock = push_block (GEN_INT (needed), 0, 0);
 
       /* We only really need to call `copy_to_reg' in the case where push
 	 insns are going to be used to pass ARGBLOCK to a function
@@ -1255,14 +1253,13 @@ expand_call (exp, target, ignore)
   if (stack_arg_under_construction)
     {
 #if defined(REG_PARM_STACK_SPACE) && ! defined(OUTGOING_REG_PARM_STACK_SPACE)
-      rtx push_size = gen_rtx (CONST_INT, VOIDmode,
-			       reg_parm_stack_space + args_size.constant);
+      rtx push_size = GEN_INT (reg_parm_stack_space + args_size.constant);
 #else
-      rtx push_size = gen_rtx (CONST_INT, VOIDmode, args_size.constant);
+      rtx push_size = GEN_INT (args_size.constant);
 #endif
       if (old_stack_level == 0)
 	{
-	  emit_stack_save (SAVE_BLOCK, &old_stack_level, 0);
+	  emit_stack_save (SAVE_BLOCK, &old_stack_level, NULL_RTX);
 	  old_pending_adj = pending_stack_adjust;
 	  pending_stack_adjust = 0;
 	  /* stack_arg_under_construction says whether a stack arg is
@@ -1275,7 +1272,7 @@ expand_call (exp, target, ignore)
 	  bzero (stack_usage_map, highest_outgoing_arg_in_use);
 	  highest_outgoing_arg_in_use = 0;
 	}
-      allocate_dynamic_stack_space (push_size, 0, BITS_PER_UNIT);
+      allocate_dynamic_stack_space (push_size, NULL_RTX, BITS_PER_UNIT);
     }
   /* If argument evaluation might modify the stack pointer, copy the
      address of the argument list to a register.  */
@@ -1334,9 +1331,8 @@ expand_call (exp, target, ignore)
   /* If we push args individually in reverse order, perform stack alignment
      before the first push (the last arg).  */
   if (argblock == 0)
-    anti_adjust_stack (gen_rtx (CONST_INT, VOIDmode,
-				(args_size.constant
-				 - original_args_size.constant)));
+    anti_adjust_stack (GEN_INT (args_size.constant
+				- original_args_size.constant));
 #endif
 #endif
 
@@ -1352,7 +1348,7 @@ expand_call (exp, target, ignore)
   else
     /* Generate an rtx (probably a pseudo-register) for the address.  */
     {
-      funexp = expand_expr (TREE_OPERAND (exp, 0), 0, VOIDmode, 0);
+      funexp = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, VOIDmode, 0);
       free_temp_slots ();	/* FUNEXP can't be BLKmode */
       emit_queue ();
     }
@@ -1379,7 +1375,8 @@ expand_call (exp, target, ignore)
 
 	if (args[i].value == 0)
 	  {
-	    args[i].value = expand_expr (args[i].tree_value, 0, VOIDmode, 0);
+	    args[i].value = expand_expr (args[i].tree_value, NULL_RTX,
+					 VOIDmode, 0);
 	    preserve_temp_slots (args[i].value);
 	    free_temp_slots ();
 
@@ -1428,7 +1425,7 @@ expand_call (exp, target, ignore)
 	{
 	  save_area = assign_stack_temp (BLKmode, num_to_save, 1);
 	  emit_block_move (validize_mem (save_area), stack_area,
-			   gen_rtx (CONST_INT, VOIDmode, num_to_save),
+			   GEN_INT (num_to_save),
 			   PARM_BOUNDARY / BITS_PER_UNIT);
 	}
       else
@@ -1464,9 +1461,8 @@ expand_call (exp, target, ignore)
   /* If we pushed args in forward order, perform stack alignment
      after pushing the last arg.  */
   if (argblock == 0)
-    anti_adjust_stack (gen_rtx (CONST_INT, VOIDmode,
-				(args_size.constant
-				 - original_args_size.constant)));
+    anti_adjust_stack (GEN_INT (args_size.constant
+				- original_args_size.constant));
 #endif
 #endif
 
@@ -1475,7 +1471,7 @@ expand_call (exp, target, ignore)
      passed in registers.  */
 #if ! defined(ALLOCATE_OUTGOING_ARGS) && defined(OUTGOING_REG_PARM_STACK_SPACE)
   if (must_preallocate == 0 && reg_parm_stack_space > 0)
-    anti_adjust_stack (gen_rtx (CONST_INT, VOIDmode, reg_parm_stack_space));
+    anti_adjust_stack (GEN_INT (reg_parm_stack_space));
 #endif
 
   /* Pass the function the address in which to return a structure value.  */
@@ -1483,7 +1479,8 @@ expand_call (exp, target, ignore)
     {
       emit_move_insn (struct_value_rtx,
 		      force_reg (Pmode,
-				 force_operand (structure_value_addr, 0)));
+				 force_operand (structure_value_addr,
+						NULL_RTX)));
       if (GET_CODE (struct_value_rtx) == REG)
 	{
 	  push_to_sequence (use_insns);
@@ -1675,7 +1672,7 @@ expand_call (exp, target, ignore)
 
   if (old_stack_level)
     {
-      emit_stack_restore (SAVE_BLOCK, old_stack_level, 0);
+      emit_stack_restore (SAVE_BLOCK, old_stack_level, NULL_RTX);
       pending_stack_adjust = old_pending_adj;
 #ifdef ACCUMULATE_OUTGOING_ARGS
       stack_arg_under_construction = old_stack_arg_under_construction;
@@ -1699,9 +1696,8 @@ expand_call (exp, target, ignore)
 	    emit_move_insn (stack_area, save_area);
 	  else
 	    emit_block_move (stack_area, validize_mem (save_area),
-			     gen_rtx (CONST_INT, VOIDmode,
-				      high_to_save - low_to_save + 1,
-				      PARM_BOUNDARY / BITS_PER_UNIT));
+			     GEN_INT (high_to_save - low_to_save + 1),
+			     PARM_BOUNDARY / BITS_PER_UNIT);
 	}
 #endif
 	  
@@ -1719,8 +1715,7 @@ expand_call (exp, target, ignore)
 	      emit_move_insn (stack_area, args[i].save_area);
 	    else
 	      emit_block_move (stack_area, validize_mem (args[i].save_area),
-			       gen_rtx (CONST_INT, VOIDmode,
-					args[i].size.constant),
+			       GEN_INT (args[i].size.constant),
 			       PARM_BOUNDARY / BITS_PER_UNIT);
 	  }
 
@@ -1734,7 +1729,7 @@ expand_call (exp, target, ignore)
      for non-local gotos. */
 
   if (may_be_alloca && nonlocal_goto_handler_slot != 0)
-    emit_stack_save (SAVE_NONLOCAL, &nonlocal_goto_stack_level, 0);
+    emit_stack_save (SAVE_NONLOCAL, &nonlocal_goto_stack_level, NULL_RTX);
 
   pop_temp_slots ();
 
@@ -1861,8 +1856,7 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size, fndecl,
 	      arg->save_area = assign_stack_temp (BLKmode,
 						  arg->size.constant, 1);
 	      emit_block_move (validize_mem (arg->save_area), stack_area,
-			       gen_rtx (CONST_INT, VOIDmode,
-					arg->size.constant),
+			       GEN_INT (arg->size.constant),
 			       PARM_BOUNDARY / BITS_PER_UNIT);
 	    }
 	  else
@@ -1916,7 +1910,8 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size, fndecl,
       if (arg->pass_on_stack)
 	stack_arg_under_construction++;
 #endif
-      arg->value = expand_expr (pval, partial ? 0 : arg->stack, VOIDmode, 0);
+      arg->value = expand_expr (pval, partial ? NULL_RTX : arg->stack,
+				VOIDmode, 0);
 #ifdef ACCUMULATE_OUTGOING_ARGS
       if (arg->pass_on_stack)
 	stack_arg_under_construction--;
@@ -1994,7 +1989,7 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size, fndecl,
 	     emit_push_insn for BLKmode is careful to avoid it.  */
 	  excess = (arg->size.constant - TREE_INT_CST_LOW (size)
 		    + partial * UNITS_PER_WORD);
-	  size_rtx = expand_expr (size, 0, VOIDmode, 0);
+	  size_rtx = expand_expr (size, NULL_RTX, VOIDmode, 0);
 	}
 
       emit_push_insn (arg->value, TYPE_MODE (TREE_TYPE (pval)),
