@@ -28,9 +28,6 @@ Boston, MA 02111-1307, USA.  */
 #undef LIB_SPEC
 #define LIB_SPEC "%{pg:-lgmon} %{pg:-lc_p} %{!pg:-lc}"
 
-/* Generate calls to memcpy, etc., not bcopy, etc. */
-#define TARGET_MEM_FUNCTIONS
-
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO)			\
 	fputs ("\tlda $28,_mcount\n\tjsr $28,($28),_mcount\n", (FILE))
