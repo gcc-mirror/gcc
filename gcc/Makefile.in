@@ -3166,7 +3166,7 @@ site.exp: ./config.status Makefile
 	@echo "set target_alias $(target_alias)" >> ./tmp0
 # CFLAGS is set even though it's empty to show we reserve the right to set it.
 	@echo "set CFLAGS \"\"" >> ./tmp0
-	@echo "set CXXFLAGS \"-I$(objdir)/../$(target_subdir)libio -I\$$srcdir/../libg++/src -I\$$srcdir/../libio -I\$$srcdir/../libstdc++ -I\$$srcdir/../libstdc++/stl -L$(objdir)/../$(target_subdir)libg++ -L$(objdir)/../$(target_subdir)libstdc++\"" >> ./tmp0
+	@echo "set CXXFLAGS \"\"" >> ./tmp0
 	@echo "set TESTING_IN_BUILD_TREE 1" >> ./tmp0
 	@echo "set HAVE_LIBSTDCXX_V3 1" >> ./tmp0
 # If newlib has been configured, we need to pass -B to gcc so it can find
