@@ -659,13 +659,6 @@ extern void	xfree		__proto((PTR_T));
 extern void	fatal();	/* can't use prototypes here */
 extern void	error();
 
-#if !defined(__OSF1__) && !defined(__OSF__) && !defined(__osf__)
-extern char *index ();
-extern char *rindex ();
-#else
-#undef rindex
-#undef index
-#endif
 
 #ifndef MIPS_DEBUGGING_INFO
 
@@ -685,6 +678,11 @@ main ()
 
 #else				/* MIPS_DEBUGGING defined */
 
+/* The local and global symbols have a field index, so undo any defines
+   of index -> strchr and rindex -> strrchr.  */
+
+#undef rindex
+#undef index
 
 #include <sys/types.h>
 #include <a.out.h>
@@ -1728,6 +1726,9 @@ STATIC void	  free_scope		__proto((scope_t *));
 STATIC void	  free_tag		__proto((tag_t *));
 STATIC void	  free_thead		__proto((thead_t *));
 
+STATIC char	 *local_index		__proto((const char *, int));
+STATIC char	 *local_rindex		__proto((const char *, int));
+
 extern char  *sbrk			__proto((int));
 extern PTR_T  malloc			__proto((Size_t));
 extern PTR_T  calloc			__proto((Size_t, Size_t));
@@ -1927,7 +1928,7 @@ add_local_symbol (str_start, str_end_p1, type, storage, value, indx)
   psym->value = value;
   psym->st = (unsigned) type;
   psym->sc = (unsigned) storage;
-  psym->indx = indx;
+  psym->index = indx;
   psym->iss = (str_start == (const char *)0)
 		? 0
 		: add_string (&cur_file_ptr->strings,
@@ -2015,13 +2016,13 @@ add_local_symbol (str_start, str_end_p1, type, storage, value, indx)
 	    }
 
 	  cur_file_ptr->cur_scope = pscope->prev;
-	  psym->indx = pscope->lnumber;		/* blk end gets begin sym # */
+	  psym->index = pscope->lnumber;	/* blk end gets begin sym # */
 
 	  if (storage != sc_Info)
 	    psym->iss = pscope->lsym->iss;	/* blk end gets same name */
 
 	  if (begin_type == st_File || begin_type == st_Block)
-	    pscope->lsym->indx = ret+1;		/* block begin gets next sym # */
+	    pscope->lsym->index = ret+1;	/* block begin gets next sym # */
 
 	  /* Functions push two or more aux words as follows:
 	     1st word: index+1 of the end symbol
@@ -2030,14 +2031,14 @@ add_local_symbol (str_start, str_end_p1, type, storage, value, indx)
 	  else
 	    {
 	      symint_t type;
-	      pscope->lsym->indx = add_aux_sym_symint (ret+1);
+	      pscope->lsym->index = add_aux_sym_symint (ret+1);
 	      type = add_aux_sym_tir (&last_func_type_info,
 				      hash_no,
 				      &cur_file_ptr->thash_head[0]);
 	      if (last_func_eptr)
 		{
 		  last_func_eptr->ifd = cur_file_ptr->file_index;
-		  last_func_eptr->asym.indx = type;
+		  last_func_eptr->asym.index = type;
 		}
 	    }
 
@@ -2112,7 +2113,7 @@ add_ext_symbol (str_start, str_end_p1, type, storage, value, indx, ifd)
   psym->asym.value = value;
   psym->asym.st    = (unsigned) type;
   psym->asym.sc    = (unsigned) storage;
-  psym->asym.indx  = indx;
+  psym->asym.index = indx;
   psym->asym.iss   = (str_start == (const char *)0)
 			? 0
 			: add_string (&ext_strings,
@@ -2431,7 +2432,7 @@ add_unknown_tag (ptag)
       f_next = f_next->next;
 
       f_cur->ifd_ptr->isym = file_index;
-      f_cur->index_ptr->rndx.indx = sym_index;
+      f_cur->index_ptr->rndx.index = sym_index;
 
       free_forward (f_cur);
     }
@@ -3339,10 +3340,10 @@ parse_def (name_start)
      external symbol.  */
 
   if (eptr != (EXTR *)0
-      && (eptr->asym.indx == indexNil || cur_proc_ptr == (PDR *)0))
+      && (eptr->asym.index == indexNil || cur_proc_ptr == (PDR *)0))
     {
       eptr->ifd = cur_file_ptr->file_index;
-      eptr->asym.indx = indx;
+      eptr->asym.index = indx;
     }
 
 
@@ -3429,7 +3430,7 @@ parse_def (name_start)
 	      f_next = f_next->next;
 
 	      f_cur->ifd_ptr->isym = file_index;
-	      f_cur->index_ptr->rndx.indx = isym;
+	      f_cur->index_ptr->rndx.index = isym;
 
 	      free_forward (f_cur);
 	    }
@@ -3563,8 +3564,8 @@ parse_file (start)
 
   (void) strtol (start, &p, 0);
   if (start == p
-      || (start_name = index (p, '"')) == (char *)0
-      || (end_name_p1 = rindex (++start_name, '"')) == (char *)0)
+      || (start_name = local_index (p, '"')) == (char *)0
+      || (end_name_p1 = local_rindex (++start_name, '"')) == (char *)0)
     {
       error ("Illegal .file directive");
       return;
@@ -3817,7 +3818,7 @@ STATIC void
 parse_stabs (start)
      const char *start;			/* start of directive */
 {
-  const char *end = index (start+1, '"');
+  const char *end = local_index (start+1, '"');
 
   if (*start != '"' || end == (const char *)0 || end[1] != ',')
     {
@@ -4515,7 +4516,7 @@ copy_object __proto((void))
       && orig_files->caux == 0)
     {
       char *filename = orig_local_strs + (orig_files->issBase + orig_files->rss);
-      char *suffix = rindex (filename, '.');
+      char *suffix = local_rindex (filename, '.');
 
       if (suffix != (char *)0 && strcmp (suffix, ".s") == 0)
 	delete_ifd = 1;
@@ -4564,7 +4565,7 @@ copy_object __proto((void))
 			     (st_t) eptr->asym.st,
 			     (sc_t) eptr->asym.sc,
 			     eptr->asym.value,
-			     (symint_t)((eptr->asym.indx == indexNil) ? indexNil : 0),
+			     (symint_t)((eptr->asym.index == indexNil) ? indexNil : 0),
 			     (ifd < orig_sym_hdr.ifdMax) ? remap_file_number[ ifd ] : ifd);
     }
 
@@ -4749,7 +4750,7 @@ main (argc, argv)
      char *argv[];
 {
   int iflag = 0;
-  char *p = rindex (argv[0], '/');
+  char *p = local_rindex (argv[0], '/');
   char *num_end;
   int option;
   int i;
@@ -5620,4 +5621,41 @@ xfree (ptr)
     fprintf (stderr, "\tfree\tptr = 0x%.8x\n", ptr);
 
   free (ptr);
+}
+
+
+/* Define our own index/rindex, since the local and global symbol
+   structures as defined by MIPS has an 'index' field.  */
+
+STATIC char *
+local_index (str, sentinel)
+     const char *str;
+     int sentinel;
+{
+  int ch;
+
+  for ( ; (ch = *str) != sentinel; str++)
+    {
+      if (ch == '\0')
+	return (char *)0;
+    }
+
+  return (char *)str;
+}
+
+STATIC char *
+local_rindex (str, sentinel)
+     const char *str;
+     int sentinel;
+{
+  int ch;
+  const char *ret = (const char *)0;
+
+  for ( ; (ch = *str) != '\0'; str++)
+    {
+      if (ch == sentinel)
+	ret = str;
+    }
+
+  return (char *)ret;
 }
