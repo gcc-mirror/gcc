@@ -1310,7 +1310,10 @@ collect_expansion (pfile, buf, limit, nargs, arglist)
 	break;
 
       case '@':
-	*exp_p++ = c;
+	/* An '@' in a string or character constant stands for itself,
+	   and does not need to be escaped. */
+	if (!expected_delimiter)
+	  *exp_p++ = c;
 	break;
 
       case '#':
