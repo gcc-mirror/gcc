@@ -211,6 +211,9 @@ struct lexer_state
   /* Nonzero if in a directive that takes angle-bracketed headers.  */
   unsigned char angled_headers;
 
+  /* Nonzero if in a #if or #elif directive.  */
+  unsigned char in_expression;
+
   /* Nonzero to save comments.  Turned off if discard_comments, and in
      all directives apart from #define.  */
   unsigned char save_comments;
@@ -308,6 +311,9 @@ struct cpp_reader
 {
   /* Top of buffer stack.  */
   cpp_buffer *buffer;
+
+  /* Overlaid buffer (can be different after processing #include).  */
+  cpp_buffer *overlaid_buffer;
 
   /* Lexer state.  */
   struct lexer_state state;
