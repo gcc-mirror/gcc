@@ -41,28 +41,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 static tree calls_setjmp_r (tree *, int *, void *);
 static void update_cloned_parm (tree, tree);
-static void dump_function (enum tree_dump_index, tree);
-
-/* Optimize the body of FN.  */
-
-void
-optimize_function (tree fn)
-{
-  dump_function (TDI_original, fn);
-
-  if (flag_inline_trees
-      /* We do not inline thunks, as (a) the backend tries to optimize
-         the call to the thunkee, (b) tree based inlining breaks that
-         optimization, (c) virtual functions are rarely inlineable,
-         and (d) TARGET_ASM_OUTPUT_MI_THUNK is there to DTRT anyway.  */
-      && !DECL_THUNK_P (fn))
-    {
-      optimize_inline_calls (fn);
-      dump_function (TDI_inlined, fn);
-    }
-  
-  dump_function (TDI_optimized, fn);
-}
 
 /* Called from calls_setjmp_p via walk_tree.  */
 
@@ -247,27 +225,4 @@ maybe_clone_body (tree fn)
 
   /* We don't need to process the original function any further.  */
   return 1;
-}
-
-/* Dump FUNCTION_DECL FN as tree dump PHASE.  */
-
-static void
-dump_function (enum tree_dump_index phase, tree fn)
-{
-  FILE *stream;
-  int flags;
-
-  stream = dump_begin (phase, &flags);
-  if (stream)
-    {
-      fprintf (stream, "\n;; Function %s",
-	       decl_as_string (fn, TFF_DECL_SPECIFIERS));
-      fprintf (stream, " (%s)\n",
-	       decl_as_string (DECL_ASSEMBLER_NAME (fn), 0));
-      fprintf (stream, ";; enabled by -fdump-%s\n", dump_flag_name (phase));
-      fprintf (stream, "\n");
-      
-      dump_node (fn, TDF_SLIM | flags, stream);
-      dump_end (phase, stream);
-    }
 }

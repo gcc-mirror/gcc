@@ -2925,10 +2925,6 @@ expand_body (tree fn)
   /* Emit any thunks that should be emitted at the same time as FN.  */
   emit_associated_thunks (fn);
 
-  timevar_push (TV_INTEGRATION);
-  optimize_function (fn);
-  timevar_pop (TV_INTEGRATION);
-
   tree_rest_of_compilation (fn, function_depth > 1);
 
   current_function_decl = saved_function;
