@@ -331,9 +331,9 @@ exchange (argv)
 	nonoption_flags_len = nonoption_flags_max_len = 0;
       else
 	{
-	  memcpy (new_str, __getopt_nonoption_flags, nonoption_flags_max_len);
-	  memset (&new_str[nonoption_flags_max_len], '\0',
-		  top + 1 - nonoption_flags_max_len);
+	  memset (__mempcpy (new_str, __getopt_nonoption_flags,
+			     nonoption_flags_max_len),
+		  '\0', top + 1 - nonoption_flags_max_len);
 	  nonoption_flags_max_len = top + 1;
 	  __getopt_nonoption_flags = new_str;
 	}
@@ -442,11 +442,8 @@ _getopt_initialize (argc, argv, optstring)
 	      if (__getopt_nonoption_flags == NULL)
 		nonoption_flags_max_len = -1;
 	      else
-		{
-		  memcpy (__getopt_nonoption_flags, orig_str, len);
-		  memset (&__getopt_nonoption_flags[len], '\0',
-			  nonoption_flags_max_len - len);
-		}
+		memset (__mempcpy (__getopt_nonoption_flags, orig_str, len),
+			'\0', nonoption_flags_max_len - len);
 	    }
 	}
       nonoption_flags_len = nonoption_flags_max_len;
