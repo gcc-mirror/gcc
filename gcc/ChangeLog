@@ -1,3 +1,14 @@
+2004-12-23  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (ix86_expand_vector_move): Tidy.
+	(ix86_expand_vector_move_misalign): New.
+	(ix86_misaligned_mem_ok): Remove.
+	(TARGET_VECTORIZE_MISALIGNED_MEM_OK): Remove.
+	* config/i386/i386-protos.h: Update.
+	* config/i386/i386.md (SSEMODEI): Rename from SSEINT16.
+	(MMXMODEI): Rename from MMXINT8.
+	(SSEMODE, MMXMODE, movmisalign<mode>): New.
+
 2004-12-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/16405
