@@ -707,6 +707,12 @@ package body Prj.Part is
                                      (Original_Path,
                                       Project_Directory_Path);
 
+            Resolved_Path : constant String :=
+                              Normalize_Pathname
+                                (Imported_Path_Name,
+                                 Resolve_Links => True,
+                                 Case_Sensitive => False);
+
             Withed_Project : Project_Node_Id := Empty_Node;
 
          begin
@@ -750,21 +756,17 @@ package body Prj.Part is
                  (Current_Project, Current_With.Path);
                Set_Location_Of (Current_Project, Current_With.Location);
 
-               --  If this is a "limited with", check if we have
-               --  a circularity; if we have one, get the project id
-               --  of the limited imported project file, and don't
-               --  parse it.
+               --  If this is a "limited with", check if we have a circularity.
+               --  If we have one, get the project id of the limited imported
+               --  project file, and do not parse it.
 
                if Limited_With and then Project_Stack.Last > 1 then
                   declare
-                     Normed : constant String :=
-                                Normalize_Pathname (Imported_Path_Name);
                      Canonical_Path_Name : Name_Id;
 
                   begin
-                     Name_Len := Normed'Length;
-                     Name_Buffer (1 .. Name_Len) := Normed;
-                     Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
+                     Name_Len := Resolved_Path'Length;
+                     Name_Buffer (1 .. Name_Len) := Resolved_Path;
                      Canonical_Path_Name := Name_Find;
 
                      for Index in 1 .. Project_Stack.Last loop
@@ -818,8 +820,9 @@ package body Prj.Part is
                      To           => Withed_Project,
                      Limited_With => Limited_With);
                   Set_Name_Of (Current_Project, Name_Of (Withed_Project));
-                  Name_Len := Imported_Path_Name'Length;
-                  Name_Buffer (1 .. Name_Len) := Imported_Path_Name;
+
+                  Name_Len := Resolved_Path'Length;
+                  Name_Buffer (1 .. Name_Len) := Resolved_Path;
                   Set_Path_Name_Of (Current_Project, Name_Find);
 
                   if Extends_All then
@@ -1038,7 +1041,7 @@ package body Prj.Part is
       Project := Default_Project_Node (Of_Kind => N_Project);
       Project_Stack.Table (Project_Stack.Last).Id := Project;
       Set_Directory_Of (Project, Project_Directory);
-      Set_Path_Name_Of (Project, Normed_Path_Name);
+      Set_Path_Name_Of (Project, Canonical_Path_Name);
       Set_Location_Of (Project, Token_Ptr);
 
       Expect (Tok_Project, "PROJECT");
@@ -1271,7 +1274,9 @@ package body Prj.Part is
                   --  A project that extends an extending-all project is also
                   --  an extending-all project.
 
-                  if Is_Extending_All (Extended_Project) then
+                  if Extended_Project /= Empty_Node
+                    and then Is_Extending_All (Extended_Project)
+                  then
                      Set_Is_Extending_All (Project);
                   end if;
                end if;

@@ -1970,10 +1970,10 @@ package body Prj.Env is
                         if Data.Library then
                            Add_To_Object_Path (Data.Library_Dir);
 
-                        else
-                           --  For a non library project, add the object
-                           --  directory.
+                        --  For a non-library project, add the object
+                        --  directory, if it is not a virtual project.
 
+                        elsif not Data.Virtual then
                            Add_To_Object_Path (Data.Object_Directory);
                         end if;
                      end if;
