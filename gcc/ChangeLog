@@ -1,5 +1,10 @@
 Tue Nov 25 22:43:30 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* dwarf2out.c (outout_call_frame_info): Ensure that the info has
+	proper alignment.
+
+	* libgcc2.c (__throw): Initialize HANDLER.
+
 	* dwarfout.c (output_type): If finalizing, write out nested types 
 	of types we've already written.
 
