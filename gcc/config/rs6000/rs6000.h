@@ -2469,8 +2469,13 @@ extern int toc_initialized;
     }									  \
 }
 
-/* This implementes the `alias' attribute.  */
+#ifdef HAVE_GAS_WEAK
+#define RS6000_WEAK 1
+#else
+#define RS6000_WEAK 0
+#endif
 
+/* This implementes the `alias' attribute.  */
 #define ASM_OUTPUT_DEF_FROM_DECLS(FILE,decl,target)	\
 do {							\
   const char * alias = XSTR (XEXP (DECL_RTL (decl), 0), 0); \
@@ -2480,9 +2485,18 @@ do {							\
     {							\
       if (TREE_PUBLIC (decl))				\
 	{						\
-	  fputs ("\t.globl .", FILE);			\
-	  assemble_name (FILE, alias);			\
-	  putc ('\n', FILE);				\
+	  if (RS6000_WEAK && DECL_WEAK (decl))		\
+	    {						\
+	      fputs ("\t.weak .", FILE);		\
+	      assemble_name (FILE, alias);		\
+	      putc ('\n', FILE);			\
+	    }						\
+	  else						\
+	    {						\
+	      fputs ("\t.globl .", FILE);		\
+	      assemble_name (FILE, alias);		\
+	      putc ('\n', FILE);			\
+	    }						\
 	}						\
       else						\
 	{						\
