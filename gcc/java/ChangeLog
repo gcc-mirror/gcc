@@ -1,3 +1,11 @@
+2004-08-04  Roger Sayle  <roger@eyesopen.com>
+	    Andrew Haley  <aph@redhat.com>
+
+	* typeck.c (convert_ieee_real_to_integer): Call fold on the range
+	checking trees as they're being built.
+	(convert): Call convert_ieee_real_to_integer if we're
+	converting a constant, even if we're writing a class file.
+
 2004-08-02  Bryce McKinlay  <mckinlay@redhat.com>
 
 	PR java/16701
