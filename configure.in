@@ -306,6 +306,9 @@ if [ x${shared} = xyes ]; then
     i[3456]86-*-*)
       host_makefile_frag="${host_makefile_frag} config/mh-x86pic"
       ;;
+    ia64-*-*)
+      host_makefile_frag="${host_makefile_frag} config/mh-ia64pic"
+      ;;
     sparc64-*-*)
       host_makefile_frag="${host_makefile_frag} config/mh-sparcpic"
       ;;
@@ -1023,6 +1026,9 @@ if [ x${shared} = xyes ]; then
       ;;
     i[3456]86-*)
       target_makefile_frag="${target_makefile_frag} config/mt-x86pic"
+      ;;
+    ia64-*)
+      target_makefile_frag="${target_makefile_frag} config/mt-ia64pic"
       ;;
     powerpc*-*-aix*)
       # We don't want -fPIC on AIX.
