@@ -1,5 +1,15 @@
 2003-12-12  Hans-Peter Nilsson  <hp@axis.com>
 
+	PR target/13256
+	Backport from mainline:
+	* resource.h (enum mark_resource_type): Remove member MARK_DEST.
+	The only user changed as follows:
+	* resource.c (mark_set_resources) <case SET>: Always recurse for
+	SET_SRC (x).
+	<case SIGN_EXTRACT, case ZERO_EXTRACT>: Always recurse on
+	operands.
+	<case STRICT_LOW_PART>: Delete, deferring to default code.
+
 	PR target/12598
 	Backport from mainline:
 	* config/cris/cris.md (define_split "*mov_sidesi_biap_mem"+1)

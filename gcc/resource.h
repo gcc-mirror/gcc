@@ -37,8 +37,7 @@ struct resources
 enum mark_resource_type
 {
   MARK_SRC_DEST = 0,
-  MARK_SRC_DEST_CALL = 1,
-  MARK_DEST = 2
+  MARK_SRC_DEST_CALL = 1
 };
 
 extern void mark_target_live_regs 	PARAMS ((rtx, rtx, struct resources *));

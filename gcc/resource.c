@@ -1,5 +1,5 @@
 /* Definitions for computing resource usage of specific insns.
-   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -624,7 +624,7 @@ find_dead_or_set_registers (target, res, jump_target, jump_count, set, needed)
 /* Given X, a part of an insn, and a pointer to a `struct resource',
    RES, indicate which resources are modified by the insn. If
    MARK_TYPE is MARK_SRC_DEST_CALL, also mark resources potentially
-   set by the called routine.  If MARK_TYPE is MARK_DEST, only mark SET_DESTs
+   set by the called routine.
 
    If IN_DEST is nonzero, it means we are inside a SET.  Otherwise,
    objects are being referenced instead of set.
@@ -727,8 +727,7 @@ mark_set_resources (x, res, in_dest, mark_type)
 			   || GET_CODE (SET_SRC (x)) != CALL),
 			  mark_type);
 
-      if (mark_type != MARK_DEST)
-	mark_set_resources (SET_SRC (x), res, 0, MARK_SRC_DEST);
+      mark_set_resources (SET_SRC (x), res, 0, MARK_SRC_DEST);
       return;
 
     case CLOBBER:
@@ -758,12 +757,9 @@ mark_set_resources (x, res, in_dest, mark_type)
 
     case SIGN_EXTRACT:
     case ZERO_EXTRACT:
-      if (! (mark_type == MARK_DEST && in_dest))
-	{
-	  mark_set_resources (XEXP (x, 0), res, in_dest, MARK_SRC_DEST);
-	  mark_set_resources (XEXP (x, 1), res, 0, MARK_SRC_DEST);
-	  mark_set_resources (XEXP (x, 2), res, 0, MARK_SRC_DEST);
-	}
+      mark_set_resources (XEXP (x, 0), res, in_dest, MARK_SRC_DEST);
+      mark_set_resources (XEXP (x, 1), res, 0, MARK_SRC_DEST);
+      mark_set_resources (XEXP (x, 2), res, 0, MARK_SRC_DEST);
       return;
 
     case MEM:
@@ -809,13 +805,6 @@ mark_set_resources (x, res, in_dest, mark_type)
 	    SET_HARD_REG_BIT (res->regs, r);
 	}
       return;
-
-    case STRICT_LOW_PART:
-      if (! (mark_type == MARK_DEST && in_dest))
-	{
-	  mark_set_resources (XEXP (x, 0), res, 0, MARK_SRC_DEST);
-	  return;
-	}
 
     case UNSPEC_VOLATILE:
     case ASM_INPUT:
