@@ -350,6 +350,12 @@ extern int target_flags;
        &&  ((MODE2) == QImode || (MODE2) == HImode			  \
 	    || ((TARGET_H8300H || TARGET_H8300S) && (MODE2) == SImode))))
 
+/* A C expression that is nonzero if hard register NEW_REG can be
+   considered for use as a rename register for OLD_REG register */
+
+#define HARD_REGNO_RENAME_OK(OLD_REG, NEW_REG)		\
+   h8300_hard_regno_rename_ok (OLD_REG, NEW_REG)
+
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
 
