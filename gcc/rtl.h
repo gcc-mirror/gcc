@@ -1,5 +1,5 @@
 /* Register Transfer Language (RTL) definitions for GNU C-Compiler
-   Copyright (C) 1987, 91-96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 91-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1388,5 +1388,9 @@ extern int output_dependence		PROTO ((rtx, rtx));
 extern void init_alias_once		PROTO ((void));
 extern void init_alias_analysis		PROTO ((void));
 extern void end_alias_analysis		PROTO ((void));
+
+/* In local-alloc.c */
+extern int optimize_reg_copy_1  	PROTO((rtx, rtx, rtx));
+extern void optimize_reg_copy_2 	PROTO((rtx, rtx, rtx));
 
 #endif /* _RTL_H */

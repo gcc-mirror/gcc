@@ -1,5 +1,5 @@
 /* Reload pseudo regs into hard regs for insns that require hard regs.
-   Copyright (C) 1987, 88, 89, 92-6, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-7 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -392,7 +392,6 @@ static void emit_reload_insns		PROTO((rtx));
 static void delete_output_reload	PROTO((rtx, int, rtx));
 static void inc_for_reload		PROTO((rtx, rtx, int));
 static int constraint_accepts_reg_p	PROTO((char *, rtx));
-static int count_occurrences		PROTO((rtx, rtx));
 static void reload_cse_invalidate_regno	PROTO((int, enum machine_mode, int));
 static int reload_cse_mem_conflict_p	PROTO((rtx, rtx));
 static void reload_cse_invalidate_mem	PROTO((rtx));
@@ -7510,7 +7509,7 @@ constraint_accepts_reg_p (string, reg)
 /* Return the number of places FIND appears within X, but don't count
    an occurrence if some SET_DEST is FIND.  */
 
-static int
+int
 count_occurrences (x, find)
      register rtx x, find;
 {
