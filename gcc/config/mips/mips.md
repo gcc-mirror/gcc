@@ -3152,6 +3152,9 @@ move\\t%0,%z4\\n\\
   if (GET_CODE (operands[1]) != MEM)
     FAIL;
 
+  /* Change the mode to BLKmode for aliasing purposes.  */
+  operands[1] = change_address (operands[1], BLKmode, XEXP (operands[1], 0));
+
   /* Otherwise, emit a lwl/lwr pair to load the value.  */
   emit_insn (gen_movsi_ulw (operands[0], operands[1]));
   DONE;
@@ -3175,6 +3178,9 @@ move\\t%0,%z4\\n\\
      source matches the predicate, so we force it to be a MEM here.  */
   if (GET_CODE (operands[1]) != MEM)
     FAIL;
+
+  /* Change the mode to BLKmode for aliasing purposes.  */
+  operands[1] = change_address (operands[1], BLKmode, XEXP (operands[1], 0));
 
   /* Otherwise, emit a lwl/lwr pair to load the value.  */
   emit_insn (gen_movsi_ulw (operands[0], operands[1]));
@@ -3200,6 +3206,9 @@ move\\t%0,%z4\\n\\
   if (GET_CODE (operands[0]) != MEM)
     FAIL;
 
+  /* Change the mode to BLKmode for aliasing purposes.  */
+  operands[0] = change_address (operands[0], BLKmode, XEXP (operands[0], 0));
+
   /* Otherwise, emit a swl/swr pair to load the value.  */
   emit_insn (gen_movsi_usw (operands[0], operands[3]));
   DONE;
@@ -3209,7 +3218,7 @@ move\\t%0,%z4\\n\\
 
 (define_insn "movsi_ulw"
   [(set (match_operand:SI 0 "register_operand" "=&d,&d")
-	(unspec:SI [(match_operand:QI 1 "general_operand" "R,o")] 0))]
+	(unspec:SI [(match_operand:BLK 1 "general_operand" "R,o")] 0))]
   ""
   "*
 {
@@ -3237,8 +3246,8 @@ move\\t%0,%z4\\n\\
    (set_attr "length"	"2,4")])
 
 (define_insn "movsi_usw"
-  [(set (match_operand:QI 0 "memory_operand" "=R,o")
-	(unspec:QI [(match_operand:SI 1 "reg_or_0_operand" "dJ,dJ")] 1))]
+  [(set (match_operand:BLK 0 "memory_operand" "=R,o")
+	(unspec:BLK [(match_operand:SI 1 "reg_or_0_operand" "dJ,dJ")] 1))]
   ""
   "*
 {
