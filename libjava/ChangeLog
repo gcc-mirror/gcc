@@ -1,3 +1,13 @@
+2003-09-16  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* Makefile.am: (MOSTLYCLEANFILES) Removed libtool objects.
+	(mostlyclean-local): New target patterned after clean-local
+	which recursively deletes all libtool objects using 'libtool rm'.
+	(clean-local): Slightly modified comment to alleviate monotony.
+	(distclean-local): New target patterned after clean-local
+	which recursively deletes all .d files.
+	* Makefile.in: Rebuilt.
+
 2003-09-11  Tom Tromey  <tromey@redhat.com>
 
 	* java/net/URLStreamHandler.java (parseURL): If original file
