@@ -637,11 +637,19 @@ struct definition {
   } args;
 };
 
-extern const unsigned char is_idstart[256];
-extern const unsigned char is_idchar[256];
-extern const unsigned char is_hor_space[256];
-extern const unsigned char is_space[256];
-extern const unsigned char trigraph_table[256];
+/* These tables are not really `const', but they are only modified at
+   initialization time, in a separate translation unit from the rest
+   of the library.  We let the rest of the library think they are `const'
+   to get better code and some additional sanity checks.  */
+#ifndef FAKE_CONST
+#define FAKE_CONST const
+#endif
+extern FAKE_CONST unsigned char is_idstart[256];
+extern FAKE_CONST unsigned char is_idchar[256];
+extern FAKE_CONST unsigned char is_hor_space[256];
+extern FAKE_CONST unsigned char is_space[256];
+extern FAKE_CONST unsigned char trigraph_table[256];
+#undef FAKE_CONST
 
 /* Stack of conditionals currently in progress
    (including both successful and failing conditionals).  */
@@ -667,8 +675,9 @@ typedef struct if_stack IF_STACK_FRAME;
 
 extern void cpp_buf_line_and_col PARAMS((cpp_buffer *, long *, long *));
 extern cpp_buffer* cpp_file_buffer PARAMS((cpp_reader *));
-extern void cpp_define PARAMS ((cpp_reader*, unsigned char *));
+extern void cpp_define PARAMS ((cpp_reader *, unsigned char *));
 extern void cpp_assert PARAMS ((cpp_reader *, unsigned char *));
+extern void cpp_undef  PARAMS ((cpp_reader *, unsigned char *));
 
 extern void cpp_error PVPROTO ((cpp_reader *, const char *, ...))
   ATTRIBUTE_PRINTF_2;
@@ -705,6 +714,16 @@ extern int scan_decls PARAMS ((cpp_reader *, int, char **));
 extern void skip_rest_of_line PARAMS ((cpp_reader *));
 extern void cpp_finish PARAMS ((cpp_reader *));
 
+extern void quote_string		PARAMS ((cpp_reader *, const char *));
+extern void cpp_expand_to_buffer	PARAMS ((cpp_reader *, U_CHAR *, int));
+extern void cpp_scan_buffer		PARAMS ((cpp_reader *));
+extern int check_macro_name		PARAMS ((cpp_reader *, U_CHAR *, int));
+
+/* Last arg to output_line_command.  */
+enum file_change_code {same_file, enter_file, leave_file};
+extern void output_line_command		PARAMS ((cpp_reader *, int,
+						 enum file_change_code));
+
 /* From cpperror.c */
 extern void cpp_fatal PVPROTO ((cpp_reader *, const char *, ...))
   ATTRIBUTE_PRINTF_2;
@@ -728,9 +747,6 @@ extern int finclude			PROTO ((cpp_reader *, int,
 					        struct include_hash *));
 extern void deps_output			PROTO ((cpp_reader *, char *, int));
 extern struct include_hash *include_hash PROTO ((cpp_reader *, char *, int));
-
-/* cppinit.c */
-extern void initialize_char_syntax	PROTO ((int));
 
 #ifndef INCLUDE_LEN_FUDGE
 #define INCLUDE_LEN_FUDGE 0

@@ -376,7 +376,7 @@ static struct token tokentab2[] = {
 
 /* Read one token.  */
 
-struct operation
+static struct operation
 cpp_lex (pfile, skip_evaluation)
      cpp_reader *pfile;
      int skip_evaluation;

@@ -1,3 +1,35 @@
+1999-02-18 18:32 -0500  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* cpplib.c: Kill define of STDC_VALUE.  Don't include output.h
+          or prefix.h. Change CPP_IS_MACRO_BUFFER to not refer to
+          macro_cleanup.
+	  (GET_ENV_PATH_LIST, PATH_SEPARATOR, STANDARD_INCLUDE_DIR,
+          predefs, SIZE_TYPE, PTRDIFF_TYPE, WCHAR_TYPE,
+          CPP_WCHAR_TYPE, USER_LABEL_PREFIX, REGISTER_PREFIX, struct
+          cpp_pending, version_string, struct default_include,
+          include_defaults_array, path_include, cpp_options_init,
+          dump_special_to_buffer, initialize_builtins, cpp_start_read,
+          cpp_reader_init, nreverse_pending, push_pending, print_help,
+          cpp_handle_option, cpp_handle_options, cpp_finish,
+          cpp_cleanup): Move to cppinit.c.
+	  (macro_cleanup, struct arglist, collect_expansion,
+	  create_definition, compare_defs, comp_def_part, ARG_BASE,
+	  struct argdata, macarg, change_newlines, timestamp,
+	  monthnames, special_symbol, unsafe_chars, macroexpand,
+	  push_macro_expansion): Move to cpphash.c.
+	  (quote_string, check_macro_name, cpp_expand_to_buffer,
+	  output_line_command, cpp_undef): Export.
+	  (null_underflow, null_cleanup, handle_directive): Make static.
+
+	* cpplib.h: Prototype now-exported functions.  Adjust decls of
+          syntax tables so we can include cpplib.h in cppinit.c.
+	* cpphash.h: Prototype all functions exported by cpphash.c.
+	* cppinit.c: Make syntax tables initialized data if possible
+          (uses GCC designated-initializer extension).
+	* cppexp.c:  Make cpp_lex static.
+	* Makefile.in: Move -D switches for the various include dirs
+          from cpplib.o rule to cppinit.o rule.  Adjust dependencies.
+
 Thu Feb 18 13:15:56 1999  Marc Espie <espie@cvs.openbsd.org>
 
 	* alpha/openbsd.h: New file.
