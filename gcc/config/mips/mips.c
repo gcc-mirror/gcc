@@ -458,12 +458,14 @@ FILE *asm_out_text_file;
    for the global pointer if they haven't been declared by the end of
    the program with an appropriate .comm or initialization.  */
 
-struct extern_list
+struct extern_list GTY (())
 {
   struct extern_list *next;	/* next external */
   const char *name;		/* name of the external */
   int size;			/* size in bytes */
-} *extern_head = 0;
+};
+
+static GTY (()) struct extern_list *extern_head = 0;
 
 /* Name of the file containing the current function.  */
 const char *current_function_file = "";
@@ -2894,7 +2896,7 @@ mips_output_move (dest, src)
       if (dest_code == REG)
 	{
 	  if (GP_REG_P (REGNO (dest)))
-	    return "move\t%0,%z1";
+	    return "or\t%0,%z1,$0";
 
 	  if (MD_REG_P (REGNO (dest)))
 	    return "mt%0\t%z1";
@@ -2961,7 +2963,7 @@ mips_output_move (dest, src)
 	  break;
 
 	case CONSTANT_GP:
-	  return "move\t%0,%1";
+	  return "or\t%0,%1,$0";
 
 	case CONSTANT_RELOC:
 	  return (TARGET_MIPS16 ? "li\t%0,0\n\taddiu\t%0,%1" : "li\t%0,%1");
@@ -6253,7 +6255,7 @@ mips_output_external (file, decl, name)
 	  || strcmp (TREE_STRING_POINTER (section_name), ".sbss") == 0
 	  || strcmp (TREE_STRING_POINTER (section_name), ".sdata") == 0))
     {
-      p = (struct extern_list *) xmalloc (sizeof (struct extern_list));
+      p = (struct extern_list *) ggc_alloc (sizeof (struct extern_list));
       p->next = extern_head;
       p->name = name;
       p->size = len;
@@ -6269,7 +6271,7 @@ mips_output_external (file, decl, name)
 	 bootstrap under Irix 5.1.  */
       && strcmp (name, "__builtin_next_arg"))
     {
-      p = (struct extern_list *) xmalloc (sizeof (struct extern_list));
+      p = (struct extern_list *) ggc_alloc (sizeof (struct extern_list));
       p->next = extern_head;
       p->name = name;
       p->size = -1;
@@ -6288,7 +6290,7 @@ mips_output_external_libcall (file, name)
 {
   register struct extern_list *p;
 
-  p = (struct extern_list *) xmalloc (sizeof (struct extern_list));
+  p = (struct extern_list *) ggc_alloc (sizeof (struct extern_list));
   p->next = extern_head;
   p->name = name;
   p->size = -1;
