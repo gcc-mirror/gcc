@@ -7101,3 +7101,26 @@
  "(REGNO (operands[0]) != REGNO (operands[4]))"
  "xor3\\t%2,%1,%0\\n||\\tsti\\t%4,%3")
 
+; The following two peepholes remove an unecessary load
+; often found at the end of a function.  These peepholes
+; could be generalised to other binary operators.  They shouldn't
+; be required if we run a post reload mop-up pass.
+(define_peephole
+ [(parallel [(set (match_operand:QF 0 "ext_reg_operand" "")
+                  (plus:QF (match_operand:QF 1 "ext_reg_operand" "")
+                           (match_operand:QF 2 "ext_reg_operand" "")))
+             (clobber (reg:CC_NOOV 21))])
+  (set (match_operand:QF 3 "ext_reg_operand" "")
+       (match_dup 0))]
+ "dead_or_set_p (insn, operands[0])"
+ "addf3\\t%2,%1,%3")
+
+(define_peephole
+ [(parallel [(set (match_operand:QI 0 "reg_operand" "")
+                  (plus:QI (match_operand:QI 1 "reg_operand" "")
+                           (match_operand:QI 2 "reg_operand" "")))
+             (clobber (reg:CC_NOOV 21))])
+  (set (match_operand:QI 3 "reg_operand" "")
+       (match_dup 0))]
+ "dead_or_set_p (insn, operands[0])"
+ "addi3\\t%2,%1,%3")
