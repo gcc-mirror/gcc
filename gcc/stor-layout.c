@@ -104,19 +104,6 @@ get_pending_sizes (void)
   return chain;
 }
 
-/* Return nonzero if EXPR is present on the pending sizes list.  */
-
-int
-is_pending_size (tree expr)
-{
-  tree t;
-
-  for (t = pending_sizes; t; t = TREE_CHAIN (t))
-    if (TREE_VALUE (t) == expr)
-      return 1;
-  return 0;
-}
-
 /* Add EXPR to the pending sizes list.  */
 
 void

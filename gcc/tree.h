@@ -2471,7 +2471,6 @@ extern tree size_int_type_wide (HOST_WIDE_INT, tree);
 extern tree round_up (tree, int);
 extern tree round_down (tree, int);
 extern tree get_pending_sizes (void);
-extern int is_pending_size (tree);
 extern void put_pending_size (tree);
 extern void put_pending_sizes (tree);
 
