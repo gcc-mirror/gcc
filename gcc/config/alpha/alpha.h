@@ -49,6 +49,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define LIB_SPEC "-lc"
 
+/* Pass "-G 8" to ld because Alpha's CC does.  Pass -O2 if we are optimizing,
+   -O1 if we are not.  Pass -non_shared or -call_shared as appropriate.  */
+#define LINK_SPEC  \
+  "-G 8 %{O*:-O2} %{!O*:-O1} %{static:-non_shared} %{!static:-call_shared}"
+
 /* Print subsidiary information on the compiler version in use.  */
 #define TARGET_VERSION
 
