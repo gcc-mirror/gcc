@@ -1,3 +1,7 @@
+2002-05-29  Joel Sherrill <joel@OARcorp.com>
+
+	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Use -m403 and -m405.
+
 2002-05-29  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/alpha/netbsd.h (TARGET_OS_CPP_BUILTINS): Use
