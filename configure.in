@@ -755,24 +755,24 @@ enable_languages=`echo "${enable_languages}" | sed -e 's/[[ 	,]][[ 	,]]*/,/g' -e
 # First scan to see if an enabled language requires some other language.
 # We assume that a given config-lang.in will list all the language
 # front ends it requires, even if some are required indirectly.
-for lang in ${srcdir}/gcc/*/config-lang.in ..
-do
-  case $lang in
+for lang_frag in ${srcdir}/gcc/*/config-lang.in .. ; do
+  case ${lang_frag} in
     ..) ;;
     # The odd quoting in the next line works around
     # an apparent bug in bash 1.12 on linux.
     ${srcdir}/gcc/[[*]]/config-lang.in) ;;
     *)
-      lang_alias=`sed -n -e 's,^language=[['"'"'"'"]]\(.*\)[["'"'"'"']].*$,\1,p' -e 's,^language=\([[^ 	]]*\).*$,\1,p' $lang`
-      this_lang_requires=`sed -n -e 's,^lang_requires=[['"'"'"'"]]\(.*\)[["'"'"'"']].*$,\1,p' -e 's,^lang_requires=\([[^ 	]]*\).*$,\1,p' $lang`
-      for other in $this_lang_requires
-      do
+      # From the config-lang.in, get $language, $lang_requires
+      language=
+      lang_requires=
+      . ${lang_frag}
+      for other in ${lang_requires} ; do
         case ,${enable_languages}, in
 	  *,$other,*) ;;
 	  *,all,*) ;;
-	  *,$lang_alias,*)
-	    echo " \`$other' language required by \`$lang_alias'; enabling" 1>&2
-	    enable_languages="$enable_languages,$other"
+	  *,$language,*)
+	    echo " \`$other' language required by \`$language'; enabling" 1>&2
+	    enable_languages="${enable_languages},${other}"
 	    ;;
 	esac
       done
@@ -780,35 +780,44 @@ do
   esac
 done
 
-subdirs=
-for lang in ${srcdir}/gcc/*/config-lang.in ..
-do
-  case $lang in
+for lang_frag in ${srcdir}/gcc/*/config-lang.in .. ; do
+  case ${lang_frag} in
     ..) ;;
     # The odd quoting in the next line works around
     # an apparent bug in bash 1.12 on linux.
     ${srcdir}/gcc/[[*]]/config-lang.in) ;;
     *)
-      lang_alias=`sed -n -e 's,^language=[['"'"'"'"]]\(.*\)[["'"'"'"']].*$,\1,p' -e 's,^language=\([[^ 	]]*\).*$,\1,p' $lang`
-      this_lang_libs=`sed -n -e 's,^target_libs=[['"'"'"'"]]\(.*\)[["'"'"'"']].*$,\1,p' -e 's,^target_libs=\([[^ 	]]*\).*$,\1,p' $lang`
-      this_lang_dirs=`sed -n -e 's,^lang_dirs=[['"'"'"'"]]\(.*\)[["'"'"'"']].*$,\1,p' -e 's,^lang_dirs=\([[^ 	]]*\).*$,\1,p' $lang`
-      build_by_default=`sed -n -e 's,^build_by_default=[['"'"'"'"]]\(.*\)[["'"'"'"']].*$,\1,p' -e 's,^build_by_default=\([[^ 	]]*\).*$,\1,p' $lang`
-      if test "x$lang_alias" = x
-         then
-        echo "$lang doesn't set \$language." 1>&2
+      # From the config-lang.in, get $language, $target_libs, 
+      # $lang_dirs, and $build_by_default
+      language=
+      target_libs=
+      lang_dirs=
+      build_by_default=
+      . ${lang_frag}
+      if test "x$language" = x ; then
+        echo "${lang_frag} doesn't set \$language." 1>&2
         exit 1
       fi
-      case ${build_by_default},${enable_languages}, in
-        *,$lang_alias,*) add_this_lang=yes ;;
-        no,*) add_this_lang=no ;;
-        *,all,*) add_this_lang=yes ;;
+      case ,${enable_languages}, in
+        *,${language},*)
+          # Language was explicitly selected; include it.
+          add_this_lang=yes
+          ;;
+        *,all,*)
+          # 'all' was selected; include 'default' languages.
+          case ${build_by_default} in
+            no) add_this_lang=no ;;
+            *) add_this_lang=yes ;;
+          esac 
+          ;;
         *) add_this_lang=no ;;
       esac
-      if test x"${add_this_lang}" = xyes; then
-        :
-      else
-        eval noconfigdirs='"$noconfigdirs "'\"$this_lang_libs $this_lang_dirs\"
-      fi
+      case ${add_this_lang} in
+        no)
+          # Remove language-dependent dirs.
+          eval noconfigdirs='"$noconfigdirs "'\"$target_libs $lang_dirs\"
+          ;;
+      esac
       ;;
   esac
 done

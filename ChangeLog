@@ -1,3 +1,9 @@
+2003-06-27  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.in: Clean up config-lang.in handling.  Delete
+	useless assignment to "subdirs".
+	* configure: Regenerate.
+
 2003-06-26  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.in: Rename 'target_libs' to 'target_libraries'.
