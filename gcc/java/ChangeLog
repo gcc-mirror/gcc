@@ -1,3 +1,7 @@
+2003-10-24  David S. Miller  <davem@redhat.com>
+
+	* jcf-parse.c (jcf_parse): Fix args to fatal_error().
+
 2003-10-22  Andrew Haley  <aph@redhat.com>
 
 	* lang.c (LANG_HOOKS_GET_CALLEE_FNDECL): New.

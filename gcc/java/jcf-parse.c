@@ -632,7 +632,7 @@ jcf_parse (JCF* jcf)
   if (CLASS_PARSED_P (current_class))
     {
       /* FIXME - where was first time */
-      fatal_error (stderr, "READING CLASS %s for the second time from %s",
+      fatal_error ("READING CLASS %s for the second time from %s",
 		   IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (current_class))),
 		   jcf->filename);
     }
