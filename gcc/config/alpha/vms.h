@@ -31,7 +31,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
-"-D__ALPHA -Dvms -DVMS -D__vms__ -D__VMS__ -Asystem(vms)"
+"-D__ALPHA -Dvms -DVMS -D__vms__ -D__VMS__ -Asystem=vms"
 
 #undef CPP_SUBTARGET_SPEC
 #define CPP_SUBTARGET_SPEC "\

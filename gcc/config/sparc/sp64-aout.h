@@ -35,4 +35,4 @@ Boston, MA 02111-1307, USA.  */
 #define SPARC_DEFAULT_CMODEL CM_MEDLOW
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dsparc -Acpu(sparc) -Amachine(sparc)"
+#define CPP_PREDEFINES "-Dsparc -Acpu=sparc -Amachine=sparc"

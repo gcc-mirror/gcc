@@ -23,7 +23,7 @@ Boston, MA 02111-1307, USA.  */
 #define HAVE_ATEXIT
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__sparc__ -D__sparclite86x__ -Acpu(sparc) -Amachine(sparc)"
+#define CPP_PREDEFINES "-D__sparc__ -D__sparclite86x__ -Acpu=sparc -Amachine=sparc"
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (sparclite 86x)");

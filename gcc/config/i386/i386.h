@@ -400,7 +400,7 @@ extern int ix86_arch;
 
 #ifndef CPP_CPU_SPEC
 #define CPP_CPU_SPEC "\
--Acpu(i386) -Amachine(i386) \
+-Acpu=i386 -Amachine=i386 \
 %{!ansi:-Di386} -D__i386 -D__i386__ \
 %{march=i386:%{!mcpu*:-D__tune_i386__ }}\
 %{march=i486:-D__i486 -D__i486__ %{!mcpu*:-D__tune_i486__ }}\

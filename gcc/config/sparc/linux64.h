@@ -61,7 +61,7 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_ARCH32_SPEC
 #define CPP_ARCH32_SPEC "%{mlong-double-128:-D__LONG_DOUBLE_128__} \
 -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int \
--D__GCC_NEW_VARARGS__ -Acpu(sparc) -Amachine(sparc)"
+-D__GCC_NEW_VARARGS__ -Acpu=sparc -Amachine=sparc"
 
 #endif
 
@@ -174,7 +174,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__ELF__ -Dunix -D_LONGLONG -D__sparc__ -Dlinux -Asystem(unix) -Asystem(posix)"
+#define CPP_PREDEFINES "-D__ELF__ -Dunix -D_LONGLONG -D__sparc__ -Dlinux -Asystem=unix -Asystem=posix"
 
 #undef CPP_SUBTARGET_SPEC
 #define CPP_SUBTARGET_SPEC "\

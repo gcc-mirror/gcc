@@ -23,7 +23,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-D_AM29K -D_AM29000 -D_EPI -Acpu(a29k) -Amachine(a29k)"
+#define CPP_PREDEFINES "-D_AM29K -D_AM29000 -D_EPI -Acpu=a29k -Amachine=a29k"
 
 /* Print subsidiary information on the compiler version in use.  */
 #define TARGET_VERSION

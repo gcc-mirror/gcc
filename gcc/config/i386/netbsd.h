@@ -16,7 +16,7 @@
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dunix -D__NetBSD__ \
- -Asystem(unix) -Asystem(bsd) -Asystem(NetBSD)"
+ -Asystem=unix -Asystem=bsd -Asystem=NetBSD"
 
 #undef SIZE_TYPE
 #define SIZE_TYPE "unsigned int"

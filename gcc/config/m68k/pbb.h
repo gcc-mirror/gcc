@@ -43,7 +43,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-Dm68k -Dunix -DUnicomPBB -Dmc68k -Dmc68020 -Dmc68k32 -Asystem(unix)  -Acpu(m68k) -Amachine(m68k)"
+#define CPP_PREDEFINES "-Dm68k -Dunix -DUnicomPBB -Dmc68k -Dmc68020 -Dmc68k32 -Asystem=unix  -Acpu=m68k -Amachine=m68k"
 
 /* We want DBX format for use with gdb under COFF.  */
 

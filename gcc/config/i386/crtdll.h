@@ -25,7 +25,7 @@ Boston, MA 02111-1307, USA. */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-D_WIN32 -DWIN32 \
   -D__MINGW32__=0.2 -DWINNT  -D_X86_=1 \
-  -Asystem(winnt)"
+  -Asystem=winnt"
 
 #undef LIBGCC_SPEC
 #define LIBGCC_SPEC \

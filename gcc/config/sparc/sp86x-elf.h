@@ -22,7 +22,7 @@ Boston, MA 02111-1307, USA.  */
 #include "sparc/elf.h"
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__sparc__ -D__sparclite86x__ -Acpu(sparc) -Amachine(sparc)"
+#define CPP_PREDEFINES "-D__sparc__ -D__sparclite86x__ -Acpu=sparc -Amachine=sparc"
 
 /* Default to dwarf2 in ELF.  */
 

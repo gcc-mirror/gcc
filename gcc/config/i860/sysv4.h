@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA.  */
    __svr4__ is our extension.  */
 
 #define CPP_PREDEFINES \
-  "-Di860 -Dunix -DSVR4 -D__svr4__ -Asystem(unix) -Asystem(svr4) -Acpu(i860) -Amachine(i860)"
+  "-Di860 -Dunix -DSVR4 -D__svr4__ -Asystem=unix -Asystem=svr4 -Acpu=i860 -Amachine=i860"
 
 /* For the benefit of i860_va_arg, flag it this way too.  */
 

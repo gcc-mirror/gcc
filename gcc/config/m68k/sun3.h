@@ -88,7 +88,7 @@ Boston, MA 02111-1307, USA.  */
    should not be defined.  For cross compilers, let's do things as we
    normally do in GCC.  -- rms.  */
 
-#define CPP_PREDEFINES "-Dmc68000 -Dsun -Dunix -Asystem(unix)  -Asystem(bsd) -Acpu(m68k) -Amachine(m68k)"
+#define CPP_PREDEFINES "-Dmc68000 -Dsun -Dunix -Asystem=unix  -Asystem=bsd -Acpu=m68k -Amachine=m68k"
 
 /* STARTFILE_SPEC to include sun floating point initialization
    This is necessary (tr: Sun does it) for both the m68881 and the fpa

@@ -51,7 +51,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef  CPP_PREDEFINES
 #define CPP_PREDEFINES \
-  "-Dm88000 -Dm88k -Dunix -D__svr4__ -Amachine(m88k) -Acpu(m88k) -Asystem(unix) -Asystem(svr4)"
+  "-Dm88000 -Dm88k -Dunix -D__svr4__ -Amachine=m88k -Acpu=m88k -Asystem=unix -Asystem=svr4"
 
 /* For the AT&T SVR4 port, the function is _mcount.  */
 #undef	FUNCTION_PROFILER

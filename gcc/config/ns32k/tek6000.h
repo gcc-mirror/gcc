@@ -99,7 +99,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define CPP_PREDEFINES_Tek6000 \
   "-Dns16000 -Dns32000 -Dns32k -Dns32016 -DUTek -DUTEK -Dbsd -DBSD \
-   -Asystem(unix) -Asystem(bsd) -Acpu(ns32k) -Amachine(ns32k)"
+   -Asystem=unix -Asystem=bsd -Acpu=ns32k -Amachine=ns32k"
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES CPP_PREDEFINES_Tek6000
 

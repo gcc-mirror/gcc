@@ -71,7 +71,7 @@ Boston, MA 02111-1307, USA. */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-D_WIN32 \
   -DWINNT  -D_X86_=1 \
-  -Asystem(winnt)"
+  -Asystem=winnt"
 
 /* Normally, -lgcc is not needed since everything in it is in the DLL, but we
    want to allow things to be added to it when installing new versions of

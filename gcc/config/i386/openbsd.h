@@ -37,7 +37,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Run-time target specifications */
 #define CPP_PREDEFINES "-D__unix__ -D__OpenBSD__ \
- -Asystem(unix) -Asystem(bsd) -Asystem(OpenBSD)"
+ -Asystem=unix -Asystem=bsd -Asystem=OpenBSD"
 
 /* Layout of source language data types.  */
 

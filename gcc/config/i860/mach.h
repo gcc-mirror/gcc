@@ -4,7 +4,7 @@
 #define TARGET_VERSION fprintf (stderr, " (i860 Mach3.x)");
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dunix -Di860 -DMACH -Asystem(unix) -Asystem(mach) -Acpu(i860) -Amachine(i860)"
+#define CPP_PREDEFINES "-Dunix -Di860 -DMACH -Asystem=unix -Asystem=mach -Acpu=i860 -Amachine=i860"
 
 /* Specify extra dir to search for include files.  */
 #define SYSTEM_INCLUDE_DIR "/usr/mach/include"

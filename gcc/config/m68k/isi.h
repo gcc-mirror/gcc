@@ -51,7 +51,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-Dunix -Dmc68000 -Dis68k -Asystem(unix) -Asystem(bsd) -Acpu(m68k) -Amachine(m68k)"
+#define CPP_PREDEFINES "-Dunix -Dmc68000 -Dis68k -Asystem=unix -Asystem=bsd -Acpu=m68k -Amachine=m68k"
 
 /* This is BSD, so it wants DBX format.  */
 

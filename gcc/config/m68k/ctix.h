@@ -33,7 +33,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dmc68000 -Dmc68k -Dunix -Dctix -Asystem(unix)  -Acpu(m68k) -Amachine(m68k)"
+#define CPP_PREDEFINES "-Dmc68000 -Dmc68k -Dunix -Dctix -Asystem=unix  -Acpu=m68k -Amachine=m68k"
 
 /* Where to look for robotussinized startfiles.  */
 #undef STANDARD_STARTFILE_PREFIX

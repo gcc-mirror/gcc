@@ -34,7 +34,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #ifndef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__ELF__ -D__pj__ -Asystem(posix)"
+#define CPP_PREDEFINES "-D__ELF__ -D__pj__ -Asystem=posix"
 #endif
 
 /* Run-time compilation parameters selecting different hardware subsets.  */

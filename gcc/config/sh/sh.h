@@ -54,7 +54,7 @@ extern int code_for_indirect_jump_scratch;
 %{mnomacsave:-D__NOMACSAVE__} \
 %{mhitachi:-D__HITACHI__}"
 
-#define CPP_PREDEFINES "-D__sh__ -Acpu(sh) -Amachine(sh)"
+#define CPP_PREDEFINES "-D__sh__ -Acpu=sh -Amachine=sh"
 
 #define ASM_SPEC  "%{ml:-little} %{mrelax:-relax}"
 

@@ -23,7 +23,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dmips -DMIPSEB -DR4000 -D_mips -D_MIPSEB -D_R4000 \
-   -Drtems -D__rtems__ -Asystem(rtems)"
+   -Drtems -D__rtems__ -Asystem=rtems"
 
 /* Generate calls to memcpy, memcmp and memset.  */
 #ifndef TARGET_MEM_FUNCTIONS

@@ -49,7 +49,7 @@ Boston, MA 02111-1307, USA.  */
 
 #ifndef CPP_PREDEFINES
 #define CPP_PREDEFINES  \
-    "-Darm -Driscix -Dunix -Asystem(unix) -Acpu(arm) -Amachine(arm)"
+    "-Darm -Driscix -Dunix -Asystem=unix -Acpu=arm -Amachine=arm"
 #endif
 
 

@@ -23,7 +23,7 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES "\
 -Dr3000 -Dnews3700 -DLANGUAGE_C -DMIPSEB -DSYSTYPE_BSD \
 -Dsony_news -Dsony -Dunix -Dmips -Dhost_mips \
--Asystem(unix) -Asystem(bsd) -Acpu(mips) -Amachine(mips)"
+-Asystem=unix -Asystem=bsd -Acpu=mips -Amachine=mips"
 
 #define SYSTEM_INCLUDE_DIR "/usr/include2.0"
 

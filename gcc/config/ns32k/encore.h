@@ -55,7 +55,7 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_VERSION fprintf (stderr, " (32000, Encore syntax)");
 /* Note Encore does not standardly do -Dencore.  */
 /* budd: should have a -ns32332 (or -apc) switch! but no harm for now */
-#define CPP_PREDEFINES "-Dns32000 -Dn16 -Dns16000 -Dns32332 -Dunix -Asystem(unix) -Acpu(ns32k) -Amachine(ns32k)"
+#define CPP_PREDEFINES "-Dns32000 -Dn16 -Dns16000 -Dns32332 -Dunix -Asystem=unix -Acpu=ns32k -Amachine=ns32k"
 
 /* Ignore certain cpp directives used in header files on sysV.  */
 #define SCCS_DIRECTIVE

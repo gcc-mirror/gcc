@@ -41,7 +41,7 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
   "-Dm68k -Dunix -DAMIX -D__svr4__ -D__motorola__ \
- -Amachine(m68k) -Acpu(m68k) -Asystem(unix) -Alint(off)"
+ -Amachine=m68k -Acpu=m68k -Asystem=unix -Alint=off"
 
 /* At end of a switch table, define LDnnn iff the symbol LInnn was defined.
    Some SGS assemblers have a bug such that "Lnnn-LInnn-2.b(pc,d0.l*2)"

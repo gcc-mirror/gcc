@@ -40,7 +40,7 @@
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
   "-D__NO_UNDERSCORES__ -D__ELF__ -DOSF -DOSF1 -Dunix \
-   -Asystem(unix) -Asystem(xpg4) -Asystem(osf1)"
+   -Asystem=unix -Asystem=xpg4 -Asystem=osf1"
 
 /* current OSF/1 doesn't provide separate crti.o and gcrti.o (and also, crtn.o
    and gcrtn.o) for profile.  */

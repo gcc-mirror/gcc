@@ -375,7 +375,7 @@
    The result is to define the macros `__mc68000__', `__sun__' and `__unix__'
    unconditionally, and the macros `mc68000', `sun' and `unix' provided `-ansi'
    is not specified.  */
-#define CPP_PREDEFINES "-D__D30V__ -Amachine(d30v)"
+#define CPP_PREDEFINES "-D__D30V__ -Amachine=d30v"
 
 /* This declaration should be present.  */
 extern int target_flags;

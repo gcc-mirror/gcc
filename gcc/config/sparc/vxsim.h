@@ -24,7 +24,7 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
  "-DCPU=SIMSPARCSOLARIS -D__vxworks -D__vxworks__ -Dsparc -D__svr4__ -D__SVR4 \
-  -Asystem(embedded) -Asystem(svr4) -Acpu(sparc) -Amachine(sparc)\
+  -Asystem=embedded -Asystem=svr4 -Acpu=sparc -Amachine=sparc\
   -D__GCC_NEW_VARARGS__"
 
 #undef CPP_SPEC

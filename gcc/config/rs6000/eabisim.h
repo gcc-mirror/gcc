@@ -25,7 +25,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
-  "-DPPC -D__embedded__ -D__simulator__ -Asystem(embedded) -Asystem(simulator) -Acpu(powerpc) -Amachine(powerpc)"
+  "-DPPC -D__embedded__ -D__simulator__ -Asystem=embedded -Asystem=simulator -Acpu=powerpc -Amachine=powerpc"
 
 /* Make the simulator the default */
 #undef	LIB_DEFAULT_SPEC

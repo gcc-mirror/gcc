@@ -24,7 +24,7 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_VERSION	fputs (" (ARM/ELF non-Linux old abi)", stderr);
 #endif
 
-#define CPP_PREDEFINES "-Darm_oabi -Darm -Darm_elf -Acpu(arm) -Amachine(arm) -D__ELF__"
+#define CPP_PREDEFINES "-Darm_oabi -Darm -Darm_elf -Acpu=arm -Amachine=arm -D__ELF__"
 
 #ifndef ASM_SPEC
 #define ASM_SPEC "-moabi %{mbig-endian:-EB} %{mcpu=*:-m%*} %{march=*:-m%*} \

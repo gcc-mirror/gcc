@@ -40,7 +40,7 @@ Boston, MA 02111-1307, USA. */
   _D_stdcall=__attribute__((__stdcall__)) \
   -D__cdecl=__attribute__((__cdecl__)) \
   -D__declspec(x)=__attribute__((x)) \
-  -Asystem(winnt)"
+  -Asystem=winnt"
 
 #undef CPP_SPEC
 #define CPP_SPEC "-remap %(cpp_cpu) %{posix:-D_POSIX_SOURCE} \

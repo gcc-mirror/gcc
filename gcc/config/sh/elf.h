@@ -67,7 +67,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 /* Let code know that this is ELF.  */
-#define CPP_PREDEFINES "-D__sh__ -D__ELF__ -Acpu(sh) -Amachine(sh)"
+#define CPP_PREDEFINES "-D__sh__ -D__ELF__ -Acpu=sh -Amachine=sh"
 
 /* Pass -ml and -mrelax to the assembler and linker.  */
 #undef ASM_SPEC

@@ -36,7 +36,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dunix -D__FreeBSD__\
- -Asystem(unix) -Asystem(bsd) -Asystem(FreeBSD)"
+ -Asystem=unix -Asystem=bsd -Asystem=FreeBSD"
 
 /* Like the default, except no -lg.  */
 #define LIB_SPEC "%{!shared:%{!pg:-lc}%{pg:-lc_p}}"

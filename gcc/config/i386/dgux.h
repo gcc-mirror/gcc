@@ -27,7 +27,7 @@ Boston, MA 02111-1307, USA.  */
 #include "i386/sysv4.h"
 
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.11 $"
+#define VERSION_INFO2   "$Revision: 1.12 $"
 #endif
 
 #ifndef VERSION_STRING
@@ -151,7 +151,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef	CPP_PREDEFINES
 #define CPP_PREDEFINES "-D__ix86 -Dunix -DDGUX -D__CLASSIFY_TYPE__=2\
-   -Asystem(unix) -Asystem(svr4)"
+   -Asystem=unix -Asystem=svr4"
 
    /*
      If not -ansi, -traditional, or restricting include files to one

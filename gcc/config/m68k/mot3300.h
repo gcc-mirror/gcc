@@ -274,7 +274,7 @@ dtors_section ()							\
    on the other hand I don't care what he says.  */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dm68k -Dunix -DsysV68 -D__motorola__ -Asystem(unix) -Asystem(svr3) -Acpu(m68k) -Amachine(m68k)"
+#define CPP_PREDEFINES "-Dm68k -Dunix -DsysV68 -D__motorola__ -Asystem=unix -Asystem=svr3 -Acpu=m68k -Amachine=m68k"
 
 #undef TARGET_VERSION
 #ifndef USE_GAS

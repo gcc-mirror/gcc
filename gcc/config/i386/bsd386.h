@@ -7,7 +7,7 @@
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dunix -Dbsdi -D____386BSD____ -D__386BSD__\
- -DBSD_NET2 -Asystem(unix) -Asystem(bsd)"
+ -DBSD_NET2 -Asystem=unix -Asystem=bsd"
 
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "int"

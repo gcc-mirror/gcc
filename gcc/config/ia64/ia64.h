@@ -35,7 +35,7 @@ Boston, MA 02111-1307, USA.  */
    predefined macros that identify this machine and system.  These macros will
    be predefined unless the `-ansi' option is specified.  */
 /* ??? This is undefed in svr4.h.  */
-#define CPP_PREDEFINES "-Dia64 -Amachine(ia64)"
+#define CPP_PREDEFINES "-Dia64 -Amachine=ia64"
 
 /* This declaration should be present.  */
 extern int target_flags;

@@ -26,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
 "-Dsparc -Dsun -Dunix -D__svr4__ -D__SVR4 \
--Asystem(unix) -Asystem(svr4)"
+-Asystem=unix -Asystem=svr4"
 
 #undef CPP_SUBTARGET_SPEC
 #define CPP_SUBTARGET_SPEC "\

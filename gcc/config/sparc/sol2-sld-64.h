@@ -163,10 +163,10 @@
 
 #undef CPP_ARCH32_SPEC
 #define CPP_ARCH32_SPEC "-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int \
--D__GCC_NEW_VARARGS__ -Acpu(sparc) -Amachine(sparc)"
+-D__GCC_NEW_VARARGS__ -Acpu=sparc -Amachine=sparc"
 #undef CPP_ARCH64_SPEC
 #define CPP_ARCH64_SPEC "-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int \
--D__arch64__ -Acpu(sparc64) -Amachine(sparcv9) -D__sparcv9"
+-D__arch64__ -Acpu=sparc64 -Amachine=sparcv9 -D__sparcv9"
 
 #undef CPP_ARCH_SPEC
 #define CPP_ARCH_SPEC "\

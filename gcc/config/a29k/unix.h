@@ -29,7 +29,7 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_DEFAULT (1+2+16+128)
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dam29k -Da29k -Dam29000 -Asystem(unix) -Acpu(a29k) -Amachine(a29k)"
+#define CPP_PREDEFINES "-Dam29k -Da29k -Dam29000 -Asystem=unix -Acpu=a29k -Amachine=a29k"
 
 #undef CPP_SPEC
 #define CPP_SPEC "%{!m29000:-Dam29050 -D__am29050__}"

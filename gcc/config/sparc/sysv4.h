@@ -61,7 +61,7 @@ Boston, MA 02111-1307, USA.  */
    the Sparc running svr4.  __svr4__ is our extension.  */
 
 #define CPP_PREDEFINES \
-"-Dsparc -Dunix -D__svr4__ -Asystem(unix) -Asystem(svr4)"
+"-Dsparc -Dunix -D__svr4__ -Asystem=unix -Asystem=svr4"
 
 /* The native assembler can't compute differences between symbols in different
    sections when generating pic code, so we must put jump tables in the

@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.  */
   "%{pg:/usr/lib/gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}"
 
 #ifndef CPP_PREDEFINES
-#define CPP_PREDEFINES  "-Darm -Driscix -Dunix -Asystem(unix) -Acpu(arm) -Amachine(arm)"
+#define CPP_PREDEFINES  "-Darm -Driscix -Dunix -Asystem=unix -Acpu=arm -Amachine=arm"
 #endif
 
 /* Riscix 1.1 doesn't have X/OPEN support, so only accept -mbsd (but ignore

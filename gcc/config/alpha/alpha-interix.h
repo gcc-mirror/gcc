@@ -33,7 +33,7 @@ Boston, MA 02111-1307, USA.  */
   -D__alpha -D__alpha__\
   -D__stdcall= \
   -D__cdecl= \
-  -Asystem(unix) -Asystem(interix) -Acpu(alpha) -Amachine(alpha)"
+  -Asystem=unix -Asystem=interix -Acpu=alpha -Amachine=alpha"
 
 #undef CPP_SUBTARGET_SPEC
 #define CPP_SUBTARGET_SPEC "\

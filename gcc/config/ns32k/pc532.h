@@ -55,7 +55,7 @@ Boston, MA 02111-1307, USA.  */
 /* Maybe someone needs to know which processor we're running on */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dns32000 -Dns32532 -Dpc532 -Dunix -Asystem(unix) -Acpu(ns32k) -Amachine(ns32k)"
+#define CPP_PREDEFINES "-Dns32000 -Dns32532 -Dpc532 -Dunix -Asystem=unix -Acpu=ns32k -Amachine=ns32k"
 
 /* Use pc relative addressing whenever possible,
    it's more efficient than absolute (ns32k.c)

@@ -1,7 +1,7 @@
 #include "m68k/sun3.h"
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dmc68000 -Dsun -Dsun3 -Dunix -DMACH -DCMU -DMTXINU -DBIT_MSF -DBYTE_MSF -Asystem(unix)  -Asystem(mach) -Acpu(m68k) -Amachine(m68k)"
+#define CPP_PREDEFINES "-Dmc68000 -Dsun -Dsun3 -Dunix -DMACH -DCMU -DMTXINU -DBIT_MSF -DBYTE_MSF -Asystem=unix  -Asystem=mach -Acpu=m68k -Amachine=m68k"
 
 /* Specify extra dir to search for include files.  */
 #define SYSTEM_INCLUDE_DIR "/usr/mach/include"

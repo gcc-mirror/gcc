@@ -122,7 +122,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 #endif
 
 #ifndef CPP_PREDEFINES
-#define CPP_PREDEFINES  "-Acpu(arm) -Amachine(arm)"
+#define CPP_PREDEFINES  "-Acpu=arm -Amachine=arm"
 #endif
 
 #define CPP_SPEC "\

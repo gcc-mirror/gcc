@@ -62,7 +62,7 @@ Boston, MA 02111-1307, USA.  */
 -DMIPSEL -DR3000 -DSYSTYPE_BSD -D_SYSTYPE_BSD -D__NetBSD__ -Dmips \
 -D__NO_LEADING_UNDERSCORES__ -D__GP_SUPPORT__ \
 -Dunix -D_R3000 \
--Asystem(unix) -Asystem(NetBSD) -Amachine(mips)"
+-Asystem=unix -Asystem=NetBSD -Amachine=mips"
 #endif
 
 #ifndef SUBTARGET_CPP_SPEC

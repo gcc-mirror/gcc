@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.  */
 #include "svr3.h"
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dsparc -Dsparclite -Acpu(sparc) -Amachine(sparc)"
+#define CPP_PREDEFINES "-Dsparc -Dsparclite -Acpu=sparc -Amachine=sparc"
 
 /* Default to stabs in COFF.  */
 

@@ -24,7 +24,7 @@ Boston, MA 02111-1307, USA.  */
 #include "aoutos.h"
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dmc68000 -D__vxworks -D__vxworks_5 -Acpu(m68k) -Amachine(m68k)"
+#define CPP_PREDEFINES "-Dmc68000 -D__vxworks -D__vxworks_5 -Acpu=m68k -Amachine=m68k"
 
 /* The default value for -DCPU=.  */
 #if TARGET_CPU_DEFAULT == M68K_CPU_m68k || TARGET_CPU_DEFAULT == M68K_CPU_m68020

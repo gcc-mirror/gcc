@@ -31,7 +31,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Macros to be automatically defined.  */
 #undef	CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dm88000 -Dm88k -Dunix -DsysV88 -D__CLASSIFY_TYPE__=2 -Asystem(unix) -Asystem(svr3) -Acpu(m88k) -Amachine(m88k)"
+#define CPP_PREDEFINES "-Dm88000 -Dm88k -Dunix -DsysV88 -D__CLASSIFY_TYPE__=2 -Asystem=unix -Asystem=svr3 -Acpu=m88k -Amachine=m88k"
 
 /* Override svr3.h to link with ?crt0.o instead of ?crt1.o and ?crtn.o.
    From arul@sdsu.edu.  */

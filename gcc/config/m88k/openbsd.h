@@ -24,7 +24,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Macros to be automatically defined.  */
 #define CPP_PREDEFINES \
-    "-D__m88k__ -D__unix__ -D__OpenBSD__ -D__CLASSIFY_TYPE__=2 -Asystem(unix) -Asystem(OpenBSD) -Acpu(m88k) -Amachine(m88k)"
+    "-D__m88k__ -D__unix__ -D__OpenBSD__ -D__CLASSIFY_TYPE__=2 -Asystem=unix -Asystem=OpenBSD -Acpu=m88k -Amachine=m88k"
 
 /* If -m88000 is in effect, add -Dmc88000; similarly for -m88100 and -m88110.
    However, reproduce the effect of -Dmc88100 previously in CPP_PREDEFINES.

@@ -95,8 +95,8 @@ Boston, MA 02111-1307, USA.  */
 #define MIPS_GNU
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dmips -Acpu(mips) -Amachine(mips) \
--Dunix -Asystem(unix)  -DMACH -Asystem(mach) -D__GNU__ -Asystem(gnu) \
+#define CPP_PREDEFINES "-Dmips -Acpu=mips -Amachine=mips \
+-Dunix -Asystem=unix  -DMACH -Asystem=mach -D__GNU__ -Asystem=gnu \
 -DMIPSEB -DR3000 -D_MIPSEB -D_R3000 \
 -D_MIPS_SZINT=32 -D_MIPS_SZLONG=32 -D_MIPS_SZPTR=32"
 

@@ -134,7 +134,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef	CPP_PREDEFINES
 #define CPP_PREDEFINES "-DNeXT -Dunix -D__MACH__ -D__LITTLE_ENDIAN__ \
-  -D__ARCHITECTURE__=\"i386\" -Asystem(unix) -Asystem(mach)"
+  -D__ARCHITECTURE__=\"i386\" -Asystem=unix -Asystem=mach"
 
 /* This accounts for the return pc and saved fp on the i386. */
 

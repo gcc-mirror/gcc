@@ -68,7 +68,7 @@ Boston, MA 02111-1307, USA.  */
    predefined macros that identify this machine and system.  These macros will
    be predefined unless the `-ansi' option is specified. */
 
-#define CPP_PREDEFINES "-Dfr30 -D__fr30__ -Amachine(fr30)"
+#define CPP_PREDEFINES "-Dfr30 -D__fr30__ -Amachine=fr30"
 
 /* Use LDI:20 instead of LDI:32 to load addresses.  */
 #define TARGET_SMALL_MODEL_MASK	(1 << 0)

@@ -44,7 +44,7 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_VERSION fprintf (stderr, " (arc)")
 
 /* Names to predefine in the preprocessor for this target machine.  */
-#define CPP_PREDEFINES "-Acpu(arc) -Amachine(arc) -D__arc__"
+#define CPP_PREDEFINES "-Acpu=arc -Amachine=arc -D__arc__"
 
 /* Additional flags for the preprocessor.  */
 #define CPP_SPEC "\
