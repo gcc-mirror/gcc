@@ -2998,15 +2998,15 @@ eh_regs (pcontext, psp, pra, outgoing)
 {
   rtx rcontext, rsp, rra;
   unsigned int i;
+  tree t;
 
+  t = build_pointer_type (void_type_node);
 #ifdef FUNCTION_OUTGOING_VALUE
   if (outgoing)
-    rcontext = FUNCTION_OUTGOING_VALUE (build_pointer_type (void_type_node),
-				        current_function_decl);
+    rcontext = FUNCTION_OUTGOING_VALUE (t, current_function_decl);
   else
 #endif
-    rcontext = FUNCTION_VALUE (build_pointer_type (void_type_node),
-			       current_function_decl);
+    rcontext = FUNCTION_VALUE (t, current_function_decl);
 
 #ifdef STATIC_CHAIN_REGNUM
   if (outgoing)
