@@ -25,6 +25,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "machmode.h"
 
 extern bool hook_bool_void_false (void);
+extern bool hook_bool_void_true (void);
 extern bool hook_bool_bool_false (bool);
 extern bool hook_bool_mode_false (enum machine_mode);
 extern bool hook_bool_tree_false (tree);
