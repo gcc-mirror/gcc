@@ -1,3 +1,8 @@
+2004-08-21  Bud Davis  <bdavis9659@comcast.net>
+
+	PR 16908
+	* gfortran.dg/direct_io.f90: New test.
+
 2004-08-20  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17121

@@ -1,3 +1,9 @@
+2004-08-21  Bud Davis  <bdavis9659@comcast.net>
+
+	PR 16908
+	* io/transfer.c (next_record_w): Do not blank pad.
+	* io/transfer.c (next_record): Take into account partial records.
+
 2004-08-18  Victor Leikehman  <lei@il.ibm.com>
 
 	PR fortran/13278
