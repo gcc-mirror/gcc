@@ -1,6 +1,6 @@
 /* Try to unroll loops, and split induction variables.
-   Copyright (C) 1992, 1993, 1994, 1995, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995, 1997, 1998, 1999, 2000
+   Free Software Foundation, Inc.
    Contributed by James E. Wilson, Cygnus Support/UC Berkeley.
 
 This file is part of GNU CC.
@@ -140,12 +140,17 @@ Boston, MA 02111-1307, USA.  */
 
 #define NUM_FACTORS 4
 
-struct _factor { int factor, count; } factors[NUM_FACTORS]
-  = { {2, 0}, {3, 0}, {5, 0}, {7, 0}};
+struct _factor { int factor, count; }
+factors[NUM_FACTORS] = { {2, 0}, {3, 0}, {5, 0}, {7, 0}};
 
 /* Describes the different types of loop unrolling performed.  */
 
-enum unroll_types { UNROLL_COMPLETELY, UNROLL_MODULO, UNROLL_NAIVE };
+enum unroll_types
+{
+  UNROLL_COMPLETELY,
+  UNROLL_MODULO,
+  UNROLL_NAIVE
+};
 
 #include "config.h"
 #include "system.h"
@@ -206,7 +211,7 @@ static void copy_loop_body PARAMS ((struct loop *, rtx, rtx,
 				    enum unroll_types, rtx, rtx, rtx, rtx));
 static int find_splittable_regs PARAMS ((const struct loop *,
 					 enum unroll_types, rtx, int));
-static int find_splittable_givs PARAMS ((const struct loop *, 
+static int find_splittable_givs PARAMS ((const struct loop *,
 					 struct iv_class *, enum unroll_types,
 					 rtx, int));
 static int reg_dead_after_loop PARAMS ((const struct loop *, rtx));
@@ -357,7 +362,7 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
       rtx ujump = ujump_to_loop_cont (loop->start, loop->cont);
       if (ujump)
 	delete_insn (ujump);
-	
+
       /* If number of iterations is exactly 1, then eliminate the compare and
 	 branch at the end of the loop since they will never be taken.
 	 Then return, since no other action is needed here.  */
@@ -443,13 +448,11 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
       if (unroll_number == 1)
 	{
 	  if (loop_dump_stream)
-	    fprintf (loop_dump_stream,
-		     "Loop unrolling: No factors found.\n");
+	    fprintf (loop_dump_stream, "Loop unrolling: No factors found.\n");
 	}
       else
 	unroll_type = UNROLL_MODULO;
     }
-
 
   /* Default case, calculate number of times to unroll loop based on its
      size.  */
@@ -466,9 +469,7 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
   /* Now we know how many times to unroll the loop.  */
 
   if (loop_dump_stream)
-    fprintf (loop_dump_stream,
-	     "Unrolling loop %d times.\n", unroll_number);
-
+    fprintf (loop_dump_stream, "Unrolling loop %d times.\n", unroll_number);
 
   if (unroll_type == UNROLL_COMPLETELY || unroll_type == UNROLL_MODULO)
     {
@@ -767,9 +768,7 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
 	      for (i = 0; i < len; i++)
 		{
 		  label = XEXP (XVECEXP (pat, diff_vec_p, i), 0);
-		  set_label_in_map (map,
-				    CODE_LABEL_NUMBER (label),
-				    label);
+		  set_label_in_map (map, CODE_LABEL_NUMBER (label), label);
 		}
 	    }
 	}
@@ -828,7 +827,8 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
       /* If we have a target that uses cc0, then we also must not duplicate
 	 the insn that sets cc0 before the jump insn, if one is present.  */
 #ifdef HAVE_cc0
-      if (GET_CODE (copy_end) == JUMP_INSN && sets_cc0_p (PREV_INSN (copy_end)))
+      if (GET_CODE (copy_end) == JUMP_INSN
+	  && sets_cc0_p (PREV_INSN (copy_end)))
 	copy_end_luid--;
 #endif
 
@@ -913,7 +913,7 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
 			       &initial_value, &final_value, &increment,
 			       &mode))
 	{
-	  register rtx diff ;
+	  register rtx diff;
 	  rtx *labels;
 	  int abs_inc, neg_inc;
 
@@ -936,7 +936,7 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
 	  abs_inc = INTVAL (increment);
 	  if (abs_inc < 0)
 	    {
-	      abs_inc = - abs_inc;
+	      abs_inc = -abs_inc;
 	      neg_inc = 1;
 	    }
 
@@ -1071,8 +1071,8 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
 	    {
 	      copy_end = PREV_INSN (last_loop_insn);
 #ifdef HAVE_cc0
-	      /* The immediately preceding insn may be a compare which we do not
-		 want to copy.  */
+	      /* The immediately preceding insn may be a compare which
+		 we do not want to copy.  */
 	      if (sets_cc0_p (PREV_INSN (copy_end)))
 		copy_end = PREV_INSN (copy_end);
 #endif
@@ -1132,8 +1132,9 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
 	    {
 	      insert_before = last_loop_insn;
 #ifdef HAVE_cc0
-	      /* The instruction immediately before the JUMP_INSN may be a compare
-		 instruction which we do not want to copy or delete.  */
+	      /* The instruction immediately before the JUMP_INSN may
+		 be a compare instruction which we do not want to copy
+		 or delete.  */
 	      if (sets_cc0_p (PREV_INSN (insert_before)))
 		insert_before = PREV_INSN (insert_before);
 #endif
@@ -1154,7 +1155,8 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
   if (unroll_type == UNROLL_NAIVE && ! flag_unroll_all_loops)
     {
       if (loop_dump_stream)
-	fprintf (loop_dump_stream, "Unrolling failure: Naive unrolling not being done.\n");
+	fprintf (loop_dump_stream,
+		 "Unrolling failure: Naive unrolling not being done.\n");
       goto egress;
     }
 
@@ -1419,7 +1421,7 @@ precondition_loop_p (loop, initial_value, final_value, increment, mode)
       return 0;
     }
   else if ((exact_log2 (INTVAL (loop_info->increment)) < 0)
-	   && (exact_log2 (- INTVAL (loop_info->increment)) < 0))
+	   && (exact_log2 (-INTVAL (loop_info->increment)) < 0))
     {
       if (loop_dump_stream)
 	fprintf (loop_dump_stream,
@@ -1509,7 +1511,6 @@ precondition_loop_p (loop, initial_value, final_value, increment, mode)
     fprintf (loop_dump_stream, "Preconditioning: Successful.\n");
   return 1;
 }
-
 
 /* All pseudo-registers must be mapped to themselves.  Two hard registers
    must be mapped, VIRTUAL_STACK_VARS_REGNUM and VIRTUAL_INCOMING_ARGS_
@@ -1739,8 +1740,7 @@ copy_loop_body (loop, copy_start, copy_end, map, exit_label, last_iteration,
   if (! last_iteration)
     {
       final_label = gen_label_rtx ();
-      set_label_in_map (map, CODE_LABEL_NUMBER (start_label),
-			final_label);
+      set_label_in_map (map, CODE_LABEL_NUMBER (start_label), final_label);
     }
   else
     set_label_in_map (map, CODE_LABEL_NUMBER (start_label), start_label);
@@ -1857,7 +1857,7 @@ copy_loop_body (loop, copy_start, copy_end, map, exit_label, last_iteration,
 			   We must subtract the const_adjust factor added in
 			   above.  */
 			tv->dest_reg = plus_constant (dest_reg,
-						      - tv->const_adjust);
+						      -tv->const_adjust);
 			*tv->location = tv->dest_reg;
 		      }
 		  }
@@ -2073,7 +2073,7 @@ copy_loop_body (loop, copy_start, copy_end, map, exit_label, last_iteration,
 		  emit_label_after (lab, jmp);
 		  LABEL_NUSES (lab) = 0;
 		  if (!redirect_jump (copy, lab, 0))
-		    abort();
+		    abort ();
 		}
 	    }
 
@@ -2209,7 +2209,7 @@ copy_loop_body (loop, copy_start, copy_end, map, exit_label, last_iteration,
 	  /* VTOP and CONT notes are valid only before the loop exit test.
 	     If placed anywhere else, loop may generate bad code.  */
 	  /* BASIC_BLOCK notes exist to stabilize basic block structures with
-	     the associated rtl.  We do not want to share the structure in 
+	     the associated rtl.  We do not want to share the structure in
 	     this new block.  */
 
 	  if (NOTE_LINE_NUMBER (insn) != NOTE_INSN_DELETED
@@ -2430,7 +2430,6 @@ biv_total_increment (bl)
   return result;
 }
 
-
 /* For each biv and giv, determine whether it can be safely split into
    a different variable for each unrolled copy of the loop body.  If it
    is safe to split, then indicate that by saving some useful info
@@ -2541,7 +2540,8 @@ find_splittable_regs (loop, unroll_type, end_insert_before, unroll_number)
 				    loop_start);
 
 		  if (loop_dump_stream)
-		    fprintf (loop_dump_stream, "Biv %d initial value remapped to %d.\n",
+		    fprintf (loop_dump_stream,
+			     "Biv %d initial value remapped to %d.\n",
 			     bl->regno, REGNO (tem));
 
 		  splittable_regs[bl->regno] = tem;
@@ -2568,7 +2568,7 @@ find_splittable_regs (loop, unroll_type, end_insert_before, unroll_number)
 	 depend on it may be splittable if the biv is live outside the
 	 loop, and the givs aren't.  */
 
-      result += find_splittable_givs (loop, bl, unroll_type, increment, 
+      result += find_splittable_givs (loop, bl, unroll_type, increment,
 				      unroll_number);
 
       /* If final value is non-zero, then must emit an instruction which sets
@@ -2927,7 +2927,7 @@ find_splittable_givs (loop, bl, unroll_type, increment, unroll_number)
 			  /* Save the negative of the eliminated const, so
 			     that we can calculate the dest_reg's increment
 			     value later.  */
-			  v->const_adjust = - INTVAL (XEXP (new_reg, 1));
+			  v->const_adjust = -INTVAL (XEXP (new_reg, 1));
 
 			  new_reg = XEXP (new_reg, 0);
 			  if (loop_dump_stream)
@@ -3155,7 +3155,7 @@ reg_dead_after_loop (loop, reg)
   label = gen_rtx_LABEL_REF (VOIDmode, loop->end);
   LABEL_NEXTREF (label) = loop->exit_labels;
 
-  for ( ; label; label = LABEL_NEXTREF (label))
+  for (; label; label = LABEL_NEXTREF (label))
     {
       /* Succeed if find an insn which sets the biv or if reach end of
 	 function.  Fail if find an insn that uses the biv, or if come to
@@ -3215,7 +3215,7 @@ final_biv_value (loop, bl)
     return 0;
 
   /* The final value for reversed bivs must be calculated differently than
-      for ordinary bivs.  In this case, there is already an insn after the
+     for ordinary bivs.  In this case, there is already an insn after the
      loop which sets this biv's final value (if necessary), and there are
      no other loop exits, so we can return any value.  */
   if (bl->reversed)
@@ -3373,8 +3373,7 @@ final_giv_value (loop, v)
 	    }
 
 	  /* Now calculate the giv's final value.  */
-	  emit_iv_add_mult (tem, v->mult_val, v->add_val, tem,
-			    insert_before);
+	  emit_iv_add_mult (tem, v->mult_val, v->add_val, tem, insert_before);
 
 	  if (loop_dump_stream)
 	    fprintf (loop_dump_stream,
@@ -3403,7 +3402,6 @@ final_giv_value (loop, v)
   return 0;
 }
 
-
 /* Look back before LOOP->START for then insn that sets REG and return
    the equivalent constant if there is a REG_EQUAL note otherwise just
    the SET_SRC of REG.  */
@@ -3418,7 +3416,7 @@ loop_find_equiv_value (loop, reg)
   rtx ret;
 
   ret = reg;
-  for (insn = PREV_INSN (loop_start); insn ; insn = PREV_INSN (insn))
+  for (insn = PREV_INSN (loop_start); insn; insn = PREV_INSN (insn))
     {
       if (GET_CODE (insn) == CODE_LABEL)
 	break;
@@ -3429,7 +3427,7 @@ loop_find_equiv_value (loop, reg)
 	     If it sets the entire register, and has a REG_EQUAL note,
 	     then use the value of the REG_EQUAL note.  */
 	  if ((set = single_set (insn))
-		  && (SET_DEST (set) == reg))
+	      && (SET_DEST (set) == reg))
 	    {
 	      rtx note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
 
@@ -3480,7 +3478,6 @@ subtract_reg_term (op, reg)
   abort ();
 }
 
-
 /* Find and return register term common to both expressions OP0 and
    OP1 or NULL_RTX if no such term exists.  Each expression must be a
    REG or a PLUS of a REG.  */
@@ -3517,7 +3514,6 @@ find_common_reg_term (op0, op1)
   /* No common register term found.  */
   return NULL_RTX;
 }
-
 
 /* Determine the loop iterator and calculate the number of loop
    iterations.  Returns the exact number of loop iterations if it can
@@ -3768,7 +3764,7 @@ loop_iterations (loop)
      its value from the insns before the start of the loop.  */
 
   final_value = comparison_value;
-  if (GET_CODE (comparison_value) == REG 
+  if (GET_CODE (comparison_value) == REG
       && loop_invariant_p (loop, comparison_value))
     {
       final_value = loop_find_equiv_value (loop, comparison_value);
@@ -3855,12 +3851,12 @@ loop_iterations (loop)
 	{
 	  rtx temp;
 
-	  /*  When running the loop optimizer twice, check_dbra_loop
-	      further obfuscates reversible loops of the form:
-	      for (i = init; i < init + const; i++).  We often end up with
-	      final_value = 0, initial_value = temp, temp = temp2 - init,
-	      where temp2 = init + const.  If the loop has a vtop we
-	      can replace initial_value with const.  */
+	  /* When running the loop optimizer twice, check_dbra_loop
+	     further obfuscates reversible loops of the form:
+	     for (i = init; i < init + const; i++).  We often end up with
+	     final_value = 0, initial_value = temp, temp = temp2 - init,
+	     where temp2 = init + const.  If the loop has a vtop we
+	     can replace initial_value with const.  */
 
 	  temp = loop_find_equiv_value (loop, reg1);
 
@@ -3898,7 +3894,7 @@ loop_iterations (loop)
      Check this now so that we won't leave an invalid value if we
      return early for any other reason.  */
   if (comparison_code == EQ)
-      loop_info->final_equiv_value = loop_info->final_value = 0;
+    loop_info->final_equiv_value = loop_info->final_value = 0;
 
   if (increment == 0)
     {
@@ -3944,8 +3940,7 @@ loop_iterations (loop)
   else if (comparison_code == EQ)
     {
       if (loop_dump_stream)
-	fprintf (loop_dump_stream,
-		 "Loop iterations: EQ comparison loop.\n");
+	fprintf (loop_dump_stream, "Loop iterations: EQ comparison loop.\n");
       return 0;
     }
   else if (GET_CODE (final_value) != CONST_INT)
@@ -4012,8 +4007,7 @@ loop_iterations (loop)
   else
     {
       if (loop_dump_stream)
-	fprintf (loop_dump_stream,
-		 "Loop iterations: Not normal loop.\n");
+	fprintf (loop_dump_stream, "Loop iterations: Not normal loop.\n");
       return 0;
     }
 
@@ -4045,7 +4039,6 @@ loop_iterations (loop)
   loop_info->n_iterations = abs_diff / abs_inc + ((abs_diff % abs_inc) != 0);
   return loop_info->n_iterations;
 }
-
 
 /* Replace uses of split bivs with their split pseudo register.  This is
    for original instructions which remain after loop unrolling without
@@ -4135,7 +4128,7 @@ set_dominates_use (regno, first_uid, last_uid, copy_start, copy_end)
   while (INSN_UID (p) != first_uid)
     {
       if (GET_CODE (p) == JUMP_INSN)
-	passed_jump= 1;
+	passed_jump = 1;
       /* Could not find FIRST_UID.  */
       if (p == copy_end)
 	return 0;
@@ -4172,10 +4165,11 @@ set_dominates_use (regno, first_uid, last_uid, copy_start, copy_end)
    unconditional branch to the loop continuation note (or a label just after).
    In this case, the unconditional branch that starts the loop needs to be
    deleted so that we execute the single iteration.  */
+
 static rtx
 ujump_to_loop_cont (loop_start, loop_cont)
-      rtx loop_start;
-      rtx loop_cont;
+     rtx loop_start;
+     rtx loop_cont;
 {
   rtx x, label, label_ref;
 
@@ -4196,11 +4190,8 @@ ujump_to_loop_cont (loop_start, loop_cont)
     return NULL_RTX;
 
   /* Return the loop start if the branch label matches the code label.  */
-  if (CODE_LABEL_NUMBER (label) == CODE_LABEL_NUMBER (XEXP (label_ref,0)))
+  if (CODE_LABEL_NUMBER (label) == CODE_LABEL_NUMBER (XEXP (label_ref, 0)))
     return loop_start;
   else
     return NULL_RTX;
-
 }
-
-
