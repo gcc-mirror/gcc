@@ -210,6 +210,7 @@ extern rtx arm_expand_builtin		PARAMS ((tree, rtx, rtx,
 					       enum machine_mode, int));
 #endif
 
+struct cpp_reader;
 extern void arm_pr_long_calls		PARAMS ((struct cpp_reader *));
 extern void arm_pr_no_long_calls	PARAMS ((struct cpp_reader *));
 extern void arm_pr_long_calls_off	PARAMS ((struct cpp_reader *));

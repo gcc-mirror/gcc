@@ -1,3 +1,7 @@
+2003-01-11  Richard Earnshaw  (rearnsha@arm.com)
+
+	* arm-protos.h (struct cpp_reader): Add declaration.
+
 Sat Jan 11 11:02:58 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	PR target/9068
