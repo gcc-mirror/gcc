@@ -17,7 +17,7 @@ TARGET_MACHINE='*'
 DESTDIR=`${PWDCMD-pwd}`/res
 SRCDIR=`${PWDCMD-pwd}`/inc
 FIND_BASE='.'
-VERBOSE=1
+VERBOSE=[=` echo ${VERBOSE-1} `=]
 INPUT=`${PWDCMD-pwd}`
 ORIGDIR=${INPUT}
 
