@@ -57,6 +57,13 @@
 	(expand_epilogue): Likewise.
 	(m68hc11_memory_move_cost): Increase cost of HI/QI soft registers.
 
+2003-01-15  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* som.h (SUPPORTS_WEAK, SUPPORTS_ONE_ONLY, MAKE_DECL_ONE_ONLY,
+	ASM_WEAKEN_LABEL, GTHREAD_USE_WEAK): Define.
+	* pa.h (TARGET_SOM_SDEF): Define.
+	* pa-hpux11.h (TARGET_SOM_SDEF): Define.
+
 2003-01-15  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.h (ASM_SPEC): Handle -m68hcs12; Pass -mshort
