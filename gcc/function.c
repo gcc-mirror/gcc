@@ -1449,19 +1449,7 @@ fixup_var_refs_insns (var, promoted_mode, unsignedp, insn, toplevel)
 			replacements->old
 			  = fixup_stack_1 (replacements->old, insn);
 
-		      /* We can not separate USE insns from the CALL_INSN
-			 that they belong to.  If this is a CALL_INSN, insert
-			 the move insn before the USE insns preceding it
-			 instead of immediately before the insn.  */
-		      if (GET_CODE (insn) == CALL_INSN)
-			{
-			  insert_before = insn;
-			  while (GET_CODE (PREV_INSN (insert_before)) == INSN
-				 && GET_CODE (PATTERN (PREV_INSN (insert_before))) == USE)
-			    insert_before = PREV_INSN (insert_before);
-			}
-		      else
-			insert_before = insn;
+		      insert_before = insn;
 
 		      /* If we are changing the mode, do a conversion.
 			 This might be wasteful, but combine.c will
