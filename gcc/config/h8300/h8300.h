@@ -1080,7 +1080,7 @@ struct cum_arg
 #define ASM_APP_OFF "; #NO_APP\n"
 
 #define FILE_ASM_OP "\t.file\n"
-#define IDENT_ASM_OP "\t.ident\n"
+#define IDENT_ASM_OP "\t.ident\t"
 
 /* The assembler op to get a word, 2 bytes for the H8/300, 4 for H8/300H.  */
 #define ASM_WORD_OP							\

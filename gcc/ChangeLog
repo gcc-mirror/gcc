@@ -1,5 +1,9 @@
 2002-12-26  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.h (IDENT_ASM_OP): End with a tab.
+
+2002-12-26  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/i386/athlon.md: Fix comment typos.
 	* config/i386/crtdll.h: Likewise.
 	* config/i386/djgpp.h: Likewise.
