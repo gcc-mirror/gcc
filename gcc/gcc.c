@@ -244,7 +244,9 @@ or with constant text in a single argument.
  %x{OPTION}	Accumulate an option for %X.
  %X	Output the accumulated linker options specified by compilations.
  %Y	Output the accumulated assembler options specified by compilations.
- %v	Substitute the minor version number of GCC.
+ %v1	Substitute the major version number of GCC.
+	(For version 2.5.n, this is 2.)
+ %v2	Substitute the minor version number of GCC.
 	(For version 2.5.n, this is 5.)
  %a     process ASM_SPEC as a spec.
         This allows config.h to specify part of the spec for running as.
@@ -446,7 +448,7 @@ static struct compiler default_compilers[] =
    "cpp -lang-c %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d}\
-        -undef -D__GNUC__=2 -D__GNUC_MINOR__=%v\
+        -undef -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
 	%{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
 	%{!undef:%{!ansi:%p} %P} %{trigraphs} \
         %c %{O*:%{!O0:-D__OPTIMIZE__}} %{traditional} %{ftraditional:-traditional}\
@@ -467,7 +469,7 @@ static struct compiler default_compilers[] =
    "%{E:cpp -lang-c %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d}\
-        -undef -D__GNUC__=2 %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
+        -undef -D__GNUC__=%v1 %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
 	%{!undef:%{!ansi:%p} %P} %{trigraphs}\
         %c %{O*:%{!O0:-D__OPTIMIZE__}} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
@@ -479,7 +481,7 @@ static struct compiler default_compilers[] =
    "cpp -lang-objc %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d}\
-        -undef -D__OBJC__ -D__GNUC__=2 -D__GNUC_MINOR__=%v\
+        -undef -D__OBJC__ -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
 	 %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
 	%{!undef:%{!ansi:%p} %P} %{trigraphs}\
         %c %{O*:%{!O0:-D__OPTIMIZE__}} %{traditional} %{ftraditional:-traditional}\
@@ -503,7 +505,7 @@ static struct compiler default_compilers[] =
     cpp %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	 %{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} \
-        -undef -D__GNUC__=2 -D__GNUC_MINOR__=%v\
+        -undef -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
 	 %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
 	%{!undef:%{!ansi:%p} %P} %{trigraphs}\
         %c %{O*:%{!O0:-D__OPTIMIZE__}} %{traditional} %{ftraditional:-traditional}\
@@ -517,7 +519,7 @@ static struct compiler default_compilers[] =
    "cpp -lang-c++ %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
 	%{C:%{!E:%eGNU C++ does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} \
-	-undef -D__GNUC__=2 -D__GNUG__=2 -D__cplusplus -D__GNUC_MINOR__=%v\
+	-undef -D__GNUC__=%v1 -D__GNUG__=%v1 -D__cplusplus -D__GNUC_MINOR__=%v2\
 	%{ansi:-trigraphs -$ -D__STRICT_ANSI__} %{!undef:%{!ansi:%p} %P}\
         %c %{O*:%{!O0:-D__OPTIMIZE__}} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional} %{trigraphs}\
@@ -3352,12 +3354,17 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 
 	  case 'v':
 	    {
-	      char *p = version_string;
+	      int c1 = *p++;  /* Select first or second version number.  */
+	      char *p = spec_version;
 	      char *q, *copy;
-	      /* Set P after the first period.  */
-	      while (*p != '.') p++;
-	      p++;
-	      /* Set Q at the second period or at the end.  */
+	      /* If desired, advance to second version number.  */
+	      if (c1 == '2')
+		{
+		  /* Set P after the first period.  */
+		  while (*p != '.') p++;
+		  p++;
+		}
+	      /* Set Q at the next period or at the end.  */
 	      q = p;
 	      while (*q != '.' && *q != 0) q++;
 	      /* Put that part into the command.  */
