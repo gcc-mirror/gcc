@@ -1,58 +1,218 @@
 Many people contribute to the GCJ project, and in many different
-capacities.  Any omissions to this list are accidental.  Feel free to
-contact green@cygnus.com if you have been left out or some of your
-contributions are not listed.  Please keep this list in alphabetical
-order.
+capacities.  Any omissions to this list are accidental.  Please keep 
+this list in alphabetical order.
 
-Godmar Back for his improvements and encouragement.
-Scott Bambrough for help porting the compiler.
-Jon Beniston for his Win32 port.
-Geoff Berry for his object serialization work and various patches.
-Eric Blake for helping to make gcj and libgcj conform to the specifications.
-Hans-J. Boehm for his garbage collector, IA-64 libffi port, and other work.
-Per Bothner for dreaming up, designing and implementing much of gcj.
-Joerg Brunsmann for compiler hacking and help with the FAQ.
-Steve Chamberlain for config fixes and the picoJava port.
-Glenn Chambers for help with the FAQ.
-John-Marc Chandonia for various library patches.
-Eric Christopher for his porting help and clean-ups.
-The GNU Classpath project for all of their merged runtime code.
-Mo DeJong for gcj and libgcj bug fixes.
-The GCC project contributors for all of their great compiler work.
-Ivan Fontes Garcia for the Portugese translation of the FAQ.
-John Gilmore for a donation to the FSF earmarked improving GNU Java.
-Anthony Green for various contributions.
-Stu Grossman for gdb hacking, allowing us to debug our code.
-Andrew Haley for his amazing compiler and library efforts.
-Jakub Jelinek for improving the build system.
-Warren Levy for his tremendous library work.
-Oskar Liljeblad for hacking on AWT and his many bug reports and patches.
-All of the Mauve project contributors, for test code.
-Bryce McKinlay for numerous gcj and libgcj fixes and improvements.
-Adam Megacz for his work on the Win32 port.
-Jason Molenda for establishing the project infrastructure 
-	on sources.redhat.com.
-Mike Moreton for his various patches.
-Alexandre Oliva for all of this porting and testing efforts.
-Rainer Orth for configuration clean-ups and porting help.
-Alexandre Petit-Bianco for implementing much of the compiler, 
-	and continued maintainership.
-Rolf W. Rasmussen for hacking on AWT.
-Bradley Schatz for his work on the FAQ.
-Jason Schroeder for jcf-dump patches.
-John Stracke for his HTTP protocol fixes.
-Jeff Sturm for porting help, bug fixes, and encouragement.
-Kresten Krab Thorup for his fantastic bytecode interpreter.
-Andreas Tobler for his work porting libgcj to Darwin.
-Tom Tromey for his many contributions and libgcj maintainership.
-Matt Welsh for help with Linux Threads.
-Urban Widmark for help fixing java.io.
-Mark Wielaard for new library code and his work integrating with Classpath.
-Gilles Zunino for help porting to Irix.
+Robert Abeles
+Mark G. Adams
+C. Scott Ananian
+Mark Anderson
+Bonzo Armstrong
+Steven Augart
+Godmar Back
+Stuart Ballard
+Scott Bambrough
+David Belanger
+Jon Beniston
+Gary Benson
+Mark Benvenuto
+Daniel Berlin
+Geoff Berry
+Alberto Biancardi
+Artur Biesiadowski
+David Billinghurst
+Eric Blake
+Hans Boehm
+Paolo Bonzini
+Neil Booth
+Steven Bosscher
+Per Bothner
+Sascha Brawer
+Dave Brolley
+Rodney Brown
+Joerg Brunsmann
+Nathan Bryant
+Adrian Bunk
+Andrew Cagney
+John F. Carr
+Steve Chamberlain
+Glenn Chambers
+John-Marc Chandonia
+Michael Chastain
+Tang Ching-Hui
+Eric Christopher
+Randolph Chung
+James Clark
+Nick Clifton
+Kelley Cook
+Christian Cornelssen
+Stephen Crawley
+David Daney
+Marcus G. Daniels
+Mo DeJong
+Bert Deknuydt
+DJ Delorie
+Akim Demaille
+R. A. Rivas Diaz
+Julian Dolby
+Richard Earnshaw
+David Edelsohn
+Frank Ch. Eigler
+Mohan Embar
+Marc Espie
+Nic Ferrier
+Thomas Fitzsimmons
+Andreas Franck
+Norbert Frese
+Todd T. Fries
+Jeroen Frijters
+Wu Gansha
+Ivan Fontes Garcia
+Kaveh R. Ghazi
+Scott Gilbertson
+John Gilmore
+Jacob Gladish
+Taras Glek
+Anthony Green
+Stu Grossman
+David P Grove
+Laurent Guerby
+Andrew Haley
+Raja R Harinath
+Richard Henderson
+Kevin B Hendricks
+Kazu Hirata
+Kim Ho
+Graydon Hoare
+Jochen Hoenicke
+Jens-Michael Hoffmann
+Manfred Hollstein
+Jan Hubicka
+Bernardo Innocenti
+Christian Iseli
+Andreas Jaeger
+David Jee
+Jakub Jelinek
+Mojo Jojo
+C. Brian Jones
+Tim Josling
+Martin Kahlert
+Ito Kazumitsu
+Geoffrey Keating
+Brendan Kehoe
+Richard Kenner
+Mumit Khan
+Dhek Bhun Kho
+Tony Kimball
+Adam King
+Matthias Klose
+Michael Koch
+Kaz Kojima
+Stepan Koltsov
+Bruce Korb
+Matt Kraai
+Guilhem Lavaux
+Jeffrey A Law
+John Leuner
+Warren Levy
+Oskar Liljeblad
+Robert Lipe
+Ralph Loader
+H.J. Lu
+Brad Lucier
+Martin v. Löwis
+Andrew MacLeod
+Jan van Male
+Jerome Marc
+Casey Marshall
+T.J. Mather
+Ranjit Mathew
+Greg McGary
+Bryce McKinlay
+Adam Megacz
+Marcus Meissner
+Jason Merrill
+Jim Meyering
+David S. Miller
+Corey Minyard
+Mark Mitchell
+Alan Modra
+Jason Molenda
+Peter Moon
+Mike Moreton
+Joseph S. Myers
+Raif Naffah
+Raif S. Naffah
+Fernando Nasser
+Nathanael Nerode
+Pekka Nikander
+Hans-Peter Nilsson
+Jeremy Nimmer
+Diego Novillo
+Jeffrey Oldham
+Alexandre Oliva
+Rainer Orth
+Andrew Overholt
+Theodore Papadopoulo
+Oscar Pearce
+Alexandre Petit-Bianco
+Andrew Pinski
+Ovidiu Predescu
+Steve Pribyl
+Ingo Proetel
+Vladimir Puskas
+Jerry Quinn
+Rolf W. Rasmussen
+Volker Reichelt
+Petter Reinholdtsen
+Gabriel Dos Reis
+Aaron M. Renn
+J"orn Rennecke
+Loren J. Rittle
+Mark J. Roberts
+Olga Rodimina
+Craig Rodrigues
+Jesse Rosenstock
+Torsten Rueger
+Douglas B. Rupp
+Roger Sayle
+Bradley Schatz
+Bernd Schmidt
+Jason Schroeder
+Andreas Schwab
+Chris Sears
+Nathan Sidwell
+Franz Sirl
+Danny Smith
+Michael Smith
+Todd Stock
+Graham Stott
+John Stracke
+Mike Stump
+Jeff Sturm
+Sam TH
+Philipp Thomas
+Jason Thorpe
+Bo Thorsen
+Kresten Krab Thorup
+Michael Tiemann
+Andreas Tobler
+Gerhard Tonn
+Dalibor Topic
+Gregg Townsend
+Tom Tromey
+Arnaud Vandyck
+H. Väisänen
+Krister Walfridsson
+Ulrich Weigand
+Zack Weinberg
+Matt Welsh
+Urban Widmark
+Mark Wielaard
+Gilles Zunino
 
 
-We'd also like to thank the folks who have contributed time and energy
-in testing GCJ:
+We'd also like to thank these folks who contributed time and energy
+in testing early versions of GCJ:
 
 Michael Abd-El-Malek 
 Thomas Arend
@@ -102,5 +262,12 @@ Adam Sulmicki
 Frederik Warg 
 Gregory Warnes
 David E. Young
+
+Special thanks to:
+
+The GCC project contributors for all of their great compiler work.
+The GNU Classpath project for all of their merged class libraries.
+All of the Mauve project contributors, for test code.
+All the contributors to the Jacks compiler test suite.
 
 Thank you all!

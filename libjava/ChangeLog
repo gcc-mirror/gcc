@@ -1,5 +1,10 @@
 2004-07-28  Bryce McKinlay  <mckinlay@redhat.com>
 
+	* README: Remove obsolete info. Update bug URL.
+	* THANKS: Updated.
+
+2004-07-28  Bryce McKinlay  <mckinlay@redhat.com>
+
 	* gnu/java/security/action/GetPropertyAction.java (setParameters):
 	Renamed from 'setName'. New 2-argument form with default value.
 	(run): Pass default 'value' parameter to System.getProperty().
