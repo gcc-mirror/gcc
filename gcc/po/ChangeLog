@@ -1,3 +1,8 @@
+2003-11-20  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* exgettext: Use --copyright-holder and --msgid-bugs-address.
+	* gcc.pot: Regenerate.
+
 2003-10-26  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* nl.po: Update.
