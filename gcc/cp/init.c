@@ -27,6 +27,7 @@ Boston, MA 02111-1307, USA.  */
 #include "cp-tree.h"
 #include "flags.h"
 #include "output.h"
+#include "except.h"
 
 /* In C++, structures with well-defined constructors are initialized by
    those constructors, unasked.  CURRENT_BASE_INIT_LIST
@@ -38,8 +39,6 @@ Boston, MA 02111-1307, USA.  */
    where each successive term can be handed down the constructor
    line.  Perhaps this was not intended.  */
 tree current_base_init_list, current_member_init_list;
-
-extern tree cleanups_this_call;
 
 void emit_base_init ();
 void check_base_init ();
@@ -153,13 +152,8 @@ perform_member_init (member, name, init, explicit)
 {
   tree decl;
   tree type = TREE_TYPE (member);
-  extern int temp_slot_level;
-  extern int target_temp_slot_level; 
-  tree old_cleanups = cleanups_this_call;
-  int old_temp_level = target_temp_slot_level;
-  push_temp_slots ();
-  push_temp_slots ();
-  target_temp_slot_level = temp_slot_level;
+
+  expand_start_target_temps ();
 
   if (TYPE_NEEDS_CONSTRUCTING (type)
       || (init && TYPE_HAS_CONSTRUCTOR (type)))
@@ -219,15 +213,8 @@ perform_member_init (member, name, init, explicit)
 	  expand_expr_stmt (build_modify_expr (decl, INIT_EXPR, init));
 	}
     }
-  expand_cleanups_to (old_cleanups);
-  pop_temp_slots ();
-  pop_temp_slots ();
-  target_temp_slot_level = old_temp_level;
-  /* There might something left from building the trees.  */
-  if (cleanups_this_call)
-    {
-      expand_cleanups_to (NULL_TREE);
-    }
+
+  expand_end_target_temps ();
   free_temp_slots ();
 
   if (TYPE_NEEDS_DESTRUCTOR (type))
@@ -589,27 +576,14 @@ emit_base_init (t, immediately)
 
       if (init != void_list_node)
 	{
-	  extern int temp_slot_level;
-	  extern int target_temp_slot_level; 
-	  tree old_cleanups = cleanups_this_call;
-	  int old_temp_level = target_temp_slot_level;
-	  push_temp_slots ();
-	  push_temp_slots ();
-	  target_temp_slot_level = temp_slot_level;
+	  expand_start_target_temps ();
 
 	  member = convert_pointer_to_real (base_binfo, current_class_ptr);
 	  expand_aggr_init_1 (base_binfo, NULL_TREE,
 			      build_indirect_ref (member, NULL_PTR), init,
 			      BINFO_OFFSET_ZEROP (base_binfo), LOOKUP_NORMAL);
-	  expand_cleanups_to (old_cleanups);
-	  pop_temp_slots ();
-	  pop_temp_slots ();
-	  target_temp_slot_level = old_temp_level;
-	  /* There might something left from building the trees.  */
-	  if (cleanups_this_call)
-	    {
-	      expand_cleanups_to (NULL_TREE);
-	    }
+
+	  expand_end_target_temps ();
 	  free_temp_slots ();
 	}
 
@@ -796,28 +770,14 @@ expand_aggr_vbase_init_1 (binfo, exp, addr, init_list)
   tree init = purpose_member (binfo, init_list);
   tree ref = build_indirect_ref (addr, NULL_PTR);
 
-  extern int temp_slot_level;
-  extern int target_temp_slot_level; 
-  tree old_cleanups = cleanups_this_call;
-  int old_temp_level = target_temp_slot_level;
-  push_temp_slots ();
-  push_temp_slots ();
-  target_temp_slot_level = temp_slot_level;
+  expand_start_target_temps ();
 
   if (init)
     init = TREE_VALUE (init);
   /* Call constructors, but don't set up vtables.  */
   expand_aggr_init_1 (binfo, exp, ref, init, 0, LOOKUP_COMPLAIN);
 
-  expand_cleanups_to (old_cleanups);
-  pop_temp_slots ();
-  pop_temp_slots ();
-  target_temp_slot_level = old_temp_level;
-  /* There might something left from building the trees.  */
-  if (cleanups_this_call)
-    {
-      expand_cleanups_to (NULL_TREE);
-    }
+  expand_end_target_temps ();
   free_temp_slots ();
 }
 
@@ -3109,20 +3069,22 @@ expand_vec_init (decl, base, maxindex, init, from_array)
 	  push_obstacks_nochange ();
 	  resume_temporary_allocation ();
 	  {
-	    tree e1, e2 = make_node (RTL_EXPR);
-	    TREE_TYPE (e2) = void_type_node;
-	    RTL_EXPR_RTL (e2) = const0_rtx;
-	    TREE_SIDE_EFFECTS (e2) = 1;
-	    start_sequence_for_rtl_expr (e2);
+	    tree e1, cleanup = make_node (RTL_EXPR);
+	    TREE_TYPE (cleanup) = void_type_node;
+	    RTL_EXPR_RTL (cleanup) = const0_rtx;
+	    TREE_SIDE_EFFECTS (cleanup) = 1;
+	    start_sequence_for_rtl_expr (cleanup);
 
 	    e1 = build_array_eh_cleanup
 	      (rval,
 	       build_binary_op (MINUS_EXPR, maxindex, iterator, 1),
 	       type);
 	    expand_expr (e1, const0_rtx, VOIDmode, 0);
-	    RTL_EXPR_SEQUENCE (e2) = get_insns ();
+	    RTL_EXPR_SEQUENCE (cleanup) = get_insns ();
 	    end_sequence ();
-	    expand_eh_region_end (e2);
+
+	    cleanup = protect_with_terminate (cleanup);
+	    expand_eh_region_end (cleanup);
 	  }
 	  pop_obstacks ();
 	}

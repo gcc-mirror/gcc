@@ -1698,7 +1698,7 @@ make_thunk (function, delta)
     }
   if (thunk == NULL_TREE)
     {
-      thunk = build_decl (FUNCTION_DECL, thunk_id, TREE_TYPE (func_decl));
+      thunk = build_lang_decl (FUNCTION_DECL, thunk_id, TREE_TYPE (func_decl));
       DECL_RESULT (thunk)
 	= build_decl (RESULT_DECL, 0, TYPE_MAIN_VARIANT (TREE_TYPE (vtable_entry_type)));
       TREE_READONLY (thunk) = TYPE_READONLY (TREE_TYPE (vtable_entry_type));
@@ -1719,27 +1719,9 @@ void
 emit_thunk (thunk_fndecl)
      tree thunk_fndecl;
 {
-  rtx insns;
-  char buffer[250];
-  tree argp;
-  struct args_size stack_args_size;
   tree function = TREE_OPERAND (DECL_INITIAL (thunk_fndecl), 0);
   int delta = THUNK_DELTA (thunk_fndecl);
   char *fnname = XSTR (XEXP (DECL_RTL (thunk_fndecl), 0), 0);
-  int tem;
-  int failure = 0;
-  int save_ofp;
-
-  /* Used to remember which regs we need to emit a USE rtx for.  */
-  rtx need_use[FIRST_PSEUDO_REGISTER];
-  int need_use_count = 0;
-
-  /* rtx for the 'this' parameter.  */
-  rtx this_rtx = 0, this_reg_rtx = 0, fixed_this_rtx;
-
-  char *(*save_decl_printable_name) () = decl_printable_name;
-  /* Data on reg parms scanned so far.  */
-  CUMULATIVE_ARGS args_so_far;
 
   if (TREE_ASM_WRITTEN (thunk_fndecl))
     return;
@@ -1749,203 +1731,58 @@ emit_thunk (thunk_fndecl)
   TREE_ADDRESSABLE (function) = 1;
   mark_used (function);
 
-  decl_printable_name = thunk_printable_name;
   if (current_function_decl)
     abort ();
-  current_function_decl = thunk_fndecl;
 
   TREE_SET_CODE (thunk_fndecl, FUNCTION_DECL);
+
 #ifdef ASM_OUTPUT_MI_THUNK
+  current_function_decl = thunk_fndecl;
   temporary_allocation ();
   assemble_start_function (thunk_fndecl, fnname);
   ASM_OUTPUT_MI_THUNK (asm_out_file, thunk_fndecl, delta, function);
   assemble_end_function (thunk_fndecl, fnname);
   permanent_allocation (1);
-#else
-  save_ofp = flag_omit_frame_pointer;
-  flag_omit_frame_pointer = 1;
-  init_function_start (thunk_fndecl, input_filename, lineno);
-  pushlevel (0);
-  expand_start_bindings (1);
-
-  temporary_allocation ();
-
-  /* Start updating where the next arg would go.  */
-  INIT_CUMULATIVE_ARGS (args_so_far, TREE_TYPE (function), NULL_RTX, 0);
-  stack_args_size.constant = 0;
-  stack_args_size.var = 0;
-  /* SETUP for possible structure return address FIXME */
-
-  /* Now look through all the parameters, make sure that we
-     don't clobber any registers used for parameters.
-     Also, pick up an rtx for the first "this" parameter.  */
-  for (argp = TYPE_ARG_TYPES (TREE_TYPE (function));
-       argp != NULL_TREE;
-       argp = TREE_CHAIN (argp))
-
-    {
-      tree passed_type = TREE_VALUE (argp);
-      register rtx entry_parm;
-      int named = 1; /* FIXME */
-      struct args_size stack_offset;
-      struct args_size arg_size;
-
-      if (passed_type == void_type_node)
-	break;
-
-      if ((TREE_CODE (TYPE_SIZE (passed_type)) != INTEGER_CST
-	   && contains_placeholder_p (TYPE_SIZE (passed_type)))
-#ifdef FUNCTION_ARG_PASS_BY_REFERENCE
-	  || FUNCTION_ARG_PASS_BY_REFERENCE (args_so_far,
-					     TYPE_MODE (passed_type),
-					     passed_type, named)
-#endif
-	  )
-	passed_type = build_pointer_type (passed_type);
-
-      entry_parm = FUNCTION_ARG (args_so_far,
-				 TYPE_MODE (passed_type),
-				 passed_type,
-				 named);
-      if (entry_parm != 0)
-	need_use[need_use_count++] = entry_parm;
-
-      locate_and_pad_parm (TYPE_MODE (passed_type), passed_type,
-#ifdef STACK_PARMS_IN_REG_PARM_AREA
-			   1,
-#else
-			   entry_parm != 0,
-#endif
-			   thunk_fndecl,
-			   &stack_args_size, &stack_offset, &arg_size);
-
-/*    REGNO (entry_parm);*/
-      if (this_rtx == 0)
-	{
-	  this_reg_rtx = entry_parm;
-	  if (!entry_parm)
-	    {
-	      rtx offset_rtx = ARGS_SIZE_RTX (stack_offset);
-
-	      rtx internal_arg_pointer, stack_parm;
-
-	      if ((ARG_POINTER_REGNUM == STACK_POINTER_REGNUM
-		   || ! (fixed_regs[ARG_POINTER_REGNUM]
-			 || ARG_POINTER_REGNUM == FRAME_POINTER_REGNUM)))
-		internal_arg_pointer = copy_to_reg (virtual_incoming_args_rtx);
-	      else
-		internal_arg_pointer = virtual_incoming_args_rtx;
-
-	      if (offset_rtx == const0_rtx)
-		entry_parm = gen_rtx (MEM, TYPE_MODE (passed_type),
-				      internal_arg_pointer);
-	      else
-		entry_parm = gen_rtx (MEM, TYPE_MODE (passed_type),
-				      gen_rtx (PLUS, Pmode,
-					       internal_arg_pointer, 
-					       offset_rtx));
-	    }
-	  
-	  this_rtx = entry_parm;
-	}
-
-      FUNCTION_ARG_ADVANCE (args_so_far,
-			    TYPE_MODE (passed_type),
-			    passed_type,
-			    named);
-    }
-
-  fixed_this_rtx = plus_constant (this_rtx, delta);
-  if (this_rtx != fixed_this_rtx)
-    emit_move_insn (this_rtx, fixed_this_rtx);
-
-  if (this_reg_rtx)
-    emit_insn (gen_rtx (USE, VOIDmode, this_reg_rtx));
-
-  emit_indirect_jump (XEXP (DECL_RTL (function), 0));
-
-  while (need_use_count > 0)
-    emit_insn (gen_rtx (USE, VOIDmode, need_use[--need_use_count]));
-
-  expand_end_bindings (NULL, 1, 0);
-  poplevel (0, 0, 1);
-
-  /* From now on, allocate rtl in current_obstack, not in saveable_obstack.
-     Note that that may have been done above, in save_for_inline_copying.
-     The call to resume_temporary_allocation near the end of this function
-     goes back to the usual state of affairs.  */
-
-  rtl_in_current_obstack ();
-
-  insns = get_insns ();
-
-  /* Copy any shared structure that should not be shared.  */
-
-  unshare_all_rtl (insns);
-
-  /* Instantiate all virtual registers.  */
-
-  instantiate_virtual_regs (current_function_decl, get_insns ());
-
-  /* We are no longer anticipating cse in this function, at least.  */
-
-  cse_not_expected = 1;
-
-  /* Now we choose between stupid (pcc-like) register allocation
-     (if we got the -noreg switch and not -opt)
-     and smart register allocation.  */
-
-  if (optimize > 0)			/* Stupid allocation probably won't work */
-    obey_regdecls = 0;		/* if optimizations being done.  */
-
-  regclass_init ();
-
-  regclass (insns, max_reg_num ());
-  if (obey_regdecls)
-    {
-      stupid_life_analysis (insns, max_reg_num (), NULL);
-      failure = reload (insns, 0, NULL);
-    }
-  else
-    {
-      /* Do control and data flow analysis,
-	 and write some of the results to dump file.  */
-
-      flow_analysis (insns, max_reg_num (), NULL);
-      local_alloc ();
-      failure = global_alloc (NULL);
-    }
-
-  reload_completed = 1;
-
-#ifdef LEAF_REGISTERS
-  leaf_function = 0;
-  if (optimize > 0 && only_leaf_regs_used () && leaf_function_p ())
-    leaf_function = 1;
-#endif
-
-  /* If a machine dependent reorganization is needed, call it.  */
-#ifdef MACHINE_DEPENDENT_REORG
-   MACHINE_DEPENDENT_REORG (insns);
-#endif
-
-  /* Now turn the rtl into assembler code.  */
-
-  assemble_start_function (thunk_fndecl, fnname);
-  final (insns, asm_out_file, optimize, 0);
-  assemble_end_function (thunk_fndecl, fnname);
-
-  reload_completed = 0;
-
-  /* Cancel the effect of rtl_in_current_obstack.  */
-
-  permanent_allocation (1);
-  flag_omit_frame_pointer = save_ofp;
-#endif /* ASM_OUTPUT_MI_THUNK */
-  TREE_SET_CODE (thunk_fndecl, THUNK_DECL);
-
-  decl_printable_name = save_decl_printable_name;
   current_function_decl = 0;
+#else /* ASM_OUTPUT_MI_THUNK */
+  if (varargs_function_p (function))
+    cp_error ("generic thunk code does not work for variadic function `%#D'",
+	      function);
+  {
+    tree a, t;
+
+    /* Set up clone argument trees for the thunk.  */
+    t = NULL_TREE;
+    for (a = DECL_ARGUMENTS (function); a; a = TREE_CHAIN (a))
+      {
+	tree x = copy_node (a);
+	TREE_CHAIN (x) = t;
+	DECL_CONTEXT (x) = thunk_fndecl;
+	t = x;
+      }
+    a = nreverse (t);
+    DECL_ARGUMENTS (thunk_fndecl) = a;
+    DECL_RESULT (thunk_fndecl) = NULL_TREE;
+
+    start_function (NULL_TREE, thunk_fndecl, NULL_TREE, 1);
+    store_parm_decls ();
+
+    /* Build up the call to the real function.  */
+    t = build_int_2 (delta, -1 * (delta < 0));
+    TREE_TYPE (t) = signed_type (sizetype);
+    t = fold (build (PLUS_EXPR, TREE_TYPE (a), a, t));
+    t = tree_cons (NULL_TREE, t, NULL_TREE);
+    for (a = TREE_CHAIN (a); a; a = TREE_CHAIN (a))
+      t = tree_cons (NULL_TREE, a, t);
+    t = nreverse (t);
+    t = build_call (function, TREE_TYPE (TREE_TYPE (function)), t);
+    c_expand_return (t);
+
+    finish_function (lineno, 0, 0);
+  }
+#endif /* ASM_OUTPUT_MI_THUNK */
+
+  TREE_SET_CODE (thunk_fndecl, THUNK_DECL);
 }
 
 /* Code for synthesizing methods which have default semantics defined.  */

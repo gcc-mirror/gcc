@@ -1507,7 +1507,7 @@ decay_conversion (exp)
 	      inner = build1 (CONVERT_EXPR,
 			      build_pointer_type (TREE_TYPE (TREE_TYPE (inner))),
 			      inner);
-	      TREE_REFERENCE_EXPR (inner) = 1;
+	      TREE_CONSTANT (inner) = TREE_CONSTANT (TREE_OPERAND (inner, 0));
 	    }
 	  return convert (build_pointer_type (TREE_TYPE (type)), inner);
 	}
@@ -4261,8 +4261,10 @@ build_unary_op (code, xarg, noconvert)
       argtype = TREE_TYPE (arg);
       if (TREE_CODE (argtype) == REFERENCE_TYPE)
 	{
-	  arg = build1 (CONVERT_EXPR, build_pointer_type (TREE_TYPE (TREE_TYPE (arg))), arg);
-	  TREE_REFERENCE_EXPR (arg) = 1;
+	  arg = build1
+	    (CONVERT_EXPR,
+	     build_pointer_type (TREE_TYPE (TREE_TYPE (arg))), arg);
+	  TREE_CONSTANT (arg) = TREE_CONSTANT (TREE_OPERAND (arg, 0));
 	  return arg;
 	}
       else if (pedantic
@@ -4283,16 +4285,12 @@ build_unary_op (code, xarg, noconvert)
 	  if (arg == current_class_ref)
 	    return current_class_ptr;
 
-	  /* Keep `default_conversion' from converting if
-	     ARG is of REFERENCE_TYPE.  */
 	  arg = TREE_OPERAND (arg, 0);
 	  if (TREE_CODE (TREE_TYPE (arg)) == REFERENCE_TYPE)
 	    {
-	      if (TREE_CODE (arg) == VAR_DECL && DECL_INITIAL (arg)
-		  && !TREE_SIDE_EFFECTS (DECL_INITIAL (arg)))
-		arg = DECL_INITIAL (arg);
-	      arg = build1 (CONVERT_EXPR, build_pointer_type (TREE_TYPE (TREE_TYPE (arg))), arg);
-	      TREE_REFERENCE_EXPR (arg) = 1;
+	      arg = build1
+		(CONVERT_EXPR,
+		 build_pointer_type (TREE_TYPE (TREE_TYPE (arg))), arg);
 	      TREE_CONSTANT (arg) = TREE_CONSTANT (TREE_OPERAND (arg, 0));
 	    }
 	  else if (lvalue_p (arg))
@@ -7148,6 +7146,8 @@ c_expand_return (retval)
 	  if (TREE_CODE (whats_returned) == ADDR_EXPR)
 	    whats_returned = TREE_OPERAND (whats_returned, 0);
 	}
+      if (TREE_CODE (whats_returned) == CONVERT_EXPR)
+	whats_returned = TREE_OPERAND (whats_returned, 0);
       if (TREE_CODE (whats_returned) == ADDR_EXPR)
 	{
 	  whats_returned = TREE_OPERAND (whats_returned, 0);

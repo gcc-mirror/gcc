@@ -371,232 +371,24 @@ convert_to_pointer_force (type, expr)
    value we have to begin with is in ARG.
 
    FLAGS controls how we manage access checking.
-   DIRECT_BIND in FLAGS controls how any temporarys are generated.
-   CHECKCONST controls if we report error messages on const subversion.  */
+   DIRECT_BIND in FLAGS controls how any temporaries are generated.  */
 
 static tree
 build_up_reference (type, arg, flags, checkconst)
      tree type, arg;
      int flags, checkconst;
 {
-  tree rval, targ;
-  int literal_flag = 0;
+  tree rval;
   tree argtype = TREE_TYPE (arg);
   tree target_type = TREE_TYPE (type);
-  tree binfo = NULL_TREE;
 
   my_friendly_assert (TREE_CODE (type) == REFERENCE_TYPE, 187);
-  if ((flags & LOOKUP_PROTECT)
-      && TYPE_MAIN_VARIANT (argtype) != TYPE_MAIN_VARIANT (target_type)
-      && IS_AGGR_TYPE (argtype)
-      && IS_AGGR_TYPE (target_type))
+
+  if ((flags & DIRECT_BIND) && ! real_lvalue_p (arg))
     {
-      binfo = get_binfo (target_type, argtype, 1);
-      if (binfo == error_mark_node)
-	return error_mark_node;
-      if (binfo == NULL_TREE)
-	return error_not_base_type (target_type, argtype);
-    }
-
-  /* Pass along const and volatile down into the type.  */
-  if (TYPE_READONLY (type) || TYPE_VOLATILE (type))
-    target_type = cp_build_type_variant (target_type, TYPE_READONLY (type),
-					TYPE_VOLATILE (type));
-  targ = arg;
-  if (TREE_CODE (targ) == SAVE_EXPR)
-    targ = TREE_OPERAND (targ, 0);
-  while (TREE_CODE (targ) == NOP_EXPR
-	 && (TYPE_MAIN_VARIANT (argtype)
-	     == TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (targ, 0)))))
-    targ = TREE_OPERAND (targ, 0);
-
-  switch (TREE_CODE (targ))
-    {
-    case INDIRECT_REF:
-      /* This is a call to a constructor which did not know what it was
-	 initializing until now: it needs to initialize a temporary.  */
-      if (TREE_HAS_CONSTRUCTOR (targ))
-	{
-	  tree temp = build_cplus_new (argtype, TREE_OPERAND (targ, 0));
-	  TREE_HAS_CONSTRUCTOR (targ) = 0;
-	  return build_up_reference (type, temp, flags, 1);
-	}
-      /* Let &* cancel out to simplify resulting code.
-         Also, throw away intervening NOP_EXPRs.  */
-      arg = TREE_OPERAND (targ, 0);
-      if (TREE_CODE (arg) == NOP_EXPR || TREE_CODE (arg) == NON_LVALUE_EXPR
-	  || (TREE_CODE (arg) == CONVERT_EXPR && TREE_REFERENCE_EXPR (arg)))
-	arg = TREE_OPERAND (arg, 0);
-
-      /* in doing a &*, we have to get rid of the const'ness on the pointer
-	 value.  Haven't thought about volatile here.  Pointers come to mind
-	 here.  */
-      if (TREE_READONLY (arg))
-	{
-	  arg = copy_node (arg);
-	  TREE_READONLY (arg) = 0;
-	}
-
-      rval = build1 (CONVERT_EXPR, type, arg);
-      TREE_REFERENCE_EXPR (rval) = 1;
-
-      /* propagate the const flag on something like:
-
-	 class Base {
-	 public:
-	   int foo;
-	 };
-
-      class Derived : public Base {
-      public:
-	int bar;
-      };
-
-      void func(Base&);
-
-      void func2(const Derived& d) {
-	func(d);
-      }
-
-        on the d parameter.  The below could have been avoided, if the flags
-        were down in the tree, not sure why they are not.  (mrs) */
-      /* The below code may have to be propagated to other parts of this
-	 switch.  */
-      if (TREE_READONLY (targ) && !TREE_READONLY (arg)
-	  && (TREE_CODE (arg) == PARM_DECL || TREE_CODE (arg) == VAR_DECL)
-	  && TREE_CODE (TREE_TYPE (arg)) == REFERENCE_TYPE
-	  && (TYPE_READONLY (target_type) && checkconst))
-	{
-	  arg = copy_node (arg);
-	  TREE_READONLY (arg) = TREE_READONLY (targ);
-	}
-      literal_flag = TREE_CONSTANT (arg);
-
-      goto done;
-
-      /* Get this out of a register if we happened to be in one by accident.
-	 Also, build up references to non-lvalues it we must.  */
-      /* For &x[y], return (&) x+y */
-    case ARRAY_REF:
-      if (mark_addressable (TREE_OPERAND (targ, 0)) == 0)
-	return error_mark_node;
-      rval = build_binary_op (PLUS_EXPR, TREE_OPERAND (targ, 0),
-			      TREE_OPERAND (targ, 1), 1);
-      TREE_TYPE (rval) = type;
-      if (TREE_CONSTANT (TREE_OPERAND (targ, 1))
-	  && staticp (TREE_OPERAND (targ, 0)))
-	TREE_CONSTANT (rval) = 1;
-      goto done;
-
-    case SCOPE_REF:
-      /* Could be a reference to a static member.  */
-      {
-	tree field = TREE_OPERAND (targ, 1);
-	if (TREE_STATIC (field))
-	  {
-	    rval = build1 (ADDR_EXPR, type, field);
-	    literal_flag = 1;
-	    goto done;
-	  }
-      }
-
-      /* We should have farmed out member pointers above.  */
-      my_friendly_abort (188);
-
-    case COMPONENT_REF:
-      rval = build_component_addr (targ, build_pointer_type (argtype),
-				   "attempt to make a reference to bit-field structure member `%s'");
-      TREE_TYPE (rval) = type;
-      literal_flag = staticp (TREE_OPERAND (targ, 0));
-
-      goto done;
-
-      /* Anything not already handled and not a true memory reference
-	 needs to have a reference built up.  Do so silently for
-	 things like integers and return values from function,
-	 but complain if we need a reference to something declared
-	 as `register'.  */
-
-    case PARM_DECL:
-      /* 'this' is not an lvalue.  */
-      if (targ == current_class_ptr && ! flag_this_is_variable)
-	break;
-
-    case RESULT_DECL:
-    case VAR_DECL:
-    case CONST_DECL:
-      if (staticp (targ))
-	literal_flag = 1;
-
-      /* Fall through.  */
-    case TARGET_EXPR:
-      mark_addressable (targ);
-      break;
-
-    case COMPOUND_EXPR:
-      {
-	tree real_reference = build_up_reference (type, TREE_OPERAND (targ, 1),
-						  flags, checkconst);
-	rval = build (COMPOUND_EXPR, type, TREE_OPERAND (targ, 0), real_reference);
-	TREE_CONSTANT (rval) = staticp (TREE_OPERAND (targ, 1));
-	return rval;
-      }
-
-    case PREINCREMENT_EXPR:
-    case PREDECREMENT_EXPR:
-    case MODIFY_EXPR:
-    case INIT_EXPR:
-      {
-	tree real_reference = build_up_reference (type, TREE_OPERAND (targ, 0),
-						  flags, checkconst);
-	rval = build (COMPOUND_EXPR, type, arg, real_reference);
-	TREE_CONSTANT (rval) = staticp (TREE_OPERAND (targ, 0));
-	return rval;
-      }
-
-    case COND_EXPR:
-      return build (COND_EXPR, type,
-		    TREE_OPERAND (targ, 0),
-		    build_up_reference (type, TREE_OPERAND (targ, 1),
-					flags, checkconst),
-		    build_up_reference (type, TREE_OPERAND (targ, 2),
-					flags, checkconst));
-
-      /* Undo the folding...  */
-    case MIN_EXPR:
-    case MAX_EXPR:
-      return build (COND_EXPR, type,
-		    build (TREE_CODE (targ) == MIN_EXPR ? LT_EXPR : GT_EXPR,
-			   boolean_type_node, TREE_OPERAND (targ, 0),
-			   TREE_OPERAND (targ, 1)),
-		    build_up_reference (type, TREE_OPERAND (targ, 0),
-					flags, checkconst),
-		    build_up_reference (type, TREE_OPERAND (targ, 1),
-					flags, checkconst));
-
-    case BIND_EXPR:
-      arg = TREE_OPERAND (targ, 1);
-      if (arg == NULL_TREE)
-	{
-	  compiler_error ("({ ... }) expression not expanded when needed for reference");
-	  return error_mark_node;
-	}
-      rval = build1 (ADDR_EXPR, type, arg);
-      TREE_REFERENCE_EXPR (rval) = 1;
-      return rval;
-
-    default:
-      break;
-    }
-
-  if ((flags & DIRECT_BIND)
-      && ! real_lvalue_p (targ))
-    {
+      tree targ = arg;
       if (toplevel_bindings_p ())
-	{
-	  arg = get_temp_name (argtype, 1);
-	  literal_flag = 1;
-	}
+	arg = get_temp_name (argtype, 1);
       else
 	{
 	  arg = pushdecl (build_decl (VAR_DECL, NULL_TREE, argtype));
@@ -605,7 +397,7 @@ build_up_reference (type, arg, flags, checkconst)
       DECL_INITIAL (arg) = targ;
       cp_finish_decl (arg, targ, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
     }
-  else if (TREE_ADDRESSABLE (targ) == 0 && !(flags & DIRECT_BIND))
+  else if (!(flags & DIRECT_BIND) && ! lvalue_p (arg))
     {
       tree slot = build_decl (VAR_DECL, NULL_TREE, argtype);
       arg = build (TARGET_EXPR, argtype, slot, arg, NULL_TREE, NULL_TREE);
@@ -614,25 +406,14 @@ build_up_reference (type, arg, flags, checkconst)
   /* If we had a way to wrap this up, and say, if we ever needed it's
      address, transform all occurrences of the register, into a memory
      reference we could win better.  */
-  mark_addressable (arg);
-  rval = build1 (ADDR_EXPR, type, arg);
-
- done:
-  if (TYPE_USES_COMPLEX_INHERITANCE (argtype)
-      || TYPE_USES_COMPLEX_INHERITANCE (target_type))
-    {
-      TREE_TYPE (rval) = build_pointer_type (argtype);
-      if (flags & LOOKUP_PROTECT)
-	rval = convert_pointer_to (target_type, rval);
-      else
-	rval
-	  = convert_to_pointer_force (build_pointer_type (target_type), rval);
-      TREE_TYPE (rval) = type;
-      if (TREE_CODE (rval) == PLUS_EXPR || TREE_CODE (rval) == MINUS_EXPR)
-	TREE_TYPE (TREE_OPERAND (rval, 0))
-	  = TREE_TYPE (TREE_OPERAND (rval, 1)) = type;
-    }
-  TREE_CONSTANT (rval) = literal_flag;
+  rval = build_unary_op (ADDR_EXPR, arg, 1);
+  if (flags & LOOKUP_PROTECT)
+    rval = convert_pointer_to (target_type, rval);
+  else
+    rval
+      = convert_to_pointer_force (build_pointer_type (target_type), rval);
+  rval = build1 (CONVERT_EXPR, type, rval);
+  TREE_CONSTANT (rval) = TREE_CONSTANT (TREE_OPERAND (rval, 0));
   return rval;
 }
 

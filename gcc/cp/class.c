@@ -2809,6 +2809,7 @@ check_for_override (decl, ctype)
 		}
 	      virtualp = 1;
 
+#if 0 /* The signature of an overriding function is not changed.  */
 	      {
 		/* The argument types may have changed...  */
 		tree type = TREE_TYPE (decl);
@@ -2823,9 +2824,10 @@ check_for_override (decl, ctype)
 		if (raises)
 		  type = build_exception_variant (type, raises);
 		TREE_TYPE (decl) = type;
-		DECL_VINDEX (decl)
-		  = tree_cons (NULL_TREE, tmp, DECL_VINDEX (decl));
 	      }
+#endif
+	      DECL_VINDEX (decl)
+		= tree_cons (NULL_TREE, tmp, DECL_VINDEX (decl));
 	      break;
 	    }
 	}

@@ -132,6 +132,9 @@ process_template_parm (list, next)
 	    error ("  a template type parameter must begin with `class' or `typename'");
 	  TREE_TYPE (parm) = void_type_node;
 	}
+      else if (pedantic && TREE_CODE (TREE_TYPE (parm)) == REAL_TYPE)
+	cp_pedwarn ("`%T' is not a valid type for a template constant parameter",
+		    TREE_TYPE (parm));
       tinfo = make_node (TEMPLATE_CONST_PARM);
       my_friendly_assert (TREE_PERMANENT (tinfo), 260.5);
       if (TREE_PERMANENT (parm) == 0)

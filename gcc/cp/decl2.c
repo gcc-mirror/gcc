@@ -38,7 +38,6 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 
 extern tree get_file_function_name ();
-extern tree cleanups_this_call;
 static void grok_function_init PROTO((tree, tree));
 void import_export_decl ();
 extern int current_class_depth;
@@ -420,7 +419,6 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"huge-objects", &flag_huge_objects, 1},
   {"conserve-space", &flag_conserve_space, 1},
   {"vtable-thunks", &flag_vtable_thunks, 1},
-  {"short-temps", &flag_short_temps, 1},
   {"access-control", &flag_access_control, 1},
   {"nonansi-builtins", &flag_no_nonansi_builtin, 0},
   {"gnu-keywords", &flag_no_gnu_keywords, 0},
@@ -2919,15 +2917,8 @@ finish_file ()
 
       while (vars)
 	{
-	  extern int temp_slot_level;
-	  extern int target_temp_slot_level; 
 	  tree decl = TREE_VALUE (vars);
 	  tree init = TREE_PURPOSE (vars);
-	  tree old_cleanups = cleanups_this_call;
-	  int old_temp_level = target_temp_slot_level;
-	  push_temp_slots ();
-	  push_temp_slots ();
-	  target_temp_slot_level = temp_slot_level;
 
 	  /* If this was a static attribute within some function's scope,
 	     then don't initialize it here.  Also, don't bother
@@ -2940,9 +2931,9 @@ finish_file ()
 
 	  if (TREE_CODE (decl) == VAR_DECL)
 	    {
-	  int protect = (TREE_PUBLIC (decl) && (DECL_COMMON (decl)
-						|| DECL_ONE_ONLY (decl)
-						|| DECL_WEAK (decl)));
+	      int protect = (TREE_PUBLIC (decl) && (DECL_COMMON (decl)
+						    || DECL_ONE_ONLY (decl)
+						    || DECL_WEAK (decl)));
 
 	      /* Set these global variables so that GDB at least puts
 		 us near the declaration which required the initialization.  */
@@ -2964,6 +2955,8 @@ finish_file ()
 		  expand_start_cond (sentry, 0);
 		}
 
+	      expand_start_target_temps ();
+
 	      if (IS_AGGR_TYPE (TREE_TYPE (decl))
 		  || TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
 		expand_aggr_init (decl, init, 0, 0);
@@ -2977,6 +2970,9 @@ finish_file ()
 	      else
 		expand_assignment (decl, init, 0, 0);
 
+	      /* Cleanup any temporaries needed for the initial value.  */
+	      expand_end_target_temps ();
+
 	      if (protect)
 		expand_end_cond ();
 
@@ -2987,13 +2983,7 @@ finish_file ()
 	    ;
 	  else my_friendly_abort (22);
 
-	  /* Cleanup any temporaries needed for the initial value.  */
-	  expand_cleanups_to (old_cleanups);
 	next_mess:
-	  pop_temp_slots ();
-	  pop_temp_slots ();
-	  target_temp_slot_level = old_temp_level;
-
 	  vars = TREE_CHAIN (vars);
 	}
 

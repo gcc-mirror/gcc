@@ -30,22 +30,23 @@
 #include "typeinfo"
 #include "exception"
 
-/* terminate (), unexpected (), set_terminate (), set_unexpected () as
-   well as the default terminate func and default unexpected func */
+/* Define terminate, unexpected, set_terminate, set_unexpected as
+   well as the default terminate func and default unexpected func.  */
+
+extern terminate_handler __terminate_func;
 
 void
-__default_terminate ()
+terminate ()
 {
-  abort ();
+  __terminate_func ();
 }
 
 void
 __default_unexpected ()
 {
-  __default_terminate ();
+  terminate ();
 }
 
-static terminate_handler __terminate_func = __default_terminate;
 static unexpected_handler __unexpected_func = __default_unexpected;
 
 terminate_handler
@@ -64,12 +65,6 @@ set_unexpected (unexpected_handler func)
 
   __unexpected_func = func;
   return old;
-}
-
-void
-terminate ()
-{
-  __terminate_func ();
 }
 
 void
