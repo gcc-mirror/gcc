@@ -1,3 +1,11 @@
+2004-01-19  Stefan Olsson  <stefan@snon.net>
+
+	* include/ext/mt_allocator.h: If a thread, when it dies, still has
+	memory on it's freelist this memory is not returned to global
+	list. Simplification of deallocate so that memory is always
+	returned to the calling thread id's freelist instead of to
+	global. Fix typos. Add volatile where appropriate.
+
 2004-01-19  Loren J. Rittle  <ljrittle@acm.org>
 
 	* testsuite/ext/stdio_filebuf/char/10063-2.cc: Treat unbuffered.
