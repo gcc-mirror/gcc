@@ -141,9 +141,9 @@ namespace std
       }
 
     // Name all the categories.
+    size_t __len = strlen(__s) + 1;
     if (!strchr(__s, ';'))
       {
-	size_t __len = strlen(__s) + 1;
 	for (size_t __i = 0; 
 	     __i < _S_categories_size + _S_extra_categories_size; ++__i)
 	  {
@@ -152,27 +152,28 @@ namespace std
 	  }
       }
     else
-      {
-	char* __tmp = strdup(__s);
-	__tmp[strlen(__tmp)] = ';';
-	strtok(__tmp, "=;");
+     {
+	char* __new;
+	const char* __save = __s;
+	char* __next = strpbrk(__save, "=;");
+	__save = __next + 1;
 	for (size_t __i = 0; 
 	     __i < _S_categories_size + _S_extra_categories_size - 1; ++__i)
 	  {
-	    char* __src = strtok(NULL, "=;");
-	    char* __new = new char[strlen(__src) + 1];
-	    strcpy(__new, __src);
+	    __next = strpbrk(__save, "=;");
+	    __new = new char[__next - __save + 1];
+	    memcpy(__new, __save, __next - __save);
+	    __new[__next - __save] = '\0';
 	    _M_names[__i] = __new;
-	    strtok(NULL, "=;");
+	    __save = __next + 1;
+	    __next = strpbrk(__save, "=;");
+	    __save = __next + 1;
 	  }
-	char* __src = strtok(NULL, "=;");
-	char* __new = new char[strlen(__src) + 1];
-	strcpy(__new, __src);
+	__new = new char[__s + __len - __save];
+	memcpy(__new, __save, __s + __len - __save);
 	_M_names[_S_categories_size + _S_extra_categories_size - 1] = __new;
-
-	free(__tmp);
       }
-      
+
     // Construct all standard facets and add them to _M_facets.  
     _M_init_facet(new std::ctype<char>(__cloc, 0, false));
     _M_init_facet(new codecvt<char, char, mbstate_t>(__cloc));

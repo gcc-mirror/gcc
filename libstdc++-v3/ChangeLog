@@ -1,3 +1,10 @@
+2002-11-25  Paolo Carlini  <pcarlini@unitus.it>
+            Nathan Myers  <ncm@cantrip.org>
+
+	* src/localename.cc
+	(locale::_Impl::_Impl(const char*, size_t)):
+	Avoid strtok for thread safety.
+
 2002-11-25  Stephen M. Webb  <stephen@bregmasoft.com>
 
   	* testsuite/testsuite_allocator.h: New file.
