@@ -1,3 +1,10 @@
+2003-01-13  Alexandre Oliva  <aoliva@redhat.com>
+
+	* aclocal.m4 (gcc_AC_PROG_GNAT): Don't try to prepend
+	${ac_tool_prefix} to ADAC or CC.  Protect them from word
+	splitting.
+	* configure: Rebuilt.
+
 2003-01-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* unwind-dw2-fde.h (last_fde): Mark parameter with __attribute__
