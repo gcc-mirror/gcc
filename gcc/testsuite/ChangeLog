@@ -1,5 +1,9 @@
 2004-08-03  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	* gcc.dg/array-7.c, gcc.dg/c99-tag-2.c: New tests.
+
+2004-08-03  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	* gcc.dg/20001023-1.c, gcc.dg/20001108-1.c, gcc.dg/20001117-1.c,
 	gcc.dg/20010202-1.c, gcc.dg/20011008-2.c, gcc.dg/20011214-1.c,
 	gcc.dg/20020201-1.c, gcc.dg/20020312-2.c, gcc.dg/20020426-2.c,
