@@ -171,12 +171,6 @@ Perhaps there should be a bitmap argument to df_analyse to specify
 #include "df.h"
 #include "fibheap.h"
 
-#define FOR_ALL_BBS(BB, CODE)					\
-do {								\
-  int node_;							\
-  for (node_ = 0; node_ < n_basic_blocks; node_++)		\
-    {(BB) = BASIC_BLOCK (node_); CODE;};} while (0)
-
 #define FOR_EACH_BB_IN_BITMAP(BITMAP, MIN, BB, CODE)		\
 do {								\
   unsigned int node_;						\
@@ -406,8 +400,8 @@ df_bitmaps_alloc (df, flags)
      struct df *df;
      int flags;
 {
-  unsigned int i;
   int dflags = 0;
+  basic_block bb;
 
   /* Free the bitmaps if they need resizing.  */
   if ((flags & DF_LR) && df->n_regs < (unsigned int)max_reg_num ())
@@ -423,9 +417,8 @@ df_bitmaps_alloc (df, flags)
   df->n_defs = df->def_id;
   df->n_uses = df->use_id;
 
-  for (i = 0; i < df->n_bbs; i++)
+  FOR_ALL_BB (bb)
     {
-      basic_block bb = BASIC_BLOCK (i);
       struct bb_info *bb_info = DF_BB_INFO (df, bb);
 
       if (flags & DF_RD && ! bb_info->rd_in)
@@ -474,11 +467,10 @@ df_bitmaps_free (df, flags)
      struct df *df ATTRIBUTE_UNUSED;
      int flags;
 {
-  unsigned int i;
+  basic_block bb;
 
-  for (i = 0; i < df->n_bbs; i++)
+  FOR_ALL_BB (bb)
     {
-      basic_block bb = BASIC_BLOCK (i);
       struct bb_info *bb_info = DF_BB_INFO (df, bb);
 
       if (!bb_info)
@@ -534,7 +526,7 @@ df_alloc (df, n_regs)
      int n_regs;
 {
   int n_insns;
-  int i;
+  basic_block bb;
 
   gcc_obstack_init (&df_ref_obstack);
 
@@ -555,7 +547,7 @@ df_alloc (df, n_regs)
   df->uses = xmalloc (df->use_size * sizeof (*df->uses));
 
   df->n_regs = n_regs;
-  df->n_bbs = n_basic_blocks;
+  df->n_bbs = last_basic_block;
 
   /* Allocate temporary working array used during local dataflow analysis.  */
   df->reg_def_last = xmalloc (df->n_regs * sizeof (struct ref *));
@@ -569,11 +561,11 @@ df_alloc (df, n_regs)
 
   df->flags = 0;
 
-  df->bbs = xcalloc (df->n_bbs, sizeof (struct bb_info));
+  df->bbs = xcalloc (last_basic_block, sizeof (struct bb_info));
 
   df->all_blocks = BITMAP_XMALLOC ();
-  for (i = 0; i < n_basic_blocks; i++)
-    bitmap_set_bit (df->all_blocks, i);
+  FOR_ALL_BB (bb)
+    bitmap_set_bit (df->all_blocks, bb->sindex);
 }
 
 
@@ -1946,8 +1938,10 @@ df_analyse_1 (df, blocks, flags, update)
   int aflags;
   int dflags;
   int i;
+  basic_block bb;
+
   dflags = 0;
-  aflags = flags;
+  aflags = flags; 
   if (flags & DF_UD_CHAIN)
     aflags |= DF_RD | DF_RD_CHAIN;
 
@@ -2009,16 +2003,16 @@ df_analyse_1 (df, blocks, flags, update)
       df_reg_use_chain_create (df, blocks);
     }
 
-  df->dfs_order = xmalloc (sizeof(int) * n_basic_blocks);
-  df->rc_order = xmalloc (sizeof(int) * n_basic_blocks);
-  df->rts_order = xmalloc (sizeof(int) * n_basic_blocks);
-  df->inverse_dfs_map = xmalloc (sizeof(int) * n_basic_blocks);
-  df->inverse_rc_map = xmalloc (sizeof(int) * n_basic_blocks);
-  df->inverse_rts_map = xmalloc (sizeof(int) * n_basic_blocks);
-
+  df->dfs_order = xmalloc (sizeof(int) * num_basic_blocks);
+  df->rc_order = xmalloc (sizeof(int) * num_basic_blocks);
+  df->rts_order = xmalloc (sizeof(int) * num_basic_blocks);
+  df->inverse_dfs_map = xmalloc (sizeof(int) * last_basic_block);
+  df->inverse_rc_map = xmalloc (sizeof(int) * last_basic_block);
+  df->inverse_rts_map = xmalloc (sizeof(int) * last_basic_block);
+  
   flow_depth_first_order_compute (df->dfs_order, df->rc_order);
   flow_reverse_top_sort_order_compute (df->rts_order);
-  for (i = 0; i < n_basic_blocks; i ++)
+  for (i = 0; i < num_basic_blocks; i ++)
    {
      df->inverse_dfs_map[df->dfs_order[i]] = i;
      df->inverse_rc_map[df->rc_order[i]] = i;
@@ -2029,17 +2023,16 @@ df_analyse_1 (df, blocks, flags, update)
       /* Compute the sets of gens and kills for the defs of each bb.  */
       df_rd_local_compute (df, df->flags & DF_RD ? blocks : df->all_blocks);
       {
-	int i;
-	bitmap *in = xmalloc (sizeof (bitmap) * n_basic_blocks);
-	bitmap *out = xmalloc (sizeof (bitmap) * n_basic_blocks);
-	bitmap *gen = xmalloc (sizeof (bitmap) * n_basic_blocks);
-	bitmap *kill = xmalloc (sizeof (bitmap) * n_basic_blocks);
-	for (i = 0; i < n_basic_blocks; i ++)
+	bitmap *in = xmalloc (sizeof (bitmap) * last_basic_block);
+	bitmap *out = xmalloc (sizeof (bitmap) * last_basic_block);
+	bitmap *gen = xmalloc (sizeof (bitmap) * last_basic_block);
+	bitmap *kill = xmalloc (sizeof (bitmap) * last_basic_block);
+	FOR_ALL_BB (bb)
 	  {
-	    in[i] = DF_BB_INFO (df, BASIC_BLOCK (i))->rd_in;
-	    out[i] = DF_BB_INFO (df, BASIC_BLOCK (i))->rd_out;
-	    gen[i] = DF_BB_INFO (df, BASIC_BLOCK (i))->rd_gen;
-	    kill[i] = DF_BB_INFO (df, BASIC_BLOCK (i))->rd_kill;
+	    in[bb->sindex] = DF_BB_INFO (df, bb)->rd_in;
+	    out[bb->sindex] = DF_BB_INFO (df, bb)->rd_out;
+	    gen[bb->sindex] = DF_BB_INFO (df, bb)->rd_gen;
+	    kill[bb->sindex] = DF_BB_INFO (df, bb)->rd_kill;
 	  }
 	iterative_dataflow_bitmap (in, out, gen, kill, df->all_blocks,
 				   FORWARD, UNION, df_rd_transfer_function,
@@ -2066,17 +2059,16 @@ df_analyse_1 (df, blocks, flags, update)
 	 uses in each bb.  */
       df_ru_local_compute (df, df->flags & DF_RU ? blocks : df->all_blocks);
       {
-	int i;
-	bitmap *in = xmalloc (sizeof (bitmap) * n_basic_blocks);
-	bitmap *out = xmalloc (sizeof (bitmap) * n_basic_blocks);
-	bitmap *gen = xmalloc (sizeof (bitmap) * n_basic_blocks);
-	bitmap *kill = xmalloc (sizeof (bitmap) * n_basic_blocks);
-	for (i = 0; i < n_basic_blocks; i ++)
+	bitmap *in = xmalloc (sizeof (bitmap) * last_basic_block);
+	bitmap *out = xmalloc (sizeof (bitmap) * last_basic_block);
+	bitmap *gen = xmalloc (sizeof (bitmap) * last_basic_block);
+	bitmap *kill = xmalloc (sizeof (bitmap) * last_basic_block);
+	FOR_ALL_BB (bb)
 	  {
-	    in[i] = DF_BB_INFO (df, BASIC_BLOCK (i))->ru_in;
-	    out[i] = DF_BB_INFO (df, BASIC_BLOCK (i))->ru_out;
-	    gen[i] = DF_BB_INFO (df, BASIC_BLOCK (i))->ru_gen;
-	    kill[i] = DF_BB_INFO (df, BASIC_BLOCK (i))->ru_kill;
+	    in[bb->sindex] = DF_BB_INFO (df, bb)->ru_in;
+	    out[bb->sindex] = DF_BB_INFO (df, bb)->ru_out;
+	    gen[bb->sindex] = DF_BB_INFO (df, bb)->ru_gen;
+	    kill[bb->sindex] = DF_BB_INFO (df, bb)->ru_kill;
 	  }
 	iterative_dataflow_bitmap (in, out, gen, kill, df->all_blocks,
 				   BACKWARD, UNION, df_ru_transfer_function,
@@ -2106,17 +2098,16 @@ df_analyse_1 (df, blocks, flags, update)
       /* Compute the sets of defs and uses of live variables.  */
       df_lr_local_compute (df, df->flags & DF_LR ? blocks : df->all_blocks);
       {
-	int i;
-	bitmap *in = xmalloc (sizeof (bitmap) * n_basic_blocks);
-	bitmap *out = xmalloc (sizeof (bitmap) * n_basic_blocks);
-	bitmap *use = xmalloc (sizeof (bitmap) * n_basic_blocks);
-	bitmap *def = xmalloc (sizeof (bitmap) * n_basic_blocks);
-	for (i = 0; i < n_basic_blocks; i ++)
+	bitmap *in = xmalloc (sizeof (bitmap) * last_basic_block);
+	bitmap *out = xmalloc (sizeof (bitmap) * last_basic_block);
+	bitmap *use = xmalloc (sizeof (bitmap) * last_basic_block);
+	bitmap *def = xmalloc (sizeof (bitmap) * last_basic_block);
+	FOR_ALL_BB (bb)
 	  {
-	    in[i] = DF_BB_INFO (df, BASIC_BLOCK (i))->lr_in;
-	    out[i] = DF_BB_INFO (df, BASIC_BLOCK (i))->lr_out;
-	    use[i] = DF_BB_INFO (df, BASIC_BLOCK (i))->lr_use;
-	    def[i] = DF_BB_INFO (df, BASIC_BLOCK (i))->lr_def;
+	    in[bb->sindex] = DF_BB_INFO (df, bb)->lr_in;
+	    out[bb->sindex] = DF_BB_INFO (df, bb)->lr_out;
+	    use[bb->sindex] = DF_BB_INFO (df, bb)->lr_use;
+	    def[bb->sindex] = DF_BB_INFO (df, bb)->lr_def;
 	  }
 	iterative_dataflow_bitmap (in, out, use, def, df->all_blocks,
 				   BACKWARD, UNION, df_lr_transfer_function,
@@ -2270,12 +2261,15 @@ df_modified_p (df, blocks)
      struct df *df;
      bitmap blocks;
 {
-  unsigned int j;
   int update = 0;
+  basic_block bb;
 
-  for (j = 0; j < df->n_bbs; j++)
-    if (bitmap_bit_p (df->bbs_modified, j)
-	&& (! blocks || (blocks == (bitmap) -1) || bitmap_bit_p (blocks, j)))
+  if (!df->n_bbs)
+    return 0;
+
+  FOR_ALL_BB (bb)
+    if (bitmap_bit_p (df->bbs_modified, bb->sindex)
+	&& (! blocks || (blocks == (bitmap) -1) || bitmap_bit_p (blocks, bb->sindex)))
     {
       update = 1;
       break;
@@ -2298,7 +2292,7 @@ df_analyse (df, blocks, flags)
 
   /* We could deal with additional basic blocks being created by
      rescanning everything again.  */
-  if (df->n_bbs && df->n_bbs != (unsigned int)n_basic_blocks)
+  if (df->n_bbs && df->n_bbs != (unsigned int) last_basic_block)
     abort ();
 
   update = df_modified_p (df, blocks);
@@ -2408,10 +2402,8 @@ df_refs_unlink (df, blocks)
     }
   else
     {
-      FOR_ALL_BBS (bb,
-      {
+      FOR_ALL_BB (bb)
 	df_bb_refs_unlink (df, bb);
-      });
     }
 }
 #endif
@@ -2459,7 +2451,7 @@ df_insn_modify (df, bb, insn)
   if (uid >= df->insn_size)
     df_insn_table_realloc (df, 0);
 
-  bitmap_set_bit (df->bbs_modified, bb->index);
+  bitmap_set_bit (df->bbs_modified, bb->sindex);
   bitmap_set_bit (df->insns_modified, uid);
 
   /* For incremental updating on the fly, perhaps we could make a copy
@@ -3274,7 +3266,6 @@ df_dump (df, flags, file)
      int flags;
      FILE *file;
 {
-  unsigned int i;
   unsigned int j;
 
   if (! df || ! file)
@@ -3286,22 +3277,23 @@ df_dump (df, flags, file)
 
   if (flags & DF_RD)
     {
+      basic_block bb;
+
       fprintf (file, "Reaching defs:\n");
-      for (i = 0; i < df->n_bbs; i++)
+      FOR_ALL_BB (bb)
 	{
-	  basic_block bb = BASIC_BLOCK (i);
 	  struct bb_info *bb_info = DF_BB_INFO (df, bb);
 
 	  if (! bb_info->rd_in)
 	    continue;
 
-	  fprintf (file, "bb %d in  \t", i);
+	  fprintf (file, "bb %d in  \t", bb->sindex);
 	  dump_bitmap (file, bb_info->rd_in);
-	  fprintf (file, "bb %d gen \t", i);
+	  fprintf (file, "bb %d gen \t", bb->sindex);
 	  dump_bitmap (file, bb_info->rd_gen);
-	  fprintf (file, "bb %d kill\t", i);
+	  fprintf (file, "bb %d kill\t", bb->sindex);
 	  dump_bitmap (file, bb_info->rd_kill);
-	  fprintf (file, "bb %d out \t", i);
+	  fprintf (file, "bb %d out \t", bb->sindex);
 	  dump_bitmap (file, bb_info->rd_out);
 	}
     }
@@ -3328,22 +3320,23 @@ df_dump (df, flags, file)
 
   if (flags & DF_RU)
     {
+      basic_block bb;
+
       fprintf (file, "Reaching uses:\n");
-      for (i = 0; i < df->n_bbs; i++)
+      FOR_ALL_BB (bb)
 	{
-	  basic_block bb = BASIC_BLOCK (i);
 	  struct bb_info *bb_info = DF_BB_INFO (df, bb);
 
 	  if (! bb_info->ru_in)
 	    continue;
 
-	  fprintf (file, "bb %d in  \t", i);
+	  fprintf (file, "bb %d in  \t", bb->sindex);
 	  dump_bitmap (file, bb_info->ru_in);
-	  fprintf (file, "bb %d gen \t", i);
+	  fprintf (file, "bb %d gen \t", bb->sindex);
 	  dump_bitmap (file, bb_info->ru_gen);
-	  fprintf (file, "bb %d kill\t", i);
+	  fprintf (file, "bb %d kill\t", bb->sindex);
 	  dump_bitmap (file, bb_info->ru_kill);
-	  fprintf (file, "bb %d out \t", i);
+	  fprintf (file, "bb %d out \t", bb->sindex);
 	  dump_bitmap (file, bb_info->ru_out);
 	}
     }
@@ -3370,22 +3363,23 @@ df_dump (df, flags, file)
 
   if (flags & DF_LR)
     {
+      basic_block bb;
+
       fprintf (file, "Live regs:\n");
-      for (i = 0; i < df->n_bbs; i++)
+      FOR_ALL_BB (bb)
 	{
-	  basic_block bb = BASIC_BLOCK (i);
 	  struct bb_info *bb_info = DF_BB_INFO (df, bb);
 
 	  if (! bb_info->lr_in)
 	    continue;
 
-	  fprintf (file, "bb %d in  \t", i);
+	  fprintf (file, "bb %d in  \t", bb->sindex);
 	  dump_bitmap (file, bb_info->lr_in);
-	  fprintf (file, "bb %d use \t", i);
+	  fprintf (file, "bb %d use \t", bb->sindex);
 	  dump_bitmap (file, bb_info->lr_use);
-	  fprintf (file, "bb %d def \t", i);
+	  fprintf (file, "bb %d def \t", bb->sindex);
 	  dump_bitmap (file, bb_info->lr_def);
-	  fprintf (file, "bb %d out \t", i);
+	  fprintf (file, "bb %d out \t", bb->sindex);
 	  dump_bitmap (file, bb_info->lr_out);
 	}
     }
@@ -3408,7 +3402,7 @@ df_dump (df, flags, file)
 		basic_block bb = df_regno_bb (df, j);
 
 		if (bb)
-		  fprintf (file, " bb %d", bb->index);
+		  fprintf (file, " bb %d", bb->sindex);
 		else
 		  fprintf (file, " bb ?");
 	      }
@@ -3609,11 +3603,11 @@ hybrid_search_bitmap (block, in, out, gen, kill, dir,
      void *data;
 {
   int changed;
-  int i = block->index;
+  int i = block->sindex;
   edge e;
-  basic_block bb= block;
-  SET_BIT (visited, block->index);
-  if (TEST_BIT (pending, block->index))
+  basic_block bb = block;
+  SET_BIT (visited, block->sindex);
+  if (TEST_BIT (pending, block->sindex))
     {
       if (dir == FORWARD)
 	{
@@ -3626,10 +3620,10 @@ hybrid_search_bitmap (block, in, out, gen, kill, dir,
 	      switch (conf_op)
 		{
 		case UNION:
-		  bitmap_a_or_b (in[i], in[i], out[e->src->index]);
+		  bitmap_a_or_b (in[i], in[i], out[e->src->sindex]);
 		  break;
 		case INTERSECTION:
-		  bitmap_a_and_b (in[i], in[i], out[e->src->index]);
+		  bitmap_a_and_b (in[i], in[i], out[e->src->sindex]);
 		  break;
 		}
 	    }
@@ -3645,10 +3639,10 @@ hybrid_search_bitmap (block, in, out, gen, kill, dir,
 	      switch (conf_op)
 		{
 		case UNION:
-		  bitmap_a_or_b (out[i], out[i], in[e->dest->index]);
+		  bitmap_a_or_b (out[i], out[i], in[e->dest->sindex]);
 		  break;
 		case INTERSECTION:
-		  bitmap_a_and_b (out[i], out[i], in[e->dest->index]);
+		  bitmap_a_and_b (out[i], out[i], in[e->dest->sindex]);
 		  break;
 		}
 	    }
@@ -3662,18 +3656,18 @@ hybrid_search_bitmap (block, in, out, gen, kill, dir,
 	    {
 	      for (e = bb->succ; e != 0; e = e->succ_next)
 		{
-		  if (e->dest == EXIT_BLOCK_PTR || e->dest->index == i)
+		  if (e->dest == EXIT_BLOCK_PTR || e->dest == block)
 		    continue;
-		  SET_BIT (pending, e->dest->index);
+		  SET_BIT (pending, e->dest->sindex);
 		}
 	    }
 	  else
 	    {
 	      for (e = bb->pred; e != 0; e = e->pred_next)
 		{
-		  if (e->src == ENTRY_BLOCK_PTR || e->dest->index == i)
+		  if (e->src == ENTRY_BLOCK_PTR || e->dest == block)
 		    continue;
-		  SET_BIT (pending, e->src->index);
+		  SET_BIT (pending, e->src->sindex);
 		}
 	    }
 	}
@@ -3682,11 +3676,11 @@ hybrid_search_bitmap (block, in, out, gen, kill, dir,
     {
       for (e = bb->succ; e != 0; e = e->succ_next)
 	{
-	  if (e->dest == EXIT_BLOCK_PTR || e->dest->index == i)
+	  if (e->dest == EXIT_BLOCK_PTR || e->dest == block)
 	    continue;
-	  if (!TEST_BIT (visited, e->dest->index))
-	    hybrid_search_bitmap (e->dest, in, out, gen, kill, dir,
-				  conf_op, transfun, visited, pending,
+	  if (!TEST_BIT (visited, e->dest->sindex))
+	    hybrid_search_bitmap (e->dest, in, out, gen, kill, dir, 
+				  conf_op, transfun, visited, pending, 
 				  data);
 	}
     }
@@ -3694,9 +3688,9 @@ hybrid_search_bitmap (block, in, out, gen, kill, dir,
     {
       for (e = bb->pred; e != 0; e = e->pred_next)
 	{
-	  if (e->src == ENTRY_BLOCK_PTR || e->src->index == i)
+	  if (e->src == ENTRY_BLOCK_PTR || e->src == block)
 	    continue;
-	  if (!TEST_BIT (visited, e->src->index))
+	  if (!TEST_BIT (visited, e->src->sindex))
 	    hybrid_search_bitmap (e->src, in, out, gen, kill, dir,
 				  conf_op, transfun, visited, pending,
 				  data);
@@ -3720,11 +3714,11 @@ hybrid_search_sbitmap (block, in, out, gen, kill, dir,
      void *data;
 {
   int changed;
-  int i = block->index;
+  int i = block->sindex;
   edge e;
-  basic_block bb= block;
-  SET_BIT (visited, block->index);
-  if (TEST_BIT (pending, block->index))
+  basic_block bb = block;
+  SET_BIT (visited, block->sindex);
+  if (TEST_BIT (pending, block->sindex))
     {
       if (dir == FORWARD)
 	{
@@ -3737,10 +3731,10 @@ hybrid_search_sbitmap (block, in, out, gen, kill, dir,
 	      switch (conf_op)
 		{
 		case UNION:
-		  sbitmap_a_or_b (in[i], in[i], out[e->src->index]);
+		  sbitmap_a_or_b (in[i], in[i], out[e->src->sindex]);
 		  break;
 		case INTERSECTION:
-		  sbitmap_a_and_b (in[i], in[i], out[e->src->index]);
+		  sbitmap_a_and_b (in[i], in[i], out[e->src->sindex]);
 		  break;
 		}
 	    }
@@ -3756,10 +3750,10 @@ hybrid_search_sbitmap (block, in, out, gen, kill, dir,
 	      switch (conf_op)
 		{
 		case UNION:
-		  sbitmap_a_or_b (out[i], out[i], in[e->dest->index]);
+		  sbitmap_a_or_b (out[i], out[i], in[e->dest->sindex]);
 		  break;
 		case INTERSECTION:
-		  sbitmap_a_and_b (out[i], out[i], in[e->dest->index]);
+		  sbitmap_a_and_b (out[i], out[i], in[e->dest->sindex]);
 		  break;
 		}
 	    }
@@ -3773,18 +3767,18 @@ hybrid_search_sbitmap (block, in, out, gen, kill, dir,
 	    {
 	      for (e = bb->succ; e != 0; e = e->succ_next)
 		{
-		  if (e->dest == EXIT_BLOCK_PTR || e->dest->index == i)
+		  if (e->dest == EXIT_BLOCK_PTR || e->dest == block)
 		    continue;
-		  SET_BIT (pending, e->dest->index);
+		  SET_BIT (pending, e->dest->sindex);
 		}
 	    }
 	  else
 	    {
 	      for (e = bb->pred; e != 0; e = e->pred_next)
 		{
-		  if (e->src == ENTRY_BLOCK_PTR || e->dest->index == i)
+		  if (e->src == ENTRY_BLOCK_PTR || e->dest == block)
 		    continue;
-		  SET_BIT (pending, e->src->index);
+		  SET_BIT (pending, e->src->sindex);
 		}
 	    }
 	}
@@ -3793,9 +3787,9 @@ hybrid_search_sbitmap (block, in, out, gen, kill, dir,
     {
       for (e = bb->succ; e != 0; e = e->succ_next)
 	{
-	  if (e->dest == EXIT_BLOCK_PTR || e->dest->index == i)
+	  if (e->dest == EXIT_BLOCK_PTR || e->dest == block)
 	    continue;
-	  if (!TEST_BIT (visited, e->dest->index))
+	  if (!TEST_BIT (visited, e->dest->sindex))
 	    hybrid_search_sbitmap (e->dest, in, out, gen, kill, dir,
 				   conf_op, transfun, visited, pending,
 				   data);
@@ -3805,9 +3799,9 @@ hybrid_search_sbitmap (block, in, out, gen, kill, dir,
     {
       for (e = bb->pred; e != 0; e = e->pred_next)
 	{
-	  if (e->src == ENTRY_BLOCK_PTR || e->src->index == i)
+	  if (e->src == ENTRY_BLOCK_PTR || e->src == block)
 	    continue;
-	  if (!TEST_BIT (visited, e->src->index))
+	  if (!TEST_BIT (visited, e->src->sindex))
 	    hybrid_search_sbitmap (e->src, in, out, gen, kill, dir,
 				   conf_op, transfun, visited, pending,
 				   data);
@@ -3853,8 +3847,8 @@ iterative_dataflow_sbitmap (in, out, gen, kill, blocks,
   fibheap_t worklist;
   basic_block bb;
   sbitmap visited, pending;
-  pending = sbitmap_alloc (n_basic_blocks);
-  visited = sbitmap_alloc (n_basic_blocks);
+  pending = sbitmap_alloc (last_basic_block);
+  visited = sbitmap_alloc (last_basic_block);
   sbitmap_zero (pending);
   sbitmap_zero (visited);
   worklist = fibheap_new ();
@@ -3873,7 +3867,7 @@ iterative_dataflow_sbitmap (in, out, gen, kill, blocks,
 	{
 	  i = (size_t) fibheap_extract_min (worklist);
 	  bb = BASIC_BLOCK (i);
-	  if (!TEST_BIT (visited, bb->index))
+	  if (!TEST_BIT (visited, bb->sindex))
 	    hybrid_search_sbitmap (bb, in, out, gen, kill, dir,
 				   conf_op, transfun, visited, pending, data);
 	}
@@ -3912,8 +3906,8 @@ iterative_dataflow_bitmap (in, out, gen, kill, blocks,
   fibheap_t worklist;
   basic_block bb;
   sbitmap visited, pending;
-  pending = sbitmap_alloc (n_basic_blocks);
-  visited = sbitmap_alloc (n_basic_blocks);
+  pending = sbitmap_alloc (last_basic_block);
+  visited = sbitmap_alloc (last_basic_block);
   sbitmap_zero (pending);
   sbitmap_zero (visited);
   worklist = fibheap_new ();
@@ -3932,7 +3926,7 @@ iterative_dataflow_bitmap (in, out, gen, kill, blocks,
 	{
 	  i = (size_t) fibheap_extract_min (worklist);
 	  bb = BASIC_BLOCK (i);
-	  if (!TEST_BIT (visited, bb->index))
+	  if (!TEST_BIT (visited, bb->sindex))
 	    hybrid_search_bitmap (bb, in, out, gen, kill, dir,
 				  conf_op, transfun, visited, pending, data);
 	}

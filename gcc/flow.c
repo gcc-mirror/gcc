@@ -575,7 +575,7 @@ verify_local_live_at_start (new_live_at_start, bb)
 	    {
 	      fprintf (rtl_dump_file,
 		       "live_at_start mismatch in bb %d, aborting\nNew:\n",
-		       bb->index);
+		       bb->sindex);
 	      debug_bitmap_file (rtl_dump_file, new_live_at_start);
 	      fputs ("Old:\n", rtl_dump_file);
 	      dump_bb (bb, rtl_dump_file);
@@ -656,6 +656,7 @@ update_life_info (blocks, extent, prop_flags)
       for ( ; ; )
 	{
 	  int changed = 0;
+	  basic_block bb;
 
 	  calculate_global_regs_live (blocks, blocks,
 				prop_flags & (PROP_SCAN_DEAD_CODE
@@ -667,9 +668,8 @@ update_life_info (blocks, extent, prop_flags)
 
 	  /* Removing dead code may allow the CFG to be simplified which
 	     in turn may allow for further dead code detection / removal.  */
-	  for (i = n_basic_blocks - 1; i >= 0; --i)
+	  FOR_ALL_BB_REVERSE (bb)
 	    {
-	      basic_block bb = BASIC_BLOCK (i);
 
 	      COPY_REG_SET (tmp, bb->global_live_at_end);
 	      changed |= propagate_block (bb, tmp, NULL, NULL,
@@ -718,10 +718,10 @@ update_life_info (blocks, extent, prop_flags)
     }
   else
     {
-      for (i = n_basic_blocks - 1; i >= 0; --i)
-	{
-	  basic_block bb = BASIC_BLOCK (i);
+      basic_block bb;
 
+      FOR_ALL_BB_REVERSE (bb)
+	{
 	  COPY_REG_SET (tmp, bb->global_live_at_end);
 
 	  propagate_block (bb, tmp, NULL, NULL, stabilized_prop_flags);
@@ -775,16 +775,16 @@ update_life_info_in_dirty_blocks (extent, prop_flags)
      enum update_life_extent extent;
      int prop_flags;
 {
-  sbitmap update_life_blocks = sbitmap_alloc (n_basic_blocks);
-  int block_num;
+  sbitmap update_life_blocks = sbitmap_alloc (last_basic_block);
   int n = 0;
+  basic_block bb;
   int retval = 0;
 
   sbitmap_zero (update_life_blocks);
-  for (block_num = 0; block_num < n_basic_blocks; block_num++)
-    if (BASIC_BLOCK (block_num)->flags & BB_DIRTY)
+  FOR_ALL_BB (bb)
+    if (bb->flags & BB_DIRTY)
       {
-	SET_BIT (update_life_blocks, block_num);
+	SET_BIT (update_life_blocks, bb->sindex);
 	n++;
       }
 
@@ -810,7 +810,8 @@ free_basic_block_vars (keep_head_end_p)
 	  clear_edges ();
 	  VARRAY_FREE (basic_block_info);
 	}
-      n_basic_blocks = 0;
+      num_basic_blocks = 0;
+      last_basic_block = 0;
 
       ENTRY_BLOCK_PTR->aux = NULL;
       ENTRY_BLOCK_PTR->global_live_at_end = NULL;
@@ -825,14 +826,12 @@ int
 delete_noop_moves (f)
      rtx f ATTRIBUTE_UNUSED;
 {
-  int i;
   rtx insn, next;
   basic_block bb;
   int nnoops = 0;
 
-  for (i = 0; i < n_basic_blocks; i++)
+  FOR_ALL_BB (bb)
     {
-      bb = BASIC_BLOCK (i);
       for (insn = bb->head; insn != NEXT_INSN (bb->end); insn = next)
 	{
 	  next = NEXT_INSN (insn);
@@ -1079,7 +1078,7 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
      sbitmap blocks_in, blocks_out;
      int flags;
 {
-  basic_block *queue, *qhead, *qtail, *qend;
+  basic_block *queue, *qhead, *qtail, *qend, bb;
   regset tmp, new_live_at_end, call_used;
   regset_head tmp_head, call_used_head;
   regset_head new_live_at_end_head;
@@ -1088,10 +1087,8 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
   /* Some passes used to forget clear aux field of basic block causing
      sick behaviour here.  */
 #ifdef ENABLE_CHECKING
-  if (ENTRY_BLOCK_PTR->aux || EXIT_BLOCK_PTR->aux)
-    abort ();
-  for (i = 0; i < n_basic_blocks; i++)
-    if (BASIC_BLOCK (i)->aux)
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
+    if (bb->aux)
       abort ();
 #endif
 
@@ -1107,9 +1104,9 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
   /* Create a worklist.  Allocate an extra slot for ENTRY_BLOCK, and one
      because the `head == tail' style test for an empty queue doesn't
      work with a full queue.  */
-  queue = (basic_block *) xmalloc ((n_basic_blocks + 2) * sizeof (*queue));
+  queue = (basic_block *) xmalloc ((num_basic_blocks + 2) * sizeof (*queue));
   qtail = queue;
-  qhead = qend = queue + n_basic_blocks + 2;
+  qhead = qend = queue + num_basic_blocks + 2;
 
   /* Queue the blocks set in the initial mask.  Do this in reverse block
      number order so that we are more likely for the first round to do
@@ -1117,21 +1114,20 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
   if (blocks_in)
     {
       /* Clear out the garbage that might be hanging out in bb->aux.  */
-      for (i = n_basic_blocks - 1; i >= 0; --i)
-	BASIC_BLOCK (i)->aux = NULL;
+      FOR_ALL_BB (bb)
+	bb->aux = NULL;
 
       EXECUTE_IF_SET_IN_SBITMAP (blocks_in, 0, i,
 	{
-	  basic_block bb = BASIC_BLOCK (i);
+	  bb = BASIC_BLOCK (i);
 	  *--qhead = bb;
 	  bb->aux = bb;
 	});
     }
   else
     {
-      for (i = 0; i < n_basic_blocks; ++i)
+      FOR_ALL_BB (bb)
 	{
-	  basic_block bb = BASIC_BLOCK (i);
 	  *--qhead = bb;
 	  bb->aux = bb;
 	}
@@ -1307,7 +1303,7 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
       /* Let our caller know that BB changed enough to require its
 	 death notes updated.  */
       if (blocks_out)
-	SET_BIT (blocks_out, bb->index);
+	SET_BIT (blocks_out, bb->sindex);
 
       if (! rescan)
 	{
@@ -1363,16 +1359,15 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
     {
       EXECUTE_IF_SET_IN_SBITMAP (blocks_out, 0, i,
 	{
-	  basic_block bb = BASIC_BLOCK (i);
+	  bb = BASIC_BLOCK (i);
 	  FREE_REG_SET (bb->local_set);
 	  FREE_REG_SET (bb->cond_local_set);
 	});
     }
   else
     {
-      for (i = n_basic_blocks - 1; i >= 0; --i)
+      FOR_ALL_BB (bb)
 	{
-	  basic_block bb = BASIC_BLOCK (i);
 	  FREE_REG_SET (bb->local_set);
 	  FREE_REG_SET (bb->cond_local_set);
 	}
@@ -1498,12 +1493,10 @@ initialize_uninitialized_subregs ()
 void
 allocate_bb_life_data ()
 {
-  int i;
+  basic_block bb;
 
-  for (i = 0; i < n_basic_blocks; i++)
+  FOR_ALL_BB (bb)
     {
-      basic_block bb = BASIC_BLOCK (i);
-
       bb->global_live_at_start = OBSTACK_ALLOC_REG_SET (&flow_obstack);
       bb->global_live_at_end = OBSTACK_ALLOC_REG_SET (&flow_obstack);
     }
@@ -2342,14 +2335,14 @@ int
 regno_uninitialized (regno)
      unsigned int regno;
 {
-  if (n_basic_blocks == 0
+  if (num_basic_blocks == 0
       || (regno < FIRST_PSEUDO_REGISTER
 	  && (global_regs[regno]
 	      || fixed_regs[regno]
 	      || FUNCTION_ARG_REGNO_P (regno))))
     return 0;
 
-  return REGNO_REG_SET_P (BASIC_BLOCK (0)->global_live_at_start, regno);
+  return REGNO_REG_SET_P (ENTRY_BLOCK_PTR->next_bb->global_live_at_start, regno);
 }
 
 /* 1 if register REGNO was alive at a place where `setjmp' was called
@@ -2360,11 +2353,11 @@ int
 regno_clobbered_at_setjmp (regno)
      int regno;
 {
-  if (n_basic_blocks == 0)
+  if (num_basic_blocks == 0)
     return 0;
 
   return ((REG_N_SETS (regno) > 1
-	   || REGNO_REG_SET_P (BASIC_BLOCK (0)->global_live_at_start, regno))
+	   || REGNO_REG_SET_P (ENTRY_BLOCK_PTR->next_bb->global_live_at_start, regno))
 	  && REGNO_REG_SET_P (regs_live_at_setjmp, regno));
 }
 
@@ -2719,7 +2712,7 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
 		   | PROP_DEATH_NOTES | PROP_AUTOINC))
 	{
 	  rtx y;
-	  int blocknum = pbi->bb->index;
+	  int blocknum = pbi->bb->sindex;
 
 	  y = NULL_RTX;
 	  if (flags & (PROP_LOG_LINKS | PROP_AUTOINC))
@@ -3576,7 +3569,7 @@ mark_used_reg (pbi, reg, cond, insn)
 	{
 	  /* Keep track of which basic block each reg appears in.  */
 
-	  int blocknum = pbi->bb->index;
+	  int blocknum = pbi->bb->sindex;
 	  if (REG_BASIC_BLOCK (regno_first) == REG_BLOCK_UNKNOWN)
 	    REG_BASIC_BLOCK (regno_first) = blocknum;
 	  else if (REG_BASIC_BLOCK (regno_first) != blocknum)
@@ -4246,17 +4239,15 @@ count_or_remove_death_notes (blocks, kill)
      sbitmap blocks;
      int kill;
 {
-  int i, count = 0;
+  int count = 0;
+  basic_block bb;
 
-  for (i = n_basic_blocks - 1; i >= 0; --i)
+  FOR_ALL_BB_REVERSE (bb)
     {
-      basic_block bb;
       rtx insn;
 
-      if (blocks && ! TEST_BIT (blocks, i))
+      if (blocks && ! TEST_BIT (blocks, bb->sindex))
 	continue;
-
-      bb = BASIC_BLOCK (i);
 
       for (insn = bb->head;; insn = NEXT_INSN (insn))
 	{

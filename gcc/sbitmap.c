@@ -446,7 +446,7 @@ sbitmap_intersection_of_succs (dst, src, bb)
       if (e->dest == EXIT_BLOCK_PTR)
 	continue;
 
-      sbitmap_copy (dst, src[e->dest->index]);
+      sbitmap_copy (dst, src[e->dest->sindex]);
       break;
     }
 
@@ -461,7 +461,7 @@ sbitmap_intersection_of_succs (dst, src, bb)
 	if (e->dest == EXIT_BLOCK_PTR)
 	  continue;
 
-	p = src[e->dest->index]->elms;
+	p = src[e->dest->sindex]->elms;
 	r = dst->elms;
 	for (i = 0; i < set_size; i++)
 	  *r++ &= *p++;
@@ -486,7 +486,7 @@ sbitmap_intersection_of_preds (dst, src, bb)
       if (e->src == ENTRY_BLOCK_PTR)
 	continue;
 
-      sbitmap_copy (dst, src[e->src->index]);
+      sbitmap_copy (dst, src[e->src->sindex]);
       break;
     }
 
@@ -501,7 +501,7 @@ sbitmap_intersection_of_preds (dst, src, bb)
 	if (e->src == ENTRY_BLOCK_PTR)
 	  continue;
 
-	p = src[e->src->index]->elms;
+	p = src[e->src->sindex]->elms;
 	r = dst->elms;
 	for (i = 0; i < set_size; i++)
 	  *r++ &= *p++;
@@ -526,7 +526,7 @@ sbitmap_union_of_succs (dst, src, bb)
       if (e->dest == EXIT_BLOCK_PTR)
 	continue;
 
-      sbitmap_copy (dst, src[e->dest->index]);
+      sbitmap_copy (dst, src[e->dest->sindex]);
       break;
     }
 
@@ -541,7 +541,7 @@ sbitmap_union_of_succs (dst, src, bb)
 	if (e->dest == EXIT_BLOCK_PTR)
 	  continue;
 
-	p = src[e->dest->index]->elms;
+	p = src[e->dest->sindex]->elms;
 	r = dst->elms;
 	for (i = 0; i < set_size; i++)
 	  *r++ |= *p++;
@@ -566,7 +566,7 @@ sbitmap_union_of_preds (dst, src, bb)
       if (e->src== ENTRY_BLOCK_PTR)
 	continue;
 
-      sbitmap_copy (dst, src[e->src->index]);
+      sbitmap_copy (dst, src[e->src->sindex]);
       break;
     }
 
@@ -580,8 +580,8 @@ sbitmap_union_of_preds (dst, src, bb)
 
 	if (e->src == ENTRY_BLOCK_PTR)
 	  continue;
-
-	p = src[e->src->index]->elms;
+	
+	p = src[e->src->sindex]->elms;
 	r = dst->elms;
 	for (i = 0; i < set_size; i++)
 	  *r++ |= *p++;
