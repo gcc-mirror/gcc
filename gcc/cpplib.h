@@ -402,7 +402,6 @@ struct cpp_callbacks
   void (*undef) PARAMS ((cpp_reader *, unsigned int, cpp_hashnode *));
   void (*ident) PARAMS ((cpp_reader *, unsigned int, const cpp_string *));
   void (*def_pragma) PARAMS ((cpp_reader *, unsigned int));
-  void (*simplify_path) PARAMS ((char *));
   /* Called when the client has a chance to properly register
      built-ins with cpp_define() and cpp_assert().  */
   void (*register_builtins) PARAMS ((cpp_reader *));
@@ -741,6 +740,7 @@ extern unsigned char *cpp_quote_string	PARAMS ((unsigned char *,
 /* In cppfiles.c */
 extern int cpp_included	PARAMS ((cpp_reader *, const char *));
 extern void cpp_make_system_header PARAMS ((cpp_reader *, int, int));
+extern void cpp_simplify_path PARAMS ((char *));
 
 /* In cpppch.c */
 struct save_macro_data;
