@@ -6208,6 +6208,8 @@
    (UNSPEC_MQLMTHS		155)
    (UNSPEC_MQSLLHI		156)
    (UNSPEC_MQSRAHI		157)
+   (UNSPEC_MASACCS		158)
+   (UNSPEC_MDASACCS		159)
 ])
 
 ;; Logic operations: type "mlogic"
@@ -7726,52 +7728,45 @@
 ;; Accumulator addition/subtraction: type "maddacc"
 
 (define_expand "maddaccs"
-  [(parallel [(set (match_operand:DI 0 "even_acc_operand" "")
-		   (unspec:DI [(match_dup 0)
-			       (match_operand:DI 1 "even_acc_operand" "")]
+  [(parallel [(set (match_operand:SI 0 "acc_operand" "")
+		   (unspec:SI [(match_operand:DI 1 "even_acc_operand" "")]
 			      UNSPEC_MADDACC))
-	      (set (match_operand:HI 2 "accg_operand" "")
-		   (unspec:HI [(match_dup 2)
-			       (match_operand:HI 3 "accg_operand" "")
+	      (set (match_operand:QI 2 "accg_operand" "")
+		   (unspec:QI [(match_operand:HI 3 "accg_operand" "")
 			       (match_dup 4)]
 			      UNSPEC_MADDACC))])]
   "TARGET_MEDIA_REV2"
   "operands[4] = GEN_INT (FRV_BUILTIN_MADDACCS);")
 
 (define_expand "msubaccs"
-  [(parallel [(set (match_operand:DI 0 "even_acc_operand" "")
-		   (unspec:DI [(match_dup 0)
-			       (match_operand:DI 1 "even_acc_operand" "")]
+  [(parallel [(set (match_operand:SI 0 "acc_operand" "")
+		   (unspec:SI [(match_operand:DI 1 "even_acc_operand" "")]
 			      UNSPEC_MADDACC))
-	      (set (match_operand:HI 2 "accg_operand" "")
-		   (unspec:HI [(match_dup 2)
-			       (match_operand:HI 3 "accg_operand" "")
+	      (set (match_operand:QI 2 "accg_operand" "")
+		   (unspec:QI [(match_operand:HI 3 "accg_operand" "")
 			       (match_dup 4)]
 			      UNSPEC_MADDACC))])]
   "TARGET_MEDIA_REV2"
   "operands[4] = GEN_INT (FRV_BUILTIN_MSUBACCS);")
 
-(define_expand "masaccs"
-  [(parallel [(set (match_operand:DI 0 "even_acc_operand" "")
-		   (unspec:DI [(match_dup 0)
-			       (match_operand:DI 1 "even_acc_operand" "")]
-			      UNSPEC_MADDACC))
-	      (set (match_operand:HI 2 "accg_operand" "")
-		   (unspec:HI [(match_dup 2)
-			       (match_operand:HI 3 "accg_operand" "")
-			       (match_dup 4)]
-			      UNSPEC_MADDACC))])]
+(define_insn "masaccs"
+  [(set (match_operand:DI 0 "even_acc_operand" "=b")
+	(unspec:DI [(match_operand:DI 1 "even_acc_operand" "b")]
+		   UNSPEC_MASACCS))
+   (set (match_operand:HI 2 "accg_operand" "=B")
+	(unspec:HI [(match_operand:HI 3 "accg_operand" "B")]
+		   UNSPEC_MASACCS))]
   "TARGET_MEDIA_REV2"
-  "operands[4] = GEN_INT (FRV_BUILTIN_MASACCS);")
+  "masaccs %1, %0"
+  [(set_attr "length" "4")
+   (set_attr "type" "maddacc")])
 
 (define_insn "*maddacc"
-  [(set (match_operand:DI 0 "even_acc_operand" "+b")
-	(unspec:DI [(match_dup 0)
-		    (match_operand:DI 1 "even_acc_operand" "b")]
+  [(set (match_operand:SI 0 "acc_operand" "=a")
+	(unspec:SI [(match_operand:DI 1 "even_acc_operand" "b")]
 		   UNSPEC_MADDACC))
-   (set (match_operand:HI 2 "accg_operand" "+B")
-	(unspec:HI [(match_dup 2)
-		    (match_operand:HI 3 "accg_operand" "B")
+   (set (match_operand:QI 2 "accg_operand" "=B")
+	(unspec:QI [(match_operand:HI 3 "accg_operand" "B")
 		    (match_operand:SI 4 "const_int_operand" "n")]
 		   UNSPEC_MADDACC))]
   "TARGET_MEDIA_REV2"
@@ -7782,7 +7777,6 @@
   default:		     break;
   case FRV_BUILTIN_MADDACCS: return \"maddaccs %1, %0\";
   case FRV_BUILTIN_MSUBACCS: return \"msubaccs %1, %0\";
-  case FRV_BUILTIN_MASACCS:  return \"masaccs %1, %0\";
   }
 
   fatal_insn (\"Bad media insn, maddacc\", insn);
@@ -7793,54 +7787,47 @@
 ;; Dual accumulator addition/subtraction: type "mdaddacc"
 
 (define_expand "mdaddaccs"
-  [(parallel [(set (match_operand:V4SI 0 "quad_acc_operand" "")
-		   (unspec:V4SI [(match_dup 0)
-				 (match_operand:V4SI 1 "quad_acc_operand" "")]
-				UNSPEC_MDADDACC))
-	      (set (match_operand:V4QI 2 "accg_operand" "")
-		   (unspec:V4QI [(match_dup 2)
-				 (match_operand:V4QI 3 "accg_operand" "")
-				 (match_dup 4)]
-				UNSPEC_MDADDACC))])]
+  [(parallel [(set (match_operand:DI 0 "even_acc_operand" "")
+		   (unspec:DI [(match_operand:V4SI 1 "quad_acc_operand" "")]
+			      UNSPEC_MDADDACC))
+	      (set (match_operand:HI 2 "accg_operand" "")
+		   (unspec:HI [(match_operand:V4QI 3 "accg_operand" "")
+			       (match_dup 4)]
+			      UNSPEC_MDADDACC))])]
   "TARGET_MEDIA_REV2"
   "operands[4] = GEN_INT (FRV_BUILTIN_MDADDACCS);")
 
 (define_expand "mdsubaccs"
-  [(parallel [(set (match_operand:V4SI 0 "quad_acc_operand" "")
-		   (unspec:V4SI [(match_dup 0)
-				 (match_operand:V4SI 1 "quad_acc_operand" "")]
-				UNSPEC_MDADDACC))
-	      (set (match_operand:V4QI 2 "accg_operand" "")
-	      	   (unspec:V4QI [(match_dup 2)
-				 (match_operand:V4QI 3 "accg_operand" "")
-				 (match_dup 4)]
-				UNSPEC_MDADDACC))])]
+  [(parallel [(set (match_operand:DI 0 "even_acc_operand" "")
+		   (unspec:DI [(match_operand:V4SI 1 "quad_acc_operand" "")]
+			      UNSPEC_MDADDACC))
+	      (set (match_operand:HI 2 "accg_operand" "")
+	      	   (unspec:HI [(match_operand:V4QI 3 "accg_operand" "")
+			       (match_dup 4)]
+			      UNSPEC_MDADDACC))])]
   "TARGET_MEDIA_REV2"
   "operands[4] = GEN_INT (FRV_BUILTIN_MDSUBACCS);")
 
-(define_expand "mdasaccs"
-  [(parallel [(set (match_operand:V4SI 0 "quad_acc_operand" "")
-		   (unspec:V4SI [(match_dup 0)
-				 (match_operand:V4SI 1 "quad_acc_operand" "")]
-				UNSPEC_MDADDACC))
-	      (set (match_operand:V4QI 2 "accg_operand" "")
-		   (unspec:V4QI [(match_dup 2)
-			         (match_operand:V4QI 3 "accg_operand" "")
-				 (match_dup 4)]
-			        UNSPEC_MDADDACC))])]
+(define_insn "mdasaccs"
+  [(set (match_operand:V4SI 0 "quad_acc_operand" "=A")
+	(unspec:V4SI [(match_operand:V4SI 1 "quad_acc_operand" "A")]
+		     UNSPEC_MDASACCS))
+   (set (match_operand:V4QI 2 "accg_operand" "=B")
+	(unspec:V4QI [(match_operand:V4QI 3 "accg_operand" "B")]
+		     UNSPEC_MDASACCS))]
   "TARGET_MEDIA_REV2"
-  "operands[4] = GEN_INT (FRV_BUILTIN_MDASACCS);")
+  "mdasaccs %1, %0"
+  [(set_attr "length" "4")
+   (set_attr "type" "mdaddacc")])
 
 (define_insn "*mdaddacc"
-  [(set (match_operand:V4SI 0 "quad_acc_operand" "+A")
-	(unspec:V4SI [(match_dup 0)
-		      (match_operand:V4SI 1 "quad_acc_operand" "A")]
-		     UNSPEC_MDADDACC))
-   (set (match_operand:V4QI 2 "accg_operand" "+B")
-	(unspec:V4QI [(match_dup 2)
-		      (match_operand:V4QI 3 "accg_operand" "B")
-		      (match_operand:SI 4 "const_int_operand" "n")]
-		     UNSPEC_MDADDACC))]
+  [(set (match_operand:DI 0 "even_acc_operand" "=b")
+	(unspec:DI [(match_operand:V4SI 1 "quad_acc_operand" "A")]
+		   UNSPEC_MDADDACC))
+   (set (match_operand:HI 2 "accg_operand" "=B")
+	(unspec:HI [(match_operand:V4QI 3 "accg_operand" "B")
+		    (match_operand:SI 4 "const_int_operand" "n")]
+		   UNSPEC_MDADDACC))]
   "TARGET_MEDIA_REV2"
   "*
 {
@@ -7849,7 +7836,6 @@
   default:		      break;
   case FRV_BUILTIN_MDADDACCS: return \"mdaddaccs %1, %0\";
   case FRV_BUILTIN_MDSUBACCS: return \"mdsubaccs %1, %0\";
-  case FRV_BUILTIN_MDASACCS:  return \"mdasaccs %1, %0\";
   }
 
   fatal_insn (\"Bad media insn, mdaddacc\", insn);
