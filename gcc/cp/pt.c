@@ -12131,7 +12131,7 @@ build_non_dependent_expr (tree expr)
      There is at least one place where we want to know that a
      particular expression is a throw-expression: when checking a ?:
      expression, there are special rules if the second or third
-     argument is a throw-expresion.  */
+     argument is a throw-expression.  */
   if (TREE_CODE (expr) == THROW_EXPR)
     return expr;
 
