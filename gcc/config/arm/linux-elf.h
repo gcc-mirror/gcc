@@ -43,10 +43,10 @@ Boston, MA 02111-1307, USA.  */
 #else	/* default is APCS-26 */
 # define TARGET_DEFAULT (ARM_FLAG_MMU_TRAPS)
 # ifdef SUBTARGET_OLD_LINKER
-#  define SUBTARGET_LINK_SPEC	\
+#  define SUBTARGET_EXTRA_LINK_SPEC	\
 	" %{mapcs-32:-m elf32arm} %{!mapcs-32:-m elf32arm26}"
 # else	/* new linker */
-#  define SUBTARGET_LINK_SPEC	\
+#  define SUBTARGET_EXTRA_LINK_SPEC	\
 	" %{mapcs-32:-m armelf_linux} %{!mapcs-32:-m armelf_linux26} -p"
 # endif
 # define SUBTARGET_EXTRA_ASM_SPEC	\
