@@ -1,3 +1,21 @@
+2003-10-26  Daniel Berlin  <dberlin@dberlin.org>
+
+	* ggc-zone.c:  New file, zone allocating collector.
+	* configure: Accept zone option for --with-gc
+	* configure.in: Ditto.
+	* ggc.h (ggc_pch_count_object): Pass bool indicating
+	stringiness. Update all callers.
+	(ggc_pch_alloc_object): Ditto.
+	(ggc_pch_write_object): Ditto.
+	(ggc_alloc_rtx): Use typed allocation, since all RTX's are of a single
+	type.
+	(ggc_alloc_rtvec): Ditto.
+	(ggc_alloc_tree): Use zone allocation, since some things using this macro
+	aren't a single typecode.
+	* ggc-none.c (ggc_alloc_typed): New function.
+	(ggc_alloc_zone): Ditto.
+	* ggc-page.c: Ditto on both functions.
+
 2003-10-26  Gunther Nikl  <gni@gecko.de>
 
 	* config/m68k/m68k.c (m68k_compute_frame_layout): Ensure FPU related

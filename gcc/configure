@@ -83,7 +83,7 @@ ac_help="$ac_help
                           use KEY instead of GCC version as the last portion
                           of the registry key"
 ac_help="$ac_help
-  --with-gc={simple,page} choose the garbage collection mechanism to use
+  --with-gc={simple,page,zone} choose the garbage collection mechanism to use
                           with the compiler"
 ac_help="$ac_help
   --with-system-zlib      use installed libz"
@@ -7609,7 +7609,7 @@ fi
 if test "${with_gc+set}" = set; then
   withval="$with_gc"
   case "$withval" in
-  simple | page)
+  simple | page | zone)
     GGC=ggc-$withval
     ;;
   *)

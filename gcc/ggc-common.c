@@ -328,7 +328,7 @@ call_count (void **slot, void *state_p)
   struct ptr_data *d = (struct ptr_data *)*slot;
   struct traversal_state *state = (struct traversal_state *)state_p;
 
-  ggc_pch_count_object (state->d, d->obj, d->size);
+  ggc_pch_count_object (state->d, d->obj, d->size, d->note_ptr_fn == gt_pch_p_S);
   state->count++;
   return 1;
 }
@@ -339,7 +339,7 @@ call_alloc (void **slot, void *state_p)
   struct ptr_data *d = (struct ptr_data *)*slot;
   struct traversal_state *state = (struct traversal_state *)state_p;
 
-  d->new_addr = ggc_pch_alloc_object (state->d, d->obj, d->size);
+  d->new_addr = ggc_pch_alloc_object (state->d, d->obj, d->size, d->note_ptr_fn == gt_pch_p_S);
   state->ptrs[state->ptrs_i++] = d;
   return 1;
 }
@@ -524,7 +524,7 @@ gt_pch_save (FILE *f)
 				  state.ptrs[i]->note_ptr_cookie,
 				  relocate_ptrs, &state);
       ggc_pch_write_object (state.d, state.f, state.ptrs[i]->obj,
-			    state.ptrs[i]->new_addr, state.ptrs[i]->size);
+			    state.ptrs[i]->new_addr, state.ptrs[i]->size, state.ptrs[i]->note_ptr_fn == gt_pch_p_S);
       if (state.ptrs[i]->note_ptr_fn != gt_pch_p_S)
 	memcpy (state.ptrs[i]->obj, this_object, state.ptrs[i]->size);
     }
