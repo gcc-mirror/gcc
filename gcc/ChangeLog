@@ -1,5 +1,16 @@
 2004-02-19  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* hooks.c (hook_void_tree_int): Remove.
+	(hook_void_constcharptr): Likewise.
+	(hook_int_void_0): Likewise.
+	* hooks.h: Remove the prototypes for the above three
+	functions.
+	* targhooks.c (hook_bool_machine_mode_true): Remove.
+	* targhooks.h: Remove the prototype for
+	hook_bool_machine_mode_true.
+
+2004-02-19  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* emit-rtl.c (subreg_realpart_p): Remove.
 	(reorder_insns_with_line_notes): Likewise.
 	(end_full_sequence): Likewise.

@@ -31,4 +31,3 @@ extern bool hook_bool_CUMULATIVE_ARGS_false (CUMULATIVE_ARGS *);
 extern bool default_pretend_outgoing_varargs_named (CUMULATIVE_ARGS *);
 
 extern bool hook_bool_CUMULATIVE_ARGS_true (CUMULATIVE_ARGS *);
-extern bool hook_bool_machine_mode_true (enum machine_mode);

@@ -55,21 +55,9 @@ hook_bool_bool_false (bool a ATTRIBUTE_UNUSED)
   return false;
 }
 
-
-/* Generic hook that takes (tree, int) and does nothing.  */
-void
-hook_void_tree_int (tree a ATTRIBUTE_UNUSED, int b ATTRIBUTE_UNUSED)
-{
-}
-
 /* Generic hook that takes (FILE *, const char *) and does nothing.  */
 void
 hook_void_FILEptr_constcharptr (FILE *a ATTRIBUTE_UNUSED, const char *b ATTRIBUTE_UNUSED)
-{
-}
-
-void
-hook_void_constcharptr (const char *a ATTRIBUTE_UNUSED)
 {
 }
 
@@ -117,12 +105,6 @@ hook_int_tree_tree_1 (tree a ATTRIBUTE_UNUSED, tree b ATTRIBUTE_UNUSED)
 
 int
 hook_int_rtx_0 (rtx a ATTRIBUTE_UNUSED)
-{
-  return 0;
-}
-
-int
-hook_int_void_0 (void)
 {
   return 0;
 }
