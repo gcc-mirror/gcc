@@ -68,6 +68,11 @@ Boston, MA 02111-1307, USA.  */
 #include "target.h"
 #include "debug.h"
 
+#ifdef XCOFF_DEBUGGING_INFO
+#include "xcoffout.h"		/* Needed for external data
+				   declarations for e.g. AIX 4.x.  */
+#endif
+
 #if defined (DWARF2_UNWIND_INFO) || defined (DWARF2_DEBUGGING_INFO)
 #include "dwarf2out.h"
 #endif
