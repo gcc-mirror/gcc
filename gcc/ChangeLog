@@ -1,5 +1,7 @@
 2003-03-21  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* config.gcc: Remove 'float_format'.
+
 	* fixproto: Define NULL and size_t in generated stdlib.h and
 	unistd.h.  Kill unused required_stdlib_h, required_unistd_h.
 	Rearrange file generation loop for readability.  Generate time.h,

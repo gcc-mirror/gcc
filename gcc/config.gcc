@@ -1287,7 +1287,6 @@ i[34567]86-*-pe | i[34567]86-*-cygwin*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/cygming.h i386/cygwin.h"
 	xm_file=i386/xm-cygwin.h
 	tmake_file="i386/t-cygming i386/t-cygwin"
-	float_format=i386
 	extra_objs=winnt.o
 	c_target_objs=cygwin2.o
 	cxx_target_objs=cygwin2.o
@@ -1300,7 +1299,6 @@ i[34567]86-*-mingw32*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/cygming.h i386/mingw32.h"
 	xm_file=i386/xm-mingw32.h
 	tmake_file="i386/t-cygming i386/t-mingw32"
-	float_format=i386
 	extra_objs=winnt.o
 	if test x$enable_threads = xyes; then
 		thread_file='win32'
@@ -2544,7 +2542,6 @@ vax-*-sysv*)			# VAXen running system V
 	;;
 vax-*-netbsdelf*)
 	tm_file="${tm_file} elfos.h netbsd.h netbsd-elf.h vax/elf.h vax/netbsd-elf.h"
-	float_format=vax
 	;;
 vax-*-netbsd*)
 	tm_file="${tm_file} netbsd.h netbsd-aout.h vax/netbsd.h"
