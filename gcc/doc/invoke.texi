@@ -7336,8 +7336,6 @@ produce code that runs somewhat faster on a @samp{Pentium} at the
 expense of more memory.
 
 @item -m128bit-long-double
-@itemx -m128bit-long-double
-@opindex m128bit-long-double
 @opindex m128bit-long-double
 Control the size of @code{long double} type. i386 application binary interface
 specify the size to be 12 bytes, while modern architectures (Pentium and newer)
@@ -7350,8 +7348,6 @@ well as function calling convention for function taking @code{long double}
 will be modified.
 
 @item -m96bit-long-double
-@itemx -m96bit-long-double
-@opindex m96bit-long-double
 @opindex m96bit-long-double
 Set the size of @code{long double} to 96 bits as required by the i386
 application binary interface.  This is the default.
@@ -7363,14 +7359,6 @@ application binary interface.  This is the default.
 Control whether GCC places uninitialized locals into @code{bss} or
 @code{data}.  @option{-msvr3-shlib} places these locals into @code{bss}.
 These options are meaningful only on System V Release 3.
-
-@item -mno-wide-multiply
-@itemx -mwide-multiply
-@opindex mno-wide-multiply
-@opindex mwide-multiply
-Control whether GCC uses the @code{mul} and @code{imul} that produce
-64-bit results in @code{eax:edx} from 32-bit operands to do @code{long
-long} multiplies and 32-bit division by constants.
 
 @item -mrtd
 @opindex mrtd
@@ -7471,7 +7459,9 @@ may want to reduce the preferred alignment to
 @option{-mpreferred-stack-boundary=2}.
 
 @item -mpush-args
+@itemx -mno-push-args
 @opindex mpush-args
+@opindex mno-push-args
 Use PUSH operations to store outgoing parameters.  This method is shorter
 and usually equally fast as method using SUB/MOV operations and is enabled
 by default.  In some cases disabling it may improve performance because of
@@ -7480,7 +7470,7 @@ improved scheduling and reduced dependencies.
 @item -maccumulate-outgoing-args
 @opindex maccumulate-outgoing-args
 If enabled, the maximum amount of space required for outgoing arguments will be
-computed in the function prologue.  This in faster on most modern CPUs
+computed in the function prologue.  This is faster on most modern CPUs
 because of reduced dependencies, improved scheduling and reduced stack usage
 when preferred stack boundary is not equal to 2.  The drawback is a notable
 increase in code size.  This switch implies @option{-mno-push-args}.

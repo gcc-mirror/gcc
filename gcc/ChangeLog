@@ -1,3 +1,9 @@
+2001-09-05  Andreas Jaeger  <aj@suse.de>
+
+	* doc/invoke.texi (i386 Options): -mwide-multiply is not
+	available anymore, remove the documentation.
+	(i386 Options): Fix typo, cleanup index entries.
+
 2001-09-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* stor-layout.c (layout_type) [ARRAY_TYPE]: Copy elements
@@ -80,7 +86,7 @@ Thu Aug 30 16:00:31 2001  J"orn Rennecke <amylaar@redhat.com>
 
 2001-08-17  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
-	* doc/invoke.texi (Optimize Options): The default for 
+	* doc/invoke.texi (Optimize Options): The default for
 	-finline-limit is 600.
 
 2001-08-16  Joel Sherrill <joel@OARcorp.com>
@@ -93,7 +99,7 @@ Thu Aug 30 16:00:31 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* config/s390/linux64.h (CPP_PREDEFINES): Define __s390__
 	also on 64-bit s390x targets.
- 
+
 2001-08-14  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi (Specific, avr): Fix markup.
@@ -128,18 +134,18 @@ Thu Aug 30 16:00:31 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* doc/install.texi (Specific, c4x): Fix cross-reference to the
 	main manual to work both for info and HTML versions.
-	
-2001-08-10  Ulrich Weigand  <uweigand@de.ibm.com>
- 
- 	* glimits.h (__LONG_MAX__): Add s390x as 64-bit architecture.
 
- 	* config/s390/s390.c (legitimize_pic_address): Don't generate
+2001-08-10  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* glimits.h (__LONG_MAX__): Add s390x as 64-bit architecture.
+
+	* config/s390/s390.c (legitimize_pic_address): Don't generate
 	unnecessary moves (to avoid confusing loop optimization).
- 	(check_and_change_labels): Replace jump_long by indirect_jump.
-	(s390_final_chunkify): Don't start a new literal pool on section 
+	(check_and_change_labels): Replace jump_long by indirect_jump.
+	(s390_final_chunkify): Don't start a new literal pool on section
 	switch in 64-bit code.
 	(s390_va_start, s390_va_arg): Fixed incorrect sizes for 64-bit.
-	
+
 	* config/s390/s390.h (HARD_REGNO_MODE_OK, RETURN_IN_MEMORY):
 	Support complex integer modes correctly.
 	(reg_class, REG_CLASS_NAMES, REG_CLASS_CONTENTS): Remove CC_REGS.
@@ -148,8 +154,8 @@ Thu Aug 30 16:00:31 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* config/s390/s390.md (divsi3, modsi3): Clobber low word of
 	divmoddisi3 before shifting (to avoid confusing flow analysis).
-	(cjump_long, icjump_long, jump_long, indirect_jump, casesi_jump): 
-	Never use "address_operand" without "p" or "memory_operand" 
+	(cjump_long, icjump_long, jump_long, indirect_jump, casesi_jump):
+	Never use "address_operand" without "p" or "memory_operand"
 	without mode.
 	(builtin_setjmp_setup, builtin_setjmp_receiver, builtin_longjmp):
 	Fixed broken setjmp/longjmp handling.
@@ -225,7 +231,7 @@ Thu Aug 30 16:00:31 2001  J"orn Rennecke <amylaar@redhat.com>
 
 2001-08-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
-	* config/m68hc11/m68hc11.md ("cmphi_1", "cmpqi_1"): Allow memory 
+	* config/m68hc11/m68hc11.md ("cmphi_1", "cmpqi_1"): Allow memory
 	and soft register for operand 0.
 	("cmphi_z_used", "cmpqi_z_used"): Allow memory for operand 0.
 
@@ -266,22 +272,22 @@ Thu Aug 30 16:00:31 2001  J"orn Rennecke <amylaar@redhat.com>
 	(DTORS_SECTION_FUNCTION): Likewise for __do_global_dtors.
 
 2001-08-03  Ulrich Weigand  <uweigand@de.ibm.com>
- 
- 	* config.gcc (s390-*-linux*, s390x-*-linux*): Added.
- 	* doc/install.texi: Add s390 and s390x targets.
- 	* doc/invoke.texi: Add s390 and s390x target options.
- 	* doc/md.texi: Add s390 and s390x extra constraints.
- 	* config/s390/s390.c: New. Subroutines for code generation.
- 	* config/s390/s390.h: New. Definitions for S/390.
- 	* config/s390/s390-protos.h: New. Prototypes.
- 	* config/s390/linux.h: New. Definitions for Linux for S/390.
- 	* config/s390/linux64.h: New. Definitions for Linux for zSeries.
- 	* config/s390/t-linux: New. Makefile fragment.
- 	* config/s390/s390.md: New. Machine description for S/390 and zSeries.
- 	* config/s390/xm-390.h: New. Host definitions for S/390.
- 	* config/s390/xm-390x.h: New. Host definitions for zSeries.
- 	* config/s390/fixdfdi.h: New. Fix L_fix*di.
- 
+
+	* config.gcc (s390-*-linux*, s390x-*-linux*): Added.
+	* doc/install.texi: Add s390 and s390x targets.
+	* doc/invoke.texi: Add s390 and s390x target options.
+	* doc/md.texi: Add s390 and s390x extra constraints.
+	* config/s390/s390.c: New. Subroutines for code generation.
+	* config/s390/s390.h: New. Definitions for S/390.
+	* config/s390/s390-protos.h: New. Prototypes.
+	* config/s390/linux.h: New. Definitions for Linux for S/390.
+	* config/s390/linux64.h: New. Definitions for Linux for zSeries.
+	* config/s390/t-linux: New. Makefile fragment.
+	* config/s390/s390.md: New. Machine description for S/390 and zSeries.
+	* config/s390/xm-390.h: New. Host definitions for S/390.
+	* config/s390/xm-390x.h: New. Host definitions for zSeries.
+	* config/s390/fixdfdi.h: New. Fix L_fix*di.
+
 2001-08-03  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
 
 	* cpplex.c (parse_string): Warn once per string.
@@ -292,7 +298,7 @@ Thu Aug 30 16:00:31 2001  J"orn Rennecke <amylaar@redhat.com>
 	* doc/install.texi (Configuration): Fix markup.
 	(Specific, i?86-*-udk): Likewise.
 	(Specific, alpha*-dec-osf*): Warn against --with-gnu-as,
-	--with-gnu-ld. 
+	--with-gnu-ld.
 	Document --enable-threads and --enable-libgcj status.
 	(Specific, mips-sgi-irix*): Canonicalize triples.
 	(Specific, mips-sgi-irix5): Warn about problems with this config.
@@ -324,9 +330,9 @@ Thu Aug 30 16:00:31 2001  J"orn Rennecke <amylaar@redhat.com>
 
 2001-08-01  Hartmut Penner  <hpenner@de.ibm.com>
 
-	* varasm.c (decode_rtx_const): Allow unspec (symbol_ref) in 
+	* varasm.c (decode_rtx_const): Allow unspec (symbol_ref) in
 	constant pool to be identical by string address and index.
-	
+
 2001-08-01  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* params.def (PARAM_MAX_INLINE_INSNS): Change default to 600.
