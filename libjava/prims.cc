@@ -328,16 +328,22 @@ _Jv_NewObjectArray (jsize count, jclass elementClass, jobject init)
   if (count < 0)
     JvThrow (new java::lang::NegativeArraySizeException);
 
+  JvAssert (! elementClass->isPrimitive ());
+
+  jobjectArray obj = NULL;
+  size_t size = (size_t) _Jv_GetArrayElementFromElementType (obj,
+							     elementClass);
+
   // Check for overflow.
-  if ((size_t) count > (SIZE_T_MAX - sizeof (__JArray)) / sizeof (jobject))
+  if ((size_t) count > (SIZE_T_MAX - size) / sizeof (jobject))
     JvThrow (no_memory);
 
-  size_t size = count * sizeof (jobject) + sizeof (__JArray);
+  size += count * sizeof (jobject);
 
   // FIXME: second argument should be "current loader" //
   jclass clas = _Jv_FindArrayClass (elementClass, 0);
 
-  jobjectArray obj = (jobjectArray) _Jv_AllocArray (size);
+  obj = (jobjectArray) _Jv_AllocArray (size);
   if (! obj)
     JvThrow (no_memory);
   obj->length = count;
@@ -365,12 +371,15 @@ _Jv_NewPrimArray (jclass eltype, jint count)
   if (count < 0)
     JvThrow (new java::lang::NegativeArraySizeException ());
 
+  JvAssert (eltype->isPrimitive ());
+  jobject dummy = NULL;
+  size_t size = (size_t) _Jv_GetArrayElementFromElementType (dummy, eltype);
+
   // Check for overflow.
-  if ((size_t) count > (SIZE_T_MAX - sizeof (__JArray)) / elsize)
+  if ((size_t) count > (SIZE_T_MAX - size) / elsize)
     JvThrow (no_memory);
 
-  __JArray *arr = (__JArray*) _Jv_AllocObj (sizeof (__JArray)
-					    + elsize * count);
+  __JArray *arr = (__JArray*) _Jv_AllocObj (size + elsize * count);
   if (! arr)
     JvThrow (no_memory);
   arr->length = count;

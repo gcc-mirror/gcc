@@ -114,6 +114,36 @@ _Jv_HashCode (jobject obj)
   return (jint) obj;
 }
 
+// Return a raw pointer to the elements of an array given the array
+// and its element type.  You might think we could just pick a single
+// array type and use elements() on it, but we can't because we must
+// account for alignment of the element type.
+inline char *
+_Jv_GetArrayElementFromElementType (jobject array,
+				    jclass element_type)
+{
+  char *elts;
+  if (element_type == JvPrimClass (byte))
+    elts = (char *) elements ((jbyteArray) array);
+  else if (element_type == JvPrimClass (short))
+    elts = (char *) elements ((jshortArray) array);
+  else if (element_type == JvPrimClass (int))
+    elts = (char *) elements ((jintArray) array);
+  else if (element_type == JvPrimClass (long))
+    elts = (char *) elements ((jlongArray) array);
+  else if (element_type == JvPrimClass (boolean))
+    elts = (char *) elements ((jbooleanArray) array);
+  else if (element_type == JvPrimClass (char))
+    elts = (char *) elements ((jcharArray) array);
+  else if (element_type == JvPrimClass (float))
+    elts = (char *) elements ((jfloatArray) array);
+  else if (element_type == JvPrimClass (double))
+    elts = (char *) elements ((jdoubleArray) array);
+  else
+    elts = (char *) elements ((jobjectArray) array);
+  return elts;
+}
+
 extern "C" void _Jv_ThrowBadArrayIndex (jint bad_index);
 extern "C" jobject _Jv_NewArray (jint type, jint size);
 extern "C" jobject _Jv_NewMultiArray (jclass klass, jint dims, ...);

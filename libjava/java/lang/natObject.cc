@@ -84,7 +84,10 @@ java::lang::Object::clone (void)
 	  r = _Jv_NewObjectArray (array->length, comp, NULL);
 	  eltsize = sizeof (jobject);
 	}
-      size = sizeof (__JArray) + array->length * eltsize;
+      // We can't use sizeof on __JArray because we must account for
+      // alignment of the element type.
+      size = (_Jv_GetArrayElementFromElementType (array, comp) - (char *) array
+	      + array->length * eltsize);
     }
   else
     {
