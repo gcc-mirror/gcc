@@ -1729,7 +1729,7 @@ jump_back_p (insn, target)
 	  && rtx_renumbered_equal_p (XEXP (cinsn, 1), XEXP (ctarget, 1)));
 }
 
-/* Given a comparison (CODE ARG0 ARG1), inside a insn, INSN, return an code
+/* Given a comparison (CODE ARG0 ARG1), inside an insn, INSN, return a code
    of reversed comparison if it is possible to do so.  Otherwise return UNKNOWN.
    UNKNOWN may be returned in case we are having CC_MODE compare and we don't
    know whether it's source is floating point or integer comparison.  Machine
@@ -1764,7 +1764,7 @@ reversed_comparison_code_parts (code, arg0, arg1, insn)
 	}
 #endif
 
-  /* Try few special cases based on the comparison code.  */
+  /* Try a few special cases based on the comparison code.  */
   switch (code)
     {
       case GEU:

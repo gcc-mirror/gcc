@@ -1,3 +1,7 @@
+2001-07-13  Kazu Hirata  <kazu@hxi.com>
+
+	* jump.c (reversed_comparison_code_parts): Fix comment typos.
+
 2001-07-13  Marc Espie  <espie@cvs.openbsd.org>
 
 	* config.gcc (*-*-openbsd*):  Add fragment to compile libgcc
