@@ -77,6 +77,7 @@ static int simple_operand_p PROTO((tree));
 static tree range_test	PROTO((enum tree_code, tree, enum tree_code,
 			       enum tree_code, tree, tree, tree));
 static tree fold_truthop PROTO((enum tree_code, tree, tree, tree));
+static tree strip_compound_expr PROTO((tree, tree));
 
 #ifndef BRANCH_COST
 #define BRANCH_COST 1
@@ -3093,6 +3094,43 @@ fold_truthop (code, truth_type, lhs, rhs)
 		const_binop (BIT_IOR_EXPR, l_const, r_const, 0));
 }
 
+/* If T contains a COMPOUND_EXPR which was inserted merely to evaluate
+   S, a SAVE_EXPR, return the expression actually being evaluated.   Note
+   that we may sometimes modify the tree.  */
+
+static tree
+strip_compound_expr (t, s)
+     tree t;
+     tree s;
+{
+  tree type = TREE_TYPE (t);
+  enum tree_code code = TREE_CODE (t);
+
+  /* See if this is the COMPOUND_EXPR we want to eliminate.  */
+  if (code == COMPOUND_EXPR && TREE_CODE (TREE_OPERAND (t, 0)) == CONVERT_EXPR
+      && TREE_OPERAND (TREE_OPERAND (t, 0), 0) == s)
+    return TREE_OPERAND (t, 1);
+
+  /* See if this is a COND_EXPR or a simple arithmetic operator.   We
+     don't bother handling any other types.  */
+  else if (code == COND_EXPR)
+    {
+      TREE_OPERAND (t, 0) = strip_compound_expr (TREE_OPERAND (t, 0), s);
+      TREE_OPERAND (t, 1) = strip_compound_expr (TREE_OPERAND (t, 1), s);
+      TREE_OPERAND (t, 2) = strip_compound_expr (TREE_OPERAND (t, 2), s);
+    }
+  else if (TREE_CODE_CLASS (code) == '1')
+    TREE_OPERAND (t, 0) = strip_compound_expr (TREE_OPERAND (t, 0), s);
+  else if (TREE_CODE_CLASS (code) == '<'
+	   || TREE_CODE_CLASS (code) == '2')
+    {
+      TREE_OPERAND (t, 0) = strip_compound_expr (TREE_OPERAND (t, 0), s);
+      TREE_OPERAND (t, 1) = strip_compound_expr (TREE_OPERAND (t, 1), s);
+    }
+
+  return t;
+}
+
 /* Perform constant folding and related simplification of EXPR.
    The related simplifications include x*1 => x, x*0 => 0, etc.,
    and application of the associative law.
@@ -3328,8 +3366,10 @@ fold (expr)
 	     SAVE_EXPR interfers with later optimizations, suppressing
 	     it when we can is important.  */
 
-	  if ((TREE_CODE (arg0) != VAR_DECL && TREE_CODE (arg0) != PARM_DECL)
-	      || TREE_SIDE_EFFECTS (arg0))
+	  if (TREE_CODE (arg0) != SAVE_EXPR
+	      && ((TREE_CODE (arg0) != VAR_DECL
+		   && TREE_CODE (arg0) != PARM_DECL)
+		  || TREE_SIDE_EFFECTS (arg0)))
 	    {
 	      tree lhs = fold (build (code, type, arg0, true_value));
 	      tree rhs = fold (build (code, type, arg0, false_value));
@@ -3345,7 +3385,8 @@ fold (expr)
 			      fold (build (code, type, arg0, false_value))));
 	  if (TREE_CODE (arg0) == SAVE_EXPR)
 	    return build (COMPOUND_EXPR, type,
-			  convert (void_type_node, arg0), test);
+			  convert (void_type_node, arg0),
+			  strip_compound_expr (test, arg0));
 	  else
 	    return convert (type, test);
 	}
@@ -3371,8 +3412,10 @@ fold (expr)
 	      false_value = integer_zero_node;
 	    }
 
-	  if ((TREE_CODE (arg1) != VAR_DECL && TREE_CODE (arg1) != PARM_DECL)
-	      || TREE_SIDE_EFFECTS (arg1))
+	  if (TREE_CODE (arg1) != SAVE_EXPR
+	      && ((TREE_CODE (arg1) != VAR_DECL
+		   && TREE_CODE (arg1) != PARM_DECL)
+		  || TREE_SIDE_EFFECTS (arg1)))
 	    {
 	      tree lhs = fold (build (code, type, true_value, arg1));
 	      tree rhs = fold (build (code, type, false_value, arg1));
@@ -3388,7 +3431,8 @@ fold (expr)
 			      fold (build (code, type, false_value, arg1))));
 	  if (TREE_CODE (arg1) == SAVE_EXPR)
 	    return build (COMPOUND_EXPR, type,
-			  convert (void_type_node, arg1), test);
+			  convert (void_type_node, arg1),
+			  strip_compound_expr (test, arg1));
 	  else
 	    return convert (type, test);
 	}
