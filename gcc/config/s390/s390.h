@@ -1034,39 +1034,9 @@ extern int s390_nr_constants;
 #define ASM_OUTPUT_SPECIAL_POOL_ENTRY(FILE, EXP, MODE, ALIGN, LABELNO, WIN) \
 {									    \
   fprintf (FILE, ".LC%d:\n", LABELNO);					    \
-									    \
-  /* Output the value of the constant itself.  */			    \
-  switch (GET_MODE_CLASS (MODE))					    \
-    {									    \
-    case MODE_FLOAT:							    \
-      if (GET_CODE (EXP) != CONST_DOUBLE)				    \
-	abort ();							    \
-									    \
-      REAL_VALUE_FROM_CONST_DOUBLE (r, EXP);				    \
-      assemble_real (r, MODE, ALIGN);					    \
-      break;								    \
-									    \
-    case MODE_INT:							    \
-    case MODE_PARTIAL_INT:						    \
-      if (GET_CODE (EXP) == CONST					    \
-	  || GET_CODE (EXP) == SYMBOL_REF				    \
-	  || GET_CODE (EXP) == LABEL_REF)				    \
-        {								    \
-	  fputs (integer_asm_op (UNITS_PER_WORD, TRUE), FILE);		    \
-          s390_output_symbolic_const (FILE, EXP);			    \
-          fputc ('\n', (FILE));						    \
-	}								    \
-      else								    \
-	{								    \
-	  assemble_integer (EXP, GET_MODE_SIZE (MODE), ALIGN, 1);	    \
-	  if (GET_MODE_SIZE (MODE) == 1)				    \
-	    ASM_OUTPUT_SKIP ((FILE), (unsigned HOST_WIDE_INT)1);	    \
-	}								    \
-      break;								    \
-									    \
-    default:								    \
-      abort ();								    \
-    }									    \
+  s390_output_pool_entry (FILE, EXP, MODE, ALIGN);			    \
+  if (GET_MODE_SIZE (MODE) == 1)					    \
+    ASM_OUTPUT_SKIP ((FILE), (unsigned HOST_WIDE_INT)1);		    \
   goto WIN;								    \
 }
 

@@ -1,3 +1,9 @@
+2003-08-26  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (emit_prologue): Don't check literal pool size.
+	* config/s390/s390.h (ASM_OUTPUT_SPECIAL_POOL_ENTRY): Call 
+	s390_output_pool_entry.
+
 2003-08-26  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* fixinc/inclhack.def (svr4_preproc_lint_on, 
