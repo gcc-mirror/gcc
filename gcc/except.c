@@ -3208,16 +3208,18 @@ default_exception_section (void)
   if (targetm.have_named_sections)
     {
       int flags;
-#ifdef HAVE_LD_RO_RW_SECTION_MIXING
-      int tt_format = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/0, /*global=*/1);
 
-      flags = (! flag_pic
-	       || ((tt_format & 0x70) != DW_EH_PE_absptr
-		   && (tt_format & 0x70) != DW_EH_PE_aligned))
-	      ? 0 : SECTION_WRITE;
-#else
-      flags = SECTION_WRITE;
-#endif
+      if (EH_TABLES_CAN_BE_READ_ONLY)
+	{
+	  int tt_format = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/0, /*global=*/1);
+	  
+	  flags = (! flag_pic
+		   || ((tt_format & 0x70) != DW_EH_PE_absptr
+		       && (tt_format & 0x70) != DW_EH_PE_aligned))
+	    ? 0 : SECTION_WRITE;
+	}
+      else
+	flags = SECTION_WRITE;
       named_section_flags (".gcc_except_table", flags);
     }
   else if (flag_pic)

@@ -1,3 +1,16 @@
+2004-11-24  Mark Mitchell  <mark@codesourcery.com>
+            Joseph Myers  <joseph@codesourcery.com>
+
+	* crtstuff.c (IN_LIBGCC2): Define it.
+	(EH_FRAME_SECTION_CONST): Check EH_TABLES_CAN_BE_READ_ONLY
+	instead of HAVE_LD_RO_RW_SECTION_MIXING.
+	* defaults.h (EH_TABLES_CAN_BE_READ_ONLY): New macro.
+	* dwarf2out.c (named_section_eh_frame_section): Check
+	EH_TABLES_CAN_BE_READ_ONLY.
+	* except.c (default_exception_section): Likewise.
+	* config/i386/sol2.h (EH_TABLES_CAN_BE_READ_ONLY): Define.
+	* doc/tm.texi (EH_TABLES_CAN_BE_READ_ONLY): Document.
+
 2004-11-24  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-ssa-pre.c (phi_translate): Use find_edge to find the

@@ -55,6 +55,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    compiled for the target, and hence definitions concerning only the host
    do not apply.  */
 
+#define IN_LIBGCC2
+
 /* We include auto-host.h here to get HAVE_GAS_HIDDEN.  This is
    supposedly valid even though this is a "target" file.  */
 #include "auto-host.h"
@@ -92,7 +94,7 @@ call_ ## FUNC (void)					\
 #if defined(EH_FRAME_SECTION_NAME) && !defined(USE_PT_GNU_EH_FRAME)
 # define USE_EH_FRAME_REGISTRY
 #endif
-#if defined(EH_FRAME_SECTION_NAME) && defined(HAVE_LD_RO_RW_SECTION_MIXING)
+#if defined(EH_FRAME_SECTION_NAME) && EH_TABLES_CAN_BE_READ_ONLY
 # define EH_FRAME_SECTION_CONST const
 #else
 # define EH_FRAME_SECTION_CONST

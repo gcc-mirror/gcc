@@ -7588,6 +7588,13 @@ Do not define this macro unless @code{TARGET_ASM_NAMED_SECTION} is
 also defined.
 @end defmac
 
+@defmac EH_TABLES_CAN_BE_READ_ONLY
+Define this macro to 1 if your target is such that no frame unwind
+information encoding used with non-PIC code will ever require a
+runtime relocation, but the linker may not support merging read-only
+and read-write sections into a single read-write section.
+@end defmac
+
 @defmac MASK_RETURN_ADDR
 An rtx used to mask the return address found via @code{RETURN_ADDR_RTX}, so
 that it does not contain any extraneous set bits in it.

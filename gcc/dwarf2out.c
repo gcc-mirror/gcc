@@ -121,24 +121,29 @@ void
 named_section_eh_frame_section (void)
 {
 #ifdef EH_FRAME_SECTION_NAME
-#ifdef HAVE_LD_RO_RW_SECTION_MIXING
-  int fde_encoding = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/1, /*global=*/0);
-  int per_encoding = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/2, /*global=*/1);
-  int lsda_encoding = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/0, /*global=*/0);
   int flags;
 
-  flags = (! flag_pic
-	   || ((fde_encoding & 0x70) != DW_EH_PE_absptr
-	       && (fde_encoding & 0x70) != DW_EH_PE_aligned
-	       && (per_encoding & 0x70) != DW_EH_PE_absptr
-	       && (per_encoding & 0x70) != DW_EH_PE_aligned
-	       && (lsda_encoding & 0x70) != DW_EH_PE_absptr
-	       && (lsda_encoding & 0x70) != DW_EH_PE_aligned))
-	  ? 0 : SECTION_WRITE;
+  if (EH_TABLES_CAN_BE_READ_ONLY)
+    {
+      int fde_encoding;
+      int per_encoding;
+      int lsda_encoding;
+
+      fde_encoding = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/1, /*global=*/0);
+      per_encoding = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/2, /*global=*/1);
+      lsda_encoding = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/0, /*global=*/0);
+      flags = (! flag_pic
+	       || ((fde_encoding & 0x70) != DW_EH_PE_absptr
+		   && (fde_encoding & 0x70) != DW_EH_PE_aligned
+		   && (per_encoding & 0x70) != DW_EH_PE_absptr
+		   && (per_encoding & 0x70) != DW_EH_PE_aligned
+		   && (lsda_encoding & 0x70) != DW_EH_PE_absptr
+		   && (lsda_encoding & 0x70) != DW_EH_PE_aligned))
+	      ? 0 : SECTION_WRITE;
+    }
+  else
+    flags = SECTION_WRITE;
   named_section_flags (EH_FRAME_SECTION_NAME, flags);
-#else
-  named_section_flags (EH_FRAME_SECTION_NAME, SECTION_WRITE);
-#endif
 #endif
 }
 
