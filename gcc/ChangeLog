@@ -1,4 +1,8 @@
-Fri Sep 29 13:37:59 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+Fri Sep 29 10:04:12 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* version.c: Bump to gcc-2.97.
+
+Frs Sep 29 13:37:59 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* final.c (final_scan_insn): Remove extra extract_insn call;
 	Use caching for constrain_operands.
