@@ -1,3 +1,8 @@
+2001-04-07  Tom Tromey  <tromey@redhat.com>
+
+	* libjava.compile/weirddecl.xfail: Removed xfail-*.
+	* libjava.compile/PR374.xfail: Removed.
+
 2001-03-29  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* libjava.lang/instinit2.out: Fixed.
