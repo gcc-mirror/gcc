@@ -373,6 +373,9 @@ get_typeid (type)
   if (type == error_mark_node)
     return error_mark_node;
   
+  if (processing_template_decl)
+    return build_min_nt (TYPEID_EXPR, type);
+
   /* If the type of the type-id is a reference type, the result of the
      typeid expression refers to a type_info object representing the
      referenced type.  */
@@ -652,7 +655,7 @@ expand_si_desc (tdecl, type)
 {
   tree t, elems, fn;
   char *name = build_overload_name (type, 1, 1);
-  tree name_string = combine_strings (build_string (strlen (name), name));
+  tree name_string = combine_strings (build_string (strlen (name)+1, name));
 
   type = BINFO_TYPE (TREE_VEC_ELT (TYPE_BINFO_BASETYPES (type), 0));
   expand_expr_stmt (get_typeid_1 (type));
@@ -825,7 +828,7 @@ expand_class_desc (tdecl, type)
 #endif
 
   name = build_overload_name (type, 1, 1);
-  name_string = combine_strings (build_string (strlen (name), name));
+  name_string = combine_strings (build_string (strlen (name)+1, name));
 
   {
     tree arrtype = build_array_type (base_info_type_node, NULL_TREE);
@@ -877,7 +880,7 @@ expand_ptr_desc (tdecl, type)
 {
   tree t, elems, fn;
   char *name = build_overload_name (type, 1, 1);
-  tree name_string = combine_strings (build_string (strlen (name), name));
+  tree name_string = combine_strings (build_string (strlen (name)+1, name));
 
   type = TREE_TYPE (type);
   expand_expr_stmt (get_typeid_1 (type));
@@ -924,7 +927,7 @@ expand_attr_desc (tdecl, type)
 {
   tree elems, t, fn;
   char *name = build_overload_name (type, 1, 1);
-  tree name_string = combine_strings (build_string (strlen (name), name));
+  tree name_string = combine_strings (build_string (strlen (name)+1, name));
   tree attrval = build_int_2
     (TYPE_READONLY (type) | TYPE_VOLATILE (type) * 2, 0);
 
@@ -973,7 +976,7 @@ expand_generic_desc (tdecl, type, fnname)
      char *fnname;
 {
   char *name = build_overload_name (type, 1, 1);
-  tree name_string = combine_strings (build_string (strlen (name), name));
+  tree name_string = combine_strings (build_string (strlen (name)+1, name));
   tree elems = tree_cons
     (NULL_TREE, decay_conversion (tdecl), tree_cons
      (NULL_TREE, decay_conversion (name_string), NULL_TREE));

@@ -963,7 +963,7 @@ uses_template_parms (t)
 static struct tinst_level *current_tinst_level = 0;
 static struct tinst_level *free_tinst_level = 0;
 static int tinst_depth = 0;
-int max_tinst_depth = 17;
+extern int max_tinst_depth;
 #ifdef GATHER_STATISTICS
 int depth_reached = 0;
 #endif
@@ -982,6 +982,7 @@ push_tinst_level (d)
 
       error ("template instantiation depth exceeds maximum of %d",
 	     max_tinst_depth);
+      error (" (use -ftemplate-depth-NN to increase the maximum)");
       cp_error ("  instantiating `%D'", d);
 
       for (; p; p = p->next)

@@ -76,6 +76,7 @@ Boston, MA 02111-1307, USA.  */
   "-fno-stats",
   "-fstrict-prototype",
   "-fno-strict-prototype",
+  "-ftemplate-depth-",
   "-fthis-is-variable",
   "-fno-this-is-variable",
   "-fvtable-thunks",
