@@ -1,3 +1,9 @@
+2000-04-24  Nick Clifton  <nickc@redhat.com>
+
+	* combine.c (combine_instructions): Do not try to combine a
+	sequence of insns when the second insn has been replaced by a
+	note.
+
 Mon Apr 24 17:34:18 2000  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* gcc.c (load_specs): New static function.
