@@ -2902,9 +2902,10 @@ output_inline_function (fndecl)
   /* Compile this function all the way down to assembly code.  */
   rest_of_compilation (fndecl);
 
-  /* We can't inline this anymore.  */
-  f->inlinable = 0;
+  /* We can't inline this anymore; rest_of_compilation destroyed the
+     data structures describing the function.  */
   DECL_INLINE (fndecl) = 0;
+  DECL_SAVED_INSNS (fndecl) = 0;
 
   cfun = old_cfun;
   current_function_decl = old_cfun ? old_cfun->decl : 0;
