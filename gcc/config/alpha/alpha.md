@@ -3143,12 +3143,13 @@
     {
       extern char *savealloc ();
       char *symbol = XSTR (operands[0], 0);
-      char *linksym = savealloc (strlen (symbol) + 5);
+      char *linksym = savealloc (strlen (symbol) + 6);
       rtx linkage;
 
       alpha_need_linkage (symbol, 0);
 
-      strcpy (linksym, symbol);
+      linksym[0] = '$';
+      strcpy (linksym+1, symbol);
       strcat (linksym, \"..lk\");
       linkage = gen_rtx (SYMBOL_REF, Pmode, linksym);
 
@@ -3247,11 +3248,12 @@
     {
       extern char *savealloc ();
       char *symbol = XSTR (operands[1], 0);
-      char *linksym = savealloc (strlen (symbol) + 5);
+      char *linksym = savealloc (strlen (symbol) + 6);
       rtx linkage;
 
       alpha_need_linkage (symbol, 0);
-      strcpy (linksym, symbol);
+      linksym[0] = '$';
+      strcpy (linksym+1, symbol);
       strcat (linksym, \"..lk\");
       linkage = gen_rtx (SYMBOL_REF, Pmode, linksym);
 
@@ -3277,7 +3279,7 @@
   "! TARGET_WINDOWS_NT && ! TARGET_OPEN_VMS"
   "@
    jsr $26,($27),0\;ldgp $29,0($26)
-   bsr $26,%0..ng
+   bsr $26,$%0..ng
    jsr $26,%0\;ldgp $29,0($26)"
   [(set_attr "type" "jsr")])
       
@@ -3314,7 +3316,7 @@
   "! TARGET_WINDOWS_NT && ! TARGET_OPEN_VMS"
   "@
    jsr $26,($27),0\;ldgp $29,0($26)
-   bsr $26,%1..ng
+   bsr $26,$%1..ng
    jsr $26,%1\;ldgp $29,0($26)"
   [(set_attr "type" "jsr")])
 

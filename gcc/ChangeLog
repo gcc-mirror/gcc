@@ -15,6 +15,16 @@
 
 Fri Nov 14 07:24:20 1997  Richard Henderson  <rth@cygnus.com>
 
+	* alpha.c (output_prolog [*]): Prefix entry labels with '$' to 
+	keep them from being propogated to the object file.
+	(alpha_write_linkage): Likewise.
+	* alpha.md (call_vms): Likewise.
+	(call_value_vms): Likewise.
+	(unnamed osf call insns): Likewise.
+
+	* alpha.h (ASM_OUTPUT_INTERNAL_LABEL): Don't omit L from local label.
+	(ASM_GENERATE_INTERNAL_LABEL): Likewise.
+
 	* alpha.c (call_operand): Any reg is valid for WinNT.
 	* alpha.md (call_nt, call_value_nt): Don't force address into $27.
 	(anon nt calls): Add 'R' alternative.
