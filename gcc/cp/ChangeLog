@@ -1,3 +1,15 @@
+2000-03-03  Jason Merrill  <jason@casey.cygnus.com>
+
+	* decl2.c (key_method): Break out from...
+	(import_export_vtable, import_export_class): ...here.
+
+	* decl.c (finish_function): Don't mess with flag_keep_inline_functions.
+	* decl2.c (finish_vtable_vardecl): Don't check decl_function_context.
+
+	* search.c (note_debug_info_needed, dfs_debug_mark, 
+	dfs_debug_unmarkedp): Uncomment.  Adjust for new scheme.
+	* decl2.c (finish_vtable_vardecl): Call note_debug_info_needed.
+
 2000-03-03  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* decl.c (cp_finish_decl): Remove obsolete obstack comments, fix

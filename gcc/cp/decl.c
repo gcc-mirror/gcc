@@ -13883,20 +13883,9 @@ finish_function (lineno, flags)
     {
       int returns_null;
       int returns_value;
-      int saved_flag_keep_inline_functions =
-	flag_keep_inline_functions;
 
       /* So we can tell if jump_optimize sets it to 1.  */
       can_reach_end = 0;
-
-      if (DECL_CONTEXT (fndecl) != NULL_TREE
-	  && decl_function_context (fndecl))
-	/* Trick rest_of_compilation into not deferring output of this
-	   function, even if it is inline, since the rtl_obstack for
-	   this function is the function_obstack of the enclosing
-	   function and will be deallocated when the enclosing
-	   function is gone.  See save_tree_status.  */
-	flag_keep_inline_functions = 1;
 
       /* Before we call rest_of_compilation (which will pop the
 	 CURRENT_FUNCTION), we must save these values.  */
@@ -13933,8 +13922,6 @@ finish_function (lineno, flags)
       /* Undo the call to ggc_push_context above.  */
       if (function_depth > 1)
 	ggc_pop_context ();
-
-      flag_keep_inline_functions = saved_flag_keep_inline_functions;
 
       if (DECL_SAVED_INSNS (fndecl) && ! TREE_ASM_WRITTEN (fndecl))
 	{

@@ -92,6 +92,7 @@ static int generate_ctor_and_dtor_functions_for_priority
 static tree prune_vars_needing_no_initialization PARAMS ((tree));
 static void write_out_vars PARAMS ((tree));
 static void import_export_class	PARAMS ((tree));
+static tree key_method PARAMS ((tree));
 
 extern int current_class_depth;
 
@@ -2378,6 +2379,29 @@ maybe_make_one_only (decl)
     DECL_COMDAT (decl) = 1;
 }
 
+/* Returns the virtual function with which the vtable for TYPE is
+   emitted, or NULL_TREE if that heuristic is not applicable to TYPE.  */
+
+static tree
+key_method (type)
+     tree type;
+{
+  tree method;
+
+  if (TYPE_FOR_JAVA (type)
+      || CLASSTYPE_INTERFACE_KNOWN (type))
+    return NULL_TREE;
+
+  for (method = TYPE_METHODS (type); method != NULL_TREE;
+       method = TREE_CHAIN (method))
+    if (DECL_VINDEX (method) != NULL_TREE
+	&& ! DECL_THIS_INLINE (method)
+	&& ! DECL_PURE_VIRTUAL_P (method))
+      return method;
+
+  return NULL_TREE;
+}
+
 /* Set TREE_PUBLIC and/or DECL_EXTERN on the vtable DECL,
    based on TYPE and other static flags.
 
@@ -2409,21 +2433,8 @@ import_export_vtable (decl, type, final)
       /* We can only wait to decide if we have real non-inline virtual
 	 functions in our class, or if we come from a template.  */
 
-      int found = CLASSTYPE_TEMPLATE_INSTANTIATION (type);
-
-      if (! found && ! final)
-	{
-	  tree method;
-	  for (method = TYPE_METHODS (type); method != NULL_TREE;
-	       method = TREE_CHAIN (method))
-	    if (DECL_VINDEX (method) != NULL_TREE
-		&& ! DECL_THIS_INLINE (method)
-		&& ! DECL_PURE_VIRTUAL_P (method))
-	      {
-		found = 1;
-		break;
-	      }
-	}
+      int found = (CLASSTYPE_TEMPLATE_INSTANTIATION (type)
+		   || key_method (type));
 
       if (final || ! found)
 	{
@@ -2482,23 +2493,14 @@ import_export_class (ctype)
     import_export = -1;
 
   /* Base our import/export status on that of the first non-inline,
-     non-abstract virtual function, if any.  */
+     non-pure virtual function, if any.  */
   if (import_export == 0
       && TYPE_POLYMORPHIC_P (ctype)
       && ! CLASSTYPE_TEMPLATE_INSTANTIATION (ctype))
     {
-      tree method;
-      for (method = TYPE_METHODS (ctype); method != NULL_TREE;
-	   method = TREE_CHAIN (method))
-	{
-	  if (DECL_VINDEX (method) != NULL_TREE
-	      && !DECL_THIS_INLINE (method)
-	      && !DECL_PURE_VIRTUAL_P (method))
-	    {
-	      import_export = (DECL_REALLY_EXTERN (method) ? -1 : 1);
-	      break;
-	    }
-	}
+      tree method = key_method (ctype);
+      if (method)
+	import_export = (DECL_REALLY_EXTERN (method) ? -1 : 1);
     }
 
 #ifdef MULTIPLE_SYMBOL_SPACES
@@ -2552,8 +2554,7 @@ finish_vtable_vardecl (t, data)
   import_export_vtable (vars, ctype, 1);
 
   if (! DECL_EXTERNAL (vars)
-      && (DECL_NEEDED_P (vars)
-	  || (decl_function_context (vars) && TREE_USED (vars)))
+      && DECL_NEEDED_P (vars)
       && ! TREE_ASM_WRITTEN (vars))
     {
       if (TREE_TYPE (vars) == void_type_node)
@@ -2607,17 +2608,16 @@ finish_vtable_vardecl (t, data)
 
       /* Since we're writing out the vtable here, also write the debug 
 	 info.  */
-      if (TYPE_DECL_SUPPRESS_DEBUG (TYPE_MAIN_DECL (ctype)))
-	{
-	  TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (ctype)) = 0;
-	  rest_of_type_compilation (ctype, toplevel_bindings_p ());
-	}
+      note_debug_info_needed (ctype);
 
       return 1;
     }
-  else if (!DECL_NEEDED_P (vars))
-    /* We don't know what to do with this one yet.  */
-    return 0;
+
+  /* If the references to this class' vtables were optimized away, still
+     emit the appropriate debugging information.  See dfs_debug_mark.  */
+  if (DECL_COMDAT (vars)
+      && CLASSTYPE_DEBUG_REQUESTED (ctype))
+    note_debug_info_needed (ctype);
 
   return 0;
 }
