@@ -1,3 +1,8 @@
+Fri Jun 26 11:54:19 1998  Craig Burley  <burley@gnu.org>
+
+	* g77spec.c (lang_specific_driver): Put `-lg2c' in
+	front of any `-lm' that is seen.
+
 Mon Jun 15 23:39:24 1998  Craig Burley  <burley@gnu.org>
 
 	* Make-lang.in (f/g77.info): Use -f when removing
