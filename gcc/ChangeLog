@@ -1,3 +1,8 @@
+2001-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* reg-stack.c (stack_result): Unconditionally use
+	FUNCTION_OUTGOING_VALUE resp. FUNCTION_VALUE.
+
 Wed Mar 14 16:36:25 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* expr.c (emit_move_insn_1):  Split push of complex value when

@@ -786,11 +786,7 @@ stack_result (decl)
     return 0;
 
   result = DECL_RTL (DECL_RESULT (decl));
-  /* ?!?  What is this code supposed to do?  Can this code actually
-     trigger if we kick out aggregates above?  */
-  if (result != 0
-      && ! (GET_CODE (result) == REG
-	    && REGNO (result) < FIRST_PSEUDO_REGISTER))
+  if (result != 0)
     {
 #ifdef FUNCTION_OUTGOING_VALUE
       result
