@@ -1,5 +1,7 @@
 Thu May  7 19:26:34 1998  Jim Wilson  <wilson@cygnus.com>
 
+	* gcc.c (read_specs): Handle missing blank line at end of specs file.
+
 	* i386.md (movsicc, movhicc, movsicc_1, movhicc_1, movsfcc_1,
 	movdfcc_1): Disable.
 
