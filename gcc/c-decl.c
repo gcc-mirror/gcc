@@ -4429,10 +4429,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	    }
 	  else if (decl_context == FIELD)
 	    {
-	      /* ??? Need to check somewhere that this is a structure
-		 and not a union, that this field is last, and that
-		 this structure has at least one other named member.  */
-
 	      if (pedantic && !flag_isoc99 && !in_system_header)
 		pedwarn ("ISO C89 does not support flexible array members");
 
