@@ -785,7 +785,7 @@ cpp_start_read (pfile, print, fname)
   if (CPP_OPTION (pfile, cplusplus))
     CPP_OPTION (pfile, warn_traditional) = 0;
 
-  /* Do not warn about illegal token pasting if -lang-asm.  */
+  /* Do not warn about invalid token pasting if -lang-asm.  */
   if (CPP_OPTION (pfile, lang_asm))
     CPP_OPTION (pfile, warn_paste) = 0;
 

@@ -127,7 +127,7 @@ count_params (pfile, info)
 	{
 	default:
 	  cpp_error_with_line (pfile, token->line, token->col,
-			       "illegal token in macro parameter list");
+			       "token may not appear in macro parameter list");
 	  return;
 
 	case CPP_EOF:
@@ -462,7 +462,7 @@ save_expansion (pfile, info)
 	  else
 	    dest->flags = token->flags;  /* Particularly PREV_WHITE.  */
 	  /* Turn off PREV_WHITE if we immediately follow a paste.
-	     That way, even if the paste turns out to be illegal, there
+	     That way, even if the paste turns out to be invalid, there
 	     will be no space between the two tokens in the output.  */
 	  if (token[-1].type == CPP_PASTE)
 	    dest->flags &= ~PREV_WHITE;

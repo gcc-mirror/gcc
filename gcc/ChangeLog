@@ -1,3 +1,19 @@
+2000-08-02  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cppexp.c, cppinit.c, cpplex.c, cpplib.c, cppmacro.c,
+	cppspec.c: Do not use 'legal' or 'illegal' in error messages
+	and comments.
+
+	* cppmain.c (cb_define, cb_undef): Don't generate any output
+	if not done_initializing.
+	* cpplex.c (maybe_paste_with_next): When the token after a ## 
+	is an omitted rest argument, only delete the token before it
+	if that token is a comma.  Do not warn about bogus token
+	pastes for , ## rest_arg.
+
+	* cpp.texi: Update.
+	* cpp.1: Regenerate.
+
 2000-08-02  Fred Fish  <fnf@be.com>
 
 	* config/i386/beos-elf.h (STARTFILE_SPEC): Add i386-mcount.o

@@ -433,7 +433,7 @@ read_line_number (pfile, num)
 
 /* Another subroutine of do_line.  Convert a number in STR, of length
    LEN, to binary; store it in NUMP, and return 0 if the number was
-   legal, 1 if not.  Temporary, hopefully.  */
+   well-formed, 1 if not.  Temporary, hopefully.  */
 static int
 strtoul_for_line (str, len, nump)
      const U_CHAR *str;
