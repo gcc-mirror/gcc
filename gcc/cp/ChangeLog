@@ -1,3 +1,8 @@
+2004-02-05  Jan Hubicka  <jh@suse.cz>
+
+	* tree.c (cp_cannot_inline_tree_fn):  Allow inlining of comdat
+	functions.
+
 2003-02-05  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/14008

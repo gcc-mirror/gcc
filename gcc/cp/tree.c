@@ -2080,8 +2080,12 @@ cp_cannot_inline_tree_fn (tree* fnp)
     return 1;
 
   /* Don't auto-inline anything that might not be bound within
-     this unit of translation.  */
-  if (!DECL_DECLARED_INLINE_P (fn) && !(*targetm.binds_local_p) (fn))
+     this unit of translation.
+     Exclude comdat functions from this rule.  While they can be bound
+     to the other unit, they all must be the same.  This is especilly
+     important so templates can inline.  */
+  if (!DECL_DECLARED_INLINE_P (fn) && !(*targetm.binds_local_p) (fn)
+      && !DECL_COMDAT (fn))
     {
       DECL_UNINLINABLE (fn) = 1;
       return 1;
