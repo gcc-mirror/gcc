@@ -312,6 +312,11 @@
        (match_test "INTVAL (op) == 2 || INTVAL (op) == 4 ||
 	            INTVAL (op) == 8 || INTVAL (op) == 16")))
 
+;; True if OP is one of the immediate values 1, 2, 3, or 4.
+(define_predicate "shladd_log2_operand"
+  (and (match_code "const_int")
+       (match_test "INTVAL (op) >= 1 && INTVAL (op) <= 4")))
+
 ;; True if OP is one of the immediate values  -16, -8, -4, -1, 1, 4, 8, 16.
 (define_predicate "fetchadd_operand"
   (and (match_code "const_int")
