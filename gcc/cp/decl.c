@@ -13001,6 +13001,9 @@ start_function (declspecs, declarator, attrs, flags)
 	    = build_indirect_ref (t, NULL_PTR);
 	  cp_function_chain->x_current_class_ptr = t;
 	  
+	  if (DECL_DESTRUCTOR_P (decl1))
+	    current_in_charge_parm = TREE_CHAIN (t);
+
 	  resume_momentary (i);
 	  if (! hack_decl_function_context (decl1))
 	    end_temporary_allocation ();
@@ -13374,7 +13377,6 @@ finish_function (lineno, flags)
 	  tree binfo = TYPE_BINFO (current_class_type);
 	  tree cond = integer_one_node;
 	  tree exprstmt;
-	  tree in_charge_node = lookup_name (in_charge_identifier, 0);
 	  tree virtual_size;
 	  int ok_to_optimize_dtor = 0;
 	  int empty_dtor = get_last_insn () == last_dtor_insn;
@@ -13424,7 +13426,9 @@ finish_function (lineno, flags)
 	    exprstmt = build_delete (current_class_type, current_class_ref, integer_zero_node,
 				     LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR|LOOKUP_NORMAL, 0);
 	  else
-	    exprstmt = build_delete (current_class_type, current_class_ref, in_charge_node,
+	    exprstmt = build_delete (current_class_type,
+				     current_class_ref, 
+				     current_in_charge_parm,
 				     LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR|LOOKUP_NORMAL, 0);
 
 	  /* If we did not assign to this, then `this' is non-zero at
@@ -13451,7 +13455,8 @@ finish_function (lineno, flags)
 		{
 		  tree vbases = nreverse (copy_list (CLASSTYPE_VBASECLASSES (current_class_type)));
 		  expand_start_cond (build (BIT_AND_EXPR, integer_type_node,
-					    in_charge_node, integer_two_node), 0);
+					    current_in_charge_parm, 
+					    integer_two_node), 0);
 		  while (vbases)
 		    {
 		      if (TYPE_NEEDS_DESTRUCTOR (BINFO_TYPE (vbases)))
@@ -13499,7 +13504,7 @@ finish_function (lineno, flags)
 	  if (exprstmt)
 	    {
 	      cond = build (BIT_AND_EXPR, integer_type_node,
-			    in_charge_node, integer_one_node);
+			    current_in_charge_parm, integer_one_node);
 	      expand_start_cond (cond, 0);
 	      expand_expr_stmt (exprstmt);
 	      expand_end_cond ();
