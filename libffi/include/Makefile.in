@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.4a from Makefile.am
+# Makefile.in generated automatically by automake 1.4 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -9,6 +9,7 @@
 # but WITHOUT ANY WARRANTY, to the extent permitted by law; without
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
+
 
 SHELL = @SHELL@
 
@@ -45,10 +46,9 @@ AUTOMAKE = @AUTOMAKE@
 AUTOHEADER = @AUTOHEADER@
 
 INSTALL = @INSTALL@
-INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@ $(AM_INSTALL_PROGRAM_FLAGS)
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
-INSTALL_STRIP_FLAG =
 transform = @program_transform_name@
 
 NORMAL_INSTALL = :
@@ -80,7 +80,6 @@ TARGETDIR = @TARGETDIR@
 VERSION = @VERSION@
 install_sh = @install_sh@
 
-
 AUTOMAKE_OPTIONS = foreign
 
 EXTRA_DIST = ffi.h.in ffi_common.h ffi_mips.h
@@ -88,18 +87,17 @@ EXTRA_DIST = ffi.h.in ffi_common.h ffi_mips.h
 hackdir = $(includedir)
 
 hack_DATA = fficonfig.h ffi.h ffi_mips.h
-subdir = include
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../fficonfig.h
 CONFIG_CLEAN_FILES =  ffi.h
-DIST_SOURCES = 
 DATA =  $(hack_DATA)
 
-DIST_COMMON =  $(hack_DATA) Makefile.am Makefile.in ffi.h.in
+DIST_COMMON =  Makefile.am Makefile.in ffi.h.in
 
 
-DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
+DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
+TAR = tar
 GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:
@@ -117,24 +115,27 @@ install-hackDATA: $(hack_DATA)
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(hackdir)
 	@list='$(hack_DATA)'; for p in $$list; do \
-	  if test -f "$$p"; then d= ; else d="$(srcdir)/"; fi; \
-	  f="`echo $$p | sed -e 's|^.*/||'`"; \
-	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(hackdir)/$$f"; \
-	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(hackdir)/$$f; \
+	  if test -f $(srcdir)/$$p; then \
+	    echo " $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(hackdir)/$$p"; \
+	    $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(hackdir)/$$p; \
+	  else if test -f $$p; then \
+	    echo " $(INSTALL_DATA) $$p $(DESTDIR)$(hackdir)/$$p"; \
+	    $(INSTALL_DATA) $$p $(DESTDIR)$(hackdir)/$$p; \
+	  fi; fi; \
 	done
 
 uninstall-hackDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(hack_DATA)'; for p in $$list; do \
-	  f="`echo $$p | sed -e 's|^.*/||'`"; \
-	  echo " rm -f $(DESTDIR)$(hackdir)/$$f"; \
-	  rm -f $(DESTDIR)$(hackdir)/$$f; \
+	list='$(hack_DATA)'; for p in $$list; do \
+	  rm -f $(DESTDIR)$(hackdir)/$$p; \
 	done
 tags: TAGS
 TAGS:
 
 
 distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
+
+subdir = include
 
 distdir: $(DISTFILES)
 	here=`cd $(top_builddir) && pwd`; \
@@ -145,7 +146,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$d/$$file $(distdir)/$$file; \
+	    cp -pr $$/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
@@ -174,7 +175,7 @@ uninstall: uninstall-am
 all-am: Makefile $(DATA)
 all-redirect: all-am
 install-strip:
-	$(MAKE) $(AM_MAKEFLAGS) INSTALL_STRIP_FLAG=-s install
+	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
 installdirs:
 	$(mkinstalldirs)  $(DESTDIR)$(hackdir)
 
@@ -197,7 +198,6 @@ clean-am:  clean-generic mostlyclean-am
 clean: clean-am
 
 distclean-am:  distclean-generic clean-am
-	-rm -f libtool
 
 distclean: distclean-am
 
@@ -210,8 +210,8 @@ maintainer-clean: maintainer-clean-am
 .PHONY: uninstall-hackDATA install-hackDATA tags distdir info-am info \
 dvi-am dvi check check-am installcheck-am installcheck install-exec-am \
 install-exec install-data-am install-data install-am install \
-uninstall-am uninstall all-redirect all-am all install-strip \
-installdirs mostlyclean-generic distclean-generic clean-generic \
+uninstall-am uninstall all-redirect all-am all installdirs \
+mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
