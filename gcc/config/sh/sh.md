@@ -1520,7 +1520,7 @@
       operands[1] = force_reg (SImode, operands[1]);
       operands[2] = force_reg (SImode, operands[2]);
       last = gen_divsi3_i4_media (operands[0], operands[1], operands[2]);
-      first = XVECEXP (last, 0, 0);
+      first = last;
     }
   else if (TARGET_SH5)
     {

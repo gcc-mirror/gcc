@@ -1,4 +1,6 @@
-Mon Jun 17 12:32:24 2002  J"orn Rennecke <joern.rennecke@superh.com>
+Mon Jun 17 17:26:15 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.md (divsi3): Update way how to find insns in a sequence.
 
 	* reload1.c (merge_assigned_reloads): Don't change reloads
 	other than RELOAD_FOR_INPUT_ADDRESS / RELOAD_FOR_INPADDR_ADDRESS
