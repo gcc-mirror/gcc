@@ -3197,7 +3197,7 @@ prepare_cmp_insn (rtx *px, rtx *py, enum rtx_code *pcomparison, rtx size,
    WIDER_MODE (UNSIGNEDP determines whether it is an unsigned conversion), and
    that it is accepted by the operand predicate.  Return the new value.  */
 
-rtx
+static rtx
 prepare_operand (int icode, rtx x, int opnum, enum machine_mode mode,
 		 enum machine_mode wider_mode, int unsignedp)
 {
