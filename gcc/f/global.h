@@ -1,5 +1,5 @@
 /* global.h -- Public #include File (module.h template V1.0)
-   Copyright (C) 1995, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1997, 2003 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -89,9 +89,7 @@ struct _ffeglobal_
 {
   ffelexToken t;
   ffename n;
-#ifdef FFECOM_globalHOOK
   ffecomGlobal hook;
-#endif
   ffeCounter tick;		/* Recent transition in this progunit. */
   ffeglobalType type;
   bool intrinsic;		/* Known as intrinsic? */

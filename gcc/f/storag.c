@@ -1,5 +1,5 @@
 /* storag.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 2003 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -420,9 +420,7 @@ ffestorag_new (ffestoragList sl)
 				 sizeof (*s));
   s->next = (ffestorag) &sl->first;
   s->previous = sl->last;
-#ifdef FFECOM_storageHOOK
   s->hook = FFECOM_storageNULL;
-#endif
   s->previous->next = s;
   sl->last = s;
   s->equivs_.first = s->equivs_.last = (ffestorag) &s->equivs_.first;

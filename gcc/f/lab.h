@@ -1,5 +1,5 @@
 /* lab.h -- Public #include File (module.h template V1.0)
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 2003 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -70,9 +70,7 @@ typedef unsigned long ffelabValue;
 struct _ffelab_
   {
     ffelab next;
-#ifdef FFECOM_labelHOOK
     ffecomLabel hook;
-#endif
     ffelabValue value;		/* 1 through 99999, or 100000+ for temp
 				   labels. */
     unsigned long blocknum;	/* Managed entirely by user of module. */

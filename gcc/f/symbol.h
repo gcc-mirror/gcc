@@ -1,5 +1,5 @@
 /* Interface definitions for Fortran symbol manager
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 2003 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -121,9 +121,7 @@ struct _ffesymbol_
     ffeequiv equiv;		/* Who have I been equivalenced with? */
     ffestorag storage;		/* Where am I in relation to my outside
 				   world? */
-#ifdef FFECOM_symbolHOOK
     ffecomSymbol hook;		/* Whatever the compiler/backend wants! */
-#endif
     ffesymbol sfa_dummy_parent;	/* "X" outside sfunc "CIRC(X) = 3.14 * X". */
     ffesymbol func_result;	/* FUN sym's corresponding RES sym, & vice
 				   versa. */

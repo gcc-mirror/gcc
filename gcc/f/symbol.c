@@ -1,5 +1,6 @@
 /* Implementation of Fortran symbol manager
-   Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 2003
+   Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -230,9 +231,7 @@ ffesymbol_new_ (ffename n)
   s->common = NULL;
   s->equiv = NULL;
   s->storage = NULL;
-#ifdef FFECOM_symbolHOOK
   s->hook = FFECOM_symbolNULL;
-#endif
   s->sfa_dummy_parent = NULL;
   s->func_result = NULL;
   s->value = 0;

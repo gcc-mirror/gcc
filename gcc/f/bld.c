@@ -1,5 +1,5 @@
 /* bld.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 2003 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -70,16 +70,6 @@ struct _ffebld_pool_stack_ ffebld_pool_stack_;
 
 /* Static objects accessed by functions in this module.	 */
 
-#if FFEBLD_BLANK_
-static struct _ffebld_ ffebld_blank_
-=
-{
-  0,
-  {FFEINFO_basictypeNONE, FFEINFO_kindtypeNONE, 0, FFEINFO_kindNONE,
-   FFEINFO_whereNONE, FFETARGET_charactersizeNONE},
-  {NULL, NULL}
-};
-#endif
 #if FFETARGET_okCHARACTER1
 static ffebldConstant ffebld_constant_character1_;
 #endif
@@ -715,9 +705,7 @@ ffebld_constant_new_character1_val (ffetargetCharacter1 val)
   nc->next = c->next;
   nc->consttype = FFEBLD_constCHARACTER1;
   nc->u.character1 = val;
-#ifdef FFECOM_constantHOOK
   nc->hook = FFECOM_constantNULL;
-#endif
   c->next = nc;
 
   return nc;
@@ -773,9 +761,7 @@ ffebld_constant_new_complex1_val (ffetargetComplex1 val)
   nc->next = c->next;
   nc->consttype = FFEBLD_constCOMPLEX1;
   nc->u.complex1 = val;
-#ifdef FFECOM_constantHOOK
   nc->hook = FFECOM_constantNULL;
-#endif
   c->next = nc;
 
   return nc;
@@ -831,9 +817,7 @@ ffebld_constant_new_complex2_val (ffetargetComplex2 val)
   nc->next = c->next;
   nc->consttype = FFEBLD_constCOMPLEX2;
   nc->u.complex2 = val;
-#ifdef FFECOM_constantHOOK
   nc->hook = FFECOM_constantNULL;
-#endif
   c->next = nc;
 
   return nc;
@@ -881,9 +865,7 @@ ffebld_constant_new_hollerith_val (ffetargetHollerith val)
   nc->next = c->next;
   nc->consttype = FFEBLD_constHOLLERITH;
   nc->u.hollerith = val;
-#ifdef FFECOM_constantHOOK
   nc->hook = FFECOM_constantNULL;
-#endif
   c->next = nc;
 
   return nc;
@@ -938,9 +920,7 @@ ffebld_constant_new_integer1_val (ffetargetInteger1 val)
   nc->next = c->next;
   nc->consttype = FFEBLD_constINTEGER1;
   nc->u.integer1 = val;
-#ifdef FFECOM_constantHOOK
   nc->hook = FFECOM_constantNULL;
-#endif
   c->next = nc;
 
   return nc;
@@ -976,9 +956,7 @@ ffebld_constant_new_integer2_val (ffetargetInteger2 val)
   nc->next = c->next;
   nc->consttype = FFEBLD_constINTEGER2;
   nc->u.integer2 = val;
-#ifdef FFECOM_constantHOOK
   nc->hook = FFECOM_constantNULL;
-#endif
   c->next = nc;
 
   return nc;
@@ -1014,9 +992,7 @@ ffebld_constant_new_integer3_val (ffetargetInteger3 val)
   nc->next = c->next;
   nc->consttype = FFEBLD_constINTEGER3;
   nc->u.integer3 = val;
-#ifdef FFECOM_constantHOOK
   nc->hook = FFECOM_constantNULL;
-#endif
   c->next = nc;
 
   return nc;
@@ -1052,9 +1028,7 @@ ffebld_constant_new_integer4_val (ffetargetInteger4 val)
   nc->next = c->next;
   nc->consttype = FFEBLD_constINTEGER4;
   nc->u.integer4 = val;
-#ifdef FFECOM_constantHOOK
   nc->hook = FFECOM_constantNULL;
-#endif
   c->next = nc;
 
   return nc;
@@ -1165,9 +1139,7 @@ ffebld_constant_new_logical1_val (ffetargetLogical1 val)
   nc->next = c->next;
   nc->consttype = FFEBLD_constLOGICAL1;
   nc->u.logical1 = val;
-#ifdef FFECOM_constantHOOK
   nc->hook = FFECOM_constantNULL;
-#endif
   c->next = nc;
 
   return nc;
@@ -1203,9 +1175,7 @@ ffebld_constant_new_logical2_val (ffetargetLogical2 val)
   nc->next = c->next;
   nc->consttype = FFEBLD_constLOGICAL2;
   nc->u.logical2 = val;
-#ifdef FFECOM_constantHOOK
   nc->hook = FFECOM_constantNULL;
-#endif
   c->next = nc;
 
   return nc;
@@ -1241,9 +1211,7 @@ ffebld_constant_new_logical3_val (ffetargetLogical3 val)
   nc->next = c->next;
   nc->consttype = FFEBLD_constLOGICAL3;
   nc->u.logical3 = val;
-#ifdef FFECOM_constantHOOK
   nc->hook = FFECOM_constantNULL;
-#endif
   c->next = nc;
 
   return nc;
@@ -1279,9 +1247,7 @@ ffebld_constant_new_logical4_val (ffetargetLogical4 val)
   nc->next = c->next;
   nc->consttype = FFEBLD_constLOGICAL4;
   nc->u.logical4 = val;
-#ifdef FFECOM_constantHOOK
   nc->hook = FFECOM_constantNULL;
-#endif
   c->next = nc;
 
   return nc;
@@ -1335,9 +1301,7 @@ ffebld_constant_new_real1_val (ffetargetReal1 val)
   nc->next = c->next;
   nc->consttype = FFEBLD_constREAL1;
   nc->u.real1 = val;
-#ifdef FFECOM_constantHOOK
   nc->hook = FFECOM_constantNULL;
-#endif
   c->next = nc;
 
   return nc;
@@ -1391,9 +1355,7 @@ ffebld_constant_new_real2_val (ffetargetReal2 val)
   nc->next = c->next;
   nc->consttype = FFEBLD_constREAL2;
   nc->u.real2 = val;
-#ifdef FFECOM_constantHOOK
   nc->hook = FFECOM_constantNULL;
-#endif
   c->next = nc;
 
   return nc;
@@ -1557,9 +1519,7 @@ ffebld_constant_new_typeless_val (ffebldConst type, ffetargetTypeless val)
   nc->next = c->next;
   nc->consttype = type;
   nc->u.typeless = val;
-#ifdef FFECOM_constantHOOK
   nc->hook = FFECOM_constantNULL;
-#endif
   c->next = nc;
 
   return nc;
@@ -4231,9 +4191,6 @@ ffebld_new_accter (ffebldConstantArray a, ffebit b)
   ffebld x;
 
   x = ffebld_new ();
-#if FFEBLD_BLANK_
-  *x = ffebld_blank_;
-#endif
   x->op = FFEBLD_opACCTER;
   x->u.accter.array = a;
   x->u.accter.bits = b;
@@ -4254,9 +4211,6 @@ ffebld_new_arrter (ffebldConstantArray a, ffetargetOffset size)
   ffebld x;
 
   x = ffebld_new ();
-#if FFEBLD_BLANK_
-  *x = ffebld_blank_;
-#endif
   x->op = FFEBLD_opARRTER;
   x->u.arrter.array = a;
   x->u.arrter.size = size;
@@ -4276,9 +4230,6 @@ ffebld_new_conter_with_orig (ffebldConstant c, ffebld o)
   ffebld x;
 
   x = ffebld_new ();
-#if FFEBLD_BLANK_
-  *x = ffebld_blank_;
-#endif
   x->op = FFEBLD_opCONTER;
   x->u.conter.expr = c;
   x->u.conter.orig = o;
@@ -4297,15 +4248,9 @@ ffebld_new_item (ffebld head, ffebld trail)
   ffebld x;
 
   x = ffebld_new ();
-#if FFEBLD_BLANK_
-  *x = ffebld_blank_;
-#endif
   x->op = FFEBLD_opITEM;
   x->u.item.head = head;
   x->u.item.trail = trail;
-#ifdef FFECOM_itemHOOK
-  x->u.item.hook = FFECOM_itemNULL;
-#endif
   return x;
 }
 
@@ -4321,9 +4266,6 @@ ffebld_new_labter (ffelab l)
   ffebld x;
 
   x = ffebld_new ();
-#if FFEBLD_BLANK_
-  *x = ffebld_blank_;
-#endif
   x->op = FFEBLD_opLABTER;
   x->u.labter = l;
   return x;
@@ -4346,9 +4288,6 @@ ffebld_new_labtok (ffelexToken t)
   ffebld x;
 
   x = ffebld_new ();
-#if FFEBLD_BLANK_
-  *x = ffebld_blank_;
-#endif
   x->op = FFEBLD_opLABTOK;
   x->u.labtok = t;
   return x;
@@ -4365,9 +4304,6 @@ ffebld_new_none (ffebldOp o)
   ffebld x;
 
   x = ffebld_new ();
-#if FFEBLD_BLANK_
-  *x = ffebld_blank_;
-#endif
   x->op = o;
   return x;
 }
@@ -4383,14 +4319,9 @@ ffebld_new_one (ffebldOp o, ffebld left)
   ffebld x;
 
   x = ffebld_new ();
-#if FFEBLD_BLANK_
-  *x = ffebld_blank_;
-#endif
   x->op = o;
   x->u.nonter.left = left;
-#ifdef FFECOM_nonterHOOK
   x->u.nonter.hook = FFECOM_nonterNULL;
-#endif
   return x;
 }
 
@@ -4410,9 +4341,6 @@ ffebld_new_symter (ffesymbol s, ffeintrinGen gen, ffeintrinSpec spec,
   ffebld x;
 
   x = ffebld_new ();
-#if FFEBLD_BLANK_
-  *x = ffebld_blank_;
-#endif
   x->op = FFEBLD_opSYMTER;
   x->u.symter.symbol = s;
   x->u.symter.generic = gen;
@@ -4433,15 +4361,10 @@ ffebld_new_two (ffebldOp o, ffebld left, ffebld right)
   ffebld x;
 
   x = ffebld_new ();
-#if FFEBLD_BLANK_
-  *x = ffebld_blank_;
-#endif
   x->op = o;
   x->u.nonter.left = left;
   x->u.nonter.right = right;
-#ifdef FFECOM_nonterHOOK
   x->u.nonter.hook = FFECOM_nonterNULL;
-#endif
   return x;
 }
 

@@ -1,5 +1,5 @@
 /* storag.h -- Public #include File (module.h template V1.0)
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 2003 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -83,9 +83,7 @@ struct _ffestorag_
 				   LOCAL. */
     ffetargetAlign alignment;	/* Initial alignment for entity. */
     ffetargetAlign modulo;	/* Modulo within alignment. */
-#ifdef FFECOM_storageHOOK
     ffecomStorage hook;		/* Whatever the backend needs here. */
-#endif
     ffestoragType type;
     ffeinfoBasictype basic_type;/* NONE= >1 non-CHARACTER; ANY=
 				   CHAR+non-CHAR. */

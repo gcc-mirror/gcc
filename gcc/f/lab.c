@@ -1,5 +1,5 @@
 /* lab.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 2003 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -143,9 +143,7 @@ ffelab_new (ffelabValue v)
   ++ffelab_num_news_;
   l = (ffelab) malloc_new_ks (ffe_pool_any_unit (), "FFELAB label", sizeof (*l));
   l->next = ffelab_list_;
-#ifdef FFECOM_labelHOOK
   l->hook = FFECOM_labelNULL;
-#endif
   l->value = v;
   l->firstref_line = ffewhere_line_unknown ();
   l->firstref_col = ffewhere_column_unknown ();
