@@ -293,7 +293,7 @@ get_hard_reg_initial_reg (struct function *fun, rtx reg)
   return NULL_RTX;
 }
 
-rtx
+static rtx
 has_func_hard_reg_initial_val (struct function *fun, rtx reg)
 {
   struct initial_value_struct *ivs = fun->hard_reg_initial_vals;
@@ -309,7 +309,7 @@ has_func_hard_reg_initial_val (struct function *fun, rtx reg)
   return NULL_RTX;
 }
 
-rtx
+static rtx
 get_func_hard_reg_initial_val (struct function *fun, rtx reg)
 {
   struct initial_value_struct *ivs = fun->hard_reg_initial_vals;
