@@ -38,11 +38,14 @@ class PlainDatagramSocketImpl extends DatagramSocketImpl
   int fnum = -1;
 
   // FIXME: Is this necessary?  Could it help w/ DatagramSocket.getLocalAddress?
-  InetAddress address;	
+  // InetAddress address;
+  
+  // localAddress cache  
+  InetAddress localAddress;
 
   // These values are set/read by setOption/getOption.
   int timeout = 0;
-  InetAddress iface = null;
+  /* InetAddress iface = null; */
   int ttl = -1;
 
   // FIXME: Probably should have bind (and create?) calls from DatagramSocket

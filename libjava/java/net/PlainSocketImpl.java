@@ -39,6 +39,9 @@ class PlainSocketImpl extends SocketImpl
 
   // This value is set/read by setOption/getOption.
   int timeout = 0;
+  
+  // localAddress cache
+  InetAddress localAddress;
 
   public native void setOption(int optID, Object value) throws SocketException;
 

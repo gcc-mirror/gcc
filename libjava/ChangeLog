@@ -1,3 +1,22 @@
+1999-06-17  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/net/natPlainSocketImpl.cc (bind): Bind to any/all network
+	interfaces if host==NULL. 
+	(accept): Throw message with InterruptedIOException.
+	(getOption): Cache localAddress.
+	* java/net/natPlainDatagramSocketImpl.cc (bind): Don't need
+	'address' for DatagramSocket.
+	(setTimeToLive): Fix compiler warnings.
+	(getOption): Cache localAddress.
+	* java/net/Socket.java (getLocalAddress): Don't need local
+	InetAddress object. Add FIXME comment about calling checkConnect().
+	* java/net/ServerSocket.java (ServerSocket(int)): Initialize
+	connection queue to 50 as per JDK 1.2 docs.
+	(ServerSocket(int,int)): Listen on all network interfaces by
+	default, per JDK 1.2 docs.
+	* java/net/PlainDatagramSocketImpl.java: Don't need 'address'.
+	Add localAddress caching. 
+
 1999-06-15  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/io/FilterOutputStream.java (write(byte[])): Rewrite according
@@ -56,7 +75,7 @@
 1999-05-30  Anthony Green  <green@cygnus.com>
 
 	* java/net/URLStreamHandler.java (parseURL): Parse relative URLs
-	correctly.  Clean up "/../" and "/./" path fragments.
+	correctly.  Clean up "/../" an[Bd "/./" path fragments.
 
 1999-05-28  Warren Levy  <warrenl@cygnus.com>
 

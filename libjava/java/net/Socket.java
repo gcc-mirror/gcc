@@ -129,10 +129,10 @@ public class Socket
 
   public InetAddress getLocalAddress ()
   {
-    InetAddress localAddress;
+    // FIXME: see note in DatagramSocket.java about checkConnect() and security
     try
       {
-	localAddress = (InetAddress)impl.getOption(SocketOptions.SO_BINDADDR);
+	return (InetAddress)impl.getOption(SocketOptions.SO_BINDADDR);
       }
     catch (SocketException x)
       {
@@ -140,7 +140,6 @@ public class Socket
 	System.err.println(x);
         throw new java.lang.InternalError("Error in PlainSocketImpl.getOption");
       }
-    return localAddress;
   }
 
   public int getPort ()
