@@ -4414,12 +4414,17 @@ build_over_call (struct z_candidate *cand, int flags)
 				       TREE_VALUE (arg),
 				       cand->conversion_path,
 				       1);
+      /* Check that the base class is accessible.  */
+      if (!accessible_base_p (TREE_TYPE (argtype), 
+			      BINFO_TYPE (cand->conversion_path)))
+	error ("`%T' is not an accessible base of `%T'",
+	       BINFO_TYPE (cand->conversion_path),
+	       TREE_TYPE (argtype));
       /* If fn was found by a using declaration, the conversion path
          will be to the derived class, not the base declaring fn. We
          must convert from derived to base.  */
       base_binfo = lookup_base (TREE_TYPE (TREE_TYPE (converted_arg)),
 				TREE_TYPE (parmtype), ba_ignore, NULL);
-      
       converted_arg = build_base_path (PLUS_EXPR, converted_arg,
 				       base_binfo, 1);
       

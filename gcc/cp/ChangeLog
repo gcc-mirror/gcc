@@ -1,5 +1,11 @@
 2003-07-23  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/11645
+	* cp-tree.h (accessible_base_p): Declare.
+	* call.c (build_over_call): Use it.
+	* search.c (accessible_base_p): New function, split out from ...
+	(lookup_base): ... here.
+
 	PR c++/11517
 	* call.c (build_conditional_expr): Use perform_implicit_conversion
 	and error_operand_p.  Robustify.

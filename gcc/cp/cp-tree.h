@@ -4025,6 +4025,7 @@ extern void emit_support_tinfos (void);
 extern bool emit_tinfo_decl (tree);
 
 /* in search.c */
+extern bool accessible_base_p (tree, tree);
 extern tree lookup_base (tree, tree, base_access, base_kind *);
 extern int types_overlap_p			(tree, tree);
 extern tree get_vbase				(tree, tree);

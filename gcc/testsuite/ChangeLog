@@ -1,5 +1,8 @@
 2003-07-23  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/11645
+	* g++.dg/inherit/access4.C: New test.
+
 	PR c++/11517
 	* g++.dg/expr/cond2.C: New test.
 	
