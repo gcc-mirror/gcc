@@ -2349,18 +2349,16 @@ __unwind_function(void *ptr)
   /* This is a test routine, as we have to dynamically probe to find out
      what to pop for certain, this is just a guess. */
   asm("leal -16(%ebp),%esp");
-  asm("pop %eax"); /* really for popl %ebx */
-  asm("pop %eax"); /* really for popl %esi */
-  asm("pop %eax"); /* really for popl %edi */
+  asm("pop %ebx");
+  asm("pop %esi");
+  asm("pop %edi");
   asm("movl %ebp,%esp");
   asm("popl %ebp");
 
   asm("movl %ecx,0(%esp)");
   asm("ret");
 }
-#endif
-
-#if #machine(rs6000)
+#elif #machine(rs6000)
 __unwind_function(void *ptr)
 {
   asm("mr 31,1");
@@ -2376,9 +2374,7 @@ __unwind_function(void *ptr)
   asm("# br");
   asm("mtctr 3;bctr # b 3");
 }
-#endif /* rs6000 */
-
-#if #machine(powerpc)
+#elif #machine(powerpc)
 __unwind_function(void *ptr)
 {
   asm("mr 31,1");
@@ -2393,6 +2389,11 @@ __unwind_function(void *ptr)
   asm("lwz 31,-4(1)");
   asm("# br");
   asm("mtctr 3;bctr # b 3");
+}
+#else
+__unwind_function(void *ptr)
+{
+  abort ();
 }
 #endif /* powerpc */
 #endif /* L_eh */
