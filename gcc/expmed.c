@@ -2157,7 +2157,7 @@ enum mult_variant {basic_variant, negate_variant, add_variant};
 
 static void synth_mult (struct algorithm *, unsigned HOST_WIDE_INT, int);
 static bool choose_mult_variant (enum machine_mode, HOST_WIDE_INT,
-				 struct algorithm *, enum mult_variant *);
+				 struct algorithm *, enum mult_variant *, int);
 static rtx expand_mult_const (enum machine_mode, rtx, HOST_WIDE_INT, rtx,
 			      const struct algorithm *, enum mult_variant);
 static unsigned HOST_WIDE_INT choose_multiplier (unsigned HOST_WIDE_INT, int,
@@ -2416,21 +2416,15 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
        - a shift/add sequence based on -VAL, followed by a negation
        - a shift/add sequence based on VAL - 1, followed by an addition.
 
-   Return true if the cheapest of these is better than register
-   multiplication, describing the algorithm in *ALG and final
-   fixup in *VARIANT.  */
+   Return true if the cheapest of these cost less than MULT_COST,
+   describing the algorithm in *ALG and final fixup in *VARIANT.  */
 
 static bool
 choose_mult_variant (enum machine_mode mode, HOST_WIDE_INT val,
-		     struct algorithm *alg, enum mult_variant *variant)
+		     struct algorithm *alg, enum mult_variant *variant,
+		     int mult_cost)
 {
-  int mult_cost;
   struct algorithm alg2;
-  rtx reg;
-
-  reg = gen_rtx_REG (mode, FIRST_PSEUDO_REGISTER);
-  mult_cost = rtx_cost (gen_rtx_MULT (mode, reg, GEN_INT (val)), SET);
-  mult_cost = MIN (12 * add_cost, mult_cost);
 
   *variant = basic_variant;
   synth_mult (alg, val, mult_cost);
@@ -2642,10 +2636,16 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
      that it seems better to use synth_mult always.  */
 
   if (const_op1 && GET_CODE (const_op1) == CONST_INT
-      && (unsignedp || !flag_trapv)
-      && choose_mult_variant (mode, INTVAL (const_op1), &algorithm, &variant))
-    return expand_mult_const (mode, op0, INTVAL (const_op1), target,
-			      &algorithm, variant);
+      && (unsignedp || !flag_trapv))
+    {
+      int mult_cost = rtx_cost (gen_rtx_MULT (mode, op0, op1), SET);
+      mult_cost = MIN (12 * add_cost, mult_cost);
+
+      if (choose_mult_variant (mode, INTVAL (const_op1), &algorithm, &variant,
+			       mult_cost))
+	return expand_mult_const (mode, op0, INTVAL (const_op1), target,
+				  &algorithm, variant);
+    }
 
   if (GET_CODE (op0) == CONST_DOUBLE)
     {
@@ -2976,7 +2976,9 @@ expand_mult_highpart (enum machine_mode mode, rtx op0,
 		      unsigned HOST_WIDE_INT cnst1, rtx target,
 		      int unsignedp, int max_cost)
 {
-  enum machine_mode wider_mode;
+  enum machine_mode wider_mode = GET_MODE_WIDER_MODE (mode);
+  int extra_cost;
+  bool sign_adjust = false;
   enum mult_variant variant;
   struct algorithm alg;
   rtx op1, tem;
@@ -2986,22 +2988,45 @@ expand_mult_highpart (enum machine_mode mode, rtx op0,
     abort ();
 
   op1 = gen_int_mode (cnst1, mode);
+  cnst1 &= GET_MODE_MASK (mode);
+
+  /* We can't optimize modes wider than BITS_PER_WORD. 
+     ??? We might be able to perform double-word arithmetic if 
+     mode == word_mode, however all the cost calculations in
+     synth_mult etc. assume single-word operations.  */
+  if (GET_MODE_BITSIZE (wider_mode) > BITS_PER_WORD)
+    return expand_mult_highpart_optab (mode, op0, op1, target,
+				       unsignedp, max_cost);
+
+  extra_cost = shift_cost[GET_MODE_BITSIZE (mode) - 1];
+
+  /* Check whether we try to multiply by a negative constant.  */
+  if (!unsignedp && ((cnst1 >> (GET_MODE_BITSIZE (mode) - 1)) & 1))
+    {
+      sign_adjust = true;
+      extra_cost += add_cost;
+    }
 
   /* See whether shift/add multiplication is cheap enough.  */
-  if (choose_mult_variant (mode, cnst1, &alg, &variant)
-      && (alg.cost += shift_cost[GET_MODE_BITSIZE (mode) - 1]) < max_cost)
+  if (choose_mult_variant (wider_mode, cnst1, &alg, &variant,
+			   max_cost - extra_cost))
     {
       /* See whether the specialized multiplication optabs are
 	 cheaper than the shift/add version.  */
       tem = expand_mult_highpart_optab (mode, op0, op1, target,
-					unsignedp, alg.cost);
+					unsignedp, alg.cost + extra_cost);
       if (tem)
 	return tem;
 
-      wider_mode = GET_MODE_WIDER_MODE (mode);
-      op0 = convert_to_mode (wider_mode, op0, unsignedp);
-      tem = expand_mult_const (wider_mode, op0, cnst1, 0, &alg, variant);
-      return extract_high_half (mode, tem);
+      tem = convert_to_mode (wider_mode, op0, unsignedp);
+      tem = expand_mult_const (wider_mode, tem, cnst1, 0, &alg, variant);
+      tem = extract_high_half (mode, tem);
+
+      /* Adjust result for signedness. */
+      if (sign_adjust)
+	tem = force_operand (gen_rtx_MINUS (mode, tem, op0), tem);
+
+      return tem;
     }
   return expand_mult_highpart_optab (mode, op0, op1, target,
 				     unsignedp, max_cost);
