@@ -27,6 +27,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "pretty-print.h"
 
 
+typedef enum
+  {
+     pp_c_flag_abstract = 1 << 1,
+     pp_c_flag_last_bit = 2    
+  } pp_c_pretty_print_flags;
+
+
 /* The data type used to bundle information necessary for pretty-printing
    a C or C++ entity.  */
 typedef struct c_pretty_print_info *c_pretty_printer;
@@ -41,18 +48,24 @@ struct c_pretty_print_info
      Not used yet.  */
   int *offset_list;
 
+  pp_flags flags;
+   
   /* These must be overridden by each of the C and C++ front-end to
      reflect their understanding of syntactic productions when they differ.  */
   c_pretty_print_fn declaration;
   c_pretty_print_fn declaration_specifiers;
-  c_pretty_print_fn type_specifier;
   c_pretty_print_fn declarator;
+  c_pretty_print_fn abstract_declarator;
+  c_pretty_print_fn type_specifier;
   c_pretty_print_fn direct_declarator;
   c_pretty_print_fn parameter_declaration;
   c_pretty_print_fn type_id;
+  c_pretty_print_fn function_specifier;
+  c_pretty_print_fn storage_class_specifier;
 
   c_pretty_print_fn statement;
 
+  c_pretty_print_fn id_expression;
   c_pretty_print_fn primary_expression;
   c_pretty_print_fn postfix_expression;
   c_pretty_print_fn unary_expression;
@@ -65,78 +78,50 @@ struct c_pretty_print_info
 #undef pp_base
 #define pp_base(PP)  (&pp_c_base (PP)->base)
 
-#define pp_c_left_paren(PPI)                       \
-   do {                                            \
-     pp_left_paren (PPI);                          \
-     pp_c_base (PPI)->base.padding = pp_none;      \
-   } while (0)
-#define pp_c_right_paren(PPI)                      \
-   do {                                            \
-     pp_right_paren (PPI);                         \
-     pp_c_base (PPI)->base.padding = pp_none;      \
-   } while (0)
-#define pp_c_left_bracket(PPI)                     \
-   do {                                            \
-     pp_left_bracket (PPI);                        \
-     pp_c_base (PPI)->base.padding = pp_none;      \
-   } while (0)
-#define pp_c_right_bracket(PPI)                    \
-   do {                                            \
-     pp_right_bracket (PPI);                       \
-     pp_c_base (PPI)->base.padding = pp_none;      \
-   } while (0)
-#define pp_c_whitespace(PPI)                       \
-   do {                                            \
-     pp_space (PPI);                               \
-     pp_c_base (PPI)->base.padding = pp_none;      \
-   } while (0)
-#define pp_c_maybe_whitespace(PPI)                 \
-   do {                                            \
-     if (pp_c_base (PPI)->base.padding != pp_none) \
-       pp_c_whitespace (PPI);                      \
-   } while (0)
-#define pp_c_identifier(PPI, ID)                   \
-   do {                                            \
-     pp_c_maybe_whitespace (PPI);                  \
-     pp_identifier (PPI, ID);                      \
-     pp_c_base (PPI)->base.padding = pp_before;    \
-   } while (0)
      
 #define pp_c_tree_identifier(PPI, ID)              \
    pp_c_identifier (PPI, IDENTIFIER_POINTER (ID))
 
 #define pp_declaration(PPI, T)                    \
-   (*pp_c_base (PPI)->declaration) (pp_c_base (PPI), T)
+   pp_c_base (PPI)->declaration (pp_c_base (PPI), T)
 #define pp_declaration_specifiers(PPI, D)         \
-   (*pp_c_base (PPI)->declaration_specifiers) (pp_c_base (PPI), D)
+   pp_c_base (PPI)->declaration_specifiers (pp_c_base (PPI), D)
+#define pp_abstract_declarator(PP, D)             \
+   pp_c_base (PP)->abstract_declarator (pp_c_base (PP), D)
 #define pp_type_specifier(PPI, D)                 \
-   (*pp_c_base (PPI)->type_specifier) (pp_c_base (PPI), D)
+   pp_c_base (PPI)->type_specifier (pp_c_base (PPI), D)
 #define pp_declarator(PPI, D)                     \
-   (*pp_c_base (PPI)->declarator) (pp_c_base (PPI), D)
+   pp_c_base (PPI)->declarator (pp_c_base (PPI), D)
 #define pp_direct_declarator(PPI, D)              \
-   (*pp_c_base (PPI)->direct_declarator) (pp_c_base (PPI), D)
+   pp_c_base (PPI)->direct_declarator (pp_c_base (PPI), D)
 #define pp_parameter_declaration(PPI, T)          \
-  (*pp_c_base (PPI)->parameter_declaration) (pp_c_base (PPI), T)
+  pp_c_base (PPI)->parameter_declaration (pp_c_base (PPI), T)
 #define pp_type_id(PPI, D)                        \
-  (*pp_c_base (PPI)->type_id) (pp_c_base (PPI), D)
+  pp_c_base (PPI)->type_id (pp_c_base (PPI), D)
+#define pp_function_specifier(PP, D)              \
+  pp_c_base (PP)->function_specifier (pp_c_base (PP), D)
+#define pp_storage_class_specifier(PP, D)         \
+  pp_c_base (PP)->storage_class_specifier (pp_c_base (PP), D);
 
 #define pp_statement(PPI, S)                      \
-  (*pp_c_base (PPI)->statement) (pp_c_base (PPI), S)
+  pp_c_base (PPI)->statement (pp_c_base (PPI), S)
 
+#define pp_id_expression(PP, E)  \
+  pp_c_base (PP)->id_expression (pp_c_base (PP), E)
 #define pp_primary_expression(PPI, E)             \
-  (*pp_c_base (PPI)->primary_expression) (pp_c_base (PPI), E)
+  pp_c_base (PPI)->primary_expression (pp_c_base (PPI), E)
 #define pp_postfix_expression(PPI, E)             \
-  (*pp_c_base (PPI)->postfix_expression) (pp_c_base (PPI), E)
+  pp_c_base (PPI)->postfix_expression (pp_c_base (PPI), E)
 #define pp_unary_expression(PPI, E)               \
-  (*pp_c_base (PPI)->unary_expression) (pp_c_base (PPI), E)
+  pp_c_base (PPI)->unary_expression (pp_c_base (PPI), E)
 #define pp_initializer(PPI, E)                    \
-  (*pp_c_base (PPI)->initializer) (pp_c_base (PPI), E)
+  pp_c_base (PPI)->initializer (pp_c_base (PPI), E)
 #define pp_multiplicative_expression(PPI, E)      \
-   (*pp_c_base (PPI)->multiplicative_expression) (pp_c_base (PPI), E)
+  pp_c_base (PPI)->multiplicative_expression (pp_c_base (PPI), E)
 #define pp_conditional_expression(PPI, E)         \
-   (*pp_c_base (PPI)->conditional_expression) (pp_c_base (PPI), E)
+  pp_c_base (PPI)->conditional_expression (pp_c_base (PPI), E)
 #define pp_assignment_expression(PPI, E)          \
-   (*pp_c_base (PPI)->assignment_expression) (pp_c_base (PPI), E)
+   pp_c_base (PPI)->assignment_expression (pp_c_base (PPI), E)
 
 
 /* Returns the c_pretty_printer base object of PRETTY-PRINTER.  This
@@ -146,22 +131,28 @@ struct c_pretty_print_info
 extern void pp_c_pretty_printer_init (c_pretty_printer);
 
 /* Declarations.  */
+void pp_c_function_definition (c_pretty_printer, tree);
 void pp_c_attributes (c_pretty_printer, tree);
-void pp_c_cv_qualifier (c_pretty_printer, int);
+void pp_c_type_qualifier_list (c_pretty_printer, tree);
 void pp_c_parameter_declaration_clause (c_pretty_printer, tree);
 void pp_c_declaration (c_pretty_printer, tree);
+void pp_c_declarator (c_pretty_printer, tree);
+void pp_c_direct_declarator (c_pretty_printer, tree);
+void pp_c_specifier_qualifier_list (c_pretty_printer, tree);
+void pp_c_type_id (c_pretty_printer, tree);
 /* Statements.  */
 void pp_c_statement (c_pretty_printer, tree);
 /* Expressions.  */
 void pp_c_expression (c_pretty_printer, tree);
 void pp_c_logical_or_expression (c_pretty_printer, tree);
 void pp_c_expression_list (c_pretty_printer, tree);
+void pp_c_unary_expression (c_pretty_printer, tree);
 void pp_c_cast_expression (c_pretty_printer, tree);
 void pp_c_postfix_expression (c_pretty_printer, tree);
 void pp_c_initializer (c_pretty_printer, tree);
-void pp_c_literal (c_pretty_printer, tree);
+void pp_c_constant (c_pretty_printer, tree);
+void pp_c_id_expression (c_pretty_printer, tree);
+void pp_c_identifier (c_pretty_printer, const char *);
 void pp_c_string_literal (c_pretty_printer, tree);
-void pp_c_real_literal (c_pretty_printer, tree);
-void pp_c_integer_literal (c_pretty_printer, tree);
 
 #endif /* GCC_C_PRETTY_PRINTER */

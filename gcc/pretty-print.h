@@ -108,8 +108,6 @@ struct pretty_print_info
 
   /* The prefix for each new line.  */
   const char *prefix;
-
-  pp_flags flags;
   
   /* Where to put whitespace around the entity being formatted.  */
   pp_padding padding;
@@ -202,6 +200,8 @@ struct pretty_print_info
   do {                               \
     pp_indentation (PP) += N;        \
     pp_newline (PP);                 \
+    pp_base_indent (pp_base (PP));   \
+    pp_needs_newline (PP) = false;   \
   } while (0)
 #define pp_separate_with(PP, C)     \
    do {                             \
@@ -251,6 +251,7 @@ extern void pp_base_flush (pretty_printer *);
 extern void pp_base_format_text (pretty_printer *, text_info *);
 extern void pp_base_format_verbatim (pretty_printer *, text_info *);
 
+extern void pp_base_indent (pretty_printer *);
 extern void pp_base_newline (pretty_printer *);
 extern void pp_base_character (pretty_printer *, int);
 extern void pp_base_string (pretty_printer *, const char *);

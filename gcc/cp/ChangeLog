@@ -1,3 +1,26 @@
+2003-08-10  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* error.c (dump_expr): Tidy.
+	* cxx-pretty-print.c (pp_cxx_nonconsecutive_character): New.
+	(pp_cxx_begin_template_argument_list): Likewise.
+	(pp_cxx_end_template_argument_list): Likewise.
+	(is_destructor_name): Likewise.
+	(pp_cxx_unqualified_id): Likewise.
+	(pp_cxx_qualified_id): Likewise.
+	(pp_cxx_id_expression): Likewise.
+	(pp_cxx_new_expression): Likewise.
+	(pp_cxx_delete_expression): Likewise.
+	(pp_cxx_pm_expression): Likewise.
+	(pp_cxx_type_specifier): Rework.
+	(pp_cxx_type_id): Likewise.
+	(pp_cxx_primary_expression): Likewise.
+	(pp_cxx_postfix_expression): Likewise.
+	(pp_cxx_unary_expression): Likewise.
+	(pp_cxx_multiplicative_expression): Likewise.
+	(pp_cxx_conditional_expression): Likewise.
+	(pp_cxx_assignment_expression): Likewise.
+	(pp_cxx_pretty_printer_init): Tidy.
+
 2003-08-10  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.h (TMPL_ARGS_HAVE_MULTIPLE_LEVELS): non-NULL

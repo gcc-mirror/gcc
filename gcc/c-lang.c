@@ -30,6 +30,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
+#include "diagnostic.h"
+#include "c-pretty-print.h"
+
+static void c_initialize_diagnostics (diagnostic_context *);
 
 enum c_language_kind c_language = clk_c;
 
@@ -43,6 +47,8 @@ enum c_language_kind c_language = clk_c;
 #define LANG_HOOKS_FINISH c_common_finish
 #undef LANG_HOOKS_INIT_OPTIONS
 #define LANG_HOOKS_INIT_OPTIONS c_common_init_options
+#undef LANG_HOOKS_INITIALIZE_DIAGNOSTITCS
+#define LANG_HOOKS_INITIALIZE_DIAGNOSTITCS c_initialize_diagnostics
 #undef LANG_HOOKS_HANDLE_OPTION
 #define LANG_HOOKS_HANDLE_OPTION c_common_handle_option
 #undef LANG_HOOKS_MISSING_ARGUMENT
@@ -217,5 +223,19 @@ finish_file (void)
 {
   c_objc_common_finish_file ();
 }
+
+static void
+c_initialize_diagnostics (diagnostic_context *context)
+{
+  pretty_printer *base = context->printer;
+  c_pretty_printer pp = xmalloc (sizeof *pp);
+  memcpy (pp_base (pp), base, sizeof (pretty_printer));
+  pp_c_pretty_printer_init (pp);
+  context->printer = (pretty_printer *) pp;
+
+  /* It is safe to free this object because it was previously malloc()'d.  */
+  free (base);
+}
+
 
 #include "gtype-c.h"
