@@ -269,7 +269,7 @@ namespace __gnu_cxx
         size_t thread_id = 0;
 #endif
 
-        block_record* block;
+        block_record* block = NULL;
 
         /*
          * Find out if we have blocks on our freelist.
@@ -280,9 +280,11 @@ namespace __gnu_cxx
           {
             /*
              * Are we using threads?
-             * - Yes, lock and check if there are free blocks on the global
-             *   list (and if not add new ones), get the first one
-             *   and change owner.
+             * - Yes, check if there are free blocks on the global
+             *   list. If so, grab up to block_count blocks in one
+             *   lock and change ownership. If the global list is 
+             *   empty, we allocate a new chunk and add those blocks 
+             *   directly to our own freelist (with us as owner).
              * - No, all operations are made directly to global pool 0
              *   no need to lock or change ownership but check for free
              *   blocks on global list (and if not add new ones) and
@@ -291,57 +293,83 @@ namespace __gnu_cxx
 #ifdef __GTHREADS
             if (__gthread_active_p())
               {
+                size_t bin_t = 1 << bin;
+                size_t block_count =
+                  _S_chunk_size /(bin_t + sizeof(block_record));
+
                 __gthread_mutex_lock(_S_bin[bin].mutex);
 
                 if (_S_bin[bin].first[0] == NULL)
                   {
-                    _S_bin[bin].first[0] =
+                    /*
+                     * No need to hold the lock when we are adding a
+                     * whole chunk to our own list
+                     */
+                    __gthread_mutex_unlock(_S_bin[bin].mutex);
+
+                    _S_bin[bin].first[thread_id] =
                       (block_record*)malloc(_S_chunk_size);
 
-                    if (!_S_bin[bin].first[0])
-                      {
-                        __gthread_mutex_unlock(_S_bin[bin].mutex);
-                        __throw_bad_alloc();
-                      }
+                    if (!_S_bin[bin].first[thread_id])
+                      __throw_bad_alloc();
 
-                    size_t bin_t = 1 << bin;
-                    size_t block_count =
-                      _S_chunk_size /(bin_t + sizeof(block_record));
-
-                    _S_bin[bin].free[0] = block_count;
+                    _S_bin[bin].free[thread_id] = block_count;
 
                     block_count--;
-                    block = _S_bin[bin].first[0];
+                    block = _S_bin[bin].first[thread_id];
 
                     while (block_count > 0)
                       {
                         block->next = (block_record*)((char*)block +
                                       (bin_t + sizeof(block_record)));
+                        block->thread_id = thread_id;
                         block = block->next;
                         block_count--;
                       }
 
                     block->next = NULL;
-                    _S_bin[bin].last[0] = block;
+                    block->thread_id = thread_id;
+                    _S_bin[bin].last[thread_id] = block;
+                  }
+                else
+                  {
+                    size_t global_count = 0;
+
+                    while( _S_bin[bin].first[0] != NULL &&
+                           global_count < block_count )
+                      {
+                        block = _S_bin[bin].first[0];
+
+                        if (_S_bin[bin].first[thread_id] == NULL)
+                          _S_bin[bin].first[thread_id] = block;
+                        else
+                          _S_bin[bin].last[thread_id]->next = block;
+
+                        _S_bin[bin].last[thread_id] = block;
+
+                        block->thread_id = thread_id;
+
+                        _S_bin[bin].free[thread_id]++;
+
+                        _S_bin[bin].first[0] = _S_bin[bin].first[0]->next;
+
+                        global_count++;
+                      }
+
+                    block->next = NULL;
+
+                    __gthread_mutex_unlock(_S_bin[bin].mutex);
                   }
 
-                block = _S_bin[bin].first[0];
-
                 /*
-                 * Remove from list and count down the available counter on
-                 * global pool 0.
+                 * Return the first newly added block in our list and
+                 * update the counters
                  */
-                _S_bin[bin].first[0] = _S_bin[bin].first[0]->next;
-                _S_bin[bin].free[0]--;
+                block = _S_bin[bin].first[thread_id];
+                _S_bin[bin].first[thread_id] = 
+                  _S_bin[bin].first[thread_id]->next;
 
-                __gthread_mutex_unlock(_S_bin[bin].mutex);
-
-                /*
-                 * Now that we have removed the block from the global
-                 * freelist we can change owner and update the used
-                 * counter for this thread without locking.
-                 */
-                block->thread_id = thread_id;
+                _S_bin[bin].free[thread_id]--;
                 _S_bin[bin].used[thread_id]++;
               }
             else
@@ -354,9 +382,7 @@ namespace __gnu_cxx
 
                 size_t bin_t = 1 << bin;
                 size_t block_count = 
-		  _S_chunk_size / (bin_t + sizeof(block_record));
-
-                _S_bin[bin].free[0] = block_count;
+                  _S_chunk_size / (bin_t + sizeof(block_record));
 
                 block_count--;
                 block = _S_bin[bin].first[0];
@@ -375,12 +401,9 @@ namespace __gnu_cxx
                 block = _S_bin[bin].first[0];
 
                 /*
-                 * Remove from list and count down the available counter on
-                 * global pool 0 and increase it's used counter.
+                 * Remove from list
                  */
                 _S_bin[bin].first[0] = _S_bin[bin].first[0]->next;
-                _S_bin[bin].free[0]--;
-                _S_bin[bin].used[0]++;
               }
           }
         else
@@ -392,8 +415,14 @@ namespace __gnu_cxx
             block = _S_bin[bin].first[thread_id];
 
             _S_bin[bin].first[thread_id] = _S_bin[bin].first[thread_id]->next;
-            _S_bin[bin].free[thread_id]--;
-            _S_bin[bin].used[thread_id]++;
+
+#ifdef __GTHREADS
+            if (__gthread_active_p())
+              {
+                _S_bin[bin].free[thread_id]--;
+                _S_bin[bin].used[thread_id]++;
+              }
+#endif
           }
 
         return static_cast<_Tp*>(static_cast<void*>((char*)block + sizeof(block_record)));
@@ -424,7 +453,7 @@ namespace __gnu_cxx
 #endif
 
         block_record* block = (block_record*)((char*)__p
-					      - sizeof(block_record));
+                                             - sizeof(block_record));
 
         /*
          * This block will always be at the back of a list and thus
@@ -465,7 +494,6 @@ namespace __gnu_cxx
                     _S_bin[bin].first[thread_id] =
                       _S_bin[bin].first[thread_id]->next;
 
-                    _S_bin[bin].free[0]++;
                     _S_bin[bin].free[thread_id]--;
 
                     remove--;
@@ -509,9 +537,6 @@ namespace __gnu_cxx
               _S_bin[bin].last[0]->next = block;
 
             _S_bin[bin].last[0] = block;
-
-            _S_bin[bin].free[0]++;
-            _S_bin[bin].used[0]--;
           }
       }
     };
@@ -564,7 +589,7 @@ namespace __gnu_cxx
 #ifdef __GTHREADS
       if (__gthread_active_p())
         {
-	  _S_thread_freelist_first =
+          _S_thread_freelist_first =
             (thread_record*)malloc(sizeof(thread_record) * _S_max_threads);
 
           if (!_S_thread_freelist_first)
@@ -578,7 +603,7 @@ namespace __gnu_cxx
           for (i = 1; i < _S_max_threads; i++)
             {
               _S_thread_freelist_first[i - 1].next = 
-		&_S_thread_freelist_first[i];
+                &_S_thread_freelist_first[i];
 
               _S_thread_freelist_first[i - 1].id = i;
             }
@@ -605,52 +630,65 @@ namespace __gnu_cxx
       if (!_S_bin)
         __throw_bad_alloc();
 
-       for (size_t bin = 0; bin < _S_no_of_bins; bin++)
-        {
-	  std::size_t __n = _S_max_threads + 1;
+      std::size_t __n = 1;
 
+#ifdef __GTHREADS
+      if (__gthread_active_p())
+        __n = _S_max_threads + 1;
+#endif
+
+      for (size_t bin = 0; bin < _S_no_of_bins; bin++)
+        {
           _S_bin[bin].first = (block_record**) 
-	    malloc(sizeof(block_record*) * __n);
+            malloc(sizeof(block_record*) * __n);
 
           if (!_S_bin[bin].first)
             __throw_bad_alloc();
 
           _S_bin[bin].last = (block_record**) 
-	    malloc(sizeof(block_record*) * __n);
+            malloc(sizeof(block_record*) * __n);
 
           if (!_S_bin[bin].last)
             __throw_bad_alloc();
 
-          _S_bin[bin].free = (size_t*) malloc(sizeof(size_t) * __n);
-
-          if (!_S_bin[bin].free)
-            __throw_bad_alloc();
-
-          _S_bin[bin].used = (size_t*) malloc(sizeof(size_t) * __n);
-
-          if (!_S_bin[bin].used)
-            __throw_bad_alloc();
-
 #ifdef __GTHREADS
-          _S_bin[bin].mutex =(__gthread_mutex_t*) malloc(sizeof(__gthread_mutex_t));
+          if (__gthread_active_p())
+            {
+              _S_bin[bin].free = (size_t*) malloc(sizeof(size_t) * __n);
+
+              if (!_S_bin[bin].free)
+                __throw_bad_alloc();
+
+              _S_bin[bin].used = (size_t*) malloc(sizeof(size_t) * __n);
+
+              if (!_S_bin[bin].used)
+                __throw_bad_alloc();
+
+              _S_bin[bin].mutex =(__gthread_mutex_t*) malloc(sizeof(__gthread_mutex_t));
 
 #ifdef __GTHREAD_MUTEX_INIT
-	  {
-	    // Do not copy a POSIX/gthr mutex once in use.
-	    __gthread_mutex_t __tmp = __GTHREAD_MUTEX_INIT;
-	    *_S_bin[bin].mutex = __tmp;
-	  }
+              {
+                // Do not copy a POSIX/gthr mutex once in use.
+                __gthread_mutex_t __tmp = __GTHREAD_MUTEX_INIT;
+                *_S_bin[bin].mutex = __tmp;
+              }
 #else
-	  { __GTHREAD_MUTEX_INIT_FUNCTION (_S_bin[bin].mutex); }
+              { __GTHREAD_MUTEX_INIT_FUNCTION (_S_bin[bin].mutex); }
 #endif
+            }
 #endif
 
-          for (size_t thread = 0; thread <= _S_max_threads; thread++)
+          for (size_t thread = 0; thread < __n; thread++)
             {
               _S_bin[bin].first[thread] = NULL;
               _S_bin[bin].last[thread] = NULL;
-              _S_bin[bin].free[thread] = 0;
-              _S_bin[bin].used[thread] = 0;
+#ifdef __GTHREADS
+              if (__gthread_active_p())
+                {
+                  _S_bin[bin].free[thread] = 0;
+                  _S_bin[bin].used[thread] = 0;
+                }
+#endif
             }
         }
 
@@ -783,6 +821,18 @@ namespace __gnu_cxx
 
   template<typename _Tp> typename __mt_alloc<_Tp>::bin_record*
   volatile __mt_alloc<_Tp>::_S_bin = NULL;
+
+  template<typename _Tp>
+    inline bool
+    operator==(const __mt_alloc<_Tp>&,
+               const __mt_alloc<_Tp>&)
+    { return true; }
+  
+  template<typename _Tp>
+    inline bool
+    operator!=(const __mt_alloc<_Tp>&,
+               const __mt_alloc<_Tp>&)
+    { return false; }
 } // namespace __gnu_cxx
 
 #endif
