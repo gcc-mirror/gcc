@@ -6544,7 +6544,27 @@ gen_input_reload (reloadreg, in, opnum, type)
       if (rtx_equal_p (op0, op1))
 	op1 = reloadreg;
 
-      emit_insn (gen_add2_insn (reloadreg, op1));
+      insn = emit_insn (gen_add2_insn (reloadreg, op1));
+
+      /* If that failed, copy the address register to the reload register.
+	 Then add the constant to the reload register. */
+
+      code = recog_memoized (insn);
+
+      if (code >= 0)
+	{
+	  insn_extract (insn);
+	  /* We want constrain operands to treat this insn strictly in
+	     its validity determination, i.e., the way it would after reload
+	     has completed.  */
+	  if (constrain_operands (code, 1))
+	    return insn;
+	}
+
+      delete_insns_since (last);
+
+      emit_insn (gen_move_insn (reloadreg, op1));
+      emit_insn (gen_add2_insn (reloadreg, op0));
     }
 
 #ifdef SECONDARY_MEMORY_NEEDED
