@@ -396,11 +396,11 @@ struct cpp_reader
   struct deps *deps;
 
   /* Obstack holding all macro hash nodes.  This never shrinks.
-     See cpphash.c */
+     See identifiers.c */
   struct obstack hash_ob;
 
   /* Obstack holding buffer and conditional structures.  This is a
-     real stack.  See cpplib.c.  */
+     real stack.  See directives.c.  */
   struct obstack buffer_ob;
 
   /* Pragma table - dynamic, because a library user can add to the
@@ -435,7 +435,7 @@ struct cpp_reader
     source_location first_line;
   } out;
 
-  /* Used for buffer overlays by cpptrad.c.  */
+  /* Used for buffer overlays by traditional.c.  */
   const unsigned char *saved_cur, *saved_rlimit, *saved_line_base;
 
   /* A saved list of the defined macros, for dependency checking
@@ -448,7 +448,7 @@ struct cpp_reader
    definition of a pp-number in the C standard [section 6.4.8 of C99].
 
    In the unlikely event that characters other than \r and \n enter
-   the set is_vspace, the macro handle_newline() in cpplex.c must be
+   the set is_vspace, the macro handle_newline() in lex.c must be
    updated.  */
 #define _dollar_ok(x)	((x) == '$' && CPP_OPTION (pfile, dollars_in_ident))
 
@@ -481,11 +481,11 @@ cpp_in_system_header (cpp_reader *pfile)
 #define CPP_PEDANTIC(PF) CPP_OPTION (PF, pedantic)
 #define CPP_WTRADITIONAL(PF) CPP_OPTION (PF, warn_traditional)
 
-/* In cpperror.c  */
+/* In errors.c  */
 extern int _cpp_begin_message (cpp_reader *, int,
 			       source_location, unsigned int);
 
-/* In cppmacro.c */
+/* In macro.c */
 extern void _cpp_free_definition (cpp_hashnode *);
 extern bool _cpp_create_definition (cpp_reader *, cpp_hashnode *);
 extern void _cpp_pop_context (cpp_reader *);
@@ -497,11 +497,11 @@ extern bool _cpp_arguments_ok (cpp_reader *, cpp_macro *, const cpp_hashnode *,
 extern const unsigned char *_cpp_builtin_macro_text (cpp_reader *,
 						     cpp_hashnode *);
 int _cpp_warn_if_unused_macro (cpp_reader *, cpp_hashnode *, void *);
-/* In cpphash.c */
+/* In identifiers.c */
 extern void _cpp_init_hashtable (cpp_reader *, hash_table *);
 extern void _cpp_destroy_hashtable (cpp_reader *);
 
-/* In cppfiles.c */
+/* In files.c */
 typedef struct _cpp_file _cpp_file;
 extern _cpp_file *_cpp_find_file (cpp_reader *, const char *fname,
 				  cpp_dir *start_dir, bool fake);
@@ -519,11 +519,11 @@ extern void _cpp_pop_file_buffer (cpp_reader *, struct _cpp_file *);
 extern bool _cpp_save_file_entries (cpp_reader *pfile, FILE *f);
 extern bool _cpp_read_file_entries (cpp_reader *, FILE *);
 
-/* In cppexp.c */
+/* In expr.c */
 extern bool _cpp_parse_expr (cpp_reader *);
 extern struct op *_cpp_expand_op_stack (cpp_reader *);
 
-/* In cpplex.c */
+/* In lex.c */
 extern void _cpp_process_line_notes (cpp_reader *, int);
 extern void _cpp_clean_line (cpp_reader *);
 extern bool _cpp_get_fresh_line (cpp_reader *);
@@ -534,10 +534,10 @@ extern cpp_token *_cpp_lex_direct (cpp_reader *);
 extern int _cpp_equiv_tokens (const cpp_token *, const cpp_token *);
 extern void _cpp_init_tokenrun (tokenrun *, unsigned int);
 
-/* In cppinit.c.  */
+/* In init.c.  */
 extern void _cpp_maybe_push_include_file (cpp_reader *);
 
-/* In cpplib.c */
+/* In directives.c */
 extern int _cpp_test_assertion (cpp_reader *, unsigned int *);
 extern int _cpp_handle_directive (cpp_reader *, int);
 extern void _cpp_define_builtin (cpp_reader *, const char *);
@@ -550,7 +550,7 @@ extern void _cpp_do_file_change (cpp_reader *, enum lc_reason, const char *,
 				 unsigned int, unsigned int);
 extern void _cpp_pop_buffer (cpp_reader *);
 
-/* In cpptrad.c.  */
+/* In traditional.c.  */
 extern bool _cpp_scan_out_logical_line (cpp_reader *, cpp_macro *);
 extern bool _cpp_read_logical_line_trad (cpp_reader *);
 extern void _cpp_overlay_buffer (cpp_reader *pfile, const unsigned char *,
@@ -563,7 +563,7 @@ extern unsigned char *_cpp_copy_replacement_text (const cpp_macro *,
 						  unsigned char *);
 extern size_t _cpp_replacement_text_len (const cpp_macro *);
 
-/* In cppcharset.c.  */
+/* In charset.c.  */
 extern cppchar_t _cpp_valid_ucn (cpp_reader *, const unsigned char **,
 				 const unsigned char *, int);
 extern void _cpp_destroy_iconv (cpp_reader *);

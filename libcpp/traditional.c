@@ -76,7 +76,7 @@ enum ls {ls_none = 0,		/* Normal state.  */
 	 ls_predicate,		/* After the predicate, maybe paren?  */
 	 ls_answer};		/* In answer to predicate.  */
 
-/* Lexing TODO: Maybe handle space in escaped newlines.  Stop cpplex.c
+/* Lexing TODO: Maybe handle space in escaped newlines.  Stop lex.c
    from recognizing comments and directives during its lexing pass.  */
 
 static const uchar *skip_whitespace (cpp_reader *, const uchar *, int);
