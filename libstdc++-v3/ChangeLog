@@ -1,5 +1,13 @@
 2000-11-21  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
+	* src/strstream.cc: Adjust includes.
+	* src/Makefile.am (base_headers): Remove std_strstream.h, add
+	backwards/strstream.h.
+	(std_headers): Remove strstream.
+	* src/Makefile.in: Regenerate.
+	* libsupc++/Makefile.am (headers): Remove new.h
+	* libsupc++/Makefile.in: Regenerate.
+	* include/std/strstream: Remove.	
 	* include/backward/strstream.h: Replace with...
 	* include/bits/std_strstream.h: ...this. Move.
 	* include/backward/complex.h: Remove SGIisms.

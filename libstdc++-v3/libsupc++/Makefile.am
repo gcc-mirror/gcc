@@ -77,7 +77,7 @@ INCLUDES = \
 	$(CONFIG_INCLUDES) -I$(top_builddir)/include
 
 headers = \
-	cxxabi.h exception new new.h typeinfo
+	cxxabi.h exception new typeinfo
 
 sources = \
 	del_op.cc \

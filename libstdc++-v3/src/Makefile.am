@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.47 2000/11/13 23:38:41 bkoz Exp $
+## $Id: Makefile.am,v 1.48 2000/11/16 01:44:03 mmitchel Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -101,7 +101,7 @@ base_headers = \
 	backward/multiset.h backward/pair.h backward/iostream.h \
 	backward/rope.h backward/set.h backward/slist.h backward/stack.h \
 	backward/tempbuf.h backward/tree.h backward/vector.h \
-	backward/fstream.h \
+	backward/fstream.h backward/strstream.h \
 	bits/std_bitset.h bits/std_deque.h bits/std_functional.h \
 	bits/std_iterator.h bits/std_list.h \
 	bits/std_map.h bits/std_memory.h bits/std_numeric.h \
@@ -117,7 +117,7 @@ base_headers = \
 	bits/stl_tree.h bits/stl_uninitialized.h bits/stl_vector.h \
 	bits/type_traits.h bits/stl_range_errors.h bits/std_algorithm.h \
 	bits/concept_checks.h bits/container_concepts.h \
-	bits/sequence_concepts.h bits/std_strstream.h \
+	bits/sequence_concepts.h \
 	ext/ropeimpl.h ext/stl_rope.h \
 	ext/stl_bvector.h bits/stl_config.h bits/stl_construct.h \
 	ext/stl_hashtable.h ext/stl_hash_fun.h \
@@ -152,7 +152,7 @@ std_headers = \
 	algorithm bitset complex deque fstream functional \
 	iomanip ios iosfwd iostream istream iterator limits list locale \
 	map memory numeric ostream queue set sstream stack stdexcept \
-	streambuf string strstream utility valarray vector \
+	streambuf string utility valarray vector \
 	cassert cctype cerrno cfloat climits clocale ciso646 \
 	cmath csetjmp csignal cstdarg cstddef cstdio cstdlib \
 	cstring ctime cwchar cwctype
