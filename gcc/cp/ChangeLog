@@ -1,3 +1,19 @@
+1999-03-05  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.h (ANON_UNION_TYPE_P): Robustify.
+	* decl.c (make_typename_type): Don't issue an error if an
+	immediate lookup fails; it migt be resolved later.
+	* friend.c (is_friend): Add comment.
+	* search.c (breadth_first_search): Add POSTFN and DATA
+	parameters.  Tidy.  All callers changed.
+	(lookup_field_queue_p): New function.
+	(lookup_field_r): Likewise.
+	(lookup_field_post): Likewise.
+	(lookup_field): Use them, via breadth_first_search, instead of
+	duplicating logic.
+	(compute_access): Robustify.
+	(lookup_fnfield_info): New structure.
+	
 1999-03-05  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (tsubst, case ARRAY_REF): Use tsubst_expr again.
