@@ -726,11 +726,12 @@ struct lang_type
       unsigned has_abstract_assign_ref : 1;
       unsigned non_aggregate : 1;
       unsigned is_partial_instantiation : 1;
+      unsigned has_mutable : 1;
 
       /* The MIPS compiler gets it wrong if this struct also
 	 does not fill out to a multiple of 4 bytes.  Add a
 	 member `dummy' with new bits if you go over the edge.  */
-      unsigned dummy : 11;
+      unsigned dummy : 10;
     } type_flags;
 
   int n_ancestors;
@@ -1036,6 +1037,10 @@ struct lang_type
 
 /* Ditto, for operator=.  */
 #define TYPE_HAS_NONPUBLIC_ASSIGN_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_nonpublic_assign_ref)
+
+/* Nonzero means that this type contains a mutable member */
+#define CLASSTYPE_HAS_MUTABLE(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_mutable)
+#define TYPE_HAS_MUTABLE_P(NODE) (cp_has_mutable_p (NODE))
 
 /* Many routines need to cons up a list of basetypes for access
    checking.  This field contains a TREE_LIST node whose TREE_VALUE
@@ -3372,6 +3377,7 @@ extern int comp_ptr_ttypes			PROTO((tree, tree));
 extern int ptr_reasonably_similar		PROTO((tree, tree));
 extern tree build_ptrmemfunc			PROTO((tree, tree, int));
 extern int cp_type_quals                        PROTO((tree));
+extern int cp_has_mutable_p                     PROTO((tree));
 extern int at_least_as_qualified_p              PROTO((tree, tree));
 extern int more_qualified_p                     PROTO((tree, tree));
 
