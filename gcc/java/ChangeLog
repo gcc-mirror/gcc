@@ -1,3 +1,13 @@
+2002-06-10  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	Don't use RTL inlining. Fix for PR java/6820.
+	* lang.c (LANG_HOOKS_POST_OPTIONS): Define.
+	(flag_really_inline): New.
+	(java_decode_option): Set flag_really_inline if -finline-functions
+	is seen.
+	(java_post_options): New function. Turn off inlining unless
+	flag_really_inline is set.
+
 2002-06-08  H.J. Lu  (hjl@gnu.org)
 
 	* jcf-path.c (jcf_path_init): Allocate 1 more byte for string.
