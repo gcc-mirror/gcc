@@ -1,3 +1,9 @@
+2003-12-09  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (num_get::_M_extract_int):
+	Slightly streamline the code dealing with overflows and the
+	parsing of the sign.
+
 2003-12-09  Bernardo Innocenti  <bernie@develer.com>
 
 	* include/ext/algorithm, include/ext/debug_allocator.h,
