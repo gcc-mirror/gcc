@@ -1,3 +1,8 @@
+Mon Sep 11 20:07:48 2000  J"orn Rennecke <amylaar@redhat.co.uk>
+
+	* sh.h (INITIALIZE_TRAMPOLINE): Remove stray call to
+	gen_ic_invalidate_line.
+
 2000-09-11  Philip Blundell  <pb@futuretv.com>
 
 	* config/arm/elf.h (SUBTARGET_CPP_SPEC): Don't define `arm_elf'.
