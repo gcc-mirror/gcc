@@ -1083,4 +1083,5 @@ AC_SUBST([am__untar])
 ]) # _AM_PROG_TAR
 
 m4_include([../config/accross.m4])
+m4_include([../config/gcc-version.m4])
 m4_include([acinclude.m4])

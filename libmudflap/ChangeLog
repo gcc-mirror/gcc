@@ -1,3 +1,9 @@
+2004-12-02  Richard Sandiford  <rsandifo@redhat.com>
+
+	* configure.ac: Use TL_AC_GCC_VERSION to set gcc_version.
+	* aclocal.m4: Include ../config/gcc-version.m4.
+	* configure, Makefile.in, testsuite/Makefile.in: Regenerate.
+
 2004-11-29  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.am: Define ACLOCAL_AMFLAGS.

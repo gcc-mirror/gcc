@@ -1,3 +1,10 @@
+2004-12-02  Richard Sandiford  <rsandifo@redhat.com>
+
+	* configure.ac: Use TL_AC_GCC_VERSION to set gcc_version.  Remove
+	now-redundant AC_SUBSTs.
+	* aclocal.m4: Include ../config/gcc-version.m4.
+	* configure: Regenerate.
+
 2004-12-02  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (rs6000_assemble_integer): Put back the

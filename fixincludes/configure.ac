@@ -52,11 +52,7 @@ if test $TARGET = twoprocess; then
 		  [Define if testing and fixing are done by separate process])
 fi
 
-# Get GCC's version number.
-changequote(,)dnl
-gcc_version=`sed -n '/version_string/ { s/.*"\([^ "]*\)[^"]*".*/\1/p ; }' ${srcdir}/../gcc/version.c`
-changequote([,])dnl
-AC_SUBST(gcc_version)
+TL_AC_GCC_VERSION([$srcdir/..])
 
 case $host in
 	vax-dec-bsd* )
