@@ -1844,8 +1844,11 @@ expand_call (exp, target, ignore)
 	    move_block_to_reg (REGNO (reg),
 			       validize_mem (args[i].value), nregs,
 			       args[i].mode);
-	
-	  use_regs (&call_fusage, reg, REGNO (reg), nregs);
+
+	  if (nregs == -1)
+	    use_reg (&call_fusage, reg);
+	  else
+	    use_regs (&call_fusage, REGNO (reg), nregs == 0 ? 1 : nregs);
 
 	  /* PARTIAL referred only to the first register, so clear it for the
 	     next time.  */
