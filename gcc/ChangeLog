@@ -3,6 +3,43 @@
 	* config/frv/frv.h (PREDICATE_CODES): Add CONST to
 	gpr_or_int12_operand.
 
+	* config/frv/frv-protos.h: Add a prototype to
+	frv_legitimate_memory_operand and frv_const_unspec_p.
+	(frv_unspec): Move from frv.c.
+	* config/frv/frv.c (frv_unspec): Move to frv-protos.h.
+	(frv_const_unspec_p, frv_legitimate_memory_operand_): Export.
+	(ldd_address_operand, fdpic_fptr_operand, frv_load_operand,
+	gpr_or_fpr_operand, gpr_or_int12_operand,
+	gpr_fpr_or_int12_operand, fpr_or_int6_operand,
+	gpr_or_int10_operand, gpr_or_int_operand, int12_operand,
+	int6_operand, int5_operand, uint5_operand, uint4_operand,
+	uint1_operand, int_2word_operand, uint16_operand,
+	upper_int16_operand, integer_register_operand,
+	gpr_no_subreg_operand, fpr_operand, even_reg_operand,
+	odd_reg_operand, even_gpr_operand, odd_gpr_operand,
+	quad_fpr_operand, even_fpr_operand, odd_fpr_operand,
+	dbl_memory_one_insn_operand, dbl_memory_two_insn_operand,
+	move_destination_operand, movcc_fp_destination_operand,
+	frv_function_symbol_referenced_p, move_source_operand,
+	condexec_dest_operand, condexec_source_operand,
+	reg_or_0_operand, lr_operand, fdpic_operand, got12_operand,
+	const_unspec_operand, gpr_or_memory_operand,
+	gpr_or_memory_operand_with_scratch, fpr_or_memory_operand,
+	icc_operand, fcc_operand, cc_operand, icr_operand,
+	fcr_operand, cr_operand, call_operand, sibcall_operand,
+	symbolic_operand, relational_operator,
+	integer_relational_operator, float_relational_operator,
+	ccr_eqne_operator, minmax_operator,
+	condexec_si_binary_operator, condexec_si_media_operator,
+	condexec_si_divide_operator, condexec_si_unary_operator,
+	condexec_sf_conv_operator, condexec_sf_add_operator,
+	condexec_memory_operand, intop_compare_operator, acc_operand,
+	even_acc_operand, quad_acc_operand, accg_operand: Move to
+	predicates.md.
+	* config/frv/frv.h (PREDICATE_CODES): Remove.
+	* config/frv/frv.md: Include predicates.md.
+	* config/frv/predicates.md: New.
+
 2004-04-04  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR target/19537
