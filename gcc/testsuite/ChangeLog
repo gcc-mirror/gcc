@@ -1,3 +1,7 @@
+2002-03-09  Geoffrey Keating  <geoffk@redhat.com>
+
+	* gcc.dg/ppc-ldstruct.c: New test.
+
 2002-03-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/va-arg-22.c: New test.
