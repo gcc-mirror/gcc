@@ -610,14 +610,13 @@ namespace std
 	__first = std::find(__first, __last, __val);
 	while (__first != __last) {
 	  typename iterator_traits<_ForwardIterator>::difference_type __n = __count;
-	  --__n;
 	  _ForwardIterator __i = __first;
 	  ++__i;
-	  while (__i != __last && __n != 0 && *__i == __val) {
+	  while (__i != __last && __n != 1 && *__i == __val) {
 	    ++__i;
 	    --__n;
 	  }
-	  if (__n == 0)
+	  if (__n == 1)
 	    return __first;
 	  else
 	    __first = std::find(__i, __last, __val);
@@ -663,14 +662,13 @@ namespace std
 	}
 	while (__first != __last) {
 	  typename iterator_traits<_ForwardIterator>::difference_type __n = __count;
-	  --__n;
 	  _ForwardIterator __i = __first;
 	  ++__i;
-	  while (__i != __last && __n != 0 && __binary_pred(*__i, __val)) {
+	  while (__i != __last && __n != 1 && __binary_pred(*__i, __val)) {
 	    ++__i;
 	    --__n;
 	  }
-	  if (__n == 0)
+	  if (__n == 1)
 	    return __first;
 	  else {
 	    while (__i != __last) {
