@@ -1,3 +1,7 @@
+2005-02-25  James A. Morrison  <phython@gcc.gnu.org>
+
+	* treelang.texi: Fix whitespacing.
+
 2005-02-24  James A. Morrison  <phython@gcc.gnu.org>
 
 	PR other/19896
