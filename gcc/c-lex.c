@@ -1613,7 +1613,8 @@ yylex ()
 		else if (TREE_UNSIGNED (traditional_type)
 			 != TREE_UNSIGNED (ansi_type))
 		  warning ("integer constant is unsigned in ANSI C, signed with -traditional");
-		else abort ();
+		else
+		  warning ("width of integer constant may change on other systems with -traditional");
 	      }
 #endif
 

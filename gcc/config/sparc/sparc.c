@@ -1048,63 +1048,53 @@ output_move_double (operands)
       || (optype0 != REGOP && optype0 != CNSTOP && optype1 == REGOP
 	  && (REGNO (operands[1]) & 1) == 0))
     {
-      rtx op1, op2;
-      rtx base = 0, offset = const0_rtx;
+      rtx addr;
+      rtx base, offset;
 
-      /* OP1 gets the register pair, and OP2 gets the memory address.  */
       if (optype0 == REGOP)
-	op1 = operands[0], op2 = operands[1];
+	addr = operands[1];
       else
-	op1 = operands[1], op2 = operands[0];
+	addr = operands[0];
 
-      /* Now see if we can trust the address to be 8-byte aligned.  */
-      /* Trust double-precision floats in global variables.  */
+      /* Now see if we can trust the address to be 8-byte aligned.
+	 Trust double-precision floats in global variables.  */
 
-      if (GET_CODE (XEXP (op2, 0)) == LO_SUM && GET_MODE (op2) == DFmode)
+      if (GET_CODE (XEXP (addr, 0)) == LO_SUM && GET_MODE (addr) == DFmode)
+	return (addr == operands[1] ? "ldd %1,%0" : "std %1,%0");
+
+      base = 0;
+      if (GET_CODE (XEXP (addr, 0)) == PLUS)
 	{
-	  if (final_sequence)
-	    abort ();
-	  return (op1 == operands[0] ? "ldd %1,%0" : "std %1,%0");
-	}
-
-      if (GET_CODE (XEXP (op2, 0)) == PLUS)
-	{
-	  rtx temp = XEXP (op2, 0);
-	  if (GET_CODE (XEXP (temp, 0)) == REG)
+	  rtx temp = XEXP (addr, 0);
+	  if (GET_CODE (XEXP (temp, 0)) == REG
+	      && GET_CODE (XEXP (temp, 1)) == CONST_INT)
 	    base = XEXP (temp, 0), offset = XEXP (temp, 1);
-	  else if (GET_CODE (XEXP (temp, 1)) == REG)
-	    base = XEXP (temp, 1), offset = XEXP (temp, 0);
 	}
+      else if (GET_CODE (XEXP (addr, 0)) == REG)
+	base = XEXP (addr, 0), offset = const0_rtx;
 
-      /* Trust round enough offsets from the stack or frame pointer.  */
+      /* Trust round enough offsets from the stack or frame pointer.
+	 If TARGET_HOPE_ALIGN, trust round enough offset from any register
+	 for DFmode loads.  If it is obviously unaligned, don't ever
+	 generate ldd or std.  */
       if (base
 	  && (REGNO (base) == FRAME_POINTER_REGNUM
-	      || REGNO (base) == STACK_POINTER_REGNUM))
+	      || REGNO (base) == STACK_POINTER_REGNUM
+	      || (TARGET_HOPE_ALIGN && GET_MODE (addr) == DFmode)))
 	{
-	  if (GET_CODE (offset) == CONST_INT
-	      && (INTVAL (offset) & 0x7) == 0)
-	    {
-	      if (op1 == operands[0])
-		return "ldd %1,%0";
-	      else
-		return "std %1,%0";
-	    }
+	  if ((INTVAL (offset) & 0x7) == 0)
+	    return (addr == operands[1] ? "ldd %1,%0" : "std %1,%0");
 	}
       /* We know structs not on the stack are properly aligned.  Since a
 	 double asks for 8-byte alignment, we know it must have got that
 	 if it is in a struct.  But a DImode need not be 8-byte aligned,
-	 because it could be a struct containing two ints or pointers.  */
-      else if (GET_CODE (operands[1]) == MEM
-	       && GET_MODE (operands[1]) == DFmode
-	       && (CONSTANT_P (XEXP (operands[1], 0))
-		   /* Let user ask for it anyway.  */
-		   || TARGET_HOPE_ALIGN))
-	return "ldd %1,%0";
-      else if (GET_CODE (operands[0]) == MEM
-	       && GET_MODE (operands[0]) == DFmode
-	       && (CONSTANT_P (XEXP (operands[0], 0))
-		   || TARGET_HOPE_ALIGN))
-	return "std %1,%0";
+	 because it could be a struct containing two ints or pointers.
+	 Hence, a constant DFmode address will always be 8-byte aligned.
+	 If TARGET_HOPE_ALIGN, then assume all doubles are aligned even if this
+	 is not a constant address.  */
+      else if (GET_CODE (addr) == MEM && GET_MODE (addr) == DFmode
+	       && (CONSTANT_P (addr) || TARGET_HOPE_ALIGN))
+	return (addr == operands[1] ? "ldd %1,%0" : "std %1,%0");
     }
 
   if (optype0 == REGOP && optype1 == REGOP
@@ -1159,6 +1149,9 @@ output_move_double (operands)
   return "";
 }
 
+/* Output assembler code to perform a doubleword move insn with perands
+   OPERANDS, one of which must be a floating point register.  */
+
 char *
 output_fp_move_double (operands)
      rtx *operands;
@@ -1169,35 +1162,15 @@ output_fp_move_double (operands)
     {
       if (FP_REG_P (operands[1]))
 	return "fmovs %1,%0\n\tfmovs %R1,%R0";
-      if (GET_CODE (operands[1]) == REG)
+      else if (GET_CODE (operands[1]) == REG)
 	{
 	  if ((REGNO (operands[1]) & 1) == 0)
 	    return "std %1,[%@-8]\n\tldd [%@-8],%0";
 	  else
 	    return "st %R1,[%@-4]\n\tst %1,[%@-8]\n\tldd [%@-8],%0";
 	}
-      addr = XEXP (operands[1], 0);
-
-      /* Use ldd if known to be aligned.  */
-      if (TARGET_HOPE_ALIGN
-	  || (GET_CODE (addr) == PLUS
-	      && (((XEXP (addr, 0) == frame_pointer_rtx
-		    || XEXP (addr, 0) == stack_pointer_rtx)
-		   && GET_CODE (XEXP (addr, 1)) == CONST_INT
-		   && (INTVAL (XEXP (addr, 1)) & 0x7) == 0)
-		  /* Arrays are known to be aligned,
-		     and reg+reg addresses are used (on this machine)
-		     only for array accesses.  */
-		  || (REG_P (XEXP (addr, 0)) && REG_P (XEXP (addr, 1)))))
-	  || (GET_MODE (operands[0]) == DFmode
-	      && (GET_CODE (addr) == LO_SUM || CONSTANT_P (addr))))
-	return "ldd %1,%0";
-
-      /* Otherwise use two ld insns.  */
-      operands[2]
-	= gen_rtx (MEM, GET_MODE (operands[1]),
-		   plus_constant_for_output (addr, 4));
-	return "ld %1,%0\n\tld %2,%R0";
+      else
+	return output_move_double (operands);
     }
   else if (FP_REG_P (operands[1]))
     {
@@ -1208,28 +1181,8 @@ output_fp_move_double (operands)
 	  else
 	    return "std %1,[%@-8]\n\tld [%@-4],%R0\n\tld [%@-8],%0";
 	}
-      addr = XEXP (operands[0], 0);
-
-      /* Use std if we can be sure it is well-aligned.  */
-      if (TARGET_HOPE_ALIGN
-	  || (GET_CODE (addr) == PLUS
-	      && (((XEXP (addr, 0) == frame_pointer_rtx
-		    || XEXP (addr, 0) == stack_pointer_rtx)
-		   && GET_CODE (XEXP (addr, 1)) == CONST_INT
-		   && (INTVAL (XEXP (addr, 1)) & 0x7) == 0)
-		  /* Arrays are known to be aligned,
-		     and reg+reg addresses are used (on this machine)
-		     only for array accesses.  */
-		  || (REG_P (XEXP (addr, 0)) && REG_P (XEXP (addr, 1)))))
-	  || (GET_MODE (operands[1]) == DFmode
-	      && (GET_CODE (addr) == LO_SUM || CONSTANT_P (addr))))
-	return "std %1,%0";
-
-      /* Otherwise use two st insns.  */
-      operands[2]
-	= gen_rtx (MEM, GET_MODE (operands[0]),
-		   plus_constant_for_output (addr, 4));
-      return "st %r1,%0\n\tst %R1,%2";
+      else
+	return output_move_double (operands);
     }
   else abort ();
 }
