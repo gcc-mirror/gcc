@@ -129,7 +129,10 @@ done:
 	f__cf = b->ufd = bf;
 #else  /* !defined(HAVE_FTRUNCATE) */
 	fflush(b->ufd);
-	rc = ftruncate(fileno(b->ufd),loc);
+	/* The cast of loc is helpful on FreeBSD.  It helps
+	in any case where ftruncate() prototype is somehow missing
+	even though autoconf test found it properly.  */
+	rc = ftruncate(fileno(b->ufd), (off_t)loc);
 #endif /* !defined(HAVE_FTRUNCATE) */
 	if (rc)
 		err(a->aerr,111,"endfile");

@@ -1,3 +1,9 @@
+2001-05-15  Loren J. Rittle  <ljrittle@acm.org>
+
+	* libI77/endfile.c (t_runc): Add cast to help case where
+	ftruncate() prototype is somehow missing even though autoconf
+	test found it properly.
+
 2001-02-26  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* libI77/configure.in: Test for ftruncate.
