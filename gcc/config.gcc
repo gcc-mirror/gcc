@@ -1902,13 +1902,13 @@ sh-*-elf* | sh[2346l]*-*-elf* | sh*-*-kaos*)
 	esac
 	use_fixproto=yes
 	;;
-sh-*-rtemself*)
-	tmake_file="sh/t-sh sh/t-elf t-rtems"
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sh/elf.h sh/embed-elf.h sh/rtemself.h rtems.h"
-	;;
-sh-*-rtems*)
+sh-*-rtemscoff*)
 	tmake_file="sh/t-sh t-rtems"
 	tm_file="${tm_file} dbxcoff.h sh/coff.h sh/rtems.h rtems.h"
+	;;
+sh-*-rtems*)
+	tmake_file="sh/t-sh sh/t-elf t-rtems"
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sh/elf.h sh/embed-elf.h sh/rtemself.h rtems.h"
 	;;
 sh-*-linux* | sh[2346lbe]*-*-linux*)
 	tmake_file="sh/t-sh sh/t-elf t-slibgcc-elf-ver t-linux"
