@@ -1,3 +1,8 @@
+2004-02-28  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* config/darwin.h (machopic_finish): Output stub even if the
+	symbol is already defined.
+
 2004-02-28  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa64-hpux.h (LIB_SPEC): Fix linking under HP-UX 11.00 with -p and -pg.

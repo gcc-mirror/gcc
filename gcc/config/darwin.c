@@ -900,10 +900,6 @@ machopic_finish (FILE *asm_out_file)
       if (! TREE_USED (temp))
 	continue;
 
-      /* If the symbol is actually defined, we don't need a stub.  */
-      if (sym_name[0] == '!' && sym_name[1] == 'T')
-	continue;
-
       sym_name = darwin_strip_name_encoding (sym_name);
 
       sym = alloca (strlen (sym_name) + 2);
