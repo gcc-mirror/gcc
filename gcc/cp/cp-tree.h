@@ -2203,11 +2203,8 @@ struct lang_decl GTY(())
 
 /* Nonzero if the template arguments is actually a vector of vectors,
    rather than just a vector.  */
-#define TMPL_ARGS_HAVE_MULTIPLE_LEVELS(NODE) \
-  ((NODE) != NULL_TREE						\
-   && TREE_CODE (NODE) == TREE_VEC				\
-   && TREE_VEC_LENGTH (NODE) > 0				\
-   && TREE_VEC_ELT (NODE, 0) != NULL_TREE			\
+#define TMPL_ARGS_HAVE_MULTIPLE_LEVELS(NODE) 		\
+  (NODE && TREE_VEC_ELT (NODE, 0)			\
    && TREE_CODE (TREE_VEC_ELT (NODE, 0)) == TREE_VEC)
 
 /* The depth of a template argument vector.  When called directly by
@@ -2241,9 +2238,7 @@ struct lang_decl GTY(())
 /* Given a single level of template arguments in NODE, return the
    number of arguments.  */
 #define NUM_TMPL_ARGS(NODE)				\
-  ((NODE) == NULL_TREE ? 0				\
-   : (TREE_CODE (NODE) == TREE_VEC			\
-      ? TREE_VEC_LENGTH (NODE) : list_length (NODE)))
+  (TREE_VEC_LENGTH (NODE))
 
 /* Returns the innermost level of template arguments in ARGS.  */
 #define INNERMOST_TEMPLATE_ARGS(NODE) \

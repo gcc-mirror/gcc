@@ -7675,32 +7675,51 @@ cp_parser_template_name (cp_parser* parser,
      template-argument
      template-argument-list , template-argument
 
-   Returns a TREE_LIST representing the arguments, in the order they
-   appeared.  The TREE_VALUE of each node is a representation of the
-   argument.  */
+   Returns a TREE_VEC containing the arguments.   */
 
 static tree
 cp_parser_template_argument_list (cp_parser* parser)
 {
-  tree arguments = NULL_TREE;
+  tree fixed_args[10];
+  unsigned n_args = 0;
+  unsigned alloced = 10;
+  tree *arg_ary = fixed_args;
+  tree vec;
 
-  while (true)
+  do
     {
       tree argument;
 
+      if (n_args)
+	/* Consume the comma. */
+	cp_lexer_consume_token (parser->lexer);
+      
       /* Parse the template-argument.  */
       argument = cp_parser_template_argument (parser);
-      /* Add it to the list.  */
-      arguments = tree_cons (NULL_TREE, argument, arguments);
-      /* If it is not a `,', then there are no more arguments.  */
-      if (cp_lexer_next_token_is_not (parser->lexer, CPP_COMMA))
-	break;
-      /* Otherwise, consume the ','.  */
-      cp_lexer_consume_token (parser->lexer);
+      if (n_args == alloced)
+	{
+	  alloced *= 2;
+	  
+	  if (arg_ary == fixed_args)
+	    {
+	      arg_ary = xmalloc (sizeof (tree) * alloced);
+	      memcpy (arg_ary, fixed_args, sizeof (tree) * n_args);
+	    }
+	  else
+	    arg_ary = xrealloc (arg_ary, sizeof (tree) * alloced);
+	}
+      arg_ary[n_args++] = argument;
     }
+  while (cp_lexer_next_token_is (parser->lexer, CPP_COMMA));
 
-  /* We built up the arguments in reverse order.  */
-  return nreverse (arguments);
+  vec = make_tree_vec (n_args);
+
+  while (n_args--)
+    TREE_VEC_ELT (vec, n_args) = arg_ary[n_args];
+  
+  if (arg_ary != fixed_args)
+    free (arg_ary);
+  return vec;
 }
 
 /* Parse a template-argument.
