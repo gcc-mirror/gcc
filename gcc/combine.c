@@ -9434,12 +9434,12 @@ simplify_shift_const (x, code, result_mode, varop, orig_count)
       if (code == LSHIFTRT
 	  && GET_MODE_BITSIZE (shift_mode) <= HOST_BITS_PER_WIDE_INT
 	  && !(nonzero_bits (varop, shift_mode) >> count))
-	return const0_rtx;
+	varop = const0_rtx;
       if (code == ASHIFT
 	  && GET_MODE_BITSIZE (shift_mode) <= HOST_BITS_PER_WIDE_INT
 	  && !((nonzero_bits (varop, shift_mode) << count)
 	       & GET_MODE_MASK (shift_mode)))
-	return const0_rtx;
+	varop = const0_rtx;
 
       switch (GET_CODE (varop))
 	{
