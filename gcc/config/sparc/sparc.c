@@ -341,6 +341,31 @@ symbolic_memory_operand (op, mode)
 	  || GET_CODE (op) == HIGH || GET_CODE (op) == LABEL_REF);
 }
 
+/* Return 1 if the operand is an argument used in generating pic references
+   in either the medium/low or medium/anywhere code models of sparc64.  */
+
+int
+sp64_medium_pic_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  /* Check for (const (minus (symbol_ref:GOT)
+                             (const (minus (label) (pc))))).  */
+  if (GET_CODE (op) != CONST)
+    return 0;
+  op = XEXP (op, 0);
+  if (GET_CODE (op) != MINUS)
+    return 0;
+  if (GET_CODE (XEXP (op, 0)) != SYMBOL_REF)
+    return 0;
+  /* ??? Ensure symbol is GOT.  */
+  if (GET_CODE (XEXP (op, 1)) != CONST)
+    return 0;
+  if (GET_CODE (XEXP (XEXP (op, 1), 0)) != MINUS)
+    return 0;
+  return 1;
+}
+
 /* Return 1 if the operand is a data segment reference.  This includes
    the readonly data segment, or in other words anything but the text segment.
    This is needed in the medium/anywhere code model on v9.  These values
@@ -356,7 +381,8 @@ data_segment_operand (op, mode)
     case SYMBOL_REF :
       return ! SYMBOL_REF_FLAG (op);
     case PLUS :
-      /* Assume canonical format of symbol + constant.  */
+      /* Assume canonical format of symbol + constant.
+	 Fall through.  */
     case CONST :
       return data_segment_operand (XEXP (op, 0));
     default :
@@ -379,7 +405,8 @@ text_segment_operand (op, mode)
     case SYMBOL_REF :
       return SYMBOL_REF_FLAG (op);
     case PLUS :
-      /* Assume canonical format of symbol + constant.  */
+      /* Assume canonical format of symbol + constant.
+	 Fall through.  */
     case CONST :
       return text_segment_operand (XEXP (op, 0));
     default :
@@ -450,17 +477,6 @@ move_operand (op, mode)
     return (register_operand (XEXP (op, 0), Pmode)
 	    && CONSTANT_P (XEXP (op, 1)));
   return memory_address_p (mode, op);
-}
-
-int
-move_pic_label (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  /* Special case for PIC.  */
-  if (flag_pic && GET_CODE (op) == LABEL_REF)
-    return 1;
-  return 0;
 }
 
 int
@@ -1150,16 +1166,9 @@ legitimize_pic_address (orig, mode, reg)
 	     won't get confused into thinking that these two instructions
 	     are loading in the true address of the symbol.  If in the
 	     future a PIC rtx exists, that should be used instead.  */
-	  emit_insn (gen_rtx (SET, VOIDmode, temp_reg,
-			      gen_rtx (HIGH, Pmode,
-				       gen_rtx (UNSPEC, Pmode,
-						gen_rtvec (1, orig),
-						0))));
-	  emit_insn (gen_rtx (SET, VOIDmode, temp_reg,
-			      gen_rtx (LO_SUM, Pmode, temp_reg,
-				       gen_rtx (UNSPEC, Pmode,
-						gen_rtvec (1, orig),
-						0))));
+	  emit_insn (gen_pic_sethi_si (temp_reg, orig));
+	  emit_insn (gen_pic_lo_sum_si (temp_reg, temp_reg, orig));
+
 	  address = temp_reg;
 	}
       else
@@ -1215,6 +1224,7 @@ legitimize_pic_address (orig, mode, reg)
       return gen_rtx (PLUS, Pmode, base, offset);
     }
   else if (GET_CODE (orig) == LABEL_REF)
+    /* ??? Why do we do this?  */
     current_function_uses_pic_offset_table = 1;
 
   return orig;
@@ -1247,18 +1257,12 @@ finalize_pic ()
     abort ();
 
   flag_pic = 0;
-  l1 = gen_label_rtx ();
-  l2 = gen_label_rtx ();
+
+  /* ??? sparc64 pic currently under construction.  */
 
   start_sequence ();
 
-  emit_label (l1);
-  /* Note that we pun calls and jumps here!  */
-  emit_jump_insn (gen_rtx (PARALLEL, VOIDmode,
-                         gen_rtvec (2,
-                                    gen_rtx (SET, VOIDmode, pc_rtx, gen_rtx (LABEL_REF, VOIDmode, l2)),
-                                    gen_rtx (SET, VOIDmode, gen_rtx (REG, SImode, 15), gen_rtx (LABEL_REF, VOIDmode, l2)))));
-  emit_label (l2);
+  l1 = gen_label_rtx ();
 
   /* Initialize every time through, since we can't easily
      know this to be permanent.  */
@@ -1271,27 +1275,57 @@ finalize_pic ()
 						   gen_rtx (LABEL_REF, VOIDmode, l1),
 						   pc_rtx))));
 
-  if (Pmode == DImode)
-    emit_insn (gen_rtx (PARALLEL, VOIDmode,
-			gen_rtvec (2,
-				   gen_rtx (SET, VOIDmode, pic_offset_table_rtx,
-					    gen_rtx (HIGH, Pmode, pic_pc_rtx)),
-				   gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, Pmode, 1)))));
-  else
-    emit_insn (gen_rtx (SET, VOIDmode, pic_offset_table_rtx,
-			gen_rtx (HIGH, Pmode, pic_pc_rtx)));
+  if (! TARGET_ARCH64)
+    {
+      l2 = gen_label_rtx ();
+      emit_label (l1);
+      /* Note that we pun calls and jumps here!  */
+      emit_jump_insn (gen_get_pc_sp32 (l2));
+      emit_label (l2);
 
-  emit_insn (gen_rtx (SET, VOIDmode,
-		      pic_offset_table_rtx,
-		      gen_rtx (LO_SUM, Pmode,
-			       pic_offset_table_rtx, pic_pc_rtx)));
-  emit_insn (gen_rtx (SET, VOIDmode,
-		      pic_offset_table_rtx,
-		      gen_rtx (PLUS, Pmode,
-			       pic_offset_table_rtx, gen_rtx (REG, Pmode, 15))));
-  /* emit_insn (gen_rtx (ASM_INPUT, VOIDmode, "!#PROLOGUE# 1")); */
-  LABEL_PRESERVE_P (l1) = 1;
-  LABEL_PRESERVE_P (l2) = 1;
+      emit_insn (gen_rtx (SET, VOIDmode, pic_offset_table_rtx,
+			  gen_rtx (HIGH, Pmode, pic_pc_rtx)));
+
+      emit_insn (gen_rtx (SET, VOIDmode,
+			  pic_offset_table_rtx,
+			  gen_rtx (LO_SUM, Pmode,
+				   pic_offset_table_rtx, pic_pc_rtx)));
+      emit_insn (gen_rtx (SET, VOIDmode,
+			  pic_offset_table_rtx,
+			  gen_rtx (PLUS, Pmode,
+				   pic_offset_table_rtx,
+				   gen_rtx (REG, Pmode, 15))));
+
+      /* emit_insn (gen_rtx (ASM_INPUT, VOIDmode, "!#PROLOGUE# 1")); */
+      LABEL_PRESERVE_P (l1) = 1;
+      LABEL_PRESERVE_P (l2) = 1;
+    }
+  else
+    {
+      /* ??? This definately isn't right for -mfullany.  */
+      /* ??? And it doesn't quite seem right for the others either.  */
+      emit_label (l1);
+      emit_insn (gen_get_pc_sp64 (gen_rtx (REG, Pmode, 1)));
+
+      /* Don't let the scheduler separate the previous insn from `l1'.  */
+      emit_insn (gen_blockage ());
+
+      emit_insn (gen_rtx (SET, VOIDmode, pic_offset_table_rtx,
+			  gen_rtx (HIGH, Pmode, pic_pc_rtx)));
+
+      emit_insn (gen_rtx (SET, VOIDmode,
+			  pic_offset_table_rtx,
+			  gen_rtx (LO_SUM, Pmode,
+				   pic_offset_table_rtx, pic_pc_rtx)));
+      emit_insn (gen_rtx (SET, VOIDmode,
+			  pic_offset_table_rtx,
+			  gen_rtx (PLUS, Pmode,
+				   pic_offset_table_rtx, gen_rtx (REG, Pmode, 1))));
+
+      /* emit_insn (gen_rtx (ASM_INPUT, VOIDmode, "!#PROLOGUE# 1")); */
+      LABEL_PRESERVE_P (l1) = 1;
+    }
+
   flag_pic = orig_flag_pic;
 
   seq = gen_sequence ();
@@ -1352,10 +1386,33 @@ emit_move_sequence (operands, mode)
 	}
     }
 
-  /* Simplify the source if we need to.  Must handle DImode HIGH operators
-     here because such a move needs a clobber added.  */
-  if ((GET_CODE (operand1) != HIGH && immediate_operand (operand1, mode))
-      || (GET_CODE (operand1) == HIGH && GET_MODE (operand1) == DImode))
+  if (GET_CODE (operand1) == LABEL_REF
+      && mode == SImode && flag_pic)
+    {
+      if (TARGET_ARCH64)
+	abort ();
+      emit_insn (gen_move_pic_label_si (operand0, XEXP (operand1, 0)));
+      return 1;
+    }
+  /* Non-pic LABEL_REF's in sparc64 are expensive to do the normal way,
+     so always use special code.  */
+  else if (GET_CODE (operand1) == LABEL_REF
+	   && mode == DImode)
+    {
+      if (! TARGET_ARCH64)
+	abort ();
+      emit_insn (gen_move_label_di (operands[0], XEXP (operands[1], 0)));
+      return 1;
+    }
+  /* DImode HIGH values in sparc64 need a clobber added.  */
+  else if (TARGET_ARCH64
+      && GET_CODE (operand1) == HIGH && GET_MODE (operand1) == DImode)
+    {
+      emit_insn (gen_sethi_di_sp64 (operand0, XEXP (operand1, 0)));
+      return 1;
+    }
+  /* Simplify the source if we need to.  */
+  else if (GET_CODE (operand1) != HIGH && immediate_operand (operand1, mode))
     {
       if (flag_pic && symbolic_operand (operand1, mode))
 	{
@@ -1387,50 +1444,13 @@ emit_move_sequence (operands, mode)
 		      ? operand0 : gen_reg_rtx (mode));
 
 	  if (TARGET_ARCH64 && mode == DImode)
-	    {
-	      int high_operand = 0;
-
-	      /* If the operand is already a HIGH, then remove the HIGH so
-		 that we won't get duplicate HIGH operators in this insn.
-		 Also, we must store the result into the original dest,
-		 because that is where the following LO_SUM expects it.  */
-	      if (GET_CODE (operand1) == HIGH)
-		{
-		  operand1 = XEXP (operand1, 0);
-		  high_operand = 1;
-		}
-
-	      emit_insn (gen_rtx (PARALLEL, VOIDmode,
-				  gen_rtvec (2,
-					     gen_rtx (SET, VOIDmode, temp,
-						      gen_rtx (HIGH, mode, operand1)),
-					     gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, DImode, 1)))));
-
-	      /* If this was a high operand, then we are now finished.  */
-	      if (high_operand)
-		return 1;
-	    }
+	    emit_insn (gen_sethi_di_sp64 (temp, operand1));
 	  else
 	    emit_insn (gen_rtx (SET, VOIDmode, temp,
 				gen_rtx (HIGH, mode, operand1)));
 
 	  operands[1] = gen_rtx (LO_SUM, mode, temp, operand1);
 	}
-    }
-
-  if (GET_CODE (operand1) == LABEL_REF && flag_pic)
-    {
-      /* The procedure for doing this involves using a call instruction to
-	 get the pc into o7.  We need to indicate this explicitly because
-	 the tablejump pattern assumes that it can use this value also.  */
-      emit_insn (gen_rtx (PARALLEL, VOIDmode,
-			  gen_rtvec (2,
-				     gen_rtx (SET, VOIDmode, operand0,
-					      operand1),
-				     gen_rtx (SET, VOIDmode,
-					      gen_rtx (REG, mode, 15),
-					      pc_rtx))));
-      return 1;
     }
 
   /* Now have insn-emit do whatever it normally does.  */

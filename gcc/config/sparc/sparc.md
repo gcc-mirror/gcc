@@ -1467,30 +1467,6 @@
   ;; is not an "arith_operand".
   [(set_attr "length" "1")])
 
-;; For PIC, symbol_refs are put inside unspec so that the optimizer will not
-;; confuse them with real addresses.
-(define_insn "*pic_lo_sum_si"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(lo_sum:SI (match_operand:SI 1 "register_operand" "r")
-		   (unspec:SI [(match_operand:SI 2 "immediate_operand" "in")] 0)))]
-  ""
-  ;; V9 needs "add" because of the code models.  We still use "or" for v8
-  ;; so we can compare the old compiler with the new.
-  "* return TARGET_ARCH64 ? \"add %1,%%lo(%a2),%0\" : \"or %1,%%lo(%a2),%0\";"
-  ;; Need to set length for this arith insn because operand2
-  ;; is not an "arith_operand".
-  [(set_attr "length" "1")])
-
-;; For PIC, symbol_refs are put inside unspec so that the optimizer will not
-;; confuse them with real addresses.
-(define_insn "*pic_sethi_si"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(high:SI (unspec:SI [(match_operand 1 "" "")] 0)))]
-  "check_pic (1)"
-  "sethi %%hi(%a1),%0"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
-
 (define_insn "*sethi_si"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(high:SI (match_operand 1 "" "")))]
@@ -1507,29 +1483,93 @@
   [(set_attr "type" "move")
    (set_attr "length" "1")])
 
+;; For PIC, symbol_refs are put inside unspec so that the optimizer will not
+;; confuse them with real addresses.
+(define_insn "pic_lo_sum_si"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(lo_sum:SI (match_operand:SI 1 "register_operand" "r")
+		   (unspec:SI [(match_operand:SI 2 "immediate_operand" "in")] 0)))]
+  "flag_pic"
+  ;; V9 needs "add" because of the code models.  We still use "or" for v8
+  ;; so we can compare the old compiler with the new.
+  "* return TARGET_ARCH64 ? \"add %1,%%lo(%a2),%0\" : \"or %1,%%lo(%a2),%0\";"
+  ;; Need to set length for this arith insn because operand2
+  ;; is not an "arith_operand".
+  [(set_attr "length" "1")])
+
+;; For PIC, symbol_refs are put inside unspec so that the optimizer will not
+;; confuse them with real addresses.
+(define_insn "pic_sethi_si"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(high:SI (unspec:SI [(match_operand 1 "" "")] 0)))]
+  "flag_pic && check_pic (1)"
+  "sethi %%hi(%a1),%0"
+  [(set_attr "type" "move")
+   (set_attr "length" "1")])
+
+(define_insn "get_pc_sp32"
+  [(set (pc) (label_ref (match_operand 0 "" "")))
+   (set (reg:SI 15) (label_ref (match_dup 0)))]
+  "! TARGET_PTR64"
+  "call %l0%#"
+  [(set_attr "type" "uncond_branch")])
+
+(define_insn "get_pc_sp64"
+  [(set (match_operand:DI 0 "register_operand" "=r") (pc))]
+  "TARGET_PTR64"
+  "rd %%pc,%0"
+  [(set_attr "type" "move")])
+
 ;; Special pic pattern, for loading the address of a label into a register.
 ;; It clobbers o7 because the call puts the return address (i.e. pc value)
-;; there.
+;; there.  The pic tablejump pattern also uses this.
 
-(define_insn "*move_pic_label_si"
+(define_insn "move_pic_label_si"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(match_operand:SI 1 "move_pic_label" "i"))
+	(label_ref:SI (match_operand 1 "" "")))
    (set (reg:SI 15) (pc))]
-  ""
-  "\\n1:\;call 2f\;sethi %%hi(%l1-1b),%0\\n2:\\tor %0,%%lo(%l1-1b),%0\;add %0,%%o7,%0"
+  "flag_pic"
+  "*
+{
+  if (get_attr_length (insn) == 2)
+    return \"\\n1:\;call 2f\;add %%o7,%%lo(%l1-1b),%0\\n2:\";
+  else
+    return \"\\n1:\;call 2f\;sethi %%hi(%l1-1b),%0\\n2:\\tor %0,%%lo(%l1-1b),%0\;add %0,%%o7,%0\";
+}"
   [(set_attr "type" "multi")
-   (set_attr "length" "4")])
+   ; 1024 = 4096 bytes / 4 bytes/insn
+   (set (attr "length") (if_then_else (ltu (minus (match_dup 1) (pc))
+					   (const_int 1024))
+				      (const_int 2)
+				      (const_int 4)))])
 
-;; v9 special pic pattern, for loading the address of a label into a register.
+;; Special sparc64 pattern for loading the address of a label into a register.
+;; The pic and non-pic cases are the same since it's the most efficient way.
+;;
+;; ??? The non-pic case doesn't need to use %o7, we could use a scratch
+;; instead.  But the pic case doesn't need to use %o7 either.  We handle them
+;; both here so that when this is fixed, they can both be fixed together.
+;; Don't forget that the pic jump table stuff uses %o7 (that will need to be
+;; changed too).
 
-(define_insn "*move_pic_label_di"
+(define_insn "move_label_di"
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(match_operand:DI 1 "move_pic_label" "i"))
+	(label_ref:DI (match_operand 1 "" "")))
    (set (reg:DI 15) (pc))]
   "TARGET_ARCH64"
-  "\\n1:\;call 2f\;sethi %%hi(%l1-1b),%0\\n2:\\tor %0,%%lo(%l1-1b),%0\;add %0,%%o7,%0"
+  "*
+{
+  if (get_attr_length (insn) == 2)
+    return \"\\n1:\;rd %%pc,%%o7\;add %%o7,%l1-1b,%0\";
+  else
+    return \"\\n1:\;rd %%pc,%%o7\;sethi %%hi(%l1-1b),%0\;add %0,%%lo(%l1-1b),%0\;sra %0,0,%0\;add %0,%%o7,%0\";
+}"
   [(set_attr "type" "multi")
-   (set_attr "length" "4")])
+   ; 1024 = 4096 bytes / 4 bytes/insn
+   (set (attr "length") (if_then_else (ltu (minus (match_dup 1) (pc))
+					   (const_int 1024))
+				      (const_int 2)
+				      (const_int 5)))])
 
 (define_insn "*lo_sum_di_sp32"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -1548,8 +1588,6 @@
   ;; is not an "arith_operand".
   [(set_attr "length" "1")])
 
-;; ??? Gas does not handle %lo(DI), so we use the same code for ! TARGET_ARCH64.
-;; ??? The previous comment is obsolete.
 ;; ??? Optimizer does not handle "or %o1,%lo(0),%o1". How about add?
 
 (define_insn "*lo_sum_di_sp64"
@@ -1617,12 +1655,15 @@
 ;;; e.g. by using a toc like the romp and rs6000 ports do for addresses, reg
 ;;; 1 will then no longer need to be considered a fixed reg.
 
-;;; Gas doesn't have any 64 bit constant support, so don't use %uhi and %ulo
-;;; on constants.  Symbols have to be handled by the linker, so we must use
-;;; %uhi and %ulo for them, but gas will handle these correctly.
-;;; ??? This comment is obsolete, gas handles them now.
+(define_expand "sethi_di_sp64"
+  [(parallel
+     [(set (match_operand:DI 0 "register_operand" "")
+	   (high:DI (match_operand 1 "general_operand" "")))
+      (clobber (reg:DI 1))])]
+  "TARGET_ARCH64"
+  "")
 
-(define_insn "*sethi_di_sp64"
+(define_insn "*sethi_di_sp64_const"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(high:DI (match_operand 1 "const_double_operand" "")))
    (clobber (reg:DI 1))]
@@ -1661,9 +1702,9 @@
 
 ;; When TARGET_MEDLOW, assume that the upper 32 bits of symbol addresses are
 ;; always 0.
-;; When TARGET_MEDANY, the upper 32 bits of function addresses are 0.
-;; The data segment has a maximum size of 32 bits, but may be located anywhere.
-;; MEDANY_BASE_REG contains the start address, currently %g4.
+;; When TARGET_MEDANY, the text and data segments have a maximum size of 32
+;; bits and may be located anywhere.  MEDANY_BASE_REG contains the start
+;; address of the data segment, currently %g4.
 ;; When TARGET_FULLANY, symbolic addresses are 64 bits.
 
 (define_insn "*sethi_di_medlow"
@@ -1672,6 +1713,14 @@
   ;; The clobber is here because emit_move_sequence assumes the worst case.
    (clobber (reg:DI 1))]
   "TARGET_MEDLOW && check_pic (1)"
+  "sethi %%hi(%a1),%0"
+  [(set_attr "type" "move")
+   (set_attr "length" "1")])
+
+(define_insn "*sethi_di_medium_pic"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(high:DI (match_operand 1 "sp64_medium_pic_operand" "")))]
+  "(TARGET_MEDLOW || TARGET_MEDANY) && check_pic (1)"
   "sethi %%hi(%a1),%0"
   [(set_attr "type" "move")
    (set_attr "length" "1")])
@@ -4782,7 +4831,7 @@
 (define_expand "tablejump"
   [(parallel [(set (pc) (match_operand 0 "register_operand" "r"))
 	      (use (label_ref (match_operand 1 "" "")))])]
-  "! TARGET_MEDANY"
+  ""
   "
 {
   if (GET_MODE (operands[0]) != Pmode)
@@ -4829,54 +4878,6 @@
   "TARGET_PTR64"
   "jmp %a0%#"
   [(set_attr "type" "uncond_branch")])
-
-(define_insn "*get_pc_sp32"
-  [(set (pc) (label_ref (match_operand 0 "" "")))
-   (set (reg:SI 15) (label_ref (match_dup 0)))]
-  "! TARGET_PTR64"
-  "call %l0%#"
-  [(set_attr "type" "uncond_branch")])
-
-(define_insn "*get_pc_sp64"
-  [(set (pc) (label_ref (match_operand 0 "" "")))
-   (set (reg:DI 15) (label_ref (match_dup 0)))]
-  "TARGET_PTR64"
-  "call %l0%#"
-  [(set_attr "type" "uncond_branch")])
-
-;; Implement a switch statement for the medium/anywhere code model.
-;; This wouldn't be necessary if we could distinguish label refs of the jump
-;; table from other label refs.  The problem is that jump tables live in the
-;; .rodata section and thus we need to add %g4 to get their address.
-
-(define_expand "casesi"
-  [(set (match_dup 5)
-	(minus:SI (match_operand:SI 0 "register_operand" "")
-		  (match_operand:SI 1 "nonmemory_operand" "")))
-   (set (reg:CC 0)
-	(compare:CC (match_dup 5)
-		    (match_operand:SI 2 "nonmemory_operand" "")))
-   (set (pc)
-	(if_then_else (gtu (reg:CC 0)
-			   (const_int 0))
-		      (label_ref (match_operand 4 "" ""))
-		      (pc)))
-   (parallel [(set (match_dup 6) (high:DI (label_ref (match_operand 3 "" ""))))
-	      (clobber (reg:DI 1))])
-   (set (match_dup 6)
-	(lo_sum:DI (match_dup 6) (label_ref (match_dup 3))))
-   (set (match_dup 6) (plus:DI (match_dup 6) (reg:DI 4)))
-   (set (match_dup 7) (zero_extend:DI (match_dup 5)))
-   (set (match_dup 7) (ashift:DI (match_dup 7) (const_int 3)))
-   (set (match_dup 7) (mem:DI (plus:DI (match_dup 6) (match_dup 7))))
-   (set (pc) (match_dup 7))]
-  "TARGET_MEDANY"
-  "
-{
-  operands[5] = gen_reg_rtx (SImode);
-  operands[6] = gen_reg_rtx (DImode);
-  operands[7] = gen_reg_rtx (DImode);
-}")
 
 ;; This pattern recognizes the "instruction" that appears in 
 ;; a function call that wants a structure value, 
