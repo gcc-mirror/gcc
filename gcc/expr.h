@@ -75,6 +75,14 @@ extern rtx forced_labels;
    So we can mark them all live at the end of the function, if stupid.  */
 extern rtx save_expr_regs;
 
+/* Nonzero means __builtin_saveregs has already been done in this function.
+   The value is the pseudoreg containing the value __builtin_saveregs
+   returned.  */
+extern rtx saveregs_value;
+
+/* Similarly for __builtin_apply_args.  */
+extern rtx apply_args_value;
+
 extern int current_function_calls_alloca;
 extern int current_function_outgoing_args_size;
 
@@ -727,6 +735,13 @@ extern rtx get_condition PROTO((rtx, rtx *));
 /* Generate a conditional trap instruction.  */
 extern rtx gen_cond_trap PROTO((enum rtx_code, rtx, rtx, rtx));
 
+/* Functions from builtins.c:  */
+#ifdef TREE_CODE
+extern rtx expand_builtin PROTO((tree, rtx, rtx, enum machine_mode, int));
+#endif
+
+extern rtx expand_builtin_setjmp PROTO((rtx, rtx, rtx, rtx));
+
 /* Functions from expr.c:  */
 
 /* This is run once per compilation to set up which modes can be used
@@ -831,8 +846,6 @@ extern rtx store_expr PROTO((tree, rtx, int));
    Useful after calling expand_expr with 1 as sum_ok.  */
 extern rtx force_operand PROTO((rtx, rtx));
 
-extern rtx expand_builtin_setjmp PROTO((rtx, rtx, rtx, rtx));
-
 #ifdef TREE_CODE
 /* Generate code for computing expression EXP.
    An rtx for the computed value is returned.  The value is never null.
@@ -853,6 +866,10 @@ extern void clear_pending_stack_adjust PROTO((void));
 extern void do_pending_stack_adjust PROTO((void));
 
 #ifdef TREE_CODE
+/* Return the tree node and offset if a given argument corresponds to
+   a string constant.  */
+extern tree string_constant PROTO((tree, tree *));
+
 /* Generate code to evaluate EXP and jump to LABEL if the value is zero.  */
 extern void jumpifnot PROTO((tree, rtx));
 

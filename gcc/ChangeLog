@@ -1,3 +1,18 @@
+Thu Jul 22 11:25:20 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* builtins.c: New file.
+	* expr.c (saveregs_value, apply_args_value):  Delete definition,
+	moved into builtins.c.
+	(string_constant): No longer static.
+	(get_pointer_alignment, c_strlen, get_memory_rtx, expand_builtin,
+	apply_args_size, apply_result_size, result_vector,
+	expand_builtin_apply_args, expand_builtin_apply,
+	expand_builtin_return): Delete functions, moved into builtins.c.
+	(INCOMING_REGNO, OUTGOING_REGNO): Delete unused macros.
+	* expr.h (saveregs_value, apply_args_value): Declare variables.
+	(expand_builtin, string_constant): Declare functions.
+	* Makefile.in: Update to build builtin.o.
+
 Wed Jul 21 12:37:34 IDT 1999 Vladik Goytin (goytin@yahoo.com)
 
 	* config/arm/aout.h (ASM_OUTPUT_SECTION_NAME): New macro: Support
