@@ -1297,8 +1297,8 @@ input_operand (op, mode)
   if (mode != VOIDmode && GET_MODE (op) != VOIDmode && mode != GET_MODE (op))
     return 0;
 
-  /* Only a tiny bit of handling for CONSTANT_P_RTX is necessary.  */
-  if (GET_CODE (op) == CONST && GET_CODE (XEXP (op, 0)) == CONSTANT_P_RTX)
+  /* Accept CONSTANT_P_RTX, since it will be gone by CSE1 and result in 0/1.  */
+  if (GET_CODE (op) == CONSTANT_P_RTX)
     return 1;
 
   /* Allow any one instruction integer constant, and all CONST_INT
