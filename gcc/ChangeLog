@@ -1,4 +1,15 @@
-2004-06-03  Steevn Bosscher  <stevenb@suse.de>
+2004-06-03  Daniel Berlin  <dberlin@dberlin.org>
+		Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* tree-ssa-ccp.c (varying_ssa_edges): New worklist.
+	(add_var_to_ssa_edges_worklist): Add value argument.
+	Update callers.
+	Use new worklist.
+	(process_ssa_edge_worklist): New function.
+	(tree_ssa_ccp): Move worklist processing core to 
+	process_ssa_edge_worklist, and just call that for the two worklists.
+
+2004-06-03  Steven Bosscher  <stevenb@suse.de>
 
 	* basic-block.c (tail_recursion_label_list): Don't declare.
 	(CLEANUP_PRE_SIBCALL): Remove.  Renumber the other CLEANUP_*
