@@ -1217,6 +1217,30 @@ find_blocks (first)
 	record_label_references (insn, PATTERN (insn));
     }
 }
+
+/* If current function returns its result in an fp stack register,
+   return the register number.  Otherwise return -1.  */
+
+static int
+stack_result_p (decl)
+     tree decl;
+{
+  rtx result = DECL_RTL (DECL_RESULT (decl));
+
+  if (result != 0
+      && !(GET_CODE (result) == REG
+	   && REGNO (result) < FIRST_PSEUDO_REGISTER))
+    {
+#ifdef FUNCTION_OUTGOING_VALUE
+      result
+        = FUNCTION_OUTGOING_VALUE (TREE_TYPE (DECL_RESULT (decl)), decl);
+#else
+      result = FUNCTION_VALUE (TREE_TYPE (DECL_RESULT (decl)), decl);
+#endif
+    }
+
+  return STACK_REG_P (result) ? REGNO (result) : -1;
+}
 
 /* Determine the which registers are live at the start of each basic
    block of the function whose first insn is FIRST.
@@ -1256,11 +1280,11 @@ stack_reg_life_analysis (first)
   struct stack_def regstack;
 
   if (current_function_returns_real
-      && STACK_REG_P (DECL_RTL (DECL_RESULT (current_function_decl))))
+      && stack_result_p (current_function_decl) >= 0)
     {
       /* Find all RETURN insns and mark them. */
 
-      int value_regno = REGNO (DECL_RTL (DECL_RESULT (current_function_decl)));
+      int value_regno = stack_result_p (current_function_decl);
 
       for (block = blocks - 1; block >= 0; block--)
 	if (GET_CODE (block_end[block]) == JUMP_INSN
