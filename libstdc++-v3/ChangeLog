@@ -1,3 +1,7 @@
+2001-08-16  Marc Espie <espie@openbsd.org>
+	* libmath/mathconf.h:  Include <sys/types.h> on OpenBSD  (branch
+	fix only, for robustness).
+
 2001-08-15  Andreas Schwab  <schwab@suse.de>
 
 	* configure.target (cpu_include_dir): Set to `config/cpu/m68k' for
