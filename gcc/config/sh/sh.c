@@ -434,7 +434,8 @@ print_operand (stream, x, code)
       break;
 
     case 'N':
-      if (x == const0_rtx)
+      if (x == const0_rtx
+	  || (GET_CODE (x) == CONST_VECTOR && zero_vec_operand (x, VOIDmode)))
 	{
 	  fprintf ((stream), "r63");
 	  break;
@@ -5940,7 +5941,7 @@ arith_reg_or_0_operand (op, mode)
   if (arith_reg_operand (op, mode))
     return 1;
 
-  if (GET_CODE (op) == CONST_INT && CONST_OK_FOR_N (INTVAL (op)))
+  if (EXTRA_CONSTRAINT_U (op))
     return 1;
 
   return 0;
@@ -6222,7 +6223,7 @@ zero_vec_operand (v, mode)
 {
   int i;
 
-  if (GET_CODE (v) != PARALLEL
+  if (GET_CODE (v) != CONST_VECTOR
       || (GET_MODE (v) != mode && mode != VOIDmode))
     return 0;
   for (i = XVECLEN (v, 0) - 1; i >= 0; i--)

@@ -2689,10 +2689,16 @@ while (0)
   case CONST_INT:				\
     if (TARGET_SHMEDIA)				\
       {						\
+	if (INTVAL (RTX) == 0)			\
+	  return 0;				\
 	if ((OUTER_CODE) == AND && and_operand ((RTX), DImode)) \
 	  return 0;				\
+	if (((OUTER_CODE) == IOR || (OUTER_CODE) == XOR \
+	     || (OUTER_CODE) == PLUS) \
+	    && CONST_OK_FOR_P (INTVAL (RTX)))	\
+	  return 0;				\
 	if (CONST_OK_FOR_J (INTVAL (RTX)))	\
-          return COSTS_N_INSNS (1);		\
+          return COSTS_N_INSNS ((OUTER_CODE) != SET);		\
 	else if (CONST_OK_FOR_J (INTVAL (RTX) >> 16)) \
 	  return COSTS_N_INSNS (2);		\
 	else if (CONST_OK_FOR_J ((INTVAL (RTX) >> 16) >> 16)) \
@@ -3225,7 +3231,7 @@ extern int rtx_equal_function_value_matters;
   {"arith_operand", {SUBREG, REG, CONST_INT}},				\
   {"arith_reg_dest", {SUBREG, REG}},					\
   {"arith_reg_operand", {SUBREG, REG}},					\
-  {"arith_reg_or_0_operand", {SUBREG, REG, CONST_INT}},			\
+  {"arith_reg_or_0_operand", {SUBREG, REG, CONST_INT, CONST_VECTOR}},	\
   {"binary_float_operator", {PLUS, MULT}},				\
   {"commutative_float_operator", {PLUS, MULT}},				\
   {"extend_reg_operand", {SUBREG, REG, TRUNCATE}},			\
