@@ -27,7 +27,9 @@ Boston, MA 02111-1307, USA.  */
 #undef  SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES		\
   {"xl-call", 		MASK_XL_CALL},	\
-  {"no-xl-call",	- MASK_XL_CALL},
+  {"no-xl-call",	- MASK_XL_CALL}, \
+  {"threads",		0},		\
+  {"pe",		0},
 
 #include "rs6000/rs6000.h"
 
@@ -39,7 +41,10 @@ Boston, MA 02111-1307, USA.  */
 -Asystem(unix) -Asystem(aix)"
 
 #undef CPP_SPEC
-#define CPP_SPEC "%{posix: -D_POSIX_SOURCE} %(cpp_cpu)"
+#define CPP_SPEC "%{posix: -D_POSIX_SOURCE}\
+   %{mpe: -I/usr/lpp/ppe.poe/include}\
+   %{mthreads: -D_THREAD_SAFE}\
+   %(cpp_cpu)"
 
 #undef	CPP_DEFAULT_SPEC
 #define CPP_DEFAULT_SPEC "-D_ARCH_COM"
@@ -83,8 +88,24 @@ Boston, MA 02111-1307, USA.  */
     }						\
 }
 
+#undef LIB_SPEC
+#define LIB_SPEC "%{pg:-L/lib/profiled -L/usr/lib/profiled}\
+   %{p:-L/lib/profiled -L/usr/lib/profiled} %{!shared:%{g*:-lg}}\
+   %{mpe:-L/usr/lpp/ppe.poe/lib -lmpi -lvtd}\
+   %{mthreads: -L/usr/lib/threads -lpthreads -lc_r /usr/lib/libc.a}\
+   %{!mthreads: -lc}"
+
 #undef LINK_SPEC
 #define LINK_SPEC "-bpT:0x10000000 -bpD:0x20000000 %{!r:-btextro} -bnodelcsect\
    %{static:-bnso %(link_syscalls) } %{!shared: %{g*: %(link_libg) }}\
    %{shared:-bM:SRE %{!e:-bnoentry}}"
+
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC "%{!shared:\
+   %{mpe:%{pg:/usr/lpp/ppe.poe/lib/gcrt0.o}\
+         %{!pg:%{p:/usr/lpp/ppe.poe/lib/mcrt0.o}\
+               %{!p:/usr/lpp/ppe.poe/lib/crt0.o}}}\
+   %{!mpe:\
+     %{mthreads:%{pg:gcrt0_r%O%s}%{!pg:%{p:mcrt0_r%O%s}%{!p:crt0_r%O%s}}}\
+     %{!mthreads:%{pg:gcrt0%O%s}%{!pg:%{p:mcrt0%O%s}%{!p:crt0%O%s}}}}}"
 
