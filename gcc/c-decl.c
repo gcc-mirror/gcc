@@ -4375,7 +4375,22 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	  }
 	else if (type_quals)
 	  type = c_build_qualified_type (type, type_quals);
-	  
+
+	/* It is invalid to create an `extern' declaration for a
+	   variable if there is a global declaration that is
+	   `static'.  */
+	if (extern_ref && current_binding_level != global_binding_level)
+	  {
+	    tree global_decl;
+
+	    global_decl = identifier_global_value (declarator);
+	    if (global_decl 
+		&& TREE_CODE (global_decl) == VAR_DECL
+		&& !TREE_PUBLIC (global_decl))
+	      error ("variable previously declared `static' redeclared "
+		     "`extern'");
+	  }
+
 	decl = build_decl (VAR_DECL, declarator, type);
 	if (size_varies)
 	  C_DECL_VARIABLE_SIZE (decl) = 1;

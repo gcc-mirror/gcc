@@ -1,3 +1,8 @@
+2003-04-14  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.c-torture/execute/scope-2.c: Move to ...
+	* gcc.dg/noncompile/scope.c: .... here.
+
 2003-04-14  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/20030414-2.c: New test case.
