@@ -544,9 +544,9 @@ convert_move (to, from, unsignedp)
 	abort ();
 
       if (VECTOR_MODE_P (to_mode))
-	from = gen_rtx_SUBREG (to_mode, from, 0);
+	from = simplify_gen_subreg (to_mode, from, GET_MODE (from), 0);
       else
-	to = gen_rtx_SUBREG (from_mode, to, 0);
+	to = simplify_gen_subreg (from_mode, to, GET_MODE (to), 0);
 
       emit_move_insn (to, from);
       return;
