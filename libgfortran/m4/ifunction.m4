@@ -1,7 +1,7 @@
 dnl Support macro file for intrinsic functions.
 dnl Contains the generic sections of the array functions.
 dnl This file is part of the GNU Fortran 95 Runtime Library (libgfortran)
-dnl Distributed under the GNU LGPL.  See COPYING for details.
+dnl Distributed under the GNU GPL with exception.  See COPYING for details.
 dnl
 dnl Pass the implementation for a single section as the parameter to
 dnl {MASK_}ARRAY_FUNCTION.

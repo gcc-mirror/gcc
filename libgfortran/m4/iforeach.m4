@@ -1,7 +1,7 @@
 dnl Support macro file for intrinsic functions.
 dnl Contains the generic sections of the array functions.
 dnl This file is part of the GNU Fortran 95 Runtime Library (libgfortran)
-dnl Distributed under the GNU LGPL.  See COPYING for details.
+dnl Distributed under the GNU GPL with exception.  See COPYING for details.
 define(START_FOREACH_FUNCTION,
 `
 extern void name`'rtype_qual`_'atype_code (rtype * retarray, atype *array);
