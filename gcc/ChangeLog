@@ -1,3 +1,17 @@
+2000-11-27  Bernd Schmidt  <bernds@redhat.co.uk>
+
+	* reload1.c (reload_cse_simplify_set): Pass down mode to cselib_lookup.
+	(reload_cse_simplify_operands): Do nothing about operands where both
+	the operand and the match_operand fail to give us a mode.
+	* simplify-rtx.c (wrap_constant): New function.
+	(entry_and_rtx_equal_p): Except integer constants to come wrapped in a
+	CONST describing the proper mode.
+	(rtx_equal_for_cselib_p): Pass down modes to recursive calls of
+	cselib_lookup.
+	(cselib_lookup_mem): Call wrap_constant on the rtx that is passed to
+	htab_find_slot_with_hash.
+	(cselib_lookup): Likewise.
+
 2000-11-27  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in (extra_objs): Enclose extra_headers in quotes.

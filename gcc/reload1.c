@@ -8093,7 +8093,7 @@ reload_cse_simplify_set (set, insn)
     /* ???   */
     old_cost = rtx_cost (src, SET);
 
-  val = cselib_lookup (src, VOIDmode, 0);
+  val = cselib_lookup (src, GET_MODE (SET_DEST (set)), 0);
   if (! val)
     return 0;
   for (l = val->locs; l; l = l->next)
@@ -8178,8 +8178,11 @@ reload_cse_simplify_operands (insn)
       CLEAR_HARD_REG_SET (equiv_regs[i]);
 
       /* cselib blows up on CODE_LABELs.  Trying to fix that doesn't seem
-	 right, so avoid the problem here.  */
-      if (GET_CODE (recog_data.operand[i]) == CODE_LABEL)
+	 right, so avoid the problem here.  Likewise if we have a constant
+         and the insn pattern doesn't tell us the mode we need.  */
+      if (GET_CODE (recog_data.operand[i]) == CODE_LABEL
+	  || (CONSTANT_P (recog_data.operand[i])
+	      && recog_data.operand_mode[i] == VOIDmode))
 	continue;
 
       v = cselib_lookup (recog_data.operand[i], recog_data.operand_mode[i], 0);

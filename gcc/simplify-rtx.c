@@ -115,6 +115,7 @@ static void clear_table			PARAMS ((void));
 static int discard_useless_locs		PARAMS ((void **, void *));
 static int discard_useless_values	PARAMS ((void **, void *));
 static void remove_useless_values	PARAMS ((void));
+static rtx wrap_constant		PARAMS ((enum machine_mode, rtx));
 static unsigned int hash_rtx		PARAMS ((rtx, enum machine_mode, int));
 static cselib_val *new_cselib_val	PARAMS ((unsigned int,
 						 enum machine_mode));
@@ -2221,7 +2222,9 @@ clear_table ()
 }
 
 /* The equality test for our hash table.  The first argument ENTRY is a table
-   element (i.e. a cselib_val), while the second arg X is an rtx.  */
+   element (i.e. a cselib_val), while the second arg X is an rtx.  We know
+   that all callers of htab_find_slot_with_hash will wrap CONST_INTs into a
+   CONST of an appropriate mode.  */
 
 static int
 entry_and_rtx_equal_p (entry, x_arg)
@@ -2230,7 +2233,20 @@ entry_and_rtx_equal_p (entry, x_arg)
   struct elt_loc_list *l;
   const cselib_val *v = (const cselib_val *) entry;
   rtx x = (rtx) x_arg;
+  enum machine_mode mode = GET_MODE (x);
 
+  if (GET_CODE (x) == CONST_INT
+      || (mode == VOIDmode && GET_CODE (x) == CONST_DOUBLE))
+    abort ();
+  if (mode != GET_MODE (v->u.val_rtx))
+    return 0;
+
+  /* Unwrap X if necessary.  */
+  if (GET_CODE (x) == CONST
+      && (GET_CODE (XEXP (x, 0)) == CONST_INT
+	  || GET_CODE (XEXP (x, 0)) == CONST_DOUBLE))
+    x = XEXP (x, 0);
+  
   /* We don't guarantee that distinct rtx's have different hash values,
      so we need to do a comparison.  */
   for (l = v->locs; l; l = l->next)
@@ -2366,7 +2382,7 @@ rtx_equal_for_cselib_p (x, y)
   
   if (GET_CODE (x) == REG || GET_CODE (x) == MEM)
     {
-      cselib_val *e = cselib_lookup (x, VOIDmode, 0);
+      cselib_val *e = cselib_lookup (x, GET_MODE (x), 0);
 
       if (e)
 	x = e->u.val_rtx;
@@ -2374,7 +2390,7 @@ rtx_equal_for_cselib_p (x, y)
 
   if (GET_CODE (y) == REG || GET_CODE (y) == MEM)
     {
-      cselib_val *e = cselib_lookup (y, VOIDmode, 0);
+      cselib_val *e = cselib_lookup (y, GET_MODE (y), 0);
 
       if (e)
 	y = e->u.val_rtx;
@@ -2490,6 +2506,22 @@ rtx_equal_for_cselib_p (x, y)
 	}
     }
   return 1;
+}
+
+/* We need to pass down the mode of constants through the hash table
+   functions.  For that purpose, wrap them in a CONST of the appropriate
+   mode.  */
+static rtx
+wrap_constant (mode, x)
+     enum machine_mode mode;
+     rtx x;
+{
+  if (GET_CODE (x) != CONST_INT
+      && (GET_CODE (x) != CONST_DOUBLE || GET_MODE (x) != VOIDmode))
+    return x;
+  if (mode == VOIDmode)
+    abort ();
+  return gen_rtx_CONST (mode, x);
 }
 
 /* Hash an rtx.  Return 0 if we couldn't hash the rtx.
@@ -2690,31 +2722,33 @@ cselib_lookup_mem (x, create)
      rtx x;
      int create;
 {
+  enum machine_mode mode = GET_MODE (x);
   void **slot;
   cselib_val *addr;
   cselib_val *mem_elt;
   struct elt_list *l;
 
-  if (MEM_VOLATILE_P (x) || GET_MODE (x) == BLKmode
-      || (FLOAT_MODE_P (GET_MODE (x)) && flag_float_store))
+  if (MEM_VOLATILE_P (x) || mode == BLKmode
+      || (FLOAT_MODE_P (mode) && flag_float_store))
     return 0;
 
   /* Look up the value for the address.  */
-  addr = cselib_lookup (XEXP (x, 0), GET_MODE (x), create);
+  addr = cselib_lookup (XEXP (x, 0), mode, create);
   if (! addr)
     return 0;
 
   /* Find a value that describes a value of our mode at that address.  */
   for (l = addr->addr_list; l; l = l->next)
-    if (GET_MODE (l->elt->u.val_rtx) == GET_MODE (x))
+    if (GET_MODE (l->elt->u.val_rtx) == mode)
       return l->elt;
 
   if (! create)
     return 0;
 
-  mem_elt = new_cselib_val (++next_unknown_value, GET_MODE (x));
+  mem_elt = new_cselib_val (++next_unknown_value, mode);
   add_mem_for_addr (addr, mem_elt, x);
-  slot = htab_find_slot_with_hash (hash_table, x, mem_elt->value, INSERT);
+  slot = htab_find_slot_with_hash (hash_table, wrap_constant (mode, x),
+				   mem_elt->value, INSERT);
   *slot = mem_elt;
   return mem_elt;
 }
@@ -2847,8 +2881,8 @@ cselib_lookup (x, mode, create)
   if (! hashval)
     return 0;
 
-  slot = htab_find_slot_with_hash (hash_table, x, hashval,
-				   create ? INSERT : NO_INSERT);
+  slot = htab_find_slot_with_hash (hash_table, wrap_constant (mode, x),
+				   hashval, create ? INSERT : NO_INSERT);
   if (slot == 0)
     return 0;
 
