@@ -5718,6 +5718,7 @@ emit_copy_of_insn_after (insn, after)
       XEXP (note1, 0) = p;
       XEXP (note2, 0) = new;
     }
+  INSN_CODE (new) = INSN_CODE (insn);
   return new;
 }
 
