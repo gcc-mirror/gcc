@@ -1,3 +1,8 @@
+2000-09-06  Greg McGary  <greg@mcgary.org>
+
+	* gcc.c-torture/20000906.c: New test.
+	* gcc.c-torture/20000906.x: Expect failure for ix86 at `-O2'.
+
 2000-09-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/wtr-int-type-1.c: Fix for 64-bit platforms.
