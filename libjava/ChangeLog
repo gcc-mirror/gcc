@@ -1,5 +1,10 @@
 2003-05-19  Michael Koch  <konqueror@gmx.de>
 
+	* java/nio/CharBuffer.java
+	(toString): Compile fix.
+
+2003-05-19  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/nio/ByteBufferImpl.java
 	(putLong): Fixed conversion to bytes.
 	(putDouble): Fixed conversion to bytes.
