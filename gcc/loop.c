@@ -1,5 +1,5 @@
 /* Move constant computations out of loops.
-   Copyright (C) 1987, 88, 89, 91, 92, 93, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 91-4, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2568,11 +2568,7 @@ mark_loop_jump (x, loop_num)
 	 as a branch out of this loop, but not into any loop.  */
 
       if (loop_num != -1)
-	{
-	  LABEL_OUTSIDE_LOOP_P (x) = 1;
-	  LABEL_NEXTREF (x) = loop_number_exit_labels[loop_num];
-	  loop_number_exit_labels[loop_num] = x;
-	}
+	loop_number_exit_labels[loop_num] = x;
 
       return;
     }
