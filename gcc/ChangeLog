@@ -1,3 +1,7 @@
+2002-11-01  Toshiyasu Morita  <toshiyasu.morita@hsa.hitachi.com>
+
+	* config/h8300/h8300.h (OPTIMIZATION_OPTIONS): New.
+
 2002-11-01  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/ia64.h (MASK_INLINE_DIV_LAT): Remove.

@@ -66,6 +66,16 @@ extern const char * const *h8_reg_names;
 
 #define LIB_SPEC "%{mrelax:-relax} %{g:-lg} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}"
 
+#define OPTIMIZATION_OPTIONS(LEVEL, SIZE)				  \
+  do									  \
+    {                                                                     \
+      /* Basic block reordering is only beneficial on targets with cache  \
+	 and/or variable-cycle branches where (cycle count taken !=	  \
+	 cycle count not taken).  */            			  \
+      flag_reorder_blocks = 0;                                        	  \
+    }									  \
+  while (0)
+
 /* Print subsidiary information on the compiler version in use.  */
 
 #define TARGET_VERSION fprintf (stderr, " (Hitachi H8/300)");
