@@ -41,6 +41,9 @@
 	* tree-inline.c (expand_call_inline): Remove local variable
 	decl.
 
+	* tree-ssa-live.c (create_ssa_var_map,
+	calculate_live_on_entry): Remove local variable snn.
+
 2005-03-12  Geoffrey Keating  <geoffk@apple.com>
 
 	* c-lex.c (c_lex_with_flags): Add parameter to call to 

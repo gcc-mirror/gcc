@@ -323,7 +323,6 @@ create_ssa_var_map (int flags)
   basic_block bb;
   tree dest, use;
   tree stmt;
-  stmt_ann_t ann;
   var_map map;
   ssa_op_iter iter;
 #ifdef ENABLE_CHECKING
@@ -369,7 +368,6 @@ create_ssa_var_map (int flags)
         {
 	  stmt = bsi_stmt (bsi);
 	  get_stmt_operands (stmt);
-	  ann = stmt_ann (stmt);
 
 	  /* Register USE and DEF operands in each statement.  */
 	  FOR_EACH_SSA_TREE_OPERAND (use , stmt, iter, SSA_OP_USE)
@@ -565,7 +563,6 @@ calculate_live_on_entry (var_map map)
   edge e;
   varray_type stack;
   block_stmt_iterator bsi;
-  stmt_ann_t ann;
   ssa_op_iter iter;
   bitmap_iterator bi;
 #ifdef ENABLE_CHECKING
@@ -616,7 +613,6 @@ calculate_live_on_entry (var_map map)
         {
 	  stmt = bsi_stmt (bsi);
 	  get_stmt_operands (stmt);
-	  ann = stmt_ann (stmt);
 
 	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE)
 	    {
