@@ -4386,7 +4386,9 @@ handle_mode_attribute (tree *node, tree name, tree args,
 	  TYPE_PRECISION (type) = TYPE_PRECISION (typefm);
 	  typefm = type;
 	}
-      else if (TREE_CODE (type) != TREE_CODE (typefm))
+      else if (VECTOR_MODE_P (mode)
+	       ? TREE_CODE (type) != TREE_CODE (TREE_TYPE (typefm))
+	       : TREE_CODE (type) != TREE_CODE (typefm))
 	{
 	  error ("mode %qs applied to inappropriate type", p);
 	  return NULL_TREE;
