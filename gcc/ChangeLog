@@ -1,3 +1,23 @@
+2004-08-12  Ziemowit Laski  <zlaski@apple.com>
+
+	(This patch is part of merge of objc-improvements-branch
+	into mainline.)
+
+	* doc/frontends.texi: Mention Objective-C++ in addition to
+	Objective-C.
+	* doc/install.texi: Add 'obj-c++' to list of configurable
+	languages.
+	* doc/invoke.texi: Rename Objective-C option headings to
+	indicate they also apply to Objective-C++.  List file
+	extensions for Objective-C++ sources.  Mention that
+	ObjC and ObjC++ compilations may also use C and C++ options,
+	respectively.  Point users to doc/standards.texi for
+	further info on ObjC and ObjC++.
+	* doc/sourcebuild.texi: Mention the objcp/ directory and
+	the Objective-C++ sources it contains.
+	* doc/standards.texi: Update link to Apple ObjC site;
+	add link to gcc readings.html WWW doc.
+
 2004-08-12  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (function_arg_padding): Revert 2004-07-28

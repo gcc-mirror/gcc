@@ -156,20 +156,25 @@ information concerning the history of C that is available online, see
 
 @c FIXME: details of C++ standard.
 
-There is no formal written standard for Objective-C@.  The most
+@cindex Objective-C
+@cindex Objective-C++
+
+There is no formal written standard for Objective-C or Objective-C++@.  The most
 authoritative manual is ``Object-Oriented Programming and the
-Objective-C Language'', available at a number of web sites
+Objective-C Language'', available at a number of web sites:
 
 @itemize
 @item
-@uref{http://developer.apple.com/techpubs/macosx/Cocoa/ObjectiveC/}
-is a recent version
+@uref{http://developer.apple.com/documentation/Cocoa/Conceptual/ObjectiveC/}
+is a recent (and periodically updated) version;
 @item
 @uref{http://www.toodarkpark.org/computers/objc/}
-is an older example
+is an older example;
 @item
 @uref{http://www.gnustep.org}
-has additional useful information
+and
+@uref{http://gcc.gnu.org/readings.html}
+have additional useful information.
 @end itemize
 
 @cindex treelang

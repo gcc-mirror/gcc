@@ -121,7 +121,8 @@ only one of these two forms, whichever one is not the default.
 * Invoking G++::	Compiling C++ programs.
 * C Dialect Options::   Controlling the variant of C language compiled.
 * C++ Dialect Options:: Variations on C++.
-* Objective-C Dialect Options:: Variations on Objective-C.
+* Objective-C and Objective-C++ Dialect Options:: Variations on Objective-C
+                        and Objective-C++.
 * Language Independent Options:: Controlling how diagnostics should be
                         formatted.
 * Warning Options::     How picky should the compiler be?
@@ -190,8 +191,9 @@ in the following sections.
 -Woverloaded-virtual  -Wno-pmf-conversions @gol
 -Wsign-promo  -Wsynth}
 
-@item Objective-C Language Options
-@xref{Objective-C Dialect Options,,Options Controlling Objective-C Dialect}.
+@item Objective-C and Objective-C++ Language Options
+@xref{Objective-C and Objective-C++ Dialect Options,,Options Controlling
+Objective-C and Objective-C++ Dialects}.
 @gccoptlist{
 -fconstant-string-class=@var{class-name} @gol
 -fgnu-runtime  -fnext-runtime @gol
@@ -710,7 +712,8 @@ See S/390 and zSeries Options.
                         or preprocessed source.
 * C Dialect Options::   Controlling the variant of C language compiled.
 * C++ Dialect Options:: Variations on C++.
-* Objective-C Dialect Options:: Variations on Objective-C.
+* Objective-C and Objective-C++ Dialect Options:: Variations on Objective-C
+                        and Objective-C++.
 * Language Independent Options:: Controlling how diagnostics should be
                         formatted.
 * Warning Options::     How picky should the compiler be?
@@ -752,14 +755,24 @@ C source code which should not be preprocessed.
 C++ source code which should not be preprocessed.
 
 @item @var{file}.m
-Objective-C source code.  Note that you must link with the library
-@file{libobjc.a} to make an Objective-C program work.
+Objective-C source code.  Note that you must link with the @file{libobjc}
+library to make an Objective-C program work.
 
 @item @var{file}.mi
 Objective-C source code which should not be preprocessed.
 
+@item @var{file}.mm
+@itemx @var{file}.M
+Objective-C++ source code.  Note that you must link with the @file{libobjc}
+library to make an Objective-C++ program work.  Note that @samp{.M} refers
+to a literal capital M@.
+
+@item @var{file}.mii
+Objective-C++ source code which should not be preprocessed.
+
 @item @var{file}.h
-C or C++ header file to be turned into a precompiled header.
+C, C++, Objective-C or Objective-C++ header file to be turned into a
+precompiled header.
 
 @item @var{file}.cc
 @itemx @var{file}.cp
@@ -838,9 +851,10 @@ Specify explicitly the @var{language} for the following input files
 name suffix).  This option applies to all following input files until
 the next @option{-x} option.  Possible values for @var{language} are:
 @smallexample
-c  c-header  cpp-output
+c  c-header  c-cpp-output
 c++  c++-header  c++-cpp-output
-objective-c  objective-c-header  objc-cpp-output
+objective-c  objective-c-header  objective-c-cpp-output
+objective-c++ objective-c++-header objective-c++-cpp-output
 assembler  assembler-with-cpp
 ada
 f77  f77-cpp-input  ratfor
@@ -1011,7 +1025,8 @@ explanations of options that are meaningful only for C++ programs.
 @cindex options, dialect
 
 The following options control the dialect of C (or languages derived
-from C, such as C++ and Objective-C) that the compiler accepts:
+from C, such as C++, Objective-C and Objective-C++) that the compiler
+accepts:
 
 @table @gcctabopt
 @cindex ANSI support
@@ -1767,19 +1782,20 @@ In this example, G++ will synthesize a default @samp{A& operator =
 (const A&);}, while cfront will use the user-defined @samp{operator =}.
 @end table
 
-@node Objective-C Dialect Options
-@section Options Controlling Objective-C Dialect
+@node Objective-C and Objective-C++ Dialect Options
+@section Options Controlling Objective-C and Objective-C++ Dialects
 
-@cindex compiler options, Objective-C
-@cindex Objective-C options, command line
-@cindex options, Objective-C
-(NOTE: This manual does not describe the Objective-C language itself.  See
-@w{@uref{http://gcc.gnu.org/readings.html}} for references.)
+@cindex compiler options, Objective-C and Objective-C++
+@cindex Objective-C and Objective-C++ options, command line
+@cindex options, Objective-C and Objective-C++
+(NOTE: This manual does not describe the Objective-C and Objective-C++
+languages themselves.  See @xref{Standards,,Language Standards
+Supported by GCC}, for references.)
 
 This section describes the command-line options that are only meaningful
-for Objective-C programs, but you can also use most of the GNU compiler
-options regardless of what language your program is in.  For example,
-you might compile a file @code{some_class.m} like this:
+for Objective-C and Objective-C++ programs, but you can also use most of
+the language-independent GNU compiler options.
+For example, you might compile a file @code{some_class.m} like this:
 
 @smallexample
 gcc -g -fgnu-runtime -O -c some_class.m
@@ -1787,11 +1803,16 @@ gcc -g -fgnu-runtime -O -c some_class.m
 
 @noindent
 In this example, @option{-fgnu-runtime} is an option meant only for
-Objective-C programs; you can use the other options with any language
-supported by GCC@.
+Objective-C and Objective-C++ programs; you can use the other options with
+any language supported by GCC@.
+
+Note that since Objective-C is an extension of the C language, Objective-C
+compilations may also use options specific to the C front-end (e.g., 
+@option{-Wtraditional}).  Similarly, Objective-C++ compilations may use
+C++-specific options (e.g., @option{-Wabi}).
 
 Here is a list of options that are @emph{only} for compiling Objective-C
-programs:
+and Objective-C++ programs:
 
 @table @gcctabopt
 @item -fconstant-string-class=@var{class-name}
@@ -1820,8 +1841,8 @@ used.
 @opindex fno-nil-receivers
 Assume that all Objective-C message dispatches (e.g.,
 @code{[receiver message:arg]}) in this translation unit ensure that the receiver
-is not @code{nil}.  This allows for more efficient entry points in the runtime to be
-used.  Currently, this option is only available in conjunction with
+is not @code{nil}.  This allows for more efficient entry points in the runtime
+to be used.  Currently, this option is only available in conjunction with
 the NeXT runtime on Mac OS X 10.3 and later.
 
 @item -fobjc-exceptions
@@ -2045,7 +2066,8 @@ two forms, whichever is not the default.
 
 The following options control the amount and kinds of warnings produced
 by GCC; for further, language-specific options also refer to
-@ref{C++ Dialect Options} and @ref{Objective-C Dialect Options}.
+@ref{C++ Dialect Options} and @ref{Objective-C and Objective-C++ Dialect
+Options}.
 
 @table @gcctabopt
 @cindex syntax checking
@@ -2210,7 +2232,7 @@ requiring a non-null value by the @code{nonnull} function attribute.
 @option{-Wnonnull} is included in @option{-Wall} and @option{-Wformat}.  It
 can be disabled with the @option{-Wno-nonnull} option.
 
-@item -Winit-self @r{(C, C++, and Objective-C only)}
+@item -Winit-self @r{(C, C++, Objective-C and Objective-C++ only)}
 @opindex Winit-self
 Warn about uninitialized variables which are initialized with themselves.
 Note this option can only be used with the @option{-Wuninitialized} option,
@@ -2260,7 +2282,7 @@ int a[2][2] = @{ 0, 1, 2, 3 @};
 int b[2][2] = @{ @{ 0, 1 @}, @{ 2, 3 @} @};
 @end smallexample
 
-@item -Wmissing-include-dirs @r{(C, C++, and Objective-C only)}
+@item -Wmissing-include-dirs @r{(C, C++, Objective-C and Objective-C++ only)}
 @opindex Wmissing-include-dirs
 Warn if a user-supplied include directory does not exist.
 
@@ -2554,7 +2576,7 @@ warnings about constructions that some users consider questionable, and
 that are easy to avoid (or modify to prevent the warning), even in
 conjunction with macros.  This also enables some language-specific
 warnings described in @ref{C++ Dialect Options} and
-@ref{Objective-C Dialect Options}.
+@ref{Objective-C and Objective-C++ Dialect Options}.
 @end table
 
 The following @option{-W@dots{}} options are not implied by @option{-Wall}.
@@ -5491,7 +5513,7 @@ and searches several directories.
 @item -lobjc
 @opindex lobjc
 You need this special case of the @option{-l} option in order to
-link an Objective-C program.
+link an Objective-C or Objective-C++ program.
 
 @item -nostartfiles
 @opindex nostartfiles
