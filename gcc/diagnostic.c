@@ -791,7 +791,7 @@ diagnostic_build_prefix (diagnostic)
      diagnostic_info *diagnostic;
 {
   static const char *diagnostic_kind_text[] = {
-#define DEFINE_DIAGNOSTIC_KIND(K, T) _(T),
+#define DEFINE_DIAGNOSTIC_KIND(K, T) (T),
 #include "diagnostic.def"
 #undef DEFINE_DIAGNOSTIC_KIND
     "must-not-happen"
@@ -803,9 +803,9 @@ diagnostic_build_prefix (diagnostic)
     ? build_message_string ("%s:%d: %s",
                             diagnostic->location.file,
                             diagnostic->location.line,
-                            diagnostic_kind_text[diagnostic->kind])
+                            _(diagnostic_kind_text[diagnostic->kind]))
     : build_message_string ("%s: %s", progname,
-                            diagnostic_kind_text[diagnostic->kind]);
+                            _(diagnostic_kind_text[diagnostic->kind]));
 }
 
 /* Report a diagnostic MESSAGE at the declaration DECL.
