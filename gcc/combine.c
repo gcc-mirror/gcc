@@ -7871,7 +7871,7 @@ make_field_assignment (rtx x)
 	{
 	  mode = GET_MODE (src);
 	  src = gen_rtx_AND (mode, XEXP (src, 0),
-			     gen_int_mode (mode, and_mask & ze_mask));
+			     gen_int_mode (and_mask & ze_mask, mode));
 	  return gen_rtx_SET (VOIDmode, dest, src);
 	}
     }
