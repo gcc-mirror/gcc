@@ -1,3 +1,11 @@
+2002-03-22  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpplex.c (parse_identifier_slow): Rename parse_slow, adjust
+	prototype, and handle lexing numbers and identifiers.
+	(parse_identifier): Update to new form of parse_slow.
+	(parse_number): Fast path only, use parse_slow otherwise.
+	(_cpp_lex_direct): Update calls to parse_number.
+
 2002-03-21  DJ Delorie  <dj@redhat.com>
 
 	* bb-reorder.c (make_reorder_chain_1): Protect against
