@@ -68,7 +68,7 @@
 /* The Darwin ABI always includes AltiVec, can't be (validly) turned
    off.  */
 
-#define SUBTARGET_OVERRIDE_OPTIONS				  	\
+#define SUBTARGET_OVERRIDE_OPTIONS					\
 do {									\
   rs6000_altivec_abi = 1;						\
   rs6000_altivec_vrsave = 1;						\
@@ -87,11 +87,18 @@ do {									\
         flag_pic = 2;							\
       }									\
   }									\
-}while(0)
+} while(0)
+
+/* Darwin has 128-bit long double support in libc in 10.4 and later.
+   Default to 128-bit long doubles even on earlier platforms for ABI
+   consistency; arithmetic will work even if libc and libm support is
+   not available.  */
+
+#define RS6000_DEFAULT_LONG_DOUBLE_SIZE 128
+
 
 /* We want -fPIC by default, unless we're using -static to compile for
    the kernel or some such.  */
-
 
 #define CC1_SPEC "\
 %{gused: -g -feliminate-unused-debug-symbols %<gused }\

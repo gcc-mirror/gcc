@@ -1,3 +1,7 @@
+2004-07-30  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/darwin-longdouble.c: New file.
+
 2004-07-30  Richard Henderson  <rth@redhat.com>
 
 	* gfortran.fortran-torture/execute/intrinsic_rrspacing.f90: Fix

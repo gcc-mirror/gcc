@@ -51,8 +51,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #if !_SOFT_FLOAT && (defined (__MACH__) || defined (__powerpc64__))
 
 #define fabs(x) __builtin_fabs(x)
+#define isless(x, y) __builtin_isless (x, y)
+#define inf() __builtin_inf()
 
 #define unlikely(x) __builtin_expect ((x), 0)
+
+#define nonfinite(a) unlikely (! isless (fabs (a), inf ()))
 
 /* All these routines actually take two long doubles as parameters,
    but GCC currently generates poor code when a union is used to turn
@@ -69,66 +73,40 @@ typedef union
   double dval[2];
 } longDblUnion;
 
-static const double FPKINF = 1.0/0.0;
-
 /* Add two 'long double' values and return the result.	*/
 long double
-_xlqadd (double a, double b, double c, double d)
+_xlqadd (double a, double aa, double c, double cc)
 {
-  longDblUnion z;
-  double t, tau, u, FPR_zero, FPR_PosInf;
+  longDblUnion x;
+  double z, q, zz, xh;
 
-  FPR_zero = 0.0;
-  FPR_PosInf = FPKINF;
+  z = a + c;
 
-  if (unlikely (a != a) || unlikely (c != c)) 
-    return a + c;  /* NaN result.  */
-
-  /* Ordered operands are arranged in order of their magnitudes.  */
-
-  /* Switch inputs if |(c,d)| > |(a,b)|. */
-  if (fabs (c) > fabs (a))
+  if (nonfinite (z))
     {
-      t = a;
-      tau = b;
-      a = c;
-      b = d;
-      c = t;
-      d = tau;
+      z = cc + aa + c + a;
+      if (nonfinite (z))
+	return z;
+      x.dval[0] = z;  /* Will always be DBL_MAX.  */
+      zz = aa + cc;
+      if (fabs(a) > fabs(c))
+	x.dval[1] = a - z + c + zz;
+      else
+	x.dval[1] = c - z + a + zz;
     }
-
-  /* b <- second largest magnitude double.  */
-  if (fabs (c) > fabs (b))
+  else
     {
-      t = b;
-      b = c;
-      c = t;
+      q = a - z;
+      zz = q + c + (a - (q + z)) + aa + cc;
+      xh = z + zz;
+
+      if (nonfinite (xh))
+	return xh;
+
+      x.dval[0] = xh;
+      x.dval[1] = z - xh + zz;
     }
-
-  /* Thanks to commutativity, sum is invariant w.r.t. the next
-     conditional exchange.  */
-  tau = d + c;
-
-  /* Order the smallest magnitude doubles.  */
-  if (fabs (d) > fabs (c))
-    {
-      t = c;
-      c = d;
-      d = t;
-    }
-
-  t = (tau + b) + a;	     /* Sum values in ascending magnitude order.  */
-
-  /* Infinite or zero result.  */
-  if (unlikely (t == FPR_zero) || unlikely (fabs (t) == FPR_PosInf))
-    return t;
-
-  /* Usual case.  */
-  tau = (((a-t) + b) + c) + d;
-  u = t + tau;
-  z.dval[0] = u;	       /* Final fixup for long double result.  */
-  z.dval[1] = (t - u) + tau;
-  return z.ldval;
+  return x.ldval;
 }
 
 long double
@@ -141,21 +119,17 @@ long double
 _xlqmul (double a, double b, double c, double d)
 {
   longDblUnion z;
-  double t, tau, u, v, w, FPR_zero, FPR_PosInf;
+  double t, tau, u, v, w;
   
-  FPR_zero = 0.0;
-  FPR_PosInf = FPKINF;
-
   t = a * c;			/* Highest order double term.  */
 
-  if (unlikely (t != t) || unlikely (t == FPR_zero) 
-      || unlikely (fabs (t) == FPR_PosInf))
+  if (unlikely (t == 0)		/* Preserve -0.  */
+      || nonfinite (t))
     return t;
 
-  /* Finite nonzero result requires summing of terms of two highest
-     orders.	*/
+  /* Sum terms of two highest orders. */
   
-  /* Use fused multiply-add to get low part of a * c.	 */
+  /* Use fused multiply-add to get low part of a * c.  */
   asm ("fmsub %0,%1,%2,%3" : "=f"(tau) : "f"(a), "f"(c), "f"(t));
   v = a*d;
   w = b*c;
@@ -163,6 +137,8 @@ _xlqmul (double a, double b, double c, double d)
   u = t + tau;
 
   /* Construct long double result.  */
+  if (nonfinite (u))
+    return u;
   z.dval[0] = u;
   z.dval[1] = (t - u) + tau;
   return z.ldval;
@@ -172,15 +148,12 @@ long double
 _xlqdiv (double a, double b, double c, double d)
 {
   longDblUnion z;
-  double s, sigma, t, tau, u, v, w, FPR_zero, FPR_PosInf;
-  
-  FPR_zero = 0.0;
-  FPR_PosInf = FPKINF;
+  double s, sigma, t, tau, u, v, w;
   
   t = a / c;                    /* highest order double term */
   
-  if (unlikely (t != t) || unlikely (t == FPR_zero) 
-      || unlikely (fabs (t) == FPR_PosInf))
+  if (unlikely (t == 0)		/* Preserve -0.  */
+      || nonfinite (t))
     return t;
 
   /* Finite nonzero result requires corrections to the highest order term.  */
@@ -197,6 +170,8 @@ _xlqdiv (double a, double b, double c, double d)
   u = t + tau;
 
   /* Construct long double result.  */
+  if (nonfinite (u))
+    return u;
   z.dval[0] = u;
   z.dval[1] = (t - u) + tau;
   return z.ldval;

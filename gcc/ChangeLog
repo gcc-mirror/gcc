@@ -1,3 +1,24 @@
+2004-07-30  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/rs6000.c (legitimate_lo_sum_address_p): Permit
+	non-offsettable addresses even for DImode.
+	(rs6000_split_multireg_move): Cope with non-offsettable addresses
+	being moved into multiple GPRs.
+
+	* config/rs6000/rs6000.c (RS6000_DEFAULT_LONG_DOUBLE_SIZE): Default
+	to 64.
+	(rs6000_override_options): Use RS6000_DEFAULT_LONG_DOUBLE_SIZE.
+	* config/rs6000/darwin.h (RS6000_DEFAULT_LONG_DOUBLE_SIZE): Define
+	to 128.
+	* config/rs6000/darwin-ldouble.c (isless): New macro.
+	(inf): New macro.
+	(nonfinite): New macro.
+	(FPKINF): Delete.
+	(_xlqadd): Completely rewrite.
+	(_xlqmul): Correct overflow handling.
+	(_xlqdiv): Correct overflow handling.
+	* config/rs6000/darwin-ldouble-format: New file.
+
 2004-07-30  Roger Sayle  <roger@eyesopen.com>
 	    Richard Henderson  <rth@redhat.com>
 
