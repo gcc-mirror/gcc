@@ -51,6 +51,9 @@ public abstract class RemoteStub extends RemoteObject
     super (ref);
   }
 
+  /**
+   * @deprecated
+   */
   protected static void setRef (RemoteStub stub,  RemoteRef ref)
   {
     stub.ref = ref;

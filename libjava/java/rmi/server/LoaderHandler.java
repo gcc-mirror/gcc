@@ -47,11 +47,20 @@ public interface LoaderHandler
 {
   public static final String packagePrefix = "";
 
+  /**
+   * @deprecated
+   */
   public Class loadClass(String name)
     throws MalformedURLException, ClassNotFoundException;
 
+  /**
+   * @deprecated
+   */
   public Class loadClass(URL codebase, String name)
     throws MalformedURLException, ClassNotFoundException;
 
+  /**
+   * @deprecated
+   */
   public Object getSecurityContext(ClassLoader loader);
 }

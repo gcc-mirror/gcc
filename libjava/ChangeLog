@@ -1,5 +1,41 @@
 2003-03-31  Michael Koch  <konqueror@gmx.de>
 
+	* java/rmi/server/LoaderHandler.java
+	(loadClass): Deprecated.
+	(getSecurityContext): Deprecated.
+	* java/rmi/server/LogStream.java
+	(getDefaultStream): Deprecated.
+	(setDefaultStream): Deprecated.
+	(getOutputStream): Deprecated.
+	(setOutputStream): Deprecated.
+	(write): Deprecated.
+	(toString): Deprecated.
+	(parseLevel): Deprecated.
+	* java/rmi/server/Operation.java
+	(Operation): Deprecated.
+	(getOperation): Deprecated.
+	(toString): Deprecated.
+	* java/rmi/server/RemoteCall.java
+	(getOutputStream): Deprecated.
+	(releaseOutputStream): Deprecated.
+	(getInputStream): Deprecated.
+	(releaseInputStream): Deprecated.
+	(getResultStream): Deprecated.
+	(executeCall): Deprecated.
+	(done): Deprecated.
+	* java/rmi/server/RemoteRef.java
+	(invoke): Deprecated.
+	(newCall): Deprecated.
+	(done): Deprecated.
+	* java/rmi/server/RemoteStub.java
+	(setRef): Deprecated.
+	* java/rmi/server/Skeleton.java:
+	No need to import java.lang.Exception explicitly.
+	(dispatch): Deprecated.
+	(getOperations): Deprecated.
+
+2003-03-31  Michael Koch  <konqueror@gmx.de>
+
 	* java/rmi/dgc/VMID.java,
 	java/rmi/registry/RegistryHandler.java,
 	java/rmi/server/LogStream.java,

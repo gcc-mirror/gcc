@@ -38,7 +38,6 @@ exception statement from your version. */
 package java.rmi.server;
 
 import java.rmi.Remote;
-import java.lang.Exception;
 import java.rmi.server.RemoteCall;
 
 /**
@@ -46,8 +45,14 @@ import java.rmi.server.RemoteCall;
  */
 public interface Skeleton
 {
+  /**
+   * @deprecated
+   */
   public void dispatch (Remote obj, RemoteCall theCall, int opnum, long hash)
     throws Exception;
 
+  /**
+   * @deprecated
+   */
   public Operation[] getOperations();
 }
