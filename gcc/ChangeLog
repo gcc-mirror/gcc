@@ -1,3 +1,9 @@
+2004-11-16  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/18498
+	* c-decl.c (grokdeclarator): Call check_bitfield_type_and_width
+	after processing the declarator.
+
 2004-11-14  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR objc/18406

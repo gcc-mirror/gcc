@@ -3620,10 +3620,6 @@ grokdeclarator (tree declarator, tree declspecs,
 	}
     }
 
-  /* Check the type and width of a bit-field.  */
-  if (bitfield)
-    check_bitfield_type_and_width (&type, width, orig_name);
-
   /* Figure out the type qualifiers for the declaration.  There are
      two ways a declaration can become qualified.  One is something
      like `const int i' where the `const' is explicit.  Another is
@@ -4132,6 +4128,10 @@ grokdeclarator (tree declarator, tree declspecs,
     }
 
   /* Now TYPE has the actual type.  */
+
+  /* Check the type and width of a bit-field.  */
+  if (bitfield)
+    check_bitfield_type_and_width (&type, width, orig_name);
 
   /* Did array size calculations overflow?  */
 
