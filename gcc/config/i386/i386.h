@@ -1524,8 +1524,9 @@ do {						\
 									\
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)		\
 	if ((regs_ever_live[regno] && ! call_used_regs[regno])		\
-	    || (current_function_uses_pic_offset_table			\
-		&& regno == PIC_OFFSET_TABLE_REGNUM))			\
+	    || ((current_function_uses_pic_offset_table			\
+		 || current_function_uses_const_pool)			\
+		&& flag_pic && regno == PIC_OFFSET_TABLE_REGNUM))	\
 	  offset += 4;							\
 									\
       (OFFSET) = offset + get_frame_size ();				\
