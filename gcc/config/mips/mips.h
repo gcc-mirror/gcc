@@ -463,7 +463,7 @@ while (0)
 
 /* Print subsidiary information on the compiler version in use.  */
 
-#define MIPS_VERSION "[AL 1.1, MM 34]"
+#define MIPS_VERSION "[AL 1.1, MM 35]"
 
 #ifndef MACHINE_TYPE
 #define MACHINE_TYPE "BSD Mips"
@@ -683,22 +683,17 @@ do {							\
 #define MASK_FLOAT64	0x00000200	/* fp registers are 64 bits */
 #define MASK_ABICALLS	0x00000400	/* emit .abicalls/.cprestore/.cpload */
 #define MASK_HALF_PIC	0x00000800	/* Emit OSF-style pic refs to externs*/
-#define MASK_UNUSED1	0x00001000
-#define MASK_UNUSED2	0x00002000
-#define MASK_UNUSED3	0x00004000
-#define MASK_UNUSED4	0x00008000
-#define MASK_UNUSED5	0x00010000
-#define MASK_UNUSED6	0x00020000
-#define MASK_UNUSED7	0x00040000
-#define MASK_UNUSED8	0x00080000
+#define MASK_LONG_CALLS	0x00001000	/* Always call through a register */
+#define MASK_UNUSED1	0x00002000
+#define MASK_UNUSED2	0x00004000
+#define MASK_UNUSED3	0x00008000
+#define MASK_UNUSED4	0x00010000
+#define MASK_UNUSED5	0x00020000
+#define MASK_UNUSED6	0x00040000
+#define MASK_UNUSED7	0x00080000
 
 					/* Dummy switches used only in spec's*/
 #define MASK_MIPS_TFILE	0x00000000	/* flag for mips-tfile usage */
-
-					/* switches not used yet */
-#define MASK_WC8	0x00000000	/* wchar's are  8 bits, not 32 */
-#define MASK_WC16	0x00000000	/* wchar's are 16 bits, not 32 */
-#define MASK_WC32	0x00000000	/* dummy for consistency */
 
 					/* Debug switches, not documented */
 #define MASK_DEBUG	0x40000000	/* Eliminate version # in .s file */
@@ -755,14 +750,12 @@ do {							\
 					/* OSF pic references to externs */
 #define TARGET_HALF_PIC		(target_flags & MASK_HALF_PIC)
 
-					/* wchar size */
-#define TARGET_WC8		(target_flags & MASK_WC8)
-#define TARGET_WC16		(target_flags & MASK_WC16)
-#define TARGET_WC32		((target_flags & (MASK_WC8 | MASK_WC16)) == 0)
-
 					/* software floating point */
 #define TARGET_SOFT_FLOAT	(target_flags & MASK_SOFT_FLOAT)
 #define TARGET_HARD_FLOAT	(! TARGET_SOFT_FLOAT)
+
+					/* always call through a register */
+#define TARGET_LONG_CALLS	(target_flags & MASK_LONG_CALLS)
 
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
@@ -787,9 +780,6 @@ do {							\
   {"no-stats",		 -MASK_STATS},					\
   {"memcpy",		  MASK_MEMCPY},					\
   {"no-memcpy",		 -MASK_MEMCPY},					\
-  {"wc8",		  MASK_WC8},					\
-  {"wc16",		  MASK_WC16},					\
-  {"wc32",		  MASK_WC32},					\
   {"mips-tfile",	  MASK_MIPS_TFILE},				\
   {"no-mips-tfile",	 -MASK_MIPS_TFILE},				\
   {"soft-float",	  MASK_SOFT_FLOAT},				\
@@ -800,6 +790,8 @@ do {							\
   {"no-abicalls",	 -MASK_ABICALLS},				\
   {"half-pic",		  MASK_HALF_PIC},				\
   {"no-half-pic",	 -MASK_HALF_PIC},				\
+  {"long-calls",	  MASK_LONG_CALLS},				\
+  {"no-long-calls",	 -MASK_LONG_CALLS},				\
   {"debug",		  MASK_DEBUG},					\
   {"debuga",		  MASK_DEBUG_A},				\
   {"debugb",		  MASK_DEBUG_B},				\

@@ -4054,7 +4054,7 @@ move\\t%0,%z4\\n\\
   if (operands[0])		/* eliminate unused code warnings */
     {
       addr = XEXP (operands[0], 0);
-      if (GET_CODE (addr) != REG && !CONSTANT_ADDRESS_P (addr))
+      if (GET_CODE (addr) != REG && (!CONSTANT_ADDRESS_P (addr) || TARGET_LONG_CALLS))
 	XEXP (operands[0], 0) = force_reg (FUNCTION_MODE, addr);
 
       /* In order to pass small structures by value in registers
@@ -4074,17 +4074,17 @@ move\\t%0,%z4\\n\\
 	    emit_insn (RTVEC_ELT (adjust, i));
 	}
 
-      emit_call_insn (gen_call_internal (operands[0], operands[1],
-					 gen_rtx (REG, Pmode, GP_REG_FIRST + 31)));
+      emit_call_insn (gen_call_internal1 (operands[0], operands[1],
+					  gen_rtx (REG, Pmode, GP_REG_FIRST + 31)));
       DONE;
     }
 }")
 
-(define_insn "call_internal"
+(define_insn "call_internal1"
   [(call (match_operand 0 "memory_operand" "m")
 	 (match_operand 1 "" "i"))
    (clobber (match_operand:SI 2 "register_operand" "=d"))]
-  ""
+  "!TARGET_LONG_CALLS"
   "*
 {
   register rtx target = XEXP (operands[0], 0);
@@ -4108,6 +4108,17 @@ move\\t%0,%z4\\n\\
    (set_attr "mode"	"none")
    (set_attr "length"	"1")])
 
+(define_insn "call_internal2"
+  [(call (mem:SI (match_operand:SI 0 "register_operand" "r"))
+	 (match_operand 1 "" "i"))
+   (clobber (match_operand:SI 2 "register_operand" "=d"))]
+  "TARGET_LONG_CALLS"
+  "%*jal\\t%2,%0"
+  [(set_attr "type"	"call")
+   (set_attr "mode"	"none")
+   (set_attr "length"	"1")])
+
+
 ;; calls.c now passes a fourth argument, make saber happy
 
 (define_expand "call_value"
@@ -4124,7 +4135,7 @@ move\\t%0,%z4\\n\\
   if (operands[0])		/* eliminate unused code warning */
     {
       addr = XEXP (operands[1], 0);
-      if (GET_CODE (addr) != REG && !CONSTANT_ADDRESS_P (addr))
+      if (GET_CODE (addr) != REG && (!CONSTANT_ADDRESS_P (addr) || TARGET_LONG_CALLS))
 	XEXP (operands[1], 0) = force_reg (FUNCTION_MODE, addr);
 
       /* In order to pass small structures by value in registers
@@ -4144,20 +4155,20 @@ move\\t%0,%z4\\n\\
 	    emit_insn (RTVEC_ELT (adjust, i));
 	}
 
-      emit_call_insn (gen_call_value_internal (operands[0], operands[1], operands[2],
-					       gen_rtx (REG, Pmode, GP_REG_FIRST + 31)));
+      emit_call_insn (gen_call_value_internal1 (operands[0], operands[1], operands[2],
+					        gen_rtx (REG, Pmode, GP_REG_FIRST + 31)));
 
       DONE;
     }
 
 }")
 
-(define_insn "call_value_internal"
+(define_insn "call_value_internal1"
   [(set (match_operand 0 "register_operand" "=df")
         (call (match_operand 1 "memory_operand" "m")
               (match_operand 2 "" "i")))
    (clobber (match_operand:SI 3 "register_operand" "=d"))]
-  ""
+  "!TARGET_LONG_CALLS"
   "*
 {
   register rtx target = XEXP (operands[1], 0);
@@ -4177,6 +4188,17 @@ move\\t%0,%z4\\n\\
       return \"%*jal\\t%3,%1\";
     }
 }"
+  [(set_attr "type"	"call")
+   (set_attr "mode"	"none")
+   (set_attr "length"	"1")])
+
+(define_insn "call_value_internal2"
+  [(set (match_operand 0 "register_operand" "=df")
+        (call (mem:SI (match_operand:SI 1 "register_operand" "r"))
+	      (match_operand 2 "" "i")))
+   (clobber (match_operand:SI 3 "register_operand" "=d"))]
+  "TARGET_LONG_CALLS"
+  "%*jal\\t%3,%1"
   [(set_attr "type"	"call")
    (set_attr "mode"	"none")
    (set_attr "length"	"1")])
