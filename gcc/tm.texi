@@ -1361,7 +1361,7 @@ One use of this macro is on machines where the highest numbered
 registers must always be saved and the save-multiple-registers
 instruction supports only sequences of consecutive registers.  On such
 machines, define @code{REG_ALLOC_ORDER} to be an initializer that lists
-the highest numbered allocatable register first.
+the highest numbered allocable register first.
 
 @findex ORDER_REGS_FOR_LOCAL_ALLOC
 @item ORDER_REGS_FOR_LOCAL_ALLOC
@@ -1465,14 +1465,14 @@ be used unless some pattern's constraint asks for one.
 @findex MODES_TIEABLE_P
 @item MODES_TIEABLE_P (@var{mode1}, @var{mode2})
 A C expression that is nonzero if a value of mode
-@var{mode1} is accessable in mode @var{mode2} without copying.
+@var{mode1} is accessible in mode @var{mode2} without copying.
 
 If @code{HARD_REGNO_MODE_OK (@var{r}, @var{mode1})} and
 @code{HARD_REGNO_MODE_OK (@var{r}, @var{mode2})} are always the same for
 any @var{r}, then @code{MODES_TIEABLE_P (@var{mode1}, @var{mode2})}
 should be nonzero.  If they differ for any @var{r}, you should define
 this macro to return zero unless some other mechanism ensures the
-accessability of the value in a narrower mode.
+accessibility of the value in a narrower mode.
 
 You should define this macro to return nonzero in as many cases as
 possible since doing so will allow GNU CC to perform better register
@@ -3333,7 +3333,7 @@ the function prologue.  Normally, the profiling code comes after.
 A C statement or compound statement to output to @var{file} some
 assembler code to initialize basic-block profiling for the current
 object module.  The global compile flag @code{profile_block_flag}
-distingishes two profile modes.
+distinguishes two profile modes.
 
 @table @code
 @findex __bb_init_func
@@ -3393,7 +3393,7 @@ call __bb_init_trace_func
 A C statement or compound statement to output to @var{file} some
 assembler code to increment the count associated with the basic
 block number @var{blockno}.  The global compile flag
-@code{profile_block_flag} distingishes two profile modes.
+@code{profile_block_flag} distinguishes two profile modes.
 
 @table @code
 @item profile_block_flag != 2
