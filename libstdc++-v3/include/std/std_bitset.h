@@ -1,6 +1,6 @@
 // <bitset> -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -290,7 +290,7 @@ namespace _GLIBCXX_STD
       ++__prev;
 
       // check out of bounds
-      if ( __prev >= _Nw * _GLIBCXX_BITSET_BITS_PER_WORD )
+      if (__prev >= _Nw * _GLIBCXX_BITSET_BITS_PER_WORD)
 	return __not_found;
 
       // search first word
@@ -298,7 +298,7 @@ namespace _GLIBCXX_STD
       _WordT __thisword = _M_w[__i];
 
       // mask off bits below bound
-      __thisword >>= __prev + 1;
+      __thisword &= (~static_cast<_WordT>(0)) << _S_whichbit(__prev);
 
       if (__thisword != static_cast<_WordT>(0))
 	return __i * _GLIBCXX_BITSET_BITS_PER_WORD
