@@ -1,3 +1,12 @@
+2002-01-16  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/r3900.h: Reformat.
+	(SUBTARGET_CPP_SIZE_SPEC): Remove.
+	* config/mips/isa3264.h (SUBTARGET_CPP_SIZE_SPEC): Ditto.
+	* config/mips/mips.h (ABI_GAS_ASM_SPEC): Default to "".
+	(SUBTARGET_CPP_SIZE_SPEC): Rewrite.
+	* config/mips/t-elf: Remove mips3 multilib.
+
 2002-01-16  H.J. Lu <hjl@gnu.org>
 
 	* config/mips/linux.h: Include "mips/abi64.h".
