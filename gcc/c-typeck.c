@@ -6486,7 +6486,7 @@ static int if_stack_pointer = 0;
 /* Begin an if-statement.  Returns a newly created IF_STMT if
    appropriate.  */
 
-tree
+void
 c_begin_if_stmt (void)
 {
   tree r;
@@ -6546,20 +6546,22 @@ c_finish_then (tree then_stmt)
 void
 c_begin_else (int stmt_count)
 {
+  if_elt *elt = &if_stack[if_stack_pointer - 1];
+
   /* An ambiguous else warning must be generated for the enclosing if
      statement, unless we see an else branch for that one, too.  */
   if (warn_parentheses
       && if_stack_pointer > 1
-      && (if_stack[if_stack_pointer - 1].compstmt_count
-	  == if_stack[if_stack_pointer - 2].compstmt_count))
-    if_stack[if_stack_pointer - 2].needs_warning = 1;
+      && (elt[0].compstmt_count == elt[-1].compstmt_count))
+    elt[-1].needs_warning = 1;
 
   /* Even if a nested if statement had an else branch, it can't be
      ambiguous if this one also has an else.  So don't warn in that
      case.  Also don't warn for any if statements nested in this else.  */
-  if_stack[if_stack_pointer - 1].needs_warning = 0;
-  if_stack[if_stack_pointer - 1].compstmt_count--;
-  if_stack[if_stack_pointer - 1].saw_else = 1;
+  elt->needs_warning = 0;
+  elt->compstmt_count--;
+  elt->saw_else = 1;
+  elt->stmt_count = stmt_count;
 }
 
 /* Called after the else-clause for an if-statement is processed.  */
