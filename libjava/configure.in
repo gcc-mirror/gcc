@@ -302,7 +302,7 @@ if test -n "${with_cross_host}"; then
    dnl We also assume we are using gcc, which provides alloca.
    AC_DEFINE(HAVE_ALLOCA)
 
-   ZLIBSPEC=-lgcj
+   ZLIBSPEC=-lzgcj
 
    # If Canadian cross, then don't pick up tools from the build
    # directory.

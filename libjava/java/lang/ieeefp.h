@@ -66,6 +66,14 @@
 #define __IEEE_BIG_ENDIAN
 #endif
 
+#ifdef __pj__
+#ifdef __pjl__
+#define __IEEE_LITTLE_ENDIAN
+#else
+#define __IEEE_BIG_ENDIAN
+#endif
+#endif
+
 /* necv70 was __IEEE_LITTLE_ENDIAN. */
 
 #ifdef __W65__
