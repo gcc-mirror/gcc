@@ -44,6 +44,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.TooManyListenersException;
 
+/** STUB CLASS ONLY */
 public class DropTarget
 {
   protected static class DropTargetAutoScroller

@@ -1,5 +1,24 @@
 2002-11-09  Tom Tromey  <tromey@redhat.com>
 
+	* java/applet/Applet.java, java/applet/AppletContext.java,
+	java/applet/AppletStub.java, java/applet/AudioClip.java,
+	java/awt/CardLayout.java,
+	java/awt/ContainerOrderFocusTraversalPolicy.java,
+	java/awt/Cursor.java, java/awt/Event.java, java/awt/Frame.java,
+	java/awt/GridBagConstraints.java, java/awt/GridBagLayout.java,
+	java/awt/GridLayout.java, java/awt/color/ColorSpace.java,
+	java/awt/color/ICC_ColorSpace.java,
+	java/awt/color/ICC_Profile.java,
+	java/awt/color/ICC_ProfileGray.java,
+	java/awt/color/ICC_ProfileRGB.java,
+	java/awt/datatransfer/DataFlavor.java,
+	java/awt/dnd/DragSourceContext.java, java/awt/dnd/DropTarget.java,
+	java/awt/dnd/DropTargetContext.java, java/awt/event/KeyEvent.java:
+	New versions from Classpath.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (awt_java_source_files): Added ICC_ProfileGray and
+	ICC_ProfileRGB.
+
 	* java/awt/ScrollPane.java (ScrollPane): Fixed test for valid
 	display policy.
 

@@ -45,6 +45,8 @@ import java.io.Serializable;
  * GridBagLayout layout manager.  */
 public class GridBagConstraints implements Cloneable, Serializable
 {
+  static final long serialVersionUID = -1000070633030801713L;
+
   /** Fill in both directions.  */
   public static final int BOTH = 1;
   /** Don't fill.  */

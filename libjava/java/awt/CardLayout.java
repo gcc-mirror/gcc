@@ -53,6 +53,8 @@ import java.io.Serializable;
  */
 public class CardLayout implements LayoutManager2, Serializable
 {
+  static final long serialVersionUID = -4328196481005934313L;
+
   /**
    * Initializes a new instance of <code>CardLayout</code> with horizontal
    * and vertical gaps of 0.

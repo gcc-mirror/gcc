@@ -45,6 +45,8 @@ import java.io.Serializable;
 public class GridBagLayout
   implements Serializable, LayoutManager2
 {
+  static final long serialVersionUID = 8838754796412211005L;
+
   public void addLayoutComponent(String name, Component component)
   {
   }

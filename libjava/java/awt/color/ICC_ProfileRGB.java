@@ -1,5 +1,5 @@
-/* AudioClip.java -- play an audio clip in an applet
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+/* ICC_ProfileRGB.java -- the ICC profile for a RGB colorspace
+   Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -36,32 +36,45 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package java.applet;
+package java.awt.color;
 
 /**
- * This interface provides a simple mechanism for playing audio clips.
- * If multiple clips are played at once, the browser combines them into a
- * composite clip.
- *
- * @author Aaron M. Renn (arenn@urbanophile.com)
- * @since 1.0
- * @status updated to 1.4
+ * STUBBED
+ * @since 1.2
  */
-public interface AudioClip
+public class ICC_ProfileRGB extends ICC_Profile
 {
   /**
-   * Plays the audio clip starting from the beginning.
+   * Compatible with JDK 1.2+.
    */
-  void play();
+  private static final long serialVersionUID = 8505067385152579334L;
 
-  /**
-   * Stops playing this audio clip.  There is no mechanism for restarting
-   * at the point where the clip is stopped.
-   */
-  void stop();
+  public static final int REDCOMPONENT = 0;
+  public static final int GREENCOMPONENT = 1;
+  public static final int BLUECOMPONENT = 2;
 
-  /**
-   * Plays this audio clip in a continuous loop.
-   */
-  void loop();
-} // interface AudioClip
+  ICC_ProfileRGB()
+  {
+    super(ColorSpace.CS_sRGB);
+  }
+
+  public float[] getMediaWhitePoint()
+  {
+    return null;
+  }
+
+  public float[][] getMatrix()
+  {
+    return null;
+  }
+
+  public float getGamma(int component)
+  {
+    return 0;
+  }
+
+  public short[] getTRC(int component)
+  {
+    return null;
+  }
+} // class ICC_ProfileRGB

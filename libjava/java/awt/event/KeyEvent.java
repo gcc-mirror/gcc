@@ -754,18 +754,18 @@ public class KeyEvent extends InputEvent
   public static final int VK_EURO_SIGN = 516;
 
   /**
-   * The virtual key VK_EXCLAMATION_POINT.
+   * The virtual key VK_EXCLAMATION_MARK.
    *
    * @since 1.2
    */
-  public static final int VK_EXCLAMATION_POINT = 517;
+  public static final int VK_EXCLAMATION_MARK = 517;
 
   /**
-   * The virtual key VK_INVERTED_EXCLAMATION_POINT.
+   * The virtual key VK_INVERTED_EXCLAMATION_MARK.
    *
    * @since 1.2
    */
-  public static final int VK_INVERTED_EXCLAMATION_POINT = 518;
+  public static final int VK_INVERTED_EXCLAMATION_MARK = 518;
 
   /**
    * The virtual key VK_LEFT_PARENTHESIS.
@@ -1410,9 +1410,9 @@ public class KeyEvent extends InputEvent
         return "Dollar";
       case VK_EURO_SIGN:
         return "Euro";
-      case VK_EXCLAMATION_POINT:
+      case VK_EXCLAMATION_MARK:
         return "Exclamation Mark";
-      case VK_INVERTED_EXCLAMATION_POINT:
+      case VK_INVERTED_EXCLAMATION_MARK:
         return "Inverted Exclamation Mark";
       case VK_LEFT_PARENTHESIS:
         return "Left Parenthesis";
