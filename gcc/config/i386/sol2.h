@@ -40,6 +40,15 @@ Boston, MA 02111-1307, USA.  */
 		  : DW_EH_PE_datarel))					\
    : DW_EH_PE_absptr)
 
+/* The Solaris linker will not merge a read-only .eh_frame section
+   with a read-write .eh_frame section.  None of the encodings used
+   with non-PIC code require runtime relocations.  In 64-bit mode,
+   since there is no backwards compatibility issue, we use a read-only
+   section for .eh_frame.  In 32-bit mode, we use a writable .eh_frame
+   section in order to be compatible with G++ for Solaris x86.  */
+#undef EH_TABLES_CAN_BE_READ_ONLY
+#define EH_TABLES_CAN_BE_READ_ONLY (TARGET_64BIT)
+
 /* Solaris 2/Intel as chokes on #line directives.  */
 #undef CPP_SPEC
 #define CPP_SPEC "%{.S:-P} %(cpp_subtarget)"
