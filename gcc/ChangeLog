@@ -1,3 +1,7 @@
+2002-02-05  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.h (PREDICATE_CODES): Add reg_before_reload_operand.
+
 2002-02-06  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/altivec.h: Change elem to _S_elem.
