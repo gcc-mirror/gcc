@@ -450,6 +450,21 @@ debug_rtx_list (x, n)
     debug_rtx (insn);
 }
 
+/* Call this function to print an rtx list from START to END inclusive.  */
+
+void
+debug_rtx_range (start, end)
+     rtx start, end;
+{
+  while (1)
+    {
+      debug_rtx (start);
+      if (!start || start == end)
+	break;
+      start = NEXT_INSN (start);
+    }
+}
+
 /* Call this function to search an rtx list to find one with insn uid UID,
    and then call debug_rtx_list to print it, using DEBUG_RTX_COUNT.
    The found insn is returned to enable further debugging analysis.  */
