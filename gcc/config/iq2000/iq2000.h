@@ -926,7 +926,6 @@ extern void		sbss_section  (void);
 
 
 #undef ASM_SPEC
-#define ASM_SPEC "%{march=iq2000: -m2000} %{march=iq10: -m10} %{!march=*: -m2000}"
 
 
 /* The mapping from gcc register number to DWARF 2 CFA column number.
