@@ -2270,7 +2270,7 @@ cp_parser_primary_expression (cp_parser *parser,
 	    /* Parse the compound-statement.  */
 	    cp_parser_compound_statement (parser, true);
 	    /* Finish up.  */
-	    expr = finish_stmt_expr (expr);
+	    expr = finish_stmt_expr (expr, false);
 	  }
 	else
 	  {

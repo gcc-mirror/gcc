@@ -1,5 +1,16 @@
 2003-08-18  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/11957
+	* cp-tree.h (finish_stmt_expr): Add bool parameter.
+	* init.c (finish_init_stmts): Pass true to finish_stmt_expr. Don't
+	adjust the stmt_expr here.
+	(build_vec_init): Use finish_stmt_expr_expr, convert result to
+	array type.
+	* parser.c (cp_parser_primar_expression): Adjust finish_stmt_expr
+	call.
+	* pt.c (tsubst_copy): Likewise.
+	* semantics.c (finish_stmt_expr): Add parameter.
+
 	* pt.c (instantiate_class_template): Push to class's scope before
 	tsubsting base.
 
