@@ -336,3 +336,18 @@ splay_tree_foreach (sp, fn, data)
 {
   return splay_tree_foreach_helper (sp, sp->root, fn, data);
 }
+
+/* Splay-tree comparison function, treating the keys as ints.  */
+
+int
+splay_tree_compare_ints (k1, k2)
+     splay_tree_key k1;
+     splay_tree_key k2;
+{
+  if ((int) k1 < (int) k2)
+    return -1;
+  else if ((int) k1 > (int) k2)
+    return 1;
+  else 
+    return 0;
+}
