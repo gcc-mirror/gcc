@@ -7,7 +7,8 @@ MULTILIB_EXCLUSIONS = m32/!m64/mno-app-regs m32/!m64/mcmodel=medany
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
 
-EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o
+EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o \
+	crtfastmath.o
 
 SHLIB_SLIBDIR_SUFFIXES = 64:64 32:
 

@@ -1,3 +1,7 @@
+2002-06-21  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/sparc/t-linux64 (EXTRA_MULTILIB_PARTS): Add crtfastmath.o.
+
 2002-06-21  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cpperror.c (cpp_error): For traditional CPP, default to
@@ -78,6 +82,7 @@
 	* config/sparc/t-crtfm (crtfastmath.o): Prefix with $(T) for
 	multilibs.
 	* config/sparc/t-sol2-64 (EXTRA_MULTILIB_PARTS): Add crtfastmath.o.
+	Fixes PR other/6836.
 
 Thu Jun 20 19:42:21 CEST 2002  Jan Hubicka  <jh@suse.cz>
 			       Pavel Nejedly  <bim@atrey.karlin.mff.cuni.cz>
