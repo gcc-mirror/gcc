@@ -1101,6 +1101,16 @@ main (argc, argv)
 	   with the default prefix at the front of its name.  */
 	if (!strcmp (argv[i], "-iwithprefix")) {
 	  struct file_name_list *dirtmp;
+	  char *prefix;
+
+	  if (include_prefix != 0)
+	    prefix = include_prefix;
+	  else {
+	    prefix = savestring (GCC_INCLUDE_DIR);
+	    /* Remove the `include' from /usr/local/lib/gcc.../include.  */
+	    if (!strcmp (prefix + strlen (prefix) - 8, "/include"))
+	      prefix[strlen (prefix) - 7] = 0;
+	  }
 
 	  dirtmp = (struct file_name_list *)
 	    xmalloc (sizeof (struct file_name_list));
@@ -1110,8 +1120,8 @@ main (argc, argv)
 	    fatal ("Directory name missing after `-iwithprefix' option");
 
 	  dirtmp->fname = (char *) xmalloc (strlen (argv[i+1])
-					    + strlen (include_prefix) + 1);
-	  strcpy (dirtmp->fname, include_prefix);
+					    + strlen (prefix) + 1);
+	  strcpy (dirtmp->fname, prefix);
 	  strcat (dirtmp->fname, argv[++i]);
 
 	  if (after_include == 0)
@@ -1119,6 +1129,35 @@ main (argc, argv)
 	  else
 	    last_after_include->next = dirtmp;
 	  last_after_include = dirtmp; /* Tail follows the last one */
+	}
+	/* Add directory to main path for includes,
+	   with the default prefix at the front of its name.  */
+	if (!strcmp (argv[i], "-iwithprefixbefore")) {
+	  struct file_name_list *dirtmp;
+	  char *prefix;
+
+	  if (include_prefix != 0)
+	    prefix = include_prefix;
+	  else {
+	    prefix = savestring (GCC_INCLUDE_DIR);
+	    /* Remove the `include' from /usr/local/lib/gcc.../include.  */
+	    if (!strcmp (prefix + strlen (prefix) - 8, "/include"))
+	      prefix[strlen (prefix) - 7] = 0;
+	  }
+
+	  dirtmp = (struct file_name_list *)
+	    xmalloc (sizeof (struct file_name_list));
+	  dirtmp->next = 0;	/* New one goes on the end */
+	  dirtmp->control_macro = 0;
+	  if (i + 1 == argc)
+	    fatal ("Directory name missing after `-iwithprefixbefore' option");
+
+	  dirtmp->fname = (char *) xmalloc (strlen (argv[i+1])
+					    + strlen (prefix) + 1);
+	  strcpy (dirtmp->fname, prefix);
+	  strcat (dirtmp->fname, argv[++i]);
+
+	  append_include_chain (dirtmp, dirtmp);
 	}
 	/* Add directory to end of path for includes.  */
 	if (!strcmp (argv[i], "-idirafter")) {
