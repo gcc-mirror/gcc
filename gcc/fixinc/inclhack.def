@@ -631,6 +631,9 @@ fix = {
     files    = term.h;
     files    = tinfo.h;
 
+    select   = "char[ \t]+bool|bool[ \t]+char";
+    bypass   = "we must use the C\\+\\+ compiler's type";
+
     sed = "/^#[ \t]*define[ \t][ \t]*bool[ \t][ \t]*char[ \t]*$/i\\\n"
                 "#ifndef __cplusplus\n";
 
@@ -745,21 +748,6 @@ fix = {
                "#ifdef __cplusplus\\\n"
                "#include <stdlib.h>\\\n"
                "#endif\n";
-};
-
-
-/*
- *  Note that BSD43_* are used on recent MIPS systems.
- */
-fix = {
-    hackname = bsd43_io_macros;
-    select   = "BSD43__IO";
-    /*
-     *  Put single quotes aroung the character that appears after '('
-     *  and before ',', UNLESS it is a 'c' or 'g' or 'x'.
-     */
-    sed = "/[ \t]BSD43__IO[A-Z]*[ \t]*(/"       's/(\(.\),/(\'\1\',/';
-    sed = "/#[ \t]*define[ \t]*[ \t]BSD43__IO/" 's/\'\([cgx]\)\'/\1/g';
 };
 
 
@@ -970,52 +958,45 @@ fix = {
 };
 
 /*
- *  Fix various _IO* defines, but do *not* quote the characters cgxtf.
+ *  Fix various macros used to define ioctl numbers.  The traditional
+ *  syntax was
+ *  #define _IO(n, x) (('n'<<8)+x)
+ *  #define TIOCFOO _IO(T, 1)
+ *  but this does not work with the C standard, which disallows macro
+ *  expansion inside strings.  We have to rewrite it thus:
+ *  #define _IO(n, x) ((n<<8)+x)
+ *  #define TIOCFOO  _IO('T', 1)
+ *  The select expressions match too much, but the c_fix code is cautious.
+ *
+ *  _IO might be: _IO DESIO BSD43__IO with W, R, WR, C, ... suffixes.
  */
 fix = {
-    hackname = io_def_quotes;
-    select = "[ \t]*[ \t](_|DES)IO[A-Z]*[ \t]*\\( *[^,']";
-    sed = "s/\\([ \t]*[ \t]_IO[A-Z]*[ \t]*(\\)\\([^,']\\),/\\1'\\2',/";
-    sed = "s/\\([ \t]*[ \t]DESIO[A-Z]*[ \t]*(\\)\\([^,']\\),/\\1'\\2',/";
-    sed = "/#[ \t]*define[ \t]*[ \t]_IO/"       "s/'\\([cgxtf]\\)'/\\1/g";
-    sed = "/#[ \t]*define[ \t]*[ \t]DESIOC/"    's/\'\([cdgx]\)\'/\1/g';
+    hackname = io_use_quotes;
+    select = "define[ \t]+[A-Z0-9_]+[ \t]+[A-Z0-9_]+IO[A-Z]*[ \t]*\\( *[^,']";
+    c_fix = IO_use;
 };
 
-
+fix = {
+    hackname = io_def_quotes;
+    select = "define[ \t]+[A-Z0-9_]+IO[A-Z]*\\(([a-zA-Z]).*'\\1'";
+    c_fix = IO_defn;
+};
+ 
+ 
 /*
- *  Fix CTRL macros
- *
- * Basically, what is supposed to be happening is that every
- * _invocation_ of the "_CTRL()" or "CTRL()" macros is supposed to have
- * its argument inserted into single quotes.  We _must_ do this because
- * ANSI macro substitution rules prohibit looking inside quoted strings
- * for the substitution names.  A side effect is that the quotes are
- * inserted in the definitions of those macros as well.  So, the last
- * several sed expressions are supposed to clean up the definitions, as
- * long as those definitions are using "c", "g" or "x" as the macro
- * argument :).  Yuck.
+ *  Same deal for CTRL() macros.
+ *  CTRL might be: CTRL _CTRL ISCTRL BSD43_CTRL ...
  */
 fix = {
-    hackname = ioctl_fix_ctrl;
-    select = "CTRL[ \t]*\\(";
-
-    sed = "/[^A-Z0-9_]CTRL[ \t]*(/"
-              "s/\\([^']\\))/'\\1')/";
-
-    sed = "/[^A-Z0-9]_CTRL[ \t]*(/"
-              "s/\\([^']\\))/'\\1')/";
-
-    sed = "/#[ \t]*define[ \t]*[ \t]CTRL/"
-              "s/'\\([cgx]\\)'/\\1/g";
-
-    sed = "/#[ \t]*define[ \t]*[ \t]_CTRL/"
-              "s/'\\([cgx]\\)'/\\1/g";
-
-    sed = "/#[ \t]*define[ \t]*[ \t]BSD43_CTRL/"
-              "s/'\\([cgx]\\)'/\\1/g";
-
-    sed = "/#[ \t]*define[ \t]*[ \t][_]*ISCTRL/"
-              "s/'\\([cgx]\\)'/\\1/g";
+    hackname = ctrl_use_quotes;
+    select = "define[ \t]+[A-Z0-9_]+[ \t]+[A-Z0-9_]+CTRL[ \t]*\\( *[^,']";
+    c_fix = CTRL_use;
+};
+ 
+fix = {
+    hackname = ctrl_def_quotes;
+    select = "define[ \t]+[A-Z0-9_]+CTRL\\(([a-zA-Z]).*'\\1'";
+    c_fix = CTRL_defn;
 };
 
 
@@ -1372,7 +1353,7 @@ fix = {
     hackname = math_exception;
     files    = math.h;
     select   = "struct exception";
-    bypass   = "We have a problem when using C++";
+    bypass   = "We have a problem when using C\\+\\+";
     sed      = "/struct exception/i\\\n"
                "#ifdef __cplusplus\\\n"
                "#define exception __math_exception\\\n"

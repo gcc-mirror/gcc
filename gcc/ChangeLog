@@ -1,3 +1,25 @@
+2000-01-19  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* fixinc/Makefile.in: Correct dependencies of fixincl and fixincl.o.
+	* fixinc/fixfixes.c (IO_use, CTRL_use, IO_defn, CTRL_defn): New fixes.
+	(fix_char_macro_defines, fix_char_macro_uses): New functions.
+
+	* fixinc/fixlib.c (is_cxx_header): Do the text scan with a regexp.
+	Recognize Emacs mode markers also.
+	* fixinc/fixtests.c (else_endif_label): Fix bug in recognition of
+	C++ comments in C++ headers.  Call is_cxx_header only if
+	necessary.
+
+	* fixinc/inclhack.def (avoid_bool): Add select for the problem and
+	bypass for ncurses.
+	(bsd43_io_macros, io_def_quotes, ioctl_fix_ctrl): Replace with...
+	(io_def_quotes, io_use_quotes, ctrl_def_quotes, ctrl_use_quotes):
+	... these, which use the new C fixes.
+	(math_exception): Escape literal '+' in bypass expression.
+
+	* fixinc/fixincl.x, fixinc/fixincl.sh, fixinc/inclhack.sh:
+	Regenerate.
+
 2000-01-19  Geoff Keating  <geoffk@cygnus.com>
 
 	* rtlanal.c (reg_referenced_p): A CLOBBER of a MEM uses any REGs

@@ -6,7 +6,7 @@
 # files which are fixed to work correctly with ANSI C and placed in a
 # directory that GNU C will search.
 #
-# This script contains 112 fixup scripts.
+# This script contains 113 fixup scripts.
 #
 # See README-fixinc for more information.
 #
@@ -1056,6 +1056,10 @@ struct rusage;
 	./curses_colr/curses.h | \
 	./term.h | \
 	./tinfo.h )
+    if ( test -n "`egrep 'char[ 	]+bool|bool[ 	]+char' ${file}`"
+       ) > /dev/null 2>&1 ; then
+    if ( test -z "`egrep 'we must use the C\\+\\+ compiler'\\''s type' ${file}`"
+       ) > /dev/null 2>&1 ; then
     fixlist="${fixlist}
       avoid_bool"
     if [ ! -r ${DESTFILE} ]
@@ -1095,6 +1099,8 @@ struct rusage;
           < $infile > ${DESTDIR}/fixinc.tmp
     rm -f ${DESTFILE}
     mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
+    fi # end of bypass 'if'
+    fi # end of select 'if'
     ;; # case end for file name test
     esac
 
@@ -1224,25 +1230,6 @@ struct rusage;
     fi # end of select 'if'
     ;; # case end for file name test
     esac
-
-
-    #
-    # Fix Bsd43_Io_Macros
-    #
-    if ( test -n "`egrep 'BSD43__IO' ${file}`"
-       ) > /dev/null 2>&1 ; then
-    fixlist="${fixlist}
-      bsd43_io_macros"
-    if [ ! -r ${DESTFILE} ]
-    then infile=${file}
-    else infile=${DESTFILE} ; fi 
-
-    sed -e '/[ 	]BSD43__IO[A-Z]*[ 	]*(/s/(\(.\),/('\''\1'\'',/' \
-        -e '/#[ 	]*define[ 	]*[ 	]BSD43__IO/s/'\''\([cgx]\)'\''/\1/g' \
-          < $infile > ${DESTDIR}/fixinc.tmp
-    rm -f ${DESTFILE}
-    mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
-    fi # end of select 'if'
 
 
     #
@@ -1541,44 +1528,64 @@ extern "C" {\
 
 
     #
-    # Fix Io_Def_Quotes
+    # Fix Io_Use_Quotes
     #
-    if ( test -n "`egrep '[ 	]*[ 	](_|DES)IO[A-Z]*[ 	]*\\( *[^,'\\'']' ${file}`"
+    if ( test -n "`egrep 'define[ 	]+[A-Z0-9_]+[ 	]+[A-Z0-9_]+IO[A-Z]*[ 	]*\\( *[^,'\\'']' ${file}`"
        ) > /dev/null 2>&1 ; then
     fixlist="${fixlist}
-      io_def_quotes"
+      io_use_quotes"
     if [ ! -r ${DESTFILE} ]
     then infile=${file}
     else infile=${DESTFILE} ; fi 
-
-    sed -e 's/\([ 	]*[ 	]_IO[A-Z]*[ 	]*(\)\([^,'\'']\),/\1'\''\2'\'',/' \
-        -e 's/\([ 	]*[ 	]DESIO[A-Z]*[ 	]*(\)\([^,'\'']\),/\1'\''\2'\'',/' \
-        -e '/#[ 	]*define[ 	]*[ 	]_IO/s/'\''\([cgxtf]\)'\''/\1/g' \
-        -e '/#[ 	]*define[ 	]*[ 	]DESIOC/s/'\''\([cdgx]\)'\''/\1/g' \
-          < $infile > ${DESTDIR}/fixinc.tmp
+    ${FIXFIXES} ${file} IO_use < $infile > ${DESTDIR}/fixinc.tmp
     rm -f ${DESTFILE}
     mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
     fi # end of select 'if'
 
 
     #
-    # Fix Ioctl_Fix_Ctrl
+    # Fix Io_Def_Quotes
     #
-    if ( test -n "`egrep 'CTRL[ 	]*\\(' ${file}`"
+    if ( test -n "`egrep 'define[ 	]+[A-Z0-9_]+IO[A-Z]*\\(([a-zA-Z]).*'\\''\\1'\\''' ${file}`"
        ) > /dev/null 2>&1 ; then
     fixlist="${fixlist}
-      ioctl_fix_ctrl"
+      io_def_quotes"
     if [ ! -r ${DESTFILE} ]
     then infile=${file}
     else infile=${DESTFILE} ; fi 
+    ${FIXFIXES} ${file} IO_defn < $infile > ${DESTDIR}/fixinc.tmp
+    rm -f ${DESTFILE}
+    mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
+    fi # end of select 'if'
 
-    sed -e '/[^A-Z0-9_]CTRL[ 	]*(/s/\([^'\'']\))/'\''\1'\'')/' \
-        -e '/[^A-Z0-9]_CTRL[ 	]*(/s/\([^'\'']\))/'\''\1'\'')/' \
-        -e '/#[ 	]*define[ 	]*[ 	]CTRL/s/'\''\([cgx]\)'\''/\1/g' \
-        -e '/#[ 	]*define[ 	]*[ 	]_CTRL/s/'\''\([cgx]\)'\''/\1/g' \
-        -e '/#[ 	]*define[ 	]*[ 	]BSD43_CTRL/s/'\''\([cgx]\)'\''/\1/g' \
-        -e '/#[ 	]*define[ 	]*[ 	][_]*ISCTRL/s/'\''\([cgx]\)'\''/\1/g' \
-          < $infile > ${DESTDIR}/fixinc.tmp
+
+    #
+    # Fix Ctrl_Use_Quotes
+    #
+    if ( test -n "`egrep 'define[ 	]+[A-Z0-9_]+[ 	]+[A-Z0-9_]+CTRL[ 	]*\\( *[^,'\\'']' ${file}`"
+       ) > /dev/null 2>&1 ; then
+    fixlist="${fixlist}
+      ctrl_use_quotes"
+    if [ ! -r ${DESTFILE} ]
+    then infile=${file}
+    else infile=${DESTFILE} ; fi 
+    ${FIXFIXES} ${file} CTRL_use < $infile > ${DESTDIR}/fixinc.tmp
+    rm -f ${DESTFILE}
+    mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
+    fi # end of select 'if'
+
+
+    #
+    # Fix Ctrl_Def_Quotes
+    #
+    if ( test -n "`egrep 'define[ 	]+[A-Z0-9_]+CTRL\\(([a-zA-Z]).*'\\''\\1'\\''' ${file}`"
+       ) > /dev/null 2>&1 ; then
+    fixlist="${fixlist}
+      ctrl_def_quotes"
+    if [ ! -r ${DESTFILE} ]
+    then infile=${file}
+    else infile=${DESTFILE} ; fi 
+    ${FIXFIXES} ${file} CTRL_defn < $infile > ${DESTDIR}/fixinc.tmp
     rm -f ${DESTFILE}
     mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
     fi # end of select 'if'
@@ -2043,7 +2050,7 @@ s/\\+++fixinc_eol+++/\\/g
     case "${file}" in ./math.h )
     if ( test -n "`egrep 'struct exception' ${file}`"
        ) > /dev/null 2>&1 ; then
-    if ( test -z "`egrep 'We have a problem when using C++' ${file}`"
+    if ( test -z "`egrep 'We have a problem when using C\\+\\+' ${file}`"
        ) > /dev/null 2>&1 ; then
     fixlist="${fixlist}
       math_exception"

@@ -153,9 +153,9 @@ TEST_FOR_FIX_PROC_HEAD( else_endif_label_test )
   static regex_t label_re;
 
   char ch;
-  tCC* pz_next = (char*)NULL;
+  tCC* pz_next;
+  tCC* all_text = text;
   regmatch_t match[2];
-  t_bool file_is_cxx = is_cxx_header( fname, text );
 
   /*
      This routine may be run many times within a single execution.
@@ -170,20 +170,14 @@ TEST_FOR_FIX_PROC_HEAD( else_endif_label_test )
 
   for (;;) /* entire file */
     {
-      /*
-        See if we need to advance to the next candidate directive
-        If the scanning pointer passes over the end of the directive,
-        then the directive is inside a comment */
-      if (pz_next < text)
-        {
-          if (regexec (&label_re, text, 2, match, 0) != 0)
-            break;
-          pz_next = text + match[0].rm_eo;
-        }
+      /* Find the next else or endif in the file.  */
+      if (regexec (&label_re, text, 2, match, 0) != 0)
+	break;
+      pz_next = text + match[0].rm_eo;
 
-      /*
-        IF the scan pointer has not reached the directive end, ... */
-      if (pz_next > text)
+      /* Scan from where we are up to that position, to make sure
+	 we didn't find something in a string or comment.  */
+      while (pz_next > text)
         {
           /*
             Advance the scanning pointer.  If we are at the start
@@ -209,34 +203,23 @@ TEST_FOR_FIX_PROC_HEAD( else_endif_label_test )
             case '\'':
               text = skip_quote( ch, text );
               break;
-            } /* switch (ch) */
-          continue;
-        } /* if (still shy of directive end) */
+            }
+        }
+      if (pz_next < text)
+	continue;
 
-      /*
-         The scanning pointer (text) has reached the end of the current
-         directive under test, then check for bogons here */
-      for (;;) /* bogon check */
+      /* We're at the end of a real directive.  Check for bogons here.  */
+      for (;;)
         {
           char ch = *(pz_next++);
-          if (isspace (ch))
-            {
-              if (ch == '\n')
-                {
-                  /*
-                    It is clean.  No bogons on this directive */
-                  text = pz_next;
-                  pz_next = (char*)NULL; /* force a new regex search */
-                  break;
-                }
-              continue;
-            }
+	  switch (ch)
+	    {
+	    case '\n':
+	      /* It is clean.  No bogons on this directive.  */
+	      goto next_directive;
 
-          switch (ch)
-            {
             case '\\':
-              /*
-                Skip escaped newlines.  Otherwise, we have a bogon */
+              /* Skip escaped newlines.  Otherwise, we have a bogon.  */
               if (*pz_next != '\n')
                 return APPLY_FIX;
 
@@ -244,46 +227,47 @@ TEST_FOR_FIX_PROC_HEAD( else_endif_label_test )
               break;
 
             case '/':
-              /*
-                Skip comments.  Otherwise, we have a bogon */
-              switch (*pz_next)
-                {
-                case '/':
-                  /* IF we found a "//" in a C header, THEN fix it. */
-                  if (! file_is_cxx)
+              /* Skip comments.  Otherwise, we have a bogon */
+	      switch (*pz_next)
+		{
+		case '/':
+		  /* // in a C header is a bogon.  */
+                  if (! is_cxx_header( fname, all_text ))
                     return APPLY_FIX;
 
-                  /* C++ header.  Skip to newline and continue. */
+                  /* C++ comment is allowed in a C++ header.
+		     Skip to newline and continue. */
                   pz_next = strchr( pz_next+1, '\n' );
                   if (pz_next == (char*)NULL)
                     return SKIP_FIX;
                   pz_next++;
-                  break;
+                  goto next_directive;
 
-                case '*':
+		case '*':
                   /* A comment for either C++ or C.  Skip over it. */
                   pz_next = strstr( pz_next+1, "*/" );
                   if (pz_next == (char*)NULL)
                     return SKIP_FIX;
                   pz_next += 2;
-                  break;
+		  break;
 
-                default:
-                  /* a '/' followed by other junk. */
-                  return APPLY_FIX;
-                }
-              break; /* a C or C++ comment */
+		default:
+		  return APPLY_FIX;
+		}
+	      break;
 
             default:
-              /*
-                GOTTA BE A BOGON */
-              return APPLY_FIX;
+	      if (!isspace (ch))
+		return APPLY_FIX;
             } /* switch (ch) */
         } /* for (bogon check loop) */
+    next_directive:;
+      text = pz_next;
     } /* for (entire file) loop */
 
   return SKIP_FIX;
 }
+
 
 /* = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 

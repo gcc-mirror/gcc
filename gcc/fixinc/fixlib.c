@@ -112,43 +112,27 @@ is_cxx_header (fname, text)
         }
     } not_cxx_name:;
 
-  /* Or it might contain the phrase 'extern "C++"' */
-  for (;;)
+  /* Or it might contain one of several phrases which indicate C++ code.
+     Currently recognized are:
+     extern "C++"
+     -*- (Mode: )? C++ -*-   (emacs mode marker)
+     template <
+   */
     {
-      tSCC zExtern[]   = "extern";
-      tSCC zExtCxx[]   = "\"C++\"";
-      tSCC zTemplate[] = "template";
+      tSCC cxxpat[] = "\
+extern[ \t]*\"C\\+\\+\"|\
+-\\*-[ \t]*([mM]ode:[ \t]*)?[cC]\\+\\+[; \t]*-\\*-|\
+template[ \t]*<";
+      static regex_t cxxre;
+      static int compiled;
 
-      switch (*(text++))
-        {
-        case 'e':
-          /*  Check for "extern \"C++\"" */
-          if (strncmp (text, zExtern+1, sizeof( zExtern )-2) != 0)
-            break;
-          text += sizeof( zExtern )-2;
-          if (! isspace( *(text++)) )
-            break;
-          while (isspace( *text ))  text++;
-          if (strncmp (text, zExtCxx, sizeof (zExtCxx) -1) == 0)
-            return BOOL_TRUE;
-          break;
+      if (!compiled)
+	compile_re (cxxpat, &cxxre, 0, "contents check", "is_cxx_header");
 
-        case 't':
-          /*  Check for "template<" */
-          if (strncmp (text, zTemplate+1, sizeof( zTemplate )-2) != 0)
-            break;
-          text += sizeof( zTemplate )-2;
-          while (isspace( *text ))  text++;
-          if (*text == '<')
-            return BOOL_TRUE;
-          break;
-
-        case NUL:
-          goto text_done;
-          break;
-        }
-    } text_done:;
-
+      if (regexec (&cxxre, text, 0, 0, 0) == 0)
+	return BOOL_TRUE;
+    }
+		   
   return BOOL_FALSE;
 }
 
