@@ -405,14 +405,21 @@ input_operand (op, mode)
      register rtx op;
      enum machine_mode mode;
 {
+  /* Memory is always valid.  */
   if (memory_operand (op, mode))
     return 1;
 
-  /* For floating-point or multi-word mode, only register or memory
-     is valid.  */
+  /* For floating-point, easy constants are valid.  */
+  if (GET_MODE_CLASS (mode) == MODE_FLOAT
+      && CONSTANT_P (op)
+      && easy_fp_constant (op, mode))
+    return 1;
+
+  /* For floating-point or multi-word mode, the only remaining valid type
+     is a register.  */
   if (GET_MODE_CLASS (mode) == MODE_FLOAT
       || GET_MODE_SIZE (mode) > UNITS_PER_WORD)
-    return gpc_reg_operand (op, mode);
+    return register_operand (op, mode);
 
   /* The only cases left are integral modes one word or smaller (we
      do not get called for MODE_CC values).  These can be in any
