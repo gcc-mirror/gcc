@@ -1,3 +1,20 @@
+2005-02-28  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/19065.
+	* config/cris/cris.h (EXTRA_CONSTRAINT_Q): Accept only (mem (reg)),
+	not including (reg). Do not check for reg being CRIS_PC_REGNUM.
+	(EXTRA_MEMORY_CONSTRAINT): Define as 'Q'.
+	* config/cris/cris.md: Tweak comments referring to Q.
+ 	("cmpsi", "cmphi", "cmpqi", "*movsi_internal", "movhi")
+	("movstricthi", "movqi", "movstrictqi", "movsf", "addsi3")
+	("addhi3", "addqi3", "subsi3", "subhi3", "subqi3")
+	("*expanded_andsi", "*expanded_andhi", "*andhi_lowpart", "andqi3")
+	("*andqi_lowpart", "iorsi3", "iorhi3", "iorqi3", "uminsi3"):
+	Insert spaces in constraints to align alternatives vertically for
+	readability.
+	("cmphi"): Ditto.  Add separate alternative for operand 0 "r",
+	operand 1: "M".
+
 2005-02-28  Dale Johannesen  <dalej@apple.com>
 	    Stan Shebs  <shebs@apple.com>
 

@@ -1,5 +1,5 @@
 ;; GCC machine description for CRIS cpu cores.
-;; Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004
+;; Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
 ;; Free Software Foundation, Inc.
 ;; Contributed by Axis Communications.
 
@@ -91,9 +91,9 @@
 ;; mode, but that would need more attributes and hairier, more error
 ;; prone code.
 ;;
-;;  There is an extra constraint, 'Q', which recognizes indirect reg,
-;; except when the reg is pc.  The constraints 'Q' and '>' together match
-;; all possible memory operands that are slottable.
+;;  There is an extra memory constraint, 'Q', which recognizes an indirect
+;; register.  The constraints 'Q' and '>' together match all possible
+;; memory operands that are slottable.
 ;;  For other operands, you need to check if it has a valid "slottable"
 ;; quick-immediate operand, where the particular signedness-variation
 ;; may match the constraints 'I' or 'J'.), and include it in the
@@ -268,8 +268,8 @@
 (define_insn "cmpsi"
   [(set (cc0)
 	(compare
-	 (match_operand:SI 0 "nonimmediate_operand" "r,r,r,r,Q>,Q>,r,r,m,m")
-	 (match_operand:SI 1 "general_operand" "I,r,Q>,M,M,r,P,g,M,r")))]
+	 (match_operand:SI 0 "nonimmediate_operand" "r,r,r, r,Q>,Q>,r,r,m,m")
+	 (match_operand:SI 1 "general_operand"	    "I,r,Q>,M,M, r, P,g,M,r")))]
   ""
   "@
    cmpq %1,%0
@@ -286,24 +286,25 @@
 
 (define_insn "cmphi"
   [(set (cc0)
-	(compare (match_operand:HI 0 "nonimmediate_operand" "r,r,Q>,Q>,r,m,m")
-		 (match_operand:HI 1 "general_operand" "r,Q>,M,r,g,M,r")))]
+	(compare (match_operand:HI 0 "nonimmediate_operand" "r,r, r,Q>,Q>,r,m,m")
+		 (match_operand:HI 1 "general_operand"	    "r,Q>,M,M, r, g,M,r")))]
   ""
   "@
    cmp.w %1,%0
    cmp.w %1,%0
    test.w %0
+   test.w %0
    cmp.w %0,%1
    cmp.w %1,%0
    test.w %0
    cmp.w %0,%1"
-  [(set_attr "slottable" "yes,yes,yes,yes,no,no,no")])
+  [(set_attr "slottable" "yes,yes,yes,yes,yes,no,no,no")])
 
 (define_insn "cmpqi"
   [(set (cc0)
 	(compare
-	 (match_operand:QI 0 "nonimmediate_operand" "r,r,r,Q>,Q>,r,m,m")
-	 (match_operand:QI 1 "general_operand" "r,Q>,M,M,r,g,M,r")))]
+	 (match_operand:QI 0 "nonimmediate_operand" "r,r, r,Q>,Q>,r,m,m")
+	 (match_operand:QI 1 "general_operand"	    "r,Q>,M,M, r, g,M,r")))]
   ""
   "@
    cmp.b %1,%0
@@ -993,11 +994,11 @@
 
 (define_insn "*movsi_internal"
   [(set
-    (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,Q>,r,Q>,g,r,r,r,g")
+    (match_operand:SI 0 "nonimmediate_operand" "=r,r, r,Q>,r,Q>,g,r,r,r,g")
     (match_operand:SI 1
     ;; FIXME: We want to put S last, but apparently g matches S.
     ;; It's a bug: an S is not a general_operand and shouldn't match g.
-     "cris_general_operand_or_gotless_symbol" "r,Q>,M,M,I,r,M,n,!S,g,r"))]
+     "cris_general_operand_or_gotless_symbol"   "r,Q>,M,M, I,r, M,n,!S,g,r"))]
   ""
   "*
 {
@@ -1206,8 +1207,8 @@
 
 (define_insn "movhi"
   [(set
-    (match_operand:HI 0 "nonimmediate_operand" "=r,r,r,Q>,r,Q>,r,r,r,g,g,r")
-    (match_operand:HI 1 "general_operand" "r,Q>,M,M,I,r,L,O,n,M,r,g"))]
+    (match_operand:HI 0 "nonimmediate_operand" "=r,r, r,Q>,r,Q>,r,r,r,g,g,r")
+    (match_operand:HI 1 "general_operand"	"r,Q>,M,M, I,r, L,O,n,M,r,g"))]
   ""
   "*
 {
@@ -1249,8 +1250,8 @@
 (define_insn "movstricthi"
   [(set
     (strict_low_part
-     (match_operand:HI 0 "nonimmediate_operand" "+r,r,r,Q>,Q>,g,r,g"))
-    (match_operand:HI 1 "general_operand" "r,Q>,M,M,r,M,g,r"))]
+     (match_operand:HI 0 "nonimmediate_operand" "+r,r, r,Q>,Q>,g,r,g"))
+    (match_operand:HI 1 "general_operand"	 "r,Q>,M,M, r, M,g,r"))]
   ""
   "@
    move.w %1,%0
@@ -1264,8 +1265,8 @@
   [(set_attr "slottable" "yes,yes,yes,yes,yes,no,no,no")])
 
 (define_insn "movqi"
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=r,Q>,r,r,Q>,r,g,g,r,r")
-	(match_operand:QI 1 "general_operand" "r,r,Q>,M,M,I,M,r,O,g"))]
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=r,Q>,r, r,Q>,r,g,g,r,r")
+	(match_operand:QI 1 "general_operand"	    "r,r, Q>,M,M, I,M,r,O,g"))]
   ""
   "@
    move.b %1,%0
@@ -1286,8 +1287,8 @@
 
 (define_insn "movstrictqi"
   [(set (strict_low_part
-	 (match_operand:QI 0 "nonimmediate_operand" "+r,Q>,r,r,Q>,g,g,r"))
-	(match_operand:QI 1 "general_operand" "r,r,Q>,M,M,M,r,g"))]
+	 (match_operand:QI 0 "nonimmediate_operand" "+r,Q>,r, r,Q>,g,g,r"))
+	(match_operand:QI 1 "general_operand"	     "r,r, Q>,M,M, M,r,g"))]
   ""
   "@
    move.b %1,%0
@@ -1306,8 +1307,8 @@
 ;; It will use clear, so we know ALL types of immediate 0 never change cc.
 
 (define_insn "movsf"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=r,Q>,r,r,Q>,g,g,r")
-	(match_operand:SF 1 "general_operand" "r,r,Q>,G,G,G,r,g"))]
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=r,Q>,r, r,Q>,g,g,r")
+	(match_operand:SF 1 "general_operand"	    "r,r, Q>,G,G, G,r,g"))]
   ""
   "@
    move.d %1,%0
@@ -1720,10 +1721,10 @@
    add.d %M2,%M1,%M0\;ax\;add.d %H2,%H1,%H0")
 
 (define_insn "addsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r,r,r,r,r,r,r,r")
+  [(set (match_operand:SI 0 "register_operand"  "=r,r, r,r,r,r,r,  r")
 	(plus:SI
-	 (match_operand:SI 1 "register_operand" "%0,0,0,0,0,0,r,r")
-	 (match_operand:SI 2 "general_operand" "r,Q>,J,N,n,g,!To,0")))]
+	 (match_operand:SI 1 "register_operand" "%0,0, 0,0,0,0,r,  r")
+	 (match_operand:SI 2 "general_operand"   "r,Q>,J,N,n,g,!To,0")))]
 
 ;; The last constraint is due to that after reload, the '%' is not
 ;; honored, and canonicalization doesn't care about keeping the same
@@ -1773,9 +1774,9 @@
  [(set_attr "slottable" "yes,yes,yes,yes,no,no,no,yes")])
 
 (define_insn "addhi3"
-  [(set (match_operand:HI 0 "register_operand" "=r,r,r,r,r,r")
-	(plus:HI (match_operand:HI 1 "register_operand" "%0,0,0,0,0,r")
-		 (match_operand:HI 2 "general_operand" "r,Q>,J,N,g,!To")))]
+  [(set (match_operand:HI 0 "register_operand"		"=r,r, r,r,r,r")
+	(plus:HI (match_operand:HI 1 "register_operand" "%0,0, 0,0,0,r")
+		 (match_operand:HI 2 "general_operand"   "r,Q>,J,N,g,!To")))]
   ""
   "@
    add.w %2,%0
@@ -1788,9 +1789,9 @@
    (set_attr "cc" "normal,normal,clobber,clobber,normal,normal")])
 
 (define_insn "addqi3"
-  [(set (match_operand:QI 0 "register_operand" "=r,r,r,r,r,r,r")
-	(plus:QI (match_operand:QI 1 "register_operand" "%0,0,0,0,0,0,r")
-		 (match_operand:QI 2 "general_operand" "r,Q>,J,N,O,g,!To")))]
+  [(set (match_operand:QI 0 "register_operand"		"=r,r, r,r,r,r,r")
+	(plus:QI (match_operand:QI 1 "register_operand" "%0,0, 0,0,0,0,r")
+		 (match_operand:QI 2 "general_operand"	 "r,Q>,J,N,O,g,!To")))]
   ""
   "@
    add.b %2,%0
@@ -1824,10 +1825,10 @@
    sub.d %M2,%M1,%M0\;ax\;sub.d %H2,%H1,%H0")
 
 (define_insn "subsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r,r,r,r,r,r,r,r")
+  [(set (match_operand:SI 0 "register_operand" "=r,r, r,r,r,r,r,r")
 	(minus:SI
-	 (match_operand:SI 1 "register_operand" "0,0,0,0,0,0,0,r")
-	 (match_operand:SI 2 "general_operand" "r,Q>,J,N,P,n,g,!To")))]
+	 (match_operand:SI 1 "register_operand" "0,0, 0,0,0,0,0,r")
+	 (match_operand:SI 2 "general_operand"	"r,Q>,J,N,P,n,g,!To")))]
   ""
 
 ;; This does not do the optimal: "addu.w 65535,r0" when %2 is negative.
@@ -1845,9 +1846,9 @@
   [(set_attr "slottable" "yes,yes,yes,yes,no,no,no,no")])
 
 (define_insn "subhi3"
-  [(set (match_operand:HI 0 "register_operand" "=r,r,r,r,r,r")
-	(minus:HI (match_operand:HI 1 "register_operand" "0,0,0,0,0,r")
-		  (match_operand:HI 2 "general_operand" "r,Q>,J,N,g,!To")))]
+  [(set (match_operand:HI 0 "register_operand"		"=r,r, r,r,r,r")
+	(minus:HI (match_operand:HI 1 "register_operand" "0,0, 0,0,0,r")
+		  (match_operand:HI 2 "general_operand"  "r,Q>,J,N,g,!To")))]
   ""
   "@
    sub.w %2,%0
@@ -1860,9 +1861,9 @@
    (set_attr "cc" "normal,normal,clobber,clobber,normal,normal")])
 
 (define_insn "subqi3"
-  [(set (match_operand:QI 0 "register_operand" "=r,r,r,r,r,r")
-	(minus:QI (match_operand:QI 1 "register_operand" "0,0,0,0,0,r")
-		  (match_operand:QI 2 "general_operand" "r,Q>,J,N,g,!To")))]
+  [(set (match_operand:QI 0 "register_operand"		"=r,r, r,r,r,r")
+	(minus:QI (match_operand:QI 1 "register_operand" "0,0, 0,0,0,r")
+		  (match_operand:QI 2 "general_operand"  "r,Q>,J,N,g,!To")))]
   ""
   "@
    sub.b %2,%0
@@ -2734,9 +2735,9 @@
 ;; improved reload pass.
 
 (define_insn "*expanded_andsi"
-  [(set (match_operand:SI 0 "register_operand" "=r,r,r,r,r")
-	(and:SI (match_operand:SI 1 "register_operand" "%0,0,0,0,r")
-		(match_operand:SI 2 "general_operand" "I,r,Q>,g,!To")))]
+  [(set (match_operand:SI 0 "register_operand"	       "=r,r,r, r,r")
+	(and:SI (match_operand:SI 1 "register_operand" "%0,0,0, 0,r")
+		(match_operand:SI 2 "general_operand"   "I,r,Q>,g,!To")))]
   ""
   "@
    andq %2,%0
@@ -2810,9 +2811,9 @@
 ;; Catch-all andhi3 pattern.
 
 (define_insn "*expanded_andhi"
-  [(set (match_operand:HI 0 "register_operand" "=r,r,r,r,r,r,r")
-	(and:HI (match_operand:HI 1 "register_operand" "%0,0,0,0,0,0,r")
-		(match_operand:HI 2 "general_operand" "I,r,Q>,L,O,g,!To")))]
+  [(set (match_operand:HI 0 "register_operand"	       "=r,r,r, r,r,r,r")
+	(and:HI (match_operand:HI 1 "register_operand" "%0,0,0, 0,0,0,r")
+		(match_operand:HI 2 "general_operand"   "I,r,Q>,L,O,g,!To")))]
 
 ;; Sidenote: the tightening from "general_operand" to
 ;; "register_operand" for operand 1 actually increased the register
@@ -2835,9 +2836,9 @@
 
 (define_insn "*andhi_lowpart"
   [(set (strict_low_part
-	 (match_operand:HI 0 "register_operand" "=r,r,r,r,r,r"))
-	(and:HI (match_operand:HI 1 "register_operand" "%0,0,0,0,0,r")
-		(match_operand:HI 2 "general_operand" "r,Q>,L,O,g,!To")))]
+	 (match_operand:HI 0 "register_operand"	       "=r,r, r,r,r,r"))
+	(and:HI (match_operand:HI 1 "register_operand" "%0,0, 0,0,0,r")
+		(match_operand:HI 2 "general_operand"   "r,Q>,L,O,g,!To")))]
   ""
   "@
    and.w %2,%0
@@ -2850,9 +2851,9 @@
    (set_attr "cc" "normal,normal,normal,clobber,normal,normal")])
 
 (define_insn "andqi3"
-  [(set (match_operand:QI 0 "register_operand" "=r,r,r,r,r,r")
-	(and:QI (match_operand:QI 1 "register_operand" "%0,0,0,0,0,r")
-		(match_operand:QI 2 "general_operand" "I,r,Q>,O,g,!To")))]
+  [(set (match_operand:QI 0 "register_operand"	       "=r,r,r, r,r,r")
+	(and:QI (match_operand:QI 1 "register_operand" "%0,0,0, 0,0,r")
+		(match_operand:QI 2 "general_operand"   "I,r,Q>,O,g,!To")))]
   ""
   "@
    andq %2,%0
@@ -2866,9 +2867,9 @@
 
 (define_insn "*andqi_lowpart"
   [(set (strict_low_part
-	 (match_operand:QI 0 "register_operand" "=r,r,r,r,r"))
-	(and:QI (match_operand:QI 1 "register_operand" "%0,0,0,0,r")
-		(match_operand:QI 2 "general_operand" "r,Q>,O,g,!To")))]
+	 (match_operand:QI 0 "register_operand"	       "=r,r, r,r,r"))
+	(and:QI (match_operand:QI 1 "register_operand" "%0,0, 0,0,r")
+		(match_operand:QI 2 "general_operand"   "r,Q>,O,g,!To")))]
   ""
   "@
    and.b %2,%0
@@ -2887,9 +2888,9 @@
 ;; with andsi3.
 
 (define_insn "iorsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r,r,r,r,r,r")
-	(ior:SI (match_operand:SI 1 "register_operand" "%0,0,0,0,0,r")
-		(match_operand:SI 2 "general_operand" "I,r,Q>,n,g,!To")))]
+  [(set (match_operand:SI 0 "register_operand"	       "=r,r,r, r,r,r")
+	(ior:SI (match_operand:SI 1 "register_operand" "%0,0,0, 0,0,r")
+		(match_operand:SI 2 "general_operand"  "I, r,Q>,n,g,!To")))]
   ""
   "@
    orq %2,%0
@@ -2902,9 +2903,9 @@
    (set_attr "cc" "normal,normal,normal,clobber,normal,normal")])
 
 (define_insn "iorhi3"
-  [(set (match_operand:HI 0 "register_operand" "=r,r,r,r,r,r,r")
-	(ior:HI (match_operand:HI 1 "register_operand" "%0,0,0,0,0,0,r")
-		(match_operand:HI 2 "general_operand" "I,r,Q>,L,O,g,!To")))]
+  [(set (match_operand:HI 0 "register_operand"	       "=r,r,r, r,r,r,r")
+	(ior:HI (match_operand:HI 1 "register_operand" "%0,0,0, 0,0,0,r")
+		(match_operand:HI 2 "general_operand"   "I,r,Q>,L,O,g,!To")))]
   ""
   "@
    orq %2,%0
@@ -2918,9 +2919,9 @@
    (set_attr "cc" "clobber,normal,normal,normal,clobber,normal,normal")])
 
 (define_insn "iorqi3"
-  [(set (match_operand:QI 0 "register_operand" "=r,r,r,r,r,r")
-	(ior:QI (match_operand:QI 1 "register_operand" "%0,0,0,0,0,r")
-		(match_operand:QI 2 "general_operand" "I,r,Q>,O,g,!To")))]
+  [(set (match_operand:QI 0 "register_operand"	       "=r,r,r, r,r,r")
+	(ior:QI (match_operand:QI 1 "register_operand" "%0,0,0, 0,0,r")
+		(match_operand:QI 2 "general_operand"   "I,r,Q>,O,g,!To")))]
   ""
   "@
    orq %2,%0
@@ -3340,9 +3341,9 @@
 ;; normal code too.
 
 (define_insn "uminsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
-	(umin:SI  (match_operand:SI 1 "register_operand" "%0,0,0,r")
-		  (match_operand:SI 2 "general_operand" "r,Q>,g,!STo")))]
+  [(set (match_operand:SI 0 "register_operand"		 "=r,r, r,r")
+	(umin:SI  (match_operand:SI 1 "register_operand" "%0,0, 0,r")
+		  (match_operand:SI 2 "general_operand"   "r,Q>,g,!STo")))]
   ""
   "*
 {
@@ -3858,7 +3859,7 @@
 }")
 
 ;; Accept *anything* as operand 1.  Accept operands for operand 0 in
-;; order of preference (Q includes r, but r is shorter, faster)
+;; order of preference.
 
 (define_insn "*expanded_call"
   [(call (mem:QI (match_operand:SI
