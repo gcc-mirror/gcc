@@ -179,6 +179,9 @@ DEFTREECODE (OVERLOAD, "overload", 'x', 1)
    tree structure.  */
 DEFTREECODE (WRAPPER, "wrapper", 'x', 1)
 
+/* A node to remember a source position.  */
+DEFTREECODE (SRCLOC, "srcloc", 'x', 2)
+
 /* A whole bunch of tree codes for the initial, superficial parsing of
    templates.  */
 DEFTREECODE (LOOKUP_EXPR, "lookup_expr", 'e', 2)

@@ -1,3 +1,15 @@
+1998-05-23  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cp-tree.def: Add SRCLOC.
+	* cp-tree.h: Add struct tree_srcloc and accessor macros.
+	* tree.c (build_srcloc, build_srcloc_here): New fns.
+	* pt.c (add_pending_template): Use build_srcloc_here.
+	(push_tinst_level): Update last_template_error_tick before erroring.
+	(instantiate_decl): Restore lineno and input_filename before 
+	calling add_pending_template.
+	* decl2.c (finish_file): Set up lineno and input_filename for
+	pending templates.
+
 1998-05-22  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (lang_print_error_function): New fn.  

@@ -166,6 +166,15 @@ struct tree_wrapper
   } u;
 };
 
+#define SRCLOC_FILE(NODE) (((struct tree_srcloc*)NODE)->filename)
+#define SRCLOC_LINE(NODE) (((struct tree_srcloc*)NODE)->linenum)
+struct tree_srcloc
+{
+  char common[sizeof (struct tree_common)];
+  char *filename;
+  int linenum;
+};
+
 /* To identify to the debug emitters if it should pay attention to the
    flag `-Wtemplate-debugging'.  */
 #define HAVE_TEMPLATES 1
@@ -2823,6 +2832,8 @@ extern tree make_temp_vec			PROTO((int));
 extern tree build_ptr_wrapper			PROTO((void *));
 extern tree build_expr_ptr_wrapper		PROTO((void *));
 extern tree build_int_wrapper			PROTO((int));
+extern tree build_srcloc			PROTO((char *, int));
+extern tree build_srcloc_here			PROTO((void));
 extern int varargs_function_p			PROTO((tree));
 extern int really_overloaded_fn			PROTO((tree));
 extern int cp_tree_equal			PROTO((tree, tree));
