@@ -170,6 +170,7 @@ cpp_create_reader (enum c_lang lang, hash_table *table)
   /* Initialize the line map.  Start at logical line 1, so we can use
      a line number of zero for special states.  */
   linemap_init (&pfile->line_maps);
+  pfile->line = 1;
 
   /* Initialize lexer state.  */
   pfile->state.save_comments = ! CPP_OPTION (pfile, discard_comments);
@@ -434,11 +435,9 @@ cpp_add_dependency_target (cpp_reader *pfile, const char *target, int quote)
 }
 
 /* This is called after options have been parsed, and partially
-   processed.  Setup for processing input from the file named FNAME,
-   or stdin if it is the empty string.  Return the original filename
-   on success (e.g. foo.i->foo.c), or NULL on failure.  */
-const char *
-cpp_read_main_file (cpp_reader *pfile, const char *fname)
+   processed. */
+void
+cpp_post_options (cpp_reader *pfile)
 {
   sanity_checks (pfile);
 
@@ -447,7 +446,14 @@ cpp_read_main_file (cpp_reader *pfile, const char *fname)
   /* Mark named operators before handling command line macros.  */
   if (CPP_OPTION (pfile, cplusplus) && CPP_OPTION (pfile, operator_names))
     mark_named_operators (pfile);
+}
 
+/* Setup for processing input from the file named FNAME,
+   or stdin if it is the empty string.  Return the original filename
+   on success (e.g. foo.i->foo.c), or NULL on failure.  */
+const char *
+cpp_read_main_file (cpp_reader *pfile, const char *fname)
+{
   if (CPP_OPTION (pfile, deps.style) != DEPS_NONE)
     {
       if (!pfile->deps)
@@ -457,8 +463,7 @@ cpp_read_main_file (cpp_reader *pfile, const char *fname)
       deps_add_default_target (pfile->deps, fname);
     }
 
-  pfile->line = 1;
-  if (!cpp_stack_file (pfile, fname))
+  if (! _cpp_stack_file (pfile, fname))
     return NULL;
 
   /* Set this here so the client can change the option if it wishes,

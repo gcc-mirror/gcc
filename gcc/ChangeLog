@@ -1,3 +1,17 @@
+2003-08-09  Per Bothner  <pbothner@apple.com>
+
+        * cppinit.c (cpp_read_main_file):  Split out source-independent
+        initialization to separate function ...
+        (cpp_post_options):  New function.
+        * cppfiles.c (cpp_stack_file):  Rename public name to ...
+        (_cpp_stack_file):  New internal function name.
+        * cpplib.h:  Update accordingly.
+        * cppinit.c:  (cpp_create_reader):  Initialize cpp_readers line here.
+        (cpp_read_main_file):  Don't initialize line here.
+        * c-opts.c (c_common_post_options):  Call cpp_post_options.
+        (c_common_parse_file):  Call cpp_read_main_file, not cpp_stack_file.
+        * fix-header.c (read_scan_file):  Call cpp_post_options.
+	
 2003-08-09  Per Bothner  <per@bothner.com>
 
 	* c-decl.c (SCOPE_LIST_APPEND):  Remove bogus line continuation.

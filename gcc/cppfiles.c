@@ -696,7 +696,7 @@ dir_name_of_file (_cpp_file *file)
 /* Push an input buffer with the contents of FNAME, the empty string
    for standard input.  Return true if a buffer was stacked.  */
 bool
-cpp_stack_file (cpp_reader *pfile, const char *fname)
+_cpp_stack_file (cpp_reader *pfile, const char *fname)
 {
   struct cpp_dir *dir = &pfile->no_search_path;
 
