@@ -122,12 +122,12 @@ static void dump_lex_value (int lexret);
   
 "+" {
   update_lineno_charno ();
-  SAVE_RETURN (PLUS);
+  SAVE_RETURN (tl_PLUS);
 }
   
 "-" {
   update_lineno_charno ();
-  SAVE_RETURN (MINUS);
+  SAVE_RETURN (tl_MINUS);
 }
   
 "=" {
@@ -187,7 +187,7 @@ static void dump_lex_value (int lexret);
   
 "return" {
   update_lineno_charno ();
-  SAVE_RETURN (RETURN);
+  SAVE_RETURN (tl_RETURN);
 }
   
 "if" {

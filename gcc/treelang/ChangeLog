@@ -1,3 +1,12 @@
+2003-03-01  Tim Josling  <tej@melbpc.org.au>
+
+        Name clashes with rtl.h fixed.
+	
+	* lex.l: Tokens PLUS, MINUS, RETURN changed to tl_PLUS tl_MINUS
+	tl_RETURN.
+
+	* parse.y: Ditto.	
+	
 2003-02-24  Tim Josling  <tej@melbpc.org.au>
 
 	* parse.y (my_yylex): New - ensure lexer time is charged to

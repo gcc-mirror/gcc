@@ -106,8 +106,8 @@ static struct prod_token_parm_item *current_function=NULL;
 %token COMMA
 %right EQUALS
 %right ASSIGN
-%left  PLUS
-%left  MINUS
+%left  tl_PLUS
+%left  tl_MINUS
 
 /* Literals.  */
 %token INTEGER
@@ -115,7 +115,7 @@ static struct prod_token_parm_item *current_function=NULL;
 /* Keywords.  */
 %token IF
 %token ELSE
-%token RETURN
+%token tl_RETURN
 %token CHAR
 %token INT
 %token UNSIGNED
@@ -505,7 +505,7 @@ LEFT_BRACE statements_opt RIGHT_BRACE {
 
 
 return:
-RETURN expression_opt {
+tl_RETURN expression_opt {
   struct prod_token_parm_item *type_prod;
   struct prod_token_parm_item* ret_tok;
   ret_tok = $1;
@@ -568,7 +568,7 @@ INTEGER {
 |variable_ref {
   $$ = $1;
 }
-|expression PLUS expression {
+|expression tl_PLUS expression {
   struct prod_token_parm_item* tok;
   struct prod_token_parm_item *prod;
   struct prod_token_parm_item *op1;
@@ -597,7 +597,7 @@ INTEGER {
     }
   $$ = prod;
 }
-|expression MINUS expression %prec PLUS {
+|expression tl_MINUS expression %prec tl_PLUS {
   struct prod_token_parm_item* tok;
   struct prod_token_parm_item *prod;
   struct prod_token_parm_item *op1;
