@@ -1438,7 +1438,7 @@ namespace __gnu_cxx
       if (_Rope_constants::_S_leaf == __left->_M_tag)
 	{
 	  _RopeLeaf* __l = (_RopeLeaf*) __left;
-	  if (_RopeRep::_S_leaf == __right->_M_tag)
+	  if (_Rope_constants::_S_leaf == __right->_M_tag)
 	    {
 	      _RopeLeaf* __r = (_RopeLeaf*) __right;
 	      return lexicographical_compare_3way(__l->_M_data,
