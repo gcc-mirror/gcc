@@ -7599,6 +7599,7 @@ maybe_yank_clinit (mdecl)
 {
   tree type, current;
   tree fbody, bbody;
+  int found = 0;
   
   if (!DECL_CLINIT_P (mdecl))
     return 0;
@@ -7646,7 +7647,35 @@ maybe_yank_clinit (mdecl)
 	break;
     }
 
-  if (current)
+  /* Now we analyze the method body and look for something that
+     isn't a MODIFY_EXPR */
+  if (bbody == empty_stmt_node)
+    bbody = NULL_TREE;
+  while (bbody)
+    switch (TREE_CODE (bbody))
+      {
+      case BLOCK:
+	bbody = BLOCK_EXPR_BODY (bbody);
+	break;
+	
+      case EXPR_WITH_FILE_LOCATION:
+	bbody = EXPR_WFL_NODE (bbody);
+	break;
+	
+      case COMPOUND_EXPR:
+	bbody = TREE_OPERAND (bbody, 0);
+	break;
+	
+      case MODIFY_EXPR:
+	bbody = NULL_TREE;
+	break;
+
+      default:
+	bbody = NULL_TREE;
+	found = 1;
+      }
+
+  if (current || found)
     return 0;
 
   /* Get rid of <clinit> in the class' list of methods */
