@@ -3373,8 +3373,11 @@ main (argc, argv)
   int linker_was_run = 0;
   char *explicit_link_files;
   char *specs_file;
+  char *p;
 
-  programname = argv[0];
+  p = argv[0] + strlen (argv[0]);
+  while (p != argv[0] && p[-1] != '/') --p;
+  programname = p;
 
   if (signal (SIGINT, SIG_IGN) != SIG_IGN)
     signal (SIGINT, fatal_error);
