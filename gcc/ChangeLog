@@ -1,3 +1,10 @@
+Sat Sep  4 16:56:28 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.md (rptb_init): Renamed from *rptb_init.
+	(doloop_begin):  Simplify pattern and use emit_jump_insn.
+	(doloop_end): Simplify pattern, switch operand order,
+	and use emit_jump_insn.
+
 Fri Sep  3 19:02:38 1999  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
 
  	* function.h (struct function): Add new element LANGUAGE.
