@@ -1,5 +1,8 @@
 2004-11-28  Hans-Peter Nilsson  <hp@bitrange.com>
 
+	PR target/18484
+	* g++.dg/abi/empty6.C: Xfail warning for mmix-*-*.
+
 	PR target/18348
 	* gcc.dg/uninit-H.c (ASM): For unknown targets, define to "= 0".
 
