@@ -1,3 +1,7 @@
+2004-02-02  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/titype-1.c: Fix pasto.
+
 2004-02-02  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/13957
