@@ -2747,7 +2747,7 @@ read_line __proto((void))
 	  else if (ch == '#')
 	    comment_p++;
 
-	  else if (ch == ';')
+	  else if (ch == ';' && !string_p)
 	    {
 	      line_split_p = 1;
 	      *ptr++ = '\n';
