@@ -1,6 +1,12 @@
+2003-03-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/8396
+	* tree-inline.c (initialize_inlined_parameters): Make sure the value
+	of read-only constant arguments is passed with the right type.
+
 2003-03-14  Andreas Jaeger  <aj@suse.de>
 
-        * config/i386/linux64.h (CPP_SPEC): Define __LP64__ and _LP64 for 
+	* config/i386/linux64.h (CPP_SPEC): Define __LP64__ and _LP64 for 
 	64-bit.
 
 2003-03-12  Richard Henderson  <rth@redhat.com>
