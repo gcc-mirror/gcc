@@ -8169,12 +8169,13 @@ cp_parser_template_argument (cp_parser* parser)
   if (!cp_parser_error_occurred (parser))
     {
       /* Figure out what is being referred to.  */
-      argument = cp_parser_lookup_name_simple (parser, argument);
-      if (template_p)
-	argument = make_unbound_class_template (TREE_OPERAND (argument, 0),
-						TREE_OPERAND (argument, 1),
-						tf_error);
-      else if (TREE_CODE (argument) != TEMPLATE_DECL)
+      argument = cp_parser_lookup_name (parser, argument,
+					/*is_type=*/false,
+					/*is_template=*/template_p,
+					/*is_namespace=*/false,
+					/*check_dependency=*/true);
+      if (TREE_CODE (argument) != TEMPLATE_DECL
+	  && TREE_CODE (argument) != UNBOUND_CLASS_TEMPLATE)
 	cp_parser_error (parser, "expected template-name");
     }
   if (cp_parser_parse_definitely (parser))
@@ -13347,9 +13348,9 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 						  name,
 						  /*complain=*/1));
 	  else if (is_template)
-	    decl = TYPE_NAME (make_unbound_class_template (parser->scope,
-							   name,
-							   /*complain=*/1));
+	    decl = make_unbound_class_template (parser->scope,
+						name,
+						/*complain=*/1);
 	  else
 	    decl = build_nt (SCOPE_REF, parser->scope, name);
 	}
@@ -13428,6 +13429,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
   my_friendly_assert (DECL_P (decl) 
 		      || TREE_CODE (decl) == OVERLOAD
 		      || TREE_CODE (decl) == SCOPE_REF
+		      || TREE_CODE (decl) == UNBOUND_CLASS_TEMPLATE
 		      || BASELINK_P (decl),
 		      20000619);
 
