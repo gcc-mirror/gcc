@@ -1,5 +1,10 @@
 2003-05-14  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* Makefile.in (LIBGCC_DEPS): Use $(srcdir) on gcov files
+	(libgcov.a): Depend on libgcc.a.
+	(gcov.o, gcov-dump.o): Add gcov-io.c.
+	* mklibgcc.in (libgcov_c_dep): Use $(srcdir).
+	
 	* loop.c (check_dbra_loop): Factor common test.
 
 2003-05-14  Ben Elliston  <bje@wasabisystems.com>
