@@ -130,6 +130,9 @@ RANLIB_TEST = \
   [ -f $(RANLIB) ] \
   || [ -f /usr/bin/ranlib -o -f /bin/ranlib ]
 
+# Substitution type for target's getgroups 2nd arg.
+TARGET_GETGROUPS_T = @TARGET_GETGROUPS_T@
+
 # Compiler to use for compiling libgcc1.a.
 # OLDCC should not be the GNU C compiler,
 # since that would compile typical libgcc1.a functions such as mulsi3
@@ -1857,7 +1860,8 @@ unprotoize.o: unprotoize.c protoize.c $(srcdir)/../include/getopt.h \
 SYSCALLS.c.X: $(srcdir)/sys-types.h $(srcdir)/sys-protos.h $(GCC_PASSES) \
    stmp-int-hdrs
 	-rm -f SYSCALLS.c tmp-SYSCALLS.s
-	cat $(srcdir)/sys-types.h $(srcdir)/sys-protos.h > SYSCALLS.c
+	sed -e s/TARGET_GETGROUPS_T/$(TARGET_GETGROUPS_T)/ \
+	  $(srcdir)/sys-types.h $(srcdir)/sys-protos.h > SYSCALLS.c
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -aux-info $@ -S -o tmp-SYSCALLS.s SYSCALLS.c
 	-rm -f SYSCALLS.c tmp-SYSCALLS.s
@@ -2014,7 +2018,8 @@ scan.o: scan.c scan.h $(build_xm_file) system.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/scan.c
 
 xsys-protos.h: $(GCC_PASSES) $(srcdir)/sys-protos.h deduced.h gen-protos Makefile
-	cat deduced.h $(srcdir)/sys-protos.h > tmp-fixtmp.c
+	sed -e s/TARGET_GETGROUPS_T/$(TARGET_GETGROUPS_T)/ \
+	  deduced.h $(srcdir)/sys-protos.h > tmp-fixtmp.c
 	mv tmp-fixtmp.c fixtmp.c
 	$(GCC_FOR_TARGET) fixtmp.c -w -U__SIZE_TYPE__ -U__PTRDIFF_TYPE__ -U__WCHAR_TYPE__ -E \
 	  | sed -e 's/	/ /g' -e 's/ *(/ (/g' -e 's/ [ ]*/ /g' -e 's/( )/()/' \
