@@ -12755,7 +12755,7 @@ output_indirect_string (h, v)
 
 
 /* Clear the marks for a die and its children.
-   Be cool if the mark isn't set. */
+   Be cool if the mark isn't set.  */
 
 static void
 prune_unmark_dies (die)
@@ -12829,7 +12829,7 @@ prune_unused_types_mark (die, dokids)
       for (c = die->die_child; c; c = c->die_sib)
 	{
 	  /* If this is an array type, we need to make sure our
-	     kids get marked, even if they're types. */
+	     kids get marked, even if they're types.  */
 	  if (die->die_tag == DW_TAG_array_type)
 	    prune_unused_types_mark (c, 1);
 	  else

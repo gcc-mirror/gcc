@@ -694,7 +694,7 @@ ggc_min_heapsize_heuristic()
   /* Adjust for rlimits.  */
   min_heap_kbytes = ggc_rlimit_bound (min_heap_kbytes);
 
-  min_heap_kbytes /= 1024; /* convert to Kbytes. */
+  min_heap_kbytes /= 1024; /* convert to Kbytes.  */
   
   /* The heuristic is RAM/8, with a lower bound of 4M and an upper
      bound of 128M (when RAM >= 1GB).  */

@@ -94,7 +94,7 @@ sbitmap_resize (bmap, n_elms, def)
     }
   else if (n_elms < bmap->n_bits)
     {
-      /* Clear the surplus bits in the last word. */
+      /* Clear the surplus bits in the last word.  */
       last_bit = n_elms % SBITMAP_ELT_BITS;
       if (last_bit)
 	bmap->elms[size - 1]

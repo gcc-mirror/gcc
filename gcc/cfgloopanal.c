@@ -214,7 +214,7 @@ invariant_rtx_wrto_regs_p_helper (expr, invariant_regs)
     }
 }
 
-/* Checks that EXPR is invariant provided that INVARIANT_REGS are invariant. */
+/* Checks that EXPR is invariant provided that INVARIANT_REGS are invariant.  */
 static bool
 invariant_rtx_wrto_regs_p (expr, invariant_regs)
      rtx expr;
@@ -278,7 +278,7 @@ simple_condition_p (loop, condition, invariant_regs, desc)
       return true;
     }
 
-  /* Check the other operand. */
+  /* Check the other operand.  */
   if (!invariant_rtx_wrto_regs_p (op1, invariant_regs))
     return false;
   if (!REG_P (op0))
@@ -494,7 +494,7 @@ constant_iterations (desc, niter, may_be_zero)
    These cases needs to be either cared by copying the loop test in the front
    of loop or keeping the test in first iteration of loop.
    
-   When INIT/LIM are set, they are used instead of var/lim of DESC. */
+   When INIT/LIM are set, they are used instead of var/lim of DESC.  */
 rtx
 count_loop_iterations (desc, init, lim)
      struct loop_desc *desc;
@@ -578,7 +578,7 @@ count_loop_iterations (desc, init, lim)
   if (stride != const1_rtx)
     {
       /* Number of iterations is now (EXP + STRIDE - 1 / STRIDE),
-	 but we need to take care for overflows.   */
+	 but we need to take care for overflows.  */
 
       mod = simplify_gen_binary (UMOD, GET_MODE (desc->var), exp, stride);
 
@@ -719,7 +719,7 @@ simple_loop_exit_p (loops, loop, exit_edge, invariant_regs, single_set_regs, des
   desc->var_alts = variable_initial_values (e, desc->var);
   desc->lim_alts = variable_initial_values (e, desc->lim);
 
-  /* Number of iterations. */
+  /* Number of iterations.  */
   if (!count_loop_iterations (desc, NULL, NULL))
     return false;
   desc->const_iter =

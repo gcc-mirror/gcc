@@ -4193,7 +4193,7 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
          = (float_truncate:SF foo:DF). 
 
          (float_truncate:DF (float_extend:XF foo:SF)) 
-         = (float_extend:SF foo:DF). */
+         = (float_extend:SF foo:DF).  */
       if ((GET_CODE (XEXP (x, 0)) == FLOAT_TRUNCATE
 	   && flag_unsafe_math_optimizations)
 	  || GET_CODE (XEXP (x, 0)) == FLOAT_EXTEND)

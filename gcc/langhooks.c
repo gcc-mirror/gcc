@@ -450,7 +450,7 @@ lhd_expr_size (exp)
 }
 
 /* lang_hooks.decls.final_write_globals: perform final processing on
-   global variables. */
+   global variables.  */
 void
 write_global_declarations ()
 {

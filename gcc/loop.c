@@ -225,7 +225,7 @@ struct movable
   unsigned int is_equiv : 1;	/* 1 means a REG_EQUIV is present on INSN.  */
   unsigned int insert_temp : 1;  /* 1 means we copy to a new pseudo and replace
 				    the original insn with a copy from that
-				    pseudo, rather than deleting it. */
+				    pseudo, rather than deleting it.  */
   struct movable *match;	/* First entry for same value */
   struct movable *forces;	/* An insn that must be moved if this is */
   struct movable *next;
@@ -846,7 +846,7 @@ scan_loop (loop, flags)
 		;
 	      /* Don't move the source and add a reg-to-reg copy with -Os
 		 (this certainly increases size) or if the source is
-		 already a reg (the motion will gain nothing). */
+		 already a reg (the motion will gain nothing).  */
 	      else if (insert_temp 
 		       && (optimize_size || GET_CODE (SET_SRC (set)) == REG
 			   || (CONSTANT_P (SET_SRC (set))
@@ -1977,7 +1977,7 @@ move_movables (loop, movables, threshold, insn_count)
 		      if (m->insert_temp)
 			{
 			  /* Replace the original insn with a move from
-			     our newly created temp. */
+			     our newly created temp.  */
 			  start_sequence ();
     			  emit_move_insn (m->set_dest, newreg);
 			  seq = get_insns ();
@@ -2221,7 +2221,7 @@ move_movables (loop, movables, threshold, insn_count)
 			{
 			  rtx seq;
 			  /* Replace the original insn with a move from
-			     our newly created temp. */
+			     our newly created temp.  */
 			  start_sequence ();
     			  emit_move_insn (m->set_dest, newreg);
 			  seq = get_insns ();

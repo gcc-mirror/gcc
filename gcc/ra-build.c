@@ -1729,7 +1729,7 @@ compare_and_free_webs (link)
 	      && (web1->num_uses != web2->num_uses
 	          || web1->num_defs != web2->num_defs))
 	  /* Similarly, if the framepointer was unreferenced originally
-	     but we added spills, these fields may not match. */
+	     but we added spills, these fields may not match.  */
 	  || (web1->type != PRECOLORED
                && web1->crosses_call != web2->crosses_call)
 	  || (web1->type != PRECOLORED

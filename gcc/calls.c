@@ -2572,7 +2572,7 @@ expand_call (exp, target, ignore)
 	  if (try_tail_recursion)
 	    actparms = tree_cons (NULL_TREE, args[i].tree_value, actparms);
 	}
-      /* Do the same for the function address if it is an expression. */
+      /* Do the same for the function address if it is an expression.  */
       if (!fndecl)
         addr = fix_unsafe_tree (addr);
       /* Expanding one of those dangerous arguments could have added
