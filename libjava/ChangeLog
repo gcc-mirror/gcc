@@ -1,3 +1,9 @@
+2002-02-24  Jeff Sturm  <jsturm@one-point.com>
+
+	* java/lang/reflect/natMethod.cc (_Jv_CallAnyMethodA):
+	Define ffi_result union for ffi_call result.  Cast
+	ffi_result members to jvalue.
+ 
 2002-02-23  Alexandre Oliva  <aoliva@redhat.com>
 
 	* Makefile.in, gcj/Makefile.in, include/Makefile.in: Rebuilt.
