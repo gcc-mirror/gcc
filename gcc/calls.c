@@ -85,7 +85,7 @@ struct arg_data
 };
 
 #ifdef ACCUMULATE_OUTGOING_ARGS
-/* A vector of one char per word of stack space.  A byte if non-zero if
+/* A vector of one char per byte of stack space.  A byte if non-zero if
    the corresponding stack location has been used.
    This vector is used to prevent a function call within an argument from
    clobbering any stack already set up.  */
@@ -1437,7 +1437,11 @@ expand_call (exp, target, ignore)
 
      Here we compute the boundary of the that needs to be saved, if any.  */
 
+#ifdef ARGS_GROW_DOWNWARD
+  for (i = 0; i < reg_parm_stack_space + 1; i++)
+#else
   for (i = 0; i < reg_parm_stack_space; i++)
+#endif
     {
       if (i >=  highest_outgoing_arg_in_use
 	  || stack_usage_map[i] == 0)
@@ -1463,8 +1467,15 @@ expand_call (exp, target, ignore)
 
       stack_area = gen_rtx (MEM, save_mode,
 			    memory_address (save_mode,
+					    
+#ifdef ARGS_GROW_DOWNWARD
 					    plus_constant (argblock,
-							   low_to_save)));
+							   - high_to_save)
+#else
+					    plus_constant (argblock,
+							   low_to_save)
+#endif
+					    ));
       if (save_mode == BLKmode)
 	{
 	  save_area = assign_stack_temp (BLKmode, num_to_save, 1);
@@ -1759,7 +1770,12 @@ expand_call (exp, target, ignore)
 	  rtx stack_area
 	    = gen_rtx (MEM, save_mode,
 		       memory_address (save_mode,
-				       plus_constant (argblock, low_to_save)));
+#ifdef ARGS_GROW_DOWNWARD
+				       plus_constant (argblock, - high_to_save)
+#else
+				       plus_constant (argblock, low_to_save)
+#endif
+				       ));
 
 	  if (save_mode != BLKmode)
 	    emit_move_insn (stack_area, save_area);
