@@ -342,6 +342,8 @@ static const struct ieee_format ieee_53 =
   EXONE - 0x3ff
 };
 
+#endif /* IEEE */
+
 /* IEEE extended double (64 bits).  */
 static const struct ieee_format ieee_64 =
 {
@@ -352,6 +354,7 @@ static const struct ieee_format ieee_64 =
   0
 };
 
+#if (INTEL_EXTENDED_IEEE_FORMAT == 0)
 /* IEEE long double (113 bits).  */
 static const struct ieee_format ieee_113 =
 {
@@ -361,7 +364,7 @@ static const struct ieee_format ieee_113 =
   TFmode,
   0
 };
-#endif
+#endif /* INTEL_EXTENDED_IEEE_FORMAT == 0 */
 
 #ifdef DEC
 /* DEC F float (24 bits).  */
@@ -394,6 +397,7 @@ static const struct ieee_format dec_g =
   EXONE - 1025
 };
 
+#if 0
 /* DEC H float (113 bits).  (not yet used) */
 static const struct ieee_format dec_h =
 {
@@ -404,6 +408,7 @@ static const struct ieee_format dec_h =
   EXONE - 16385
 };
 #endif
+#endif /* DEC */
 
 extern int extra_warnings;
 extern const UEMUSHORT ezero[NE], ehalf[NE], eone[NE], etwo[NE];
@@ -2594,7 +2599,7 @@ static void
 emdnorm (s, lost, subflg, exp, rcntrl)
      UEMUSHORT s[];
      int lost;
-     int subflg;
+     int subflg ATTRIBUTE_UNUSED;
      EMULONG exp;
      int rcntrl;
 {
@@ -2753,7 +2758,9 @@ emdnorm (s, lost, subflg, exp, rcntrl)
 #endif
       eaddm (rbit, s);
     }
+#ifndef C4X
  mddone:
+#endif
 /* Undo the temporary shift for denormal values.  */
   if ((exp <= 0) && (rndprc != NBITS)
       && ((rndprc != 64) || ((rndprc == 64) && ! REAL_WORDS_BIG_ENDIAN)))
@@ -5961,7 +5968,7 @@ toc4x (x, y, mode)
 #ifdef TFMODE_NAN
 TFMODE_NAN;
 #else
-#ifdef IEEE
+#if defined (IEEE) && (INTEL_EXTENDED_IEEE_FORMAT == 0)
 static const UEMUSHORT TFbignan[8] =
  {0x7fff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff};
 static const UEMUSHORT TFlittlenan[8] = {0, 0, 0, 0, 0, 0, 0x8000, 0xffff};

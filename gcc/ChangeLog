@@ -1,3 +1,12 @@
+2002-08-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* real.c (ieee_64): Always define.
+	(ieee_113): Guard with INTEL_EXTENDED_IEEE_FORMAT == 0.
+	(dec_h): Not used yet, hide it.
+	(emdnorm): Mark parameter in ATTRIBUTE_UNUSED.  Guard label with
+	macro controlling use.
+	(TFbignan, TFlittlenan): Guard with INTEL_EXTENDED_IEEE_FORMAT == 0.
+
 Mon Aug 12 12:48:20 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (tablejump): Sign extend the operand.
