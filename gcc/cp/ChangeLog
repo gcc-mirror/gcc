@@ -1,3 +1,8 @@
+1998-12-18  DJ Delorie  <dj@cygnus.com>
+
+	* cvt.c (convert_to_reference): Check for both error_mark_node
+	and NULL_NODE after call to convert_for_initialization.
+
 1998-12-17  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* error.c (interesting_scope_p): New fn.

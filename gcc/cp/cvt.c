@@ -506,8 +506,8 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
     {
       rval = convert_for_initialization (NULL_TREE, type, expr, flags,
 					 "converting", 0, 0);
-      if (rval == error_mark_node)
-	return error_mark_node;
+      if (rval == NULL_TREE || rval == error_mark_node)
+	return rval;
       rval = build_up_reference (reftype, rval, flags);
 
       if (rval && ! CP_TYPE_CONST_P (TREE_TYPE (reftype)))
