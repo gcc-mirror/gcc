@@ -1,3 +1,9 @@
+Mon Oct 27 21:25:20 1997  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.md (movqi, movhi): Make sure new insns created during reload
+	won't need reloading themselves.
+	(reload_inqi, reload_inhi, reload_outqi, reload_outhi): Likewise.
+
 Mon Oct 27 16:11:10 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* mn10300.h (GO_IF_LEGITIMATE_ADDRESS): Disable reg+reg.
