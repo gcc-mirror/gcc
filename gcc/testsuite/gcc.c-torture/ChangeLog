@@ -1,3 +1,6 @@
+Fri Apr  3 12:27:49 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* compile/980329-1.c: New test.
 
 Mon Feb 23 15:16:53 1998  Robert Lipe <robertl@dgii.com>
 	From Bruno Haible <haible@ilog.fr>:
