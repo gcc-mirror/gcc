@@ -99,35 +99,42 @@ int rs6000_save_toc_p;
 /* ABI enumeration available for subtarget to use.  */
 enum rs6000_abi rs6000_current_abi;
 
+/* Offset & size for fpmem stack locations used for converting between
+   float and integral types.  */
+int rs6000_fpmem_offset;
+int rs6000_fpmem_size;
+
 
 /* Default register names.  */
 char rs6000_reg_names[][8] =
 {
-   "0",  "1",  "2",  "3",  "4",  "5",  "6",  "7",
-   "8",  "9", "10", "11", "12", "13", "14", "15",
-  "16", "17", "18", "19", "20", "21", "22", "23",
-  "24", "25", "26", "27", "28", "29", "30", "31",
-   "0",  "1",  "2",  "3",  "4",  "5",  "6",  "7",
-   "8",  "9", "10", "11", "12", "13", "14", "15",
-  "16", "17", "18", "19", "20", "21", "22", "23",
-  "24", "25", "26", "27", "28", "29", "30", "31",
-  "mq", "lr", "ctr","ap",
-   "0",  "1",  "2",  "3",  "4",  "5",  "6",  "7"
+      "0",  "1",  "2",  "3",  "4",  "5",  "6",  "7",
+      "8",  "9", "10", "11", "12", "13", "14", "15",
+     "16", "17", "18", "19", "20", "21", "22", "23",
+     "24", "25", "26", "27", "28", "29", "30", "31",
+      "0",  "1",  "2",  "3",  "4",  "5",  "6",  "7",
+      "8",  "9", "10", "11", "12", "13", "14", "15",
+     "16", "17", "18", "19", "20", "21", "22", "23",
+     "24", "25", "26", "27", "28", "29", "30", "31",
+     "mq", "lr", "ctr","ap",
+      "0",  "1",  "2",  "3",  "4",  "5",  "6",  "7",
+  "fpmem"
 };
 
 #ifdef TARGET_REGNAMES
 static char alt_reg_names[][8] =
 {
-   "%r0",  "%r1",  "%r2",  "%r3",  "%r4",  "%r5",  "%r6",  "%r7",
-   "%r8",  "%r9", "%r10", "%r11", "%r12", "%r13", "%r14", "%r15",
-  "%r16", "%r17", "%r18", "%r19", "%r20", "%r21", "%r22", "%r23",
-  "%r24", "%r25", "%r26", "%r27", "%r28", "%r29", "%r30", "%r31",
-   "%f0",  "%f1",  "%f2",  "%f3",  "%f4",  "%f5",  "%f6",  "%f7",
-   "%f8",  "%f9", "%f10", "%f11", "%f12", "%f13", "%f14", "%f15",
-  "%f16", "%f17", "%f18", "%f19", "%f20", "%f21", "%f22", "%f23",
-  "%f24", "%f25", "%f26", "%f27", "%f28", "%f29", "%f30", "%f31",
-    "mq",   "lr",  "ctr",   "ap",
-  "%cr0", "%cr1", "%cr2", "%cr3", "%cr4", "%cr5", "%cr6", "%cr7"
+   "%r0",   "%r1",  "%r2",  "%r3",  "%r4",  "%r5",  "%r6",  "%r7",
+   "%r8",   "%r9", "%r10", "%r11", "%r12", "%r13", "%r14", "%r15",
+  "%r16",  "%r17", "%r18", "%r19", "%r20", "%r21", "%r22", "%r23",
+  "%r24",  "%r25", "%r26", "%r27", "%r28", "%r29", "%r30", "%r31",
+   "%f0",   "%f1",  "%f2",  "%f3",  "%f4",  "%f5",  "%f6",  "%f7",
+   "%f8",   "%f9", "%f10", "%f11", "%f12", "%f13", "%f14", "%f15",
+  "%f16",  "%f17", "%f18", "%f19", "%f20", "%f21", "%f22", "%f23",
+  "%f24",  "%f25", "%f26", "%f27", "%f28", "%f29", "%f30", "%f31",
+    "mq",    "lr",  "ctr",   "ap",
+  "%cr0",  "%cr1", "%cr2", "%cr3", "%cr4", "%cr5", "%cr6", "%cr7",
+ "fpmem"
 };
 #endif
 
@@ -363,6 +370,26 @@ int count_register_operand(op, mode)
   return 0;
 }
 
+/* Returns 1 if op is memory location for float/int conversions that masquerades
+   as a register.  */
+int fpmem_operand(op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  if (GET_CODE (op) != REG)
+    return 0;
+
+  if (FPMEM_REGNO_P (REGNO (op)))
+    return 1;
+
+#if 0
+  if (REGNO (op) > FIRST_PSEUDO_REGISTER)
+    return 1;
+#endif
+
+  return 0;
+}
+
 /* Return 1 if OP is a constant that can fit in a D field.  */
 
 int
@@ -404,7 +431,9 @@ gpc_reg_operand (op, mode)
      enum machine_mode mode;
 {
   return (register_operand (op, mode)
-	  && (GET_CODE (op) != REG || REGNO (op) >= 67 || REGNO (op) < 64));
+	  && (GET_CODE (op) != REG
+	      || (REGNO (op) >= 67 && !FPMEM_REGNO_P (REGNO (op)))
+	      || REGNO (op) < 64));
 }
 
 /* Returns 1 if OP is either a pseudo-register or a register denoting a
@@ -1785,7 +1814,7 @@ includes_rshift_p (shiftop, andop)
      register rtx shiftop;
      register rtx andop;
 {
-  unsigned shift_mask = ~0;
+  unsigned shift_mask = ~(unsigned)0;
 
   shift_mask >>= INTVAL (shiftop);
 
@@ -2319,12 +2348,28 @@ print_operand (file, x, code)
       return;
       
     case 'u':
-      /* High-order 16 bits of constant.  */
+      /* High-order 16 bits of constant for use in unsigned operand.  */
       if (! INT_P (x))
 	output_operand_lossage ("invalid %%u value");
 
       fprintf (file, "0x%x", (INT_LOWPART (x) >> 16) & 0xffff);
       return;
+
+    case 'v':
+      /* High-order 16 bits of constant for use in signed operand.  */
+      if (! INT_P (x))
+	output_operand_lossage ("invalid %%v value");
+
+      {
+	int value = (INT_LOWPART (x) >> 16) & 0xffff;
+
+	/* Solaris assembler doesn't like lis 0,0x80000 */
+	if (DEFAULT_ABI == ABI_SOLARIS && (value & 0x8000) != 0)
+	  fprintf (file, "%d", value | (~0 << 16));
+	else
+	  fprintf (file, "0x%x", value);
+	return;
+      }
 
     case 'U':
       /* Print `u' if this has an auto-increment or auto-decrement.  */
@@ -2575,13 +2620,15 @@ rs6000_makes_calls ()
 		+---------------------------------------+
 		| Parameter save area (P)		| 24
 		+---------------------------------------+
-		| Alloca space (A)			| 24+P
+		| Float/int conversion temporary (X)	| 24+P
 		+---------------------------------------+
-		| Local variable space (L)		| 24+P+A
+		| Alloca space (A)			| 24+P+X
 		+---------------------------------------+
-		| Save area for GP registers (G)	| 24+P+A+L
+		| Local variable space (L)		| 24+P+X+A
 		+---------------------------------------+
-		| Save area for FP registers (F)	| 24+P+A+L+G
+		| Save area for GP registers (G)	| 24+P+X+A+L
+		+---------------------------------------+
+		| Save area for FP registers (F)	| 24+P+X+A+L+G
 		+---------------------------------------+
 	old SP->| back chain to caller's caller		|
 		+---------------------------------------+
@@ -2595,17 +2642,19 @@ rs6000_makes_calls ()
 		+---------------------------------------+
 		| Parameter save area (P)		| 8
 		+---------------------------------------+
-		| Alloca space (A)			| 8+P
+		| Float/int conversion temporary (X)	| 8+P
 		+---------------------------------------+
-		| Varargs save area (V)			| 8+P+A
+		| Alloca space (A)			| 8+P+X
 		+---------------------------------------+
-		| Local variable space (L)		| 8+P+A+V
+		| Varargs save area (V)			| 8+P+X+A
 		+---------------------------------------+
-		| saved CR (C)				| 8+P+A+V+L
+		| Local variable space (L)		| 8+P+X+A+V
 		+---------------------------------------+
-		| Save area for GP registers (G)	| 8+P+A+V+L+C
+		| saved CR (C)				| 8+P+X+A+V+L
 		+---------------------------------------+
-		| Save area for FP registers (F)	| 8+P+A+V+L+C+G
+		| Save area for GP registers (G)	| 8+P+X+A+V+L+C
+		+---------------------------------------+
+		| Save area for FP registers (F)	| 8+P+X+A+V+L+C+G
 		+---------------------------------------+
 	old SP->| back chain to caller's caller		|
 		+---------------------------------------+
@@ -2628,21 +2677,23 @@ rs6000_makes_calls ()
 		+---------------------------------------+
 		| Parameter save area (P)		| 24
 		+---------------------------------------+
-		| Alloca space (A)			| 24+P
+		| Float/int conversion temporary (X)	| 24+P
 		+---------------------------------------+
-		| Local variable space (L)		| 24+P+A
+		| Alloca space (A)			| 24+P+X
 		+---------------------------------------+
-		| Save area for FP registers (F)	| 24+P+A+L
+		| Local variable space (L)		| 24+P+X+A
 		+---------------------------------------+
-		| Possible alignment area (X)		| 24+P+A+L+F
+		| Save area for FP registers (F)	| 24+P+X+A+L
 		+---------------------------------------+
-		| Save area for GP registers (G)	| 24+P+A+L+F+X
+		| Possible alignment area (X)		| 24+P+X+A+L+F
 		+---------------------------------------+
-		| Save area for CR (C)			| 24+P+A+L+F+X+G
+		| Save area for GP registers (G)	| 24+P+X+A+L+F+X
 		+---------------------------------------+
-		| Save area for TOC (T)			| 24+P+A+L+F+X+G+C
+		| Save area for CR (C)			| 24+P+X+A+L+F+X+G
 		+---------------------------------------+
-		| Save area for LR (R)			| 24+P+A+L+F+X+G+C+T
+		| Save area for TOC (T)			| 24+P+X+A+L+F+X+G+C
+		+---------------------------------------+
+		| Save area for LR (R)			| 24+P+X+A+L+F+X+G+C+T
 		+---------------------------------------+
 	old SP->| back chain to caller's caller		|
 		+---------------------------------------+
@@ -2684,6 +2735,9 @@ rs6000_stack_info ()
       info_ptr->toc_save_p = 1;
       info_ptr->toc_size = reg_size;
     }
+
+  /* Does this machine need the float/int conversion area? */
+  info_ptr->fpmem_p = regs_ever_live[FPMEM_REGNUM];
 
   /* If this is main and we need to call a function to set things up,
      save main's arguments around the call.  */
@@ -2749,6 +2803,7 @@ rs6000_stack_info ()
   info_ptr->varargs_size = RS6000_VARARGS_AREA;
   info_ptr->vars_size    = ALIGN (get_frame_size (), 8);
   info_ptr->parm_size    = ALIGN (current_function_outgoing_args_size, 8);
+  info_ptr->fpmem_size	 = (info_ptr->fpmem_p) ? 8 : 0;
   info_ptr->save_size    = ALIGN (info_ptr->fp_size
 				  + info_ptr->gp_size
 				  + info_ptr->cr_size
@@ -2758,6 +2813,7 @@ rs6000_stack_info ()
 
   total_raw_size	 = (info_ptr->vars_size
 			    + info_ptr->parm_size
+			    + info_ptr->fpmem_size
 			    + info_ptr->save_size
 			    + info_ptr->varargs_size
 			    + info_ptr->fixed_size);
@@ -2785,6 +2841,7 @@ rs6000_stack_info ()
 			|| info_ptr->total_size > 220);
 
   /* Calculate the offsets */
+  info_ptr->fpmem_offset = info_ptr->total_size - info_ptr->parm_size;
   switch (abi)
     {
     case ABI_NONE:
@@ -2841,6 +2898,16 @@ rs6000_stack_info ()
 
   if (!info_ptr->main_save_p)
     info_ptr->main_save_offset = 0;
+
+  if (!info_ptr->fpmem_p)
+    info_ptr->fpmem_offset = 0;
+  else
+    {
+      rs6000_fpmem_size   = info_ptr->fpmem_size;
+      rs6000_fpmem_offset = STACK_DYNAMIC_OFFSET (current_function_decl) - info_ptr->fpmem_size;
+      if (rs6000_fpmem_offset > 32767)
+	abort ();
+    }
 
   return info_ptr;
 }
@@ -2899,6 +2966,9 @@ debug_stack_info (info)
   if (info->main_save_p)
     fprintf (stderr, "\tmain_save_p         = %5d\n", info->main_save_p);
 
+  if (info->fpmem_p)
+    fprintf (stderr, "\tfpmem_p             = %5d\n", info->fpmem_p);
+
   if (info->gp_save_offset)
     fprintf (stderr, "\tgp_save_offset      = %5d\n", info->gp_save_offset);
 
@@ -2920,6 +2990,9 @@ debug_stack_info (info)
   if (info->main_save_offset)
     fprintf (stderr, "\tmain_save_offset    = %5d\n", info->main_save_offset);
 
+  if (info->fpmem_offset)
+    fprintf (stderr, "\tfpmem_offset        = %5d\n", info->fpmem_offset);
+
   if (info->total_size)
     fprintf (stderr, "\ttotal_size          = %5d\n", info->total_size);
 
@@ -2931,6 +3004,9 @@ debug_stack_info (info)
 
   if (info->parm_size)
     fprintf (stderr, "\tparm_size           = %5d\n", info->parm_size);
+
+  if (info->fpmem_size)
+    fprintf (stderr, "\tfpmem_size          = %5d\n", info->fpmem_size);
 
   if (info->fixed_size)
     fprintf (stderr, "\tfixed_size          = %5d\n", info->fixed_size);
@@ -3619,6 +3695,8 @@ output_epilog (file, size)
   /* Reset varargs and save TOC indicator */
   rs6000_sysv_varargs_p = 0;
   rs6000_save_toc_p = 0;
+  rs6000_fpmem_size = 0;
+  rs6000_fpmem_offset = 0;
   pic_offset_table_rtx = (rtx)0;
 
   if (DEFAULT_ABI == ABI_NT)
@@ -4601,7 +4679,6 @@ handle_mac_pragma (finput, t)
   pname = IDENTIFIER_POINTER (t);
   if (strcmp (pname, "segment") == 0)
     {
-      retval = 1;
       /* (should collect pbuf + 8 into a segment name) */
     }
   else if (strcmp (pname, "options") == 0)
@@ -4613,7 +4690,10 @@ handle_mac_pragma (finput, t)
 
       /* Return without doing anything if no content.  */
       if (c == '\n' || c == EOF)
-	return 0;
+	{
+	  ungetc (c, finput);
+	  return 0;
+	}
 
       /* Collect the rest of the line.  */
       while (psize < sizeof (pbuf) - 1 && c != '\n')
@@ -4624,14 +4704,21 @@ handle_mac_pragma (finput, t)
 
       if (strncmp (pbuf, "align=mac68k", 12) == 0)
 	{
-	  mac68k_aligned = retval = 1;
+	  mac68k_aligned = 1;
+	  retval = 1;
+	}
+      else if (strncmp (pbuf, "align=power", 11) == 0)
+	{
+	  mac68k_aligned = 0;
+	  retval = 1;
 	}
       else if (strncmp (pbuf, "align=reset", 11) == 0)
 	{
-	  mac68k_aligned = 0, retval = 1;
+	  mac68k_aligned = 0;
+	  retval = 1;
 	}
     }
 
-  return c;
+  return retval;
 }
 /* END CYGNUS LOCAL mac */
