@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for Intel 860.
    Copyright (C) 1989, 1991, 1993, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003 Free Software Foundation, Inc.
+   2001, 2002, 2003, 2004 Free Software Foundation, Inc.
    Hacked substantially by Ron Guilmette (rfg@monkeys.com) to cater to
    the whims of the System V Release 4 assembler.
 
@@ -240,7 +240,7 @@ extern int target_flags;
 
 /* Register in which address to store a structure value
    is passed to a function.  */
-#define STRUCT_VALUE_REGNUM 16
+#define I860_STRUCT_VALUE_REGNUM 16
 
 /* Register to use when a source of a floating-point zero is needed.  */
 #define F0_REGNUM	32
@@ -566,10 +566,6 @@ struct cumulative_args { int ints, floats; };
    No definition is equivalent to always zero.  */
 
 #define EXIT_IGNORE_STACK 1
-
-/* Generate necessary RTL for __builtin_saveregs().  */
-#define EXPAND_BUILTIN_SAVEREGS() \
-  i860_saveregs()
 
 /* Implement `va_start' for varargs and stdarg.  */
 #define EXPAND_BUILTIN_VA_START(valist, nextarg) \

@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Intel i860
-   Copyright (C) 1989, 1991, 1997, 1998, 1999, 2000, 2001, 2002, 2003
+   Copyright (C) 1989, 1991, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
    Free Software Foundation, Inc.
    Derived from sparc.c.
 
@@ -1775,7 +1775,7 @@ i860_output_function_epilogue (FILE *asm_file, HOST_WIDE_INT local_bytes)
 
 /* Expand a library call to __builtin_saveregs.  */
 
-rtx
+static rtx
 i860_saveregs (void)
 {
   rtx fn = gen_rtx_SYMBOL_REF (Pmode, "__builtin_saveregs");
@@ -2101,6 +2101,13 @@ i860_init_libfuncs (void)
   set_optab_libfunc (umod_optab, SImode, "*.urem");
 }
 
+static rtx
+i860_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
+		       int incoming ATTRIBUTE_UNUSED)
+{
+  return gen_rtx_REG (Pmode, I860_STRUCT_VALUE_REGNUM);
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS i860_rtx_costs
@@ -2119,5 +2126,11 @@ i860_init_libfuncs (void)
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST i860_build_builtin_va_list
+
+#undef TARGET_STRUCT_VALUE_RTX
+#define TARGET_STRUCT_VALUE_RTX i860_struct_value_rtx
+
+#undef TARGET_EXPAND_BUILTIN_SAVEREGS
+#define TARGET_EXPAND_BUILTIN_SAVEREGS i860_saveregs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
