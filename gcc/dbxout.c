@@ -1346,73 +1346,66 @@ dbxout_symbol (decl, local)
 
       FORCE_TEXT;
 
-      if (DECL_NAME (decl))
-	{
-	  /* Nonzero means we must output a tag as well as a typedef.  */
-	  int tag_also = ((TREE_CODE (type) == RECORD_TYPE
-			   || TREE_CODE (type) == UNION_TYPE)
-			  && TYPE_NAME (type) == decl);
+      {
+	int tag_needed = 1;
 
-	  /* Output typedef name.  */
-	  fprintf (asmfile, "%s \"%s:", ASM_STABS_OP,
-		   IDENTIFIER_POINTER (DECL_NAME (decl)));
+	if (DECL_NAME (decl))
+	  {
+	    /* Nonzero means we must output a tag as well as a typedef.  */
+	    tag_needed = 0;
 
-	  /* Short cut way to output a tag also.  */
-	  if (tag_also && use_gdb_dbx_extensions && have_used_extensions)
-	    putc ('T', asmfile);
+	    /* Output typedef name.  */
+	    fprintf (asmfile, "%s \"%s:", ASM_STABS_OP,
+		     IDENTIFIER_POINTER (DECL_NAME (decl)));
 
-	  putc ('t', asmfile);
-	  current_sym_code = DBX_DECL_STABS_CODE;
+	    /* Short cut way to output a tag also.  */
+	    if ((TREE_CODE (type) == RECORD_TYPE
+		 || TREE_CODE (type) == UNION_TYPE)
+		&& TYPE_NAME (type) == decl)
+	      {
+		if (use_gdb_dbx_extensions && have_used_extensions)
+		  {
+		    putc ('T', asmfile);
+		    TREE_ASM_WRITTEN (TYPE_NAME (type)) = 1;
+		  }
+		else
+		  tag_needed = 1;
+	      }
 
-	  dbxout_type (type, 1, 0);
-	  dbxout_finish_symbol (decl);
+	    putc ('t', asmfile);
+	    current_sym_code = DBX_DECL_STABS_CODE;
 
-	  /* Long way to output a tag also.  */
-	  if (tag_also && ! (use_gdb_dbx_extensions && have_used_extensions))
-	    {
-	      /* Output the tag for the type, not using GDB extensions.
-		 This represents `struct foo' as opposed to `typedef foo'.  */
-	      /* In C++, the name of a type is the corresponding typedef.
-		 In C, it is an IDENTIFIER_NODE.  */
-	      tree name = TYPE_NAME (type);
-	      if (TREE_CODE (name) == TYPE_DECL)
-		name = DECL_NAME (name);
+	    dbxout_type (type, 1, 0);
+	    dbxout_finish_symbol (decl);
+	  }
 
-	      current_sym_code = DBX_DECL_STABS_CODE;
-	      current_sym_value = 0;
-	      current_sym_addr = 0;
-	      current_sym_nchars = 2 + IDENTIFIER_LENGTH (name);
+	if (tag_needed && TYPE_NAME (type) != 0
+	    && !TREE_ASM_WRITTEN (TYPE_NAME (type)))
+	  {
+	    /* For a TYPE_DECL with no name, but the type has a name,
+	       output a tag.
+	       This is what represents `struct foo' with no typedef.  */
+	    /* In C++, the name of a type is the corresponding typedef.
+	       In C, it is an IDENTIFIER_NODE.  */
+	    tree name = TYPE_NAME (type);
+	    if (TREE_CODE (name) == TYPE_DECL)
+	      name = DECL_NAME (name);
 
-	      fprintf (asmfile, "%s \"%s:T", ASM_STABS_OP,
-		       IDENTIFIER_POINTER (name));
-	      dbxout_type (type, 1, 0);
-	      dbxout_finish_symbol (0);
-	    }
-	}
-      else if (TYPE_NAME (type) != 0 && !TREE_ASM_WRITTEN (TYPE_NAME (type)))
-	{
-	  /* Output a tag (a TYPE_DECL with no name, but the type has a name).
-	     This is what represents `struct foo' with no typedef.  */
-	  /* In C++, the name of a type is the corresponding typedef.
-	     In C, it is an IDENTIFIER_NODE.  */
-	  tree name = TYPE_NAME (type);
-	  if (TREE_CODE (name) == TYPE_DECL)
-	    name = DECL_NAME (name);
+	    current_sym_code = DBX_DECL_STABS_CODE;
+	    current_sym_value = 0;
+	    current_sym_addr = 0;
+	    current_sym_nchars = 2 + IDENTIFIER_LENGTH (name);
 
-	  current_sym_code = DBX_DECL_STABS_CODE;
-	  current_sym_value = 0;
-	  current_sym_addr = 0;
-	  current_sym_nchars = 2 + IDENTIFIER_LENGTH (name);
+	    fprintf (asmfile, "%s \"%s:T", ASM_STABS_OP,
+		     IDENTIFIER_POINTER (name));
+	    dbxout_type (type, 1, 0);
+	    dbxout_finish_symbol (0);
+	  }
 
-	  fprintf (asmfile, "%s \"%s:T", ASM_STABS_OP,
-		   IDENTIFIER_POINTER (name));
-	  dbxout_type (type, 1, 0);
-	  dbxout_finish_symbol (0);
-	}
-
-      /* Prevent duplicate output of a typedef.  */
-      TREE_ASM_WRITTEN (decl) = 1;
-      break;
+	/* Prevent duplicate output of a typedef.  */
+	TREE_ASM_WRITTEN (decl) = 1;
+	break;
+      }
 
     case PARM_DECL:
       /* Parm decls go in their own separate chains
