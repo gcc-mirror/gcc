@@ -1,5 +1,5 @@
 ;;- Machine description for the pdp11 for GNU C compiler
-;; Copyright (C) 1994, 1995, 1997 Free Software Foundation, Inc.
+;; Copyright (C) 1994, 1995, 1997, 1999 Free Software Foundation, Inc.
 ;; Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 ;; This file is part of GNU CC.
@@ -89,7 +89,7 @@
   "*
 {
   cc_status.flags = CC_IN_FPU;
-  return \"cmpd %0, %1\;cfcc\";
+  return \"{cmpd|cmpf} %0, %1\;cfcc\";
 }"
   [(set_attr "length" "2,3,6")])
 
@@ -180,7 +180,7 @@
   "*
 {
   cc_status.flags = CC_IN_FPU;
-  return \"tstd %0\;cfcc\";
+  return \"{tstd|tstf} %0\;cfcc\";
 }"
   [(set_attr "length" "2,3")])
 
@@ -730,16 +730,16 @@
   "TARGET_FPU"
   "* if (which_alternative ==0)
      {
-       output_asm_insn(\"stcdf %1, -(sp)\", operands);
+       output_asm_insn(\"{stcdf|movfo} %1, -(sp)\", operands);
        output_asm_insn(\"mov (sp)+, %0\", operands);
        operands[0] = gen_rtx(REG, HImode, REGNO (operands[0])+1);
        output_asm_insn(\"mov (sp)+, %0\", operands);
        return \"\";
      }
      else if (which_alternative == 1)
-       return \"stcdf %1, %0\";
+       return \"{stcdf|movfo} %1, %0\";
      else 
-       return \"stcdf %1, %0\";
+       return \"{stcdf|movfo} %1, %0\";
   "
   [(set_attr "length" "3,1,2")])
 
@@ -782,9 +782,9 @@
 	(float_extend:DF (match_operand:SF 1 "general_operand" "r,R,Q")))]
   "TARGET_FPU"
   "@
-   mov %1, -(sp)\;ldcfd (sp)+,%0
-   ldcfd %1, %0
-   ldcfd %1, %0"
+   mov %1, -(sp)\;{ldcfd|movof} (sp)+,%0
+   {ldcfd|movof} %1, %0
+   {ldcfd|movof} %1, %0"
   [(set_attr "length" "2,1,2")])
 
 ;; does movb sign extend in register-to-register move?
@@ -923,14 +923,14 @@
        output_asm_insn(\"mov %1, -(sp)\", operands);
        
        output_asm_insn(\"setl\", operands);
-       output_asm_insn(\"ldcld (sp)+, %0\", operands);
+       output_asm_insn(\"{ldcld|movif} (sp)+, %0\", operands);
        output_asm_insn(\"seti\", operands);
        return \"\";
      }
      else if (which_alternative == 1)
-       return \"setl\;ldcld %1, %0\;seti\";
+       return \"setl\;{ldcld|movif} %1, %0\;seti\";
      else 
-       return \"setl\;ldcld %1, %0\;seti\";
+       return \"setl\;{ldcld|movif} %1, %0\;seti\";
   "
   [(set_attr "length" "5,3,4")])
 
@@ -938,7 +938,7 @@
   [(set (match_operand:DF 0 "register_operand" "=a,a")
 	(float:DF (match_operand:HI 1 "general_operand" "rR,Qi")))]
   "TARGET_FPU"
-  "ldcid %1, %0"
+  "{ldcid|movif} %1, %0"
   [(set_attr "length" "1,2")])
 	
 ;; cut float to int
@@ -949,7 +949,7 @@
   "* if (which_alternative ==0)
      {
        output_asm_insn(\"setl\", operands);
-       output_asm_insn(\"stcdl %1, -(sp)\", operands);
+       output_asm_insn(\"{stcdl|movfi} %1, -(sp)\", operands);
        output_asm_insn(\"seti\", operands);
        output_asm_insn(\"mov (sp)+, %0\", operands);
        operands[0] = gen_rtx(REG, HImode, REGNO (operands[0])+1);
@@ -957,9 +957,9 @@
        return \"\";
      }
      else if (which_alternative == 1)
-       return \"setl\;stcdl %1, %0\;seti\";
+       return \"setl\;{stcdl|movfi} %1, %0\;seti\";
      else 
-       return \"setl\;stcdl %1, %0\;seti\";
+       return \"setl\;{stcdl|movfi} %1, %0\;seti\";
   "
   [(set_attr "length" "5,3,4")])
 
@@ -967,7 +967,7 @@
   [(set (match_operand:HI 0 "general_operand" "=rR,Q")
 	(fix:HI (fix:DF (match_operand:DF 1 "register_operand" "a,a"))))]
   "TARGET_FPU"
-  "stcdi %1, %0"
+  "{stcdi|movfi} %1, %0"
   [(set_attr "length" "1,2")])
 
 
@@ -979,7 +979,7 @@
 	(plus:DF (match_operand:DF 1 "register_operand" "%0,0,0")
 		 (match_operand:DF 2 "general_operand" "fR,Q,F")))]
   "TARGET_FPU"
-  "addd %2, %0"
+  "{addd|addf} %2, %0"
   [(set_attr "length" "1,2,5")])
 
 (define_insn "addsi3"
@@ -1082,7 +1082,7 @@
 	(minus:DF (match_operand:DF 1 "register_operand" "0,0")
 		  (match_operand:DF 2 "general_operand" "fR,Q")))]
   "TARGET_FPU"
-  "subd %2, %0"
+  "{subd|subf} %2, %0"
   [(set_attr "length" "1,2")])
 
 (define_insn "subsi3"
@@ -1560,7 +1560,7 @@
   [(set (match_operand:DF 0 "general_operand" "=fR,Q")
 	(abs:DF (match_operand:DF 1 "general_operand" "0,0")))]
   "TARGET_FPU"
-  "absd %0"
+  "{absd|absf} %0"
   [(set_attr "length" "1,2")])
 
 (define_insn "abshi2"
@@ -1624,7 +1624,7 @@
   [(set (match_operand:DF 0 "general_operand" "=fR,Q")
 	(neg:DF (match_operand:DF 1 "register_operand" "0,0")))]
   "TARGET_FPU"
-  "negd %0"
+  "{negd|negf} %0"
   [(set_attr "length" "1,2")])
 
 (define_insn "neghi2"
@@ -1712,7 +1712,7 @@
 	(mult:DF (match_operand:DF 1 "register_operand" "%0,0,0")
 		 (match_operand:DF 2 "general_operand" "fR,Q,F")))]
   "TARGET_FPU"
-  "muld %2, %0"
+  "{muld|mulf} %2, %0"
   [(set_attr "length" "1,2,5")])
 
 ;; 16 bit result multiply:
@@ -1764,7 +1764,7 @@
 	(div:DF (match_operand:DF 1 "register_operand" "0,0,0")
 		(match_operand:DF 2 "general_operand" "fR,Q,F")))]
   "TARGET_FPU"
-  "divd %2, %0"
+  "{divd|divf} %2, %0"
   [(set_attr "length" "1,2,5")])
 
 	 
