@@ -7,4 +7,7 @@ EXTRA_DIST=ffi.h.in ffi_common.h
 
 hackdir=$(includedir)
 
-hack_DATA=ffitarget.h ffi.h
+hack_DATA= ffi.h
+
+toollibffidir = @tool_include_dir@/libffi
+toollibffi_HEADERS = ffitarget.h
