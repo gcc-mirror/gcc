@@ -1,3 +1,15 @@
+2002-02-19  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.h (CONDITIONAL_REGISTER_USAGE): Set
+	really_call_used[VRSAVE_REGNO] if not Altivec.
+
+2002-02-19  Alan Modra  <amodra@bigpond.net.au>
+	
+	* config/rs6000/rs6000.c (u_short_cint_operand): Mask op with
+	MODE_MASK.
+	(constant_pool_expr_1): Fix formatting.
+	(rs6000_legitimize_reload_address): Likewise.
+
 Tue Feb 19 20:13:57 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/sparc/sparc.md (nonlocal_goto): Use hard_frame_pointer_rtx
