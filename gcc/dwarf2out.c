@@ -7438,24 +7438,25 @@ reg_number (rtl)
   unsigned regno = REGNO (rtl);
 
   if (regno >= FIRST_PSEUDO_REGISTER)
-    {
-      warning ("internal regno botch: regno = %d\n", regno);
-      regno = 0;
-    }
+    abort ();
 
-  regno = DBX_REGISTER_NUMBER (regno);
-  return regno;
+  return DBX_REGISTER_NUMBER (regno);
 }
 
-/* Return a location descriptor that designates a machine register.  */
+/* Return a location descriptor that designates a machine register or
+   zero if there is no such.  */
 
 static dw_loc_descr_ref
 reg_loc_descriptor (rtl)
      rtx rtl;
 {
   dw_loc_descr_ref loc_result = NULL;
-  unsigned reg = reg_number (rtl);
+  unsigned reg;
 
+  if (REGNO (rtl) >= FIRST_PSEUDO_REGISTER)
+    return 0;
+
+  reg = reg_number (rtl);
   if (reg <= 31)
     loc_result = new_loc_descr (DW_OP_reg0 + reg, 0, 0);
   else
@@ -7537,6 +7538,7 @@ is_based_loc (rtl)
 {
     return (GET_CODE (rtl) == PLUS
 	    && ((GET_CODE (XEXP (rtl, 0)) == REG
+		 && REGNO (XEXP (rtl, 0)) < FIRST_PSEUDO_REGISTER
 		 && GET_CODE (XEXP (rtl, 1)) == CONST_INT)));
 }
 
@@ -7551,7 +7553,9 @@ is_based_loc (rtl)
    it into Dwarf postfix code as it goes.
 
    MODE is the mode of the memory reference, needed to handle some
-   autoincrement addressing modes.  */
+   autoincrement addressing modes.
+
+   Return 0 if we can't represent the location.  */
 
 static dw_loc_descr_ref
 mem_loc_descriptor (rtl, mode)
@@ -7559,6 +7563,7 @@ mem_loc_descriptor (rtl, mode)
      enum machine_mode mode;
 {
   dw_loc_descr_ref mem_loc_result = NULL;
+
   /* Note that for a dynamically sized array, the location we will generate a
      description of here will be the lowest numbered location which is
      actually within the array.  That's *not* necessarily the same as the
@@ -7602,12 +7607,14 @@ mem_loc_descriptor (rtl, mode)
          the object in question was allocated to a register (rather than in
          memory) so DWARF consumers need to be aware of the subtle
          distinction between OP_REG and OP_BASEREG.  */
-      mem_loc_result = based_loc_descr (reg_number (rtl), 0);
+      if (REGNO (rtl) < FIRST_PSEUDO_REGISTER)
+	mem_loc_result = based_loc_descr (reg_number (rtl), 0);
       break;
 
     case MEM:
       mem_loc_result = mem_loc_descriptor (XEXP (rtl, 0), GET_MODE (rtl));
-      add_loc_descr (&mem_loc_result, new_loc_descr (DW_OP_deref, 0, 0));
+      if (mem_loc_result != 0)
+	add_loc_descr (&mem_loc_result, new_loc_descr (DW_OP_deref, 0, 0));
       break;
 
     case LABEL_REF:
@@ -7656,14 +7663,14 @@ mem_loc_descriptor (rtl, mode)
       else
 	{
 	  mem_loc_result = mem_loc_descriptor (XEXP (rtl, 0), mode);
+	  if (mem_loc_result == 0)
+	    break;
 
 	  if (GET_CODE (XEXP (rtl, 1)) == CONST_INT
 	      && INTVAL (XEXP (rtl, 1)) >= 0)
-	    {
-	      add_loc_descr (&mem_loc_result,
-			     new_loc_descr (DW_OP_plus_uconst,
-					    INTVAL (XEXP (rtl, 1)), 0));
-	    }
+	    add_loc_descr (&mem_loc_result,
+			   new_loc_descr (DW_OP_plus_uconst,
+					  INTVAL (XEXP (rtl, 1)), 0));
 	  else
 	    {
 	      add_loc_descr (&mem_loc_result,
@@ -7675,14 +7682,20 @@ mem_loc_descriptor (rtl, mode)
       break;
 
     case MULT:
-      /* If a pseudo-reg is optimized away, it is possible for it to
-	 be replaced with a MEM containing a multiply.  */
-      add_loc_descr (&mem_loc_result,
-		     mem_loc_descriptor (XEXP (rtl, 0), mode));
-      add_loc_descr (&mem_loc_result,
-		     mem_loc_descriptor (XEXP (rtl, 1), mode));
-      add_loc_descr (&mem_loc_result, new_loc_descr (DW_OP_mul, 0, 0));
-      break;
+      {
+	/* If a pseudo-reg is optimized away, it is possible for it to
+	   be replaced with a MEM containing a multiply.  */
+	dw_loc_descr_ref op0 = mem_loc_descriptor (XEXP (rtl, 0), mode);
+	dw_loc_descr_ref op1 = mem_loc_descriptor (XEXP (rtl, 1), mode);
+
+	if (op0 == 0 || op1 == 0)
+	  break;
+
+	mem_loc_result = op0;
+	add_loc_descr (&mem_loc_result, op1);
+	add_loc_descr (&mem_loc_result, new_loc_descr (DW_OP_mul, 0, 0));
+	break;
+      }
 
     case CONST_INT:
       mem_loc_result = int_loc_descriptor (INTVAL (rtl));
@@ -7703,18 +7716,21 @@ concat_loc_descriptor (x0, x1)
      rtx x0, x1;
 {
   dw_loc_descr_ref cc_loc_result = NULL;
+  dw_loc_descr_ref x0_ref = loc_descriptor (x0);
+  dw_loc_descr_ref x1_ref = loc_descriptor (x1);
 
-  if (!is_pseudo_reg (x0)
-      && (GET_CODE (x0) != MEM || !is_pseudo_reg (XEXP (x0, 0))))
-    add_loc_descr (&cc_loc_result, loc_descriptor (x0));
-  add_loc_descr (&cc_loc_result,
-	         new_loc_descr (DW_OP_piece, GET_MODE_SIZE (GET_MODE (x0)), 0));
+  if (x0_ref == 0 || x1_ref == 0)
+    return 0;
 
-  if (!is_pseudo_reg (x1)
-      && (GET_CODE (x1) != MEM || !is_pseudo_reg (XEXP (x1, 0))))
-    add_loc_descr (&cc_loc_result, loc_descriptor (x1));
+  cc_loc_result = x0_ref;
   add_loc_descr (&cc_loc_result,
-		 new_loc_descr (DW_OP_piece, GET_MODE_SIZE (GET_MODE (x1)), 0));
+		 new_loc_descr (DW_OP_piece,
+				GET_MODE_SIZE (GET_MODE (x0)), 0));
+
+  add_loc_descr (&cc_loc_result, x1_ref);
+  add_loc_descr (&cc_loc_result,
+		 new_loc_descr (DW_OP_piece,
+				GET_MODE_SIZE (GET_MODE (x1)), 0));
 
   return cc_loc_result;
 }
@@ -7723,13 +7739,16 @@ concat_loc_descriptor (x0, x1)
    which is either allocated in a register or in a memory location.  For a
    register, we just generate an OP_REG and the register number.  For a
    memory location we provide a Dwarf postfix expression describing how to
-   generate the (dynamic) address of the object onto the address stack.  */
+   generate the (dynamic) address of the object onto the address stack.
+
+   If we don't know how to describe it, return 0.  */
 
 static dw_loc_descr_ref
 loc_descriptor (rtl)
      rtx rtl;
 {
   dw_loc_descr_ref loc_result = NULL;
+
   switch (GET_CODE (rtl))
     {
     case SUBREG:
@@ -7762,15 +7781,17 @@ loc_descriptor (rtl)
 }
 
 /* Similar, but generate the descriptor from trees instead of rtl.
-   This comes up particularly with variable length arrays.  */
+   This comes up particularly with variable length arrays.  If ADDRESSP
+   is nonzero, we are looking for an address.  Otherwise, we return a
+   value.  If we can't find a value, return 0.  */
 
 static dw_loc_descr_ref
 loc_descriptor_from_tree (loc, addressp)
      tree loc;
      int addressp;
 {
-  dw_loc_descr_ref ret = NULL;
-  int indirect_size = 0;
+  dw_loc_descr_ref ret, ret1;
+  int indirect_p = 0;
   int unsignedp = TREE_UNSIGNED (TREE_TYPE (loc));
   enum dwarf_location_atom op;
 
@@ -7781,35 +7802,36 @@ loc_descriptor_from_tree (loc, addressp)
   switch (TREE_CODE (loc))
     {
     case ERROR_MARK:
-      break;
+      return 0;
 
     case WITH_RECORD_EXPR:
+    case PLACEHOLDER_EXPR:
       /* This case involves extracting fields from an object to determine the
 	 position of other fields.  We don't try to encode this here.  The
 	 only user of this is Ada, which encodes the needed information using
 	 the names of types.  */
-      return ret;
+      return 0;
 
     case VAR_DECL:
     case PARM_DECL:
       {
 	rtx rtl = rtl_for_decl_location (loc);
-	enum machine_mode mode = DECL_MODE (loc);
+	enum machine_mode mode = GET_MODE (rtl);
 
 	if (rtl == NULL_RTX)
-	  break;
+	  return 0;
 	else if (CONSTANT_P (rtl))
 	  {
 	    ret = new_loc_descr (DW_OP_addr, 0, 0);
 	    ret->dw_loc_oprnd1.val_class = dw_val_class_addr;
 	    ret->dw_loc_oprnd1.v.val_addr = rtl;
-	    indirect_size = GET_MODE_SIZE (mode);
+	    indirect_p = 1;
 	  }
 	else
 	  {
 	    if (GET_CODE (rtl) == MEM)
 	      {
-		indirect_size = GET_MODE_SIZE (mode);
+		indirect_p = 1;
 		rtl = XEXP (rtl, 0);
 	      }
 	    ret = mem_loc_descriptor (rtl, mode);
@@ -7819,7 +7841,7 @@ loc_descriptor_from_tree (loc, addressp)
 
     case INDIRECT_REF:
       ret = loc_descriptor_from_tree (TREE_OPERAND (loc, 0), 0);
-      indirect_size = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (loc)));
+      indirect_p = 1;
       break;
 
     case NOP_EXPR:
@@ -7841,7 +7863,15 @@ loc_descriptor_from_tree (loc, addressp)
 
 	obj = get_inner_reference (loc, &bitsize, &bitpos, &offset, &mode,
 				   &unsignedp, &volatilep, &alignment);
+
+	if (obj == loc)
+	  return 0;
+
 	ret = loc_descriptor_from_tree (obj, 1);
+	if (ret == 0
+	    || bitpos % BITS_PER_UNIT != 0
+	    || bitsize % BITS_PER_UNIT != 0)
+	  return 0;
 
 	if (offset != NULL_TREE)
 	  {
@@ -7850,24 +7880,8 @@ loc_descriptor_from_tree (loc, addressp)
 	    add_loc_descr (&ret, new_loc_descr (DW_OP_plus, 0, 0));
 	  }
 
-	if (addressp)
-	  {
-	    /* We cannot address anything not on a unit boundary.  */
-	    if (bitpos % BITS_PER_UNIT != 0)
-	      abort ();
-	  }
-	else
-	  {
-	    if (bitpos % BITS_PER_UNIT != 0
-		|| bitsize % BITS_PER_UNIT != 0)
-	      {
-		/* ??? We could handle this by loading and shifting etc.
-		   Wait until someone needs it before expending the effort.  */
-		abort ();
-	      }
-
-	    indirect_size = bitsize / BITS_PER_UNIT;
-	  }
+	if (!addressp)
+	  indirect_p = 1;
 
 	bytepos = bitpos / BITS_PER_UNIT;
 	if (bytepos > 0)
@@ -7883,40 +7897,54 @@ loc_descriptor_from_tree (loc, addressp)
     case INTEGER_CST:
       if (host_integerp (loc, 0))
 	ret = int_loc_descriptor (tree_low_cst (loc, 0));
+      else
+	return 0;
       break;
 
     case BIT_AND_EXPR:
       op = DW_OP_and;
       goto do_binop;
+
     case BIT_XOR_EXPR:
       op = DW_OP_xor;
       goto do_binop;
+
     case BIT_IOR_EXPR:
       op = DW_OP_or;
       goto do_binop;
+
     case TRUNC_DIV_EXPR:
       op = DW_OP_div;
       goto do_binop;
+
     case MINUS_EXPR:
       op = DW_OP_minus;
       goto do_binop;
+
     case TRUNC_MOD_EXPR:
       op = DW_OP_mod;
       goto do_binop;
+
     case MULT_EXPR:
       op = DW_OP_mul;
       goto do_binop;
+
     case LSHIFT_EXPR:
       op = DW_OP_shl;
       goto do_binop;
+
     case RSHIFT_EXPR:
       op = (unsignedp ? DW_OP_shr : DW_OP_shra);
       goto do_binop;
+
     case PLUS_EXPR:
       if (TREE_CODE (TREE_OPERAND (loc, 1)) == INTEGER_CST
 	  && host_integerp (TREE_OPERAND (loc, 1), 0))
 	{
 	  ret = loc_descriptor_from_tree (TREE_OPERAND (loc, 0), 0);
+	  if (ret == 0)
+	    return 0;
+
 	  add_loc_descr (&ret,
 			 new_loc_descr (DW_OP_plus_uconst,
 					tree_low_cst (TREE_OPERAND (loc, 1),
@@ -7924,53 +7952,72 @@ loc_descriptor_from_tree (loc, addressp)
 					0));
 	  break;
 	}
+
       op = DW_OP_plus;
       goto do_binop;
     case LE_EXPR:
       if (TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (loc, 0))))
-	break;
+	return 0;
+
       op = DW_OP_le;
       goto do_binop;
+
     case GE_EXPR:
       if (TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (loc, 0))))
-	break;
+	return 0;
+
       op = DW_OP_ge;
       goto do_binop;
+
     case LT_EXPR:
       if (TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (loc, 0))))
-	break;
+	return 0;
+
       op = DW_OP_lt;
       goto do_binop;
+
     case GT_EXPR:
       if (TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (loc, 0))))
-	break;
+	return 0;
+
       op = DW_OP_gt;
       goto do_binop;
+
     case EQ_EXPR:
       op = DW_OP_eq;
       goto do_binop;
+
     case NE_EXPR:
       op = DW_OP_ne;
       goto do_binop;
 
     do_binop:
       ret = loc_descriptor_from_tree (TREE_OPERAND (loc, 0), 0);
-      add_loc_descr (&ret, loc_descriptor_from_tree (TREE_OPERAND (loc, 1), 0));
+      ret1 = loc_descriptor_from_tree (TREE_OPERAND (loc, 1), 0);
+      if (ret == 0 || ret1 == 0)
+	return 0;
+
+      add_loc_descr (&ret, ret1);
       add_loc_descr (&ret, new_loc_descr (op, 0, 0));
       break;
 
     case BIT_NOT_EXPR:
       op = DW_OP_not;
       goto do_unop;
+
     case ABS_EXPR:
       op = DW_OP_abs;
       goto do_unop;
+
     case NEGATE_EXPR:
       op = DW_OP_neg;
       goto do_unop;
 
     do_unop:
       ret = loc_descriptor_from_tree (TREE_OPERAND (loc, 0), 0);
+      if (ret == 0)
+	return 0;
+
       add_loc_descr (&ret, new_loc_descr (op, 0, 0));
       break;
 
@@ -7983,21 +8030,26 @@ loc_descriptor_from_tree (loc, addressp)
 
     case COND_EXPR:
       {
+	dw_loc_descr_ref lhs
+	  = loc_descriptor_from_tree (TREE_OPERAND (loc, 1), 0);
+	dw_loc_descr_ref rhs
+	  = loc_descriptor_from_tree (TREE_OPERAND (loc, 2), 0);
 	dw_loc_descr_ref bra_node, jump_node, tmp;
 
 	ret = loc_descriptor_from_tree (TREE_OPERAND (loc, 0), 0);
+	if (ret == 0 || lhs == 0 || rhs == 0)
+	  return 0;
+
 	bra_node = new_loc_descr (DW_OP_bra, 0, 0);
 	add_loc_descr (&ret, bra_node);
 
-	tmp = loc_descriptor_from_tree (TREE_OPERAND (loc, 2), 0);
-	add_loc_descr (&ret, tmp);
+	add_loc_descr (&ret, rhs);
 	jump_node = new_loc_descr (DW_OP_skip, 0, 0);
 	add_loc_descr (&ret, jump_node);
 
-	tmp = loc_descriptor_from_tree (TREE_OPERAND (loc, 1), 0);
-	add_loc_descr (&ret, tmp);
+	add_loc_descr (&ret, lhs);
 	bra_node->dw_loc_oprnd1.val_class = dw_val_class_loc;
-	bra_node->dw_loc_oprnd1.v.val_loc = tmp;
+	bra_node->dw_loc_oprnd1.v.val_loc = lhs;
 
 	/* ??? Need a node to point the skip at.  Use a nop.  */
 	tmp = new_loc_descr (DW_OP_nop, 0, 0);
@@ -8011,20 +8063,23 @@ loc_descriptor_from_tree (loc, addressp)
       abort ();
     }
 
-  /* If we can't fill the request for an address, die.  */
-  if (addressp && indirect_size == 0)
-    abort ();
+  /* Show if we can't fill the request for an address.  */
+  if (addressp && indirect_p == 0)
+    return 0;
 
   /* If we've got an address and don't want one, dereference.  */
-  if (!addressp && indirect_size > 0)
+  if (!addressp && indirect_p > 0)
     {
-      if (indirect_size > DWARF2_ADDR_SIZE)
-	abort ();
-      if (indirect_size == DWARF2_ADDR_SIZE)
+      HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (loc));
+
+      if (size > DWARF2_ADDR_SIZE || size == -1)
+	return 0;
+      if (size == DWARF2_ADDR_SIZE)
 	op = DW_OP_deref;
       else
 	op = DW_OP_deref_size;
-      add_loc_descr (&ret, new_loc_descr (op, indirect_size, 0));
+
+      add_loc_descr (&ret, new_loc_descr (op, size, 0));
     }
 
   return ret;
@@ -8240,31 +8295,10 @@ add_AT_location_description (die, attr_kind, rtl)
      enum dwarf_attribute attr_kind;
      rtx rtl;
 {
-  /* Handle a special case.  If we are about to output a location descriptor
-     for a variable or parameter which has been optimized out of existence,
-     don't do that.  A variable which has been optimized out
-     of existence will have a DECL_RTL value which denotes a pseudo-reg.
-     Currently, in some rare cases, variables can have DECL_RTL values which
-     look like (MEM (REG pseudo-reg#)).  These cases are due to bugs
-     elsewhere in the compiler.  We treat such cases as if the variable(s) in
-     question had been optimized out of existence.  */
+  dw_loc_descr_ref descr = loc_descriptor (rtl);
 
-  if (is_pseudo_reg (rtl)
-      || (GET_CODE (rtl) == MEM
-	  && is_pseudo_reg (XEXP (rtl, 0)))
-      /* This can happen for a PARM_DECL with a DECL_INCOMING_RTL which
-	 references the internal argument pointer (a pseudo) in a function
-	 where all references to the internal argument pointer were
-	 eliminated via the optimizers.  */
-      || (GET_CODE (rtl) == MEM
-	  && GET_CODE (XEXP (rtl, 0)) == PLUS
-	  && is_pseudo_reg (XEXP (XEXP (rtl, 0), 0)))
-      || (GET_CODE (rtl) == CONCAT
-	  && is_pseudo_reg (XEXP (rtl, 0))
-	  && is_pseudo_reg (XEXP (rtl, 1))))
-    return;
-
-  add_AT_loc (die, attr_kind, loc_descriptor (rtl));
+  if (descr != 0)
+    add_AT_loc (die, attr_kind, descr);
 }
 
 /* Attach the specialized form of location attribute used for data
@@ -8343,11 +8377,12 @@ add_const_value_attribute (die, rtl)
 	  add_AT_int (die, DW_AT_const_value, (long) val);
 	else if ((unsigned long) val == (unsigned HOST_WIDE_INT) val)
 	  add_AT_unsigned (die, DW_AT_const_value, (unsigned long) val);
-	else if (2*HOST_BITS_PER_LONG == HOST_BITS_PER_WIDE_INT)
-	  add_AT_long_long (die, DW_AT_const_value,
-			    val >> HOST_BITS_PER_LONG, val);
-	else
-	  abort ();
+#if HOST_BITS_PER_LONG * 2 == HOST_BITS_PER_WIDE_INT
+	add_AT_long_long (die, DW_AT_const_value,
+			  val >> HOST_BITS_PER_LONG, val);
+#else
+	abort ();
+#endif
       }
       break;
 
@@ -8710,12 +8745,6 @@ add_bound_info (subrange_die, bound_attr, bound)
      enum dwarf_attribute bound_attr;
      tree bound;
 {
-  /* If this is an Ada unconstrained array type, then don't emit any debug
-     info because the array bounds are unknown.  They are parameterized when
-     the type is instantiated.  */
-  if (contains_placeholder_p (bound))
-    return;
-
   switch (TREE_CODE (bound))
     {
     case ERROR_MARK:
@@ -8816,7 +8845,10 @@ add_bound_info (subrange_die, bound_attr, bound)
 	if (loc == NULL)
 	  break;
 
-	ctx = lookup_decl_die (current_function_decl);
+	if (current_function_decl == 0)
+	  ctx = comp_unit_die;
+	else
+	  ctx = lookup_decl_die (current_function_decl);
 
 	decl_die = new_die (DW_TAG_variable, ctx);
 	add_AT_flag (decl_die, DW_AT_artificial, 1);
