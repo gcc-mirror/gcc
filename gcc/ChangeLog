@@ -1,3 +1,7 @@
+Wed Dec 17 00:13:48 1997  Christian Iseli  <Christian.Iseli@lslsun.epfl.ch>
+
+	* combine.c (force_to_mode): return immediately if operand is a CLOBBER.
+
 Tue Dec 16 23:44:54 1997  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* fixincludes (size_t): Add support for Motorola's stdlib.h
