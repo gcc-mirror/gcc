@@ -1207,6 +1207,8 @@ copy_default_args_to_explicit_spec (decl)
   tree old_type;
   tree new_type;
   tree t;
+  tree object_type = NULL_TREE;
+  tree in_charge = NULL_TREE;
 
   /* See if there's anything we need to do.  */
   tmpl = DECL_TI_TEMPLATE (decl);
@@ -1220,40 +1222,43 @@ copy_default_args_to_explicit_spec (decl)
   old_type = TREE_TYPE (decl);
   spec_types = TYPE_ARG_TYPES (old_type);
   
-  /* DECL may contain more parameters than TMPL due to the extra
-     in-charge parameter in constructors and destructors.  */
   if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
     {
+      /* Remove the this pointer, but remember the object's type for
+         CV quals.  */
+      object_type = TREE_TYPE (TREE_VALUE (spec_types));
       spec_types = TREE_CHAIN (spec_types);
       tmpl_types = TREE_CHAIN (tmpl_types);
+      
       if (DECL_HAS_IN_CHARGE_PARM_P (decl))
-	spec_types = TREE_CHAIN (spec_types);
+        {
+          /* DECL may contain more parameters than TMPL due to the extra
+             in-charge parameter in constructors and destructors.  */
+          in_charge = spec_types;
+	  spec_types = TREE_CHAIN (spec_types);
+	}
     }
 
   /* Compute the merged default arguments.  */
   new_spec_types = 
     copy_default_args_to_explicit_spec_1 (spec_types, tmpl_types);
 
-  /* Put the extra parameters back together -- but note that
-     build_cplus_method_type will automatically add the `this'
-     pointer.  */
-  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
-      && DECL_HAS_IN_CHARGE_PARM_P (decl))
-    {
-      tree t = TREE_CHAIN (TYPE_ARG_TYPES (old_type));
-      new_spec_types = hash_tree_cons (TREE_PURPOSE (t),
-				       TREE_VALUE (t),
-				       new_spec_types);
-    }
-  
   /* Compute the new FUNCTION_TYPE.  */
-  if (TREE_CODE (old_type) == METHOD_TYPE)
-    new_type = build_cplus_method_type (TYPE_METHOD_BASETYPE (old_type),
-					TREE_TYPE (old_type),
-					new_spec_types);
+  if (object_type)
+    {
+      if (in_charge)
+        /* Put the in-charge parameter back.  */
+        new_spec_types = hash_tree_cons (TREE_PURPOSE (in_charge),
+			  	         TREE_VALUE (in_charge),
+				         new_spec_types);
+
+      new_type = build_cplus_method_type (object_type,
+					  TREE_TYPE (old_type),
+					  new_spec_types);
+    }
   else
     new_type = build_function_type (TREE_TYPE (old_type),
-				  new_spec_types);
+				    new_spec_types);
   new_type = build_type_attribute_variant (new_type,
 					   TYPE_ATTRIBUTES (old_type));
   new_type = build_exception_variant (new_type,
@@ -1500,7 +1505,7 @@ check_explicit_specialization (declarator, decl, template_count, flags)
       else if (TREE_CODE (TREE_OPERAND (declarator, 0)) == LOOKUP_EXPR)
 	{
 	  /* A friend declaration.  We can't do much, because we don't
-	   know what this resolves to, yet.  */
+	     know what this resolves to, yet.  */
 	  my_friendly_assert (is_friend != 0, 0);
 	  my_friendly_assert (!explicit_instantiation, 0);
 	  SET_DECL_IMPLICIT_INSTANTIATION (decl);
@@ -1641,7 +1646,7 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	      return tmpl;
 	    }
 
-	  /* If we though that the DECL was a member function, but it
+	  /* If we thought that the DECL was a member function, but it
 	     turns out to be specializing a static member function,
 	     make DECL a static member function as well.  */
 	  if (DECL_STATIC_FUNCTION_P (tmpl)
