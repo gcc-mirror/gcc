@@ -3792,13 +3792,26 @@ package body Checks is
 
       --  The result of any function call or operator is always considered
       --  valid, since we assume the necessary checks are done by the call.
+      --  For operators on floating-point operations, we must also check
+      --  when the operation is the right-hand side of an assignment, or
+      --  is an actual in a call.
 
-      elsif Nkind (Expr) in N_Binary_Op
-              or else
-            Nkind (Expr) in N_Unary_Op
-              or else
-            Nkind (Expr) = N_Function_Call
+      elsif
+        Nkind (Expr) in N_Binary_Op or else Nkind (Expr) in N_Unary_Op
       then
+         if Is_Floating_Point_Type (Typ)
+            and then Validity_Check_Floating_Point
+            and then
+              (Nkind (Parent (Expr)) = N_Assignment_Statement
+                or else Nkind (Parent (Expr)) = N_Function_Call
+                or else Nkind (Parent (Expr)) = N_Parameter_Association)
+         then
+            return False;
+         else
+            return True;
+         end if;
+
+      elsif Nkind (Expr) = N_Function_Call then
          return True;
 
       --  For all other cases, we do not know the expression is valid
