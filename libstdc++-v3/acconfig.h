@@ -1,7 +1,10 @@
 // acconfig.h symbols and macros for libstdc++ v3 -*- C++ -*-
 
-// Include support for multiple threads, e.g., in the I/O package.
-#undef _GLIBCPP_USE_THREADS
+// Define if GCC supports weak symbols
+#undef _GLIBCPP_SUPPORTS_WEAK
+
+// Define if gthr-default.h exists (meaning that threading support is enabled)
+#undef HAVE_GTHR_DEFAULT
 
 // Include support for 'long long' and 'unsigned long long'.
 #undef _GLIBCPP_USE_LONG_LONG

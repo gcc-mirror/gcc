@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.85 2001/05/19 03:42:53 bkoz Exp $
+## $Id: Makefile.am,v 1.86 2001/06/01 09:22:05 hp Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -158,7 +158,8 @@ endif
 
 build_headers = \
 	bits/std_limits.h \
-	bits/c++config.h bits/c++io.h bits/c++locale.h bits/c++threads.h \
+	bits/c++config.h bits/c++io.h bits/c++locale.h \
+	bits/gthr.h bits/gthr-single.h bits/gthr-default.h \
 	bits/basic_file_model.h \
 	bits/atomicity.h bits/os_defines.h \
 	bits/ctype_base.h bits/ctype_noninline.h bits/ctype_inline.h 

@@ -8,7 +8,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 HOWTO:  Chapter 17</TITLE>
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.4 2001/05/30 21:54:57 pme Exp $ -->
+<!-- $Id: howto.html,v 1.5 2001/05/31 02:45:03 ljrittle Exp $ -->
 </HEAD>
 <BODY>
 
@@ -57,7 +57,8 @@
       This entry will mention a very little bit about the general MT
       issues with libstdc++.  The latest status and quick notes will be
       in FAQ 5.6.  Some discussion about thread-safe containers will be
-      in section 6.8 (the HOWTOs on containers).
+      in section 6.8 (the HOWTOs on containers).  This section only applies
+      when gcc and libstdc++-v3 were configured with --enable-threads.
    </P>
    <P>The libstdc++ code (all of it, not just the containers) has been
       designed so that thread-safety will be easily possible.  The first
@@ -79,19 +80,7 @@
       in include/bits/c++config and the HOWTOs on containers.  Be
       fully aware that you may change the external or internal ABI of
       libstdc++-v3 when you provide -D__USE_MALLOC on the command line
-      or make a change to that configuration file. [Placeholder in
-      case other patches don't make it before the 3.0 release: That
-      memory allocator can appear buggy in multithreaded C++ programs
-      (and has been reported to leak memory), if STL is misconfigured
-      for your platform.  You may need to provide -D_PTHREADS on the
-      command line in this case to ensure the memory allocator for
-      containers is really protected by a mutex.  Also, be aware that
-      you just changed the ABI of libstdc++-v3 when you did that thus
-      your entire application and all libraries must be compiled with
-      compatible flags.  The STL implementation doesn't currently
-      protect you from changing the mutex locking implementation to
-      one that doesn't really play together with the implementation
-      you may have compiled other application code with.]
+      or make a change to that configuration file.
    </P>
    <P>
       If you don't like caches of objects being retained inside the
@@ -192,7 +181,7 @@
 <P CLASS="fineprint"><EM>
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:libstdc++@gcc.gnu.org">the mailing list</A>.
-<BR> $Id: howto.html,v 1.4 2001/05/30 21:54:57 pme Exp $
+<BR> $Id: howto.html,v 1.5 2001/05/31 02:45:03 ljrittle Exp $
 </EM></P>
 
 

@@ -8,7 +8,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 HOWTO:  Chapter 23</TITLE>
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.4 2001/05/30 21:55:01 pme Exp $ -->
+<!-- $Id: howto.html,v 1.5 2001/05/31 02:45:02 ljrittle Exp $ -->
 </HEAD>
 <BODY>
 
@@ -185,7 +185,8 @@
    <P>This section will mention some of the problems in designing MT
       programs that use Standard containers.  For information on other
       aspects of multithreading (e.g., the library as a whole), see
-      the Received Wisdom on Chapter 17.
+      the Received Wisdom on Chapter 17.  This section only applies
+      when gcc and libstdc++-v3 were configured with --enable-threads.
    </P>
    <P>Two excellent pages to read when working with templatized containers
       and threads are
@@ -207,7 +208,7 @@
       the mutex lock as is best for your platform.  In particular,
       past advice was for people using g++ to explicitly define
       _PTHREADS on the command line to get a thread-safe STL.  This
-      may or may not be required for your port.  It may or may not be
+      is no longer required for your port.  It may or may not be
       a good idea for your port.  Extremely big caution: if you
       compile some of your application code against the STL with one
       set of threading flags and macros and another portion of the
@@ -258,7 +259,7 @@
 <P CLASS="fineprint"><EM>
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:libstdc++@gcc.gnu.org">the mailing list</A>.
-<BR> $Id: howto.html,v 1.4 2001/05/30 21:55:01 pme Exp $
+<BR> $Id: howto.html,v 1.5 2001/05/31 02:45:02 ljrittle Exp $
 </EM></P>
 
 
