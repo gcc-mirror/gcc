@@ -1,3 +1,10 @@
+1998-05-27  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* g++.old-deja/g++.jason/thunk2.C: Setup this test to be expected to
+	fail on m68k-motorola-sysv and m88k-motorola-sysv3.
+	* g++.old-deja/g++.jason/thunk3.C: Add m68k-motorola-sysv and
+	m88k-motorola-sysv3 to XFAIL.
+
 Tue May 26 23:58:03 1998  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
 
 	* gcc.dg/980526-1.c: New test.
