@@ -172,6 +172,7 @@ lang_print_xnode (file, node, indent)
     case OVERLOAD:
       print_node (file, "function", OVL_FUNCTION (node), indent+4);
       print_node (file, "chain", TREE_CHAIN (node), indent+4);
+      break;
     case TEMPLATE_PARM_INDEX:
       indent_to (file, indent + 3);
       fprintf (file, "index %d level %d orig_level %d",

@@ -1,3 +1,7 @@
+Mon May 11 11:38:07 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* ptree.c (lang_print_xnode): Add missing `break'.
+
 Mon May 11 10:09:16 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* pt.c (tsubst): Remove duplicate check for IDENTIFIER_NODE.
