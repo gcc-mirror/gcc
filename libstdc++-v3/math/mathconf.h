@@ -328,10 +328,10 @@ do {                                                            \
 
 
 /* Replacement for non-existing float functions.  */
-#if !defined(_GLIBCPP_HAVE_FABSF) && !defined(_GLIBCPP_HAS_BUILTIN_FABSF)
+#if !defined(_GLIBCPP_HAVE_FABSF) && !defined(_GLIBCPP_HAVE_BUILTIN_FABSF)
 # define fabsf(x) fabs (x)
 #endif
-#if !defined(_GLIBCPP_HAVE_COSF) && !defined(_GLIBCPP_HAS_BUILTIN_COSF)
+#if !defined(_GLIBCPP_HAVE_COSF) && !defined(_GLIBCPP_HAVE_BUILTIN_COSF)
 # define cosf(x) cos (x)
 #endif
 #ifndef _GLIBCPP_HAVE_COSHF
@@ -349,13 +349,13 @@ do {                                                            \
 #ifndef _GLIBCPP_HAVE_POWF
 # define powf(x, y) pow (x, y)
 #endif
-#if !defined(_GLIBCPP_HAVE_SINF) && !defined(_GLIBCPP_HAS_BUILTIN_SINF)
+#if !defined(_GLIBCPP_HAVE_SINF) && !defined(_GLIBCPP_HAVE_BUILTIN_SINF)
 # define sinf(x) sin (x)
 #endif
 #ifndef _GLIBCPP_HAVE_SINHF
 # define sinhf(x) sinh (x)
 #endif
-#if !defined(_GLIBCPP_HAVE_SQRTF) && !defined(_GLIBCPP_HAS_BUILTIN_SQRTF)
+#if !defined(_GLIBCPP_HAVE_SQRTF) && !defined(_GLIBCPP_HAVE_BUILTIN_SQRTF)
 # define sqrtf(x) sqrt (x)
 #endif
 #ifndef _GLIBCPP_HAVE_TANF

@@ -1,3 +1,19 @@
+2000-06-06  Steven King  <sxking@uswest.net>
+
+	* acconfig.h: Added defines for HAVE_BUILTIN math functs for float,
+	double and long double.  Added defines for HAVE libm math functs for
+	float and long double.
+	* aclocal.m4: Added configure checks for builtin math funcs and libm
+	support for float and long double versions of the math functions.
+	* config.h.in: Added undefs for math functs.
+	* configure: Regenerate.
+	* math/mathconf: Changed the _GLIBCPP_HAS_BUILTIN_* to
+	_GLIBCPP_HAVE_BUILTIN_*.
+	* bits/std_cmath.h: Added long double support.  Use builtins for
+	float, double and long if available, otherwise, use libm versions if
+	availible, otherwise, punt.
+	* shadow/bits/std_cmath.h: ditto
+
 2000-06-02  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* bits/locale_facets.h: Tweak.
