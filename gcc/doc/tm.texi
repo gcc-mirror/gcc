@@ -8514,12 +8514,13 @@ pragma of the form
 @var{space} is the case-sensitive namespace of the pragma, or
 @code{NULL} to put the pragma in the global namespace.  The callback
 routine receives @var{pfile} as its first argument, which can be passed
-on to cpplib's functions if necessary.  It may read any text after the
-@var{name} by making calls to @code{c_lex}.  Text which is not read by
-the callback will be silently ignored.
+on to cpplib's functions if necessary.  You can lex tokens after the
+@var{name} by calling @code{c_lex}.  Tokens that are not read by the
+callback will be silently ignored.  The end of the line is indicated by
+a token of type @code{CPP_EOF}.
 
 For an example use of this routine, see @file{c4x.h} and the callback
-routines defined in @file{c4x.c}.
+routines defined in @file{c4x-c.c}.
 
 Note that the use of @code{c_lex} is specific to the C and C++
 compilers.  It will not work in the Java or Fortran compilers, or any

@@ -45,8 +45,6 @@ Boston, MA 02111-1307, USA.  */
 #include "c-tree.h"
 #include "ggc.h"
 #include "cpplib.h"
-#include "c-lex.h"
-#include "c-pragma.h"
 #include "toplev.h"
 #include "c4x-protos.h"
 #include "target.h"
@@ -160,11 +158,11 @@ int c4x_cpu_version = 40;	/* CPU version C30/31/32/33/40/44.  */
 
 /* Pragma definitions.  */
 
-static tree code_tree = NULL_TREE;
-static tree data_tree = NULL_TREE;
-static tree pure_tree = NULL_TREE;
-static tree noreturn_tree = NULL_TREE;
-static tree interrupt_tree = NULL_TREE;
+tree code_tree = NULL_TREE;
+tree data_tree = NULL_TREE;
+tree pure_tree = NULL_TREE;
+tree noreturn_tree = NULL_TREE;
+tree interrupt_tree = NULL_TREE;
 
 /* Forward declarations */
 static void c4x_add_gc_roots PARAMS ((void));
@@ -187,7 +185,6 @@ static int c4x_valid_operands PARAMS ((enum rtx_code, rtx *,
 static int c4x_arn_reg_operand PARAMS ((rtx, enum machine_mode, unsigned int));
 static int c4x_arn_mem_operand PARAMS ((rtx, enum machine_mode, unsigned int));
 static void c4x_check_attribute PARAMS ((const char *, tree, tree, tree *));
-static int c4x_parse_pragma PARAMS ((const char *, tree *, tree *));
 static int c4x_r11_set_p PARAMS ((rtx));
 static int c4x_rptb_valid_p PARAMS ((rtx, rtx));
 static int c4x_label_ref_used_p PARAMS ((rtx, rtx));
@@ -4485,141 +4482,6 @@ c4x_operand_subword (op, i, validate_address, mode)
     }
   
   return operand_subword (op, i, validate_address, mode);
-}
-
-/* Handle machine specific pragmas for compatibility with existing
-   compilers for the C3x/C4x.
-
-   pragma				   attribute
-   ----------------------------------------------------------
-   CODE_SECTION(symbol,"section")          section("section")
-   DATA_SECTION(symbol,"section")          section("section")
-   FUNC_CANNOT_INLINE(function)            
-   FUNC_EXT_CALLED(function)               
-   FUNC_IS_PURE(function)                  const
-   FUNC_IS_SYSTEM(function)                
-   FUNC_NEVER_RETURNS(function)            noreturn
-   FUNC_NO_GLOBAL_ASG(function)            
-   FUNC_NO_IND_ASG(function)               
-   INTERRUPT(function)                     interrupt
-
-   */
-
-/* Parse a C4x pragma, of the form ( function [, "section"] ) \n.
-   FUNC is loaded with the IDENTIFIER_NODE of the function, SECT with
-   the STRING_CST node of the string.  If SECT is null, then this
-   pragma doesn't take a section string.  Returns 0 for a good pragma,
-   -1 for a malformed pragma.  */
-#define BAD(msgid, arg) do { warning (msgid, arg); return -1; } while (0)
-
-static int (*c_lex_func) (tree *);
-
-void
-c4x_init_pragma (get_token)
-  int (*get_token) PARAMS ((tree *));
-{
-  c_lex_func = get_token;
-}
-
-
-static int
-c4x_parse_pragma (name, func, sect)
-     const char *name;
-     tree *func;
-     tree *sect;
-{
-  tree f, s, x;
-
-  if (c_lex_func (&x) != CPP_OPEN_PAREN)
-    BAD ("missing '(' after '#pragma %s' - ignored", name);
-
-  if (c_lex_func (&f) != CPP_NAME)
-    BAD ("missing function name in '#pragma %s' - ignored", name);
-
-  if (sect)
-    {
-      if (c_lex_func (&x) != CPP_COMMA)
-	BAD ("malformed '#pragma %s' - ignored", name);
-      if (c_lex_func (&s) != CPP_STRING)
-	BAD ("missing section name in '#pragma %s' - ignored", name);
-      *sect = s;
-    }
-
-  if (c_lex_func (&x) != CPP_CLOSE_PAREN)
-    BAD ("missing ')' for '#pragma %s' - ignored", name);
-
-  if (c_lex_func (&x) != CPP_EOF)
-    warning ("junk at end of '#pragma %s'", name);
-
-  *func = f;
-  return 0;
-}
-
-void
-c4x_pr_CODE_SECTION (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-{
-  tree func, sect;
-
-  if (c4x_parse_pragma ("CODE_SECTION", &func, &sect))
-    return;
-  code_tree = chainon (code_tree,
-		       build_tree_list (func,
-					build_tree_list (NULL_TREE, sect)));
-}
-
-void
-c4x_pr_DATA_SECTION (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-{
-  tree func, sect;
-
-  if (c4x_parse_pragma ("DATA_SECTION", &func, &sect))
-    return;
-  data_tree = chainon (data_tree,
-		       build_tree_list (func,
-					build_tree_list (NULL_TREE, sect)));
-}
-
-void
-c4x_pr_FUNC_IS_PURE (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-{
-  tree func;
-
-  if (c4x_parse_pragma ("FUNC_IS_PURE", &func, 0))
-    return;
-  pure_tree = chainon (pure_tree, build_tree_list (func, NULL_TREE));
-}
-
-void
-c4x_pr_FUNC_NEVER_RETURNS (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-{
-  tree func;
-
-  if (c4x_parse_pragma ("FUNC_NEVER_RETURNS", &func, 0))
-    return;
-  noreturn_tree = chainon (noreturn_tree, build_tree_list (func, NULL_TREE));
-}
-
-void
-c4x_pr_INTERRUPT (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-{
-  tree func;
-
-  if (c4x_parse_pragma ("INTERRUPT", &func, 0))
-    return;
-  interrupt_tree = chainon (interrupt_tree, build_tree_list (func, NULL_TREE));
-}
-
-/* Used for FUNC_CANNOT_INLINE, FUNC_EXT_CALLED, FUNC_IS_SYSTEM,
-   FUNC_NO_GLOBAL_ASG, and FUNC_NO_IND_ASG.  */
-void
-c4x_pr_ignored (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-{
 }
 
 struct name_list
