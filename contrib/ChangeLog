@@ -1,3 +1,13 @@
+Mon Oct  5 14:19:48 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* warn_summary (subdirectoryFilter): New shell function to
+ 	optionally filter in/out gcc subdirectories when summarizing
+ 	warnings.  Add new flags to support subdirectory filtering.
+	
+	Also, ensure the bootstrap stage is a number.  Add some more C
+ 	keywords that are preserved in the "warning type" summary and
+ 	tighten up the "arg ???" regexp.
+
 Tue Sep 22 07:30 Bruce Korb <korb@datadesign.com>
 
 	* fixinc/inclhack.def:  Not all C++ comments in C headers
