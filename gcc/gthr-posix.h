@@ -129,8 +129,8 @@ __gthread_objc_init_thread_system(void)
             return 0;
         }
     }
-  else
-    return -1;
+
+  return -1;
 }
 
 /* Close the threads subsystem. */
