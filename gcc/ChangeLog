@@ -1,3 +1,12 @@
+2004-02-03  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/9348
+	* expr.c (expand_expr_real) <MULT_EXPR>:  When performing widening
+	multiplies with a multiplication of the wrong signedness, its the
+	signedness of the multiplication that we've performed that needs to
+	be passed to expand_mult_highpart_adjust.  Avoid emitting a nop-move
+	if expand_mult_highpart_adjust places the result in target.
+
 2004-02-03  Richard Henderson  <rth@redhat.com>
 
 	* varasm.c (const_desc_rtx_sym_eq): Compare symbol strings.

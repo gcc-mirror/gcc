@@ -7859,12 +7859,12 @@ expand_expr_real (tree exp, rtx target, enum machine_mode tmode,
 		   ==
 		   TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0)))))))
 	{
-	  enum machine_mode innermode
-	    = TYPE_MODE (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0)));
-	  optab other_optab = (TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0)))
-			? smul_widen_optab : umul_widen_optab);
-	  this_optab = (TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0)))
-			? umul_widen_optab : smul_widen_optab);
+	  tree op0type = TREE_TYPE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0));
+	  enum machine_mode innermode = TYPE_MODE (op0type);
+	  bool zextend_p = TREE_UNSIGNED (op0type);
+	  optab other_optab = zextend_p ? smul_widen_optab : umul_widen_optab;
+	  this_optab = zextend_p ? umul_widen_optab : smul_widen_optab;
+
 	  if (mode == GET_MODE_WIDER_MODE (innermode))
 	    {
 	      if (this_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
@@ -7882,7 +7882,7 @@ expand_expr_real (tree exp, rtx target, enum machine_mode tmode,
 	      else if (other_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing
 		       && innermode == word_mode)
 		{
-		  rtx htem;
+		  rtx htem, hipart;
 		  op0 = expand_expr (TREE_OPERAND (TREE_OPERAND (exp, 0), 0),
 				     NULL_RTX, VOIDmode, 0);
 		  if (TREE_CODE (TREE_OPERAND (exp, 1)) == INTEGER_CST)
@@ -7895,12 +7895,12 @@ expand_expr_real (tree exp, rtx target, enum machine_mode tmode,
 				       NULL_RTX, VOIDmode, 0);
 		  temp = expand_binop (mode, other_optab, op0, op1, target,
 				       unsignedp, OPTAB_LIB_WIDEN);
-		  htem = expand_mult_highpart_adjust (innermode,
-						      gen_highpart (innermode, temp),
-						      op0, op1,
-						      gen_highpart (innermode, temp),
-						      unsignedp);
-		  emit_move_insn (gen_highpart (innermode, temp), htem);
+		  hipart = gen_highpart (innermode, temp);
+		  htem = expand_mult_highpart_adjust (innermode, hipart,
+						      op0, op1, hipart,
+						      zextend_p);
+		  if (htem != hipart)
+		    emit_move_insn (hipart, htem);
 		  return temp;
 		}
 	    }
