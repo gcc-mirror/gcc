@@ -1,3 +1,7 @@
+2004-03-25  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cxx-pretty-print.c: Fix comment typos.
+
 2004-03-24  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cxx-pretty-print.c, cxx-pretty-print.h, decl.h, friend.c:

@@ -1,5 +1,11 @@
 2004-03-25  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* cfgrtl.c, dbxout.c, tree.def, config/darwin.h,
+	config/arm/arm.c, objc/objc-act.c: Fix comment typos.
+	* doc/invoke.texi: Fix a typo.
+
+2004-03-25  Kazu Hirata  <kazu@cs.umass.edu>
+
 	PR optimization/9707.
 	* stmt.c (emit_case_nodes): Emit equality comparisons instead
 	of recursing if both children are single-valued cases with no

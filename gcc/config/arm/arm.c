@@ -2288,7 +2288,7 @@ arm_function_arg (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
     /* Compute operand 2 of the call insn.  */
     return GEN_INT (pcum->call_cookie);
 
-  /* Only allow splitting an arg between regs and memory if all preceeding
+  /* Only allow splitting an arg between regs and memory if all preceding
      args were allocated to regs.  For args passed by reference we only count
      the reference pointer.  */
   if (pcum->can_split)
@@ -9909,8 +9909,8 @@ arm_get_frame_offsets (void)
   if (reload_completed)
     return offsets;
 
-  /* Initialy this is the size of the local variables.  It will translated
-     into an offset once we have determined the size of preceeding data.  */
+  /* Initially this is the size of the local variables.  It will translated
+     into an offset once we have determined the size of preceding data.  */
   frame_size = ROUND_UP_WORD (get_frame_size ());
 
   leaf = leaf_function_p ();
@@ -10013,7 +10013,7 @@ arm_get_frame_offsets (void)
 }
 
 
-/* Calculate the realative offsets for the different stack pointers.  Positive
+/* Calculate the relative offsets for the different stack pointers.  Positive
    offsets are in the direction of stack growth.  */
 
 unsigned int

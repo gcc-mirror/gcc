@@ -884,8 +884,8 @@ dbxout_type_fields (tree type)
      field that we can support.  */
   for (tem = TYPE_FIELDS (type); tem; tem = TREE_CHAIN (tem))
     {
-
-      /* If on of the nodes is an error_mark or its type is then return early.  */
+      /* If one of the nodes is an error_mark or its type is then
+	 return early.  */
       if (tem == error_mark_node || TREE_TYPE (tem) == error_mark_node)
 	return;
 

@@ -553,7 +553,7 @@ DEFTREECODE (CLEANUP_POINT_EXPR, "cleanup_point_expr", 'e', 1)
    fact that the expression for the array contains the dereference of
    the fat pointer that obtained the array pointer.  */
 
-/* Denotes a record to later be substitued before evaluating this expression.
+/* Denotes a record to later be substituted before evaluating this expression.
    The type of this expression is used to find the record to replace it.  */
 DEFTREECODE (PLACEHOLDER_EXPR, "placeholder_expr", 'x', 0)
 
