@@ -1,5 +1,8 @@
 2005-03-23  Mark Mitchell  <mark@codesourcery.com>
 
+	* testsuite/libstdc++-dg/normal.exp: Read testsuite_files, if it
+	exists.
+
 	* testsuite/lib/libstdc++.exp (libstdc++_wchar_t): Rename to ...
 	(v3-wchar_t): ... this.
 	(libstdc++_threads): Rename to ...
