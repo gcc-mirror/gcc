@@ -1,3 +1,7 @@
+Thu Apr  2 13:53:54 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* choose-temp.c: Include system.h when IN_GCC.
+
 1998-04-01  Mark Mitchell  <mmitchell@usa.net>
 
 	* cplus-dem.c (optable): Add sizeof.

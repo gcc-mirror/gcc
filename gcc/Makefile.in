@@ -1311,7 +1311,7 @@ dumpvers: dumpvers.c
 
 version.o: version.c
 obstack.o: obstack.c $(CONFIG_H)
-choose-temp.o: choose-temp.c $(CONFIG_H) gansidecl.h
+choose-temp.o: choose-temp.c $(CONFIG_H) gansidecl.h system.h
 pexecute.o: pexecute.c $(CONFIG_H) system.h gansidecl.h
 prefix.o: prefix.c $(CONFIG_H) system.h gansidecl.h Makefile
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
