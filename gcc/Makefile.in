@@ -654,6 +654,7 @@ CCCP=@cpp_main@
 # Files to be copied away after each stage in building.
 STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  insn-output.c insn-recog.c insn-emit.c insn-extract.c insn-peep.c \
+ insn-attr.h insn-attrtab.c insn-opinit.c genrtl.c genrtl.h tree-check.h \
  s-flags s-config s-codes s-mlib s-under\
  s-output s-recog s-emit s-extract s-peep s-check \
  s-attr s-attrtab s-opinit s-crt s-crtS s-crt0 \
