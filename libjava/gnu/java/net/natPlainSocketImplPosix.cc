@@ -637,9 +637,14 @@ gnu::java::net::PlainSocketImpl::setOption (jint optID, ::java::lang::Object *va
         return;
 	
       case _Jv_SO_REUSEADDR_ :
-        throw new ::java::net::SocketException (
-          JvNewStringUTF ("SO_REUSEADDR: not valid for TCP"));
-        return;
+#if defined(SO_REUSEADDR)
+	if (::setsockopt (native_fd, SOL_SOCKET, SO_REUSEADDR, (char *) &val,
+	    val_len) != 0)
+	  goto error;
+#else
+        throw new ::java::lang::InternalError (
+          JvNewStringUTF ("SO_REUSEADDR not supported"));
+#endif 
 
       case _Jv_SO_TIMEOUT_ :
         timeout = val;
@@ -780,8 +785,14 @@ gnu::java::net::PlainSocketImpl::getOption (jint optID)
       break;
 	
     case _Jv_SO_REUSEADDR_ :
-      throw new ::java::net::SocketException
-        (JvNewStringUTF ("SO_REUSEADDR: not valid for TCP"));
+#if defined(SO_REUSEADDR)
+      if (::getsockopt (native_fd, SOL_SOCKET, SO_REUSEADDR, (char *) &val,
+                        &val_len) != 0)
+        goto error;    
+#else
+        throw new ::java::lang::InternalError (
+          JvNewStringUTF ("SO_REUSEADDR not supported"));
+#endif 
       break;
 
     case _Jv_SO_TIMEOUT_ :

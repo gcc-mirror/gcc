@@ -1,3 +1,13 @@
+2005-01-31  Anthony Green  <green@redhat.com>
+
+	* gnu/java/net/natPlainDatagramSocketImplPosix.cc (getOption):
+	Support IP_MULTICAST_LOOP.
+	(setOption): Support IP_MULTICAST_LOOP.
+
+	* gnu/java/net/natPlainSocketImplPosix.cc (setOption): Add
+	SO_REUSEADDR support.
+	(getOption): Support SO_REUSEADDR.
+
 2004-01-28  Jeroen Frijters  <jeroen@frijters.net>
 
 	PR libgcj/19649
