@@ -2111,7 +2111,7 @@ require GNU binutils 2.13 or newer.  Such subtargets include:
 <hr />
 @end html
 @heading @anchor{arm-*-coff}arm-*-coff
-ARM-family processors.  Note that there are two diffierent varieties
+ARM-family processors.  Note that there are two different varieties
 of PE format subtarget supported: @code{arm-wince-pe} and
 @code{arm-pe} as well as a standard COFF target @code{arm-*-coff}.
 

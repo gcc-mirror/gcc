@@ -3954,7 +3954,7 @@ sense when scheduling before register allocation, i.e.@: with
 
 @item -fsched2-use-superblocks
 @opindex fsched2-use-superblocks
-When schedulilng after register allocation, do use superblock scheduling
+When scheduling after register allocation, do use superblock scheduling
 algorithm.  Superblock scheduling allows motion across basic block boundaries
 resulting on faster schedules.  This option is experimental, as not all machine
 descriptions used by GCC model the CPU closely enough to avoid unreliable
