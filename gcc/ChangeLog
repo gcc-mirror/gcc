@@ -1,3 +1,8 @@
+2002-05-05  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cse.c: Fix formatting.
+	* emit-rtl.c: Likewise.
+
 2002-05-05  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* genautomata.c (initiate_states): Add additional guard to
