@@ -44,7 +44,7 @@ struct real_value GTY(())
 {
   enum real_value_class class : 2;
   unsigned int sign : 1;
-  int exp : EXP_BITS;
+  signed int exp : EXP_BITS;
   unsigned long sig[SIGSZ];
 };
 
