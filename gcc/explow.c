@@ -29,12 +29,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "insn-flags.h"
 #include "insn-codes.h"
 
-/* Return an rtx for the sum of X and the integer C.  */
+/* Return an rtx for the sum of X and the integer C.
+
+   This fucntion should be used via the `plus_constant' macro.  */
 
 rtx
-plus_constant (x, c)
+plus_constant_wide (x, c)
      register rtx x;
-     register int c;
+     register HOST_WIDE_INT c;
 {
   register RTX_CODE code;
   register enum machine_mode mode;
@@ -51,15 +53,15 @@ plus_constant (x, c)
   switch (code)
     {
     case CONST_INT:
-      return gen_rtx (CONST_INT, VOIDmode, (INTVAL (x) + c));
+      return GEN_INT (INTVAL (x) + c);
 
     case CONST_DOUBLE:
       {
-	int l1 = CONST_DOUBLE_LOW (x);
-	int h1 = CONST_DOUBLE_HIGH (x);
-	int l2 = c;
-	int h2 = c < 0 ? ~0 : 0;
-	int lv, hv;
+	HOST_WIDE_INT l1 = CONST_DOUBLE_LOW (x);
+	HOST_WIDE_INT h1 = CONST_DOUBLE_HIGH (x);
+	HOST_WIDE_INT l2 = c;
+	HOST_WIDE_INT h2 = c < 0 ? ~0 : 0;
+	HOST_WIDE_INT lv, hv;
 
 	add_double (l1, h1, l2, h2, &lv, &hv);
 
@@ -117,7 +119,7 @@ plus_constant (x, c)
     }
 
   if (c != 0)
-    x = gen_rtx (PLUS, mode, x, gen_rtx (CONST_INT, VOIDmode, c));
+    x = gen_rtx (PLUS, mode, x, GEN_INT (c));
 
   if (GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == LABEL_REF)
     return x;
@@ -127,12 +129,14 @@ plus_constant (x, c)
     return x;
 }
 
-/* This is the same as `plus_constant', except that it handles LO_SUM.  */
+/* This is the same as `plus_constant', except that it handles LO_SUM.
+
+   This function should be used via the `plus_constant_for_output' macro.  */
 
 rtx
-plus_constant_for_output (x, c)
+plus_constant_for_output_wide (x, c)
      register rtx x;
-     register int c;
+     register HOST_WIDE_INT c;
 {
   register RTX_CODE code = GET_CODE (x);
   register enum machine_mode mode = GET_MODE (x);
@@ -239,7 +243,7 @@ expr_size (exp)
      tree exp;
 {
   return expand_expr (size_in_bytes (TREE_TYPE (exp)),
-		      0, TYPE_MODE (sizetype), 0);
+		      NULL_RTX, TYPE_MODE (sizetype), 0);
 }
 
 /* Return a copy of X in which all memory references
@@ -377,15 +381,15 @@ memory_address (mode, x)
       rtx y = eliminate_constant_term (x, &constant_term);
       if (constant_term == const0_rtx
 	  || ! memory_address_p (mode, y))
-	return force_operand (x, 0);
+	return force_operand (x, NULL_RTX);
 
       y = gen_rtx (PLUS, GET_MODE (x), copy_to_reg (y), constant_term);
       if (! memory_address_p (mode, y))
-	return force_operand (x, 0);
+	return force_operand (x, NULL_RTX);
       return y;
     }
   if (GET_CODE (x) == MULT || GET_CODE (x) == MINUS)
-    return force_operand (x, 0);
+    return force_operand (x, NULL_RTX);
 
   /* If we have a register that's an invalid address,
      it must be a hard reg of the wrong class.  Copy it to a pseudo.  */
@@ -408,7 +412,7 @@ memory_address (mode, x)
       if (general_operand (x, Pmode))
 	return force_reg (Pmode, x);
       else
-	return force_operand (x, 0);
+	return force_operand (x, NULL_RTX);
     }
   return x;
 }
@@ -550,7 +554,7 @@ force_reg (mode, x)
      and that X can be substituted for it.  */
   if (CONSTANT_P (x))
     {
-      rtx note = find_reg_note (insn, REG_EQUAL, 0);
+      rtx note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
 
       if (note)
 	XEXP (note, 0) = x;
@@ -662,16 +666,13 @@ round_push (size)
     {
       int new = (INTVAL (size) + align - 1) / align * align;
       if (INTVAL (size) != new)
-	size = gen_rtx (CONST_INT, VOIDmode, new);
+	size = GEN_INT (new);
     }
   else
     {
-      size = expand_divmod (0, CEIL_DIV_EXPR, Pmode, size,
-			    gen_rtx (CONST_INT, VOIDmode, align),
-			    0, 1);
-      size = expand_mult (Pmode, size,
-			  gen_rtx (CONST_INT, VOIDmode, align),
-			  0, 1);
+      size = expand_divmod (0, CEIL_DIV_EXPR, Pmode, size, GEN_INT (align),
+			    NULL_RTX, 1);
+      size = expand_mult (Pmode, size, GEN_INT (align), NULL_RTX, 1);
     }
 #endif /* STACK_BOUNDARY */
   return size;
@@ -867,14 +868,12 @@ allocate_dynamic_stack_space (size, target, known_align)
   if (known_align % BIGGEST_ALIGNMENT != 0)
     {
       if (GET_CODE (size) == CONST_INT)
-	size = gen_rtx (CONST_INT, VOIDmode,
-			(INTVAL (size)
-			 + (BIGGEST_ALIGNMENT / BITS_PER_UNIT - 1)));
+	size = GEN_INT (INTVAL (size)
+			+ (BIGGEST_ALIGNMENT / BITS_PER_UNIT - 1));
       else
 	size = expand_binop (Pmode, add_optab, size,
-			     gen_rtx (CONST_INT, VOIDmode,
-				      BIGGEST_ALIGNMENT / BITS_PER_UNIT - 1),
-			     0, 1, OPTAB_LIB_WIDEN);
+			     GEN_INT (BIGGEST_ALIGNMENT / BITS_PER_UNIT - 1),
+			     NULL_RTX, 1, OPTAB_LIB_WIDEN);
     }
 #endif
 
@@ -887,9 +886,9 @@ allocate_dynamic_stack_space (size, target, known_align)
   {
     rtx dynamic_offset
       = expand_binop (Pmode, sub_optab, virtual_stack_dynamic_rtx,
-		      stack_pointer_rtx, 0, 1, OPTAB_LIB_WIDEN);
+		      stack_pointer_rtx, NULL_RTX, 1, OPTAB_LIB_WIDEN);
     size = expand_binop (Pmode, add_optab, size, dynamic_offset,
-			 0, 1, OPTAB_LIB_WIDEN);
+			 NULL_RTX, 1, OPTAB_LIB_WIDEN);
   }
 #endif /* SETJMP_VIA_SAVE_AREA */
 
@@ -953,14 +952,12 @@ allocate_dynamic_stack_space (size, target, known_align)
   if (known_align % BIGGEST_ALIGNMENT != 0)
     {
       target = expand_divmod (0, CEIL_DIV_EXPR, Pmode, target,
-			      gen_rtx (CONST_INT, VOIDmode,
-				       BIGGEST_ALIGNMENT / BITS_PER_UNIT),
-			      0, 1);
+			      GEN_INT (BIGGEST_ALIGNMENT / BITS_PER_UNIT),
+			      NULL_RTX, 1);
 
       target = expand_mult (Pmode, target,
-			    gen_rtx (CONST_INT, VOIDmode,
-				     BIGGEST_ALIGNMENT / BITS_PER_UNIT),
-			    0, 1);
+			    GEN_INT (BIGGEST_ALIGNMENT / BITS_PER_UNIT),
+			    NULL_RTX, 1);
     }
 #endif
   

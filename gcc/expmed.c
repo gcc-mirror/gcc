@@ -62,25 +62,24 @@ init_expmed ()
   /* This is "some random pseudo register" for purposes of calling recog
      to see what insns exist.  */
   rtx reg = gen_rtx (REG, word_mode, FIRST_PSEUDO_REGISTER);
-  rtx pow2 = gen_rtx (CONST_INT, VOIDmode, 32);
+  rtx pow2 = GEN_INT (32);
   rtx lea;
-  int i, dummy;
+  HOST_WIDE_INT i;
+  int dummy;
 
   add_cost = rtx_cost (gen_rtx (PLUS, word_mode, reg, reg), SET);
   shift_cost = rtx_cost (gen_rtx (LSHIFT, word_mode, reg,
 				  /* Using a constant gives better
 				     estimate of typical costs.
 				     1 or 2 might have quirks.  */
-				  gen_rtx (CONST_INT, VOIDmode, 3)), SET);
+				  GEN_INT (3)), SET);
   mult_cost = rtx_cost (gen_rtx (MULT, word_mode, reg, reg), SET);
   negate_cost = rtx_cost (gen_rtx (NEG, word_mode, reg), SET);
 
   /* 999999 is chosen to avoid any plausible faster special case.  */
   mult_is_very_cheap
-    = (rtx_cost (gen_rtx (MULT, word_mode, reg,
-			  gen_rtx (CONST_INT, VOIDmode, 999999)), SET)
-       < rtx_cost (gen_rtx (LSHIFT, word_mode, reg,
-			    gen_rtx (CONST_INT, VOIDmode, 7)), SET));
+    = (rtx_cost (gen_rtx (MULT, word_mode, reg, GEN_INT (999999)), SET)
+       < rtx_cost (gen_rtx (LSHIFT, word_mode, reg, GEN_INT (7)), SET));
 
   sdiv_pow2_cheap
     = rtx_cost (gen_rtx (DIV, word_mode, reg, pow2), SET) <= 2 * add_cost;
@@ -92,8 +91,7 @@ init_expmed ()
     {
       lea = gen_rtx (SET, VOIDmode, reg,
 		     gen_rtx (PLUS, word_mode,
-			      gen_rtx (MULT, word_mode, reg,
-				       gen_rtx (CONST_INT, VOIDmode, i)),
+			      gen_rtx (MULT, word_mode, reg, GEN_INT (i)),
 			      reg));
       /* Using 0 as second argument is not quite right,
 	 but what else is there to do?  */
@@ -118,19 +116,19 @@ negate_rtx (mode, x)
 {
   if (GET_CODE (x) == CONST_INT)
     {
-      int val = - INTVAL (x);
-      if (GET_MODE_BITSIZE (mode) < HOST_BITS_PER_INT)
+      HOST_WIDE_INT val = - INTVAL (x);
+      if (GET_MODE_BITSIZE (mode) < HOST_BITS_PER_WIDE_INT)
 	{
 	  /* Sign extend the value from the bits that are significant.  */
-	  if (val & (1 << (GET_MODE_BITSIZE (mode) - 1)))
-	    val |= (-1) << GET_MODE_BITSIZE (mode);
+	  if (val & ((HOST_WIDE_INT) 1 << (GET_MODE_BITSIZE (mode) - 1)))
+	    val |= (HOST_WIDE_INT) (-1) << GET_MODE_BITSIZE (mode);
 	  else
-	    val &= (1 << GET_MODE_BITSIZE (mode)) - 1;
+	    val &= ((HOST_WIDE_INT) 1 << GET_MODE_BITSIZE (mode)) - 1;
 	}
-      return gen_rtx (CONST_INT, VOIDmode, val);
+      return GEN_INT (val);
     }
   else
-    return expand_unop (GET_MODE (x), neg_optab, x, 0, 0);
+    return expand_unop (GET_MODE (x), neg_optab, x, NULL_RTX, 0);
 }
 
 /* Generate code to store value from rtx VALUE
@@ -425,10 +423,7 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
 	     (value1, maxmode)))
 	value1 = force_reg (maxmode, value1);
 
-      pat = gen_insv (xop0,
-		      gen_rtx (CONST_INT, VOIDmode, bitsize),
-		      gen_rtx (CONST_INT, VOIDmode, xbitpos),
-		      value1);
+      pat = gen_insv (xop0, GEN_INT (bitsize), GEN_INT (xbitpos), value1);
       if (pat)
 	emit_insn (pat);
       else
@@ -546,15 +541,16 @@ store_fixed_bit_field (op0, offset, bitsize, bitpos, value, struct_align)
 
   if (GET_CODE (value) == CONST_INT)
     {
-      register int v = INTVAL (value);
+      register HOST_WIDE_INT v = INTVAL (value);
 
-      if (bitsize < HOST_BITS_PER_INT)
-	v &= (1 << bitsize) - 1;
+      if (bitsize < HOST_BITS_PER_WIDE_INT)
+	v &= ((HOST_WIDE_INT) 1 << bitsize) - 1;
 
       if (v == 0)
 	all_zero = 1;
-      else if ((bitsize < HOST_BITS_PER_INT && v == (1 << bitsize) - 1)
-	       || (bitsize == HOST_BITS_PER_INT && v == -1))
+      else if ((bitsize < HOST_BITS_PER_WIDE_INT
+		&& v == ((HOST_WIDE_INT) 1 << bitsize) - 1)
+	       || (bitsize == HOST_BITS_PER_WIDE_INT && v == -1))
 	all_one = 1;
 
       value = lshift_value (mode, value, bitpos, bitsize);
@@ -587,10 +583,10 @@ store_fixed_bit_field (op0, offset, bitsize, bitpos, value, struct_align)
       if (must_and)
 	value = expand_binop (mode, and_optab, value,
 			      mask_rtx (mode, 0, bitsize, 0),
-			      0, 1, OPTAB_LIB_WIDEN);
+			      NULL_RTX, 1, OPTAB_LIB_WIDEN);
       if (bitpos > 0)
 	value = expand_shift (LSHIFT_EXPR, mode, value,
-			      build_int_2 (bitpos, 0), 0, 1);
+			      build_int_2 (bitpos, 0), NULL_RTX, 1);
     }
 
   /* Now clear the chosen bits in OP0,
@@ -655,35 +651,33 @@ store_split_bit_field (op0, bitsize, bitpos, value, align)
   /* PART1 gets the more significant part.  */
   if (GET_CODE (value) == CONST_INT)
     {
-      part1 = gen_rtx (CONST_INT, VOIDmode,
-		       (unsigned) (INTVAL (value)) >> bitsize_2);
-      part2 = gen_rtx (CONST_INT, VOIDmode,
-		       (unsigned) (INTVAL (value)) & ((1 << bitsize_2) - 1));
+      part1 = GEN_INT ((unsigned HOST_WIDE_INT) (INTVAL (value)) >> bitsize_2);
+      part2 = GEN_INT ((unsigned HOST_WIDE_INT) (INTVAL (value))
+		       & (((HOST_WIDE_INT) 1 << bitsize_2) - 1));
     }
   else
     {
       part1 = extract_fixed_bit_field (word_mode, value, 0, bitsize_1,
-				       BITS_PER_WORD - bitsize, 0, 1,
+				       BITS_PER_WORD - bitsize, NULL_RTX, 1,
 				       BITS_PER_WORD);
       part2 = extract_fixed_bit_field (word_mode, value, 0, bitsize_2,
-				       BITS_PER_WORD - bitsize_2, 0, 1,
+				       BITS_PER_WORD - bitsize_2, NULL_RTX, 1,
 				       BITS_PER_WORD);
     }
 #else
   /* PART1 gets the less significant part.  */
   if (GET_CODE (value) == CONST_INT)
     {
-      part1 = gen_rtx (CONST_INT, VOIDmode,
-		       (unsigned) (INTVAL (value)) & ((1 << bitsize_1) - 1));
-      part2 = gen_rtx (CONST_INT, VOIDmode,
-		       (unsigned) (INTVAL (value)) >> bitsize_1);
+      part1 = GEN_INT ((unsigned HOST_WIDE_INT) (INTVAL (value))
+		       & (((HOST_WIDE_INT) 1 << bitsize_1) - 1));
+      part2 = GEN_INT ((unsigned HOST_WIDE_INT) (INTVAL (value)) >> bitsize_1);
     }
   else
     {
       part1 = extract_fixed_bit_field (word_mode, value, 0, bitsize_1, 0,
-				       0, 1, BITS_PER_WORD);
+				       NULL_RTX, 1, BITS_PER_WORD);
       part2 = extract_fixed_bit_field (word_mode, value, 0, bitsize_2,
-				       bitsize_1, 0, 1, BITS_PER_WORD);
+				       bitsize_1, NULL_RTX, 1, BITS_PER_WORD);
     }
 #endif
 
@@ -989,8 +983,8 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 		 (xtarget, maxmode)))
 	    xtarget = gen_reg_rtx (maxmode);
 
-	  bitsize_rtx = gen_rtx (CONST_INT, VOIDmode, bitsize);
-	  bitpos_rtx = gen_rtx (CONST_INT, VOIDmode, xbitpos);
+	  bitsize_rtx = GEN_INT (bitsize);
+	  bitpos_rtx = GEN_INT (xbitpos);
 
 	  pat = gen_extzv (protect_from_queue (xtarget, 1),
 			   xop0, bitsize_rtx, bitpos_rtx);
@@ -1121,8 +1115,8 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 		 (xtarget, maxmode)))
 	    xtarget = gen_reg_rtx (maxmode);
 
-	  bitsize_rtx = gen_rtx (CONST_INT, VOIDmode, bitsize);
-	  bitpos_rtx = gen_rtx (CONST_INT, VOIDmode, xbitpos);
+	  bitsize_rtx = GEN_INT (bitsize);
+	  bitpos_rtx = GEN_INT (xbitpos);
 
 	  pat = gen_extv (protect_from_queue (xtarget, 1),
 			  xop0, bitsize_rtx, bitpos_rtx);
@@ -1327,23 +1321,25 @@ mask_rtx (mode, bitpos, bitsize, complement)
      enum machine_mode mode;
      int bitpos, bitsize, complement;
 {
-  int masklow, maskhigh;
+  HOST_WIDE_INT masklow, maskhigh;
 
-  if (bitpos < HOST_BITS_PER_INT)
-    masklow = -1 << bitpos;
+  if (bitpos < HOST_BITS_PER_WIDE_INT)
+    masklow = (HOST_WIDE_INT) -1 << bitpos;
   else
     masklow = 0;
 
-  if (bitpos + bitsize < HOST_BITS_PER_INT)
-    masklow &= (unsigned) -1 >> (HOST_BITS_PER_INT - bitpos - bitsize);
+  if (bitpos + bitsize < HOST_BITS_PER_WIDE_INT)
+    masklow &= ((unsigned HOST_WIDE_INT) -1
+		>> (HOST_BITS_PER_WIDE_INT - bitpos - bitsize));
   
-  if (bitpos <= HOST_BITS_PER_INT)
+  if (bitpos <= HOST_BITS_PER_WIDE_INT)
     maskhigh = -1;
   else
-    maskhigh = -1 << (bitpos - HOST_BITS_PER_INT);
+    maskhigh = (HOST_WIDE_INT) -1 << (bitpos - HOST_BITS_PER_WIDE_INT);
 
-  if (bitpos + bitsize > HOST_BITS_PER_INT)
-    maskhigh &= (unsigned) -1 >> (2 * HOST_BITS_PER_INT - bitpos - bitsize);
+  if (bitpos + bitsize > HOST_BITS_PER_WIDE_INT)
+    maskhigh &= ((unsigned HOST_WIDE_INT) -1
+		 >> (2 * HOST_BITS_PER_WIDE_INT - bitpos - bitsize));
   else
     maskhigh = 0;
 
@@ -1365,21 +1361,21 @@ lshift_value (mode, value, bitpos, bitsize)
      rtx value;
      int bitpos, bitsize;
 {
-  unsigned v = INTVAL (value);
-  int low, high;
+  unsigned HOST_WIDE_INT v = INTVAL (value);
+  HOST_WIDE_INT low, high;
 
-  if (bitsize < HOST_BITS_PER_INT)
-    v &= ~(-1 << bitsize);
+  if (bitsize < HOST_BITS_PER_WIDE_INT)
+    v &= ~((HOST_WIDE_INT) -1 << bitsize);
 
-  if (bitpos < HOST_BITS_PER_INT)
+  if (bitpos < HOST_BITS_PER_WIDE_INT)
     {
       low = v << bitpos;
-      high = (bitpos > 0 ? (v >> (HOST_BITS_PER_INT - bitpos)) : 0);
+      high = (bitpos > 0 ? (v >> (HOST_BITS_PER_WIDE_INT - bitpos)) : 0);
     }
   else
     {
       low = 0;
-      high = v << (bitpos - HOST_BITS_PER_INT);
+      high = v << (bitpos - HOST_BITS_PER_WIDE_INT);
     }
 
   return immed_double_const (low, high, mode);
@@ -1417,7 +1413,8 @@ extract_split_bit_field (op0, bitsize, bitpos, unsignedp, align)
 	  : operand_subword_force (op0, offset, GET_MODE (op0)));
   part1 = extract_fixed_bit_field (word_mode, word,
 				   GET_CODE (op0) == MEM ? offset : 0,
-				   bitsize_1, bitpos % unit, 0, 1, align);
+				   bitsize_1, bitpos % unit, NULL_RTX,
+				   1, align);
 
   /* Offset op0 by 1 word to get to the following one.  */
   if (GET_CODE (op0) == SUBREG)
@@ -1433,7 +1430,7 @@ extract_split_bit_field (op0, bitsize, bitpos, unsignedp, align)
 				   (GET_CODE (op0) == MEM
 				    ? CEIL (offset + 1, UNITS_PER_WORD) * UNITS_PER_WORD
 				    : 0),
-				   bitsize_2, 0, 0, 1, align);
+				   bitsize_2, 0, NULL_RTX, 1, align);
 
   /* Shift the more significant part up to fit above the other part.  */
 #if BYTES_BIG_ENDIAN
@@ -1446,7 +1443,7 @@ extract_split_bit_field (op0, bitsize, bitpos, unsignedp, align)
 
   /* Combine the two parts with bitwise or.  This works
      because we extracted both parts as unsigned bit fields.  */
-  result = expand_binop (word_mode, ior_optab, part1, part2, 0, 1,
+  result = expand_binop (word_mode, ior_optab, part1, part2, NULL_RTX, 1,
 			 OPTAB_LIB_WIDEN);
 
   /* Unsigned bit field: we are done.  */
@@ -1454,9 +1451,10 @@ extract_split_bit_field (op0, bitsize, bitpos, unsignedp, align)
     return result;
   /* Signed bit field: sign-extend with two arithmetic shifts.  */
   result = expand_shift (LSHIFT_EXPR, word_mode, result,
-			 build_int_2 (BITS_PER_WORD - bitsize, 0), 0, 0);
+			 build_int_2 (BITS_PER_WORD - bitsize, 0),
+			 NULL_RTX, 0);
   return expand_shift (RSHIFT_EXPR, word_mode, result,
-		       build_int_2 (BITS_PER_WORD - bitsize, 0), 0, 0);
+		       build_int_2 (BITS_PER_WORD - bitsize, 0), NULL_RTX, 0);
 }
 
 /* Add INC into TARGET.  */
@@ -1510,7 +1508,7 @@ expand_shift (code, mode, shifted, amount, target, unsignedp)
      and shifted in the other direction; but that does not work
      on all machines.  */
 
-  op1 = expand_expr (amount, 0, VOIDmode, 0);
+  op1 = expand_expr (amount, NULL_RTX, VOIDmode, 0);
 
   if (op1 == const0_rtx)
     return shifted;
@@ -1624,8 +1622,7 @@ expand_shift (code, mode, shifted, amount, target, unsignedp)
 	      /* WIDTH gets the width of the bit field to extract:
 		 wordsize minus # bits to shift by.  */
 	      if (GET_CODE (xop1) == CONST_INT)
-		width = gen_rtx (CONST_INT, VOIDmode,
-				 (GET_MODE_BITSIZE (mode) - INTVAL (op1)));
+		width = GEN_INT (GET_MODE_BITSIZE (mode) - INTVAL (op1));
 	      else
 		{
 		  /* Now get the width in the proper mode.  */
@@ -1633,9 +1630,8 @@ expand_shift (code, mode, shifted, amount, target, unsignedp)
 					   TREE_UNSIGNED (TREE_TYPE (amount)));
 
 		  width = expand_binop (length_mode, sub_optab,
-					gen_rtx (CONST_INT, VOIDmode,
-						 GET_MODE_BITSIZE (mode)),
-					width, 0, 0, OPTAB_LIB_WIDEN);
+					GEN_INT (GET_MODE_BITSIZE (mode)),
+					width, NULL_RTX, 0, OPTAB_LIB_WIDEN);
 		}
 
 	      /* If this machine's extzv insists on a register for
@@ -1700,13 +1696,15 @@ struct algorithm
 
 static struct algorithm
 synth_mult (t, add_cost, shift_cost, max_cost)
-     unsigned int t;
+     unsigned HOST_WIDE_INT t;
      int add_cost, shift_cost;
      int max_cost;
 {
   int m, n;
-  struct algorithm *best_alg = (struct algorithm *)alloca (sizeof (struct algorithm));
-  struct algorithm *alg_in = (struct algorithm *)alloca (sizeof (struct algorithm));
+  struct algorithm *best_alg
+    = (struct algorithm *)alloca (sizeof (struct algorithm));
+  struct algorithm *alg_in
+    = (struct algorithm *)alloca (sizeof (struct algorithm));
   unsigned int cost;
 
   /* No matter what happens, we want to return a valid algorithm.  */
@@ -1756,13 +1754,13 @@ synth_mult (t, add_cost, shift_cost, max_cost)
 
   for (m = floor_log2 (t) - 1; m >= 2; m--)
     {
-      int m_exp_2 = 1 << m;
-      int d;
+      HOST_WIDE_INT m_exp_2 = (HOST_WIDE_INT) 1 << m;
+      HOST_WIDE_INT d;
 
       d = m_exp_2 + 1;
       if (t % d == 0)
 	{
-	  int q = t / d;
+	  HOST_WIDE_INT q = t / d;
 
 	  cost = add_cost + shift_cost * 2;
 
@@ -1791,7 +1789,7 @@ synth_mult (t, add_cost, shift_cost, max_cost)
       d = m_exp_2 - 1;
       if (t % d == 0)
 	{
-	  int q = t / d;
+	  HOST_WIDE_INT q = t / d;
 
 	  cost = add_cost + shift_cost * 2;
 
@@ -1821,8 +1819,8 @@ synth_mult (t, add_cost, shift_cost, max_cost)
   /* Try load effective address instructions, i.e. do a*3, a*5, a*9.  */
 
   {
-    int q;
-    int w;
+    HOST_WIDE_INT q;
+    HOST_WIDE_INT w;
 
     q = t & -t;			/* get out lsb */
     w = (t - q) & -(t - q);	/* get out next lsb */
@@ -1861,8 +1859,8 @@ synth_mult (t, add_cost, shift_cost, max_cost)
      1-bit.  */
 
   {
-    int q;
-    int w;
+    HOST_WIDE_INT q;
+    HOST_WIDE_INT w;
 
     q = t & -t;			/* get out lsb */
     for (w = q; (w & t) != 0; w <<= 1)
@@ -1958,7 +1956,7 @@ expand_mult (mode, op0, op1, target, unsignedp)
     {
       if ((CONST_DOUBLE_HIGH (op1) == 0 && CONST_DOUBLE_LOW (op1) >= 0)
 	  || (CONST_DOUBLE_HIGH (op1) == -1 && CONST_DOUBLE_LOW (op1) < 0))
-	const_op1 = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_LOW (op1));
+	const_op1 = GEN_INT (CONST_DOUBLE_LOW (op1));
     }
 
   /* We used to test optimize here, on the grounds that it's better to
@@ -1970,7 +1968,7 @@ expand_mult (mode, op0, op1, target, unsignedp)
       struct algorithm alg;
       struct algorithm neg_alg;
       int negate = 0;
-      int absval = INTVAL (op1);
+      HOST_WIDE_INT absval = INTVAL (op1);
       rtx last;
 
       /* Try to do the computation two ways: multiply by the negative of OP1
@@ -2015,8 +2013,7 @@ expand_mult (mode, op0, op1, target, unsignedp)
 	      if (alg.op[0] != alg_add)
 		abort ();
 	      accum = expand_shift (LSHIFT_EXPR, mode, op0,
-				    build_int_2 (log, 0),
-				    0, 0);
+				    build_int_2 (log, 0), NULL_RTX, 0);
 	    }
    
 	  while (++opno < alg.ops)
@@ -2035,7 +2032,7 @@ expand_mult (mode, op0, op1, target, unsignedp)
 		  if (factors_seen)
 		    {
 		      tem = expand_shift (LSHIFT_EXPR, mode, op0,
-					  build_int_2 (log, 0), 0, 0);
+					  build_int_2 (log, 0), NULL_RTX, 0);
 		      accum = force_operand (gen_rtx (PLUS, mode, accum, tem),
 					     accum);
 		    }
@@ -2054,7 +2051,7 @@ expand_mult (mode, op0, op1, target, unsignedp)
 		  if (factors_seen)
 		    {
 		      tem = expand_shift (LSHIFT_EXPR, mode, op0,
-					  build_int_2 (log, 0), 0, 0);
+					  build_int_2 (log, 0), NULL_RTX, 0);
 		      accum = force_operand (gen_rtx (MINUS, mode, accum, tem),
 					     accum);
 		    }
@@ -2073,11 +2070,11 @@ expand_mult (mode, op0, op1, target, unsignedp)
 		case alg_compound:
 		  factors_seen = 1;
 		  tem = expand_shift (LSHIFT_EXPR, mode, accum,
-				      build_int_2 (log, 0), 0, 0);
+				      build_int_2 (log, 0), NULL_RTX, 0);
 
 		  log = floor_log2 (alg.coeff[opno + 1]);
 		  accum = expand_shift (LSHIFT_EXPR, mode, accum,
-					build_int_2 (log, 0), 0, 0);
+					build_int_2 (log, 0), NULL_RTX, 0);
 		  opno++;
 		  if (alg.op[opno] == alg_add)
 		    accum = force_operand (gen_rtx (PLUS, mode, tem, accum),
@@ -2105,9 +2102,7 @@ expand_mult (mode, op0, op1, target, unsignedp)
 	      REG_NOTES (last)
 		= gen_rtx (EXPR_LIST, REG_EQUAL,
 			   gen_rtx (MULT, mode, op0, 
-				    negate ? gen_rtx (CONST_INT,
-						      VOIDmode, absval)
-				    : op1),
+				    negate ? GEN_INT (absval) : op1),
 			   REG_NOTES (last));
 	    }
 
@@ -2285,7 +2280,8 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		 which will screw up mem refs for autoincrements.  */
 	      op0 = force_reg (compute_mode, op0);
 	    }
-	  emit_cmp_insn (adjusted_op0, const0_rtx, GE, 0, compute_mode, 0, 0);
+	  emit_cmp_insn (adjusted_op0, const0_rtx, GE, 
+			 NULL_RTX, compute_mode, 0, 0);
 	  emit_jump_insn (gen_bge (label));
 	  expand_inc (adjusted_op0, plus_constant (op1, -1));
 	  emit_label (label);
@@ -2306,7 +2302,8 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		 which will screw up mem refs for autoincrements.  */
 	      op0 = force_reg (compute_mode, op0);
 	    }
-	  emit_cmp_insn (adjusted_op0, const0_rtx, GE, 0, compute_mode, 0, 0);
+	  emit_cmp_insn (adjusted_op0, const0_rtx, GE, 
+			 NULL_RTX, compute_mode, 0, 0);
 	  emit_jump_insn (gen_bge (label));
 	  expand_dec (adjusted_op0, op1);
 	  expand_inc (adjusted_op0, const1_rtx);
@@ -2331,7 +2328,8 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	  if (! unsignedp)
 	    {
 	      label = gen_label_rtx ();
-	      emit_cmp_insn (adjusted_op0, const0_rtx, LE, 0, compute_mode, 0, 0);
+	      emit_cmp_insn (adjusted_op0, const0_rtx, LE, 
+			     NULL_RTX, compute_mode, 0, 0);
 	      emit_jump_insn (gen_ble (label));
 	    }
 	  expand_inc (adjusted_op0, op1);
@@ -2343,7 +2341,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	{
 	  adjusted_op0 = expand_binop (compute_mode, add_optab,
 				       adjusted_op0, plus_constant (op1, -1),
-				       0, 0, OPTAB_LIB_WIDEN);
+				       NULL_RTX, 0, OPTAB_LIB_WIDEN);
 	}
       mod_insn_no_good = 1;
       break;
@@ -2361,11 +2359,12 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
       if (log < 0)
 	{
 	  op1 = expand_shift (RSHIFT_EXPR, compute_mode, op1,
-			      integer_one_node, 0, 0);
+			      integer_one_node, NULL_RTX, 0);
 	  if (! unsignedp)
 	    {
 	      rtx label = gen_label_rtx ();
-	      emit_cmp_insn (adjusted_op0, const0_rtx, GE, 0, compute_mode, 0, 0);
+	      emit_cmp_insn (adjusted_op0, const0_rtx, GE, NULL_RTX,
+			     compute_mode, 0, 0);
 	      emit_jump_insn (gen_bge (label));
 	      expand_unop (compute_mode, neg_optab, op1, op1, 0);
 	      emit_label (label);
@@ -2374,7 +2373,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	}
       else
 	{
-	  op1 = gen_rtx (CONST_INT, VOIDmode, (1 << log) / 2);
+	  op1 = GEN_INT (((HOST_WIDE_INT) 1 << log) / 2);
 	  expand_inc (adjusted_op0, op1);
 	}
       mod_insn_no_good = 1;
@@ -2386,8 +2385,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
       /* Try to produce the remainder directly */
       if (log >= 0)
 	result = expand_binop (compute_mode, and_optab, adjusted_op0,
-			       gen_rtx (CONST_INT, VOIDmode,
-					(1 << log) - 1),
+			       GEN_INT (((HOST_WIDE_INT) 1 << log) - 1),
 			       target, 1, OPTAB_LIB_WIDEN);
       else
 	{
@@ -2403,7 +2401,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	      if (! expand_twoval_binop (unsignedp
 					 ? udivmod_optab : sdivmod_optab,
 					 adjusted_op0, op1,
-					 0, result, unsignedp))
+					 NULL_RTX, result, unsignedp))
 		result = 0;
 	    }
 	}
@@ -2421,12 +2419,14 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
        and a remainder subroutine would be ok,
        don't use a divide subroutine.  */
     result = sign_expand_binop (compute_mode, udiv_optab, sdiv_optab,
-				adjusted_op0, op1, 0, unsignedp, OPTAB_WIDEN);
+				adjusted_op0, op1, NULL_RTX, unsignedp,
+				OPTAB_WIDEN);
   else
     {
       /* Try a quotient insn, but not a library call.  */
       result = sign_expand_binop (compute_mode, udiv_optab, sdiv_optab,
-				  adjusted_op0, op1, rem_flag ? 0 : target,
+				  adjusted_op0, op1,
+				  rem_flag ? NULL_RTX : target,
 				  unsignedp, OPTAB_WIDEN);
       if (result == 0)
 	{
@@ -2435,14 +2435,15 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	  result = gen_reg_rtx (mode);
 	  if (! expand_twoval_binop (unsignedp ? udivmod_optab : sdivmod_optab,
 				     adjusted_op0, op1,
-				     result, 0, unsignedp))
+				     result, NULL_RTX, unsignedp))
 	    result = 0;
 	}
 
       /* If still no luck, use a library call.  */
       if (result == 0)
 	result = sign_expand_binop (compute_mode, udiv_optab, sdiv_optab,
-				    adjusted_op0, op1, rem_flag ? 0 : target,
+				    adjusted_op0, op1,
+				    rem_flag ? NULL_RTX : target,
 				    unsignedp, OPTAB_LIB_WIDEN);
     }
 
@@ -2611,7 +2612,7 @@ expand_and (op0, op1, target)
   if (mode != VOIDmode)
     tem = expand_binop (mode, and_optab, op0, op1, target, 0, OPTAB_LIB_WIDEN);
   else if (GET_CODE (op0) == CONST_INT && GET_CODE (op1) == CONST_INT)
-    tem = gen_rtx (CONST_INT, VOIDmode, INTVAL (op0) & INTVAL (op1));
+    tem = GEN_INT (INTVAL (op0) & INTVAL (op1));
   else
     abort ();
 
@@ -2697,8 +2698,9 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
   if (op1 == const0_rtx && (code == LT || code == GE)
       && GET_MODE_CLASS (mode) == MODE_INT
       && (normalizep || STORE_FLAG_VALUE == 1
-	  || (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_INT
-	      && STORE_FLAG_VALUE == 1 << (GET_MODE_BITSIZE (mode) - 1))))
+	  || (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
+	      && (STORE_FLAG_VALUE 
+		  == (HOST_WIDE_INT) 1 << (GET_MODE_BITSIZE (mode) - 1)))))
     {
       rtx subtarget = target;
 
@@ -2742,7 +2744,8 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
       emit_queue ();
       last = get_last_insn ();
 
-      comparison = compare_from_rtx (op0, op1, code, unsignedp, mode, 0, 0);
+      comparison
+	= compare_from_rtx (op0, op1, code, unsignedp, mode, NULL_RTX, 0);
       if (GET_CODE (comparison) == CONST_INT)
 	return (comparison == const0_rtx ? const0_rtx
 		: normalizep == 1 ? const1_rtx
@@ -2773,9 +2776,10 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
 	    {
 	      convert_move (target, subtarget,
 			    (GET_MODE_BITSIZE (compare_mode)
-			     <= HOST_BITS_PER_INT)
+			     <= HOST_BITS_PER_WIDE_INT)
 			    && 0 == (STORE_FLAG_VALUE
-				     & (1 << (GET_MODE_BITSIZE (compare_mode) -1))));
+				     & ((HOST_WIDE_INT) 1
+					<< (GET_MODE_BITSIZE (compare_mode) -1))));
 	      op0 = target;
 	      compare_mode = target_mode;
 	    }
@@ -2798,9 +2802,10 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
 	  /* We don't want to use STORE_FLAG_VALUE < 0 below since this
 	     makes it hard to use a value of just the sign bit due to
 	     ANSI integer constant typing rules.  */
-	  else if (GET_MODE_BITSIZE (compare_mode) <= HOST_BITS_PER_INT
+	  else if (GET_MODE_BITSIZE (compare_mode) <= HOST_BITS_PER_WIDE_INT
 		   && (STORE_FLAG_VALUE
-		       & (1 << (GET_MODE_BITSIZE (compare_mode) - 1))))
+		       & ((HOST_WIDE_INT) 1
+			  << (GET_MODE_BITSIZE (compare_mode) - 1))))
 	    op0 = expand_shift (RSHIFT_EXPR, compare_mode, op0,
 				size_int (GET_MODE_BITSIZE (compare_mode) - 1),
 				subtarget, normalizep == 1);
@@ -2874,8 +2879,9 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
       if (STORE_FLAG_VALUE == 1 || STORE_FLAG_VALUE == -1)
 	normalizep = STORE_FLAG_VALUE;
 
-      else if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_INT
-	       && STORE_FLAG_VALUE == 1 << (GET_MODE_BITSIZE (mode) - 1))
+      else if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
+	       && (STORE_FLAG_VALUE
+		   == (HOST_WIDE_INT) 1 << (GET_MODE_BITSIZE (mode) - 1)))
 	;
       else
 	return 0;
