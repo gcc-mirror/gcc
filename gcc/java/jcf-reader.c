@@ -27,8 +27,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "zipfile.h"
 
 static int get_attribute PARAMS ((JCF *));
-static int peek_attribute PARAMS ((JCF *, int, const char *, int));
-static void skip_attribute PARAMS ((JCF *, int));
 static int jcf_parse_preamble PARAMS ((JCF *));
 static int jcf_parse_constant_pool PARAMS ((JCF *));
 static void jcf_parse_class PARAMS ((JCF *));
@@ -36,12 +34,19 @@ static int jcf_parse_fields PARAMS ((JCF *));
 static int jcf_parse_one_method PARAMS ((JCF *));
 static int jcf_parse_methods PARAMS ((JCF *));
 static int jcf_parse_final_attributes PARAMS ((JCF *));
+#ifdef NEED_PEEK_ATTRIBUTE
+static int peek_attribute PARAMS ((JCF *, int, const char *, int));
+#endif
+#ifdef NEED_SKIP_ATTRIBUTE
+static void skip_attribute PARAMS ((JCF *, int));
+#endif
 
 /* Go through all available attribute (ATTRIBUTE_NUMER) and try to
    identify PEEKED_NAME.  Return 1 if PEEKED_NAME was found, 0
    otherwise. JCF is restored to its initial position before
    returning.  */
 
+#ifdef NEED_PEEK_ATTRIBUTE	/* Not everyone uses this function */
 static int
 peek_attribute (jcf, attribute_number, peeked_name, peeked_name_length)
       JCF *jcf;
@@ -81,7 +86,9 @@ peek_attribute (jcf, attribute_number, peeked_name, peeked_name_length)
   JCF_SEEK (jcf, absolute_offset);
   return to_return;
 }
+#endif
 
+#ifdef NEED_SKIP_ATTRIBUTE	/* Not everyone uses this function */
 static void
 skip_attribute (jcf, number_of_attribute)
      JCF *jcf;
@@ -94,6 +101,7 @@ skip_attribute (jcf, number_of_attribute)
       JCF_SKIP (jcf, JCF_readu4 (jcf));
     }
 }
+#endif
 
 static int
 DEFUN(get_attribute, (jcf),
