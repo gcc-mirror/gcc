@@ -1241,7 +1241,8 @@ c-pretty-print.o : c-pretty-print.c c-pretty-print.h pretty-print.h \
 	$(C_COMMON_H) $(CONFIG_H) $(SYSTEM_H) real.h
 
 c-opts.o : c-opts.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(C_COMMON_H) \
-        c-pragma.h flags.h toplev.h langhooks.h tree-inline.h diagnostic.h
+        c-pragma.h flags.h toplev.h langhooks.h tree-inline.h diagnostic.h \
+	intl.h
 
 # A file used by all variants of C and some other languages.
 

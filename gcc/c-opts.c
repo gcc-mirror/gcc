@@ -29,6 +29,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "langhooks.h"
 #include "tree-inline.h"
 #include "diagnostic.h"
+#include "intl.h"
 
 static cpp_options *cpp_opts;
 
@@ -37,6 +38,8 @@ static size_t parse_option PARAMS ((const char *, int));
 static void set_Wimplicit PARAMS ((int));
 static void complain_wrong_lang PARAMS ((size_t));
 static void write_langs PARAMS ((char *, int));
+static void print_help PARAMS ((void));
+static void handle_OPT_d PARAMS ((const char *));
 
 #define CL_C_ONLY	(1 << 0) /* Only C.  */
 #define CL_OBJC_ONLY	(1 << 1) /* Only ObjC.  */
@@ -68,15 +71,19 @@ static void write_langs PARAMS ((char *, int));
 
    If you request an argument with CL_JOINED, CL_SEPARATE or their
    combination CL_ARG, it is stored in the variable "arg", which is
-   guaranteed non-NULL.  It points to the argument either within the
-   argv[] vector or within one of its strings, and so the text is not
-   temporary and copies need not be made.
-
-   If you use the CL_SEPARATE flag (which is also in CL_ARG) be sure
-   to add an error message in missing_arg().  */
+   guaranteed to be non-NULL and to not be an empty string.  It points
+   to the argument either within the argv[] vector or within one of
+   that vector's strings, and so the text is permanent and copies need
+   not be made.  Be sure to add an error message in missing_arg() if
+   the default is not appropriate.  */
 
 #define COMMAND_LINE_OPTIONS						     \
+  OPT("-help",                  CL_ALL,   OPT__help)			     \
+  OPT("C",                      CL_ALL,   OPT_C)			     \
+  OPT("CC",                     CL_ALL,   OPT_CC)			     \
   OPT("E",			CL_ALL,   OPT_E)			     \
+  OPT("H",                      CL_ALL,   OPT_H)			     \
+  OPT("P",                      CL_ALL,   OPT_P)			     \
   OPT("Wall",			CL_ALL,   OPT_Wall)			     \
   OPT("Wbad-function-cast",	CL_C,     OPT_Wbad_function_cast)	     \
   OPT("Wcast-qual",		CL_ALL,   OPT_Wcast_qual)		     \
@@ -138,6 +145,7 @@ static void write_langs PARAMS ((char *, int));
   OPT("Wunused-macros",		CL_ALL,   OPT_Wunused_macros)		     \
   OPT("Wwrite-strings",		CL_ALL,   OPT_Wwrite_strings)		     \
   OPT("ansi",			CL_ALL,   OPT_ansi)			     \
+  OPT("d",                      CL_ALL | CL_JOINED, OPT_d)		     \
   OPT("faccess-control",	CL_CXX,   OPT_faccess_control)		     \
   OPT("fall-virtual",		CL_CXX,   OPT_fall_virtual)		     \
   OPT("falt-external-templates",CL_CXX,   OPT_falt_external_templates)	     \
@@ -191,7 +199,7 @@ static void write_langs PARAMS ((char *, int));
   OPT("fsquangle",		CL_CXX,   OPT_fsquangle)		     \
   OPT("fstats",			CL_CXX,   OPT_fstats)			     \
   OPT("fstrict-prototype",	CL_CXX,   OPT_fstrict_prototype)	     \
-  OPT("ftabstop=",              CL_ALL | CL_JOINED,   OPT_ftabstop)	     \
+  OPT("ftabstop=",              CL_ALL | CL_JOINED, OPT_ftabstop)	     \
   OPT("ftemplate-depth-",	CL_CXX | CL_JOINED, OPT_ftemplate_depth)     \
   OPT("fthis-is-variable",	CL_CXX,   OPT_fthis_is_variable)	     \
   OPT("funsigned-bitfields",	CL_ALL,   OPT_funsigned_bitfields)	     \
@@ -202,6 +210,8 @@ static void write_langs PARAMS ((char *, int));
   OPT("fweak",			CL_CXX,   OPT_fweak)			     \
   OPT("fxref",			CL_CXX,   OPT_fxref)			     \
   OPT("gen-decls",		CL_OBJC,  OPT_gen_decls)		     \
+  OPT("nostdinc",               CL_ALL,   OPT_nostdinc)			     \
+  OPT("nostdinc++",             CL_ALL,   OPT_nostdincplusplus)		     \
   OPT("pedantic",		CL_ALL,   OPT_pedantic)			     \
   OPT("pedantic-errors",	CL_ALL,   OPT_pedantic_errors)		     \
   OPT("print-objc-runtime-info", CL_OBJC, OPT_print_objc_runtime_info)	     \
@@ -217,7 +227,11 @@ static void write_langs PARAMS ((char *, int));
   OPT("std=iso9899:199409",	CL_C,     OPT_std_iso9899_199409)	     \
   OPT("std=iso9899:1999",	CL_C,     OPT_std_iso9899_1999)		     \
   OPT("std=iso9899:199x",	CL_C,     OPT_std_iso9899_199x)		     \
-  OPT("undef",			CL_ALL,   OPT_undef)
+  OPT("traditional-cpp",	CL_ALL,   OPT_traditional_cpp)		     \
+  OPT("trigraphs",              CL_ALL,   OPT_trigraphs)		     \
+  OPT("undef",			CL_ALL,   OPT_undef)			     \
+  OPT("v",                      CL_ALL,      OPT_v)			     \
+  OPT("w",                      CL_ALL,      OPT_w)
 
 #define OPT(text, flags, code) code,
 enum opt_code
@@ -259,6 +273,32 @@ opt_comp (p1, p2)
 		 ((struct cl_option *) p2)->opt_text);
 }
 #endif
+
+/* Complain that switch OPT_INDEX expects an argument but none was
+   provided.  */
+static void
+missing_arg (opt_index)
+     size_t opt_index;
+{
+  switch (opt_index)
+    {
+    case OPT_Wformat_eq:
+    case OPT_d:
+    case OPT_fbuiltin_:
+    case OPT_fdump:
+    case OPT_fname_mangling:
+    case OPT_ftabstop:
+    case OPT_ftemplate_depth:
+    case OPT_std_bad:
+    default:
+      error ("missing argument to \"-%s\"", cl_options[opt_index].opt_text);
+      break;
+
+    case OPT_fconstant_string_class:
+      error ("no class name specified with -fconstant-string-class=");
+      break;
+    }
+}
 
 /* Perform a binary search to find which option the command-line INPUT
    matches.  Returns its index in the option array, and N_OPTS on
@@ -431,6 +471,8 @@ c_common_decode_option (argc, argv)
   opt_index = parse_option (opt + 1, lang_flag);
   if (opt_index == N_OPTS)
     goto done;
+
+  result = 1;
   option = &cl_options[opt_index];
 
   /* Sort out any argument the switch takes.  */
@@ -444,30 +486,52 @@ c_common_decode_option (argc, argv)
 	  arg = argv[0] + cl_options[opt_index].opt_len + 1;
 	  if (!on)
 	    arg += strlen ("no-");
-	  if (*arg == '\0' && (option->flags & CL_SEPARATE))
-	    arg = 0;
 	}
 
-      /* If arg is still 0, we can only be a CL_SEPARATE switch.  */
-      if (arg == 0)
+      /* If we don't have an argument, and CL_SEPARATE, try the next
+	 argument in the vector.  */
+      if (!arg || (*arg == '\0' && option->flags & CL_SEPARATE))
 	{
 	  arg = argv[1];
-	  if (!arg)
-	    {
-	      missing_arg (opt_index);
-	      result = argc;
-	      goto done;
-	    }
+	  result = 2;
+	}
+
+      if (!arg || *arg == '\0')
+	{
+	  missing_arg (opt_index);
+	  result = argc;
+	  goto done;
 	}
     }
 
-  switch (code = cl_options[opt_index].opt_code)
+  switch (code = option->opt_code)
     {
     case N_OPTS: /* Shut GCC up.  */
       break;
 
+    case OPT__help:
+      print_help ();
+      break;
+
+    case OPT_C:
+      cpp_opts->discard_comments = 0;
+      break;
+
+    case OPT_CC:
+      cpp_opts->discard_comments = 0;
+      cpp_opts->discard_comments_in_macro_exp = 0;
+      break;
+
     case OPT_E:
       flag_preprocess_only = 1;
+      break;
+
+    case OPT_H:
+      cpp_opts->print_include_names = 1;
+      break;
+
+    case OPT_P:
+      cpp_opts->no_line_commands = 1;
       break;
 
     case OPT_Wall:
@@ -558,11 +622,9 @@ c_common_decode_option (argc, argv)
 
     case OPT_Werror_implicit_function_decl:
       if (!on)
-	{
-	  result = 0;
-	  goto done;
-	}
-      mesg_implicit_function_declaration = 2;
+	result = 0;
+      else
+	mesg_implicit_function_declaration = 2;
       break;
 
     case OPT_Wfloat_equal:
@@ -757,6 +819,10 @@ c_common_decode_option (argc, argv)
 	warn_write_strings = on;
       break;
 
+    case OPT_d:
+      handle_OPT_d (arg);
+      break;
+
     case OPT_fcond_mismatch:
       if (c_language == clk_c || c_language == clk_objective_c)
 	{
@@ -804,11 +870,9 @@ c_common_decode_option (argc, argv)
 
     case OPT_fbuiltin_:
       if (on)
-	{
-	  result = 0;
-	  goto done;
-	}
-      disable_builtin_function (arg);
+	result = 0;
+      else
+	disable_builtin_function (arg);
       break;
 
     case OPT_fdollars_in_identifiers:
@@ -817,10 +881,7 @@ c_common_decode_option (argc, argv)
 
     case OPT_fdump:
       if (!on || !dump_switch_p (argv[0] + strlen ("-f")))
-	{
-	  result = 0;
-	  goto done;
-	}
+	result = 0;
       break;
 
     case OPT_ffreestanding:
@@ -877,10 +938,7 @@ c_common_decode_option (argc, argv)
       break;
 
     case OPT_fconstant_string_class:
-      if (*arg == 0)
-	error ("no class name specified with -fconstant-string-class=");
-      else
-	constant_string_class_name = arg;
+      constant_string_class_name = arg;
       break;
 
     case OPT_fdefault_inline:
@@ -980,7 +1038,6 @@ c_common_decode_option (argc, argv)
 	return 0;
 
       /* It is documented that we silently ignore silly values.  */
-      if (*arg)
 	{
 	  char *endptr;
 	  long tabstop = strtol (arg, &endptr, 10);
@@ -1007,6 +1064,17 @@ c_common_decode_option (argc, argv)
 
     case OPT_gen_decls:
       flag_gen_declaration = 1;
+      break;
+
+    case OPT_nostdinc:
+      /* No default include directories.  You must specify all
+	 include-file directories with -I.  */
+      cpp_opts->no_standard_includes = 1;
+      break;
+
+    case OPT_nostdincplusplus:
+      /* No default C++-specific include directories.  */
+      cpp_opts->no_standard_cplusplus_includes = 1;
       break;
 
       /* We need to handle the -pedantic switches here, rather than in
@@ -1091,12 +1159,26 @@ c_common_decode_option (argc, argv)
       flag_isoc94 = 1;
       break;
 
+    case OPT_trigraphs:
+      cpp_opts->trigraphs = 1;
+      break;
+
+    case OPT_traditional_cpp:
+      cpp_opts->traditional = 1;
+      break;
+
     case OPT_undef:
       flag_undef = 1;
       break;
-    }
 
-  result = 1 + (arg == argv[1]);
+    case OPT_w:
+      cpp_opts->inhibit_warnings = 1;
+      break;
+
+    case OPT_v:
+      cpp_opts->verbose = 1;
+      break;
+    }
 
  done:
   if (dup)
@@ -1167,15 +1249,33 @@ set_Wimplicit (on)
     mesg_implicit_function_declaration = 0;
 }
 
-/* Complain that switch OPT_INDEX expects an argument but none was
-   provided.  This is currenlty unused, as the C front ends have no
-   switches that take separate arguments.  Will be used when cpplib's
-   switches are integrated.  */
+/* Args to -d specify what to dump.  Silently ignore
+   unrecognised options; they may be aimed at toplev.c.  */
 static void
-missing_arg (opt_index)
-     size_t opt_index ATTRIBUTE_UNUSED;
+handle_OPT_d (arg)
+     const char *arg;
 {
-  abort ();
+  char c;
+
+  while ((c = *arg++) != '\0')
+    switch (c)
+      {
+      case 'M':
+	cpp_opts->dump_macros = dump_only;
+	break;
+
+      case 'N':
+	cpp_opts->dump_macros = dump_names;
+	break;
+
+      case 'D':
+	cpp_opts->dump_macros = dump_definitions;
+	break;
+
+      case 'I':
+	cpp_opts->dump_includes = 1;
+	break;
+      }
 }
 
 /* Write a slash-separated list of languages in FLAGS to BUF.  */
@@ -1213,4 +1313,85 @@ complain_wrong_lang (opt_index)
   write_langs (bad_langs, ~ok_flags);
   warning ("\"-%s\" is valid for %s but not for %s",
 	   cl_options[opt_index].opt_text, ok_langs, bad_langs);
+}
+
+/* Handle --help output.  */
+static void
+print_help ()
+{
+  /* To keep the lines from getting too long for some compilers, limit
+     to about 500 characters (6 lines) per chunk.  */
+  fputs (_("\
+Switches:\n\
+  -include <file>           Include the contents of <file> before other files\n\
+  -imacros <file>           Accept definition of macros in <file>\n\
+  -iprefix <path>           Specify <path> as a prefix for next two options\n\
+  -iwithprefix <dir>        Add <dir> to the end of the system include path\n\
+  -iwithprefixbefore <dir>  Add <dir> to the end of the main include path\n\
+  -isystem <dir>            Add <dir> to the start of the system include path\n\
+"), stdout);
+  fputs (_("\
+  -idirafter <dir>          Add <dir> to the end of the system include path\n\
+  -I <dir>                  Add <dir> to the end of the main include path\n\
+  -I-                       Fine-grained include path control; see info docs\n\
+  -nostdinc                 Do not search system include directories\n\
+                             (dirs specified with -isystem will still be used)\n\
+  -nostdinc++               Do not search system include directories for C++\n\
+  -o <file>                 Put output into <file>\n\
+"), stdout);
+  fputs (_("\
+  -trigraphs                Support ISO C trigraphs\n\
+  -std=<std name>           Specify the conformance standard; one of:\n\
+                            gnu89, gnu99, c89, c99, iso9899:1990,\n\
+                            iso9899:199409, iso9899:1999, c++98\n\
+  -w                        Inhibit warning messages\n\
+  -W[no-]trigraphs          Warn if trigraphs are encountered\n\
+  -W[no-]comment{s}         Warn if one comment starts inside another\n\
+"), stdout);
+  fputs (_("\
+  -W[no-]traditional        Warn about features not present in traditional C\n\
+  -W[no-]undef              Warn if an undefined macro is used by #if\n\
+  -W[no-]import             Warn about the use of the #import directive\n\
+"), stdout);
+  fputs (_("\
+  -W[no-]error              Treat all warnings as errors\n\
+  -W[no-]system-headers     Do not suppress warnings from system headers\n\
+  -W[no-]all                Enable most preprocessor warnings\n\
+"), stdout);
+  fputs (_("\
+  -M                        Generate make dependencies\n\
+  -MM                       As -M, but ignore system header files\n\
+  -MD                       Generate make dependencies and compile\n\
+  -MMD                      As -MD, but ignore system header files\n\
+  -MF <file>                Write dependency output to the given file\n\
+  -MG                       Treat missing header file as generated files\n\
+"), stdout);
+  fputs (_("\
+  -MP			    Generate phony targets for all headers\n\
+  -MQ <target>              Add a MAKE-quoted target\n\
+  -MT <target>              Add an unquoted target\n\
+"), stdout);
+  fputs (_("\
+  -D<macro>                 Define a <macro> with string '1' as its value\n\
+  -D<macro>=<val>           Define a <macro> with <val> as its value\n\
+  -A<question>=<answer>     Assert the <answer> to <question>\n\
+  -A-<question>=<answer>    Disable the <answer> to <question>\n\
+  -U<macro>                 Undefine <macro> \n\
+  -v                        Display the version number\n\
+"), stdout);
+  fputs (_("\
+  -H                        Print the name of header files as they are used\n\
+  -C                        Do not discard comments\n\
+  -dM                       Display a list of macro definitions active at end\n\
+  -dD                       Preserve macro definitions in output\n\
+  -dN                       As -dD except that only the names are preserved\n\
+  -dI                       Include #include directives in the output\n\
+"), stdout);
+  fputs (_("\
+  -f[no-]preprocessed       Treat the input file as already preprocessed\n\
+  -ftabstop=<number>        Distance between tab stops for column reporting\n\
+  -P                        Do not generate #line directives\n\
+  -remap                    Remap file names when including files\n\
+  --help                    Display this information\n\
+"), stdout);
 }
