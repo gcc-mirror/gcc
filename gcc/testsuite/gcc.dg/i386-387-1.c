@@ -1,6 +1,6 @@
 /* Verify that -mno-fancy-math-387 works.  */
 /* { dg-do compile { target "i?86-*-*" } } */
-/* { dg-options "-O -ffast-math -mfpmath=387 -mno-fancy-math-387" } */
+/* { dg-options "-O -ffast-math -mfpmath=387 -mno-fancy-math-387 -march=i386" } */
 /* { dg-final { scan-assembler "call\t_?sin" } } */
 /* { dg-final { scan-assembler "call\t_?cos" } } */
 /* { dg-final { scan-assembler "call\t_?sqrt" } } */
