@@ -2,7 +2,7 @@
 @c %**start of header
 @setfilename g77.info
 
-@set last-update 2000-11-27
+@set last-update 2000-12-21
 @set copyrights-g77 1995,1996,1997,1998,1999,2000
 
 @include root.texi
