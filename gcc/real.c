@@ -115,12 +115,12 @@ static bool div_significands PARAMS ((REAL_VALUE_TYPE *,
 				      const REAL_VALUE_TYPE *));
 static void normalize PARAMS ((REAL_VALUE_TYPE *));
 
-static void do_add PARAMS ((REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *,
+static bool do_add PARAMS ((REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *,
 			    const REAL_VALUE_TYPE *, int));
-static void do_multiply PARAMS ((REAL_VALUE_TYPE *,
+static bool do_multiply PARAMS ((REAL_VALUE_TYPE *,
 				 const REAL_VALUE_TYPE *,
 				 const REAL_VALUE_TYPE *));
-static void do_divide PARAMS ((REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *,
+static bool do_divide PARAMS ((REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *,
 			       const REAL_VALUE_TYPE *));
 static int do_compare PARAMS ((const REAL_VALUE_TYPE *,
 			       const REAL_VALUE_TYPE *, int));
@@ -563,9 +563,10 @@ normalize (r)
     }
 }
 
-/* Return R = A + (SUBTRACT_P ? -B : B).  */
+/* Calculate R = A + (SUBTRACT_P ? -B : B).  Return true if the
+   result may be inexact due to a loss of precision.  */
 
-static void
+static bool
 do_add (r, a, b, subtract_p)
      REAL_VALUE_TYPE *r;
      const REAL_VALUE_TYPE *a, *b;
@@ -584,7 +585,7 @@ do_add (r, a, b, subtract_p)
     case CLASS2 (rvc_zero, rvc_zero):
       /* -0 + -0 = -0, -0 - +0 = -0; all other cases yield +0.  */
       get_zero (r, sign & !subtract_p);
-      return;
+      return false;
 
     case CLASS2 (rvc_zero, rvc_normal):
     case CLASS2 (rvc_zero, rvc_inf):
@@ -598,7 +599,7 @@ do_add (r, a, b, subtract_p)
       /* R + Inf = Inf.  */
       *r = *b;
       r->sign = sign ^ subtract_p;
-      return;
+      return false;
 
     case CLASS2 (rvc_normal, rvc_zero):
     case CLASS2 (rvc_inf, rvc_zero):
@@ -610,7 +611,7 @@ do_add (r, a, b, subtract_p)
     case CLASS2 (rvc_inf, rvc_normal):
       /* Inf + R = Inf.  */
       *r = *a;
-      return;
+      return false;
 
     case CLASS2 (rvc_inf, rvc_inf):
       if (subtract_p)
@@ -619,7 +620,7 @@ do_add (r, a, b, subtract_p)
       else
 	/* Inf + Inf = Inf.  */
 	*r = *a;
-      return;
+      return false;
 
     case CLASS2 (rvc_normal, rvc_normal):
       break;
@@ -649,7 +650,7 @@ do_add (r, a, b, subtract_p)
 	{
 	  *r = *a;
 	  r->sign = sign;
-	  return;
+	  return true;
 	}
 
       inexact |= sticky_rshift_significand (&t, b, dexp);
@@ -680,7 +681,7 @@ do_add (r, a, b, subtract_p)
 	  if (++exp > MAX_EXP)
 	    {
 	      get_inf (r, sign);
-	      return;
+	      return true;
 	    }
 	}
     }
@@ -698,11 +699,13 @@ do_add (r, a, b, subtract_p)
     r->sign = 0;
   else
     r->sig[0] |= inexact;
+
+  return inexact;
 }
 
-/* Return R = A * B.  */
+/* Calculate R = A * B.  Return true if the result may be inexact.  */
 
-static void
+static bool
 do_multiply (r, a, b)
      REAL_VALUE_TYPE *r;
      const REAL_VALUE_TYPE *a, *b;
@@ -710,6 +713,7 @@ do_multiply (r, a, b)
   REAL_VALUE_TYPE u, t, *rr;
   unsigned int i, j, k;
   int sign = a->sign ^ b->sign;
+  bool inexact = false;
 
   switch (CLASS2 (a->class, b->class))
     {
@@ -718,7 +722,7 @@ do_multiply (r, a, b)
     case CLASS2 (rvc_normal, rvc_zero):
       /* +-0 * ANY = 0 with appropriate sign.  */
       get_zero (r, sign);
-      return;
+      return false;
 
     case CLASS2 (rvc_zero, rvc_nan):
     case CLASS2 (rvc_normal, rvc_nan):
@@ -727,7 +731,7 @@ do_multiply (r, a, b)
       /* ANY * NaN = NaN.  */
       *r = *b;
       r->sign = sign;
-      return;
+      return false;
 
     case CLASS2 (rvc_nan, rvc_zero):
     case CLASS2 (rvc_nan, rvc_normal):
@@ -735,21 +739,20 @@ do_multiply (r, a, b)
       /* NaN * ANY = NaN.  */
       *r = *a;
       r->sign = sign;
-      return;
+      return false;
 
     case CLASS2 (rvc_zero, rvc_inf):
     case CLASS2 (rvc_inf, rvc_zero):
       /* 0 * Inf = NaN */
       get_canonical_qnan (r, sign);
-      return;
+      return false;
 
     case CLASS2 (rvc_inf, rvc_inf):
     case CLASS2 (rvc_normal, rvc_inf):
     case CLASS2 (rvc_inf, rvc_normal):
       /* Inf * Inf = Inf, R * Inf = Inf */
-    overflow:
       get_inf (r, sign);
-      return;
+      return false;
 
     case CLASS2 (rvc_normal, rvc_normal):
       break;
@@ -799,10 +802,16 @@ do_multiply (r, a, b)
 		     + (b->exp - (1-j)*(HOST_BITS_PER_LONG/2)));
 
 	  if (exp > MAX_EXP)
-	    goto overflow;
+	    {
+	      get_inf (r, sign);
+	      return true;
+	    }
 	  if (exp < -MAX_EXP)
-	    /* Would underflow to zero, which we shouldn't bother adding.  */
-	    continue;
+	    {
+	      /* Would underflow to zero, which we shouldn't bother adding.  */
+	      inexact = true;
+	      continue;
+	    }
 
 	  u.class = rvc_normal;
 	  u.sign = 0;
@@ -820,18 +829,20 @@ do_multiply (r, a, b)
 	    }
 
 	  normalize (&u);
-	  do_add (rr, rr, &u, 0);
+	  inexact |= do_add (rr, rr, &u, 0);
 	}
     }
 
   rr->sign = sign;
   if (rr != r)
     *r = t;
+
+  return inexact;
 }
 
-/* Return R = A / B.  */
+/* Calculate R = A / B.  Return true if the result may be inexact.  */
 
-static void
+static bool
 do_divide (r, a, b)
      REAL_VALUE_TYPE *r;
      const REAL_VALUE_TYPE *a, *b;
@@ -847,23 +858,22 @@ do_divide (r, a, b)
     case CLASS2 (rvc_inf, rvc_inf):
       /* Inf / Inf = NaN.  */
       get_canonical_qnan (r, sign);
-      return;
+      return false;
 
     case CLASS2 (rvc_zero, rvc_normal):
     case CLASS2 (rvc_zero, rvc_inf):
       /* 0 / ANY = 0.  */
     case CLASS2 (rvc_normal, rvc_inf):
       /* R / Inf = 0.  */
-    underflow:
       get_zero (r, sign);
-      return;
+      return false;
 
     case CLASS2 (rvc_normal, rvc_zero):
       /* R / 0 = Inf.  */
     case CLASS2 (rvc_inf, rvc_zero):
       /* Inf / 0 = Inf.  */
       get_inf (r, sign);
-      return;
+      return false;
 
     case CLASS2 (rvc_zero, rvc_nan):
     case CLASS2 (rvc_normal, rvc_nan):
@@ -872,7 +882,7 @@ do_divide (r, a, b)
       /* ANY / NaN = NaN.  */
       *r = *b;
       r->sign = sign;
-      return;
+      return false;
 
     case CLASS2 (rvc_nan, rvc_zero):
     case CLASS2 (rvc_nan, rvc_normal):
@@ -880,13 +890,12 @@ do_divide (r, a, b)
       /* NaN / ANY = NaN.  */
       *r = *a;
       r->sign = sign;
-      return;
+      return false;
 
     case CLASS2 (rvc_inf, rvc_normal):
       /* Inf / R = Inf.  */
-    overflow:
       get_inf (r, sign);
-      return;
+      return false;
 
     case CLASS2 (rvc_normal, rvc_normal):
       break;
@@ -905,9 +914,15 @@ do_divide (r, a, b)
 
   exp = a->exp - b->exp + 1;
   if (exp > MAX_EXP)
-    goto overflow;
+    {
+      get_inf (r, sign);
+      return true;
+    }
   if (exp < -MAX_EXP)
-    goto underflow;
+    {
+      get_zero (r, sign);
+      return true;
+    }
   rr->exp = exp;
 
   inexact = div_significands (rr, a, b);
@@ -918,6 +933,8 @@ do_divide (r, a, b)
 
   if (rr != r)
     *r = t;
+
+  return inexact;
 }
 
 /* Return a tri-state comparison of A vs B.  Return NAN_RESULT if
