@@ -4511,7 +4511,7 @@ on this machine.  So it must be copied into a register with
      = force_reg (SImode, GEN_INT (65535)); ")
 @end smallexample
 
-@strong{Note:} If the @code{define_expand} is used to serve a
+@emph{Note:} If the @code{define_expand} is used to serve a
 standard binary or unary arithmetic operation or a bit-field operation,
 then the last insn it generates must not be a @code{code_label},
 @code{barrier} or @code{note}.  It must be an @code{insn},

@@ -4133,7 +4133,7 @@ here are also acceptable to the C compiler and have the same meaning,
 except that the C compiler has different rules for specifying the output
 file.
 
-@strong{Note:} Whether you use the preprocessor by way of @command{gcc}
+@emph{Note:} Whether you use the preprocessor by way of @command{gcc}
 or @command{cpp}, the @dfn{compiler driver} is run first.  This
 program's purpose is to translate your command into invocations of the
 programs that do the actual work.  Their command line interfaces are
