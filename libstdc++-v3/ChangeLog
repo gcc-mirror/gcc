@@ -1,6 +1,9 @@
 2003-05-06  Michael Ritzert <Ritzert@t-online.de>
+	    Matt Kraai <kraai@alumni.cmu.edu>
 
 	* include/ext/stl_rope.h (_Rope_RopeRep<>::_M_c_string_lock): Tweak.
+	And retweak.
+
 2003-05-06  Richard Sandiford  <rsandifo@redhat.com>
 
 	* configure.target (mips*): Use the generic atomicity.h by default.
