@@ -10149,7 +10149,7 @@ tsubst_enum (tag, newtag, args)
       build_enumerator (TREE_PURPOSE (e), value, newtag); 
     }
 
-  finish_enum (newtag);
+  finish_enum (newtag, NULL_TREE);
   DECL_SOURCE_LINE (TYPE_NAME (newtag)) = DECL_SOURCE_LINE (TYPE_NAME (tag));
   DECL_SOURCE_FILE (TYPE_NAME (newtag)) = DECL_SOURCE_FILE (TYPE_NAME (tag));
 }
