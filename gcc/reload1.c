@@ -3606,7 +3606,7 @@ reload_as_needed (first, live_known)
 		  if (reload_out[i] == XEXP (x, 0))
 		    break;
 
-		if (i != n_reloads)
+		if (i == n_reloads)
 		  forget_old_reloads_1 (XEXP (x, 0));
 	      }
 #endif
