@@ -1,3 +1,8 @@
+Mon Feb 16 08:17:14 1998  John Carr  <jfc@mit.edu>
+
+	* loop.c (strength_reduce, record_biv, record_giv): Use
+        HOST_WIDE_INT_PRINT_DEC to print CONST_INT values.
+
 1998-02-16  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tree.c (first_rtl_op): New fn.

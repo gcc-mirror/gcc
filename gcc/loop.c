@@ -3683,7 +3683,10 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	  if (loop_dump_stream)
 	    {
 	      if (GET_CODE (src) == CONST_INT)
-		fprintf (loop_dump_stream, "%d\n", INTVAL (src));
+		{
+		  fprintf (loop_dump_stream, HOST_WIDE_INT_PRINT_DEC, INTVAL (src));
+		  fputc ('\n', loop_dump_stream);
+		}
 	      else
 		{
 		  print_rtl (loop_dump_stream, src);
@@ -4618,8 +4621,11 @@ record_biv (v, insn, dest_reg, inc_val, mult_val,
 	       "Insn %d: possible biv, reg %d,",
 	       INSN_UID (insn), REGNO (dest_reg));
       if (GET_CODE (inc_val) == CONST_INT)
-	fprintf (loop_dump_stream, " const = %d\n",
-		 INTVAL (inc_val));
+	{
+	  fprintf (loop_dump_stream, " const =");
+	  fprintf (loop_dump_stream, HOST_WIDE_INT_PRINT_DEC, INTVAL (inc_val));
+	  fputc ('\n', loop_dump_stream);
+	}
       else
 	{
 	  fprintf (loop_dump_stream, " const = ");
@@ -4826,8 +4832,10 @@ record_giv (v, insn, src_reg, dest_reg, mult_val, add_val, benefit,
  	fprintf (loop_dump_stream, " replaceable");
 
       if (GET_CODE (mult_val) == CONST_INT)
-	fprintf (loop_dump_stream, " mult %d",
- 		 INTVAL (mult_val));
+	{
+	  fprintf (loop_dump_stream, " mult ");
+	  fprintf (loop_dump_stream, HOST_WIDE_INT_PRINT_DEC, INTVAL (mult_val));
+	}
       else
 	{
 	  fprintf (loop_dump_stream, " mult ");
@@ -4835,8 +4843,10 @@ record_giv (v, insn, src_reg, dest_reg, mult_val, add_val, benefit,
 	}
 
       if (GET_CODE (add_val) == CONST_INT)
-	fprintf (loop_dump_stream, " add %d",
-		 INTVAL (add_val));
+	{
+	  fprintf (loop_dump_stream, " add ");
+	  fprintf (loop_dump_stream, HOST_WIDE_INT_PRINT_DEC, INTVAL (add_val));
+	}
       else
 	{
 	  fprintf (loop_dump_stream, " add ");
