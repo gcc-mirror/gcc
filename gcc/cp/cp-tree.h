@@ -730,7 +730,6 @@ struct saved_scope
   tree x_previous_class_type;
   tree x_previous_class_values;
   tree x_saved_tree;
-  tree incomplete;
   tree lookups;
   tree last_parms;
 
@@ -794,10 +793,6 @@ struct saved_scope
    cache miss).  */
 
 #define previous_class_values scope_chain->x_previous_class_values
-
-/* A list of the declarations with incomplete type at namespace scope.  */
-
-#define namespace_scope_incomplete scope_chain->incomplete
 
 /* A list of private types mentioned, for deferred access checking.  */
 
@@ -3766,7 +3761,8 @@ extern void finish_function_body		PARAMS ((tree));
 extern tree finish_function			PARAMS ((int));
 extern tree start_method			PARAMS ((tree, tree, tree));
 extern tree finish_method			PARAMS ((tree));
-extern void hack_incomplete_structures		PARAMS ((tree));
+extern void maybe_register_incomplete_var       PARAMS ((tree));
+extern void complete_vars			PARAMS ((tree));
 extern void finish_stmt				PARAMS ((void));
 extern void print_other_binding_stack		PARAMS ((struct binding_level *));
 extern void revert_static_member_fn             PARAMS ((tree));
