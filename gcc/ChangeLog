@@ -1,3 +1,42 @@
+2004-09-15  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/11572
+	* c-incpath.h (target_c_incpath_s): Add extra_pre_includes.
+	Add two parameters to extra_includes.
+	(C_INCPATH_INIT): Remove.
+	* c-incpath.c (register_include_chains): Call extra_pre_includes
+	before adding the standard include directory.
+	Update call to extra_includes.
+	(!defined TARGET_EXTRA_INCLUDES): Update
+	hook_void_charptr_charptr_int and add !define
+	TARGET_EXTRA_PRE_INCLUDES.
+	(!define TARGET_EXTRA_INCLUDES): Define as
+	hook_void_charptr_charptr_int.
+	(!define TARGET_EXTRA_PRE_INCLUDES): Likewise.
+	(target_c_incpath): Always declare.
+	* fixinclude.c (defined TARGET_EXTRA_INCLUDES): Declare a
+	empty function.
+	(define TARGET_EXTRA_PRE_INCLUDES): Likewise.
+	* config/darwin.h: (darwin_register_frameworks): Update for
+	the two new parameters.
+	(darwin_register_objc_includes): Add prototype.
+	(TARGET_EXTRA_PRE_INCLUDES): Define.
+	* config/darwin-c.c (darwin_register_objc_includes): New function.
+	(darwin_register_frameworks): Update for the two new parameters.
+	(target_c_incpath): Remove.
+	* config/t-darwin (darwin-c.o): Add $(PREPROCESSOR_DEFINES) to
+	the compile line.
+	* doc/tm.texi (TARGET_EXTRA_INCLUDES): Document the two new
+	parameters.
+	(TARGET_EXTRA_PRE_INCLUDES): Document.
+
+	* gcc.c (spec_function): Add replace-outfile.
+	(replace_outfile_spec_function): New function.
+	* config/darwin.h (LINK_SPEC): Add replace
+	-lobjc with -lobjc-gnu if -fgnu-runtime is
+	supplied.
+	* invoke.texi (replace-outfile): Document.
+
 2004-09-13  Jan Hubicka  <jh@suse.cz>
 
 	* predict.c (expr_expected_value, strip_builtin_expect): New function.

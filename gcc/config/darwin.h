@@ -238,6 +238,7 @@ extern const char *darwin_fix_and_continue_switch;
    their names so all of them get passed.  */
 #define LINK_SPEC  \
   "%{static}%{!static:-dynamic} \
+   %{fgnu-runtime:%:replace-outfile(-lobjc -lobjc-gnu)}\
    %{!Zdynamiclib: \
      %{Zbundle:-bundle} \
      %{Zbundle_loader*:-bundle_loader %*} \
@@ -962,7 +963,9 @@ enum machopic_addr_class {
 #undef ASM_APP_OFF
 #define ASM_APP_OFF ""
 
-void darwin_register_frameworks (int);
+void darwin_register_frameworks (const char *, const char *, int);
+void darwin_register_objc_includes (const char *, const char *, int);
+#define TARGET_EXTRA_PRE_INCLUDES darwin_register_objc_includes
 #define TARGET_EXTRA_INCLUDES darwin_register_frameworks
 
 void add_framework_path (char *);

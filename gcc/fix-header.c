@@ -82,9 +82,19 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "errors.h"
 
 #ifdef TARGET_EXTRA_INCLUDES
-static void hook_void_int(int u ATTRIBUTE_UNUSED) { }
+void TARGET_EXTRA_INCLUDES (const char *sysroot ATTRIBUTE_UNUSED,
+			    const char *iprefix ATTRIBUTE_UNUSED,
+			    int stdinc ATTRIBUTE_UNUSED)
+{
+}
+#endif
 
-struct target_c_incpath_s target_c_incpath = { hook_void_int };
+#ifdef TARGET_EXTRA_PRE_INCLUDES 
+void TARGET_EXTRA_PRE_INCLUDES (const char *sysroot ATTRIBUTE_UNUSED,
+			    const char *iprefix ATTRIBUTE_UNUSED,
+			    int stdinc ATTRIBUTE_UNUSED)
+{
+}
 #endif
 
 struct line_maps line_table;

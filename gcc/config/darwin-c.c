@@ -30,6 +30,8 @@ Boston, MA 02111-1307, USA.  */
 #include "c-incpath.h"
 #include "toplev.h"
 #include "tm_p.h"
+#include "cppdefault.h"
+#include "prefix.h"
 
 /* Pragmas.  */
 
@@ -419,13 +421,55 @@ static const char *framework_defaults [] =
     "/Library/Frameworks",
   };
 
+/* Register the GNU objective-C runtime include path if STDINC.  */
+
+void
+darwin_register_objc_includes (const char *sysroot, const char *iprefix,
+			       int stdinc)
+{
+  const char *fname;
+  size_t len;
+  /* We do not do anything if we do not want the standard includes. */
+  if (!stdinc)
+    return;
+  
+  fname = GCC_INCLUDE_DIR "-gnu-runtime";
+  
+  /* Register the GNU OBJC runtime include path if we are compiling  OBJC
+    with GNU-runtime.  */
+
+  if (c_dialect_objc () && !flag_next_runtime)
+    {
+      char *str;
+      /* See if our directory starts with the standard prefix.
+	 "Translate" them, ie. replace /usr/local/lib/gcc... with
+	 IPREFIX and search them first.  */
+      if (iprefix && (len = cpp_GCC_INCLUDE_DIR_len) != 0 && !sysroot
+	  && !strncmp (fname, cpp_GCC_INCLUDE_DIR, len))
+	{
+	  str = concat (iprefix, fname + len, NULL);
+          /* FIXME: wrap the headers for C++awareness.  */
+	  add_path (str, SYSTEM, /*c++aware=*/false, false);
+	}
+      
+      /* Should this directory start with the sysroot?  */
+      if (sysroot)
+	str = concat (sysroot, fname, NULL);
+      else
+	str = update_path (fname, "");
+      
+      add_path (str, SYSTEM, /*c++aware=*/false, false);
+    }
+}
+
 
 /* Register all the system framework paths if STDINC is true and setup
    the missing_header callback for subframework searching if any
    frameworks had been registered.  */
 
 void
-darwin_register_frameworks (int stdinc)
+darwin_register_frameworks (const char *sysroot ATTRIBUTE_UNUSED,
+			    const char *iprefix ATTRIBUTE_UNUSED, int stdinc)
 {
   if (stdinc)
     {
@@ -476,5 +520,3 @@ find_subframework_header (cpp_reader *pfile, const char *header, cpp_dir **dirp)
 
   return 0;
 }
-
-struct target_c_incpath_s target_c_incpath = C_INCPATH_INIT;
