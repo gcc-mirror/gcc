@@ -1,3 +1,7 @@
+Sat May 18 23:09:19 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (pushqi2, ashrqi_*): Fix constraint.
+
 2002-05-18  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/altivec.h: Cleanups.
