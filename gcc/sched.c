@@ -124,6 +124,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "insn-config.h"
 #include "insn-attr.h"
 
+#ifdef INSN_SCHEDULING
 /* Arrays set up by scheduling for the same respective purposes as
    similar-named arrays set up by flow analysis.  We work with these
    arrays during the scheduling pass so we can compare values against
@@ -267,9 +268,6 @@ static rtx dead_notes;
    time has passed.  INSN_QUEUE_SIZE is a power of two larger than
    MAX_BLOCKAGE and MAX_READY_COST computed by genattr.c.  This is the
    longest time an isnsn may be queued.  */
-#ifndef INSN_QUEUE_SIZE
-#define INSN_QUEUE_SIZE 10
-#endif
 static rtx insn_queue[INSN_QUEUE_SIZE];
 static int q_ptr = 0;
 static int q_size = 0;
@@ -288,6 +286,7 @@ static void schedule_block ();
 
 /* Main entry point of this file.  */
 void schedule_insns ();
+#endif /* INSN_SCHEDULING */
 
 #define SIZE_FOR_MODE(X) (GET_MODE_SIZE (GET_MODE (X)))
 
