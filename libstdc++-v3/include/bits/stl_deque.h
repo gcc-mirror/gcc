@@ -132,11 +132,6 @@ template <typename _Tp, typename _Ref, typename _Ptr>
   reference operator*() const { return *_M_cur; }
   pointer operator->() const { return _M_cur; }
 
-  difference_type operator-(const _Self& __x) const {
-    return difference_type(_S_buffer_size()) * (_M_node - __x._M_node - 1) +
-      (_M_cur - _M_first) + (__x._M_last - __x._M_cur);
-  }
-
   _Self& operator++() {
     ++_M_cur;
     if (_M_cur == _M_last) {
@@ -316,6 +311,22 @@ operator>=(const _Deque_iterator<_Tp, _RefL, _PtrL>& __x,
 	   const _Deque_iterator<_Tp, _RefR, _PtrR>& __y)
 {
   return !(__x < __y);
+}
+
+// _GLIBCPP_RESOLVE_LIB_DEFECTS
+// According to the resolution of DR179 not only the various comparison
+// operators but also operator- must accept mixed iterator/const_iterator
+// parameters.
+template <typename _Tp, typename _RefL, typename _PtrL,
+                        typename _RefR, typename _PtrR>
+inline typename _Deque_iterator<_Tp, _RefL, _PtrL>::difference_type
+operator-(const _Deque_iterator<_Tp, _RefL, _PtrL>& __x,
+	  const _Deque_iterator<_Tp, _RefR, _PtrR>& __y)
+{
+  return _Deque_iterator<_Tp, _RefL, _PtrL>::difference_type
+    (_Deque_iterator<_Tp, _RefL, _PtrL>::_S_buffer_size()) *
+    (__x._M_node - __y._M_node - 1) + (__x._M_cur - __x._M_first) +
+    (__y._M_last - __y._M_cur);
 }
 
 template <typename _Tp, typename _Ref, typename _Ptr>
