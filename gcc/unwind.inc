@@ -232,12 +232,40 @@ _Unwind_Resume (struct _Unwind_Exception *exc)
   uw_install_context (&this_context, &cur_context);
 }
 
+
+/* Resume propagation of an FORCE_UNWIND exception, or to rethrow
+   a normal exception that was handled.  */
+
+_Unwind_Reason_Code
+_Unwind_Resume_or_Rethrow (struct _Unwind_Exception *exc)
+{
+  struct _Unwind_Context this_context, cur_context;
+  _Unwind_Reason_Code code;
+
+  /* Choose between continuing to process _Unwind_RaiseException
+     or _Unwind_ForcedUnwind.  */
+  if (exc->private_1 == 0)
+    return _Unwind_RaiseException (exc);
+
+  uw_init_context (&this_context);
+  cur_context = this_context;
+
+  code = _Unwind_ForcedUnwind_Phase2 (exc, &cur_context);
+
+  if (code != _URC_INSTALL_CONTEXT)
+    abort ();
+
+  uw_install_context (&this_context, &cur_context);
+}
+
+
 /* A convenience function that calls the exception_cleanup field.  */
 
 void
 _Unwind_DeleteException (struct _Unwind_Exception *exc)
 {
-  (*exc->exception_cleanup) (_URC_FOREIGN_EXCEPTION_CAUGHT, exc);
+  if (exc->exception_cleanup)
+    (*exc->exception_cleanup) (_URC_FOREIGN_EXCEPTION_CAUGHT, exc);
 }
 
 
@@ -274,4 +302,3 @@ _Unwind_Backtrace(_Unwind_Trace_Fn trace, void * trace_argument)
 
   return code;
 }
-

@@ -1,7 +1,7 @@
 // { dg-do run }
 
-// Test that leaving the catch block without rethrowing
-// does call the exception object destructor.
+// Test that forced unwinding does not call std::unexpected going 
+// throw a function with a non-empty exception spec.
 
 #include <unwind.h>
 #include <stdlib.h>
@@ -18,18 +18,12 @@ force_unwind_stop (int version, _Unwind_Action actions,
   return _URC_NO_REASON;
 }
 
-static void
-force_unwind_cleanup (_Unwind_Reason_Code, struct _Unwind_Exception *)
-{
-  exit (0);
-}
-
-static void
+static void __attribute__((noreturn))
 force_unwind ()
 {
   _Unwind_Exception *exc = new _Unwind_Exception;
   exc->exception_class = 0;
-  exc->exception_cleanup = force_unwind_cleanup;
+  exc->exception_cleanup = 0;
 
 #ifndef __USING_SJLJ_EXCEPTIONS__
   _Unwind_ForcedUnwind (exc, force_unwind_stop, 0);
@@ -40,11 +34,16 @@ force_unwind ()
   abort ();
 }
 
+static void
+doit () throw(int)
+{
+  force_unwind ();
+}
+
 int main()
 { 
   try {
-    force_unwind ();
+    doit ();
   } catch (...) {
   }
-  abort ();
 }

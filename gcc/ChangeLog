@@ -1,5 +1,20 @@
 2003-05-07  Richard Henderson  <rth@redhat.com>
 
+        PR c++/10570
+        * except.c: Revert 04-01 and 04-02 forced-unwind changes.
+        * flags.h, toplev.c, doc/invoke.texi: Likewise.
+
+        * unwind-dw2.c (_Unwind_GetCFA): Fix ptr->int conversion warning.
+        * unwind.inc (_Unwind_DeleteException): Check for null
+        exception_cleanup.
+
+        * unwind-sjlj.c (_Unwind_SjLj_Resume_or_Rethrow): New.
+        * unwind.inc (_Unwind_Resume_or_Rethrow): New.
+        * unwind.h: Declare them.
+        * libgcc-std.ver (GCC_3.3): Export them.
+
+2003-05-07  Richard Henderson  <rth@redhat.com>
+
 	* unwind-dw2.c (_Unwind_GetCFA): Cast pointer to _Unwind_Ptr,
 	not _Unwind_Word.
 

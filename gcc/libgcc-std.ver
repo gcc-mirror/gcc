@@ -181,6 +181,8 @@ GCC_3.3 {
   _Unwind_FindEnclosingFunction
   _Unwind_GetCFA
   _Unwind_Backtrace
+  _Unwind_Resume_or_Rethrow
+  _Unwind_SjLj_Resume_or_Rethrow
 }
 
 %inherit GCC_3.4 GCC_3.3

@@ -1,12 +1,11 @@
 // { dg-do run }
 
-// Test that forced unwinding runs all cleanups.  Also tests that
-// rethrowing doesn't call the exception object destructor.
+// Test that forced unwinding calls std::unexpected going 
+// throw a nothrow function.
 
 #include <unwind.h>
 #include <stdlib.h>
-
-static int test = 0;
+#include <exception>
 
 static _Unwind_Reason_Code
 force_unwind_stop (int version, _Unwind_Action actions,
@@ -16,26 +15,16 @@ force_unwind_stop (int version, _Unwind_Action actions,
                    void *stop_parameter)
 {
   if (actions & _UA_END_OF_STACK)
-    {
-      if (test != 15)
-        abort ();
-      exit (0);
-    }
-
+    abort ();
   return _URC_NO_REASON;
 }
 
-static void
-force_unwind_cleanup (_Unwind_Reason_Code, struct _Unwind_Exception *)
-{
-  abort ();
-}
-
-static void force_unwind ()
+static void __attribute__((noreturn))
+force_unwind ()
 {
   _Unwind_Exception *exc = new _Unwind_Exception;
   exc->exception_class = 0;
-  exc->exception_cleanup = force_unwind_cleanup;
+  exc->exception_cleanup = 0;
 
 #ifndef __USING_SJLJ_EXCEPTIONS__
   _Unwind_ForcedUnwind (exc, force_unwind_stop, 0);
@@ -46,35 +35,21 @@ static void force_unwind ()
   abort ();
 }
 
-struct S
+static void
+handle_unexpected ()
 {
-  int bit;
-  S(int b) : bit(b) { }
-  ~S() { test |= bit; }
-};
-  
-static void doit ()
+  exit (0);
+}
+
+static void
+doit () throw()
 {
-  try {
-    S four(4);
-
-    try {
-      S one(1);
-      force_unwind ();
-  
-    } catch(...) { 
-      test |= 2;
-      throw;
-    }
-
-  } catch(...) {
-    test |= 8;
-    throw;
-  }
+  force_unwind ();
 }
 
 int main()
 { 
+  std::set_unexpected (handle_unexpected);
   doit ();
   abort ();
 }

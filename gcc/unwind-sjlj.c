@@ -285,6 +285,7 @@ uw_identify_context (struct _Unwind_Context *context)
 #define _Unwind_RaiseException		_Unwind_SjLj_RaiseException
 #define _Unwind_ForcedUnwind		_Unwind_SjLj_ForcedUnwind
 #define _Unwind_Resume			_Unwind_SjLj_Resume
+#define _Unwind_Resume_or_Rethrow	_Unwind_SjLj_Resume_or_Rethrow
 
 #include "unwind.inc"
 
