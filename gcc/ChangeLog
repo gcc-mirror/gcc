@@ -1,5 +1,10 @@
 2003-12-24  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/avr/avr.c: Fix comment formatting.
+	* config/avr/avr.md: Likewise.
+
+2003-12-24  Kazu Hirata  <kazu@cs.umass.edu>
+
 	PR target/12721.
 	* config/avr/avr.c: Include ggc.h.
 	(tmp_reg_rtx): Declare with GTY.

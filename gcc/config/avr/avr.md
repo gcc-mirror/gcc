@@ -178,7 +178,7 @@
   [(set (match_operand:QI 0 "nonimmediate_operand" "")
 	(match_operand:QI 1 "general_operand" ""))]
   ""
-  "/* One of the ops has to be in a register */
+  "/* One of the ops has to be in a register.  */
    if (!register_operand(operand0, QImode)
        && ! (register_operand(operand1, QImode) || const0_rtx == operand1))
        operands[1] = copy_to_mode_reg(QImode, operand1);
@@ -226,7 +226,7 @@
   ""
   "
 {
-   /* One of the ops has to be in a register */
+   /* One of the ops has to be in a register.  */
   if (!register_operand(operand0, HImode)
       && !(register_operand(operand1, HImode) || const0_rtx == operands[1]))
     {
