@@ -1,3 +1,18 @@
+2004-03-07  Richard Henderson  <rth@redhat.com>
+
+        * config/alpha/alpha.h (MASK_LONG_DOUBLE_128): New.
+        (TARGET_LONG_DOUBLE_128): New.
+        (TARGET_SWITCHES): Add long-double-{128,64}.
+        (TARGET_HAS_XFLOATING_LIBS): Default to TARGET_LONG_DOUBLE_128.
+        (LONG_DOUBLE_TYPE_SIZE): Honor TARGET_LONG_DOUBLE_128.
+        (LIBGCC2_LONG_DOUBLE_TYPE_SIZE): New.
+        (WIDEST_HARDWARE_FP_SIZE): New.
+        (TARGET_CPU_CPP_BUILTINS): Define __LONG_DOUBLE_128__.
+        * config/alpha/alpha.c (override_options): Clear MASK_LONG_DOUBLE_128
+        if TARGET_VAX_FLOAT.
+        * config/alpha/osf5.h (LONG_DOUBLE_TYPE_SIZE): Remove.
+        (TARGET_DEFAULT): Set MASK_LONG_DOUBLE_128.
+
 2004-03-08  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/14471

@@ -501,6 +501,9 @@ override_options ()
 	  warning ("trap mode not supported for VAX floats");
 	  alpha_fptm = ALPHA_FPTM_SU;
 	}
+      if (target_flags_explicit & MASK_LONG_DOUBLE_128)
+	warning ("128-bit long double not supported for VAX floats");
+      target_flags &= ~MASK_LONG_DOUBLE_128;
     }
 
   {
