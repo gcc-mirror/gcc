@@ -4329,6 +4329,10 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
     case EQ:  case NE:
     case GT:  case GTU:  case GE:  case GEU:
     case LT:  case LTU:  case LE:  case LEU:
+    case UNEQ:  case LTGT:
+    case UNGT:  case UNGE:  
+    case UNLT:  case UNLE:  
+    case UNORDERED: case ORDERED:
       /* If the first operand is a condition code, we can't do anything
 	 with it.  */
       if (GET_CODE (XEXP (x, 0)) == COMPARE
@@ -7488,7 +7492,9 @@ known_cond (x, cond, reg, val)
   if (side_effects_p (x))
     return x;
 
-  if (cond == EQ && rtx_equal_p (x, reg))
+  if (cond == EQ && rtx_equal_p (x, reg) && !FLOAT_MODE_P (cond))
+    return val;
+  if (cond == UNEQ && rtx_equal_p (x, reg))
     return val;
 
   /* If X is (abs REG) and we know something about REG's relationship
@@ -8119,10 +8125,12 @@ nonzero_bits (x, mode)
       break;
 
     case EQ:  case NE:
-    case GT:  case GTU:
-    case LT:  case LTU:
-    case GE:  case GEU:
-    case LE:  case LEU:
+    case UNEQ:  case LTGT:
+    case GT:  case GTU:  case UNGT:
+    case LT:  case LTU:  case UNLT:
+    case GE:  case GEU:  case UNGE:
+    case LE:  case LEU:  case UNLE:
+    case UNORDERED: case ORDERED:
 
       /* If this produces an integer result, we know which bits are set.
 	 Code here used to clear bits outside the mode of X, but that is
@@ -8696,9 +8704,17 @@ num_sign_bit_copies (x, mode)
       return MIN (num0, num1);
 
     case EQ:  case NE:  case GE:  case GT:  case LE:  case LT:
+    case UNEQ:  case LTGT:  case UNGE:  case UNGT:  case UNLE:  case UNLT:
     case GEU: case GTU: case LEU: case LTU:
-      if (STORE_FLAG_VALUE == -1)
-	return bitwidth;
+    case UNORDERED: case ORDERED:
+      /* If the constant is negative, take its 1's complement and remask.
+	 Then see how many zero bits we have.  */
+      nonzero = STORE_FLAG_VALUE;
+      if (bitwidth <= HOST_BITS_PER_WIDE_INT
+	  && (nonzero & ((HOST_WIDE_INT) 1 << (bitwidth - 1))) != 0)
+	nonzero = (~nonzero) & GET_MODE_MASK (mode);
+
+      return (nonzero == 0 ? bitwidth : bitwidth - floor_log2 (nonzero) - 1);
       break;
 
     default:
@@ -10668,8 +10684,10 @@ simplify_comparison (code, pop0, pop1)
 	  break;
 
 	case EQ:  case NE:
-	case LT:  case LTU:  case LE:  case LEU:
-	case GT:  case GTU:  case GE:  case GEU:
+	case UNEQ:  case LTGT:
+	case LT:  case LTU:  case UNLT:  case LE:  case LEU:  case UNLE:
+	case GT:  case GTU:  case UNGT:  case GE:  case GEU:  case UNGE:
+        case UNORDERED: case ORDERED:
 	  /* We can't do anything if OP0 is a condition code value, rather
 	     than an actual data value.  */
 	  if (const_op != 0
