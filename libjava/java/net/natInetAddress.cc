@@ -66,6 +66,12 @@ java::net::InetAddress::aton (jstring)
   return NULL;
 }
 
+jint
+java::net::InetAddress::getFamily (jbyteArray bytes)
+{
+  return 0;
+}
+
 JArray<java::net::InetAddress*> *
 java::net::InetAddress::lookup (jstring, java::net::InetAddress *, jboolean)
 {
@@ -125,6 +131,20 @@ java::net::InetAddress::aton (jstring host)
   jbyteArray result = JvNewByteArray (blen);
   memcpy (elements (result), bytes, blen);
   return result;
+}
+
+jint
+java::net::InetAddress::getFamily (jbyteArray bytes)
+{
+  int len = bytes->length;
+  if (len == 4)
+    return AF_INET;
+#ifdef HAVE_INET6
+  else if (len == 16)
+    return AF_INET6;
+#endif /* HAVE_INET6 */
+  else
+    JvFail ("unrecognized size");
 }
 
 
@@ -196,7 +216,7 @@ java::net::InetAddress::lookup (jstring host, java::net::InetAddress* iaddr,
     }
   else
     {
-      jbyteArray bytes = iaddr->address;
+      jbyteArray bytes = iaddr->addr;
       char *chars = (char*) elements (bytes);
       int len = bytes->length;
       int type;
@@ -204,13 +224,13 @@ java::net::InetAddress::lookup (jstring host, java::net::InetAddress* iaddr,
       if (len == 4)
 	{
 	  val = chars;
-	  type = AF_INET;
+	  type = iaddr->family = AF_INET;
 	}
 #ifdef HAVE_INET6
       else if (len == 16)
 	{
 	  val = (char *) &chars;
-	  type = AF_INET6;
+	  type = iaddr->family = AF_INET6;
 	}
 #endif /* HAVE_INET6 */
       else
@@ -255,16 +275,16 @@ java::net::InetAddress::lookup (jstring host, java::net::InetAddress* iaddr,
       java::lang::SecurityException *ex = checkConnect (host);
       if (ex != NULL)
 	{
-	  if (iaddr == NULL || iaddr->address == NULL)
+	  if (iaddr == NULL || iaddr->addr == NULL)
 	    throw ex;
 	  hptr = NULL;
 	}
     }
   if (hptr == NULL)
     {
-      if (iaddr != NULL && iaddr->address != NULL)
+      if (iaddr != NULL && iaddr->addr != NULL)
 	{
-	  iaddr->hostname = iaddr->getHostAddress();
+	  iaddr->hostName = iaddr->getHostAddress();
 	  return NULL;
 	}
       else
@@ -296,13 +316,14 @@ java::net::InetAddress::lookup (jstring host, java::net::InetAddress* iaddr,
     {
       if (iaddrs[i] == NULL)
 	iaddrs[i] = new java::net::InetAddress (NULL, NULL);
-      if (iaddrs[i]->hostname == NULL)
-        iaddrs[i]->hostname = host;
-      if (iaddrs[i]->address == NULL)
+      if (iaddrs[i]->hostName == NULL)
+        iaddrs[i]->hostName = host;
+      if (iaddrs[i]->addr == NULL)
 	{
 	  char *bytes = hptr->h_addr_list[i];
-	  iaddrs[i]->address = JvNewByteArray (hptr->h_length);
-	  memcpy (elements (iaddrs[i]->address), bytes, hptr->h_length);
+	  iaddrs[i]->addr = JvNewByteArray (hptr->h_length);
+	  iaddrs[i]->family = getFamily (iaddrs[i]->addr);
+	  memcpy (elements (iaddrs[i]->addr), bytes, hptr->h_length);
 	}
     }
   return result;
