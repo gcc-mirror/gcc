@@ -1,3 +1,21 @@
+2000-02-15  Tom Tromey  <tromey@cygnus.com>
+
+	* libjava.jni/virtual.java: New file.
+	* libjava.jni/virtual.c: New file.
+	* libjava.jni/virtual.out: New file.
+	* libjava.jni/final_method.java: New file.
+	* libjava.jni/final_method.c: New file.
+	* libjava.jni/final_method.out: New file.
+	* libjava.jni/overload.java: New file.
+	* libjava.jni/overload.c: New file.
+	* libjava.jni/overload.out: New file.
+	* libjava.jni/simple_int.java: New file.
+	* libjava.jni/simple_int.c: New file.
+	* libjava.jni/simple_int.out: New file.
+	* libjava.jni/invoke.out: New file.
+	* libjava.jni/invoke.c: New file.
+	* libjava.jni/invoke.java: New file.
+
 2000-02-12  Anthony Green  <green@cygnus.com>
 
 	* libjava.compile/comment.java: New file.
