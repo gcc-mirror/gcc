@@ -1,3 +1,8 @@
+2000-05-25  Alexandre Oliva  <aoliva@cygnus.com>
+
+	* emit-rtl.c (reset_used_decls): New function.
+	(unshare_all_rtl_again): Call it.
+
 2000-05-25  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplex.c (maybe_macroexpand): Warn about function-like
