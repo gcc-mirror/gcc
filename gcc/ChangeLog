@@ -1,5 +1,22 @@
 Fri Oct 31 07:10:09 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* alias.c (init_alias_analysis): Add struct_value_incoming_rtx
+	and static_chain_rtx into the potential base values array if
+	they are registers.
+
+	* alias.c (new_reg_base_value): New array of potential base values.
+	(unique_id): Now file scoped static.
+	(find_base_value, case REG): Return the value in reg_base_value
+	array for the REG if it exists.  Else, return the value from
+	new_reg_base_value if copying args and REG is a hard register.
+	(find_base_value, case PLUS): If either operand of the PLUS is
+	a REG, try to get its base value.  Handle base + index and
+	index + base.
+	(record_set): Use new_reg_base_value instead of reg_base_value.
+	(init_alias_analysis): Allocate space for new_reg_base_value too.
+	Rework code to iterate over the insns propagating base value
+	information until nothing changes.
+
 	* global.c (global_alloc): Free the conflict matrix after
 	reload has finished.
 
