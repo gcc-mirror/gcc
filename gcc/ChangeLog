@@ -1,3 +1,16 @@
+2003-04-25  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/linux.h (TARGET_OS_CPP_BUILTINS): Remove definition of
+	_GNU_SOURCE.  Add definitions of __PIC__ and __pic__.
+	(SUBTARGET_CPP_SPEC): Define.
+	(LIB_SPEC): Delete.
+	* config/xtensa/xtensa-protos.h (xtensa_declare_object): Delete.
+	* config/xtensa/xtensa.c (xtensa_declare_object): Delete.
+	* config/xtensa/xtensa.h (CPP_SPEC, SUBTARGET_CPP_SPEC, EXTRA_SPECS):
+	Define.
+	(ASM_OUTPUT_COMMON, ASM_OUTPUT_LOCAL): Delete.
+	(ASM_OUTPUT_ALIGNED_BSS, BSS_SECTION_ASM_OP): Define.
+
 2003-04-25  H.J. Lu <hjl@gnu.org>
 
 	* config/ia64/ia64.c (ia64_expand_compare_and_swap): Add rmode
