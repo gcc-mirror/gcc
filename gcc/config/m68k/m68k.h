@@ -642,13 +642,15 @@ extern enum reg_class regno_reg_class[];
    allowed as immediate shift counts and in addq.
    `J' is used for the range of signed numbers that fit in 16 bits.
    `K' is for numbers that moveq can't handle.
-   `L' is for range -8 to -1, range of values that can be added with subq.  */
+   `L' is for range -8 to -1, range of values that can be added with subq.
+   `M' is for numbers that moveq+notb can't handle.  */
 
-#define CONST_OK_FOR_LETTER_P(VALUE, C)  \
-  ((C) == 'I' ? (VALUE) > 0 && (VALUE) <= 8 :    \
-   (C) == 'J' ? (VALUE) >= -0x8000 && (VALUE) <= 0x7FFF :	\
-   (C) == 'K' ? (VALUE) < -0x80 || (VALUE) >= 0x80 :	\
-   (C) == 'L' ? (VALUE) < 0 && (VALUE) >= -8 : 0)
+#define CONST_OK_FOR_LETTER_P(VALUE, C) \
+  ((C) == 'I' ? (VALUE) > 0 && (VALUE) <= 8 : \
+   (C) == 'J' ? (VALUE) >= -0x8000 && (VALUE) <= 0x7FFF : \
+   (C) == 'K' ? (VALUE) < -0x80 || (VALUE) >= 0x80 : \
+   (C) == 'L' ? (VALUE) < 0 && (VALUE) >= -8 : \
+   (C) == 'M' ? (VALUE) < -0x100 && (VALUE) >= 0x100 : 0)
 
 /*
  * A small bit of explanation:
