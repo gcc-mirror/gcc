@@ -1,0 +1,1524 @@
+// class template tuple -*- C++ -*-
+
+// Copyright (C) 2004 Free Software Foundation, Inc.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 2, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License along
+// with this library; see the file COPYING.  If not, write to the Free
+// Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+// USA.
+
+// Chris Jefferson <chris@bubblescope.net>
+
+// This header is automatically generated: see maketuple.c for details.
+
+#ifndef _TUPLE
+#define _TUPLE 1
+
+#include<utility>
+
+namespace std
+{
+namespace tr1
+{
+  // An implementation specific class which is used in the tuple class
+  // when the tuple is not maximum possible size.
+  struct _NullClass { };
+
+  // Foward definition of the tuple class
+  template<typename _T0 = _NullClass, typename _T1 = _NullClass, 
+	   typename _T2 = _NullClass, typename _T3 = _NullClass, 
+	   typename _T4 = _NullClass, typename _T5 = _NullClass, 
+	   typename _T6 = _NullClass, typename _T7 = _NullClass, 
+	   typename _T8 = _NullClass, typename _T9 = _NullClass>
+    class tuple;
+
+  // Gives the type of the ith element of a given tuple type.
+  template<int __i, typename _T>
+    struct tuple_element;
+
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6, typename _T7, 
+	   typename _T8, typename _T9>
+    struct tuple_element<0, tuple<_T0, _T1, _T2, _T3, _T4, _T5, _T6, 
+				  _T7, _T8, _T9> >
+    { typedef _T0 type; };
+  
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6, typename _T7, 
+	   typename _T8, typename _T9>
+    struct tuple_element<1, tuple<_T0, _T1, _T2, _T3, _T4, _T5, _T6, 
+				  _T7, _T8, _T9> >
+    { typedef _T1 type; };
+  
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6, typename _T7, 
+	   typename _T8, typename _T9>
+    struct tuple_element<2, tuple<_T0, _T1, _T2, _T3, _T4, _T5, _T6, 
+				  _T7, _T8, _T9> >
+    { typedef _T2 type; };
+  
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6, typename _T7, 
+	   typename _T8, typename _T9>
+    struct tuple_element<3, tuple<_T0, _T1, _T2, _T3, _T4, _T5, _T6, 
+				  _T7, _T8, _T9> >
+    { typedef _T3 type; };
+  
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6, typename _T7, 
+	   typename _T8, typename _T9>
+    struct tuple_element<4, tuple<_T0, _T1, _T2, _T3, _T4, _T5, _T6, 
+				  _T7, _T8, _T9> > 
+    { typedef _T4 type; };
+  
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6, typename _T7, 
+	   typename _T8, typename _T9>
+    struct tuple_element<5, tuple<_T0, _T1, _T2, _T3, _T4, _T5, _T6, 
+				  _T7, _T8, _T9> >
+    { typedef _T5 type; };
+  
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6, typename _T7, 
+	   typename _T8, typename _T9>
+    struct tuple_element<6, tuple<_T0, _T1, _T2, _T3, _T4, _T5, _T6, 
+				  _T7, _T8, _T9> >
+    { typedef _T6 type; };
+  
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6, typename _T7, 
+	   typename _T8, typename _T9>
+    struct tuple_element<7, tuple<_T0, _T1, _T2, _T3, _T4, _T5, _T6, 
+				  _T7, _T8, _T9> >
+    { typedef _T7 type; };
+  
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6, typename _T7, 
+	   typename _T8, typename _T9>
+    struct tuple_element<8, tuple<_T0, _T1, _T2, _T3, _T4, _T5, _T6, 
+				  _T7, _T8, _T9> >
+    { typedef _T8 type; };
+  
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6, typename _T7, 
+	   typename _T8, typename _T9>
+    struct tuple_element<9, tuple<_T0, _T1, _T2, _T3, _T4, _T5, _T6, 
+				  _T7, _T8, _T9> >
+   { typedef _T9 type; };
+  
+  // Finds the size of a given tuple type.
+  // NB: Can't this be done via value->type conversions in the generic
+  // tuple class, say with an enum?
+  template<typename _T>
+    struct tuple_size;
+
+  template<>
+    struct tuple_size<tuple<_NullClass, _NullClass, _NullClass, _NullClass, 
+			    _NullClass, _NullClass, _NullClass, _NullClass, 
+			    _NullClass, _NullClass> >
+    { static const int value = 0; };
+  
+  template<typename _T0>
+    struct tuple_size<tuple<_T0, _NullClass, _NullClass, _NullClass, 
+			    _NullClass, _NullClass, _NullClass, _NullClass, 
+			    _NullClass, _NullClass> >
+    { static const int value = 1; };
+  
+  template<typename _T0, typename _T1>
+    struct tuple_size<tuple<_T0, _T1, _NullClass, _NullClass, _NullClass, 
+			    _NullClass, _NullClass, _NullClass, _NullClass, 
+			    _NullClass> >
+    { static const int value = 2; };
+  
+  template<typename _T0, typename _T1, typename _T2>
+    struct tuple_size<tuple<_T0, _T1, _T2, _NullClass, _NullClass, 
+			    _NullClass, _NullClass, _NullClass, _NullClass, 
+			    _NullClass> >
+    { static const int value = 3; };
+  
+  template<typename _T0, typename _T1, typename _T2, typename _T3>
+    struct tuple_size<tuple<_T0, _T1, _T2, _T3, _NullClass, _NullClass, 
+			    _NullClass, _NullClass, _NullClass, _NullClass> >
+    { static const int value = 4; };
+  
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4>
+    struct tuple_size<tuple<_T0, _T1, _T2, _T3, _T4, _NullClass, 
+			    _NullClass, _NullClass, _NullClass, _NullClass> >
+    { static const int value = 5; };
+  
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5>
+    struct tuple_size<tuple<_T0, _T1, _T2, _T3, _T4, _T5, _NullClass, 
+			    _NullClass, _NullClass, _NullClass> >
+    { static const int value = 6; };
+  
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6>
+    struct tuple_size<tuple<_T0, _T1, _T2, _T3, _T4, _T5, _T6, 
+			    _NullClass, _NullClass, _NullClass> >
+    { static const int value = 7; };
+  
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6, typename _T7>
+    struct tuple_size<tuple<_T0, _T1, _T2, _T3, _T4, _T5, _T6, _T7, 
+			    _NullClass, _NullClass> >
+    { static const int value = 8; };
+  
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6, typename _T7, 
+	   typename _T8>
+    struct tuple_size<tuple<_T0, _T1, _T2, _T3, _T4, _T5, _T6, _T7, 
+			    _T8, _NullClass> >
+    { static const int value = 9; };
+  
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6, typename _T7, 
+	   typename _T8, typename _T9>
+    struct tuple_size<tuple<_T0, _T1, _T2, _T3, _T4, _T5, _T6, _T7, 
+			    _T8, _T9> >
+    { static const int value = 10; };
+  
+  // Adds a const reference to a non-reference type.
+  template<typename _T>
+    struct __add_const_ref
+    { typedef const _T& type; };
+  
+  template<typename _T>
+    struct __add_const_ref<_T&>
+    { typedef _T& type; };
+  
+  // Adds a reference to a non-reference type.
+  template<typename _T>
+    struct __add_ref
+    { typedef _T& type; };
+  
+  template<typename _T>
+    struct __add_ref<_T&>
+    { typedef _T& type; };
+  
+  // The empty tuple.
+  template<>
+    class tuple<_NullClass, _NullClass, _NullClass, _NullClass, _NullClass, 
+		_NullClass, _NullClass, _NullClass, _NullClass, _NullClass>
+    {
+    public:
+      tuple()
+      { }
+      
+      tuple(const tuple& __in)
+      { }
+      
+      tuple& operator=(const tuple& __in)
+      { return *this; }
+    };
+  
+  template<typename _T0>
+    class tuple<_T0, _NullClass, _NullClass, _NullClass, _NullClass, 
+		_NullClass, _NullClass, _NullClass, _NullClass, _NullClass>
+    {
+      _T0 __t0;
+
+    public:
+      tuple()
+      { }
+      
+      explicit tuple(typename __add_const_ref<_T0>::type __in0):
+      __t0(__in0)
+      { }
+      
+    tuple(const tuple& __in):
+      __t0(__in.__t0)
+    { }
+    template <typename _U0>
+    tuple(const tuple<_U0>& __in):
+      __t0(__in.__t0)
+    { }
+      
+    tuple& operator=(const tuple& __in)
+    {
+      __t0=__in.__t0;
+      return *this;
+    }
+      
+    template <typename _U0>
+    tuple&
+    operator=(const tuple<_U0>& __in)
+    {
+      __t0=__in.__t0;
+      return *this;
+    }
+    template<int __i, typename _U>
+    friend class __get_helper;
+    template<typename, typename, typename, typename, typename, typename, 
+	     typename, typename, typename, typename>
+    friend class tuple;
+  };
+  
+  template<typename _T0, typename _T1>
+  class tuple<_T0, _T1, _NullClass, _NullClass, _NullClass, _NullClass, 
+	      _NullClass, _NullClass, _NullClass, _NullClass>
+  {
+    _T0 __t0;
+    _T1 __t1;
+  public:
+    tuple()
+    { }
+      
+    explicit tuple(typename __add_const_ref<_T0>::type __in0, 
+		   typename __add_const_ref<_T1>::type __in1):
+      __t0(__in0), __t1(__in1)
+    { }
+      
+    tuple(const tuple& __in):
+      __t0(__in.__t0), __t1(__in.__t1)
+    { }
+    template <typename _U0, typename _U1>
+    tuple(const tuple<_U0, _U1>& __in):
+      __t0(__in.__t0), __t1(__in.__t1)
+    { }
+      
+    template<class _U1, class _U2>
+    tuple(const std::pair<_U1, _U2>& __u): __t0(__u.first), __t1(__u.second)
+    { }
+      
+    tuple& operator=(const tuple& __in)
+    {
+      __t0=__in.__t0;
+      __t1=__in.__t1;
+      return *this;
+    }
+      
+    template <typename _U0, typename _U1>
+    tuple&
+    operator=(const tuple<_U0, _U1>& __in)
+    {
+      __t0=__in.__t0;
+      __t1=__in.__t1;
+      return *this;
+    }
+    template<int __i, typename _U>
+    friend class __get_helper;
+    template<typename, typename, typename, typename, typename, typename, 
+	     typename, typename, typename, typename>
+    friend class tuple;
+  };
+  
+  template<typename _T0, typename _T1, typename _T2>
+  class tuple<_T0, _T1, _T2, _NullClass, _NullClass, _NullClass, 
+	      _NullClass, _NullClass, _NullClass, _NullClass>
+  {
+    _T0 __t0;
+    _T1 __t1;
+    _T2 __t2;
+  public:
+    tuple()
+    { }
+      
+    explicit tuple(typename __add_const_ref<_T0>::type __in0, 
+		   typename __add_const_ref<_T1>::type __in1, 
+		   typename __add_const_ref<_T2>::type __in2):
+      __t0(__in0), __t1(__in1), __t2(__in2)
+    { }
+      
+    tuple(const tuple& __in):
+      __t0(__in.__t0), __t1(__in.__t1), __t2(__in.__t2)
+    { }
+    template <typename _U0, typename _U1, typename _U2>
+    tuple(const tuple<_U0, _U1, _U2>& __in):
+      __t0(__in.__t0), __t1(__in.__t1), __t2(__in.__t2)
+    { }
+      
+    tuple& operator=(const tuple& __in)
+    {
+      __t0=__in.__t0;
+      __t1=__in.__t1;
+      __t2=__in.__t2;
+      return *this;
+    }
+      
+    template <typename _U0, typename _U1, typename _U2>
+    tuple&
+    operator=(const tuple<_U0, _U1, _U2>& __in)
+    {
+      __t0=__in.__t0;
+      __t1=__in.__t1;
+      __t2=__in.__t2;
+      return *this;
+    }
+    template<int __i, typename _U>
+    friend class __get_helper;
+    template<typename, typename, typename, typename, typename, typename, 
+	     typename, typename, typename, typename>
+    friend class tuple;
+  };
+  
+  template<typename _T0, typename _T1, typename _T2, typename _T3>
+  class tuple<_T0, _T1, _T2, _T3, _NullClass, _NullClass, _NullClass, 
+	      _NullClass, _NullClass, _NullClass>
+  {
+    _T0 __t0;
+    _T1 __t1;
+    _T2 __t2;
+    _T3 __t3;
+  public:
+    tuple()
+    { }
+      
+    explicit tuple(typename __add_const_ref<_T0>::type __in0, 
+		   typename __add_const_ref<_T1>::type __in1, 
+		   typename __add_const_ref<_T2>::type __in2, 
+		   typename __add_const_ref<_T3>::type __in3):
+      __t0(__in0), __t1(__in1), __t2(__in2), __t3(__in3)
+    { }
+      
+    tuple(const tuple& __in):
+      __t0(__in.__t0), __t1(__in.__t1), __t2(__in.__t2), 
+      __t3(__in.__t3)
+    { }
+    template <typename _U0, typename _U1, typename _U2, typename _U3>
+    tuple(const tuple<_U0, _U1, _U2, _U3>& __in):
+      __t0(__in.__t0), __t1(__in.__t1), __t2(__in.__t2), 
+      __t3(__in.__t3)
+    { }
+      
+    tuple& operator=(const tuple& __in)
+    {
+      __t0=__in.__t0;
+      __t1=__in.__t1;
+      __t2=__in.__t2;
+      __t3=__in.__t3;
+      return *this;
+    }
+      
+    template <typename _U0, typename _U1, typename _U2, typename _U3>
+    tuple&
+    operator=(const tuple<_U0, _U1, _U2, _U3>& __in)
+    {
+      __t0=__in.__t0;
+      __t1=__in.__t1;
+      __t2=__in.__t2;
+      __t3=__in.__t3;
+      return *this;
+    }
+    template<int __i, typename _U>
+    friend class __get_helper;
+    template<typename, typename, typename, typename, typename, typename, 
+	     typename, typename, typename, typename>
+    friend class tuple;
+  };
+  
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4>
+  class tuple<_T0, _T1, _T2, _T3, _T4, _NullClass, _NullClass, 
+	      _NullClass, _NullClass, _NullClass>
+  {
+    _T0 __t0;
+    _T1 __t1;
+    _T2 __t2;
+    _T3 __t3;
+    _T4 __t4;
+  public:
+    tuple()
+    { }
+      
+    explicit tuple(typename __add_const_ref<_T0>::type __in0, 
+		   typename __add_const_ref<_T1>::type __in1, 
+		   typename __add_const_ref<_T2>::type __in2, 
+		   typename __add_const_ref<_T3>::type __in3, 
+		   typename __add_const_ref<_T4>::type __in4):
+      __t0(__in0), __t1(__in1), __t2(__in2), __t3(__in3), 
+      __t4(__in4)
+    { }
+      
+    tuple(const tuple& __in):
+      __t0(__in.__t0), __t1(__in.__t1), __t2(__in.__t2), 
+      __t3(__in.__t3), __t4(__in.__t4)
+    { }
+    template <typename _U0, typename _U1, typename _U2, typename _U3, 
+	      typename _U4>
+    tuple(const tuple<_U0, _U1, _U2, _U3, _U4>& __in):
+      __t0(__in.__t0), __t1(__in.__t1), __t2(__in.__t2), 
+      __t3(__in.__t3), __t4(__in.__t4)
+    { }
+      
+    tuple& operator=(const tuple& __in)
+    {
+      __t0=__in.__t0;
+      __t1=__in.__t1;
+      __t2=__in.__t2;
+      __t3=__in.__t3;
+      __t4=__in.__t4;
+      return *this;
+    }
+      
+    template <typename _U0, typename _U1, typename _U2, typename _U3, 
+	      typename _U4>
+    tuple&
+    operator=(const tuple<_U0, _U1, _U2, _U3, _U4>& __in)
+    {
+      __t0=__in.__t0;
+      __t1=__in.__t1;
+      __t2=__in.__t2;
+      __t3=__in.__t3;
+      __t4=__in.__t4;
+      return *this;
+    }
+    template<int __i, typename _U>
+    friend class __get_helper;
+    template<typename, typename, typename, typename, typename, typename, 
+	     typename, typename, typename, typename>
+    friend class tuple;
+  };
+  
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5>
+  class tuple<_T0, _T1, _T2, _T3, _T4, _T5, _NullClass, _NullClass, 
+	      _NullClass, _NullClass>
+  {
+    _T0 __t0;
+    _T1 __t1;
+    _T2 __t2;
+    _T3 __t3;
+    _T4 __t4;
+    _T5 __t5;
+  public:
+    tuple()
+    { }
+      
+    explicit tuple(typename __add_const_ref<_T0>::type __in0, 
+		   typename __add_const_ref<_T1>::type __in1, 
+		   typename __add_const_ref<_T2>::type __in2, 
+		   typename __add_const_ref<_T3>::type __in3, 
+		   typename __add_const_ref<_T4>::type __in4, 
+		   typename __add_const_ref<_T5>::type __in5):
+      __t0(__in0), __t1(__in1), __t2(__in2), __t3(__in3), 
+      __t4(__in4), __t5(__in5)
+    { }
+      
+    tuple(const tuple& __in):
+      __t0(__in.__t0), __t1(__in.__t1), __t2(__in.__t2), 
+      __t3(__in.__t3), __t4(__in.__t4), __t5(__in.__t5)
+    { }
+    template <typename _U0, typename _U1, typename _U2, typename _U3, 
+	      typename _U4, typename _U5>
+    tuple(const tuple<_U0, _U1, _U2, _U3, _U4, _U5>& __in):
+      __t0(__in.__t0), __t1(__in.__t1), __t2(__in.__t2), 
+      __t3(__in.__t3), __t4(__in.__t4), __t5(__in.__t5)
+    { }
+      
+    tuple& operator=(const tuple& __in)
+    {
+      __t0=__in.__t0;
+      __t1=__in.__t1;
+      __t2=__in.__t2;
+      __t3=__in.__t3;
+      __t4=__in.__t4;
+      __t5=__in.__t5;
+      return *this;
+    }
+      
+    template <typename _U0, typename _U1, typename _U2, typename _U3, 
+	      typename _U4, typename _U5>
+    tuple&
+    operator=(const tuple<_U0, _U1, _U2, _U3, _U4, _U5>& __in)
+    {
+      __t0=__in.__t0;
+      __t1=__in.__t1;
+      __t2=__in.__t2;
+      __t3=__in.__t3;
+      __t4=__in.__t4;
+      __t5=__in.__t5;
+      return *this;
+    }
+    template<int __i, typename _U>
+    friend class __get_helper;
+    template<typename, typename, typename, typename, typename, typename, 
+	     typename, typename, typename, typename>
+    friend class tuple;
+  };
+  
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6>
+  class tuple<_T0, _T1, _T2, _T3, _T4, _T5, _T6, _NullClass, 
+	      _NullClass, _NullClass>
+  {
+    _T0 __t0;
+    _T1 __t1;
+    _T2 __t2;
+    _T3 __t3;
+    _T4 __t4;
+    _T5 __t5;
+    _T6 __t6;
+  public:
+    tuple()
+    { }
+      
+    explicit tuple(typename __add_const_ref<_T0>::type __in0, 
+		   typename __add_const_ref<_T1>::type __in1, 
+		   typename __add_const_ref<_T2>::type __in2, 
+		   typename __add_const_ref<_T3>::type __in3, 
+		   typename __add_const_ref<_T4>::type __in4, 
+		   typename __add_const_ref<_T5>::type __in5, 
+		   typename __add_const_ref<_T6>::type __in6):
+      __t0(__in0), __t1(__in1), __t2(__in2), __t3(__in3), 
+      __t4(__in4), __t5(__in5), __t6(__in6)
+    { }
+      
+    tuple(const tuple& __in):
+      __t0(__in.__t0), __t1(__in.__t1), __t2(__in.__t2), 
+      __t3(__in.__t3), __t4(__in.__t4), __t5(__in.__t5), 
+      __t6(__in.__t6)
+    { }
+    template <typename _U0, typename _U1, typename _U2, typename _U3, 
+	      typename _U4, typename _U5, typename _U6>
+    tuple(const tuple<_U0, _U1, _U2, _U3, _U4, _U5, _U6>& __in):
+      __t0(__in.__t0), __t1(__in.__t1), __t2(__in.__t2), 
+      __t3(__in.__t3), __t4(__in.__t4), __t5(__in.__t5), 
+      __t6(__in.__t6)
+    { }
+      
+    tuple& operator=(const tuple& __in)
+    {
+      __t0=__in.__t0;
+      __t1=__in.__t1;
+      __t2=__in.__t2;
+      __t3=__in.__t3;
+      __t4=__in.__t4;
+      __t5=__in.__t5;
+      __t6=__in.__t6;
+      return *this;
+    }
+      
+    template <typename _U0, typename _U1, typename _U2, typename _U3, 
+	      typename _U4, typename _U5, typename _U6>
+    tuple&
+    operator=(const tuple<_U0, _U1, _U2, _U3, _U4, _U5, _U6>& __in)
+    {
+      __t0=__in.__t0;
+      __t1=__in.__t1;
+      __t2=__in.__t2;
+      __t3=__in.__t3;
+      __t4=__in.__t4;
+      __t5=__in.__t5;
+      __t6=__in.__t6;
+      return *this;
+    }
+    template<int __i, typename _U>
+    friend class __get_helper;
+    template<typename, typename, typename, typename, typename, typename, 
+	     typename, typename, typename, typename>
+    friend class tuple;
+  };
+  
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6, typename _T7>
+  class tuple<_T0, _T1, _T2, _T3, _T4, _T5, _T6, _T7, _NullClass, 
+	      _NullClass>
+  {
+    _T0 __t0;
+    _T1 __t1;
+    _T2 __t2;
+    _T3 __t3;
+    _T4 __t4;
+    _T5 __t5;
+    _T6 __t6;
+    _T7 __t7;
+  public:
+    tuple()
+    { }
+      
+    explicit tuple(typename __add_const_ref<_T0>::type __in0, 
+		   typename __add_const_ref<_T1>::type __in1, 
+		   typename __add_const_ref<_T2>::type __in2, 
+		   typename __add_const_ref<_T3>::type __in3, 
+		   typename __add_const_ref<_T4>::type __in4, 
+		   typename __add_const_ref<_T5>::type __in5, 
+		   typename __add_const_ref<_T6>::type __in6, 
+		   typename __add_const_ref<_T7>::type __in7):
+      __t0(__in0), __t1(__in1), __t2(__in2), __t3(__in3), 
+      __t4(__in4), __t5(__in5), __t6(__in6), __t7(__in7)
+    { }
+      
+    tuple(const tuple& __in):
+      __t0(__in.__t0), __t1(__in.__t1), __t2(__in.__t2), 
+      __t3(__in.__t3), __t4(__in.__t4), __t5(__in.__t5), 
+      __t6(__in.__t6), __t7(__in.__t7)
+    { }
+    template <typename _U0, typename _U1, typename _U2, typename _U3, 
+	      typename _U4, typename _U5, typename _U6, typename _U7>
+    tuple(const tuple<_U0, _U1, _U2, _U3, _U4, _U5, _U6, _U7
+	  >& __in):
+      __t0(__in.__t0), __t1(__in.__t1), __t2(__in.__t2), 
+      __t3(__in.__t3), __t4(__in.__t4), __t5(__in.__t5), 
+      __t6(__in.__t6), __t7(__in.__t7)
+    { }
+      
+    tuple& operator=(const tuple& __in)
+    {
+      __t0=__in.__t0;
+      __t1=__in.__t1;
+      __t2=__in.__t2;
+      __t3=__in.__t3;
+      __t4=__in.__t4;
+      __t5=__in.__t5;
+      __t6=__in.__t6;
+      __t7=__in.__t7;
+      return *this;
+    }
+      
+    template <typename _U0, typename _U1, typename _U2, typename _U3, 
+	      typename _U4, typename _U5, typename _U6, typename _U7>
+    tuple&
+    operator=(const tuple<_U0, _U1, _U2, _U3, _U4, _U5, _U6, _U7
+	      >& __in)
+    {
+      __t0=__in.__t0;
+      __t1=__in.__t1;
+      __t2=__in.__t2;
+      __t3=__in.__t3;
+      __t4=__in.__t4;
+      __t5=__in.__t5;
+      __t6=__in.__t6;
+      __t7=__in.__t7;
+      return *this;
+    }
+    template<int __i, typename _U>
+    friend class __get_helper;
+    template<typename, typename, typename, typename, typename, typename, 
+	     typename, typename, typename, typename>
+    friend class tuple;
+  };
+  
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6, typename _T7, 
+	   typename _T8>
+  class tuple<_T0, _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, 
+	      _NullClass>
+  {
+    _T0 __t0;
+    _T1 __t1;
+    _T2 __t2;
+    _T3 __t3;
+    _T4 __t4;
+    _T5 __t5;
+    _T6 __t6;
+    _T7 __t7;
+    _T8 __t8;
+  public:
+    tuple()
+    { }
+      
+    explicit tuple(typename __add_const_ref<_T0>::type __in0, 
+		   typename __add_const_ref<_T1>::type __in1, 
+		   typename __add_const_ref<_T2>::type __in2, 
+		   typename __add_const_ref<_T3>::type __in3, 
+		   typename __add_const_ref<_T4>::type __in4, 
+		   typename __add_const_ref<_T5>::type __in5, 
+		   typename __add_const_ref<_T6>::type __in6, 
+		   typename __add_const_ref<_T7>::type __in7, 
+		   typename __add_const_ref<_T8>::type __in8):
+      __t0(__in0), __t1(__in1), __t2(__in2), __t3(__in3), 
+      __t4(__in4), __t5(__in5), __t6(__in6), __t7(__in7), 
+      __t8(__in8)
+    { }
+      
+    tuple(const tuple& __in):
+      __t0(__in.__t0), __t1(__in.__t1), __t2(__in.__t2), 
+      __t3(__in.__t3), __t4(__in.__t4), __t5(__in.__t5), 
+      __t6(__in.__t6), __t7(__in.__t7), __t8(__in.__t8)
+    { }
+    template <typename _U0, typename _U1, typename _U2, typename _U3, 
+	      typename _U4, typename _U5, typename _U6, typename _U7, 
+	      typename _U8>
+    tuple(const tuple<_U0, _U1, _U2, _U3, _U4, _U5, _U6, _U7, _U8
+	  >& __in):
+      __t0(__in.__t0), __t1(__in.__t1), __t2(__in.__t2), 
+      __t3(__in.__t3), __t4(__in.__t4), __t5(__in.__t5), 
+      __t6(__in.__t6), __t7(__in.__t7), __t8(__in.__t8)
+    { }
+      
+    tuple& operator=(const tuple& __in)
+    {
+      __t0=__in.__t0;
+      __t1=__in.__t1;
+      __t2=__in.__t2;
+      __t3=__in.__t3;
+      __t4=__in.__t4;
+      __t5=__in.__t5;
+      __t6=__in.__t6;
+      __t7=__in.__t7;
+      __t8=__in.__t8;
+      return *this;
+    }
+      
+    template <typename _U0, typename _U1, typename _U2, typename _U3, 
+	      typename _U4, typename _U5, typename _U6, typename _U7, 
+	      typename _U8>
+    tuple&
+    operator=(const tuple<_U0, _U1, _U2, _U3, _U4, _U5, _U6, _U7, 
+	      _U8>& __in)
+    {
+      __t0=__in.__t0;
+      __t1=__in.__t1;
+      __t2=__in.__t2;
+      __t3=__in.__t3;
+      __t4=__in.__t4;
+      __t5=__in.__t5;
+      __t6=__in.__t6;
+      __t7=__in.__t7;
+      __t8=__in.__t8;
+      return *this;
+    }
+    template<int __i, typename _U>
+    friend class __get_helper;
+    template<typename, typename, typename, typename, typename, typename, 
+	     typename, typename, typename, typename>
+    friend class tuple;
+  };
+  
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6, typename _T7, 
+	   typename _T8, typename _T9>
+  class tuple
+  {
+    _T0 __t0;
+    _T1 __t1;
+    _T2 __t2;
+    _T3 __t3;
+    _T4 __t4;
+    _T5 __t5;
+    _T6 __t6;
+    _T7 __t7;
+    _T8 __t8;
+    _T9 __t9;
+  public:
+    tuple()
+    { }
+      
+    explicit tuple(typename __add_const_ref<_T0>::type __in0, 
+		   typename __add_const_ref<_T1>::type __in1, 
+		   typename __add_const_ref<_T2>::type __in2, 
+		   typename __add_const_ref<_T3>::type __in3, 
+		   typename __add_const_ref<_T4>::type __in4, 
+		   typename __add_const_ref<_T5>::type __in5, 
+		   typename __add_const_ref<_T6>::type __in6, 
+		   typename __add_const_ref<_T7>::type __in7, 
+		   typename __add_const_ref<_T8>::type __in8, 
+		   typename __add_const_ref<_T9>::type __in9):
+      __t0(__in0), __t1(__in1), __t2(__in2), __t3(__in3), 
+      __t4(__in4), __t5(__in5), __t6(__in6), __t7(__in7), 
+      __t8(__in8), __t9(__in9)
+    { }
+      
+    tuple(const tuple& __in):
+      __t0(__in.__t0), __t1(__in.__t1), __t2(__in.__t2), 
+      __t3(__in.__t3), __t4(__in.__t4), __t5(__in.__t5), 
+      __t6(__in.__t6), __t7(__in.__t7), __t8(__in.__t8), 
+      __t9(__in.__t9)
+    { }
+    template <typename _U0, typename _U1, typename _U2, typename _U3, 
+	      typename _U4, typename _U5, typename _U6, typename _U7, 
+	      typename _U8, typename _U9>
+    tuple(const tuple<_U0, _U1, _U2, _U3, _U4, _U5, _U6, _U7, _U8, 
+	  _U9>& __in):
+      __t0(__in.__t0), __t1(__in.__t1), __t2(__in.__t2), 
+      __t3(__in.__t3), __t4(__in.__t4), __t5(__in.__t5), 
+      __t6(__in.__t6), __t7(__in.__t7), __t8(__in.__t8), 
+      __t9(__in.__t9)
+    { }
+      
+    tuple& operator=(const tuple& __in)
+    {
+      __t0=__in.__t0;
+      __t1=__in.__t1;
+      __t2=__in.__t2;
+      __t3=__in.__t3;
+      __t4=__in.__t4;
+      __t5=__in.__t5;
+      __t6=__in.__t6;
+      __t7=__in.__t7;
+      __t8=__in.__t8;
+      __t9=__in.__t9;
+      return *this;
+    }
+      
+    template <typename _U0, typename _U1, typename _U2, typename _U3, 
+	      typename _U4, typename _U5, typename _U6, typename _U7, 
+	      typename _U8, typename _U9>
+    tuple&
+    operator=(const tuple<_U0, _U1, _U2, _U3, _U4, _U5, _U6, _U7, 
+	      _U8, _U9>& __in)
+    {
+      __t0=__in.__t0;
+      __t1=__in.__t1;
+      __t2=__in.__t2;
+      __t3=__in.__t3;
+      __t4=__in.__t4;
+      __t5=__in.__t5;
+      __t6=__in.__t6;
+      __t7=__in.__t7;
+      __t8=__in.__t8;
+      __t9=__in.__t9;
+      return *this;
+    }
+    template<int __i, typename _U>
+    friend class __get_helper;
+    template<typename, typename, typename, typename, typename, typename, 
+	     typename, typename, typename, typename>
+    friend class tuple;
+  };
+  
+  // Class used in the implementation of get
+  template<int __i, typename _T>
+    struct __get_helper;
+
+  template<typename _T>
+    struct __get_helper<0, _T>
+    {
+      static typename __add_ref<typename tuple_element<0, _T>::type>::type
+      get_value(_T& __in) 
+      { return __in.__t0; }
+
+      static typename __add_const_ref<typename tuple_element<0, _T>::type>::type
+      get_value(const _T& __in)
+      { return __in.__t0; }
+    };
+  
+  template<typename _T>
+  struct __get_helper<1, _T>
+  {
+    static typename __add_ref<typename tuple_element<1, _T>::type>::type
+    get_value(_T& __in)
+    {
+      return __in.__t1;
+    }
+    static typename __add_const_ref<typename tuple_element<1, _T>::type>::type
+    get_value(const _T& __in)
+    {
+      return __in.__t1;
+    }
+  };
+  
+  template<typename _T>
+  struct __get_helper<2, _T>
+  {
+    static typename __add_ref<typename tuple_element<2, _T>::type>::type
+    get_value(_T& __in)
+    {
+      return __in.__t2;
+    }
+    static typename __add_const_ref<typename tuple_element<2, _T>::type>::type
+    get_value(const _T& __in)
+    {
+      return __in.__t2;
+    }
+  };
+  
+  template<typename _T>
+  struct __get_helper<3, _T>
+  {
+    static typename __add_ref<typename tuple_element<3, _T>::type>::type
+    get_value(_T& __in)
+    {
+      return __in.__t3;
+    }
+    static typename __add_const_ref<typename tuple_element<3, _T>::type>::type
+    get_value(const _T& __in)
+    {
+      return __in.__t3;
+    }
+  };
+  
+  template<typename _T>
+  struct __get_helper<4, _T>
+  {
+    static typename __add_ref<typename tuple_element<4, _T>::type>::type
+    get_value(_T& __in)
+    {
+      return __in.__t4;
+    }
+    static typename __add_const_ref<typename tuple_element<4, _T>::type>::type
+    get_value(const _T& __in)
+    {
+      return __in.__t4;
+    }
+  };
+  
+  template<typename _T>
+  struct __get_helper<5, _T>
+  {
+    static typename __add_ref<typename tuple_element<5, _T>::type>::type
+    get_value(_T& __in)
+    {
+      return __in.__t5;
+    }
+    static typename __add_const_ref<typename tuple_element<5, _T>::type>::type
+    get_value(const _T& __in)
+    {
+      return __in.__t5;
+    }
+  };
+  
+  template<typename _T>
+  struct __get_helper<6, _T>
+  {
+    static typename __add_ref<typename tuple_element<6, _T>::type>::type
+    get_value(_T& __in)
+    {
+      return __in.__t6;
+    }
+    static typename __add_const_ref<typename tuple_element<6, _T>::type>::type
+    get_value(const _T& __in)
+    {
+      return __in.__t6;
+    }
+  };
+  
+  template<typename _T>
+  struct __get_helper<7, _T>
+  {
+    static typename __add_ref<typename tuple_element<7, _T>::type>::type
+    get_value(_T& __in)
+    {
+      return __in.__t7;
+    }
+    static typename __add_const_ref<typename tuple_element<7, _T>::type>::type
+    get_value(const _T& __in)
+    {
+      return __in.__t7;
+    }
+  };
+  
+  template<typename _T>
+  struct __get_helper<8, _T>
+  {
+    static typename __add_ref<typename tuple_element<8, _T>::type>::type
+    get_value(_T& __in)
+    {
+      return __in.__t8;
+    }
+    static typename __add_const_ref<typename tuple_element<8, _T>::type>::type
+    get_value(const _T& __in)
+    {
+      return __in.__t8;
+    }
+  };
+  
+  template<typename _T>
+  struct __get_helper<9, _T>
+  {
+    static typename __add_ref<typename tuple_element<9, _T>::type>::type
+    get_value(_T& __in)
+    {
+      return __in.__t9;
+    }
+    static typename __add_const_ref<typename tuple_element<9, _T>::type>::type
+    get_value(const _T& __in)
+    {
+      return __in.__t9;
+    }
+  };
+  
+  /* Returns a reference to the ith element of a tuple.
+   * Any const or non-const ref elements are returned with their original type
+   */
+  template<int __i, typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6, typename _T7, 
+	   typename _T8, typename _T9>
+  typename __add_ref<typename tuple_element<__i,tuple<_T0, _T1, _T2, _T3, 
+						      _T4, _T5, _T6, _T7, _T8, _T9> >::type>::type
+  get(tuple<_T0, _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9>& __t)
+  {
+    return __get_helper<__i,tuple<_T0, _T1, _T2, _T3, _T4, _T5, _T6, 
+      _T7, _T8, _T9> >::get_value(__t);
+  }
+
+  /* Returns a const reference to the ith element of a tuple.
+   * Any const or non-const ref elements are returned with their original type
+   */
+  template<int __i, typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6, typename _T7, 
+	   typename _T8, typename _T9>
+  typename __add_const_ref<typename tuple_element<__i,tuple<_T0, _T1, _T2, 
+							    _T3, _T4, _T5, _T6, _T7, _T8, _T9> >::type>::type
+  get(const tuple<_T0, _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9
+      >& __t)
+  {
+    return __get_helper<__i,tuple<_T0, _T1, _T2, _T3, _T4, _T5, _T6, 
+      _T7, _T8, _T9> >::get_value(__t);
+  }
+
+  // This class helps construct the various comparison operations on tuples
+  template<int __check_equal_size, int __i, int __j, typename _T, typename _U>
+  struct __tuple_compare;
+
+  template<int __i, int __j, typename _T, typename _U>
+  struct __tuple_compare<0, __i, __j, _T, _U>
+  {
+    static bool __eq(const _T& __t, const _U& __u)
+    {
+      return get<__i>(__t) == get<__i>(__u) &&
+	__tuple_compare<0, __i+1, __j, _T, _U>::__eq(__t, __u) ;
+    }
+    static bool __neq(const _T& __t, const _U& __u)
+    {
+      return get<__i>(__t) != get<__i>(__u) ||
+	__tuple_compare<0, __i+1, __j, _T, _U>::__neq(__t, __u) ;
+    }
+    static bool __less(const _T& __t, const _U& __u)
+    {
+      return (get<__i>(__t) < get<__i>(__u)) || !(get<__i>(__u) < get<__i>(__t)) &&
+	__tuple_compare<0, __i+1, __j, _T, _U>::__less(__t, __u) ;
+    }
+    static bool __greater(const _T& __t, const _U& __u)
+    {
+      return (get<__i>(__t) > get<__i>(__u)) || !(get<__i>(__u) > get<__i>(__t)) &&
+	__tuple_compare<0, __i+1, __j, _T, _U>::__greater(__t, __u) ;
+    }
+    static bool __leq(const _T& __t, const _U& __u)
+    {
+      return (get<__i>(__t) <= get<__i>(__u)) && (!(get<__i>(__u)<=get<__i>(__t)) ||
+						  __tuple_compare<0, __i+1, __j, _T, _U>::__leq(__t, __u) );
+    }
+    static bool __geq(const _T& __t, const _U& __u)
+    {
+      return (get<__i>(__t) >= get<__i>(__u)) && (!(get<__i>(__u)>=get<__i>(__t)) ||
+						  __tuple_compare<0, __i+1, __j, _T, _U>::__geq(__t, __u) );
+    }
+  };
+  
+  template<int __i, typename _T, typename _U>
+  struct __tuple_compare<0, __i, __i, _T, _U>
+  {
+    static bool __eq(const _T&, const _U&)
+    {
+      return true;
+    }
+    static bool __neq(const _T&, const _U&)
+    {
+      return false;
+    }
+    static bool __leq(const _T&, const _U&)
+    {
+      return true;
+    }
+    static bool __geq(const _T&, const _U&)
+    {
+      return true;
+    }
+    static bool __less(const _T&, const _U&)
+    {
+      return false;
+    }
+    static bool __greater(const _T&, const _U&)
+    {
+      return false;
+    }
+  };
+
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6, typename _T7, 
+	   typename _T8, typename _T9, typename _U0, typename _U1, 
+	   typename _U2, typename _U3, typename _U4, typename _U5, 
+	   typename _U6, typename _U7, typename _U8, typename _U9>
+  bool
+  operator==(const tuple<_T0, _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, 
+	     _T9>& __t, const tuple<_U0, _U1, _U2, _U3, _U4, _U5, _U6, 
+	     _U7, _U8, _U9>& __u)
+  {
+    typedef tuple<_T0, _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9
+      > __T_tuple;
+    typedef tuple<_U0, _U1, _U2, _U3, _U4, _U5, _U6, _U7, _U8, _U9
+      > __U_tuple;
+    return __tuple_compare<tuple_size<__T_tuple>::value -
+      tuple_size<__U_tuple>::value, 0,
+      tuple_size<__T_tuple>::value, __T_tuple, __U_tuple>::__eq(__t, __u);
+  }
+
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6, typename _T7, 
+	   typename _T8, typename _T9, typename _U0, typename _U1, 
+	   typename _U2, typename _U3, typename _U4, typename _U5, 
+	   typename _U6, typename _U7, typename _U8, typename _U9>
+  bool
+  operator!=(const tuple<_T0, _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, 
+	     _T9>& __t, const tuple<_U0, _U1, _U2, _U3, _U4, _U5, _U6, 
+	     _U7, _U8, _U9>& __u)
+  {
+    typedef tuple<_T0, _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9
+      > __T_tuple;
+    typedef tuple<_U0, _U1, _U2, _U3, _U4, _U5, _U6, _U7, _U8, _U9
+      > __U_tuple;
+    return __tuple_compare<tuple_size<__T_tuple>::value -
+      tuple_size<__U_tuple>::value, 0,
+      tuple_size<__T_tuple>::value, __T_tuple, __U_tuple>::__neq(__t, __u);
+  }
+
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6, typename _T7, 
+	   typename _T8, typename _T9, typename _U0, typename _U1, 
+	   typename _U2, typename _U3, typename _U4, typename _U5, 
+	   typename _U6, typename _U7, typename _U8, typename _U9>
+  bool
+  operator<(const tuple<_T0, _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, 
+	    _T9>& __t, const tuple<_U0, _U1, _U2, _U3, _U4, _U5, _U6, 
+	    _U7, _U8, _U9>& __u)
+  {
+    typedef tuple<_T0, _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9
+      > __T_tuple;
+    typedef tuple<_U0, _U1, _U2, _U3, _U4, _U5, _U6, _U7, _U8, _U9
+      > __U_tuple;
+    return __tuple_compare<tuple_size<__T_tuple>::value -
+      tuple_size<__U_tuple>::value, 0,
+      tuple_size<__T_tuple>::value, __T_tuple, __U_tuple>::__less(__t, __u);
+  }
+
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6, typename _T7, 
+	   typename _T8, typename _T9, typename _U0, typename _U1, 
+	   typename _U2, typename _U3, typename _U4, typename _U5, 
+	   typename _U6, typename _U7, typename _U8, typename _U9>
+  bool
+  operator>(const tuple<_T0, _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, 
+	    _T9>& __t, const tuple<_U0, _U1, _U2, _U3, _U4, _U5, _U6, 
+	    _U7, _U8, _U9>& __u)
+  {
+    typedef tuple<_T0, _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9
+      > __T_tuple;
+    typedef tuple<_U0, _U1, _U2, _U3, _U4, _U5, _U6, _U7, _U8, _U9
+      > __U_tuple;
+    return __tuple_compare<tuple_size<__T_tuple>::value -
+      tuple_size<__U_tuple>::value, 0,
+      tuple_size<__T_tuple>::value, __T_tuple, __U_tuple>::__greater(__t, __u);
+  }
+
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6, typename _T7, 
+	   typename _T8, typename _T9, typename _U0, typename _U1, 
+	   typename _U2, typename _U3, typename _U4, typename _U5, 
+	   typename _U6, typename _U7, typename _U8, typename _U9>
+  bool
+  operator<=(const tuple<_T0, _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, 
+	     _T9>& __t, const tuple<_U0, _U1, _U2, _U3, _U4, _U5, _U6, 
+	     _U7, _U8, _U9>& __u)
+  {
+    typedef tuple<_T0, _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9
+      > __T_tuple;
+    typedef tuple<_U0, _U1, _U2, _U3, _U4, _U5, _U6, _U7, _U8, _U9
+      > __U_tuple;
+    return __tuple_compare<tuple_size<__T_tuple>::value -
+      tuple_size<__U_tuple>::value, 0,
+      tuple_size<__T_tuple>::value, __T_tuple, __U_tuple>::__leq(__t, __u);
+  }
+
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6, typename _T7, 
+	   typename _T8, typename _T9, typename _U0, typename _U1, 
+	   typename _U2, typename _U3, typename _U4, typename _U5, 
+	   typename _U6, typename _U7, typename _U8, typename _U9>
+  bool
+  operator>=(const tuple<_T0, _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, 
+	     _T9>& __t, const tuple<_U0, _U1, _U2, _U3, _U4, _U5, _U6, 
+	     _U7, _U8, _U9>& __u)
+  {
+    typedef tuple<_T0, _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9
+      > __T_tuple;
+    typedef tuple<_U0, _U1, _U2, _U3, _U4, _U5, _U6, _U7, _U8, _U9
+      > __U_tuple;
+    return __tuple_compare<tuple_size<__T_tuple>::value -
+      tuple_size<__U_tuple>::value, 0,
+      tuple_size<__T_tuple>::value, __T_tuple, __U_tuple>::__geq(__t, __u);
+  }
+
+  // Provides a way to annotate that a reference to
+  // an object should be passed.
+  template<typename _T>
+  class reference_wrapper
+  {
+    _T& __data;
+
+  public:
+    typedef _T type;
+
+    explicit reference_wrapper(_T& __indata): __data(__indata)
+    { }
+    
+    operator _T&() const
+    { return this->get(); }
+    
+    _T&
+    get() const
+    { return __data; }
+  };
+
+  // Denotes a reference should be taken to a variable.
+  template<typename _T>
+    reference_wrapper<_T>
+    ref(_T& __t)
+    { return reference_wrapper<_T>(__t); }
+
+  // Denotes a const reference should be taken to a variable.
+  template<typename _T>
+    reference_wrapper<_T const>
+    cref(const _T& __t)
+    { return reference_wrapper<_T const>(__t); }
+
+  // Helper which adds a reference to a type when given a reference_wrapper
+  template<typename _T>
+    struct __strip_reference_wrapper
+    { typedef _T __type; };
+
+  template<typename _T>
+    struct __strip_reference_wrapper<reference_wrapper<_T> >
+    { typedef _T& __type; };
+
+  template<typename _T>
+    struct __strip_reference_wrapper<const reference_wrapper<_T> >
+    { typedef _T& __type; };
+
+  template<typename _T0 = _NullClass, typename _T1 = _NullClass, 
+	   typename _T2 = _NullClass, typename _T3 = _NullClass, 
+	   typename _T4 = _NullClass, typename _T5 = _NullClass, 
+	   typename _T6 = _NullClass, typename _T7 = _NullClass, 
+	   typename _T8 = _NullClass, typename _T9 = _NullClass>
+    struct __stripped_tuple_type
+    {
+      typedef tuple<typename __strip_reference_wrapper<_T0>::__type, 
+		    typename __strip_reference_wrapper<_T1>::__type, 
+		    typename __strip_reference_wrapper<_T2>::__type, 
+		    typename __strip_reference_wrapper<_T3>::__type, 
+		    typename __strip_reference_wrapper<_T4>::__type, 
+		    typename __strip_reference_wrapper<_T5>::__type, 
+		    typename __strip_reference_wrapper<_T6>::__type, 
+		    typename __strip_reference_wrapper<_T7>::__type, 
+		    typename __strip_reference_wrapper<_T8>::__type, 
+		    typename __strip_reference_wrapper<_T9>::__type>  __type;
+    };
+
+  tuple<>
+  make_tuple()
+  {
+    return tuple<>();
+  };
+
+  template<typename _T0>
+  typename __stripped_tuple_type<_T0>::__type
+  make_tuple(_T0 __t0)
+  {
+    return typename  __stripped_tuple_type<_T0>::__type(__t0);};
+
+  template<typename _T0, typename _T1>
+  typename __stripped_tuple_type<_T0, _T1>::__type
+  make_tuple(_T0 __t0, _T1 __t1)
+  {
+    return typename  __stripped_tuple_type<_T0, _T1>::__type(__t0, __t1);};
+
+  template<typename _T0, typename _T1, typename _T2>
+  typename __stripped_tuple_type<_T0, _T1, _T2>::__type
+  make_tuple(_T0 __t0, _T1 __t1, _T2 __t2)
+  {
+    return typename __stripped_tuple_type<_T0, _T1, _T2>::__type(__t0, __t1, __t2);};
+
+  template<typename _T0, typename _T1, typename _T2, typename _T3>
+  typename __stripped_tuple_type<_T0, _T1, _T2, _T3>::__type
+  make_tuple(_T0 __t0, _T1 __t1, _T2 __t2, _T3 __t3)
+  {
+    return typename  __stripped_tuple_type<_T0, _T1, _T2, _T3>::__type(__t0, __t1, __t2, __t3);};
+
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4>
+  typename __stripped_tuple_type<_T0, _T1, _T2, _T3, _T4>::__type
+  make_tuple(_T0 __t0, _T1 __t1, _T2 __t2, _T3 __t3, _T4 __t4)
+  {
+    return typename  __stripped_tuple_type<_T0, _T1, _T2, _T3, _T4>::__type(__t0, __t1, __t2, __t3, __t4);};
+
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5>
+  typename __stripped_tuple_type<_T0, _T1, _T2, _T3, _T4, _T5>::__type
+  make_tuple(_T0 __t0, _T1 __t1, _T2 __t2, _T3 __t3, _T4 __t4, 
+	     _T5 __t5)
+  {
+    return typename  __stripped_tuple_type<_T0, _T1, _T2, _T3, _T4, _T5
+      >::__type(__t0, __t1, __t2, __t3, __t4, __t5);};
+
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6>
+  typename __stripped_tuple_type<_T0, _T1, _T2, _T3, _T4, _T5, _T6
+				 >::__type
+  make_tuple(_T0 __t0, _T1 __t1, _T2 __t2, _T3 __t3, _T4 __t4, 
+	     _T5 __t5, _T6 __t6)
+  {
+    return typename  __stripped_tuple_type<_T0, _T1, _T2, _T3, _T4, _T5, 
+      _T6>::__type(__t0, __t1, __t2, __t3, __t4, __t5, __t6);};
+
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6, typename _T7>
+  typename __stripped_tuple_type<_T0, _T1, _T2, _T3, _T4, _T5, _T6, _T7
+				 >::__type
+  make_tuple(_T0 __t0, _T1 __t1, _T2 __t2, _T3 __t3, _T4 __t4, 
+	     _T5 __t5, _T6 __t6, _T7 __t7)
+  {
+    return typename  __stripped_tuple_type<_T0, _T1, _T2, _T3, _T4, _T5, 
+      _T6, _T7>::__type(__t0, __t1, __t2, __t3, __t4, __t5, __t6, __t7);};
+
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6, typename _T7, 
+	   typename _T8>
+  typename __stripped_tuple_type<_T0, _T1, _T2, _T3, _T4, _T5, _T6, _T7, 
+				 _T8>::__type
+  make_tuple(_T0 __t0, _T1 __t1, _T2 __t2, _T3 __t3, _T4 __t4, 
+	     _T5 __t5, _T6 __t6, _T7 __t7, _T8 __t8)
+  {
+    return typename  __stripped_tuple_type<_T0, _T1, _T2, _T3, _T4, _T5, 
+      _T6, _T7, _T8>::__type(__t0, __t1, __t2, __t3, __t4, __t5, __t6, __t7, __t8);};
+
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6, typename _T7, 
+	   typename _T8, typename _T9>
+  typename __stripped_tuple_type<_T0, _T1, _T2, _T3, _T4, _T5, _T6, _T7, 
+				 _T8, _T9>::__type
+  make_tuple(_T0 __t0, _T1 __t1, _T2 __t2, _T3 __t3, _T4 __t4, 
+	     _T5 __t5, _T6 __t6, _T7 __t7, _T8 __t8, _T9 __t9)
+  {
+    return typename  __stripped_tuple_type<_T0, _T1, _T2, _T3, _T4, _T5, 
+      _T6, _T7, _T8, _T9>::__type(__t0, __t1, __t2, __t3, __t4, __t5, __t6, __t7, __t8, __t9
+				    );};
+
+  // A class (and instance) which can be used in 'tie' when a element
+  // is not required.
+  struct swallow_assign
+  {
+    template<class T>
+      swallow_assign&
+      operator=(const T&)
+      { return *this; }
+  };
+
+  // TODO: Put this in some kind of shared file
+  namespace
+  {
+    swallow_assign ignore;
+  };
+
+  //  extern swallow_assign ignore;
+
+
+  // Allows forms a tuple of references to a list of variables.
+  template<typename _T0>
+    tuple<_T0&>
+    tie(_T0& __t0)
+    { return make_tuple(ref(__t0)); };
+
+  template<typename _T0, typename _T1>
+    tuple<_T0&, _T1&>
+    tie(_T0& __t0, _T1& __t1)
+    { return make_tuple(ref(__t0), ref(__t1)); };
+
+  template<typename _T0, typename _T1, typename _T2>
+    tuple<_T0&, _T1&, _T2&>
+    tie(_T0& __t0, _T1& __t1, _T2& __t2)
+    { return make_tuple(ref(__t0), ref(__t1), ref(__t2)); };
+
+  template<typename _T0, typename _T1, typename _T2, typename _T3>
+    tuple<_T0&, _T1&, _T2&, _T3&>
+    tie(_T0& __t0, _T1& __t1, _T2& __t2, _T3& __t3)
+    { return make_tuple(ref(__t0), ref(__t1), ref(__t2), ref(__t3)); };
+
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4>
+    tuple<_T0&, _T1&, _T2&, _T3&, _T4&>
+    tie(_T0& __t0, _T1& __t1, _T2& __t2, _T3& __t3, _T4& __t4)
+    { 
+      return make_tuple(ref(__t0), ref(__t1), ref(__t2), ref(__t3), ref(__t4));
+    };
+
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5>
+    tuple<_T0&, _T1&, _T2&, _T3&, _T4&, _T5&>
+    tie(_T0& __t0, _T1& __t1, _T2& __t2, _T3& __t3, _T4& __t4, _T5& __t5)
+    {
+      return make_tuple(ref(__t0), ref(__t1), ref(__t2), ref(__t3), 
+			ref(__t4), ref(__t5));
+    };
+
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6>
+    tuple<_T0&, _T1&, _T2&, _T3&, _T4&, _T5&, _T6&>
+    tie(_T0& __t0, _T1& __t1, _T2& __t2, _T3& __t3, _T4& __t4, 
+	_T5& __t5, _T6& __t6)
+    {
+      return make_tuple(ref(__t0), ref(__t1), ref(__t2), ref(__t3), 
+			ref(__t4), ref(__t5), ref(__t6));
+    };
+
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6, typename _T7>
+    tuple<_T0&, _T1&, _T2&, _T3&, _T4&, _T5&, _T6&, _T7&>
+    tie(_T0& __t0, _T1& __t1, _T2& __t2, _T3& __t3, _T4& __t4, 
+	_T5& __t5, _T6& __t6, _T7& __t7)
+    {
+      return make_tuple(ref(__t0), ref(__t1), ref(__t2), ref(__t3), 
+			ref(__t4), ref(__t5), ref(__t6), ref(__t7));
+    };
+
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6, typename _T7, 
+	   typename _T8>
+    tuple<_T0&, _T1&, _T2&, _T3&, _T4&, _T5&, _T6&, _T7&, _T8&>
+    tie(_T0& __t0, _T1& __t1, _T2& __t2, _T3& __t3, _T4& __t4, 
+	_T5& __t5, _T6& __t6, _T7& __t7, _T8& __t8)
+    {
+      return make_tuple(ref(__t0), ref(__t1), ref(__t2), ref(__t3), 
+			ref(__t4), ref(__t5), ref(__t6), ref(__t7), ref(__t8));
+    };
+
+  template<typename _T0, typename _T1, typename _T2, typename _T3, 
+	   typename _T4, typename _T5, typename _T6, typename _T7, 
+	   typename _T8, typename _T9>
+    tuple<_T0&, _T1&, _T2&, _T3&, _T4&, _T5&, _T6&, _T7&, _T8&, _T9&>
+    tie(_T0& __t0, _T1& __t1, _T2& __t2, _T3& __t3, _T4& __t4, 
+	_T5& __t5, _T6& __t6, _T7& __t7, _T8& __t8, _T9& __t9)
+    {
+      return make_tuple(ref(__t0), ref(__t1), ref(__t2), ref(__t3), 
+			ref(__t4), ref(__t5), ref(__t6), ref(__t7), ref(__t8), 
+			ref(__t9));
+    };
+
+  // Various functions which give std::pair a tuple-like interface.
+  template<class _T1, class _T2>
+    struct tuple_size<std::pair<_T1, _T2> >
+    { static const int value = 2; };
+
+  template<class _T1, class _T2>
+    struct tuple_element<0, std::pair<_T1, _T2> >
+    { typedef _T1 type; };
+
+  template<class _T1, class _T2>
+    struct tuple_element<1, std::pair<_T1, _T2> >
+    { typedef _T2 type; };
+
+  template<int _I,class _T1,class _T2>
+    typename tuple_element<_I, tuple<_T1, _T2> >::type
+    get(pair<_T1, _T2>& __in)
+    { return get<_I>(tie(__in.first, __in.second)); }
+
+  template<int _I,class _T1,class _T2>
+    typename tuple_element<_I, tuple<_T1, _T2> >::type
+    get(const pair<_T1, _T2>& __in)
+    { return get<_I>(tie(__in.first, __in.second)); }
+}
+}
+
+#endif
