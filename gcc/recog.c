@@ -950,11 +950,13 @@ general_operand (op, mode)
 
   if (code == SUBREG)
     {
+      rtx sub = SUBREG_REG (op);
+
 #ifdef INSN_SCHEDULING
       /* On machines that have insn scheduling, we want all memory
 	 reference to be explicit, so outlaw paradoxical SUBREGs.  */
-      if (GET_CODE (SUBREG_REG (op)) == MEM
-	  && GET_MODE_SIZE (mode) > GET_MODE_SIZE (GET_MODE (SUBREG_REG (op))))
+      if (GET_CODE (sub) == MEM
+	  && GET_MODE_SIZE (mode) > GET_MODE_SIZE (GET_MODE (sub)))
 	return 0;
 #endif
       /* Avoid memories with nonzero SUBREG_BYTE, as offsetting the memory
@@ -964,10 +966,16 @@ general_operand (op, mode)
 
 	 ??? This is a kludge.  */
       if (!reload_completed && SUBREG_BYTE (op) != 0
-	  && GET_CODE (SUBREG_REG (op)) == MEM)
+	  && GET_CODE (sub) == MEM)
         return 0;
 
-      op = SUBREG_REG (op);
+      /* FLOAT_MODE subregs can't be paradoxical.  Combine will occasionally
+	 create such rtl, and we must reject it.  */
+      if (GET_MODE_CLASS (GET_MODE (op)) == MODE_FLOAT
+	  && GET_MODE_SIZE (GET_MODE (op)) > GET_MODE_SIZE (GET_MODE (sub)))
+	return 0;
+
+      op = sub;
       code = GET_CODE (op);
     }
 
@@ -1040,28 +1048,36 @@ register_operand (op, mode)
 
   if (GET_CODE (op) == SUBREG)
     {
+      rtx sub = SUBREG_REG (op);
+
       /* Before reload, we can allow (SUBREG (MEM...)) as a register operand
 	 because it is guaranteed to be reloaded into one.
 	 Just make sure the MEM is valid in itself.
 	 (Ideally, (SUBREG (MEM)...) should not exist after reload,
 	 but currently it does result from (SUBREG (REG)...) where the
 	 reg went on the stack.)  */
-      if (! reload_completed && GET_CODE (SUBREG_REG (op)) == MEM)
+      if (! reload_completed && GET_CODE (sub) == MEM)
 	return general_operand (op, mode);
 
 #ifdef CLASS_CANNOT_CHANGE_MODE
-      if (GET_CODE (SUBREG_REG (op)) == REG
-	  && REGNO (SUBREG_REG (op)) < FIRST_PSEUDO_REGISTER
+      if (GET_CODE (sub) == REG
+	  && REGNO (sub) < FIRST_PSEUDO_REGISTER
 	  && (TEST_HARD_REG_BIT
 	      (reg_class_contents[(int) CLASS_CANNOT_CHANGE_MODE],
-	       REGNO (SUBREG_REG (op))))
-	  && CLASS_CANNOT_CHANGE_MODE_P (mode, GET_MODE (SUBREG_REG (op)))
-	  && GET_MODE_CLASS (GET_MODE (SUBREG_REG (op))) != MODE_COMPLEX_INT
-	  && GET_MODE_CLASS (GET_MODE (SUBREG_REG (op))) != MODE_COMPLEX_FLOAT)
+	       REGNO (sub)))
+	  && CLASS_CANNOT_CHANGE_MODE_P (mode, GET_MODE (sub))
+	  && GET_MODE_CLASS (GET_MODE (sub)) != MODE_COMPLEX_INT
+	  && GET_MODE_CLASS (GET_MODE (sub)) != MODE_COMPLEX_FLOAT)
 	return 0;
 #endif
 
-      op = SUBREG_REG (op);
+      /* FLOAT_MODE subregs can't be paradoxical.  Combine will occasionally
+	 create such rtl, and we must reject it.  */
+      if (GET_MODE_CLASS (GET_MODE (op)) == MODE_FLOAT
+	  && GET_MODE_SIZE (GET_MODE (op)) > GET_MODE_SIZE (GET_MODE (sub)))
+	return 0;
+
+      op = sub;
     }
 
   /* If we have an ADDRESSOF, consider it valid since it will be
