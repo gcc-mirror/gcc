@@ -32,7 +32,6 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "output.h"
 #include "except.h"
-#include "function.h"
 #include "defaults.h"
 #include "toplev.h"
 #include "eh-common.h"
@@ -807,7 +806,7 @@ start_anon_func ()
   tree params;
   tree t;
 
-  push_cp_function_context (NULL_TREE);
+  push_function_context_to (NULL_TREE);
   push_to_top_level ();
 
   /* No need to mangle this.  */
@@ -847,7 +846,7 @@ end_anon_func ()
   finish_function (lineno, 0, 0);
 
   pop_from_top_level ();
-  pop_cp_function_context (NULL_TREE);
+  pop_function_context_from (NULL_TREE);
 }
 
 /* Return a pointer to a buffer for an exception object of type TYPE.  */

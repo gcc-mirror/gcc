@@ -31,7 +31,6 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "tree.h"
 #include "rtl.h"
-#include "function.h"
 #include "flags.h"
 #include "cp-tree.h"
 #include "decl.h"
@@ -197,6 +196,8 @@ static void maybe_commonize_var PROTO((tree));
 static tree build_cleanup_on_safe_obstack PROTO((tree));
 static void check_initializer PROTO((tree, tree *));
 static void make_rtl_for_nonlocal_decl PROTO((tree, tree, const char *));
+static void push_cp_function_context PROTO((struct function *));
+static void pop_cp_function_context PROTO((struct function *));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
 static void indent PROTO((void));
@@ -2485,7 +2486,7 @@ maybe_push_to_top_level (pseudo)
   struct binding_level *b = current_binding_level;
   tree old_bindings = NULL_TREE;
 
-  push_cp_function_context (NULL_TREE);
+  push_function_context_to (NULL_TREE);
 
   if (previous_class_type)
     old_bindings = store_bindings (previous_class_values, old_bindings);
@@ -2621,7 +2622,7 @@ pop_from_top_level ()
 
   free (s);
 
-  pop_cp_function_context (NULL_TREE);
+  pop_function_context_from (NULL_TREE);
 }
 
 /* Push a definition of struct, union or enum tag "name".
@@ -6173,8 +6174,13 @@ init_decl_processing ()
   lang_name_c = get_identifier ("C");
   lang_name_java = get_identifier ("Java");
 
+  /* Let the back-end now how to save and restore language-specific
+     per-function globals.  */
+  save_lang_status = &push_cp_function_context;
+  restore_lang_status = &pop_cp_function_context;
+
   /* Create the global per-function variables.  */
-  push_cp_function_context (NULL_TREE);
+  push_function_context_to (NULL_TREE);
 
   /* Enter the global namespace. */
   my_friendly_assert (global_namespace == NULL_TREE, 375);
@@ -14496,28 +14502,21 @@ revert_static_member_fn (decl, fn, argtypes)
     *argtypes = args;
 }
 
-struct cp_function *cp_function_chain;
-
 /* Save and reinitialize the variables
    used during compilation of a C++ function.  */
 
-void
-push_cp_function_context (context)
-     tree context;
+static void
+push_cp_function_context (f)
+     struct function *f;
 {
-  struct cp_function *p;
-
-  /* Push the language-independent context.  */
-  push_function_context_to (context);
-
-  /* Push the C++-specific context.  */
-  p = (struct cp_function *) xmalloc (sizeof (struct cp_function));
-  if (cp_function_chain)
-    *p = *cp_function_chain;
+  struct language_function *p 
+    = ((struct language_function *) 
+       xmalloc (sizeof (struct language_function)));
+  f->language = p;
+  if (f->next)
+    *p = *f->next->language;
   else
-    bzero (p, sizeof (struct cp_function));
-  p->next = cp_function_chain;
-  cp_function_chain = p;
+    bzero (p, sizeof (struct language_function));
 
   /* For now, we always assume we're expanding all the way to RTL
      unless we're explicitly doing otherwise.  */
@@ -14530,19 +14529,12 @@ push_cp_function_context (context)
 
 /* Restore the variables used during compilation of a C++ function.  */
 
-void
-pop_cp_function_context (context)
-     tree context;
+static void
+pop_cp_function_context (f)
+     struct function *f;
 {
-  struct cp_function *p;
-
-  /* Pop the language-independent context.  */
-  pop_function_context_from (context);
-
-  /* Pop the C++-specific context.  */
-  p = cp_function_chain;
-  cp_function_chain = p->next;
-  free (p);
+  free (f->language);
+  f->language = 0;
 }
 
 int
