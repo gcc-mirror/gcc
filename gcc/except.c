@@ -1533,7 +1533,7 @@ expand_eh_region_end (handler)
   /* create region entry in final exception table */
   r = new_eh_region_entry (NOTE_EH_HANDLER (note), entry->rethrow_label);
 
-  enqueue_eh_entry (&ehqueue, entry);
+  enqueue_eh_entry (ehqueue, entry);
 
   /* If we have already started ending the bindings, don't recurse.  */
   if (is_eh_region ())
@@ -1551,7 +1551,7 @@ expand_eh_region_end (handler)
 
   /* Go through the goto handlers in the queue, emitting their
      handlers if we now have enough information to do so.  */
-  for (node = ehqueue.head; node; node = node->chain)
+  for (node = ehqueue->head; node; node = node->chain)
     if (node->entry->goto_entry_p 
 	&& node->entry->outer_context == entry->rethrow_label)
       emit_cleanup_handler (node->entry);
@@ -1596,7 +1596,7 @@ expand_fixup_region_end (cleanup)
   for (node = ehstack.top; node && node->entry->finalization != cleanup; )
     node = node->chain;
   if (node == 0)
-    for (node = ehqueue.head; node && node->entry->finalization != cleanup; )
+    for (node = ehqueue->head; node && node->entry->finalization != cleanup; )
       node = node->chain;
   if (node == 0)
     abort ();
@@ -1678,9 +1678,9 @@ expand_leftover_cleanups ()
 {
   struct eh_entry *entry;
 
-  for (entry = dequeue_eh_entry (&ehqueue); 
+  for (entry = dequeue_eh_entry (ehqueue); 
        entry;
-       entry = dequeue_eh_entry (&ehqueue))
+       entry = dequeue_eh_entry (ehqueue))
     {
       /* A leftover try block.  Shouldn't be one here.  */
       if (entry->finalization == integer_zero_node)
@@ -1787,6 +1787,29 @@ end_catch_handler ()
   catchstack.top->entry->false_label = NULL_RTX;
 }
 
+/* Save away the current ehqueue.  */
+
+void 
+push_ehqueue ()
+{
+  struct eh_queue *q;
+  q = xcalloc (1, sizeof (struct eh_queue));
+  q->next = ehqueue;
+  ehqueue = q;
+}
+
+/* Restore a previously pushed ehqueue.  */
+
+void
+pop_ehqueue ()
+{
+  struct eh_queue *q;
+  expand_leftover_cleanups ();
+  q = ehqueue->next;
+  free (ehqueue);
+  ehqueue = q;
+}
+
 /* Emit the handler specified by ENTRY.  */
 
 static void
@@ -1795,13 +1818,11 @@ emit_cleanup_handler (entry)
 {
   rtx prev;
   rtx handler_insns;
-  struct eh_queue q;
 
   /* Since the cleanup could itself contain try-catch blocks, we
      squirrel away the current queue and replace it when we are done
      with this function.  */
-  q = ehqueue;
-  ehqueue.head = ehqueue.tail = NULL;
+  push_ehqueue ();
 
   /* Put these handler instructions in a sequence.  */
   do_pending_stack_adjust ();
@@ -1844,8 +1865,7 @@ emit_cleanup_handler (entry)
   end_sequence ();
 
   /* Now we've left the handler.  */
-  expand_leftover_cleanups ();
-  ehqueue = q;
+  pop_ehqueue ();
 }
 
 /* Generate RTL for the start of a group of catch clauses. 
@@ -1889,9 +1909,9 @@ expand_start_all_catch ()
   /* Throw away entries in the queue that we won't need anymore.  We
      need entries for regions that have ended but to which there might
      still be gotos pending.  */
-  for (entry = dequeue_eh_entry (&ehqueue); 
+  for (entry = dequeue_eh_entry (ehqueue); 
        entry->finalization != integer_zero_node;
-       entry = dequeue_eh_entry (&ehqueue))
+       entry = dequeue_eh_entry (ehqueue))
     free (entry);
 
   /* At this point, all the cleanups are done, and the ehqueue now has
@@ -2477,8 +2497,11 @@ static void
 mark_eh_queue (q)
      struct eh_queue *q;
 {
-  if (q)
-    mark_eh_node (q->head);
+  while (q)
+    {
+      mark_eh_node (q->head);
+      q = q->next;
+    }
 }
 
 /* Mark NODE for GC.  A label_node contains a union containing either
@@ -2506,7 +2529,7 @@ mark_eh_status (eh)
 
   mark_eh_stack (&eh->x_ehstack);
   mark_eh_stack (&eh->x_catchstack);
-  mark_eh_queue (&eh->x_ehqueue);
+  mark_eh_queue (eh->x_ehqueue);
   ggc_mark_rtx (eh->x_catch_clauses);
 
   lang_mark_false_label_stack (eh->x_false_label_stack);
@@ -2577,6 +2600,7 @@ init_eh_for_function ()
 {
   current_function->eh
     = (struct eh_status *) xcalloc (1, sizeof (struct eh_status));
+  ehqueue = (struct eh_queue *) xcalloc (1, sizeof (struct eh_queue));
   eh_return_context = NULL_RTX;
   eh_return_stack_adjust = NULL_RTX;
   eh_return_handler = NULL_RTX;
@@ -2586,6 +2610,7 @@ void
 free_eh_status (f)
      struct function *f;
 {
+  free (f->eh->x_ehqueue);
   free (f->eh);
   f->eh = NULL;
 }

@@ -93,6 +93,7 @@ struct eh_stack {
 struct eh_queue {
   struct eh_node *head;
   struct eh_node *tail;
+  struct eh_queue *next;
 };
 
 /* Used to save exception handling status for each function.  */
@@ -115,7 +116,7 @@ struct eh_status
      As we exit a region, we enqueue a new entry. The entries are then
      dequeued during expand_leftover_cleanups and
      expand_start_all_catch.  */
-  struct eh_queue x_ehqueue;
+  struct eh_queue *x_ehqueue;
   /* Insns for all of the exception handlers for the current function.
      They are currently emitted by the frontend code.  */
   rtx x_catch_clauses;
@@ -442,6 +443,12 @@ extern rtx get_dynamic_cleanup_chain		PROTO((void));
 /* Throw an exception.  */
 
 extern void emit_throw				PROTO((void));
+
+/* Save away the current ehqueue.  */
+extern void push_ehqueue                        PROTO((void));
+
+/* Restore a previously pushed ehqueue.  */
+extern void pop_ehqueue                         PROTO((void));
 
 /* One to use setjmp/longjmp method of generating code.  */
 

@@ -1,3 +1,27 @@
+1999-12-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* except.h (struct eh_queue): Add `next' pointer.
+	(struct eh_status): Make x_ehqueue a pointer.
+	(push_ehqueue):  Declare.
+	(pop_ehqueue): Likewise.
+	* except.c (expand_eh_region_end): Adjust now that ehqueue is a
+	pointer.
+	(expand_fixup_region_end): Likewise.
+	(expand_leftover_cleanups): Likewise.
+	(push_ehqueue): Define.
+	(pop_ehqueue): Likewise.
+	(emit_cleanup_handler): Use push_ehqueue and pop_ehqueue rather
+	than doing it inline.
+	(expand_start_all_catch):  Adjust now that ehqueue is a
+	pointer.
+	(mark_eh_queue): Mark all level of the queue.
+	(mark_eh_status):  Adjust now that ehqueue is a
+	pointer.
+	(init_eh_for_function): Allocate ehqueue.
+	(free_eh_status): Free it.
+	* stmt.c (expand_cleanups): Save the ehqueue around the cleanup
+	expansion for a fixup.
+
 1999-12-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gthr-single.h (__gthread_active_p): Add prototype arguments.
