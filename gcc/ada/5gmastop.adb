@@ -121,7 +121,7 @@ package body System.Machine_State_Operations is
    --  load/store instructions used to save/restore machine instructions.
 
    Roff : constant Character := Character'Val (o32n * Character'Pos ('4') +
-                                               n32n * Character'Pos (' '));
+                                               n32n * Character'Pos ('0'));
    --  Offset from first byte of a __uint64 register save location where
    --  the register value is stored.  For n32/64 we store the entire 64
    --  bit register into the uint64.  For o32, only 32 bits are stored
