@@ -1,5 +1,13 @@
 2003-12-19  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/locale_facets.tcc (num_get::_M_extract_int,
+	num_get::_M_extract_float): According to 22.2.2.1.2, p8-9,
+	first look for decimal_point and thousands_sep.
+	* testsuite/22_locale/num_get/get/char/11.cc: New.
+	* testsuite/22_locale/num_get/get/wchar_t/11.cc: Likewise.
+
+2003-12-19  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/locale_facets.tcc (num_get::_M_extract_float):
 	When __found_sci becomes true stop eating thousands separators
 	and the decimal radix separator.
