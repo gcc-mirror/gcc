@@ -102,10 +102,10 @@ void monstartup(lowpc, highpc)
 	 *	so the rest of the scaling (here and in gprof) stays in ints.
 	 */
     lowpc = (char *)
-	    ROUNDDOWN((unsigned)lowpc, HISTFRACTION*sizeof(HISTCOUNTER));
+	    ROUNDDOWN((unsigned long)lowpc, HISTFRACTION*sizeof(HISTCOUNTER));
     s_lowpc = lowpc;
     highpc = (char *)
-	    ROUNDUP((unsigned)highpc, HISTFRACTION*sizeof(HISTCOUNTER));
+	    ROUNDUP((unsigned long)highpc, HISTFRACTION*sizeof(HISTCOUNTER));
     s_highpc = highpc;
     s_textsize = highpc - lowpc;
     monsize = (s_textsize / HISTFRACTION) + sizeof(struct phdr);
@@ -195,7 +195,7 @@ _mcleanup()
 	else
 	    progname++;
 
-	sprintf(buf, "%s/%ld.%s", profdir, getpid(), progname);
+	sprintf(buf, "%s/%ld.%s", profdir, (long) getpid(), progname);
 	proffile = buf;
     } else {
 	proffile = "gmon.out";
@@ -412,7 +412,7 @@ static void moncontrol(mode)
 	/* start */
 	profil((unsigned short *)(sbuf + sizeof(struct phdr)),
 	       ssiz - sizeof(struct phdr),
-	       (int)s_lowpc, s_scale);
+	       (long)s_lowpc, s_scale);
 	profiling = 0;
     } else {
 	/* stop */

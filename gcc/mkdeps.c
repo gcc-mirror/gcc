@@ -127,7 +127,7 @@ base_name (fname)
 /* Public routines.  */
 
 struct deps *
-deps_init (void)
+deps_init ()
 {
   struct deps *d = (struct deps *) xmalloc (sizeof (struct deps));
 

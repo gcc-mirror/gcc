@@ -45,12 +45,12 @@ typedef enum
 #define die_unless(c) \
   do if (!(c)) \
     { \
-      fprintf (stderr, "%s:%lu: " #c "\n", argv[1], lineno); \
+      fprintf (stderr, "%s:%lu: %s\n", argv[1], lineno, #c); \
       die (); \
     } \
   while(0)
 
-static void
+static void ATTRIBUTE_NORETURN
 die (void)
 {
   exit (1);

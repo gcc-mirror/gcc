@@ -1,3 +1,8 @@
+Mon Mar  6 13:01:19 2000  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* ansify.c (die_unless): Don't use ANSI string concatenation.
+	(die): Mark with ATTRIBUTE_NORETURN.
+
 Wed Mar  1 00:31:44 2000  Martin von Loewis  <loewis@informatik.hu-berlin.de>
 
 	* com.c (current_function_decl): Move to toplev.c.
