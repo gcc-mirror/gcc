@@ -501,7 +501,8 @@ gfc_init_types (void)
       PUSH_TYPE (name_buf, type);
     }
 
-  gfc_character1_type_node = build_type_variant (signed_char_type_node, 0, 0);
+  gfc_character1_type_node = build_type_variant (unsigned_char_type_node, 
+						 0, 0);
   PUSH_TYPE ("char", gfc_character1_type_node);
 
   PUSH_TYPE ("byte", unsigned_char_type_node);
