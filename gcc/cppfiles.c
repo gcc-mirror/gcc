@@ -206,6 +206,9 @@ stack_include_file (pfile, inc)
 {
   cpp_buffer *fp;
 
+  if (pfile->context->prev)
+    cpp_ice (pfile, "attempt to push file buffer with contexts stacked");
+
   if (DO_NOT_REREAD (inc))
     return 0;
 

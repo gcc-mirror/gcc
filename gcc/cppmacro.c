@@ -689,7 +689,8 @@ funlike_invocation_p (pfile, node, list)
 
 /* Push the context of a macro onto the context stack.  TOKEN is the
    macro name.  If we can successfully start expanding the macro,
-   TOKEN is replaced with the first token of the expansion.  */
+   TOKEN is replaced with the first token of the expansion, and we
+   return non-zero.  */
 static int
 enter_macro_context (pfile, token)
      cpp_reader *pfile;
@@ -704,7 +705,7 @@ enter_macro_context (pfile, token)
   if (macro->disabled)
     {
       token->flags |= NO_EXPAND;
-      return 1;
+      return 0;
     }
 
   /* Save the position of the outermost macro invocation.  */
@@ -718,7 +719,7 @@ enter_macro_context (pfile, token)
     {
       if (!pfile->context->prev)
 	unlock_pools (pfile);
-      return 1;
+      return 0;
     }
 
   /* Now push its context.  */
@@ -740,7 +741,7 @@ enter_macro_context (pfile, token)
   /* Disable the macro within its expansion.  */
   macro->disabled = 1;
 
-  return 0;
+  return 1;
 }
 
 /* Move to the next context.  Create one if there is none.  */
@@ -922,6 +923,7 @@ _cpp_get_token (pfile, token)
      cpp_reader *pfile;
      cpp_token *token;
 {
+ next_token:
   for (;;)
     {
       cpp_context *context = pfile->context;
@@ -959,22 +961,34 @@ _cpp_get_token (pfile, token)
       if (token->flags & PASTE_LEFT)
 	paste_all_tokens (pfile, token);
 
-      if (token->type != CPP_NAME
-	  || token->val.node->type != NT_MACRO
-	  || pfile->state.prevent_expansion
-	  || token->flags & NO_EXPAND)
+      if (token->type != CPP_NAME)
 	break;
 
-      /* Macros, built-in or not, invalidate controlling macros.  */
-      pfile->mi_state = MI_FAILED;
-
-      if (token->val.node->flags & NODE_BUILTIN)
+      /* Handle macros and the _Pragma operator.  */
+      if (token->val.node->type == NT_MACRO
+	  && !pfile->state.prevent_expansion
+	  && !(token->flags & NO_EXPAND))
 	{
-	  builtin_macro (pfile, token);
-	  break;
+	  /* Macros invalidate controlling macros.  */
+	  pfile->mi_state = MI_FAILED;
+
+	  if (token->val.node->flags & NODE_BUILTIN)
+	    {
+	      builtin_macro (pfile, token);
+	      break;
+	    }
+
+	  if (enter_macro_context (pfile, token))
+	    continue;
 	}
-      else if (enter_macro_context (pfile, token))
+
+      if (token->val.node != pfile->spec_nodes.n__Pragma)
 	break;
+
+      /* Invalidate controlling macros.  */
+      pfile->mi_state = MI_FAILED;
+      _cpp_do__Pragma (pfile);
+      goto next_token;
     }
 }
 

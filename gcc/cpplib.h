@@ -287,7 +287,12 @@ struct cpp_buffer
      The warning happens only for C89 extended mode with -pedantic on,
      or for -Wtraditional, and only once per file (otherwise it would
      be far too noisy).  */
-  char warned_cplusplus_comments;
+  unsigned char warned_cplusplus_comments;
+
+  /* True if we don't process trigraphs and escaped newlines.  True
+     for preprocessed input, command line directives, and _Pragma
+     buffers.  */
+  unsigned char from_stage3;
 };
 
 /* Maximum nesting of cpp_buffers.  We use a static limit, partly for
@@ -509,6 +514,7 @@ struct spec_nodes
 {
   cpp_hashnode *n_L;			/* L"str" */
   cpp_hashnode *n_defined;		/* defined operator */
+  cpp_hashnode *n__Pragma;		/* _Pragma operator */
   cpp_hashnode *n__STRICT_ANSI__;	/* STDC_0_IN_SYSTEM_HEADERS */
   cpp_hashnode *n__CHAR_UNSIGNED__;	/* plain char is unsigned */
   cpp_hashnode *n__VA_ARGS__;		/* C99 vararg macros */

@@ -1,3 +1,32 @@
+2000-10-30  Neil Booth  <neilb@earthling.net>
+
+	* cppfiles.c (stack_include_file): Check for stacked contexts
+	here.
+	* cpphash.h (_cpp_do__Pragma): New prototype.
+	* cppinit.c (cpp_reader_init): Add _Pragma keyword to hash table.
+
+	* cpplex.c (skip_escaped_newlines): Only process trigraphs and
+	escaped newlines if !(buffer->from_stage3).
+	(_cpp_lex_token): Warn about missing newlines iff
+	!buffer->from_stage3.
+
+	* cpplib.c (get__Pragma_string, destringize,
+	_cpp_do__Pragma): New functions.
+	(run_directive): Set output_line for _Pragma to avoid line
+	markers in output.  Set from_stage3 and prevent macro expansion
+	for _Pragma and command-line options.  Check buffer exhaustion.
+	(cpp_push_buffer): Don't check for stacked macro contexts, as
+	this is perfectly legitimate for _Pragma.  Move the check to
+	stack_include_file instead. Set from_stage3 iff buffer is
+	preprocessed input.
+
+	* cpplib.h (struct cpp_buffer): Make warned_cplusplus_comments
+	unsigned. New boolean from_stage3.
+	(struct spec_nodes): Add n__Pragma.
+
+	* cppmacro.c (enter_macro_context): Flip sense of return value.
+	(_cpp_get_token): Handle _Pragma operator.
+
 2000-10-30  Phil Edwards  <pme@sources.redhat.com>
 
 	* gcc.texi:  The C++ standard isn't "draft" anymore.
