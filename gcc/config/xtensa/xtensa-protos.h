@@ -70,6 +70,7 @@ extern int xtensa_expand_conditional_move PARAMS ((rtx *, int));
 extern int xtensa_expand_scc PARAMS ((rtx *));
 extern int xtensa_expand_block_move PARAMS ((rtx *));
 extern int xtensa_emit_move_sequence PARAMS ((rtx *, enum machine_mode));
+extern bool xtensa_copy_incoming_a7 PARAMS ((rtx *, enum machine_mode));
 extern void xtensa_emit_block_move PARAMS ((rtx *, rtx *, int));
 extern void xtensa_expand_nonlocal_goto PARAMS ((rtx *));
 extern void xtensa_emit_loop_end PARAMS ((rtx, rtx *));
