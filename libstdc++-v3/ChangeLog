@@ -1,5 +1,10 @@
 2005-03-02  Jonathan Wakely  <redi@gcc.gnu.org>
 
+	* include/tr1/memory: Replace checked_deleter with (unchecked)
+	_Sp_deleter as GCC warns about delete on incomplete types anyway.
+
+2005-03-02  Jonathan Wakely  <redi@gcc.gnu.org>
+
 	* include/tr1/memory: Add missing "inline" to __throw_bad_weak_ptr.
 
 2005-03-02  Douglas Gregor  <doug.gregor@gmail.com>
