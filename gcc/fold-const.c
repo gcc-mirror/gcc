@@ -4008,30 +4008,44 @@ fold (expr)
 	  tem = const_binop (MULT_EXPR, TREE_OPERAND (arg0, 1), arg1, 0);
 
 	  /* If it overflows, the result is +/- 1 or zero, depending on
-	     the signs of the two constants and the division operation.  */
+	     the signs of the constants and remaining operand and on which
+	     division operation is being performed.  */
+
 	  if (TREE_OVERFLOW (tem))
 	    {
+	      /* 1 if C1 * C2 is negative (i.e., C1 and C2 have
+		 different signs).  */
+	      int c_neg = ((tree_int_cst_sgn (arg1) < 0)
+			   == (tree_int_cst_sgn (TREE_OPERAND (arg0, 1)) < 0));
+
 	      switch (code)
 		{
 		case EXACT_DIV_EXPR:
-		case TRUNC_DIV_EXPR:
-		  tem = integer_zero_node;
-		  break;
-		case FLOOR_DIV_EXPR:
-		  /* -1 if signs disagree, else 0.  */
-		  tem = (((tree_int_cst_sgn (TREE_OPERAND (arg0, 1)) < 0)
-			  != (tree_int_cst_sgn (arg1) < 0))
-			 ? build_int_2 (-1, -1) : integer_zero_node);
-		  break;
-		case CEIL_DIV_EXPR:
-		  /* 1 if signs agree, else 0.  */
-		  tem = (((tree_int_cst_sgn (TREE_OPERAND (arg0, 1)) < 0)
-			  == (tree_int_cst_sgn (arg1) < 0))
-			 ? integer_one_node : integer_zero_node);
-		  break;
-		}
+		  /* If this overflowed, it couldn't have been exact.  */
+		  abort ();
 
-	      return omit_one_operand (type, tem, TREE_OPERAND (arg0, 0));
+		case TRUNC_DIV_EXPR:
+		  return omit_one_operand (type, integer_zero_node,
+					   TREE_OPERAND (arg0, 0));
+
+		case FLOOR_DIV_EXPR:
+		  /* -1 or zero, depending on signs of remaining
+		     operand and constants.  */
+		  tem = build (c_neg ? GE_EXPR : LE_EXPR, integer_type_node,
+			       TREE_OPERAND (arg0, 0),
+			       convert (type, integer_zero_node));
+		  return fold (build (NEGATE_EXPR, type,
+				      convert (type, fold (tem))));
+
+		case CEIL_DIV_EXPR:
+		  /* Zero or 1, depending on signs of remaining
+		     operand and constants.  */
+		  tem = build (c_neg ? LE_EXPR : GE_EXPR, integer_type_node,
+			       TREE_OPERAND (arg0, 0),
+			       convert (type, integer_zero_node));
+		  
+		  return convert (type, fold (tem));
+		}
 	    }
 	  else
 	    /* If no overflow, divide by C1*C2.  */
