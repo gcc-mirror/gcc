@@ -113,7 +113,7 @@ public abstract class CharBuffer extends Buffer
         buffer [i] = a.charAt (i);
       }
     
-    return wrap (buffer, offset, length);
+    return wrap (buffer, offset, length).asReadOnlyBuffer ();
   }
 
   /**
@@ -426,7 +426,7 @@ public abstract class CharBuffer extends Buffer
       return new String (array (), position (), length ());
 
     char[] buf = new char [length ()];
-    get (buf);
+    get (position (), buf);
     return new String (buf);
   }
 

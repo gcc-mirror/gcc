@@ -291,14 +291,14 @@ public class DirectByteBufferImpl extends ByteBuffer
   final public ByteBuffer putLong (long value)
   {
     // FIXME: this handles big endian only
-    put ((byte) ((((int) value) & 0xff00000000000000) >> 56));
-    put ((byte) ((((int) value) & 0x00ff000000000000) >> 48));
-    put ((byte) ((((int) value) & 0x0000ff0000000000) >> 40));
-    put ((byte) ((((int) value) & 0x000000ff00000000) >> 32));
-    put ((byte) ((((int) value) & 0x00000000ff000000) >> 24));
-    put ((byte) ((((int) value) & 0x0000000000ff0000) >> 16));
-    put ((byte) ((((int) value) & 0x000000000000ff00) >> 8));
-    put ((byte) (((int) value) & 0x00000000000000ff));
+    put ((byte) ((value & 0xff00000000000000L) >> 56));
+    put ((byte) ((value & 0x00ff000000000000L) >> 48));
+    put ((byte) ((value & 0x0000ff0000000000L) >> 40));
+    put ((byte) ((value & 0x000000ff00000000L) >> 32));
+    put ((byte) ((value & 0x00000000ff000000L) >> 24));
+    put ((byte) ((value & 0x0000000000ff0000L) >> 16));
+    put ((byte) ((value & 0x000000000000ff00L) >> 8));
+    put ((byte) (value & 0x00000000000000ffL));
     return this;
   }
   
@@ -318,14 +318,14 @@ public class DirectByteBufferImpl extends ByteBuffer
   final public ByteBuffer putLong (int index, long value)
   {
     // FIXME: this handles big endian only
-    put (index, (byte) ((((int) value) & 0xff00000000000000) >> 56));
-    put (index + 1, (byte) ((((int) value) & 0x00ff000000000000) >> 48));
-    put (index + 2, (byte) ((((int) value) & 0x0000ff0000000000) >> 40));
-    put (index + 3, (byte) ((((int) value) & 0x000000ff00000000) >> 32));
-    put (index + 4, (byte) ((((int) value) & 0x00000000ff000000) >> 24));
-    put (index + 5, (byte) ((((int) value) & 0x0000000000ff0000) >> 16));
-    put (index + 6, (byte) ((((int) value) & 0x000000000000ff00) >> 8));
-    put (index + 7, (byte) (((int) value) & 0x00000000000000ff));
+    put (index, (byte) ((value & 0xff00000000000000L) >> 56));
+    put (index + 1, (byte) ((value & 0x00ff000000000000L) >> 48));
+    put (index + 2, (byte) ((value & 0x0000ff0000000000L) >> 40));
+    put (index + 3, (byte) ((value & 0x000000ff00000000L) >> 32));
+    put (index + 4, (byte) ((value & 0x00000000ff000000L) >> 24));
+    put (index + 5, (byte) ((value & 0x0000000000ff0000L) >> 16));
+    put (index + 6, (byte) ((value & 0x000000000000ff00L) >> 8));
+    put (index + 7, (byte) (value & 0x00000000000000ffL));
     return this;
   }
 
@@ -383,14 +383,14 @@ public class DirectByteBufferImpl extends ByteBuffer
   final public ByteBuffer putDouble (double value)
   {
     // FIXME: this handles big endian only
-    put ((byte) ((((int) value) & 0xff00000000000000) >> 56));
-    put ((byte) ((((int) value) & 0x00ff000000000000) >> 48));
-    put ((byte) ((((int) value) & 0x0000ff0000000000) >> 40));
-    put ((byte) ((((int) value) & 0x000000ff00000000) >> 32));
-    put ((byte) ((((int) value) & 0x00000000ff000000) >> 24));
-    put ((byte) ((((int) value) & 0x0000000000ff0000) >> 16));
-    put ((byte) ((((int) value) & 0x000000000000ff00) >> 8));
-    put ((byte) (((int) value) & 0x00000000000000ff));
+    put ((byte) ((((long) value) & 0xff00000000000000L) >> 56));
+    put ((byte) ((((long) value) & 0x00ff000000000000L) >> 48));
+    put ((byte) ((((long) value) & 0x0000ff0000000000L) >> 40));
+    put ((byte) ((((long) value) & 0x000000ff00000000L) >> 32));
+    put ((byte) ((((long) value) & 0x00000000ff000000L) >> 24));
+    put ((byte) ((((long) value) & 0x0000000000ff0000L) >> 16));
+    put ((byte) ((((long) value) & 0x000000000000ff00L) >> 8));
+    put ((byte) (((long) value) & 0x00000000000000ffL));
     return this;
   }
   
@@ -410,14 +410,14 @@ public class DirectByteBufferImpl extends ByteBuffer
   final public ByteBuffer putDouble (int index, double value)
   {
     // FIXME: this handles big endian only
-    put (index, (byte) ((((int) value) & 0xff00000000000000) >> 56));
-    put (index + 1, (byte) ((((int) value) & 0x00ff000000000000) >> 48));
-    put (index + 2, (byte) ((((int) value) & 0x0000ff0000000000) >> 40));
-    put (index + 3, (byte) ((((int) value) & 0x000000ff00000000) >> 32));
-    put (index + 4, (byte) ((((int) value) & 0x00000000ff000000) >> 24));
-    put (index + 5, (byte) ((((int) value) & 0x0000000000ff0000) >> 16));
-    put (index + 6, (byte) ((((int) value) & 0x000000000000ff00) >> 8));
-    put (index + 7, (byte) (((int) value) & 0x00000000000000ff));
+    put (index, (byte) ((((long) value) & 0xff00000000000000L) >> 56));
+    put (index + 1, (byte) ((((long) value) & 0x00ff000000000000L) >> 48));
+    put (index + 2, (byte) ((((long) value) & 0x0000ff0000000000L) >> 40));
+    put (index + 3, (byte) ((((long) value) & 0x000000ff00000000L) >> 32));
+    put (index + 4, (byte) ((((long) value) & 0x00000000ff000000L) >> 24));
+    put (index + 5, (byte) ((((long) value) & 0x0000000000ff0000L) >> 16));
+    put (index + 6, (byte) ((((long) value) & 0x000000000000ff00L) >> 8));
+    put (index + 7, (byte) (((long) value) & 0x00000000000000ffL));
     return this;
   }
 }
