@@ -1,3 +1,8 @@
+2002-04-02  Phil Edwards  <pme@gcc.gnu.org>
+
+	* include/Makefile.am (install-data-local):  Use mkinstalldirs.
+	* include/Makefile.in:  Regenerate.
+
 2002-04-02  Paolo Carlini  <pcarlini@unitus.it>
             Nathan Myers  <ncm@cantrip.org>
             Philip Martin  <philip@codematters.co.uk>
