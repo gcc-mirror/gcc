@@ -1751,11 +1751,6 @@ check_format_info_main (status, res, info, format_chars, format_length,
 	      /* "...a field width...may be indicated by an asterisk.
 		 In this case, an int argument supplies the field width..."  */
 	      ++format_chars;
-	      if (params == 0)
-		{
-		  status_warning (status, "too few arguments for format");
-		  return;
-		}
 	      if (has_operand_number != 0)
 		{
 		  int opnum;
@@ -1775,6 +1770,11 @@ check_format_info_main (status, res, info, format_chars, format_length,
 		}
 	      if (info->first_arg_num != 0)
 		{
+		  if (params == 0)
+		    {
+		      status_warning (status, "too few arguments for format");
+		      return;
+		    }
 		  cur_param = TREE_VALUE (params);
 		  if (has_operand_number <= 0)
 		    {

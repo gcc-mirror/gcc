@@ -1,3 +1,7 @@
+2002-05-03  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/format/xopen-2.c: New test.
+
 2002-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/20020503-1.c: New test.
