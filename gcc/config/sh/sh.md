@@ -3529,6 +3529,96 @@
     operands[1] = force_reg (SImode, XEXP (operands[1], 0));
 }")
 
+(define_insn "sibcalli"
+  ;; FIXME: any call-clobbered register will do
+  [(call (mem:SI (match_operand:SI 0 "register_operand" "z"))
+	 (match_operand 1 "" ""))
+   (use (reg:PSI FPSCR_REG))
+   (return)]
+  ""
+  "jmp	@%0%#"
+  [(set_attr "needs_delay_slot" "yes")
+   (set_attr "type" "jump_ind")])
+
+(define_insn "sibcalli_pcrel"
+  ;; FIXME: any call-clobbered register will do
+  [(call (mem:SI (match_operand:SI 0 "arith_reg_operand" "z"))
+	 (match_operand 1 "" ""))
+   (use (match_operand 2 "" ""))
+   (use (reg:PSI FPSCR_REG))
+   (return)]
+  "TARGET_SH2"
+  "braf	%0\\n%O2:%#"
+  [(set_attr "needs_delay_slot" "yes")
+   (set_attr "type" "jump_ind")])
+
+(define_insn_and_split "sibcall_pcrel"
+  [(call (mem:SI (match_operand:SI 0 "symbol_ref_operand" ""))
+	 (match_operand 1 "" ""))
+   (use (reg:PSI FPSCR_REG))
+   ;; FIXME: any call-clobbered register will do
+   (clobber (match_scratch:SI 2 "=z"))
+   (return)]
+  "TARGET_SH2 && optimize"
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+  "
+{
+  rtx lab = gen_call_site ();
+  rtx call_insn;
+
+  emit_insn (gen_sym_label2reg (operands[2], operands[0], lab));
+  call_insn = emit_call_insn (gen_sibcalli_pcrel (operands[2], operands[1],
+						  lab));
+  SIBLING_CALL_P (call_insn) = 1;
+  DONE;
+}")
+
+(define_expand "sibcall"
+  [(parallel
+    [(call (mem:SI (match_operand 0 "arith_reg_operand" ""))
+	   (match_operand 1 "" ""))
+     (use (reg:PSI FPSCR_REG))
+     (return)])]
+  ""
+  "
+{
+  if (flag_pic && TARGET_SH2 && optimize
+      && GET_CODE (operands[0]) == MEM
+      && GET_CODE (XEXP (operands[0], 0)) == SYMBOL_REF
+      /* The PLT needs the PIC register, but the epilogue would have
+	 to restore it, so we can only use PC-relative PIC calls for
+	 static functions.  */
+      && SYMBOL_REF_FLAG (XEXP (operands[0], 0)))
+    {
+      emit_call_insn (gen_sibcall_pcrel (XEXP (operands[0], 0), operands[1]));
+      DONE;
+    }
+  else
+    operands[0] = force_reg (SImode, XEXP (operands[0], 0));
+}")
+
+(define_expand "sibcall_value"
+  [(set (match_operand 0 "" "")
+	(call (match_operand 1 "" "")
+	      (match_operand 2 "" "")))]
+  ""
+  "
+{
+  emit_call_insn (gen_sibcall (operands[1], operands[2]));
+  DONE;
+}")
+
+(define_expand "sibcall_epilogue"
+  [(return)]
+  ""
+  "
+{
+  sh_expand_epilogue ();
+  DONE;
+}")
+
 (define_insn "indirect_jump"
   [(set (pc)
 	(match_operand:SI 0 "arith_reg_operand" "r"))]
