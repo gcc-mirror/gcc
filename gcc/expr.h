@@ -1203,7 +1203,6 @@ extern tree (*lang_expand_constant) PROTO((tree));
 #endif
 
 extern void init_all_optabs			PROTO ((void));
-extern void init_mov_optab			PROTO ((void));
 extern void do_jump_by_parts_equality_rtx	PROTO((rtx, rtx, rtx));
 extern void do_jump_by_parts_greater_rtx	PROTO ((enum machine_mode, int,
 							rtx, rtx, rtx, rtx));
