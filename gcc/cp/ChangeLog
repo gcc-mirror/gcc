@@ -1,5 +1,15 @@
 Thu Nov 20 14:40:17 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* Make-lang.in (CXX_LIB2FUNCS): Add new op new and op delete objs.
+	(various.o): Likewise.
+	* inc/new: Add placement deletes.  Add throw specs for default new.
+	* new.cc (set_new_handler): Move here from libgcc2.
+	* new1.cc (new (nothrow)): Catch a bad_alloc thrown from the handler.
+	(new): Move from libgcc2.  Throw bad_alloc.
+	* new2.cc: Move the rest of the op news and op deletes from libgcc2.
+	* decl.c (init_decl_processing): Update exception specs on new and
+	delete.
+
 	* method.c (build_decl_overload_real): Don't mess with global 
 	placement delete.
 
