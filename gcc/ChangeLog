@@ -3,6 +3,9 @@
 	* stmt.c (expand_asm_operands): For inout operands, make sure
 	the substitution of '=' for '+' makes it into the rtl.
 
+	* reload1.c (delete_output_reload): Call eliminate_regs on substed.
+	(reload_as_needed): Call update_eliminable_offsets a bit later.
+
 2001-05-17  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* gcc.texi (gccbug): Refer to the web pages for detailed information
