@@ -1,3 +1,11 @@
+Fri Nov 14 09:09:20 1997  Fred Fish  (fnf@cygnus.com)
+
+	* dwarfout.c (byte_size_attribute):  Add local var upper_bound
+	and add case to handle STRING_TYPE.
+	* dwarfout.c (output_string_type_die):  Fix code to generate
+	correct string length attribute for fixed length strings.
+	Still needs support for varying length strings.
+
 Fri Nov 14 08:46:56 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* toplev.c (get_run_time): Do something sensible for cygwin32.
