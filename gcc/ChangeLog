@@ -1,3 +1,11 @@
+2004-08-23  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.md (length): Don't use mips_fetch_insns for indexed
+	loads and stores.
+	(*lwxc1_<mode>, *ldxc1_<mode>, *swxc1_<mode>, *sdxc1_<mode>): Name
+	formerly unnamed patterns.  Redefine using :P for the address.  Remove
+	explicit length attributes.
+
 2004-08-23  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* tree-ssa-loop-im.c (fem_single_reachable_address, for_each_memref):

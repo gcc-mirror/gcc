@@ -181,9 +181,9 @@
 
 	  (eq_attr "type" "const")
 	  (symbol_ref "mips_const_insns (operands[1]) * 4")
-	  (eq_attr "type" "load,fpload,fpidxload")
+	  (eq_attr "type" "load,fpload")
 	  (symbol_ref "mips_fetch_insns (operands[1]) * 4")
-	  (eq_attr "type" "store,fpstore,fpidxstore")
+	  (eq_attr "type" "store,fpstore")
 	  (symbol_ref "mips_fetch_insns (operands[0]) * 4")
 
 	  ;; In the worst case, a call macro will take 8 instructions:
@@ -3717,85 +3717,41 @@ beq\t%2,%.,1b\;\
 ;; these instructions can only be used to load and store floating
 ;; point registers, that would probably cause trouble in reload.
 
-(define_insn ""
+(define_insn "*lwxc1_<mode>"
   [(set (match_operand:SF 0 "register_operand" "=f")
-	(mem:SF (plus:SI (match_operand:SI 1 "register_operand" "d")
-			 (match_operand:SI 2 "register_operand" "d"))))]
+	(mem:SF (plus:P (match_operand:P 1 "register_operand" "d")
+			(match_operand:P 2 "register_operand" "d"))))]
   "ISA_HAS_FP4 && TARGET_HARD_FLOAT"
   "lwxc1\t%0,%1(%2)"
-  [(set_attr "type"	"fpidxload")
-   (set_attr "mode"	"SF")
-   (set_attr "length"   "4")])
+  [(set_attr "type" "fpidxload")
+   (set_attr "mode" "SF")])
 
-(define_insn ""
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(mem:SF (plus:DI (match_operand:DI 1 "register_operand" "d")
-			 (match_operand:DI 2 "register_operand" "d"))))]
-  "ISA_HAS_FP4 && TARGET_HARD_FLOAT"
-  "lwxc1\t%0,%1(%2)"
-  [(set_attr "type"	"fpidxload")
-   (set_attr "mode"	"SF")
-   (set_attr "length"   "4")])
-
-(define_insn ""
+(define_insn "*ldxc1_<mode>"
   [(set (match_operand:DF 0 "register_operand" "=f")
-	(mem:DF (plus:SI (match_operand:SI 1 "register_operand" "d")
-			 (match_operand:SI 2 "register_operand" "d"))))]
+	(mem:DF (plus:P (match_operand:P 1 "register_operand" "d")
+			(match_operand:P 2 "register_operand" "d"))))]
   "ISA_HAS_FP4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "ldxc1\t%0,%1(%2)"
-  [(set_attr "type"	"fpidxload")
-   (set_attr "mode"	"DF")
-   (set_attr "length"   "4")])
+  [(set_attr "type" "fpidxload")
+   (set_attr "mode" "DF")])
 
-(define_insn ""
-  [(set (match_operand:DF 0 "register_operand" "=f")
-	(mem:DF (plus:DI (match_operand:DI 1 "register_operand" "d")
-			 (match_operand:DI 2 "register_operand" "d"))))]
-  "ISA_HAS_FP4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
-  "ldxc1\t%0,%1(%2)"
-  [(set_attr "type"	"fpidxload")
-   (set_attr "mode"	"DF")
-   (set_attr "length"   "4")])
-
-(define_insn ""
-  [(set (mem:SF (plus:SI (match_operand:SI 1 "register_operand" "d")
-			 (match_operand:SI 2 "register_operand" "d")))
+(define_insn "*swxc1_<mode>"
+  [(set (mem:SF (plus:P (match_operand:P 1 "register_operand" "d")
+			(match_operand:P 2 "register_operand" "d")))
 	(match_operand:SF 0 "register_operand" "f"))]
   "ISA_HAS_FP4 && TARGET_HARD_FLOAT"
   "swxc1\t%0,%1(%2)"
-  [(set_attr "type"	"fpidxstore")
-   (set_attr "mode"	"SF")
-   (set_attr "length"   "4")])
+  [(set_attr "type" "fpidxstore")
+   (set_attr "mode" "SF")])
 
-(define_insn ""
-  [(set (mem:SF (plus:DI (match_operand:DI 1 "register_operand" "d")
-			 (match_operand:DI 2 "register_operand" "d")))
-	(match_operand:SF 0 "register_operand" "f"))]
-  "ISA_HAS_FP4 && TARGET_HARD_FLOAT"
-  "swxc1\t%0,%1(%2)"
-  [(set_attr "type"	"fpidxstore")
-   (set_attr "mode"	"SF")
-   (set_attr "length"   "4")])
-
-(define_insn ""
-  [(set (mem:DF (plus:SI (match_operand:SI 1 "register_operand" "d")
-			 (match_operand:SI 2 "register_operand" "d")))
+(define_insn "*sdxc1_<mode>"
+  [(set (mem:DF (plus:P (match_operand:P 1 "register_operand" "d")
+			(match_operand:P 2 "register_operand" "d")))
 	(match_operand:DF 0 "register_operand" "f"))]
   "ISA_HAS_FP4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "sdxc1\t%0,%1(%2)"
-  [(set_attr "type"	"fpidxstore")
-   (set_attr "mode"	"DF")
-   (set_attr "length"   "4")])
-
-(define_insn ""
-  [(set (mem:DF (plus:DI (match_operand:DI 1 "register_operand" "d")
-			 (match_operand:DI 2 "register_operand" "d")))
-	(match_operand:DF 0 "register_operand" "f"))]
-  "ISA_HAS_FP4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
-  "sdxc1\t%0,%1(%2)"
-  [(set_attr "type"	"fpidxstore")
-   (set_attr "mode"	"DF")
-   (set_attr "length"   "4")])
+  [(set_attr "type" "fpidxstore")
+   (set_attr "mode" "DF")])
 
 ;; 16-bit Integer moves
 
