@@ -1,5 +1,9 @@
 2002-10-14  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* testsuite/22_locale/static_members.cc (test02): Less provincial.
+
+2002-10-14  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* testsuite/22_locale/static_members.cc (test02): Disable for 
 	systems without named locale support.
 	* testsuite/22_locale/ctor_copy_dtor.cc (test04): Don't assume
