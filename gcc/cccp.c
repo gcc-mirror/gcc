@@ -905,7 +905,7 @@ static struct directive directive_table[] = {
   {  4, do_sccs, "sccs", T_SCCS},
 #endif
   {  6, do_pragma, "pragma", T_PRAGMA, 0, 0, 1},
-  {  5, do_ident, "ident", T_IDENT, 0, 0, 1},
+  {  5, do_ident, "ident", T_IDENT},
   {  6, do_assert, "assert", T_ASSERT},
   {  8, do_unassert, "unassert", T_UNASSERT},
   {  -1, 0, "", T_UNUSED},
@@ -6141,9 +6141,31 @@ static int
 do_ident (buf, limit)
      U_CHAR *buf, *limit;
 {
+  FILE_BUF trybuf;
+  int len;
+  FILE_BUF *op = &outbuf;
+
   /* Allow #ident in system headers, since that's not user's fault.  */
   if (pedantic && !instack[indepth].system_header_p)
     pedwarn ("ANSI C does not allow `#ident'");
+
+  trybuf = expand_to_temp_buffer (buf, limit, 0, 0);
+  buf = (U_CHAR *) alloca (trybuf.bufp - trybuf.buf + 1);
+  bcopy (trybuf.buf, buf, trybuf.bufp - trybuf.buf);
+  limit = buf + (trybuf.bufp - trybuf.buf);
+  len = (limit - buf);
+  free (trybuf.buf);
+
+  /* Output directive name.  */
+  check_expand (op, 8);
+  bcopy ("#ident ", op->bufp, 7);
+  op->bufp += 7;
+
+  /* Output the expanded argument line.  */
+  check_expand (op, len);
+  bcopy (buf, op->bufp, len);
+  op->bufp += len;
+
   return 0;
 }
 
