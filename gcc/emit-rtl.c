@@ -1157,6 +1157,20 @@ operand_subword (op, i, validate_address, mode)
       else
 	abort ();
     }
+  else if (HOST_BITS_PER_WIDE_INT >= BITS_PER_WORD
+	   && GET_MODE_CLASS (mode) == MODE_FLOAT
+	   && GET_MODE_BITSIZE (mode) > 64
+	   && GET_CODE (op) == CONST_DOUBLE)
+  {
+    long k[4];
+    REAL_VALUE_TYPE rv;
+
+    REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
+    REAL_VALUE_TO_TARGET_LONG_DOUBLE (rv, k);
+
+    if (BITS_PER_WORD == 32)
+      return GEN_INT ((HOST_WIDE_INT) k[i]);
+  }
 #else /* no REAL_ARITHMETIC */
   if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
 	&& HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
