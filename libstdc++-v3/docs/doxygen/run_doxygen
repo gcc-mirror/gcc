@@ -95,8 +95,8 @@ parse_options() {
 mode=unset
 srcdir=unset
 outdir=unset
-do_html=no
-do_man=no
+do_html=false
+do_man=false
 enabled_sections=
 DATEtext=`date '+%Y-%m-%d'`
 
@@ -110,14 +110,14 @@ if test $srcdir = unset || test $outdir = unset || test $mode = unset; then
 fi
 
 case x"$mode" in
-    xuser)           do_html=yes
+    xuser)           do_html=true
                      LEVELtext='User'
                      ;;
-    xmaint)          do_html=yes
+    xmaint)          do_html=true
                      enabled_sections=maint
                      LEVELtext='Maintainer'
                      ;;
-    xman)            do_man=yes
+    xman)            do_man=true
                      ;;
     *)
       echo run_doxygen error:  $mode is an invalid mode 1>&2
@@ -129,10 +129,10 @@ mkdir -p $outdir
 chmod u+w $outdir
 
 # work around a stupid doxygen bug
-test $do_man = yes && {
+if $do_man; then
     mkdir -p $outdir/man/man3/ext
     chmod -R u+w $outdir/man/man3/ext
-}
+fi
 
 (
   set -e
@@ -152,10 +152,12 @@ test $do_man = yes && {
 ret=$?
 test $ret -ne 0 && exit $ret
 
-test $do_html = yes && {
+if $do_html; then
   cd ${outdir}/html_${mode}
 
   #doxytag -t libstdc++.tag . > /dev/null 2>&1
+  sed -e '/<path>/d' libstdc++.tag > TEMP
+  mv TEMP libstdc++.tag
 
   sed -e "s=@LEVEL@=${LEVELtext}=" \
       -e "s=@DATE@=${DATEtext}=" \
@@ -179,14 +181,14 @@ test $do_html = yes && {
   echo ::
   echo :: HTML pages begin with
   echo :: ${outdir}/html_${mode}/index.html
-}
+fi
 
 # Mess with the man pages.  We don't need documentation of the internal
 # headers, since the man pages for those contain nothing useful anyhow.  The
 # man pages for doxygen modules need to be renamed (or deleted).  And the
 # generated #include lines need to be changed from the internal names to the
 # standard ones (e.g., "#include <stl_tempbuf.h>" -> "#include <memory>").
-test $do_man = yes && {
+if $do_man; then
 echo ::
 echo :: Fixing up the man pages...
 cd $outdir/man/man3
@@ -195,7 +197,7 @@ cd $outdir/man/man3
 rm -rf ext
 
 # File names with embedded spaces (EVIL!) need to be....?  renamed or removed?
-find . -name "* *" -print0 | xargs -0 rm        # requires GNU tools
+find . -name "* *" -print0 | xargs -0r rm        # requires GNU tools
 
 # can leave SGIextensions.3 alone, it's an okay name
 mv s20_3_1_base.3           Intro_functors.3
@@ -287,7 +289,7 @@ done
 
 echo ::
 echo :: Man pages in ${outdir}/man
-}
+fi
 
 # all done
 echo ::
