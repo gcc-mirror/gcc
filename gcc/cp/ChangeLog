@@ -1,3 +1,8 @@
+2002-02-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* typeck.c (build_binary_op) [BIT_XOR_EXPR]: Remove explicit
+	shortening.
+
 2002-02-15  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* decl.c (grokdeclarator): Set typedef_decl for all TYPE_DECLs,
