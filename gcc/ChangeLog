@@ -1,3 +1,10 @@
+2002-07-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (arm_buneq, arm_bltgt): put '\' before ';' in output
+	pattern.
+	(arm_buneq_reversed, arm_bltgt_reversed): Likewise.
+	(movsicc, movsfcc, movdfcc): FAIL if UNEQ or LTGT.
+
 2002-07-24  Chris Demetriou  <cgd@broadcom.com>
 
 	* config/mips/elf.h (STARTFILE_SPEC): Never include crt0.o.
