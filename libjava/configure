@@ -5740,8 +5740,6 @@ INTERPRETER="$libgcj_interpreter"
 
 echo "$as_me:$LINENO: checking for exception model to use" >&5
 echo $ECHO_N "checking for exception model to use... $ECHO_C" >&6
-
-
 ac_ext=cc
 ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -5754,7 +5752,7 @@ if test "${enable_sjlj_exceptions+set}" = set; then
   :
 else
   cat > conftest.$ac_ext << EOF
-#line 5757 "configure"
+#line 5755 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -10748,9 +10746,7 @@ echo $ECHO_N "checking whether gethostbyname_r declaration requires -D_REENTRANT
 if test "${libjava_cv_gethostbyname_r_needs_reentrant+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
-
-
-	  ac_ext=cc
+   ac_ext=cc
 ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
@@ -15543,7 +15539,11 @@ here=`${PWDCMD-pwd}`
 
 
                                                                                 ac_config_files="$ac_config_files Makefile libgcj.pc libgcj.spec libgcj-test.spec gnu/classpath/Configuration.java gcj/Makefile include/Makefile testsuite/Makefile"
+
+
           ac_config_commands="$ac_config_commands default"
+
+
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
