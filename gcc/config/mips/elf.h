@@ -71,6 +71,73 @@ do {								\
     fprintf (F, "\t.section %s,\"aw\",@progbits\n", (NAME));	\
 } while (0)
 
+/* The following macro defines the format used to output the second
+   operand of the .type assembler directive.  Different svr4 assemblers
+   expect various different forms for this operand.  The one given here
+   is just a default.  You may need to override it in your machine-
+   specific tm.h file (depending upon the particulars of your assembler).  */
+
+#define TYPE_OPERAND_FMT        "@%s"
+
+/* Define the strings used for the special svr4 .type and .size directives.
+   These strings generally do not vary from one system running svr4 to
+   another, but if a given system (e.g. m88k running svr) needs to use
+   different pseudo-op names for these, they may be overridden in the
+   file which includes this one.  */
+
+#undef TYPE_ASM_OP
+#undef SIZE_ASM_OP
+#define TYPE_ASM_OP	".type"
+#define SIZE_ASM_OP	".size"
+
+/* These macros generate the special .type and .size directives which
+   are used to set the corresponding fields of the linker symbol table
+   entries in an ELF object file under SVR4.  These macros also output
+   the starting labels for the relevant functions/objects.  */
+
+/* Write the extra assembler code needed to declare an object properly.  */
+
+#undef ASM_DECLARE_OBJECT_NAME
+#define ASM_DECLARE_OBJECT_NAME(FILE, NAME, DECL)			\
+  do {									\
+    fprintf (FILE, "\t%s\t ", TYPE_ASM_OP);				\
+    assemble_name (FILE, NAME);						\
+    putc (',', FILE);							\
+    fprintf (FILE, TYPE_OPERAND_FMT, "object");				\
+    putc ('\n', FILE);							\
+    size_directive_output = 0;						\
+    if (!flag_inhibit_size_directive && DECL_SIZE (DECL))		\
+      {									\
+	size_directive_output = 1;					\
+	fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);				\
+	assemble_name (FILE, NAME);					\
+	fprintf (FILE, ",%d\n",  int_size_in_bytes (TREE_TYPE (DECL)));	\
+      }									\
+    mips_declare_object (FILE, NAME, "", ":\n", 0);			\
+  } while (0)
+
+/* Output the size directive for a decl in rest_of_decl_compilation
+   in the case where we did not do so before the initializer.
+   Once we find the error_mark_node, we know that the value of
+   size_directive_output was set
+   by ASM_DECLARE_OBJECT_NAME when it was run for the same decl.  */
+
+#undef ASM_FINISH_DECLARE_OBJECT
+#define ASM_FINISH_DECLARE_OBJECT(FILE, DECL, TOP_LEVEL, AT_END)	 \
+do {									 \
+     char *name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);			 \
+     if (!flag_inhibit_size_directive && DECL_SIZE (DECL)		 \
+         && ! AT_END && TOP_LEVEL					 \
+	 && DECL_INITIAL (DECL) == error_mark_node			 \
+	 && !size_directive_output)					 \
+       {								 \
+	 size_directive_output = 1;					 \
+	 fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);			 \
+	 assemble_name (FILE, name);					 \
+	 fprintf (FILE, ",%d\n", int_size_in_bytes (TREE_TYPE (DECL)));  \
+       }								 \
+   } while (0)
+
 #define ASM_OUTPUT_DEF(FILE,LABEL1,LABEL2)                            \
  do { fputc ( '\t', FILE);                                            \
       assemble_name (FILE, LABEL1);                                   \
