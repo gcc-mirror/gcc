@@ -3196,7 +3196,7 @@ h8300_shift_needs_scratch_p (count, mode)
       abort ();
     }
 
-  /* On H8/300H and H8S, count == 8 uses the scratch register.  */
+  /* On H8/300H, count == 8 uses a scratch register.  */
   return (a == SHIFT_LOOP || lr == SHIFT_LOOP || ar == SHIFT_LOOP
 	  || (TARGET_H8300H && mode == SImode && count == 8));
 }
