@@ -268,13 +268,13 @@ thread_jump (mode, e, b)
   set1 = pc_set (e->src->end);
   set2 = pc_set (b->end);
   if (((e->flags & EDGE_FALLTHRU) != 0)
-      != (XEXP (SET_SRC (set1), 0) == pc_rtx))
+      != (XEXP (SET_SRC (set1), 1) == pc_rtx))
     reverse1 = true;
 
   cond1 = XEXP (SET_SRC (set1), 0);
   cond2 = XEXP (SET_SRC (set2), 0);
   if (reverse1)
-    code1 = reversed_comparison_code (cond1, b->end);
+    code1 = reversed_comparison_code (cond1, e->src->end);
   else
     code1 = GET_CODE (cond1);
 
