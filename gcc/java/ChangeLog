@@ -1,3 +1,11 @@
+2003-09-28  Jeff Sturm  <jsturm@one-point.com>
+
+	* decl.c (java_optimize_inline, dump_function): Remove.
+	* java-tree.h (java_optimize_inline): Remove declaration.
+	* jcf-parse.c (java_parse_file): Assume flag_unit_at_a_time is set.
+	* parse.y (source_end_java_method, java_expand_classes):
+	Likewise.  Remove dead code.
+
 2003-09-27  Roger Sayle  <roger@eyesopen.com>
 
 	* lang.c (java_init_options): Set flag_evaluation_order.

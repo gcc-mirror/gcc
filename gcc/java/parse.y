@@ -7484,20 +7484,11 @@ source_end_java_method (void)
      patched.  Dump it to a file if the user requested it.  */
   dump_java_tree (TDI_original, fndecl);
 
-  /* In unit-at-a-time mode, don't expand the method yet.  */
-  if (DECL_SAVED_TREE (fndecl) && flag_unit_at_a_time)
-    {
-      cgraph_finalize_function (fndecl, false);
-      current_function_decl = NULL_TREE;
-      java_parser_context_restore_global ();
-      return;
-    }
+  /* Defer expanding the method until cgraph analysis is complete.  */
+  if (DECL_SAVED_TREE (fndecl))
+    cgraph_finalize_function (fndecl, false);
 
-  java_optimize_inline (fndecl);
-
-  /* Expand the function's body.  */
-  java_expand_body (fndecl);
-
+  current_function_decl = NULL_TREE;
   java_parser_context_restore_global ();
 }
 
@@ -9157,11 +9148,7 @@ java_expand_classes (void)
 	  if (flag_emit_xref)
 	    expand_xref (current_class);
 	  else if (! flag_syntax_only)
-	    {
-	      java_expand_method_bodies (current_class);
-	      if (!flag_unit_at_a_time)
-		finish_class ();
-	    }
+	    java_expand_method_bodies (current_class);
 	}
     }
 }
