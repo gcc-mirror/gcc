@@ -1,3 +1,9 @@
+Sat Aug 15 20:22:33 1998  H.J. Lu  (hjl@gnu.org)
+
+	* config/alpha/alpha.h (ASM_OUTPUT_MI_THUNK): Handle aggregated
+	return type.
+	* config/alpha/win-nt.h (ASM_OUTPUT_MI_THUNK): Likewise.
+
 Fri Aug 14 21:07:03 1998  Jeffrey A Law  (law@cygnus.com)
 
 	From Joern:
