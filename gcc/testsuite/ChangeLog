@@ -1,3 +1,8 @@
+1998-07-13  Dave Love  <d.love@dl.ac.uk>
+
+	* g77.f-torture/execute/auto0.f, g77.f-torture/execute/auto1.f:
+	New test from Craig.
+
 1998-07-12  Dave Love  <d.love@dl.ac.uk>
 
 	* g77.f-torture/noncompile/980616-0.f: New test.
