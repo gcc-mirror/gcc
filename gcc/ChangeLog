@@ -1,3 +1,8 @@
+2000-09-27  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* extend.texi, invoke.texi, gcc.texi, install.texi: Consistently
+	use @uref for formatting URLs.
+
 2000-09-27  Mark Elbrecht  <snowball3@bigfoot.com>
 
 	* config/i386/djgpp.h (UNIQUE_SECTION): Constify the variables
