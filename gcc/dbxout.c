@@ -70,6 +70,7 @@ Boston, MA 02111-1307, USA.  */
 /* Include these first, because they may define MIN and MAX.  */
 #include <stdio.h>
 #include <errno.h>
+#include <string.h>
 
 #include "config.h"
 #include "tree.h"
