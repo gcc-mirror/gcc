@@ -1,5 +1,7 @@
 2000-11-24  Tom Tromey  <tromey@cygnus.com>
 
+	* libjava.compile/PR375.java: New file.  For PR gcj/375.
+
 	* libjava.compile/PR374.java: New file.  For PR gcj/374.
 
 2000-11-07  Tom Tromey  <tromey@cygnus.com>
