@@ -8880,8 +8880,9 @@ cp_parser_simple_type_specifier (cp_parser* parser, cp_parser_flags flags,
 
       /* Look for the optional `::' operator.  */
       global_p
-	= cp_parser_global_scope_opt (parser,
-				      /*current_scope_valid_p=*/false);
+	= (cp_parser_global_scope_opt (parser,
+				       /*current_scope_valid_p=*/false)
+	   != NULL_TREE);
       /* Look for the nested-name specifier.  */
       qualified_p
 	= (cp_parser_nested_name_specifier_opt (parser,
