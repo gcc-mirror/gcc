@@ -1585,7 +1585,7 @@ AC_MSG_RESULT($enable_cshadow_headers)
 dnl Option parsed, now set things appropriately
 case "$enable_cshadow_headers" in
     yes) 
-	CSHADOWFLAGS="-D_ISOC9X_SOURCE"
+	CSHADOWFLAGS="-D_GNU_SOURCE"
 	CSHADOW_INCLUDES=" -I$srcdir/shadow -I$blddir/cshadow"
 	;;
     no)   
