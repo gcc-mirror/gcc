@@ -1,5 +1,8 @@
 2005-02-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/19666
+	* gcc/testsuite/g++.dg/other/ptrmem6.C: New test.
+
 	PR middle-end/19858
 	* gcc.c-torture/compile/20050210-1.c: New test.
 
