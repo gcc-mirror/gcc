@@ -1151,8 +1151,7 @@ s-crt0:	$(CRT0_S) $(MCRT0_S) $(GCC_PASSES) $(CONFIG_H)
 c-errors.o: c-errors.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(C_TREE_H) flags.h \
     diagnostic.h $(TM_P_H)
 c-parse.o : $(srcdir)/c-parse.c $(CONFIG_H) $(TREE_H) c-lex.h $(GGC_H) intl.h \
-    $(C_TREE_H) input.h flags.h $(SYSTEM_H) toplev.h output.h $(CPPLIB_H) \
-    diagnostic.h
+    $(C_TREE_H) input.h flags.h $(SYSTEM_H) toplev.h output.h $(CPPLIB_H)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/c-parse.c
 
 $(srcdir)/c-parse.c: $(srcdir)/c-parse.y
@@ -1249,7 +1248,8 @@ s-under: $(GCC_PASSES)
 
 c-common.o : c-common.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(OBSTACK_H) \
 	$(C_COMMON_H) flags.h toplev.h output.h c-pragma.h $(RTL_H) $(GGC_H) \
-	$(EXPR_H) $(TM_P_H) builtin-types.def builtin-attrs.def $(TARGET_H)
+	$(EXPR_H) $(TM_P_H) builtin-types.def builtin-attrs.def $(TARGET_H) \
+	diagnostic.h
 
 # A file used by all variants of C and some other languages.
 
