@@ -158,6 +158,7 @@ enum dump_file_index
   DFI_lreg,
   DFI_greg,
   DFI_postreload,
+  DFI_gcse2,
   DFI_flow2,
   DFI_peephole2,
   DFI_ce3,
@@ -178,7 +179,7 @@ enum dump_file_index
    Remaining -d letters:
 
 	"   e        m   q         "
-	"         JK   O Q     WXY "
+	"          K   O Q     WXY "
 */
 
 static struct dump_file_info dump_file_tbl[DFI_MAX] =
@@ -210,6 +211,7 @@ static struct dump_file_info dump_file_tbl[DFI_MAX] =
   { "lreg",	'l', 1, 0, 0 },
   { "greg",	'g', 1, 0, 0 },
   { "postreload", 'o', 1, 0, 0 },
+  { "gcse2",    'J', 0, 0, 0 },
   { "flow2",	'w', 1, 0, 0 },
   { "peephole2", 'z', 1, 0, 0 },
   { "ce3",	'E', 1, 0, 0 },
@@ -787,6 +789,23 @@ rest_of_handle_sched2 (tree decl, rtx insns)
   ggc_collect ();
 }
 #endif
+
+static void
+rest_of_handle_gcse2 (tree decl, rtx insns)
+{
+  open_dump_file (DFI_gcse2, decl);
+
+  gcse_after_reload_main (insns, dump_file);
+  rebuild_jump_labels (insns);
+  delete_trivially_dead_insns (insns, max_reg_num ());
+  close_dump_file (DFI_gcse2, print_rtl_with_bb, insns);
+
+  ggc_collect ();
+
+#ifdef ENABLE_CHECKING
+  verify_flow_info ();
+#endif
+}
 
 /* Register allocation pre-pass, to reduce number of moves necessary
    for two-address machines.  */
@@ -1841,6 +1860,9 @@ rest_of_compilation (tree decl)
     }
 
   close_dump_file (DFI_postreload, print_rtl_with_bb, insns);
+
+  if (optimize > 0 && flag_gcse_after_reload)
+    rest_of_handle_gcse2 (decl, insns);
 
   /* Re-create the death notes which were deleted during reload.  */
   timevar_push (TV_FLOW2);

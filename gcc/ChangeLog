@@ -1,3 +1,37 @@
+2004-03-03  Mostafa Hagog  <mustafa@il.ibm.com>
+
+	* common.opt: Add description of the new -fgcse-after-reload flag.
+
+	* flags.h (flag_gcse_after_reload): Declaration of global variable.
+
+	* gcse.c (reg_used_on_edge ,reg_set_between_after_reload_p,
+	reg_used_between_after_reload_p, rtx get_avail_load_store_reg,
+	is_jump_table_basic_block, bb_has_well_behaved_predecessors,
+	get_bb_avail_insn, hash_scan_set_after_reload,
+	compute_hash_table_after_reload, eliminate_partially_redundant_loads,
+	gcse_after_reload, get_bb_avail_insn): New functions to implement
+	gcse-after-reload.
+	(gcse_after_reload_main): New function, the main entry point to
+	gcse-after-reload.
+
+	* rtl.h (gcse_after_reload_main): Declaration of the new function.
+
+	* opts.c (common_handle_option): Handle the -fgcse-after-reload flag.
+
+	* toplev.c (flag_gcse_after_reload): Initialization.
+
+	* passes.c (rest_of_handl_gcse2): Call gcse_after_reload_main.
+
+	* params.def (PARAM_GCSE_AFTER_RELOAD_PARTIAL_FRACTION,
+	PARAM_GCSE_AFTER_RELOAD_CRITICAL_FRACTION): New parameters for tuning
+	the gcse after reload optimization.
+
+	* params.h (GCSE_AFTER_RELOAD_PARTIAL_FRACTION,
+	GCSE_AFTER_RELOAD_CRITICAL_FRACTION): Two macros to access the tuning
+	parameters.
+
+	* doc/invoke.texi: Documentation for the new flag gcse-after-reload.
+
 2004-03-03  Nicolas Pitre <nico@cam.org>
 
 	* config/arm/ieee754-df.S (muldf3, divdf3): Fix denormalization of
