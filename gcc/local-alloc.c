@@ -1181,8 +1181,7 @@ update_equiv_regs ()
 		       && GET_CODE (insn) == INSN
 		       && REG_BASIC_BLOCK (regno) < 0)
 		{
-		  int l, offset;
-		  REGSET_ELT_TYPE bit;
+		  int l;
 
 		  emit_insn_before (copy_rtx (PATTERN (equiv_insn)), insn);
 		  REG_NOTES (PREV_INSN (insn)) = REG_NOTES (equiv_insn);
@@ -1202,11 +1201,8 @@ update_equiv_regs ()
 		  if (block >= 0 && insn == basic_block_head[block])
 		    basic_block_head[block] = PREV_INSN (insn);
 
-		  offset = regno / REGSET_ELT_BITS;
-		  bit = ((REGSET_ELT_TYPE) 1
-			 << (regno % REGSET_ELT_BITS));
 		  for (l = 0; l < n_basic_blocks; l++)
-		    basic_block_live_at_start[l][offset] &= ~ bit;
+		    CLEAR_REGNO_REG_SET (basic_block_live_at_start[l], regno);
 		}
 	    }
 	}
@@ -1253,11 +1249,7 @@ block_alloc (b)
 
   /* Initialize table of hardware registers currently live.  */
 
-#ifdef HARD_REG_SET
-  regs_live = *basic_block_live_at_start[b];
-#else
-  COPY_HARD_REG_SET (regs_live, basic_block_live_at_start[b]);
-#endif
+  REG_SET_TO_HARD_REG_SET (regs_live, basic_block_live_at_start[b]);
 
   /* This loop scans the instructions of the basic block
      and assigns quantities to registers.

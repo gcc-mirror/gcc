@@ -357,8 +357,7 @@ save_call_clobbered_regs (insn_mode)
     {
       regset regs_live = basic_block_live_at_start[b];
       rtx prev_block_last = PREV_INSN (basic_block_head[b]);
-      REGSET_ELT_TYPE bit;
-      int offset, i, j;
+      int i, j;
       int regno;
 
       /* Compute hard regs live at start of block -- this is the

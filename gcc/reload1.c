@@ -2092,9 +2092,8 @@ reload (first, global, dumpfile)
 
   if (! frame_pointer_needed)
     for (i = 0; i < n_basic_blocks; i++)
-      basic_block_live_at_start[i][HARD_FRAME_POINTER_REGNUM / REGSET_ELT_BITS]
-	&= ~ ((REGSET_ELT_TYPE) 1 << (HARD_FRAME_POINTER_REGNUM
-				      % REGSET_ELT_BITS));
+      CLEAR_REGNO_REG_SET (basic_block_live_at_start[i],
+			   HARD_FRAME_POINTER_REGNUM);
 
   /* Come here (with failure set nonzero) if we can't get enough spill regs
      and we decide not to abort about it.  */
