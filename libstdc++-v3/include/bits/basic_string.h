@@ -122,8 +122,8 @@ namespace std
       typedef __gnu_cxx::__normal_iterator<pointer, basic_string>  iterator;
       typedef __gnu_cxx::__normal_iterator<const_pointer, basic_string>
                                                             const_iterator;
-      typedef reverse_iterator<const_iterator> 	const_reverse_iterator;
-      typedef reverse_iterator<iterator> 		    reverse_iterator;
+      typedef std::reverse_iterator<const_iterator> 	const_reverse_iterator;
+      typedef std::reverse_iterator<iterator> 		    reverse_iterator;
 
     private:
       // _Rep: string representation

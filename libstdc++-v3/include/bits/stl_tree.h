@@ -702,8 +702,8 @@ namespace std
       typedef _Rb_tree_iterator<value_type, const_reference, const_pointer> 
       const_iterator;
 
-      typedef reverse_iterator<const_iterator> const_reverse_iterator;
-      typedef reverse_iterator<iterator> reverse_iterator;
+      typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+      typedef std::reverse_iterator<iterator> reverse_iterator;
 
     private:
       iterator 

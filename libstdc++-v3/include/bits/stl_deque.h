@@ -647,8 +647,8 @@ namespace std
     typedef const value_type*                  const_pointer;
     typedef typename _Base::iterator           iterator;
     typedef typename _Base::const_iterator     const_iterator;
-    typedef reverse_iterator<const_iterator>   const_reverse_iterator;
-    typedef reverse_iterator<iterator>         reverse_iterator;
+    typedef std::reverse_iterator<const_iterator>   const_reverse_iterator;
+    typedef std::reverse_iterator<iterator>         reverse_iterator;
     typedef value_type&                        reference;
     typedef const value_type&                  const_reference;
     typedef size_t                             size_type;

@@ -195,8 +195,8 @@ namespace std
     typedef __gnu_cxx::__normal_iterator<pointer, vector_type> 	iterator;
     typedef __gnu_cxx::__normal_iterator<const_pointer, vector_type>
                                                           const_iterator;
-    typedef reverse_iterator<const_iterator>              const_reverse_iterator;
-    typedef reverse_iterator<iterator>                    reverse_iterator;
+    typedef std::reverse_iterator<const_iterator>    const_reverse_iterator;
+    typedef std::reverse_iterator<iterator>                reverse_iterator;
     typedef value_type& 					reference;
     typedef const value_type& 				const_reference;
     typedef size_t 					size_type;
