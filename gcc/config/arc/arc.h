@@ -186,7 +186,7 @@ do {				\
 /* Target machine storage layout.  */
 
 /* Define to use software floating point emulator for REAL_ARITHMETIC and
-   decimal <-> binary conversion. */
+   decimal <-> binary conversion.  */
 #define REAL_ARITHMETIC
 
 /* Define this if most significant bit is lowest numbered
@@ -448,7 +448,7 @@ enum reg_class {
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
-/* Give names of register classes as strings for dump file.   */
+/* Give names of register classes as strings for dump file.  */
 #define REG_CLASS_NAMES \
 { "NO_REGS", "LPCOUNT_REG", "GENERAL_REGS", "ALL_REGS" }
 
@@ -1040,7 +1040,7 @@ arc_select_cc_mode (OP, X, Y)
    of a switch statement.  If the code is computed here,
    return it with a return statement.  Otherwise, break from the switch.  */
 /* Small integers are as cheap as registers.  4 byte values can be fetched
-   as immediate constants - let's give that the cost of an extra insn. */
+   as immediate constants - let's give that the cost of an extra insn.  */
 #define CONST_COSTS(X, CODE, OUTER_CODE) \
   case CONST_INT :						\
     if (SMALL_INT (INTVAL (X)))					\
@@ -1474,7 +1474,7 @@ do { if ((LOG) != 0) fprintf (FILE, "\t.align %d\n", 1 << (LOG)); } while (0)
 /* Define as C expression which evaluates to nonzero if the tablejump
    instruction expects the table to contain offsets from the address of the
    table.
-   Do not define this if the table should contain absolute addresses. */
+   Do not define this if the table should contain absolute addresses.  */
 /* It's not clear what PIC will look like or whether we want to use -fpic
    for the embedded form currently being talked about.  For now require -fpic
    to get pc relative switch tables.  */
@@ -1501,7 +1501,7 @@ do { if ((LOG) != 0) fprintf (FILE, "\t.align %d\n", 1 << (LOG)); } while (0)
 #define MOVE_MAX 4
 
 /* Define this to be nonzero if shift instructions ignore all but the low-order
-   few bits. */
+   few bits.  */
 #define SHIFT_COUNT_TRUNCATED 1
 
 /* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
@@ -1532,7 +1532,7 @@ do { if ((LOG) != 0) fprintf (FILE, "\t.align %d\n", 1 << (LOG)); } while (0)
    since it hasn't been defined!  */
 extern struct rtx_def *arc_compare_op0, *arc_compare_op1;
 
-/* ARC function types.   */
+/* ARC function types.  */
 enum arc_function_type {
   ARC_FUNCTION_UNKNOWN, ARC_FUNCTION_NORMAL,
   /* These are interrupt handlers.  The name corresponds to the register

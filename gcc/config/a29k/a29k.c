@@ -106,7 +106,7 @@ int a29k_compare_fp_p;
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
-/* Returns 1 if OP is a 8-bit constant. */
+/* Returns 1 if OP is a 8-bit constant.  */
 
 int
 cint_8_operand (op, mode)
@@ -351,7 +351,7 @@ and_operand (op, mode)
 
 /* Return 1 if OP can be used as the second operand of an ADD insn.
    This is the same as above, except we use negative, rather than
-   complement.   */
+   complement.  */
 
 int
 add_operand (op, mode)
@@ -1225,7 +1225,7 @@ print_operand (file, x, code)
     output_addr_const (file, x);
 }
 
-/* This page contains routines to output function prolog and epilog code. */
+/* This page contains routines to output function prolog and epilog code.  */
 
 /* Compute the size of the register stack, and determine if there are any
    call instructions.  */
@@ -1482,7 +1482,7 @@ output_function_epilogue (file, size)
 {
   rtx insn;
   int locals_unavailable = 0;	/* True until after first insn
-				   after gr1 update. */
+				   after gr1 update.  */
 
   /* If we hit a BARRIER before a real insn or CODE_LABEL, we don't
      need to do anything because we are never jumped to.  */

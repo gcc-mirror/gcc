@@ -88,7 +88,7 @@ extern int target_flags;
 #define TARGET_NO_REUSE_ARGS	(target_flags & 256)
 
 /* This means that neither builtin nor emulated float operations are
-   available, and that GCC should generate libcalls instead. */
+   available, and that GCC should generate libcalls instead.  */
 
 #define TARGET_SOFT_FLOAT	(target_flags & 512)
 
@@ -162,7 +162,7 @@ extern int target_flags;
    numbered. 
 
    For 29k we can decide arbitrarily since there are no machine instructions
-   for them.  Might as well be consistent with bytes. */
+   for them.  Might as well be consistent with bytes.  */
 #define WORDS_BIG_ENDIAN 1
 
 /* number of bits in an addressable storage unit */
@@ -525,7 +525,7 @@ enum reg_class { NO_REGS, LR0_REGS, GENERAL_REGS, BP_REGS, FC_REGS, CR_REGS,
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
-/* Give names of register classes as strings for dump file.   */
+/* Give names of register classes as strings for dump file.  */
 
 #define REG_CLASS_NAMES				\
  {"NO_REGS", "LR0_REGS", "GENERAL_REGS", "BP_REGS", "FC_REGS", "CR_REGS", \
@@ -1176,7 +1176,7 @@ extern const char *a29k_function_name;
 /* Define as C expression which evaluates to nonzero if the tablejump
    instruction expects the table to contain offsets from the address of the
    table.
-   Do not define this if the table should contain absolute addresses. */
+   Do not define this if the table should contain absolute addresses.  */
 /* #define CASE_VECTOR_PC_RELATIVE 1 */
 
 /* Specify the tree operation to be used to convert reals to integers.  */
@@ -1269,7 +1269,7 @@ extern const char *a29k_function_name;
 #define NO_FUNCTION_CSE
 
 /* Define this to be nonzero if shift instructions ignore all but the low-order
-   few bits. */
+   few bits.  */
 #define SHIFT_COUNT_TRUNCATED 1
 
 /* Compute the cost of computing a constant rtl expression RTX
@@ -1434,7 +1434,7 @@ extern int a29k_debug_reg_map[];
 #define ASM_GLOBALIZE_LABEL(FILE,NAME)	\
   do { fputs ("\t.global ", FILE); assemble_name (FILE, NAME); fputs ("\n", FILE);} while (0)
 
-/* The prefix to add to user-visible assembler symbols. */
+/* The prefix to add to user-visible assembler symbols.  */
 
 #undef USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX "_"
@@ -1447,7 +1447,7 @@ extern int a29k_debug_reg_map[];
 
 /* This is how to output a label for a jump table.  Arguments are the same as
    for ASM_OUTPUT_INTERNAL_LABEL, except the insn for the jump table is
-   passed. */
+   passed.  */
 
 #define ASM_OUTPUT_CASE_LABEL(FILE,PREFIX,NUM,TABLEINSN)	\
 { ASM_OUTPUT_ALIGN (FILE, 2); ASM_OUTPUT_INTERNAL_LABEL (FILE, PREFIX, NUM); }
@@ -1516,7 +1516,7 @@ extern int a29k_debug_reg_map[];
   fprintf (FILE, "\t.word L%d\n", VALUE)
 
 /* This is how to output an element of a case-vector that is relative.
-   Don't define this if it is not supported. */
+   Don't define this if it is not supported.  */
 
 /* #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL) */
 

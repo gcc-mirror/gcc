@@ -81,7 +81,7 @@ we32k_output_function_prologue (file, size)
    The function epilogue should not depend on the current stack
    pointer!  It should use the frame pointer only.  This is mandatory
    because of alloca; we also take advantage of it to omit stack
-   adjustments before returning. */
+   adjustments before returning.  */
 
 static void
 we32k_output_function_epilogue (file, size)

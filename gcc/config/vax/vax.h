@@ -25,7 +25,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define CPP_PREDEFINES "-Dvax -D__vax__ -Dunix -Asystem=unix -Asystem=bsd -Acpu=vax -Amachine=vax"
 
-/* Use -J option for long branch support with Unix assembler. */
+/* Use -J option for long branch support with Unix assembler.  */
 
 #define ASM_SPEC "-J"
 
@@ -90,7 +90,7 @@ extern int target_flags;
 /* Target machine storage layout */
 
 /* Define for software floating point emulation of VAX format
-   when cross compiling from a non-VAX host. */
+   when cross compiling from a non-VAX host.  */
 /* #define REAL_ARITHMETIC */
 
 /* Define this if most significant bit is lowest numbered
@@ -255,7 +255,7 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 #define GENERAL_REGS ALL_REGS
 
-/* Give names of register classes as strings for dump file.   */
+/* Give names of register classes as strings for dump file.  */
 
 #define REG_CLASS_NAMES \
  {"NO_REGS", "ALL_REGS" }
@@ -794,7 +794,7 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
 /* Define as C expression which evaluates to nonzero if the tablejump
    instruction expects the table to contain offsets from the address of the
    table.
-   Do not define this if the table should contain absolute addresses. */
+   Do not define this if the table should contain absolute addresses.  */
 #define CASE_VECTOR_PC_RELATIVE 1
 
 /* Define this if the case instruction drops through after the table
@@ -1093,7 +1093,7 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
 #define ASM_GLOBALIZE_LABEL(FILE,NAME)	\
   do { fputs (".globl ", FILE); assemble_name (FILE, NAME); fputs ("\n", FILE);} while (0)
 
-/* The prefix to add to user-visible assembler symbols. */
+/* The prefix to add to user-visible assembler symbols.  */
 
 #define USER_LABEL_PREFIX "_"
 

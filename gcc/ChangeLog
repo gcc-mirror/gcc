@@ -1,3 +1,14 @@
+2001-11-16  Kazu Hirata  <kazu@hxi.com>
+
+	* config/a29k/a29k.c: Fix comment formatting.
+	* config/a29k/a29k.h: Likewise.
+	* config/arc/arc.c: Likewise.
+	* config/arc/arc.h: Likewise.
+	* config/vax/vax.c: Likewise.
+	* config/vax/vax.h: Likewise.
+	* config/we32k/we32k.c: Likewise.
+	* config/we32k/we32k.h: Likewise.
+
 2001-11-16  Jeff Law  <law@redhat.com>
 
 	* unroll.c (copy_loop_body): Initialize JUMP_LABEL field after

@@ -473,7 +473,7 @@ vax_address_cost (addr)
       goto restart;
     }
   /* Indexing and register+offset can both be used (except on a VAX 2)
-     without increasing execution time over either one alone. */
+     without increasing execution time over either one alone.  */
   if (reg && indexed && offset)
     return reg + indir + offset + predec;
   return reg + indexed + indir + offset + predec;
@@ -573,7 +573,7 @@ vax_rtx_cost (x)
       c = 3;
       break;
     case AND:
-      /* AND is special because the first operand is complemented. */
+      /* AND is special because the first operand is complemented.  */
       c = 3;
       if (GET_CODE (XEXP (x, 0)) == CONST_INT)
 	{
@@ -742,7 +742,7 @@ check_float_value (mode, d, overflow)
 }
 
 #if VMS_TARGET
-/* Additional support code for VMS target. */
+/* Additional support code for VMS target.  */
 
 /* Linked list of all externals that are to be emitted when optimizing
    for the global pointer if they haven't been declared by the end of
@@ -863,7 +863,7 @@ vms_asm_out_destructor (symbol, priority)
 }
 #endif /* VMS_TARGET */
 
-/* Additional support code for VMS host. */
+/* Additional support code for VMS host.  */
 /* ??? This should really be in libiberty; vax.c is a target file.  */
 #ifdef QSORT_WORKAROUND
   /*
