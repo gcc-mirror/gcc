@@ -3307,6 +3307,29 @@ declaration, the above program would abort when compiled with
 @option{-fstrict-aliasing}, which is on by default at @option{-O2} or
 above in recent GCC versions.
 
+@subsection ARM Type Attributes
+
+On those ARM targets that support @code{dllimport} (such as Symbian
+OS), you can use the @code{notshared} attribute to indicate that the 
+virtual table and other similar data for a class should not be
+exported from a DLL.  For example:
+
+@smallexample
+class __declspec(notshared) C @{
+public:
+  __declspec(dllimport) C(); 
+  virtual void f();
+@}
+
+__declspec(dllexport)
+C::C() @{@}
+@end smallexample
+
+In this code, @code{C::C} is exported from the current DLL, but the
+virtual table for @code{C} is not exported.  (You can use
+@code{__attribute__} instead of @code{__declspec} if you prefer, but
+most Symbian OS code uses @code{__declspec}.)
+
 @subsection i386 Type Attributes
 
 Two attributes are currently defined for i386 configurations:

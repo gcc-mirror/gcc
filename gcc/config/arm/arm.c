@@ -114,6 +114,7 @@ static unsigned long arm_isr_value (tree);
 static unsigned long arm_compute_func_type (void);
 static tree arm_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
 static tree arm_handle_isr_attribute (tree *, tree, tree, int, bool *);
+static tree arm_handle_notshared_attribute (tree *, tree, tree, int, bool *);
 static void arm_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static void arm_output_function_prologue (FILE *, HOST_WIDE_INT);
 static void thumb_output_function_prologue (FILE *, HOST_WIDE_INT);
@@ -2589,6 +2590,7 @@ const struct attribute_spec arm_attribute_table[] =
 #elif TARGET_DLLIMPORT_DECL_ATTRIBUTES
   { "dllimport",    0, 0, false, false, false, handle_dll_attribute },
   { "dllexport",    0, 0, false, false, false, handle_dll_attribute },
+  { "notshared",    0, 0, false, true, false, arm_handle_notshared_attribute },
 #endif
   { NULL,           0, 0, false, false, false, NULL }
 };
@@ -2665,6 +2667,29 @@ arm_handle_isr_attribute (tree *node, tree name, tree args, int flags,
 	}
     }
 
+  return NULL_TREE;
+}
+
+/* Handle the "notshared" attribute.  This attribute is another way of
+   requesting hidden visibility.  ARM's compiler supports
+   "__declspec(notshared)"; we support the same thing via an
+   attribute.  */
+
+static tree
+arm_handle_notshared_attribute (tree *node, 
+				tree name ATTRIBUTE_UNUSED, 
+				tree args ATTRIBUTE_UNUSED, 
+				int flags ATTRIBUTE_UNUSED, 
+				bool *no_add_attrs)
+{
+  tree decl = TYPE_NAME (*node);
+
+  if (decl)
+    {
+      DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;
+      DECL_VISIBILITY_SPECIFIED (decl) = 1;
+      *no_add_attrs = false;
+    }
   return NULL_TREE;
 }
 
