@@ -1,3 +1,18 @@
+2002-05-23  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* builtin-attrs.def: Update copyright years.
+	(ATTR_NONNULL): New attribute identifier.
+	(ATTR_NONNULL_1, ATTR_NONNULL_2, ATTR_NONNULL_3): New
+	attribute tree lists.
+	(DEF_FORMAT_ATTRIBUTE): Chain a nonnull attribute for the
+	format operand.
+	(ATTR_FORMAT_ARG_1, ATTR_FORMAT_ARG_2): Use...
+	(DEF_FORMAT_ARG_ATTRIBUTE): ...this to generate format_arg
+	attribute lists.  Chain the appropriate nonnull attribute.
+	* c-format.c (check_format_arg): Remove null format string
+	warning.
+	* testsuite/gcc.dg/format/null-1.c: New test.
+
 2002-05-23  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* Makefile.in (ADAC): Define.
