@@ -1,3 +1,9 @@
+2004-03-29  Fariborz Jahanian <fjahanian@apple.com>
+
+        * fold-const.c (fold): Reassociate multiply expression
+        with an adjacent non-multiply expression to use
+        architecture's multiply-add instruction.
+
 2004-03-30  Zack Weinberg  <zack@codesourcery.com>
 
 	* gengtype.c (create_option): New function.

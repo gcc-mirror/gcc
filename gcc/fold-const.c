@@ -6042,6 +6042,36 @@ fold (tree expr)
 				  TREE_OPERAND (arg0, 0),
 				  build_real (type, c1)));
 	    }
+          /* Convert a + (b*c + d*e) into (a + b*c) + d*e */
+          if (flag_unsafe_math_optimizations
+              && TREE_CODE (arg1) == PLUS_EXPR
+              && TREE_CODE (arg0) != MULT_EXPR)
+            {
+              tree tree10 = TREE_OPERAND (arg1, 0);
+              tree tree11 = TREE_OPERAND (arg1, 1);
+              if (TREE_CODE (tree11) == MULT_EXPR
+		  && TREE_CODE (tree10) == MULT_EXPR)
+                {
+                  tree tree0;
+                  tree0 = fold (build (PLUS_EXPR, type, arg0, tree10));
+                  return fold (build (PLUS_EXPR, type, tree0, tree11));
+                }
+            }
+          /* Convert (b*c + d*e) + a into b*c + (d*e +a) */
+          if (flag_unsafe_math_optimizations
+              && TREE_CODE (arg0) == PLUS_EXPR
+              && TREE_CODE (arg1) != MULT_EXPR)
+            {
+              tree tree00 = TREE_OPERAND (arg0, 0);
+              tree tree01 = TREE_OPERAND (arg0, 1);
+              if (TREE_CODE (tree01) == MULT_EXPR
+		  && TREE_CODE (tree00) == MULT_EXPR)
+                {
+                  tree tree0;
+                  tree0 = fold (build (PLUS_EXPR, type, tree01, arg1));
+                  return fold (build (PLUS_EXPR, type, tree00, tree0));
+                }
+            }
 	}
 
      bit_rotate:
