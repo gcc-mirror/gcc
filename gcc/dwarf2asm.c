@@ -757,7 +757,7 @@ dw2_output_indirect_constant_1 (splay_tree_node node,
   sym = (const char *) node->key;
   sym_ref = gen_rtx_SYMBOL_REF (Pmode, sym);
   if (USE_LINKONCE_INDIRECT)
-    fprintf (asm_out_file, "\t.hidden DW.ref.%s\n", sym);
+    fprintf (asm_out_file, "\t.hidden %sDW.ref.%s\n", user_label_prefix, sym);
   assemble_variable ((tree) node->value, 1, 1, 1);
   assemble_integer (sym_ref, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
 
