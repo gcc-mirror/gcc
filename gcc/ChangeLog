@@ -1,3 +1,8 @@
+Sun Sep  7 18:44:50 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* m68k/m68k.h (TARGET_SWITCHES): For 68000, 68302, subtract MASK_68881.
+	For 68303, 68332, cpu32, subtract MASK_68040_ONLY.
+
 Sun Sep  7 14:19:39 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
