@@ -3823,9 +3823,6 @@ mips_setup_incoming_varargs (const CUMULATIVE_ARGS *cum,
   CUMULATIVE_ARGS local_cum;
   int gp_saved, fp_saved;
 
-  if (mips_abi == ABI_32 || mips_abi == ABI_O64)
-    return 0;
-
   /* The caller has advanced CUM up to, but not beyond, the last named
      argument.  Advance a local copy of CUM past the last "real" named
      argument, to find out how many registers are left over.  */
@@ -3846,19 +3843,22 @@ mips_setup_incoming_varargs (const CUMULATIVE_ARGS *cum,
 	  rtx ptr, mem;
 
 	  ptr = virtual_incoming_args_rtx;
-	  if (mips_abi == ABI_EABI)
-	    ptr = plus_constant (ptr, -gp_saved * UNITS_PER_WORD);
+	  switch (mips_abi)
+	    {
+	    case ABI_32:
+	    case ABI_O64:
+	      ptr = plus_constant (ptr, local_cum.num_gprs * UNITS_PER_WORD);
+	      break;
+
+	    case ABI_EABI:
+	      ptr = plus_constant (ptr, -gp_saved * UNITS_PER_WORD);
+	      break;
+	    }
 	  mem = gen_rtx_MEM (BLKmode, ptr);
+	  set_mem_alias_set (mem, get_varargs_alias_set ());
 
-	  /* va_arg is an array access in this case, which causes
-	     it to get MEM_IN_STRUCT_P set.  We must set it here
-	     so that the insn scheduler won't assume that these
-	     stores can't possibly overlap with the va_arg loads.  */
-	  if (mips_abi != ABI_EABI && BYTES_BIG_ENDIAN)
-	    MEM_SET_IN_STRUCT_P (mem, 1);
-
-	  move_block_from_reg (local_cum.num_gprs + GP_ARG_FIRST, mem,
-			       gp_saved);
+	  move_block_from_reg (local_cum.num_gprs + GP_ARG_FIRST,
+			       mem, gp_saved);
 	}
       if (fp_saved > 0)
 	{
@@ -3878,13 +3878,20 @@ mips_setup_incoming_varargs (const CUMULATIVE_ARGS *cum,
 
 	  for (i = local_cum.num_fprs; i < MAX_ARGS_IN_REGISTERS; i += FP_INC)
 	    {
-	      rtx ptr = plus_constant (virtual_incoming_args_rtx, off);
-	      emit_move_insn (gen_rtx_MEM (mode, ptr),
-			      gen_rtx_REG (mode, FP_ARG_FIRST + i));
+	      rtx ptr, mem;
+
+	      ptr = plus_constant (virtual_incoming_args_rtx, off);
+	      mem = gen_rtx_MEM (mode, ptr);
+	      set_mem_alias_set (mem, get_varargs_alias_set ());
+	      emit_move_insn (mem, gen_rtx_REG (mode, FP_ARG_FIRST + i));
 	      off += UNITS_PER_HWFPVALUE;
 	    }
 	}
     }
+  if (mips_abi == ABI_32 || mips_abi == ABI_O64)
+    /* No need for pretend arguments: the register parameter area was
+       allocated by the caller.  */
+    return 0;
   return (gp_saved * UNITS_PER_WORD) + (fp_saved * UNITS_PER_FPREG);
 }
 
@@ -6704,21 +6711,16 @@ mips_gp_insn (rtx dest, rtx src)
 void
 mips_expand_prologue (void)
 {
-  int regno;
   HOST_WIDE_INT tsize;
   rtx tmp_rtx = 0;
-  int last_arg_is_vararg_marker = 0;
   tree fndecl = current_function_decl;
   tree fntype = TREE_TYPE (fndecl);
   tree fnargs = DECL_ARGUMENTS (fndecl);
   rtx next_arg_reg;
   int i;
-  tree next_arg;
   tree cur_arg;
   CUMULATIVE_ARGS args_so_far;
   rtx reg_18_save = NULL_RTX;
-  int store_args_on_stack = (mips_abi == ABI_32 || mips_abi == ABI_O64)
-                            && (! mips_entry || mips_can_use_return_insn ());
 
   if (cfun->machine->global_pointer > 0)
     REGNO (pic_offset_table_rtx) = cfun->machine->global_pointer;
@@ -6736,71 +6738,23 @@ mips_expand_prologue (void)
       fnargs = function_result_decl;
     }
 
-  /* For arguments passed in registers, find the register number
-     of the first argument in the variable part of the argument list,
-     otherwise GP_ARG_LAST+1.  Note also if the last argument is
-     the varargs special argument, and treat it as part of the
-     variable arguments.
-
-     This is only needed if store_args_on_stack is true.  */
-
+  /* Go through the function arguments, leaving args_so_far reflecting
+     the final state.  */
   INIT_CUMULATIVE_ARGS (args_so_far, fntype, NULL_RTX, current_function_decl);
-  regno = GP_ARG_FIRST;
-
-  for (cur_arg = fnargs; cur_arg != 0; cur_arg = next_arg)
+  for (cur_arg = fnargs; cur_arg != 0; cur_arg = TREE_CHAIN (cur_arg))
     {
-      tree passed_type = DECL_ARG_TYPE (cur_arg);
-      enum machine_mode passed_mode = TYPE_MODE (passed_type);
-      rtx entry_parm;
+      tree passed_type;
+      enum machine_mode passed_mode;
 
+      passed_type = DECL_ARG_TYPE (cur_arg);
       if (TREE_ADDRESSABLE (passed_type))
 	{
 	  passed_type = build_pointer_type (passed_type);
 	  passed_mode = Pmode;
 	}
-
-      entry_parm = FUNCTION_ARG (args_so_far, passed_mode, passed_type, 1);
-
-      FUNCTION_ARG_ADVANCE (args_so_far, passed_mode, passed_type, 1);
-      next_arg = TREE_CHAIN (cur_arg);
-
-      if (entry_parm && store_args_on_stack)
-	{
-	  if (next_arg == 0
-	      && DECL_NAME (cur_arg)
-	      && ((0 == strcmp (IDENTIFIER_POINTER (DECL_NAME (cur_arg)),
-				"__builtin_va_alist"))
-		  || (0 == strcmp (IDENTIFIER_POINTER (DECL_NAME (cur_arg)),
-				   "va_alist"))))
-	    {
-	      last_arg_is_vararg_marker = 1;
-	      if (GET_CODE (entry_parm) == REG)
-		regno = REGNO (entry_parm);
-	      else
-		regno = GP_ARG_LAST + 1;
-	      break;
-	    }
-	  else
-	    {
-	      int words;
-
-	      if (GET_CODE (entry_parm) != REG)
-	        abort ();
-
-	      /* passed in a register, so will get homed automatically */
-	      if (GET_MODE (entry_parm) == BLKmode)
-		words = (int_size_in_bytes (passed_type) + 3) / 4;
-	      else
-		words = (GET_MODE_SIZE (GET_MODE (entry_parm)) + 3) / 4;
-
-	      regno = REGNO (entry_parm) + words - 1;
-	    }
-	}
       else
-	{
-	  regno = GP_ARG_LAST+1;
-	  break;
-	}
+	passed_mode = TYPE_MODE (passed_type);
+      FUNCTION_ARG_ADVANCE (args_so_far, passed_mode, passed_type, 1);
     }
 
   /* In order to pass small structures by value in registers compatibly with
@@ -6837,28 +6791,6 @@ mips_expand_prologue (void)
     }
 
   tsize = compute_frame_size (get_frame_size ());
-
-  /* If this function is a varargs function, store any registers that
-     would normally hold arguments ($4 - $7) on the stack.  */
-  if (store_args_on_stack
-      && ((TYPE_ARG_TYPES (fntype) != 0
-	   && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
-	       != void_type_node))
-	  || last_arg_is_vararg_marker))
-    {
-      int offset = (regno - GP_ARG_FIRST) * UNITS_PER_WORD;
-      rtx ptr = stack_pointer_rtx;
-
-      for (; regno <= GP_ARG_LAST; regno++)
-	{
-	  if (offset != 0)
-	    ptr = gen_rtx (PLUS, Pmode, stack_pointer_rtx, GEN_INT (offset));
-	  emit_move_insn (gen_rtx (MEM, gpr_mode, ptr),
-			  gen_rtx (REG, gpr_mode, regno));
-
-	  offset += GET_MODE_SIZE (gpr_mode);
-	}
-    }
 
   /* If we are using the entry pseudo instruction, it will
      automatically subtract 32 from the stack pointer, so we don't
