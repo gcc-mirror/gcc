@@ -366,27 +366,30 @@ redirect_edges_and_update_ssa_graph (varray_type redirection_edges)
 	  defs = DEF_OPS (ann);
 	  for (j = 0; j < NUM_DEFS (defs); j++)
 	    {
-	      tree op = SSA_NAME_VAR (DEF_OP (defs, j));
-	      bitmap_set_bit (vars_to_rename, var_ann (op)->uid);
+	      tree op = DEF_OP (defs, j);
+	      tree var = SSA_NAME_VAR (op);
+	      bitmap_set_bit (vars_to_rename, var_ann (var)->uid);
 	    }
 
 	  v_may_defs = STMT_V_MAY_DEF_OPS (stmt);
 	  for (j = 0; j < NUM_V_MAY_DEFS (v_may_defs); j++)
 	    {
 	      tree op = V_MAY_DEF_RESULT (v_may_defs, j);
-	      bitmap_set_bit (vars_to_rename, var_ann (op)->uid);
+	      tree var = SSA_NAME_VAR (op);
+	      bitmap_set_bit (vars_to_rename, var_ann (var)->uid);
 	    }
 	    
 	  v_must_defs = STMT_V_MUST_DEF_OPS (stmt);
 	  for (j = 0; j < NUM_V_MUST_DEFS (v_must_defs); j++)
 	    {
 	      tree op = V_MUST_DEF_OP (v_must_defs, j);
-	      bitmap_set_bit (vars_to_rename, var_ann (op)->uid);
+	      tree var = SSA_NAME_VAR (op);
+	      bitmap_set_bit (vars_to_rename, var_ann (var)->uid);
 	    }
 	}
 
       /* Finally, any variables in PHI nodes at our final destination
-         must also be taken our of SSA form.  */
+         must also be taken out of SSA form.  */
       for (phi = phi_nodes (tgt); phi; phi = PHI_CHAIN (phi))
 	{
 	  tree result = SSA_NAME_VAR (PHI_RESULT (phi));
@@ -528,6 +531,7 @@ redirect_edges_and_update_ssa_graph (varray_type redirection_edges)
 	    remove_phi_node (phi, NULL, bb);
 	}
     }
+
   BITMAP_XFREE (virtuals_to_rename);
 }
 

@@ -608,7 +608,7 @@ set_livein_block (tree var, basic_block bb)
 /* If the use operand pointed to by OP_P needs to be renamed, then strip away 
    any SSA_NAME wrapping the operand, set *UID_P to the underlying variable's 
    uid, and return true.  Otherwise return false.  If the operand was an 
-   SSA_NAME, change it to the stipped name.  */
+   SSA_NAME, change it to the stripped name.  */
 
 static bool
 prepare_use_operand_for_rename (use_operand_p op_p, size_t *uid_p)
@@ -1822,9 +1822,8 @@ rewrite_ssa_into_ssa (bitmap names_to_rename)
   /* We no longer need this bitmap, clear and free it.  */
   sbitmap_free (mark_def_sites_global_data.kills);
 
-  for (i = 0; i < num_ssa_names; i++)
-    if (ssa_name (i))
-      set_current_def (ssa_name (i), NULL_TREE);
+  for (i = 1; i < num_ssa_names; i++)
+    set_current_def (ssa_name (i), NULL_TREE);
 
   /* Insert PHI nodes at dominance frontiers of definition blocks.  */
   insert_phi_nodes (dfs, names_to_rename);
@@ -1856,6 +1855,9 @@ rewrite_ssa_into_ssa (bitmap names_to_rename)
   /* Finalize the dominator walker.  */
   fini_walk_dominator_tree (&walk_data);
 
+  EXECUTE_IF_SET_IN_BITMAP (names_to_rename, 0, i,
+      release_ssa_name (ssa_name (i)));
+
   sbitmap_free (snames_to_rename);
 
   timevar_pop (TV_TREE_SSA_REWRITE_BLOCKS);
@@ -1874,16 +1876,16 @@ rewrite_ssa_into_ssa (bitmap names_to_rename)
 
   htab_delete (def_blocks);
 
-  for (i = 0; i < num_ssa_names; i++)
+  for (i = 1; i < num_ssa_names; i++)
     {
       name = ssa_name (i);
-      if (!name
-	  || !SSA_NAME_AUX (name))
+      if (!SSA_NAME_AUX (name))
 	continue;
 
       free (SSA_NAME_AUX (name));
       SSA_NAME_AUX (name) = NULL;
     }
+
   timevar_pop (TV_TREE_SSA_OTHER);
 }
 

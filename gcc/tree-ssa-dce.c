@@ -753,6 +753,7 @@ remove_dead_stmt (block_stmt_iterator *i, basic_block bb)
     }
 
   bsi_remove (i);
+  release_defs (t);
 }
 
 /* Print out removed statement statistics.  */

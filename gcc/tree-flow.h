@@ -576,7 +576,7 @@ extern bool tree_ssa_useless_type_conversion_1 (tree, tree);
 extern void verify_ssa (void);
 extern void delete_tree_ssa (void);
 extern void register_new_def (tree, varray_type *);
-extern void walk_use_def_chains (tree, walk_use_def_chains_fn, void *);
+extern void walk_use_def_chains (tree, walk_use_def_chains_fn, void *, bool);
 extern void kill_redundant_phi_nodes (void);
 
 /* In tree-into-ssa.c  */

@@ -160,6 +160,7 @@ make_ssa_name (tree var, tree stmt)
   SSA_NAME_VAR (t) = var;
   SSA_NAME_DEF_STMT (t) = stmt;
   SSA_NAME_PTR_INFO (t) = NULL;
+  SSA_NAME_IN_FREE_LIST (t) = 0;
 
   return t;
 }
@@ -176,6 +177,11 @@ make_ssa_name (tree var, tree stmt)
 void
 release_ssa_name (tree var)
 {
+  /* Never release the default definition for a symbol.  It's a
+     special SSA name that should always exist once it's created.  */
+  if (var == var_ann (SSA_NAME_VAR (var))->default_def)
+    return;
+
   /* release_ssa_name can be called multiple times on a single SSA_NAME.
      However, it should only end up on our free list one time.   We
      keep a status bit in the SSA_NAME node itself to indicate it has
@@ -214,6 +220,33 @@ duplicate_ssa_name (tree name, tree stmt)
 
   SSA_NAME_PTR_INFO (new_name) = new_ptr_info;
   return new_name;
+}
+
+
+/* Release all the SSA_NAMEs created by STMT.  */
+
+void
+release_defs (tree stmt)
+{
+  size_t i;
+  v_may_def_optype v_may_defs;
+  v_must_def_optype v_must_defs;
+  def_optype defs;
+  stmt_ann_t ann;
+
+  ann = stmt_ann (stmt);
+  defs = DEF_OPS (ann);
+  v_may_defs = V_MAY_DEF_OPS (ann);
+  v_must_defs = V_MUST_DEF_OPS (ann);
+
+  for (i = 0; i < NUM_DEFS (defs); i++)
+    release_ssa_name (DEF_OP (defs, i));
+
+  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
+    release_ssa_name (V_MAY_DEF_RESULT (v_may_defs, i));
+
+  for (i = 0; i < NUM_V_MUST_DEFS (v_must_defs); i++)
+    release_ssa_name (V_MUST_DEF_OP (v_must_defs, i));
 }
 
 #include "gt-tree-ssanames.h"
