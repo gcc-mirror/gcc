@@ -35,6 +35,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "expr.h"
 #include "hard-reg-set.h"
 #include "regs.h"
+#include "real.h"
 #include "defaults.h"
 
 #include "obstack.h"
