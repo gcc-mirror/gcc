@@ -56,6 +56,12 @@ static int nfunctions_inlined;
 static int initial_insns;
 static int overall_insns;
 
+/* Records tree nodes seen in cgraph_create_edges.  Simply using
+   walk_tree_without_duplicates doesn't guarantee each node is visited
+   once because it gets a new htab upon each recursive call from
+   record_calls_1.  */
+static htab_t visited_nodes;
+
 /* Analyze function once it is parsed.  Set up the local information
    available - create cgraph edges for function calls via BODY.  */
 
@@ -145,8 +151,8 @@ record_call_1 (tree *tp, int *walk_subtrees, void *data)
 	     taken by something that is not a function call.  So only
 	     walk the function parameter list, skip the other subtrees.  */
 
-	  walk_tree_without_duplicates (&TREE_OPERAND (*tp, 1),
-					record_call_1, data);
+	  walk_tree (&TREE_OPERAND (*tp, 1), record_call_1, data,
+		     visited_nodes);
 	  *walk_subtrees = 0;
 	}
     }
@@ -164,7 +170,11 @@ cgraph_create_edges (tree decl, tree body)
 {
   /* The nodes we're interested in are never shared, so walk
      the tree ignoring duplicates.  */
-  walk_tree_without_duplicates (&body, record_call_1, decl);
+  visited_nodes = htab_create (37, htab_hash_pointer,
+				    htab_eq_pointer, NULL);
+  walk_tree (&body, record_call_1, decl, visited_nodes);
+  htab_delete (visited_nodes);
+  visited_nodes = NULL;
 }
 
 /* Analyze the function scheduled to be output.  */
