@@ -1,5 +1,11 @@
 2004-03-11  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/channels/natFileChannelEcos.cc: Totally reworked.
+	This file was was just copied form java/io/natFileDescriptorEcos.cc
+	and never changed to compile correctly.
+
+2004-03-11  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/nio/PipeImpl.java
 	(SourceChannelImpl): Made final.
 	(read): Implemented.
