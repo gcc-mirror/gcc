@@ -621,6 +621,7 @@ ordinary_nat_headers = $(ordinary_java_source_files:.java=.h) \
 
 inner_nat_headers = java/io/ObjectOutputStream$$PutField.h \
 	java/io/ObjectInputStream$$GetField.h \
+	java/nio/DirectByteBufferImpl$$ReadWrite.h \
 	java/nio/channels/Pipe$$SinkChannel.h \
 	java/nio/channels/Pipe$$SourceChannel.h \
 	java/lang/reflect/Proxy$$ProxyData.h \
@@ -736,6 +737,10 @@ java/io/ObjectOutputStream$$PutField.h: java/io/ObjectOutputStream.class
 	$(GCJH) -classpath '' -bootclasspath $(top_builddir) \
 	'java/io/ObjectOutputStream$$PutField'
 
+java/nio/DirectByteBufferImpl$$ReadWrite.h: java/nio/DirectByteBufferImpl.class
+	$(GCJH) -classpath '' -bootclasspath $(top_builddir) \
+	'java/nio/DirectByteBufferImpl$$ReadWrite'
+
 java/nio/channels/Pipe$$SinkChannel.h: java/nio/channels/Pipe.class
 	$(GCJH) -classpath '' -bootclasspath $(top_builddir) \
 	'java/nio/channels/Pipe$$SinkChannel'
@@ -806,6 +811,8 @@ install-data-local:
 	$(INSTALL_DATA) 'gnu/java/net/PlainSocketImpl$$SocketOutputStream.h' $(DESTDIR)$(includedir)/gnu/java/net/
 	$(INSTALL_DATA) 'gnu/java/nio/PipeImpl$$SinkChannelImpl.h' $(DESTDIR)$(includedir)/gnu/java/nio/
 	$(INSTALL_DATA) 'gnu/java/nio/PipeImpl$$SourceChannelImpl.h' $(DESTDIR)$(includedir)/gnu/java/nio/
+## Don't install java/nio/DirectByteBufferImpl$$ReadWrite.h here. It's for internal use only.
+
 
 ## ################################################################
 

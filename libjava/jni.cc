@@ -42,6 +42,7 @@ details.  */
 #include <java/lang/Thread.h>
 #include <java/lang/IllegalAccessError.h>
 #include <java/nio/DirectByteBufferImpl.h>
+#include <java/nio/DirectByteBufferImpl$ReadWrite.h>
 #include <java/util/IdentityHashMap.h>
 #include <gnu/gcj/RawData.h>
 
@@ -1723,8 +1724,8 @@ _Jv_JNI_NewDirectByteBuffer (JNIEnv *, void *address, jlong length)
 {
   using namespace gnu::gcj;
   using namespace java::nio;
-  return new DirectByteBufferImpl (reinterpret_cast<RawData *> (address),
-				   length);
+  return new DirectByteBufferImpl$ReadWrite
+    (reinterpret_cast<RawData *> (address), length);
 }
 
 static void * JNICALL
