@@ -366,6 +366,10 @@ or with constant text in a single argument.
 	specified to CC.  Note that the tail part of the -S option
 	(i.e. the part matched by the `*') will be substituted for each
 	occurrence of %* within X.
+ %{<S}  remove all occurences of S from the command line.
+        Note - this option is position dependent.  % commands in the
+        spec string before this option will see S, % commands in the
+        spec string after this option will not.
  %{S:X} substitutes X, but only if the -S switch was given to CC.
  %{!S:X} substitutes X, but only if the -S switch was NOT given to CC.
  %{|S:X} like %{S:X}, but if no S switch, substitute `-'.
@@ -2639,10 +2643,18 @@ execute ()
    If a switch uses following arguments, then the `part1' field
    is the switch itself and the `args' field
    is a null-terminated vector containing the following arguments.
-   The `live_cond' field is 1 if the switch is true in a conditional spec,
-   -1 if false (overridden by a later switch), and is initialized to zero.
+   The `live_cond' field is:
+   0 when initialized
+   1 if the switch is true in a conditional spec,
+   -1 if false (overridden by a later switch)
+   -2 if this switch should be ignored (used in %{<S})
    The `validated' field is nonzero if any spec has looked at this switch;
    if it remains zero at the end of the run, it must be meaningless.  */
+
+#define SWITCH_OK       0
+#define SWITCH_FALSE   -1
+#define SWITCH_IGNORE  -2
+#define SWITCH_LIVE     1
 
 struct switchstr
 {
@@ -3465,7 +3477,7 @@ process_command (argc, argv)
 		 cc1 spec string.  */
 	      switches[n_switches].part1     = "--help";
 	      switches[n_switches].args      = 0;
-	      switches[n_switches].live_cond = 0;
+	      switches[n_switches].live_cond = SWITCH_OK;
 	      switches[n_switches].validated     = 0;
 	      
 	      n_switches++;
@@ -3480,7 +3492,7 @@ process_command (argc, argv)
 	     -e0 or -e1 down into the linker.  */
 	  switches[n_switches].part1 = &argv[i][0];
 	  switches[n_switches].args = 0;
-	  switches[n_switches].live_cond = 0;
+	  switches[n_switches].live_cond = SWITCH_OK;
 	  switches[n_switches].validated = 0;
 	  n_switches++;
 	}
@@ -3589,7 +3601,7 @@ process_command (argc, argv)
 	  else
 	    switches[n_switches].args = 0;
 
-	  switches[n_switches].live_cond = 0;
+	  switches[n_switches].live_cond = SWITCH_OK;
 	  switches[n_switches].validated = 0;
 	  /* This is always valid, since gcc.c itself understands it.  */
 	  if (!strcmp (p, "save-temps"))
@@ -4601,16 +4613,31 @@ handle_braces (p)
   int negate;
   int suffix;
   int include_blanks = 1;
+  int elide_switch = 0;
 
   if (*p == '^')
-    /* A '^' after the open-brace means to not give blanks before args.  */
-    include_blanks = 0, ++p;
+    {
+      /* A '^' after the open-brace means to not give blanks before args.  */
+      include_blanks = 0;
+      ++p;
+    }
 
   if (*p == '|')
-    /* A `|' after the open-brace means,
-       if the test fails, output a single minus sign rather than nothing.
-       This is used in %{|!pipe:...}.  */
-    pipe_p = 1, ++p;
+    {
+      /* A `|' after the open-brace means,
+	 if the test fails, output a single minus sign rather than nothing.
+	 This is used in %{|!pipe:...}.  */
+      pipe_p = 1;
+      ++p;
+    }
+
+  if (*p == '<')
+    {
+      /* A `<' after the open-brace means that the switch should be
+	 removed from the command-line.  */
+      elide_switch = 1;
+      ++p;
+    }
 
 next_member:
   negate = suffix = 0;
@@ -4628,6 +4655,13 @@ next_member:
 
       suffix = 1;
       ++p;
+    }
+
+  if (elide_switch && (negate || pipe_p || suffix))
+    {
+      /* It doesn't make sense to mix elision with other flags.  We
+	 could fatal() here, but the standard seems to be to abort.  */
+      abort ();
     }
 
   filter = p;
@@ -4767,7 +4801,12 @@ next_member:
 	 conditional text.  */
       if (present != negate)
 	{
-	  if (*p == '}')
+	  if (elide_switch)
+	    {
+	      switches[i].live_cond = SWITCH_IGNORE;
+	      switches[i].validated = 1;
+	    }
+	  else if (*p == '}')
 	    {
 	      give_switch (i, 0, include_blanks);
 	    }
@@ -4829,7 +4868,7 @@ check_live_switch (switchnum, prefix_length)
 	  if (switches[i].part1[0] == 'O')
 	    {
 	      switches[switchnum].validated = 1;
-	      switches[switchnum].live_cond = -1;
+	      switches[switchnum].live_cond = SWITCH_FALSE;
 	      return 0;
 	    }
       break;
@@ -4843,7 +4882,7 @@ check_live_switch (switchnum, prefix_length)
 		&& ! strcmp (&switches[i].part1[1], &name[4]))
 	    {
 	      switches[switchnum].validated = 1;
-	      switches[switchnum].live_cond = -1;
+	      switches[switchnum].live_cond = SWITCH_FALSE;
 	      return 0;
 	    }
 	}
@@ -4858,7 +4897,7 @@ check_live_switch (switchnum, prefix_length)
 		&& !strcmp (&switches[i].part1[4], &name[1]))
 	    {
 	      switches[switchnum].validated = 1;
-	      switches[switchnum].live_cond = -1;
+	      switches[switchnum].live_cond = SWITCH_FALSE;
 	      return 0;
 	    }
 	}
@@ -4866,7 +4905,7 @@ check_live_switch (switchnum, prefix_length)
     }
 
   /* Otherwise the switch is live.  */
-  switches[switchnum].live_cond = 1;
+  switches[switchnum].live_cond = SWITCH_LIVE;
   return 1;
 }
 
@@ -4887,6 +4926,9 @@ give_switch (switchnum, omit_first_word, include_blanks)
      int omit_first_word;
      int include_blanks;
 {
+  if (switches[switchnum].live_cond == SWITCH_IGNORE)
+    return;
+
   if (!omit_first_word)
     {
       do_spec_1 ("-", 0, NULL_PTR);
