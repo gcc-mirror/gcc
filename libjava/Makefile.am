@@ -2957,6 +2957,7 @@ java/nio/ReadOnlyBufferException.java \
 java/nio/ShortBuffer.java \
 java/nio/ShortBufferImpl.java \
 java/nio/ShortViewBufferImpl.java \
+java/nio/VMDirectByteBuffer.java \
 java/nio/channels/AlreadyConnectedException.java \
 java/nio/channels/AsynchronousCloseException.java \
 java/nio/channels/ByteChannel.java \

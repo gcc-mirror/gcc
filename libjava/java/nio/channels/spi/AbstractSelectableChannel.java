@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.nio.channels.spi;
 
 import java.io.IOException;
@@ -44,7 +45,6 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.util.LinkedList;
 import java.util.ListIterator;
-
 
 public abstract class AbstractSelectableChannel extends SelectableChannel
 {
@@ -226,7 +226,7 @@ public abstract class AbstractSelectableChannel extends SelectableChannel
       {
 	key = locate(selector);
 
-	if (key != null)
+	if (key != null && key.isValid())
 	  {
 	    if (att != null)
 	      key.attach(att);
