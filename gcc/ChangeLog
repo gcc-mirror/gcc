@@ -1,3 +1,8 @@
+Sat Dec 27 21:20:02 1997  Richard Henderson  <rth@cygnus.com>
+
+	* configure.in: Move default enabling of Haifa out of for loop.
+	* configure: Rebuild.
+
 Thu Dec 25 01:02:54 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.

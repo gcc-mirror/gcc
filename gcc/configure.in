@@ -314,9 +314,6 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	alpha*-*-linux-gnuecoff*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		tm_file="${tm_file} alpha/linux-ecoff.h alpha/linux.h"
 		xm_file="${xm_file} alpha/xm-linux.h"
 		gas=no
@@ -325,9 +322,6 @@ for machine in $build $host $target; do
 		gas=yes gnu_ld=yes
 		;;
 	alpha*-*-linux-gnulibc1*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		tm_file="${tm_file} alpha/elf.h alpha/linux-elf.h alpha/linux.h"
 		xm_file="${xm_file} alpha/xm-linux.h"
 		tmake_file="t-linux t-linux-gnulibc1 alpha/t-linux"
@@ -339,9 +333,6 @@ for machine in $build $host $target; do
  		fi
 		;;
 	alpha*-*-linux-gnu*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		tm_file="${tm_file} alpha/elf.h alpha/linux-elf.h alpha/linux.h"
 		xm_file="${xm_file} alpha/xm-linux.h"
 		tmake_file="t-linux alpha/t-linux"
@@ -353,9 +344,6 @@ for machine in $build $host $target; do
  		fi
 		;;
 	alpha*-dec-osf*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		if [[ x$stabs = xyes ]]
 		then
 			tm_file="${tm_file} dbx.h"
@@ -386,9 +374,6 @@ for machine in $build $host $target; do
 		esac
 		;;
 	alpha*-*-winnt*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		tm_file="${tm_file} alpha/win-nt.h"
 		xm_file="${xm_file} config/winnt/xm-winnt.h alpha/xm-winnt.h"
 		tmake_file=t-libc-ok
@@ -405,9 +390,6 @@ for machine in $build $host $target; do
 		fi
 		;;
 	alpha*-dec-vms*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		tm_file=alpha/vms.h
 		xm_file="${xm_file} alpha/xm-vms.h"
 		tmake_file=alpha/t-vms
@@ -510,57 +492,36 @@ for machine in $build $host $target; do
 		float_format=i32
 		;;
 	hppa1.1-*-pro*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		tm_file="pa/pa-pro.h ${tm_file} pa/pa-pro-end.h libgloss.h"
 		xm_file=pa/xm-papro.h
 		tmake_file=pa/t-pro
 		;;
 	hppa1.1-*-osf*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		target_cpu_default=1
 		tm_file="${tm_file} pa/pa-osf.h"
 		use_collect2=yes
 		fixincludes=Makefile.in
 		;;
 	hppa1.1-*-rtems*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		tm_file="pa/pa-pro.h ${tm_file} pa/pa-pro-end.h libgloss.h pa/rtems.h"
 		xm_file=pa/xm-papro.h
 		tmake_file=pa/t-pro
 		;;
 	hppa1.0-*-osf*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		tm_file="${tm_file} pa/pa-osf.h"
 		use_collect2=yes
 		fixincludes=Makefile.in
 		;;
 	hppa1.1-*-bsd*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		target_cpu_default=1
 		use_collect2=yes
 		fixincludes=Makefile.in
 		;;
 	hppa1.0-*-bsd*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		use_collect2=yes
 		fixincludes=Makefile.in
 		;;
 	hppa1.0-*-hpux7*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		tm_file="pa/pa-oldas.h ${tm_file} pa/pa-hpux7.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
@@ -572,9 +533,6 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	hppa1.0-*-hpux8.0[[0-2]]*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		tm_file="${tm_file} pa/pa-hpux.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
@@ -588,9 +546,6 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	hppa1.1-*-hpux8.0[[0-2]]*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		target_cpu_default=1
 		tm_file="${tm_file} pa/pa-hpux.h"
 		xm_file=pa/xm-pahpux.h
@@ -605,9 +560,6 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	hppa1.1-*-hpux8*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		target_cpu_default=1
 		tm_file="${tm_file} pa/pa-hpux.h"
 		xm_file=pa/xm-pahpux.h
@@ -620,9 +572,6 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	hppa1.0-*-hpux8*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		tm_file="${tm_file} pa/pa-hpux.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
@@ -634,9 +583,6 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	hppa1.1-*-hpux10*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		target_cpu_default=1
 		tm_file="${tm_file} pa/pa-hpux.h pa/pa-hpux10.h"
 		xm_file=pa/xm-pahpux.h
@@ -657,9 +603,6 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	hppa1.0-*-hpux10*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		tm_file="${tm_file} pa/pa-hpux.h pa/pa-hpux10.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
@@ -671,9 +614,6 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	hppa1.1-*-hpux*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		target_cpu_default=1
 		tm_file="${tm_file} pa/pa-hpux.h pa/pa-hpux9.h"
 		xm_file=pa/xm-pahpux.h
@@ -686,9 +626,6 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	hppa1.0-*-hpux*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		tm_file="${tm_file} pa/pa-hpux.h pa/pa-hpux9.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
@@ -700,9 +637,6 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	hppa1.1-*-hiux*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		target_cpu_default=1
 		tm_file="${tm_file} pa/pa-hpux.h pa/pa-hiux.h"
 		xm_file=pa/xm-pahpux.h
@@ -715,9 +649,6 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	hppa1.0-*-hiux*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		tm_file="${tm_file} pa/pa-hpux.h pa/pa-hiux.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
@@ -729,9 +660,6 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	hppa*-*-lites*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		target_cpu_default=1
 		use_collect2=yes
 		fixincludes=Makefile.in
@@ -2159,9 +2087,6 @@ for machine in $build $host $target; do
 		xmake_file=rs6000/x-beos
 		;;
 	powerpc-*-sysv* | powerpc-*-elf*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		tm_file=rs6000/sysv4.h
 		xm_file=rs6000/xm-sysv4.h
 		extra_headers=ppc-asm.h
@@ -2174,27 +2099,18 @@ for machine in $build $host $target; do
 		xmake_file=rs6000/x-sysv4
 		;;
 	powerpc-*-eabiaix*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		tm_file=rs6000/eabiaix.h
 		tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
 		fixincludes=Makefile.in
 		extra_headers=ppc-asm.h
 		;;
 	powerpc-*-eabisim*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		tm_file=rs6000/eabisim.h
 		tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
 		fixincludes=Makefile.in
 		extra_headers=ppc-asm.h
 		;;
 	powerpc-*-eabi*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		tm_file=rs6000/eabi.h
 		if [[ x$gas = xyes ]]
 		then
@@ -2206,9 +2122,6 @@ for machine in $build $host $target; do
 		extra_headers=ppc-asm.h
 		;;
 	powerpc-*-rtems*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		tm_file=rs6000/rtems.h
 		if [[ x$gas = xyes ]]
 		then
@@ -2220,9 +2133,6 @@ for machine in $build $host $target; do
 		extra_headers=ppc-asm.h
 		;;
 	powerpc-*-linux-gnu*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		tm_file=rs6000/linux.h
 		xm_file=rs6000/xm-sysv4.h
 		out_file=rs6000/rs6000.c
@@ -2241,9 +2151,6 @@ for machine in $build $host $target; do
 		fi
 		;;
         powerpc-*-vxworks*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
                 cpu_type=rs6000
                 xm_file=rs6000/xm-sysv4.h
                 tm_file=rs6000/vxppc.h
@@ -2251,9 +2158,6 @@ for machine in $build $host $target; do
 		extra_headers=ppc-asm.h
                 ;;
 	powerpcle-*-sysv* | powerpcle-*-elf*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		tm_file=rs6000/sysv4le.h
 		xm_file=rs6000/xm-sysv4.h
 		if [[ x$gas = xyes ]]
@@ -2266,18 +2170,12 @@ for machine in $build $host $target; do
 		extra_headers=ppc-asm.h
 		;;
 	powerpcle-*-eabisim*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		tm_file=rs6000/eabilesim.h
 		tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
 		fixincludes=Makefile.in
 		extra_headers=ppc-asm.h
 		;;
 	powerpcle-*-eabi*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		tm_file=rs6000/eabile.h
 		if [[ x$gas = xyes ]]
 		then
@@ -2289,9 +2187,6 @@ for machine in $build $host $target; do
 		extra_headers=ppc-asm.h
 		;;
         powerpcle-*-winnt* )
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
                 tm_file=rs6000/win-nt.h
                 tmake_file=rs6000/t-winnt
 #               extra_objs=pe.o
@@ -2302,9 +2197,6 @@ for machine in $build $host $target; do
 		extra_headers=ppc-asm.h
 		;;
 	powerpcle-*-pe | powerpcle-*-cygwin32)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		tm_file=rs6000/cygwin32.h
 		xm_file=rs6000/xm-cygwin32.h
 		tmake_file=rs6000/t-winnt
@@ -2318,9 +2210,6 @@ for machine in $build $host $target; do
 		extra_headers=ppc-asm.h
 		;;
 	powerpcle-*-solaris2*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		tm_file=rs6000/sol2.h
 		xm_file=rs6000/xm-sysv4.h
 		if [[ x$gas = xyes ]]
@@ -2334,17 +2223,11 @@ for machine in $build $host $target; do
 		extra_headers=ppc-asm.h
 		;;
 	rs6000-ibm-aix3.[[01]]*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		tm_file=rs6000/aix31.h
 		xmake_file=rs6000/x-aix31
 		use_collect2=yes
 		;;
 	rs6000-ibm-aix3.2.[[456789]]* | powerpc-ibm-aix3.2.[[456789]]*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		tm_file=rs6000/aix3newas.h
 		if [[ x$host != x$target ]]
 		then
@@ -2355,9 +2238,6 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	rs6000-ibm-aix[[456789]].* | powerpc-ibm-aix[[456789]].*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		tm_file=rs6000/aix41.h
 		if [[ x$host != x$target ]]
 		then
@@ -2369,30 +2249,18 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	rs6000-ibm-aix*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		use_collect2=yes
 		;;
 	rs6000-bull-bosx)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		use_collect2=yes
 		;;
 	rs6000-*-mach*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		tm_file=rs6000/mach.h
 		xm_file=rs6000/xm-mach.h
 		xmake_file=rs6000/x-mach
 		use_collect2=yes
 		;;
 	rs6000-*-lynxos*)
-		if [[ x$enable_haifa != xno ]]; then
-			enable_haifa=yes
-		fi
 		tm_file=rs6000/lynx.h
 		xm_file=rs6000/xm-lynx.h
 		tmake_file=rs6000/t-rs6000
@@ -2858,6 +2726,14 @@ fi
 
 if [[ x$float_format = x ]]
 then float_format=i64
+fi
+
+if [[ x$enable_haifa = x ]]
+then
+  case $target in
+    alpha*-* | hppa1.?-* | powerpc*-* | rs6000-*)
+      enable_haifa=yes;;
+  esac
 fi
 
 # Say what files are being used for the output code and MD file.
