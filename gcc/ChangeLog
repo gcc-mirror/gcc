@@ -1,3 +1,18 @@
+Tue Jun  4 19:29:42 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* cfglayout.c (duplicate_insn_chain): Kill NOTE_INSN_RANGE notes.
+	* final.c (final_scan_insn): Likewise.
+	* ggc-common.c (ggc_mark_rtx_children_1): Likewise; use
+	NOTE_EXPECTED_VALUE instead of NOTE_RANGE.
+	* haifa-sched.c (unlink_other_notes): Likeewise.
+	(reemit_notes): Likewise.
+	* print-rtl.c (print_rtx): Likewise.
+	* sched-deps (sched-analyze): Likewise.
+	* rtl.c (note_insn_name): Likewise.
+	* rtl.h (NOTE_RANGE_INFO, NOTE_LIVE_INFO): Kill.
+	(enum insn_note): Kill NOTE_INSN_RANGE_*, NOTE_INSN_LIVE.
+	(RANGE_*): Kill.
+
 2002-06-04  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* varasm.c (mark_constants): Handle RTX format 'B'.

@@ -1995,9 +1995,6 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	case NOTE_INSN_LOOP_VTOP:
 	case NOTE_INSN_FUNCTION_END:
 	case NOTE_INSN_REPEATED_LINE_NUMBER:
-	case NOTE_INSN_RANGE_BEG:
-	case NOTE_INSN_RANGE_END:
-	case NOTE_INSN_LIVE:
 	case NOTE_INSN_EXPECTED_VALUE:
 	  break;
 

@@ -251,16 +251,6 @@ print_rtx (in_rtx)
 		sawclose = 1;
 		break;
 
-	      case NOTE_INSN_RANGE_BEG:
-	      case NOTE_INSN_RANGE_END:
-	      case NOTE_INSN_LIVE:
-		indent += 2;
-		if (!sawclose)
-		  fprintf (outfile, " ");
-		print_rtx (NOTE_RANGE_INFO (in_rtx));
-		indent -= 2;
-		break;
-
 	      case NOTE_INSN_BASIC_BLOCK:
 		{
 		  basic_block bb = NOTE_BASIC_BLOCK (in_rtx);
