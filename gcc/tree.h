@@ -2294,6 +2294,8 @@ extern void start_identifier_warnings	PROTO ((void));
 extern void gcc_obstack_init		PROTO ((struct obstack *));
 extern void init_obstacks		PROTO ((void));
 extern void obfree			PROTO ((char *));
+extern void build_common_tree_nodes	PROTO ((int));
+extern void build_common_tree_nodes_2	PROTO ((int));
 
 /* In function.c */
 extern void setjmp_protect_args		PROTO ((void));

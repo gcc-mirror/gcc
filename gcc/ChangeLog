@@ -1,5 +1,8 @@
 Sun Sep 12 15:53:20 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
+	* tree.h (build_common_tree_nodes, build_common_tree_nodes_2):
+	Declare.
+
 	* reload.h (reload_in, reload_out, reload_in_reg, reload_out_reg,
 	reload_reg_class, reload_inmode, reload_outmode, reload_optional,
 	reload_nongroup, reload_inc, reload_opnum, reload_secondary_p,
