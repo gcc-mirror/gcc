@@ -530,6 +530,7 @@ dequeue_and_dump (di)
 
 	  dump_child ("flds", TYPE_FIELDS (t));
 	  dump_child ("fncs", TYPE_METHODS (t));
+	  dump_child ("vfld", TYPE_VFIELD (t));
 	  queue_and_dump_index (di, "binf", TYPE_BINFO (t), 
 				DUMP_BINFO);
 	}

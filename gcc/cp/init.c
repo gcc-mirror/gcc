@@ -659,9 +659,9 @@ expand_virtual_init (binfo, decl)
   /* This code is crusty.  Should be simple, like:
      vtbl = BINFO_VTABLE (binfo);
      */
-  vtype = DECL_CONTEXT (CLASSTYPE_VFIELD (type));
+  vtype = DECL_CONTEXT (TYPE_VFIELD (type));
   vtype_binfo = get_binfo (vtype, TREE_TYPE (TREE_TYPE (decl)), 0);
-  vtbl = BINFO_VTABLE (binfo_value (DECL_FIELD_CONTEXT (CLASSTYPE_VFIELD (type)), binfo));
+  vtbl = BINFO_VTABLE (binfo_value (DECL_FIELD_CONTEXT (TYPE_VFIELD (type)), binfo));
   assemble_external (vtbl);
   TREE_USED (vtbl) = 1;
   vtbl = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (vtbl)), vtbl);
