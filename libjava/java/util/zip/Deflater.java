@@ -124,9 +124,6 @@ public class Deflater
   // True if finished.
   private boolean is_finished;
 
-  // Total number of bytes made available at last setInput.
-  private int last_input_count;
-
   // `Flush' flag to pass to next call to deflate.
   private int flush_flag;
 }

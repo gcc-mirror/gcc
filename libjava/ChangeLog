@@ -1,3 +1,22 @@
+1999-05-22  Tom Tromey  <tromey@cygnus.com>
+
+	* java/util/zip/ZipInputStream.java (fill): New method.
+	(compressed_len): New instance variable.
+	(getNextStream): Set it.
+	(read): Reset inflater on EOF.  Only read via `super' if entry is
+	deflated.
+	(skip): Only skip via `super' if entry is deflated.
+	* java/util/zip/Deflater.java (last_input_count): Removed.
+	* java/util/zip/natDeflater.cc (deflate): Return 0 if input array
+	is length 0.
+	(needsInput): Don't use last_input_count.
+	(setInput): Don't set last_input_count.
+	* java/util/zip/natInflater.cc (getRemaining): Return correct
+	result.
+	(inflate): Return 0 if input array is length 0.
+	(setInput): Don't set last_input_count.
+	* java/util/zip/Inflater.java (last_input_count): Removed.
+
 1999-05-21  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in: Rebuilt.
