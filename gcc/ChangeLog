@@ -1,3 +1,10 @@
+2004-10-13  Dorit Naishlos  <dorit@il.ibm.com>
+
+	* rs6000.c (altivec_builtin_mask_for_load): Made static GTY(()).
+	(altivec_builtin_mask_for_store): Likewise.
+	(altivec_init_builtins): Use lang_hooks.builtin_function to
+	create the decls for builtin_altivec_mask_for_load/store.
+
 2004-10-13  Nick Clifton  <nickc@redhat.com>
 
 	* config/c4x/c4x.c: Remove inclusion of loop.h.
