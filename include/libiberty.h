@@ -149,6 +149,10 @@ extern PTR xcalloc PARAMS ((size_t, size_t));
 
 extern char *xstrdup PARAMS ((const char *));
 
+/* Copy an existing memory buffer to a new memory buffer without fail.  */
+
+extern PTR xmemdup PARAMS ((const PTR, size_t, size_t));
+
 /* hex character manipulation routines */
 
 #define _hex_array_size 256
