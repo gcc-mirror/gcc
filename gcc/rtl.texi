@@ -2490,14 +2490,15 @@ recorded as a @code{jump_insn}.
 accessed in the same way and in addition contain a field
 @code{JUMP_LABEL} which is defined once jump optimization has completed.
 
-For simple conditional and unconditional jumps, this field contains the
-@code{code_label} to which this insn will (possibly conditionally)
+For simple conditional and unconditional jumps, this field contains
+the @code{code_label} to which this insn will (possibly conditionally)
 branch.  In a more complex jump, @code{JUMP_LABEL} records one of the
-labels that the insn refers to; the only way to find the others
-is to scan the entire body of the insn.
+labels that the insn refers to; the only way to find the others is to
+scan the entire body of the insn.  In an @code{addr_vec},
+@code{JUMP_LABEL} is @code{NULL_RTX}.
 
-Return insns count as jumps, but since they do not refer to any labels,
-they have zero in the @code{JUMP_LABEL} field.
+Return insns count as jumps, but since they do not refer to any
+labels, their @code{JUMP_LABEL} is @code{NULL_RTX}.
 
 @findex call_insn
 @item call_insn
