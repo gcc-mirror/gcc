@@ -4877,6 +4877,11 @@ validate_nonmember_using_decl (decl, scope, name)
       *scope = global_namespace;
       *name = decl;
     }
+  else if (TREE_CODE (decl) == NAMESPACE_DECL)
+    {
+      cp_error ("namespace `%D' not allowed in using-declaration", decl);
+      return NULL_TREE;
+    }
   else
     my_friendly_abort (382);
   if (DECL_P (*name))

@@ -1,3 +1,7 @@
+2001-10-27  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* decl2.c (validate_nonmember_using_decl): Handle NAMESPACE_DECL.
+
 2001-10-25  Zack Weinberg  <zack@codesourcery.com>
 
 	* cp-lang.c: Redefine LANG_HOOKS_CLEAR_BINDING_STACK to
