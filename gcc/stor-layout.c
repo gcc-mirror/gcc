@@ -925,7 +925,7 @@ finalize_record_size (rli)
   TYPE_SIZE (rli->t) = ROUND_TYPE_SIZE (rli->t, unpadded_size,
 					TYPE_ALIGN (rli->t));
   TYPE_SIZE_UNIT (rli->t)
-    = ROUND_TYPE_SIZE_UNIT (rli->t, unpaded_size_unit,
+    = ROUND_TYPE_SIZE_UNIT (rli->t, unpadded_size_unit,
 			    TYPE_ALIGN (rli->t) / BITS_PER_UNIT);
 #else
   TYPE_SIZE (rli->t) = round_up (unpadded_size, TYPE_ALIGN (rli->t));
