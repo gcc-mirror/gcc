@@ -176,6 +176,82 @@ changequote([, ])dnl
   fi
 fi
 
+# Find the native compiler
+AC_PROG_CC
+AC_PROG_CC_C_O
+# autoconf is lame and doesn't give us any substitution variable for this.
+if eval "test \"`echo '$ac_cv_prog_cc_'${ac_cc}_c_o`\" = no"; then
+  NO_MINUS_C_MINUS_O=yes
+else
+  OUTPUT_OPTION='-o $@'
+fi
+AC_SUBST(NO_MINUS_C_MINUS_O)
+AC_SUBST(OUTPUT_OPTION)
+
+# See if GNAT has been installed
+gcc_AC_PROG_GNAT
+
+AC_CACHE_CHECK(whether ${CC-cc} accepts -Wno-long-long,
+ac_cv_prog_cc_no_long_long,
+[save_CFLAGS="$CFLAGS"
+CFLAGS="-Wno-long-long"
+AC_TRY_COMPILE(,,ac_cv_prog_cc_no_long_long=yes,
+	       ac_cv_prog_cc_no_long_long=no)
+CFLAGS="$save_CFLAGS"])
+
+if test x$have_gnat != xno ; then 
+AC_CACHE_CHECK(whether ${ADAC} accepts -Wno-long-long,
+ac_cv_prog_adac_no_long_long,
+[cat >conftest.adb <<EOF
+procedure conftest is begin null; end conftest;
+EOF
+if $ADAC -Wno-long-long -c conftest.adb 1>&5 2>&5 ; then
+  ac_cv_prog_adac_no_long_long=yes
+else
+  ac_cv_prog_adac_no_long_long=no
+fi
+rm -f conftest*])
+else
+  ac_cv_prog_adac_no_long_long=yes
+fi
+
+strict1_warn=
+if test $ac_cv_prog_cc_no_long_long = yes && \
+    test $ac_cv_prog_adac_no_long_long = yes ; then
+  strict1_warn="-pedantic -Wno-long-long"
+fi
+AC_SUBST(strict1_warn)
+
+AC_PROG_CPP
+AC_C_INLINE
+gcc_AC_C_VOLATILE
+
+gcc_AC_C_LONG_DOUBLE
+gcc_AC_C_LONG_LONG
+gcc_AC_C__BOOL
+
+# sizeof(char) is 1 by definition.
+gcc_AC_COMPILE_CHECK_SIZEOF(short)
+gcc_AC_COMPILE_CHECK_SIZEOF(int)
+gcc_AC_COMPILE_CHECK_SIZEOF(long)
+if test $ac_cv_c_long_long = yes; then
+  gcc_AC_COMPILE_CHECK_SIZEOF(long long)
+fi
+if test $ac_cv_c___int64 = yes; then
+  gcc_AC_COMPILE_CHECK_SIZEOF(__int64)
+fi
+
+gcc_AC_C_CHARSET
+
+# If the native compiler is GCC, we can enable warnings even in stage1.  
+# That's useful for people building cross-compilers, or just running a
+# quick `make'.
+warn_cflags=
+if test "x$GCC" = "xyes"; then
+  warn_cflags='$(GCC_WARN_CFLAGS)'
+fi
+AC_SUBST(warn_cflags)
+
 # Determine whether or not multilibs are enabled.
 AC_ARG_ENABLE(multilib,
 [  --enable-multilib       enable library support for multiple ABIs],
@@ -211,6 +287,7 @@ no)	;;
 		rtl)	ac_rtl_checking=1 ;;
 		gc)	ac_gc_checking=1 ;;
 		gcac)	ac_gc_always_collect=1 ;;
+		valgrind)	ac_checking_valgrind=1 ;;
 		*)	AC_MSG_ERROR(unknown check category $check) ;;
 		esac
 	done
@@ -256,6 +333,25 @@ if test x$ac_gc_always_collect != x ; then
    paranoid mode, validating the entire heap and collecting garbage at
    every opportunity.  This is extremely expensive.])
 fi
+valgrind_path_defines=
+valgrind_command=
+if test x$ac_checking_valgrind != x ; then
+  # It is certainly possible that there's valgrind but no valgrind.h.
+  # GCC relies on making annotations so we must have both.
+  AC_CHECK_HEADER(valgrind.h, have_valgrind_h=yes, have_valgrind_h=no)
+  AM_PATH_PROG_WITH_TEST(valgrind_path, valgrind,
+	[$ac_dir/$ac_word --version | grep valgrind- >/dev/null 2>&1])
+  if test "x$valgrind_path" = "x" || test $have_valgrind_h = no; then
+	AC_MSG_ERROR([*** Can't find both valgrind and valgrind.h])
+  fi
+  valgrind_path_defines=-DVALGRIND_PATH='\"'$valgrind_path'\"'
+  valgrind_command="$valgrind_path -q"
+  AC_DEFINE(ENABLE_VALGRIND_CHECKING, 1,
+[Define if you want to run subprograms and generated programs
+   through valgrind (a memory checker).  This is extremely expensive.])
+fi
+AC_SUBST(valgrind_path_defines)
+AC_SUBST(valgrind_command)
 
 # Enable code coverage collection
 AC_ARG_ENABLE(coverage,
@@ -378,82 +474,6 @@ AC_CANONICAL_SYSTEM
 
 # Set program_transform_name
 AC_ARG_PROGRAM
-
-# Find the native compiler
-AC_PROG_CC
-AC_PROG_CC_C_O
-# autoconf is lame and doesn't give us any substitution variable for this.
-if eval "test \"`echo '$ac_cv_prog_cc_'${ac_cc}_c_o`\" = no"; then
-  NO_MINUS_C_MINUS_O=yes
-else
-  OUTPUT_OPTION='-o $@'
-fi
-AC_SUBST(NO_MINUS_C_MINUS_O)
-AC_SUBST(OUTPUT_OPTION)
-
-# See if GNAT has been installed
-gcc_AC_PROG_GNAT
-
-AC_CACHE_CHECK(whether ${CC-cc} accepts -Wno-long-long,
-ac_cv_prog_cc_no_long_long,
-[save_CFLAGS="$CFLAGS"
-CFLAGS="-Wno-long-long"
-AC_TRY_COMPILE(,,ac_cv_prog_cc_no_long_long=yes,
-	       ac_cv_prog_cc_no_long_long=no)
-CFLAGS="$save_CFLAGS"])
-
-if test x$have_gnat != xno ; then 
-AC_CACHE_CHECK(whether ${ADAC} accepts -Wno-long-long,
-ac_cv_prog_adac_no_long_long,
-[cat >conftest.adb <<EOF
-procedure conftest is begin null; end conftest;
-EOF
-if $ADAC -Wno-long-long -c conftest.adb 1>&5 2>&5 ; then
-  ac_cv_prog_adac_no_long_long=yes
-else
-  ac_cv_prog_adac_no_long_long=no
-fi
-rm -f conftest*])
-else
-  ac_cv_prog_adac_no_long_long=yes
-fi
-
-strict1_warn=
-if test $ac_cv_prog_cc_no_long_long = yes && \
-    test $ac_cv_prog_adac_no_long_long = yes ; then
-  strict1_warn="-pedantic -Wno-long-long"
-fi
-AC_SUBST(strict1_warn)
-
-AC_PROG_CPP
-AC_C_INLINE
-gcc_AC_C_VOLATILE
-
-gcc_AC_C_LONG_DOUBLE
-gcc_AC_C_LONG_LONG
-gcc_AC_C__BOOL
-
-# sizeof(char) is 1 by definition.
-gcc_AC_COMPILE_CHECK_SIZEOF(short)
-gcc_AC_COMPILE_CHECK_SIZEOF(int)
-gcc_AC_COMPILE_CHECK_SIZEOF(long)
-if test $ac_cv_c_long_long = yes; then
-  gcc_AC_COMPILE_CHECK_SIZEOF(long long)
-fi
-if test $ac_cv_c___int64 = yes; then
-  gcc_AC_COMPILE_CHECK_SIZEOF(__int64)
-fi
-
-gcc_AC_C_CHARSET
-
-# If the native compiler is GCC, we can enable warnings even in stage1.  
-# That's useful for people building cross-compilers, or just running a
-# quick `make'.
-warn_cflags=
-if test "x$GCC" = "xyes"; then
-  warn_cflags='$(GCC_WARN_CFLAGS)'
-fi
-AC_SUBST(warn_cflags)
 
 # Stage specific cflags for build.
 stage1_cflags=

@@ -96,6 +96,10 @@ STRICT2_WARN = -Wtraditional -pedantic -Wno-long-long
 # "extern" tags in header files.
 NOCOMMON_FLAG = @nocommon_flag@
 
+# These are set by --enable-checking=valgrind.
+RUN_GEN = @valgrind_command@
+VALGRIND_DRIVER_DEFINES = @valgrind_path_defines@
+
 # This is how we control whether or not the additional warnings are applied.
 .-warn = $(STRICT_WARN)
 GCC_WARN_CFLAGS = $(LOOSE_WARN) $($(@D)-warn) $(NOCOMMON_FLAG)
@@ -1260,6 +1264,7 @@ DRIVER_DEFINES = \
   -DDEFAULT_TARGET_MACHINE=\"$(target_alias)\" \
   -DSTANDARD_BINDIR_PREFIX=\"$(bindir)/\" \
   -DTOOLDIR_BASE_PREFIX=\"$(unlibsubdir)/../\" \
+  $(VALGRIND_DRIVER_DEFINES) \
   `test "X$${SHLIB_LINK}" = "X" || test "@enable_shared@" != "yes" || echo "-DENABLE_SHARED_LIBGCC"` \
   `test "X$${SHLIB_MULTILIB}" = "X" || echo "-DNO_SHARED_LIBGCC_MULTILIB"`
 
@@ -1282,7 +1287,7 @@ cppspec.o: cppspec.c $(CONFIG_H) $(SYSTEM_H) $(GCC_H)
 
 tree-check.h: s-check ; @true
 s-check : gencheck$(build_exeext) $(srcdir)/move-if-change
-	./gencheck$(build_exeext) > tmp-check.h
+	$(RUN_GEN) ./gencheck$(build_exeext) > tmp-check.h
 	$(SHELL) $(srcdir)/move-if-change tmp-check.h tree-check.h
 	$(STAMP) s-check
 
@@ -1690,13 +1695,13 @@ mips-tdump.o : mips-tdump.c $(CONFIG_H) $(RTL_H) $(SYSTEM_H)
 
 insn-config.h: s-config ; @true
 s-config : $(md_file) genconfig$(build_exeext) $(srcdir)/move-if-change
-	./genconfig$(build_exeext) $(md_file) > tmp-config.h
+	$(RUN_GEN) ./genconfig$(build_exeext) $(md_file) > tmp-config.h
 	$(SHELL) $(srcdir)/move-if-change tmp-config.h insn-config.h
 	$(STAMP) s-config
 
 insn-conditions.c: s-conditions ; @true
 s-conditions : $(md_file) genconditions$(build_exeext) $(srcdir)/move-if-change
-	./genconditions$(build_exeext) $(md_file) > tmp-conditions.c
+	$(RUN_GEN) ./genconditions$(build_exeext) $(md_file) > tmp-conditions.c
 	$(SHELL) $(srcdir)/move-if-change tmp-conditions.c insn-conditions.c
 	$(STAMP) s-conditions
 
@@ -1711,19 +1716,19 @@ dummy-conditions.o : dummy-conditions.c $(HCONFIG_H) $(SYSTEM_H) gensupport.h
 
 insn-flags.h: s-flags ; @true
 s-flags : $(md_file) genflags$(build_exeext) $(srcdir)/move-if-change
-	./genflags$(build_exeext) $(md_file) > tmp-flags.h
+	$(RUN_GEN) ./genflags$(build_exeext) $(md_file) > tmp-flags.h
 	$(SHELL) $(srcdir)/move-if-change tmp-flags.h insn-flags.h
 	$(STAMP) s-flags
 
 insn-codes.h: s-codes ; @true
 s-codes : $(md_file) gencodes$(build_exeext) $(srcdir)/move-if-change
-	./gencodes$(build_exeext) $(md_file) > tmp-codes.h
+	$(RUN_GEN) ./gencodes$(build_exeext) $(md_file) > tmp-codes.h
 	$(SHELL) $(srcdir)/move-if-change tmp-codes.h insn-codes.h
 	$(STAMP) s-codes
 
 insn-constants.h: s-constants ; @true
 s-constants : $(md_file) genconstants$(build_exeext) $(srcdir)/move-if-change
-	./genconstants$(build_exeext) $(md_file) > tmp-constants.h
+	$(RUN_GEN) ./genconstants$(build_exeext) $(md_file) > tmp-constants.h
 	$(SHELL) $(srcdir)/move-if-change tmp-constants.h insn-constants.h
 	$(STAMP) s-constants
 
@@ -1735,7 +1740,7 @@ insn-emit.o : insn-emit.c $(CONFIG_H) $(RTL_H) $(EXPR_H) real.h output.h \
 
 insn-emit.c: s-emit ; @true
 s-emit : $(md_file) genemit$(build_exeext) $(srcdir)/move-if-change
-	./genemit$(build_exeext) $(md_file) > tmp-emit.c
+	$(RUN_GEN) ./genemit$(build_exeext) $(md_file) > tmp-emit.c
 	$(SHELL) $(srcdir)/move-if-change tmp-emit.c insn-emit.c
 	$(STAMP) s-emit
 
@@ -1747,7 +1752,7 @@ insn-recog.o : insn-recog.c $(CONFIG_H) $(RTL_H) insn-config.h $(RECOG_H) \
 
 insn-recog.c: s-recog ; @true
 s-recog : $(md_file) genrecog$(build_exeext) $(srcdir)/move-if-change
-	./genrecog$(build_exeext) $(md_file) > tmp-recog.c
+	$(RUN_GEN) ./genrecog$(build_exeext) $(md_file) > tmp-recog.c
 	$(SHELL) $(srcdir)/move-if-change tmp-recog.c insn-recog.c
 	$(STAMP) s-recog
 
@@ -1758,7 +1763,7 @@ insn-opinit.o : insn-opinit.c $(CONFIG_H) $(RTL_H) \
 
 insn-opinit.c: s-opinit ; @true
 s-opinit : $(md_file) genopinit$(build_exeext) $(srcdir)/move-if-change
-	./genopinit$(build_exeext) $(md_file) > tmp-opinit.c
+	$(RUN_GEN) ./genopinit$(build_exeext) $(md_file) > tmp-opinit.c
 	$(SHELL) $(srcdir)/move-if-change tmp-opinit.c insn-opinit.c
 	$(STAMP) s-opinit
 
@@ -1769,7 +1774,7 @@ insn-extract.o : insn-extract.c $(CONFIG_H) $(RTL_H) $(SYSTEM_H) toplev.h \
 
 insn-extract.c: s-extract ; @true
 s-extract : $(md_file) genextract$(build_exeext) $(srcdir)/move-if-change
-	./genextract$(build_exeext) $(md_file) > tmp-extract.c
+	$(RUN_GEN) ./genextract$(build_exeext) $(md_file) > tmp-extract.c
 	$(SHELL) $(srcdir)/move-if-change tmp-extract.c insn-extract.c
 	$(STAMP) s-extract
 
@@ -1780,7 +1785,7 @@ insn-peep.o : insn-peep.c $(CONFIG_H) $(RTL_H) $(REGS_H) output.h real.h \
 
 insn-peep.c: s-peep ; @true
 s-peep : $(md_file) genpeep$(build_exeext) $(srcdir)/move-if-change
-	./genpeep$(build_exeext) $(md_file) > tmp-peep.c
+	$(RUN_GEN) ./genpeep$(build_exeext) $(md_file) > tmp-peep.c
 	$(SHELL) $(srcdir)/move-if-change tmp-peep.c insn-peep.c
 	$(STAMP) s-peep
 
@@ -1792,13 +1797,13 @@ insn-attrtab.o : insn-attrtab.c $(CONFIG_H) $(RTL_H) $(REGS_H) real.h \
 
 insn-attr.h: s-attr ; @true
 s-attr : $(md_file) genattr$(build_exeext) $(srcdir)/move-if-change
-	./genattr$(build_exeext) $(md_file) > tmp-attr.h
+	$(RUN_GEN) ./genattr$(build_exeext) $(md_file) > tmp-attr.h
 	$(SHELL) $(srcdir)/move-if-change tmp-attr.h insn-attr.h
 	$(STAMP) s-attr
 
 insn-attrtab.c: s-attrtab ; @true
 s-attrtab : $(md_file) genattrtab$(build_exeext) $(srcdir)/move-if-change
-	./genattrtab$(build_exeext) $(md_file) > tmp-attrtab.c
+	$(RUN_GEN) ./genattrtab$(build_exeext) $(md_file) > tmp-attrtab.c
 	$(SHELL) $(srcdir)/move-if-change tmp-attrtab.c insn-attrtab.c
 	$(STAMP) s-attrtab
 
@@ -1811,7 +1816,7 @@ insn-output.o : insn-output.c $(CONFIG_H) $(RTL_H) $(GGC_H) $(REGS_H) real.h \
 
 insn-output.c: s-output ; @true
 s-output : $(md_file) genoutput$(build_exeext) $(srcdir)/move-if-change
-	./genoutput$(build_exeext) $(md_file) > tmp-output.c
+	$(RUN_GEN) ./genoutput$(build_exeext) $(md_file) > tmp-output.c
 	$(SHELL) $(srcdir)/move-if-change tmp-output.c insn-output.c
 	$(STAMP) s-output
 
@@ -1820,16 +1825,16 @@ genrtl.c genrtl.h : s-genrtl
 	@true	# force gnu make to recheck modification times.
 
 s-genrtl: gengenrtl$(build_exeext) $(srcdir)/move-if-change $(RTL_BASE_H)
-	./gengenrtl$(build_exeext) -h > tmp-genrtl.h
+	$(RUN_GEN) ./gengenrtl$(build_exeext) -h > tmp-genrtl.h
 	$(SHELL) $(srcdir)/move-if-change tmp-genrtl.h genrtl.h
-	./gengenrtl$(build_exeext) > tmp-genrtl.c
+	$(RUN_GEN) ./gengenrtl$(build_exeext) > tmp-genrtl.c
 	$(SHELL) $(srcdir)/move-if-change tmp-genrtl.c genrtl.c
 	$(STAMP) s-genrtl
 
 tm-preds.h: s-preds; @true
 
 s-preds: genpreds$(build_exeext) $(srcdir)/move-if-change
-	./genpreds$(build_exeext) > tmp-preds.h
+	$(RUN_GEN) ./genpreds$(build_exeext) > tmp-preds.h
 	$(SHELL) $(srcdir)/move-if-change tmp-preds.h tm-preds.h
 	$(STAMP) s-preds
 
@@ -1894,7 +1899,7 @@ gtyp-gen.h: Makefile
 	$(SHELL) $(srcdir)/move-if-change tmp-gtyp.h gtyp-gen.h 
 
 s-gtype: gengtype$(build_exeext) $(GTFILES)
-	./gengtype
+	$(RUN_GEN) ./gengtype
 	$(STAMP) s-gtype
 
 #
@@ -2402,7 +2407,7 @@ xsys-protos.h: $(GCC_PASSES) $(srcdir)/sys-protos.h deduced.h gen-protos$(build_
 	mv tmp-fixtmp.c fixtmp.c
 	$(GCC_FOR_TARGET) fixtmp.c -w -U__SIZE_TYPE__ -U__PTRDIFF_TYPE__ -U__WCHAR_TYPE__ -E \
 	  | sed -e 's/	/ /g' -e 's/ *(/ (/g' -e 's/ [ ]*/ /g' -e 's/( )/()/' \
-	  | ./gen-protos >xsys-protos.hT
+	  | $(RUN_GEN) ./gen-protos >xsys-protos.hT
 	mv xsys-protos.hT xsys-protos.h
 	rm -rf fixtmp.c
 

@@ -27,6 +27,12 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "intl.h"
 #include "mkdeps.h"
 #include "splay-tree.h"
+#ifdef ENABLE_VALGRIND_CHECKING
+#include <valgrind.h>
+#else
+/* Avoid #ifdef:s when we can help it.  */
+#define VALGRIND_DISCARD(x)
+#endif
 
 #ifdef HAVE_MMAP_FILE
 # include <sys/mman.h>
@@ -417,6 +423,11 @@ read_include_file (pfile, inc)
 	  buf = (uchar *) mmap (0, size, PROT_READ, MAP_PRIVATE, inc->fd, 0);
 	  if (buf == (uchar *) -1)
 	    goto perror_fail;
+
+	  /* We must tell Valgrind that the byte at buf[size] is actually
+	     readable.  Discard the handle to avoid handle leak.  */
+	  VALGRIND_DISCARD (VALGRIND_MAKE_READABLE (buf + size, 1));
+
 	  inc->mapped = 1;
 	}
       else
@@ -497,7 +508,14 @@ purge_cache (inc)
     {
 #if MMAP_THRESHOLD
       if (inc->mapped)
-	munmap ((PTR) inc->buffer, inc->st.st_size);
+	{
+	  /* Undo the previous annotation for the
+	     known-zero-byte-after-mmap.  Discard the handle to avoid
+	     handle leak.  */
+	  VALGRIND_DISCARD (VALGRIND_MAKE_NOACCESS (inc->buffer
+						    + inc->st.st_size, 1));
+	  munmap ((PTR) inc->buffer, inc->st.st_size);
+	}
       else
 #endif
 	free ((PTR) inc->buffer);

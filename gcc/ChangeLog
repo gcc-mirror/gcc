@@ -1,3 +1,23 @@
+2002-11-20  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* Makefile.in (RUN_GEN, VALGRIND_DRIVER_DEFINES): New variables.
+	(DRIVER_DEFINES): Add $(VALGRIND_DRIVER_DEFINES).
+	(executing gencheck, genconfigs, genconditions, genflags,
+	gencodes, genconstants, genemit, genrecog, genopinit, genextract,
+	genpeep, genattr, genattrtab, genoutput, gengenrtl, genpreds,
+	gengtype, genprotos): Prepend $(RUN_GEN).
+	* configure.in: Move host compiler tests before --enable-checking
+	tests.
+	(--enable-checking=valgrind): New.
+	* config.in, configure: Regenerate.
+	* cppfiles.c [!ENABLE_VALGRIND_CHECKING] (VALGRIND_DISCARD):
+	Define as empty.
+	(read_include_file): When doing the mmap+1 trick,
+	valgrind-annotate the byte after the mmap:ed area as readable.
+	(purge_cache): Remove above annotation.
+	* gcc.c (execute) [ENABLE_VALGRIND_CHECKING]: Arrange to prepend
+	VALGRIND_PATH -q to each command.
+
 2002-11-20  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* recog.c (constrain_operands): Prefer exact match over reloadable
