@@ -1,3 +1,8 @@
+2002-02-18  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_emit_prologue): Do not set the
+	frame_related flag for call-clobbered registers.
+
 Mon Feb 18 15:07:35 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (classify_argument): Properly classify SSE/MMX modes and VOIDmode.
