@@ -3955,7 +3955,7 @@ build_abbrev_table (die)
 	{
 	  n_alloc = abbrev_die_table_allocated + ABBREV_DIE_TABLE_INCREMENT;
 	  abbrev_die_table 
-	    = (dw_die_ref *) xmalloc (abbrev_die_table,
+	    = (dw_die_ref *) xrealloc (abbrev_die_table,
 				      sizeof (dw_die_ref) * n_alloc);
 
 	  bzero ((char *) &abbrev_die_table[abbrev_die_table_allocated],

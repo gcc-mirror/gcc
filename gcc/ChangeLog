@@ -1,3 +1,8 @@
+Fri Aug 29 09:33:20 1997  Philipp Thomas  (kthomas@lxi165.gwdg.de)
+
+	* dwarfout2.c (build_abbrev_table): Use xrealloc, not xmalloc
+	to reallocate abbrev_die_table.
+
 Thu Aug 28 15:14:46 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* m68k/m68k.md (iorsi_zexthi_ashl16): Disable.
