@@ -710,12 +710,22 @@ i386_pe_asm_named_section (const char *name, unsigned int flags)
 {
   char flagchars[8], *f = flagchars;
 
-  if (flags & SECTION_CODE)
-    *f++ = 'x';
-  if (flags & SECTION_WRITE)
-    *f++ = 'w';
-  if (flags & SECTION_PE_SHARED)
-    *f++ = 's';
+  if ((flags & (SECTION_CODE | SECTION_WRITE)) == 0)
+    /* readonly data */
+    {
+      *f++ ='d';  /* This is necessary for older versions of gas.  */
+      *f++ ='r';
+    }
+  else	
+  {
+    if (flags & SECTION_CODE)
+      *f++ = 'x';
+    if (flags & SECTION_WRITE)
+      *f++ = 'w';
+    if (flags & SECTION_PE_SHARED)
+      *f++ = 's';
+  }
+
   *f = '\0';
 
   fprintf (asm_out_file, "\t.section\t%s,\"%s\"\n", name, flagchars);
