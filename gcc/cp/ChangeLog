@@ -1,3 +1,9 @@
+2002-03-22  Jeff Knaggs  <jknaggs@redhat.com>
+
+	* typeck.c (expand_ptrmemfunc_cst): Scale idx down to an index
+	into the vtable_entry array regardless of
+	TARGET_PTRMEMFUNC_VBIT_LOCATION.
+
 2002-03-21  Aldy Hernandez  <aldyh@redhat.com>
 
         * tree.c (cp_cannot_inline_tree_fn): Same.
