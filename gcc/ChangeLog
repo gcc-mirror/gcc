@@ -1,3 +1,8 @@
+2003-04-01  Dale Johannesen  <dalej@apple.com>
+
+        * cse.c (count_reg_usage): Fix handling of REG_EQUAL notes.
+        (Zdenek Dvorak's fix from 3.4 branch)
+
 2003-04-01  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_fixup_clobbered_return_reg):

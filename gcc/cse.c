@@ -7493,6 +7493,7 @@ count_reg_usage (x, counts, dest, incr)
      int incr;
 {
   enum rtx_code code;
+  rtx note;
   const char *fmt;
   int i, j;
 
@@ -7527,15 +7528,8 @@ count_reg_usage (x, counts, dest, incr)
       /* Unless we are setting a REG, count everything in SET_DEST.  */
       if (GET_CODE (SET_DEST (x)) != REG)
 	count_reg_usage (SET_DEST (x), counts, NULL_RTX, incr);
-
-      /* If SRC has side-effects, then we can't delete this insn, so the
-	 usage of SET_DEST inside SRC counts.
-
-	 ??? Strictly-speaking, we might be preserving this insn
-	 because some other SET has side-effects, but that's hard
-	 to do and can't happen now.  */
       count_reg_usage (SET_SRC (x), counts,
-		       side_effects_p (SET_SRC (x)) ? NULL_RTX : SET_DEST (x),
+		       SET_DEST (x),
 		       incr);
       return;
 
@@ -7550,16 +7544,13 @@ count_reg_usage (x, counts, dest, incr)
       /* Things used in a REG_EQUAL note aren't dead since loop may try to
 	 use them.  */
 
-      count_reg_usage (REG_NOTES (x), counts, NULL_RTX, incr);
+      note = find_reg_equal_equiv_note (x);
+      if (note)
+        count_reg_usage (XEXP (note, 0), counts, NULL_RTX, incr);
       return;
 
-    case EXPR_LIST:
     case INSN_LIST:
-      if (REG_NOTE_KIND (x) == REG_EQUAL
-	  || (REG_NOTE_KIND (x) != REG_NONNEG && GET_CODE (XEXP (x,0)) == USE))
-	count_reg_usage (XEXP (x, 0), counts, NULL_RTX, incr);
-      count_reg_usage (XEXP (x, 1), counts, NULL_RTX, incr);
-      return;
+      abort ();
 
     default:
       break;
