@@ -1,3 +1,38 @@
+2000-09-06  Bernd Schmidt  <bernds@redhat.co.uk>
+	
+	* Makefile.in (cse.o): Depend on $(BASIC_BLOCK_H).
+	* cse.c: Include "basic-block.h".
+	(struct table_elt): New field REGCOST.
+	(CHEAP_REG): Delete macro.
+	(COST): Return 0 for REGs.
+	(approx_reg_cost_1, approx_reg_cost, preferrable): New functions.
+	(notreg_cost): Return 0 for appropriate SUBREGs.
+	(COSTS_N_INSNS): Return N * 2.
+	(rtx_cost): Return 0 for REGs, and use cost of nested rtx for cheap
+	SUBREGs.
+	(CHEAPER): Use new function preferrable.
+	(insert): Initialize REGCOST member.
+	(find_best_addr): Use approx_reg_cost for estimation of register
+	usage.
+	(cse_insn): Likewise.
+	* loop.c (iv_add_mult_cost): New function.
+	(add_cost, shift_cost, mult_cost): Delete variables.
+	(init_loop): Don't initialize add_cost; reduce copy_cost by half.
+	(strength_reduce): Use iv_add_mult_cost instead of fixed add_cost.
+	Make code that detects autoinc opportunities slightly less optimistic.
+	(simplify_giv_expr): If expression contains other reg that is also a
+	giv, only increment benefit if this is the only use of that reg.
+	(consec_sets_giv): Take that change into account.
+	(combine_givs): Slightly more verbose output.
+
+	* i386.h (RTX_COSTS): For MULT, return true cost of multiplication,
+	not the cost of an equivalent shift.
+	* sh-protos.h (addsubcosts): Declare.
+	* sh.c (addsubcosts): New function.
+	* sh.h (CONST_COSTS): If CONST_OK_FOR_I, then return 0.
+	(RTX_COSTS): Tweak.  Use addsubcosts.
+	(ADDRESS_COST): Return higher cost for reg+reg addressing.
+
 2000-09-06  Geoff Keating  <geoffk@cygnus.com>
 
 	* config/rs6000/rs6000.c (validate_condition_mode): New function.

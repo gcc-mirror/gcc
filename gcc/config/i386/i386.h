@@ -1978,22 +1978,14 @@ while (0)
 	unsigned HOST_WIDE_INT value = INTVAL (XEXP (X, 1));		\
 	int nbits = 0;							\
 									\
-	if (value == 2)							\
-	  TOPLEVEL_COSTS_N_INSNS (ix86_cost->add);			\
-	if (value == 4 || value == 8)					\
-	  TOPLEVEL_COSTS_N_INSNS (ix86_cost->lea);			\
-									\
 	while (value != 0)						\
 	  {								\
 	    nbits++;							\
 	    value >>= 1;						\
 	  } 								\
 									\
-	if (nbits == 1)							\
-	  TOPLEVEL_COSTS_N_INSNS (ix86_cost->shift_const);		\
-	else								\
-	  TOPLEVEL_COSTS_N_INSNS (ix86_cost->mult_init			\
-			          + nbits * ix86_cost->mult_bit);	\
+	TOPLEVEL_COSTS_N_INSNS (ix86_cost->mult_init			\
+			        + nbits * ix86_cost->mult_bit);		\
       }									\
     else			/* This is arbitrary */			\
       TOPLEVEL_COSTS_N_INSNS (ix86_cost->mult_init			\

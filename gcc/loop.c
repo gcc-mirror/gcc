@@ -312,6 +312,7 @@ static void try_swap_copy_prop PARAMS ((const struct loop *, rtx,
 static int replace_label PARAMS ((rtx *, void *));
 static rtx check_insn_for_givs PARAMS((struct loop *, rtx, int, int));
 static rtx check_insn_for_bivs PARAMS((struct loop *, rtx, int, int));
+static int iv_add_mult_cost PARAMS ((rtx, rtx, rtx, rtx));
 
 static void loop_dump_aux PARAMS ((const struct loop *, FILE *, int));
 void debug_loop PARAMS ((const struct loop *));
@@ -341,13 +342,6 @@ static int compute_luids PARAMS ((rtx, rtx, int));
 static int biv_elimination_giv_has_0_offset PARAMS ((struct induction *,
 						   struct induction *, rtx));
 
-/* Relative gain of eliminating various kinds of operations.  */
-static int add_cost;
-#if 0
-static int shift_cost;
-static int mult_cost;
-#endif
-
 /* Benefit penalty, if a giv is not replaceable, i.e. must emit an insn to
    copy the value of the strength reduced giv to its original register.  */
 static int copy_cost;
@@ -361,15 +355,9 @@ init_loop ()
   char *free_point = (char *) oballoc (1);
   rtx reg = gen_rtx_REG (word_mode, LAST_VIRTUAL_REGISTER + 1);
 
-  add_cost = rtx_cost (gen_rtx_PLUS (word_mode, reg, reg), SET);
-
   reg_address_cost = address_cost (reg, SImode);
 
-  /* We multiply by 2 to reconcile the difference in scale between
-     these two ways of computing costs.  Otherwise the cost of a copy
-     will be far less than the cost of an add.  */
-
-  copy_cost = 2 * 2;
+  copy_cost = 2;
 
   /* Free the objects we just allocated.  */
   obfree (free_point);
@@ -3825,6 +3813,7 @@ strength_reduce (loop, insn_count, flags)
   rtx loop_start = loop->start;
   rtx loop_end = loop->end;
   rtx loop_scan_start = loop->scan_start;
+  rtx test_reg = gen_rtx_REG (word_mode, LAST_VIRTUAL_REGISTER + 1);
 
   VARRAY_INT_INIT (reg_iv_type, max_reg_before_loop, "reg_iv_type");
   VARRAY_GENERIC_PTR_INIT (reg_iv_info, max_reg_before_loop, "reg_iv_info");
@@ -4436,11 +4425,15 @@ strength_reduce (loop, insn_count, flags)
       for (v = bl->giv; v; v = v->next_iv)
 	{
 	  struct induction *tv;
+	  int add_cost;
 
 	  if (v->ignore || v->same)
 	    continue;
 
 	  benefit = v->benefit;
+	  PUT_MODE (test_reg, v->mode);
+	  add_cost = iv_add_mult_cost (bl->biv->add_val, v->mult_val,
+				       test_reg, test_reg);
 
 	  /* Reduce benefit if not replaceable, since we will insert
 	     a move-insn to replace the insn that calculates this giv.
@@ -4457,7 +4450,14 @@ strength_reduce (loop, insn_count, flags)
 	    benefit -= copy_cost;
 
 	  /* Decrease the benefit to count the add-insns that we will
-	     insert to increment the reduced reg for the giv.  */
+	     insert to increment the reduced reg for the giv.
+	     ??? This can overestimate the run-time cost of the additional
+	     insns, e.g. if there are multiple basic blocks that increment
+	     the biv, but only one of these blocks is executed during each
+	     iteration.  There is no good way to detect cases like this with
+	     the current structure of the loop optimizer.
+	     This code is more accurate for determining code size than
+	     run-time benefits.  */
 	  benefit -= add_cost * bl->biv_count;
 
 	  /* Decide whether to strength-reduce this giv or to leave the code
@@ -4469,6 +4469,10 @@ strength_reduce (loop, insn_count, flags)
 	     new add insns; if so, increase BENEFIT (undo the subtraction of
 	     add_cost that was done above).  */
 	  if (v->giv_type == DEST_ADDR
+	      /* Increasing the benefit is risky, since this is only a guess.
+		 Avoid increasing register pressure in cases where there would
+		 be no other benefit from reducing this giv.  */
+	      && benefit > 0
 	      && GET_CODE (v->mult_val) == CONST_INT)
 	    {
 	      if (HAVE_POST_INCREMENT
@@ -6439,7 +6443,20 @@ simplify_giv_expr (loop, x, benefit)
 
 	    /* Form expression from giv and add benefit.  Ensure this giv
 	       can derive another and subtract any needed adjustment if so.  */
-	    *benefit += v->benefit;
+
+	    /* Increasing the benefit here is risky.  The only case in which it
+	       is arguably correct is if this is the only use of V.  In other
+	       cases, this will artificially inflate the benefit of the current
+	       giv, and lead to suboptimal code.  Thus, it is disabled, since
+	       potentially not reducing an only marginally beneficial giv is
+	       less harmful than reducing many givs that are not really
+	       beneficial.  */
+	    {
+	      rtx single_use = VARRAY_RTX (reg_single_usage, REGNO (x));
+	      if (single_use && single_use != const0_rtx)
+		*benefit += v->benefit;
+	    }
+
 	    if (v->cant_derive)
 	      return 0;
 
@@ -6683,7 +6700,7 @@ consec_sets_giv (loop, first_benefit, p, src_reg, dest_reg,
 	  count--;
 	  v->mult_val = *mult_val;
 	  v->add_val = *add_val;
-	  v->benefit = benefit;
+	  v->benefit += benefit;
 	}
       else if (code != NOTE)
 	{
@@ -7098,8 +7115,9 @@ restart:
 
 	      if (loop_dump_stream)
 		fprintf (loop_dump_stream,
-			 "giv at %d combined with giv at %d\n",
-			 INSN_UID (g2->insn), INSN_UID (g1->insn));
+			 "giv at %d combined with giv at %d; new benefit %d + %d, lifetime %d\n",
+			 INSN_UID (g2->insn), INSN_UID (g1->insn),
+			 g1->benefit, g1_add_benefit, g1->lifetime);
 	    }
 	}
 
@@ -7612,6 +7630,34 @@ emit_iv_add_mult (b, m, a, reg, insert_before)
   else if (GET_CODE (seq) == SET
 	   && GET_CODE (SET_DEST (seq)) == REG)
     record_base_value (REGNO (SET_DEST (seq)), SET_SRC (seq), 0);
+}
+
+/* Similar to emit_iv_add_mult, but compute cost rather than emitting
+   insns.  */
+static int
+iv_add_mult_cost (b, m, a, reg)
+     rtx b;          /* initial value of basic induction variable */
+     rtx m;          /* multiplicative constant */
+     rtx a;          /* additive constant */
+     rtx reg;        /* destination register */
+{
+  int cost = 0;
+  rtx last, result;
+
+  start_sequence ();
+  result = expand_mult_add (b, reg, m, a, GET_MODE (reg), 0);
+  if (reg != result)
+    emit_move_insn (reg, result);
+  last = get_last_insn ();
+  while (last)
+    {
+      rtx t = single_set (last);
+      if (t)
+	cost += rtx_cost (SET_SRC (t), SET);
+      last = PREV_INSN (last);
+    }
+  end_sequence ();
+  return cost;
 }
 
 /* Test whether A * B can be computed without
