@@ -1923,6 +1923,8 @@ cpplib.o: cpplib.c $(CONFIG_H) cpplib.h machmode.h cpphash.h config.status \
 
 cpperror.o: cpperror.c $(CONFIG_H) cpplib.h machmode.h system.h
 
+cppulp.o: cppulp.c $(CONFIG_H) system.h output.h
+
 cppexp.o: cppexp.c $(CONFIG_H) cpplib.h machmode.h system.h
 
 cppfiles.o: cppfiles.c $(CONFIG_H) cpplib.h machmode.h system.h
