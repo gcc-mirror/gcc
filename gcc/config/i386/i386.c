@@ -15662,7 +15662,7 @@ k8_avoid_jump_misspredicts ()
 
       nbytes += min_insn_size (insn);
       if (rtl_dump_file)
-        fprintf(stderr,"Insn %i estimated to %i bytes\n",
+        fprintf(rtl_dump_file, "Insn %i estimated to %i bytes\n",
 		INSN_UID (insn), min_insn_size (insn));
       if ((GET_CODE (insn) == JUMP_INSN
 	   && GET_CODE (PATTERN (insn)) != ADDR_VEC
