@@ -7688,7 +7688,6 @@ package body Sem_Ch12 is
           or else
             Ekind (Get_Instance_Of (A_Gen_T)) = E_Record_Type_With_Private
          then
-
             --  Check whether the parent is another derived formal type
             --  in the same generic unit.
 
@@ -7697,19 +7696,19 @@ package body Sem_Ch12 is
               and then Scope (Etype (A_Gen_T)) = Scope (A_Gen_T)
               and then Etype (Etype (A_Gen_T)) /= Etype (A_Gen_T)
             then
-
                --  Locate ancestor of parent from the subtype declaration
                --  created for the actual.
 
                declare
                   Decl : Node_Id;
+
                begin
                   Decl := First (Actual_Decls);
 
                   while (Present (Decl)) loop
                      if Nkind (Decl) = N_Subtype_Declaration
-                       and then Chars (Defining_Identifier (Decl))
-                         = Chars (Etype (A_Gen_T))
+                       and then Chars (Defining_Identifier (Decl)) =
+                                                    Chars (Etype (A_Gen_T))
                      then
                         Ancestor := Generic_Parent_Type (Decl);
                         exit;

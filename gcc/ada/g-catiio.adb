@@ -44,7 +44,7 @@ package body GNAT.Calendar.Time_IO is
 
    type Month_Name is
      (January,
-      Febuary,
+      February,
       March,
       April,
       May,

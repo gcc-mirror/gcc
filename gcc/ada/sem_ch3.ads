@@ -42,8 +42,7 @@ package Sem_Ch3  is
 
    function Access_Definition
      (Related_Nod : Node_Id;
-      N           : Node_Id)
-      return        Entity_Id;
+      N           : Node_Id) return Entity_Id;
    --  An access definition defines a general access type for a formal
    --  parameter.  The procedure is called when processing formals, when
    --  the current scope is the subprogram. The Implicit type is attached
@@ -129,10 +128,9 @@ package Sem_Ch3  is
    --  private type.
 
    function Get_Discriminant_Value
-     (Discriminant         : Entity_Id;
-      Typ_For_Constraint   : Entity_Id;
-      Constraint           : Elist_Id)
-      return                 Node_Id;
+     (Discriminant       : Entity_Id;
+      Typ_For_Constraint : Entity_Id;
+      Constraint         : Elist_Id) return Node_Id;
    --  ??? MORE DOCUMENTATION
    --  Given a discriminant somewhere in the Typ_For_Constraint tree
    --  and a Constraint, return the value of that discriminant.
@@ -195,8 +193,7 @@ package Sem_Ch3  is
      (S           : Node_Id;
       Related_Nod : Node_Id;
       Related_Id  : Entity_Id := Empty;
-      Suffix      : Character := ' ')
-      return        Entity_Id;
+      Suffix      : Character := ' ') return Entity_Id;
    --  Process a subtype indication S and return corresponding entity.
    --  Related_Nod is the node where the potential generated implicit types
    --  will be inserted. The Related_Id and Suffix parameters are used to

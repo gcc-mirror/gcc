@@ -28,6 +28,7 @@ with Ada.Exceptions;   use Ada.Exceptions;
 with Ada.Command_Line; use Ada.Command_Line;
 
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
+with GNAT.Case_Util;            use GNAT.Case_Util;
 
 with ALI;      use ALI;
 with ALI.Util; use ALI.Util;
@@ -177,6 +178,31 @@ package body Make is
      Table_Increment      => 100,
      Table_Name           => "Make.Q");
    --  This is the actual Q.
+
+
+   --  Package Mains is used to store the mains specified on the command line
+   --  and to retrieve them when a project file is used, to verify that the
+   --  files exist and that they belong to a project file.
+
+   package Mains is
+
+      --  Mains are stored in a table. An index is used to retrieve the mains
+      --  from the table.
+
+      procedure Add_Main (Name : String);
+      --  Add one main to the table
+
+      procedure Delete;
+      --  Empty the table
+
+      procedure Reset;
+      --  Reset the index to the beginning of the table
+
+      function Next_Main return String;
+      --  Increase the index and return the next main.
+      --  If table is exhausted, return an empty string.
+
+   end Mains;
 
    --  The following instantiations and variables are necessary to save what
    --  is found on the command line, in case there is a project file specified.
@@ -3340,6 +3366,147 @@ package body Make is
             if Projects.Table (Main_Project).Library then
                Make_Failed ("cannot specify a main program " &
                             "on the command line for a library project file");
+
+            else
+               --  Check that each main on the command line is a source of a
+               --  project file and, if there are several mains, each of them
+               --  is a source of the same project file.
+
+               Mains.Reset;
+
+               declare
+                  Real_Main_Project : Project_Id := No_Project;
+                  --  The project of the first main
+
+                  Proj : Project_Id := No_Project;
+                  --  The project of the current main
+
+               begin
+                  --  Check each main
+
+                  loop
+                     declare
+                        Main      : constant String := Mains.Next_Main;
+                        --  The name specified on the command line may include
+                        --  directory information.
+
+                        File_Name : constant String := Base_Name (Main);
+                        --  The simple file name of the current main main
+
+                     begin
+                        exit when Main = "";
+
+                        --  Get the project of the current main
+
+                        Proj := Prj.Env.Project_Of (File_Name, Main_Project);
+
+                        --  Fail if the current main is not a source of a
+                        --  project.
+
+                        if Proj = No_Project then
+                           Make_Failed
+                             ("""" & Main &
+                              """ is not a source of any project");
+
+                        else
+                           --  If there is directory information, check that
+                           --  the source exists and, if it does, that the path
+                           --  is the actual path of a source of a project.
+
+                           if Main /= File_Name then
+                              declare
+                                 Data : constant Project_Data :=
+                                   Projects.Table (Main_Project);
+
+                                 Project_Path : constant String :=
+                                   Prj.Env.File_Name_Of_Library_Unit_Body
+                                     (Name              => File_Name,
+                                      Project           => Main_Project,
+                                      Main_Project_Only => False,
+                                      Full_Path         => True);
+                                 Real_Path : String_Access :=
+                                   Locate_Regular_File
+                                     (Main &
+                                      Get_Name_String
+                                        (Data.Naming.Current_Body_Suffix),
+                                      "");
+                              begin
+                                 if Real_Path = null then
+                                    Real_Path :=
+                                      Locate_Regular_File
+                                        (Main &
+                                         Get_Name_String
+                                           (Data.Naming.Current_Spec_Suffix),
+                                         "");
+                                 end if;
+
+                                 if Real_Path = null then
+                                    Real_Path :=
+                                      Locate_Regular_File (Main, "");
+                                 end if;
+
+                                 --  Fail if the file cannot be found
+
+                                 if Real_Path = null then
+                                    Make_Failed
+                                      ("file """ & Main & """ does not exist");
+                                 end if;
+
+                                 declare
+                                    Normed_Path : constant String :=
+                                      Normalize_Pathname
+                                        (Real_Path.all,
+                                         Case_Sensitive => False);
+                                 begin
+                                    Free (Real_Path);
+
+                                    --  Fail if it is not the correct path
+
+                                    if Normed_Path /= Project_Path then
+                                       if Verbose_Mode then
+                                          Write_Str (Normed_Path);
+                                          Write_Str (" /= ");
+                                          Write_Line (Project_Path);
+                                       end if;
+
+                                       Make_Failed
+                                         ("""" & Main &
+                                          """ is not a source of any project");
+                                    end if;
+                                 end;
+                              end;
+                           end if;
+
+                           if not Unique_Compile then
+                              --  Record the project, if it is the first main
+
+                              if Real_Main_Project = No_Project then
+                                 Real_Main_Project := Proj;
+
+                              elsif Proj /= Real_Main_Project then
+                                 --  Fail, as the current main is not a source
+                                 --  of the same project as the first main.
+
+                                 Make_Failed
+                                   ("""" & Main &
+                                    """ is not a source of project " &
+                                    Get_Name_String
+                                      (Projects.Table
+                                         (Real_Main_Project).Name));
+                              end if;
+                           end if;
+                        end if;
+
+                        --  If -u and -U are not used, we may have mains that
+                        --  are sources of a project that is not the one
+                        --  specified with switch -P.
+
+                        if not Unique_Compile then
+                           Main_Project := Real_Main_Project;
+                        end if;
+                     end;
+                  end loop;
+               end;
             end if;
 
          --  If no mains have been specified on the command line,
@@ -3383,13 +3550,92 @@ package body Make is
                else
                   --  The attribute Main is not an empty list.
                   --  Put all the main subprograms in the list as if there
-                  --  were specified on the command line.
+                  --  were specified on the command line. However, if attribute
+                  --  Languages includes a language other than Ada, only
+                  --  include the Ada mains; if there is no Ada main, compile
+                  --  all the sources of the project.
 
-                  while Value /= Prj.Nil_String loop
-                     Get_Name_String (String_Elements.Table (Value).Value);
-                     Osint.Add_File (Name_Buffer (1 .. Name_Len));
-                     Value := String_Elements.Table (Value).Next;
-                  end loop;
+                  declare
+                     Data : Project_Data := Projects.Table (Main_Project);
+                     Languages : Variable_Value :=
+                       Prj.Util.Value_Of
+                         (Name_Languages, Data.Decl.Attributes);
+                     Current : String_List_Id;
+                     Element : String_Element;
+                     Foreign_Language  : Boolean := False;
+                     At_Least_One_Main : Boolean := False;
+
+                  begin
+                     --  First, determine if there is a foreign language in
+                     --  attribute Languages.
+
+                     if not Languages.Default then
+                        Current := Languages.Values;
+
+                        Look_For_Foreign :
+                        while Current /= Nil_String loop
+                           Element := String_Elements.Table (Current);
+                           Get_Name_String (Element.Value);
+                           To_Lower (Name_Buffer (1 .. Name_Len));
+
+                           if Name_Buffer (1 .. Name_Len) /= "ada" then
+                              Foreign_Language := True;
+                              exit Look_For_Foreign;
+                           end if;
+
+                           Current := Element.Next;
+                        end loop Look_For_Foreign;
+                     end if;
+
+                     --  The, find all mains, or if there is a foreign
+                     --  language, all the Ada mains.
+
+                     while Value /= Prj.Nil_String loop
+                        Get_Name_String (String_Elements.Table (Value).Value);
+
+                        --  To know if a main is an Ada main, get its project;
+                        --  it should be the project specified on the command
+                        --  line.
+
+                        if (not Foreign_Language) or else
+                            Prj.Env.Project_Of
+                              (Name_Buffer (1 .. Name_Len), Main_Project) =
+                             Main_Project
+                        then
+                           At_Least_One_Main := True;
+                           Osint.Add_File
+                             (Get_Name_String
+                                (String_Elements.Table (Value).Value));
+                        end if;
+
+                        Value := String_Elements.Table (Value).Next;
+                     end loop;
+
+                     --  If we did not get any main, it means that all mains
+                     --  in attribute Mains are in a foreign language. So,
+                     --  we put all sources of the main project in the Q.
+
+                     if not At_Least_One_Main then
+                        --  First make sure that the binder and the linker
+                        --  will not be invoked.
+
+                        Do_Bind_Step := False;
+                        Do_Link_Step := False;
+
+                        --  Put all the sources in the queue
+
+                        Insert_Project_Sources
+                          (The_Project  => Main_Project,
+                           All_Projects => Unique_Compile_All_Projects,
+                           Into_Q       => False);
+
+                        --  If there are no sources to compile, we fail
+
+                        if Osint.Number_Of_Files = 0 then
+                           Make_Failed ("no sources to compile");
+                        end if;
+                     end if;
+                  end;
 
                end if;
             end;
@@ -5256,6 +5502,8 @@ package body Make is
 
       RTS_Specified := null;
 
+      Mains.Delete;
+
       Next_Arg := 1;
       Scan_Args : while Next_Arg <= Argument_Count loop
          Scan_Make_Arg (Argument (Next_Arg), And_Save => True);
@@ -5849,6 +6097,68 @@ package body Make is
 
       Set_Standard_Error;
    end List_Depend;
+
+   -----------
+   -- Mains --
+   -----------
+
+   package body Mains is
+
+      package Names is new Table.Table
+        (Table_Component_Type => File_Name_Type,
+         Table_Index_Type     => Integer,
+         Table_Low_Bound      => 1,
+         Table_Initial        => 10,
+         Table_Increment      => 100,
+         Table_Name           => "Make.Mains.Names");
+      --  The table that stores the main
+
+      Current : Natural := 0;
+      --  The index of the last main retrieved from the table
+
+      --------------
+      -- Add_Main --
+      --------------
+
+      procedure Add_Main (Name : String) is
+      begin
+         Name_Len := 0;
+         Add_Str_To_Name_Buffer (Name);
+         Names.Increment_Last;
+         Names.Table (Names.Last) := Name_Find;
+      end Add_Main;
+
+      ------------
+      -- Delete --
+      ------------
+
+      procedure Delete is
+      begin
+         Names.Set_Last (0);
+         Reset;
+      end Delete;
+
+      ---------------
+      -- Next_Main --
+      ---------------
+
+      function Next_Main return String is
+      begin
+         if Current >= Names.Last then
+            return "";
+
+         else
+            Current := Current + 1;
+            return Get_Name_String (Names.Table (Current));
+         end if;
+      end Next_Main;
+
+      procedure Reset is
+      begin
+         Current := 0;
+      end Reset;
+
+   end Mains;
 
    ----------
    -- Mark --
@@ -6521,6 +6831,7 @@ package body Make is
 
       else
          Add_File (Argv);
+         Mains.Add_Main (Argv);
       end if;
    end Scan_Make_Arg;
 

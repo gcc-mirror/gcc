@@ -1060,7 +1060,8 @@ package body Prj.Env is
    function File_Name_Of_Library_Unit_Body
      (Name              : String;
       Project           : Project_Id;
-      Main_Project_Only : Boolean := True)
+      Main_Project_Only : Boolean := True;
+      Full_Path         : Boolean := False)
       return              String
    is
       The_Project   : Project_Id := Project;
@@ -1151,7 +1152,13 @@ package body Prj.Env is
                            Write_Line ("   OK");
                         end if;
 
-                        return Get_Name_String (Current_Name);
+                        if Full_Path then
+                           return Get_Name_String
+                             (Unit.File_Names (Body_Part).Path);
+
+                        else
+                           return Get_Name_String (Current_Name);
+                        end if;
 
                         --  If it has the name of the extended body name,
                         --  return the extended body name
@@ -1161,7 +1168,13 @@ package body Prj.Env is
                            Write_Line ("   OK");
                         end if;
 
-                        return Extended_Body_Name;
+                        if Full_Path then
+                           return Get_Name_String
+                             (Unit.File_Names (Body_Part).Path);
+
+                        else
+                           return Extended_Body_Name;
+                        end if;
 
                      else
                         if Current_Verbosity = High then
@@ -1202,7 +1215,14 @@ package body Prj.Env is
                            Write_Line ("   OK");
                         end if;
 
-                        return Get_Name_String (Current_Name);
+
+                        if Full_Path then
+                           return Get_Name_String
+                             (Unit.File_Names (Specification).Path);
+
+                        else
+                           return Get_Name_String (Current_Name);
+                        end if;
 
                         --  If it has the same name as the extended spec name,
                         --  return the extended spec name.
@@ -1212,7 +1232,13 @@ package body Prj.Env is
                            Write_Line ("   OK");
                         end if;
 
-                        return Extended_Spec_Name;
+                        if Full_Path then
+                           return Get_Name_String
+                             (Unit.File_Names (Specification).Path);
+
+                        else
+                           return Extended_Spec_Name;
+                        end if;
 
                      else
                         if Current_Verbosity = High then
@@ -1700,6 +1726,101 @@ package body Prj.Env is
 
       Write_Line ("end of List of Sources.");
    end Print_Sources;
+
+   ----------------
+   -- Project_Of --
+   ----------------
+
+   function Project_Of
+     (Name         : String;
+      Main_Project : Project_Id)
+      return         Project_Id
+   is
+      Result : Project_Id := No_Project;
+
+      Original_Name : String := Name;
+
+      Data : constant Project_Data := Projects.Table (Main_Project);
+
+      Extended_Spec_Name : String :=
+                             Name & Namet.Get_Name_String
+                                      (Data.Naming.Current_Spec_Suffix);
+      Extended_Body_Name : String :=
+                             Name & Namet.Get_Name_String
+                                      (Data.Naming.Current_Body_Suffix);
+
+      Unit : Unit_Data;
+
+      Current_Name : Name_Id;
+
+      The_Original_Name : Name_Id;
+      The_Spec_Name     : Name_Id;
+      The_Body_Name     : Name_Id;
+
+   begin
+      Canonical_Case_File_Name (Original_Name);
+      Name_Len := Original_Name'Length;
+      Name_Buffer (1 .. Name_Len) := Original_Name;
+      The_Original_Name := Name_Find;
+
+      Canonical_Case_File_Name (Extended_Spec_Name);
+      Name_Len := Extended_Spec_Name'Length;
+      Name_Buffer (1 .. Name_Len) := Extended_Spec_Name;
+      The_Spec_Name := Name_Find;
+
+      Canonical_Case_File_Name (Extended_Body_Name);
+      Name_Len := Extended_Body_Name'Length;
+      Name_Buffer (1 .. Name_Len) := Extended_Body_Name;
+      The_Body_Name := Name_Find;
+
+      for Current in reverse Units.First .. Units.Last loop
+         Unit := Units.Table (Current);
+
+         --  Check for body
+         Current_Name := Unit.File_Names (Body_Part).Name;
+         --  Case of a body present
+
+         if Current_Name /= No_Name then
+            --  If it has the name of the original name or the body name,
+            --  we have found the project.
+
+            if Unit.Name = The_Original_Name
+              or else Current_Name = The_Original_Name
+              or else Current_Name = The_Body_Name
+            then
+               Result := Unit.File_Names (Body_Part).Project;
+               exit;
+            end if;
+         end if;
+
+         --  Check for spec
+
+         Current_Name := Unit.File_Names (Specification).Name;
+
+         if Current_Name /= No_Name then
+            --  If name same as the original name, or the spec name, we have
+            --  found the project.
+
+            if Unit.Name = The_Original_Name
+              or else Current_Name = The_Original_Name
+              or else Current_Name = The_Spec_Name
+            then
+               Result := Unit.File_Names (Specification).Project;
+               exit;
+            end if;
+         end if;
+      end loop;
+
+      --  Get the ultimate extending project
+
+      if Result /= No_Project then
+         while Projects.Table (Result).Extended_By /= No_Project loop
+            Result := Projects.Table (Result).Extended_By;
+         end loop;
+      end if;
+
+      return Result;
+   end Project_Of;
 
    -------------------
    -- Set_Ada_Paths --
