@@ -1,3 +1,7 @@
+Mon Nov 23 16:48:39 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	*  configure.in: Use AC_PREREQ(2.12.1).
+
 Fri Nov 20 18:48:34 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* basicio.c (PATH_MAX): Define only to _POSIX_PATH_MAX if that is
