@@ -1019,7 +1019,7 @@ dbxout_type (type, full, show_arg_types)
 	  fprintf (asmfile, "r%d;%d;0;",
 		   TYPE_SYMTAB_ADDRESS (type),
 		   TREE_INT_CST_LOW (size_in_bytes (TREE_TYPE (type))));
-	  CHARS (15);		/* The number is propably incorrect here */
+	  CHARS (15);		/* The number is probably incorrect here.  */
 	} else
 	  abort (); /* What to do with CSImode complex? */
       break;
