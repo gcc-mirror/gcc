@@ -1,5 +1,10 @@
 2001-02-12  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* typeck2.c (process_init_constructor): Check
+	TREE_HAS_CONSTRUCTOR before issuing missing init warning.
+
+2001-02-12  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* pt.c (maybe_adjust_types_for_deduction, DEDUCE_ORDER case):
 	Remove spurious information in comment. Allow further
 	adjustments of REFERENCE_TYPE args.
