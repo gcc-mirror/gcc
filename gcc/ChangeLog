@@ -1,5 +1,10 @@
 Wed Sep 20 15:39:14 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* gcc.c (modify_target): New variable and struct.
+	(process_command): Handle MODIFY_TARGET_NAME.
+	* tm.texi (MODIFY_TARGET_NAME): Add documentation for new macro.
+	* config/pa/pa.h (MODIFY_TARGET_NAME): New macro.
+
 	* c-decl.c (finish_decl): Add else's to avoid referencing
 	TYPE_DOMAIN of an ERROR_MARK.
 

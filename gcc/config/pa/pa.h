@@ -326,6 +326,15 @@ extern int target_flags;
 #define LIB_SPEC "%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}"
 #endif
 
+/* This macro defines command-line switches that modify the default
+   target name.
+
+   The definition is be an initializer for an array of structures.  Each
+   array element has have three elements: the switch name, one of the
+   enumeration codes ADD or DELETE to indicate whether the string should be
+   inserted or deleted, and the string to be inserted or deleted. */
+#define MODIFY_TARGET_NAME {{"-32", DELETE, "64"}, {"-64", ADD, "64"}}
+
 /* Make gcc agree with <machine/ansi.h> */
 
 #define SIZE_TYPE "unsigned int"
