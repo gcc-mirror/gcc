@@ -1,3 +1,8 @@
+2001-04-26  Andrew Haley  <aph@cambridge.redhat.com>
+
+	* except.c (expand_eh_region_end_cleanup): Force pending stack
+	adjust before emitting label that branches around cleanup code. 
+
 2001-04-26  H.J. Lu  (hjl@gnu.org)
 
 	* config.gcc (mips*-*-linux*): Add elfos.h to tm_file.

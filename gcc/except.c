@@ -750,6 +750,9 @@ expand_eh_region_end_cleanup (handler)
   if (protect_cleanup_actions)
     expand_eh_region_end_must_not_throw (protect_cleanup_actions);
 
+  /* We need any stack adjustment complete before the around_label.  */
+  do_pending_stack_adjust ();
+
   /* We delay the generation of the _Unwind_Resume until we generate
      landing pads.  We emit a marker here so as to get good control
      flow data in the meantime.  */
