@@ -2,6 +2,10 @@
 
 	* include/bits/stl_pair.h:  Tweak comment markup.
 
+2002-05-21  Phil Edwards  <pme@gcc.gnu.org>
+
+	* include/ext/stdio_filebuf.h:  Add header guards.  Doxygenate.
+
 2002-05-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in (AC_CHECK_HEADERS): Check for string.h & stdlib.h.

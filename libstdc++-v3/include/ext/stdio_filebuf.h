@@ -27,10 +27,27 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+/** @file ext/stdio_filebuf.h
+ *  This file is a GNU extension to the Standard C++ Library.
+ */
+
+#ifndef _EXT_STDIO_FILEBUF
+#define _EXT_STDIO_FILEBUF
+
+#pragma GCC system_header
 #include <fstream>
 
 namespace __gnu_cxx
 {
+  /**
+   *  @class stdio_filebuf ext/stdio_filebuf.h <ext/stdio_filebuf.h>
+   *  @brief Provides a layer of compatibility for C/POSIX.
+   *
+   *  This GNU extension provides extensions for working with standard C
+   *  FILE*'s and POSIX file descriptors.  It must be instantiated by the
+   *  user with the type of character used in the file stream, e.g.,
+   *  stdio_filebuf<char>.
+  */
   template<typename _CharT, typename _Traits = std::char_traits<_CharT> >
     class stdio_filebuf : public std::basic_filebuf<_CharT, _Traits>
     {
@@ -47,15 +64,47 @@ namespace __gnu_cxx
       char_type			_M_unbuf[4];
       
     public:
+      /**
+       *  @param  fd  An open file descriptor.
+       *  @param  mode  Same meaning as in a standard filebuf.
+       *  @param  del  Whether to close the file on destruction.
+       *  @param  size  Optimal or preferred size of internal buffer, in bytes.
+       *
+       *  This constructor associates a file stream buffer with an open
+       *  POSIX file descriptor.  Iff @a del is true, then the associated
+       *  file will be closed when the stdio_filebuf is closed/destroyed.
+      */
       stdio_filebuf(int __fd, std::ios_base::openmode __mode, bool __del, 
 		    int_type __size);
 
+      /**
+       *  @param  f  An open @c FILE*.
+       *  @param  mode  Same meaning as in a standard filebuf.
+       *  @param  size  Optimal or preferred size of internal buffer, in bytes.
+       *                Defaults to system's @c BUFSIZ.
+       *
+       *  This constructor associates a file stream buffer with an open
+       *  C @c FILE*.  The @c FILE* will not be automatically closed when the
+       *  stdio_filebuf is closed/destroyed.
+      */
       stdio_filebuf(std::__c_file* __f, std::ios_base::openmode __mode, 
 		    int_type __size = static_cast<int_type>(BUFSIZ));
 
+      /**
+       *  Possibly closes the external data stream, in the case of the file
+       *  descriptor constructor and @c del @c == @c true.
+      */
       virtual
       ~stdio_filebuf();
 
+      /**
+       *  @return  The underlying file descriptor.
+       *
+       *  Once associated with an external data stream, this function can be
+       *  used to access the underlying POSIX file descriptor.  Note that
+       *  there is no way for the library to track what you do with the
+       *  descriptor, so be careful.
+      */
       int
       fd()
       { return _M_file.fd(); }
@@ -111,3 +160,5 @@ namespace __gnu_cxx
 	}
     }
 } // namespace __gnu_cxx
+
+#endif /* _EXT_STDIO_FILEBUF */
