@@ -79,53 +79,52 @@ enum bitmap_bits {
 extern bitmap_element bitmap_zero_bits;	/* Zero bitmap element */
 
 /* Clear a bitmap by freeing up the linked list.  */
-extern void bitmap_clear PARAMS ((bitmap));
+extern void bitmap_clear (bitmap);
 
 /* Copy a bitmap to another bitmap.  */
-extern void bitmap_copy PARAMS ((bitmap, bitmap));
+extern void bitmap_copy (bitmap, bitmap);
 
 /* True if two bitmaps are identical.  */
-extern int bitmap_equal_p PARAMS ((bitmap, bitmap));
+extern int bitmap_equal_p (bitmap, bitmap);
 
 /* Perform an operation on two bitmaps, yielding a third.  */
-extern int bitmap_operation PARAMS ((bitmap, bitmap, bitmap, enum bitmap_bits));
+extern int bitmap_operation (bitmap, bitmap, bitmap, enum bitmap_bits);
 
 /* `or' into one bitmap the `and' of a second bitmap witih the complement
    of a third.  */
-extern void bitmap_ior_and_compl PARAMS ((bitmap, bitmap, bitmap));
+extern void bitmap_ior_and_compl (bitmap, bitmap, bitmap);
 
 /* Clear a single register in a register set.  */
-extern void bitmap_clear_bit PARAMS ((bitmap, int));
+extern void bitmap_clear_bit (bitmap, int);
 
 /* Set a single register in a register set.  */
-extern void bitmap_set_bit PARAMS ((bitmap, int));
+extern void bitmap_set_bit (bitmap, int);
 
 /* Return true if a register is set in a register set.  */
-extern int bitmap_bit_p PARAMS ((bitmap, int));
+extern int bitmap_bit_p (bitmap, int);
 
 /* Debug functions to print a bitmap linked list.  */
-extern void debug_bitmap PARAMS ((bitmap));
-extern void debug_bitmap_file PARAMS ((FILE *, bitmap));
+extern void debug_bitmap (bitmap);
+extern void debug_bitmap_file (FILE *, bitmap);
 
 /* Print a bitmap */
-extern void bitmap_print PARAMS ((FILE *, bitmap, const char *, const char *));
+extern void bitmap_print (FILE *, bitmap, const char *, const char *);
 
 /* Initialize a bitmap header.  If HEAD is NULL, a new header will be
    allocated.  USING_OBSTACK indicates how elements should be allocated.  */
-extern bitmap bitmap_initialize PARAMS ((bitmap head, 
-					 int using_obstack));
+extern bitmap bitmap_initialize (bitmap head, int using_obstack);
 
 /* Release all memory used by the bitmap obstack.  */
-extern void bitmap_release_memory PARAMS ((void));
+extern void bitmap_release_memory (void);
 
 /* A few compatibility/functions macros for compatibility with sbitmaps */
 #define dump_bitmap(file, bitmap) bitmap_print (file, bitmap, "", "\n")
 #define bitmap_zero(a) bitmap_clear (a)
 #define bitmap_a_or_b(a,b,c) bitmap_operation (a, b, c, BITMAP_IOR)
 #define bitmap_a_and_b(a,b,c) bitmap_operation (a, b, c, BITMAP_AND)
-extern int bitmap_union_of_diff PARAMS((bitmap, bitmap, bitmap, bitmap));
-extern int bitmap_first_set_bit PARAMS((bitmap));
-extern int bitmap_last_set_bit PARAMS((bitmap));
+extern int bitmap_union_of_diff (bitmap, bitmap, bitmap, bitmap);
+extern int bitmap_first_set_bit (bitmap);
+extern int bitmap_last_set_bit (bitmap);
 
 /* Allocate a bitmap with oballoc.  */
 #define BITMAP_OBSTACK_ALLOC(OBSTACK)				\
@@ -249,7 +248,7 @@ do {									\
 	ptr2_ = ptr2_->next;						\
 									\
       tmp2_ = ((ptr2_ != 0 && ptr2_->indx == ptr1_->indx)		\
-	       ? ptr2_ : &bitmap_zero_bits); 				\
+	       ? ptr2_ : &bitmap_zero_bits);				\
 									\
       for (; word_num_ < BITMAP_ELEMENT_WORDS; word_num_++)		\
 	{								\

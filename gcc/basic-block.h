@@ -542,7 +542,6 @@ extern bool probably_never_executed_bb_p PARAMS ((basic_block));
 
 /* In flow.c */
 extern void init_flow                   PARAMS ((void));
-extern void reorder_basic_blocks	PARAMS ((void));
 extern void dump_bb			PARAMS ((basic_block, FILE *));
 extern void debug_bb			PARAMS ((basic_block));
 extern basic_block debug_bb_n		PARAMS ((int));
@@ -618,6 +617,9 @@ extern rtx hoist_insn_after		PARAMS ((rtx, rtx, rtx, rtx));
 extern rtx hoist_insn_to_edge		PARAMS ((rtx, edge, rtx, rtx));
 extern bool inside_basic_block_p	PARAMS ((rtx));
 extern bool control_flow_insn_p		PARAMS ((rtx));
+
+/* In bb-reorder.c */
+extern void reorder_basic_blocks (void);
 
 /* In dominance.c */
 

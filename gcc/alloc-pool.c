@@ -30,7 +30,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    special abort includes one or both.  toplev.h gets too few files,
    system.h gets too many.  */
 
-extern void fancy_abort PARAMS ((const char *, int, const char *))
+extern void fancy_abort (const char *, int, const char *)
     ATTRIBUTE_NORETURN;
 #define abort() fancy_abort (__FILE__, __LINE__, __FUNCTION__)
 
@@ -80,10 +80,7 @@ static ALLOC_POOL_ID_TYPE last_id;
    allocate.  */
 
 alloc_pool
-create_alloc_pool (name, size, num)
-     const char *name;
-     size_t size;
-     size_t num;
+create_alloc_pool (const char *name, size_t size, size_t num)
 {
   alloc_pool pool;
   size_t pool_size, header_size;
@@ -143,8 +140,7 @@ create_alloc_pool (name, size, num)
 
 /* Free all memory allocated for the given memory pool.  */
 void
-free_alloc_pool (pool)
-     alloc_pool pool;
+free_alloc_pool (alloc_pool pool)
 {
   alloc_pool_list block, next_block;
 
@@ -166,8 +162,7 @@ free_alloc_pool (pool)
 
 /* Allocates one element from the pool specified.  */
 void *
-pool_alloc (pool)
-     alloc_pool pool;
+pool_alloc (alloc_pool pool)
 {
   alloc_pool_list header;
   char *block;
@@ -225,9 +220,7 @@ pool_alloc (pool)
 
 /* Puts PTR back on POOL's free list.  */
 void
-pool_free (pool, ptr)
-     alloc_pool pool;
-     void *ptr;
+pool_free (alloc_pool pool, void *ptr)
 {
   alloc_pool_list header;
 

@@ -352,25 +352,23 @@ extern rtx get_condition PARAMS ((rtx, rtx *));
 extern rtx gen_cond_trap PARAMS ((enum rtx_code, rtx, rtx, rtx));
 
 /* Functions from builtins.c:  */
-extern rtx expand_builtin PARAMS ((tree, rtx, rtx, enum machine_mode, int));
-extern void std_expand_builtin_va_start PARAMS ((tree, rtx));
-extern rtx std_expand_builtin_va_arg PARAMS ((tree, tree));
-extern rtx expand_builtin_va_arg PARAMS ((tree, tree));
-extern void default_init_builtins PARAMS ((void));
-extern rtx default_expand_builtin PARAMS ((tree, rtx, rtx,
-					   enum machine_mode, int));
-extern void expand_builtin_setjmp_setup PARAMS ((rtx, rtx));
-extern void expand_builtin_setjmp_receiver PARAMS ((rtx));
-extern void expand_builtin_longjmp PARAMS ((rtx, rtx));
-extern rtx expand_builtin_saveregs PARAMS ((void));
-extern void expand_builtin_trap PARAMS ((void));
-extern HOST_WIDE_INT get_varargs_alias_set PARAMS ((void));
-extern HOST_WIDE_INT get_frame_alias_set PARAMS ((void));
-extern void record_base_value		PARAMS ((unsigned int, rtx, int));
-extern void record_alias_subset         PARAMS ((HOST_WIDE_INT,
-						 HOST_WIDE_INT));
-extern HOST_WIDE_INT new_alias_set		PARAMS ((void));
-extern int can_address_p		PARAMS ((tree));
+extern rtx expand_builtin (tree, rtx, rtx, enum machine_mode, int);
+extern void std_expand_builtin_va_start (tree, rtx);
+extern rtx std_expand_builtin_va_arg (tree, tree);
+extern rtx expand_builtin_va_arg (tree, tree);
+extern void default_init_builtins (void);
+extern rtx default_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
+extern void expand_builtin_setjmp_setup (rtx, rtx);
+extern void expand_builtin_setjmp_receiver (rtx);
+extern void expand_builtin_longjmp (rtx, rtx);
+extern rtx expand_builtin_saveregs (void);
+extern void expand_builtin_trap (void);
+extern HOST_WIDE_INT get_varargs_alias_set (void);
+extern HOST_WIDE_INT get_frame_alias_set (void);
+extern void record_base_value (unsigned int, rtx, int);
+extern void record_alias_subset (HOST_WIDE_INT, HOST_WIDE_INT);
+extern HOST_WIDE_INT new_alias_set (void);
+extern int can_address_p (tree);
 
 /* Functions from expr.c:  */
 

@@ -46,18 +46,16 @@ bitmap_element bitmap_zero_bits;	/* An element of all zero bits.  */
 static bitmap_element *bitmap_free;	/* Freelist of bitmap elements.  */
 static GTY((deletable (""))) bitmap_element *bitmap_ggc_free;
 
-static void bitmap_elem_to_freelist	PARAMS ((bitmap, bitmap_element *));
-static void bitmap_element_free		PARAMS ((bitmap, bitmap_element *));
-static bitmap_element *bitmap_element_allocate PARAMS ((bitmap));
-static int bitmap_element_zerop		PARAMS ((bitmap_element *));
-static void bitmap_element_link		PARAMS ((bitmap, bitmap_element *));
-static bitmap_element *bitmap_find_bit	PARAMS ((bitmap, unsigned int));
+static void bitmap_elem_to_freelist (bitmap, bitmap_element *);
+static void bitmap_element_free (bitmap, bitmap_element *);
+static bitmap_element *bitmap_element_allocate (bitmap);
+static int bitmap_element_zerop (bitmap_element *);
+static void bitmap_element_link (bitmap, bitmap_element *);
+static bitmap_element *bitmap_find_bit (bitmap, unsigned int);
 
 /* Add ELEM to the appropriate freelist.  */
 static INLINE void
-bitmap_elem_to_freelist (head, elt)
-     bitmap head;
-     bitmap_element *elt;
+bitmap_elem_to_freelist (bitmap head, bitmap_element *elt)
 {
   if (head->using_obstack)
     {
@@ -75,9 +73,7 @@ bitmap_elem_to_freelist (head, elt)
    bitmap_obstack, "free" actually means "put onto the freelist".  */
 
 static INLINE void
-bitmap_element_free (head, elt)
-     bitmap head;
-     bitmap_element *elt;
+bitmap_element_free (bitmap head, bitmap_element *elt)
 {
   bitmap_element *next = elt->next;
   bitmap_element *prev = elt->prev;
@@ -105,8 +101,7 @@ bitmap_element_free (head, elt)
 /* Allocate a bitmap element.  The bits are cleared, but nothing else is.  */
 
 static INLINE bitmap_element *
-bitmap_element_allocate (head)
-     bitmap head;
+bitmap_element_allocate (bitmap head)
 {
   bitmap_element *element;
 
@@ -159,7 +154,7 @@ bitmap_element_allocate (head)
 /* Release any memory allocated by bitmaps.  */
 
 void
-bitmap_release_memory ()
+bitmap_release_memory (void)
 {
   bitmap_free = 0;
   if (bitmap_obstack_init)
@@ -172,8 +167,7 @@ bitmap_release_memory ()
 /* Return nonzero if all bits in an element are zero.  */
 
 static INLINE int
-bitmap_element_zerop (element)
-     bitmap_element *element;
+bitmap_element_zerop (bitmap_element *element)
 {
 #if BITMAP_ELEMENT_WORDS == 2
   return (element->bits[0] | element->bits[1]) == 0;
@@ -191,9 +185,7 @@ bitmap_element_zerop (element)
 /* Link the bitmap element into the current bitmap linked list.  */
 
 static INLINE void
-bitmap_element_link (head, element)
-     bitmap head;
-     bitmap_element *element;
+bitmap_element_link (bitmap head, bitmap_element *element)
 {
   unsigned int indx = element->indx;
   bitmap_element *ptr;
@@ -248,8 +240,7 @@ bitmap_element_link (head, element)
 /* Clear a bitmap by freeing the linked list.  */
 
 INLINE void
-bitmap_clear (head)
-     bitmap head;
+bitmap_clear (bitmap head)
 {
   bitmap_element *element, *next;
 
@@ -265,9 +256,7 @@ bitmap_clear (head)
 /* Copy a bitmap to another bitmap.  */
 
 void
-bitmap_copy (to, from)
-     bitmap to;
-     bitmap from;
+bitmap_copy (bitmap to, bitmap from)
 {
   bitmap_element *from_ptr, *to_ptr = 0;
 #if BITMAP_ELEMENT_WORDS != 2
@@ -316,9 +305,7 @@ bitmap_copy (to, from)
    faster.  */
 
 static INLINE bitmap_element *
-bitmap_find_bit (head, bit)
-     bitmap head;
-     unsigned int bit;
+bitmap_find_bit (bitmap head, unsigned int bit)
 {
   bitmap_element *element;
   unsigned int indx = bit / BITMAP_ELEMENT_ALL_BITS;
@@ -352,9 +339,7 @@ bitmap_find_bit (head, bit)
 /* Clear a single bit in a bitmap.  */
 
 void
-bitmap_clear_bit (head, bit)
-     bitmap head;
-     int bit;
+bitmap_clear_bit (bitmap head, int bit)
 {
   bitmap_element *ptr = bitmap_find_bit (head, bit);
 
@@ -373,9 +358,7 @@ bitmap_clear_bit (head, bit)
 /* Set a single bit in a bitmap.  */
 
 void
-bitmap_set_bit (head, bit)
-     bitmap head;
-     int bit;
+bitmap_set_bit (bitmap head, int bit)
 {
   bitmap_element *ptr = bitmap_find_bit (head, bit);
   unsigned word_num = bit / BITMAP_WORD_BITS % BITMAP_ELEMENT_WORDS;
@@ -396,9 +379,7 @@ bitmap_set_bit (head, bit)
 /* Return whether a bit is set within a bitmap.  */
 
 int
-bitmap_bit_p (head, bit)
-     bitmap head;
-     int bit;
+bitmap_bit_p (bitmap head, int bit)
 {
   bitmap_element *ptr;
   unsigned bit_num;
@@ -418,8 +399,7 @@ bitmap_bit_p (head, bit)
    if the bitmap is empty.  */
 
 int
-bitmap_first_set_bit (a)
-     bitmap a;
+bitmap_first_set_bit (bitmap a)
 {
   bitmap_element *ptr = a->first;
   BITMAP_WORD word;
@@ -471,8 +451,7 @@ bitmap_first_set_bit (a)
    if the bitmap is empty.  */
 
 int
-bitmap_last_set_bit (a)
-     bitmap a;
+bitmap_last_set_bit (bitmap a)
 {
   bitmap_element *ptr = a->first;
   BITMAP_WORD word;
@@ -524,11 +503,8 @@ bitmap_last_set_bit (a)
    a specific bit manipulation.  Return true if TO changes.  */
 
 int
-bitmap_operation (to, from1, from2, operation)
-     bitmap to;
-     bitmap from1;
-     bitmap from2;
-     enum bitmap_bits operation;
+bitmap_operation (bitmap to, bitmap from1, bitmap from2,
+		  enum bitmap_bits operation)
 {
 #define HIGHEST_INDEX (unsigned int) ~0
 
@@ -687,14 +663,12 @@ bitmap_operation (to, from1, from2, operation)
 /* Return true if two bitmaps are identical.  */
 
 int
-bitmap_equal_p (a, b)
-     bitmap a;
-     bitmap b;
+bitmap_equal_p (bitmap a, bitmap b)
 {
   bitmap_head c;
   int ret;
 
-  memset (&c, 0, sizeof (c)); 
+  memset (&c, 0, sizeof (c));
   ret = ! bitmap_operation (&c, a, b, BITMAP_XOR);
   bitmap_clear (&c);
 
@@ -705,10 +679,7 @@ bitmap_equal_p (a, b)
    bitmap FROM2.  */
 
 void
-bitmap_ior_and_compl (to, from1, from2)
-     bitmap to;
-     bitmap from1;
-     bitmap from2;
+bitmap_ior_and_compl (bitmap to, bitmap from1, bitmap from2)
 {
   bitmap_head tmp;
 
@@ -721,11 +692,7 @@ bitmap_ior_and_compl (to, from1, from2)
 }
 
 int
-bitmap_union_of_diff (dst, a, b, c)
-     bitmap dst;
-     bitmap a;
-     bitmap b;
-     bitmap c;
+bitmap_union_of_diff (bitmap dst, bitmap a, bitmap b, bitmap c)
 {
   bitmap_head tmp;
   int changed;
@@ -743,13 +710,11 @@ bitmap_union_of_diff (dst, a, b, c)
 /* Initialize a bitmap header.  */
 
 bitmap
-bitmap_initialize (head, using_obstack)
-     bitmap head;
-     int using_obstack;
+bitmap_initialize (bitmap head, int using_obstack)
 {
   if (head == NULL && ! using_obstack)
     head = ggc_alloc (sizeof (*head));
-  
+
   head->first = head->current = 0;
   head->using_obstack = using_obstack;
 
@@ -759,9 +724,7 @@ bitmap_initialize (head, using_obstack)
 /* Debugging function to print out the contents of a bitmap.  */
 
 void
-debug_bitmap_file (file, head)
-     FILE *file;
-     bitmap head;
+debug_bitmap_file (FILE *file, bitmap head)
 {
   bitmap_element *ptr;
 
@@ -806,8 +769,7 @@ debug_bitmap_file (file, head)
    of a bitmap.  */
 
 void
-debug_bitmap (head)
-     bitmap head;
+debug_bitmap (bitmap head)
 {
   debug_bitmap_file (stdout, head);
 }
@@ -816,11 +778,7 @@ debug_bitmap (head)
    it does not print anything but the bits.  */
 
 void
-bitmap_print (file, head, prefix, suffix)
-     FILE *file;
-     bitmap head;
-     const char *prefix;
-     const char *suffix;
+bitmap_print (FILE *file, bitmap head, const char *prefix, const char *suffix)
 {
   const char *comma = "";
   int i;
