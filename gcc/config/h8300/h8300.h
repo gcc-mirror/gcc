@@ -322,14 +322,18 @@ do {				\
 /* The h8 has only one kind of register, but we mustn't do byte by
    byte operations on the sp, so we keep it as a different class */
 
-enum reg_class { NO_REGS,  LONG_REGS, GENERAL_REGS, SP_REG, SP_AND_G_REG, ALL_REGS, LIM_REG_CLASSES };
+enum reg_class {
+  NO_REGS, LONG_REGS, GENERAL_REGS, SP_REG, SP_AND_G_REGS,
+  ALL_REGS, LIM_REG_CLASSES
+};
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
 /* Give names of register classes as strings for dump file.   */
 
 #define REG_CLASS_NAMES \
- {"NO_REGS",  "LONG_REGS",  "GENERAL_REGS", "SP_REG", "SP_AND_G_REG", "ALL_REGS", "LIM_REGS" }
+{ "NO_REGS", "LONG_REGS", "GENERAL_REGS", "SP_REG", "SP_AND_G_REGS", \
+  "ALL_REGS", "LIM_REGS" }
 
 /* Define which registers fit in which classes.
    This is an initializer for a vector of HARD_REG_SET
@@ -340,7 +344,7 @@ enum reg_class { NO_REGS,  LONG_REGS, GENERAL_REGS, SP_REG, SP_AND_G_REG, ALL_RE
    0x07f,               /* LONG_REGS    */      \
    0x07f,		/* GENERAL_REGS */	\
    0x080,		/* SP_REG       */     	\
-   0x0ff,		/* SP_AND_G_REG */     	\
+   0x0ff,		/* SP_AND_G_REGS */    	\
    0x1ff,		/* ALL_REGS 	*/	\
 }
 
@@ -971,14 +975,18 @@ extern int current_function_anonymous_args;
    Do not alter them if the instruction would not alter the cc's.  */
 
 #define NOTICE_UPDATE_CC(EXP, INSN) notice_update_cc(EXP, INSN)
-#define CC_DONE_CBIT 0400
 
-#define OUTPUT_JUMP(NORMAL, FLOAT, NO_OV) \
-{					\
-  if (cc_status.flags & CC_NO_OVERFLOW)	\
-    return NO_OV;			\
-  return NORMAL;			\
-}
+/* The mov,and,or,xor insns always set V to 0.  */
+#define CC_OVERFLOW_0 0400
+/* The add insns don't set overflow in a usable way.  */
+#define CC_OVERFLOW_UNUSABLE 01000
+/* The mov,and,or,xor insns don't set carry.  That's ok though as the
+   Z bit is all we need when doing unsigned comparisons on the result of
+   these insns (since they're always with 0).  However, conditions.h has
+   CC_NO_OVERFLOW defined for this purpose.  Rename it to something more
+   understandable.  */
+#define CC_NO_CARRY CC_NO_OVERFLOW
+/* ??? Use CC_Z_IN_NOT_C for bld insns?  */
 
 /* Control the assembler format that we output.  */
 
