@@ -1564,6 +1564,7 @@ dump_expr (t, nop)
       else
 	{
 	  if (TREE_OPERAND (t,0) != NULL_TREE
+	      && TREE_TYPE (TREE_OPERAND (t, 0))
 	      && NEXT_CODE (TREE_OPERAND (t, 0)) == REFERENCE_TYPE)
 	    dump_expr (TREE_OPERAND (t, 0), nop);
 	  else
