@@ -4077,7 +4077,11 @@ output_prolog (file, size)
 #else
 #ifdef RS6000_CALL_GLUE
       if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_NT)
-	fprintf (file, "\t%s\n", RS6000_CALL_GLUE);
+	{
+	  putc('\t', file);
+	  asm_fprintf (file, RS6000_CALL_GLUE);
+	  putc('\n', file);
+	}
 #endif
 #endif
 
@@ -5093,8 +5097,9 @@ output_function_profiler (file, labelno)
       asm_fprintf (file, TARGET_32BIT ? "\t{l|lwz} %s," : "\tld %s,",
 		   reg_names[3]);
       assemble_name (file, buf);
-      asm_fprintf (file, "(%s)\n\tbl %s\n\t%s\n",
-		   reg_names[2], RS6000_MCOUNT, RS6000_CALL_GLUE);
+      asm_fprintf (file, "(%s)\n\tbl %s\n\t", reg_names[2], RS6000_MCOUNT);
+      asm_fprintf (file, RS6000_CALL_GLUE);
+      putc('\n', file);
 
   /* Restore parameter registers and static chain.  */
 
