@@ -1,3 +1,10 @@
+2002-04-12  Richard Henderson  <rth@redhat.com>
+
+	* recog.c (offsettable_address_p): Match the logic in adjust_address.
+
+	* config/sparc/sparc.h (LEGITIMIZE_RELOAD_ADDRESS): Handle TFmode
+	in 64-bit mode only.  Use only for 32-bit or MEDLOW.
+
 2002-04-12  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/alpha/osf.h (LINK_SPEC): Pass -S to silence ld warnings.
