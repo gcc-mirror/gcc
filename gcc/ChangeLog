@@ -1,3 +1,12 @@
+Tue Nov  9 16:43:00 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/arm-protos.h: New file: Prototypes for functions
+	defined in arm.c and pe.c.
+	* config/arm/arm.h: Fix compile time warnings.
+	* config/arm/arm.c: Fix compile time warnings.
+	* config/arm/pe.h: Fix compile time warnings.
+	* config/arm/aout.h: Fix compile time warnings.
+
 Tue Nov  9 14:55:44 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* config/m32r/m32r-protos.h: New file: Prototypes for functions
