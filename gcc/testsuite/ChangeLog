@@ -1,3 +1,7 @@
+Tue Mar 18 13:14:05 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/i386-cvt-1.c: New test.
+
 2003-03-17  Zack Weinberg  <zack@codesourcery.com>
 
         * objc.dg/naming-1.m: Use "(parse|syntax) error".
