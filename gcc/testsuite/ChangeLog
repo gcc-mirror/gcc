@@ -1,5 +1,9 @@
 2004-10-01  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	* gcc.dg/tree-ssa/pr17343.c: Remove.
+
+2004-10-01  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR tree-opt/17343
 	* gcc.dg/tree-ssa/pr17343.c: New test.
 
