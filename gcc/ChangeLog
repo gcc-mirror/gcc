@@ -1,5 +1,9 @@
 2002-12-17  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* doc/c-tree.texi: Restore deliberate spelling mistakes.
+
+2002-12-17  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* doc/c-tree.texi: Fix typos and follow spelling conventions.
 	* doc/cpp.texi: Likewise.
 	* doc/extend.texi: Likewise.
