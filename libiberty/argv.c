@@ -1,5 +1,5 @@
 /* Create and destroy argument vectors (argv's)
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright (C) 1992, 2001 Free Software Foundation, Inc.
    Written by Fred Fish @ Cygnus Support
 
 This file is part of the libiberty library.
@@ -203,7 +203,7 @@ NOTES
 */
 
 char **buildargv (input)
-char *input;
+     const char *input;
 {
   char *arg;
   char *copybuf;
@@ -336,7 +336,7 @@ char *input;
 
 /* Simple little test driver. */
 
-static char *tests[] =
+static const char *const tests[] =
 {
   "a simple command line",
   "arg 'foo' is single quoted",
@@ -353,10 +353,10 @@ static char *tests[] =
   NULL
 };
 
-main ()
+int main ()
 {
   char **argv;
-  char **test;
+  const char *const *test;
   char **targs;
 
   for (test = tests; *test != NULL; test++)
@@ -377,6 +377,7 @@ main ()
       freeargv (argv);
     }
 
+  return 0;
 }
 
 #endif	/* MAIN */

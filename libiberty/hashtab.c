@@ -80,7 +80,7 @@ higher_prime_number (n)
 {
   /* These are primes that are near, but slightly smaller than, a
      power of two.  */
-  static unsigned long primes[] = {
+  static const unsigned long primes[] = {
     (unsigned long) 2,
     (unsigned long) 7,
     (unsigned long) 13,
@@ -115,12 +115,12 @@ higher_prime_number (n)
     ((unsigned long) 2147483647) + ((unsigned long) 2147483644),
   };
 
-  unsigned long* low = &primes[0];
-  unsigned long* high = &primes[sizeof(primes) / sizeof(primes[0])];
+  const unsigned long *low = &primes[0];
+  const unsigned long *high = &primes[sizeof(primes) / sizeof(primes[0])];
 
   while (low != high)
     {
-      unsigned long* mid = low + (high - low) / 2;
+      const unsigned long *mid = low + (high - low) / 2;
       if (n > *mid)
 	low = mid + 1;
       else

@@ -1557,11 +1557,11 @@ demangle_operator_name (dm, short_name, num_args)
   struct operator_code
   {
     /* The mangled code for this operator.  */
-    const char *code;
+    const char *const code;
     /* The source name of this operator.  */
-    const char *name;
+    const char *const name;
     /* The number of arguments this operator takes.  */
-    int num_args;
+    const int num_args;
   };
 
   static const struct operator_code operators[] = 

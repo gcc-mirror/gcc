@@ -1,3 +1,8 @@
+2001-10-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* demangle.h (demangler_engine): Const-ify.
+	* libiberty.h (buildargv): Likewise.
+
 2001-09-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* libiberty.h (reconcat): New function.

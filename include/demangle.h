@@ -1,5 +1,5 @@
 /* Defs for interface to demanglers.
-   Copyright 1992, 1993, 1994, 1995, 1996, 1997, 1998, 2000
+   Copyright 1992, 1993, 1994, 1995, 1996, 1997, 1998, 2000, 2001
    Free Software Foundation, Inc.
    
    This program is free software; you can redistribute it and/or modify
@@ -94,11 +94,11 @@ extern enum demangling_styles
 /* Provide information about the available demangle styles. This code is
    pulled from gdb into libiberty because it is useful to binutils also.  */
 
-extern struct demangler_engine
+extern const struct demangler_engine
 {
-  const char *demangling_style_name;
-  enum demangling_styles demangling_style;
-  const char *demangling_style_doc;
+  const char *const demangling_style_name;
+  const enum demangling_styles demangling_style;
+  const char *const demangling_style_doc;
 } libiberty_demanglers[];
 
 extern char *

@@ -157,9 +157,9 @@ struct work_stuff
 
 static const struct optable
 {
-  const char *in;
-  const char *out;
-  int flags;
+  const char *const in;
+  const char *const out;
+  const int flags;
 } optable[] = {
   {"nw",	  " new",	DMGL_ANSI},	/* new (1.92,	 ansi) */
   {"dl",	  " delete",	DMGL_ANSI},	/* new (1.92,	 ansi) */
@@ -256,7 +256,7 @@ typedef enum type_kind_t
   tk_real
 } type_kind_t;
 
-struct demangler_engine libiberty_demanglers[] =
+const struct demangler_engine libiberty_demanglers[] =
 {
   {
     AUTO_DEMANGLING_STYLE_STRING,
@@ -847,7 +847,7 @@ enum demangling_styles
 cplus_demangle_set_style (style)
      enum demangling_styles style;
 {
-  struct demangler_engine *demangler = libiberty_demanglers; 
+  const struct demangler_engine *demangler = libiberty_demanglers; 
 
   for (; demangler->demangling_style != unknown_demangling; ++demangler)
     if (style == demangler->demangling_style)
@@ -865,7 +865,7 @@ enum demangling_styles
 cplus_demangle_name_to_style (name)
      const char *name;
 {
-  struct demangler_engine *demangler = libiberty_demanglers; 
+  const struct demangler_engine *demangler = libiberty_demanglers; 
 
   for (; demangler->demangling_style != unknown_demangling; ++demangler)
     if (strcmp (name, demangler->demangling_style_name) == 0)
@@ -4909,7 +4909,7 @@ static void
 print_demangler_list (stream)
      FILE *stream;
 {
-  struct demangler_engine *demangler; 
+  const struct demangler_engine *demangler; 
 
   fprintf (stream, "{%s", libiberty_demanglers->demangling_style_name);
   
