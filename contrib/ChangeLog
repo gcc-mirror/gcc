@@ -1,3 +1,7 @@
+Sun Jul 16 12:04:33 2000  Mark P Mitchell  <mark@codesourcery.com>
+
+	* gcc_build: New script.
+
 2000-07-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc_update (files_and_dependencies): Remove generated YACC files.
