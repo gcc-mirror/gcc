@@ -1,3 +1,9 @@
+2002-03-21  Eric Botcazou <ebotcazou@multimania.com>
+
+	PR c/5597
+	* c-typeck.c (process_init_element): Flag non-static
+	initialization of a flexible array member as illegal.
+
 2002-03-22  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/t-linux64: New.
@@ -10,19 +16,19 @@
 
 2002-03-21  Aldy Hernandez  <aldyh@redhat.com>
 
-        * langhooks.c (lhd_tree_inlining_cannot_inline_tree_fn): Check
-        flag_really_no_inline instead of optimize == 0.
+	* langhooks.c (lhd_tree_inlining_cannot_inline_tree_fn): Check
+	flag_really_no_inline instead of optimize == 0.
 
-        * c-objc-common.c (c_cannot_inline_tree_fn): Same.
+	* c-objc-common.c (c_cannot_inline_tree_fn): Same.
 
-        * cp/tree.c (cp_cannot_inline_tree_fn): Same.
+	* cp/tree.c (cp_cannot_inline_tree_fn): Same.
 
-        * flags.h (flag_really_no_inline): New.
+	* flags.h (flag_really_no_inline): New.
 
-        * c-common.c (c_common_post_options): Initialzie
-        flag_really_no_inline.
+	* c-common.c (c_common_post_options): Initialzie
+	flag_really_no_inline.
 
-        * toplev.c (flag_really_no_inline): New.
+	* toplev.c (flag_really_no_inline): New.
 
 2002-03-21  Jakub Jelinek  <jakub@redhat.com>
 
