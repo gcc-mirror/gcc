@@ -7,53 +7,68 @@
 
 # Directory containing the original header files.
 # (This was named INCLUDES, but that conflicts with a name in Makefile.in.)
-INPUT=${2-${INPUT-/usr/include}}
-
-# Directory in which to store the results.
-LIB=${1?"fixincludes: output directory not specified"}
-
-# Define what target system we're fixing.
-if test -r ./Makefile; then
-	target_canonical="`sed -n -e 's,^target[ 	]*=[ 	]*\(.*\)$,\1,p' < Makefile`"
-	test -z "${target_canonical}" && target_canonical=unknown
-else
-	target_canonical=unknown
+if [ "x$1" = "x" ]
+then echo fixincludes: no output directory specified
+exit 1
 fi
 
+LIB=${1}
+shift
+
+# Make sure it exists.
+if [ ! -d $LIB ]; then
+  mkdir $LIB || {
+    echo fixincludes:  output dir '`'$LIB"' cannot be created"
+    exit 1
+  }
+else
+  ( \cd $LIB && touch DONE && rm DONE ) || {
+    echo fixincludes:  output dir '`'$LIB"' is an invalid directory"
+    exit 1
+  }
+fi
+
+# Define what target system we're fixing.
+#
+if test -r ./Makefile; then
+  target_canonical="`sed -n -e 's,^target[ 	]*=[ 	]*\(.*\)$,\1,p' < Makefile`"
+fi
+
+# If not from the Makefile, then try config.guess
+#
+if test -z "${target_canonical}" ; then
+  if test -x ./config.guess ; then
+    target_canonical="`config.guess`" ; fi
+  test -z "${target_canonical}" && target_canonical=unknown
+fi
+export target_canonical
+
+# # # # # # # # # # # # # # # # # # # # #
+#
 # Define PWDCMD as a command to use to get the working dir
 # in the form that we want.
 PWDCMD=pwd
-case "`pwd`" in
+
+case "`$PWDCMD`" in
 //*)
-	# On an Apollo, discard everything before `/usr'.
-	PWDCMD="eval pwd | sed -e 's,.*/usr/,/usr/,'"
-	;;
+    # On an Apollo, discard everything before `/usr'.
+    PWDCMD="eval pwd | sed -e 's,.*/usr/,/usr/,'"
+    ;;
 esac
 
 # Original directory.
 ORIGDIR=`${PWDCMD}`
 
-# Make sure it exists.
-if [ ! -d $LIB ]; then
-  mkdir $LIB || exit 1
-fi
-
 # Make LIB absolute only if needed to avoid problems with the amd.
 case $LIB in
 /*)
-	;;
+    ;;
 *)
-	cd $LIB; LIB=`${PWDCMD}`
-	;;
+    cd $LIB; LIB=`${PWDCMD}`
+    ;;
 esac
 
-# Fail if no arg to specify a directory for the output.
-if [ x$1 = x ]
-then echo fixincludes: no output directory specified
-exit 1
-fi
-
-echo Building fixed headers in ${LIB}
+echo Fixing headers into ${LIB} for ${target_canonical} target
 
 # Determine whether this system has symbolic links.
 if ln -s X $LIB/ShouldNotExist 2>/dev/null; then
@@ -66,8 +81,30 @@ else
   LINKS=false
 fi
 
+# # # # # # # # # # # # # # # # # # # # #
+#
+#  Search each input directory for broken header files.
+#  This loop ends near the end of the file.
+#
+if test $# -eq 0
+then
+    INPUTLIST="/usr/include"
+else
+    INPUTLIST="$@"
+fi
+
+for INPUT in ${INPUTLIST} ; do
+
+cd ${ORIGDIR}
+
+cd ${INPUT} || continue
+INPUT=`${PWDCMD}`
+
+#
+# # # # # # # # # # # # # # # # # # # # #
+#
 echo Finding directories and links to directories
-cd ${INPUT}
+
 # Find all directories and all symlinks that point to directories.
 # Put the list in $files.
 # Each time we find a symlink, add it to newdirs
@@ -3210,5 +3247,17 @@ for file in $files; do
   rmdir $LIB/$file > /dev/null 2>&1
 done
 
+# # # # # # # # # # # # # # # # # # # # #
+#
+# End of for INPUT directories
+#
+done
+#
+# # # # # # # # # # # # # # # # # # # # #
+
+cd $ORIGDIR
+rm -f include/assert.h
+cp ${srcdir}/assert.h include/assert.h || exit 1
+chmod a+r include/assert.h
 
 exit 0
