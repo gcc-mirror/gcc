@@ -1,3 +1,14 @@
+2004-09-23  Denis Chertykov  <denisc@overta.ru>
+
+	PR target/16884
+	* config/avr/avr.md ("movmemhi"): Substitute match_dup to
+	match_scratch.
+	(*movmemqi_insn): Likewise.
+	(*movmemhi): Likewise.
+	(clrmemhi): Likewise.
+	(*clrmemqi): Likewise.
+	(*clrmemhi): Likewise.
+
 2004-09-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/17369

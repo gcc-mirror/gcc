@@ -1,7 +1,7 @@
 ;; -*- Mode: Scheme -*-
 ;;   Machine description for GNU compiler,
 ;;   for ATMEL AVR micro controllers.
-;;   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+;;   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
 ;;   Contributed by Denis Chertykov (denisc@overta.ru)
 
 ;; This file is part of GCC.
@@ -349,8 +349,8 @@
 		   (match_operand:BLK 1 "memory_operand" ""))
 	      (use (match_operand:HI 2 "const_int_operand" ""))
 	      (use (match_operand:HI 3 "const_int_operand" ""))
-	      (clobber (match_dup 4))
-	      (clobber (match_dup 5))
+	      (clobber (match_scratch:HI 4 ""))
+	      (clobber (match_scratch:HI 5 ""))
 	      (clobber (match_dup 6))])]
   ""
   "{
@@ -364,13 +364,10 @@
   mode = cnt8 ? QImode : HImode;
   operands[2] = copy_to_mode_reg (mode,
                                   gen_int_mode (INTVAL (operands[2]), mode));
-  operands[4] = operands[2];
   addr0 = copy_to_mode_reg (Pmode, XEXP (operands[0], 0));
   addr1 = copy_to_mode_reg (Pmode, XEXP (operands[1], 0));
 
-  operands[5] = addr0;
-  operands[6] = addr1;
-
+  operands[6] = gen_rtx_SCRATCH (mode);
   operands[0] = gen_rtx (MEM, BLKmode, addr0);
   operands[1] = gen_rtx (MEM, BLKmode, addr1);
 }")
@@ -380,9 +377,9 @@
 	(mem:BLK (match_operand:HI 1 "register_operand" "e")))
    (use (match_operand:QI 2 "register_operand" "r"))
    (use (match_operand:QI 3 "const_int_operand" "i"))
-   (clobber (match_dup 2))
-   (clobber (match_dup 0))
-   (clobber (match_dup 1))]
+   (clobber (match_scratch:HI 4 "=0"))
+   (clobber (match_scratch:HI 5 "=1"))
+   (clobber (match_scratch:QI 6 "=2"))]
   ""
   "ld __tmp_reg__,%a1+
 	st %a0+,__tmp_reg__
@@ -396,9 +393,9 @@
 	(mem:BLK (match_operand:HI 1 "register_operand" "e,e")))
    (use (match_operand:HI 2 "register_operand" "!w,d"))
    (use (match_operand:HI 3 "const_int_operand" ""))
-   (clobber (match_dup 2))
-   (clobber (match_dup 0))
-   (clobber (match_dup 1))]
+   (clobber (match_scratch:HI 4 "=0,0"))
+   (clobber (match_scratch:HI 5 "=1,1"))
+   (clobber (match_scratch:HI 6 "=2,2"))]
   ""
   "*{
      if (which_alternative==0)
@@ -424,7 +421,7 @@
 		   (const_int 0))
 	      (use (match_operand:HI 1 "const_int_operand" ""))
 	      (use (match_operand:HI 2 "const_int_operand" "n"))
-	      (clobber (match_dup 3))
+	      (clobber (match_scratch:HI 3 ""))
 	      (clobber (match_dup 4))])]
   ""
   "{
@@ -437,13 +434,10 @@
 
   cnt8 = byte_immediate_operand (operands[1], GET_MODE (operands[1]));
   mode = cnt8 ? QImode : HImode;
+  operands[4] = gen_rtx_SCRATCH (mode);
   operands[1] = copy_to_mode_reg (mode,
                                   gen_int_mode (INTVAL (operands[1]), mode));
-  operands[3] = operands[1];
-
   addr0 = copy_to_mode_reg (Pmode, XEXP (operands[0], 0));
-  operands[4] = addr0;
-  
   operands[0] = gen_rtx (MEM, BLKmode, addr0);
 }")
 
@@ -452,8 +446,8 @@
 	(const_int 0))
    (use (match_operand:QI 1 "register_operand" "r"))
    (use (match_operand:QI 2 "const_int_operand" "n"))
-   (clobber (match_dup 1))
-   (clobber (match_dup 0))]
+   (clobber (match_scratch:HI 3 "=0"))
+   (clobber (match_scratch:QI 4 "=1"))]
   ""
   "st %a0+,__zero_reg__
         dec %1
@@ -466,8 +460,8 @@
 	(const_int 0))
    (use (match_operand:HI 1 "register_operand" "!w,d"))
    (use (match_operand:HI 2 "const_int_operand" "n,n"))
-   (clobber (match_dup 1))
-   (clobber (match_dup 0))]
+   (clobber (match_scratch:HI 3 "=0,0"))
+   (clobber (match_scratch:HI 4 "=1,1"))]
   ""
   "*{
      if (which_alternative==0)
