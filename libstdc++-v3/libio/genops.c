@@ -45,11 +45,11 @@ _IO_un_link (fp)
 #ifdef _IO_MTSAFE_IO
       _IO_lock_lock (list_all_lock);
 #endif
-      for (f = &_IO_list_all; *f != NULL; f = &(*f)->file._chain)
+      for (f = &_IO_list_all; *f; f = (struct _IO_FILE_plus **) &(*f)->file._chain)
 	{
 	  if (*f == fp)
 	    {
-	      *f = fp->file._chain;
+	      *f = (struct _IO_FILE_plus *) fp->file._chain;
 	      break;
 	    }
 	}
@@ -70,7 +70,7 @@ _IO_link_in (fp)
 #ifdef _IO_MTSAFE_IO
 	_IO_lock_lock (list_all_lock);
 #endif
-	fp->file._chain = _IO_list_all;
+	fp->file._chain = (_IO_FILE *) _IO_list_all;
 	_IO_list_all = fp;
 #ifdef _IO_MTSAFE_IO
 	_IO_lock_unlock (list_all_lock);
@@ -194,6 +194,9 @@ __overflow (f, ch)
      _IO_FILE *f;
      int ch;
 {
+  /* This is a single-byte stream.  */
+  if (f->_mode == 0)
+    _IO_fwide (f, -1);
   return _IO_OVERFLOW (f, ch);
 }
 
@@ -287,6 +290,8 @@ __underflow (fp)
     return EOF;
 #endif
 
+  if (fp->_mode == 0)
+    _IO_fwide (fp, -1);
   if (_IO_in_put_mode (fp))
     if (_IO_switch_to_get_mode (fp) == EOF)
       return EOF;
@@ -317,6 +322,8 @@ __uflow (fp)
     return EOF;
 #endif
 
+  if (fp->_mode == 0)
+    _IO_fwide (fp, -11);
   if (_IO_in_put_mode (fp))
     if (_IO_switch_to_get_mode (fp) == EOF)
       return EOF;
@@ -745,17 +752,15 @@ int
 _IO_flush_all ()
 {
   int result = 0;
-  struct _IO_FILE_plus *fp;
-  for (fp = _IO_list_all; fp != NULL; fp = fp->file._chain)
-    if (((fp->file._mode < 0 && fp->file._IO_write_ptr > fp->file._IO_write_base)
+  struct _IO_FILE *fp;
+  for (fp = (_IO_FILE *) _IO_list_all; fp; fp = fp->_chain)
+    if (((fp->_mode < 0 && fp->_IO_write_ptr > fp->_IO_write_base)
 #if defined _LIBC || defined _GLIBCPP_USE_WCHAR_T
-
-	 || (fp->file._vtable_offset == 0
-	     && fp->file._mode > 0 && (fp->file._wide_data->_IO_write_ptr
-				  > fp->file._wide_data->_IO_write_base))
+	 || (fp->_vtable_offset == 0
+	     && fp->_mode > 0 && (fp->_wide_data->_IO_write_ptr
+				  > fp->_wide_data->_IO_write_base)))
 #endif
-	 )
-	&& _IO_OVERFLOW (&fp->file, EOF) == EOF)
+	&& _IO_OVERFLOW (fp, EOF) == EOF)
       result = EOF;
   return result;
 }
@@ -763,10 +768,10 @@ _IO_flush_all ()
 void
 _IO_flush_all_linebuffered ()
 {
-  struct _IO_FILE_plus *fp;
-  for (fp = _IO_list_all; fp != NULL; fp = fp->file._chain)
-    if ((fp->file._flags & _IO_NO_WRITES) == 0 && fp->file._flags & _IO_LINE_BUF)
-      _IO_OVERFLOW (&fp->file, EOF);
+  struct _IO_FILE *fp;
+  for (fp = (_IO_FILE *) _IO_list_all; fp; fp = fp->_chain)
+    if ((fp->_flags & _IO_NO_WRITES) == 0 && fp->_flags & _IO_LINE_BUF)
+      _IO_OVERFLOW (fp, EOF);
 }
 
 static void _IO_unbuffer_write __P ((void));
@@ -774,12 +779,12 @@ static void _IO_unbuffer_write __P ((void));
 static void
 _IO_unbuffer_write ()
 {
-  struct _IO_FILE_plus *fp;
-  for (fp = _IO_list_all; fp != NULL; fp = fp->file._chain)
-    if (! (fp->file._flags & _IO_UNBUFFERED)
-	&& (! (fp->file._flags & _IO_NO_WRITES)
-	    || (fp->file._flags & _IO_IS_APPENDING)))
-      _IO_SETBUF (&fp->file, NULL, 0);
+  struct _IO_FILE *fp;
+  for (fp = (_IO_FILE *) _IO_list_all; fp; fp = fp->_chain)
+    if (! (fp->_flags & _IO_UNBUFFERED)
+	&& (! (fp->_flags & _IO_NO_WRITES)
+	    || (fp->_flags & _IO_IS_APPENDING)))
+      _IO_SETBUF (fp, NULL, 0);
 }
 
 int
@@ -1039,7 +1044,7 @@ _IO_default_imbue (fp, locale)
 _IO_ITER
 _IO_iter_begin()
 {
-  return _IO_list_all;
+  return (_IO_ITER) _IO_list_all;
 }
 
 _IO_ITER
@@ -1052,14 +1057,14 @@ _IO_ITER
 _IO_iter_next(iter)
     _IO_ITER iter;
 {
-  return iter->file._chain;
+  return iter->_chain;
 }
 
 _IO_FILE *
 _IO_iter_file(iter)
     _IO_ITER iter;
 {
-  return (_IO_FILE *) iter;
+  return iter;
 }
 
 void

@@ -1,4 +1,4 @@
-/* Copyright (C) 1993, 1995, 1997, 1998, 1999 Free Software Foundation, Inc.
+/* Copyright (C) 1993, 95, 97, 98, 99, 2000 Free Software Foundation, Inc.
    This file is part of the GNU IO Library.
    Written by Ulrich Drepper <drepper@cygnus.com>.
    Based on the single byte version by Per Bothner <bothner@cygnus.com>.
@@ -77,40 +77,46 @@ _IO_wdo_write (fp, data, to_do)
      _IO_size_t to_do;
 {
   struct _IO_codecvt *cc = &fp->_wide_data->_codecvt;
-  _IO_size_t count = 0;
 
-  while (to_do > 0)
+  if (to_do > 0)
     {
-      enum __codecvt_result result;
-      const wchar_t *new_data;
-
-      if (fp->_IO_write_end == fp->_IO_write_ptr)
+      if (fp->_IO_write_end == fp->_IO_write_ptr
+	  && fp->_IO_write_end != fp->_IO_write_base)
 	{
-	  _IO_new_file_overflow (fp, EOF);
-	  assert (fp->_IO_write_end > fp->_IO_write_ptr);
+	  if (_IO_new_do_write (fp, fp->_IO_write_base,
+				fp->_IO_write_ptr - fp->_IO_write_base) == EOF)
+	    return EOF;
 	}
 
-      /* Now convert from the internal format into the external buffer.  */
-      result = (*cc->__codecvt_do_out) (cc, &fp->_wide_data->_IO_state,
-					data, data + to_do, &new_data,
-					fp->_IO_write_ptr,
-					fp->_IO_write_end,
-					&fp->_IO_write_ptr);
+      do
+	{
+	  enum __codecvt_result result;
+	  const wchar_t *new_data;
 
-      /* Write out what we produced so far.  */
-      if (_IO_new_do_write (fp, fp->_IO_write_base,
-			    fp->_IO_write_ptr - fp->_IO_write_base) == EOF)
-	/* Something went wrong.  */
-	return EOF;
+	  /* Now convert from the internal format into the external buffer.  */
+	  result = (*cc->__codecvt_do_out) (cc, &fp->_wide_data->_IO_state,
+					    data, data + to_do, &new_data,
+					    fp->_IO_write_ptr,
+					    fp->_IO_buf_end,
+					    &fp->_IO_write_ptr);
 
-      count += new_data - data;
-      to_do -= new_data - data;
-      data = new_data;
+	  /* Write out what we produced so far.  */
+	  if (_IO_new_do_write (fp, fp->_IO_write_base,
+				fp->_IO_write_ptr - fp->_IO_write_base) == EOF)
+	    /* Something went wrong.  */
+	    return EOF;
 
-      /* Next see whether we had problems during the conversion.  If yes,
-	 we cannot go on.  */
-      if (result != __codecvt_ok)
-	break;
+	  to_do -= new_data - data;
+
+	  /* Next see whether we had problems during the conversion.  If yes,
+	     we cannot go on.  */
+	  if (result != __codecvt_ok
+	      && (result != __codecvt_partial || new_data - data == 0))
+	    break;
+
+	  data = new_data;
+	}
+      while (to_do > 0);
     }
 
   _IO_wsetg (fp, fp->_wide_data->_IO_buf_base, fp->_wide_data->_IO_buf_base,
@@ -121,7 +127,7 @@ _IO_wdo_write (fp, data, to_do)
 				   ? fp->_wide_data->_IO_buf_base
 				   : fp->_wide_data->_IO_buf_end);
 
-  return count;
+  return to_do == 0 ? 0 : WEOF;
 }
 
 
@@ -190,9 +196,6 @@ _IO_wfile_underflow (fp)
     fp->_IO_read_base = fp->_IO_read_ptr = fp->_IO_read_end =
       fp->_IO_buf_base;
 
-  fp->_IO_write_base = fp->_IO_write_ptr = fp->_IO_write_end =
-    fp->_IO_buf_base;
-
   if (fp->_IO_buf_base == NULL)
     {
       /* Maybe we already have a push back pointer.  */
@@ -202,7 +205,13 @@ _IO_wfile_underflow (fp)
 	  fp->_flags &= ~_IO_IN_BACKUP;
 	}
       _IO_doallocbuf (fp);
+
+      fp->_IO_read_base = fp->_IO_read_ptr = fp->_IO_read_end =
+	fp->_IO_buf_base;
     }
+
+  fp->_IO_write_base = fp->_IO_write_ptr = fp->_IO_write_end =
+    fp->_IO_buf_base;
 
   if (fp->_wide_data->_IO_buf_base == NULL)
     {
@@ -221,11 +230,6 @@ _IO_wfile_underflow (fp)
     _IO_flush_all_linebuffered ();
 
   _IO_switch_to_get_mode (fp);
-
-  fp->_IO_read_base = fp->_IO_read_ptr = fp->_IO_buf_base;
-  fp->_IO_read_end = fp->_IO_buf_base;
-  fp->_IO_write_base = fp->_IO_write_ptr = fp->_IO_write_end
-    = fp->_IO_buf_base;
 
   fp->_wide_data->_IO_read_base = fp->_wide_data->_IO_read_ptr =
     fp->_wide_data->_IO_buf_base;
@@ -306,6 +310,12 @@ _IO_wfile_overflow (f, wch)
 	  _IO_wdoallocbuf (f);
 	  _IO_wsetg (f, f->_wide_data->_IO_buf_base,
 		     f->_wide_data->_IO_buf_base, f->_wide_data->_IO_buf_base);
+
+	  if (f->_IO_write_base == NULL)
+	    {
+	      _IO_doallocbuf (f);
+	      _IO_setg (f, f->_IO_buf_base, f->_IO_buf_base, f->_IO_buf_base);
+	    }
 	}
       else
 	{
@@ -330,13 +340,18 @@ _IO_wfile_overflow (f, wch)
       f->_wide_data->_IO_read_base = f->_wide_data->_IO_read_ptr =
 	f->_wide_data->_IO_read_end;
 
+      f->_IO_write_ptr = f->_IO_read_ptr;
+      f->_IO_write_base = f->_IO_write_ptr;
+      f->_IO_write_end = f->_IO_buf_end;
+      f->_IO_read_base = f->_IO_read_ptr = f->_IO_read_end;
+
       f->_flags |= _IO_CURRENTLY_PUTTING;
       if (f->_flags & (_IO_LINE_BUF+_IO_UNBUFFERED))
 	f->_wide_data->_IO_write_end = f->_wide_data->_IO_write_ptr;
     }
   if (wch == WEOF)
     return _IO_do_flush (f);
-  if (f->_wide_data->_IO_write_ptr == f->_wide_data->_IO_buf_end )
+  if (f->_wide_data->_IO_write_ptr == f->_wide_data->_IO_buf_end)
     /* Buffer is really full */
     if (_IO_do_flush (f) == WEOF)
       return WEOF;

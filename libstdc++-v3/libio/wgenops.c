@@ -275,6 +275,8 @@ __wunderflow (fp)
   if (fp->_mode < 0 || (fp->_mode == 0 && _IO_fwide (fp, 1) != 1))
     return WEOF;
 
+  if (fp->_mode == 0)
+    _IO_fwide (fp, 1);
   if (_IO_in_put_mode (fp))
     if (_IO_switch_to_wget_mode (fp) == EOF)
       return WEOF;

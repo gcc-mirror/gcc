@@ -380,8 +380,7 @@ _IO_new_do_write (fp, data, to_do)
      const char *data;
      _IO_size_t to_do;
 {
-  return (to_do == 0 || new_do_write (fp, data, to_do) == to_do)
-  	 ? 0 : EOF;
+  return (to_do == 0 || new_do_write (fp, data, to_do) == to_do) ? 0 : EOF;
 }
 
 static
