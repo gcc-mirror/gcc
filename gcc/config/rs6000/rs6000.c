@@ -2918,11 +2918,9 @@ function_arg_advance (cum, mode, type, named)
       else
 	cum->words += RS6000_ARG_SIZE (mode, type);
     }
-  else if (TARGET_SPE_ABI && TARGET_SPE && SPE_VECTOR_MODE (mode))
-    {
-      cum->words += RS6000_ARG_SIZE (mode, type);
-      cum->sysv_gregno++;
-    }
+  else if (TARGET_SPE_ABI && TARGET_SPE && SPE_VECTOR_MODE (mode)
+	   && named && cum->sysv_gregno <= GP_ARG_MAX_REG)
+    cum->sysv_gregno++;
   else if (DEFAULT_ABI == ABI_V4)
     {
       if (TARGET_HARD_FLOAT && TARGET_FPRS
@@ -2949,11 +2947,12 @@ function_arg_advance (cum, mode, type, named)
 	  else 
 	    n_words = RS6000_ARG_SIZE (mode, type);
 
-	  /* Long long is put in odd registers.  */
+	  /* Long long and SPE vectors are put in odd registers.  */
 	  if (n_words == 2 && (gregno & 1) == 0)
 	    gregno += 1;
 
-	  /* Long long is not split between registers and stack.  */
+	  /* Long long and SPE vectors are not split between registers
+	     and stack.  */
 	  if (gregno + n_words - 1 > GP_ARG_MAX_REG)
 	    {
 	      /* Long long is aligned on the stack.  */
@@ -3062,9 +3061,9 @@ function_arg (cum, mode, type, named)
       else
 	return NULL;
     }
-  else if (TARGET_SPE_ABI && TARGET_SPE && SPE_VECTOR_MODE (mode))
+  else if (TARGET_SPE_ABI && TARGET_SPE && SPE_VECTOR_MODE (mode) && named)
     {
-      if (cum->sysv_gregno - 1 <= GP_ARG_MAX_REG)
+      if (cum->sysv_gregno <= GP_ARG_MAX_REG)
 	return gen_rtx_REG (mode, cum->sysv_gregno);
       else
 	return NULL;
@@ -3091,13 +3090,29 @@ function_arg (cum, mode, type, named)
 	  else 
 	    n_words = RS6000_ARG_SIZE (mode, type);
 
-	  /* Long long is put in odd registers.  */
+	  /* Long long and SPE vectors are put in odd registers.  */
 	  if (n_words == 2 && (gregno & 1) == 0)
 	    gregno += 1;
 
-	  /* Long long is not split between registers and stack.  */
+	  /* Long long and SPE vectors are not split between registers
+	     and stack.  */
 	  if (gregno + n_words - 1 <= GP_ARG_MAX_REG)
-	    return gen_rtx_REG (mode, gregno);
+	    {
+	      /* SPE vectors in ... get split into 2 registers.  */
+	      if (TARGET_SPE && TARGET_SPE_ABI
+		  && SPE_VECTOR_MODE (mode) && !named)
+		{
+		  rtx r1, r2;
+		  enum machine_mode m = GET_MODE_INNER (mode);
+
+		  r1 = gen_rtx_REG (m, gregno);
+		  r1 = gen_rtx_EXPR_LIST (m, r1, const0_rtx);
+		  r2 = gen_rtx_REG (m, gregno + 1);
+		  r2 = gen_rtx_EXPR_LIST (m, r2, GEN_INT (4));
+		  return gen_rtx_PARALLEL (mode, gen_rtvec (2, r1, r2));
+		}
+	      return gen_rtx_REG (mode, gregno);
+	    }
 	  else
 	    return NULL;
 	}
