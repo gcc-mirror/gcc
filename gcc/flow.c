@@ -3651,7 +3651,7 @@ init_propagate_block_info (bb, live, local_set, flags)
       regset_head diff_head;
       regset diff = INITIALIZE_REG_SET (diff_head);
       basic_block bb_true, bb_false;
-      rtx cond_true, cond_false;
+      rtx cond_true, cond_false, set_src;
       int i;
 
       /* Identify the successor blocks.  */
@@ -3680,11 +3680,12 @@ init_propagate_block_info (bb, live, local_set, flags)
 	}
      
       /* Extract the condition from the branch.  */
-      cond_true = XEXP (SET_SRC (PATTERN (bb->end)), 0);
+      set_src = SET_SRC (pc_set (bb->end));
+      cond_true = XEXP (set_src, 0);
       cond_false = gen_rtx_fmt_ee (reverse_condition (GET_CODE (cond_true)),
 				   GET_MODE (cond_true), XEXP (cond_true, 0),
 				   XEXP (cond_true, 1));
-      if (GET_CODE (XEXP (SET_SRC (PATTERN (bb->end)), 1)) == PC)
+      if (GET_CODE (XEXP (set_src, 1)) == PC)
 	{
 	  rtx t = cond_false;
 	  cond_false = cond_true;

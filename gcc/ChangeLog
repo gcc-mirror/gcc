@@ -1,3 +1,7 @@
+2000-07-30  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (init_propagate_block_info): Use pc_set.
+
 Sun Jul 30 20:58:34 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (*lea_general_[123]) New insns and splits.
