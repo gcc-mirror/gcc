@@ -864,7 +864,7 @@ DEF_RTL_EXPR(IF_THEN_ELSE, "if_then_else", "eee", '3')
 /* General conditional. The first operand is a vector composed of pairs of
    expressions.  The first element of each pair is evaluated, in turn.
    The value of the conditional is the second expression of the first pair
-   whose first expression evaluates non-zero.  If none of the expressions is
+   whose first expression evaluates nonzero.  If none of the expressions is
    true, the second operand will be used as the value of the conditional.
 
    This should be replaced with use of IF_THEN_ELSE.  */

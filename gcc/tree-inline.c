@@ -831,7 +831,7 @@ declare_return_variable (id, var)
     return NULL_TREE;
 }
 
-/* Returns non-zero if a function can be inlined as a tree.  */
+/* Returns nonzero if a function can be inlined as a tree.  */
 
 int
 tree_inlinable_function_p (fn)
@@ -840,7 +840,7 @@ tree_inlinable_function_p (fn)
   return inlinable_function_p (fn, NULL);
 }
 
-/* Returns non-zero if FN is a function that can be inlined into the
+/* Returns nonzero if FN is a function that can be inlined into the
    inlining context ID_.  If ID_ is NULL, check whether the function
    can be inlined at all.  */
 

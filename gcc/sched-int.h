@@ -109,7 +109,7 @@ struct deps
       int clobbers_length;
     } *reg_last;
 
-  /* Element N is set for each register that has any non-zero element
+  /* Element N is set for each register that has any nonzero element
      in reg_last[N].{uses,sets,clobbers}.  */
   regset_head reg_last_in_use;
 };

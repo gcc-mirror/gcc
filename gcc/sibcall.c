@@ -54,7 +54,7 @@ static rtx skip_unreturned_value 	PARAMS ((rtx));
 /* Examine a CALL_PLACEHOLDER pattern and determine where the call's
    return value is located.  P_HARD_RETURN receives the hard register
    that the function used; P_SOFT_RETURN receives the pseudo register
-   that the sequence used.  Return non-zero if the values were located.  */
+   that the sequence used.  Return nonzero if the values were located.  */
 
 static int
 identify_call_return_value (cp, p_hard_return, p_soft_return)

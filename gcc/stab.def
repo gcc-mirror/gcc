@@ -84,7 +84,7 @@ __define_stab (N_BSLINE, 0x48, "BSLINE")
 __define_stab (N_BROWS, 0x48, "BROWS")
 
 /* GNU Modula-2 definition module dependency.  Value is the modification time
-   of the definition file.  Other is non-zero if it is imported with the
+   of the definition file.  Other is nonzero if it is imported with the
    GNU M2 keyword %INITIALIZE.  Perhaps N_M2C can be used if there
    are enough empty fields? */
 __define_stab(N_DEFD, 0x4a, "DEFD")

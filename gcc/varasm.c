@@ -195,7 +195,7 @@ static enum in_section { no_section, in_text, in_data, in_named
 #endif
 } in_section = no_section;
 
-/* Return a non-zero value if DECL has a section attribute.  */
+/* Return a nonzero value if DECL has a section attribute.  */
 #ifndef IN_NAMED_SECTION
 #define IN_NAMED_SECTION(DECL) \
   ((TREE_CODE (DECL) == FUNCTION_DECL || TREE_CODE (DECL) == VAR_DECL) \
@@ -1138,7 +1138,7 @@ default_ctor_section_asm_out_constructor (symbol, priority)
 #endif
 
 /* CONSTANT_POOL_BEFORE_FUNCTION may be defined as an expression with
-   a non-zero value if the constant pool should be output before the
+   a nonzero value if the constant pool should be output before the
    start of the function, or a zero value if the pool should output
    after the end of the function.  The default is to put it before the
    start.  */
@@ -1945,7 +1945,7 @@ default_assemble_integer (x, size, aligned_p)
 
 /* Assemble the integer constant X into an object of SIZE bytes.  ALIGN is
    the alignment of the integer in bits.  Return 1 if we were able to output
-   the constant, otherwise 0.  If FORCE is non-zero, abort if we can't output
+   the constant, otherwise 0.  If FORCE is nonzero, abort if we can't output
    the constant.  */
 
 bool
@@ -2228,7 +2228,7 @@ const_str_htab_hash (x)
   return STRHASH (((const struct deferred_string *) x)->label);
 }
 
-/* Returns non-zero if the value represented by X (which is really a
+/* Returns nonzero if the value represented by X (which is really a
    struct deferred_string *) is the same as that given by Y
    (which is really a char *).  */
 
@@ -2648,7 +2648,7 @@ copy_constant (exp)
    Otherwise, output such a constant in memory (or defer it for later)
    and generate an rtx for it.
 
-   If DEFER is non-zero, the output of string constants can be deferred
+   If DEFER is nonzero, the output of string constants can be deferred
    and output only if referenced in the function after all optimizations.
 
    The TREE_CST_RTL of EXP is set up to point to that rtx.
