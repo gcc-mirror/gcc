@@ -5954,6 +5954,7 @@ init_decl_processing ()
   using_eh_for_cleanups ();
 
   print_error_function = lang_print_error_function;
+  lang_get_alias_set = &c_get_alias_set;
 }
 
 /* Function to print any language-specific context for an error message.  */

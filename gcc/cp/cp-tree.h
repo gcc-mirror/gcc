@@ -1743,6 +1743,7 @@ extern tree shorten_compare                     PROTO((tree *, tree *, tree *, e
 extern tree truthvalue_conversion               PROTO((tree));
 extern tree type_for_mode                       PROTO((enum machine_mode, int));
 extern tree type_for_size                       PROTO((unsigned, int));
+extern int c_get_alias_set                      PROTO((tree));
 
 /* in decl{2}.c */
 extern tree void_list_node;
