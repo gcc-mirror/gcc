@@ -2854,12 +2854,10 @@
   ""
   "
 {
-  rtx dest_mem = operands[0];
-  rtx src_mem = operands[1];
-  operands[0] = copy_to_mode_reg (SImode, XEXP (operands[0], 0));
-  operands[1] = copy_to_mode_reg (SImode, XEXP (operands[1], 0));
-  mcore_expand_block_move (dest_mem, src_mem, operands);
-  DONE;
+  if (mcore_expand_block_move (operands))
+    DONE;
+  else
+    FAIL;
 }")
 
 ;; ;;; ??? These patterns are meant to be generated from expand_block_move,

@@ -57,7 +57,7 @@ extern char *       mcore_output_call          		(rtx *, int);
 extern int          mcore_is_dead                	(rtx, rtx);
 extern int          mcore_expand_insv            	(rtx *);
 extern int          mcore_modify_comparison      	(RTX_CODE);
-extern void         mcore_expand_block_move      	(rtx, rtx, rtx *);
+extern bool         mcore_expand_block_move      	(rtx *);
 extern const char * mcore_output_andn          		(rtx, rtx *);
 extern void         mcore_print_operand_address  	(FILE *, rtx);
 extern void         mcore_print_operand          	(FILE *, rtx, int);
