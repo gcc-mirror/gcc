@@ -1833,11 +1833,9 @@ type_promotes_to (type)
     }
   else if (C_PROMOTING_INTEGER_TYPE_P (type))
     {
-      /* Traditionally, unsignedness is preserved in default promotions.
-         Otherwise, retain unsignedness if really not getting bigger.  */
+      /* Retain unsignedness if really not getting bigger.  */
       if (TREE_UNSIGNED (type)
-	  && (flag_traditional
-	      || TYPE_PRECISION (type) == TYPE_PRECISION (integer_type_node)))
+	  && TYPE_PRECISION (type) == TYPE_PRECISION (integer_type_node))
 	type = unsigned_type_node;
       else
 	type = integer_type_node;

@@ -1,3 +1,38 @@
+Thu Oct 10 15:58:08 1996  Mike Stump  <mrs@cygnus.com>
+
+	* typeck.c (unary_complex_lvalue): Add code to handle intermediate
+	pmd conversions.
+
+	* typeck.c (get_delta_difference): Fix wording, as we can be used
+	for pointer to data members.
+
+Tue Oct  8 12:43:51 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* pt.c (tsubst): If the function decl isn't a member of this
+ 	template, return a copy of the decl (including copying the
+ 	lang-specific part) so we don't hose ourselves later.
+
+Thu Oct  3 16:24:28 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* class.c (finish_struct): Remove DWARF-specific tag handling.
+	* decl.c (pushtag): Likewise.
+	(finish_function): Always clear DECL_ARGUMENTS on function decls with
+	no saved RTX.
+	* decl2.c (finish_file): Emit DWARF debugging info for static data
+	members.
+
+Wed Oct  2 21:58:01 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* decl.c (duplicate_decls): Make sure the old DECL_LANG_SPECIFIC
+	isn't the same as the new one before we whack it.
+
+Mon Sep 30 13:38:24 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* class.c, cp-tree.h, cvt.c, decl.c, decl2.c, gxx.gperf, hash.h,
+ 	lex.c, method.c, parse.y, typeck.c, typeck2.c: Remove
+ 	warn_traditional and warn_strict_prototypes; remove ancient
+ 	'overload' code; remove references to flag_traditional.
+
 Mon Sep 30 12:58:40 1996  Mike Stump  <mrs@cygnus.com>
 
 	* input.c (sub_getch): Handle 8-bit characters in string literals.
