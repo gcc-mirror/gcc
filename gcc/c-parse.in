@@ -2095,7 +2095,7 @@ ivar_decls:
 	| ivar_decls ';'
 		{
                   if (pedantic)
-		    warning ("extra semicolon in struct or union specified");
+		    pedwarn ("extra semicolon in struct or union specified");
                 }
 	;
 
