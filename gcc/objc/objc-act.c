@@ -1267,12 +1267,7 @@ setup_string_decl ()
   if (!string_class_decl)
     {
       if (!constant_string_global_id)
-	{
-	  constant_string_global_id =
-	    get_identifier (STRING_OBJECT_GLOBAL_NAME);
-	  if (constant_string_global_id == NULL_TREE)
-	    return;
-        }
+	constant_string_global_id = get_identifier (STRING_OBJECT_GLOBAL_NAME);
       string_class_decl = lookup_name (constant_string_global_id);
     }
 }

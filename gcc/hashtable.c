@@ -64,7 +64,7 @@ calc_hash (str, len)
 {
   unsigned int n = len;
   unsigned int r = 0;
-#define HASHSTEP(r, c) ((r) * 67 + (c - 113));
+#define HASHSTEP(r, c) ((r) * 67 + ((c) - 113));
 
   while (n--)
     r = HASHSTEP (r, *str++);

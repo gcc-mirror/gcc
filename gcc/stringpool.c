@@ -114,9 +114,6 @@ make_identifier (node)
 	       IDENTIFIER_POINTER (node));
 
   TREE_SET_CODE (node, IDENTIFIER_NODE);
-#ifdef GATHER_STATISTICS
-  id_string_size += IDENTIFIER_LENGTH (node);
-#endif
 }
 
 /* Return an IDENTIFIER_NODE whose name is TEXT (a null-terminated string).
