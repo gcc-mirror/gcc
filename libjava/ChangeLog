@@ -1,3 +1,7 @@
+2003-10-28  David S. Miller  <davem@redhat.com>
+
+	* sysdep/sparc/locks.h (__cas_start_atomic): %g0 --> %%g0.
+
 2003-10-26  Mark Wielaard  <mark@klomp.org>
 
 	Reported by Helmer Kraemer <hkraemer@freenet.de>
