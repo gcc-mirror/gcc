@@ -100,7 +100,7 @@ integer f_inqu(inlist *a)
 	if(a->inrecl!=NULL && p!=NULL)
 		*a->inrecl=p->url;
 	if(a->innrec!=NULL && p!=NULL && p->url>0)
-		*a->innrec=ftell(p->ufd)/p->url+1;
+		*a->innrec=FTELL(p->ufd)/p->url+1;
 	if(a->inblank && p!=NULL && p->ufmt)
 		if(p->ublnk)
 			b_char("ZERO",a->inblank,a->inblanklen);

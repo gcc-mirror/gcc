@@ -1134,7 +1134,7 @@ else
 int main() {
 
 /* Ultrix mips cc rejects this.  */
-typedef int charset[2]; const charset x;
+typedef int charset[2]; const charset x = {0,0};
 /* SunOS 4.1.1 cc rejects this.  */
 char const *const *ccp;
 char **p;
@@ -1297,7 +1297,7 @@ else
   echo "$ac_t""no" 1>&6
 fi
 
-for ac_func in ftruncate
+for ac_func in fseeko
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
 echo "configure:1304: checking for $ac_func" >&5
@@ -1352,7 +1352,7 @@ else
 fi
 done
 
-for ac_func in mkstemp
+for ac_func in ftello
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
 echo "configure:1359: checking for $ac_func" >&5
@@ -1407,7 +1407,7 @@ else
 fi
 done
 
-for ac_func in tempnam
+for ac_func in ftruncate
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
 echo "configure:1414: checking for $ac_func" >&5
@@ -1462,25 +1462,135 @@ else
 fi
 done
 
+for ac_func in mkstemp
+do
+echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
+echo "configure:1469: checking for $ac_func" >&5
+if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 1474 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char $ac_func(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char $ac_func();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_$ac_func) || defined (__stub___$ac_func)
+choke me
+#else
+$ac_func();
+#endif
+
+; return 0; }
+EOF
+if { (eval echo configure:1497: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=yes"
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=no"
+fi
+rm -f conftest*
+fi
+
+if eval "test \"`echo '$ac_cv_func_'$ac_func`\" = yes"; then
+  echo "$ac_t""yes" 1>&6
+    ac_tr_func=HAVE_`echo $ac_func | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+  cat >> confdefs.h <<EOF
+#define $ac_tr_func 1
+EOF
+ 
+else
+  echo "$ac_t""no" 1>&6
+fi
+done
+
+for ac_func in tempnam
+do
+echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
+echo "configure:1524: checking for $ac_func" >&5
+if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 1529 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char $ac_func(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char $ac_func();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_$ac_func) || defined (__stub___$ac_func)
+choke me
+#else
+$ac_func();
+#endif
+
+; return 0; }
+EOF
+if { (eval echo configure:1552: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=yes"
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=no"
+fi
+rm -f conftest*
+fi
+
+if eval "test \"`echo '$ac_cv_func_'$ac_func`\" = yes"; then
+  echo "$ac_t""yes" 1>&6
+    ac_tr_func=HAVE_`echo $ac_func | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+  cat >> confdefs.h <<EOF
+#define $ac_tr_func 1
+EOF
+ 
+else
+  echo "$ac_t""no" 1>&6
+fi
+done
+
 
 # posix will guarantee the right behaviour for sprintf, else we can't be
 # sure; HEADER_STDC wouldn't be the right check in sunos4, for instance.
 # However, on my sunos4/gcc setup unistd.h leads us wrongly to believe
 # we're posix-conformant, so always do the test.
 echo $ac_n "checking for ansi/posix sprintf result""... $ac_c" 1>&6
-echo "configure:1472: checking for ansi/posix sprintf result" >&5
+echo "configure:1582: checking for ansi/posix sprintf result" >&5
 if test "$cross_compiling" = yes; then
   g77_cv_sys_sprintf_ansi=no
 else
   cat > conftest.$ac_ext <<EOF
-#line 1477 "configure"
+#line 1587 "configure"
 #include "confdefs.h"
   #include <stdio.h>
     /* does sprintf return the number of chars transferred? */
     main () {char foo[2]; (sprintf(foo, "1") == 1) ? exit(0) : exit(1);}
 
 EOF
-if { (eval echo configure:1484: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+if { (eval echo configure:1594: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
 then
   g77_cv_sys_sprintf_ansi=yes
 else
@@ -1511,9 +1621,9 @@ fi
 
 # define NON_ANSI_RW_MODES on unix (can't hurt)
 echo $ac_n "checking NON_ANSI_RW_MODES""... $ac_c" 1>&6
-echo "configure:1515: checking NON_ANSI_RW_MODES" >&5
+echo "configure:1625: checking NON_ANSI_RW_MODES" >&5
 cat > conftest.$ac_ext <<EOF
-#line 1517 "configure"
+#line 1627 "configure"
 #include "confdefs.h"
 #ifdef unix
   yes
@@ -1558,12 +1668,12 @@ EOF
 
 
 echo $ac_n "checking for off_t""... $ac_c" 1>&6
-echo "configure:1562: checking for off_t" >&5
+echo "configure:1672: checking for off_t" >&5
 if eval "test \"`echo '$''{'ac_cv_type_off_t'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1567 "configure"
+#line 1677 "configure"
 #include "confdefs.h"
 #include <sys/types.h>
 #if STDC_HEADERS

@@ -81,9 +81,9 @@ t_runc(alist *a)
 	b = &f__units[a->aunit];
 	if(b->url)
 		return(0);	/*don't truncate direct files*/
-	loc=ftell(bf = b->ufd);
-	fseek(bf,0L,SEEK_END);
-	len=ftell(bf);
+	loc=FTELL(bf = b->ufd);
+	FSEEK(bf,0,SEEK_END);
+	len=FTELL(bf);
 	if (loc >= len || b->useek == 0 || b->ufnm == NULL)
 		return(0);
 #ifndef HAVE_FTRUNCATE
@@ -121,7 +121,7 @@ t_runc(alist *a)
 		fclose(bf);
 		if (!(bf = fopen(b->ufnm, f__w_mode[3])))
 			goto bad;
-		fseek(bf,0L,SEEK_END);
+		FSEEK(bf,0,SEEK_END);
 		b->urw = 3;
 		}
 #endif

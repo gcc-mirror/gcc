@@ -283,7 +283,7 @@ integer f_open(olist *a)
 		if (a->orl)
 			rewind(b->ufd);
 		else if ((s = a->oacc) && (*s == 'a' || *s == 'A')
-			&& fseek(b->ufd, 0L, SEEK_END))
+			&& FSEEK(b->ufd, 0, SEEK_END))
 				opnerr(a->oerr,129,"open");
 	return(0);
 }

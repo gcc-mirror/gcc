@@ -62,8 +62,8 @@ integer s_wsue(cilist *a)
 	f__reclen=0;
 	if(f__curunit->uwrt != 1 && f__nowwriting(f__curunit))
 		err(a->cierr, errno, "write start");
-	f__recloc=ftell(f__cf);
-	(void) fseek(f__cf,(long)sizeof(uiolen),SEEK_CUR);
+	f__recloc=FTELL(f__cf);
+	FSEEK(f__cf,(off_t)sizeof(uiolen),SEEK_CUR);
 	return(0);
 }
 integer e_wsue(Void)
@@ -74,15 +74,15 @@ integer e_wsue(Void)
 	if (fflush(f__cf))
 		err(f__elist->cierr, errno, "write end");
 #endif
-	loc=ftell(f__cf);
-	fseek(f__cf,f__recloc,SEEK_SET);
+	loc=FTELL(f__cf);
+	FSEEK(f__cf,f__recloc,SEEK_SET);
 	fwrite((char *)&f__reclen,sizeof(uiolen),1,f__cf);
-	fseek(f__cf,loc,SEEK_SET);
+	FSEEK(f__cf,loc,SEEK_SET);
 	return(0);
 }
 integer e_rsue(Void)
 {
 	f__init = 1;
-	(void) fseek(f__cf,(long)(f__reclen-f__recpos+sizeof(uiolen)),SEEK_CUR);
+	FSEEK(f__cf,(off_t)(f__reclen-f__recpos+sizeof(uiolen)),SEEK_CUR);
 	return(0);
 }
