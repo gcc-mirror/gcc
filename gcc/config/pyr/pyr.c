@@ -856,3 +856,100 @@ forget_cc_if_dependent (op)
   if (cc_status.value2 && reg_overlap_mentioned_p (op, cc_status.value2))
     cc_status.value2 = 0;
 }
+
+/* ??? None of the original definitions ever worked for stdarg.h, or
+   even for structs or float arguments.   Quoting bits of the old 
+   va-pyr.h for historical interest.  */
+
+/**
+ *
+ * 	Varargs for PYR/GNU CC
+ *
+ * WARNING -- WARNING -- DANGER
+ *
+ * The code in this file implements varargs for gcc on a pyr in
+ * a way that is compatible with code compiled by the Pyramid Technology
+ * C compiler.
+ * As such, it depends strongly on the Pyramid conventions for
+ * parameter passing.ct and independent implementation. 
+ * These (somewhat bizarre) parameter-passing conventions are described
+ * in the ``OSx Operating System Porting Guide''.
+ * 
+ * A quick summary is useful:
+ * 12 of the 48 register-windowed regs available for
+ * parameter passing.  Parameters of a function call that are eligible
+ * to be passed in registers are assigned registers from TR0/PR0 onwards;
+ * all other arguments are passed on the stack.
+ * Structure and union parameters are *never* passed in registers,
+ * even if they are small enough to fit.  They are always passed on
+ * the stack.
+ *
+ * Double-sized parameters cannot be passed in TR11, because
+ * TR12 is not used for passing parameters.  If, in the absence of this
+ * rule, a double-sized param would have been passed in TR11,
+ * that parameter is passed on the stack and no parameters are
+ * passed in TR11.
+ * 
+ * It is only known to work for passing 32-bit integer quantities
+ * (ie chars, shorts, ints/enums, longs), doubles, or pointers. 
+ * Passing structures on a Pyramid via varargs is a loser.
+ * Passing an object larger than 8 bytes on a pyramid via varargs may
+ * also be a loser.
+ * 
+ */
+
+tree
+pyr_build_va_list ()
+{
+typedef struct __va_regs {
+      __voidptr __stackp,__regp,__count;
+      __voidptr __pr0,__pr1,__pr2,__pr3,__pr4,__pr5,__pr6,__pr7,__pr8,__pr9,__pr10,__pr11;
+  } __va_regs;
+
+typedef __va_regs __va_buf;
+typedef __va_buf __gnuc_va_list;
+}
+
+void
+pyr_va_start (stdarg_p, valist, nextarg)
+     int stdarg_p;
+     tree valist;
+     rtx nextarg ATTRIBUTE_UNUSED;
+{
+#define va_alist \
+  __va0,__va1,__va2,__va3,__va4,__va5,__va6,__va7,__va8,__va9,__va10,__va11, \
+ __builtin_va_alist
+
+/* The ... causes current_function_varargs to be set in cc1.  */
+#define va_dcl __voidptr va_alist; __va_ellipsis
+
+
+/* __asm ("rcsp %0" : "=r" ( _AP [0]));*/
+
+#define va_start(_AP)  \
+  _AP =  ((struct __va_regs) {						\
+   &(_AP.__pr0), (void*)&__builtin_va_alist, (void*)0,			\
+        __va0,__va1,__va2,__va3,__va4,__va5,				\
+	__va6,__va7,__va8,__va9,__va10,__va11})
+
+}
+
+rtx
+pyr_va_arg (valist, type)
+     tree valist, type;
+{
+#define va_arg(_AP, _MODE)	\
+__extension__								\
+(*({__voidptr *__ap = (__voidptr*)&_AP;					\
+  register int __size = sizeof (_MODE);					\
+  register int __onstack =						\
+	  (__size > 8 || ( (int)(__ap[2]) > 11) ||			\
+	    (__size==8 && (int)(__ap[2])==11));				\
+  register int* __param_addr =  ((int*)((__ap) [__onstack]));		\
+									\
+  ((void *)__ap[__onstack])+=__size;					\
+    if (__onstack==0 || (int)(__ap[2])==11)				\
+      __ap[2]+= (__size >> 2);						\
+  (( _MODE *) (void *) __param_addr);					\
+}))
+}

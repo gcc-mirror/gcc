@@ -505,7 +505,7 @@ clipper_va_start (stdarg_p, valist, nextarg)
     t = build (PLUS_EXPR, ptr_type_node, t,
 	       build_int_2 (current_function_args_info.size, 0));
   t = build (MODIFY_EXPR, TREE_TYPE (ap_field), ap_field, t);
-  TREE_SIZE_EFFECTS (t) = 1;
+  TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
   /* Set the four entries of __va_reg.  */
@@ -513,7 +513,7 @@ clipper_va_start (stdarg_p, valist, nextarg)
   t = build1 (NOP_EXPR, ptr_type_node, save_area);
   u = build (ARRAY_REF, ptr_type_node, reg_field, build_int (0, 0));
   t = build (MODIFY_EXPR, ptr_type_node, u, t);
-  TREE_SIZE_EFFECTS (t) = 1;
+  TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
   t = fold (build (PLUS_EXPR, integer_type_node, save_area,
@@ -521,7 +521,7 @@ clipper_va_start (stdarg_p, valist, nextarg)
   t = build1 (NOP_EXPR, ptr_type_node, save_area);
   u = build (ARRAY_REF, ptr_type_node, reg_field, build_int (1, 0));
   t = build (MODIFY_EXPR, ptr_type_node, u, t);
-  TREE_SIZE_EFFECTS (t) = 1;
+  TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
   t = fold (build (PLUS_EXPR, integer_type_node, save_area,
@@ -529,7 +529,7 @@ clipper_va_start (stdarg_p, valist, nextarg)
   t = build1 (NOP_EXPR, ptr_type_node, save_area);
   u = build (ARRAY_REF, ptr_type_node, reg_field, build_int (2, 0));
   t = build (MODIFY_EXPR, ptr_type_node, u, t);
-  TREE_SIZE_EFFECTS (t) = 1;
+  TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
   t = fold (build (PLUS_EXPR, integer_type_node, save_area,
@@ -537,14 +537,15 @@ clipper_va_start (stdarg_p, valist, nextarg)
   t = build1 (NOP_EXPR, ptr_type_node, save_area);
   u = build (ARRAY_REF, ptr_type_node, reg_field, build_int (3, 0));
   t = build (MODIFY_EXPR, ptr_type_node, u, t);
-  TREE_SIZE_EFFECTS (t) = 1;
+  TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
   /* Set __va_num.  */
 
   t = build_int_2 (current_function_args_info.num, 0);
   t = build (MODIFY_EXPR, TREE_TYPE (num_field), num_field, t);
-  TREE_SIZE_EFFECTS (t) = 1;
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 }
 
 rtx
