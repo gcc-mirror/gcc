@@ -1,3 +1,8 @@
+2004-04-21  Aldy Hernandez  <aldyh@redhat.com>
+
+	* lib/target-supports.exp (check_profiling_available): Assume
+	profiling is not available on powerpc-eabi targets.
+
 2004-04-21  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/vmx/1c-01.c: Use ptrdiff_t for casts of pointers.
