@@ -61,6 +61,12 @@ dtor_section ()							\
     fprintf (FILE, "\n");			\
   } while (0)
 
+/* Allow (eg) __attribute__((section "locked")) to work */
+#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME)\
+  do {						\
+    fprintf (FILE, "\t.section %s\n", NAME);	\
+  } while (0)
+
 /* This is how to output an assembler line
    that says to advance the location counter
    to a multiple of 2**LOG bytes.  */
