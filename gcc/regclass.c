@@ -1584,7 +1584,8 @@ reg_scan_mark_refs (x, insn, note_flag)
       break;
 
     case EXPR_LIST:
-      reg_scan_mark_refs (XEXP (x, 0), insn, note_flag);
+      if (XEXP (x, 0))
+	reg_scan_mark_refs (XEXP (x, 0), insn, note_flag);
       if (XEXP (x, 1))
 	reg_scan_mark_refs (XEXP (x, 1), insn, note_flag);
       break;
