@@ -262,11 +262,6 @@ package GNAT.Sockets.Thin is
      (S       : C.int;
       Backlog : C.int) return C.int;
 
-   function C_Read
-     (Fildes : C.int;
-      Buf    : System.Address;
-      Nbyte  : C.int) return C.int;
-
    function C_Readv
      (Socket : C.int;
       Iov    : System.Address;
@@ -328,11 +323,6 @@ package GNAT.Sockets.Thin is
 
    function C_System
      (Command : System.Address) return C.int;
-
-   function C_Write
-     (Fildes : C.int;
-      Buf    : System.Address;
-      Nbyte  : C.int) return C.int;
 
    function C_Writev
      (Socket : C.int;
@@ -408,7 +398,6 @@ private
    pragma Import (Stdcall, C_Inet_Addr, "inet_addr");
    pragma Import (Stdcall, C_Ioctl, "ioctlsocket");
    pragma Import (Stdcall, C_Listen, "listen");
-   pragma Import (C, C_Read, "_read");
    pragma Import (Stdcall, C_Recv, "recv");
    pragma Import (Stdcall, C_Recvfrom, "recvfrom");
    pragma Import (Stdcall, C_Send, "send");
@@ -418,7 +407,6 @@ private
    pragma Import (Stdcall, C_Socket, "socket");
    pragma Import (C, C_Strerror, "strerror");
    pragma Import (C, C_System, "_system");
-   pragma Import (C, C_Write, "_write");
    pragma Import (Stdcall, Socket_Errno, "WSAGetLastError");
    pragma Import (Stdcall, Set_Socket_Errno, "WSASetLastError");
    pragma Import (Stdcall, WSAStartup, "WSAStartup");

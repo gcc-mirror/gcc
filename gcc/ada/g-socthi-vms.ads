@@ -273,12 +273,6 @@ package GNAT.Sockets.Thin is
 
    function C_Listen (S, Backlog : C.int) return C.int;
 
-   function C_Read
-     (Fd    : C.int;
-      Buf   : System.Address;
-      Count : C.int)
-      return  C.int;
-
    function C_Readv
      (Fd     : C.int;
       Iov    : System.Address;
@@ -352,12 +346,6 @@ package GNAT.Sockets.Thin is
      (Command : System.Address)
       return    C.int;
 
-   function C_Write
-     (Fd    : C.int;
-      Buf   : System.Address;
-      Count : C.int)
-      return  C.int;
-
    function C_Writev
      (Fd     : C.int;
       Iov    : System.Address;
@@ -427,13 +415,11 @@ private
    pragma Import (C, C_Getsockopt,    "DECC$GETSOCKOPT");
    pragma Import (C, C_Inet_Addr,     "DECC$INET_ADDR");
    pragma Import (C, C_Listen,        "DECC$LISTEN");
-   pragma Import (C, C_Read,          "DECC$READ");
    pragma Import (C, C_Select,        "DECC$SELECT");
    pragma Import (C, C_Setsockopt,    "DECC$SETSOCKOPT");
    pragma Import (C, C_Shutdown,      "DECC$SHUTDOWN");
    pragma Import (C, C_Strerror,      "DECC$STRERROR");
    pragma Import (C, C_System,        "DECC$SYSTEM");
-   pragma Import (C, C_Write,         "DECC$WRITE");
 
    pragma Import (C, Free_Socket_Set, "__gnat_free_socket_set");
    pragma Import (C, Get_Socket_From_Set, "__gnat_get_socket_from_set");
