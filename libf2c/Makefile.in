@@ -78,7 +78,7 @@ F2CEXT = abort derf derfc ef1asc ef1cmc erf erfc exit getarg getenv iargc \
 # files which the $(LIBG2C) target checks in the sub-make.  (Probably
 # only one stamp file is really needed.)
 all: i77 f77 u77 e77
-	make $(FLAGS_TO_PASS) $(LIBG2C)
+	$(MAKE) $(FLAGS_TO_PASS) $(LIBG2C)
 
 i77 f77 u77: g2c.h
 
