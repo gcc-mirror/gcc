@@ -2203,7 +2203,7 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
 	     be viewed as just an efficiency improvement.  */
 	  rtx slot = assign_stack_temp (mode, GET_MODE_SIZE (mode), 0);
 	  emit_move_insn (slot, val);
-	  val = XEXP (slot, 0);
+	  val = force_operand (XEXP (slot, 0), NULL_RTX);
 	  mode = Pmode;
 	}
 #endif
