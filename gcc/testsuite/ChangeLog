@@ -1,3 +1,10 @@
+2003-02-12  Aldy Hernandez  <aldyh@redhat.com>
+
+        * gcc.dg/ppc-spe.c: Fix formatting.
+        Enable tests that were previously unsupported by gas.
+        Delete tests for instructions that no longer exist.
+        Switch arguments on evsubifw builtin.
+
 2003-02-12  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gcc.c-torture/execute/20030209-1.c: Disable the test if
@@ -124,6 +131,7 @@ Mon Feb  3 16:05:11 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* gcc.c-torture/exectue/ieee/20000320-1.c: The ARM VFP format is
 	'natural-endian'.
 
+>>>>>>> 1.2408
 2003-02-01  Richard Sandiford  <rsandifo@redhat.com>
 
 	* g++.dg/init/new1.C: Remove -fvolatile dg-options line.

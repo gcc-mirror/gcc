@@ -26,70 +26,70 @@ int16_t s16;
 void
 test_api ()
 {
-  c = __ev_addw(a, b);
-  c = __ev_addiw(a, 8);
-  c = __ev_subfw(a, b);
-  c = __ev_subifw(a, 8);
-  c = __ev_abs(a);
-  c = __ev_neg(a);
-  c = __ev_extsb(a);
-  c = __ev_extsh(a);
-  c = __ev_and(a, b);
-  c = __ev_or(a, b);
-  c = __ev_xor(a, b);
-  c = __ev_nand(a, b);
-  c = __ev_nor(a, b);
-  c = __ev_eqv(a, b);
-  c = __ev_andc(a, b);
-  c = __ev_orc(a, b);
-  c = __ev_rlw(a, b);
-  c = __ev_rlwi(a, 8);
-  c = __ev_slw(a, b);
-  c = __ev_slwi(a, 8);
-  c = __ev_srws(a, b);
-  c = __ev_srwu(a, b);
-  c = __ev_srwis(a, 8);
-  c = __ev_srwiu(a, 8);
-  c = __ev_cntlzw(a);
-  c = __ev_cntlsw(a);
-  c = __ev_rndw(a);
-  c = __ev_mergehi(a, b);
-  c = __ev_mergelo(a, b);
-  c = __ev_mergelohi(a, b);
-  c = __ev_mergehilo(a, b);
-  c = __ev_splati(5);
-  c = __ev_splatfi(6);
-  c = __ev_divws(a, b);
-  c = __ev_divwu(a, b);
-  c = __ev_mra(a);
-  i = __brinc(5, 6);
+  c = __ev_addw (a, b);
+  c = __ev_addiw (a, 8);
+  c = __ev_subfw (a, b);
+  c = __ev_subifw (8, a);
+  c = __ev_abs (a);
+  c = __ev_neg (a);
+  c = __ev_extsb (a);
+  c = __ev_extsh (a);
+  c = __ev_and (a, b);
+  c = __ev_or (a, b);
+  c = __ev_xor (a, b);
+  c = __ev_nand (a, b);
+  c = __ev_nor (a, b);
+  c = __ev_eqv (a, b);
+  c = __ev_andc (a, b);
+  c = __ev_orc (a, b);
+  c = __ev_rlw (a, b);
+  c = __ev_rlwi (a, 8);
+  c = __ev_slw (a, b);
+  c = __ev_slwi (a, 8);
+  c = __ev_srws (a, b);
+  c = __ev_srwu (a, b);
+  c = __ev_srwis (a, 8);
+  c = __ev_srwiu (a, 8);
+  c = __ev_cntlzw (a);
+  c = __ev_cntlsw (a);
+  c = __ev_rndw (a);
+  c = __ev_mergehi (a, b);
+  c = __ev_mergelo (a, b);
+  c = __ev_mergelohi (a, b);
+  c = __ev_mergehilo (a, b);
+  c = __ev_splati (5);
+  c = __ev_splatfi (6);
+  c = __ev_divws (a, b);
+  c = __ev_divwu (a, b);
+  c = __ev_mra (a);
+  i = __brinc (5, 6);
 
   /* Loads.  */
-  c = __ev_lddx(ap, i);
-  c = __ev_ldwx(ap, i);
-  c = __ev_ldhx(ap, i);
+  c = __ev_lddx (ap, i);
+  c = __ev_ldwx (ap, i);
+  c = __ev_ldhx (ap, i);
 
-  c = __ev_lwhex(uip, i);
-  c = __ev_lwhoux(uip, i);
-  c = __ev_lwhosx(uip, i);
-  c = __ev_lwwsplatx(uip, i);
-  c = __ev_lwhsplatx(uip, i);
+  c = __ev_lwhex (uip, i);
+  c = __ev_lwhoux (uip, i);
+  c = __ev_lwhosx (uip, i);
+  c = __ev_lwwsplatx (uip, i);
+  c = __ev_lwhsplatx (uip, i);
 
-  c = __ev_lhhesplatx(usp, i);
-  c = __ev_lhhousplatx(usp, i);
-  c = __ev_lhhossplatx(usp, i);
+  c = __ev_lhhesplatx (usp, i);
+  c = __ev_lhhousplatx (usp, i);
+  c = __ev_lhhossplatx (usp, i);
 
-  c = __ev_ldd(ap, 5);
-  c = __ev_ldw(ap, 6);
-  c = __ev_ldh(ap, 7);
-  c = __ev_lwhe(uip, 6);
-  c = __ev_lwhou(uip, 6);
-  c = __ev_lwhos(uip, 7);
-  c = __ev_lwwsplat(uip, 7);
-  c = __ev_lwhsplat(uip, 7);
-  c = __ev_lhhesplat(usp, 7);
-  c = __ev_lhhousplat(usp, 7);
-  c = __ev_lhhossplat(usp, 7);
+  c = __ev_ldd (ap, 5);
+  c = __ev_ldw (ap, 6);
+  c = __ev_ldh (ap, 7);
+  c = __ev_lwhe (uip, 6);
+  c = __ev_lwhou (uip, 6);
+  c = __ev_lwhos (uip, 7);
+  c = __ev_lwwsplat (uip, 7);
+  c = __ev_lwhsplat (uip, 7);
+  c = __ev_lhhesplat (usp, 7);
+  c = __ev_lhhousplat (usp, 7);
+  c = __ev_lhhossplat (usp, 7);
 
   /* Stores.  */
   __ev_stddx (a, ap, 9);
@@ -108,125 +108,109 @@ test_api ()
   __ev_stwho (a, uip, 9);
 
   /* Fixed point complex.  */
-  c = __ev_mhossf(a, b);
-  c = __ev_mhosmf(a, b);
-  c = __ev_mhosmi(a, b);
-  c = __ev_mhoumi(a, b);
-  c = __ev_mhessf(a, b);
-  c = __ev_mhesmf(a, b);
-  c = __ev_mhesmi(a, b);
-  c = __ev_mheumi(a, b);
-  c = __ev_mhossfa(a, b);
-  c = __ev_mhosmfa(a, b);
-  c = __ev_mhosmia(a, b);
-  c = __ev_mhoumia(a, b);
-  c = __ev_mhessfa(a, b);
-  c = __ev_mhesmfa(a, b);
-  c = __ev_mhesmia(a, b);
-  c = __ev_mheumia(a, b);
+  c = __ev_mhossf (a, b);
+  c = __ev_mhosmf (a, b);
+  c = __ev_mhosmi (a, b);
+  c = __ev_mhoumi (a, b);
+  c = __ev_mhessf (a, b);
+  c = __ev_mhesmf (a, b);
+  c = __ev_mhesmi (a, b);
+  c = __ev_mheumi (a, b);
+  c = __ev_mhossfa (a, b);
+  c = __ev_mhosmfa (a, b);
+  c = __ev_mhosmia (a, b);
+  c = __ev_mhoumia (a, b);
+  c = __ev_mhessfa (a, b);
+  c = __ev_mhesmfa (a, b);
+  c = __ev_mhesmia (a, b);
+  c = __ev_mheumia (a, b);
 
   c = __ev_mhoumf (a, b);
   c = __ev_mheumf (a, b);
   c = __ev_mhoumfa (a, b);
   c = __ev_mheumfa (a, b);
 
-  c = __ev_mhossfaaw(a, b);
-  c = __ev_mhossiaaw(a, b);
-  c = __ev_mhosmfaaw(a, b);
-  c = __ev_mhosmiaaw(a, b);
-  c = __ev_mhousiaaw(a, b);
-  c = __ev_mhoumiaaw(a, b);
-  c = __ev_mhessfaaw(a, b);
-  c = __ev_mhessiaaw(a, b);
-  c = __ev_mhesmfaaw(a, b);
-  c = __ev_mhesmiaaw(a, b);
-  c = __ev_mheusiaaw(a, b);
-  c = __ev_mheumiaaw(a, b);
+  c = __ev_mhossfaaw (a, b);
+  c = __ev_mhossiaaw (a, b);
+  c = __ev_mhosmfaaw (a, b);
+  c = __ev_mhosmiaaw (a, b);
+  c = __ev_mhousiaaw (a, b);
+  c = __ev_mhoumiaaw (a, b);
+  c = __ev_mhessfaaw (a, b);
+  c = __ev_mhessiaaw (a, b);
+  c = __ev_mhesmfaaw (a, b);
+  c = __ev_mhesmiaaw (a, b);
+  c = __ev_mheusiaaw (a, b);
+  c = __ev_mheumiaaw (a, b);
 
   c = __ev_mhousfaaw (a, b);
   c = __ev_mhoumfaaw (a, b);
   c = __ev_mheusfaaw (a, b);
   c = __ev_mheumfaaw (a, b);
 
-  c = __ev_mhossfanw(a, b);
-  c = __ev_mhossianw(a, b);
-  c = __ev_mhosmfanw(a, b);
-  c = __ev_mhosmianw(a, b);
-  c = __ev_mhousianw(a, b);
-  c = __ev_mhoumianw(a, b);
-  c = __ev_mhessfanw(a, b);
-  c = __ev_mhessianw(a, b);
-  c = __ev_mhesmfanw(a, b);
-  c = __ev_mhesmianw(a, b);
-  c = __ev_mheusianw(a, b);
-  c = __ev_mheumianw(a, b);
+  c = __ev_mhossfanw (a, b);
+  c = __ev_mhossianw (a, b);
+  c = __ev_mhosmfanw (a, b);
+  c = __ev_mhosmianw (a, b);
+  c = __ev_mhousianw (a, b);
+  c = __ev_mhoumianw (a, b);
+  c = __ev_mhessfanw (a, b);
+  c = __ev_mhessianw (a, b);
+  c = __ev_mhesmfanw (a, b);
+  c = __ev_mhesmianw (a, b);
+  c = __ev_mheusianw (a, b);
+  c = __ev_mheumianw (a, b);
 
   c = __ev_mhousfanw (a, b);
   c = __ev_mhoumfanw (a, b);
   c = __ev_mheusfanw (a, b);
   c = __ev_mheumfanw (a, b);
 
-  c = __ev_mhogsmfaa(a, b);
-  c = __ev_mhogsmiaa(a, b);
-  c = __ev_mhogumiaa(a, b);
-  c = __ev_mhegsmfaa(a, b);
-  c = __ev_mhegsmiaa(a, b);
-  c = __ev_mhegumiaa(a, b);
+  c = __ev_mhogsmfaa (a, b);
+  c = __ev_mhogsmiaa (a, b);
+  c = __ev_mhogumiaa (a, b);
+  c = __ev_mhegsmfaa (a, b);
+  c = __ev_mhegsmiaa (a, b);
+  c = __ev_mhegumiaa (a, b);
 
   c = __ev_mhogumfaa (a, b);
   c = __ev_mhegumfaa (a, b);
 
-  c = __ev_mhogsmfan(a, b);
-  c = __ev_mhogsmian(a, b);
-  c = __ev_mhogumian(a, b);
-  c = __ev_mhegsmfan(a, b);
-  c = __ev_mhegsmian(a, b);
-  c = __ev_mhegumian(a, b);
+  c = __ev_mhogsmfan (a, b);
+  c = __ev_mhogsmian (a, b);
+  c = __ev_mhogumian (a, b);
+  c = __ev_mhegsmfan (a, b);
+  c = __ev_mhegsmian (a, b);
+  c = __ev_mhegumian (a, b);
 
   c = __ev_mhogumfan (a, b);
   c = __ev_mhegumfan (a, b);
 
-  c = __ev_mwhssf(a, b);
-  c = __ev_mwhsmf(a, b);
-  c = __ev_mwhsmi(a, b);
-  c = __ev_mwhumi(a, b);
-  c = __ev_mwhssfa(a, b);
-  c = __ev_mwhsmfa(a, b);
-  c = __ev_mwhsmia(a, b);
-  c = __ev_mwhumia(a, b);
+  c = __ev_mwhssf (a, b);
+  c = __ev_mwhsmf (a, b);
+  c = __ev_mwhsmi (a, b);
+  c = __ev_mwhumi (a, b);
+  c = __ev_mwhssfa (a, b);
+  c = __ev_mwhsmfa (a, b);
+  c = __ev_mwhsmia (a, b);
+  c = __ev_mwhumia (a, b);
 
   c = __ev_mwhumf (a, b);
   c = __ev_mwhumfa (a, b);
 
-  c = __ev_mwlssf(a, b);
-  c = __ev_mwlsmf(a, b);
-  c = __ev_mwlumi(a, b);
-  c = __ev_mwlssfa(a, b);
-  c = __ev_mwlsmfa(a, b);
-  c = __ev_mwlumia(a, b);
-  c = __ev_mwlumiaaw(a, b);
+  c = __ev_mwlumi (a, b);
+  c = __ev_mwlumia (a, b);
+  c = __ev_mwlumiaaw (a, b);
 
-  c = __ev_mwlufi (a, b);
-  c = __ev_mwlufia (a, b);
+  c = __ev_mwlssiaaw (a, b);
+  c = __ev_mwlsmiaaw (a, b);
+  c = __ev_mwlusiaaw (a, b);
+  c = __ev_mwlusiaaw (a, b);
 
-  c = __ev_mwlssfaaw(a, b);
-  c = __ev_mwlssiaaw(a, b);
-  c = __ev_mwlsmfaaw(a, b);
-  c = __ev_mwlsmiaaw(a, b);
-  c = __ev_mwlusiaaw(a, b);
-  c = __ev_mwlusiaaw(a, b);
-
-  c = __ev_mwlusfaaw (a, b);
-
-  c = __ev_mwlssfanw(a, b);
-  c = __ev_mwlssianw(a, b);
-  c = __ev_mwlsmfanw(a, b);
-  c = __ev_mwlsmianw(a, b);
-  c = __ev_mwlusianw(a, b);
-  c = __ev_mwlumianw(a, b);
-
-  c = __ev_mwlumfanw (a, b);
-  c = __ev_mwlusfanw (a, b);
+  c = __ev_mwlssianw (a, b);
+  c = __ev_mwlsmianw (a, b);
+  c = __ev_mwlusianw (a, b);
+  c = __ev_mwlumianw (a, b);
 
   c = __ev_mwssf (a, b);
   c = __ev_mwsmf (a, b);
@@ -536,16 +520,8 @@ main (void)
   c = __builtin_spe_evmwhssfa (a, b);
   c = __builtin_spe_evmwhumi (a, b);
   c = __builtin_spe_evmwhumia (a, b);
-  c = __builtin_spe_evmwlsmf (a, b);
-  c = __builtin_spe_evmwlsmfa (a, b);
-  c = __builtin_spe_evmwlsmfaaw (a, b);
-  c = __builtin_spe_evmwlsmfanw (a, b);
   c = __builtin_spe_evmwlsmiaaw (a, b);
   c = __builtin_spe_evmwlsmianw (a, b);
-  c = __builtin_spe_evmwlssf (a, b);
-  c = __builtin_spe_evmwlssfa (a, b);
-  c = __builtin_spe_evmwlssfaaw (a, b);
-  c = __builtin_spe_evmwlssfanw (a, b);
   c = __builtin_spe_evmwlssiaaw (a, b);
   c = __builtin_spe_evmwlssianw (a, b);
   c = __builtin_spe_evmwlumi (a, b);
@@ -580,7 +556,7 @@ main (void)
   c = __builtin_spe_evsrwu (a, b);
   c = __builtin_spe_evsubfw (a, b);
   c = __builtin_spe_evxor (a, b);
-  /* GAS bug not implemented.
+
   c = __builtin_spe_evmwhssfaa (a, b);
   c = __builtin_spe_evmwhssmaa (a, b);
   c = __builtin_spe_evmwhsmfaa (a, b);
@@ -601,7 +577,6 @@ main (void)
   c = __builtin_spe_evmwhgsmfan (a, b);
   c = __builtin_spe_evmwhgsmian (a, b);
   c = __builtin_spe_evmwhgumian (a, b);
-  */
   i = __builtin_spe_brinc (i, j);
 
   /* Generic unary operations.  */
