@@ -1886,7 +1886,7 @@ string_conv_p (totype, exp, warn)
   if (TREE_CODE (exp) == STRING_CST)
     {
       /* Make sure that we don't try to convert between char and wchar_t.  */
-      if (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (exp))) != t)
+      if (!same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (exp))), t))
 	return 0;
     }
   else
