@@ -1,3 +1,7 @@
+2004-01-29  Devang Patel  <dpatel@apple.com>
+
+	* dwarf2out.c (gen_field_die): Do not equate decl number to die.
+	
 2004-01-28  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	PR inline-asm/6162
