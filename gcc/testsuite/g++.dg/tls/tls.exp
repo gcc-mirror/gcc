@@ -23,7 +23,8 @@ load_lib g++-dg.exp
 # isn't, everything will fail with the "not supported" message.
 
 set comp_output [g++_target_compile \
-		"$srcdir/$subdir/trivial.C" "trivial.S" assembly ""]
+		"$srcdir/$subdir/trivial.C" "trivialx.S" assembly ""]
+remove-build-file "trivialx.S"
 if { [string match "*not supported*" $comp_output] } {
   return 0
 }

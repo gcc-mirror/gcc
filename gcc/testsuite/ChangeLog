@@ -1,5 +1,10 @@
 2005-03-31  Janis Johnson  <janis187@us.ibm.com>
 
+	* gcc.dg/tls/tls.exp: Remove temporary file.
+	* g++.dg/tls/tls.exp: Ditto.
+	* lib/file-format.exp: Ditto.
+	* g++.dg/special/ecos.exp: Ditto.
+
 	* lib/profopt.exp: Treat prof_ext as a list.
 	* gcc.misc-tests/bprob.exp: Ditto.
 	* g++.dg/bprob/bprob.exp: Ditto.
