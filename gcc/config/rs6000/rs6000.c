@@ -37,6 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #include "except.h"
 #include "function.h"
 #include "output.h"
+#include "basic-block.h"
 #include "toplev.h"
 #include "ggc.h"
 #include "hashtab.h"
@@ -5940,8 +5941,9 @@ rs6000_emit_prologue ()
        it.  We use R11 for this purpose because emit_load_toc_table
        can use register 0.  This allows us to use a plain 'blr' to return
        from the procedure more often.  */
-    int save_LR_around_toc_setup = (TARGET_ELF && flag_pic != 0 && 
-				    ! info->lr_save_p);
+    int save_LR_around_toc_setup = (TARGET_ELF && flag_pic != 0
+				    && ! info->lr_save_p
+				    && EXIT_BLOCK_PTR->pred != NULL);
     if (save_LR_around_toc_setup)
       emit_move_insn (gen_rtx_REG (Pmode, 11), 
 		      gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM));
@@ -7347,7 +7349,7 @@ output_profile_hook (labelno)
     }
   else if (DEFAULT_ABI == ABI_DARWIN)
     {
-      char *mcount_name = RS6000_MCOUNT;
+      const char *mcount_name = RS6000_MCOUNT;
       int caller_addr_regno = LINK_REGISTER_REGNUM;
 
       /* Be conservative and always set this, at least for now.  */
@@ -7376,9 +7378,6 @@ output_function_profiler (file, labelno)
   FILE *file;
   int labelno;
 {
-  /* The last used parameter register.  */
-  int last_parm_reg;
-  int i, j;
   char buf[100];
 
   ASM_GENERATE_INTERNAL_LABEL (buf, "LP", labelno);
