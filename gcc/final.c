@@ -413,7 +413,7 @@ end_final (filename)
 	assemble_integer (const0_rtx, pointer_bytes, 1);
 
       /* byte count for extended structure.  */
-      assemble_integer (GEN_INT (10 * UNITS_PER_WORD), long_bytes, 1);
+      assemble_integer (GEN_INT (11 * UNITS_PER_WORD), long_bytes, 1);
 
       /* address of function name table */
       if (profile_block_flag)
