@@ -123,7 +123,7 @@ in the following sections.
 -Wimplicit-function-declaration  -Wimport
 -Werror-implicit-function-declaration  -Winline
 -Wlarger-than-@var{len}  -Wlong-long
--Wmain  -Wmissing-declarations
+-Wmain  -Wmissing-declarations  -Wmissing-noreturn
 -Wmissing-prototypes  -Wmultichar  -Wnested-externs  -Wno-import  
 -Wno-non-template-friend -Wold-style-cast  -Woverloaded-virtual  
 -Wparentheses -Wpointer-arith  -Wredundant-decls  -Wreorder  
@@ -1616,6 +1616,13 @@ Warn if a global function is defined without a previous declaration.
 Do so even if the definition itself provides a prototype.
 Use this option to detect global functions that are not declared in
 header files.
+
+@item -Wmissing-noreturn
+Warn about functions which might be candidates for attribute @code{noreturn}.
+Note these are only possible candidates, not absolute ones.  Care should
+be taken to manually verify functions actually do not ever return before
+adding the @code{noreturn} attribute, otherwise subtle code generation
+bugs could be introduced.
 
 @item -Wredundant-decls
 Warn if anything is declared more than once in the same scope, even in

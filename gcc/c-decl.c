@@ -515,6 +515,10 @@ int warn_cast_qual;
 
 int warn_bad_function_cast;
 
+/* Warn about functions which might be candidates for attribute noreturn. */
+
+int warn_missing_noreturn;
+
 /* Warn about traditional constructs whose meanings changed in ANSI C.  */
 
 int warn_traditional;
@@ -728,6 +732,10 @@ c_decode_option (argc, argv)
     warn_bad_function_cast = 1;
   else if (!strcmp (p, "-Wno-bad-function-cast"))
     warn_bad_function_cast = 0;
+  else if (!strcmp (p, "-Wmissing-noreturn"))
+    warn_missing_noreturn = 1;
+  else if (!strcmp (p, "-Wno-missing-noreturn"))
+    warn_missing_noreturn = 0;
   else if (!strcmp (p, "-Wpointer-arith"))
     warn_pointer_arith = 1;
   else if (!strcmp (p, "-Wno-pointer-arith"))
@@ -7191,6 +7199,12 @@ finish_function (nested)
   rest_of_compilation (fndecl);
 
   current_function_returns_null |= can_reach_end;
+
+  if (warn_missing_noreturn
+      && !TREE_THIS_VOLATILE (fndecl)
+      && !current_function_returns_null
+      && !current_function_returns_value)
+    warning ("function might be possible candidate for attribute `noreturn'");
 
   if (TREE_THIS_VOLATILE (fndecl) && current_function_returns_null)
     warning ("`noreturn' function does return");
