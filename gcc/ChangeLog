@@ -1,3 +1,7 @@
+Thu Apr  2 07:06:57 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* m68k.c (standard_68881_constant_p): Don't use fmovecr on 68060.
+
 Thu Apr  2 06:19:25 1998  Ken Raeburn  <raeburn@cygnus.com>
 
 	* Makefile.in (version.c): Put "cvs log" output in build directory.
