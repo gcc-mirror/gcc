@@ -1,3 +1,25 @@
+Sun Jan 31 20:34:29 1999  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* flags.h: Declare flag_no_ident.
+	* toplev.c: Define flag_no_ident.  Process -f(no-)ident here.
+	* c-tree.h: Don't declare flag_no_ident.
+	* c-decl.c: Don't define flag_no_ident.  Don't process
+          -f(no-)ident switches here.
+
+	* config/elfos.h (ASM_FILE_END): Output final .ident directive
+          only if !flag_no_ident.
+	* config/ptx4.h: Likewise.
+	* config/svr4.h: Likewise.
+	* config/alpha/elf.h: Likewise.
+	* config/arm/linux-elf.h: Likewise.
+	* config/i386/sco5.h: Likewise.
+	* config/i860/fx2800.h: Likewise.
+	* config/mips/gnu.h: Likewise.
+	* config/i386/osfrose.h: Likewise.
+
+	* gcc.c (C specs): Map -Qn to -fno-ident.
+	* objc/lang-specs.h: Likewise.
+
 Mon Feb  1 10:52:07 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* configure.in: Don't remove loop.o and unroll.o when
