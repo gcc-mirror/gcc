@@ -1,3 +1,8 @@
+2002-04-10  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/5507
+	* decl.c (make_typename_type): Remove implicit typenameness.
+
 2002-04-09  Jason Merrill  <jason@redhat.com>
 
 	PR optimization/6189
