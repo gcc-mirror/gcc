@@ -296,8 +296,6 @@ do {									   \
 #define EXTRA_SECTIONS in_sdata, in_sbss, in_rdata, in_ctors, in_dtors
  
 #define INVOKE__main
-#define NAME__MAIN "__gccmain"
-#define SYMBOL__MAIN __gccmain
 
 #undef EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS                                         \
