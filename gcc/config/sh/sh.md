@@ -1358,8 +1358,7 @@
   /* Emit the move of the address to a pseudo outside of the libcall.  */
   if (TARGET_HARD_SH4 && TARGET_SH2E)
     {
-      emit_move_insn (operands[3],
-		      gen_rtx_SYMBOL_REF (SImode, \"__udivsi3_i4\"));
+      emit_move_insn (operands[3], function_symbol (\"__udivsi3_i4\"));
       if (TARGET_FPU_SINGLE)
 	last = gen_udivsi3_i4_single (operands[0], operands[3]);
       else
@@ -1375,10 +1374,9 @@
   else if (TARGET_SH5)
     {
       emit_move_insn (operands[3],
-		      gen_rtx_SYMBOL_REF (Pmode,
-					  (TARGET_FPU_ANY
-					   ? \"__udivsi3_i4\"
-					   : \"__udivsi3\")));
+		      function_symbol (TARGET_FPU_ANY
+				       ? \"__udivsi3_i4\"
+				       : \"__udivsi3\"));
 
       if (TARGET_SHMEDIA)
 	last = gen_udivsi3_i1_media (operands[0],
@@ -1393,8 +1391,7 @@
     }
   else
     {
-      emit_move_insn (operands[3],
-		      gen_rtx_SYMBOL_REF (SImode, \"__udivsi3\"));
+      emit_move_insn (operands[3], function_symbol (\"__udivsi3\"));
       last = gen_udivsi3_i1 (operands[0], operands[3]);
     }
   first = emit_move_insn (gen_rtx_REG (SImode, 4), operands[1]);
@@ -1508,8 +1505,7 @@
   /* Emit the move of the address to a pseudo outside of the libcall.  */
   if (TARGET_HARD_SH4 && TARGET_SH2E)
     {
-      emit_move_insn (operands[3],
-		      gen_rtx_SYMBOL_REF (SImode, \"__sdivsi3_i4\"));
+      emit_move_insn (operands[3], function_symbol (\"__sdivsi3_i4\"));
       if (TARGET_FPU_SINGLE)
 	last = gen_divsi3_i4_single (operands[0], operands[3]);
       else
@@ -1525,10 +1521,9 @@
   else if (TARGET_SH5)
     {
       emit_move_insn (operands[3],
-		      gen_rtx_SYMBOL_REF (Pmode,
-					  (TARGET_FPU_ANY
-					   ? \"__sdivsi3_i4\"
-					   : \"__sdivsi3\")));
+		      function_symbol (TARGET_FPU_ANY
+				       ? \"__sdivsi3_i4\"
+				       : \"__sdivsi3\"));
 
       if (TARGET_SHMEDIA)
 	last = gen_divsi3_i1_media (operands[0],
@@ -1543,7 +1538,7 @@
     }
   else
     {
-      emit_move_insn (operands[3], gen_rtx_SYMBOL_REF (SImode, \"__sdivsi3\"));
+      emit_move_insn (operands[3], function_symbol (\"__sdivsi3\"));
       last = gen_divsi3_i1 (operands[0], operands[3]);
     }
   first = emit_move_insn (gen_rtx_REG (SImode, 4), operands[1]);
@@ -1697,7 +1692,7 @@
     {
       /* The address must be set outside the libcall,
 	 since it goes into a pseudo.  */
-      rtx sym = gen_rtx_SYMBOL_REF (SImode, \"__mulsi3\");
+      rtx sym = function_symbol (\"__mulsi3\");
       rtx addr = force_reg (SImode, sym);
       rtx insns = gen_mulsi3_call (operands[0], operands[1],
 				   operands[2], addr);
@@ -3554,7 +3549,7 @@
     }
   else if (TARGET_SHCOMPACT)
     {
-      operands[1] = gen_rtx_SYMBOL_REF (Pmode, \"__ic_invalidate\");
+      operands[1] = function_symbol (\"__ic_invalidate\");
       operands[1] = force_reg (Pmode, operands[1]);
       emit_insn (gen_ic_invalidate_line_compact (operands[0], operands[1]));
       DONE;
@@ -3609,7 +3604,7 @@
   rtx sfun, tramp;
 
   tramp = force_reg (Pmode, operands[0]);
-  sfun = force_reg (Pmode, gen_rtx_SYMBOL_REF (Pmode, \"__init_trampoline\"));
+  sfun = force_reg (Pmode, function_symbol (\"__init_trampoline\"));
   emit_move_insn (gen_rtx_REG (SImode, R2_REG), operands[1]);
   emit_move_insn (gen_rtx_REG (SImode, R3_REG), operands[2]);
 
@@ -5806,8 +5801,7 @@
 	 run out of registers when adjusting fpscr for the call.  */
       emit_insn (gen_force_mode_for_call ());
 
-      operands[0] = gen_rtx_SYMBOL_REF (SImode,
-					\"__GCC_shcompact_call_trampoline\");
+      operands[0] = function_symbol (\"__GCC_shcompact_call_trampoline\");
       if (flag_pic)
 	{
 	  rtx reg = gen_reg_rtx (Pmode);
@@ -5926,8 +5920,7 @@
 	 run out of registers when adjusting fpscr for the call.  */
       emit_insn (gen_force_mode_for_call ());
 
-      operands[0] = gen_rtx_SYMBOL_REF (SImode,
-					\"__GCC_shcompact_call_trampoline\");
+      operands[0] = function_symbol (\"__GCC_shcompact_call_trampoline\");
       if (flag_pic)
 	{
 	  rtx reg = gen_reg_rtx (Pmode);
@@ -6031,8 +6024,7 @@
 	 run out of registers when adjusting fpscr for the call.  */
       emit_insn (gen_force_mode_for_call ());
 
-      operands[1] = gen_rtx_SYMBOL_REF (SImode,
-					\"__GCC_shcompact_call_trampoline\");
+      operands[1] = function_symbol (\"__GCC_shcompact_call_trampoline\");
       if (flag_pic)
 	{
 	  rtx reg = gen_reg_rtx (Pmode);
@@ -6250,8 +6242,7 @@
 	 run out of registers when adjusting fpscr for the call.  */
       emit_insn (gen_force_mode_for_call ());
 
-      operands[0] = gen_rtx_SYMBOL_REF (SImode,
-					\"__GCC_shcompact_call_trampoline\");
+      operands[0] = function_symbol (\"__GCC_shcompact_call_trampoline\");
       if (flag_pic)
 	{
 	  rtx reg = gen_reg_rtx (Pmode);
@@ -6391,8 +6382,7 @@
 	 run out of registers when adjusting fpscr for the call.  */
       emit_insn (gen_force_mode_for_call ());
 
-      operands[1] = gen_rtx_SYMBOL_REF (SImode,
-					\"__GCC_shcompact_call_trampoline\");
+      operands[1] = function_symbol (\"__GCC_shcompact_call_trampoline\");
       if (flag_pic)
 	{
 	  rtx reg = gen_reg_rtx (Pmode);
@@ -6620,7 +6610,7 @@
       emit_insn (gen_ptrel (tr, dipic, lab));
 
       if (GET_MODE (operands[0]) != GET_MODE (tr))
-	tr = gen_rtx_SUBREG (GET_MODE (operands[0]), tr, 0);
+	tr = gen_lowpart (GET_MODE (operands[0]), tr);
 
       insn = emit_move_insn (operands[0], tr);
 
@@ -7207,8 +7197,7 @@ mov.l\\t1f,r0\\n\\
   "
 {
   rtx reg = gen_rtx_REG (Pmode, R0_REG);
-  rtx sym = gen_rtx_SYMBOL_REF (Pmode,
-				\"__GCC_shcompact_return_trampoline\");
+  rtx sym = function_symbol (\"__GCC_shcompact_return_trampoline\");
 
   if (flag_pic)
     emit_insn (gen_symGOTPLT2reg (reg, sym));

@@ -456,7 +456,11 @@ do {									\
 	  /* Relaxation isn't yet supported for SHmedia */		\
 	  target_flags &= ~RELAX_BIT;					\
 	}								\
-      if (profile_flag || profile_arc_flag)				\
+      /* -fprofile-arcs needs a working libgcov .  In unified tree	\
+	 configurations with newlib, this requires to configure with	\
+	 --with-newlib --with-headers.  But there is no way to check	\
+	 here we have a working libgcov, so just assume that we have.  */\
+      if (profile_flag)							\
 	{								\
 	  warning ("Profiling is not supported on this target.");	\
 	  profile_flag = profile_arc_flag = 0;				\

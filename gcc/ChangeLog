@@ -1,3 +1,19 @@
+2003-06-10  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh-protos.h (function_symbol): Declare.
+	* sh.c (expand_block_move, expand_ashiftrt): Use it.
+	(sh_expand_prologue, sh_expand_epilogue): Likewise.
+	(sh_initialize_trampoline): Likewise.
+	(function_symbol): New function.
+	* sh.md (udivsi3, divsi3, mulsi3, ic_invalidate_line): Use it.
+	(initialize_trampoline, call, call_pop, call_value, sibcall): Likewise.
+	(call_value_pop, shcompact_return_tramp): Likewise.
+
+	* sh.h (OVERRIDE_OPTIONS): Don't suppress --profile-arc-flag.
+
+	* sh.md (GOTaddr2picreg): Use gen_lowpart to get lowpart of
+	target register.
+
 2003-06-10  DJ Delorie  <dj@redhat.com>
 
 	* doc/md.texi (Machine Constraints): Document stormy's Z
