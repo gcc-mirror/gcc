@@ -13,6 +13,23 @@
 
 
 dnl
+dnl GLIBCXX_CONDITIONAL (NAME, SHELL-TEST)
+dnl
+dnl Exactly like AM_CONDITIONAL, but delays evaluation of the test until the
+dnl end of configure.  This lets tested variables be reassigned, and the
+dnl conditional will depend on the final state of the variable.  For a simple
+dnl example of why this is needed, see GLIBCXX_ENABLE_HOSTED.
+dnl
+m4_define([_m4_divert(glibcxx_diversion)], 8000)dnl
+AC_DEFUN(GLIBCXX_CONDITIONAL, [dnl
+  m4_divert_text([glibcxx_diversion],dnl
+   AM_CONDITIONAL([$1],[$2])
+  )dnl
+])dnl
+AC_DEFUN(GLIBCXX_EVALUATE_CONDITIONALS, [m4_undivert([glibcxx_diversion])])dnl
+
+
+dnl
 dnl Check to see what architecture and operating system we are compiling
 dnl for.  Also, if architecture- or OS-specific flags are required for
 dnl compilation, pick them up here.
@@ -156,7 +173,10 @@ AC_DEFUN(GLIBCXX_CONFIGURE, [
 
   AM_MAINTAINER_MODE
 
-  # Set up safe default values for all subsequent AM_CONDITIONAL tests.
+  # Set up safe default values for all subsequent AM_CONDITIONAL tests
+  # which are themselves conditionally expanded.
+  ## (Right now, this only matters for enable_wchar_t, but nothing prevents
+  ## other macros from doing the same.  This should be automated.)  -pme
   need_libmath=no
   enable_wchar_t=no
   #enable_libstdcxx_debug=no
@@ -165,6 +185,7 @@ AC_DEFUN(GLIBCXX_CONFIGURE, [
   #c_compatibility=no
   #enable_abi_check=no
   #enable_symvers=no
+  #enable_hosted_libstdcxx=yes
 
   # Find platform-specific directories containing configuration info.
   # Also possibly modify flags used elsewhere, as needed by the platform.
@@ -573,7 +594,7 @@ dnl Substs:
 dnl  baseline_dir
 dnl
 AC_DEFUN(GLIBCXX_CONFIGURE_TESTSUITE, [
-  if $GLIBCXX_IS_NATIVE; then
+  if $GLIBCXX_IS_NATIVE && test $is_hosted = yes; then
     # Do checks for memory limit functions.
     GLIBCXX_CHECK_SETRLIMIT
 
@@ -586,7 +607,7 @@ AC_DEFUN(GLIBCXX_CONFIGURE_TESTSUITE, [
   AC_SUBST(baseline_dir)
 
   # Determine if checking the ABI is desirable.
-  if test $enable_symvers = no; then
+  if test $enable_symvers = no || test $is_hosted = no; then
     enable_abi_check=no
   else
     case "$host" in
@@ -597,8 +618,8 @@ AC_DEFUN(GLIBCXX_CONFIGURE_TESTSUITE, [
     esac
   fi
 
-  AM_CONDITIONAL(GLIBCXX_TEST_WCHAR_T, test $enable_wchar_t = yes)
-  AM_CONDITIONAL(GLIBCXX_TEST_ABI, test $enable_abi_check = yes)
+  GLIBCXX_CONDITIONAL(GLIBCXX_TEST_WCHAR_T, test $enable_wchar_t = yes)
+  GLIBCXX_CONDITIONAL(GLIBCXX_TEST_ABI, test $enable_abi_check = yes)
 ])
 
 
@@ -910,9 +931,9 @@ AC_DEFUN(GLIBCXX_ENABLE_CHEADERS, [
   C_INCLUDE_DIR='${glibcxx_srcdir}/include/'$enable_cheaders
 
   AC_SUBST(C_INCLUDE_DIR)
-  AM_CONDITIONAL(GLIBCXX_C_HEADERS_C, test $enable_cheaders = c)
-  AM_CONDITIONAL(GLIBCXX_C_HEADERS_C_STD, test $enable_cheaders = c_std)
-  AM_CONDITIONAL(GLIBCXX_C_HEADERS_COMPATIBILITY, test $c_compatibility = yes)
+  GLIBCXX_CONDITIONAL(GLIBCXX_C_HEADERS_C, test $enable_cheaders = c)
+  GLIBCXX_CONDITIONAL(GLIBCXX_C_HEADERS_C_STD, test $enable_cheaders = c_std)
+  GLIBCXX_CONDITIONAL(GLIBCXX_C_HEADERS_COMPATIBILITY, test $c_compatibility = yes)
 ])
 
 
@@ -1226,7 +1247,7 @@ AC_DEFUN(GLIBCXX_ENABLE_DEBUG, [
   AC_MSG_CHECKING([for additional debug build])
   GLIBCXX_ENABLE(libstdcxx-debug,$1,,[build extra debug library])
   AC_MSG_RESULT($enable_libstdcxx_debug)
-  AM_CONDITIONAL(GLIBCXX_BUILD_DEBUG, test $enable_libstdcxx_debug = yes)
+  GLIBCXX_CONDITIONAL(GLIBCXX_BUILD_DEBUG, test $enable_libstdcxx_debug = yes)
 ])
 
 
@@ -1256,6 +1277,34 @@ AC_DEFUN(GLIBCXX_ENABLE_DEBUG_FLAGS, [
   AC_SUBST(DEBUG_FLAGS)
 
   AC_MSG_NOTICE([Debug build flags set to $DEBUG_FLAGS])
+])
+
+
+dnl
+dnl Check if the user only wants a freestanding library implementation.
+dnl
+dnl --disable-hosted-libstdcxx will turn off most of the library build,
+dnl installing only the headers required by [17.4.1.3] and the language
+dnl support library.  More than that will be built (to keep the Makefiles
+dnl conveniently clean), but not installed.
+dnl
+dnl Sets:
+dnl  is_hosted  (yes/no)
+dnl
+AC_DEFUN(GLIBCXX_ENABLE_HOSTED, [
+  AC_ARG_ENABLE([hosted-libstdcxx],
+    AC_HELP_STRING([--disable-hosted-libstdcxx],
+                   [only build freestanding C++ runtime support]),,
+    [enable_hosted_libstdcxx=yes])
+  if test "$enable_hosted_libstdcxx" = no; then
+    AC_MSG_NOTICE([Only freestanding libraries will be built])
+    is_hosted=no
+    enable_abi_check=no
+    enable_libstdcxx_pch=no
+  else
+    is_hosted=yes
+  fi
+  GLIBCXX_CONDITIONAL(GLIBCXX_HOSTED, test $is_hosted = yes)
 ])
 
 
@@ -1364,7 +1413,7 @@ AC_DEFUN(GLIBCXX_ENABLE_PCH, [
     enable_libstdcxx_pch=$glibcxx_cv_prog_CXX_pch
   fi
 
-  AM_CONDITIONAL(GLIBCXX_BUILD_PCH, test $enable_libstdcxx_pch = yes)
+  GLIBCXX_CONDITIONAL(GLIBCXX_BUILD_PCH, test $enable_libstdcxx_pch = yes)
   if test $enable_libstdcxx_pch = yes; then
     glibcxx_PCHFLAGS="-include bits/stdc++.h"
   else
@@ -1536,7 +1585,7 @@ esac
 
 AC_SUBST(SYMVER_MAP)
 AC_SUBST(port_specific_symbol_files)
-AM_CONDITIONAL(GLIBCXX_BUILD_VERSIONED_SHLIB, test $enable_symvers != no)
+GLIBCXX_CONDITIONAL(GLIBCXX_BUILD_VERSIONED_SHLIB, test $enable_symvers != no)
 AC_MSG_NOTICE(versioning on shared library symbols is $enable_symvers)
 ])
 
@@ -1607,6 +1656,50 @@ AC_DEFUN([AC_PROG_LD])
 ])
 
 dnl vim:et:ts=2:sw=2
+
+# AM_CONDITIONAL                                              -*- Autoconf -*-
+
+# Copyright 1997, 2000, 2001 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+# 02111-1307, USA.
+
+# serial 5
+
+AC_PREREQ(2.52)
+
+# AM_CONDITIONAL(NAME, SHELL-CONDITION)
+# -------------------------------------
+# Define a conditional.
+AC_DEFUN([AM_CONDITIONAL],
+[ifelse([$1], [TRUE],  [AC_FATAL([$0: invalid condition: $1])],
+        [$1], [FALSE], [AC_FATAL([$0: invalid condition: $1])])dnl
+AC_SUBST([$1_TRUE])
+AC_SUBST([$1_FALSE])
+if $2; then
+  $1_TRUE=
+  $1_FALSE='#'
+else
+  $1_TRUE='#'
+  $1_FALSE=
+fi
+AC_CONFIG_COMMANDS_PRE(
+[if test -z "${$1_TRUE}" && test -z "${$1_FALSE}"; then
+  AC_MSG_ERROR([conditional "$1" was never defined.
+Usually this means the macro was only invoked conditionally.])
+fi])])
 
 # Copyright 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
@@ -1741,50 +1834,6 @@ AC_DEFUN([AM_MAINTAINER_MODE],
 )
 
 AU_DEFUN([jm_MAINTAINER_MODE], [AM_MAINTAINER_MODE])
-
-# AM_CONDITIONAL                                              -*- Autoconf -*-
-
-# Copyright 1997, 2000, 2001 Free Software Foundation, Inc.
-
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2, or (at your option)
-# any later version.
-
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-# 02111-1307, USA.
-
-# serial 5
-
-AC_PREREQ(2.52)
-
-# AM_CONDITIONAL(NAME, SHELL-CONDITION)
-# -------------------------------------
-# Define a conditional.
-AC_DEFUN([AM_CONDITIONAL],
-[ifelse([$1], [TRUE],  [AC_FATAL([$0: invalid condition: $1])],
-        [$1], [FALSE], [AC_FATAL([$0: invalid condition: $1])])dnl
-AC_SUBST([$1_TRUE])
-AC_SUBST([$1_FALSE])
-if $2; then
-  $1_TRUE=
-  $1_FALSE='#'
-else
-  $1_TRUE='#'
-  $1_FALSE=
-fi
-AC_CONFIG_COMMANDS_PRE(
-[if test -z "${$1_TRUE}" && test -z "${$1_FALSE}"; then
-  AC_MSG_ERROR([conditional "$1" was never defined.
-Usually this means the macro was only invoked conditionally.])
-fi])])
 
 # Do all the work for Automake.                            -*- Autoconf -*-
 

@@ -1,3 +1,20 @@
+2003-08-27  Phil Edwards  <pme@gcc.gnu.org>
+
+	* acinclude.m4 (GLIBCXX_CONDITIONAL):  New macro.  Wrap
+	AM_CONDITIONAL.  Replace all calls to AM_CONDITIONAL with this one.
+	(GLIBCXX_ENABLE_HOSTED):  New macro, sets new variable is_hosted,
+	used elsewhere in this file.
+	(GLIBCXX_EVALUATE_CONDITIONALS):  New macro...
+	* configure.ac:  ...called here to expand all conditionals.
+	* Makefile.am:  Conditionalize SUBDIRS on GLIBCXX_HOSTED.
+	* include/Makefile.am:  Remove redundant gxx_include_dir assignment.
+	(install-freestanding-headers):  New target, a subset of
+	install-headers.  Conditionalize install-data-local on GLIBCXX_HOSTED.
+
+	* aclocal.m4, configure, Makefile.in, include/Makefile.in,
+	libmath/Makefile.in, libsupc++/Makefile.in, po/Makefile.in,
+	src/Makefile.in, testsuite/Makefile.in:  Regenerated.
+
 2003-08-26  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/doxygen/run_doxygen:  Shell fixes.  Remove hardcoded local

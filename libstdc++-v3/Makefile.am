@@ -24,8 +24,12 @@
 
 include $(top_srcdir)/fragment.am
 
+if GLIBCXX_HOSTED
+  # Possibly libmath as well...
+  hosted_source = src po
+endif
 ## Keep this list sync'd with acinclude.m4:GLIBCXX_CONFIGURE.
-SUBDIRS = include libmath libsupc++ src po testsuite 
+SUBDIRS = include libmath libsupc++ $(hosted_source) testsuite 
 
 # These rules are messy, but are hella worth it.
 doxygen:

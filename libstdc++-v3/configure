@@ -308,7 +308,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS libtool_VERSION multi_basedir build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO AMTAR install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM AWK SET_MAKE am__leading_dot glibcxx_builddir glibcxx_srcdir toplevel_srcdir CC ac_ct_CC EXEEXT OBJEXT CXX ac_ct_CXX CFLAGS CXXFLAGS LN_S AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT LIBTOOL CXXCPP CPPFLAGS enable_shared enable_static LIBUNWIND_FLAG GLIBCXX_BUILD_PCH_TRUE GLIBCXX_BUILD_PCH_FALSE glibcxx_PCHFLAGS CSTDIO_H FPOS_H BASIC_FILE_H BASIC_FILE_CC CPP EGREP check_msgfmt glibcxx_MOFILES glibcxx_POFILES glibcxx_localedir USE_NLS CLOCALE_H CCODECVT_H CMESSAGES_H CCODECVT_CC CCOLLATE_CC CCTYPE_CC CMESSAGES_CC CMONEY_CC CNUMERIC_CC CTIME_H CTIME_CC CLOCALE_CC CLOCALE_INTERNAL_H C_INCLUDE_DIR GLIBCXX_C_HEADERS_C_TRUE GLIBCXX_C_HEADERS_C_FALSE GLIBCXX_C_HEADERS_C_STD_TRUE GLIBCXX_C_HEADERS_C_STD_FALSE GLIBCXX_C_HEADERS_COMPATIBILITY_TRUE GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE glibcxx_thread_h DEBUG_FLAGS GLIBCXX_BUILD_DEBUG_TRUE GLIBCXX_BUILD_DEBUG_FALSE EXTRA_CXX_FLAGS WERROR SECTION_FLAGS SECTION_LDFLAGS OPT_LDFLAGS LIBMATHOBJS SYMVER_MAP port_specific_symbol_files GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE baseline_dir GLIBCXX_TEST_WCHAR_T_TRUE GLIBCXX_TEST_WCHAR_T_FALSE GLIBCXX_TEST_ABI_TRUE GLIBCXX_TEST_ABI_FALSE ATOMICITY_INC_SRCDIR FPOS_INC_SRCDIR OS_INC_SRCDIR glibcxx_prefixdir gxx_include_dir glibcxx_toolexecdir glibcxx_toolexeclibdir GLIBCXX_INCLUDES TOPLEVEL_INCLUDES OPTIMIZE_CXXFLAGS WARN_FLAGS LIBSUPCXX_PICFLAGS LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS libtool_VERSION multi_basedir build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO AMTAR install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM AWK SET_MAKE am__leading_dot glibcxx_builddir glibcxx_srcdir toplevel_srcdir CC ac_ct_CC EXEEXT OBJEXT CXX ac_ct_CXX CFLAGS CXXFLAGS LN_S AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT LIBTOOL CXXCPP CPPFLAGS enable_shared enable_static GLIBCXX_HOSTED_TRUE GLIBCXX_HOSTED_FALSE LIBUNWIND_FLAG GLIBCXX_BUILD_PCH_TRUE GLIBCXX_BUILD_PCH_FALSE glibcxx_PCHFLAGS CSTDIO_H FPOS_H BASIC_FILE_H BASIC_FILE_CC CPP EGREP check_msgfmt glibcxx_MOFILES glibcxx_POFILES glibcxx_localedir USE_NLS CLOCALE_H CCODECVT_H CMESSAGES_H CCODECVT_CC CCOLLATE_CC CCTYPE_CC CMESSAGES_CC CMONEY_CC CNUMERIC_CC CTIME_H CTIME_CC CLOCALE_CC CLOCALE_INTERNAL_H C_INCLUDE_DIR GLIBCXX_C_HEADERS_C_TRUE GLIBCXX_C_HEADERS_C_FALSE GLIBCXX_C_HEADERS_C_STD_TRUE GLIBCXX_C_HEADERS_C_STD_FALSE GLIBCXX_C_HEADERS_COMPATIBILITY_TRUE GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE glibcxx_thread_h DEBUG_FLAGS GLIBCXX_BUILD_DEBUG_TRUE GLIBCXX_BUILD_DEBUG_FALSE EXTRA_CXX_FLAGS WERROR SECTION_FLAGS SECTION_LDFLAGS OPT_LDFLAGS LIBMATHOBJS SYMVER_MAP port_specific_symbol_files GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE baseline_dir GLIBCXX_TEST_WCHAR_T_TRUE GLIBCXX_TEST_WCHAR_T_FALSE GLIBCXX_TEST_ABI_TRUE GLIBCXX_TEST_ABI_FALSE ATOMICITY_INC_SRCDIR FPOS_INC_SRCDIR OS_INC_SRCDIR glibcxx_prefixdir gxx_include_dir glibcxx_toolexecdir glibcxx_toolexeclibdir GLIBCXX_INCLUDES TOPLEVEL_INCLUDES OPTIMIZE_CXXFLAGS WARN_FLAGS LIBSUPCXX_PICFLAGS LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -850,6 +850,8 @@ Optional Features:
   --enable-static=PKGS  build static libraries default=yes
   --enable-fast-install=PKGS  optimize for fast installation default=yes
   --disable-libtool-lock  avoid locking (might break parallel builds)
+  --disable-hosted-libstdcxx
+                          only build freestanding C++ runtime support
   --enable-sjlj-exceptions
                           force use of builtin_setjmp for exceptions
                           [default=auto]
@@ -857,7 +859,7 @@ Optional Features:
                           force use of libunwind for exceptions
                           [default=no]
   --enable-libstdcxx-pch  build pre-compiled libstdc++ headers
-                          [default=yes]
+                          [default=$is_hosted]
   --enable-cstdio=PACKAGE use target-specific I/O package
                           [default=stdio]
   --enable-clocale[=MODEL]
@@ -3536,7 +3538,10 @@ fi
 
 
 
-  # Set up safe default values for all subsequent AM_CONDITIONAL tests.
+  # Set up safe default values for all subsequent AM_CONDITIONAL tests
+  # which are themselves conditionally expanded.
+  ## (Right now, this only matters for enable_wchar_t, but nothing prevents
+  ## other macros from doing the same.  This should be automated.)  -pme
   need_libmath=no
   enable_wchar_t=no
   #enable_libstdcxx_debug=no
@@ -3545,6 +3550,7 @@ fi
   #c_compatibility=no
   #enable_abi_check=no
   #enable_symvers=no
+  #enable_hosted_libstdcxx=yes
 
   # Find platform-specific directories containing configuration info.
   # Also possibly modify flags used elsewhere, as needed by the platform.
@@ -4287,7 +4293,7 @@ test x"$pic_mode" = xno && libtool_flags="$libtool_flags --prefer-non-pic"
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 4290 "configure"' > conftest.$ac_ext
+  echo '#line 4296 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -4821,6 +4827,29 @@ exec 5>>./config.log
 
 #AC_MSG_NOTICE([====== Finished libtool configuration]) ; sleep 10
 
+# Possibly disable most of the library.
+## XXX Consider skipping unncessary tests altogether in this case, rather
+## than just ignoring the results.  Faster /and/ more correct, win win.
+
+  # Check whether --enable-hosted-libstdcxx or --disable-hosted-libstdcxx was given.
+if test "${enable_hosted_libstdcxx+set}" = set; then
+  enableval="$enable_hosted_libstdcxx"
+
+else
+  enable_hosted_libstdcxx=yes
+fi;
+  if test "$enable_hosted_libstdcxx" = no; then
+    { echo "$as_me:$LINENO: Only freestanding libraries will be built" >&5
+echo "$as_me: Only freestanding libraries will be built" >&6;}
+    is_hosted=no
+    enable_abi_check=no
+    enable_libstdcxx_pch=no
+  else
+    is_hosted=yes
+  fi
+
+
+
 # Check for support bits and g++ features that don't require linking.
 
   echo "$as_me:$LINENO: checking for exception model to use" >&5
@@ -4856,7 +4885,7 @@ fi;
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 4859 "configure"
+#line 4888 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -4953,7 +4982,7 @@ echo "$as_me: error: Argument to enable/disable libstdcxx-pch must be yes or no"
       esac
 
 else
-  enable_libstdcxx_pch=yes
+  enable_libstdcxx_pch=$is_hosted
 fi;
 
   echo "$as_me:$LINENO: result: $enable_libstdcxx_pch" >&5
@@ -5001,15 +5030,6 @@ echo "${ECHO_T}$glibcxx_cv_prog_CXX_pch" >&6
     enable_libstdcxx_pch=$glibcxx_cv_prog_CXX_pch
   fi
 
-
-
-if test $enable_libstdcxx_pch = yes; then
-  GLIBCXX_BUILD_PCH_TRUE=
-  GLIBCXX_BUILD_PCH_FALSE='#'
-else
-  GLIBCXX_BUILD_PCH_TRUE='#'
-  GLIBCXX_BUILD_PCH_FALSE=
-fi
 
   if test $enable_libstdcxx_pch = yes; then
     glibcxx_PCHFLAGS="-include bits/stdc++.h"
@@ -6088,33 +6108,6 @@ echo "$as_me: \"C\" header strategy set to $enable_cheaders" >&6;}
 
 
 
-if test $enable_cheaders = c; then
-  GLIBCXX_C_HEADERS_C_TRUE=
-  GLIBCXX_C_HEADERS_C_FALSE='#'
-else
-  GLIBCXX_C_HEADERS_C_TRUE='#'
-  GLIBCXX_C_HEADERS_C_FALSE=
-fi
-
-
-
-if test $enable_cheaders = c_std; then
-  GLIBCXX_C_HEADERS_C_STD_TRUE=
-  GLIBCXX_C_HEADERS_C_STD_FALSE='#'
-else
-  GLIBCXX_C_HEADERS_C_STD_TRUE='#'
-  GLIBCXX_C_HEADERS_C_STD_FALSE=
-fi
-
-
-
-if test $c_compatibility = yes; then
-  GLIBCXX_C_HEADERS_COMPATIBILITY_TRUE=
-  GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE='#'
-else
-  GLIBCXX_C_HEADERS_COMPATIBILITY_TRUE='#'
-  GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE=
-fi
 
 
    # Check whether --enable-c-mbchar or --disable-c-mbchar was given.
@@ -7425,15 +7418,6 @@ fi;
 
   echo "$as_me:$LINENO: result: $enable_libstdcxx_debug" >&5
 echo "${ECHO_T}$enable_libstdcxx_debug" >&6
-
-
-if test $enable_libstdcxx_debug = yes; then
-  GLIBCXX_BUILD_DEBUG_TRUE=
-  GLIBCXX_BUILD_DEBUG_FALSE='#'
-else
-  GLIBCXX_BUILD_DEBUG_TRUE='#'
-  GLIBCXX_BUILD_DEBUG_FALSE=
-fi
 
 
   echo "$as_me:$LINENO: checking for extra compiler flags for building" >&5
@@ -56984,22 +56968,13 @@ esac
 
 
 
-
-if test $enable_symvers != no; then
-  GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE=
-  GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE='#'
-else
-  GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE='#'
-  GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE=
-fi
-
 { echo "$as_me:$LINENO: versioning on shared library symbols is $enable_symvers" >&5
 echo "$as_me: versioning on shared library symbols is $enable_symvers" >&6;}
 
 
 # This depends on GLIBCXX_ENABLE_SYMVERS and GLIBCXX_IS_NATIVE.
 
-  if $GLIBCXX_IS_NATIVE; then
+  if $GLIBCXX_IS_NATIVE && test $is_hosted = yes; then
     # Do checks for memory limit functions.
 
   setrlimit_have_headers=yes
@@ -57562,7 +57537,7 @@ done
 
 
   # Determine if checking the ABI is desirable.
-  if test $enable_symvers = no; then
+  if test $enable_symvers = no || test $is_hosted = no; then
     enable_abi_check=no
   else
     case "$host" in
@@ -57574,24 +57549,6 @@ done
   fi
 
 
-
-if test $enable_wchar_t = yes; then
-  GLIBCXX_TEST_WCHAR_T_TRUE=
-  GLIBCXX_TEST_WCHAR_T_FALSE='#'
-else
-  GLIBCXX_TEST_WCHAR_T_TRUE='#'
-  GLIBCXX_TEST_WCHAR_T_FALSE=
-fi
-
-
-
-if test $enable_abi_check = yes; then
-  GLIBCXX_TEST_ABI_TRUE=
-  GLIBCXX_TEST_ABI_FALSE='#'
-else
-  GLIBCXX_TEST_ABI_TRUE='#'
-  GLIBCXX_TEST_ABI_FALSE=
-fi
 
 
 
@@ -57610,6 +57567,106 @@ FPOS_INC_SRCDIR=config/${fpos_include_dir}
 #AM_CONDITIONAL(CANADIAN, test $CANADIAN = yes)
 # from GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT:
 #AM_CONDITIONAL(GLIBCXX_BUILD_LIBMATH,  test $need_libmath = yes)
+
+
+if test $is_hosted = yes; then
+  GLIBCXX_HOSTED_TRUE=
+  GLIBCXX_HOSTED_FALSE='#'
+else
+  GLIBCXX_HOSTED_TRUE='#'
+  GLIBCXX_HOSTED_FALSE=
+fi
+
+
+
+
+if test $enable_libstdcxx_pch = yes; then
+  GLIBCXX_BUILD_PCH_TRUE=
+  GLIBCXX_BUILD_PCH_FALSE='#'
+else
+  GLIBCXX_BUILD_PCH_TRUE='#'
+  GLIBCXX_BUILD_PCH_FALSE=
+fi
+
+
+
+
+if test $enable_cheaders = c; then
+  GLIBCXX_C_HEADERS_C_TRUE=
+  GLIBCXX_C_HEADERS_C_FALSE='#'
+else
+  GLIBCXX_C_HEADERS_C_TRUE='#'
+  GLIBCXX_C_HEADERS_C_FALSE=
+fi
+
+
+
+
+if test $enable_cheaders = c_std; then
+  GLIBCXX_C_HEADERS_C_STD_TRUE=
+  GLIBCXX_C_HEADERS_C_STD_FALSE='#'
+else
+  GLIBCXX_C_HEADERS_C_STD_TRUE='#'
+  GLIBCXX_C_HEADERS_C_STD_FALSE=
+fi
+
+
+
+
+if test $c_compatibility = yes; then
+  GLIBCXX_C_HEADERS_COMPATIBILITY_TRUE=
+  GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE='#'
+else
+  GLIBCXX_C_HEADERS_COMPATIBILITY_TRUE='#'
+  GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE=
+fi
+
+
+
+
+if test $enable_libstdcxx_debug = yes; then
+  GLIBCXX_BUILD_DEBUG_TRUE=
+  GLIBCXX_BUILD_DEBUG_FALSE='#'
+else
+  GLIBCXX_BUILD_DEBUG_TRUE='#'
+  GLIBCXX_BUILD_DEBUG_FALSE=
+fi
+
+
+
+
+if test $enable_symvers != no; then
+  GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE=
+  GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE='#'
+else
+  GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE='#'
+  GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE=
+fi
+
+
+
+
+if test $enable_wchar_t = yes; then
+  GLIBCXX_TEST_WCHAR_T_TRUE=
+  GLIBCXX_TEST_WCHAR_T_FALSE='#'
+else
+  GLIBCXX_TEST_WCHAR_T_TRUE='#'
+  GLIBCXX_TEST_WCHAR_T_FALSE=
+fi
+
+
+
+
+if test $enable_abi_check = yes; then
+  GLIBCXX_TEST_ABI_TRUE=
+  GLIBCXX_TEST_ABI_FALSE='#'
+else
+  GLIBCXX_TEST_ABI_TRUE='#'
+  GLIBCXX_TEST_ABI_FALSE=
+fi
+
+
+
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -57908,6 +57965,13 @@ if test -z "${MAINTAINER_MODE_TRUE}" && test -z "${MAINTAINER_MODE_FALSE}"; then
   { { echo "$as_me:$LINENO: error: conditional \"MAINTAINER_MODE\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
 echo "$as_me: error: conditional \"MAINTAINER_MODE\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if test -z "${GLIBCXX_HOSTED_TRUE}" && test -z "${GLIBCXX_HOSTED_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"GLIBCXX_HOSTED\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"GLIBCXX_HOSTED\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
@@ -58581,6 +58645,8 @@ s,@CXXCPP@,$CXXCPP,;t t
 s,@CPPFLAGS@,$CPPFLAGS,;t t
 s,@enable_shared@,$enable_shared,;t t
 s,@enable_static@,$enable_static,;t t
+s,@GLIBCXX_HOSTED_TRUE@,$GLIBCXX_HOSTED_TRUE,;t t
+s,@GLIBCXX_HOSTED_FALSE@,$GLIBCXX_HOSTED_FALSE,;t t
 s,@LIBUNWIND_FLAG@,$LIBUNWIND_FLAG,;t t
 s,@GLIBCXX_BUILD_PCH_TRUE@,$GLIBCXX_BUILD_PCH_TRUE,;t t
 s,@GLIBCXX_BUILD_PCH_FALSE@,$GLIBCXX_BUILD_PCH_FALSE,;t t
