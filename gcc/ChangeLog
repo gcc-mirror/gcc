@@ -1,3 +1,9 @@
+2000-09-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* cpplex.c (ON_REST_ARG): Check VAR_ARGS flag of current context,
+	use posn - 1 to index into tokens array.
+	(maybe_paste_with_next): Adjust caller.
+
 2000-09-03  Geoff Keating  <geoffk@cygnus.com>
 
 	* invoke.texi: Document the -mvxworks option for rs6000 ELF.

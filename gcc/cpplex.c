@@ -202,8 +202,8 @@ TOKEN_LEN (token)
 #define CURRENT_CONTEXT(pfile) ((pfile)->contexts + (pfile)->cur_context)
 #define ON_REST_ARG(c) \
  (((c)->flags & VAR_ARGS) \
-  && (c)->u.list->tokens[(c)->posn].val.aux \
-      == (unsigned int) ((c)->u.list->paramc - 1))
+  && ((c)-1)->u.list->tokens[((c)-1)->posn - 1].val.aux \
+      == (unsigned int) (((c)-1)->u.list->paramc - 1))
 
 #define ASSIGN_FLAGS_AND_POS(d, s) \
   do {(d)->flags = (s)->flags & (PREV_WHITE | BOL | PASTE_LEFT); \
@@ -2773,7 +2773,7 @@ maybe_paste_with_next (pfile, token)
 		     the special extended semantics (see above).  */
 		  if (token->type == CPP_COMMA
 		      && IS_ARG_CONTEXT (CURRENT_CONTEXT (pfile))
-		      && ON_REST_ARG (CURRENT_CONTEXT (pfile) - 1))
+		      && ON_REST_ARG (CURRENT_CONTEXT (pfile)))
 		    /* no warning */;
 		  else
 		    cpp_warning (pfile,
