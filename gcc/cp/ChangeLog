@@ -1,3 +1,10 @@
+Thu Feb  2 15:07:58 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+        * class.c (build_vbase_path): Bash types to make the backend happy.
+        * cvt.c (build_up_reference): Bash the types bashed by
+        build_vbase_path to be reference types instead of pointer types.
+        (convert_to_reference): Ditto.
+
 Wed Jan 25 15:02:09 1995  David S. Miller  (davem@nadzieja.rutgers.edu)
 
 	* class.c (instantiate_type): Change error message text.

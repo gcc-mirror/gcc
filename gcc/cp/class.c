@@ -303,6 +303,10 @@ build_vbase_path (code, type, expr, path, alias_this)
 
   if (TREE_INT_CST_LOW (offset))
     {
+      /* Bash types to make the backend happy.  */
+      offset = convert (type, offset);
+      expr = build1 (NOP_EXPR, type, expr);
+
       /* For multiple inheritance: if `this' can be set by any
 	 function, then it could be 0 on entry to any function.
 	 Preserve such zeroness here.  Otherwise, only in the

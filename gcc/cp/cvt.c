@@ -609,6 +609,9 @@ build_up_reference (type, arg, flags, checkconst)
 	rval
 	  = convert_to_pointer_force (build_pointer_type (target_type), rval);
       TREE_TYPE (rval) = type;
+      if (TREE_CODE (rval) == PLUS_EXPR || TREE_CODE (rval) == MINUS_EXPR)
+	TREE_TYPE (TREE_OPERAND (rval, 0))
+	  = TREE_TYPE (TREE_OPERAND (rval, 1)) = type;
     }
   TREE_CONSTANT (rval) = literal_flag;
   return rval;
@@ -683,6 +686,9 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 			     convtype, flags);
 	  TREE_TYPE (expr) = type;
 	  TREE_TYPE (rval) = reftype;
+	  if (TREE_CODE (rval) == PLUS_EXPR || TREE_CODE (rval) == MINUS_EXPR)
+	    TREE_TYPE (TREE_OPERAND (rval, 0))
+	      = TREE_TYPE (TREE_OPERAND (rval, 1)) = reftype;
 	  return rval;
 	}
 
