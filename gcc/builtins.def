@@ -1,6 +1,6 @@
 /* This file contains the definitions and documentation for the
    builtins used in the GNU compiler.
-   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -487,6 +487,20 @@ DEF_LIB_BUILTIN(BUILT_IN_LOG,
 				: (flag_unsafe_math_optimizations
 				   ? ATTR_CONST_NOTHROW_LIST
 				   : ATTR_PURE_NOTHROW_LIST))
+DEF_LIB_BUILTIN(BUILT_IN_POW,
+		"__builtin_pow",
+		BT_FN_DOUBLE_DOUBLE_DOUBLE,
+		flag_errno_math ? ATTR_NOTHROW_LIST
+				: (flag_unsafe_math_optimizations
+				   ? ATTR_CONST_NOTHROW_LIST
+				   : ATTR_PURE_NOTHROW_LIST))
+DEF_LIB_BUILTIN(BUILT_IN_ATAN2,
+		"__builtin_atan2",
+		BT_FN_DOUBLE_DOUBLE_DOUBLE,
+		flag_errno_math ? ATTR_NOTHROW_LIST
+				: (flag_unsafe_math_optimizations
+				   ? ATTR_CONST_NOTHROW_LIST
+				   : ATTR_PURE_NOTHROW_LIST))
 DEF_C99_C90RES_BUILTIN(BUILT_IN_SQRTF,
 		       "__builtin_sqrtf",
 		       BT_FN_FLOAT_FLOAT,
@@ -518,6 +532,20 @@ DEF_C99_C90RES_BUILTIN(BUILT_IN_LOGF,
 				       : (flag_unsafe_math_optimizations
 					  ? ATTR_CONST_NOTHROW_LIST
 					  : ATTR_PURE_NOTHROW_LIST))
+DEF_C99_C90RES_BUILTIN(BUILT_IN_POWF,
+		       "__builtin_powf",
+		       BT_FN_FLOAT_FLOAT_FLOAT,
+		       flag_errno_math ? ATTR_NOTHROW_LIST
+				       : (flag_unsafe_math_optimizations
+					  ? ATTR_CONST_NOTHROW_LIST
+					  : ATTR_PURE_NOTHROW_LIST))
+DEF_C99_C90RES_BUILTIN(BUILT_IN_ATAN2F,
+		       "__builtin_atan2f",
+		       BT_FN_FLOAT_FLOAT_FLOAT,
+		       flag_errno_math ? ATTR_NOTHROW_LIST
+				       : (flag_unsafe_math_optimizations
+					  ? ATTR_CONST_NOTHROW_LIST
+					  : ATTR_PURE_NOTHROW_LIST))
 DEF_C99_C90RES_BUILTIN(BUILT_IN_SQRTL,
 		       "__builtin_sqrtl",
 		       BT_FN_LONG_DOUBLE_LONG_DOUBLE,
@@ -545,6 +573,20 @@ DEF_C99_C90RES_BUILTIN(BUILT_IN_EXPL,
 DEF_C99_C90RES_BUILTIN(BUILT_IN_LOGL,
 		       "__builtin_logl",
 		       BT_FN_LONG_DOUBLE_LONG_DOUBLE,
+		       flag_errno_math ? ATTR_NOTHROW_LIST
+				       : (flag_unsafe_math_optimizations
+					  ? ATTR_CONST_NOTHROW_LIST
+					  : ATTR_PURE_NOTHROW_LIST))
+DEF_C99_C90RES_BUILTIN(BUILT_IN_POWL,
+		       "__builtin_powl",
+		       BT_FN_LONG_DOUBLE_LONG_DOUBLE_LONG_DOUBLE,
+		       flag_errno_math ? ATTR_NOTHROW_LIST
+				       : (flag_unsafe_math_optimizations
+					  ? ATTR_CONST_NOTHROW_LIST
+					  : ATTR_PURE_NOTHROW_LIST))
+DEF_C99_C90RES_BUILTIN(BUILT_IN_ATAN2L,
+		       "__builtin_atan2l",
+		       BT_FN_LONG_DOUBLE_LONG_DOUBLE_LONG_DOUBLE,
 		       flag_errno_math ? ATTR_NOTHROW_LIST
 				       : (flag_unsafe_math_optimizations
 					  ? ATTR_CONST_NOTHROW_LIST
