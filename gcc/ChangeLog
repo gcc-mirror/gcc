@@ -1,3 +1,13 @@
+2002-02-17  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (some_small_symbolic_operand,
+	some_small_symbolic_operand_1, split_small_symbolic_operand,
+	split_small_symbolic_operand_1): Rename from *symbolic_mem_op*.
+	Handle small SYMBOL_REFs anywhere, not just inside memories.
+	* config/alpha/alpha-protos.h: Update.
+	* config/alpha/alpha.h (PREDICATE_CODES): Update.
+	* config/alpha/alpha.md (small symbolic operand splitter): Update.
+
 2002-02-17  Roland McGrath  <roland@frob.com>
 
 	* config.gcc (powerpc-*-gnu-gnualtivec*,

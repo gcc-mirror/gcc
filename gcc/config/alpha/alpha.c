@@ -117,9 +117,9 @@ int alpha_this_gpdisp_sequence_number;
 /* Declarations of static functions.  */
 static bool decl_in_text_section
   PARAMS ((tree));
-static int some_small_symbolic_mem_operand_1
+static int some_small_symbolic_operand_1
   PARAMS ((rtx *, void *));
-static int split_small_symbolic_mem_operand_1
+static int split_small_symbolic_operand_1
   PARAMS ((rtx *, void *));
 static bool local_symbol_p
   PARAMS ((rtx));
@@ -1875,61 +1875,55 @@ alpha_legitimize_address (x, scratch, mode)
    so that sched2 has the proper dependency information.  */
 
 int
-some_small_symbolic_mem_operand (x, mode)
+some_small_symbolic_operand (x, mode)
      rtx x;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  return for_each_rtx (&x, some_small_symbolic_mem_operand_1, NULL);
+  return for_each_rtx (&x, some_small_symbolic_operand_1, NULL);
 }
 
 static int
-some_small_symbolic_mem_operand_1 (px, data)
+some_small_symbolic_operand_1 (px, data)
      rtx *px;
      void *data ATTRIBUTE_UNUSED;
 {
   rtx x = *px;
 
-  if (GET_CODE (x) != MEM)
-    return 0;
-  x = XEXP (x, 0);
+  /* Don't re-split.  */
+  if (GET_CODE (x) == LO_SUM)
+    return -1;
 
-  /* If this is an ldq_u type address, discard the outer AND.  */
-  if (GET_CODE (x) == AND)
-    x = XEXP (x, 0);
-
-  return small_symbolic_operand (x, Pmode) ? 1 : -1;
+  return small_symbolic_operand (x, Pmode) != 0;
 }
 
 rtx
-split_small_symbolic_mem_operand (x)
+split_small_symbolic_operand (x)
      rtx x;
 {
   x = copy_insn (x);
-  for_each_rtx (&x, split_small_symbolic_mem_operand_1, NULL);
+  for_each_rtx (&x, split_small_symbolic_operand_1, NULL);
   return x;
 }
 
 static int
-split_small_symbolic_mem_operand_1 (px, data)
+split_small_symbolic_operand_1 (px, data)
      rtx *px;
      void *data ATTRIBUTE_UNUSED;
 {
   rtx x = *px;
 
-  if (GET_CODE (x) != MEM)
-    return 0;
-
-  px = &XEXP (x, 0), x = *px;
-  if (GET_CODE (x) == AND)
-    px = &XEXP (x, 0), x = *px;
+  /* Don't re-split.  */
+  if (GET_CODE (x) == LO_SUM)
+    return -1;
 
   if (small_symbolic_operand (x, Pmode))
     {
       x = gen_rtx_LO_SUM (Pmode, pic_offset_table_rtx, x);
       *px = x;
+      return -1;
     }
 
-  return -1;
+  return 0;
 }
 
 /* Try a machine-dependent way of reloading an illegitimate address
