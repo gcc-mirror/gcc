@@ -1,5 +1,10 @@
 2004-11-04  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* tree-phinodes.c (make_phi_node): Make it static.
+	* tree.h: Remove the prototypes for make_phi_node.
+
+2004-11-04  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* stmt.c (expand_asm, expand_asm_operands): Make them static.
 	* tree.h: Remove the prototypes for expand_asm and
 	expand_asm_operands.

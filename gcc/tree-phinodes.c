@@ -202,7 +202,7 @@ ideal_phi_node_len (int len)
    definitions created when a variable is used without a preceding
    definition).  */
 
-tree
+static tree
 make_phi_node (tree var, int len)
 {
   tree phi;
