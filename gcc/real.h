@@ -1,6 +1,6 @@
 /* Definitions of floating-point access for GNU compiler.
    Copyright (C) 1989, 1991, 1994, 1996, 1997, 1998, 1999,
-   2000, 2002, 2003 Free Software Foundation, Inc.
+   2000, 2002, 2003, 2004 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -372,5 +372,7 @@ extern void real_floor (REAL_VALUE_TYPE *, enum machine_mode,
 			const REAL_VALUE_TYPE *);
 extern void real_ceil (REAL_VALUE_TYPE *, enum machine_mode,
 		       const REAL_VALUE_TYPE *);
+extern void real_round (REAL_VALUE_TYPE *, enum machine_mode,
+			const REAL_VALUE_TYPE *);
 
 #endif /* ! GCC_REAL_H */

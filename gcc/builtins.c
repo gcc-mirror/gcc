@@ -156,6 +156,7 @@ static tree fold_builtin_cabs (tree, tree, tree);
 static tree fold_builtin_trunc (tree);
 static tree fold_builtin_floor (tree);
 static tree fold_builtin_ceil (tree);
+static tree fold_builtin_round (tree);
 static tree fold_builtin_bitop (tree);
 static tree fold_builtin_memcpy (tree);
 static tree fold_builtin_mempcpy (tree);
@@ -5923,6 +5924,38 @@ fold_builtin_ceil (tree exp)
   return fold_trunc_transparent_mathfn (exp);
 }
 
+/* Fold function call to builtin round, roundf or roundl.  Return
+   NULL_TREE if no simplification can be made.  */
+
+static tree
+fold_builtin_round (tree exp)
+{
+  tree arglist = TREE_OPERAND (exp, 1);
+  tree arg;
+
+  if (! validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+    return 0;
+
+  /* Optimize ceil of constant value.  */
+  arg = TREE_VALUE (arglist);
+  if (TREE_CODE (arg) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg))
+    {
+      REAL_VALUE_TYPE x;
+
+      x = TREE_REAL_CST (arg);
+      if (! REAL_VALUE_ISNAN (x) || ! flag_errno_math)
+	{
+	  tree type = TREE_TYPE (exp);
+	  REAL_VALUE_TYPE r;
+
+	  real_round (&r, TYPE_MODE (type), &x);
+	  return build_real (type, r);
+	}
+    }
+
+  return fold_trunc_transparent_mathfn (exp);
+}
+
 /* Fold function call to builtin ffs, clz, ctz, popcount and parity
    and their long and long long variants (i.e. ffsl and ffsll).
    Return NULL_TREE if no simplification can be made.  */
@@ -6868,6 +6901,8 @@ fold_builtin (tree exp)
     case BUILT_IN_ROUND:
     case BUILT_IN_ROUNDF:
     case BUILT_IN_ROUNDL:
+      return fold_builtin_round (exp);
+
     case BUILT_IN_NEARBYINT:
     case BUILT_IN_NEARBYINTF:
     case BUILT_IN_NEARBYINTL:
