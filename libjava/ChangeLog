@@ -1,5 +1,7 @@
 2001-12-12  Tom Tromey  <tromey@redhat.com>
 
+	* gij.cc (main): Clarify --help output.
+
 	* gnu/gcj/runtime/StringBuffer.java
 	(ensureCapacity_unsynchronized): Ensure we always get at least
 	`minimumCapacity' characters in new buffer.

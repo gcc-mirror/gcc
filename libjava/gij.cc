@@ -129,7 +129,7 @@ main (int argc, const char **argv)
   if (argc - i < 1)
     {
       fprintf (stderr, "Usage: gij [OPTION] ... CLASS [ARGS] ...\n");
-      fprintf (stderr, "          to interpret Java bytecodes, or\n");
+      fprintf (stderr, "          to invoke CLASS.main, or\n");
       fprintf (stderr, "       gij -jar [OPTION] ... JARFILE [ARGS] ...\n");
       fprintf (stderr, "          to execute a jar file\n");
       fprintf (stderr, "Try `gij --help' for more information.\n");
