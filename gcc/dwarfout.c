@@ -1478,7 +1478,7 @@ output_mem_loc_descriptor (rtl)
 	   be referred to as a "base register".  This distinction is not
 	   based in any way upon what category of register the hardware
 	   believes the given register belongs to.  This is strictly
-	   DWARF terminology we're dealing with here.  */
+	   DWARF terminology we're dealing with here.
 
 	   Note that in cases where the location of a memory-resident data
 	   object could be expressed as:
