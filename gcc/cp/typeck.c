@@ -5665,10 +5665,11 @@ build_modify_expr (lhs, modifycode, rhs)
     {
       int from_array;
       
-      if (!same_or_base_type_p (lhstype, TREE_TYPE (rhs)))
+      if (!same_or_base_type_p (TYPE_MAIN_VARIANT (lhstype),
+				TYPE_MAIN_VARIANT (TREE_TYPE (rhs))))
 	{
 	  error ("incompatible types in assignment of `%T' to `%T'",
-		    TREE_TYPE (rhs), lhstype);
+		 TREE_TYPE (rhs), lhstype);
 	  return error_mark_node;
 	}
 
