@@ -23,31 +23,26 @@
 #Boston, MA 02111-1307, USA.
 
 savesrcdir=$srcdir
+
 for subdir in . $subdirs
 do
+	# We only want to do this in language subdirs, but we have to handle
+	# the case of $subdirs = "".
+	if [ $subdir = . ]
+	then
+		continue
+	fi
+
 	oldsrcdir=$savesrcdir
 
 	# Re-adjust the path
 	case $oldsrcdir in
 	/*)
-		case $subdir in
-		.)
-			srcdir=$oldsrcdir
-			;;
-		*)
-			srcdir=$oldsrcdir/$subdir
-			;;
-		esac
+		srcdir=$oldsrcdir/$subdir
 		;;
 	*)
-		case $subdir in
-		.)
-			;;
-		*)
-			oldsrcdir=../${oldsrcdir}
-			srcdir=$oldsrcdir/$subdir
-			;;
-		esac
+		oldsrcdir=../${oldsrcdir}
+		srcdir=$oldsrcdir/$subdir
 		;;
 	esac
 	mainsrcdir=$oldsrcdir
@@ -133,22 +128,6 @@ do
 		mv Makefile.xx Makefile.tem
 	fi
 
-	# Some of the following don't make sense in the language makefiles,
-	# but rather than introduce another level of nesting, we leave them
-	# as is.
-
-	# Add a definition of USE_COLLECT2 if system wants one.
-	# Also tell toplev.c what to do.
-	# This substitutes for lots of t-* files.
-	if [ x$use_collect2 != x ]
-	then
-		rm -f Makefile.xx
-		(echo "USE_COLLECT2 = ld"; echo "MAYBE_USE_COLLECT2 = -DUSE_COLLECT2")\
-	 	   | cat - Makefile.tem > Makefile.xx
-		rm -f Makefile.tem
-		mv Makefile.xx Makefile.tem
-	fi
-
 	# If using -program-transform-name, override the installation names.
 	if [ "x${program_transform_set}" = "xyes" ] ; then
 		sed -e "s/^program_transform_name[ 	]*=.*$/program_transform_name =
@@ -184,124 +163,38 @@ $program_transform_name/" \
 		rm -f Makefile.ll
 	fi
 
-	# If this is the top level Makefile, add the language fragments.
-	# Languages are added via two mechanisms.  Some information must be
-	# recorded in makefile variables, these are defined in config-lang.in.
-	# We accumulate them and plug them into the main Makefile.
-	# The other mechanism is a set of hooks for each of the main targets
-	# like `clean', `install', etc.
-	if [ $subdir = . ]
-	then
-		rm -f Makefile.xx Makefile.ll
-		touch Makefile.ll
-		sed -e "/####language fragments/ r Makefile.ll" Makefile.tem > Makefile.xx
-		rm -f Makefile.tem
-		mv Makefile.xx Makefile.tem
-		subdirs=`echo $subdirs`
-		sed -e "s|^SUBDIRS[ 	]*=.*$|SUBDIRS = $subdirs|" \
-		    -e "s|^LANGUAGES[ 	]*=[ 	]*\(.*\)$|LANGUAGES = \1 $all_languages|" \
-		    -e "s|^BOOT_LANGUAGES[ 	]*=[ 	]*\(.*\)$|BOOT_LANGUAGES = \1 $all_boot_languages|" \
-		    -e "s|^COMPILERS[ 	]*=[ 	]*\(.*\)$|COMPILERS = \1 $all_compilers|" \
-		    -e "s|^LANG_MAKEFILES[ 	]*=.*$|LANG_MAKEFILES = $all_lang_makefiles|" \
-		    -e "s|^LANG_STAGESTUFF[ 	]*=.*$|LANG_STAGESTUFF = $all_stagestuff|" \
-		    -e "s|^LANG_DIFF_EXCLUDES[ 	]*=.*$|LANG_DIFF_EXCLUDES = $all_diff_excludes|" \
-		    -e "s|^LANG_EXTRA_HEADERS[ 	]*=.*$|LANG_EXTRA_HEADERS = $all_headers|" \
-		    -e "s|^LANG_LIB2FUNCS[ 	]*=.*$|LANG_LIB2FUNCS = $all_lib2funcs|" \
-		    Makefile.tem > Makefile.xx
-		rm -f Makefile.tem
-		mv Makefile.xx Makefile.tem
-
-		# Since we can't use `::' targets, we link each language in
-		# with a set of hooks, reached indirectly via lang.${target}.
-		rm -f Makefile.ll
-		for t in $target_list
-		do
-			x=
-			for l in .. $all_languages
-			do
-				if [ $l != ".." ]; then
-					x="$x $l.$t"
-				fi
-			done
-			echo "lang.$t: $x" >> Makefile.ll
-		done
-		sed -e "/####language hooks/ r Makefile.ll" Makefile.tem > Makefile.xx
-		rm -f Makefile.tem
-		mv Makefile.xx Makefile.tem
-		rm -f Makefile.ll
-
-		# If the host doesn't support symlinks, modify CC in
-		# FLAGS_TO_PASS so CC="stage1/xgcc -Bstage1/" works.
-		# Otherwise, we can use "CC=$(CC)".
-		rm -f symtest.tem
-		if $symbolic_link symtest1.tem symtest.tem 2>/dev/null
-		then
-			sed -e 's,CC=set-by-configure,CC=$(CC),' \
-			    Makefile.tem > Makefile.xx
-			sed -e 's,STAGE_PREFIX=set-by-configure,STAGE_PREFIX=$(STAGE_PREFIX),' \
-			    Makefile.xx > Makefile.yy
-		else
-			sed -e "s,CC=set-by-configure,CC=\`case '\$(CC)' in *stage*) echo '\$(CC)' | sed -e 's|stage|../stage|g';; *) echo '\$(CC)';; esac\`," \
-			    Makefile.tem > Makefile.xx
-			sed -e "s,STAGE_PREFIX=set-by-configure,STAGE_PREFIX=\`case '\$(STAGE_PREFIX)' in stage*) echo '\$(STAGE_PREFIX)' | sed -e 's|stage|../stage|g';; *) echo '\$(STAGE_PREFIX)';; esac\`," \
-			    Makefile.xx > Makefile.yy
-		fi
-		rm -f Makefile.tem Makefile.xx
-		mv Makefile.yy Makefile.tem
-		rm -f symtest.tem
-
-		if [ "x$all_languages" != x ]
-		then
-			# Missing space after `Merged' is intentional.
-			echo "Merged$all_languages fragment(s)."
-		fi
-
-	# Otherwise, this is a language subdirectory.  If the host supports
+	# If the host supports
 	# symlinks, point stage[123] at ../stage[123] so bootstrapping and the
 	# installation procedure can still use CC="stage1/xgcc -Bstage1/".
 	# If the host doesn't support symlinks, FLAGS_TO_PASS has been
 	# modified to solve the problem there.
-	else
-		for t in stage1 stage2 stage3 stage4 include
-		do
-			rm -f $t
-			$symbolic_link ../$t $t 2>/dev/null
-		done
-	fi
+	for t in stage1 stage2 stage3 stage4 include
+	do
+		rm -f $t
+		$symbolic_link ../$t $t 2>/dev/null
+	done
 
 	# Remove all formfeeds, since some Makes get confused by them.
-	# Also arrange to give the variables `target', `host_xmake_file',
-	# `tmake_file', `prefix', `local_prefix', `exec_prefix', `FIXINCLUDES'
-	# `out_file', `out_object', `md_file', `lang_specs_files',
-	# `lang_options_files', `INSTALL_HEADERS_DIR', and `CROSS_FLOAT_H'
+	# Also arrange to give the variables `target', `target_alias',
+	# `host_xmake_file', `tmake_file', `prefix', `local_prefix',
+	# `exec_prefix', `INSTALL_HEADERS_DIR', `exeext'
 	# values in the Makefile from the values they have in this script.
 	rm -f Makefile.xx
-	rm -f aux-output.c aux-output.o md
 	# Create an empty Makefile.sed first, to work around a Nextstep 3.3 bug.
 	echo 's|||' > Makefile.sed
 	rm Makefile.sed
 	echo 's|||' > Makefile.sed
 	echo "s|^target=.*$|target=${target}|" >> Makefile.sed
-	echo "s|^target_alias=.*$|target_alias=${target}|" >> Makefile.sed
+	echo "s|^target_alias=.*$|target=${target_alias}|" >> Makefile.sed
 	echo "s|^xmake_file=.*$|xmake_file=${dep_host_xmake_file}|" >> Makefile.sed
 	echo "s|^tmake_file=.*$|tmake_file=${dep_tmake_file}|" >> Makefile.sed
 	echo "s|^version=.*$|version=${version}|" >> Makefile.sed
-	echo "s|^out_file=.*$|out_file=${srcdir}/config/${out_file}|" >> Makefile.sed
-	echo "s|^out_object_file=.*$|out_object_file=${out_object_file}|" >> Makefile.sed
-	echo "s|^md_file=.*$|md_file=${md_file}|" >> Makefile.sed
-	echo "s|^tm_file=.*$|tm_file=${tm_file_sub}|" >> Makefile.sed
-	echo "s|^host_xm_file=.*$|host_xm_file=${host_xm_file_sub}|" >> Makefile.sed
-	echo "s|^build_xm_file=.*$|build_xm_file=${build_xm_file_sub}|" >> Makefile.sed
-	echo "s|^lang_specs_files=.*$|lang_specs_files=${lang_specs_files}|" >> Makefile.sed
-	echo "s|^lang_options_files=.*$|lang_options_files=${lang_options_files}|" >> Makefile.sed
 	echo "s|^GCC_THREAD_FILE=.*$|GCC_THREAD_FILE=${thread_file}|" >> Makefile.sed
 	echo "s|^prefix[ 	]*=.*|prefix = $prefix|" >> Makefile.sed
 	echo "s|^local_prefix[ 	]*=.*|local_prefix = $local_prefix|" >> Makefile.sed
 	echo "s|^exec_prefix[ 	]*=.*|exec_prefix = $exec_prefix|" >> Makefile.sed
-	echo "s|^FIXINCLUDES[ 	]*=.*|FIXINCLUDES = $fixincludes|" >> Makefile.sed
 	echo "s|^INSTALL_HEADERS_DIR[ 	]*=.*$|INSTALL_HEADERS_DIR = ${build_install_headers_dir}|" >> Makefile.sed
 	echo "s|^exeext[ 	]*=.*$|exeext = ${build_exeext}|" >> Makefile.sed
-	echo "s|^CROSS_FLOAT_H[	]*=.*|CROSS_FLOAT_H=\$(srcdir)/config/float-${float_format}.h|" >> Makefile.sed
 	sed -f Makefile.sed Makefile.tem > Makefile.xx
 	rm -f Makefile.tem Makefile.sed
 	mv Makefile.xx Makefile.tem
@@ -334,16 +227,12 @@ $program_transform_name/" \
 		mv Makefile.xx Makefile.tem
 	fi
 
-	if [ $subdir != . ]
-	then
-		rm -f Makefile
-		mv Makefile.tem Makefile
-		echo "Created \`$subdir/Makefile'."
-	else
-		rm -f Makefile.tem
-	fi
+	rm -f Makefile
+	mv Makefile.tem Makefile
+	echo "Created \`$subdir/Makefile'."
 
 	cd $STARTDIR
 done   # end of current-dir SUBDIRS loop
 
+# Restore this, remember we're invoked with `.'.
 srcdir=$savesrcdir
