@@ -1,3 +1,10 @@
+2004-11-24  Roger Sayle  <roger@eyesopen.com>
+
+	PR preprocessor/15824
+	* configure.ac: Correct HAVE_UCHAR test to #include <sys/types.h>
+	directly, instead of the non-existant "system.h" and "ansidecl.h".
+	* configure: Regenerate.
+
 2004-11-23  Daniel Jacobowitz  <dan@codesourcery.com>
             Joseph Myers  <joseph@codesourcery.com>
 
