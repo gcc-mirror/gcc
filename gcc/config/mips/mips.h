@@ -245,7 +245,7 @@ extern char	       *mktemp ();
 					/* Bits for real switches */
 #define MASK_INT64	0x00000001	/* ints are 64 bits */
 #define MASK_LONG64	0x00000002	/* longs and pointers are 64 bits */
-#define MASK_LLONG128	0x00000004	/* long longs are 128 bits */
+#define MASK_UNUSED	0x00000004
 #define MASK_GPOPT	0x00000008	/* Optimize for global pointer */
 #define MASK_GAS	0x00000010	/* Gas used instead of MIPS as */
 #define MASK_NAME_REGS	0x00000020	/* Use MIPS s/w reg name convention */
@@ -283,7 +283,6 @@ extern char	       *mktemp ();
 					/* r4000 64 bit sizes */
 #define TARGET_INT64		(target_flags & MASK_INT64)
 #define TARGET_LONG64		(target_flags & MASK_LONG64)
-#define TARGET_LLONG128		(target_flags & MASK_LLONG128)
 #define TARGET_FLOAT64		(target_flags & MASK_FLOAT64)
 #define TARGET_64BIT		(target_flags & MASK_64BIT)
 
@@ -349,7 +348,6 @@ extern char	       *mktemp ();
 {									\
   {"int64",		  MASK_INT64 | MASK_LONG64},			\
   {"long64",		  MASK_LONG64},					\
-  {"longlong128",	  MASK_INT64 | MASK_LONG64 | MASK_LLONG128},	\
   {"mips-as",		 -MASK_GAS},					\
   {"gas",		  MASK_GAS},					\
   {"rnames",		  MASK_NAME_REGS},				\
@@ -978,7 +976,7 @@ do {							\
 /* A C expression for the size in bits of the type `long long' on the
    target machine.  If you don't define this, the default is two
    words.  */
-#define LONG_LONG_TYPE_SIZE (TARGET_LLONG128 ? 128 : 64)
+#define LONG_LONG_TYPE_SIZE 64
 
 /* A C expression for the size in bits of the type `char' on the
    target machine.  If you don't define this, the default is one
