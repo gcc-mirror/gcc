@@ -2398,6 +2398,7 @@ compile_file (name)
 		|| TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
 	    && DECL_INITIAL (decl) == 0
 	    && DECL_EXTERNAL (decl)
+	    && ! DECL_ARTIFICIAL (decl)
 	    && ! TREE_PUBLIC (decl))
 	  {
 	    pedwarn_with_decl (decl, 
