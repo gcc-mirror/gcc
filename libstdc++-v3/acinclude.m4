@@ -2042,8 +2042,8 @@ dnl       controlled by 'style'.
 dnl --disable-symvers does not.
 dnl  +  Usage:  GLIBCPP_ENABLE_SYMVERS[(DEFAULT)]
 dnl       Where DEFAULT is either `yes' or `no'.  If ommitted, it
-dnl       defaults to `no'.  Passing `yes' tries to choose a default style
-dnl       based on linker characteristics.
+dnl       defaults to `yes'.  Passing `yes' tries to choose a default style
+dnl       based on linker characteristics. Passing 'no' disables versioning.
 AC_DEFUN(GLIBCPP_ENABLE_SYMVERS, [dnl
 define([GLIBCPP_ENABLE_SYMVERS_DEFAULT], ifelse($1, yes, yes, no))dnl
 AC_ARG_ENABLE(symvers,
@@ -2051,7 +2051,7 @@ changequote(<<, >>)dnl
 <<  --enable-symvers=style  enables symbol versioning of the shared library [default=>>GLIBCPP_ENABLE_SYMVERS_DEFAULT],
 changequote([, ])dnl
 [case "$enableval" in
- yes) enable_symvers=default ;;
+ yes) enable_symvers=yes ;;
  no)  enable_symvers=no ;;
  # other names here, just as sanity checks
  #gnu|sun|etcetera) enable_symvers=$enableval ;;
@@ -2061,42 +2061,50 @@ changequote([, ])dnl
 enable_symvers=GLIBCPP_ENABLE_SYMVERS_DEFAULT)dnl
 
 # If we never went through the GLIBCPP_CHECK_LINKER_FEATURES macro, then we
-# don't know enough about $LD... I think.
-AC_MSG_CHECKING([whether to version shared lib symbols])
+# don't know enough about $LD to do tricks... 
 if test $enable_shared = no || test x$LD = x ; then
-  enable_symvers=irrelevant
+  enable_symvers=no
 fi
+
+# Check to see if libgcc_s exists, indicating that shared libgcc is possible.
+AC_MSG_CHECKING([for shared libgcc])
+ac_save_CFLAGS="$CFLAGS"
+CFLAGS=' -lgcc_s'
+AC_TRY_LINK( , [return 0], glibcpp_shared_libgcc=yes, glibcpp_shared_libgcc=no)
+CFLAGS="$ac_save_CFLAGS"
+AC_MSG_RESULT($glibcpp_shared_libgcc)
 
 # For GNU ld, we need at least this version.  It's 2.12 in the same format
 # as the tested-for version.  See GLIBCPP_CHECK_LINKER_FEATURES for more.
 glibcpp_min_gnu_ld_version=21200
 
-dnl Everything parsed; figure out the actions.
-LINKER_MAP=config/linker-map.dummy
+# Check to see if unspecified "yes" value can win, given results
+# above.  
+if test $enable_symvers = yes ; then
+  if test $with_gnu_ld = yes &&
+    test $glibcpp_gnu_ld_version -ge $glibcpp_min_gnu_ld_version &&
+    test $glibcpp_shared_libgcc = yes ;
+  then
+    enable_symvers=gnu
+  else
+    # just fail for now
+    enable_symvers=no
+  fi
+fi
+
+dnl Everything parsed; figure out what file to use.
 case $enable_symvers in
-  no | irrelevant)
+  no)
+      LINKER_MAP=config/linker-map.dummy
       ;;
   gnu)
       LINKER_MAP=config/linker-map.gnu
       ;;
-dnl  sun)
-dnl      LINKER_MAP=config/linker-map....?
-dnl      ;;
-  default)   # not specified by user, try to figure it out
-      if test $with_gnu_ld = yes &&
-         test $glibcpp_gnu_ld_version -ge $glibcpp_min_gnu_ld_version ;
-      then
-        LINKER_MAP=config/linker-map.gnu
-      else
-	# just fail for now
-        enable_symvers=no
-      fi
-      ;;
 esac
 
 AC_LINK_FILES($LINKER_MAP, src/linker.map)
-AM_CONDITIONAL(GLIBCPP_BUILD_VERSIONED_SHLIB,
-    test $enable_symvers != no && test $enable_symvers != irrelevant)
+AM_CONDITIONAL(GLIBCPP_BUILD_VERSIONED_SHLIB, test $enable_symvers != no)
+AC_MSG_CHECKING([versioning on shared library symbols])
 AC_MSG_RESULT($enable_symvers)
 ])
 
