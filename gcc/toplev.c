@@ -3022,6 +3022,11 @@ rest_of_compilation (decl)
 		   fflush (rtl_dump_file);
 		 });
 
+      /* If we can, defer compiling inlines until EOF.
+	 save_for_inline_copying can be extremely expensive.  */
+      if (inlineable && ! decl_function_context (decl))
+	DECL_DEFER_OUTPUT (decl) = 1;
+
       /* If function is inline, and we don't yet know whether to
 	 compile it by itself, defer decision till end of compilation.
 	 finish_compilation will call rest_of_compilation again
