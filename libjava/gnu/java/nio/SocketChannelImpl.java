@@ -118,22 +118,21 @@ public class SocketChannelImpl extends SocketChannel
 
   public int read (ByteBuffer dst) throws IOException
   {
+    byte[] data;
     int bytes = 0;
-    int len = 1024;
-    byte[]b = new byte[len];
+    int len = dst.remaining ();
 	
-    /*
-    bytes = SocketRead(fd, b, 0, len);
-    dst.put(b, 0, bytes);
-
-    if (bytes == 0)
+    if (!dst.hasArray ())
       {
-        // we've hit eof ?
-        return -1;
+        data = new byte [len];
+        dst.get (data, 0, len);
       }
-    */
-
-    return bytes;
+    else
+      {
+        data = dst.array ();
+      }
+    
+    return socket.getInputStream().read (data, 0, len);
   }
     
   public long read (ByteBuffer[] dsts, int offset, int length)
@@ -152,24 +151,22 @@ public class SocketChannelImpl extends SocketChannel
   public int write (ByteBuffer src)
     throws IOException
   {
+    byte[] data;
     int bytes = 0;
-    int len = src.position();
-
-    /*
-    if (src.hasArray ())
+    int len = src.remaining ();
+    
+    if (!src.hasArray ())
       {
-        byte[] b = src.array ();
-        bytes = SocketWrite (fd, b, 0, len);
+        data = new byte [len];
+        src.get (data, 0, len);
       }
     else
       {
-        byte[] b = new byte [len];
-        src.get (b, 0, len);
-        bytes = SocketWrite (fd, b, 0, len);
+        data = src.array ();
       }
-    */
-		
-    return bytes;
+   
+    socket.getOutputStream().write (data, 0, len);
+    return len;
   }
 
   public long write (ByteBuffer[] srcs, int offset, int length)

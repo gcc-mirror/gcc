@@ -35,78 +35,120 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package gnu.java.nio;
 
+import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
+import java.nio.channels.NotYetConnectedException;
 import java.nio.channels.spi.SelectorProvider;
 
 public class DatagramChannelImpl extends DatagramChannel
 {
-  int fd;
-
+  boolean blocking = false;
+  DatagramSocket socket;
+  
   protected DatagramChannelImpl (SelectorProvider provider)
+    throws IOException
   {
     super (provider);
-  }
-    
-  protected void implCloseSelectableChannel ()
-  {
-  }
-    
-  protected void implConfigureBlocking (boolean block)
-  {
-  }
-
-  public int write (ByteBuffer src)
-  {
-    return 0;
-  }
-
-  public long write (ByteBuffer[] srcs, int offset, int length)
-  {
-    return 0;
-  }
-
-  public int read (ByteBuffer dst)
-  {
-    return 0;
-  }
-    
-  public DatagramChannel connect (SocketAddress remote)
-  {
-    return null;
-  }
-    
-  public DatagramChannel disconnect ()
-  {
-    return null;
-  }
-    
-  public boolean isConnected ()
-  {
-    return false;
-  }
-    
-  public long read (ByteBuffer[] dsts, int offset, int length)
-  {
-    return 0;
-  }
-    
-  public SocketAddress receive (ByteBuffer dst)
-  {
-    return null;
-  }
-    
-  public int send (ByteBuffer src, SocketAddress target)
-  {
-    return 0;
+    socket = new DatagramSocket ();
   }
     
   public DatagramSocket socket ()
   {
-    return null;
+    return socket;
+  }
+    
+  protected void implCloseSelectableChannel ()
+    throws IOException
+  {
+    socket.close ();
+  }
+    
+  protected void implConfigureBlocking (boolean blocking)
+    throws IOException
+  {
+    this.blocking = blocking; // FIXME
+  }
+
+  public DatagramChannel connect (SocketAddress remote)
+    throws IOException
+  {
+    socket.connect (remote);
+    return this;
+  }
+    
+  public DatagramChannel disconnect ()
+    throws IOException
+  {
+    socket.disconnect ();
+    return this;
+  }
+    
+  public boolean isConnected ()
+  {
+    return socket.isConnected ();
+  }
+    
+  public int write (ByteBuffer src)
+    throws IOException
+  {
+    if (!isConnected ())
+      throw new NotYetConnectedException ();
+    
+    throw new Error ("Not implemented");
+  }
+
+  public long write (ByteBuffer[] srcs, int offset, int length)
+    throws IOException
+  {
+    // FIXME: Should we throw an exception if offset and/or length
+    // have wrong values ?
+
+    long result = 0;
+
+    for (int i = offset; i < offset + length; i++)
+      result += write (srcs [i]);
+
+    return result;
+  }
+
+  public int read (ByteBuffer dst)
+    throws IOException
+  {
+    if (!isConnected ())
+      throw new NotYetConnectedException ();
+    
+    throw new Error ("Not implemented");
+  }
+    
+  public long read (ByteBuffer[] dsts, int offset, int length)
+    throws IOException
+  {
+    // FIXME: Should we throw an exception if offset and/or length
+    // have wrong values ?
+
+    long result = 0;
+
+    for (int i = offset; i < offset + length; i++)
+      result += read (dsts [i]);
+
+    return result;
+  }
+    
+  public SocketAddress receive (ByteBuffer dst)
+    throws IOException
+  {
+    throw new Error ("Not implemented");
+  }
+    
+  public int send (ByteBuffer src, SocketAddress target)
+    throws IOException
+  {
+    throw new Error ("Not implemented");
   }
 }
