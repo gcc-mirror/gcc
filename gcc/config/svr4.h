@@ -719,10 +719,11 @@ do {									 \
    in the table.  Note that we can use standard UN*X escape
    sequences for many control characters, but we don't use
    \a to represent BEL because some svr4 assemblers (e.g. on
-   the i386) don't know about that.   */
+   the i386) don't know about that.  Also, we don't use \v
+   since some versions of gas, such as 2.2 did not accept it.  */
 
 #define ESCAPES \
-"\1\1\1\1\1\1\1\1btnvfr\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\
+"\1\1\1\1\1\1\1\1btn\1fr\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\
 \0\0\"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
 \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\\\0\0\0\
 \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\1\
