@@ -2637,7 +2637,9 @@ expand_eh_return ()
 #ifdef RETURN_ADDR_OFFSET
   tmp = plus_constant (tmp, -RETURN_ADDR_OFFSET);
 #endif
-  emit_move_insn (ra, tmp);
+  tmp = force_operand (tmp, ra);
+  if (tmp != ra)
+    emit_move_insn (ra, tmp);
 
   /* Indicate that the registers are in fact used.  */
   emit_insn (gen_rtx_USE (VOIDmode, reg1));

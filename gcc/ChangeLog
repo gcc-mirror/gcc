@@ -1,3 +1,8 @@
+Wed Nov 11 13:46:13 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* except.c (expand_eh_return): Readd force_operand call lost in
+	Sept 15 change.
+
 Tue Nov 10 17:04:11 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.h (LEGITIMIZE_ADDRESS): Add missing goto on last case.
