@@ -1,3 +1,10 @@
+2003-08-11  John Levon  <levon@movementarian.org>
+
+	* docs/html/ext/howto/guide.html (GLIBCXX_FORCE_NEW): Update
+	remaining places for the name change from GLIBCPP_FORCE_NEW
+	to GLIBCXX_FORCE_NEW
+
+
 2003-08-11  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/basic_ios.h: Remove *_iter typedefs, change num*

@@ -285,20 +285,21 @@
       SGI STL days.  We have removed it in gcc 3.3.  See next section
       for the new way to get the same effect.
    </p>
-   <h3>Globally disabling memory caching:<code>  GLIBCPP_FORCE_NEW</code></h3>
+   <h3>Globally disabling memory caching:<code>  GLIBCXX_FORCE_NEW</code></h3>
    <p>Starting with gcc 3.3, if you want to globally disable memory
       caching within the library for the default allocator (i.e.
       the one you get for all library objects when you do not specify
-      which one to use), merely set GLIBCPP_FORCE_NEW (at this time,
+      which one to use), merely set GLIBCXX_FORCE_NEW (at this time,
       with any value) into your environment before running the
       program.  You will obtain a similar effect without having to
       recompile your entire program and the entire library (the new
       operator in gcc is a light wrapper around malloc).  If your
-      program crashes with GLIBCPP_FORCE_NEW in the environment,
+      program crashes with GLIBCXX_FORCE_NEW in the environment,
       it likely means that you linked against objects built against
       the older library.  Code to support this extension is fully
-      compatible with 3.2 code if GLIBCPP_FORCE_NEW is not in the
-      environment.
+      compatible with 3.2 code if GLIBCXX_FORCE_NEW is not in the
+      environment. Prior to GCC 3.4, this variable was spelt
+      GLIBCPP_FORCE_NEW.
    </p>
    <h3>Writing your own allocators</h3>
    <p>Depending on your application (a specific program, a generic library,
