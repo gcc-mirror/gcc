@@ -35,10 +35,20 @@
 (define_reservation "us3_single_issue" "us3_slot0 + us3_slot1 + us3_slot2 + us3_slot3")
 (define_reservation "us3_ax" "(us3_a0 | us3_a1)")
 
+(define_insn_reservation "us3_single" 1
+  (and (eq_attr "cpu" "ultrasparc3")
+    (eq_attr "type" "multi,flushw,iflush,trap"))
+  "us3_single_issue")
+
 (define_insn_reservation "us3_integer" 1
   (and (eq_attr "cpu" "ultrasparc3")
     (eq_attr "type" "ialu,shift,compare"))
   "us3_ax + us3_slotany")
+
+(define_insn_reservation "us3_ialuX" 5
+  (and (eq_attr "cpu" "ultrasparc3")
+    (eq_attr "type" "ialu,shift,compare"))
+  "us3_single_issue*4, nothing")
 
 (define_insn_reservation "us3_cmove" 2
   (and (eq_attr "cpu" "ultrasparc3")
@@ -54,15 +64,15 @@
 ;; ??? here, but the variable cycles are not.
 ;; ??? Currently I have no idea how to determine the variability, but once
 ;; ??? known we can simply add a define_bypass or similar to model it.
-(define_insn_reservation "us3_imul" 6
+(define_insn_reservation "us3_imul" 7
   (and (eq_attr "cpu" "ultrasparc3")
     (eq_attr "type" "imul"))
-  "us3_ms + us3_slotany, us3_single_issue*5")
+  "us3_ms + us3_slotany, us3_single_issue*4, nothing*2")
 
-(define_insn_reservation "us3_idiv" 71
+(define_insn_reservation "us3_idiv" 72
   (and (eq_attr "cpu" "ultrasparc3")
     (eq_attr "type" "idiv"))
-  "us3_ms + us3_slotany, us3_single_issue*70")
+  "us3_ms + us3_slotany, us3_single_issue*69, nothing*2")
 
 ;; UltraSPARC-III has a similar load delay as UltraSPARC-I/II except
 ;; that all loads except 32-bit/64-bit unsigned loads take the extra
