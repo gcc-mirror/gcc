@@ -1,3 +1,7 @@
+2000-03-06  Tom Tromey  <tromey@cygnus.com>
+
+	* Make-lang.in (JAVA_SRCS): Added boehm.c, lex.c.
+
 2000-02-17  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in (JAVA_OBJS): Added boehm.o.
