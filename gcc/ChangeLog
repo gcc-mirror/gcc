@@ -1,3 +1,7 @@
+Sun Jun 21 01:08:17 PDT 1998 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Sun Jun 21 01:16:38 1998  John Wehle  (john@feith.com)
 
 	* i386.c (output_fp_conditional_move): Don't bother handling
