@@ -1,7 +1,7 @@
 // 1999-11-15 Kevin Ediger  <kediger@licor.com>
 // test the floating point inserters (facet num_put)
 
-// Copyright (C) 1999 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,6 +20,8 @@
 // USA.
 
 #include <cstdio> // for sprintf
+#include <cmath> // for abs
+#include <cfloat> // for DBL_EPSILON
 #include <iostream>
 #include <iomanip>
 #include <locale>
@@ -355,6 +357,21 @@ test04()
   return 0;
 }
 
+int
+test05()
+{
+  double pi = 3.14159265358979323846;
+  ostringstream ostr;
+  ostr.precision(20);
+  ostr << pi;
+  string sval = ostr.str();
+  istringstream istr (sval);
+  double d;
+  istr >> d;
+  VERIFY (abs(pi-d)/pi < DBL_EPSILON);
+  return 0;
+}
+
 int 
 main()
 {
@@ -362,6 +379,7 @@ main()
   test02();
   test03();
   test04();
+  test05();
 #ifdef TEST_NUMPUT_VERBOSE
   cout << "Test passed!" << endl;
 #endif
