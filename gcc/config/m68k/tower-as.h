@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.
-   Copyright (C) 1990 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1993 Free Software Foundation, Inc.
 
    Written by Robert Andersson, International Systems, Oslo, Norway.
    Send bug reports, questions and improvements to ra@intsys.no.
@@ -344,16 +344,23 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef ASM_OUTPUT_DOUBLE
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)  \
-do { union { double d; long l[2]; } tem;		\
-     tem.d = (VALUE);					\
-     fprintf(FILE, "\tlong 0x%x,0x%x\n", tem.l[0], tem.l[1]); \
+do { long l[2];						\
+     REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);		\
+     fprintf (FILE, "\tlong 0x%x,0x%x\n", l[0], l[1]); \
+   } while (0)
+
+#undef ASM_OUTPUT_LONG_DOUBLE
+#define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)  				\
+do { long l[3];								\
+     REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);			\
+     fprintf (FILE, "\tlong 0x%x,0x%x,0x%x\n", l[0], l[1], l[2]);	\
    } while (0)
 
 #undef ASM_OUTPUT_FLOAT
 #define ASM_OUTPUT_FLOAT(FILE,VALUE)  \
-do { union { float f; long l;} tem;			\
-     tem.f = (VALUE);					\
-     fprintf (FILE, "\tlong 0x%x\n", tem.l);	\
+do { long l;					\
+     REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);	\
+     fprintf ((FILE), "\tlong 0x%x\n", l);	\
    } while (0)
 
 /* This is how to output an assembler line defining an `int' constant.  */
@@ -411,18 +418,26 @@ do { union { float f; long l;} tem;			\
   else if (CODE == '+') fprintf (FILE, "(%%sp)+");			\
   else if (CODE == '@') fprintf (FILE, "(%%sp)");			\
   else if (CODE == '!') fprintf (FILE, "%%fpcr");			\
+  else if (CODE == '$') { if (TARGET_68040_ONLY) fprintf (FILE, "s"); }	\
+  else if (CODE == '&') { if (TARGET_68040_ONLY) fprintf (FILE, "d"); }	\
   else if (GET_CODE (X) == REG)						\
     fprintf (FILE, "%s", reg_names[REGNO (X)]);				\
   else if (GET_CODE (X) == MEM)						\
     output_address (XEXP (X, 0));					\
   else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == SFmode)	\
-    { union { double d; int i[2]; } u;					\
-      union { float f; int i; } u1;					\
-      u.i[0] = CONST_DOUBLE_LOW (X); u.i[1] = CONST_DOUBLE_HIGH (X);	\
-      u1.f = u.d;							\
-      fprintf (FILE, "&0x%x", u1.i); }				        \
+    { REAL_VALUE_TYPE r; long l;					\
+      REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
+      REAL_VALUE_TO_TARGET_SINGLE (r, l);				\
+      fprintf (FILE, "&0x%x", l); }					\
   else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == DFmode)	\
-      fprintf (FILE, "&0x%x%08x", CONST_DOUBLE_LOW (X), CONST_DOUBLE_HIGH (X));\
+    { REAL_VALUE_TYPE r; int i[2];					\
+      REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
+      REAL_VALUE_TO_TARGET_DOUBLE (r, i);				\
+      fprintf (FILE, "&0x%x%08x", i[0], i[1]); }			\
+  else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == XFmode)	\
+    { REAL_VALUE_TYPE r;						\
+      REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
+      ASM_OUTPUT_LONG_DOUBLE_OPERAND (FILE, r); }			\
   else { putc ('&', FILE); output_addr_const (FILE, X); }}
 
 /* Note that this contains a kludge that knows that the only reason
