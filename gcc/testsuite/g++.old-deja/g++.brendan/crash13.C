@@ -1,5 +1,6 @@
 // Build don't link: 
 // GROUPS passed old-abort
+// Special g++ Options: -Wreturn-type
 class gen_op
 {
 public:
