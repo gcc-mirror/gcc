@@ -1,3 +1,7 @@
+2000-08-25  Jason Merrill  <jason@redhat.com>
+
+	* integrate.c (expand_inline_function): Pull out the original decl.
+
 2000-08-25  Jim Wilson  <wilson@cygnus.com>
 
 	* cse.c (cse_insn): Don't pass label subtraction to force_const_mem.
