@@ -97,6 +97,16 @@ Boston, MA 02111-1307, USA.  */
        %{!p:%{!pg:%{!g*:-lc} %{g*:-lg}}}}"
 #endif
 
+#define LINUX_TARGET_OS_CPP_BUILTINS()				\
+    do {							\
+	builtin_define ("__gnu_linux__");			\
+	builtin_define_std ("linux");				\
+	builtin_define_std ("unix");				\
+	builtin_assert ("system=linux");			\
+	builtin_assert ("system=unix");				\
+	builtin_assert ("system=posix");			\
+    } while (0)
+
 #if !defined(USE_GNULIBC_1) && defined(HAVE_LD_EH_FRAME_HDR)
 #define LINK_EH_SPEC "%{!static:--eh-frame-hdr} "
 #endif

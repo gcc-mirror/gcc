@@ -26,6 +26,7 @@ Boston, MA 02111-1307, USA.  */
 	builtin_define_std ("linux");		\
 	builtin_define ("_LONGLONG");		\
 	builtin_define ("__gnu_linux__");	\
+	builtin_assert ("system=linux");	\
 	builtin_assert ("system=unix");		\
 	builtin_assert ("system=posix");	\
     }						\

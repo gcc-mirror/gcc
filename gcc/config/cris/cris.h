@@ -251,6 +251,8 @@ extern const char *cris_elinux_stacksize_str;
       builtin_define_std ("CRIS");		\
       builtin_define_std ("GNU_CRIS");		\
       builtin_define ("__CRIS_ABI_version=2");	\
+      builtin_assert ("cpu=cris");		\
+      builtin_assert ("machine=cris");		\
     }						\
   while (0)
 
