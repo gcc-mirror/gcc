@@ -54,5 +54,5 @@ public interface RSAPrivateKey extends PrivateKey, RSAKey
    *
    * @return The private exponent value for this key
    */
-  public abstract BigInteger getPrivateExponent();
+  BigInteger getPrivateExponent();
 }

@@ -52,5 +52,5 @@ public interface DSAPublicKey extends DSAKey, PublicKey
   /**
    * This method returns the value of the DSA public key
    */
-  public BigInteger getY();
+  BigInteger getY();
 }

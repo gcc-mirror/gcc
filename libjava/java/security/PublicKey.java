@@ -56,5 +56,5 @@ public interface PublicKey extends Key
   /**
    * The version identifier used for serialization.
    */
-  public static final long serialVersionUID = 7187392471159151072L;
+  long serialVersionUID = 7187392471159151072L;
 } // interface PublicKey

@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package java.security.interfaces;
 
+import java.math.BigInteger;
+
 /**
    A generic RSA Key interface for public and private keys
 
@@ -51,5 +53,5 @@ public interface RSAKey
 
      @returns a modulus
    */
-  public java.math.BigInteger getModulus();
+  BigInteger getModulus();
 }

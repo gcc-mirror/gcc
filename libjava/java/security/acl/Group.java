@@ -59,7 +59,7 @@ public interface Group extends Principal
    *
    * @return <code>true</code> if the user was successfully added or <code>false</code> if the user is already a member
    */
-  public abstract boolean addMember(Principal user);
+  boolean addMember(Principal user);
 
   /**
    * This method deletes a member from the group.
@@ -68,7 +68,7 @@ public interface Group extends Principal
    *
    * @return <code>true</code> if the user was successfully deleted or <code>false</code> if the user is not a member of the group
    */
-  public abstract boolean removeMember(Principal user);
+  boolean removeMember(Principal user);
 
   /**
    * This method tests whether or not a given <code>Principal</code> is a
@@ -78,7 +78,7 @@ public interface Group extends Principal
    *
    * @return <code>true</code> if the user is member, <code>false</code> otherwise
    */
-  public abstract boolean isMember(Principal member);
+  boolean isMember(Principal member);
 
   /**
    * This method returns a list of all members of the group as an 
@@ -86,5 +86,5 @@ public interface Group extends Principal
    *
    * @return The list of all members of the group
    */
-  public abstract Enumeration members();
+  Enumeration members();
 }
