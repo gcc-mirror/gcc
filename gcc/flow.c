@@ -1795,9 +1795,6 @@ mark_set_1 (needed, dead, x, insn, significant)
       /* Mark it as as dead before this insn.  */
       dead[offset] |= bit;
 
-      /* The next use is no longer "next", since a store intervenes.  */
-      reg_next_use[regno] = 0;
-
       /* A hard reg in a wide mode may really be multiple registers.
 	 If so, mark all of them just like the first.  */
       if (regno < FIRST_PSEUDO_REGISTER)
@@ -1830,6 +1827,9 @@ mark_set_1 (needed, dead, x, insn, significant)
 	{
 	  register rtx y = reg_next_use[regno];
 	  register int blocknum = BLOCK_NUM (insn);
+
+	  /* The next use is no longer "next", since a store intervenes.  */
+	  reg_next_use[regno] = 0;
 
 	  /* If this is a hard reg, record this function uses the reg.  */
 
