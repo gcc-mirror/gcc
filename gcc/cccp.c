@@ -5785,7 +5785,7 @@ do_warning (buf, limit, op, keyword)
   bcopy (buf, copy, length);
   copy[length] = 0;
   SKIP_WHITE_SPACE (copy);
-  error ("#warning %s", copy);
+  warning ("#warning %s", copy);
   return 0;
 }
 
