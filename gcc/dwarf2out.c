@@ -116,7 +116,7 @@ dwarf2out_do_frame (void)
 /* Various versions of targetm.eh_frame_section.  Note these must appear
    outside the DWARF2_DEBUGGING_INFO || DWARF2_UNWIND_INFO macro guards.  */
 
-/* Version of targetm.eh_frame_section for systems with named sections.  */ 
+/* Version of targetm.eh_frame_section for systems with named sections.  */
 void
 named_section_eh_frame_section (void)
 {
@@ -142,7 +142,7 @@ named_section_eh_frame_section (void)
 #endif
 }
 
-/* Version of targetm.eh_frame_section for systems using collect2.  */ 
+/* Version of targetm.eh_frame_section for systems using collect2.  */
 void
 collect2_eh_frame_section (void)
 {
@@ -1150,7 +1150,7 @@ struct reg_saved_in_data GTY(()) {
    more efficient data structure.  */
 static GTY(()) struct reg_saved_in_data regs_saved_in_regs[4];
 static GTY(()) size_t num_regs_saved_in_regs;
-  
+
 #if defined (DWARF2_DEBUGGING_INFO) || defined (DWARF2_UNWIND_INFO)
 static const char *last_reg_save_label;
 
@@ -1253,7 +1253,7 @@ reg_saved_in (rtx reg)
   unsigned int regn = REGNO (reg);
   size_t i;
   struct queued_reg_save *q;
-  
+
   for (q = queued_reg_saves; q; q = q->next)
     if (q->saved_reg && regn == REGNO (q->saved_reg))
       return q->reg;
@@ -1311,7 +1311,7 @@ static dw_cfa_location cfa_temp;
   the intent is to save the value of SP from the previous frame.
 
   In addition, if a register has previously been saved to a different
-  register, 
+  register,
 
   Invariants / Summaries of Rules
 
@@ -1480,7 +1480,7 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 	    {
 	      /* Rule 1 */
 	      /* Update the CFA rule wrt SP or FP.  Make sure src is
-		 relative to the current CFA register. 
+		 relative to the current CFA register.
 
 		 We used to require that dest be either SP or FP, but the
 		 ARM copies SP to a temporary register, and from there to
@@ -1677,14 +1677,14 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 	case LO_SUM:
 	  {
 	    int regno;
-	    
+
 	    gcc_assert (GET_CODE (XEXP (XEXP (dest, 0), 1)) == CONST_INT);
 	    offset = INTVAL (XEXP (XEXP (dest, 0), 1));
 	    if (GET_CODE (XEXP (dest, 0)) == MINUS)
 	      offset = -offset;
 
 	    regno = REGNO (XEXP (XEXP (dest, 0), 0));
-	    
+
 	    if (cfa_store.reg == (unsigned) regno)
 	      offset -= cfa_store.offset;
 	    else
@@ -1700,7 +1700,7 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 	case REG:
 	  {
 	    int regno = REGNO (XEXP (dest, 0));
-	    
+
 	    if (cfa_store.reg == (unsigned) regno)
 	      offset = -cfa_store.offset;
 	    else
@@ -1778,7 +1778,7 @@ dwarf2out_frame_debug (rtx insn)
   if (insn == NULL_RTX)
     {
       size_t i;
-      
+
       /* Flush any queued register saves.  */
       flush_queued_reg_saves ();
 
@@ -1791,7 +1791,7 @@ dwarf2out_frame_debug (rtx insn)
       cfa_store = cfa;
       cfa_temp.reg = -1;
       cfa_temp.offset = 0;
-      
+
       for (i = 0; i < num_regs_saved_in_regs; i++)
 	{
 	  regs_saved_in_regs[i].orig_reg = NULL_RTX;
@@ -3930,6 +3930,7 @@ static dw_die_ref scope_die_for (tree, dw_die_ref);
 static inline int local_scope_p (dw_die_ref);
 static inline int class_or_namespace_scope_p (dw_die_ref);
 static void add_type_attribute (dw_die_ref, tree, int, int, dw_die_ref);
+static void add_calling_convention_attribute (dw_die_ref, tree);
 static const char *type_tag (tree);
 static tree member_declared_type (tree);
 #if 0
@@ -4809,11 +4810,11 @@ AT_string_form (dw_attr_ref a)
   char label[32];
 
   gcc_assert (a && AT_class (a) == dw_val_class_str);
-  
+
   node = a->dw_attr_val.v.val_str;
   if (node->form)
     return node->form;
-  
+
   len = strlen (node->str) + 1;
 
   /* If the string is shorter or equal to the size of the reference, it is
@@ -8637,7 +8638,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode, bool can_use_fbreg)
     case ASHIFT:
       op = DW_OP_shl;
       goto do_binop;
-      
+
     case ASHIFTRT:
       op = DW_OP_shra;
       goto do_binop;
@@ -9283,7 +9284,7 @@ field_byte_offset (tree decl)
 
   if (TREE_CODE (decl) == ERROR_MARK)
     return 0;
-  
+
   gcc_assert (TREE_CODE (decl) == FIELD_DECL);
 
   type = field_type (decl);
@@ -9557,7 +9558,7 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 
 	if (val < 0)
 	  add_AT_int (die, DW_AT_const_value, val);
-	else 
+	else
 	  add_AT_unsigned (die, DW_AT_const_value, (unsigned HOST_WIDE_INT) val);
       }
       break;
@@ -9605,30 +9606,30 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 	      {
 		rtx elt = CONST_VECTOR_ELT (rtl, i);
 		HOST_WIDE_INT lo, hi;
-		
+
 		switch (GET_CODE (elt))
 		  {
 		  case CONST_INT:
 		    lo = INTVAL (elt);
 		    hi = -(lo < 0);
 		    break;
-		    
+
 		  case CONST_DOUBLE:
 		    lo = CONST_DOUBLE_LOW (elt);
 		    hi = CONST_DOUBLE_HIGH (elt);
 		    break;
-		    
+
 		  default:
 		    gcc_unreachable ();
 		  }
-		
+
 		if (elt_size <= sizeof (HOST_WIDE_INT))
 		  insert_int (lo, elt_size, p);
 		else
 		  {
 		    unsigned char *p0 = p;
 		    unsigned char *p1 = p + sizeof (HOST_WIDE_INT);
-		    
+
 		    gcc_assert (elt_size == 2 * sizeof (HOST_WIDE_INT));
 		    if (WORDS_BIG_ENDIAN)
 		      {
@@ -10621,6 +10622,20 @@ add_type_attribute (dw_die_ref object_die, tree type, int decl_const,
     add_AT_die_ref (object_die, DW_AT_type, type_die);
 }
 
+/* Given an object die, add the calling convention attribute for the
+   function call type.  */
+static void
+add_calling_convention_attribute (dw_die_ref subr_die, tree type)
+{
+  enum dwarf_calling_convention value = DW_CC_normal;
+
+  value = targetm.dwarf_calling_convention (type);
+
+  /* Only add the attribute if the backend requests it.  */
+  if (value)
+    add_AT_unsigned (subr_die, DW_AT_calling_convention, value);
+}
+
 /* Given a tree pointer to a struct, class, union, or enum type node, return
    a pointer to the (string) tag name for the given type, or zero if the type
    was declared without a tag.  */
@@ -11165,7 +11180,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	  subr_die = old_die;
 
 	  /* Clear out the declaration attribute and the formal parameters.
-	     Do not remove all children, because it is possible that this 
+	     Do not remove all children, because it is possible that this
 	     declaration die was forced using force_decl_die(). In such
 	     cases die that forced declaration die (e.g. TAG_imported_module)
 	     is one of the children that we do not want to remove.  */
@@ -11218,7 +11233,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	  /* The first time we see a member function, it is in the context of
 	     the class to which it belongs.  We make sure of this by emitting
 	     the class first.  The next time is the definition, which is
-	     handled above.  The two may come from the same source text. 
+	     handled above.  The two may come from the same source text.
 
 	     Note that force_decl_die() forces function declaration die. It is
 	     later reused to represent definition.  */
@@ -11917,6 +11932,7 @@ gen_subroutine_type_die (tree type, dw_die_ref context_die)
   equate_type_number_to_die (type, subr_die);
   add_prototyped_attribute (subr_die, type);
   add_type_attribute (subr_die, return_type, 0, 0, context_die);
+  add_calling_convention_attribute (subr_die, type);
   gen_formal_types_die (type, subr_die);
 }
 
@@ -12356,7 +12372,7 @@ force_decl_die (tree decl)
 	  save_fn = current_function_decl;
 	  current_function_decl = NULL_TREE;
 	  gen_subprogram_die (decl, context_die);
-	  current_function_decl = save_fn; 
+	  current_function_decl = save_fn;
 	  break;
 
 	case VAR_DECL:
@@ -12375,14 +12391,14 @@ force_decl_die (tree decl)
 	default:
 	  gcc_unreachable ();
 	}
-  
+
       /* See if we can find the die for this deci now.
 	 If not then abort.  */
       if (!decl_die)
 	decl_die = lookup_decl_die (decl);
       gcc_assert (decl_die);
     }
-  
+
   return decl_die;
 }
 
@@ -12696,8 +12712,8 @@ dwarf2out_type_decl (tree decl, int local)
     dwarf2out_decl (decl);
 }
 
-/* Output debug information for imported module or decl.  */ 
- 
+/* Output debug information for imported module or decl.  */
+
 static void
 dwarf2out_imported_module_or_decl (tree decl, tree context)
 {
@@ -12705,14 +12721,14 @@ dwarf2out_imported_module_or_decl (tree decl, tree context)
   dw_die_ref scope_die;
   unsigned file_index;
   expanded_location xloc;
-  
+
   if (debug_info_level <= DINFO_LEVEL_TERSE)
     return;
 
   gcc_assert (decl);
 
   /* To emit DW_TAG_imported_module or DW_TAG_imported_decl, we need two DIEs.
-     We need decl DIE for reference and scope die. First, get DIE for the decl 
+     We need decl DIE for reference and scope die. First, get DIE for the decl
      itself.  */
 
   /* Get the scope die for decl context. Use comp_unit_die for global module
@@ -12729,8 +12745,8 @@ dwarf2out_imported_module_or_decl (tree decl, tree context)
     at_import_die = force_type_die (TREE_TYPE (decl));
   else
     at_import_die = force_decl_die (decl);
-  
-  /* OK, now we have DIEs for decl as well as scope. Emit imported die.  */ 
+
+  /* OK, now we have DIEs for decl as well as scope. Emit imported die.  */
   if (TREE_CODE (decl) == NAMESPACE_DECL)
     imported_die = new_die (DW_TAG_imported_module, scope_die, context);
   else
@@ -13440,7 +13456,7 @@ static void
 prune_unused_types_prune (dw_die_ref die)
 {
   dw_die_ref c, p, n;
-  
+
   gcc_assert (die->die_mark);
 
   p = NULL;
@@ -13568,9 +13584,9 @@ dwarf2out_finish (const char *filename)
 		context = DECL_CONTEXT (node->created_for);
 	      else if (TYPE_P (node->created_for))
 		context = TYPE_CONTEXT (node->created_for);
-		
+
 	      gcc_assert (context && TREE_CODE (context) == FUNCTION_DECL);
-	      
+
 	      origin = lookup_decl_die (context);
 	      if (origin)
 	        add_child_die (origin, die);
