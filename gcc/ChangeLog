@@ -16,6 +16,8 @@
 	Fix a comment typo.
 	* config/i960/i960.c (signed_arith_operand): Likewise.
 
+	* calls.c (expand_call): Fix a comment typo.
+
 2001-04-20  Zack Weinberg  <zackw@stanford.edu>
 
 	* configure.in: Probe for times, clock, struct tms, and clock_t.
