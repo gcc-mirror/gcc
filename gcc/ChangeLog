@@ -1,5 +1,9 @@
 Sun Feb 14 23:05:34 1999  Jeffrey A Law  (law@cygnus.com)
 
+	Tue Feb  9 21:14:03 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+	* alias.c (init_alias_analysis): Avoid self-referential value
+	when setting reg_known_value from REG_EQUAL notes.
+
 	Mon Aug 17 02:03:55 1998  Richard Henderson  <rth@cygnus.com>
 	* regclass.c (allocate_reg_info): Respect MIN when clearing data.
 

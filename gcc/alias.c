@@ -1174,7 +1174,8 @@ init_alias_analysis ()
 		  && (((note = find_reg_note (insn, REG_EQUAL, 0)) != 0
 		       && REG_N_SETS (REGNO (SET_DEST (set))) == 1)
 		      || (note = find_reg_note (insn, REG_EQUIV, NULL_RTX)) != 0)
-		  && GET_CODE (XEXP (note, 0)) != EXPR_LIST)
+		  && GET_CODE (XEXP (note, 0)) != EXPR_LIST
+		  && ! reg_overlap_mentioned_p (SET_DEST (set), XEXP (note, 0)))
 		{
 		  int regno = REGNO (SET_DEST (set));
 		  reg_known_value[regno] = XEXP (note, 0);
