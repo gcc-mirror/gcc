@@ -1,5 +1,8 @@
 2001-12-07  Tom Tromey  <tromey@redhat.com>
 
+	* java/lang/ClassLoader.java (defineClass): Rethrow any
+	LinkageError.
+
 	* java/lang/ThreadGroup.java (uncaughtException): Print message to
 	System.err.  Required by spec.
 

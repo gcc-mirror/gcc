@@ -254,7 +254,7 @@ public abstract class ClassLoader
 
       return defineClass0 (name, data, off, len, protectionDomain);
 
-    } catch (ClassFormatError x) {
+    } catch (LinkageError x) {
       throw x;		// rethrow
 
     } catch (java.lang.VirtualMachineError x) {
