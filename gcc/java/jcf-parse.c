@@ -1088,7 +1088,7 @@ yyparse ()
   for (node = current_file_list; node; node = TREE_CHAIN (node))
     {
       unsigned char magic_string[4];
-      uint32 magic;
+      uint32 magic = 0;
       tree name = TREE_VALUE (node);
 
       /* Skip already parsed files */
@@ -1110,11 +1110,11 @@ yyparse ()
       input_filename = IDENTIFIER_POINTER (name);
 
       /* Figure what kind of file we're dealing with */
-      if (fread (magic_string, 1, 4, finput) != 4)
-	fatal_io_error ("Premature end of input file %s", 
-			IDENTIFIER_POINTER (name));
-      fseek (finput, 0L, SEEK_SET);
-      magic = GET_u4 (magic_string);
+      if (fread (magic_string, 1, 4, finput) == 4)
+	{
+	  fseek (finput, 0L, SEEK_SET);
+	  magic = GET_u4 (magic_string);
+	}
       if (magic == 0xcafebabe)
 	{
 	  CLASS_FILE_P (node) = 1;

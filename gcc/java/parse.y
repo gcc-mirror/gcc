@@ -141,6 +141,8 @@ static tree patch_invoke PARAMS ((tree, tree, tree));
 static int maybe_use_access_method PARAMS ((int, tree *, tree *));
 static tree lookup_method_invoke PARAMS ((int, tree, tree, tree, tree));
 static tree register_incomplete_type PARAMS ((int, tree, tree, tree));
+static tree check_inner_circular_reference PARAMS ((tree, tree));
+static tree check_circular_reference PARAMS ((tree));
 static tree obtain_incomplete_type PARAMS ((tree));
 static tree java_complete_lhs PARAMS ((tree));
 static tree java_complete_tree PARAMS ((tree));
@@ -1345,6 +1347,8 @@ abstract_method_declaration:
 /* 19.10 Productions from 10: Arrays  */
 array_initializer:
 	OCB_TK CCB_TK
+		{ $$ = build_new_array_init ($1.location, NULL_TREE); }
+|	OCB_TK C_TK CCB_TK
 		{ $$ = build_new_array_init ($1.location, NULL_TREE); }
 |	OCB_TK variable_initializers CCB_TK
 		{ $$ = build_new_array_init ($1.location, $2); }
@@ -5219,6 +5223,80 @@ register_incomplete_type (kind, wfl, decl, ptr)
   return ptr;
 }
 
+/* This checks for circular references with innerclasses. We start
+   from SOURCE and should never reach TARGET. Extended/implemented
+   types in SOURCE have their enclosing context checked not to reach
+   TARGET. When the last enclosing context of SOURCE is reached, its
+   extended/implemented types are also checked not to reach TARGET.
+   In case of error, WFL of the offending type is returned; NULL_TREE
+   otherwise.  */
+
+static tree
+check_inner_circular_reference (source, target)
+     tree source;
+     tree target;
+{
+  tree basetype_vec = TYPE_BINFO_BASETYPES (source);
+  tree ctx, cl;
+  int i;
+
+  if (!basetype_vec)
+    return NULL_TREE;
+  
+  for (i = 0; i < TREE_VEC_LENGTH (basetype_vec); i++)
+    {
+      tree su = BINFO_TYPE (TREE_VEC_ELT (basetype_vec, i));
+
+      if (inherits_from_p (su, target))
+	return lookup_cl (TYPE_NAME (su));
+      
+      for (ctx = DECL_CONTEXT (TYPE_NAME (su)); ctx; ctx = DECL_CONTEXT (ctx))
+	{
+	  /* An enclosing context shouldn't be TARGET */
+	  if (ctx == TYPE_NAME (target))
+	    return lookup_cl (TYPE_NAME (su));
+
+	  /* When we reach the enclosing last context, start a check
+	     on it, with the same target */
+	  if (! DECL_CONTEXT (ctx) &&
+	      (cl = check_inner_circular_reference (TREE_TYPE (ctx), target)))
+	    return cl;
+	}
+    }
+  return NULL_TREE;
+}
+
+/* Explore TYPE's `extends' clause member(s) and return the WFL of the
+   offending type if a circularity is detected. NULL_TREE is returned
+   otherwise. TYPE can be an interface or a class.   */
+
+static tree
+check_circular_reference (type)
+     tree type;
+{
+  tree basetype_vec = TYPE_BINFO_BASETYPES (type);
+  int i;
+
+  if (!basetype_vec)
+    return NULL_TREE;
+
+  if (! CLASS_INTERFACE (TYPE_NAME (type)))
+    {
+      if (inherits_from_p (CLASSTYPE_SUPER (type), type))
+	return lookup_cl (TYPE_NAME (type));
+      return NULL_TREE;
+    }
+    
+  for (i = 0; i < TREE_VEC_LENGTH (basetype_vec); i++)
+    {
+      tree vec_elt = TREE_VEC_ELT (basetype_vec, i);
+      if (vec_elt && BINFO_TYPE (vec_elt) != object_type_node
+	  && interface_of_p (type, BINFO_TYPE (vec_elt)))
+	return lookup_cl (TYPE_NAME (BINFO_TYPE (vec_elt)));
+    }
+  return NULL_TREE;
+}
+
 void
 java_check_circular_reference ()
 {
@@ -5226,30 +5304,15 @@ java_check_circular_reference ()
   for (current = ctxp->class_list; current; current = TREE_CHAIN (current))
     {
       tree type = TREE_TYPE (current);
-      if (CLASS_INTERFACE (current))
-	{
-	  /* Check all interfaces this class extends */
-	  tree basetype_vec = TYPE_BINFO_BASETYPES (type);
-	  int n, i;
+      tree cl;
 
-	  if (!basetype_vec)
-	    return;
-	  n = TREE_VEC_LENGTH (basetype_vec);
-	  for (i = 0; i < n; i++)
-	    {
-	      tree vec_elt = TREE_VEC_ELT (basetype_vec, i);
-	      if (vec_elt && BINFO_TYPE (vec_elt) != object_type_node 
-		  && interface_of_p (type, BINFO_TYPE (vec_elt)))
-		parse_error_context (lookup_cl (current),
-				     "Cyclic interface inheritance");
-	    }
-	}
-      else
-	if (inherits_from_p (CLASSTYPE_SUPER (type), type))
-	  parse_error_context (lookup_cl (current), 
-			       "Cyclic class inheritance%s",
-			       (cyclic_inheritance_report ?
-				cyclic_inheritance_report : ""));
+      cl = check_circular_reference (type);
+      if (! cl)
+	cl = check_inner_circular_reference (type, type);
+      if (cl)
+	parse_error_context (cl, "Cyclic class inheritance%s",
+			     (cyclic_inheritance_report ?
+			      cyclic_inheritance_report : ""));
     }
 }
 
@@ -7918,10 +7981,9 @@ java_complete_expand_method (mdecl)
   current_this = (!METHOD_STATIC (mdecl) ? 
 		  BLOCK_EXPR_DECLS (DECL_FUNCTION_BODY (mdecl)) : NULL_TREE);
 
-  /* Purge the `throws' list of unchecked exceptions. If we're doing
-     xref, save a copy of the list and re-install it later. */
-  if (flag_emit_xref)
-    exception_copy = copy_list (DECL_FUNCTION_THROWS (mdecl));
+  /* Purge the `throws' list of unchecked exceptions (we save a copy
+     of the list and re-install it later.) */
+  exception_copy = copy_list (DECL_FUNCTION_THROWS (mdecl));
   purge_unchecked_exceptions (mdecl);
   
   /* Install exceptions thrown with `throws' */
@@ -7985,8 +8047,7 @@ java_complete_expand_method (mdecl)
     abort ();
 
   /* Restore the copy of the list of exceptions if emitting xrefs. */
-  if (flag_emit_xref)
-    DECL_FUNCTION_THROWS (mdecl) = exception_copy;
+  DECL_FUNCTION_THROWS (mdecl) = exception_copy;
 }
 
 /* For with each class for which there's code to generate. */
@@ -8656,6 +8717,10 @@ build_dot_class_method_invocation (type)
     sig_id = build_java_signature (type);
   else
     sig_id = DECL_NAME (TYPE_NAME (type));
+
+  /* Ensure that the proper name separator is used */
+  sig_id = unmangle_classname (IDENTIFIER_POINTER (sig_id),
+			       IDENTIFIER_LENGTH (sig_id));
 
   s = build_string (IDENTIFIER_LENGTH (sig_id), 
 		    IDENTIFIER_POINTER (sig_id));

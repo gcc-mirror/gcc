@@ -1,3 +1,16 @@
+2001-08-23  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* jcf-parse.c (yyparse): Set magic to 0, don't issue error for a
+	file smaller than 4 bytes.  
+	* parse.y (check_inner_circular_reference): New function.
+	(check_circular_reference): Likewise.
+	(array_initializer:): Accept {,}.
+	(java_check_circular_reference): Rewritten using
+	check_circular_reference and check_inner_circular_reference.
+	(java_complete_expand_method): Unconditionally save and restore
+	the unpurged exception list.
+	(build_dot_class_method_invocation): Unmangle signature parameter.
+
 2001-08-21  Tom Tromey  <tromey@redhat.com>
 
 	* decl.c (init_decl_processing): Add `throws' field to method
