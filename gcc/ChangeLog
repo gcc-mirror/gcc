@@ -1,3 +1,10 @@
+2004-02-07  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.in, config/t-slibgcc-darwin, config/t-slibgcc-elf-ver,
+	config/t-slibgcc-sld, config/mips/t-iris5-6, config/sh/t-linux:
+	Use the top level mkinstalldirs, not the one in the gcc subdir.
+	* mkinstalldirs: Remove (from the gcc subdir).
+
 2004-02-07  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/13696
