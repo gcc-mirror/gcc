@@ -37,6 +37,6 @@ void func(int n, int m)
        expression, and thus A is a VLA.  */
     int a[6][(2, 2)];
     int (*p)[3];
-    p = a; /* { dg-bogus "incompatible" "bad vla handling" { xfail *-*-* } } */
+    p = a; /* { dg-bogus "incompatible" "bad vla handling" } */
   }
 }

@@ -1,3 +1,19 @@
+2004-01-20  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-decl.c (c_init_decl_processing): Set pedantic_lvalues to
+	true unconditionally.
+	* c-typeck.c (unary_complex_lvalue, pedantic_lvalue_warning):
+	Remove.
+	(build_unary_op, build_modify_expr): Don't handle extended
+	lvalues.
+	(build_component_ref, build_conditional_expr): Call non_lvalue
+	instead of pedantic_non_lvalue.
+	(build_c_cast): Don't condition use of non_lvalue on pedantic.
+	* fold-const.c (fold): Don't check pedantic directly for
+	COMPOUND_EXPR.  Ensure that results for COMPOUND_EXPR are
+	passed to pedantic_non_lvalue.
+	* doc/extend.texi: Remove documentation of extended lvalues.
+
 2004-01-19  Roger Sayle  <roger@eyesopen.com>
 
 	PR optimization/5263

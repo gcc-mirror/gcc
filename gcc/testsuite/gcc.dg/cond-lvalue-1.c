@@ -8,5 +8,6 @@ int x, y, z;
 void
 foo (void)
 {
-  (x ? y : z) = 1; /* { dg-warning "lvalue" "conditional expression as lvalue deprecated" } */
+  (x ? y : z) = 1; /* { dg-bogus "warning" "warning in place of error" } */
 }
+/* { dg-error "lvalue" "conditional expression as lvalue" { target *-*-* } 11 } */

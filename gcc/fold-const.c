@@ -8170,12 +8170,12 @@ fold (tree expr)
     case COMPOUND_EXPR:
       /* When pedantic, a compound expression can be neither an lvalue
 	 nor an integer constant expression.  */
-      if (TREE_SIDE_EFFECTS (arg0) || pedantic)
+      if (TREE_SIDE_EFFECTS (arg0) || TREE_CONSTANT (arg1))
 	return t;
       /* Don't let (0, 0) be null pointer constant.  */
       if (integer_zerop (arg1))
-	return build1 (NOP_EXPR, type, arg1);
-      return convert (type, arg1);
+	return pedantic_non_lvalue (build1 (NOP_EXPR, type, arg1));
+      return pedantic_non_lvalue (convert (type, arg1));
 
     case COMPLEX_EXPR:
       if (wins)

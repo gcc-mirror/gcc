@@ -1,3 +1,12 @@
+2004-01-20  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gcc.c-torture/compile/981022-1.c: Remove.
+	* gcc.dg/array-5.c: Remove XFAIL.
+	* gcc.dg/sequence-pt-1.c: Remove test using extended lvalues.
+	* gcc.dg/cast-lvalue-1.c, gcc.dg/compound-lvalue-1.c,
+	gcc.dg/cond-lvalue-1.c: Update.
+	* gcc.dg/cast-lvalue-2.c: New test.
+
 2004-01-19  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13592
