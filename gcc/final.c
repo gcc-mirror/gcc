@@ -1983,7 +1983,7 @@ final (first, file, optimize, prescan)
 #ifdef HAVE_cc0
       /* If CC tracking across branches is enabled, record the insn which
 	 jumps to each branch only reached from one place.  */
-      if (GET_CODE (insn) == JUMP_INSN)
+      if (optimize && GET_CODE (insn) == JUMP_INSN)
 	{
 	  rtx lab = JUMP_LABEL (insn);
 	  if (lab && LABEL_NUSES (lab) == 1)
@@ -2299,7 +2299,10 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
       CC_STATUS_INIT;
       /* If this label is reached from only one place, set the condition
 	 codes from the instruction just before the branch.  */
-      if (LABEL_NUSES (insn) == 1)
+
+      /* Disabled because some insns set cc_status in the C output code
+	 and NOTICE_UPDATE_CC alone can set incorrect status.  */
+      if (0 /* optimize && LABEL_NUSES (insn) == 1*/)
 	{
 	  rtx jump = LABEL_REFS (insn);
 	  rtx barrier = prev_nonnote_insn (insn);
