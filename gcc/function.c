@@ -3708,7 +3708,8 @@ assign_parms (fndecl, second_time)
 		   && FUNCTION_ARG_CALLEE_COPIES (args_so_far,
 						  TYPE_MODE (DECL_ARG_TYPE (parm)),
 						  DECL_ARG_TYPE (parm),
-						  ! last_named))
+						  ! last_named)
+		   && ! TREE_ADDRESSABLE (DECL_ARG_TYPE (parm)))
 	    {
 	      rtx copy;
 	      tree type = DECL_ARG_TYPE (parm);
