@@ -183,7 +183,7 @@ extern int errno;
 #else
 /* Stubs.  */
 # undef dgettext
-# define dgettext(msgid) (msgid)
+# define dgettext(package, msgid) (msgid)
 #endif
 
 #ifndef _
