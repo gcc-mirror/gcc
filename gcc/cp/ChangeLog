@@ -1,3 +1,7 @@
+2002-07-25  Neil Booth  <neil@daikokuya.co.uk>
+
+	* decl2.c (cxx_decode_option): Similarly.
+
 2002-07-25  Gabriel Dos Reis  <gdr@nerim.net>
 
 	* cp-tree.h (cxx_sizeof_nowarn): Now a macro.
