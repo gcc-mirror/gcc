@@ -1,3 +1,8 @@
+2001-03-24  Phil Edwards  <pme@sources.redhat.com>
+
+	* include/bits/std_bitset.h:  Include ostream and istream headers
+	instead of iostream.
+
 2001-03-22  Greg Bumgardner <bumgard@roguewave.com>
 
 	* include/bits/ostream.tcc: Use __builtin_alloca.
