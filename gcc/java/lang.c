@@ -340,8 +340,10 @@ java_decode_option (argc, argv)
 	 P's value is the option sans `-f'.
 	 Search for it in the table of options.  */
       p += 2;
-      return process_option_with_no (p, lang_f_options,
-				     ARRAY_SIZE (lang_f_options));
+      if (process_option_with_no (p, lang_f_options,
+				  ARRAY_SIZE (lang_f_options)))
+	return 1;
+      return dump_switch_p (p);
     }
 
   if (strcmp (p, "-Wall") == 0)
