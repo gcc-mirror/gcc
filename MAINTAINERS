@@ -50,7 +50,6 @@ hppa port		Jeff Law		law@redhat.com
 hppa port		Dave Anglin		dave.anglin@nrc.ca
 i386 port		Richard Henderson	rth@redhat.com
 i860 port		Jason Eckhardt		jle@rice.edu
-i960 port		Jim Wilson		wilson@specifixinc.com
 ia64 port		Jim Wilson		wilson@specifixinc.com
 ip2k port		Denis Chertykov		denisc@overta.ru
 iq2000 port		Stan Cox		scox@redhat.com

@@ -1,3 +1,7 @@
+2004-02-04  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* MAINTAINERS: Remove i960 port.
+
 2004-01-23  DJ Delorie  <dj@redhat.com>
 
 	* Makefile.def (target_modules) [libiberty]: Don't stage.
