@@ -126,16 +126,36 @@ struct tokenrun
   cpp_token *base, *limit;
 };
 
+/* Accessor macros for struct cpp_context.  */
+#define FIRST(c) (c->u.iso.first)
+#define LAST(c) (c->u.iso.last)
+#define CUR(c) (c->u.trad.cur)
+#define RLIMIT(c) (c->u.trad.rlimit)
+
 typedef struct cpp_context cpp_context;
 struct cpp_context
 {
   /* Doubly-linked list.  */
   cpp_context *next, *prev;
 
-  /* Contexts other than the base context are contiguous tokens.
-     e.g. macro expansions, expanded argument tokens.  */
-  union utoken first;
-  union utoken last;
+  union
+  {
+    /* For ISO macro expansion.  Contexts other than the base context
+       are contiguous tokens.  e.g. macro expansions, expanded
+       argument tokens.  */
+    struct
+    {
+      union utoken first;
+      union utoken last;
+    } iso;
+
+    /* For traditional macro expansion.  */
+    struct
+    {
+      const uchar *cur;
+      const uchar *rlimit;
+    } trad;
+  } u;
 
   /* If non-NULL, a buffer used for storage related to this context.
      When the context is popped, the buffer is released.  */
