@@ -1,3 +1,9 @@
+2003-09-01  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* doc/fragments.texi: Mention config.host.
+	* doc/sourcebuild.texi: Mention config.host.  Give brief descriptions
+	of config.build, config.host, and config.gcc.
+
 2003-09-01  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-decl.c (pushdecl): Don't put variables on
