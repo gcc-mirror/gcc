@@ -1,3 +1,8 @@
+Sun Jun  7 17:19:35 1998  Tom Quiggle  <quiggle@sgi.com>
+
+	* mips/iris6.h (DWARF2_FRAME_INFO): Define.
+	* dwarf2out.c (dwarf2out_do_frame): Do something if DWARF2_FRAME_INFO.
+
 Sun Jun  7 15:29:04 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* regmove.c: New file.
