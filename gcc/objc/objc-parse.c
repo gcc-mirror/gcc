@@ -1,6 +1,7 @@
 
 /*  A Bison parser, made from objc-parse.y
-    by GNU Bison version 1.28  */
+ by  GNU Bison version 1.27
+  */
 
 #define YYBISON 1  /* Identify Bison output.  */
 
@@ -127,10 +128,10 @@ static int undeclared_variable_notice;
 /* For __extension__, save/restore the warning flags which are
    controlled by __extension__.  */
 #define SAVE_WARN_FLAGS()	\
-	build_int_2 (pedantic | (warn_pointer_arith << 1), 0)
+	size_int (pedantic | (warn_pointer_arith << 1))
 #define RESTORE_WARN_FLAGS(tval) \
   do {                                     \
-    int val = tree_low_cst (tval, 0);     \
+    int val = tree_low_cst (tval, 0);      \
     pedantic = val & 1;                    \
     warn_pointer_arith = (val >> 1) & 1;   \
   } while (0)
@@ -1754,7 +1755,7 @@ static const short yycheck[] = {    56,
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
 #line 3 "/usr/share/bison.simple"
-/* This file comes from bison-1.28.  */
+/* This file comes from bison-1.27.  */
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -1967,7 +1968,7 @@ __yy_memcpy (char *to, char *from, unsigned int count)
 #endif
 #endif
 
-#line 217 "/usr/share/bison.simple"
+#line 216 "/usr/share/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -2042,7 +2043,7 @@ yyparse(YYPARSE_PARAM_ARG)
 
   int yylen;
 
-#if YYDEBUG != 0 && !defined YYFILE
+#if YYDEBUG != 0
   if (yydebug)
     fprintf(stderr, "Starting parse\n");
 #endif
@@ -2145,7 +2146,7 @@ yynewstate:
       yylsp = yyls + size - 1;
 #endif
 
-#if YYDEBUG != 0 && !defined YYFILE
+#if YYDEBUG != 0
       if (yydebug)
 	fprintf(stderr, "Stack size increased to %d\n", yystacksize);
 #endif
@@ -2154,7 +2155,7 @@ yynewstate:
 	YYABORT;
     }
 
-#if YYDEBUG != 0 && !defined YYFILE
+#if YYDEBUG != 0
   if (yydebug)
     fprintf(stderr, "Entering state %d\n", yystate);
 #endif
@@ -2179,7 +2180,7 @@ yynewstate:
 
   if (yychar == YYEMPTY)
     {
-#if YYDEBUG != 0 && !defined YYFILE
+#if YYDEBUG != 0
       if (yydebug)
 	fprintf(stderr, "Reading a token: ");
 #endif
@@ -2193,7 +2194,7 @@ yynewstate:
       yychar1 = 0;
       yychar = YYEOF;		/* Don't call YYLEX any more */
 
-#if YYDEBUG != 0 && !defined YYFILE
+#if YYDEBUG != 0
       if (yydebug)
 	fprintf(stderr, "Now at end of input.\n");
 #endif
@@ -2202,7 +2203,7 @@ yynewstate:
     {
       yychar1 = YYTRANSLATE(yychar);
 
-#if YYDEBUG != 0 && !defined YYFILE
+#if YYDEBUG != 0
       if (yydebug)
 	{
 	  fprintf (stderr, "Next token is %d (%s", yychar, yytname[yychar1]);
@@ -2244,7 +2245,7 @@ yynewstate:
 
   /* Shift the lookahead token.  */
 
-#if YYDEBUG != 0 && !defined YYFILE
+#if YYDEBUG != 0
   if (yydebug)
     fprintf(stderr, "Shifting token %d (%s), ", yychar, yytname[yychar1]);
 #endif
@@ -2281,12 +2282,7 @@ yyreduce:
   if (yydebug)
     {
       int i;
-#ifdef YYFILE
-      fprintf (stderr, YYFILE ":%d: %s:", yyrline[yyn], yytname[yyr1[yyn]]);
-      for (i = yyprhs[yyn]; yyrhs[i] > 0; i++)
-	fprintf (stderr, " %s", yytname[yyrhs[i]]);
-      fputc ('\n', stderr);
-#else
+
       fprintf (stderr, "Reducing via rule %d (line %d), ",
 	       yyn, yyrline[yyn]);
 
@@ -2294,7 +2290,6 @@ yyreduce:
       for (i = yyprhs[yyn]; yyrhs[i] > 0; i++)
 	fprintf (stderr, "%s ", yytname[yyrhs[i]]);
       fprintf (stderr, " -> %s\n", yytname[yyr1[yyn]]);
-#endif
     }
 #endif
 
@@ -5096,7 +5091,7 @@ case 570:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 543 "/usr/share/bison.simple"
+#line 542 "/usr/share/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -5104,7 +5099,7 @@ case 570:
   yylsp -= yylen;
 #endif
 
-#if YYDEBUG != 0 && !defined YYFILE
+#if YYDEBUG != 0
   if (yydebug)
     {
       short *ssp1 = yyss - 1;
@@ -5211,7 +5206,7 @@ yyerrlab1:   /* here on error raised explicitly by an action */
       if (yychar == YYEOF)
 	YYABORT;
 
-#if YYDEBUG != 0 && !defined YYFILE
+#if YYDEBUG != 0
       if (yydebug)
 	fprintf(stderr, "Discarding token %d (%s).\n", yychar, yytname[yychar1]);
 #endif
@@ -5244,7 +5239,7 @@ yyerrpop:   /* pop the current state because it cannot handle the error token */
   yylsp--;
 #endif
 
-#if YYDEBUG != 0 && !defined YYFILE
+#if YYDEBUG != 0
   if (yydebug)
     {
       short *ssp1 = yyss - 1;
@@ -5279,7 +5274,7 @@ yyerrhandle:
   if (yyn == YYFINAL)
     YYACCEPT;
 
-#if YYDEBUG != 0 && !defined YYFILE
+#if YYDEBUG != 0
   if (yydebug)
     fprintf(stderr, "Shifting error token, ");
 #endif
