@@ -1,3 +1,8 @@
+2004-10-23  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/17967
+	* tree-cfg.c (remove_usless_stmts_cond):  Don't Fold statement.
+
 2004-10-23  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-dom.c (record_equality): Use loop depth to determine
