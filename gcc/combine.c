@@ -3823,8 +3823,8 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	 perform the above simplification.  */
 
       if (STORE_FLAG_VALUE == -1
-	  && XEXP (x, 1) == const1_rtx
 	  && GET_CODE (XEXP (x, 0)) == ASHIFTRT
+	  && XEXP (x, 1) == const1_rtx
 	  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
 	  && INTVAL (XEXP (XEXP (x, 0), 1)) == GET_MODE_BITSIZE (mode) - 1)
 	return gen_rtx_combine (GE, mode, XEXP (XEXP (x, 0), 0), const0_rtx);
