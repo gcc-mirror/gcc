@@ -136,9 +136,7 @@ push_jvm_slot (index, decl)
 
 /* Find a VAR_DECL (or PARM_DECL) at local index INDEX that has type TYPE,
    that is valid at PC (or -1 if any pc).
-   If there is no existing matching decl, allocate one.
-   If we find a decl with matching modes but different types,
-   we re-use the rtl, but create a new decl. */
+   If there is no existing matching decl, allocate one.  */
 
 tree
 find_local_variable (index, type, pc)
@@ -148,6 +146,7 @@ find_local_variable (index, type, pc)
 {
   tree decl = TREE_VEC_ELT (decl_map, index);
   tree best = NULL_TREE;
+
   while (decl != NULL_TREE)
     {
       int in_range;
@@ -156,6 +155,10 @@ find_local_variable (index, type, pc)
 	    && pc < DECL_LOCAL_END_PC (decl));
 
       if ((TREE_TYPE (decl) == type
+	   || (TREE_CODE (TREE_TYPE (decl)) == TREE_CODE (type)
+	       && TYPE_PRECISION (TREE_TYPE (decl)) <= 32
+	       && TYPE_PRECISION (type) <= 32
+	       && TREE_CODE (type) != POINTER_TYPE)
 	   || (TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE
 	       && type == ptr_type_node))
 	   && in_range)
