@@ -1,3 +1,9 @@
+2003-10-21  Sascha Brawer  <brawer@dandelis.ch>
+
+	Fix for bug #2944, reported by David Holmes <dholmes@dltech.com.au>
+        * java/util/logging/ErrorManager.java (everUsed): Made volatile.
+        (error): Synchronize on instance, not class.
+
 2003-10-21  Mark Wielaard  <mark@klomp.org>
 
 	Reported by M.Negovanovic

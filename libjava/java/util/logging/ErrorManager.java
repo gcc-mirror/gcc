@@ -2,7 +2,7 @@
    -- a class for dealing with errors that a Handler encounters
       during logging
 
-Copyright (C) 2002 Free Software Foundation, Inc.
+Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -100,7 +100,16 @@ public class ErrorManager
   public static final int FORMAT_FAILURE = 5;
 
 
-  private boolean everUsed = false;
+  /**
+   * Indicates whether the {@link #error} method of this ErrorManager
+   * has ever been used.
+   *
+   * Declared volatile in order to correctly support the
+   * double-checked locking idiom (once the revised Java Memory Model
+   * gets adopted); see Classpath bug #2944.
+   */
+  private volatile boolean everUsed = false;
+
 
   public ErrorManager()
   {
@@ -125,13 +134,19 @@ public class ErrorManager
     if (everUsed)
       return;
 
-    synchronized (ErrorManager.class)
+    synchronized (this)
     {
       /* The double check is intentional. If the first check was
        * omitted, the monitor would have to be entered every time
        * error() method was called. If the second check was
        * omitted, the code below could be executed by multiple
        * threads simultaneously.
+       *
+       * This is the 'double-checked locking' idiom, which is broken
+       * with the current version of the Java memory model.  However,
+       * we assume that JVMs will have adopted a revised version of
+       * the Java Memory Model by the time GNU Classpath gains
+       * widespread acceptance. See Classpath bug #2944.
        */
       if (everUsed)
 	return;
