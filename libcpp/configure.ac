@@ -5,12 +5,17 @@ AC_PREREQ(2.59)
 AC_INIT(cpplib, [ ], gcc-bugs@gcc.gnu.org, cpplib)
 AC_CONFIG_SRCDIR(ucnid.h)
 AC_CANONICAL_SYSTEM
-AM_INIT_AUTOMAKE(foreign)
-AM_MAINTAINER_MODE
+AC_PROG_MAKE_SET
+AC_PROG_INSTALL
 
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_RANLIB
+
+MISSING=`cd $ac_aux_dir && ${PWDCMD-pwd}`/missing
+AC_CHECK_PROGS([ACLOCAL], [aclocal], [$MISSING aclocal])
+AC_CHECK_PROGS([AUTOCONF], [autoconf], [$MISSING autoconf])
+AC_CHECK_PROGS([AUTOHEADER], [autoheader], [$MISSING autoheader])
 
 # Checks for header files.
 AC_HEADER_TIME
@@ -52,7 +57,29 @@ if test $ac_cv_type_uchar = yes; then
 fi
 
 AM_ICONV
-AM_CONDITIONAL(ENABLE_NLS, [test "x$enable_nls" != xno])
+
+# More defines and substitutions.
+AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Define to the name of this package.])
+AC_SUBST(PACKAGE)
+
+if test "x$enable_nls" != xno; then
+  USED_CATALOGS='$(CATALOGS)'
+else
+  USED_CATALOGS=
+fi
+AC_SUBST(USED_CATALOGS)
+
+AC_ARG_ENABLE(maintainer-mode,
+[  --enable-maintainer-mode enable rules only needed by maintainers],,
+enable_maintainer_mode=no)
+
+if test "x$enable_maintainer_mode" = xno; then
+  MAINT='#'
+else
+  MAINT=
+fi
+AC_SUBST(MAINT)
+
 AC_ARG_ENABLE(checking,
 [  --enable-checking      enable expensive run-time checks],,
 enable_checking=no)
@@ -94,6 +121,8 @@ AC_DEFINE_UNQUOTED(HOST_WIDE_INT, $host_wide_int,
 [Define to the widest efficient host integer type at least
    as wide as the target's size_t type.])
 
-AC_CONFIG_HEADERS(config.h:config.in)
+# Output.
+
+AC_CONFIG_HEADERS(config.h:config.in, [echo timestamp > stamp-h1])
 AC_CONFIG_FILES(Makefile)
 AC_OUTPUT

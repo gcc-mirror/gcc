@@ -1,3 +1,13 @@
+2004-08-25  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure.ac: Replace Automake macro invocations
+	with manual Autoconf checks and substitutions.
+	* configure: Regenerate.
+	* aclocal.m4: Regenerate.
+	* config.in: Regenerate.
+	* Makefile.am: Removed.
+	* Makefile.in: Heavy simplification and reorganization.
+
 2004-08-09  Mark Mitchell  <mark@codesourcery.com>
 
 	* configure.ac (arm*-*-eabi*): New target.
@@ -14,7 +24,7 @@
 
 2004-07-23  Matthias Klose  <doko@debian.org> 
 
-	init.c (init_library): Use PACKAGE for the text domain. 
+	* init.c (init_library): Use PACKAGE for the text domain. 
 
 2004-07-16  Andris Pavenis  <pavenis@latnet.lv>
 

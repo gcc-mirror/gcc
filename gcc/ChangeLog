@@ -1,3 +1,9 @@
+2004-08-25  Paolo Bonzini  <bonzini@gnu.org>
+
+	* doc/invoke.texi: Document that libcpp does not require
+	Automake any longer.  Document that Automake 1.9.1 should
+	work everywhere.
+
 2004-08-25  Zack Weinberg  <zack@codesourcery.com>
 
 	* flags.h (enum debug_info_type): Remove DWARF_DEBUG.
