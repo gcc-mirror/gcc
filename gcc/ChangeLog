@@ -1,3 +1,9 @@
+Thu Feb 11 01:53:10 1999  Jeffrey A Law  (law@cygnus.com)
+
+	Wed Nov 18 22:13:00 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+	* expr.c (store_expr): Don't generate load-store pair
+	if TEMP is identical (according to ==) with TARGET.
+
 Thu Feb 11 01:06:49 1999  Nathan Sidwell  <nathan@acm.org>
 
 	* fold-const.c (range_binop): Take account of the bounded nature
