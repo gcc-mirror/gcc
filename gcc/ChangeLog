@@ -1,3 +1,8 @@
+2003-06-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/alpha/alpha.h (FUNCTION_ARG_PADDING): Remove.
+	* config/alpha/unicosmk.h: Don't #undef FUNCTION_ARG_PADDING.
+
 2003-06-30  Wolfgang Bangerth  <bangerth@dealii.org>
 
 	* doc/sourcebuild.texi: Don't reference gnats.html any more.

@@ -1088,13 +1088,6 @@ extern int alpha_memory_latency;
 #define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED) \
   ((MODE) == TFmode || (MODE) == TCmode)
 
-/* Specify the padding direction of arguments.
-
-   On the Alpha, we must pad upwards in order to be able to pass args in
-   registers.  */
-
-#define FUNCTION_ARG_PADDING(MODE, TYPE)	upward
-
 /* For an arg passed partly in registers and partly in memory,
    this is the number of registers used.
    For args passed entirely in registers or entirely in memory, zero.  */

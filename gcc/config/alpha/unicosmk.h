@@ -218,12 +218,6 @@ do {								\
   ++(CUM).num_args;						\
 } while(0)
 
-/* We want the default definition for this.
-   ??? In fact, we should delete the definition from alpha.h as it
-   corresponds to the default definition for little-endian machines.  */
-
-#undef FUNCTION_ARG_PADDING
-
 /* An argument is passed either entirely in registers or entirely on stack.  */
  
 #undef FUNCTION_ARG_PARTIAL_NREGS
