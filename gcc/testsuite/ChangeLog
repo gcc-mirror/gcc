@@ -1,3 +1,8 @@
+2002-01-25  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* lib/scanasm.exp (scan-assembler-dem, scan-assembler-dem-not):
+	Remove first, non-varying, argument.
+
 2002-01-23  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/inline-2.c: New.
