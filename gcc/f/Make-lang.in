@@ -239,7 +239,7 @@ $(srcdir)/f/NEWS: f/news0.texi f/news.texi f/root.texi
 	cd $(srcdir)/f; $(MAKEINFO) -D NEWSONLY --no-header --no-split \
 	  --no-validate -I../doc/include -o NEWS news0.texi
 
-f77.rebuilt: f/g77.info $(srcdir)/f/BUGS \
+f77.rebuilt: $(docobjdir)/g77.info $(srcdir)/f/BUGS \
   $(srcdir)/f/NEWS 
 
 #
