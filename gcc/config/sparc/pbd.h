@@ -31,7 +31,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* We want DBX format for use with gdb under COFF.  */
 
 #define DBX_DEBUGGING_INFO
-#define DBX_IN_COFF
 
 /* Generate calls to memcpy, memcmp and memset.  */
 
@@ -40,24 +39,70 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* we use /lib/libp/lib*  when profiling */
 
 #undef LIB_SPEC
-#define LIB_SPEC "%{!shlib:%{p:-L/lib/libp} %{pg:-L/lib/libp} -lc} \
-   %{shlib:-lc_s crtn.o%s }"
+#define LIB_SPEC "%{p:-L/usr/lib/libp} %{pg:-L/usr/lib/libp} -lc"
 
-/* shared libraries need to use crt1.o  */
 
-#ifdef USE_GPLUS_IFILE
+/* Use crt1.o as a startup file and crtn.o as a closing file.  */
+/*
+ * The loader directive file gcc.ifile defines how to merge the constructor 
+ * sections into the data section.  Also, since gas only puts out those 
+ * sections in response to N_SETT stabs, and does not (yet) have a 
+ * ".sections" directive, gcc.ifile also defines the list symbols 
+ * __DTOR_LIST__ and __CTOR_LIST__.
+ * 
+ * Finally, we must explicitly specify the file from libgcc.a that defines
+ * exit(), otherwise if the user specifies (for example) "-lc_s" on the 
+ * command line, the wrong exit() will be used and global destructors will 
+ * not get called .
+ */
+
 #define STARTFILE_SPEC \
-  "g++.ifile%s %{!shlib:%{pg:mcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}}\
-   %{shlib:crt1.o%s } "
-#else
-#define STARTFILE_SPEC \
-  "%{!shlib:%{pg:mcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}}\
-   %{shlib:crt1.o%s } "
-#endif
+"%{!r: gcc.ifile%s} %{pg:gcrt1.o%s}%{!pg:%{p:mcrt1.o%s}%{!p:crt1.o%s}} \
+%{!r:_exit.o%s}"
+
+#define ENDFILE_SPEC "crtn.o%s"
 
 /* cpp has to support a #sccs directive for the /usr/include files */
 
 #define SCCS_DIRECTIVE
+
+/* LINK_SPEC is needed only for Sunos 4.  */
+
+#undef LINK_SPEC
+
+/* Although the gas we use can create .ctor and .dtor sections from N_SETT
+   stabs, it does not support section directives, so we need to have the loader
+   define the lists.
+   */
+#define CTOR_LISTS_DEFINED_EXTERNALLY
+
+/* similar to default, but allows for the table defined by ld with gcc.ifile. 
+   nptrs is always 0.  So we need to instead check that __DTOR_LIST__[1] != 0.
+   The old check is left in so that the same macro can be used if and when  
+   a future version of gas does support section directives. */
+
+#define DO_GLOBAL_DTORS_BODY {int nptrs = *(int *)__DTOR_LIST__; int i; \
+  if (nptrs == -1 || (__DTOR_LIST__[0] == 0 && __DTOR_LIST__[1] != 0))  \
+    for (nptrs = 0; __DTOR_LIST__[nptrs + 1] != 0; nptrs++); 		\
+  for (i = nptrs; i >= 1; i--)						\
+    __DTOR_LIST__[i] (); }
+
+/* 
+ * Here is an example gcc.ifile.  I've tested it on PBD sparc
+ * systems. The NEXT(0x200000) works on just about all 386 and m68k systems, 
+ * but can be reduced to any power of 2 that is >= NBPS (0x40000 on a pbd).
+
+   SECTIONS {
+       .text BIND(0x41000200) BLOCK (0x200) : 
+		{ *(.init) *(.text) vfork = fork; *(.fini) }
+
+      	GROUP BIND( NEXT(0x200000) + ADDR(.text) + SIZEOF(.text)):
+	{      .data : { __CTOR_LIST__ = . ; . += 4; *(.ctor) . += 4 ;
+		       	 __DTOR_LIST__ = . ; . += 4; *(.dtor) . += 4 ; }
+	       .bss : { }
+       }
+  }
+ */
 
 #ifndef __GNUC__
 #define USE_C_ALLOCA
@@ -105,7 +150,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
   fprintf (FILE, "\t.word .L%d\n", VALUE)
 
-/* Underscores are not used on Unicom PBB coff systems. */
+/* Underscores are not used on Unicom PBD coff systems. */
+/* This currently seems to only be needed for libgcc2.a */
 #define NO_UNDERSCORES
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
