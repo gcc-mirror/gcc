@@ -1,5 +1,11 @@
 2002-03-05  Jakub Jelinek  <jakub@redhat.com>
 
+	* mklibgcc.in: Prepend a tab before .hidden, add $flags to gcc
+	-r command line.  Don't hide any symbols if not building
+	shared libgcc.
+
+2002-03-05  Jakub Jelinek  <jakub@redhat.com>
+
 	* expmed.c (emit_store_flag): Don't test BITS_PER_WORD * 2
 	wide volatile memory by parts.
 
