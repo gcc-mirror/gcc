@@ -75,7 +75,7 @@
 
       bigi = time8 ()
 
-      call ctime (ctim2, i)
+      call ctime (i, ctim2)
       if (ctim .ne. ctim2) then
         write (6, *) '*** CALL CTIME disagrees with CTIME(): ',
      +    ctim2(:lenstr (ctim2)), ' vs. ', ctim(:lenstr (ctim))
@@ -103,7 +103,7 @@
         line = 'and 6 isn''t a tty device (ISATTY)'
       end if
       write (6,'(1X,A)') line(:lenstr(line))
-      call ttynam (line, 6)
+      call ttynam (6, line)
       if (line .ne. line2) then
         print *, '*** CALL TTYNAM disagrees with TTYNAM: ',
      +    line(:lenstr (line))
@@ -186,10 +186,10 @@ c now try to get times to change enough to see in etime/dtime
       do i = 1,1000
       do j = 1,1000
       end do
-      call dtime (r2, tarray2)
+      call dtime (tarray2, r2)
       if (tarray2(1) .ne. 0. .or. tarray2(2) .ne. 0.) exit
       end do
-      call etime (r1, tarray1)
+      call etime (tarray1, r1)
       if (.not. issum (r1, tarray1(1), tarray1(2))) then
         write (6,*) '*** ETIME didn''t return sum of the array: ',
      +       r1, ' /= ', tarray1(1), '+', tarray1(2)
