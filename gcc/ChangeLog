@@ -1,3 +1,7 @@
+2005-03-06  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* cse.c (find_best_addr): Use canon_for_address.
+
 2005-03-06  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cse.c (fold_rtx_subreg, fold_rtx_mem): New.
