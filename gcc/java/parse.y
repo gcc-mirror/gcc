@@ -10547,7 +10547,9 @@ patch_synchronized_statement (node, wfl_op1)
   catch_all = build1 (CATCH_EXPR, void_type_node, catch_all);
 
   /* TRY-CATCH statement */
-  return build (TRY_EXPR, void_type_node, try_block, catch_all, NULL_TREE);
+  compound = build (TRY_EXPR, void_type_node, try_block, catch_all, NULL_TREE);
+  CAN_COMPLETE_NORMALLY (compound) = CAN_COMPLETE_NORMALLY (block);
+  return compound;
 }
 
 /* 14.16 The throw Statement */
