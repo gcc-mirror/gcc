@@ -1,6 +1,6 @@
 /* Check calls to formatted I/O functions (-Wformat).
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002 Free Software Foundation, Inc.
+   2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1009,8 +1009,8 @@ status_warning VPARAMS ((int *status, const char *msgid, ...))
   else
     {
       /* This duplicates the warning function behavior.  */
-      diagnostic_set_info (&diagnostic, _(msgid), &ap, input_filename, lineno,
-                           DK_WARNING);
+      diagnostic_set_info (&diagnostic, _(msgid), &ap,
+			   input_filename, input_line, DK_WARNING);
       report_diagnostic (&diagnostic);
     }
 

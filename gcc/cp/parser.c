@@ -407,7 +407,7 @@ cp_lexer_set_source_position_from_token (cp_lexer *lexer ATTRIBUTE_UNUSED ,
   /* Update the line number.  */
   if (token->type != CPP_EOF)
     {
-      lineno = token->line_number;
+      input_line = token->line_number;
       input_filename = token->file_name;
     }
 }
@@ -651,7 +651,7 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer ATTRIBUTE_UNUSED ,
 	}
     }
   /* Now we've got our token.  */
-  token->line_number = lineno;
+  token->line_number = input_line;
   token->file_name = input_filename;
 
   /* Check to see if this token is a keyword.  */

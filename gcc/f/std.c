@@ -1,5 +1,5 @@
 /* std.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995, 1996, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 2000, 2002, 2003 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -1423,7 +1423,7 @@ ffestd_exec_begin ()
 void
 ffestd_exec_end ()
 {
-  int old_lineno = lineno;
+  int old_lineno = input_line;
   const char *old_input_filename = input_filename;
 
   ffecom_end_transition ();
@@ -1456,7 +1456,7 @@ ffestd_exec_end ()
   ffestd_stmt_list_.last = NULL;
   ffestd_2pass_entrypoints_ = 0;
 
-  lineno = old_lineno;
+  input_line = old_lineno;
   input_filename = old_input_filename;
 }
 

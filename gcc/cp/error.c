@@ -1,7 +1,7 @@
 /* Call-backs for C++ error reporting.
    This code is non-reentrant.
-   Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2002
-   Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2002,
+   2003 Free Software Foundation, Inc.
    This file is part of GCC.
 
 GCC is free software; you can redistribute it and/or modify
@@ -2159,7 +2159,7 @@ cp_line_of (tree t)
     line = DECL_SOURCE_LINE (t);
 
   if (line == 0)
-    return lineno;
+    return input_line;
 
   return line;
 }
@@ -2406,7 +2406,7 @@ static void
 print_instantiation_full_context (diagnostic_context *context)
 {
   tree p = current_instantiation ();
-  int line = lineno;
+  int line = input_line;
   const char *file = input_filename;
 
   if (p)
@@ -2468,7 +2468,7 @@ void
 print_instantiation_context (void)
 {
   print_instantiation_partial_context
-    (global_dc, current_instantiation (), input_filename, lineno);
+    (global_dc, current_instantiation (), input_filename, input_line);
   diagnostic_flush_buffer (global_dc);
 }
 

@@ -181,7 +181,7 @@ finish_stmt_tree (t)
     {
       /* The line-number recorded in the outermost statement in a function
 	 is the line number of the end of the function.  */
-      STMT_LINENO (stmt) = lineno;
+      STMT_LINENO (stmt) = input_line;
       STMT_LINENO_FOR_FN_P (stmt) = 1;
     }
 }
@@ -204,7 +204,7 @@ build_stmt VPARAMS ((enum tree_code code, ...))
 
   t = make_node (code);
   length = TREE_CODE_LENGTH (code);
-  STMT_LINENO (t) = lineno;
+  STMT_LINENO (t) = input_line;
 
   for (i = 0; i < length; i++)
     TREE_OPERAND (t, i) = va_arg (p, tree);
@@ -301,7 +301,7 @@ emit_local_var (decl)
 void
 genrtl_do_pushlevel ()
 {
-  emit_line_note (input_filename, lineno);
+  emit_line_note (input_filename, input_line);
   clear_last_expr ();
 }
 
@@ -319,7 +319,7 @@ genrtl_goto_stmt (destination)
   if (TREE_CODE (destination) == LABEL_DECL)
     TREE_USED (destination) = 1;
   
-  emit_line_note (input_filename, lineno);
+  emit_line_note (input_filename, input_line);
   
   if (TREE_CODE (destination) == LABEL_DECL)
     {
@@ -355,7 +355,7 @@ genrtl_expr_stmt_value (expr, want_value, maybe_last)
 {
   if (expr != NULL_TREE)
     {
-      emit_line_note (input_filename, lineno);
+      emit_line_note (input_filename, input_line);
       
       if (stmts_are_full_exprs_p ())
 	expand_start_target_temps ();
@@ -375,7 +375,7 @@ genrtl_decl_stmt (t)
      tree t;
 {
   tree decl;
-  emit_line_note (input_filename, lineno);
+  emit_line_note (input_filename, input_line);
   decl = DECL_STMT_DECL (t);
   /* If this is a declaration for an automatic local
      variable, initialize it.  Note that we might also see a
@@ -412,7 +412,7 @@ genrtl_if_stmt (t)
   tree cond;
   genrtl_do_pushlevel ();
   cond = expand_cond (IF_COND (t));
-  emit_line_note (input_filename, lineno);
+  emit_line_note (input_filename, input_line);
   expand_start_cond (cond, 0);
   if (THEN_CLAUSE (t))
     {
@@ -442,14 +442,14 @@ genrtl_while_stmt (t)
   tree cond = WHILE_COND (t);
 
   emit_nop ();
-  emit_line_note (input_filename, lineno);
+  emit_line_note (input_filename, input_line);
   expand_start_loop (1); 
   genrtl_do_pushlevel ();
 
   if (cond && !integer_nonzerop (cond))
     {
       cond = expand_cond (cond);
-      emit_line_note (input_filename, lineno);
+      emit_line_note (input_filename, input_line);
       expand_exit_loop_top_cond (0, cond);
       genrtl_do_pushlevel ();
     }
@@ -481,25 +481,25 @@ genrtl_do_stmt (t)
   else if (integer_nonzerop (cond))
     {
       emit_nop ();
-      emit_line_note (input_filename, lineno);
+      emit_line_note (input_filename, input_line);
       expand_start_loop (1);
 
       expand_stmt (DO_BODY (t));
 
-      emit_line_note (input_filename, lineno);
+      emit_line_note (input_filename, input_line);
       expand_end_loop ();
     }
   else
     {
       emit_nop ();
-      emit_line_note (input_filename, lineno);
+      emit_line_note (input_filename, input_line);
       expand_start_loop_continue_elsewhere (1);
 
       expand_stmt (DO_BODY (t));
 
       expand_loop_continue_here ();
       cond = expand_cond (cond);
-      emit_line_note (input_filename, lineno);
+      emit_line_note (input_filename, input_line);
       expand_exit_loop_if_false (0, cond);
       expand_end_loop ();
     }
@@ -524,7 +524,7 @@ genrtl_return_stmt (stmt)
 
   expr = RETURN_STMT_EXPR (stmt);
 
-  emit_line_note (input_filename, lineno);
+  emit_line_note (input_filename, input_line);
   if (!expr)
     expand_null_return ();
   else
@@ -552,7 +552,7 @@ genrtl_for_stmt (t)
 
   /* Expand the initialization.  */
   emit_nop ();
-  emit_line_note (input_filename, lineno);
+  emit_line_note (input_filename, input_line);
   if (FOR_EXPR (t))
     expand_start_loop_continue_elsewhere (1); 
   else
@@ -562,13 +562,13 @@ genrtl_for_stmt (t)
   /* Save the filename and line number so that we expand the FOR_EXPR
      we can reset them back to the saved values.  */
   saved_filename = input_filename;
-  saved_lineno = lineno;
+  saved_lineno = input_line;
 
   /* Expand the condition.  */
   if (cond && !integer_nonzerop (cond))
     {
       cond = expand_cond (cond);
-      emit_line_note (input_filename, lineno);
+      emit_line_note (input_filename, input_line);
       expand_exit_loop_top_cond (0, cond);
       genrtl_do_pushlevel ();
     }
@@ -578,8 +578,8 @@ genrtl_for_stmt (t)
 
   /* Expand the increment expression.  */
   input_filename = saved_filename;
-  lineno = saved_lineno;
-  emit_line_note (input_filename, lineno);
+  input_line = saved_lineno;
+  emit_line_note (input_filename, input_line);
   if (FOR_EXPR (t))
     {
       expand_loop_continue_here ();
@@ -601,7 +601,7 @@ build_break_stmt ()
 void
 genrtl_break_stmt ()
 {
-  emit_line_note (input_filename, lineno);
+  emit_line_note (input_filename, input_line);
   if ( ! expand_exit_something ())
     error ("break statement not within loop or switch");
 }
@@ -619,7 +619,7 @@ build_continue_stmt ()
 void
 genrtl_continue_stmt ()
 {
-  emit_line_note (input_filename, lineno);
+  emit_line_note (input_filename, input_line);
   if (! expand_continue_loop (0))
     error ("continue statement not within a loop");   
 }
@@ -685,7 +685,7 @@ genrtl_switch_stmt (t)
        crash.  */
     cond = boolean_false_node;
 
-  emit_line_note (input_filename, lineno);
+  emit_line_note (input_filename, input_line);
   expand_start_case (1, cond, TREE_TYPE (cond), "switch statement");
   expand_unreachable_stmt (SWITCH_BODY (t), warn_notreached);
   expand_end_case_type (cond, SWITCH_TYPE (t));
@@ -768,13 +768,13 @@ genrtl_asm_stmt (cv_qualifier, string, output_operands,
       cv_qualifier = NULL_TREE;
     }
 
-  emit_line_note (input_filename, lineno);
+  emit_line_note (input_filename, input_line);
   if (asm_input_p)
     expand_asm (string, cv_qualifier != NULL_TREE);
   else
     c_expand_asm_operands (string, output_operands, input_operands, 
 			   clobbers, cv_qualifier != NULL_TREE,
-			   input_filename, lineno);
+			   input_filename, input_line);
 }
 
 /* Generate the RTL for a CLEANUP_STMT.  */
@@ -796,7 +796,7 @@ prep_stmt (t)
      tree t;
 {
   if (!STMT_LINENO_FOR_FN_P (t))
-    lineno = STMT_LINENO (t);
+    input_line = STMT_LINENO (t);
   current_stmt_tree ()->stmts_are_full_exprs_p = STMT_IS_FULL_EXPR_P (t);
 }
 
@@ -951,11 +951,11 @@ static tree
 find_reachable_label (exp)
      tree exp;
 {
-  int line = lineno;
+  int line = input_line;
   const char *file = input_filename;
   tree ret = walk_tree (&exp, find_reachable_label_1, NULL, NULL);
   input_filename = file;
-  lineno = line;
+  input_line = line;
   return ret;
 }
 
@@ -1025,7 +1025,7 @@ expand_unreachable_stmt (t, warn)
 	  case IF_STMT:
 	  case RETURN_STMT:
 	    if (!STMT_LINENO_FOR_FN_P (t))
-	      lineno = STMT_LINENO (t);
+	      input_line = STMT_LINENO (t);
 	    warning("will never be executed");
 	    warn = false;
 	    break;

@@ -617,7 +617,7 @@ poplevel (keep, reverse, functionbody)
 	    {
 	      error_with_decl (label, "label `%s' used but not defined");
 	      /* Avoid crashing later.  */
-	      define_label (input_filename, lineno,
+	      define_label (input_filename, input_line,
 			    DECL_NAME (label));
 	    }
 	  else if (warn_unused_label && !TREE_USED (label))
@@ -711,7 +711,7 @@ pop_label_level ()
 	      error_with_decl (TREE_VALUE (link),
 			       "label `%s' used but not defined");
 	      /* Avoid crashing later.  */
-	      define_label (input_filename, lineno,
+	      define_label (input_filename, input_line,
 			    DECL_NAME (TREE_VALUE (link)));
 	    }
 	  else if (warn_unused_label && !TREE_USED (TREE_VALUE (link)))
@@ -2019,7 +2019,7 @@ lookup_label (id)
 
   /* Say where one reference is to the label,
      for the sake of the error if it is not defined.  */
-  DECL_SOURCE_LINE (decl) = lineno;
+  DECL_SOURCE_LINE (decl) = input_line;
   DECL_SOURCE_FILE (decl) = input_filename;
 
   IDENTIFIER_LABEL_VALUE (id) = decl;
@@ -2184,7 +2184,7 @@ lookup_tag (code, name, thislevel_only)
       /* Definition isn't the kind we were looking for.  */
       pending_invalid_xref = name;
       pending_invalid_xref_file = input_filename;
-      pending_invalid_xref_line = lineno;
+      pending_invalid_xref_line = input_line;
 
       /* If in the same binding level as a declaration as a tag
 	 of a different type, this must not be allowed to
@@ -6079,7 +6079,7 @@ store_parm_decls ()
   gen_aux_info_record (fndecl, 1, 0, prototype);
 
   /* Initialize the RTL code for the function.  */
-  init_function_start (fndecl, input_filename, lineno);
+  init_function_start (fndecl, input_filename, input_line);
 
   /* Begin the statement tree for this function.  */
   begin_stmt_tree (&DECL_SAVED_TREE (current_function_decl));
@@ -6339,7 +6339,7 @@ c_expand_body_1 (fndecl, nested_p)
   current_function_decl = fndecl;
   input_filename = DECL_SOURCE_FILE (fndecl);
   init_function_start (fndecl, input_filename, DECL_SOURCE_LINE (fndecl));
-  lineno = DECL_SOURCE_LINE (fndecl);
+  input_line = DECL_SOURCE_LINE (fndecl);
 
   /* This function is being processed in whole-function mode.  */
   cfun->x_whole_function_mode_p = 1;
@@ -6384,7 +6384,7 @@ c_expand_body_1 (fndecl, nested_p)
     (*lang_expand_function_end) ();
 
   /* Generate rtl for function exit.  */
-  expand_function_end (input_filename, lineno, 0);
+  expand_function_end (input_filename, input_line, 0);
 
   /* If this is a nested function, protect the local variables in the stack
      above us from being collected while we're compiling this function.  */

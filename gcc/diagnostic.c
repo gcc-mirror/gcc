@@ -1,5 +1,5 @@
 /* Language-independent diagnostic subroutines for the GNU Compiler Collection
-   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
 This file is part of GCC.
@@ -961,7 +961,7 @@ pedwarn VPARAMS ((const char *msgid, ...))
   VA_OPEN (ap, msgid);
   VA_FIXEDARG (ap, const char *, msgid);
 
-  diagnostic_set_info (&diagnostic, _(msgid), &ap, input_filename, lineno,
+  diagnostic_set_info (&diagnostic, _(msgid), &ap, input_filename, input_line,
                        pedantic_error_kind ());
   report_diagnostic (&diagnostic);
   VA_CLOSE (ap);
@@ -1019,7 +1019,7 @@ sorry VPARAMS ((const char *msgid, ...))
 
   ++sorrycount;
   diagnostic_set_info (&diagnostic, _(msgid), &ap,
-                       input_filename, lineno, DK_SORRY);
+                       input_filename, input_line, DK_SORRY);
 
   output_set_prefix
     (&global_dc->buffer, diagnostic_build_prefix (&diagnostic));
@@ -1136,7 +1136,7 @@ error VPARAMS ((const char *msgid, ...))
   VA_OPEN (ap, msgid);
   VA_FIXEDARG (ap, const char *, msgid);
 
-  diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, lineno,
+  diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, input_line,
                        DK_ERROR);
   report_diagnostic (&diagnostic);
   VA_CLOSE (ap);
@@ -1153,7 +1153,7 @@ fatal_error VPARAMS ((const char *msgid, ...))
   VA_OPEN (ap, msgid);
   VA_FIXEDARG (ap, const char *, msgid);
 
-  diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, lineno,
+  diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, input_line,
                        DK_FATAL);
   report_diagnostic (&diagnostic);
   VA_CLOSE (ap);
@@ -1177,7 +1177,7 @@ internal_error VPARAMS ((const char *msgid, ...))
   if (errorcount > 0 || sorrycount > 0)
     {
       fnotice (stderr, "%s:%d: confused by earlier errors, bailing out\n",
-	       input_filename, lineno);
+	       input_filename, input_line);
       exit (FATAL_EXIT_CODE);
     }
 #endif
@@ -1185,7 +1185,7 @@ internal_error VPARAMS ((const char *msgid, ...))
   if (global_dc->internal_error != 0)
     (*global_dc->internal_error) (_(msgid), &ap);
 
-  diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, lineno,
+  diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, input_line,
                        DK_ICE);
   report_diagnostic (&diagnostic);
   VA_CLOSE (ap);
@@ -1236,7 +1236,7 @@ warning VPARAMS ((const char *msgid, ...))
   VA_OPEN (ap, msgid);
   VA_FIXEDARG (ap, const char *, msgid);
 
-  diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, lineno,
+  diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, input_line,
                        DK_WARNING);
   report_diagnostic (&diagnostic);
   VA_CLOSE (ap);
@@ -1382,10 +1382,12 @@ diagnostic_report_current_module (context)
       for (p = input_file_stack->next; p; p = p->next)
 	if (p == input_file_stack->next)
 	  output_verbatim (&context->buffer,
-                           "In file included from %s:%d", p->name, p->line);
+                           "In file included from %s:%d",
+			   p->name, p->line);
 	else
 	  output_verbatim (&context->buffer,
-                           ",\n                 from %s:%d", p->name, p->line);
+                           ",\n                 from %s:%d",
+			   p->name, p->line);
       output_verbatim (&context->buffer, ":\n");
       diagnostic_set_last_module (context);
     }
@@ -1416,7 +1418,7 @@ inform VPARAMS ((const char *msgid, ...))
   VA_OPEN (ap, msgid);
   VA_FIXEDARG (ap, const char *, msgid);
 
-  diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, lineno,
+  diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, input_line,
                        DK_NOTE);
   report_diagnostic (&diagnostic);
   VA_CLOSE (ap);

@@ -1670,7 +1670,7 @@ complete_start_java_method (tree fndecl)
   if (! flag_emit_class_files)
     {
       /* Initialize the RTL code for the function.  */
-      init_function_start (fndecl, input_filename, lineno);
+      init_function_start (fndecl, input_filename, input_line);
 
       /* Set up parameters and prepare for return, for the function.  */
       expand_function_start (fndecl, 0);
@@ -1810,7 +1810,7 @@ end_java_method (void)
   BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;
 
   /* Generate rtl for function exit.  */
-  expand_function_end (input_filename, lineno, 0);
+  expand_function_end (input_filename, input_line, 0);
 
   /* Run the optimizers and output assembler code for this function. */
   rest_of_compilation (fndecl);

@@ -1452,7 +1452,7 @@ empty_statement:
 			   (DECL_CONTEXT (current_function_decl)))))
 
 		    {
-		      EXPR_WFL_SET_LINECOL (wfl_operator, lineno, -1);
+		      EXPR_WFL_SET_LINECOL (wfl_operator, input_line, -1);
 		      parse_warning_context (wfl_operator, "An empty declaration is a deprecated feature that should not be used");
 		    }
 		  $$ = empty_stmt_node;
@@ -1489,7 +1489,7 @@ expression_statement:
 		{
 		  /* We have a statement. Generate a WFL around it so
 		     we can debug it */
-		  $$ = build_expr_wfl ($1, input_filename, lineno, 0);
+		  $$ = build_expr_wfl ($1, input_filename, input_line, 0);
 		  /* We know we have a statement, so set the debug
                      info to be eventually generate here. */
 		  $$ = JAVA_MAYBE_GENERATE_DEBUG_INFO ($$);
@@ -2692,7 +2692,7 @@ java_pop_parser_context (int generate)
   next = ctxp->next;
   if (next)
     {
-      lineno = ctxp->lineno;
+      input_line = ctxp->lineno;
       current_class = ctxp->class_type;
     }
 
@@ -2737,7 +2737,7 @@ java_parser_context_save_global (void)
   else if (ctxp->saved_data)
     create_new_parser_context (1);
 
-  ctxp->lineno = lineno;
+  ctxp->lineno = input_line;
   ctxp->class_type = current_class;
   ctxp->filename = input_filename;
   ctxp->function_decl = current_function_decl;
@@ -2750,7 +2750,7 @@ java_parser_context_save_global (void)
 void
 java_parser_context_restore_global (void)
 {
-  lineno = ctxp->lineno;
+  input_line = ctxp->lineno;
   current_class = ctxp->class_type;
   input_filename = ctxp->filename;
   if (wfl_operator)
@@ -2989,7 +2989,7 @@ yyerror (const char *msg)
   int save_lineno;
   char *remainder, *code_from_source;
 
-  if (!force_error && prev_lineno == lineno)
+  if (!force_error && prev_lineno == input_line)
     return;
 
   /* Save current error location but report latter, when the context is
@@ -3022,8 +3022,8 @@ yyerror (const char *msg)
       elc.line = ctxp->p_line->lineno;
     }
 
-  save_lineno = lineno;
-  prev_lineno = lineno = elc.line;
+  save_lineno = input_line;
+  prev_lineno = input_line = elc.line;
   prev_msg = msg;
 
   code_from_source = java_get_line_col (ctxp->filename, elc.line, elc.col);
@@ -3040,7 +3040,7 @@ yyerror (const char *msg)
      the same line. This occurs when we report an error but don't have
      a synchronization point other than ';', which
      expression_statement is the only one to take care of.  */
-  ctxp->prevent_ese = lineno = save_lineno;
+  ctxp->prevent_ese = input_line = save_lineno;
 }
 
 static void
@@ -4225,7 +4225,7 @@ register_fields (int flags, tree type, tree variable_list)
 {
   tree current, saved_type;
   tree class_type = NULL_TREE;
-  int saved_lineno = lineno;
+  int saved_lineno = input_line;
   int must_chain = 0;
   tree wfl = NULL_TREE;
 
@@ -4295,9 +4295,9 @@ register_fields (int flags, tree type, tree variable_list)
       /* Set lineno to the line the field was found and create a
          declaration for it. Eventually sets the @deprecated tag flag. */
       if (flag_emit_xref)
-	lineno = EXPR_WFL_LINECOL (cl);
+	input_line = EXPR_WFL_LINECOL (cl);
       else
-	lineno = EXPR_WFL_LINENO (cl);
+	input_line = EXPR_WFL_LINENO (cl);
       field_decl = add_field (class_type, current_name, real_type, flags);
       CHECK_DEPRECATED_NO_RESET (field_decl);
 
@@ -4359,7 +4359,7 @@ register_fields (int flags, tree type, tree variable_list)
     }
 
   CLEAR_DEPRECATED;
-  lineno = saved_lineno;
+  input_line = saved_lineno;
 }
 
 /* Generate finit$, using the list of initialized fields to populate
@@ -4611,11 +4611,11 @@ method_header (int flags, tree type, tree mdecl, tree throws)
   else
     TREE_TYPE (meth) = type;
 
-  saved_lineno = lineno;
+  saved_lineno = input_line;
   /* When defining an abstract or interface method, the curly
      bracket at level 1 doesn't exist because there is no function
      body */
-  lineno = (ctxp->first_ccb_indent1 ? ctxp->first_ccb_indent1 :
+  input_line = (ctxp->first_ccb_indent1 ? ctxp->first_ccb_indent1 :
 	    EXPR_WFL_LINENO (id));
 
   /* Remember the original argument list */
@@ -4649,7 +4649,7 @@ method_header (int flags, tree type, tree mdecl, tree throws)
   /* Register the parameter number and re-install the current line
      number */
   DECL_MAX_LOCALS (meth) = ctxp->formal_parameter_number+1;
-  lineno = saved_lineno;
+  input_line = saved_lineno;
 
   /* Register exception specified by the `throws' keyword for
      resolution and set the method decl appropriate field to the list.
@@ -5451,13 +5451,13 @@ safe_layout_class (tree class)
 {
   tree save_current_class = current_class;
   const char *save_input_filename = input_filename;
-  int save_lineno = lineno;
+  int save_lineno = input_line;
 
   layout_class (class);
 
   current_class = save_current_class;
   input_filename = save_input_filename;
-  lineno = save_lineno;
+  input_line = save_lineno;
 }
 
 static tree
@@ -6867,7 +6867,7 @@ find_in_imports_on_demand (tree enclosing_type, tree class_type)
 
   for (; import; import = TREE_CHAIN (import))
     {
-      int saved_lineno = lineno;
+      int saved_lineno = input_line;
       int access_check;
       const char *id_name;
       tree decl, type_name_copy;
@@ -6886,7 +6886,7 @@ find_in_imports_on_demand (tree enclosing_type, tree class_type)
 
       /* Setup lineno so that it refers to the line of the import (in
 	 case we parse a class file and encounter errors */
-      lineno = EXPR_WFL_LINENO (TREE_PURPOSE (import));
+      input_line = EXPR_WFL_LINENO (TREE_PURPOSE (import));
 
       type_name_copy = TYPE_NAME (class_type);
       TYPE_NAME (class_type) = node;
@@ -6908,7 +6908,7 @@ find_in_imports_on_demand (tree enclosing_type, tree class_type)
 	/* 6.6.1: Inner classes are subject to member access rules. */
 	access_check = 0;
 
-      lineno = saved_lineno;
+      input_line = saved_lineno;
 
       /* If the loaded class is not accessible or couldn't be loaded,
 	 we restore the original TYPE_NAME and process the next
@@ -7297,7 +7297,7 @@ create_artificial_method (tree class, int flags, tree type,
   tree mdecl;
 
   java_parser_context_save_global ();
-  lineno = 0;
+  input_line = 0;
   mdecl = make_node (FUNCTION_TYPE);
   TREE_TYPE (mdecl) = type;
   TYPE_ARG_TYPES (mdecl) = args;
@@ -7357,7 +7357,7 @@ source_end_java_method (void)
     return;
 
   java_parser_context_save_global ();
-  lineno = ctxp->last_ccb_indent1;
+  input_line = ctxp->last_ccb_indent1;
 
   /* Turn function bodies with only a NOP expr null, so they don't get
      generated at all and we won't get warnings when using the -W
@@ -7385,8 +7385,8 @@ source_end_java_method (void)
   /* Generate rtl for function exit.  */
   if (! flag_emit_class_files && ! flag_emit_xref)
     {
-      lineno = DECL_SOURCE_LINE_LAST (fndecl);
-      expand_function_end (input_filename, lineno, 0);
+      input_line = DECL_SOURCE_LINE_LAST (fndecl);
+      expand_function_end (input_filename, input_line, 0);
 
       DECL_SOURCE_LINE (fndecl) = DECL_SOURCE_LINE_FIRST (fndecl);
 
@@ -7894,7 +7894,7 @@ start_complete_expand_method (tree mdecl)
       TREE_CHAIN (tem) = next;
     }
   pushdecl_force_head (DECL_ARGUMENTS (mdecl));
-  lineno = DECL_SOURCE_LINE_FIRST (mdecl);
+  input_line = DECL_SOURCE_LINE_FIRST (mdecl);
   build_result_decl (mdecl);
 }
 
@@ -8572,7 +8572,7 @@ build_thisn_assign (void)
       tree lhs = make_qualified_primary (build_wfl_node (this_identifier_node),
 					 build_wfl_node (thisn), 0);
       tree rhs = build_wfl_node (thisn);
-      EXPR_WFL_SET_LINECOL (lhs, lineno, 0);
+      EXPR_WFL_SET_LINECOL (lhs, input_line, 0);
       return build_assignment (ASSIGN_TK, EXPR_WFL_LINECOL (lhs), lhs, rhs);
     }
   return NULL_TREE;
@@ -11824,10 +11824,10 @@ java_complete_lhs (tree node)
       else
 	{
 	  tree body;
-	  int save_lineno = lineno;
-	  lineno = EXPR_WFL_LINENO (node);
+	  int save_lineno = input_line;
+	  input_line = EXPR_WFL_LINENO (node);
 	  body = java_complete_tree (EXPR_WFL_NODE (node));
-	  lineno = save_lineno;
+	  input_line = save_lineno;
 	  EXPR_WFL_NODE (node) = body;
 	  TREE_SIDE_EFFECTS (node) = TREE_SIDE_EFFECTS (body);
 	  CAN_COMPLETE_NORMALLY (node) = CAN_COMPLETE_NORMALLY (body);
@@ -12375,7 +12375,7 @@ maybe_absorb_scoping_blocks (void)
     {
       tree b = exit_block ();
       java_method_add_stmt (current_function_decl, b);
-      SOURCE_FRONTEND_DEBUG (("Absorbing scoping block at line %d", lineno));
+      SOURCE_FRONTEND_DEBUG (("Absorbing scoping block at line %d", input_line));
     }
 }
 

@@ -141,7 +141,7 @@ static void ffeste_subr_beru_ (ffestpBeruStmt *info, ffecomGfrt rt);
 /* Internal macros. */
 
 #define ffeste_emit_line_note_() \
-  emit_line_note (input_filename, lineno)
+  emit_line_note (input_filename, input_line)
 #define ffeste_check_simple_() \
   assert(ffeste_statelet_ == FFESTE_stateletSIMPLE_)
 #define ffeste_check_start_() \
@@ -401,7 +401,7 @@ ffeste_start_block_ (ffestw block)
 
   b->outer = ffeste_top_block_;
   b->block = block;
-  b->lineno = lineno;
+  b->lineno = input_line;
   b->filename = input_filename;
   b->is_stmt = FALSE;
 
@@ -443,7 +443,7 @@ ffeste_start_stmt_(void)
 
   b->outer = ffeste_top_block_;
   b->block = NULL;
-  b->lineno = lineno;
+  b->lineno = input_line;
   b->filename = input_filename;
   b->is_stmt = TRUE;
 

@@ -7,7 +7,7 @@
  *                          C Implementation File                           *
  *                                                                          *
  *                                                                          *
- *          Copyright (C) 1992-2002, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2003, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -1508,7 +1508,7 @@ build_call_raise (msg)
     build_call_2_expr (fndecl,
 		       build1 (ADDR_EXPR, build_pointer_type (char_type_node),
 			       filename),
-		       build_int_2 (lineno, 0));
+		       build_int_2 (input_line, 0));
 }
 
 /* Return a CONSTRUCTOR of TYPE whose list is LIST.  */

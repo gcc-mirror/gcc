@@ -919,7 +919,7 @@ c_expand_start_cond (cond, compstmt_count, if_stmt)
   /* Record this if statement.  */
   if_stack[if_stack_pointer].compstmt_count = compstmt_count;
   if_stack[if_stack_pointer].locus.file = input_filename;
-  if_stack[if_stack_pointer].locus.line = lineno;
+  if_stack[if_stack_pointer].locus.line = input_line;
   if_stack[if_stack_pointer].needs_warning = 0;
   if_stack[if_stack_pointer].if_stmt = if_stmt;
   if_stack_pointer++;
@@ -1158,8 +1158,8 @@ fname_decl (rid, id)
 	 beginning of the function and this line number will be wrong.
 	 To avoid this problem set the lineno to 0 here; that prevents
 	 it from appearing in the RTL.  */
-      int saved_lineno = lineno;
-      lineno = 0;
+      int saved_lineno = input_line;
+      input_line = 0;
       
       decl = (*make_fname_decl) (id, fname_vars[ix].pretty);
       if (last_tree != saved_last_tree)
@@ -1175,7 +1175,7 @@ fname_decl (rid, id)
 						 saved_function_name_decls);
 	}
       *fname_vars[ix].decl = decl;
-      lineno = saved_lineno;
+      input_line = saved_lineno;
     }
   if (!ix && !current_function_decl)
     pedwarn_with_decl (decl, "`%s' is not defined outside of function scope");

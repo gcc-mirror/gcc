@@ -1,5 +1,6 @@
 /* intrin.c -- Recognize references to intrinsics
-   Copyright (C) 1995, 1996, 1997, 1998, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1998, 2002,
+   2003 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -1389,7 +1390,7 @@ ffeintrin_fulfill_generic (ffebld *expr, ffeinfo *info, ffelexToken t)
       if (!highly_specific && (nimp != FFEINTRIN_impNONE))
 	{
 	  fprintf (stderr, "lineno=%ld, gen=%s, imp=%s, timp=%s\n",
-		   (long) lineno,
+		   (long) input_line,
 		   ffeintrin_gens_[gen].name,
 		   ffeintrin_imps_[imp].name,
 		   ffeintrin_imps_[nimp].name);

@@ -1,5 +1,5 @@
 /* ste.h -- Private #include File (module.h template V1.0)
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 2003 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -148,9 +148,9 @@ void ffeste_V026 (ffestpFindStmt *info);
 #define ffeste_init_3()
 #define ffeste_init_4()
 #define ffeste_filename() input_filename
-#define ffeste_filelinenum() lineno
+#define ffeste_filelinenum() input_line
 #define ffeste_set_line(name,num) \
-  (input_filename = (name), lineno = (num))
+  (input_filename = (name), input_line = (num))
 #define ffeste_terminate_0()
 #define ffeste_terminate_1()
 #ifdef ENABLE_CHECKING

@@ -29,7 +29,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 /* Extern global variables declarations  */
 extern FILE *finput;
-extern int   lineno;
+extern int   input_lineno;
 
 /* A Unicode character, as read from the input file  */
 typedef unsigned short unicode_t;

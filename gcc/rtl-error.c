@@ -1,5 +1,5 @@
 /* RTL specific diagnostic subroutines for the GNU C compiler
-   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
 This file is part of GCC.
@@ -69,7 +69,7 @@ file_and_line_for_asm (insn, pfile, pline)
   else
     {
       *pfile = input_filename;
-      *pline = lineno;
+      *pline = input_line;
     }
 }
 

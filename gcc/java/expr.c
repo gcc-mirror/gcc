@@ -2827,8 +2827,8 @@ expand_byte_code (JCF *jcf, tree method)
 	      linenumber_pointer += 4;
 	      if (pc == PC)
 		{
-		  lineno = GET_u2 (linenumber_pointer - 2);
-		  emit_line_note (input_filename, lineno);
+		  input_line = GET_u2 (linenumber_pointer - 2);
+		  emit_line_note (input_filename, input_line);
 		  if (!(instruction_bits[PC] & BCODE_HAS_MULTI_LINENUMBERS))
 		    break;
 		}

@@ -162,7 +162,7 @@ const char *main_input_filename;
 
 /* Current line number in real source file.  */
 
-int lineno;
+int input_line;
 
 /* Nonzero if it is unsafe to create any new pseudo registers.  */
 int no_new_pseudos;
@@ -2149,12 +2149,12 @@ push_srcloc (file, line)
   if (input_file_stack)
     {
       input_file_stack->name = input_filename;
-      input_file_stack->line = lineno;
+      input_file_stack->line = input_line;
     }
 
   fs = (struct file_stack *) xmalloc (sizeof (struct file_stack));
   fs->name = input_filename = file;
-  fs->line = lineno = line;
+  fs->line = input_line = line;
   fs->next = input_file_stack;
   input_file_stack = fs;
   input_file_stack_tick++;
@@ -2177,12 +2177,12 @@ pop_srcloc ()
   if (input_file_stack)
     {
       input_filename = input_file_stack->name;
-      lineno = input_file_stack->line;
+      input_line = input_file_stack->line;
     }
   else
     {
       input_filename = NULL;
-      lineno = 0;
+      input_line = 0;
     }
 }
 

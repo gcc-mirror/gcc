@@ -135,7 +135,7 @@ java_init_lex (FILE *finput, const char *encoding)
 #endif
 
   ctxp->filename = input_filename;
-  ctxp->lineno = lineno = 0;
+  ctxp->lineno = input_line = 0;
   ctxp->p_line = NULL;
   ctxp->c_line = NULL;
   ctxp->java_error_flag = 0;
@@ -212,7 +212,7 @@ java_allocate_new_line (void)
     }
   ctxp->c_line->ahead [0] = 0;
   ctxp->c_line->unicode_escape_ahead_p = 0;
-  ctxp->c_line->lineno = ++lineno;
+  ctxp->c_line->lineno = ++input_line;
   ctxp->c_line->white_space_only = 1;
 }
 
@@ -1351,9 +1351,9 @@ do_java_lex (YYSTYPE *java_lval)
 	}
       if (c == '\n' || c == UEOF) /* ULT.  */
 	{
-	  lineno--;	/* Refer to the line where the terminator was seen.  */
+	  input_line--;	/* Refer to the line where the terminator was seen.  */
 	  java_lex_error ("String not terminated at end of line", 0);
-	  lineno++;
+	  input_line++;
 	}
 
       obstack_1grow (&temporary_obstack, '\0');
@@ -1381,14 +1381,14 @@ do_java_lex (YYSTYPE *java_lval)
     case '{':
       JAVA_LEX_SEP (c);
       if (ctxp->ccb_indent == 1)
-	ctxp->first_ccb_indent1 = lineno;
+	ctxp->first_ccb_indent1 = input_line;
       ctxp->ccb_indent++;
       BUILD_OPERATOR (OCB_TK);
     case '}':
       JAVA_LEX_SEP (c);
       ctxp->ccb_indent--;
       if (ctxp->ccb_indent == 1)
-        ctxp->last_ccb_indent1 = lineno;
+        ctxp->last_ccb_indent1 = input_line;
       BUILD_OPERATOR (CCB_TK);
     case '[':
       JAVA_LEX_SEP (c);

@@ -309,18 +309,18 @@ push_class (tree class_type, tree class_name)
 {
   tree decl, signature;
   const char *save_input_filename = input_filename;
-  int save_lineno = lineno;
+  int save_lineno = input_line;
   tree source_name = identifier_subst (class_name, "", '.', '/', ".java");
   CLASS_P (class_type) = 1;
   input_filename = IDENTIFIER_POINTER (source_name);
-  lineno = 0;
+  input_line = 0;
   decl = build_decl (TYPE_DECL, class_name, class_type);
 
   /* dbxout needs a DECL_SIZE if in gstabs mode */
   DECL_SIZE (decl) = integer_zero_node;
 
   input_filename = save_input_filename;
-  lineno = save_lineno;
+  input_line = save_lineno;
   signature = identifier_subst (class_name, "L", '.', '/', ";");
   IDENTIFIER_SIGNATURE_TYPE (signature) = build_pointer_type (class_type);
 

@@ -1,5 +1,5 @@
 /* scan.h - Utility declarations for scan-decls and fix-header programs.
-   Copyright (C) 1993, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1998, 1999, 2003 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -52,7 +52,6 @@ struct fn_decl
 
 struct cpp_token;
 
-extern int lineno;
 extern void sstring_append _PARAMS((sstring *, sstring *));
 extern void make_sstring_space _PARAMS((sstring *, int));
 extern int skip_spaces _PARAMS((FILE *, int));
@@ -78,4 +77,4 @@ extern int get_token _PARAMS ((FILE *, sstring *));
 extern int source_lineno;
 extern sstring source_filename;
 /* Current physical line number */
-extern int lineno;
+extern int input_line;

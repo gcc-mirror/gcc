@@ -2783,7 +2783,7 @@ extern int real_zerop PARAMS ((tree));
 extern const char *input_filename;
 
 /* Current line number in input file.  */
-extern int lineno;
+extern int input_line;
 
 /* Nonzero means lvalues are limited to those valid in pedantic ANSI C.
    Zero means allow extended lvalues.  */

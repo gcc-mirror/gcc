@@ -915,10 +915,10 @@ check_handlers_1 (tree master, tree handlers)
     if (TREE_TYPE (handler)
 	&& can_convert_eh (type, TREE_TYPE (handler)))
       {
-	lineno = STMT_LINENO (handler);
+	input_line = STMT_LINENO (handler);
 	warning ("exception of type `%T' will be caught",
 		    TREE_TYPE (handler));
-	lineno = STMT_LINENO (master);
+	input_line = STMT_LINENO (master);
 	warning ("   by earlier handler for `%T'", type);
 	break;
       }
@@ -930,19 +930,20 @@ void
 check_handlers (tree handlers)
 {
   tree handler;
-  int save_line = lineno;
+  int save_line = input_line;
+  
   for (handler = handlers; handler; handler = TREE_CHAIN (handler))
     {
       if (TREE_CHAIN (handler) == NULL_TREE)
 	/* No more handlers; nothing to shadow.  */;
       else if (TREE_TYPE (handler) == NULL_TREE)
 	{
-	  lineno = STMT_LINENO (handler);
+	  input_line = STMT_LINENO (handler);
 	  pedwarn
 	    ("`...' handler must be the last handler for its try block");
 	}
       else
 	check_handlers_1 (handler, TREE_CHAIN (handler));
     }
-  lineno = save_line;
+  input_line = save_line;
 }

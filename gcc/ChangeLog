@@ -1,5 +1,48 @@
 2003-05-01  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* input.h (lineno): Rename to ...
+	(input_line): ... here.
+	* tree.h (lineno): Rename to ...
+	(input_line): ... here.
+	* scan.h (lineno): Rename to ...
+	(input_line): ... here.
+	* toplev.c (lineno): Rename to ...
+	(input_line): ... here.
+	(push_srcloc, pop_srcloc):  Rename lineno to input_line.
+	* c-common.c (c_expand_start_cond, fname_decl): Likewise.
+	* c-decl.c (poplevel, pop_label_level, lookup_label, lookup_tag,
+	store_parm_decls, c_expand_body_1): Likewise.
+	* c-errors.c (pedwarn_c99): Likewise.
+	* c-format.c (status_warning): Likewise.
+	* c-lex.c (fe_file_change, cb_def_pragma, c_lex): Likewise.
+	* c-opts.c (c_common_post_options, c_common_parse_file): Likewise.
+	* c-parse.in (save_filename, maybe_type_qual, ifc): Likwise.
+	* c-semantics.c (finish_stmt_tree, build_stmt, emit_local_var,
+	gentrtl_goto_stmt, genrtl_expr_stmt_value, genrtl_decl_stmt,
+	genrtl_if_stmt, genrtl_while_stmt, genrtl_do_stmt,
+	genrtl_return_stmt, genrtl_for_stmt, build_break_stmt,
+	build_continue_stmt, genrtl_switch_stmt, genrtl_asm_stmt,
+	prep_stmt, find_reachable_label, expand_unreachable_stmt): Likewise.
+	* coverage.c (create_coverage): Likewise.
+	* diagnostic.c (pedwarn, sorry, error, fatal_error,
+	internal_error, warning, diagnostic_report_current_module,
+	inform): Likewise.
+	* expr.c (expand_expr): Likewise.
+	* integrate.c (expand_inline_function,
+	output_inline_function): Likewise.
+	* rtl-error.c (file_and_line_for_asm): Likewise.
+	* tree-inline.c (find_alloca_call, find_builtin_longjmp_call,
+	walk_tree): Likewise.
+	* tree.c (make_node): Likewise.
+	* ada, cp, f, java, objc, treelang: Likewise.
+	* objc/objc-act.c (objc_init): Rename lineno to input_line.
+	(build_module_descriptor, build_selector_translation_table,
+	build_protocol_template, build_method_prototype_list_template,
+	build_category_template, build_selector_table,
+	build_class_template, build_super_template, build_ivar_template,
+	build_ivar_list_template, build_method_list_template,
+	build_method_template, add_instance_variable): Likewise.
+
 	* dwarf2out.c (dwarf2out_init, dwarf2out_finish): Change parameter
 	name from input_filename.
 
