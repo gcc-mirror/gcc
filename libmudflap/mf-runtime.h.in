@@ -15,12 +15,18 @@ typedef unsigned long uintptr_t;
 #endif
 
 
-/* Global declarations used by instrumentation. */
-
+/* Global declarations used by instrumentation.  When _MUDFLAP is
+   defined, these have been auto-declared by the compiler and we
+   should not declare them again (ideally we *would* declare them
+   again, to verify that the compiler's declarations match the
+   library's, but the C++ front end has no mechanism for allowing
+   the re-definition of a structure type).  */
+#ifndef _MUDFLAP
 struct __mf_cache { uintptr_t low; uintptr_t high; };
 extern struct __mf_cache __mf_lookup_cache [];
 extern uintptr_t __mf_lc_mask;
 extern unsigned char __mf_lc_shift;
+#endif
 
 /* Multithreading support.  */
 #ifdef _MUDFLAPTH

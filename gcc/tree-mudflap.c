@@ -44,6 +44,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <demangle.h>
 #include "langhooks.h"
 #include "ggc.h"
+#include "cgraph.h"
 
 /* Internal function decls */
 
@@ -51,9 +52,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static tree mf_build_string (const char *string);
 static tree mf_varname_tree (tree);
 static tree mf_file_function_line_tree (location_t);
-
-/* Initialization of all the mf-runtime.h extern decls.  */
-static void mf_init_extern_trees (void);
 
 /* Indirection-related instrumentation.  */
 static void mf_decl_cache_locals (void);
@@ -247,10 +245,10 @@ static GTY (()) tree mf_cache_structptr_type;
 /* extern struct __mf_cache __mf_lookup_cache []; */
 static GTY (()) tree mf_cache_array_decl;
 
-/* extern const unsigned char __mf_lc_shift; */
+/* extern unsigned char __mf_lc_shift; */
 static GTY (()) tree mf_cache_shift_decl;
 
-/* extern const uintptr_t __mf_lc_mask; */
+/* extern uintptr_t __mf_lc_mask; */
 static GTY (()) tree mf_cache_mask_decl;
 
 /* Their function-scope local shadows, used in single-threaded mode only. */
@@ -267,31 +265,98 @@ static GTY (()) tree mf_check_fndecl;
 /* extern void __mf_register (void *ptr, size_t sz, int type, const char *); */
 static GTY (()) tree mf_register_fndecl;
 
-/* extern void __mf_unregister (void *ptr, size_t sz); */
+/* extern void __mf_unregister (void *ptr, size_t sz, int type); */
 static GTY (()) tree mf_unregister_fndecl;
 
+/* Helper for mudflap_init: construct a decl with the given category,
+   name, and type, mark it an external reference, and pushdecl it.  */
+static inline tree
+mf_make_builtin (enum tree_code category, const char *name, tree type)
+{
+  tree decl = mf_mark (build_decl (category, get_identifier (name), type));
+  TREE_PUBLIC (decl) = 1;
+  DECL_EXTERNAL (decl) = 1;
+  lang_hooks.decls.pushdecl (decl);
+  return decl;
+}
+
+/* Helper for mudflap_init: construct a tree corresponding to the type
+     struct __mf_cache { uintptr_t low; uintptr_t high; };
+     where uintptr_t is the FIELD_TYPE argument.  */
+static inline tree
+mf_make_mf_cache_struct_type (tree field_type)
+{
+  /* There is, abominably, no language-independent way to construct a
+     RECORD_TYPE.  So we have to call the basic type construction
+     primitives by hand.  */
+  tree fieldlo = build_decl (FIELD_DECL, get_identifier ("low"), field_type);
+  tree fieldhi = build_decl (FIELD_DECL, get_identifier ("high"), field_type);
+
+  tree struct_type = make_node (RECORD_TYPE);
+  DECL_CONTEXT (fieldlo) = struct_type;
+  DECL_CONTEXT (fieldhi) = struct_type;
+  TREE_CHAIN (fieldlo) = fieldhi;
+  TYPE_FIELDS (struct_type) = fieldlo;
+  TYPE_NAME (struct_type) = get_identifier ("__mf_cache");
+  layout_type (struct_type);
+
+  return struct_type;
+}
+
+#define build_function_type_3(rtype, arg1, arg2, arg3) \
+ build_function_type (rtype, tree_cons (0, arg1, tree_cons (0, arg2, \
+                             tree_cons (0, arg3, void_list_node))))
+#define build_function_type_4(rtype, arg1, arg2, arg3, arg4) \
+ build_function_type (rtype, tree_cons (0, arg1, tree_cons (0, arg2, \
+                             tree_cons (0, arg3, tree_cons (0, arg4, \
+                             void_list_node)))))
 
 /* Initialize the global tree nodes that correspond to mf-runtime.h
    declarations.  */
-static void
-mf_init_extern_trees (void)
+void
+mudflap_init (void)
 {
   static bool done = false;
+  tree mf_const_string_type;
+  tree mf_cache_array_type;
+  tree mf_check_register_fntype;
+  tree mf_unregister_fntype;
 
   if (done)
     return;
   done = true;
 
-  mf_uintptr_type = TREE_TYPE (mflang_lookup_decl ("uintptr_t"));
-  mf_cache_array_decl = mf_mark (mflang_lookup_decl ("__mf_lookup_cache"));
-  mf_cache_struct_type = TREE_TYPE (TREE_TYPE (mf_cache_array_decl));
+  mf_uintptr_type = lang_hooks.types.type_for_mode (ptr_mode,
+						    /*unsignedp=*/true);
+  mf_const_string_type
+    = build_pointer_type (build_qualified_type
+			  (char_type_node, TYPE_QUAL_CONST));
+
+  mf_cache_struct_type = mf_make_mf_cache_struct_type (mf_uintptr_type);
   mf_cache_structptr_type = build_pointer_type (mf_cache_struct_type);
-  mf_cache_shift_decl = mf_mark (mflang_lookup_decl ("__mf_lc_shift"));
-  mf_cache_mask_decl = mf_mark (mflang_lookup_decl ("__mf_lc_mask"));
-  mf_check_fndecl = mflang_lookup_decl ("__mf_check");
-  mf_register_fndecl = mflang_lookup_decl ("__mf_register");
-  mf_unregister_fndecl = mflang_lookup_decl ("__mf_unregister");
+  mf_cache_array_type = build_array_type (mf_cache_struct_type, 0);
+  mf_check_register_fntype =
+    build_function_type_4 (void_type_node, ptr_type_node, size_type_node,
+			   integer_type_node, mf_const_string_type);
+  mf_unregister_fntype =
+    build_function_type_3 (void_type_node, ptr_type_node, size_type_node,
+			   integer_type_node);
+
+  mf_cache_array_decl = mf_make_builtin (VAR_DECL, "__mf_lookup_cache",
+					 mf_cache_array_type);
+  mf_cache_shift_decl = mf_make_builtin (VAR_DECL, "__mf_lc_shift",
+					 unsigned_char_type_node);
+  mf_cache_mask_decl = mf_make_builtin (VAR_DECL, "__mf_lc_mask",
+					mf_uintptr_type);
+  mf_check_fndecl = mf_make_builtin (FUNCTION_DECL, "__mf_check",
+				     mf_check_register_fntype);
+  mf_register_fndecl = mf_make_builtin (FUNCTION_DECL, "__mf_register",
+					mf_check_register_fntype);
+  mf_unregister_fndecl = mf_make_builtin (FUNCTION_DECL, "__mf_unregister",
+					  mf_unregister_fntype);
 }
+#undef build_function_type_4
+#undef build_function_type_3
 
 
 /* ------------------------------------------------------------------------ */
@@ -773,7 +838,6 @@ execute_mudflap_function_decls (void)
 
   push_gimplify_context ();
 
-  mf_init_extern_trees ();
   mf_xform_decls (DECL_SAVED_TREE (current_function_decl),
                   DECL_ARGUMENTS (current_function_decl));
 
@@ -1064,7 +1128,6 @@ mudflap_register_call (tree obj, tree object_size, tree varname)
   arg = convert (ptr_type_node, arg);
   args = tree_cons (NULL_TREE, arg, args);
 
-  mf_init_extern_trees ();
   call_stmt = build_function_call_expr (mf_register_fndecl, args);
 
   append_to_statement_list (call_stmt, &enqueued_call_stmt_chain);
@@ -1181,7 +1244,11 @@ mudflap_finish_file (void)
       VARRAY_CLEAR (deferred_static_decls);
     }
 
-  mflang_flush_calls (enqueued_call_stmt_chain);
+  if (enqueued_call_stmt_chain)
+    {
+      cgraph_build_static_cdtor ('I', enqueued_call_stmt_chain);
+      enqueued_call_stmt_chain = 0;
+    }
 }
 
 
