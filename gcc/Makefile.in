@@ -1266,9 +1266,11 @@ $(srcdir)/INSTALL: install1.texi install.texi
 
 mostlyclean:
 	-rm -f $(STAGESTUFF)
-# Clean the objc subdir.
-	srcdir1=`cd $(srcdir); pwd`; \
-	cd objc; $(MAKE) -f $$srcdir1/objc/Makefile mostlyclean
+# Clean the objc subdir if we created one.
+	if [ -d objc ]; then \
+	  srcdir1=`cd $(srcdir); pwd`; \
+	  cd objc; $(MAKE) -f $$srcdir1/objc/Makefile mostlyclean \
+	else true; fi
 	-rm -f libobjc.a
 # Delete the temporary source copies for cross compilation.
 	-rm -f $(HOST_PREFIX_1)rtl.c $(HOST_PREFIX_1)rtlanal.c
