@@ -26,4 +26,9 @@ int bar3 (int x)
 // { dg-final { scan-assembler "baz2" } }
 // { dg-final { scan-assembler-not "baz2.*baz2.*baz2.*baz2.*baz2.*baz2" } }
 // { dg-final { scan-assembler-not "foo3" } }
+// SH targets put the funtion address into a constant pool and / or register,
+// so it does not appear repeated (as much as expected) in the assembler.
+// { dg-final { global target_triplet } }
+// { dg-final { if [string match sh-*-* $target_triplet ] {return} } }
+// { dg-final { if [string match {sh[elb1-9]*-*-*} $target_triplet ] {return} } }
 // { dg-final { scan-assembler "baz3.*baz3.*baz3.*baz3.*baz3.*baz3" } }
