@@ -195,7 +195,7 @@ struct dbx_file GTY(())
   struct dbx_file *prev;              /* Chain to traverse all pending bincls.  */
 };
 
-#ifdef DBX_USE_BINCLS
+#ifdef DBX_USE_BINCL
 /* If zero then there is no pending BINCL.  */
 static int pending_bincls = 0;
 #endif
@@ -317,7 +317,7 @@ static int current_sym_nchars;
 #define CONTIN do { } while (0)
 #endif
 
-#ifdef DBX_USE_BINCLS
+#ifdef DBX_USE_BINCL
 static void emit_bincl_stab             (const char *c);
 static void emit_pending_bincls         (void);
 #endif
