@@ -7,6 +7,13 @@
 	* Makefile.in (unstrap, restrap): New targets.
 	(bootstrap): Mention restrap.
 
+2002-06-19  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* except.c (ehl_free): Remove.
+
+	* doc/tm.texi (TARGET_CPU_CPP_BUILTINS): Correct misnamings of
+	builtin_define and builtin_define_std.
+
 2002-06-19  Ian Dall  <ian@sibyl.beware.dropbear.id.au>
 
 	* config/ns32k/ns32k.md: Give "*xxx" names to all unnamed insn's.
