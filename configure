@@ -2556,7 +2556,7 @@ elif test -d ${srcdir}/gcc; then
 elif test "$host" = "$target"; then
   CC_FOR_TARGET='$(CC)'
 else
-  CC_FOR_TARGET=`echo gcc | sed -e 's/x/x/' ${program_transform_name}`
+  CC_FOR_TARGET=`echo gcc | sed "${program_transform_name}"`
 fi
 CC_FOR_TARGET=$CC_FOR_TARGET' $(FLAGS_FOR_TARGET)'
 
@@ -2567,7 +2567,7 @@ elif test -d ${srcdir}/gcc; then
 elif test "$host" = "$target"; then
   GCJ_FOR_TARGET='gcj'
 else
-  GCJ_FOR_TARGET=`echo gcj | sed -e 's/x/x/' ${program_transform_name}`
+  GCJ_FOR_TARGET=`echo gcj | sed "${program_transform_name}"`
 fi
 GCJ_FOR_TARGET=$GCJ_FOR_TARGET' $(FLAGS_FOR_TARGET)'
 
@@ -2589,7 +2589,7 @@ elif test "$host" = "$target"; then
   CXX_FOR_TARGET='$(CXX)'
   RAW_CXX_FOR_TARGET=${CXX_FOR_TARGET}
 else
-  CXX_FOR_TARGET=`echo c++ | sed -e 's/x/x/' ${program_transform_name}`
+  CXX_FOR_TARGET=`echo c++ | sed "${program_transform_name}"`
   RAW_CXX_FOR_TARGET=${CXX_FOR_TARGET}
 fi
 CXX_FOR_TARGET=$CXX_FOR_TARGET' $(FLAGS_FOR_TARGET)'
