@@ -1,5 +1,5 @@
 /* SplitPaneUI.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,75 +37,97 @@ exception statement from your version. */
 
 package javax.swing.plaf;
 
-// Imports
-import java.awt.*;
-import javax.swing.*;
+
+import java.awt.Graphics;
+import javax.swing.JSplitPane;
+
 
 /**
- * SplitPaneUI
- * @author	Andrew Selkirk
- * @version	1.0
+ * An abstract base class for delegates that implement the pluggable
+ * look and feel for a <code>JSplitPane</code>.
+ *
+ * @see javax.swing.JSplitPane
+ *
+ * @author Andrew Selkirk (aselkirk@sympatico.ca)
+ * @author Sascha Brawer (brawer@dandelis.ch)
  */
-public abstract class SplitPaneUI extends ComponentUI {
-
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * Constructor SplitPaneUI
-	 */
-	public SplitPaneUI() {
-		// TODO
-	} // SplitPaneUI()
+public abstract class SplitPaneUI
+  extends ComponentUI
+{
+  /**
+   * Constructs a new <code>SplitPaneUI</code>.
+   */
+  public SplitPaneUI()
+  {
+  }
 
 
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * resetToPreferredSizes
-	 * @param splitpane TODO
-	 */
-	public abstract void resetToPreferredSizes(JSplitPane splitpane);
-
-	/**
-	 * setDividerLocation
-	 * @param splitpane TODO
-	 * @param location TODO
-	 */
-	public abstract void setDividerLocation(JSplitPane splitpane,
-		int location);
-
-	/**
-	 * getDividerLocation
-	 * @param splitpane TODO
-	 * @returns int
-	 */
-	public abstract int getDividerLocation(JSplitPane splitpane);
-
-	/**
-	 * getMinimumDividerLocation
-	 * @param splitpane TODO
-	 * @returns int
-	 */
-	public abstract int getMinimumDividerLocation(JSplitPane splitpane);
-
-	/**
-	 * getMaximumDividerLocation
-	 * @param splitpane TODO
-	 * @returns int
-	 */
-	public abstract int getMaximumDividerLocation(JSplitPane splitpane);
-
-	/**
-	 * finishedPaintingChildren
-	 * @param splitpane TODO
-	 * @param graphics TODO
-	 */
-	public abstract void finishedPaintingChildren(JSplitPane splitpane,
-		Graphics graphics);
+  /**
+   * Moves the divider to the location which best respects
+   * the preferred sizes of the children.
+   *
+   * @param pane the <code>JSplitPane</code> for thich this
+   *        delegate provides the look and feel.
+   */
+  public abstract void resetToPreferredSizes(JSplitPane pane);
 
 
-} // SplitPaneUI
+  /**
+   * Moves the divider to the specified location.
+   *
+   * @param pane the <code>JSplitPane</code> for thich this
+   *        delegate provides the look and feel.
+   *
+   * @param location the new location of the divider.
+   */
+  public abstract void setDividerLocation(JSplitPane pane,
+                                          int location);
+
+
+  /**
+   * Determines the current location of the divider.
+   *
+   * @param pane the <code>JSplitPane</code> for thich this
+   *        delegate provides the look and feel.
+   *
+   * @return the current location of the divider.
+   */
+  public abstract int getDividerLocation(JSplitPane pane);
+  
+  
+  /**
+   * Determines the minimum location of the divider.
+   *
+   * @param pane the <code>JSplitPane</code> for thich this
+   *        delegate provides the look and feel.
+   *
+   * @return the leftmost (or topmost) possible location
+   *         of the divider.
+   */
+  public abstract int getMinimumDividerLocation(JSplitPane pane);
+
+
+  /**
+   * Determines the maximum location of the divider.
+   *
+   * @param pane the <code>JSplitPane</code> for thich this
+   *        delegate provides the look and feel.
+   *
+   * @return the bottommost (or rightmost) possible location
+   *         of the divider.
+   */
+  public abstract int getMaximumDividerLocation(JSplitPane pane);
+
+
+  /**
+   * Called by the <code>JSplitPane</code> after it has finished
+   * painting its children.
+   *
+   * @param pane the <code>JSplitPane</code> for thich this
+   *        delegate provides the look and feel.
+   *
+   * @param g the Graphics used for painting.
+   */
+  public abstract void finishedPaintingChildren(JSplitPane pane,
+                                                Graphics g);
+}

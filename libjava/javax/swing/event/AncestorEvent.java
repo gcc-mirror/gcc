@@ -48,11 +48,11 @@ import javax.swing.JComponent;
  */
 public class AncestorEvent extends AWTEvent
 {
-  private static final long serialVersionUID = 4799843792513591457L;
+  private static final long serialVersionUID = -8079801679695605002L;
   
-  public static int ANCESTOR_ADDED = 0;
-  public static int ANCESTOR_MOVED = 1;
-  public static int ANCESTOR_REMOVED = 2;
+  public static final int ANCESTOR_ADDED = 0;
+  public static final int ANCESTOR_MOVED = 1;
+  public static final int ANCESTOR_REMOVED = 2;
 
   private JComponent sourceComponent;
   private Container ancestor;

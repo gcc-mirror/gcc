@@ -1,3 +1,25 @@
+2003-06-27  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JWindow.java,
+	javax/swing/event/AncestorEvent.java,
+	javax/swing/event/HyperlinkEvent.java,
+	javax/swing/event/InternalFrameEvent.java,
+	javax/swing/event/ListDataEvent.java,
+	javax/swing/event/TableModelEvent.java,
+	javax/swing/plaf/PopupMenuUI.java,
+	javax/swing/plaf/SplitPaneUI.java,
+	javax/swing/plaf/TabbedPaneUI.java,
+	javax/swing/plaf/TextUI.java,
+	javax/swing/plaf/TreeUI.java,
+	javax/swing/plaf/basic/BasicTextUI.java,
+	javax/swing/plaf/basic/BasicTreeUI.java:
+	New versions from classpath.
+	* javax/swing/Popup.java,
+	javax/swing/PopupFactory.jav:
+	New source files from classpath.
+	* javax/swing/plaf/doc-files/TreeUI-1.png:
+	New binary files from classpath.
+
 2003-06-25  Michael Koch  <konqueror@gmx.de>
 
 	* Makefile.am

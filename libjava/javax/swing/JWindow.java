@@ -1,5 +1,5 @@
 /* JWindow.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -77,6 +77,11 @@ public class JWindow extends Window implements Accessible
      *
      *
      *************/
+
+    public JWindow()
+    {
+      this(null);
+    }
 
     // huuu ?
     public JWindow(Frame f)
