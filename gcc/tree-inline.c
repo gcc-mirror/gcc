@@ -483,7 +483,8 @@ initialize_inlined_parameters (id, args, fn)
       tree cleanup;
 
       /* Find the initializer.  */
-      value = a ? TREE_VALUE (a) : NULL_TREE;
+      value = (*lang_hooks.tree_inlining.convert_parm_for_inlining)
+	      (p, a ? TREE_VALUE (a) : NULL_TREE, fn);
 
       /* If the parameter is never assigned to, we may not need to
 	 create a new variable here at all.  Instead, we may be able
