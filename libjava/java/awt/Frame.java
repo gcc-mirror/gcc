@@ -218,9 +218,7 @@ public
 Frame(String title)
 {
   super();
-  System.err.println("returned");
   this.title = title;
-  System.err.println("end");
 }
 
 public
