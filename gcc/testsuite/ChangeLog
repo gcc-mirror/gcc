@@ -1,3 +1,9 @@
+2004-08-24  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/16706
+	* g++.dg/template/crash21.C: New test.
+	* g++.dg/template/crash22.C: Likewise.
+
 2004-08-23  Roger Sayle  <roger@eyesopen.com>
 
 	PR rtl-optimization/17078

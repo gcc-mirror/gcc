@@ -891,10 +891,26 @@ friend_accessible_p (tree scope, tree decl, tree binfo)
 
       /* Or an instantiation of something which is a friend.  */
       if (DECL_TEMPLATE_INFO (scope))
-	return friend_accessible_p (DECL_TI_TEMPLATE (scope), decl, binfo);
+	{
+	  int ret;
+	  /* Increment processing_template_decl to make sure that
+	     dependent_type_p works correctly.  */
+	  ++processing_template_decl;
+	  ret = friend_accessible_p (DECL_TI_TEMPLATE (scope), decl, binfo);
+	  --processing_template_decl;
+	  return ret;
+	}
     }
   else if (CLASSTYPE_TEMPLATE_INFO (scope))
-    return friend_accessible_p (CLASSTYPE_TI_TEMPLATE (scope), decl, binfo);
+    {
+      int ret;
+      /* Increment processing_template_decl to make sure that
+	 dependent_type_p works correctly.  */
+      ++processing_template_decl;
+      ret = friend_accessible_p (CLASSTYPE_TI_TEMPLATE (scope), decl, binfo);
+      --processing_template_decl;
+      return ret;
+    }
 
   return 0;
 }
