@@ -2176,35 +2176,65 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc link.cc \
 	javax/print/attribute/TextSyntax.java \
 	javax/print/attribute/UnmodifiableSetException.java \
 	javax/print/attribute/URISyntax.java \
+	javax/print/attribute/standard/ColorSupported.java \
+	javax/print/attribute/standard/Compression.java \
 	javax/print/attribute/standard/Copies.java \
+	javax/print/attribute/standard/CopiesSupported.java \
 	javax/print/attribute/standard/DateTimeAtCompleted.java \
 	javax/print/attribute/standard/DateTimeAtCreation.java \
 	javax/print/attribute/standard/DateTimeAtProcessing.java \
 	javax/print/attribute/standard/DocumentName.java \
+	javax/print/attribute/standard/Fidelity.java \
+	javax/print/attribute/standard/Finishings.java \
 	javax/print/attribute/standard/JobHoldUntil.java \
 	javax/print/attribute/standard/JobImpressions.java \
 	javax/print/attribute/standard/JobImpressionsCompleted.java \
+	javax/print/attribute/standard/JobImpressionsSupported.java \
 	javax/print/attribute/standard/JobKOctets.java \
 	javax/print/attribute/standard/JobKOctetsProcessed.java \
+	javax/print/attribute/standard/JobKOctetsSupported.java \
 	javax/print/attribute/standard/JobMediaSheets.java \
 	javax/print/attribute/standard/JobMediaSheetsCompleted.java \
+	javax/print/attribute/standard/JobMediaSheetsSupported.java \
 	javax/print/attribute/standard/JobMessageFromOperator.java \
 	javax/print/attribute/standard/JobName.java \
 	javax/print/attribute/standard/JobOriginatingUserName.java \
 	javax/print/attribute/standard/JobPriority.java \
 	javax/print/attribute/standard/JobPrioritySupported.java \
+	javax/print/attribute/standard/JobSheets.java \
+	javax/print/attribute/standard/JobState.java \
+	javax/print/attribute/standard/JobStateReason.java \
+	javax/print/attribute/standard/JobStateReasons.java \
+	javax/print/attribute/standard/Media.java \
+	javax/print/attribute/standard/MediaSizeName.java \
+	javax/print/attribute/standard/MultipleDocumentHandling.java \
 	javax/print/attribute/standard/NumberOfDocuments.java \
 	javax/print/attribute/standard/NumberOfInterveningJobs.java \
 	javax/print/attribute/standard/NumberUp.java \
+	javax/print/attribute/standard/NumberUpSupported.java \
+	javax/print/attribute/standard/OrientationRequested.java \
 	javax/print/attribute/standard/OutputDeviceAssigned.java \
+	javax/print/attribute/standard/PDLOverrideSupported.java \
+	javax/print/attribute/standard/PageRanges.java \
 	javax/print/attribute/standard/PagesPerMinute.java \
 	javax/print/attribute/standard/PagesPerMinuteColor.java \
+	javax/print/attribute/standard/PresentationDirection.java \
+	javax/print/attribute/standard/PrintQuality.java \
 	javax/print/attribute/standard/PrinterInfo.java \
+	javax/print/attribute/standard/PrinterIsAcceptingJobs.java \
 	javax/print/attribute/standard/PrinterLocation.java \
 	javax/print/attribute/standard/PrinterMakeAndModel.java \
 	javax/print/attribute/standard/PrinterMessageFromOperator.java \
+	javax/print/attribute/standard/PrinterMoreInfo.java \
+	javax/print/attribute/standard/PrinterMoreInfoManufacturer.java \
 	javax/print/attribute/standard/PrinterName.java \
+	javax/print/attribute/standard/PrinterResolution.java \
+	javax/print/attribute/standard/PrinterState.java \
+	javax/print/attribute/standard/PrinterStateReason.java \
+	javax/print/attribute/standard/PrinterStateReasons.java \
+	javax/print/attribute/standard/PrinterURI.java \
 	javax/print/attribute/standard/QueuedJobCount.java \
+	javax/print/attribute/standard/ReferenceUriSchemesSupported.java \
 	javax/print/attribute/standard/RequestingUserName.java \
 	javax/print/attribute/standard/Severity.java \
 	javax/print/attribute/standard/SheetCollate.java \
@@ -3407,35 +3437,65 @@ am__objects_13 = javax/accessibility/Accessible.lo \
 	javax/print/attribute/TextSyntax.lo \
 	javax/print/attribute/UnmodifiableSetException.lo \
 	javax/print/attribute/URISyntax.lo \
+	javax/print/attribute/standard/ColorSupported.lo \
+	javax/print/attribute/standard/Compression.lo \
 	javax/print/attribute/standard/Copies.lo \
+	javax/print/attribute/standard/CopiesSupported.lo \
 	javax/print/attribute/standard/DateTimeAtCompleted.lo \
 	javax/print/attribute/standard/DateTimeAtCreation.lo \
 	javax/print/attribute/standard/DateTimeAtProcessing.lo \
 	javax/print/attribute/standard/DocumentName.lo \
+	javax/print/attribute/standard/Fidelity.lo \
+	javax/print/attribute/standard/Finishings.lo \
 	javax/print/attribute/standard/JobHoldUntil.lo \
 	javax/print/attribute/standard/JobImpressions.lo \
 	javax/print/attribute/standard/JobImpressionsCompleted.lo \
+	javax/print/attribute/standard/JobImpressionsSupported.lo \
 	javax/print/attribute/standard/JobKOctets.lo \
 	javax/print/attribute/standard/JobKOctetsProcessed.lo \
+	javax/print/attribute/standard/JobKOctetsSupported.lo \
 	javax/print/attribute/standard/JobMediaSheets.lo \
 	javax/print/attribute/standard/JobMediaSheetsCompleted.lo \
+	javax/print/attribute/standard/JobMediaSheetsSupported.lo \
 	javax/print/attribute/standard/JobMessageFromOperator.lo \
 	javax/print/attribute/standard/JobName.lo \
 	javax/print/attribute/standard/JobOriginatingUserName.lo \
 	javax/print/attribute/standard/JobPriority.lo \
 	javax/print/attribute/standard/JobPrioritySupported.lo \
+	javax/print/attribute/standard/JobSheets.lo \
+	javax/print/attribute/standard/JobState.lo \
+	javax/print/attribute/standard/JobStateReason.lo \
+	javax/print/attribute/standard/JobStateReasons.lo \
+	javax/print/attribute/standard/Media.lo \
+	javax/print/attribute/standard/MediaSizeName.lo \
+	javax/print/attribute/standard/MultipleDocumentHandling.lo \
 	javax/print/attribute/standard/NumberOfDocuments.lo \
 	javax/print/attribute/standard/NumberOfInterveningJobs.lo \
 	javax/print/attribute/standard/NumberUp.lo \
+	javax/print/attribute/standard/NumberUpSupported.lo \
+	javax/print/attribute/standard/OrientationRequested.lo \
 	javax/print/attribute/standard/OutputDeviceAssigned.lo \
+	javax/print/attribute/standard/PDLOverrideSupported.lo \
+	javax/print/attribute/standard/PageRanges.lo \
 	javax/print/attribute/standard/PagesPerMinute.lo \
 	javax/print/attribute/standard/PagesPerMinuteColor.lo \
+	javax/print/attribute/standard/PresentationDirection.lo \
+	javax/print/attribute/standard/PrintQuality.lo \
 	javax/print/attribute/standard/PrinterInfo.lo \
+	javax/print/attribute/standard/PrinterIsAcceptingJobs.lo \
 	javax/print/attribute/standard/PrinterLocation.lo \
 	javax/print/attribute/standard/PrinterMakeAndModel.lo \
 	javax/print/attribute/standard/PrinterMessageFromOperator.lo \
+	javax/print/attribute/standard/PrinterMoreInfo.lo \
+	javax/print/attribute/standard/PrinterMoreInfoManufacturer.lo \
 	javax/print/attribute/standard/PrinterName.lo \
+	javax/print/attribute/standard/PrinterResolution.lo \
+	javax/print/attribute/standard/PrinterState.lo \
+	javax/print/attribute/standard/PrinterStateReason.lo \
+	javax/print/attribute/standard/PrinterStateReasons.lo \
+	javax/print/attribute/standard/PrinterURI.lo \
 	javax/print/attribute/standard/QueuedJobCount.lo \
+	javax/print/attribute/standard/ReferenceUriSchemesSupported.lo \
 	javax/print/attribute/standard/RequestingUserName.lo \
 	javax/print/attribute/standard/Severity.lo \
 	javax/print/attribute/standard/SheetCollate.lo \
@@ -5976,35 +6036,65 @@ javax/print/attribute/SupportedValuesAttribute.java \
 javax/print/attribute/TextSyntax.java \
 javax/print/attribute/UnmodifiableSetException.java \
 javax/print/attribute/URISyntax.java \
+javax/print/attribute/standard/ColorSupported.java \
+javax/print/attribute/standard/Compression.java \
 javax/print/attribute/standard/Copies.java \
+javax/print/attribute/standard/CopiesSupported.java \
 javax/print/attribute/standard/DateTimeAtCompleted.java \
 javax/print/attribute/standard/DateTimeAtCreation.java \
 javax/print/attribute/standard/DateTimeAtProcessing.java \
 javax/print/attribute/standard/DocumentName.java \
+javax/print/attribute/standard/Fidelity.java \
+javax/print/attribute/standard/Finishings.java \
 javax/print/attribute/standard/JobHoldUntil.java \
 javax/print/attribute/standard/JobImpressions.java \
 javax/print/attribute/standard/JobImpressionsCompleted.java \
+javax/print/attribute/standard/JobImpressionsSupported.java \
 javax/print/attribute/standard/JobKOctets.java \
 javax/print/attribute/standard/JobKOctetsProcessed.java \
+javax/print/attribute/standard/JobKOctetsSupported.java \
 javax/print/attribute/standard/JobMediaSheets.java \
 javax/print/attribute/standard/JobMediaSheetsCompleted.java \
+javax/print/attribute/standard/JobMediaSheetsSupported.java \
 javax/print/attribute/standard/JobMessageFromOperator.java \
 javax/print/attribute/standard/JobName.java \
 javax/print/attribute/standard/JobOriginatingUserName.java \
 javax/print/attribute/standard/JobPriority.java \
 javax/print/attribute/standard/JobPrioritySupported.java \
+javax/print/attribute/standard/JobSheets.java \
+javax/print/attribute/standard/JobState.java \
+javax/print/attribute/standard/JobStateReason.java \
+javax/print/attribute/standard/JobStateReasons.java \
+javax/print/attribute/standard/Media.java \
+javax/print/attribute/standard/MediaSizeName.java \
+javax/print/attribute/standard/MultipleDocumentHandling.java \
 javax/print/attribute/standard/NumberOfDocuments.java \
 javax/print/attribute/standard/NumberOfInterveningJobs.java \
 javax/print/attribute/standard/NumberUp.java \
+javax/print/attribute/standard/NumberUpSupported.java \
+javax/print/attribute/standard/OrientationRequested.java \
 javax/print/attribute/standard/OutputDeviceAssigned.java \
+javax/print/attribute/standard/PDLOverrideSupported.java \
+javax/print/attribute/standard/PageRanges.java \
 javax/print/attribute/standard/PagesPerMinute.java \
 javax/print/attribute/standard/PagesPerMinuteColor.java \
+javax/print/attribute/standard/PresentationDirection.java \
+javax/print/attribute/standard/PrintQuality.java \
 javax/print/attribute/standard/PrinterInfo.java \
+javax/print/attribute/standard/PrinterIsAcceptingJobs.java \
 javax/print/attribute/standard/PrinterLocation.java \
 javax/print/attribute/standard/PrinterMakeAndModel.java \
 javax/print/attribute/standard/PrinterMessageFromOperator.java \
+javax/print/attribute/standard/PrinterMoreInfo.java \
+javax/print/attribute/standard/PrinterMoreInfoManufacturer.java \
 javax/print/attribute/standard/PrinterName.java \
+javax/print/attribute/standard/PrinterResolution.java \
+javax/print/attribute/standard/PrinterState.java \
+javax/print/attribute/standard/PrinterStateReason.java \
+javax/print/attribute/standard/PrinterStateReasons.java \
+javax/print/attribute/standard/PrinterURI.java \
 javax/print/attribute/standard/QueuedJobCount.java \
+javax/print/attribute/standard/ReferenceUriSchemesSupported.java \
 javax/print/attribute/standard/RequestingUserName.java \
 javax/print/attribute/standard/Severity.java \
 javax/print/attribute/standard/SheetCollate.java \
@@ -13778,7 +13868,16 @@ javax/print/attribute/standard/$(am__dirstamp):
 javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp):
 	@$(mkdir_p) javax/print/attribute/standard/$(DEPDIR)
 	@: > javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/ColorSupported.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/Compression.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
 javax/print/attribute/standard/Copies.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/CopiesSupported.lo:  \
 	javax/print/attribute/standard/$(am__dirstamp) \
 	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
 javax/print/attribute/standard/DateTimeAtCompleted.lo:  \
@@ -13793,6 +13892,12 @@ javax/print/attribute/standard/DateTimeAtProcessing.lo:  \
 javax/print/attribute/standard/DocumentName.lo:  \
 	javax/print/attribute/standard/$(am__dirstamp) \
 	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/Fidelity.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/Finishings.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
 javax/print/attribute/standard/JobHoldUntil.lo:  \
 	javax/print/attribute/standard/$(am__dirstamp) \
 	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
@@ -13802,16 +13907,25 @@ javax/print/attribute/standard/JobImpressions.lo:  \
 javax/print/attribute/standard/JobImpressionsCompleted.lo:  \
 	javax/print/attribute/standard/$(am__dirstamp) \
 	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/JobImpressionsSupported.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
 javax/print/attribute/standard/JobKOctets.lo:  \
 	javax/print/attribute/standard/$(am__dirstamp) \
 	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
 javax/print/attribute/standard/JobKOctetsProcessed.lo:  \
 	javax/print/attribute/standard/$(am__dirstamp) \
 	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/JobKOctetsSupported.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
 javax/print/attribute/standard/JobMediaSheets.lo:  \
 	javax/print/attribute/standard/$(am__dirstamp) \
 	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
 javax/print/attribute/standard/JobMediaSheetsCompleted.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/JobMediaSheetsSupported.lo:  \
 	javax/print/attribute/standard/$(am__dirstamp) \
 	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
 javax/print/attribute/standard/JobMessageFromOperator.lo:  \
@@ -13829,6 +13943,27 @@ javax/print/attribute/standard/JobPriority.lo:  \
 javax/print/attribute/standard/JobPrioritySupported.lo:  \
 	javax/print/attribute/standard/$(am__dirstamp) \
 	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/JobSheets.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/JobState.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/JobStateReason.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/JobStateReasons.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/Media.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/MediaSizeName.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/MultipleDocumentHandling.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
 javax/print/attribute/standard/NumberOfDocuments.lo:  \
 	javax/print/attribute/standard/$(am__dirstamp) \
 	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
@@ -13838,7 +13973,19 @@ javax/print/attribute/standard/NumberOfInterveningJobs.lo:  \
 javax/print/attribute/standard/NumberUp.lo:  \
 	javax/print/attribute/standard/$(am__dirstamp) \
 	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/NumberUpSupported.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/OrientationRequested.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
 javax/print/attribute/standard/OutputDeviceAssigned.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/PDLOverrideSupported.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/PageRanges.lo:  \
 	javax/print/attribute/standard/$(am__dirstamp) \
 	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
 javax/print/attribute/standard/PagesPerMinute.lo:  \
@@ -13847,7 +13994,16 @@ javax/print/attribute/standard/PagesPerMinute.lo:  \
 javax/print/attribute/standard/PagesPerMinuteColor.lo:  \
 	javax/print/attribute/standard/$(am__dirstamp) \
 	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/PresentationDirection.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/PrintQuality.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
 javax/print/attribute/standard/PrinterInfo.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/PrinterIsAcceptingJobs.lo:  \
 	javax/print/attribute/standard/$(am__dirstamp) \
 	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
 javax/print/attribute/standard/PrinterLocation.lo:  \
@@ -13859,10 +14015,34 @@ javax/print/attribute/standard/PrinterMakeAndModel.lo:  \
 javax/print/attribute/standard/PrinterMessageFromOperator.lo:  \
 	javax/print/attribute/standard/$(am__dirstamp) \
 	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/PrinterMoreInfo.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/PrinterMoreInfoManufacturer.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
 javax/print/attribute/standard/PrinterName.lo:  \
 	javax/print/attribute/standard/$(am__dirstamp) \
 	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/PrinterResolution.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/PrinterState.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/PrinterStateReason.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/PrinterStateReasons.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/PrinterURI.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
 javax/print/attribute/standard/QueuedJobCount.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/ReferenceUriSchemesSupported.lo:  \
 	javax/print/attribute/standard/$(am__dirstamp) \
 	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
 javax/print/attribute/standard/RequestingUserName.lo:  \
@@ -18132,8 +18312,14 @@ mostlyclean-compile:
 	-rm -f javax/print/attribute/URISyntax.lo
 	-rm -f javax/print/attribute/UnmodifiableSetException.$(OBJEXT)
 	-rm -f javax/print/attribute/UnmodifiableSetException.lo
+	-rm -f javax/print/attribute/standard/ColorSupported.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/ColorSupported.lo
+	-rm -f javax/print/attribute/standard/Compression.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/Compression.lo
 	-rm -f javax/print/attribute/standard/Copies.$(OBJEXT)
 	-rm -f javax/print/attribute/standard/Copies.lo
+	-rm -f javax/print/attribute/standard/CopiesSupported.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/CopiesSupported.lo
 	-rm -f javax/print/attribute/standard/DateTimeAtCompleted.$(OBJEXT)
 	-rm -f javax/print/attribute/standard/DateTimeAtCompleted.lo
 	-rm -f javax/print/attribute/standard/DateTimeAtCreation.$(OBJEXT)
@@ -18142,20 +18328,30 @@ mostlyclean-compile:
 	-rm -f javax/print/attribute/standard/DateTimeAtProcessing.lo
 	-rm -f javax/print/attribute/standard/DocumentName.$(OBJEXT)
 	-rm -f javax/print/attribute/standard/DocumentName.lo
+	-rm -f javax/print/attribute/standard/Fidelity.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/Fidelity.lo
+	-rm -f javax/print/attribute/standard/Finishings.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/Finishings.lo
 	-rm -f javax/print/attribute/standard/JobHoldUntil.$(OBJEXT)
 	-rm -f javax/print/attribute/standard/JobHoldUntil.lo
 	-rm -f javax/print/attribute/standard/JobImpressions.$(OBJEXT)
 	-rm -f javax/print/attribute/standard/JobImpressions.lo
 	-rm -f javax/print/attribute/standard/JobImpressionsCompleted.$(OBJEXT)
 	-rm -f javax/print/attribute/standard/JobImpressionsCompleted.lo
+	-rm -f javax/print/attribute/standard/JobImpressionsSupported.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/JobImpressionsSupported.lo
 	-rm -f javax/print/attribute/standard/JobKOctets.$(OBJEXT)
 	-rm -f javax/print/attribute/standard/JobKOctets.lo
 	-rm -f javax/print/attribute/standard/JobKOctetsProcessed.$(OBJEXT)
 	-rm -f javax/print/attribute/standard/JobKOctetsProcessed.lo
+	-rm -f javax/print/attribute/standard/JobKOctetsSupported.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/JobKOctetsSupported.lo
 	-rm -f javax/print/attribute/standard/JobMediaSheets.$(OBJEXT)
 	-rm -f javax/print/attribute/standard/JobMediaSheets.lo
 	-rm -f javax/print/attribute/standard/JobMediaSheetsCompleted.$(OBJEXT)
 	-rm -f javax/print/attribute/standard/JobMediaSheetsCompleted.lo
+	-rm -f javax/print/attribute/standard/JobMediaSheetsSupported.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/JobMediaSheetsSupported.lo
 	-rm -f javax/print/attribute/standard/JobMessageFromOperator.$(OBJEXT)
 	-rm -f javax/print/attribute/standard/JobMessageFromOperator.lo
 	-rm -f javax/print/attribute/standard/JobName.$(OBJEXT)
@@ -18166,30 +18362,74 @@ mostlyclean-compile:
 	-rm -f javax/print/attribute/standard/JobPriority.lo
 	-rm -f javax/print/attribute/standard/JobPrioritySupported.$(OBJEXT)
 	-rm -f javax/print/attribute/standard/JobPrioritySupported.lo
+	-rm -f javax/print/attribute/standard/JobSheets.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/JobSheets.lo
+	-rm -f javax/print/attribute/standard/JobState.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/JobState.lo
+	-rm -f javax/print/attribute/standard/JobStateReason.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/JobStateReason.lo
+	-rm -f javax/print/attribute/standard/JobStateReasons.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/JobStateReasons.lo
+	-rm -f javax/print/attribute/standard/Media.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/Media.lo
+	-rm -f javax/print/attribute/standard/MediaSizeName.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/MediaSizeName.lo
+	-rm -f javax/print/attribute/standard/MultipleDocumentHandling.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/MultipleDocumentHandling.lo
 	-rm -f javax/print/attribute/standard/NumberOfDocuments.$(OBJEXT)
 	-rm -f javax/print/attribute/standard/NumberOfDocuments.lo
 	-rm -f javax/print/attribute/standard/NumberOfInterveningJobs.$(OBJEXT)
 	-rm -f javax/print/attribute/standard/NumberOfInterveningJobs.lo
 	-rm -f javax/print/attribute/standard/NumberUp.$(OBJEXT)
 	-rm -f javax/print/attribute/standard/NumberUp.lo
+	-rm -f javax/print/attribute/standard/NumberUpSupported.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/NumberUpSupported.lo
+	-rm -f javax/print/attribute/standard/OrientationRequested.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/OrientationRequested.lo
 	-rm -f javax/print/attribute/standard/OutputDeviceAssigned.$(OBJEXT)
 	-rm -f javax/print/attribute/standard/OutputDeviceAssigned.lo
+	-rm -f javax/print/attribute/standard/PDLOverrideSupported.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/PDLOverrideSupported.lo
+	-rm -f javax/print/attribute/standard/PageRanges.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/PageRanges.lo
 	-rm -f javax/print/attribute/standard/PagesPerMinute.$(OBJEXT)
 	-rm -f javax/print/attribute/standard/PagesPerMinute.lo
 	-rm -f javax/print/attribute/standard/PagesPerMinuteColor.$(OBJEXT)
 	-rm -f javax/print/attribute/standard/PagesPerMinuteColor.lo
+	-rm -f javax/print/attribute/standard/PresentationDirection.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/PresentationDirection.lo
+	-rm -f javax/print/attribute/standard/PrintQuality.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/PrintQuality.lo
 	-rm -f javax/print/attribute/standard/PrinterInfo.$(OBJEXT)
 	-rm -f javax/print/attribute/standard/PrinterInfo.lo
+	-rm -f javax/print/attribute/standard/PrinterIsAcceptingJobs.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/PrinterIsAcceptingJobs.lo
 	-rm -f javax/print/attribute/standard/PrinterLocation.$(OBJEXT)
 	-rm -f javax/print/attribute/standard/PrinterLocation.lo
 	-rm -f javax/print/attribute/standard/PrinterMakeAndModel.$(OBJEXT)
 	-rm -f javax/print/attribute/standard/PrinterMakeAndModel.lo
 	-rm -f javax/print/attribute/standard/PrinterMessageFromOperator.$(OBJEXT)
 	-rm -f javax/print/attribute/standard/PrinterMessageFromOperator.lo
+	-rm -f javax/print/attribute/standard/PrinterMoreInfo.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/PrinterMoreInfo.lo
+	-rm -f javax/print/attribute/standard/PrinterMoreInfoManufacturer.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/PrinterMoreInfoManufacturer.lo
 	-rm -f javax/print/attribute/standard/PrinterName.$(OBJEXT)
 	-rm -f javax/print/attribute/standard/PrinterName.lo
+	-rm -f javax/print/attribute/standard/PrinterResolution.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/PrinterResolution.lo
+	-rm -f javax/print/attribute/standard/PrinterState.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/PrinterState.lo
+	-rm -f javax/print/attribute/standard/PrinterStateReason.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/PrinterStateReason.lo
+	-rm -f javax/print/attribute/standard/PrinterStateReasons.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/PrinterStateReasons.lo
+	-rm -f javax/print/attribute/standard/PrinterURI.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/PrinterURI.lo
 	-rm -f javax/print/attribute/standard/QueuedJobCount.$(OBJEXT)
 	-rm -f javax/print/attribute/standard/QueuedJobCount.lo
+	-rm -f javax/print/attribute/standard/ReferenceUriSchemesSupported.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/ReferenceUriSchemesSupported.lo
 	-rm -f javax/print/attribute/standard/RequestingUserName.$(OBJEXT)
 	-rm -f javax/print/attribute/standard/RequestingUserName.lo
 	-rm -f javax/print/attribute/standard/Severity.$(OBJEXT)
@@ -21237,35 +21477,65 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/$(DEPDIR)/TextSyntax.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/$(DEPDIR)/URISyntax.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/$(DEPDIR)/UnmodifiableSetException.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/ColorSupported.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/Compression.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/Copies.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/CopiesSupported.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/DateTimeAtCompleted.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/DateTimeAtCreation.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/DateTimeAtProcessing.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/DocumentName.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/Fidelity.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/Finishings.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/JobHoldUntil.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/JobImpressions.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/JobImpressionsCompleted.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/JobImpressionsSupported.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/JobKOctets.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/JobKOctetsProcessed.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/JobKOctetsSupported.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/JobMediaSheets.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/JobMediaSheetsCompleted.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/JobMediaSheetsSupported.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/JobMessageFromOperator.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/JobName.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/JobOriginatingUserName.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/JobPriority.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/JobPrioritySupported.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/JobSheets.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/JobState.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/JobStateReason.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/JobStateReasons.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/Media.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/MediaSizeName.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/MultipleDocumentHandling.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/NumberOfDocuments.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/NumberOfInterveningJobs.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/NumberUp.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/NumberUpSupported.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/OrientationRequested.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/OutputDeviceAssigned.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/PDLOverrideSupported.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/PageRanges.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/PagesPerMinute.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/PagesPerMinuteColor.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/PresentationDirection.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/PrintQuality.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/PrinterInfo.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/PrinterIsAcceptingJobs.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/PrinterLocation.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/PrinterMakeAndModel.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/PrinterMessageFromOperator.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/PrinterMoreInfo.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/PrinterMoreInfoManufacturer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/PrinterName.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/PrinterResolution.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/PrinterState.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/PrinterStateReason.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/PrinterStateReasons.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/PrinterURI.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/QueuedJobCount.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/ReferenceUriSchemesSupported.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/RequestingUserName.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/Severity.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/SheetCollate.Plo@am__quote@

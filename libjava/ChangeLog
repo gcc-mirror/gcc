@@ -3,6 +3,11 @@
 	* Makefile.am: Added most of javax.print again.
 	* Makefile.in: Regenerated.
 
+2004-11-25  Michael Koch  <konqueror@gmx.de>
+
+	* Makefile.am: Added most of javax.print again.
+	* Makefile.in: Regenerated.
+
 2004-11-24  Tom Tromey  <tromey@redhat.com>
 
 	* Merged gcj-abi-2-dev-branch to trunk.
