@@ -1,3 +1,10 @@
+2002-12-19  Andrew Haley  <aph@redhat.com>
+
+	* java/util/natResourceBundle.cc: Include
+	ArrayIndexOutOfBoundsException.h.
+	(getCallingClassLoader): Don't put upper bound on stack search.
+	Catch ArrayIndexOutOfBoundsException.
+
 2002-12-19  Tom Tromey  <tromey@redhat.com>
 
 	* libtool-version: Increased `current'.
