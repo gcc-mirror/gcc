@@ -136,7 +136,7 @@ darwin_pragma_unused (pfile)
       tok = c_lex (&decl);
       if (tok == CPP_NAME && decl)
 	{
-	  tree local = IDENTIFIER_LOCAL_VALUE (decl);
+	  tree local = lookup_name (decl);
 	  if (local && (TREE_CODE (local) == PARM_DECL
 			|| TREE_CODE (local) == VAR_DECL))
 	    TREE_USED (local) = 1;
