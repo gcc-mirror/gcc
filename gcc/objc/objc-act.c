@@ -1,5 +1,5 @@
 /* Implement classes and message passing for Objective C.
-   Copyright (C) 1992, 1993, 1994, 1995, 1997, 1998, 1999, 2000, 2001
+   Copyright (C) 1992, 1993, 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2002
    Free Software Foundation, Inc.
    Contributed by Steve Naroff.
 
@@ -2951,6 +2951,9 @@ hack_method_prototype (nst_methods, tmp_decl)
   /* Usually called from store_parm_decls -> init_function_start.  */
 
   DECL_ARGUMENTS (tmp_decl) = TREE_PURPOSE (parms);
+
+  if (current_function_decl)
+    abort ();
   current_function_decl = tmp_decl;
 
   {
@@ -2974,6 +2977,7 @@ hack_method_prototype (nst_methods, tmp_decl)
   /* install return type */
   TREE_TYPE (TREE_TYPE (tmp_decl)) = groktypename (TREE_TYPE (nst_methods));
 
+  current_function_decl = NULL;
 }
 
 static void
