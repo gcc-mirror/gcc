@@ -1,3 +1,10 @@
+2003-03-28  Kazu Hirata  <kazu@cs.umass.edu>,
+	    Dhananjay Deshpande  <dhananjayd@kpit.com>
+
+	PR target/10205
+	* config/h8300/h8300.c (h8300_initial_elimination_offset):
+	Correct the offset computation when TARGET_NORMAL.
+
 2003-03-28  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/10067
