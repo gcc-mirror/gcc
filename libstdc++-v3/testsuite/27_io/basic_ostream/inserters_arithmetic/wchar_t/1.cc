@@ -30,7 +30,7 @@
 
 using namespace std;
 
-#ifndef DEBUG_ASSERT
+#ifndef _GLIBCXX_ASSERT
 #  define TEST_NUMPUT_VERBOSE 1
 #endif
 

@@ -66,10 +66,6 @@ bool test01(void)
   catch(...) {
     VERIFY( false );
   }
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
   return test;
 }
 

@@ -56,11 +56,6 @@ bool test02() {
   VERIFY( n == 20000 );
   char c = is.peek();
   VERIFY( c == 65 );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
- 
   return test;
 }
 

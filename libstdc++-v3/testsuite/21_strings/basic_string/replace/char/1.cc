@@ -73,10 +73,6 @@ bool test01(void)
 	    std::find(x.rbegin(), x.rend(), 'l').base(), ar, 
 	    ar + sizeof(ar) / sizeof(ar[0]));
   VERIFY( x == "jeHelloo" );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
   return test;
 }
 

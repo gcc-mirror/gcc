@@ -1,6 +1,6 @@
 // 1999-06-08 bkoz
 
-// Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -73,11 +73,6 @@ bool test01(void)
   catch(...) {
     VERIFY( false );
   }
-  
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
   return test;
 }
 
@@ -109,11 +104,7 @@ bool test02(void)
   }
 
   VERIFY( z1.to_ulong() == 0 );
-  VERIFY( ( z1.to_string<char,char_traits<char>,allocator<char> >().empty() ) );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
+  VERIFY( (z1.to_string<char,char_traits<char>,allocator<char> >().empty() ));
   return test;
 }
 

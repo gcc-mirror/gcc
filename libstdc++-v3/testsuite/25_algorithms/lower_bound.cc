@@ -1,4 +1,5 @@
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// { dg-do compile }
+// Copyright (C) 2000, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,18 +29,4 @@ bool operator< (const foo&, const foo&) { return true; };
 void bar(foo* a, foo* b, foo& x)
 {
   foo* c = std::lower_bound(a, b, x);
-}
-
-void test01()
-{
-  bool test = true;
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
-}
-
-int main()
-{
-  return 0;
 }

@@ -56,10 +56,6 @@ bool test03()
   VERIFY( pos == 0 );
   pos = z.find_last_not_of(L"Xa");
   VERIFY( pos == 1 );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
   return test;
 }
 int main()

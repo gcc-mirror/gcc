@@ -58,10 +58,6 @@ bool test09()
    test = f1 == 2456;
    VERIFY( f2 == 0.00567 );
    VERIFY( c == '-' );
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
- 
   return test;
 }
 

@@ -1,6 +1,6 @@
 // 2001-04-30  Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -106,11 +106,6 @@ bool test02(void)
   tmp = ostrs00.str();
   VERIFY ( tmp != str01 );
   VERIFY ( tmp != str02 );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
-
   return test;
 }
 

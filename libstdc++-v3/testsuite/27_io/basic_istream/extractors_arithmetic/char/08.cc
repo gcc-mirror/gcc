@@ -79,11 +79,6 @@ void test08()
   is >> h2; 
   VERIFY( h2 == 2212322 );
   VERIFY( static_cast<bool>(is.rdstate() & std::ios_base::eofbit) );
-
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
 }
 
 int main()

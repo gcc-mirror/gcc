@@ -1,3 +1,78 @@
+2003-07-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/testsuite_hooks.h: Remove list include.
+	(func_callback): Define as unique type, not std::list.
+	Change DEBUG_ASSERT to _GLIBCXX_ASSERT.
+	* testsuite/libstdc++-v3.dg/dg.exp: Same.
+	* testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-init): Same.
+	* testsuite/23_containers/bitset_ctor.cc: 
+	* testsuite/17_intro/header_ciso646.cc: Remove DEBUG_ASSERT.
+	* testsuite/18_support/numeric_limits.cc: Same.
+	* testsuite/21_strings/basic_string/append/char/1.cc: Same.
+	* testsuite/21_strings/basic_string/append/wchar_t/1.cc: Same.
+	* testsuite/21_strings/basic_string/compare/char/1.cc: Same.
+	* testsuite/21_strings/basic_string/compare/wchar_t/1.cc: Same.
+	* testsuite/21_strings/basic_string/element_access/char/1.cc: Same.
+	* testsuite/21_strings/basic_string/element_access/char/2.cc: Same.
+	* testsuite/21_strings/basic_string/element_access/char/3.cc: Same.
+	* testsuite/21_strings/basic_string/element_access/wchar_t/1.cc: Same.
+	* testsuite/21_strings/basic_string/element_access/wchar_t/2.cc: Same.
+	* testsuite/21_strings/basic_string/element_access/wchar_t/3.cc: Same.
+	* testsuite/21_strings/basic_string/find/char/1.cc: Same.
+	* testsuite/21_strings/basic_string/find/char/2.cc: Same.
+	* testsuite/21_strings/basic_string/find/char/3.cc: Same.
+	* testsuite/21_strings/basic_string/find/wchar_t/1.cc: Same.
+	* testsuite/21_strings/basic_string/find/wchar_t/2.cc: Same.
+	* testsuite/21_strings/basic_string/find/wchar_t/3.cc: Same.
+	* testsuite/21_strings/basic_string/insert/char/1.cc: Same.
+	* testsuite/21_strings/basic_string/insert/char/2.cc: Same.
+	* testsuite/21_strings/basic_string/insert/wchar_t/1.cc: Same.
+	* testsuite/21_strings/basic_string/insert/wchar_t/2.cc: Same.
+	* testsuite/21_strings/basic_string/inserters_extractors/char/1.cc: 
+	* testsuite/21_strings/basic_string/inserters_extractors/char/4.cc: 
+	* testsuite/21_strings/basic_string/inserters_extractors/char/5.cc: 
+	* testsuite/21_strings/basic_string/inserters_extractors/char/6.cc: 
+	* testsuite/21_strings/basic_string/inserters_extractors/char/7.cc: 
+	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/1.cc: 
+	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/4.cc: 
+	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/5.cc: 
+	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/6.cc: 
+	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/7.cc: 
+	* testsuite/21_strings/basic_string/operators/char/1.cc: Same.
+	* testsuite/21_strings/basic_string/operators/char/2.cc: Same.
+	* testsuite/21_strings/basic_string/operators/wchar_t/1.cc: Same.
+	* testsuite/21_strings/basic_string/operators/wchar_t/2.cc: Same.
+	* testsuite/21_strings/basic_string/replace/char/1.cc: Same.
+	* testsuite/21_strings/basic_string/replace/wchar_t/1.cc: Same.
+	* testsuite/21_strings/basic_string/rfind/char/1.cc: Same.
+	* testsuite/21_strings/basic_string/rfind/char/2.cc: Same.
+	* testsuite/21_strings/basic_string/rfind/char/3.cc: Same.
+	* testsuite/21_strings/basic_string/rfind/wchar_t/1.cc: Same.
+	* testsuite/21_strings/basic_string/rfind/wchar_t/2.cc: Same.
+	* testsuite/21_strings/basic_string/rfind/wchar_t/3.cc: Same.
+	* testsuite/21_strings/basic_string/substr/char/1.cc: Same.
+	* testsuite/21_strings/basic_string/substr/wchar_t/1.cc: Same.
+	* testsuite/23_containers/bitset_ctor.cc: Same.
+	* testsuite/23_containers/bitset_shift.cc: Same.
+	* testsuite/23_containers/vector_ctor.cc: Same.
+	* testsuite/23_containers/vector_element_access.cc: Same.
+	* testsuite/24_iterators/istreambuf_iterator.cc: Same.
+	* testsuite/24_iterators/iterator.cc: Same.
+	* testsuite/24_iterators/ostreambuf_iterator.cc: Same.
+	* testsuite/25_algorithms/lower_bound.cc: Same.
+	* testsuite/26_numerics/complex_inserters_extractors.cc: Same.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/01.cc: Same.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/02.cc: Same.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/03.cc: Same.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/06.cc: Same.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/07.cc: Same.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/08.cc: Same.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/09.cc: Same.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/10.cc: Same.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/1.cc: Same.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/wchar_t/1.cc: 
+        Same.
+	
 2003-07-28  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/doxygen/user.cfg.in, docs/html/abi.txt, docs/html/debug.html,

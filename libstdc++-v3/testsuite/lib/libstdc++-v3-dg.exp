@@ -107,7 +107,7 @@ proc libstdc++-v3-init { args } {
             return "untested"
         }
       set cxx [transform "g++"]
-      set cxxflags "-ggdb3 -DDEBUG_ASSERT"
+      set cxxflags "-ggdb3 -D_GLIBCXX_ASSERT"
       set includes "-I./"
     } else {
         # If we find a testsuite_flags file, we're testing in the build dir.
@@ -118,7 +118,7 @@ proc libstdc++-v3-init { args } {
             set includes [exec sh $flags_file --build-includes]
         } else {
             set cxx [transform "g++"]
-            set cxxflags "-ggdb3 -DDEBUG_ASSERT"
+            set cxxflags "-ggdb3 -D_GLIBCXX_ASSERT"
             set includes "-I${srcdir}"
         }
     }

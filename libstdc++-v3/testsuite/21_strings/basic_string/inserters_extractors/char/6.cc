@@ -52,10 +52,6 @@ void test06(void)
   size_type i06 = str02.capacity();
   VERIFY( i05 == i03 );
   VERIFY( i06 <= i04 );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
 }
 
 int main()

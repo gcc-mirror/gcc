@@ -119,11 +119,6 @@ bool test01() {
   ss_01 >> pi;
   std::printf ("%x %x\n", pi, po);
   VERIFY( po == pi );
-  
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
- 
   return test;
 }
 

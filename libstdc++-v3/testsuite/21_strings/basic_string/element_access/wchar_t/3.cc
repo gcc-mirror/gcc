@@ -76,10 +76,6 @@ bool test02(void)
   std::wstring str13 = str12;
   *p2 = L'e';
   VERIFY( str12 != str13 );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
   return test;
 }
 

@@ -2,7 +2,7 @@
 // 24.3.1 Iterator traits
 // (basic_string and vector implementations)
 //
-// Copyright (C) 1999  Philip Martin
+// Copyright (C) 1999, 2003 Free Software Foundation, Inc.
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 2 of the License, or 
@@ -603,9 +603,6 @@ main(int argc, char **argv)
 
    failures += test6642();
 
-#ifdef DEBUG_ASSERT
-   assert (failures == 0);
-#endif
-
+   VERIFY(failures == 0);
    return 0;
 }

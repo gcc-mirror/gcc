@@ -155,8 +155,9 @@ namespace __gnu_test
     if (res != NULL)
       {
 	string preLC_ALL = res;
-	for (func_callback::const_iterator i = l.begin(); i != l.end(); ++i)
-	  (*i)();
+	const func_callback::test_type* tests = l.tests();
+	for (int i = 0; i < l.size(); ++i)
+	  (*tests[i])();
 	string postLC_ALL= setlocale(LC_ALL, NULL);
 	VERIFY( preLC_ALL == postLC_ALL );
       }
@@ -180,8 +181,9 @@ namespace __gnu_test
     const char* oldENV = getenv(env);
     if (!setenv(env, name, 1))
       {
-	for (func_callback::const_iterator i = l.begin(); i != l.end(); ++i)
-	  (*i)();
+	const func_callback::test_type* tests = l.tests();
+	for (int i = 0; i < l.size(); ++i)
+	  (*tests[i])();
 	setenv(env, oldENV ? oldENV : "", 1);
       }
     else

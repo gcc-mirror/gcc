@@ -102,9 +102,7 @@ bool test01(void)
   VERIFY( str03[0] == L'x' );
 
   // need to also test for const begin/const end
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
+  VERIFY(test);
   return test;
 }
 

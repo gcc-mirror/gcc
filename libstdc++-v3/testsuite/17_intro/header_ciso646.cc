@@ -1,6 +1,6 @@
 // 1999-05-20 bkoz
 
-// Copyright (C) 1999 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -86,10 +86,6 @@ bool test01()
 
 #endif
 
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
-
   return test;
 }
 
@@ -109,10 +105,6 @@ bool test02()
 
   VERIFY( (arg1 && arg2) == (arg1 and arg2) );
   VERIFY( (arg1 && int1) == (arg1 and int1) );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
 
   return test;
 }

@@ -1,6 +1,6 @@
 // 2000-01-15  Anders Widell  <awl@hem.passagen.se>
 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -99,10 +99,6 @@ test01() {
   VERIFY( do_test<511>() );
   VERIFY( do_test<513>() );
   VERIFY( do_test<997>() );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
   return test;
 }
 
@@ -114,10 +110,6 @@ test02()
   std::bitset<66>  b;
   b <<= 400;
   VERIFY( b.count() == 0 );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
   return test;
 }
 

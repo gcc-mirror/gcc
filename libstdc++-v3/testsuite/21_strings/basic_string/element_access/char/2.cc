@@ -102,9 +102,6 @@ bool test01(void)
   VERIFY( str03[0] == 'x' );
 
   // need to also test for const begin/const end
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
   return test;
 }
 

@@ -73,10 +73,6 @@ int test02(void)
   str01.insert(0, str01.c_str());
   VERIFY( str01 == L"Everything was beautiful, and nothing hurt"
 	  L"Everything was beautiful, and nothing hurt");
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
   return test;
 }
 

@@ -44,10 +44,6 @@ void test07(void)
 
   VERIFY( i < 3 );
   VERIFY( static_cast<bool>(iss.rdstate() & std::ios_base::failbit) );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
 }
 
 int main()
