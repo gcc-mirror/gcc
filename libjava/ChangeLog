@@ -1,3 +1,10 @@
+2002-03-25  Andrew Haley <aph@cambridge.redhat.com>, Hans Boehm <Hans_Boehm@hp.com>
+
+        * include/dwarf2-signal.h (MAKE_THROW_FRAME): Add for IA-64.
+        (INIT_SEGV, INIT_FPE): Add versions that use __libc_sigaction
+        instead of syscall on IA-64.
+        Add FIXME comment.
+
 2002-03-27  Anthony Green  <green@redhat.com>
 
 	* libgcj.spec.in: Add CHECKREFSPEC.
