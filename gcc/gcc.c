@@ -175,8 +175,8 @@ extern char *getenv ();
 extern int errno;
 #endif
 
-extern int sys_nerr;
 #ifndef HAVE_STRERROR
+extern int sys_nerr;
 #if defined(bsd4_4)
 extern const char *const sys_errlist[];
 #else
@@ -1023,7 +1023,7 @@ my_strerror(e)
 
   static char buffer[30];
   if (!e)
-    return "";
+    return "cannot access";
 
   if (e > 0 && e < sys_nerr)
     return sys_errlist[e];
@@ -4722,40 +4722,22 @@ static void
 pfatal_with_name (name)
      char *name;
 {
-  char *s;
-
-  if (errno < sys_nerr)
-    s = concat ("%s: ", my_strerror( errno ));
-  else
-    s = "cannot open `%s'";
-  fatal (s, name);
+  fatal ("%s: %s", name, my_strerror (errno));
 }
 
 static void
 perror_with_name (name)
      char *name;
 {
-  char *s;
-
-  if (errno < sys_nerr)
-    s = concat ("%s: ", my_strerror( errno ));
-  else
-    s = "cannot open `%s'";
-  error (s, name);
+  error ("%s: %s", name, my_strerror (errno));
 }
 
 static void
 perror_exec (name)
      char *name;
 {
-  char *s;
-
-  if (errno < sys_nerr)
-    s = concat ("installation problem, cannot exec `%s': ",
-		my_strerror (errno));
-  else
-    s = "installation problem, cannot exec `%s'";
-  error (s, name);
+  error ("installation problem, cannot exec `%s': %s",
+	 name, my_strerror (errno));
 }
 
 /* More 'friendly' abort that prints the line and file.
