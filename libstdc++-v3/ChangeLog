@@ -1,3 +1,9 @@
+2004-01-15  Stefan Olsson  <stefan@snon.net>
+
+	* include/ext/mt_allocator.h: Reuse thread id's as soon as
+	possible by changing the behaviour of thread_freelist to do
+	push_front when threads die instead of push_back.
+
 2004-01-14  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.h (struct __numpunct_cache):
