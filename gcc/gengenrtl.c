@@ -324,7 +324,7 @@ gendef (format)
 static void
 genlegend ()
 {
-  printf ("/* Generated automaticaly by the program `gengenrtl'\n");
+  printf ("/* Generated automatically by the program `gengenrtl'\n");
   printf ("   from the RTL description file `rtl.def' */\n\n");
 }
 
