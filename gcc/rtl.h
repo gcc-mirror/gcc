@@ -99,7 +99,8 @@ typedef struct rtx_def
      if it is deleted.
      1 in a REG expression if corresponds to a variable declared by the user.
      0 for an internally generated temporary.
-     In a SYMBOL_REF, this flag is used for machine-specific purposes.  */
+     In a SYMBOL_REF, this flag is used for machine-specific purposes.
+     In a LABEL_REF or in a REG_LABEL note, this is LABEL_REF_NONLOCAL_P.  */
   unsigned int volatil : 1;
   /* 1 in a MEM referring to a field of a structure (not a union!).
      0 if the MEM was a variable or the result of a * operator in C;
@@ -483,6 +484,7 @@ extern char *note_insn_name[];
 #define LABEL_OUTSIDE_LOOP_P(RTX) ((RTX)->in_struct)
 
 /* For a LABEL_REF, 1 means it is for a nonlocal label.  */
+/* Likewise in an EXPR_LIST for a REG_LABEL note.  */
 #define LABEL_REF_NONLOCAL_P(RTX) ((RTX)->volatil)
 
 /* For a CODE_LABEL, 1 means always consider this label to be needed.  */
