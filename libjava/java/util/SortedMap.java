@@ -86,6 +86,7 @@ public interface SortedMap extends Map
    * Returns the first (lowest sorted) key in the map.
    *
    * @return the first key
+   * @throws NoSuchElementException if this map is empty.
    */
   Object firstKey();
 
@@ -115,6 +116,7 @@ public interface SortedMap extends Map
    * Returns the last (highest sorted) key in the map.
    *
    * @return the last key
+   * @throws NoSuchElementException if this map is empty.
    */
   Object lastKey();
 

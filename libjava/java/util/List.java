@@ -97,6 +97,8 @@ public interface List extends Collection
    *         type
    * @throws IllegalArgumentException if o cannot be added to this list for
    *         some other reason
+   * @throws NullPointerException if o is null and this list doesn't support
+   *         the addition of null values.
    */
   void add(int index, Object o);
 
@@ -113,6 +115,8 @@ public interface List extends Collection
    *         type
    * @throws IllegalArgumentException if o cannot be added to this list for
    *         some other reason
+   * @throws NullPointerException if o is null and this list doesn't support
+   *         the addition of null values.
    */
   boolean add(Object o);
 
@@ -134,6 +138,8 @@ public interface List extends Collection
    *         list due to its type
    * @throws IllegalArgumentException if some element of c cannot be added
    *         to this list for some other reason
+   * @throws NullPointerException if some element of c is null and this list
+   *         doesn't support the addition of null values.
    * @throws NullPointerException if the specified collection is null
    * @see #add(int, Object)
    */
@@ -155,6 +161,8 @@ public interface List extends Collection
    * @throws IllegalArgumentException if some element of c cannot be added
    *         to this list for some other reason
    * @throws NullPointerException if the specified collection is null
+   * @throws NullPointerException if some element of c is null and this list
+   *         doesn't support the addition of null values.
    * @see #add(Object)
    */
   boolean addAll(Collection c);
@@ -175,6 +183,10 @@ public interface List extends Collection
    *
    * @param o the element to look for
    * @return true if this list contains the element
+   * @throws ClassCastException if the type of o is not a valid type
+   *         for this list.
+   * @throws NullPointerException if o is null and the list doesn't
+   *         support null values.
    */
   boolean contains(Object o);
 
@@ -184,6 +196,10 @@ public interface List extends Collection
    * @param c the collection to test for
    * @return true if for every element o in c, contains(o) would return true
    * @throws NullPointerException if the collection is null
+   * @throws ClassCastException if the type of any element in c is not a valid
+   *         type for this list.
+   * @throws NullPointerException if some element of c is null and this
+   *         list does not support null values.
    * @see #contains(Object)
    */
   boolean containsAll(Collection c);
@@ -240,7 +256,11 @@ while (i.hasNext())
    *
    * @param o the object to search for
    * @return the least integer n such that <code>o == null ? get(n) == null :
-   *         o.equals(get(n))</code>, or -1 if there is no such index
+   *         o.equals(get(n))</code>, or -1 if there is no such index.
+   * @throws ClassCastException if the type of o is not a valid
+   *         type for this list.
+   * @throws NullPointerException if o is null and this
+   *         list does not support null values.
    */
   int indexOf(Object o);
 
@@ -263,7 +283,11 @@ while (i.hasNext())
    * list.
    *
    * @return the greatest integer n such that <code>o == null ? get(n) == null
-   *         : o.equals(get(n))</code>, or -1 if there is no such index
+   *         : o.equals(get(n))</code>, or -1 if there is no such index.
+   * @throws ClassCastException if the type of o is not a valid
+   *         type for this list.
+   * @throws NullPointerException if o is null and this
+   *         list does not support null values.
    */
   int lastIndexOf(Object o);
 
@@ -310,6 +334,10 @@ while (i.hasNext())
    *         the list contained at least one occurrence of o
    * @throws UnsupportedOperationException if this list does not support the
    *         remove operation
+   * @throws ClassCastException if the type of o is not a valid
+   *         type for this list.
+   * @throws NullPointerException if o is null and this
+   *         list does not support removing null values.
    */
   boolean remove(Object o);
 
@@ -322,6 +350,10 @@ while (i.hasNext())
    * @throws UnsupportedOperationException if this list does not support the
    *         removeAll operation
    * @throws NullPointerException if the collection is null
+   * @throws ClassCastException if the type of any element in c is not a valid
+   *         type for this list.
+   * @throws NullPointerException if some element of c is null and this
+   *         list does not support removing null values.
    * @see #remove(Object)
    * @see #contains(Object)
    */
@@ -337,6 +369,10 @@ while (i.hasNext())
    * @throws UnsupportedOperationException if this list does not support the
    *         retainAll operation
    * @throws NullPointerException if the collection is null
+   * @throws ClassCastException if the type of any element in c is not a valid
+   *         type for this list.
+   * @throws NullPointerException if some element of c is null and this
+   *         list does not support retaining null values.
    * @see #remove(Object)
    * @see #contains(Object)
    */
@@ -355,6 +391,8 @@ while (i.hasNext())
    *         type
    * @throws IllegalArgumentException if o cannot be added to this list for
    *         some other reason
+   * @throws NullPointerException if o is null and this
+   *         list does not support null values.
    */
   Object set(int index, Object o);
 
@@ -381,8 +419,6 @@ while (i.hasNext())
    * @return a List backed by a subsection of this list
    * @throws IndexOutOfBoundsException if fromIndex &lt; 0
    *         || toIndex &gt; size() || fromIndex &gt; toIndex
-   * @throws IllegalArgumentException if fromIndex &gt; toIndex (according to
-   *         AbstractList). Don't you love Sun's inconsistent specifications?
    */
   List subList(int fromIndex, int toIndex);
 

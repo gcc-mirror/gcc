@@ -118,6 +118,10 @@ public interface Set extends Collection
    *
    * @param o the object to look for
    * @return true if it is found in the set
+   * @throws ClassCastException if the type of o is not a valid type
+   *         for this set.
+   * @throws NullPointerException if o is null and this set doesn't
+   *         support null values.
    */
   boolean contains(Object o);
 
@@ -129,6 +133,10 @@ public interface Set extends Collection
    * @param c the collection to check membership in
    * @return true if all elements in this set are in c
    * @throws NullPointerException if c is null
+   * @throws ClassCastException if the type of any element in c is not
+   *         a valid type for this set.
+   * @throws NullPointerException if some element of c is null and this
+   *         set doesn't support null values.
    * @see #contains(Object)
    */
   boolean containsAll(Collection c);
@@ -148,6 +156,7 @@ public interface Set extends Collection
    * equals, this is the sum of the hashcode of all elements in the set.
    *
    * @return the sum of the hashcodes of all set elements
+   * @see #equals(Object)
    */
   int hashCode();
 
@@ -174,6 +183,10 @@ public interface Set extends Collection
    * @param o the object to remove
    * @return true if the set changed (an object was removed)
    * @throws UnsupportedOperationException if this operation is not allowed
+   * @throws ClassCastException if the type of o is not a valid type
+   *         for this set.
+   * @throws NullPointerException if o is null and this set doesn't allow
+   *         the removal of a null value.
    */
   boolean remove(Object o);
 
@@ -186,6 +199,10 @@ public interface Set extends Collection
    * @return true if this set changed as a result
    * @throws UnsupportedOperationException if this operation is not allowed
    * @throws NullPointerException if c is null
+   * @throws ClassCastException if the type of any element in c is not
+   *         a valid type for this set.
+   * @throws NullPointerException if some element of c is null and this
+   *         set doesn't support removing null values.
    * @see #remove(Object)
    */
   boolean removeAll(Collection c);
@@ -199,6 +216,10 @@ public interface Set extends Collection
    * @return true if this set was modified
    * @throws UnsupportedOperationException if this operation is not allowed
    * @throws NullPointerException if c is null
+   * @throws ClassCastException if the type of any element in c is not
+   *         a valid type for this set.
+   * @throws NullPointerException if some element of c is null and this
+   *         set doesn't support retaining null values.
    * @see #remove(Object)
    */
   boolean retainAll(Collection c);
