@@ -308,6 +308,9 @@ case $machine in
 	# But here we need a little extra magic.
 	tmake_file="t-slibgcc-elf-ver t-linux t-gnu"
 	case $machine in
+	alpha*)
+		tm_file="${cpu_type}/${cpu_type}.h alpha/elf.h alpha/linux.h alpha/linux-elf.h gnu.h ${tm_file}"
+		;;
 	i[34567]86-*-*)
 		tm_file="${cpu_type}/${cpu_type}.h i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h linux.h i386/linux.h gnu.h ${tm_file}"
 		;;
@@ -484,6 +487,10 @@ alpha*-*-linux*)
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
 	fi
+	;;
+alpha*-*-gnu*)
+	target_cpu_default="MASK_GAS"
+	tmake_file="${tmake_file} alpha/t-crtfm alpha/t-alpha alpha/t-ieee"
 	;;
 alpha*-*-freebsd*)
 	tm_file="${tm_file} ${fbsd_tm_file} alpha/elf.h alpha/freebsd.h"
