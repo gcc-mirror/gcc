@@ -1,3 +1,7 @@
+2002-11-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (two anonymous test insns): New.
+
 Fri Nov  8 11:20:19 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* jump.c (mark_jump_label): Handle subregs of label_refs.
