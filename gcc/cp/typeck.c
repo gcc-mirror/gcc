@@ -6523,7 +6523,7 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
   /* Simplify the RHS if possible.  */
   if (TREE_CODE (rhs) == CONST_DECL)
     rhs = DECL_INITIAL (rhs);
-  else if (TREE_READONLY_DECL_P (rhs))
+  else if (TREE_READONLY_DECL_P (rhs) && coder != ARRAY_TYPE)
     rhs = decl_constant_value (rhs);
 
   /* [expr.ass]
