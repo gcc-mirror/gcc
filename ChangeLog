@@ -1,3 +1,8 @@
+2002-06-18  Dave Brolley  <brolley@redhat.com>
+
+	* configure.in: Add support for frv.
+	* config.sub: Add support for frv.
+
 2002-06-18  Phil Edwards  <pme@gcc.gnu.org>
 
 	* configure:  Remove garbage from previous commit.
