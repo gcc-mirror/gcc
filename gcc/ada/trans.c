@@ -106,8 +106,8 @@ static GTY(()) tree gnu_except_ptr_stack;
 static GTY(()) tree gnu_return_label_stack;
 
 /* List of TREE_LIST nodes representing a stack of LOOP_STMT nodes.
-   TREE_VALUE of each entry is the corresponding LOOP_STMT.  */
-static GTY(()) tree gnu_loop_stmt_stack;
+   TREE_VALUE of each entry is the label of the corresponding LOOP_STMT.  */
+static GTY(()) tree gnu_loop_label_stack;
 
 /* List of TREE_LIST nodes containing pending elaborations lists.
    used to prevent the elaborations being reclaimed by GC.  */
@@ -2139,11 +2139,13 @@ gnat_to_gnu (Node_Id gnat_node)
 
 	TREE_TYPE (gnu_loop_stmt) = void_type_node;
 	TREE_SIDE_EFFECTS (gnu_loop_stmt) = 1;
+	LOOP_STMT_LABEL (gnu_loop_stmt) = create_artificial_label ();
 	annotate_with_node (gnu_loop_stmt, gnat_node);
 
-	/* Save this LOOP_STMT in a stack so that the corresponding
-	   N_Exit_Statement can find it.  */
-	push_stack (&gnu_loop_stmt_stack, NULL_TREE, gnu_loop_stmt);
+	/* Save the end label of this LOOP_STMT in a stack so that the
+	   corresponding N_Exit_Statement can find it.  */
+	push_stack (&gnu_loop_label_stack, NULL_TREE,
+		    LOOP_STMT_LABEL (gnu_loop_stmt));
 
 	/* Set the condition that under which the loop should continue.
 	   For "LOOP .... END LOOP;" the condition is always true.  */
@@ -2227,10 +2229,12 @@ gnat_to_gnu (Node_Id gnat_node)
 				gnat_iter_scheme);
 	  }
 
-	/* If the loop was named, have the name point to this loop.  In this
-	   case, the association is not a ..._DECL node, but this LOOP_STMT. */
+	/* If the loop was named, have the name point to this loop.  In this case,
+	   the association is not a ..._DECL node, but the end label from this
+	   LOOP_STMT. */
         if (Present (Identifier (gnat_node)))
-	  save_gnu_tree (Entity (Identifier (gnat_node)), gnu_loop_stmt, 1);
+	  save_gnu_tree (Entity (Identifier (gnat_node)),
+			 LOOP_STMT_LABEL (gnu_loop_stmt), 1);
 
         /* Make the loop body into its own block, so any allocated storage
            will be released every iteration.  This is needed for stack
@@ -2258,7 +2262,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	else
 	  gnu_result = gnu_loop_stmt;
 
-	pop_stack (&gnu_loop_stmt_stack);
+	pop_stack (&gnu_loop_label_stack);
       }
       break;
 
@@ -2281,7 +2285,7 @@ gnat_to_gnu (Node_Id gnat_node)
 		  ? gnat_to_gnu (Condition (gnat_node)) : NULL_TREE),
 		 (Present (Name (gnat_node))
 		  ? get_gnu_tree (Entity (Name (gnat_node)))
-		  : TREE_VALUE (gnu_loop_stmt_stack)));
+		  : TREE_VALUE (gnu_loop_label_stack)));
       break;
 
     case N_Return_Statement:
@@ -4025,7 +4029,7 @@ add_stmt (tree gnu_stmt)
 			   gnu_lhs, DECL_INITIAL (gnu_decl));
       DECL_INITIAL (gnu_decl) = 0;
 
-      SET_EXPR_LOCUS (gnu_assign_stmt, &DECL_SOURCE_LOCATION (gnu_decl));
+      annotate_with_locus (gnu_assign_stmt, DECL_SOURCE_LOCATION (gnu_decl));
       add_stmt (gnu_assign_stmt);
     }
 }
@@ -4254,20 +4258,44 @@ gnat_gimplify_stmt (tree *stmt_p)
       return GS_ALL_DONE;
 
     case DECL_STMT:
-      if (TREE_CODE (DECL_STMT_VAR (stmt)) == TYPE_DECL)
-	*stmt_p = gnat_gimplify_type_sizes (TREE_TYPE (DECL_STMT_VAR (stmt)));
-      else
-	*stmt_p = build_empty_stmt ();
-      return GS_ALL_DONE;
+      {
+	tree var = DECL_STMT_VAR (stmt);
+
+	if (TREE_CODE (var) == TYPE_DECL)
+	  *stmt_p = gnat_gimplify_type_sizes (TREE_TYPE (var));
+	else if (TREE_CODE (var) == VAR_DECL && !DECL_EXTERNAL (var)
+		 && !TREE_CONSTANT (DECL_SIZE_UNIT (var)))
+	  {
+	    tree pt_type = build_pointer_type (TREE_TYPE (var));
+	    tree size, pre = NULL_TREE, post = NULL_TREE;
+
+	    /* This is a variable-sized decl.  Simplify its size and mark it
+	       for deferred expansion.  Note that mudflap depends on the format
+	       of the emitted code: see mx_register_decls.  */
+	    *stmt_p = NULL_TREE;
+	    size = get_initialized_tmp_var (DECL_SIZE_UNIT (var), &pre, &post);
+	    DECL_DEFER_OUTPUT (var) = 1;
+	    append_to_statement_list (pre, stmt_p);
+	    append_to_statement_list
+	      (build_function_call_expr
+	       (implicit_built_in_decls[BUILT_IN_STACK_ALLOC],
+		tree_cons (NULL_TREE,
+			   build1 (ADDR_EXPR, pt_type, var),
+			   tree_cons (NULL_TREE, size, NULL_TREE))),
+	       stmt_p);
+	    append_to_statement_list (post, stmt_p);
+	  }
+	else
+	  *stmt_p = build_empty_stmt ();
+	return GS_ALL_DONE;
+      }
 
     case LOOP_STMT:
       {
 	tree gnu_start_label = create_artificial_label ();
-	tree gnu_end_label = create_artificial_label ();
+	tree gnu_end_label = LOOP_STMT_LABEL (stmt);
 
-	/* Save the end label for EXIT_STMT and set to emit the statements
-	   of the loop.  */
-	LOOP_STMT_LABEL (stmt) = gnu_end_label;
+	/* Set to emit the statements of the loop.  */
 	*stmt_p = NULL_TREE;
 
 	/* We first emit the start label and then a conditional jump to
@@ -4314,8 +4342,7 @@ gnat_gimplify_stmt (tree *stmt_p)
     case EXIT_STMT:
       /* Build a statement to jump to the corresponding end label, then
 	 see if it needs to be conditional.  */
-      *stmt_p = build1 (GOTO_EXPR, void_type_node,
-			LOOP_STMT_LABEL (EXIT_STMT_LOOP (stmt)));
+      *stmt_p = build1 (GOTO_EXPR, void_type_node, EXIT_STMT_LABEL (stmt));
       if (EXIT_STMT_COND (stmt))
 	*stmt_p = build (COND_EXPR, void_type_node,
 			 EXIT_STMT_COND (stmt), *stmt_p, alloc_stmt_list ());
@@ -5255,12 +5282,12 @@ assoc_to_constructor (Node_Id gnat_assoc, tree gnu_type)
    of the array component. It is needed for range checking. */
 
 static tree
-pos_to_constructor (Node_Id gnat_expr,
-                    tree gnu_array_type,
+pos_to_constructor (Node_Id gnat_expr, tree gnu_array_type,
                     Entity_Id gnat_component_type)
 {
-  tree gnu_expr;
   tree gnu_expr_list = NULL_TREE;
+  tree gnu_index = TYPE_MIN_VALUE (TYPE_DOMAIN (gnu_array_type));
+  tree gnu_expr;
 
   for ( ; Present (gnat_expr); gnat_expr = Next (gnat_expr))
     {
@@ -5285,8 +5312,12 @@ pos_to_constructor (Node_Id gnat_expr,
 	}
 
       gnu_expr_list
-	= tree_cons (NULL_TREE, convert (TREE_TYPE (gnu_array_type), gnu_expr),
+	= tree_cons (gnu_index, convert (TREE_TYPE (gnu_array_type), gnu_expr),
 		     gnu_expr_list);
+
+      gnu_index = fold (build2 (PLUS_EXPR, TREE_TYPE (gnu_index), gnu_index,
+				convert (TREE_TYPE (gnu_index),
+					 integer_one_node)));
     }
 
   return gnat_build_constructor (gnu_array_type, nreverse (gnu_expr_list));
@@ -5454,17 +5485,12 @@ gnat_stabilize_reference (tree ref, int force)
       break;
 
     case ARRAY_REF:
-      result = build (ARRAY_REF, type,
-		      gnat_stabilize_reference (TREE_OPERAND (ref, 0), force),
-		      gnat_stabilize_reference_1 (TREE_OPERAND (ref, 1),
-						  force));
-      break;
-
     case ARRAY_RANGE_REF:
-      result = build (ARRAY_RANGE_REF, type,
+      result = build (code, type,
 		      gnat_stabilize_reference (TREE_OPERAND (ref, 0), force),
 		      gnat_stabilize_reference_1 (TREE_OPERAND (ref, 1),
-						  force));
+						  force),
+		      NULL_TREE, NULL_TREE);
       break;
 
     case COMPOUND_EXPR:

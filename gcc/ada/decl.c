@@ -299,12 +299,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
   /* For cases when we are not defining (i.e., we are referencing from
      another compilation unit) Public entities, show we are at global level
-     for the purpose of computing sizes.  Don't do this for components or
+     for the purpose of computing scopes.  Don't do this for components or
      discriminants since the relevant test is whether or not the record is
-     being defined.  */
-  if (! definition && Is_Public (gnat_entity)
-      && ! Is_Statically_Allocated (gnat_entity)
-      && kind != E_Discriminant && kind != E_Component)
+     being defined.  But do this for Imported functions or procedures in
+     all cases.  */
+  if ((! definition && Is_Public (gnat_entity)
+       && ! Is_Statically_Allocated (gnat_entity)
+       && kind != E_Discriminant && kind != E_Component)
+      || (Is_Imported (gnat_entity)
+	  && (kind == E_Function || kind == E_Procedure)))
     force_global++, this_global = 1;
 
   /* Handle any attributes.  */
