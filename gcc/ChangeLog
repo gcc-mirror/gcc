@@ -1,3 +1,8 @@
+2000-12-21  Chandrakala Chavva  <cchavva@redhat.com>
+
+	* varasm.c (output_addressed_constants): Use language specific
+	expander on unknown nodes.
+
 2000-12-21  Graham Stott <grahams@redhat.com>
 
 	* combine.c (distribute_notes): Handle REG_NON_LOCAL_GOTO notes.
