@@ -565,7 +565,7 @@ strdup __argz_count __argz_stringify __argz_next])
    AM_LC_MESSAGES
    AM_WITH_NLS
 
-   if test "x$create_catalogs" == "xno"; then
+   if test "x$create_catalogs" = "xno"; then
      AC_MSG_WARN([No program for building catalogs found -> building disabled])
    fi
 
