@@ -5436,7 +5436,7 @@ write_const_num_delay_slots ()
   if (attr)
     {
       printf ("int\nconst_num_delay_slots (insn)\n");
-      printf ("     rtx *insn;\n");
+      printf ("     rtx insn;\n");
       printf ("{\n");
       printf ("  switch (recog_memoized (insn))\n");
       printf ("    {\n");
