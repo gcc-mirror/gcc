@@ -1,5 +1,5 @@
 /* Compilation switch flag definitions for GNU CC.
-   Copyright (C) 1987, 1988, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -334,6 +334,9 @@ extern int flag_verbose_asm;
 /* -fgnu-linker specifies use of the GNU linker for initializations.
    -fno-gnu-linker says that collect will be used.  */
 extern int flag_gnu_linker;
+
+/* Tag all structures with __attribute__(packed) */
+extern int flag_pack_struct;
 
 /* Other basic status info about current function.  */
 

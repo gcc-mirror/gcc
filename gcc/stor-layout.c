@@ -1,5 +1,5 @@
 /* C-compiler utilities for types and variables storage layout
-   Copyright (C) 1987, 1988, 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -22,6 +22,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include <stdio.h>
 
 #include "tree.h"
+#include "flags.h"
 #include "function.h"
 
 #define CEIL(x,y) (((x) + (y) - 1) / (y))
@@ -241,6 +242,8 @@ layout_decl (decl, known_align)
       DECL_BIT_FIELD_TYPE (decl) = DECL_BIT_FIELD (decl) ? type : 0;
       if (maximum_field_alignment != 0)
 	DECL_ALIGN (decl) = MIN (DECL_ALIGN (decl), maximum_field_alignment);
+      else if (flag_pack_struct)
+	DECL_ALIGN (decl) = MIN (DECL_ALIGN (decl), BITS_PER_UNIT);
     }
 
   if (DECL_BIT_FIELD (decl)
@@ -364,6 +367,8 @@ layout_record (rec)
 	      int type_align = TYPE_ALIGN (TREE_TYPE (field));
 	      if (maximum_field_alignment != 0)
 		type_align = MIN (type_align, maximum_field_alignment);
+	      else if (flag_pack_struct)
+		type_align = MIN (type_align, BITS_PER_UNIT);
 
 	      record_align = MAX (record_align, type_align);
 	    }
@@ -406,6 +411,7 @@ layout_record (rec)
 	  && !DECL_PACKED (field)
 	  /* If #pragma pack is in effect, turn off this feature.  */
 	  && maximum_field_alignment == 0
+	  && !flag_pack_struct
 	  && !integer_zerop (DECL_SIZE (field)))
 	{
 	  int type_align = TYPE_ALIGN (TREE_TYPE (field));
@@ -440,6 +446,8 @@ layout_record (rec)
 
 	  if (maximum_field_alignment != 0)
 	    type_align = MIN (type_align, maximum_field_alignment);
+	  else if (flag_pack_struct)
+	    type_align = MIN (type_align, BITS_PER_UNIT);
 
 	  /* A bit field may not span the unit of alignment of its type.
 	     Advance to next boundary if necessary.  */
