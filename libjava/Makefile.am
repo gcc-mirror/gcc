@@ -193,6 +193,8 @@ $(c_files): java/lang/fdlibm.h java/lang/ieeefp.h java/lang/mprec.h
 $(javao_files): %.lo: %.java
 	$(GCJCOMPILE) -o $@ $<
 
+$(javao_files): libgcj.zip
+
 ## ################################################################
 
 ##
