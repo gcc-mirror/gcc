@@ -42,6 +42,30 @@
 #pragma GCC system_header
 #include <string.h>
 
+// Get rid of those macros defined in <string.h> in lieu of real functions.
+#undef memcpy
+#undef memmove
+#undef strcpy
+#undef strncpy
+#undef strcat
+#undef strncat
+#undef memcmp
+#undef strcmp
+#undef strcoll
+#undef strncmp
+#undef strxfrm
+#undef memchr
+#undef strchr
+#undef strcspn
+#undef strpbrk
+#undef strrchr
+#undef strspn
+#undef strstr
+#undef strtok
+#undef memset
+#undef strerror
+#undef strlen
+
 namespace std 
 {
   extern "C" void* memcpy(void*, const void*, size_t); 

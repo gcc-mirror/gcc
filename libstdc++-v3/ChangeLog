@@ -1,3 +1,22 @@
+2001-02-05  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/c_std/bits/std_cerrno.h: Correct date format for copyright.
+	* include/c_std/bits/std_cctype.h: Same.
+	* include/c_std/bits/std_cassert.h: Same.
+	* include/c_std/bits/std_cstdarg.h: Same.
+	* include/c_std/bits/std_cstddef.h: Same.
+	
+	* include/c_std/bits/std_cstdio.h: Undefine all names brought into
+	namespace std.
+	* include/c_std/bits/std_ctime.h: Same.
+	* include/c_std/bits/std_clocale.h: Same.
+	* include/c_std/bits/std_cmath.h: Same.
+	* include/c_std/bits/std_csetjmp.h: Same.
+	* include/c_std/bits/std_csignal.h: Same.
+	* include/c_std/bits/std_cstring.h: Same.
+	* include/c_std/bits/std_cstdlib.h: Same.
+	* include/c_std/bits/std_cwchar.h: Same.
+	
 2001-02-05  Phil Edwards  <pme@sources.redhat.com>
 
 	* testsuite/27_io/ios_base_members_static.cc:  Swap order of tests.

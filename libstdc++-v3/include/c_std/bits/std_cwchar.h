@@ -46,6 +46,7 @@
 #include <wchar.h>
 #endif
 
+
 // Need to do a bit of trickery here with mbstate_t as char_traits
 // assumes it is in wchar.h, regardless of wchar_t specializations.
 #ifndef _GLIBCPP_HAVE_MBSTATE_T
@@ -64,7 +65,50 @@ namespace std
 }
 
 // Get rid of those macros defined in <wchar.h> in lieu of real functions.
+#undef vwprintf
+#undef vwscanf
+#undef wprintf
+#undef wscanf
+#undef getwc
 #undef getwchar
+#undef mbsinit
+#undef mbrlen
+#undef mbrtowc
+#undef mbsrtowcs
+#undef wcsrtombs
+#undef putwc
+#undef putwchar
+#undef ungetwc
+#undef wcrtomb
+#undef wcstod
+#undef wcstof
+#undef wcstol
+#undef wcstoul
+#undef wcscpy
+#undef wcsncpy
+#undef wcscat
+#undef wcsncat
+#undef wcscmp
+#undef wcscoll
+#undef wcsncmp
+#undef wcsxfrm
+#undef wcschr
+#undef wcscspn
+#undef wcslen
+#undef wcspbrk
+#undef wcsrchr
+#undef wcsspn
+#undef wcsstr
+#undef wcstok
+#undef wmemchr
+#undef wmemcmp
+#undef wmemcpy
+#undef wmemmove
+#undef wmemset
+#undef wcsftime
+#undef wcstold
+#undef wcstoll
+#undef wcstoull
 
 #if _GLIBCPP_USE_WCHAR_T
 namespace std
