@@ -32,7 +32,7 @@ or Back-Cover Texts.
 
 @macro covertexts
 This manual contains no Invariant Sections.  The Front-Cover Texts are
-(a) (see below), and the the Back-Cover Texts are (b) (see below).
+(a) (see below), and the Back-Cover Texts are (b) (see below).
 
 (a) The FSF's Front-Cover Text is:
 
@@ -1950,7 +1950,7 @@ expands to nothing, but in the @code{m68k-coff} environment it expands
 to a single @samp{%}.
 
 @item __USER_LABEL_PREFIX__
-This macro expands to a single token which is the the prefix applied to
+This macro expands to a single token which is the prefix applied to
 user labels (symbols visible to C code) in assembly.  For example, in
 the @code{m68k-aout} environment it expands to an @samp{_}, but in the
 @code{m68k-coff} environment it expands to nothing.
@@ -3604,7 +3604,7 @@ simultaneously true.
 
 @cindex assertions, cancelling
 @findex #unassert
-Assertions can be cancelled with the the @samp{#unassert} directive.  It
+Assertions can be cancelled with the @samp{#unassert} directive.  It
 has the same syntax as @samp{#assert}.  In that form it cancels only the
 answer which was specified on the @samp{#unassert} line; other answers
 for that predicate remain true.  You can cancel an entire predicate by

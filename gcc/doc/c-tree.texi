@@ -1443,7 +1443,7 @@ fields.
 @item CASE_LABEL
 
 Use to represent a @code{case} label, range of @code{case} labels, or a
-@code{default} label.  If @code{CASE_LOW} is @code{NULL_TREE}, then this is a a
+@code{default} label.  If @code{CASE_LOW} is @code{NULL_TREE}, then this is a
 @code{default} label.  Otherwise, if @code{CASE_HIGH} is @code{NULL_TREE}, then
 this is an ordinary @code{case} label.  In this case, @code{CASE_LOW} is
 an expression giving the value of the label.  Both @code{CASE_LOW} and
@@ -1821,7 +1821,7 @@ as a signed or unsigned quantity depending on the type of the constant.
 In general, the expression given above will overflow, so it should not
 be used to calculate the value of the constant.
 
-The variable @code{integer_zero_node} is a integer constant with value
+The variable @code{integer_zero_node} is an integer constant with value
 zero.  Similarly, @code{integer_one_node} is an integer constant with
 value one.  The @code{size_zero_node} and @code{size_one_node} variables
 are analogous, but have type @code{size_t} rather than @code{int}.

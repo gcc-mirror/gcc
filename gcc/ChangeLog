@@ -1,3 +1,11 @@
+2001-10-09  Kazu Hirata  <kazu@hxi.com>
+
+	* doc/cpp.texi: Fix typos.
+	* doc/c-tree.texi: Likewise.
+	* doc/extend.texi: Likewise.
+	* doc/invoke.texi: Likewise.
+	* doc/objc.texi: Likewise.
+
 2001-10-09  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/gcc.texi: Document preference for "nonzero" over "non-zero".
