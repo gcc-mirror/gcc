@@ -1,0 +1,19 @@
+While the GC should work on MacOS X Server, MacOS X and Darwin, I only tested
+it on MacOS X Server.
+I've added a PPC assembly version of GC_push_regs(), thus the setjmp() hack is
+no longer necessary. Incremental collection is supported via mprotect/signal.
+The current solution isn't really optimal because the signal handler must decode
+the faulting PPC machine instruction in order to find the correct heap address.
+Further, it must poke around in the register state which the kernel saved away
+in some obscure register state structure before it calls the signal handler -
+needless to say the layout of this structure is no where documented.
+Threads and dynamic libraries are not yet supported (adding dynamic library
+support via the low-level dyld API shouldn't be that hard).
+
+The original MacOS X port was brought to you by Andrew Stone.
+
+
+June, 1 2000
+
+Dietmar Planitzer
+dave.pl@ping.at
