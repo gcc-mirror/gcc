@@ -1,3 +1,11 @@
+2005-02-19  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/19299
+	* g++.dg/inherit/volatile1.C: New test.
+
+	PR c++/19440
+	* g++.dg/template/dtor4.C: New test.
+
 2005-02-19  Steven G. Kargl  <kargls@comcast.net>
 
 	* gfortran.dg/int_1.f90: New test.
