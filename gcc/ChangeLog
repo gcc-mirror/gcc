@@ -1,3 +1,7 @@
+Thu Oct 16 09:36:47 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Wed Oct 15 21:38:18 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* pa.c (move_operand): Respect -mdisable-indexing.
