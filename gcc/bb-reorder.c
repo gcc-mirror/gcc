@@ -1684,9 +1684,11 @@ fix_crossing_conditional_branches (void)
 						       (old_label), 
 						       BB_END (new_bb));
 		    }
+#ifdef HAVE_return
 		  else if (GET_CODE (old_label) == RETURN)
 		    new_jump = emit_jump_insn_after (gen_return (), 
 						     BB_END (new_bb));
+#endif
 		  else
 		    abort ();
 		  
