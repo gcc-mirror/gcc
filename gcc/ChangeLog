@@ -1,3 +1,8 @@
+2002-01-24  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.c (print_operand): Remove support for
+	operand character 'U'.
+
 2002-01-24  Andris Pavenis  <pavenis@latnet.lv>
 
         * config/i386/t-djgpp: Use NATIVE_SYSTEM_HEADER_DIR.
