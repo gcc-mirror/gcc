@@ -1,3 +1,7 @@
+2001-10-25  Geert Bosch  <bosch@gnat.com>
+
+	* osint.adb (Is_Relative): Remove duplicate.
+
 2001-10-25  Pascal Obry <obry@gnat.com>
 
 	* osint.adb (Read_Default_Search_Dirs): correctly detect relative 
@@ -7,7 +11,7 @@
 	* osint.adb: Minor reformatting
 	
 	* osint.adb (Is_Relative): implementation using 
-        GNAT.OS_Lib.Is_Absolute_Path. Better fix for 8121-009.
+        GNAT.OS_Lib.Is_Absolute_Path. Better fix.
 
 2001-10-25  Pascal Obry <obry@gnat.com>
 
