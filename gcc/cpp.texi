@@ -1200,6 +1200,16 @@ for some system library functions.  You should not refer to or test the
 definition of this macro unless you make very sure that programs will
 execute with the same effect regardless.
 
+@item __NO_INLINE__
+@findex __NO_INLINE__
+GNU CC defines this macro if it will not attempt to inline functions
+with @samp{inline} keyword (either when not optimizing or when inlining
+has been explicitely forbidden through @samp{-fno-inline}).  It causes
+certain GNU header files to define alternative macro definitions for some
+system library functions.  You should not refer to or test the definition
+of this macro unless you make very sure that programs will execute with
+the same effect regardless.
+
 @item __CHAR_UNSIGNED__
 @findex __CHAR_UNSIGNED__
 GNU C defines this macro if and only if the data type @code{char} is
