@@ -28,6 +28,8 @@ AC_CONFIG_HEADER(config.h)
 AC_DEFINE(_XOPEN_SOURCE, 500L, [Get Single Unix Specification semantics])
 # The following is needed by irix6.2 so that struct timeval is declared.
 AC_DEFINE(_XOPEN_SOURCE_EXTENDED, 1, [Get Single Unix Specification semantics])
+# The following is needed by Solaris2.5.1 so that struct timeval is declared.
+AC_DEFINE(__EXTENSIONS__, 1, [Solaris extensions])
 AC_DEFINE(_FILE_OFFSET_BITS, 64, [Get 64-bit file size support])
 
 dnl Checks for programs.

@@ -1,3 +1,9 @@
+2001-09-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	* libI77/configure.in (__EXTENSIONS__): Define.
+	* libI77/config.h.in, libI77/conifgure: regenerate.
+	* libU77/configure.in (__EXTENSIONS__): Likewise.
+
 2001-07-18  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* libI77/configure.in (_XOPEN_SOURCE, _FILE_OFFSET_BITS): Move
