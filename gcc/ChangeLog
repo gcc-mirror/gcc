@@ -1,5 +1,12 @@
 Fri Aug 18 14:23:18 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* regmove.c (perhaps_ends_bb_p): New function.
+	(optimize_reg_copy_1, optimize_reg_copy_2): Call it.
+	(optimize_reg_copy_3, fixup_match_2, regmove_optimize): Likewise.
+	(fixup_match_1): Likewise.
+	(fixup_match_1, combine_stack_adjustments_for_block): Add casts to
+	avoid signed/unsigned warnings.
+	
 	* function.c (fixup_var_refs_1, case MEM): Update CODE after
 	updating X.
 
