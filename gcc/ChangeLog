@@ -1,3 +1,7 @@
+2001-08-01  H.J. Lu <hjl@gnu.org>
+
+	* gcc/config/mips/linux.h (ASM_OUTPUT_SOURCE_LINE): Defined.
+
 2001-08-01  Ziemowit Laski  <zlaski@apple.com>
 
         * c-parse.in (OBJC_NEED_RAW_IDENTIFIER): Define macro and flag for
