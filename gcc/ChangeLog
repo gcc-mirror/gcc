@@ -1,3 +1,16 @@
+Tue Apr 30 19:15:36 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (type): Add new SSE/MMX subtypes, remove usused fop1.
+	(mode): Add vector modes
+	(i387): Kill attribute.
+	(unit): New attribute.
+	(length_immediate): Grok new types.
+	(prefix_data16, prefix_rep, prefix_0f): Fix for SSE/MMX.
+	(modrm): Use "unit".
+	(memory): Handle MMX/SSE properly.
+	(scheduling descriptions): Kill uses of fop1.
+	(sse, mmx, fp patterns): Set type and mode properly.
+
 Tue Apr 30 09:31:59 2002  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.c (override_options): Default to PA8000 scheduling.
