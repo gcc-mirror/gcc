@@ -1289,8 +1289,9 @@
 {
   int shift = int_log2 (INTVAL (operands[4]));
   operands[4] = GEN_INT (shift);
-  arm_output_asm_insn (\"add\\t%0, %2, %3, asl#%4\", operands);
-  operands[2] = operands[0];
+  arm_output_asm_insn (\"add\\t%0, %2, %3, asl %4\", operands);
+  operands[2] = operands[1];
+  operands[1] = operands[0];
   return output_add_immediate (operands);
 }")
 
