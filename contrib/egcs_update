@@ -50,11 +50,12 @@ fi
 echo "Pass 1: Updating autoconf and bison generated files"
 # Do a CVS update on those files that exist in CVS directories.  libg++
 # makes sense to drop into the tree, but it isn't CVS-controlled.
-for i in `find . -name configure.in -o -name '*.y'`
+X=`for i in \`find . -name configure.in -o -name '*.y'\`
 do
-	D=`dirname $i`/CVS
-	[ -f $i -a  -d $D ]  && echo $i  
-done | xargs cvs -q update
+	D=\`dirname $i\`/CVS
+	[ -f $i -a  -d $D ]  && echo $i
+done`
+cvs -q update $X
 
 
 echo "Pass 2: Updating full tree"

@@ -1,3 +1,7 @@
+1999-01-19  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* egcs_update: Do not use xargs, but a backquote construct.
+
 1999-01-07  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* test_summary (version): remove carriage return that gawk inserts
