@@ -1,3 +1,7 @@
+2000-06-12  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+        * config/float-vax.h: Add GFLOAT defines.
+
 Mon Jun  12  9:44:00 2000  Mark Klein  <mklein@dis.com>
 
 	* configure.in: Update tm dependencies for MPE.
