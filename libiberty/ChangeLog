@@ -1,3 +1,28 @@
+2005-03-28  Ian Lance Taylor  <ian@airs.com>
+
+	* pex-common.c: New file.
+	* pex-one.c: New file.
+	* pexecute.c: New file.
+	* pex-common.h: Include <stdio.h>.
+	(struct pex_obj): Define.
+	(struct pex_funcs): Define.
+	(pex_init_common): Declare.
+	* pex-unix.c: Rewrite.
+	* pex-win32.c: Rewrite.
+	* pex-djgpp.c: Rewrite.
+	* pex-msdos.c: Rewrite.
+	* testsuite/text-pexecute.c: New file.
+	* pexecute.txh: Rewrite.
+	* configure.ac: Check for wait3 and wait4.  Set CHECK to
+	really-check rather than check-cplus-dem.
+	* functions.texi: Rebuild.
+	* Makefile.in: Rebuild dependencies.
+	(CFILES): Add pexecute.c, pex-common.c, pex-one.c.
+	(REQUIRED_OFILES): Add pexecute.o, pex-common.o, pex-one.o.
+	* testsuite/Makefile.in (really-check): New target.
+	(check-pexecute, test-pexecute): New targets.
+	* configure: Rebuild.
+
 2005-03-28  Mark Kettenis  <kettenis@gnu.org>
 	
 	* unlink-if-ordinary.c: Include <sys/types.h>.

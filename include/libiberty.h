@@ -1,6 +1,6 @@
 /* Function declarations for libiberty.
 
-   Copyright 2001, 2002 Free Software Foundation, Inc.
+   Copyright 2001, 2002, 2005 Free Software Foundation, Inc.
    
    Note - certain prototypes declared in this header file are for
    functions whoes implementation copyright does not belong to the
@@ -45,6 +45,8 @@ extern "C" {
 #include <stddef.h>
 /* Get a definition for va_list.  */
 #include <stdarg.h>
+
+#include <stdio.h>
 
 /* Build an argument vector from a string.  Allocates memory using
    malloc.  Use freeargv to free the vector.  */
@@ -313,6 +315,166 @@ extern void hex_init (void);
 /* If you change this, note well: Some code relies on side effects in
    the argument being performed exactly once.  */
 #define hex_value(c)	((unsigned int) _hex_value[(unsigned char) (c)])
+
+/* Flags for pex_init.  These are bits to be or'ed together.  */
+
+/* Record subprocess times, if possible.  */
+#define PEX_RECORD_TIMES	0x1
+
+/* Use pipes for communication between processes, if possible.  */
+#define PEX_USE_PIPES		0x2
+
+/* Save files used for communication between processes.  */
+#define PEX_SAVE_TEMPS		0x4
+
+/* Prepare to execute one or more programs, with standard output of
+   each program fed to standard input of the next.
+   FLAGS	As above.
+   PNAME	The name of the program to report in error messages.
+   TEMPBASE	A base name to use for temporary files; may be NULL to
+   		use a random name.
+   Returns NULL on error.  */
+
+extern struct pex_obj *pex_init (int flags, const char *pname,
+				 const char *tempbase);
+
+/* Flags for pex_run.  These are bits to be or'ed together.  */
+
+/* Last program in pipeline.  Standard output of program goes to
+   OUTNAME, or, if OUTNAME is NULL, to standard output of caller.  Do
+   not set this if you want to call pex_read_output.  After this is
+   set, pex_run may no longer be called with the same struct
+   pex_obj.  */
+#define PEX_LAST		0x1
+
+/* Search for program in executable search path.  */
+#define PEX_SEARCH		0x2
+
+/* OUTNAME is a suffix.  */
+#define PEX_SUFFIX		0x4
+
+/* Send program's standard error to standard output.  */
+#define PEX_STDERR_TO_STDOUT	0x8
+
+/* Input file should be opened in binary mode.  This flag is ignored
+   on Unix.  */
+#define PEX_BINARY_INPUT	0x10
+
+/* Output file should be opened in binary mode.  This flag is ignored
+   on Unix.  For proper behaviour PEX_BINARY_INPUT and
+   PEX_BINARY_OUTPUT have to match appropriately--i.e., a call using
+   PEX_BINARY_OUTPUT should be followed by a call using
+   PEX_BINARY_INPUT.  */
+#define PEX_BINARY_OUTPUT	0x20
+
+/* Execute one program.  Returns NULL on success.  On error returns an
+   error string (typically just the name of a system call); the error
+   string is statically allocated.
+
+   OBJ		Returned by pex_init.
+
+   FLAGS	As above.
+
+   EXECUTABLE	The program to execute.
+
+   ARGV		NULL terminated array of arguments to pass to the program.
+
+   OUTNAME	Sets the output file name as follows:
+
+		PEX_SUFFIX set (OUTNAME may not be NULL):
+		  TEMPBASE parameter to pex_init not NULL:
+		    Output file name is the concatenation of TEMPBASE
+		    and OUTNAME.
+		  TEMPBASE is NULL:
+		    Output file name is a random file name ending in
+		    OUTNAME.
+		PEX_SUFFIX not set:
+		  OUTNAME not NULL:
+		    Output file name is OUTNAME.
+		  OUTNAME NULL, TEMPBASE not NULL:
+		    Output file name is randomly chosen using
+		    TEMPBASE.
+		  OUTNAME NULL, TEMPBASE NULL:
+		    Output file name is randomly chosen.
+
+		If PEX_LAST is not set, the output file name is the
+   		name to use for a temporary file holding stdout, if
+   		any (there will not be a file if PEX_USE_PIPES is set
+   		and the system supports pipes).  If a file is used, it
+   		will be removed when no longer needed unless
+   		PEX_SAVE_TEMPS is set.
+
+		If PEX_LAST is set, and OUTNAME is not NULL, standard
+   		output is written to the output file name.  The file
+   		will not be removed.  If PEX_LAST and PEX_SUFFIX are
+   		both set, TEMPBASE may not be NULL.
+
+   ERRNAME	If not NULL, this is the name of a file to which
+		standard error is written.  If NULL, standard error of
+		the program is standard error of the caller.
+
+   ERR		On an error return, *ERR is set to an errno value, or
+   		to 0 if there is no relevant errno.
+*/
+
+extern const char *pex_run (struct pex_obj *obj, int flags,
+			    const char *executable, char * const *argv,
+			    const char *outname, const char *errname,
+			    int *err);
+
+/* Read the standard output of the last program to be executed.
+   pex_run can not be called after this.  BINARY should be non-zero if
+   the file should be opened in binary mode; this is ignored on Unix.
+   Returns NULL on error.  Don't call fclose on the returned FILE; it
+   will be closed by pex_free.  */
+
+extern FILE *pex_read_output (struct pex_obj *, int binary);
+
+/* Return exit status of all programs in VECTOR.  COUNT indicates the
+   size of VECTOR.  The status codes in the vector are in the order of
+   the calls to pex_run.  Returns 0 on error, 1 on success.  */
+
+extern int pex_get_status (struct pex_obj *, int count, int *vector);
+
+/* Return times of all programs in VECTOR.  COUNT indicates the size
+   of VECTOR.  struct pex_time is really just struct timeval, but that
+   is not portable to all systems.  Returns 0 on error, 1 on
+   success.  */
+
+struct pex_time
+{
+  unsigned long user_seconds;
+  unsigned long user_microseconds;
+  unsigned long system_seconds;
+  unsigned long system_microseconds;
+};
+
+extern int pex_get_times (struct pex_obj *, int count,
+			  struct pex_time *vector);
+
+/* Clean up a pex_obj.  */
+
+  extern void pex_free (struct pex_obj *);
+
+/* Just execute one program.  Return value is as for pex_run.
+   FLAGS	Combination of PEX_SEARCH and PEX_STDERR_TO_STDOUT.
+   EXECUTABLE	As for pex_run.
+   ARGV		As for pex_run.
+   PNAME	As for pex_init.
+   OUTNAME	As for pex_run when PEX_LAST is set.
+   ERRNAME	As for pex_run.
+   STATUS	Set to exit status on success.
+   ERR		As for pex_run.
+*/
+
+extern const char *pex_one (int flags, const char *executable,
+			    char * const *argv, const char *pname,
+			    const char *outname, const char *errname,
+			    int *status, int *err);
+
+/* pexecute and pwait are the old pexecute interface, still here for
+   backward compatibility.  Don't use these for new code.  Instead,
+   use pex_init/pex_run/pex_get_status/pex_free, or pex_one.  */
 
 /* Definitions used by the pexecute routine.  */
 

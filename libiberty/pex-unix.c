@@ -20,12 +20,18 @@ License along with libiberty; see the file COPYING.LIB.  If not,
 write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#include "config.h"
+#include "libiberty.h"
 #include "pex-common.h"
 
 #include <stdio.h>
+#include <signal.h>
 #include <errno.h>
 #ifdef NEED_DECLARATION_ERRNO
 extern int errno;
+#endif
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
 #endif
 #ifdef HAVE_STRING_H
 #include <string.h>
@@ -33,16 +39,23 @@ extern int errno;
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
+
+#include <sys/types.h>
+
+#ifdef HAVE_FCNTL_H
+#include <fcntl.h>
 #endif
 #ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
 #endif
-
-#ifndef HAVE_WAITPID
-#define waitpid(pid, status, flags) wait(status)
+#ifdef HAVE_GETRUSAGE
+#include <sys/time.h>
+#include <sys/resource.h>
 #endif
+#ifdef HAVE_SYS_STAT_H
+#include <sys/stat.h>
+#endif
+
 
 #ifdef vfork /* Autoconf may define this to fork for us. */
 # define VFORK_STRING "fork"
@@ -57,80 +70,300 @@ extern int errno;
                lib$get_current_invo_context(decc$$get_vfork_jmpbuf()) : -1)
 #endif /* VMS */
 
-/* Execute a program, possibly setting up pipes to programs executed
-   via other calls to this function.
 
-   This version of the function uses vfork.  In general vfork is
-   similar to setjmp/longjmp, in that any variable which is modified by
-   the child process has an indeterminate value in the parent process.
-   We follow a safe approach here by not modifying any variables at
-   all in the child process (with the possible exception of variables
-   modified by xstrerror if exec fails, but this is unlikely to be
-   detectable).
+/* File mode to use for private and world-readable files.  */
 
-   We work a little bit harder to avoid gcc warnings.  gcc will warn
-   about any automatic variable which is live at the time of the
-   vfork, which is non-volatile, and which is either set more than
-   once or is an argument to the function.  This warning isn't quite
-   right, since what we really care about is whether the variable is
-   live at the time of the vfork and set afterward by the child
-   process, but gcc only checks whether the variable is set more than
-   once.  To avoid this warning, we ensure that any variable which is
-   live at the time of the vfork (i.e., used after the vfork) is set
-   exactly once and is not an argument, or is marked volatile.  */
+#if defined (S_IRUSR) && defined (S_IWUSR) && defined (S_IRGRP) && defined (S_IWGRP) && defined (S_IROTH) && defined (S_IWOTH)
+#define PUBLIC_MODE  \
+    (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH)
+#else
+#define PUBLIC_MODE 0666
+#endif
 
-int
-pexecute (const char *program, char * const *argv, const char *this_pname,
-          const char *temp_base ATTRIBUTE_UNUSED,
-          char **errmsg_fmt, char **errmsg_arg, int flagsarg)
+/* Get the exit status of a particular process, and optionally get the
+   time that it took.  This is simple if we have wait4, slightly
+   harder if we have waitpid, and is a pain if we only have wait.  */
+
+static pid_t pex_wait (struct pex_obj *, pid_t, int *, struct pex_time *);
+
+#ifdef HAVE_WAIT4
+
+static pid_t
+pex_wait (struct pex_obj *obj ATTRIBUTE_UNUSED, pid_t pid, int *status,
+	  struct pex_time *time)
 {
-  int pid;
-  int pdes[2];
-  int out;
-  int input_desc, output_desc;
-  int flags;
+  pid_t ret;
+  struct rusage r;
+
+#ifdef HAVE_WAITPID
+  if (time == NULL)
+    return waitpid (pid, status, 0);
+#endif
+
+  ret = wait4 (pid, status, 0, &r);
+
+  if (time != NULL)
+    {
+      time->user_seconds = r.ru_utime.tv_sec;
+      time->user_microseconds= r.ru_utime.tv_usec;
+      time->system_seconds = r.ru_stime.tv_sec;
+      time->system_microseconds= r.ru_stime.tv_usec;
+    }
+
+  return ret;
+}
+
+#else /* ! defined (HAVE_WAIT4) */
+
+#ifdef HAVE_WAITPID
+
+#ifndef HAVE_GETRUSAGE
+
+static pid_t
+pex_wait (struct pex_obj *obj ATTRIBUTE_UNUSED, pid_t pid, int *status,
+	  struct pex_time *time)
+{
+  if (time != NULL)
+    memset (time, 0, sizeof (struct pex_time));
+  return waitpid (pid, status, 0);
+}
+
+#else /* defined (HAVE_GETRUSAGE) */
+
+static pid_t
+pex_wait (struct pex_obj *obj ATTRIBUTE_UNUSED, pid_t pid, int *status,
+	  struct pex_time *time)
+{
+  struct rusage r1, r2;
+  pid_t ret;
+
+  if (time == NULL)
+    return waitpid (pid, status, 0);
+
+  getrusage (RUSAGE_CHILDREN, &r1);
+
+  ret = waitpid (pid, status, 0);
+  if (ret < 0)
+    return ret;
+
+  getrusage (RUSAGE_CHILDREN, &r2);
+
+  time->user_seconds = r2.ru_utime.tv_sec - r1.ru_utime.tv_sec;
+  time->user_microseconds = r2.ru_utime.tv_usec - r1.ru_utime.tv_usec;
+  if (r2.ru_utime.tv_usec < r1.ru_utime.tv_usec)
+    {
+      --time->user_seconds;
+      time->user_microseconds += 1000000;
+    }
+
+  time->system_seconds = r2.ru_stime.tv_sec - r1.ru_stime.tv_sec;
+  time->system_microseconds = r2.ru_stime.tv_usec - r1.ru_stime.tv_usec;
+  if (r2.ru_stime.tv_usec < r1.ru_stime.tv_usec)
+    {
+      --time->system_seconds;
+      time->system_microseconds += 1000000;
+    }
+
+  return ret;
+}
+
+#endif /* defined (HAVE_GETRUSAGE) */
+
+#else /* ! defined (HAVE_WAITPID) */
+
+struct status_list
+{
+  struct status_list *next;
+  pid_t pid;
+  int status;
+  struct pex_time time;
+};
+
+static pid_t
+pex_wait (struct pex_obj *obj, pid_t pid, int *status, struct pex_time *time)
+{
+  struct status_list **pp;
+
+  for (pp = (struct status_list **) &obj->sysdep;
+       *pp != NULL;
+       pp = &(*pp)->next)
+    {
+      if ((*pp)->pid == pid)
+	{
+	  struct status_list *p;
+
+	  p = *pp;
+	  *status = p->status;
+	  if (time != NULL)
+	    *time = p->time;
+	  *pp = p->next;
+	  free (p);
+	  return pid;
+	}
+    }
+
+  while (1)
+    {
+      pid_t cpid;
+      struct status_list *psl;
+      struct pex_time pt;
+#ifdef HAVE_GETRUSAGE
+      struct rusage r1, r2;
+#endif
+
+      if (time != NULL)
+	{
+#ifdef HAVE_GETRUSAGE
+	  getrusage (RUSAGE_CHILDREN, &r1);
+#else
+	  memset (&pt, 0, sizeof (struct pex_time));
+#endif
+	}
+
+      cpid = wait (status);
+
+#ifdef HAVE_GETRUSAGE
+      if (time != NULL && cpid >= 0)
+	{
+	  getrusage (RUSAGE_CHILDREN, &r2);
+
+	  pt.user_seconds = r2.ru_utime.tv_sec - r1.ru_utime.tv_sec;
+	  pt.user_microseconds = r2.ru_utime.tv_usec - r1.ru_utime.tv_usec;
+	  if (pt.user_microseconds < 0)
+	    {
+	      --pt.user_seconds;
+	      pt.user_microseconds += 1000000;
+	    }
+
+	  pt.system_seconds = r2.ru_stime.tv_sec - r1.ru_stime.tv_sec;
+	  pt.system_microseconds = r2.ru_stime.tv_usec - r1.ru_stime.tv_usec;
+	  if (pt.system_microseconds < 0)
+	    {
+	      --pt.system_seconds;
+	      pt.system_microseconds += 1000000;
+	    }
+	}
+#endif
+
+      if (cpid < 0 || cpid == pid)
+	{
+	  if (time != NULL)
+	    *time = pt;
+	  return cpid;
+	}
+
+      psl = xmalloc (sizeof (struct status_list));
+      psl->pid = cpid;
+      psl->status = *status;
+      if (time != NULL)
+	psl->time = pt;
+      psl->next = (struct status_list *) obj->sysdep;
+      obj->sysdep = (void *) psl;
+    }
+}
+
+#endif /* ! defined (HAVE_WAITPID) */
+#endif /* ! defined (HAVE_WAIT4) */
+
+static void pex_child_error (struct pex_obj *, const char *, const char *, int)
+     ATTRIBUTE_NORETURN;
+static int pex_unix_open_read (struct pex_obj *, const char *, int);
+static int pex_unix_open_write (struct pex_obj *, const char *, int);
+static long pex_unix_exec_child (struct pex_obj *, int, const char *,
+				 char * const *, int, int, int,
+				 const char **, int *);
+static int pex_unix_close (struct pex_obj *, int);
+static int pex_unix_wait (struct pex_obj *, long, int *, struct pex_time *,
+			  int, const char **, int *);
+static int pex_unix_pipe (struct pex_obj *, int *, int);
+static FILE *pex_unix_fdopenr (struct pex_obj *, int, int);
+static void pex_unix_cleanup (struct pex_obj *);
+
+/* The list of functions we pass to the common routines.  */
+
+const struct pex_funcs funcs =
+{
+  pex_unix_open_read,
+  pex_unix_open_write,
+  pex_unix_exec_child,
+  pex_unix_close,
+  pex_unix_wait,
+  pex_unix_pipe,
+  pex_unix_fdopenr,
+  pex_unix_cleanup
+};
+
+/* Return a newly initialized pex_obj structure.  */
+
+struct pex_obj *
+pex_init (int flags, const char *pname, const char *tempbase)
+{
+  return pex_init_common (flags, pname, tempbase, &funcs);
+}
+
+/* Open a file for reading.  */
+
+static int
+pex_unix_open_read (struct pex_obj *obj ATTRIBUTE_UNUSED, const char *name,
+		    int binary ATTRIBUTE_UNUSED)
+{
+  return open (name, O_RDONLY);
+}
+
+/* Open a file for writing.  */
+
+static int
+pex_unix_open_write (struct pex_obj *obj ATTRIBUTE_UNUSED, const char *name,
+		     int binary ATTRIBUTE_UNUSED)
+{
+  /* Note that we can't use O_EXCL here because gcc may have already
+     created the temporary file via make_temp_file.  */
+  return open (name, O_WRONLY | O_CREAT | O_TRUNC, PUBLIC_MODE);
+}
+
+/* Close a file.  */
+
+static int
+pex_unix_close (struct pex_obj *obj ATTRIBUTE_UNUSED, int fd)
+{
+  return close (fd);
+}
+
+/* Report an error from a child process.  We don't use stdio routines,
+   because we might be here due to a vfork call.  */
+
+static void
+pex_child_error (struct pex_obj *obj, const char *executable,
+		 const char *errmsg, int err)
+{
+#define writeerr(s) write (STDERR_FILE_NO, s, strlen (s))
+  writeerr (obj->pname);
+  writeerr (": error trying to exec '");
+  writeerr (executable);
+  writeerr ("': ");
+  writeerr (errmsg);
+  writeerr (": ");
+  writeerr (xstrerror (err));
+  writeerr ("\n");
+  _exit (-1);
+}
+
+/* Execute a child.  */
+
+static long
+pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
+		     char * const * argv, int in, int out, int errdes,
+		     const char **errmsg, int *err)
+{
+  pid_t pid;
   /* We declare these to be volatile to avoid warnings from gcc about
      them being clobbered by vfork.  */
-  volatile int retries, sleep_interval;
-  /* Pipe waiting from last process, to be used as input for the next one.
-     Value is STDIN_FILE_NO if no pipe is waiting
-     (i.e. the next command is the first of a group).  */
-  static int last_pipe_input;
+  volatile int sleep_interval;
+  volatile int retries;
 
-  flags = flagsarg;
-
-  /* If this is the first process, initialize.  */
-  if (flags & PEXECUTE_FIRST)
-    last_pipe_input = STDIN_FILE_NO;
-
-  input_desc = last_pipe_input;
-
-  /* If this isn't the last process, make a pipe for its output,
-     and record it as waiting to be the input to the next process.  */
-  if (! (flags & PEXECUTE_LAST))
-    {
-      if (pipe (pdes) < 0)
-	{
-	  *errmsg_fmt = "pipe";
-	  *errmsg_arg = NULL;
-	  return -1;
-	}
-      out = pdes[WRITE_PORT];
-      last_pipe_input = pdes[READ_PORT];
-    }
-  else
-    {
-      /* Last process.  */
-      out = STDOUT_FILE_NO;
-      last_pipe_input = STDIN_FILE_NO;
-    }
-
-  output_desc = out;
-
-  /* Fork a subprocess; wait and retry if it fails.  */
   sleep_interval = 1;
   pid = -1;
-  for (retries = 0; retries < 4; retries++)
+  for (retries = 0; retries < 4; ++retries)
     {
       pid = vfork ();
       if (pid >= 0)
@@ -142,66 +375,139 @@ pexecute (const char *program, char * const *argv, const char *this_pname,
   switch (pid)
     {
     case -1:
-      *errmsg_fmt = "fork";
-      *errmsg_arg = NULL;
+      *err = errno;
+      *errmsg = VFORK_STRING;
       return -1;
 
-    case 0: /* child */
-      /* Move the input and output pipes into place, if necessary.  */
-      if (input_desc != STDIN_FILE_NO)
+    case 0:
+      /* Child process.  */
+      if (in != STDIN_FILE_NO)
 	{
-	  close (STDIN_FILE_NO);
-	  dup (input_desc);
-	  close (input_desc);
+	  if (dup2 (in, STDIN_FILE_NO) < 0)
+	    pex_child_error (obj, executable, "dup2", errno);
+	  if (close (in) < 0)
+	    pex_child_error (obj, executable, "close", errno);
 	}
-      if (output_desc != STDOUT_FILE_NO)
+      if (out != STDOUT_FILE_NO)
 	{
-	  close (STDOUT_FILE_NO);
-	  dup (output_desc);
-	  close (output_desc);
+	  if (dup2 (out, STDOUT_FILE_NO) < 0)
+	    pex_child_error (obj, executable, "dup2", errno);
+	  if (close (out) < 0)
+	    pex_child_error (obj, executable, "close", errno);
 	}
-
-      /* Close the parent's descs that aren't wanted here.  */
-      if (last_pipe_input != STDIN_FILE_NO)
-	close (last_pipe_input);
-
-      /* Exec the program.  */
-      if (flags & PEXECUTE_SEARCH)
-	execvp (program, argv);
+      if (errdes != STDERR_FILE_NO)
+	{
+	  if (dup2 (errdes, STDERR_FILE_NO) < 0)
+	    pex_child_error (obj, executable, "dup2", errno);
+	  if (close (errdes) < 0)
+	    pex_child_error (obj, executable, "close", errno);
+	}
+      if ((flags & PEX_STDERR_TO_STDOUT) != 0)
+	{
+	  if (dup2 (STDOUT_FILE_NO, STDERR_FILE_NO) < 0)
+	    pex_child_error (obj, executable, "dup2", errno);
+	}
+      if ((flags & PEX_SEARCH) != 0)
+	{
+	  execvp (executable, argv);
+	  pex_child_error (obj, executable, "execvp", errno);
+	}
       else
-	execv (program, argv);
+	{
+	  execv (executable, argv);
+	  pex_child_error (obj, executable, "execv", errno);
+	}
 
-      /* We don't want to call fprintf after vfork.  */
-#define writeerr(s) write (STDERR_FILE_NO, s, strlen (s))
-      writeerr (this_pname);
-      writeerr (": ");
-      writeerr ("installation problem, cannot exec '");
-      writeerr (program);
-      writeerr ("': ");
-      writeerr (xstrerror (errno));
-      writeerr ("\n");
-      _exit (-1);
       /* NOTREACHED */
-      return 0;
+      return -1;
 
     default:
-      /* In the parent, after forking.
-	 Close the descriptors that we made for this child.  */
-      if (input_desc != STDIN_FILE_NO)
-	close (input_desc);
-      if (output_desc != STDOUT_FILE_NO)
-	close (output_desc);
+      /* Parent process.  */
+      if (in != STDIN_FILE_NO)
+	{
+	  if (close (in) < 0)
+	    {
+	      *err = errno;
+	      *errmsg = "close";
+	      return -1;
+	    }
+	}
+      if (out != STDOUT_FILE_NO)
+	{
+	  if (close (out) < 0)
+	    {
+	      *err = errno;
+	      *errmsg = "close";
+	      return -1;
+	    }
+	}
+      if (errdes != STDERR_FILE_NO)
+	{
+	  if (close (errdes) < 0)
+	    {
+	      *err = errno;
+	      *errmsg = "close";
+	      return -1;
+	    }
+	}
 
-      /* Return child's process number.  */
-      return pid;
+      return (long) pid;
     }
 }
 
-int
-pwait (int pid, int *status, int flags ATTRIBUTE_UNUSED)
+/* Wait for a child process to complete.  */
+
+static int
+pex_unix_wait (struct pex_obj *obj, long pid, int *status,
+	       struct pex_time *time, int done, const char **errmsg,
+	       int *err)
 {
-  /* ??? Here's an opportunity to canonicalize the values in STATUS.
-     Needed?  */
-  pid = waitpid (pid, status, 0);
-  return pid;
+  /* If we are cleaning up when the caller didn't retrieve process
+     status for some reason, encourage the process to go away.  */
+  if (done)
+    kill (pid, SIGTERM);
+
+  if (pex_wait (obj, pid, status, time) < 0)
+    {
+      *err = errno;
+      *errmsg = "wait";
+      return -1;
+    }
+
+  return 0;
+}
+
+/* Create a pipe.  */
+
+static int
+pex_unix_pipe (struct pex_obj *obj ATTRIBUTE_UNUSED, int *p,
+	       int binary ATTRIBUTE_UNUSED)
+{
+  return pipe (p);
+}
+
+/* Get a FILE pointer to read from a file descriptor.  */
+
+static FILE *
+pex_unix_fdopenr (struct pex_obj *obj ATTRIBUTE_UNUSED, int fd,
+		  int binary ATTRIBUTE_UNUSED)
+{
+  return fdopen (fd, "r");
+}
+
+static void
+pex_unix_cleanup (struct pex_obj *obj ATTRIBUTE_UNUSED)
+{
+#if !defined (HAVE_WAIT4) && !defined (HAVE_WAITPID)
+  while (obj->sysdep != NULL)
+    {
+      struct status_list *this;
+      struct status_list *next;
+
+      this = (struct status_list *) obj->sysdep;
+      next = this->next;
+      free (this);
+      obj->sysdep = (void *) next;
+    }
+#endif
 }

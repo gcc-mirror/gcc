@@ -42,16 +42,27 @@ INCDIR=$(srcdir)/../$(MULTISRCTOP)../include
 
 all:
 
+# CHECK is set to "really_check" or the empty string by configure.
 check: @CHECK@
+
+really-check: check-cplus-dem check-pexecute
 
 # Run some tests of the demangler.
 check-cplus-dem: test-demangle $(srcdir)/demangle-expected
 	./test-demangle < $(srcdir)/demangle-expected
 
+# Check the pexecute code.
+check-pexecute: test-pexecute
+	./test-pexecute
+
 TEST_COMPILE = $(CC) @DEFS@ $(LIBCFLAGS) -I.. -I$(INCDIR) $(HDEFINES)
 test-demangle: $(srcdir)/test-demangle.c ../libiberty.a
 	$(TEST_COMPILE) -o test-demangle \
 		$(srcdir)/test-demangle.c ../libiberty.a
+
+test-pexecute: $(srcdir)/test-pexecute.c ../libiberty.a
+	$(TEST_COMPILE) -DHAVE_CONFIG_H -I.. -o test-pexecute \
+		$(srcdir)/test-pexecute.c ../libiberty.a
 
 # Standard (either GNU or Cygnus) rules we don't use.
 info install-info clean-info dvi install etags tags installcheck:
