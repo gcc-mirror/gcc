@@ -1,3 +1,8 @@
+2002-10-21  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* gcc.dg/weak/typeof-2.c: Handle s390x targets as well.
+	* gcc.misc-tests/linkage.exp: Handle s390x targets in -m31 mode.
+
 2002-10-21  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gcc.c-torture/compile/20020604-1.x: New.
