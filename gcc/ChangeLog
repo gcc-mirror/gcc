@@ -1,3 +1,7 @@
+2000-04-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cpplib.c (D): Adjust to call CONCAT2 macro without whitespace.
+
 Tue Apr  4 19:17:20 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* calls.c (ECF_MALLOC, ECF_MAY_BE_ALLOCA, ECF_RETURNS_TWICE,
