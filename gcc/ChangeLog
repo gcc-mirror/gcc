@@ -1,3 +1,9 @@
+Mon Jan 14 20:23:34 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* unroll.c (final_reg_note_copy): Properly handle
+	REG_LABEL
+	(unroll_loops): Fix LOOP_CONDITION heuristics.
+
 2002-01-14  Geoffrey Keating  <geoffk@redhat.com>
 
 	* doc/invoke.texi (Xstormy16 Options): Add xstormy16 option.
