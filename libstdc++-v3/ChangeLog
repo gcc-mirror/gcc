@@ -1,3 +1,8 @@
+2004-03-08  Petur Runolfsson  <peturr02@ru.is>
+
+	PR libstdc++/12658
+	* testsuite/22_locale/locale/cons/12658_thread.cc: New.
+
 2004-03-08  Paolo Carlini  <pcarlini@suse.de>
 
 	* docs/html/ext/howto.html: Add entry for DR 103 [WP].
