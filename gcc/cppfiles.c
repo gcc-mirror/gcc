@@ -43,7 +43,6 @@ static char *remap_filename 		PROTO ((cpp_reader *, char *,
 						struct file_name_list *));
 static long read_and_prescan		PROTO ((cpp_reader *, cpp_buffer *,
 						int, size_t));
-static void simplify_pathname		PROTO ((char *));
 static struct file_name_list *actual_directory PROTO ((cpp_reader *, char *));
 
 #if 0
@@ -61,54 +60,6 @@ static void hack_vms_include_specification PROTO ((char *));
 #define INO_T_EQ(a, b) ((a) == (b))
 #endif
 
-/* Append an entry for dir DIR to list LIST, simplifying it if
-   possible.  SYS says whether this is a system include directory.
-   *** DIR is modified in place.  It must be writable and permanently
-   allocated. LIST is a pointer to the head pointer, because we actually
-   *prepend* the dir, and reverse the list later (in merge_include_chains). */
-void
-append_include_chain (pfile, list, dir, sysp)
-     cpp_reader *pfile;
-     struct file_name_list **list;
-     const char *dir;
-     int sysp;
-{
-  struct file_name_list *new;
-  struct stat st;
-  unsigned int len;
-  char * newdir = xstrdup (dir);
-
-  simplify_pathname (newdir);
-  if (stat (newdir, &st))
-    {
-      /* Dirs that don't exist are silently ignored. */
-      if (errno != ENOENT)
-	cpp_perror_with_name (pfile, newdir);
-      return;
-    }
-
-  if (!S_ISDIR (st.st_mode))
-    {
-      cpp_message (pfile, 1, "%s: %s: Not a directory", progname, newdir);
-      return;
-    }
-
-  len = strlen(newdir);
-  if (len > pfile->max_include_len)
-    pfile->max_include_len = len;
-  
-  new = (struct file_name_list *)xmalloc (sizeof (struct file_name_list));
-  new->name = newdir;
-  new->nlen = len;
-  new->next = *list;
-  new->ino  = st.st_ino;
-  new->dev  = st.st_dev;
-  new->sysp = sysp;
-  new->name_map = NULL;
-
-  *list = new;
-}
-
 /* Merge the four include chains together in the order quote, bracket,
    system, after.  Remove duplicate dirs (as determined by
    INO_T_EQ()).  The system_include and after_include chains are never
@@ -122,51 +73,19 @@ void
 merge_include_chains (opts)
      struct cpp_options *opts;
 {
-  struct file_name_list *prev, *next, *cur, *other;
+  struct file_name_list *prev, *cur, *other;
   struct file_name_list *quote, *brack, *systm, *after;
   struct file_name_list *qtail, *btail, *stail, *atail;
 
-  qtail = opts->quote_include;
-  btail = opts->bracket_include;
-  stail = opts->system_include;
-  atail = opts->after_include;
+  qtail = opts->pending->quote_tail;
+  btail = opts->pending->brack_tail;
+  stail = opts->pending->systm_tail;
+  atail = opts->pending->after_tail;
 
-  /* Nreverse the four lists. */
-  prev = 0;
-  for (cur = qtail; cur; cur = next)
-    {
-      next = cur->next;
-      cur->next = prev;
-      prev = cur;
-    }
-  quote = prev;
-
-  prev = 0;
-  for (cur = btail; cur; cur = next)
-    {
-      next = cur->next;
-      cur->next = prev;
-      prev = cur;
-    }
-  brack = prev;
-
-  prev = 0;
-  for (cur = stail; cur; cur = next)
-    {
-      next = cur->next;
-      cur->next = prev;
-      prev = cur;
-    }
-  systm = prev;
-
-  prev = 0;
-  for (cur = atail; cur; cur = next)
-    {
-      next = cur->next;
-      cur->next = prev;
-      prev = cur;
-    }
-  after = prev;
+  quote = opts->pending->quote_head;
+  brack = opts->pending->brack_head;
+  systm = opts->pending->systm_head;
+  after = opts->pending->after_head;
 
   /* Paste together bracket, system, and after include chains. */
   if (stail)
@@ -188,7 +107,10 @@ merge_include_chains (opts)
      then we may lose directories from the <> search path that should
      be there; consider -Ifoo -Ibar -I- -Ifoo -Iquux. It is however
      safe to treat -Ibar -Ifoo -I- -Ifoo -Iquux as if written
-     -Ibar -I- -Ifoo -Iquux. */
+     -Ibar -I- -Ifoo -Iquux.
+
+     Note that this algorithm is quadratic in the number of -I switches,
+     which is acceptable since there aren't usually that many of them.  */
 
   for (cur = quote; cur; cur = cur->next)
     {
@@ -196,6 +118,9 @@ merge_include_chains (opts)
         if (INO_T_EQ (cur->ino, other->ino)
 	    && cur->dev == other->dev)
           {
+	    if (opts->verbose)
+	      cpp_notice ("ignoring duplicate directory `%s'\n", cur->name);
+
 	    prev->next = cur->next;
 	    free (cur->name);
 	    free (cur);
@@ -212,6 +137,9 @@ merge_include_chains (opts)
         if (INO_T_EQ (cur->ino, other->ino)
 	    && cur->dev == other->dev)
           {
+	    if (opts->verbose)
+	      cpp_notice ("ignoring duplicate directory `%s'\n", cur->name);
+
 	    prev->next = cur->next;
 	    free (cur->name);
 	    free (cur);
@@ -227,6 +155,10 @@ merge_include_chains (opts)
         {
 	  if (quote == qtail)
 	    {
+	      if (opts->verbose)
+		cpp_notice ("ignoring duplicate directory `%s'\n",
+			    quote->name);
+
 	      free (quote->name);
 	      free (quote);
 	      quote = brack;
@@ -237,6 +169,10 @@ merge_include_chains (opts)
 	      while (cur->next != qtail)
 		  cur = cur->next;
 	      cur->next = brack;
+	      if (opts->verbose)
+		cpp_notice ("ignoring duplicate directory `%s'\n",
+			    qtail->name);
+
 	      free (qtail->name);
 	      free (qtail);
 	    }
@@ -249,8 +185,6 @@ merge_include_chains (opts)
 
   opts->quote_include = quote;
   opts->bracket_include = brack;
-  opts->system_include = NULL;
-  opts->after_include = NULL;
 }
 
 /* Look up or add an entry to the table of all includes.  This table
@@ -742,8 +676,8 @@ finclude (pfile, fd, ihash)
   close (fd);
   fp->rlimit = fp->alimit = fp->buf + length;
   fp->cur = fp->buf;
-  fp->system_header_p = (ihash->foundhere != ABSOLUTE_PATH
-			 && ihash->foundhere->sysp);
+  if (ihash->foundhere != ABSOLUTE_PATH)
+      fp->system_header_p = ihash->foundhere->sysp;
   fp->lineno = 1;
   fp->colno = 1;
   fp->cleanup = file_cleanup;
@@ -816,7 +750,7 @@ actual_directory (pfile, fname)
   x->nlen = dlen;
   x->next = CPP_OPTIONS (pfile)->quote_include;
   x->alloc = pfile->actual_dirs;
-  x->sysp = 0;
+  x->sysp = CPP_BUFFER (pfile)->system_header_p;
   x->name_map = NULL;
 
   pfile->actual_dirs = x;
@@ -1063,12 +997,11 @@ deps_output (pfile, string, spacer)
   if (pfile->deps_column > 0
       && (pfile->deps_column + size) > MAX_OUTPUT_COLUMNS)
     {
-      size += 5;
-      cr = 1;
+      cr = 5;
       pfile->deps_column = 0;
     }
 
-  if (pfile->deps_size + size + 8 > pfile->deps_allocated_size)
+  if (pfile->deps_size + size + cr + 8 > pfile->deps_allocated_size)
     {
       pfile->deps_allocated_size = (pfile->deps_size + size + 50) * 2;
       pfile->deps_buffer = (char *) xrealloc (pfile->deps_buffer,
@@ -1105,7 +1038,7 @@ deps_output (pfile, string, spacer)
    Guarantees no trailing slashes. All transforms reduce the length
    of the string.
  */
-static void
+void
 simplify_pathname (path)
     char *path;
 {

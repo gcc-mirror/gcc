@@ -1,3 +1,52 @@
+1999-03-15 21:39 -0500  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* cppinit.c: Instead of one pending list, keep separate lists
+	for each category of pending option: -D/-U, -A, -include,
+	-imacros.  Move the four partial include-path lists into the
+	pending block.  Use head and tail pointers so we don't ever
+	have to reverse the lists.
+
+	(cpp_start_read): Break out blocks of code to their own
+	functions: install_predefs and initialize_dependency_output.
+	Use path_include for C_INCLUDE_PATH and friends as well as
+	CPATH.  Remove include_defaults gunk.  Warn about the
+	combination of -lang-chill and -trigraphs.  Optimize string
+	bashing.  Walk each pending list once, deallocating as we go.
+
+	(append_include_chain): Brought over from cppfiles.c.  Mark
+	dirs as system include dirs if and only if appending to
+	system include path. If opts->verbose, print a notice when a
+	dir is dropped from the include path because it doesn't
+	exist.  Fix memory leak: this function is not supposed to copy
+	its DIR argument.
+
+	(nreverse_pending, push_pending): Removed.
+	(APPEND): New macro for adding to pending lists.
+	(path_include): Can now add to any partial include path.
+	(base_name): Bring over from cccp.c.
+	(cpp_options_init): Allocate the pending block.
+	(cpp_handle_option): Add --version.  Exit after --help.  Fix
+	formatting.  Order -ifoo options by frequency of usage.
+	(install_predefs): New function, simplified version of code
+	that was in cpp_start_read.
+	(initialize_dependency_output): Likewise.  Understand OBJECT_SUFFIX.
+
+	* cppfiles.c (simplify_pathname): Export.
+	(merge_include_chains):  Don't nreverse the lists.  If
+	opts->verbose, print a notice when a duplicate dir is detected
+	and dropped from the include path.
+	(finclude): Fix excessive cleverness in setting
+	fp->system_header_p.
+	(actual_directory): Set x->sysp from
+	CPP_BUFFER (pfile)->system_header_p so that one system header
+	may include another with "".
+	(deps_output): Fix double adjustment of deps_size which would
+	cause all dependencies after the first two lines to be lost.
+
+	* cpplib.c (cpp_unassert): New function.
+	* cpplib.h: Lay out struct cpp_pending here.  Adjust
+	prototypes.  Add include_prefix_len to struct cpp_options.
+
 Mon Mar 15 16:01:52 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* config/misp/mips.h (REGISTER_MOVE_COST): Make the cost of moving
