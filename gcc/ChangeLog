@@ -1,3 +1,14 @@
+2001-06-07  Theodore Papadopoulo  <Theodore.Papadopoulo@sophia.inria.fr>
+
+	* c-tree.texi: Reformat the manual as a single chapter now
+	included by gcc.texi.
+	* gcc.texi: Include c-tree.texi. Merge all indexes.
+	* Makefile.in (dvi): Add generation for the cppinternals
+	documentation. Added dependencies on fdl.texi and c-tree.texi
+	where appropriate.  Use TEXI2DVI instead of custom tex calls.
+	(info): Added dependencies on fdl.texi and c-tree.texi where
+	appropriate.  Remove the target c-tree.info.
+
 2001-06-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* NEWS: Regenerate.
