@@ -1,3 +1,18 @@
+1998-11-06  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.h (lang_decl_flags): Add defined_in_class.  Decrease
+	size of dummy.
+	(DECL_DEFINED_IN_CLASS_P): New macro.
+	(TEMPLATE_PARMS_FOR_INLINE): Document.
+	(check_static_variable_definition): New function.
+	* decl.c (cp_finish_decl): Set DECL_DEFINED_IN_CLASS_P, if
+	appropriate. 
+	(check_static_variable_definition): Split out from ...
+	(grokdeclarator): Here.
+	* pt.c (check_default_tmpl_args): New function, split out from ...
+	(push_template_decl_real): Here.
+	(instantiate_template): Fix comment.
+	
 1998-11-04  Mark Mitchell  <mark@markmitchell.com>
 
 	* cp-tree.h (CP_TYPE_CONST_P): Make {0,1}-valued.

@@ -135,6 +135,7 @@ static tree tsubst_arg_types PROTO((tree, tree, tree));
 static void check_specialization_scope PROTO((void));
 static tree process_partial_specialization PROTO((tree));
 static void set_current_access_from_decl PROTO((tree));
+static void check_default_tmpl_args PROTO((tree, tree, int, int));
 
 /* We use TREE_VECs to hold template arguments.  If there is only one
    level of template arguments, then the TREE_VEC contains the
@@ -1853,27 +1854,8 @@ process_partial_specialization (decl)
   int ntparms = TREE_VEC_LENGTH (inner_parms);
   int  i;
   int did_error_intro = 0;
-  int issued_default_arg_message = 0;
   struct template_parm_data tpd;
   struct template_parm_data tpd2;
-
-  /* [temp.class.spec]
-     
-     The template parameter list of a specialization shall not
-     contain default template argument values.  */
-  for (i = 0; i < ntparms; ++i) 
-    {
-      if (TREE_PURPOSE (TREE_VEC_ELT (inner_parms, i)))
-	{
-	  if (!issued_default_arg_message)
-	    {
-	      cp_error ("default argument in partial specialization `%T'", 
-			type);
-	      issued_default_arg_message = 1;
-	    }
-	  TREE_PURPOSE (TREE_VEC_ELT (inner_parms, i)) = NULL_TREE;
-	}
-    }
 
   /* We check that each of the template parameters given in the
      partial specialization is used in the argument list to the
@@ -2029,6 +2011,107 @@ process_partial_specialization (decl)
   return decl;
 }
 
+/* Check that a template declaration's use of default arguments is not
+   invalid.  Here, PARMS are the template parameters.  IS_PRIMARY is
+   non-zero if DECL is the thing declared by a primary template.
+   IS_PARTIAL is non-zero if DECL is a partial specialization.  */
+
+static void
+check_default_tmpl_args (decl, parms, is_primary, is_partial)
+     tree decl;
+     tree parms;
+     int is_primary;
+     int is_partial;
+{
+  char* msg;
+  int   last_level_to_check;
+
+  /* [temp.param] 
+
+     A default template-argument shall not be specified in a
+     function template declaration or a function template definition, nor
+     in the template-parameter-list of the definition of a member of a
+     class template.  */
+
+  if (current_class_type
+      && !TYPE_BEING_DEFINED (current_class_type)
+      && DECL_REAL_CONTEXT (decl) == current_class_type
+      && DECL_DEFINED_IN_CLASS_P (decl)) 
+    /* We already checked these parameters when the template was
+       declared, so there's no need to do it again now.  This is an
+       inline member function definition.  */
+    return;
+
+  if (TREE_CODE (decl) != TYPE_DECL || is_partial || !is_primary)
+    /* For an ordinary class template, default template arguments are
+       allowed at the innermost level, e.g.:
+         template <class T = int>
+	 struct S {};
+       but, in a partial specialization, they're not allowed even
+       there, as we have in [temp.class.spec]:
+     
+	 The template parameter list of a specialization shall not
+	 contain default template argument values.  
+
+       So, for a partial specialization, or for a function template,
+       we look at all of them.  */
+    ;
+  else
+    /* But, for a primary class template that is not a partial
+       specialization we look at all template parameters except the
+       innermost ones.  */
+    parms = TREE_CHAIN (parms);
+
+  /* Figure out what error message to issue.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    msg = "default argument for template parameter in function template `%D'";
+  else if (is_partial)
+    msg = "default argument in partial specialization `%D'";
+  else
+    msg = "default argument for template parameter for class enclosing `%D'";
+
+  if (current_class_type && TYPE_BEING_DEFINED (current_class_type))
+    /* If we're inside a class definition, there's no need to
+       examine the paramters to the class itself.  On the one
+       hand, they will be checked when the class is defined, and,
+       on the other, default arguments are legal in things like:
+         template <class T = double>
+         struct S { template <class U> void f(U); };
+       Here the default argument for `S' has no bearing on the
+       declaration of `f'.  */
+    last_level_to_check = template_class_depth (current_class_type) + 1;
+  else
+    /* Check everything.  */
+    last_level_to_check = 0;
+
+  for (; parms && TMPL_PARMS_DEPTH (parms) >= last_level_to_check; 
+       parms = TREE_CHAIN (parms))
+    {
+      tree inner_parms = TREE_VALUE (parms);
+      int i, ntparms;
+
+      ntparms = TREE_VEC_LENGTH (inner_parms);
+      for (i = 0; i < ntparms; ++i) 
+	if (TREE_PURPOSE (TREE_VEC_ELT (inner_parms, i)))
+	  {
+	    if (msg)
+	      {
+		cp_error (msg, decl);
+		msg = 0;
+	      }
+
+	    /* Clear out the default argument so that we are not
+	       confused later.  */
+	    TREE_PURPOSE (TREE_VEC_ELT (inner_parms, i)) = NULL_TREE;
+	  }
+
+      /* At this point, if we're still interested in issuing messages,
+	 they must apply to classes surrounding the object declared.  */
+      if (msg)
+	msg = "default argument for template parameter for class enclosing `%D'"; 
+    }
+}
+
 /* Creates a TEMPLATE_DECL for the indicated DECL using the template
    parameters given by current_template_args, or reuses a
    previously existing one, if appropriate.  Returns the DECL, or an
@@ -2046,6 +2129,12 @@ push_template_decl_real (decl, is_friend)
   tree info;
   tree ctx;
   int primary;
+  int is_partial;
+
+  /* See if this is a partial specialization.  */
+  is_partial = (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl)
+		&& TREE_CODE (TREE_TYPE (decl)) != ENUMERAL_TYPE
+		&& CLASSTYPE_TEMPLATE_SPECIALIZATION (TREE_TYPE (decl)));
 
   is_friend |= (TREE_CODE (decl) == FUNCTION_DECL && DECL_FRIEND_P (decl));
 
@@ -2076,6 +2165,7 @@ push_template_decl_real (decl, is_friend)
   else
     info = ctx;
 
+  /* See if this is a primary template.  */
   if (info && TREE_CODE (info) == FUNCTION_DECL)
     primary = 0;
   /* Note that template_class_depth returns 0 if given NULL_TREE, so
@@ -2096,47 +2186,13 @@ push_template_decl_real (decl, is_friend)
 	cp_error ("template declaration of `%#T'", TREE_TYPE (decl));
     }
 
-  /* Partial specialization.  */
-  if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl)
-      && TREE_CODE (TREE_TYPE (decl)) != ENUMERAL_TYPE
-      && CLASSTYPE_TEMPLATE_SPECIALIZATION (TREE_TYPE (decl)))
+  /* Check to see that the rules regarding the use of default
+     arguments are not being violated.  */
+  check_default_tmpl_args (decl, current_template_parms, 
+			   primary, is_partial);
+
+  if (is_partial)
     return process_partial_specialization (decl);
-
-  /* [temp.param] A default template-argument shall not be specified in a
-     function template declaration or a function template definition, nor
-     in the template-parameter-list of the definition of a member of a
-     class template.  */
-  {
-    tree parms;
-    int issued_default_arg_message = 0;
-
-    parms = current_template_parms;
-    if (primary)
-      parms = TREE_CHAIN (parms);
-    for (; parms; parms = TREE_CHAIN (parms))
-      {
-	tree inner_parms = TREE_VALUE (parms);
-	int i, ntparms;
-
-	if (TREE_TYPE (inner_parms))
-	  continue;
-
-	ntparms = TREE_VEC_LENGTH (inner_parms);
-	for (i = 0; i < ntparms; ++i) 
-	  {
-	    if (TREE_PURPOSE (TREE_VEC_ELT (inner_parms, i)))
-	      {
-		if (!issued_default_arg_message)
-		  {
-		    cp_error ("default argument for template parameter of class enclosing `%D'", 
-			      decl);
-		    issued_default_arg_message = 1;
-		  }
-		TREE_PURPOSE (TREE_VEC_ELT (inner_parms, i)) = NULL_TREE;
-	      }
-	  }
-      }
-  }
 
   args = current_template_args ();
 
@@ -4604,6 +4660,8 @@ instantiate_class_template (type)
 	    DECL_IN_AGGR_P (r) = 1;
 	    DECL_EXTERNAL (r) = 1;
 	    cp_finish_decl (r, DECL_INITIAL (r), NULL_TREE, 0, 0);
+	    if (DECL_DEFINED_IN_CLASS_P (r))
+	      check_static_variable_definition (r, TREE_TYPE (r));
 	  }
 	
 	/* R will have a TREE_CHAIN if and only if it has already been
@@ -6468,7 +6526,7 @@ tsubst_expr (t, args, in_decl)
   return NULL_TREE;
 }
 
-/* Instantiate the indicated variable of function template TMPL with
+/* Instantiate the indicated variable or function template TMPL with
    the template arguments in TARG_PTR.  */
 
 tree

@@ -7071,6 +7071,12 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
       init = NULL_TREE;
     }
 
+  if (current_class_type
+      && DECL_REAL_CONTEXT (decl) == current_class_type
+      && TYPE_BEING_DEFINED (current_class_type)
+      && (DECL_INITIAL (decl) || init))
+    DECL_DEFINED_IN_CLASS_P (decl) = 1;
+
   if (TREE_CODE (decl) == VAR_DECL 
       && DECL_CONTEXT (decl)
       && TREE_CODE (DECL_CONTEXT (decl)) == NAMESPACE_DECL
@@ -8492,6 +8498,41 @@ build_ptrmemfunc_type (type)
    See grokfield for details.  */
 
 enum return_types { return_normal, return_ctor, return_dtor, return_conversion };
+
+/* DECL is a VAR_DECL defined in-class, whose TYPE is also given.
+   Check to see that the definition is valid.  Issue appropriate error
+   messages.  Return 1 if the definition is particularly bad, or 0
+   otherwise.  */
+
+int
+check_static_variable_definition (decl, type)
+     tree decl;
+     tree type;
+{
+  /* Motion 10 at San Diego: If a static const integral data member is
+     initialized with an integral constant expression, the initializer
+     may appear either in the declaration (within the class), or in
+     the definition, but not both.  If it appears in the class, the
+     member is a member constant.  The file-scope definition is always
+     required.  */
+  if (CLASS_TYPE_P (type) || TREE_CODE (type) == REFERENCE_TYPE)
+    {
+      cp_error ("in-class initialization of static data member of non-integral type `%T'", 
+		type);
+      /* If we just return the declaration, crashes will sometimes
+	 occur.  We therefore return void_type_node, as if this was a
+	 friend declaration, to cause callers to completely ignore
+	 this declaration.  */
+      return 1;
+    }
+  else if (!CP_TYPE_CONST_P (type))
+    cp_error ("ANSI C++ forbids in-class initialization of non-const static member `%D'",
+	      decl);
+  else if (pedantic && !INTEGRAL_TYPE_P (type))
+    cp_pedwarn ("ANSI C++ forbids initialization of member constant `%D' of non-integral type `%T'", decl, type);
+
+  return 0;
+}
 
 tree
 grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
@@ -10660,31 +10701,17 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		    staticp = 1;
 		  }
 
-		/* Motion 10 at San Diego: If a static const integral data
-		   member is initialized with an integral constant
-		   expression, the initializer may appear either in the
-		   declaration (within the class), or in the definition,
-		   but not both.  If it appears in the class, the member is
-		   a member constant.  The file-scope definition is always
-		   required.  */
-		if (CLASS_TYPE_P (type)
-		    || TREE_CODE (type) == REFERENCE_TYPE)
-		  {
-		    cp_error ("in-class initialization of static data member of non-integral type `%T'", 
-			      type);
-		    /* If we just return the declaration, crashes will
-		       sometimes occur.  We therefore return
-		       void_type_node, as if this was a friend
-		       declaration, to cause callers to completely
-		       ignore this declaration.  */
-		    return void_type_node;
-		  }
-		else if (!(type_quals & TYPE_QUAL_CONST))
-		  cp_error ("ANSI C++ forbids in-class initialization of non-const static member `%D'",
-			    declarator);
-		else if (pedantic && ! INTEGRAL_TYPE_P (type) 
-			 && !uses_template_parms (type))
-		  cp_pedwarn ("ANSI C++ forbids initialization of member constant `%D' of non-integral type `%T'", declarator, type);
+		if (uses_template_parms (type))
+		  /* We'll check at instantiation time.  */
+		  ;
+		else if (check_static_variable_definition (declarator,
+							   type))
+		  /* If we just return the declaration, crashes
+		     will sometimes occur.  We therefore return
+			 void_type_node, as if this was a friend
+			 declaration, to cause callers to completely
+			 ignore this declaration.  */
+		  return void_type_node;
 	      }
 
 	    if (staticp)
