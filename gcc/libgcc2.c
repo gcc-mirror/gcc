@@ -1,7 +1,7 @@
 /* More subroutines needed by GCC output code on some machines.  */
 /* Compile this one with gcc.  */
 /* Copyright (C) 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001  Free Software Foundation, Inc.
+   2000, 2001, 2002  Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1243,7 +1243,7 @@ struct bb_function_info {
   const char *name;
 };
 
-/* Structure emitted by -a  */
+/* Structure emitted by --profile-arcs  */
 struct bb
 {
   long zero_word;
@@ -1259,14 +1259,11 @@ struct bb
 
 #ifndef inhibit_libc
 
-/* Simple minded basic block profiling output dumper for
-   systems that don't provide tcov support.  At present,
-   it requires atexit and stdio.  */
+/* Arc profile dumper. Requires atexit and stdio.  */
 
 #undef NULL /* Avoid errors if stdio.h and our stddef.h mismatch.  */
 #include <stdio.h>
 
-#include "gbl-ctors.h"
 #include "gcov-io.h"
 #include <string.h>
 #ifdef TARGET_HAS_F_SETLKW
@@ -1274,189 +1271,268 @@ struct bb
 #include <errno.h>
 #endif
 
-#include <gthr.h>
-
+/* Chain of per-object file bb structures. */
 static struct bb *bb_head;
 
-int __global_counters = 0, __gthreads_active = 0;
+/* Dump the coverage counts. We merge with existing counts when
+   possible, to avoid growing the .da files ad infinitum.  */
 
 void
 __bb_exit_func (void)
 {
-  FILE *da_file;
   struct bb *ptr;
-  long n_counters_p = 0;
-  gcov_type max_counter_p = 0;
-  gcov_type sum_counters_p = 0;
+  int i;
+  gcov_type program_sum = 0;
+  gcov_type program_max = 0;
+  long program_arcs = 0;
+  gcov_type merged_sum = 0;
+  gcov_type merged_max = 0;
+  long merged_arcs = 0;
+  
+#if defined (TARGET_HAS_F_SETLKW)
+  struct flock s_flock;
 
-  if (bb_head == 0)
-    return;
+  s_flock.l_type = F_WRLCK;
+  s_flock.l_whence = SEEK_SET;
+  s_flock.l_start = 0;
+  s_flock.l_len = 0; /* Until EOF. */
+  s_flock.l_pid = getpid ();
+#endif
 
-  /* Calculate overall "statistics".  */
-
-  for (ptr = bb_head; ptr != (struct bb *) 0; ptr = ptr->next)
+  /* Non-merged stats for this program.  */
+  for (ptr = bb_head; ptr; ptr = ptr->next)
     {
-      int i;
-
-      n_counters_p += ptr->ncounts;
-
       for (i = 0; i < ptr->ncounts; i++)
 	{
-	  sum_counters_p += ptr->counts[i];
+	  program_sum += ptr->counts[i];
 
-	  if (ptr->counts[i] > max_counter_p)
-	    max_counter_p = ptr->counts[i];
+	  if (ptr->counts[i] > program_max)
+	    program_max = ptr->counts[i];
 	}
+      program_arcs += ptr->ncounts;
     }
-
-  for (ptr = bb_head; ptr != (struct bb *) 0; ptr = ptr->next)
+  
+  for (ptr = bb_head; ptr; ptr = ptr->next)
     {
-      gcov_type max_counter_o = 0;
-      gcov_type sum_counters_o = 0;
-      int i;
-
-      /* Calculate the per-object statistics.  */
-
-      for (i = 0; i < ptr->ncounts; i++)
+      FILE *da_file;
+      gcov_type object_max = 0;
+      gcov_type object_sum = 0;
+      long object_functions = 0;
+      int merging = 0;
+      int error = 0;
+      struct bb_function_info *fn_info;
+      gcov_type *count_ptr;
+      
+      /* Open for modification */
+      da_file = fopen (ptr->filename, "r+b");
+      
+      if (da_file)
+	merging = 1;
+      else
 	{
-	  sum_counters_o += ptr->counts[i];
-
-	  if (ptr->counts[i] > max_counter_o)
-	    max_counter_o = ptr->counts[i];
+	  /* Try for appending */
+	  da_file = fopen (ptr->filename, "ab");
+	  /* Some old systems might not allow the 'b' mode modifier.
+             Therefore, try to open without it.  This can lead to a
+             race condition so that when you delete and re-create the
+             file, the file might be opened in text mode, but then,
+             you shouldn't delete the file in the first place.  */
+	  if (!da_file)
+	    da_file = fopen (ptr->filename, "a");
 	}
-
-      /* open the file for appending, creating it if necessary.  */
-      da_file = fopen (ptr->filename, "ab");
-      /* Some old systems might not allow the 'b' mode modifier.
-         Therefore, try to open without it.  This can lead to a race
-         condition so that when you delete and re-create the file, the
-         file might be opened in text mode, but then, you shouldn't
-         delete the file in the first place.  */
-      if (da_file == 0)
-	da_file = fopen (ptr->filename, "a");
-      if (da_file == 0)
+      
+      if (!da_file)
 	{
 	  fprintf (stderr, "arc profiling: Can't open output file %s.\n",
 		   ptr->filename);
+	  ptr->filename = 0;
 	  continue;
 	}
 
+#if defined (TARGET_HAS_F_SETLKW)
       /* After a fork, another process might try to read and/or write
          the same file simultanously.  So if we can, lock the file to
          avoid race conditions.  */
-#if defined (TARGET_HAS_F_SETLKW)
-      {
-	struct flock s_flock;
-
-	s_flock.l_type = F_WRLCK;
-	s_flock.l_whence = SEEK_SET;
-	s_flock.l_start = 0;
-	s_flock.l_len = 1;
-	s_flock.l_pid = getpid ();
-
-	while (fcntl (fileno (da_file), F_SETLKW, &s_flock)
-	       && errno == EINTR);
-      }
+      while (fcntl (fileno (da_file), F_SETLKW, &s_flock)
+	     && errno == EINTR)
+	continue;
 #endif
+      for (fn_info = ptr->function_infos; fn_info->arc_count != -1; fn_info++)
+	object_functions++;
 
-      if (__write_long (-123, da_file, 4) != 0)	/* magic */
+      if (merging)
 	{
-	  fprintf (stderr, "arc profiling: Error writing output file %s.\n",
-		   ptr->filename);
+	  /* Merge data from file.  */
+	  long tmp_long;
+	  gcov_type tmp_gcov;
+	  
+	  if (/* magic */
+	      (__read_long (&tmp_long, da_file, 4) || tmp_long != -123l)
+	      /* functions in object file.  */
+	      || (__read_long (&tmp_long, da_file, 4)
+		  || tmp_long != object_functions)
+	      /* extension block, skipped */
+	      || (__read_long (&tmp_long, da_file, 4)
+		  || fseek (da_file, tmp_long, SEEK_CUR)))
+	    {
+	    read_error:;
+	      fprintf (stderr, "arc profiling: Error merging output file %s.\n",
+		       ptr->filename);
+	      clearerr (da_file);
+	    }
+	  else
+	    {
+	      /* Merge execution counts for each function.  */
+	      count_ptr = ptr->counts;
+	      
+	      for (fn_info = ptr->function_infos; fn_info->arc_count != -1;
+		   fn_info++)
+		{
+		  if (/* function name delim */
+		      (__read_long (&tmp_long, da_file, 4)
+		       || tmp_long != -1)
+		      /* function name length */
+		      || (__read_long (&tmp_long, da_file, 4)
+			  || tmp_long != (long) strlen (fn_info->name))
+		      /* skip string */
+		      || fseek (da_file, ((tmp_long + 1) + 3) & ~3, SEEK_CUR)
+		      /* function name delim */
+		      || (__read_long (&tmp_long, da_file, 4)
+			  || tmp_long != -1))
+		    goto read_error;
+
+		  if (/* function checksum */
+		      (__read_long (&tmp_long, da_file, 4)
+		       || tmp_long != fn_info->checksum)
+		      /* arc count */
+		      || (__read_long (&tmp_long, da_file, 4)
+			  || tmp_long != fn_info->arc_count))
+		    goto read_error;
+		  
+		  for (i = fn_info->arc_count; i > 0; i--, count_ptr++)
+		    if (__read_gcov_type (&tmp_gcov, da_file, 8))
+		      goto read_error;
+		    else
+		      *count_ptr += tmp_gcov;
+		}
+	    }
+	  fseek (da_file, 0, SEEK_SET);
 	}
-      else
+      
+      /* Calculate the per-object statistics.  */
+      for (i = 0; i < ptr->ncounts; i++)
 	{
+	  object_sum += ptr->counts[i];
 
-	  struct bb_function_info *fn_info;
-	  gcov_type *count_ptr = ptr->counts;
-	  int i;
-	  int count_functions = 0;
-
-	  for (fn_info = ptr->function_infos; fn_info->arc_count != -1;
-	       fn_info++)
-	    count_functions++;
-
-	  /* number of functions in this block.  */
-	  __write_long (count_functions, da_file, 4);
-
+	  if (ptr->counts[i] > object_max)
+	    object_max = ptr->counts[i];
+	}
+      merged_sum += object_sum;
+      if (merged_max < object_max)
+	merged_max = object_max;
+      merged_arcs += ptr->ncounts;
+      
+      /* Write out the data. */
+      if (/* magic */
+	  __write_long (-123, da_file, 4)
+	  /* number of functions in object file.  */
+	  || __write_long (object_functions, da_file, 4)
 	  /* length of extra data in bytes.  */
-	  __write_long ((4 + 8 + 8) + (4 + 8 + 8), da_file, 4);
+	  || __write_long ((4 + 8 + 8) + (4 + 8 + 8), da_file, 4)
 
-	  /* overall statistics.  */
-	  /* number of counters.  */
-	  __write_long (n_counters_p, da_file, 4);
+	  /* whole program statistics. If merging write per-object
+	     now, rewrite later */
+	  /* number of instrumented arcs.  */
+	  || __write_long (merging ? ptr->ncounts : program_arcs, da_file, 4)
 	  /* sum of counters.  */
-	  __write_gcov_type (sum_counters_p, da_file, 8);
+	  || __write_gcov_type (merging ? object_sum : program_sum, da_file, 8)
 	  /* maximal counter.  */
-	  __write_gcov_type (max_counter_p, da_file, 8);
+	  || __write_gcov_type (merging ? object_max : program_max, da_file, 8)
 
 	  /* per-object statistics.  */
 	  /* number of counters.  */
-	  __write_long (ptr->ncounts, da_file, 4);
+	  || __write_long (ptr->ncounts, da_file, 4)
 	  /* sum of counters.  */
-	  __write_gcov_type (sum_counters_o, da_file, 8);
+	  || __write_gcov_type (object_sum, da_file, 8)
 	  /* maximal counter.  */
-	  __write_gcov_type (max_counter_o, da_file, 8);
-
-	  /* write execution counts for each function.  */
+	  || __write_gcov_type (object_max, da_file, 8))
+	{
+	write_error:;
+	  fprintf (stderr, "arc profiling: Error writing output file %s.\n",
+		   ptr->filename);
+	  error = 1;
+	}
+      else
+	{
+	  /* Write execution counts for each function.  */
+	  count_ptr = ptr->counts;
 
 	  for (fn_info = ptr->function_infos; fn_info->arc_count != -1;
 	       fn_info++)
 	    {
-	      /* new function.  */
-	      if (__write_gcov_string
-		  (fn_info->name, strlen (fn_info->name), da_file, -1) != 0)
-		{
-		  fprintf (stderr,
-			   "arc profiling: Error writing output file %s.\n",
-			   ptr->filename);
-		  break;
-		}
-
-	      if (__write_long (fn_info->checksum, da_file, 4) != 0)
-		{
-		  fprintf (stderr,
-			   "arc profiling: Error writing output file %s.\n",
-			   ptr->filename);
-		  break;
-		}
-
-	      if (__write_long (fn_info->arc_count, da_file, 4) != 0)
-		{
-		  fprintf (stderr,
-			   "arc profiling: Error writing output file %s.\n",
-			   ptr->filename);
-		  break;
-		}
-
+	      if (__write_gcov_string (fn_info->name,
+				       strlen (fn_info->name), da_file, -1)
+		  || __write_long (fn_info->checksum, da_file, 4)
+		  || __write_long (fn_info->arc_count, da_file, 4))
+		goto write_error;
+	      
 	      for (i = fn_info->arc_count; i > 0; i--, count_ptr++)
-		{
-		  if (__write_gcov_type (*count_ptr, da_file, 8) != 0)
-		    break;
-		}
-
-	      if (i)		/* there was an error */
-		{
-		  fprintf (stderr,
-			   "arc profiling: Error writing output file %s.\n",
-			   ptr->filename);
-		  break;
-		}
+		if (__write_gcov_type (*count_ptr, da_file, 8))
+		  goto write_error; /* RIP Edsger Dijkstra */
 	    }
 	}
 
-      if (fclose (da_file) != 0)
-	fprintf (stderr, "arc profiling: Error closing output file %s.\n",
-		 ptr->filename);
+      if (fclose (da_file))
+	{
+	  fprintf (stderr, "arc profiling: Error closing output file %s.\n",
+		   ptr->filename);
+	  error = 1;
+	}
+      if (error || !merging)
+	ptr->filename = 0;
     }
+
+  /* Upate whole program statistics.  */
+  for (ptr = bb_head; ptr; ptr = ptr->next)
+    if (ptr->filename)
+      {
+	FILE *da_file;
+	
+	da_file = fopen (ptr->filename, "r+b");
+	if (!da_file)
+	  {
+	    fprintf (stderr, "arc profiling: Cannot reopen %s.\n",
+		     ptr->filename);
+	    continue;
+	  }
+	
+#if defined (TARGET_HAS_F_SETLKW)
+	while (fcntl (fileno (da_file), F_SETLKW, &s_flock)
+	       && errno == EINTR)
+	  continue;
+#endif
+	
+	if (fseek (da_file, 4 * 3, SEEK_SET)
+	    /* number of instrumented arcs.  */
+	    || __write_long (program_arcs, da_file, 4)
+	    /* sum of counters.  */
+	    || __write_gcov_type (program_sum, da_file, 8)
+	    /* maximal counter.  */
+	    || __write_gcov_type (program_max, da_file, 8))
+	  fprintf (stderr, "arc profiling: Error updating program header %s.\n",
+		   ptr->filename);
+	if (fclose (da_file))
+	  fprintf (stderr, "arc profiling: Error reclosing %s\n",
+		   ptr->filename);
+      }
 }
+
+/* Add a new object file onto the bb chain.  Invoked automatically
+   when running an object file's global ctors.  */
 
 void
 __bb_init_func (struct bb *blocks)
 {
-  /* User is supposed to check whether the first word is non-0,
-     but just in case....  */
-
   if (blocks->zero_word)
     return;
 
@@ -1473,6 +1549,7 @@ __bb_init_func (struct bb *blocks)
 /* Called before fork or exec - write out profile information gathered so
    far and reset it to zero.  This avoids duplication or loss of the
    profile information gathered so far.  */
+
 void
 __bb_fork_func (void)
 {
