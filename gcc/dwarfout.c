@@ -4439,7 +4439,10 @@ output_type (type, containing_scope)
 		    && TREE_CODE (TYPE_CONTEXT (type)) != METHOD_TYPE))
 	    && !finalizing)
 	  {
-	    add_incomplete_type (type);
+	    /* We can't do this for function-local types, and we don't need
+               to.  */
+	    if (TREE_PERMANENT (type))
+	      add_incomplete_type (type);
 	    return;	/* EARLY EXIT!  Avoid setting TREE_ASM_WRITTEN.  */
 	  }
 
