@@ -1,3 +1,8 @@
+Wed Jun 10 09:47:13 1998  Richard Earnshaw (rearnsha@arm.com)
+
+	* unroll.c (verify_addresses): Use validate_replace_rtx to undo the 
+	changes.  Abort if the undo fails.
+
 Wed Jun 10 08:56:27 1998  John Carr  <jfc@mit.edu>
 
 	* reload1.c (reload_cse_simplify_operands): Do not call gen_rtx_REG
