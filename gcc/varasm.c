@@ -69,44 +69,18 @@ const char *weak_global_object_name;
 
 struct addr_const;
 struct constant_descriptor_rtx;
-struct rtx_const;
-struct pool_constant;
-
-#define MAX_RTX_HASH_TABLE 61
+struct rtx_constant_pool;
 
 struct varasm_status GTY(())
 {
-  /* Hash facility for making memory-constants
-     from constant rtl-expressions.  It is used on RISC machines
-     where immediate integer arguments and constant addresses are restricted
-     so that such constants must be stored in memory.
-
-     This pool of constants is reinitialized for each function
-     so each function gets its own constants-pool that comes right before
-     it.  */
-  struct constant_descriptor_rtx ** GTY ((length ("MAX_RTX_HASH_TABLE")))
-    x_const_rtx_hash_table;
-  struct pool_constant ** GTY ((length ("MAX_RTX_HASH_TABLE")))
-    x_const_rtx_sym_hash_table;
-
-  /* Pointers to first and last constant in pool.  */
-  struct pool_constant *x_first_pool;
-  struct pool_constant *x_last_pool;
-
-  /* Current offset in constant pool (does not include any machine-specific
-     header).  */
-  HOST_WIDE_INT x_pool_offset;
+  /* If we're using a per-function constant pool, this is it.  */
+  struct rtx_constant_pool *pool;
 
   /* Number of tree-constants deferred during the expansion of this
      function.  */
   unsigned int deferred_constants;
 };
 
-#define const_rtx_hash_table (cfun->varasm->x_const_rtx_hash_table)
-#define const_rtx_sym_hash_table (cfun->varasm->x_const_rtx_sym_hash_table)
-#define first_pool (cfun->varasm->x_first_pool)
-#define last_pool (cfun->varasm->x_last_pool)
-#define pool_offset (cfun->varasm->x_pool_offset)
 #define n_deferred_constants (cfun->varasm->deferred_constants)
 
 /* Number for making the label on the next
@@ -147,16 +121,6 @@ static hashval_t const_hash_1 (const tree);
 static int compare_constant (const tree, const tree);
 static tree copy_constant (tree);
 static void output_constant_def_contents (rtx);
-static void decode_rtx_const (enum machine_mode, rtx, struct rtx_const *);
-static unsigned int const_hash_rtx (enum machine_mode, rtx);
-static int compare_constant_rtx (enum machine_mode, rtx,
-				 struct constant_descriptor_rtx *);
-static struct constant_descriptor_rtx * record_constant_rtx
-  (enum machine_mode, rtx);
-static struct pool_constant *find_pool_constant (struct function *, rtx);
-static void mark_constant_pool (void);
-static void mark_constants (rtx);
-static int mark_constant (rtx *current_rtx, void *data);
 static void output_addressed_constants (tree);
 static unsigned HOST_WIDE_INT array_size_for_constructor (tree);
 static unsigned min_align (unsigned, unsigned);
@@ -2025,36 +1989,6 @@ decode_addr_const (tree exp, struct addr_const *value)
   value->offset = offset;
 }
 
-/* We do RTX_UNSPEC + XINT (blah), so nothing can go after RTX_UNSPEC.  */
-enum kind { RTX_UNKNOWN, RTX_DOUBLE, RTX_VECTOR, RTX_INT, RTX_UNSPEC };
-struct rtx_const GTY(())
-{
-  ENUM_BITFIELD(kind) kind : 16;
-  ENUM_BITFIELD(machine_mode) mode : 16;
-  union rtx_const_un {
-    REAL_VALUE_TYPE GTY ((tag ("4"))) du;
-    struct rtx_const_u_addr {
-      rtx base;
-      const char *symbol;
-      HOST_WIDE_INT offset;
-    } GTY ((tag ("1"))) addr;
-    struct rtx_const_u_di {
-      HOST_WIDE_INT high;
-      HOST_WIDE_INT low;
-    } GTY ((tag ("0"))) di;
-
-    /* The max vector size we have is 16 wide; two variants for
-       integral and floating point vectors.  */
-    struct rtx_const_int_vec {
-      HOST_WIDE_INT high;
-      HOST_WIDE_INT low;
-    } GTY ((tag ("2"))) int_vec[16];
-
-    REAL_VALUE_TYPE GTY ((tag ("3"))) fp_vec[8];
-
-  } GTY ((desc ("%1.kind >= RTX_INT"), descbits ("1"))) un;
-};
-
 /* Uniquize all constants that appear in memory.
    Each constant in memory thus far output is recorded
    in `const_desc_table'.  */
@@ -2612,43 +2546,157 @@ lookup_constant_def (tree exp)
 
 /* Used in the hash tables to avoid outputting the same constant
    twice.  Unlike 'struct constant_descriptor_tree', RTX constants
-   are output once per function, not once per file; there seems
-   to be no reason for the difference.  */
+   are output once per function, not once per file.  */
+/* ??? Only a few targets need per-function constant pools.  Most
+   can use one per-file pool.  Should add a targetm bit to tell the
+   difference.  */
 
-struct constant_descriptor_rtx GTY(())
+struct rtx_constant_pool GTY(())
 {
-  /* More constant_descriptors with the same hash code.  */
-  struct constant_descriptor_rtx *next;
+  /* Pointers to first and last constant in pool, as ordered by offset.  */
+  struct constant_descriptor_rtx *first;
+  struct constant_descriptor_rtx *last;
 
-  /* A MEM for the constant.  */
-  rtx rtl;
+  /* Hash facility for making memory-constants from constant rtl-expressions.
+     It is used on RISC machines where immediate integer arguments and
+     constant addresses are restricted so that such constants must be stored
+     in memory.  */
+  htab_t GTY((param_is (struct constant_descriptor_rtx))) const_rtx_htab;
+  htab_t GTY((param_is (struct constant_descriptor_rtx))) const_rtx_sym_htab;
 
-  /* The value of the constant.  */
-  struct rtx_const value;
+  /* Current offset in constant pool (does not include any
+     machine-specific header).  */
+  HOST_WIDE_INT offset;
 };
 
-/* Structure to represent sufficient information about a constant so that
-   it can be output when the constant pool is output, so that function
-   integration can be done, and to simplify handling on machines that reference
-   constant pool as base+displacement.  */
-
-struct pool_constant GTY(())
+struct constant_descriptor_rtx GTY((chain_next ("%h.next")))
 {
-  struct constant_descriptor_rtx *desc;
-  struct pool_constant *next;
-  struct pool_constant *next_sym;
+  struct constant_descriptor_rtx *next;
+  rtx mem;
+  rtx sym;
   rtx constant;
-  enum machine_mode mode;
-  int labelno;
-  unsigned int align;
   HOST_WIDE_INT offset;
+  hashval_t hash;
+  enum machine_mode mode;
+  unsigned int align;
+  int labelno;
   int mark;
 };
 
-/* Hash code for a SYMBOL_REF with CONSTANT_POOL_ADDRESS_P true.
-   The argument is XSTR (... , 0)  */
+/* Hash and compare functions for const_rtx_htab.  */
 
-#define SYMHASH(LABEL)	(((unsigned long) (LABEL)) % MAX_RTX_HASH_TABLE)
+static hashval_t
+const_desc_rtx_hash (const void *ptr)
+{
+  const struct constant_descriptor_rtx *desc = ptr;
+  return desc->hash;
+}
+
+static int
+const_desc_rtx_eq (const void *a, const void *b)
+{
+  const struct constant_descriptor_rtx *x = a;
+  const struct constant_descriptor_rtx *y = b;
+
+  if (x->mode != y->mode)
+    return 0;
+  return rtx_equal_p (x->constant, y->constant);
+}
+
+/* Hash and compare functions for const_rtx_sym_htab.  */
+
+static hashval_t
+const_desc_rtx_sym_hash (const void *ptr)
+{
+  const struct constant_descriptor_rtx *desc = ptr;
+  return htab_hash_string (XSTR (desc->sym, 0));
+}
+
+static int
+const_desc_rtx_sym_eq (const void *a, const void *b)
+{
+  const struct constant_descriptor_rtx *x = a;
+  const struct constant_descriptor_rtx *y = b;
+  return x->sym == y->sym;
+}
+
+/* This is the worker function for const_rtx_hash, called via for_each_rtx.  */
+
+static int
+const_rtx_hash_1 (rtx *xp, void *data)
+{
+  unsigned HOST_WIDE_INT hwi;
+  enum machine_mode mode;
+  enum rtx_code code;
+  hashval_t h, *hp;
+  rtx x;
+
+  x = *xp;
+  code = GET_CODE (x);
+  mode = GET_MODE (x);
+  h = (hashval_t) code * 1048573 + mode;
+
+  switch (code)
+    {
+    case CONST_INT:
+      hwi = INTVAL (x);
+    fold_hwi:
+      {
+	const int shift = sizeof (hashval_t) * CHAR_BIT;
+	const int n = sizeof (HOST_WIDE_INT) / sizeof (hashval_t);
+	int i;
+
+	h ^= (hashval_t) hwi;
+	for (i = 1; i < n; ++i)
+	  {
+	    hwi >>= shift;
+	    h ^= (hashval_t) hwi;
+	  }
+      }
+      break;
+
+    case CONST_DOUBLE:
+      if (mode == VOIDmode)
+	{
+	  hwi = CONST_DOUBLE_LOW (x) ^ CONST_DOUBLE_HIGH (x);
+	  goto fold_hwi;
+	}
+      else
+	h ^= real_hash (CONST_DOUBLE_REAL_VALUE (x));
+      break;
+
+    case SYMBOL_REF:
+      h ^= htab_hash_string (XSTR (x, 0));
+      break;
+
+    case LABEL_REF:
+      h = h * 251 + CODE_LABEL_NUMBER (XEXP (x, 0));
+      break;
+
+    case UNSPEC:
+    case UNSPEC_VOLATILE:
+      h = h * 251 + XINT (x, 1);
+      break;
+
+    default:
+      break;
+    }
+
+  hp = data;
+  *hp = *hp * 509 + h;
+  return 0;
+}
+
+/* Compute a hash value for X, which should be a constant.  */
+
+static hashval_t
+const_rtx_hash (rtx x)
+{
+  hashval_t h = 0;
+  for_each_rtx (&x, const_rtx_hash_1, &h);
+  return h;
+}
+
 
 /* Initialize constant pool hashing for a new function.  */
 
@@ -2656,270 +2704,31 @@ void
 init_varasm_status (struct function *f)
 {
   struct varasm_status *p;
+  struct rtx_constant_pool *pool;
+
   p = ggc_alloc (sizeof (struct varasm_status));
   f->varasm = p;
-  p->x_const_rtx_hash_table
-    = ggc_alloc_cleared (MAX_RTX_HASH_TABLE
-			 * sizeof (struct constant_descriptor_rtx *));
-  p->x_const_rtx_sym_hash_table
-    = ggc_alloc_cleared (MAX_RTX_HASH_TABLE
-			 * sizeof (struct pool_constant *));
 
-  p->x_first_pool = p->x_last_pool = 0;
-  p->x_pool_offset = 0;
+  pool = ggc_alloc (sizeof (struct rtx_constant_pool));
+  p->pool = pool;
   p->deferred_constants = 0;
+
+  pool->const_rtx_htab = htab_create_ggc (31, const_desc_rtx_hash,
+					  const_desc_rtx_eq, NULL);
+  pool->const_rtx_sym_htab = htab_create_ggc (31, const_desc_rtx_sym_hash,
+					      const_desc_rtx_sym_eq, NULL);
+  pool->first = pool->last = NULL;
+  pool->offset = 0;
 }
 
-
-/* Express an rtx for a constant integer (perhaps symbolic)
-   as the sum of a symbol or label plus an explicit integer.
-   They are stored into VALUE.  */
-
-static void
-decode_rtx_const (enum machine_mode mode, rtx x, struct rtx_const *value)
-{
-  /* Clear the whole structure, including any gaps.  */
-  memset (value, 0, sizeof (struct rtx_const));
-
-  value->kind = RTX_INT;	/* Most usual kind.  */
-  value->mode = mode;
-
-  switch (GET_CODE (x))
-    {
-    case CONST_DOUBLE:
-      value->kind = RTX_DOUBLE;
-      if (GET_MODE (x) != VOIDmode)
-	{
-	  const REAL_VALUE_TYPE *r = CONST_DOUBLE_REAL_VALUE (x);
-
-	  value->mode = GET_MODE (x);
-
-	  /* Copy the REAL_VALUE_TYPE by members so that we don't
-	     copy garbage from the original structure into our
-	     carefully cleaned hashing structure.  */
-	  value->un.du.class = r->class;
-	  value->un.du.sign = r->sign;
-	  switch (r->class)
-	    {
-	    case rvc_zero:
-	    case rvc_inf:
-	      break;
-	    case rvc_normal:
-	      value->un.du.exp = r->exp;
-	      /* Fall through.  */
-	    case rvc_nan:
-	      memcpy (value->un.du.sig, r->sig, sizeof (r->sig));
-	      break;
-	    default:
-	      abort ();
-	    }
-	}
-      else
-	{
-	  value->un.di.low = CONST_DOUBLE_LOW (x);
-	  value->un.di.high = CONST_DOUBLE_HIGH (x);
-	}
-      break;
-
-    case CONST_VECTOR:
-      {
-	int units, i;
-
-	units = CONST_VECTOR_NUNITS (x);
-	value->kind = RTX_VECTOR;
-	value->mode = mode;
-
-	if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
-	  {
-	    for (i = 0; i < units; ++i)
-	      {
-	        rtx elt = CONST_VECTOR_ELT (x, i);
-	        if (GET_CODE (elt) == CONST_INT)
-	          {
-		    value->un.int_vec[i].low = INTVAL (elt);
-		    value->un.int_vec[i].high = 0;
-	          }
-		else
-	          {
-		    value->un.int_vec[i].low = CONST_DOUBLE_LOW (elt);
-		    value->un.int_vec[i].high = CONST_DOUBLE_HIGH (elt);
-		  }
-	      }
-	  }
-	else if (GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
-	  {
-	    for (i = 0; i < units; ++i)
-	      {
-		const REAL_VALUE_TYPE *r
-		  = CONST_DOUBLE_REAL_VALUE (CONST_VECTOR_ELT (x, i));
-		REAL_VALUE_TYPE *d = &value->un.fp_vec[i];
-
-	        /* Copy the REAL_VALUE_TYPE by members so that we don't
-	           copy garbage from the original structure into our
-	           carefully cleaned hashing structure.  */
-	        d->class = r->class;
-	        d->sign = r->sign;
-	        switch (r->class)
-	          {
-	          case rvc_zero:
-	          case rvc_inf:
-	            break;
-	          case rvc_normal:
-	            d->exp = r->exp;
-	            /* Fall through.  */
-	          case rvc_nan:
-	            memcpy (d->sig, r->sig, sizeof (r->sig));
-	            break;
-	          default:
-	            abort ();
-	          }
-	      }
-	  }
-	else
-	  abort ();
-      }
-      break;
-
-    case CONST_INT:
-      value->un.addr.offset = INTVAL (x);
-      break;
-
-    case SYMBOL_REF:
-    case LABEL_REF:
-    case PC:
-      value->un.addr.base = x;
-      break;
-
-    case CONST:
-      x = XEXP (x, 0);
-      if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 1)) == CONST_INT)
-	{
-	  value->un.addr.base = XEXP (x, 0);
-	  value->un.addr.offset = INTVAL (XEXP (x, 1));
-	}
-      else if (GET_CODE (x) == MINUS && GET_CODE (XEXP (x, 1)) == CONST_INT)
-	{
-	  value->un.addr.base = XEXP (x, 0);
-	  value->un.addr.offset = - INTVAL (XEXP (x, 1));
-	}
-      else
-	{
-	  value->un.addr.base = x;
-	  value->un.addr.offset = 0;
-	}
-      break;
-
-    default:
-      value->kind = RTX_UNKNOWN;
-      break;
-    }
-
-  if (value->kind == RTX_INT && value->un.addr.base != 0
-      && GET_CODE (value->un.addr.base) == UNSPEC)
-    {
-      /* For a simple UNSPEC, the base is set to the
-	 operand, the kind field is set to the index of
-	 the unspec expression.
-	 Together with the code below, in case that
-	 the operand is a SYMBOL_REF or LABEL_REF,
-	 the address of the string or the code_label
-	 is taken as base.  */
-      if (XVECLEN (value->un.addr.base, 0) == 1)
-	{
-	  value->kind = RTX_UNSPEC + XINT (value->un.addr.base, 1);
-	  value->un.addr.base = XVECEXP (value->un.addr.base, 0, 0);
-	}
-    }
-
-  if (value->kind >= RTX_INT && value->un.addr.base != 0)
-    switch (GET_CODE (value->un.addr.base))
-      {
-      case SYMBOL_REF:
-	/* Use the string's address, not the SYMBOL_REF's address,
-	   for the sake of addresses of library routines.  */
-	value->un.addr.symbol = XSTR (value->un.addr.base, 0);
-	value->un.addr.base = NULL_RTX;
-	break;
-
-      case LABEL_REF:
-	/* For a LABEL_REF, compare labels.  */
-	value->un.addr.base = XEXP (value->un.addr.base, 0);
-
-      default:
-	break;
-      }
-}
-
 /* Given a MINUS expression, simplify it if both sides
    include the same symbol.  */
 
 rtx
 simplify_subtraction (rtx x)
 {
-  struct rtx_const val0, val1;
-
-  decode_rtx_const (GET_MODE (x), XEXP (x, 0), &val0);
-  decode_rtx_const (GET_MODE (x), XEXP (x, 1), &val1);
-
-  if (val0.kind >= RTX_INT
-      && val0.kind == val1.kind
-      && val0.un.addr.base == val1.un.addr.base
-      && val0.un.addr.symbol == val1.un.addr.symbol)
-    return GEN_INT (val0.un.addr.offset - val1.un.addr.offset);
-
-  return x;
-}
-
-/* Compute a hash code for a constant RTL expression.  */
-
-static unsigned int
-const_hash_rtx (enum machine_mode mode, rtx x)
-{
-  union {
-    struct rtx_const value;
-    unsigned int data[sizeof(struct rtx_const) / sizeof (unsigned int)];
-  } u;
-
-  unsigned int hi;
-  size_t i;
-
-  decode_rtx_const (mode, x, &u.value);
-
-  /* Compute hashing function.  */
-  hi = 0;
-  for (i = 0; i < ARRAY_SIZE (u.data); i++)
-    hi = hi * 613 + u.data[i];
-
-  return hi % MAX_RTX_HASH_TABLE;
-}
-
-/* Compare a constant rtl object X with a constant-descriptor DESC.
-   Return 1 if DESC describes a constant with the same value as X.  */
-
-static int
-compare_constant_rtx (enum machine_mode mode, rtx x,
-		      struct constant_descriptor_rtx *desc)
-{
-  struct rtx_const value;
-
-  decode_rtx_const (mode, x, &value);
-
-  /* Compare constant contents.  */
-  return memcmp (&value, &desc->value, sizeof (struct rtx_const)) == 0;
-}
-
-/* Construct a constant descriptor for the rtl-expression X.
-   It is up to the caller to enter the descriptor in the hash table.  */
-
-static struct constant_descriptor_rtx *
-record_constant_rtx (enum machine_mode mode, rtx x)
-{
-  struct constant_descriptor_rtx *ptr;
-
-  ptr = ggc_alloc (sizeof (*ptr));
-  decode_rtx_const (mode, x, &ptr->value);
-
-  return ptr;
+  rtx r = simplify_rtx (x);
+  return r ? r : x;
 }
 
 /* Given a constant rtx X, make (or find) a memory constant for its value
@@ -2928,30 +2737,32 @@ record_constant_rtx (enum machine_mode mode, rtx x)
 rtx
 force_const_mem (enum machine_mode mode, rtx x)
 {
-  int hash;
-  struct constant_descriptor_rtx *desc;
+  struct constant_descriptor_rtx *desc, tmp;
+  struct rtx_constant_pool *pool = cfun->varasm->pool;
   char label[256];
   rtx def, symbol;
-  struct pool_constant *pool;
+  hashval_t hash;
   unsigned int align;
+  void **slot;
 
   /* If we're not allowed to drop X into the constant pool, don't.  */
   if ((*targetm.cannot_force_const_mem) (x))
     return NULL_RTX;
 
-  /* Compute hash code of X.  Search the descriptors for that hash code
-     to see if any of them describes X.  If yes, we have an rtx to use.  */
-  hash = const_hash_rtx (mode, x);
-  for (desc = const_rtx_hash_table[hash]; desc; desc = desc->next)
-    if (compare_constant_rtx (mode, x, desc))
-      return copy_rtx (desc->rtl);
+  /* Lookup the value in the hashtable.  */
+  tmp.constant = x;
+  tmp.mode = mode;
+  hash = const_rtx_hash (x);
+  slot = htab_find_slot_with_hash (pool->const_rtx_htab, &tmp, hash, INSERT);
+  desc = *slot;
+  
+  /* If the constant was already present, return its memory.  */
+  if (desc)
+    return copy_rtx (desc->mem);
 
-  /* No constant equal to X is known to have been output.
-     Make a constant descriptor to enter X in the hash table
-     and make a MEM for it.  */
-  desc = record_constant_rtx (mode, x);
-  desc->next = const_rtx_hash_table[hash];
-  const_rtx_hash_table[hash] = desc;
+  /* Otherwise, create a new descriptor.  */
+  desc = ggc_alloc (sizeof (*desc));
+  *slot = desc;
 
   /* Align the location counter as required by EXP's data type.  */
   align = GET_MODE_ALIGNMENT (mode == VOIDmode ? word_mode : mode);
@@ -2963,73 +2774,64 @@ force_const_mem (enum machine_mode mode, rtx x)
   }
 #endif
 
-  pool_offset += (align / BITS_PER_UNIT) - 1;
-  pool_offset &= ~ ((align / BITS_PER_UNIT) - 1);
+  pool->offset += (align / BITS_PER_UNIT) - 1;
+  pool->offset &= ~ ((align / BITS_PER_UNIT) - 1);
 
-  if (GET_CODE (x) == LABEL_REF)
-    LABEL_PRESERVE_P (XEXP (x, 0)) = 1;
+  desc->next = NULL;
+  desc->constant = tmp.constant;
+  desc->offset = pool->offset;
+  desc->hash = hash;
+  desc->mode = mode;
+  desc->align = align;
+  desc->labelno = const_labelno;
+  desc->mark = 0;
 
-  /* Allocate a pool constant descriptor, fill it in, and chain it in.  */
-  pool = ggc_alloc (sizeof (struct pool_constant));
-  pool->desc = desc;
-  pool->constant = x;
-  pool->mode = mode;
-  pool->labelno = const_labelno;
-  pool->align = align;
-  pool->offset = pool_offset;
-  pool->mark = 1;
-  pool->next = 0;
-
-  if (last_pool == 0)
-    first_pool = pool;
+  pool->offset += GET_MODE_SIZE (mode);
+  if (pool->last)
+    pool->last->next = desc;
   else
-    last_pool->next = pool;
-
-  last_pool = pool;
-  pool_offset += GET_MODE_SIZE (mode);
+    pool->first = pool->last = desc;
+  pool->last = desc;
 
   /* Create a string containing the label name, in LABEL.  */
   ASM_GENERATE_INTERNAL_LABEL (label, "LC", const_labelno);
-
   ++const_labelno;
 
-  /* Construct the SYMBOL_REF and the MEM.  */
-
-  symbol = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (label));
+  /* Construct the SYMBOL_REF.  Make sure to mark it as belonging to
+     the constants pool.  */
+  desc->sym = symbol = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (label));
   SYMBOL_REF_FLAGS (symbol) = SYMBOL_FLAG_LOCAL;
+  CONSTANT_POOL_ADDRESS_P (symbol) = 1;
+  current_function_uses_const_pool = 1;
 
-  pool->desc->rtl = def = gen_rtx_MEM (mode, symbol);
+  /* Insert the descriptor into the symbol cross-reference table too.  */
+  slot = htab_find_slot (pool->const_rtx_sym_htab, desc, INSERT);
+  if (*slot)
+    abort ();
+  *slot = desc;
+
+  /* Construct the MEM.  */
+  desc->mem = def = gen_rtx_MEM (mode, symbol);
   set_mem_attributes (def, (*lang_hooks.types.type_for_mode) (mode, 0), 1);
   RTX_UNCHANGING_P (def) = 1;
 
-  /* Add label to symbol hash table.  */
-  hash = SYMHASH (XSTR (symbol, 0));
-  pool->next_sym = const_rtx_sym_hash_table[hash];
-  const_rtx_sym_hash_table[hash] = pool;
-
-  /* Mark the symbol_ref as belonging to this constants pool.  */
-  CONSTANT_POOL_ADDRESS_P (symbol) = 1;
-  SYMBOL_REF_FLAGS (symbol) = SYMBOL_FLAG_LOCAL;
-  current_function_uses_const_pool = 1;
+  /* If we're dropping a label to the constant pool, make sure we
+     don't delete it.  */
+  if (GET_CODE (x) == LABEL_REF)
+    LABEL_PRESERVE_P (XEXP (x, 0)) = 1;
 
   return copy_rtx (def);
 }
 
 /* Given a SYMBOL_REF with CONSTANT_POOL_ADDRESS_P true, return a pointer to
-   the corresponding pool_constant structure.  */
+   the corresponding constant_descriptor_rtx structure.  */
 
-static struct pool_constant *
-find_pool_constant (struct function *f, rtx addr)
+static struct constant_descriptor_rtx *
+find_pool_constant (struct rtx_constant_pool *pool, rtx sym)
 {
-  struct pool_constant *pool;
-  const char *label = XSTR (addr, 0);
-
-  for (pool = f->varasm->x_const_rtx_sym_hash_table[SYMHASH (label)]; pool;
-       pool = pool->next_sym)
-    if (XSTR (XEXP (pool->desc->rtl, 0), 0) == label)
-      return pool;
-
-  abort ();
+  struct constant_descriptor_rtx tmp;
+  tmp.sym = sym;
+  return htab_find (pool->const_rtx_sym_htab, &tmp);
 }
 
 /* Given a constant pool SYMBOL_REF, return the corresponding constant.  */
@@ -3037,7 +2839,7 @@ find_pool_constant (struct function *f, rtx addr)
 rtx
 get_pool_constant (rtx addr)
 {
-  return (find_pool_constant (cfun, addr))->constant;
+  return find_pool_constant (cfun->varasm->pool, addr)->constant;
 }
 
 /* Given a constant pool SYMBOL_REF, return the corresponding constant
@@ -3046,9 +2848,11 @@ get_pool_constant (rtx addr)
 rtx
 get_pool_constant_mark (rtx addr, bool *pmarked)
 {
-  struct pool_constant *pool = find_pool_constant (cfun, addr);
-  *pmarked = (pool->mark != 0);
-  return pool->constant;
+  struct constant_descriptor_rtx *desc;
+
+  desc = find_pool_constant (cfun->varasm->pool, addr);
+  *pmarked = (desc->mark != 0);
+  return desc->constant;
 }
 
 /* Likewise, but for the constant pool of a specific function.  */
@@ -3056,7 +2860,7 @@ get_pool_constant_mark (rtx addr, bool *pmarked)
 rtx
 get_pool_constant_for_function (struct function *f, rtx addr)
 {
-  return (find_pool_constant (f, addr))->constant;
+  return find_pool_constant (f->varasm->pool, addr)->constant;
 }
 
 /* Similar, return the mode.  */
@@ -3064,13 +2868,13 @@ get_pool_constant_for_function (struct function *f, rtx addr)
 enum machine_mode
 get_pool_mode (rtx addr)
 {
-  return (find_pool_constant (cfun, addr))->mode;
+  return find_pool_constant (cfun->varasm->pool, addr)->mode;
 }
 
 enum machine_mode
 get_pool_mode_for_function (struct function *f, rtx addr)
 {
-  return (find_pool_constant (f, addr))->mode;
+  return find_pool_constant (f->varasm->pool, addr)->mode;
 }
 
 /* Similar, return the offset in the constant pool.  */
@@ -3078,7 +2882,7 @@ get_pool_mode_for_function (struct function *f, rtx addr)
 int
 get_pool_offset (rtx addr)
 {
-  return (find_pool_constant (cfun, addr))->offset;
+  return find_pool_constant (cfun->varasm->pool, addr)->offset;
 }
 
 /* Return the size of the constant pool.  */
@@ -3086,257 +2890,129 @@ get_pool_offset (rtx addr)
 int
 get_pool_size (void)
 {
-  return pool_offset;
+  return cfun->varasm->pool->offset;
 }
 
-/* Write all the constants in the constant pool.  */
+/* Worker function for output_constant_pool_1.  Emit assembly for X
+   in MODE with known alignment ALIGN.  */
 
-void
-output_constant_pool (const char *fnname ATTRIBUTE_UNUSED,
-		      tree fndecl ATTRIBUTE_UNUSED)
+static void
+output_constant_pool_2 (enum machine_mode mode, rtx x, unsigned int align)
 {
-  struct pool_constant *pool;
-  rtx x;
-  REAL_VALUE_TYPE r;
-
-  /* It is possible for gcc to call force_const_mem and then to later
-     discard the instructions which refer to the constant.  In such a
-     case we do not need to output the constant.  */
-  mark_constant_pool ();
-
-#ifdef ASM_OUTPUT_POOL_PROLOGUE
-  ASM_OUTPUT_POOL_PROLOGUE (asm_out_file, fnname, fndecl, pool_offset);
-#endif
-
-  for (pool = first_pool; pool; pool = pool->next)
+  switch (GET_MODE_CLASS (mode))
     {
-      rtx tmp;
-
-      x = pool->constant;
-
-      if (! pool->mark)
-	continue;
-
-      /* See if X is a LABEL_REF (or a CONST referring to a LABEL_REF)
-	 whose CODE_LABEL has been deleted.  This can occur if a jump table
-	 is eliminated by optimization.  If so, write a constant of zero
-	 instead.  Note that this can also happen by turning the
-	 CODE_LABEL into a NOTE.  */
-      /* ??? This seems completely and utterly wrong.  Certainly it's
-	 not true for NOTE_INSN_DELETED_LABEL, but I disbelieve proper
-	 functioning even with INSN_DELETED_P and friends.  */
-
-      tmp = x;
-      switch (GET_CODE (x))
+    case MODE_FLOAT:
+      if (GET_CODE (x) != CONST_DOUBLE)
+	abort ();
+      else
 	{
-	case CONST:
-	  if (GET_CODE (XEXP (x, 0)) != PLUS
-	      || GET_CODE (XEXP (XEXP (x, 0), 0)) != LABEL_REF)
-	    break;
-	  tmp = XEXP (XEXP (x, 0), 0);
-	  /* Fall through.  */
-
-	case LABEL_REF:
-	  tmp = XEXP (x, 0);
-	  if (INSN_DELETED_P (tmp)
-	      || (GET_CODE (tmp) == NOTE
-		  && NOTE_LINE_NUMBER (tmp) == NOTE_INSN_DELETED))
-	    {
-	      abort ();
-	      x = const0_rtx;
-	    }
-	  break;
-
-	default:
-	  break;
-	}
-
-      /* First switch to correct section.  */
-      (*targetm.asm_out.select_rtx_section) (pool->mode, x, pool->align);
-
-#ifdef ASM_OUTPUT_SPECIAL_POOL_ENTRY
-      ASM_OUTPUT_SPECIAL_POOL_ENTRY (asm_out_file, x, pool->mode,
-				     pool->align, pool->labelno, done);
-#endif
-
-      assemble_align (pool->align);
-
-      /* Output the label.  */
-      (*targetm.asm_out.internal_label) (asm_out_file, "LC", pool->labelno);
-
-      /* Output the value of the constant itself.  */
-      switch (GET_MODE_CLASS (pool->mode))
-	{
-	case MODE_FLOAT:
-	  if (GET_CODE (x) != CONST_DOUBLE)
-	    abort ();
-
+	  REAL_VALUE_TYPE r;
 	  REAL_VALUE_FROM_CONST_DOUBLE (r, x);
-	  assemble_real (r, pool->mode, pool->align);
-	  break;
-
-	case MODE_INT:
-	case MODE_PARTIAL_INT:
-	  assemble_integer (x, GET_MODE_SIZE (pool->mode), pool->align, 1);
-	  break;
-
-	case MODE_VECTOR_FLOAT:
-	  {
-	    int i, units;
-	    rtx elt;
-
-	    if (GET_CODE (x) != CONST_VECTOR)
-	      abort ();
-
-	    units = CONST_VECTOR_NUNITS (x);
-
-	    for (i = 0; i < units; i++)
-	      {
-		elt = CONST_VECTOR_ELT (x, i);
-		REAL_VALUE_FROM_CONST_DOUBLE (r, elt);
-		assemble_real (r, GET_MODE_INNER (pool->mode), pool->align);
-	      }
-	  }
-	  break;
-
-	case MODE_VECTOR_INT:
-	  {
-	    int i, units;
-	    rtx elt;
-
-	    if (GET_CODE (x) != CONST_VECTOR)
-	      abort ();
-
-	    units = CONST_VECTOR_NUNITS (x);
-
-	    for (i = 0; i < units; i++)
-	      {
-		elt = CONST_VECTOR_ELT (x, i);
-		assemble_integer (elt, GET_MODE_UNIT_SIZE (pool->mode),
-				  pool->align, 1);
-	      }
-	  }
-	  break;
-
-	default:
-	  abort ();
+	  assemble_real (r, mode, align);
 	}
+      break;
 
-      /* Make sure all constants in SECTION_MERGE and not SECTION_STRINGS
-	 sections have proper size.  */
-      if (pool->align > GET_MODE_BITSIZE (pool->mode)
-	  && in_section == in_named
-	  && get_named_section_flags (in_named_name) & SECTION_MERGE)
-	assemble_align (pool->align);
+    case MODE_INT:
+    case MODE_PARTIAL_INT:
+      assemble_integer (x, GET_MODE_SIZE (mode), align, 1);
+      break;
+
+    case MODE_VECTOR_FLOAT:
+    case MODE_VECTOR_INT:
+      {
+	int i, units;
+        enum machine_mode submode = GET_MODE_INNER (mode);
+	unsigned int subalign = MIN (align, GET_MODE_BITSIZE (submode));
+
+	if (GET_CODE (x) != CONST_VECTOR)
+	  abort ();
+	units = CONST_VECTOR_NUNITS (x);
+
+	for (i = 0; i < units; i++)
+	  {
+	    rtx elt = CONST_VECTOR_ELT (x, i);
+	    output_constant_pool_2 (submode, elt, i ? subalign : align);
+	  }
+      }
+      break;
+
+    default:
+      abort ();
+    }
+}
+
+/* Worker function for output_constant_pool.  Emit POOL.  */
+
+static void
+output_constant_pool_1 (struct constant_descriptor_rtx *desc)
+{
+  rtx x, tmp;
+
+  if (!desc->mark)
+    return;
+  x = desc->constant;
+
+  /* See if X is a LABEL_REF (or a CONST referring to a LABEL_REF)
+     whose CODE_LABEL has been deleted.  This can occur if a jump table
+     is eliminated by optimization.  If so, write a constant of zero
+     instead.  Note that this can also happen by turning the
+     CODE_LABEL into a NOTE.  */
+  /* ??? This seems completely and utterly wrong.  Certainly it's
+     not true for NOTE_INSN_DELETED_LABEL, but I disbelieve proper
+     functioning even with INSN_DELETED_P and friends.  */
+
+  tmp = x;
+  switch (GET_CODE (x))
+    {
+    case CONST:
+      if (GET_CODE (XEXP (x, 0)) != PLUS
+	  || GET_CODE (XEXP (XEXP (x, 0), 0)) != LABEL_REF)
+	break;
+      tmp = XEXP (XEXP (x, 0), 0);
+      /* FALLTHRU  */
+
+    case LABEL_REF:
+      tmp = XEXP (x, 0);
+      if (INSN_DELETED_P (tmp)
+	  || (GET_CODE (tmp) == NOTE
+	      && NOTE_LINE_NUMBER (tmp) == NOTE_INSN_DELETED))
+	{
+	  abort ();
+	  x = const0_rtx;
+	}
+      break;
+
+    default:
+      break;
+    }
+
+  /* First switch to correct section.  */
+  (*targetm.asm_out.select_rtx_section) (desc->mode, x, desc->align);
 
 #ifdef ASM_OUTPUT_SPECIAL_POOL_ENTRY
-    done: ;
-#endif
-    }
-
-#ifdef ASM_OUTPUT_POOL_EPILOGUE
-  ASM_OUTPUT_POOL_EPILOGUE (asm_out_file, fnname, fndecl, pool_offset);
+  ASM_OUTPUT_SPECIAL_POOL_ENTRY (asm_out_file, x, desc->mode,
+				 desc->align, desc->labelno, done);
 #endif
 
-  /* Done with this pool.  */
-  first_pool = last_pool = 0;
-}
+  assemble_align (desc->align);
 
-/* Look through the instructions for this function, and mark all the
-   entries in the constant pool which are actually being used.  Emit
-   deferred constants which have indeed been used.  */
+  /* Output the label.  */
+  (*targetm.asm_out.internal_label) (asm_out_file, "LC", desc->labelno);
 
-static void
-mark_constant_pool (void)
-{
-  rtx insn;
-  rtx link;
-  struct pool_constant *pool;
+  /* Output the data.  */
+  output_constant_pool_2 (desc->mode, x, desc->align);
 
-  if (first_pool == 0 && n_deferred_constants == 0)
-    return;
+  /* Make sure all constants in SECTION_MERGE and not SECTION_STRINGS
+     sections have proper size.  */
+  if (desc->align > GET_MODE_BITSIZE (desc->mode)
+      && in_section == in_named
+      && get_named_section_flags (in_named_name) & SECTION_MERGE)
+    assemble_align (desc->align);
 
-  for (pool = first_pool; pool; pool = pool->next)
-    pool->mark = 0;
-
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    if (INSN_P (insn))
-      mark_constants (PATTERN (insn));
-
-  for (link = current_function_epilogue_delay_list;
-       link;
-       link = XEXP (link, 1))
-    {
-      insn = XEXP (link, 0);
-
-      if (INSN_P (insn))
-	mark_constants (PATTERN (insn));
-    }
-}
-
-/* Look through appropriate parts of X, marking all entries in the
-   constant pool which are actually being used.  Entries that are only
-   referenced by other constants are also marked as used.  Emit
-   deferred strings that are used.  */
-
-static void
-mark_constants (rtx x)
-{
-  int i;
-  const char *format_ptr;
-
-  if (x == 0)
-    return;
-
-  if (GET_CODE (x) == SYMBOL_REF)
-    {
-      mark_constant (&x, NULL);
-      return;
-    }
-
-  /* Insns may appear inside a SEQUENCE.  Only check the patterns of
-     insns, not any notes that may be attached.  We don't want to mark
-     a constant just because it happens to appear in a REG_EQUIV note.  */
-  if (INSN_P (x))
-    {
-      mark_constants (PATTERN (x));
-      return;
-    }
-
-  format_ptr = GET_RTX_FORMAT (GET_CODE (x));
-
-  for (i = 0; i < GET_RTX_LENGTH (GET_CODE (x)); i++)
-    {
-      switch (*format_ptr++)
-	{
-	case 'e':
-	  mark_constants (XEXP (x, i));
-	  break;
-
-	case 'E':
-	  if (XVEC (x, i) != 0)
-	    {
-	      int j;
-
-	      for (j = 0; j < XVECLEN (x, i); j++)
-		mark_constants (XVECEXP (x, i, j));
-	    }
-	  break;
-
-	case 'S':
-	case 's':
-	case '0':
-	case 'i':
-	case 'w':
-	case 'n':
-	case 'u':
-	case 'B':
-	  break;
-
-	default:
-	  abort ();
-	}
-    }
+#ifdef ASM_OUTPUT_SPECIAL_POOL_ENTRY
+ done:
+#endif
+  return;
 }
 
 /* Given a SYMBOL_REF CURRENT_RTX, mark it and all constants it refers
@@ -3344,37 +3020,113 @@ mark_constants (rtx x)
    be used with for_each_rtx to mark all SYMBOL_REFs in an rtx.  */
 
 static int
-mark_constant (rtx *current_rtx, void *data ATTRIBUTE_UNUSED)
+mark_constant (rtx *current_rtx, void *data)
 {
+  struct rtx_constant_pool *pool = data;
   rtx x = *current_rtx;
 
-  if (x == NULL_RTX)
+  if (x == NULL_RTX || GET_CODE (x) != SYMBOL_REF)
     return 0;
 
-  else if (GET_CODE (x) == SYMBOL_REF)
+  if (CONSTANT_POOL_ADDRESS_P (x))
     {
-      if (CONSTANT_POOL_ADDRESS_P (x))
+      struct constant_descriptor_rtx *desc = find_pool_constant (pool, x);
+      if (desc->mark == 0)
 	{
-	  struct pool_constant *pool = find_pool_constant (cfun, x);
-	  if (pool->mark == 0)
-	    {
-	      pool->mark = 1;
-	      for_each_rtx (&(pool->constant), &mark_constant, NULL);
-	    }
-	  else
-	    return -1;
-	}
-      else if (TREE_CONSTANT_POOL_ADDRESS_P (x))
-	{
-	  tree exp = SYMBOL_REF_DECL (x);
-	  if (!TREE_ASM_WRITTEN (exp))
-	    {
-	      n_deferred_constants--;
-	      output_constant_def_contents (x);
-	    }
+	  desc->mark = 1;
+	  for_each_rtx (&desc->constant, mark_constant, pool);
 	}
     }
-  return 0;
+  else if (TREE_CONSTANT_POOL_ADDRESS_P (x))
+    {
+      tree exp = SYMBOL_REF_DECL (x);
+      if (!TREE_ASM_WRITTEN (exp))
+	{
+	  n_deferred_constants--;
+	  output_constant_def_contents (x);
+	}
+    }
+
+  return -1;
+} 
+
+/* Look through appropriate parts of INSN, marking all entries in the
+   constant pool which are actually being used.  Entries that are only
+   referenced by other constants are also marked as used.  Emit
+   deferred strings that are used.  */
+
+static void
+mark_constants (struct rtx_constant_pool *pool, rtx insn)
+{
+  if (!INSN_P (insn))
+    return;
+
+  /* Insns may appear inside a SEQUENCE.  Only check the patterns of
+     insns, not any notes that may be attached.  We don't want to mark
+     a constant just because it happens to appear in a REG_EQUIV note.  */
+  if (GET_CODE (PATTERN (insn)) == SEQUENCE)
+    {
+      rtx seq = PATTERN (insn);
+      int i, n = XVECLEN (seq, 0);
+      for (i = 0; i < n; ++i)
+	{
+	  rtx subinsn = XVECEXP (seq, 0, i);
+	  if (INSN_P (subinsn))
+	    for_each_rtx (&PATTERN (subinsn), mark_constant, pool);
+	}
+    }
+  else
+    for_each_rtx (&PATTERN (insn), mark_constant, pool);
+}
+
+/* Look through the instructions for this function, and mark all the
+   entries in POOL which are actually being used.  Emit deferred constants
+   which have indeed been used.  */
+
+static void
+mark_constant_pool (struct rtx_constant_pool *pool)
+{
+  rtx insn, link;
+
+  if (pool->first == 0 && n_deferred_constants == 0)
+    return;
+
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    mark_constants (pool, insn);
+
+  for (link = current_function_epilogue_delay_list;
+       link;
+       link = XEXP (link, 1))
+    mark_constants (pool, XEXP (link, 0));
+}
+
+/* Write all the constants in the constant pool.  */
+
+void
+output_constant_pool (const char *fnname ATTRIBUTE_UNUSED,
+		      tree fndecl ATTRIBUTE_UNUSED)
+{
+  struct rtx_constant_pool *pool = cfun->varasm->pool;
+  struct constant_descriptor_rtx *desc;
+
+  /* It is possible for gcc to call force_const_mem and then to later
+     discard the instructions which refer to the constant.  In such a
+     case we do not need to output the constant.  */
+  mark_constant_pool (pool);
+
+#ifdef ASM_OUTPUT_POOL_PROLOGUE
+  ASM_OUTPUT_POOL_PROLOGUE (asm_out_file, fnname, fndecl, pool->offset);
+#endif
+
+  for (desc = pool->first; desc ; desc = desc->next)
+    output_constant_pool_1 (desc);
+
+#ifdef ASM_OUTPUT_POOL_EPILOGUE
+  ASM_OUTPUT_POOL_EPILOGUE (asm_out_file, fnname, fndecl, pool->offset);
+#endif
+
+  /* Done with this pool.  */
+  cfun->varasm->pool = NULL;
 }
 
 /* Determine what kind of relocations EXP may need.  */

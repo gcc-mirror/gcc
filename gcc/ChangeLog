@@ -1,3 +1,33 @@
+2004-01-30  Richard Henderson  <rth@redhat.com>
+
+	* varasm.c (struct rtx_const, struct pool_constant): Remove.
+	(MAX_RTX_HASH_TABLE): Remove.
+	(const_rtx_hash_table, const_rtx_sym_hash_table): Remove.
+	(first_pool, last_pool, pool_offset): Remove.
+	(struct rtx_constant_pool): Split out from ...
+	(struct varasm_status): ... here.  Reference one via pointer.
+	(struct constant_descriptor_rtx): Merge struct pool_constant.
+	(SYMHASH): Remove.
+	(decode_rtx_const): Remove.
+	(const_hash_rtx, compare_constant_rtx): Remove.
+	(record_constant_rtx): Remove.
+	(const_desc_rtx_hash, const_desc_rtx_eq): New.
+	(const_desc_rtx_sym_hash, const_desc_rtx_sym_eq): New.
+	(const_rtx_hash_1, const_rtx_hash): New.
+	(init_varasm_status): Allocate a rtx_constant_pool, and its hashes.
+	(simplify_subtraction): Use simplify_rtx.
+	(force_const_mem): Rewrite to use new data structures.
+	(find_pool_constant): Likewise.
+	(get_pool_constant, get_pool_constant_mark,
+	get_pool_constant_for_function, get_pool_mode,
+	get_pool_mode_for_function, get_pool_offset, get_pool_size): Likewise.
+	(output_constant_pool_2): Split out from output_constant_pool.
+	(output_constant_pool_1): Likewise.  Use new pool datastructures.
+	(output_constant_pool): Zap entire pool datastructure.
+	(mark_constant): Use new pool datastructures.
+	(mark_constants): Use for_each_rtx.
+	(mark_constant_pool): Use new pool datastructures.
+
 2004-01-30  Fariborz Jahanian <fjahanian@apple.com>
         
         * config/rs6000/rs6000.c (rs6000_emit_move): Remove #if 0. 
