@@ -709,7 +709,7 @@ tagged_types_tu_compatible_p (tree t1, tree t2, int flags)
         if (tv1 == tv2)
           return 1;
         
-        for (;tv1 && tv2; tv1 = TREE_CHAIN (tv2), tv2 = TREE_CHAIN (tv2))
+        for (;tv1 && tv2; tv1 = TREE_CHAIN (tv1), tv2 = TREE_CHAIN (tv2))
           {
             if (TREE_PURPOSE (tv1) != TREE_PURPOSE (tv2))
               break;
