@@ -4539,6 +4539,45 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 
       break;
 
+    case VEC_SELECT:
+      {
+	rtx op0 = XEXP (x, 0);
+	rtx op1 = XEXP (x, 1);
+	int len;
+
+	if (GET_CODE (op1) != PARALLEL)
+	  abort ();
+	len = XVECLEN (op1, 0);
+	if (len == 1
+	    && GET_CODE (XVECEXP (op1, 0, 0)) == CONST_INT
+	    && GET_CODE (op0) == VEC_CONCAT)
+	  {
+	    int offset = INTVAL (XVECEXP (op1, 0, 0)) * GET_MODE_SIZE (GET_MODE (x));
+
+	    /* Try to find the element in the VEC_CONCAT.  */
+	    for (;;)
+	      {
+		if (GET_MODE (op0) == GET_MODE (x))
+		  return op0;
+		if (GET_CODE (op0) == VEC_CONCAT)
+		  {
+		    HOST_WIDE_INT op0_size = GET_MODE_SIZE (GET_MODE (XEXP (op0, 0)));
+		    if (op0_size < offset)
+		      op0 = XEXP (op0, 0);
+		    else
+		      {
+			offset -= op0_size;
+			op0 = XEXP (op0, 1);
+		      }
+		  }
+		else
+		  break;
+	      }
+	  }
+      }
+
+      break;
+      
     default:
       break;
     }
