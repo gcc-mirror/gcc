@@ -145,6 +145,7 @@ lvalue_p_1 (ref, treat_class_rvalues_as_lvalues)
       return treat_class_rvalues_as_lvalues ? clk_class : clk_none;
 
     case CALL_EXPR:
+    case VA_ARG_EXPR:
       return ((treat_class_rvalues_as_lvalues
 	       && IS_AGGR_TYPE (TREE_TYPE (ref)))
 	      ? clk_class : clk_none);

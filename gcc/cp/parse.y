@@ -1173,7 +1173,7 @@ unary_expr:
 	| IMAGPART cast_expr %prec UNARY
 		{ $$ = build_x_unary_op (IMAGPART_EXPR, $2); }
 	| VA_ARG '(' expr_no_commas ',' type_id ')'
-		{ $$ = build_va_arg ($3, groktypename ($5.t));
+		{ $$ = build_x_va_arg ($3, groktypename ($5.t));
 		  check_for_new_type ("__builtin_va_arg", $5); }
 	;
 
