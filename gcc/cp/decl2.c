@@ -574,13 +574,17 @@ lang_decode_option (argc, argv)
 	  || !strcmp (p, "no-save-memoized")
 	  || !strcmp (p, "no-all-virtual")
 	  || !strcmp (p, "no-enum-int-equiv")
+	  || !strcmp (p, "init-priority")
+	  || !strcmp (p, "no-init-priority")
 	  || !strcmp (p, "nonnull-objects")
+	  || !strcmp (p, "no-this-is-variable")
           || !strcmp (p, "ansi-overloading"))
 	/* ignore */
 	;
       else if (!strcmp (p, "all-virtual")
 	       || !strcmp (p, "enum-int-equiv")
 	       || !strcmp (p, "no-nonnull-objects")
+	       || !strcmp (p, "this-is-variable")
 	       || !strcmp (p, "no-ansi-overloading"))
 	warning ("-f%s is no longer supported", p);
       else if (! strcmp (p, "alt-external-templates"))
