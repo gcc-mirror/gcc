@@ -3784,11 +3784,13 @@
 
 (define_expand "sym_label2reg"
   [(set (match_operand:SI 0 "" "")
-	(const (minus:SI
-		(const:SI (unspec:SI [(match_operand:SI 1 "" "")] UNSPEC_PIC))
-		(const (plus:SI
-			(match_operand:SI 2 "" "")
-			(const_int 2))))))]
+	(const:SI (minus:SI
+		   (const:SI
+		    (unspec:SI [(match_operand:SI 1 "" "")] UNSPEC_PIC))
+		   (const:SI
+		    (plus:SI
+		     (match_operand:SI 2 "" "")
+		     (const_int 2))))))]
   "" "")
 
 (define_expand "symGOT_load"
