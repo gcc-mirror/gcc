@@ -2485,38 +2485,42 @@ output_stack_adjust (size, reg, temp)
 {
   if (size)
     {
-      rtx val = GEN_INT (size);
-      rtx insn;
-
-      if (! CONST_OK_FOR_I (size))
+      if (CONST_OK_FOR_I (size))
+	emit_insn (gen_addsi3 (reg, reg, GEN_INT (size)));
+      /* Try to do it with two partial adjustments; however, we must make
+	 sure that the stack is properly aligned at all times, in case
+	 an interrupt occurs between the two partial adjustments. */
+      else if (CONST_OK_FOR_I (size / 2 & -4)
+	       && CONST_OK_FOR_I (size - (size / 2 & -4)))
 	{
-	  /* Try to do it with two partial adjustments; however, must make
-	     sure that the stack is properly aligned at all times, in case
-	     an interrupt occurs between the two partial adjustments. */
-	  if (CONST_OK_FOR_I (size / 2 & -4)
-	      && CONST_OK_FOR_I (size - (size / 2 & -4)))
+	  emit_insn (gen_addsi3 (reg, reg, GEN_INT (size / 2 & -4)));
+	  emit_insn (gen_addsi3 (reg, reg, GEN_INT (size - (size / 2 & -4))));
+	}
+      else
+	{
+	  rtx const_reg;
+
+	  /* If TEMP is invalid, we could temporarily save a general
+	     register to MACL.  However, there is currently no need
+	     to handle this case, so just abort when we see it.  */
+	  if (temp < 0)
+	    abort ();
+	  const_reg = gen_rtx (REG, SImode, temp);
+
+	  /* If SIZE is negative, subtract the positive value.
+	     This sometimes allows a constant pool entry to be shared
+	     between prologue and epilogue code.  */
+	  if (size < 0)
 	    {
-	      val = GEN_INT (size / 2 & -4);
-	      emit_insn (gen_addsi3 (reg, reg, val));
-	      val = GEN_INT (size - (size / 2 & -4));
+	      emit_insn (gen_movsi (const_reg, GEN_INT (-size)));
+	      emit_insn (gen_subsi3 (reg, reg, const_reg));
 	    }
 	  else
 	    {
-	      rtx reg;
-
-	      /* If TEMP is invalid, we could temporarily save a general
-		 register to MACL.  However, there is currently no need
-		 to handle this case, so just abort when we see it.  */
-	      if (temp < 0)
-		abort ();
-	      reg = gen_rtx (REG, SImode, temp);
-	      emit_insn (gen_movsi (reg, val));
-	      val = reg;
+	      emit_insn (gen_movsi (const_reg, GEN_INT (size)));
+	      emit_insn (gen_addsi3 (reg, reg, const_reg));
 	    }
 	}
-
-      insn = gen_addsi3 (reg, reg, val);
-      emit_insn (insn);
     }
 }
 
