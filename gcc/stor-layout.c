@@ -34,6 +34,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "target.h"
 #include "langhooks.h"
+#include "regs.h"
 
 /* Set to one when set_sizetype has been called.  */
 static int sizetype_set;
@@ -1582,10 +1583,52 @@ layout_type (tree type)
       break;
 
     case VECTOR_TYPE:
-      TYPE_UNSIGNED (type) = TYPE_UNSIGNED (TREE_TYPE (type));
-      TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (TYPE_MODE (type)));
-      TYPE_SIZE_UNIT (type) = size_int (GET_MODE_SIZE (TYPE_MODE (type)));
-      break;
+      {
+	int nunits = TYPE_VECTOR_SUBPARTS (type);
+	tree nunits_tree = build_int_2 (nunits, 0);
+	tree innertype = TREE_TYPE (type);
+
+	if (nunits & (nunits - 1))
+	  abort ();
+
+	/* Find an appropriate mode for the vector type.  */
+	if (TYPE_MODE (type) == VOIDmode)
+	  {
+	    enum machine_mode innermode = TYPE_MODE (innertype);
+	    enum machine_mode mode;
+
+	    /* First, look for a supported vector type.  */
+	    if (GET_MODE_CLASS (innermode) == MODE_FLOAT)
+	      mode = MIN_MODE_VECTOR_FLOAT;
+	    else
+	      mode = MIN_MODE_VECTOR_INT;
+
+	    for (; mode != VOIDmode ; mode = GET_MODE_WIDER_MODE (mode))
+	      if (GET_MODE_NUNITS (mode) == nunits
+	  	  && GET_MODE_INNER (mode) == innermode
+	  	  && VECTOR_MODE_SUPPORTED_P (mode))
+	        break;
+
+	    /* For integers, try mapping it to a same-sized scalar mode.  */
+	    if (mode == VOIDmode
+	        && GET_MODE_CLASS (innermode) == MODE_INT)
+	      mode = mode_for_size (nunits * GET_MODE_BITSIZE (innermode),
+				    MODE_INT, 0);
+
+	    if (mode == VOIDmode || !have_regs_of_mode[mode])
+	      TYPE_MODE (type) = BLKmode;
+	    else
+	      TYPE_MODE (type) = mode;
+	  }
+
+        TYPE_UNSIGNED (type) = TYPE_UNSIGNED (TREE_TYPE (type));
+	TYPE_SIZE_UNIT (type) = int_const_binop (MULT_EXPR,
+					         TYPE_SIZE_UNIT (innertype),
+					         nunits_tree, 0);
+	TYPE_SIZE (type) = int_const_binop (MULT_EXPR, TYPE_SIZE (innertype),
+					    nunits_tree, 0);
+        break;
+      }
 
     case VOID_TYPE:
       /* This is an incomplete type and so doesn't have a size.  */

@@ -373,7 +373,7 @@ init_tmp_var (struct nesting_info *info, tree exp, tree_stmt_iterator *tsi)
 /* Similarly, but only do so to force EXP to satisfy is_gimple_val.  */
 
 static tree
-gimplify_val (struct nesting_info *info, tree exp, tree_stmt_iterator *tsi)
+tsi_gimplify_val (struct nesting_info *info, tree exp, tree_stmt_iterator *tsi)
 {
   if (is_gimple_val (exp))
     return exp;
@@ -790,7 +790,7 @@ convert_nonlocal_reference (tree *tp, int *walk_subtrees, void *data)
 	       where we only accept variables (and min_invariant, presumably),
 	       then compute the address into a temporary.  */
 	    if (save_val_only)
-	      *tp = gimplify_val (wi->info, t, &wi->tsi);
+	      *tp = tsi_gimplify_val (wi->info, t, &wi->tsi);
 	  }
       }
       break;
@@ -904,7 +904,7 @@ convert_local_reference (tree *tp, int *walk_subtrees, void *data)
 	    /* If we are in a context where we only accept values, then
 	       compute the address into a temporary.  */
 	    if (save_val_only)
-	      *tp = gimplify_val (wi->info, t, &wi->tsi);
+	      *tp = tsi_gimplify_val (wi->info, t, &wi->tsi);
 	  }
       }
       break;
@@ -1041,7 +1041,7 @@ convert_nl_goto_reference (tree *tp, int *walk_subtrees, void *data)
   field = get_nl_goto_field (i);
   x = get_frame_field (info, target_context, field, &wi->tsi);
   x = build_addr (x);
-  x = gimplify_val (info, x, &wi->tsi);
+  x = tsi_gimplify_val (info, x, &wi->tsi);
   arg = tree_cons (NULL, x, NULL);
   x = build_addr (new_label);
   arg = tree_cons (NULL, x, arg);
@@ -1139,7 +1139,7 @@ convert_tramp_reference (tree *tp, int *walk_subtrees, void *data)
       /* Compute the address of the field holding the trampoline.  */
       x = get_frame_field (info, target_context, x, &wi->tsi);
       x = build_addr (x);
-      x = gimplify_val (info, x, &wi->tsi);
+      x = tsi_gimplify_val (info, x, &wi->tsi);
       arg = tree_cons (NULL, x, NULL);
 
       /* Do machine-specific ugliness.  Normally this will involve

@@ -4793,6 +4793,79 @@ struct tree_opt_pass pass_split_crit_edges =
   0,                             /* todo_flags_start */
   TODO_dump_func,                             /* todo_flags_finish */
 };
+
+
+/* Return EXP if it is a valid GIMPLE rvalue, else gimplify it into
+   a temporary, make sure and register it to be renamed if necessary,
+   and finally return the temporary.  Put the statements to compute
+   EXP before the current statement in BSI.  */
+
+tree
+gimplify_val (block_stmt_iterator *bsi, tree type, tree exp)
+{
+  tree t, new_stmt, orig_stmt;
+
+  if (is_gimple_val (exp))
+    return exp;
+
+  t = make_rename_temp (type, NULL);
+  new_stmt = build (MODIFY_EXPR, type, t, exp);
+
+  orig_stmt = bsi_stmt (*bsi);
+  SET_EXPR_LOCUS (new_stmt, EXPR_LOCUS (orig_stmt));
+  TREE_BLOCK (new_stmt) = TREE_BLOCK (orig_stmt);
+
+  bsi_insert_before (bsi, new_stmt, BSI_SAME_STMT);
+
+  return t;
+}
+
+/* Build a ternary operation and gimplify it.  Emit code before BSI.
+   Return the gimple_val holding the result.  */
+
+tree
+gimplify_build3 (block_stmt_iterator *bsi, enum tree_code code,
+		 tree type, tree a, tree b, tree c)
+{
+  tree ret;
+
+  ret = fold (build3 (code, type, a, b, c));
+  STRIP_NOPS (ret);
+
+  return gimplify_val (bsi, type, ret);
+}
+
+/* Build a binary operation and gimplify it.  Emit code before BSI.
+   Return the gimple_val holding the result.  */
+
+tree
+gimplify_build2 (block_stmt_iterator *bsi, enum tree_code code,
+		 tree type, tree a, tree b)
+{
+  tree ret;
+
+  ret = fold (build2 (code, type, a, b));
+  STRIP_NOPS (ret);
+
+  return gimplify_val (bsi, type, ret);
+}
+
+/* Build a unary operation and gimplify it.  Emit code before BSI.
+   Return the gimple_val holding the result.  */
+
+tree
+gimplify_build1 (block_stmt_iterator *bsi, enum tree_code code, tree type,
+		 tree a)
+{
+  tree ret;
+
+  ret = fold (build1 (code, type, a));
+  STRIP_NOPS (ret);
+
+  return gimplify_val (bsi, type, ret);
+}
+
+
 
 /* Emit return warnings.  */
 

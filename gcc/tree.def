@@ -151,7 +151,8 @@ DEFTREECODE (REAL_TYPE, "real_type", 't', 0)
 DEFTREECODE (COMPLEX_TYPE, "complex_type", 't', 0)
 
 /* Vector types.  The TREE_TYPE field is the data type of the vector
-   elements.  */
+   elements.  The TYPE_PRECISION field is the number of subparts of
+   the vector.  */
 DEFTREECODE (VECTOR_TYPE, "vector_type", 't', 0)
 
 /* C enums.  The type node looks just like an INTEGER_TYPE node.

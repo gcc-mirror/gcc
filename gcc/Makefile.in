@@ -1585,7 +1585,7 @@ print-tree.o : print-tree.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H
    $(GGC_H) langhooks.h real.h
 stor-layout.o : stor-layout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(FLAGS_H) function.h $(EXPR_H) $(RTL_H) toplev.h $(GGC_H) $(TM_P_H) $(TARGET_H) \
-   langhooks.h
+   langhooks.h $(REGS_H)
 tree-alias-type.o: tree-alias-type.c tree-alias-type.h $(SYSTEM_H) $(CONFIG_H) \
    $(GGC_H) $(TM_H) coretypes.h $(VARRAY_H)
 tree-alias-ander.o: tree-alias-ander.c tree-alias-ander.h $(SYSTEM_H) \
@@ -1922,7 +1922,8 @@ tree-sra.o : tree-sra.c $(CONFIG_H) system.h errors.h $(TREE_H) $(RTL_H) \
     langhooks.h tree-pass.h $(FLAGS_H) $(EXPR_H)
 tree-complex.o : tree-complex.c $(CONFIG_H) system.h $(TREE_H) \
     $(TM_H) $(TREE_FLOW_H) $(TREE_GIMPLE_H) tree-iterator.h tree-pass.h \
-    $(FLAGS_H)
+    $(FLAGS_H) $(OPTABS_H) $(RTL_H) $(MACHMODE_H) $(EXPR_H) \
+    langhooks.h $(FLAGS_H) $(DIAGNOSTIC_H)
 df.o : df.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    insn-config.h $(RECOG_H) function.h $(REGS_H) alloc-pool.h hard-reg-set.h \
    $(BASIC_BLOCK_H) $(DF_H)

@@ -111,7 +111,7 @@ static void set_type_quals (tree, int);
 static int type_hash_eq (const void *, const void *);
 static hashval_t type_hash_hash (const void *);
 static void print_type_hash_statistics (void);
-static void finish_vector_type (tree);
+static tree make_vector_type (tree, int, enum machine_mode);
 static int type_hash_marked_p (const void *);
 static unsigned int type_hash_list (tree, hashval_t);
 static unsigned int attribute_hash_list (tree, hashval_t);
@@ -5279,18 +5279,23 @@ tree_operand_check_failed (int idx, enum tree_code code, const char *file,
 }
 #endif /* ENABLE_TREE_CHECKING */
 
-/* For a new vector type node T, build the information necessary for
-   debugging output.  */
+/* Create a new vector type node holding SUBPARTS units of type INNERTYPE,
+   and mapped to the machine mode MODE.  Initialize its fields and build
+   the information necessary for debugging output.  */
 
-static void
-finish_vector_type (tree t)
+static tree
+make_vector_type (tree innertype, int nunits, enum machine_mode mode)
 {
+  tree t = make_node (VECTOR_TYPE);
+
+  TREE_TYPE (t) = innertype;
+  TYPE_VECTOR_SUBPARTS (t) = nunits;
+  TYPE_MODE (t) = mode;
   layout_type (t);
 
   {
-    tree index = build_int_2 (TYPE_VECTOR_SUBPARTS (t) - 1, 0);
-    tree array = build_array_type (TREE_TYPE (t),
-				   build_index_type (index));
+    tree index = build_int_2 (nunits - 1, 0);
+    tree array = build_array_type (innertype, build_index_type (index));
     tree rt = make_node (RECORD_TYPE);
 
     TYPE_FIELDS (rt) = build_decl (FIELD_DECL, get_identifier ("f"), array);
@@ -5303,6 +5308,8 @@ finish_vector_type (tree t)
        numbers equal.  */
     TYPE_UID (rt) = TYPE_UID (t);
   }
+
+  return t;
 }
 
 static tree
@@ -5521,36 +5528,39 @@ reconstruct_complex_type (tree type, tree bottom)
   return outer;
 }
 
-/* Returns a vector tree node given a vector mode and inner type.  */
+/* Returns a vector tree node given a mode (integer, vector, or BLKmode) and
+   the inner type.  */
 tree
 build_vector_type_for_mode (tree innertype, enum machine_mode mode)
 {
-  tree t;
-  t = make_node (VECTOR_TYPE);
-  TREE_TYPE (t) = innertype;
-  TYPE_MODE (t) = mode;
-  finish_vector_type (t);
-  return t;
+  int nunits;
+
+  if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
+      || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
+    nunits = GET_MODE_NUNITS (mode);
+
+  else if (GET_MODE_CLASS (mode) == MODE_INT)
+    {
+      /* Check that there are no leftover bits.  */
+      if (GET_MODE_BITSIZE (mode) % TREE_INT_CST_LOW (TYPE_SIZE (innertype)))
+	abort ();
+
+      nunits = GET_MODE_BITSIZE (mode)
+	       / TREE_INT_CST_LOW (TYPE_SIZE (innertype));
+    }
+  else
+    abort ();
+
+  return make_vector_type (innertype, nunits, mode);
 }
 
-/* Similarly, but takes inner type and units.  */
+/* Similarly, but takes the inner type and number of units, which must be
+   a power of two.  */
 
 tree
 build_vector_type (tree innertype, int nunits)
 {
-  enum machine_mode innermode = TYPE_MODE (innertype);
-  enum machine_mode mode;
-
-  if (GET_MODE_CLASS (innermode) == MODE_FLOAT)
-    mode = MIN_MODE_VECTOR_FLOAT;
-  else
-    mode = MIN_MODE_VECTOR_INT;
-
-  for (; mode != VOIDmode ; mode = GET_MODE_WIDER_MODE (mode))
-    if (GET_MODE_NUNITS (mode) == nunits && GET_MODE_INNER (mode) == innermode)
-      return build_vector_type_for_mode (innertype, mode);
-
-  return NULL_TREE;
+  return make_vector_type (innertype, nunits, VOIDmode);
 }
 
 /* Given an initializer INIT, return TRUE if INIT is zero or some

@@ -299,6 +299,7 @@ init_tree_optimization_passes (void)
   NEXT_PASS (pass_lower_cf);
   NEXT_PASS (pass_lower_eh);
   NEXT_PASS (pass_build_cfg);
+  NEXT_PASS (pass_pre_expand);
   NEXT_PASS (pass_tree_profile);
   NEXT_PASS (pass_init_datastructures);
   NEXT_PASS (pass_all_optimizations);
@@ -325,7 +326,6 @@ init_tree_optimization_passes (void)
   NEXT_PASS (pass_tail_recursion);
   NEXT_PASS (pass_ch);
   NEXT_PASS (pass_profile);
-  NEXT_PASS (pass_lower_complex);
   NEXT_PASS (pass_sra);
   NEXT_PASS (DUP_PASS (pass_rename_ssa_copies));
   NEXT_PASS (DUP_PASS (pass_dominator));

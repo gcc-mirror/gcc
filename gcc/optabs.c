@@ -628,6 +628,89 @@ expand_cmplxdiv_wide (rtx real0, rtx real1, rtx imag0, rtx imag1, rtx realr,
   return 1;
 }
 
+/* Return the optab used for computing the operation given by
+   the tree code, CODE.  This function is not always usable (for
+   example, it cannot give complete results for multiplication
+   or division) but probably ought to be relied on more widely
+   throughout the expander.  */
+optab
+optab_for_tree_code (enum tree_code code, tree type)
+{
+  bool trapv;
+  switch (code)
+    {
+    case BIT_AND_EXPR:
+      return and_optab;
+
+    case BIT_IOR_EXPR:
+      return ior_optab;
+
+    case BIT_NOT_EXPR:
+      return one_cmpl_optab;
+
+    case BIT_XOR_EXPR:
+      return xor_optab;
+
+    case TRUNC_MOD_EXPR:
+    case CEIL_MOD_EXPR:
+    case FLOOR_MOD_EXPR:
+    case ROUND_MOD_EXPR:
+      return TYPE_UNSIGNED (type) ? umod_optab : smod_optab;
+
+    case RDIV_EXPR:
+    case TRUNC_DIV_EXPR:
+    case CEIL_DIV_EXPR:
+    case FLOOR_DIV_EXPR:
+    case ROUND_DIV_EXPR:
+    case EXACT_DIV_EXPR:
+      return TYPE_UNSIGNED (type) ? udiv_optab : sdiv_optab;
+
+    case LSHIFT_EXPR:
+      return ashl_optab;
+
+    case RSHIFT_EXPR:
+      return TYPE_UNSIGNED (type) ? lshr_optab : ashr_optab;
+
+    case LROTATE_EXPR:
+      return rotl_optab;
+
+    case RROTATE_EXPR:
+      return rotr_optab;
+
+    case MAX_EXPR:
+      return TYPE_UNSIGNED (type) ? umax_optab : smax_optab;
+
+    case MIN_EXPR:
+      return TYPE_UNSIGNED (type) ? umin_optab : smin_optab;
+
+    default:
+      break;
+    }
+
+  trapv = flag_trapv && INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type);
+  switch (code)
+    {
+    case PLUS_EXPR:
+      return trapv ? addv_optab : add_optab;
+
+    case MINUS_EXPR:
+      return trapv ? subv_optab : sub_optab;
+
+    case MULT_EXPR:
+      return trapv ? smulv_optab : smul_optab;
+
+    case NEGATE_EXPR:
+      return trapv ? negv_optab : neg_optab;
+
+    case ABS_EXPR:
+      return trapv ? absv_optab : abs_optab;
+
+    default:
+      return NULL;
+    }
+}
+
+
 /* Wrapper around expand_binop which takes an rtx code to specify
    the operation to perform, not an optab pointer.  All other
    arguments are the same.  */
@@ -2804,7 +2887,8 @@ expand_unop (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
     }
 
   /* If there is no negate operation, try doing a subtract from zero.
-     The US Software GOFAST library needs this.  */
+     The US Software GOFAST library needs this.  FIXME: This is *wrong*
+     for floating-point operations due to negative zeros!  */
   if (unoptab->code == NEG)
     {
       rtx temp;

@@ -163,6 +163,10 @@ extern char regs_ever_live[FIRST_PSEUDO_REGISTER];
 
 extern char regs_asm_clobbered[FIRST_PSEUDO_REGISTER];
 
+/* Vector indexed by machine mode saying whether there are regs of that mode.  */
+
+extern bool have_regs_of_mode [MAX_MACHINE_MODE];
+
 /* For each hard register, the widest mode object that it can contain.
    This will be a MODE_INT mode if the register can hold integers.  Otherwise
    it will be a MODE_FLOAT or a MODE_CC mode, whichever is valid for the
