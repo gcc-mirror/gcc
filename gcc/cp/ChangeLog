@@ -1,6 +1,9 @@
 2000-02-29  Jason Merrill  <jason@casey.cygnus.com>
 
+	* search.c (protected_accessible_p): Use context_for_name_lookup.
+
 	* init.c (construct_virtual_bases): Fix thinko.
+	* typeck.c (expand_ptrmemfunc_cst): Fix thinko.
 
 2000-03-01  Martin von Loewis  <loewis@informatik.hu-berlin.de>
 

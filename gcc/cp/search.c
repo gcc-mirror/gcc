@@ -997,7 +997,7 @@ protected_accessible_p (decl, derived, binfo)
     member of a base.  (jason 2000/02/28)  */
 
   /* If DERIVED isn't derived from m's class, then it can't be a P.  */
-  if (!DERIVED_FROM_P (DECL_CONTEXT (decl), derived))
+  if (!DERIVED_FROM_P (context_for_name_lookup (decl), derived))
     return 0;
 
   access = access_in_type (derived, decl);
