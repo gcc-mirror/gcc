@@ -275,6 +275,19 @@ Ldiv_zero:
 #define RETCOND
 #endif
 
+#ifndef __USER_LABEL_PREFIX__
+#define __USER_LABEL_PREFIX__ _
+#endif
+
+/* ANSI concatenation macros.  */
+
+#define CONCAT1(a, b) CONCAT2(a, b)
+#define CONCAT2(a, b) a ## b
+
+/* Use the right prefix for global labels.  */
+
+#define SYM(x) CONCAT1 (__USER_LABEL_PREFIX__, x)
+
 #ifdef L_udivsi3
 
 ip	.req	r12
@@ -282,9 +295,9 @@ sp	.req	r13
 lr	.req	r14
 pc	.req	r15
 .text
-	.globl ___udivsi3
+	.globl SYM (__udivsi3)
 	.align 0
-___udivsi3:
+SYM (__udivsi3):
 	stmdb	sp!, {r4, r5, lr}
 	@ Ready to divide.  Compute size of quotient; scale comparand.
 	movs	lr, r1
@@ -596,7 +609,7 @@ Lgot_result:
 Ldiv_zero:
 	@ Divide by zero trap.  If it returns, return 0 (about as
 	@ wrong as possible, but that is what SunOS does...).
-	bl	___div0
+	bl	SYM (__div0)
 	mov	r0, #0
 	ldmia	sp!, {r4, r5, pc}RETCOND
 
@@ -609,9 +622,9 @@ sp	.req	r13
 lr	.req	r14
 pc	.req	r15
 .text
-	.globl ___divsi3
+	.globl SYM (__divsi3)
 	.align 0
-___divsi3:
+SYM (__divsi3):
 	stmdb	sp!, {r4, r5, r6, lr}
 	@ compute sign of result; if neither is negative, no problem
 	eor	r6, r1, r0	@ compute sign
@@ -930,7 +943,7 @@ Lgot_result:
 Ldiv_zero:
 	@ Divide by zero trap.  If it returns, return 0 (about as
 	@ wrong as possible, but that is what SunOS does...).
-	bl	___div0
+	bl	SYM (__div0)
 	mov	r0, #0
 	ldmia	sp!, {r4, r5, r6, pc}RETCOND
 
@@ -943,9 +956,9 @@ sp	.req	r13
 lr	.req	r14
 pc	.req	r15
 .text
-	.globl ___umodsi3
+	.globl SYM (__umodsi3)
 	.align 0
-___umodsi3:
+SYM (__umodsi3):
 	stmdb	sp!, {r4, r5, lr}
 	@ Ready to divide.  Compute size of quotient; scale comparand.
 	movs	lr, r1
@@ -1257,7 +1270,7 @@ Lgot_result:
 Ldiv_zero:
 	@ Divide by zero trap.  If it returns, return 0 (about as
 	@ wrong as possible, but that is what SunOS does...).
-	bl	___div0
+	bl	SYM (__div0)
 	mov	r0, #0
 	ldmia	sp!, {r4, r5, pc}RETCOND
 
@@ -1270,9 +1283,9 @@ sp	.req	r13
 lr	.req	r14
 pc	.req	r15
 .text
-	.globl ___modsi3
+	.globl SYM (__modsi3)
 	.align 0
-___modsi3:
+SYM (__modsi3):
 	stmdb	sp!, {r4, r5, r6, lr}
 	@ compute sign of result; if neither is negative, no problem
 	mov	r6, r0
@@ -1591,7 +1604,7 @@ Lgot_result:
 Ldiv_zero:
 	@ Divide by zero trap.  If it returns, return 0 (about as
 	@ wrong as possible, but that is what SunOS does...).
-	bl	___div0
+	bl	SYM (__div0)
 	mov	r0, #0
 	ldmia	sp!, {r4, r5, r6, pc}RETCOND
 
@@ -1599,9 +1612,9 @@ Ldiv_zero:
 
 #ifdef L_dvmd_tls
 
-	.globl ___div0
+	.globl SYM (__div0)
 	.align 0
-___div0:
+SYM (__div0):
 	RET	pc, lr
 
 #endif /* L_divmodsi_tools */
