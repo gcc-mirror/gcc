@@ -1,3 +1,8 @@
+Fri Mar  6 14:00:04 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * mips/mips.h: Prototype `machine_dependent_reorg'.
+        (ASM_OUTPUT_ALIGN): Remove unused variable `mask'.
+
 Fri Mar  6 11:43:35 1998  Joern Rennecke  (amylaar@cygnus.co.uk)
 
 	* final.c (shorten_branches): Restore accidentally removed code.
