@@ -101,6 +101,27 @@ struct function_list
   				/* the sections */
 };
 
+
+/* Counts information for a function.  */
+typedef struct counts_entry
+{
+  /* We hash by  */
+  char *function_name;
+  unsigned section;
+  
+  /* Store  */
+  unsigned checksum;
+  unsigned n_counts;
+  gcov_type *counts;
+  unsigned merged;
+  gcov_type max_counter;
+  gcov_type max_counter_sum;
+
+  /* Workspace */
+  struct counts_entry *chain;
+  
+} counts_entry_t;
+
 static struct function_list *functions_head = 0;
 static struct function_list **functions_tail = &functions_head;
 
@@ -119,12 +140,10 @@ struct profile_info profile_info;
 
 /* Name and file pointer of the output file for the basic block graph.  */
 
-static FILE *bbg_file;
 static char *bbg_file_name;
 
 /* Name and file pointer of the input file for the arc count data.  */
 
-static FILE *da_file;
 static char *da_file_name;
 
 /* The name of the count table. Used by the edge profiling code.  */
@@ -149,11 +168,10 @@ static void find_spanning_tree PARAMS ((struct edge_list *));
 static rtx gen_edge_profiler PARAMS ((int));
 static void instrument_edges PARAMS ((struct edge_list *));
 static void compute_branch_probabilities PARAMS ((void));
-static hashval_t htab_counts_index_hash PARAMS ((const void *));
-static int htab_counts_index_eq PARAMS ((const void *, const void *));
-static void htab_counts_index_del PARAMS ((void *));
-static void cleanup_counts_index PARAMS ((int));
-static int index_counts_file PARAMS ((void));
+static hashval_t htab_counts_entry_hash PARAMS ((const void *));
+static int htab_counts_entry_eq PARAMS ((const void *, const void *));
+static void htab_counts_entry_del PARAMS ((void *));
+static void read_counts_file PARAMS ((const char *));
 static gcov_type * get_exec_counts PARAMS ((void));
 static unsigned compute_checksum PARAMS ((void));
 static basic_block find_group PARAMS ((basic_block));
@@ -218,106 +236,61 @@ instrument_edges (el)
     fprintf (rtl_dump_file, "%d edges instrumented\n", num_instr_edges);
 }
 
-struct section_reference
-{
-  long offset;
-  int owns_summary;
-  long *summary;
-};
-
-struct da_index_entry
-{
-  /* We hash by  */
-  char *function_name;
-  unsigned section;
-  /* and store  */
-  unsigned checksum;
-  unsigned n_offsets;
-  struct section_reference *offsets;
-};
-
 static hashval_t
-htab_counts_index_hash (of)
+htab_counts_entry_hash (of)
      const void *of;
 {
-  const struct da_index_entry *entry = of;
+  const counts_entry_t *entry = of;
 
   return htab_hash_string (entry->function_name) ^ entry->section;
 }
 
 static int
-htab_counts_index_eq (of1, of2)
+htab_counts_entry_eq (of1, of2)
      const void *of1;
      const void *of2;
 {
-  const struct da_index_entry *entry1 = of1;
-  const struct da_index_entry *entry2 = of2;
+  const counts_entry_t *entry1 = of1;
+  const counts_entry_t *entry2 = of2;
 
   return !strcmp (entry1->function_name, entry2->function_name)
-	  && entry1->section == entry2->section;
+    && entry1->section == entry2->section;
 }
 
 static void
-htab_counts_index_del (what)
-     void *what;
+htab_counts_entry_del (of)
+     void *of;
 {
-  struct da_index_entry *entry = what;
-  unsigned i;
+  counts_entry_t *entry = of;
 
-  for (i = 0; i < entry->n_offsets; i++)
-    {
-      struct section_reference *act = entry->offsets + i;
-      if (act->owns_summary)
-	free (act->summary);
-    }
   free (entry->function_name);
-  free (entry->offsets);
+  free (entry->counts);
   free (entry);
 }
 
-static char *counts_file_name;
-static htab_t counts_file_index = NULL;
+static htab_t counts_hash = NULL;
 
 static void
-cleanup_counts_index (close_file)
-     int close_file;
-{
-  if (da_file && close_file)
-    {
-      fclose (da_file);
-      da_file = NULL;
-    }
-  if (counts_file_name)
-    free (counts_file_name);
-  counts_file_name = NULL;
-  if (counts_file_index)
-    htab_delete (counts_file_index);
-  counts_file_index = NULL;
-}
-
-static int
-index_counts_file ()
+read_counts_file (const char *name)
 {
   char *function_name_buffer = NULL;
   unsigned magic, version, ix, checksum;
-  long *summary;
-
-  /* No .da file, no data.  */
-  if (!da_file)
-    return 0;
-  counts_file_index = htab_create (10, htab_counts_index_hash, htab_counts_index_eq, htab_counts_index_del);
-
-  /* Now index all profile sections.  */
-  rewind (da_file);
-
-  summary = NULL;
-
-  if (gcov_read_unsigned (da_file, &magic) || magic != GCOV_DATA_MAGIC)
+  counts_entry_t *summaried = NULL;
+  unsigned seen_summary = 0;
+  
+  if (!gcov_open (name, 1))
     {
-      warning ("`%s' is not a gcov data file", da_file_name);
-      goto cleanup;
+      warning ("file %s not found, execution counts assumed to be zero", name);
+      return;
     }
-  if (gcov_read_unsigned (da_file, &version) || version != GCOV_VERSION)
+  
+  if (gcov_read_unsigned (&magic) || magic != GCOV_DATA_MAGIC)
+    {
+      warning ("`%s' is not a gcov data file", name);
+      gcov_close ();
+      return;
+    }
+  else if (gcov_read_unsigned (&version) || version != GCOV_VERSION)
     {
       char v[4], e[4];
       magic = GCOV_VERSION;
@@ -327,97 +300,121 @@ index_counts_file ()
 	  v[ix] = version;
 	  e[ix] = magic;
 	}
-      warning ("`%s' is version `%.4s', expected version `%.4s'",
-	       da_file_name, v, e);
-      goto cleanup;
+      warning ("`%s' is version `%.4s', expected version `%.4s'", name, v, e);
+      gcov_close ();
+      return;
     }
   
+  counts_hash = htab_create (10,
+			     htab_counts_entry_hash, htab_counts_entry_eq,
+			     htab_counts_entry_del);
   while (1)
     {
       unsigned tag, length;
       long offset;
       
-      offset = gcov_save_position (da_file);
-      if (gcov_read_unsigned (da_file, &tag)
-	  || gcov_read_unsigned (da_file, &length))
+      offset = gcov_save_position ();
+      if (gcov_read_unsigned (&tag) || gcov_read_unsigned (&length))
 	{
-	  if (feof (da_file))
+	  if (gcov_eof ())
 	    break;
 	corrupt:;
-	  warning ("`%s' is corrupted", da_file_name);
-	  goto cleanup;
+	  warning ("`%s' is corrupted", name);
+	cleanup:
+	  htab_delete (counts_hash);
+	  break;
 	}
       if (tag == GCOV_TAG_FUNCTION)
 	{
-	  if (gcov_read_string (da_file, &function_name_buffer, NULL)
-	      || gcov_read_unsigned (da_file, &checksum))
+	  if (gcov_read_string (&function_name_buffer)
+	      || gcov_read_unsigned (&checksum))
 	    goto corrupt;
-	  continue;
-	}
-      if (tag == GCOV_TAG_PROGRAM_SUMMARY)
-	{
-	  if (length != GCOV_SUMMARY_LENGTH)
-	    goto corrupt;
-
-	  if (summary)
-	    *summary = offset;
-	  summary = NULL;
-	}
-      else
-	{
-	  if (function_name_buffer)
+	  if (seen_summary)
 	    {
-	      struct da_index_entry **slot, elt;
-	      elt.function_name = function_name_buffer;
-	      elt.section = tag;
-
-	      slot = (struct da_index_entry **)
-		htab_find_slot (counts_file_index, &elt, INSERT);
-	      if (*slot)
+	      /* We have already seen a summary, this means that this
+		 new function begins a new set of program runs. We
+		 must unlink the summaried chain.  */
+	      counts_entry_t *entry, *chain;
+	      
+	      for (entry = summaried; entry; entry = chain)
 		{
-		  if ((*slot)->checksum != checksum)
-		    {
-		      warning ("profile mismatch for `%s'", function_name_buffer);
-		      goto cleanup;
-		    }
-		  (*slot)->n_offsets++;
-		  (*slot)->offsets = xrealloc ((*slot)->offsets,
-					       sizeof (struct section_reference) * (*slot)->n_offsets);
+		  chain = entry->chain;
+		  
+		  entry->max_counter_sum += entry->max_counter;
+		  entry->chain = NULL;
 		}
-	      else
-		{
-		  *slot = xmalloc (sizeof (struct da_index_entry));
-		  (*slot)->function_name = xstrdup (function_name_buffer);
-		  (*slot)->section = tag;
-		  (*slot)->checksum = checksum;
-		  (*slot)->n_offsets = 1;
-		  (*slot)->offsets = xmalloc (sizeof (struct section_reference));
-		}
-	      (*slot)->offsets[(*slot)->n_offsets - 1].offset = offset;
-	      if (summary)
-		(*slot)->offsets[(*slot)->n_offsets - 1].owns_summary = 0;
-	      else
-		{
-		  summary = xmalloc (sizeof (long));
-		  *summary = -1;
-		  (*slot)->offsets[(*slot)->n_offsets - 1].owns_summary = 1;
-		}
-	      (*slot)->offsets[(*slot)->n_offsets - 1].summary = summary;
+	      summaried = NULL;
+	      seen_summary = 0;
 	    }
 	}
-      if (gcov_skip (da_file, length))
-	goto corrupt;
+      else if (tag == GCOV_TAG_PROGRAM_SUMMARY)
+	{
+	  counts_entry_t *entry;
+	  struct gcov_summary summary;
+	  
+	  if (length != GCOV_SUMMARY_LENGTH
+	      || gcov_read_summary (&summary))
+	    goto corrupt;
+
+	  seen_summary = 1;
+	  for (entry = summaried; entry; entry = entry->chain)
+	    {
+	      entry->merged += summary.runs;
+	      if (entry->max_counter < summary.arc_sum_max)
+		entry->max_counter = summary.arc_sum_max;
+	    }
+	}
+      else if (GCOV_TAG_IS_SUBTAG (GCOV_TAG_FUNCTION, tag)
+	       && function_name_buffer)
+	{
+	  counts_entry_t **slot, *entry, elt;
+	  unsigned n_counts = length / 8;
+	  unsigned ix;
+	  gcov_type count;
+
+	  elt.function_name = function_name_buffer;
+	  elt.section = tag;
+
+	  slot = (counts_entry_t **) htab_find_slot
+	    (counts_hash, &elt, INSERT);
+	  entry = *slot;
+	  if (!entry)
+	    {
+	      *slot = entry = xmalloc (sizeof (counts_entry_t));
+	      entry->function_name = xstrdup (function_name_buffer);
+	      entry->section = tag;
+	      entry->checksum = checksum;
+	      entry->n_counts = n_counts;
+	      entry->counts = xcalloc (n_counts, sizeof (gcov_type));
+	    }
+	  else if (entry->checksum != checksum || entry->n_counts != n_counts)
+	    {
+	      warning ("profile mismatch for `%s'", function_name_buffer);
+	      goto cleanup;
+	    }
+	  
+	  /* This should always be true for a just allocated entry,
+	     and always false for an existing one. Check this way, in
+	     case the gcov file is corrupt.  */
+	  if (!entry->chain || summaried != entry)
+	    {
+	      entry->chain = summaried;
+	      summaried = entry;
+	    }
+	  for (ix = 0; ix != n_counts; ix++)
+	    {
+	      if (gcov_read_counter (&count))
+		goto corrupt;
+	      entry->counts[ix] += count;
+	    }
+	}
+      else
+	if (gcov_skip (length))
+	  goto corrupt;
     }
 
   free (function_name_buffer);
-
-  return 1;
-
-cleanup:
-  cleanup_counts_index (1);
-  if (function_name_buffer)
-    free (function_name_buffer);
-  return 0;
+  gcov_close ();
 }
 
 /* Computes hybrid profile for all matching entries in da_file.
@@ -428,26 +425,17 @@ get_exec_counts ()
 {
   unsigned num_edges = 0;
   basic_block bb;
-  gcov_type *profile;
-  gcov_type max_count;
-  unsigned ix, i, tag, length, num;
   const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl));
-  struct da_index_entry *entry, what;
-  struct section_reference *act;
-  gcov_type count;
-  struct gcov_summary summ;
+  counts_entry_t *entry, elt;
 
   profile_info.max_counter_in_program = 0;
   profile_info.count_profiles_merged = 0;
 
-  /* No .da file, no execution counts.  */
-  if (!da_file)
+  /* No hash table, no counts. */
+  if (!counts_hash)
     return NULL;
-  if (!counts_file_index)
-    abort ();
 
   /* Count the edges to be (possibly) instrumented.  */
-
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
     {
       edge e;
@@ -456,81 +444,24 @@ get_exec_counts ()
 	  num_edges++;
     }
 
-  /* now read and combine all matching profiles.  */
-
-  profile = xmalloc (sizeof (gcov_type) * num_edges);
-
-  for (ix = 0; ix < num_edges; ix++)
-    profile[ix] = 0;
-
-  what.function_name = (char *) name;
-  what.section = GCOV_TAG_ARC_COUNTS;
-  entry = htab_find (counts_file_index, &what);
+  elt.function_name = (char *) name;
+  elt.section = GCOV_TAG_ARC_COUNTS;
+  entry = htab_find (counts_hash, &elt);
   if (!entry)
     {
       warning ("No profile for function '%s' found.", name);
-      goto cleanup;
+      return NULL;
     }
   
-  if (entry->checksum != profile_info.current_function_cfg_checksum)
+  if (entry->checksum != profile_info.current_function_cfg_checksum
+      || num_edges != entry->n_counts)
     {
       warning ("profile mismatch for `%s'", current_function_name);
-      goto cleanup;
+      return NULL;
     }
 
-  for (i = 0; i < entry->n_offsets; i++)
-    {
-      act = entry->offsets + i;
-
-      /* Read arc counters.  */
-      max_count = 0;
-      gcov_resync (da_file, act->offset, 0);
-
-      if (gcov_read_unsigned (da_file, &tag)
-	  || gcov_read_unsigned (da_file, &length)
-	  || tag != GCOV_TAG_ARC_COUNTS)
-	{
-	  /* We have already passed through file, so any error means
-	     something is rotten.  */
-	  abort ();
-	}
-      num = length / 8;
-
-      if (num != num_edges)
-	{
-	  warning ("profile mismatch for `%s'", current_function_name);
-	  goto cleanup;
-	}
-	  
-      for (ix = 0; ix != num; ix++)
-	{
-	  if (gcov_read_counter (da_file, &count))
-	    abort ();
-	  if (count > max_count)
-	    max_count = count;
-	  profile[ix] += count;
-	}
-
-      /* Read program summary.  */
-      if (*act->summary != -1)
-	{
-	  gcov_resync (da_file, *act->summary, 0);
-	  if (gcov_read_unsigned (da_file, &tag)
-	      || gcov_read_unsigned (da_file, &length)
-	      || tag != GCOV_TAG_PROGRAM_SUMMARY
-	      || gcov_read_summary (da_file, &summ))
-	    abort ();
-	  profile_info.count_profiles_merged += summ.runs;
-	  profile_info.max_counter_in_program += summ.arc_sum_max;
-	}
-      else
-	summ.runs = 0;
-      if (!summ.runs)
-	{
-	  profile_info.count_profiles_merged++;
-	  profile_info.max_counter_in_program += max_count;
-	}
-    }
+  profile_info.count_profiles_merged = entry->merged;
+  profile_info.max_counter_in_program = entry->max_counter_sum;
 
   if (rtl_dump_file)
     {
@@ -539,12 +470,7 @@ get_exec_counts ()
 	      (int)profile_info.max_counter_in_program);
     }
 
-  return profile;
-
-cleanup:;
-  free (profile);
-  cleanup_counts_index (1);
-  return NULL;
+  return entry->counts;
 }
 
 
@@ -858,8 +784,6 @@ compute_branch_probabilities ()
     }
 
   free_aux_for_blocks ();
-  if (exec_counts)
-    free (exec_counts);
   find_counters_section (GCOV_TAG_ARC_COUNTS)->present = 1;
 }
 
@@ -1083,32 +1007,30 @@ branch_prob ()
      edge output the source and target basic block numbers.
      NOTE: The format of this file must be compatible with gcov.  */
 
-  if (flag_test_coverage && bbg_file)
+  if (gcov_ok ())
     {
       long offset;
       const char *file = DECL_SOURCE_FILE (current_function_decl);
       unsigned line = DECL_SOURCE_LINE (current_function_decl);
       
       /* Announce function */
-      if (gcov_write_unsigned (bbg_file, GCOV_TAG_FUNCTION)
-	  || !(offset = gcov_reserve_length (bbg_file))
-	  || gcov_write_string (bbg_file, name,
-			     strlen (name))
-	  || gcov_write_unsigned (bbg_file,
-			    profile_info.current_function_cfg_checksum)
-	  || gcov_write_string (bbg_file, file, strlen (file))
-	  || gcov_write_unsigned (bbg_file, line)
-	  || gcov_write_length (bbg_file, offset))
+      if (gcov_write_unsigned (GCOV_TAG_FUNCTION)
+	  || !(offset = gcov_reserve_length ())
+	  || gcov_write_string (name)
+	  || gcov_write_unsigned (profile_info.current_function_cfg_checksum)
+	  || gcov_write_string (file)
+	  || gcov_write_unsigned (line)
+	  || gcov_write_length (offset))
 	goto bbg_error;
 
       /* Basic block flags */
-      if (gcov_write_unsigned (bbg_file, GCOV_TAG_BLOCKS)
-	  || !(offset = gcov_reserve_length (bbg_file)))
+      if (gcov_write_unsigned (GCOV_TAG_BLOCKS)
+	  || !(offset = gcov_reserve_length ()))
 	goto bbg_error;
       for (i = 0; i != (unsigned) (n_basic_blocks + 2); i++)
-	if (gcov_write_unsigned (bbg_file, 0))
+	if (gcov_write_unsigned (0))
 	  goto bbg_error;
-      if (gcov_write_length (bbg_file, offset))
+      if (gcov_write_length (offset))
 	goto bbg_error;
       
       /* Arcs */
@@ -1116,9 +1038,9 @@ branch_prob ()
 	{
 	  edge e;
 
-	  if (gcov_write_unsigned (bbg_file, GCOV_TAG_ARCS)
-	      || !(offset = gcov_reserve_length (bbg_file))
-	      || gcov_write_unsigned (bbg_file, BB_TO_GCOV_INDEX (bb)))
+	  if (gcov_write_unsigned (GCOV_TAG_ARCS)
+	      || !(offset = gcov_reserve_length ())
+	      || gcov_write_unsigned (BB_TO_GCOV_INDEX (bb)))
 	    goto bbg_error;
 
 	  for (e = bb->succ; e; e = e->succ_next)
@@ -1135,14 +1057,13 @@ branch_prob ()
 		  if (e->flags & EDGE_FALLTHRU)
 		    flag_bits |= GCOV_ARC_FALLTHROUGH;
 
-		  if (gcov_write_unsigned (bbg_file,
-					   BB_TO_GCOV_INDEX (e->dest))
-		      || gcov_write_unsigned (bbg_file, flag_bits))
+		  if (gcov_write_unsigned (BB_TO_GCOV_INDEX (e->dest))
+		      || gcov_write_unsigned (flag_bits))
 		    goto bbg_error;
 	        }
 	    }
 
-	  if (gcov_write_length (bbg_file, offset))
+	  if (gcov_write_length (offset))
 	    goto bbg_error;
 	}
 
@@ -1185,10 +1106,10 @@ branch_prob ()
 		      {
 			if (offset)
 			  /*NOP*/;
-			else if (gcov_write_unsigned (bbg_file, GCOV_TAG_LINES)
-				 || !(offset = gcov_reserve_length (bbg_file))
-				 || gcov_write_unsigned (bbg_file,
-						   BB_TO_GCOV_INDEX (bb)))
+			else if (gcov_write_unsigned (GCOV_TAG_LINES)
+				 || !(offset = gcov_reserve_length ())
+				 || (gcov_write_unsigned
+				     (BB_TO_GCOV_INDEX (bb))))
 			  goto bbg_error;
 			/* If this is a new source file, then output
 			   the file's name to the .bb file.  */
@@ -1197,12 +1118,11 @@ branch_prob ()
 				       prev_file_name))
 			  {
 			    prev_file_name = NOTE_SOURCE_FILE (insn);
-			    if (gcov_write_unsigned (bbg_file, 0)
-				|| gcov_write_string (bbg_file, prev_file_name,
-						      strlen (prev_file_name)))
+			    if (gcov_write_unsigned (0)
+				|| gcov_write_string (prev_file_name))
 			      goto bbg_error;
 			  }
-			if (gcov_write_unsigned (bbg_file, NOTE_LINE_NUMBER (insn)))
+			if (gcov_write_unsigned (NOTE_LINE_NUMBER (insn)))
 			  goto bbg_error;
 		      }
 		  }
@@ -1211,14 +1131,13 @@ branch_prob ()
 
 	    if (offset)
 	      {
-		if (gcov_write_unsigned (bbg_file, 0)
-		    || gcov_write_string (bbg_file, NULL, 0)
-		    || gcov_write_length (bbg_file, offset))
+		if (gcov_write_unsigned (0)
+		    || gcov_write_string (NULL)
+		    || gcov_write_length (offset))
 		  {
 		  bbg_error:;
 		    warning ("error writing `%s'", bbg_file_name);
-		    fclose (bbg_file);
-		    bbg_file = NULL;
+		    gcov_error ();
 		  }
 	      }
 	  }
@@ -1395,38 +1314,27 @@ init_branch_prob (filename)
   int len = strlen (filename);
   int i;
 
+  da_file_name = (char *) xmalloc (len + strlen (GCOV_DATA_SUFFIX) + 1);
+  strcpy (da_file_name, filename);
+  strcat (da_file_name, GCOV_DATA_SUFFIX);
+  
+  if (flag_branch_probabilities)
+    read_counts_file (da_file_name);
+
   if (flag_test_coverage)
     {
       /* Open the bbg output file.  */
       bbg_file_name = (char *) xmalloc (len + strlen (GCOV_GRAPH_SUFFIX) + 1);
       strcpy (bbg_file_name, filename);
       strcat (bbg_file_name, GCOV_GRAPH_SUFFIX);
-      bbg_file = fopen (bbg_file_name, "wb");
-      if (!bbg_file)
-	fatal_io_error ("cannot open %s", bbg_file_name);
-
-      if (gcov_write_unsigned (bbg_file, GCOV_GRAPH_MAGIC)
-	  || gcov_write_unsigned (bbg_file, GCOV_VERSION))
+      if (!gcov_open (bbg_file_name, -1))
 	{
-	  fclose (bbg_file);
-	  fatal_io_error ("cannot write `%s'", bbg_file_name);
+	  error ("cannot open %s", bbg_file_name);
+	  gcov_error ();
 	}
-    }
-
-  da_file_name = (char *) xmalloc (len + strlen (GCOV_DATA_SUFFIX) + 1);
-  strcpy (da_file_name, filename);
-  strcat (da_file_name, GCOV_DATA_SUFFIX);
-  
-  if (flag_branch_probabilities)
-    {
-      da_file = fopen (da_file_name, "rb");
-      if (!da_file)
-	warning ("file %s not found, execution counts assumed to be zero",
-		 da_file_name);
-      if (counts_file_index && strcmp (da_file_name, counts_file_name))
-       	cleanup_counts_index (0);
-      if (index_counts_file ())
-	counts_file_name = xstrdup (da_file_name);
+      else if (gcov_write_unsigned (GCOV_GRAPH_MAGIC)
+	       || gcov_write_unsigned (GCOV_VERSION))
+	gcov_error ();
     }
 
   if (profile_arc_flag)
@@ -1459,26 +1367,19 @@ end_branch_prob ()
 {
   if (flag_test_coverage)
     {
-      if (bbg_file)
-	{
-#if !SELF_COVERAGE
-	  /* If the compiler is instrumented, we should not remove the
-             counts file, because we might be recompiling
-             ourselves. The .da files are all removed during copying
-             the stage1 files.  */
-	  unlink (da_file_name);
+      int error = gcov_close ();
+      
+      if (error)
+	unlink (bbg_file_name);
+#if SELF_COVERAGE
+      /* If the compiler is instrumented, we should not
+         unconditionally remove the counts file, because we might be
+         recompiling ourselves. The .da files are all removed during
+         copying the stage1 files.  */
+      if (error)
 #endif
-	  fclose (bbg_file);
-	}
-      else
-	{
-	  unlink (bbg_file_name);
-	  unlink (da_file_name);
-	}
+	unlink (da_file_name);
     }
-
-  if (da_file)
-    fclose (da_file);
 
   if (rtl_dump_file)
     {
