@@ -1,3 +1,8 @@
+Sat Feb  6 18:14:46 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* README.g77, gcc.c, gcc.texi: Update email addresses.
+	* invoke.texi system.h: Likewise.
+
 Sat Feb  6 11:04:08 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* unroll.c (find_splittable_givs): After express_from, call replace_rtx
