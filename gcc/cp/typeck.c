@@ -1826,10 +1826,9 @@ build_object_ref (datum, basetype, field)
     }
   else if (is_aggr_type (basetype, 1))
     {
-      tree binfo = binfo_or_else (basetype, dtype);
-      if (binfo)
-	return build_x_component_ref (build_scoped_ref (datum, basetype),
-				      field, binfo, 1);
+      tree binfo = NULL_TREE;
+      datum = build_scoped_ref (datum, basetype, &binfo);
+      return build_x_component_ref (datum, field, binfo, 1);
     }
   return error_mark_node;
 }

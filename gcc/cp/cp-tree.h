@@ -4387,7 +4387,7 @@ extern int abstract_virtuals_error		PARAMS ((tree, tree));
 
 extern tree store_init_value			PARAMS ((tree, tree));
 extern tree digest_init				PARAMS ((tree, tree, tree *));
-extern tree build_scoped_ref			PARAMS ((tree, tree));
+extern tree build_scoped_ref			PARAMS ((tree, tree, tree *));
 extern tree build_x_arrow			PARAMS ((tree));
 extern tree build_m_component_ref		PARAMS ((tree, tree));
 extern tree build_functional_cast		PARAMS ((tree, tree));

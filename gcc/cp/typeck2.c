@@ -954,7 +954,7 @@ process_init_constructor (type, init, elts)
 
 /* Given a structure or union value DATUM, construct and return
    the structure or union component which results from narrowing
-   that value by the type specified in BASETYPE.  For example, given the
+   that value to the base specified in BASETYPE.  For example, given the
    hierarchy
 
    class L { int ii; };
@@ -975,29 +975,36 @@ process_init_constructor (type, init, elts)
    I used to think that this was nonconformant, that the standard specified
    that first we look up ii in A, then convert x to an L& and pull out the
    ii part.  But in fact, it does say that we convert x to an A&; A here
-   is known as the "naming class".  (jason 2000-12-19) */
+   is known as the "naming class".  (jason 2000-12-19)
+
+   BINFO_P points to a variable initialized either to NULL_TREE or to the
+   binfo for the specific base subobject we want to convert to.  */
 
 tree
-build_scoped_ref (datum, basetype)
+build_scoped_ref (datum, basetype, binfo_p)
      tree datum;
      tree basetype;
+     tree *binfo_p;
 {
-  tree ref;
   tree binfo;
 
   if (datum == error_mark_node)
     return error_mark_node;
-  binfo = lookup_base (TREE_TYPE (datum), basetype, ba_check, NULL);
+  if (*binfo_p)
+    binfo = *binfo_p;
+  else
+    binfo = lookup_base (TREE_TYPE (datum), basetype, ba_check, NULL);
 
-  if (binfo == error_mark_node)
-    return error_mark_node;
-  if (!binfo)
-    return error_not_base_type (TREE_TYPE (datum), basetype);
-  
-  ref = build_unary_op (ADDR_EXPR, datum, 0);
-  ref = build_base_path (PLUS_EXPR, ref, binfo, 1);
+  if (!binfo || binfo == error_mark_node)
+    {
+      *binfo_p = NULL_TREE;
+      if (!binfo)
+	error_not_base_type (basetype, TREE_TYPE (datum));
+      return error_mark_node;
+    }
 
-  return build_indirect_ref (ref, "(compiler error in build_scoped_ref)");
+  *binfo_p = binfo;
+  return build_base_path (PLUS_EXPR, datum, binfo, 1);
 }
 
 /* Build a reference to an object specified by the C++ `->' operator.

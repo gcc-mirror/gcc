@@ -1,5 +1,16 @@
 2002-04-06  Jason Merrill  <jason@redhat.com>
 
+	PR c++/525
+	* init.c (build_member_call): Use build_scoped_ref.
+	(resolve_offset_ref): Likewise.
+	* call.c (build_scoped_method_call): Likewise.
+	* tree.c (maybe_dummy_object): Kludge around current_class_type being 
+	wrong.
+	* typeck2.c (build_scoped_ref): Return the binfo via binfo_p parm.
+	* cp-tree.h: Adjust.
+	
+	* init.c (push_base_cleanups): Just use build_scoped_method_call.
+
 	PR c++/6179
 	* method.c (implicitly_declare_fn): Pass unqualified type to 
 	synthesize_exception_spec.

@@ -298,27 +298,10 @@ build_scoped_method_call (exp, basetype, name, parms)
       return error_mark_node;
     }
 
-  if (! binfo)
-    {
-      binfo = lookup_base (type, basetype, ba_check, NULL);
-      if (binfo == error_mark_node)
-	return error_mark_node;
-      if (! binfo)
-	error_not_base_type (basetype, type);
-    }
+  decl = build_scoped_ref (exp, basetype, &binfo);
 
   if (binfo)
     {
-      if (TREE_CODE (exp) == INDIRECT_REF)
-	{
-	  decl = build_base_path (PLUS_EXPR,
-				  build_unary_op (ADDR_EXPR, exp, 0),
-				  binfo, 1);
-	  decl = build_indirect_ref (decl, NULL);
-	}
-      else
-	decl = build_scoped_ref (exp, basetype);
-
       /* Call to a destructor.  */
       if (TREE_CODE (name) == BIT_NOT_EXPR)
 	{
