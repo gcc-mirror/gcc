@@ -1,5 +1,7 @@
 2000-03-14  Tom Tromey  <tromey@cygnus.com>
 
+	* libjava.compile/pr172.java: New file, for PR gcj/172.
+
 	* libjava.compile/pr174.java: New file, for PR gcj/174.
 
 2000-03-07  Tom Tromey  <tromey@cygnus.com>
