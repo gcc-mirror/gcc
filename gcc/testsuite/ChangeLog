@@ -1,3 +1,7 @@
+2002-04-02  David S. Miller  <davem@redhat.com>
+
+	* gcc.c-torture/execute/20020402-3.c: New test.
+
 2002-04-03  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* g77.dg/bprob/bprob.exp: Skip for mmix-*-* and cris-*-*.
