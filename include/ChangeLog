@@ -1,3 +1,8 @@
+Thu May  4 17:15:26 2000  Philippe De Muyter  <phdm@macqel.be>
+
+	* sort.h (sys/types.h): File included unconditionnaly.
+	(stddef.h): File include only #ifdef __STDC__.
+
 2000-05-03  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* symcat.h: Remove #endif label.

@@ -29,6 +29,10 @@ Boston, MA 02111-1307, USA.  */
 #include <stdlib.h>
 #endif
 
+#ifndef UCHAR_MAX
+#define UCHAR_MAX ((unsigned char)(-1))
+#endif
+
 /* POINTERS and WORK are both arrays of N pointers.  When this
    function returns POINTERS will be sorted in ascending order.  */
 
