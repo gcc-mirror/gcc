@@ -727,6 +727,9 @@ struct tree_type
    Often this is the same as DECL_NAME.
    It is an IDENTIFIER_NODE.  */
 #define DECL_ASSEMBLER_NAME(NODE) ((NODE)->decl.assembler_name)
+/* Records the section name in a section attribute.  Used to pass
+   the name from decl_attributes to make_function_rtl and make_decl_rtl.  */
+#define DECL_SECTION_NAME(NODE) ((NODE)->decl.section_name)
 /*  For FIELD_DECLs, this is the
     RECORD_TYPE, UNION_TYPE, or QUAL_UNION_TYPE node that the field is
     a member of.  For VAR_DECL, PARM_DECL, FUNCTION_DECL, LABEL_DECL,
@@ -946,6 +949,7 @@ struct tree_decl
   /* The PRINT_NAME field is marked for death.  */
   char *print_name;
   union tree_node *assembler_name;
+  union tree_node *section_name;
   struct rtx_def *rtl;	/* acts as link to register transfer language
 				   (rtl) info */
   /* For a FUNCTION_DECL, if inline, this is the size of frame needed.
