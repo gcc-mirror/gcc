@@ -32,6 +32,44 @@ CC recognizes how to compile each input file by suffixes in the file names.
 Once it knows which kind of compilation to perform, the procedure for
 compilation is specified by a string called a "spec".  */
 
+/* A Short Introduction to Adding a Command-Line Option.
+
+   Before adding a command-line option, consider if it is really
+   necessary.  Each additional command-line option adds complexity and
+   is difficult to remove in subsequent versions.
+
+   In the following, consider adding the command-line argument
+   `--bar'.
+
+   1. Each command-line option is specified in the specs file.  The
+   notation is described below in the comment entitled "The Specs
+   Language".  Read it.
+
+   2. In this file, add an entry to "option_map" equating the long
+   `--' argument version and any shorter, single letter version.  Read
+   the comments in the declaration of "struct option_map" for an
+   explanation.  Do not omit the first `-'.
+
+   3. Look in the "specs" file to determine which program or option
+   list should be given the argument, e.g., "cc1_options".  Add the
+   appropriate syntax for the shorter option version to the
+   corresponding "const char *" entry in this file.  Omit the first
+   `-' from the option.  For example, use `-bar', rather than `--bar'.
+
+   4. If the argument takes an argument, e.g., `--baz argument1',
+   modify either DEFAULT_SWITCH_TAKES_ARG or
+   DEFAULT_WORD_SWITCH_TAKES_ARG in this file.  Omit the first `-'
+   from `--baz'.
+
+   5. Document the option in this file's display_help().  If the
+   option is passed to a subprogram, modify its corresponding
+   function, e.g., cppinit.c:print_help() or toplev.c:display_help(),
+   instead.
+
+   6. Compile and test.  Make sure that your new specs file is being
+   read.  For example, use a debugger to investigate the value of
+   "specs_file" in main().  */
+
 #include "config.h"
 #include "system.h"
 #include <signal.h>
@@ -233,7 +271,6 @@ static void add_prefix		PARAMS ((struct path_prefix *, const char *,
 					 const char *, int, int, int *));
 static void translate_options	PARAMS ((int *, const char *const **));
 static char *skip_whitespace	PARAMS ((char *));
-static void record_temp_file	PARAMS ((const char *, int, int));
 static void delete_if_ordinary	PARAMS ((const char *));
 static void delete_temp_files	PARAMS ((void));
 static void delete_failure_queue PARAMS ((void));
@@ -251,12 +288,9 @@ static int used_arg		PARAMS ((const char *, int));
 static int default_arg		PARAMS ((const char *, int));
 static void set_multilib_dir	PARAMS ((void));
 static void print_multilib_info	PARAMS ((void));
-static void pfatal_with_name	PARAMS ((const char *)) ATTRIBUTE_NORETURN;
 static void perror_with_name	PARAMS ((const char *));
 static void pfatal_pexecute	PARAMS ((const char *, const char *))
   ATTRIBUTE_NORETURN;
-static void error		PARAMS ((const char *, ...))
-  ATTRIBUTE_PRINTF_1;
 static void notice		PARAMS ((const char *, ...))
   ATTRIBUTE_PRINTF_1;
 static void display_help 	PARAMS ((void));
@@ -272,7 +306,9 @@ static void init_gcc_specs              PARAMS ((struct obstack *,
 						 const char *,
 						 const char *));
 
-/* Specs are strings containing lines, each of which (if not blank)
+/* The Specs Language
+
+Specs are strings containing lines, each of which (if not blank)
 is made up of a program name, and arguments separated by spaces.
 The program name must be exact and start from root, since no path
 is searched and it is unreliable to depend on the current working directory.
@@ -619,7 +655,7 @@ static const char *cc1_options =
  %{aux-info*} %{Qn:-fno-ident} %{--help:--help}\
  %{--target-help:--target-help}\
  %{!fsyntax-only:%{S:%W{o*}%{!o*:-o %b.s}}}\
- %{fsyntax-only:-o %j}";
+ %{fsyntax-only:-o %j} %{-param*}";
 
 static const char *asm_options =
 "%a %Y %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}";
@@ -674,7 +710,8 @@ static struct user_specs *user_specs_head, *user_specs_tail;
   || !strcmp (STR, "imacros") || !strcmp (STR, "aux-info") \
   || !strcmp (STR, "idirafter") || !strcmp (STR, "iprefix") \
   || !strcmp (STR, "iwithprefix") || !strcmp (STR, "iwithprefixbefore") \
-  || !strcmp (STR, "isystem") || !strcmp (STR, "specs") \
+  || !strcmp (STR, "isystem") || !strcmp (STR, "-param") \
+  || !strcmp (STR, "specs") \
   || !strcmp (STR, "MF") || !strcmp (STR, "MT") || !strcmp (STR, "MQ"))
 
 #ifndef WORD_SWITCH_TAKES_ARG
@@ -729,19 +766,20 @@ static struct compiler default_compilers[] =
      were not present when we built the driver, we will hit these copies
      and be given a more meaningful error than "file not used since
      linking is not done".  */
-  {".m",  "#Objective-C"}, {".mi",  "#Objective-C"},
-  {".cc", "#C++"}, {".cxx", "#C++"}, {".cpp", "#C++"}, {".cp", "#C++"},
-  {".c++", "#C++"}, {".C", "#C++"}, {".ii", "#C++"},
-  {".ads", "#Ada"}, {".adb", "#Ada"}, {".ada", "#Ada"},
-  {".f", "#Fortran"}, {".for", "#Fortran"}, {".fpp", "#Fortran"},
-  {".F", "#Fortran"}, {".FOR", "#Fortran"}, {".FPP", "#Fortran"},
-  {".r", "#Ratfor"},
-  {".p", "#Pascal"}, {".pas", "#Pascal"},
-  {".ch", "#Chill"}, {".chi", "#Chill"},
-  {".java", "#Java"}, {".class", "#Java"},
-  {".zip", "#Java"}, {".jar", "#Java"},
+  {".m",  "#Objective-C", 0}, {".mi",  "#Objective-C", 0},
+  {".cc", "#C++", 0}, {".cxx", "#C++", 0}, {".cpp", "#C++", 0},
+  {".cp", "#C++", 0}, {".c++", "#C++", 0}, {".C", "#C++", 0},
+  {".ii", "#C++", 0},
+  {".ads", "#Ada", 0}, {".adb", "#Ada", 0}, {".ada", "#Ada", 0},
+  {".f", "#Fortran", 0}, {".for", "#Fortran", 0}, {".fpp", "#Fortran", 0},
+  {".F", "#Fortran", 0}, {".FOR", "#Fortran", 0}, {".FPP", "#Fortran", 0},
+  {".r", "#Ratfor", 0},
+  {".p", "#Pascal", 0}, {".pas", "#Pascal", 0},
+  {".ch", "#Chill", 0}, {".chi", "#Chill", 0},
+  {".java", "#Java", 0}, {".class", "#Java", 0},
+  {".zip", "#Java", 0}, {".jar", "#Java", 0},
   /* Next come the entries for C.  */
-  {".c", "@c"},
+  {".c", "@c", 0},
   {"@c",
    /* cc1 has an integrated ISO C preprocessor.  We should invoke the
       external preprocessor if -save-temps or -traditional is given.  */
@@ -756,27 +794,27 @@ static struct compiler default_compilers[] =
 		    cc1 -fpreprocessed %{!pipe:%g.i} %(cc1_options)}\
 	    %{!traditional:%{!ftraditional:%{!traditional-cpp:\
 		cc1 -lang-c %{ansi:-std=c89} %(cpp_options) %(cc1_options)}}}}\
-        %{!fsyntax-only:%(invoke_as)}}}}"},
+        %{!fsyntax-only:%(invoke_as)}}}}", 0},
   {"-",
    "%{!E:%e-E required when input is from standard input}\
-    %(trad_capable_cpp) -lang-c %{ansi:-std=c89} %(cpp_options)"},
-  {".h", "@c-header"},
+    %(trad_capable_cpp) -lang-c %{ansi:-std=c89} %(cpp_options)", 0},
+  {".h", "@c-header", 0},
   {"@c-header",
    "%{!E:%eCompilation of header file requested} \
-    %(trad_capable_cpp) -lang-c %{ansi:-std=c89} %(cpp_options)"},
-  {".i", "@cpp-output"},
+    %(trad_capable_cpp) -lang-c %{ansi:-std=c89} %(cpp_options)", 0},
+  {".i", "@cpp-output", 0},
   {"@cpp-output",
-   "%{!M:%{!MM:%{!E:cc1 -fpreprocessed %i %(cc1_options) %{!fsyntax-only:%(invoke_as)}}}}"},
-  {".s", "@assembler"},
+   "%{!M:%{!MM:%{!E:cc1 -fpreprocessed %i %(cc1_options) %{!fsyntax-only:%(invoke_as)}}}}", 0},
+  {".s", "@assembler", 0},
   {"@assembler",
-   "%{!M:%{!MM:%{!E:%{!S:as %(asm_options) %i %A }}}}"},
-  {".S", "@assembler-with-cpp"},
+   "%{!M:%{!MM:%{!E:%{!S:as %(asm_options) %i %A }}}}", 0},
+  {".S", "@assembler-with-cpp", 0},
   {"@assembler-with-cpp",
    "%(trad_capable_cpp) -lang-asm %(cpp_options)\
-	%{!M:%{!MM:%{!E:%(invoke_as)}}}"},
+	%{!M:%{!MM:%{!E:%(invoke_as)}}}", 0},
 #include "specs.h"
   /* Mark end of table */
-  {0, 0}
+  {0, 0, 0}
 };
 
 /* Number of elements in default_compilers, not counting the terminator.  */
@@ -863,6 +901,7 @@ struct option_map option_map[] =
    {"--optimize", "-O", "oj"},
    {"--output", "-o", "a"},
    {"--output-class-directory", "-foutput-class-dir=", "ja"},
+   {"--param", "--param", "a"},
    {"--pedantic", "-pedantic", 0},
    {"--pedantic-errors", "-pedantic-errors", 0},
    {"--pipe", "-pipe", 0},
@@ -1876,7 +1915,7 @@ static struct temp_file *failure_delete_queue;
    FAIL_DELETE nonzero means delete it if a compilation step fails;
    otherwise delete it in any case.  */
 
-static void
+void
 record_temp_file (filename, always_delete, fail_delete)
      const char *filename;
      int always_delete;
@@ -2920,9 +2959,9 @@ display_help ()
 "), stdout);
 
   printf (_("\
-\nOptions starting with -g, -f, -m, -O or -W are automatically passed on to\n\
-the various sub-processes invoked by %s.  In order to pass other options\n\
-on to these processes the -W<letter> options must be used.\n\
+\nOptions starting with -g, -f, -m, -O, -W, or --param are automatically\n\
+ passed on to the various sub-processes invoked by %s.  In order to pass\n\
+ other options on to these processes the -W<letter> options must be used.\n\
 "), programname);
 
   /* The rest of the options are displayed by invocations of the various
@@ -6025,7 +6064,7 @@ save_string (s, len)
   return result;
 }
 
-static void
+void
 pfatal_with_name (name)
      const char *name;
 {
@@ -6093,7 +6132,7 @@ fatal VPARAMS ((const char *msgid, ...))
   exit (1);
 }
 
-static void
+void
 error VPARAMS ((const char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
