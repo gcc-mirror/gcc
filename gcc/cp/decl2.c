@@ -375,13 +375,6 @@ int flag_detailed_statistics;
 
 int flag_this_is_variable;
 
-/* 3 means write out only virtuals function tables `defined'
-   in this implementation file.
-   0 means write out virtual function tables and give them
-   (C) static access (default).  */
-
-int write_virtuals;
-
 /* Nonzero means we should attempt to elide constructors when possible.  */
 
 int flag_elide_constructors = 1;
@@ -3818,7 +3811,8 @@ reparse_absdcl_as_casts (decl, expr)
       expr = build_c_cast (type, expr);
     }
 
-  if (warn_old_style_cast)
+  if (warn_old_style_cast && ! in_system_header
+      && current_lang_name != lang_name_c)
     warning ("use of old-style cast");
 
   return expr;

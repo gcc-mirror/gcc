@@ -3212,16 +3212,6 @@ finish_struct_1 (t, warn_anon)
       no_const_asn_ref = 0;
     }
 
-#if 0
-  /* Both of these should be done before now.  */
-  if (write_virtuals == 3 && CLASSTYPE_INTERFACE_KNOWN (t)
-      && ! IS_SIGNATURE (t))
-    {
-      my_friendly_assert (CLASSTYPE_INTERFACE_ONLY (t) == interface_only, 999);
-      my_friendly_assert (CLASSTYPE_VTABLE_NEEDS_WRITING (t) == ! interface_only, 999);
-    }
-#endif
-
   /* The three of these are approximations which may later be
      modified.  Needed at this point to make add_virtual_function
      and modify_vtable_entries work.  */

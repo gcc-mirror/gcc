@@ -1329,16 +1329,12 @@ begin_class_definition (t)
 	  SET_CLASSTYPE_INTERFACE_UNKNOWN_X
 	    (t, interface_unknown);
 	}
-      
-      /* Record how to set the access of this class's
-	 virtual functions.  If write_virtuals == 3, then
-	 inline virtuals are ``extern inline''.  */
-      if (write_virtuals == 3)
-	needs_writing = ! CLASSTYPE_INTERFACE_ONLY (t)
-	  && CLASSTYPE_INTERFACE_KNOWN (t);
-      else
-	needs_writing = 1;
-      CLASSTYPE_VTABLE_NEEDS_WRITING (t) = needs_writing;
+
+      /* Only leave this bit clear if we know this
+	 class is part of an interface-only specification.  */
+      if (! CLASSTYPE_INTERFACE_KNOWN (t)
+	  || ! CLASSTYPE_INTERFACE_ONLY (t))
+	CLASSTYPE_VTABLE_NEEDS_WRITING (t) = 1;
     }
 #if 0
   tmp = TYPE_IDENTIFIER ($<ttype>0);
