@@ -3187,7 +3187,7 @@ Variables are represented as declaration nodes.
 The language-independent source files for parsing are
 @file{stor-layout.c}, @file{fold-const.c}, and @file{tree.c}.
 There are also header files @file{tree.h} and @file{tree.def}
-which define the format of the tree representation.@refill
+which define the format of the tree representation.
 
 C Preprocessing, for language front ends, that want or require it, is
 performed by cpplib, which is covered in seperate documentation.  In
@@ -3295,14 +3295,14 @@ and @file{emit-rtl.c}.
 Also, the file
 @file{insn-emit.c}, generated from the machine description by the
 program @code{genemit}, is used in this pass.  The header file
-@file{expr.h} is used for communication within this pass.@refill
+@file{expr.h} is used for communication within this pass.
 
 @findex genflags
 @findex gencodes
 The header files @file{insn-flags.h} and @file{insn-codes.h},
 generated from the machine description by the programs @code{genflags}
 and @code{gencodes}, tell this pass which standard names are available
-for use and which patterns correspond to them.@refill
+for use and which patterns correspond to them.
 
 Aside from debugging information output, none of the following passes
 refers to the tree structure representation of the function (only
@@ -3733,7 +3733,7 @@ Several passes use the instruction recognizer, which consists of
 @file{recog.c} and @file{recog.h}, plus the files @file{insn-recog.c}
 and @file{insn-extract.c} that are generated automatically from the
 machine description by the tools @file{genrecog} and
-@file{genextract}.@refill
+@file{genextract}.
 
 @item
 Several passes use the header files @file{regs.h} which defines the
@@ -3753,7 +3753,7 @@ attributes defined for a particular machine is in file
 @file{insn-attr.h}, which is generated from the machine description by
 the program @file{genattr}.  The file @file{insn-attrtab.c} contains
 subroutines to obtain the attribute values for insns.  It is generated
-from the machine description by the program @file{genattrtab}.@refill
+from the machine description by the program @file{genattrtab}.
 @end itemize
 @end ifset
 

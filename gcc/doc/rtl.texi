@@ -185,7 +185,7 @@ expression (actually a pointer to an expression), @samp{i} for integer,
 @samp{w} for wide integer, @samp{s} for string, and @samp{E} for vector
 of expressions.  The sequence of letters for an expression code is
 called its @dfn{format}.  For example, the format of @code{subreg} is
-@samp{ei}.@refill
+@samp{ei}.
 
 @cindex RTL format characters
 A few other format characters are used occasionally:
@@ -271,7 +271,7 @@ You can make no assumptions about the format of these codes.
 Operands of expressions are accessed using the macros @code{XEXP},
 @code{XINT}, @code{XWINT} and @code{XSTR}.  Each of these macros takes
 two arguments: an expression-pointer (RTX) and an operand number
-(counting from zero).  Thus,@refill
+(counting from zero).  Thus,
 
 @example
 XEXP (@var{x}, 2)
@@ -304,7 +304,7 @@ compile without error, and would return the second, integer operand cast as
 an expression pointer, which would probably result in a crash when
 accessed.  Nothing stops you from writing @code{XEXP (@var{x}, 28)} either,
 but this will access memory past the end of the expression with
-unpredictable results.@refill
+unpredictable results.
 
 Access to operands which are vectors is more complicated.  You can use the
 macro @code{XVEC} to get the vector-pointer itself, or the macros
@@ -959,7 +959,7 @@ only expression for integer value negative one is found in
 @code{constm1_rtx}.  Any attempt to create an expression of code
 @code{const_int} and value zero, one, two or negative one will return
 @code{const0_rtx}, @code{const1_rtx}, @code{const2_rtx} or
-@code{constm1_rtx} as appropriate.@refill
+@code{constm1_rtx} as appropriate.
 
 @findex const_true_rtx
 Similarly, there is only one object for the integer whose value is
@@ -967,7 +967,7 @@ Similarly, there is only one object for the integer whose value is
 @code{STORE_FLAG_VALUE} is one, @code{const_true_rtx} and
 @code{const1_rtx} will point to the same object.  If
 @code{STORE_FLAG_VALUE} is @minus{}1, @code{const_true_rtx} and
-@code{constm1_rtx} will point to the same object.@refill
+@code{constm1_rtx} will point to the same object.
 
 @findex const_double
 @item (const_double:@var{m} @var{addr} @var{i0} @var{i1} @dots{})
@@ -986,7 +986,7 @@ it has not been allocated a memory location, but is on the chain of all
 undisplayed field), @var{addr} contains @code{const0_rtx}.  If it is not
 on the chain, @var{addr} contains @code{cc0_rtx}.  @var{addr} is
 customarily accessed with the macro @code{CONST_DOUBLE_MEM} and the
-chain field via @code{CONST_DOUBLE_CHAIN}.@refill
+chain field via @code{CONST_DOUBLE_CHAIN}.
 
 @findex CONST_DOUBLE_LOW
 If @var{m} is @code{VOIDmode}, the bits of the value are stored in
@@ -1951,10 +1951,10 @@ Represents the action of storing the value of @var{x} into the place
 represented by @var{lval}.  @var{lval} must be an expression
 representing a place that can be stored in: @code{reg} (or @code{subreg}
 or @code{strict_low_part}), @code{mem}, @code{pc}, @code{parallel}, or
-@code{cc0}.@refill
+@code{cc0}.
 
 If @var{lval} is a @code{reg}, @code{subreg} or @code{mem}, it has a
-machine mode; then @var{x} must be valid for that mode.@refill
+machine mode; then @var{x} must be valid for that mode.
 
 If @var{lval} is a @code{reg} whose machine mode is less than the full
 width of the register, then it means that the part of the register
@@ -1967,7 +1967,7 @@ an undefined way.
 If @var{lval} is a @code{strict_low_part} of a @code{subreg}, then the
 part of the register specified by the machine mode of the
 @code{subreg} is given the value @var{x} and the rest of the register
-is not changed.@refill
+is not changed.
 
 If @var{lval} is @code{(cc0)}, it has no machine mode, and @var{x} may
 be either a @code{compare} expression or a value that may have any mode.
@@ -1995,7 +1995,7 @@ does not jump) and the other of the two must be a @code{label_ref}
 (for the case which does jump).  @var{x} may also be a @code{mem} or
 @code{(plus:SI (pc) @var{y})}, where @var{y} may be a @code{reg} or a
 @code{mem}; these unusual patterns are used to represent jumps through
-branch tables.@refill
+branch tables.
 
 If @var{lval} is neither @code{(cc0)} nor @code{(pc)}, the mode of
 @var{lval} must not be @code{VOIDmode} and the mode of @var{x} must be
@@ -2145,7 +2145,7 @@ Represents several side effects performed in parallel.  The square
 brackets stand for a vector; the operand of @code{parallel} is a
 vector of expressions.  @var{x0}, @var{x1} and so on are individual
 side effect expressions---expressions of code @code{set}, @code{call},
-@code{return}, @code{clobber} or @code{use}.@refill
+@code{return}, @code{clobber} or @code{use}.
 
 ``In parallel'' means that first all the values used in the individual
 side-effects are computed, and second all the actual side-effects are
@@ -2255,7 +2255,7 @@ space is given to each address-difference.  @var{min} and @var{max}
 are set up by branch shortening and hold a label with a minimum and a
 maximum address, respectively.  @var{flags} indicates the relative
 position of @var{base}, @var{min} and @var{max} to the containing insn
-and of @var{min} and @var{max} to @var{base}.  See rtl.def for details.@refill
+and of @var{min} and @var{max} to @var{base}.  See rtl.def for details.
 @end table
 
 @node Incdec
@@ -2277,7 +2277,7 @@ machines allow only a @code{reg}.  @var{m} must be the machine mode
 for pointers on the machine in use.  The amount @var{x} is decremented
 by is the length in bytes of the machine mode of the containing memory
 reference of which this expression serves as the address.  Here is an
-example of its use:@refill
+example of its use:
 
 @example
 (mem:DF (pre_dec:SI (reg:SI 39)))
@@ -2320,7 +2320,7 @@ The expression @var{y} must be one of three forms:
 @end table
 where @var{z} is an index register and @var{i} is a constant.
 
-Here is an example of its use:@refill
+Here is an example of its use:
 
 @example
 (mem:SF (post_modify:SI (reg:SI 42) (plus (reg:SI 42) (reg:SI 48))))
@@ -2470,7 +2470,7 @@ first insn in a @code{sequence}, @code{NEXT_INSN (PREV_INSN (@var{insn}))}
 is the insn containing the @code{sequence} expression, as is the value
 of @code{PREV_INSN (NEXT_INSN (@var{insn}))} is @var{insn} is the last
 insn in the @code{sequence} expression.  You can use these expressions
-to find the containing @code{sequence} expression.@refill
+to find the containing @code{sequence} expression.
 
 Every insn has one of the following six expression codes:
 
@@ -2935,7 +2935,7 @@ filling is done, this may no longer be true.  In this case a
 @code{REG_CC_USER} note will be placed on the insn setting @code{cc0} to
 point to the insn using @code{cc0} and a @code{REG_CC_SETTER} note will
 be placed on the insn using @code{cc0} to point to the insn setting
-@code{cc0}.@refill
+@code{cc0}.
 @end table
 
 These values are only used in the @code{LOG_LINKS} field, and indicate

@@ -426,7 +426,7 @@ vector of @var{subpat} expressions in the @code{match_parallel}, if each
 @emph{and} the function @var{predicate} returns nonzero on the
 @code{parallel} that is the body of the insn.  It is the responsibility
 of the predicate to validate elements of the @code{parallel} beyond
-those listed in the @code{match_parallel}.@refill
+those listed in the @code{match_parallel}.
 
 A typical use of @code{match_parallel} is to match load and store
 multiple expressions, which can contain a variable number of elements
@@ -3325,7 +3325,7 @@ logically equivalent RTL expressions.
 @item
 The only possible RTL expressions involving both bitwise exclusive-or
 and bitwise negation are @code{(xor:@var{m} @var{x} @var{y})}
-and @code{(not:@var{m} (xor:@var{m} @var{x} @var{y}))}.@refill
+and @code{(not:@var{m} (xor:@var{m} @var{x} @var{y}))}.
 
 @item
 The sum of three items, one of which is a constant, will only appear in
@@ -3338,7 +3338,7 @@ the form
 @item
 On machines that do not use @code{cc0},
 @code{(compare @var{x} (const_int 0))} will be converted to
-@var{x}.@refill
+@var{x}.
 
 @cindex @code{zero_extract}, canonicalization of
 @cindex @code{sign_extract}, canonicalization of
@@ -3564,7 +3564,7 @@ then the last insn it generates must not be a @code{code_label},
 @code{jump_insn} or @code{call_insn}.  If you don't need a real insn
 at the end, emit an insn to copy the result of the operation into
 itself.  Such an insn will generate no code, but it can avoid problems
-in the compiler.@refill
+in the compiler.
 
 @node Insn Splitting
 @section Defining How to Split Instructions
@@ -3835,7 +3835,7 @@ it must obey the same rules as in a @code{define_insn}.
 In this skeleton, @var{insn-pattern-1} and so on are patterns to match
 consecutive insns.  The optimization applies to a sequence of insns when
 @var{insn-pattern-1} matches the first one, @var{insn-pattern-2} matches
-the next, and so on.@refill
+the next, and so on.
 
 Each of the insns matched by a peephole must also match a
 @code{define_insn}.  Peepholes are checked only at the last stage just
@@ -3887,7 +3887,7 @@ elsewhere.  Use the C expression @code{dead_or_set_p (@var{insn},
 @var{op})}, where @var{insn} is the insn in which you expect the value
 to be used for the last time (from the value of @code{insn}, together
 with use of @code{prev_nonnote_insn}), and @var{op} is the intermediate
-value (from @code{operands[@var{i}]}).@refill
+value (from @code{operands[@var{i}]}).
 
 Applying the optimization means replacing the sequence of insns with one
 new insn.  The @var{template} controls ultimate output of assembler code
@@ -4201,7 +4201,7 @@ The string @var{value} specifies a constant attribute value.
 If @var{value} is specified as @samp{"*"}, it means that the default value of
 the attribute is to be used for the insn containing this expression.
 @samp{"*"} obviously cannot be used in the @var{default} expression
-of a @code{define_attr}.@refill
+of a @code{define_attr}.
 
 If the attribute whose value is being specified is numeric, @var{value}
 must be a string containing a non-negative integer (normally
@@ -4283,14 +4283,14 @@ These tests are true if the indicated comparison of the two arithmetic
 expressions is true.  Arithmetic expressions are formed with
 @code{plus}, @code{minus}, @code{mult}, @code{div}, @code{mod},
 @code{abs}, @code{neg}, @code{and}, @code{ior}, @code{xor}, @code{not},
-@code{ashift}, @code{lshiftrt}, and @code{ashiftrt} expressions.@refill
+@code{ashift}, @code{lshiftrt}, and @code{ashiftrt} expressions.
 
 @findex get_attr
 @code{const_int} and @code{symbol_ref} are always valid terms (@pxref{Insn
 Lengths},for additional forms).  @code{symbol_ref} is a string
 denoting a C expression that yields an @code{int} when evaluated by the
 @samp{get_attr_@dots{}} routine.  It should normally be a global
-variable.@refill
+variable.
 
 @findex eq_attr
 @item (eq_attr @var{name} @var{value})
@@ -4320,7 +4320,7 @@ is equivalent to
 If @var{name} specifies an attribute of @samp{alternative}, it refers to the
 value of the compiler variable @code{which_alternative}
 (@pxref{Output Statement}) and the values must be small integers.  For
-example,@refill
+example,
 
 @smallexample
 (eq_attr "alternative" "2,3")
@@ -4336,7 +4336,7 @@ is equivalent to
 
 Note that, for most attributes, an @code{eq_attr} test is simplified in cases
 where the value of the attribute being tested is known for all insns matching
-a particular pattern.  This is by far the most common case.@refill
+a particular pattern.  This is by far the most common case.
 
 @findex attr_flag
 @item (attr_flag @var{name})
@@ -4398,7 +4398,7 @@ insn is set to the default value for that attribute, as specified in its
 @code{define_attr}.  Extensive use of default values for attributes
 permits the specification of the values for only one or two attributes
 in the definition of most insn patterns, as seen in the example in the
-next section.@refill
+next section.
 
 The optional last argument of @code{define_insn} and
 @code{define_peephole} is a vector of expressions, each of which defines
@@ -4406,7 +4406,7 @@ the value for a single attribute.  The most general way of assigning an
 attribute's value is to use a @code{set} expression whose first operand is an
 @code{attr} expression giving the name of the attribute being set.  The
 second operand of the @code{set} is an attribute expression
-(@pxref{Expressions}) giving the value of the attribute.@refill
+(@pxref{Expressions}) giving the value of the attribute.
 
 When the attribute value depends on the @samp{alternative} attribute
 (i.e., which is the applicable alternative in the constraint of the
@@ -4705,7 +4705,7 @@ satisfy attribute test @var{delay-n}.  @var{annul-true-n} is an
 attribute test that specifies which insns may be annulled if the branch
 is true.  Similarly, @var{annul-false-n} specifies which insns in the
 delay slot may be annulled if the branch is false.  If annulling is not
-supported for that delay slot, @code{(nil)} should be coded.@refill
+supported for that delay slot, @code{(nil)} should be coded.
 
 For example, in the common case where branch and call insns require
 a single delay slot, which may contain any insn other than a branch or

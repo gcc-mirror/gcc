@@ -1,5 +1,11 @@
 2001-06-24  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* doc/extend.texi, doc/gcc.texi, doc/install-old.texi,
+	doc/invoke.texi, doc/md.texi, doc/rtl.texi, doc/tm.texi: Remove
+	uses of @refill.
+
+2001-06-24  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* doc/install-old.texi: Remove more documentation of configure
 	options.
 	* doc/install.texi: Add it here.

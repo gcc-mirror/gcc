@@ -2366,7 +2366,7 @@ struct foo @{ int x; char y; @} foo1;
 @noindent
 the value of @code{__alignof__ (foo1.y)} is probably 2 or 4, the same as
 @code{__alignof__ (int)}, even though the data type of @code{foo1.y}
-does not itself demand any alignment.@refill
+does not itself demand any alignment.
 
 It is an error to ask for the alignment of an incomplete type.
 
@@ -3546,7 +3546,7 @@ since they won't work in a program compiled with @option{-ansi}
 compiled with @option{-traditional}.  The ISO C99 keyword
 @code{restrict} is only available when @option{-std=gnu99} (which will
 eventually be the default) or @option{-std=c99} (or the equivalent
-@option{-std=iso9899:1999}) is used.@refill
+@option{-std=iso9899:1999}) is used.
 
 The way to solve these problems is to put @samp{__} at the beginning and
 end of each problematical keyword.  For example, use @code{__asm__}

@@ -2807,7 +2807,7 @@ register windows are used, the register number as seen by the called
 function is @code{STATIC_CHAIN_INCOMING_REGNUM}, while the register
 number as seen by the calling function is @code{STATIC_CHAIN_REGNUM}.  If
 these registers are the same, @code{STATIC_CHAIN_INCOMING_REGNUM} need
-not be defined.@refill
+not be defined.
 
 The static chain register need not be a fixed register.
 
@@ -2823,7 +2823,7 @@ If the static chain is passed in memory, these macros provide rtx giving
 @code{STATIC_CHAIN} and @code{STATIC_CHAIN_INCOMING} give the locations
 as seen by the calling and called functions, respectively.  Often the former
 will be at an offset from the stack pointer and the latter at an offset from
-the frame pointer.@refill
+the frame pointer.
 
 @findex stack_pointer_rtx
 @findex frame_pointer_rtx
@@ -2859,7 +2859,7 @@ In certain cases, the compiler does not know how to produce valid code
 without a frame pointer.  The compiler recognizes those cases and
 automatically gives the function a frame pointer regardless of what
 @code{FRAME_POINTER_REQUIRED} says.  You don't need to worry about
-them.@refill
+them.
 
 In a function that does not require a frame pointer, the frame pointer
 register can be allocated for ordinary usage, unless you mark it as a
@@ -3177,7 +3177,7 @@ be defined in a similar fashion to tell the function being called
 where the arguments will arrive.
 
 If @code{FUNCTION_INCOMING_ARG} is not defined, @code{FUNCTION_ARG}
-serves both purposes.@refill
+serves both purposes.
 
 @findex FUNCTION_ARG_PARTIAL_NREGS
 @item FUNCTION_ARG_PARTIAL_NREGS (@var{cum}, @var{mode}, @var{type}, @var{named})
@@ -3288,7 +3288,7 @@ A C statement (sans semicolon) to update the summarizer variable
 @var{cum} to advance past an argument in the argument list.  The
 values @var{mode}, @var{type} and @var{named} describe that argument.
 Once this is done, the variable @var{cum} is suitable for analyzing
-the @emph{following} argument with @code{FUNCTION_ARG}, etc.@refill
+the @emph{following} argument with @code{FUNCTION_ARG}, etc.
 
 This macro need not do anything if the argument in question was passed
 on the stack.  The compiler knows how to track the amount of stack space
@@ -3365,7 +3365,7 @@ a tree node representing a data type.  Write @code{TYPE_MODE
 (@var{valtype})} to get the machine mode used to represent that type.
 On many machines, only the mode is relevant.  (Actually, on most
 machines, scalar values are returned in the same place regardless of
-mode).@refill
+mode).
 
 The value of the expression is usually a @code{reg} RTX for the hard
 register where the return value is stored.  The value can also be a
@@ -3380,7 +3380,7 @@ If the precise function being called is known, @var{func} is a tree
 node (@code{FUNCTION_DECL}) for it; otherwise, @var{func} is a null
 pointer.  This makes it possible to use a different value-returning
 convention for specific functions when all their calls are
-known.@refill
+known.
 
 @code{FUNCTION_VALUE} is not used for return vales with aggregate data
 types, because these are returned in another way.  See
@@ -3395,10 +3395,10 @@ the same as the one in which the caller sees the value.
 For such machines, @code{FUNCTION_VALUE} computes the register in which
 the caller will see the value.  @code{FUNCTION_OUTGOING_VALUE} should be
 defined in a similar fashion to tell the function where to put the
-value.@refill
+value.
 
 If @code{FUNCTION_OUTGOING_VALUE} is not defined,
-@code{FUNCTION_VALUE} serves both purposes.@refill
+@code{FUNCTION_VALUE} serves both purposes.
 
 @code{FUNCTION_OUTGOING_VALUE} is not used for return vales with
 aggregate data types, because these are returned in another way.  See
@@ -3412,7 +3412,7 @@ being called is known, @var{func} is a tree node
 (@code{FUNCTION_DECL}) for it; otherwise, @var{func} is a null
 pointer.  This makes it possible to use a different value-returning
 convention for specific functions when all their calls are
-known.@refill
+known.
 
 Note that ``library function'' in this context means a compiler
 support routine, used to perform arithmetic, whose name is known
@@ -4693,7 +4693,7 @@ Subroutines to check for acceptable registers for various purposes (one
 for base registers, one for index registers, and so on) are typically
 among the subroutines used to define @code{GO_IF_LEGITIMATE_ADDRESS}.
 Then only these subroutine macros need have two variants; the higher
-levels of macros may be the same whether strict or not.@refill
+levels of macros may be the same whether strict or not.
 
 Normally, constant addresses which are the sum of a @code{symbol_ref}
 and an integer are stored inside a @code{const} RTX to mark them as
@@ -4869,7 +4869,7 @@ A C expression that is nonzero if @var{x} is a legitimate constant for
 an immediate operand on the target machine.  You can assume that
 @var{x} satisfies @code{CONSTANT_P}, so you need not check this.  In fact,
 @samp{1} is a suitable definition for this macro on machines where
-anything @code{CONSTANT_P} is valid.@refill
+anything @code{CONSTANT_P} is valid.
 @end table
 
 @node Condition Code
@@ -5754,7 +5754,7 @@ instruction to assemble an integer of 16, 8, 4, 2 or 1 bytes,
 respectively, whose value is @var{value}.  The argument @var{exp} will
 be an RTL expression which represents a constant value.  Use
 @samp{output_addr_const (@var{stream}, @var{exp})} to output this value
-as an assembler expression.@refill
+as an assembler expression.
 
 For sizes larger than @code{UNITS_PER_WORD}, if the action of a macro
 would be identical to repeatedly calling the macro corresponding to
@@ -7680,7 +7680,7 @@ in @var{output} (which will be a variable).
 The operation to be performed is specified by @var{code}, a tree code
 which will always be one of the following: @code{PLUS_EXPR},
 @code{MINUS_EXPR}, @code{MULT_EXPR}, @code{RDIV_EXPR},
-@code{MAX_EXPR}, @code{MIN_EXPR}.@refill
+@code{MAX_EXPR}, @code{MIN_EXPR}.
 
 @cindex overflow while constant folding
 The expansion of this macro is responsible for checking for overflow.
@@ -7913,7 +7913,7 @@ extends.
 @item IMPLICIT_FIX_EXPR
 An alias for a tree code that should be used by default for conversion
 of floating point values to fixed point.  Normally,
-@code{FIX_ROUND_EXPR} is used.@refill
+@code{FIX_ROUND_EXPR} is used.
 
 @findex FIXUNS_TRUNC_LIKE_FIX_TRUNC
 @item FIXUNS_TRUNC_LIKE_FIX_TRUNC
@@ -7929,7 +7929,7 @@ compile code for in the general case.  It may be
 @code{ROUND_DIV_EXPR}.  These four division operators differ in how
 they round the result to an integer.  @code{EASY_DIV_EXPR} is used
 when it is permissible to use any of those kinds of division and the
-choice should be made on the basis of efficiency.@refill
+choice should be made on the basis of efficiency.
 
 @findex MOVE_MAX
 @item MOVE_MAX
