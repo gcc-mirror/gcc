@@ -1,3 +1,11 @@
+2001-05-07  Zack Weinberg  <zackw@stanford.edu>
+
+	* cp-demangle.c (demangle_v3_with_details,
+	is_gnu_v3_mangled_ctor, is_gnu_v3_mangled_dtor): Use K+R style
+	function definition.
+	* ternary.c: Use K+R style function definitions.  Use PTR, not
+	void *.  Make arguments constant where possible.
+
 2001-05-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* splay-tree.h (splay_tree_max): New function.

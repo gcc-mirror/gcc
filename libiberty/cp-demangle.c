@@ -3819,7 +3819,8 @@ java_demangle_v3 (mangled)
    zero, indicating that some error occurred, or a demangling_t
    holding the results.  */
 static demangling_t
-demangle_v3_with_details (const char *name)
+demangle_v3_with_details (name)
+     const char *name;
 {
   demangling_t dm;
   status_t status;
@@ -3857,7 +3858,8 @@ demangle_v3_with_details (const char *name)
    - '2' if NAME is a base object constructor, or
    - '3' if NAME is a complete object allocating constructor.  */
 enum gnu_v3_ctor_kinds
-is_gnu_v3_mangled_ctor (const char *name)
+is_gnu_v3_mangled_ctor (name)
+     const char *name;
 {
   demangling_t dm = demangle_v3_with_details (name);
 
@@ -3878,7 +3880,8 @@ is_gnu_v3_mangled_ctor (const char *name)
    - '1' if NAME is a complete object destructor, or
    - '2' if NAME is a base object destructor.  */
 enum gnu_v3_dtor_kinds
-is_gnu_v3_mangled_dtor (const char *name)
+is_gnu_v3_mangled_dtor (name)
+     const char *name;
 {
   demangling_t dm = demangle_v3_with_details (name);
 
