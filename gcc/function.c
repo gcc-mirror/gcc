@@ -300,13 +300,14 @@ static int invalid_stack_slot;
 /* Last insn of those whose job was to put parms into their nominal homes.  */
 static rtx last_parm_insn;
 
-/* 1 + last pseudo register number used for loading a copy
-   of a parameter of this function.  */
+/* 1 + last pseudo register number possibly used for loading a copy
+   of a parameter of this function. */
 int max_parm_reg;
 
 /* Vector indexed by REGNO, containing location on stack in which
    to put the parm which is nominally in pseudo register REGNO,
-   if we discover that that parm must go in the stack.  */
+   if we discover that that parm must go in the stack.  The highest
+   element in this vector is one less than MAX_PARM_REG, above.  */
 rtx *parm_reg_stack_loc;
 
 /* Nonzero once virtual register instantiation has been done.
@@ -3548,7 +3549,6 @@ assign_parms (fndecl, second_time)
   /* This is a dummy PARM_DECL that we used for the function result if 
      the function returns a structure.  */
   tree function_result_decl = 0;
-  int nparmregs = list_length (fnargs) + LAST_VIRTUAL_REGISTER + 1;
   int varargs_setup = 0;
   rtx conversion_insns = 0;
 
@@ -3606,8 +3606,9 @@ assign_parms (fndecl, second_time)
       fnargs = function_result_decl;
     }
 			       
-  parm_reg_stack_loc = (rtx *) savealloc (nparmregs * sizeof (rtx));
-  bzero ((char *) parm_reg_stack_loc, nparmregs * sizeof (rtx));
+  max_parm_reg = LAST_VIRTUAL_REGISTER + 1;
+  parm_reg_stack_loc = (rtx *) savealloc (max_parm_reg * sizeof (rtx));
+  bzero ((char *) parm_reg_stack_loc, max_parm_reg * sizeof (rtx));
 
 #ifdef INIT_CUMULATIVE_INCOMING_ARGS
   INIT_CUMULATIVE_INCOMING_ARGS (args_so_far, fntype, NULL_RTX);
@@ -4163,17 +4164,20 @@ assign_parms (fndecl, second_time)
 	  else
 	    regno = REGNO (parmreg);
 
-	  if (regno >= nparmregs)
+	  if (regno >= max_parm_reg)
 	    {
 	      rtx *new;
-	      int old_nparmregs = nparmregs;
+	      int old_max_parm_reg = max_parm_reg;
 
-	      nparmregs = regno + 5;
-	      new = (rtx *) savealloc (nparmregs * sizeof (rtx));
+	      /* It's slow to expand this one register at a time,
+		 but it's also rare and we need max_parm_reg to be
+		 precisely correct.  */
+	      max_parm_reg = regno + 1;
+	      new = (rtx *) savealloc (max_parm_reg * sizeof (rtx));
 	      bcopy ((char *) parm_reg_stack_loc, (char *) new,
-		     old_nparmregs * sizeof (rtx));
-	      bzero ((char *) (new + old_nparmregs),
-		     (nparmregs - old_nparmregs) * sizeof (rtx));
+		     old_max_parm_reg * sizeof (rtx));
+	      bzero ((char *) (new + old_max_parm_reg),
+		     (max_parm_reg - old_max_parm_reg) * sizeof (rtx));
 	      parm_reg_stack_loc = new;
 	    }
 
@@ -4334,7 +4338,6 @@ assign_parms (fndecl, second_time)
      now that all parameters have been copied out of hard registers.  */
   emit_insns (conversion_insns);
 
-  max_parm_reg = max_reg_num ();
   last_parm_insn = get_last_insn ();
 
   current_function_args_size = stack_args_size.constant;
