@@ -39,6 +39,9 @@
 
 #define __glibcpp_wchar_t_is_signed false
 
+// Use macro form of ctype functions to ensure __SB_masks is defined.
+#define _SB_CTYPE_MACROS 1
+
 /* HP-UX, for reasons unknown choose to use a different name for
    the string to [unsigned] long long conversion routines.
 
