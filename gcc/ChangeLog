@@ -1,3 +1,13 @@
+2005-01-22  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/18402
+	Backport from mainline
+	2003-02-05  Jakub Jelinek  <jakub@redhat.com>
+ 
+ 	PR optimization/8555
+ 	* config/i386/i386.md (sse_mov?fcc split): Handle op2 == op3 case
+ 	instead of aborting.
+
 2005-01-21  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	* gccbug.in: Update optimization -> tree-optimization/rtl-optimization.
