@@ -69,6 +69,7 @@
    			; instructions setting registers for EH handling
    			; and stack frame generation.  Operand 0 is the
    			; register to "use".
+   (UNSPEC_CHECK_ARCH 7); Set CCs to indicate 26-bit or 32-bit mode.
   ]
 )
 
@@ -6795,6 +6796,33 @@
   }"
   [(set_attr "conds" "use")
    (set_attr "type" "load")]
+)
+
+;; Generate a sequence of instructions to determine if the processor is
+;; in 26-bit or 32-bit mode, and return the appropriate return address
+;; mask.
+
+(define_expand "return_addr_mask"
+  [(set (match_dup 1)
+      (compare:CC_NOOV (unspec [(const_int 0)] UNSPEC_CHECK_ARCH)
+		       (const_int 0)))
+   (set (match_operand:SI 0 "s_register_operand" "")
+      (if_then_else:SI (eq (match_dup 1) (const_int 0))
+		       (const_int -1)
+		       (const_int 67108860)))] ; 0x03fffffc
+  "TARGET_ARM"
+  "
+  operands[1] = gen_rtx_REG (CC_NOOVmode, 24);
+  ")
+
+(define_insn "*check_arch2"
+  [(set (match_operand:CC_NOOV 0 "cc_register" "")
+      (compare:CC_NOOV (unspec [(const_int 0)] UNSPEC_CHECK_ARCH)
+		       (const_int 0)))]
+  "TARGET_ARM"
+  "teq\\t%|r0, %|r0\;teq\\t%|pc, %|pc"
+  [(set_attr "length" "8")
+   (set_attr "conds" "set")]
 )
 
 ;; Call subroutine returning any type.
