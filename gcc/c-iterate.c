@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C compiler.
-   Copyright (C) 1987, 1988, 1989, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1989, 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -209,12 +209,9 @@ collect_iterators (exp, list)
 
     case SAVE_EXPR:
       /* In each scan, scan a given save_expr only once.  */
-      {
-	tree tail;
-	for (tail = save_exprs; tail; tail = TREE_CHAIN (tail))
-	  if (TREE_VALUE (tail) == exp)
-	    return list;
-      }
+      if (value_member (exp, save_exprs))
+	return list;
+
       save_exprs = tree_cons (NULL_TREE, exp, save_exprs);
       return collect_iterators (TREE_OPERAND (exp, 0), list);
 
