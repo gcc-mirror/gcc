@@ -2093,8 +2093,6 @@ pushdecl (x)
 
   if (name)
     {
-      const char *file;
-      int line;
       int different_binding_level = 0;
 
       if (warn_nested_externs
@@ -2124,12 +2122,6 @@ pushdecl (x)
 	{
 	  t = 0;
 	  error_with_decl (x, "`%s' used prior to declaration");
-	}
-
-      if (t != 0)
-	{
-	  file = DECL_SOURCE_FILE (t);
-	  line = DECL_SOURCE_LINE (t);
 	}
 
       /* If this decl is `static' and an implicit decl was seen previously,
