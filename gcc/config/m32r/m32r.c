@@ -793,7 +793,13 @@ move_src_operand (op, mode)
 	 loadable with one insn, and split the rest into two.  The instances
 	 where this would help should be rare and the current way is
 	 simpler.  */
-      return UINT32_P (INTVAL (op));
+      if (HOST_BITS_PER_WIDE_INT > 32)
+	{
+	  HOST_WIDE_INT rest = INTVAL (op) >> 31;
+	  return (rest == 0 || rest == -1);
+	}
+      else
+	return 1;
     case LABEL_REF :
       return TARGET_ADDR24;
     case CONST_DOUBLE :
