@@ -2943,10 +2943,28 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	   needs to be reinserted.  */
 	if (template == 0)
 	  {
+	    rtx prev;
+
 	    if (prev_nonnote_insn (insn) != last_ignored_compare)
 	      abort ();
 	    new_block = 0;
-	    return prev_nonnote_insn (insn);
+
+	    /* We have already processed the notes between the setter and
+	       the user.  Make sure we don't process them again, this is
+	       particularly important if one of the notes is a block
+	       scope note or an EH note.  */
+	    for (prev = insn;
+		 prev != last_ignored_compare;
+		 prev = PREV_INSN (prev))
+	      {
+		if (GET_CODE (prev) == NOTE)
+		  {
+		    NOTE_LINE_NUMBER (prev) = NOTE_INSN_DELETED;
+		    NOTE_SOURCE_FILE (prev) = 0;
+		  }
+	      }
+
+	    return prev;
 	  }
 
 	/* If the template is the string "#", it means that this insn must
