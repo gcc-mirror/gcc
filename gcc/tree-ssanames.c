@@ -97,7 +97,7 @@ any_marked_for_rewrite_p (void)
   if (!ssa_names_to_rewrite)
     return false;
 
-  return bitmap_first_set_bit (ssa_names_to_rewrite) != -1;
+  return !bitmap_empty_p (ssa_names_to_rewrite);
 }
 
 /* Mark ssa name VAR for rewriting.  */

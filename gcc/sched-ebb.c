@@ -184,11 +184,9 @@ compute_jump_reg_dependencies (rtx insn, regset cond_set, regset used,
 	 it may guard the fallthrough block from using a value that has
 	 conditionally overwritten that of the main codepath.  So we
 	 consider that it restores the value of the main codepath.  */
-      bitmap_operation (set, e->dest->global_live_at_start, cond_set,
-			BITMAP_AND);
+      bitmap_and (set, e->dest->global_live_at_start, cond_set);
     else
-      bitmap_operation (used, used, e->dest->global_live_at_start,
-			BITMAP_IOR);
+      bitmap_ior_into (used, e->dest->global_live_at_start);
 }
 
 /* Used in schedule_insns to initialize current_sched_info for scheduling

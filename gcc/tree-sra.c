@@ -1388,10 +1388,8 @@ decide_instantiations (void)
 
   if (cleared_any)
     {
-      bitmap_operation (sra_candidates, sra_candidates, &done_head,
-			BITMAP_AND_COMPL);
-      bitmap_operation (needs_copy_in, needs_copy_in, &done_head,
-			BITMAP_AND_COMPL);
+      bitmap_and_compl_into (sra_candidates, &done_head);
+      bitmap_and_compl_into (needs_copy_in, &done_head);
     }
   bitmap_clear (&done_head);
 

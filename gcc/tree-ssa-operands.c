@@ -1411,7 +1411,7 @@ get_call_expr_operands (tree stmt, tree expr)
 
   get_expr_operands (stmt, &TREE_OPERAND (expr, 2), opf_none);
 
-  if (bitmap_first_set_bit (call_clobbered_vars) >= 0)
+  if (!bitmap_empty_p (call_clobbered_vars))
     {
       /* A 'pure' or a 'const' functions never call clobber anything. 
 	 A 'noreturn' function might, but since we don't return anyway 

@@ -5664,7 +5664,7 @@ vectorize_loops (struct loops *loops)
     }
 
   rewrite_into_ssa (false);
-  if (bitmap_first_set_bit (vars_to_rename) >= 0)
+  if (!bitmap_empty_p (vars_to_rename))
     {
       /* The rewrite of ssa names may cause violation of loop closed ssa
          form invariants.  TODO -- avoid these rewrites completely.

@@ -1983,7 +1983,7 @@ fini_pre (void)
   free_dominance_info (CDI_POST_DOMINATORS);
   vn_delete ();
 
-  if (bitmap_first_set_bit (need_eh_cleanup) >= 0)
+  if (!bitmap_empty_p (need_eh_cleanup))
     {
       tree_purge_all_dead_eh_edges (need_eh_cleanup);
       cleanup_tree_cfg ();

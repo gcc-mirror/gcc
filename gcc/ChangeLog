@@ -1,3 +1,42 @@
+2004-10-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* bitmap.h (bitmap_empty_p): New.
+	(bitmap_and, bitmap_and_into, bitmap_and_compl,
+	bitmap_and_compl_into, bitmap_ior, bitmap_ior_into,
+	bitmap_ior_compl, bitmap_xor, bitmap_xor_into): New bitmap
+	operation macros.
+	(bitmap_ior_and_compl): Rename to ...
+	(bitmap_ior_and_compl_into): ... here.
+	* bitmap.c (bitmap_equal_p): Use bitmap_xor.
+	(bitmap_ior_and_compl): Rename to ...
+	(bitmap_ior_and_compl_into): ... here. Adjust. Return changed
+	flag.
+	(bitmap_union_of_diff): Use renamed bitmap functions.
+	* basic-block.h (AND_REG_SET, AND_COMPL_REG_SET, IOR_REG_SET,
+	XOR_REG_SET, IOR_AND_COMPL_REG_SET): Likewise.
+	* cfgrtl.c (safe_insert_insn_on_edge): Likewise.
+	* df.c (df_bb_rd_local_compute)
+	* flow.c (calculate_global_regs_live,
+	init_propagate_block_info): Likewise.
+	* ifcvt.c (find_if_case_1, find_if_case_2,
+	dead_or_predicable): Likewise.
+	* ra-build.c (union_web_part_roots, livethrough_conflicts_bb,
+	reset_conflicts, conflicts_between_webs): Likewise.
+	* ra-rewrite.c (reloads_to_loads, rewrite_program2,
+	detect_web_parts_to_rebuild): Likewise.
+	* sched-ebb.c (compute_jump_reg_dependencies): Likewise.
+	* tree-int-ssa.c (insert_phi_nodes_for, rewrite_into_ssa): Likewise.
+	* tree-sra.c (decide_instantiations): Likewise.
+	* tree-ssa-alias.c (create_name_tags,
+	merge_pointed_to_info): Likewise.
+	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Likewise.
+	* tree-ssa-loop-im.c (move_computations): Likewise.
+	* tree-ssa-operands.c (get_call_expr_operands): Likewise.
+	* tree-ssa-pre.c (fini_pre): Likewise.
+	* tree-ssa.c (verify_flow_sensitive_alias_info): Likewise.
+	* tree-ssanames.c (any_marked_for_rewrite_p): Likewise.
+	* tree-vectorizer.c (vectorize_loops): Likewise.
+
 2004-10-29  Nick Clifton  <nickc@redhat.com>
 
 	config/mn10300/mn10300.h (CONDITIONAL_REGISTER_USAGE): When

@@ -87,12 +87,24 @@ extern void bitmap_copy (bitmap, bitmap);
 /* True if two bitmaps are identical.  */
 extern int bitmap_equal_p (bitmap, bitmap);
 
+#define bitmap_empty_p(MAP) (!(MAP)->first)
+
 /* Perform an operation on two bitmaps, yielding a third.  */
 extern int bitmap_operation (bitmap, bitmap, bitmap, enum bitmap_bits);
 
+#define bitmap_and(DST,A,B) bitmap_operation (DST,A,B,BITMAP_AND)
+#define bitmap_and_into(DST_SRC,B) bitmap_operation (DST_SRC,DST_SRC,B,BITMAP_AND)
+#define bitmap_and_compl(DST,A,B) bitmap_operation (DST,A,B,BITMAP_AND_COMPL)
+#define bitmap_and_compl_into(DST_SRC,B) bitmap_operation (DST_SRC,DST_SRC,B,BITMAP_AND_COMPL)
+#define bitmap_ior(DST,A,B) bitmap_operation (DST,A,B,BITMAP_IOR)
+#define bitmap_ior_into(DST_SRC,B) bitmap_operation (DST_SRC,DST_SRC,B,BITMAP_IOR)
+#define bitmap_ior_compl(DST,A,B) bitmap_operation (DST,A,B,BITMAP_IOR_COMPL)
+#define bitmap_xor(DST,A,B) bitmap_operation (DST,A,B,BITMAP_XOR)
+#define bitmap_xor_into(DST_SRC,B) bitmap_operation (DST_SRC,DST_SRC,B,BITMAP_XOR)
+
 /* `or' into one bitmap the `and' of a second bitmap witih the complement
-   of a third.  */
-extern void bitmap_ior_and_compl (bitmap, bitmap, bitmap);
+   of a third. Return nonzero if the bitmap changes. */
+extern int bitmap_ior_and_compl_into (bitmap, bitmap, bitmap);
 
 /* Clear a single register in a register set.  */
 extern void bitmap_clear_bit (bitmap, int);

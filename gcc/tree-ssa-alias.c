@@ -747,8 +747,7 @@ create_name_tags (struct alias_info *ai)
 	  continue;
 	}
 
-      if (pi->pt_vars
-	  && bitmap_first_set_bit (pi->pt_vars) >= 0)
+      if (pi->pt_vars && !bitmap_empty_p (pi->pt_vars))
 	{
 	  size_t j;
 	  tree old_name_tag = pi->name_mem_tag;
@@ -1733,7 +1732,7 @@ merge_pointed_to_info (struct alias_info *ai, tree dest, tree orig)
 
       if (!dest_pi->pt_anything
 	  && orig_pi->pt_vars
-	  && bitmap_first_set_bit (orig_pi->pt_vars) >= 0)
+	  && !bitmap_empty_p (orig_pi->pt_vars))
 	{
 	  if (dest_pi->pt_vars == NULL)
 	    {

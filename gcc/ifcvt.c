@@ -2914,9 +2914,9 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
   /* Conversion went ok, including moving the insns and fixing up the
      jump.  Adjust the CFG to match.  */
 
-  bitmap_operation (test_bb->global_live_at_end,
-		    else_bb->global_live_at_start,
-		    then_bb->global_live_at_end, BITMAP_IOR);
+  bitmap_ior (test_bb->global_live_at_end,
+	      else_bb->global_live_at_start,
+	      then_bb->global_live_at_end);
 
   new_bb = redirect_edge_and_branch_force (FALLTHRU_EDGE (test_bb), else_bb);
   then_bb_index = then_bb->index;
@@ -3018,9 +3018,9 @@ find_if_case_2 (basic_block test_bb, edge then_edge, edge else_edge)
   /* Conversion went ok, including moving the insns and fixing up the
      jump.  Adjust the CFG to match.  */
 
-  bitmap_operation (test_bb->global_live_at_end,
-		    then_bb->global_live_at_start,
-		    else_bb->global_live_at_end, BITMAP_IOR);
+  bitmap_ior (test_bb->global_live_at_end,
+	      then_bb->global_live_at_start,
+	      else_bb->global_live_at_end);
 
   delete_basic_block (else_bb);
 
@@ -3217,14 +3217,13 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	   TEST_SET & merge_bb->global_live_at_start
 	 are empty.  */
 
-      bitmap_operation (tmp, test_set, test_live, BITMAP_IOR);
-      bitmap_operation (tmp, tmp, merge_set, BITMAP_AND);
-      if (bitmap_first_set_bit (tmp) >= 0)
+      bitmap_ior (tmp, test_set, test_live);
+      bitmap_and_into (tmp, merge_set);
+      if (!bitmap_empty_p (tmp))
 	fail = 1;
 
-      bitmap_operation (tmp, test_set, merge_bb->global_live_at_start,
-			BITMAP_AND);
-      if (bitmap_first_set_bit (tmp) >= 0)
+      bitmap_and (tmp, test_set, merge_bb->global_live_at_start);
+      if (!bitmap_empty_p (tmp))
 	fail = 1;
 
       FREE_REG_SET (tmp);

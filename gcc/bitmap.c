@@ -672,7 +672,7 @@ bitmap_equal_p (bitmap a, bitmap b)
   int ret;
 
   memset (&c, 0, sizeof (c));
-  ret = ! bitmap_operation (&c, a, b, BITMAP_XOR);
+  ret = ! bitmap_xor (&c, a, b);
   bitmap_clear (&c);
 
   return ret;
@@ -681,17 +681,19 @@ bitmap_equal_p (bitmap a, bitmap b)
 /* Or into bitmap TO bitmap FROM1 and'ed with the complement of
    bitmap FROM2.  */
 
-void
-bitmap_ior_and_compl (bitmap to, bitmap from1, bitmap from2)
+int
+bitmap_ior_and_compl_into (bitmap to, bitmap from1, bitmap from2)
 {
   bitmap_head tmp;
+  int changed;
 
   tmp.first = tmp.current = 0;
   tmp.using_obstack = 0;
 
-  bitmap_operation (&tmp, from1, from2, BITMAP_AND_COMPL);
-  bitmap_operation (to, to, &tmp, BITMAP_IOR);
+  bitmap_and_compl (&tmp, from1, from2);
+  changed = bitmap_ior_into (to, &tmp);
   bitmap_clear (&tmp);
+  return changed;
 }
 
 int
@@ -703,8 +705,8 @@ bitmap_union_of_diff (bitmap dst, bitmap a, bitmap b, bitmap c)
   tmp.first = tmp.current = 0;
   tmp.using_obstack = 0;
 
-  bitmap_operation (&tmp, b, c, BITMAP_AND_COMPL);
-  changed = bitmap_operation (dst, &tmp, a, BITMAP_IOR);
+  bitmap_and_compl (&tmp, b, c);
+  changed = bitmap_ior (dst, &tmp, a);
   bitmap_clear (&tmp);
 
   return changed;
