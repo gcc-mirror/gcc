@@ -1532,8 +1532,7 @@ asm_insn_count (body)
   if (GET_CODE (body) == ASM_INPUT)
     template = XSTR (body, 0);
   else
-    template = decode_asm_operands (body, NULL_PTR, NULL_PTR,
-				    NULL_PTR, NULL_PTR);
+    template = decode_asm_operands (body, NULL, NULL, NULL, NULL);
 
   for (; *template; template++)
     if (IS_ASM_LOGICAL_LINE_SEPARATOR (*template) || *template == '\n')
@@ -2337,7 +2336,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
       new_block = 1;
 
 #ifdef FINAL_PRESCAN_LABEL
-      FINAL_PRESCAN_INSN (insn, NULL_PTR, 0);
+      FINAL_PRESCAN_INSN (insn, NULL, 0);
 #endif
 
 #ifdef SDB_DEBUGGING_INFO
@@ -2539,8 +2538,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	      }
 
 	    /* Get out the operand values.  */
-	    string = decode_asm_operands (body, ops, NULL_PTR,
-					  NULL_PTR, NULL_PTR);
+	    string = decode_asm_operands (body, ops, NULL, NULL, NULL);
 	    /* Inhibit aborts on what would otherwise be compiler bugs.  */
 	    insn_noperands = noperands;
 	    this_is_asm_operands = insn;

@@ -3051,9 +3051,9 @@ process_command (argc, argv)
 
       set_std_prefix (gcc_exec_prefix, len);
       add_prefix (&exec_prefixes, gcc_exec_prefix, "GCC",
-		  PREFIX_PRIORITY_LAST, 0, NULL_PTR);
+		  PREFIX_PRIORITY_LAST, 0, NULL);
       add_prefix (&startfile_prefixes, gcc_exec_prefix, "GCC",
-		  PREFIX_PRIORITY_LAST, 0, NULL_PTR);
+		  PREFIX_PRIORITY_LAST, 0, NULL);
     }
 
   /* COMPILER_PATH and LIBRARY_PATH have values
@@ -3081,10 +3081,10 @@ process_command (argc, argv)
 	      else
 		nstore[endp - startp] = 0;
 	      add_prefix (&exec_prefixes, nstore, 0,
-			  PREFIX_PRIORITY_LAST, 0, NULL_PTR);
+			  PREFIX_PRIORITY_LAST, 0, NULL);
 	      add_prefix (&include_prefixes,
 			  concat (nstore, "include", NULL),
-			  0, PREFIX_PRIORITY_LAST, 0, NULL_PTR);
+			  0, PREFIX_PRIORITY_LAST, 0, NULL);
 	      if (*endp == 0)
 		break;
 	      endp = startp = endp + 1;
@@ -3116,7 +3116,7 @@ process_command (argc, argv)
 	      else
 		nstore[endp - startp] = 0;
 	      add_prefix (&startfile_prefixes, nstore, NULL,
-			  PREFIX_PRIORITY_LAST, 0, NULL_PTR);
+			  PREFIX_PRIORITY_LAST, 0, NULL);
 	      if (*endp == 0)
 		break;
 	      endp = startp = endp + 1;
@@ -3149,7 +3149,7 @@ process_command (argc, argv)
 	      else
 		nstore[endp - startp] = 0;
 	      add_prefix (&startfile_prefixes, nstore, NULL,
-			  PREFIX_PRIORITY_LAST, 0, NULL_PTR);
+			  PREFIX_PRIORITY_LAST, 0, NULL);
 	      if (*endp == 0)
 		break;
 	      endp = startp = endp + 1;
@@ -3375,14 +3375,14 @@ process_command (argc, argv)
 		    {
 		      if (len == 7)
 			add_prefix (&include_prefixes, "include", NULL,
-				    PREFIX_PRIORITY_B_OPT, 0, NULL_PTR);
+				    PREFIX_PRIORITY_B_OPT, 0, NULL);
 		      else
 			{
 			  char *string = xmalloc (len + 1);
 			  strncpy (string, value, len-7);
 			  strcpy (string+len-7, "include");
 			  add_prefix (&include_prefixes, string, NULL,
-				      PREFIX_PRIORITY_B_OPT, 0, NULL_PTR);
+				      PREFIX_PRIORITY_B_OPT, 0, NULL);
 			}
 		    }
 		}
@@ -3391,7 +3391,7 @@ process_command (argc, argv)
 		add_prefix (&startfile_prefixes, value, NULL,
 			    PREFIX_PRIORITY_B_OPT, 0, &warn_B);
 		add_prefix (&include_prefixes, concat (value, "include", NULL),
-			    NULL, PREFIX_PRIORITY_B_OPT, 0, NULL_PTR);
+			    NULL, PREFIX_PRIORITY_B_OPT, 0, NULL);
 		n_switches++;
 	      }
 	      break;
@@ -3597,11 +3597,11 @@ process_command (argc, argv)
 	  add_prefix (&exec_prefixes,
 		      concat (gcc_exec_tooldir_prefix, "bin",
 			      dir_separator_str, NULL),
-		      NULL, PREFIX_PRIORITY_LAST, 0, NULL_PTR);
+		      NULL, PREFIX_PRIORITY_LAST, 0, NULL);
 	  add_prefix (&startfile_prefixes,
 		      concat (gcc_exec_tooldir_prefix, "lib",
 			      dir_separator_str, NULL),
-		      NULL, PREFIX_PRIORITY_LAST, 0, NULL_PTR);
+		      NULL, PREFIX_PRIORITY_LAST, 0, NULL);
 	}
 
       tooldir_prefix = concat (standard_exec_prefix, spec_machine,
@@ -3611,10 +3611,10 @@ process_command (argc, argv)
 
   add_prefix (&exec_prefixes,
 	      concat (tooldir_prefix, "bin", dir_separator_str, NULL),
-	      "BINUTILS", PREFIX_PRIORITY_LAST, 0, NULL_PTR);
+	      "BINUTILS", PREFIX_PRIORITY_LAST, 0, NULL);
   add_prefix (&startfile_prefixes,
 	      concat (tooldir_prefix, "lib", dir_separator_str, NULL),
-	      "BINUTILS", PREFIX_PRIORITY_LAST, 0, NULL_PTR);
+	      "BINUTILS", PREFIX_PRIORITY_LAST, 0, NULL);
 
   /* More prefixes are enabled in main, after we read the specs file
      and determine whether this is cross-compilation or not.  */
@@ -5643,18 +5643,18 @@ main (argc, argv)
       if (*md_exec_prefix)
 	{
 	  add_prefix (&exec_prefixes, md_exec_prefix, "GCC",
-		      PREFIX_PRIORITY_LAST, 0, NULL_PTR);
+		      PREFIX_PRIORITY_LAST, 0, NULL);
 	  add_prefix (&startfile_prefixes, md_exec_prefix, "GCC",
-		      PREFIX_PRIORITY_LAST, 0, NULL_PTR);
+		      PREFIX_PRIORITY_LAST, 0, NULL);
 	}
 
       if (*md_startfile_prefix)
 	add_prefix (&startfile_prefixes, md_startfile_prefix, "GCC",
-		    PREFIX_PRIORITY_LAST, 0, NULL_PTR);
+		    PREFIX_PRIORITY_LAST, 0, NULL);
 
       if (*md_startfile_prefix_1)
 	add_prefix (&startfile_prefixes, md_startfile_prefix_1, "GCC",
-		    PREFIX_PRIORITY_LAST, 0, NULL_PTR);
+		    PREFIX_PRIORITY_LAST, 0, NULL);
 
       /* If standard_startfile_prefix is relative, base it on
 	 standard_exec_prefix.  This lets us move the installed tree
@@ -5662,28 +5662,28 @@ main (argc, argv)
 	 standard_startfile_prefix on that as well.  */
       if (IS_ABSOLUTE_PATHNAME (standard_startfile_prefix))
 	add_prefix (&startfile_prefixes, standard_startfile_prefix, "BINUTILS",
-		    PREFIX_PRIORITY_LAST, 0, NULL_PTR);
+		    PREFIX_PRIORITY_LAST, 0, NULL);
       else
 	{
 	  if (gcc_exec_prefix)
 	    add_prefix (&startfile_prefixes,
 			concat (gcc_exec_prefix, machine_suffix,
 				standard_startfile_prefix, NULL),
-			NULL, PREFIX_PRIORITY_LAST, 0, NULL_PTR);
+			NULL, PREFIX_PRIORITY_LAST, 0, NULL);
 	  add_prefix (&startfile_prefixes,
 		      concat (standard_exec_prefix,
 			      machine_suffix,
 			      standard_startfile_prefix, NULL),
-		      NULL, PREFIX_PRIORITY_LAST, 0, NULL_PTR);
+		      NULL, PREFIX_PRIORITY_LAST, 0, NULL);
 	}
 
       add_prefix (&startfile_prefixes, standard_startfile_prefix_1,
-		  "BINUTILS", PREFIX_PRIORITY_LAST, 0, NULL_PTR);
+		  "BINUTILS", PREFIX_PRIORITY_LAST, 0, NULL);
       add_prefix (&startfile_prefixes, standard_startfile_prefix_2,
-		  "BINUTILS", PREFIX_PRIORITY_LAST, 0, NULL_PTR);
+		  "BINUTILS", PREFIX_PRIORITY_LAST, 0, NULL);
 #if 0 /* Can cause surprises, and one can use -B./ instead.  */
       add_prefix (&startfile_prefixes, "./", NULL,
-		  PREFIX_PRIORITY_LAST, 1, NULL_PTR);
+		  PREFIX_PRIORITY_LAST, 1, NULL);
 #endif
     }
   else
@@ -5693,7 +5693,7 @@ main (argc, argv)
 	add_prefix (&startfile_prefixes,
 		    concat (gcc_exec_prefix, machine_suffix,
 			    standard_startfile_prefix, NULL),
-		    "BINUTILS", PREFIX_PRIORITY_LAST, 0, NULL_PTR);
+		    "BINUTILS", PREFIX_PRIORITY_LAST, 0, NULL);
     }
 
   /* Process any user specified specs in the order given on the command

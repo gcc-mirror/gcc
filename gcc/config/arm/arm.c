@@ -8647,7 +8647,7 @@ arm_final_prescan_insn (insn)
 	      if (!this_insn)
 	        {
 		  /* Oh, dear! we ran off the end.. give up */
-		  recog (PATTERN (insn), insn, NULL_PTR);
+		  recog (PATTERN (insn), insn, NULL);
 		  arm_ccfsm_state = 0;
 		  arm_target_insn = NULL;
 		  return;
@@ -8685,7 +8685,7 @@ arm_final_prescan_insn (insn)
 	 destroy this array, but final.c assumes that it remains intact
 	 across this call; since the insn has been recognized already we
 	 call recog direct).  */
-      recog (PATTERN (insn), insn, NULL_PTR);
+      recog (PATTERN (insn), insn, NULL);
     }
 }
 
@@ -8801,7 +8801,7 @@ arm_debugger_arg_offset (value, addr)
 }
 
 #define def_builtin(NAME, TYPE, CODE) \
-  builtin_function ((NAME), (TYPE), (CODE), BUILT_IN_MD, NULL_PTR)
+  builtin_function ((NAME), (TYPE), (CODE), BUILT_IN_MD, NULL)
 
 void
 arm_init_builtins ()

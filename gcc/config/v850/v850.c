@@ -1605,7 +1605,7 @@ expand_prologue ()
 	      offset -= 4;
 	    }
 
-	  code = recog (save_all, NULL_RTX, NULL_PTR);
+	  code = recog (save_all, NULL_RTX, NULL);
 	  if (code >= 0)
 	    {
 	      rtx insn = emit_insn (save_all);
@@ -1790,7 +1790,7 @@ expand_epilogue ()
 	      offset -= 4;
 	    }
 
-	  code = recog (restore_all, NULL_RTX, NULL_PTR);
+	  code = recog (restore_all, NULL_RTX, NULL);
 	  
 	  if (code >= 0)
 	    {

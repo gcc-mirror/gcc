@@ -2382,7 +2382,7 @@ clear_by_pieces (to, len, align)
   struct store_by_pieces data;
 
   data.constfun = clear_by_pieces_1;
-  data.constfundata = NULL_PTR;
+  data.constfundata = NULL;
   data.len = len;
   data.to = to;
   store_by_pieces_1 (&data, align);
@@ -6601,7 +6601,7 @@ expand_expr (exp, target, tmode, modifier)
       return const0_rtx;
 
     case EXIT_EXPR:
-      expand_exit_loop_if_false (NULL_PTR,
+      expand_exit_loop_if_false (NULL,
 				 invert_truthvalue (TREE_OPERAND (exp, 0)));
       return const0_rtx;
 

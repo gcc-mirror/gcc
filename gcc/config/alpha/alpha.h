@@ -1583,7 +1583,7 @@ do {									\
       && GET_CODE (XEXP (XEXP (X, 0), 1)) == CONST_INT			\
       && GET_CODE (XEXP (X, 1)) == CONST_INT)				\
     {									\
-      push_reload (XEXP (X, 0), NULL_RTX, &XEXP (X, 0), NULL_PTR,	\
+      push_reload (XEXP (X, 0), NULL_RTX, &XEXP (X, 0), NULL,	\
 		   BASE_REG_CLASS, GET_MODE (X), VOIDmode, 0, 0,	\
 		   OPNUM, TYPE);					\
       goto WIN;								\
@@ -1611,7 +1611,7 @@ do {									\
 				      GEN_INT (high)),			\
 			GEN_INT (low));					\
 	  								\
-      push_reload (XEXP (X, 0), NULL_RTX, &XEXP (X, 0), NULL_PTR,	\
+      push_reload (XEXP (X, 0), NULL_RTX, &XEXP (X, 0), NULL,	\
 		   BASE_REG_CLASS, GET_MODE (X), VOIDmode, 0, 0,	\
 		   OPNUM, TYPE);					\
       goto WIN;								\

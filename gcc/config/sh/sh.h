@@ -1543,7 +1543,7 @@ extern int current_function_anonymous_args;
       if (TARGET_SH3E && MODE == SFmode)				\
 	{								\
 	  X = copy_rtx (X);						\
-	  push_reload (index_rtx, NULL_RTX, &XEXP (X, 1), NULL_PTR,	\
+	  push_reload (index_rtx, NULL_RTX, &XEXP (X, 1), NULL,		\
 		       INDEX_REG_CLASS, Pmode, VOIDmode, 0, 0, (OPNUM),	\
 		       (TYPE));						\
 	  goto WIN;							\
@@ -1565,7 +1565,7 @@ extern int current_function_anonymous_args;
 	  sum = gen_rtx (PLUS, Pmode, XEXP (X, 0),			\
 			 GEN_INT (offset_base));			\
 	  X = gen_rtx (PLUS, Pmode, sum, GEN_INT (offset - offset_base));\
-	  push_reload (sum, NULL_RTX, &XEXP (X, 0), NULL_PTR,	\
+	  push_reload (sum, NULL_RTX, &XEXP (X, 0), NULL,		\
 		       BASE_REG_CLASS, Pmode, VOIDmode, 0, 0, (OPNUM),	\
 		       (TYPE));						\
 	  goto WIN;							\
@@ -1583,7 +1583,7 @@ extern int current_function_anonymous_args;
       /* Because this address is so complex, we know it must have	\
 	 been created by LEGITIMIZE_RELOAD_ADDRESS before; thus,	\
 	 it is already unshared, and needs no further unsharing.  */	\
-      push_reload (XEXP ((X), 0), NULL_RTX, &XEXP ((X), 0), NULL_PTR,	\
+      push_reload (XEXP ((X), 0), NULL_RTX, &XEXP ((X), 0), NULL,	\
 		   BASE_REG_CLASS, Pmode, VOIDmode, 0, 0, (OPNUM), (TYPE));\
       goto WIN;								\
     }									\

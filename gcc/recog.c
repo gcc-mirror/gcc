@@ -149,7 +149,7 @@ check_asm_operands (x)
   operands = (rtx *) alloca (noperands * sizeof (rtx));
   constraints = (const char **) alloca (noperands * sizeof (char *));
 
-  decode_asm_operands (x, operands, NULL_PTR, constraints, NULL_PTR);
+  decode_asm_operands (x, operands, NULL, constraints, NULL);
 
   for (i = 0; i < noperands; i++)
     {

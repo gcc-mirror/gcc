@@ -2605,7 +2605,7 @@ do {                                                                    \
     {									\
       X = gen_rtx_LO_SUM (GET_MODE (X),					\
 			  gen_rtx_HIGH (GET_MODE (X), X), X);		\
-      push_reload (XEXP (X, 0), NULL_RTX, &XEXP (X, 0), NULL_PTR,	\
+      push_reload (XEXP (X, 0), NULL_RTX, &XEXP (X, 0), NULL,		\
                    BASE_REG_CLASS, GET_MODE (X), VOIDmode, 0, 0,	\
                    OPNUM, TYPE);					\
       goto WIN;								\

@@ -6950,7 +6950,7 @@ ia64_init_builtins ()
 						      endlink));
 
 #define def_builtin(name, type, code) \
-  builtin_function ((name), (type), (code), BUILT_IN_MD, NULL_PTR)
+  builtin_function ((name), (type), (code), BUILT_IN_MD, NULL)
 
   def_builtin ("__sync_val_compare_and_swap_si", si_ftype_psi_si_si,
 	       IA64_BUILTIN_VAL_COMPARE_AND_SWAP_SI);
