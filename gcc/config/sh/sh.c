@@ -4538,6 +4538,13 @@ initial_elimination_offset (from, to)
   int save_flags = target_flags;
 
   int live_regs_mask, live_regs_mask2;
+
+  if (from == RETURN_ADDRESS_POINTER_REGNUM)
+      /* Kludge: since we assume that the return address is on the stack,
+	 make it so.  N.B. We rely on RETURN_ADDRESS_POINTER_REGNUM being
+	 processed before ARG_POINTER_REGNUM here.  */
+      regs_ever_live[PR_REG] = 1;
+
   live_regs_mask = calc_live_regs (&regs_saved, &live_regs_mask2);
   total_auto_space = rounded_frame_size (regs_saved);
   target_flags = save_flags;
@@ -4556,13 +4563,7 @@ initial_elimination_offset (from, to)
 
   if (from == RETURN_ADDRESS_POINTER_REGNUM
       && (to == FRAME_POINTER_REGNUM || to == STACK_POINTER_REGNUM))
-    {
-      int i, n = total_saved_regs_space;
-      for (i = PR_REG-1; i >= 0; i--)
-	if (live_regs_mask & (1 << i))
-	  n -= 4;
-      return n + total_auto_space;
-    }
+    return total_auto_space;
 
   abort ();
 }

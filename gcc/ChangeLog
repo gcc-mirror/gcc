@@ -1,3 +1,9 @@
+Thu Sep 20 12:18:41 2001  J"orn Rennecke <amylaar@redhat.com>
+
+	* sh.c (initial_elimination_offset): When seeing
+	RETURN_ADDRESS_POINTER_REGNUM, force pr to be live.
+	Fix FROM == RETURN_ADDRESS_POINTER_REGNUM case.
+
 2001-08-21  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/ia64.c (ia64_return_in_memory): True for variable
