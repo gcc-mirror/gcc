@@ -1,3 +1,8 @@
+Mon Nov 10 00:05:56 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* alias.c (MAX_ALIAS_LOOP_PASSES): Define.
+	(init_alias_analysis): Break out of loops after MAX_ALIAS_LOOP_PASSES.
+
 Sun Nov  9 02:07:16 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* fixinc.svr4 (__STDC__): Add another case.
