@@ -229,7 +229,7 @@ static char spill_indirect_levels;
 /* Nonzero if indirect addressing is supported when the innermost MEM is
    of the form (MEM (SYMBOL_REF sym)).  It is assumed that the level to
    which these are valid is the same as spill_indirect_levels, above.  */
-char indirect_symref_ok;
+static char indirect_symref_ok;
 
 /* Nonzero if an address (plus (reg frame_pointer) (reg ...)) is valid.  */
 char double_reg_address_ok;
@@ -268,7 +268,7 @@ enum insn_code reload_out_optab[NUM_MACHINE_MODES];
 /* This obstack is used for allocation of rtl during register elimination.
    The allocated storage can be freed once find_reloads has processed the
    insn.  */
-struct obstack reload_obstack;
+static struct obstack reload_obstack;
 
 /* Points to the beginning of the reload_obstack.  All insn_chain structures
    are allocated first.  */
