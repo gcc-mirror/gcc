@@ -1,3 +1,8 @@
+1999-04-22 Bruce Korb <ddsinc09@ix.netcom.com>
+
+	* configure.in: enable disabling of fast fixincludes
+	* configure: regenerate
+
 1999-04-21 14:55 -0400  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* gen-protos.c: #undef abort after including system.h.  
