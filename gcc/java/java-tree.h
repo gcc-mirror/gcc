@@ -132,6 +132,9 @@ extern int flag_emit_class_files;
 
 extern int flag_emit_xref;
 
+/* When doing xrefs, tell when not to fold.   */
+extern int do_not_fold;
+
 /* Turned to 1 if -Wall was encountered. See lang.c for their meanings.  */
 extern int flag_wall;
 extern int flag_redundant;

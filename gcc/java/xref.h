@@ -27,6 +27,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 int xref_flag_value PROTO ((char *));
 void expand_xref PROTO ((tree));
 void xref_set_data PROTO ((int, void *));
+void *xref_get_data PROTO ((int));
 
 /* flag_emit_xref range of possible values. */
 
@@ -43,4 +44,4 @@ typedef struct {
   void *data;			         /* Placeholder for additional data */
 } xref_flag_table;
 
-#define XREF_GET_DATA(FLAG, T) ((T)xref_table [(FLAG)-1].data)
+#define XREF_GET_DATA(FLAG, T) ((T)xref_get_data (FLAG))

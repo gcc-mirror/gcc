@@ -247,6 +247,8 @@ static void static_ref_err PROTO ((tree, tree, tree));
 int java_error_count; 
 /* Number of warning found so far. */
 int java_warning_count;
+/* Tell when not to fold, when doing xrefs */
+int do_not_fold;
 
 /* The current parser context */
 struct parser_ctxt *ctxp;
@@ -5706,6 +5708,8 @@ void
 java_complete_expand_methods ()
 {
   tree current;
+
+  do_not_fold = flag_emit_xref;
   
   for (current = ctxp->class_list; current; current = TREE_CHAIN (current))
     {
@@ -5819,6 +5823,7 @@ java_complete_expand_method (mdecl)
     {
       tree fbody = DECL_FUNCTION_BODY (mdecl);
       tree block_body = BLOCK_EXPR_BODY (fbody);
+      tree exception_copy;
       expand_start_java_method (mdecl);
       build_result_decl (mdecl);
 
@@ -5826,7 +5831,12 @@ java_complete_expand_method (mdecl)
 	= (!METHOD_STATIC (mdecl) ? 
 	   BLOCK_EXPR_DECLS (DECL_FUNCTION_BODY (mdecl)) : NULL_TREE);
 
-      /* Purge the `throws' list of unchecked exceptions */
+      /* Purge the `throws' list of unchecked exceptions. If we're
+	 doing xref, save a copy of the list and re-install it
+	 later. */
+      if (flag_emit_xref)
+	exception_copy = copy_list (DECL_FUNCTION_THROWS (mdecl));
+
       purge_unchecked_exceptions (mdecl);
 
       /* Install exceptions thrown with `throws' */
@@ -5835,13 +5845,15 @@ java_complete_expand_method (mdecl)
       if (block_body != NULL_TREE)
 	{
 	  block_body = java_complete_tree (block_body);
-	  check_for_initialization (block_body);
+	  if (!flag_emit_xref)
+	    check_for_initialization (block_body);
 	  ctxp->explicit_constructor_p = 0;
 	}
       BLOCK_EXPR_BODY (fbody) = block_body;
 
       if ((block_body == NULL_TREE || CAN_COMPLETE_NORMALLY (block_body))
-	  && TREE_CODE (TREE_TYPE (TREE_TYPE (mdecl))) != VOID_TYPE)
+	  && TREE_CODE (TREE_TYPE (TREE_TYPE (mdecl))) != VOID_TYPE
+	  && !flag_emit_xref)
 	missing_return_error (current_function_decl);
 
       complete_start_java_method (mdecl); 
@@ -5860,6 +5872,9 @@ java_complete_expand_method (mdecl)
       POP_EXCEPTIONS();
       if (currently_caught_type_list)
 	fatal ("Exception list non empty - java_complete_expand_method");
+
+      if (flag_emit_xref)
+	DECL_FUNCTION_THROWS (mdecl) = exception_copy;
     }
 }
 
@@ -7871,7 +7886,7 @@ java_complete_lhs (node)
       /* First, the case expression must be constant */
       cn = fold (cn);
 
-      if (!TREE_CONSTANT (cn))
+      if (!TREE_CONSTANT (cn) && !flag_emit_xref)
 	{
 	  EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (node);
 	  parse_error_context (node, "Constant expression required");
@@ -8229,6 +8244,11 @@ java_complete_lhs (node)
     case INSTANCEOF_EXPR:
       wfl_op1 = TREE_OPERAND (node, 0);
       COMPLETE_CHECK_OP_0 (node);
+      if (flag_emit_xref)
+	{
+	  TREE_TYPE (node) = boolean_type_node;
+	  return node;
+	}
       return patch_binop (node, wfl_op1, TREE_OPERAND (node, 1));
 
     case UNARY_PLUS_EXPR:
@@ -9508,6 +9528,9 @@ patch_binop (node, wfl_op1, wfl_op2)
   TREE_TYPE (node) = prom_type;
   TREE_SIDE_EFFECTS (node) = TREE_SIDE_EFFECTS (op1) | TREE_SIDE_EFFECTS (op2);
   
+  if (flag_emit_xref)
+    return node;
+
   /* fold does not respect side-effect order as required for Java but not C.
    * Also, it sometimes create SAVE_EXPRs which are bad when emitting
    * bytecode.
@@ -9635,6 +9658,9 @@ build_string_concatenation (op1, op2)
 {
   tree result;
   int side_effects = TREE_SIDE_EFFECTS (op1) | TREE_SIDE_EFFECTS (op2);
+
+  if (flag_emit_xref)
+    return build (PLUS_EXPR, string_type_node, op1, op2);
   
   /* Try to do some static optimization */
   if ((result = string_constant_concatenation (op1, op2)))
@@ -11121,6 +11147,14 @@ patch_synchronized_statement (node, wfl_op1)
       return error_mark_node;
     }
 
+  if (flag_emit_xref)
+    {
+      TREE_OPERAND (node, 0) = expr;
+      TREE_OPERAND (node, 1) = java_complete_tree (block);
+      CAN_COMPLETE_NORMALLY (node) = 1;
+      return node;
+    }
+
   /* Generate a try-finally for the synchronized statement, except
      that the handler that catches all throw exception calls
      _Jv_MonitorExit and then rethrow the exception.
@@ -11234,8 +11268,12 @@ patch_throw_statement (node, wfl_op1)
       return error_mark_node;
     }
 
-  if (! flag_emit_class_files)
+  if (! flag_emit_class_files && ! flag_emit_xref)
     BUILD_THROW (node, expr);
+
+  /* If doing xrefs, keep the location where the `throw' was seen. */
+  if (flag_emit_xref)
+    EXPR_WFL_LINECOL (node) = EXPR_WFL_LINECOL (wfl_op1);
   return node;
 }
 

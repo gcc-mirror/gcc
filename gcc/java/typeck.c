@@ -86,6 +86,9 @@ convert (type, expr)
 {
   register enum tree_code code = TREE_CODE (type);
 
+  if (do_not_fold)
+    return build1 (NOP_EXPR, type, expr);
+
   if (type == TREE_TYPE (expr)
       || TREE_CODE (expr) == ERROR_MARK)
     return expr;
