@@ -451,7 +451,7 @@ _obstack_memory_used (h)
 
 /* Define the error handler.  */
 #ifndef _
-# ifdef HAVE_LIBINTL_H
+# if (HAVE_LIBINTL_H && ENABLE_NLS) || defined _LIBC
 #  include <libintl.h>
 #  ifndef _
 #   define _(Str) gettext (Str)
