@@ -6,8 +6,9 @@
 /* By default, allow $ to be part of an identifier.  */
 #define DOLLARS_IN_IDENTIFIERS 1
 
-/* These are as defined in /usr/include/sys/stdtypes.h */
+/* These are as defined in /usr/include/sys/stdtypes.h.
+   These values are for ultrix 4.2 on the vax.  */
 #define SIZE_TYPE "unsigned int"
 #define PTRDIFF_TYPE "int"
-#define WCHAR_TYPE "short unsigned int"
-#define WCHAR_TYPE_SIZE 16
+#define WCHAR_TYPE "unsigned int"
+#define WCHAR_TYPE_SIZE 32
