@@ -1,3 +1,13 @@
+1999-04-19  Anthony Green  <green@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (ordinary_java_source_files): Add new security files.
+
+	* java/security/NoSuchAlgorithmException.java,
+	java/security/MessageDigest.java: New files.
+
+	* include/javaprims.h: Add security namespace.
+
 1999-04-16  Per Bothner  <bothner@cygnus.com>
 
 	* gnu/gcj/convert/JIS0201.h:  New file, generated from Unicode table.
