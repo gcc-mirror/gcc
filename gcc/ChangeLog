@@ -1,5 +1,11 @@
 2003-07-04  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* doc/install.texi: Fix typos.
+	* doc/invoke.texi: Likewise.
+	* doc/tm.texi: Likewise.
+
+2003-07-04  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/pa/fptr.c: Fix comment typos.
 	* config/pa/pa-64.h: Likewise.
 	* config/pa/pa.c: Likewise.
