@@ -50,27 +50,50 @@ __GOT_START__:
 _GLOBAL_OFFSET_TABLE_:
 _SDA_BASE_:
 
-	.section ".got1","w"
+	.section ".got1","aw"
 	.globl	__GOT1_START__
 	.type	__GOT1_START__,@object
 __GOT1_START__:
 
-	.section ".got2","w"
+	.section ".got2","aw"
 	.globl	__GOT2_START__
 	.type	__GOT2_START__,@object
 __GOT2_START__:
 
-	.section ".fixup","w"
+	.section ".fixup","aw"
 	.globl	__FIXUP_START__
 	.type	__FIXUP_START__,@object
 __FIXUP_START__:
 
-	.section ".ctors","w"
+	.section ".ctors","aw"
 	.globl	__CTOR_LIST__
 	.type	__CTOR_LIST__,@object
 __CTOR_LIST__:
 
-	.section ".dtors","w"
+	.section ".dtors","aw"
 	.globl	__DTOR_LIST__
 	.type	__DTOR_LIST__,@object
 __DTOR_LIST__:
+
+	.section ".sdata","aw"
+	.globl	__SDATA_START__
+	.type	__SDATA_START__,@object
+__SDATA_START__:
+
+	.section ".sbss","aw"
+	.globl	__SBSS_START__
+	.type	__SBSS_START__,@object
+__SBSS_START__:
+
+	.section ".sdata2","aw"
+	.globl	_SDA2_BASE_
+	.type	_SDA2_BASE_,@object
+	.globl	__SDATA2_START__
+	.type	__SDATA2_START__,@object
+__SDATA2_START__:
+_SDA2_BASE_ = .+32768
+
+	.section ".sbss2","aw"
+	.globl	__SBSS2_START__
+	.type	__SBSS2_START__,@object
+__SBSS2_START__:

@@ -39,32 +39,59 @@
 	.file	"crtn.s"
 	.ident	"GNU C crtn.s"
 
-	.section ".got","w"
+	.section ".got","aw"
 	.globl	__GOT_END__
 	.type	__GOT_END__,@object
 __GOT_END__:
 
-	.section ".got1","w"
+	.section ".got1","aw"
 	.globl	__GOT1_END__
 	.type	__GOT1_END__,@object
 __GOT1_END__:
 
-	.section ".got2","w"
+	.section ".got2","aw"
 	.globl	__GOT2_END__
 	.type	__GOT2_END__,@object
 __GOT2_END__:
 
-	.section ".fixup","w"
+	.section ".fixup","aw"
 	.globl	__FIXUP_END__
 	.type	__FIXUP_END__,@object
 __FIXUP_END__:
 
-	.section ".ctors","w"
+	.section ".ctors","aw"
 	.globl	__CTOR_END__
 	.type	__CTOR_END__,@object
 __CTOR_END__:
 
-	.section ".dtors","w"
+	.section ".dtors","aw"
 	.globl	__DTOR_END__
 	.type	__DTOR_END__,@object
 __DTOR_END__:
+
+# Put a blrl instruction in the special .got.blrl section, which
+# the GNU linker puts at _GLOBAL_OFFSET_TABLE-4, so that a program
+# can find the _GLOBAL_OFFSET_TABLE_ address in a painless fashion.
+
+	.section ".got.blrl","awx"
+	blrl
+
+	.section ".sdata","aw"
+	.globl	__SDATA_END__
+	.type	__SDATA_END__,@object
+__SDATA_END__:
+
+	.section ".sbss","aw"
+	.globl	__SBSS_END__
+	.type	__SBSS_END__,@object
+__SBSS_END__:
+
+	.section ".sdata2","aw"
+	.globl	__SDATA2_END__
+	.type	__SDATA2_END__,@object
+__SDATA2_END__:
+
+	.section ".sbss2","aw"
+	.globl	__SBSS2_END__
+	.type	__SBSS2_END__,@object
+__SBSS2_END__:

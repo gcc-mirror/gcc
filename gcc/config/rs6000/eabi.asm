@@ -48,14 +48,23 @@
 .Ltable = .-.LCTOC1
 	.long	.LCTOC1				/* address we are really at */
 
-.Lgot = .-.LCTOC1
-	.long	_GLOBAL_OFFSET_TABLE_		/* normal GOT address */
+.Lsda = .-.LCTOC1
+	.long	_SDA_BASE_			/* address of the first small data area */
 
-.Lgots = .-.LCTOC1
-	.long	__GOT_START__			/* start of .got section */
+.Lsdas = .-.LCTOC1
+	.long	__SDATA_START__			/* start of .sdata/.sbss section */
 
-.Lgote = .-.LCTOC1
-	.long	__GOT_END__			/* end of .got section */
+.Lsdae = .-.LCTOC1
+	.long	__SBSS_END__			/* end of .sdata/.sbss section */
+
+.Lsda2 = .-.LCTOC1
+	.long	_SDA2_BASE_			/* address of the second small data area */
+
+.Lsda2s = .-.LCTOC1
+	.long	__SDATA2_START__		/* start of .sdata2/.sbss2 section */
+
+.Lsda2e = .-.LCTOC1
+	.long	__SBSS2_END__			/* end of .sdata2/.sbss2 section */
 
 .Lgot2s = .-.LCTOC1
 	.long	__GOT2_START__			/* -mrelocatable GOT pointers start */
@@ -110,20 +119,27 @@ FUNC_START(__eabi)
 	stwx	1,10,12				/* store a non-zero value in the done flag */
 	bne	0,.Lreloc			/* skip if we need to relocate */
 
-/* Only load up register 2 if there is a .got section */
+/* Only load up register 13 if there is a .sdata and/or .sbss section */
 
-	lwz	3,.Lgots(11)			/* start of .got section */
-	lwz	4,.Lgote(11)			/* end of .got section */
-	cmpw	1,3,4				/* .got section non-empty? */
-	bc	12,6,.Ldone
+	lwz	3,.Lsdas(11)			/* start of .sdata/.sbss section */
+	lwz	4,.Lsdae(11)			/* end of .sdata/.sbss section */
+	cmpw	1,3,4				/* .sdata/.sbss section non-empty? */
+	beq	1,.Lsda2l			/* skip loading r13 */
 
-/* Normal program, load up register 2 */
+	lwz	13,.Lsda(11)			/* load r13 with _SDA_BASE address */
 
-	lwz	2,.Lgot(11)			/* normal GOT address (obsolete in register 2) */
-	mr	13,2				/* also same as _SDA_BASE_ (V.4 small data ptr) */
+/* Only load up register 2 if there is a .sdata2 and/or .sbss2 section */
+
+.Lsda2l:	
+	lwz	3,.Lsda2s(11)			/* start of .sdata/.sbss section */
+	lwz	4,.Lsda2e(11)			/* end of .sdata/.sbss section */
+	cmpw	1,3,4				/* .sdata/.sbss section non-empty? */
+	beq	1,.Ldone			/* skip loading r2 */
+
+	lwz	2,.Lsda2(11)			/* load r2 with _SDA2_BASE address */
 	b	FUNC_NAME(__do_global_ctors)	/* do any C++ global constructors (which returns to caller) */
 
-/* We need to relocate the .got2 pointers.  Don't load register 2 */
+/* We need to relocate the .got2 pointers.  Don't load registers 2 or 13 */
 
 .Lreloc:
 	lwz	3,.Lgot2s(11)			/* GOT pointers start */
