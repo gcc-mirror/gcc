@@ -1,3 +1,11 @@
+2001-12-16  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-typeck.c (error_init, pedwarn_init, warning_init): Call
+	gettext on argument before printing.
+
+	* fold-const.c (negate_expr): Always call fold on new
+	NEGATE_EXPR.
+
 2001-12-17  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.def (COMPOUND_LITERAL_EXPR): Contain a DECL_STMT, not
