@@ -45,14 +45,5 @@ typedef enum ffi_abi {
 				/* can be interpreted as a C function	*/
 				/* descriptor:				*/
 
-#ifndef LIBFFI_ASM
-struct ffi_ia64_trampoline_struct {
-    void * code_pointer;	/* Pointer to ffi_closure_UNIX	*/
-    void * fake_gp;		/* Pointer to closure, installed as gp	*/
-    void * real_gp;		/* Real gp value, reinstalled by 	*/
-				/* ffi_closure_UNIX.			*/
-};
-#endif
-
 #endif
 

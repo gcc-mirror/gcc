@@ -1,3 +1,12 @@
+2004-12-31  Richard Henderson  <rth@redhat.com>
+
+	* src/types.c (FFI_TYPE_POINTER): Define with sizeof.
+	(FFI_TYPE_LONGDOUBLE): Fix for ia64.
+	* src/ia64/ffitarget.h (struct ffi_ia64_trampoline_struct): Move 
+	into ffi_prep_closure.
+	* src/ia64/ia64_flags.h, src/ia64/ffi.c, src/ia64/unix.S: Rewrite
+	from scratch.
+
 2004-12-27  Richard Henderson  <rth@redhat.com>
 
 	* src/x86/unix64.S: Fix typo in unwind info.
