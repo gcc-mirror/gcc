@@ -423,6 +423,10 @@ xcoffout_declare_function (file, decl, name)
 	}
     }
 
+  /* Any pending .bi or .ei must occur before the .function psuedo op.
+     Otherwise debuggers will think that the function is in the previous
+     file and/or at the wrong line number.  */
+  dbxout_source_file (file, DECL_SOURCE_FILE (decl));
   dbxout_symbol (decl, 0);
   fprintf (file, "\t.function .%s,.%s,16,044,FE..%s-.%s\n", n, n, n, n);
 }
