@@ -1,3 +1,9 @@
+2002-02-01  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/mips/mips.h (ENDIAN_SPEC): Output the endianness flag if
+	the -me[lb] option is given.  Don't output the default flag
+	twice.
+
 2002-01-31  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-lex.c (yyparse): Call debug_hooks->start_source_file for
