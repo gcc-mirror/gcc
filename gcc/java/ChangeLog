@@ -3,6 +3,9 @@
 	* expr.c, parse.h: Use USING_SJLJ_EXCEPTIONS instead of
 	exceptions_via_longjmp.
 
+	* lang.c (flag_new_exceptions): Don't declare it.
+	(java_init_options): Or set it.
+
 2001-03-27  Richard Henderson  <rth@redhat.com>
 
 	* decl.c (end_java_method): Rename asynchronous_exceptions to
