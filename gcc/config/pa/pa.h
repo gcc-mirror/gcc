@@ -2001,7 +2001,7 @@ do { fputs ("\t.SPACE $PRIVATE$\n\
     {								\
       fputs ("\t.SPACE $PRIVATE$\n", FILE);			\
       fprintf (FILE,						\
-	       "\t.SUBSPA %s,QUAD=1,ALIGN=8,ACCESS=31,SORT=16\n", \
+	       "\t.SUBSPA %s%s%s,QUAD=1,ALIGN=8,ACCESS=31,SORT=16\n", \
 	       TARGET_GAS ? "" : "$", NAME, TARGET_GAS ? "" : "$"); \
     }
 
