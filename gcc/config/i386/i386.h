@@ -157,7 +157,8 @@ extern int target_flags;
 #define TARGET_PENTIUMPRO (ix86_cpu == PROCESSOR_PENTIUMPRO)
 #define TARGET_USE_LEAVE (ix86_cpu == PROCESSOR_I386)
 #define TARGET_PUSH_MEMORY (ix86_cpu == PROCESSOR_I386)
-#define TARGET_ZERO_EXTEND_WITH_AND (ix86_cpu != PROCESSOR_I386)
+#define TARGET_ZERO_EXTEND_WITH_AND (ix86_cpu != PROCESSOR_I386 \
+				     && ix86_cpu != PROCESSOR_PENTIUMPRO)
 #define TARGET_DOUBLE_WITH_ADD (ix86_cpu != PROCESSOR_I386)
 #define TARGET_USE_BIT_TEST (ix86_cpu == PROCESSOR_I386)
 #define TARGET_UNROLL_STRLEN (ix86_cpu != PROCESSOR_I386)
@@ -2604,6 +2605,9 @@ do {									\
 extern void override_options ();
 extern void order_regs_for_local_alloc ();
 extern char *output_strlen_unroll ();
+extern struct rtx_def *i386_sext16_if_const ();
+extern int i386_aligned_p ();
+extern int i386_cc_probably_useless_p ();
 extern int i386_valid_decl_attribute_p ();
 extern int i386_valid_type_attribute_p ();
 extern int i386_return_pops_args ();
