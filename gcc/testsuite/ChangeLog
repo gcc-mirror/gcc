@@ -1,3 +1,19 @@
+2003-07-04  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR c++/5287, PR c++/7910,  PR c++/11021
+	* testsuite/g++.dg/ext/dllimport1.C: Add mingw32 as target. Add
+	tests for warnings.
+	* testsuite/g++.dg/ext/dllimport2.C: Add tests for warnings.
+	* testsuite/g++.dg/ext/dllimport3.C: Likewise.
+	* testsuite/g++.dg/ext/dllimport4.C: New file.
+	* testsuite/g++.dg/ext/dllimport5.C: New file.
+	* testsuite/g++.dg/ext/dllimport6.C: New file.
+	* testsuite/g++.dg/ext/dllimport7.C: New file.
+	* testsuite/g++.dg/ext/dllimport8.C: New file.
+	* testsuite/g++.dg/ext/dllimport9.C: New file.
+	* testsuite/g++.dg/ext/dllimport10.C: New file.
+	* testsuite/g++.dg/ext/dllexport1.C: New file.
+
 2003-07-03  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.old-deja/g++.jason/typeid1.C: Add dg-error marker.
