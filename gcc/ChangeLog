@@ -1,3 +1,13 @@
+2003-06-04  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* Makefile.in (cse.o): Add params.h dependency.
+	* cse.c: Include params.h.
+	(PATHLENGTH): Removed.
+	(struct cse_basic_block_data): Make path array dynamic.
+	(cse_end_of_basic_block): Use PARAM_MAX_CSE_PATH_LENGTH instead of PATHLENGTH.
+	(cse_main, cse_basic_block): Allocate path array.
+	* params.def (PARAM_MAX_CSE_PATH_LENGTH): New.
+
 Wed Jun  4 09:49:21 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_reorg): Replace the jump instead of adding nop.
