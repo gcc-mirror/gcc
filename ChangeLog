@@ -1,3 +1,7 @@
+2000-05-15  David Edelsohn  <edelsohn@gnu.org>
+
+	* configure.in: Special case powerpc*-*-aix* target_makefile_frag.
+
 Mon May 15 13:39:09 2000  Andrew Cagney  <cagney@b1.cygnus.com>
 
 	* MAINTAINERS: Add self to Write After Approval list.
