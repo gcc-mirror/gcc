@@ -21,6 +21,7 @@ Boston, MA 02111-1307, USA. */
 
 #define NO_STAB_H
 #define EXECUTABLE_SUFFIX ".exe"
+#define NO_SYS_SIGLIST 1
 
 /* Even though we support "/", allow "\" since everybody tests both.  */
 #define DIR_SEPARATOR '\\'

@@ -202,3 +202,7 @@ do {								\
 
 #undef ASM_COMMENT_START
 #define ASM_COMMENT_START " #"
+
+/* DWARF2 Unwinding doesn't work with exception handling yet. */
+#define DWARF2_UNWIND_INFO 0
+
