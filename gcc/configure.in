@@ -121,6 +121,10 @@ esac
 # Determine the host, build, and target systems
 AC_CANONICAL_SYSTEM
 
+# Find the native compiler
+AC_PROG_CC
+AC_PROG_MAKE_SET
+
 # Find some useful tools
 AC_PROG_AWK
 AC_PROG_LEX
@@ -128,10 +132,6 @@ AC_PROG_LN_S
 AC_PROG_RANLIB
 AC_PROG_YACC
 AC_PROG_INSTALL
-
-# Find the native compiler
-AC_PROG_CC
-AC_PROG_MAKE_SET
 
 AC_CHECK_HEADERS(stddef.h string.h strings.h stdlib.h time.h unistd.h)
 
