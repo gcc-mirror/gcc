@@ -43,7 +43,7 @@ provided with a @option{-D} option.
 Do not predefine any system-specific or GCC-specific macros.  The
 standard predefined macros remain defined.
 @ifset cppmanual
-@xref{Standard Predefined Macros}
+@xref{Standard Predefined Macros}.
 @end ifset
 
 @item -I @var{dir}
@@ -636,7 +636,9 @@ execution, and report the final form of the include path.
 @opindex H
 Print the name of each header file used, in addition to other normal
 activities.  Each name is indented to show how deep in the
-@samp{#include} stack it is.
+@samp{#include} stack it is.  Precompiled header files are also
+printed, even if they are found to be invalid; an invalid precompiled
+header file is printed with @samp{...x} and a valid one with @samp{...!} .
 
 @item -version
 @itemx --version
