@@ -1448,6 +1448,7 @@ changequote([,])dnl
 		tmake_file="i386/t-crtpic i386/t-udk"
 		xmake_file=x-svr4
 		extra_parts="crtbegin.o crtend.o"
+		install_headers_dir=install-headers-cpio
 		;;
 changequote(,)dnl
 	i[34567]86-*-osf1*)		# Intel 80386's running OSF/1 1.3+
