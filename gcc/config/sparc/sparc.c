@@ -7779,7 +7779,7 @@ sparc_block_profiler(file, blockno)
       assemble_name (file, LPBX);
       fputs ("),%g2\n", file);
   
-      fputs ("\tor\t%o2,%lo(", file);
+      fputs ("\tor\t%g2,%lo(", file);
       assemble_name (file, LPBX);
       fputs ("),%g2\n", file);
   
