@@ -56,6 +56,11 @@
 ; LENGTH of an instruction (in bytes)
 (define_attr "length" "" (const_int 4))
 
+; POOL_RANGE is how far away from a constant pool entry that this insn
+; can be placed.  If the distance is zero, then this insn will never
+; reference the pool.
+(define_attr "pool_range" "" (const_int 0))
+
 ; An assembler sequence may clobber the condition codes without us knowing
 (define_asm_attributes
  [(set_attr "conds" "clob")
@@ -2146,7 +2151,8 @@
    and%?\\t%Q0, %1, #255\;mov%?\\t%R0, #0
    ldr%?b\\t%Q0, %1\;mov%?\\t%R0, #0"
 [(set_attr "length" "8")
- (set_attr "type" "*,load")])
+ (set_attr "type" "*,load")
+ (set_attr "pool_range" "*,4096")])
 
 (define_insn "extendsidi2"
   [(set (match_operand:DI 0 "s_register_operand" "=r")
@@ -2193,7 +2199,8 @@
 	(zero_extend:SI (match_operand:HI 1 "memory_operand" "m")))]
   "arm_arch4"
   "ldr%?h\\t%0, %1"
-[(set_attr "type" "load")])
+[(set_attr "type" "load")
+ (set_attr "pool_range" "256")])
 
 (define_split
   [(set (match_operand:SI 0 "s_register_operand" "")
@@ -2244,7 +2251,8 @@
 	(zero_extend:SI (match_operand:QI 1 "memory_operand" "m")))]
   ""
   "ldr%?b\\t%0, %1\\t%@ zero_extendqisi2"
-[(set_attr "type" "load")])
+[(set_attr "type" "load")
+ (set_attr "pool_range" "4096")])
 
 (define_split
   [(set (match_operand:SI 0 "s_register_operand" "")
@@ -2339,7 +2347,8 @@
 	(sign_extend:SI (match_operand:HI 1 "memory_operand" "m")))]
   "arm_arch4"
   "ldr%?sh\\t%0, %1"
-[(set_attr "type" "load")])
+[(set_attr "type" "load")
+ (set_attr "pool_range" "256")])
 
 (define_split
   [(set (match_operand:SI 0 "s_register_operand" "")
@@ -2408,7 +2417,8 @@
   return \"ldr%?sb\\t%0, %1\";
 "
 [(set_attr "type" "load")
- (set_attr "length" "8")])
+ (set_attr "length" "8")
+ (set_attr "pool_range" "256")])
 
 (define_split
   [(set (match_operand:HI 0 "s_register_operand" "")
@@ -2481,7 +2491,8 @@
   return \"ldr%?sb\\t%0, %1\";
 "
 [(set_attr "type" "load")
- (set_attr "length" "8")])
+ (set_attr "length" "8")
+ (set_attr "pool_range" "256")])
 
 (define_split
   [(set (match_operand:SI 0 "s_register_operand" "")
@@ -2609,7 +2620,8 @@
   return (output_move_double (operands));
 "
 [(set_attr "length" "8,8,8")
- (set_attr "type" "*,load,store2")])
+ (set_attr "type" "*,load,store2")
+ (set_attr "pool_range" "0,1020,0")])
 
 (define_expand "movsi"
   [(set (match_operand:SI 0 "general_operand" "")
@@ -2646,7 +2658,8 @@
    mvn%?\\t%0, #%B1
    ldr%?\\t%0, %1
    str%?\\t%1, %0"
-[(set_attr "type" "*,*,load,store1")])
+[(set_attr "type" "*,*,load,store1")
+ (set_attr "pool_range" "*,*,4096,*")])
 
 (define_split
   [(set (match_operand:SI 0 "s_register_operand" "")
@@ -2687,7 +2700,8 @@
 	(unspec:SI [(match_operand 1 "" "")] 3))]
   "flag_pic"
   "ldr%?\\t%0, %a1"
- [(set_attr "type" "load")])
+ [(set_attr "type" "load")
+  (set_attr "pool_range" "4096")])
 
 ;; This variant is used for AOF assembly, since it needs to mention the
 ;; pic register in the rtl.
@@ -2708,7 +2722,9 @@
 #endif
   output_asm_insn (\"ldr%?\\t%0, %a1\", operands);
   return \"\";
-" [(set_attr "type" "load")])
+"
+[(set_attr "type" "load")
+ (set_attr "pool_range" "4096")])
 
 (define_insn "pic_add_dot_plus_eight"
   [(set (match_operand 0 "register_operand" "+r")
@@ -3079,7 +3095,8 @@
    mvn%?\\t%0, #%B1\\t%@ movhi
    ldr%?h\\t%0, %1\\t%@ movhi
    str%?h\\t%1, %0\\t%@ movhi"
-[(set_attr "type" "*,*,load,store1")])
+[(set_attr "type" "*,*,load,store1")
+ (set_attr "pool_range" "*,*,256,*")])
 
 (define_insn "*movhi_insn_littleend"
   [(set (match_operand:HI 0 "s_register_operand" "=r,r,r")
@@ -3094,7 +3111,8 @@
    mov%?\\t%0, %1\\t%@ movhi
    mvn%?\\t%0, #%B1\\t%@ movhi
    ldr%?\\t%0, %1\\t%@ movhi"
-[(set_attr "type" "*,*,load")])
+[(set_attr "type" "*,*,load")
+ (set_attr "pool_range" "4096")])
 
 (define_insn "*movhi_insn_bigend"
   [(set (match_operand:HI 0 "s_register_operand" "=r,r,r")
@@ -3110,7 +3128,8 @@
    mvn%?\\t%0, #%B1\\t%@ movhi
    ldr%?\\t%0, %1\\t%@ movhi_bigend\;mov%?\\t%0, %0, asr #16"
 [(set_attr "type" "*,*,load")
- (set_attr "length" "4,4,8")])
+ (set_attr "length" "4,4,8")
+ (set_attr "pool_range" "*,*,4092")])
 
 (define_insn "*loadhi_si_bigend"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
@@ -3119,7 +3138,8 @@
   "BYTES_BIG_ENDIAN
    && ! TARGET_SHORT_BY_BYTES"
   "ldr%?\\t%0, %1\\t%@ movhi_bigend"
-[(set_attr "type" "load")])
+[(set_attr "type" "load")
+ (set_attr "pool_range" "4096")])
 
 (define_insn "*movhi_bytes"
   [(set (match_operand:HI 0 "s_register_operand" "=r,r")
@@ -3212,7 +3232,8 @@
    str%?\\t%1, %0\\t%@ float"
 [(set_attr "length" "4,4,4,4,8,8,4,4,4")
  (set_attr "type"
-	 "ffarith,ffarith,f_load,f_store,r_mem_f,f_mem_r,*,load,store1")])
+	 "ffarith,ffarith,f_load,f_store,r_mem_f,f_mem_r,*,load,store1")
+ (set_attr "pool_range" "*,*,1024,*,*,*,*,4096,*")])
 
 ;; Exactly the same as above, except that all `f' cases are deleted.
 ;; This is necessary to prevent reload from ever trying to use a `f' reg
@@ -3228,7 +3249,8 @@
    ldr%?\\t%0, %1\\t%@ float
    str%?\\t%1, %0\\t%@ float"
 [(set_attr "length" "4,4,4")
- (set_attr "type" "*,load,store1")])
+ (set_attr "type" "*,load,store1")
+ (set_attr "pool_range" "*,4096,*")])
 
 (define_expand "movdf"
   [(set (match_operand:DF 0 "general_operand" "")
@@ -3306,7 +3328,8 @@
 "
 [(set_attr "length" "4,4,8,8,8,4,4,4,4,8,8")
  (set_attr "type"
-"load,store2,*,store2,load,ffarith,ffarith,f_load,f_store,r_mem_f,f_mem_r")])
+"load,store2,*,store2,load,ffarith,ffarith,f_load,f_store,r_mem_f,f_mem_r")
+ (set_attr "pool_range" "*,*,*,*,252,*,*,1024,*,*,*")])
 
 ;; Software floating point version.  This is essentially the same as movdi.
 ;; Do not use `f' as a constraint to prevent reload from ever trying to use
@@ -3318,7 +3341,8 @@
   "TARGET_SOFT_FLOAT"
   "* return output_move_double (operands);"
 [(set_attr "length" "8,8,8")
- (set_attr "type" "*,load,store2")])
+ (set_attr "type" "*,load,store2")
+ (set_attr "pool_range" "252")])
 
 (define_expand "movxf"
   [(set (match_operand:XF 0 "general_operand" "")
@@ -3347,7 +3371,8 @@
     }
 "
 [(set_attr "length" "4,4,4,4,8,8,12")
- (set_attr "type" "ffarith,ffarith,f_load,f_store,r_mem_f,f_mem_r,*")])
+ (set_attr "type" "ffarith,ffarith,f_load,f_store,r_mem_f,f_mem_r,*")
+ (set_attr "pool_range" "*,*,1024,*,*,*,*")])
 
 
 ;; load- and store-multiple insns
@@ -6096,6 +6121,27 @@
   arm_expand_prologue ();
   DONE;
 ")
+
+(define_expand "epilogue"
+  [(unspec_volatile [(return)] 6)]
+  ""
+  "
+  if (USE_RETURN_INSN (FALSE))
+    {
+      emit_jump_insn (gen_return ());
+      DONE;
+    }
+")
+
+(define_insn "*epilogue_insn"
+  [(unspec_volatile [(return)] 6)]
+  ""
+  "*
+  return arm_output_epilogue ();
+"
+;; Length is absolute worst case
+[(set_attr "length" "44")
+ (set_attr "type" "block")])
 
 ;; This split is only used during output to reduce the number of patterns
 ;; that need assembler instructions adding to them.  We allowed the setting
