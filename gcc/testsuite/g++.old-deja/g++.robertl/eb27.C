@@ -3,7 +3,10 @@
 */
 /* (w) 4.9.97 by Kurt Garloff <K.Garloff@ping.de> */
 // Special g++ Options:
-// crash test - XFAIL *-*-*
+// crash test - XCRASH *-*-*
+// 8/28/1998 - This dies in add_conversions from dfs_walk, null CLASSTYPE_METHOD_VEC
+// for the test<T> record_type.  This is marked as an expected failure for now,
+// until we actually fix it.
 
 #include <iostream.h>
 
