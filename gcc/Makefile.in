@@ -431,7 +431,7 @@ all: all.indirect
 
 ####build overrides
 @build_overrides@
-
+#
 # Now figure out from those variables how to compile and link.
 
 all.indirect: $(ALL)
@@ -488,7 +488,7 @@ INCLUDES = -I. -I$(srcdir) -I$(srcdir)/config
 # This tells GNU make version 3 not to export all the variables
 # defined in this file into the environment.
 .NOEXPORT:
-
+#
 # Support for additional languages (other than c and objc).
 # ??? objc can be supported this way too (leave for later).
 
@@ -529,7 +529,7 @@ FLAGS_TO_PASS = \
 	"tooldir=$(tooldir)" \
 	"bindir=$(bindir)" \
 	"libsubdir=$(libsubdir)"
-
+#
 # Lists of files for various purposes.
 
 # Language-specific object files for C.
@@ -624,7 +624,7 @@ BYTECODE_H = bytecode.h bc-emit.h bc-optab.h
 
 # "t" or nothing, for building multilibbed versions of, say, crtbegin.o.
 T =
-
+#
 # Language makefile fragments.
 
 # The following targets define the interface between us and the languages.
@@ -648,7 +648,7 @@ T =
 @language_fragments@
 
 # End of language makefile fragments.
-
+#
 # Avoid a lot of time thinking about remaking Makefile.in and *.def.
 .SUFFIXES: .in .def
 
@@ -779,7 +779,7 @@ xlimits.h: glimits.h limitx.h limity.h
 	  cat $(srcdir)/glimits.h > tmp-xlimits.h; \
 	fi
 	mv tmp-xlimits.h xlimits.h
-
+#
 # Build libgcc.a.
 # This is done in two parts because some functions, in libgcc1.c,
 # must be compiled with something other than GCC,
@@ -1136,7 +1136,7 @@ stamp-crt0:	$(CRT0_S) $(MCRT0_S) $(GCC_PASSES) $(CONFIG_H)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(CRT0STUFF_T_CFLAGS) \
 	  -o mcrt0.o -c $(MCRT0_S)
 	touch stamp-crt0
-
+#
 # Compiling object files from source files.
 
 # Note that dependencies on obstack.h are not written
@@ -1384,7 +1384,7 @@ alloca.o:	alloca.c
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(ALLOCA_FLAGS) \
 	  -c `echo $(srcdir)/alloca.c | sed 's,^\./,,'`
 	$(ALLOCA_FINISH)
-
+#
 # Generate header and source files from the machine description, 
 # and compile them.
 
@@ -1509,7 +1509,7 @@ stamp-output : $(md_file) genoutput $(srcdir)/move-if-change
 	./genoutput $(md_file) > tmp-output.c
 	$(srcdir)/move-if-change tmp-output.c insn-output.c
 	touch stamp-output
-
+#
 # Compile the programs that generate insn-* from the machine description.
 # They are compiled with $(HOST_CC), and associated libraries,
 # since they need to run on this machine
@@ -1602,7 +1602,7 @@ genoutput : genoutput.o $(HOST_RTL) $(HOST_LIBDEPS)
 
 genoutput.o : genoutput.c $(RTL_H) $(build_xm_file)
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genoutput.c
-
+#
 # Compile the libraries to be used by gen*.
 # If we are not cross-building, gen* use the same .o's that cc1 will use,
 # and HOST_PREFIX_1 is `foobar', just to ensure these rules don't conflict
@@ -1641,7 +1641,7 @@ $(HOST_PREFIX_1)malloc.o: malloc.c
 # that does not need to compile alloca, malloc or whatever.
 $(HOST_PREFIX_1): 
 	touch $(HOST_PREFIX_1)
-
+#
 # Remake bytecode files.
 BI_OBJ=bi-parser.o bi-lexer.o bi-reverse.o
 
@@ -1710,7 +1710,7 @@ bytecode.distclean bytecode.clean:	bytecode.mostlyclean
 bytecode.maintainer-clean: bytecode.clean
 	-rm -f bi-parser.c bi-parser.h
 
-
+#
 # Remake cpp and protoize.
 
 # Making the preprocessor
@@ -1846,7 +1846,7 @@ gcov.o: gcov.c gcov-io.h
 
 gcov: gcov.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) gcov.o $(LIBS) -o $@
-
+#
 # Build the include directory.  The stamp files are stmp-* rather than
 # stamp-* so that mostlyclean does not force the include directory to
 # be rebuilt.
@@ -1984,7 +1984,7 @@ stmp-fixproto: fixhdr.ready fixproto stmp-headers
 	  touch include/fixed; \
 	fi
 	touch stmp-fixproto
-
+#
 # Remake the info files.
 
 doc: info
@@ -2011,7 +2011,7 @@ $(srcdir)/cpp.dvi: cpp.texi
 $(srcdir)/INSTALL: install1.texi install.texi
 	$(MAKEINFO) -D INSTALLONLY --no-header --no-split \
 	  `echo $(srcdir)/install1.texi | sed 's,^\./,,'`
-
+#
 # Deletion of files made during compilation.
 # There are four levels of this:
 #   `mostlyclean', `clean', `distclean' and `maintainer-clean'.
@@ -2139,7 +2139,7 @@ maintainer-clean:
 	-rm -f cexp.c cexp.output TAGS 
 	-rm -f cpp.info* cpp.??s cpp.*aux
 	-rm -f gcc.info* gcc.??s gcc.*aux
-
+#
 # Entry points `install' and `uninstall'.
 # Also use `install-collect2' to install collect2 when the config files don't.
 
@@ -2396,7 +2396,7 @@ uninstall: lang.uninstall
 	-rm -rf $(mandir)/cccp$(manext)
 	-rm -rf $(mandir)/protoize$(manext)
 	-rm -rf $(mandir)/unprotoize$(manext)
-
+#
 # These exist for maintenance purposes.
 
 # Update the tags table.
