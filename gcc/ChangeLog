@@ -1,3 +1,7 @@
+2005-01-21  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-cfg.c: Fix comment typos.
+
 2005-01-21  J"orn Rennecke <joern.rennecke@st.com>
 
 	* passes.c (rest_of_handle_flow2): Close / open the flow2 dump file
