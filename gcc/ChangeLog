@@ -1,3 +1,8 @@
+2002-11-19  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/contrib.texi (Contributors): Add self as second contact in
+	addition to Jeff Law.
+
 2002-11-19  Andreas Jaeger  <aj@suse.de>
 
 	* tree-inline.c: Move prototpyes of find_alloca_call_1 and
