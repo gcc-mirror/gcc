@@ -162,7 +162,8 @@ typedef struct rtx_def
   unsigned int used : 1;
   /* Nonzero if this rtx came from procedure integration.
      In a REG, nonzero means this reg refers to the return value
-     of the current function.  */
+     of the current function.
+     1 in a SYMBOL_REF if the symbol is weak.  */
   unsigned integrated : 1;
   /* 1 in an INSN or a SET if this rtx is related to the call frame,
      either changing how we compute the frame address or saving and
@@ -926,6 +927,9 @@ extern const char * const note_insn_name[NOTE_INSN_MAX - NOTE_INSN_BIAS];
 
 /* 1 means a SYMBOL_REF has been the library function in emit_library_call.  */
 #define SYMBOL_REF_USED(RTX) ((RTX)->used)
+
+/* 1 means a SYMBOL_REF is weak.  */
+#define SYMBOL_REF_WEAK(RTX) ((RTX)->integrated)
 
 /* Define a macro to look for REG_INC notes,
    but save time on machines where they never exist.  */

@@ -208,11 +208,9 @@ rtx_addr_can_trap_p (x)
   switch (code)
     {
     case SYMBOL_REF:
+      return SYMBOL_REF_WEAK (x);
+
     case LABEL_REF:
-      /* SYMBOL_REF is problematic due to the possible presence of
-	 a #pragma weak, but to say that loads from symbols can trap is
-	 *very* costly.  It's not at all clear what's best here.  For
-	 now, we ignore the impact of #pragma weak.  */
       return 0;
 
     case REG:

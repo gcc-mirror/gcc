@@ -496,6 +496,13 @@ once.  Stored in the @code{used} field.
 In a @code{symbol_ref}, this is used as a flag for machine-specific purposes.
 Stored in the @code{volatil} field and printed as @samp{/v}.
 
+@findex SYMBOL_REF_WEAK
+@cindex @code{symbol_ref} and @samp{/i}
+@cindex @code{integrated}, in @code{symbol_ref}
+@item SYMBOL_REF_WEAK (@var{x})
+In a @code{symbol_ref}, indicates that @var{x} has been declared weak.
+Stored in the @code{integrated} field and printed as @samp{/i}.
+
 @findex LABEL_OUTSIDE_LOOP_P
 @cindex @code{label_ref} and @samp{/s}
 @cindex @code{in_struct}, in @code{label_ref}

@@ -1,3 +1,11 @@
+2001-05-13  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* rtl.h (SYMBOL_REF_WEAK): New macro.
+	* rtlanal.h (rtx_addr_can_trap): Use it, a weak SYMBOL_REF can trap.
+	* varasm.c (make_decl_rtl): Mark SYMBOL_REF weak if necessary.
+	* rtl.texi (SYMBOL_REF_WEAK): Document it.
+	* gcc.texi: Remove wrong description.
+
 2001-05-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* stringpool.c (xxx, yyy): Remove.

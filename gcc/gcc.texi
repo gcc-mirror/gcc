@@ -2004,13 +2004,6 @@ clutter the program with a cast to @code{void} whenever the value isn't
 useful.
 
 @item
-Assuming (for optimization) that the address of an external symbol is
-never zero.
-
-This assumption is false on certain systems when @samp{#pragma weak} is
-used.
-
-@item
 Making @samp{-fshort-enums} the default.
 
 This would cause storage layout to be incompatible with most other C
