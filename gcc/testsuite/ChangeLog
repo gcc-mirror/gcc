@@ -1,3 +1,7 @@
+Fri Jun  9 22:46:34 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/compile/20000609-1.c: New test.
+
 Fri Jun  9 21:54:28 2000  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* gcc.dg/20000609-1.c: New test.
