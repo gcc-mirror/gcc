@@ -1785,6 +1785,7 @@ extern char *output_floatsidf2 ();
 extern char *output_mul_insn ();
 extern char *output_div_insn ();
 extern char *output_mod_insn ();
+extern char *singlemove_string ();
 extern void output_arg_descriptor ();
 extern void output_global_address ();
 extern struct rtx_def *legitimize_pic_address ();
