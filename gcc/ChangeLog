@@ -1,3 +1,12 @@
+2000-04-03  Neil Booth  <NeilB@earthling.net>
+
+	* cppexp.c: wrap long lines.  New macros CPP_ICE, SYNTAX_ERROR
+	and SYNTAX_ERROR2. Replace `' in messages with ''.
+	(op_to_str): Make re-entrant.
+	(_cpp_parse_expr): Implement new error macros. Use | rather
+	than || to logically or 2 boolean integers.  Simply expression
+	checking we have a left operand iff needed.
+
 2000-04-03  Nick Clifton  <nickc@cygnus.com>
 
 	* Makefile.in (diagnostic.o): Depend upon diagnostic.c
