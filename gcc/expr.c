@@ -4555,11 +4555,13 @@ expand_expr (exp, target, tmode, modifier)
 		&& AGGREGATE_TYPE_P (TREE_TYPE (exp2))))
 	  MEM_IN_STRUCT_P (temp) = 1;
 	MEM_VOLATILE_P (temp) = TREE_THIS_VOLATILE (exp) | flag_volatile;
-#if 0 /* It is incorrect to set RTX_UNCHANGING_P here, because the fact that
-	 a location is accessed through a pointer to const does not mean
-	 that the value there can never change.  */
-	RTX_UNCHANGING_P (temp) = TREE_READONLY (exp);
-#endif
+
+	/* It is incorrect to set RTX_UNCHANGING_P from TREE_READONLY
+	   here, because, in C and C++, the fact that a location is accessed
+	   through a pointer to const does not mean that the value there can
+	   never change.  Languages where it can never change should
+	   also set TREE_STATIC.  */
+	RTX_UNCHANGING_P (temp) = TREE_READONLY (exp) | TREE_STATIC (exp);
 	return temp;
       }
 
