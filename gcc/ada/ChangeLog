@@ -1,3 +1,296 @@
+2005-03-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_res.adb (Resolve_Real_Literal): Generate warning if static
+	fixed-point expression has value that is not a multiple of the Small
+	value.
+
+	* opt.ads (Warn_On_Bad_Fixed_Value): New flag
+
+	* s-taprop-tru64.adb (RT_Resolution): Return an integer number of
+	nanoseconds.
+
+	* ug_words: Add entry for [NO_]BAD_FIXED_VALUES for -gnatwb/-gnatwB
+
+2005-03-29  Vincent Celier  <celier@adacore.com>
+
+	* mlib-tgt-vms-ia64.adb, mlib-tgt-vms-alpha.adb
+	(Build_Dynamic_Library.Version_String): Return the empty string when
+	Lib_Version is empty or when the symbol policy is not Autonomous.
+
+	* symbols-vms-alpha.adb (Finalize): For symbol policy Compliant, when
+	a symbol is not in the reference symbol file, increase the Major ID
+	and set the Minor ID to 0.
+	Use gsmatch=lequal instead of gsmatch=equal
+
+2005-03-29  Doug Rupp  <rupp@adacore.com>
+
+	* adaint.c (__gnat_to_canonical_file_spec [VMS]): Check for logical
+	name and translate.
+
+2005-03-29  Javier Miranda  <miranda@adacore.com>
+
+	* a-tags.ads, a-tags.adb (Get_TSD): Subprogram removed.
+	(Inherit_DT): The first formal has been redefined as a Tag.
+	This allows us the removal of the subprogram Get_TSD.
+	(TSD): Replace the call to Get_TSD by the actual code.
+
+	* exp_disp.ads, exp_disp.adb: Remove support to call Get_TSD.
+	(Make_DT): Upgrade the call to Inherit_TSD according to the
+	new interface: the first formal is now a Tag.
+
+	* i-cpp.ads, i-cpp.adb (CPP_Inherit_DT): The first formal has been
+	redefined as a Tag.
+	This change allows us to remove the subprogram Get_TSD.
+	(CPP_Get_TSD): Subprogram removed.
+	(TSD): Replace the call to CPP_Get_TSD by the actual code.
+
+	* rtsfind.ads: Remove support to call the run-time
+	subprogram Get_TSD
+
+2005-03-29  Robert Dewar  <dewar@adacore.com>
+
+	* errutil.adb, errout.adb: 
+	Minor comment updates on Line_Terminator references
+
+	* par-ch10.adb: Add ??? comment about line terminator
+
+	* styleg.adb (Check_Line_Terminator): Add check for new switch -gnatyd
+	(check dos line terminator).
+	(Check_Line_Max_Length): New procedure, split off from the existing
+	Check_Line_Terminator routine. Separating this out allows -gnatyf to
+	be properly recognized.
+
+	* styleg.adb: Add ??? comment for line terminator reference
+
+	* scng.adb (Check_End_Of_Line): Fix bug of -gnatyf being ignored
+	(Check_End_Of_Line): Add -gnatyd handling (check dos line terminators)
+
+	* styleg.ads (Check_Line_Terminator): Add check for new switch -gnatyd
+	(check dos line terminator).
+	(Check_Line_Max_Length): New procedure, split off from the existing
+	Check_Line_Terminator routine. Separating this out allows -gnatyf to
+	be properly recognized.
+
+	* stylesw.ads, stylesw.adb: 
+	Add handling for new -gnatyd switch (check dos line terminator)
+
+	* switch-c.adb: Recognize new -gnatyd switch (check dos line terminator)
+	Recognize -gnatwb/-gnatwB switches
+	Include Warn_On_Bad_Fixed_Value for -gnatg
+
+	* usage.adb: 
+	Add line for new -gnatyd switch (check dos line terminator)
+
+	* usage.adb: Add lines for -gnatwb/-gnatwB
+
+	* vms_data.ads: Add entry for NOCRLF (-gnatyd)
+
+	* vms_data.ads: [NO_]BAD_FIXED_VALUES synonym for -gnatwb/-gnatwB
+
+	* gnat_ugn.texi: Fix overlong lines
+	Document new -gnatyd switch
+	Document new -gnatwb/-gnatwB switches
+
+2005-03-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Has_Unconstrained_UU_Component): Use the base type in
+	order to retrieve the component list of the type, before examining
+	individual components.
+
+	* sem_type.adb (Covers): Types are compatible if one is the base type
+	of the other, even though their base types might differ when private
+	views are involved.
+
+2005-03-29  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_dist.adb (Add_RAST_Features, PolyORB version): Set the From_Any,
+	To_Any and TypeCode TSSs on RAS types directly using Set_TSS, instead
+	of using Set_Renaming_TSS. This ensures that the TSS bodies are not
+	analyzed if expansion is disabled (which could otherwise cause spurious
+	error messages if expansion has been disabled due to previous
+	(unrelated) errors).
+
+	* sem_prag.adb (Analyze_Pragma, case Asynchronous): If RAS expansion
+	is disabled, the entity denoted by the argument is the access type
+	itself, not an underlying record type, so there is no need to go back
+	to the Corresponding_Remote_Type.
+
+2005-03-29  Gary Dismukes  <dismukes@adacore.com>
+	    Robert Dewar  <dewar@adacore.com>
+
+	* exp_intr.adb (Expand_Dispatching_Constructor_Call): New procedure to
+	expand a call to an instance of
+	Ada.Tags.Generic_Dispatching_Constructor into a dispatching call to the
+	Constructor actual of the instance. A class-wide membership
+	check is also generated, to ensure that the tag passed to the instance
+	denotes a type in the class.
+	(Expand_Intrinsic_Call): Call Expand_Dispatching_Constructor in the case
+	of Name_Generic_Dispatching_Constructor.
+
+	* Makefile.rtl: Add a-tgdico.ads to the list of library units (new Ada
+	05 unit for AI-260-02).
+
+	* a-tgdico.ads: New file.
+
+	* impunit.adb (Non_Imp_File_Names_05): Add entry "a-tgdico" for new
+	predefined Ada 05 generic unit Ada.Tags.Generic_Dispatching_Constructor.
+
+	* snames.ads, snames.adb (Preset_Names): Add entry for
+	Generic_Dispatching_Constructor.
+
+	PR ada/20300
+
+	* sem_ch8.adb (Find_Direct_Name): Go to root type for check of
+	character type cases.
+	(Analyze_Subprogram_Renaming): Add special handling for
+	the case of renaming of stream attributes when the renaming denotes a
+	generic formal subprogram association for an abstract formal subprogram.
+	Check that the attribute is a primitive stream attribute (and not
+	a class-wide stream attribute) and then rewrite the attribute name
+	as the name of the appropriate compiler-generated stream primitive.
+
+2005-03-29  Robert Dewar  <dewar@adacore.com>
+
+	* exp_util.adb (Remove_Side_Effects): Properly propagate arguments to
+	recursive calls.
+	(Is_Possibly_Unaligned_Object): Correct typo that
+	resulted in inaccurate result for unaligned scalars within records.
+
+2005-03-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Freeze_Record_Type): If the type of the component is an
+	itype whose parent is controlled and not yet frozen, do not create a
+	freeze node for the itype if expansion is disabled.
+
+2005-03-29  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Gnatmake): Don't fail if the main project file is declared
+	as having no Ada sources. Do not display message "no sources to
+	compile" in quiet output.
+
+2005-03-29  Doug Rupp  <rupp@adacore.com>
+
+	* Makefile.in [VMS] (EXTRA_GNATTOOLS): Add vms_help and gnat.hlp as
+	extra tools.
+
+2005-03-29  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch12.adb (P_Generic): Give better msg for illegal private generic
+	child.
+
+2005-03-29  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch3.adb (P_Type_Declaration): Fix bad error recovery after
+	missing TYPE Improve the error message generated when compiling a
+	limited interface in Ada83 or Ada95 mode.
+
+2005-03-29  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch4.adb (P_Name): When a bad attribute is returned, return error,
+	rather than proceed ahead using a junk attribute name.
+
+2005-03-29  Vincent Celier  <celier@adacore.com>
+
+	* prj.ads, prj.adb: (Project_Data): Add new component Display_Name
+
+	* prj-part.adb (Parse_Single_Project): Set the location of a project
+	on its defining identifier, rather than on the reserved word "project".
+
+	* prj-proc.adb (Expression): Adapt to the fact that default of external
+	references may be string expressions, not always literal strings.
+	(Recursive_Process): Set Display_Name equal to Name
+	when Location is No_Location, that is when there is no actual file.
+	Get the Display_Name of the project from the source, when it is not a
+	virtual project.
+	(Process): Use the Display_Name in error messages
+
+	* prj-strt.adb (External_Reference): Allow default to be string
+	expressions, not only literal strings.
+
+2005-03-29  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Check_Stand_Alone_Library): Do not forbid the symbol
+	file and the reference symbol file to be the same file.
+
+2005-03-29  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_cat.adb (Validate_Remote_Types_Type_Conversion): Perform check to
+	forbid conversion of a local access-to-subprogram type to a remote one.
+
+	* sem_util.adb (Wrong_Type): For a record type that is the expanded
+	equivalent type for a remote access-to-subprogram type, go back to the
+	original RAS entity when displaying an error message, so the casing is
+	the original source casing.
+
+2005-03-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch11.adb (Analyze_Raise_Statement): Change message for warning
+	on param update.
+
+2005-03-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Selected_Component): Do not generate an actual
+	subtype if code is being pre-analyzed, to prevent un-expanded
+	references to protected formals, among others.
+	(Analyze_Explicit_Dereference): If the overloaded prefix includes some
+	interpretation that can be a call, include the result of the call as a
+	possible interpretation of the dereference.
+
+	* sem_ch5.adb (Process_Bounds): Determine type of range by
+	pre-analyzing a copy of the original range, and then analyze the range
+	with the expected type.
+
+	* sem_res.adb (Check_Parameterless_Call): For an explicit dereference
+	with an overloaded prefix where not all interpretations yield an
+	access to subprogram, do not rewrite node as a call.
+	(Resolve_Explicit_Dereference): Recognize the previous case and rewrite
+	the node as a call once the context identifies the interpretation of
+	the prefix whose call yields the context type.
+	(Valid_Conversion): For the case of a conversion between
+	local access-to-subprogram types, check subtype conformance using
+	Check_Subtype_Conformant instead of Subtype_Conformant, to have a more
+	detailed error message.
+
+2005-03-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Set_Formal_Mode): If the subtype has a non_null
+	indicator, indicate that the formal can never be null.
+	(Process_Formals): If a formal has a non_null indicator, insert the
+	resulting subtype immediately before the enclosing subprogram decl,
+	and not at the beginning of the corresponding declarative part, to
+	prevent access before elaboration (Ada2005).
+
+2005-03-29  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	PR ada/19956
+	* utils.c (finish_record_type): Use variable_size when setting sizes.
+
+2005-03-29  Robert Dewar  <dewar@adacore.com>
+
+	* xtreeprs.adb, xnmake.adb: Use Stream_IO instead of Text_IO to
+	guarantee Unix style line terminators for the output files, even when
+	running on windows.
+
+2005-03-29  Robert Dewar  <dewar@adacore.com>
+
+	* a-direct.ads, a-direct.adb (Start_Search): Free allocated search
+	buffer if an exception is raised.
+
+2005-03-29  Ed Falis  <falis@adacore.com>
+
+	* cio.c: Undefine putchar and getchar for VTHREADS: incompatible with
+	VxWorks 653 1.4
+
+2005-03-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.ads: Minor reformatting
+	* gnat_rm.texi: Minor editing.
+
+2005-03-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* decl.c (gnat_to_gnu_entity) <E_Variable>: Rework comment.
+	* trans.c (tree_transform) <N_Identifier>: Use correct predicates.
+
 2005-03-24  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
 
 	* adaint.c (__gnat_portable_spawn): Adjust cast.
