@@ -249,6 +249,8 @@ extern tree method_type_node;
 extern tree method_ptr_type_node;
 #define nativecode_ptr_type_node ptr_type_node
 
+extern tree end_params_node;
+
 /* References to internal libjava functions we use. */
 extern tree alloc_object_node;
 extern tree soft_instanceof_node;
