@@ -21,6 +21,7 @@
 	expand_end_bindings for a scope with SCOPE_NO_CLEANUPS_P set.
 	* tree.c (copy_tree_r): Clear SCOPE_STMT_BLOCK rather than setting
 	SCOPE_NULLIFIED_P.
+	* Makefile.in (semantics.o): Depend on RTL_H.
 	
 	* decl2.c (pending_statics_used): Make it a macro.
 	(saved_inlines_used): Likewise.
