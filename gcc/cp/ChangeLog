@@ -1,3 +1,35 @@
+1999-02-16  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.h (tsubst): Change prototype.
+	(tsubst_expr): Likewise.
+	(tsubst_copy): Likewise.
+	(type_unification): Remove prototype.
+	* call.c (convert_default_arg): Adjust call to tsubst_expr.
+	* class.c (resolve_address_of_overloaded_function): Just use
+	fn_type_unification. 
+	* decl.c (grokdeclarator): Adjust call to tsubst.
+	* method.c (build_template_parm_names): Likewise.
+	* pt.c (GTB_VIA_VIRTUAL): New macro.
+	(GTB_IGNORE_TYPE): Likewise.
+	(resolve_overloaded_unification): Add `complain' parameter.
+	(try_one_overload): Likewise.
+	(tsubst_template_arg_vector): Likewise.
+	(tsubst_template_parms): Likewise.
+	(tsubst_aggr_type): Likewise.
+	(tsubst_arg_types): Likewise.
+	(tsubst_call_declarator_parms): Likewise.
+	(unify): Remove explicit_mask.
+	(type_unification_real): Likewise.
+	(get_template_base_recursive): Likewise.
+	(coerce_template_template_parms): Provide prototype.
+	(tsubst_function_type): Likewise.
+	(try_class_unification): New function.
+	All callers changed to use new complain parameter.
+	(get_template_base): Use try_class_unification.
+	(unify): Adjust handling of classes derived from template types.
+	(fn_type_unification): Substitute explicit arguments before
+	unification.
+	
 1999-02-16  Kriang Lerdsuwanakij <lerdsuwa@scf-fs.usc.edu>
 
 	* decl.c (pushdecl): Remove dead code.
