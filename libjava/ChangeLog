@@ -1,5 +1,14 @@
 2004-10-18  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/Inet4Address.java: Merged file header and javadocs.
+	* java/net/Inet6Address.java: Likewise.
+	* java/net/InetAddress.java
+	(getCanonicalHostName): Create Inet4Address object instead of
+	InetAddress and add comment regarding IPv6.
+	(toString): Simplified.
+
+2004-10-18  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/net/protocol/http/Connection.java,
 	java/nio/MappedByteBufferImpl.java,
 	java/text/RuleBasedCollator.java,

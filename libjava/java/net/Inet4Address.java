@@ -1,5 +1,5 @@
-/* Inet4Address.java
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+/* Inet4Address.java --
+   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,23 +35,20 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.net;
 
 import java.io.ObjectStreamException;
 import java.util.Arrays;
-
-
-/**
- * @author Michael Koch
- * @date August 3, 2002.
- */
 
 /*
  * Written using on-line Java Platform 1.4 API Specification and
  * RFC 1884 (http://www.ietf.org/rfc/rfc1884.txt),
  * RFC 1918 (http://www.ietf.org/rfc/rfc1918.txt),
  * RFC 2365 (http://www.ietf.org/rfc/rfc2365.txt)
- * Status: Believed complete and correct.
+ *
+ * @author Michael Koch
+ * @status Believed complete and correct.
  */
 public final class Inet4Address extends InetAddress
 {
@@ -67,12 +64,14 @@ public final class Inet4Address extends InetAddress
   {
     return new InetAddress(addr, hostName);
   }
-
+  
   /**
-   * Creates a Inet4Address
+   * Initializes this object's addr instance variable from the passed in
+   * byte array.  Note that this constructor is protected and is called
+   * only by static methods in this class.
    *
-   * @param addr The IP address
-   * @param host The Hostname
+   * @param addr The IP number of this address as an array of bytes
+   * @param hostname The hostname of this IP address.
    */
   Inet4Address(byte[] addr, String host)
   {
