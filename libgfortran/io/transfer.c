@@ -935,6 +935,12 @@ data_transfer_init (int read_flag)
   current_unit = get_unit (read_flag);
   if (current_unit == NULL)
   {  /* Open the unit with some default flags.  */
+     if (ioparm.unit < 0)
+     {
+       generate_error (ERROR_BAD_OPTION, "Bad unit number in OPEN statement");
+       library_end ();
+       return;
+     }
      memset (&u_flags, '\0', sizeof (u_flags));
      u_flags.access = ACCESS_SEQUENTIAL;
      u_flags.action = ACTION_READWRITE;
