@@ -5,7 +5,7 @@ target=go32
 /^xmake_file=/ d
 /^tmake_file=/ d
 /^version=/ c\
-version=2.6.0
+version=2.6.1
 s/CC = cc/CC = gcc/
 s/:\$/: \$/g
 s/^	\ *\.\//	go32 /

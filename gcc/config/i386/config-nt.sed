@@ -5,7 +5,7 @@ target=winnt3.1
 /^xmake_file=/ d
 /^tmake_file=/ d
 /^version=/ c\
-version=2.6.0
+version=2.6.1
 s/CC = cc/CC = cl/
 s/CFLAGS = -g/CFLAGS =/
 s/:\$/: \$/g
