@@ -135,6 +135,14 @@ default_eh_return_filter_mode (void)
   return word_mode;
 }
 
+/* The default implementation of TARGET_SHIFT_TRUNCATION_MASK.  */
+
+unsigned HOST_WIDE_INT
+default_shift_truncation_mask (enum machine_mode mode)
+{
+  return SHIFT_COUNT_TRUNCATED ? GET_MODE_BITSIZE (mode) - 1 : 0;
+}
+
 /* Generic hook that takes a CUMULATIVE_ARGS pointer and returns true.  */
 
 bool

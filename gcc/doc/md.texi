@@ -2884,13 +2884,16 @@ quotient or remainder and generate the appropriate instruction.
 @item @samp{udivmod@var{m}4}
 Similar, but does unsigned division.
 
+@anchor{shift patterns}
 @cindex @code{ashl@var{m}3} instruction pattern
 @item @samp{ashl@var{m}3}
 Arithmetic-shift operand 1 left by a number of bits specified by operand
 2, and store the result in operand 0.  Here @var{m} is the mode of
 operand 0 and operand 1; operand 2's mode is specified by the
 instruction pattern, and the compiler will convert the operand to that
-mode before generating the instruction.
+mode before generating the instruction.  The meaning of out-of-range shift
+counts can optionally be specified by @code{TARGET_SHIFT_TRUNCATION_MASK}.
+@xref{TARGET_SHIFT_TRUNCATION_MASK}.
 
 @cindex @code{ashr@var{m}3} instruction pattern
 @cindex @code{lshr@var{m}3} instruction pattern

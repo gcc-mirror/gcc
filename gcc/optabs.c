@@ -312,7 +312,356 @@ optab_for_tree_code (enum tree_code code, tree type)
       return NULL;
     }
 }
+
+/* Like expand_binop, but return a constant rtx if the result can be
+   calculated at compile time.  The arguments and return value are
+   otherwise the same as for expand_binop.  */
 
+static rtx
+simplify_expand_binop (enum machine_mode mode, optab binoptab,
+		       rtx op0, rtx op1, rtx target, int unsignedp,
+		       enum optab_methods methods)
+{
+  if (CONSTANT_P (op0) && CONSTANT_P (op1))
+    return simplify_gen_binary (binoptab->code, mode, op0, op1);
+  else
+    return expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods);
+}
+
+/* Like simplify_expand_binop, but always put the result in TARGET.
+   Return true if the expansion succeeded.  */
+
+static bool
+force_expand_binop (enum machine_mode mode, optab binoptab,
+		    rtx op0, rtx op1, rtx target, int unsignedp,
+		    enum optab_methods methods)
+{
+  rtx x = simplify_expand_binop (mode, binoptab, op0, op1,
+				 target, unsignedp, methods);
+  if (x == 0)
+    return false;
+  if (x != target)
+    emit_move_insn (target, x);
+  return true;
+}
+
+/* This subroutine of expand_doubleword_shift handles the cases in which
+   the effective shift value is >= BITS_PER_WORD.  The arguments and return
+   value are the same as for the parent routine, except that SUPERWORD_OP1
+   is the shift count to use when shifting OUTOF_INPUT into INTO_TARGET.
+   INTO_TARGET may be null if the caller has decided to calculate it.  */
+
+static bool
+expand_superword_shift (optab binoptab, rtx outof_input, rtx superword_op1,
+			rtx outof_target, rtx into_target,
+			int unsignedp, enum optab_methods methods)
+{
+  if (into_target != 0)
+    if (!force_expand_binop (word_mode, binoptab, outof_input, superword_op1,
+			     into_target, unsignedp, methods))
+      return false;
+
+  if (outof_target != 0)
+    {
+      /* For a signed right shift, we must fill OUTOF_TARGET with copies
+	 of the sign bit, otherwise we must fill it with zeros.  */
+      if (binoptab != ashr_optab)
+	emit_move_insn (outof_target, CONST0_RTX (word_mode));
+      else
+	if (!force_expand_binop (word_mode, binoptab,
+				 outof_input, GEN_INT (BITS_PER_WORD - 1),
+				 outof_target, unsignedp, methods))
+	  return false;
+    }
+  return true;
+}
+
+/* This subroutine of expand_doubleword_shift handles the cases in which
+   the effective shift value is < BITS_PER_WORD.  The arguments and return
+   value are the same as for the parent routine.  */
+
+static bool
+expand_subword_shift (enum machine_mode op1_mode, optab binoptab,
+		      rtx outof_input, rtx into_input, rtx op1,
+		      rtx outof_target, rtx into_target,
+		      int unsignedp, enum optab_methods methods,
+		      unsigned HOST_WIDE_INT shift_mask)
+{
+  optab reverse_unsigned_shift, unsigned_shift;
+  rtx tmp, carries;
+
+  reverse_unsigned_shift = (binoptab == ashl_optab ? lshr_optab : ashl_optab);
+  unsigned_shift = (binoptab == ashl_optab ? ashl_optab : lshr_optab);
+
+  /* The low OP1 bits of INTO_TARGET come from the high bits of OUTOF_INPUT.
+     We therefore need to shift OUTOF_INPUT by (BITS_PER_WORD - OP1) bits in
+     the opposite direction to BINOPTAB.  */
+  if (CONSTANT_P (op1) || shift_mask >= BITS_PER_WORD)
+    {
+      carries = outof_input;
+      tmp = immed_double_const (BITS_PER_WORD, 0, op1_mode);
+      tmp = simplify_expand_binop (op1_mode, sub_optab, tmp, op1,
+				   0, true, methods);
+    }
+  else
+    {
+      /* We must avoid shifting by BITS_PER_WORD bits since that is either
+	 the same as a zero shift (if shift_mask == BITS_PER_WORD - 1) or
+	 has unknown behaviour.  Do a single shift first, then shift by the
+	 remainder.  It's OK to use ~OP1 as the remainder if shift counts
+	 are truncated to the mode size.  */
+      carries = expand_binop (word_mode, reverse_unsigned_shift,
+			      outof_input, const1_rtx, 0, unsignedp, methods);
+      if (shift_mask == BITS_PER_WORD - 1)
+	{
+	  tmp = immed_double_const (-1, -1, op1_mode);
+	  tmp = simplify_expand_binop (op1_mode, xor_optab, op1, tmp,
+				       0, true, methods);
+	}
+      else
+	{
+	  tmp = immed_double_const (BITS_PER_WORD - 1, 0, op1_mode);
+	  tmp = simplify_expand_binop (op1_mode, sub_optab, tmp, op1,
+				       0, true, methods);
+	}
+    }
+  if (tmp == 0 || carries == 0)
+    return false;
+  carries = expand_binop (word_mode, reverse_unsigned_shift,
+			  carries, tmp, 0, unsignedp, methods);
+  if (carries == 0)
+    return false;
+
+  /* Shift INTO_INPUT logically by OP1.  This is the last use of INTO_INPUT
+     so the result can go directly into INTO_TARGET if convenient.  */
+  tmp = expand_binop (word_mode, unsigned_shift, into_input, op1,
+		      into_target, unsignedp, methods);
+  if (tmp == 0)
+    return false;
+
+  /* Now OR in the bits carried over from OUTOF_INPUT.  */
+  if (!force_expand_binop (word_mode, ior_optab, tmp, carries,
+			   into_target, unsignedp, methods))
+    return false;
+
+  /* Use a standard word_mode shift for the out-of half.  */
+  if (outof_target != 0)
+    if (!force_expand_binop (word_mode, binoptab, outof_input, op1,
+			     outof_target, unsignedp, methods))
+      return false;
+
+  return true;
+}
+
+
+#ifdef HAVE_conditional_move
+/* Try implementing expand_doubleword_shift using conditional moves.
+   The shift is by < BITS_PER_WORD if (CMP_CODE CMP1 CMP2) is true,
+   otherwise it is by >= BITS_PER_WORD.  SUBWORD_OP1 and SUPERWORD_OP1
+   are the shift counts to use in the former and latter case.  All other
+   arguments are the same as the parent routine.  */
+
+static bool
+expand_doubleword_shift_condmove (enum machine_mode op1_mode, optab binoptab,
+				  enum rtx_code cmp_code, rtx cmp1, rtx cmp2,
+				  rtx outof_input, rtx into_input,
+				  rtx subword_op1, rtx superword_op1,
+				  rtx outof_target, rtx into_target,
+				  int unsignedp, enum optab_methods methods,
+				  unsigned HOST_WIDE_INT shift_mask)
+{
+  rtx outof_superword, into_superword;
+
+  /* Put the superword version of the output into OUTOF_SUPERWORD and
+     INTO_SUPERWORD.  */
+  outof_superword = outof_target != 0 ? gen_reg_rtx (word_mode) : 0;
+  if (outof_target != 0 && subword_op1 == superword_op1)
+    {
+      /* The value INTO_TARGET >> SUBWORD_OP1, which we later store in
+	 OUTOF_TARGET, is the same as the value of INTO_SUPERWORD.  */
+      into_superword = outof_target;
+      if (!expand_superword_shift (binoptab, outof_input, superword_op1,
+				   outof_superword, 0, unsignedp, methods))
+	return false;
+    }
+  else
+    {
+      into_superword = gen_reg_rtx (word_mode);
+      if (!expand_superword_shift (binoptab, outof_input, superword_op1,
+				   outof_superword, into_superword,
+				   unsignedp, methods))
+	return false;
+    }
+
+  /* Put the subword version directly in OUTOF_TARGET and INTO_TARGET.  */
+  if (!expand_subword_shift (op1_mode, binoptab,
+			     outof_input, into_input, subword_op1,
+			     outof_target, into_target,
+			     unsignedp, methods, shift_mask))
+    return false;
+
+  /* Select between them.  Do the INTO half first because INTO_SUPERWORD
+     might be the current value of OUTOF_TARGET.  */
+  if (!emit_conditional_move (into_target, cmp_code, cmp1, cmp2, op1_mode,
+			      into_target, into_superword, word_mode, false))
+    return false;
+
+  if (outof_target != 0)
+    if (!emit_conditional_move (outof_target, cmp_code, cmp1, cmp2, op1_mode,
+				outof_target, outof_superword,
+				word_mode, false))
+      return false;
+
+  return true;
+}
+#endif
+
+/* Expand a doubleword shift (ashl, ashr or lshr) using word-mode shifts.
+   OUTOF_INPUT and INTO_INPUT are the two word-sized halves of the first
+   input operand; the shift moves bits in the direction OUTOF_INPUT->
+   INTO_TARGET.  OUTOF_TARGET and INTO_TARGET are the equivalent words
+   of the target.  OP1 is the shift count and OP1_MODE is its mode.
+   If OP1 is constant, it will have been truncated as appropriate
+   and is known to be nonzero.
+
+   If SHIFT_MASK is zero, the result of word shifts is undefined when the
+   shift count is outside the range [0, BITS_PER_WORD).  This routine must
+   avoid generating such shifts for OP1s in the range [0, BITS_PER_WORD * 2).
+
+   If SHIFT_MASK is nonzero, all word-mode shift counts are effectively
+   masked by it and shifts in the range [BITS_PER_WORD, SHIFT_MASK) will
+   fill with zeros or sign bits as appropriate.
+
+   If SHIFT_MASK is BITS_PER_WORD - 1, this routine will synthesise
+   a doubleword shift whose equivalent mask is BITS_PER_WORD * 2 - 1.
+   Doing this preserves semantics required by SHIFT_COUNT_TRUNCATED.
+   In all other cases, shifts by values outside [0, BITS_PER_UNIT * 2)
+   are undefined.
+
+   BINOPTAB, UNSIGNEDP and METHODS are as for expand_binop.  This function
+   may not use INTO_INPUT after modifying INTO_TARGET, and similarly for
+   OUTOF_INPUT and OUTOF_TARGET.  OUTOF_TARGET can be null if the parent
+   function wants to calculate it itself.
+
+   Return true if the shift could be successfully synthesized.  */
+
+static bool
+expand_doubleword_shift (enum machine_mode op1_mode, optab binoptab,
+			 rtx outof_input, rtx into_input, rtx op1,
+			 rtx outof_target, rtx into_target,
+			 int unsignedp, enum optab_methods methods,
+			 unsigned HOST_WIDE_INT shift_mask)
+{
+  rtx superword_op1, tmp, cmp1, cmp2;
+  rtx subword_label, done_label;
+  enum rtx_code cmp_code;
+
+  /* See if word-mode shifts by BITS_PER_WORD...BITS_PER_WORD * 2 - 1 will
+     fill the result with sign or zero bits as appropriate.  If so, the value
+     of OUTOF_TARGET will always be (SHIFT OUTOF_INPUT OP1).   Recursively call
+     this routine to calculate INTO_TARGET (which depends on both OUTOF_INPUT
+     and INTO_INPUT), then emit code to set up OUTOF_TARGET.
+
+     This isn't worthwhile for constant shifts since the optimizers will
+     cope better with in-range shift counts.  */
+  if (shift_mask >= BITS_PER_WORD
+      && outof_target != 0
+      && !CONSTANT_P (op1))
+    {
+      if (!expand_doubleword_shift (op1_mode, binoptab,
+				    outof_input, into_input, op1,
+				    0, into_target,
+				    unsignedp, methods, shift_mask))
+	return false;
+      if (!force_expand_binop (word_mode, binoptab, outof_input, op1,
+			       outof_target, unsignedp, methods))
+	return false;
+      return true;
+    }
+
+  /* Set CMP_CODE, CMP1 and CMP2 so that the rtx (CMP_CODE CMP1 CMP2)
+     is true when the effective shift value is less than BITS_PER_WORD.
+     Set SUPERWORD_OP1 to the shift count that should be used to shift
+     OUTOF_INPUT into INTO_TARGET when the condition is false.  */
+  tmp = immed_double_const (BITS_PER_WORD, 0, op1_mode);
+  if (!CONSTANT_P (op1) && shift_mask == BITS_PER_WORD - 1)
+    {
+      /* Set CMP1 to OP1 & BITS_PER_WORD.  The result is zero iff OP1
+	 is a subword shift count.  */
+      cmp1 = simplify_expand_binop (op1_mode, and_optab, op1, tmp,
+				    0, true, methods);
+      cmp2 = CONST0_RTX (op1_mode);
+      cmp_code = EQ;
+      superword_op1 = op1;
+    }
+  else
+    {
+      /* Set CMP1 to OP1 - BITS_PER_WORD.  */
+      cmp1 = simplify_expand_binop (op1_mode, sub_optab, op1, tmp,
+				    0, true, methods);
+      cmp2 = CONST0_RTX (op1_mode);
+      cmp_code = LT;
+      superword_op1 = cmp1;
+    }
+  if (cmp1 == 0)
+    return false;
+
+  /* If we can compute the condition at compile time, pick the
+     appropriate subroutine.  */
+  tmp = simplify_relational_operation (cmp_code, SImode, op1_mode, cmp1, cmp2);
+  if (tmp != 0 && GET_CODE (tmp) == CONST_INT)
+    {
+      if (tmp == const0_rtx)
+	return expand_superword_shift (binoptab, outof_input, superword_op1,
+				       outof_target, into_target,
+				       unsignedp, methods);
+      else
+	return expand_subword_shift (op1_mode, binoptab,
+				     outof_input, into_input, op1,
+				     outof_target, into_target,
+				     unsignedp, methods, shift_mask);
+    }
+
+#ifdef HAVE_conditional_move
+  /* Try using conditional moves to generate straight-line code.  */
+  {
+    rtx start = get_last_insn ();
+    if (expand_doubleword_shift_condmove (op1_mode, binoptab,
+					  cmp_code, cmp1, cmp2,
+					  outof_input, into_input,
+					  op1, superword_op1,
+					  outof_target, into_target,
+					  unsignedp, methods, shift_mask))
+      return true;
+    delete_insns_since (start);
+  }
+#endif
+
+  /* As a last resort, use branches to select the correct alternative.  */
+  subword_label = gen_label_rtx ();
+  done_label = gen_label_rtx ();
+
+  do_compare_rtx_and_jump (cmp1, cmp2, cmp_code, false, op1_mode,
+			   0, 0, subword_label);
+
+  if (!expand_superword_shift (binoptab, outof_input, superword_op1,
+			       outof_target, into_target,
+			       unsignedp, methods))
+    return false;
+
+  emit_jump_insn (gen_jump (done_label));
+  emit_barrier ();
+  emit_label (subword_label);
+
+  if (!expand_subword_shift (op1_mode, binoptab,
+			     outof_input, into_input, op1,
+			     outof_target, into_target,
+			     unsignedp, methods, shift_mask))
+    return false;
+
+  emit_label (done_label);
+  return true;
+}
 
 /* Wrapper around expand_binop which takes an rtx code to specify
    the operation to perform, not an optab pointer.  All other
@@ -638,118 +987,71 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
   if ((binoptab == lshr_optab || binoptab == ashl_optab
        || binoptab == ashr_optab)
       && class == MODE_INT
-      && GET_CODE (op1) == CONST_INT
+      && (GET_CODE (op1) == CONST_INT || !optimize_size)
       && GET_MODE_SIZE (mode) == 2 * UNITS_PER_WORD
       && binoptab->handlers[(int) word_mode].insn_code != CODE_FOR_nothing
       && ashl_optab->handlers[(int) word_mode].insn_code != CODE_FOR_nothing
       && lshr_optab->handlers[(int) word_mode].insn_code != CODE_FOR_nothing)
     {
-      rtx insns, inter, equiv_value;
-      rtx into_target, outof_target;
-      rtx into_input, outof_input;
-      int shift_count, left_shift, outof_word;
+      unsigned HOST_WIDE_INT shift_mask, double_shift_mask;
+      enum machine_mode op1_mode;
 
-      /* If TARGET is the same as one of the operands, the REG_EQUAL note
-	 won't be accurate, so use a new target.  */
-      if (target == 0 || target == op0 || target == op1)
-	target = gen_reg_rtx (mode);
+      double_shift_mask = targetm.shift_truncation_mask (mode);
+      shift_mask = targetm.shift_truncation_mask (word_mode);
+      op1_mode = GET_MODE (op1) != VOIDmode ? GET_MODE (op1) : word_mode;
 
-      start_sequence ();
+      /* Apply the truncation to constant shifts.  */
+      if (double_shift_mask > 0 && GET_CODE (op1) == CONST_INT)
+	op1 = GEN_INT (INTVAL (op1) & double_shift_mask);
 
-      shift_count = INTVAL (op1);
+      if (op1 == CONST0_RTX (op1_mode))
+	return op0;
 
-      /* OUTOF_* is the word we are shifting bits away from, and
-	 INTO_* is the word that we are shifting bits towards, thus
-	 they differ depending on the direction of the shift and
-	 WORDS_BIG_ENDIAN.  */
-
-      left_shift = binoptab == ashl_optab;
-      outof_word = left_shift ^ ! WORDS_BIG_ENDIAN;
-
-      outof_target = operand_subword (target, outof_word, 1, mode);
-      into_target = operand_subword (target, 1 - outof_word, 1, mode);
-
-      outof_input = operand_subword_force (op0, outof_word, mode);
-      into_input = operand_subword_force (op0, 1 - outof_word, mode);
-
-      if (shift_count >= BITS_PER_WORD)
+      /* Make sure that this is a combination that expand_doubleword_shift
+	 can handle.  See the comments there for details.  */
+      if (double_shift_mask == 0
+	  || (shift_mask == BITS_PER_WORD - 1
+	      && double_shift_mask == BITS_PER_WORD * 2 - 1))
 	{
-	  inter = expand_binop (word_mode, binoptab,
-			       outof_input,
-			       GEN_INT (shift_count - BITS_PER_WORD),
-			       into_target, unsignedp, next_methods);
+	  rtx insns, equiv_value;
+	  rtx into_target, outof_target;
+	  rtx into_input, outof_input;
+	  int left_shift, outof_word;
 
-	  if (inter != 0 && inter != into_target)
-	    emit_move_insn (into_target, inter);
+	  /* If TARGET is the same as one of the operands, the REG_EQUAL note
+	     won't be accurate, so use a new target.  */
+	  if (target == 0 || target == op0 || target == op1)
+	    target = gen_reg_rtx (mode);
 
-	  /* For a signed right shift, we must fill the word we are shifting
-	     out of with copies of the sign bit.  Otherwise it is zeroed.  */
-	  if (inter != 0 && binoptab != ashr_optab)
-	    inter = CONST0_RTX (word_mode);
-	  else if (inter != 0)
-	    inter = expand_binop (word_mode, binoptab,
-				  outof_input,
-				  GEN_INT (BITS_PER_WORD - 1),
-				  outof_target, unsignedp, next_methods);
+	  start_sequence ();
 
-	  if (inter != 0 && inter != outof_target)
-	    emit_move_insn (outof_target, inter);
-	}
-      else
-	{
-	  rtx carries;
-	  optab reverse_unsigned_shift, unsigned_shift;
+	  /* OUTOF_* is the word we are shifting bits away from, and
+	     INTO_* is the word that we are shifting bits towards, thus
+	     they differ depending on the direction of the shift and
+	     WORDS_BIG_ENDIAN.  */
 
-	  /* For a shift of less then BITS_PER_WORD, to compute the carry,
-	     we must do a logical shift in the opposite direction of the
-	     desired shift.  */
+	  left_shift = binoptab == ashl_optab;
+	  outof_word = left_shift ^ ! WORDS_BIG_ENDIAN;
 
-	  reverse_unsigned_shift = (left_shift ? lshr_optab : ashl_optab);
+	  outof_target = operand_subword (target, outof_word, 1, mode);
+	  into_target = operand_subword (target, 1 - outof_word, 1, mode);
 
-	  /* For a shift of less than BITS_PER_WORD, to compute the word
-	     shifted towards, we need to unsigned shift the orig value of
-	     that word.  */
+	  outof_input = operand_subword_force (op0, outof_word, mode);
+	  into_input = operand_subword_force (op0, 1 - outof_word, mode);
 
-	  unsigned_shift = (left_shift ? ashl_optab : lshr_optab);
+	  if (expand_doubleword_shift (op1_mode, binoptab,
+				       outof_input, into_input, op1,
+				       outof_target, into_target,
+				       unsignedp, methods, shift_mask))
+	    {
+	      insns = get_insns ();
+	      end_sequence ();
 
-	  carries = expand_binop (word_mode, reverse_unsigned_shift,
-				  outof_input,
-				  GEN_INT (BITS_PER_WORD - shift_count),
-				  0, unsignedp, next_methods);
-
-	  if (carries == 0)
-	    inter = 0;
-	  else
-	    inter = expand_binop (word_mode, unsigned_shift, into_input,
-				  op1, 0, unsignedp, next_methods);
-
-	  if (inter != 0)
-	    inter = expand_binop (word_mode, ior_optab, carries, inter,
-				  into_target, unsignedp, next_methods);
-
-	  if (inter != 0 && inter != into_target)
-	    emit_move_insn (into_target, inter);
-
-	  if (inter != 0)
-	    inter = expand_binop (word_mode, binoptab, outof_input,
-				  op1, outof_target, unsignedp, next_methods);
-
-	  if (inter != 0 && inter != outof_target)
-	    emit_move_insn (outof_target, inter);
-	}
-
-      insns = get_insns ();
-      end_sequence ();
-
-      if (inter != 0)
-	{
-	  if (binoptab->code != UNKNOWN)
-	    equiv_value = gen_rtx_fmt_ee (binoptab->code, mode, op0, op1);
-	  else
-	    equiv_value = 0;
-
-	  emit_no_conflict_block (insns, target, op0, op1, equiv_value);
-	  return target;
+	      equiv_value = gen_rtx_fmt_ee (binoptab->code, mode, op0, op1);
+	      emit_no_conflict_block (insns, target, op0, op1, equiv_value);
+	      return target;
+	    }
+	  end_sequence ();
 	}
     }
 

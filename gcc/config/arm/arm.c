@@ -175,7 +175,7 @@ static bool arm_cxx_cdtor_returns_this (void);
 static bool arm_cxx_key_method_may_be_inline (void);
 static bool arm_cxx_export_class_data (void);
 static void arm_init_libfuncs (void);
-
+static unsigned HOST_WIDE_INT arm_shift_truncation_mask (enum machine_mode);
 
 /* Initialize the GCC target structure.  */
 #if TARGET_DLLIMPORT_DECL_ATTRIBUTES
@@ -248,6 +248,8 @@ static void arm_init_libfuncs (void);
 #undef  TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST arm_address_cost
 
+#undef TARGET_SHIFT_TRUNCATION_MASK
+#define TARGET_SHIFT_TRUNCATION_MASK arm_shift_truncation_mask
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P arm_vector_mode_supported_p
 
@@ -14333,4 +14335,15 @@ arm_vector_mode_supported_p (enum machine_mode mode)
     return true;
 
   return false;
+}
+
+/* Implement TARGET_SHIFT_TRUNCATION_MASK.  SImode shifts use normal
+   ARM insns and therefore guarantee that the shift count is modulo 256.
+   DImode shifts (those implemented by lib1funcs.asm or by optabs.c)
+   guarantee no particular behavior for out-of-range counts.  */
+
+static unsigned HOST_WIDE_INT
+arm_shift_truncation_mask (enum machine_mode mode)
+{
+  return mode == SImode ? 255 : 0;
 }
