@@ -1046,9 +1046,9 @@ while (0)
    that the MIPS assembler does not choke.  The mips-tfile program
    will correctly put the stab into the object file.  */
 
-#define ASM_STABS_OP	((TARGET_GAS) ? ".stabs" : " #.stabs")
-#define ASM_STABN_OP	((TARGET_GAS) ? ".stabn" : " #.stabn")
-#define ASM_STABD_OP	((TARGET_GAS) ? ".stabd" : " #.stabd")
+#define ASM_STABS_OP	((TARGET_GAS) ? "\t.stabs\t" : " #.stabs\t")
+#define ASM_STABN_OP	((TARGET_GAS) ? "\t.stabn\t" : " #.stabn\t")
+#define ASM_STABD_OP	((TARGET_GAS) ? "\t.stabd\t" : " #.stabd\t")
 
 /* Local compiler-generated symbols must have a prefix that the assembler
    understands.   By default, this is $, although some targets (e.g.,

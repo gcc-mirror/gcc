@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  SNI SINIX version.
-   Copyright (C) 1996, 1997, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Marco Walther (Marco.Walther@mch.sni.de).
 
 This file is part of GNU CC.
@@ -60,7 +60,7 @@ Boston, MA 02111-1307, USA.  */
 #define OBJECT_FORMAT_ELF
 
 #define	TARGET_DEFAULT	MASK_ABICALLS
-#define ABICALLS_ASM_OP ".option pic2"
+#define ABICALLS_ASM_OP "\t.option pic2"
 
 #define MACHINE_TYPE "SNI running SINIX 5.42"
 

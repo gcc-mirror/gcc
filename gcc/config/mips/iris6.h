@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Iris version 6.
-   Copyright (C) 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1997, 1998, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -185,8 +185,8 @@ Boston, MA 02111-1307, USA.  */
 
 /* Define the strings used for the special svr4 .type and .size directives.  */
 
-#define TYPE_ASM_OP	".type"
-#define SIZE_ASM_OP	".size"
+#define TYPE_ASM_OP	"\t.type\t"
+#define SIZE_ASM_OP	"\t.size\t"
 
 /* This is how we tell the assembler that a symbol is weak.  */
 
@@ -205,7 +205,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define ASM_WEAKEN_LABEL(FILE,NAME) ASM_OUTPUT_WEAK_ALIAS(FILE,NAME,0)
 
-#define POPSECTION_ASM_OP	".popsection"
+#define POPSECTION_ASM_OP	"\t.popsection"
 
 #define DEBUG_INFO_SECTION	".debug_info,0x7000001e,0,0,1"
 #define DEBUG_LINE_SECTION	".debug_line,0x7000001e,0,0,1"
@@ -250,9 +250,9 @@ Boston, MA 02111-1307, USA.  */
    and dtor lists this way, so we use -init and -fini to invoke the
    do_global_* functions instead of running collect2.  */
 
-#define BSS_SECTION_ASM_OP	".section\t.bss"
+#define BSS_SECTION_ASM_OP	"\t.section\t.bss"
 #define CONST_SECTION_ASM_OP_32	"\t.rdata"
-#define CONST_SECTION_ASM_OP_64	".section\t.rodata"
+#define CONST_SECTION_ASM_OP_64	"\t.section\t.rodata"
 
 /* The IRIX 6 assembler .section directive takes four additional args:
    section type, flags, entry size, and alignment.  The alignment of the
@@ -263,25 +263,25 @@ Boston, MA 02111-1307, USA.  */
 /* If we are included from crtstuff.c, these need to be plain strings.
    _MIPS_SZPTR is defined in SUBTARGET_CPP_SPEC above.  */
 #if _MIPS_SZPTR == 64
-#define CTORS_SECTION_ASM_OP ".section\t.ctors,1,2,0,8"
-#define DTORS_SECTION_ASM_OP ".section\t.dtors,1,2,0,8"
+#define CTORS_SECTION_ASM_OP "\t.section\t.ctors,1,2,0,8"
+#define DTORS_SECTION_ASM_OP "\t.section\t.dtors,1,2,0,8"
 #else /* _MIPS_SZPTR != 64 */
-#define CTORS_SECTION_ASM_OP ".section\t.ctors,1,2,0,4"
-#define DTORS_SECTION_ASM_OP ".section\t.dtors,1,2,0,4"
+#define CTORS_SECTION_ASM_OP "\t.section\t.ctors,1,2,0,4"
+#define DTORS_SECTION_ASM_OP "\t.section\t.dtors,1,2,0,4"
 #endif /* _MIPS_SZPTR == 64 */
 
 #else /* ! (defined (CRT_BEGIN) || defined (CRT_END)) */
 
 /* If we are included from varasm.c, these need to depend on -mabi.  */
 #define CTORS_SECTION_ASM_OP \
-  (Pmode == DImode ? ".section\t.ctors,1,2,0,8" : ".section\t.ctors,1,2,0,4")
+  (Pmode == DImode ? "\t.section\t.ctors,1,2,0,8" : "\t.section\t.ctors,1,2,0,4")
 #define DTORS_SECTION_ASM_OP \
-  (Pmode == DImode ? ".section\t.dtors,1,2,0,8" : ".section\t.dtors,1,2,0,4")
+  (Pmode == DImode ? "\t.section\t.dtors,1,2,0,8" : "\t.section\t.dtors,1,2,0,4")
 #endif /* defined (CRT_BEGIN) || defined (CRT_END) */
 
 /* dwarf2out will handle padding this data properly.  We definitely don't
    want it 8-byte aligned on n32.  */
-#define EH_FRAME_SECTION_ASM_OP ".section\t.eh_frame,1,2,0,1"
+#define EH_FRAME_SECTION_ASM_OP "\t.section\t.eh_frame,1,2,0,1"
 
 /* A default list of other sections which we might be "in" at any given
    time.  For targets that use additional sections (e.g. .tdesc) you
