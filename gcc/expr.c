@@ -8481,21 +8481,33 @@ expand_expr (exp, target, tmode, modifier)
 		   || GET_CODE (op0) == CONCAT || GET_CODE (op0) == ADDRESSOF
 		   || GET_CODE (op0) == PARALLEL)
 	    {
-	      /* If this object is in a register, it must can't be BLKmode.  */
-	      tree inner_type = TREE_TYPE (TREE_OPERAND (exp, 0));
-	      tree nt = build_qualified_type (inner_type,
-					      (TYPE_QUALS (inner_type)
-					       | TYPE_QUAL_CONST));
-	      rtx memloc = assign_temp (nt, 1, 1, 1);
-
-	      if (GET_CODE (op0) == PARALLEL)
-		/* Handle calls that pass values in multiple non-contiguous
-		   locations.  The Irix 6 ABI has examples of this.  */
-		emit_group_store (memloc, op0, int_size_in_bytes (inner_type));
+	      /* If the operand is a SAVE_EXPR, we can deal with this by
+		 forcing the SAVE_EXPR into memory.  */
+	      if (TREE_CODE (TREE_OPERAND (exp, 0)) == SAVE_EXPR)
+		{
+		  put_var_into_stack (TREE_OPERAND (exp, 0));
+		  op0 = SAVE_EXPR_RTL (TREE_OPERAND (exp, 0));
+		}
 	      else
-		emit_move_insn (memloc, op0);
+		{
+		  /* If this object is in a register, it can't be BLKmode.  */
+		  tree inner_type = TREE_TYPE (TREE_OPERAND (exp, 0));
+		  tree nt = build_qualified_type (inner_type,
+						  (TYPE_QUALS (inner_type)
+						   | TYPE_QUAL_CONST));
+		  rtx memloc = assign_temp (nt, 1, 1, 1);
 
-	      op0 = memloc;
+		  if (GET_CODE (op0) == PARALLEL)
+		    /* Handle calls that pass values in multiple
+		       non-contiguous locations.  The Irix 6 ABI has examples
+		       of this.  */
+		    emit_group_store (memloc, op0, 
+				      int_size_in_bytes (inner_type));
+		  else
+		    emit_move_insn (memloc, op0);
+		  
+		  op0 = memloc;
+		}
 	    }
 
 	  if (GET_CODE (op0) != MEM)
