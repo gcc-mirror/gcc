@@ -24,6 +24,14 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dsparc -Dsun -Dunix -Asystem=unix -Asystem=bsd"
 
+#define LIB_SPEC "%{!shared:%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p} %{g:-lg}}"
+
+/* Provide required defaults for linker -e and -d switches.  */
+
+#define LINK_SPEC \
+ "%{!shared:%{!nostdlib:%{!r*:%{!e*:-e start}}} -dc -dp} %{static:-Bstatic} \
+  %{assert*} %{shared:%{!mimpure-text:-assert pure-text}}"
+
 /* Use N_BINCL stabs.  */
 
 #define DBX_USE_BINCL

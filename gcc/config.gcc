@@ -3183,6 +3183,14 @@ sparc64-*-elf*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sol2.h sparc/sp64-elf.h"
 	extra_parts="crtbegin.o crtend.o"
 	;;
+sparc64-*-freebsd*|ultrasparc-*-freebsd*)
+	tm_file="${tm_file} ${fbsd_tm_file} dbxelf.h elfos.h sparc/sysv4.h sparc/freebsd.h"
+	xmake_file=none
+	case "x$with_cpu" in
+		x) with_cpu=ultrasparc ;;
+		*) echo "$with_cpu not supported for freebsd target"; exit 1 ;;
+	esac
+	;;
 sparc64-*-linux*)		# 64-bit Sparc's running GNU/Linux
 	tmake_file="t-slibgcc-elf-ver t-linux sparc/t-linux64"
 	tm_file="sparc/sparc_bi.h ${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/linux64.h"

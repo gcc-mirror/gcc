@@ -329,14 +329,6 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 %| %{R} %{!pg:%{!p:%{fpic:-k} %{fPIC:-k}}} %{keep-local-as-symbols:-L} \
 %(asm_cpu) %(asm_relax)"
 
-#define LIB_SPEC "%{!shared:%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p} %{g:-lg}}"
-
-/* Provide required defaults for linker -e and -d switches.  */
-
-#define LINK_SPEC \
- "%{!shared:%{!nostdlib:%{!r*:%{!e*:-e start}}} -dc -dp} %{static:-Bstatic} \
-  %{assert*} %{shared:%{!mimpure-text:-assert pure-text}}"
-
 /* This macro defines names of additional specifications to put in the specs
    that can be used in various specifications like CC1_SPEC.  Its definition
    is an initializer with a subgrouping for each command option.
