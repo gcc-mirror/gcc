@@ -1,3 +1,8 @@
+2002-10-05  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/7804
+	* error.c (dump_expr) [REAL_CST]: Output in decimal format.
+
 2002-10-03  Mark Mitchell  <mark@codesourcery.com>
 
  	PR c++/7931
