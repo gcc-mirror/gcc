@@ -1,3 +1,9 @@
+2003-03-23  Glen Nakamura <glen@imodulo.com>
+
+	PR c/8224
+	* fold-const.c (extract_muldiv_1): Don't pass through type conversions
+	when signedness changes for division or modulus.
+
 2003-03-23  Richard Henderson  <rth@redhat.com>
      
         * cfgcleanup.c (try_optimize_cfg): Allow merging of tablejumps

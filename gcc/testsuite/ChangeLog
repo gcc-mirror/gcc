@@ -1,3 +1,8 @@
+2003-03-23  Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+
+	PR c/8224
+	* gcc.dg/20030323-1.c: New test.
+
 2003-03-22  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* gcc.dg/20030321-1.c: New test.
