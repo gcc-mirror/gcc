@@ -1409,6 +1409,35 @@ EOF
 
 
 dnl
+dnl Check for libunwind exception handling support. If enabled then
+dnl we assume that the _Unwind_* functions that make up the Unwind ABI
+dnl (_Unwind_RaiseException, _Unwind_Resume, etc.) are defined by
+dnl libunwind instead of libgcc and that libstdc++ has a dependency
+dnl on libunwind as well as libgcc.
+dnl
+dnl GLIBCPP_ENABLE_LIBUNWIND_EXCEPTIONS
+dnl --enable-libunwind-exceptions forces the use of libunwind.
+dnl --disable-libunwind-exceptions assumes there is no libunwind.
+dnl
+dnl Define _GLIBCPP_LIBUNWIND_EXCEPTIONS if requested.
+dnl
+AC_DEFUN(GLIBCPP_ENABLE_LIBUNWIND_EXCEPTIONS, [
+  AC_MSG_CHECKING([for use of libunwind])
+  AC_ARG_ENABLE(libunwind-exceptions,
+  [  --enable-libunwind-exceptions  force use of libunwind for exceptions],
+  use_libunwind_exceptions=$enableval,
+  use_libunwind_exceptions=no)
+  AC_MSG_RESULT($use_libunwind_exceptions)
+  dnl Option parsed, now set things appropriately
+  if test x"$use_libunwind_exceptions" = xyes; then
+    LIBUNWIND_FLAG="-lunwind"
+  else
+    LIBUNWIND_FLAG=""
+  fi
+  AC_SUBST(LIBUNWIND_FLAG)
+])
+
+dnl
 dnl Check for ISO/IEC 9899:1999 "C99" support.
 dnl
 dnl GLIBCPP_ENABLE_C99
