@@ -1,5 +1,16 @@
 2000-01-05  Tom Tromey  <tromey@cygnus.com>
 
+	* java/lang/natClass.cc (getMethod): Compute offset relative to
+	`klass's methods table, not `this's table.
+
+	* java/lang/reflect/natMethod.cc (_Jv_CallNonvirtualMethodA):
+	In unwrapping/widening case, check whether `k' is null, not
+	whether it is primitive.  Initialize `num' from `argelts', not
+	`paramelts'.  Correct create and pass arguments to ffi_call.
+	Don't let presence of `this' argument affect index used to look in
+	argument arrays.
+	(COPY): Set appropriate element in `values' vector.
+
 	* java/lang/natClass.cc: Include <gcj/method.h>.
 
 	* java/lang/Class.h (_getMethods): Correctly declare as private,

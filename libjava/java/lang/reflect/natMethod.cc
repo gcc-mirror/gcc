@@ -374,21 +374,21 @@ _Jv_CallNonvirtualMethodA (jobject obj,
       size += sizeof (jobject);
     }
 
-  for (; i < param_count; ++i)
+  for (int arg = 0; i < param_count; ++i, ++arg)
     {
-      jclass k = argelts[i] ? argelts[i]->getClass() : NULL;
+      jclass k = argelts[arg] ? argelts[arg]->getClass() : NULL;
       argtypes[i] = get_ffi_type (k);
-      if (paramelts[i]->isPrimitive())
+      if (paramelts[arg]->isPrimitive())
 	{
-	  if (! argelts[i]
-	      || ! k->isPrimitive ()
-	      || ! can_widen (k, paramelts[i]))
+	  if (! argelts[arg]
+	      || ! k
+	      || ! can_widen (k, paramelts[arg]))
 	    JvThrow (new java::lang::IllegalArgumentException);
-	  size += paramelts[i]->size();
+	  size += paramelts[arg]->size();
 	}
       else
 	{
-	  if (argelts[i] && ! paramelts[i]->isAssignableFrom (k))
+	  if (argelts[arg] && ! paramelts[arg]->isAssignableFrom (k))
 	    JvThrow (new java::lang::IllegalArgumentException);
 	  size += sizeof (jobject);
 	}
@@ -401,13 +401,14 @@ _Jv_CallNonvirtualMethodA (jobject obj,
       // FIXME: throw some kind of VirtualMachineError here.
     }
 
-  char *values = (char *) alloca (size);
-  char *p = values;
+  char *p = (char *) alloca (size);
+  void **values = (void **) alloca (param_count * sizeof (void *));
 
 #define COPY(Where, What, Type) \
   do { \
     Type val = (What); \
     memcpy ((Where), &val, sizeof (Type)); \
+    values[i] = (Where); \
     Where += sizeof (Type); \
   } while (0)
 
@@ -418,30 +419,30 @@ _Jv_CallNonvirtualMethodA (jobject obj,
       ++i;
     }
 
-  for (; i < param_count; ++i)
+  for (int arg = 0; i < param_count; ++i, ++arg)
     {
-      java::lang::Number *num = (java::lang::Number *) paramelts[i];
-      if (paramelts[i] == JvPrimClass (byte))
+      java::lang::Number *num = (java::lang::Number *) argelts[arg];
+      if (paramelts[arg] == JvPrimClass (byte))
 	COPY (p, num->byteValue(), jbyte);
-      else if (paramelts[i] == JvPrimClass (short))
+      else if (paramelts[arg] == JvPrimClass (short))
 	COPY (p, num->shortValue(), jshort);
-      else if (paramelts[i] == JvPrimClass (int))
+      else if (paramelts[arg] == JvPrimClass (int))
 	COPY (p, num->intValue(), jint);
-      else if (paramelts[i] == JvPrimClass (long))
+      else if (paramelts[arg] == JvPrimClass (long))
 	COPY (p, num->longValue(), jlong);
-      else if (paramelts[i] == JvPrimClass (float))
+      else if (paramelts[arg] == JvPrimClass (float))
 	COPY (p, num->floatValue(), jfloat);
-      else if (paramelts[i] == JvPrimClass (double))
+      else if (paramelts[arg] == JvPrimClass (double))
 	COPY (p, num->doubleValue(), jdouble);
-      else if (paramelts[i] == JvPrimClass (boolean))
-	COPY (p, ((java::lang::Boolean *) argelts[i])->booleanValue(),
+      else if (paramelts[arg] == JvPrimClass (boolean))
+	COPY (p, ((java::lang::Boolean *) argelts[arg])->booleanValue(),
 	      jboolean);
-      else if (paramelts[i] == JvPrimClass (char))
-	COPY (p, ((java::lang::Character *) argelts[i])->charValue(), jchar);
+      else if (paramelts[arg] == JvPrimClass (char))
+	COPY (p, ((java::lang::Character *) argelts[arg])->charValue(), jchar);
       else
 	{
-	  JvAssert (! paramelts[i]->isPrimitive());
-	  COPY (p, argelts[i], jobject);
+	  JvAssert (! paramelts[arg]->isPrimitive());
+	  COPY (p, argelts[arg], jobject);
 	}
     }
 

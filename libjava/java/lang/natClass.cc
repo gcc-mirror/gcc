@@ -477,7 +477,8 @@ java::lang::Class::getMethod (jstring name, JArray<jclass> *param_types)
 		break;
 
 	      Method *rmethod = new Method ();
-	      rmethod->offset = (char*) (&klass->methods[i]) - (char*) methods;
+	      rmethod->offset = ((char *) (&klass->methods[i])
+				 - (char *) klass->methods);
 	      rmethod->declaringClass = klass;
 	      return rmethod;
 	    }
