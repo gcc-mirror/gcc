@@ -4388,6 +4388,96 @@ the same names as the standard macros ( @code{isgreater},
 prefixed.  We intend for a library implementor to be able to simply
 @code{#define} each standard macro to its built-in equivalent.
 
+@deftypefn {Built-in Function} int __builtin_types_compatible_p (@var{type1}, @var{type2})
+
+You can use the built-in function @code{__builtin_types_compatible_p} to
+determine whether two types are the same.
+
+This built-in function returns 1 if the unqualified versions of the
+types @var{type1} and @var{type2} (which are types, not expressions) are
+compatible, 0 otherwise.  The result of this built-in function can be
+used in integer constant expressions.
+
+This built-in function ignores top level qualifiers (e.g., @code{const},
+@code{volatile}).  For example, @code{int} is equivalent to @code{const
+int}.
+
+The type @code{int[]} and @code{int[5]} are compatible.  On the other
+hand, @code{int} and @code{char *} are not compatible, even if the size
+of their types, on the particular architecture are the same.  Also, the
+amount of pointer indirection is taken into account when determining
+similarity.  Consequently, @code{short *} is not similar to
+@code{short **}.  Furthermore, two types that are typedefed are
+considered compatible if their underlying types are compatible.
+
+An @code{enum} type is considered to be compatible with another
+@code{enum} type.  For example, @code{enum @{foo, bar@}} is similar to
+@code{enum @{hot, dog@}}.
+
+You would typically use this function in code whose execution varies
+depending on the arguments' types.  For example:
+
+@smallexample
+#define foo(x)                                                        \
+  (@{                                                                 \
+    typeof (x) tmp;                                                   \
+    if (__builtin_types_compatible_p (typeof (x), long double))       \
+      tmp = foo_long_double (tmp);                                    \
+    else if (__builtin_types_compatible_p (typeof (x), double))       \
+      tmp = foo_double (tmp);                                         \
+    else if (__builtin_types_compatible_p (typeof (x), float))        \
+      tmp = foo_float (tmp);                                          \
+    else                                                              \
+      abort ();                                                       \
+    tmp;                                                              \
+  @})
+@end smallexample
+
+@emph{Note:} This construct is only available for C.
+
+@end deftypefn
+
+@deftypefn {Built-in Function} @var{type} __builtin_choose_expr (@var{const_exp}, @var{exp1}, @var{exp2})
+
+You can use the built-in function @code{__builtin_choose_expr} to
+evaluate code depending on the value of a constant expression.  This
+built-in function returns @var{exp1} if @var{const_exp}, which is a
+constant expression that must be able to be determined at compile time,
+is nonzero.  Otherwise it returns 0.
+
+This built-in function is analogous to the @samp{? :} operator in C,
+except that the expression returned has its type unaltered by promotion
+rules.  Also, the built-in function does not evaluate the expression
+that was not chosen.  For example, if @var{const_exp} evaluates to true,
+@var{exp2} is not evaluated even if it has side-effects.
+
+This built-in function can return an lvalue if the chosen argument is an
+lvalue.
+
+If @var{exp1} is returned, the return type is the same as @var{exp1}'s
+type.  Similarly, if @var{exp2} is returned, its return type is the same
+as @var{exp2}.
+
+Example:
+
+@smallexample
+#define foo(x)                                                               \
+  __builtin_choose_expr (__builtin_types_compatible_p (typeof (x), double),  \
+    foo_double (x),                                                          \
+    __builtin_choose_expr (__builtin_types_compatible_p (typeof (x), float), \
+      foo_float (x),                                                         \
+      /* @r{The void expression results in a compile-time error}             \
+         @r{when assigning the result to something.}  */                     \
+      (void)0))
+@end smallexample
+
+@emph{Note:} This construct is only available for C.  Furthermore, the
+unused expression (@var{exp1} or @var{exp2} depending on the value of
+@var{const_exp}) may still generate syntax errors.  This may change in
+future revisions.
+
+@end deftypefn
+
 @deftypefn {Built-in Function} int __builtin_constant_p (@var{exp})
 You can use the built-in function @code{__builtin_constant_p} to
 determine if a value is known to be constant at compile-time and hence
