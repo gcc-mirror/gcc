@@ -1,3 +1,11 @@
+2004-06-12  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/12841
+	* interface.c (compare_parameter, compare_actual_formal): Don't
+	check types and array shapes for NULL()
+	* trans-expr.c (conv_function_call): No double indirection for
+	NULL() 
+
 2004-06-09  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* trans-expr.c (gfc_conv_cst_int_power): Compute

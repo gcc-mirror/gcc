@@ -1100,10 +1100,12 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	  if (argss == gfc_ss_terminator)
             {
 	      gfc_conv_expr_reference (&parmse, arg->expr);
-              if (formal && formal->sym->attr.pointer)
+              if (formal && formal->sym->attr.pointer
+		  && arg->expr->expr_type != EXPR_NULL)
                 {
                   /* Scalar pointer dummy args require an extra level of
-                     indirection.  */
+                     indirection. The null pointer already contains
+		     this level of indirection.  */
                   parmse.expr = gfc_build_addr_expr (NULL, parmse.expr);
                 }
             }
