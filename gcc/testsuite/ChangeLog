@@ -1,3 +1,8 @@
+1999-05-02  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/cast-qual-1.c, gcc.dg/return-type-1.c, gcc.dg/unused-1.c:
+	New tests.
+
 1999-05-02  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.f-torture/compile/19990502-1.f: New test.
