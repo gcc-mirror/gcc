@@ -1,3 +1,23 @@
+2002-06-25  Neil Booth  <neil@daikokuya.co.uk>
+
+	* gcc.dg/cpp/mi7.c, gcc.dg/cpp/mi7a.h, gcc.dg/cpp/mi7b.h,
+	gcc.dg/cpp/trad/builtins.c, gcc.dg/cpp/trad/builtins.h,
+	gcc.dg/cpp/trad/cmdlne-C.c, gcc.dg/cpp/trad/cmdlne-C2.c,
+	gcc.dg/cpp/trad/maccom1.c, gcc.dg/cpp/trad/maccom2.c,
+	gcc.dg/cpp/trad/maccom3.c, gcc.dg/cpp/trad/maccom4.c,
+	gcc.dg/cpp/trad/maccom6.c, gcc.dg/cpp/trad/mi1.c,
+	gcc.dg/cpp/trad/mi1c.h, gcc.dg/cpp/trad/mi1nd.h,
+	gcc.dg/cpp/trad/mi1ndp.h, gcc.dg/cpp/trad/mi1x.h,
+	gcc.dg/cpp/trad/mi2.c, gcc.dg/cpp/trad/mi2a.h,
+	gcc.dg/cpp/trad/mi2b.h, gcc.dg/cpp/trad/mi2c.h
+	gcc.dg/cpp/trad/mi3.c, gcc.dg/cpp/trad/mi3.def,
+	gcc.dg/cpp/trad/mi3.h, gcc.dg/cpp/trad/mi4.c,
+	gcc.dg/cpp/trad/mi5.c, gcc.dg/cpp/trad/mi6.c,
+	gcc.dg/cpp/trad/mi6a.h, gcc.dg/cpp/trad/mi6b.h,
+	gcc.dg/cpp/trad/mi6c.h, gcc.dg/cpp/trad/mi6d.h,
+	gcc.dg/cpp/trad/mi6e.h, gcc.dg/cpp/trad/mi7.c,
+	gcc.dg/cpp/trad/mi7a.h, gcc.dg/cpp/trad/mi7b.h: New tests.
+
 2002-06-24  Neil Booth  <neil@daikokuya.co.uk>
 
 	* gcc.dg/cpp/trad/argcout.c, gcc.dg/cpp/trad/assembler.S,
