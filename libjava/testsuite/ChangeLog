@@ -1,3 +1,8 @@
+2001-06-14  Tom Tromey  <tromey@redhat.com>
+
+	* libjava.jni/jni.exp: New file.
+	* lib/libjava.exp (gcj_link): New proc.
+
 2001-06-08  Tom Tromey  <tromey@redhat.com>
 
 	Fix for PR libgcj/2874:
