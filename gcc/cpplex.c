@@ -114,6 +114,7 @@ static const unsigned char *backslash_start PARAMS ((cpp_reader *,
 						     const unsigned char *));
 static int skip_block_comment PARAMS ((cpp_reader *));
 static int skip_line_comment PARAMS ((cpp_reader *));
+static void adjust_column PARAMS ((cpp_reader *, const U_CHAR *));
 static void skip_whitespace PARAMS ((cpp_reader *, int));
 static const U_CHAR *parse_name PARAMS ((cpp_reader *, cpp_token *,
 				   const U_CHAR *, const U_CHAR *));
@@ -906,15 +907,8 @@ skip_block_comment (pfile)
 {
   cpp_buffer *buffer = pfile->buffer;
   const unsigned char *char_after_star = 0;
-  register const unsigned char *cur = buffer->cur;
-  int seen_eof = 0;
+  const unsigned char *cur = buffer->cur;
   
-  /* Inner loop would think the comment has ended if the first comment
-     character is a '/'.  Avoid this and keep the inner loop clean by
-     skipping such a character.  */
-  if (cur < buffer->rlimit && cur[0] == '/')
-    cur++;
-
   for (; cur < buffer->rlimit; )
     {
       unsigned char c = *cur++;
@@ -923,8 +917,13 @@ skip_block_comment (pfile)
 	 '/' instead for efficiency.  */
       if (c == '/')
 	{
-	  if (cur[-2] == '*' || cur - 1 == char_after_star)
-	    goto out;
+	  /* Don't view / then * then / as finishing the comment.  */
+	  if ((cur[-2] == '*' && cur - 1 > buffer->cur)
+	      || cur - 1 == char_after_star)
+	    {
+	      buffer->cur = cur;
+	      return 0;
+	    }
 
 	  /* Warn about potential nested comments, but not when
 	     the final character inside the comment is a '/'.
@@ -948,12 +947,12 @@ skip_block_comment (pfile)
 	  else
 	    char_after_star = 0;
 	}
+      else if (c == '\t')
+	adjust_column (pfile, cur - 1);
     }
-  seen_eof = 1;
 
- out:
   buffer->cur = cur;
-  return seen_eof;
+  return 1;
 }
 
 /* Skip a C++ line comment.  Handles escaped newlines.  Returns
@@ -986,6 +985,22 @@ skip_line_comment (pfile)
   return multiline;
 }
 
+/* TAB points to a \t character.  Update col_adjust so we track the
+   column correctly.  */
+static void
+adjust_column (pfile, tab)
+     cpp_reader *pfile;
+     const U_CHAR *tab;
+{
+  /* Zero-based column.  */
+  unsigned int col = CPP_BUF_COLUMN (pfile->buffer, tab);
+
+  /* Round it up to multiple of the tabstop, but subtract 1 since the
+     tab itself occupies a character position.  */
+  pfile->col_adjust += (CPP_OPTION (pfile, tabstop)
+			- col % CPP_OPTION (pfile, tabstop)) - 1;
+}
+
 /* Skips whitespace, stopping at next non-whitespace character.
    Adjusts pfile->col_adjust to account for tabs.  This enables tokens
    to be assigned the correct column.  */
@@ -1010,8 +1025,7 @@ skip_whitespace (pfile, in_directive)
       if (c == ' ')
 	continue;
       else if (c == '\t')
-	pfile->col_adjust += CPP_OPTION (pfile, tabstop) - 1
-	  - (CPP_BUF_COL (buffer) - 1) % CPP_OPTION(pfile, tabstop);
+	adjust_column (pfile, buffer->cur - 1);
       /* Must be \f \v or \0.  */
       else if (c == '\0')
 	{

@@ -1,5 +1,12 @@
 2000-07-14  Neil Booth  <NeilB@earthling.net>
 
+	* cpplex.c (adjust_column): New funcion.
+	(skip_whitespace): Use it.
+	(skip_block_comment): Use it, and warn about /*/* with
+	-Wcomments.
+
+2000-07-14  Neil Booth  <NeilB@earthling.net>
+
 	* cpphash.c (struct macro_info): Add new members.
 	(_cpp_free_definition): Delete the macro directly.
 	(count_params): Return void, with first token of
