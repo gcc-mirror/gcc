@@ -1,5 +1,14 @@
 2004-09-09  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	PR c/8420
+	* gcc.dg/anon-struct-4.c, gcc.dg/declspec-1.c,
+	gcc.dg/declspec-2.c, gcc.dg/declspec-3.c, gcc.dg/declspec-4.c,
+	gcc.dg/declspec-5.c, gcc.dg/declspec-6.c,
+	gcc.dg/long-long-typespec-1.c: New tests.
+	* gcc.dg/tls/diag-2.c: Update expected diagnostics
+
+2004-09-09  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	* gcc.dg/c90-static-1.c, gcc.dg/c99-static-1.c,
 	gcc.dg/gnu99-static-1.c: New tests.
 
