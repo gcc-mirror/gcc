@@ -1,3 +1,14 @@
+2004-11-12  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/18389
+	* g++.dg/parse/cond1.C: New test.
+
+	PR c++/18436
+	* g++.dg/template/call3.C: New test.
+
+	PR c++/18407
+	* g++.dg/template/ptrmem11.C: New test.
+
 2004-11-12  Eric Botcazou  <ebotcazou@act-europe.fr>
 
 	* gcc.c-torture/execute/20041112-1.c: New test.

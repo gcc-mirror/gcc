@@ -3704,12 +3704,12 @@ start_decl (tree declarator,
   deprecated_state = DEPRECATED_NORMAL;
 
   if (decl == NULL_TREE || TREE_CODE (decl) == VOID_TYPE)
-    return NULL_TREE;
+    return error_mark_node;
 
   type = TREE_TYPE (decl);
 
   if (type == error_mark_node)
-    return NULL_TREE;
+    return error_mark_node;
 
   context = DECL_CONTEXT (decl);
 

@@ -1,3 +1,17 @@
+2004-11-12  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/18389
+	* decl.c (start_decl): Make sure to set *pop_scope_p.  Return
+	error_mark_node to indicate errors.
+
+	PR c++/18436
+	* pt.c (tsubst_copy_and_build): Do not do Koenig lookup when an
+	unqualified name resolves to a member function.
+
+	PR c++/18407
+	* pt.c (tsubst_copy_and_build): Handle qualified names used from a
+	derived class correctly.
+
 2004-11-04  Release Manager
 
 	* GCC 3.4.3 released.

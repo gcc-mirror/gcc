@@ -8454,7 +8454,11 @@ tsubst_copy_and_build (tree t,
 	   lookup finds a non-function, in accordance with the
 	   expected resolution of DR 218.  */
 	if (koenig_p
-	    && (is_overloaded_fn (function)
+	    && ((is_overloaded_fn (function)
+		 /* If lookup found a member function, the Koenig lookup is
+		    not appropriate, even if an unqualified-name was used
+		    to denote the function.  */
+		 && !DECL_FUNCTION_MEMBER_P (get_first_fn (function)))
 		|| TREE_CODE (function) == IDENTIFIER_NODE))
 	  function = perform_koenig_lookup (function, call_args);
 
@@ -8570,9 +8574,14 @@ tsubst_copy_and_build (tree t,
 					    /*is_type_p=*/false,
 					    /*complain=*/false);
 	    if (BASELINK_P (member))
-	      BASELINK_FUNCTIONS (member) 
-		= build_nt (TEMPLATE_ID_EXPR, BASELINK_FUNCTIONS (member),
-			    args);
+	      {
+		BASELINK_FUNCTIONS (member) 
+		  = build_nt (TEMPLATE_ID_EXPR, BASELINK_FUNCTIONS (member),
+			      args);
+		member = (adjust_result_of_qualified_name_lookup 
+			  (member, BINFO_TYPE (BASELINK_BINFO (member)), 
+			   TREE_TYPE (object)));
+	      }
 	    else
 	      {
 		qualified_name_lookup_error (TREE_TYPE (object), tmpl);
