@@ -1,3 +1,12 @@
+2003-12-20  Roger Sayle  <roger@eyesopen.com>
+
+	PR optimization/13031
+	* gcse.c (cprop_jump): Backport code clean-up and bug-fix
+	from mainline [2003-05-20 Sayle, Hirata and Rennecke patch].
+	(cprop_insn): Don't attemp further substitutions if the
+	current instruction has been deleted.
+	(local_cprop_pass): Likewise.
+
 2003-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/13239

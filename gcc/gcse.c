@@ -4063,28 +4063,29 @@ cprop_jump (bb, setcc, jump, from, src)
      rtx from;
      rtx src;
 {
-  rtx new, new_set;
+  rtx new;
   rtx set = pc_set (jump);
+  rtx set_src = SET_SRC (set);
 
   /* First substitute in the INSN condition as the SET_SRC of the JUMP,
      then substitute that given values in this expanded JUMP.  */
-  if (setcc != NULL
+  if (setcc != NULL_RTX
       && !modified_between_p (from, setcc, jump)
       && !modified_between_p (src, setcc, jump))
     {
       rtx setcc_set = single_set (setcc);
-      new_set = simplify_replace_rtx (SET_SRC (set),
+      set_src = simplify_replace_rtx (set_src,
 				      SET_DEST (setcc_set),
 				      SET_SRC (setcc_set));
     }
   else
-    new_set = set;
+    setcc = NULL_RTX;
 
-  new = simplify_replace_rtx (new_set, from, src);
+  new = simplify_replace_rtx (set_src, from, src);
 
   /* If no simplification can be made, then try the next
      register.  */
-  if (rtx_equal_p (new, new_set) || rtx_equal_p (new, SET_SRC (set)))
+  if (rtx_equal_p (new, SET_SRC (set)))
     return 0;
 
   /* If this is now a no-op delete it, otherwise this must be a valid insn.  */
@@ -4235,6 +4236,8 @@ cprop_insn (insn, alter_jumps)
 		  print_rtl (gcse_file, src);
 		  fprintf (gcse_file, "\n");
 		}
+	      if (INSN_DELETED_P (insn))
+		return 1;
 	    }
 	}
       else if (GET_CODE (src) == REG
@@ -4477,6 +4480,8 @@ local_cprop_pass (alter_jumps)
 		    changed = true;
 		    break;
 		  }
+	      if (INSN_DELETED_P (insn))
+		break;
 	    }
 	  while (reg_use_count);
 	}
