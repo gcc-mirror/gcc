@@ -3,6 +3,8 @@
 	* reload.c (find_reloads): Distinguish "wins" so that we know whether
 	a given operand won because of a matching constraint or not; then use
 	that information to compute goal_alternative_matched properly.
+	* reload1.c (choose_reload_regs): Never set reload_override_in for an
+	optional reload.
 
 2000-10-28  Neil Booth  <neilb@earthling.net>
 
