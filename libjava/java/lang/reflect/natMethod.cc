@@ -10,6 +10,8 @@ details.  */
 
 #include <config.h>
 
+#include <alloca.h>
+
 #include <gcj/cni.h>
 #include <jvm.h>
 #include <jni.h>

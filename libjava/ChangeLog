@@ -1,3 +1,9 @@
+2000-06-23  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/reflect/natMethod.cc: Include <alloca.h>.
+	* java/lang/natDouble.cc: Always include <alloca.h>.
+	Fix for PR libgcj/267.
+
 2000-06-21  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/lang/ThreadGroup.java (add(Thread)): Rename to addThread() to
