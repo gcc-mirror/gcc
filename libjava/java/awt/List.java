@@ -299,6 +299,8 @@ setMultipleMode(boolean multipleMode)
   *
   * @param multipleMode <code>true</code> to enable multiple mode,
   * <code>false</code> otherwise.
+  *
+  * @deprecated
   */
 public void
 setMultipleSelections(boolean multipleMode)
@@ -523,6 +525,8 @@ addItem(String item, int index)
   * @param index The index of the item to delete.
   *
   * @exception IllegalArgumentException If the index is not valid
+  *
+  * @deprecated
   */
 public void
 delItem(int index) throws IllegalArgumentException

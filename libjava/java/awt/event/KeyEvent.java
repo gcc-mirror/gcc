@@ -1142,6 +1142,8 @@ public class KeyEvent extends InputEvent
    * @param keyCode the integer constant for the virtual key type
    * @throws IllegalArgumentException if source is null, or if
    *         id == KEY_TYPED but keyCode != VK_UNDEFINED
+   *
+   * @deprecated
    */
   public KeyEvent(Component source, int id, long when, int modifiers,
                   int keyCode)
@@ -1202,6 +1204,8 @@ public class KeyEvent extends InputEvent
    *
    * @param modifiers the new modifier value, in either old or new style
    * @see InputEvent
+   *
+   * @deprecated
    */
   public void setModifiers(int modifiers)
   {
