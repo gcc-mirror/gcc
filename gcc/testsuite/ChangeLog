@@ -1,3 +1,7 @@
+2005-03-24  Dale Johannesen  <dalej@apple.com>
+
+	* gcc.dg/20020919-1.c:  Fix for x86 Darwin.
+
 2005-03-24  Geoffrey Keating  <geoffk@apple.com>
 
 	* g++.dg/expr/cast3.C: New.
