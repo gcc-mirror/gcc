@@ -49,6 +49,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef DBX_NO_XREFS
 #undef DBX_CONTIN_LENGTH
 
+/* Ask for COFF symbols.  */
+
+#define SDB_DEBUGGING_INFO
+
 /* Specify predefined symbols in preprocessor.  */
 
 #define CPP_PREDEFINES "-Dunix -Di386"
