@@ -222,8 +222,7 @@ static long find_zip_file_start (int fd, long offset);
 /* Function makeword() */
 /***********************/
 
-static ush makeword(b)
-    const uch *b;
+static ush makeword(const uch *b)
 {
     /*
      * Convert Intel style 'short' integer to non-Intel non-16-bit
@@ -237,8 +236,7 @@ static ush makeword(b)
 /* Function makelong() */
 /***********************/
 
-static ulg makelong(sig)
-    const uch *sig;
+static ulg makelong(const uch *sig)
 {
     /*
      * Convert intel style 'long' variable to non-Intel non-16-bit
@@ -254,9 +252,7 @@ static ulg makelong(sig)
    start of the actual data.  Return -1 on error.  OFFSET is the
    offset from the beginning of the zip file of the file's header.  */
 static long
-find_zip_file_start (fd, offset)
-     int fd;
-     long offset;
+find_zip_file_start (int fd, long offset)
 {
   int filename_length, extra_field_length;
   unsigned char buffer[LREC_SIZE + 4];
@@ -277,8 +273,7 @@ find_zip_file_start (fd, offset)
 }
 
 int
-read_zip_archive (zipf)
-     register ZipFile *zipf;
+read_zip_archive (ZipFile *zipf)
 {
   int i;
   int dir_last_pad;
@@ -356,7 +351,7 @@ read_zip_archive (zipf)
 }
 
 #ifdef TEST
-main ()
+main (void)
 {
   ZipFile zipf[1];
   ZipDirectory *zipd;

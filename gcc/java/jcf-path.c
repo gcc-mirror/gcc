@@ -105,8 +105,7 @@ static int longest_path = 0;
 
 
 static void
-free_entry (entp)
-     struct entry **entp;
+free_entry (struct entry **entp)
 {
   struct entry *e, *n;
 
@@ -120,9 +119,7 @@ free_entry (entp)
 }
 
 static void
-append_entry (entp, ent)
-     struct entry **entp;
-     struct entry *ent;
+append_entry (struct entry **entp, struct entry *ent)
 {
   /* It doesn't matter if this is slow, since it is run only at
      startup, and then infrequently.  */
@@ -139,10 +136,7 @@ append_entry (entp, ent)
 }
 
 static void
-add_entry (entp, filename, is_system)
-     struct entry **entp;
-     const char *filename;
-     int is_system;
+add_entry (struct entry **entp, const char *filename, int is_system)
 {
   int len;
   struct entry *n;
@@ -186,10 +180,7 @@ add_entry (entp, filename, is_system)
 }
 
 static void
-add_path (entp, cp, is_system)
-     struct entry **entp;
-     const char *cp;
-     int is_system;
+add_path (struct entry **entp, const char *cp, int is_system)
 {
   const char *startp, *endp;
 
@@ -228,7 +219,7 @@ static int init_done = 0;
 
 /* Initialize the path module.  */
 void
-jcf_path_init ()
+jcf_path_init (void)
 {
   char *cp;
   char *try, sep[2];
@@ -321,8 +312,7 @@ jcf_path_init ()
    This overrides only the $CLASSPATH environment variable.
  */
 void
-jcf_path_classpath_arg (path)
-     const char *path;
+jcf_path_classpath_arg (const char *path)
 {
   free_entry (&classpath_user);
   add_path (&classpath_user, path, 0);
@@ -331,8 +321,7 @@ jcf_path_classpath_arg (path)
 /* Call this when -bootclasspath is seen on the command line.
  */
 void
-jcf_path_bootclasspath_arg (path)
-     const char *path;
+jcf_path_bootclasspath_arg (const char *path)
 {
   free_entry (&sys_dirs);
   add_path (&sys_dirs, path, 1);
@@ -341,8 +330,7 @@ jcf_path_bootclasspath_arg (path)
 /* Call this when -extdirs is seen on the command line.
  */
 void
-jcf_path_extdirs_arg (cp)
-     const char *cp;
+jcf_path_extdirs_arg (const char *cp)
 {
   const char *startp, *endp;
 
@@ -406,8 +394,7 @@ jcf_path_extdirs_arg (cp)
 
 /* Call this when -I is seen on the command line.  */
 void
-jcf_path_include_arg (path)
-     const char *path;
+jcf_path_include_arg (const char *path)
 {
   add_entry (&include_dirs, path, 0);
 }
@@ -416,8 +403,7 @@ jcf_path_include_arg (path)
    we provide a way to iterate through the sealed list.  If PRINT is
    true then we print the final class path to stderr.  */
 void
-jcf_path_seal (print)
-     int print;
+jcf_path_seal (int print)
 {
   struct entry *secondary;
 
@@ -465,14 +451,13 @@ jcf_path_seal (print)
 }
 
 void *
-jcf_path_start ()
+jcf_path_start (void)
 {
   return (void *) sealed;
 }
 
 void *
-jcf_path_next (x)
-     void *x;
+jcf_path_next (void *x)
 {
   struct entry *ent = (struct entry *) x;
   return (void *) ent->next;
@@ -481,31 +466,28 @@ jcf_path_next (x)
 /* We guarantee that the return path will either be a zip file, or it
    will end with a directory separator.  */
 char *
-jcf_path_name (x)
-     void *x;
+jcf_path_name (void *x)
 {
   struct entry *ent = (struct entry *) x;
   return ent->name;
 }
 
 int
-jcf_path_is_zipfile (x)
-     void *x;
+jcf_path_is_zipfile (void *x)
 {
   struct entry *ent = (struct entry *) x;
   return (ent->flags & FLAG_ZIP);
 }
 
 int
-jcf_path_is_system (x)
-     void *x;
+jcf_path_is_system (void *x)
 {
   struct entry *ent = (struct entry *) x;
   return (ent->flags & FLAG_SYSTEM);
 }
 
 int
-jcf_path_max_len ()
+jcf_path_max_len (void)
 {
   return longest_path;
 }

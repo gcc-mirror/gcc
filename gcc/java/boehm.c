@@ -43,9 +43,8 @@ static void set_bit (unsigned HOST_WIDE_INT *, unsigned HOST_WIDE_INT *,
 /* Treat two HOST_WIDE_INT's as a contiguous bitmap, with bit 0 being
    the least significant.  This function sets bit N in the bitmap.  */
 static void
-set_bit (low, high, n)
-     unsigned HOST_WIDE_INT *low, *high;
-     unsigned int n;
+set_bit (unsigned HOST_WIDE_INT *low, unsigned HOST_WIDE_INT *high,
+	 unsigned int n)
 {
   HOST_WIDE_INT *which;
 
@@ -62,15 +61,14 @@ set_bit (low, high, n)
 
 /* Recursively mark reference fields.  */
 static void
-mark_reference_fields (field, low, high, ubit,
-		       pointer_after_end, all_bits_set,
-		       last_set_index, last_view_index)
-     tree field;
-     unsigned HOST_WIDE_INT *low, *high;
-     unsigned int ubit;
-     int *pointer_after_end, *all_bits_set;
-     int *last_set_index;
-     HOST_WIDE_INT *last_view_index;
+mark_reference_fields (tree field,
+		       unsigned HOST_WIDE_INT *low,
+		       unsigned HOST_WIDE_INT *high,
+		       unsigned int ubit,
+		       int *pointer_after_end,
+		       int *all_bits_set,
+		       int *last_set_index,
+		       HOST_WIDE_INT *last_view_index)
 {
   /* See if we have fields from our superclass.  */
   if (DECL_NAME (field) == NULL_TREE)

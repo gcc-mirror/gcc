@@ -41,11 +41,7 @@ static tree build_constant_data_ref (void);
 /* Set the INDEX'th constant in CPOOL to have the given TAG and VALUE. */
 
 static void
-set_constant_entry (cpool, index, tag, value)
-     CPool *cpool;
-     int index;
-     int tag;
-     jword value;
+set_constant_entry (CPool *cpool, int index, int tag, jword value)
 {
   if (cpool->data == NULL)
     {
@@ -73,10 +69,7 @@ set_constant_entry (cpool, index, tag, value)
 /* Find (or create) a constant pool entry matching TAG and VALUE. */
 
 int
-find_constant1 (cpool, tag, value)
-     CPool *cpool;
-     int tag;
-     jword value;
+find_constant1 (CPool *cpool, int tag, jword value)
 {
   int i;
   for (i = cpool->count;  --i > 0; )
@@ -92,10 +85,7 @@ find_constant1 (cpool, tag, value)
 /* Find a double-word constant pool entry matching TAG and WORD1/WORD2. */
 
 int
-find_constant2 (cpool, tag, word1, word2)
-     CPool *cpool;
-     int tag;
-     jword word1, word2;
+find_constant2 (CPool *cpool, int tag, jword word1, jword word2)
 {
   int i;
   for (i = cpool->count - 1;  --i > 0; )
@@ -112,10 +102,7 @@ find_constant2 (cpool, tag, word1, word2)
 }
 
 static int
-find_tree_constant (cpool, tag, value)
-     CPool *cpool;
-     int tag;
-     tree value;
+find_tree_constant (CPool *cpool, int tag, tree value)
 {
   int i;
   for (i = cpool->count;  --i > 0; )
@@ -131,9 +118,7 @@ find_tree_constant (cpool, tag, value)
 
 
 int
-find_utf8_constant (cpool, name)
-     CPool *cpool;
-     tree name;
+find_utf8_constant (CPool *cpool, tree name)
 {
   if (name == NULL_TREE)
     return 0;
@@ -141,10 +126,7 @@ find_utf8_constant (cpool, name)
 }
 
 static int
-find_class_or_string_constant (cpool, tag, name)
-     CPool *cpool;
-     int tag;
-     tree name;
+find_class_or_string_constant (CPool *cpool, int tag, tree name)
 {
   jword j = find_utf8_constant (cpool, name);
   int i;
@@ -159,9 +141,7 @@ find_class_or_string_constant (cpool, tag, name)
 }
 
 int
-find_class_constant (cpool, type)
-     CPool *cpool;
-     tree type;
+find_class_constant (CPool *cpool, tree type)
 {
   return find_class_or_string_constant (cpool, CONSTANT_Class,
 					build_internal_class_name (type));
@@ -170,9 +150,7 @@ find_class_constant (cpool, type)
 /* Allocate a CONSTANT_string entry given a STRING_CST. */
 
 int
-find_string_constant (cpool, string)
-     CPool *cpool;
-     tree string;
+find_string_constant (CPool *cpool, tree string)
 {
   string = get_identifier (TREE_STRING_POINTER (string));
   return find_class_or_string_constant (cpool, CONSTANT_String, string);
@@ -183,10 +161,7 @@ find_string_constant (cpool, string)
    Return its index in the constant pool CPOOL. */
 
 static int
-find_name_and_type_constant (cpool, name, type)
-     CPool *cpool;
-     tree name;
-     tree type;
+find_name_and_type_constant (CPool *cpool, tree name, tree type)
 {
   int name_index = find_utf8_constant (cpool, name);
   int type_index = find_utf8_constant (cpool, build_java_signature (type));
@@ -198,9 +173,7 @@ find_name_and_type_constant (cpool, name, type)
    Return its index in the constant pool CPOOL. */
 
 int
-find_fieldref_index (cpool, decl)
-     CPool *cpool;
-     tree decl;
+find_fieldref_index (CPool *cpool, tree decl)
 {
   int class_index = find_class_constant (cpool, DECL_CONTEXT (decl));
   int name_type_index
@@ -213,18 +186,13 @@ find_fieldref_index (cpool, decl)
    Return its index in the constant pool CPOOL. */
 
 int
-find_methodref_index (cpool, decl)
-     CPool *cpool;
-     tree decl;
+find_methodref_index (CPool *cpool, tree decl)
 {
   return find_methodref_with_class_index (cpool, decl, DECL_CONTEXT (decl));
 }
 
 int
-find_methodref_with_class_index (cpool, decl, mclass)
-     CPool *cpool;
-     tree decl;
-     tree mclass;
+find_methodref_with_class_index (CPool *cpool, tree decl, tree mclass)
 {
   int class_index = find_class_constant (cpool, mclass);
   tree name = DECL_CONSTRUCTOR_P (decl) ? init_identifier_node
@@ -248,8 +216,7 @@ find_methodref_with_class_index (cpool, decl, mclass)
    constant pool.  Includes the 2-byte constant_pool_count. */
 
 int
-count_constant_pool_bytes (cpool)
-     CPool *cpool;
+count_constant_pool_bytes (CPool *cpool)
 {
   int size = 2;
   int i = 1;
@@ -294,10 +261,7 @@ count_constant_pool_bytes (cpool)
    The length of BUFFER is LENGTH, which must match the needed length. */
 
 void
-write_constant_pool (cpool, buffer, length)
-     CPool *cpool;
-     unsigned char *buffer;
-     int length;
+write_constant_pool (CPool *cpool, unsigned char *buffer, int length)
 {
   unsigned char *ptr = buffer;
   int i = 1;
@@ -348,8 +312,7 @@ CPool *outgoing_cpool;
 
 static GTY(()) tree tag_nodes[13];
 static tree
-get_tag_node (tag)
-     int tag;
+get_tag_node (int tag)
 {
   /* A Cache for build_int_2 (CONSTANT_XXX, 0). */
 
@@ -365,9 +328,7 @@ get_tag_node (tag)
    Returns the index of the entry. */
 
 int
-alloc_name_constant (tag, name)
-     int tag;
-     tree name;
+alloc_name_constant (int tag, tree name)
 {
   return find_tree_constant (outgoing_cpool, tag, name);
 }
@@ -375,8 +336,7 @@ alloc_name_constant (tag, name)
 /* Build an identifier for the internal name of reference type TYPE. */
 
 tree
-build_internal_class_name (type)
-     tree type;
+build_internal_class_name (tree type)
 {
   tree name;
   if (TYPE_ARRAY_P (type))
@@ -394,8 +354,7 @@ build_internal_class_name (type)
 /* Look for a CONSTANT_Class entry for CLAS, creating a new one if needed. */
 
 int
-alloc_class_constant (clas)
-     tree clas;
+alloc_class_constant (tree clas)
 {
   tree class_name = build_internal_class_name (clas);
   
@@ -408,7 +367,7 @@ alloc_class_constant (clas)
 /* Return a reference to the data array of the current constant pool. */
 
 static tree
-build_constant_data_ref ()
+build_constant_data_ref (void)
 {
   tree cpool_data_ref = NULL_TREE;
 
@@ -433,8 +392,7 @@ build_constant_data_ref ()
 /* Get the pointer value at the INDEX'th element of the constant pool. */
 
 tree
-build_ref_from_constant_pool (index)
-     int index;
+build_ref_from_constant_pool (int index)
 {
   tree t = build_constant_data_ref ();
   index *= int_size_in_bytes (ptr_type_node);
@@ -447,7 +405,7 @@ build_ref_from_constant_pool (index)
    Should only be called at top-level, since it may emit declarations. */
 
 tree
-build_constants_constructor ()
+build_constants_constructor (void)
 {
   tree tags_value, data_value;
   tree cons;

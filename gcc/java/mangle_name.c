@@ -53,9 +53,7 @@ extern struct obstack *mangle_obstack;
    frequently that they could be cached.  */
 
 void
-append_gpp_mangled_name (name, len)
-     const char *name;
-     int len;
+append_gpp_mangled_name (const char *name, int len)
 {
   int encoded_len = unicode_mangling_length (name, len);
   int needs_escapes = encoded_len > 0;
@@ -76,9 +74,7 @@ append_gpp_mangled_name (name, len)
    which case `__U' will be mangled `__U_'.  */
 
 static void
-append_unicode_mangled_name (name, len)
-     const char *name;
-     int len;
+append_unicode_mangled_name (const char *name, int len)
 {
   const unsigned char *ptr;
   const unsigned char *limit = (const unsigned char *)name + len;
@@ -129,9 +125,7 @@ append_unicode_mangled_name (name, len)
    escapes.  If no escapes are needed, return 0.  */
 
 static int
-unicode_mangling_length (name, len)
-     const char *name; 
-     int len; 
+unicode_mangling_length (const char *name, int len)
 {
   const unsigned char *ptr;
   const unsigned char *limit = (const unsigned char *)name + len;
@@ -199,9 +193,7 @@ unicode_mangling_length (name, len)
    so frequently that they could be cached.  */
 
 void
-append_gpp_mangled_name (name, len)
-     const char *name;
-     int len;
+append_gpp_mangled_name (const char *name, int len)
 {
   const unsigned char *ptr;
   const unsigned char *limit = (const unsigned char *)name + len;

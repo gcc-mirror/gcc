@@ -50,11 +50,8 @@ static void skip_attribute (JCF *, int);
 
 #ifdef NEED_PEEK_ATTRIBUTE	/* Not everyone uses this function */
 static int
-peek_attribute (jcf, attribute_number, peeked_name, peeked_name_length)
-      JCF *jcf;
-      int attribute_number;
-      const char *peeked_name;
-      int peeked_name_length;
+peek_attribute (JCF *jcf, int attribute_number, const char *peeked_name,
+		int peeked_name_length)
 {
   int to_return = 0;
   long absolute_offset = (long)JCF_TELL (jcf);
@@ -92,9 +89,7 @@ peek_attribute (jcf, attribute_number, peeked_name, peeked_name_length)
 
 #ifdef NEED_SKIP_ATTRIBUTE	/* Not everyone uses this function */
 static void
-skip_attribute (jcf, number_of_attribute)
-     JCF *jcf;
-     int number_of_attribute;
+skip_attribute (JCF *jcf, int number_of_attribute)
 {
   while (number_of_attribute--)
     {

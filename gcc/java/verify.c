@@ -56,8 +56,7 @@ tree pending_blocks;
 /* Append TARGET_LABEL to the pending_block stack unless already in it. */
 
 static void
-push_pending_label (target_label) 
-     tree target_label;
+push_pending_label (tree target_label) 
 {
   if (! LABEL_CHANGED (target_label))
     {
@@ -72,8 +71,7 @@ push_pending_label (target_label)
    Return NULL on success, or an error message on failure. */
 
 static const char *
-check_pending_block (target_label)
-     tree target_label;
+check_pending_block (tree target_label)
 {
   int changed = merge_type_state (target_label);
 
@@ -129,8 +127,7 @@ subroutine_nesting (tree label)
    Return TYPE_UNKNOWN if the types cannot be merged. */   
 
 static tree
-merge_types (type1, type2)
-     tree type1, type2;
+merge_types (tree type1, tree type2)
 {
   if (type1 == type2)
     return type1;
@@ -245,8 +242,7 @@ merge_types (type1, type2)
    0 if there was no change, and 1 if there was a change. */
 
 int
-merge_type_state (label)
-     tree label;
+merge_type_state (tree label)
 {
   int nlocals = DECL_MAX_LOCALS (current_function_decl);
   int cur_length = stack_pointer + nlocals;
@@ -308,8 +304,7 @@ merge_type_state (label)
 /* Handle dup-like operations. */
 
 static void
-type_stack_dup (size, offset)
-     int size, offset;
+type_stack_dup (int size, int offset)
 {
   tree type[4];
   int index;
@@ -350,9 +345,7 @@ struct pc_index
 
 /* A helper that is used when sorting exception ranges.  */
 static int
-start_pc_cmp (xp, yp)
-     const void *xp;
-     const void *yp;
+start_pc_cmp (const void *xp, const void *yp)
 {
   const struct pc_index *x = (const struct pc_index *) xp;
   const struct pc_index *y = (const struct pc_index *) yp;
@@ -375,8 +368,7 @@ start_pc_cmp (xp, yp)
    Return NULL on success and a freshly malloc'd error message on failure. */
 
 static char *
-pop_argument_types (arg_types)
-     tree arg_types;
+pop_argument_types (tree arg_types)
 {
   if (arg_types == end_params_node)
     return NULL;
@@ -419,10 +411,7 @@ pop_argument_types (arg_types)
 /* Verify the bytecodes of the current method.
    Return 1 on success, 0 on failure. */
 int
-verify_jvm_instructions (jcf, byte_ops, length)
-     JCF* jcf;
-     const unsigned char *byte_ops;
-     long length;
+verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
 {
   tree label;
   int wide = 0;

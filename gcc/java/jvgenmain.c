@@ -40,8 +40,7 @@ struct obstack  name_obstack;
 struct obstack *mangle_obstack = &name_obstack;
 
 void
-gcc_obstack_init (obstack)
-     struct obstack *obstack;
+gcc_obstack_init (struct obstack *obstack)
 {
   /* Let particular systems override the size of a chunk.  */
 #ifndef OBSTACK_CHUNK_SIZE
@@ -157,8 +156,7 @@ main (int argc, char **argv)
 
 
 static char *
-do_mangle_classname (string)
-     const char *string;
+do_mangle_classname (const char *string)
 {
   const char *ptr;
   int count = 0;

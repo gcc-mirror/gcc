@@ -162,8 +162,7 @@ static void check_final_reassigned (tree, words);
    Return the declaration or NULL_TREE if no interesting declaration.  */
 
 static tree
-get_variable_decl (exp)
-     tree exp;
+get_variable_decl (tree exp)
 {
   if (TREE_CODE (exp) == VAR_DECL)
     {
@@ -196,8 +195,7 @@ get_variable_decl (exp)
 }
 
 static void
-final_assign_error (name)
-     tree name;
+final_assign_error (tree name)
 {
   static const char format[]
     = "can't reassign a value to the final variable '%s'";
@@ -205,9 +203,7 @@ final_assign_error (name)
 }
 
 static void
-check_final_reassigned (decl, before)
-     tree decl;
-     words before;
+check_final_reassigned (tree decl, words before)
 {
   int index = DECL_BIT_INDEX (decl);
   /* A final local already assigned or a final parameter
@@ -225,10 +221,8 @@ check_final_reassigned (decl, before)
    BEFORE, WHEN_FALSE, and WHEN_TRUE are as in check_bool_init. */
 
 static void
-check_cond_init (test_exp, then_exp, else_exp,
-		 before, when_false, when_true)
-     tree test_exp, then_exp, else_exp;
-     words before, when_false, when_true;
+check_cond_init (tree test_exp, tree then_exp, tree else_exp,
+		 words before, words when_false, words when_true)
 {
   int save_start_current_locals = start_current_locals;
   DECLARE_BUFFERS(test_false, 6);
@@ -253,9 +247,8 @@ check_cond_init (test_exp, then_exp, else_exp,
    BEFORE, WHEN_FALSE, and WHEN_TRUE are as in check_bool_init. */
 
 static void
-check_bool2_init (code, exp0, exp1, before, when_false, when_true)
-     enum tree_code code;  tree exp0, exp1;
-     words before, when_false, when_true;
+check_bool2_init (enum tree_code code, tree exp0, tree exp1,
+		  words before, words when_false, words when_true)
 {
   word buf[2*4];
   words tmp = num_current_words <= 2 ? buf
@@ -321,9 +314,7 @@ check_bool2_init (code, exp0, exp1, before, when_false, when_true)
    be used as temporary working areas. */
 
 static void
-check_bool_init (exp, before, when_false, when_true)
-     tree exp;
-     words before, when_false, when_true;
+check_bool_init (tree exp, words before, words when_false, words when_true)
 {
   switch (TREE_CODE (exp))
     {
@@ -455,9 +446,7 @@ struct alternatives * alternatives = NULL;
    of previous alternative branches. */
 
 static void
-done_alternative (after, current)
-     words after;
-     struct alternatives *current; 
+done_alternative (words after, struct alternatives *current)
 {
   INTERSECTN (current->combined, current->combined, after,
 	      WORDS_NEEDED (2 * current->num_locals));
@@ -479,9 +468,7 @@ done_alternative (after, current)
 /* Check for (un)initialized local variables in EXP.  */
 
 static void
-check_init (exp, before)
-     tree exp;
-     words before;
+check_init (tree exp, words before)
 {
   tree tmp;
  again:
@@ -924,8 +911,7 @@ check_init (exp, before)
 }
 
 void
-check_for_initialization (body, mdecl)
-     tree body, mdecl;
+check_for_initialization (tree body, tree mdecl)
 {
   tree decl;
   word buf[2];

@@ -106,9 +106,7 @@ static void load_inner_classes (tree);
 /* Handle "SourceFile" attribute. */
 
 static void
-set_source_filename (jcf, index)
-     JCF *jcf;
-     int index;
+set_source_filename (JCF *jcf, int index)
 {
   tree sfname_id = get_name_constant (jcf, index);
   const char *sfname = IDENTIFIER_POINTER (sfname_id);
@@ -223,9 +221,7 @@ set_source_filename (jcf, index)
 #include "jcf-reader.c"
 
 tree
-parse_signature (jcf, sig_index)
-     JCF *jcf;
-     int sig_index;
+parse_signature (JCF *jcf, int sig_index)
 {
   if (sig_index <= 0 || sig_index >= JPOOL_SIZE (jcf)
       || JPOOL_TAG (jcf, sig_index) != CONSTANT_Utf8)
@@ -236,9 +232,7 @@ parse_signature (jcf, sig_index)
 }
 
 tree
-get_constant (jcf, index)
-  JCF *jcf;
-  int index;
+get_constant (JCF *jcf, int index)
 {
   tree value;
   int tag;
@@ -336,9 +330,7 @@ get_constant (jcf, index)
 }
 
 tree
-get_name_constant (jcf, index)
-  JCF *jcf;
-  int index;
+get_name_constant (JCF *jcf, int index)
 {
   tree name = get_constant (jcf, index);
 
@@ -353,9 +345,7 @@ get_name_constant (jcf, index)
    the outer context with the newly resolved innerclass.  */
 
 static void
-handle_innerclass_attribute (count, jcf)
-     int count;
-     JCF *jcf;
+handle_innerclass_attribute (int count, JCF *jcf)
 {
   int c = (count);
   while (c--)
@@ -391,9 +381,7 @@ handle_innerclass_attribute (count, jcf)
 }
 
 static tree
-give_name_to_class (jcf, i)
-     JCF *jcf;
-     int i;
+give_name_to_class (JCF *jcf, int i)
 {
   if (i <= 0 || i >= JPOOL_SIZE (jcf)
       || JPOOL_TAG (jcf, i) != CONSTANT_Class)
@@ -420,7 +408,7 @@ give_name_to_class (jcf, i)
 /* Get the class of the CONSTANT_Class whose constant pool index is I. */
 
 tree
-get_class_constant (JCF *jcf , int i)
+get_class_constant (JCF *jcf, int i)
 {
   tree type;
   if (i <= 0 || i >= JPOOL_SIZE (jcf)
@@ -455,8 +443,7 @@ get_class_constant (JCF *jcf , int i)
    define the class it is supposed to.) */
 
 int
-read_class (name)
-     tree name;
+read_class (tree name)
 {
   JCF this_jcf, *jcf;
   tree icv, class = NULL_TREE;
@@ -548,9 +535,7 @@ read_class (name)
    - and then perhaps rename read_class to load_class.  FIXME */
 
 void
-load_class (class_or_name, verbose)
-     tree class_or_name;
-     int verbose;
+load_class (tree class_or_name, int verbose)
 {
   tree name, saved;
   int class_loaded;
@@ -596,8 +581,7 @@ load_class (class_or_name, verbose)
 /* Parse the .class file JCF. */
 
 void
-jcf_parse (jcf)
-     JCF* jcf;
+jcf_parse (JCF* jcf)
 {
   int i, code;
 
@@ -667,8 +651,7 @@ jcf_parse (jcf)
 
 /* If we came across inner classes, load them now. */
 static void
-load_inner_classes (cur_class)
-     tree cur_class;
+load_inner_classes (tree cur_class)
 {
   tree current;
   for (current = DECL_INNER_CLASS_LIST (TYPE_NAME (cur_class)); current;
@@ -683,13 +666,13 @@ load_inner_classes (cur_class)
 }
 
 void
-init_outgoing_cpool ()
+init_outgoing_cpool (void)
 {
   outgoing_cpool = ggc_alloc_cleared (sizeof (struct CPool));
 }
 
 static void
-parse_class_file ()
+parse_class_file (void)
 {
   tree method, field;
   const char *save_input_filename = input_filename;
@@ -799,9 +782,7 @@ parse_class_file ()
 /* Parse a source file, as pointed by the current value of INPUT_FILENAME. */
 
 static void
-parse_source_file_1 (file, finput)
-     tree file;
-     FILE *finput;
+parse_source_file_1 (tree file, FILE *finput)
 {
   int save_error_count = java_error_count;
   /* Mark the file as parsed */
@@ -833,7 +814,7 @@ parse_source_file_1 (file, finput)
 /* Process a parsed source file, resolving names etc. */
 
 static void
-parse_source_file_2 ()
+parse_source_file_2 (void)
 {
   int save_error_count = java_error_count;
   java_complete_class ();	    /* Parse unsatisfied class decl. */
@@ -841,7 +822,7 @@ parse_source_file_2 ()
 }
 
 static void
-parse_source_file_3 ()
+parse_source_file_3 (void)
 {
   int save_error_count = java_error_count;
   java_check_circular_reference (); /* Check on circular references */
@@ -852,15 +833,13 @@ parse_source_file_3 ()
 }
 
 void
-add_predefined_file (name)
-     tree name;
+add_predefined_file (tree name)
 {
   predef_filenames = tree_cons (NULL_TREE, name, predef_filenames);
 }
 
 int
-predefined_filename_p (node)
-     tree node;
+predefined_filename_p (tree node)
 {
   tree iter;
 
@@ -873,8 +852,7 @@ predefined_filename_p (node)
 }
 
 void
-java_parse_file (set_yydebug)
-     int set_yydebug ATTRIBUTE_UNUSED;
+java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 {
   int filename_count = 0;
   char *list, *next;
@@ -1229,7 +1207,7 @@ process_zip_dir (FILE *finput)
 /* Initialization.  */
 
 void
-init_jcf_parse ()
+init_jcf_parse (void)
 {
   init_src_parse ();
 }

@@ -29,9 +29,7 @@ Boston, MA 02111-1307, USA.  */
 /* Grow BUFP so there is room for at least SIZE more bytes. */
 
 void
-buffer_grow (bufp, size)
-     struct buffer *bufp;
-     int size;
+buffer_grow (struct buffer *bufp, int size)
 {
   if (bufp->limit - bufp->ptr >= size)
     return;

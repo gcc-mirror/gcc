@@ -95,14 +95,14 @@ static const struct option options[] =
 };
 
 static void
-usage ()
+usage (void)
 {
   fprintf (stderr, "Try `jv-scan --help' for more information.\n");
   exit (1);
 }
 
 static void
-help ()
+help (void)
 {
   printf ("Usage: jv-scan [OPTION]... FILE...\n\n");
   printf ("Print useful information read from Java source files.\n\n");
@@ -123,7 +123,7 @@ help ()
 }
 
 static void
-version ()
+version (void)
 {
   printf ("jv-scan (GCC) %s\n\n", version_string);
   printf ("Copyright (C) 2002 Free Software Foundation, Inc.\n");
@@ -264,8 +264,7 @@ warning (const char *s, ...)
 }
 
 void
-gcc_obstack_init (obstack)
-     struct obstack *obstack;
+gcc_obstack_init (struct obstack *obstack)
 {
   /* Let particular systems override the size of a chunk.  */
 #ifndef OBSTACK_CHUNK_SIZE
