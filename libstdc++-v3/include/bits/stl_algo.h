@@ -737,11 +737,9 @@ namespace std
     {
       // concept requirements
       __glibcpp_function_requires(_InputIteratorConcept<_InputIter>)
-    /* XXX
       __glibcpp_function_requires(_OutputIteratorConcept<_OutputIter,
-	    // should be "the type returned by _UnaryOperation"
-	    typename iterator_traits<_InputIter>::value_type>)
-    */
+            // "the type returned by a _UnaryOperation"
+            __typeof__(__unary_op(*__first))>)
 
       for ( ; __first != __last; ++__first, ++__result)
 	*__result = __unary_op(*__first);
@@ -775,11 +773,9 @@ namespace std
       // concept requirements
       __glibcpp_function_requires(_InputIteratorConcept<_InputIter1>)
       __glibcpp_function_requires(_InputIteratorConcept<_InputIter2>)
-    /* XXX
       __glibcpp_function_requires(_OutputIteratorConcept<_OutputIter,
-	    // should be "the type returned by _BinaryOperation"
-	    typename iterator_traits<_InputIter1>::value_type>)
-    */
+            // "the type returned by a _BinaryOperation"
+            __typeof__(__binary_op(*__first1,*__first2))>)
 
       for ( ; __first1 != __last1; ++__first1, ++__first2, ++__result)
 	*__result = __binary_op(*__first1, *__first2);
@@ -948,11 +944,10 @@ namespace std
     _OutputIter
     generate_n(_OutputIter __first, _Size __n, _Generator __gen)
     {
-    /*
-      // XXX concept requirements
+      // concept requirements
       __glibcpp_function_requires(_OutputIteratorConcept<_OutputIter,
-	    "the return type of _Generator" ??   >)
-    */
+            // "the type returned by a _Generator"
+            __typeof__(gen())>)
 
       for ( ; __n > 0; --__n, ++__first)
 	*__first = __gen();
