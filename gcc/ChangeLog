@@ -1,3 +1,16 @@
+Wed Nov 24 17:26:05 1999  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* config/mips/mips.h (ASM_SPEC): Don't pass -G to the assembler
+	when -membedded-pic is passed.
+
+	* config/mips/mips.md (casesi): Handle 64-bit case too.
+	(casesi_internal_di): New insn.
+
+	* config/mips/mips.c (embedded_pic_offset): Always make the
+	embedded-pic subtractions relative to the name of the current
+	function by use of the magic string "..CURRENT_FUNCTION".
+	* config/mips/mips.h (ASM_OUTPUT_LABELREF): Make the magic happen.
+
 1999-11-24  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* config/mips/mips.md (div_trap_normal): Don't ask for the REGNO

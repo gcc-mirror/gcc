@@ -9217,10 +9217,6 @@ move\\t%0,%z4\\n\\
   "TARGET_EMBEDDED_PIC"
   "
 {
-  /* We need slightly different code for eight byte table entries.  */
-  if (Pmode == DImode)
-    abort ();
-
   if (operands[0])
     {
       rtx reg = gen_reg_rtx (SImode);
@@ -9231,8 +9227,12 @@ move\\t%0,%z4\\n\\
       emit_insn (gen_bgtu (operands[4]));
 
       /* Do the PIC jump.  */
-      emit_jump_insn (gen_casesi_internal (reg, operands[3],
-					   gen_reg_rtx (SImode)));
+      if (Pmode != DImode)
+        emit_jump_insn (gen_casesi_internal (reg, operands[3], 
+					     gen_reg_rtx (SImode)));
+      else
+        emit_jump_insn (gen_casesi_internal_di (reg, operands[3], 
+						gen_reg_rtx (DImode)));
 
       DONE;
     }
@@ -9261,6 +9261,21 @@ move\\t%0,%z4\\n\\
   "TARGET_EMBEDDED_PIC"
   "%(bal\\t%S1\;sll\\t%2,%0,2\\n%~%S1:\;addu\\t%2,%2,$31%)\;\\
 lw\\t%2,%1-%S1(%2)\;addu\\t%2,%2,$31\;j\\t%2"
+  [(set_attr "type"	"jump")
+   (set_attr "mode"	"none")
+   (set_attr "length"	"24")])
+
+(define_insn "casesi_internal_di"
+  [(set (pc)
+	(mem:DI (plus:DI (sign_extend:DI 
+			  (mult:SI (match_operand:SI 0 "register_operand" "d")
+				  (const_int 4))
+			 (label_ref (match_operand 1 "" "")))))
+   (clobber (match_operand:DI 2 "register_operand" "=d"))
+   (clobber (reg:DI 31))]
+  "TARGET_EMBEDDED_PIC"
+  "%(bal\\t%S1\;sll\\t%2,%0,2\\n%~%S1:\;addu\\t%2,%2,$31%)\;\\
+ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\;j\\t%2"
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
    (set_attr "length"	"24")])

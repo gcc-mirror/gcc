@@ -807,7 +807,7 @@ while (0)
 /* ASM_SPEC is the set of arguments to pass to the assembler.  */
 
 #define ASM_SPEC "\
-%{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} %{mips4} \
+%{!membedded-pic:%{G*}} %{EB} %{EL} %{mips1} %{mips2} %{mips3} %{mips4} \
 %{mips16:%{!mno-mips16:-mips16}} %{mno-mips16:-no-mips16} \
 %(subtarget_asm_optimizing_spec) \
 %(subtarget_asm_debugging_spec) \
@@ -3209,6 +3209,16 @@ do									\
       }									\
   }									\
 while (0)
+
+/* This handles the magic '..CURRENT_FUNCTION' symbol, which means
+   'the start of the function that this code is output in'.  */
+
+#define ASM_OUTPUT_LABELREF(FILE,NAME)  \
+  if (strcmp (NAME, "..CURRENT_FUNCTION") == 0)				\
+    asm_fprintf ((FILE), "%U%s",					\
+		 XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));	\
+  else									\
+    asm_fprintf ((FILE), "%U%s", (NAME))
 
 /* The mips16 wants the constant pool to be after the function,
    because the PC relative load instructions use unsigned offsets.  */
