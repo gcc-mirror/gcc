@@ -309,7 +309,6 @@ static void reg_dies (int, enum machine_mode, struct insn_chain *);
 static void allocate_bb_info (void);
 static void free_bb_info (void);
 static bool check_earlyclobber (rtx);
-static bool regclass_intersect (enum reg_class, enum reg_class);
 static void mark_reg_use_for_earlyclobber_1 (rtx *, void *);
 static int mark_reg_use_for_earlyclobber (rtx *, void *);
 static void calculate_local_reg_bb_info (void);
@@ -2180,22 +2179,6 @@ check_earlyclobber (rtx insn)
   return found;
 }
 
-/* The function returns true if register classes C1 and C2 intersect.  */
-
-static bool
-regclass_intersect (enum reg_class c1, enum reg_class c2)
-{
-  HARD_REG_SET rs, zero;
-
-  CLEAR_HARD_REG_SET (zero);
-  COPY_HARD_REG_SET(rs, reg_class_contents [c1]);
-  AND_HARD_REG_SET (rs, reg_class_contents [c2]);
-  GO_IF_HARD_REG_EQUAL (zero, rs, yes);
-  return true;
- yes:
-  return false;
-}
-
 /* The function checks that pseudo-register *X has a class
    intersecting with the class of pseudo-register could be early
    clobbered in the same insn.
@@ -2218,11 +2201,12 @@ mark_reg_use_for_earlyclobber (rtx *x, void *data ATTRIBUTE_UNUSED)
       pref_class = reg_preferred_class (regno);
       alt_class = reg_alternate_class (regno);
       for (i = VARRAY_ACTIVE_SIZE (earlyclobber_regclass) - 1; i >= 0; i--)
-	if (regclass_intersect (VARRAY_INT (earlyclobber_regclass, i),
-				pref_class)
+	if (reg_classes_intersect_p (VARRAY_INT (earlyclobber_regclass, i),
+				     pref_class)
 	    || (VARRAY_INT (earlyclobber_regclass, i) != NO_REGS
-		&& regclass_intersect (VARRAY_INT (earlyclobber_regclass, i),
-				       alt_class)))
+		&& reg_classes_intersect_p (VARRAY_INT (earlyclobber_regclass,
+							i),
+					    alt_class)))
 	  {
 	    bitmap_set_bit (bb_info->earlyclobber, regno);
 	    break;
