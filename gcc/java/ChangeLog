@@ -1,3 +1,8 @@
+2004-01-15  Michael Chastain  <mec.gnu@mindspring.com>
+
+	* class.c (gen_indirect_dispatch_tables): Fix string length
+	calculations.
+
 2004-01-15  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Make-lang.in (parse.c, parse-scan.c): Always build in doc directory.
