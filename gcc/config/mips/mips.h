@@ -146,6 +146,7 @@ extern const char *mips_isa_string;	/* for -mips{1,2,3,4} */
 extern const char *mips_abi_string;	/* for -mabi={32,n32,64} */
 extern const char *mips_entry_string;	/* for -mentry */
 extern const char *mips_no_mips16_string;/* for -mno-mips16 */
+extern const char *mips_explicit_type_size_string;/* for -mexplicit-type-size */
 extern int mips_split_addresses;	/* perform high/lo_sum support */
 extern int dslots_load_total;		/* total # load related delay slots */
 extern int dslots_load_filled;		/* # filled load delay slots */
@@ -453,6 +454,7 @@ extern void		mips_select_section ();
 {									\
   {"int64",		  MASK_INT64 | MASK_LONG64},			\
   {"long64",		  MASK_LONG64},					\
+  {"long32",		 -(MASK_LONG64 | MASK_INT64)},			\
   {"split-addresses",	  MASK_SPLIT_ADDR},				\
   {"no-split-addresses", -MASK_SPLIT_ADDR},				\
   {"mips-as",		 -MASK_GAS},					\
@@ -576,7 +578,8 @@ extern void		mips_select_section ();
   { "cpu=",	&mips_cpu_string	},				\
   { "ips",	&mips_isa_string	},				\
   { "entry",	&mips_entry_string	},				\
-  { "no-mips16", &mips_no_mips16_string	}                               \
+  { "no-mips16", &mips_no_mips16_string	},                              \
+  { "explicit-type-size", &mips_explicit_type_size_string }		\
 }
 
 /* This is meant to be redefined in the host dependent files.  */
@@ -888,6 +891,7 @@ while (0)
 %{mips4:%{!msingle-float:%{!m4650:-mfp64}} -mgp64} \
 %{mfp64:%{msingle-float:%emay not use both -mfp64 and -msingle-float}} \
 %{mfp64:%{m4650:%emay not use both -mfp64 and -m4650}} \
+%{mint64|mlong64|mlong32:-mexplicit-type-size }\
 %{m4650:-mcpu=r4650} \
 %{m3900:-mips1 -mcpu=r3900 -mfp32 -mgp32} \
 %{G*} %{EB:-meb} %{EL:-mel} %{EB:%{EL:%emay not use both -EB and -EL}} \
@@ -906,7 +910,7 @@ while (0)
 
 #ifndef SUBTARGET_CPP_SIZE_SPEC
 #define SUBTARGET_CPP_SIZE_SPEC "\
-%{mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
+%{mlong64:%{!mips1:%{!mips2:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}} \
 %{!mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}"
 #endif
 
@@ -920,7 +924,7 @@ while (0)
    correctly.  Similarly for 64bit ints and __INT_MAX__.  */
 #ifndef LONG_MAX_SPEC
 #if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & MASK_LONG64)
-#define LONG_MAX_SPEC "%{!mno-long64:-D__LONG_MAX__=9223372036854775807L}"
+#define LONG_MAX_SPEC "%{!mlong32:-D__LONG_MAX__=9223372036854775807L}"
 #else
 #define LONG_MAX_SPEC "%{mlong64:-D__LONG_MAX__=9223372036854775807L}"
 #endif

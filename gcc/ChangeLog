@@ -1,3 +1,20 @@
+Tue Mar 16 10:53:17 1999  Gavin Romig-Koch  <gavin@cygnus.com>
+
+	* invoke.texi: Add -mlong32 documentation.
+	* config/mips/mips.h (mips_explicit_type_size_string): New.
+	(TARGET_SWITCHES): Add 'long32'.
+	(TARGET_OPTIONS): Add 'explicit-type-size'.
+	(CC1_SPECS): Set -mexplicit-type-size.
+        (LONG_MAX_SPEC): Change a use of 'no-long64' to 'long32'.
+	* config/mips/abi64.h (LONG_MAX_SPEC): Same.  Add 'mabi=32'.
+	* config/mips/mips.c (mips_explicit_type_size_string): New.
+	(override_options): Use it.
+	* config/mips/osfrose.h (CC1_SPECS): Set -mexplicit-type-size.
+
+	* config/mips/mips.h (SUBTARGET_CPP_SIZE_SPEC): 
+	Pointer size now depends on both size longs and size of GP
+	registers.
+
 Tue Mar 16 10:22:22 1999  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* config/mips/iris.h (CTORS_SECTION_ASM_OP,DTORS_SECTION_ASM_OP,
