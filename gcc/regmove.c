@@ -1,5 +1,5 @@
 /* Move registers around to reduce number of move instructions needed.
-   Copyright (C) 1987, 88, 89, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -254,10 +254,10 @@ optimize_reg_copy_1 (insn, dest, src)
 	  && GET_MODE (XEXP (note, 0)) == GET_MODE (src))
 	{
 	  int failed = 0;
-	  int length = 0;
 	  int d_length = 0;
-	  int n_calls = 0;
+	  int s_length = 0;
 	  int d_n_calls = 0;
+	  int s_n_calls = 0;
 
 	  /* We can do the optimization.  Scan forward from INSN again,
 	     replacing regs as we go.  Set FAILED if a replacement can't
@@ -291,42 +291,14 @@ optimize_reg_copy_1 (insn, dest, src)
 			 insn in the REG_N_REFS updates below.  If this is not
 			 correct, no great harm is done.
 
-
-			 We do not undo this substitution if something later
-			 fails.  Therefore, we must update the other REG_N_*
-			 counters now to keep them accurate.  */
+			 Since we do not know if we will change the lifetime of
+			 SREGNO or DREGNO, we must not update REG_LIVE_LENGTH
+			 or REG_N_CALLS_CROSSED at this time.   */
 		      if (sregno >= FIRST_PSEUDO_REGISTER)
-			{
-			  REG_N_REFS (sregno) -= loop_depth;
-
-			  if (REG_LIVE_LENGTH (sregno) >= 0)
-			    {
-			      REG_LIVE_LENGTH (sregno) -= length;
-			      /* REG_LIVE_LENGTH is only an approximation after
-				 combine if sched is not run, so make sure that
-				 we still have a reasonable value.  */
-			      if (REG_LIVE_LENGTH (sregno) < 2)
-				REG_LIVE_LENGTH (sregno) = 2;
-			    }
-
-			  REG_N_CALLS_CROSSED (sregno) -= n_calls;
-			}
+			REG_N_REFS (sregno) -= loop_depth;
 
 		      if (dregno >= FIRST_PSEUDO_REGISTER)
-			{
-			  REG_N_REFS (dregno) += loop_depth;
-
-			  if (REG_LIVE_LENGTH (dregno) >= 0)
-			    REG_LIVE_LENGTH (dregno) += d_length;
-
-			  REG_N_CALLS_CROSSED (dregno) += d_n_calls;
-			}
-
-		      /* We've done a substitution, clear the counters.  */
-		      length = 0;
-		      d_length = 0;
-		      n_calls = 0;
-		      d_n_calls = 0;
+			REG_N_REFS (dregno) += loop_depth;
 		    }
 		  else
 		    {
@@ -335,9 +307,10 @@ optimize_reg_copy_1 (insn, dest, src)
 		    }
 		}
 
-	      /* Count the insns and CALL_INSNs passed.  If we passed the
-		 death note of DEST, show increased live length.  */
-	      length++;
+	      /* For SREGNO, count the total number of insns scanned.
+		 For DREGNO, count the total number of insns scanned after
+		 passing the death note for DREGNO.  */
+	      s_length++;
 	      if (dest_death)
 		d_length++;
 
@@ -345,7 +318,9 @@ optimize_reg_copy_1 (insn, dest, src)
 		 as a call that has been crossed.  Otherwise, count it.  */
 	      if (q != p && GET_CODE (q) == CALL_INSN)
 		{
-		  n_calls++;
+		  /* Similarly, total calls for SREGNO, total calls beyond
+		     the death note for DREGNO.  */
+		  s_n_calls++;
 		  if (dest_death)
 		    d_n_calls++;
 		}
@@ -365,11 +340,13 @@ optimize_reg_copy_1 (insn, dest, src)
 
 	  if (! failed)
 	    {
+	      /* These counters need to be updated if and only if we are
+		 going to move the REG_DEAD note.  */
 	      if (sregno >= FIRST_PSEUDO_REGISTER)
 		{
 		  if (REG_LIVE_LENGTH (sregno) >= 0)
 		    {
-		      REG_LIVE_LENGTH (sregno) -= length;
+		      REG_LIVE_LENGTH (sregno) -= s_length;
 		      /* REG_LIVE_LENGTH is only an approximation after
 			 combine if sched is not run, so make sure that we
 			 still have a reasonable value.  */
@@ -377,15 +354,7 @@ optimize_reg_copy_1 (insn, dest, src)
 			REG_LIVE_LENGTH (sregno) = 2;
 		    }
 
-		  REG_N_CALLS_CROSSED (sregno) -= n_calls;
-		}
-
-	      if (dregno >= FIRST_PSEUDO_REGISTER)
-		{
-		  if (REG_LIVE_LENGTH (dregno) >= 0)
-		    REG_LIVE_LENGTH (dregno) += d_length;
-
-		  REG_N_CALLS_CROSSED (dregno) += d_n_calls;
+		  REG_N_CALLS_CROSSED (sregno) -= s_n_calls;
 		}
 
 	      /* Move death note of SRC from P to INSN.  */
@@ -399,6 +368,15 @@ optimize_reg_copy_1 (insn, dest, src)
 	    {
 	      XEXP (dest_death, 1) = REG_NOTES (p);
 	      REG_NOTES (p) = dest_death;
+
+	      if (dregno >= FIRST_PSEUDO_REGISTER)
+		{
+		  /* If and only if we are moving the death note for DREGNO,
+		     then we need to update its counters.  */
+		  if (REG_LIVE_LENGTH (dregno) >= 0)
+		    REG_LIVE_LENGTH (dregno) += d_length;
+		  REG_N_CALLS_CROSSED (dregno) += d_n_calls;
+		}
 	    }
 
 	  return ! failed;
