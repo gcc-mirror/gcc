@@ -1,3 +1,7 @@
+Sun Dec  2 09:03:06 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* cfgbuild.c (SET_STATE): Add cast to eliminate warning.a
+
 2001-12-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cfgrtl.c (purge_all_dead_edges): Initialize variable.
