@@ -1,5 +1,19 @@
 2002-11-29  Michael Koch <konqueror@gmx.de>
 
+	* gnu/java/nio/natByteBufferImpl.cc,
+	gnu/java/nio/natCharBufferImpl.cc,
+	gnu/java/nio/natDoubleBufferImpl.cc,
+	gnu/java/nio/natFloatBufferImpl.cc,
+	gnu/java/nio/natIntBufferImpl.cc,
+	gnu/java/nio/natLongBufferImpl.cc,
+	gnu/java/nio/natSelectorImpl.cc,
+	gnu/java/nio/natServerSocketChannelImpl.cc,
+	gnu/java/nio/natShortBufferImpl.cc,
+	gnu/java/nio/natSocketChannelImpl.cc:
+	New files that implement native functionalities.
+
+2002-11-29  Michael Koch <konqueror@gmx.de>
+
 	* gnu/java/nio/ByteBufferImpl.java
 	(ByteBufferImpl): Moved position() after limit.
 	(nio_*): Use native implementation.
