@@ -1,3 +1,8 @@
+2004-01-27  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR target/7297
+	* except.c (init_eh): Use a 5-word __jbuf for __builtin_setjmp().
+
 2004-01-27  Bob Wilson  <bob.wilson@acm.org>
 	
 	* config/xtensa/xtensa.c (xtensa_copy_incoming_a7): Remove SUBREG
