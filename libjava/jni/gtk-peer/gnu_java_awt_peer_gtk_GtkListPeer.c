@@ -228,7 +228,6 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_deselect
   gdk_threads_leave ();
 }
 
-/* FIXME: magic mojo (that doesn't seem to do anything) */
 JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkListPeer_getSize
   (JNIEnv *env, jobject obj, jint rows, jintArray jdims)
@@ -251,7 +250,7 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_getSize
   list = GTK_WIDGET (CLIST_FROM_SW (ptr));
   sw = GTK_SCROLLED_WINDOW (ptr);
 
-  gtk_widget_size_request(list, &myreq);
+  gtk_widget_size_request(GTK_WIDGET(sw), &myreq);
   dims[1]=myreq.height;
   dims[0]=myreq.width;
   
