@@ -6190,7 +6190,7 @@ c_expand_return (retval)
   tree valtype = TREE_TYPE (TREE_TYPE (current_function_decl));
 
   if (TREE_THIS_VOLATILE (current_function_decl))
-    warning ("function declared `volatile' has a `return' statement");
+    warning ("function declared `noreturn' has a `return' statement");
 
   if (!retval)
     {
