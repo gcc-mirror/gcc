@@ -37,6 +37,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "cfgloop.h"
 #include "flags.h"
 #include "tree-inline.h"
+#include "tree-scalar-evolution.h"
 
 /* The loop tree currently optimized.  */
 
@@ -98,6 +99,9 @@ static void
 tree_ssa_loop_init (void)
 {
   current_loops = tree_loop_optimizer_init (dump_file);
+  if (!current_loops)
+    return;
+  scev_initialize (current_loops);
 }
   
 struct tree_opt_pass pass_loop_init = 
@@ -149,6 +153,40 @@ struct tree_opt_pass pass_lim =
   TODO_dump_func                	/* todo_flags_finish */
 };
 
+/* Loop autovectorization.  */
+
+static void
+tree_vectorize (void)
+{
+  if (!current_loops)
+    return;
+
+  bitmap_clear (vars_to_rename);
+  vectorize_loops (current_loops);
+}
+
+static bool
+gate_tree_vectorize (void)
+{
+  return flag_tree_vectorize != 0;
+}
+
+struct tree_opt_pass pass_vectorize =
+{
+  "vect",                               /* name */
+  gate_tree_vectorize,                  /* gate */
+  tree_vectorize,                       /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_TREE_VECTORIZATION,                /* tv_id */
+  PROP_cfg | PROP_ssa,                  /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func			/* todo_flags_finish */
+};
+
 /* Loop optimizer finalization.  */
 
 static void
@@ -156,6 +194,8 @@ tree_ssa_loop_done (void)
 {
   if (!current_loops)
     return;
+
+  scev_finalize ();
 
 #ifdef ENABLE_CHECKING
   verify_loop_closed_ssa ();

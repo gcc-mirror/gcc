@@ -907,6 +907,10 @@ fvar-tracking
 Common Report Var(flag_var_tracking) VarExists
 Perform variable tracking
 
+ftree-vectorize
+Common Report Var(flag_tree_vectorize)
+Enable loop vectorization on trees
+
 ; -fverbose-asm causes extra commentary information to be produced in
 ; the generated assembly code (to make it more readable).  This option
 ; is generally only of use to those who actually need to read the

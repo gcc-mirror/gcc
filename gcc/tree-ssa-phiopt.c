@@ -45,7 +45,6 @@ static void replace_phi_with_stmt (block_stmt_iterator, basic_block,
 static bool candidate_bb_for_phi_optimization (basic_block,
 					       basic_block *,
 					       basic_block *);
-static bool empty_block_p (basic_block);
 
 /* This pass eliminates PHI nodes which can be trivially implemented as
    an assignment from a conditional expression.  ie if we have something
@@ -147,7 +146,7 @@ tree_ssa_phiopt (void)
 
 /* Return TRUE if block BB has no executable statements, otherwise return
    FALSE.  */
-static bool
+bool
 empty_block_p (basic_block bb)
 {
   block_stmt_iterator bsi;
