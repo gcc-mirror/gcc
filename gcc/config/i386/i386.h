@@ -715,8 +715,15 @@ extern int x86_prefetch_sse;
    boundaries, so lower the aligment for structure fields unless
    -malign-double is set.  */
 
+/* ??? Blah -- this macro is used directly by libobjc.  Since it
+   supports no vector modes, cut out the complexity and fall back
+   on BIGGEST_FIELD_ALIGNMENT.  */
+#ifdef IN_TARGET_LIBS
+#define BIGGEST_FIELD_ALIGNMENT 32
+#else
 #define ADJUST_FIELD_ALIGN(FIELD, COMPUTED) \
    x86_field_alignment (FIELD, COMPUTED)
+#endif
 
 /* If defined, a C expression to compute the alignment given to a
    constant that is being placed in memory.  EXP is the constant
