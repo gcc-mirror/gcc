@@ -5333,10 +5333,35 @@ package body Exp_Ch4 is
       Pfx  : constant Node_Id    := Prefix (N);
       Ptp  : Entity_Id           := Etype (Pfx);
 
+      function Is_Procedure_Actual (N : Node_Id) return Boolean;
+      --  Check whether context is a procedure call, in which case
+      --  expansion of a bit-packed slice is deferred until the call
+      --  itself is expanded.
+
       procedure Make_Temporary;
       --  Create a named variable for the value of the slice, in
       --  cases where the back-end cannot handle it properly, e.g.
       --  when packed types or unaligned slices are involved.
+
+      -------------------------
+      -- Is_Procedure_Actual --
+      -------------------------
+
+      function Is_Procedure_Actual (N : Node_Id) return Boolean is
+         Par : Node_Id := Parent (N);
+      begin
+         while Present (Par)
+           and then Nkind (Par) not in N_Statement_Other_Than_Procedure_Call
+         loop
+            if Nkind (Par) = N_Procedure_Call_Statement then
+               return True;
+            else
+               Par := Parent (Par);
+            end if;
+         end loop;
+
+         return False;
+      end Is_Procedure_Actual;
 
       --------------------
       -- Make_Temporary --
@@ -5422,26 +5447,34 @@ package body Exp_Ch4 is
       --       is caught elsewhere, and the expansion would intefere
       --       with generating the error message).
 
-      if Is_Packed (Typ)
-        and then Nkind (Parent (N)) /= N_Assignment_Statement
-        and then (Nkind (Parent (Parent (N))) /= N_Assignment_Statement
-                     or else
-                  Parent (N) /= Name (Parent (Parent (N))))
-        and then Nkind (Parent (N)) /= N_Indexed_Component
-        and then not Is_Renamed_Object (N)
-        and then Nkind (Parent (N)) /= N_Procedure_Call_Statement
-        and then (Nkind (Parent (N)) /= N_Attribute_Reference
-                    or else
-                  Attribute_Name (Parent (N)) /= Name_Address)
-      then
-         Make_Temporary;
+      if not Is_Packed (Typ) then
+         --  apply transformation for actuals of a function call, where
+         --  Expand_Actuals is not used.
 
-      --  Same transformation for actuals in a function call, where
-      --  Expand_Actuals is not used.
+         if Nkind (Parent (N)) = N_Function_Call
+           and then Is_Possibly_Unaligned_Slice (N)
+         then
+            Make_Temporary;
+         end if;
 
-      elsif Nkind (Parent (N)) = N_Function_Call
-        and then Is_Possibly_Unaligned_Slice (N)
+      elsif Nkind (Parent (N)) = N_Assignment_Statement
+        or else (Nkind (Parent (Parent (N))) = N_Assignment_Statement
+                   and then Parent (N) = Name (Parent (Parent (N))))
       then
+         return;
+
+      elsif Nkind (Parent (N)) = N_Indexed_Component
+        or else Is_Renamed_Object (N)
+        or else Is_Procedure_Actual (N)
+      then
+         return;
+
+      elsif (Nkind (Parent (N)) = N_Attribute_Reference
+        and then Attribute_Name (Parent (N)) = Name_Address)
+      then
+         return;
+
+      else
          Make_Temporary;
       end if;
    end Expand_N_Slice;

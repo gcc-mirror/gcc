@@ -885,15 +885,15 @@ package GNAT.Sockets is
    function Stream
      (Socket : Socket_Type)
       return   Stream_Access;
-   --  Associate a stream with a stream-based socket that is already
-   --  connected.
+   --  Create a stream associated with a stream-based socket that is
+   --  already connected.
 
    function Stream
      (Socket  : Socket_Type;
       Send_To : Sock_Addr_Type)
       return    Stream_Access;
-   --  Associate a stream with a datagram-based socket that is already
-   --  bound. Send_To is the socket address to which messages are
+   --  Create a stream associated with a datagram-based socket that is
+   --  already bound. Send_To is the socket address to which messages are
    --  being sent.
 
    function Get_Address
@@ -901,6 +901,11 @@ package GNAT.Sockets is
       return   Sock_Addr_Type;
    --  Return the socket address from which the last message was
    --  received.
+
+   procedure Free (Stream : in out Stream_Access);
+   --  Destroy a stream created by one of the Stream functions above, and
+   --  release associated resources. The user is responsible for calling
+   --  this subprogram when the stream is not needed anymore.
 
    type Socket_Set_Type is limited private;
    --  This type allows to manipulate sets of sockets. It allows to

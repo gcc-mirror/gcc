@@ -296,9 +296,13 @@ package body System.Task_Primitives.Operations is
       Timed_Out : out Boolean;
       Status    : out Integer)
    is
-      Time_Out    : DWORD;
-      Result      : BOOL;
-      Wait_Result : DWORD;
+      Time_Out_Max : constant DWORD := 16#FFFF0000#;
+      --  NT 4 cannot handle timeout values that are too large,
+      --  e.g. DWORD'Last - 1
+
+      Time_Out     : DWORD;
+      Result       : BOOL;
+      Wait_Result  : DWORD;
 
    begin
       --  Must reset Cond BEFORE L is unlocked.
@@ -315,8 +319,8 @@ package body System.Task_Primitives.Operations is
          Wait_Result := 0;
 
       else
-         if Rel_Time >= Duration (DWORD'Last - 1) / 1000 then
-            Time_Out := DWORD'Last - 1;
+         if Rel_Time >= Duration (Time_Out_Max) / 1000 then
+            Time_Out := Time_Out_Max;
          else
             Time_Out := DWORD (Rel_Time * 1000);
          end if;

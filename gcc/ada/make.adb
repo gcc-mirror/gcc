@@ -312,6 +312,11 @@ package body Make is
    Main_Project : Prj.Project_Id := No_Project;
    --  The project id of the main project file, if any
 
+   Project_Object_Directory : Project_Id := No_Project;
+   --  The object directory of the project for the last compilation.
+   --  Avoid calling Change_Dir if the current working directory is already
+   --  this directory
+
    --  Packages of project files where unknown attributes are errors.
 
    Naming_String   : aliased String := "naming";
@@ -343,6 +348,10 @@ package body Make is
 
    procedure Add_Object_Directories is
      new Prj.Env.For_All_Object_Dirs (Action => Add_Object_Dir);
+
+   procedure Change_To_Object_Directory (Project : Project_Id);
+   --  Change to the object directory of project Project, if this is not
+   --  already the current working directory.
 
    type Bad_Compilation_Info is record
       File  : File_Name_Type;
@@ -1106,6 +1115,36 @@ package body Make is
          raise Bind_Failed;
       end if;
    end Bind;
+
+   --------------------------------
+   -- Change_To_Object_Directory --
+   --------------------------------
+
+   procedure Change_To_Object_Directory (Project : Project_Id) is
+   begin
+      --  Nothing to do if the current working directory is alresdy the one
+      --  we want.
+
+      if Project_Object_Directory /= Project then
+         Project_Object_Directory := Project;
+
+         --  If in a real project, set the working directory to the object
+         --  directory of the project.
+
+         if Project /= No_Project then
+            Change_Dir
+              (Get_Name_String (Projects.Table (Project).Object_Directory));
+
+         --  Otherwise, for sources outside of any project, set the working
+         --  directory to the object directory of the main project.
+
+         elsif Main_Project /= No_Project then
+            Change_Dir
+              (Get_Name_String
+                 (Projects.Table (Main_Project).Object_Directory));
+         end if;
+      end if;
+   end Change_To_Object_Directory;
 
    -----------
    -- Check --
@@ -2204,28 +2243,23 @@ package body Make is
                end;
             end if;
 
-            --  Change to the object directory of the project file, if it is
-            --  not the main project file.
+            --  Change to the object directory of the project file,
+            --  if necessary.
 
-            if Arguments_Project /= Main_Project then
-               Change_Dir
-                 (Get_Name_String
-                    (Projects.Table (Arguments_Project).Object_Directory));
-            end if;
+            Change_To_Object_Directory (Arguments_Project);
 
             Pid := Compile (Arguments_Path_Name, Lib_File,
                             Arguments (1 .. Last_Argument));
 
-            --  Change back to the object directory of the main project file,
-            --  if necessary.
+         else
+            --  If this is a source outside of any project file, make sure
+            --  it will be compiled in the object directory of the main project
+            --  file.
 
-            if Arguments_Project /= Main_Project then
-               Change_Dir
-                 (Get_Name_String
-                    (Projects.Table (Main_Project).Object_Directory));
+            if Main_Project /= No_Project then
+               Change_To_Object_Directory (Arguments_Project);
             end if;
 
-         else
             Pid := Compile (Full_Source_File, Lib_File,
                             Arguments (1 .. Last_Argument));
          end if;
@@ -3761,9 +3795,8 @@ package body Make is
          --  project.
 
          begin
-            Change_Dir
-              (Get_Name_String
-                 (Projects.Table (Main_Project).Object_Directory));
+            Project_Object_Directory := No_Project;
+            Change_To_Object_Directory (Main_Project);
 
          exception
             when Directory_Error =>
@@ -4621,6 +4654,13 @@ package body Make is
                   end if;
                end if;
             end Recursive_Compilation_Step;
+         end if;
+
+         --  For binding and linking, we need to be in the object directory of
+         --  the main project.
+
+         if Main_Project /= No_Project then
+            Change_To_Object_Directory (Main_Project);
          end if;
 
          --  If we are here, it means that we need to rebuilt the current
@@ -5712,6 +5752,10 @@ package body Make is
                Make_Failed (Exception_Message (Err));
          end;
       end if;
+
+      --  Make sure no project object directory is recorded
+
+      Project_Object_Directory := No_Project;
 
       --  Set the marking label to a value that is not zero
 

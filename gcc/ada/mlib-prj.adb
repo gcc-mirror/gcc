@@ -806,6 +806,42 @@ package body MLib.Prj is
               (B_Start & Get_Name_String (Data.Library_Name) & ".adb");
             Add_Argument ("-L" & Get_Name_String (Data.Library_Name));
 
+            --  Check if Binder'Default_Switches ("Ada) is defined. If it is,
+            --  add these switches to call gnatbind.
+
+            declare
+               Binder_Package : constant Package_Id :=
+                 Value_Of
+                   (Name        => Name_Binder,
+                    In_Packages => Data.Decl.Packages);
+            begin
+               if Binder_Package /= No_Package then
+                  declare
+                     Defaults : constant Array_Element_Id :=
+                                  Value_Of
+                                    (Name      => Name_Default_Switches,
+                                     In_Arrays =>
+                                       Packages.Table
+                                         (Binder_Package).Decl.Arrays);
+                     Switches : Variable_Value :=
+                                  Value_Of
+                                    (Index => Name_Ada, In_Array => Defaults);
+                     Switch : String_List_Id := Nil_String;
+                  begin
+                     if not Switches.Default then
+                        Switch := Switches.Values;
+
+                        while Switch /= Nil_String loop
+                           Add_Argument
+                             (Get_Name_String
+                                (String_Elements.Table (Switch).Value));
+                           Switch := String_Elements.Table (Switch).Next;
+                        end loop;
+                     end if;
+                  end;
+               end if;
+            end;
+
             --  Get all the ALI files of the project file
 
             declare

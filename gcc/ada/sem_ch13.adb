@@ -2898,6 +2898,8 @@ package body Sem_Ch13 is
                Error_Msg_Uint_1 := Asiz;
                Error_Msg_NE
                  ("size for& too small, minimum allowed is ^", N, T);
+               Set_Esize   (T, Asiz);
+               Set_RM_Size (T, Asiz);
             end if;
          end;
 
@@ -2939,6 +2941,8 @@ package body Sem_Ch13 is
                Error_Msg_Uint_1 := M;
                Error_Msg_NE
                  ("size for& too small, minimum allowed is ^", N, T);
+               Set_Esize (T, M);
+               Set_RM_Size (T, M);
             else
                Biased := True;
             end if;

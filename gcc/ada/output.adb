@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -236,10 +236,12 @@ package body Output is
 
    procedure Write_Char (C : Character) is
    begin
-      if Next_Column < Buffer'Length then
-         Buffer (Natural (Next_Column)) := C;
-         Next_Column := Next_Column + 1;
+      if Next_Column = Buffer'Length then
+         Write_Eol;
       end if;
+
+      Buffer (Natural (Next_Column)) := C;
+      Next_Column := Next_Column + 1;
    end Write_Char;
 
    ---------------
