@@ -1,4 +1,4 @@
-#   Copyright (C) 1999, 2001, 2003, 2004 Free Software Foundation, Inc.
+#   Copyright (C) 1999, 2001, 2003, 2004, 2005 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -40,6 +40,16 @@ proc get_compiler_messages {basename type contents} {
     remote_file build delete $output
 
     return $lines
+}
+
+proc current_target_name { } {
+    global target_info
+    if [info exists target_info(target,name)] {
+	set answer $target_info(target,name)
+    } else {
+	set answer ""
+    }
+    return $answer
 }
 
 ###############################
@@ -418,26 +428,74 @@ proc check_alpha_max_hw_available { } {
 
 # Return 1 if we're generating 32-bit code using default options, 0
 # otherwise.
+#
+# When the target name changes, replace the cached result.
 
 proc check_effective_target_ilp32 { } {
-    verbose "check_effective_target_ilp32: compiling source" 2
-    set answer [string match "" [get_compiler_messages ilp32 object {
-	int dummy[(sizeof (int) == 4 && sizeof (void *) == 4 && sizeof (long) == 4 ) ? 1 : -1];
-    }]]
-    verbose "check_effective_target_ilp32: returning $answer" 2
-    return $answer
+    global et_ilp32_saved
+    global et_ilp32_target_name
+
+    if { ![info exists et_ilp32_target_name] } {
+	set et_ilp32_target_name ""
+    }
+
+    # If the target has changed since we set the cached value, clear it.
+    set current_target [current_target_name]
+    if { $current_target != $et_ilp32_target_name } {
+	verbose "check_effective_target_ilp32: `$et_ilp32_target_name' `$current_target'" 2
+	set et_ilp32_target_name $current_target
+	if { [info exists et_ilp32_saved] } {
+	    verbose "check_effective_target_ilp32: removing cached result" 2
+	    unset et_ilp32_saved
+	}
+    }
+
+    if [info exists et_ilp32_saved] {
+	verbose "check-effective_target_ilp32: using cached result" 2
+    } else {
+	verbose "check_effective_target_ilp32: compiling source" 2
+	set et_ilp32_saved [string match "" [get_compiler_messages ilp32 object {
+	    int dummy[(sizeof (int) == 4 && sizeof (void *) == 4 && sizeof (long) == 4 ) ? 1 : -1];
+	}]]
+    }
+    verbose "check_effective_target_ilp32: returning $et_ilp32_saved" 2
+    return $et_ilp32_saved
 }
 
 # Return 1 if we're generating 64-bit code using default options, 0
 # otherwise.
+#
+# When the target name changes, replace the cached result.
 
 proc check_effective_target_lp64 { } {
-    verbose "check_effective_target_lp64: compiling source" 2
-    set answer [string match "" [get_compiler_messages lp64 object {
-	int dummy[(sizeof (int) == 4 && sizeof (void *) == 8 && sizeof (long) == 8 ) ? 1 : -1];
-    }]]
-    verbose "check_effective_target_lp64: returning $answer" 2
-    return $answer
+    global et_lp64_saved
+    global et_lp64_target_name
+
+    if { ![info exists et_lp64_target_name] } {
+	set et_lp64_target_name ""
+    }
+
+    # If the target has changed since we set the cached value, clear it.
+    set current_target [current_target_name]
+    if { $current_target != $et_lp64_target_name } {
+	verbose "check_effective_target_lp64: `$et_lp64_target_name' `$current_target'" 2
+	set et_lp64_target_name $current_target
+	if [info exists et_lp64_saved] {
+	    verbose "check_effective_target_lp64: removing cached result" 2
+	    unset et_lp64_saved
+	}
+    }
+
+    if [info exists et_lp64_saved] {
+	verbose "check_effective_target_lp64: using cached result" 2
+    } else {
+	verbose "check_effective_target_lp64: compiling source" 2
+	set et_lp64_saved [string match "" [get_compiler_messages lp64 object {
+	    int dummy[(sizeof (int) == 4 && sizeof (void *) == 8 && sizeof (long) == 8 ) ? 1 : -1];
+	}]]
+    }
+    verbose "check_effective_target_lp64: returning $et_lp64_saved" 2
+    return $et_lp64_saved
 }
 
 # Return 1 if the target supports hardware vectors of int, 0 otherwise.
