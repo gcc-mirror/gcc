@@ -7613,20 +7613,16 @@ expand_builtin_return_addr (fndecl_code, count, tem)
    them.  */
 
 rtx
-expand_builtin_setjmp (buf_addr, target)
+expand_builtin_setjmp (buf_addr, target, first_label, next_label)
      rtx buf_addr;
      rtx target;
+     rtx first_label, next_label;
 {
-  rtx lab1 = gen_label_rtx (), lab2 = gen_label_rtx ();
+  rtx lab1 = gen_label_rtx ();
   enum machine_mode sa_mode = Pmode, value_mode;
   rtx stack_save;
   int old_inhibit_defer_pop = inhibit_defer_pop;
-  int return_pops
-    =  RETURN_POPS_ARGS (get_identifier ("__dummy"),
-			 build_function_type (void_type_node, NULL_TREE),
-			 0);
   rtx next_arg_reg;
-  CUMULATIVE_ARGS args_so_far;
   rtx op0;
   int i;
 
@@ -7649,11 +7645,11 @@ expand_builtin_setjmp (buf_addr, target)
      machine-dependent.  */
   emit_move_insn (gen_rtx_MEM (Pmode, buf_addr),
 		  virtual_stack_vars_rtx);
-  emit_move_insn
-    (validize_mem (gen_rtx_MEM (Pmode,
+  emit_move_insn (validize_mem
+		  (gen_rtx_MEM (Pmode,
 				plus_constant (buf_addr,
 					       GET_MODE_SIZE (Pmode)))),
-     gen_rtx_LABEL_REF (Pmode, lab1));
+		  gen_rtx_LABEL_REF (Pmode, lab1));
 
 #ifdef HAVE_save_stack_nonlocal
   if (HAVE_save_stack_nonlocal)
@@ -7665,19 +7661,23 @@ expand_builtin_setjmp (buf_addr, target)
 					   2 * GET_MODE_SIZE (Pmode)));
   emit_stack_save (SAVE_NONLOCAL, &stack_save, NULL_RTX);
 
-#ifdef HAVE_setjmp
-  if (HAVE_setjmp)
-    emit_insn (gen_setjmp ());
+  /* If there is further processing to do, do it.  */
+#ifdef HAVE_builtin_setjmp_setup
+  if (HAVE_builtin_setjmp_setup)
+    emit_insn (gen_builtin_setjmp_setup (buf_addr));
 #endif
 
-  /* Set TARGET to zero and branch around the other case.  */
+  /* Set TARGET to zero and branch to the first-time-through label.  */
   emit_move_insn (target, const0_rtx);
-  emit_jump_insn (gen_jump (lab2));
+  emit_jump_insn (gen_jump (first_label));
   emit_barrier ();
   emit_label (lab1);
 
-  /* Note that setjmp clobbers FP when we get here, so we have to make
-     sure it's marked as used by this function.  */
+  /* Tell flow about the strange goings on.  */
+  current_function_has_nonlocal_label = 1;
+
+  /* Clobber the FP when we get here, so we have to make sure it's
+     marked as used by this function.  */
   emit_insn (gen_rtx_USE (VOIDmode, hard_frame_pointer_rtx));
 
   /* Mark the static chain as clobbered here so life information
@@ -7691,8 +7691,6 @@ expand_builtin_setjmp (buf_addr, target)
   if (! HAVE_nonlocal_goto)
 #endif
     emit_move_insn (virtual_stack_vars_rtx, hard_frame_pointer_rtx);
-
-  current_function_has_nonlocal_label = 1;
 
 #if ARG_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
   if (fixed_regs[ARG_POINTER_REGNUM])
@@ -7721,49 +7719,107 @@ expand_builtin_setjmp (buf_addr, target)
     }
 #endif
 
-#ifdef HAVE_nonlocal_goto_receiver
-  if (HAVE_nonlocal_goto_receiver)
-    emit_insn (gen_nonlocal_goto_receiver ());
-#endif
-  /* The static chain pointer contains the address of dummy function.
-     We need to call it here to handle some PIC cases of restoring a
-     global pointer.  Then return 1.  */
-  op0 = copy_to_mode_reg (Pmode, static_chain_rtx);
-
-  /* We can't actually call emit_library_call here, so do everything
-     it does, which isn't much for a libfunc with no args.  */
-  op0 = memory_address (FUNCTION_MODE, op0);
-
-  INIT_CUMULATIVE_ARGS (args_so_far, NULL_TREE,
-			gen_rtx_SYMBOL_REF (Pmode, "__dummy"), 1);
-  next_arg_reg = FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1);
-
-#ifndef ACCUMULATE_OUTGOING_ARGS
-#ifdef HAVE_call_pop
-  if (HAVE_call_pop)
-    emit_call_insn (gen_call_pop (gen_rtx_MEM (FUNCTION_MODE, op0),
-				  const0_rtx, next_arg_reg,
-				  GEN_INT (return_pops)));
-  else
-#endif
-#endif
-
-#ifdef HAVE_call
-    if (HAVE_call)
-      emit_call_insn (gen_call (gen_rtx_MEM (FUNCTION_MODE, op0),
-				const0_rtx, next_arg_reg, const0_rtx));
-    else
-#endif
-      abort ();
-
 #ifdef HAVE_builtin_setjmp_receiver
   if (HAVE_builtin_setjmp_receiver)
-    emit_insn (gen_builtin_setjmp_receiver ());
+    emit_insn (gen_builtin_setjmp_receiver (lab1));
+  else
+#endif
+#ifdef HAVE_nonlocal_goto_receiver
+    if (HAVE_nonlocal_goto_receiver)
+      emit_insn (gen_nonlocal_goto_receiver ());
+    else
+#endif
+      ; /* Nothing */
+
+  /* Set TARGET, and branch to the next-time-through label.  */
+  emit_move_insn (target, gen_lowpart (GET_MODE (target), static_chain_rtx));
+  emit_jump_insn (gen_jump (next_label));
+  emit_barrier ();
+
+  return target;
+}
+
+void
+expand_builtin_longjmp (buf_addr, value)
+     rtx buf_addr, value;
+{
+  rtx fp, lab, stack;
+  enum machine_mode sa_mode;
+
+#ifdef POINTERS_EXTEND_UNSIGNED
+  buf_addr = convert_memory_address (Pmode, buf_addr);
+#endif
+  buf_addr = force_reg (Pmode, buf_addr);
+
+  /* The value sent by longjmp is not allowed to be zero.  Force it
+     to one if so.  */
+  if (GET_CODE (value) == CONST_INT)
+    {
+      if (INTVAL (value) == 0)
+	value = const1_rtx;
+    }
+  else
+    {
+      lab = gen_label_rtx ();
+
+      emit_cmp_insn (value, const0_rtx, NE, NULL_RTX, GET_MODE (value), 0, 0);
+      emit_jump_insn (gen_bne (lab));
+      emit_move_insn (value, const1_rtx);
+      emit_label (lab);
+    }
+
+  /* Make sure the value is in the right mode to be copied to the chain.  */
+  if (GET_MODE (value) != VOIDmode)
+    value = gen_lowpart (GET_MODE (static_chain_rtx), value);
+
+#ifdef HAVE_builtin_longjmp
+  if (HAVE_builtin_longjmp)
+    {
+      /* Copy the "return value" to the static chain reg.  */
+      emit_move_insn (static_chain_rtx, value);
+      emit_insn (gen_rtx_USE (VOIDmode, static_chain_rtx));
+      emit_insn (gen_builtin_longjmp (buf_addr));
+    }
+  else
+#endif
+    {
+      fp = gen_rtx_MEM (Pmode, buf_addr);
+      lab = gen_rtx_MEM (Pmode, plus_constant (buf_addr,
+					       GET_MODE_SIZE (Pmode)));
+
+#ifdef HAVE_save_stack_nonlocal
+      sa_mode = (HAVE_save_stack_nonlocal
+		 ? insn_operand_mode[(int) CODE_FOR_save_stack_nonlocal][0]
+		 : Pmode);
+#else
+      sa_mode = Pmode;
 #endif
 
-  emit_move_insn (target, const1_rtx);
-  emit_label (lab2);
-  return target;
+      stack = gen_rtx_MEM (sa_mode, plus_constant (buf_addr,
+						   2 * GET_MODE_SIZE (Pmode)));
+
+      /* Pick up FP, label, and SP from the block and jump.  This code is
+	 from expand_goto in stmt.c; see there for detailed comments.  */
+#if HAVE_nonlocal_goto
+      if (HAVE_nonlocal_goto)
+	emit_insn (gen_nonlocal_goto (value, fp, stack, lab));
+      else
+#endif
+	{
+	  lab = copy_to_reg (lab);
+
+	  /* Copy the "return value" to the static chain reg.  */
+	  emit_move_insn (static_chain_rtx, value);
+
+	  emit_move_insn (hard_frame_pointer_rtx, fp);
+	  emit_stack_restore (SAVE_NONLOCAL, stack, NULL_RTX);
+
+	  emit_insn (gen_rtx_USE (VOIDmode, hard_frame_pointer_rtx));
+	  emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
+	  emit_insn (gen_rtx_USE (VOIDmode, static_chain_rtx));
+	  emit_indirect_jump (lab);
+	}
+    }
 }
 
 
@@ -8676,88 +8732,32 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       if (arglist == 0
 	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE)
 	break;
+      else
+	{
+	  rtx buf_addr = expand_expr (TREE_VALUE (arglist), subtarget,
+				      VOIDmode, 0);
+	  rtx lab = gen_label_rtx ();
+	  rtx ret = expand_builtin_setjmp (buf_addr, target, lab, lab);
+	  emit_label (lab);
+	  return ret;
+	}
 
-      {
-	rtx buf_addr = expand_expr (TREE_VALUE (arglist), subtarget,
-				    VOIDmode, 0);
-	return expand_builtin_setjmp (buf_addr, target);
-      }
-
-      /* __builtin_longjmp is passed a pointer to an array of five words
-	 and a value, which is a dummy.  It's similar to the C library longjmp
-	 function but works with __builtin_setjmp above.  */
+      /* __builtin_longjmp is passed a pointer to an array of five words.
+	 It's similar to the C library longjmp function but works with
+	 __builtin_setjmp above.  */
     case BUILT_IN_LONGJMP:
       if (arglist == 0 || TREE_CHAIN (arglist) == 0
 	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE)
 	break;
-
-      {
-	tree dummy_id = get_identifier ("__dummy");
-	tree dummy_type = build_function_type (void_type_node, NULL_TREE);
-	tree dummy_decl = build_decl (FUNCTION_DECL, dummy_id, dummy_type); 
-#ifdef POINTERS_EXTEND_UNSIGNED
-	rtx buf_addr
-	  = force_reg (Pmode,
-		       convert_memory_address
-		       (Pmode,
-			expand_expr (TREE_VALUE (arglist),
-				     NULL_RTX, VOIDmode, 0)));
-#else
-	rtx buf_addr
-	  = force_reg (Pmode, expand_expr (TREE_VALUE (arglist),
-					   NULL_RTX,
-					   VOIDmode, 0));
-#endif
-	rtx fp = gen_rtx_MEM (Pmode, buf_addr);
-	rtx lab = gen_rtx_MEM (Pmode,
-			       plus_constant (buf_addr,
-					      GET_MODE_SIZE (Pmode)));
-	enum machine_mode sa_mode
-#ifdef HAVE_save_stack_nonlocal
-	  = (HAVE_save_stack_nonlocal
-	     ? insn_operand_mode[(int) CODE_FOR_save_stack_nonlocal][0]
-	     : Pmode);
-#else
-	= Pmode;
-#endif
-	rtx stack = gen_rtx_MEM (sa_mode,
-				 plus_constant (buf_addr,
-						2 * GET_MODE_SIZE (Pmode)));
-
-	DECL_EXTERNAL (dummy_decl) = 1;
-	TREE_PUBLIC (dummy_decl) = 1;
-	make_decl_rtl (dummy_decl, NULL_PTR, 1);
-
-	/* Expand the second expression just for side-effects.  */
-	expand_expr (TREE_VALUE (TREE_CHAIN (arglist)),
-		     const0_rtx, VOIDmode, 0);
-
-	assemble_external (dummy_decl);
-
-	/* Pick up FP, label, and SP from the block and jump.  This code is
-	   from expand_goto in stmt.c; see there for detailed comments.  */
-#if HAVE_nonlocal_goto
-	if (HAVE_nonlocal_goto)
-	  emit_insn (gen_nonlocal_goto (fp, lab, stack,
-					XEXP (DECL_RTL (dummy_decl), 0)));
       else
-#endif
 	{
-	  lab = copy_to_reg (lab);
-	  emit_move_insn (hard_frame_pointer_rtx, fp);
-	  emit_stack_restore (SAVE_NONLOCAL, stack, NULL_RTX);
-
-	  /* Put in the static chain register the address of the dummy
-	     function.  */
-	  emit_move_insn (static_chain_rtx, XEXP (DECL_RTL (dummy_decl), 0));
-	  emit_insn (gen_rtx_USE (VOIDmode, hard_frame_pointer_rtx));
-	  emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
-	  emit_insn (gen_rtx_USE (VOIDmode, static_chain_rtx));
-	  emit_indirect_jump (lab);
+	  rtx buf_addr = expand_expr (TREE_VALUE (arglist), subtarget,
+				      VOIDmode, 0);
+	  rtx value = expand_expr (TREE_VALUE (TREE_CHAIN (arglist)),
+				   const0_rtx, VOIDmode, 0);
+	  expand_builtin_longjmp (buf_addr, value);
+	  return const0_rtx;
 	}
-
-	return const0_rtx;
-      }
 
       /* Various hooks for the DWARF 2 __throw routine.  */
     case BUILT_IN_UNWIND_INIT:

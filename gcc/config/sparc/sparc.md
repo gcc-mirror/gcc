@@ -5640,7 +5640,7 @@
 
 (define_insn "update_return"
   [(unspec:SI [(match_operand:SI 0 "register_operand" "r")
-	       (match_operand:SI 1 "register_operand" "r")] 0)]
+	       (match_operand:SI 1 "register_operand" "r")] 1)]
   "! TARGET_ARCH64"
   "cmp %1,0\;be,a .+8\;add %0,4,%0"
   [(set_attr "type" "multi")])
@@ -5676,32 +5676,40 @@
 
 ;; ??? Doesn't work with -mflat.
 (define_expand "nonlocal_goto"
-  [(match_operand:SI 0 "general_operand" "")
+  [(match_operand:SI 0 "" "")
    (match_operand:SI 1 "general_operand" "")
    (match_operand:SI 2 "general_operand" "")
-   (match_operand:SI 3 "" "")]
+   (match_operand:SI 3 "general_operand" "")]
   ""
   "
 {
+  rtx chain = operands[0];
+  rtx fp = operands[1];
+  rtx stack = operands[2];
+  rtx lab = operands[3];
+
   /* Trap instruction to flush all the register windows.  */
   emit_insn (gen_flush_register_windows ());
-  /* Load the fp value for the containing fn into %fp.
-     This is needed because operands[2] refers to %fp.
-     Virtual register instantiation fails if the virtual %fp isn't set from a
-     register.  Thus we must copy operands[0] into a register if it isn't
-     already one.  */
-  if (GET_CODE (operands[0]) != REG)
-    operands[0] = force_reg (Pmode, operands[0]);
-  emit_move_insn (virtual_stack_vars_rtx, operands[0]);
+
+  /* Load the fp value for the containing fn into %fp.  This is needed
+     because STACK refers to %fp.  Note that virtual register instantiation
+     fails if the virtual %fp isn't set from a register.  */
+  if (GET_CODE (fp) != REG)
+    fp = force_reg (Pmode, fp);
+  emit_move_insn (virtual_stack_vars_rtx, fp);
+
   /* Find the containing function's current nonlocal goto handler,
      which will do any cleanups and then jump to the label.  */
-  emit_move_insn (gen_rtx (REG, Pmode, 8), operands[1]);
+  emit_move_insn (gen_rtx (REG, Pmode, 8), lab);
+
   /* Restore %fp from stack pointer value for containing function.
      The restore insn that follows will move this to %sp,
      and reload the appropriate value into %fp.  */
-  emit_move_insn (frame_pointer_rtx, operands[2]);
+  emit_move_insn (frame_pointer_rtx, stack);
+
   /* Put in the static chain register the nonlocal label address.  */
-  emit_move_insn (static_chain_rtx, operands[3]);
+  emit_move_insn (static_chain_rtx, chain);
+
   /* USE of frame_pointer_rtx added for consistency; not clear if
      really needed.  */
   emit_insn (gen_rtx (USE, VOIDmode, frame_pointer_rtx));
@@ -5729,11 +5737,10 @@
   [(set_attr "type" "misc")
    (set_attr "length" "2")])
 
-;; Pattern for use after a setjmp to store FP and the return register
-;; into the stack area.
+;; Implement setjmp.  Step one, set up the buffer.
 
-(define_expand "setjmp"
-  [(const_int 0)]
+(define_expand "builtin_setjmp_setup"
+  [(unspec [(match_operand 0 "" "")] 3)]
   ""
   "
 {
@@ -5741,7 +5748,6 @@
     emit_insn (gen_setjmp_64 ());
   else
     emit_insn (gen_setjmp_32 ());
-
   DONE;
 }")
 

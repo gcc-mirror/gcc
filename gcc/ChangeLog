@@ -1,3 +1,30 @@
+Mon Feb  2 19:18:14 1998  Richard Henderson  <rth@cygnus.com>
+
+        * expr.c (expand_builtin_setjmp): Accept two new arguments for
+        the labels to branch to on first and subsequent executions.  Don't
+        play with __dummy.  Rename `setjmp' insn to `builtin_setjmp_setup',
+	and provide it with the jmp_buf.  Use only one of
+	`builtin_setjmp_receiver' or `nonlocal_goto_receiver',
+        and provide the former with the target label.
+        (expand_builtin) [BUILTIN_SETJMP]: Generate a label for use by setjmp.
+        (expand_builtin) [BUILTIN_LONGJMP]: Split out to ...
+        (expand_builtin_longjmp): ... here.  Recognize a `builtin_longjmp'
+        insn to replace all of the normal nonlocal_goto code.  Don't play
+	with __dummy.  Correct arguments to nonlocal_goto.
+        * expr.h (expand_builtin_setjmp): Update prototype.
+        * except.c (start_dynamic_handler): When using builtin_setjmp,
+        generate more accurate flow information.
+
+        * alpha.md (nonlocal_goto_receiver_osf): Delete.
+        (nonlocal_goto_receiver_vms): Rename to nonlocal_goto_receiver.
+        (builtin_longjmp, builtin_setjmp_receiver): New.
+        * sparc.md (update_return): Disambiguate unspec number.
+        (nonlocal_goto): Rearrange arguments to match caller in except.c.
+        (builtin_setjmp_setup): Rename from setjmp.  Match and ignore the
+        jmp_buf operand.
+	* mips.md (nonlocal_goto_receiver, builtin_setjmp_receiver): Remove.
+	(builtin_setjmp_setup*, builtin_longjmp): New.
+
 Mon Feb  2 16:43:10 1998  John Carr  <jfc@mit.edu>
 
 	* mips.md: Change gen_rtx (CONST_INT) to GEN_INT.

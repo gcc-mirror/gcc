@@ -5050,33 +5050,42 @@
     }
 }")
 
-;; Ideally we should be able to define nonlocal_goto and arrange
-;; for the pc to be in a known place.  Or perhaps branch back via
-;; br instead of jmp.
-(define_insn "nonlocal_goto_receiver_osf"
-  [(unspec_volatile [(const_int 0)] 2)]
+(define_expand "builtin_longjmp"
+  [(unspec_volatile [(match_operand 0 "register_operand" "r")] 3)]
   "! TARGET_OPEN_VMS && ! TARGET_WINDOWS_NT"
-  "br $29,$LGOTO%=\\n$LGOTO%=:\;ldgp $29,0($29)")
+  "
+{
+  /* The elements of the buffer are, in order:  */
+  rtx fp = gen_rtx_MEM (Pmode, operands[0]);
+  rtx lab = gen_rtx_MEM (Pmode, plus_constant (operands[0], 8));
+  rtx stack = gen_rtx_MEM (Pmode, plus_constant (operands[0], 16));
+  rtx pv = gen_rtx_REG (Pmode, 27);
 
-(define_expand "nonlocal_goto_receiver_vms"
+  /* This bit is the same as expand_builtin_longjmp.  */
+  emit_move_insn (hard_frame_pointer_rtx, fp);
+  emit_move_insn (pv, lab);
+  emit_stack_restore (SAVE_NONLOCAL, stack, NULL_RTX);
+  emit_insn (gen_rtx_USE (VOIDmode, hard_frame_pointer_rtx));
+  emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
+
+  /* Load the label we are jumping through into $27 so that we know
+     where to look for it when we get back to setjmp's function for
+     restoring the gp.  */
+  emit_indirect_jump (pv);
+}")
+
+(define_insn "builtin_setjmp_receiver"
+  [(unspec_volatile [(match_operand 0 "" "")] 2)]
+  "! TARGET_OPEN_VMS && ! TARGET_WINDOWS_NT"
+  "\\n$LSJ%=:\;ldgp $29,$LSJ%=-%l0($27)")
+
+(define_expand "nonlocal_goto_receiver"
   [(unspec_volatile [(const_int 0)] 1)
    (set (reg:DI 27) (mem:DI (reg:DI 29)))
    (unspec_volatile [(const_int 0)] 1)
    (use (reg:DI 27))]
   "TARGET_OPEN_VMS"
   "")
-
-(define_expand "nonlocal_goto_receiver"
-  [(unspec_volatile [(const_int 0)] 2)]
-  ""
-  "
-{
-  if (TARGET_OPEN_VMS)
-    emit_insn(gen_nonlocal_goto_receiver_vms ());
-  else if (!TARGET_WINDOWS_NT)
-    emit_insn(gen_nonlocal_goto_receiver_osf ());
-  DONE;
-}")
 
 (define_insn "arg_home"
   [(unspec [(const_int 0)] 0)

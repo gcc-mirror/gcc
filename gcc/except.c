@@ -945,14 +945,17 @@ start_dynamic_handler ()
 #ifdef DONT_USE_BUILTIN_SETJMP
   x = emit_library_call_value (setjmp_libfunc, NULL_RTX, 1, SImode, 1,
 			       buf, Pmode);
-#else
-  x = expand_builtin_setjmp (buf, NULL_RTX);
-#endif
-
-  /* If we come back here for a catch, transfer control to the
-     handler.  */
-
+  /* If we come back here for a catch, transfer control to the handler.  */
   jumpif_rtx (x, ehstack.top->entry->exception_handler_label);
+#else
+  {
+    /* A label to continue execution for the no exception case.  */
+    rtx noex = gen_label_rtx();
+    x = expand_builtin_setjmp (buf, NULL_RTX, noex,
+			       ehstack.top->entry->exception_handler_label);
+    emit_label (noex);
+  }
+#endif
 
   /* We are committed to this, so update the handler chain.  */
 
