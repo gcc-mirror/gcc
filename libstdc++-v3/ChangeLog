@@ -1,3 +1,7 @@
+2003-04-12  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* os/hpux/ctype_inline.h: Replace with gnu-linux version.
+
 2003-04-12  David Edelsohn  <edelsohn@gnu.org>
 
 	* testsuite/27_io/basic_istream/sentry/char/3983-fstream.cc:
