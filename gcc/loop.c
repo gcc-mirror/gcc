@@ -7259,6 +7259,7 @@ check_dbra_loop (loop, insn_count)
       if (bl->giv_count == 0 && ! loop->exit_count)
 	{
 	  rtx bivreg = regno_reg_rtx[bl->regno];
+	  struct iv_class *blt;
 
 	  /* If there are no givs for this biv, and the only exit is the
 	     fall through at the end of the loop, then
@@ -7294,6 +7295,14 @@ check_dbra_loop (loop, insn_count)
 		    no_use_except_counting = 0;
 		    break;
 		  }
+	      }
+
+	  /* A biv has uses besides counting if it is used to set another biv.  */
+	  for (blt = ivs->list; blt; blt = blt->next)
+	    if (blt->init_set && reg_mentioned_p (bivreg, SET_SRC (blt->init_set)))
+	      {
+		no_use_except_counting = 0;
+		break;
 	      }
 	}
 

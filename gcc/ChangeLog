@@ -1,3 +1,8 @@
+2001-02-24  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* loop.c (check_dbra_loop): A biv has uses besides counting if it is
+	used to set another biv.
+
 Sat Feb 24 06:45:21 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree.h (BLOCK_DEAD): New macro.
