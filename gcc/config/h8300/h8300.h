@@ -316,29 +316,11 @@ extern int target_flags;
     fixed_regs[MAC_REG] = call_used_regs[MAC_REG] = 1;	\
 }
 
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.
+#define HARD_REGNO_NREGS(REGNO, MODE)		\
+  h8300_hard_regno_nregs ((REGNO), (MODE))
 
-   This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers.
-
-   We pretend the MAC register is 32bits -- we don't have any data
-   types on the H8 series to handle more than 32bits.  */
-
-#define HARD_REGNO_NREGS(REGNO, MODE)   \
-   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
-/* Value is 1 if hard register REGNO can hold a value of machine-mode
-   MODE.
-
-   H8/300: If an even reg, then anything goes. Otherwise the mode must be QI
-           or HI.
-   H8/300H: Anything goes.  */
-
-#define HARD_REGNO_MODE_OK(REGNO, MODE)					\
-  (TARGET_H8300								\
-   ? ((((REGNO) & 1) == 0) || ((MODE) == HImode) || ((MODE) == QImode))	\
-   : (REGNO) == MAC_REG ? (MODE) == SImode : 1)
+#define HARD_REGNO_MODE_OK(REGNO, MODE)		\
+  h8300_hard_regno_mode_ok ((REGNO), (MODE))
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.

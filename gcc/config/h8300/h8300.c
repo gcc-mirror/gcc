@@ -4706,6 +4706,32 @@ h8300_legitimate_address_p (rtx x, int strict)
 
   return 0;
 }
+
+/* Worker function for HARD_REGNO_NREGS.
+
+   We pretend the MAC register is 32bits -- we don't have any data
+   types on the H8 series to handle more than 32bits.  */
+
+int
+h8300_hard_regno_nregs (int regno ATTRIBUTE_UNUSED, enum machine_mode mode)
+{
+  return (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+}
+
+/* Worker function for HARD_REGNO_MODE_OK.  */
+
+int
+h8300_hard_regno_mode_ok (int regno, enum machine_mode mode)
+{
+  if (TARGET_H8300)
+    /* If an even reg, then anything goes.  Otherwise the mode must be
+       QI or HI.  */
+    return ((regno & 1) == 0) || (mode == HImode) || (mode == QImode);
+  else
+    /* MAC register can only be of SImode.  Otherwise, anything
+       goes.  */
+    return regno == MAC_REG ? mode == SImode : 1;
+}
 
 /* Perform target dependent optabs initialization.  */
 static void
