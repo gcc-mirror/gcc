@@ -319,9 +319,10 @@ extern int target_flags;
            or HI.
    H8/300H: Anything goes.  */
 
-#define HARD_REGNO_MODE_OK(REGNO, MODE) \
- (TARGET_H8300 ? (((REGNO)&1)==0) || (MODE==HImode) || (MODE==QImode) \
-   : REGNO == 8 ? MODE == SImode : 1)
+#define HARD_REGNO_MODE_OK(REGNO, MODE)					\
+  (TARGET_H8300								\
+   ? ((((REGNO) & 1) == 0) || ((MODE) == HImode) || ((MODE) == QImode))	\
+   : (REGNO) == 8 ? (MODE) == SImode : 1)
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.
@@ -476,7 +477,7 @@ enum reg_class {
    In general this is just CLASS; but on some machines
    in some cases it is preferable to use a more restrictive class.  */
 
-#define PREFERRED_RELOAD_CLASS(X,CLASS)  (CLASS)
+#define PREFERRED_RELOAD_CLASS(X, CLASS)  (CLASS)
 
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
@@ -542,7 +543,7 @@ enum reg_class {
 
    On the H8 the return does not pop anything.  */
 
-#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) 0
+#define RETURN_POPS_ARGS(FUNDECL, FUNTYPE, SIZE) 0
 
 /* Definitions for register eliminations.
 
@@ -654,7 +655,7 @@ struct cum_arg
 
    On the H8/300, the offset starts at 0.  */
 
-#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT)	\
+#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT)	\
  ((CUM).nbytes = 0, (CUM).libcall = LIBNAME)
 
 /* Update the data in CUM to advance over an argument
@@ -928,7 +929,7 @@ struct cum_arg
 
    For the H8/300, don't do anything.  */
 
-#define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)  {}
+#define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)  {}
 
 /* Go to LABEL if ADDR (a legitimate address expression)
    has an effect that depends on the machine mode it is used for.
@@ -936,7 +937,7 @@ struct cum_arg
    On the H8/300, the predecrement and postincrement address depend thus
    (the amount of decrement or increment being the length of the operand).  */
 
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL) \
+#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL) \
   if (GET_CODE (ADDR) == POST_INC || GET_CODE (ADDR) == PRE_DEC) goto LABEL;
 
 /* Specify the machine mode that this machine uses
@@ -1009,7 +1010,7 @@ struct cum_arg
    of a switch statement.  If the code is computed here,
    return it with a return statement.  Otherwise, break from the switch.  */
 
-#define DEFAULT_RTX_COSTS(RTX,CODE,OUTER_CODE) \
+#define DEFAULT_RTX_COSTS(RTX, CODE, OUTER_CODE) \
   return (const_costs (RTX, CODE));
 
 #define BRANCH_COST 0
@@ -1021,7 +1022,7 @@ struct cum_arg
    switch on CODE.  */
 /* ??? Shifts need to have a *much* higher cost than this.  */
 
-#define RTX_COSTS(RTX,CODE,OUTER_CODE)		\
+#define RTX_COSTS(RTX, CODE, OUTER_CODE)	\
   case MOD:					\
   case DIV:					\
     return 60;					\
@@ -1045,11 +1046,11 @@ struct cum_arg
    after execution of an instruction whose pattern is EXP.
    Do not alter them if the instruction would not alter the cc's.  */
 
-#define NOTICE_UPDATE_CC(EXP, INSN) notice_update_cc(EXP, INSN)
+#define NOTICE_UPDATE_CC(EXP, INSN) notice_update_cc (EXP, INSN)
 
 /* The add insns don't set overflow in a usable way.  */
 #define CC_OVERFLOW_UNUSABLE 01000
-/* The mov,and,or,xor insns don't set carry.  That's ok though as the
+/* The mov,and,or,xor insns don't set carry.  That's OK though as the
    Z bit is all we need when doing unsigned comparisons on the result of
    these insns (since they're always with 0).  However, conditions.h has
    CC_NO_OVERFLOW defined for this purpose.  Rename it to something more
@@ -1060,9 +1061,9 @@ struct cum_arg
 
 /* Output at beginning/end of assembler file.  */
 
-#define ASM_FILE_START(FILE) asm_file_start(FILE)
+#define ASM_FILE_START(FILE) asm_file_start (FILE)
 
-#define ASM_FILE_END(FILE) asm_file_end(FILE)
+#define ASM_FILE_END(FILE) asm_file_end (FILE)
 
 /* Output to assembler file text saying following lines
    may contain character constants, extra white space, comments, etc.  */
@@ -1155,7 +1156,7 @@ readonly_data ()							\
 
 /* Store the user-specified part of SYMBOL_NAME in VAR.
    This is sort of inverse to ENCODE_SECTION_INFO.  */
-#define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME)		\
+#define STRIP_NAME_ENCODING(VAR, SYMBOL_NAME)		\
   (VAR) = (SYMBOL_NAME) + ((SYMBOL_NAME)[0] == '*'	\
 			   || (SYMBOL_NAME)[0] == '@'	\
 			   || (SYMBOL_NAME)[0] == '&');
@@ -1201,7 +1202,7 @@ readonly_data ()							\
     }						\
   while (0)
 
-#define ASM_OUTPUT_LABELREF(FILE,NAME)  \
+#define ASM_OUTPUT_LABELREF(FILE, NAME)  \
   asm_fprintf ((FILE), "%U%s", (NAME) + (TINY_DATA_NAME_P (NAME) ? 1 : 0))
 
 #define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME)
@@ -1251,7 +1252,7 @@ readonly_data ()							\
 /* This is how to output an insn to pop a register from the stack.
    It need not be very fast code.  */
 
-#define ASM_OUTPUT_REG_POP(FILE,REGNO) \
+#define ASM_OUTPUT_REG_POP(FILE, REGNO) \
   fprintf (FILE, "\t%s\t%s\n", h8_pop_op, h8_reg_names[REGNO])
 
 /* This is how to output an element of a case-vector that is absolute.  */
@@ -1268,7 +1269,7 @@ readonly_data ()							\
    that says to advance the location counter
    to a multiple of 2**LOG bytes.  */
 
-#define ASM_OUTPUT_ALIGN(FILE,LOG)		\
+#define ASM_OUTPUT_ALIGN(FILE, LOG)		\
   if ((LOG) != 0)				\
     fprintf (FILE, "\t.align %d\n", (LOG))
 
@@ -1299,7 +1300,7 @@ readonly_data ()							\
 /* This says how to output an assembler line
    to define a local common symbol.  */
 
-#define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE,ROUNDED)	\
+#define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)	\
 ( fputs ("\t.lcomm ", (FILE)),				\
   assemble_name ((FILE), (NAME)),			\
   fprintf ((FILE), ",%d\n", (SIZE)))
@@ -1318,7 +1319,7 @@ readonly_data ()							\
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE) \
   ((CODE) == '#')
 
-#define PRINT_OPERAND(FILE, X, CODE) print_operand(FILE,X,CODE)
+#define PRINT_OPERAND(FILE, X, CODE) print_operand (FILE, X, CODE)
 
 /* Print a memory operand whose address is X, on file FILE.
    This uses a function in h8300.c.  */
