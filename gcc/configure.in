@@ -2361,6 +2361,7 @@ for machine in $build $host $target; do
 		xmake_file=sparc/x-sysv4
 		extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
 		fixincludes=fixinc.svr4
+		float_format=i128
 		broken_install=yes
  		if [[ x$enable_threads = xyes ]]; then
 			thread_file='solaris'
