@@ -624,7 +624,6 @@ check_init (exp, before)
     case FIX_CEIL_EXPR:
     case FIX_FLOOR_EXPR:
     case FIX_ROUND_EXPR:
-    case EXPON_EXPR:
     case ABS_EXPR:
     case FFS_EXPR:
       /* Avoid needless recursion. */

@@ -1,3 +1,8 @@
+2001-07-14  Tim Josling  <tej@melbpc.org.au>
+
+	* com.c (ffecom_overlap_): Remove references to EXPON_EXPR.
+	(ffecom_tree_canonize_ref_): Likewise.
+
 2001-07-10  James Smaby  <jsmaby@virgo.umeche.maine.edu>
 
 	* intdoc.in: Fix the definition of COMPLEX ABS.

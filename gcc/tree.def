@@ -599,10 +599,6 @@ DEFTREECODE (FIX_ROUND_EXPR, "fix_round_expr", '1', 1)
 /* Conversion of an integer to a real.  */
 DEFTREECODE (FLOAT_EXPR, "float_expr", '1', 1)
 
-/* Exponentiation.  Operands may have any types;
-   constraints on value type are not known yet.  */
-DEFTREECODE (EXPON_EXPR, "expon_expr", '2', 2)
-
 /* Unary negation.  */
 DEFTREECODE (NEGATE_EXPR, "negate_expr", '1', 1)
 
