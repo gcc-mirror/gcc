@@ -1432,7 +1432,6 @@ private:
   {
     int *prev_loc = &next_verify_pc;
     int npc = next_verify_pc;
-    bool skipped = false;
 
     while (npc != state::NO_NEXT)
       {
@@ -1449,7 +1448,6 @@ private:
 	    return npc;
 	  }
 
-	skipped = true;
 	prev_loc = &states[npc]->next;
 	npc = states[npc]->next;
       }
