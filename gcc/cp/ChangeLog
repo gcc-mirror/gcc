@@ -1,3 +1,7 @@
+1998-11-08  Mark Mitchell  <mark@markmitchell.com>
+
+	* method.c (build_overload_value): Handle REFERENCE_TYPE.
+
 1998-11-08  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* decl.c (grokdeclarator): Allow namespace-scoped members if they

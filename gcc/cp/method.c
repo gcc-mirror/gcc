@@ -794,6 +794,10 @@ build_overload_value (type, value, in_template)
 	}
 
       value = TREE_OPERAND (value, 0);
+
+      /* Fall through.  */
+
+    case REFERENCE_TYPE:
       if (TREE_CODE (value) == VAR_DECL)
 	{
 	  my_friendly_assert (DECL_NAME (value) != 0, 245);
