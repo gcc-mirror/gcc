@@ -258,7 +258,6 @@ public abstract class ClassLoader
    * @param     link if the class should be linked.
    * @return    the class loaded.
    * @exception java.lang.ClassNotFoundException 
-   * @deprecated 
    */ 
   protected Class loadClass(String name, boolean link)
     throws java.lang.ClassNotFoundException
