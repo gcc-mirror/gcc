@@ -1,3 +1,9 @@
+Tue Oct  6 00:07:14 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* call.c (build_object_call): Move declaration of variable
+	`fn' into the scope where it is used.  Don't access variable
+	`fn' when it is uninitialized, instead use `fns'.
+
 1998-10-04  Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
 
 	* errfn.c (cp_thing): Print buf as a string not as a printf format
