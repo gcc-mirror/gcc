@@ -16,15 +16,6 @@ MULTISUBDIR =
 MULTIDO = true
 MULTICLEAN = true
 
-## Install a library built with a cross compiler in tooldir, not
-## libdir.
-if USE_LIBDIR
-toolexeclibdir = $(libdir)$(MULTISUBDIR)
-else
-toolexecdir = $(exec_prefix)/$(target_alias)
-toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
-endif
-
 noinst_LTLIBRARIES = libgcjgc.la libgcjgc_convenience.la
 
 GC_SOURCES = allchblk.c alloc.c blacklst.c checksums.c dbg_mlc.c \
