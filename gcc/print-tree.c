@@ -617,4 +617,6 @@ print_node (file, prefix, node, indent)
 
       break;
     }
+
+  fprintf (file, ">");
 }
