@@ -282,6 +282,8 @@ static hashval_t iris_section_align_entry_hash	PARAMS ((const void *));
 static int iris6_section_align_1		PARAMS ((void **, void *));
 static void iris6_file_start			PARAMS ((void));
 static void iris6_file_end			PARAMS ((void));
+static unsigned int iris6_section_type_flags	PARAMS ((tree, const char *,
+							 int));
 #endif
 static int mips_adjust_cost			PARAMS ((rtx, rtx, rtx, int));
 static int mips_issue_rate			PARAMS ((void));
@@ -289,13 +291,12 @@ static int mips_issue_rate			PARAMS ((void));
 static struct machine_function * mips_init_machine_status PARAMS ((void));
 static void mips_select_section PARAMS ((tree, int, unsigned HOST_WIDE_INT))
 	ATTRIBUTE_UNUSED;
-static void mips_unique_section			PARAMS ((tree, int))
-	ATTRIBUTE_UNUSED;
 static void mips_select_rtx_section PARAMS ((enum machine_mode, rtx,
 					     unsigned HOST_WIDE_INT));
 static int mips_use_dfa_pipeline_interface      PARAMS ((void));
 static bool mips_rtx_costs			PARAMS ((rtx, int, int, int *));
 static int mips_address_cost                    PARAMS ((rtx));
+static bool mips_in_small_data_p		PARAMS ((tree));
 static void mips_encode_section_info            PARAMS ((tree, rtx, int));
 static void mips_file_start			PARAMS ((void));
 static void mips_file_end			PARAMS ((void));
@@ -888,6 +889,8 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO mips_encode_section_info
+#undef TARGET_IN_SMALL_DATA_P
+#define TARGET_IN_SMALL_DATA_P mips_in_small_data_p
 
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG mips_reorg
@@ -903,6 +906,11 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 #endif
 #undef TARGET_ASM_FILE_START_FILE_DIRECTIVE
 #define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
+
+#ifdef TARGET_IRIX6
+#undef TARGET_SECTION_TYPE_FLAGS
+#define TARGET_SECTION_TYPE_FLAGS iris6_section_type_flags
+#endif
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -995,10 +1003,13 @@ mips_classify_symbol (x)
 	return SYMBOL_GOT_LOCAL;
     }
 
+  if (SYMBOL_REF_SMALL_P (x))
+    return SYMBOL_SMALL_DATA;
+
   if (TARGET_ABICALLS)
     return (SYMBOL_REF_FLAG (x) ? SYMBOL_GOT_LOCAL : SYMBOL_GOT_GLOBAL);
 
-  return (SYMBOL_REF_FLAG (x) ? SYMBOL_SMALL_DATA : SYMBOL_GENERAL);
+  return SYMBOL_GENERAL;
 }
 
 
@@ -4852,11 +4863,6 @@ override_options ()
 
   mips_section_threshold = g_switch_set ? g_switch_value : MIPS_DEFAULT_GVALUE;
 
-  if (mips_section_threshold <= 0)
-    target_flags &= ~MASK_GPOPT;
-  else if (optimize)
-    target_flags |= MASK_GPOPT;
-
   /* Interpret -mabi.  */
   mips_abi = MIPS_ABI_DEFAULT;
   if (mips_abi_string != 0)
@@ -5057,10 +5063,7 @@ override_options ()
      do this, it was very invasive and fragile.  It no longer seems
      worth the effort.  */
   if (!TARGET_EXPLICIT_RELOCS && !TARGET_GAS)
-    {
-      mips_section_threshold = 0;
-      target_flags &= ~MASK_GPOPT;
-    }
+    mips_section_threshold = 0;
 
   /* -membedded-pic is a form of PIC code suitable for embedded
      systems.  All calls are made using PC relative addressing, and
@@ -5906,16 +5909,13 @@ mips_assemble_integer (x, size, aligned_p)
   return default_assemble_integer (x, size, aligned_p);
 }
 
-/* If optimizing for the global pointer, keep track of all of the externs, so
-   that at the end of the file, we can emit the appropriate .extern
-   declaration for them, before writing out the text section.  We assume all
-   names passed to us are in the permanent obstack, so they will be valid at
-   the end of the compilation.
+/* When using assembler macros, keep track of all of small-data externs
+   so that mips_file_end can emit the appropriate declarations for them.
 
-   If we have -G 0, or the extern size is unknown, or the object is in a user
-   specified section that is not .sbss/.sdata, don't bother emitting the
-   .externs.  In the case of user specified sections this behavior is
-   required as otherwise GAS will think the object lives in .sbss/.sdata.  */
+   In most cases it would be safe (though pointless) to emit .externs
+   for other symbols too.  One exception is when an object is within
+   the -G limit but declared by the user to be in a section other
+   than .sbss or .sdata.  */
 
 int
 mips_output_external (file, decl, name)
@@ -5924,21 +5924,13 @@ mips_output_external (file, decl, name)
      const char *name;
 {
   register struct extern_list *p;
-  int len;
-  tree section_name;
 
-  if (TARGET_GP_OPT
-      && TREE_CODE (decl) != FUNCTION_DECL
-      && !DECL_COMDAT (decl)
-      && (len = int_size_in_bytes (TREE_TYPE (decl))) > 0
-      && ((section_name = DECL_SECTION_NAME (decl)) == NULL
-	  || strcmp (TREE_STRING_POINTER (section_name), ".sbss") == 0
-	  || strcmp (TREE_STRING_POINTER (section_name), ".sdata") == 0))
+  if (!TARGET_EXPLICIT_RELOCS && mips_in_small_data_p (decl))
     {
       p = (struct extern_list *) ggc_alloc (sizeof (struct extern_list));
       p->next = extern_head;
       p->name = name;
-      p->size = len;
+      p->size = int_size_in_bytes (TREE_TYPE (decl));
       extern_head = p;
     }
 
@@ -6250,8 +6242,9 @@ mips_file_end ()
     }
 }
 
-/* Emit either a label, .comm, or .lcomm directive, and mark that the symbol
-   is used, so that we don't emit an .extern for it in mips_file_end.  */
+/* Emit either a label, .comm, or .lcomm directive.  When using assembler
+   macros, mark the symbol as written so that mips_file_end won't emit an
+   .extern for it.  */
 
 void
 mips_declare_object (stream, name, init_string, final_string, size)
@@ -6265,7 +6258,7 @@ mips_declare_object (stream, name, init_string, final_string, size)
   assemble_name (stream, name);
   fprintf (stream, final_string, size);	/* ":\n", ",%u\n", ",%u\n" */
 
-  if (TARGET_GP_OPT)
+  if (!TARGET_EXPLICIT_RELOCS)
     {
       tree name_tree = get_identifier (name);
       TREE_ASM_WRITTEN (name_tree) = 1;
@@ -7812,11 +7805,11 @@ mips_select_rtx_section (mode, x, align)
 
       if (GET_MODE_SIZE (mode) <= (unsigned) mips_section_threshold
 	  && mips_section_threshold > 0)
-	SMALL_DATA_SECTION ();
+	named_section (0, ".sdata", 0);
       else if (flag_pic && symbolic_expression_p (x))
 	{
 	  if (targetm.have_named_sections)
-	    named_section (NULL_TREE, ".data.rel.ro", 3);
+	    named_section (0, ".data.rel.ro", 3);
 	  else
 	    data_section ();
 	}
@@ -7826,9 +7819,7 @@ mips_select_rtx_section (mode, x, align)
 }
 
 /* Choose the section to use for DECL.  RELOC is true if its value contains
-   any relocatable expression.
-
-   ??? This would be fixed by implementing targetm.is_small_data_p.  */
+   any relocatable expression.  */
 
 static void
 mips_select_section (decl, reloc, align)
@@ -7836,8 +7827,6 @@ mips_select_section (decl, reloc, align)
      int reloc;
      unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED;
 {
-  int size = int_size_in_bytes (TREE_TYPE (decl));
-
   if ((TARGET_EMBEDDED_PIC || TARGET_MIPS16)
       && TREE_CODE (decl) == STRING_CST
       && !flag_writable_strings)
@@ -7846,54 +7835,66 @@ mips_select_section (decl, reloc, align)
        For mips16 code, put strings in the text section so that a PC
        relative load instruction can be used to get their address.  */
     text_section ();
-  else if (TARGET_EMBEDDED_DATA)
-    {
-      /* For embedded applications, always put an object in read-only data
-	 if possible, in order to reduce RAM usage.  */
-
-      if (((TREE_CODE (decl) == VAR_DECL
-	    && TREE_READONLY (decl) && !TREE_SIDE_EFFECTS (decl)
-	    && DECL_INITIAL (decl)
-	    && (DECL_INITIAL (decl) == error_mark_node
-		|| TREE_CONSTANT (DECL_INITIAL (decl))))
-	   /* Deal with calls from output_constant_def_contents.  */
-	   || (TREE_CODE (decl) != VAR_DECL
-	       && (TREE_CODE (decl) != STRING_CST
-		   || !flag_writable_strings)))
-	  && ! (flag_pic && reloc))
-	readonly_data_section ();
-      else if (size > 0 && size <= mips_section_threshold)
-	SMALL_DATA_SECTION ();
-      else
-	data_section ();
-    }
   else
-    {
-      /* For hosted applications, always put an object in small data if
-	 possible, as this gives the best performance.  */
-
-      if (size > 0 && size <= mips_section_threshold)
-	SMALL_DATA_SECTION ();
-      else if (((TREE_CODE (decl) == VAR_DECL
-		 && TREE_READONLY (decl) && !TREE_SIDE_EFFECTS (decl)
-		 && DECL_INITIAL (decl)
-		 && (DECL_INITIAL (decl) == error_mark_node
-		     || TREE_CONSTANT (DECL_INITIAL (decl))))
-		/* Deal with calls from output_constant_def_contents.  */
-		|| (TREE_CODE (decl) != VAR_DECL
-		    && (TREE_CODE (decl) != STRING_CST
-			|| !flag_writable_strings)))
-	       && ! (flag_pic && reloc))
-	readonly_data_section ();
-      else
-	data_section ();
-    }
+    default_elf_select_section (decl, reloc, align);
 }
 
-/* When optimizing for the $gp pointer, SYMBOL_REF_FLAG is set for all
-   small objects.
 
-   When generating embedded PIC code, SYMBOL_REF_FLAG is set for
+/* Implement TARGET_IN_SMALL_DATA_P.  Return true if it would be safe to
+   access DECL using %gp_rel(...)($gp).  */
+
+static bool
+mips_in_small_data_p (decl)
+     tree decl;
+{
+  HOST_WIDE_INT size;
+
+  if (TREE_CODE (decl) == STRING_CST || TREE_CODE (decl) == FUNCTION_DECL)
+    return false;
+
+  if (TREE_CODE (decl) == VAR_DECL && DECL_SECTION_NAME (decl) != 0)
+    {
+      const char *name;
+
+      /* Reject anything that isn't in a known small-data section.  */
+      name = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
+      if (strcmp (name, ".sdata") != 0 && strcmp (name, ".sbss") != 0)
+	return false;
+
+      /* If a symbol is defined externally, the assembler will use the
+	 usual -G rules when deciding how to implement macros.  */
+      if (TARGET_EXPLICIT_RELOCS || !DECL_EXTERNAL (decl))
+	return true;
+    }
+  else if (TARGET_EMBEDDED_DATA)
+    {
+      /* Don't put constants into the small data section: we want them
+	 to be in ROM rather than RAM.  */
+      if (TREE_CODE (decl) != VAR_DECL)
+	return false;
+
+      if (TREE_READONLY (decl)
+	  && !TREE_SIDE_EFFECTS (decl)
+	  && (!DECL_INITIAL (decl) || TREE_CONSTANT (DECL_INITIAL (decl))))
+	return false;
+    }
+  else if (TARGET_MIPS16)
+    {
+      /* Alhough it seems strange to have separate rules for -mips16,
+	 this behaviour is long-standing.  */
+      if (TREE_PUBLIC (decl)
+	  && (DECL_COMMON (decl)
+	      || DECL_ONE_ONLY (decl)
+	      || DECL_WEAK (decl)))
+	return false;
+    }
+
+  size = int_size_in_bytes (TREE_TYPE (decl));
+  return (size > 0 && size <= mips_section_threshold);
+}
+
+
+/* When generating embedded PIC code, SYMBOL_REF_FLAG is set for
    symbols which are not in the .text section.
 
    When generating mips16 code, SYMBOL_REF_FLAG is set for string
@@ -7902,20 +7903,8 @@ mips_select_section (decl, reloc, align)
    whether we need to split the constant table, and need not be
    precisely correct.
 
-   When not mips16 code nor embedded PIC, if a symbol is in a
-   gp addressable section, SYMBOL_REF_FLAG is set prevent gcc from
-   splitting the reference so that gas can generate a gp relative
-   reference.
-
-   When TARGET_EMBEDDED_DATA is set, we assume that all const
-   variables will be stored in ROM, which is too far from %gp to use
-   %gprel addressing.  Note that (1) we include "extern const"
-   variables in this, which mips_select_section doesn't, and (2) we
-   can't always tell if they're really const (they might be const C++
-   objects with non-const constructors), so we err on the side of
-   caution and won't use %gprel anyway (otherwise we'd have to defer
-   this decision to the linker/loader).  The handling of extern consts
-   is why the DECL_INITIAL macros differ from mips_select_section.  */
+   When generating -mabicalls code, SYMBOL_REF_FLAG is set if we
+   should treat the symbol as SYMBOL_GOT_LOCAL.  */
 
 static void
 mips_encode_section_info (decl, rtl, first)
@@ -7957,16 +7946,7 @@ mips_encode_section_info (decl, rtl, first)
         }
     }
 
-  if (TARGET_EMBEDDED_DATA
-      && (TREE_CODE (decl) == VAR_DECL
-          && TREE_READONLY (decl) && !TREE_SIDE_EFFECTS (decl))
-      && (!DECL_INITIAL (decl)
-          || TREE_CONSTANT (DECL_INITIAL (decl))))
-    {
-      SYMBOL_REF_FLAG (symbol) = 0;
-    }
-
-  else if (TARGET_EMBEDDED_PIC)
+  if (TARGET_EMBEDDED_PIC)
     {
       if (TREE_CODE (decl) == VAR_DECL)
         SYMBOL_REF_FLAG (symbol) = 1;
@@ -8008,32 +7988,7 @@ mips_encode_section_info (decl, rtl, first)
         SYMBOL_REF_FLAG (symbol) = 1;
     }
 
-  else if (TREE_CODE (decl) == VAR_DECL
-           && DECL_SECTION_NAME (decl) != NULL_TREE
-           && (0 == strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)),
-                            ".sdata")
-               || 0 == strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)),
-                               ".sbss")))
-    {
-      SYMBOL_REF_FLAG (symbol) = 1;
-    }
-
-  /* We can not perform GP optimizations on variables which are in
-       specific sections, except for .sdata and .sbss which are
-       handled above.  */
-  else if (TARGET_GP_OPT && TREE_CODE (decl) == VAR_DECL
-           && DECL_SECTION_NAME (decl) == NULL_TREE
-           && ! (TARGET_MIPS16 && TREE_PUBLIC (decl)
-                 && (DECL_COMMON (decl)
-                     || DECL_ONE_ONLY (decl)
-                     || DECL_WEAK (decl))))
-    {
-      int size = int_size_in_bytes (TREE_TYPE (decl));
-
-      if (size > 0 && size <= mips_section_threshold)
-        SYMBOL_REF_FLAG (symbol) = 1;
-    }
-
+  default_encode_section_info (decl, rtl, first);
 }
 
 
@@ -10243,81 +10198,6 @@ mips_adjust_cost (insn, link, dep, cost)
   return cost;
 }
 
-/* ??? This could be replaced with the default elf version if
-   TARGET_IS_SMALL_DATA_P is set properly.  */
-
-static void
-mips_unique_section (decl, reloc)
-     tree decl;
-     int reloc;
-{
-  int len, size, sec;
-  const char *name, *prefix;
-  char *string;
-  static const char *const prefixes[4][2] = {
-    { ".text.", ".gnu.linkonce.t." },
-    { ".rodata.", ".gnu.linkonce.r." },
-    { ".data.", ".gnu.linkonce.d." },
-    { ".sdata.", ".gnu.linkonce.s." }
-  };
-
-  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-  name = (* targetm.strip_name_encoding) (name);
-  size = int_size_in_bytes (TREE_TYPE (decl));
-
-  /* Determine the base section we are interested in:
-     0=text, 1=rodata, 2=data, 3=sdata, [4=bss].  */
-  if (TREE_CODE (decl) == FUNCTION_DECL)
-    sec = 0;
-  else if (DECL_INITIAL (decl) == 0
-           || DECL_INITIAL (decl) == error_mark_node)
-    sec = 2;
-  else if ((TARGET_EMBEDDED_PIC || TARGET_MIPS16)
-      && TREE_CODE (decl) == STRING_CST
-      && !flag_writable_strings)
-    {
-      /* For embedded position independent code, put constant
-	 strings in the text section, because the data section
-	 is limited to 64K in size.  For mips16 code, put
-	 strings in the text section so that a PC relative load
-	 instruction can be used to get their address.  */
-      sec = 0;
-    }
-  else if (TARGET_EMBEDDED_DATA)
-    {
-      /* For embedded applications, always put an object in
-	 read-only data if possible, in order to reduce RAM
-	 usage.  */
-
-      if (decl_readonly_section (decl, reloc))
-	sec = 1;
-      else if (size > 0 && size <= mips_section_threshold)
-	sec = 3;
-      else
-	sec = 2;
-    }
-  else
-    {
-      /* For hosted applications, always put an object in
-	 small data if possible, as this gives the best
-	 performance.  */
-
-      if (size > 0 && size <= mips_section_threshold)
-	sec = 3;
-      else if (decl_readonly_section (decl, reloc))
-	sec = 1;
-      else
-	sec = 2;
-    }
-
-  prefix = prefixes[sec][DECL_ONE_ONLY (decl)];
-  len = strlen (name) + strlen (prefix);
-  string = alloca (len + 1);
-  sprintf (string, "%s%s", prefix, name);
-
-  DECL_SECTION_NAME (decl) = build_string (len, string);
-}
-
 unsigned int
 mips_hard_regno_nregs (regno, mode)
     int regno;
@@ -10585,6 +10465,32 @@ iris6_file_end ()
 
   mips_file_end ();
 }
+
+
+/* Implement TARGET_SECTION_TYPE_FLAGS.  Make sure that .sdata and
+   .sbss sections get the SECTION_SMALL flag: this isn't set by the
+   default code.  */
+
+static unsigned int
+iris6_section_type_flags (decl, section, relocs_p)
+     tree decl;
+     const char *section;
+     int relocs_p;
+{
+  unsigned int flags;
+
+  flags = default_section_type_flags (decl, section, relocs_p);
+
+  if (strcmp (section, ".sdata") == 0
+      || strcmp (section, ".sbss") == 0
+      || strncmp (section, ".gnu.linkonce.s.", 16) == 0
+      || strncmp (section, ".gnu.linkonce.sb.", 17) == 0)
+    flags |= SECTION_SMALL;
+
+  return flags;
+}
+
+
 #endif /* TARGET_IRIX6 */
 
 #include "gt-mips.h"

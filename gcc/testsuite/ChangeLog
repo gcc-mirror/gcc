@@ -1,3 +1,9 @@
+2003-07-08  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.dg/compat/sdata-section.h: New file.
+	* gcc.dg/compat/sdata-1_{x,y,main}.c: New test.
+	* gcc.dg/torture/mips-sdata-1.c: New test.
+
 2003-07-08  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/11030

@@ -148,10 +148,6 @@ extern const struct mips_cpu_info mips_cpu_info_table[];
 extern const struct mips_cpu_info *mips_arch_info;
 extern const struct mips_cpu_info *mips_tune_info;
 
-/* Functions to change what output section we are using.  */
-extern void		sdata_section PARAMS ((void));
-extern void		sbss_section PARAMS ((void));
-
 /* Macros to silence warnings about numbers being signed in traditional
    C and unsigned in ISO C when compiled on 32-bit hosts.  */
 
@@ -168,7 +164,8 @@ extern void		sbss_section PARAMS ((void));
 #define MASK_INT64	   0x00000001	/* ints are 64 bits */
 #define MASK_LONG64	   0x00000002	/* longs are 64 bits */
 #define MASK_SPLIT_ADDR	   0x00000004	/* Address splitting is enabled.  */
-#define MASK_GPOPT	   0x00000008	/* Optimize for global pointer */
+#define MASK_NO_FUSED_MADD 0x00000008   /* Don't generate floating point
+					   multiply-add operations.  */
 #define MASK_GAS	   0x00000010	/* Gas used instead of MIPS as */
 #define MASK_NAME_REGS	   0x00000020	/* Use MIPS s/w reg name convention */
 #define MASK_EXPLICIT_RELOCS 0x00000040 /* Use relocation operators.  */
@@ -193,8 +190,6 @@ extern void		sbss_section PARAMS ((void));
 #define MASK_UNINIT_CONST_IN_RODATA \
 			   0x00800000	/* Store uninitialized
 					   consts in rodata */
-#define MASK_NO_FUSED_MADD 0x01000000   /* Don't generate floating point
-					   multiply-add operations.  */
 
 					/* Debug switches, not documented */
 #define MASK_DEBUG	0		/* unused */
@@ -236,9 +231,6 @@ extern void		sbss_section PARAMS ((void));
 
 					/* Reg. Naming in .s ($21 vs. $a0) */
 #define TARGET_NAME_REGS	(target_flags & MASK_NAME_REGS)
-
-					/* Optimize for Sdata/Sbss */
-#define TARGET_GP_OPT		(target_flags & MASK_GPOPT)
 
 					/* call memcpy instead of inline code */
 #define TARGET_MEMCPY		(target_flags & MASK_MEMCPY)
@@ -532,14 +524,14 @@ extern void		sbss_section PARAMS ((void));
      N_("Use symbolic register names")},				\
   {"no-rnames",		 -MASK_NAME_REGS,				\
      N_("Don't use symbolic register names")},				\
-  {"gpOPT",		  MASK_GPOPT,					\
-     N_("Use GP relative sdata/sbss sections")},			\
-  {"gpopt",		  MASK_GPOPT,					\
-     N_("Use GP relative sdata/sbss sections")},			\
-  {"no-gpOPT",		 -MASK_GPOPT,					\
-     N_("Don't use GP relative sdata/sbss sections")},			\
-  {"no-gpopt",		 -MASK_GPOPT,					\
-     N_("Don't use GP relative sdata/sbss sections")},			\
+  {"gpOPT",		  0,						\
+     N_("Use GP relative sdata/sbss sections (now ignored)")},		\
+  {"gpopt",		  0,						\
+     N_("Use GP relative sdata/sbss sections (now ignored)")},		\
+  {"no-gpOPT",		  0,					\
+     N_("Don't use GP relative sdata/sbss sections (now ignored)")},	\
+  {"no-gpopt",		  0,					\
+     N_("Don't use GP relative sdata/sbss sections (now ignored)")},	\
   {"stats",		  0,						\
      N_("Output compiler statistics (now ignored)")},			\
   {"no-stats",		  0,						\
@@ -3862,35 +3854,6 @@ do {									\
 
 #undef READONLY_DATA_SECTION_ASM_OP
 #define READONLY_DATA_SECTION_ASM_OP	"\t.rdata"	/* read-only data */
-
-#define SMALL_DATA_SECTION	sdata_section
-
-/* What other sections we support other than the normal .data/.text.  */
-
-#undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_sdata
-
-/* Define the additional functions to select our additional sections.  */
-
-/* on the MIPS it is not a good idea to put constants in the text
-   section, since this defeats the sdata/data mechanism. This is
-   especially true when -O is used. In this case an effort is made to
-   address with faster (gp) register relative addressing, which can
-   only get at sdata and sbss items (there is no stext !!)  However,
-   if the constant is too large for sdata, and it's readonly, it
-   will go into the .rdata section.  */
-
-#undef EXTRA_SECTION_FUNCTIONS
-#define EXTRA_SECTION_FUNCTIONS						\
-void									\
-sdata_section ()							\
-{									\
-  if (in_section != in_sdata)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", SDATA_SECTION_ASM_OP);		\
-      in_section = in_sdata;						\
-    }									\
-}
 
 /* Given a decl node or constant node, choose the section to output it in
    and select that section.  */

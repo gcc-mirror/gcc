@@ -47,7 +47,7 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN)	\
 do {								\
   if (SIZE > 0 && (long)(SIZE) <= mips_section_threshold)	\
-    sbss_section ();						\
+    named_section (0, ".sbss", 0);				\
   else								\
     bss_section ();						\
   ASM_OUTPUT_ALIGN (FILE, floor_log2 (ALIGN / BITS_PER_UNIT));	\
@@ -77,28 +77,6 @@ do {								\
       }									\
     mips_declare_object (FILE, NAME, "", ":\n", 0);			\
   } while (0)
-
-#define TARGET_ASM_UNIQUE_SECTION  mips_unique_section
-
-/* A list of other sections which the compiler might be "in" at any
-   given time.  */
-#undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_sdata, in_sbss
-
-#undef EXTRA_SECTION_FUNCTIONS
-#define EXTRA_SECTION_FUNCTIONS                                         \
-  SECTION_FUNCTION_TEMPLATE(sdata_section, in_sdata, SDATA_SECTION_ASM_OP) \
-  SECTION_FUNCTION_TEMPLATE(sbss_section, in_sbss, SBSS_SECTION_ASM_OP)
-
-#define SECTION_FUNCTION_TEMPLATE(FN, ENUM, OP)			\
-void FN ()							\
-{								\
-  if (in_section != ENUM)					\
-    {								\
-      fprintf (asm_out_file, "%s\n", OP);			\
-      in_section = ENUM;					\
-    }								\
-}
 
 #undef TARGET_VERSION
 #if TARGET_ENDIAN_DEFAULT == 0
