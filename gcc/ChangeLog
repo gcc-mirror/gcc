@@ -1,3 +1,10 @@
+2003-01-01  Steven Bosscher  <s.bosscher@student.tudelft.nl>
+
+	* objc/Make-lang.in, objc/config-lang.in, objc/lang-options.h,
+	  objc/lang-specs.h, objc/objc-act.c, objc/objc-act.h,
+	  objc/objc-lang.c, objc/objc-tree.def: Replace "GNU CC" with
+	  "GCC" in the copyright header.
+
 2003-01-01  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c-pragma.c (c_register_pragma): New.
