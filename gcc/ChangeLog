@@ -1,5 +1,9 @@
 2003-08-22  Mark Mitchell  <mark@codesourcery.com>
 
+	* config/ia64/hpux.h (SUPPORTS_INIT_PRIORITY): Define to 0.
+
+2003-08-22  Mark Mitchell  <mark@codesourcery.com>
+
 	* config/ia64/ia64.md (*ptr_extend_plus_1): Rename to ...
 	(ptr_extend_plus_imm): ... this.
 	* config/ia64/ia64.c (addp4_optimize_ok): Do not disable addp4
