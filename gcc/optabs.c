@@ -1647,8 +1647,13 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	      temp1 = expand_binop (submode, binoptab, real0, imag1,
 				    NULL_RTX, unsignedp, methods);
 
-	      temp2 = expand_binop (submode, binoptab, real1, imag0,
-				    NULL_RTX, unsignedp, methods);
+	      /* Avoid expanding redundant multiplication for the common
+		 case of squaring a complex number.  */
+	      if (rtx_equal_p (real0, real1) && rtx_equal_p (imag0, imag1))
+		temp2 = temp1;
+	      else
+		temp2 = expand_binop (submode, binoptab, real1, imag0,
+				      NULL_RTX, unsignedp, methods);
 
 	      if (temp1 == 0 || temp2 == 0)
 		break;
