@@ -1,3 +1,8 @@
+2000-11-27  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.in (extra_objs): Enclose extra_headers in quotes.
+	* configure: Rebuilt.
+
 2000-11-27  Neil Booth  <neilb@earthling.net>
 
         * c-lex.c (cb_enter_file, cb_leave_file, cb_rename_file):
