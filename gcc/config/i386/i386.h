@@ -87,6 +87,7 @@ extern int target_flags;
 #define MASK_IEEE_FP		000000000100	/* IEEE fp comparisons */
 #define MASK_FLOAT_RETURNS	000000000200	/* Return float in st(0) */
 #define MASK_NO_FANCY_MATH_387	000000000400	/* Disable sin, cos, sqrt */
+#define MASK_OMIT_LEAF_FRAME_POINTER 0x00000800 /* omit leaf frame pointers */
 						/* Temporary codegen switches */
 #define MASK_DEBUG_ADDR		000001000000	/* Debug GO_IF_LEGITIMATE_ADDRESS */
 #define MASK_NO_WIDE_MULTIPLY	000002000000	/* Disable 32x32->64 multiplies */
@@ -125,6 +126,9 @@ extern int target_flags;
    This is because FreeBSD lacks these in the math-emulator-code */
 #define TARGET_NO_FANCY_MATH_387 (target_flags & MASK_NO_FANCY_MATH_387)
 
+/* Don't create frame pointers for leaf functions */
+#define TARGET_OMIT_LEAF_FRAME_POINTER (target_flags & MASK_OMIT_LEAF_FRAME_POINTER)
+
 /* Temporary switches for tuning code generation */
 
 /* Disable 32x32->64 bit multiplies that are used for long long multiplies
@@ -155,7 +159,7 @@ extern int target_flags;
 #define TARGET_USE_Q_REG (ix86_cpu == PROCESSOR_PENTIUM)
 #define TARGET_USE_ANY_REG (ix86_cpu == PROCESSOR_I486)
 #define TARGET_CMOVE (ix86_isa == PROCESSOR_PENTIUMPRO)
-#define TARGET_DEEP_BRANCH_PREDICTION (ix86_isa == PROCESSOR_PENTIUMPRO)
+#define TARGET_DEEP_BRANCH_PREDICTION (ix86_cpu == PROCESSOR_PENTIUMPRO)
 
 #define TARGET_SWITCHES							\
 { { "80387",			 MASK_80387 },				\
@@ -181,6 +185,8 @@ extern int target_flags;
   { "no-fp-ret-in-387",		-MASK_FLOAT_RETURNS },			\
   { "no-fancy-math-387",	 MASK_NO_FANCY_MATH_387 },		\
   { "fancy-math-387",		-MASK_NO_FANCY_MATH_387 },		\
+  { "omit-leaf-frame-pointer",	 MASK_OMIT_LEAF_FRAME_POINTER }, 	\
+  { "no-omit-leaf-frame-pointer",-MASK_OMIT_LEAF_FRAME_POINTER },       \
   { "no-wide-multiply",		 MASK_NO_WIDE_MULTIPLY },		\
   { "wide-multiply",		-MASK_NO_WIDE_MULTIPLY },		\
   { "debug-addr",		 MASK_DEBUG_ADDR },			\
@@ -245,7 +251,7 @@ extern int ix86_isa;
    by appending `-m' to the specified name.  */
 #define TARGET_OPTIONS							\
 { { "cpu=",		&ix86_cpu_string},				\
-  { "isa=",		&ix86_isa_string},				\
+  { "arch=",		&ix86_isa_string},				\
   { "reg-alloc=",	&i386_reg_alloc_order },			\
   { "regparm=",		&i386_regparm_string },				\
   { "align-loops=",	&i386_align_loops_string },			\
@@ -277,13 +283,13 @@ extern int ix86_isa;
 #ifndef CC1_SPEC
 #define CC1_SPEC "\
 %{!mcpu*: \
-%{m386:-mcpu=i386} \
-%{mno-486:-mcpu=i386} \
-%{mno-pentium:-mcpu=i386} \
-%{mno-pentiumpro:-mcpu=i386} \
-%{m486:-mcpu=i486} \
-%{mno-386:-mcpu=i486} \
+%{m386:-mcpu=i386 -march=i386} \
+%{mno-486:-mcpu=i386 -march=i386} \
+%{m486:-mcpu=i486 -march=i486} \
+%{mno-386:-mcpu=i486 -march=i486} \
+%{mno-pentium:-mcpu=i486 -march=i486} \
 %{mpentium:-mcpu=pentium} \
+%{mno-pentiumpro:-mcpu=pentium} \
 %{mpentiumpro:-mcpu=pentiumpro}}"
 #endif
 
@@ -544,7 +550,7 @@ extern int ix86_isa;
    Zero means the frame pointer need not be set up (and parms
    may be accessed via the stack pointer) in functions that seem suitable.
    This is computed in `reload', in reload1.c.  */
-#define FRAME_POINTER_REQUIRED 0
+#define FRAME_POINTER_REQUIRED (TARGET_OMIT_LEAF_FRAME_POINTER && !leaf_function_p ()) 	
 
 /* Base register for access to arguments of the function.  */
 #define ARG_POINTER_REGNUM 16
@@ -1359,14 +1365,19 @@ while (0)
    off the end.  This happens if the function ends in an "exit" call, or
    if a `return' insn is emitted directly into the function. */
 
-#define FUNCTION_EPILOGUE(FILE, SIZE) 		\
+#if 0
+#define FUNCTION_BEGIN_EPILOGUE(FILE)		\
 do {						\
   rtx last = get_last_insn ();			\
   if (last && GET_CODE (last) == NOTE)		\
     last = prev_nonnote_insn (last);		\
-  if (! last || GET_CODE (last) != BARRIER)	\
-    function_epilogue (FILE, SIZE);		\
+/*  if (! last || GET_CODE (last) != BARRIER)	\
+    function_epilogue (FILE, SIZE);*/		\
 } while (0)
+#endif
+
+#define FUNCTION_EPILOGUE(FILE, SIZE)     \
+  function_epilogue (FILE, SIZE)
 
 /* Output assembler code for a block containing the constant parts
    of a trampoline, leaving space for the variable parts.  */
