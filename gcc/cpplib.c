@@ -59,8 +59,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 # include <limits.h>
 #endif
 
-#ifdef HAVE_STDLIB_H
-# include <stdlib.h>
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
 #endif
 
 #ifdef HAVE_STRING_H
@@ -271,7 +271,7 @@ extern void fancy_abort ();
 #endif
 static int lookup_import ();
 static int redundant_include_p ();
-static is_system_include ();
+static int is_system_include ();
 static struct file_name_map *read_name_map ();
 static char *read_filename_string ();
 static int open_include_file ();
@@ -615,7 +615,6 @@ make_assertion (pfile, option, str)
      char *option;
      U_CHAR *str;
 {
-  struct directive *kt;
   U_CHAR *buf, *p, *q;
 
   /* Copy the entire option so we can modify it.  */
@@ -1946,7 +1945,9 @@ cpp_expand_to_buffer (pfile, buf, length)
      int length;
 {
   register cpp_buffer *ip;
+#if 0
   cpp_buffer obuf;
+#endif
   U_CHAR *limit = buf + length;
   U_CHAR *buf1;
 #if 0
@@ -2087,8 +2088,6 @@ output_line_command (pfile, conditional, file_change)
      int conditional;
      enum file_change_code file_change;
 {
-  int len;
-  char *line_cmd_buf, *line_end;
   long line, col;
   cpp_buffer *ip = CPP_BUFFER (pfile);
 
@@ -2180,7 +2179,6 @@ macarg (pfile, rest_args)
 {
   int paren = 0;
   enum cpp_token token;
-  long arg_start = CPP_WRITTEN (pfile);
   char save_put_out_comments = CPP_OPTIONS (pfile)->put_out_comments;
   CPP_OPTIONS (pfile)->put_out_comments = 0;
 
@@ -2298,7 +2296,7 @@ special_symbol (hp, pfile)
      cpp_reader *pfile;
 {
   char *buf;
-  int i, len;
+  int len;
   int true_indepth;
   cpp_buffer *ip = NULL;
   struct tm *timebuf;
@@ -2438,7 +2436,7 @@ special_symbol (hp, pfile)
 	goto oops;
       if (ip->cur[0] == 'L' && (ip->cur[1] == '\'' || ip->cur[1] == '"'))
 	goto oops;
-      if (hp = cpp_lookup (pfile, ip->cur, -1, -1))
+      if ((hp = cpp_lookup (pfile, ip->cur, -1, -1)))
 	{
 #if 0
 	  if (pcp_outfile && pcp_inside_if
@@ -3105,7 +3103,6 @@ do_include (pfile, keyword, unused1, unused2)
   int skip_dirs = (keyword->type == T_INCLUDE_NEXT);
   char *fname;		/* Dynamically allocated fname buffer */
   char *pcftry;
-  char *pcfname;
   U_CHAR *fbeg, *fend;		/* Beginning and end of fname */
   enum cpp_token token;
 
@@ -3119,12 +3116,12 @@ do_include (pfile, keyword, unused1, unused2)
 
   int f;			/* file number */
 
-  int retried = 0;		/* Have already tried macro
-				   expanding the include line */
   int angle_brackets = 0;	/* 0 for "...", 1 for <...> */
-  int pcf = -1;
   char *pcfbuf;
+#if 0
+  int pcf = -1;
   char *pcfbuflimit;
+#endif
   int pcfnum;
   f= -1;			/* JF we iz paranoid! */
 
@@ -3730,7 +3727,6 @@ do_line (pfile, keyword)
   long old_written = CPP_WRITTEN (pfile);
   enum file_change_code file_change = same_file;
   enum cpp_token token;
-  int i;
 
   token = get_directive_token (pfile);
 
@@ -5602,7 +5598,9 @@ finclude (pfile, f, fname, system_header_p, dirptr)
   long i;
   int length;
   cpp_buffer *fp;			/* For input stack frame */
+#if 0
   int missing_newline = 0;
+#endif
 
   if (fstat (f, &st) < 0)
     {
@@ -6657,7 +6655,6 @@ cpp_handle_options (pfile, argc, argv)
 	       Let's include also any that were specified earlier
 	       on the command line.  That way we can get rid of any
 	       that were passed automatically in from GCC.  */
-	    int j;
 	    opts->inhibit_predefs = 1;
 	    for (ptr = &opts->pending; *ptr != NULL; )
 	      {
@@ -7136,7 +7133,7 @@ read_token_list (pfile, error_flag)
     {
       struct arglist *temp;
       long name_written = CPP_WRITTEN (pfile);
-      int eofp = 0;  int c;
+      int c;
 
       cpp_skip_hspace (pfile);
 
@@ -7419,7 +7416,6 @@ cpp_error_with_line (pfile, line, column, msg, arg1, arg2, arg3)
      char *msg;
      char *arg1, *arg2, *arg3;
 {
-  int i;
   cpp_buffer *ip = cpp_file_buffer (pfile);
 
   cpp_print_containing_files (pfile);
@@ -7437,7 +7433,6 @@ cpp_warning_with_line (pfile, line, column, msg, arg1, arg2, arg3)
      char *msg;
      char *arg1, *arg2, *arg3;
 {
-  int i;
   cpp_buffer *ip;
 
   if (CPP_OPTIONS (pfile)->inhibit_warnings)
@@ -7459,7 +7454,7 @@ cpp_warning_with_line (pfile, line, column, msg, arg1, arg2, arg3)
 void
 cpp_pedwarn_with_line (pfile, line, column, msg, arg1, arg2, arg3)
      cpp_reader *pfile;
-     int line;
+     int line, column;
      char *msg;
      char *arg1, *arg2, *arg3;
 {
@@ -7545,7 +7540,6 @@ cpp_error_from_errno (pfile, name)
      cpp_reader *pfile;
      char *name;
 {
-  int i;
   cpp_buffer *ip = cpp_file_buffer (pfile);
 
   cpp_print_containing_files (pfile);

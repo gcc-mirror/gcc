@@ -1,3 +1,165 @@
+Tue Jan 27 23:11:11 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-lex.c: Include <stdlib.h> and <string.h>/<strings.h>.  Add
+	prototype for `handle_sysv_pragma', and make it static.  Add
+	parentheses around assignment used as truth value.
+
+	* combine.c (combine_instructions): Protect variable `prev' with
+	macro HAVE_cc0.
+	(can_combine_p): Protect variable `link' with AUTO_INC_DEC.
+	(extract_left_shift): Add parentheses around operand of &.
+	(merge_outer_ops): Avoid an empty body in an else-statement.
+	(gen_rtx_combine): Remove unused variable `i'.
+	
+	* sparc/gmon-sol2.c: Include <fcntl.h>.  Make return type of
+        function monstartup `void'.  Likewise for internal_mcount.  Add
+        `static void' prototype for moncontrol.  Reconcile sprintf format
+        vs. args.  
+
+	* sparc/sparc.c: Include <stdlib.h> and <string.h>/<strings.h>.
+	Make return type of function_arg_slotno explicitly `int'.
+	(reg_unused_after): Add	parentheses around assignment used as
+	truth value.
+	(save_regs): Add explicit braces to avoid ambiguous `else'.
+	(function_arg_slotno): Add parentheses around && within ||.
+	(function_arg_pass_by_reference): Likewise.
+	(sparc_flat_output_function_prologue): Reconcile fprintf format
+	vs. args.
+
+	* svr4.h (ASM_OUTPUT_LIMITED_STRING): Add parentheses around
+	assignment used as truth value.
+
+	* cplus-dem.c: Include <stdlib.h>.
+	(demangle_signature): Avoid an empty body in an else-statement.
+	(do_type): Remove unused variable `lvl'.
+	
+	* cppexp.c: Don't have <stdlib.h> depend on MULTIBYTE_CHARS.
+	Include <string.h>/<strings.h>.
+	(cpp_lex): Remove unused variable `namelen'.
+	(cpp_lex): Explicitly declare `num_chars' as an int.
+
+	* cpplib.c: Avoid duplicate inclusion of <stdlib.h>, include
+	<unistd.h> instead.  Explicitly declare is_system_include
+	returning int.
+	(make_assertion): Remove unused variable `kt'.  
+	(cpp_expand_to_buffer): Hide variable `obuf'.
+	(output_line_command): Remove unused variables, `line_end',
+	`line_cmd_buf' and `len'.
+	(macarg): Remove unused variable `arg_start'.
+	(special_symbol): Remove unused variable `i'.  Add parentheses
+	around assignment used as truth value.  
+	(do_include):  Remove unused variables `pcfname' and `retried',
+	hide `pcf' and `pcfbuflimit'. 
+	(do_line): Remove unused variable `i'.
+	(finclude): Hide variable `missing_newline'.
+	(cpp_handle_options): Remove unused variable `j'.
+	(read_token_list): Remove unused variable `eofp'.
+	(cpp_error_with_line): Remove unused variable `i'.
+	(cpp_warning_with_line): Likewise.
+	(cpp_pedwarn_with_line): Explicitly declare `column' as int.
+	(cpp_error_from_errno): Remove unused variable `i'.
+
+	* cse.c (invalidate): Add parentheses around assignment used as
+	truth value.
+	(find_best_addr): Move declaration of variable `our_cost' inside
+	the conditional macro where its used.
+	(fold_rtx): Avoid an empty body in an if-statement.
+	(cse_insn): Wrap variables  `this_insn_cc0_mode' and
+	`this_insn_cc0' in macro HAVE_cc0.
+	
+	* dwarf2out.c: Include <stdlib.h> and <string.h>/<string.h>.
+	(ASM_OUTPUT_DWARF_DATA8):  Reconcile format vs. args in fprintf's.
+	(output_uleb128): Likewise.
+	(output_sleb128): Likewise.
+	(output_cfi): Likewise.
+	(output_call_frame_info): Remove unused variables `j', `fde_size'
+	and `fde_pad'.
+	(comp_unit_has_inlines): Hide declaration as per rest of file.
+	(size_of_line_prolog): Correct typo in prototype.
+	(add_arange): Likewise.
+	(output_aranges): Likewise.
+	(add_name_and_src_coords_attributes): Likewise.
+	(gen_array_type_die): Likewise.
+	(gen_inlined_subroutine_die): Likewise.
+	(equate_decl_number_to_die): Remove unused variable `i'.
+	(print_die): Reconcile format vs. args in fprintf's.
+	(print_dwarf_line_table): Likewise.
+	(output_die): Likewise.
+	(output_line_info): Likewise.
+	(add_subscript_info): Avoid an empty body in an else-statement.
+	(gen_subprogram_die): Remove unused variable `fp_loc'.
+
+	* dwarfout.c: Explicitly declare `next_pubname_number' as int.
+	Protect `ordering_attribute' prototype with USE_ORDERING_ATTRIBUTE
+	macro.  Protect `src_coords_attribute' prototype with
+	DWARF_DECL_COORDINATES macro.  Hide `output_entry_point_die'
+	prototype as in the rest of the file.  Likewise for
+	`output_pointer_type_die' and `output_reference_type_die'.  Remove
+	prototype for `type_of_for_scope'.
+	(output_unsigned_leb128): Reconcile format vs. args in fprintf.
+	(type_attribute): Add explicit braces to avoid ambiguous `else'.
+	
+	* final.c: Include <stdlib.h> and <string.h>/<strings.h>.
+	(shorten_branches): Protect declaration of tmp_length with
+	SHORTEN_WITH_ADJUST_INSN_LENGTH and ADJUST_INSN_LENGTH macros.
+	(profile_function): Protect declaration of `sval' and `cxt'
+	variables with appropriate macros.
+	(final_scan_insn): Likewise for `note' variable.  Add explicit
+	braces to avoid empty body in an if-statement.
+	(output_asm_insn): Move variable `i' inside macro conditional
+	where it is used.  Add parentheses around assignment used as truth
+	value.
+	(asm_fprintf) Likewise, likewise.
+	
+	* fix-header.c (main): Remove unused variable `done'.  Protect
+	declaration of `i' with FIXPROTO_IGNORE_LIST.
+
+	* pexecute.c: Include <unistd.h>.  Prototype `my_strerror'.
+
+	* print-rtl.c (print_inline_rtx): Explicitly declare the parameter
+	`ind'.
+
+	* profile.c: Include <string.h>/<strings.h>.
+	(instrument_arcs): Remove unused variables `note', `inverted',
+	`zero' and `neg_one'.
+	(branch_prob): Avoid empty body in an if-statement.
+
+	* regclass.c: Include <stdlib.h>.
+	(reg_alternate_class): Explicitly declare parameter `regno'.
+
+	* regmove.c (regmove_optimize): Remove unused variable `p'.  Add
+	parentheses around assignment used as truth value.
+	(find_matches):  Remove unused variables `output_operand' and
+	`matching_operand'.
+	(fixup_match_1): Remove statement with no effect: "if (0) ;".
+
+	* scan.c (sstring_append): Explicitly declare `count' as int.
+	(scan_string): Explicitly declare parameter `init' as int.
+
+	* sched.c: Include <stdlib.h>.
+	(BLOCKAGE_RANGE): Add parentheses around arithmetic in operand of |.
+	(rank_for_schedule): Add parentheses around assignment used as
+	truth value.
+	(schedule_block): Likewise.
+	(regno_use_in): Likewise.
+	(schedule_insns): Remove unused variable `i'.
+
+	* toplev.c: Include <stdlib.h> and <string.h>/<strings.h>.
+	(v_message_with_decl): Remove unused variable `n'.
+	(botch): Explicitly declare parameter `s' as char *.
+	(main): Add parentheses around assignment used as truth value.
+
+	* tree.c (make_node): Protect the variable `kind' with the
+	GATHER_STATISTICS macro.
+	(real_value_from_int_cst): Move variable `e' inside conditional
+	macro area where it is used.
+	(tree_last): Add parentheses around assignment used as truth value.
+	(build1): Protect the variable `kind' with the GATHER_STATISTICS
+	macro.
+	(print_obstack_statistics): Reconcile format vs. args in fprintf.
+	Protect variables `i', `total_nodes', and `total_bytes' with the
+	GATHER_STATISTICS macro.
+
 Tue Jan 27 23:01:55 1998  Mike Stump  (mrs@wrs.com)
 
 	* m32r.md, mips.md, mn10200.md, mn10300.md, pyr.md: Add

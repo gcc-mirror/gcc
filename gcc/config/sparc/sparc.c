@@ -23,6 +23,16 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include <stdio.h>
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#ifdef HAVE_STRING_H
+#include <string.h>
+#else
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#endif
 #include "tree.h"
 #include "rtl.h"
 #include "regs.h"
@@ -107,7 +117,7 @@ static int save_regs		PROTO((FILE *, int, int, char *,
 				       int, int, int));
 static int restore_regs		PROTO((FILE *, int, int, char *, int, int));
 static void build_big_number	PROTO((FILE *, int, char *));
-static function_arg_slotno	PROTO((const CUMULATIVE_ARGS *,
+static int function_arg_slotno	PROTO((const CUMULATIVE_ARGS *,
 				       enum machine_mode, tree, int, int,
 				       int *, int *));
 
@@ -1307,7 +1317,7 @@ reg_unused_after (reg, insn)
 {
   enum rtx_code code, prev_code = UNKNOWN;
 
-  while (insn = NEXT_INSN (insn))
+  while ((insn = NEXT_INSN (insn)))
     {
       if (prev_code == CALL_INSN && call_used_regs[REGNO (reg)])
 	return 1;
@@ -3135,33 +3145,38 @@ save_regs (file, low, high, base, offset, n_regs, real_offset)
       for (i = low; i < high; i += 2)
 	{
 	  if (regs_ever_live[i] && ! call_used_regs[i])
-	    if (regs_ever_live[i+1] && ! call_used_regs[i+1])
-	      {
-		fprintf (file, "\tstd %s,[%s+%d]\n",
-			 reg_names[i], base, offset + 4 * n_regs);
-		if (dwarf2out_do_frame ())
-		  {
-		    char *l = dwarf2out_cfi_label ();
-		    dwarf2out_reg_save (l, i, real_offset + 4 * n_regs);
-		    dwarf2out_reg_save (l, i+1, real_offset + 4 * n_regs + 4);
-		  }
-		n_regs += 2;
-	      }
-	    else
-	      {
-		fprintf (file, "\tst %s,[%s+%d]\n",
-			 reg_names[i], base, offset + 4 * n_regs);
-		if (dwarf2out_do_frame ())
-		  dwarf2out_reg_save ("", i, real_offset + 4 * n_regs);
-		n_regs += 2;
-	      }
-	  else if (regs_ever_live[i+1] && ! call_used_regs[i+1])
 	    {
-	      fprintf (file, "\tst %s,[%s+%d]\n",
-		       reg_names[i+1], base, offset + 4 * n_regs + 4);
-	      if (dwarf2out_do_frame ())
-		dwarf2out_reg_save ("", i + 1, real_offset + 4 * n_regs + 4);
-	      n_regs += 2;
+	      if (regs_ever_live[i+1] && ! call_used_regs[i+1])
+		{
+		  fprintf (file, "\tstd %s,[%s+%d]\n",
+			   reg_names[i], base, offset + 4 * n_regs);
+		  if (dwarf2out_do_frame ())
+		    {
+		      char *l = dwarf2out_cfi_label ();
+		      dwarf2out_reg_save (l, i, real_offset + 4 * n_regs);
+		      dwarf2out_reg_save (l, i+1, real_offset + 4 * n_regs + 4);
+		    }
+		  n_regs += 2;
+		}
+	      else
+		{
+		  fprintf (file, "\tst %s,[%s+%d]\n",
+			   reg_names[i], base, offset + 4 * n_regs);
+		  if (dwarf2out_do_frame ())
+		    dwarf2out_reg_save ("", i, real_offset + 4 * n_regs);
+		  n_regs += 2;
+		}
+	    }
+	  else
+	    {
+	      if (regs_ever_live[i+1] && ! call_used_regs[i+1])
+		{
+		  fprintf (file, "\tst %s,[%s+%d]\n",
+			   reg_names[i+1], base, offset + 4 * n_regs + 4);
+		  if (dwarf2out_do_frame ())
+		    dwarf2out_reg_save ("", i + 1, real_offset + 4 * n_regs + 4);
+		  n_regs += 2;
+		}
 	    }
 	}
     }
@@ -3746,7 +3761,7 @@ function_arg_slotno (cum, mode, type, named, incoming_p, pregno, ppadding)
 	}
 
       if (TARGET_ARCH32
-	  || type && TREE_CODE (type) == UNION_TYPE)
+	  || (type && TREE_CODE (type) == UNION_TYPE))
 	{
 	  if (slotno >= SPARC_INT_ARG_MAX)
 	    return -1;
@@ -4145,7 +4160,7 @@ function_arg_pass_by_reference (cum, mode, type, named)
 {
   if (TARGET_ARCH32)
     {
-      return (type && AGGREGATE_TYPE_P (type)
+      return ((type && AGGREGATE_TYPE_P (type))
 	      || mode == TFmode || mode == TCmode);
     }
   else
@@ -5585,7 +5600,7 @@ sparc_flat_output_function_prologue (file, size)
 
   /* This is only for the human reader.  */
   fprintf (file, "\t%s#PROLOGUE# 0\n", ASM_COMMENT_START);
-  fprintf (file, "\t%s# vars= %d, regs= %d/%d, args= %d, extra= %d\n",
+  fprintf (file, "\t%s# vars= %ld, regs= %d/%d, args= %d, extra= %ld\n",
 	   ASM_COMMENT_START,
 	   current_frame_info.var_size,
 	   current_frame_info.gp_reg_size / 4,
