@@ -1,5 +1,13 @@
 1999-09-10  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (finish_function): Adjust prototype.
+	* decl.c (finish_function): Return the function compiled.
+	* pt.c (instantiate_decl): Don't play games with obstacks.
+	* tree.c (mapcar): Handle OFFSET_REF and BIT_FIELD_REF.
+	(search_tree): Likewise.
+	* typeck.c: Fix typo in comment.
+	* typeck2.c (store_init_value): Add comment.
+
 	* cp-tree.h (CPTI_ATEXIT): New macro.
 	(atexit_node): Likewise.
 	* decl.c (destroy_local_static): New function, broken out from ...
