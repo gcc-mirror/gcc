@@ -121,8 +121,8 @@ Stephan Buys for contributing Doxygen notes for libstdc++.
 
 @item
 Paolo Carlini for libstdc++ work: lots of efficiency improvements to
-the string class, hard detective work on the frustrating localization
-issues, and keeping up with the problem reports.
+the string class, C++ streambufs and formatted I/O, hard detective work on
+the frustrating localization issues, and keeping up with the problem reports.
 
 @item
 John Carr for his alias work, SPARC hacking, infrastructure improvements,
@@ -653,6 +653,9 @@ Ovidiu Predescu for his work on the Objective-C front end and runtime
 libraries.
 
 @item
+Jerry Quinn for major performance improvements in C++ formatted I/O.
+
+@item
 Ken Raeburn for various improvements to checker, MIPS ports and various
 cleanups in the compiler.
 
@@ -687,6 +690,10 @@ Ken Rose for fixes to our delay slot filling code.
 
 @item
 Paul Rubin wrote most of the preprocessor.
+
+@item
+Petur Runolfsson for major performance improvements in C++ formatted I/O and
+large file support in C++ filebuf.
 
 @item
 Chip Salzenberg for libstdc++ patches and improvements to locales, traits,
