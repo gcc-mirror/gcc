@@ -1,5 +1,5 @@
 /*
-Copyright (C) 1994, 2000 Free Software Foundation
+Copyright (C) 1994 Free Software Foundation
 
 This file is part of the GNU IO Library.  This library is free
 software; you can redistribute it and/or modify it under the
@@ -35,7 +35,15 @@ the executable file might be covered by the GNU General Public License. */
 #if !defined(filebuf_vtable) && defined(__cplusplus)
 #ifdef __GNUC__
 extern char filebuf_vtable[]
-  asm ( "_ZTV7filebuf" );
+#if (!defined(__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100)
+  asm (_G_VTABLE_LABEL_PREFIX
+#if _G_VTABLE_LABEL_HAS_LENGTH
+       "7"
+#endif
+       "filebuf");
+#else
+  asm ( "_ZN7filebufTVE" );
+#endif /* (!defined(__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100) */
 #else /* !__GNUC__ */
 #if _G_VTABLE_LABEL_HAS_LENGTH
 #define filebuf_vtable _G_VTABLE_LABEL_PREFIX_ID##7filebuf
@@ -83,7 +91,15 @@ struct _IO_fake_stdiobuf {
 #ifndef stdiobuf_vtable
 #ifdef __GNUC__
 extern struct _IO_jump_t stdiobuf_vtable
-  asm ( "_ZTV15stdiobuf_vtable" );
+#if (!defined(__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100)
+  asm (_G_VTABLE_LABEL_PREFIX
+#if _G_VTABLE_LABEL_HAS_LENGTH
+       "8"
+#endif
+       "stdiobuf");
+#else
+  asm ( "_ZN15stdiobuf_vtableTVE" );
+#endif /* (!defined(__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100) */
 #else /* !__GNUC__ */
 #if _G_VTABLE_LABEL_HAS_LENGTH
 #define stdiobuf_vtable _G_VTABLE_LABEL_PREFIX_ID##8stdiobuf
