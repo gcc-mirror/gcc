@@ -62,12 +62,10 @@ static cppchar_t get_effective_char PARAMS ((cpp_reader *));
 
 static int skip_line_comment PARAMS ((cpp_reader *));
 static void skip_whitespace PARAMS ((cpp_reader *, cppchar_t));
-static cpp_hashnode *parse_identifier PARAMS ((cpp_reader *));
-static uchar *parse_slow PARAMS ((cpp_reader *, const uchar *, int,
-				  unsigned int *));
-static void parse_number PARAMS ((cpp_reader *, cpp_string *, int));
-static int unescaped_terminator_p PARAMS ((cpp_reader *, const uchar *));
-static void parse_string PARAMS ((cpp_reader *, cpp_token *, cppchar_t));
+static cpp_hashnode *lex_identifier PARAMS ((cpp_reader *));
+static void lex_number PARAMS ((cpp_reader *, cpp_string *));
+static bool continues_identifier_p PARAMS ((cpp_reader *));
+static void lex_string PARAMS ((cpp_reader *, cpp_token *));
 static void save_comment PARAMS ((cpp_reader *, cpp_token *, const uchar *,
 				  cppchar_t));
 static int name_p PARAMS ((cpp_reader *, const cpp_string *));
@@ -377,46 +375,50 @@ name_p (pfile, string)
   return 1;
 }
 
-/* Parse an identifier, skipping embedded backslash-newlines.  This is
-   a critical inner loop.  The common case is an identifier which has
-   not been split by backslash-newline, does not contain a dollar
-   sign, and has already been scanned (roughly 10:1 ratio of
-   seen:unseen identifiers in normal code; the distribution is
-   Poisson-like).  Second most common case is a new identifier, not
-   split and no dollar sign.  The other possibilities are rare and
-   have been relegated to parse_slow.  */
+/* Returns TRUE if the sequence starting at buffer->cur is invalid in
+   an identifier.  */
+static bool
+continues_identifier_p (pfile)
+     cpp_reader *pfile;
+{
+  if (*pfile->buffer->cur != '$')
+    return false;
+
+  if (CPP_PEDANTIC (pfile) && !pfile->state.skipping && !pfile->warned_dollar)
+    {
+      pfile->warned_dollar = true;
+      cpp_error (pfile, DL_PEDWARN, "'$' in identifier or number");
+    }
+  pfile->buffer->cur++;
+
+  return true;
+}
+
+/* Lex an identifier starting at BUFFER->CUR - 1.  */
 static cpp_hashnode *
-parse_identifier (pfile)
+lex_identifier (pfile)
      cpp_reader *pfile;
 {
   cpp_hashnode *result;
   const uchar *cur, *base;
 
-  /* Fast-path loop.  Skim over a normal identifier.
-     N.B. ISIDNUM does not include $.  */
-  cur = pfile->buffer->cur;
-  while (ISIDNUM (*cur))
-    cur++;
-
-  /* Check for slow-path cases.  */
-  if (*cur == '$')
+  base = pfile->buffer->cur - 1;
+  do
     {
-      unsigned int len;
+      cur = pfile->buffer->cur;
 
-      base = parse_slow (pfile, cur, 0, &len);
-      result = (cpp_hashnode *)
-	ht_lookup (pfile->hash_table, base, len, HT_ALLOCED);
-    }
-  else
-    {
-      base = pfile->buffer->cur - 1;
+      /* N.B. ISIDNUM does not include $.  */
+      while (ISIDNUM (*cur))
+	cur++;
+
       pfile->buffer->cur = cur;
-      result = (cpp_hashnode *)
-	ht_lookup (pfile->hash_table, base, cur - base, HT_ALLOC);
     }
+  while (continues_identifier_p (pfile));
 
-  /* Rarely, identifiers require diagnostics when lexed.
-     XXX Has to be forced out of the fast path.  */
+  result = (cpp_hashnode *)
+    ht_lookup (pfile->hash_table, base, cur - base, HT_ALLOC);
+
+  /* Rarely, identifiers require diagnostics when lexed.  */
   if (__builtin_expect ((result->flags & NODE_DIAGNOSTIC)
 			&& !pfile->state.skipping, 0))
     {
@@ -436,188 +438,66 @@ parse_identifier (pfile)
   return result;
 }
 
-/* Slow path.  This handles numbers and identifiers which have been
-   split, or contain dollar signs.  The part of the token from
-   PFILE->buffer->cur-1 to CUR has already been scanned.  NUMBER_P is
-   1 if it's a number, and 2 if it has a leading period.  Returns a
-   pointer to the token's NUL-terminated spelling in permanent
-   storage, and sets PLEN to its length.  */
-static uchar *
-parse_slow (pfile, cur, number_p, plen)
-     cpp_reader *pfile;
-     const uchar *cur;
-     int number_p;
-     unsigned int *plen;
-{
-  cpp_buffer *buffer = pfile->buffer;
-  const uchar *base = buffer->cur - 1;
-  struct obstack *stack = &pfile->hash_table->stack;
-  unsigned int c, prevc, saw_dollar = 0;
-
-  /* Place any leading period.  */
-  if (number_p == 2)
-    obstack_1grow (stack, '.');
-
-  /* Copy the part of the token which is known to be okay.  */
-  obstack_grow (stack, base, cur - base);
-
-  /* Now process the part which isn't.  We are looking at one of
-     '$', '\\', or '?' on entry to this loop.  */
-  prevc = cur[-1];
-  c = *cur++;
-  buffer->cur = cur;
-  for (;;)
-    {
-      /* Potential escaped newline?  */
-      buffer->backup_to = buffer->cur - 1;
-
-      if (!is_idchar (c))
-	{
-	  if (!number_p)
-	    break;
-	  if (c != '.' && !VALID_SIGN (c, prevc))
-	    break;
-	}
-
-      /* Handle normal identifier characters in this loop.  */
-      do
-	{
-	  prevc = c;
-	  obstack_1grow (stack, c);
-
-	  if (c == '$')
-	    saw_dollar++;
-
-	  c = *buffer->cur++;
-	}
-      while (is_idchar (c));
-    }
-
-  /* Step back over the unwanted char.  */
-  BACKUP ();
-
-  /* $ is not an identifier character in the standard, but is commonly
-     accepted as an extension.  Don't warn about it in skipped
-     conditional blocks.  */
-  if (saw_dollar && CPP_PEDANTIC (pfile) && ! pfile->state.skipping)
-    cpp_error (pfile, DL_PEDWARN, "'$' character(s) in identifier or number");
-
-  /* Identifiers and numbers are null-terminated.  */
-  *plen = obstack_object_size (stack);
-  obstack_1grow (stack, '\0');
-  return obstack_finish (stack);
-}
-
-/* Parse a number, beginning with character C, skipping embedded
-   backslash-newlines.  LEADING_PERIOD is nonzero if there was a "."
-   before C.  Place the result in NUMBER.  */
+/* Lex a number to NUMBER starting at BUFFER->CUR - 1.  */
 static void
-parse_number (pfile, number, leading_period)
+lex_number (pfile, number)
      cpp_reader *pfile;
      cpp_string *number;
-     int leading_period;
 {
   const uchar *cur;
+  const uchar *base;
+  uchar *dest;
 
-  /* Fast-path loop.  Skim over a normal number.
-     N.B. ISIDNUM does not include $.  */
-  cur = pfile->buffer->cur;
-  while (ISIDNUM (*cur) || *cur == '.' || VALID_SIGN (*cur, cur[-1]))
-    cur++;
-
-  /* Check for slow-path cases.  */
-  if (*cur == '$')
-    number->text = parse_slow (pfile, cur, 1 + leading_period, &number->len);
-  else
+  base = pfile->buffer->cur - 1;
+  do
     {
-      const uchar *base = pfile->buffer->cur - 1;
-      uchar *dest;
+      cur = pfile->buffer->cur;
 
-      number->len = cur - base + leading_period;
-      dest = _cpp_unaligned_alloc (pfile, number->len + 1);
-      dest[number->len] = '\0';
-      number->text = dest;
+      /* N.B. ISIDNUM does not include $.  */
+      while (ISIDNUM (*cur) || *cur == '.' || VALID_SIGN (*cur, cur[-1]))
+	cur++;
 
-      if (leading_period)
-	*dest++ = '.';
-      memcpy (dest, base, cur - base);
       pfile->buffer->cur = cur;
     }
+  while (continues_identifier_p (pfile));
+
+  number->len = cur - base;
+  dest = _cpp_unaligned_alloc (pfile, number->len + 1);
+  memcpy (dest, base, number->len);
+  dest[number->len] = '\0';
+  number->text = dest;
 }
 
-/* Subroutine of parse_string.  */
-static int
-unescaped_terminator_p (pfile, dest)
-     cpp_reader *pfile;
-     const unsigned char *dest;
-{
-  const unsigned char *start, *temp;
-
-  /* In #include-style directives, terminators are not escapable.  */
-  if (pfile->state.angled_headers)
-    return 1;
-
-  start = BUFF_FRONT (pfile->u_buff);
-
-  /* An odd number of consecutive backslashes represents an escaped
-     terminator.  */
-  for (temp = dest; temp > start && temp[-1] == '\\'; temp--)
-    ;
-
-  return ((dest - temp) & 1) == 0;
-}
-
-/* Parses a string, character constant, or angle-bracketed header file
-   name.  Handles embedded trigraphs and escaped newlines.  The stored
-   string is guaranteed NUL-terminated, but it is not guaranteed that
-   this is the first NUL since embedded NULs are preserved.
-
-   When this function returns, buffer->cur points to the next
-   character to be processed.  */
+/* Lexes a string, character constant, or angle-bracketed header file
+   name.  The stored string is guaranteed NUL-terminated, but it is
+   not guaranteed that this is the first NUL since embedded NULs are
+   preserved.  */
 static void
-parse_string (pfile, token, terminator)
+lex_string (pfile, token)
      cpp_reader *pfile;
      cpp_token *token;
-     cppchar_t terminator;
 {
   cpp_buffer *buffer = pfile->buffer;
-  unsigned char *dest, *limit;
-  cppchar_t c;
   bool warned_nulls = false;
+  const uchar *base;
+  uchar *dest;
+  cppchar_t terminator;
 
-  dest = BUFF_FRONT (pfile->u_buff);
-  limit = BUFF_LIMIT (pfile->u_buff);
+  base = buffer->cur;
+  terminator = base[-1];
+  if (terminator == '<')
+    terminator = '>';
 
   for (;;)
     {
-      /* We need room for another char, possibly the terminating NUL.  */
-      if ((size_t) (limit - dest) < 1)
-	{
-	  size_t len_so_far = dest - BUFF_FRONT (pfile->u_buff);
-	  _cpp_extend_buff (pfile, &pfile->u_buff, 2);
-	  dest = BUFF_FRONT (pfile->u_buff) + len_so_far;
-	  limit = BUFF_LIMIT (pfile->u_buff);
-	}
+      cppchar_t c = *buffer->cur++;
 
-      c = *buffer->cur++;
-
-      if (c == terminator)
-	{
-	  if (unescaped_terminator_p (pfile, dest))
-	    break;
-	}
-      else if (c == '\n')
-	{
-	  /* No string literal may extend over multiple lines.  In
-	     assembly language, suppress the error except for <>
-	     includes.  This is a kludge around not knowing where
-	     comments are.  */
-	  if (CPP_OPTION (pfile, lang) != CLK_ASM || terminator == '>')
-	    cpp_error (pfile, DL_ERROR, "missing terminating %c character",
-		       (int) terminator);
-	  buffer->cur--;
-	  break;
-	}
+      /* In #include-style directives, terminators are not escapable.
+	 \n can follow the '\\' if the file's last byte is '\\'.  */
+      if (c == '\\' && !pfile->state.angled_headers && *buffer->cur != '\n')
+	buffer->cur++;
+      else if (c == terminator || c == '\n')
+	break;
       else if (c == '\0')
 	{
 	  if (!warned_nulls)
@@ -627,14 +507,25 @@ parse_string (pfile, token, terminator)
 			 "null character(s) preserved in literal");
 	    }
 	}
-	*dest++ = c;
     }
 
-  *dest = '\0';
+  token->val.str.len = buffer->cur - base - 1;
+  dest = _cpp_unaligned_alloc (pfile, token->val.str.len + 1);
+  memcpy (dest, base, token->val.str.len);
+  dest[token->val.str.len] = '\0';
+  token->val.str.text = dest;
 
-  token->val.str.text = BUFF_FRONT (pfile->u_buff);
-  token->val.str.len = dest - BUFF_FRONT (pfile->u_buff);
-  BUFF_FRONT (pfile->u_buff) = dest + 1;
+  if (buffer->cur[-1] == '\n')
+    {
+      /* No string literal may extend over multiple lines.  In
+	 assembly language, suppress the error except for <>
+	 includes.  This is a kludge around not knowing where
+	 comments are.  */
+      if (CPP_OPTION (pfile, lang) != CLK_ASM || terminator == '>')
+	cpp_error (pfile, DL_ERROR, "missing terminating %c character",
+		   (int) terminator);
+      buffer->cur--;
+    }
 }
 
 /* The stored comment includes the comment start and any terminator.  */
@@ -916,23 +807,18 @@ _cpp_lex_direct (pfile)
     case '0': case '1': case '2': case '3': case '4':
     case '5': case '6': case '7': case '8': case '9':
       result->type = CPP_NUMBER;
-      parse_number (pfile, &result->val.str, 0);
+      lex_number (pfile, &result->val.str);
       break;
 
     case 'L':
       /* 'L' may introduce wide characters or strings.  */
-      {
-	const unsigned char *pos = buffer->cur;
-
-	c = get_effective_char (pfile);
-	if (c == '\'' || c == '"')
-	  {
-	    result->type = (c == '"' ? CPP_WSTRING: CPP_WCHAR);
-	    parse_string (pfile, result, c);
-	    break;
-	  }
-	buffer->cur = pos;
-      }
+      if (*buffer->cur == '\'' || *buffer->cur == '"')
+	{
+	  result->type = (*buffer->cur == '"' ? CPP_WSTRING: CPP_WCHAR);
+	  buffer->cur++;
+	  lex_string (pfile, result);
+	  break;
+	}
       /* Fall through.  */
 
     start_ident:
@@ -948,7 +834,7 @@ _cpp_lex_direct (pfile)
     case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
     case 'Y': case 'Z':
       result->type = CPP_NAME;
-      result->val.node = parse_identifier (pfile);
+      result->val.node = lex_identifier (pfile);
 
       /* Convert named operators to their proper types.  */
       if (result->val.node->flags & NODE_OPERATOR)
@@ -961,7 +847,7 @@ _cpp_lex_direct (pfile)
     case '\'':
     case '"':
       result->type = c == '"' ? CPP_STRING: CPP_CHAR;
-      parse_string (pfile, result, c);
+      lex_string (pfile, result);
       break;
 
     case '/':
@@ -1018,7 +904,7 @@ _cpp_lex_direct (pfile)
       if (pfile->state.angled_headers)
 	{
 	  result->type = CPP_HEADER_NAME;
-	  parse_string (pfile, result, '>');
+	  lex_string (pfile, result);
 	  break;
 	}
 
@@ -1108,8 +994,9 @@ _cpp_lex_direct (pfile)
       /* All known character sets have 0...9 contiguous.  */
       else if (ISDIGIT (c))
 	{
+	  buffer->cur--;
 	  result->type = CPP_NUMBER;
-	  parse_number (pfile, &result->val.str, 1);
+	  lex_number (pfile, &result->val.str);
 	}
       else if (c == '*' && CPP_OPTION (pfile, cplusplus))
 	result->type = CPP_DOT_STAR;

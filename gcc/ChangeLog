@@ -1,3 +1,12 @@
+2003-04-19  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cpphash.h (struct cpp_reader): New member warned_dollar.
+	* cpplex.c (continues_identifier_p): New function.
+	(parse_identifier, parse_number, parse_string): Rename lex_identifer,
+	lex_number and lex_string, and simplify.
+	(parse_slow, unescaped_terminator_p): Die.
+	(_cpp_lex_direct): Update.
+
 2003-04-19  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* calls.c (expand_call): Provide init for old_stack_pointer_delta.
