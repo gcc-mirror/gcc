@@ -224,6 +224,36 @@ do {								\
 	     ? "discard" : "same_size");			\
 } while (0)
 
+/* Write the extra assembler code needed to declare a function
+   properly.  If we are generating SDB debugging information, this
+   will happen automatically, so we only need to handle other cases.  */
+#define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
+  do									\
+    {									\
+      if (write_symbols != SDB_DEBUG)					\
+	i386_pe_declare_function_type (FILE, NAME, TREE_PUBLIC (DECL));	\
+      ASM_OUTPUT_LABEL (FILE, NAME);					\
+    }									\
+  while (0)
+
+/* Add an external function to the list of functions to be declared at
+   the end of the file.  */
+#define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME)				\
+  do									\
+    {									\
+      if (TREE_CODE (DECL) == FUNCTION_DECL)				\
+	i386_pe_record_external_function (NAME);			\
+    }									\
+  while (0)
+
+/* Declare the type properly for any external libcall.  */
+#define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, FUN) \
+  i386_pe_declare_function_type (FILE, XSTR (FUN, 0), 1)
+
+/* Output function declarations at the end of the file.  */
+#define ASM_FILE_END(FILE) \
+  i386_pe_asm_file_end (FILE)
+
 #undef ASM_COMMENT_START
 #define ASM_COMMENT_START " #"
 
@@ -232,3 +262,23 @@ do {								\
 
 /* Don't assume anything about the header files. */
 #define NO_IMPLICIT_EXTERN_C
+
+/* External function declarations.  */
+
+#ifndef PROTO
+#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
+#define PROTO(ARGS) ARGS
+#else
+#define PROTO(ARGS) ()
+#endif
+#endif
+
+#ifdef BUFSIZE		/* stdio.h has been included, ok to use FILE * */
+#define STDIO_PROTO(ARGS) PROTO(ARGS)
+#else
+#define STDIO_PROTO(ARGS) ()
+#endif
+
+extern void i386_pe_record_external_function PROTO((char *));
+extern void i386_pe_declare_function_type STDIO_PROTO((FILE *, char *, int));
+extern void i386_pe_asm_file_end STDIO_PROTO((FILE *));
