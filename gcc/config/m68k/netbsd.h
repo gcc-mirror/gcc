@@ -1,4 +1,3 @@
-#include <machine/ansi.h>
 #include "m68k/m68k.h"
 
 /* Get generic NetBSD definitions.  */
