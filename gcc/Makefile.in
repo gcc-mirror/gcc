@@ -1280,13 +1280,13 @@ bytecode: $(BI_ALL) $(BC_ALL)
 
 bi-arity: bi-arity.o $(BI_OBJ) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o bi-arity \
-	 bi-arity.o $(BI_OBJ) $(HOST_LIBS) $(LEXLIB)
+	 bi-arity.o $(BI_OBJ) $(HOST_LIBS)
 bi-opcode: bi-opcode.o $(BI_OBJ) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o bi-opcode \
-	 bi-opcode.o $(BI_OBJ) $(HOST_LIBS) $(LEXLIB)
+	 bi-opcode.o $(BI_OBJ) $(HOST_LIBS)
 bi-opname: bi-opname.o $(BI_OBJ) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o bi-opname \
-	 bi-opname.o $(BI_OBJ) $(HOST_LIBS) $(LEXLIB)
+	 bi-opname.o $(BI_OBJ) $(HOST_LIBS)
 
 
 bi-run.o:	$(srcdir)/bi-run.c $(srcdir)/bi-run.h $(srcdir)/bc-typecd.h bc-opname.h bc-arity.h bc-opcode.h
