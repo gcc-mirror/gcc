@@ -3381,8 +3381,11 @@ handle_avail_expr (rtx insn, struct expr *expr)
   if (insn_computes_expr == NULL)
     return 0;
   expr_set = single_set (insn_computes_expr);
+  /* The set might be in a parallel with multiple sets; we could
+     probably handle that, but there's currently no easy way to find
+     the relevant sub-expression.  */
   if (!expr_set)
-    abort ();
+    return 0;
 
   found_setting = 0;
   use_src = 0;
