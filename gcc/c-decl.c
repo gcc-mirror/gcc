@@ -634,7 +634,7 @@ push_scope (void)
       if (current_scope && scope->depth == 0)
 	{
 	  scope->depth--;
-	  sorry ("GCC supports only %u nested scopes\n", scope->depth);
+	  sorry ("GCC supports only %u nested scopes", scope->depth);
 	}
 
       current_scope        = scope;
