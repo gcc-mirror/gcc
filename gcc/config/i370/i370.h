@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler.  System/370 version.
    Copyright (C) 1989, 1993, 1995 Free Software Foundation, Inc.
    Contributed by Jan Stein (jan@cd.chalmers.se).
-   Modified for C/370 MVS by Dave Pitts (pitts@mcdata.com)
+   Modified for C/370 MVS by Dave Pitts (dpitts@nyx.cs.du.edu)
 
 This file is part of GNU CC.
 
@@ -79,6 +79,13 @@ extern int current_function_outgoing_args_size;
 { { "char-instructions", 1},						\
   { "no-char-instructions", -1},					\
   { "", TARGET_DEFAULT} }
+
+/* To use IBM supplied macro function prologue and epilogue, define the
+   following to 1.  Should only be needed if IBM changes the definition
+   of their prologue and epilogue.  */
+
+#define MACROPROLOGUE 0
+#define MACROEPILOGUE 0
 
 /* Target machine storage layout */
 
@@ -479,6 +486,21 @@ enum reg_class
 /* This macro generates the assembly code for function entry.
    All of the C/370 environment is preserved.  */
 
+#if MACROPROLOGUE == 1
+#define FUNCTION_PROLOGUE(FILE, LSIZE)					\
+{ 									\
+  fprintf (FILE, "\tEDCPRLG USRDSAL=%d,BASEREG=%d\n",			\
+	   STACK_POINTER_OFFSET + LSIZE +				\
+	   current_function_outgoing_args_size, BASE_REGISTER);		\
+  fprintf (FILE, "PG%d\tEQU\t*\n", mvs_page_num );			\
+  fprintf (FILE, "\tLR\t11,1\n");					\
+  fprintf (FILE, "\tL\t%d,=A(PGT%d)\n", PAGE_REGISTER, mvs_page_num);	\
+  mvs_page_code = 6;							\
+  mvs_page_lit = 4;							\
+  mvs_check_page (FILE, 0, 0);						\
+  function_base_page = mvs_page_num;					\
+}
+#else /* MACROPROLOGUE != 1 */
 #define FUNCTION_PROLOGUE(FILE, LSIZE)					\
 { 									\
   static int function_label_index = 1;					\
@@ -499,33 +521,39 @@ enum reg_class
       function_minute = function_time->tm_min;				\
       function_second = function_time->tm_sec;				\
     }									\
+  fprintf (FILE, "$DSD%03d\tDSECT\n", function_label_index);		\
+  fprintf (FILE, "\tDS\tD\n");						\
+  fprintf (FILE, "\tDS\tCL(120+%d)\n", STACK_POINTER_OFFSET + LSIZE	\
+			+ current_function_outgoing_args_size);		\
+  fprintf (FILE, "\tORG\t$DSD%03d\n", function_label_index);		\
+  fprintf (FILE, "\tDS\tCL(120+8)\n");					\
+  fprintf (FILE, "\tORG\n");						\
+  fprintf (FILE, "\tDS\t0D\n");						\
+  fprintf (FILE, "$DSL%03d\tEQU\t*-$DSD%03d-8\n", function_label_index, \
+	   function_label_index);					\
+  fprintf (FILE, "\tDS\t0H\n");						\
+  assemble_name (FILE, mvs_function_name);				\
+  fprintf (FILE, "\tCSECT\n");						\
   fprintf (FILE, "\tUSING\t*,15\n");					\
   fprintf (FILE, "\tB\tFPL%03d\n", function_label_index);		\
   fprintf (FILE, "\tDC\tAL1(FPL%03d+4-*)\n", function_label_index + 1);	\
-  fprintf (FILE, "\tDC\tX'CE',X'A0',X'10'\n");				\
-  fprintf (FILE, "\tDC\tA($PPA2)\n");					\
-  fprintf (FILE, "\tDC\tF'%d'\n", 0);					\
-  fprintf (FILE, "\tDC\tF'%d'\n", STACK_POINTER_OFFSET + LSIZE		\
-			+ current_function_outgoing_args_size);		\
+  fprintf (FILE, "\tDC\tX'CE',X'A0',AL1(16)\n");			\
+  fprintf (FILE, "\tDC\tAL4($PPA%03d)\n",function_label_index);		\
+  fprintf (FILE, "\tDC\tAL4(0)\n");					\
+  fprintf (FILE, "\tDC\tAL4($DSL%03d)\n", function_label_index);	\
   fprintf (FILE, "FPL%03d\tEQU\t*\n", function_label_index + 1);	\
   fprintf (FILE, "\tDC\tAL2(%d),C'%s'\n", strlen (mvs_function_name),	\
 	mvs_function_name);						\
-  fprintf (FILE, "\tDS\t0F\n");						\
-  if (!function_first)							\
-    {									\
-      fprintf (FILE, "$PPA2\tEQU\t*\n");				\
-      fprintf (FILE, "\tDC\tX'03',X'00',X'33',X'00'\n");		\
-      fprintf (FILE, "\tDC\tV(CEESTART),A(0)\n");			\
-      fprintf (FILE, "\tDC\tA($TIMES)\n");				\
-      fprintf (FILE, "\tDS\t0F\n");					\
-      fprintf (FILE, "$TIMES\tEQU\t*\n");				\
-      fprintf (FILE, "\tDC\tCL4'%d',CL4'%02d%02d',CL6'%02d%02d00'\n",	\
-		      function_year, function_month, function_day,	\
-		      function_hour, function_minute, function_second);	\
-      fprintf (FILE, "\tDC\tCL2'01',CL4'0100'\n");			\
-    }									\
-  fprintf (FILE, "\tDS\t0H\n");						\
-  fprintf (FILE, "FPL%03d\tEQU\t*\n", function_label_index);		\
+  fprintf (FILE, "$PPA%03d\tDS\t0F\n", function_label_index);		\
+  fprintf (FILE, "\tDC\tX'03',X'00',X'33',X'00'\n");			\
+  fprintf (FILE, "\tDC\tV(CEESTART),A(0)\n");				\
+  fprintf (FILE, "\tDC\tA($TIM%03d)\n", function_label_index);		\
+  fprintf (FILE, "$TIM%03d\tDS\t0F\n", function_label_index);		\
+  fprintf (FILE, "\tDC\tCL4'%d',CL4'%02d%02d',CL6'%02d%02d00'\n",	\
+		 function_year, function_month, function_day,		\
+		 function_hour, function_minute, function_second);	\
+  fprintf (FILE, "\tDC\tCL2'01',CL4'0100'\n");				\
+  fprintf (FILE, "FPL%03d\tDS\t0H\n", function_label_index);		\
   fprintf (FILE, "\tSTM\t14,12,12(13)\n");				\
   fprintf (FILE, "\tL\t2,76(,13)\n");					\
   fprintf (FILE, "\tL\t0,16(,15)\n");					\
@@ -539,11 +567,11 @@ enum reg_class
   fprintf (FILE, "\tMVI\t0(2),X'10'\n");				\
   fprintf (FILE, "\tST\t13,4(,2)\n ");					\
   fprintf (FILE, "\tLR\t13,2\n");					\
-  fprintf (FILE, "\tLR\t11,1\n");					\
   fprintf (FILE, "\tDROP\t15\n");					\
   fprintf (FILE, "\tBALR\t%d,0\n", BASE_REGISTER);			\
   fprintf (FILE, "PG%d\tEQU\t*\n", mvs_page_num );			\
   fprintf (FILE, "\tUSING\t*,%d\n", BASE_REGISTER);			\
+  fprintf (FILE, "\tLR\t11,1\n");					\
   fprintf (FILE, "\tL\t%d,=A(PGT%d)\n", PAGE_REGISTER, mvs_page_num);	\
   mvs_page_code = 4;							\
   mvs_page_lit = 4;							\
@@ -552,6 +580,7 @@ enum reg_class
   function_first = 1;							\
   function_label_index += 2;						\
 }
+#endif /* MACROPROLOGUE */
 
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
 {									\
@@ -575,7 +604,7 @@ enum reg_class
     strcpy (mvs_function_name, "gccmain");				\
   else									\
     strcpy (mvs_function_name, NAME);					\
-  fprintf (FILE, "\tDS\t0H\n");						\
+  fprintf (FILE, "\tDS\t0F\n");						\
   assemble_name (FILE, mvs_function_name);				\
   fputs ("\tCSECT\n", FILE);						\
 }
@@ -590,6 +619,23 @@ enum reg_class
    of alloca; we also take advantage of it to omit stack adjustments
    before returning.  */
 
+#if MACROEPILOGUE == 1
+#define FUNCTION_EPILOGUE(FILE, LSIZE)					\
+{									\
+  int i;								\
+  check_label_emit();							\
+  mvs_check_page (FILE,14,0);						\
+  fprintf (FILE, "\tEDCEPIL\n");					\
+  mvs_page_num++;							\
+  fprintf (FILE, "\tDS\t0F\n" );					\
+  fprintf (FILE, "\tLTORG\n");						\
+  fprintf (FILE, "\tDS\t0F\n");						\
+  fprintf (FILE, "PGT%d\tEQU\t*\n", function_base_page);		\
+  mvs_free_label();							\
+  for ( i = function_base_page; i < mvs_page_num; i++ )			\
+    fprintf (FILE, "\tDC\tA(PG%d)\n", i);				\
+}
+#else /* MACROEPILOGUE != 1 */
 #define FUNCTION_EPILOGUE(FILE, LSIZE)					\
 {									\
   int i;								\
@@ -611,6 +657,8 @@ enum reg_class
   for ( i = function_base_page; i < mvs_page_num; i++ )			\
     fprintf (FILE, "\tDC\tA(PG%d)\n", i);				\
 }
+#endif /* MACROEPILOGUE */
+
 
 /* Output assembler code for a block containing the constant parts of a
    trampoline, leaving space for the variable parts.
@@ -1133,9 +1181,7 @@ enum reg_class
 
 #define ASM_OUTPUT_SHORT(FILE, EXP)					\
 {									\
-  fprintf (FILE, "\tDC\tH'");						\
-  output_addr_const (FILE, EXP);					\
-  fprintf (FILE, "'\n");						\
+  fprintf (FILE, "\tDC\tX'%04X'\n", INTVAL(EXP) & 0xFFFF);		\
 }
 
 /* This outputs a byte sized integer.  */
@@ -1170,7 +1216,7 @@ enum reg_class
       else								\
 	{								\
 	  if (j % MVS_ASCII_TEXT_LENGTH == 0)				\
-            fprintf (FILE, "\tDC\tC'", c);				\
+            fprintf (FILE, "\tDC\tC'");					\
           if ( c == '\'' )                                       	\
 	    fprintf (FILE, "%c%c", c, c);                        	\
 	  else                                                   	\
@@ -1324,8 +1370,8 @@ enum reg_class
 	  fprintf (FILE, "%d", (INTVAL (X) << 16) >> 16);		\
 	else if (CODE == 'H')						\
 	  {								\
-	    mvs_page_lit += 4;						\
-	    fprintf (FILE, "=F'%d'", (INTVAL (X) << 16) >> 16);		\
+	    mvs_page_lit += 2;						\
+	    fprintf (FILE, "=H'%d'", (INTVAL (X) << 16) >> 16);		\
 	  }								\
 	else								\
 	  {								\
