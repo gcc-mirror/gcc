@@ -3344,6 +3344,14 @@ fill_simple_delay_slots (first, non_jumps_p)
   else
     SET_HARD_REG_BIT (needed.regs, STACK_POINTER_REGNUM);
 
+#ifdef EPILOGUE_USES
+  for (i = 0; i <FIRST_PSEUDO_REGISTER; i++)
+    {
+      if (EPILOGUE_USES (i))
+	SET_HARD_REG_BIT (needed.regs, i);
+    }
+#endif
+
   for (trial = get_last_insn (); ! stop_search_p (trial, 1);
        trial = PREV_INSN (trial))
     {
@@ -4450,7 +4458,11 @@ dbr_schedule (first, file)
 			       &end_of_function_needs, 1);
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    if (global_regs[i])
+    if (global_regs[i]
+#ifdef EPILOGUE_USES
+	|| EPILOGUE_USES (i)
+#endif
+	)
       SET_HARD_REG_BIT (end_of_function_needs.regs, i);
 
   /* The registers required to be live at the end of the function are
