@@ -1,3 +1,9 @@
+2004-10-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/17829
+	* parser.c (cp_parser_postfix_expression): Inhibit Koenig when
+	unqualified lookup finds a member function.
+
 2004-10-04  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	Convert diagnostics to use quoting flag q 4/n
