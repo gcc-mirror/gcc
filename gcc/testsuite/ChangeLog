@@ -1,3 +1,7 @@
+2000-04-19  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* gcc.dg/20000419-1.c: New test.
+
 Wed Apr 12 10:25:08 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/20000412-5.c: New test.
