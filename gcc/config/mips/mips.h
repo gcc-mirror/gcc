@@ -288,7 +288,7 @@ extern void		text_section ();
 #define MASK_DEBUG_E	0x02000000	/* function_arg debug */
 #define MASK_DEBUG_F	0x01000000	/* don't try to suppress load nop's */
 #define MASK_DEBUG_G	0x00800000	/* don't support 64 bit arithmetic */
-#define MASK_DEBUG_H	0x00400000	/* allow ints in FP registers */
+#define MASK_DEBUG_H	0               /* allow ints in FP registers */
 #define MASK_DEBUG_I	0x00200000	/* unused */
 
 					/* r4000 64 bit sizes */
