@@ -1,3 +1,20 @@
+2003-03-10  Josef Zlomek  <zlomekj@suse.cz>
+
+	* cfgcleanup.c (outgoing_edges_match): Compare the jump tables. 
+	(try_crossjump_to_edge): Replace refereces to one jump table by
+	references to identical jump table.
+	* loop.c (load_mems): Moved setting the JUMP_LABEL to replace_label.
+	(replace_label): Moved to rtlanal.c.
+	(struct rtx_pair): Moved to rtl.h.
+	* rtl.h (struct rtx_pair): Moved from loop.c.  
+	(replace_label): New extern function.
+	(subrtx_p): New extern function.
+	(tablejump_p): New extern function.
+	* rtlanal.c (replace_label): Moved from loop.c.  
+	(subrtx_p_1): New static function.
+	(subrtx_p): New function.
+	(tablejump_p): New function.
+
 Mon Mar 10 15:30:36 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* cfgcleanup.c (merge_blocks): Return where to iterate next.

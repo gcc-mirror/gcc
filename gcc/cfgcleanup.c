@@ -1254,10 +1254,83 @@ outgoing_edges_match (mode, bb1, bb2)
   /* Generic case - we are seeing a computed jump, table jump or trapping
      instruction.  */
 
+#ifndef CASE_DROPS_THROUGH
+  /* Check whether there are tablejumps in the end of BB1 and BB2.
+     Return true if they are identical.  */
+    {
+      rtx label1, label2;
+      rtx table1, table2;
+
+      if (tablejump_p (bb1->end, &label1, &table1)
+	  && tablejump_p (bb2->end, &label2, &table2)
+	  && GET_CODE (PATTERN (table1)) == GET_CODE (PATTERN (table2)))
+	{
+	  /* The labels should never be the same rtx.  If they really are same
+	     the jump tables are same too. So disable crossjumping of blocks BB1
+	     and BB2 because when deleting the common insns in the end of BB1
+	     by flow_delete_block () the jump table would be deleted too.  */
+	  /* If LABEL2 is contained in BB1->END do not do anything
+	     because we would loose information when replacing
+	     LABEL1 by LABEL2 and then LABEL2 by LABEL1 in BB1->END.  */
+	  if (label1 != label2 && !subrtx_p (label2, bb1->end))
+	    {
+	      /* Set IDENTICAL to true when the tables are identical.  */
+	      bool identical = false;
+	      rtx p1, p2;
+
+	      p1 = PATTERN (table1);
+	      p2 = PATTERN (table2);
+	      if (GET_CODE (p1) == ADDR_VEC && rtx_equal_p (p1, p2))
+		{
+		  identical = true;
+		}
+	      else if (GET_CODE (p1) == ADDR_DIFF_VEC
+		       && (XVECLEN (p1, 1) == XVECLEN (p2, 1))
+		       && rtx_equal_p (XEXP (p1, 2), XEXP (p2, 2))
+		       && rtx_equal_p (XEXP (p1, 3), XEXP (p2, 3)))
+		{
+		  int i;
+
+		  identical = true;
+		  for (i = XVECLEN (p1, 1) - 1; i >= 0 && identical; i--)
+		    if (!rtx_equal_p (XVECEXP (p1, 1, i), XVECEXP (p2, 1, i)))
+		      identical = false;
+		}
+
+	      if (identical)
+		{
+		  rtx_pair rr;
+		  bool match;
+
+		  /* Temporarily replace references to LABEL1 with LABEL2
+		     in BB1->END so that we could compare the instructions.  */
+		  rr.r1 = label1;
+		  rr.r2 = label2;
+		  for_each_rtx (&bb1->end, replace_label, &rr);
+
+		  match = insns_match_p (mode, bb1->end, bb2->end);
+		  if (rtl_dump_file && match)
+		    fprintf (rtl_dump_file,
+			     "Tablejumps in bb %i and %i match.\n",
+			     bb1->index, bb2->index);
+
+		  /* Set the original label in BB1->END because when deleting
+		     a block whose end is a tablejump, the tablejump referenced
+		     from the instruction is deleted too.  */
+		  rr.r1 = label2;
+		  rr.r2 = label1;
+		  for_each_rtx (&bb1->end, replace_label, &rr);
+
+		  return match;
+		}
+	    }
+	  return false;
+	}
+    }
+#endif
+
   /* First ensure that the instructions match.  There may be many outgoing
-     edges so this test is generally cheaper.
-     ??? Currently the tablejumps will never match, as they do have
-     different tables.  */
+     edges so this test is generally cheaper.  */
   if (!insns_match_p (mode, bb1->end, bb2->end))
     return false;
 
@@ -1370,6 +1443,38 @@ try_crossjump_to_edge (mode, e1, e2)
   if (!nmatch)
     return false;
 
+#ifndef CASE_DROPS_THROUGH
+  /* Here we know that the insns in the end of SRC1 which are common with SRC2
+     will be deleted.
+     If we have tablejumps in the end of SRC1 and SRC2
+     they have been already compared for equivalence in outgoing_edges_match ()
+     so replace the references to TABLE1 by references to TABLE2.  */
+    {
+      rtx label1, label2;
+      rtx table1, table2;
+
+      if (tablejump_p (src1->end, &label1, &table1)
+	  && tablejump_p (src2->end, &label2, &table2)
+	  && label1 != label2)
+	{
+	  rtx_pair rr;
+	  rtx insn;
+
+	  /* Replace references to LABEL1 with LABEL2.  */
+	  rr.r1 = label1;
+	  rr.r2 = label2;
+	  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+	    {
+	      /* Do not replace the label in SRC1->END because when deleting
+		 a block whose end is a tablejump, the tablejump referenced
+		 from the instruction is deleted too.  */
+	      if (insn != src1->end)
+		for_each_rtx (&insn, replace_label, &rr);
+	    }
+	}
+    }
+#endif
+  
   /* Avoid splitting if possible.  */
   if (newpos2 == src2->head)
     redirect_to = src2;

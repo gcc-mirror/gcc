@@ -338,7 +338,6 @@ static void note_reg_stored PARAMS ((rtx, rtx, void *));
 static void try_copy_prop PARAMS ((const struct loop *, rtx, unsigned int));
 static void try_swap_copy_prop PARAMS ((const struct loop *, rtx,
 					 unsigned int));
-static int replace_label PARAMS ((rtx *, void *));
 static rtx check_insn_for_givs PARAMS((struct loop *, rtx, int, int));
 static rtx check_insn_for_bivs PARAMS((struct loop *, rtx, int, int));
 static rtx gen_add_mult PARAMS ((rtx, rtx, rtx, rtx));
@@ -362,12 +361,6 @@ void debug_biv PARAMS ((const struct induction *));
 void debug_giv PARAMS ((const struct induction *));
 void debug_loop PARAMS ((const struct loop *));
 void debug_loops PARAMS ((const struct loops *));
-
-typedef struct rtx_pair
-{
-  rtx r1;
-  rtx r2;
-} rtx_pair;
 
 typedef struct loop_replace_args
 {
@@ -10151,15 +10144,6 @@ load_mems (loop)
       for (p = loop->start; p != loop->end; p = NEXT_INSN (p))
 	{
 	  for_each_rtx (&p, replace_label, &rr);
-
-	  /* If this is a JUMP_INSN, then we also need to fix the JUMP_LABEL
-	     field.  This is not handled by for_each_rtx because it doesn't
-	     handle unprinted ('0') fields.  We need to update JUMP_LABEL
-	     because the immediately following unroll pass will use it.
-	     replace_label would not work anyways, because that only handles
-	     LABEL_REFs.  */
-	  if (GET_CODE (p) == JUMP_INSN && JUMP_LABEL (p) == end_label)
-	    JUMP_LABEL (p) = label;
 	}
     }
 
@@ -10488,35 +10472,6 @@ replace_loop_regs (insn, reg, replacement)
   args.replacement = replacement;
 
   for_each_rtx (&insn, replace_loop_reg, &args);
-}
-
-/* Replace occurrences of the old exit label for the loop with the new
-   one.  DATA is an rtx_pair containing the old and new labels,
-   respectively.  */
-
-static int
-replace_label (x, data)
-     rtx *x;
-     void *data;
-{
-  rtx l = *x;
-  rtx old_label = ((rtx_pair *) data)->r1;
-  rtx new_label = ((rtx_pair *) data)->r2;
-
-  if (l == NULL_RTX)
-    return 0;
-
-  if (GET_CODE (l) != LABEL_REF)
-    return 0;
-
-  if (XEXP (l, 0) != old_label)
-    return 0;
-
-  XEXP (l, 0) = new_label;
-  ++LABEL_NUSES (new_label);
-  --LABEL_NUSES (old_label);
-
-  return 0;
 }
 
 /* Emit insn for PATTERN after WHERE_INSN in basic block WHERE_BB
