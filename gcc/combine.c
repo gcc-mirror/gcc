@@ -3561,7 +3561,7 @@ subst (x, from, to, in_dest, unique_copy)
 		     ? const1_rtx : constm1_rtx);
 	  rtx c = 0;
 	  enum machine_mode m = mode;
-	  enum rtx_code op, extend_op = NULL;
+	  enum rtx_code op, extend_op = 0;
 
 	  if ((GET_CODE (nz) == PLUS || GET_CODE (nz) == MINUS
 	       || GET_CODE (nz) == IOR || GET_CODE (nz) == XOR
@@ -3621,7 +3621,7 @@ subst (x, from, to, in_dest, unique_copy)
 
 	      temp = gen_binary (op, m, gen_lowpart_for_combine (m, z), temp);
 
-	      if (extend_op != NULL)
+	      if (extend_op != 0)
 		temp = gen_unary (extend_op, mode, temp);
 
 	      return temp;
