@@ -1925,8 +1925,8 @@ literal_section ()						\
    from the virtual frame pointer and adjust the debugger arg/auto offsets
    accordingly. These debugger offsets are set up in output_prolog.  */
 
-long alpha_arg_offset;
-long alpha_auto_offset;
+extern long alpha_arg_offset;
+extern long alpha_auto_offset;
 #define DEBUGGER_AUTO_OFFSET(X) \
   ((GET_CODE (X) == PLUS ? INTVAL (XEXP (X, 1)) : 0) + alpha_auto_offset)
 #define DEBUGGER_ARG_OFFSET(OFFSET, X) (OFFSET + alpha_arg_offset)
