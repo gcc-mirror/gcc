@@ -1642,3 +1642,53 @@ if test $enable_initfini_array = yes; then
   AC_DEFINE(HAVE_INITFINI_ARRAY, 1,
     [Define .init_array/.fini_array sections are available and working.])
 fi])
+
+dnl # _gcc_COMPUTE_GAS_VERSION
+dnl # Used by gcc_GAS_VERSION_GTE_IFELSE
+dnl #
+dnl # WARNING:
+dnl # gcc_cv_as_gas_srcdir must be defined before this.
+dnl # This gross requirement will go away eventually.
+AC_DEFUN([_gcc_COMPUTE_GAS_VERSION],
+[gcc_cv_as_bfd_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/bfd
+for f in $gcc_cv_as_bfd_srcdir/configure \
+         $gcc_cv_as_gas_srcdir/configure \
+         $gcc_cv_as_gas_srcdir/configure.in \
+         $gcc_cv_as_gas_srcdir/Makefile.in ; do
+  gcc_cv_gas_version=`grep '^VERSION=[[0-9]]*\.[[0-9]]*' $f`
+  if test x$gcc_cv_gas_version != x; then
+    break
+  fi
+done
+gcc_cv_gas_major_version=`expr "$gcc_cv_gas_version" : "VERSION=\([[0-9]]*\)"`
+gcc_cv_gas_minor_version=`expr "$gcc_cv_gas_version" : "VERSION=[[0-9]]*\.\([[0-9]]*\)"`
+gcc_cv_gas_patch_version=`expr "$gcc_cv_gas_version" : "VERSION=[[0-9]]*\.[[0-9]]*\.\([[0-9]]*\)"`
+]) []dnl # _gcc_COMPUTE_GAS_VERSION
+
+dnl # gcc_GAS_VERSION_GTE_IFELSE(major, minor, patchlevel,
+dnl #                     [command_if_true = :], [command_if_false = :])
+dnl # Check to see if the version of GAS is greater than or
+dnl # equal to the specified version.
+dnl #
+dnl # The first ifelse() shortens the shell code if the patchlevel
+dnl # is unimportant (the usual case).  The others handle missing
+dnl # commands.  Note that the tests are structured so that the most
+dnl # common version number cases are tested first.
+AC_DEFUN([gcc_GAS_VERSION_GTE_IFELSE],
+[AC_REQUIRE([_gcc_COMPUTE_GAS_VERSION]) []dnl
+ifelse([$3],[0],
+[if test $gcc_cv_gas_major_version -eq $1 \
+&& test $gcc_cv_gas_minor_version -ge $2 \
+|| test $gcc_cv_gas_major_version -gt $1 ; then
+],
+[if test $gcc_cv_gas_major_version -eq $1 \
+&& (test $gcc_cv_gas_minor_version -gt $2 \
+    || (test $gcc_cv_gas_minor_version -eq $2 \
+        && test $gcc_cv_gas_patch_version -ge $3 )) \
+|| test $gcc_cv_gas_major_version -gt $1 ; then
+])
+ifelse([$4],[],[:],[$4])
+ifelse([$5],[],[],[else $5])
+fi
+]) []dnl # gcc_GAS_VERSION_GTE_IFELSE
+

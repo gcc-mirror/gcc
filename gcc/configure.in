@@ -1447,7 +1447,6 @@ gcc_cv_as=
 gcc_cv_gas_major_version=
 gcc_cv_gas_minor_version=
 gcc_cv_as_gas_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/gas
-gcc_cv_as_bfd_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/bfd
 if test -x "$DEFAULT_ASSEMBLER"; then
 	gcc_cv_as="$DEFAULT_ASSEMBLER"
 elif test -x "$AS"; then
@@ -1457,22 +1456,9 @@ elif test -x as$host_exeext; then
 	gcc_cv_as=./as$host_exeext
 elif test -f $gcc_cv_as_gas_srcdir/configure.in \
      && test -f ../gas/Makefile; then
-	# Single tree build which includes gas.
-	in_tree_gas=yes
-	for f in $gcc_cv_as_bfd_srcdir/configure $gcc_cv_as_gas_srcdir/configure $gcc_cv_as_gas_srcdir/configure.in $gcc_cv_as_gas_srcdir/Makefile.in
-	do
-changequote(,)dnl
-		gcc_cv_gas_version=`grep '^VERSION=[0-9]*\.[0-9]*' $f`
-changequote([,])dnl
-		if test x$gcc_cv_gas_version != x; then
-			break
-		fi
-	done
-changequote(,)dnl
-	gcc_cv_gas_major_version=`expr "$gcc_cv_gas_version" : "VERSION=\([0-9]*\)"`
-	gcc_cv_gas_minor_version=`expr "$gcc_cv_gas_version" : "VERSION=[0-9]*\.\([0-9]*\)"`
-	gcc_cv_gas_patch_version=`expr "$gcc_cv_gas_version" : "VERSION=[0-9]*\.[0-9]*\.\([0-9]*\)"`
-changequote([,])dnl
+  # Single tree build which includes gas.
+  in_tree_gas=yes
+  _gcc_COMPUTE_GAS_VERSION
 fi
 
 if test "x$gcc_cv_as" = x; then
@@ -1671,18 +1657,17 @@ AC_MSG_RESULT($gcc_cv_objdump)
 AC_MSG_CHECKING(assembler alignment features)
 gcc_cv_as_alignment_features=none
 if test $in_tree_gas = yes; then
-	# Gas version 2.6 and later support for .balign and .p2align.
-	# bytes to skip when using .p2align.
-	if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 6 -o "$gcc_cv_gas_major_version" -gt 2; then
-		gcc_cv_as_alignment_features=".balign and .p2align"
-		AC_DEFINE(HAVE_GAS_BALIGN_AND_P2ALIGN)
-	fi
-	# Gas version 2.8 and later support specifying the maximum
-	# bytes to skip when using .p2align.
-	if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 8 -o "$gcc_cv_gas_major_version" -gt 2; then
-		gcc_cv_as_alignment_features=".p2align including maximum skip"
-		AC_DEFINE(HAVE_GAS_MAX_SKIP_P2ALIGN)
-	fi
+  # Gas version 2.6 and later support for .balign and .p2align.
+  gcc_GAS_VERSION_GTE_IFELSE(2,6,0,[
+    gcc_cv_as_alignment_features=".balign and .p2align"
+    AC_DEFINE(HAVE_GAS_BALIGN_AND_P2ALIGN)
+  ])
+  # Gas version 2.8 and later support specifying the maximum
+  # bytes to skip when using .p2align.
+  gcc_GAS_VERSION_GTE_IFELSE(2,8,0,[
+    gcc_cv_as_alignment_features=".p2align including maximum skip"
+    AC_DEFINE(HAVE_GAS_MAX_SKIP_P2ALIGN)
+  ])
 elif test x$gcc_cv_as != x; then
 	# Check if we have .balign and .p2align
 	echo ".balign  4" > conftest.s
@@ -1706,9 +1691,11 @@ AC_MSG_RESULT($gcc_cv_as_alignment_features)
 AC_MSG_CHECKING(assembler subsection support)
 gcc_cv_as_subsections=no
 if test $in_tree_gas = yes ; then
-  if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 9 -o "$gcc_cv_gas_major_version" -gt 2 && grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
-    gcc_cv_as_subsections="working .subsection -1"
-  fi
+  gcc_GAS_VERSION_GTE_IFELSE(2,9,0,[
+    if grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
+      gcc_cv_as_subsections="working .subsection -1"
+    fi
+  ])
 elif test x$gcc_cv_as != x; then
 	# Check if we have .subsection
 	echo ".subsection 1" > conftest.s
@@ -1744,9 +1731,9 @@ AC_MSG_RESULT($gcc_cv_as_subsections)
 AC_MSG_CHECKING(assembler weak support)
 gcc_cv_as_weak=no
 if test $in_tree_gas = yes ; then
-  if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 2 -o "$gcc_cv_gas_major_version" -gt 2; then
+  gcc_GAS_VERSION_GTE_IFELSE(2,2,0,[
     gcc_cv_as_weak="yes"
-  fi
+  ])
 elif test x$gcc_cv_as != x; then
 	# Check if we have .weak
 	echo "	.weak foobar" > conftest.s
@@ -1763,15 +1750,11 @@ AC_MSG_RESULT($gcc_cv_as_weak)
 AC_MSG_CHECKING(assembler hidden support)
 gcc_cv_as_hidden=no
 if test $in_tree_gas = yes ; then
-  if test "$gcc_cv_gas_major_version" -eq 2	\
-	  -a "$gcc_cv_gas_minor_version" -eq 12	\
-	  -a "$gcc_cv_gas_patch_version" -ge 1	\
-	  -o "$gcc_cv_gas_major_version" -eq 2	\
-	  -a "$gcc_cv_gas_minor_version" -gt 12	\
-	  -o "$gcc_cv_gas_major_version" -gt 2	\
-    && grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
-    gcc_cv_as_hidden="yes"
-  fi
+  gcc_GAS_VERSION_GTE_IFELSE(2,12,1,[
+    if grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
+      gcc_cv_as_hidden="yes"
+    fi
+  ])
 elif test x$gcc_cv_as != x; then
 	# Check if we have .hidden
 	echo "	.hidden foobar" > conftest.s
@@ -1838,9 +1821,11 @@ AC_SUBST(libgcc_visibility)
 AC_MSG_CHECKING(assembler leb128 support)
 gcc_cv_as_leb128=no
 if test $in_tree_gas = yes ; then
-  if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 11 -o "$gcc_cv_gas_major_version" -gt 2 && grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
-    gcc_cv_as_leb128="yes"
-  fi
+  gcc_GAS_VERSION_GTE_IFELSE(2,11,0,[
+    if grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
+      gcc_cv_as_leb128="yes"
+    fi
+  ])
 elif test x$gcc_cv_as != x; then
 	# Check if we have .[us]leb128, and support symbol arithmetic with it.
 	cat > conftest.s <<EOF
@@ -1882,9 +1867,11 @@ AC_MSG_RESULT($gcc_cv_as_leb128)
 AC_MSG_CHECKING(assembler eh_frame optimization)
 gcc_cv_as_eh_frame=no
 if test $in_tree_gas = yes ; then
-  if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 12 -o "$gcc_cv_gas_major_version" -gt 2 && grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
-    gcc_cv_as_eh_frame="yes"
-  fi
+  gcc_GAS_VERSION_GTE_IFELSE(2,12,0,[
+    if grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
+      gcc_cv_as_eh_frame="yes"
+    fi
+  ])
 elif test x$gcc_cv_as != x; then
 	# Check if this is GAS.
 	as_ver=`$gcc_cv_as --version < /dev/null 2> /dev/null | head -1`
@@ -1960,9 +1947,11 @@ AC_MSG_RESULT($gcc_cv_as_eh_frame)
 AC_MSG_CHECKING(assembler section merging support)
 gcc_cv_as_shf_merge=no
 if test $in_tree_gas = yes ; then
-  if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 12 -o "$gcc_cv_gas_major_version" -gt 2 && grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
-    gcc_cv_as_shf_merge=yes
-  fi
+  gcc_GAS_VERSION_GTE_IFELSE(2,12,0,[
+    if grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
+      gcc_cv_as_shf_merge=yes
+    fi
+  ])
 elif test x$gcc_cv_as != x; then
 	# Check if we support SHF_MERGE sections
 	echo '.section .rodata.str, "aMS", @progbits, 1' > conftest.s
@@ -2096,11 +2085,9 @@ esac
 if test -z "$tls_first_major"; then
   :
 elif test $in_tree_gas = yes ; then
-  if test "$gcc_cv_gas_major_version" -eq "$tls_first_major" \
-	  -a "$gcc_cv_gas_minor_version" -ge "$tls_first_minor" \
-	  -o "$gcc_cv_gas_major_version" -gt "$tls_first_major"; then
+  gcc_GAS_VERSION_GTE_IFELSE($tls_first_major,$tls_first_minor,0,[
     gcc_cv_as_tls=yes
-  fi
+  ])
 elif test x$gcc_cv_as != x; then
   echo "$conftest_s" > conftest.s
   if $gcc_cv_as --fatal-warnings -o conftest.o conftest.s > /dev/null 2>&1
@@ -2122,11 +2109,9 @@ case "$target" in
 	gcc_cv_as_explicit_relocs, [
 	gcc_cv_as_explicit_relocs=unknown
 	if test $in_tree_gas = yes ; then
-	   if test "$gcc_cv_gas_major_version" -eq 2 \
-	           -a "$gcc_cv_gas_minor_version" -ge 12 \
-	           -o "$gcc_cv_gas_major_version" -gt 2; then
+           gcc_GAS_VERSION_GTE_IFELSE(2,12,0,[
 	      gcc_cv_as_explicit_relocs=yes
-	   fi
+	   ])
 	elif test x$gcc_cv_as != x; then
 	    cat > conftest.s << 'EOF'
 	.set nomacro
@@ -2279,9 +2264,9 @@ changequote([,])dnl
     AC_MSG_CHECKING(assembler instructions)
     gcc_cv_as_instructions=
     if test $in_tree_gas = yes ; then 
-      if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 9 -o "$gcc_cv_gas_major_version" -gt 2; then
+      gcc_GAS_VERSION_GTE_IFELSE(2,9,0,[
 	gcc_cv_as_instructions="filds fists"
-      fi
+      ])
     elif test x$gcc_cv_as != x; then
 	set "filds fists" "filds mem; fists mem"
 	while test $# -gt 0
@@ -2302,11 +2287,9 @@ changequote([,])dnl
     AC_MSG_CHECKING(assembler GOTOFF in data directives)
     gcc_cv_as_gotoff_in_data=no
     if test $in_tree_gas = yes ; then
-      if test "$gcc_cv_gas_major_version" -eq 2 \
-	 -a "$gcc_cv_gas_minor_version" -ge 11 \
-	 -o "$gcc_cv_gas_major_version" -gt 2; then
+      gcc_GAS_VERSION_GTE_IFELSE(2,11,0,[
 	gcc_cv_as_gotoff_in_data=yes
-      fi
+      ])
     elif test x$gcc_cv_as != x; then
 	cat > conftest.s <<EOF
 	.text
@@ -2329,14 +2312,10 @@ EOF
     AC_CACHE_CHECK([assembler supports ltoffx and ldxmov],
 	gcc_cv_as_ltoffx_ldxmov_relocs, [
 	gcc_cv_as_ltoffx_ldxmov_relocs=unknown
-	if test x$gcc_cv_gas_major_version != x \
-		-a x$gcc_cv_gas_minor_version != x
-	then
-	   if test "$gcc_cv_gas_major_version" -eq 2 \
-	           -a "$gcc_cv_gas_minor_version" -ge 14 \
-	           -o "$gcc_cv_gas_major_version" -gt 2; then
-	      gcc_cv_as_ltoffx_ldxmov_relocs=yes
-	   fi
+	if test $in_tree_gas = yes ; then
+          gcc_GAS_VERSION_GTE_IFELSE(2,14,0,[
+	    gcc_cv_as_ltoffx_ldxmov_relocs=yes
+          ])
 	elif test x$gcc_cv_as != x; then
 	    cat > conftest.s << 'EOF'
 changequote(,)dnl
@@ -2379,13 +2358,12 @@ case "$target" in
     ;;
   esac
 if test $in_tree_gas = yes ; then
-  if test "$gcc_cv_gas_major_version" -eq 2 \
-	-a "$gcc_cv_gas_minor_version" -ge 11 \
-	-o "$gcc_cv_gas_major_version" -gt 2 \
-     && grep 'obj_format = elf' ../gas/Makefile > /dev/null \
-     && test x"$insn" != x ; then
-    gcc_cv_as_dwarf2_debug_line="yes"
-  fi
+  gcc_GAS_VERSION_GTE_IFELSE(2,11,0,[
+    if grep 'obj_format = elf' ../gas/Makefile > /dev/null \
+        && test x"$insn" != x ; then
+      gcc_cv_as_dwarf2_debug_line="yes"
+    fi
+  ])
 elif test x$gcc_cv_as != x -a x"$insn" != x ; then
 	echo '	.file 1 "conftest.s"' > conftest.s
 	echo '	.loc 1 3 0' >> conftest.s
@@ -2418,13 +2396,12 @@ AC_MSG_RESULT($gcc_cv_as_dwarf2_debug_line)
 AC_MSG_CHECKING(assembler --gdwarf2 support)
 gcc_cv_as_gdwarf2_flag=no
 if test $in_tree_gas = yes ; then
-  if test "$gcc_cv_gas_major_version" -eq 2 \
-	-a "$gcc_cv_gas_minor_version" -ge 11 \
-	-o "$gcc_cv_gas_major_version" -gt 2 \
-     && grep 'obj_format = elf' ../gas/Makefile > /dev/null \
-     && test x"$insn" != x ; then
-    gcc_cv_as_gdwarf2_flag="yes"
-  fi
+  gcc_GAS_VERSION_GTE_IFELSE(2,11,0,[
+    if grep 'obj_format = elf' ../gas/Makefile > /dev/null \
+        && test x"$insn" != x ; then
+      gcc_cv_as_gdwarf2_flag="yes"
+    fi
+  ])
 elif test x$gcc_cv_as != x -a x"$insn" != x ; then
 	echo '' > conftest.s
 	# ??? This fails with non-gnu grep.
@@ -2443,13 +2420,12 @@ AC_MSG_RESULT($gcc_cv_as_gdwarf2_flag)
 AC_MSG_CHECKING(assembler --gstabs support)
 gcc_cv_as_gstabs_flag=no
 if test $in_tree_gas = yes ; then
-  if test "$gcc_cv_gas_major_version" -eq 2 \
-	-a "$gcc_cv_gas_minor_version" -ge 11 \
-	-o "$gcc_cv_gas_major_version" -gt 2 \
-     && grep 'obj_format = elf' ../gas/Makefile > /dev/null \
-     && test x"$insn" != x ; then
-    gcc_cv_as_gstabs_flag="yes"
-  fi
+  gcc_GAS_VERSION_GTE_IFELSE(2,11,0,[
+    if grep 'obj_format = elf' ../gas/Makefile > /dev/null \
+        && test x"$insn" != x ; then
+      gcc_cv_as_gstabs_flag="yes"
+    fi
+  ])
 elif test x$gcc_cv_as != x -a x"$insn" != x ; then
 	echo '' > conftest.s
 	# ??? This fails with non-gnu grep.
