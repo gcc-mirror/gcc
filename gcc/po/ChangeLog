@@ -1,5 +1,9 @@
 2000-09-12  Philipp Thomas  <pthomas@suse.de>
 
+	* Makefile.in.in (stamp-check-pot): Don't use $@ in rule.
+
+2000-09-12  Philipp Thomas  <pthomas@suse.de>
+
 	* Makefile.in.in (stamp-check-pot): New target used for
 	checking POTFILES.
 	* gcc.pot: Regenerated.
