@@ -523,7 +523,7 @@ quote_string (pfile, src)
       }
 }
 
-/* Make sure PFILE->token_buffer will hold at least N more chars. */
+/* Re-allocates PFILE->token_buffer so it will hold at least N more chars. */
 
 void
 cpp_grow_buffer (pfile, n)
@@ -1886,25 +1886,23 @@ struct argdata {
 };
 
 
+/* Allocate a new cpp_buffer for PFILE, and push it on the input buffer stack.
+   If BUFFER != NULL, then use the LENGTH characters in BUFFER
+   as the new input buffer.
+   Return the new buffer, or NULL on failure. */
+
 cpp_buffer*
 cpp_push_buffer (pfile, buffer, length)
      cpp_reader *pfile;
      U_CHAR *buffer;
      long length;
 {
-#ifdef STATIC_BUFFERS
   register cpp_buffer *buf = CPP_BUFFER (pfile);
   if (buf == pfile->buffer_stack)
     fatal ("%s: macro or `#include' recursion too deep", buf->fname);
   buf--;
   bzero ((char *) buf, sizeof (cpp_buffer));
   CPP_BUFFER (pfile) = buf;
-#else
-  register cpp_buffer *buf = (cpp_buffer*) xmalloc (sizeof(cpp_buffer));
-  bzero ((char *) buf, sizeof (cpp_buffer));
-  CPP_PREV_BUFFER (buf) = CPP_BUFFER (pfile);
-  CPP_BUFFER (pfile) = buf;
-#endif
   buf->if_stack = pfile->if_stack;
   buf->cleanup = null_cleanup;
   buf->underflow = null_underflow;
@@ -1919,16 +1917,8 @@ cpp_pop_buffer (pfile)
      cpp_reader *pfile;
 {
   cpp_buffer *buf = CPP_BUFFER (pfile);
-#ifdef STATIC_BUFFERS
   (*buf->cleanup) (buf, pfile);
   return ++CPP_BUFFER (pfile);
-#else
-  cpp_buffer *next_buf = CPP_PREV_BUFFER (buf);
-  (*buf->cleanup) (buf, pfile);
-  CPP_BUFFER (pfile) = next_buf;
-  free (buf);
-  return next_buf;
-#endif
 }
 
 /* Scan until CPP_BUFFER (PFILE) is exhausted into PFILE->token_buffer.
@@ -2331,7 +2321,7 @@ special_symbol (hp, pfile)
     
   for (ip = CPP_BUFFER (pfile); ; ip = CPP_PREV_BUFFER (ip))
     {
-      if (ip == NULL)
+      if (ip == CPP_NULL_BUFFER (pfile))
 	{
 	  cpp_error (pfile, "cccp error: not in any file?!");
 	  return;			/* the show must go on */
@@ -2348,7 +2338,7 @@ special_symbol (hp, pfile)
 	char *string;
 	if (hp->type == T_BASE_FILE)
 	  {
-	    while (CPP_PREV_BUFFER (ip))
+	    while (CPP_PREV_BUFFER (ip) != CPP_NULL_BUFFER (pfile))
 	      ip = CPP_PREV_BUFFER (ip);
 	  }
 	string = ip->nominal_fname;
@@ -2362,7 +2352,8 @@ special_symbol (hp, pfile)
 
     case T_INCLUDE_LEVEL:
       true_indepth = 0;
-      for (ip = CPP_BUFFER (pfile);  ip != NULL; ip = CPP_PREV_BUFFER (ip))
+      ip = CPP_BUFFER (pfile);
+      for (;  ip != CPP_NULL_BUFFER (pfile); ip = CPP_PREV_BUFFER (ip))
 	if (ip->fname != NULL)
 	  true_indepth++;
 
@@ -2496,6 +2487,25 @@ special_symbol (hp, pfile)
   return;
 }
 
+/* Write out a #define command for the special named MACRO_NAME
+   to PFILE's token_buffer.  */
+
+static void
+dump_special_to_buffer (pfile, macro_name)
+     cpp_reader *pfile;
+     char *macro_name;
+{
+  static char define_directive[] = "#define ";
+  int macro_name_length = strlen (macro_name);
+  output_line_command (pfile, 0, same_file);
+  CPP_RESERVE (pfile, sizeof(define_directive) + macro_name_length);
+  CPP_PUTS_Q (pfile, define_directive, sizeof(define_directive)-1);
+  CPP_PUTS_Q (pfile, macro_name, macro_name_length);
+  CPP_PUTC_Q (pfile, ' ');
+  cpp_expand_to_buffer (pfile, macro_name, macro_name_length);
+  CPP_PUTC (pfile, '\n');
+}
+
 /* Initialize the built-in macros.  */
 
 static void
@@ -2528,63 +2538,21 @@ initialize_builtins (pfile)
 
   if (CPP_OPTIONS (pfile)->debug_output)
     {
-      char directive[2048];
-      register struct directive *dp = &directive_table[0];
-      struct tm *timebuf = timestamp (pfile);
-      cpp_buffer *pbuffer = CPP_BUFFER (pfile);
-
-      while (CPP_PREV_BUFFER (pbuffer))
-	pbuffer = CPP_PREV_BUFFER (pbuffer);
-      sprintf (directive, " __BASE_FILE__ \"%s\"\n",
-	       pbuffer->nominal_fname);
-      output_line_command (pfile, 0, same_file);
-      pass_thru_directive (directive, &directive[strlen (directive)], pfile, dp);
-
-      sprintf (directive, " __VERSION__ \"%s\"\n", version_string);
-      output_line_command (pfile, 0, same_file);
-      pass_thru_directive (directive, &directive[strlen (directive)], pfile, dp);
-
+      dump_special_to_buffer (pfile, "__BASE_FILE__");
+      dump_special_to_buffer (pfile, "__VERSION__");
 #ifndef NO_BUILTIN_SIZE_TYPE
-      sprintf (directive, " __SIZE_TYPE__ %s\n", SIZE_TYPE);
-      output_line_command (pfile, 0, same_file);
-      pass_thru_directive (directive, &directive[strlen (directive)], pfile, dp);
+      dump_special_to_buffer (pfile, "__SIZE_TYPE__");
 #endif
-
 #ifndef NO_BUILTIN_PTRDIFF_TYPE
-      sprintf (directive, " __PTRDIFF_TYPE__ %s\n", PTRDIFF_TYPE);
-      output_line_command (pfile, 0, same_file);
-      pass_thru_directive (directive, &directive[strlen (directive)], pfile, dp);
+      dump_special_to_buffer (pfile, "__PTRDIFF_TYPE__");
 #endif
-
-      sprintf (directive, " __WCHAR_TYPE__ %s\n", CPP_WCHAR_TYPE (pfile));
-      output_line_command (pfile, 0, same_file);
-      pass_thru_directive (directive, &directive[strlen (directive)], pfile, dp);
-
-      sprintf (directive, " __DATE__ \"%s %2d %4d\"\n",
-	       monthnames[timebuf->tm_mon],
-	       timebuf->tm_mday, timebuf->tm_year + 1900);
-      output_line_command (pfile, 0, same_file);
-      pass_thru_directive (directive, &directive[strlen (directive)], pfile, dp);
-
-      sprintf (directive, " __TIME__ \"%02d:%02d:%02d\"\n",
-	       timebuf->tm_hour, timebuf->tm_min, timebuf->tm_sec);
-      output_line_command (pfile, 0, same_file);
-      pass_thru_directive (directive, &directive[strlen (directive)], pfile, dp);
-
+      dump_special_to_buffer (pfile, "__WCHAR_TYPE__");
+      dump_special_to_buffer (pfile, "__DATE__");
+      dump_special_to_buffer (pfile, "__TIME__");
       if (!CPP_TRADITIONAL (pfile))
-	{
-          sprintf (directive, " __STDC__ 1");
-          output_line_command (pfile, 0, same_file);
-          pass_thru_directive (directive, &directive[strlen (directive)],
-			       pfile, dp);
-	}
+	dump_special_to_buffer (pfile, "__STDC__");
       if (CPP_OPTIONS (pfile)->objc)
-	{
-          sprintf (directive, " __OBJC__ 1");
-          output_line_command (pfile, 0, same_file);
-          pass_thru_directive (directive, &directive[strlen (directive)],
-			       pfile, dp);
-	}
+	dump_special_to_buffer (pfile, "__OBJC__");
     }
 }
 
@@ -3188,11 +3156,11 @@ do_include (pfile, keyword, unused1, unused2)
       /* If -I- was specified, don't search current dir, only spec'd ones. */
       else if (! CPP_OPTIONS (pfile)->ignore_srcdir)
 	{
-	  cpp_buffer *fp;
+	  cpp_buffer *fp = CPP_BUFFER (pfile);
 	  /* We have "filename".  Figure out directory this source
 	     file is coming from and put it on the front of the list. */
 
-	  for (fp = CPP_BUFFER (pfile); fp != NULL; fp = CPP_PREV_BUFFER (fp))
+	  for ( ; fp != CPP_NULL_BUFFER (pfile); fp = CPP_PREV_BUFFER (fp))
 	    {
 	      int n;
 	      char *ep,*nam;
@@ -3271,8 +3239,8 @@ do_include (pfile, keyword, unused1, unused2)
      past the dir in which the containing file was found.  */
   if (skip_dirs)
     {
-      cpp_buffer *fp;
-      for (fp = CPP_BUFFER (pfile); fp != NULL; fp = CPP_PREV_BUFFER (fp))
+      cpp_buffer *fp = CPP_BUFFER (pfile);
+      for (; fp != CPP_NULL_BUFFER (pfile); fp = CPP_PREV_BUFFER (fp))
 	if (fp->fname != NULL)
 	  {
 	    /* fp->dir is null if the containing file was specified with
@@ -3467,7 +3435,7 @@ do_include (pfile, keyword, unused1, unused2)
     if (CPP_OPTIONS(pfile)->print_include_names)
       {
 	cpp_buffer *buf = CPP_BUFFER (pfile);
-	while ((buf = CPP_PREV_BUFFER (buf)) != NULL)
+	while ((buf = CPP_PREV_BUFFER (buf)) != CPP_NULL_BUFFER (pfile))
 	  putc ('.', stderr);
 	fprintf (stderr, "%s\n", fname);
       }
@@ -3958,7 +3926,7 @@ do_once (pfile)
 
   for (ip = CPP_BUFFER (pfile); ; ip = CPP_PREV_BUFFER (ip))
     {
-      if (ip == NULL)
+      if (ip == CPP_NULL_BUFFER (pfile))
 	return 0;
       if (ip->fname != NULL)
 	break;
@@ -4623,7 +4591,8 @@ cpp_get_token (pfile)
 	  cpp_buffer *next_buf
 	    = CPP_PREV_BUFFER (CPP_BUFFER (pfile));
 	  CPP_BUFFER (pfile)->seen_eof = 1;
-	  if (CPP_BUFFER (pfile)->nominal_fname && next_buf != 0)
+	  if (CPP_BUFFER (pfile)->nominal_fname
+	      && next_buf != CPP_NULL_BUFFER (pfile))
 	    {
 	      /* We're about to return from an #include file.
 		 Emit #line information now (as part of the CPP_POP) result.
@@ -6750,7 +6719,8 @@ cpp_finish (pfile)
     }
 }
 
-/* Free resources used by PFILE. */
+/* Free resources used by PFILE.
+   This is the cpp_reader 'finalizer' or 'destructor' (in C++ terminology). */
 
 void
 cpp_cleanup (pfile)
