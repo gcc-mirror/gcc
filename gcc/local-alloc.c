@@ -227,6 +227,11 @@ static HARD_REG_SET regs_live;
 
 static HARD_REG_SET *regs_live_at;
 
+int *scratch_block;
+rtx *scratch_list;
+int scratch_list_length;
+static int scratch_index;
+
 /* Communicate local vars `insn_number' and `insn'
    from `block_alloc' to `reg_is_set', `wipe_dead_reg', and `alloc_qty'.  */
 static int this_insn_number;
@@ -394,6 +399,13 @@ local_alloc ()
   /* Allocate vectors of temporary data.
      See the declarations of these variables, above,
      for what they mean.  */
+
+  scratch_list_length = max_qty;
+  scratch_list = (rtx *) xmalloc (scratch_list_length * sizeof (rtx));
+  bzero (scratch_list, scratch_list_length * sizeof (rtx));
+  scratch_block = (int *) xmalloc (scratch_list_length * sizeof (int));
+  bzero (scratch_block, scratch_list_length * sizeof (int));
+  scratch_index = 0;
 
   qty_phys_reg = (short *) alloca (max_qty * sizeof (short));
   qty_phys_copy_sugg = (HARD_REG_SET *) alloca (max_qty * sizeof (HARD_REG_SET));
@@ -1333,7 +1345,8 @@ block_alloc (b)
 
 	  if (insn_code_number >= 0)
 	    for (i = 0; i < insn_n_operands[insn_code_number]; i++)
-	      if (GET_CODE (recog_operand[i]) == SCRATCH)
+	      if (GET_CODE (recog_operand[i]) == SCRATCH
+		  && scratch_index < scratch_list_length - 1)
 		alloc_qty_for_scratch (recog_operand[i], i, insn,
 				       insn_code_number, insn_number);
 #endif
@@ -1450,13 +1463,13 @@ block_alloc (b)
 	  reg_renumber[i] = qty_phys_reg[q] + reg_offset[i];
 	if (qty_scratch_rtx[q])
 	  {
+	    if (GET_CODE (qty_scratch_rtx[q]) == REG)
+	      abort ();
 	    PUT_CODE (qty_scratch_rtx[q], REG);
 	    REGNO (qty_scratch_rtx[q]) = qty_phys_reg[q];
 
-	    for (i = HARD_REGNO_NREGS (qty_phys_reg[q],
-				       GET_MODE (qty_scratch_rtx[q])) - 1;
-		 i >= 0; i--)
-	      regs_ever_live[qty_phys_reg[q] + i] = 1;
+	    scratch_block[scratch_index] = b;
+	    scratch_list[scratch_index++] = qty_scratch_rtx[q];
 
 	    /* Must clear the USED field, because it will have been set by
 	       copy_rtx_if_shared, but the leaf_register code expects that
