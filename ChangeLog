@@ -1,3 +1,12 @@
+2003-07-10  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure: Rebuilt.
+	2001-09-26  Alexandre Oliva  <aoliva@redhat.com>
+	* configure.in (noconfigdirs) [am33_2.0-*-linux*]: Don't build
+	newlib nor libgloss.
+	Wed May  9 10:07:19 2001  Alexandre Oliva  <aoliva@redhat.com>
+	* configure.in (am33_2.0-*-linux*): Added.
+
 2003-07-09  Bob Wilson  <bob.wilson@acm.org>
 
 	* configure.in: Add ${libgcj} to noconfigdirs for xtensa-*-* targets.
