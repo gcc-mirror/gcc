@@ -49,7 +49,7 @@ namespace std
 	char* __sanity;
 	errno = 0;
 	long __l = __strtol_l(__s, &__sanity, __base, __cloc);
-	if (__sanity != __s && *__sanity == '\0' && errno == 0)
+	if (__sanity != __s && *__sanity == '\0' && errno != ERANGE)
 	  __v = __l;
 	else
 	  __err |= ios_base::failbit;
@@ -67,7 +67,7 @@ namespace std
 	  char* __sanity;
 	  errno = 0;
 	  unsigned long __ul = __strtoul_l(__s, &__sanity, __base, __cloc);
-          if (__sanity != __s && *__sanity == '\0' && errno == 0)
+          if (__sanity != __s && *__sanity == '\0' && errno != ERANGE)
 	    __v = __ul;
 	  else
 	    __err |= ios_base::failbit;
@@ -85,7 +85,7 @@ namespace std
 	  char* __sanity;
 	  errno = 0;
 	  long long __ll = __strtoll_l(__s, &__sanity, __base, __cloc);
-          if (__sanity != __s && *__sanity == '\0' && errno == 0)
+          if (__sanity != __s && *__sanity == '\0' && errno != ERANGE)
 	    __v = __ll;
 	  else
 	    __err |= ios_base::failbit;
@@ -104,7 +104,7 @@ namespace std
 	  errno = 0;
 	  unsigned long long __ull = __strtoull_l(__s, &__sanity, __base, 
 						  __cloc);
-          if (__sanity != __s && *__sanity == '\0' && errno == 0)
+          if (__sanity != __s && *__sanity == '\0' && errno != ERANGE)
 	    __v = __ull;
 	  else
 	    __err |= ios_base::failbit;
@@ -122,7 +122,7 @@ namespace std
 	  char* __sanity;
 	  errno = 0;
 	  float __f = __strtof_l(__s, &__sanity, __cloc);
-          if (__sanity != __s && *__sanity == '\0' && errno == 0)
+          if (__sanity != __s && *__sanity == '\0' && errno != ERANGE)
 	    __v = __f;
 	  else
 	    __err |= ios_base::failbit;
@@ -139,7 +139,7 @@ namespace std
 	  char* __sanity;
 	  errno = 0;
 	  double __d = __strtod_l(__s, &__sanity, __cloc);
-          if (__sanity != __s && *__sanity == '\0' && errno == 0)
+          if (__sanity != __s && *__sanity == '\0' && errno != ERANGE)
 	    __v = __d;
 	  else
 	    __err |= ios_base::failbit;
@@ -156,7 +156,7 @@ namespace std
 	  char* __sanity;
 	  errno = 0;
 	  long double __ld = __strtold_l(__s, &__sanity, __cloc);
-          if (__sanity != __s && *__sanity == '\0' && errno == 0)
+          if (__sanity != __s && *__sanity == '\0' && errno != ERANGE)
 	    __v = __ld;
 	  else
 	    __err |= ios_base::failbit;
