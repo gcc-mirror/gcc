@@ -1,3 +1,10 @@
+2001-04-02  Geoffrey Keating  <geoffk@redhat.com>
+
+	* configure.in (gcc_cv_as_leb128): Correct name of cache variable.
+	Require at least 2.11 in the version test.  Specifically check
+	for and reject GAS version 2.10.90.
+	* configure: regenerate.
+
 2001-04-03  Alan Modra  <alan@linuxcare.com.au>
 
 	* config/pa/pa.c (override_options): Remove PIC profiling warning.
