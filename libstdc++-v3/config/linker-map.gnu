@@ -1,4 +1,4 @@
-2## Linker script for GNU ld 2.11.94+ only.
+## Linker script for GNU ld 2.11.94+ only.
 ##
 ## Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 ##
