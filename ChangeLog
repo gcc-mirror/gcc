@@ -1,3 +1,8 @@
+2004-08-02  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure.in: Sync from src, add noconfigdirs for crx-*-*.
+	* configure: Regenerate.
+
 2004-07-16  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* maintainer-scripts/gcc_release: Revert yesterday's change.
