@@ -397,6 +397,8 @@ layout_decl (tree decl, unsigned int known_align)
   else
     /* For fields, it's a bit more complicated...  */
     {
+      bool old_user_align = DECL_USER_ALIGN (decl);
+
       if (DECL_BIT_FIELD (decl))
 	{
 	  DECL_BIT_FIELD_TYPE (decl) = type;
@@ -454,22 +456,21 @@ layout_decl (tree decl, unsigned int known_align)
 	   supercede USER_ALIGN inherited from the type, but defer to
 	   alignment explicitly specified on the field decl.  */;
       else
-	{
-	  do_type_align (type, decl);
+	do_type_align (type, decl);
 
-	  /* If the field is of variable size, we can't misalign it since we
-	     have no way to make a temporary to align the result.  But this
-	     isn't an issue if the decl is not addressable.  Likewise if it
-	     is of unknown size.
+      /* If the field is of variable size, we can't misalign it since we
+	 have no way to make a temporary to align the result.  But this
+	 isn't an issue if the decl is not addressable.  Likewise if it
+	 is of unknown size.
 
-	     Note that do_type_align may set DECL_USER_ALIGN, so we don't
-	     want to check it again here.  */
-	  if (DECL_PACKED (decl)
-	      && (DECL_NONADDRESSABLE_P (decl)
-		  || DECL_SIZE_UNIT (decl) == 0
-		  || TREE_CODE (DECL_SIZE_UNIT (decl)) == INTEGER_CST))
-	    DECL_ALIGN (decl) = MIN (DECL_ALIGN (decl), BITS_PER_UNIT);
-	}
+	 Note that do_type_align may set DECL_USER_ALIGN, so we need to
+	 check old_user_align instead.  */
+      if (DECL_PACKED (decl)
+	  && !old_user_align
+	  && (DECL_NONADDRESSABLE_P (decl)
+	      || DECL_SIZE_UNIT (decl) == 0
+	      || TREE_CODE (DECL_SIZE_UNIT (decl)) == INTEGER_CST))
+	DECL_ALIGN (decl) = MIN (DECL_ALIGN (decl), BITS_PER_UNIT);
 
       /* Should this be controlled by DECL_USER_ALIGN, too?  */
       if (maximum_field_alignment != 0)

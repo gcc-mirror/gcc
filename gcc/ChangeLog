@@ -1,3 +1,8 @@
+2003-10-21  Jason Merrill  <jason@redhat.com>
+
+	* stor-layout.c (layout_decl): Do packed field alignment for
+	bit-fields, too.
+
 2003-10-21  Eric Christopher  <echristo@redhat.com>
 
 	* expr.c (convert_move): Use FLOAT_EXTEND for extensions.
