@@ -1324,8 +1324,13 @@ immed_double_const (i0, i1, mode)
   if (in_current_obstack)
     rtl_in_current_obstack ();
 
-  CONST_DOUBLE_CHAIN (r) = const_double_chain;
-  const_double_chain = r;
+  /* Don't touch const_double_chain in nested function;
+     see force_const_mem.  */
+  if (outer_function_chain != 0)
+    {
+      CONST_DOUBLE_CHAIN (r) = const_double_chain;
+      const_double_chain = r;
+    }
 
   /* Store const0_rtx in mem-slot since this CONST_DOUBLE is on the chain.
      Actual use of mem-slot is only through force_const_mem.  */
@@ -1390,8 +1395,13 @@ immed_real_const_1 (d, mode)
   if (in_current_obstack)
     rtl_in_current_obstack ();
 
-  CONST_DOUBLE_CHAIN (r) = const_double_chain;
-  const_double_chain = r;
+  /* Don't touch const_double_chain in nested function;
+     see force_const_mem.  */
+  if (outer_function_change != 0)
+    {
+      CONST_DOUBLE_CHAIN (r) = const_double_chain;
+      const_double_chain = r;
+    }
 
   /* Store const0_rtx in CONST_DOUBLE_MEM since this CONST_DOUBLE is on the
      chain, but has not been allocated memory.  Actual use of CONST_DOUBLE_MEM
