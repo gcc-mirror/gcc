@@ -1,3 +1,8 @@
+2001-09-29  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config-lang.in (target_libs): Added target-gperf, so that we
+	don't try to build it if C++ is disabled.
+
 2001-09-23  Zack Weinberg  <zack@codesourcery.com>
 
 	* Make-lang.in (CXX_OBJS): Take out cp/errfn.o.
