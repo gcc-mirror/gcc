@@ -1,3 +1,7 @@
+2004-04-01  Paul Brook  <paul@codesourcery.com>
+
+	* gcc.dg/arm-mmx-1.c: Add -mabi=iwmmxt to dg-options.
+
 2004-03-30  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/14724
