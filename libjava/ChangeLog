@@ -1,5 +1,34 @@
 2003-12-20  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/net/protocol/jar/Connection.java
+	(connectionCache): New field.
+	(connect): New method.
+	(getInputStream): New method.
+	(hdrHash): New field.
+	(hdrVec): New field.
+	(gotHeaders): New field.
+	(getHeaderField): New method.
+	(getHeaderFields): New method.
+	(getHeaderFieldKey): New method.
+	(getKey): New method.
+	(getField): New method.
+	(getHeaders): New method.
+	* java/net/JarURLConnection.java
+	(connectionCache): Removed.
+	(connect): Removed.
+	(getInputStream): Removed.
+	(hdrHash): Removed.
+	(hdrVec): Removed.
+	(gotHeaders): Removed.
+	(getHeaderField): Removed.
+	(getHeaderFields): Removed.
+	(getHeaderFieldKey): Removed.
+	(getKey): Removed.
+	(getField): Removed.
+	(getHeaders): Removed.
+
+2003-12-20  Michael Koch  <konqueror@gmx.de>
+
 	* java/io/ObjectStreamField.java (isUnshared): Added documentation.
 
 2003-12-20  Mohan Embar  <gnustuff@thisiscool.com>
