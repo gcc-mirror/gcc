@@ -6,6 +6,7 @@ configdirs=
 srctrigger=stdio.h
 srcname="libio/stdio"
 package_makefile_frag=../Make.pack
+package_makefile_rules_frag=../Make.pack.r
 
 # per-host:
 
@@ -15,7 +16,7 @@ LIBDIR=yes
 TO_TOPDIR=../../
 ALL=nothing
 MOSTLYCLEAN='*.o pic stamp-picdir core stdio.list'
-(. ${srcdir}/../config.shared) >${package_makefile_frag}
+(. ${srcdir}/../config.shared) >${package_makefile_frag} 2>${package_makefile_rules_frag}
 
 # post-target:
 

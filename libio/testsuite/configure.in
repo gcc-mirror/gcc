@@ -6,6 +6,7 @@ configdirs=
 srctrigger=libio.tests/hounddog.exp
 srcname="test C++ input/output library, dejagnu style"
 package_makefile_frag=Make.pack
+package_makefile_rules_frag=Make.pack.r
 
 # per-host:
 
@@ -16,6 +17,6 @@ ALL=' '
 XCINCLUDES='-I. -I.. -I$(srcdir) -I$(srcdir)/..'
 XCXXINCLUDES='-I. -I.. -I$(srcdir) -I$(srcdir)/..'
 MOSTLYCLEAN='*.o core $(JUNK_TO_CLEAN)'
-(. ${srcdir}/../config.shared) >${package_makefile_frag}
+(. ${srcdir}/../config.shared) >${package_makefile_frag} 2>${package_makefile_rules_frag}
 
 # post-target:
