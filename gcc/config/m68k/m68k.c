@@ -1771,7 +1771,7 @@ print_operand_address (file, addr)
 	    ireg = reg2;
 	  }
 	if (ireg != 0 && breg == 0 && GET_CODE (addr) == LABEL_REF
- 	  && ! (flag_pic && ireg == pic_offset_table_rtx))
+	    && ! (flag_pic && ireg == pic_offset_table_rtx))
 	  {
 	    int scale = 1;
 	    if (GET_CODE (ireg) == MULT)
@@ -1831,7 +1831,7 @@ print_operand_address (file, addr)
 	    break;
 	  }
 	if (breg != 0 && ireg == 0 && GET_CODE (addr) == LABEL_REF
- 	  && ! (flag_pic && breg == pic_offset_table_rtx))
+	    && ! (flag_pic && breg == pic_offset_table_rtx))
 	  {
 #ifdef MOTOROLA
 #ifdef SGS
@@ -1926,7 +1926,7 @@ print_operand_address (file, addr)
 	    break;
 	  }
 	else if (reg1 != 0 && GET_CODE (addr) == LABEL_REF
- 	       && ! (flag_pic && reg1 == pic_offset_table_rtx))	
+		 && ! (flag_pic && reg1 == pic_offset_table_rtx))	
 	  {
 #ifdef MOTOROLA
 #ifdef SGS
