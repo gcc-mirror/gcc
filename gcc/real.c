@@ -858,6 +858,8 @@ do_divide (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *a,
   else
     rr = r;
 
+  /* Make sure all fields in the result are initialized.  */
+  get_zero (rr, 0);
   rr->class = rvc_normal;
   rr->sign = sign;
 
