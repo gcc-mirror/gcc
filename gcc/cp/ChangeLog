@@ -1,3 +1,8 @@
+1997-10-14  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* parse.y (unary_expr): Give a pedwarn if someone tries to use the
+	&&label GNU extension.
+
 Tue Oct 14 12:01:00 1997  Mark Mitchell  <mmitchell@usa.net>
 
 	* decl.c (pushtag): Unset DECL_ASSEMBLER_NAME before setting it,
