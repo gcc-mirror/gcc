@@ -304,9 +304,11 @@ prepare_call_address (funexp, fndecl, call_fusage, reg_parm_seen)
    FNDECL is the declaration node of the function.  This is given to the
    macro RETURN_POPS_ARGS to determine whether this function pops its own args.
 
-   FUNTYPE is the data type of the function, or, for a library call,
-   the identifier for the name of the call.  This is given to the
-   macro RETURN_POPS_ARGS to determine whether this function pops its own args.
+   FUNTYPE is the data type of the function.  This is given to the macro
+   RETURN_POPS_ARGS to determine whether this function pops its own args.
+   We used to allow an identifier for library functions, but that doesn't
+   work when the return type is an aggregate type and the calling convention
+   says that the pointer to this aggregate is to be popped by the callee.
 
    STACK_SIZE is the number of bytes of arguments on the stack,
    rounded up to STACK_BOUNDARY; zero if the size is variable.
@@ -2496,9 +2498,15 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
   /* We pass the old value of inhibit_defer_pop + 1 to emit_call_1, which
      will set inhibit_defer_pop to that value.  */
 
+  /* The return type is needed to decide how many bytes the function pops.
+     Signedness plays no role in that, so for simplicity, we pretend it's
+     always signed.  We also assume that the list of arguments passed has
+     no impact, so we pretend it is unknown.  */
+
   emit_call_1 (fun, 
                get_identifier (XSTR (orgfun, 0)), 
-               get_identifier (XSTR (orgfun, 0)), args_size.constant, 0,
+	       build_function_type (type_for_mode (outmode, 0), NULL_TREE),
+               args_size.constant, 0,
 	       FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1),
 	       outmode != VOIDmode ? hard_libcall_value (outmode) : NULL_RTX,
 	       old_inhibit_defer_pop + 1, call_fusage, no_queue);
@@ -2856,11 +2864,13 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
 
   /* We pass the old value of inhibit_defer_pop + 1 to emit_call_1, which
      will set inhibit_defer_pop to that value.  */
+  /* See the comment in emit_library_call about the function type we build
+     and pass here.  */
 
   emit_call_1 (fun, 
                get_identifier (XSTR (orgfun, 0)),
-               get_identifier (XSTR (orgfun, 0)), args_size.constant,
-	       struct_value_size,
+	       build_function_type (type_for_mode (outmode, 0), NULL_TREE),
+               args_size.constant, struct_value_size,
 	       FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1),
 	       (outmode != VOIDmode && mem_value == 0
 		? hard_libcall_value (outmode) : NULL_RTX),
