@@ -2551,10 +2551,8 @@ function_label_operand  (op, mode)
   return GET_CODE (op) == SYMBOL_REF && FUNCTION_NAME_P (XSTR (op, 0));
 }
 
-/* Returns 1 if the 5 operands specified in OPERANDS are suitable for
-   use in fmpyadd instructions.  Because of the inout operand in the
-   add part this function may swap operands[3] and operands[4] to make them
-   suitable for fmpyadd instructions.  */
+/* Returns 1 if the 6 operands specified in OPERANDS are suitable for
+   use in fmpyadd instructions.  */
 int
 fmpyaddoperands(operands)
      rtx *operands;
@@ -2573,7 +2571,8 @@ fmpyaddoperands(operands)
   if (GET_MODE (operands[0]) != DFmode)
     return 0;
 
-  /* Only 2 real operands to the addition.  One input must be the output.  */
+  /* Only 2 real operands to the addition.  One of the input operands must
+     be the same as the output operand.  */
   if (! rtx_equal_p (operands[3], operands[4])
       && ! rtx_equal_p (operands[3], operands[5]))
     return 0;
@@ -2589,24 +2588,12 @@ fmpyaddoperands(operands)
       || rtx_equal_p (operands[5], operands[0]))
     return 0;
 
-  /* Make the inout operand be operands[5] and operands[3].  Output template
-     assumes operands[4] is the read-only add operand.  */
-  if (rtx_equal_p (operands[3], operands[4]))
-    {
-      rtx tmp;
-      tmp = operands[4];
-      operands[4] = operands[5];
-      operands[5] = tmp;
-    }
-
   /* Passed.  Operands are suitable for fmpyadd.  */
   return 1;
 }
 
-/* Returns 1 if the 5 operands specified in OPERANDS are suitable for
-   use in fmpysub instructions.  It is very similar to fmpyaddoperands
-   above except operands[3] and operands[4] must be the same without
-   swapping.  */
+/* Returns 1 if the 6 operands specified in OPERANDS are suitable for
+   use in fmpysub instructions.  */
 int
 fmpysuboperands(operands)
      rtx *operands;
@@ -2625,16 +2612,16 @@ fmpysuboperands(operands)
   if (GET_MODE (operands[0]) != DFmode)
     return 0;
 
-  /* Only 2 real operands to the subtraction.  One input must be the output.  */
+  /* Only 2 real operands to the subtraction.  Subtraction is not a commutative
+     operation, so operands[4] must be the same as operand[3].  */
   if (! rtx_equal_p (operands[3], operands[4]))
     return 0;
 
   /* multiply can not feed into subtraction.  */
-  if (rtx_equal_p (operands[4], operands[0])
-      || rtx_equal_p (operands[5], operands[0]))
+  if (rtx_equal_p (operands[5], operands[0]))
     return 0;
 
-  /* Inout operand of add can not conflict with any operands from multiply.  */
+  /* Inout operand of sub can not conflict with any operands from multiply.  */
   if (rtx_equal_p (operands[3], operands[0])
      || rtx_equal_p (operands[3], operands[1])
      || rtx_equal_p (operands[3], operands[2]))
