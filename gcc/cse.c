@@ -5767,6 +5767,11 @@ cse_insn (insn, libcall_insn)
 	 be a conditional or computed branch.  */
       else if (dest == pc_rtx && GET_CODE (src) == LABEL_REF)
 	{
+	  /* Now emit a BARRIER after the unconditional jump.  */
+	  if (NEXT_INSN (insn) == 0
+	      || GET_CODE (NEXT_INSN (insn)) != BARRIER)
+	    emit_barrier_after (insn);
+
 	  /* We reemit the jump in as many cases as possible just in
 	     case the form of an unconditional jump is significantly
 	     different than a computed jump or conditional jump.
@@ -5777,20 +5782,23 @@ cse_insn (insn, libcall_insn)
 	  if (n_sets == 1)
 	    {
 	      rtx new = emit_jump_insn_before (gen_jump (XEXP (src, 0)), insn);
+
 	      JUMP_LABEL (new) = XEXP (src, 0);
 	      LABEL_NUSES (XEXP (src, 0))++;
 	      insn = new;
+
+	      /* Now emit a BARRIER after the unconditional jump.  */
+	      if (NEXT_INSN (insn) == 0
+		  || GET_CODE (NEXT_INSN (insn)) != BARRIER)
+		emit_barrier_after (insn);
 	    }
 	  else
 	    INSN_CODE (insn) = -1;
 
 	  never_reached_warning (insn);
 
-	  /* Now emit a BARRIER after the unconditional jump.  Do not bother
-	     deleting any unreachable code, let jump/flow do that.  */
-	  if (NEXT_INSN (insn) != 0
-	      && GET_CODE (NEXT_INSN (insn)) != BARRIER)
-	    emit_barrier_after (insn);
+	  /* Do not bother deleting any unreachable code,
+	     let jump/flow do that.  */
 
 	  cse_jumps_altered = 1;
 	  sets[i].rtl = 0;
