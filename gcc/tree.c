@@ -430,7 +430,8 @@ copy_list (tree list)
 
 /* Create an INT_CST node with a LOW value sign extended.  */
 
-tree build_int_cst (tree type, HOST_WIDE_INT low)
+tree
+build_int_cst (tree type, HOST_WIDE_INT low)
 {
   return build_int_cst_wide (type, low,
 			     low < 0 ? -1 : 0);
@@ -438,7 +439,8 @@ tree build_int_cst (tree type, HOST_WIDE_INT low)
 
 /* Create an INT_CST node with a LOW value zero extended.  */
 
-tree build_int_cstu (tree type, unsigned HOST_WIDE_INT low)
+tree
+build_int_cstu (tree type, unsigned HOST_WIDE_INT low)
 {
   return build_int_cst_wide (type, low, 0);
 }
