@@ -531,17 +531,6 @@ The option @option{-dB} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.bbro} to
 the input file name.
 
-@cindex cross-jumping
-@cindex no-op move instructions
-@item
-Jump optimization is repeated, this time including cross-jumping
-and deletion of no-op move instructions.
-
-@opindex dJ
-The option @option{-dJ} causes a debugging dump of the RTL code after
-this pass.  This dump file's name is made by appending @samp{.jump2}
-to the input file name.
-
 @cindex delayed branch scheduling
 @cindex scheduling, delayed branch
 @item
