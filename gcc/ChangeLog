@@ -1,3 +1,7 @@
+Wed Oct 14 23:27:08 1998  Didier FORT (didier.fort@fedex.com)
+
+	* fixincludes: Fix up rpc/{clnt,svr,xdr}.h for SunOS.
+
 Wed Oct 14 22:13:28 1998  Joel Sherrill (joel@OARcorp.com)
 
 	* Makefile.in (stmp-fixinc): Do not install assert.h if not desired.
