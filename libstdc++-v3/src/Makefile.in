@@ -142,7 +142,9 @@ TOPLEVEL_INCLUDES = -I$(includedir)
 
 CONFIG_INCLUDES =  	-I$(top_srcdir)/@cpu_include_dir@ 	-I$(top_srcdir)/@ctype_include_dir@
 
-INCLUDES = -D_GNU_SOURCE -nostdinc++ -I$(top_srcdir) $(CSHADOW_INCLUDES) $(LIBIO_INCLUDES) $(CONFIG_INCLUDES) $(TOPLEVEL_INCLUDES)
+
+INCLUDES =  	-D_GNU_SOURCE -nostdinc++ $(CSHADOW_INCLUDES) -I$(top_srcdir) 	 $(LIBIO_INCLUDES) $(CONFIG_INCLUDES) $(TOPLEVEL_INCLUDES)	
+
 
 # Need to explicitly set this so that AM_CXXFLAGS is last. (That way,
 # things like -O2 passed down from the toplevel can be overridden by
