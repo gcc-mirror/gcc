@@ -50,6 +50,7 @@ enum rid
   RID_OUT,
   RID_INOUT,
   RID_BYCOPY,
+  RID_BYREF,
   RID_ONEWAY,
   RID_ID,
 

@@ -4610,6 +4610,7 @@ is_objc_type_qualifier (node)
 	      || node == ridpointers [(int) RID_OUT]
 	      || node == ridpointers [(int) RID_INOUT]
 	      || node == ridpointers [(int) RID_BYCOPY]
+              || node == ridpointers [(int) RID_BYREF]
 	      || node == ridpointers [(int) RID_ONEWAY]));
 }
 
@@ -6495,6 +6496,8 @@ encode_type_qualifiers (declspecs)
 	obstack_1grow (&util_obstack, 'o');
       else if (ridpointers[(int) RID_BYCOPY] == TREE_VALUE (spec))
 	obstack_1grow (&util_obstack, 'O');
+      else if (ridpointers[(int) RID_BYREF] == TREE_VALUE (spec))
+        obstack_1grow (&util_obstack, 'R');
       else if (ridpointers[(int) RID_ONEWAY] == TREE_VALUE (spec))
 	obstack_1grow (&util_obstack, 'V');
     }
