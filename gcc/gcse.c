@@ -481,7 +481,7 @@ static struct ls_expr * pre_ldst_mems = NULL;
 /* Bitmap containing one bit for each register in the program.
    Used when performing GCSE to track which registers have been set since
    the start of the basic block.  */
-static sbitmap reg_set_bitmap;
+static regset reg_set_bitmap;
 
 /* For each block, a bitmap of registers set in the block.
    This is used by expr_killed_p and compute_transp.
@@ -493,9 +493,11 @@ static sbitmap *reg_set_in_block;
 /* Array, indexed by basic block number for a list of insns which modify
    memory within that block.  */
 static rtx * modify_mem_list;
+bitmap modify_mem_list_set;
 
 /* This array parallels modify_mem_list, but is kept canonicalized.  */
 static rtx * canon_modify_mem_list;
+bitmap canon_modify_mem_list_set;
 /* Various variables for statistics gathering.  */
 
 /* Memory used in a pass.
@@ -693,6 +695,8 @@ static void delete_store		PARAMS ((struct ls_expr *,
 						 basic_block));
 static void free_store_memory		PARAMS ((void));
 static void store_motion		PARAMS ((void));
+static void clear_modify_mem_tables	PARAMS ((void));
+static void free_modify_mem_tables	PARAMS ((void));
 
 /* Entry point for global common subexpression elimination.
    F is the first instruction in the function.  */
@@ -825,15 +829,7 @@ gcse_main (f, file)
 	     basic blocks.  */
 	  if (changed)
 	    {
-	      int i;
-
-	      for (i = 0; i < orig_bb_count; i++)
-	        {
-		  if (modify_mem_list[i])
-		    free_INSN_LIST_list (modify_mem_list + i);
-		  if (canon_modify_mem_list[i])
-		    free_INSN_LIST_list (canon_modify_mem_list + i); 
-		}
+	      free_modify_mem_tables ();
 	      modify_mem_list
 		= (rtx *) gmalloc (n_basic_blocks * sizeof (rtx *));
 	      canon_modify_mem_list
@@ -1016,7 +1012,7 @@ alloc_gcse_mem (f)
       CUID_INSN (i++) = insn;
 
   /* Allocate vars to track sets of regs.  */
-  reg_set_bitmap = (sbitmap) sbitmap_alloc (max_gcse_regno);
+  reg_set_bitmap = BITMAP_XMALLOC ();
 
   /* Allocate vars to track sets of regs, memory per block.  */
   reg_set_in_block = (sbitmap *) sbitmap_vector_alloc (n_basic_blocks,
@@ -1027,6 +1023,8 @@ alloc_gcse_mem (f)
   canon_modify_mem_list = (rtx *) gmalloc (n_basic_blocks * sizeof (rtx *));
   memset ((char *) modify_mem_list, 0, n_basic_blocks * sizeof (rtx *));
   memset ((char *) canon_modify_mem_list, 0, n_basic_blocks * sizeof (rtx *));
+  modify_mem_list_set = BITMAP_XMALLOC ();
+  canon_modify_mem_list_set = BITMAP_XMALLOC ();
 }
 
 /* Free memory allocated by alloc_gcse_mem.  */
@@ -1037,26 +1035,12 @@ free_gcse_mem ()
   free (uid_cuid);
   free (cuid_insn);
 
-  free (reg_set_bitmap);
+  BITMAP_XFREE (reg_set_bitmap);
 
   sbitmap_vector_free (reg_set_in_block);
-  /* re-Cache any INSN_LIST nodes we have allocated.  */
-  {
-    int i;
-
-    for (i = 0; i < n_basic_blocks; i++)
-      {
-        if (modify_mem_list[i])
-          free_INSN_LIST_list (modify_mem_list + i);
-        if (canon_modify_mem_list[i])
-          free_INSN_LIST_list (canon_modify_mem_list + i);
-      }
-
-    free (modify_mem_list);
-    free (canon_modify_mem_list);
-    modify_mem_list = 0;
-    canon_modify_mem_list = 0;
-  }
+  free_modify_mem_tables ();
+  BITMAP_XFREE (modify_mem_list_set);
+  BITMAP_XFREE (canon_modify_mem_list_set);
 }
 
 /* Many of the global optimization algorithms work by solving dataflow
@@ -2403,6 +2387,7 @@ canon_list_insert (dest, unused1, v_insn)
     alloc_INSN_LIST (dest_addr, canon_modify_mem_list[BLOCK_NUM (insn)]);
   canon_modify_mem_list[BLOCK_NUM (insn)] = 
     alloc_INSN_LIST (dest, canon_modify_mem_list[BLOCK_NUM (insn)]);
+  bitmap_set_bit (canon_modify_mem_list_set, BLOCK_NUM (insn));
 }
 
 /* Record memory modification information for INSN.  We do not actually care
@@ -2417,6 +2402,7 @@ record_last_mem_set_info (insn)
      everything.  */
   modify_mem_list[BLOCK_NUM (insn)] = 
     alloc_INSN_LIST (insn, modify_mem_list[BLOCK_NUM (insn)]);
+  bitmap_set_bit (modify_mem_list_set, BLOCK_NUM (insn));
 
   if (GET_CODE (insn) == CALL_INSN)
     {
@@ -2425,6 +2411,7 @@ record_last_mem_set_info (insn)
 	 need to insert a pair of items, as canon_list_insert does.  */
       canon_modify_mem_list[BLOCK_NUM (insn)] = 
         alloc_INSN_LIST (insn, canon_modify_mem_list[BLOCK_NUM (insn)]);
+      bitmap_set_bit (canon_modify_mem_list_set, BLOCK_NUM (insn));
     }
   else
     note_stores (PATTERN (insn), canon_list_insert, (void*)insn );
@@ -2482,16 +2469,7 @@ compute_hash_table (set_p)
   sbitmap_vector_zero (reg_set_in_block, n_basic_blocks);
 
   /* re-Cache any INSN_LIST nodes we have allocated.  */
-  {
-    int i;
-    for (i = 0; i < n_basic_blocks; i++)
-      {
-        if (modify_mem_list[i])
-	  free_INSN_LIST_list (modify_mem_list + i);
-        if (canon_modify_mem_list[i])
-	  free_INSN_LIST_list (canon_modify_mem_list + i);
-      }
-  }
+  clear_modify_mem_tables ();
   /* Some working arrays used to track first and last set in each block.  */
   reg_avail_info = (struct reg_avail_info*)
     gmalloc (max_gcse_regno * sizeof (struct reg_avail_info));
@@ -2712,6 +2690,35 @@ next_set (regno, expr)
   return expr;
 }
 
+/* Clear canon_modify_mem_list and modify_mem_list tables.  */
+static void
+clear_modify_mem_tables ()
+{
+  int i;
+
+  EXECUTE_IF_SET_IN_BITMAP
+    (canon_modify_mem_list_set, 0, i,
+     free_INSN_LIST_list (modify_mem_list + i));
+  bitmap_clear (canon_modify_mem_list_set);
+
+  EXECUTE_IF_SET_IN_BITMAP
+    (canon_modify_mem_list_set, 0, i,
+     free_INSN_LIST_list (canon_modify_mem_list + i));
+  bitmap_clear (modify_mem_list_set);
+}
+
+/* Release memory used by modify_mem_list_set and canon_modify_mem_list_set.  */
+
+static void
+free_modify_mem_tables ()
+{
+  clear_modify_mem_tables ();
+  free (modify_mem_list);
+  free (canon_modify_mem_list);
+  modify_mem_list = 0;
+  canon_modify_mem_list = 0;
+}
+
 /* Reset tables used to keep track of what's still available [since the
    start of the block].  */
 
@@ -2720,23 +2727,12 @@ reset_opr_set_tables ()
 {
   /* Maintain a bitmap of which regs have been set since beginning of
      the block.  */
-  sbitmap_zero (reg_set_bitmap);
+  CLEAR_REG_SET (reg_set_bitmap);
 
   /* Also keep a record of the last instruction to modify memory.
      For now this is very trivial, we only record whether any memory
      location has been modified.  */
-  {
-    int i;
-
-    /* re-Cache any INSN_LIST nodes we have allocated.  */
-    for (i = 0; i < n_basic_blocks; i++)
-      {
-        if (modify_mem_list[i]) 
-	  free_INSN_LIST_list (modify_mem_list + i);
-        if (canon_modify_mem_list[i]) 
-	  free_INSN_LIST_list (canon_modify_mem_list + i);
-      }
-  }
+  clear_modify_mem_tables ();
 }
 
 /* Return non-zero if the operands of X are not set before INSN in
@@ -2775,7 +2771,7 @@ oprs_not_set_p (x, insn)
 	return oprs_not_set_p (XEXP (x, 0), insn);
 
     case REG:
-      return ! TEST_BIT (reg_set_bitmap, REGNO (x));
+      return ! REGNO_REG_SET_P (reg_set_bitmap, REGNO (x));
 
     default:
       break;
@@ -2828,7 +2824,7 @@ mark_set (pat, insn)
     dest = XEXP (dest, 0);
 
   if (GET_CODE (dest) == REG)
-    SET_BIT (reg_set_bitmap, REGNO (dest));
+    SET_REGNO_REG_SET (reg_set_bitmap, REGNO (dest));
   else if (GET_CODE (dest) == MEM)
     record_last_mem_set_info (insn);
 
@@ -2848,7 +2844,7 @@ mark_clobber (pat, insn)
     clob = XEXP (clob, 0);
 
   if (GET_CODE (clob) == REG)
-    SET_BIT (reg_set_bitmap, REGNO (clob));
+    SET_REGNO_REG_SET (reg_set_bitmap, REGNO (clob));
   else
     record_last_mem_set_info (insn);
 }

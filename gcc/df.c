@@ -1224,8 +1224,25 @@ df_insn_refs_record (df, bb, insn)
 
   if (INSN_P (insn))
     {
+      rtx note;
+
       /* Record register defs */
       df_defs_record (df, PATTERN (insn), bb, insn);
+
+      if (df->flags & DF_EQUIV_NOTES)
+	for (note = REG_NOTES (insn); note;
+	     note = XEXP (note, 1))
+	  {
+	    switch (REG_NOTE_KIND (note))
+	      {
+		case REG_EQUIV:
+		case REG_EQUAL:
+		  df_uses_record (df, &XEXP (note, 0), DF_REF_REG_USE,
+				  bb, insn);
+		default:
+		  break;
+	      }
+	  }
       
       if (GET_CODE (insn) == CALL_INSN)
 	{

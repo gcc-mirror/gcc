@@ -1029,6 +1029,7 @@ optimize_mode_switching (file)
   int i, j;
   int n_entities;
   int max_num_modes = 0;
+  bool emited = false;
 
 #ifdef NORMAL_MODE
   /* Increment n_basic_blocks before allocating bb_info.  */
@@ -1239,10 +1240,16 @@ optimize_mode_switching (file)
 	      mode_set = gen_sequence ();
 	      end_sequence ();
 
+	      /* Do not bother to insert empty sequence.  */
+	      if (GET_CODE (mode_set) == SEQUENCE
+		  && !XVECLEN (mode_set, 0))
+		continue;
+
 	      /* If this is an abnormal edge, we'll insert at the end
 		 of the previous block.  */
 	      if (eg->flags & EDGE_ABNORMAL)
 		{
+		  emited = true;
 		  if (GET_CODE (src_bb->end) == JUMP_INSN)
 		    emit_insn_before (mode_set, src_bb->end);
 		  /* It doesn't make sense to switch to normal mode
@@ -1313,10 +1320,16 @@ optimize_mode_switching (file)
 	      mode_set = gen_sequence ();
 	      end_sequence ();
 
+	      /* Do not bother to insert empty sequence.  */
+	      if (GET_CODE (mode_set) == SEQUENCE
+		  && !XVECLEN (mode_set, 0))
+		continue;
+
 	      /* If this is an abnormal edge, we'll insert at the end of the
 		 previous block.  */
 	      if (eg->flags & EDGE_ABNORMAL)
 		{
+		  emited = true;
 		  if (GET_CODE (eg->src->end) == JUMP_INSN)
 		    emit_insn_before (mode_set, eg->src->end);
 		  else if (GET_CODE (eg->src->end) == INSN)
@@ -1349,6 +1362,12 @@ optimize_mode_switching (file)
 		  mode_set = gen_sequence ();
 		  end_sequence ();
 
+		  /* Do not bother to insert empty sequence.  */
+		  if (GET_CODE (mode_set) == SEQUENCE
+		      && !XVECLEN (mode_set, 0))
+		    continue;
+
+		  emited = true;
 		  if (GET_CODE (ptr->insn_ptr) == NOTE
 		      && (NOTE_LINE_NUMBER (ptr->insn_ptr)
 			  == NOTE_INSN_BASIC_BLOCK))
@@ -1375,6 +1394,9 @@ optimize_mode_switching (file)
 
   if (need_commit)
     commit_edge_insertions ();
+
+  if (!need_commit && !emited)
+    return 0;
 
   /* Ideally we'd figure out what blocks were affected and start from
      there, but this is enormously complicated by commit_edge_insertions,

@@ -62,6 +62,17 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "recog.h"
 #include "sched-int.h"
 
+/* Define when we want to do count REG_DEAD notes before and after scheduling
+   for sanity checking.  We can't do that when conditional execution is used,
+   as REG_DEAD exist only for unconditional deaths.  */
+
+#if !defined (HAVE_conditional_execution) && defined (ENABLE_CHECKING)
+#define CHECK_DEAD_NOTES 1
+#else
+#define CHECK_DEAD_NOTES 0
+#endif
+
+
 #ifdef INSN_SCHEDULING
 /* Some accessor macros for h_i_d members only used within this file.  */
 #define INSN_REF_COUNT(INSN)	(h_i_d[INSN_UID (INSN)].ref_count)
@@ -2790,8 +2801,6 @@ init_regions ()
   block_to_bb = (int *) xmalloc ((n_basic_blocks) * sizeof (int));
   containing_rgn = (int *) xmalloc ((n_basic_blocks) * sizeof (int));
 
-  blocks = sbitmap_alloc (n_basic_blocks);
-
   /* Compute regions for scheduling.  */
   if (reload_completed
       || n_basic_blocks == 1
@@ -2849,21 +2858,26 @@ init_regions ()
 	}
     }
 
-  deaths_in_region = (int *) xmalloc (sizeof (int) * nr_regions);
 
-  /* Remove all death notes from the subroutine.  */
-  for (rgn = 0; rgn < nr_regions; rgn++)
+  if (CHECK_DEAD_NOTES)
     {
-      int b;
+      blocks = sbitmap_alloc (n_basic_blocks);
+      deaths_in_region = (int *) xmalloc (sizeof (int) * nr_regions);
+      /* Remove all death notes from the subroutine.  */
+      for (rgn = 0; rgn < nr_regions; rgn++)
+	{
+	  int b;
 
-      sbitmap_zero (blocks);
-      for (b = RGN_NR_BLOCKS (rgn) - 1; b >= 0; --b)
-	SET_BIT (blocks, rgn_bb_table[RGN_BLOCKS (rgn) + b]);
+	  sbitmap_zero (blocks);
+	  for (b = RGN_NR_BLOCKS (rgn) - 1; b >= 0; --b)
+	    SET_BIT (blocks, rgn_bb_table[RGN_BLOCKS (rgn) + b]);
 
-      deaths_in_region[rgn] = count_or_remove_death_notes (blocks, 1);
+	  deaths_in_region[rgn] = count_or_remove_death_notes (blocks, 1);
+	}
+      sbitmap_free (blocks);
     }
-
-  sbitmap_free (blocks);
+  else
+    count_or_remove_death_notes (NULL, 1);
 }
 
 /* The one entry point in this file.  DUMP_FILE is the dump file for
@@ -2916,37 +2930,48 @@ schedule_insns (dump_file)
   sbitmap_ones (large_region_blocks);
 
   blocks = sbitmap_alloc (n_basic_blocks);
+  sbitmap_zero (blocks);
 
+  /* Update life information.  For regions consisting of multiple blocks
+     we've possibly done interblock scheduling that affects global liveness.
+     For regions consisting of single blocks we need to do only local
+     liveness.  */
   for (rgn = 0; rgn < nr_regions; rgn++)
     if (RGN_NR_BLOCKS (rgn) > 1)
       any_large_regions = 1;
     else
       {
-	sbitmap_zero (blocks);
 	SET_BIT (blocks, rgn_bb_table[RGN_BLOCKS (rgn)]);
 	RESET_BIT (large_region_blocks, rgn_bb_table[RGN_BLOCKS (rgn)]);
-
-	/* Don't update reg info after reload, since that affects
-	   regs_ever_live, which should not change after reload.  */
-	update_life_info (blocks, UPDATE_LIFE_LOCAL,
-			  (reload_completed ? PROP_DEATH_NOTES
-			   : PROP_DEATH_NOTES | PROP_REG_INFO));
-
-#ifndef HAVE_conditional_execution
-	/* ??? REG_DEAD notes only exist for unconditional deaths.  We need
-	   a count of the conditional plus unconditional deaths for this to
-	   work out.  */
-	/* In the single block case, the count of registers that died should
-	   not have changed during the schedule.  */
-	if (count_or_remove_death_notes (blocks, 0) != deaths_in_region[rgn])
-	  abort ();
-#endif
       }
 
+  /* Don't update reg info after reload, since that affects
+     regs_ever_live, which should not change after reload.  */
+  update_life_info (blocks, UPDATE_LIFE_LOCAL,
+		    (reload_completed ? PROP_DEATH_NOTES
+		     : PROP_DEATH_NOTES | PROP_REG_INFO));
   if (any_large_regions)
     {
       update_life_info (large_region_blocks, UPDATE_LIFE_GLOBAL,
 			PROP_DEATH_NOTES | PROP_REG_INFO);
+    }
+
+  if (CHECK_DEAD_NOTES)
+    {
+      /* Remove all death notes from the subroutine.  */
+      for (rgn = 0; rgn < nr_regions; rgn++)
+	if (RGN_NR_BLOCKS (rgn) == 1)
+	  {
+	    int b;
+
+	    sbitmap_zero (blocks);
+	    SET_BIT (blocks, rgn_bb_table[RGN_BLOCKS (rgn)]);
+
+	    if (deaths_in_region[rgn]
+		!= count_or_remove_death_notes (blocks, 0))
+	      abort ();
+	  }
+      free (deaths_in_region);
     }
 
   /* Reposition the prologue and epilogue notes in case we moved the
@@ -3001,7 +3026,5 @@ schedule_insns (dump_file)
 
   sbitmap_free (blocks);
   sbitmap_free (large_region_blocks);
-
-  free (deaths_in_region);
 }
 #endif
