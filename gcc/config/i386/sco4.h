@@ -72,9 +72,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   %{scoxpg3:-D_XOPEN_SOURCE -D_STRICT_NAMES} \
   %{!scoxpg3:%{posix:-D_POSIX_SOURCE -D_STRICT_NAMES}} \
   %{!scoxpg3:%{!posix:\
-  %{ansi:-D_STRICT_NAMES}%{!ansi:\
-  -DM_I386 -DM_I86 -DM_I86SM -DM_SDATA -DM_STEXT \
-  -DM_UNIX -DM_XENIX \
-  -DM_SYS5 -DM_SYSV -DM_SYS3 -DM_SYSIII \
-  -DM_COFF -DM_BITFIELDS -DM_WORDSWAP \
-  %{scointl:-D_M_INTERNAT -DM_INTERNAT}}}}"
+    %{ansi:-D_STRICT_NAMES}%{!ansi:\
+    -DM_I386 -DM_I86 -DM_I86SM -DM_SDATA -DM_STEXT \
+    -DM_UNIX -DM_XENIX \
+    -DM_SYS5 -DM_SYSV -DM_SYS3 -DM_SYSIII \
+    -DM_COFF -DM_BITFIELDS -DM_WORDSWAP \
+    %{scointl:-D_M_INTERNAT -DM_INTERNAT} \
+    %{traditional:-D_KR -D_SVID -D_NO_PROTOTYPE}}}}"
