@@ -1,5 +1,5 @@
 /* Utility to generate opcode list from bytecode definition.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -41,7 +41,10 @@ enum bytecode_opcode\n{");
   i = 0;
   for (d = defs; d; d = d->next)
     for (v = d->variations; v; v = v->next)
-      printf ("  %s%s,\n", d->basename, v->name, i++);
+      {
+	printf ("  %s%s,\n", d->basename, v->name);
+	++i;
+      }
 
   puts ("  LAST_AND_UNUSED_OPCODE\n};");
 
