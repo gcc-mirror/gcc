@@ -302,17 +302,20 @@ struct undobuf
 
 static struct undobuf undobuf;
 
-/* Substitute NEWVAL, an rtx expression, into INTO, a place in a some
+/* Substitute NEWVAL, an rtx expression, into INTO, a place in some
    insn.  The substitution can be undone by undo_all.  If INTO is already
-   set to NEWVAL, do not record this change.  */
+   set to NEWVAL, do not record this change.  Because computing NEWVAL might
+   also call SUBST, we have to compute it before we put anything into
+   the undo table.  */
 
 #define SUBST(INTO, NEWVAL)  \
- do { if (undobuf.num_undo < MAX_UNDO)					\
+ do { rtx _new = (NEWVAL);						\
+      if (undobuf.num_undo < MAX_UNDO)					\
 	{								\
 	  undobuf.undo[undobuf.num_undo].where = &INTO;			\
 	  undobuf.undo[undobuf.num_undo].old_contents = INTO;		\
 	  undobuf.undo[undobuf.num_undo].is_int = 0;			\
-	  INTO = NEWVAL;						\
+	  INTO = _new;							\
 	  if (undobuf.undo[undobuf.num_undo].old_contents != INTO)	\
 	    undobuf.num_undo++; 					\
 	}								\
