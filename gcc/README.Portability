@@ -129,6 +129,17 @@ myfunc (var1, var2)
   ...
 }
 
+This implies that if the function takes no arguments, it should be
+declared and defined as follows:
+
+int myfunc PARAMS ((void))
+
+int
+myfunc ()
+{
+  ...
+}
+
 You also need to use PARAMS when referring to function protypes in
 other circumstances, for example see "Calling functions through
 pointers to functions" below.
