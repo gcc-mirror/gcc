@@ -274,8 +274,6 @@ extern int flow_loop_scan (struct loop *, int);
 extern void flow_loop_free (struct loop *);
 void mark_irreducible_loops (struct loops *);
 void mark_single_exit_loops (struct loops *);
-void update_single_exits_after_duplication (basic_block *, unsigned,
-					    struct loop *);
 extern void create_loop_notes (void);
 
 /* Loop data structure manipulation/querying.  */
@@ -337,7 +335,6 @@ extern int duplicate_loop_to_header_edge (struct loop *, edge, struct loops *,
 					  unsigned *, int);
 extern struct loop *loopify (struct loops *, edge, edge,
 			     basic_block, edge, edge, bool);
-extern void unloop (struct loops *, struct loop *);
 extern bool remove_path (struct loops *, edge);
 extern edge split_loop_bb (basic_block, void *);
 
