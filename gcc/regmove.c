@@ -515,6 +515,8 @@ regmove_optimize (f, nregs, regmove_dump_file)
 			      else
 #endif
 				{
+				  rtx notes = REG_NOTES (insn);
+
 				  emit_insn_after_with_line_notes
 				    (pat, PREV_INSN (p), insn);
 				  PUT_CODE (insn, NOTE);
@@ -525,6 +527,8 @@ regmove_optimize (f, nregs, regmove_dump_file)
 				     for the new insn.  */
 				  for (insn = p; PATTERN (insn) != pat; )
 				    insn = PREV_INSN (insn);
+
+				  REG_NOTES (insn) = notes;
 				}
 			    }
 			  /* Sometimes we'd generate src = const; src += n;
