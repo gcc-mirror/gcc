@@ -1,3 +1,8 @@
+2005-03-02  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Fix setting of
+	CFG_ALTERED in the main DOM iteration loop.
+
 2005-03-02  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/19916
