@@ -6899,6 +6899,33 @@ fold (expr)
 			      fold (build (code, type, imag0, imag1))));
 	}
 
+      /* Optimize comparisons of strlen vs zero to a compare of the
+	 first character of the string vs zero.  To wit, 
+	 	strlen(ptr) == 0   =>  *ptr == 0
+		strlen(ptr) != 0   =>  *ptr != 0
+	 Other cases should reduce to one of these two (or a constant)
+	 due to the return value of strlen being unsigned.  */
+      if ((code == EQ_EXPR || code == NE_EXPR)
+	  && integer_zerop (arg1)
+	  && TREE_CODE (arg0) == CALL_EXPR
+	  && TREE_CODE (TREE_OPERAND (arg0, 0)) == ADDR_EXPR)
+	{
+	  tree fndecl = TREE_OPERAND (TREE_OPERAND (arg0, 0), 0);
+	  tree arglist;
+
+	  if (TREE_CODE (fndecl) == FUNCTION_DECL
+	      && DECL_BUILT_IN (fndecl)
+	      && DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_MD
+	      && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_STRLEN
+	      && (arglist = TREE_OPERAND (arg0, 1))
+	      && TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) == POINTER_TYPE
+	      && ! TREE_CHAIN (arglist))
+	    return fold (build (code, type,
+				build1 (INDIRECT_REF, char_type_node,
+					TREE_VALUE(arglist)),
+				integer_zero_node));
+	}
+
       /* From here on, the only cases we handle are when the result is
 	 known to be a constant.
 
