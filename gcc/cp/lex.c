@@ -4748,10 +4748,6 @@ extern int tree_node_counts[];
 extern int tree_node_sizes[];
 #endif
 
-/* Place to save freed lang_decls which were allocated on the
-   permanent_obstack.  */
-struct lang_decl *free_lang_decl_chain;
-
 tree
 build_lang_decl (code, name, type)
      enum tree_code code;
@@ -4760,16 +4756,8 @@ build_lang_decl (code, name, type)
 {
   tree t;
 
-  /* When we're building statement trees, declarations need to live
-     forever.  */
-  if (building_stmt_tree ())
-    push_permanent_obstack ();
-
   t = build_decl (code, name, type);
   retrofit_lang_decl (t);
-
-  if (building_stmt_tree ())
-    pop_obstacks ();
 
   return t;
 }
@@ -4781,7 +4769,6 @@ void
 retrofit_lang_decl (t)
      tree t;
 {
-  struct obstack *obstack = current_obstack;
   struct lang_decl *ld;
   size_t size;
 
@@ -4790,26 +4777,10 @@ retrofit_lang_decl (t)
   else
     size = sizeof (struct lang_decl_flags);
 
-  if (! TREE_PERMANENT (t))
-    obstack = saveable_obstack;
-  else
-    /* Could be that saveable is permanent and current is not.  */
-    obstack = &permanent_obstack;
-
-  if (CAN_HAVE_FULL_LANG_DECL_P (t) && free_lang_decl_chain 
-      && obstack == &permanent_obstack)
-    {
-      ld = free_lang_decl_chain;
-      free_lang_decl_chain = free_lang_decl_chain->u.next;
-    }
-  else
-    ld = (struct lang_decl *) obstack_alloc (obstack, size);
-
+  ld = (struct lang_decl *) ggc_alloc (size);
   memset (ld, 0, size);
 
   DECL_LANG_SPECIFIC (t) = ld;
-  LANG_DECL_PERMANENT (ld) = obstack == &permanent_obstack;
-  my_friendly_assert (LANG_DECL_PERMANENT (ld) == TREE_PERMANENT  (t), 234);
   if (current_lang_name == lang_name_cplusplus)
     DECL_LANGUAGE (t) = lang_cplusplus;
   else if (current_lang_name == lang_name_c)
@@ -4832,7 +4803,7 @@ copy_lang_decl (node)
      tree node;
 {
   int size;
-  int *pi;
+  struct lang_decl *ld;
 
   if (! DECL_LANG_SPECIFIC (node))
     return;
@@ -4841,9 +4812,9 @@ copy_lang_decl (node)
     size = sizeof (struct lang_decl_flags);
   else
     size = sizeof (struct lang_decl);
-  pi = (int *)obstack_alloc (&permanent_obstack, size);
-  bcopy ((char *)DECL_LANG_SPECIFIC (node), (char *)pi, size);
-  DECL_LANG_SPECIFIC (node) = (struct lang_decl *)pi;
+  ld = (struct lang_decl *) ggc_alloc (size);
+  bcopy ((char *)DECL_LANG_SPECIFIC (node), (char *)ld, size);
+  DECL_LANG_SPECIFIC (node) = ld;
 }
 
 tree
