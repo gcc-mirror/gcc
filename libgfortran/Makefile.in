@@ -282,7 +282,7 @@ toolexecdir = @toolexecdir@
 toolexeclibdir = @toolexeclibdir@
 AM_CFLAGS = -std=gnu99
 toolexeclib_LTLIBRARIES = libgfortran.la libgfortranbegin.la
-libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version`
+libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` -lm
 libgfortranbegin_la_SOURCES = fmain.c
 libgfortranbegin_la_LDFLAGS = -static
 AM_CPPFLAGS = -I$(srcdir)/io
