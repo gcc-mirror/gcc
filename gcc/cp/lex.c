@@ -62,7 +62,16 @@ extern double atof ();
 #ifdef HAVE_STRING_H
 #include <string.h>
 #else
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#endif
+
+#ifdef NEED_DECLARATION_INDEX
 extern char *index ();
+#endif
+
+#ifdef NEED_DECLARATION_RINDEX
 extern char *rindex ();
 #endif
 
@@ -1675,8 +1684,6 @@ reinit_parse_for_expr (obstackp)
   int starting_lineno = lineno;
   char *starting_filename = input_filename;
   int len;
-  int look_for_semicolon = 0;
-  int look_for_lbrac = 0;
   int plev = 0;
 
   if (nextchar != EOF)
@@ -1936,7 +1943,7 @@ cons_up_default_function (type, full_name, kind)
 {
   extern tree void_list_node;
   tree declspecs = NULL_TREE;
-  tree fn, args;
+  tree fn, args = NULL_TREE;
   tree argtype;
   int retref = 0;
   tree name = constructor_name (full_name);
@@ -2612,7 +2619,7 @@ readescape (ignore_ptr)
   register int c = getch ();
   register int code;
   register unsigned count;
-  unsigned firstdig;
+  unsigned firstdig = 0;
   int nonnull;
 
   switch (c)
@@ -3218,7 +3225,7 @@ real_yylex ()
 	{
 	  register struct resword *ptr;
 
-	  if (ptr = is_reserved_word (token_buffer, p - token_buffer))
+	  if ((ptr = is_reserved_word (token_buffer, p - token_buffer)))
 	    {
 	      if (ptr->rid)
 		{

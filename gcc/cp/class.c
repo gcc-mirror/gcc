@@ -458,11 +458,13 @@ build_vtable_entry (delta, pfn)
 	   < TREE_INT_CST_LOW (delta))
 	  || (TREE_INT_CST_LOW (delta)
 	      < TREE_INT_CST_LOW (TYPE_MIN_VALUE (delta_type_node))))
-	if (flag_huge_objects)
-	  sorry ("object size exceeds built-in limit for virtual function table implementation");
-	else
-	  sorry ("object size exceeds normal limit for virtual function table implementation, recompile all source and use -fhuge-objects");
-
+	{
+	  if (flag_huge_objects)
+	    sorry ("object size exceeds built-in limit for virtual function table implementation");
+	  else
+	    sorry ("object size exceeds normal limit for virtual function table implementation, recompile all source and use -fhuge-objects");
+	}
+      
       TREE_CONSTANT (entry) = 1;
       TREE_STATIC (entry) = 1;
       TREE_READONLY (entry) = 1;
@@ -1493,10 +1495,13 @@ build_class_init_list (type)
     }
 
   if (base_init_list)
-    if (member_init_list)
-      CLASSTYPE_BASE_INIT_LIST (type) = build_tree_list (base_init_list, member_init_list);
-    else
-      CLASSTYPE_BASE_INIT_LIST (type) = base_init_list;
+    {
+      if (member_init_list)
+	CLASSTYPE_BASE_INIT_LIST (type) =
+	  build_tree_list (base_init_list, member_init_list);
+      else
+	CLASSTYPE_BASE_INIT_LIST (type) = base_init_list;
+    }
   else if (member_init_list)
     CLASSTYPE_BASE_INIT_LIST (type) = member_init_list;
 }
@@ -3461,7 +3466,7 @@ finish_struct_1 (t, warn_anon)
 	  if (DECL_INITIAL (x))
 	    {
 	      tree w = DECL_INITIAL (x);
-	      register int width;
+	      register int width = 0;
 
 	      /* Avoid the non_lvalue wrapper added by fold for PLUS_EXPRs.  */
 	      STRIP_NOPS (w);
@@ -5102,7 +5107,7 @@ instantiate_type (lhstype, rhs, complain)
 
     case TREE_LIST:
       {
-	tree elem, baselink, name;
+	tree elem, baselink, name = NULL_TREE;
 	int globals = overloaded_globals_p (rhs);
 
 	/* First look for an exact match.  Search either overloaded
@@ -5113,15 +5118,17 @@ instantiate_type (lhstype, rhs, complain)
 	  lhstype = TYPE_PTRMEMFUNC_FN_TYPE (lhstype);
 
 	if (TREE_CODE (lhstype) == POINTER_TYPE)
-	  if (TREE_CODE (TREE_TYPE (lhstype)) == FUNCTION_TYPE
-	      || TREE_CODE (TREE_TYPE (lhstype)) == METHOD_TYPE)
-	    lhstype = TREE_TYPE (lhstype);
-	  else
-	    {
-	      if (complain)
-		error ("invalid type combination for overload");
-	      return error_mark_node;
-	    }
+	  {
+	    if (TREE_CODE (TREE_TYPE (lhstype)) == FUNCTION_TYPE
+		|| TREE_CODE (TREE_TYPE (lhstype)) == METHOD_TYPE)
+	      lhstype = TREE_TYPE (lhstype);
+	    else
+	      {
+		if (complain)
+		  error ("invalid type combination for overload");
+		return error_mark_node;
+	      }
+	  }
 
 	if (TREE_CODE (lhstype) != FUNCTION_TYPE && globals > 0)
 	  {
@@ -5138,13 +5145,15 @@ instantiate_type (lhstype, rhs, complain)
 	       can match.  */
 	    if (explicit_targs == NULL_TREE)
 	      while (elem)
-		if (! comptypes (lhstype, TREE_TYPE (elem), 1))
-		  elem = DECL_CHAIN (elem);
-		else
-		  {
-		    mark_used (elem);
-		    return elem;
-		  }
+		{
+		  if (! comptypes (lhstype, TREE_TYPE (elem), 1))
+		    elem = DECL_CHAIN (elem);
+		  else
+		    {
+		      mark_used (elem);
+		      return elem;
+		    }
+		}
 
 	    /* No exact match found, look for a compatible template.  */
 	    {

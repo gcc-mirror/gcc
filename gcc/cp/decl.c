@@ -164,7 +164,7 @@ static tree obscure_complex_init PROTO((tree, tree));
 static tree maybe_build_cleanup_1 PROTO((tree, tree));
 static tree lookup_name_real PROTO((tree, int, int));
 static void warn_extern_redeclared_static PROTO((tree, tree));
-static void grok_reference_init PROTO((tree, tree, tree, tree *));
+static void grok_reference_init PROTO((tree, tree, tree));
 static tree grokfndecl PROTO((tree, tree, tree, tree, int,
 			      enum overload_flags,
 			      tree, tree, tree, int, int, int, int, int, int));
@@ -4798,7 +4798,7 @@ record_builtin_type (rid_index, name, type)
      tree type;
 {
   tree rname = NULL_TREE, tname = NULL_TREE;
-  tree tdecl;
+  tree tdecl = NULL_TREE;
 
   if ((int) rid_index < (int) RID_MAX)
     rname = ridpointers[(int) rid_index];
@@ -4870,7 +4870,7 @@ init_decl_processing ()
   tree temp;
   tree array_domain_type;
   extern int flag_strict_prototype;
-  tree vb_off_identifier;
+  tree vb_off_identifier = NULL_TREE;
   /* Function type `char *(char *, char *)' and similar ones */
   tree string_ftype_ptr_ptr, int_ftype_string_string;
   tree sizetype_endlink;
@@ -6299,9 +6299,8 @@ start_decl_1 (decl)
    Quotes on semantics can be found in ARM 8.4.3.  */
 
 static void
-grok_reference_init (decl, type, init, cleanupp)
+grok_reference_init (decl, type, init)
      tree decl, type, init;
-     tree *cleanupp;
 {
   tree tmp;
 
@@ -6442,7 +6441,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
      int flags;
 {
   register tree type;
-  tree cleanup = NULL_TREE, ttype;
+  tree cleanup = NULL_TREE, ttype = NULL_TREE;
   int was_incomplete;
   int temporary = allocation_temporary_p ();
   char *asmspec = NULL;
@@ -6569,7 +6568,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	make_decl_rtl (decl, NULL_PTR,
 		       toplevel_bindings_p ()
 		       || pseudo_global_level_p ());
-      grok_reference_init (decl, type, init, &cleanup);
+      grok_reference_init (decl, type, init);
       init = NULL_TREE;
     }
 
@@ -7976,7 +7975,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	      }
 	    if (! IDENTIFIER_OPNAME_P (dname)
 		/* GNU/Linux headers use '__op'.  Arrgh.  */
-		|| IDENTIFIER_TYPENAME_P (dname) && ! TREE_TYPE (dname))
+		|| (IDENTIFIER_TYPENAME_P (dname) && ! TREE_TYPE (dname)))
 	      name = IDENTIFIER_POINTER (dname);
 	    else
 	      {
@@ -9521,10 +9520,12 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
       /* Note that the grammar rejects storage classes
 	 in typenames, fields or parameters.  */
       if (constp || volatilep)
-	if (IS_SIGNATURE (type))
-	  error ("`const' or `volatile' specified with signature type");
-	else  
-	  type = cp_build_type_variant (type, constp, volatilep);
+	{
+	  if (IS_SIGNATURE (type))
+	    error ("`const' or `volatile' specified with signature type");
+	  else  
+	    type = cp_build_type_variant (type, constp, volatilep);
+	}
 
       /* Special case: "friend class foo" looks like a TYPENAME context.  */
       if (friendp)
@@ -10204,7 +10205,7 @@ grokparms (first_parm, funcdef_flag)
 
 	  for (parm = first_parm; parm != NULL_TREE; parm = chain)
 	    {
-	      tree type, list_node = parm;
+	      tree type = NULL_TREE, list_node = parm;
 	      register tree decl = TREE_VALUE (parm);
 	      tree init = TREE_PURPOSE (parm);
 
@@ -10951,8 +10952,6 @@ xref_tag (code_type_node, name, binfo, globalize)
   if (binfo)
     xref_basetypes (code_type_node, name, ref, binfo);
 
- just_return:
-
   /* Until the type is defined, tentatively accept whatever
      structure tag the user hands us.  */
   if (TYPE_SIZE (ref) == NULL_TREE
@@ -11182,7 +11181,7 @@ tree
 finish_enum (enumtype, values)
      register tree enumtype, values;
 {
-  register tree minnode, maxnode;
+  register tree minnode = NULL_TREE, maxnode = NULL_TREE;
   /* Calculate the maximum value of any enumerator in this type.  */
 
   if (values)
@@ -12328,7 +12327,7 @@ finish_function (lineno, call_poplevel, nested)
 	}
       else if (DECL_CONSTRUCTOR_P (fndecl))
 	{
-	  tree cond, thenclause;
+	  tree cond = NULL_TREE, thenclause = NULL_TREE;
 	  /* Allow constructor for a type to get a new instance of the object
 	     using `build_new'.  */
 	  tree abstract_virtuals = CLASSTYPE_ABSTRACT_VIRTUALS (current_class_type);
@@ -12816,7 +12815,7 @@ hack_incomplete_structures (type)
   for (list = &current_binding_level->incomplete; *list; )
     {
       tree decl = TREE_VALUE (*list);
-      if (decl && TREE_TYPE (decl) == type
+      if ((decl && TREE_TYPE (decl) == type)
 	  || (TREE_TYPE (decl)
 	      && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
 	      && TREE_TYPE (TREE_TYPE (decl)) == type))

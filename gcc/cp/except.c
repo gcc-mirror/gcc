@@ -215,8 +215,6 @@ do_function_call (func, params, return_type)
 void
 init_exception_processing ()
 {
-  tree d;
-
   /* void vtype () */
   tree vtype = build_function_type (void_type_node, void_list_node);
   
@@ -972,7 +970,6 @@ void
 expand_throw (exp)
      tree exp;
 {
-  rtx label;
   tree fn;
   static tree cleanup_type;
 

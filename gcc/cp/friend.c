@@ -195,14 +195,16 @@ add_friends (type, name, friend_type)
 	  while (friends && TREE_PURPOSE (friends) != friend_type)
 	    friends = TREE_CHAIN (friends);
 	  if (friends)
-	    if (friend_type)
-	      warning ("method `%s::%s' is already a friend of class",
-		       TYPE_NAME_STRING (friend_type),
-		       IDENTIFIER_POINTER (name));
-	    else
-	      warning ("function `%s' is already a friend of class `%s'",
-		       IDENTIFIER_POINTER (name),
-		       IDENTIFIER_POINTER (DECL_NAME (typedecl)));
+	    {
+	      if (friend_type)
+		warning ("method `%s::%s' is already a friend of class",
+			 TYPE_NAME_STRING (friend_type),
+			 IDENTIFIER_POINTER (name));
+	      else
+		warning ("function `%s' is already a friend of class `%s'",
+			 IDENTIFIER_POINTER (name),
+			 IDENTIFIER_POINTER (DECL_NAME (typedecl)));
+	    }
 	  else
 	    TREE_VALUE (list) = tree_cons (friend_type, NULL_TREE,
 					   TREE_VALUE (list));

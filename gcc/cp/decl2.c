@@ -2399,7 +2399,10 @@ tree
 coerce_delete_type (type)
      tree type;
 {
-  int e1 = 0, e2 = 0, e3 = 0;
+  int e1 = 0, e2 = 0;
+#if 0
+  e3 = 0;
+#endif
   tree arg_types = TYPE_ARG_TYPES (type);
 
   if (TREE_CODE (type) == METHOD_TYPE)

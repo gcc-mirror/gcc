@@ -545,7 +545,7 @@ get_binfo (parent, binfo, protect)
      register tree parent, binfo;
      int protect;
 {
-  tree type;
+  tree type = NULL_TREE;
   int dist;
   tree rval = NULL_TREE;
   
@@ -716,7 +716,7 @@ get_base_distance (parent, binfo, protect, path_ptr)
 {
   int rval;
   int rval_private = 0;
-  tree type;
+  tree type = NULL_TREE;
   tree new_binfo = NULL_TREE;
   int via_virtual;
   int watch_access = protect;
@@ -1154,8 +1154,8 @@ lookup_field (xbasetype, name, protect, want_type)
      int protect, want_type;
 {
   int head = 0, tail = 0;
-  tree rval, rval_binfo = NULL_TREE, rval_binfo_h;
-  tree type, basetype_chain, basetype_path;
+  tree rval, rval_binfo = NULL_TREE, rval_binfo_h = NULL_TREE;
+  tree type = NULL_TREE, basetype_chain, basetype_path = NULL_TREE;
   tree this_v = access_default_node;
   tree entry, binfo, binfo_h;
   tree own_access = access_default_node;
@@ -1470,7 +1470,7 @@ lookup_field (xbasetype, name, protect, want_type)
 	    /* If is possible for one of the derived types on the path to
 	       have defined special access for this field.  Look for such
 	       declarations and report an error if a conflict is found.  */
-	    tree new_v;
+	    tree new_v = NULL_TREE;
 
 	    if (this_v != access_default_node)
 	      new_v = compute_access (TREE_VALUE (TREE_CHAIN (*tp)), rval);
@@ -1689,8 +1689,8 @@ lookup_fnfields (basetype_path, name, complain)
      int complain;
 {
   int head = 0, tail = 0;
-  tree type, rval, rval_binfo = NULL_TREE, rvals = NULL_TREE, rval_binfo_h;
-  tree entry, binfo, basetype_chain, binfo_h;
+  tree type, rval, rval_binfo = NULL_TREE, rvals = NULL_TREE;
+  tree rval_binfo_h = NULL_TREE, entry, binfo, basetype_chain, binfo_h;
   int find_all = 0;
 
   /* rval_binfo is the binfo associated with the found member, note,
@@ -2034,7 +2034,7 @@ breadth_first_search (binfo, testfn, qfn)
 
       binfo = search_stack->first[head++];
       i = (HOST_WIDE_INT) search_stack->first[head++];
-      if (rval = (*testfn) (binfo, i))
+      if ((rval = (*testfn) (binfo, i)))
 	break;
       binfo = BINFO_BASETYPE (binfo, i);
     }
@@ -3768,7 +3768,7 @@ tree
 get_template_base (template, binfo)
      register tree template, binfo;
 {
-  tree type, rval;
+  tree type = NULL_TREE, rval;
 
   if (TREE_CODE (binfo) == TREE_VEC)
     type = BINFO_TYPE (binfo);

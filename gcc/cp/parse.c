@@ -5192,21 +5192,23 @@ case 281:
 		  if (TREE_CODE (yyval.ttype) == BIT_NOT_EXPR)
 		    yyval.ttype = build_x_unary_op (BIT_NOT_EXPR, TREE_OPERAND (yyval.ttype, 0));
 		  else if (TREE_CODE (yyval.ttype) != TEMPLATE_ID_EXPR)
-		    if (processing_template_arg)
-		      {
-			tree id;
-			arg_looking_for_template = processing_template_arg;
-			id = lookup_name (yyval.ttype, 0);
-			arg_looking_for_template = 0;
+		    {
+		      if (processing_template_arg)
+			{
+			  tree id;
+			  arg_looking_for_template = processing_template_arg;
+			  id = lookup_name (yyval.ttype, 0);
+			  arg_looking_for_template = 0;
 			
-			if (!id || id == error_mark_node
-			    || (TREE_CODE (id) != TEMPLATE_DECL
-				&& TREE_CODE (id) != TEMPLATE_TEMPLATE_PARM))
-			  id = do_identifier (yyval.ttype, 1);
-			yyval.ttype = id;
-		      } 
-		    else
-		      yyval.ttype = do_identifier (yyval.ttype, 1);
+			  if (!id || id == error_mark_node
+			      || (TREE_CODE (id) != TEMPLATE_DECL
+				  && TREE_CODE (id) != TEMPLATE_TEMPLATE_PARM))
+			    id = do_identifier (yyval.ttype, 1);
+			  yyval.ttype = id;
+			} 
+		      else
+			yyval.ttype = do_identifier (yyval.ttype, 1);
+		    }
 		;
     break;}
 case 284:
@@ -5343,7 +5345,7 @@ case 295:
 case 296:
 #line 1511 "parse.y"
 {
-		  tree type;
+		  tree type = NULL_TREE;
 		  tree id = yyval.ttype;
 
 		  /* This is a C cast in C++'s `functional' notation.  */
@@ -6178,7 +6180,6 @@ case 453:
 #line 2307 "parse.y"
 {
 		  int semi;
-		  tree id;
 
 		  yyval.ttype = yyvsp[-4].ttype;
 #if 0

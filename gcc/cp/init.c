@@ -259,7 +259,7 @@ sort_member_init (t)
   tree x, member, name, field;
   tree init_list = NULL_TREE;
   int last_pos = 0;
-  tree last_field;
+  tree last_field = NULL_TREE;
 
   for (member = TYPE_FIELDS (t); member ; member = TREE_CHAIN (member))
     {
@@ -369,7 +369,7 @@ sort_base_init (t, rbase_ptr, vbase_ptr)
   for (x = TREE_CHAIN (last); x; x = TREE_CHAIN (x))
     {
       tree basetype = TREE_PURPOSE (x);
-      tree binfo;
+      tree binfo = NULL_TREE;
 
       if (basetype == NULL_TREE)
 	{
@@ -925,7 +925,7 @@ expand_member_init (exp, name, init)
 
   tree basetype = NULL_TREE, field;
   tree parm;
-  tree rval, type;
+  tree rval = NULL_TREE, type;
 
   if (exp == NULL_TREE)
     return;			/* complain about this later */
@@ -1776,7 +1776,7 @@ build_member_call (type, name, parmlist)
   if (method_name == constructor_name (type)
       || method_name == constructor_name_full (type))
     return build_functional_cast (type, parmlist);
-  if (t = lookup_fnfields (basetype_path, method_name, 0))
+  if ((t = lookup_fnfields (basetype_path, method_name, 0)))
     return build_method_call (decl, 
 			      TREE_CODE (name) == TEMPLATE_ID_EXPR
 			      ? name : method_name,
@@ -1906,10 +1906,12 @@ build_offset_ref (type, name)
     decl = current_class_ref;
 
   if (constructor_name (BINFO_TYPE (basebinfo)) == name)
-    if (dtor)
-      name = dtor_identifier;
-    else
-      name = ctor_identifier;
+    {
+      if (dtor)
+	name = dtor_identifier;
+      else
+	name = ctor_identifier;
+    }
   else
     if (dtor)
       my_friendly_abort (999);
@@ -2250,7 +2252,7 @@ build_new (placement, decl, init, use_global_new)
      int use_global_new;
 {
   tree type, rval;
-  tree nelts, t;
+  tree nelts = NULL_TREE, t;
   int has_array = 0;
 
   tree pending_sizes = NULL_TREE;
@@ -2262,7 +2264,7 @@ build_new (placement, decl, init, use_global_new)
     {
       tree absdcl = TREE_VALUE (decl);
       tree last_absdcl = NULL_TREE;
-      int old_immediate_size_expand;
+      int old_immediate_size_expand = 0;
 
       if (current_function_decl
 	  && DECL_CONSTRUCTOR_P (current_function_decl))
@@ -2434,8 +2436,8 @@ build_new_1 (exp)
 {
   tree placement, init, t;
   tree type, true_type, size, rval;
-  tree nelts;
-  tree alloc_expr, alloc_node;
+  tree nelts = NULL_TREE;
+  tree alloc_expr, alloc_node = NULL_TREE;
   int has_array = 0;
   enum tree_code code = NEW_EXPR;
   int use_cookie, nothrow, check_new;
@@ -2806,9 +2808,6 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, auto_delete,
      This is also the containing expression returned by this function.  */
   tree controller = NULL_TREE;
 
-  /* This is the BLOCK to record the symbol binding for debugging.  */
-  tree block;
-
   if (! IS_AGGR_TYPE (type) || ! TYPE_NEEDS_DESTRUCTOR (type))
     {
       loop = integer_zero_node;
@@ -3049,6 +3048,7 @@ expand_vec_init (decl, base, maxindex, init, from_array)
       iterator = get_temp_regvar (ptrdiff_type_node, maxindex);
 
     init_by_default:
+      itype = NULL_TREE;
 
       /* If initializing one array from another,
 	 initialize element by element.  */

@@ -818,10 +818,12 @@ convert_to_aggr (type, expr, msgp, protect)
     else if (msgp)
       {
 	if (saw_private)
-	  if (saw_protected)
-	    *msgp = "only private and protected conversions apply";
-	  else
-	    *msgp = "only private conversions apply";
+	  {
+	    if (saw_protected)
+	      *msgp = "only private and protected conversions apply";
+	    else
+	      *msgp = "only private conversions apply";
+	  }
 	else if (saw_protected)
 	  *msgp = "only protected conversions apply";
 	else

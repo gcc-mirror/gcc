@@ -350,7 +350,7 @@ append_signature_fields (list_of_fieldlists)
   tree l, x;
   tree last_x = NULL_TREE;
   tree mfptr;
-  tree last_mfptr;
+  tree last_mfptr = NULL_TREE;
   tree mfptr_list = NULL_TREE;
 	      
   /* For signatures it should actually be only a list with one element.  */
@@ -461,7 +461,7 @@ build_signature_table_constructor (sig_ty, rhs)
   tree sig_field = TYPE_FIELDS (sig_ty);
   tree result = NULL_TREE;
   tree first_rhs_field = NULL_TREE;
-  tree last_rhs_field;
+  tree last_rhs_field = NULL_TREE;
   int sig_ptr_p = IS_SIGNATURE (rhstype);
   int offset_p = sig_ptr_p;
 
@@ -574,7 +574,7 @@ build_signature_table_constructor (sig_ty, rhs)
 	}
       else
 	{
-	  tree tag, vb_off, delta, idx, pfn, vt_off;
+	  tree tag, vb_off, delta, idx, pfn = NULL_TREE, vt_off = NULL_TREE;
 	  tree tag_decl, vb_off_decl, delta_decl, index_decl;
 	  tree pfn_decl, vt_off_decl;
 
@@ -724,7 +724,7 @@ build_sigtable (sig_type, rhs_type, init_from)
     }
   if (decl == NULL_TREE)
     {
-      tree init;
+      tree init = NULL_TREE;
 
       /* We allow only one signature table to be generated for signatures
 	 with opaque types.  Otherwise we create a loophole in the type
