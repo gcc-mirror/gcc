@@ -193,9 +193,9 @@ setup_callbacks ()
 {
   cpp_callbacks *cb = cpp_get_callbacks (pfile);
 
-  cb->line_change = cb_line_change;
   if (! options->no_output)
     {
+      cb->line_change = cb_line_change;
       cb->ident      = cb_ident;
       cb->def_pragma = cb_def_pragma;
       if (! options->no_line_commands)
