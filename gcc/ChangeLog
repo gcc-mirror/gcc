@@ -1,3 +1,7 @@
+2004-12-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* gimplify.c (gimplify_modify_expr_rhs): Use types_compatible_p.
+
 2004-12-23  DJ Delorie  <dj@redhat.com>
 
 	* genrecog.c (did_you_mean_codes): New.
