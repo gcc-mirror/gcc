@@ -4591,13 +4591,9 @@ assign_parms (tree fndecl)
       locate_and_pad_parm (promoted_mode, passed_type, in_regs,
 			   entry_parm ? partial : 0, fndecl,
 			   &stack_args_size, &locate);
-      /* Adjust offsets to include pretend args, unless this is the
-         split arg.  */
-      if (pretend_bytes == 0)
-	{
-	  locate.slot_offset.constant += extra_pretend_bytes;
-	  locate.offset.constant += extra_pretend_bytes;
-	}
+      /* Adjust offsets to include the pretend args.  */
+      locate.slot_offset.constant += extra_pretend_bytes - pretend_bytes;
+      locate.offset.constant += extra_pretend_bytes - pretend_bytes;
 
       {
 	rtx offset_rtx;
