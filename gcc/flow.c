@@ -2859,7 +2859,7 @@ life_analysis (f, file, flags)
   {
     rtx insn;
 
-    /* Search for any REG_LABEL notes whih reference deleted labels.  */
+    /* Search for any REG_LABEL notes which reference deleted labels.  */
     for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
       {
 	rtx inote = find_reg_note (insn, REG_LABEL, NULL_RTX);
@@ -3385,6 +3385,24 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
   if (blocks_out)
     sbitmap_zero (blocks_out);
 
+  /* We work through the queue until there are no more blocks.  What
+     is live at the end of this block is precisely the union of what
+     is live at the beginning of all its successors.  So, we set its
+     GLOBAL_LIVE_AT_END field based on the GLOBAL_LIVE_AT_START field
+     for its successors.  Then, we compute GLOBAL_LIVE_AT_START for
+     this block by walking through the instructions in this block in
+     reverse order and updating as we go.  If that changed
+     GLOBAL_LIVE_AT_START, we add the predecessors of the block to the
+     queue; they will now need to recalculate GLOBAL_LIVE_AT_END.
+
+     We are guaranteed to terminate, because GLOBAL_LIVE_AT_START
+     never shrinks.  If a register appears in GLOBAL_LIVE_AT_START, it
+     must either be live at the end of the block, or used within the
+     block.  In the latter case, it will certainly never disappear
+     from GLOBAL_LIVE_AT_START.  In the former case, the register
+     could go away only if it disappeared from GLOBAL_LIVE_AT_START
+     for one of the successor blocks.  By induction, that cannot
+     occur.  */
   while (qhead != qtail)
     {
       int rescan, changed;
@@ -3396,7 +3414,7 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
 	qhead = queue;
       bb->aux = NULL;
 
-      /* Begin by propogating live_at_start from the successor blocks.  */
+      /* Begin by propagating live_at_start from the successor blocks.  */
       CLEAR_REG_SET (new_live_at_end);
       for (e = bb->succ; e; e = e->succ_next)
 	{
@@ -4609,7 +4627,11 @@ mark_set_regs (pbi, x, insn)
     }
 }
 
-/* Process a single SET rtx, X.  */
+/* Process a single set, which appears in INSN.  REG (which may not
+   actually be a REG, it may also be a SUBREG, PARALLEL, etc.) is
+   being set using the CODE (which may be SET, CLOBBER, or COND_EXEC).
+   If the set is conditional (because it appear in a COND_EXEC), COND
+   will be the condition.  */
 
 static void
 mark_set_1 (pbi, code, reg, cond, insn, flags)
@@ -6257,6 +6279,10 @@ dump_regset (r, outf)
 		 reg_names[i]);
     });
 }
+
+/* Print a human-reaable representation of R on the standard error
+   stream.  This function is designed to be used from within the
+   debugger.  */
 
 void
 debug_regset (r)

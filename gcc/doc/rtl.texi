@@ -2201,6 +2201,13 @@ but it is ok then because no further optimization remains to be done.
 However, the definition of the macro @code{NOTICE_UPDATE_CC}, if
 any, must deal with such insns if you define any peephole optimizations.
 
+@findex cond_exec
+@item (cond_exec [@var{cond} @var{expr}])
+Represents a conditionally executed expression.  The @var{expr} is
+executed only if the @var{cond} is non-zero.  The @var{cond} expression
+must not have side-effects, but the @var{expr} may very well have
+side-effects.
+
 @findex sequence
 @item (sequence [@var{insns} @dots{}])
 Represents a sequence of insns.  Each of the @var{insns} that appears
@@ -2685,7 +2692,7 @@ An expression for the side effect performed by this insn.  This must be
 one of the following codes: @code{set}, @code{call}, @code{use},
 @code{clobber}, @code{return}, @code{asm_input}, @code{asm_output},
 @code{addr_vec}, @code{addr_diff_vec}, @code{trap_if}, @code{unspec},
-@code{unspec_volatile}, @code{parallel}, or @code{sequence}.  If it is a @code{parallel},
+@code{unspec_volatile}, @code{parallel}, @code{cond_exec}, or @code{sequence}.  If it is a @code{parallel},
 each element of the @code{parallel} must be one these codes, except that
 @code{parallel} expressions cannot be nested and @code{addr_vec} and
 @code{addr_diff_vec} are not permitted inside a @code{parallel} expression.
