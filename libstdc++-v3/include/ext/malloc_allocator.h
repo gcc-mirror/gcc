@@ -34,6 +34,7 @@
 #ifndef _MALLOC_ALLOCATOR_H
 #define _MALLOC_ALLOCATOR_H 1
 
+#include <cstdlib>
 #include <new>
 #include <bits/functexcept.h>
 
