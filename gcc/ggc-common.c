@@ -543,6 +543,7 @@ gt_pch_save (f)
 	memcpy (state.ptrs[i]->obj, this_object, state.ptrs[i]->size);
     }
   ggc_pch_finish (state.d, state.f);
+  gt_pch_fixup_stringpool ();
 
   free (state.ptrs);
   htab_delete (saving_htab);

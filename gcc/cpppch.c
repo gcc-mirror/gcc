@@ -34,7 +34,6 @@ static int comp_hashnodes PARAMS ((const void *, const void *));
 static int collect_ht_nodes PARAMS ((cpp_reader *, cpp_hashnode *, void *));
 static int write_defs PARAMS ((cpp_reader *, cpp_hashnode *, void *));
 static int save_macros PARAMS ((cpp_reader *, cpp_hashnode *, void *));
-static int reset_ht PARAMS ((cpp_reader *, cpp_hashnode *, void *));
 
 /* This structure represents a macro definition on disk.  */
 struct macrodef_struct 
@@ -628,23 +627,6 @@ cpp_prepare_state (r, data)
   *data = d;
 }
 
-/* Erase all the existing macros and assertions.  */
-
-static int 
-reset_ht (r, h, unused)
-     cpp_reader *r ATTRIBUTE_UNUSED;
-     cpp_hashnode *h;
-     void *unused ATTRIBUTE_UNUSED;
-{
-  if (h->type != NT_VOID
-      && (h->flags & NODE_BUILTIN) == 0)
-    {
-      h->type = NT_VOID;
-      memset (&h->value, 0, sizeof (h->value));
-    }
-  return 1;
-}
-
 /* Given a precompiled header that was previously determined to be valid,
    apply all its definitions (and undefinitions) to the current state. 
    DEPNAME is passed to deps_restore.  */
@@ -663,11 +645,6 @@ cpp_read_state (r, name, f, data)
   struct save_macro_item *d;
   size_t i, mac_count;
   int saved_line = r->line;
-
-  /* Erase all the existing hashtable entries for macros.  At this
-     point, they're all from the PCH file, and their pointers won't be
-     valid.  */
-  cpp_forall_identifiers (r, reset_ht, NULL);
 
   /* Restore spec_nodes, which will be full of references to the old 
      hashtable entries and so will now be invalid.  */

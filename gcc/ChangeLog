@@ -1,3 +1,18 @@
+2003-04-03  Matt Austern  <austern@apple.com>
+
+	* cpppch.c (reset_ht): Remove.
+	(cpp_read_state): Remove loop to reset hashtable identifiers.
+	* ggc-common.c (gt_pch_save): Add call to gt_pch_fixup_stringpool
+	after pch file is written.
+	* ggc.h (gt_pch_fixup_stringpool): Declare.
+	* stringpool.c (ht_copy_and_clear): Define.  Callback.  Copy
+	hashnode's value to another hashtable, then clear the original.
+	(saved_ident_hash): Define.
+	(gt_pch_save_stringpool): Create saved_ident_hash, use it to
+	store definitions in ident_hash, and clear ident_hash.
+	(gt_pch_fixup_stringpool): Define.  Restore definitions from
+	saved_ident_hash to ident_hash, then destroy saved_ident_hash.
+
 Thu Apr  3 22:27:40 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* cfgrtl.c (update_bb_for_insn): Do not set block for barriers.
