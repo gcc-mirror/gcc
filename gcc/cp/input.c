@@ -1,5 +1,5 @@
 /* Input handling for G++.
-   Copyright (C) 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93-97, 1998 Free Software Foundation, Inc.
    Written by Ken Raeburn (raeburn@cygnus.com) while at Watchmaker Computing.
 
 This file is part of GNU CC.

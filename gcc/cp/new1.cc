@@ -1,5 +1,5 @@
 // Support routines for the -*- C++ -*- dynamic memory management.
-// Copyright (C) 1997 Free Software Foundation
+// Copyright (C) 1997, 1998 Free Software Foundation
 
 // This file is part of GNU CC.
 

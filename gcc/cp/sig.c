@@ -1,5 +1,5 @@
 /* Functions dealing with signatures and signature pointers/references.
-   Copyright (C) 1992, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93-97, 1998 Free Software Foundation, Inc.
    Contributed by Gerald Baumgartner (gb@cs.purdue.edu)
 
 This file is part of GNU CC.

@@ -1,5 +1,5 @@
 /* Provide a call-back mechanism for handling error output.
-   Copyright (C) 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1993, 94-97, 1998 Free Software Foundation, Inc.
    Contributed by Jason Merrill (jason@cygnus.com)
 
    This file is part of GNU CC.

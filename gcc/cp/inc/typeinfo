@@ -1,5 +1,5 @@
 // RTTI support for -*- C++ -*-
-// Copyright (C) 1994, 1995, 1996 Free Software Foundation
+// Copyright (C) 1994, 95-97, 1998 Free Software Foundation
 
 #ifndef __TYPEINFO__
 #define __TYPEINFO__
