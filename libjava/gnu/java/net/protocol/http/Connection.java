@@ -1,5 +1,6 @@
 /* HttpURLConnection.java -- URLConnection class for HTTP protocol
-   Copyright (C) 1998, 1999, 2000, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2002, 2003, 2004
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -52,6 +53,8 @@ import java.net.ProtocolException;
 import java.net.Socket;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -76,41 +79,45 @@ public final class Connection extends HttpURLConnection
    * The socket we are connected to
    */
   private Socket socket;
-  private static int proxyPort = 80;
-  private static boolean proxyInUse = false;
-  private static String proxyHost = null;
-
-  private static final String userAgent;
+  
+  // Properties depeending on system properties settings
+  static int proxyPort = 80;
+  static boolean proxyInUse = false;
+  static String proxyHost = null;
+  static String userAgent;
 
   static 
   {
-    // Recognize some networking properties listed at
-    // http://java.sun.com/j2se/1.4/docs/guide/net/properties.html.
-    String port = null;
-    proxyHost = System.getProperty("http.proxyHost");
-    if (proxyHost != null)
-      {
-	proxyInUse = true;
-	if ((port = System.getProperty("http.proxyPort")) != null)
-	  {
-	    try
-	      {
-		proxyPort = Integer.parseInt(port);
-	      }
-	    catch (Throwable t)
-	      {
-		// Nothing.  
-	      }
-	  }
-      }
+    // Make sure access control for system properties depends only on
+    // our class ProtectionDomain, not on any (indirect) callers.
+    AccessController.doPrivileged(new PrivilegedAction() {
+	public Object run()
+	{
+	  // Recognize some networking properties listed at
+	  // http://java.sun.com/j2se/1.4/docs/guide/net/properties.html.
+	  String port = null;
+	  proxyHost = System.getProperty("http.proxyHost");
+	  if (proxyHost != null)
+	    {
+	      proxyInUse = true;
+	      if ((port = System.getProperty("http.proxyPort")) != null)
+		{
+		  try
+		    {
+		      proxyPort = Integer.parseInt(port);
+		    }
+		  catch (Throwable t)
+		    {
+		      // Nothing.  
+		    }
+		}
+	    }
+	  
+	  userAgent = System.getProperty("http.agent");
 
-    userAgent = "gnu-classpath/"
-      + System.getProperty("gnu.classpath.version")
-      + " ("
-      + System.getProperty("gnu.classpath.vm.shortname")
-      + "/"
-      + System.getProperty("java.vm.version")
-      + ")";
+	  return null;
+	}
+      });
   }
 
   /**
