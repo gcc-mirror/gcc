@@ -1428,7 +1428,7 @@ vect_analyze_offset_expr (tree expr,
 
   /* Stop conditions:
      1. Constant.  */
-  if (TREE_CONSTANT (expr))
+  if (TREE_CODE (expr) == INTEGER_CST)
     {
       *initial_offset = fold_convert (sizetype, expr);
       *misalign = fold_convert (sizetype, expr);      
@@ -1465,7 +1465,7 @@ vect_analyze_offset_expr (tree expr,
 	/* Evolution is not constant.  */
 	return false;
 
-      if (TREE_CONSTANT (init))
+      if (TREE_CODE (init) == INTEGER_CST)
 	*misalign = fold_convert (sizetype, init);
       else
 	/* Not constant, misalignment cannot be calculated.  */
@@ -1502,7 +1502,7 @@ vect_analyze_offset_expr (tree expr,
   switch (code)
     {
     case MULT_EXPR:
-      if (!TREE_CONSTANT (right_offset))
+      if (TREE_CODE (right_offset) != INTEGER_CST)
 	/* RIGHT_OFFSET can be not constant. For example, for arrays of variable 
 	   sized types. 
 	   FORNOW: We don't support such cases.  */
@@ -3336,7 +3336,7 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters)
   /* If the loop bound is known at compile time we already verified that it is
      greater than vf; since the misalignment ('iters') is at most vf, there's
      no need to generate the MIN_EXPR in this case.  */
-  if (!TREE_CONSTANT (loop_niters))
+  if (TREE_CODE (loop_niters) != INTEGER_CST)
     iters = build2 (MIN_EXPR, niters_type, iters, loop_niters);
 
   var = create_tmp_var (niters_type, "prolog_loop_niters");
@@ -4618,7 +4618,7 @@ vect_analyze_pointer_ref_access (tree memref, tree stmt, bool is_read)
 		
   STRIP_NOPS (init);
 
-  if (!TREE_CONSTANT (step))
+  if (TREE_CODE (step) != INTEGER_CST)
     {
       if (vect_debug_stats (loop) || vect_debug_details (loop)) 
 	fprintf (dump_file, 
