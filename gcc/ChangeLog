@@ -1,5 +1,10 @@
 2000-08-11  Richard Henderson  <rth@cygnus.com>
 
+	* function.c (put_reg_into_stack): Allow type to be NULL.
+	(schedule_fixup_var_refs): Likewise.
+	(gen_mem_addressof): Allow decl to be NULL.
+	(put_addressof_into_stack): Likewise.
+
 	* flow.c (merge_blocks_nomove): Be more careful about
 	locating the beginning of block A.
 
