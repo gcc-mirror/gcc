@@ -11,22 +11,19 @@ AC_INIT(src/ios.cc)
 # source directory.
 if test "${srcdir}" = "."; then
   if test -z "${with_target_subdir}"; then
-    toplevel_srcdir="\${top_srcdir}/.."
-    auxdir="${srcdir}/.."
+    toprel=".."
   else
     if test "${with_target_subdir}" != "."; then
-      toplevel_srcdir="\${top_srcdir}/${with_multisrctop}../.."
-      auxdir="${srcdir}/${with_multisrctop}../.."
+      toprel="${with_multisrctop}../.."
     else
-      toplevel_srcdir="\${top_srcdir}/${with_multisrctop}.."
-      auxdir="${srcdir}/${with_multisrctop}.."
+      toprel="${with_multisrctop}.."
     fi
   fi
 else
-  toplevel_srcdir="\${top_srcdir}/.."
-  auxdir="${srcdir}/.."
+  toprel=".."
 fi
-AC_CONFIG_AUX_DIR($auxdir)
+AC_CONFIG_AUX_DIR(${srcdir}/$toprel)
+toplevel_srcdir=\${top_srcdir}/$toprel
 AC_SUBST(toplevel_srcdir)
 
 dnl This is here just to satisfy automake.
