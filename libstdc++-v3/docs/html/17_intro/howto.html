@@ -29,6 +29,7 @@
    <li><a href="#4"><code>&lt;foo&gt;</code> vs <code>&lt;foo.h&gt;</code></a>
    <li><a href="porting-howto.html">Porting HOWTO</a>
    <li><a href="#5">Behavior specific to libstdc++-v3</a>
+   <li><a href="#6">Preprocessor macros controlling the library</a>
 </ul>
 
 <hr>
@@ -54,20 +55,20 @@
 <h2><a name="3">The Standard C++ library and multithreading</a></h2>
    <p>This section discusses issues surrounding the proper compilation
       of multithreaded applications which use the Standard C++
-      library.  This information is gcc-specific since the C++
+      library.  This information is GCC-specific since the C++
       standard does not address matters of multithreaded applications.
       Unless explicitly prefaced, all information in this section is
-      current as of the gcc 3.0 release and all later point releases.
+      current as of the GCC 3.0 release and all later point releases.
    </p>
-   <p>Earlier gcc releases had a somewhat different approach to
-      threading configuration and proper compilation.  Before gcc 3.0,
+   <p>Earlier GCC releases had a somewhat different approach to
+      threading configuration and proper compilation.  Before GCC 3.0,
       configuration of the threading model was dictated by compiler
       command-line options and macros (both of which were somewhat
       thread-implementation and port-specific).  There were no
       guarantees related to being able to link code compiled with one
-      set of options and macro setting with another set.  For gcc 3.0,
+      set of options and macro setting with another set.  For GCC 3.0,
       configuration of the threading model used with libraries and
-      user-code is performed when gcc is configured and built using
+      user-code is performed when GCC is configured and built using
       the --enable-threads and --disable-threads options.  The ABI is
       stable for symbol name-mangling and limited functional
       compatibility exists between code compiled under different
@@ -83,9 +84,9 @@
       with another thread model useful on the platform.  Other mixes
       may or may not work but are not considered supported.  (Thus, if
       you distribute a shared C++ library in binary form only, it may
-      be best to compile it with a gcc configured with
+      be best to compile it with a GCC configured with
       --enable-threads for maximal interchangeability and usefulness
-      with a user population that may have built gcc with either
+      with a user population that may have built GCC with either
       --enable-threads or --disable-threads.)
    </p>
    <p>When you link a multithreaded application, you will probably
@@ -262,6 +263,71 @@
    </p>
    <p><strong>[27.8.1.4]/16</strong> Calling <code>fstream::sync</code> when
       a get area exists will... whatever <code>fflush()</code> does, I think.
+   </p>
+   <p>Return <a href="#top">to top of page</a> or
+      <a href="../faq/index.html">to the FAQ</a>.
+   </p>
+
+<hr>
+<h2><a name="6">Preprocessor macros controlling the library</a></h2>
+   <p>Some of the semantics of the libstdc++-v3 implementation are
+      controlled by preprocessor macros, both during build/installation and
+      during compilation of user code.  Many of these choices are made when
+      the library is built and installed (actually, during
+      <a href="../configopts.html">the configuration step</a>, with the
+      various --enable/--disable choices being translated to #define/#undef).
+   </p>
+   <p>All library macros begin with <code>_GLIBCPP_</code>.  The fact that
+      these symbols start with a leading underscore should give you a clue
+      that (by default) they aren't meant to be changed by the user.  :-)
+   </p>
+   <p>These macros are all gathered in the file <code>c++config.h</code>,
+      which is generated during installation.  <strong>You must assume that
+      these macros cannot be redefined by your own code</strong>, unless we
+      document otherwise here.  Some of the choices control code which has
+      already been compiled (i.e., libstdc++.a/.so).  If you explicitly
+      #define or #undef these macros, the <em>headers</em> may see different
+      code paths, but the <em>libraries</em> which you link against will not.
+      If you want to experiment with different values, you must change the
+      config headers before building/installing the library.
+   </p>
+   <p>Below are macros which, for 3.1 and later, you may change yourself,
+      in your own code with #define/#undef or with -D/-U compiler flags.
+      The default state of the symbol is listed.  &quot;Configurable&quot;
+      (or &quot;Not configurable&quot;) means that the symbol is initially
+      chosen (or not) based on --enable/--disable options at configure time.
+    <dl>
+    <dt><code>_GLIBCPP_DEPRECATED</code></dt>
+    <dd>Undefined by default.  Not configurable.  Turning this on enables
+        older ARM-style iostreams code, and other anachronisms.  This may be
+        useful in updating old C++ programs which no longer meet the
+        requirements of the language.
+    </dd>
+    <!--
+     Can this actually be turned off and still produce a working lib?  Must
+     check.  -pme
+     No, it can't.  Hmmm.  -pme
+    <dt><code>_GLIBCPP_RESOLVE_LIB_DEFECTS</code></dt>
+    <dd>Defined by default.  Not configurable.  The library follows
+        corrections and updates from the ISO committee, see
+        <a href="../faq/index.html#5_2">here</a> and
+        <a href="../ext/howto.html#5">here</a> for more on this feature.
+        If you have code which depends on the first version of the standard,
+        you might try undefining this macro.
+    </dd>
+    -->
+    <dt><code>_GLIBCPP_CONCEPT_CHECKS</code></dt>
+    <dd>Undefined by default.  Configurable.  When defined, performs
+        compile-time checking on certain template instantiations to detect
+        violations of the requirements of the standard.  This is described
+        in more detail <a href="../19_diagnostics/howto.html#3">here</a>.
+    </dd>
+    <!--
+    <dt><code></code></dt>
+    <dd>
+    </dd>
+    -->
+    </dl>
    </p>
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.

@@ -1,5 +1,15 @@
 2002-03-27  Phil Edwards  <pme@gcc.gnu.org>
 
+	Bulk documentation merge (copy) from trunk.
+	* docs/doxygen/Intro.3, docs/doxygen/TODO, docs/doxygen/doxygroups.cc,
+	docs/doxygen/mainpage.html, docs/doxygen/run_doxygen,
+	docs/doxygen/tables.html, docs/doxygen/user.cfg.in,
+	docs/html/Makefile, docs/html/17_intro/howto.html,
+	docs/html/19_diagnostics/howto.html, docs/html/20_util/howto.html:
+	Merge from trunk.
+
+2002-03-27  Phil Edwards  <pme@gcc.gnu.org>
+
 	* include/bits/stl_algo.h:  Remove @maint and @endmaint.
 	* include/bits/stl_alloc.h:  Likewise.
 	* include/bits/stl_construct.h:  Likewise.

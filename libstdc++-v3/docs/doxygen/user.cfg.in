@@ -222,9 +222,7 @@ GENERATE_BUGLIST       = YES
 # will result in a user defined paragraph with heading "Side Effects:". 
 # You can put \n's in the value part of an alias to insert newlines.
 
-ALIASES                = "maint=@if maint" \
-                         "endmaint=@endif" \
-	"doctodo=@todo\nDoc me!  See docs/doxygen/TODO and http://gcc.gnu.org/ml/libstdc++/2002-02/msg00003.html for more."
+ALIASES                = "doctodo=@todo\nDoc me!  See docs/doxygen/TODO and http://gcc.gnu.org/ml/libstdc++/2002-02/msg00003.html for more."
 
 # The ENABLED_SECTIONS tag can be used to enable conditional 
 # documentation sections, marked by \if sectionname ... \endif.
@@ -703,7 +701,7 @@ INCLUDE_FILE_PATTERNS  =
 # or name=definition (no spaces). If the definition and the = are 
 # omitted =1 is assumed.
 
-PREDEFINED             = 
+PREDEFINED             = _GLIBCPP_DEPRECATED
 
 # If the MACRO_EXPANSION and EXPAND_PREDEF_ONLY tags are set to YES then 
 # this tag can be used to specify a list of macro names that should be expanded. 
