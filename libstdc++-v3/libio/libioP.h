@@ -23,7 +23,12 @@
    other reasons why the executable file might be covered by the GNU
    General Public License.  */
 
-#include <errno.h>
+#ifdef __cplusplus
+# include <cerrno>
+#else 
+# include <errno.h>
+#endif
+
 #ifndef __set_errno
 # define __set_errno(Val) errno = (Val)
 #endif
