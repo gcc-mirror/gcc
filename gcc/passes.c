@@ -1639,7 +1639,7 @@ rest_of_compilation (void)
   /* Any of the several passes since flow1 will have munged register
      lifetime data a bit.  We need it to be up to date for scheduling
      (see handling of reg_known_equiv in init_alias_analysis).  */
-  recompute_reg_usage (get_insns (), !optimize_size);
+  recompute_reg_usage ();
 
 #ifdef INSN_SCHEDULING
   if (optimize > 0 && flag_modulo_sched)
