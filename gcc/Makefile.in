@@ -316,6 +316,12 @@ CLIB=
 # system library.
 OBSTACK=obstack.o
 
+# The GC method to be used on this system.
+GGC=ggc-simple.o
+
+# If a supplementary library is being used for the GC.
+GGC_LIB=
+
 # Configure will set these if you need vfprintf and possibly _doprnt support.
 VFPRINTF=@vfprintf@
 DOPRINT=@doprint@
@@ -572,7 +578,7 @@ HOST_LIBS = $(USE_HOST_OBSTACK) $(USE_HOST_ALLOCA) $(USE_HOST_MALLOC)  \
 	    $(HOST_INTLLIBS) $(USE_HOST_VFPRINTF) $(USE_HOST_DOPRINT) \
 	    $(HOST_CLIB)
 
-HOST_RTL = $(HOST_PREFIX)rtl.o $(HOST_PREFIX)bitmap.o
+HOST_RTL = $(HOST_PREFIX)rtl.o $(HOST_PREFIX)bitmap.o $(HOST_PREFIX)ggc-none.o
 HOST_RTLANAL = $(HOST_PREFIX)rtlanal.o
 HOST_PRINT = $(HOST_PREFIX)print-rtl.o
 HOST_ERRORS = $(HOST_PREFIX)errors.o
@@ -1424,6 +1430,11 @@ gencheck.o : gencheck.c tree.def $(CONFIG_H) hconfig.h system.h
 dumpvers: dumpvers.c
 
 version.o: version.c
+
+ggc-simple.o: ggc-simple.c $(CONFIG_H) $(RTL_BASE_H) $(TREE_H) flags.h ggc.h
+
+ggc-none.o: ggc-none.c $(CONFIG_H) $(RTL_BASE_H) ggc.h
+
 obstack.o: $(srcdir)/../libiberty/obstack.c $(CONFIG_H)
 	rm -f obstack.c
 	$(LN_S) $(srcdir)/../libiberty/obstack.c obstack.c

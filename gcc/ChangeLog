@@ -1,3 +1,20 @@
+Sat Sep  4 11:19:52 1999  Richard Henderson  <rth@cygnus.com>
+
+	* Makefile.in (GGC, GGC_LIB): New.
+	(HOST_RTL): Include ggc-none.o.
+	(ggc-simple.o): New target.
+	(ggc-none.o): Likewise.
+	* tree.h (tree_common): Add gc_mark.
+	* rtl.h (struct rtx_def): Steal a bit from code to make gc_mark.
+	(struct rtvec_def): Add gc_mark.
+	* emit-rtl.c (global_rtl): Update static initializers to contain
+	enough initializers.
+	* ggc.h, ggc-none.c, ggc-simple.c: New files.
+	* toplev.c (gc_time): New variable.
+	(all_time): New variable.
+	(compile_file): Print gc time.
+	(print_time): Calculate percentage of the whole.
+	
 Sat Sep  4 13:11:01 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	Change obstack memory management and varasm constant pool handling so

@@ -93,17 +93,17 @@ static int no_line_numbers;
 
 struct _global_rtl global_rtl =
 {
-  {PC, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0 FLDI },  /* pc_rtx */
-  {CC0, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* cc0_rtx */
-  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* stack_pointer_rtx */
-  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* frame_pointer_rtx */
-  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* hard_frame_pointer_rtx */
-  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* arg_pointer_rtx */
-  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* virtual_incoming_args_rtx */
-  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* virtual_stack_vars_rtx */
-  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* virtual_stack_dynamic_rtx */
-  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* virtual_outgoing_args_rtx */
-  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* virtual_cfa_rtx */
+  {PC, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0, 0 FLDI },  /* pc_rtx */
+  {CC0, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* cc0_rtx */
+  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* stack_pointer_rtx */
+  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* frame_pointer_rtx */
+  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* hard_frame_pointer_rtx */
+  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* arg_pointer_rtx */
+  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* virtual_incoming_args_rtx */
+  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* virtual_stack_vars_rtx */
+  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* virtual_stack_dynamic_rtx */
+  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* virtual_outgoing_args_rtx */
+  {REG, VOIDmode, 0, 0, 0, 0, 0, 0, 0, 0, 0 FLDI }, /* virtual_cfa_rtx */
 };
 
 /* We record floating-point CONST_DOUBLEs in each floating-point mode for
