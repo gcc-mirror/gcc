@@ -1,3 +1,11 @@
+2004-04-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/13985
+	* cfgloopmanip.c (fix_loop_placements): New prototype.
+	Call fix_bb_placements on the preheader of loops that have
+	been reparented.
+	(remove_path): Adjust call to fix_loop_placements.
+
 2004-04-23  Nick Clifton  <nickc@redhat.com>
 
 	* Import this patch from mainline:
