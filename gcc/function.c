@@ -68,6 +68,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define LOCAL_ALIGNMENT(TYPE, ALIGNMENT) ALIGNMENT
 #endif
 
+#ifndef STARTING_FRAME_PHASE
+#define STARTING_FRAME_PHASE 0
+#endif
+
 /* Some systems use __main in a way incompatible with its use in gcc, in these
    cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to
    give the same symbol without quotes for an alternative entry point.  You
@@ -567,9 +571,9 @@ assign_stack_local_1 (mode, size, align, function)
      like.  So we instead assume that ALIGNMENT is a power of two and
      use logical operations which are unambiguous.  */
 #ifdef FRAME_GROWS_DOWNWARD
-  function->x_frame_offset = FLOOR_ROUND (function->x_frame_offset, alignment);
+  function->x_frame_offset = FLOOR_ROUND (function->x_frame_offset - STARTING_FRAME_PHASE, alignment) + STARTING_FRAME_PHASE;
 #else
-  function->x_frame_offset = CEIL_ROUND (function->x_frame_offset, alignment);
+  function->x_frame_offset = CEIL_ROUND (function->x_frame_offset - STARTING_FRAME_PHASE, alignment) + STARTING_FRAME_PHASE;
 #endif
 
   /* On a big-endian machine, if we are allocating more space than we will use,
@@ -3476,6 +3480,21 @@ instantiate_virtual_regs (fndecl, insns)
 {
   rtx insn;
   unsigned int i;
+
+  if (STARTING_FRAME_PHASE > 0)
+    {
+      /* Make sure the frame offset and phase displacement are aligned as
+	 advertised.
+
+	 Only do the sanity check if we have a STARTING_FRAME_PHASE,
+	 else we might trigger this abort on ports who claim to have
+	 STARTING_FRAME_OFFSET aligned properly, but don't.  I suppose
+	 we could enable this and fix those ports.  */
+
+      if ((STARTING_FRAME_OFFSET + STARTING_FRAME_PHASE)
+	  % (STACK_BOUNDARY / BITS_PER_UNIT))
+	abort ();
+    }
 
   /* Compute the offsets to use for this function.  */
   in_arg_offset = FIRST_PARM_OFFSET (fndecl);
