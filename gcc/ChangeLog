@@ -1,3 +1,16 @@
+Wed Dec 24 23:03:42 1997  Jim Wilson  (wilson@cygnus.com)
+
+	* mips.c (mips_expand_epilogue): Emit blockage insn before call to
+	save_restore_insns if no FP and GP will be restored.
+
+	* abi64.h (LONG_MAX_SPEC): Check MIPS_ABI_DEFAULT and TARGET_DEFAULT,
+	and define __LONG_MAX__ appropriately.  Add support for -mabi=X,
+	-mlong64, and -mgp{32,64} options.
+	* mips.c (mips_abi): Change type to int.
+	* mips.h (enum mips_abi_type): Delete.
+	(ABI_32, ABI_N32, ABI_64, ABI_EABI): Define as constants.
+	(mips_abi): Change type to int.
+
 Mon Dec 22 09:55:01 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* verison.c: Bump for beta release of egcs-1.0.1.

@@ -193,9 +193,9 @@ enum processor_type mips_cpu;
 int mips_isa;
 
 #ifdef MIPS_ABI_DEFAULT
-/* which ABI to use.  This is defined to a constant in mips.h if the target
+/* Which ABI to use.  This is defined to a constant in mips.h if the target
    doesn't support multiple ABIs.  */
-enum mips_abi_type mips_abi;
+int mips_abi;
 #endif
 
 /* Strings to hold which cpu and instruction set architecture to use.  */
@@ -5627,6 +5627,13 @@ mips_expand_epilogue ()
 	  else
 	    emit_insn (gen_movsi (stack_pointer_rtx, frame_pointer_rtx));
 	}
+      /* The GP/PIC register is implicitly used by all SYMBOL_REFs, so if we
+	 are going to restore it, then we must emit a blockage insn to
+	 prevent the scheduler from moving the restore out of the epilogue.  */
+      else if (TARGET_ABICALLS && mips_abi != ABI_32
+	       && (current_frame_info.mask
+		   & (1L << (PIC_OFFSET_TABLE_REGNUM - GP_REG_FIRST))))
+	emit_insn (gen_blockage ());
 
       save_restore_insns (FALSE, tmp_rtx, tsize, (FILE *)0);
 
