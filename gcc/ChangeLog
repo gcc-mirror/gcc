@@ -1,4 +1,9 @@
-2002-11-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
+Tue Nov 19 23:50:56 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (length_immediate): Do not refer to insn address.
+	(jcc*, jmp patterns):  Compute length explicitly.
+
+2002-11-19 Eric Botcazou <ebotcazou@libertysurf.fr>
 
 	PR c/8588
 	* optabs.c (expand_binop): Convert CONST_INTs in shift
