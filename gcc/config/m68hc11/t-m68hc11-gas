@@ -25,7 +25,7 @@ LIB1ASMFUNCS = _mulsi3 \
 	_premain __exit _abort _cleanup \
 	_adddi3 _subdi3 _notdi2 _rotlhi3 _rotrhi3 \
 	_ashrhi3 _lshrhi3 _lshlhi3 _ashrqi3 _lshlqi3 _map_data _init_bss \
-	_ctor _dtor __far_trampoline
+	_ctor _dtor _far_tramp _call_far _return_far
 
 TARGET_LIBGCC2_CFLAGS = -DUSE_GAS -DIN_GCC
 
@@ -37,10 +37,10 @@ LIB2FUNCS_EXTRA = $(srcdir)/config/udivmodsi4.c \
 LIBGCC2_DEBUG_CFLAGS =-g
 LIBGCC2_CFLAGS = -Os -mrelax $(LIBGCC2_INCLUDES) $(TARGET_LIBGCC2_CFLAGS) $(LIBGCC2_DEBUG_CFLAGS) $(GTHREAD_FLAGS) -DIN_LIBGCC2
 
-MULTILIB_OPTIONS  = m68hc11/m68hc12 mshort fshort-double mlong-calls
+MULTILIB_OPTIONS  = m68hc11/m68hc12 mshort fshort-double
 MULTILIB_DIRNAMES =
 MULTILIB_MATCHES  = m68hc11=m6811 m68hc12=m6812
-MULTILIB_EXCEPTIONS = -mnoshort -mno68hc11 -mnolong-calls
+MULTILIB_EXCEPTIONS = -mnoshort -mno68hc11
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib

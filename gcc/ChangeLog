@@ -1,3 +1,32 @@
+2003-03-24  Stephane Carrez  <stcarrez@nerim.fr>
+
+	* config/m68hc11/t-m68hc11-gas (LIB1ASMFUNCS): Add _call_far and
+	_return_far
+	(MULTILIB_OPTIONS): Don't multilib on -mlong-calls.
+	(MULTILIB_EXCEPTIONS): Likewise.
+	* config/m68hc11/m68hc11.md ("call"): Support far calls for 68HC11
+	by calling some board support routine.
+	("call_value"): Likewise.
+	("*return_void"): Likewise for return.
+	("*return_16bit"): Likewise.
+	("*return_32bit"): Likewise.
+	* config/m68hc11/m68hc11.h (ASM_DECLARE_FUNCTION_NAME): Generate .far
+	for 68HC11 too.
+	(DWARF2_ADDR_SIZE): Use 4 so that addresses can 
+	* config/m68hc11/m68hc11.c (m68hc11_override_options): Accept
+	-mlong-calls for 68HC11.
+	* config/m68hc11/larith.asm (declare_near): New macro.
+	(__premain, ___negsi2, ___one_cmplsi2, ___ashlsi3): Use it.
+	(___ashrsi3, ___lshrsi3, ___lshrhi3, ___lshlhi3): Likewise.
+	(___rotrhi3, ___rotlhi3, ___ashrhi3, ___ashrqi3): Likewise.
+	(___lshlqi3, __divmodhi4, ___mulqi3, ___mulhi3): Likewise.
+	(__mulhi32): Likewise.
+	(ret): Update macro for 68HC11.
+	(__far_trampoline): Implement for 68HC11.
+	(__call_a16, __call_a32, __return_void, __return_16): New support
+	routines for 68HC11 memory bank switching calling support.
+	(__return_32): Likewise.
+
 2003-03-24  Neil Booth  <neil@daikokuya.co.uk>
 
 	* toplev.c (independent_decode_option): Don't skip a 'Y' prefix.
