@@ -1,3 +1,9 @@
+2001-04-26  Alexandre Oliva  <aoliva@redhat.com>
+
+	* acinclude.m4 (GLIBCPP_ENABLE_THREADS): Obtain
+	target_thread_file with `gcc -v'.
+	* aclocal.m4, configure: Rebuilt.
+
 2001-04-17  Phil Edwards  <pme@sources.redhat.com>
 
 	* include/bits/stl_algo.h (std::transform):  Disable the check
