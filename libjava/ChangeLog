@@ -1,3 +1,8 @@
+2004-12-08  Ranjit Mathew  <rmathew@hotmail.com>
+
+	* java/util/IdentityHashMap.java (put): Replace mistaken use
+	of "<<" by "*".
+
 2004-12-06  Tom Tromey  <tromey@redhat.com>
 
 	For PR java/14853:
