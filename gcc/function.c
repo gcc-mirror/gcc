@@ -946,9 +946,23 @@ preserve_temp_slots (x)
 {
   struct temp_slot *p;
 
+  if (x == 0)
+    return;
+
+  /* If X is a register that is being used as a pointer, see if we have
+     a temporary slot we know it points to.  To be consistent with
+     the code below, we really should preserve all non-kept slots
+     if we can't find a match, but that seems to be much too costly.  */
+  if (GET_CODE (x) == REG && REGNO_POINTER_FLAG (REGNO (x))
+      && (p = find_temp_slot_from_address (x)) != 0)
+    {
+      p->level--;
+      return;
+    }
+    
   /* If X is not in memory or is at a constant address, it cannot be in
      a temporary slot.  */
-  if (x == 0 || GET_CODE (x) != MEM || CONSTANT_P (XEXP (x, 0)))
+  if (GET_CODE (x) != MEM || CONSTANT_P (XEXP (x, 0)))
     return;
 
   /* First see if we can find a match.  */
