@@ -358,7 +358,7 @@ bmp_iter_and_compl_init (bitmap_iterator *bi, bitmap map1, bitmap map2,
 }
 
 /* Advance to the next bit in BI.  We don't advance to the next
-   non-zero bit yet.  */
+   nonzero bit yet.  */
 
 static inline void
 bmp_iter_next (bitmap_iterator *bi, unsigned *bit_no)
@@ -367,14 +367,14 @@ bmp_iter_next (bitmap_iterator *bi, unsigned *bit_no)
   *bit_no += 1;
 }
 
-/* Advance to the next non-zero bit of a single bitmap, we will have
+/* Advance to the next nonzero bit of a single bitmap, we will have
    already advanced past the just iterated bit.  Return true if there
    is a bit to iterate.  */
 
 static inline bool
 bmp_iter_set (bitmap_iterator *bi, unsigned *bit_no)
 {
-  /* If our current word is non-zero, it contains the bit we want.  */
+  /* If our current word is nonzero, it contains the bit we want.  */
   if (bi->bits)
     {
     next_bit:
@@ -395,7 +395,7 @@ bmp_iter_set (bitmap_iterator *bi, unsigned *bit_no)
 
   while (1)
     {
-      /* Find the next non-zero word in this elt.  */
+      /* Find the next nonzero word in this elt.  */
       while (bi->word_no != BITMAP_ELEMENT_WORDS)
 	{
 	  bi->bits = bi->elt1->bits[bi->word_no];
@@ -414,14 +414,14 @@ bmp_iter_set (bitmap_iterator *bi, unsigned *bit_no)
     }
 }
 
-/* Advance to the next non-zero bit of an intersecting pair of
-   bitmaps.  We will have alreadt advanced past the just iterated bit.
+/* Advance to the next nonzero bit of an intersecting pair of
+   bitmaps.  We will have already advanced past the just iterated bit.
    Return true if there is a bit to iterate.  */
 
 static inline bool
 bmp_iter_and (bitmap_iterator *bi, unsigned *bit_no)
 {
-  /* If our current word is non-zero, it contains the bit we want.  */
+  /* If our current word is nonzero, it contains the bit we want.  */
   if (bi->bits)
     {
     next_bit:
@@ -442,7 +442,7 @@ bmp_iter_and (bitmap_iterator *bi, unsigned *bit_no)
   
   while (1)
     {
-      /* Find the next non-zero word in this elt.  */
+      /* Find the next nonzero word in this elt.  */
       while (bi->word_no != BITMAP_ELEMENT_WORDS)
 	{
 	  bi->bits = bi->elt1->bits[bi->word_no] & bi->elt2->bits[bi->word_no];
@@ -481,14 +481,14 @@ bmp_iter_and (bitmap_iterator *bi, unsigned *bit_no)
     }
 }
 
-/* Advance to the next non-zero bit in the intersection of
+/* Advance to the next nonzero bit in the intersection of
    complemented bitmaps.  We will have already advanced past the just
    iterated bit.  */
 
 static inline bool
 bmp_iter_and_compl (bitmap_iterator *bi, unsigned *bit_no)
 {
-  /* If our current word is non-zero, it contains the bit we want.  */
+  /* If our current word is nonzero, it contains the bit we want.  */
   if (bi->bits)
     {
     next_bit:
@@ -509,7 +509,7 @@ bmp_iter_and_compl (bitmap_iterator *bi, unsigned *bit_no)
 
   while (1)
     {
-      /* Find the next non-zero word in this elt.  */
+      /* Find the next nonzero word in this elt.  */
       while (bi->word_no != BITMAP_ELEMENT_WORDS)
 	{
 	  bi->bits = bi->elt1->bits[bi->word_no];

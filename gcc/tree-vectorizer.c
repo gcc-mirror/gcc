@@ -4426,7 +4426,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
        in code size).
 
      The scheme we use FORNOW: peel to force the alignment of the first
-     misaliged store in the loop.
+     misaligned store in the loop.
      Rationale: misaligned store are not yet supported.
 
      TODO: Use a better cost model.  */
