@@ -1,3 +1,8 @@
+2004-01-05  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/12815
+	* g++.dg/rtti/typeid4.C: New test.
+
 2004-01-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/compat/sdata-section.h: Declare 'abort'.
