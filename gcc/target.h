@@ -44,6 +44,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
    to gradually reduce the amount of conditional compilation that is
    scattered throughout GCC.  */
 
+#include "tm.h"
+
 struct gcc_target
 {
   /* Functions that output assembler for the target.  */
@@ -379,6 +381,15 @@ struct gcc_target
   /* Do machine-dependent code transformations.  Called just before
      delayed-branch scheduling.  */
   void (* machine_dependent_reorg) (void);
+
+  /* Validity-checking routines for PCH files, target-specific.
+     get_pch_validity returns a pointer to the data to be stored,
+     and stores the size in its argument.  pch_valid_p gets the same
+     information back and returns NULL if the PCH is valid,
+     or an error message if not.
+  */
+  void * (* get_pch_validity) (size_t *);
+  const char * (* pch_valid_p) (const void *, size_t);
 
   /* Leave the boolean fields at the end.  */
 
