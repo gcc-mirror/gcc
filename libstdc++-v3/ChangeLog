@@ -1,5 +1,10 @@
 2003-04-20  Paolo Carlini  <pcarlini@unitus.it>
 
+	* docs/html/ext/howto.html ('LWG Issues'):
+	Add issues 19, 90, 171, 231, 271.
+
+2003-04-20  Paolo Carlini  <pcarlini@unitus.it>
+
 	* include/bits/sstream.tcc (pbackfail): Remove redundant
 	NULL pointer check from test involving _M_in_*.
 	(overflow, seekoff, seekpos): Const qualify bool variables.
