@@ -1,3 +1,7 @@
+2003-09-10  Richard Henderson  <rth@redhat.com>
+
+	* decl2.c (cxx_callgraph_analyze_expr): Mark argument unused.
+
 2003-09-10  Jan Hubicka  <jh@suse.cz>
 
 	* decl2.c (var_finalized_p): New.

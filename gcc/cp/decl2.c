@@ -2571,7 +2571,7 @@ generate_ctor_and_dtor_functions_for_priority (splay_tree_node n, void * data)
    Here we must deal with member pointers.  */
 
 tree
-cxx_callgraph_analyze_expr (tree *tp, int *walk_subtrees,
+cxx_callgraph_analyze_expr (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
 			    tree from ATTRIBUTE_UNUSED)
 {
   tree t = *tp;
