@@ -295,10 +295,22 @@ Another use of label values is in an interpreter for threaded code.
 The labels within the interpreter function can be stored in the
 threaded code for super-fast dispatching.
 
-You can use this mechanism to jump to code in a different function.  If
-you do that, totally unpredictable things will happen.  The best way to
+You may not use this mechanism to jump to code in a different function. 
+If you do that, totally unpredictable things will happen.  The best way to
 avoid this is to store the label address only in automatic variables and
 never pass it as an argument.
+
+An alternate way to write the above example is
+
+@example
+static const int array[] = @{ &&foo - &&foo, &&bar - &&foo, &&hack - &&foo @};
+goto *(&&foo + array[i]);
+@end example
+
+@noindent
+This is more friendly to code living in shared libraries, as it reduces
+the number of dynamic relocations that are needed, and by consequence,
+allows the data to be read-only.
 
 @node Nested Functions
 @section Nested Functions
