@@ -1034,7 +1034,7 @@ build_module_descriptor ()
     return buf;
   }
 #else /* NEXT_OBJC_RUNTIME */
-  return "__objcInit";
+  return 0;
 #endif /* NEXT_OBJC_RUNTIME */
 }
 
@@ -4998,7 +4998,8 @@ finish_objc ()
       /* Arrange for Objc data structures to be initialized at run time.  */
 
       char *init_name = build_module_descriptor ();
-      assemble_constructor (init_name);
+      if (init_name)
+	assemble_constructor (init_name);
     }
 
   /* dump the string table last */
@@ -5016,14 +5017,15 @@ finish_objc ()
   for (chain = cls_ref_chain; chain; chain = TREE_CHAIN (chain))
     {
       tree decl;
+
 #if 0 /* Grossly unportable.  */
       sprintf (utlbuf, ".reference .objc_class_name_%s",
 	       IDENTIFIER_POINTER (TREE_VALUE (chain)));
       assemble_asm (my_build_string (strlen (utlbuf) + 1, utlbuf));
-#endif
+#else
       sprintf (utlbuf, ".objc_class_name_%s",
 	       IDENTIFIER_POINTER (TREE_VALUE (chain)));
-      assemble_global (utlbuf);
+#endif
       /* Make a decl for this name, so we can use its address in a tree.  */
       decl = build_decl (VAR_DECL, get_identifier (utlbuf), char_type_node);
       TREE_EXTERNAL (decl) = 1;
@@ -5031,6 +5033,9 @@ finish_objc ()
       
       pushdecl (decl);
       rest_of_decl_compilation (decl, 0, 0, 0);
+
+      /* Make following constant read-only (why not)?  */
+      text_section ();
 
       /* Output a constant to reference this address.  */
       output_constant (build1 (ADDR_EXPR, string_type_node, decl),
@@ -5044,8 +5049,9 @@ finish_objc ()
 
       if (TREE_CODE (impent->imp_context) == IMPLEMENTATION_TYPE)
 	{
-#if 0 /* Grossly unportable.  People should know better that to
-	 assume such things about assembler syntax!  */
+#if 0 /* Grossly unportable.
+			    People should know better than to assume
+			    such things about assembler syntax!  */
 	  sprintf (utlbuf, ".objc_class_name_%s=0",
 		   IDENTIFIER_POINTER (CLASS_NAME (impent->imp_context)));
 	  assemble_asm (my_build_string (strlen (utlbuf) + 1, utlbuf));
