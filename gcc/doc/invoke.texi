@@ -3784,6 +3784,9 @@ order to perform the global common subexpression elimination
 optimization.  If more memory than specified is required, the
 optimization will not be done.
 
+@item max-gcse-passes
+The maximum number of passes of GCSE to run. 
+
 @item max-inline-insns
 If an function contains more than this many instructions, it
 will not be inlined.  This option is precisely equivalent to

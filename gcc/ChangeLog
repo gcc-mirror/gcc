@@ -1,3 +1,17 @@
+2001-06-26  Daniel Berlin  <dan@cgsoftware.com>
+	
+	* doc/invoke.texi: Add description of max-gcse-passes param.
+
+	* gcse.c (gcse_main): Use MAX_GCSE_PASSES instead of MAX_PASSES.
+	(MAX_PASSES): Remove now unneeded macro.
+
+	* params.h (MAX_GCSE_PASSES): New macro, to get parameter value of
+	max-gcse-passes param.
+
+	* params.def (PARAM_MAX_GCSE_PASSES): New parameter, controlling
+	maximum number of GCSE passes to run. Defaults to 1 (which is what
+	MAX_PASSES in gcse.c used to be).
+
 2001-06-27  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
 
 	* system.h (TARGET_ESC): Move to ...
