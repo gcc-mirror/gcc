@@ -739,6 +739,28 @@ mark_set_resources (x, res, in_dest, include_delayed_effects)
 	  SET_HARD_REG_BIT (res->regs, REGNO (x) + i);
       return;
 
+    case UNSPEC_VOLATILE:
+    case ASM_INPUT:
+      /* Traditional asm's are always volatile.  */
+      res->volatil = 1;
+      return;
+
+    case TRAP_IF:
+      res->volatil = 1;
+      break;
+
+    case ASM_OPERANDS:
+      res->volatil = MEM_VOLATILE_P (x);
+
+      /* For all ASM_OPERANDS, we must traverse the vector of input operands.
+	 We can not just fall through here since then we would be confused
+	 by the ASM_INPUT rtx inside ASM_OPERANDS, which do not indicate
+	 traditional asms unlike their normal usage.  */
+      
+      for (i = 0; i < ASM_OPERANDS_INPUT_LENGTH (x); i++)
+	mark_set_resources (ASM_OPERANDS_INPUT (x, i), res, in_dest, 0);
+      return;
+
     default:
       break;
     }
