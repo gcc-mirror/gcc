@@ -13,18 +13,18 @@ This is the default target.  Depending on what your build/host/target
 configuration is, it coordinates all the things that need to be built.
 
 @item doc
-Produce info-formatted documentation.  Also, @code{make dvi} is
-available for DVI-formatted documentation, and @code{make
+Produce info-formatted documentation.  Also, @samp{make dvi} is
+available for DVI-formatted documentation, and @samp{make
 generated-manpages} to generate man pages.
 
 @item mostlyclean
 Delete the files made while building the compiler.
 
 @item clean
-That, and all the other files built by @code{make all}.
+That, and all the other files built by @samp{make all}.
 
 @item distclean
-That, and all the files created by @code{configure}.
+That, and all the files created by @command{configure}.
 
 @item extraclean
 That, and any temporary or intermediate files, like emacs backup files.
@@ -43,7 +43,7 @@ Deletes installed files.
 @item check
 Run the testsuite.  This creates a @file{testsuite} subdirectory that
 has various @file{.sum} and @file{.log} files containing the results of
-the testing.  You can run subsets with, for example, @code{make check-gcc}.
+the testing.  You can run subsets with, for example, @samp{make check-gcc}.
 You can specify specific tests by setting RUNTESTFLAGS to be the name
 of the @file{.exp} file, optionally followed by (for some tests) an equals
 and a file wildcard, like:
@@ -59,7 +59,7 @@ installed, such as TCL or dejagnu.
 Builds gcc three times---once with the native compiler, once with the
 native-built compiler it just built, and once with the compiler it built
 the second time.  In theory, the last two should produce the same
-results, which @code{make compare} can check.  Each step of this process
+results, which @samp{make compare} can check.  Each step of this process
 is called a ``stage'', and the results of each stage @var{N}
 (@var{N} = 1@dots{}3) are copied to a subdirectory @file{stage@var{N}/}.
 
@@ -81,7 +81,7 @@ special invocation, using this target means you don't have to keep track
 of which stage you're on or what invocation that stage needs.
 
 @item cleanstrap
-Removed everything (@code{make clean}) and rebuilds (@code{make bootstrap}).
+Removed everything (@samp{make clean}) and rebuilds (@samp{make bootstrap}).
 
 @item stage@var{N} (@var{N} = 1@dots{}4)
 For each stage, moves the appropriate files to the @file{stage@var{N}}
