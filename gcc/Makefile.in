@@ -2719,15 +2719,16 @@ bootstrap bootstrap-lean: force
 	-if test $@ = bootstrap-lean; then rm -rf stage1; else true; fi
 	$(MAKE) CC="stage2/xgcc$(exeext) -Bstage2/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage2/ LANGUAGES="$(LANGUAGES)"
 
-bootstrap2: force
+bootstrap2 bootstrap2-lean: force
 	$(MAKE) CC="stage1/xgcc$(exeext) -Bstage1/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage1/ LANGUAGES="$(LANGUAGES)"
 	$(MAKE) stage2
+	-if test $@ = bootstrap2-lean; then rm -rf stage1; else true; fi
 	$(MAKE) CC="stage2/xgcc$(exeext) -Bstage2/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage2/ LANGUAGES="$(LANGUAGES)"
 
-bootstrap3: force
+bootstrap3 bootstrap3-lean: force
 	$(MAKE) CC="stage2/xgcc$(exeext) -Bstage2/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage2/ LANGUAGES="$(LANGUAGES)"
 
-bootstrap4: force
+bootstrap4 bootstrap4-lean: force
 	$(MAKE) CC="stage3/xgcc$(exeext) -Bstage3/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage3/ LANGUAGES="$(LANGUAGES)"
 
 # Compare the object files in the current directory with those in the
