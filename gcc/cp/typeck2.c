@@ -506,8 +506,9 @@ split_nonconstant_init_1 (tree dest, tree init)
     case VECTOR_TYPE:
       if (!initializer_constant_valid_p (init, type))
 	{
+	  tree cons = copy_node (init);
 	  CONSTRUCTOR_ELTS (init) = NULL;
-	  code = build2 (MODIFY_EXPR, type, dest, init);
+	  code = build2 (MODIFY_EXPR, type, dest, cons);
 	  code = build_stmt (EXPR_STMT, code);
 	  add_stmt (code);
 	}
