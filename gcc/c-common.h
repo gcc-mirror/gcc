@@ -743,10 +743,6 @@ extern int flag_weak;
 
 extern int flag_use_cxa_atexit;
 
-/* Nonzero means output .vtable_{entry,inherit} for use in doing vtable gc.  */
-
-extern int flag_vtable_gc;
-
 /* Nonzero means make the default pedwarns warnings instead of errors.
    The value of this flag is ignored if -pedantic is specified.  */
 

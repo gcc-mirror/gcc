@@ -3410,7 +3410,12 @@ pic_symbolic_operand (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
   op = XEXP (op, 0);
   if (TARGET_64BIT)
     {
-      if (GET_CODE (XEXP (op, 0)) == UNSPEC)
+      if (GET_CODE (op) == UNSPEC
+	  && XINT (op, 1) == UNSPEC_GOTPCREL)
+	return 1;
+      if (GET_CODE (op) == PLUS
+	  && XINT (XEXP (op, 0), 1) == UNSPEC_GOTPCREL
+	  && GET_CODE (XEXP (op, 0)) == UNSPEC)
 	return 1;
     }
   else

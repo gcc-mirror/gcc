@@ -675,6 +675,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
     case OPT_fthis_is_variable:
     case OPT_fvtable_thunks:
     case OPT_fxref:
+    case OPT_fvtable_gc:
       warning ("switch \"%s\" is no longer supported", option->opt_text);
       break;
 
@@ -894,10 +895,6 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_ftemplate_depth_:
       max_tinst_depth = value;
-      break;
-
-    case OPT_fvtable_gc:
-      flag_vtable_gc = value;
       break;
 
     case OPT_fuse_cxa_atexit:

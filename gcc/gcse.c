@@ -7495,6 +7495,9 @@ insert_store (struct ls_expr * expr, edge e)
   if (expr->reaching_reg == NULL_RTX)
     return 0;
 
+  if (e->flags & EDGE_FAKE)
+    return 0;
+
   reg = expr->reaching_reg;
   insn = gen_move_insn (copy_rtx (expr->pattern), reg);
 
@@ -7503,13 +7506,14 @@ insert_store (struct ls_expr * expr, edge e)
      edges so we don't try to insert it on the other edges.  */
   bb = e->dest;
   for (tmp = e->dest->pred; tmp ; tmp = tmp->pred_next)
-    {
-      int index = EDGE_INDEX (edge_list, tmp->src, tmp->dest);
-      if (index == EDGE_INDEX_NO_EDGE)
-	abort ();
-      if (! TEST_BIT (pre_insert_map[index], expr->index))
-	break;
-    }
+    if (!tmp->flags & EDGE_FAKE)
+      {
+	int index = EDGE_INDEX (edge_list, tmp->src, tmp->dest);
+	if (index == EDGE_INDEX_NO_EDGE)
+	  abort ();
+	if (! TEST_BIT (pre_insert_map[index], expr->index))
+	  break;
+      }
 
   /* If tmp is NULL, we found an insertion on every edge, blank the
      insertion vector for these edges, and insert at the start of the BB.  */

@@ -948,6 +948,11 @@ inlinable_function_p (tree fn, inline_data *id, int nolimit)
      in C++ it may result in template instantiation.)  */
   inlinable = !(*lang_hooks.tree_inlining.cannot_inline_tree_fn) (&fn);
 
+  /* If we don't have the function body available, we can't inline
+     it.  */
+  if (! DECL_SAVED_TREE (fn))
+    return 0;
+
   /* We may be here either because fn is declared inline or because
      we use -finline-functions.  For the second case, we are more
      restrictive.  */
@@ -1026,11 +1031,6 @@ inlinable_function_p (tree fn, inline_data *id, int nolimit)
 	    inlinable = 0;
 	}
     }
-
-  /* If we don't have the function body available, we can't inline
-     it.  */
-  if (! DECL_SAVED_TREE (fn))
-    inlinable = 0;
 
   /* Check again, language hooks may have modified it.  */
   if (! inlinable || DECL_UNINLINABLE (fn))

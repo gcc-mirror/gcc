@@ -508,10 +508,6 @@ extern void default_file_start (void);
 extern void file_end_indicate_exec_stack (void);
 extern bool default_valid_pointer_mode (enum machine_mode);
 
-/* Emit data for vtable gc for GNU binutils.  */
-extern void assemble_vtable_entry (rtx, HOST_WIDE_INT);
-extern void assemble_vtable_inherit (rtx, rtx);
-
 extern int default_address_cost (rtx);
 
 #endif /* ! GCC_OUTPUT_H */

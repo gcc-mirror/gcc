@@ -3826,7 +3826,6 @@ extern tree build_artificial_parm (tree, tree);
 extern tree get_guard (tree);
 extern tree get_guard_cond (tree);
 extern tree set_guard (tree);
-extern void prepare_assemble_variable (tree);
 extern void lower_function (tree);
 
 /* XXX Not i18n clean.  */

@@ -4657,30 +4657,6 @@ default_pe_asm_named_section (const char *name, unsigned int flags)
     }
 }
 
-/* Used for vtable gc in GNU binutils.  Record that the pointer at OFFSET
-   from SYMBOL is used in all classes derived from SYMBOL.  */
-
-void
-assemble_vtable_entry (rtx symbol, HOST_WIDE_INT offset)
-{
-  fputs ("\t.vtable_entry ", asm_out_file);
-  output_addr_const (asm_out_file, symbol);
-  fprintf (asm_out_file, ", " HOST_WIDE_INT_PRINT_DEC "\n", offset);
-}
-
-/* Used for vtable gc in GNU binutils.  Record the class hierarchy by noting
-   that the vtable symbol CHILD is derived from the vtable symbol PARENT.  */
-
-void
-assemble_vtable_inherit (rtx child, rtx parent)
-{
-  fputs ("\t.vtable_inherit ", asm_out_file);
-  output_addr_const (asm_out_file, child);
-  fputs (", ", asm_out_file);
-  output_addr_const (asm_out_file, parent);
-  fputc ('\n', asm_out_file);
-}
-
 /* The lame default section selector.  */
 
 void
