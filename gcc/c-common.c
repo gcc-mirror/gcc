@@ -4189,27 +4189,8 @@ c_init_attributes (void)
 /* Depending on the name of DECL, apply default attributes to it.  */
 
 void
-c_common_insert_default_attributes (tree decl)
+c_common_insert_default_attributes (tree decl ATTRIBUTE_UNUSED)
 {
-  tree name = DECL_NAME (decl);
-
-  if (!c_attrs_initialized)
-    c_init_attributes ();
-
-#define DEF_ATTR_NULL_TREE(ENUM) /* Nothing needed after initialization.  */
-#define DEF_ATTR_INT(ENUM, VALUE)
-#define DEF_ATTR_IDENT(ENUM, STRING)
-#define DEF_ATTR_TREE_LIST(ENUM, PURPOSE, VALUE, CHAIN)
-#define DEF_FN_ATTR(NAME, ATTRS, PREDICATE)			\
-  if ((PREDICATE) && name == built_in_attributes[(int) NAME])	\
-    decl_attributes (&decl, built_in_attributes[(int) ATTRS],	\
-		     ATTR_FLAG_BUILT_IN);
-#include "builtin-attrs.def"
-#undef DEF_ATTR_NULL_TREE
-#undef DEF_ATTR_INT
-#undef DEF_ATTR_IDENT
-#undef DEF_ATTR_TREE_LIST
-#undef DEF_FN_ATTR
 }
 
 /* Output a -Wshadow warning MSGCODE about NAME, and give the location
