@@ -76,6 +76,15 @@ ix86_handle_dll_attribute (node, name, args, flags, no_add_attrs)
 	}
     }
 
+  /* `extern' needn't be specified with dllimport.
+     Specify `extern' now and hope for the best.  Sigh.  */
+  else if (TREE_CODE (*node) == VAR_DECL
+	   && is_attribute_p ("dllimport", name))
+    {
+      DECL_EXTERNAL (*node) = 1;
+      TREE_PUBLIC (*node) = 1;
+    }
+
   return NULL_TREE;
 }
 
@@ -298,16 +307,6 @@ i386_pe_mark_dllimport (decl)
     {
       error_with_decl (decl, "static variable `%s' is marked dllimport");
       return;
-    }
-
-  /* `extern' needn't be specified with dllimport.
-     Specify `extern' now and hope for the best.  Sigh.  */
-  if (TREE_CODE (decl) == VAR_DECL
-      /* ??? Is this test for vtables needed?  */
-      && !DECL_VIRTUAL_P (decl))
-    {
-      DECL_EXTERNAL (decl) = 1;
-      TREE_PUBLIC (decl) = 1;
     }
 
   newname = alloca (strlen (oldname) + 11);
