@@ -1,3 +1,36 @@
+2000-02-17  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpphash.c: Don't include hashtab.h.  Most macro-handling code
+	moved to cppmacro.c.
+	(hash_HASHNODE, eq_HASHNODE, _cpp_dump_macro_hash,
+	dump_hash_helper): Delete.
+	(expand_hash, higher_prime_number, _cpp_lookup_with_hash,
+	cpp_forall_identifiers): New. Implement specialized version of
+	Vlad's expandable hash table.
+	(cpp_lookup): Use new functions.
+	(_cpp_init_macros, _cpp_cleanup_macros): Adjust for new
+	implementation. 
+	* cppmacro.c: New file.
+	* cppinit.c (dump_macros_helper): New.
+	(cpp_finish): Iterate over the identifier table directly.
+	* cpplex.c (parse_name): Calculate the hash of the identifier
+	while we scan it.  Use _cpp_lookup_with_hash when we can.
+
+	* cpphash.h: Update prototypes.
+	(xcnewvec, HASHSTEP): New helper macros.
+	* cpplib.h: Update prototypes.
+	* Makefile.in (LIBCPP_OBJS): Add cppmacro.o.
+	(cppmacro.o): New rule.
+	(cpphash.o): Update deps.
+
+	* cppmain.c: Do not set pfile->printer if no_output is on.
+
+2000-02-15  Neil Booth  <neilb@earthling.net>
+
+	* cpplib.c: Change all directive-handler functions to return
+	void, not int.
+	* cpphash.h: Update typedefs.
+
 2000-07-17  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* configure: Regenerate.

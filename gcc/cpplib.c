@@ -113,7 +113,7 @@ SCCS_ENTRY						   /*      0 SVR2? */
    pointers to functions returning void.  */
 
 /* Don't invoke CONCAT2 with any whitespace or K&R cc will fail. */
-#define D(name, t, o, f) static int CONCAT2(do_,name) PARAMS ((cpp_reader *));
+#define D(name, t, o, f) static void CONCAT2(do_,name) PARAMS ((cpp_reader *));
 DIRECTIVE_TABLE
 #undef D
 
@@ -272,7 +272,7 @@ get_define_node (pfile)
 }
 
 /* Process a #define command.  */
-static int
+static void
 do_define (pfile)
      cpp_reader *pfile;
 {
@@ -287,11 +287,10 @@ do_define (pfile)
 	else if (CPP_OPTION (pfile, dump_macros) == dump_names)
 	  dump_macro_name (pfile, node);
       }
-  return 0;
 }
 
 /* Remove the definition of a symbol from the symbol table.  */
-static int
+static void
 do_undef (pfile)
      cpp_reader *pfile;
 {
@@ -317,8 +316,6 @@ do_undef (pfile)
       _cpp_free_definition (node);
       node->type = T_VOID;
     }
-
-  return 0;
 }
 
 
@@ -360,7 +357,7 @@ parse_include (pfile, dir, trail, strp, lenp, abp)
   return 0;
 }
 
-static int
+static void
 do_include (pfile)
      cpp_reader *pfile;
 {
@@ -369,15 +366,14 @@ do_include (pfile)
   int ab;
 
   if (parse_include (pfile, dtable[T_INCLUDE].name, 0, &str, &len, &ab))
-    return 0;
+    return;
 
   _cpp_execute_include (pfile, str, len, 0, 0, ab);
   if (CPP_OPTION (pfile, dump_includes))
     pass_thru_directive (pfile);
-  return 0;
 }
 
-static int
+static void
 do_import (pfile)
      cpp_reader *pfile;
 {
@@ -394,15 +390,14 @@ do_import (pfile)
     }
 
   if (parse_include (pfile, dtable[T_IMPORT].name, 0, &str, &len, &ab))
-    return 0;
+    return;
 
   _cpp_execute_include (pfile, str, len, 1, 0, ab);
   if (CPP_OPTION (pfile, dump_includes))
     pass_thru_directive (pfile);
-  return 0;
 }
 
-static int
+static void
 do_include_next (pfile)
      cpp_reader *pfile;
 {
@@ -412,7 +407,7 @@ do_include_next (pfile)
   int ab;
 
   if (parse_include (pfile, dtable[T_INCLUDE_NEXT].name, 0, &str, &len, &ab))
-    return 0;
+    return;
 
   /* For #include_next, skip in the search path past the dir in which
      the current file was found.  If this is the last directory in the
@@ -426,7 +421,7 @@ do_include_next (pfile)
 	{
 	  search_start = CPP_BUFFER (pfile)->inc->foundhere->next;
 	  if (!search_start)
-	    return 0;
+	    return;
 	}
     }
   else
@@ -435,8 +430,6 @@ do_include_next (pfile)
   _cpp_execute_include (pfile, str, len, 0, search_start, ab);
   if (CPP_OPTION (pfile, dump_includes))
     pass_thru_directive (pfile);
-
-  return 0;
 }
 
 /* Subroutine of do_line.  Read next token from PFILE without adding it to
@@ -494,7 +487,7 @@ strtoul_for_line (str, len, nump)
    Note that the filename string (if any) is treated as if it were an
    include filename.  That means no escape handling.  */
 
-static int
+static void
 do_line (pfile)
      cpp_reader *pfile;
 {
@@ -552,7 +545,7 @@ do_line (pfile)
     }
 
   if (read_line_number (pfile, &action_number) == 0)
-    return 0;
+    return;
 
   if (CPP_PEDANTIC (pfile))
     cpp_pedwarn (pfile, "garbage at end of #line");
@@ -582,10 +575,9 @@ do_line (pfile)
       cpp_make_system_header (pfile, ip, 2);
       read_line_number (pfile, &action_number);
     }
-   return 0;
 
  done:
-  return 0;
+  return;
 }
 
 /*
@@ -594,7 +586,7 @@ do_line (pfile)
  * (We use error because it prints the filename & line#.)
  */
 
-static int
+static void
 do_error (pfile)
      cpp_reader *pfile;
 {
@@ -605,8 +597,6 @@ do_error (pfile)
   limit = pfile->limit;
   pfile->limit = text;
   cpp_error (pfile, "%.*s", (int)(limit - text), text);
-
-  return 0;
 }
 
 /*
@@ -614,7 +604,7 @@ do_error (pfile)
  * Use the text of the line in the warning message, then continue.
  */
 
-static int
+static void
 do_warning (pfile)
      cpp_reader *pfile;
 {
@@ -625,12 +615,11 @@ do_warning (pfile)
   limit = pfile->limit;
   pfile->limit = text;
   cpp_warning (pfile, "%.*s", (int)(limit - text), text);
-  return 0;
 }
 
 /* Report program identification.  */
 
-static int
+static void
 do_ident (pfile)
      cpp_reader *pfile;
 {
@@ -641,11 +630,10 @@ do_ident (pfile)
       {
 	/* Good - ship it.  */
 	pass_thru_directive (pfile);
-	return 0;
+	return;
       }
 
   cpp_error (pfile, "invalid #ident");
-  return 0;
 }
 
 /* Pragmata handling.  We handle some of these, and pass the rest on
@@ -708,7 +696,7 @@ static int pragma_dispatch (pfile, table, node)
   return 0;
 }
 
-static int
+static void
 do_pragma (pfile)
      cpp_reader *pfile;
 {
@@ -717,17 +705,16 @@ do_pragma (pfile)
 
   tok = _cpp_get_token (pfile);
   if (tok->type == CPP_EOF)
-    return 0;
+    return;
   else if (tok->type != CPP_NAME)
     {
       cpp_error (pfile, "malformed #pragma directive");
-      return 0;
+      return;
     }
 
   pop = pragma_dispatch (pfile, top_pragmas, tok->val.node);
   if (!pop)
     pass_thru_directive (pfile);
-  return 0;
 }
 
 static int
@@ -900,11 +887,10 @@ do_pragma_dependency (pfile)
 
 /* Just ignore #sccs, on systems where we define it at all.  */
 #ifdef SCCS_DIRECTIVE
-static int
+static void
 do_sccs (pfile)
      cpp_reader *pfile ATTRIBUTE_UNUSED;
 {
-  return 0;
 }
 #endif
 
@@ -991,7 +977,7 @@ parse_ifdef (pfile, name)
 
 /* #ifdef is dead simple.  */
 
-static int
+static void
 do_ifdef (pfile)
      cpp_reader *pfile;
 {
@@ -1001,13 +987,12 @@ do_ifdef (pfile)
     node = parse_ifdef (pfile, dtable[T_IFDEF].name);
 
   push_conditional (pfile, !(node && node->type != T_VOID), T_IFDEF, 0);
-  return 0;
 }
 
 /* #ifndef is a tad more complex, because we need to check for a
    no-reinclusion wrapper.  */
 
-static int
+static void
 do_ifndef (pfile)
      cpp_reader *pfile;
 {
@@ -1022,13 +1007,12 @@ do_ifndef (pfile)
 
   push_conditional (pfile, node && node->type != T_VOID,
 		    T_IFNDEF, start_of_file ? node : 0);
-  return 0;
 }
 
 /* #if is straightforward; just call _cpp_parse_expr, then conditional_skip.
    Also, check for a reinclude preventer of the form #if !defined (MACRO).  */
 
-static int
+static void
 do_if (pfile)
      cpp_reader *pfile;
 {
@@ -1042,14 +1026,13 @@ do_if (pfile)
       value = _cpp_parse_expr (pfile);
     }
   push_conditional (pfile, value == 0, T_IF, cmacro);
-  return 0;
 }
 
 /* #else flips pfile->skipping and continues without changing
    if_stack; this is so that the error message for missing #endif's
    etc. will point to the original #if.  */
 
-static int
+static void
 do_else (pfile)
      cpp_reader *pfile;
 {
@@ -1059,7 +1042,7 @@ do_else (pfile)
   if (ifs == NULL)
     {
       cpp_error (pfile, "#else without #if");
-      return 0;
+      return;
     }
   if (ifs->type == T_ELSE)
     {
@@ -1079,7 +1062,6 @@ do_else (pfile)
       if (pfile->skipping < 2)
 	pfile->skipping = ! pfile->skipping;
     }
-  return 0;
 }
 
 /*
@@ -1087,7 +1069,7 @@ do_else (pfile)
  * see the comment above do_else.
  */
 
-static int
+static void
 do_elif (pfile)
      cpp_reader *pfile;
 {
@@ -1096,7 +1078,7 @@ do_elif (pfile)
   if (ifs == NULL)
     {
       cpp_error (pfile, "#elif without #if");
-      return 0;
+      return;
     }
   if (ifs->type == T_ELSE)
     {
@@ -1107,21 +1089,20 @@ do_elif (pfile)
 
   ifs->type = T_ELIF;
   if (ifs->was_skipping)
-    return 0;  /* Don't evaluate a nested #if */
+    return;  /* Don't evaluate a nested #if */
 
   if (pfile->skipping != 1)
     {
       pfile->skipping = 2;  /* one block succeeded, so don't do any others */
-      return 0;
+      return;
     }
 
   pfile->skipping = ! _cpp_parse_expr (pfile);
-  return 0;
 }
 
 /* #endif pops the if stack and resets pfile->skipping.  */
 
-static int
+static void
 do_endif (pfile)
      cpp_reader *pfile;
 {
@@ -1138,7 +1119,6 @@ do_endif (pfile)
       pfile->potential_control_macro = ifs->cmacro;
       obstack_free (pfile->buffer_ob, ifs);
     }
-  return 0;
 }
 
 
@@ -1332,7 +1312,7 @@ _cpp_find_answer (node, candidate)
 #define WARNING(msgid) do { cpp_warning(pfile, msgid); goto error; } while (0)
 #define ERROR(msgid) do { cpp_error(pfile, msgid); goto error; } while (0)
 #define ICE(msgid) do { cpp_ice(pfile, msgid); goto error; } while (0)
-static int
+static void
 do_assert (pfile)
      cpp_reader *pfile;
 {
@@ -1355,16 +1335,15 @@ do_assert (pfile)
       node->type = T_ASSERTION;
       node->value.answers = new_answer;
     }
-  return 0;
+  return;
 
  err:
   cpp_warning (pfile, "\"%.*s\" re-asserted",
 	       node->length - 1, node->name + 1);
   FREE_ANSWER (new_answer);
-  return 0;
 }
 
-static int
+static void
 do_unassert (pfile)
      cpp_reader *pfile;
 {
@@ -1404,7 +1383,6 @@ do_unassert (pfile)
       if (answer)
 	FREE_ANSWER (answer);
     }
-  return 0;
 }
 
 /* These are for -D, -U, -A.  */

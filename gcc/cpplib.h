@@ -653,6 +653,10 @@ extern void cpp_undef  PARAMS ((cpp_reader *, const char *));
 extern void cpp_unassert PARAMS ((cpp_reader *, const char *));
 
 extern void cpp_free_token_list PARAMS ((cpp_toklist *));
+extern cpp_buffer *cpp_push_buffer PARAMS ((cpp_reader *,
+					    const unsigned char *, long));
+extern cpp_buffer *cpp_pop_buffer PARAMS ((cpp_reader *));
+extern int cpp_defined PARAMS ((cpp_reader *, const unsigned char *, int));
 
 /* N.B. The error-message-printer prototypes have not been nicely
    formatted because exgettext needs to see 'msgid' on the same line
@@ -680,8 +684,8 @@ extern void cpp_pedwarn_with_line PARAMS ((cpp_reader *, int, int, const char *m
   ATTRIBUTE_PRINTF_4;
 extern void cpp_pedwarn_with_file_and_line PARAMS ((cpp_reader *, const char *, int, int, const char *msgid, ...))
   ATTRIBUTE_PRINTF_5;
-extern void cpp_error_from_errno	PARAMS ((cpp_reader *, const char *));
-extern void cpp_notice_from_errno	PARAMS ((cpp_reader *, const char *));
+extern void cpp_error_from_errno PARAMS ((cpp_reader *, const char *));
+extern void cpp_notice_from_errno PARAMS ((cpp_reader *, const char *));
 
 /* In cpplex.c */
 extern cpp_buffer *cpp_push_buffer	PARAMS ((cpp_reader *,
@@ -694,16 +698,16 @@ extern int cpp_ideq			PARAMS ((const cpp_token *,
 						 const char *));
 
 /* In cpphash.c */
-extern int cpp_defined			PARAMS ((cpp_reader *,
-						 const unsigned char *, int));
-extern cpp_hashnode *cpp_lookup		PARAMS ((cpp_reader *,
-						 const unsigned char *, int));
+extern cpp_hashnode *cpp_lookup	PARAMS ((cpp_reader *,
+					 const unsigned char *, size_t));
+extern void cpp_forall_identifiers PARAMS ((cpp_reader *,
+					    int (*) PARAMS ((cpp_reader *,
+							     cpp_hashnode *))));
 
 /* In cppfiles.c */
-extern int cpp_included			PARAMS ((cpp_reader *, const char *));
-extern int cpp_read_file		PARAMS ((cpp_reader *, const char *));
-extern void cpp_make_system_header	PARAMS ((cpp_reader *,
-						 cpp_buffer *, int));
+extern int cpp_included	PARAMS ((cpp_reader *, const char *));
+extern int cpp_read_file PARAMS ((cpp_reader *, const char *));
+extern void cpp_make_system_header PARAMS ((cpp_reader *, cpp_buffer *, int));
 
 #ifdef __cplusplus
 }

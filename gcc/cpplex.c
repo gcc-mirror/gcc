@@ -1070,16 +1070,21 @@ skip_whitespace (pfile, in_directive)
     }
 }
 
-/* Parse (append) an identifier.  */
+/* Parse (append) an identifier.  Calculates the hash value of the
+   token while parsing, for performance.  The algorithm *must* match
+   cpp_lookup().  */
 static const U_CHAR *
 parse_name (pfile, tok, cur, rlimit)
      cpp_reader *pfile;
      cpp_token *tok;
      const U_CHAR *cur, *rlimit;
 {
-  const U_CHAR *name = cur;
+  const U_CHAR *name;
   unsigned int len;
+  unsigned int r;
 
+  name = cur;
+  r = 0;
   while (cur < rlimit)
     {
       if (! is_idchar (*cur))
@@ -1092,21 +1097,23 @@ parse_name (pfile, tok, cur, rlimit)
 	  CPP_BUFFER (pfile)->cur = cur;
 	  cpp_pedwarn (pfile, "'$' character in identifier");
 	}
+
+      r = HASHSTEP (r, cur);
       cur++;
     }
   len = cur - name;
 
-  if (tok->val.node)
+  if (tok->val.node == 0)
+    tok->val.node = _cpp_lookup_with_hash (pfile, name, len, r);
+  else
     {
       unsigned int oldlen = tok->val.node->length;
       U_CHAR *newname = alloca (oldlen + len);
       memcpy (newname, tok->val.node->name, oldlen);
       memcpy (newname + oldlen, name, len);
-      len += oldlen;
-      name = newname;
+      tok->val.node = cpp_lookup (pfile, newname, len + oldlen);
     }
 
-  tok->val.node = cpp_lookup (pfile, name, len);
   return cur;
 }
 
