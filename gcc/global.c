@@ -734,7 +734,7 @@ global_conflicts (void)
 		   evaluates X.
 
 		3. Either X or Y is not evaluated on the path to P
-		   (ie it is used uninitialized) and thus the
+		   (i.e. it is used uninitialized) and thus the
 		   conflict can be ignored.
 
 	    In cases #1 and #2 the conflict will be recorded when we

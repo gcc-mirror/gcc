@@ -453,7 +453,7 @@ static int reg_set_table_size;
 /* This is a list of expressions which are MEMs and will be used by load
    or store motion.
    Load motion tracks MEMs which aren't killed by
-   anything except itself. (ie, loads and stores to a single location).
+   anything except itself. (i.e., loads and stores to a single location).
    We can then allow movement of these MEM refs with a little special
    allowance. (all stores copy the same value to the reaching reg used
    for the loads).  This means all values used to store into memory must have
@@ -2768,7 +2768,7 @@ find_avail_set (int regno, rtx insn)
   struct expr *set1 = 0;
 
   /* Loops are not possible here.  To get a loop we would need two sets
-     available at the start of the block containing INSN.  ie we would
+     available at the start of the block containing INSN.  i.e. we would
      need two sets like this available at the start of the block:
 
        (set (reg X) (reg Y))
@@ -2814,7 +2814,7 @@ find_avail_set (int regno, rtx insn)
       if (! REG_P (src))
 	break;
 
-      /* Follow the copy chain, ie start another iteration of the loop
+      /* Follow the copy chain, i.e. start another iteration of the loop
 	 and see if we have an available copy into SRC.  */
       regno = REGNO (src);
     }

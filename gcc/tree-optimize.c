@@ -541,7 +541,7 @@ execute_pass_list (struct tree_opt_pass *pass)
 }
 
 
-/* update recursivly all inlined_to pointers of functions
+/* Update recursively all inlined_to pointers of functions
    inlined into NODE to INLINED_TO.  */
 static void
 update_inlined_to_pointers (struct cgraph_node *node,

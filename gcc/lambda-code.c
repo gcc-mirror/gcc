@@ -2033,7 +2033,7 @@ stmt_is_bumper_for_loop (struct loop *loop, tree stmt)
    innermost loop body.
    If S is a program statement, then
 
-   ie 
+   i.e. 
    DO I = 1, 20
        S1
        DO J = 1, 20
@@ -2395,7 +2395,7 @@ perfect_nestify (struct loops *loops,
    matrix T is legal when applied to a loop nest with a set of
    lexicographically non-negative distance vectors RDG if and only if
    for each vector d in RDG, (T.d >= 0) is lexicographically positive.
-   ie.: if and only if it transforms the lexicographically positive
+   i.e.: if and only if it transforms the lexicographically positive
    distance vectors to lexicographically positive vectors.  Note that
    a unimodular matrix must transform the zero vector (and only it) to
    the zero vector." S.Muchnick.  */

@@ -823,7 +823,7 @@ estimate_probability (struct loops *loops_info)
 	       && !last_basic_block_p (e->dest))
 	    predict_edge_def (e, PRED_EARLY_RETURN, TAKEN);
 
-	  /* Look for block we are guarding (ie we dominate it,
+	  /* Look for block we are guarding (i.e. we dominate it,
 	     but it doesn't postdominate us).  */
 	  if (e->dest != EXIT_BLOCK_PTR && e->dest != bb
 	      && dominated_by_p (CDI_DOMINATORS, e->dest, e->src)
@@ -1183,7 +1183,7 @@ tree_estimate_probability (void)
 	       && !last_basic_block_p (e->dest))
 	    predict_edge_def (e, PRED_EARLY_RETURN, TAKEN);
 
-	  /* Look for block we are guarding (ie we dominate it,
+	  /* Look for block we are guarding (i.e. we dominate it,
 	     but it doesn't postdominate us).  */
 	  if (e->dest != EXIT_BLOCK_PTR && e->dest != bb
 	      && dominated_by_p (CDI_DOMINATORS, e->dest, e->src)

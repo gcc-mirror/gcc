@@ -374,12 +374,12 @@ extern GTY(()) optab code_to_optab[NUM_RTX_CODE + 1];
 
 typedef rtx (*rtxfun) (rtx);
 
-/* Indexed by the rtx-code for a conditional (eg. EQ, LT,...)
+/* Indexed by the rtx-code for a conditional (e.g. EQ, LT,...)
    gives the gen_function to make a branch to test that condition.  */
 
 extern rtxfun bcc_gen_fctn[NUM_RTX_CODE];
 
-/* Indexed by the rtx-code for a conditional (eg. EQ, LT,...)
+/* Indexed by the rtx-code for a conditional (e.g. EQ, LT,...)
    gives the insn code to make a store-condition insn
    to test that condition.  */
 

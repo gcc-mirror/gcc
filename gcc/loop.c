@@ -3558,7 +3558,7 @@ note_addr_stored (rtx x, rtx y ATTRIBUTE_UNUSED,
 }
 
 /* X is a value modified by an INSN that references a biv inside a loop
-   exit test (ie, X is somehow related to the value of the biv).  If X
+   exit test (i.e., X is somehow related to the value of the biv).  If X
    is a pseudo that is used more than once, then the biv is (effectively)
    used more than once.  DATA is a pointer to a loop_regs structure.  */
 

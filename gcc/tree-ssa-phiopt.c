@@ -47,7 +47,7 @@ static bool candidate_bb_for_phi_optimization (basic_block,
 					       basic_block *);
 
 /* This pass eliminates PHI nodes which can be trivially implemented as
-   an assignment from a conditional expression.  ie if we have something
+   an assignment from a conditional expression.  i.e. if we have something
    like:
 
      bb0:
