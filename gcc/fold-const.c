@@ -1118,7 +1118,7 @@ real_hex_to_f (s, mode)
      abort ();
 
    shcount -= 4;
-   if (high == 0 && low == 0))
+   if (high == 0 && low == 0)
      return dconst0;
 
    /* Normalize.  */
