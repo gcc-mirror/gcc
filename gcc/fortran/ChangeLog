@@ -1,5 +1,9 @@
 2005-04-03  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
+	* intrinsic.texi: Document COS, EXP, LOG, LOG10, SIN, SQRT, TAN.
+
+2005-04-03  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
 	* intrinsic.texi: Document BESJ0, BESJ1, BESJN, BESY0, BESY1,
 	BESYN, ATAN, COSH, ERF, ERC, SINH, TANH.
 
