@@ -38,15 +38,46 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 extern char regs_ever_live[];
 
-#ifdef ACCUMULATE_OUTGOING_ARGS
-extern int current_function_outgoing_args_size;
-#endif
+extern int frame_pointer_needed;
 
-static int save_reg_offset;
+static int frame_size;
+
+/*
+ * compute size of a clipper stack frame where 'lsize' is the required
+ * space for local variables.
+ */
+
+int
+clipper_frame_size (lsize)
+     int lsize;
+{
+  int i,size;				/* total size of frame */
+  int save_size;
+  save_size = 0;			/* compute size for reg saves */
+
+  for (i = 16; i < 32; i++)
+    if (regs_ever_live[i] && !call_used_regs[i])
+      save_size += 8;
+
+  for (i = 0; i < 16; i++)
+    if (regs_ever_live[i] && !call_used_regs[i])
+      save_size += 4;
+
+  size = lsize + save_size;
+
+  size = (size + 7) & ~7;		/* align to 64 Bit */
+  return size;
+}
 
 /*
  * prologue and epilogue output
- * function is entered with pc pushed, i.e. stack is 32 bit alligned
+ * function is entered with pc pushed, i.e. stack is 32 bit aligned
+ *
+ * current_function_args_size == 0 means that the current function's args
+ * are passed totally in registers i.e fp is not used as ap.
+ * If frame_size is also 0 the current function does not push anything and
+ * can run with misaligned stack -> subq $4,sp / add $4,sp on entry and exit
+ * can be omitted.
  *
  */
 void
@@ -55,61 +86,52 @@ output_function_prologue (file, lsize)
      int lsize;				/* size for locals */
 {
   int i, offset;
-  int save_size;
-  int size;				/* total size of frame */
+  int size;
 
-  save_size = 0;			/* compute size for reg saves */
-  for (i = 17; i < 32; i++)
-    if (regs_ever_live[i] && !call_used_regs[i])
-      save_size += 8;
+  frame_size = size = clipper_frame_size (lsize);
 
-  for (i = 0; i < 16; i++)
-    if (regs_ever_live[i] && !call_used_regs[i])
-      save_size += 4;
-
-  save_reg_offset = lsize + save_size;
-
-  save_reg_offset = (save_reg_offset + 7) & ~7;	/* align to 64 Bit */
-
-#ifdef ACCUMULATE_OUTGOING_ARGS
-  size = save_reg_offset + current_function_outgoing_args_size;
-#else
-  size = save_reg_offset;
-#endif
-  
-  size = (size + 7) & ~7;		/* align to 64 Bit */
-
-  if (size == 0)
+  if (frame_pointer_needed)
     {
       fputs ("\tpushw  fp,sp\n", file);
       fputs ("\tmovw   sp,fp\n", file);
     }
-  else
+  else if (size != 0 || current_function_args_size != 0)
     {
-      if (size < 16)
-	fprintf (file, "\tsubq   $%d,sp\n", size + 4); /* room for fp */
-      else
-	fprintf (file, "\tsubi   $%d,sp\n", size + 4);
-
-      fprintf (file, "\tstorw  fp,%d(sp)\n", size);
-      fprintf (file, "\tloada  %d(sp),fp\n", size);
+      size += 4;			/* keep stack aligned */
+      frame_size = size;		/* must push data or access args */
     }
 
-  offset = -save_reg_offset;
+  if (size)
+    {
+      if (size < 16)
+	fprintf (file, "\tsubq   $%d,sp\n", size);
+      else
+	fprintf (file, "\tsubi   $%d,sp\n", size);
 
-  for (i = 16; i < 32; i++)
-    if (regs_ever_live[i] && !call_used_regs[i])
-      {
-	fprintf (file, "\tstord  f%d,%d(fp)\n", i-16, offset);
-	offset += 8;
-      }
+      /* register save slots are relative to sp, because we have small positive
+	 displacements and this works whether we have a frame pointer or not */
 
-  for (i = 0; i < 16; i++)
-    if (regs_ever_live[i] && !call_used_regs[i])
-      {
-	fprintf (file, "\tstorw  r%d,%d(fp)\n", i, offset);
-	offset += 4;
-      }
+      offset = 0;
+      for (i = 16; i < 32; i++)
+	if (regs_ever_live[i] && !call_used_regs[i])
+	  {
+	    if (offset == 0)
+	      fprintf (file, "\tstord  f%d,(sp)\n", i-16);
+	    else
+	      fprintf (file, "\tstord  f%d,%d(sp)\n", i-16, offset);
+	    offset += 8;
+	  }
+
+      for (i = 0; i < 16; i++)
+	if (regs_ever_live[i] && !call_used_regs[i])
+	  {
+	    if (offset == 0)
+	      fprintf (file, "\tstorw  r%d,(sp)\n", i);
+	    else
+	      fprintf (file, "\tstorw  r%d,%d(sp)\n", i, offset);
+	    offset += 4;
+	  }
+    }
 }
 
 void
@@ -119,24 +141,62 @@ output_function_epilogue (file, size)
 {
   int i, offset;
 
-  offset = -save_reg_offset;
+  if (frame_pointer_needed)
+    {
+      offset = -frame_size;
 
-  for (i = 16; i < 32; i++)
-    if (regs_ever_live[i] && !call_used_regs[i])
-      {
-	fprintf (file, "\tloadd  %d(fp),f%d\n", offset, i-16);
-	offset += 8;
-      }
+      for (i = 16; i < 32; i++)
+	if (regs_ever_live[i] && !call_used_regs[i])
+	  {
+	    fprintf (file, "\tloadd  %d(fp),f%d\n", offset, i-16);
+	    offset += 8;
+	  }
 
-  for (i = 0; i < 16; i++)
-    if (regs_ever_live[i] && !call_used_regs[i])
-      {
-	fprintf (file, "\tloadw  %d(fp),r%d\n", offset, i);
-	offset += 4;
-      }
+      for (i = 0; i < 16; i++)
+	if (regs_ever_live[i] && !call_used_regs[i])
+	  {
+	    fprintf (file, "\tloadw  %d(fp),r%d\n", offset, i);
+	    offset += 4;
+	  }
 
-  fputs ("\tmovw   fp,sp\n\tpopw   sp,fp\n\tret    sp\n",
-	 file);
+      fputs ("\tmovw   fp,sp\n\tpopw   sp,fp\n\tret    sp\n",
+	     file);
+    }
+
+  else					/* no frame pointer */
+    {
+      offset = 0;
+
+      for (i = 16; i < 32; i++)
+	if (regs_ever_live[i] && !call_used_regs[i])
+	  {
+	    if (offset == 0)
+	      fprintf (file, "\tloadd  (sp),f%d\n", i-16);
+	    else
+	      fprintf (file, "\tloadd  %d(sp),f%d\n", offset, i-16);
+	    offset += 8;
+	  }
+
+      for (i = 0; i < 16; i++)
+	if (regs_ever_live[i] && !call_used_regs[i])
+	  {
+	    if (offset == 0)
+	      fprintf (file, "\tloadw  (sp),r%d\n", i);
+	    else
+	      fprintf (file, "\tloadw  %d(sp),r%d\n", offset, i);
+	    offset += 4;
+	  }
+
+      if (frame_size > 0)
+	{
+	  if (frame_size < 16)
+	    fprintf (file, "\taddq   $%d,sp\n", frame_size);
+	  else
+	    fprintf (file, "\taddi   $%d,sp\n", frame_size);
+	}
+
+      fputs ("\tret    sp\n", file);
+    }
 }
 
 /*
