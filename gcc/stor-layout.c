@@ -306,10 +306,12 @@ layout_decl (decl, known_align)
      also happens with other fields.  For example, the C++ front-end creates
      zero-sized fields corresponding to empty base classes, and depends on
      layout_type setting DECL_FIELD_BITPOS correctly for the field.  Set the
-     size in bytes from the size in bits.  */
+     size in bytes from the size in bits.  If we have already set the mode,
+     don't set it again since we can be called twice for FIELD_DECLs.  */
 
-  DECL_MODE (decl) = TYPE_MODE (type);
   TREE_UNSIGNED (decl) = TREE_UNSIGNED (type);
+  if (DECL_MODE (decl) == VOIDmode)
+    DECL_MODE (decl) = TYPE_MODE (type);
 
   if (DECL_SIZE (decl) == 0)
     {
@@ -642,9 +644,11 @@ place_field (rli, field)
 
   /* Work out the known alignment so far.  Note that A & (-A) is the
      value of the least-significant bit in A that is one.  */
-  if (! integer_zerop (rli->bitpos) && TREE_CONSTANT (rli->offset))
+  if (! integer_zerop (rli->bitpos))
     known_align = (tree_low_cst (rli->bitpos, 1)
 		   & - tree_low_cst (rli->bitpos, 1));
+  else if (integer_zerop (rli->offset))
+    known_align = BIGGEST_ALIGNMENT;
   else if (host_integerp (rli->offset, 1))
     known_align = (BITS_PER_UNIT
 		   * (tree_low_cst (rli->offset, 1)
@@ -833,10 +837,11 @@ place_field (rli, field)
   /* If this field ended up more aligned than we thought it would be (we
      approximate this by seeing if its position changed), lay out the field
      again; perhaps we can use an integral mode for it now.  */
-  if (! integer_zerop (DECL_FIELD_BIT_OFFSET (field))
-      && TREE_CONSTANT (DECL_FIELD_OFFSET (field)))
+  if (! integer_zerop (DECL_FIELD_BIT_OFFSET (field)))
     actual_align = (tree_low_cst (DECL_FIELD_BIT_OFFSET (field), 1)
 		    & - tree_low_cst (DECL_FIELD_BIT_OFFSET (field), 1));
+  else if (integer_zerop (DECL_FIELD_OFFSET (field)))
+    actual_align = BIGGEST_ALIGNMENT;
   else if (host_integerp (DECL_FIELD_OFFSET (field), 1))
     actual_align = (BITS_PER_UNIT
 		   * (tree_low_cst (DECL_FIELD_OFFSET (field), 1)
