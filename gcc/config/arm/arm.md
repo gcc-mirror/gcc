@@ -9246,7 +9246,8 @@
   {
     rtx ldm[3];
     rtx arith[4];
-    int val1 = 0, val2 = 0;
+    rtx base_reg;
+    HOST_WIDE_INT val1 = 0, val2 = 0;
 
     if (REGNO (operands[0]) > REGNO (operands[4]))
       {
@@ -9258,12 +9259,21 @@
 	ldm[1] = operands[0];
 	ldm[2] = operands[4];
       }
-    if (GET_CODE (XEXP (operands[2], 0)) != REG)
-      val1 = INTVAL (XEXP (XEXP (operands[2], 0), 1));
-    if (GET_CODE (XEXP (operands[3], 0)) != REG)
+
+    base_reg = XEXP (operands[2], 0);
+
+    if (!REG_P (base_reg))
+      {
+	val1 = INTVAL (XEXP (base_reg, 1));
+	base_reg = XEXP (base_reg, 0);
+      }
+
+    if (!REG_P (XEXP (operands[3], 0)))
       val2 = INTVAL (XEXP (XEXP (operands[3], 0), 1));
+
     arith[0] = operands[0];
     arith[3] = operands[1];
+
     if (val1 < val2)
       {
 	arith[1] = ldm[1];
@@ -9274,21 +9284,30 @@
 	arith[1] = ldm[2];
 	arith[2] = ldm[1];
       }
-   if (val1 && val2)
+
+    ldm[0] = base_reg;
+    if (val1 !=0 && val2 != 0)
       {
-	rtx ops[3];
-	ldm[0] = ops[0] = operands[4];
-	ops[1] = XEXP (XEXP (operands[2], 0), 0);
-	ops[2] = XEXP (XEXP (operands[2], 0), 1);
-	output_add_immediate (ops);
-	if (val1 < val2)
-	  output_asm_insn (\"ldm%?ia\\t%0, {%1, %2}\", ldm);
+	if (val1 == 4 || val2 == 4)
+	  /* Other val must be 8, since we know they are adjacent and neither
+	     is zero.  */
+	  output_asm_insn (\"ldm%?ib\\t%0, {%1, %2}\", ldm);
 	else
-	  output_asm_insn (\"ldm%?da\\t%0, {%1, %2}\", ldm);
+	  {
+	    rtx ops[3];
+
+	    ldm[0] = ops[0] = operands[4];
+	    ops[1] = base_reg;
+	    ops[2] = GEN_INT (val1);
+	    output_add_immediate (ops);
+	    if (val1 < val2)
+	      output_asm_insn (\"ldm%?ia\\t%0, {%1, %2}\", ldm);
+	    else
+	      output_asm_insn (\"ldm%?da\\t%0, {%1, %2}\", ldm);
+	  }
       }
-    else if (val1)
+    else if (val1 != 0)
       {
-	ldm[0] = XEXP (operands[3], 0);
 	if (val1 < val2)
 	  output_asm_insn (\"ldm%?da\\t%0, {%1, %2}\", ldm);
 	else
@@ -9296,7 +9315,6 @@
       }
     else
       {
-	ldm[0] = XEXP (operands[2], 0);
 	if (val1 < val2)
 	  output_asm_insn (\"ldm%?ia\\t%0, {%1, %2}\", ldm);
 	else

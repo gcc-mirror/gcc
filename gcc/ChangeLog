@@ -1,5 +1,13 @@
 2005-04-01  Richard Earnshaw  <richard.earnshaw@arm.com>
 
+	* arm.c (adjacent_mem_locations): Reject volatile memory refs.
+	Also reject cases where this pattern will cause load delay stalls
+	unless optimizing for size and it will produce a shorter sequence.
+	* arm.md (arith_adjacent_mem): Make better use of ldm addressing
+	variants to avoid pre-adjusting the base when possible.
+
+2005-04-01  Richard Earnshaw  <richard.earnshaw@arm.com>
+
 	* arm.md (minmax_arithsi): Reject all eliminable registers, not just
 	the frame and argument pointers.
 	(strqi_preinc, strqi_predec, loadqi_preinc, loadqi_predec): Likewise.

@@ -5139,6 +5139,10 @@ minmax_code (rtx x)
 int
 adjacent_mem_locations (rtx a, rtx b)
 {
+  /* We don't guarantee to preserve the order of these memory refs.  */
+  if (volatile_refs_p (a) || volatile_refs_p (b))
+    return 0;
+
   if ((GET_CODE (XEXP (a, 0)) == REG
        || (GET_CODE (XEXP (a, 0)) == PLUS
 	   && GET_CODE (XEXP (XEXP (a, 0), 1)) == CONST_INT))
@@ -5178,6 +5182,17 @@ adjacent_mem_locations (rtx a, rtx b)
 	return 0;
 
       val_diff = val1 - val0;
+
+      if (arm_ld_sched)
+	{
+	  /* If the target has load delay slots, then there's no benefit
+	     to using an ldm instruction unless the offset is zero and
+	     we are optimizing for size.  */
+	  return (optimize_size && (REGNO (reg0) == REGNO (reg1))
+		  && (val0 == 0 || val1 == 0 || val0 == 4 || val1 == 4)
+		  && (val_diff == 4 || val_diff == -4));
+	}
+
       return ((REGNO (reg0) == REGNO (reg1))
 	      && (val_diff == 4 || val_diff == -4));
     }
