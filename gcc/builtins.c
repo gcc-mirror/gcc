@@ -6172,8 +6172,8 @@ real_dconstp (tree expr, const REAL_VALUE_TYPE *value)
 }
 
 /* A subroutine of fold_builtin to fold the various logarithmic
-   functions.  EXP is the CALL_EXPR of a call to a builtin log*
-   function.  VALUE is the base of the log* function.  */
+   functions.  EXP is the CALL_EXPR of a call to a builtin logN
+   function.  VALUE is the base of the logN function.  */
 
 static tree
 fold_builtin_logarithm (tree exp, const REAL_VALUE_TYPE *value)
@@ -6187,7 +6187,7 @@ fold_builtin_logarithm (tree exp, const REAL_VALUE_TYPE *value)
       tree arg = TREE_VALUE (arglist);
       const enum built_in_function fcode = builtin_mathfn_code (arg);
 	
-      /* Optimize log*(1.0) = 0.0.  */
+      /* Optimize logN(1.0) = 0.0.  */
       if (real_onep (arg))
 	return build_real (type, dconst0);
 
@@ -6218,7 +6218,7 @@ fold_builtin_logarithm (tree exp, const REAL_VALUE_TYPE *value)
 		      || fcode == BUILT_IN_EXP10L))))
 	return convert (type, TREE_VALUE (TREE_OPERAND (arg, 1)));
 
-      /* Optimize log*(func()) for various exponential functions.  We
+      /* Optimize logN(func()) for various exponential functions.  We
          want to determine the value "x" and the power "exponent" in
          order to transform logN(x**exponent) into exponent*logN(x).  */
       if (flag_unsafe_math_optimizations)
