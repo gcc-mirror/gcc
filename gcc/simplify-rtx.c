@@ -50,7 +50,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
  ((((HOST_WIDE_INT) low) < 0) ? ((HOST_WIDE_INT) -1) : ((HOST_WIDE_INT) 0))
 
 static rtx neg_const_int (enum machine_mode, rtx);
-static bool mode_signbit_p (enum machine_mode, rtx);
 static int simplify_plus_minus_op_data_cmp (const void *, const void *);
 static rtx simplify_plus_minus (enum rtx_code, enum machine_mode, rtx,
 				rtx, int);
@@ -72,7 +71,7 @@ neg_const_int (enum machine_mode mode, rtx i)
 /* Test whether expression, X, is an immediate constant that represents
    the most significant bit of machine mode MODE.  */
 
-static bool
+bool
 mode_signbit_p (enum machine_mode mode, rtx x)
 {
   unsigned HOST_WIDE_INT val;

@@ -1,3 +1,10 @@
+2004-10-18  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* simplify-rtx.c (mode_signbit_p): Externalize function...
+	* rtl.h (mode_signbit_p): ... to here.
+	* combine.c (simplify_shift_const): Recognize PLUS signbit as
+	canonical form of XOR signbit and move to outer op.
+
 2004-10-18  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-cfg.c (bsi_for_stmt): Rename from stmt_for_bsi.
