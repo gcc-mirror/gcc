@@ -1,3 +1,8 @@
+Thu Sep 20 12:49:34 2001  J"orn Rennecke <amylaar@redhat.com>
+
+	* sh.c (shiftcosts): Don't use shiftcosts array for modes wider
+	than SImode.
+
 Thu Sep 20 09:00:27 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* stor-layout.c (layout_type, case ARRAY_TYPE): Kludge to disable
