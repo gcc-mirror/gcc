@@ -64,6 +64,11 @@ namespace std
 	  this->_M_buf = NULL;
 	  _M_buf_allocated = false;
 	}
+      delete [] _M_ext_buf;
+      _M_ext_buf = NULL;
+      _M_ext_buf_size = 0;
+      _M_ext_next = NULL;
+      _M_ext_end = NULL;
     }
 
   template<typename _CharT, typename _Traits>
@@ -73,7 +78,8 @@ namespace std
     _M_state_beg(__state_type()), _M_buf(NULL), _M_buf_size(BUFSIZ),
     _M_buf_allocated(false), _M_reading(false), _M_writing(false),
     _M_last_overflowed(false), _M_pback_cur_save(0), _M_pback_end_save(0),
-    _M_pback_init(false), _M_codecvt(0)
+    _M_pback_init(false), _M_codecvt(0), _M_ext_buf(0), _M_ext_buf_size(0),
+    _M_ext_next(0), _M_ext_end(0)
     { 
       if (has_facet<__codecvt_type>(this->_M_buf_locale))
 	_M_codecvt = &use_facet<__codecvt_type>(this->_M_buf_locale);
@@ -199,44 +205,92 @@ namespace std
 	  // Get and convert input sequence.
 	  const size_t __buflen = this->_M_buf_size > 1
 	                          ? this->_M_buf_size - 1 : 1;
-	  streamsize __elen = 0;
+	  
+	  // Will be set to true if ::read() returns 0 indicating EOF.
+	  bool __got_eof = false;
+	  // Number of internal characters produced.
 	  streamsize __ilen = 0;
 	  if (__check_facet(_M_codecvt).always_noconv())
 	    {
-	      __elen = _M_file.xsgetn(reinterpret_cast<char*>(this->eback()), 
+	      __ilen = _M_file.xsgetn(reinterpret_cast<char*>(this->eback()), 
 				      __buflen);
-	      __ilen = __elen;
+	      if (__ilen == 0)
+		__got_eof = true;
 	    }
 	  else
 	    {
-	      // Worst-case number of external bytes.
-	      // XXX Not done encoding() == -1.
-	      const int __enc = _M_codecvt->encoding();
-	      const streamsize __blen = __enc > 0 ? __buflen * __enc : __buflen;
-	      char* __buf = static_cast<char*>(__builtin_alloca(__blen));
-	      __elen = _M_file.xsgetn(__buf, __blen);
+              // Worst-case number of external bytes.
+              // XXX Not done encoding() == -1.
+              const int __enc = _M_codecvt->encoding();
+	      streamsize __blen; // Minimum buffer size.
+	      streamsize __rlen; // Number of chars to read.
+	      if (__enc > 0)
+		__blen = __rlen = __buflen * __enc;
+	      else
+		{
+		  __blen = __buflen + _M_codecvt->max_length() - 1;
+		  __rlen = __buflen;
+		}
+	      const streamsize __remainder = _M_ext_end - _M_ext_next;
+	      __rlen = __rlen > __remainder ? __rlen - __remainder : 0;
+	      
+	      // Allocate buffer if necessary and move unconverted
+	      // bytes to front.
+	      if (_M_ext_buf_size < __blen)
+		{
+		  char* __buf = new char[__blen];
+		  if (__remainder > 0)
+		    std::memcpy(__buf, _M_ext_next, __remainder);
 
- 	      const char* __eend;
-	      char_type* __iend;
-	      codecvt_base::result __r;
-	      __r = _M_codecvt->in(_M_state_cur, __buf, __buf + __elen, 
-				   __eend, this->eback(), 
-				   this->eback() + __buflen, __iend);
-	      if (__r == codecvt_base::ok || __r == codecvt_base::partial)
-		__ilen = __iend - this->eback();
-	      else if (__r == codecvt_base::noconv)
-		{
-		  traits_type::copy(this->eback(),
-				    reinterpret_cast<char_type*>(__buf), 
-				    __elen);
-		  __ilen = __elen;
+		  delete [] _M_ext_buf;
+		  _M_ext_buf = __buf;
+		  _M_ext_buf_size = __blen;
 		}
-	      else 
+	      else if (__remainder > 0)
+		std::memmove(_M_ext_buf, _M_ext_next, __remainder);
+
+	      _M_ext_next = _M_ext_buf;
+	      _M_ext_end = _M_ext_buf + __remainder;
+
+	      do
 		{
-		  // Unwind.
-		  __ilen = 0;
-		  _M_file.seekoff(-__elen, ios_base::cur, ios_base::in);
+		  if (__rlen > 0)
+		    {
+		      // Sanity check!
+		      // This may fail if the return value of
+		      // codecvt::max_length() is bogus.
+		      if (_M_ext_end - _M_ext_buf + __rlen > _M_ext_buf_size)
+			std::abort();
+		      streamsize __elen = _M_file.xsgetn(_M_ext_end, __rlen);
+		      if (__elen == 0)
+			__got_eof = true;
+		      _M_ext_end += __elen;
+		    }
+		  
+		  char_type* __iend;
+		  codecvt_base::result __r;
+		  __r = _M_codecvt->in(_M_state_cur, _M_ext_next,
+				       _M_ext_end, _M_ext_next, this->eback(), 
+				       this->eback() + __buflen, __iend);
+		  if (__r == codecvt_base::ok || __r == codecvt_base::partial)
+		    __ilen = __iend - this->eback();
+		  else if (__r == codecvt_base::noconv)
+		    {
+		      size_t __avail = _M_ext_end - _M_ext_buf;
+		      __ilen = std::min(__avail, __buflen);
+		      traits_type::copy(this->eback(),
+					reinterpret_cast<char_type*>(_M_ext_buf), 
+					__ilen);
+		      _M_ext_next = _M_ext_buf + __ilen;
+		    }
+		  else 
+		    {
+		      __ilen = 0;
+		      break;
+		    }
+		  __rlen = 1;
 		}
+	      while (!__got_eof && __ilen == 0);
 	    }
 
 	  if (__ilen > 0)
@@ -245,7 +299,7 @@ namespace std
 	      _M_reading = true;
 	      __ret = traits_type::to_int_type(*this->gptr());
 	    }
-	  else if (__elen == 0)
+	  else if (__got_eof)
 	    {
 	      // If the actual end of file is reached, set 'uncommitted'
 	      // mode, thus allowing an immediate write without an 
