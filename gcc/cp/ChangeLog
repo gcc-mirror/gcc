@@ -1,3 +1,8 @@
+Fri Nov 28 12:35:19 1997  Scott Christley  <scottc@net-community.com>
+
+	* repo.c: Prototype rindex only if needed.
+	* xref.c: Likewise.
+
 Thu Nov 27 08:26:56 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* except.c (expand_start_catch_block): We only need the rethrow
