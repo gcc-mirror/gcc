@@ -1429,7 +1429,6 @@ struct base_info
   char cant_have_default_ctor;
   char cant_have_const_ctor;
   char no_const_asn_ref;
-  char base_has_virtual;
 };
 
 /* Record information about type T derived from its base classes.
@@ -1547,9 +1546,6 @@ finish_base_struct (t, b, t_binfo)
 
       if (TYPE_VIRTUAL_P (basetype))
 	{
-	  /* Remember that the baseclass has virtual members.  */
-	  b->base_has_virtual = 1;
-
 	  /* Ensure that this is set from at least a virtual base
              class.  */
 	  if (b->rtti == NULL_TREE)
@@ -3026,7 +3022,6 @@ finish_struct_1 (t, warn_anon)
   tree fields = TYPE_FIELDS (t);
   tree fn_fields = TYPE_METHODS (t);
   tree x, last_x, method_vec;
-  int base_has_virtual;
   int all_virtual;
   int has_virtual;
   int max_has_virtual;
@@ -3126,7 +3121,6 @@ finish_struct_1 (t, warn_anon)
       cant_have_default_ctor = base_info.cant_have_default_ctor;
       cant_have_const_ctor = base_info.cant_have_const_ctor;
       no_const_asn_ref = base_info.no_const_asn_ref;
-      base_has_virtual = base_info.base_has_virtual;
       n_baseclasses = TREE_VEC_LENGTH (BINFO_BASETYPES (t_binfo));
       aggregate = 0;
     }
@@ -3142,7 +3136,6 @@ finish_struct_1 (t, warn_anon)
       cant_have_default_ctor = 0;
       cant_have_const_ctor = 0;
       no_const_asn_ref = 0;
-      base_has_virtual = 0;
     }
 
 #if 0

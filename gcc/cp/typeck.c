@@ -4734,7 +4734,6 @@ build_conditional_expr (ifexp, op1, op2)
   register enum tree_code code1;
   register enum tree_code code2;
   register tree result_type = NULL_TREE;
-  tree orig_op1 = op1, orig_op2 = op2;
 
   /* If second operand is omitted, it is the same as the first one;
      make sure it is calculated only once.  */
@@ -6236,12 +6235,11 @@ build_ptrmemfunc (type, pfn, force)
   tree delta2 = integer_zero_node;
   tree vfield_offset;
   tree npfn = NULL_TREE;
-  tree u;
 
   /* Handle multiple conversions of pointer to member functions.  */
   if (TYPE_PTRMEMFUNC_P (TREE_TYPE (pfn)))
     {
-      tree ndelta, ndelta2, nindex;
+      tree ndelta, ndelta2;
       tree e1, e2, e3, n;
 
       /* Is is already the right type? */

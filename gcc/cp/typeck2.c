@@ -1390,8 +1390,6 @@ build_functional_cast (exp, parms)
      tree exp;
      tree parms;
 {
-  tree binfo;
-
   /* This is either a call to a constructor,
      or a C cast in C++'s `functional' notation.  */
   tree type;

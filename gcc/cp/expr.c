@@ -39,11 +39,10 @@ cplus_expand_expr (exp, target, tmode, modifier)
   tree type = TREE_TYPE (exp);
   register enum machine_mode mode = TYPE_MODE (type);
   register enum tree_code code = TREE_CODE (exp);
-  rtx original_target = target;
   int ignore = target == const0_rtx;
 
   if (ignore)
-    target = 0, original_target = 0;
+    target = 0;
 
   /* No sense saving up arithmetic to be done
      if it's all in the wrong mode to form part of an address.

@@ -1095,6 +1095,10 @@ struct lang_decl
 #define DELETE_EXPR_USE_VEC(NODE)	TREE_LANG_FLAG_1 (NODE)
 #define LOOKUP_EXPR_GLOBAL(NODE)	TREE_LANG_FLAG_0 (NODE)
 
+/* For a TREE_LIST node representing a function parm type and its default arg,
+   did the default arg come from a template?  */
+#define PARM_DEFAULT_FROM_TEMPLATE(NODE) TREE_LANG_FLAG_0 (NODE)
+
 /* Nonzero in INT_CST means that this int is negative by dint of
    using a twos-complement negated operand.  */
 #define TREE_NEGATED_INT(NODE) (TREE_LANG_FLAG_0 (NODE))

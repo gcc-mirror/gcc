@@ -1,3 +1,120 @@
+Mon Jan 20 17:59:51 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (standard_conversion): Handle getting references.  Tack
+ 	on RVALUE_CONV here.  Do it for non-class types, too.
+	(reference_binding): Pass references to standard_conversion.
+	(implicit_conversion): Likewise.
+	(add_builtin_candidate): Disable one ?: kludge.
+	(convert_like): Handle RVALUE_CONVs for non-class types.
+	(joust): Disable the other ?: kludge.
+
+Mon Jan 20 14:53:13 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* decl.c (init_decl_processing): Add code to build up common
+	function types beforehand, to avoid creation then removal of
+	things already in the hash table.
+
+Mon Jan 20 14:43:49 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (finish_function): Also zero out DECL_INCOMING_RTL for
+ 	the arguments.
+
+	* error.c (dump_expr, TEMPLATE_CONST_PARM): Don't require
+ 	current_template_parms.
+
+Fri Jan 17 10:25:42 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* search.c (lookup_field): Don't return a function, check want_type.
+
+Thu Jan 16 18:14:35 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* init.c (build_new): Make sure PLACEMENT has a type.
+
+Thu Jan 16 17:40:28 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* init.c (build_new): Support new (nothrow).
+
+Wed Jan 15 12:38:14 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (instantiate_decl): Also do push_to_top_level before setting
+	up DECL_INITIAL.
+
+	* cp-tree.h (PARM_DEFAULT_FROM_TEMPLATE): New macro.
+	* pt.c (tsubst): Defer instantiation of default args.
+	* call.c (build_over_call): Until here.
+
+Wed Jan 15 10:08:10 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* search.c (lookup_field): Make sure we have an
+	IDENTIFIER_CLASS_VALUE before we try to return it.
+
+Thu Jan  9 07:19:01 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* call.c (build_method_call): Delete unused var PARM.
+	(build_overload_call_real): Likewise.
+	(build_object_call): Delete unused var P.
+	(build_new_op): Likewise.
+	* decl.c (builtin_type_tdescs_{arr, len, max}): #if 0 out static
+	var definitions, which are never used.
+	(shadow_tag): Delete unused var FN.
+	* expr.c (cplus_expand_expr): Delete unused var ORIGINAL_TARGET.
+	* init.c (build_new): Delete unused var ALLOC_TEMP.
+	* method.c (hack_identifier): Delete unused var CONTEXT.
+	(do_build_copy_constructor): Delete unused var NAME.
+	(synthesize_method): Delete unused var BASE.
+	* pt.c (lookup_template_class): Delete unused var CODE_TYPE_NODE.
+	* rtti.c (build_headof): Delete unused var VPTR.
+	(get_typeid): Delete unused var T.
+	* typeck.c (build_conditional_expr): Delete unused vars ORIG_OP1
+	and ORIG_OP2.
+	(build_ptrmemfunc): Delete unused vars U and NINDEX.
+	* typeck2.c (build_functional_cast): Delete unused var BINFO.
+
+Wed Jan  8 13:09:54 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* search.c (lookup_field): Use IDENTIFIER_CLASS_VALUE to look up
+	things in a type being defined.
+	* decl.c (finish_enum): Reverse the values so that they are in
+	the correct order.
+
+	* pt.c (instantiate_class_template): Don't initialize
+ 	BINFO_BASETYPES until the vector is filled out.
+	(unify): Don't abort on conflicting bindings, just fail.
+	(instantiate_decl): Do push_tinst_level before any tsubsting.
+
+	* method.c (build_overload_value): Handle getting a
+ 	TEMPLATE_CONST_PARM for a pointer.
+
+Tue Jan  7 14:00:58 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* init.c (expand_member_init): Don't give 'not a base' error for
+ 	templates.
+
+	* pt.c (instantiate_decl): Call import_export_decl later.
+
+	* pt.c (instantiate_class_template): Return a value.
+
+	* parse.y (extension): New rule for __extension__.
+	(extdef, unary_expr, decl, component_decl): Use it.
+
+Tue Jan  7 09:20:28 1997  Mike Stump  <mrs@cygnus.com>
+
+	* class.c (base_binfo): Remove unused base_has_virtual member.
+	(finish_base_struct): Likewise.
+	(finish_struct_1): Likewise.
+
+Tue Dec 31 20:25:50 1996  Mike Stump  <mrs@cygnus.com>
+
+	* search.c (expand_upcast_fixups): Fix bogus code generation
+	problem where the generated code uses the wrong index into the
+	runtime built vtable on the stack.  Old code could clobber random
+	stack values.
+
+Tue Dec 31 15:16:56 1996  Mike Stump  <mrs@cygnus.com>
+
+	* init.c (perform_member_init): Make sure the partial EH cleanups
+ 	live on the function_obstack.
+
 Fri Dec 27 10:31:40 1996  Paul Eggert  <eggert@twinsun.com>
 
 	* Make-lang.in (g++spec.o): Don't use $< with an explicit target;

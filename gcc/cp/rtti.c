@@ -81,7 +81,7 @@ build_headof (exp)
 {
   tree type = TREE_TYPE (exp);
   tree aref;
-  tree vptr, offset;
+  tree offset;
 
   if (TREE_CODE (type) != POINTER_TYPE)
     {
@@ -373,8 +373,6 @@ tree
 get_typeid (type)
      tree type;
 {
-  tree t;
-
   if (type == error_mark_node)
     return error_mark_node;
   
