@@ -567,7 +567,7 @@ package body Snames is
      "tagged#" &
      "raise_exception#" &
      "project#" &
-     "modifying#" &
+     "extends#" &
      "naming#" &
      "object_dir#" &
      "source_dirs#" &

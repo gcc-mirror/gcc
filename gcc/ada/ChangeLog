@@ -1,3 +1,7 @@
+2001-12-05  Geert Bosch <bosch@gnat.com>
+
+	* snames.adb: Autoupdate
+
 2001-12-05  Vincent Celier <celier@gnat.com>
 
 	* prj-dect.adb (Parse): Rename parameter Modifying to Extends.
