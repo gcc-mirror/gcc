@@ -285,7 +285,7 @@ namespace std
 		  }
 		// ... otherwise either an additional instance of
 		// the "C" locale or LANG.
-		else if (std::strcmp(__res.c_str(), "C") == 0)
+		else if (__res == "C")
 		  (_M_impl = _S_classic)->_M_add_reference();
 		else
 		  _M_impl = new _Impl(__res.c_str(), 1);
