@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the DEC Alpha.
-   Copyright (C) 1992, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -1924,11 +1924,14 @@ vmskrunch (name)
 		for (i = j; foo[i]==' ' && foo[i]; i++)
 		  ;
 
+	      /* Find the first blank */
 	      j = i;
 	      if (foo[j])
 		for (i = j + 1; foo[i] != ' ' && foo[i]; i++)
 		  ;
 
+	      /* If this substring is the longest so far, remember the
+		 position of the character to chop off. */
 	      slen = i - j;
 	      if (slen > xlen)
 		{
@@ -1939,6 +1942,16 @@ vmskrunch (name)
 	      j = i;
 	    }
 
+	  /* Try to avoid chopping uppercase suffix letters */
+	  if (isupper (foo [chopchar]))
+	    {
+	      for (i = chopchar;
+		   isupper (foo[i]) && foo[i] != ' ' && i >= 0;
+		   i--)
+		;
+	      if (islower (foo[i]))
+		chopchar = i;
+	    }
 	  foo [chopchar] = ' ';
 	  nlen--;
 	}
