@@ -1,0 +1,88 @@
+dnl Process this with autoconf to create configure
+AC_INIT(fficonfig.h.in)
+AM_CONFIG_HEADER(fficonfig.h)
+
+AC_MSG_WARN(***********************************************************)
+AC_MSG_WARN(***********************************************************)
+AC_MSG_WARN(This is beta code.  If you're looking for a stable release)
+AC_MSG_WARN(then use the most recent one - libffi-1.20.)
+AC_MSG_WARN(***********************************************************)
+AC_MSG_WARN(***********************************************************)
+
+AC_CANONICAL_HOST
+
+AM_INIT_AUTOMAKE(libffi,2.00-beta)
+
+AC_EXEEXT
+AM_MAINTAINER_MODE
+
+AC_PROG_CC
+AC_PROG_LIBTOOL
+
+TARGETDIR="unknown"
+case "$host" in
+mips-sgi-irix5.* | mips-sgi-irix6.*) TARGET=MIPS; TARGETDIR=mips;;
+i*86-pc-linux*) TARGET=X86; TARGETDIR=x86;;
+i*86-*-beos*) TARGET=X86; TARGETDIR=x86;;
+sparc-sun-4*) TARGET=SPARC; TARGETDIR=sparc;;
+sparc-sun-*) TARGET=SPARC; TARGETDIR=sparc;;
+alpha*-*-linux* | alpha*-*-osf*) TARGET=ALPHA; TARGETDIR=alpha;;
+m68k-*-linux*) TARGET=M68K; TARGETDIR=m68k;;
+powerpc-*-linux* | powerpc-*-sysv*) TARGET=POWERPC; TARGETDIR=powerpc;;
+powerpc-*-beos*) TARGET=POWERPC; TARGETDIR=powerpc;;
+arm-*-linux-*) TARGET=ARM; TARGETDIR=arm;;
+esac
+
+if test $TARGETDIR = unknown; then
+  AC_ERROR("libffi has not been ported to $host.")
+fi
+
+AM_CONDITIONAL(MIPS_GCC, test ${TARGET}${ac_cv_prog_gcc} = MIPSyes)
+AM_CONDITIONAL(MIPS_SGI, test ${TARGET}${ac_cv_prog_gcc} = MIPSno)
+AM_CONDITIONAL(SPARC, test x$TARGET = xSPARC)
+AM_CONDITIONAL(X86, test x$TARGET = xX86)
+AM_CONDITIONAL(ALPHA, test x$TARGET = xALPHA)
+AM_CONDITIONAL(M68K, test x$TARGET = xM68K)
+AM_CONDITIONAL(POWERPC, test x$TARGET = xPOWERPC)
+AM_CONDITIONAL(ARM, test x$TARGET = xARM)
+
+AC_HEADER_STDC
+AC_CHECK_FUNCS(memcpy)
+AC_FUNC_ALLOCA
+
+dnl AC_CHECK_SIZEOF(char)
+AC_CHECK_SIZEOF(short)
+AC_CHECK_SIZEOF(int)
+AC_CHECK_SIZEOF(long)
+AC_CHECK_SIZEOF(long long)
+AC_CHECK_SIZEOF(float)
+AC_CHECK_SIZEOF(double)
+AC_CHECK_SIZEOF(long double)
+
+AC_CHECK_SIZEOF(void *)
+AC_C_BIGENDIAN
+
+AC_SUBST(TARGET)
+AC_SUBST(TARGETDIR)
+
+AC_SUBST(SHELL)
+
+AC_ARG_ENABLE(debug,[  --enable-debug          Debugging mode], AC_DEFINE(FFI_DEBUG))
+
+AC_ARG_ENABLE(debug,[  --disable-structs       Omit code for struct support], AC_DEFINE(FFI_NO_STRUCTS))
+
+AC_ARG_ENABLE(debug,[  --disable-raw-api       Make the raw api unavailable], AC_DEFINE(FFI_NO_RAW_API))
+
+AC_ARG_ENABLE(purify-safety,
+[  --enable-purify-safety  Purify-safe mode], AC_DEFINE(USING_PURIFY))
+
+AC_OUTPUT(include/Makefile include/ffi.h Makefile,, 
+test ! -d include && mkdir include
+test ! -f include/fficonfig.h && cp fficonfig.h include/fficonfig.h
+if cmp -s fficonfig.h include/fficonfig.h 2>/dev/null; then 
+	echo fficonfig.h unchanged
+else
+	echo Moving fficonfig.h to include/fficonfig.h
+	cp fficonfig.h include/fficonfig.h
+fi
+)

@@ -1,0 +1,77 @@
+/* fficonfig.h.in.  Generated automatically from configure.in by autoheader.  */
+
+/* Define if using alloca.c.  */
+#undef C_ALLOCA
+
+/* Define to one of _getb67, GETB67, getb67 for Cray-2 and Cray-YMP systems.
+   This function is required for alloca.c support on those systems.  */
+#undef CRAY_STACKSEG_END
+
+/* Define if you have alloca, as a function or macro.  */
+#undef HAVE_ALLOCA
+
+/* Define if you have <alloca.h> and it should be used (not on Ultrix).  */
+#undef HAVE_ALLOCA_H
+
+/* If using the C implementation of alloca, define if you know the
+   direction of stack growth for your system; otherwise it will be
+   automatically deduced at run-time.
+ STACK_DIRECTION > 0 => grows toward higher addresses
+ STACK_DIRECTION < 0 => grows toward lower addresses
+ STACK_DIRECTION = 0 => direction of growth unknown
+ */
+#undef STACK_DIRECTION
+
+/* Define if you have the ANSI C header files.  */
+#undef STDC_HEADERS
+
+/* Define if your processor stores words with the most significant
+   byte first (like Motorola and SPARC, unlike Intel and VAX).  */
+#undef WORDS_BIGENDIAN
+
+/* Define this if you want extra debugging */
+#undef FFI_DEBUG
+
+/* Define this if you are using Purify and want to suppress 
+   spurious messages. */
+#undef USING_PURIFY
+
+/* Define this is you do not want support for aggregate types.  */
+#undef FFI_NO_STRUCTS
+
+/* Define this is you do not want support for the raw API.  */
+#undef FFI_NO_RAW_API
+
+/* The number of bytes in a double.  */
+#undef SIZEOF_DOUBLE
+
+/* The number of bytes in a float.  */
+#undef SIZEOF_FLOAT
+
+/* The number of bytes in a int.  */
+#undef SIZEOF_INT
+
+/* The number of bytes in a long.  */
+#undef SIZEOF_LONG
+
+/* The number of bytes in a long double.  */
+#undef SIZEOF_LONG_DOUBLE
+
+/* The number of bytes in a long long.  */
+#undef SIZEOF_LONG_LONG
+
+/* The number of bytes in a short.  */
+#undef SIZEOF_SHORT
+
+/* The number of bytes in a void *.  */
+#undef SIZEOF_VOID_P
+
+/* Define if you have the memcpy function.  */
+#undef HAVE_MEMCPY
+
+/* Name of package */
+#undef PACKAGE
+
+/* Version number of package */
+#undef VERSION
+
