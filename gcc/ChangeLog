@@ -1,3 +1,7 @@
+Sun Sep  7 14:50:03 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* cfgcleanup.c (try_simplify_condjump): Fix again the preivous patch.
+
 2003-09-07  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* diagnostic.c (warn_deprecated_use): Move to toplev.c
