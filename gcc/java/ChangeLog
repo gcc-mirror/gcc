@@ -1,3 +1,14 @@
+1999-03-22  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* Makefile.in: (JAVA_OBJS) Added entry xref.o.
+	(xref.o): New rule.
+	* java-tree.h (flag_emit_xref): Declared extern.
+	* lang.c: (xref.h): Included.
+	(flag_emit_xref): New global variable.
+	(lang_decode_option): Added support for -fxref.
+	* xref.c: Created.
+	* xref.h: Likewise.
+
 1999-03-21  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Make-lang.in ($(GCJ)$(exeext)): Add intl.o to list of files to be

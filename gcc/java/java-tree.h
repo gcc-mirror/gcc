@@ -127,6 +127,11 @@ extern int flag_assume_compiled;
 
 extern int flag_emit_class_files;
 
+/* When non zero, we emit xref strings. Values of the flag for xref
+   backends are defined in xref.h.  */
+
+extern int flag_emit_xref;
+
 /* Turned to 1 if -Wall was encountered. See lang.c for their meanings.  */
 extern int flag_wall;
 extern int flag_redundant;

@@ -32,6 +32,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "jcf.h"
 #include "toplev.h"
 #include "flags.h"
+#include "xref.h"
 
 #ifndef OBJECT_SUFFIX
 # define OBJECT_SUFFIX ".o"
@@ -86,6 +87,11 @@ int flag_bounds_check = 1;
 int flag_assume_compiled = 1;
 
 int flag_emit_class_files = 0;
+
+/* When non zero, we emit xref strings. Values of the flag for xref
+   backends are defined in xref_flag_table, xref.c.  */
+
+int flag_emit_xref = 0;
 
 /* When non zero, -Wall was turned on.  */
 int flag_wall = 0;
@@ -167,6 +173,16 @@ lang_decode_option (argc, argv)
       return 1;
     }
 #undef ARG
+
+#define XARG "-fxref="
+  if (strncmp (p, XARG, sizeof (XARG) - 1) == 0)
+    {
+      if (!(flag_emit_xref = xref_flag_value (p + sizeof (XARG) - 1)))
+	{
+	  error ("Unkown xref back end `%s'", p + sizeof (XARG) - 1);
+	}
+    }
+#undef XARG
 
   if (p[0] == '-' && p[1] == 'f')
     {
