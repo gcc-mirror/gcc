@@ -72,6 +72,10 @@ Sat Feb  6 17:17:09 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* g77.texi: Assorted minor changes.
 
+1998-11-19  Dave Love  <d.love@dl.ac.uk>
+
+	* intdoc.in: Terminate some @xrefs with `,'.
+
 Mon Nov  9 23:13:30 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* g77.texi: Updates from Craig.
