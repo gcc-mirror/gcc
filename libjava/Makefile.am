@@ -1034,10 +1034,6 @@ gnu/java/locale/Calendar.java \
 gnu/java/locale/Calendar_de.java \
 gnu/java/locale/Calendar_en.java \
 gnu/java/locale/Calendar_nl.java \
-gnu/java/locale/LocaleInformation.java \
-gnu/java/locale/LocaleInformation_de.java \
-gnu/java/locale/LocaleInformation_en.java \
-gnu/java/locale/LocaleInformation_nl.java \
 gnu/java/security/provider/Gnu.java \
 gnu/java/security/provider/SHA.java \
 gnu/java/security/provider/SHA1PRNG.java \
@@ -1278,6 +1274,7 @@ java/net/natInetAddress.cc \
 java/net/natPlainDatagramSocketImpl.cc \
 java/net/natPlainSocketImpl.cc \
 java/text/natCollator.cc \
+java/util/natGregorianCalendar.cc \
 java/util/zip/natDeflater.cc \
 java/util/zip/natInflater.cc
 
