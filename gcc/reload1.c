@@ -8393,9 +8393,10 @@ reload_combine ()
   for (r = 0; r < FIRST_PSEUDO_REGISTER; r++)
     if (TEST_HARD_REG_BIT (reg_class_contents[INDEX_REG_CLASS], r))
       {
-	if (! last_index_reg)
-	  last_index_reg = r;
-	first_index_reg = i;
+	if (! first_index_reg)
+	  first_index_reg = r;
+
+	last_index_reg = r;
       }
 
   /* If no index register is available, we can quit now.  */
