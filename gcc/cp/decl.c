@@ -4386,9 +4386,10 @@ push_class_level_binding (name, x)
     }
 }
 
-/* Insert another USING_DECL into the current binding level,
-   returning this declaration. If this is a redeclaration,
-   do nothing and return NULL_TREE.  */
+/* Insert another USING_DECL into the current binding level, returning
+   this declaration. If this is a redeclaration, do nothing, and
+   return NULL_TREE if this not in namespace scope (in namespace
+   scope, a using decl might extend any previous bindings).  */
 
 tree
 push_using_decl (scope, name)
@@ -4403,7 +4404,7 @@ push_using_decl (scope, name)
     if (DECL_INITIAL (decl) == scope && DECL_NAME (decl) == name)
       break;
   if (decl)
-    return NULL_TREE;
+    return namespace_bindings_p () ? decl : NULL_TREE;
   decl = build_lang_decl (USING_DECL, name, void_type_node);
   DECL_INITIAL (decl) = scope;
   TREE_CHAIN (decl) = current_binding_level->usings;

@@ -4402,6 +4402,8 @@ qualified_lookup_using_namespace (name, scope, result, flags)
   /* ... and a list of namespace yet to see. */
   tree todo = NULL_TREE;
   tree usings;
+  /* Look through namespace aliases.  */
+  scope = ORIGINAL_NAMESPACE (scope);
   while (scope && (result != error_mark_node))
     {
       seen = tree_cons (scope, NULL_TREE, seen);

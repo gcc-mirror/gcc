@@ -1,3 +1,10 @@
+2000-05-22  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* decl2.c (qualified_lookup_using_namespace): Look through
+	namespace aliases.
+
+	* decl.c (push_using_decl): Return the old decl on namespace level.
+
 2000-05-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (SET_BINFO_NEW_VTABLE_MARKED): Add sanity checks.
