@@ -353,7 +353,7 @@ rename_variables_in_bb (basic_block bb)
   edge e;
   edge_iterator ei;
 
-  for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+  for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
     rename_def_op (PHI_RESULT_PTR (phi), phi);
 
   for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
@@ -390,7 +390,7 @@ rename_variables_in_bb (basic_block bb)
     }
 
   FOR_EACH_EDGE (e, ei, bb->succs)
-    for (phi = phi_nodes (e->dest); phi; phi = TREE_CHAIN (phi))
+    for (phi = phi_nodes (e->dest); phi; phi = PHI_CHAIN (phi))
       rename_use_op (PHI_ARG_DEF_PTR_FROM_EDGE (phi, e));
 }
 
@@ -449,8 +449,8 @@ copy_phi_nodes (struct loop *loop, struct loop *new_loop,
   for (phi = phi_nodes (loop->header),
 	 new_phi = phi_nodes (new_loop->header);
        phi;
-       phi = TREE_CHAIN (phi),
-	 new_phi = TREE_CHAIN (new_phi))
+       phi = PHI_CHAIN (phi),
+	 new_phi = PHI_CHAIN (new_phi))
     {
       new_e = loop_preheader_edge (new_loop);
       def = PHI_ARG_DEF_FROM_EDGE (phi, e);
@@ -557,7 +557,7 @@ update_phi_nodes_for_guard (edge guard_true_edge, struct loop * loop)
 {
   tree phi, phi1;
 
-  for (phi = phi_nodes (loop->header); phi; phi = TREE_CHAIN (phi))
+  for (phi = phi_nodes (loop->header); phi; phi = PHI_CHAIN (phi))
       {
 	tree new_phi;
 	tree phi_arg;
@@ -695,7 +695,7 @@ tree_duplicate_loop_to_edge_cfg (struct loop *loop, struct loops *loops,
 
   /* Duplicating phi args at exit bbs as coming 
      also from exit of duplicated loop.  */
-  for (phi = phi_nodes (exit_dest); phi; phi = TREE_CHAIN (phi))
+  for (phi = phi_nodes (exit_dest); phi; phi = PHI_CHAIN (phi))
     {
       phi_arg = PHI_ARG_DEF_FROM_EDGE (phi, loop->exit_edges[0]);
       if (phi_arg)
@@ -736,7 +736,7 @@ tree_duplicate_loop_to_edge_cfg (struct loop *loop, struct loops *loops,
 
       /* We have to add phi args to the loop->header here as coming 
 	 from new_exit_e edge.  */
-      for (phi = phi_nodes (loop->header); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (loop->header); phi; phi = PHI_CHAIN (phi))
 	{
 	  phi_arg = PHI_ARG_DEF_FROM_EDGE (phi, entry_e);
 	  if (phi_arg)
@@ -2913,7 +2913,7 @@ vect_update_ivs_after_vectorizer (struct loop *loop, tree niters)
   
   loop->exit_edges[0] = EDGE_PRED (new_bb, 0);
   
-  for (phi = phi_nodes (loop->header); phi; phi = TREE_CHAIN (phi))
+  for (phi = phi_nodes (loop->header); phi; phi = PHI_CHAIN (phi))
     {
       tree access_fn = NULL;
       tree evolution_part;
@@ -3731,7 +3731,7 @@ vect_analyze_scalar_cycles (loop_vec_info loop_vinfo)
   if (vect_debug_details (NULL))
     fprintf (dump_file, "\n<<vect_analyze_scalar_cycles>>\n");
 
-  for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+  for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
     {
       tree access_fn = NULL;
 
@@ -5351,7 +5351,7 @@ vect_analyze_loop_with_symbolic_num_of_iters (tree niters,
    
   /* Analyze phi functions of the loop header.  */
 
-  for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+  for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
     {
       tree access_fn = NULL;
       tree evolution_part;

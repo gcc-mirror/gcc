@@ -298,7 +298,7 @@ ssa_mark_def_sites_initialize_block (struct dom_walk_data *walk_data,
 
   sbitmap_zero (kills);
 
-  for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+  for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
     {
       def = PHI_RESULT (phi);
       def_uid = SSA_NAME_VERSION (def);
@@ -328,7 +328,7 @@ ssa_mark_phi_uses (struct dom_walk_data *walk_data, basic_block bb)
       if (e->dest == EXIT_BLOCK_PTR)
 	continue;
 
-      for (phi = phi_nodes (e->dest); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (e->dest); phi; phi = PHI_CHAIN (phi))
 	{
 	  use = PHI_ARG_DEF_FROM_EDGE (phi, e);
 	  if (TREE_CODE (use) != SSA_NAME)
@@ -748,7 +748,7 @@ ssa_rewrite_initialize_block (struct dom_walk_data *walk_data, basic_block bb)
   /* Step 1.  Register new definitions for every PHI node in the block.
      Conceptually, all the PHI nodes are executed in parallel and each PHI
      node introduces a new version for the associated variable.  */
-  for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+  for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
     {
       tree result = PHI_RESULT (phi);
 
@@ -783,7 +783,7 @@ rewrite_add_phi_arguments (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
     {
       tree phi;
 
-      for (phi = phi_nodes (e->dest); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (e->dest); phi; phi = PHI_CHAIN (phi))
 	{
 	  tree currdef;
 
@@ -818,7 +818,7 @@ rewrite_virtual_phi_arguments (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
       if (e->dest == EXIT_BLOCK_PTR)
 	continue;
 
-      for (phi = phi_nodes (e->dest); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (e->dest); phi; phi = PHI_CHAIN (phi))
 	{
 	  tree result = PHI_RESULT (phi);
 	  op = PHI_ARG_DEF_PTR_FROM_EDGE (phi, e);
@@ -852,7 +852,7 @@ ssa_rewrite_phi_arguments (struct dom_walk_data *walk_data, basic_block bb)
       if (e->dest == EXIT_BLOCK_PTR)
 	continue;
 
-      for (phi = phi_nodes (e->dest); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (e->dest); phi; phi = PHI_CHAIN (phi))
 	{
 	  op = PHI_ARG_DEF_PTR_FROM_EDGE (phi, e);
 	  if (TREE_CODE (USE_FROM_PTR (op)) != SSA_NAME)

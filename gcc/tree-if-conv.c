@@ -591,7 +591,7 @@ if_convertable_loop_p (struct loop *loop, bool for_vectorizer ATTRIBUTE_UNUSED)
       /* ??? Check data dependency for vectorizer.  */
 
       /* What about phi nodes ? */
-      for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	if (!if_convertable_phi_p (loop, bb, phi))
 	  return false;
 
