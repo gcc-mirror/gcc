@@ -46,11 +46,20 @@ class FloatViewBufferImpl extends FloatBuffer
   private boolean readOnly;
   private ByteOrder endian;
   
+  FloatViewBufferImpl (ByteBuffer bb, int capacity)
+  {
+    super (capacity, capacity, 0, -1);
+    this.bb = bb;
+    this.offset = bb.position();
+    this.readOnly = bb.isReadOnly();
+    this.endian = bb.order();
+  }
+  
   public FloatViewBufferImpl (ByteBuffer bb, int offset, int capacity,
 			      int limit, int position, int mark,
 			      boolean readOnly, ByteOrder endian)
   {
-    super (limit >> 2, limit >> 2, position >> 2, mark >> 2);
+    super (capacity, limit, position, mark);
     this.bb = bb;
     this.offset = offset;
     this.readOnly = readOnly;

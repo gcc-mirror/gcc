@@ -12,6 +12,13 @@
 	* java/nio/IntBuffer.java:  Likewise.
 	* java/nio/LongBuffer.java:  Likewise.
 	* java/nio/ShortBuffer.java:  Likewise.
+	* java/nio/CharViewBufferImpl.java:  New convenience constructor.
+	Fix buggy call to super constructor.
+	* java/nio/DoubleViewBufferImpl.java:  Likewise.
+	* java/nio/FloatViewBufferImpl.java:  Likewise.
+	* java/nio/IntViewBufferImpl.java:  Likewise.
+	* java/nio/LongViewBufferImpl.java:  Likewise.
+	* java/nio/ShortViewBufferImpl.java:  Likewise.
 
 2004-02-15  Ito Kazumitsu  <kaz@maczuka.gcd.org>
 
