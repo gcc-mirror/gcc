@@ -1,5 +1,10 @@
 2003-01-23  Tom Tromey  <tromey@redhat.com>
 
+	* jcf-parse.c (parse_zip_file_entries): Overwrite trailing \0 of
+	file name in resource buffer.
+
+2003-01-23  Tom Tromey  <tromey@redhat.com>
+
 	* expr.c (build_known_method_ref): Use method's context to find
 	method table index.
 

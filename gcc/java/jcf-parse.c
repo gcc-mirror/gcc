@@ -1221,7 +1221,9 @@ parse_zip_file_entries (void)
 	    buffer = ALLOC (zdir->filename_length + 1 +
 			    (jcf->buffer_end - jcf->buffer));
 	    strcpy (buffer, file_name);
-	    memcpy (buffer + zdir->filename_length + 1,
+	    /* This is not a typo: we overwrite the trailing \0 of the
+	       file name; this is just how the data is laid out.  */
+	    memcpy (buffer + zdir->filename_length,
 		    jcf->buffer, jcf->buffer_end - jcf->buffer);
 
 	    compile_resource_data (file_name, buffer,
