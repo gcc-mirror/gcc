@@ -1,3 +1,27 @@
+Mon Mar 30 14:43:20 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * Makefile.in (cppalloc.o, cpperror.o, cppexp.o, cpphash.o,
+ 	cpplib.o, cppmain.o, fix-header.o, gcov.o, gen-protos.o,
+ 	gengenrtl.o, halfpic.o, hash.o, scan-decls.o, scan.o): Depend on
+ 	system.h.
+	 
+        * cpphash.c: Include config.h.
+        * cppalloc.c: Include system.h.  Add parameters to various
+        function prototypes.
+        * cpperror.c: Likewise.
+        * cppexp.c: Likewise.
+        * cpphash.c: Likewise.
+        * cpplib.c: Likewise.
+        * cppmain.c: Likewise.
+        * fix-header.c: Likewise.
+        * gcov.c: Likewise.
+        * gen-protos.c: Likewise.
+        * gengenrtl.c: Likewise.
+        * halfpic.c: Likewise.
+        * hash.c: Likewise.
+        * scan-decls.c: Likewise.
+        * scan.c: Likewise.
+
 Mon Mar 30 11:06:45 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* README.gnat: Add lang_print_xnode definition.

@@ -25,31 +25,16 @@ Written by Per Bothner 1994.  */
 /* Parse a C expression from text in a string  */
    
 #include "config.h"
+#include "system.h"
 #include "cpplib.h"
 #include "gansidecl.h"
 
 extern char *xmalloc PARAMS ((unsigned));
 extern char *xrealloc PARAMS ((void *, unsigned));
 
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
 #ifdef MULTIBYTE_CHARS
 #include <locale.h>
 #endif
-
-#if HAVE_LIMITS_H
-# include <limits.h>
-#endif
-#ifdef HAVE_STRING_H
-#include <string.h>
-#else
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif
-#endif
-
-#include <stdio.h>
 
 /* This is used for communicating lists of keywords with cccp.c.  */
 struct arglist {
@@ -58,26 +43,6 @@ struct arglist {
   int length;
   int argno;
 };
-
-/* Define a generic NULL if one hasn't already been defined.  */
-
-#ifndef NULL
-#define NULL 0
-#endif
-
-#ifndef GENERIC_PTR
-#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
-#define GENERIC_PTR void *
-#else
-#define GENERIC_PTR char *
-#endif
-#endif
-
-#ifndef NULL_PTR
-#define NULL_PTR ((GENERIC_PTR) 0)
-#endif
-
-extern char *xmalloc ();
 
 #ifndef CHAR_TYPE_SIZE
 #define CHAR_TYPE_SIZE BITS_PER_UNIT
@@ -115,9 +80,9 @@ extern char *xmalloc ();
    number with SUM's sign, where A, B, and SUM are all C integers.  */
 #define possible_sum_sign(a, b, sum) ((((a) ^ (b)) | ~ ((a) ^ (sum))) < 0)
 
-static void integer_overflow ();
-static long left_shift ();
-static long right_shift ();
+static void integer_overflow PARAMS ((cpp_reader *));
+static long left_shift PARAMS ((cpp_reader *, long, int, unsigned long));
+static long right_shift PARAMS ((cpp_reader *, long, int, unsigned long));
 
 #define ERROR 299
 #define OROR 300

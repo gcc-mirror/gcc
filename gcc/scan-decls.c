@@ -17,9 +17,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
    Written by Per Bothner <bothner@cygnus.com>, July 1993.  */
 
-#include <stdio.h>
-#include <ctype.h>
 #include "hconfig.h"
+#include "system.h"
 #include "cpplib.h"
 
 int brace_nesting = 0;
