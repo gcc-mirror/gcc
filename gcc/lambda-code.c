@@ -672,7 +672,7 @@ lambda_compute_auxillary_space (lambda_loopnest nest,
   lambda_matrix A, B, A1, B1;
   lambda_vector a, a1;
   lambda_matrix invertedtrans;
-  int determinant, depth, invariants, size;
+  int depth, invariants, size;
   int i, j;
   lambda_loop loop;
   lambda_linear_expression expression;
@@ -787,8 +787,8 @@ lambda_compute_auxillary_space (lambda_loopnest nest,
   invertedtrans = lambda_matrix_new (depth, depth);
 
   /* Compute the inverse of U.  */
-  determinant = lambda_matrix_inverse (LTM_MATRIX (trans),
-				       invertedtrans, depth);
+  lambda_matrix_inverse (LTM_MATRIX (trans),
+			 invertedtrans, depth);
 
   /* A = A1 inv(U).  */
   lambda_matrix_mult (A1, invertedtrans, A, size, depth, depth);
