@@ -4075,8 +4075,8 @@ move\\t%0,%z4\\n\\
 ;; Argument 3 is the alignment
 
 (define_expand "movstrsi"
-  [(parallel [(set (mem:BLK (match_operand:BLK 0 "general_operand" ""))
-		   (mem:BLK (match_operand:BLK 1 "general_operand" "")))
+  [(parallel [(set (match_operand:BLK 0 "general_operand" "")
+		   (match_operand:BLK 1 "general_operand" ""))
 	      (use (match_operand:SI 2 "arith32_operand" ""))
 	      (use (match_operand:SI 3 "immediate_operand" ""))])]
   ""
