@@ -1339,6 +1339,15 @@ darwin_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED)
     darwin_make_decl_one_only (decl);
 }
 
+#define HAVE_DEAD_STRIP 0
+
+static void
+no_dead_strip (FILE *file, const char *lab)
+{
+  if (HAVE_DEAD_STRIP)
+    fprintf (file, ".no_dead_strip %s\n", lab);
+}
+
 /* Emit a label for an FDE, making it global and/or weak if appropriate. 
    The third parameter is nonzero if this is for exception handling.
    The fourth parameter is nonzero if this is just a placeholder for an
@@ -1388,7 +1397,15 @@ darwin_emit_unwind_label (FILE *file, tree decl, int for_eh, int empty)
     fprintf (file, ".weak_definition %s\n", lab);
 
   if (empty)
-    fprintf (file, "%s = 0\n", lab);
+    {
+      fprintf (file, "%s = 0\n", lab);
+
+      /* Mark the absolute .eh and .eh1 style labels as needed to
+	 ensure that we don't dead code strip them and keep such
+	 labels from another instantiation point until we can fix this
+	 properly with group comdat support.  */
+      no_dead_strip (file, lab);
+    }
   else
     fprintf (file, "%s:\n", lab);
 
