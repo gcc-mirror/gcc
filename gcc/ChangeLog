@@ -1,3 +1,7 @@
+2003-01-06  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/mips.md (movdf_internal2): Fix constraints.
+
 2003-01-06  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (*twoshifts_l16_r1): New.
@@ -138,7 +142,7 @@
 
 	* integrate.c (copy_decl_for_inlining): Don't clear the rtl for
 	static/external decls.
-        
+
 	* c-common.c (finish_fname_decls): Put the DECL_STMTs inside the
 	outermost scope.
 	* c-decl.c (c_make_fname_decl): Push the decls there, too.
@@ -733,7 +737,7 @@ Sun Dec 22 18:23:44 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-12-20  Hartmut Penner  <hpenner@de.ibm.com>
 
-	* doc/invoke.texi: Document -mzarch, -mesa, -mcpu= and -march=
+       	* doc/invoke.texi: Document -mzarch, -mesa, -mcpu= and -march=
 	option for S/390 and zSeries.
         * config/s390/s390.c (s390_cpu, s390_cpu_string, s390_arch,
         s390_arch_string): New variables.
