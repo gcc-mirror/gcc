@@ -1226,6 +1226,7 @@ __builtin_new (sz)
 #ifdef L_caps_New
 
 /* This gets us __GNU_LIBRARY__.  */
+#undef NULL /* Avoid errors if stdio.h and our stddef.h mismatch.  */
 #include <stdio.h>
 
 #ifdef __GNU_LIBRARY__
@@ -1499,6 +1500,7 @@ __enable_execute_stack ()
 
 #ifdef __pyr__
 
+#undef NULL /* Avoid errors if stdio.h and our stddef.h mismatch.  */
 #include <stdio.h>
 #include <sys/mman.h>
 #include <sys/types.h>
