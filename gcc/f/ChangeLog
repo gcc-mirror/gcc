@@ -1,3 +1,11 @@
+2002-09-09  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	Fix PR web/7596:
+	* ffe.texi (Front End): Fix broken links.
+	* bugs.texi (Known Bugs): Refer to gcc.gnu.org instead of
+	www.gnu.org for onlinedocs.
+	* news.texi (News): Ditto.
+	
 2002-09-07  Jan Hubicka  <jh@suse.cz>
 
 	* com.c (ffe_type_for_mode): Handle long double.
