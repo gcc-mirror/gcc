@@ -1561,9 +1561,15 @@ assemble_name (file, name)
      char *name;
 {
   char *real_name;
+  int save_warn_id_clash = warn_id_clash;
 
   STRIP_NAME_ENCODING (real_name, name);
+
+  /* Don't warn about an identifier name length clash on this name, since
+     it can be a user symbol suffixed by a number.  */
+  warn_id_clash = 0;
   TREE_SYMBOL_REFERENCED (get_identifier (real_name)) = 1;
+  warn_id_clash = save_warn_id_clash;
 
   if (name[0] == '*')
     {
