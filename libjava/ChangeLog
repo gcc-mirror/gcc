@@ -1,3 +1,14 @@
+2004-10-09  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/rmi/rmic/RMIC.java,
+	gnu/java/rmi/server/RMIHashes.java,
+	gnu/java/rmi/server/RMIObjectInputStream.java,
+	gnu/java/rmi/server/UnicastConnection.java,
+	gnu/java/rmi/server/UnicastConnectionManager.java,
+	gnu/java/rmi/server/UnicastRemoteCall.java,
+	gnu/java/rmi/server/UnicastServerRef.java:
+	Reworked import statements and fixed file headers.
+
 2004-10-04  Loren J. Rittle  <ljrittle@acm.org>
 
 	* configure.ac (*-*-freebsd[[1234]]*): Refine error message

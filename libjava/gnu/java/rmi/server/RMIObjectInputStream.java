@@ -41,11 +41,10 @@ import java.io.ObjectStreamClass;
 import java.io.ObjectInputStream;
 import java.io.InputStream;
 import java.io.IOException;
+import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.rmi.server.RMIClassLoader;
-import java.lang.ClassNotFoundException;
-import java.lang.reflect.Proxy;
 
 public class RMIObjectInputStream
 	extends ObjectInputStream {
