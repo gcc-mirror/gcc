@@ -2541,36 +2541,6 @@ if test x"$gcc_cv_ld_pie" = xyes; then
 fi
 AC_MSG_RESULT($gcc_cv_ld_pie)
 
-# Miscellaneous target-specific checks.
-case "$target" in
-  mips*-*-*)
-    AC_MSG_CHECKING(whether libgloss uses STARTUP directives consistently)
-    gcc_cv_mips_libgloss_startup=no
-    gcc_cv_libgloss_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/libgloss
-    if test "x$exec_prefix" = xNONE; then
-      if test "x$prefix" = xNONE; then
-        test_prefix=/usr/local
-      else
-        test_prefix=$prefix
-      fi
-    else
-      test_prefix=$exec_prefix
-    fi
-    for f in $gcc_cv_libgloss_srcdir/mips/idt.ld $test_prefix/$target_noncanonical/lib/idt.ld
-    do
-      if grep '^STARTUP' $f > /dev/null 2>&1; then
-        gcc_cv_mips_libgloss_startup=yes
-        break
-      fi
-    done
-    if test x"$gcc_cv_mips_libgloss_startup" = xyes; then
-      AC_DEFINE(HAVE_MIPS_LIBGLOSS_STARTUP_DIRECTIVES, 1,
-        [Define if your MIPS libgloss linker scripts consistently include STARTUP directives.])
-    fi
-    AC_MSG_RESULT($gcc_cv_mips_libgloss_startup)
-    ;;
-esac
-
 if test x$with_sysroot = x && test x$host = x$target \
    && test "$prefix" != "/usr" && test "x$prefix" != "x$local_prefix" ; then
   AC_DEFINE_UNQUOTED(PREFIX_INCLUDE_DIR, "$prefix/include",

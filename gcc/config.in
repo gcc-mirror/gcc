@@ -517,9 +517,6 @@
 /* Define if your linker supports -pie option. */
 #undef HAVE_LD_PIE
 
-/* Define if your MIPS libgloss linker scripts consistently include STARTUP directives. */
-#undef HAVE_MIPS_LIBGLOSS_STARTUP_DIRECTIVES
-
 /* Define to PREFIX/include if cpp should also search that directory. */
 #undef PREFIX_INCLUDE_DIR
 
