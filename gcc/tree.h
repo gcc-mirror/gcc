@@ -733,6 +733,11 @@ struct tree_type
    for symbolic debug purposes.  */
 #define DECL_IGNORED_P(NODE) ((NODE)->decl.ignored_flag)
 
+/* Nonzero if a _DECL means that no warnings should be generated just
+   because this decl is unused.  */
+#define DECL_IN_SYSTEM_HEADER(NODE) ((NODE)->decl.in_system_header_flag)
+
+/* Language-specific decl information.  */
 #define DECL_LANG_SPECIFIC(NODE) ((NODE)->decl.lang_specific)
 
 /* In a VAR_DECL or FUNCTION_DECL,
@@ -809,6 +814,9 @@ struct tree_decl
   unsigned virtual_flag : 1;
   unsigned from_inline_flag : 1;
   unsigned ignored_flag : 1;
+
+  unsigned in_system_header_flag : 1;
+  /* room for seven more */
 
   unsigned lang_flag_0 : 1;
   unsigned lang_flag_1 : 1;
