@@ -1,3 +1,17 @@
+2004-11-21  Jeff Law  <law@redhat.com>
+
+	* tree-ssa.c (verify_use): Fix comment.
+	(verify_phi_args): Check that the number of incoming edges matches
+	the number of PHI arguments.  Check that each PHI argument is
+	either an SSA_NAME or an invariant.  Coalesce tests for PHIs for
+	dead or duplicated edges.  Clear e->aux earlier and avoid separate
+	loop to clear e->aux and test for missed edges.
+	(verify_ssa): Remove first walk over statements.  Move checking
+	of PHI args into verify_phi_args.  Move checking of statements
+	with aliased stores and V_MAY_DEFS into the remaining loop over
+	the statements.  Register defs by walking through the formal
+	SSA_NAME table.
+
 2004-11-21  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/18520
