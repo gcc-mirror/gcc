@@ -1,3 +1,9 @@
+Tue Jan  8 15:56:41 2002  Nicola Pero  <nicola@brainstorm.co.uk>
+
+	* objc/objc-act.c (handle_class_ref): Mark the declaration of
+	%sobjc_class_ref_%s as used - to prevent unwanted compiler
+	warnings.
+
 2002-01-08  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/linux.h (ASM_OUTPUT_LABELREF): Remove.
