@@ -1,3 +1,8 @@
+2002-04-21  Hans-Peter Nilsson  <hp@axis.com>
+
+	* g++.dg/opt/cleanup1.C (C::C()): Initialize member c.
+	Clarify comment.
+
 2002-04-21  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* gcc.c-torture/execute/20000906-1.x: Delete.
