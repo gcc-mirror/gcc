@@ -1,3 +1,8 @@
+2002-01-12  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* conflict.c (conflict_graph_compute): Free regsets when finished.
+	* ssa.c (compute_coalesced_reg_partition): Likewise.
+	
 2002-01-12  Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
 	* global.c (find_reg): Check for HARD_REGNO_CALL_PART_CLOBBERED
