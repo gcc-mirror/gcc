@@ -1,3 +1,17 @@
+Tue Aug 10 09:26:07 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* dwarf2out.c (dwarf2out_frame_debug_expr, add_incomplete_type,
+	retry_incomplete_types): Add static prototype.
+	(stripattributes, dwarf_cfi_name, ASM_OUTPUT_DWARF_STRING,
+	dwarf_tag_name, dwarf_attr_name, dwarf_form_name,
+	dwarf_stack_op_name, dwarf_type_encoding_name, add_AT_string,
+	dwarf2_name, add_name_attribute, lookup_filename, dwarf2out_line,
+	dwarf2out_start_source_file, dwarf2out_define, dwarf2out_undef):
+	Constify a char*.
+
+	* dwarf2out.h (dwarf2out_define, dwarf2out_undef,
+	dwarf2out_start_source_file, dwarf2out_line): Likewise.
+
 Tue Aug 10 09:21:46 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* output.h (assemble_name): Constify a char*.

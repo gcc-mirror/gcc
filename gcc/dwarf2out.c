@@ -186,8 +186,8 @@ static unsigned current_funcdef_fde;
 
 /* Forward declarations for functions defined in this file.  */
 
-static char *stripattributes		PROTO((char *));
-static char *dwarf_cfi_name		PROTO((unsigned));
+static char *stripattributes		PROTO((const char *));
+static const char *dwarf_cfi_name	PROTO((unsigned));
 static dw_cfi_ref new_cfi		PROTO((void));
 static void add_cfi			PROTO((dw_cfi_ref *, dw_cfi_ref));
 static unsigned long size_of_uleb128	PROTO((unsigned long));
@@ -205,6 +205,7 @@ static void output_cfi			PROTO((dw_cfi_ref, dw_fde_ref));
 static void output_call_frame_info	PROTO((int));
 static unsigned reg_number		PROTO((rtx));
 static void dwarf2out_stack_adjust	PROTO((rtx));
+static void dwarf2out_frame_debug_expr	PROTO((rtx, char *));
 
 /* Definitions of defaults for assembler-dependent names of various
    pseudo-ops and section names.
@@ -471,7 +472,7 @@ static void dwarf2out_stack_adjust	PROTO((rtx));
 #define ASM_OUTPUT_DWARF_STRING(FILE,P) \
   do {									      \
     register int slen = strlen(P);                                            \
-    register char *p = (P);  	                                              \
+    register const char *p = (P);  	                                      \
     register int i;					                      \
     fprintf (FILE, "\t.ascii \"");				              \
     for (i = 0; i < slen; i++)					              \
@@ -527,7 +528,7 @@ expand_builtin_dwarf_fp_regnum ()
 
 static inline char *
 stripattributes (s)
-     char *s;
+     const char *s;
 {
   char *stripped = xmalloc (strlen (s) + 2);
   char *p = stripped;
@@ -667,7 +668,7 @@ expand_builtin_dwarf_reg_size (reg_tree, target)
 
 /* Convert a DWARF call frame info. operation to its string name */
 
-static char *
+static const char *
 dwarf_cfi_name (cfi_opc)
      register unsigned cfi_opc;
 {
@@ -2461,12 +2462,12 @@ static char *addr_to_string		PROTO((rtx));
 static int is_pseudo_reg		PROTO((rtx));
 static tree type_main_variant		PROTO((tree));
 static int is_tagged_type		PROTO((tree));
-static char *dwarf_tag_name		PROTO((unsigned));
-static char *dwarf_attr_name		PROTO((unsigned));
-static char *dwarf_form_name		PROTO((unsigned));
-static char *dwarf_stack_op_name	PROTO((unsigned));
+static const char *dwarf_tag_name	PROTO((unsigned));
+static const char *dwarf_attr_name	PROTO((unsigned));
+static const char *dwarf_form_name	PROTO((unsigned));
+static const char *dwarf_stack_op_name	PROTO((unsigned));
 #if 0
-static char *dwarf_type_encoding_name	PROTO((unsigned));
+static const char *dwarf_type_encoding_name PROTO((unsigned));
 #endif
 static tree decl_ultimate_origin	PROTO((tree));
 static tree block_ultimate_origin	PROTO((tree));
@@ -2487,7 +2488,8 @@ static void add_AT_float		PROTO((dw_die_ref,
 					       enum dwarf_attribute,
 					       unsigned, long *));
 static void add_AT_string		PROTO((dw_die_ref,
-					       enum dwarf_attribute, char *));
+					       enum dwarf_attribute,
+					       const char *));
 static void add_AT_die_ref		PROTO((dw_die_ref,
 					       enum dwarf_attribute,
 					       dw_die_ref));
@@ -2551,7 +2553,7 @@ static void output_loc_operands		PROTO((dw_loc_descr_ref));
 static unsigned long sibling_offset	PROTO((dw_die_ref));
 static void output_die			PROTO((dw_die_ref));
 static void output_compilation_unit_header PROTO((void));
-static char *dwarf2_name		PROTO((tree, int));
+static const char *dwarf2_name		PROTO((tree, int));
 static void add_pubname			PROTO((tree, dw_die_ref));
 static void output_pubnames		PROTO((void));
 static void add_arange			PROTO((tree, dw_die_ref));
@@ -2579,7 +2581,7 @@ static void add_AT_location_description	PROTO((dw_die_ref,
 static void add_data_member_location_attribute PROTO((dw_die_ref, tree));
 static void add_const_value_attribute	PROTO((dw_die_ref, rtx));
 static void add_location_or_const_value_attribute PROTO((dw_die_ref, tree));
-static void add_name_attribute		PROTO((dw_die_ref, char *));
+static void add_name_attribute		PROTO((dw_die_ref, const char *));
 static void add_bound_info		PROTO((dw_die_ref,
 					       enum dwarf_attribute, tree));
 static void add_subscript_info		PROTO((dw_die_ref, tree));
@@ -2635,7 +2637,9 @@ static void gen_block_die		PROTO((tree, dw_die_ref, int));
 static void decls_for_scope		PROTO((tree, dw_die_ref, int));
 static int is_redundant_typedef		PROTO((tree));
 static void gen_decl_die		PROTO((tree, dw_die_ref));
-static unsigned lookup_filename		PROTO((char *));
+static unsigned lookup_filename		PROTO((const char *));
+static void add_incomplete_type		PROTO((tree));
+static void retry_incomplete_types	PROTO((void));
 
 /* Section names used to hold DWARF debugging information.  */
 #ifndef DEBUG_INFO_SECTION
@@ -2936,7 +2940,7 @@ is_tagged_type (type)
 
 /* Convert a DIE tag into its string name.  */
 
-static char *
+static const char *
 dwarf_tag_name (tag)
      register unsigned tag;
 {
@@ -3053,7 +3057,7 @@ dwarf_tag_name (tag)
 
 /* Convert a DWARF attribute code into its string name.  */
 
-static char *
+static const char *
 dwarf_attr_name (attr)
      register unsigned attr;
 {
@@ -3226,7 +3230,7 @@ dwarf_attr_name (attr)
 
 /* Convert a DWARF value form code into its string name.  */
 
-static char *
+static const char *
 dwarf_form_name (form)
      register unsigned form;
 {
@@ -3281,7 +3285,7 @@ dwarf_form_name (form)
 
 /* Convert a DWARF stack opcode into its string name.  */
 
-static char *
+static const char *
 dwarf_stack_op_name (op)
      register unsigned op;
 {
@@ -3585,7 +3589,7 @@ dwarf_stack_op_name (op)
 /* Convert a DWARF type code into its string name.  */
 
 #if 0
-static char *
+static const char *
 dwarf_type_encoding_name (enc)
      register unsigned enc;
 {
@@ -3804,7 +3808,7 @@ static inline void
 add_AT_string (die, attr_kind, str)
      register dw_die_ref die;
      register enum dwarf_attribute attr_kind;
-     register char *str;
+     register const char *str;
 {
   register dw_attr_ref attr = (dw_attr_ref) xmalloc (sizeof (dw_attr_node));
 
@@ -5518,7 +5522,7 @@ output_compilation_unit_header ()
    of decl_printable_name for C++ looks like "A::f(int)".  Let's drop the
    argument list, and maybe the scope.  */
 
-static char *
+static const char *
 dwarf2_name (decl, scope)
      tree decl;
      int scope;
@@ -7269,7 +7273,7 @@ add_location_or_const_value_attribute (die, decl)
 static inline void
 add_name_attribute (die, name_string)
      register dw_die_ref die;
-     register char *name_string;
+     register const char *name_string;
 {
   if (name_string != NULL && *name_string != 0)
     add_AT_string (die, DW_AT_name, name_string);
@@ -9793,7 +9797,7 @@ dwarf2out_label (insn)
 
 static unsigned
 lookup_filename (file_name)
-     char *file_name;
+     const char *file_name;
 {
   static unsigned last_file_lookup_index = 0;
   register unsigned i;
@@ -9835,7 +9839,7 @@ lookup_filename (file_name)
 
 void
 dwarf2out_line (filename, line)
-     register char *filename;
+     register const char *filename;
      register unsigned line;
 {
   if (debug_info_level >= DINFO_LEVEL_NORMAL)
@@ -9904,7 +9908,7 @@ dwarf2out_line (filename, line)
 
 void
 dwarf2out_start_source_file (filename)
-     register char *filename ATTRIBUTE_UNUSED;
+     register const char *filename ATTRIBUTE_UNUSED;
 {
 }
 
@@ -9923,7 +9927,7 @@ dwarf2out_end_source_file ()
 void
 dwarf2out_define (lineno, buffer)
      register unsigned lineno ATTRIBUTE_UNUSED;
-     register char *buffer ATTRIBUTE_UNUSED;
+     register const char *buffer ATTRIBUTE_UNUSED;
 {
   static int initialized = 0;
   if (!initialized)
@@ -9940,7 +9944,7 @@ dwarf2out_define (lineno, buffer)
 void
 dwarf2out_undef (lineno, buffer)
      register unsigned lineno ATTRIBUTE_UNUSED;
-     register char *buffer ATTRIBUTE_UNUSED;
+     register const char *buffer ATTRIBUTE_UNUSED;
 {
 }
 
