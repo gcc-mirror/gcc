@@ -1,3 +1,7 @@
+1998-07-13  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Makefile.in (VERSION): Bump to 2.9.0.
+
 1998-07-12  Bob Sidebotham <rns@fore.com>
 
 	* tstring.cc (findtest): New fn.
