@@ -1737,7 +1737,7 @@ all_iter_stmt_simple:
 	      error ("`%s' is not an iterator",
 		     IDENTIFIER_POINTER (DECL_NAME ($3)));
 	    else if (ITERATOR_BOUND_P ($3))
-	      error ("`for (%s)' inside expansion of same iterator"
+	      error ("`for (%s)' inside expansion of same iterator",
 		     IDENTIFIER_POINTER (DECL_NAME ($3)));
 	    else
 	      {
