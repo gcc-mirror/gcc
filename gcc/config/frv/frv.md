@@ -5260,7 +5260,7 @@
     operands[2] = const0_rtx;
 
   if (TARGET_FDPIC)
-    frv_expand_fdpic_call (operands, 0);
+    frv_expand_fdpic_call (operands, false, false);
   else
     emit_call_insn (gen_call_internal (addr, operands[1], operands[2], lr));
 
@@ -5308,7 +5308,7 @@
 	 (match_operand 1 "" ""))
    (clobber (match_operand:SI 2 "lr_operand" "=l"))]
   "TARGET_FDPIC"
-  "calll %M0"
+  "call%i0l %M0"
   [(set_attr "length" "4")
    (set_attr "type" "jumpl")])
 
@@ -5324,6 +5324,65 @@
    call%i0l %M0"
   [(set_attr "length" "4")
    (set_attr "type" "call,jumpl")])
+
+(define_expand "sibcall"
+  [(use (match_operand:QI 0 "" ""))
+   (use (match_operand 1 "" ""))
+   (use (match_operand 2 "" ""))
+   (use (match_operand 3 "" ""))]
+  ""
+  "
+{
+  rtx addr;
+
+  if (GET_CODE (operands[0]) != MEM)
+    abort ();
+
+  addr = XEXP (operands[0], 0);
+  if (! sibcall_operand (addr, Pmode))
+    addr = force_reg (Pmode, addr);
+
+  if (! operands[2])
+    operands[2] = const0_rtx;
+
+  if (TARGET_FDPIC)
+    frv_expand_fdpic_call (operands, false, true);
+  else
+    emit_call_insn (gen_sibcall_internal (addr, operands[1], operands[2]));
+
+  DONE;
+}")
+  
+;; It might seem that these sibcall patterns are missing references to
+;; LR, but they're not necessary because sibcall_epilogue will make
+;; sure LR is restored, and having LR here will set
+;; regs_ever_used[REG_LR], forcing it to be saved on the stack, and
+;; then restored in sibcalls and regular return code paths, even if
+;; the function becomes a leaf function after tail-call elimination.
+
+;; We must not use a call-saved register here.  `W' limits ourselves
+;; to gr14 or gr15, but since we're almost running out of constraint
+;; letters, and most other call-clobbered registers are often used for
+;; argument-passing, this will do.
+(define_insn "sibcall_internal"
+  [(call (mem:QI (match_operand:SI 0 "sibcall_operand" "WNOP"))
+	 (match_operand 1 "" ""))
+   (use (match_operand 2 "" ""))
+   (return)]
+  "! TARGET_FDPIC"
+  "jmp%i0l %M0"
+  [(set_attr "length" "4")
+   (set_attr "type" "jumpl")])
+
+(define_insn "sibcall_fdpicdi"
+  [(call (mem:QI (match_operand:DI 0 "fdpic_fptr_operand" "W"))
+	 (match_operand 1 "" ""))
+   (return)]
+  "TARGET_FDPIC"
+  "jmp%i0l %M0"
+  [(set_attr "length" "4")
+   (set_attr "type" "jumpl")])
+
 
 ;; Subroutine call instruction returning a value.  Operand 0 is the hard
 ;; register in which the value is returned.  There are three more operands, the
@@ -5355,7 +5414,7 @@
     operands[3] = const0_rtx;
 
   if (TARGET_FDPIC)
-    frv_expand_fdpic_call (operands, 1);
+    frv_expand_fdpic_call (operands, true, false);
   else
     emit_call_insn (gen_call_value_internal (operands[0], addr, operands[2],
 					     operands[3], lr));
@@ -5382,7 +5441,7 @@
 	      (match_operand 2 "" "")))
    (clobber (match_operand:SI 3 "lr_operand" "=l"))]
   "TARGET_FDPIC"
-  "calll %M1"
+  "call%i1l %M1"
   [(set_attr "length" "4")
    (set_attr "type" "jumpl")])
 
@@ -5399,6 +5458,56 @@
    call%i1l %M1"
   [(set_attr "length" "4")
    (set_attr "type" "call,jumpl")])
+
+(define_expand "sibcall_value"
+  [(use (match_operand 0 "" ""))
+   (use (match_operand:QI 1 "" ""))
+   (use (match_operand 2 "" ""))
+   (use (match_operand 3 "" ""))
+   (use (match_operand 4 "" ""))]
+  ""
+  "
+{
+  rtx addr;
+
+  if (GET_CODE (operands[1]) != MEM)
+    abort ();
+
+  addr = XEXP (operands[1], 0);
+  if (! sibcall_operand (addr, Pmode))
+    addr = force_reg (Pmode, addr);
+
+  if (! operands[3])
+    operands[3] = const0_rtx;
+
+  if (TARGET_FDPIC)
+    frv_expand_fdpic_call (operands, true, true);
+  else
+    emit_call_insn (gen_sibcall_value_internal (operands[0], addr, operands[2],
+						operands[3]));
+  DONE;
+}")
+
+(define_insn "sibcall_value_internal"
+  [(set (match_operand 0 "register_operand" "=d")
+	(call (mem:QI (match_operand:SI 1 "sibcall_operand" "WNOP"))
+		      (match_operand 2 "" "")))
+   (use (match_operand 3 "" ""))
+   (return)]
+  "! TARGET_FDPIC"
+  "jmp%i1l %M1"
+  [(set_attr "length" "4")
+   (set_attr "type" "jumpl")])
+
+(define_insn "sibcall_value_fdpicdi"
+  [(set (match_operand 0 "register_operand" "=d")
+	(call (mem:QI (match_operand:DI 1 "fdpic_fptr_operand" "W"))
+	      (match_operand 2 "" "")))
+   (return)]
+  "TARGET_FDPIC"
+  "jmp%i1l %M1"
+  [(set_attr "length" "4")
+   (set_attr "type" "jumpl")])
 
 ;; return instruction generated instead of jmp to epilog
 (define_expand "return"
@@ -5429,6 +5538,30 @@
     jmpl @(%0,%.)"
   [(set_attr "length" "4")
    (set_attr "type" "jump,jumpl")])
+
+(define_insn "*return_unsigned_true"
+  [(set (pc)
+	(if_then_else (match_operator:CC_UNS 0 "unsigned_relational_operator"
+					     [(match_operand 1 "icc_operand" "t")
+					      (const_int 0)])
+		      (return)
+		      (pc)))]
+  "direct_return_p ()"
+  "b%c0lr %1,%#"
+  [(set_attr "length" "4")
+   (set_attr "type" "jump")])
+
+(define_insn "*return_unsigned_false"
+  [(set (pc)
+	(if_then_else (match_operator:CC_UNS 0 "unsigned_relational_operator"
+					     [(match_operand 1 "icc_operand" "t")
+					      (const_int 0)])
+		      (pc)
+		      (return)))]
+  "direct_return_p ()"
+  "b%C0lr %1,%#"
+  [(set_attr "length" "4")
+   (set_attr "type" "jump")])
 
 ;; A version of addsi3 for deallocating stack space at the end of the
 ;; epilogue.  The addition is done in parallel with an (unspec_volatile),
@@ -5634,7 +5767,7 @@
   ""
   "
 {
-  frv_expand_epilogue (FALSE);
+  frv_expand_epilogue (true);
   DONE;
 }")
 
@@ -5650,7 +5783,7 @@
   ""
   "
 {
-  frv_expand_epilogue (TRUE);
+  frv_expand_epilogue (false);
   DONE;
 }")
 

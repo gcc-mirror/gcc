@@ -285,6 +285,7 @@ static bool frv_cannot_force_const_mem		(rtx);
 static const char *unspec_got_name		(int);
 static void frv_output_const_unspec		(FILE *,
 						 const struct frv_unspec *);
+static bool frv_function_ok_for_sibcall		(tree, tree);
 static rtx frv_struct_value_rtx			(tree, int);
 
 /* Initialize the GCC target structure.  */
@@ -319,6 +320,8 @@ static rtx frv_struct_value_rtx			(tree, int);
 #undef  TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE
 #define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE frv_use_dfa_pipeline_interface
 
+#undef TARGET_FUNCTION_OK_FOR_SIBCALL
+#define TARGET_FUNCTION_OK_FOR_SIBCALL frv_function_ok_for_sibcall
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM frv_cannot_force_const_mem
 
@@ -332,6 +335,16 @@ static rtx frv_struct_value_rtx			(tree, int);
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
+/* Any function call that satisfies the machine-independent
+   requirements is eligible on FR-V.  */
+
+static bool
+frv_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
+			     tree exp ATTRIBUTE_UNUSED)
+{
+  return true;
+}
+
 /* Return true if SYMBOL is a small data symbol and relocation RELOC
    can be used to access it directly in a load or store.  */
 
@@ -1749,7 +1762,7 @@ frv_function_epilogue (FILE *file ATTRIBUTE_UNUSED,
    slots for arguments passed to the current function.  */
 
 void
-frv_expand_epilogue (int sibcall_p)
+frv_expand_epilogue (bool emit_return)
 {
   frv_stack_t *info = frv_stack_info ();
   rtx fp = frame_pointer_rtx;
@@ -1769,9 +1782,7 @@ frv_expand_epilogue (int sibcall_p)
 
   /* Set RETURN_ADDR to the address we should return to.  Set it to NULL if
      no return instruction should be emitted.  */
-  if (sibcall_p)
-    return_addr = 0;
-  else if (info->save_p[LR_REGNO])
+  if (info->save_p[LR_REGNO])
     {
       int lr_offset;
       rtx mem;
@@ -1814,8 +1825,20 @@ frv_expand_epilogue (int sibcall_p)
   if (current_function_calls_eh_return)
     emit_insn (gen_stack_adjust (sp, sp, EH_RETURN_STACKADJ_RTX));
 
-  if (return_addr)
+  if (emit_return)
     emit_jump_insn (gen_epilogue_return (return_addr));
+  else
+    {
+      rtx lr = return_addr;
+
+      if (REGNO (return_addr) != LR_REGNO)
+	{
+	  lr = gen_rtx_REG (Pmode, LR_REGNO);
+	  emit_move_insn (lr, return_addr);
+	}
+
+      emit_insn (gen_rtx_USE (VOIDmode, lr));
+    }
 }
 
 
@@ -3529,7 +3552,7 @@ frv_legitimate_memory_operand (rtx op, enum machine_mode mode, int condexec_p)
 }
 
 void
-frv_expand_fdpic_call (rtx *operands, int ret_value)
+frv_expand_fdpic_call (rtx *operands, bool ret_value, bool sibcall)
 {
   rtx lr = gen_rtx_REG (Pmode, LR_REGNO);
   rtx picreg = get_hard_reg_initial_val (SImode, FDPIC_REG);
@@ -3565,8 +3588,9 @@ frv_expand_fdpic_call (rtx *operands, int ret_value)
      all external functions, so one would have to also mark function
      declarations available in the same module with non-default
      visibility, which is advantageous in itself.  */
-  if (GET_CODE (addr) == SYMBOL_REF && !SYMBOL_REF_LOCAL_P (addr)
-      && TARGET_INLINE_PLT)
+  if (GET_CODE (addr) == SYMBOL_REF
+      && ((!SYMBOL_REF_LOCAL_P (addr) && TARGET_INLINE_PLT)
+	  || sibcall))
     {
       rtx x, dest;
       dest = gen_reg_rtx (SImode);
@@ -3598,7 +3622,11 @@ frv_expand_fdpic_call (rtx *operands, int ret_value)
   picreg = gen_reg_rtx (DImode);
   emit_insn (gen_movdi_ldd (picreg, addr));
 
-  if (ret_value)
+  if (sibcall && ret_value)
+    c = gen_sibcall_value_fdpicdi (rvrtx, picreg, const0_rtx);
+  else if (sibcall)
+    c = gen_sibcall_fdpicdi (picreg, const0_rtx);
+  else if (ret_value)
     c = gen_call_value_fdpicdi (rvrtx, picreg, const0_rtx, lr);
   else
     c = gen_call_fdpicdi (picreg, const0_rtx, lr);
@@ -4758,6 +4786,21 @@ call_operand (rtx op, enum machine_mode mode)
 
   if (GET_CODE (op) == SYMBOL_REF)
     return TRUE;
+
+  /* Note this doesn't allow reg+reg or reg+imm12 addressing (which should
+     never occur anyway), but prevents reload from not handling the case
+     properly of a call through a pointer on a function that calls
+     vfork/setjmp, etc. due to the need to flush all of the registers to stack.  */
+  return gpr_or_int12_operand (op, mode);
+}
+
+/* Return true if operand is a memory reference suitable for a sibcall.  */
+
+int
+sibcall_operand (rtx op, enum machine_mode mode)
+{
+  if (GET_MODE (op) != mode && mode != VOIDmode && GET_CODE (op) != CONST_INT)
+    return FALSE;
 
   /* Note this doesn't allow reg+reg or reg+imm12 addressing (which should
      never occur anyway), but prevents reload from not handling the case

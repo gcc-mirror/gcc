@@ -3111,8 +3111,10 @@ do {                                                                    \
   { "odd_fpr_operand",			{ REG, SUBREG }},		\
   { "dbl_memory_one_insn_operand",	{ MEM }},			\
   { "dbl_memory_two_insn_operand",	{ MEM }},			\
-  { "call_operand",			{ REG, SUBREG, PLUS, CONST_INT,	\
-					  SYMBOL_REF, LABEL_REF, CONST }}, \
+  { "call_operand",			{ REG, SUBREG, CONST_INT,	\
+					  CONST, SYMBOL_REF }}, 	\
+  { "sibcall_operand",			{ REG, SUBREG, CONST_INT,	\
+					  CONST }}, 			\
   { "upper_int16_operand",		{ CONST_INT }},			\
   { "uint16_operand",			{ CONST_INT }},			\
   { "relational_operator",		{ EQ, NE, LE, LT, GE, GT,	\
