@@ -1,3 +1,9 @@
+Sun Jun 18 21:42:15 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* function.c (put_var_into_stack): Don't reference DECL_ fields
+	if input is a SAVE_EXPR.
+	Use set_mem_attributes in COMPLEX case.
+
 2000-06-18  Richard Henderson  <rth@cygnus.com>
 
 	* config/ia64/ia64-protos.h (process_for_unwind_directive): Declare.

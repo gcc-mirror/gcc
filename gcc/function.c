@@ -1335,6 +1335,9 @@ put_var_into_stack (decl)
   struct function *function = 0;
   tree context;
   int can_use_addressof;
+  int volatilep = TREE_CODE (decl) != SAVE_EXPR && TREE_THIS_VOLATILE (decl);
+  int usedp = (TREE_USED (decl)
+	       || (TREE_CODE (decl) != SAVE_EXPR && DECL_INITIAL (decl) != 0));
 
   context = decl_function_context (decl);
 
@@ -1362,7 +1365,7 @@ put_var_into_stack (decl)
 
   /* If this is a variable-size object with a pseudo to address it,
      put that pseudo into the stack, if the var is nonlocal.  */
-  if (DECL_NONLOCAL (decl)
+  if (TREE_CODE (decl) != SAVE_EXPR && DECL_NONLOCAL (decl)
       && GET_CODE (reg) == MEM
       && GET_CODE (XEXP (reg, 0)) == REG
       && REGNO (XEXP (reg, 0)) > LAST_VIRTUAL_REGISTER)
@@ -1397,15 +1400,8 @@ put_var_into_stack (decl)
       if (can_use_addressof)
 	gen_mem_addressof (reg, decl);
       else
-	put_reg_into_stack (function, reg, TREE_TYPE (decl),
-			    promoted_mode, decl_mode,
-			    (TREE_CODE (decl) != SAVE_EXPR
-			     && TREE_THIS_VOLATILE (decl)),
-			    0,
-			    (TREE_USED (decl)
-			     || (TREE_CODE (decl) != SAVE_EXPR
-				 && DECL_INITIAL (decl) != 0)),
-			    0);
+	put_reg_into_stack (function, reg, TREE_TYPE (decl), promoted_mode,
+			    decl_mode, volatilep, 0, usedp, 0);
     }
   else if (GET_CODE (reg) == CONCAT)
     {
@@ -1416,29 +1412,19 @@ put_var_into_stack (decl)
 #ifdef FRAME_GROWS_DOWNWARD
       /* Since part 0 should have a lower address, do it second.  */
       put_reg_into_stack (function, XEXP (reg, 1), part_type, part_mode,
-			  part_mode, TREE_SIDE_EFFECTS (decl), 0,
-			  TREE_USED (decl) || DECL_INITIAL (decl) != 0,
-			  0);
+			  part_mode, volatilep, 0, usedp, 0);
       put_reg_into_stack (function, XEXP (reg, 0), part_type, part_mode,
-			  part_mode, TREE_SIDE_EFFECTS (decl), 0,
-			  TREE_USED (decl) || DECL_INITIAL (decl) != 0,
-			  0);
+			  part_mode, volatilep, 0, usedp, 0);
 #else
       put_reg_into_stack (function, XEXP (reg, 0), part_type, part_mode,
-			  part_mode, TREE_SIDE_EFFECTS (decl), 0,
-			  TREE_USED (decl) || DECL_INITIAL (decl) != 0,
-			  0);
+			  part_mode, volatilep, 0, usedp, 0);
       put_reg_into_stack (function, XEXP (reg, 1), part_type, part_mode,
-			  part_mode, TREE_SIDE_EFFECTS (decl), 0,
-			  TREE_USED (decl) || DECL_INITIAL (decl) != 0,
-			  0);
+			  part_mode, volatilep, 0, usedp, 0);
 #endif
 
       /* Change the CONCAT into a combined MEM for both parts.  */
       PUT_CODE (reg, MEM);
-      MEM_VOLATILE_P (reg) = MEM_VOLATILE_P (XEXP (reg, 0));
-      MEM_ALIAS_SET (reg) = get_alias_set (decl);
-      MEM_SET_IN_STRUCT_P (reg, AGGREGATE_TYPE_P (TREE_TYPE (decl)));
+      set_mem_attributes (reg, decl, 1);
 
       /* The two parts are in memory order already.
 	 Use the lower parts address as ours.  */
