@@ -331,10 +331,10 @@ f77.install-normal:
 # and also as either g77 (if native) or $(tooldir)/bin/g77.
 f77.install-common:
 	case "$(LANGUAGES)" in \
-	  *[fF]77*) touch lang-f77;; \
-	  *) rm -f lang-f77;; \
+	  *[fF]77*) touch $(prefix)/lang-f77;; \
+	  *) rm -f $(prefix)/lang-f77;; \
 	esac
-	-if [ -f lang-f77 -a -f f771$(exeext) ] ; then \
+	-if [ -f $(prefix)/lang-f77 -a -f f771$(exeext) ] ; then \
 	  if [ -f g77-cross$(exeext) ] ; then \
 	    rm -f $(bindir)/$(G77_CROSS_NAME)$(exeext); \
 	    $(INSTALL_PROGRAM) g77-cross$(exeext) $(bindir)/$(G77_CROSS_NAME)$(exeext); \
@@ -354,15 +354,16 @@ f77.install-common:
 	  echo '         f77-install-ok in the source or build directory.)'; \
 	  echo ''; \
 	else true; fi
+	rm -f $(prefix)/lang-f77
 
 # $(INSTALL_DATA) might be a relative pathname, so we can't cd into srcdir
 # to do the install.  The sed rule was copied from stmp-int-hdrs.
 f77.install-info: f77.info
 	case "$(LANGUAGES)" in \
-	  *[fF]77*) touch lang-f77;; \
-	  *) rm -f lang-f77;; \
+	  *[fF]77*) touch $(prefix)/lang-f77;; \
+	  *) rm -f $(prefix)/lang-f77;; \
 	esac
-	if [ -f lang-f77 -a -f f/g77.info ] ; then \
+	if [ -f $(prefix)/lang-f77 -a -f f/g77.info ] ; then \
 	  rm -f $(infodir)/g77.info*; \
 	  for f in f/g77.info*; do \
 	      realfile=`echo $$f | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
@@ -370,19 +371,20 @@ f77.install-info: f77.info
 	  done; \
 	  chmod a-x $(infodir)/g77.info*; \
 	else true; fi
-	@if [ -f lang-f77 -a -f $(srcdir)/f/g77.info ] ; then \
+	@if [ -f $(prefix)/lang-f77 -a -f $(srcdir)/f/g77.info ] ; then \
 	  if $(SHELL) -c 'install-info --version | sed 1q | fgrep -s -v -i debian' >/dev/null 2>&1; then \
 	    echo " install-info --info-dir=$(infodir) $(infodir)/g77.info"; \
 	    install-info --info-dir=$(infodir) $(infodir)/g77.info || : ; \
 	  else : ; fi; \
 	else : ; fi
+	rm -f $(prefix)/lang-f77
 
 f77.install-man: $(srcdir)/f/g77.1
 	case "$(LANGUAGES)" in \
-	  *[fF]77*) touch lang-f77;; \
-	  *) rm -f lang-f77;; \
+	  *[fF]77*) touch $(prefix)/lang-f77;; \
+	  *) rm -f $(prefix)/lang-f77;; \
 	esac
-	-if [ -f lang-f77 -a -f f771$(exeext) ] ; then \
+	-if [ -f $(prefix)/lang-f77 -a -f f771$(exeext) ] ; then \
 	  if [ -f g77-cross$(exeext) ] ; then \
 	    rm -f $(man1dir)/$(G77_CROSS_NAME)$(manext); \
 	    $(INSTALL_DATA) $(srcdir)/f/g77.1 $(man1dir)/$(G77_CROSS_NAME)$(manext); \
@@ -393,25 +395,27 @@ f77.install-man: $(srcdir)/f/g77.1
 	    chmod a-x $(man1dir)/$(G77_INSTALL_NAME)$(manext); \
 	  fi; \
 	else true; fi
+	rm -f $(prefix)/lang-f77
 
 f77.uninstall:
 	case "$(LANGUAGES)" in \
-	  *[fF]77*) touch lang-f77;; \
-	  *) rm -f lang-f77;; \
+	  *[fF]77*) touch $(prefix)/lang-f77;; \
+	  *) rm -f $(prefix)/lang-f77;; \
 	esac
-	@if [ -f lang-f77 ] ; then \
+	@if [ -f $(prefix)/lang-f77 ] ; then \
 	  if $(SHELL) -c 'install-info --version | sed 1q | fgrep -s -v -i debian' >/dev/null 2>&1; then \
 	    echo " install-info --delete --info-dir=$(infodir) $(infodir)/g77.info"; \
 	    install-info --delete --info-dir=$(infodir) $(infodir)/g77.info || : ; \
 	  else : ; fi; \
 	else : ; fi
-	-if [ -f lang-f77 ]; then \
+	-if [ -f $(prefix)/lang-f77 ]; then \
 	  rm -rf $(bindir)/$(G77_INSTALL_NAME)$(exeext); \
 	  rm -rf $(bindir)/$(G77_CROSS_NAME)$(exeext); \
 	  rm -rf $(man1dir)/$(G77_INSTALL_NAME)$(manext); \
 	  rm -rf $(man1dir)/$(G77_CROSS_NAME)$(manext); \
 	  rm -rf $(infodir)/g77.info*; \
 	fi
+	rm -f $(prefix)/lang-f77
 #
 # Clean hooks:
 # A lot of the ancillary files are deleted by the main makefile.

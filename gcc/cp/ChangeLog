@@ -1,4 +1,10 @@
 Sun Feb 21 20:38:00 1999  H.J. Lu  (hjl@gnu.org)
+1999-02-20  Craig Burley  <craig@jcb-sc.com>
+
+	* Make-lang.in (cplib2.ready): Don't consider updating
+	cplib2 stuff if the current directory isn't writable, as
+	it won't work (such as during a `make install').
+
 
 	* decl2.c (start_objects): Make file scope constructors and
 	destructors local to the file if ASM_OUTPUT_CONSTRUCTOR and
