@@ -1123,6 +1123,8 @@ do_pending_inlines ()
 	  {
 	    tree f = t->fndecl;
 	    DECL_PENDING_INLINE_INFO (f) = 0;
+	    interface_unknown = t->interface == 1;
+	    interface_only = t->interface == 0;
 	    switch (- t->lineno)
 	      {
 	      case 0: case 1:
@@ -1147,7 +1149,10 @@ do_pending_inlines ()
 	  tail = t;
       }
     if (bottom)
-      obstack_free (&synth_obstack, bottom);      
+      {
+	obstack_free (&synth_obstack, bottom);
+	extract_interface_info ();
+      }
     t = prev;
   }
 
@@ -1772,6 +1777,9 @@ cons_up_default_function (type, name, kind)
   if (fn == void_type_node)
     return fn;
 
+  if (CLASSTYPE_TEMPLATE_INSTANTIATION (type))
+    SET_DECL_IMPLICIT_INSTANTIATION (fn);
+
   /* This kludge should go away when synthesized methods are handled
      properly, i.e. only when needed.  */
   {
@@ -1780,6 +1788,7 @@ cons_up_default_function (type, name, kind)
       obstack_alloc (&synth_obstack, sizeof (struct pending_inline));
     t->lineno = -kind;
     t->can_free = 0;
+    t->interface = (interface_unknown ? 1 : (interface_only ? 0 : 2));
     store_pending_inline (fn, t);
   }
 
