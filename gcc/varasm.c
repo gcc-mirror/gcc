@@ -1142,7 +1142,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
      int dont_output_data;
 {
   register char *name;
-  int align;
+  unsigned int align;
   tree size_tree;
   int reloc = 0;
   enum in_section saved_in_section;
@@ -3216,7 +3216,8 @@ const_hash_rtx (mode, x)
      enum machine_mode mode;
      rtx x;
 {
-  register int hi, i;
+  register int hi;
+  register size_t i;
 
   struct rtx_const value;
   decode_rtx_const (mode, x, &value);

@@ -648,20 +648,20 @@ layout_vbasetypes (rec, max)
   tree vbase_types = get_vbase_types (rec);
 
 #ifdef STRUCTURE_SIZE_BOUNDARY
-  unsigned record_align = MAX (STRUCTURE_SIZE_BOUNDARY, TYPE_ALIGN (rec));
+  unsigned int record_align = MAX (STRUCTURE_SIZE_BOUNDARY, TYPE_ALIGN (rec));
 #else
-  unsigned record_align = MAX (BITS_PER_UNIT, TYPE_ALIGN (rec));
+  unsigned int record_align = MAX (BITS_PER_UNIT, TYPE_ALIGN (rec));
 #endif
-  int desired_align;
+  unsigned int desired_align;
 
   /* Record size so far is CONST_SIZE + VAR_SIZE bits,
      where CONST_SIZE is an integer
      and VAR_SIZE is a tree expression.
      If VAR_SIZE is null, the size is just CONST_SIZE.
      Naturally we try to avoid using VAR_SIZE.  */
-  register unsigned const_size = 0;
+  register unsigned int const_size = 0;
   register tree var_size = 0;
-  int nonvirtual_const_size;
+  unsigned int nonvirtual_const_size;
 
   CLASSTYPE_VBASECLASSES (rec) = vbase_types;
 
@@ -809,7 +809,8 @@ layout_basetypes (rec, binfos)
 
   for (i = 0; i < n_baseclasses; i++)
     {
-      int inc, desired_align, int_vbase_size;
+      int inc, int_vbase_size;
+      unsigned int desired_align;
       register tree base_binfo = TREE_VEC_ELT (binfos, i);
       register tree basetype = BINFO_TYPE (base_binfo);
       tree decl, offset;

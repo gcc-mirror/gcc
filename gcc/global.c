@@ -293,7 +293,7 @@ global_alloc (file)
 #endif
        || FRAME_POINTER_REQUIRED);
 
-  register int i;
+  register size_t i;
   rtx x;
 
   max_allocno = 0;
