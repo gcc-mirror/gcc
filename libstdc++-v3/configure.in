@@ -431,13 +431,13 @@ else
   ])
 
   AC_FUNC_MMAP
-
-  # Establish limits on memory usage during 'make check'
-  GLIBCPP_CONFIGURE_TESTSUITE
 fi
 
-# This depends on the possibly-skipped linker test above.
+# This depends on GLIBCPP_CHECK_LINKER_FEATURES, but without it assumes no.
 GLIBCPP_ENABLE_SYMVERS([yes])
+
+# This depends on GLIBCPP_ENABLE_SYMVERS and GLIBCPP_IS_CROSS_COMPILING.
+GLIBCPP_CONFIGURE_TESTSUITE
 
 # Propagate the target-specific source directories through the build chain.
 # (Nothing currently uses cpu_include_dir directly; only ATOMICITYH 
@@ -447,15 +447,11 @@ ATOMICITY_INC_SRCDIR=config/${ATOMICITYH}
 AC_SUBST(OS_INC_SRCDIR)
 AC_SUBST(ATOMICITY_INC_SRCDIR)
 
-# Set up cross-compile flags and all AM_CONDITIONALs.
+# Determine cross-compile flags and all AM_CONDITIONALs.
 AC_SUBST(GLIBCPP_IS_CROSS_COMPILING)
 AM_CONDITIONAL(CANADIAN, test "$CANADIAN" = yes)
 dnl from GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT:
 AM_CONDITIONAL(GLIBCPP_BUILD_LIBMATH,  test "$need_libmath" = yes)
-dnl from GLIBCPP_CHECK_WCHAR_T_SUPPORT:
-AM_CONDITIONAL(GLIBCPP_TEST_WCHAR_T, test "$enable_wchar_t" = yes)	
-dnl from GLIBCPP_CONFIGURE_TESTSUITE:
-AM_CONDITIONAL(GLIBCPP_BUILD_ABI_CHECK, test "$enable_abi_check" = yes)
  
 AC_CACHE_SAVE
 

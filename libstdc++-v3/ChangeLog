@@ -1,3 +1,20 @@
+2003-06-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* Makefile.am (check-abi): Move...
+	(new-abi-baseline): Move...
+	* testsuite/Makefile.am: ...here.
+	(new-abi-baseline): Conditionalize.
+	(check-abi): Conditionalize.
+	(check-abi-verbose): New.
+	* Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.	
+	* configure.in: Consolidate testsuite configure bits.
+	* acinclude.m4 (GLIBCPP_CONFIGURE_TESTSUITE): Same.
+	* configure: Regenerate.
+	* aclocal.m4: Regenerate.	
+	* testsuite/abi_check.cc: Add --check-verbose.
+	Only output detailed information if --check-verbose.
+
 2003-06-16  Andreas Jaeger  <aj@suse.de>
         
         * testsuite/abi_check.cc: Create summary report.

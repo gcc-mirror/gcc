@@ -1504,7 +1504,7 @@ ac_exeext=$EXEEXT
   #glibcpp_pch_comp=no
   #enable_cheaders=c
   #c_compatibility=no
-  enable_abi_check=no
+  #enable_abi_check=no
   #enable_symvers=no
 
   # Find platform-specific directories containing configuration info.  In
@@ -23161,328 +23161,9 @@ EOF
 
 fi
 
-
-  # Establish limits on memory usage during 'make check'
-  
-  
-  setrlimit_have_headers=yes
-  for ac_hdr in unistd.h sys/time.h sys/resource.h
-do
-ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
-echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
-echo "configure:23174: checking for $ac_hdr" >&5
-if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
-  echo $ac_n "(cached) $ac_c" 1>&6
-else
-  cat > conftest.$ac_ext <<EOF
-#line 23179 "configure"
-#include "confdefs.h"
-#include <$ac_hdr>
-EOF
-ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:23184: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
-ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
-if test -z "$ac_err"; then
-  rm -rf conftest*
-  eval "ac_cv_header_$ac_safe=yes"
-else
-  echo "$ac_err" >&5
-  echo "configure: failed program was:" >&5
-  cat conftest.$ac_ext >&5
-  rm -rf conftest*
-  eval "ac_cv_header_$ac_safe=no"
-fi
-rm -f conftest*
-fi
-if eval "test \"`echo '$ac_cv_header_'$ac_safe`\" = yes"; then
-  echo "$ac_t""yes" 1>&6
-    ac_tr_hdr=HAVE_`echo $ac_hdr | sed 'y%abcdefghijklmnopqrstuvwxyz./-%ABCDEFGHIJKLMNOPQRSTUVWXYZ___%'`
-  cat >> confdefs.h <<EOF
-#define $ac_tr_hdr 1
-EOF
- 
-else
-  echo "$ac_t""no" 1>&6
-setrlimit_have_headers=no
-fi
-done
-
-  # If don't have the headers, then we can't run the tests now, and we
-  # won't be seeing any of these during testsuite compilation.
-  if test $setrlimit_have_headers = yes; then
-    # Can't do these in a loop, else the resulting syntax is wrong.
-    
-  cat > conftest.$ac_ext <<EOF
-#line 23217 "configure"
-#include "confdefs.h"
-#include <unistd.h>
-                  #include <sys/time.h>
-                  #include <sys/resource.h>
-                 
-int main() {
- int f = RLIMIT_DATA ; 
-; return 0; }
-EOF
-if { (eval echo configure:23227: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
-  rm -rf conftest*
-  glibcpp_mresult=1
-else
-  echo "configure: failed program was:" >&5
-  cat conftest.$ac_ext >&5
-  rm -rf conftest*
-  glibcpp_mresult=0
-fi
-rm -f conftest*
-  cat >> confdefs.h <<EOF
-#define HAVE_MEMLIMIT_DATA $glibcpp_mresult
-EOF
-
-
-    
-  cat > conftest.$ac_ext <<EOF
-#line 23244 "configure"
-#include "confdefs.h"
-#include <unistd.h>
-                  #include <sys/time.h>
-                  #include <sys/resource.h>
-                 
-int main() {
- int f = RLIMIT_RSS ; 
-; return 0; }
-EOF
-if { (eval echo configure:23254: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
-  rm -rf conftest*
-  glibcpp_mresult=1
-else
-  echo "configure: failed program was:" >&5
-  cat conftest.$ac_ext >&5
-  rm -rf conftest*
-  glibcpp_mresult=0
-fi
-rm -f conftest*
-  cat >> confdefs.h <<EOF
-#define HAVE_MEMLIMIT_RSS $glibcpp_mresult
-EOF
-
-
-    
-  cat > conftest.$ac_ext <<EOF
-#line 23271 "configure"
-#include "confdefs.h"
-#include <unistd.h>
-                  #include <sys/time.h>
-                  #include <sys/resource.h>
-                 
-int main() {
- int f = RLIMIT_VMEM ; 
-; return 0; }
-EOF
-if { (eval echo configure:23281: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
-  rm -rf conftest*
-  glibcpp_mresult=1
-else
-  echo "configure: failed program was:" >&5
-  cat conftest.$ac_ext >&5
-  rm -rf conftest*
-  glibcpp_mresult=0
-fi
-rm -f conftest*
-  cat >> confdefs.h <<EOF
-#define HAVE_MEMLIMIT_VMEM $glibcpp_mresult
-EOF
-
-
-    
-  cat > conftest.$ac_ext <<EOF
-#line 23298 "configure"
-#include "confdefs.h"
-#include <unistd.h>
-                  #include <sys/time.h>
-                  #include <sys/resource.h>
-                 
-int main() {
- int f = RLIMIT_AS ; 
-; return 0; }
-EOF
-if { (eval echo configure:23308: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
-  rm -rf conftest*
-  glibcpp_mresult=1
-else
-  echo "configure: failed program was:" >&5
-  cat conftest.$ac_ext >&5
-  rm -rf conftest*
-  glibcpp_mresult=0
-fi
-rm -f conftest*
-  cat >> confdefs.h <<EOF
-#define HAVE_MEMLIMIT_AS $glibcpp_mresult
-EOF
-
-
-
-    # Check for rlimit, setrlimit.
-    if eval "test \"`echo '$''{'ac_setrlimit'+set}'`\" = set"; then
-  echo $ac_n "(cached) $ac_c" 1>&6
-else
-  
-      cat > conftest.$ac_ext <<EOF
-#line 23330 "configure"
-#include "confdefs.h"
-#include <unistd.h>
-                  #include <sys/time.h>
-                  #include <sys/resource.h>
-		     
-int main() {
- struct rlimit r; setrlimit(0, &r);
-; return 0; }
-EOF
-if { (eval echo configure:23340: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
-  rm -rf conftest*
-  ac_setrlimit=yes
-else
-  echo "configure: failed program was:" >&5
-  cat conftest.$ac_ext >&5
-  rm -rf conftest*
-  ac_setrlimit=no
-fi
-rm -f conftest*
-    
 fi
 
-  fi
-
-  echo $ac_n "checking for testsuite memory limit support""... $ac_c" 1>&6
-echo "configure:23356: checking for testsuite memory limit support" >&5
-  if test $setrlimit_have_headers = yes && test $ac_setrlimit = yes; then
-    ac_mem_limits=yes
-    cat >> confdefs.h <<\EOF
-#define _GLIBCPP_MEM_LIMITS 1
-EOF
-
-  else
-    ac_mem_limits=no
-  fi
-  echo "$ac_t""$ac_mem_limits" 1>&6
-
-
-  # Look for setenv, so that extended locale tests can be performed.
-  
-  echo $ac_n "checking for setenv declaration""... $ac_c" 1>&6
-echo "configure:23372: checking for setenv declaration" >&5
-  if test x${glibcpp_cv_func_setenv_use+set} != xset; then
-    if eval "test \"`echo '$''{'glibcpp_cv_func_setenv_use'+set}'`\" = set"; then
-  echo $ac_n "(cached) $ac_c" 1>&6
-else
-  
-      
-      ac_ext=C
-# CXXFLAGS is not in ac_cpp because -g, -O, etc. are not valid cpp options.
-ac_cpp='$CXXCPP $CPPFLAGS'
-ac_compile='${CXX-g++} -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext 1>&5'
-ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS 1>&5'
-cross_compiling=$ac_cv_prog_cxx_cross
-
-      cat > conftest.$ac_ext <<EOF
-#line 23387 "configure"
-#include "confdefs.h"
-#include <stdlib.h>
-int main() {
- setenv(0, 0, 0);
-; return 0; }
-EOF
-if { (eval echo configure:23394: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
-  rm -rf conftest*
-  glibcpp_cv_func_setenv_use=yes
-else
-  echo "configure: failed program was:" >&5
-  cat conftest.$ac_ext >&5
-  rm -rf conftest*
-  glibcpp_cv_func_setenv_use=no
-fi
-rm -f conftest*
-      ac_ext=c
-# CFLAGS is not in ac_cpp because -g, -O, etc. are not valid cpp options.
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='${CC-cc} -c $CFLAGS $CPPFLAGS conftest.$ac_ext 1>&5'
-ac_link='${CC-cc} -o conftest${ac_exeext} $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS 1>&5'
-cross_compiling=$ac_cv_prog_cc_cross
-
-    
-fi
-
-  fi
-  echo "$ac_t""$glibcpp_cv_func_setenv_use" 1>&6
-  if test x$glibcpp_cv_func_setenv_use = x"yes"; then
-    for ac_func in setenv
-do
-echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:23420: checking for $ac_func" >&5
-if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
-  echo $ac_n "(cached) $ac_c" 1>&6
-else
-  cat > conftest.$ac_ext <<EOF
-#line 23425 "configure"
-#include "confdefs.h"
-/* System header to define __stub macros and hopefully few prototypes,
-    which can conflict with char $ac_func(); below.  */
-#include <assert.h>
-/* Override any gcc2 internal prototype to avoid an error.  */
-/* We use char because int might match the return type of a gcc2
-    builtin and then its argument prototype would still apply.  */
-char $ac_func();
-
-int main() {
-
-/* The GNU C library defines this for functions which it implements
-    to always fail with ENOSYS.  Some functions are actually named
-    something starting with __ and the normal name is an alias.  */
-#if defined (__stub_$ac_func) || defined (__stub___$ac_func)
-choke me
-#else
-$ac_func();
-#endif
-
-; return 0; }
-EOF
-if { (eval echo configure:23448: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
-  rm -rf conftest*
-  eval "ac_cv_func_$ac_func=yes"
-else
-  echo "configure: failed program was:" >&5
-  cat conftest.$ac_ext >&5
-  rm -rf conftest*
-  eval "ac_cv_func_$ac_func=no"
-fi
-rm -f conftest*
-fi
-
-if eval "test \"`echo '$ac_cv_func_'$ac_func`\" = yes"; then
-  echo "$ac_t""yes" 1>&6
-    ac_tr_func=HAVE_`echo $ac_func | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
-  cat >> confdefs.h <<EOF
-#define $ac_tr_func 1
-EOF
- 
-else
-  echo "$ac_t""no" 1>&6
-fi
-done
-
-  fi
-
-
-  # Export file names for ABI checking.
-  baseline_file="${glibcpp_srcdir}/config/abi/${abi_baseline_pair}\$(MULTISUBDIR)/baseline_symbols.txt"
-  
-
-    case "$target" in
-    *-*-cygwin* ) enable_abi_check=no ;;
-    * ) enable_abi_check=yes ;;
-  esac
-
-fi
-
-# This depends on the possibly-skipped linker test above.
+# This depends on GLIBCPP_CHECK_LINKER_FEATURES, but without it assumes no.
 # Check whether --enable-symvers or --disable-symvers was given.
 if test "${enable_symvers+set}" = set; then
   enableval="$enable_symvers"
@@ -23509,18 +23190,18 @@ fi
 # Check to see if libgcc_s exists, indicating that shared libgcc is possible.
 if test $enable_symvers != no; then
   echo $ac_n "checking for shared libgcc""... $ac_c" 1>&6
-echo "configure:23513: checking for shared libgcc" >&5
+echo "configure:23194: checking for shared libgcc" >&5
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS=' -lgcc_s'
   cat > conftest.$ac_ext <<EOF
-#line 23517 "configure"
+#line 23198 "configure"
 #include "confdefs.h"
 
 int main() {
 return 0
 ; return 0; }
 EOF
-if { (eval echo configure:23524: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:23205: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   glibcpp_shared_libgcc=yes
 else
@@ -23555,14 +23236,14 @@ if test $enable_symvers = yes ; then
       echo 'FOO { global: f[a-z]o; local: *; };' > conftest.map
       
       cat > conftest.$ac_ext <<EOF
-#line 23559 "configure"
+#line 23240 "configure"
 #include "confdefs.h"
 int foo;
 int main() {
 
 ; return 0; }
 EOF
-if { (eval echo configure:23566: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:23247: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   enable_symvers=gnu
 else
@@ -23608,8 +23289,357 @@ else
   GLIBCPP_BUILD_VERSIONED_SHLIB_FALSE=
 fi
 echo $ac_n "checking versioning on shared library symbols""... $ac_c" 1>&6
-echo "configure:23612: checking versioning on shared library symbols" >&5
+echo "configure:23293: checking versioning on shared library symbols" >&5
 echo "$ac_t""$enable_symvers" 1>&6
+
+
+# This depends on GLIBCPP_ENABLE_SYMVERS and GLIBCPP_IS_CROSS_COMPILING.
+
+
+  if test  x"$GLIBCPP_IS_CROSS_COMPILING" = xfalse; then
+    # Do checks for memory limit functions.
+    
+  setrlimit_have_headers=yes
+  for ac_hdr in unistd.h sys/time.h sys/resource.h
+do
+ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
+echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
+echo "configure:23308: checking for $ac_hdr" >&5
+if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 23313 "configure"
+#include "confdefs.h"
+#include <$ac_hdr>
+EOF
+ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
+{ (eval echo configure:23318: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
+if test -z "$ac_err"; then
+  rm -rf conftest*
+  eval "ac_cv_header_$ac_safe=yes"
+else
+  echo "$ac_err" >&5
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  eval "ac_cv_header_$ac_safe=no"
+fi
+rm -f conftest*
+fi
+if eval "test \"`echo '$ac_cv_header_'$ac_safe`\" = yes"; then
+  echo "$ac_t""yes" 1>&6
+    ac_tr_hdr=HAVE_`echo $ac_hdr | sed 'y%abcdefghijklmnopqrstuvwxyz./-%ABCDEFGHIJKLMNOPQRSTUVWXYZ___%'`
+  cat >> confdefs.h <<EOF
+#define $ac_tr_hdr 1
+EOF
+ 
+else
+  echo "$ac_t""no" 1>&6
+setrlimit_have_headers=no
+fi
+done
+
+  # If don't have the headers, then we can't run the tests now, and we
+  # won't be seeing any of these during testsuite compilation.
+  if test $setrlimit_have_headers = yes; then
+    # Can't do these in a loop, else the resulting syntax is wrong.
+    
+  cat > conftest.$ac_ext <<EOF
+#line 23351 "configure"
+#include "confdefs.h"
+#include <unistd.h>
+                  #include <sys/time.h>
+                  #include <sys/resource.h>
+                 
+int main() {
+ int f = RLIMIT_DATA ; 
+; return 0; }
+EOF
+if { (eval echo configure:23361: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  rm -rf conftest*
+  glibcpp_mresult=1
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  glibcpp_mresult=0
+fi
+rm -f conftest*
+  cat >> confdefs.h <<EOF
+#define HAVE_MEMLIMIT_DATA $glibcpp_mresult
+EOF
+
+
+    
+  cat > conftest.$ac_ext <<EOF
+#line 23378 "configure"
+#include "confdefs.h"
+#include <unistd.h>
+                  #include <sys/time.h>
+                  #include <sys/resource.h>
+                 
+int main() {
+ int f = RLIMIT_RSS ; 
+; return 0; }
+EOF
+if { (eval echo configure:23388: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  rm -rf conftest*
+  glibcpp_mresult=1
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  glibcpp_mresult=0
+fi
+rm -f conftest*
+  cat >> confdefs.h <<EOF
+#define HAVE_MEMLIMIT_RSS $glibcpp_mresult
+EOF
+
+
+    
+  cat > conftest.$ac_ext <<EOF
+#line 23405 "configure"
+#include "confdefs.h"
+#include <unistd.h>
+                  #include <sys/time.h>
+                  #include <sys/resource.h>
+                 
+int main() {
+ int f = RLIMIT_VMEM ; 
+; return 0; }
+EOF
+if { (eval echo configure:23415: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  rm -rf conftest*
+  glibcpp_mresult=1
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  glibcpp_mresult=0
+fi
+rm -f conftest*
+  cat >> confdefs.h <<EOF
+#define HAVE_MEMLIMIT_VMEM $glibcpp_mresult
+EOF
+
+
+    
+  cat > conftest.$ac_ext <<EOF
+#line 23432 "configure"
+#include "confdefs.h"
+#include <unistd.h>
+                  #include <sys/time.h>
+                  #include <sys/resource.h>
+                 
+int main() {
+ int f = RLIMIT_AS ; 
+; return 0; }
+EOF
+if { (eval echo configure:23442: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  rm -rf conftest*
+  glibcpp_mresult=1
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  glibcpp_mresult=0
+fi
+rm -f conftest*
+  cat >> confdefs.h <<EOF
+#define HAVE_MEMLIMIT_AS $glibcpp_mresult
+EOF
+
+
+
+    # Check for rlimit, setrlimit.
+    if eval "test \"`echo '$''{'ac_setrlimit'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  
+      cat > conftest.$ac_ext <<EOF
+#line 23464 "configure"
+#include "confdefs.h"
+#include <unistd.h>
+                  #include <sys/time.h>
+                  #include <sys/resource.h>
+		     
+int main() {
+ struct rlimit r; setrlimit(0, &r);
+; return 0; }
+EOF
+if { (eval echo configure:23474: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  rm -rf conftest*
+  ac_setrlimit=yes
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  ac_setrlimit=no
+fi
+rm -f conftest*
+    
+fi
+
+  fi
+
+  echo $ac_n "checking for testsuite memory limit support""... $ac_c" 1>&6
+echo "configure:23490: checking for testsuite memory limit support" >&5
+  if test $setrlimit_have_headers = yes && test $ac_setrlimit = yes; then
+    ac_mem_limits=yes
+    cat >> confdefs.h <<\EOF
+#define _GLIBCPP_MEM_LIMITS 1
+EOF
+
+  else
+    ac_mem_limits=no
+  fi
+  echo "$ac_t""$ac_mem_limits" 1>&6
+
+
+    # Look for setenv, so that extended locale tests can be performed.
+    
+  echo $ac_n "checking for setenv declaration""... $ac_c" 1>&6
+echo "configure:23506: checking for setenv declaration" >&5
+  if test x${glibcpp_cv_func_setenv_use+set} != xset; then
+    if eval "test \"`echo '$''{'glibcpp_cv_func_setenv_use'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  
+      
+      ac_ext=C
+# CXXFLAGS is not in ac_cpp because -g, -O, etc. are not valid cpp options.
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='${CXX-g++} -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext 1>&5'
+ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS 1>&5'
+cross_compiling=$ac_cv_prog_cxx_cross
+
+      cat > conftest.$ac_ext <<EOF
+#line 23521 "configure"
+#include "confdefs.h"
+#include <stdlib.h>
+int main() {
+ setenv(0, 0, 0);
+; return 0; }
+EOF
+if { (eval echo configure:23528: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  rm -rf conftest*
+  glibcpp_cv_func_setenv_use=yes
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  glibcpp_cv_func_setenv_use=no
+fi
+rm -f conftest*
+      ac_ext=c
+# CFLAGS is not in ac_cpp because -g, -O, etc. are not valid cpp options.
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='${CC-cc} -c $CFLAGS $CPPFLAGS conftest.$ac_ext 1>&5'
+ac_link='${CC-cc} -o conftest${ac_exeext} $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS 1>&5'
+cross_compiling=$ac_cv_prog_cc_cross
+
+    
+fi
+
+  fi
+  echo "$ac_t""$glibcpp_cv_func_setenv_use" 1>&6
+  if test x$glibcpp_cv_func_setenv_use = x"yes"; then
+    for ac_func in setenv
+do
+echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
+echo "configure:23554: checking for $ac_func" >&5
+if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 23559 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char $ac_func(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char $ac_func();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_$ac_func) || defined (__stub___$ac_func)
+choke me
+#else
+$ac_func();
+#endif
+
+; return 0; }
+EOF
+if { (eval echo configure:23582: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=yes"
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=no"
+fi
+rm -f conftest*
+fi
+
+if eval "test \"`echo '$ac_cv_func_'$ac_func`\" = yes"; then
+  echo "$ac_t""yes" 1>&6
+    ac_tr_func=HAVE_`echo $ac_func | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+  cat >> confdefs.h <<EOF
+#define $ac_tr_func 1
+EOF
+ 
+else
+  echo "$ac_t""no" 1>&6
+fi
+done
+
+  fi
+
+  fi
+
+  # Export file names for ABI checking.
+  baseline_file="${glibcpp_srcdir}/config/abi/${abi_baseline_pair}\$(MULTISUBDIR)/baseline_symbols.txt"
+  
+
+  # Determine if checking the ABI is desirable.
+  if test x$enable_symvers = xno; then
+    enable_abi_check=no
+  else
+    case "$host" in
+      *-*-cygwin*) 
+	enable_abi_check=no ;;
+      *) 
+        enable_abi_check=yes ;;
+    esac
+  fi
+
+  
+
+if test "$enable_wchar_t" = yes; then
+  GLIBCPP_TEST_WCHAR_T_TRUE=
+  GLIBCPP_TEST_WCHAR_T_FALSE='#'
+else
+  GLIBCPP_TEST_WCHAR_T_TRUE='#'
+  GLIBCPP_TEST_WCHAR_T_FALSE=
+fi	
+  
+
+if test "$enable_abi_check" = yes; then
+  GLIBCPP_TEST_ABI_TRUE=
+  GLIBCPP_TEST_ABI_FALSE='#'
+else
+  GLIBCPP_TEST_ABI_TRUE='#'
+  GLIBCPP_TEST_ABI_FALSE=
+fi
 
 
 # Propagate the target-specific source directories through the build chain.
@@ -23620,7 +23650,7 @@ ATOMICITY_INC_SRCDIR=config/${ATOMICITYH}
 
 
 
-# Set up cross-compile flags and all AM_CONDITIONALs.
+# Determine cross-compile flags and all AM_CONDITIONALs.
 
 
 
@@ -23639,24 +23669,6 @@ if test "$need_libmath" = yes; then
 else
   GLIBCPP_BUILD_LIBMATH_TRUE='#'
   GLIBCPP_BUILD_LIBMATH_FALSE=
-fi
-
-
-if test "$enable_wchar_t" = yes; then
-  GLIBCPP_TEST_WCHAR_T_TRUE=
-  GLIBCPP_TEST_WCHAR_T_FALSE='#'
-else
-  GLIBCPP_TEST_WCHAR_T_TRUE='#'
-  GLIBCPP_TEST_WCHAR_T_FALSE=
-fi	
-
-
-if test "$enable_abi_check" = yes; then
-  GLIBCPP_BUILD_ABI_CHECK_TRUE=
-  GLIBCPP_BUILD_ABI_CHECK_FALSE='#'
-else
-  GLIBCPP_BUILD_ABI_CHECK_TRUE='#'
-  GLIBCPP_BUILD_ABI_CHECK_FALSE=
 fi
  
 cat > confcache <<\EOF
@@ -23723,7 +23735,7 @@ glibcpp_prefixdir=${prefix}
 
 # Process the option --with-gxx-include-dir=<path to include-files directory>
 echo $ac_n "checking for --with-gxx-include-dir""... $ac_c" 1>&6
-echo "configure:23727: checking for --with-gxx-include-dir" >&5
+echo "configure:23739: checking for --with-gxx-include-dir" >&5
 # Check whether --with-gxx-include-dir or --without-gxx-include-dir was given.
 if test "${with_gxx_include_dir+set}" = set; then
   withval="$with_gxx_include_dir"
@@ -23747,7 +23759,7 @@ echo "$ac_t""$gxx_include_dir" 1>&6
 
 # Process the option "--enable-version-specific-runtime-libs"
 echo $ac_n "checking for --enable-version-specific-runtime-libs""... $ac_c" 1>&6
-echo "configure:23751: checking for --enable-version-specific-runtime-libs" >&5
+echo "configure:23763: checking for --enable-version-specific-runtime-libs" >&5
 # Check whether --enable-version-specific-runtime-libs or --disable-version-specific-runtime-libs was given.
 if test "${enable_version_specific_runtime_libs+set}" = set; then
   enableval="$enable_version_specific_runtime_libs"
@@ -23798,7 +23810,7 @@ if test x"$glibcpp_toolexecdir" = x"no"; then
 fi
 
 echo $ac_n "checking for install location""... $ac_c" 1>&6
-echo "configure:23802: checking for install location" >&5
+echo "configure:23814: checking for install location" >&5
 echo "$ac_t""$gxx_include_dir" 1>&6
 
 
@@ -24080,10 +24092,14 @@ s%@SECTION_LDFLAGS@%$SECTION_LDFLAGS%g
 s%@OPT_LDFLAGS@%$OPT_LDFLAGS%g
 s%@LIBMATHOBJS@%$LIBMATHOBJS%g
 s%@WERROR@%$WERROR%g
-s%@baseline_file@%$baseline_file%g
 s%@SYMVER_MAP@%$SYMVER_MAP%g
 s%@GLIBCPP_BUILD_VERSIONED_SHLIB_TRUE@%$GLIBCPP_BUILD_VERSIONED_SHLIB_TRUE%g
 s%@GLIBCPP_BUILD_VERSIONED_SHLIB_FALSE@%$GLIBCPP_BUILD_VERSIONED_SHLIB_FALSE%g
+s%@baseline_file@%$baseline_file%g
+s%@GLIBCPP_TEST_WCHAR_T_TRUE@%$GLIBCPP_TEST_WCHAR_T_TRUE%g
+s%@GLIBCPP_TEST_WCHAR_T_FALSE@%$GLIBCPP_TEST_WCHAR_T_FALSE%g
+s%@GLIBCPP_TEST_ABI_TRUE@%$GLIBCPP_TEST_ABI_TRUE%g
+s%@GLIBCPP_TEST_ABI_FALSE@%$GLIBCPP_TEST_ABI_FALSE%g
 s%@OS_INC_SRCDIR@%$OS_INC_SRCDIR%g
 s%@ATOMICITY_INC_SRCDIR@%$ATOMICITY_INC_SRCDIR%g
 s%@GLIBCPP_IS_CROSS_COMPILING@%$GLIBCPP_IS_CROSS_COMPILING%g
@@ -24091,10 +24107,6 @@ s%@CANADIAN_TRUE@%$CANADIAN_TRUE%g
 s%@CANADIAN_FALSE@%$CANADIAN_FALSE%g
 s%@GLIBCPP_BUILD_LIBMATH_TRUE@%$GLIBCPP_BUILD_LIBMATH_TRUE%g
 s%@GLIBCPP_BUILD_LIBMATH_FALSE@%$GLIBCPP_BUILD_LIBMATH_FALSE%g
-s%@GLIBCPP_TEST_WCHAR_T_TRUE@%$GLIBCPP_TEST_WCHAR_T_TRUE%g
-s%@GLIBCPP_TEST_WCHAR_T_FALSE@%$GLIBCPP_TEST_WCHAR_T_FALSE%g
-s%@GLIBCPP_BUILD_ABI_CHECK_TRUE@%$GLIBCPP_BUILD_ABI_CHECK_TRUE%g
-s%@GLIBCPP_BUILD_ABI_CHECK_FALSE@%$GLIBCPP_BUILD_ABI_CHECK_FALSE%g
 s%@glibcpp_prefixdir@%$glibcpp_prefixdir%g
 s%@gxx_include_dir@%$gxx_include_dir%g
 s%@glibcpp_toolexecdir@%$glibcpp_toolexecdir%g

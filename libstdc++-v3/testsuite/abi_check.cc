@@ -313,17 +313,20 @@ main(int argc, char** argv)
   using namespace std;
 
   // Get arguments.  (Heading towards getopt_long, I can feel it.)
-  string argv1;
-  if (argc < 4 || (string("--help") == (argv1 = argv[1])))
+  bool verbose = false;
+  string argv1 = argc > 1 ? argv[1] : "";
+  if (argv1 == "--help" || argc < 4)
     {
-      cerr << "Usage:  abi_check --check    cur baseline\n"
-              "                  --help\n\n"
-              "Where CUR is a file containing the current results from\n"
+      cerr << "usage: abi_check --check current baseline\n"
+              "                 --check-verbose current baseline\n"
+              "                 --help\n\n"
+              "Where CURRENT is a file containing the current results from\n"
               "extract_symvers, and BASELINE is one from config/abi.\n"
 	   << endl;
       exit(1);
     }
-
+  else if (argv1 == "--check-verbose")
+    verbose = true;
 
   // Quick sanity/setup check for arguments.
   const char* test_file = argv[2];
@@ -412,21 +415,21 @@ main(int argc, char** argv)
     }
 
   // Report results.
-  if (added_names.size())
+  if (verbose && added_names.size())
     {
       cout << added_names.size() << " added symbols " << endl;
       for (size_t j = 0; j < added_names.size() ; ++j)
 	report_symbol_info(test_symbols[added_names[j]], j + 1);
     }
   
-  if (missing_names.size())
+  if (verbose && missing_names.size())
     {
       cout << missing_names.size() << " missing symbols " << endl;
       for (size_t j = 0; j < missing_names.size() ; ++j)
 	report_symbol_info(baseline_symbols[missing_names[j]], j + 1);
     }
   
-  if (incompatible.size ())
+  if (verbose && incompatible.size())
     {
       cout << incompatible.size() << " incompatible symbols " << endl;
       for (size_t j = 0; j < incompatible.size() ; ++j)
@@ -441,11 +444,13 @@ main(int argc, char** argv)
 	}
     }
   
-  cout << "\n\t\t=== libstdc++-v3 check-abi Summary for " << baseline_file 
-       << " ===" << endl << endl;
+  cout << "\n\t\t=== libstdc++-v3 check-abi Summary ===" << endl;
+  cout << endl;
   cout << "# of added symbols:\t\t " << added_names.size() << endl;
   cout << "# of missing symbols:\t\t " << missing_names.size() << endl;
   cout << "# of incompatible symbols:\t " << incompatible.size() << endl;
+  cout << endl;
+  cout << "using: " << baseline_file << endl;
 
   return 0;
 }
