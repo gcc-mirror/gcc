@@ -4419,8 +4419,8 @@ move\\t%0,%z4\\n\\
 
       emit_label (label1);
       emit_move_insn (reg2, gen_rtx_MINUS (SFmode, operands[1], reg1));
-      emit_move_insn (reg3, GEN_INT (trunc_int_for_mode (BITMASK_HIGH,
-							 SImode)));
+      emit_move_insn (reg3, GEN_INT (trunc_int_for_mode
+				     (BITMASK_HIGH, SImode)));
 
       emit_insn (gen_fix_truncsfsi2 (operands[0], reg2));
       emit_insn (gen_iorsi3 (operands[0], operands[0], reg3));
