@@ -1,5 +1,9 @@
 2001-10-29  Zack Weinberg  <zack@codesourcery.com>
 
+	* configure.in: Do not assume that gas's version number is the
+	last thing on the first line of as --version output.
+	* configure: Regenerate.
+	
 	* tradcpp.c: Include intl.h.  Rename WARNING, ERROR, FATAL to
 	MT_WARNING, MT_ERROR, MT_FATAL.
 	(main): Call gcc_init_libintl.
