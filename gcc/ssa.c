@@ -833,6 +833,21 @@ rename_insn_1 (ptr, data)
 	rtx *destp = &SET_DEST (x);
 	rtx dest = SET_DEST (x);
 
+	/* An assignment to a paradoxical SUBREG does not read from
+	   the destination operand, and thus does not need to be
+	   wrapped into a SEQUENCE when translating into SSA form.
+	   We merely strip off the SUBREG and proceed normally for
+	   this case.  */
+	if (GET_CODE (dest) == SUBREG
+	    && (GET_MODE_SIZE (GET_MODE (dest))
+		> GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest))))
+	    && GET_CODE (SUBREG_REG (dest)) == REG
+	    && CONVERT_REGISTER_TO_SSA_P (REGNO (SUBREG_REG (dest))))
+	  {
+	    destp = &XEXP (dest, 0);
+	    dest = XEXP (dest, 0);
+	  }
+
 	/* Some SETs also use the REG specified in their LHS.
 	   These can be detected by the presence of
 	   STRICT_LOW_PART, SUBREG, SIGN_EXTRACT, and ZERO_EXTRACT
@@ -842,11 +857,12 @@ rename_insn_1 (ptr, data)
 	   (sequence [(set (reg foo_1) (reg foo))
 	              (set (subreg (reg foo_1)) ...)])  
 
-	   FIXME: Much of the time this is too much.  For many libcalls,
-	   paradoxical SUBREGs, etc., the input register is dead.  We should
-	   recognise this in rename_block or here and not make a false
+	   FIXME: Much of the time this is too much.  For some constructs
+	   we know that the output register is strictly an output
+	   (paradoxical SUBREGs and some libcalls for example).
+
+	   For those cases we are better off not making the false
 	   dependency.  */
-	   
 	if (GET_CODE (dest) == STRICT_LOW_PART
 	    || GET_CODE (dest) == SUBREG
 	    || GET_CODE (dest) == SIGN_EXTRACT
@@ -877,8 +893,8 @@ rename_insn_1 (ptr, data)
 		context->new_renames = saved_new_renames;
 	      }
 	  }
-	else if (GET_CODE (dest) == REG &&
-		 CONVERT_REGISTER_TO_SSA_P (REGNO (dest)))
+	else if (GET_CODE (dest) == REG
+		 && CONVERT_REGISTER_TO_SSA_P (REGNO (dest)))
 	  {
 	    /* We found a genuine set of an interesting register.  Tag
 	       it so that we can create a new name for it after we finish

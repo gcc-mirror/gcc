@@ -5,6 +5,10 @@
 
 Wed Jul 25 08:25:01 2001  Jeffrey A Law  (law@cygnus.com)
 
+	* ssa.c (rename_insn_1): Do not wrap an assignment to a 
+	paradoxical SUBREG inside a SEQUENCE.  Fix minor formatting
+	glitch.
+
 	* ssa-ccp.c (visit_expression): Handle CALL_INSNs that can
 	throw an exception.
 	(visit_expression): When attempting to simplify an expression,
