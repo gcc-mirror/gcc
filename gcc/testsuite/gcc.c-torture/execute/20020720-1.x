@@ -11,7 +11,9 @@
 #     and can make the optimization.
 if { [istarget "powerpc-*-*"] || [istarget "rs6000-*-*"] \
      || [istarget "mips*-*-*"] || [istarget "xtensa-*-*"] \
-     || [istarget "sh-*-*"] || [istarget "mmix-*-*"] } {
+     || [istarget "sh-*-*"] || [istarget "mmix-*-*"] \
+     || [istarget "arm*-*-*"] || [istarget "strongarm*-*-*"] \
+     || [istarget "xscale*-*-*"] } {
     return 1
 }
 
