@@ -1,3 +1,21 @@
+2000-08-22  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* src/locale-inst.cc: Add codecvt<unicode_t, wchar_t,
+	__enc_traits> instantiations for has_facet and use_facet.
+	* testsuite/22_locale/codecvt_unicode_wchar_t.cc: New file, for
+	testing two-byte unicode encodings converted to four-byte UCS4
+	encodings.
+
+	* bits/codecvt.h (codecvt<__enc_traits>): Fix do_unshift.
+	* testsuite/22_locale/codecvt_unicode_char.cc (test01): Add
+	correct state/encoding information.
+
+	* acinclude.m4 (GLIBCPP_CHECK_WCHAR_T_SUPPORT): Add wcsrtombs,
+	mbsrtowcs checks as codecvt<wchar_t, char, mbstate_t> needs them
+	now.
+	Add checks for langinfo.h, nl_langinfo function call.
+	* libio/iofwide.c (_IO_fwide): Simplify, as nl_langinfo is assumed.
+
 2000-08-22  Richard B. Kreckel  <Richard.Kreckel@Uni-Mainz.DE>
 
 	* config/cpu/alpha/bits/atomicity.h: Change __attribute__

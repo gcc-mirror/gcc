@@ -27,15 +27,15 @@
 #ifdef _LIBC
 # include <dlfcn.h>
 # include <wchar.h>
+# include <locale/localeinfo.h>
+# include <wcsmbs/wcsmbsload.h>
+# include <iconv/gconv_int.h>
 #endif
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef _LIBC
+#if defined(_LIBC) || defined(_GLIBCPP_USE_WCHAR_T)
 # include <langinfo.h>
-# include <locale/localeinfo.h>
-# include <wcsmbs/wcsmbsload.h>
-# include <iconv/gconv_int.h>
 #endif
 
 
@@ -156,21 +156,14 @@ _IO_fwide (fp, mode)
 	   should come up with a solution for the determination of the
 	   currently used internal character set.  */
 	const char *internal_ccs = _G_INTERNAL_CCS;
-	const char *external_ccs = NULL;
+	const char *external_ccs = nl_langinfo(CODESET);
 
-#  ifdef HAVE_NL_LANGINFO
-	external_ccs = nl_langinfo (CODESET);
-#  endif
 	if (external_ccs == NULL)
 	  external_ccs = "ISO-8859-1";
 
 	cc->__cd_in = iconv_open (internal_ccs, external_ccs);
 	if (cc->__cd_in != (iconv_t) -1)
 	  cc->__cd_out = iconv_open (external_ccs, internal_ccs);
-
-	if (cc->__cd_in == (iconv_t) -1 || cc->__cd_out == (iconv_t) -1)
-	  /* XXX */
-	  abort ();
       }
 # else
 #  error "somehow determine this from LC_CTYPE"
