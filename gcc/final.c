@@ -2778,7 +2778,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 
 	    /* If we didn't split the insn, go away.  */
 	    if (new == insn && PATTERN (new) == body)
-	      abort ();
+	      fatal_insn ("Could not split insn", insn);
 	      
 #ifdef HAVE_ATTR_length
 	    /* This instruction should have been split in shorten_branches,
