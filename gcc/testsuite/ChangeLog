@@ -1,3 +1,13 @@
+2004-04-13  Uros Bizjak  <uros@kss-loka.si>:
+
+	* gcc.dg/i386-387-1.c: Add new test for __builtin_tan.
+	* gcc.dg/i386-387-2.c: Likewise.
+
+	* gcc.dg/i386-387-7.c: New test.
+	* gcc.dg/i386-387-8.c: New test.
+
+	* gcc.dg/builtins-37.c: New test.
+
 2004-04-13  Geoffrey Keating  <geoffk@apple.com>
 
 	* g++.dg/pch/externc-1.C: Add missing semicolon.

@@ -1,3 +1,20 @@
+2004-04-13  Uros Bizjak  <uros@kss-loka.si>:
+
+	* optabs.c (expand_twoval_unop): Reorder function arguments.
+	* builtins.c (expand_builtin_mathfn_3): Update calls to
+	expand_twoval_unop.
+
+	* reg-stack.c (subst_stack_regs_pat): Handle UNSPEC_TAN_ONE
+	and UNSPEC_TAN_TAN. Add missing comment.
+
+	* config/i386/i386.md (*tandf3_1, *tansf3_1, *tanxf3_1): New
+	patterns to implement fptan x87 instruction.
+	(tandf2, tansf2, tanxf2): New expanders to implement tan, tanf
+	and tanl built-ins as inline x87 intrinsics. Define corresponding
+	peephole2 optimizers for 'fptan; fstp %st(0); fld1' sequence.
+	(UNSPEC_TAN_ONE, UNSPEC_TAN_TAN): New unspecs to represent
+	x87's fptan insn.
+
 2004-03-13  Richard Henderson  <rth@redhat.com>
 
 	* bb-reorder.c (fix_crossing_unconditional_branches): Use Pmode
@@ -489,8 +506,8 @@
 	(sindf2, sinsf2, sinxf2): Rename to *sindf2, *sinsf2, *sinxf2.
 	(cosdf2, cossf2, cosxf2): Rename to *cosdf2, *cossf2, *cosxf2.
 
-	(UNSPEC_SINCOS_SIN, UNPEC_SINCOS_COS): New unspecs to represent
-	x87's unspec insn.
+	(UNSPEC_SINCOS_SIN, UNSPEC_SINCOS_COS): New unspecs to represent
+	x87's fsincos insn.
 
 2004-04-06  Devang Patel  <dpatel@apple.com>
 

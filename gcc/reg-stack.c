@@ -1769,6 +1769,7 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 		break;
 
 	      case UNSPEC_SINCOS_COS:
+	      case UNSPEC_TAN_ONE:
 		/* These insns operate on the top two stack slots,
 		   first part of one input, double output insn.  */
 
@@ -1796,6 +1797,10 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 		break;
 
 	      case UNSPEC_SINCOS_SIN:
+	      case UNSPEC_TAN_TAN:
+		/* These insns operate on the top two stack slots,
+		   second part of one input, double output insn.  */
+
 		src1 = get_true_reg (&XVECEXP (pat_src, 0, 0));
 
 		emit_swap_insn (insn, regstack, *src1);
