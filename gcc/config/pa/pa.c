@@ -4319,8 +4319,8 @@ pa_adjust_insn_length (rtx insn, int length)
   /* Jumps inside switch tables which have unfilled delay slots need
      adjustment.  */
   if (GET_CODE (insn) == JUMP_INSN
-	   && simplejump_p (insn)
-	   && GET_MODE (insn) == SImode)
+      && GET_CODE (pat) == PARALLEL
+      && get_attr_type (insn) == TYPE_BTABLE_BRANCH)
     return 4;
   /* Millicode insn with an unfilled delay slot.  */
   else if (GET_CODE (insn) == INSN
@@ -7848,7 +7848,8 @@ following_call (rtx insn)
    The jump instructions within the table are special; we must be able
    to identify them during assembly output (if the jumps don't get filled
    we need to emit a nop rather than nullifying the delay slot)).  We
-   identify jumps in switch tables by marking the SET with DImode.
+   identify jumps in switch tables by using insns with the attribute
+   type TYPE_BTABLE_BRANCH.
 
    We also surround the jump table itself with BEGIN_BRTAB and END_BRTAB
    insns.  This serves two purposes, first it prevents jump.c from
@@ -7874,7 +7875,7 @@ pa_reorg (void)
       /* Find and explode all ADDR_VEC or ADDR_DIFF_VEC insns.  */
       for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
 	{
-	  rtx pattern, tmp, location;
+	  rtx pattern, tmp, location, label;
 	  unsigned int length, i;
 
 	  /* Find an ADDR_VEC or ADDR_DIFF_VEC insn to explode.  */
@@ -7900,57 +7901,17 @@ pa_reorg (void)
 	      location = NEXT_INSN (location);
 
 	      if (GET_CODE (pattern) == ADDR_VEC)
-		{
-		  /* Emit the jump itself.  */
-		  tmp = gen_jump (XEXP (XVECEXP (pattern, 0, i), 0));
-		  tmp = emit_jump_insn_after (tmp, location);
-		  JUMP_LABEL (tmp) = XEXP (XVECEXP (pattern, 0, i), 0);
-		  /* It is easy to rely on the branch table markers
-		     during assembly output to trigger the correct code
-		     for a switch table jump with an unfilled delay slot,
-
-		     However, that requires state and assumes that we look
-		     at insns in order.
-
-		     We can't make such assumptions when computing the length
-		     of instructions.  Ugh.  We could walk the insn chain to
-		     determine if this instruction is in a branch table, but
-		     that can get rather expensive, particularly during the
-		     branch shortening phase of the compiler.
-
-		     So instead we mark this jump as being special.  This is
-		     far from ideal and knows that no code after this will
-		     muck around with the mode of the JUMP_INSN itself.  */
-		  PUT_MODE (tmp, SImode);
-		  LABEL_NUSES (JUMP_LABEL (tmp))++;
-		  location = NEXT_INSN (location);
-		}
+		label = XEXP (XVECEXP (pattern, 0, i), 0);
 	      else
-		{
-		  /* Emit the jump itself.  */
-		  tmp = gen_jump (XEXP (XVECEXP (pattern, 1, i), 0));
-		  tmp = emit_jump_insn_after (tmp, location);
-		  JUMP_LABEL (tmp) = XEXP (XVECEXP (pattern, 1, i), 0);
-		  /* It is easy to rely on the branch table markers
-		     during assembly output to trigger the correct code
-		     for a switch table jump with an unfilled delay slot,
+		label = XEXP (XVECEXP (pattern, 1, i), 0);
 
-		     However, that requires state and assumes that we look
-		     at insns in order.
+	      tmp = gen_short_jump (label);
 
-		     We can't make such assumptions when computing the length
-		     of instructions.  Ugh.  We could walk the insn chain to
-		     determine if this instruction is in a branch table, but
-		     that can get rather expensive, particularly during the
-		     branch shortening phase of the compiler.
-
-		     So instead we mark this jump as being special.  This is
-		     far from ideal and knows that no code after this will
-		     muck around with the mode of the JUMP_INSN itself.  */
-		  PUT_MODE (tmp, SImode);
-		  LABEL_NUSES (JUMP_LABEL (tmp))++;
-		  location = NEXT_INSN (location);
-		}
+	      /* Emit the jump itself.  */
+	      tmp = emit_jump_insn_after (tmp, location);
+	      JUMP_LABEL (tmp) = label;
+	      LABEL_NUSES (label)++;
+	      location = NEXT_INSN (location);
 
 	      /* Emit a BARRIER after the jump.  */
 	      emit_barrier_after (location);
@@ -7968,7 +7929,12 @@ pa_reorg (void)
     }
   else
     {
-      /* Sill need an end_brtab insn.  */
+      /* Still need brtab marker insns.  FIXME: the presence of these
+	 markers disables output of the branch table to readonly memory,
+	 and any alignment directives that might be needed.  Possibly,
+	 the begin_brtab insn should be output before the label for the
+	 table.  This doesn matter at the moment since the tables are
+	 always output in the text section.  */
       for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
 	{
 	  /* Find an ADDR_VEC insn.  */
