@@ -1055,9 +1055,12 @@ enum reg_class
 
 #define CLASS_CANNOT_CHANGE_MODE        FR_REGS
 
-/* Defines illegal mode changes for CLASS_CANNOT_CHANGE_MODE.  */
+/* Defines illegal mode changes for CLASS_CANNOT_CHANGE_MODE.
+   In FP regs, we can't change FP values to integer values and vice
+   versa, but we can change e.g. DImode to SImode.  */
 
-#define CLASS_CANNOT_CHANGE_MODE_P(FROM,TO) 1
+#define CLASS_CANNOT_CHANGE_MODE_P(FROM,TO) \
+  (GET_MODE_CLASS (FROM) != GET_MODE_CLASS (TO))
 
 /* A C expression that defines the machine-dependent operand constraint
    letters (`I', `J', `K', .. 'P') that specify particular ranges of
