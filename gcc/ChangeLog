@@ -7,6 +7,9 @@ Wed Nov 28 06:52:27 2001  Arnaud Charlet  <charlet@ACT-Europe.FR>
 
 Wed Nov 28 08:21:47 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* df.c (iterate_dataflow_sbitmap, iterate_dataflow_bitmap):
+	Add casts to remove warnings.
+
 	* Makefile.in (OBJS): Sort alphabetically.
 
 	* print-rtl.c (print_rtx): If RTX code is bad, just say so.

@@ -3863,7 +3863,7 @@ iterative_dataflow_sbitmap (in, out, gen, kill, blocks,
   worklist = fibheap_new ();
   EXECUTE_IF_SET_IN_BITMAP (blocks, 0, i,
   {
-    fibheap_insert (worklist, order[i], (void *) i); 
+    fibheap_insert (worklist, order[i], (void *) (size_t) i); 
     SET_BIT (pending, i);
     if (dir == FORWARD)
       sbitmap_copy (out[i], gen[i]);
@@ -3874,18 +3874,17 @@ iterative_dataflow_sbitmap (in, out, gen, kill, blocks,
     {
       while (!fibheap_empty (worklist))
 	{
-	  i = (int) fibheap_extract_min  (worklist);
+	  i = (size_t) fibheap_extract_min (worklist);
 	  bb = BASIC_BLOCK (i);
 	  if (!TEST_BIT (visited, bb->index))
 	    hybrid_search_sbitmap (bb, in, out, gen, kill, dir, 
-				   conf_op, transfun, visited, pending, 
-				   data);
+				   conf_op, transfun, visited, pending, data);
 	}
       if (sbitmap_first_set_bit (pending) != -1)
 	{
 	  EXECUTE_IF_SET_IN_BITMAP (blocks, 0, i,
 	  {
-	    fibheap_insert (worklist, order[i], (void *) i);
+	    fibheap_insert (worklist, order[i], (void *) (size_t) i);
 	  });
 	  sbitmap_zero (visited);
 	}
@@ -3923,7 +3922,7 @@ iterative_dataflow_bitmap (in, out, gen, kill, blocks,
   worklist = fibheap_new ();
   EXECUTE_IF_SET_IN_BITMAP (blocks, 0, i,
   {
-    fibheap_insert (worklist, order[i], (void *) i); 
+    fibheap_insert (worklist, order[i], (void *) (size_t) i);
     SET_BIT (pending, i);
     if (dir == FORWARD)
       bitmap_copy (out[i], gen[i]);
@@ -3934,18 +3933,17 @@ iterative_dataflow_bitmap (in, out, gen, kill, blocks,
     {
       while (!fibheap_empty (worklist))
 	{
-	  i = (int) fibheap_extract_min  (worklist);
+	  i = (size_t) fibheap_extract_min (worklist);
 	  bb = BASIC_BLOCK (i);
 	  if (!TEST_BIT (visited, bb->index))
 	    hybrid_search_bitmap (bb, in, out, gen, kill, dir, 
-				  conf_op, transfun, visited, pending, 
-				  data);
+				  conf_op, transfun, visited, pending, data);
 	}
       if (sbitmap_first_set_bit (pending) != -1)
 	{
 	  EXECUTE_IF_SET_IN_BITMAP (blocks, 0, i,
 	  {
-	    fibheap_insert (worklist, order[i], (void *) i);
+	    fibheap_insert (worklist, order[i], (void *) (size_t) i);
 	  });
 	  sbitmap_zero (visited);
 	}
