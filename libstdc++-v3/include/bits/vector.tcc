@@ -262,7 +262,16 @@ namespace _GLIBCXX_STD
       else
 	{
 	  const size_type __old_size = size();
-	  const size_type __len = __old_size != 0 ? 2 * __old_size : 1;
+	  if (__old_size == this->max_size())
+	    __throw_length_error(__N("vector::_M_insert_aux"));
+
+	  // When sizeof(value_type) == 1 and __old_size > size_type(-1)/2
+	  // __len overflows: if we don't notice and _M_allocate doesn't
+	  // throw we crash badly later.
+	  size_type __len = __old_size != 0 ? 2 * __old_size : 1;	  
+	  if (__len < __old_size)
+	    __len = this->max_size();
+
 	  iterator __new_start(this->_M_allocate(__len));
 	  iterator __new_finish(__new_start);
 	  try
@@ -279,7 +288,7 @@ namespace _GLIBCXX_STD
 					    iterator(this->_M_impl._M_finish),
 					    __new_finish,
 					    this->get_allocator());
-          }
+	    }
 	  catch(...)
 	    {
 	      std::_Destroy(__new_start, __new_finish, this->get_allocator());
@@ -337,7 +346,14 @@ namespace _GLIBCXX_STD
 	  else
 	    {
 	      const size_type __old_size = size();
-	      const size_type __len = __old_size + std::max(__old_size, __n);
+	      if (this->max_size() - __old_size < __n)
+		__throw_length_error(__N("vector::_M_fill_insert"));
+	      
+	      // See _M_insert_aux above.
+	      size_type __len = __old_size + std::max(__old_size, __n);
+	      if (__len < __old_size)
+		__len = this->max_size();
+
 	      iterator __new_start(this->_M_allocate(__len));
 	      iterator __new_finish(__new_start);
 	      try
@@ -389,7 +405,7 @@ namespace _GLIBCXX_STD
     template<typename _ForwardIterator>
       void
       vector<_Tp, _Alloc>::
-      _M_range_insert(iterator __position,_ForwardIterator __first,
+      _M_range_insert(iterator __position, _ForwardIterator __first,
 		      _ForwardIterator __last, forward_iterator_tag)
       {
 	if (__first != __last)
@@ -429,7 +445,14 @@ namespace _GLIBCXX_STD
 	    else
 	      {
 		const size_type __old_size = size();
-		const size_type __len = __old_size + std::max(__old_size, __n);
+		if (this->max_size() - __old_size < __n)
+		  __throw_length_error(__N("vector::_M_range_insert"));	
+
+		// See _M_insert_aux above.
+		size_type __len = __old_size + std::max(__old_size, __n);
+		if (__len < __old_size)
+		  __len = this->max_size();
+
 		iterator __new_start(this->_M_allocate(__len));
 		iterator __new_finish(__new_start);
 		try

@@ -1,3 +1,14 @@
+2004-10-21  Paolo Carlini  <pcarlini@suse.de>
+	    Dhruv Matani  <dhruvbird@gmx.net>
+	    Nathan Myers  <ncm@cantrip.org>
+
+	* include/bits/vector.tcc (_M_insert_aux, _M_fill_insert,
+	_M_range_insert): Check at the outset that we are not trying
+	to exceed max_size, then deal properly with __len overflows.
+	* testsuite/23_containers/vector/modifiers/insert/1.cc: New.
+	
+	* testsuite/testsuite_allocator.h: Remove redundant include.
+
 2004-10-20  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/bitmap_allocator.h (allocate): Throw std::bad_alloc
