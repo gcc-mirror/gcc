@@ -3126,53 +3126,46 @@ finish_file ()
 
     while (reconsider)
       {
-	tree last = saved_inlines = tree_cons (NULL_TREE, NULL_TREE,
-					       saved_inlines);
-	tree last_head = last;
-	tree place = TREE_CHAIN (saved_inlines);
+	tree *p = &saved_inlines;
 	reconsider = 0;
 
 	walk_vtables ((void (*)())0, finish_vtable_vardecl);
 
-	for (; place; place = TREE_CHAIN (place))
+	while (*p)
 	  {
-	    tree decl = TREE_VALUE (place);
+	    tree decl = TREE_VALUE (*p);
 
-	    /* Slice out the empty elements put in just above in the
-	       previous reconsidering.  */
-	    if (decl == NULL_TREE)
+	    if (DECL_ARTIFICIAL (decl) && ! DECL_INITIAL (decl)
+		&& TREE_USED (decl))
 	      {
-		TREE_CHAIN (last) = TREE_CHAIN (place);
-		continue;
+		synthesize_method (decl);
+		reconsider = 1;
 	      }
 
-	    if (DECL_ARTIFICIAL (decl) && ! DECL_INITIAL (decl))
-	      {
-		if (TREE_USED (decl))
-		  {
-		    synthesize_method (decl);
-		    if (TREE_ASM_WRITTEN (decl))
-		      reconsider = 1;
-		  }
-		else
-		  {
-		    last = place;
-		    continue;
-		  }
-	      }
+	    if (TREE_ASM_WRITTEN (decl)
+		|| (DECL_SAVED_INSNS (decl) == 0 && ! DECL_ARTIFICIAL (decl)))
+	      *p = TREE_CHAIN (*p);
+	    else
+	      p = &TREE_CHAIN (*p);
+	  }
+      }
+
+    reconsider = 1;		/* More may be referenced; check again */
+    while (reconsider)
+      {
+	tree *p = &saved_inlines;
+	reconsider = 0;
+
+	while (*p)
+	  {
+	    tree decl = TREE_VALUE (*p);
 
 	    if (TREE_ASM_WRITTEN (decl) || DECL_SAVED_INSNS (decl) == 0)
+	      *p = TREE_CHAIN (*p);
+	    else if ((TREE_PUBLIC (decl) && ! DECL_WEAK (decl))
+		     || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))
+		     || flag_keep_inline_functions)
 	      {
-		TREE_CHAIN (last) = TREE_CHAIN (place);
-		continue;
-	      }
-
-	    if ((TREE_PUBLIC (decl) && ! DECL_WEAK (decl))
-		|| TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))
-		|| flag_keep_inline_functions)
-	      {
-		TREE_CHAIN (last) = TREE_CHAIN (place);
-
 		if (DECL_NOT_REALLY_EXTERN (decl))
 		  {
 		    DECL_EXTERNAL (decl) = 0;
@@ -3182,10 +3175,10 @@ finish_file ()
 		    permanent_allocation (1);
 		  }
 
-		continue;
+		*p = TREE_CHAIN (*p);
 	      }
-
-	    last = place;
+	    else
+	      p = &TREE_CHAIN (*p);
 	  }
       }
   }

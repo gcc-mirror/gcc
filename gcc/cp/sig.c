@@ -571,6 +571,7 @@ build_signature_table_constructor (sig_ty, rhs)
 	      delta = integer_zero_node;
 	      index = integer_zero_node;
 	      pfn = build_unary_op (ADDR_EXPR, rhs_method, 0);
+	      TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (rhs_method)) = 1;
 	      TREE_TYPE (pfn) = ptr_type_node;
 	      TREE_ADDRESSABLE (rhs_method) = 1;
 	      offset_p = 0;	/* we can't offset the rhs sig table */
@@ -595,6 +596,7 @@ build_signature_table_constructor (sig_ty, rhs)
 					       rhstype, 1));
 	      index = integer_zero_node;
 	      pfn = build_unary_op (ADDR_EXPR, rhs_method, 0);
+	      TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (rhs_method)) = 1;
 	      TREE_TYPE (pfn) = ptr_type_node;
 	      TREE_ADDRESSABLE (rhs_method) = 1;
 	    }
