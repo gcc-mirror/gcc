@@ -178,9 +178,6 @@ struct expr_status
 
 struct function
 {
-  struct function *next_global;
-  struct function *next;
-
   struct eh_status *eh;
   struct stmt_status *stmt;
   struct expr_status *expr;
@@ -194,6 +191,9 @@ struct function
 
   /* Points to the FUNCTION_DECL of this function. */
   tree decl;
+
+  /* Function containing this function, if any.  */
+  struct function *outer;
 
   /* Number of bytes of args popped by function being compiled on its return.
      Zero if no bytes are to be popped.
@@ -482,9 +482,6 @@ struct function
 /* The function currently being compiled.  */
 extern struct function *cfun;
 
-/* A list of all functions we have compiled so far.  */
-extern struct function *all_functions;
-
 /* Nonzero if we've already converted virtual regs to hard regs.  */
 extern int virtuals_instantiated;
 
@@ -552,9 +549,6 @@ extern tree inline_function_decl;
 /* Given a function decl for a containing function,
    return the `struct function' for it.  */
 struct function *find_function_data PARAMS ((tree));
-
-/* Pointer to chain of `struct function' for containing functions.  */
-extern struct function *outer_function_chain;
 
 /* Set NOTE_BLOCK for each block note in the current function.  */
 extern void identify_blocks PARAMS ((void));

@@ -1,3 +1,33 @@
+2001-08-31  Zack Weinberg  <zack@codesourcery.com>
+
+	* function.c: Remove all_functions.  Make outer_function_chain
+	static.
+	(init_function_start): Don't add new function structure to
+	all_functions.
+	(find_function_data, push_function_context_to,
+	pop_function_context_from, put_var_into_stack,
+	trampoline_address): Update for changed structure element names.
+	(push_function_context_to): Disentangle.
+	(free_after_compilation): Also free F.
+	(expand_dummy_function_end): Don't free cfun here.
+	(put_var_into_stack): Comment why we can't use find_function_data here.
+	(fix_lexical_addr, trampoline_address, ): Use find_function_data.
+	(mark_function_chain): Split into maybe_mark_struct_function and
+	ggc_mark_struct_function.  Export the latter.
+	(init_function_once): Mark from cfun and outer_function_chain;
+	not all_functions.
+
+	* function.h (struct function): Kill next_global.  Rename next
+	to outer.  All users updated to match.
+	(all_functions, outer_function_chain): Don't declare.
+
+	* ggc-common.c (ggc_mark_trees): Mark DECL_SAVED_INSNS.
+	* integrate.c (output_inline_function): Clear DECL_SAVED_INSNS,
+	don't touch f->inlinable, after calling rest_of_compilation.
+
+	* tree.h: Forward-declare struct function.  Prototype
+	ggc_mark_struct_function.
+
 2001-08-31  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.md (*andorhi3): Fix typos.

@@ -1682,6 +1682,8 @@ struct tree_type
    argument's depth.  */
 #define DECL_POINTER_DEPTH(DECL) (DECL_CHECK (DECL)->decl.pointer_depth)
 
+struct function;
+
 struct tree_decl
 {
   struct tree_common common;
@@ -2803,6 +2805,7 @@ extern void push_function_context	PARAMS ((void));
 extern void pop_function_context	PARAMS ((void));
 extern void push_function_context_to	PARAMS ((tree));
 extern void pop_function_context_from	PARAMS ((tree));
+extern void ggc_mark_struct_function	PARAMS ((struct function *));
 
 /* In print-rtl.c */
 #ifdef BUFSIZ
