@@ -18,12 +18,36 @@ Thu Jul  2 14:34:48 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 Thu Jul  2 14:16:11 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* varray.{c,h}: New files to provide virtual array support.
+
 	* Makefile.in (OBJS): Add varray.o.
 	(varray.o): Add new file.
+	(REGS_H): New variable for dependencies for files including
+	regs.h.  Add varray.h and files it includes.  Change all regs.h
+	dependencies to $(REGS_H).
 
 	* toplev.c (x{m,re}alloc): If size is 0, allocate 1 byte.
 	(xcalloc): Provide frontend for calloc.
 	* {tree,rtl}.h (xcalloc): Add declaration.
+
+	* basic-block.h (REG_BASIC_BLOCK): Convert reg_n_info to be a
+	varray.
+
+	* regs.h (toplevel): Include varray.h.
+	(reg_n_info): Switch to use a varray.
+	(REG_*): Ditto.
+	(allocate_reg_info): Change num_regs argument to be size_t.
+
+	* regclass.c (reg_info_data): New structure to remember groups of
+	reg_info structures allocated that are to be zeroed.
+	({pref,alt}class_buffer): New statics to hold buffers
+	allocate_reg_info allocates for {pref,alt}class_buffer.
+        (regclass): Use {pref,alt}class_buffer to initialize
+        {pref,alt}class.
+	(allocate_reg_info): Switch to make reg_n_info use varrays.
+	Allocate buffers for the preferred and alter register class
+	information.  Change num_regs argument to be size_t, not int.
+
+	* flow.c (reg_n_info): Switch to use varrays.
 
 Thu Jul  2 10:11:47 1998  Robert Lipe  <robertl@dgii.com>
 

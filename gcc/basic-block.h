@@ -1,5 +1,5 @@
 /* Define control and data flow tables, and regsets.
-   Copyright (C) 1987, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -132,7 +132,7 @@ extern regset regs_live_at_setjmp;
 #define REG_BLOCK_UNKNOWN -1
 #define REG_BLOCK_GLOBAL -2
 
-#define REG_BASIC_BLOCK(N) (reg_n_info[(N)].basic_block)
+#define REG_BASIC_BLOCK(N) (VARRAY_REG (reg_n_info, N)->basic_block)
 
 /* List of integers.
    These are used for storing things like predecessors, etc.
