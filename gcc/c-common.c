@@ -1755,6 +1755,8 @@ truthvalue_conversion (expr)
     case TRUTH_AND_EXPR:
     case TRUTH_OR_EXPR:
     case TRUTH_XOR_EXPR:
+      return convert (integer_type_node, expr);
+
     case ERROR_MARK:
       return expr;
 
