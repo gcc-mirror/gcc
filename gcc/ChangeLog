@@ -1,3 +1,8 @@
+Tue Jan 19 11:54:04 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* calls.c (expand_call): Strip a TARGET_EXPR if we're passing by
+	invisible reference.
+
 Tue Jan 19 14:51:36 1999  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.c (offsettable_addr_operand): Delete.
