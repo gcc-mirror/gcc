@@ -7225,7 +7225,7 @@ process_for_unwind_directive (asm_out_file, insn)
 	    }
 	}
 
-      if (! RTX_FRAME_RELATED_P (insn))
+      if (GET_CODE (insn) == NOTE || ! RTX_FRAME_RELATED_P (insn))
 	return;
 
       pat = find_reg_note (insn, REG_FRAME_RELATED_EXPR, NULL_RTX);
