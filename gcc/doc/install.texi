@@ -284,11 +284,12 @@ variable to an automounter-aware @command{pwd} command, e.g.,
 @command{pawd} or @command{amq -w}, during the configuration and build
 phases.
 
-First, in general, GCC @strong{must} be built into a separate directory
-than the sources which does @strong{not} reside within the source tree.
-This is how almost all developers build GCC; building where @var{srcdir}
-== @var{objdir} is completely unsupported; building where @var{objdir}
-is a subdirectory of @var{srcdir} is completely unsupported.
+First, we @strong{highly} recommend that GCC be built into a
+separate directory than the sources which does @strong{not} reside
+within the source tree.  This is how we generally build GCC; building
+where @var{srcdir} == @var{objdir} should still work, but doesn't
+get extensive testing; building where @var{objdir} is a subdirectory
+of @var{srcdir} is unsupported.
 
 If you have previously built GCC in the same directory for a
 different target machine, do @samp{make distclean} to delete all files
