@@ -331,6 +331,10 @@ esac
 # Common parts for widely ported systems.
 case ${target} in
 *-*-darwin*)
+  case ${target} in
+    *-darwin[0-6]*) ;;
+    *) tm_file="${tm_file} darwin7.h" ;;
+  esac
   tm_file="${tm_file} darwin.h"
   tm_p_file="${tm_p_file} darwin-protos.h"
   tmake_file="t-darwin t-slibgcc-darwin"

@@ -41,9 +41,11 @@ Boston, MA 02111-1307, USA.  */
 
 /* Suppress g++ attempt to link in the math library automatically.
    (Some Darwin versions have a libm, but they seem to cause problems
-   for C++ executables.)  */
-
+   for C++ executables.) This needs to be -lmx for Darwin 7.0 and
+   above.  */
+#ifndef MATH_LIBRARY
 #define MATH_LIBRARY ""
+#endif
 
 /* We have atexit.  */
 
@@ -907,5 +909,10 @@ void add_framework_path (char *);
 #define TARGET_OPTF add_framework_path
 
 #define TARGET_HAS_F_SETLKW
+
+/* Darwin before 7.0 does not have C99 functions.   */
+#ifndef TARGET_C99_FUNCTIONS
+#define TARGET_C99_FUNCTIONS 0
+#endif
 
 #endif /* CONFIG_DARWIN_H */
