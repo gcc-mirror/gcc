@@ -1,3 +1,9 @@
+2000-08-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.md (lea_general_1): Copy insn condition to split
+	condition.
+	(lea_general_2, lea_general_3): Likewise.
+
 2000-08-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-decl.c (duplicate_decls, define_label): Restrict -Wtraditional
