@@ -1,3 +1,9 @@
+2001-12-03  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/mips.h (CALL_REALLY_USED_REGISTERS): New macro.
+	* config/mips/mips.md: Check TARGET_DEBUG_D_MODE before split
+	patterns.
+
 2001-12-03  Janis Johnson  <janis187@us.ibm.com>
 
 	* rtl.def (PREFETCH): New rtx code.
