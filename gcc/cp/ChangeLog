@@ -1,3 +1,9 @@
+1998-09-10  Mark Mitchell  <mark@markmitchell.com>
+
+	* decl.c (pushdecl): Don't copy types if the
+	DECL_ABSTRACT_ORIGIN of the new decl matches the TYPE_NAME of the
+	type. 
+
 1998-09-09  Kriang Lerdsuwanakij <lerdsuwa@scf-fs.usc.edu>
 
 	* class.c (get_enclosing_class): New function.
