@@ -28,9 +28,9 @@ if {![istarget powerpc*-*-*altivec*]} {
 # If a testcase doesn't have special options, use these.
 # -pedantic-errors is inappropriate here, as this subdirectory tests
 # nothing but extensions.
-global DEFAULT_CFLAGS
-if ![info exists DEFAULT_CFLAGS] then {
-    set DEFAULT_CFLAGS "-std=gnu99"
+global DEFAULT_VMXCFLAGS
+if ![info exists DEFAULT_VMXCFLAGS] then {
+    set DEFAULT_VMXCFLAGS "-maltivec -mabi=altivec -std=gnu99"
 }
 
 # Default action in this directory is 'run'.
@@ -43,7 +43,7 @@ dg-init
 
 # Main loop.
 gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c]] \
-	$DEFAULT_CFLAGS
+	$DEFAULT_VMXCFLAGS
 
 # All done.
 dg-finish
