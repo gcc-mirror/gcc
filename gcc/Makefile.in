@@ -1593,7 +1593,11 @@ tree-alias-ander.o: tree-alias-ander.c tree-alias-ander.h $(SYSTEM_H) \
    $(TM_H) coretypes.h cgraph.h tree-pass.h
 tree-alias-common.o: tree-alias-common.c tree-alias-common.h $(SYSTEM_H) \
    $(CONFIG_H) $(GGC_H) $(TREE_H) gt-tree-alias-common.h $(TREE_FLOW_H) \
-   $(TM_H) coretypes.h cgraph.h tree-pass.h $(TIMEVAR_H)
+   $(TM_H) coretypes.h cgraph.h tree-pass.h $(TIMEVAR_H) tree-alias-type.h \
+   bitmap.h tree-alias-ander.h $(FLAGS_H) $(RTL_H) $(TM_P_H) \
+   hard-reg-set.h $(BASIC_BLOCK_H) output.h errors.h $(EXPR_H) \
+   $(DIAGNOSTIC_H) $(C_COMMON_H) tree-inline.h varray.h $(C_TREE_H) \
+   $(TREE_GIMPLE_H) $(HASHTAB_H) function.h
 tree-ssa.o : tree-ssa.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(RTL_H) $(TREE_H) $(TM_P_H) $(EXPR_H) output.h diagnostic.h \
    errors.h toplev.h function.h $(TIMEVAR_H) tree-alias-common.h \
