@@ -7324,6 +7324,10 @@ emit_reload_insns (struct insn_chain *chain)
 			CLEAR_HARD_REG_BIT (reg_reloaded_died, src_regno);
 		    }
 		  reg_last_reload_reg[nregno] = src_reg;
+		  /* We have to set reg_has_output_reload here, or else 
+		     forget_old_reloads_1 will clear reg_last_reload_reg
+		     right away.  */
+		  reg_has_output_reload[nregno] = 1;
 		}
 	    }
 	  else
