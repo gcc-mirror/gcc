@@ -6732,7 +6732,7 @@ ix86_expand_vector_move (mode, operands)
       && !register_operand (operands[1], mode)
       && operands[1] != CONST0_RTX (mode))
     {
-      rtx temp = force_reg (TImode, operands[1]);
+      rtx temp = force_reg (GET_MODE (operands[1]), operands[1]);
       emit_move_insn (operands[0], temp);
       return;
     }
@@ -11363,6 +11363,12 @@ ix86_expand_binop_builtin (icode, arglist, target)
   if (! (*insn_data[icode].operand[2].predicate) (op1, mode1))
     op1 = copy_to_mode_reg (mode1, op1);
 
+  /* In the commutative cases, both op0 and op1 are nonimmediate_operand,
+     yet one of the two must not be a memory.  This is normally enforced
+     by expanders, but we didn't bother to create one here.  */
+  if (GET_CODE (op0) == MEM && GET_CODE (op1) == MEM)
+    op0 = copy_to_mode_reg (mode0, op0);
+
   pat = GEN_FCN (icode) (target, op0, op1);
   if (! pat)
     return 0;
@@ -11395,6 +11401,12 @@ ix86_expand_timode_binop_builtin (icode, arglist, target)
   if (! (*insn_data[icode].operand[2].predicate) (op1, TImode))
     op1 = copy_to_mode_reg (TImode, op1);
 
+  /* In the commutative cases, both op0 and op1 are nonimmediate_operand,
+     yet one of the two must not be a memory.  This is normally enforced
+     by expanders, but we didn't bother to create one here.  */
+  if (GET_CODE (op0) == MEM && GET_CODE (op1) == MEM)
+    op0 = copy_to_mode_reg (TImode, op0);
+
   pat = GEN_FCN (icode) (target, op0, op1);
   if (! pat)
     return 0;
@@ -11422,6 +11434,10 @@ ix86_expand_store_builtin (icode, arglist)
     op1 = safe_vector_operand (op1, mode1);
 
   op0 = gen_rtx_MEM (mode0, copy_to_mode_reg (Pmode, op0));
+
+  if (! (*insn_data[icode].operand[1].predicate) (op1, mode1))
+    op1 = copy_to_mode_reg (mode1, op1);
+
   pat = GEN_FCN (icode) (op0, op1);
   if (pat)
     emit_insn (pat);
@@ -11476,7 +11492,7 @@ ix86_expand_unop1_builtin (icode, arglist, target)
 {
   rtx pat;
   tree arg0 = TREE_VALUE (arglist);
-  rtx op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+  rtx op1, op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
   enum machine_mode tmode = insn_data[icode].operand[0].mode;
   enum machine_mode mode0 = insn_data[icode].operand[1].mode;
 
@@ -11490,8 +11506,12 @@ ix86_expand_unop1_builtin (icode, arglist, target)
 
   if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
     op0 = copy_to_mode_reg (mode0, op0);
-
-  pat = GEN_FCN (icode) (target, op0, op0);
+  
+  op1 = op0;
+  if (! (*insn_data[icode].operand[2].predicate) (op1, mode0))
+    op1 = copy_to_mode_reg (mode0, op1);
+  
+  pat = GEN_FCN (icode) (target, op0, op1);
   if (! pat)
     return 0;
   emit_insn (pat);
