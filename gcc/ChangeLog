@@ -1,3 +1,8 @@
+Wed Jul  1 02:12:33 1998  Robert Lipe  <robertl@dgii.com>
+
+	* i386.c (asm_output_function_prefix): Make 686 function
+	prologues not issue .types for non-global lables.
+
 Tue Jun 30 23:46:53 1998  Dmitrij Tejblum <tejblum@arc.hq.cti.ru>
 
 	* i386/freebsd.h (WCHAR_TYPE): Chagne to an "int".
