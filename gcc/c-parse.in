@@ -2504,10 +2504,9 @@ label:	  CASE expr_no_commas ':'
 
 maybe_type_qual:
 	/* empty */
-		{ emit_line_note (input_location);
-		  $$ = NULL_TREE; }
+		{ $$ = NULL_TREE; }
 	| TYPE_QUAL
-		{ emit_line_note (input_location); }
+		{ }
 	;
 
 xexpr:
