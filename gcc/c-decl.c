@@ -1317,6 +1317,28 @@ duplicate_decls (newdecl, olddecl)
 	      if (types_match)
 		TREE_TYPE (olddecl) = newtype;
 	    }
+	  /* Accept harmless mismatch in first argument type also.
+	     This is for ffs.  */
+	  if (TYPE_ARG_TYPES (TREE_TYPE (newdecl)) != 0
+	      && TYPE_ARG_TYPES (TREE_TYPE (olddecl)) != 0
+	      && TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (newdecl))) != 0
+	      && TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (olddecl))) != 0
+	      && (TYPE_MODE (TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (newdecl))))
+		  ==
+		  TYPE_MODE (TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (olddecl))))))
+	    {
+	      /* Function types may be shared, so we can't just modify
+		 the return type of olddecl's function type.  */
+	      tree newtype
+		= build_function_type (TREE_TYPE (TREE_TYPE (olddecl)),
+				       tree_cons (NULL_TREE, 
+						  TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (newdecl))),
+						  TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (olddecl)))));
+	      
+              types_match = comptypes (TREE_TYPE (newdecl), newtype);
+	      if (types_match)
+		TREE_TYPE (olddecl) = newtype;
+	    }
 	}
       if (!types_match)
 	{
