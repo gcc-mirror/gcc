@@ -175,6 +175,7 @@ cp_printer * cp_printers[256] =
   o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, /* 0x60 */
   o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, /* 0x70 */
 };
+#undef A
 #undef C
 #undef D
 #undef E
