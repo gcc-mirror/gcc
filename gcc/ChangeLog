@@ -1,3 +1,7 @@
+Wed Feb 21 18:12:41 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (mmx_lshrdi3, mmx_ashldi3): Guard by unspec.
+
 2001-02-21  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.md (iorsi3): Do not output an extra newline
