@@ -1,3 +1,8 @@
+Wed Jan 26 22:19:14 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* cp/optimize.c (calls_setjmp_r): Supply new argument
+	to special_function_p.
+
 2000-01-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* call.c: PROTO -> PARAMS.

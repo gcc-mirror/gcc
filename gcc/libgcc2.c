@@ -1,6 +1,7 @@
 /* More subroutines needed by GCC output code on some machines.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1989, 92-98, 1999 Free Software Foundation, Inc.
+/* Copyright (C) 1989, 92, 93, 94, 95, 96, 97, 98, 1999, 2000
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1563,6 +1564,10 @@ char *ctime ();
 #include "gbl-ctors.h"
 #include "gcov-io.h"
 #include <string.h>
+#ifdef TARGET_HAS_F_SETLKW
+#include <fcntl.h>
+#include <errno.h>
+#endif
 
 static struct bb *bb_head;
 
@@ -1606,13 +1611,64 @@ __bb_exit_func (void)
 
       for (ptr = bb_head; ptr != (struct bb *) 0; ptr = ptr->next)
 	{
-	  /* If the file exists, and the number of counts in it is the same,
-	     then merge them in.  */
-	     
-	  if ((da_file = fopen (ptr->filename, "rb")) != 0)
+	  int firstchar;
+
+	  /* Make sure the output file exists -
+	     but don't clobber exiting data.  */
+	  if ((da_file = fopen (ptr->filename, "a")) != 0)
+	    fclose (da_file);
+
+	  /* Need to re-open in order to be able to write from the start.  */
+	  da_file = fopen (ptr->filename, "r+b");
+	  /* Some old systems might not allow the 'b' mode modifier.
+	     Therefore, try to open without it.  This can lead to a race
+	     condition so that when you delete and re-create the file, the
+	     file might be opened in text mode, but then, you shouldn't
+	     delete the file in the first place.  */
+	  if (da_file == 0)
+	    da_file = fopen (ptr->filename, "r+");
+	  if (da_file == 0)
+	    {
+	      fprintf (stderr, "arc profiling: Can't open output file %s.\n",
+		       ptr->filename);
+	      continue;
+	    }
+
+	  /* After a fork, another process might try to read and/or write
+	     the same file simultanously.  So if we can, lock the file to
+	     avoid race conditions.  */
+#if defined (TARGET_HAS_F_SETLKW)
+	  {
+	    struct flock s_flock;
+
+	    s_flock.l_type = F_WRLCK;
+	    s_flock.l_whence = SEEK_SET;
+	    s_flock.l_start = 0;
+	    s_flock.l_len = 1;
+	    s_flock.l_pid = getpid ();
+
+	    while (fcntl (fileno (da_file), F_SETLKW, &s_flock)
+		   && errno == EINTR);
+	  }
+#endif
+
+	  /* If the file is not empty, and the number of counts in it is the
+	     same, then merge them in.  */
+	  firstchar = fgetc (da_file);
+	  if (firstchar == EOF)
+	    {
+	      if (ferror (da_file))
+		{
+		  fprintf (stderr, "arc profiling: Can't read output file ");
+		  perror (ptr->filename);
+		}
+	    }
+	  else
 	    {
 	      long n_counts = 0;
 	      
+	      if (ungetc (firstchar, da_file) == EOF)
+		rewind (da_file);
 	      if (__read_long (&n_counts, da_file, 8) != 0)
 		{
 		  fprintf (stderr, "arc profiling: Can't read output file %s.\n",
@@ -1638,16 +1694,9 @@ __bb_exit_func (void)
 		    }
 		}
 
-	      if (fclose (da_file) == EOF)
-		fprintf (stderr, "arc profiling: Error closing output file %s.\n",
-			 ptr->filename);
 	    }
-	  if ((da_file = fopen (ptr->filename, "wb")) == 0)
-	    {
-	      fprintf (stderr, "arc profiling: Can't open output file %s.\n",
-		       ptr->filename);
-	      continue;
-	    }
+
+	  rewind (da_file);
 
 	  /* ??? Should first write a header to the file.  Preferably, a 4 byte
 	     magic number, 4 bytes containing the time the program was
@@ -1824,6 +1873,23 @@ __bb_init_func (struct bb *blocks)
   blocks->zero_word = 1;
   blocks->next = bb_head;
   bb_head = blocks;
+}
+
+/* Called before fork or exec - write out profile information gathered so
+   far and reset it to zero.  This avoids duplication or loss of the
+   profile information gathered so far.  */
+void
+__bb_fork_func (void)
+{
+  struct bb *ptr;
+
+  __bb_exit_func ();
+  for (ptr = bb_head; ptr != (struct bb *) 0; ptr = ptr->next)
+    {
+      long i;
+      for (i = ptr->ncounts - 1; i >= 0; i--)
+	ptr->counts[i] = 0;
+    }
 }
 
 #ifndef MACHINE_STATE_SAVE

@@ -1,3 +1,14 @@
+Wed Jan 26 22:19:14 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* calls.c (special_function_p): New argument fork_or_exec.
+	(expand_call): When profile_arc_flag is set and the function
+	is in the fork_or_exec group, call __bb_fork_func first.
+	* libgcc2.c, _bb module (__bb_fork_func): New function.
+	(__bb_exit_func): If fcntl F_SETLKW is available, use it to lock
+	output file.
+	* config/svr4.h (TARGET_HAS_F_SETLKW): Define.
+	* tree.h (special_function_p): Update prototype.
+
 2000-01-26  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (alpha_split_tfmode_pair): New.
