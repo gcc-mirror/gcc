@@ -154,19 +154,18 @@ AC_SUBST(CXXINCLUDES)
 
 machdep=
 case "$host" in
-# alpha_mach_dep.s assumes that pointers are not saved in fp registers.
-# Gcc on a 21264 can spill pointers to fp registers.  Oops.
-# alpha*-*-*)
-#    machdep="alpha_mach_dep.lo"
-#    ;;
- i?86-*-solaris2.[[89]]*)
-    AC_DEFINE(SOLARIS25_PROC_VDB_BUG_FIXED)
-    ;;
- alpha-*-openbsd*)
+ alpha*-*-openbsd*)
+    machdep="alpha_mach_dep.lo"
     if test x"${ac_cv_lib_dl_dlopen}" != xyes ; then
        AC_MSG_WARN(OpenBSD/Alpha without dlopen(). Shared library support is disabled)
        AM_DISABLE_SHARED
     fi
+    ;;
+ alpha*-*-*)
+    machdep="alpha_mach_dep.lo"
+    ;;
+ i?86-*-solaris2.[[89]]*)
+    AC_DEFINE(SOLARIS25_PROC_VDB_BUG_FIXED)
     ;;
  mipstx39-*-elf*)
     machdep="mips_ultrix_mach_dep.lo"

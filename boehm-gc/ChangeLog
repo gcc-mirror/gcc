@@ -1,3 +1,8 @@
+2002-02-12  Richard Henderson  <rth@redhat.com>
+
+	* configure.in: Re-apply 2001-06-26 configure change.
+	* configure: Rebuild.
+
 2002-02-12  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	Imported GC 6.1 Alpha 3.
@@ -6,7 +11,7 @@
 
 2001-02-11  Adam Megacz <adam@xwt.org
 
-	* gcc/boehm-gc/configure.in: support for win32, saner
+	* configure.in: support for win32, saner
 	cross-compile options
 
 2001-02-08  Anthony Green  <green@redhat.com>
