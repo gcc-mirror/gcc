@@ -1,3 +1,12 @@
+Sat Oct 31 05:08:34 CET 1998 Jan Hubicka  (hubicka@freesoft.cz)
+
+	* reg-stack.c: Do not emit pop insns after cc0 setter.
+	(emit_pop_insn): Do not emit insn in case WHEN is NULL.
+	(compare_for_stack_reg): Update REG_DEAD note and 
+	do not emit push insn.
+
+	* i386.c: (output_float_compare): Handle new REG_DEAD notes.
+
 Mon May 17 01:57:37 1999  David Daney <daney@ibw.com.ni>
 
 	* i386/sol2.h (LINK_SPEC): Do not pass "-z text" to the linker
