@@ -28,7 +28,7 @@ Written by Per Bothner 1994.  */
 #include "cpplib.h"
 
 extern char *xmalloc PARAMS ((unsigned));
-extern char *xrealloc PARAMS ((char *, unsigned));
+extern char *xrealloc PARAMS ((void *, unsigned));
 
 #ifdef MULTIBYTE_CHARS
 #include <stdlib.h>
@@ -367,7 +367,7 @@ cpp_lex (pfile, skip_evaluation)
 	  {
 	    if (c == '\\')
 	      {
-		c = cpp_parse_escape (pfile, &ptr);
+		c = cpp_parse_escape (pfile, (char **) &ptr);
 		if (width < HOST_BITS_PER_INT
 		  && (unsigned) c >= (1 << width))
 		    cpp_pedwarn (pfile,
