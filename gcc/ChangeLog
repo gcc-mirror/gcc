@@ -1,3 +1,8 @@
+2004-12-06  DJ Delorie  <dj@redhat.com>
+
+	* reload.c (find_valid_class): Fix logic to test inner mode as well.
+	(push_reload): Pass inner mode.
+
 2004-12-06  Eric Christopher  <echristo@redhat.com>
 
 	* doc/tm.texi (TARGET_VALID_POINTER_MODE): Document.
