@@ -8361,9 +8361,7 @@ sh_issue_rate(void)
 
 /* Get weight for mode for a set x.  */
 static short
-find_set_regmode_weight (x, mode)
-     rtx x;
-     enum machine_mode mode;
+find_set_regmode_weight (rtx x, enum machine_mode mode)
 {
   if (GET_CODE (x) == CLOBBER && register_operand (SET_DEST (x), mode))
     return 1;
@@ -8383,9 +8381,7 @@ find_set_regmode_weight (x, mode)
 
 /* Get regmode weight for insn.  */
 static short
-find_insn_regmode_weight (insn, mode)
-     rtx insn;
-     enum machine_mode mode;
+find_insn_regmode_weight (rtx insn, enum machine_mode mode)
 {
   short reg_weight = 0;
   rtx x;
@@ -8417,9 +8413,7 @@ find_insn_regmode_weight (insn, mode)
 
 /* Calculate regmode weights for all insns of a basic block.  */
 static void
-find_regmode_weight (b, mode)
-     int b;
-     enum machine_mode mode;
+find_regmode_weight (int b, enum machine_mode mode)
 {
   rtx insn, next_tail, head, tail;
 
@@ -8443,9 +8437,7 @@ find_regmode_weight (b, mode)
 
 /* Comparison function for ready queue sorting.  */
 static int
-rank_for_reorder (x, y)
-     const void *x;
-     const void *y;
+rank_for_reorder (const void *x, const void *y)
 {
   rtx tmp = *(const rtx *) y;
   rtx tmp2 = *(const rtx *) x;
@@ -8462,9 +8454,7 @@ rank_for_reorder (x, y)
 
 /* Resort the array A in which only element at index N may be out of order.  */
 static void
-swap_reorder (a, n)
-     rtx *a;
-     int n;
+swap_reorder (rtx *a, int n)
 {
   rtx insn = a[n - 1];
   int i = n - 2;
@@ -8487,19 +8477,16 @@ while (0)
 /* Sort the ready list READY by ascending priority, using the SCHED_REORDER
    macro.  */
 static void
-ready_reorder (ready, nready)
-     rtx *ready;
-     int nready;
+ready_reorder (rtx *ready, int nready)
 {
   SCHED_REORDER (ready, nready);
 }
 
 /* Calculate regmode weights for all insns of all basic block.  */
 static void
-sh_md_init_global (dump, verbose, old_max_uid)
-     FILE *dump ATTRIBUTE_UNUSED;
-     int verbose ATTRIBUTE_UNUSED;
-     int old_max_uid;
+sh_md_init_global (FILE *dump ATTRIBUTE_UNUSED,
+		   int verbose ATTRIBUTE_UNUSED,
+		   int old_max_uid)
 {
   basic_block b;
 
@@ -8519,9 +8506,8 @@ sh_md_init_global (dump, verbose, old_max_uid)
 
 /* Cleanup.  */
 static void
-sh_md_finish_global (dump, verbose)
-     FILE *dump ATTRIBUTE_UNUSED;
-     int verbose ATTRIBUTE_UNUSED;
+sh_md_finish_global (FILE *dump ATTRIBUTE_UNUSED,
+		     int verbose ATTRIBUTE_UNUSED)
 {
   if (regmode_weight[0])
     {
@@ -8538,11 +8524,10 @@ sh_md_finish_global (dump, verbose)
 /* Cache the can_issue_more so that we can return it from reorder2. Also,
    keep count of register pressures on SImode and SFmode. */
 static int
-sh_variable_issue (dump, sched_verbose, insn, can_issue_more)
-     FILE *dump ATTRIBUTE_UNUSED;
-     int sched_verbose ATTRIBUTE_UNUSED;
-     rtx insn;
-     int can_issue_more;
+sh_variable_issue (FILE *dump ATTRIBUTE_UNUSED,
+		   int sched_verbose ATTRIBUTE_UNUSED,
+		   rtx insn,
+		   int can_issue_more)
 {
   if (GET_CODE (PATTERN (insn)) != USE
       && GET_CODE (PATTERN (insn)) != CLOBBER)
@@ -8560,10 +8545,9 @@ sh_variable_issue (dump, sched_verbose, insn, can_issue_more)
 }
 
 static void
-sh_md_init (dump, verbose, veclen)
-     FILE *dump ATTRIBUTE_UNUSED;
-     int verbose ATTRIBUTE_UNUSED;
-     int veclen ATTRIBUTE_UNUSED;
+sh_md_init (FILE *dump ATTRIBUTE_UNUSED,
+	    int verbose ATTRIBUTE_UNUSED,
+	    int veclen ATTRIBUTE_UNUSED)
 {
   CURR_REGMODE_PRESSURE (SImode) = 0;
   CURR_REGMODE_PRESSURE (SFmode) = 0;
@@ -8580,8 +8564,7 @@ sh_md_init (dump, verbose, veclen)
 
 /* Return true if the pressure is high for MODE.  */
 static short
-high_pressure (mode)
-     enum machine_mode mode;
+high_pressure (enum machine_mode mode)
 {
   /* Pressure on register r0 can lead to spill failures. so avoid sched1 for
      functions that already have high pressure on r0. */
@@ -8597,12 +8580,11 @@ high_pressure (mode)
 
 /* Reorder ready queue if register pressure is high.  */
 static int
-sh_reorder (dump, sched_verbose, ready, n_readyp, clock_var)
-     FILE *dump ATTRIBUTE_UNUSED;
-     int sched_verbose ATTRIBUTE_UNUSED;
-     rtx *ready;
-     int *n_readyp;
-     int clock_var ATTRIBUTE_UNUSED;
+sh_reorder (FILE *dump ATTRIBUTE_UNUSED,
+	    int sched_verbose ATTRIBUTE_UNUSED,
+	    rtx *ready,
+	    int *n_readyp,
+	    int clock_var ATTRIBUTE_UNUSED)
 {
   if (reload_completed)
     return sh_issue_rate ();
@@ -8617,12 +8599,11 @@ sh_reorder (dump, sched_verbose, ready, n_readyp, clock_var)
 
 /* Skip cycles if the current register pressure is high.  */
 static int 
-sh_reorder2 (dump, sched_verbose, ready, n_readyp, clock_var)
-     FILE *dump ATTRIBUTE_UNUSED;
-     int sched_verbose ATTRIBUTE_UNUSED;
-     rtx *ready ATTRIBUTE_UNUSED;
-     int *n_readyp ATTRIBUTE_UNUSED;
-     int clock_var ATTRIBUTE_UNUSED;
+sh_reorder2 (FILE *dump ATTRIBUTE_UNUSED,
+	     int sched_verbose ATTRIBUTE_UNUSED,
+	     rtx *ready ATTRIBUTE_UNUSED,
+	     int *n_readyp ATTRIBUTE_UNUSED,
+	     int clock_var ATTRIBUTE_UNUSED)
 {
   if (reload_completed)
     return cached_can_issue_more;
@@ -8642,14 +8623,12 @@ sh_reorder2 (dump, sched_verbose, ready, n_readyp, clock_var)
 #define MAX_SKIPS 8 
 
 static int
-sh_dfa_new_cycle (sched_dump, sched_verbose, insn, last_clock_var, 
-		clock_var, sort_p)
-     FILE *sched_dump ATTRIBUTE_UNUSED;
-     int sched_verbose ATTRIBUTE_UNUSED;
-     rtx insn ATTRIBUTE_UNUSED;
-     int last_clock_var;
-     int clock_var;
-     int *sort_p;
+sh_dfa_new_cycle (FILE *sched_dump ATTRIBUTE_UNUSED,
+		  int sched_verbose ATTRIBUTE_UNUSED,
+		  rtx insn ATTRIBUTE_UNUSED,
+		  int last_clock_var,
+		  int clock_var,
+		  int *sort_p)
 {
   if (reload_completed)
 	  return 0;
@@ -8696,8 +8675,7 @@ sh_optimize_target_register_callee_saved (bool after_prologue_epilogue_gen)
 }
 
 static bool
-sh_ms_bitfield_layout_p (record_type)
-     tree record_type ATTRIBUTE_UNUSED;
+sh_ms_bitfield_layout_p (tree record_type ATTRIBUTE_UNUSED)
 {
   return (TARGET_SH5 || TARGET_HITACHI || sh_attr_renesas_p (record_type));
 }
