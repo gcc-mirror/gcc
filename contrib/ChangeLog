@@ -1,3 +1,8 @@
+2004-08-20  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* gcc_update (self): libjava/configure.in -> configure.ac. Automake
+	update done.
+
 2004-08-04  Paolo Bonzini  <gcc@gcc.gnu.org>
 
 	* gcc_update: libjava/configure.ac -> configure.in.  Automake
