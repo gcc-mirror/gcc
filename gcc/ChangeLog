@@ -1,3 +1,8 @@
+Tue Dec 14 18:13:32 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.c (strength_reduce): Fix sign of giv lifetime calculation
+	for givs made from biv increments.
+
 Tue Dec 14 08:11:27 1999  Richard Henderson  <rth@cygnus.com>
 
 	* configure.in (alpha-osf, alpha-linux): Handle ev6[78].
