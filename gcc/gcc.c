@@ -2562,7 +2562,7 @@ process_command (argc, argv)
 	}
     }
 
-  if (n_infiles == last_language_n_infiles)
+  if (n_infiles == last_language_n_infiles && spec_lang != 0)
     error ("Warning: `-x %s' after last input file has no effect", spec_lang);
 
   switches[n_switches].part1 = 0;
