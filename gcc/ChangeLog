@@ -1,3 +1,8 @@
+1999-10-06  Brendan Kehoe  <brendan@cygnus.com>
+
+	* sparc/sp86x-elf.h (SUBTARGET_SWITCHES): Add missing doc
+	string for little-endian-data.
+
 Wed Oct  6 16:10:35 1999  Michael Meissner  <meissner@cygnus.com>
 
 	* varray.h (VARRAY_CHECK): Fix up appropriate revision check, in

@@ -70,4 +70,4 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_LITTLE_ENDIAN_DATA (target_flags & MASK_LITTLE_ENDIAN)
 #undef  SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES \
-    { "little-endian-data",              MASK_LITTLE_ENDIAN },     
+    { "little-endian-data",              MASK_LITTLE_ENDIAN,	"Use little-endian byte order"},
