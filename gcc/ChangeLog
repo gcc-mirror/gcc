@@ -1,3 +1,8 @@
+Fri Feb  5 11:49:49 1999  Benjamin Kosnik  <bkoz@loony.cygnus.com>
+
+	* c-common.c (decl_attributes): Fix reserved space for init_priority.
+	* tree.h (MAX_RESERVED_INIT_PRIORITY): New macro.
+
 Fri Feb  5 12:37:05 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* haifa-sched.c (add_dependence): Do not add a dependency on a
