@@ -5096,13 +5096,15 @@ based_loc_descr (reg, offset)
      long int offset;
 {
   register dw_loc_descr_ref loc_result;
-  register unsigned fp_reg = (frame_pointer_needed)
-				      ? FRAME_POINTER_REGNUM
-			              : STACK_POINTER_REGNUM;
+  /* For the "frame base", we use the frame pointer or stack pointer
+     registers, since the RTL for local variables is relative to one of
+     them.  */
+  register unsigned fp_reg = DBX_REGISTER_NUMBER (frame_pointer_needed
+						  ? FRAME_POINTER_REGNUM
+						  : STACK_POINTER_REGNUM);
   if (reg == fp_reg)
     {
-      loc_result = new_loc_descr (DW_OP_fbreg,
-				  offset - current_funcdef_frame_size, 0);
+      loc_result = new_loc_descr (DW_OP_fbreg, offset, 0);
     }
   else if (reg >= 0 && reg <= 31)
     {
@@ -6662,11 +6664,14 @@ gen_subprogram_die (decl, context_die)
       add_AT_fde_ref (subr_die, DW_AT_MIPS_fde, current_funcdef_fde);
 #endif
 
-      /* Define the frame pointer location for this routine.  */
-      fp_reg = (frame_pointer_needed) ? FRAME_POINTER_REGNUM
-				      : STACK_POINTER_REGNUM;
+      /* Define the "frame base" location for this routine.  We use the
+         frame pointer or stack pointer registers, since the RTL for local
+         variables is relative to one of them.  */
+      fp_reg = DBX_REGISTER_NUMBER (frame_pointer_needed
+				    ? FRAME_POINTER_REGNUM
+				    : STACK_POINTER_REGNUM);
       assert (fp_reg >= 0 && fp_reg <= 31);
-      fp_loc = new_loc_descr (DW_OP_breg0 + fp_reg, current_funcdef_frame_size);
+      fp_loc = new_loc_descr (DW_OP_reg0 + fp_reg);
       add_AT_loc (subr_die, DW_AT_frame_base, fp_loc);
 
 #ifdef DWARF_GNU_EXTENSIONS
@@ -7890,7 +7895,8 @@ dwarfout_begin_function ()
   /* On entry, the Call Frame Address is in the stack pointer register.  */
   cfi = new_cfi ();
   cfi->dw_cfi_opc = DW_CFA_def_cfa;
-  cfi->dw_cfi_oprnd1.dw_cfi_reg_num = STACK_POINTER_REGNUM;
+  cfi->dw_cfi_oprnd1.dw_cfi_reg_num
+    = DBX_REGISTER_NUMBER (STACK_POINTER_REGNUM);
   cfi->dw_cfi_oprnd2.dw_cfi_offset = 0;
   add_cfi (&fde->dw_fde_cfi, cfi);
 
@@ -7904,9 +7910,9 @@ dwarfout_begin_function ()
      or an offset from the stack pointer.  */
   cfi = new_cfi ();
   cfi->dw_cfi_opc = DW_CFA_def_cfa;
-  cfi->dw_cfi_oprnd1.dw_cfi_reg_num = (frame_pointer_needed)
-				       ? FRAME_POINTER_REGNUM
-				       : STACK_POINTER_REGNUM;
+  cfi->dw_cfi_oprnd1.dw_cfi_reg_num
+    = DBX_REGISTER_NUMBER (frame_pointer_needed ? FRAME_POINTER_REGNUM
+			   : STACK_POINTER_REGNUM);
   offset = current_frame_info.total_size;
   cfi->dw_cfi_oprnd2.dw_cfi_offset = offset;
   add_cfi (&fde->dw_fde_cfi, cfi);
@@ -7921,8 +7927,10 @@ dwarfout_begin_function ()
       /* Restore the stack register from the frame pointer.  */
       cfi = new_cfi ();
       cfi->dw_cfi_opc = DW_CFA_register;
-      cfi->dw_cfi_oprnd1.dw_cfi_reg_num = STACK_POINTER_REGNUM;
-      cfi->dw_cfi_oprnd2.dw_cfi_reg_num = FRAME_POINTER_REGNUM;
+      cfi->dw_cfi_oprnd1.dw_cfi_reg_num
+	= DBX_REGISTER_NUMBER (STACK_POINTER_REGNUM);
+      cfi->dw_cfi_oprnd2.dw_cfi_reg_num
+	= DBX_REGISTER_NUMBER (FRAME_POINTER_REGNUM);
       add_cfi (&fde->dw_fde_cfi, cfi);
     }
 
@@ -7947,7 +7955,8 @@ dwarfout_begin_function ()
       assert (offset >= 0);
       cfi = new_cfi ();
       cfi->dw_cfi_opc = DW_CFA_offset;
-      cfi->dw_cfi_oprnd1.dw_cfi_reg_num = FRAME_POINTER_REGNUM;
+      cfi->dw_cfi_oprnd1.dw_cfi_reg_num
+	= DBX_REGISTER_NUMBER (FRAME_POINTER_REGNUM);
       cfi->dw_cfi_oprnd2.dw_cfi_offset = offset;
       add_cfi (&fde->dw_fde_cfi, cfi);
     }
