@@ -1,5 +1,11 @@
 2003-07-29  Tom Tromey  <tromey@redhat.com>
 
+	* defineclass.cc (handleField): Throw exception if field name is
+	duplicated.
+	(handleMethod): Throw exception for duplicate method.
+
+2003-07-29  Tom Tromey  <tromey@redhat.com>
+
 	* gnu/gcj/convert/natIconv.cc (write): Handle case where
 	output buffer is too small.
 
