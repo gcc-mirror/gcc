@@ -2313,6 +2313,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       && (fcode == BUILT_IN_SIN || fcode == BUILT_IN_COS
 	  || fcode == BUILT_IN_FSQRT || fcode == BUILT_IN_MEMSET
 	  || fcode == BUILT_IN_MEMCPY || fcode == BUILT_IN_MEMCMP
+	  || fcode == BUILT_IN_BCMP
 	  || fcode == BUILT_IN_STRLEN || fcode == BUILT_IN_STRCPY
 	  || fcode == BUILT_IN_STRCMP || fcode == BUILT_IN_FFS))
     return expand_call (exp, target, ignore);
@@ -2460,6 +2461,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	return target;
       break;
 
+    case BUILT_IN_BCMP:
     case BUILT_IN_MEMCMP:
       target = expand_builtin_memcmp (exp, arglist, target);
       if (target)
@@ -2467,6 +2469,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       break;
 #else
     case BUILT_IN_STRCMP:
+    case BUILT_IN_BCMP:
     case BUILT_IN_MEMCMP:
       break;
 #endif
