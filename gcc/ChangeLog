@@ -1,3 +1,8 @@
+2002-12-24  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (two peepholes): Use match_dup instead
+	of match_operand in the new patterns.
+
 2002-12-24  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/include/texinfo.tex: Update to version 2002-11-25.11.
