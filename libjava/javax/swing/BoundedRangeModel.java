@@ -55,61 +55,61 @@ public interface BoundedRangeModel {
 	 * getValue
 	 * @returns int
 	 */
-	public int getValue();
+	int getValue();
 
 	/**
 	 * setValue
 	 * @param value TODO
 	 */
-	public void setValue(int value);
+	void setValue(int value);
 
 	/**
 	 * getMinimum
 	 * @returns int
 	 */
-	public int getMinimum();
+	int getMinimum();
 
 	/**
 	 * setMinimum
 	 * @param minimum TODO
 	 */
-	public void setMinimum(int minimum);
+	void setMinimum(int minimum);
 
 	/**
 	 * getMaximum
 	 * @returns int
 	 */
-	public int getMaximum();
+	int getMaximum();
 
 	/**
 	 * setMaximum
 	 * @param maximum TODO
 	 */
-	public void setMaximum(int maximum);
+	void setMaximum(int maximum);
 
 	/**
 	 * getValueIsAdjusting
 	 * @returns boolean
 	 */
-	public boolean getValueIsAdjusting();
+	boolean getValueIsAdjusting();
 
 	/**
 	 * setValueIsAdjusting
 	 * @param adjusting TODO
 	 */
-	public void setValueIsAdjusting(boolean adjusting);
+	void setValueIsAdjusting(boolean adjusting);
 
 	/**
 	 * getExtent
 	 * @returns int
 	 */
-	public int getExtent();
+	int getExtent();
 
 	/**
 	 * setExtent
 	 * @param extent TODO
 	 */
-	public void setExtent(int extent);
+	void setExtent(int extent);
 
 	/**
 	 * setRangeProperties
@@ -119,20 +119,20 @@ public interface BoundedRangeModel {
 	 * @param max TODO
 	 * @param adjusting TODO
 	 */
-	public void setRangeProperties(int value, int extent, int min, 
+	void setRangeProperties(int value, int extent, int min, 
 					int max, boolean adjusting);
 
 	/**
 	 * addChangeListener
 	 * @param listener TODO
 	 */
-	public void addChangeListener(ChangeListener listener);
+	void addChangeListener(ChangeListener listener);
 
 	/**
 	 * removeChangeListener
 	 * @param listener TODO
 	 */
-	public void removeChangeListener(ChangeListener listener);
+	void removeChangeListener(ChangeListener listener);
 
 
 } // BoundedRangeModel

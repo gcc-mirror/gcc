@@ -232,7 +232,7 @@ public class JComboBox extends JComponent
 		 * @param value1 TODO
 		 * @returns int
 		 */
-		public abstract int selectionForKey(char value0, ComboBoxModel value1);
+		int selectionForKey(char value0, ComboBoxModel value1);
 
 
 	} // KeySelectionManager

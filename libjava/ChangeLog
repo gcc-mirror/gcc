@@ -1,3 +1,28 @@
+2003-10-12  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/Action.java,
+	javax/swing/BoundedRangeModel.java,
+	javax/swing/CellEditor.java,
+	javax/swing/ComboBoxEditor.java,
+	javax/swing/ComboBoxModel.java,
+	javax/swing/DesktopManager.java,
+	javax/swing/JComboBox.java,
+	javax/swing/ListCellRenderer.java,
+	javax/swing/ListSelectionModel.java,
+	javax/swing/MenuElement.java,
+	javax/swing/MutableComboBoxModel.java,
+	javax/swing/Renderer.java,
+	javax/swing/RootPaneContainer.java,
+	javax/swing/ScrollPaneConstants.java,
+	javax/swing/SingleSelectionModel.java,
+	javax/swing/SpinnerModel.java,
+	javax/swing/SwingConstants.java,
+	javax/swing/UIDefaults.java,
+	javax/swing/WindowConstants.java,
+	javax/swing/border/Border.java,
+	javax/swing/colorchooser/ColorSelectionModel.java:
+	Removed redundant modifiers.
+
 2003-10-11  Michael Koch  <konqueror@gmx.de>
 
 	* javax/transaction/Status.java,

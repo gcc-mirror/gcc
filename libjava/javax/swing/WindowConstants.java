@@ -51,22 +51,22 @@ public interface WindowConstants {
 	/**
 	 * DO_NOTHING_ON_CLOSE
 	 */
-	public static final int DO_NOTHING_ON_CLOSE = 0;
+	int DO_NOTHING_ON_CLOSE = 0;
 
 	/**
 	 * HIDE_ON_CLOSE
 	 */
-	public static final int HIDE_ON_CLOSE = 1;
+	int HIDE_ON_CLOSE = 1;
 
 	/**
 	 * DISPOSE_ON_CLOSE
 	 */
-	public static final int DISPOSE_ON_CLOSE = 2;
+	int DISPOSE_ON_CLOSE = 2;
 
 	/**
 	 * EXIT_ON_CLOSE
 	 */
-	public static final int EXIT_ON_CLOSE =3;
+	int EXIT_ON_CLOSE =3;
 
 
 } // WindowConstants

@@ -56,13 +56,13 @@ public interface Renderer {
 	 * @param value TODO
 	 * @param selected TODO
 	 */
-	public void setValue(Object value, boolean selected);
+	void setValue(Object value, boolean selected);
 
 	/**
 	 * getComponent
 	 * @returns Component
 	 */
-	public Component getComponent();
+	Component getComponent();
 
 
 } // Renderer

@@ -58,7 +58,7 @@ public interface MenuElement {
 	 * @param path TODO
 	 * @param manager TODO
 	 */
-	public void processMouseEvent(MouseEvent event,
+	void processMouseEvent(MouseEvent event,
 			MenuElement[] path, MenuSelectionManager manager);
 
 	/**
@@ -67,26 +67,26 @@ public interface MenuElement {
 	 * @param path TODO
 	 * @param manager TODO
 	 */
-	public abstract void processKeyEvent(KeyEvent event, 
+	void processKeyEvent(KeyEvent event, 
 			MenuElement[] path, MenuSelectionManager manager);
 
 	/**
 	 * menuSelectionChanged
 	 * @param included TODO
 	 */
-	public abstract void menuSelectionChanged(boolean included);
+	void menuSelectionChanged(boolean included);
 
 	/**
 	 * getSubElements
 	 * @returns MenuElement[]
 	 */
-	public abstract MenuElement[] getSubElements();
+	MenuElement[] getSubElements();
 
 	/**
 	 * getComponent
 	 * @returns Component
 	 */
-	public abstract Component getComponent();
+	Component getComponent();
 
 
 } // MenuElement
