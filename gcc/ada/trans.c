@@ -103,24 +103,22 @@ Node_Id error_gnat_node;
    a return in some functions.  See processing for N_Subprogram_Body.  */
 static GTY(()) tree gnu_return_label_stack;
 
-static tree tree_transform		PARAMS((Node_Id));
-static void elaborate_all_entities	PARAMS((Node_Id));
-static void process_freeze_entity	PARAMS((Node_Id));
-static void process_inlined_subprograms	PARAMS((Node_Id));
-static void process_decls		PARAMS((List_Id, List_Id, Node_Id,
-						int, int));
-static tree emit_range_check		PARAMS((tree, Node_Id));
-static tree emit_index_check		PARAMS((tree, tree, tree, tree));
-static tree emit_check			PARAMS((tree, tree, int));
-static tree convert_with_check		PARAMS((Entity_Id, tree,
-						int, int, int));
-static int addressable_p		PARAMS((tree));
-static tree assoc_to_constructor	PARAMS((Node_Id, tree));
-static tree extract_values		PARAMS((tree, tree));
-static tree pos_to_constructor		PARAMS((Node_Id, tree, Entity_Id));
-static tree maybe_implicit_deref	PARAMS((tree));
-static tree gnat_stabilize_reference_1	PARAMS((tree, int));
-static int build_unit_elab		PARAMS((Entity_Id, int, tree));
+static tree tree_transform (Node_Id);
+static void elaborate_all_entities (Node_Id);
+static void process_freeze_entity (Node_Id);
+static void process_inlined_subprograms (Node_Id);
+static void process_decls (List_Id, List_Id, Node_Id, int, int);
+static tree emit_range_check (tree, Node_Id);
+static tree emit_index_check (tree, tree, tree, tree);
+static tree emit_check (tree, tree, int);
+static tree convert_with_check (Entity_Id, tree, int, int, int);
+static int addressable_p (tree);
+static tree assoc_to_constructor (Node_Id, tree);
+static tree extract_values (tree, tree);
+static tree pos_to_constructor (Node_Id, tree, Entity_Id);
+static tree maybe_implicit_deref (tree);
+static tree gnat_stabilize_reference_1 (tree, int);
+static int build_unit_elab (Entity_Id, int, tree);
 
 /* Constants for +0.5 and -0.5 for float-to-integer rounding.  */
 static REAL_VALUE_TYPE dconstp5;
@@ -130,27 +128,23 @@ static REAL_VALUE_TYPE dconstmp5;
    structures and then generates code.  */
 
 void
-gigi (gnat_root, max_gnat_node, number_name, nodes_ptr, next_node_ptr,
-      prev_node_ptr, elists_ptr, elmts_ptr, strings_ptr, string_chars_ptr,
-      list_headers_ptr, number_units, file_info_ptr, standard_integer,
-      standard_long_long_float, standard_exception_type, gigi_operating_mode)
-     Node_Id gnat_root;
-     int max_gnat_node;
-     int number_name;
-     struct Node *nodes_ptr;
-     Node_Id *next_node_ptr;
-     Node_Id *prev_node_ptr;
-     struct Elist_Header *elists_ptr;
-     struct Elmt_Item *elmts_ptr;
-     struct String_Entry *strings_ptr;
-     Char_Code *string_chars_ptr;
-     struct List_Header *list_headers_ptr;
-     Int number_units ATTRIBUTE_UNUSED;
-     char *file_info_ptr ATTRIBUTE_UNUSED;
-     Entity_Id standard_integer;
-     Entity_Id standard_long_long_float;
-     Entity_Id standard_exception_type;
-     Int gigi_operating_mode;
+gigi (Node_Id gnat_root,
+      int max_gnat_node,
+      int number_name,
+      struct Node *nodes_ptr,
+      Node_Id *next_node_ptr,
+      Node_Id *prev_node_ptr,
+      struct Elist_Header *elists_ptr,
+      struct Elmt_Item *elmts_ptr,
+      struct String_Entry *strings_ptr,
+      Char_Code *string_chars_ptr,
+      struct List_Header *list_headers_ptr,
+      Int number_units ATTRIBUTE_UNUSED,
+      char *file_info_ptr ATTRIBUTE_UNUSED,
+      Entity_Id standard_integer,
+      Entity_Id standard_long_long_float,
+      Entity_Id standard_exception_type,
+      Int gigi_operating_mode)
 {
   tree gnu_standard_long_long_float;
   tree gnu_standard_exception_type;
@@ -233,8 +227,7 @@ gigi (gnat_root, max_gnat_node, number_name, nodes_ptr, next_node_ptr,
    part of the tree.  */
 
 void
-gnat_to_code (gnat_node)
-     Node_Id gnat_node;
+gnat_to_code (Node_Id gnat_node)
 {
   tree gnu_root;
 
@@ -259,8 +252,7 @@ gnat_to_code (gnat_node)
    code.  */
 
 tree
-gnat_to_gnu (gnat_node)
-     Node_Id gnat_node;
+gnat_to_gnu (Node_Id gnat_node)
 {
   tree gnu_root;
 
@@ -286,8 +278,7 @@ gnat_to_gnu (gnat_node)
    in the above two routines for most purposes.  */
 
 static tree
-tree_transform (gnat_node)
-     Node_Id gnat_node;
+tree_transform (Node_Id gnat_node)
 {
   tree gnu_result = error_mark_node; /* Default to no value. */
   tree gnu_result_type = void_type_node;
@@ -4156,8 +4147,7 @@ tree_transform (gnat_node)
 /* GNU_STMT is a statement.  We generate code for that statement.  */
 
 void
-gnat_expand_stmt (gnu_stmt)
-     tree gnu_stmt;
+gnat_expand_stmt (tree gnu_stmt)
 {
   set_lineno_from_sloc (TREE_SLOC (gnu_stmt), 1);
 
@@ -4193,8 +4183,7 @@ gnat_expand_stmt (gnu_stmt)
    information for types in withed units, for ASIS use  */
 
 static void
-elaborate_all_entities (gnat_node)
-     Node_Id gnat_node;
+elaborate_all_entities (Node_Id gnat_node)
 {
   Entity_Id gnat_with_clause, gnat_entity;
 
@@ -4260,8 +4249,7 @@ elaborate_all_entities (gnat_node)
 /* Do the processing of N_Freeze_Entity, GNAT_NODE.  */
 
 static void
-process_freeze_entity (gnat_node)
-     Node_Id gnat_node;
+process_freeze_entity (Node_Id gnat_node)
 {
   Entity_Id gnat_entity = Entity (gnat_node);
   tree gnu_old;
@@ -4369,8 +4357,7 @@ process_freeze_entity (gnat_node)
    N_Compilation_Unit.  */
 
 static void
-process_inlined_subprograms (gnat_node)
-     Node_Id gnat_node;
+process_inlined_subprograms (Node_Id gnat_node)
 {
   Entity_Id gnat_entity;
   Node_Id gnat_body;
@@ -4416,10 +4403,11 @@ process_inlined_subprograms (gnat_node)
    correspond to the public and private parts of a package.  */
 
 static void
-process_decls (gnat_decls, gnat_decls2, gnat_end_list, pass1p, pass2p)
-     List_Id gnat_decls, gnat_decls2;
-     Node_Id gnat_end_list;
-     int pass1p, pass2p;
+process_decls (List_Id gnat_decls,
+               List_Id gnat_decls2,
+               Node_Id gnat_end_list,
+               int pass1p, 
+               int pass2p)
 {
   List_Id gnat_decl_array[2];
   Node_Id gnat_decl;
@@ -4536,9 +4524,7 @@ process_decls (gnat_decls, gnat_decls2, gnat_end_list, pass1p, pass2p)
    which we have to check. */
 
 static tree
-emit_range_check (gnu_expr, gnat_range_type)
-     tree gnu_expr;
-     Entity_Id gnat_range_type;
+emit_range_check (tree gnu_expr, Entity_Id gnat_range_type)
 {
   tree gnu_range_type = get_unpadded_type (gnat_range_type);
   tree gnu_low  = TYPE_MIN_VALUE (gnu_range_type);
@@ -4588,11 +4574,10 @@ emit_range_check (gnu_expr, gnat_range_type)
    subprograms having unconstrained array formal parameters */
 
 static tree
-emit_index_check (gnu_array_object, gnu_expr, gnu_low, gnu_high)
-     tree gnu_array_object;
-     tree gnu_expr;
-     tree gnu_low;
-     tree gnu_high;
+emit_index_check (tree gnu_array_object,
+                  tree gnu_expr,
+                  tree gnu_low,
+                  tree gnu_high)
 {
   tree gnu_expr_check;
 
@@ -4635,10 +4620,7 @@ emit_index_check (gnu_array_object, gnu_expr, gnu_low, gnu_high)
    why the exception was raised.  */
 
 static tree
-emit_check (gnu_cond, gnu_expr, reason)
-     tree gnu_cond;
-     tree gnu_expr;
-     int reason;
+emit_check (tree gnu_cond, tree gnu_expr, int reason)
 {
   tree gnu_call;
   tree gnu_result;
@@ -4676,12 +4658,11 @@ emit_check (gnu_cond, gnu_expr, reason)
    truncation; otherwise round.  */
 
 static tree
-convert_with_check (gnat_type, gnu_expr, overflow_p, range_p, truncate_p)
-     Entity_Id gnat_type;
-     tree gnu_expr;
-     int overflow_p;
-     int range_p;
-     int truncate_p;
+convert_with_check (Entity_Id gnat_type,
+                    tree gnu_expr,
+                    int overflow_p,
+                    int range_p,
+                    int truncate_p)
 {
   tree gnu_type = get_unpadded_type (gnat_type);
   tree gnu_in_type = TREE_TYPE (gnu_expr);
@@ -4820,8 +4801,7 @@ convert_with_check (gnat_type, gnu_expr, overflow_p, range_p, truncate_p)
    cases.  */
 
 static int
-addressable_p (gnu_expr)
-     tree gnu_expr;
+addressable_p (tree gnu_expr)
 {
   switch (TREE_CODE (gnu_expr))
     {
@@ -4883,8 +4863,7 @@ addressable_p (gnu_expr)
    make a GCC type for GNAT_ENTITY and set up the correspondance.  */
 
 void
-process_type (gnat_entity)
-     Entity_Id gnat_entity;
+process_type (Entity_Id gnat_entity)
 {
   tree gnu_old
     = present_gnu_tree (gnat_entity) ? get_gnu_tree (gnat_entity) : 0;
@@ -4979,9 +4958,7 @@ process_type (gnat_entity)
    Return a CONSTRUCTOR to build the record.  */
 
 static tree
-assoc_to_constructor (gnat_assoc, gnu_type)
-     Node_Id gnat_assoc;
-     tree gnu_type;
+assoc_to_constructor (Node_Id gnat_assoc, tree gnu_type)
 {
   tree gnu_field, gnu_list, gnu_result;
 
@@ -5030,10 +5007,9 @@ assoc_to_constructor (gnat_assoc, gnu_type)
    of the array component. It is needed for range checking. */
 
 static tree
-pos_to_constructor (gnat_expr, gnu_array_type, gnat_component_type)
-     Node_Id gnat_expr;
-     tree gnu_array_type;
-     Entity_Id gnat_component_type;
+pos_to_constructor (Node_Id gnat_expr,
+                    tree gnu_array_type,
+                    Entity_Id gnat_component_type)
 {
   tree gnu_expr;
   tree gnu_expr_list = NULL_TREE;
@@ -5074,9 +5050,7 @@ pos_to_constructor (gnat_expr, gnu_array_type, gnat_component_type)
    record, make a recursive call to fill it in as well.  */
 
 static tree
-extract_values (values, record_type)
-     tree values;
-     tree record_type;
+extract_values (tree values, tree record_type)
 {
   tree result = NULL_TREE;
   tree field, tem;
@@ -5123,8 +5097,7 @@ extract_values (values, record_type)
    an access object and perform the required dereferences.  */
 
 static tree
-maybe_implicit_deref (exp)
-     tree exp;
+maybe_implicit_deref (tree exp)
 {
   /* If the type is a pointer, dereference it.  */
 
@@ -5142,8 +5115,7 @@ maybe_implicit_deref (exp)
 /* Protect EXP from multiple evaluation.  This may make a SAVE_EXPR.  */
 
 tree
-protect_multiple_eval (exp)
-     tree exp;
+protect_multiple_eval (tree exp)
 {
   tree type = TREE_TYPE (exp);
 
@@ -5182,9 +5154,7 @@ protect_multiple_eval (exp)
    whether to force evaluation of everything.  */
 
 tree
-gnat_stabilize_reference (ref, force)
-     tree ref;
-     int force;
+gnat_stabilize_reference (tree ref, int force)
 {
   register tree type = TREE_TYPE (ref);
   register enum tree_code code = TREE_CODE (ref);
@@ -5280,9 +5250,7 @@ gnat_stabilize_reference (ref, force)
    arg to force a SAVE_EXPR for everything.  */
 
 static tree
-gnat_stabilize_reference_1 (e, force)
-     tree e;
-     int force;
+gnat_stabilize_reference_1 (tree e, int force)
 {
   register enum tree_code code = TREE_CODE (e);
   register tree type = TREE_TYPE (e);
@@ -5345,10 +5313,7 @@ gnat_stabilize_reference_1 (e, force)
    Return 1 if we didn't need an elaboration function, zero otherwise.  */
 
 static int
-build_unit_elab (gnat_unit, body_p, gnu_elab_list)
-     Entity_Id gnat_unit;
-     int body_p;
-     tree gnu_elab_list;
+build_unit_elab (Entity_Id gnat_unit, int body_p, tree gnu_elab_list)
 {
   tree gnu_decl;
   rtx insn;
@@ -5429,16 +5394,14 @@ build_unit_elab (gnat_unit, body_p, gnu_elab_list)
   return result;
 }
 
-extern char *__gnat_to_canonical_file_spec PARAMS ((char *));
+extern char *__gnat_to_canonical_file_spec (char *);
 
 /* Determine the input_filename and the input_line from the source location
    (Sloc) of GNAT_NODE node.  Set the global variable input_filename and
    input_line.  If WRITE_NOTE_P is true, emit a line number note.  */
 
 void
-set_lineno (gnat_node, write_note_p)
-     Node_Id gnat_node;
-     int write_note_p;
+set_lineno (Node_Id gnat_node, int write_note_p)
 {
   Source_Ptr source_location = Sloc (gnat_node);
 
@@ -5448,9 +5411,7 @@ set_lineno (gnat_node, write_note_p)
 /* Likewise, but passed a Sloc.  */
 
 void
-set_lineno_from_sloc (source_location, write_note_p)
-     Source_Ptr source_location;
-     int write_note_p;
+set_lineno_from_sloc (Source_Ptr source_location, int write_note_p)
 {
   /* If node not from source code, ignore.  */
   if (source_location < 0)
@@ -5486,9 +5447,7 @@ set_lineno_from_sloc (source_location, write_note_p)
    "&" substitution.  */
 
 void
-post_error (msg, node)
-     const char *msg;
-     Node_Id node;
+post_error (const char *msg, Node_Id node)
 {
   String_Template temp;
   Fat_Pointer fp;
@@ -5503,10 +5462,7 @@ post_error (msg, node)
    is the node to use for the "&" substitution.  */
 
 void
-post_error_ne (msg, node, ent)
-     const char *msg;
-     Node_Id node;
-     Entity_Id ent;
+post_error_ne (const char *msg, Node_Id node, Entity_Id ent)
 {
   String_Template temp;
   Fat_Pointer fp;
@@ -5521,11 +5477,7 @@ post_error_ne (msg, node, ent)
    to use for the "&" substitution, and N is the number to use for the ^.  */
 
 void
-post_error_ne_num (msg, node, ent, n)
-     const char *msg;
-     Node_Id node;
-     Entity_Id ent;
-     int n;
+post_error_ne_num (const char *msg, Node_Id node, Entity_Id ent, int n)
 {
   String_Template temp;
   Fat_Pointer fp;
@@ -5545,11 +5497,7 @@ post_error_ne_num (msg, node, ent, n)
    and the text inside square brackets will be output instead.  */
 
 void
-post_error_ne_tree (msg, node, ent, t)
-     const char *msg;
-     Node_Id node;
-     Entity_Id ent;
-     tree t;
+post_error_ne_tree (const char *msg, Node_Id node, Entity_Id ent, tree t)
 {
   char *newmsg = alloca (strlen (msg) + 1);
   String_Template temp = {1, 0};
@@ -5597,12 +5545,11 @@ post_error_ne_tree (msg, node, ent, t)
    integer to write in the message.  */
 
 void
-post_error_ne_tree_2 (msg, node, ent, t, num)
-     const char *msg;
-     Node_Id node;
-     Entity_Id ent;
-     tree t;
-     int num;
+post_error_ne_tree_2 (const char *msg,
+                      Node_Id node,
+                      Entity_Id ent,
+                      tree t,
+                      int num)
 {
   Error_Msg_Uint_2 = UI_From_Int (num);
   post_error_ne_tree (msg, node, ent, t);
@@ -5611,8 +5558,7 @@ post_error_ne_tree_2 (msg, node, ent, t, num)
 /* Set the node for a second '&' in the error message.  */
 
 void
-set_second_error_entity (e)
-     Entity_Id e;
+set_second_error_entity (Entity_Id e)
 {
   Error_Msg_Node_2 = e;
 }
@@ -5621,8 +5567,7 @@ set_second_error_entity (e)
    as the relevant node that provides the location info for the error */
 
 void
-gigi_abort (code)
-     int code;
+gigi_abort (int code)
 {
   String_Template temp = {1, 10};
   Fat_Pointer fp;
@@ -5637,7 +5582,7 @@ gigi_abort (code)
    binary and unary operations.  */
 
 void
-init_code_table ()
+init_code_table (void)
 {
   gnu_codes[N_And_Then] = TRUTH_ANDIF_EXPR;
   gnu_codes[N_Or_Else] = TRUTH_ORIF_EXPR;

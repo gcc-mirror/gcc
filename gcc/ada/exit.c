@@ -50,8 +50,7 @@
 int gnat_exit_status = 0;
 
 void
-__gnat_set_exit_status (i)
-     int i;
+__gnat_set_exit_status (int i)
 {
   gnat_exit_status = i;
 }

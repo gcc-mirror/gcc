@@ -48,8 +48,7 @@
 /*  This function provides a portable binding to the mkdir function.  */
 
 int
-__gnat_mkdir (dir_name)
-     char *dir_name;
+__gnat_mkdir (char *dir_name)
 {
 #if defined (_WIN32) || defined (__vxworks)
   return mkdir (dir_name);

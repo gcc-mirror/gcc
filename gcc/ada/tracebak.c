@@ -58,7 +58,7 @@
 #include "system.h"
 #endif
 
-extern int __gnat_backtrace PARAMS ((void **, int, void *, void *, int));
+extern int __gnat_backtrace (void **, int, void *, void *, int);
 
 /* The point is to provide an implementation of the __gnat_bactrace function
    above, called by the default implementation of the System.Traceback
@@ -77,10 +77,10 @@ extern int __gnat_backtrace PARAMS ((void **, int, void *, void *, int));
    function is still referenced by the default System.Traceback.  */
 
 #define Lock_Task system__soft_links__lock_task
-extern void (*Lock_Task) PARAMS ((void));
+extern void (*Lock_Task) (void);
 
 #define Unlock_Task system__soft_links__unlock_task
-extern void (*Unlock_Task) PARAMS ((void));
+extern void (*Unlock_Task) (void);
 
 /*-------------------------------------*
  *-- Target specific implementations --*
@@ -339,12 +339,11 @@ static void forced_callee () {}
 #endif
 
 int
-__gnat_backtrace (array, size, exclude_min, exclude_max, skip_frames)
-     void **array;
-     int size;
-     void *exclude_min;
-     void *exclude_max;
-     int skip_frames;
+__gnat_backtrace (void **array,
+                  int size,
+                  void *exclude_min,
+                  void *exclude_max,
+                  int skip_frames)
 {
   struct layout *current;
   void *top_frame;

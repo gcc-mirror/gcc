@@ -75,7 +75,7 @@ convert_addresses (char *addrs[], int n_addr, void *buf, int *len);
 */
 
 static void
-gmem_read_backtrace ()
+gmem_read_backtrace (void)
 {
   fread (&cur_tb_len, sizeof (int), 1, gmemfile);
   fread (tracebk, sizeof (char *), cur_tb_len, gmemfile);
@@ -120,8 +120,7 @@ void __gnat_gmem_a2l_initialize (char *exename)
    write an alloc/free information in buf to be processed by gnatmem */
 
 void
-__gnat_gmem_read_next (buf)
-     struct struct_storage_elmt *buf;
+__gnat_gmem_read_next (struct struct_storage_elmt *buf)
 {
   void *addr;
   size_t size;

@@ -57,9 +57,7 @@
    resulting node.  */
 
 tree
-UI_To_gnu (Input, type)
-     Uint Input;
-     tree type;
+UI_To_gnu (Uint Input, tree type)
 {
   tree gnu_ret;
 

@@ -42,14 +42,13 @@
 
 #include <errno.h>
 int
-__get_errno()
+__get_errno(void)
 {
   return errno;
 }
 
 void
-__set_errno(err)
-     int err;
+__set_errno(int err)
 {
   errno = err;
 }

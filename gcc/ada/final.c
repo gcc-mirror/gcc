@@ -38,6 +38,6 @@ extern void __gnat_finalize (void);
    where finalization is required. */
 
 void
-__gnat_finalize ()
+__gnat_finalize (void)
 {
 }

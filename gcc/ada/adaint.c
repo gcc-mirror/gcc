@@ -425,7 +425,7 @@ __gnat_try_lock (char *dir, char *file)
 /* Return the maximum file name length.  */
 
 int
-__gnat_get_maximum_file_name_length ()
+__gnat_get_maximum_file_name_length (void)
 {
 #if defined (MSDOS)
   return 8;
@@ -442,7 +442,7 @@ __gnat_get_maximum_file_name_length ()
 /* Return nonzero if file names are case sensitive.  */
 
 int
-__gnat_get_file_names_case_sensitive ()
+__gnat_get_file_names_case_sensitive (void)
 {
 #if defined (__EMX__) || defined (MSDOS) || defined (VMS) || defined (WINNT)
   return 0;
@@ -452,7 +452,7 @@ __gnat_get_file_names_case_sensitive ()
 }
 
 char
-__gnat_get_default_identifier_character_set ()
+__gnat_get_default_identifier_character_set (void)
 {
 #if defined (__EMX__) || defined (MSDOS)
   return 'p';
@@ -782,7 +782,7 @@ __gnat_readdir (DIR *dirp, char *buffer)
 /* Returns 1 if readdir is thread safe, 0 otherwise.  */
 
 int
-__gnat_readdir_is_thread_safe ()
+__gnat_readdir_is_thread_safe (void)
 {
 #ifdef HAVE_READDIR_R
   return 1;
@@ -1270,7 +1270,7 @@ __gnat_set_env_value (char *name, char *value)
    key.  */
 
 char *
-__gnat_get_libraries_from_registry ()
+__gnat_get_libraries_from_registry (void)
 {
   char *result = (char *) "";
 
@@ -2299,13 +2299,13 @@ __gnat_to_canonical_file_list_init
 }
 
 char *
-__gnat_to_canonical_file_list_next ()
+__gnat_to_canonical_file_list_next (void)
 {
   return (char *) "";
 }
 
 void
-__gnat_to_canonical_file_list_free ()
+__gnat_to_canonical_file_list_free (void)
 {
 }
 
@@ -2340,7 +2340,7 @@ __gnat_to_host_file_spec (char *filespec)
 }
 
 void
-__gnat_adjust_os_resource_limits ()
+__gnat_adjust_os_resource_limits (void)
 {
 }
 
@@ -2458,9 +2458,8 @@ extern void __gnat_install_locks (void (*) (void), void (*) (void));
    locking subprograms for libgcc_eh. */
 
 void
-__gnatlib_install_locks (lock, unlock)
-     void (*lock) (void) ATTRIBUTE_UNUSED;
-     void (*unlock) (void) ATTRIBUTE_UNUSED;
+__gnatlib_install_locks (void (*lock) (void) ATTRIBUTE_UNUSED,
+                         void (*unlock) (void) ATTRIBUTE_UNUSED)
 {
 #ifdef IN_RTS
   __gnat_install_locks (lock, unlock);

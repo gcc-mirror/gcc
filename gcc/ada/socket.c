@@ -66,19 +66,18 @@
 
 #include "raise.h"
 
-extern void __gnat_free_socket_set	PARAMS ((fd_set *));
-extern void __gnat_last_socket_in_set	PARAMS ((fd_set *, int *));
-extern void __gnat_get_socket_from_set	PARAMS ((fd_set *, int *, int *));
-extern void __gnat_insert_socket_in_set	PARAMS ((fd_set *, int));
-extern int __gnat_is_socket_in_set	PARAMS ((fd_set *, int));
-extern fd_set *__gnat_new_socket_set	PARAMS ((fd_set *));
-extern void __gnat_remove_socket_from_set PARAMS ((fd_set *, int));
+extern void __gnat_free_socket_set (fd_set *);
+extern void __gnat_last_socket_in_set (fd_set *, int *);
+extern void __gnat_get_socket_from_set (fd_set *, int *, int *);
+extern void __gnat_insert_socket_in_set (fd_set *, int);
+extern int __gnat_is_socket_in_set (fd_set *, int);
+extern fd_set *__gnat_new_socket_set (fd_set *);
+extern void __gnat_remove_socket_from_set (fd_set *, int);
 
 /* Free socket set. */
 
 void
-__gnat_free_socket_set (set)
-     fd_set *set;
+__gnat_free_socket_set (fd_set *set)
 {
   __gnat_free (set);
 }
@@ -89,9 +88,7 @@ __gnat_free_socket_set (set)
    actual largest socket in the socket set. */
 
 void
-__gnat_last_socket_in_set (set, last)
-     fd_set *set;
-     int *last;
+__gnat_last_socket_in_set (fd_set *set, int *last)
 {
   int s;
   int l;
@@ -122,10 +119,7 @@ __gnat_last_socket_in_set (set, last)
    socket in the socket set. */
 
 void
-__gnat_get_socket_from_set (set, last, socket)
-     fd_set *set;
-     int *last;
-     int *socket;
+__gnat_get_socket_from_set (fd_set *set, int *last, int *socket)
 {
   *socket = *last;
   FD_CLR (*socket, set);
@@ -135,9 +129,7 @@ __gnat_get_socket_from_set (set, last, socket)
 /* Insert SOCKET in the socket set SET. */
 
 void
-__gnat_insert_socket_in_set (set, socket)
-     fd_set *set;
-     int socket;
+__gnat_insert_socket_in_set (fd_set *set, int socket)
 {
   FD_SET (socket, set);
 }
@@ -145,9 +137,7 @@ __gnat_insert_socket_in_set (set, socket)
 /* Check whether a given SOCKET is in the socket set SET. */
 
 int
-__gnat_is_socket_in_set (set, socket)
-     fd_set *set;
-     int socket;
+__gnat_is_socket_in_set (fd_set *set, int socket)
 {
   return FD_ISSET (socket, set);
 }
@@ -155,8 +145,7 @@ __gnat_is_socket_in_set (set, socket)
 /* Allocate a new socket set and set it as empty.  */
 
 fd_set *
-__gnat_new_socket_set (set)
-     fd_set *set;
+__gnat_new_socket_set (fd_set *set)
 {
   fd_set *new;
 
@@ -173,9 +162,7 @@ __gnat_new_socket_set (set)
 /* Remove SOCKET from the socket set SET. */
 
 void
-__gnat_remove_socket_from_set (set, socket)
-     fd_set *set;
-     int socket;
+__gnat_remove_socket_from_set (fd_set *set, int socket)
 {
   FD_CLR (socket, set);
 }

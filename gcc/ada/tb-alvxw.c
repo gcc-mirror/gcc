@@ -39,7 +39,7 @@
 #include <limits.h>
 #include <string.h>
 
-extern void kerTaskEntry();
+extern void kerTaskEntry(void);
 
 /* We still use a number of macros similar to the ones for the generic
    __gnat_backtrace implementation.  */
@@ -259,8 +259,7 @@ struct alloc_chain
 struct alloc_chain *trace_alloc_chain;
 
 static void *
-trace_alloc (n)
-     unsigned int n;
+trace_alloc (unsigned int n)
 {
   struct alloc_chain * result = malloc (n + sizeof(struct alloc_chain));
 
@@ -270,7 +269,7 @@ trace_alloc (n)
 }
 
 static void
-free_trace_alloc ()
+free_trace_alloc (void)
 {
   while (trace_alloc_chain != 0)
     {
@@ -285,9 +284,7 @@ free_trace_alloc ()
    otherwise. */
 
 static int
-read_memory_safe4 (addr, dest)
-     CORE_ADDR addr;
-     unsigned int *dest;
+read_memory_safe4 (CORE_ADDR addr, unsigned int *dest)
 {
   *dest = *((unsigned int*) addr);
   return 0;
@@ -297,17 +294,14 @@ read_memory_safe4 (addr, dest)
    otherwise. */
 
 static int
-read_memory_safe8 (addr, dest)
-     CORE_ADDR addr;
-     CORE_ADDR *dest;
+read_memory_safe8 (CORE_ADDR addr, CORE_ADDR *dest)
 {
   *dest = *((CORE_ADDR*) addr);
   return 0;
 }
 
 static CORE_ADDR
-read_register (regno)
-     int regno;
+read_register (int regno)
 {
   if (regno >= 0 && regno < 31)
     return theRegisters[regno];
@@ -316,23 +310,20 @@ read_register (regno)
 }
 
 static void
-frame_saved_regs_zalloc (fi)
-     struct frame_info *fi;
+frame_saved_regs_zalloc (struct frame_info *fi)
 {
   fi->saved_regs = (CORE_ADDR *) trace_alloc (SIZEOF_FRAME_SAVED_REGS);
   memset (fi->saved_regs, 0, SIZEOF_FRAME_SAVED_REGS);
 }
 
 static void *
-frame_obstack_alloc (size)
-     unsigned long size;
+frame_obstack_alloc (unsigned long size)
 {
   return (void *) trace_alloc (size);
 }
 
 static int
-inside_entry_file (addr)
-     CORE_ADDR addr;
+inside_entry_file (CORE_ADDR addr)
 {
   if (addr == 0)
     return 1;
@@ -341,8 +332,7 @@ inside_entry_file (addr)
 }
 
 static CORE_ADDR
-alpha_saved_pc_after_call (frame)
-     struct frame_info *frame;
+alpha_saved_pc_after_call (struct frame_info *frame)
 {
   CORE_ADDR pc = frame->pc;
   alpha_extra_func_info_t proc_desc;
@@ -358,8 +348,7 @@ alpha_saved_pc_after_call (frame)
    NULL).  */
 
 static void
-alpha_find_saved_regs (frame)
-     struct frame_info *frame;
+alpha_find_saved_regs (struct frame_info *frame)
 {
   int ireg;
   CORE_ADDR reg_position;
@@ -430,9 +419,7 @@ alpha_find_saved_regs (frame)
 }
 
 static CORE_ADDR
-read_next_frame_reg (fi, regno)
-     struct frame_info *fi;
-     int regno;
+read_next_frame_reg (struct frame_info *fi, int regno)
 {
   CORE_ADDR result;
   for (; fi; fi = fi->next)
@@ -460,8 +447,7 @@ read_next_frame_reg (fi, regno)
 }
 
 static CORE_ADDR
-alpha_frame_saved_pc (frame)
-     struct frame_info *frame;
+alpha_frame_saved_pc (struct frame_info *frame)
 {
   return read_next_frame_reg (frame, frame->pc_reg);
 }
@@ -472,8 +458,7 @@ static struct alpha_extra_func_info temp_proc_desc;
    $zero,($ra),1" on alpha. */
 
 static int
-alpha_about_to_return (pc)
-     CORE_ADDR pc;
+alpha_about_to_return (CORE_ADDR pc)
 {
   int inst;
 
@@ -485,8 +470,7 @@ alpha_about_to_return (pc)
    containing address PC.   Returns 0 if none detected. */
 
 static CORE_ADDR
-heuristic_proc_start (pc)
-     CORE_ADDR pc;
+heuristic_proc_start (CORE_ADDR pc)
 {
   CORE_ADDR start_pc = pc;
   CORE_ADDR fence = start_pc - heuristic_fence_post;
@@ -512,11 +496,10 @@ heuristic_proc_start (pc)
 }
 
 static alpha_extra_func_info_t
-heuristic_proc_desc (start_pc, limit_pc, next_frame, saved_regs_p)
-     CORE_ADDR start_pc;
-     CORE_ADDR limit_pc;
-     struct frame_info *next_frame;
-     struct frame_saved_regs *saved_regs_p;
+heuristic_proc_desc (CORE_ADDR start_pc,
+                     CORE_ADDR limit_pc,
+                     struct frame_info *next_frame,
+                     struct frame_saved_regs *saved_regs_p)
 {
   CORE_ADDR sp = read_next_frame_reg (next_frame, SP_REGNUM);
   CORE_ADDR cur_pc;
@@ -641,10 +624,9 @@ heuristic_proc_desc (start_pc, limit_pc, next_frame, saved_regs_p)
 }
 
 static alpha_extra_func_info_t
-find_proc_desc (pc, next_frame, saved_regs)
-     CORE_ADDR pc;
-     struct frame_info *next_frame;
-     struct frame_saved_regs *saved_regs;
+find_proc_desc (CORE_ADDR pc,
+                struct frame_info *next_frame,
+                struct frame_saved_regs *saved_regs)
 {
   CORE_ADDR startaddr;
 
@@ -660,8 +642,7 @@ find_proc_desc (pc, next_frame, saved_regs)
 }
 
 static CORE_ADDR
-alpha_frame_chain (frame)
-     struct frame_info *frame;
+alpha_frame_chain (struct frame_info *frame)
 {
   alpha_extra_func_info_t proc_desc;
   CORE_ADDR saved_pc = FRAME_SAVED_PC (frame);
@@ -685,8 +666,7 @@ alpha_frame_chain (frame)
 }
 
 static void
-init_extra_frame_info (frame)
-     struct frame_info *frame;
+init_extra_frame_info (struct frame_info *frame)
 {
   struct frame_saved_regs temp_saved_regs;
   alpha_extra_func_info_t proc_desc =
@@ -729,9 +709,7 @@ init_extra_frame_info (frame)
    Always returns a non-NULL value.  */
 
 static struct frame_info *
-create_new_frame (addr, pc)
-     CORE_ADDR addr;
-     CORE_ADDR pc;
+create_new_frame (CORE_ADDR addr, CORE_ADDR pc)
 {
   struct frame_info *fi;
 
@@ -754,19 +732,19 @@ create_new_frame (addr, pc)
 static CORE_ADDR current_pc;
 
 static void
-set_current_pc ()
+set_current_pc (void)
 {
   current_pc = (CORE_ADDR) __builtin_return_address (0);
 }
 
 static CORE_ADDR
-read_pc ()
+read_pc (void)
 {
   return current_pc;
 }
 
 static struct frame_info *
-get_current_frame ()
+get_current_frame (void)
 {
   return create_new_frame (0, read_pc ());
 }
@@ -775,8 +753,7 @@ get_current_frame ()
    If FI is the original frame (it has no caller), return 0.  */
 
 static struct frame_info *
-get_prev_frame (next_frame)
-     struct frame_info *next_frame;
+get_prev_frame (struct frame_info *next_frame)
 {
   CORE_ADDR address = 0;
   struct frame_info *prev;
@@ -897,12 +874,11 @@ get_prev_frame (next_frame)
     "stq $" #regno ", " #disp "(%0)\n"
 
 int
-__gnat_backtrace (array, size, exclude_min, exclude_max, skip_frames)
-     void **array;
-     int size;
-     void *exclude_min;
-     void *exclude_max;
-     int skip_frames;
+__gnat_backtrace (void **array,
+                  int size,
+                  void *exclude_min,
+                  void *exclude_max,
+                  int skip_frames)
 {
   struct frame_info* top;
   struct frame_info* current;

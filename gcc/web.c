@@ -66,22 +66,18 @@ struct web_entry
   rtx reg;
 };
 
-static struct web_entry *unionfind_root PARAMS ((struct web_entry *));
-static void unionfind_union		PARAMS ((struct web_entry *,
-						 struct web_entry *));
-static void union_defs			PARAMS ((struct df *, struct ref *,
-						 struct web_entry *,
-						 struct web_entry *));
-static rtx entry_register		PARAMS ((struct web_entry *,
-						 struct ref *, char *, char *));
-static void replace_ref			PARAMS ((struct ref *, rtx));
-static int mark_addressof		PARAMS ((rtx *, void *));
+static struct web_entry *unionfind_root (struct web_entry *);
+static void unionfind_union (struct web_entry *, struct web_entry *);
+static void union_defs (struct df *, struct ref *, struct web_entry *, 
+                        struct web_entry *);
+static rtx entry_register (struct web_entry *, struct ref *, char *, char *);
+static void replace_ref (struct ref *, rtx);
+static int mark_addressof (rtx *, void *);
 
 /* Find the root of unionfind tree (the representative of set).  */
 
 static struct web_entry *
-unionfind_root (element)
-     struct web_entry *element;
+unionfind_root (struct web_entry *element)
 {
   struct web_entry *element1 = element, *element2;
 
@@ -99,8 +95,7 @@ unionfind_root (element)
 /* Union sets.  */
 
 static void
-unionfind_union (first, second)
-     struct web_entry *first, *second;
+unionfind_union (struct web_entry *first, struct web_entry *second)
 {
   first = unionfind_root (first);
   second = unionfind_root (second);
@@ -113,11 +108,8 @@ unionfind_union (first, second)
    register, union them.  */
 
 static void
-union_defs (df, use, def_entry, use_entry)
-     struct df *df;
-     struct ref *use;
-     struct web_entry *def_entry;
-     struct web_entry *use_entry;
+union_defs (struct df *df, struct ref *use, struct web_entry *def_entry,
+            struct web_entry *use_entry)
 {
   rtx insn = DF_REF_INSN (use);
   struct df_link *link = DF_REF_CHAIN (use);
@@ -179,11 +171,8 @@ union_defs (df, use, def_entry, use_entry)
 /* Find the corresponding register for the given entry.  */
 
 static rtx
-entry_register (entry, ref, used, use_addressof)
-     struct web_entry *entry;
-     struct ref *ref;
-     char *used;
-     char *use_addressof;
+entry_register (struct web_entry *entry, struct ref *ref, char *used, 
+                char *use_addressof)
 {
   struct web_entry *root;
   rtx reg, newreg;
@@ -235,9 +224,7 @@ entry_register (entry, ref, used, use_addressof)
 /* Replace the reference by REG.  */
 
 static void
-replace_ref (ref, reg)
-   struct ref *ref;
-   rtx reg;
+replace_ref (struct ref *ref, rtx reg)
 {
   rtx oldreg = DF_REF_REAL_REG (ref);
   rtx *loc = DF_REF_REAL_LOC (ref);
@@ -253,9 +240,7 @@ replace_ref (ref, reg)
 /* Mark each pseudo whose address is taken.  */
 
 static int
-mark_addressof (rtl, data)
-     rtx *rtl;
-     void *data;
+mark_addressof (rtx *rtl, void *data)
 {
   if (!*rtl)
     return 0;
@@ -268,7 +253,7 @@ mark_addressof (rtl, data)
 /* Main entry point.  */
 
 void
-web_main ()
+web_main (void)
 {
   struct df *df;
   struct web_entry *def_entry;

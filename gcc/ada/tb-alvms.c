@@ -207,12 +207,11 @@ typedef struct {
  ********************/
 
 int
-__gnat_backtrace (array, size, exclude_min, exclude_max, skip_frames)
-     void **array;
-     int size;
-     void *exclude_min;
-     void *exclude_max;
-     int skip_frames;
+__gnat_backtrace (void **array,
+                  int size,
+                  void *exclude_min,
+                  void *exclude_max,
+                  int skip_frames)
 {
   int cnt;
 

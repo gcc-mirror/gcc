@@ -157,15 +157,13 @@ static const char *mode_append_binary_plus = "a+b";
 const char __gnat_text_translation_required = 1;
 
 void
-__gnat_set_binary_mode (handle)
-     int handle;
+__gnat_set_binary_mode (int handle)
 {
   _setmode (handle, O_BINARY);
 }
 
 void
-__gnat_set_text_mode (handle)
-     int handle;
+__gnat_set_text_mode (int handle)
 {
   _setmode (handle, O_TEXT);
 }
@@ -178,8 +176,7 @@ __gnat_set_text_mode (handle)
    "console".  */
 
 char *
-__gnat_ttyname (filedes)
-     int filedes;
+__gnat_ttyname (int filedes)
 {
   if (isatty (filedes))
     return "console";
@@ -206,22 +203,22 @@ __gnat_ttyname (filedes)
    Calling FlushConsoleInputBuffer just after getch() fix the bug under
    95/98. */
 
-static void winflush_init PARAMS ((void));
+static void winflush_init (void);
 
-static void winflush_95 PARAMS ((void));
+static void winflush_95 (void);
 
-static void winflush_nt PARAMS ((void));
+static void winflush_nt (void);
 
 /* winflusfunction is set first to the winflushinit function which will check
    the OS version 95/98 or NT/2000 */
 
-static void (*winflush_function) PARAMS ((void)) = winflush_init;
+static void (*winflush_function) (void) = winflush_init;
 
 /* This function does the runtime check of the OS version and then sets
    winflush_function to the appropriate function and then call it. */
 
 static void
-winflush_init ()
+winflush_init (void)
 {
   DWORD dwVersion = GetVersion();
 
@@ -234,12 +231,12 @@ winflush_init ()
 
 }
 
-static void winflush_95 ()
+static void winflush_95 (void)
 {
   FlushConsoleInputBuffer (GetStdHandle (STD_INPUT_HANDLE));
 }
 
-static void winflush_nt ()
+static void winflush_nt (void)
 {
   /* Does nothing as there is no problem under NT.  */
 }
@@ -264,22 +261,19 @@ const char __gnat_text_translation_required = 0;
 /* These functions do nothing in non-DOS systems. */
 
 void
-__gnat_set_binary_mode (handle)
-     int handle ATTRIBUTE_UNUSED;
+__gnat_set_binary_mode (int handle ATTRIBUTE_UNUSED)
 {
 }
 
 void
-__gnat_set_text_mode (handle)
-     int handle ATTRIBUTE_UNUSED;
+__gnat_set_text_mode (int handle ATTRIBUTE_UNUSED)
 {
 }
 char *
-__gnat_ttyname (filedes)
-     int filedes;
+__gnat_ttyname (int filedes)
 {
 #ifndef __vxworks
-  extern char *ttyname PARAMS ((int));
+  extern char *ttyname (int);
 
   return ttyname (filedes);
 
@@ -315,18 +309,14 @@ static int initted = 0;
 /* Implements the common processing for getc_immediate and
    getc_immediate_nowait. */
 
-extern void getc_immediate		PARAMS ((FILE *, int *, int *));
-extern void getc_immediate_nowait	PARAMS ((FILE *, int *, int *, int *));
-extern void getc_immediate_common	PARAMS ((FILE *, int *, int *,
-						 int *, int));
+extern void getc_immediate (FILE *, int *, int *);
+extern void getc_immediate_nowait (FILE *, int *, int *, int *);
+extern void getc_immediate_common (FILE *, int *, int *, int *, int);
 
 /* Called by Get_Immediate (Foo); */
 
 void
-getc_immediate (stream, ch, end_of_file)
-     FILE *stream;
-     int *ch;
-     int *end_of_file;
+getc_immediate (FILE *stream, int *ch, int *end_of_file)
 {
   int avail;
 
@@ -336,11 +326,7 @@ getc_immediate (stream, ch, end_of_file)
 /* Called by Get_Immediate (Foo, Available); */
 
 void
-getc_immediate_nowait (stream, ch, end_of_file, avail)
-     FILE *stream;
-     int *ch;
-     int *end_of_file;
-     int *avail;
+getc_immediate_nowait (FILE *stream, int *ch, int *end_of_file, int *avail)
 {
   getc_immediate_common (stream, ch, end_of_file, avail, 0);
 }
@@ -348,12 +334,11 @@ getc_immediate_nowait (stream, ch, end_of_file, avail)
 /* Called by getc_immediate () and getc_immediate_nowait () */
 
 void
-getc_immediate_common (stream, ch, end_of_file, avail, waiting)
-     FILE *stream;
-     int *ch;
-     int *end_of_file;
-     int *avail;
-     int waiting;
+getc_immediate_common (FILE *stream,
+                       int *ch,
+                       int *end_of_file,
+                       int *avail,
+                       int waiting)
 {
 #if defined (linux) || defined (sun) || defined (sgi) || defined (__EMX__) \
     || (defined (__osf__) && ! defined (__alpha_vxworks)) \
@@ -614,31 +599,31 @@ getc_immediate_common (stream, ch, end_of_file, avail, waiting)
    will want to import these).  We use the same names as the routines used
    by AdaMagic for compatibility.  */
 
-char *rts_get_hInstance     PARAMS ((void));
-char *rts_get_hPrevInstance PARAMS ((void));
-char *rts_get_lpCommandLine PARAMS ((void));
-int   rts_get_nShowCmd      PARAMS ((void));
+char *rts_get_hInstance (void);
+char *rts_get_hPrevInstance (void);
+char *rts_get_lpCommandLine (void);
+int   rts_get_nShowCmd (void);
 
 char *
-rts_get_hInstance ()
+rts_get_hInstance (void)
 {
   return (char *)GetModuleHandleA (0);
 }
 
 char *
-rts_get_hPrevInstance ()
+rts_get_hPrevInstance (void)
 {
   return 0;
 }
 
 char *
-rts_get_lpCommandLine ()
+rts_get_lpCommandLine (void)
 {
   return GetCommandLineA ();
 }
 
 int
-rts_get_nShowCmd ()
+rts_get_nShowCmd (void)
 {
   return 1;
 }
@@ -650,10 +635,10 @@ rts_get_nShowCmd ()
 
 #include <time.h>
 
-extern long get_gmtoff PARAMS ((void));
+extern long get_gmtoff (void);
 
 long
-get_gmtoff ()
+get_gmtoff (void)
 {
   time_t t;
   struct tm *ts;
@@ -668,22 +653,19 @@ get_gmtoff ()
 
 #if defined (_AIX) || defined (__EMX__)
 #define Lock_Task system__soft_links__lock_task
-extern void (*Lock_Task) PARAMS ((void));
+extern void (*Lock_Task) (void);
 
 #define Unlock_Task system__soft_links__unlock_task
-extern void (*Unlock_Task) PARAMS ((void));
+extern void (*Unlock_Task) (void);
 
 /* Provide reentrant version of localtime on Aix and OS/2. Note that AiX does
    provide localtime_r, but in the library libc_r which doesn't get included
    systematically, so we can't use it. */
 
-extern struct tm *__gnat_localtime_r PARAMS ((const time_t *,
-					      struct tm *));
+extern struct tm *__gnat_localtime_r (const time_t *, struct tm *);
 
 struct tm *
-__gnat_localtime_r (timer, tp)
-     const time_t *timer;
-     struct tm *tp;
+__gnat_localtime_r (const time_t *timer, struct tm *tp)
 {
   struct tm *tmp;
 
@@ -703,12 +685,10 @@ __gnat_localtime_r (timer, tp)
    spec is required. Only use when ___THREADS_POSIX4ad4__ is defined,
    the Lynx convention when building against the legacy API. */
 
-extern struct tm *__gnat_localtime_r PARAMS ((const time_t *, struct tm *));
+extern struct tm *__gnat_localtime_r (const time_t *, struct tm *);
 
 struct tm *
-__gnat_localtime_r (timer, tp)
-     const time_t *timer;
-     struct tm *tp;
+__gnat_localtime_r (const time_t *timer, struct tm *tp)
 {
   localtime_r (tp, timer);
   return NULL;
@@ -723,12 +703,10 @@ __gnat_localtime_r (timer, tp)
 
 /* All other targets provide a standard localtime_r */
 
-extern struct tm *__gnat_localtime_r PARAMS ((const time_t *, struct tm *));
+extern struct tm *__gnat_localtime_r (const time_t *, struct tm *);
 
 struct tm *
-__gnat_localtime_r (timer, tp)
-     const time_t *timer;
-     struct tm *tp;
+__gnat_localtime_r (const time_t *timer, struct tm *tp)
 {
   return (struct tm *) localtime_r (timer, tp);
 }

@@ -72,12 +72,11 @@ char *gcc_B_arg = 0;
 
 static int linkonly = 0;
 
-static void addarg		PARAMS ((char *));
-static void process_args	PARAMS ((int *, char *[]));
+static void addarg (char *);
+static void process_args (int *, char *[]);
 
 static void
-addarg (str)
-     char *str;
+addarg (char *str)
 {
   int i;
 
@@ -100,9 +99,7 @@ addarg (str)
 }
 
 static void
-process_args (p_argc, argv)
-     int *p_argc;
-     char *argv[];
+process_args (int *p_argc, char *argv[])
 {
   int i, j;
 
@@ -199,12 +196,10 @@ process_args (p_argc, argv)
       }
     }
 }
-extern int main PARAMS ((int, char **));
+extern int main (int, char **);
 
 int
-main (argc, argv)
-     int argc;
-     char **argv;
+main (int argc, char **argv)
 {
   int i, j;
   int done_an_ali = 0;

@@ -82,42 +82,34 @@ static struct incomplete
   Entity_Id full_type;
 } *defer_incomplete_list = 0;
 
-static tree substitution_list		PARAMS ((Entity_Id, Entity_Id,
-						 tree, int));
-static int allocatable_size_p		PARAMS ((tree, int));
-static struct attrib *build_attr_list	PARAMS ((Entity_Id));
-static tree elaborate_expression	PARAMS ((Node_Id, Entity_Id, tree,
-						 int, int, int));
-static int is_variable_size		PARAMS ((tree));
-static tree elaborate_expression_1	PARAMS ((Node_Id, Entity_Id, tree,
-						 tree, int, int));
-static tree make_packable_type		PARAMS ((tree));
-static tree maybe_pad_type		PARAMS ((tree, tree, unsigned int,
-						 Entity_Id, const char *, int,
-						 int, int));
-static tree gnat_to_gnu_field		PARAMS ((Entity_Id, tree, int, int));
-static void components_to_record	PARAMS ((tree, Node_Id, tree, int,
-						 int, tree *, int, int));
-static int compare_field_bitpos		PARAMS ((const PTR, const PTR));
-static Uint annotate_value		PARAMS ((tree));
-static void annotate_rep		PARAMS ((Entity_Id, tree));
-static tree compute_field_positions	PARAMS ((tree, tree, tree, tree,
-						 unsigned int));
-static tree validate_size		PARAMS ((Uint, tree, Entity_Id,
-						 enum tree_code, int, int));
-static void set_rm_size			PARAMS ((Uint, tree, Entity_Id));
-static tree make_type_from_size		PARAMS ((tree, tree, int));
-static unsigned int validate_alignment	PARAMS ((Uint, Entity_Id,
-						 unsigned int));
-static void check_ok_for_atomic		PARAMS ((tree, Entity_Id, int));
+static tree substitution_list (Entity_Id, Entity_Id, tree, int);
+static int allocatable_size_p (tree, int);
+static struct attrib *build_attr_list (Entity_Id);
+static tree elaborate_expression (Node_Id, Entity_Id, tree, int, int, int);
+static int is_variable_size (tree);
+static tree elaborate_expression_1 (Node_Id, Entity_Id, tree, tree, int, int);
+static tree make_packable_type (tree);
+static tree maybe_pad_type (tree, tree, unsigned int, Entity_Id, const char *,
+                            int, int, int);
+static tree gnat_to_gnu_field (Entity_Id, tree, int, int);
+static void components_to_record (tree, Node_Id, tree, int, int, tree *,
+                                  int, int);
+static int compare_field_bitpos (const PTR, const PTR);
+static Uint annotate_value (tree);
+static void annotate_rep (Entity_Id, tree);
+static tree compute_field_positions (tree, tree, tree, tree, unsigned int);
+static tree validate_size (Uint, tree, Entity_Id, enum tree_code, int, int);
+static void set_rm_size (Uint, tree, Entity_Id);
+static tree make_type_from_size (tree, tree, int);
+static unsigned int validate_alignment (Uint, Entity_Id, unsigned int);
+static void check_ok_for_atomic (tree, Entity_Id, int);
 
 /* Given GNAT_ENTITY, an entity in the incoming GNAT tree, return a
    GCC type corresponding to that entity.  GNAT_ENTITY is assumed to
    refer to an Ada type.  */
 
 tree
-gnat_to_gnu_type (gnat_entity)
-     Entity_Id gnat_entity;
+gnat_to_gnu_type (Entity_Id gnat_entity)
 {
   tree gnu_decl;
 
@@ -146,10 +138,7 @@ gnat_to_gnu_type (gnat_entity)
    the code.  */
 
 tree
-gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
-     Entity_Id gnat_entity;
-     tree gnu_expr;
-     int definition;
+gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 {
   tree gnu_entity_id;
   tree gnu_type = 0;
@@ -4037,8 +4026,7 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
    be elaborated at the point of its definition, but do nothing else.  */
 
 void
-elaborate_entity (gnat_entity)
-     Entity_Id gnat_entity;
+elaborate_entity (Entity_Id gnat_entity)
 {
   switch (Ekind (gnat_entity))
     {
@@ -4109,8 +4097,7 @@ elaborate_entity (gnat_entity)
    any entities on its entity chain similarly.  */
 
 void
-mark_out_of_scope (gnat_entity)
-     Entity_Id gnat_entity;
+mark_out_of_scope (Entity_Id gnat_entity)
 {
   Entity_Id gnat_sub_entity;
   unsigned int kind = Ekind (gnat_entity);
@@ -4153,11 +4140,10 @@ mark_out_of_scope (gnat_entity)
    DEFINITION is as in gnat_to_gnu_entity.  */
 
 static tree
-substitution_list (gnat_subtype, gnat_type, gnu_list, definition)
-     Entity_Id gnat_subtype;
-     Entity_Id gnat_type;
-     tree gnu_list;
-     int definition;
+substitution_list (Entity_Id gnat_subtype,
+                   Entity_Id gnat_type,
+                   tree gnu_list,
+                   int definition)
 {
   Entity_Id gnat_discrim;
   Node_Id gnat_value;
@@ -4191,7 +4177,7 @@ static GTY((length ("max_gnat_nodes"))) tree * dummy_node_table;
 /* Initialize the above table.  */
 
 void
-init_dummy_type ()
+init_dummy_type (void)
 {
   Node_Id gnat_node;
 
@@ -4206,8 +4192,7 @@ init_dummy_type ()
 /* Make a dummy type corresponding to GNAT_TYPE.  */
 
 tree
-make_dummy_type (gnat_type)
-     Entity_Id gnat_type;
+make_dummy_type (Entity_Id gnat_type)
 {
   Entity_Id gnat_underlying;
   tree gnu_type;
@@ -4253,9 +4238,7 @@ make_dummy_type (gnat_type)
    done with a static allocation.  */
 
 static int
-allocatable_size_p (gnu_size, static_p)
-     tree gnu_size;
-     int static_p;
+allocatable_size_p (tree gnu_size, int static_p)
 {
   HOST_WIDE_INT our_size;
 
@@ -4279,8 +4262,7 @@ allocatable_size_p (gnu_size, static_p)
 /* Return a list of attributes for GNAT_ENTITY, if any.  */
 
 static struct attrib *
-build_attr_list (gnat_entity)
-     Entity_Id gnat_entity;
+build_attr_list (Entity_Id gnat_entity)
 {
   struct attrib *attr_list = 0;
   Node_Id gnat_temp;
@@ -4352,8 +4334,7 @@ build_attr_list (gnat_entity)
 /* Get the unpadded version of a GNAT type.  */
 
 tree
-get_unpadded_type (gnat_entity)
-     Entity_Id gnat_entity;
+get_unpadded_type (Entity_Id gnat_entity)
 {
   tree type = gnat_to_gnu_type (gnat_entity);
 
@@ -4366,9 +4347,7 @@ get_unpadded_type (gnat_entity)
 /* Called when we need to protect a variable object using a save_expr.  */
 
 tree
-maybe_variable (gnu_operand, gnat_node)
-     tree gnu_operand;
-     Node_Id gnat_node;
+maybe_variable (tree gnu_operand, Node_Id gnat_node)
 {
   if (TREE_CONSTANT (gnu_operand) || TREE_READONLY (gnu_operand)
       || TREE_CODE (gnu_operand) == SAVE_EXPR
@@ -4397,14 +4376,12 @@ maybe_variable (gnu_operand, gnat_node)
    purposes even if it isn't needed for code generation.  */
 
 static tree
-elaborate_expression (gnat_expr, gnat_entity, gnu_name, definition,
-		      need_value, need_debug)
-     Node_Id gnat_expr;
-     Entity_Id gnat_entity;
-     tree gnu_name;
-     int definition;
-     int need_value;
-     int need_debug;
+elaborate_expression (Node_Id gnat_expr,
+                      Entity_Id gnat_entity,
+                      tree gnu_name,
+                      int definition,
+                      int need_value,
+                      int need_debug)
 {
   tree gnu_expr;
 
@@ -4439,14 +4416,12 @@ elaborate_expression (gnat_expr, gnat_entity, gnu_name, definition,
 /* Similar, but take a GNU expression.  */
 
 static tree
-elaborate_expression_1 (gnat_expr, gnat_entity, gnu_expr, gnu_name, definition,
-			need_debug)
-     Node_Id gnat_expr;
-     Entity_Id gnat_entity;
-     tree gnu_expr;
-     tree gnu_name;
-     int definition;
-     int need_debug;
+elaborate_expression_1 (Node_Id gnat_expr,
+                        Entity_Id gnat_entity,
+                        tree gnu_expr,
+                        tree gnu_name,
+                        int definition,
+                        int need_debug)
 {
   tree gnu_decl = 0;
   /* Strip any conversions to see if the expression is a readonly variable.
@@ -4514,10 +4489,7 @@ elaborate_expression_1 (gnat_expr, gnat_entity, gnu_expr, gnu_name, definition,
    position so that it is aligned to ALIGN bits and is SIZE bytes long.  */
 
 tree
-make_aligning_type (type, align, size)
-     tree type;
-     int align;
-     tree size;
+make_aligning_type (tree type, int align, tree size)
 {
   tree record_type = make_node (RECORD_TYPE);
   tree place = build (PLACEHOLDER_EXPR, record_type);
@@ -4568,8 +4540,7 @@ make_aligning_type (type, align, size)
    return the new type.  If not, return the original type.  */
 
 static tree
-make_packable_type (type)
-     tree type;
+make_packable_type (tree type)
 {
   tree new_type = make_node (TREE_CODE (type));
   tree field_list = NULL_TREE;
@@ -4645,16 +4616,14 @@ make_packable_type (type)
    type.  */
 
 static tree
-maybe_pad_type (type, size, align, gnat_entity, name_trailer,
-		is_user_type, definition, same_rm_size)
-     tree type;
-     tree size;
-     unsigned int align;
-     Entity_Id gnat_entity;
-     const char *name_trailer;
-     int is_user_type;
-     int definition;
-     int same_rm_size;
+maybe_pad_type (tree type,
+                tree size,
+                unsigned int align,
+                Entity_Id gnat_entity,
+                const char *name_trailer,
+                int is_user_type,
+                int definition,
+                int same_rm_size)
 {
   tree orig_size = TYPE_SIZE (type);
   tree record;
@@ -4830,9 +4799,7 @@ maybe_pad_type (type, size, align, gnat_entity, name_trailer,
    the value passed against the list of choices.  */
 
 tree
-choices_to_gnu (operand, choices)
-     tree operand;
-     Node_Id choices;
+choices_to_gnu (tree operand, Node_Id choices)
 {
   Node_Id choice;
   Node_Id gnat_temp;
@@ -4924,11 +4891,10 @@ choices_to_gnu (operand, choices)
    DEFINITION is nonzero if this field is for a record being defined.  */
 
 static tree
-gnat_to_gnu_field (gnat_field, gnu_record_type, packed, definition)
-     Entity_Id gnat_field;
-     tree gnu_record_type;
-     int packed;
-     int definition;
+gnat_to_gnu_field (Entity_Id gnat_field,
+                   tree gnu_record_type,
+                   int packed,
+                   int definition)
 {
   tree gnu_field_id = get_entity_name (gnat_field);
   tree gnu_field_type = gnat_to_gnu_type (Etype (gnat_field));
@@ -5173,8 +5139,7 @@ gnat_to_gnu_field (gnat_field, gnu_record_type, packed, definition)
    of variable size or is a record that has a field such a field.  */
 
 static int
-is_variable_size (type)
-     tree type;
+is_variable_size (tree type)
 {
   tree field;
 
@@ -5229,16 +5194,14 @@ is_variable_size (type)
    fields of the record and then the record type is finished.  */
 
 static void
-components_to_record (gnu_record_type, component_list, gnu_field_list, packed,
-		      definition, p_gnu_rep_list, cancel_alignment, all_rep)
-     tree gnu_record_type;
-     Node_Id component_list;
-     tree gnu_field_list;
-     int packed;
-     int definition;
-     tree *p_gnu_rep_list;
-     int cancel_alignment;
-     int all_rep;
+components_to_record (tree gnu_record_type,
+                      Node_Id component_list,
+                      tree gnu_field_list,
+                      int packed,
+                      int definition,
+                      tree *p_gnu_rep_list,
+                      int cancel_alignment,
+                      int all_rep)
 {
   Node_Id component_decl;
   Entity_Id gnat_field;
@@ -5502,9 +5465,7 @@ components_to_record (gnu_record_type, component_list, gnu_field_list, packed,
    bit positions and ordinals of the two fields.  */
 
 static int
-compare_field_bitpos (rt1, rt2)
-     const PTR rt1;
-     const PTR rt2;
+compare_field_bitpos (const PTR rt1, const PTR rt2)
 {
   tree *t1 = (tree *) rt1;
   tree *t2 = (tree *) rt2;
@@ -5524,8 +5485,7 @@ compare_field_bitpos (rt1, rt2)
    in the GNAT tree.  */
 
 static Uint
-annotate_value (gnu_size)
-     tree gnu_size;
+annotate_value (tree gnu_size)
 {
   int len = TREE_CODE_LENGTH (TREE_CODE (gnu_size));
   TCode tcode;
@@ -5663,9 +5623,7 @@ annotate_value (gnu_size)
    used by Gigi.  */
 
 static void
-annotate_rep (gnat_entity, gnu_type)
-     Entity_Id gnat_entity;
-     tree gnu_type;
+annotate_rep (Entity_Id gnat_entity, tree gnu_type)
 {
   tree gnu_list;
   tree gnu_entry;
@@ -5743,12 +5701,11 @@ annotate_rep (gnat_entity, gnu_type)
    so far.  */
 
 static tree
-compute_field_positions (gnu_type, gnu_list, gnu_pos, gnu_bitpos, offset_align)
-     tree gnu_type;
-     tree gnu_list;
-     tree gnu_pos;
-     tree gnu_bitpos;
-     unsigned int offset_align;
+compute_field_positions (tree gnu_type,
+                         tree gnu_list,
+                         tree gnu_pos,
+                         tree gnu_bitpos,
+                         unsigned int offset_align)
 {
   tree gnu_field;
   tree gnu_result = gnu_list;
@@ -5792,13 +5749,12 @@ compute_field_positions (gnu_type, gnu_list, gnu_pos, gnu_bitpos, offset_align)
    it means that a size of zero should be treated as an unspecified size.  */
 
 static tree
-validate_size (uint_size, gnu_type, gnat_object, kind, component_p, zero_ok)
-     Uint uint_size;
-     tree gnu_type;
-     Entity_Id gnat_object;
-     enum tree_code kind;
-     int component_p;
-     int zero_ok;
+validate_size (Uint uint_size,
+               tree gnu_type,
+               Entity_Id gnat_object,
+               enum tree_code kind,
+               int component_p,
+               int zero_ok)
 {
   Node_Id gnat_error_node;
   tree type_size
@@ -5911,10 +5867,7 @@ validate_size (uint_size, gnu_type, gnat_object, kind, component_p, zero_ok)
    routine is only called for types.  */
 
 static void
-set_rm_size (uint_size, gnu_type, gnat_entity)
-     Uint uint_size;
-     tree gnu_type;
-     Entity_Id gnat_entity;
+set_rm_size (Uint uint_size, tree gnu_type, Entity_Id gnat_entity)
 {
   /* Only give an error if a Value_Size clause was explicitly given.
      Otherwise, we'd be duplicating an error on the Size clause.  */
@@ -5988,10 +5941,7 @@ set_rm_size (uint_size, gnu_type, gnat_entity)
    we are making a biased type.  */
 
 static tree
-make_type_from_size (type, size_tree, biased_p)
-     tree type;
-     tree size_tree;
-     int biased_p;
+make_type_from_size (tree type, tree size_tree, int biased_p)
 {
   tree new_type;
   unsigned HOST_WIDE_INT size;
@@ -6061,10 +6011,7 @@ make_type_from_size (type, size_tree, biased_p)
    valid, return it.  Otherwise, give an error and return ALIGN.  */
 
 static unsigned int
-validate_alignment (alignment, gnat_entity, align)
-     Uint alignment;
-     Entity_Id gnat_entity;
-     unsigned int align;
+validate_alignment (Uint alignment, Entity_Id gnat_entity, unsigned int align)
 {
   Node_Id gnat_error_node = gnat_entity;
   unsigned int new_align;
@@ -6109,10 +6056,7 @@ validate_alignment (alignment, gnat_entity, align)
    if we require atomic components.  */
 
 static void
-check_ok_for_atomic (object, gnat_entity, comp_p)
-     tree object;
-     Entity_Id gnat_entity;
-     int comp_p;
+check_ok_for_atomic (tree object, Entity_Id gnat_entity, int comp_p)
 {
   Node_Id gnat_error_point = gnat_entity;
   Node_Id gnat_node;
@@ -6188,8 +6132,7 @@ check_ok_for_atomic (object, gnat_entity, comp_p)
    changed.  */
 
 tree
-gnat_substitute_in_type (t, f, r)
-     tree t, f, r;
+gnat_substitute_in_type (tree t, tree f, tree r)
 {
   tree new = t;
   tree tem;
@@ -6410,8 +6353,7 @@ gnat_substitute_in_type (t, f, r)
    needed to represent the object.  */
 
 tree
-rm_size (gnu_type)
-     tree gnu_type;
+rm_size (tree gnu_type)
 {
   /* For integer types, this is the precision.  For record types, we store
      the size explicitly.  For other types, this is just the size.  */
@@ -6440,9 +6382,7 @@ rm_size (gnu_type)
    and the specified suffix.  */
 
 tree
-create_concat_name (gnat_entity, suffix)
-     Entity_Id gnat_entity;
-     const char *suffix;
+create_concat_name (Entity_Id gnat_entity, const char *suffix)
 {
   const char *str = (suffix == 0 ? "" : suffix);
   String_Template temp = {1, strlen (str)};
@@ -6480,8 +6420,7 @@ create_concat_name (gnat_entity, suffix)
    Otherwise, return the name.  */
 
 tree
-get_entity_name (gnat_entity)
-     Entity_Id gnat_entity;
+get_entity_name (Entity_Id gnat_entity)
 {
   Get_Encoded_Name (gnat_entity);
   return get_identifier (Name_Buffer);
@@ -6492,9 +6431,7 @@ get_entity_name (gnat_entity)
    the name in GNU_ID and SUFFIX.  */
 
 tree
-concat_id_with_name (gnu_id, suffix)
-     tree gnu_id;
-     const char *suffix;
+concat_id_with_name (tree gnu_id, const char *suffix)
 {
   int len = IDENTIFIER_LENGTH (gnu_id);
 
