@@ -97,6 +97,9 @@ rs6000_cpu_cpp_builtins (pfile)
     builtin_define ("__SPE__");
   if (TARGET_SOFT_FLOAT)
     builtin_define ("_SOFT_FLOAT");
+  /* Used by lwarx/stwcx. errata work-around.  */
+  if (rs6000_cpu == PROCESSOR_PPC405)
+    builtin_define ("__PPC405__");
   if (BYTES_BIG_ENDIAN)
     {
       builtin_define ("__BIG_ENDIAN__");
@@ -126,6 +129,8 @@ rs6000_cpu_cpp_builtins (pfile)
       break;
     case ABI_DARWIN:
       builtin_define ("_CALL_DARWIN");
+      break;
+    default:
       break;
     }
 }
