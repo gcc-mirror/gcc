@@ -1,3 +1,7 @@
+2001-12-17  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* doc/cppinternals.texi: Update.
+
 Mon Dec 17 14:21:21 2001  Jeffrey A Law  (law@redhat.com)
 
 	* expmed.c (emit_store_flag): Extract updated comparison code
