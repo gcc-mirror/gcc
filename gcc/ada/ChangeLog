@@ -1,3 +1,9 @@
+2002-06-28  Andreas Jaeger  <aj@suse.de>
+
+	PR ada/7144
+	* Makefile.in: Fix typo in comment, patch by Adrian Knoth
+	<adi@thur.de>.
+
 2002-06-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (SHELL): Set to @SHELL@.
