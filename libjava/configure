@@ -6865,28 +6865,28 @@ fi
   else
      PKG_CONFIG_MIN_VERSION=0.9.0
      if $PKG_CONFIG --atleast-pkgconfig-version $PKG_CONFIG_MIN_VERSION; then
-        echo $ac_n "checking for gtk+-2.0 >= 2.2""... $ac_c" 1>&6
-echo "configure:6870: checking for gtk+-2.0 >= 2.2" >&5
+        echo $ac_n "checking for gtk+-2.0 >= 2.4""... $ac_c" 1>&6
+echo "configure:6870: checking for gtk+-2.0 >= 2.4" >&5
 
-        if $PKG_CONFIG --exists "gtk+-2.0 >= 2.2" ; then
+        if $PKG_CONFIG --exists "gtk+-2.0 >= 2.4" ; then
             echo "$ac_t""yes" 1>&6
             succeeded=yes
 
             echo $ac_n "checking GTK_CFLAGS""... $ac_c" 1>&6
 echo "configure:6877: checking GTK_CFLAGS" >&5
-            GTK_CFLAGS=`$PKG_CONFIG --cflags "gtk+-2.0 >= 2.2"`
+            GTK_CFLAGS=`$PKG_CONFIG --cflags "gtk+-2.0 >= 2.4"`
             echo "$ac_t""$GTK_CFLAGS" 1>&6
 
             echo $ac_n "checking GTK_LIBS""... $ac_c" 1>&6
 echo "configure:6882: checking GTK_LIBS" >&5
-            GTK_LIBS=`$PKG_CONFIG --libs "gtk+-2.0 >= 2.2"`
+            GTK_LIBS=`$PKG_CONFIG --libs "gtk+-2.0 >= 2.4"`
             echo "$ac_t""$GTK_LIBS" 1>&6
         else
             GTK_CFLAGS=""
             GTK_LIBS=""
             ## If we have a custom action on failure, don't print errors, but 
             ## do set a variable so people can do so.
-            GTK_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "gtk+-2.0 >= 2.2"`
+            GTK_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "gtk+-2.0 >= 2.4"`
             echo $GTK_PKG_ERRORS
         fi
 
@@ -6901,7 +6901,7 @@ echo "configure:6882: checking GTK_LIBS" >&5
   if test $succeeded = yes; then
      :
   else
-     { echo "configure: error: Library requirements (gtk+-2.0 >= 2.2) not met; consider adjusting the PKG_CONFIG_PATH environment variable if your libraries are in a nonstandard prefix so pkg-config can find them." 1>&2; exit 1; }
+     { echo "configure: error: Library requirements (gtk+-2.0 >= 2.4) not met; consider adjusting the PKG_CONFIG_PATH environment variable if your libraries are in a nonstandard prefix so pkg-config can find them." 1>&2; exit 1; }
   fi
 
       
@@ -6957,28 +6957,28 @@ fi
   else
      PKG_CONFIG_MIN_VERSION=0.9.0
      if $PKG_CONFIG --atleast-pkgconfig-version $PKG_CONFIG_MIN_VERSION; then
-        echo $ac_n "checking for glib-2.0 >= 2.2 gthread-2.0 >= 2.2""... $ac_c" 1>&6
-echo "configure:6962: checking for glib-2.0 >= 2.2 gthread-2.0 >= 2.2" >&5
+        echo $ac_n "checking for glib-2.0 >= 2.4 gthread-2.0 >= 2.4""... $ac_c" 1>&6
+echo "configure:6962: checking for glib-2.0 >= 2.4 gthread-2.0 >= 2.4" >&5
 
-        if $PKG_CONFIG --exists "glib-2.0 >= 2.2 gthread-2.0 >= 2.2" ; then
+        if $PKG_CONFIG --exists "glib-2.0 >= 2.4 gthread-2.0 >= 2.4" ; then
             echo "$ac_t""yes" 1>&6
             succeeded=yes
 
             echo $ac_n "checking GLIB_CFLAGS""... $ac_c" 1>&6
 echo "configure:6969: checking GLIB_CFLAGS" >&5
-            GLIB_CFLAGS=`$PKG_CONFIG --cflags "glib-2.0 >= 2.2 gthread-2.0 >= 2.2"`
+            GLIB_CFLAGS=`$PKG_CONFIG --cflags "glib-2.0 >= 2.4 gthread-2.0 >= 2.4"`
             echo "$ac_t""$GLIB_CFLAGS" 1>&6
 
             echo $ac_n "checking GLIB_LIBS""... $ac_c" 1>&6
 echo "configure:6974: checking GLIB_LIBS" >&5
-            GLIB_LIBS=`$PKG_CONFIG --libs "glib-2.0 >= 2.2 gthread-2.0 >= 2.2"`
+            GLIB_LIBS=`$PKG_CONFIG --libs "glib-2.0 >= 2.4 gthread-2.0 >= 2.4"`
             echo "$ac_t""$GLIB_LIBS" 1>&6
         else
             GLIB_CFLAGS=""
             GLIB_LIBS=""
             ## If we have a custom action on failure, don't print errors, but 
             ## do set a variable so people can do so.
-            GLIB_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "glib-2.0 >= 2.2 gthread-2.0 >= 2.2"`
+            GLIB_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "glib-2.0 >= 2.4 gthread-2.0 >= 2.4"`
             echo $GLIB_PKG_ERRORS
         fi
 
@@ -6993,7 +6993,7 @@ echo "configure:6974: checking GLIB_LIBS" >&5
   if test $succeeded = yes; then
      :
   else
-     { echo "configure: error: Library requirements (glib-2.0 >= 2.2 gthread-2.0 >= 2.2) not met; consider adjusting the PKG_CONFIG_PATH environment variable if your libraries are in a nonstandard prefix so pkg-config can find them." 1>&2; exit 1; }
+     { echo "configure: error: Library requirements (glib-2.0 >= 2.4 gthread-2.0 >= 2.4) not met; consider adjusting the PKG_CONFIG_PATH environment variable if your libraries are in a nonstandard prefix so pkg-config can find them." 1>&2; exit 1; }
   fi
 
       

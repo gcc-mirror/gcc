@@ -1020,11 +1020,11 @@ else
 
    # Test for Gtk stuff, if asked for.
    if test "$use_gtk_awt" = yes; then
-      PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.2)
+      PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.4)
       AC_SUBST(GTK_CFLAGS)
       AC_SUBST(GTK_LIBS)
 
-      PKG_CHECK_MODULES(GLIB, glib-2.0 >= 2.2 gthread-2.0 >= 2.2)
+      PKG_CHECK_MODULES(GLIB, glib-2.0 >= 2.4 gthread-2.0 >= 2.4)
       AC_SUBST(GLIB_CFLAGS)
       AC_SUBST(GLIB_LIBS)
 
