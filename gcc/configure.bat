@@ -1,5 +1,5 @@
 @echo off
-echo Configuring gcc-2.1 for go32
+echo Configuring GCC for go32
 rem This batch file assumes a unix-type "sed" program
 
 update config\xm-i386dos.h config.h
