@@ -12428,8 +12428,8 @@ rs6000_elf_select_section (decl, reloc, align)
      unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED;
 {
   int size = int_size_in_bytes (TREE_TYPE (decl));
-  int needs_sdata;
-  int readonly;
+  bool needs_sdata;
+  bool readonly;
   static void (* const sec_funcs[4]) PARAMS ((void)) = {
     &readonly_data_section,
     &sdata2_section,
@@ -12443,22 +12443,23 @@ rs6000_elf_select_section (decl, reloc, align)
 		 && (rs6000_sdata != SDATA_DATA || TREE_PUBLIC (decl)));
 
   if (TREE_CODE (decl) == STRING_CST)
-    readonly = ! flag_writable_strings;
+    readonly = !flag_writable_strings;
   else if (TREE_CODE (decl) == VAR_DECL)
-    readonly = (! (flag_pic && reloc)
+    readonly = (!((flag_pic || DEFAULT_ABI == ABI_AIX) && reloc)
 		&& TREE_READONLY (decl)
-		&& ! TREE_SIDE_EFFECTS (decl)
+		&& !TREE_SIDE_EFFECTS (decl)
 		&& DECL_INITIAL (decl)
 		&& DECL_INITIAL (decl) != error_mark_node
 		&& TREE_CONSTANT (DECL_INITIAL (decl)));
   else if (TREE_CODE (decl) == CONSTRUCTOR)
-    readonly = (! (flag_pic && reloc)
-		&& ! TREE_SIDE_EFFECTS (decl)
+    readonly = (!((flag_pic || DEFAULT_ABI == ABI_AIX) && reloc)
+		&& !TREE_SIDE_EFFECTS (decl)
 		&& TREE_CONSTANT (decl));
   else
-    readonly = 1;
+    readonly = !((flag_pic || DEFAULT_ABI == ABI_AIX) && reloc);
+
   if (needs_sdata && rs6000_sdata != SDATA_EABI)
-    readonly = 0;
+    readonly = false;
   
   (*sec_funcs[(readonly ? 0 : 2) + (needs_sdata ? 1 : 0)])();
 }
@@ -12497,18 +12498,19 @@ rs6000_elf_unique_section (decl, reloc)
     sec = 6;
   else
     {
-      int readonly;
-      int needs_sdata;
+      bool readonly;
+      bool needs_sdata;
       int size;
 
-      readonly = 1;
       if (TREE_CODE (decl) == STRING_CST)
-	readonly = ! flag_writable_strings;
+	readonly = !flag_writable_strings;
       else if (TREE_CODE (decl) == VAR_DECL)
-	readonly = (! (flag_pic && reloc)
+	readonly = (!((flag_pic || DEFAULT_ABI == ABI_AIX) && reloc)
 		    && TREE_READONLY (decl)
-		    && ! TREE_SIDE_EFFECTS (decl)
+		    && !TREE_SIDE_EFFECTS (decl)
 		    && TREE_CONSTANT (DECL_INITIAL (decl)));
+      else
+	readonly = !((flag_pic || DEFAULT_ABI == ABI_AIX) && reloc);
 
       size = int_size_in_bytes (TREE_TYPE (decl));
       needs_sdata = (size > 0 
@@ -12516,10 +12518,10 @@ rs6000_elf_unique_section (decl, reloc)
 		     && rs6000_sdata != SDATA_NONE
 		     && (rs6000_sdata != SDATA_DATA || TREE_PUBLIC (decl)));
 
-      if (DECL_INITIAL (decl) == 0
+      if (DECL_INITIAL (decl) == NULL
 	  || DECL_INITIAL (decl) == error_mark_node)
 	sec = 4;
-      else if (! readonly)
+      else if (!readonly)
 	sec = 2;
       else
 	sec = 0;
