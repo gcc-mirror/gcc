@@ -968,7 +968,7 @@ build_module_descriptor ()
 				      tree_cons (NULL_TREE, NULL_TREE,
 						 void_list_node),
 				      NULL_TREE),
-		    0, 0);
+		    0);
 #if 0 /* This should be turned back on later
 	 for the systems where collect is not needed.  */
     /* Make these functions nonglobal
