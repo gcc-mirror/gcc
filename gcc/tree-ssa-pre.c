@@ -1541,7 +1541,6 @@ insert_aux (basic_block block)
 									   eprime,
 									   stmts);
 				  bsi_insert_on_edge (pred, stmts);
-				  bsi_commit_edge_inserts (NULL);
 				  avail[bprime->index] = builtexpr;
 				}			      
 			    } 
@@ -1965,6 +1964,7 @@ static void
 fini_pre (void)
 {
   basic_block bb;
+  bsi_commit_edge_inserts (NULL);
 
   obstack_free (&grand_bitmap_obstack, NULL);
   free_alloc_pool (value_set_pool);
