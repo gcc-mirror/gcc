@@ -2471,7 +2471,7 @@ expand_body (fn)
 
   /* If FN is external, then there's no point in generating RTL for
      it.  This situation can arise with an inline function under
-     `-fexternal-tempaltes'; we instantiate the function, even though
+     `-fexternal-templates'; we instantiate the function, even though
      we're not planning on emitting it, in case we get a chance to
      inline it.  */
   if (DECL_EXTERNAL (fn))
