@@ -88,6 +88,8 @@ extern FILE *asm_out_file;
 
 static char *compare_constant_1 ();
 static void record_constant_1 ();
+static void output_constant_def_contents ();
+
 void output_constant_pool ();
 void assemble_name ();
 int output_addressed_constants ();
@@ -313,11 +315,8 @@ make_decl_rtl (decl, asmspec, top_level)
     }
 
   /* For a duplicate declaration, we can be called twice on the
-     same DECL node.  Don't alter the RTL already made
-     unless the old mode is wrong (which can happen when
-     the previous rtl was made when the type was incomplete).  */
-  if (DECL_RTL (decl) == 0
-      || GET_MODE (DECL_RTL (decl)) != DECL_MODE (decl))
+     same DECL node.  Don't discard the RTL already made.  */
+  if (DECL_RTL (decl) == 0)
     {
       DECL_RTL (decl) = 0;
 
@@ -418,6 +417,12 @@ make_decl_rtl (decl, asmspec, top_level)
 	  ENCODE_SECTION_INFO (decl);
 #endif
 	}
+    }
+  /* If the old RTL had the wrong mode, fix the mode.  */
+  else if (GET_MODE (DECL_RTL (decl)) != DECL_MODE (decl))
+    {
+      rtx rtl = DECL_RTL (decl);
+      PUT_MODE (rtl, DECL_MODE (decl));
     }
 }
 
@@ -693,10 +698,12 @@ assemble_string (p, size)
 
    TOP_LEVEL is nonzero if this variable has file scope.
    AT_END is nonzero if this is the special handling, at end of compilation,
-   to define things that have had only tentative definitions.  */
+   to define things that have had only tentative definitions.
+   DONT_OUTPUT_DATA if nonzero means don't actually output the
+   initial value (that will be done by the caller).  */
 
 void
-assemble_variable (decl, top_level, at_end)
+assemble_variable (decl, top_level, at_end, dont_output_data)
      tree decl;
      int top_level;
      int at_end;
@@ -763,7 +770,7 @@ assemble_variable (decl, top_level, at_end)
   /* Still incomplete => don't allocate it; treat the tentative defn
      (which is what it must have been) as an `extern' reference.  */
 
-  if (DECL_SIZE (decl) == 0)
+  if (!dont_output_data && DECL_SIZE (decl) == 0)
     {
       error_with_file_and_line (DECL_SOURCE_FILE (decl),
 				DECL_SOURCE_LINE (decl),
@@ -785,19 +792,22 @@ assemble_variable (decl, top_level, at_end)
   /* If storage size is erroneously variable, just continue.
      Error message was already made.  */
 
-  if (TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
-    goto finish;
-
-  app_disable ();
-
-  /* This is better than explicit arithmetic, since it avoids overflow.  */
-  size_tree = size_binop (CEIL_DIV_EXPR,
-			  DECL_SIZE (decl), size_int (BITS_PER_UNIT));
-
-  if (TREE_INT_CST_HIGH (size_tree) != 0)
+  if (DECL_SIZE (decl))
     {
-      error_with_decl (decl, "size of variable `%s' is too large");
-      goto finish;
+      if (TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
+	goto finish;
+
+      app_disable ();
+
+      /* This is better than explicit arithmetic, since it avoids overflow.  */
+      size_tree = size_binop (CEIL_DIV_EXPR,
+			      DECL_SIZE (decl), size_int (BITS_PER_UNIT));
+
+      if (TREE_INT_CST_HIGH (size_tree) != 0)
+	{
+	  error_with_decl (decl, "size of variable `%s' is too large");
+	  goto finish;
+	}
     }
 
   name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
@@ -809,6 +819,7 @@ assemble_variable (decl, top_level, at_end)
      initializer equal to zero.  (Section 3.7.2)
      -fno-common gives strict ANSI behavior.  Usually you don't want it.  */
   if (! flag_no_common
+      && ! dont_output_data
       && (DECL_INITIAL (decl) == 0 || DECL_INITIAL (decl) == error_mark_node))
     {
       int size = TREE_INT_CST_LOW (size_tree);
@@ -995,21 +1006,16 @@ assemble_variable (decl, top_level, at_end)
   ASM_OUTPUT_LABEL (asm_out_file, name);
 #endif /* ASM_DECLARE_OBJECT_NAME */
 
-#if 0
-  for (d = equivalents; d; d = TREE_CHAIN (d))
+  if (!dont_output_data)
     {
-      tree e = TREE_VALUE (d);
-      ASM_OUTPUT_LABEL (asm_out_file, XSTR (XEXP (DECL_RTL (e), 0), 0));
+      if (DECL_INITIAL (decl))
+	/* Output the actual data.  */
+	output_constant (DECL_INITIAL (decl),
+			 int_size_in_bytes (TREE_TYPE (decl)));
+      else
+	/* Leave space for it.  */
+	assemble_zeros (int_size_in_bytes (TREE_TYPE (decl)));
     }
-#endif
-
-  if (DECL_INITIAL (decl))
-    /* Output the actual data.  */
-    output_constant (DECL_INITIAL (decl),
-		     int_size_in_bytes (TREE_TYPE (decl)));
-  else
-    /* Leave space for it.  */
-    assemble_zeros (int_size_in_bytes (TREE_TYPE (decl)));
 
  finish:
 #ifdef XCOFF_DEBUGGING_INFO
@@ -2004,19 +2010,70 @@ record_constant_1 (exp)
   obstack_grow (&permanent_obstack, strp, len);
 }
 
+/* Record a list of constant expressions that were passed to
+   output_constant_def but that could not be output right away.  */
+
+struct deferred_constant
+{
+  struct deferred_constant *next;
+  tree exp;
+  int reloc;
+  int labelno;
+};
+
+static struct deferred_constant *deferred_constants;
+
+/* Nonzero means defer output of addressed subconstants
+   (i.e., those for which output_constant_def is called.)  */
+static int defer_addressed_constants_flag;
+
+/* Start deferring output of subconstants.  */
+
+void
+defer_addressed_constants ()
+{
+  defer_addressed_constants_flag++;
+}
+
+/* Stop deferring output of subconstants,
+   and output now all those that have been deferred.  */
+
+void
+output_deferred_addressed_constants ()
+{
+  struct deferred_constant *p, *next;
+
+  defer_addressed_constants_flag--;
+
+  if (defer_addressed_constants_flag > 0)
+    return;
+
+  for (p = deferred_constants; p; p = next)
+    {
+      output_constant_def_contents (p->exp, p->reloc, p->labelno);
+      next = p->next;
+      free (p);
+    }
+
+  deferred_constants = 0;
+}
+
 /* Return an rtx representing a reference to constant data in memory
    for the constant expression EXP.
+
    If assembler code for such a constant has already been output,
    return an rtx to refer to it.
-   Otherwise, output such a constant in memory and generate
-   an rtx for it.  The TREE_CST_RTL of EXP is set up to point to that rtx.
+   Otherwise, output such a constant in memory (or defer it for later)
+   and generate an rtx for it.
+
+   The TREE_CST_RTL of EXP is set up to point to that rtx.
    The const_hash_table records which constants already have label strings.  */
 
 rtx
 output_constant_def (exp)
      tree exp;
 {
-  register int hash, align;
+  register int hash;
   register struct constant_descriptor *desc;
   char label[256];
   char *found = 0;
@@ -2090,44 +2147,77 @@ output_constant_def (exp)
   ENCODE_SECTION_INFO (exp);
 #endif
 
+  /* If this is the first time we've seen this particular constant,
+     output it (or defer its output for later).  */
   if (found == 0)
     {
-      /* Now output assembler code to define that label
-	 and follow it with the data of EXP.  */
+      if (defer_addressed_constants_flag)
+	{
+	  struct deferred_constant *p;
+	  p = (struct deferred_constant *) xmalloc (sizeof (struct deferred_constant));
 
-      /* First switch to text section, except for writable strings.  */
-#ifdef SELECT_SECTION
-      SELECT_SECTION (exp, reloc);
-#else
-      if (((TREE_CODE (exp) == STRING_CST) && flag_writable_strings)
-	  || (flag_pic && reloc))
-	data_section ();
+	  /* We really should copy trees in depth here,
+	     but since this case is the only one that should happen now,
+	     let's do it later.  */
+	  if (TREE_CODE (exp) != STRING_CST)
+	    abort ();
+
+	  push_obstacks_nochange ();
+	  suspend_momentary ();
+	  p->exp = copy_node (exp);
+	  pop_obstacks ();
+	  p->reloc = reloc;
+	  p->labelno = const_labelno++;
+	  p->next = deferred_constants;
+	  deferred_constants = p;
+	}
       else
-	readonly_data_section ();
-#endif
-
-      /* Align the location counter as required by EXP's data type.  */
-      align = TYPE_ALIGN (TREE_TYPE (exp));
-#ifdef CONSTANT_ALIGNMENT
-      align = CONSTANT_ALIGNMENT (exp, align);
-#endif
-
-      if (align > BITS_PER_UNIT)
-	ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
-
-      /* Output the label itself.  */
-      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LC", const_labelno);
-
-      /* Output the value of EXP.  */
-      output_constant (exp,
-		       (TREE_CODE (exp) == STRING_CST
-			? TREE_STRING_LENGTH (exp)
-			: int_size_in_bytes (TREE_TYPE (exp))));
-
-      ++const_labelno;
+	output_constant_def_contents (exp, reloc, const_labelno++);
     }
 
   return TREE_CST_RTL (exp);
+}
+
+/* Now output assembler code to define the label for EXP,
+   and follow it with the data of EXP.  */
+
+static void
+output_constant_def_contents (exp, reloc, labelno)
+     tree exp;
+     int reloc;
+     int labelno;
+{
+  int align;
+
+  /* First switch to text section, except for writable strings.  */
+#ifdef SELECT_SECTION
+  SELECT_SECTION (exp, reloc);
+#else
+  if (((TREE_CODE (exp) == STRING_CST) && flag_writable_strings)
+      || (flag_pic && reloc))
+    data_section ();
+  else
+    readonly_data_section ();
+#endif
+
+  /* Align the location counter as required by EXP's data type.  */
+  align = TYPE_ALIGN (TREE_TYPE (exp));
+#ifdef CONSTANT_ALIGNMENT
+  align = CONSTANT_ALIGNMENT (exp, align);
+#endif
+
+  if (align > BITS_PER_UNIT)
+    ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
+
+  /* Output the label itself.  */
+  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LC", labelno);
+
+  /* Output the value of EXP.  */
+  output_constant (exp,
+		   (TREE_CODE (exp) == STRING_CST
+		    ? TREE_STRING_LENGTH (exp)
+		    : int_size_in_bytes (TREE_TYPE (exp))));
+
 }
 
 /* Similar hash facility for making memory-constants
