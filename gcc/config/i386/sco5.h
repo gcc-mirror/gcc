@@ -541,28 +541,8 @@ do {									\
 #define DBX_FUNCTION_FIRST 1
 
 #undef DBX_REGISTER_NUMBER
-#define DBX_REGISTER_NUMBER(n)						\
-((TARGET_ELF) ?								\
- ((n) == 0 ? 0 								\
-  : (n) == 1 ? 2 							\
-  : (n) == 2 ? 1 							\
-  : (n) == 3 ? 3 							\
-  : (n) == 4 ? 6 							\
-  : (n) == 5 ? 7 							\
-  : (n) == 6 ? 5 							\
-  : (n) == 7 ? 4 							\
-  : ((n) >= FIRST_STACK_REG && (n) <= LAST_STACK_REG) ? (n)+3 		\
-  : (-1))								\
- :									\
- ((n) == 0 ? 0 : 							\
-  (n) == 1 ? 2 : 							\
-  (n) == 2 ? 1 : 							\
-  (n) == 3 ? 3 : 							\
-  (n) == 4 ? 6 : 							\
-  (n) == 5 ? 7 : 							\
-  (n) == 6 ? 4 : 							\
-  (n) == 7 ? 5 : 							\
-  (n) + 4))
+#define DBX_REGISTER_NUMBER(n) \
+  ((TARGET_ELF) ? svr4_dbx_register_map[n] : dbx_register_map[n])
 
 #undef DWARF_DEBUGGING_INFO
 #undef SDB_DEBUGGING_INFO
