@@ -3241,9 +3241,9 @@ purge_addressof_1 (rtx *loc, rtx insn, int force, int store, int may_postpone,
 		    return true;
 		  }
 	      purge_addressof_replacements
-		= gen_rtx (EXPR_LIST, VOIDmode, XEXP (x, 0),
-			   gen_rtx_EXPR_LIST (VOIDmode, sub,
-					      purge_addressof_replacements));
+		= gen_rtx_EXPR_LIST (VOIDmode, XEXP (x, 0),
+				     gen_rtx_EXPR_LIST (VOIDmode, sub,
+							purge_addressof_replacements));
 	      return true;
 	    }
 	  goto restart;

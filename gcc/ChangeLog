@@ -1,3 +1,14 @@
+2004-01-31  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* bt-load.c: Replace "gen_rtx (FOO, " with "gen_rtx_FOO (".
+	* calls.c: Likewise.
+	* emit-rtl.c: Likewise.
+	* function.c: Likewise.
+	* reload1.c: Likewise.
+	* config/i386/cygming.h: Likewise.
+	* config/i386/i386.c: Likewise.
+	* config/i386/winnt.c: Likewise.
+
 2004-01-30  Dara Hazeghi  <dhazeghi@yahoo.com>
 
 	PR bootstrap/9249

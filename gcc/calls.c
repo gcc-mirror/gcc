@@ -3549,7 +3549,7 @@ expand_call (tree exp, rtx target, int ignore)
   if (flags & ECF_SP_DEPRESSED)
     {
       clear_pending_stack_adjust ();
-      emit_insn (gen_rtx (CLOBBER, VOIDmode, stack_pointer_rtx));
+      emit_insn (gen_rtx_CLOBBER (VOIDmode, stack_pointer_rtx));
       emit_move_insn (virtual_stack_dynamic_rtx, stack_pointer_rtx);
       save_stack_pointer ();
     }
