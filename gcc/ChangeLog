@@ -1,3 +1,25 @@
+2001-12-12  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (expand_builtin_memset, expand_builtin_memcpy,
+	expand_builtin_strcpy): Additional arguments TARGET and MODE.
+	(expand_builtin_bzero, expand_builtin_strcpy,
+	expand_builtin_strncpy, expand_builtin_bzero): Pass additional
+	TARGET and MODE parameters to the above functions.
+	(expand_builtin_memset, expand_builtin_memcpy): Optimize the
+	case where the LEN parameter is constant zero.
+	(expand_builtin_memcmp): No longer conditional on
+	HAVE_cmpstrsi.  Take an additional mode parameter.  Optimize
+	the cases where len is either constant zero or one.
+	Optimize to call to memcpy, even if the memcpy isn't inlined.
+	(expand_builtin_strncpy): Optimize to call memcpy, even if the
+	memcpy isn't inlined.
+	(expand_builtin_strcmp, expand_builtin_strncmp): Always attempt
+	to optimize to a call to memcmp.
+	(expand_builtin): expand_builtin_memcmp can always be called,
+	and pass the required parameters to expand_builtin_memcmp,
+	expand_builtin_memset, expand_builtin_memcpy and
+	expand_builtin_strcpy.
+
 2001-12-12  David O'Brien  <obrien@FreeBSD.org>
 
 	* config.gcc (arm-*-freebsd*): Add target.
