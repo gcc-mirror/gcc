@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include "parse.h"
 #include "flags.h"
 #include "obstack.h"
+#include "toplev.h"
 
 /* This takes a token stream that hasn't decided much about types and
    tries to figure out as much as it can, with excessive lookahead and

@@ -3900,9 +3900,9 @@ compare_ics (ics1, ics2)
   tree to_type1;
   tree to_type2;
   tree deref_from_type1 = NULL_TREE;
-  tree deref_from_type2;
-  tree deref_to_type1;
-  tree deref_to_type2;
+  tree deref_from_type2 = NULL_TREE;
+  tree deref_to_type1 = NULL_TREE;
+  tree deref_to_type2 = NULL_TREE;
 
   /* REF_BINDING is non-zero if the result of the conversion sequence
      is a reference type.   In that case TARGET_TYPE is the

@@ -1,3 +1,17 @@
+Tue Oct  6 07:57:26 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (spew.o): Depend on toplev.h.
+
+	* call.c (compare_ics): Initialize variables `deref_from_type2',
+ 	`deref_to_type1' and `deref_to_type2'.
+
+	* except.c (get_eh_type): Hide prototype and definition.
+	(process_start_catch_block_old): Remove unused static prototype.
+
+	* pt.c (tsubst_decl): Initialize variable `argvec'.
+
+	* spew.c: Include toplev.h.
+
 1998-10-05  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (instantiate_decl): Do save and restore file position.

@@ -5027,7 +5027,7 @@ tsubst_decl (t, args, type, in_decl)
     case FUNCTION_DECL:
       {
 	tree ctx;
-	tree argvec;
+	tree argvec = NULL_TREE;
 	tree gen_tmpl;
 	int member;
 	int args_depth;
