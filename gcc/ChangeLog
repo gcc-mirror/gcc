@@ -1,3 +1,10 @@
+2004-10-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (expand_builtin_strcpy): Delete duplicate code.
+	Accept an expression instead of an arglist.
+	(expand_builtin_stpcpy): Accept an expression instead of an
+	arglist.
+
 2004-10-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/16007

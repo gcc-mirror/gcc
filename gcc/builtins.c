@@ -2891,36 +2891,20 @@ expand_movstr (tree dest, tree src, rtx target, int endp)
    convenient).  */
 
 static rtx
-expand_builtin_strcpy (tree arglist, rtx target, enum machine_mode mode)
+expand_builtin_strcpy (tree exp, rtx target, enum machine_mode mode)
 {
-  tree fn, len, src, dst;
+  tree arglist = TREE_OPERAND (exp, 1);
+  if (validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
+    {
+      tree result = fold_builtin_strcpy (exp, 0);
+      if (result)
+	return expand_expr (result, target, mode, EXPAND_NORMAL);
 
-  if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
-    return 0;
-
-  src = TREE_VALUE (TREE_CHAIN (arglist));
-  dst = TREE_VALUE (arglist);
-
-  /* If SRC and DST are equal (and not volatile), return DST.  */
-  if (operand_equal_p (src, dst, 0))
-    return expand_expr (dst, target, mode, EXPAND_NORMAL);
-
-  len = c_strlen (src, 1);
-  if (len == 0 || TREE_SIDE_EFFECTS (len))
-    return expand_movstr (TREE_VALUE (arglist),
-			  TREE_VALUE (TREE_CHAIN (arglist)),
-			  target, /*endp=*/0);
-
-  fn = implicit_built_in_decls[BUILT_IN_MEMCPY];
-  if (!fn)
-    return 0;
-
-  len = size_binop (PLUS_EXPR, len, ssize_int (1));
-  arglist = build_tree_list (NULL_TREE, len);
-  arglist = tree_cons (NULL_TREE, src, arglist);
-  arglist = tree_cons (NULL_TREE, dst, arglist);
-  return expand_expr (build_function_call_expr (fn, arglist),
-		      target, mode, EXPAND_NORMAL);
+      return expand_movstr (TREE_VALUE (arglist),
+			    TREE_VALUE (TREE_CHAIN (arglist)),
+			    target, /*endp=*/0);
+    }
+  return 0;
 }
 
 /* Expand a call to the stpcpy builtin, with arguments in ARGLIST.
@@ -2929,8 +2913,9 @@ expand_builtin_strcpy (tree arglist, rtx target, enum machine_mode mode)
    mode MODE if that's convenient).  */
 
 static rtx
-expand_builtin_stpcpy (tree arglist, rtx target, enum machine_mode mode)
+expand_builtin_stpcpy (tree exp, rtx target, enum machine_mode mode)
 {
+  tree arglist = TREE_OPERAND (exp, 1);
   /* If return value is ignored, transform stpcpy into strcpy.  */
   if (target == const0_rtx)
     {
@@ -2976,7 +2961,7 @@ expand_builtin_stpcpy (tree arglist, rtx target, enum machine_mode mode)
 
 	  if (GET_CODE (len_rtx) == CONST_INT)
 	    {
-	      ret = expand_builtin_strcpy (arglist, target, mode);
+	      ret = expand_builtin_strcpy (exp, target, mode);
 
 	      if (ret)
 		{
@@ -5400,7 +5385,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       break;
 
     case BUILT_IN_STRCPY:
-      target = expand_builtin_strcpy (arglist, target, mode);
+      target = expand_builtin_strcpy (exp, target, mode);
       if (target)
 	return target;
       break;
@@ -5412,7 +5397,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       break;
 
     case BUILT_IN_STPCPY:
-      target = expand_builtin_stpcpy (arglist, target, mode);
+      target = expand_builtin_stpcpy (exp, target, mode);
       if (target)
 	return target;
       break;
