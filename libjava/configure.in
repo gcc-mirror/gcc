@@ -366,6 +366,9 @@ case "${host}" in
   i?86-*-linux*)
     SIGNAL_HANDLER=include/i386-signal.h
 	;;
+  sparc-sun-solaris*)
+    SIGNAL_HANDLER=include/sparc-signal.h
+	;;
   *)
     SIGNAL_HANDLER=include/default-signal.h
 	;;
