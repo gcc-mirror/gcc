@@ -1,3 +1,8 @@
+Sun Aug 26 20:25:44 2001  Denis Chertykov  <denisc@overta.ru>
+
+	* df.c (df_uses_record): Return after recording all uses
+	in ASM_OPERANDS.
+
 2001-08-26  Daniel Berlin  <dan@cgsoftware.com>
 
 	* df.c (df_insn_modify): Realloc the INSN table here, if

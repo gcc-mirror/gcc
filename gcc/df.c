@@ -1163,6 +1163,7 @@ df_uses_record (df, loc, ref_type, bb, insn)
 	    for (j = 0; j < ASM_OPERANDS_INPUT_LENGTH (x); j++)
 	      df_uses_record (df, &ASM_OPERANDS_INPUT (x, j), 
 			      DF_REF_REG_USE, bb, insn);
+	    return;
 	  }
 	break;
       }
