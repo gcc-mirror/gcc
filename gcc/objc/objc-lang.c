@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA.  */
 static void objc_init_options                   PARAMS ((void));
 
 #undef LANG_HOOKS_NAME
-#define LANG_HOOKS_NAME "GNU Objective-C"  
+#define LANG_HOOKS_NAME "GNU Objective-C"
 #undef LANG_HOOKS_INIT
 #define LANG_HOOKS_INIT objc_init
 #undef LANG_HOOKS_FINISH
@@ -43,6 +43,10 @@ static void objc_init_options                   PARAMS ((void));
 #define LANG_HOOKS_DECODE_OPTION objc_decode_option
 #undef LANG_HOOKS_POST_OPTIONS
 #define LANG_HOOKS_POST_OPTIONS c_common_post_options
+#undef LANG_HOOKS_GET_ALIAS_SET
+#define LANG_HOOKS_GET_ALIAS_SET c_common_get_alias_set
+#undef LANG_HOOKS_SAFE_FROM_P
+#define LANG_HOOKS_SAFE_FROM_P c_safe_from_p
 #undef LANG_HOOKS_PARSE_FILE
 #define LANG_HOOKS_PARSE_FILE c_common_parse_file
 #undef LANG_HOOKS_EXPAND_EXPR
