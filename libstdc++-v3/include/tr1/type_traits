@@ -42,7 +42,7 @@ namespace std
 {
 namespace tr1
 {
-  // For use in is_enum, is_abstract and elsewhere.
+  // For use in __conv_helper, is_abstract and elsewhere.
   struct __sfinae_types
   {
     typedef char __one;
@@ -455,6 +455,43 @@ namespace tr1
   template<typename _Tp>
     struct is_same<_Tp, _Tp>
     : public true_type { };
+
+  // See Daveed Vandevoorde explanation in http://tinyurl.com/502f.
+  // Also see Rani Sharoni in http://tinyurl.com/6jvyq.
+  template<typename _Base, typename _Derived,
+	   bool = (!__is_union_or_class<_Base>::value
+		   || !__is_union_or_class<_Derived>::value
+		   || is_same<_Base, _Derived>::value)>
+    struct __is_base_of_helper
+    : public __sfinae_types
+    {
+    private:
+      typedef typename remove_cv<_Base>::type     _NoCv_Base;      
+      typedef typename remove_cv<_Derived>::type  _NoCv_Derived;
+      
+      template<typename _Up>
+        static __one __test(_NoCv_Derived&, _Up);
+      static __two __test(_NoCv_Base&, int);
+   
+      struct _Conv
+      {
+	operator _NoCv_Derived&();
+	operator _NoCv_Base&() const;
+      };
+   
+    public:
+      static const bool __value = sizeof(__test(_Conv(), 0)) == 1;
+    };
+
+  template<typename _Base, typename _Derived>
+    struct __is_base_of_helper<_Base, _Derived, true>
+    { static const bool __value = is_same<_Base, _Derived>::value; };
+
+  template<typename _Base, typename _Derived>
+    struct is_base_of
+    : public integral_constant<bool,
+			       __is_base_of_helper<_Base, _Derived>::__value>
+    { };
 
   template<typename _Tp>
     struct __is_int_or_cref

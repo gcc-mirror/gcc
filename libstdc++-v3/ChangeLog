@@ -1,3 +1,11 @@
+2005-03-06  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/type_traits: Add is_base_of.
+	* testsuite/tr1/4_metaprogramming/relationships_between_types/
+	is_base_of/is_base_of.cc: New.
+	* testsuite/tr1/4_metaprogramming/relationships_between_types/
+	is_base_of/typedefs.cc: Likewise.
+
 2005-03-05  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* testsuite/22_locale/collate/compare/wchar_t/2.cc,
@@ -13,7 +21,7 @@
 
 2005-03-04  Paolo Carlini  <pcarlini@suse.de>
 
-	* include/tr1/type_traits: Implemenet is_polymorphic.
+	* include/tr1/type_traits: Implement is_polymorphic.
 	(is_empty): Minor tweaks.
 	* testsuite/testsuite_tr1.h: Add test types.
 	* testsuite/tr1/4_metaprogramming/type_properties/
