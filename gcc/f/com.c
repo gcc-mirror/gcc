@@ -9921,7 +9921,7 @@ ffecom_type_vardesc_ ()
       addrfield = ffecom_decl_field (type, namefield, "addr",
 				     string_type_node);
       dimsfield = ffecom_decl_field (type, addrfield, "dims",
-				     ffecom_f2c_ftnlen_type_node);
+				     ffecom_f2c_ptr_to_ftnlen_type_node);
       typefield = ffecom_decl_field (type, dimsfield, "type",
 				     integer_type_node);
 
