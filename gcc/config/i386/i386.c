@@ -1368,7 +1368,7 @@ standard_80387_constant_p (x)
 
   set_float_handler (handler);
   REAL_VALUE_FROM_CONST_DOUBLE (d, x);
-  is0 = REAL_VALUES_EQUAL (d, dconst0);
+  is0 = REAL_VALUES_EQUAL (d, dconst0) && !REAL_VALUE_MINUS_ZERO (d);
   is1 = REAL_VALUES_EQUAL (d, dconst1);
   set_float_handler (NULL_PTR);
 
