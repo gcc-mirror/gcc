@@ -1,3 +1,8 @@
+2000-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* semantics.c (expand_body): Sync interface information
+	at the end of function body expansion.
+
 2000-07-09  Jason Merrill  <jason@redhat.com>
 
 	* init.c (build_new_1): Bail early if the call to new fails.

@@ -2683,6 +2683,7 @@ expand_body (fn)
   /* And restore the current source position.  */
   lineno = saved_lineno;
   input_filename = saved_input_filename;
+  extract_interface_info ();
 
   timevar_pop (TV_EXPAND);
 }
