@@ -1,5 +1,7 @@
 Sat Mar 28 10:47:21 1998  Nick Clifton  <nickc@cygnus.com>
 
+	* invoke.texi: Document more ARM and Thumb command line options.
+
 	* config/arm/xm-thumb.h: New file.
 
 Sat Mar 28 01:37:33 1998  Craig Burley  <burley@gnu.ai.mit.edu>

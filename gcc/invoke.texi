@@ -241,11 +241,26 @@ in the following sections.
 -mstorem-bug  -muser-registers
 
 @emph{ARM Options}
--mapcs-frame  -mapcs-26  -mapcs-32
--mlittle-endian  -mbig-endian  -mwords-little-endian
--mshort-load-bytes  -mno-short-load-bytes
--msoft-float  -mhard-float
--mbsd  -mxopen  -mno-symrename
+-mapcs-frame -mno-apcs-frame
+-mapcs-26 -mapcs-32
+-mapcs-stack-check -mno-apcs-stack-check
+-mapcs-float -mno-apcs-float
+-mapcs-reentrant -mno-apcs-reentrant
+-msched-prolog -mno-sched-prolog
+-mlittle-endian -mbig-endian -mwords-little-endian
+-mshort-load-bytes -mno-short-load-bytes -mshort-load-words -mno-short-load-words
+-msoft-float -mhard-float -mfpe
+-mthumb-interwork -mno-thumb-interwork
+-mcpu= -march= -mfpe= 
+-mstructure-size-boundary=
+-mbsd -mxopen -mno-symrename
+
+@emph{Thumb Options}
+-mtpcs-frame -mno-tpcs-frame
+-mtpcs-leaf-frame -mno-tpcs-leaf-frame
+-mlittle-endian  -mbig-endian
+-mthumb-interwork -mno-thumb-interwork
+-mstructure-size-boundary=
 
 @emph{MN10300 Options}
 -mmult-bug
@@ -2891,6 +2906,7 @@ that macro, which enables you to change the defaults.
 * Convex Options::
 * AMD29K Options::
 * ARM Options::
+* Thumb Options::
 * MN10300 Options::
 * M32R/D Options::
 * M88K Options::
@@ -3481,7 +3497,13 @@ architectures:
 @kindex -mapcs-frame
 Generate a stack frame that is compliant with the ARM Procedure Call
 Standard for all functions, even if this is not strictly necessary for
-correct execution of the code.
+correct execution of the code.  Specifying @samp{-fomit-frame-pointer}
+with this option will cause the stack frames not to be generated for
+leaf functions.  The default is @samp{-mno-apcs-frame}.
+
+@item -mapcs
+@kindex -mapcs
+This is a synonym for @samp{-mapcs-frame}.
 
 @item -mapcs-26
 @kindex -mapcs-26
@@ -3496,6 +3518,54 @@ Generate code for a processor running with a 32-bit program counter,
 and conforming to the function calling standards for the APCS 32-bit
 option.  This option replaces the @samp{-m6} option of previous releases
 of the compiler.
+
+@item -mapcs-stack-check
+@kindex -mapcs-stack-check
+@kindex -mno-apcs-stack-check
+Generate code to check the amount of stack space available upon entry to
+every function (that actually uses some stack space).  If there is
+insufficient space available then either the function
+@samp{__rt_stkovf_split_small} or @samp{__rt_stkovf_split_big} will be
+called, depending upon the amount of stack space required.  The run time
+system is required to provide these functions.  The default is
+@samp{-mno-apcs-stack-check}, since this produces smaller code.
+
+@item -mapcs-float
+@kindex -mapcs-float
+@kindex -mno-apcs-float
+Pass floating point arguments using the float point registers.  This is
+one of the variants of the APCS.  This option is reccommended if the
+target hardware has a floating point unit or if a lot of floating point
+arithmetic is going to be performed by the code.  The default is
+@samp{-mno-apcs-float}, since integer only code is slightly increased in
+size if @samp{-mapcs-float} is used.
+
+@item -mapcs-reentrant
+@kindex -mapcs-reentrant
+@kindex -mno-apcs-reentrant
+Generate reentrant, position independent code.  This is the equivalent
+to specifying the @samp{-fpic} option.  The default is
+@samp{-mno-apcs-reentrant}.
+
+@item -mthumb-interwork
+@kindex -mthumb-interwork
+@kindex -mno-thumb-interwork
+Generate code which supports calling between the ARM and THUMB
+instruction sets.  Without this option the two instruction sets cannot
+be reliably used inside one program.  The default is
+@samp{-mno-thumb-interwork}, since slightly larger code is generated
+when @samp{-mthumb-interwork} is specified.
+
+@item -mno-sched-prolog
+@kindex -mno-sched-prolog
+@kindex -msched-prolog
+Prevent the reordering of instructions in the function prolog, or the
+merging of those instruction with the instructions in the function's
+body.  This means that all functions will start with a recognisable set
+of instructions (or in fact one of a chioce from a small set of
+different function prologues), and this information can be used to
+locate the start if functions inside an executable piece of code.  The
+default is @samp{-msched-prolog}.
 
 @item -mhard-float
 Generate output containing floating point instructions.  This is the
@@ -3544,6 +3614,14 @@ Use unaligned word loads to load half-words (eg @samp{short}s).  This
 option produces more efficient code, but the MMU is sometimes configured
 to trap these instructions.
 
+@item -mshort-load-words
+@kindex -mshort-load-words
+This is a synonym for the @samp{-mno-short-load-bytes}.
+
+@item -mno-short-load-words
+@kindex -mno-short-load-words
+This is a synonym for the @samp{-mshort-load-bytes}.
+
 @item -mbsd
 @kindex -mbsd
 This option only applies to RISC iX.  Emulate the native BSD-mode
@@ -3562,7 +3640,97 @@ Normally it is necessary to modify some of the standard symbols in
 preparation for linking with the RISC iX C library; this option
 suppresses this pass.  The post-processor is never run when the
 compiler is built for cross-compilation.
+
+@item -mcpu=<name>
+@kindex -mcpu=
+This specifies the name of the target ARM processor.  GCC uses this name
+to determine what kind of instructions it can use when generating
+assembly code.  Permissable names are: arm2, arm250, arm3, arm6, arm60,
+arm600, arm610, arm620, arm7, arm7m, arm7d, arm7dm, arm7di, arm7dmi,
+arm70, arm700, arm700i, arm710, arm710c, arm7100, arm7500, arm7500fe,
+arm7tdmi, arm8, strongarm, strongarm110
+
+@item -march=<name>
+@kindex -march=
+This specifies the name of the target ARM architecture.  GCC uses this
+name to determine what kind of instructions it can use when generating
+assembly code.  This option can be used in conjunction with or instead
+of the @samp{-mcpu=} option.  Permissable names are: armv2, armv2a,
+armv3, armv3m, armv4, armv4t
+
+@item -mfpe=<number>
+@kindex -mfpe=
+This specifes the version of the floating point emulation available on
+the target.  Permissable values are 2 and 3.
+
+@item -mstructure-size-boundary=<n>
+@kindex -mstructure-size-boundary
+The size of all structures and unions will be rounded up to a multiple
+of the number of bits set by this option.  Permissable values are 8 and
+32.  The default value varies for different toolchains.  For the COFF
+targeted toolchain the default value is 8.  Specifying the larger number
+can produced faster, more efficient code, but can also increase the size
+of the program.  The two values are potentially incompatible.  Code
+compiled with one value cannot necessarily expect to work with code or
+libraries compiled with the other value, if they exchange information
+using structures or unions.  Programmers are encouraged to use the 32
+value as future versions of the toolchain may default to this value.
+
 @end table
+
+@node Thumb Options
+@subsection Thumb Options
+@cindex Thumb Options
+
+@table @code
+
+@item -mthumb-interwork
+@kindex -mthumb-interwork
+@kindex -mno-thumb-interwork
+Generate code which supports calling between the THUMB and ARM
+instruction sets.  Without this option the two instruction sets cannot
+be reliably used inside one program.  The default is
+@samp{-mno-thumb-interwork}, since slightly smaller code is generated
+with this option.
+
+@item -mtpcs-frame
+@kindex -mtpcs-frame
+@kindex -mno-tpcs-frame
+Generate a stack frame that is compliant with the Thumb Procedure Call
+Standard for all non-leaf functions.  (A leaf function is one that does
+not call any other functions).  The default is @samp{-mno-apcs-frame}. 
+
+@item -mtpcs-leaf-frame
+@kindex -mtpcs-leaf-frame
+@kindex -mno-tpcs-leaf-frame
+Generate a stack frame that is compliant with the Thumb Procedure Call
+Standard for all leaf functions.  (A leaf function is one that does
+not call any other functions).  The default is @samp{-mno-apcs-leaf-frame}. 
+
+@item -mlittle-endian
+@kindex -mlittle-endian
+Generate code for a processor running in little-endian mode.  This is
+the default for all standard configurations.
+
+@item -mbig-endian
+@kindex -mbig-endian
+Generate code for a processor running in big-endian mode.
+
+@item -mstructure-size-boundary=<n>
+@kindex -mstructure-size-boundary
+The size of all structures and unions will be rounded up to a multiple
+of the number of bits set by this option.  Permissable values are 8 and
+32.  The default value varies for different toolchains.  For the COFF
+targeted toolchain the default value is 8.  Specifying the larger number
+can produced faster, more efficient code, but can also increase the size
+of the program.  The two values are potentially incompatible.  Code
+compiled with one value cannot necessarily expect to work with code or
+libraries compiled with the other value, if they exchange information
+using structures or unions.  Programmers are encouraged to use the 32
+value as future versions of the toolchain may default to this value.
+
+@end table
+
 
 @node MN10300 Options
 @subsection MN10300 Options
