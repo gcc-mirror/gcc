@@ -10029,7 +10029,6 @@ rs6000_stack_info ()
 					 + info_ptr->gp_size
 					 + info_ptr->altivec_size
 					 + info_ptr->altivec_padding_size
-					 + info_ptr->vrsave_size
 					 + info_ptr->spe_gp_size
 					 + info_ptr->spe_padding_size
 					 + ehrd_size
