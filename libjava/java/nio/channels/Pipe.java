@@ -1,4 +1,4 @@
-/* DatagramChannel.java -- 
+/* Pipe.java -- 
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -40,11 +40,40 @@ package java.nio.channels;
 import java.nio.channels.spi.AbstractSelectableChannel;
 import java.nio.channels.spi.SelectorProvider;
 
-public abstract class DatagramChannel
-  extends AbstractSelectableChannel
+public abstract class Pipe
 {
-  public DatagramChannel (SelectorProvider provider)
+  public abstract static class SinkChannel
+    extends AbstractSelectableChannel
+    implements WritableByteChannel, GatheringByteChannel
   {
-    super (provider);
+    protected SinkChannel(SelectorProvider provider)
+    {
+      super (provider);
+    }
   }
+
+  public abstract static class SourceChannel
+    extends AbstractSelectableChannel
+    implements ReadableByteChannel, ScatteringByteChannel
+  {
+    protected SourceChannel(SelectorProvider provider)
+    {
+      super (provider);
+    }
+  }
+    
+  protected Pipe()
+  {
+  }
+
+  /**
+   * @exception IOException If an error occurs
+   */
+  public static Pipe open()
+  {
+    return null;
+  }
+    
+  public abstract Pipe.SinkChannel sink();
+  public abstract Pipe.SourceChannel source();   
 }

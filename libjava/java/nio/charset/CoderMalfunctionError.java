@@ -1,4 +1,4 @@
-/* DatagramChannel.java -- 
+/* CoderMalfunctionError.java -- 
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -35,16 +35,18 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-package java.nio.channels;
+package java.nio.charset;
 
-import java.nio.channels.spi.AbstractSelectableChannel;
-import java.nio.channels.spi.SelectorProvider;
-
-public abstract class DatagramChannel
-  extends AbstractSelectableChannel
+/**
+ * @since 1.4
+ */
+class CoderMalfunctionError extends Error
 {
-  public DatagramChannel (SelectorProvider provider)
+  /**
+   * Creates the error
+   */
+  public CoderMalfunctionError(Exception cause)
   {
-    super (provider);
+    super (cause);
   }
 }

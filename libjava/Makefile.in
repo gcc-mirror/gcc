@@ -1708,6 +1708,7 @@ java/net/UnknownHostException.java \
 java/net/UnknownServiceException.java \
 java/nio/Buffer.java \
 java/nio/ByteBuffer.java \
+java/nio/ByteOrder.java \
 java/nio/MappedByteBuffer.java \
 java/nio/channels/AlreadyConnectedException.java \
 java/nio/channels/ByteChannel.java \
@@ -1717,13 +1718,25 @@ java/nio/channels/DatagramChannel.java \
 java/nio/channels/GatheringByteChannel.java \
 java/nio/channels/IllegalBlockingModeException.java \
 java/nio/channels/InterruptibleChannel.java \
+java/nio/channels/Pipe.java \
 java/nio/channels/ReadableByteChannel.java \
 java/nio/channels/ScatteringByteChannel.java \
+java/nio/channels/SelectableChannel.java \
+java/nio/channels/SelectionKey.java \
+java/nio/channels/Selector.java \
 java/nio/channels/ServerSocketChannel.java \
 java/nio/channels/SocketChannel.java \
 java/nio/channels/WritableByteChannel.java \
 java/nio/channels/spi/AbstractSelectableChannel.java \
+java/nio/channels/spi/AbstractChannel.java \
+java/nio/channels/spi/AbstractInterruptibleChannel.java \
+java/nio/channels/spi/AbstractSelectionKey.java \
+java/nio/channels/spi/AbstractSelector.java \
+java/nio/channels/spi/SelectorProvider.java \
+java/nio/charset/Charset.java \
 java/nio/charset/CharacterCodingException.java \
+java/nio/charset/CoderMalfunctionError.java \
+java/nio/charset/CodingErrorAction.java \
 java/nio/charset/IllegalCharsetNameException.java \
 java/nio/charset/MalformedInputException.java \
 java/nio/charset/UnmappableCharacterException.java \
@@ -2959,7 +2972,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/net/natInetAddress.P .deps/java/net/natNetworkInterface.P \
 .deps/java/net/natPlainDatagramSocketImpl.P \
 .deps/java/net/natPlainSocketImpl.P .deps/java/nio/Buffer.P \
-.deps/java/nio/ByteBuffer.P .deps/java/nio/MappedByteBuffer.P \
+.deps/java/nio/ByteBuffer.P .deps/java/nio/ByteOrder.P \
+.deps/java/nio/MappedByteBuffer.P \
 .deps/java/nio/channels/AlreadyConnectedException.P \
 .deps/java/nio/channels/ByteChannel.P .deps/java/nio/channels/Channel.P \
 .deps/java/nio/channels/ClosedChannelException.P \
@@ -2967,13 +2981,25 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/nio/channels/GatheringByteChannel.P \
 .deps/java/nio/channels/IllegalBlockingModeException.P \
 .deps/java/nio/channels/InterruptibleChannel.P \
+.deps/java/nio/channels/Pipe.P \
 .deps/java/nio/channels/ReadableByteChannel.P \
 .deps/java/nio/channels/ScatteringByteChannel.P \
+.deps/java/nio/channels/SelectableChannel.P \
+.deps/java/nio/channels/SelectionKey.P \
+.deps/java/nio/channels/Selector.P \
 .deps/java/nio/channels/ServerSocketChannel.P \
 .deps/java/nio/channels/SocketChannel.P \
 .deps/java/nio/channels/WritableByteChannel.P \
+.deps/java/nio/channels/spi/AbstractChannel.P \
+.deps/java/nio/channels/spi/AbstractInterruptibleChannel.P \
 .deps/java/nio/channels/spi/AbstractSelectableChannel.P \
+.deps/java/nio/channels/spi/AbstractSelectionKey.P \
+.deps/java/nio/channels/spi/AbstractSelector.P \
+.deps/java/nio/channels/spi/SelectorProvider.P \
 .deps/java/nio/charset/CharacterCodingException.P \
+.deps/java/nio/charset/Charset.P \
+.deps/java/nio/charset/CoderMalfunctionError.P \
+.deps/java/nio/charset/CodingErrorAction.P \
 .deps/java/nio/charset/IllegalCharsetNameException.P \
 .deps/java/nio/charset/MalformedInputException.P \
 .deps/java/nio/charset/UnmappableCharacterException.P \

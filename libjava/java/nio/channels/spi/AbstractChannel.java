@@ -1,4 +1,4 @@
-/* DatagramChannel.java -- 
+/* AbstractChannel.java -- 
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -35,16 +35,23 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-package java.nio.channels;
+package java.nio.channels.spi;
 
-import java.nio.channels.spi.AbstractSelectableChannel;
-import java.nio.channels.spi.SelectorProvider;
+import java.io.IOException;
+import java.nio.channels.Channel;
 
-public abstract class DatagramChannel
-  extends AbstractSelectableChannel
+public abstract class AbstractChannel implements Channel
 {
-  public DatagramChannel (SelectorProvider provider)
+  boolean opened;
+
+  public boolean isOpen()
   {
-    super (provider);
+    return opened;
+  }
+
+  public void close() throws IOException
+  {
+    if (! isOpen())
+      return;
   }
 }

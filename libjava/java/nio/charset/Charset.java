@@ -1,4 +1,4 @@
-/* DatagramChannel.java -- 
+/* Charset.java -- 
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -35,16 +35,56 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-package java.nio.channels;
+package java.nio.charset;
 
-import java.nio.channels.spi.AbstractSelectableChannel;
-import java.nio.channels.spi.SelectorProvider;
 
-public abstract class DatagramChannel
-  extends AbstractSelectableChannel
+import java.nio.*;
+
+public class Charset
 {
-  public DatagramChannel (SelectorProvider provider)
-  {
-    super (provider);
-  }
+    public static Charset forName(String name)
+    {
+	return new Charset();
+    }
+
+/*
+    public CharsetDecoder newDecoder()
+    {	
+	return new CharsetDecoder(this,2,2)
+	    {
+		protected CoderResult decodeLoop(ByteBuffer  in,
+						 CharBuffer  out)
+		{
+		    while (in.hasRemaining())
+			{
+			    char a = (char) in.get();
+			    out.put(a);
+			}
+		    return null;
+		}
+	    };
+    }
+
+    public CharsetEncoder newEncoder()
+    {		
+	return new CharsetEncoder(this,2,2)
+	    {
+		protected CoderResult encodeLoop(CharBuffer  in,
+						 ByteBuffer  out)
+		{
+		    //System.out.println("in encode loop:"+in.hasRemaining());
+
+		    while (in.hasRemaining())
+			{
+			    char a = in.get();
+			    out.put((byte)a);
+
+			    //int len = out.position();
+			    //System.out.println("pos="+len + ","+a);
+			}
+		    return null;
+		}
+	    };
+    }
+ */
 }

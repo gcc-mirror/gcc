@@ -1,4 +1,4 @@
-/* DatagramChannel.java -- 
+/* SelectionKey.java -- 
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -37,14 +37,84 @@ exception statement from your version. */
 
 package java.nio.channels;
 
-import java.nio.channels.spi.AbstractSelectableChannel;
-import java.nio.channels.spi.SelectorProvider;
-
-public abstract class DatagramChannel
-  extends AbstractSelectableChannel
+public abstract class SelectionKey
 {
-  public DatagramChannel (SelectorProvider provider)
+  public static final int OP_ACCEPT  = 1<<0;
+  public static final int OP_CONNECT = 1<<1;
+  public static final int OP_READ    = 1<<2;
+  public static final int OP_WRITE   = 1<<3;
+    
+  Object attached;
+    
+  protected SelectionKey()
   {
-    super (provider);
   }
+
+  public final Object attach(Object obj)
+  {
+    Object old = attached;
+    attached = obj;
+    return old;
+  }
+    
+  public final Object attachment()
+  {
+    return attached;
+  }    
+
+  /**
+   * @exception CancelledKeyException FIXME
+   */
+  public final boolean isAcceptable()
+  { 
+    return (readyOps() & OP_ACCEPT) != 0;
+  }
+
+  /**
+   * @exception CancelledKeyException FIXME
+   */
+  public final boolean isConnectable()
+  {
+    return (readyOps() & OP_CONNECT) != 0;  
+  }        
+  
+  /**
+   * @exception CancelledKeyException FIXME
+   */
+  public final boolean isReadable()
+  {
+    return (readyOps() & OP_READ) != 0; 
+  }
+  
+  /**
+   * @exception CancelledKeyException FIXME
+   */
+  public final boolean isWritable()
+  {
+    return (readyOps() & OP_WRITE) != 0;
+  }
+
+  public abstract void cancel(); 
+  
+  public abstract SelectableChannel channel();
+  
+  /**
+   * @exception CancelledKeyException FIXME
+   */
+  public abstract int interestOps();
+  
+  /**
+   * @exception CancelledKeyException FIXME
+   * @exception IllegalArgumentException FIXME
+   */
+  public abstract SelectionKey interestOps(int ops);
+  
+  public abstract boolean isValid();
+ 
+  /**
+   * @exception CancelledKeyException FIXME
+   */
+  public abstract int readyOps();
+  
+  public abstract Selector selector();
 }

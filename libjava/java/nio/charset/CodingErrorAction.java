@@ -1,4 +1,4 @@
-/* DatagramChannel.java -- 
+/* CodingErrorAction.java -- 
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -35,16 +35,20 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-package java.nio.channels;
+package java.nio.charset;
 
-import java.nio.channels.spi.AbstractSelectableChannel;
-import java.nio.channels.spi.SelectorProvider;
 
-public abstract class DatagramChannel
-  extends AbstractSelectableChannel
+class CodingErrorAction
 {
-  public DatagramChannel (SelectorProvider provider)
+  public static final CodingErrorAction IGNORE;
+  public static final CodingErrorAction REPLACE;
+  public static final CodingErrorAction REPORT;
+
+  /**
+   * FIXME
+   */
+  public String toString ()
   {
-    super (provider);
+    return "";
   }
 }

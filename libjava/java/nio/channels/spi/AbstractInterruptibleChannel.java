@@ -1,4 +1,4 @@
-/* DatagramChannel.java -- 
+/* AbstractInterruptibleChannel.java -- 
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -35,16 +35,53 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-package java.nio.channels;
+package java.nio.channels.spi;
 
-import java.nio.channels.spi.AbstractSelectableChannel;
-import java.nio.channels.spi.SelectorProvider;
+import java.io.IOException;
+import java.nio.channels.Channel;
+import java.nio.channels.InterruptibleChannel;
 
-public abstract class DatagramChannel
-  extends AbstractSelectableChannel
+public abstract class AbstractInterruptibleChannel
+  implements Channel, InterruptibleChannel
 {
-  public DatagramChannel (SelectorProvider provider)
+  boolean opened = false;
+
+  protected AbstractInterruptibleChannel()
   {
-    super (provider);
+  }
+
+  protected final void begin()
+  {
+    // Marks the beginning of an I/O operation that might block indefinitely.
+  }
+    
+  /**
+   * @exception IOException If an error occurs
+   */
+  public final void close() throws IOException
+  {
+    // Closes this channel.
+    implCloseChannel();
+  }
+
+  /**
+   * @exception AsynchronousCloseException FIXME
+   * @exception ClosedByInterruptException FIXME
+   */
+  protected final void end(boolean completed)
+  {
+    // Marks the end of an I/O operation that might block indefinitely.
+  }   
+
+  /**
+   * @exception IOException If an error occurs
+   */
+  protected abstract void implCloseChannel() throws IOException;
+
+  public final boolean isOpen()
+  {
+    // Tells whether or not this channel is open.
+    return opened;
   }
 }
+
