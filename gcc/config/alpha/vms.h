@@ -89,10 +89,7 @@ Boston, MA 02111-1307, USA.  */
 #define POINTER_SIZE 32
 #define POINTERS_EXTEND_UNSIGNED 0
 
-/* No data type wants to be aligned rounder than this. */
-#undef BIGGEST_ALIGNMENT
-#define BIGGEST_ALIGNMENT 128       /* X Complex */
-#define MAX_OFILE_ALIGNMENT 524288  /* 8 x 2^16 by DEC Test CD40VRA */
+#define MAX_OFILE_ALIGNMENT 524288  /* 8 x 2^16 by DEC Ada Test CD40VRA */
 
 #undef FIXED_REGISTERS
 #define FIXED_REGISTERS  \
@@ -212,13 +209,6 @@ extern struct rtx_def *alpha_arg_info_reg_val ();
 ((CUM).num_args < 6 && 6 < (CUM).num_args				\
    + ALPHA_ARG_SIZE (MODE, TYPE, NAMED)					\
  ? 6 - (CUM).num_args : 0)
-
-#undef ENCODE_SECTION_INFO
-#define ENCODE_SECTION_INFO(DECL)				\
-do {								\
-  if (TREE_CODE (DECL) == FUNCTION_DECL && ! TREE_PUBLIC (DECL)) \
-    SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;		\
-} while (0)
 
 /* Perform any needed actions needed for a function that is receiving a
    variable number of arguments. 
