@@ -1,3 +1,7 @@
+Tue Apr  1 18:18:23 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (test patterns):  Allow memory operand in operand1.
+
 2003-02-31  Aldy Hernandez  <aldyh@redhat.com>
 
         * testsuite/gcc.c-torture/execute/simd-3.c: New.
