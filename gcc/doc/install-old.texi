@@ -127,7 +127,7 @@ linker with GNU CC.
 This option does not cause the GNU linker to be installed; it just
 modifies the behavior of GNU CC to work with the GNU linker.
 @c Specifically, it inhibits the installation of @code{collect2}, a program
-@c which otherwise serves as a front-end for the system's linker on most
+@c which otherwise serves as a front end for the system's linker on most
 @c configurations.
 
 @item --with-stabs
@@ -767,7 +767,7 @@ make minor changes in @file{make-cccp.com} and @file{make-cc1.com}
 to choose alternate definitions of @code{CC}, @code{CFLAGS}, and
 @code{LIBS}.  See comments in those files.  However, you must
 also have a working version of the GNU assembler (GNU as, aka GAS) as
-it is used as the back-end for GNU CC to produce binary object modules
+it is used as the back end for GNU CC to produce binary object modules
 and is not included in the GNU CC sources.  GAS is also needed to
 compile @file{libgcc2} in order to build @file{gcclib} (see above);
 @file{make-l2.com} expects to be able to find it operational in

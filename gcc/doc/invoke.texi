@@ -1658,16 +1658,16 @@ Traditionally, diagnostic messages have been formatted irrespective of
 the output device's aspect (e.g. its width, @dots{}).  The options described
 below can be used to control the diagnostic messages formatting
 algorithm, e.g. how many characters per line, how often source location
-information should be reported.  Right now, only the C++ front-end can
+information should be reported.  Right now, only the C++ front end can
 honor these options.  However it is expected, in the near future, that
-the remaining front-ends would be able to digest them correctly.
+the remaining front ends would be able to digest them correctly.
 
 @table @gcctabopt
 @item -fmessage-length=@var{n}
 @opindex fmessage-length
 Try to format error messages so that they fit on lines of about @var{n}
 characters.  The default is 72 characters for g++ and 0 for the rest of
-the front-ends supported by GCC.  If @var{n} is zero, then no
+the front ends supported by GCC.  If @var{n} is zero, then no
 line-wrapping will be done; each error message will appear on a single
 line.
 

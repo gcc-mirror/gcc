@@ -33,7 +33,7 @@
 @settitle Installing GCC: Binaries
 @end ifset
 
-@comment $Id: install.texi,v 1.1.2.26 2001/06/15 17:31:53 ro Exp $
+@comment $Id: install.texi,v 1.1.2.27 2001/06/15 19:39:05 aj Exp $
 @c Copyright (C) 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -192,9 +192,9 @@ are also included in the full distribution.
 
 If you choose to download specific components, you must download the core
 gcc distribution plus any language specific distributions you wish to
-use.  The core distribution includes the C language front-end as well as the
+use.  The core distribution includes the C language front end as well as the
 shared components. Each language has a tarball which includes the language
-front-end as well as the language runtime (when appropriate).
+front end as well as the language runtime (when appropriate).
 
 Unpack the core distribution as well as any language specific
 distributions in the same directory.
@@ -549,7 +549,7 @@ Specify that the run-time libraries
 used by GCJ should not be built.  This is useful in case you intend
 to use GCJ with some other run-time, or you're going to install it
 separately, or it just happens not to build on your particular
-machine.  In general, if the Java front-end is enabled, the GCJ
+machine.  In general, if the Java front end is enabled, the GCJ
 libraries will be enabled too, unless they're known to not work on
 the target platform.  If GCJ is enabled but libgcj isn't built, you
 may need to port it; in this case, before modifying the top-level

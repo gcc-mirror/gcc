@@ -28,7 +28,7 @@ the Intel 80387 register stack.
 Alasdair Baird for various bugfixes.
 
 @item
-Gerald Baumgartner added the signature extension to the C++ front-end.
+Gerald Baumgartner added the signature extension to the C++ front end.
 
 @item
 Neil Booth for various work on cpplib.
@@ -282,7 +282,7 @@ Kriang Lerdsuwanakij for improvements to demangler and various c++ fixes.
 
 @item
 Warren Levy major work on libgcj (Java Runtime Library) and random
-work on the Java front-end.
+work on the Java front end.
 
 @item
 Alain Lichnewsky ported GCC to the Mips cpu.

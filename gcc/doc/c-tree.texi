@@ -8,7 +8,7 @@
 @c ---------------------------------------------------------------------
 
 @node Trees
-@chapter Trees: The intermediate representation used by the C and C++ front-ends
+@chapter Trees: The intermediate representation used by the C and C++ front ends
 @cindex Trees
 @cindex C/C++ Internal Representation
 
@@ -18,7 +18,7 @@ source program, GCC parses the program, performs semantic analysis
 (including the generation of error messages), and then produces the
 internal representation described here.  This representation contains a
 complete representation for the entire translation unit provided as
-input to the front-end.  This representation is then typically processed
+input to the front end.  This representation is then typically processed
 by a code-generator in order to produce machine code, but could also be
 used in the creation of source browsers, intelligent editors, automatic
 documentation generators, interpreters, and any other programs needing
@@ -28,13 +28,13 @@ This chapter explains the internal representation.  In particular, it
 documents the internal representation for C and C++ source
 constructs, and the macros, functions, and variables that can be used to
 access these constructs.  The C++ representation which is largely a superset
-of the representation used in the C front-end.  There is only one
-construct used in C that does not appear in the C++ front-end and that
+of the representation used in the C front end.  There is only one
+construct used in C that does not appear in the C++ front end and that
 is the GNU ``nested function'' extension.  Many of the macros documented
 here do not apply in C because the corresponding language constructs do
 not appear in C.
 
-If you are developing a ``back-end'', be it is a code-generator or some
+If you are developing a ``back end'', be it is a code-generator or some
 other tool, that uses this representation, you may occasionally find
 that you need to ask questions not easily answered by the functions and
 macros available here.  If that situation occurs, it is quite likely
@@ -42,8 +42,8 @@ that GCC already supports the functionality you desire, but that the
 interface is simply not documented here.  In that case, you should ask
 the GCC maintainers (via mail to @email{gcc@@gcc.gnu.org}) about
 documenting the functionality you require.  Similarly, if you find
-yourself writing functions that do not deal directly with your back-end,
-but instead might be useful to other people using the GCC front-end, you
+yourself writing functions that do not deal directly with your back end,
+but instead might be useful to other people using the GCC front end, you
 should submit your patches for inclusion in GCC.
 
 @menu
@@ -134,7 +134,7 @@ The @code{error_mark_node} is a special tree.  Its tree code is
 the usual practice is to compare the tree against
 @code{error_mark_node}.  (This test is just a test for pointer
 equality.)  If an error has occurred during front-end processing the
-flag @code{errorcount} will be set.  If the front-end has encountered
+flag @code{errorcount} will be set.  If the front end has encountered
 code it cannot handle, it will issue a message to the user and set
 @code{sorrycount}.  When these flags are set, any macro or function
 which normally returns a tree of a particular kind may instead return
@@ -144,16 +144,16 @@ erroneous code, you must be prepared to deal with the
 
 Occasionally, a particular tree slot (like an operand to an expression,
 or a particular field in a declaration) will be referred to as
-``reserved for the back-end.''  These slots are used to store RTL when
-the tree is converted to RTL for use by the GCC back-end.  However, if
-that process is not taking place (e.g., if the front-end is being hooked
+``reserved for the back end.''  These slots are used to store RTL when
+the tree is converted to RTL for use by the GCC back end.  However, if
+that process is not taking place (e.g., if the front end is being hooked
 up to an intelligent editor), then those slots may be used by the
-back-end presently in use.
+back end presently in use.
 
 If you encounter situations that do not match this documentation, such
 as tree nodes of types not mentioned here, or macros documented to
 return entities of a particular kind that instead return entities of
-some different kind, you have found a bug, either in the front-end or in
+some different kind, you have found a bug, either in the front end or in
 the documentation.  Please report these bugs as you would any other
 bug.
 
@@ -677,7 +677,7 @@ If there are no declarations, this function will return
 Although most entries on this list will be declarations,
 @code{TREE_LIST} nodes may also appear.  In this case, the
 @code{TREE_VALUE} will be an @code{OVERLOAD}.  The value of the
-@code{TREE_PURPOSE} is unspecified; back-ends should ignore this value.
+@code{TREE_PURPOSE} is unspecified; back ends should ignore this value.
 As with the other kinds of declarations returned by
 @code{cp_namespace_decls}, the @code{TREE_CHAIN} will point to the next
 declaration in this list.
@@ -736,7 +736,7 @@ object.
 
 The @code{TYPE_VFIELD} is a compiler-generated field used to point to
 virtual function tables.  It may or may not appear on the
-@code{TYPE_FIELDS} list.  However, back-ends should handle the
+@code{TYPE_FIELDS} list.  However, back ends should handle the
 @code{TYPE_VFIELD} just like all the entries on the @code{TYPE_FIELDS}
 list.
 
@@ -978,7 +978,7 @@ These nodes are used to represent class, function, and variable (static
 data member) templates.  The @code{DECL_TEMPLATE_SPECIALIZATIONS} are a
 @code{TREE_LIST}.  The @code{TREE_VALUE} of each node in the list is a
 @code{TEMPLATE_DECL}s or @code{FUNCTION_DECL}s representing
-specializations (including instantiations) of this template.  Back-ends
+specializations (including instantiations) of this template.  Back ends
 can safely ignore @code{TEMPLATE_DECL}s, but should examine
 @code{FUNCTION_DECL} nodes on the specializations list just as they
 would ordinary @code{FUNCTION_DECL} nodes.
@@ -990,7 +990,7 @@ contains partial specializations of the class.
 
 @item USING_DECL
 
-Back-ends can safely ignore these nodes.
+Back ends can safely ignore these nodes.
 
 @end table
 
@@ -1044,12 +1044,12 @@ representation indicates that the GNU nested function extension is in
 use.  For details on the semantics of nested functions, see the GCC
 Manual.  The nested function can refer to local variables in its
 containing function.  Such references are not explicitly marked in the
-tree structure; back-ends must look at the @code{DECL_CONTEXT} for the
+tree structure; back ends must look at the @code{DECL_CONTEXT} for the
 referenced @code{VAR_DECL}.  If the @code{DECL_CONTEXT} for the
 referenced @code{VAR_DECL} is not the same as the function currently
 being processed, and neither @code{DECL_EXTERNAL} nor @code{DECL_STATIC}
 hold, then the reference is to a local variable in a containing
-function, and the back-end must take appropriate action.
+function, and the back end must take appropriate action.
 
 @menu
 * Function Basics::     Function names, linkage, and so forth.
@@ -1103,8 +1103,8 @@ This macro returns the mangled name of the function, also an
 on systems that prefix all identifiers with underscores.  The mangled
 name is computed in the same way on all platforms; if special processing
 is required to deal with the object file format used on a particular
-platform, it is the responsibility of the back-end to perform those
-modifications.  (Of course, the back-end should not modify
+platform, it is the responsibility of the back end to perform those
+modifications.  (Of course, the back end should not modify
 @code{DECL_ASSEMBLER_NAME} itself.)
 
 @item DECL_EXTERNAL
@@ -1327,7 +1327,7 @@ This predicate holds if the function an overloaded
 @findex WHILE_COND
 
 A function that has a definition in the current translation unit will
-have a non-NULL @code{DECL_INITIAL}.  However, back-ends should not make
+have a non-NULL @code{DECL_INITIAL}.  However, back ends should not make
 use of the particular value given by @code{DECL_INITIAL}.
 
 The @code{DECL_SAVED_TREE} macro will give the complete body of the
@@ -1462,7 +1462,7 @@ The first value will be @code{CASE_LOW}, while the second will be
 
 Used to represent an action that should take place upon exit from the
 enclosing scope.  Typically, these actions are calls to destructors for
-local objects, but back-ends cannot rely on this fact.  If these nodes
+local objects, but back ends cannot rely on this fact.  If these nodes
 are in fact representing such destructors, @code{CLEANUP_DECL} will be
 the @code{VAR_DECL} destroyed.  Otherwise, @code{CLEANUP_DECL} will be
 @code{NULL_TREE}.  In any case, the @code{CLEANUP_EXPR} is the
@@ -1598,7 +1598,7 @@ scope; if @code{SCOPE_END_P} holds this statement represents the end of
 a scope.  On exit from a scope, all cleanups from @code{CLEANUP_STMT}s
 occurring in the scope must be run, in reverse order to the order in
 which they were encountered.  If @code{SCOPE_NULLIFIED_P} or
-@code{SCOPE_NO_CLEANUPS_P} holds of the scope, back-ends should behave
+@code{SCOPE_NO_CLEANUPS_P} holds of the scope, back ends should behave
 as if the @code{SCOPE_STMT} were not present at all.
 
 @item START_CATCH_STMT
@@ -1747,10 +1747,10 @@ same type that would be given the expression in the original program.
 
 In what follows, some nodes that one might expect to always have type
 @code{bool} are documented to have either integral or boolean type.  At
-some point in the future, the C front-end may also make use of this same
+some point in the future, the C front end may also make use of this same
 intermediate representation, and at this point these nodes will
 certainly have integral type.  The previous sentence is not meant to
-imply that the C++ front-end does not or will not give these nodes
+imply that the C++ front end does not or will not give these nodes
 integral type.
 
 Below, we list the various kinds of expression nodes.  Except where
@@ -1929,7 +1929,7 @@ of complex numbers (their sole argument).
 
 @item NON_LVALUE_EXPR
 These nodes indicate that their one and only operand is not an lvalue.
-A back-end can treat these identically to the single operand.
+A back end can treat these identically to the single operand.
 
 @item NOP_EXPR
 These nodes are used to represent conversions that do not require any
@@ -1956,7 +1956,7 @@ an expression for the code that should be executed to throw the
 exception.  However, there is one implicit action not represented in
 that expression; namely the call to @code{__throw}.  This function takes
 no arguments.  If @code{setjmp}/@code{longjmp} exceptions are used, the
-function @code{__sjthrow} is called instead.  The normal GCC back-end
+function @code{__sjthrow} is called instead.  The normal GCC back end
 uses the function @code{emit_throw} to generate this code; you can
 examine this function to see what needs to be done.
 
@@ -1989,7 +1989,7 @@ boolean or integral type.
 @itemx TRUTH_XOR_EXPR
 These nodes represent logical and, logical or, and logical exclusive or.
 They are strict; both arguments are always evaluated.  There are no
-corresponding operators in C or C++, but the front-end will sometimes
+corresponding operators in C or C++, but the front end will sometimes
 generate these expressions anyhow, if it can tell that strictness does
 not matter.
 
@@ -2151,7 +2151,7 @@ performed immediately after the expression is evaluated.
 
 @item CONSTRUCTOR
 These nodes represent the brace-enclosed initializers for a structure or
-array.  The first operand is reserved for use by the back-end.  The
+array.  The first operand is reserved for use by the back end.  The
 second operand is a @code{TREE_LIST}.  If the @code{TREE_TYPE} of the
 @code{CONSTRUCTOR} is a @code{RECORD_TYPE} or @code{UNION_TYPE}, then
 the @code{TREE_PURPOSE} of each node in the @code{TREE_LIST} will be a

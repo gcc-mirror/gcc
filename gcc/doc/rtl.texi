@@ -380,7 +380,7 @@ never be simultaneously set.
 In @code{mem} expressions, the alias set to which @var{x} belongs.  If
 zero, @var{x} is not in any alias set, and may alias anything.  If
 nonzero, @var{x} may only alias objects in the same alias set.  This
-value is set (in a language-specific manner) by the front-end.  This
+value is set (in a language-specific manner) by the front end.  This
 field is not a bit-field; it is in an integer, found as the second
 argument to the @code{mem}.
 
