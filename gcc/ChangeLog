@@ -1,3 +1,7 @@
+2003-07-13  Andreas Jaeger  <aj@suse.de>
+
+	* cgraphunit.c: Convert prototypes to ISO C90.
+
 2003-07-13  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* fixinc/inclhack.def (avoid_wchar_t_type): Use __cplusplus bypass
