@@ -1,3 +1,26 @@
+2003-08-21  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11551
+	* parser.c (cp_parser_id_expression): Add declarator_p parameter.
+	(cp_parser_primary_expression): Adjust call to
+	cp_parser_id_expression.
+	(cp_parser_unqualified_id): Complain about the use of
+	typedef-names in a destructor declarator.
+	(cp_parser_postfix_expression): Adjust call to
+	cp_parser_id_expression.
+	(cp_parser_type_parameter): Likewise.
+	(cp_parser_template_argument): Likewise.
+	(cp_parser_declarator_id): Likewise.
+
+	PR c++/11919
+	* call.c (standard_conversion): Use same_type_p, not pointer
+	equality, to compare types.
+
+	PR c++/10762
+	* parser.c (cp_parser_using_declaration): Check for invalid uses
+	of template-ids here...
+	* decl2.c (do_class_using_decl): ... rather than here.
+
 2003-08-20  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/11834

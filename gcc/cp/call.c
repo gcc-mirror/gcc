@@ -795,7 +795,7 @@ standard_conversion (tree to, tree from, tree expr)
       conv = build_conv (STD_CONV, to, conv);
 
       /* Give this a better rank if it's a promotion.  */
-      if (to == type_promotes_to (from)
+      if (same_type_p (to, type_promotes_to (from))
 	  && ICS_STD_RANK (TREE_OPERAND (conv, 0)) <= PROMO_RANK)
 	ICS_STD_RANK (conv) = PROMO_RANK;
     }

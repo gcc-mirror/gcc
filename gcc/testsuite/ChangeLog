@@ -1,3 +1,14 @@
+2003-08-21  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11919
+	* g++.dg/overload/prom1.C: New test.
+
+	PR c++/11551
+	* g++.dg/parse/dtor2.C: New test.
+
+	PR c++/10762
+	* g++.dg/parse/using2.C: New test.
+
 2003-08-21  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR target/11805
