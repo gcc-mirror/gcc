@@ -911,82 +911,6 @@ push_binding (tree id, tree decl, cxx_scope* level)
   IDENTIFIER_BINDING (id) = binding;
 }
 
-/* ID is already bound in the current scope.  But, DECL is an
-   additional binding for ID in the same scope.  This is the `struct
-   stat' hack whereby a non-typedef class-name or enum-name can be
-   bound at the same level as some other kind of entity.  It's the
-   responsibility of the caller to check that inserting this name is
-   valid here.  Returns nonzero if the new binding was successful.  */
-
-int
-add_binding (cxx_binding *binding, tree decl)
-{
-  tree bval = BINDING_VALUE (binding);
-  int ok = 1;
-
-  timevar_push (TV_NAME_LOOKUP);
-  if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
-    /* The new name is the type name.  */
-    BINDING_TYPE (binding) = decl;
-  else if (!bval)
-    /* This situation arises when push_class_level_binding moves an
-       inherited type-binding out of the way to make room for a new
-       value binding.  */
-    BINDING_VALUE (binding) = decl;
-  else if (TREE_CODE (bval) == TYPE_DECL && DECL_ARTIFICIAL (bval))
-    {
-      /* The old binding was a type name.  It was placed in
-	 BINDING_VALUE because it was thought, at the point it was
-	 declared, to be the only entity with such a name.  Move the
-	 type name into the type slot; it is now hidden by the new
-	 binding.  */
-      BINDING_TYPE (binding) = bval;
-      BINDING_VALUE (binding) = decl;
-      INHERITED_VALUE_BINDING_P (binding) = 0;
-    }
-  else if (TREE_CODE (bval) == TYPE_DECL
-	   && TREE_CODE (decl) == TYPE_DECL
-	   && DECL_NAME (decl) == DECL_NAME (bval)
-	   && (same_type_p (TREE_TYPE (decl), TREE_TYPE (bval))
-	       /* If either type involves template parameters, we must
-		  wait until instantiation.  */
-	       || uses_template_parms (TREE_TYPE (decl))
-	       || uses_template_parms (TREE_TYPE (bval))))
-    /* We have two typedef-names, both naming the same type to have
-       the same name.  This is OK because of:
-
-         [dcl.typedef]
-
-	 In a given scope, a typedef specifier can be used to redefine
-	 the name of any type declared in that scope to refer to the
-	 type to which it already refers.  */
-    ok = 0;
-  /* There can be two block-scope declarations of the same variable,
-     so long as they are `extern' declarations.  However, there cannot
-     be two declarations of the same static data member:
-
-       [class.mem]
-
-       A member shall not be declared twice in the
-       member-specification.  */
-  else if (TREE_CODE (decl) == VAR_DECL && TREE_CODE (bval) == VAR_DECL
-	   && DECL_EXTERNAL (decl) && DECL_EXTERNAL (bval)
-	   && !DECL_CLASS_SCOPE_P (decl))
-    {
-      duplicate_decls (decl, BINDING_VALUE (binding));
-      ok = 0;
-    }
-  else
-    {
-      error ("declaration of `%#D'", decl);
-      cp_error_at ("conflicts with previous declaration `%#D'",
-		   BINDING_VALUE (binding));
-      ok = 0;
-    }
-
-  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, ok);
-}
-
 /* Add DECL to the list of things declared in B.  */
 
 static void
@@ -1040,7 +964,7 @@ push_local_binding (tree id, tree decl, int flags)
   if (lookup_name_current_level (id))
     {
       /* Supplement the existing binding.  */
-      if (!add_binding (IDENTIFIER_BINDING (id), decl))
+      if (!supplement_binding (IDENTIFIER_BINDING (id), decl))
 	/* It didn't work.  Something else must be bound at this
 	   level.  Do not add DECL to the list of things to pop
 	   later.  */
@@ -1079,7 +1003,7 @@ push_class_binding (tree id, tree decl)
 
   if (binding && BINDING_SCOPE (binding) == class_binding_level)
     /* Supplement the existing binding.  */
-    result = add_binding (IDENTIFIER_BINDING (id), decl);
+    result = supplement_binding (IDENTIFIER_BINDING (id), decl);
   else
     /* Create a new binding.  */
     push_binding (id, decl, class_binding_level);
@@ -2336,7 +2260,7 @@ set_identifier_type_value_with_scope (tree id,
       if (decl)
 	{
 	  if (BINDING_VALUE (binding))
-	    add_binding (binding, decl);
+	    supplement_binding (binding, decl);
 	  else
 	    BINDING_VALUE (binding) = decl;
 	}

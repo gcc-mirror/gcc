@@ -3754,7 +3754,6 @@ extern void register_dtor_fn                    (tree);
 extern tmpl_spec_kind current_tmpl_spec_kind    (int);
 extern tree cp_fname_init			(const char *);
 extern tree check_elaborated_type_specifier     (enum tag_types, tree, bool);
-extern int add_binding                          (cxx_binding *, tree);
 extern bool have_extern_spec;
 
 /* in decl2.c */

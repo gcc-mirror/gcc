@@ -1,3 +1,16 @@
+2003-09-06  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cp-tree.h (add_binding): Remove declaration.
+	* name-lookup.h (supplement_binding): Declare.
+	* decl.c (add_binding): Move to name-lookup.c.
+	(push_local_binding): Adjust.
+	(push_class_binding): Likewise.
+	(set_identifier_type_value_with_scope): Likewise.
+	* name-lookup.c (supplement_binding): Rename from add_binding.
+	Return a bool.  Improve documentation. 
+	(set_namespace_binding): Adjust.
+	* Make-lang.in (cp/name-lookup.o): Depend on toplev.h
+
 2003-09-06  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/11794
