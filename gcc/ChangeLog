@@ -1,3 +1,7 @@
+2002-09-12  Richard Henderson  <rth@redhat.com>
+
+	* vax.c: Include tree.h earlier.
+
 2002-09-12  Stan Shebs  <shebs@apple.com>
 
 	* config/darwin.c (machopic_finish): Remove #if 0 chunks.
