@@ -747,7 +747,7 @@ static struct compiler default_compilers[] =
     %(trad_capable_cpp) -lang-c %{ansi:-std=c89} %(cpp_options)"},
   {".i", "@cpp-output"},
   {"@cpp-output",
-   "%{!M:%{!MM:%{!E:cc1 %i %(cc1_options) %{!fsyntax-only:%(invoke_as)}}}}"},
+   "%{!M:%{!MM:%{!E:cc1 -fpreprocessed %i %(cc1_options) %{!fsyntax-only:%(invoke_as)}}}}"},
   {".s", "@assembler"},
   {"@assembler",
    "%{!M:%{!MM:%{!E:%{!S:as %(asm_options) %i %A }}}}"},
