@@ -55,7 +55,6 @@ abstract class DirectByteBufferImpl extends ByteBuffer
     *                                 memory and should free it.
     */
   private final Object owner;
-  final RawData address;
 
   final static class ReadOnly extends DirectByteBufferImpl
   {

@@ -53,6 +53,8 @@ final class DoubleViewBufferImpl extends DoubleBuffer
     this.offset = bb.position();
     this.readOnly = bb.isReadOnly();
     this.endian = bb.order();
+    if (bb.isDirect())
+      this.address = VMDirectByteBuffer.adjustAddress(bb.address, offset);
   }
   
   public DoubleViewBufferImpl (ByteBuffer bb, int offset, int capacity,
@@ -64,6 +66,8 @@ final class DoubleViewBufferImpl extends DoubleBuffer
     this.offset = offset;
     this.readOnly = readOnly;
     this.endian = endian;
+    if (bb.isDirect())
+      this.address = VMDirectByteBuffer.adjustAddress(bb.address, offset);
   }
 
   /**

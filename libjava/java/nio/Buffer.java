@@ -38,12 +38,18 @@ exception statement from your version. */
 
 package java.nio;
 
+import gnu.gcj.RawData;
+
+/**
+ * @since 1.4
+ */
 public abstract class Buffer
 {
   int cap = 0;
   int limit = 0;
   int pos = 0;
   int mark = -1;
+  RawData address;
 
   /**
    * Creates a new Buffer.

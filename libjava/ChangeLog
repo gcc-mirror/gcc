@@ -1,3 +1,26 @@
+2005-01-07  Michael Koch  <konqueror@gmx.de>
+
+	PR libgcj/18115
+	* java/nio/Buffer.java (address): New field.
+	* java/nio/DirectByteBufferImpl.java (address): Removed.
+	* java/nio/MappedByteBufferImpl.java (address): Likewise.
+	* java/nio/CharViewBufferImpl.java (CharViewBufferImpl):
+	Explicitly initialize Buffer.address if needed.
+	* java/nio/DoubleViewBufferImpl.java (DoubleViewBufferImpl): Likewise.
+	* java/nio/FloatViewBufferImpl.java (FloatViewBufferImpl): Likewise.
+	* java/nio/IntViewBufferImpl.java (IntViewBufferImpl): Likewise.
+	* java/nio/LongViewBufferImpl.java (LongViewBufferImpl): Likewise.
+	* java/nio/ShortViewBufferImpl.java (ShortViewBufferImpl): Likewise.
+	* jni.cc (_Jv_JNI_GetDirectBufferAddress): Don't assume buffer is a
+	DirectByteBufferImpl object.
+	(_Jv_JNI_GetDirectBufferCapacity): Likewise.
+	* testsuite/libjava.jni/directbuffer.c,
+	testsuite/libjava.jni/directbuffer.java,
+	testsuite/libjava.jni/directbuffer.out,
+	testsuite/libjava.jni/bytebuffer.c,
+	testsuite/libjava.jni/bytebuffer.java,
+	testsuite/libjava.jni/bytebuffer.out: New files.
+
 2005-01-05  Tom Tromey  <tromey@redhat.com>
 
 	* java/util/zip/ZipEntry.java (setCompressedSize): Allow any
