@@ -8533,16 +8533,23 @@ schedule_insns (dump_file)
       for (b = 0; b < n_basic_blocks; b++)
 	for (insn = basic_block_head[b];; insn = NEXT_INSN (insn))
 	  {
-	    rtx link;
+	    rtx link, prev;
 
 	    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	      {
-		for (link = LOG_LINKS (insn); link; link = XEXP (link, 1))
+		prev = NULL_RTX;
+		link = LOG_LINKS (insn);
+		while (link)
 		  {
 		    rtx x = XEXP (link, 0);
 
 		    if (INSN_BLOCK (x) != b)
-		      remove_dependence (insn, x);
+		      {
+		        remove_dependence (insn, x);
+			link = prev ? XEXP (prev, 1) : LOG_LINKS (insn);
+		      }
+		    else
+		      prev = link, link = XEXP (prev, 1);
 		  }
 	      }
 
