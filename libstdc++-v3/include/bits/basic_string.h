@@ -842,9 +842,15 @@ namespace std
       int 
       compare(const _CharT* __s) const;
 
+#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+// 5. String::compare specification questionable
+      int 
+      compare(size_type __pos, size_type __n1, const _CharT* __s) const;
+
       int 
       compare(size_type __pos, size_type __n1, const _CharT* __s, 
-	      size_type __n2 = npos) const;
+	      size_type __n2) const;
+#endif
   };
 
 

@@ -812,6 +812,24 @@ namespace std
   template<typename _CharT, typename _Traits, typename _Alloc>
     int
     basic_string <_CharT,_Traits,_Alloc>::
+    compare(size_type __pos, size_type __n1, const _CharT* __s) const
+    {
+      size_type __size = this->size();
+      if (__pos > __size)
+	__throw_out_of_range("basic_string::compare");
+      
+      size_type __osize = traits_type::length(__s);
+      size_type __rsize = min(__size - __pos, __n1);
+      size_type __len = min(__rsize, __osize);
+      int __r = traits_type::compare(_M_data() + __pos, __s, __len);
+      if (!__r)
+	__r = __rsize - __osize;
+      return __r;
+    }
+
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    int
+    basic_string <_CharT,_Traits,_Alloc>::
     compare(size_type __pos, size_type __n1, const _CharT* __s, 
 	    size_type __n2) const
     {
@@ -839,7 +857,6 @@ namespace std
       _Traits::copy(__buf, __str.data(), __bytes);
       __buf[__bytes] = _CharT();
     }
+} // namespace std
 
-} // std::
-
-#endif /* _CPP_BITS_STRING_TCC */
+#endif
