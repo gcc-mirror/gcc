@@ -651,26 +651,28 @@ again:
 	break;
 
       case 'S':
-	/* 'S' is an optional string: if a closeparen follows,
-	   just store NULL for this element.  */
-	c = read_skip_spaces (infile);
-	ungetc (c, infile);
-	if (c == ')')
-	  {
-	    XSTR (return_rtx, i) = 0;
-	    break;
-	  }
-
       case 'T':
       case 's':
 	{
 	  char *stringbuf;
+	  int star_if_braced;
+
+	  c = read_skip_spaces (infile);
+	  ungetc (c, infile);
+	  if (c == ')')
+	    {
+	      /* 'S' fields are optional and should be NULL if no string
+		 was given.  Also allow normal 's' and 'T' strings to be
+		 omitted, treating them in the same way as empty strings.  */
+	      XSTR (return_rtx, i) = (format_ptr[-1] == 'S' ? NULL : "");
+	      break;
+	    }
 
 	  /* The output template slot of a DEFINE_INSN,
 	     DEFINE_INSN_AND_SPLIT, or DEFINE_PEEPHOLE automatically
 	     gets a star inserted as its first character, if it is
 	     written with a brace block instead of a string constant.  */
-	  int star_if_braced = (format_ptr[-1] == 'T');
+	  star_if_braced = (format_ptr[-1] == 'T');
 
 	  stringbuf = read_string (&rtl_obstack, infile, star_if_braced);
 

@@ -1,3 +1,13 @@
+2004-05-10  Richard Sandiford  <rsandifo@redhat.com>
+
+	* read-rtl.c (read_rtx): Allow 's' and 'T' strings to be omitted,
+	treating missing ones as "".
+	* config/mips/mips.md: Remove constraints from match_operands and
+	match_scratches if they appear in define_expands (except reload*),
+	define_peephole2s, define_splits or attribute specifications.
+	* config/mips/7000.md, config/mips/sb1.md: Remove match_operand
+	constraint strings.
+
 2004-05-10  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (function_arg_boundary): Always align
