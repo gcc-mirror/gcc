@@ -48,40 +48,6 @@ extern struct obstack permanent_obstack;
 /* Like YYERROR but do call yyerror.  */
 #define YYERROR1 { yyerror ("syntax error"); YYERROR; }
 
-/* Like the default stack expander, except (1) use realloc when possible,
-   and (2) impose no hard maxiumum on stack size.  */
-#define yyoverflow(MSG, SS, SSSIZE, VS, VSSIZE, YYSSZ)			\
-do {									\
-  size_t newsize;							\
-  short *newss;								\
-  YYSTYPE *newvs;							\
-  newsize = *(YYSSZ) *= 2;						\
-  if (yyfree_stacks)							\
-    {									\
-      newss = (short *)							\
-	really_call_realloc (*(SS), newsize * sizeof (short));		\
-      newvs = (YYSTYPE *)						\
-	really_call_realloc (*(VS), newsize * sizeof (YYSTYPE));	\
-    }									\
-  else									\
-    {									\
-      newss = (short *) really_call_malloc (newsize * sizeof (short));	\
-      if (newss)							\
-        memcpy (newss, *(SS), (SSSIZE));				\
-      newvs = (YYSTYPE *) really_call_malloc (newsize * sizeof (YYSTYPE)); \
-      if (newvs)							\
-        memcpy (newvs, *(VS), (VSSIZE));				\
-    }									\
-  if (!newss || !newvs)							\
-    {									\
-      yyerror (MSG);							\
-      return 2;								\
-    }									\
-  yyfree_stacks = 1;							\
-  *(SS) = newss;							\
-  *(VS) = newvs;							\
-} while (0)
-
 #define OP0(NODE) (TREE_OPERAND (NODE, 0))
 #define OP1(NODE) (TREE_OPERAND (NODE, 1))
 

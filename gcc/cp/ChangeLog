@@ -1,5 +1,9 @@
 2002-04-26  Richard Henderson  <rth@redhat.com>
 
+	* parse.y (yyoverflow): Revert.
+
+2002-04-26  Richard Henderson  <rth@redhat.com>
+
 	PR c/3581
 	* parse.y (string): Remove.  Update all uses to use STRING
 	instead, and not call combine_strings.
