@@ -166,7 +166,7 @@ INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. -I$(srcdir)/../config -I$(srcdir)
 #
 JAVA_OBJS = parse.o class.o decl.o expr.o constants.o lang.o typeck.o \
   except.o verify.o zextract.o jcf-io.o jcf-parse.o mangle.o jcf-write.o \
-  buffer.o check-init.o jcf-depend.o jcf-path.o xref.o
+  buffer.o check-init.o jcf-depend.o jcf-path.o xref.o boehm.o
 
 JAVA_OBJS_LITE = parse-scan.o jv-scan.o
 
@@ -268,6 +268,8 @@ jcf-dump.o : $(CONFIG_H) $(srcdir)/../system.h $(JAVA_TREE_H) jcf-dump.c \
   jcf-reader.c jcf.h javaop.h javaop.def $(srcdir)/../version.h
 gjavah.o : $(CONFIG_H) $(srcdir)/../system.h $(JAVA_TREE_H) gjavah.c \
   jcf-reader.c jcf.h javaop.h $(srcdir)/../version.h
+boehm.o: boehm.c $(CONFIG_H) $(srcdir)/../system.h $(TREE_H) $(JAVA_TREE_H) \
+  $(PARSE_H)
 buffer.o : buffer.c $(CONFIG_H) buffer.h $(srcdir)/../gansidecl.h \
   $(srcdir)/../system.h $(srcdir)/../toplev.h
 check-init.o : check-init.c $(CONFIG_H) $(srcdir)/../gansidecl.h \

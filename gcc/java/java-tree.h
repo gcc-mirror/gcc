@@ -141,6 +141,9 @@ extern int flag_static_local_jdk1_1;
 /* When non zero, call a library routine to do integer divisions. */
 extern int flag_use_divide_subroutine;
 
+/* When non zero, generate code for the Boehm GC.  */
+extern int flag_use_boehm_gc;
+
 /* The Java .class file that provides main_class;  the main input file. */
 extern struct JCF *current_jcf;
 
@@ -662,6 +665,8 @@ extern char* open_class PARAMS ((char *, struct JCF *, int, const char *));
 # endif /* JCF_USE_STDIO */
 #endif
 void java_debug_context PARAMS ((void));
+
+extern tree get_boehm_type_descriptor PARAMS ((tree));
 
 /* We use ARGS_SIZE_RTX to indicate that gcc/expr.h has been included
    to declare `enum expand_modifier'. */
