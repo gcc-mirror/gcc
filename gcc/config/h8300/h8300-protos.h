@@ -54,7 +54,6 @@ extern int small_call_insn_operand PARAMS ((rtx, enum machine_mode));
 extern int jump_address_operand PARAMS ((rtx, enum machine_mode));
 extern int bit_operand PARAMS ((rtx, enum machine_mode));
 extern int bit_memory_operand PARAMS ((rtx, enum machine_mode));
-extern int eq_operator PARAMS ((rtx, enum machine_mode));
 extern int bit_operator PARAMS ((rtx, enum machine_mode));
 extern int nshift_operator PARAMS ((rtx, enum machine_mode));
 
