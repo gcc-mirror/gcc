@@ -1974,10 +1974,8 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 	  /* If either decl says `inline', this fn is inline,
 	     unless its definition was passed already.  */
 	  if (DECL_DECLARED_INLINE_P (newdecl)
-	      && DECL_DECLARED_INLINE_P (olddecl) == 0)
-	    DECL_DECLARED_INLINE_P (olddecl) = 1;
-
-	  DECL_DECLARED_INLINE_P (newdecl) = DECL_DECLARED_INLINE_P (olddecl);
+	      || DECL_DECLARED_INLINE_P (olddecl))
+	    DECL_DECLARED_INLINE_P (newdecl) = 1;
 
 	  DECL_UNINLINABLE (newdecl) = DECL_UNINLINABLE (olddecl)
 	    = (DECL_UNINLINABLE (newdecl) || DECL_UNINLINABLE (olddecl));
@@ -2003,9 +2001,8 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 	      DECL_FUNCTION_CODE (newdecl) = DECL_FUNCTION_CODE (olddecl);
 	    }
 	}
+
       /* Also preserve various other info from the definition.  */
-      else if (! new_is_definition)
-	DECL_NUM_STMTS (newdecl) = DECL_NUM_STMTS (olddecl);
       if (! new_is_definition)
 	{
 	  DECL_RESULT (newdecl) = DECL_RESULT (olddecl);
@@ -2016,12 +2013,27 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 	    DECL_INITIAL (newdecl) = DECL_INITIAL (olddecl);
 	  DECL_SAVED_INSNS (newdecl) = DECL_SAVED_INSNS (olddecl);
 	  DECL_SAVED_TREE (newdecl) = DECL_SAVED_TREE (olddecl);
+	  DECL_NUM_STMTS (newdecl) = DECL_NUM_STMTS (olddecl);
 	  DECL_ARGUMENTS (newdecl) = DECL_ARGUMENTS (olddecl);
-	  if (DECL_INLINE (newdecl))
-	    DECL_ABSTRACT_ORIGIN (newdecl)
-	      = (different_binding_level
-		 ? DECL_ORIGIN (olddecl)
-		 : DECL_ABSTRACT_ORIGIN (olddecl));
+
+	  /* Set DECL_INLINE on the declaration if we've got a body
+	     from which to instantiate.  */
+	  if (DECL_INLINE (olddecl) && ! DECL_UNINLINABLE (newdecl))
+	    {
+	      DECL_INLINE (newdecl) = 1;
+	      DECL_ABSTRACT_ORIGIN (newdecl)
+		= (different_binding_level
+		   ? DECL_ORIGIN (olddecl)
+		   : DECL_ABSTRACT_ORIGIN (olddecl));
+	    }
+	}
+      else
+	{
+	  /* If a previous declaration said inline, mark the
+	     definition as inlinable.  */
+	  if (DECL_DECLARED_INLINE_P (newdecl)
+	      && ! DECL_UNINLINABLE (newdecl))
+	    DECL_INLINE (newdecl) = 1;
 	}
     }
   if (different_binding_level)
@@ -5049,16 +5061,23 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	else if (inlinep)
 	  {
 	    /* Assume that otherwise the function can be inlined.  */
-	    DECL_INLINE (decl) = 1;
 	    DECL_DECLARED_INLINE_P (decl) = 1;
 
-	    if (specbits & (1 << (int) RID_EXTERN))
-	      current_extern_inline = 1;
+	    /* Do not mark bare declarations as DECL_INLINE.  Doing so
+	       in the presence of multiple declarations can result in
+	       the abstract origin pointing between the declarations,
+	       which will confuse dwarf2out.  */
+	    if (initialized)
+	      {
+		DECL_INLINE (decl) = 1;
+		if (specbits & (1 << (int) RID_EXTERN))
+		  current_extern_inline = 1;
+	      }
 	  }
 	/* If -finline-functions, assume it can be inlined.  This does
 	   two things: let the function be deferred until it is actually
 	   needed, and let dwarf2 know that the function is inlinable.  */
-	else if (flag_inline_trees == 2)
+	else if (flag_inline_trees == 2 && initialized)
 	  {
 	    DECL_INLINE (decl) = 1;
 	    DECL_DECLARED_INLINE_P (decl) = 0;
