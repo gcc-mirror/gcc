@@ -1,3 +1,9 @@
+2002-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/6073
+	* class.c (finish_struct_1): Update static field's DECL_MODE even
+	if its type is a variant of t.
+
 2002-03-27  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cp-lang.c (LANG_HOOKS_INSERT_DEFAULT_ATTRIBUTES): Redefine.
