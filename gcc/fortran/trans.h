@@ -391,6 +391,9 @@ void gfc_shadow_sym (gfc_symbol *, tree, gfc_saved_var *);
 /* Restore the original variable.  */
 void gfc_restore_sym (gfc_symbol *, gfc_saved_var *);
 
+/* Returns true if a variable of specified size should go on the stack.  */
+int gfc_can_put_var_on_stack (tree);
+
 /* Allocate the lang-spcific part of a decl node.  */
 void gfc_allocate_lang_decl (tree);
 
