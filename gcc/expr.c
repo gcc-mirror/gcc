@@ -8584,17 +8584,117 @@ do_jump (exp, if_false_label, if_true_label)
       break;
 
     case TRUTH_ANDIF_EXPR:
-      if (if_false_label == 0)
-	if_false_label = drop_through_label = gen_label_rtx ();
-      do_jump (TREE_OPERAND (exp, 0), if_false_label, NULL_RTX);
-      do_jump (TREE_OPERAND (exp, 1), if_false_label, if_true_label);
+      {
+	rtx seq1, seq2;
+	tree cleanups, old_cleanups;
+
+	if (if_false_label == 0)
+	  if_false_label = drop_through_label = gen_label_rtx ();
+	start_sequence ();
+	do_jump (TREE_OPERAND (exp, 0), if_false_label, NULL_RTX);
+	seq1 = get_insns ();
+	end_sequence ();
+
+	old_cleanups = cleanups_this_call;
+	start_sequence ();
+	do_jump (TREE_OPERAND (exp, 1), if_false_label, if_true_label);
+	seq2 = get_insns ();
+	end_sequence ();
+
+	cleanups = defer_cleanups_to (old_cleanups);
+	if (cleanups)
+	  {
+	    rtx flag = gen_reg_rtx (word_mode);
+	    tree new_cleanups;
+	    tree cond;
+
+	    /* Flag cleanups as not needed. */
+	    emit_move_insn (flag, const0_rtx);
+	    emit_insns (seq1);
+
+	    /* Flag cleanups as needed. */
+	    emit_move_insn (flag, const1_rtx);
+	    emit_insns (seq2);
+
+	    /* convert flag, which is an rtx, into a tree. */
+	    cond = make_node (RTL_EXPR);
+	    TREE_TYPE (cond) = integer_type_node;
+	    RTL_EXPR_RTL (cond) = flag;
+	    RTL_EXPR_SEQUENCE (cond) = NULL_RTX;
+
+	    new_cleanups = build (COND_EXPR, void_type_node,
+				  truthvalue_conversion (cond),
+				  cleanups, integer_zero_node);
+	    new_cleanups = fold (new_cleanups);
+
+	    /* Now add in the conditionalized cleanups. */
+	    cleanups_this_call
+	      = tree_cons (NULL_TREE, new_cleanups, cleanups_this_call);
+	    (*interim_eh_hook) (NULL_TREE);
+	  }
+	else
+	  {
+	    emit_insns (seq1);
+	    emit_insns (seq2);
+	  }
+      }
       break;
 
     case TRUTH_ORIF_EXPR:
-      if (if_true_label == 0)
-	if_true_label = drop_through_label = gen_label_rtx ();
-      do_jump (TREE_OPERAND (exp, 0), NULL_RTX, if_true_label);
-      do_jump (TREE_OPERAND (exp, 1), if_false_label, if_true_label);
+      {
+	rtx seq1, seq2;
+	tree cleanups, old_cleanups;
+
+	if (if_true_label == 0)
+	  if_true_label = drop_through_label = gen_label_rtx ();
+	start_sequence ();
+	do_jump (TREE_OPERAND (exp, 0), NULL_RTX, if_true_label);
+	seq1 = get_insns ();
+	end_sequence ();
+
+	old_cleanups = cleanups_this_call;
+	start_sequence ();
+	do_jump (TREE_OPERAND (exp, 1), if_false_label, if_true_label);
+	seq2 = get_insns ();
+	end_sequence ();
+
+	cleanups = defer_cleanups_to (old_cleanups);
+	if (cleanups)
+	  {
+	    rtx flag = gen_reg_rtx (word_mode);
+	    tree new_cleanups;
+	    tree cond;
+
+	    /* Flag cleanups as not needed. */
+	    emit_move_insn (flag, const0_rtx);
+	    emit_insns (seq1);
+
+	    /* Flag cleanups as needed. */
+	    emit_move_insn (flag, const1_rtx);
+	    emit_insns (seq2);
+
+	    /* convert flag, which is an rtx, into a tree. */
+	    cond = make_node (RTL_EXPR);
+	    TREE_TYPE (cond) = integer_type_node;
+	    RTL_EXPR_RTL (cond) = flag;
+	    RTL_EXPR_SEQUENCE (cond) = NULL_RTX;
+
+	    new_cleanups = build (COND_EXPR, void_type_node,
+				  truthvalue_conversion (cond),
+				  cleanups, integer_zero_node);
+	    new_cleanups = fold (new_cleanups);
+
+	    /* Now add in the conditionalized cleanups. */
+	    cleanups_this_call
+	      = tree_cons (NULL_TREE, new_cleanups, cleanups_this_call);
+	    (*interim_eh_hook) (NULL_TREE);
+	  }
+	else
+	  {
+	    emit_insns (seq1);
+	    emit_insns (seq2);
+	  }
+      }
       break;
 
     case COMPOUND_EXPR:
