@@ -612,6 +612,11 @@ extern int ix86_arch;
 
 #define FIRST_PSEUDO_REGISTER 19
 
+/* Number of hardware registers that go into the DWARF-2 unwind info.
+   If not defined, equals FIRST_PSEUDO_REGISTER.  */
+
+#define DWARF_FRAME_REGISTERS 17
+
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
    On the 80386, the stack pointer is such, as is the arg pointer. */

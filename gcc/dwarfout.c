@@ -1680,7 +1680,7 @@ output_reg_number (rtl)
 {
   register unsigned regno = REGNO (rtl);
 
-  if (regno >= FIRST_PSEUDO_REGISTER)
+  if (regno >= DWARF_FRAME_REGISTERS)
     {
       warning_with_decl (dwarf_last_decl, "internal regno botch: regno = %d\n",
 			 regno);
