@@ -21,25 +21,16 @@ typedef void * __gnuc_va_list;
    __gnuc_va_list.  */
 #if defined (_STDARG_H) || defined (_VARARGS_H)
 
-/* In GCC version 2, we want an ellipsis at the end of the declaration
-   of the argument list.  GCC version 1 can't parse it.  */
-
-#if __GNUC__ > 1
-#define __va_ellipsis ...
-#else
-#define __va_ellipsis
-#endif
-
 #ifdef _STDARG_H
-#define va_start(AP, LASTARG)					\
-  (__builtin_saveregs (), AP = ((char *) __builtin_next_arg ()))
-#else
-#define va_alist  __builtin_va_alist
-/* The ... causes current_function_varargs to be set in cc1.  */
-#define va_dcl    int __builtin_va_alist; __va_ellipsis
 
-#define va_start(AP) 						\
- (__builtin_saveregs (), (AP) = ((char *) &__builtin_va_alist))
+#define va_start(AP, LASTARG)	(AP = (char *) __builtin_saveregs ())
+
+#else
+
+#define va_alist  __builtin_va_alist
+#define va_dcl
+#define va_start(AP)		((AP) = (char *) __builtin_saveregs ())
+
 #endif
 
 #ifndef va_end
