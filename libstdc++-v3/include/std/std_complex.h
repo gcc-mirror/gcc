@@ -676,11 +676,11 @@ namespace std
   template<typename _Tp>
     inline complex<_Tp>
     __complex_cosh(const complex<_Tp>& __z)
-      {
-        const _Tp __x = __z.real();
-        const _Tp __y = __z.imag();
-        return complex<_Tp>(cosh(__x) * cos(__y), sinh(__x) * sin(__y));
-      }
+    {
+      const _Tp __x = __z.real();
+      const _Tp __y = __z.imag();
+      return complex<_Tp>(cosh(__x) * cos(__y), sinh(__x) * sin(__y));
+    }
 
   inline __complex__ float
   __complex_cosh(__complex__ float __z) { return __builtin_ccoshf(__z); }
@@ -709,8 +709,8 @@ namespace std
   __complex_exp(__complex__ double __z) { return __builtin_cexp(__z); }
 
   inline __complex__ long double
-    __complex_exp(const __complex__ long double& __z)
-    { return __builtin_cexpl(__z); }
+  __complex_exp(const __complex__ long double& __z)
+  { return __builtin_cexpl(__z); }
   
   template<typename _Tp>
     inline complex<_Tp>
@@ -768,7 +768,7 @@ namespace std
 
   template<typename _Tp>
     inline complex<_Tp>
-    sin(const complex<_Tp>& __z) { __complex_sin(__z.__rep()); }
+    sin(const complex<_Tp>& __z) { return __complex_sin(__z.__rep()); }
 
   // 26.2.8/11 sinh(__z): Returns the hyperbolic sine of __z.
   template<typename _Tp>
