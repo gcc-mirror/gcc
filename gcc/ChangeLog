@@ -1,3 +1,16 @@
+2004-01-18  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c: Include cfglayout.h.
+	(TARGET_ASM_OUTPUT_MI_THUNK, TARGET_ASM_CAN_OUTPUT_MI_THUNK): Define.
+	(mips_unspec_offset_high): Add temporary register argument.
+	(mips_load_call_address): New function, split out from...
+	(mips_expand_call): ...here.
+	(mips_output_cplocal): New function.
+	(mips_output_function_prologue, mips_output_function_epilogue): Use it.
+	(mips_emit_loadgp): New function, split out from...
+	(mips_expand_prologue): ...here.
+	(mips_output_mi_thunk): New function.
+
 2004-01-17  Bernardo Innocenti  <bernie@develer.com>
 
 	* longlong.h (mc68020, __mc68030__, mc68030, __mc68040__, mc68040,
