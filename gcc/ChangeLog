@@ -4,6 +4,11 @@ Sun Sep 19 09:03:40 1999  Mark Mitchell  <mark@codesourcery.com>
 	* loop.c (find_and_verify_loops): Use it.
 	* rtlanal.c (insns_safe_to_move_p): Define it.
 
+Sun Sep 19 02:54:33 1999  Richard Henderson  <rth@cygnus.com>
+
+	* c-pragma.c: Include ggc.h.
+	* Makefile.in (c-pragma.o): Update.
+
 Sat Sep 18 16:01:18 1999  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* config/i386/sol2.h (CPP_SPEC): Support -[p]threads
