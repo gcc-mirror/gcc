@@ -26,9 +26,11 @@ Boston, MA 02111-1307, USA.  */
    This exception does not however invalidate any other reasons why
    the executable file might be covered by the GNU General Public License.  */
 
-#include <string.h>
-
-#define MIN(a, b)  ((a) < (b) ? (a) : (b))
+#ifdef __STDC__
+#include <stddef.h>
+#else
+#define size_t unsigned long
+#endif
 
 
 /*
@@ -54,7 +56,7 @@ void *
 memmove (s1, s2, n)
      void *s1;
      const void *s2;
-     unsigned int n;
+     size_t n;
 {
   char *sc1 = s1;
   const char *sc2 = s2;
