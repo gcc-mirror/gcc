@@ -1,3 +1,7 @@
+Tue May 30 16:53:34 2000  Andrew Cagney  <cagney@b1.cygnus.com>
+
+	* floatformat.h (struct floatformat): Add field name.
+
 2000-05-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* getopt.h (getopt): Also check HAVE_DECL_* when prototyping.
