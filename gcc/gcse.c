@@ -682,9 +682,9 @@ static rtx extract_mentioned_regs (rtx);
 static rtx extract_mentioned_regs_helper (rtx, rtx);
 static void find_moveable_store (rtx, int *, int *);
 static int compute_store_table (void);
-static bool load_kills_store (rtx, rtx);
-static bool find_loads (rtx, rtx);
-static bool store_killed_in_insn (rtx, rtx, rtx);
+static bool load_kills_store (rtx, rtx, int);
+static bool find_loads (rtx, rtx, int);
+static bool store_killed_in_insn (rtx, rtx, rtx, int);
 static bool store_killed_after (rtx, rtx, rtx, basic_block, int *, rtx *);
 static bool store_killed_before (rtx, rtx, rtx, basic_block, int *);
 static void build_store_vectors (void);
@@ -7186,21 +7186,27 @@ compute_store_table (void)
   return ret;
 }
 
-/* Check to see if the load X is aliased with STORE_PATTERN.  */
+/* Check to see if the load X is aliased with STORE_PATTERN.
+   AFTER is true if we are checking the case when STORE_PATTERN occurs
+   after the X.  */
 
 static bool
-load_kills_store (rtx x, rtx store_pattern)
+load_kills_store (rtx x, rtx store_pattern, int after)
 {
-  if (true_dependence (x, GET_MODE (x), store_pattern, rtx_addr_varies_p))
-    return true;
-  return false;
+  if (after)
+    return anti_dependence (x, store_pattern);
+  else
+    return true_dependence (store_pattern, GET_MODE (store_pattern), x,
+			    rtx_addr_varies_p);
 }
 
 /* Go through the entire insn X, looking for any loads which might alias
-   STORE_PATTERN.  Return true if found.  */
+   STORE_PATTERN.  Return true if found.
+   AFTER is true if we are checking the case when STORE_PATTERN occurs
+   after the insn X.  */
 
 static bool
-find_loads (rtx x, rtx store_pattern)
+find_loads (rtx x, rtx store_pattern, int after)
 {
   const char * fmt;
   int i, j;
@@ -7214,7 +7220,7 @@ find_loads (rtx x, rtx store_pattern)
 
   if (GET_CODE (x) == MEM)
     {
-      if (load_kills_store (x, store_pattern))
+      if (load_kills_store (x, store_pattern, after))
 	return true;
     }
 
@@ -7224,19 +7230,20 @@ find_loads (rtx x, rtx store_pattern)
   for (i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0 && !ret; i--)
     {
       if (fmt[i] == 'e')
-	ret |= find_loads (XEXP (x, i), store_pattern);
+	ret |= find_loads (XEXP (x, i), store_pattern, after);
       else if (fmt[i] == 'E')
 	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-	  ret |= find_loads (XVECEXP (x, i, j), store_pattern);
+	  ret |= find_loads (XVECEXP (x, i, j), store_pattern, after);
     }
   return ret;
 }
 
 /* Check if INSN kills the store pattern X (is aliased with it).
-   Return true if it it does.  */
+   AFTER is true if we are checking the case when store X occurs
+   after the insn.  Return true if it it does.  */
 
 static bool
-store_killed_in_insn (rtx x, rtx x_regs, rtx insn)
+store_killed_in_insn (rtx x, rtx x_regs, rtx insn, int after)
 {
   rtx reg, base;
 
@@ -7268,15 +7275,31 @@ store_killed_in_insn (rtx x, rtx x_regs, rtx insn)
   if (GET_CODE (PATTERN (insn)) == SET)
     {
       rtx pat = PATTERN (insn);
+      rtx dest = SET_DEST (pat);
+
+      if (GET_CODE (dest) == SIGN_EXTRACT
+	  || GET_CODE (dest) == ZERO_EXTRACT)
+	dest = XEXP (dest, 0);
+
       /* Check for memory stores to aliased objects.  */
-      if (GET_CODE (SET_DEST (pat)) == MEM && !expr_equiv_p (SET_DEST (pat), x))
-	/* pretend its a load and check for aliasing.  */
-	if (find_loads (SET_DEST (pat), x))
-	  return true;
-      return find_loads (SET_SRC (pat), x);
+      if (GET_CODE (dest) == MEM
+	  && !expr_equiv_p (dest, x))
+	{
+	  if (after)
+	    {
+	      if (output_dependence (dest, x))
+		return true;
+	    }
+	  else
+	    {
+	      if (output_dependence (x, dest))
+		return true;
+	    }
+	}
+      return find_loads (SET_SRC (pat), x, after);
     }
   else
-    return find_loads (PATTERN (insn), x);
+    return find_loads (PATTERN (insn), x, after);
 }
 
 /* Returns true if the expression X is loaded or clobbered on or after INSN
@@ -7300,7 +7323,7 @@ store_killed_after (rtx x, rtx x_regs, rtx insn, basic_block bb,
 
   /* Scan from the end, so that fail_insn is determined correctly.  */
   for (act = last; act != PREV_INSN (insn); act = PREV_INSN (act))
-    if (store_killed_in_insn (x, x_regs, act))
+    if (store_killed_in_insn (x, x_regs, act, false))
       {
 	if (fail_insn)
 	  *fail_insn = act;
@@ -7323,7 +7346,7 @@ store_killed_before (rtx x, rtx x_regs, rtx insn, basic_block bb,
     return true;
 
   for ( ; insn != PREV_INSN (first); insn = PREV_INSN (insn))
-    if (store_killed_in_insn (x, x_regs, insn))
+    if (store_killed_in_insn (x, x_regs, insn, true))
       return true;
 
   return false;

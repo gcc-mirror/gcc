@@ -1,3 +1,9 @@
+2003-07-10  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* gcse.c (load_kills_store, find_loads, store_killed_in_insn,
+	store_killed_after, store_killed_before): Keep track of the correct
+	dependency function to use.
+
 2003-07-10  Steven Bosscher  <steven@gcc.gnu.org>
 	* toplev.c (do_compile): Don't try to open dump files before
 	lang_dependent_init initializes dump_base_name.
