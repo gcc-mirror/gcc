@@ -600,6 +600,14 @@ static int one_pre_gcse_pass	  PROTO ((int));
 
 static void add_label_notes	      PROTO ((rtx, rtx));
 
+static void alloc_code_hoist_mem	PROTO ((int, int));
+static void free_code_hoist_mem		PROTO ((void));
+static void compute_code_hoist_vbeinout	PROTO ((void));
+static void compute_code_hoist_data	PROTO ((void));
+static int hoist_expr_reaches_here_p	PROTO ((int, int, int, char *));
+static void hoist_code			PROTO ((void));
+static int one_code_hoisting_pass	PROTO ((void));
+
 static void alloc_rd_mem	      PROTO ((int, int));
 static void free_rd_mem	       PROTO ((void));
 static void handle_rd_kill_set	PROTO ((rtx, int, int));
@@ -730,7 +738,27 @@ gcse_main (f, file)
       if (max_pass_bytes < bytes_used)
 	max_pass_bytes = bytes_used;
 
+      /* Free up memory, then reallocate for code hoisting.  We can
+	 not re-use the existing allocated memory because the tables
+	 will not have info for the insns or registers created by
+	 partial redundancy elimination.  */
       free_gcse_mem ();
+
+      /* It does not make sense to run code hoisting unless we optimizing
+	 for code size -- it rarely makes programs faster, and can make
+	 them bigger if we did partial redundancy elimination (when optimizing
+	 for space, we use a classic gcse algorithm instead of partial
+	 redundancy algorithms).  */
+      if (optimize_size)
+        {
+	  max_gcse_regno = max_reg_num ();
+	  alloc_gcse_mem (f);
+	  changed |= one_code_hoisting_pass ();
+	  free_gcse_mem ();
+
+	  if (max_pass_bytes < bytes_used)
+	    max_pass_bytes = bytes_used;
+        }
 
       if (file)
 	{
@@ -5043,4 +5071,358 @@ delete_null_pointer_checks (f)
   free (nonnull_killed);
   free (nonnull_avin);
   free (nonnull_avout);
+}
+
+/* Code Hoisting variables and subroutines.  */
+
+/* Very busy expressions.  */
+static sbitmap *hoist_vbein;
+static sbitmap *hoist_vbeout;
+
+/* Hoistable expressions.  */
+static sbitmap *hoist_exprs;
+
+/* Dominator bitmaps.  */
+static sbitmap *dominators;
+static sbitmap *post_dominators;
+
+/* ??? We could compute post dominators and run this algorithm in
+   reverse to to perform tail merging, doing so would probably be
+   more effective than the tail merging code in jump.c.
+
+   It's unclear if tail merging could be run in parallel with
+   code hoisting.  It would be nice.  */
+
+/* Allocate vars used for code hoisting analysis.  */
+
+static void
+alloc_code_hoist_mem (n_blocks, n_exprs)
+     int n_blocks, n_exprs;
+{
+  antloc = sbitmap_vector_alloc (n_blocks, n_exprs);
+  transp = sbitmap_vector_alloc (n_blocks, n_exprs);
+  comp = sbitmap_vector_alloc (n_blocks, n_exprs);
+
+  hoist_vbein = sbitmap_vector_alloc (n_blocks, n_exprs);
+  hoist_vbeout = sbitmap_vector_alloc (n_blocks, n_exprs);
+  hoist_exprs = sbitmap_vector_alloc (n_blocks, n_exprs);
+  transpout = sbitmap_vector_alloc (n_blocks, n_exprs);
+
+  dominators = sbitmap_vector_alloc (n_blocks, n_blocks);
+  post_dominators = sbitmap_vector_alloc (n_blocks, n_blocks);
+}
+
+/* Free vars used for code hoisting analysis.  */
+
+static void
+free_code_hoist_mem ()
+{
+  free (antloc);
+  free (transp);
+  free (comp);
+
+  free (hoist_vbein);
+  free (hoist_vbeout);
+  free (hoist_exprs);
+  free (transpout);
+
+  free (dominators);
+  free (post_dominators);
+}
+
+/* Compute the very busy expressions at entry/exit from each block.
+
+   An expression is very busy if all paths from a given point
+   compute the expression.  */
+
+static void
+compute_code_hoist_vbeinout ()
+{
+  int bb, changed, passes;
+
+  sbitmap_vector_zero (hoist_vbeout, n_basic_blocks);
+  sbitmap_vector_zero (hoist_vbein, n_basic_blocks);
+
+  passes = 0;
+  changed = 1;
+  while (changed)
+    {
+      changed = 0;
+      /* We scan the blocks in the reverse order to speed up
+	 the convergence.  */
+      for (bb = n_basic_blocks - 1; bb >= 0; bb--)
+	{
+	  changed |= sbitmap_a_or_b_and_c (hoist_vbein[bb], antloc[bb],
+					   hoist_vbeout[bb], transp[bb]);
+	  if (bb != n_basic_blocks - 1)
+	    sbitmap_intersect_of_successors (hoist_vbeout[bb], hoist_vbein,
+					     bb, s_succs);
+	}
+      passes++;
+    }
+
+  if (gcse_file)
+    fprintf (gcse_file, "hoisting vbeinout computation: %d passes\n", passes);
+}
+
+/* Top level routine to do the dataflow analysis needed by code hoisting.  */
+
+static void
+compute_code_hoist_data ()
+{
+  compute_local_properties (transp, comp, antloc, 0);
+  compute_transpout ();
+  compute_code_hoist_vbeinout ();
+  compute_flow_dominators (dominators, post_dominators);
+  if (gcse_file)
+    fprintf (gcse_file, "\n");
+}
+
+/* Determine if the expression identified by EXPR_INDEX would
+   reach BB unimpared if it was placed at the end of EXPR_BB.
+
+   It's unclear exactly what Muchnick meant by "unimpared".  It seems
+   to me that the expression must either be computed or transparent in
+   *every* block in the path(s) from EXPR_BB to BB.  Any other definition
+   would allow the expression to be hoisted out of loops, even if
+   the expression wasn't a loop invariant.
+
+   Contrast this to reachability for PRE where an expression is
+   considered reachable if *any* path reaches instead of *all*
+   paths.  */
+
+static int
+hoist_expr_reaches_here_p (expr_bb, expr_index, bb, visited)
+     int expr_bb;
+     int expr_index;
+     int bb;
+     char *visited;
+{
+  edge pred;
+
+  if (visited == NULL)
+    {
+      visited = (char *) alloca (n_basic_blocks);
+      bzero (visited, n_basic_blocks);
+    }
+
+  visited[expr_bb] = 1;
+  for (pred = BASIC_BLOCK (bb)->pred; pred != NULL; pred = pred->pred_next)
+    {
+      int pred_bb = pred->src->index;
+
+      if (pred->src == ENTRY_BLOCK_PTR)
+	break;
+      else if (visited[pred_bb])
+	continue;
+      /* Does this predecessor generate this expression?  */
+      else if (TEST_BIT (comp[pred_bb], expr_index))
+	break;
+      else if (! TEST_BIT (transp[pred_bb], expr_index))
+	break;
+      /* Not killed.  */
+      else
+	{
+	  visited[pred_bb] = 1;
+	  if (! hoist_expr_reaches_here_p (expr_bb, expr_index,
+					   pred_bb, visited))
+	    break;
+	}
+    }
+
+  return (pred == NULL);
+}
+
+/* Actually perform code hoisting.  */
+static void
+hoist_code ()
+{
+  int bb, dominated, i;
+  struct expr **index_map;
+
+  sbitmap_vector_zero (hoist_exprs, n_basic_blocks);
+
+  /* Compute a mapping from expression number (`bitmap_index') to
+     hash table entry.  */
+
+  index_map = (struct expr **) alloca (n_exprs * sizeof (struct expr *));
+  bzero ((char *) index_map, n_exprs * sizeof (struct expr *));
+  for (i = 0; i < expr_hash_table_size; i++)
+    {
+      struct expr *expr;
+
+      for (expr = expr_hash_table[i]; expr != NULL; expr = expr->next_same_hash)
+	index_map[expr->bitmap_index] = expr;
+    }
+
+  /* Walk over each basic block looking for potentially hoistable
+     expressions, nothing gets hoisted from the entry block.  */
+  for (bb = 0; bb < n_basic_blocks; bb++)
+    {
+      int found = 0;
+      int insn_inserted_p;
+
+      /* Examine each expression that is very busy at the exit of this
+	 block.  These are the potentially hoistable expressions.  */
+      for (i = 0; i < hoist_vbeout[bb]->n_bits; i++)
+	{
+	  int hoistable = 0;
+	  if (TEST_BIT (hoist_vbeout[bb], i)
+	      && TEST_BIT (transpout[bb], i))
+	    {
+	      /* We've found a potentially hoistable expression, now
+		 we look at every block BB dominates to see if it
+		 computes the expression.  */
+	      for (dominated = 0; dominated < n_basic_blocks; dominated++)
+		{
+		  /* Ignore self dominance.  */
+		  if (bb == dominated
+		      || ! TEST_BIT (dominators[dominated], bb))
+		    continue;
+
+		  /* We've found a dominated block, now see if it computes
+		     the busy expression and whether or not moving that
+		     expression to the "beginning" of that block is safe.  */
+		  if (!TEST_BIT (antloc[dominated], i))
+		    continue;
+
+		  /* Note if the expression would reach the dominated block
+		     unimpared if it was placed at the end of BB. 
+
+		     Keep track of how many times this expression is hoistable
+		     from a dominated block into BB.  */
+		  if (hoist_expr_reaches_here_p (bb, i, dominated, NULL))
+		    hoistable++;
+		}
+
+	      /* If we found more than one hoistable occurence of this
+		 expression, then note it in the bitmap of expressions to
+		 hoist.  It makes no sense to hoist things which are computed
+		 in only one BB, and doing so tends to pessimize register
+		 allocation.  One could increase this value to try harder
+		 to avoid any possible code expansion due to register
+		 allocation issues; however experiments have shown that
+		 the vast majority of hoistable expressions are only movable
+		 from two successors, so raising this threshhold is likely
+		 to nullify any benefit we get from code hoisting.  */
+	      if (hoistable > 1)
+		{
+		  SET_BIT (hoist_exprs[bb], i);
+		  found = 1;
+		}
+	    }
+	}
+		
+      /* If we found nothing to hoist, then quit now.  */
+      if (! found)
+	continue;
+
+      /* Loop over all the hoistable expressions.  */
+      for (i = 0; i < hoist_exprs[bb]->n_bits; i++)
+	{
+	  /* We want to insert the expression into BB only once, so
+	     note when we've inserted it.  */
+	  insn_inserted_p = 0;
+
+	  /* These tests should be the same as the tests above.  */
+	  if (TEST_BIT (hoist_vbeout[bb], i))
+	    {
+	      /* We've found a potentially hoistable expression, now
+		 we look at every block BB dominates to see if it
+		 computes the expression.  */
+	      for (dominated = 0; dominated < n_basic_blocks; dominated++)
+		{
+		  /* Ignore self dominance.  */
+		  if (bb == dominated
+		      || ! TEST_BIT (dominators[dominated], bb))
+		    continue;
+
+		  /* We've found a dominated block, now see if it computes
+		     the busy expression and whether or not moving that
+		     expression to the "beginning" of that block is safe.  */
+		  if (!TEST_BIT (antloc[dominated], i))
+		    continue;
+
+		  /* The expression is computed in the dominated block and
+		     it would be safe to compute it at the start of the
+		     dominated block.  Now we have to determine if the
+		     expresion would reach the dominated block if it was
+		     placed at the end of BB.  */
+		  if (hoist_expr_reaches_here_p (bb, i, dominated, NULL))
+		    {
+		      struct expr *expr = index_map[i];
+		      struct occr *occr = expr->antic_occr;
+		      rtx insn;
+		      rtx set;
+
+		  
+		      /* Find the right occurence of this expression.  */
+		      while (BLOCK_NUM (occr->insn) != dominated && occr)
+			occr = occr->next;
+
+		      /* Should never happen.  */
+		      if (!occr)
+			abort ();
+
+		      insn = occr->insn;
+		 
+		      set = single_set (insn);
+		      if (! set)
+			abort ();
+
+		      /* Create a pseudo-reg to store the result of reaching
+			 expressions into.  Get the mode for the new pseudo
+			 from the mode of the original destination pseudo.  */
+		      if (expr->reaching_reg == NULL)
+			expr->reaching_reg
+			  = gen_reg_rtx (GET_MODE (SET_DEST (set)));
+
+		      /* In theory this should never fail since we're creating
+			 a reg->reg copy.
+
+			 However, on the x86 some of the movXX patterns actually
+			 contain clobbers of scratch regs.  This may cause the
+			 insn created by validate_change to not match any
+			 pattern and thus cause validate_change to fail.   */
+		      if (validate_change (insn, &SET_SRC (set),
+					   expr->reaching_reg, 0))
+			{
+			  occr->deleted_p = 1;
+			  if (!insn_inserted_p)
+			    {
+			      insert_insn_end_bb (index_map[i], bb, 0);
+			      insn_inserted_p = 1;
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }
+}
+
+/* Top level routine to perform one code hoisting (aka unification) pass
+
+   Return non-zero if a change was made.  */
+
+static int
+one_code_hoisting_pass ()
+{
+  int changed = 0;
+
+  alloc_expr_hash_table (max_cuid);
+  compute_expr_hash_table ();
+  if (gcse_file)
+    dump_hash_table (gcse_file, "Code Hosting Expressions", expr_hash_table,
+		     expr_hash_table_size, n_exprs);
+  if (n_exprs > 0)
+    {
+      alloc_code_hoist_mem (n_basic_blocks, n_exprs);
+      compute_code_hoist_data ();
+      hoist_code ();
+      free_code_hoist_mem ();
+    }
+  free_expr_hash_table ();
+
+  return changed;
 }
