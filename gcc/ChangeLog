@@ -1,3 +1,8 @@
+Wed Jan 13 00:59:04 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* mips.h (LOAD_EXTEND_OP): Correct for SImode and CCmode moves when
+	generating code for TARGET_64BIT.
+
 Tue Jan 12 14:05:37 1999   David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.c (print_operand, cases 'm' and 'M'): Do not depend on
