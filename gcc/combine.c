@@ -6492,6 +6492,7 @@ make_compound_operation (x, in_code)
 				 INTVAL (rhs) - INTVAL (XEXP (lhs, 1)),
 				 NULL_RTX, mode_width - INTVAL (rhs),
 				 code == LSHIFTRT, 0, in_code == COMPARE);
+	  break;
 	}
 
       /* See if we have operations between an ASHIFTRT and an ASHIFT.

@@ -1,3 +1,8 @@
+2000-08-18  Richard Henderson  <rth@cygnus.com>
+
+	* combine.c (make_compound_operation): Break after creating
+	the extraction.
+
 2000-08-18  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplib.c (cpp_register_pragma_space): Just return if the
