@@ -1,6 +1,5 @@
 			Blanket Write Privs.
 
-Craig Burley					craig@jcb-sc.com
 John Carr					jfc@mit.edu
 Richard Earnshaw				rearnsha@arm.com
 Richard Henderson                               rth@redhat.com
@@ -17,6 +16,7 @@ Jim Wilson					wilson@redhat.com
 
 			Various Maintainers
 
+Fortran Front End	Craig Burley		craig@jcb-sc.com
 sh port			Joern Rennecke		amylaar@redhat.com
 			Alexandre Oliva		aoliva@redhat.com
 v850 port		Nick Clifton		nickc@redhat.com
