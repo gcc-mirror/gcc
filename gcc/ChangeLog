@@ -1,5 +1,9 @@
 2001-06-26  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
+	* config/i386/sol2.h (CPP_SPEC): Pass -P for .S files.
+
+2001-06-26  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
 	* config/mips/iris5.h (UNALIGNED_INT_ASM_OP,
 	UNALIGNED_SHORT_ASM_OP): Define.
 	* config/mips/iris6.h (UNALIGNED_INT_ASM_OP,
