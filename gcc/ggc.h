@@ -64,25 +64,30 @@ extern void ggc_mark_rtx_children PROTO ((struct rtx_def *));
 extern void ggc_mark_rtvec_children PROTO ((struct rtvec_def *));
 extern void ggc_mark_tree_children PROTO ((union tree_node *));
 
-#define ggc_mark_rtx(EXPR)			\
-  do {						\
-    rtx r__ = (EXPR);				\
-    if (r__ != NULL && ! ggc_set_mark (r__))	\
-      ggc_mark_rtx_children (r__);		\
+/* If EXPR is not NULL and previously unmarked, mark it and evaluate
+   to true.  Otherwise evaluate to false.  */
+#define ggc_test_and_set_mark(EXPR) \
+  ((EXPR) != NULL && ! ggc_set_mark (EXPR))
+
+#define ggc_mark_rtx(EXPR)                      \
+  do {                                          \
+    rtx r__ = (EXPR);                           \
+    if (ggc_test_and_set_mark (r__))            \
+      ggc_mark_rtx_children (r__);              \
   } while (0)
 
-#define ggc_mark_tree(EXPR)			\
-  do {						\
-    tree t__ = (EXPR);				\
-    if (t__ != NULL && ! ggc_set_mark (t__))	\
-      ggc_mark_tree_children (t__);		\
+#define ggc_mark_tree(EXPR)                     \
+  do {                                          \
+    tree t__ = (EXPR);                          \
+    if (ggc_test_and_set_mark (t__))            \
+      ggc_mark_tree_children (t__);             \
   } while (0)
 
-#define ggc_mark_rtvec(EXPR)			\
-  do {						\
-    rtvec v__ = (EXPR);				\
-    if (v__ != NULL && ! ggc_set_mark (v__))	\
-      ggc_mark_rtvec_children (v__);		\
+#define ggc_mark_rtvec(EXPR)                    \
+  do {                                          \
+    rtvec v__ = (EXPR);                         \
+    if (ggc_test_and_set_mark (v__))            \
+      ggc_mark_rtvec_children (v__);            \
   } while (0)
 
 #define ggc_mark_string(EXPR)			\

@@ -1,3 +1,11 @@
+1999-11-30  Alex Samuel  <samuel@codesourcery.com>
+
+	* ggc.h (ggc_test_and_set_mark): New macro.
+	(ggc_mark_rtx): Use ggc_test_and_set_mark.
+	(ggc_mark_tree): Likewise.
+	(ggc_mark_rtvec): Likewise.
+	* ggc-common.c (ggc_mark_rtx_children): Reduce recursion. 
+
 1999-11-30  Jason Merrill  <jason@casey.cygnus.com>
 
 	* dwarf2out.c (scope_die_for): Only handle types.  Only search for
