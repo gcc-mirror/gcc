@@ -45,6 +45,5 @@ int main (void)
   return 0;
 }
 
-/* Fails due to invariant phi introduced by PRE.
-   Fails for targets that don't vectorize PLUS (e.g alpha).  */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail *-*-* } } } */
+/* Fails for targets that don't vectorize PLUS (e.g alpha).  */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail alpha*-*-* } } } */
