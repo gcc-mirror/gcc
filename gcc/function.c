@@ -5144,6 +5144,35 @@ assign_parms (fndecl)
   current_function_return_rtx
     = (DECL_RTL_SET_P (DECL_RESULT (fndecl))
        ? DECL_RTL (DECL_RESULT (fndecl)) : NULL_RTX);
+
+  /* If scalar return value was computed in a pseudo-reg, or was a named
+     return value that got dumped to the stack, copy that to the hard
+     return register.  */
+  if (DECL_RTL_SET_P (DECL_RESULT (fndecl)))
+    {
+      tree decl_result = DECL_RESULT (fndecl);
+      rtx decl_rtl = DECL_RTL (decl_result);
+
+      if (REG_P (decl_rtl)
+	  ? REGNO (decl_rtl) >= FIRST_PSEUDO_REGISTER
+	  : DECL_REGISTER (decl_result))
+	{
+	  rtx real_decl_rtl;
+
+#ifdef FUNCTION_OUTGOING_VALUE
+	  real_decl_rtl = FUNCTION_OUTGOING_VALUE (TREE_TYPE (decl_result),
+						   fndecl);
+#else
+	  real_decl_rtl = FUNCTION_VALUE (TREE_TYPE (decl_result),
+					  fndecl);
+#endif
+	  REG_FUNCTION_VALUE_P (real_decl_rtl) = 1;
+	  /* The delay slot scheduler assumes that current_function_return_rtx
+	     holds the hard register containing the return value, not a
+	     temporary pseudo.  */
+	  current_function_return_rtx = real_decl_rtl;
+	}
+    }
 }
 
 /* Indicate whether REGNO is an incoming argument to the current function
@@ -6957,16 +6986,11 @@ expand_function_end (filename, line, end_bindings)
 	  ? REGNO (decl_rtl) >= FIRST_PSEUDO_REGISTER
 	  : DECL_REGISTER (decl_result))
 	{
-	  rtx real_decl_rtl;
+	  rtx real_decl_rtl = current_function_return_rtx;
 
-#ifdef FUNCTION_OUTGOING_VALUE
-	  real_decl_rtl = FUNCTION_OUTGOING_VALUE (TREE_TYPE (decl_result),
-						   current_function_decl);
-#else
-	  real_decl_rtl = FUNCTION_VALUE (TREE_TYPE (decl_result),
-					  current_function_decl);
-#endif
-	  REG_FUNCTION_VALUE_P (real_decl_rtl) = 1;
+	  /* This should be set in assign_parms.  */
+	  if (! REG_FUNCTION_VALUE_P (real_decl_rtl))
+	    abort ();
 
 	  /* If this is a BLKmode structure being returned in registers,
 	     then use the mode computed in expand_return.  Note that if
@@ -6994,11 +7018,6 @@ expand_function_end (filename, line, end_bindings)
 			     int_size_in_bytes (TREE_TYPE (decl_result)));
 	  else
 	    emit_move_insn (real_decl_rtl, decl_rtl);
-
-	  /* The delay slot scheduler assumes that current_function_return_rtx
-	     holds the hard register containing the return value, not a
-	     temporary pseudo.  */
-	  current_function_return_rtx = real_decl_rtl;
 	}
     }
 
