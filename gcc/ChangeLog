@@ -1,3 +1,7 @@
+2002-08-29  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* install.texi (hppa64-hp-hpux11*): Document installation procedure.
+
 2002-08-29  Catherine Moore  <clm@redhat.com>
 
 	* config/v850/v850.h (MULDI3_LIBCALL, UCMPDI2_LIBCALL, CMPDI2_LIBCALL,
