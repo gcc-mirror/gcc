@@ -1,5 +1,16 @@
 2005-02-22  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/tr1/functional: Fix License to GPL with exception.
+	* include/tr1/hashtable: Likewise.
+	* include/tr1/tuple: Likewise.
+	* include/tr1/type_traits: Likewise.
+	* include/tr1/type_traits_fwd.h: Likewise.
+	* include/tr1/unordered_map: Likewise.
+	* include/tr1/unordered_set: Likewise.
+	* include/tr1/utility: Likewise.
+
+2005-02-22  Paolo Carlini  <pcarlini@suse.de>
+
 	* testsuite/tr1/2_general_utilities/memory/shared_ptr/assign/
 	auto_ptr_neg.cc: Add missing dg-do compile directive.
 	* testsuite/tr1/2_general_utilities/memory/shared_ptr/assign/
