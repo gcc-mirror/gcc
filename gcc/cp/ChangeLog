@@ -1,3 +1,8 @@
+2002-10-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (cp_finish_decl): Correct check for dynamic
+	initialization of thread-local storage.
+
 2002-09-30  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* tree.c (really_overloaded_fn): TEMPLATE_ID_EXPRs are also
