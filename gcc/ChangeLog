@@ -1,3 +1,8 @@
+1998-08-28  Brendan Kehoe  <brendan@cygnus.com>
+
+	* loop.c (check_dbra_loop): Pass COMPARISON_VALUE, not
+	COMPARISON_VAL, into invariant_p.
+
 Fri Aug 28 15:13:25 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
         * regmove.c (regclass_compatible_p): New function.

@@ -6910,7 +6910,7 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 		 ??? If the insns which initialize the comparison value as
 		 a whole compute an invariant result, then we could move
 		 them out of the loop and proceed with loop reversal.  */
-	      if (!invariant_p (comparison_val))
+	      if (!invariant_p (comparison_value))
 		return 0;
 
 	      if (GET_CODE (comparison_value) == CONST_INT)
