@@ -3963,7 +3963,7 @@
 	(neg:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
 			 (match_operand:DF 2 "register_operand" "f"))))]
   "! TARGET_SOFT_FLOAT && TARGET_PA_20"
-  "fmpynfadd,dbl %1,%2,0,%0"
+  "fmpynfadd,dbl %1,%2,%%fr0,%0"
   [(set_attr "type" "fpmuldbl")
    (set_attr "length" "4")])
 
@@ -3972,7 +3972,7 @@
 	(neg:SF (mult:SF (match_operand:SF 1 "register_operand" "f")
 			 (match_operand:SF 2 "register_operand" "f"))))]
   "! TARGET_SOFT_FLOAT && TARGET_PA_20"
-  "fmpynfadd,sgl %1,%2,0,%0"
+  "fmpynfadd,sgl %1,%2,%%fr0,%0"
   [(set_attr "type" "fpmuldbl")
    (set_attr "length" "4")])
 
