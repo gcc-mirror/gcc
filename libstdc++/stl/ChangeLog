@@ -1,3 +1,8 @@
+1999-11-06  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* bitset (class bitset): Declare reference as our friend.
+	* bitset: Include limits.h.
+
 Sun Oct 24 23:54:10 PDT 1999 Jeff Law  (law@cygnus.com)
 
 	* gcc-2.95.2 Released.

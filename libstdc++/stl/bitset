@@ -36,6 +36,7 @@
 
 
 #include <stddef.h>     // for size_t
+#include <limits.h>     // for CHAR_BIT
 #include <string>
 #include <stdexcept>    // for invalid_argument, out_of_range, overflow_error
 #include <iostream.h>   // for istream, ostream
@@ -568,6 +569,8 @@ private:
 public:
 
   // bit reference:
+  class reference;
+  friend class reference;
   class reference {
     friend class bitset;
 
