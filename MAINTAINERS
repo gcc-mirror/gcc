@@ -122,6 +122,7 @@ c++ runtime libs        Gabriel Dos Reis        dosreis@cmla.ens-cachan.fr
 c++ runtime libs	Ulrich Drepper		drepper@redhat.com
 c++ runtime libs	Phil Edwards		pme@gcc.gnu.org
 c++ runtime libs	Benjamin Kosnik		bkoz@redhat.com
+c++ runtime libs	Loren J. Rittle		ljrittle@acm.org
 *synthetic multiply	Torbjorn Granlund	tege@swox.com
 *c-torture		Torbjorn Granlund	tege@swox.com
 fixincludes		Bruce Korb		bkorb@gnu.org
@@ -221,7 +222,6 @@ Clinton Popetz					cpopetz@cpopetz.com
 Ken Raeburn					raeburn@redhat.com
 Rolf Rasmussen					rolfwr@gcc.gnu.org
 Gabriel Dos Reis                                dosreis@cmla.ens-cachan.fr
-Loren J. Rittle					ljrittle@acm.org
 Tom Rix						trix@redhat.com
 Craig Rodrigues					rodrigc@gcc.gnu.org
 Gavin Romig-Koch				gavin@redhat.com

@@ -1,3 +1,8 @@
+2002-08-20  Loren J. Rittle <ljrittle@acm.org>
+
+	* MAINTAINERS (Write After Approval): Remove myself.
+	(Various Maintainers: c++ runtime libs): Add myself.
+
 2002-08-15  Eric Christopher  <echristo@redhat.com>
 
 	* config.sub: Import from master repository.
