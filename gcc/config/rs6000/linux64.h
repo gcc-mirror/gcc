@@ -308,3 +308,22 @@ do {						\
 	       || (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT		\
 		   && ! TARGET_NO_FP_IN_TOC)))))
 
+/* This is the same as the dbxelf.h version, except that we need to
+   use the function code label, not the function descriptor.  */
+#undef	ASM_OUTPUT_SOURCE_LINE
+#define	ASM_OUTPUT_SOURCE_LINE(FILE, LINE)				\
+do									\
+  {									\
+    static int sym_lineno = 1;						\
+    char temp[256];							\
+    ASM_GENERATE_INTERNAL_LABEL (temp, "LM", sym_lineno);		\
+    fprintf (FILE, "\t.stabn 68,0,%d,", LINE);				\
+    assemble_name (FILE, temp);						\
+    fputs ("-.", FILE);							\
+    assemble_name (FILE,						\
+		   XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));\
+    putc ('\n', FILE);							\
+    ASM_OUTPUT_INTERNAL_LABEL (FILE, "LM", sym_lineno);			\
+    sym_lineno += 1;							\
+  }									\
+while (0)

@@ -1,3 +1,7 @@
+2002-06-05  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/linux64.h (ASM_OUTPUT_SOURCE_LINE): Define.
+
 Tue Jun  4 18:16:50 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* dwarf2out.c (expand_builtin_init_dwarf_reg_sizes): Do not initialize
