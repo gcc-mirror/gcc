@@ -1,3 +1,8 @@
+2003-04-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10451
+	* g++.dg/parse/crash4.C: New test.
+
 2003-04-23  Andreas Tobler <a.tobler@schweiz.ch>
 
         * g++.dg/other/packed1.C: Append the missing brace.
