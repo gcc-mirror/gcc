@@ -6877,29 +6877,30 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  return t;
 	return hash_tree_cons (purpose, value, chain);
       }
-    case TREE_VEC:
-      if (type != NULL_TREE)
+      
+    case TREE_BINFO:
+      /* A binfo node.  We always need to make a copy, of the node
+	 itself and of its BINFO_BASETYPES.  */
+      my_friendly_assert (type, 20040628);
+      
+      t = copy_node (t);
+
+      /* Make sure type isn't a typedef copy.  */
+      type = BINFO_TYPE (TYPE_BINFO (type));
+      
+      TREE_TYPE (t) = complete_type (type);
+      if (IS_AGGR_TYPE (type))
 	{
-	  /* A binfo node.  We always need to make a copy, of the node
-	     itself and of its BINFO_BASETYPES.  */
-
-	  t = copy_node (t);
-
-	  /* Make sure type isn't a typedef copy.  */
-	  type = BINFO_TYPE (TYPE_BINFO (type));
-
-	  TREE_TYPE (t) = complete_type (type);
-	  if (IS_AGGR_TYPE (type))
-	    {
-	      BINFO_VTABLE (t) = TYPE_BINFO_VTABLE (type);
-	      BINFO_VIRTUALS (t) = TYPE_BINFO_VIRTUALS (type);
-	      if (TYPE_BINFO_BASETYPES (type) != NULL_TREE)
-		BINFO_BASETYPES (t) = copy_node (TYPE_BINFO_BASETYPES (type));
-	    }
-	  return t;
+	  BINFO_VTABLE (t) = TYPE_BINFO_VTABLE (type);
+	  BINFO_VIRTUALS (t) = TYPE_BINFO_VIRTUALS (type);
+	  if (TYPE_BINFO_BASETYPES (type) != NULL_TREE)
+	    BINFO_BASETYPES (t) = copy_node (TYPE_BINFO_BASETYPES (type));
 	}
+      return t;
 
-      /* Otherwise, a vector of template arguments.  */
+    case TREE_VEC:
+      /* A vector of template arguments.  */
+      my_friendly_assert (!type, 20040628);
       return tsubst_template_args (t, args, complain, in_decl);
 
     case POINTER_TYPE:

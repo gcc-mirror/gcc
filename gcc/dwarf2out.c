@@ -9468,7 +9468,7 @@ add_data_member_location_attribute (dw_die_ref die, tree decl)
   HOST_WIDE_INT offset;
   dw_loc_descr_ref loc_descr = 0;
 
-  if (TREE_CODE (decl) == TREE_VEC)
+  if (TREE_CODE (decl) == TREE_BINFO)
     {
       /* We're working on the TAG_inheritance for a base class.  */
       if (TREE_VIA_VIRTUAL (decl) && is_cxx ())

@@ -4049,7 +4049,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 bool
 enforce_access (tree basetype_path, tree decl)
 {
-  my_friendly_assert (TREE_CODE (basetype_path) == TREE_VEC, 20030624);
+  my_friendly_assert (TREE_CODE (basetype_path) == TREE_BINFO, 20030624);
   
   if (!accessible_p (basetype_path, decl))
     {

@@ -1248,7 +1248,7 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type)
 
   my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 20030624);
 
-  if (TREE_CODE (xbasetype) == TREE_VEC)
+  if (TREE_CODE (xbasetype) == TREE_BINFO)
     {
       type = BINFO_TYPE (xbasetype);
       basetype_path = xbasetype;

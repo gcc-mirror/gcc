@@ -6873,7 +6873,7 @@ binfo_ctor_vtable (tree binfo)
       vt = BINFO_VTABLE (binfo);
       if (TREE_CODE (vt) == TREE_LIST)
 	vt = TREE_VALUE (vt);
-      if (TREE_CODE (vt) == TREE_VEC)
+      if (TREE_CODE (vt) == TREE_BINFO)
 	binfo = vt;
       else
 	break;

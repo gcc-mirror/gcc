@@ -306,7 +306,7 @@ perform_or_defer_access_check (tree binfo, tree decl)
   if (deferred_access_no_check)
     return;
   
-  my_friendly_assert (TREE_CODE (binfo) == TREE_VEC, 20030623);
+  my_friendly_assert (TREE_CODE (binfo) == TREE_BINFO, 20030623);
 
   ptr = VEC_last (deferred_access, deferred_access_stack);
   
@@ -1337,6 +1337,10 @@ check_accessibility_of_qualified_id (tree decl,
 {
   tree scope;
   tree qualifying_type = NULL_TREE;
+
+  /* If we're not checking, return imediately.  */
+  if (deferred_access_no_check)
+    return;
   
   /* Determine the SCOPE of DECL.  */
   scope = context_for_name_lookup (decl);

@@ -771,10 +771,10 @@ hash_chainon (tree list1, tree list2)
 tree
 make_binfo (tree offset, tree binfo, tree vtable, tree virtuals)
 {
-  tree new_binfo = make_tree_vec (BINFO_LANG_ELTS);
+  tree new_binfo = make_tree_binfo (BINFO_LANG_SLOTS);
   tree type;
 
-  if (TREE_CODE (binfo) == TREE_VEC)
+  if (TREE_CODE (binfo) == TREE_BINFO)
     {
       type = BINFO_TYPE (binfo);
       BINFO_DEPENDENT_BASE_P (new_binfo) = BINFO_DEPENDENT_BASE_P (binfo);

@@ -119,7 +119,7 @@ struct diagnostic_context;
      forth as a substitute for the mark bits provided in `lang_type'.
      At present, only the six low-order bits are used.
 
-   TYPE_BINFO
+   TYPE_LANG_SLOT_1
      For an ENUMERAL_TYPE, this is ENUM_TEMPLATE_INFO.
      For a FUNCTION_TYPE or METHOD_TYPE, this is TYPE_RAISES_EXCEPTIONS
 
@@ -168,9 +168,6 @@ struct diagnostic_context;
 
 #define VAR_TEMPL_TYPE_OR_FUNCTION_DECL_CHECK(NODE) \
   TREE_CHECK4(NODE,VAR_DECL,FUNCTION_DECL,TYPE_DECL,TEMPLATE_DECL)
-
-#define RECORD_OR_UNION_TYPE_CHECK(NODE) \
-  TREE_CHECK2(NODE,RECORD_TYPE,UNION_TYPE)
 
 #define BOUND_TEMPLATE_TEMPLATE_PARM_TYPE_CHECK(NODE) \
   TREE_CHECK(NODE,BOUND_TEMPLATE_TEMPLATE_PARM)
@@ -1436,21 +1433,21 @@ struct lang_type GTY(())
 
 /* The index in the VTT where this subobject's sub-VTT can be found.
    NULL_TREE if there is no sub-VTT.  */
-#define BINFO_SUBVTT_INDEX(NODE) TREE_VEC_ELT (NODE, BINFO_ELTS + 0)
+#define BINFO_SUBVTT_INDEX(NODE) BINFO_LANG_SLOT(NODE, 0)
 
 /* The index in the VTT where the vptr for this subobject can be
    found.  NULL_TREE if there is no secondary vptr in the VTT.  */
-#define BINFO_VPTR_INDEX(NODE) TREE_VEC_ELT (NODE, BINFO_ELTS + 1)
+#define BINFO_VPTR_INDEX(NODE) BINFO_LANG_SLOT(NODE, 1)
 
 /* The binfo of which NODE is a primary base.  (This is different from
    BINFO_INHERITANCE_CHAIN for virtual base because a virtual base is
    sometimes a primary base for a class for which it is not an
    immediate base.)  */
-#define BINFO_PRIMARY_BASE_OF(NODE) TREE_VEC_ELT (NODE, BINFO_ELTS + 2)
+#define BINFO_PRIMARY_BASE_OF(NODE) BINFO_LANG_SLOT(NODE, 2)
 
 /* C++ binfos have 3 additional entries.  */
 
-#define BINFO_LANG_ELTS (BINFO_ELTS + 3)
+#define BINFO_LANG_SLOTS (3)
 
 /* Nonzero if this binfo is for a dependent base - one that should not
    be searched.  */
@@ -1528,7 +1525,7 @@ struct lang_type GTY(())
    this type can raise.  Each TREE_VALUE is a _TYPE.  The TREE_VALUE
    will be NULL_TREE to indicate a throw specification of `()', or
    no exceptions allowed.  */
-#define TYPE_RAISES_EXCEPTIONS(NODE) TYPE_BINFO (NODE)
+#define TYPE_RAISES_EXCEPTIONS(NODE) TYPE_LANG_SLOT_1 (NODE)
 
 /* For FUNCTION_TYPE or METHOD_TYPE, return 1 iff it is declared `throw()'.  */
 #define TYPE_NOTHROW_P(NODE) \
@@ -2087,13 +2084,14 @@ struct lang_decl GTY(())
 
 /* Template information for a RECORD_TYPE or UNION_TYPE.  */
 #define CLASSTYPE_TEMPLATE_INFO(NODE) \
-  (LANG_TYPE_CLASS_CHECK (RECORD_OR_UNION_TYPE_CHECK (NODE))->template_info)
+  (LANG_TYPE_CLASS_CHECK (RECORD_OR_UNION_CHECK (NODE))->template_info)
 
 /* Template information for an ENUMERAL_TYPE.  Although an enumeration may
    not be a primary template, it may be declared within the scope of a
    primary template and the enumeration constants may depend on
    non-type template parameters.  */
-#define ENUM_TEMPLATE_INFO(NODE) (TYPE_BINFO (ENUMERAL_TYPE_CHECK (NODE)))
+#define ENUM_TEMPLATE_INFO(NODE) \
+  (TYPE_LANG_SLOT_1 (ENUMERAL_TYPE_CHECK (NODE)))
 
 /* Template information for a template template parameter.  */
 #define TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO(NODE) \
