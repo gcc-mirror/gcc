@@ -58,7 +58,8 @@
 #  define __RESTRICT
 #endif
 
-#if !defined(__STL_PTHREADS) && !defined(_NOTHREADS) \
+#if !defined(__STL_PTHREADS) && !defined(__STL_SOLTHREADS) \
+ && !defined(_NOTHREADS) \
  && !defined(__STL_SGI_THREADS) && !defined(__STL_WIN32THREADS)
 #   define _NOTHREADS
 #endif
@@ -74,6 +75,15 @@
         if (threads) pthread_mutex_unlock(&_S_node_allocator_lock)
 #   define __NODE_ALLOCATOR_THREADS true
 #   define __VOLATILE volatile  // Needed at -O3 on SGI
+# endif
+# ifdef __STL_SOLTHREADS
+#   include <thread.h>
+#   define __NODE_ALLOCATOR_LOCK \
+	if (threads) mutex_lock(&_S_node_allocator_lock)
+#   define __NODE_ALLOCATOR_UNLOCK \
+        if (threads) mutex_unlock(&_S_node_allocator_lock)
+#   define __NODE_ALLOCATOR_THREADS true
+#   define __VOLATILE
 # endif
 # ifdef __STL_WIN32THREADS
     // The lock needs to be initialized by constructing an allocator
@@ -318,7 +328,7 @@ private:
     enum {_NFREELISTS = _MAX_BYTES/_ALIGN};
 # endif
   static size_t
-  _S_round_up(size_t __bytes) 
+  _S_round_up(size_t __bytes)
     { return (((__bytes) + _ALIGN-1) & ~(_ALIGN - 1)); }
 
 __PRIVATE:
@@ -328,10 +338,10 @@ __PRIVATE:
   };
 private:
 # ifdef __SUNPRO_CC
-    static _Obj* __VOLATILE _S_free_list[]; 
+    static _Obj* __VOLATILE _S_free_list[];
         // Specifying a size results in duplicate def for 4.1
 # else
-    static _Obj* __VOLATILE _S_free_list[_NFREELISTS]; 
+    static _Obj* __VOLATILE _S_free_list[_NFREELISTS];
 # endif
   static  size_t _S_freelist_index(size_t __bytes) {
         return (((__bytes) + _ALIGN-1)/_ALIGN - 1);
@@ -350,12 +360,16 @@ private:
 
 # ifdef __STL_SGI_THREADS
     static volatile unsigned long _S_node_allocator_lock;
-    static void _S_lock(volatile unsigned long*); 
+    static void _S_lock(volatile unsigned long*);
     static inline void _S_unlock(volatile unsigned long*);
 # endif
 
 # ifdef __STL_PTHREADS
     static pthread_mutex_t _S_node_allocator_lock;
+# endif
+
+# ifdef __STL_SOLTHREADS
+    static mutex_t _S_node_allocator_lock;
 # endif
 
 # ifdef __STL_WIN32THREADS
@@ -445,7 +459,7 @@ typedef __default_alloc_template<false, 0> single_client_alloc;
 /* We hold the allocation lock.                                         */
 template <bool __threads, int __inst>
 char*
-__default_alloc_template<__threads, __inst>::_S_chunk_alloc(size_t __size, 
+__default_alloc_template<__threads, __inst>::_S_chunk_alloc(size_t __size,
                                                             int& __nobjs)
 {
     char* __result;
@@ -463,7 +477,7 @@ __default_alloc_template<__threads, __inst>::_S_chunk_alloc(size_t __size,
         _S_start_free += __total_bytes;
         return(__result);
     } else {
-        size_t __bytes_to_get = 
+        size_t __bytes_to_get =
 	  2 * __total_bytes + _S_round_up(_S_heap_size >> 4);
         // Try to make use of the left-over piece.
         if (__bytes_left > 0) {
@@ -567,6 +581,13 @@ __default_alloc_template<threads, inst>::reallocate(void* __p,
         = PTHREAD_MUTEX_INITIALIZER;
 #endif
 
+#ifdef __STL_SOLTHREADS
+    template <bool __threads, int __inst>
+    mutex_t
+    __default_alloc_template<__threads, __inst>::_S_node_allocator_lock
+        = DEFAULTMUTEX;
+#endif
+
 #ifdef __STL_WIN32THREADS
     template <bool __threads, int __inst>
     CRITICAL_SECTION
@@ -597,7 +618,7 @@ __default_alloc_template<__threads, __inst>::_S_node_allocator_lock = 0;
 #endif
 
 template <bool __threads, int __inst>
-void 
+void
 __default_alloc_template<__threads, __inst>::
   _S_lock(volatile unsigned long* __lock)
 {
@@ -659,7 +680,7 @@ __default_alloc_template<__threads, __inst>::_S_unlock(
         *__lock = 0;
 #   elif __mips >= 3 && (defined (_ABIN32) || defined(_ABI64))
         __lock_release(__lock);
-#   else 
+#   else
         *__lock = 0;
         // This is not sufficient on many multiprocessors, since
         // writes to protected variables and the lock may be reordered.
@@ -694,7 +715,7 @@ __default_alloc_template<__threads, __inst> ::_S_free_list[
 
 #endif /* ! __USE_MALLOC */
 
-// This implements allocators as specified in the C++ standard.  
+// This implements allocators as specified in the C++ standard.
 //
 // Note that standard-conforming allocators use many language features
 // that are not yet widely implemented.  In particular, they rely on
@@ -731,7 +752,7 @@ public:
   // __n is permitted to be 0.  The C++ standard says nothing about what
   // the return value is when __n == 0.
   _Tp* allocate(size_type __n, const void* = 0) {
-    return __n != 0 ? static_cast<_Tp*>(_Alloc::allocate(__n * sizeof(_Tp))) 
+    return __n != 0 ? static_cast<_Tp*>(_Alloc::allocate(__n * sizeof(_Tp)))
                     : 0;
   }
 
@@ -739,7 +760,7 @@ public:
   void deallocate(pointer __p, size_type __n)
     { _Alloc::deallocate(__p, __n * sizeof(_Tp)); }
 
-  size_type max_size() const __STL_NOTHROW 
+  size_type max_size() const __STL_NOTHROW
     { return size_t(-1) / sizeof(_Tp); }
 
   void construct(pointer __p, const _Tp& __val) { new(__p) _Tp(__val); }
@@ -761,7 +782,7 @@ class allocator<void> {
 
 
 template <class _T1, class _T2>
-inline bool operator==(const allocator<_T1>&, const allocator<_T2>&) 
+inline bool operator==(const allocator<_T1>&, const allocator<_T2>&)
 {
   return true;
 }
@@ -776,7 +797,7 @@ inline bool operator!=(const allocator<_T1>&, const allocator<_T2>&)
 // into a standard-conforming allocator.   Note that this adaptor does
 // *not* assume that all objects of the underlying alloc class are
 // identical, nor does it assume that all of the underlying alloc's
-// member functions are static member functions.  Note, also, that 
+// member functions are static member functions.  Note, also, that
 // __allocator<_Tp, alloc> is essentially the same thing as allocator<_Tp>.
 
 template <class _Tp, class _Alloc>
@@ -798,7 +819,7 @@ struct __allocator {
   __allocator() __STL_NOTHROW {}
   __allocator(const __allocator& __a) __STL_NOTHROW
     : __underlying_alloc(__a.__underlying_alloc) {}
-  template <class _Tp1> 
+  template <class _Tp1>
   __allocator(const __allocator<_Tp1, _Alloc>& __a) __STL_NOTHROW
     : __underlying_alloc(__a.__underlying_alloc) {}
   ~__allocator() __STL_NOTHROW {}
@@ -808,8 +829,8 @@ struct __allocator {
 
   // __n is permitted to be 0.
   _Tp* allocate(size_type __n, const void* = 0) {
-    return __n != 0 
-        ? static_cast<_Tp*>(__underlying_alloc.allocate(__n * sizeof(_Tp))) 
+    return __n != 0
+        ? static_cast<_Tp*>(__underlying_alloc.allocate(__n * sizeof(_Tp)))
         : 0;
   }
 
@@ -817,7 +838,7 @@ struct __allocator {
   void deallocate(pointer __p, size_type __n)
     { __underlying_alloc.deallocate(__p, __n * sizeof(_Tp)); }
 
-  size_type max_size() const __STL_NOTHROW 
+  size_type max_size() const __STL_NOTHROW
     { return size_t(-1) / sizeof(_Tp); }
 
   void construct(pointer __p, const _Tp& __val) { new(__p) _Tp(__val); }
@@ -935,7 +956,7 @@ template <class _Tp, class _Allocator>
 struct _Alloc_traits
 {
   static const bool _S_instanceless = false;
-  typedef typename _Allocator::__STL_TEMPLATE rebind<_Tp>::other 
+  typedef typename _Allocator::__STL_TEMPLATE rebind<_Tp>::other
           allocator_type;
 };
 
@@ -966,9 +987,9 @@ template <class _Tp, bool __threads, int __inst>
 struct _Alloc_traits<_Tp, __default_alloc_template<__threads, __inst> >
 {
   static const bool _S_instanceless = true;
-  typedef simple_alloc<_Tp, __default_alloc_template<__threads, __inst> > 
+  typedef simple_alloc<_Tp, __default_alloc_template<__threads, __inst> >
           _Alloc_type;
-  typedef __allocator<_Tp, __default_alloc_template<__threads, __inst> > 
+  typedef __allocator<_Tp, __default_alloc_template<__threads, __inst> >
           allocator_type;
 };
 
@@ -984,7 +1005,7 @@ struct _Alloc_traits<_Tp, debug_alloc<_Alloc> >
 // SGI-style allocators.
 
 template <class _Tp, class _Tp1, int __inst>
-struct _Alloc_traits<_Tp, 
+struct _Alloc_traits<_Tp,
                      __allocator<_Tp1, __malloc_alloc_template<__inst> > >
 {
   static const bool _S_instanceless = true;
@@ -993,14 +1014,14 @@ struct _Alloc_traits<_Tp,
 };
 
 template <class _Tp, class _Tp1, bool __thr, int __inst>
-struct _Alloc_traits<_Tp, 
-                      __allocator<_Tp1, 
+struct _Alloc_traits<_Tp,
+                      __allocator<_Tp1,
                                   __default_alloc_template<__thr, __inst> > >
 {
   static const bool _S_instanceless = true;
-  typedef simple_alloc<_Tp, __default_alloc_template<__thr,__inst> > 
+  typedef simple_alloc<_Tp, __default_alloc_template<__thr,__inst> >
           _Alloc_type;
-  typedef __allocator<_Tp, __default_alloc_template<__thr,__inst> > 
+  typedef __allocator<_Tp, __default_alloc_template<__thr,__inst> >
           allocator_type;
 };
 
