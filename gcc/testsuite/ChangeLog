@@ -1,3 +1,7 @@
+Mon Sep 13 06:28:57 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/compile/990913-1.c: New test.
+
 Fri Sep 10 11:21:25 BST 1999  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.old-deja/g++.jason/rfg4.C: Revert erroneous change, add -w.
