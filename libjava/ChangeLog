@@ -1,3 +1,8 @@
+2004-02-14  Per Bothner  <per@bothner.com>
+
+	* java/nio/channels/spi/AbstractInterruptibleChannel.java (close):
+	Set closed before calling implCloseChannel, as in the spec.
+
 2004-02-08  Per Bothner  <per@bothner.com>
 
 	* java/nio/ByteBuffer.java (shiftDown):  New helper method.
