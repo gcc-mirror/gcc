@@ -783,8 +783,8 @@ namespace std
       {  
 	_S_minus, 
 	_S_plus, 
-	_S_ecks, 
-	_S_Ecks, 
+	_S_x, 
+	_S_X, 
 	_S_digits,
 	_S_digits_end = _S_digits + 16,
 	_S_udigits = _S_digits_end,  

@@ -333,30 +333,42 @@ namespace std
 		{
 		  if (__testEE)
 		    {
-		      if (__testEEsign) break;
+		      if (__testEEsign) 
+			break;
 		      __testEEsign = true;
 		    }
 		  else
 		    {
-		      if (__testsign) break;
+		      if (__testsign) 
+			break;
 		      __testsign = true;
 		    }
 		}
 	      // Check for exponential part and accept if appropriate.
-	      else if ((__p == &__lits[__cache_type::_S_ee])
-		       || (__p == &__lits[__cache_type::_S_Ee]))
+ 	      else if ((__p == &__lits[__cache_type::_S_ee])
+  		       || (__p == &__lits[__cache_type::_S_Ee]))
+  		{
+ 		  if (!__fp || __testEE || !__testsign) 
+		    break;
+ 		  __testEE = true;
+  		}
+	      // Check for hexadecimal base parts.
+	      else if ((__p == &__lits[__cache_type::_S_x])
+		       || (__p == &__lits[__cache_type::_S_X]))
 		{
-		  if (!__fp || __testEE || !__testsign) break;
-		  __testEE = true;
+		  if (__base != 16 
+		      && __xtrc[__pos - 1] != __lits[__cache_type::_S_digits]) 
+		    break;
 		}
 	      // Check for appropriate digits. If found, too late for a sign
 	      else if ((__p >= &__lits[__cache_type::_S_digits]
-			&& __p < &__lits[__cache_type::_S_digits+__base]) 
+			&& __p < &__lits[__cache_type::_S_digits + __base]) 
 		       || (__p >= &__lits[__cache_type::_S_udigits]
-			   && __p < &__lits[__cache_type::_S_udigits+__base]))
+			   && __p < &__lits[__cache_type::_S_udigits + __base]))
                 {
 		  __testsign = true;
-		  if (__testEE) __testEEsign = true;
+		  if (__testEE) 
+		    __testEEsign = true;
                 }
 	      // Nothing else will do
 	      else break;
@@ -1033,7 +1045,7 @@ namespace std
 	  __sign_end = __front;
 	  if (__flags & ios_base::showbase) 
 	    {
-	      *--__front = __fmt->_S_literals[__fmt->_S_ecks +
+	      *--__front = __fmt->_S_literals[__fmt->_S_x +
                        ((__flags & ios_base::uppercase) ? 1 : 0)];
 	      *--__front = __table[0];
 	    }
