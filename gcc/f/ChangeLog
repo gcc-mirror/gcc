@@ -1,3 +1,9 @@
+Thu Jul 27 11:50:08 2000  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fini.c (main): Avoid automatic aggregate initialization.
+
+	* proj.h: Indent #error directive.
+
 2000-07-26  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* lang-specs.h: Remove one /dev/null from tradcpp invocation.
