@@ -1631,7 +1631,7 @@ configure-target-libchill: $(ALL_GCC_C)
 all-target-libchill: configure-target-libchill all-target-libiberty
 configure-target-libobjc: $(ALL_GCC_C)
 all-target-libobjc: configure-target-libobjc all-target-libiberty
-all-m4: all-libiberty
+all-m4: all-libiberty all-texinfo
 all-make: all-libiberty
 all-mmalloc:
 configure-target-newlib: $(ALL_GCC)
