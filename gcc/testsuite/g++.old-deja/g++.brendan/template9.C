@@ -1,6 +1,7 @@
 // GROUPS passed templates
 // Test that the compiler will emit the definition of min given just
 // the declaration.  At one point in the past, it did not.
+// Special g++ Options: -fguiding-decls
 #include <iostream.h>
 
 template <class T> inline T min(T a, T b) { return (a < b) ? a : b;};

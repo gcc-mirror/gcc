@@ -6,11 +6,13 @@ struct ostream {
   ostream& operator<< (const char *) { return *this; };
 };
 
-template <class T> class foo {
-  friend ostream& operator<<(ostream&, foo<T>&);
-};
+template <class T> class foo;
 
 template <class T> ostream& operator<< (ostream& ios, foo<T>&obj) { };
+
+template <class T> class foo {
+  friend ostream& operator<<<>(ostream&, foo<T>&);
+};
 
 int main()
 {

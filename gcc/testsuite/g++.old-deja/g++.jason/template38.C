@@ -1,4 +1,4 @@
-// Special g++ Options: -fansi-overloading
+// Special g++ Options: -fguiding-decls
 
 struct A {
   friend int operator== (const A&, const A&);

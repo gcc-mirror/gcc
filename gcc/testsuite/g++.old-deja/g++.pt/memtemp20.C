@@ -10,7 +10,6 @@ struct S
   template <class U>
   void foo(char*, U);
 
-  template <>
   void foo(int i);
 };
 
@@ -28,7 +27,6 @@ void S::foo(char*, U u)
 }
 
 
-template <>
 void S::foo(int i)
 {
   printf ("int version\n");
