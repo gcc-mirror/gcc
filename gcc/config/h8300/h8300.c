@@ -3212,7 +3212,7 @@ emit_a_rotate (code, operands)
 
   /* Determine the faster direction.  After this phase, amount will be
      at most a half of GET_MODE_BITSIZE (mode).  */
-  if ((unsigned int) amount > GET_MODE_BITSIZE (mode) / 2U)
+  if ((unsigned int) amount > GET_MODE_BITSIZE (mode) / (unsigned) 2)
     {
       /* Flip the direction.  */
       amount = GET_MODE_BITSIZE (mode) - amount;
@@ -3747,7 +3747,7 @@ h8300_adjust_insn_length (insn, length)
 
       /* Determine the faster direction.  After this phase, amount
 	 will be at most a half of GET_MODE_BITSIZE (mode).  */
-      if ((unsigned int) amount > GET_MODE_BITSIZE (mode) / 2U)
+      if ((unsigned int) amount > GET_MODE_BITSIZE (mode) / (unsigned) 2)
 	/* Flip the direction.  */
 	amount = GET_MODE_BITSIZE (mode) - amount;
 

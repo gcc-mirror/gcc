@@ -2876,7 +2876,7 @@ v850_return_addr (count)
 static void
 v850_select_section (exp, reloc, align)
      tree exp;
-     int reloc;
+     int reloc ATTRIBUTE_UNUSED;
      unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED;
 {
   if (TREE_CODE (exp) == VAR_DECL)

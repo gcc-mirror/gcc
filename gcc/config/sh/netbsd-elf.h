@@ -112,16 +112,16 @@ do									\
       }									\
     else								\
       {									\
-        fprintf((STREAM), "\tmov.l\t%cLP%d,r1\n",			\
+        fprintf((STREAM), "\tmov.l\t%sLP%d,r1\n",			\
                 LOCAL_LABEL_PREFIX, (LABELNO));				\
-        fprintf((STREAM), "\tmova\t%cLP%dr,r0\n",			\
+        fprintf((STREAM), "\tmova\t%sLP%dr,r0\n",			\
                 LOCAL_LABEL_PREFIX, (LABELNO));				\
         fprintf((STREAM), "\tjmp\t@r1\n");				\
         fprintf((STREAM), "\tnop\n");					\
         fprintf((STREAM), "\t.align\t2\n");				\
-        fprintf((STREAM), "%cLP%d:\t.long\t__mcount\n",			\
+        fprintf((STREAM), "%sLP%d:\t.long\t__mcount\n",			\
                 LOCAL_LABEL_PREFIX, (LABELNO));				\
-        fprintf((STREAM), "%cLP%dr:\n", LOCAL_LABEL_PREFIX, (LABELNO));	\
+        fprintf((STREAM), "%sLP%dr:\n", LOCAL_LABEL_PREFIX, (LABELNO));	\
       }									\
   }									\
 while (0)

@@ -1935,7 +1935,9 @@
   rtx reg3 = gen_reg_rtx (HImode);
   rtx label1 = gen_label_rtx ();
   rtx label2 = gen_label_rtx ();
-  REAL_VALUE_TYPE offset = REAL_VALUE_LDEXP (dconst1, 31);
+  REAL_VALUE_TYPE offset;
+
+  offset = REAL_VALUE_LDEXP (dconst1, 31);
 
   if (reg1)			/* turn off complaints about unreached code */
     {

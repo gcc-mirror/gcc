@@ -1,5 +1,21 @@
 2002-08-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* dsp16xx.c (print_operand): Fix format specifier.
+	* dsp16xx.md: Avoid automatic aggregate initialization.
+	* frv.h (REG_CLASS_FROM_LETTER): Avoid char as array index.
+	* h8300.c (emit_a_rotate, h8300_adjust_insn_length): Avoid U
+	integer constant modifier.
+	* ip2k.c (ip2k_set_compare): Avoid signed/unsigned warning.
+	* mmix-protos.h (mmix_use_simple_return): Move outside TREE_CODE
+	guards.
+	* sh/netbsd-elf.h (FUNCTION_PROFILER): Fix format specifier.
+	* v850.c (v850_select_section): Mark parameter with
+	ATTRIBUTE_UNUSED.
+	* global.c (global_alloc): Const-ify.
+	* ra-colorize.c (hardregset_to_string): Fix format specifier.
+
+2002-08-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* darwin-c.c (darwin_pragma_options): Const-ify.
 	* darwin.c (machopic_non_lazy_ptr_name,
 	machopic_validate_stub_or_non_lazy_ptr): Likewise.
