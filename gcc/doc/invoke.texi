@@ -600,7 +600,7 @@ in the following sections.
 -mlibfuncs -mno-libfuncs -mepsilon -mno-epsilon -mabi=gnu @gol
 -mabi=mmixware -mzero-extend -mknuthdiv -mtoplevel-symbols @gol
 -melf -mbranch-predict -mno-branch-predict -mbase-addresses @gol
--mno-base-addresses}
+-mno-base-addresses -msingle-exit -mno-single-exit}
 
 @emph{IA-64 Options}
 @gccoptlist{
@@ -9312,6 +9312,13 @@ to 255 from the value held in the register.  The generally leads to short
 and fast code, but the number of different data items that can be
 addressed is limited.  This means that a program that uses lots of static
 data may require @option{-mno-base-addresses}.
+
+@item -msingle-exit
+@itemx -mno-single-exit
+@opindex msingle-exit
+@opindex mno-single-exit
+Force (do not force) generated code to have a single exit point in each
+function.
 @end table
 
 @node PDP-11 Options

@@ -161,6 +161,7 @@ extern int target_flags;
 #define TARGET_MASK_KNUTH_DIVISION 16
 #define TARGET_MASK_TOPLEVEL_SYMBOLS 32
 #define TARGET_MASK_BRANCH_PREDICT 64
+#define TARGET_MASK_USE_RETURN_INSN 128
 
 /* We use the term "base address" since that's what Knuth uses.  The base
    address goes in a global register.  When addressing, it's more like
@@ -183,9 +184,11 @@ extern int target_flags;
 #define TARGET_TOPLEVEL_SYMBOLS (target_flags & TARGET_MASK_TOPLEVEL_SYMBOLS)
 #define TARGET_BRANCH_PREDICT (target_flags & TARGET_MASK_BRANCH_PREDICT)
 #define TARGET_BASE_ADDRESSES (target_flags & TARGET_MASK_BASE_ADDRESSES)
+#define TARGET_USE_RETURN_INSN (target_flags & TARGET_MASK_USE_RETURN_INSN)
 
 #define TARGET_DEFAULT \
- (TARGET_MASK_BRANCH_PREDICT | TARGET_MASK_BASE_ADDRESSES)
+ (TARGET_MASK_BRANCH_PREDICT | TARGET_MASK_BASE_ADDRESSES \
+  | TARGET_MASK_USE_RETURN_INSN)
 
 /* FIXME: Provide a way to *load* the epsilon register.  */
 #define TARGET_SWITCHES							\
@@ -220,6 +223,10 @@ extern int target_flags;
    N_("Use addresses that allocate global registers")},			\
   {"no-base-addresses",	-TARGET_MASK_BASE_ADDRESSES,			\
    N_("Do not use addresses that allocate global registers")},		\
+  {"single-exit",	-TARGET_MASK_USE_RETURN_INSN,			\
+   N_("Generate a single exit point for each function")},		\
+  {"no-single-exit",	TARGET_MASK_USE_RETURN_INSN,			\
+   N_("Do not generate a single exit point for each function")},	\
   {"",			TARGET_DEFAULT, ""}}
 
 /* Unfortunately, this must not reference anything in "mmix.c".  */
