@@ -30,6 +30,7 @@ the executable file might be covered by the GNU General Public License. */
 #include "libioP.h"
 #include <pfstream.h>
 #include <procbuf.h>
+#include <string.h>
 
 ipfstream::ipfstream(const char *name, int mode, int prot)
 {

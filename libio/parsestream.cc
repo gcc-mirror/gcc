@@ -30,6 +30,7 @@ Written by Per Bothner (bothner@cygnus.com). */
 #include "libioP.h"
 #include "parsestream.h"
 #include <stdlib.h>
+#include <string.h>
 
 streambuf* parsebuf::setbuf(char*, int)
 {
