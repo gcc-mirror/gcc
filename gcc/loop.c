@@ -5682,14 +5682,17 @@ combine_givs (bl)
 		g1->combined_with = 1;
 
 		/* If one of these givs is a DEST_REG that was only used
-		   once, by the other giv, this is actually a single use.  */
-		if ((g1->giv_type != DEST_REG
-		     || n_times_used[REGNO (g1->dest_reg)] != 1
-		     || ! reg_mentioned_p (g1->dest_reg, PATTERN (g2->insn)))
-		    && (g2->giv_type != DEST_REG
-			|| n_times_used[REGNO (g2->dest_reg)] != 1
-			|| ! reg_mentioned_p (g2->dest_reg,
-					      PATTERN (g1->insn))))
+		   once, by the other giv, this is actually a single use.
+		   The DEST_REG has the correct cost, while the other giv
+		   counts the REG use too often.  */
+		if (g2->giv_type == DEST_REG
+		    && n_times_used[REGNO (g2->dest_reg)] == 1
+		    && reg_mentioned_p (g2->dest_reg, PATTERN (g1->insn)))
+		  g1->benefit = g2->benefit;
+		else if (g1->giv_type != DEST_REG
+			 || n_times_used[REGNO (g1->dest_reg)] != 1
+			 || ! reg_mentioned_p (g1->dest_reg,
+					       PATTERN (g2->insn)))
 		  {
 		    g1->benefit += g2->benefit;
 		    g1->times_used += g2->times_used;
