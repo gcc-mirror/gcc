@@ -89,9 +89,6 @@ extern int target_flags;
 /* this is just to play around and check what code gcc generates */ \
     { "branch-expensive", 256}, \
     { "branch-cheap", -256},	\
-/* optimize for space instead of time - just in a couple of places */ \
-    { "space", 512 },		\
-    { "time", -512 },		\
 /* split instruction and data memory? */ \
     { "split", 1024 },		\
     { "no-split", -1024 },	\
@@ -123,9 +120,6 @@ extern int target_flags;
 
 #define TARGET_BRANCH_EXPENSIVE	(target_flags & 256)
 #define TARGET_BRANCH_CHEAP 	(!TARGET_BRANCH_EXPENSIVE)
-
-#define TARGET_SPACE 		(target_flags & 512)
-#define TARGET_TIME		(! TARGET_SPACE)
 
 #define TARGET_SPLIT		(target_flags & 1024)
 #define TARGET_NOSPLIT		(! TARGET_SPLIT)
@@ -1315,31 +1309,31 @@ JMP	FUNCTION	0x0058  0x0000 <- FUNCTION
    there is something wrong in MULT because MULT is not 
    as cheap as total = 2 even if we can shift!
 
-   if TARGET_SPACE make mult etc cheap, but not 1, so when 
+   if optimizing for size make mult etc cheap, but not 1, so when 
    in doubt the faster insn is chosen.
 */
 
 #define RTX_COSTS(X,CODE,OUTER_CODE) \
   case MULT:								\
-    if (TARGET_SPACE)							\
+    if (optimize_size)							\
       total = COSTS_N_INSNS(2);						\
     else								\
       total = COSTS_N_INSNS (11);					\
     break;								\
   case DIV:								\
-    if (TARGET_SPACE)							\
+    if (optimize_size)							\
       total = COSTS_N_INSNS(2);						\
     else								\
       total = COSTS_N_INSNS (25);					\
     break;								\
   case MOD:								\
-    if (TARGET_SPACE)							\
+    if (optimize_size)							\
       total = COSTS_N_INSNS(2);						\
     else								\
       total = COSTS_N_INSNS (26);					\
     break;								\
   case ABS:								\
-    /* equivalent to length, so same for TARGET_SPACE */		\
+    /* equivalent to length, so same for optimize_size */		\
     total = COSTS_N_INSNS (3);						\
     break;								\
   case ZERO_EXTEND:							\
@@ -1358,7 +1352,7 @@ JMP	FUNCTION	0x0058  0x0000 <- FUNCTION
   case ASHIFT:								\
   case LSHIFTRT:							\
   case ASHIFTRT:							\
-    if (TARGET_SPACE)							\
+    if (optimize_size)							\
       total = COSTS_N_INSNS(1);						\
     else if (GET_MODE(X) ==  QImode)					\
     {									\

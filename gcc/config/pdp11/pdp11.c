@@ -1115,7 +1115,7 @@ output_block_move(operands)
     char buf[200];
     
     if (GET_CODE(operands[2]) == CONST_INT
-	&& TARGET_TIME)
+	&& ! optimize_size)
     {
 	if (INTVAL(operands[2]) < 16
 	    && INTVAL(operands[3]) == 1)
@@ -1257,7 +1257,7 @@ output_block_move(operands)
 	     bgt x
 	*/
 
-	if (TARGET_SPACE)
+	if (optimize_size)
 	    goto generate_compact_code;
 	
 	output_asm_insn("asr %4", operands);
@@ -1308,7 +1308,7 @@ output_block_move(operands)
 	*/
 
 
-	if (TARGET_SPACE)
+	if (optimize_size)
 	    goto generate_compact_code;
 	
 	output_asm_insn("asr %4", operands);
