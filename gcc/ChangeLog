@@ -1,3 +1,7 @@
+2003-06-13  Florian Weimer  <fw@deneb.enyo.de>
+
+	* doc/invoke.texi (SPARC Options): Document ``-mimpure-text''.
+
 2003-06-13  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/linux.h (TARGET_ASM_FILE_END): Set TARGET_ASM_FILE_END

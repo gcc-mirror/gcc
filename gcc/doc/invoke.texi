@@ -5935,6 +5935,22 @@ this to work.
 Generate output containing quad-word (long double) floating point
 instructions.
 
+@item -mimpure-text
+@opindex mimpure-text
+@option{-mimpure-text}, used in addition to @option{-shared}, tells
+the compiler to not pass @option{-z text} to the linker when linking a
+shared object.  Using this option, you can link position-dependent
+code into a shared object.  
+
+@option{-mimpure-text} suppresses the ``relocations remain against
+allocatable but non-writable sections'' linker error message.
+However, the necessary relocations will trigger copy-on-write, and the
+shared object is not actually shared across processes.  Instead of
+using @option{-mimpure-text}, you should compile all source code with
+@option{-fpic} or @option{-fPIC}.
+
+This option is only available on SunOS and Solaris.
+
 @item -msoft-quad-float
 @opindex msoft-quad-float
 Generate output containing library calls for quad-word (long double)
