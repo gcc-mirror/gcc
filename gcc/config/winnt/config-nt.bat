@@ -4,7 +4,7 @@ rem This batch file assumes a unix-type "sed" program
 echo #include "%2/xm-winnt.h" >config.h
 echo #include "%2/xm-winnt.h" >hconfig.h
 echo #include "%2/xm-winnt.h" >tconfig.h
-echo #include "%2/winnt.h" >tm.h
+echo #include "%2/win-nt.h" >tm.h
 
 rem This batch file assumes a unix-type "sed" program
 
