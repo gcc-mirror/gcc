@@ -452,6 +452,8 @@ plain_type_1 (type)
 	  return (TREE_UNSIGNED (type) ? T_USHORT : T_SHORT);
 	if (size == INT_TYPE_SIZE)
 	  return (TREE_UNSIGNED (type) ? T_UINT : T_INT);
+	if (size == LONG_TYPE_SIZE)
+	  return (TREE_UNSIGNED (type) ? T_ULONG : T_LONG);
 	return 0;
       }
 
