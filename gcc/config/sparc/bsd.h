@@ -1,5 +1,3 @@
-#include "sparc/sparc.h"
-
 #undef LIB_SPEC
 #define LIB_SPEC	"%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}"
  
