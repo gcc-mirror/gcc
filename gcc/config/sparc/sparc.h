@@ -394,6 +394,10 @@ extern int target_flags;
 #define MASK_BROKEN_SAVERESTORE 0x200000
 #define TARGET_BROKEN_SAVERESTORE (target_flags & MASK_BROKEN_SAVERESTORE)
 
+/* Non-zero means -m{,no-}fpu was passed on the command line.  */
+#define MASK_FPU_SET 0x400000
+#define TARGET_FPU_SET (target_flags & MASK_FPU_SET)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -401,10 +405,12 @@ extern int target_flags;
    An empty string NAME is used to identify the default VALUE.  */
 
 #define TARGET_SWITCHES  \
-  { {"fpu", MASK_FPU},			\
+  { {"fpu", MASK_FPU | MASK_FPU_SET},	\
     {"no-fpu", -MASK_FPU},		\
-    {"hard-float", MASK_FPU},		\
+    {"no-fpu", MASK_FPU_SET},		\
+    {"hard-float", MASK_FPU | MASK_FPU_SET}, \
     {"soft-float", -MASK_FPU},		\
+    {"soft-float", MASK_FPU_SET},	\
     {"epilogue", MASK_EPILOGUE},	\
     {"no-epilogue", -MASK_EPILOGUE},	\
     {"unaligned-doubles", MASK_UNALIGNED_DOUBLES}, \
