@@ -1,3 +1,8 @@
+2000-12-01  Geoffrey Keating  <geoffk@redhat.com>
+
+	* cpplib.c (do_ifdef): Add check_eol() call.
+	(do_ifndef): Likewise.
+
 2000-12-02  Daniel Berlin  <dberlin@redhat.com>
             Bruce Korb  <bkorb@gnu.org>
 

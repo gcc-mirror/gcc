@@ -1221,6 +1221,9 @@ do_ifdef (pfile)
 
       if (node)
 	skip = node->type != NT_MACRO;
+
+      if (node)
+	check_eol (pfile);
     }
 
   push_conditional (pfile, skip, T_IFDEF, 0);
@@ -1238,6 +1241,9 @@ do_ifndef (pfile)
       node = lex_macro_node (pfile);
       if (node)
 	skip = node->type == NT_MACRO;
+
+      if (node)
+	check_eol (pfile);
     }
 
   push_conditional (pfile, skip, T_IFNDEF, node);
