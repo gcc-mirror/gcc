@@ -18,6 +18,10 @@ INPUT=${2-${INPUT-/usr/include}}
 # unrecognizable.
 TERM=unknown
 export TERM
+# This prevents /bin/ex from failing if the EXINIT environment variable
+# was set to something invalid.
+EXINIT=""
+export EXINIT
 
 # Directory in which to store the results.
 LIB=${1?"fixincludes: output directory not specified"}
