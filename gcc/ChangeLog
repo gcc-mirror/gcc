@@ -1,5 +1,12 @@
 2004-11-28  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	PR/18664
+	* tree-ssa-operands.c (build_ssa_operands, case MODIFY_EXPR):
+	Ignore a VIEW_CONVERT_EXPR on LHS when deciding if must or may def.
+	* tree-ssa-ccp.c (visit_assignment): If LHS is a VIEW_CONVERT_EXPR,
+	add an inverse VIEW_CONVERT_EXPR to const_val.
+
+	PR/18657
 	* tree-nested.c (check_for_nested_with_variably_modified): New.
 	(create_nesting_tree): Call it.
 
