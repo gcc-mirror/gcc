@@ -4013,7 +4013,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
      actually fail are extremely rare, so it turns out to be better to fix
      the problem here by not generating cases that choose_reload_regs will
      fail for.  */
-  /* There is a similar problem with RELAOD_FOR_INPUT_ADDRESS /
+  /* There is a similar problem with RELOAD_FOR_INPUT_ADDRESS /
      RELOAD_FOR_OUTPUT_ADDRESS when there is more than one of a kind for
      a single operand.
      We can reduce the register pressure by exploiting that a
