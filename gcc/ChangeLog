@@ -1,3 +1,9 @@
+2001-10-30  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* tree.c (id_string_size): Remove.
+	(dump_tree_statistics): Update.
+	* toplev.c (compile_file): If dumping stats, dump tree stats too.
+
 Tue Oct 30 19:00:43 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* sched-rgn.c (schedule_insns): Fix comment.
