@@ -1,5 +1,5 @@
 /* EmbeddedWindow.java --
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.java.awt;
 
+import gnu.classpath.Configuration;
 import gnu.java.awt.peer.EmbeddedWindowPeer;
 import java.awt.Frame;
 import java.awt.Toolkit;
@@ -50,6 +51,12 @@ import java.awt.Toolkit;
  */
 public class EmbeddedWindow extends Frame
 {
+  static
+  {
+    if (Configuration.INIT_LOAD_LIBRARY)
+      System.loadLibrary("javaawt");
+  }
+  
   private long handle;
   
   /**
