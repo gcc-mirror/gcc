@@ -8609,6 +8609,15 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  if (dest_align == 0)
 	    break;
 
+	  /* If the arguments have side-effects, then we can only evaluate
+	     them at most once.  The following code evaluates them twice if
+	     they are not constants because we break out to expand_call
+	     in that case.  They can't be constants if they have side-effects
+	     so we can check for that first.  Alternatively, we could call
+	     save_expr to make multiple evaluation safe.  */
+	  if (TREE_SIDE_EFFECTS (val) || TREE_SIDE_EFFECTS (len))
+	    break;
+
 	  /* If VAL is not 0, don't do this operation in-line. */
 	  if (expand_expr (val, NULL_RTX, VOIDmode, 0) != const0_rtx)
 	    break;
