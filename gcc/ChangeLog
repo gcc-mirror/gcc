@@ -1,3 +1,7 @@
+Mon Apr 29 14:48:33 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (sse_mov?fcc*): Revert patch of Apr 18th.
+
 2002-04-29  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/contrib.texi (Contributors): Add Paolo Carlini and
