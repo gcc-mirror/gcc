@@ -3596,7 +3596,9 @@ notice_update_cc (exp)
 	 (Note that moving a constant 0 or 1 MAY set the cc's).  */
       if (REG_P (SET_DEST (exp))
 	  && (REG_P (SET_SRC (exp)) || GET_CODE (SET_SRC (exp)) == MEM
-	      || GET_RTX_CLASS (GET_CODE (SET_SRC (exp))) == '<'))
+	      || GET_RTX_CLASS (GET_CODE (SET_SRC (exp))) == '<'
+	      || (GET_CODE (SET_SRC (exp)) == IF_THEN_ELSE
+		  && GET_MODE_CLASS (GET_MODE (SET_DEST (exp))) == MODE_INT)))
 	{
 	  if (cc_status.value1
 	      && reg_overlap_mentioned_p (SET_DEST (exp), cc_status.value1))
