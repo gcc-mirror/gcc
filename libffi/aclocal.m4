@@ -1,6 +1,6 @@
-dnl aclocal.m4 generated automatically by aclocal 1.4-p5
+dnl aclocal.m4 generated automatically by aclocal 1.4
 
-dnl Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
+dnl Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -20,11 +20,100 @@ AC_DEFUN([AM_PROG_LIBTOOL],)
 AC_SUBST(LIBTOOL)
 ])
 
+# mmap(2) blacklisting.  Some platforms provide the mmap library routine
+# but don't support all of the features we need from it.
+AC_DEFUN([AC_FUNC_MMAP_BLACKLIST],
+[if test $ac_cv_header_sys_mman_h != yes \
+ || test $ac_cv_func_mmap != yes; then
+   ac_cv_func_mmap_file=no
+   ac_cv_func_mmap_dev_zero=no
+   ac_cv_func_mmap_anon=no
+else
+   AC_CACHE_CHECK([whether read-only mmap of a plain file works],
+  ac_cv_func_mmap_file,
+  [# Add a system to this blacklist if
+   # mmap(0, stat_size, PROT_READ, MAP_PRIVATE, fd, 0) doesn't return a
+   # memory area containing the same data that you'd get if you applied
+   # read() to the same fd.  The only system known to have a problem here
+   # is VMS, where text files have record structure.
+   case "$host_os" in
+     vms* | ultrix*)
+	ac_cv_func_mmap_file=no ;;
+     *)
+	ac_cv_func_mmap_file=yes;;
+   esac])
+   AC_CACHE_CHECK([whether mmap from /dev/zero works],
+  ac_cv_func_mmap_dev_zero,
+  [# Add a system to this blacklist if it has mmap() but /dev/zero
+   # does not exist, or if mmapping /dev/zero does not give anonymous
+   # zeroed pages with both the following properties:
+   # 1. If you map N consecutive pages in with one call, and then
+   #    unmap any subset of those pages, the pages that were not
+   #    explicitly unmapped remain accessible.
+   # 2. If you map two adjacent blocks of memory and then unmap them
+   #    both at once, they must both go away.
+   # Systems known to be in this category are Windows (all variants),
+   # VMS, and Darwin.
+   case "$host_os" in
+     vms* | cygwin* | pe | mingw* | darwin* | ultrix* | hpux10* | hpux11.00)
+	ac_cv_func_mmap_dev_zero=no ;;
+     *)
+	ac_cv_func_mmap_dev_zero=yes;;
+   esac])
+
+   # Unlike /dev/zero, the MAP_ANON(YMOUS) defines can be probed for.
+   AC_CACHE_CHECK([for MAP_ANON(YMOUS)], ac_cv_decl_map_anon,
+    [AC_TRY_COMPILE(
+[#include <sys/types.h>
+#include <sys/mman.h>
+#include <unistd.h>
+
+#ifndef MAP_ANONYMOUS
+#define MAP_ANONYMOUS MAP_ANON
+#endif
+],
+[int n = MAP_ANONYMOUS;],
+    ac_cv_decl_map_anon=yes,
+    ac_cv_decl_map_anon=no)])
+
+   if test $ac_cv_decl_map_anon = no; then
+     ac_cv_func_mmap_anon=no
+   else
+     AC_CACHE_CHECK([whether mmap with MAP_ANON(YMOUS) works],
+     ac_cv_func_mmap_anon,
+  [# Add a system to this blacklist if it has mmap() and MAP_ANON or
+   # MAP_ANONYMOUS, but using mmap(..., MAP_PRIVATE|MAP_ANONYMOUS, -1, 0)
+   # doesn't give anonymous zeroed pages with the same properties listed
+   # above for use of /dev/zero.
+   # Systems known to be in this category are Windows, VMS, and SCO Unix.
+   case "$host_os" in
+     vms* | cygwin* | pe | mingw* | sco* | udk* )
+	ac_cv_func_mmap_anon=no ;;
+     *)
+	ac_cv_func_mmap_anon=yes;;
+   esac])
+   fi
+fi
+
+if test $ac_cv_func_mmap_file = yes; then
+  AC_DEFINE(HAVE_MMAP_FILE, 1,
+	    [Define if read-only mmap of a plain file works.])
+fi
+if test $ac_cv_func_mmap_dev_zero = yes; then
+  AC_DEFINE(HAVE_MMAP_DEV_ZERO, 1,
+	    [Define if mmap of /dev/zero works.])
+fi
+if test $ac_cv_func_mmap_anon = yes; then
+  AC_DEFINE(HAVE_MMAP_ANON, 1,
+	    [Define if mmap with MAP_ANON(YMOUS) works.])
+fi
+])
+
 sinclude(../config/accross.m4)
 
 # Like AC_CONFIG_HEADER, but automatically create stamp file.
 
-AC_DEFUN([AM_CONFIG_HEADER],
+AC_DEFUN(AM_CONFIG_HEADER,
 [AC_PREREQ([2.12])
 AC_CONFIG_HEADER([$1])
 dnl When config.status generates a header, we must update the stamp-h file.
@@ -54,7 +143,7 @@ changequote([,]))])
 dnl Usage:
 dnl AM_INIT_AUTOMAKE(package,version, [no-define])
 
-AC_DEFUN([AM_INIT_AUTOMAKE],
+AC_DEFUN(AM_INIT_AUTOMAKE,
 [AC_REQUIRE([AC_PROG_INSTALL])
 PACKAGE=[$1]
 AC_SUBST(PACKAGE)
@@ -82,7 +171,7 @@ AC_REQUIRE([AC_PROG_MAKE_SET])])
 # Check to make sure that the build environment is sane.
 #
 
-AC_DEFUN([AM_SANITY_CHECK],
+AC_DEFUN(AM_SANITY_CHECK,
 [AC_MSG_CHECKING([whether build environment is sane])
 # Just in case
 sleep 1
@@ -123,7 +212,7 @@ AC_MSG_RESULT(yes)])
 
 dnl AM_MISSING_PROG(NAME, PROGRAM, DIRECTORY)
 dnl The program must properly implement --version.
-AC_DEFUN([AM_MISSING_PROG],
+AC_DEFUN(AM_MISSING_PROG,
 [AC_MSG_CHECKING(for working $2)
 # Run test in a subshell; some versions of sh will print an error if
 # an executable is not found, even if stderr is redirected.
@@ -142,7 +231,7 @@ AC_SUBST($1)])
 
 # serial 1
 
-AC_DEFUN([AM_MAINTAINER_MODE],
+AC_DEFUN(AM_MAINTAINER_MODE,
 [AC_MSG_CHECKING([whether to enable maintainer-specific portions of Makefiles])
   dnl maintainer-mode is disabled by default
   AC_ARG_ENABLE(maintainer-mode,
@@ -159,7 +248,7 @@ AC_DEFUN([AM_MAINTAINER_MODE],
 
 # Define a conditional.
 
-AC_DEFUN([AM_CONDITIONAL],
+AC_DEFUN(AM_CONDITIONAL,
 [AC_SUBST($1_TRUE)
 AC_SUBST($1_FALSE)
 if $2; then

@@ -49,12 +49,20 @@ cls_struct_19byte_gn(ffi_cif* cif, void* resp, void** args, void* userdata)
 int main (void)
 {
   ffi_cif cif;
+#ifndef USING_MMAP
   static ffi_closure cl;
-  ffi_closure *pcl = &cl;
+#endif
+  ffi_closure *pcl;
   void* args_dbl[3];
   ffi_type* cls_struct_fields[6];
   ffi_type cls_struct_type;
   ffi_type* dbl_arg_types[3];
+
+#ifdef USING_MMAP
+  pcl = allocate_mmap (sizeof(ffi_closure));
+#else
+  pcl = &cl;
+#endif
 
   cls_struct_type.size = 0;
   cls_struct_type.alignment = 0;
@@ -85,7 +93,7 @@ int main (void)
 
   ffi_call(&cif, FFI_FN(cls_struct_19byte_fn), &res_dbl, args_dbl);
   /* { dg-output "1 127 126 3 120 4 125 124 5 119: 5 252 250 8 239" } */
-  printf("res: %g %d %d %g %d\n", res_dbl.a, res_dbl.b, res_dbl.c, 
+  printf("res: %g %d %d %g %d\n", res_dbl.a, res_dbl.b, res_dbl.c,
 	 res_dbl.d, res_dbl.e);
   /* { dg-output "\nres: 5 252 250 8 239" } */
 

@@ -59,10 +59,17 @@ typedef int (*closure_test_type0)(unsigned long long, unsigned long long,
 int main (void)
 {
   ffi_cif cif;
+#ifndef USING_MMAP
   static ffi_closure cl;
-  ffi_closure *pcl = &cl;
+#endif
+  ffi_closure *pcl;
   ffi_type * cl_arg_types[17];
   int i, res;
+#ifdef USING_MMAP
+  pcl = allocate_mmap (sizeof(ffi_closure));
+#else
+  pcl = &cl;
+#endif
 
   for (i = 0; i < 10; i++) {
     cl_arg_types[i] = &ffi_type_uint64;
