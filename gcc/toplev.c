@@ -2170,14 +2170,11 @@ push_srcloc (const char *file, int line)
 {
   struct file_stack *fs;
 
-  if (input_file_stack)
-    input_file_stack->location = input_location;
-
   fs = (struct file_stack *) xmalloc (sizeof (struct file_stack));
-  input_filename = file;
-  input_line = line;
   fs->location = input_location;
   fs->next = input_file_stack;
+  input_filename = file;
+  input_line = line;
   input_file_stack = fs;
   input_file_stack_tick++;
 }
@@ -2192,17 +2189,10 @@ pop_srcloc (void)
   struct file_stack *fs;
 
   fs = input_file_stack;
+  input_location = fs->location;
   input_file_stack = fs->next;
   free (fs);
   input_file_stack_tick++;
-
-  if (input_file_stack)
-    input_location = input_file_stack->location;
-  else
-    {
-      input_filename = NULL;
-      input_line = 0;
-    }
 }
 
 /* Compile an entire translation unit.  Write a file of assembly
@@ -5650,9 +5640,6 @@ lang_dependent_init (const char *name)
   init_dummy_function_start ();
   init_expr_once ();
   expand_dummy_function_end ();
-
-  /* Put an entry on the input file stack for the main input file.  */
-  push_srcloc (input_filename, 0);
 
   /* If dbx symbol table desired, initialize writing it and output the
      predefined types.  */
