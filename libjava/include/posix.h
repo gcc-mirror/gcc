@@ -11,8 +11,6 @@ details.  */
 #ifndef __JV_POSIX_H__
 #define __JV_POSIX_H__
 
-#ifndef DISABLE_JAVA_NET
-
 /* Required on Tru64 UNIX V4/V5 so <sys/socket.h> defines prototypes of
    socket functions with socklen_t instead of size_t.  This must be defined
    early so <standards.h> defines the correct version of __PIIX.  */
@@ -42,10 +40,16 @@ details.  */
 #include <gcj/cni.h>
 #include <java/util/Properties.h>
 
+#ifndef DISABLE_JAVA_NET
+#include <java/net/InetAddress.h>
+#endif
+
 extern int _Jv_select (int n, fd_set *, fd_set *, fd_set *, struct timeval *);
 extern jlong _Jv_platform_gettimeofday ();
 extern void _Jv_platform_initialize (void);
 extern void _Jv_platform_initProperties (java::util::Properties*);
+
+#ifndef DISABLE_JAVA_NET
 
 static inline int
 _Jv_socket (int domain, int type, int protocol)

@@ -1,6 +1,11 @@
 2002-11-21  Michael Koch <konqueror@gmx.de>
 
-	* include/posic.h: Moved new functions into a #ifndef DISABLE_JAVA_NET
+	* include/posix.h: I put too much into the #ifndef DISABLE_JAVA_NET.
+	Only the new network functions should be in it.
+	
+2002-11-21  Michael Koch <konqueror@gmx.de>
+
+	* include/posix.h: Moved new functions into a #ifndef DISABLE_JAVA_NET
 	* include/win32.h: Moved new functions into a #ifndef DISABLE_JAVA_NET
 	
 2002-11-21  Michael Koch <konqueror@gmx.de>
