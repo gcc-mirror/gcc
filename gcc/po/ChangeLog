@@ -1,5 +1,9 @@
 2000-12-17  Philipp Thomas  <pthomas@suse.de>
 
+	* POTFILES.in: Add doloop.c.
+
+2000-12-17  Philipp Thomas  <pthomas@suse.de>
+
 	* POTFILES.in: Remove files not existing anymore.
 	Add a note at the top that trailing spaces aren't allowed.
 
