@@ -497,14 +497,15 @@ void GC_print_callers (/* struct callinfo info[NFRAMES] */);
 		}
 #    define EXIT_GC() GC_collecting = 0;
 #  endif /* LINUX_THREADS */
-#  ifdef IRIX_THREADS
+#  if defined(IRIX_THREADS) || defined(IRIX_JDK_THREADS)
 #    include <pthread.h>
 #    include <mutex.h>
 
-#    if __mips < 3 || !(defined (_ABIN32) || defined(_ABI64))
+#    if __mips < 3 || !(defined (_ABIN32) || defined(_ABI64)) \
+	|| !defined(_COMPILER_VERSION) || _COMPILER_VERSION < 700
 #        define GC_test_and_set(addr, v) test_and_set(addr,v)
 #    else
-#	  define GC_test_and_set(addr, v) __test_and_set(addr,v)
+#	 define GC_test_and_set(addr, v) __test_and_set(addr,v)
 #    endif
      extern unsigned long GC_allocate_lock;
 	/* This is not a mutex because mutexes that obey the (optional) 	*/
@@ -523,10 +524,17 @@ void GC_print_callers (/* struct callinfo info[NFRAMES] */);
 #    	define UNLOCK() pthread_mutex_unlock(&GC_allocate_ml)
 #    else
 #	define LOCK() { if (GC_test_and_set(&GC_allocate_lock, 1)) GC_lock(); }
-#       if __mips >= 3 && (defined (_ABIN32) || defined(_ABI64))
+#       if __mips >= 3 && (defined (_ABIN32) || defined(_ABI64)) \
+	   && defined(_COMPILER_VERSION) && _COMPILER_VERSION >= 700
 #	    define UNLOCK() __lock_release(&GC_allocate_lock)
 #	else
-#           define UNLOCK() GC_allocate_lock = 0
+	    /* The function call in the following should prevent the	*/
+	    /* compiler from moving assignments to below the UNLOCK.	*/
+	    /* This is probably not necessary for ucode or gcc 2.8.	*/
+	    /* It may be necessary for Ragnarok and future gcc		*/
+	    /* versions.						*/
+#           define UNLOCK() { GC_noop1(&GC_allocate_lock); \
+			*(volatile unsigned long *)(&GC_allocate_lock) = 0; }
 #	endif
 #    endif
      extern GC_bool GC_collecting;
@@ -535,7 +543,7 @@ void GC_print_callers (/* struct callinfo info[NFRAMES] */);
 		    GC_collecting = 1; \
 		}
 #    define EXIT_GC() GC_collecting = 0;
-#  endif /* IRIX_THREADS */
+#  endif /* IRIX_THREADS || IRIX_JDK_THREADS */
 #  ifdef WIN32_THREADS
 #    include <windows.h>
      GC_API CRITICAL_SECTION GC_allocate_ml;
@@ -593,7 +601,7 @@ void GC_print_callers (/* struct callinfo info[NFRAMES] */);
 #   if defined(SRC_M3) || defined(AMIGA) || defined(SOLARIS_THREADS) \
 	|| defined(MSWIN32) || defined(MACOS) || defined(DJGPP) \
 	|| defined(NO_SIGNALS) || defined(IRIX_THREADS) \
-	|| defined(LINUX_THREADS)
+	|| defined(IRIX_JDK_THREADS) || defined(LINUX_THREADS) 
 			/* Also useful for debugging.		*/
 	/* Should probably use thr_sigsetmask for SOLARIS_THREADS. */
 #     define DISABLE_SIGNALS()
@@ -621,7 +629,8 @@ void GC_print_callers (/* struct callinfo info[NFRAMES] */);
  				   PCR_waitForever);
 # else
 #   if defined(SOLARIS_THREADS) || defined(WIN32_THREADS) \
-	|| defined(IRIX_THREADS) || defined(LINUX_THREADS)
+	|| defined(IRIX_THREADS) || defined(LINUX_THREADS) \
+	|| defined(IRIX_JDK_THREADS)
       void GC_stop_world();
       void GC_start_world();
 #     define STOP_WORLD() GC_stop_world()
