@@ -5,6 +5,6 @@ void f()
 
 int main()
 {
-   f<bool>();
+  f<bool>(); // ERROR - .*
 }
 
