@@ -292,7 +292,7 @@ build_cplus_new (type, init)
   return rval;
 }
 
-/* Buidl a TARGET_EXPR using INIT to initialize a new temporary of the
+/* Build a TARGET_EXPR using INIT to initialize a new temporary of the
    indicated TYPE.  */
 
 tree
