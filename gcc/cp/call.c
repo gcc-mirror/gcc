@@ -6173,7 +6173,10 @@ initialize_reference (type, expr, decl, cleanup)
       else
 	base_conv_type = NULL_TREE;
       /* Perform the remainder of the conversion.  */
-      expr = convert_like (conv, expr);
+      expr = convert_like_real (conv, expr,
+				/*fn=*/NULL_TREE, /*argnum=*/0,
+				/*inner=*/-1,
+				/*issue_conversion_warnings=*/true);
       if (!real_non_cast_lvalue_p (expr))
 	{
 	  tree init;

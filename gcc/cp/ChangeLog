@@ -1,3 +1,12 @@
+2004-01-21  Gabriel Dos Reis <gdr@integrable-solutions.net>
+
+	Backport from mainline
+	2004-01-16  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/13478
+	* call.c (initialize_reference): Pass -1 for inner parameter to
+	convert_like_real.
+	
 2004-01-21  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	Backport from mainline
