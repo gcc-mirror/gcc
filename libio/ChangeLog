@@ -1,3 +1,8 @@
+1999-05-12  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* configure.in (compiler_name): Don't do the skip-this-dir thing
+	if we're reconfiguring.
+
 1999-04-29  Nathan Sidwell  <nathan@acm.org>
 
 	* streambuf.h (ios::~ios): Use operator delete[] to remove _arrays.

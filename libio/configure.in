@@ -18,9 +18,11 @@ esac
 # does, we do not build anything. Note, $r is set by the top-level Makefile.
 # Note that when we look for the compiler, we search both with and without
 # extension to handle cross and canadian cross builds. 
+# Note that if $norecursion is set we're being called from config.status,
+# so don't check for the compiler; we might be doing a make clean.
 compiler_name=cc1plus
 rm -f skip-this-dir
-if test -n "$r"; then
+if test -n "$r" && [ -z "$norecursion" ] ; then
   if test -d "$r"/gcc; then
     if test -f "$r"/gcc/$compiler_name \
        || test -f "$r"/gcc/$compiler_name$EXEEXT; then

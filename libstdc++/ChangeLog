@@ -1,3 +1,8 @@
+1999-05-12  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* configure.in (compiler_name): Don't do the skip-this-dir thing
+	if we're reconfiguring.
+
 1999-05-07  Ulrich Drepper  <drepper@cygnus.com>
 
 	* std/bastring.h (class basic_string::Rep): Make release member
