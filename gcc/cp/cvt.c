@@ -32,8 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include "cp-tree.h"
 #include "convert.h"
 #include "toplev.h"
-
-extern tree static_aggregates;
+#include "decl.h"
 
 static tree cp_convert_to_pointer PROTO((tree, tree));
 static tree convert_to_pointer_force PROTO((tree, tree));

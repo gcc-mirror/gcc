@@ -7439,12 +7439,10 @@ comp_ptr_ttypes_reinterpret (to, from)
       if (TREE_CODE (to) == OFFSET_TYPE)
 	to = TREE_TYPE (to);
 
-      if (TREE_CODE (to) != TREE_CODE (from))
-	return 1;
-
       /* Const and volatile mean something different for function types,
 	 so the usual checks are not appropriate.  */
-      if (TREE_CODE (to) != FUNCTION_TYPE && TREE_CODE (to) != METHOD_TYPE)
+      if (TREE_CODE (from) != FUNCTION_TYPE && TREE_CODE (from) != METHOD_TYPE
+	  && TREE_CODE (to) != FUNCTION_TYPE && TREE_CODE (to) != METHOD_TYPE)
 	{
 	  if (!at_least_as_qualified_p (to, from))
 	    return 0;
@@ -7455,7 +7453,8 @@ comp_ptr_ttypes_reinterpret (to, from)
 	  constp &= TYPE_READONLY (to);
 	}
 
-      if (TREE_CODE (to) != POINTER_TYPE)
+      if (TREE_CODE (from) != POINTER_TYPE
+	  || TREE_CODE (to) != POINTER_TYPE)
 	return 1;
     }
 }
