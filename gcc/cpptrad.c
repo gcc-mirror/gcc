@@ -89,6 +89,8 @@ static void maybe_start_funlike PARAMS ((cpp_reader *, cpp_hashnode *,
 					 const uchar *, struct fun_macro *));
 static void save_argument PARAMS ((struct fun_macro *, size_t));
 static void replace_args_and_push PARAMS ((cpp_reader *, struct fun_macro *));
+static size_t canonicalize_text PARAMS ((uchar *, const uchar *, size_t,
+					 uchar *));
 
 /* Ensures we have N bytes' space in the output buffer, and
    reallocates it if not.  */
@@ -557,16 +559,11 @@ scan_out_logical_line (pfile, macro)
 		  pfile->state.parsing_args = 0;
 		  save_argument (&fmacro, out - pfile->trad_out_base);
 
-		  /* A single whitespace argument is no argument.  */
-		  if (fmacro.argc == 1 && m->paramc == 0)
-		    {
-		      const uchar *p = pfile->trad_out_base;
-		      p += fmacro.args[0];
-		      while (is_space (*p))
-			p++;
-		      if (p == pfile->trad_out_base + fmacro.args[1])
-			fmacro.argc = 0;
-		    }
+		  /* A single zero-length argument is no argument.  */
+		  if (fmacro.argc == 1
+		      && m->paramc == 0
+		      && out == pfile->trad_out_base + 1)
+		    fmacro.argc = 0;
 
 		  if (_cpp_arguments_ok (pfile, m, fmacro.node, fmacro.argc))
 		    {
@@ -758,11 +755,11 @@ save_replacement_text (pfile, macro, arg_index)
       /* Lex the rest into the start of the output buffer.  */
       pfile->trad_out_cur = pfile->trad_out_base;
 
-      /* If this is the end of the macro, count up the bytes of text
-	 in the replacement list, excluding the parameter names, and
-	 save this in macro->count, else store the total bytes in the
-	 replacement text so far (including block headers).  */
       macro->count += blen;
+
+      /* If we've finished, commit the memory.  */
+      if (arg_index == 0)
+	BUFF_FRONT (pfile->a_buff) += macro->count;
     }
 }
 
@@ -812,6 +809,95 @@ _cpp_create_trad_definition (pfile, macro)
   save_replacement_text (pfile, macro, 0);
 
   return true;
+}
+
+/* Copy SRC of length LEN to DEST, but convert all contiguous
+   whitespace to a single space, provided it is not in quotes.  The
+   quote currently in effect is pointed to by PQUOTE, and is updated
+   by the function.  Returns the number of bytes copied.  */
+static size_t
+canonicalize_text (dest, src, len, pquote)
+     uchar *dest;
+     const uchar *src;
+     size_t len;
+     uchar *pquote;
+{
+  uchar *orig_dest = dest;
+  uchar quote = *pquote;
+
+  while (len)
+    {
+      if (is_space (*src) && !quote)
+	{
+	  do
+	    src++, len--;
+	  while (len && is_space (*src));
+	  *dest++ = ' ';
+	}
+      else
+	{
+	  if (*src == '\'' || *src == '"')
+	    {
+	      if (!quote)
+		quote = *src;
+	      else if (quote == *src)
+		quote = 0;
+	    }
+	  *dest++ = *src++, len--;
+	}
+    }
+
+  *pquote = quote;
+  return dest - orig_dest;
+}
+
+/* Returns true if MACRO1 and MACRO2 have expansions different other
+   than in the form of their whitespace.  */
+bool
+_cpp_expansions_different_trad (macro1, macro2)
+     cpp_macro *macro1, *macro2;
+{
+  uchar *p1 = xmalloc (macro1->count + macro2->count);
+  uchar *p2 = p1 + macro1->count;
+  uchar quote1 = 0, quote2;
+  bool mismatch;
+  size_t len1, len2;
+
+  if (macro1->paramc > 0)
+    {
+      const uchar *exp1 = macro1->exp.text, *exp2 = macro2->exp.text;
+
+      mismatch = true;
+      for (;;)
+	{
+	  struct block *b1 = (struct block *) exp1;
+	  struct block *b2 = (struct block *) exp2;
+
+	  if (b1->arg_index != b2->arg_index)
+	    break;
+
+	  len1 = canonicalize_text (p1, b1->text, b1->text_len, &quote1);
+	  len2 = canonicalize_text (p2, b2->text, b2->text_len, &quote2);
+	  if (len1 != len2 || memcmp (p1, p2, len1))
+	    break;
+	  if (b1->arg_index == 0)
+	    {
+	      mismatch = false;
+	      break;
+	    }
+	  exp1 += BLOCK_LEN (b1->text_len);
+	  exp2 += BLOCK_LEN (b2->text_len);
+	}
+    }
+  else
+    {
+      len1 = canonicalize_text (p1, macro1->exp.text, macro1->count, &quote1);
+      len2 = canonicalize_text (p2, macro2->exp.text, macro2->count, &quote2);
+      mismatch = (len1 != len2 || memcmp (p1, p2, len1));
+    }
+
+  free (p1);
+  return mismatch;
 }
 
 /* Prepare to be able to scan the current buffer.  */
