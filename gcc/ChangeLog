@@ -1,3 +1,7 @@
+2004-08-18  Andrew Pinski  <apinski@apple.com>
+
+	* varasm.c (ecode_reg_name): Do nothing if the asmspec is empty.
+
 2004-08-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/arm/bpabi.c (__aeabi_ul2d): Give it default visibility.
