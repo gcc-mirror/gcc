@@ -1,3 +1,14 @@
+2003-01-26  Michael Hayes  <mph@paradise.net.nz>
+
+	* df.h: Update comments, tidy formatting.
+	(DF_FORWARD, DF_REVERSE, DF_UNION, DF_INTERSECTION): Rename from FORWARD,
+	REVERSE, UNION, INTERSECTION.  All uses updated.
+	(OLD_DF_INTERFACE): Remove.
+	(struct insn_info): Remove commented out insn field.
+	* df.c: Update comments, tidy formatting.
+	(df_def_table_realloc): Remove.
+
+
 2003-01-26  Alan Modra  <amodra@bigpond.net.au>
 
 	* calls.c (save_fixed_argument_area): Tidy.
