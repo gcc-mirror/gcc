@@ -490,9 +490,9 @@ proper position among the other output files.  */
 #ifndef LIBGCC_SPEC
 #if defined(LINK_LIBGCC_SPECIAL) || defined(LINK_LIBGCC_SPECIAL_1)
 /* Have gcc do the search for libgcc.a.  */
-#define LIBGCC_SPEC "%{!shared:libgcc.a%s}"
+#define LIBGCC_SPEC "libgcc.a%s"
 #else
-#define LIBGCC_SPEC "%{!shared:-lgcc}"
+#define LIBGCC_SPEC "-lgcc"
 #endif
 #endif
 
