@@ -317,6 +317,7 @@ static void add_inner_class_fields PARAMS ((tree, tree));
 
 static tree build_dot_class_method PARAMS ((tree));
 static tree build_dot_class_method_invocation PARAMS ((tree));
+static void create_new_parser_context PARAMS ((int));
 
 /* Number of error found so far. */
 int java_error_count; 

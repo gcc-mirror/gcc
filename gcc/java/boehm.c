@@ -31,6 +31,15 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "java-tree.h"
 #include "parse.h"
 
+static unsigned int mark_reference_fields PARAMS ((tree,
+						   unsigned HOST_WIDE_INT *,
+						   unsigned HOST_WIDE_INT *,
+						   unsigned int,
+						   int *, int *, int *));
+static void set_bit PARAMS ((unsigned HOST_WIDE_INT *,
+			     unsigned HOST_WIDE_INT *,
+			     unsigned int));
+
 /* Compute a procedure-based object descriptor.  We know that our
    `kind' is 0, and `env' is likewise 0, so we have a simple
    computation.  From the GC sources:
@@ -42,8 +51,9 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 /* Treat two HOST_WIDE_INT's as a contiguous bitmap, with bit 0 being
    the least significant.  This function sets bit N in the bitmap.  */
 static void
-set_bit (unsigned HOST_WIDE_INT *low, unsigned HOST_WIDE_INT *high,
-	 unsigned int n)
+set_bit (low, high, n)
+     unsigned HOST_WIDE_INT *low, *high;
+     unsigned int n;
 {
   HOST_WIDE_INT *which;
 
