@@ -1,4 +1,9 @@
 2000-04-28  Richard Henderson  <rth@cygnus.com>
+
+	* varasm.c (record_constant_1): Record the CODE_LABEL when
+	taking the address of a LABEL_REF.
+
+2000-04-28  Richard Henderson  <rth@cygnus.com>
 	    Jan Hubicka  <jh@suse.cz>
 
 	* calls.c (combine_pending_stack_adjustment_and_call): Return the
