@@ -305,6 +305,7 @@ duplicate_loop_exit_test (loop_start)
   rtx lastexit;
   int max_reg = max_reg_num ();
   rtx *reg_map = 0;
+  rtx loop_pre_header_label;
 
   /* Scan the exit code.  We do not perform this optimization if any insn:
 
@@ -405,6 +406,7 @@ duplicate_loop_exit_test (loop_start)
 	    reg_map[REGNO (reg)] = gen_reg_rtx (GET_MODE (reg));
 	  }
       }
+  loop_pre_header_label = gen_label_rtx ();
 
   /* Now copy each insn.  */
   for (insn = exitcode; insn != lastexit; insn = NEXT_INSN (insn))
@@ -475,9 +477,14 @@ duplicate_loop_exit_test (loop_start)
 		  /* The jump_insn after loop_start should be followed
 		     by barrier and loopback label.  */
 		  if (prev_nonnote_insn (label)
-		      && (PREV_INSN (prev_nonnote_insn (label))
-			  == NEXT_INSN (loop_start)))
-		    predict_insn_def (copy, PRED_LOOP_HEADER, TAKEN);
+		      && (prev_nonnote_insn (prev_nonnote_insn (label))
+			  == next_nonnote_insn (loop_start)))
+		    {
+		      predict_insn_def (copy, PRED_LOOP_HEADER, TAKEN);
+		      /* To keep pre-header, we need to redirect all loop
+		         entrances before the LOOP_BEG note.  */
+		      redirect_jump (copy, loop_pre_header_label, 0);
+		    }
 		  else
 		    predict_insn_def (copy, PRED_LOOP_HEADER, NOT_TAKEN);
 		}
@@ -511,6 +518,8 @@ duplicate_loop_exit_test (loop_start)
       mark_jump_label (PATTERN (copy), copy, 0);
       emit_barrier_before (loop_start);
     }
+
+  emit_label_before (loop_pre_header_label, loop_start);
 
   /* Now scan from the first insn we copied to the last insn we copied
      (copy) for new pseudo registers.  Do this after the code to jump to
