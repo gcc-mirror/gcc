@@ -1992,12 +1992,7 @@ add_pointed_to_var (struct alias_info *ai, tree ptr, tree value)
 
       for (sv = svars; sv; sv = sv->next)
 	{
-	  if (offset == sv->offset && size == sv->size)
-	    bitmap_set_bit (pi->pt_vars, var_ann (sv->var)->uid);
-	  else if (offset >= sv->offset && offset < (sv->offset + sv->size))
-	    bitmap_set_bit (pi->pt_vars, var_ann (sv->var)->uid);
-	  else if (offset < sv->offset 
-		   && (offset + size > sv->offset))
+	  if (overlap_subvar (offset, size, sv, NULL))
 	    bitmap_set_bit (pi->pt_vars, var_ann (sv->var)->uid);
 	}
     }

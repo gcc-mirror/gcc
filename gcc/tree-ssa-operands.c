@@ -1024,49 +1024,6 @@ get_stmt_operands (tree stmt)
 }
 
 
-/* Return true if OFFSET and SIZE define a range that overlaps with some
-   portion of the range of SV, a subvar.  If there was an exact overlap,
-   *EXACT will be set to true upon return. */
-
-static bool
-overlap_subvar (HOST_WIDE_INT offset, HOST_WIDE_INT size,
-		subvar_t sv,  bool *exact)
-{
-  /* There are three possible cases of overlap.
-     1. We can have an exact overlap, like so:   
-     |offset, offset + size             |
-     |sv->offset, sv->offset + sv->size |
-     
-     2. We can have offset starting after sv->offset, like so:
-     
-           |offset, offset + size              |
-     |sv->offset, sv->offset + sv->size  |
-
-     3. We can have offset starting before sv->offset, like so:
-     
-     |offset, offset + size    |
-       |sv->offset, sv->offset + sv->size|
-  */
-
-  if (exact)
-    *exact = false;
-  if (offset == sv->offset && size == sv->size)
-    {
-      if (exact)
-	*exact = true;
-      return true;
-    }
-  else if (offset >= sv->offset && offset < (sv->offset + sv->size))
-    {
-      return true;
-    }
-  else if (offset < sv->offset && (offset + size > sv->offset))
-    {
-      return true;
-    }
-  return false;
-
-}
 /* Recursively scan the expression pointed by EXPR_P in statement referred to
    by INFO.  FLAGS is one of the OPF_* constants modifying how to interpret the
    operands found.  */

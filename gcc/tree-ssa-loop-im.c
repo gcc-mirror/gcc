@@ -1146,13 +1146,40 @@ static bool
 is_call_clobbered_ref (tree ref)
 {
   tree base;
+  HOST_WIDE_INT offset, size;
+  subvar_t sv;
+  subvar_t svars;
+  tree sref = ref;
 
+  if (TREE_CODE (sref) == COMPONENT_REF
+      && (sref = okay_component_ref_for_subvars (sref, &offset, &size)))
+    {
+      svars = get_subvars_for_var (sref);
+      for (sv = svars; sv; sv = sv->next)
+	{
+	  if (overlap_subvar (offset, size, sv, NULL)
+	      && is_call_clobbered (sv->var))
+	    return true;
+	}
+    }
+	      
   base = get_base_address (ref);
   if (!base)
     return true;
 
   if (DECL_P (base))
-    return is_call_clobbered (base);
+    {
+      if (var_can_have_subvars (base)
+	  && (svars = get_subvars_for_var (base)))
+	{
+	  for (sv = svars; sv; sv = sv->next)
+	    if (is_call_clobbered (sv->var))
+	      return true;
+	  return false;
+	}
+      else
+	return is_call_clobbered (base);
+    }
 
   if (INDIRECT_REF_P (base))
     {

@@ -1,3 +1,14 @@
+2005-03-18  Daniel Berlin  <dberlin@dberlin.org>
+	
+	Fix PR tree-optimization/20542
+
+	* tree-flow-inline.h (overlap_subvar): Move to here.
+	* tree-ssa-operands.c: From here.
+	* tree-flow.h (overlap_subvar): Declare.
+	* tree-ssa-alias.c (add_pointed_to_var): Use overlap_subvar here.
+	* tree-ssa-loop-im.c (is_call_clobbered_ref): Return proper answer
+	for variables with subvars.
+	
 2005-03-21 Mostafa Hagog <mustafa@il.ibm.com>
 
 	PR middle-end/20177

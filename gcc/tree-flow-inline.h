@@ -933,5 +933,48 @@ var_can_have_subvars (tree v)
 }
 
   
+/* Return true if OFFSET and SIZE define a range that overlaps with some
+   portion of the range of SV, a subvar.  If there was an exact overlap,
+   *EXACT will be set to true upon return. */
+
+static inline bool
+overlap_subvar (HOST_WIDE_INT offset, HOST_WIDE_INT size,
+		subvar_t sv,  bool *exact)
+{
+  /* There are three possible cases of overlap.
+     1. We can have an exact overlap, like so:   
+     |offset, offset + size             |
+     |sv->offset, sv->offset + sv->size |
+     
+     2. We can have offset starting after sv->offset, like so:
+     
+           |offset, offset + size              |
+     |sv->offset, sv->offset + sv->size  |
+
+     3. We can have offset starting before sv->offset, like so:
+     
+     |offset, offset + size    |
+       |sv->offset, sv->offset + sv->size|
+  */
+
+  if (exact)
+    *exact = false;
+  if (offset == sv->offset && size == sv->size)
+    {
+      if (exact)
+	*exact = true;
+      return true;
+    }
+  else if (offset >= sv->offset && offset < (sv->offset + sv->size))
+    {
+      return true;
+    }
+  else if (offset < sv->offset && (offset + size > sv->offset))
+    {
+      return true;
+    }
+  return false;
+
+}
 
 #endif /* _TREE_FLOW_INLINE_H  */

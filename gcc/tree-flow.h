@@ -596,6 +596,9 @@ static inline bool ref_contains_array_ref (tree);
 extern tree okay_component_ref_for_subvars (tree, HOST_WIDE_INT *,
 					    HOST_WIDE_INT *);
 static inline bool var_can_have_subvars (tree);
+static inline bool overlap_subvar (HOST_WIDE_INT, HOST_WIDE_INT,
+				   subvar_t, bool *);
+
 /* Call-back function for walk_use_def_chains().  At each reaching
    definition, a function with this prototype is called.  */
 typedef bool (*walk_use_def_chains_fn) (tree, tree, void *);
