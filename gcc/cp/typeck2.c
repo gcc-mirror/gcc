@@ -458,6 +458,12 @@ digest_init (type, init, tail)
     /* __PRETTY_FUNCTION__'s initializer is a bogus expression inside
        a template function. This gets substituted during instantiation. */
     return init;
+
+  /* We must strip the outermost array type when completing the type,
+     because the its bounds might be incomplete at the moment.  */
+  if (!complete_type_or_else (TREE_CODE (type) == ARRAY_TYPE
+			      ? TREE_TYPE (type) : type, NULL_TREE))
+    return error_mark_node;
   
   /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
   if (TREE_CODE (init) == NON_LVALUE_EXPR)

@@ -1,3 +1,13 @@
+2002-01-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/5132
+	* typeck2.c (digest_init): Make sure non-array core type is
+	instantiated.
+	* decl2.c (reparse_absdcl_as_casts): Just store the type in the
+	constructor, rather than build a new one.
+	(build_expr_from_tree, CONSTRUCTOR case): Be careful with the
+	PURPOSE of constructor elts.
+
 2002-01-23  Zack Weinberg  <zack@codesourcery.com>
 
 	* Make-lang.in (parse.c): Adjust expected number of

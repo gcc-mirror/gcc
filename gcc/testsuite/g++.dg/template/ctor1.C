@@ -20,3 +20,12 @@ template <class F>
 void Tfoo( const F&) {
   HUGE_VAL; // g++ fails here
 }
+
+template <typename T> struct M { T m; };
+
+void Foo ()
+{
+  Tfoo (1.2f);
+  (__extension__ ((M<int>) {m:3}));
+  (__extension__ ((M<short> []) {{m:3}}));
+}

@@ -3620,7 +3620,7 @@ reparse_absdcl_as_casts (decl, expr)
       decl = TREE_OPERAND (decl, 0);
 
       if (processing_template_decl)
-	expr = build_min (CONSTRUCTOR, type, decl, CONSTRUCTOR_ELTS (expr));
+	TREE_TYPE (expr) = type;
       else
 	{
 	  expr = digest_init (type, expr, (tree *) 0);
@@ -3938,17 +3938,35 @@ build_expr_from_tree (t)
     case CONSTRUCTOR:
       {
 	tree r;
+	tree elts;
+	tree type = TREE_TYPE (t);
+	bool purpose_p;
 
 	/* digest_init will do the wrong thing if we let it.  */
-	if (TREE_TYPE (t) && TYPE_PTRMEMFUNC_P (TREE_TYPE (t)))
+	if (type && TYPE_PTRMEMFUNC_P (type))
 	  return t;
 
-	r = build_nt (CONSTRUCTOR, NULL_TREE,
-		      build_expr_from_tree (CONSTRUCTOR_ELTS (t)));
+	r = NULL_TREE;
+	/* We do not want to process the purpose of aggregate
+	   initializers as they are identifier nodes which will be
+	   looked up by digest_init.  */
+	purpose_p = !(type && IS_AGGR_TYPE (type));
+	for (elts = CONSTRUCTOR_ELTS (t); elts; elts = TREE_CHAIN (elts))
+	  {
+	    tree purpose = TREE_PURPOSE (elts);
+	    tree value = TREE_VALUE (elts);
+	    
+	    if (purpose && purpose_p)
+	      purpose = build_expr_from_tree (purpose);
+	    value = build_expr_from_tree (value);
+	    r = tree_cons (purpose, value, r);
+	  }
+	
+	r = build_nt (CONSTRUCTOR, NULL_TREE, nreverse (r));
 	TREE_HAS_CONSTRUCTOR (r) = TREE_HAS_CONSTRUCTOR (t);
 
-	if (TREE_TYPE (t))
-	  return digest_init (TREE_TYPE (t), r, 0);
+	if (type)
+	  return digest_init (type, r, 0);
 	return r;
       }
 
