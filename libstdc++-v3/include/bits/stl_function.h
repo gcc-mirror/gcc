@@ -131,7 +131,7 @@ namespace std
    */
   /// One of the @link s20_3_2_arithmetic math functors@endlink.
   template <class _Tp>
-    struct plus : public binary_function<_Tp,_Tp,_Tp>
+    struct plus : public binary_function<_Tp, _Tp, _Tp>
     { 
       _Tp
       operator()(const _Tp& __x, const _Tp& __y) const
@@ -140,7 +140,7 @@ namespace std
 
   /// One of the @link s20_3_2_arithmetic math functors@endlink.
   template <class _Tp>
-    struct minus : public binary_function<_Tp,_Tp,_Tp>
+    struct minus : public binary_function<_Tp, _Tp, _Tp>
     {
       _Tp
       operator()(const _Tp& __x, const _Tp& __y) const
@@ -149,7 +149,7 @@ namespace std
 
   /// One of the @link s20_3_2_arithmetic math functors@endlink.
   template <class _Tp>
-    struct multiplies : public binary_function<_Tp,_Tp,_Tp>
+    struct multiplies : public binary_function<_Tp, _Tp, _Tp>
     {
       _Tp
       operator()(const _Tp& __x, const _Tp& __y) const
@@ -158,7 +158,7 @@ namespace std
 
   /// One of the @link s20_3_2_arithmetic math functors@endlink.
   template <class _Tp>
-    struct divides : public binary_function<_Tp,_Tp,_Tp>
+    struct divides : public binary_function<_Tp, _Tp, _Tp>
     {
       _Tp
       operator()(const _Tp& __x, const _Tp& __y) const
@@ -167,7 +167,7 @@ namespace std
 
   /// One of the @link s20_3_2_arithmetic math functors@endlink.
   template <class _Tp>
-    struct modulus : public binary_function<_Tp,_Tp,_Tp> 
+    struct modulus : public binary_function<_Tp, _Tp, _Tp>
     {
       _Tp
       operator()(const _Tp& __x, const _Tp& __y) const
@@ -176,7 +176,7 @@ namespace std
 
   /// One of the @link s20_3_2_arithmetic math functors@endlink.
   template <class _Tp>
-    struct negate : public unary_function<_Tp,_Tp> 
+    struct negate : public unary_function<_Tp, _Tp>
     {
       _Tp
       operator()(const _Tp& __x) const
@@ -193,7 +193,7 @@ namespace std
    */
   /// One of the @link s20_3_3_comparisons comparison functors@endlink.
   template <class _Tp>
-    struct equal_to : public binary_function<_Tp,_Tp,bool> 
+    struct equal_to : public binary_function<_Tp, _Tp, bool> 
     {
       bool
       operator()(const _Tp& __x, const _Tp& __y) const
@@ -202,7 +202,7 @@ namespace std
 
   /// One of the @link s20_3_3_comparisons comparison functors@endlink.
   template <class _Tp>
-    struct not_equal_to : public binary_function<_Tp,_Tp,bool> 
+    struct not_equal_to : public binary_function<_Tp, _Tp, bool> 
     {
       bool
       operator()(const _Tp& __x, const _Tp& __y) const
@@ -211,7 +211,7 @@ namespace std
 
   /// One of the @link s20_3_3_comparisons comparison functors@endlink.
   template <class _Tp>
-    struct greater : public binary_function<_Tp,_Tp,bool> 
+    struct greater : public binary_function<_Tp, _Tp, bool>
     {
       bool
       operator()(const _Tp& __x, const _Tp& __y) const
@@ -220,7 +220,7 @@ namespace std
 
   /// One of the @link s20_3_3_comparisons comparison functors@endlink.
   template <class _Tp>
-    struct less : public binary_function<_Tp,_Tp,bool> 
+    struct less : public binary_function<_Tp, _Tp, bool>
     {
       bool
       operator()(const _Tp& __x, const _Tp& __y) const
@@ -229,7 +229,7 @@ namespace std
 
   /// One of the @link s20_3_3_comparisons comparison functors@endlink.
   template <class _Tp>
-    struct greater_equal : public binary_function<_Tp,_Tp,bool>
+    struct greater_equal : public binary_function<_Tp, _Tp, bool>
     {
       bool
       operator()(const _Tp& __x, const _Tp& __y) const
@@ -238,7 +238,7 @@ namespace std
 
   /// One of the @link s20_3_3_comparisons comparison functors@endlink.
   template <class _Tp>
-    struct less_equal : public binary_function<_Tp,_Tp,bool> 
+    struct less_equal : public binary_function<_Tp, _Tp, bool>
     {
       bool
       operator()(const _Tp& __x, const _Tp& __y) const
@@ -254,7 +254,7 @@ namespace std
    */
   /// One of the @link s20_3_4_logical Boolean operations functors@endlink.
   template <class _Tp>
-    struct logical_and : public binary_function<_Tp,_Tp,bool>
+    struct logical_and : public binary_function<_Tp, _Tp, bool>
     {
       bool
       operator()(const _Tp& __x, const _Tp& __y) const
@@ -263,7 +263,7 @@ namespace std
 
   /// One of the @link s20_3_4_logical Boolean operations functors@endlink.
   template <class _Tp>
-    struct logical_or : public binary_function<_Tp,_Tp,bool>
+    struct logical_or : public binary_function<_Tp, _Tp, bool>
     {
       bool
       operator()(const _Tp& __x, const _Tp& __y) const
@@ -272,7 +272,7 @@ namespace std
 
   /// One of the @link s20_3_4_logical Boolean operations functors@endlink.
   template <class _Tp>
-    struct logical_not : public unary_function<_Tp,bool>
+    struct logical_not : public unary_function<_Tp, bool>
     {
       bool
       operator()(const _Tp& __x) const
@@ -772,8 +772,8 @@ namespace std
       : _M_f(__pf) {}
 
       void
-      operator()(const _Tp& __r)
-	const { (__r.*_M_f)(); }
+      operator()(const _Tp& __r) const
+      { (__r.*_M_f)(); }
     private:
       void (_Tp::*_M_f)() const;
     };
@@ -848,44 +848,44 @@ namespace std
   // Mem_fun adaptor helper functions.  There are only two:
   // mem_fun and mem_fun_ref.
   template <class _Ret, class _Tp>
-    inline mem_fun_t<_Ret,_Tp>
+    inline mem_fun_t<_Ret, _Tp>
     mem_fun(_Ret (_Tp::*__f)())
-    { return mem_fun_t<_Ret,_Tp>(__f); }
+    { return mem_fun_t<_Ret, _Tp>(__f); }
 
   template <class _Ret, class _Tp>
-    inline const_mem_fun_t<_Ret,_Tp>
+    inline const_mem_fun_t<_Ret, _Tp>
     mem_fun(_Ret (_Tp::*__f)() const)
-    { return const_mem_fun_t<_Ret,_Tp>(__f); }
+    { return const_mem_fun_t<_Ret, _Tp>(__f); }
   
   template <class _Ret, class _Tp>
-    inline mem_fun_ref_t<_Ret,_Tp>
+    inline mem_fun_ref_t<_Ret, _Tp>
     mem_fun_ref(_Ret (_Tp::*__f)()) 
-    { return mem_fun_ref_t<_Ret,_Tp>(__f); }
+    { return mem_fun_ref_t<_Ret, _Tp>(__f); }
 
   template <class _Ret, class _Tp>
-    inline const_mem_fun_ref_t<_Ret,_Tp>
+    inline const_mem_fun_ref_t<_Ret, _Tp>
     mem_fun_ref(_Ret (_Tp::*__f)() const)
-    { return const_mem_fun_ref_t<_Ret,_Tp>(__f); }
+    { return const_mem_fun_ref_t<_Ret, _Tp>(__f); }
 
   template <class _Ret, class _Tp, class _Arg>
-    inline mem_fun1_t<_Ret,_Tp,_Arg>
+    inline mem_fun1_t<_Ret, _Tp, _Arg>
     mem_fun(_Ret (_Tp::*__f)(_Arg))
-    { return mem_fun1_t<_Ret,_Tp,_Arg>(__f); }
+    { return mem_fun1_t<_Ret, _Tp, _Arg>(__f); }
 
   template <class _Ret, class _Tp, class _Arg>
-    inline const_mem_fun1_t<_Ret,_Tp,_Arg>
+    inline const_mem_fun1_t<_Ret, _Tp, _Arg>
     mem_fun(_Ret (_Tp::*__f)(_Arg) const)
-    { return const_mem_fun1_t<_Ret,_Tp,_Arg>(__f); }
+    { return const_mem_fun1_t<_Ret, _Tp, _Arg>(__f); }
 
   template <class _Ret, class _Tp, class _Arg>
-    inline mem_fun1_ref_t<_Ret,_Tp,_Arg>
+    inline mem_fun1_ref_t<_Ret, _Tp, _Arg>
     mem_fun_ref(_Ret (_Tp::*__f)(_Arg))
-    { return mem_fun1_ref_t<_Ret,_Tp,_Arg>(__f); }
+    { return mem_fun1_ref_t<_Ret, _Tp, _Arg>(__f); }
 
   template <class _Ret, class _Tp, class _Arg>
-    inline const_mem_fun1_ref_t<_Ret,_Tp,_Arg>
+    inline const_mem_fun1_ref_t<_Ret, _Tp, _Arg>
     mem_fun_ref(_Ret (_Tp::*__f)(_Arg) const)
-    { return const_mem_fun1_ref_t<_Ret,_Tp,_Arg>(__f); }
+    { return const_mem_fun1_ref_t<_Ret, _Tp, _Arg>(__f); }
 
   /** @}  */
   
