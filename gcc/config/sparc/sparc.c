@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for Sun SPARC.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
    64 bit SPARC V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
@@ -241,7 +241,7 @@ sparc_override_options ()
     { "ultrasparc", PROCESSOR_ULTRASPARC, MASK_ISA, MASK_V9
     /* Although insns using %y are deprecated, it is a clear win on current
        ultrasparcs. */
-    						    |MASK_DEPRECATED_V8_INSNS },
+    						    |MASK_DEPRECATED_V8_INSNS},
     { 0, 0, 0, 0 }
   };
   struct cpu_table *cpu;
@@ -251,22 +251,9 @@ sparc_override_options ()
 #ifndef SPARC_BI_ARCH
   /* Check for unsupported architecture size.  */
   if (! TARGET_64BIT != DEFAULT_ARCH32_P)
-    {
-      error ("%s is not supported by this configuration",
-	     DEFAULT_ARCH32_P ? "-m64" : "-m32");
-    }
+    error ("%s is not supported by this configuration",
+	   DEFAULT_ARCH32_P ? "-m64" : "-m32");
 #endif
-
-  /* At the moment we don't allow different pointer size and architecture */
-  if (! TARGET_64BIT != ! TARGET_PTR64)
-    {
-      error ("-mptr%d not allowed on -m%d",
-      	     TARGET_PTR64 ? 64 : 32, TARGET_64BIT ? 64 : 32);
-      if (TARGET_64BIT)
-    	target_flags |= MASK_PTR64;
-      else
-        target_flags &= ~MASK_PTR64;
-    }
 
   /* We force all 64bit archs to use 128 bit long double */
   if (TARGET_64BIT && ! TARGET_LONG_DOUBLE_128)
