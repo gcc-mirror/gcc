@@ -1,6 +1,6 @@
 # Makefile for GNU C compiler.
 #   Copyright (C) 1987, 1988, 1990, 1991, 1992, 1993, 1994, 1995
-#   1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+#   1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -502,6 +502,8 @@ HOST_PREFIX=
 # out of the way of the other rules for compiling the same source files.
 HOST_PREFIX_1=loser-
 HOST_CC=$(CC)
+# If you change any of the following variables, check whether a
+# similar change is needed in build-make.
 HOST_CFLAGS=$(ALL_CFLAGS) -DGENERATOR_FILE
 HOST_CLIB=$(CLIB)
 HOST_LDFLAGS=$(LDFLAGS)
