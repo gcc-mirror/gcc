@@ -956,12 +956,6 @@ extern void finish_file	(void);
 
 #define SWITCH_TYPE(NODE)	TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 2)
 
-/* COMPOUND_STMT accessor. This gives access to the TREE_LIST of
-   statements associated with a compound statement. The result is the
-   first statement in the list. Succeeding nodes can be accessed by
-   calling TREE_CHAIN on a node in the list.  */
-#define COMPOUND_BODY(NODE)     TREE_OPERAND (COMPOUND_STMT_CHECK (NODE), 0)
-
 /* DECL_STMT accessor. This gives access to the DECL associated with
    the given declaration statement.  */
 #define DECL_STMT_DECL(NODE)    TREE_OPERAND (DECL_STMT_CHECK (NODE), 0)
@@ -1000,7 +994,7 @@ enum c_tree_code {
 #undef DEFTREECODE
 
 #define c_common_stmt_codes				\
-   CLEANUP_STMT,	EXPR_STMT,	COMPOUND_STMT,	\
+   CLEANUP_STMT,	EXPR_STMT,			\
    DECL_STMT,		IF_STMT,	FOR_STMT,	\
    WHILE_STMT,		DO_STMT,	RETURN_STMT,	\
    BREAK_STMT,		CONTINUE_STMT,	SWITCH_STMT

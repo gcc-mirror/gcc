@@ -1934,8 +1934,7 @@ struct tree_type GTY(())
 #define DECL_THREAD_LOCAL(NODE) (VAR_DECL_CHECK (NODE)->decl.thread_local_flag)
 
 /* In a FUNCTION_DECL, the saved representation of the body of the
-   entire function.  Usually a COMPOUND_STMT, but in C++ this may also
-   be a RETURN_INIT, CTOR_INITIALIZER, or TRY_BLOCK.  */
+   entire function.  */
 #define DECL_SAVED_TREE(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.saved_tree)
 
 /* List of FUNCTION_DECLs inlined into this function's body.  */

@@ -33,10 +33,6 @@ DEFTREECODE (ALIGNOF_EXPR, "alignof_expr", '1', 1)
    obtain the expression.  */
 DEFTREECODE (EXPR_STMT, "expr_stmt", 'e', 1)
 
-/* Used to represent a brace-enclosed block.  The operand is
-   COMPOUND_BODY.  */
-DEFTREECODE (COMPOUND_STMT, "compound_stmt", 'e', 1)
-
 /* Used to represent a local declaration. The operand is
    DECL_STMT_DECL.  */
 DEFTREECODE (DECL_STMT, "decl_stmt", 'e', 1)

@@ -2208,7 +2208,7 @@ int
 c_tree_expr_nonnegative_p (tree t)
 {
   if (TREE_CODE (t) == STMT_EXPR)
-    t = expr_last (COMPOUND_BODY (STMT_EXPR_STMT (t)));
+    t = expr_last (STMT_EXPR_STMT (t));
   return tree_expr_nonnegative_p (t);
 }
 

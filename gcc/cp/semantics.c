@@ -950,9 +950,12 @@ finish_handler (tree handler)
   HANDLER_BODY (handler) = do_poplevel (HANDLER_BODY (handler));
 }
 
-/* Begin a compound-statement.  If HAS_NO_SCOPE is true, the
-   compound-statement does not define a scope.  Returns a new
-   COMPOUND_STMT.  */
+/* Begin a compound statement.  FLAGS contains some bits that control the
+   behaviour and context.  If BCS_NO_SCOPE is set, the compound statement
+   does not define a scope.  If BCS_FN_BODY is set, this is the outermost
+   block of a function.  If BCS_TRY_BLOCK is set, this is the block 
+   created on behalf of a TRY statement.  Returns a token to be passed to
+   finish_compound_stmt.  */
 
 tree
 begin_compound_stmt (unsigned int flags)
@@ -973,24 +976,30 @@ begin_compound_stmt (unsigned int flags)
   else
     r = do_pushlevel (flags & BCS_TRY_BLOCK ? sk_try : sk_block);
 
-  if (flags & BCS_FN_BODY || processing_template_decl)
+  /* When processing a template, we need to remember where the braces were,
+     so that we can set up identical scopes when instantiating the template
+     later.  BIND_EXPR is a handy candidate for this.
+     Note that do_poplevel won't create a BIND_EXPR itself here (and thus
+     result in nested BIND_EXPRs), since we don't build BLOCK nodes when
+     processing templates.  */
+  if (processing_template_decl)
     {
-      r = build (COMPOUND_STMT, NULL_TREE, r);
-      COMPOUND_STMT_TRY_BLOCK (r) = (flags & BCS_TRY_BLOCK) != 0;
-      COMPOUND_STMT_BODY_BLOCK (r) = (flags & BCS_FN_BODY) != 0;
+      r = build (BIND_EXPR, NULL, NULL, r, NULL);
+      BIND_EXPR_TRY_BLOCK (r) = (flags & BCS_TRY_BLOCK) != 0;
+      BIND_EXPR_BODY_BLOCK (r) = (flags & BCS_FN_BODY) != 0;
       TREE_SIDE_EFFECTS (r) = 1;
     }
 
   return r;
 }
 
-/* Finish a compound-statement, which is given by COMPOUND_STMT.  */
+/* Finish a compound-statement, which is given by STMT.  */
 
 void
 finish_compound_stmt (tree stmt)
 {
-  if (TREE_CODE (stmt) == COMPOUND_STMT)
-    COMPOUND_BODY (stmt) = do_poplevel (COMPOUND_BODY (stmt));
+  if (TREE_CODE (stmt) == BIND_EXPR)
+    BIND_EXPR_BODY (stmt) = do_poplevel (BIND_EXPR_BODY (stmt));
   else if (STATEMENT_LIST_NO_SCOPE (stmt))
     stmt = pop_stmt_list (stmt);
   else
@@ -1455,9 +1464,6 @@ finish_stmt_expr (tree stmt_expr, bool has_no_scope)
 	      }
 	    case BIND_EXPR:
 	      result_stmt_p = &BIND_EXPR_BODY (t);
-	      break;
-	    case COMPOUND_STMT:
-	      result_stmt_p = &COMPOUND_BODY (t);
 	      break;
 	    case TRY_FINALLY_EXPR:
 	    case TRY_CATCH_EXPR:

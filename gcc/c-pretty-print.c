@@ -1909,27 +1909,6 @@ pp_c_statement (c_pretty_printer *pp, tree stmt)
       }
       break;
 
-      /* compound-statement:
-            {  block-item-list(opt) }
-
-         block-item-list:
-            block-item
-            block-item-list block-item
-
-         block-item:
-            declaration
-            statement   */
-    case COMPOUND_STMT:
-      if (pp_needs_newline (pp))
-        pp_newline_and_indent (pp, 0);
-      pp_c_left_brace (pp);
-      pp_newline_and_indent (pp, 3);
-      pp_statement (pp, COMPOUND_BODY (stmt));
-      pp_newline_and_indent (pp, -3);
-      pp_c_right_brace (pp);
-      pp_needs_newline (pp) = true;
-      break;
-
       /* expression-statement:
             expression(opt) ;  */
     case EXPR_STMT:

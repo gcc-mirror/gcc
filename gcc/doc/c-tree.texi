@@ -1272,18 +1272,10 @@ This predicate holds if the function an overloaded
 @subsection Function Bodies
 @cindex function body
 @cindex statements
-@tindex ASM_STMT
-@findex ASM_STRING
-@findex ASM_CV_QUAL
-@findex ASM_INPUTS
-@findex ASM_OUTPUTS
-@findex ASM_CLOBBERS
 @tindex BREAK_STMT
 @tindex CLEANUP_STMT
 @findex CLEANUP_DECL
 @findex CLEANUP_EXPR
-@tindex COMPOUND_STMT
-@findex COMPOUND_BODY
 @tindex CONTINUE_STMT
 @tindex DECL_STMT
 @findex DECL_STMT_DECL
@@ -1298,23 +1290,14 @@ This predicate holds if the function an overloaded
 @findex FOR_COND
 @findex FOR_EXPR
 @findex FOR_BODY
-@tindex GOTO_STMT
-@findex GOTO_DESTINATION
-@findex GOTO_FAKE_P
 @tindex HANDLER
 @tindex IF_STMT
 @findex IF_COND
 @findex THEN_CLAUSE
 @findex ELSE_CLAUSE
-@tindex LABEL_STMT
-@tindex LABEL_STMT_LABEL
 @tindex RETURN_INIT
 @tindex RETURN_STMT
 @findex RETURN_EXPR
-@tindex SCOPE_STMT
-@findex SCOPE_BEGIN_P
-@findex SCOPE_END_P
-@findex SCOPE_NULLIFIED_P
 @tindex SUBOBJECT
 @findex SUBOBJECT_CLEANUP
 @tindex SWITCH_STMT
@@ -1335,9 +1318,7 @@ have a non-@code{NULL} @code{DECL_INITIAL}.  However, back ends should not make
 use of the particular value given by @code{DECL_INITIAL}.
 
 The @code{DECL_SAVED_TREE} macro will give the complete body of the
-function.  This node will usually be a @code{COMPOUND_STMT} representing
-the outermost block of the function, but it may also be a
-@code{TRY_BLOCK}, a @code{RETURN_INIT}, or any other valid statement.
+function.
 
 @subsubsection Statements
 
@@ -1398,7 +1379,7 @@ compound statement), the intermediate representation will sometimes use
 several statements chained together.
 
 @table @code
-@item ASM_STMT
+@item ASM_EXPR
 
 Used to represent an inline assembly statement.  For an inline assembly
 statement like:
@@ -1425,14 +1406,14 @@ embedded @code{NUL}-characters.
 If the assembly statement is declared @code{volatile}, or if the
 statement was not an extended assembly statement, and is therefore
 implicitly volatile, then the predicate @code{ASM_VOLATILE_P} will hold
-of the @code{ASM_STMT}.
+of the @code{ASM_EXPR}.
 
 @item BREAK_STMT
 
 Used to represent a @code{break} statement.  There are no additional
 fields.
 
-@item CASE_LABEL
+@item CASE_LABEL_EXPR
 
 Use to represent a @code{case} label, range of @code{case} labels, or a
 @code{default} label.  If @code{CASE_LOW} is @code{NULL_TREE}, then this is a
@@ -1462,14 +1443,6 @@ the @code{VAR_DECL} destroyed.  Otherwise, @code{CLEANUP_DECL} will be
 expression to execute.  The cleanups executed on exit from a scope
 should be run in the reverse order of the order in which the associated
 @code{CLEANUP_STMT}s were encountered.
-
-@item COMPOUND_STMT
-
-Used to represent a brace-enclosed block.  The first substatement is
-given by @code{COMPOUND_BODY}.  Subsequent substatements are found by
-following the @code{TREE_CHAIN} link from one substatement to the next.
-The @code{COMPOUND_BODY} will be @code{NULL_TREE} if there are no
-substatements.
 
 @item CONTINUE_STMT
 
@@ -1521,15 +1494,12 @@ expression increments a counter.  The body of the loop is given by
 return statements, while @code{FOR_COND} and @code{FOR_EXPR} return
 expressions.
 
-@item GOTO_STMT
+@item GOTO_EXPR
 
 Used to represent a @code{goto} statement.  The @code{GOTO_DESTINATION} will
 usually be a @code{LABEL_DECL}.  However, if the ``computed goto'' extension
 has been used, the @code{GOTO_DESTINATION} will be an arbitrary expression
 indicating the destination.  This expression will always have pointer type.
-Additionally the @code{GOTO_FAKE_P} flag is set whenever the goto statement
-does not come from source code, but it is generated implicitly by the compiler.
-This is used for branch prediction.
 
 @item HANDLER
 
@@ -1537,8 +1507,7 @@ Used to represent a C++ @code{catch} block.  The @code{HANDLER_TYPE}
 is the type of exception that will be caught by this handler; it is
 equal (by pointer equality) to @code{NULL} if this handler is for all
 types.  @code{HANDLER_PARMS} is the @code{DECL_STMT} for the catch
-parameter, and @code{HANDLER_BODY} is the @code{COMPOUND_STMT} for the
-block itself.
+parameter, and @code{HANDLER_BODY} is the code for the block itself.
 
 @item IF_STMT
 
@@ -1562,10 +1531,10 @@ The @code{THEN_CLAUSE} represents the statement given by the @code{then}
 condition, while the @code{ELSE_CLAUSE} represents the statement given
 by the @code{else} condition.
 
-@item LABEL_STMT
+@item LABEL_EXPR
 
 Used to represent a label.  The @code{LABEL_DECL} declared by this
-statement can be obtained with the @code{LABEL_STMT_LABEL} macro.  The
+statement can be obtained with the @code{LABEL_EXPR_LABEL} macro.  The
 @code{IDENTIFIER_NODE} giving the name of the label can be obtained from
 the @code{LABEL_DECL} with @code{DECL_NAME}.
 
@@ -1593,17 +1562,6 @@ was just
 @smallexample
 return;
 @end smallexample
-
-@item SCOPE_STMT
-
-A scope-statement represents the beginning or end of a scope.  If
-@code{SCOPE_BEGIN_P} holds, this statement represents the beginning of a
-scope; if @code{SCOPE_END_P} holds this statement represents the end of
-a scope.  On exit from a scope, all cleanups from @code{CLEANUP_STMT}s
-occurring in the scope must be run, in reverse order to the order in
-which they were encountered.  If @code{SCOPE_NULLIFIED_P} or
-@code{SCOPE_NO_CLEANUPS_P} holds of the scope, back ends should behave
-as if the @code{SCOPE_STMT} were not present at all.
 
 @item SUBOBJECT
 
@@ -2259,11 +2217,10 @@ int f() @{ return (@{ int j; j = 3; j + 7; @}); @}
 In other words, an sequence of statements may occur where a single
 expression would normally appear.  The @code{STMT_EXPR} node represents
 such an expression.  The @code{STMT_EXPR_STMT} gives the statement
-contained in the expression; this is always a @code{COMPOUND_STMT}.  The
-value of the expression is the value of the last sub-statement in the
-@code{COMPOUND_STMT}.  More precisely, the value is the value computed
-by the last @code{EXPR_STMT} in the outermost scope of the
-@code{COMPOUND_STMT}.  For example, in:
+contained in the expression.  The value of the expression is the value
+of the last sub-statement in the body.  More precisely, the value is the
+value computed by the last statement nested inside @code{BIND_EXPR},
+@code{TRY_FINALLY_EXPR}, or @code{TRY_CATCH_EXPR}.  For example, in:
 @smallexample
 (@{ 3; @})
 @end smallexample
@@ -2271,9 +2228,8 @@ the value is @code{3} while in:
 @smallexample
 (@{ if (x) @{ 3; @} @})
 @end smallexample
-(represented by a nested @code{COMPOUND_STMT}), there is no value.  If
-the @code{STMT_EXPR} does not yield a value, it's type will be
-@code{void}.
+there is no value.  If the @code{STMT_EXPR} does not yield a value,
+it's type will be @code{void}.
 
 @item BIND_EXPR
 These nodes represent local blocks.  The first operand is a list of

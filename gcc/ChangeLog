@@ -1,5 +1,28 @@
 2004-06-16  Richard Henderson  <rth@redhat.com>
 
+	* c-common.def (COMPOUND_STMT): Remove.
+	* c-common.c (finish_fname_decls): Don't look through it.
+	* c-typeck.c (c_tree_expr_nonnegative_p): Likewise.
+	* c-common.h (COMPOUND_BODY): Remove.
+	(c_common_stmt_codes): Remove COMPOUND_STMT.
+	* c-dump.c (c_dump_tree): Likewise.
+	* c-gimplify.c (c_gimplify_stmt): Likewise.
+	* c-pretty-print.c (pp_c_statement): Likewise.
+	* tree.h (DECL_SAVED_TREE): Update commentary.
+	* doc/c-tree.texi (ASM_EXPR): Rename from ASM_STMT.
+	(CASE_LABEL_EXPR): Rename from CASE_LABEL.
+	(GOTO_EXPR): Rename from GOTO_STMT.
+	(GOTO_FAKE_P): Remove.
+	(COMPOUND_STMT): Remove.
+	(HANDLER): Update wrt COMPOUND_STMT.
+	(STMT_EXPR): Likewise.
+	(LABEL_EXPR): Rename from LABEL_STMT.
+	(SCOPE_STMT): Remove.
+	* objc/objc-act.c (objc_build_try_catch_finally_stmt): Don't look
+	through COMPOUND_STMT.
+
+2004-06-16  Richard Henderson  <rth@redhat.com>
+
 	* c-common.h (c_begin_if_stmt, c_begin_while_stmt,
 	c_finish_while_stmt_cond): Remove decls.
 	* c-parse.in (if_prefix): Don't save c_begin_if_stmt result.

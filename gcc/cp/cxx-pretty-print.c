@@ -1304,17 +1304,7 @@ pp_cxx_function_definition (cxx_pretty_printer *pp, tree t)
   pp_needs_newline (pp) = true;
   pp->enclosing_scope = DECL_CONTEXT (t);
   if (DECL_SAVED_TREE (t))
-    {
-      tree body = DECL_SAVED_TREE (t);
-      if (TREE_CODE (body) == COMPOUND_STMT
-          && TREE_CODE (COMPOUND_BODY (body)) == CTOR_INITIALIZER)
-        {
-          body = COMPOUND_BODY (body);
-          pp_cxx_ctor_initializer (pp, body);
-          body = TREE_CHAIN (body);
-        }
-      pp_cxx_statement (pp, body);
-    }
+    pp_cxx_statement (pp, DECL_SAVED_TREE (t));
   else
     {
       pp_cxx_semicolon (pp);
@@ -1471,6 +1461,10 @@ pp_cxx_statement (cxx_pretty_printer *pp, tree t)
 {
   switch (TREE_CODE (t))
     {
+    case CTOR_INITIALIZER:
+      pp_cxx_ctor_initializer (pp, t);
+      break;
+
     case USING_STMT:
       pp_cxx_identifier (pp, "using");
       pp_cxx_identifier (pp, "namespace");
