@@ -1,3 +1,8 @@
+2000-04-16  Jason Merrill  <jason@casey.cygnus.com>
+
+	* decl.c (decls_match): Allow a redeclaration of a builtin to
+	specify args while the builtin did not.
+
 2000-04-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.def (THUNK_DECL): Add to documentation.

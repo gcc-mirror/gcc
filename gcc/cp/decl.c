@@ -2936,7 +2936,8 @@ decls_match (newdecl, olddecl)
 
       if (same_type_p (TREE_TYPE (f1), TREE_TYPE (f2)))
 	{
-	  if (! strict_prototypes_lang_c && DECL_LANGUAGE (olddecl) == lang_c
+	  if ((! strict_prototypes_lang_c || DECL_BUILT_IN (olddecl))
+	      && DECL_LANGUAGE (olddecl) == lang_c
 	      && p2 == NULL_TREE)
 	    {
 	      types_match = self_promoting_args_p (p1);
