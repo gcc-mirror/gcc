@@ -1,3 +1,7 @@
+Fri Sep  4 18:40:32 1998  Craig Burley  <burley@gnu.org>
+
+	* libU77/sys_clock_.c (G77_system_clock_0): Fix indentation.
+
 Tue Sep  1 10:06:06 1998  Craig Burley  <burley@gnu.org>
 
 	* libF77/Version.c: Update.
