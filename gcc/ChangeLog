@@ -1,3 +1,8 @@
+2000-07-08  Richard Henderson  <rth@cygnus.com>
+
+        * final.c (final): Do not abort when reg-stack introduces
+	a new insn.
+
 2000-07-08  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplib.h (struct cpp_name): Now struct cpp_string.
