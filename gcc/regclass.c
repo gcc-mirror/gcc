@@ -962,12 +962,12 @@ record_address_regs (x, bcost, icost)
 /* Indexed by pseudo register number, gives uid of first insn using the reg
    (as of the time reg_scan is called).  */
 
-short *regno_first_uid;
+int *regno_first_uid;
 
 /* Indexed by pseudo register number, gives uid of last insn using the reg
    (as of the time reg_scan is called).  */
 
-short *regno_last_uid;
+int *regno_last_uid;
 
 /* Record the number of registers we used when we allocated the above two
    tables.  If we are called again with more than this, we must re-allocate
@@ -996,15 +996,15 @@ reg_scan (f, nregs, repeat)
       /* Leave some spare space in case more regs are allocated.  */
       highest_regno_in_uid_map = nregs + nregs / 20;
       regno_first_uid
-	= (short *) oballoc (highest_regno_in_uid_map * sizeof (short));
+	= (int *) oballoc (highest_regno_in_uid_map * sizeof (int));
       regno_last_uid
-	= (short *) oballoc (highest_regno_in_uid_map * sizeof (short));
+	= (int *) oballoc (highest_regno_in_uid_map * sizeof (int));
       reg_n_sets
 	= (short *) oballoc (highest_regno_in_uid_map * sizeof (short));
     }
 
-  bzero (regno_first_uid, highest_regno_in_uid_map * sizeof (short));
-  bzero (regno_last_uid, highest_regno_in_uid_map * sizeof (short));
+  bzero (regno_first_uid, highest_regno_in_uid_map * sizeof (int));
+  bzero (regno_last_uid, highest_regno_in_uid_map * sizeof (int));
   bzero (reg_n_sets, highest_regno_in_uid_map * sizeof (short));
 
   max_parallel = 3;
