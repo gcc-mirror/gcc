@@ -1,3 +1,18 @@
+2002-04-15  David S. Miller  <davem@redhat.com>
+
+	* config/sparc/sparc.c (sparc_emit_float_lib_cmp):
+	Call emit_library_call with LCT_NORMAL.
+	(sparc_initialize_trampoline): Use LCT_foo instead of
+	magic constant in emit_library_call invocations.
+	(sparc64_initialize_trampoline): Likewise.
+	(sparc_profile_hook): Likewise.
+	* config/sparc/sparc.md: Likewise.
+	
+	* config/sparc/sparc.c (sparc_extra_constraint_check):
+	Fix type of argument 'c'.
+	* config/sparc/sparc-protos.h (sparc_extra_constraint_check):
+	Likewise.
+
 2002-04-14  Andreas Schwab  <schwab@suse.de>
 
 	* config/ia64/linux.h (CPP_PREDEFINES): Fix missing backslash.
