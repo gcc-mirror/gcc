@@ -7215,6 +7215,10 @@ fold (tree expr)
       goto associate;
 
     case TRUTH_NOT_EXPR:
+      /* The argument to invert_truthvalue must have Boolean type.  */
+      if (TREE_CODE (TREE_TYPE (arg0)) != BOOLEAN_TYPE)
+          arg0 = fold_convert (boolean_type_node, arg0);
+      
       /* Note that the operand of this must be an int
 	 and its values must be 0 or 1.
 	 ("true" is a fixed value perhaps depending on the language,
