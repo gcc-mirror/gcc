@@ -1,5 +1,5 @@
 /* Prototypes for exported functions defined in mcore.c
-   Copyright (C) 2000, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Nick Clifton (nickc@redhat.com)
 
    This file is part of GCC.
@@ -37,7 +37,6 @@ extern int          mcore_naked_function_p       	(void);
 #ifdef TREE_CODE
 #ifdef HAVE_MACHINE_MODES
 extern int          mcore_function_arg_partial_nregs	(CUMULATIVE_ARGS, enum machine_mode, tree, int);
-extern void         mcore_setup_incoming_varargs	(CUMULATIVE_ARGS, enum machine_mode, tree, int *);
 extern int          mcore_num_arg_regs           	(enum machine_mode, tree);
 extern int          mcore_must_pass_on_stack     	(enum machine_mode, tree);
 #endif /* HAVE_MACHINE_MODES */
