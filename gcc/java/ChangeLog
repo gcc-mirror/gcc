@@ -1,3 +1,14 @@
+2000-11-22  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (build_outer_field_access): New local `decl_ctx', use
+	it. Check for field's context and current class immediate outer
+	context inheritance.
+	(outer_field_access_p): Consider fields inherited from the last
+	enclosing context.
+	(build_access_to_thisn): Stop at the last enclosing context if
+	necessary.
+	Fixes gcj/367.
+
 Thu Nov 23 02:19:14 2000  J"orn Rennecke <amylaar@redhat.com>
 
 	* Make-lang.in (jvspec.o): Depend on $(CONFIG_H).
