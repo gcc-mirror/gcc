@@ -2087,7 +2087,7 @@ c99_block_end: /* empty */
                 { if (flag_isoc99)
 		    {
 		      tree scope_stmt = add_scope_stmt (/*begin_p=*/0, /*partial_p=*/0);
-		      $$ = poplevel (kept_level_p (), 0, 0);
+		      $$ = poplevel (KEEP_MAYBE, 0, 0);
 		      SCOPE_STMT_BLOCK (TREE_PURPOSE (scope_stmt))
 			= SCOPE_STMT_BLOCK (TREE_VALUE (scope_stmt))
 			= $$;
@@ -2137,7 +2137,7 @@ compstmt_start: '{' { compstmt_count++;
 compstmt_nostart: '}'
 		{ $$ = convert (void_type_node, integer_zero_node); }
 	| pushlevel maybe_label_decls compstmt_contents_nonempty '}' poplevel
-		{ $$ = poplevel (kept_level_p (), 1, 0);
+		{ $$ = poplevel (KEEP_MAYBE, 1, 0);
 		  SCOPE_STMT_BLOCK (TREE_PURPOSE ($5))
 		    = SCOPE_STMT_BLOCK (TREE_VALUE ($5))
 		    = $$; }

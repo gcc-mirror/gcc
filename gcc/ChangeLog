@@ -1,3 +1,15 @@
+2003-07-17  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-decl.c (pushdecl_function_level): Make static, return nothing.
+	(kept_level_p): Fold into poplevel.
+	(undeclared_variable): Moved here from c-typeck.c.  Export.
+	* c-tree.h (KEEP_YES, KEEP_NO, KEEP_MAYBE): New #defines.
+	(undeclared_variable): Prototype here.  Don't prototype
+	kept_level_p nor pushdecl_function_level.
+	* c-parse.in: Change first argument to poplevel from
+	"kept_level_p()" to "KEEP_MAYBE".
+	* c-typeck.c (undeclared_variable): Moved to c-decl.c.
+
 2003-07-17  Roger Sayle  <roger@eyesopen.com>
 
 	* simplify-rtx.c (simplify_rtx): Use simplify_gen_binary to swap

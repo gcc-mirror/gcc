@@ -155,6 +155,11 @@ struct lang_type GTY(())
    without prototypes.  */
 #define TYPE_ACTUAL_ARG_TYPES(NODE) TYPE_BINFO (NODE)
 
+/* Values for the first parameter to poplevel.  */
+#define KEEP_NO		0
+#define KEEP_YES	1
+#define KEEP_MAYBE	2
+
 
 /* in c-lang.c and objc-act.c */
 extern tree lookup_interface (tree);
@@ -175,7 +180,6 @@ extern void gen_aux_info_record (tree, int, int, int);
 
 /* in c-decl.c */
 extern int global_bindings_p (void);
-extern int kept_level_p (void);
 extern tree getdecls (void);
 extern void pushlevel (int);
 extern void insert_block (tree);
@@ -192,6 +196,7 @@ extern void check_for_loop_decls (void);
 extern void clear_parm_order (void);
 extern int  complete_array_type (tree, tree, int);
 extern void declare_parm_level (void);
+extern void undeclared_variable (tree);
 extern tree define_label (location_t, tree);
 extern void finish_decl (tree, tree, tree);
 extern tree finish_enum (tree, tree, tree);
@@ -213,7 +218,6 @@ extern void pop_label_level (void);
 extern void push_label_level (void);
 extern void push_parm_decl (tree);
 extern tree pushdecl_top_level (tree);
-extern tree pushdecl_function_level (tree, tree);
 extern void pushtag (tree, tree);
 extern tree set_array_declarator_type (tree, tree, int);
 extern tree shadow_label (tree);

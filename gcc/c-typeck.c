@@ -49,9 +49,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    message within this initializer.  */
 static int missing_braces_mentioned;
 
-/* 1 if we explained undeclared var errors.  */
-static int undeclared_variable_notice;
-
 static tree qualify_type (tree, tree);
 static int tagged_types_tu_compatible_p (tree, tree, int);
 static int comp_target_types (tree, tree, int);
@@ -60,7 +57,6 @@ static int type_lists_compatible_p (tree, tree, int);
 static tree decl_constant_value_for_broken_optimization (tree);
 static tree default_function_array_conversion (tree);
 static tree lookup_field (tree, tree);
-static void undeclared_variable (tree);
 static tree convert_arguments (tree, tree, tree, tree);
 static tree pointer_diff (tree, tree);
 static tree unary_complex_lvalue (enum tree_code, tree, int);
@@ -1531,37 +1527,6 @@ build_array_ref (tree array, tree index)
   }
 }
 
-/* Issue an error message for a reference to an undeclared variable ID,
-   including a reference to a builtin outside of function-call context.
-   Arrange to suppress further errors for the same identifier.  */
-static void
-undeclared_variable (tree id)
-{
-  if (current_function_decl == 0)
-    {
-      error ("`%s' undeclared here (not in a function)",
-	     IDENTIFIER_POINTER (id));
-      IDENTIFIER_SYMBOL_VALUE (id) = error_mark_node;
-    }
-  else
-    {
-      error ("`%s' undeclared (first use in this function)",
-	     IDENTIFIER_POINTER (id));
-
-      if (! undeclared_variable_notice)
-	{
-	  error ("(Each undeclared identifier is reported only once");
-	  error ("for each function it appears in.)");
-	  undeclared_variable_notice = 1;
-	}
-
-      /* Set IDENTIFIER_SYMBOL_VALUE (id) to error_mark_node
-	 at function scope.  This suppresses further warnings
-	 about this undeclared identifier in this function.  */
-      pushdecl_function_level (error_mark_node, id);
-    }
-}
-
 /* Build an external reference to identifier ID.  FUN indicates
    whether this will be used for a function call.  */
 tree

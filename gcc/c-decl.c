@@ -291,6 +291,7 @@ static tree any_external_decl (tree);
 static void record_external_decl (tree);
 static void warn_if_shadowing (tree, tree);
 static void clone_underlying_type (tree);
+static void pushdecl_function_level (tree, tree);
 static bool flexible_array_type_p (tree);
 static hashval_t link_hash_hash	(const void *);
 static int link_hash_eq (const void *, const void *);
@@ -391,18 +392,6 @@ keep_next_level (void)
   keep_next_level_flag = 1;
 }
 
-/* Nonzero if the current level needs to have a BLOCK made.  */
-
-int
-kept_level_p (void)
-{
-  return ((current_binding_level->keep_if_subblocks
-	   && current_binding_level->blocks != 0)
-	  || current_binding_level->keep
-	  || current_binding_level->names != 0
-	  || current_binding_level->tags != 0);
-}
-
 /* Identify this binding level as a level of parameters.  */
 
 void
@@ -485,8 +474,12 @@ poplevel (int keep, int reverse, int functionbody)
   tree subblocks = current_binding_level->blocks;
 
   functionbody |= current_binding_level->function_body;
+
+  if (keep == KEEP_MAYBE)
+    keep = (current_binding_level->names || current_binding_level->tags);
+  
   keep |= (current_binding_level->keep || functionbody
-	   || (current_binding_level->keep_if_subblocks && subblocks != 0));
+	   || (subblocks && current_binding_level->keep_if_subblocks));
 
   /* We used to warn about unused variables in expand_end_bindings,
      i.e. while generating RTL.  But in function-at-a-time mode we may
@@ -1830,12 +1823,12 @@ pushdecl_top_level (tree x)
 
 /* Record X as belonging to the outermost scope of the current
    function.  This is used only internally, by c_make_fname_decl and
-   build_external_ref, and is limited to their needs.  The NAME is
-   provided as a separate argument because build_external_ref wants to
+   undeclared_variable, and is limited to their needs.  The NAME is
+   provided as a separate argument because undeclared_variable wants to
    use error_mark_node for X.  For VAR_DECLs, duplicate_decls is not
    called; if there is any preexisting decl for this identifier, it is
    an ICE.  */
-tree
+static void
 pushdecl_function_level (tree x, tree name)
 {
   struct binding_level *scope;
@@ -1862,7 +1855,6 @@ pushdecl_function_level (tree x, tree name)
     }
 
   IDENTIFIER_SYMBOL_VALUE (name) = x;
-  return x;
 }
 
 /* Generate an implicit declaration for identifier FUNCTIONID as a
@@ -1990,6 +1982,38 @@ redeclaration_error_message (tree newdecl, tree olddecl)
 	  && DECL_CONTEXT (newdecl) == DECL_CONTEXT (olddecl))
 	return 2;
       return 0;
+    }
+}
+
+/* Issue an error message for a reference to an undeclared variable
+   ID, including a reference to a builtin outside of function-call
+   context.  Establish a binding of the identifier to error_mark_node
+   in an appropriate scope, which will suppress further errors for the
+   same identifier.  */
+void
+undeclared_variable (tree id)
+{
+  static bool already = false;
+
+  if (current_function_decl == 0)
+    {
+      error ("`%s' undeclared here (not in a function)",
+	     IDENTIFIER_POINTER (id));
+      IDENTIFIER_SYMBOL_VALUE (id) = error_mark_node;
+    }
+  else
+    {
+      error ("`%s' undeclared (first use in this function)",
+	     IDENTIFIER_POINTER (id));
+
+      if (! already)
+	{
+	  error ("(Each undeclared identifier is reported only once");
+	  error ("for each function it appears in.)");
+	  already = true;
+	}
+
+      pushdecl_function_level (error_mark_node, id);
     }
 }
 
