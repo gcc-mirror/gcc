@@ -1467,7 +1467,7 @@
 	    rtx stack_slot;
 	    
 	    stack_slot = assign_stack_temp (QImode, GET_MODE_SIZE(QImode), 0);
-	    stack_slot = change_address (stack_slot, VOIDmode, XEXP (stack_slot, 0));
+	    stack_slot = validize_mem (stack_slot);
 	    emit_move_insn (stack_slot, operands[2]);
 	    operands[2] = stack_slot;
 	  }
@@ -1592,7 +1592,7 @@
 	      rtx stack_slot;
 	    
 	      stack_slot = assign_stack_temp (QImode, GET_MODE_SIZE(QImode), 0);
-	      stack_slot = change_address (stack_slot, VOIDmode, XEXP (stack_slot, 0));
+	      stack_slot = validize_mem (stack_slot);
 	      emit_move_insn (stack_slot, operands[2]);
 	      operands[2] = stack_slot;
 	    }
@@ -1729,16 +1729,18 @@
 	emit_barrier ();
 	emit_label (label1);
 
-	if (GET_CODE(operands[2]) != MEM)
+	if (GET_CODE (operands[2]) != MEM)
 	  {
 	    rtx stack_slot;
 	    
 	    stack_slot = assign_stack_temp (QImode, GET_MODE_SIZE(QImode), 0);
-	    stack_slot = change_address (stack_slot, VOIDmode, XEXP (stack_slot, 0));
+	    stack_slot = validize_mem (stack_slot);
 	    emit_move_insn (stack_slot, operands[2]);
 	    operands[2] = stack_slot;
 	  }
-	emit_insn (gen_match_ashlhi3_nobmu (operands[0], operands[1], operands[2]));
+
+	emit_insn (gen_match_ashlhi3_nobmu (operands[0], operands[1],
+					    operands[2]));
 	emit_label (label2);
 	DONE;
 #endif

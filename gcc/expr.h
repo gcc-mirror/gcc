@@ -1150,6 +1150,10 @@ extern rtx memory_address_noforce PARAMS ((enum machine_mode, rtx));
    NULL for ADDR means don't change the address.)  */
 extern rtx change_address PARAMS ((rtx, enum machine_mode, rtx));
 
+/* Return a memory reference like MEMREF, but with its mode changed
+   to MODE and its address offset by OFFSET bytes.  */
+extern rtx adjust_address PARAMS ((rtx, enum machine_mode, HOST_WIDE_INT));
+
 /* Return a memory reference like MEMREF, but which is known to have a
    valid address.  */
 extern rtx validize_mem PARAMS ((rtx));

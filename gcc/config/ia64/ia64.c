@@ -928,11 +928,11 @@ ia64_split_timode (out, in, scratch)
 	switch (GET_CODE (base))
 	  {
 	  case REG:
-	    out[0] = change_address (in, DImode, NULL_RTX);
+	    out[0] = adjust_address (in, DImode, 0);
 	    break;
 	  case POST_MODIFY:
 	    base = XEXP (base, 0);
-	    out[0] = change_address (in, DImode, NULL_RTX);
+	    out[0] = adjust_address (in, DImode, 0);
 	    break;
 
 	  /* Since we're changing the mode, we need to change to POST_MODIFY
@@ -941,13 +941,17 @@ ia64_split_timode (out, in, scratch)
 	     register handy so let's use it.  */
 	  case POST_INC:
 	    base = XEXP (base, 0);
-	    out[0] = change_address (in, DImode,
-	      gen_rtx_POST_MODIFY (Pmode, base,plus_constant (base, 16)));
+	    out[0]
+	      = change_address (in, DImode,
+				gen_rtx_POST_MODIFY
+				(Pmode, base, plus_constant (base, 16)));
 	    break;
 	  case POST_DEC:
 	    base = XEXP (base, 0);
-	    out[0] = change_address (in, DImode,
-	      gen_rtx_POST_MODIFY (Pmode, base,plus_constant (base, -16)));
+	    out[0]
+	      = change_address (in, DImode,
+				gen_rtx_POST_MODIFY
+				(Pmode, base, plus_constant (base, -16)));
 	    break;
 	  default:
 	    abort ();
@@ -998,9 +1002,7 @@ spill_tfmode_operand (in, force)
     }
   else if (GET_CODE (in) == MEM
 	   && GET_CODE (XEXP (in, 0)) == ADDRESSOF)
-    {
-      return change_address (in, TFmode, copy_to_reg (XEXP (in, 0)));
-    }
+    return change_address (in, TFmode, copy_to_reg (XEXP (in, 0)));
   else
     return in;
 }

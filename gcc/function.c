@@ -2518,12 +2518,13 @@ fixup_memory_subreg (x, insn, uncritical)
       && ! uncritical)
     abort ();
 
-  addr = plus_constant (addr, offset);
-  if (!flag_force_addr && memory_address_p (mode, addr))
+  if (!flag_force_addr
+      && memory_address_p (mode, plus_constant (addr, offset)))
     /* Shortcut if no insns need be emitted.  */
-    return change_address (SUBREG_REG (x), mode, addr);
+    return adjust_address (SUBREG_REG (x), mode, offset);
+
   start_sequence ();
-  result = change_address (SUBREG_REG (x), mode, addr);
+  result = adjust_address (SUBREG_REG (x), mode, offset);
   emit_insn_before (gen_sequence (), insn);
   end_sequence ();
   return result;
@@ -2721,8 +2722,7 @@ optimize_bit_field (body, insn, equiv_mem)
 	    }
 
 	  start_sequence ();
-	  memref = change_address (memref, mode,
-				   plus_constant (XEXP (memref, 0), offset));
+	  memref = adjust_address (memref, mode, offset);
 	  insns = get_insns ();
 	  end_sequence ();
 	  emit_insns_before (insns, insn);
@@ -4987,11 +4987,9 @@ assign_parms (fndecl)
 	      entry_parm = convert_to_mode (nominal_mode, tempreg,
 					    TREE_UNSIGNED (TREE_TYPE (parm)));
 	      if (stack_parm)
-		{
-		  /* ??? This may need a big-endian conversion on sparc64.  */
-		  stack_parm = change_address (stack_parm, nominal_mode,
-					       NULL_RTX);
-		}
+		/* ??? This may need a big-endian conversion on sparc64.  */
+		stack_parm = adjust_address (stack_parm, nominal_mode, 0);
+
 	      conversion_insns = get_insns ();
 	      did_conversion = 1;
 	      end_sequence ();

@@ -4291,7 +4291,7 @@
 
     operands[4] = change_address (operands[1], QImode,
 				  plus_constant (addr, 1));
-    operands[1] = change_address (operands[1], QImode, NULL_RTX);
+    operands[1] = adjust_address (operands[1], QImode, 0);
     operands[3] = gen_lowpart (QImode, operands[0]);
     operands[0] = gen_lowpart (SImode, operands[0]);
     operands[2] = gen_reg_rtx (SImode); 
@@ -4315,7 +4315,7 @@
 
     operands[4] = change_address (operands[1], QImode,
 				  plus_constant (addr, 1));
-    operands[1] = change_address (operands[1], QImode, NULL_RTX);
+    operands[1] = adjust_address (operands[1], QImode, 0);
     operands[3] = gen_lowpart (QImode, operands[0]);
     operands[0] = gen_lowpart (SImode, operands[0]);
     operands[2] = gen_reg_rtx (SImode);
@@ -4364,7 +4364,7 @@
 
     operands[3] = change_address (operands[0], QImode,
 				  plus_constant (addr, 1));
-    operands[0] = change_address (operands[0], QImode, NULL_RTX);
+    operands[0] = adjust_address (operands[0], QImode, 0);
   }"
 )
 

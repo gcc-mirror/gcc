@@ -1,5 +1,6 @@
 /* Subroutines used for code generation on the Mitsubishi M32R cpu.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1263,8 +1264,8 @@ gen_split_move_double (operands)
 	{
 	  /* If the high-address word is used in the address, we must load it
 	     last.  Otherwise, load it first.  */
-	  rtx addr = XEXP (src, 0);
-	  int reverse = (refers_to_regno_p (dregno, dregno+1, addr, 0) != 0);
+	  int reverse
+	    = (refers_to_regno_p (dregno, dregno + 1, XEXP (src, 0), 0) != 0);
 
 	  /* We used to optimize loads from single registers as
 
@@ -1279,15 +1280,13 @@ gen_split_move_double (operands)
 	     which saves 2 bytes and doesn't force longword alignment.  */
 	  emit_insn (gen_rtx_SET (VOIDmode,
 				  operand_subword (dest, reverse, TRUE, mode),
-				  change_address (src, SImode,
-						  plus_constant (addr,
-								 reverse * UNITS_PER_WORD))));
+				  adjust_address (src, SImode,
+						  reverse * UNITS_PER_WORD)));
 
 	  emit_insn (gen_rtx_SET (VOIDmode,
 				  operand_subword (dest, !reverse, TRUE, mode),
-				  change_address (src, SImode,
-						  plus_constant (addr,
-								 (!reverse) * UNITS_PER_WORD))));
+				  adjust_address (src, SImode,
+						  !reverse * UNITS_PER_WORD)));
 	}
 
       else
@@ -1308,15 +1307,12 @@ gen_split_move_double (operands)
      which saves 2 bytes and doesn't force longword alignment.  */
   else if (GET_CODE (dest) == MEM && GET_CODE (src) == REG)
     {
-      rtx addr = XEXP (dest, 0);
-
       emit_insn (gen_rtx_SET (VOIDmode,
-			      change_address (dest, SImode, addr),
+			      adjust_address (dest, SImode, 0),
 			      operand_subword (src, 0, TRUE, mode)));
 
       emit_insn (gen_rtx_SET (VOIDmode,
-			      change_address (dest, SImode,
-					      plus_constant (addr, UNITS_PER_WORD)),
+			      adjust_address (dest, SImode, UNITS_PER_WORD),
 			      operand_subword (src, 1, TRUE, mode)));
     }
 

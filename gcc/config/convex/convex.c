@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for Convex.
-   Copyright (C) 1988, 1993, 1994, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1993, 1994, 1997, 1998, 1999, 2000, 2001
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -369,8 +369,10 @@ expand_movstr (operands)
 
       /* Get src and dest in the right mode */
       if (GET_MODE (src) != mode)
-	src = change_address (src, mode, 0),
-	dest = change_address (dest, mode, 0);
+	{
+	  src = adjust_address (src, mode, 0);
+	  dest = adjust_address (dest, mode, 0);
+	}
 
       /* Make load and store patterns for this piece */
       load = gen_rtx_SET (VOIDmode, reg, src);

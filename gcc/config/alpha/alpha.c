@@ -2397,9 +2397,8 @@ alpha_split_tfmode_pair (operands)
     }
   else if (GET_CODE (operands[1]) == MEM)
     {
-      operands[3] = change_address (operands[1], DImode,
-				    plus_constant (XEXP (operands[1], 0), 8));
-      operands[2] = change_address (operands[1], DImode, NULL_RTX);
+      operands[3] = adjust_address (operands[1], DImode, 8);
+      operands[2] = adjust_address (operands[1], DImode, 0);
     }
   else if (operands[1] == CONST0_RTX (TFmode))
     operands[2] = operands[3] = const0_rtx;
@@ -2413,9 +2412,8 @@ alpha_split_tfmode_pair (operands)
     }
   else if (GET_CODE (operands[0]) == MEM)
     {
-      operands[1] = change_address (operands[0], DImode,
-				    plus_constant (XEXP (operands[0], 0), 8));
-      operands[0] = change_address (operands[0], DImode, NULL_RTX);
+      operands[1] = adjust_address (operands[0], DImode, 8);
+      operands[0] = adjust_address (operands[0], DImode, 0);
     }
   else
     abort ();
@@ -2694,8 +2692,7 @@ alpha_expand_unaligned_load_words (out_regs, smem, words, ofs)
   data_regs[words] = gen_reg_rtx (DImode);
 
   if (ofs != 0)
-    smem = change_address (smem, GET_MODE (smem),
-			   plus_constant (XEXP (smem, 0), ofs));
+    smem = adjust_address (smem, GET_MODE (smem), ofs);
   
   /* Load up all of the source data.  */
   for (i = 0; i < words; ++i)
@@ -2771,9 +2768,7 @@ alpha_expand_unaligned_store_words (data_regs, dmem, words, ofs)
   st_tmp_2 = gen_reg_rtx(DImode);
   
   if (ofs != 0)
-    dmem = change_address (dmem, GET_MODE (dmem),
-			   plus_constant (XEXP (dmem, 0), ofs));
-  
+    dmem = adjust_address (dmem, GET_MODE (dmem), ofs);
 
   st_addr_2 = change_address (dmem, DImode,
 			      gen_rtx_AND (DImode,
@@ -2950,9 +2945,7 @@ alpha_expand_block_move (operands)
 
       for (i = 0; i < words; ++i)
 	emit_move_insn (data_regs[nregs + i],
-			change_address (orig_src, DImode,
-					plus_constant (XEXP (orig_src, 0), 
-						       ofs + i * 8)));
+			adjust_address (orig_src, DImode, ofs + i * 8));
 
       nregs += words;
       bytes -= words * 8;
@@ -3006,10 +2999,7 @@ alpha_expand_block_move (operands)
 	{
 	  do {
 	    data_regs[nregs++] = tmp = gen_reg_rtx (HImode);
-	    emit_move_insn (tmp,
-			    change_address (orig_src, HImode,
-					    plus_constant (XEXP (orig_src, 0),
-							   ofs)));
+	    emit_move_insn (tmp, adjust_address (orig_src, HImode, ofs));
 	    bytes -= 2;
 	    ofs += 2;
 	  } while (bytes >= 2);
@@ -3026,10 +3016,7 @@ alpha_expand_block_move (operands)
   while (bytes > 0)
     {
       data_regs[nregs++] = tmp = gen_reg_rtx (QImode);
-      emit_move_insn (tmp,
-		      change_address (orig_src, QImode,
-				      plus_constant (XEXP (orig_src, 0),
-						     ofs)));
+      emit_move_insn (tmp, adjust_address (orig_src, QImode, ofs));
       bytes -= 1;
       ofs += 1;
     }
@@ -3099,9 +3086,7 @@ alpha_expand_block_move (operands)
     {
       while (i < nregs && GET_MODE (data_regs[i]) == DImode)
 	{
-	  emit_move_insn (change_address (orig_dst, DImode,
-					  plus_constant (XEXP (orig_dst, 0),
-							 ofs)),
+	  emit_move_insn (adjust_address (orig_dst, DImode, ofs),
 			  data_regs[i]);
 	  ofs += 8;
 	  i++;
@@ -3117,13 +3102,9 @@ alpha_expand_block_move (operands)
 	  tmp = expand_binop (DImode, lshr_optab, data_regs[i], GEN_INT (32),
 			      NULL_RTX, 1, OPTAB_WIDEN);
 
-	  emit_move_insn (change_address (orig_dst, SImode,
-					  plus_constant (XEXP (orig_dst, 0),
-							 ofs)),
+	  emit_move_insn (adjust_address (orig_dst, SImode, ofs),
 			  gen_lowpart (SImode, data_regs[i]));
-	  emit_move_insn (change_address (orig_dst, SImode,
-					  plus_constant (XEXP (orig_dst, 0),
-							 ofs + 4)),
+	  emit_move_insn (adjust_address (orig_dst, SImode, ofs + 4),
 			  gen_lowpart (SImode, tmp));
 	  ofs += 8;
 	  i++;
@@ -3131,9 +3112,7 @@ alpha_expand_block_move (operands)
 
       while (i < nregs && GET_MODE (data_regs[i]) == SImode)
 	{
-	  emit_move_insn (change_address(orig_dst, SImode,
-					 plus_constant (XEXP (orig_dst, 0),
-							ofs)),
+	  emit_move_insn (adjust_address (orig_dst, SImode, ofs),
 			  data_regs[i]);
 	  ofs += 4;
 	  i++;
@@ -3171,10 +3150,7 @@ alpha_expand_block_move (operands)
   if (dst_align >= 16)
     while (i < nregs && GET_MODE (data_regs[i]) == HImode)
       {
-	emit_move_insn (change_address (orig_dst, HImode,
-					plus_constant (XEXP (orig_dst, 0),
-						       ofs)),
-			data_regs[i]);
+	emit_move_insn (adjust_address (orig_dst, HImode, ofs), data_regs[i]);
 	i++;
 	ofs += 2;
       }
@@ -3188,10 +3164,7 @@ alpha_expand_block_move (operands)
 
   while (i < nregs && GET_MODE (data_regs[i]) == QImode)
     {
-      emit_move_insn (change_address (orig_dst, QImode,
-				      plus_constant (XEXP (orig_dst, 0),
-						     ofs)),
-		      data_regs[i]);
+      emit_move_insn (adjust_address (orig_dst, QImode, ofs), data_regs[i]);
       i++;
       ofs += 1;
     }
@@ -3278,9 +3251,7 @@ alpha_expand_block_clear (operands)
 	  rtx mem, tmp;
 	  HOST_WIDE_INT mask;
 
-	  mem = change_address (orig_dst, mode,
-				plus_constant (XEXP (orig_dst, 0),
-					       ofs - inv_alignofs));
+	  mem = adjust_address (orig_dst, mode, ofs - inv_alignofs);
 	  MEM_ALIAS_SET (mem) = 0;
 
 	  mask = ~(~(HOST_WIDE_INT)0 << (inv_alignofs * 8));
@@ -3306,30 +3277,21 @@ alpha_expand_block_clear (operands)
 
       if (TARGET_BWX && (alignofs & 1) && bytes >= 1)
 	{
-	  emit_move_insn (change_address (orig_dst, QImode,
-					  plus_constant (XEXP (orig_dst, 0),
-						         ofs)),
-			  const0_rtx);
+	  emit_move_insn (adjust_address (orig_dst, QImode, ofs), const0_rtx);
 	  bytes -= 1;
 	  ofs += 1;
 	  alignofs -= 1;
 	}
       if (TARGET_BWX && align >= 16 && (alignofs & 3) == 2 && bytes >= 2)
 	{
-	  emit_move_insn (change_address (orig_dst, HImode,
-					  plus_constant (XEXP (orig_dst, 0),
-						         ofs)),
-			  const0_rtx);
+	  emit_move_insn (adjust_address (orig_dst, HImode, ofs), const0_rtx);
 	  bytes -= 2;
 	  ofs += 2;
 	  alignofs -= 2;
 	}
       if (alignofs == 4 && bytes >= 4)
 	{
-	  emit_move_insn (change_address (orig_dst, SImode,
-					  plus_constant (XEXP (orig_dst, 0),
-						         ofs)),
-			  const0_rtx);
+	  emit_move_insn (adjust_address (orig_dst, SImode, ofs), const0_rtx);
 	  bytes -= 4;
 	  ofs += 4;
 	  alignofs = 0;
@@ -3351,10 +3313,8 @@ alpha_expand_block_clear (operands)
       words = bytes / 8;
 
       for (i = 0; i < words; ++i)
-	emit_move_insn (change_address(orig_dst, DImode,
-				       plus_constant (XEXP (orig_dst, 0),
-						      ofs + i * 8)),
-			  const0_rtx);
+	emit_move_insn (adjust_address(orig_dst, DImode, ofs + i * 8),
+			const0_rtx);
 
       bytes -= words * 8;
       ofs += words * 8;
@@ -3365,9 +3325,7 @@ alpha_expand_block_clear (operands)
 
   if (align >= 32 && bytes > 16)
     {
-      emit_move_insn (change_address (orig_dst, SImode,
-				      plus_constant (XEXP (orig_dst, 0), ofs)),
-		      const0_rtx);
+      emit_move_insn (adjust_address (orig_dst, SImode, ofs), const0_rtx);
       bytes -= 4;
       ofs += 4;
 
@@ -3400,9 +3358,7 @@ alpha_expand_block_clear (operands)
       words = bytes / 4;
 
       for (i = 0; i < words; ++i)
-	emit_move_insn (change_address (orig_dst, SImode,
-					plus_constant (XEXP (orig_dst, 0),
-						       ofs + i * 4)),
+	emit_move_insn (adjust_address (orig_dst, SImode, ofs + i * 4),
 			const0_rtx);
 
       bytes -= words * 4;
@@ -3440,8 +3396,7 @@ alpha_expand_block_clear (operands)
 	  rtx mem, tmp;
 	  HOST_WIDE_INT mask;
 
-	  mem = change_address (orig_dst, DImode,
-				plus_constant (XEXP (orig_dst, 0), ofs));
+	  mem = adjust_address (orig_dst, DImode, ofs);
 	  MEM_ALIAS_SET (mem) = 0;
 
 	  mask = ~(HOST_WIDE_INT)0 << (bytes * 8);
@@ -3457,8 +3412,7 @@ alpha_expand_block_clear (operands)
 	  rtx mem, tmp;
 	  HOST_WIDE_INT mask;
 
-	  mem = change_address (orig_dst, SImode,
-				plus_constant (XEXP (orig_dst, 0), ofs));
+	  mem = adjust_address (orig_dst, SImode, ofs);
 	  MEM_ALIAS_SET (mem) = 0;
 
 	  mask = ~(HOST_WIDE_INT)0 << (bytes * 8);
@@ -3484,9 +3438,7 @@ alpha_expand_block_clear (operands)
       if (align >= 16)
 	{
 	  do {
-	    emit_move_insn (change_address (orig_dst, HImode,
-					    plus_constant (XEXP (orig_dst, 0),
-							   ofs)),
+	    emit_move_insn (adjust_address (orig_dst, HImode, ofs),
 			    const0_rtx);
 	    bytes -= 2;
 	    ofs += 2;
@@ -3502,10 +3454,7 @@ alpha_expand_block_clear (operands)
 
   while (bytes > 0)
     {
-      emit_move_insn (change_address (orig_dst, QImode,
-				      plus_constant (XEXP (orig_dst, 0),
-						     ofs)),
-		      const0_rtx);
+      emit_move_insn (adjust_address (orig_dst, QImode, ofs), const0_rtx);
       bytes -= 1;
       ofs += 1;
     }

@@ -4408,9 +4408,9 @@ split_di (operands, num, lo_half, hi_half)
 	}
       else if (offsettable_memref_p (op))
 	{
-	  rtx lo_addr = XEXP (op, 0);
 	  rtx hi_addr = XEXP (adj_offsettable_operand (op, 4), 0);
-	  lo_half[num] = change_address (op, SImode, lo_addr);
+
+	  lo_half[num] = adjust_address (op, SImode, 0);
 	  hi_half[num] = change_address (op, SImode, hi_addr);
 	}
       else
@@ -6865,7 +6865,7 @@ ix86_split_to_parts (operand, parts, mode)
 	    }
 	  else if (offsettable_memref_p (operand))
 	    {
-	      operand = change_address (operand, SImode, XEXP (operand, 0));
+	      operand = adjust_address (operand, SImode, 0);
 	      parts[0] = operand;
 	      parts[1] = adj_offsettable_operand (operand, 4);
 	      if (size == 3)
@@ -7061,7 +7061,7 @@ ix86_split_long_move (operands)
 	  if (GET_MODE (part[1][1]) == SImode)
 	    {
 	      if (GET_CODE (part[1][1]) == MEM)
-		part[1][1] = change_address (part[1][1], DImode, XEXP (part[1][1], 0));
+		part[1][1] = adjust_address (part[1][1], DImode, 0);
 	      else if (REG_P (part[1][1]))
 		part[1][1] = gen_rtx_REG (DImode, REGNO (part[1][1]));
 	      else
@@ -10185,17 +10185,16 @@ ix86_expand_builtin (exp, target, subtarget, mode, ignore)
     case IX86_BUILTIN_SETPS1:
       target = assign_386_stack_local (SFmode, 0);
       arg0 = TREE_VALUE (arglist);
-      emit_move_insn (change_address (target, SFmode, XEXP (target, 0)),
+      emit_move_insn (adjust_address (target, SFmode, 0),
 		      expand_expr (arg0, NULL_RTX, VOIDmode, 0));
       op0 = gen_reg_rtx (V4SFmode);
-      emit_insn (gen_sse_loadss (op0, change_address (target, V4SFmode,
-						      XEXP (target, 0))));
+      emit_insn (gen_sse_loadss (op0, adjust_address (target, V4SFmode, 0)));
       emit_insn (gen_sse_shufps (op0, op0, op0, GEN_INT (0)));
       return op0;
 
     case IX86_BUILTIN_SETPS:
       target = assign_386_stack_local (V4SFmode, 0);
-      op0 = change_address (target, SFmode, XEXP (target, 0));
+      op0 = adjust_address (target, SFmode, 0);
       arg0 = TREE_VALUE (arglist);
       arg1 = TREE_VALUE (TREE_CHAIN (arglist));
       arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));

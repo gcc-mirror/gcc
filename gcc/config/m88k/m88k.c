@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for Motorola 88000.
-   Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
-   Free Software Foundation, Inc. 
+   Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
+   2001 Free Software Foundation, Inc. 
    Contributed by Michael Tiemann (tiemann@mcc.com)
    Currently maintained by (gcc@dg-rtp.dg.com)
 
@@ -2613,9 +2613,7 @@ m88k_builtin_saveregs ()
   /* Now store the incoming registers.  */
   if (fixed < 8)
     {
-      dest = change_address (addr, Pmode,
-			     plus_constant (XEXP (addr, 0),
-					    fixed * UNITS_PER_WORD));
+      dest = adjust_address (addr, Pmode, fixed * UNITS_PER_WORD);
       move_block_from_reg (2 + fixed, dest, 8 - fixed,
 			   UNITS_PER_WORD * (8 - fixed));
 

@@ -4232,10 +4232,8 @@ sh_builtin_saveregs ()
      named args need not be saved.  */
   if (n_intregs > 0)
     move_block_from_reg (BASE_ARG_REG (SImode) + first_intreg,
-			 change_address (regbuf, BLKmode,
-					 plus_constant (XEXP (regbuf, 0),
-							(n_floatregs
-							 * UNITS_PER_WORD))), 
+			 adjust_address (regbuf, BLKmode,
+					 n_floatregs * UNITS_PER_WORD),
 			 n_intregs, n_intregs * UNITS_PER_WORD);
 
   /* Save float args.

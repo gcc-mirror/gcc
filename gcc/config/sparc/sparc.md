@@ -2957,7 +2957,7 @@
   [(clobber (const_int 0))]
   "
 {
-  rtx word0 = change_address (operands[1], SImode, NULL_RTX);
+  rtx word0 = adjust_address (operands[1], SImode, 0);
   rtx word1 = change_address (operands[1], SImode,
 			      plus_constant_for_output (XEXP (word0, 0), 4));
   rtx high_part = gen_highpart (SImode, operands[0]);
@@ -2985,7 +2985,7 @@
   [(clobber (const_int 0))]
   "
 {
-  rtx word0 = change_address (operands[0], SImode, NULL_RTX);
+  rtx word0 = adjust_address (operands[0], SImode, 0);
   rtx word1 = change_address (operands[0], SImode,
 			      plus_constant_for_output (XEXP (word0, 0), 4));
   rtx high_part = gen_highpart (SImode, operands[1]);
@@ -3594,7 +3594,7 @@
   [(clobber (const_int 0))]
   "
 {
-  rtx word0 = change_address (operands[1], SFmode, NULL_RTX);
+  rtx word0 = adjust_address (operands[1], SFmode, 0);
   rtx word1 = change_address (operands[1], SFmode,
 			      plus_constant_for_output (XEXP (word0, 0), 4));
 
@@ -3629,7 +3629,7 @@
   [(clobber (const_int 0))]
   "
 {
-  rtx word0 = change_address (operands[0], SFmode, NULL_RTX);
+  rtx word0 = adjust_address (operands[0], SFmode, 0);
   rtx word1 = change_address (operands[0], SFmode,
 			      plus_constant_for_output (XEXP (word0, 0), 4));
 
@@ -3655,7 +3655,7 @@
 {
   rtx dest1, dest2;
 
-  dest1 = change_address (operands[0], SFmode, NULL_RTX);
+  dest1 = adjust_address (operands[0], SFmode, 0);
   dest2 = change_address (operands[0], SFmode,
 			  plus_constant_for_output (XEXP (dest1, 0), 4));
   emit_insn (gen_movsf (dest1, CONST0_RTX (SFmode)));
@@ -3929,7 +3929,7 @@
       dest2 = gen_df_reg (set_dest, 1);
       break;
     case MEM:
-      dest1 = change_address (set_dest, DFmode, NULL_RTX);
+      dest1 = adjust_address (set_dest, DFmode, 0);
       dest2 = change_address (set_dest, DFmode,
 			      plus_constant_for_output (XEXP (dest1, 0), 8));
       break;
@@ -3950,7 +3950,7 @@
   [(clobber (const_int 0))]
   "
 {
-  rtx word0 = change_address (operands[1], DFmode, NULL_RTX);
+  rtx word0 = adjust_address (operands[1], DFmode, 0);
   rtx word1 = change_address (operands[1], DFmode,
 			      plus_constant_for_output (XEXP (word0, 0), 8));
   rtx set_dest, dest1, dest2;
@@ -3986,7 +3986,7 @@
   [(clobber (const_int 0))]
   "
 {
-  rtx word1 = change_address (operands[0], DFmode, NULL_RTX);
+  rtx word1 = adjust_address (operands[0], DFmode, 0);
   rtx word2 = change_address (operands[0], DFmode,
 			      plus_constant_for_output (XEXP (word1, 0), 8));
   rtx set_src;
@@ -8906,10 +8906,9 @@
     }
 
   /* Reload the function value registers.  */
-  emit_move_insn (valreg1, change_address (result, DImode, XEXP (result, 0)));
+  emit_move_insn (valreg1, adjust_address (result, DImode, 0));
   emit_move_insn (valreg2,
-		  change_address (result, TARGET_ARCH64 ? TFmode : DFmode,
-				  plus_constant (XEXP (result, 0), 8)));
+		  adjust_address (result, TARGET_ARCH64 ? TFmode : DFmode, 8));
 
   /* Put USE insns before the return.  */
   emit_insn (gen_rtx_USE (VOIDmode, valreg1));
