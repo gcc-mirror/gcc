@@ -1,3 +1,7 @@
+Tue Apr 20 17:57:14 1999  Catherine Moore  <clm@cygnus.com>
+
+        * config/arm/arm.md (movhi):  Add check for odd offset.
+
 Tue Apr 20 13:14:58 EDT 1999  John Wehle  (john@feith.com)
 
 	* i386.c (output_move_double): Abort if a non-offsettable

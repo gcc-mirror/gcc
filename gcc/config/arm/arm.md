@@ -2913,10 +2913,11 @@
 		  if ((GET_CODE (base = XEXP (operands[1], 0)) == REG
 		       || (GET_CODE (base) == PLUS
 			   && GET_CODE (offset = XEXP (base, 1)) == CONST_INT
+                           && ((INTVAL(offset) & 1) != 1)
 			   && GET_CODE (base = XEXP (base, 0)) == REG))
 		      && REGNO_POINTER_ALIGN (REGNO (base)) >= 4)
 		    {
-		      HOST_WIDE_INT new_offset = INTVAL (offset) & ~2;
+		      HOST_WIDE_INT new_offset = INTVAL (offset) & ~3;
 		      rtx new;
 
 		      new = gen_rtx_MEM (SImode,
