@@ -1,3 +1,8 @@
+Sun Feb 14 00:45:50 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* loop.c: Disable recent loop changes.  Temporary as Joern
+	continues to fix problems.
+
 Sat Feb 13 23:29:42 1999  Richard Henderson  <rth@cygnus.com>
 
 	* loop.c (combine_givs_used_by_other): Delete.
