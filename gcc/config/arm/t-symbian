@@ -1,0 +1,7 @@
+# Create a multilib for processors with VFP floating-point, and a
+# multilib for those without -- using the soft-float ABI in both
+# cases.  Symbian OS object should be compiled with interworking
+# enabled, so there are no separate thumb-mode libraries.
+MULTILIB_OPTIONS     = mfloat-abi=hard
+MULTILIB_DIRNAMES    = hard
+
