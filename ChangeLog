@@ -1,3 +1,7 @@
+2002-07-01  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* MAINTAINERS (Write After Approval): Update my e-mail address.
+
 2002-06-24  Ben Elliston  <bje@redhat.com>
 
 	* configure.in (host_tools): Remove cgen.
