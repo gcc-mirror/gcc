@@ -1,3 +1,14 @@
+2003-08-08  Andrew Haley  <aph@redhat.com>
+
+	* Makefile.am (AM_CXXFLAGS): Define BOOT_CLASS_PATH.
+	* Makefile.in: Rebuild.
+	* java/lang/natRuntime.cc (insertSystemProperties): Add
+	"sun.boot.class.path".
+
+2003-08-07  Andrew Haley  <aph@redhat.com>
+
+	* java/io/PrintStream.java: Don't crash on a null string.
+	
 2003-08-07  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.in: Don't initialize GCINCS to boehm-gc/include.
