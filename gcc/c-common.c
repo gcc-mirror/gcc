@@ -1546,6 +1546,8 @@ check_format_info (info, params)
       ++arg_num;
       cur_type = TREE_TYPE (cur_param);
 
+      STRIP_NOPS (cur_param);
+
       /* Check the types of any additional pointer arguments
 	 that precede the "real" argument.  */
       for (i = 0; i < fci->pointer_count + aflag; ++i)
@@ -1553,6 +1555,12 @@ check_format_info (info, params)
 	  if (TREE_CODE (cur_type) == POINTER_TYPE)
 	    {
 	      cur_type = TREE_TYPE (cur_type);
+
+	      if (TREE_CODE (cur_param) == ADDR_EXPR)
+		cur_param = TREE_OPERAND (cur_param, 0);
+	      else
+		cur_param = 0;
+
 	      continue;
 	    }
 	  if (TREE_CODE (cur_type) != ERROR_MARK)
@@ -1565,6 +1573,21 @@ check_format_info (info, params)
 	      warning (message);
 	    }
 	  break;
+	}
+
+      /* See if this is an attempt to write into a const type with
+	 scanf.  */
+      if (info->is_scan && i == fci->pointer_count + aflag
+	  && wanted_type != 0
+	  && TREE_CODE (cur_type) != ERROR_MARK
+	  && (TYPE_READONLY (cur_type)
+	      || (cur_param != 0
+		  && (TREE_CODE_CLASS (TREE_CODE (cur_param)) == 'c'
+		      || (TREE_CODE_CLASS (TREE_CODE (cur_param)) == 'd'
+			  && TREE_READONLY (cur_param))))))
+	{
+	  sprintf (message, "writing into constant object (arg %d)", arg_num);
+	  warning (message);
 	}
 
       /* Check the type of the "real" argument, if there's a type we want.  */
