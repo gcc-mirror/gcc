@@ -1261,6 +1261,10 @@ int widths[] = @{ [0 ... 9] = 1, [10 ... 99] = 2, [100] = 3 @};
 @end example
 
 @noindent
+If the value in it has side-effects, the side-effects will happen only once,
+not for each initialized field by the range initializer.
+
+@noindent
 Note that the length of the array is the highest value specified
 plus one.
 
@@ -1344,6 +1348,12 @@ example, with the @samp{struct point} declaration above:
 @example
 struct point ptarray[10] = @{ [2].y = yv2, [2].x = xv2, [0].x = xv0 @};
 @end example
+
+@noindent
+If the same field is initialized multiple times, it will have value from
+the last initialization.  If any such overridden initialization has
+side-effect, it is unspecified whether the side-effect happens or not.
+Currently, gcc will discard them and issue a warning.
 
 @node Case Ranges
 @section Case Ranges
