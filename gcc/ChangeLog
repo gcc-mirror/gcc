@@ -1,3 +1,8 @@
+2003-05-09  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/rs6000/rs6000.c (spe_init_builtins): Fix typo in creation
+	of int_ftype_void.
+
 2003-05-09  Olivier Hainque <hainque@act-europe.fr>
 
 	* config/arm/vxxscale.h, config/arm/vxxscale-coff.h: New files.

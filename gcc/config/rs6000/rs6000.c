@@ -5761,8 +5761,7 @@ spe_init_builtins ()
 			   tree_cons (NULL_TREE, integer_type_node, endlink));
 
   tree int_ftype_void
-    = build_function_type (integer_type_node,
-			   tree_cons (NULL_TREE, void_type_node, endlink));
+    = build_function_type (integer_type_node, endlink);
 
   tree v2si_ftype_pv2si_int
     = build_function_type (opaque_V2SI_type_node,
