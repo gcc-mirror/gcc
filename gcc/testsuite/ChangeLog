@@ -1,3 +1,7 @@
+2001-10-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/gcc.dg/20011015-1.c: New test.
+
 2001-10-14  Richard Sandiford  <rsandifo@redhat.com>
 
 	* g++.dg/template/unify2.C: New test.
