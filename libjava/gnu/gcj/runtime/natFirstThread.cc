@@ -1,6 +1,6 @@
 // natFirstThread.cc - Implementation of FirstThread native methods.
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -37,12 +37,19 @@ typedef void main_func (jobject);
 extern void (*_Jv_JVMPI_Notify_THREAD_START) (JVMPI_Event *event);
 #endif
 
-/* This will be non-NULL if the user has preloaded a JNI library, or
-   linked one into the executable.  */
+/* This will be different from _JNI_OnLoad if the user has preloaded a JNI
+   library, or linked one into the executable.  */
 extern "C" 
 {
-#pragma weak JNI_OnLoad
+  /* Some systems, like Tru64 UNIX, don't support weak definitions, so use
+     an empty dummy function to check if the user provided his own.  */
+#pragma weak JNI_OnLoad = _JNI_OnLoad
   extern jint JNI_OnLoad (JavaVM *, void *) __attribute__((weak));
+
+  jint _JNI_OnLoad (JavaVM *vm, void *)
+  {
+    return 0;
+  }
 }
 
 void
@@ -57,7 +64,7 @@ gnu::gcj::runtime::FirstThread::run (void)
      environment variable.  We take advatage of this here to allow for
      dynamically loading a JNI library into a fully linked executable.  */
 
-  if (JNI_OnLoad != NULL)
+  if (JNI_OnLoad != _JNI_OnLoad)
     {
       JavaVM *vm = _Jv_GetJavaVM ();
       if (vm == NULL)

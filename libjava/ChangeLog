@@ -1,5 +1,12 @@
 2001-07-24  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
+	* gnu/gcj/runtime/natFirstThread.cc (_JNI_OnLoad): New function.
+	(JNI_OnLoad): Use it.
+	(gnu::gcj::runtime::FirstThread::run): Check for _JNI_OnLoad, not
+	NULL.
+
+2001-07-24  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
 	* Makefile.am (AM_MAKEFLAGS): Pass RUNTESTFLAGS.
 	Makefile.in: Regenerate.
 
