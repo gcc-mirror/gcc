@@ -1399,6 +1399,11 @@ mask_operand (op, mode)
 
   c = INTVAL (op);
 
+  /* Fail in 64-bit mode if the mask wraps around because the upper
+     32-bits of the mask will all be 1s, contrary to GCC's internal view.  */
+  if (TARGET_POWERPC64 && (c & 0x80000001) == 0x80000001)
+    return 0;
+
   /* We don't change the number of transitions by inverting,
      so make sure we start with the LS bit zero.  */
   if (c & 1)
