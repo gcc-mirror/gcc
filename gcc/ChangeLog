@@ -6,6 +6,9 @@ Fri Jun 19 22:55:14 1998  Jeffrey A Law  (law@cygnus.com)
 
 Fri Jun 19 20:38:34 1998  H.J. Lu  (hjl@gnu.org)
 
+	* expr.c (do_jump_by_parts_greater_rtx): Removed.
+	(truthvalue_conversion): Likewise.
+
 	* c-iterate.c: Include "expr.h".
 	(expand_expr): Use proper values when calling the function.
 
