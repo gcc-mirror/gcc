@@ -27,8 +27,9 @@
 #endif
 
 /* In 4.3bsd-net2, machine/ansi.h defines these symbols, which are
-    defined if the corresponding type is *not* defined.  */
-#ifdef _ANSI_H_
+   defined if the corresponding type is *not* defined.
+   FreeBSD-2.1 defines _MACHINE_ANSI_H_ instead of _ANSI_H_ */
+#if defined(_ANSI_H_) || defined(_MACHINE_ANSI_H_)
 #if !defined(_SIZE_T_) && !defined(_BSD_SIZE_T_)
 #define _SIZE_T
 #endif
@@ -55,7 +56,7 @@
 #undef _WCHAR_T_
 #undef _BSD_WCHAR_T_
 #endif
-#endif /* _ANSI_H_ */
+#endif /* defined(_ANSI_H_) || defined(_MACHINE_ANSI_H_) */
 
 /* Sequent's header files use _PTRDIFF_T_ in some conflicting way.
    Just ignore it.  */
