@@ -1,3 +1,10 @@
+2004-07-26  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* decl.c (xref_basetypes): Adjust base access vector creation.
+	* rtti.c (get_pseudo_ti_init, get_pseudo_ti_desc): Adjust base
+	access accesses.
+	* search.c (dynamic_cast_base_recurse, dfs_access_in_type): Likewise.
+
 2004-07-26  Niall Douglas  <s_fsfeurope2@nedprod.com>
 	    Brian Ryner  <bryner@brianryner.com>
 

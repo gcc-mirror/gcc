@@ -9109,7 +9109,7 @@ xref_basetypes (tree ref, tree base_list)
 
   if (max_bases)
     {
-      BINFO_BASE_ACCESSES (binfo) = make_tree_vec (max_bases);
+      BINFO_BASE_ACCESSES (binfo) = VEC_alloc (tree, max_bases);
       /* An aggregate cannot have baseclasses.  */
       CLASSTYPE_NON_AGGREGATE (ref) = 1;
 
@@ -9199,16 +9199,9 @@ xref_basetypes (tree ref, tree base_list)
       if (!BINFO_INHERITANCE_CHAIN (base_binfo))
 	BINFO_INHERITANCE_CHAIN (base_binfo) = binfo;
 
-      TREE_VEC_ELT (BINFO_BASE_ACCESSES (binfo),
-		    BINFO_N_BASE_BINFOS (binfo)) = access;
       BINFO_BASE_APPEND (binfo, base_binfo);
+      BINFO_BASE_ACCESS_APPEND (binfo, access);
     }
-
-  if (max_bases)
-    /* If any bases were invalid, we will have allocated too many
-       slots.  */
-    TREE_VEC_LENGTH (BINFO_BASE_ACCESSES (binfo))
-      = BINFO_N_BASE_BINFOS (binfo);
 
   /* Unmark all the types.  */
   for (i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)

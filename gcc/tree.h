@@ -1671,7 +1671,11 @@ struct tree_type GTY(())
    access_public_node, access_protected_node or access_private_node.
    If this array is not present, public access is implied.  */
 #define BINFO_BASE_ACCESSES(NODE) (TREE_BINFO_CHECK(NODE)->binfo.base_accesses)
-#define BINFO_BASE_ACCESS(NODE,N) TREE_VEC_ELT (BINFO_BASE_ACCESSES(NODE), (N))
+
+#define BINFO_BASE_ACCESS(NODE,N) \
+  VEC_index (tree, BINFO_BASE_ACCESSES (NODE), (N))
+#define BINFO_BASE_ACCESS_APPEND(NODE,T) \
+  VEC_quick_push (tree, BINFO_BASE_ACCESSES (NODE), (T))
 
 /* The index in the VTT where this subobject's sub-VTT can be found.
    NULL_TREE if there is no sub-VTT.  */
@@ -1701,7 +1705,7 @@ struct tree_binfo GTY (())
   tree vtable;
   tree virtuals;
   tree vptr_field;
-  tree base_accesses;
+  VEC(tree) *base_accesses;
   tree inheritance;
 
   tree vtt_subvtt;

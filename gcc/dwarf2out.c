@@ -11897,13 +11897,13 @@ gen_member_die (tree type, dw_die_ref context_die)
   /* First output info about the base classes.  */
   if (binfo)
     {
-      tree accesses = BINFO_BASE_ACCESSES (binfo);
+      VEC (tree) *accesses = BINFO_BASE_ACCESSES (binfo);
       int i;
       tree base;
 
       for (i = 0; BINFO_BASE_ITERATE (binfo, i, base); i++)
 	gen_inheritance_die (base,
-			     (accesses ? TREE_VEC_ELT (accesses, i)
+			     (accesses ? VEC_index (tree, accesses, i)
 			      : access_public_node), context_die);
     }
 
