@@ -1,3 +1,12 @@
+2003-12-30  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/13369
+	* include/bits/locale_facets.tcc (__verify_grouping):
+	Fix to deal properly with __grouping_tmp.size() >
+	__grouping.size().
+	* testsuite/22_locale/num_get/get/char/13.cc: New.
+	* testsuite/22_locale/num_get/get/wchar_t/13.cc: Ditto.
+	
 2003-12-29  Jerry Quinn  <jlquinn@optonline.net>
 
 	* include/bits/locale_facets.h (ctype.narrow,widen): Add cast.
