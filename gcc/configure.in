@@ -1028,7 +1028,7 @@ for machine in $build $host $target; do
 		fi
 		exeext=.exe
 		;;
-	i[[34567]]86-*-mingw32)
+	i[[34567]]86-*-mingw32*)
 		tm_file=i386/mingw32.h
 		xm_file="${xm_file} i386/xm-mingw32.h"
 		tmake_file=i386/t-cygwin32
@@ -1039,6 +1039,13 @@ for machine in $build $host $target; do
 			thread_file='win32'
 		fi
 		exeext=.exe
+		case $machine in
+			*mingw32msv*)
+				;;
+			*minwg32crt* | *mingw32*)
+				tm_file="${tm_file} i386/crtdll.h"
+				;;
+		esac
 		;;
 	i[[34567]]86-*-winnt3*)
 		tm_file=i386/win-nt.h
