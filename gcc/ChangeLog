@@ -1,5 +1,18 @@
 2002-05-06  Janis Johnson  <janis187@us.ibm.com>
 
+	* rtl.h (struct rtx_def): Update comments.
+	(RTL_FLAG_CHECK[12345678]): New.  (rtl_check_failed_flag): Declare.
+	(RTL_FLAG): New.  (CLEAR_RTX_FLAGS): New.  (flag access macros): Use
+	RTL_FLAG_CHECK macros with list of expected RTL codes.
+	* rtl.c (copy_rtx, shallow_copy_rtx): Use RTX_FLAG macro.
+	(rtl_check_failed_flag): New.
+	* reload1.c (reload): Use REG macro before changing rtx to MEM.
+	(reload_cse_noop_set_p): Check rtx code before using access macro.
+	* config/ia64/ia64.c (process_for_unwind_directive): Check rtx code
+	before using access macro.
+
+2002-05-06  Janis Johnson  <janis187@us.ibm.com>
+
 	* doc/rtl.texi (Flags): Update to reflect current usage.
 
 2002-05-06  Roger Sayle  <roger@eyesopen.com>

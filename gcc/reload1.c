@@ -1160,9 +1160,9 @@ reload (first, global)
 	    {
 	      rtx reg = regno_reg_rtx[i];
 
+	      REG_USERVAR_P (reg) = 0;
 	      PUT_CODE (reg, MEM);
 	      XEXP (reg, 0) = addr;
-	      REG_USERVAR_P (reg) = 0;
 	      if (reg_equiv_memory_loc[i])
 		MEM_COPY_ATTRIBUTES (reg, reg_equiv_memory_loc[i]);
 	      else
@@ -8079,7 +8079,8 @@ reload_cse_simplify (insn)
       if (!count && reload_cse_noop_set_p (body))
 	{
 	  rtx value = SET_DEST (body);
-	  if (! REG_FUNCTION_VALUE_P (SET_DEST (body)))
+	  if (GET_CODE (body) == REG
+	      && ! REG_FUNCTION_VALUE_P (SET_DEST (body)))
 	    value = 0;
 	  reload_cse_delete_noop_set (insn, value);
 	  return;
