@@ -3117,6 +3117,8 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 		write_symbols = DBX_DEBUG;
 	      else if (!strncmp (str, "gstabs", len))
 		write_symbols = DBX_DEBUG;
+	      else if (!strncmp (str, "gstabs+", len))
+		write_symbols = DBX_DEBUG;
 
 	      /* Always enable extensions for -ggdb or -gstabs+, 
 		 always disable for -gstabs.
