@@ -1208,6 +1208,7 @@ changequote([,])dnl
 		xm_file=i386/xm-go32.h
 		tm_file=i386/go32.h
 		tmake_file=i386/t-go32
+                xmake_file=i386/x-go32
 		gnu_ld=yes
 		gas=yes
 		exeext=.exe

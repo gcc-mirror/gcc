@@ -1,3 +1,13 @@
+Wed Jan  6 03:18:53 1999  Mark Elbrecht  <snowball3@usa.net.
+
+	* configure.in (pc-msdosdjgpp): Set x_make to x-go32.
+	* configure: Rebuilt.
+	* i386/xm-go32.h: Define LIBSTDCXX.
+	* i386/x-go32: New.
+	* i386/go32.h (MD_EXEC_PREFIX): Define.
+	(FILE_NAME_ABSOLUTE_P): Define.
+	(LINK_COMMAND_SPEC): Define.
+
 Wed Jan  6 02:23:36 1999  "Charles M. Hannum" <root@ihack.net>
 
 	* expr.c (store_expr): If the lhs is a memory location pointed
