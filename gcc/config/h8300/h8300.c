@@ -3072,13 +3072,13 @@ h8300_encode_label (decl)
 {
   const char *str = XSTR (XEXP (DECL_RTL (decl), 0), 0);
   int len = strlen (str);
-  char *newstr;
+  char *newstr = alloca (len + 2);
 
-  newstr = ggc_alloc_string (NULL, len + 1);
+  newstr[0] = '&';
+  strcpy (&newstr[1], str);
 
-  strcpy (newstr + 1, str);
-  *newstr = '&';
-  XSTR (XEXP (DECL_RTL (decl), 0), 0) = newstr;
+  XSTR (XEXP (DECL_RTL (decl), 0), 0) =
+    ggc_alloc_string (newstr, len + 1);
 }
 
 const char *

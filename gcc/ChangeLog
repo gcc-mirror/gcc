@@ -1,3 +1,8 @@
+2001-11-01  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.c (h8300_encode_label): Compute a string
+	before passing it to ggc_alloc_string.
+
 2001-10-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* flow.c (merge_blocks): Don't merge blocks if second block is
