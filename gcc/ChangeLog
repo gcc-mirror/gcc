@@ -1,3 +1,7 @@
+1998-09-03  SL Baur  <steve@altair.xemacs.org>
+
+	* Makefile.in: add semicolon in BISON definition for portability.
+
 Thu Sep  3 13:34:41 1998  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* config/nextstep.c (handle_pragma): Correct name of third
