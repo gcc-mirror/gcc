@@ -7899,16 +7899,23 @@ expand_expr (exp, target, tmode, modifier)
 	    }
 	}
 
+      if (! safe_from_p (subtarget, TREE_OPERAND (exp, 1), 1))
+	subtarget = 0;
+
       /* No sense saving up arithmetic to be done
 	 if it's all in the wrong mode to form part of an address.
 	 And force_operand won't know whether to sign-extend or
 	 zero-extend.  */
       if ((modifier != EXPAND_SUM && modifier != EXPAND_INITIALIZER)
 	  || mode != ptr_mode)
-	goto binop;
-
-      if (! safe_from_p (subtarget, TREE_OPERAND (exp, 1), 1))
-	subtarget = 0;
+	{
+	  op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode, 0);
+	  op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX, VOIDmode, 0);
+	  temp = simplify_binary_operation (PLUS, mode, op0, op1);
+	  if (temp)
+	    return temp;
+	  goto binop2;
+	}
 
       op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode, modifier);
       op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX, VOIDmode, modifier);
