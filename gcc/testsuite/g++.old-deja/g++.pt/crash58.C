@@ -15,16 +15,16 @@ struct MatrixC
 {
   void foo () {
     EManip::do_assign<T> (0);
-    &EManip::do_assign<T>;
-    &do_assign<T>;
-    EManip::do_assign<T>;       // WARNING - not a call
-    do_assign<T>;               // WARNING - not a call
+    &EManip::do_assign<T>;	// ERROR - unresolved
+    &do_assign<T>;		// ERROR - unresolved
+    EManip::do_assign<T>;       // ERROR - unresolved
+    do_assign<T>;               // ERROR - unresolved
   }
 };
 void foo(MatrixC <double> *ptr)
 {
-  EManip::do_assign<double>;    // WARNING - not a call
-  &EManip::do_assign<double>;
+  EManip::do_assign<double>;    // ERROR - unresolved
+  &EManip::do_assign<double>;	// ERROR - unresolved
   ptr->foo ();
   void (*p1) (int *) = &do_assign<double>;       // ERROR - cannot convert
   void (*p2) (int *) = &EManip::do_assign<double>; // ERROR - cannot convert
