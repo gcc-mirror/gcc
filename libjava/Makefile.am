@@ -3734,6 +3734,49 @@ texinfo: TexinfoDoclet.class
 ## ################################################################
 
 ##
+## Creating and installing sources.zip
+##
+
+## Create a zip holding all the sources.  This can be meaningfully
+## used in Eclipse.
+src.zip:
+	-rm -f src.zip
+	here=`pwd`; \
+	( ( cd $(srcdir); \
+	  find java gnu javax org -name '*.java' -print | \
+	  while read file; do \
+## Ugly code to avoid "echo -C".  Must separate each entry by a newline
+## Gross but easy.
+	    echo "x-C" | sed -e 's/^.//'; \
+	    echo $(srcdir); \
+	    echo $$file; \
+	  done ); \
+## Now the build tree.
+	  find gnu java -name '*.java' -print) | \
+## Many of the above circumlocutions are because ZIP will most likely
+## be a relative path to fastjar.
+	$(ZIP) -cfM@ $$here/src.zip
+## Now include the files from external/.
+	for dir in sax w3c_dom; do \
+	  (cd $(srcdir)/external/$$dir; \
+	  find org -type f -name '*.java' -print | while read file; do \
+	    echo "x-C" | sed -e 's/^.//'; \
+	    echo $(srcdir)/external/$$dir; \
+	    echo $$file; \
+          done) | \
+	  $(ZIP) -ufM0E@ src.zip; \
+	done
+
+## We use a variable for this in case the user wants to override it.
+sourcesdir = $(jardir)
+
+install-src.zip: src.zip
+	$(INSTALL_DATA) src.zip $(DESTDIR)$(sourcesdir)/src-@gcc_version@.zip
+
+
+## ################################################################
+
+##
 ## Dependency tracking madness.
 ##
 

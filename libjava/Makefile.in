@@ -7891,6 +7891,7 @@ gnu/gcj/xlib/natXExposeEvent.cc \
 gnu/gcj/xlib/natXImage.cc \
 gnu/gcj/xlib/natXUnmapEvent.cc
 
+sourcesdir = $(jardir)
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
@@ -26178,6 +26179,31 @@ texinfo: TexinfoDoclet.class
 	javadoc -outfile $(srcdir)/doc/java-util.texi -doclet TexinfoDoclet -sourcepath .'$(CLASSPATH_SEPARATOR)'$(srcdir) $(srcdir)/java/util/*.java
 	javadoc -outfile $(srcdir)/doc/java-util-jar.texi -doclet TexinfoDoclet -sourcepath .'$(CLASSPATH_SEPARATOR)'$(srcdir) $(srcdir)/java/util/jar/*.java
 	javadoc -outfile $(srcdir)/doc/java-util-zip.texi -doclet TexinfoDoclet -sourcepath .'$(CLASSPATH_SEPARATOR)'$(srcdir) $(srcdir)/java/util/zip/*.java
+
+src.zip:
+	-rm -f src.zip
+	here=`pwd`; \
+	( ( cd $(srcdir); \
+	  find java gnu javax org -name '*.java' -print | \
+	  while read file; do \
+	    echo "x-C" | sed -e 's/^.//'; \
+	    echo $(srcdir); \
+	    echo $$file; \
+	  done ); \
+	  find gnu java -name '*.java' -print) | \
+	$(ZIP) -cfM@ $$here/src.zip
+	for dir in sax w3c_dom; do \
+	  (cd $(srcdir)/external/$$dir; \
+	  find org -type f -name '*.java' -print | while read file; do \
+	    echo "x-C" | sed -e 's/^.//'; \
+	    echo $(srcdir)/external/$$dir; \
+	    echo $$file; \
+          done) | \
+	  $(ZIP) -ufM0E@ src.zip; \
+	done
+
+install-src.zip: src.zip
+	$(INSTALL_DATA) src.zip $(DESTDIR)$(sourcesdir)/src-@gcc_version@.zip
 
 all-recursive: classes.stamp $(nat_headers) $(xlib_nat_headers)
 
