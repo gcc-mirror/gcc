@@ -98,13 +98,16 @@ extern void cpp_cleanup PARAMS ((cpp_reader *PFILE));
 /* If we have a huge buffer, may need to cache more recent counts */
 #define CPP_LINE_BASE(BUF) ((BUF)->buf + (BUF)->line_base)
 
-struct cpp_buffer {
-  unsigned char *buf;
-  unsigned char *cur;
+struct cpp_buffer
+{
+  unsigned char *cur;	 /* current position */
   unsigned char *rlimit; /* end of valid data */
+  unsigned char *buf;	 /* entire buffer */
   unsigned char *alimit; /* end of allocated buffer */
-  unsigned char *prev;  /* start of current token */
 
+  struct cpp_buffer *prev;
+
+  /* Real filename.  (Alias to ->ihash->fname, obsolete). */
   char *fname;
   /* Filename specified with #line command.  */
   char *nominal_fname;
@@ -114,8 +117,7 @@ struct cpp_buffer {
   struct file_name_list *actual_dir;
 
   /* Pointer into the include hash table.  Used for include_next and
-     to record control macros.
-     ->fname is an alias to ->ihash->fname. */
+     to record control macros. */
   struct include_hash *ihash;
 
   long line_base;
@@ -175,6 +177,9 @@ struct cpp_reader
 
   /* Current depth in #include directives that use <...>.  */
   int system_include_depth;
+
+  /* Current depth of buffer stack. */
+  int buffer_stack_depth;
 
   /* Hash table of other included files.  See cppfiles.c */
 #define ALL_INCLUDE_HASHSIZE 71
@@ -244,8 +249,6 @@ struct cpp_reader
 #ifdef __cplusplus
   ~cpp_reader () { cpp_cleanup (this); }
 #endif
-
-  cpp_buffer buffer_stack[CPP_STACK_MAX];
 };
 
 #define CPP_FATAL_LIMIT 1000
@@ -290,9 +293,9 @@ struct cpp_reader
 #define CPP_OPTIONS(PFILE) ((PFILE)->opts)
 
 #define CPP_BUFFER(PFILE) ((PFILE)->buffer)
-#define CPP_PREV_BUFFER(BUFFER) ((BUFFER)+1)
+#define CPP_PREV_BUFFER(BUFFER) ((BUFFER)->prev)
 /* The bottom of the buffer stack. */
-#define CPP_NULL_BUFFER(PFILE) (&(PFILE)->buffer_stack[CPP_STACK_MAX])
+#define CPP_NULL_BUFFER(PFILE) NULL
 
 /* Pointed to by cpp_reader.opts. */
 struct cpp_options {

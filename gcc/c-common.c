@@ -2826,7 +2826,7 @@ truthvalue_conversion (expr)
 unsigned char *yy_cur, *yy_lim;
 
 #define GETC() (yy_cur < yy_lim ? *yy_cur++ : yy_get_token ())
-#define UNGETC(c) ((c), yy_cur--)
+#define UNGETC(c) ((c) == EOF ? 0 : yy_cur--)
 
 int
 yy_get_token ()
