@@ -2013,3 +2013,130 @@ hack_decl_function_context (decl)
     return decl_function_context (TYPE_MAIN_DECL (DECL_CLASS_CONTEXT (decl)));
   return decl_function_context (decl);
 }
+
+/* Return truthvalue of whether T1 is the same tree structure as T2.
+   Return 1 if they are the same.
+   Return 0 if they are understandably different.
+   Return -1 if either contains tree structure not understood by
+   this function.  */
+
+int
+cp_tree_equal (t1, t2)
+     tree t1, t2;
+{
+  register enum tree_code code1, code2;
+  int cmp;
+
+  if (t1 == t2)
+    return 1;
+  if (t1 == 0 || t2 == 0)
+    return 0;
+
+  code1 = TREE_CODE (t1);
+  code2 = TREE_CODE (t2);
+
+  if (code1 == NOP_EXPR || code1 == CONVERT_EXPR || code1 == NON_LVALUE_EXPR)
+    if (code2 == NOP_EXPR || code2 == CONVERT_EXPR || code2 == NON_LVALUE_EXPR)
+      return cp_tree_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
+    else
+      return cp_tree_equal (TREE_OPERAND (t1, 0), t2);
+  else if (code2 == NOP_EXPR || code2 == CONVERT_EXPR
+	   || code2 == NON_LVALUE_EXPR)
+    return cp_tree_equal (t1, TREE_OPERAND (t2, 0));
+
+  if (code1 != code2)
+    return 0;
+
+  switch (code1)
+    {
+    case INTEGER_CST:
+      return TREE_INT_CST_LOW (t1) == TREE_INT_CST_LOW (t2)
+	&& TREE_INT_CST_HIGH (t1) == TREE_INT_CST_HIGH (t2);
+
+    case REAL_CST:
+      return REAL_VALUES_EQUAL (TREE_REAL_CST (t1), TREE_REAL_CST (t2));
+
+    case STRING_CST:
+      return TREE_STRING_LENGTH (t1) == TREE_STRING_LENGTH (t2)
+	&& !bcmp (TREE_STRING_POINTER (t1), TREE_STRING_POINTER (t2),
+		  TREE_STRING_LENGTH (t1));
+
+    case CONSTRUCTOR:
+      abort ();
+
+    case SAVE_EXPR:
+      return cp_tree_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
+
+    case CALL_EXPR:
+      cmp = cp_tree_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
+      if (cmp <= 0)
+	return cmp;
+      return simple_cst_list_equal (TREE_OPERAND (t1, 1), TREE_OPERAND (t2, 1));
+
+    case TARGET_EXPR:
+      /* Special case: if either target is an unallocated VAR_DECL,
+	 it means that it's going to be unified with whatever the
+	 TARGET_EXPR is really supposed to initialize, so treat it
+	 as being equivalent to anything.  */
+      if ((TREE_CODE (TREE_OPERAND (t1, 0)) == VAR_DECL
+	   && DECL_NAME (TREE_OPERAND (t1, 0)) == NULL_TREE
+	   && DECL_RTL (TREE_OPERAND (t1, 0)) == 0)
+	  || (TREE_CODE (TREE_OPERAND (t2, 0)) == VAR_DECL
+	      && DECL_NAME (TREE_OPERAND (t2, 0)) == NULL_TREE
+	      && DECL_RTL (TREE_OPERAND (t2, 0)) == 0))
+	cmp = 1;
+      else
+	cmp = cp_tree_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
+      if (cmp <= 0)
+	return cmp;
+      return cp_tree_equal (TREE_OPERAND (t1, 1), TREE_OPERAND (t2, 1));
+
+    case WITH_CLEANUP_EXPR:
+      cmp = cp_tree_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
+      if (cmp <= 0)
+	return cmp;
+      return cp_tree_equal (TREE_OPERAND (t1, 2), TREE_OPERAND (t1, 2));
+
+    case COMPONENT_REF:
+      if (TREE_OPERAND (t1, 1) == TREE_OPERAND (t2, 1))
+	return cp_tree_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
+      return 0;
+
+    case VAR_DECL:
+    case PARM_DECL:
+    case CONST_DECL:
+    case FUNCTION_DECL:
+      return 0;
+
+    case TEMPLATE_CONST_PARM:
+      return TEMPLATE_CONST_IDX (t1) == TEMPLATE_CONST_IDX (t2);
+
+    case SIZEOF_EXPR:
+      if (TREE_CODE (TREE_OPERAND (t1, 0)) != TREE_CODE (TREE_OPERAND (t2, 0)))
+	return 0;
+      if (TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (t1, 0))) == 't')
+	return comptypes (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0), 1);
+      break;
+    }
+
+  switch (TREE_CODE_CLASS (code1))
+    {
+      int i;
+    case '1':
+    case '2':
+    case '<':
+    case 'e':
+    case 'r':
+    case 's':
+      cmp = 1;
+      for (i=0; i<tree_code_length[(int) code1]; ++i)
+	{
+	  cmp = cp_tree_equal (TREE_OPERAND (t1, i), TREE_OPERAND (t2, i));
+	  if (cmp <= 0)
+	    return cmp;
+	}
+      return cmp;
+    }
+
+  return -1;
+}

@@ -248,6 +248,7 @@ get_tinfo_fn (type)
   TREE_TYPE (name) = type;
   pushdecl_top_level (d);
   make_function_rtl (d);
+  assemble_external (d);
   mark_inline_for_output (d);
   if (at_eof)
     import_export_decl (d);
@@ -312,6 +313,7 @@ throw_bad_cast ()
   DECL_ARTIFICIAL (d) = 1;
   pushdecl_top_level (d);
   make_function_rtl (d);
+  assemble_external (d);
 
   pop_obstacks ();
 
@@ -519,6 +521,7 @@ build_dynamic_cast (type, expr)
 	      DECL_ARTIFICIAL (dcast_fn) = 1;
 	      pushdecl_top_level (dcast_fn);
 	      make_function_rtl (dcast_fn);
+	      assemble_external (dcast_fn);
 	      pop_obstacks ();
 	    }
 	  
@@ -603,6 +606,7 @@ expand_si_desc (tdecl, type)
       DECL_ARTIFICIAL (fn) = 1;
       pushdecl_top_level (fn);
       make_function_rtl (fn);
+      assemble_external (fn);
       pop_obstacks ();
     }
 
@@ -782,6 +786,7 @@ expand_class_desc (tdecl, type)
       DECL_ARTIFICIAL (fn) = 1;
       pushdecl_top_level (fn);
       make_function_rtl (fn);
+      assemble_external (fn);
       pop_obstacks ();
     }
 
@@ -829,6 +834,7 @@ expand_ptr_desc (tdecl, type)
       DECL_ARTIFICIAL (fn) = 1;
       pushdecl_top_level (fn);
       make_function_rtl (fn);
+      assemble_external (fn);
       pop_obstacks ();
     }
 
@@ -879,6 +885,7 @@ expand_attr_desc (tdecl, type)
       DECL_ARTIFICIAL (fn) = 1;
       pushdecl_top_level (fn);
       make_function_rtl (fn);
+      assemble_external (fn);
       pop_obstacks ();
     }
 
@@ -920,6 +927,7 @@ expand_generic_desc (tdecl, type, fnname)
       DECL_ARTIFICIAL (fn) = 1;
       pushdecl_top_level (fn);
       make_function_rtl (fn);
+      assemble_external (fn);
       pop_obstacks ();
     }
 

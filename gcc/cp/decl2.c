@@ -2729,7 +2729,6 @@ import_export_decl (decl)
       DECL_NOT_REALLY_EXTERN (decl) = 1;
       if (DECL_IMPLICIT_INSTANTIATION (decl) && flag_implicit_templates)
 	{
-	  /* For now, leave vars public so multiple defs will break.  */
 	  if (TREE_CODE (decl) == FUNCTION_DECL)
 	    {
 	      if (flag_weak)
@@ -2737,6 +2736,19 @@ import_export_decl (decl)
 	      else
 		TREE_PUBLIC (decl) = 0;
 	    }
+	  /* Dynamically initialized vars go into common.  */
+	  else if (DECL_INITIAL (decl) == NULL_TREE
+		   || DECL_INITIAL (decl) == error_mark_node)
+	    DECL_COMMON (decl) = 1;
+	  else if (EMPTY_CONSTRUCTOR_P (DECL_INITIAL (decl)))
+	    {
+	      DECL_COMMON (decl) = 1;
+	      DECL_INITIAL (decl) = error_mark_node;
+	    }
+	  /* Statically initialized vars are weak or comdat, if supported.  */
+	  else if (flag_weak)
+	    DECL_WEAK (decl) = 1;
+	  /* else leave vars public so multiple defs will break.  */
 	}
       else
 	DECL_NOT_REALLY_EXTERN (decl) = 0;
@@ -2807,6 +2819,31 @@ extern tree pending_templates;
 
 #define TIMEVAR(VAR, BODY)    \
 do { int otime = get_run_time (); BODY; VAR += get_run_time () - otime; } while (0)
+
+extern struct obstack permanent_obstack;
+extern tree get_id_2 ();
+
+tree
+get_sentry (base)
+     tree base;
+{
+  tree sname = get_id_2 ("__sn", base);
+  tree sentry = IDENTIFIER_GLOBAL_VALUE (sname);
+  if (! sentry)
+    {
+      push_obstacks (&permanent_obstack, &permanent_obstack);
+      sentry = build_decl (VAR_DECL, sname, integer_type_node);
+      TREE_PUBLIC (sentry) = 1;
+      DECL_ARTIFICIAL (sentry) = 1;
+      TREE_STATIC (sentry) = 1;
+      TREE_USED (sentry) = 1;
+      DECL_COMMON (sentry) = 1;
+      pushdecl_top_level (sentry);
+      cp_finish_decl (sentry, NULL_TREE, NULL_TREE, 0, 0);
+      pop_obstacks ();
+    }
+  return sentry;
+}
 
 /* This routine is called from the last rule in yyparse ().
    Its job is to create all the code needed to initialize and
@@ -2880,6 +2917,18 @@ finish_file ()
      that we can pick up any other tdecls that those routines need. */
   walk_vtables ((void (*)())0, finish_prevtable_vardecl);
 
+  for (vars = pending_statics; vars; vars = TREE_CHAIN (vars))
+    {
+      tree decl = TREE_VALUE (vars);
+
+      if (DECL_TEMPLATE_INSTANTIATION (decl)
+	  && ! DECL_IN_AGGR_P (decl))
+	{
+	  import_export_decl (decl);
+	  DECL_EXTERNAL (decl) = ! DECL_NOT_REALLY_EXTERN (decl);
+	}
+    }
+
   vars = static_aggregates;
 
   if (static_ctors || vars || might_have_exceptions_p ())
@@ -2925,10 +2974,23 @@ finish_file ()
       tree type = TREE_TYPE (decl);
       tree temp = TREE_PURPOSE (vars);
 
-      if (TYPE_NEEDS_DESTRUCTOR (type) && ! TREE_STATIC (vars))
+      if (TYPE_NEEDS_DESTRUCTOR (type) && ! TREE_STATIC (vars)
+	  && ! DECL_EXTERNAL (decl))
 	{
 	  temp = build_cleanup (decl);
+
+	  if (DECL_COMMON (decl))
+	    {
+	      tree sentry = get_sentry (DECL_ASSEMBLER_NAME (decl));
+	      sentry = build_unary_op (PREDECREMENT_EXPR, sentry, 0);
+	      sentry = build_binary_op (EQ_EXPR, sentry, integer_zero_node, 1);
+	      expand_start_cond (sentry, 0);
+	    }
+
 	  expand_expr_stmt (temp);
+
+	  if (DECL_COMMON (decl))
+	    expand_end_cond ();
 	}
     }
 
@@ -2983,11 +3045,12 @@ finish_file ()
 	     then don't initialize it here.  Also, don't bother
 	     with initializers that contain errors.  */
 	  if (TREE_STATIC (vars)
+	      || DECL_EXTERNAL (decl)
 	      || (init && TREE_CODE (init) == TREE_LIST
 		  && value_member (error_mark_node, init)))
 	    {
 	      vars = TREE_CHAIN (vars);
-	      continue;
+	      goto next_mess;
 	    }
 
 	  if (TREE_CODE (decl) == VAR_DECL)
@@ -3003,6 +3066,15 @@ finish_file ()
 	      DECL_CLASS_CONTEXT (current_function_decl) = DECL_CONTEXT (decl);
 	      DECL_STATIC_FUNCTION_P (current_function_decl) = 1;
 
+	      if (DECL_COMMON (decl))
+		{
+		  tree sentry = get_sentry (DECL_ASSEMBLER_NAME (decl));
+		  sentry = build_unary_op (PREINCREMENT_EXPR, sentry, 0);
+		  sentry = build_binary_op
+		    (EQ_EXPR, sentry, integer_one_node, 1);
+		  expand_start_cond (sentry, 0);
+		}
+
 	      if (IS_AGGR_TYPE (TREE_TYPE (decl))
 		  || TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
 		expand_aggr_init (decl, init, 0, 0);
@@ -3016,25 +3088,11 @@ finish_file ()
 	      else
 		expand_assignment (decl, init, 0, 0);
 
+	      if (DECL_COMMON (decl))
+		expand_end_cond ();
+
 	      DECL_CLASS_CONTEXT (current_function_decl) = NULL_TREE;
 	      DECL_STATIC_FUNCTION_P (current_function_decl) = 0;
-	    }
-	  else if (TREE_CODE (decl) == SAVE_EXPR)
-	    {
-	      if (! PARM_DECL_EXPR (decl))
-		{
-		  /* a `new' expression at top level.  */
-		  expand_expr (decl, const0_rtx, VOIDmode, 0);
-		  if (TREE_CODE (init) == TREE_VEC)
-		    {
-		      expand_expr (expand_vec_init (decl, TREE_VEC_ELT (init, 0),
-						    TREE_VEC_ELT (init, 1),
-						    TREE_VEC_ELT (init, 2), 0),
-				   const0_rtx, VOIDmode, 0);
-		    }
-		  else
-		    expand_aggr_init (build_indirect_ref (decl, NULL_PTR), init, 0, 0);
-		}
 	    }
 	  else if (decl == error_mark_node)
 	    ;
@@ -3042,6 +3100,7 @@ finish_file ()
 
 	  /* Cleanup any temporaries needed for the initial value.  */
 	  expand_cleanups_to (old_cleanups);
+	next_mess:
 	  pop_temp_slots ();
 	  pop_temp_slots ();
 	  target_temp_slot_level = old_temp_level;
@@ -3073,13 +3132,6 @@ finish_file ()
   while (pending_statics)
     {
       tree decl = TREE_VALUE (pending_statics);
-
-      if (DECL_TEMPLATE_INSTANTIATION (decl)
-	  && ! DECL_IN_AGGR_P (decl))
-	{
-	  import_export_decl (decl);
-	  DECL_EXTERNAL (decl) = ! DECL_NOT_REALLY_EXTERN (decl);
-	}
 
       if (TREE_USED (decl) == 1
 	  || TREE_READONLY (decl) == 0

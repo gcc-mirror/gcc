@@ -463,10 +463,12 @@ comp_template_args (oldargs, newargs)
 	continue;
       if (TREE_CODE (nt) != TREE_CODE (ot))
 	return 0;
-      if (TREE_CODE_CLASS (TREE_CODE (ot)) == 't' && comptypes (ot, nt, 1))
-	continue;
-      if (TREE_CODE (ot) == TEMPLATE_CONST_PARM
-	  && TEMPLATE_CONST_IDX (nt) == TEMPLATE_CONST_IDX (ot))
+      if (TREE_CODE_CLASS (TREE_CODE (ot)) == 't')
+	{
+	  if (comptypes (ot, nt, 1))
+	    continue;
+	}
+      else if (cp_tree_equal (ot, nt) > 0)
 	continue;
       return 0;
     }
@@ -2080,7 +2082,7 @@ tsubst_expr (t, args, nargs, in_decl)
     case DECL_STMT:
       {
 	int i = suspend_momentary ();
-	tree dcl;
+	tree dcl, init;
 
 	lineno = TREE_COMPLEXITY (t);
 	emit_line_note (input_filename, lineno);
@@ -2089,9 +2091,9 @@ tsubst_expr (t, args, nargs, in_decl)
 	   tsubst (TREE_OPERAND (t, 1), args, nargs, in_decl),
 	   TREE_OPERAND (t, 3) != 0,
 	   tsubst (TREE_OPERAND (t, 2), args, nargs, in_decl));
+	init = tsubst_expr (TREE_OPERAND (t, 3), args, nargs, in_decl);
 	cp_finish_decl
-	  (dcl, tsubst_expr (TREE_OPERAND (t, 3), args, nargs, in_decl),
-	   NULL_TREE, 1, LOOKUP_ONLYCONVERTING);
+	  (dcl, init, NULL_TREE, 1, init ? LOOKUP_ONLYCONVERTING : 0);
 	resume_momentary (i);
 	return dcl;
       }

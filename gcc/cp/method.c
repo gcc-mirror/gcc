@@ -1085,6 +1085,18 @@ build_overload_with_type (name, type)
   return get_identifier (obstack_base (&scratch_obstack));
 }
 
+tree
+get_id_2 (name, name2)
+     char *name;
+     tree name2;
+{
+  OB_INIT ();
+  OB_PUTCP (name);
+  OB_PUTID (name2);
+  OB_FINISH ();
+  return get_identifier (obstack_base (&scratch_obstack));
+}
+
 /* Top-level interface to explicit overload requests. Allow NAME
    to be overloaded. Error if NAME is already declared for the current
    scope. Warning if function is redundantly overloaded. */

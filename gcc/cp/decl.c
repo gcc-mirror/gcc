@@ -6567,7 +6567,9 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 
       if (TREE_CODE (decl) == FUNCTION_DECL)
 	;
-      else if (DECL_EXTERNAL (decl))
+      else if (DECL_EXTERNAL (decl)
+	       && ! (DECL_LANG_SPECIFIC (decl)
+		     && DECL_NOT_REALLY_EXTERN (decl)))
 	{
 	  if (init)
 	    DECL_INITIAL (decl) = init;
