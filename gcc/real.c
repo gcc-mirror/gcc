@@ -2663,8 +2663,15 @@ eadd1 (a, b, c)
 	    {
 	      if (bi[j] != 0)
 		{
-		  /* This could overflow, but let emovo take care of that. */
 		  ltb += 1;
+		  if (ltb >= 0x7fff)
+		    {
+		      eclear (c);
+		      if (ai[0] != 0)
+			eneg (c);
+		      einfin (c);
+		      return;
+		    }
 		  break;
 		}
 	    }
