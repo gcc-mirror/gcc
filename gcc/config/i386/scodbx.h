@@ -86,3 +86,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Use periods rather than dollar signs in special g++ assembler names.  */
 
 #define NO_DOLLAR_IN_LABEL
+
+/* Handle #pragma pack. */
+#define HANDLE_SYSV_PRAGMA
