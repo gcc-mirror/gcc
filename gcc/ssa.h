@@ -35,6 +35,10 @@ extern int remove_phi_alternative	PARAMS ((rtx, basic_block));
 /* In ssa-dce.c */
 extern void ssa_eliminate_dead_code	PARAMS ((void));
 
+/* In ssa-ccp.c */
+extern void ssa_const_prop		PARAMS ((void));
+
+
 /* SSA definitions and uses.  */
 /* This flag is set when the CFG is in SSA form.  */
 extern int in_ssa_form;

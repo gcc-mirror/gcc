@@ -218,8 +218,8 @@ static struct df_link *df_ref_unlink PARAMS((struct df_link **, struct ref *));
 static void df_def_unlink PARAMS((struct df *, struct ref *));
 static void df_use_unlink PARAMS((struct df *, struct ref *));
 static void df_insn_refs_unlink PARAMS ((struct df *, basic_block, rtx));
-static void df_bb_refs_unlink PARAMS ((struct df *, basic_block));
 #if 0
+static void df_bb_refs_unlink PARAMS ((struct df *, basic_block));
 static void df_refs_unlink PARAMS ((struct df *, bitmap));
 #endif
 
@@ -2513,6 +2513,7 @@ df_insn_refs_unlink (df, bb, insn)
 }
 
 
+#if 0
 /* Unlink all the insns within BB from their reference information.  */
 static void
 df_bb_refs_unlink (df, bb)
@@ -2535,7 +2536,6 @@ df_bb_refs_unlink (df, bb)
 }
 
 
-#if 0
 /* Unlink all the refs in the basic blocks specified by BLOCKS.
    Not currently used.  */
 static void

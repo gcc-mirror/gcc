@@ -1,3 +1,17 @@
+Tue Jul 10 09:04:45 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* ssa-ccp.c (first_phi_node): Remove.  Replace uses with calls to
+	first_insn_after_basic_block_note instead.
+
+	* df.c (df_bb_refs_unlink): #if 0 out for now.
+
+2001-07-10  David Billinghurst <David.Billinghurst@riotinto.com
+
+	* ssa.h: Add prototype for ssa_const_prop
+	* ssa-ccp.c: Add prototype for ssa_fast_dce and mark_references
+	(ssa_ccp_substitute_constants): Fix signed vs unsigned comparison
+	(ssa_fast_dce): Remove unused variable
+
 2001-07-10  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* diagnostic.c (finish_diagnostic): Rename to
