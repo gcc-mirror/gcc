@@ -9,7 +9,11 @@ details.  */
 #include <config.h>
 #include <platform.h>
 
+#include <java/io/IOException.h>
+#include <java/net/BindException.h>
+#include <java/net/ConnectException.h>
 #include <java/net/PlainSocketImpl.h>
+#include <java/net/SocketException.h>
 
 void
 java::net::PlainSocketImpl::create (jboolean)

@@ -12,7 +12,7 @@ details.  */
 #include <java/io/IOException.h>
 #include <java/lang/Object.h>
 #include <java/net/BindException.h>
-#include <java/net/DatagramPacketInetAddress.h>
+#include <java/net/DatagramPacket.h>
 #include <java/net/InetAddress.h>
 #include <java/net/NetworkInterface.h>
 #include <java/net/PlainDatagramSocketImpl.h>

@@ -1,5 +1,14 @@
 2003-03-24  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/natInetAddressNoNet.cc:
+	Include stddef.h.
+	* java/net/natPlainDatagramSocketImplNoNet.cc:
+	Fixed inlcude of java/net/DatagramPacket.h.
+	* java/net/natPlainSocketImplNoNet.cc:
+	Include some missing classes.
+
+2003-03-24  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/dnd/DropTarget.java
 	(DropTargetAutoScroller): According to the online documentation, this
 	is protected, but in reality it is public.
