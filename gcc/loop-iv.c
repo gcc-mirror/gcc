@@ -156,7 +156,7 @@ assign_luids (basic_block bb)
 /* Generates a subreg to get the least significant part of EXPR (in mode
    INNER_MODE) to OUTER_MODE.  */
 
-static rtx
+rtx
 lowpart_subreg (enum machine_mode outer_mode, rtx expr,
 		enum machine_mode inner_mode)
 {

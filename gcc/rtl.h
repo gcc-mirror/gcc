@@ -1432,6 +1432,10 @@ extern void push_to_full_sequence (rtx, rtx);
 extern rtx immed_double_const (HOST_WIDE_INT, HOST_WIDE_INT,
 			       enum machine_mode);
 
+/* In loop-iv.c  */
+
+extern rtx lowpart_subreg (enum machine_mode, rtx, enum machine_mode);
+
 /* In varasm.c  */
 extern rtx force_const_mem (enum machine_mode, rtx);
 

@@ -1,5 +1,15 @@
 2004-10-07  Zdenek Dvorak  <dvorakz@suse.cz>
 
+	PR rtl-optimization/17791
+	* loop-doloop.c (doloop_modify): Take number of iterations as
+	argument.
+	(doloop_optimize): Extend or shorten the number of iterations
+	when changing mode of counter register.
+	* loop-iv.c (lowpart_subreg): Export.
+	* rtl.h (lowpart_subreg): Declare.
+
+2004-10-07  Zdenek Dvorak  <dvorakz@suse.cz>
+
 	PR tree-optimization/17806
 	* cfghooks.c (split_edge): Update IRREDUCIBLE_LOOP flags.
 	* cfgloopmanip.c (loop_split_edge_with): Updating of IRREDUCIBLE_LOOP
