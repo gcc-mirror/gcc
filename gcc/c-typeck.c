@@ -44,6 +44,14 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tree-iterator.h"
 #include "tree-gimple.h"
 
+/* The level of nesting inside "__alignof__".  */
+int in_alignof;
+
+/* The level of nesting inside "sizeof".  */
+int in_sizeof;
+
+/* The level of nesting inside "typeof".  */
+int in_typeof;
 
 /* Nonzero if we've already printed a "missing braces around initializer"
    message within this initializer.  */
@@ -1751,6 +1759,16 @@ build_external_ref (tree id, int fun)
     assemble_external (ref);
   TREE_USED (ref) = 1;
 
+  if (TREE_CODE (ref) == FUNCTION_DECL && !in_alignof)
+    {
+      if (!in_sizeof && !in_typeof)
+	C_DECL_USED (ref) = 1;
+      else if (DECL_INITIAL (ref) == 0
+	       && DECL_EXTERNAL (ref)
+	       && !TREE_PUBLIC (ref))
+	record_maybe_used_decl (ref);
+    }
+
   if (TREE_CODE (ref) == CONST_DECL)
     {
       ref = DECL_INITIAL (ref);
@@ -1770,6 +1788,86 @@ build_external_ref (tree id, int fun)
     }
 
   return ref;
+}
+
+/* Record details of decls possibly used inside sizeof or typeof.  */
+struct maybe_used_decl
+{
+  /* The decl.  */
+  tree decl;
+  /* The level seen at (in_sizeof + in_typeof).  */
+  int level;
+  /* The next one at this level or above, or NULL.  */
+  struct maybe_used_decl *next;
+};
+
+static struct maybe_used_decl *maybe_used_decls;
+
+/* Record that DECL, an undefined static function reference seen
+   inside sizeof or typeof, might be used if the operand of sizeof is
+   a VLA type or the operand of typeof is a variably modified
+   type.  */
+
+void
+record_maybe_used_decl (tree decl)
+{
+  struct maybe_used_decl *t = XOBNEW (&parser_obstack, struct maybe_used_decl);
+  t->decl = decl;
+  t->level = in_sizeof + in_typeof;
+  t->next = maybe_used_decls;
+  maybe_used_decls = t;
+}
+
+/* Pop the stack of decls possibly used inside sizeof or typeof.  If
+   USED is false, just discard them.  If it is true, mark them used
+   (if no longer inside sizeof or typeof) or move them to the next
+   level up (if still inside sizeof or typeof).  */
+
+void
+pop_maybe_used (bool used)
+{
+  struct maybe_used_decl *p = maybe_used_decls;
+  int cur_level = in_sizeof + in_typeof;
+  while (p && p->level > cur_level)
+    {
+      if (used)
+	{
+	  if (cur_level == 0)
+	    C_DECL_USED (p->decl) = 1;
+	  else
+	    p->level = cur_level;
+	}
+      p = p->next;
+    }
+  if (!used || cur_level == 0)
+    maybe_used_decls = p;
+}
+
+/* Return the result of sizeof applied to EXPR.  */
+
+struct c_expr
+c_expr_sizeof_expr (struct c_expr expr)
+{
+  struct c_expr ret;
+  ret.value = c_sizeof (TREE_TYPE (expr.value));
+  ret.original_code = ERROR_MARK;
+  pop_maybe_used (C_TYPE_VARIABLE_SIZE (TREE_TYPE (expr.value)));
+  return ret;
+}
+
+/* Return the result of sizeof applied to T, a structure for the type
+   name passed to sizeof (rather than the type itself).  */
+
+struct c_expr
+c_expr_sizeof_type (tree t)
+{
+  tree type;
+  struct c_expr ret;
+  type = groktypename (t);
+  ret.value = c_sizeof (type);
+  ret.original_code = ERROR_MARK;
+  pop_maybe_used (C_TYPE_VARIABLE_SIZE (type));
+  return ret;
 }
 
 /* Build a function call to function FUNCTION with parameters PARAMS.

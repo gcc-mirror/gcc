@@ -1,3 +1,28 @@
+2004-09-09  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-tree.h (C_DECL_USED, parser_obstack, in_alignof, in_sizeof,
+	in_typeof, record_maybe_used_decl, pop_maybe_used,
+	c_expr_sizeof_expr, c_expr_sizeof_type): New.
+	* c-decl.c (parser_obstack): New.
+	(c_init_decl_processing): Initialize parser_obstack.
+	(c_write_global_declarations_1): Check for used but undefined
+	static functions.
+	* c-parse.in (%union): Add otype.
+	(save_obstack_position): New.
+	(extdefs): Use it.
+	(unary_expr): Update in_sizeof and in_alignof.  Use
+	c_expr_sizeof_expr and c_expr_sizeof_type.
+	(sizeof): Update in_sizeof.
+	(alignof): Update in_alignof.
+	(typeof): Update in_typeof.
+	(typespec_nonreserved_nonattr): Call pop_maybe_used.
+	* c-typeck.c (in_alignof, in_sizeof, in_typeof, struct
+	maybe_used_decl, maybe_used_decls, record_maybe_used_decl,
+	pop_maybe_used, c_expr_sizeof_expr, c_expr_sizeof_type): New.
+	(build_external_ref): Set C_DECL_USED or call
+	record_maybe_used_decl if appropriate.
+	* toplev.c (check_global_declarations): Check TREE_NO_WARNING.
+
 2004-09-08  Eric Christopher  <echristo@redhat.com>
 
 	* builtins.c: Fix prototype for fold_builtin_atan.

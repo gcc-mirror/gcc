@@ -99,6 +99,12 @@ struct lang_type GTY(())
    they may differ for structures with volatile fields.  */
 #define C_DECL_REGISTER(EXP) DECL_LANG_FLAG_4 (EXP)
 
+/* Record whether a decl was used in an expression anywhere except an
+   unevaluated operand of sizeof / typeof / alignof.  This is only
+   used for functions declared static but not defined, though outside
+   sizeof and typeof it is set for other function decls as well.  */
+#define C_DECL_USED(EXP) DECL_LANG_FLAG_5 (EXP)
+
 /* Nonzero for a decl which either doesn't exist or isn't a prototype.
    N.B. Could be simplified if all built-in decls had complete prototypes
    (but this is presently difficult because some of them need FILE*).  */
@@ -151,6 +157,7 @@ extern void c_parse_init (void);
 extern void gen_aux_info_record (tree, int, int, int);
 
 /* in c-decl.c */
+extern struct obstack parser_obstack;
 extern tree c_break_label;
 extern tree c_cont_label;
 
@@ -224,6 +231,10 @@ extern void c_initialize_diagnostics (diagnostic_context *);
 			  ((VOLATILE_P) ? TYPE_QUAL_VOLATILE : 0))
 
 /* in c-typeck.c */
+extern int in_alignof;
+extern int in_sizeof;
+extern int in_typeof;
+
 extern struct c_switch *c_switch_stack;
 
 extern tree require_complete_type (tree);
@@ -238,6 +249,10 @@ extern tree build_component_ref (tree, tree);
 extern tree build_indirect_ref (tree, const char *);
 extern tree build_array_ref (tree, tree);
 extern tree build_external_ref (tree, int);
+extern void record_maybe_used_decl (tree);
+extern void pop_maybe_used (bool);
+extern struct c_expr c_expr_sizeof_expr (struct c_expr);
+extern struct c_expr c_expr_sizeof_type (tree);
 extern struct c_expr parser_build_binary_op (enum tree_code, struct c_expr,
 					     struct c_expr);
 extern void readonly_error (tree, const char *);

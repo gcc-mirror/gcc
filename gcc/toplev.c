@@ -840,6 +840,7 @@ check_global_declarations (tree *vec, int len)
 	  && DECL_INITIAL (decl) == 0
 	  && DECL_EXTERNAL (decl)
 	  && ! DECL_ARTIFICIAL (decl)
+	  && ! TREE_NO_WARNING (decl)
 	  && ! TREE_PUBLIC (decl)
 	  && (warn_unused_function
 	      || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))))

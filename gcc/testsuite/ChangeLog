@@ -1,3 +1,8 @@
+2004-09-09  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gcc.dg/c90-static-1.c, gcc.dg/c99-static-1.c,
+	gcc.dg/gnu99-static-1.c: New tests.
+
 2004-09-08  Devang Patel  <dpatel@apple.com>
 
 	* gcc.dg/darwin-ld-20040828-1.c: New test.
