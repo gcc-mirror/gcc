@@ -1,3 +1,7 @@
+2002-12-16  Christopher Faylor  <cgf@redhat.com>
+
+	* mh-cygwin: Don't build libtermcap if it doesn't exist.
+
 2002-11-23  H.J. Lu <hjl@gnu.org>
 
 	* accross.m4: New.
