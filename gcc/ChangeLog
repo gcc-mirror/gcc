@@ -1,3 +1,13 @@
+2005-02-06  Richard Sandiford  <rsandifo@redhat.com>
+
+	* expmed.c (store_bit_field): Make the SUBREG code adjust bitnum.
+	Set bitpos and offset later in the function.  Do nothing if the
+	target is a register and if the bitfield lies completely outside
+	that register.
+	(extract_bit_field): Make the same SUBREG, bitpos and offset changes
+	here.  Return an uninitialised register if the source value is stored
+	in a register and the bitfield lies completely outside that register.
+
 2005-02-06  Steven Bosscher  <stevenb@suse.de>
 
 	* df.c (df_insn_refs_record): Use XEXP to get the operand of a USE,
