@@ -157,15 +157,23 @@ template<typename T>
 
 template<typename T> struct underflow { };
 
+
+// Set various signals handler for trapping aritmetic ops.
+void set_signals_handler()
+{
+  signal_adapter(signal, SIGFPE, signal_handler);
+  signal_adapter(signal, SIGTRAP, signal_handler);
+  // This is necessary for Linux/SPARC.
+  signal_adapter(signal, SIGILL, signal_handler);
+}
+
 // traps
 template<typename T> void traps()
 {
   fflush(NULL);
-  signal_adapter (signal, SIGFPE, signal_handler);
-  signal_adapter (signal, SIGTRAP, signal_handler);
+  set_signals_handler();
   bool trap_flag = trapping(division_by_zero<T>());
-  signal_adapter (signal, SIGFPE, signal_handler);
-  signal_adapter (signal, SIGTRAP, signal_handler);
+  set_signals_handler();
   trap_flag = trap_flag || trapping(overflow<T>());
   const char* p = bool_alpha[trap_flag];
   printf("%s%s = %s;\n", tab2, "static const bool traps", p);    
@@ -175,8 +183,7 @@ template<typename T> void traps()
 template<> void traps< T >()                                            \
 {       								\
   fflush(NULL);                                                         \
-  signal_adapter (signal, SIGFPE, signal_handler);                      \
-  signal_adapter (signal, SIGTRAP, signal_handler);                     \
+  set_signals_handler();                                                \
   const char* p = bool_alpha[trapping(division_by_zero<T>())];          \
   printf("%s%s = %s;\n", tab2, "static const bool traps", p);           \
 }
