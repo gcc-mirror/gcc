@@ -1,5 +1,10 @@
 2003-02-27  David Edelsohn  <edelsohn@gnu.org>
 
+	* config/rs6000/aix43.h (ASM_SPEC): Only emit -mppc64 if no -mcpu
+	option.
+	(ASM_CPU_SPEC): Use -m620 for Power3, Power4, 620, 630.
+	* config/rs6000/aix51.h: Same.
+	* config/rs6000/aix52.h: Same.
 	* config/rs6000/power4.md: Additional VMX bypasses.
 
 2003-02-27   Geert Bosch <bosch@gnat.com>
