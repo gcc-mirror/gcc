@@ -1019,91 +1019,99 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 ;; extension?
 
 (define_expand "divsi3"
-  [(set (reg:DI 24)
+  [(set (match_dup 3)
 	(sign_extend:DI (match_operand:SI 1 "nonimmediate_operand" "")))
-   (set (reg:DI 25)
+   (set (match_dup 4)
 	(sign_extend:DI (match_operand:SI 2 "nonimmediate_operand" "")))
-   (parallel [(set (reg:DI 27)
-		   (sign_extend:DI (div:SI (reg:DI 24) (reg:DI 25))))
+   (parallel [(set (match_dup 5)
+		   (sign_extend:DI (div:SI (match_dup 3) (match_dup 4))))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])
    (set (match_operand:SI 0 "nonimmediate_operand" "")
-	(subreg:SI (reg:DI 27) 0))]
+	(subreg:SI (match_dup 5) 0))]
   "! TARGET_ABI_OPEN_VMS && ! TARGET_ABI_UNICOSMK"
-  "")
+{
+  operands[3] = gen_reg_rtx (DImode);
+  operands[4] = gen_reg_rtx (DImode);
+  operands[5] = gen_reg_rtx (DImode);
+})
 
 (define_expand "udivsi3"
-  [(set (reg:DI 24)
+  [(set (match_dup 3)
 	(sign_extend:DI (match_operand:SI 1 "nonimmediate_operand" "")))
-   (set (reg:DI 25)
+   (set (match_dup 4)
 	(sign_extend:DI (match_operand:SI 2 "nonimmediate_operand" "")))
-   (parallel [(set (reg:DI 27)
-		   (sign_extend:DI (udiv:SI (reg:DI 24) (reg:DI 25))))
+   (parallel [(set (match_dup 5)
+		   (sign_extend:DI (udiv:SI (match_dup 3) (match_dup 4))))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])
    (set (match_operand:SI 0 "nonimmediate_operand" "")
-	(subreg:SI (reg:DI 27) 0))]
+	(subreg:SI (match_dup 5) 0))]
   "! TARGET_ABI_OPEN_VMS && ! TARGET_ABI_UNICOSMK"
-  "")
+{
+  operands[3] = gen_reg_rtx (DImode);
+  operands[4] = gen_reg_rtx (DImode);
+  operands[5] = gen_reg_rtx (DImode);
+})
 
 (define_expand "modsi3"
-  [(set (reg:DI 24)
+  [(set (match_dup 3)
 	(sign_extend:DI (match_operand:SI 1 "nonimmediate_operand" "")))
-   (set (reg:DI 25)
+   (set (match_dup 4)
 	(sign_extend:DI (match_operand:SI 2 "nonimmediate_operand" "")))
-   (parallel [(set (reg:DI 27)
-		   (sign_extend:DI (mod:SI (reg:DI 24) (reg:DI 25))))
+   (parallel [(set (match_dup 5)
+		   (sign_extend:DI (mod:SI (match_dup 3) (match_dup 4))))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])
    (set (match_operand:SI 0 "nonimmediate_operand" "")
-	(subreg:SI (reg:DI 27) 0))]
+	(subreg:SI (match_dup 5) 0))]
   "! TARGET_ABI_OPEN_VMS && ! TARGET_ABI_UNICOSMK"
-  "")
+{
+  operands[3] = gen_reg_rtx (DImode);
+  operands[4] = gen_reg_rtx (DImode);
+  operands[5] = gen_reg_rtx (DImode);
+})
 
 (define_expand "umodsi3"
-  [(set (reg:DI 24)
+  [(set (match_dup 3)
 	(sign_extend:DI (match_operand:SI 1 "nonimmediate_operand" "")))
-   (set (reg:DI 25)
+   (set (match_dup 4)
 	(sign_extend:DI (match_operand:SI 2 "nonimmediate_operand" "")))
-   (parallel [(set (reg:DI 27)
-		   (sign_extend:DI (umod:SI (reg:DI 24) (reg:DI 25))))
+   (parallel [(set (match_dup 5)
+		   (sign_extend:DI (umod:SI (match_dup 3) (match_dup 4))))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])
    (set (match_operand:SI 0 "nonimmediate_operand" "")
-	(subreg:SI (reg:DI 27) 0))]
+	(subreg:SI (match_dup 5) 0))]
   "! TARGET_ABI_OPEN_VMS && ! TARGET_ABI_UNICOSMK"
-  "")
+{
+  operands[3] = gen_reg_rtx (DImode);
+  operands[4] = gen_reg_rtx (DImode);
+  operands[5] = gen_reg_rtx (DImode);
+})
 
 (define_expand "divdi3"
-  [(set (reg:DI 24) (match_operand:DI 1 "input_operand" ""))
-   (set (reg:DI 25) (match_operand:DI 2 "input_operand" ""))
-   (parallel [(set (reg:DI 27)
-		   (div:DI (reg:DI 24)
-			   (reg:DI 25)))
+  [(parallel [(set (match_operand:DI 0 "register_operand" "")
+		   (div:DI (match_operand:DI 1 "register_operand" "")
+			   (match_operand:DI 2 "register_operand" "")))
 	      (clobber (reg:DI 23))
-	      (clobber (reg:DI 28))])
-   (set (match_operand:DI 0 "nonimmediate_operand" "")
-	(reg:DI 27))]
+	      (clobber (reg:DI 28))])]
   "! TARGET_ABI_OPEN_VMS && ! TARGET_ABI_UNICOSMK"
   "")
 
 (define_expand "udivdi3"
-  [(set (reg:DI 24) (match_operand:DI 1 "input_operand" ""))
-   (set (reg:DI 25) (match_operand:DI 2 "input_operand" ""))
-   (parallel [(set (reg:DI 27)
-		   (udiv:DI (reg:DI 24)
-			    (reg:DI 25)))
+  [(parallel [(set (match_operand:DI 0 "register_operand" "")
+		   (udiv:DI (match_operand:DI 1 "register_operand" "")
+			    (match_operand:DI 2 "register_operand" "")))
 	      (clobber (reg:DI 23))
-	      (clobber (reg:DI 28))])
-   (set (match_operand:DI 0 "nonimmediate_operand" "")
-	(reg:DI 27))]
+	      (clobber (reg:DI 28))])]
   "! TARGET_ABI_OPEN_VMS && ! TARGET_ABI_UNICOSMK"
   "")
 
 (define_expand "moddi3"
-  [(use (match_operand:DI 0 "nonimmediate_operand" ""))
-   (use (match_operand:DI 1 "input_operand" ""))
-   (use (match_operand:DI 2 "input_operand" ""))]
+  [(use (match_operand:DI 0 "register_operand" ""))
+   (use (match_operand:DI 1 "register_operand" ""))
+   (use (match_operand:DI 2 "register_operand" ""))]
   "!TARGET_ABI_OPEN_VMS"
 {
   if (TARGET_ABI_UNICOSMK)
@@ -1114,15 +1122,11 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 })
 
 (define_expand "moddi3_dft"
-  [(set (reg:DI 24) (match_operand:DI 1 "input_operand" ""))
-   (set (reg:DI 25) (match_operand:DI 2 "input_operand" ""))
-   (parallel [(set (reg:DI 27)
-		   (mod:DI (reg:DI 24)
-			   (reg:DI 25)))
+  [(parallel [(set (match_operand:DI 0 "register_operand" "")
+		   (mod:DI (match_operand:DI 1 "register_operand" "")
+			   (match_operand:DI 2 "register_operand" "")))
 	      (clobber (reg:DI 23))
-	      (clobber (reg:DI 28))])
-   (set (match_operand:DI 0 "nonimmediate_operand" "")
-	(reg:DI 27))]
+	      (clobber (reg:DI 28))])]
   "! TARGET_ABI_OPEN_VMS && ! TARGET_ABI_UNICOSMK"
   "")
 
@@ -1130,31 +1134,25 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 ;; compute the quotient, multiply and subtract.
 
 (define_expand "moddi3_umk"
-  [(use (match_operand:DI 0 "nonimmediate_operand" ""))
-   (use (match_operand:DI 1 "input_operand" ""))
-   (use (match_operand:DI 2 "input_operand" ""))]
+  [(use (match_operand:DI 0 "register_operand" ""))
+   (use (match_operand:DI 1 "register_operand" ""))
+   (use (match_operand:DI 2 "register_operand" ""))]
   "TARGET_ABI_UNICOSMK"
 {
-  rtx mul, div, tmp;
-
-  mul = gen_reg_rtx (DImode);
-  tmp = gen_reg_rtx (DImode);
-  operands[1] = force_reg (DImode, operands[1]);
-  operands[2] = force_reg (DImode, operands[2]);
+  rtx div, mul = gen_reg_rtx (DImode);
 
   div = expand_binop (DImode, sdiv_optab, operands[1], operands[2],
 		      NULL_RTX, 0, OPTAB_LIB);
   div = force_reg (DImode, div);
   emit_insn (gen_muldi3 (mul, operands[2], div));
-  emit_insn (gen_subdi3 (tmp, operands[1], mul));
-  emit_move_insn (operands[0], tmp);
+  emit_insn (gen_subdi3 (operands[0], operands[1], mul));
   DONE;
 })
 
 (define_expand "umoddi3"
-  [(use (match_operand:DI 0 "nonimmediate_operand" ""))
-   (use (match_operand:DI 1 "input_operand" ""))
-   (use (match_operand:DI 2 "input_operand" ""))]
+  [(use (match_operand:DI 0 "register_operand" ""))
+   (use (match_operand:DI 1 "register_operand" ""))
+   (use (match_operand:DI 2 "register_operand" ""))]
   "! TARGET_ABI_OPEN_VMS"
 {
   if (TARGET_ABI_UNICOSMK)
@@ -1165,37 +1163,27 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 })
 
 (define_expand "umoddi3_dft"
-  [(set (reg:DI 24) (match_operand:DI 1 "input_operand" ""))
-   (set (reg:DI 25) (match_operand:DI 2 "input_operand" ""))
-   (parallel [(set (reg:DI 27)
-		   (umod:DI (reg:DI 24)
-			    (reg:DI 25)))
+  [(parallel [(set (match_operand:DI 0 "register_operand" "")
+		   (umod:DI (match_operand:DI 1 "register_operand" "")
+			    (match_operand:DI 2 "register_operand" "")))
 	      (clobber (reg:DI 23))
-	      (clobber (reg:DI 28))])
-   (set (match_operand:DI 0 "nonimmediate_operand" "")
-	(reg:DI 27))]
+	      (clobber (reg:DI 28))])]
   "! TARGET_ABI_OPEN_VMS && ! TARGET_ABI_UNICOSMK"
   "")
 
 (define_expand "umoddi3_umk"
-  [(use (match_operand:DI 0 "nonimmediate_operand" ""))
-   (use (match_operand:DI 1 "input_operand" ""))
-   (use (match_operand:DI 2 "input_operand" ""))]
+  [(use (match_operand:DI 0 "register_operand" ""))
+   (use (match_operand:DI 1 "register_operand" ""))
+   (use (match_operand:DI 2 "register_operand" ""))]
   "TARGET_ABI_UNICOSMK"
 {
-  rtx mul, div, tmp;
-
-  mul = gen_reg_rtx (DImode);
-  tmp = gen_reg_rtx (DImode);
-  operands[1] = force_reg (DImode, operands[1]);
-  operands[2] = force_reg (DImode, operands[2]);
+  rtx div, mul = gen_reg_rtx (DImode);
 
   div = expand_binop (DImode, udiv_optab, operands[1], operands[2],
 		      NULL_RTX, 1, OPTAB_LIB);
   div = force_reg (DImode, div);
   emit_insn (gen_muldi3 (mul, operands[2], div));
-  emit_insn (gen_subdi3 (tmp, operands[1], mul));
-  emit_move_insn (operands[0], tmp);
+  emit_insn (gen_subdi3 (operands[0], operands[1], mul));
   DONE;
 })
 
@@ -1203,46 +1191,50 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 ;; expanded by the assembler.
 
 (define_insn "*divmodsi_internal_er"
-  [(set (reg:DI 27)
-	(sign_extend:DI (match_operator:SI 0 "divmod_operator"
-			[(reg:DI 24) (reg:DI 25)])))
+  [(set (match_operand:DI 0 "register_operand" "=c")
+	(sign_extend:DI (match_operator:SI 3 "divmod_operator"
+			[(match_operand:DI 1 "register_operand" "a")
+			 (match_operand:DI 2 "register_operand" "b")])))
    (clobber (reg:DI 23))
    (clobber (reg:DI 28))]
   "TARGET_EXPLICIT_RELOCS && ! TARGET_ABI_OPEN_VMS"
-  "ldq $27,__%E0($29)\t\t!literal!%#\;jsr $23,($27),__%E0\t\t!lituse_jsr!%#"
+  "ldq $27,__%E3($29)\t\t!literal!%#\;jsr $23,($27),__%E3\t\t!lituse_jsr!%#"
   [(set_attr "type" "jsr")
    (set_attr "length" "8")])
 
 (define_insn "*divmodsi_internal"
-  [(set (reg:DI 27)
-	(sign_extend:DI (match_operator:SI 0 "divmod_operator"
-			[(reg:DI 24) (reg:DI 25)])))
+  [(set (match_operand:DI 0 "register_operand" "=c")
+	(sign_extend:DI (match_operator:SI 3 "divmod_operator"
+			[(match_operand:DI 1 "register_operand" "a")
+			 (match_operand:DI 2 "register_operand" "b")])))
    (clobber (reg:DI 23))
    (clobber (reg:DI 28))]
   "! TARGET_ABI_OPEN_VMS && ! TARGET_ABI_UNICOSMK"
-  "%E0 $24,$25,$27"
+  "%E3 %1,%2,%0"
   [(set_attr "type" "jsr")
    (set_attr "length" "8")])
 
 (define_insn "*divmoddi_internal_er"
-  [(set (reg:DI 27)
-	(match_operator:DI 0 "divmod_operator"
-			[(reg:DI 24) (reg:DI 25)]))
+  [(set (match_operand:DI 0 "register_operand" "=c")
+	(match_operator:DI 3 "divmod_operator"
+			[(match_operand:DI 1 "register_operand" "a")
+			 (match_operand:DI 2 "register_operand" "b")]))
    (clobber (reg:DI 23))
    (clobber (reg:DI 28))]
   "TARGET_EXPLICIT_RELOCS && ! TARGET_ABI_OPEN_VMS"
-  "ldq $27,__%E0($29)\t\t!literal!%#\;jsr $23,($27),__%E0\t\t!lituse_jsr!%#"
+  "ldq $27,__%E3($29)\t\t!literal!%#\;jsr $23,($27),__%E3\t\t!lituse_jsr!%#"
   [(set_attr "type" "jsr")
    (set_attr "length" "8")])
 
 (define_insn "*divmoddi_internal"
-  [(set (reg:DI 27)
-	(match_operator:DI 0 "divmod_operator"
-			[(reg:DI 24) (reg:DI 25)]))
+  [(set (match_operand:DI 0 "register_operand" "=c")
+	(match_operator:DI 3 "divmod_operator"
+			[(match_operand:DI 1 "register_operand" "a")
+			 (match_operand:DI 2 "register_operand" "b")]))
    (clobber (reg:DI 23))
    (clobber (reg:DI 28))]
   "! TARGET_ABI_OPEN_VMS && ! TARGET_ABI_UNICOSMK"
-  "%E0 $24,$25,$27"
+  "%E3 %1,%2,%0"
   [(set_attr "type" "jsr")
    (set_attr "length" "8")])
 
