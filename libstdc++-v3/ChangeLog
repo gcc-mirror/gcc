@@ -1,3 +1,8 @@
+2001-05-13  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.target: Remove detection of AIX pthread multilib, now
+	obtained from `gcc -v'.
+
 2001-05-12  Richard Henderson  <rth@redhat.com>
 
 	EH merge from mainline:

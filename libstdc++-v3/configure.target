@@ -69,6 +69,9 @@ esac
 case "${target_os}" in
   aix4.[3456789]* | aix[56789]*)
     os_include_dir="config/os/aix"
+    ;;
+  aix*)
+    os_include_dir="config/os/aix"
     case "$CXX" in
       *pthread*)
         enable_threads='posix'
@@ -77,9 +80,6 @@ case "${target_os}" in
         enable_threads='no'
         ;;
     esac
-    ;;
-  aix*)
-    os_include_dir="config/os/aix"
     ;;
   bsd* | freebsd* )
     os_include_dir="config/os/bsd/freebsd"
