@@ -67,6 +67,7 @@ lower_function_body (void)
   tree *body_p = &DECL_SAVED_TREE (current_function_decl);
   tree bind = *body_p;
   tree_stmt_iterator i;
+  tree t, x;
 
   if (TREE_CODE (bind) != BIND_EXPR)
     abort ();
@@ -83,25 +84,33 @@ lower_function_body (void)
   tsi_link_after (&i, bind, TSI_NEW_STMT);
   lower_bind_expr (&i, &data);
 
-  /* If we lowered any return statements, emit the representative at the
-     end of the function.  */
-  if (data.return_statements)
+  i = tsi_last (*body_p);
+
+  /* If the function falls off the end, we need a null return statement.
+     If we've already got one in the return_statements list, we don't
+     need to do anything special.  Otherwise build one by hand.  */
+  if (block_may_fallthru (*body_p)
+      && (data.return_statements == NULL
+          || TREE_OPERAND (TREE_VALUE (data.return_statements), 0) != NULL))
     {
-      tree t, x;
-      i = tsi_last (*body_p);
+      x = build (RETURN_EXPR, void_type_node, NULL);
+      annotate_with_locus (x, cfun->function_end_locus);
+      tsi_link_after (&i, x, TSI_CONTINUE_LINKING);
+    }
 
-      for (t = data.return_statements; t ; t = TREE_CHAIN (t))
-	{
-	  x = build (LABEL_EXPR, void_type_node, TREE_PURPOSE (t));
-          tsi_link_after (&i, x, TSI_CONTINUE_LINKING);
+  /* If we lowered any return statements, emit the representative
+     at the end of the function.  */
+  for (t = data.return_statements ; t ; t = TREE_CHAIN (t))
+    {
+      x = build (LABEL_EXPR, void_type_node, TREE_PURPOSE (t));
+      tsi_link_after (&i, x, TSI_CONTINUE_LINKING);
 
-	  /* Remove the line number from the representative return statement.
-	     It now fills in for many such returns.  Failure to remove this
-	     will result in incorrect results for coverage analysis.  */
-	  x = TREE_VALUE (t);
-	  SET_EXPR_LOCUS (x, NULL);
-          tsi_link_after (&i, x, TSI_CONTINUE_LINKING);
-        }
+      /* Remove the line number from the representative return statement.
+	 It now fills in for many such returns.  Failure to remove this
+	 will result in incorrect results for coverage analysis.  */
+      x = TREE_VALUE (t);
+      SET_EXPR_LOCUS (x, NULL);
+      tsi_link_after (&i, x, TSI_CONTINUE_LINKING);
     }
 
   if (data.block != DECL_INITIAL (current_function_decl))

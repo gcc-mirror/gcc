@@ -1,3 +1,11 @@
+2004-06-18  Richard Henderson  <rth@redhat.com>
+
+	PR c++/16036 
+	* gimple-low.c (lower_function_body): Generate return statement for
+	fall off the end of the function here ...
+	* tree-cfg.c (make_edges): ... instead of here.
+	* gimplify.c (gimplify_return_expr): Mark return temp TREE_NO_WARNING.
+
 2004-06-18  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* tree-ssa.c (raise_value): Removed.

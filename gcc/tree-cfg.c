@@ -418,7 +418,6 @@ static void
 make_edges (void)
 {
   basic_block bb;
-  edge e;
 
   /* Create an edge from entry to the first block with executable
      statements in it.  */
@@ -445,33 +444,6 @@ make_edges (void)
 	 basic block that only needs a fallthru edge.  */
       if (bb->succ == NULL)
 	make_edge (bb, bb->next_bb, EDGE_FALLTHRU);
-    }
-
-  /* If there is a fallthru edge to exit out of the last block, transform it
-     to a return statement.  */
-  for (e = EXIT_BLOCK_PTR->prev_bb->succ; e; e = e->succ_next)
-    if (e->flags & EDGE_FALLTHRU)
-      break;
-
-  if (e && e->dest == EXIT_BLOCK_PTR)
-    {
-      block_stmt_iterator bsi;
-      basic_block ret_bb = EXIT_BLOCK_PTR->prev_bb;
-      tree x;
-
-      /* If E->SRC ends with a call that has an abnormal edge (for EH or
-	 nonlocal goto), then we will need to split the edge to insert
-	 an explicit return statement.  */
-      if (e != ret_bb->succ || e->succ_next)
-	{
-	  ret_bb = split_edge (e);
-	  e = ret_bb->succ;
-	}
-      e->flags &= ~EDGE_FALLTHRU;
-
-      x = build (RETURN_EXPR, void_type_node, NULL_TREE);
-      bsi = bsi_last (ret_bb);
-      bsi_insert_after (&bsi, x, BSI_NEW_STMT);
     }
 
   /* We do not care about fake edges, so remove any that the CFG
