@@ -3383,7 +3383,7 @@ simplify_rtx (x, op0_mode, last, in_dest)
 
       if (CONSTANT_P (SUBREG_REG (x)) && op0_mode != VOIDmode
 	  && GET_MODE_SIZE (mode) == UNITS_PER_WORD
-	  && GET_MODE_SIZE (op0_mode) < UNITS_PER_WORD
+	  && GET_MODE_SIZE (op0_mode) > UNITS_PER_WORD
 	  && GET_MODE_CLASS (mode) == MODE_INT)
 	{
 	  temp = operand_subword (SUBREG_REG (x), SUBREG_WORD (x),
@@ -3395,8 +3395,16 @@ simplify_rtx (x, op0_mode, last, in_dest)
       /* If we want a subreg of a constant, at offset 0,
 	 take the low bits.  On a little-endian machine, that's
 	 always valid.  On a big-endian machine, it's valid
-	 only if the constant's mode fits in one word.  */
-      if (CONSTANT_P (SUBREG_REG (x)) && subreg_lowpart_p (x)
+	 only if the constant's mode fits in one word.   Note that we
+	 cannot use subreg_lowpart_p since we SUBREG_REG may be VOIDmode.  */
+      if (CONSTANT_P (SUBREG_REG (x))
+	  && ((GET_MODE_SIZE (op0_mode) <= UNITS_PER_WORD
+	      || ! WORDS_BIG_ENDIAN)
+	      ? SUBREG_WORD (x) == 0
+	      : (SUBREG_WORD (x)
+		 == ((GET_MODE_SIZE (op0_mode)
+		      - MAX (GET_MODE_SIZE (mode), UNITS_PER_WORD))
+		     / UNITS_PER_WORD)))
 	  && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (op0_mode)
 	  && (! WORDS_BIG_ENDIAN
 	      || GET_MODE_BITSIZE (op0_mode) <= BITS_PER_WORD))
