@@ -28,6 +28,7 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "cp-tree.h"
 #include "toplev.h"
+#include "except.h"
 
 #if 0
 static tree extract_aggr_init PROTO((tree, tree));
@@ -228,7 +229,8 @@ cplus_expand_expr (exp, target, tmode, modifier)
       return DECL_RTL (exp);
 
     case THROW_EXPR:
-      expand_throw (TREE_OPERAND (exp, 0));
+      expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode, 0);
+      expand_internal_throw ();
       return NULL;
 
     case VEC_INIT_EXPR:

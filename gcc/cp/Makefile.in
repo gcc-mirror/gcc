@@ -282,7 +282,7 @@ rtti.o : rtti.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
 except.o : except.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H) \
   $(srcdir)/../except.h $(srcdir)/../system.h $(srcdir)/../toplev.h
 expr.o : expr.c $(CONFIG_H) $(CXX_TREE_H) $(RTL_H) $(srcdir)/../flags.h \
-  $(EXPR_H) $(srcdir)/../system.h $(srcdir)/../toplev.h
+  $(EXPR_H) $(srcdir)/../system.h $(srcdir)/../toplev.h $(srcdir)/../except.h
 xref.o : xref.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../input.h \
   $(srcdir)/../system.h $(srcdir)/../toplev.h
 pt.o : pt.c $(CONFIG_H) $(CXX_TREE_H) decl.h $(PARSE_H) lex.h \
