@@ -814,6 +814,8 @@ optimization_options (level, size)
      int level ATTRIBUTE_UNUSED;
      int size ATTRIBUTE_UNUSED;
 {
+  /* ??? There are apparently still problems with -fcaller-saves.  */
+  flag_caller_saves = 0;
 }
 
 void
@@ -932,24 +934,6 @@ larl_operand (op, mode)
     return 1;
 
   return 0;
-}
-
-/* Return true if OP is a valid FP-Register.
-   OP is the current operation.
-   MODE is the current operation mode.  */
-
-int
-fp_operand (op, mode)
-     register rtx op;
-     enum machine_mode mode;
-{
-  register enum rtx_code code = GET_CODE (op);
-  if (! check_mode (op, &mode))
-    return 0;
-  if (code == REG && REGNO_OK_FOR_FP_P (REGNO (op)))
-    return 1;
-  else
-    return 0;
 }
 
 /* Helper routine to implement s_operand and s_imm_operand.
