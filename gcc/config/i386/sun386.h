@@ -93,12 +93,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Output before read-only data.  */
 
 #undef TEXT_SECTION_ASM_OP
-#define TEXT_SECTION_ASM_OP "\t.text"
+#define TEXT_SECTION_ASM_OP ".text"
 
 /* Output before writable data.  */
 
 #undef DATA_SECTION_ASM_OP
-#define DATA_SECTION_ASM_OP "\t.data"
+#define DATA_SECTION_ASM_OP ".data"
 
 /* Define the syntax of labels and symbol definitions/declarations.  */
 
