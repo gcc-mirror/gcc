@@ -1,3 +1,12 @@
+2004-02-03  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/ia64.h (MASK_INLINE_INT_DIV_LAT): Change value.
+	(MASK_INLINE_INT_DIV_THR): Ditto.
+	(MASK_INLINE_SQRT_LAT): Ditto.
+	(MASK_INLINE_SQRT_THR): Ditto.
+	(MASK_DWARF2_ASM): Ditto.
+	(MASK_EARLY_STOP_BITS): Ditto.
+
 2004-02-02  Paul Brook  <paul@codesourcery.com>
 
 	Merge from csl-arm-branch.
