@@ -1,3 +1,8 @@
+2002-02-28  Marek Michalkiewicz  <marekm@amelek.gda.pl>
+
+	* config/avr/avr.c (avr_hard_regno_mode_ok): Do not allow r29
+	which may overwrite the high byte of the frame pointer.
+
 2002-02-28  Bo Thorsen  <bo@suse.de>
 
 	* config/i386/linux64.h (LINK_SPEC): Fix 32/64 bit compilation.
