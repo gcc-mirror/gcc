@@ -291,6 +291,32 @@ small_nonneg_const (op, mode)
   return 0;
 }
 
+
+/* predicate for 1750 `B' addressing mode (Base Register with Offset)
+   memory operand */
+int
+b_mode_operand (op)
+     rtx op;
+{
+  if (GET_CODE (op) == MEM)
+    {
+      rtx inner = XEXP (op, 0);
+      if (GET_CODE (inner) == PLUS)
+	{
+	  rtx plus_op0 = XEXP (inner, 0);
+	  if (GET_CODE (plus_op0) == REG && REG_OK_FOR_INDEX_P (plus_op0))
+	    {
+	      rtx plus_op1 = XEXP (inner, 1);
+	      if (GET_CODE (plus_op1) == CONST_INT
+		  && INTVAL (plus_op1) >= 0
+		  && INTVAL (plus_op1) <= 255)
+		return 1;
+	    }
+	}
+    }
+  return 0;
+}
+
 /* Decide whether to output a conditional jump as a "Jump Conditional"
    or as a "Branch Conditional": */
 
@@ -384,7 +410,12 @@ print_operand (file, x, kode)
     case LABEL_REF:
     case CONST:
     case MEM:
-      output_address (XEXP (x, 0));
+      if (kode == 'Q')
+	fprintf (file, "r%d,%d",
+		 REGNO (XEXP (XEXP (x, 0), 0)),
+		 INTVAL (XEXP (XEXP (x, 0), 1)));
+      else
+        output_address (XEXP (x, 0));
       break;
     case CONST_DOUBLE:
 /*    {
