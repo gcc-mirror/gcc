@@ -1,4 +1,13 @@
 2005-01-03  Geoffrey Keating  <geoffk@apple.com>
+	    Robert Bowdidge <bowdidge@apple.com>
+
+	* gcc.dg/cpp/subframework1.c: New.
+	* gcc.dg/cpp/frame/one.framework/Frameworks/OneSub.framework/Headers/A.h: New.
+	* gcc.dg/cpp/frame/one.framework/Frameworks/OneSub.framework/Headers/B.h: New.
+	* gcc.dg/cpp/frame/one.framework/Frameworks/OneSub.framework/Headers/C.h: New.
+	* gcc.dg/cpp/frame/one.framework/Headers/one-includeSubs.h: New.
+
+2005-01-03  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.dg/darwin-weakimport-1.c: Remove check for variables
 	producing warning.

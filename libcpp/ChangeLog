@@ -1,3 +1,8 @@
+2005-01-03  Geoffrey Keating  <geoffk@apple.com>
+
+	* files.c (_cpp_find_file): Add files found by search_path_exhausted
+	to the list of all files.
+
 2005-01-01  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* internal.h: Update references to Cpp lib filenames.
