@@ -77,32 +77,32 @@ Boston, MA 02111-1307, USA.  */
 
 #endif /* ! __STDC__ */
 
-#ifdef HAVE_BCOPY
-# ifdef NEED_DECLARATION_BCOPY
+#ifndef bcopy
+# ifdef HAVE_BCOPY
+#  ifdef NEED_DECLARATION_BCOPY
 void bcopy ();
-# endif
-#else
-# ifndef bcopy
+#  endif
+# else
 #  define bcopy(src,dst,len) memcpy ((dst),(src),(len))
 # endif
 #endif
 
-#ifdef HAVE_BZERO
-# ifdef NEED_DECLARATION_BZERO
+#ifndef bzero
+# ifdef HAVE_BZERO
+#  ifdef NEED_DECLARATION_BZERO
 void bzero ();
-# endif
-#else
-# ifndef bzero
+#  endif
+# else
 #  define bzero(dst,len) memset ((dst),0,(len))
 # endif
 #endif
 
-#ifdef HAVE_BCMP
-# ifdef NEED_DECLARATION_BCMP
+#ifndef bcmp
+# ifdef HAVE_BCMP
+#  ifdef NEED_DECLARATION_BCMP
 int bcmp ();
-# endif
-#else
-# ifndef bcmp
+#  endif
+# else
 #  define bcmp(left,right,len) memcmp ((left),(right),(len))
 # endif
 #endif
