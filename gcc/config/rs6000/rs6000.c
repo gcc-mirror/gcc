@@ -1935,6 +1935,7 @@ rs6000_emit_move (dest, source, mode)
 	operands[1] = force_const_mem (mode, operands[1]);
       break;
 
+    case TFmode:
     case DFmode:
     case SFmode:
       if (CONSTANT_P (operands[1]) 
@@ -6594,7 +6595,7 @@ rs6000_emit_eh_toc_restore (stacksize)
   emit_label (loop_start);
   
   do_compare_rtx_and_jump (opcode, tocompare, NE, 1,
-			   SImode, NULL_RTX, 0, NULL_RTX,
+			   SImode, NULL_RTX, NULL_RTX,
 			   no_toc_restore_needed);
   
   mem = gen_rtx_MEM (Pmode, 
@@ -6604,7 +6605,7 @@ rs6000_emit_eh_toc_restore (stacksize)
 
   emit_label (no_toc_restore_needed);
   do_compare_rtx_and_jump (top_of_stack, bottom_of_stack, EQ, 1,
-			   Pmode, NULL_RTX, 0, NULL_RTX,
+			   Pmode, NULL_RTX, NULL_RTX,
 			   loop_exit);
 
   mem = gen_rtx_MEM (Pmode, bottom_of_stack);
