@@ -123,7 +123,7 @@ public class InetAddress implements Serializable
    */
   InetAddress(byte[] ipaddr, String hostname)
   {
-    addr = ipaddr;
+    addr = (null == ipaddr) ? null : (byte[]) ipaddr.clone();
     hostName = hostname;
     
     if (ipaddr != null)

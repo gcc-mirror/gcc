@@ -1,3 +1,14 @@
+2005-02-02  David Daney  <ddaney@avtrex.com>
+
+	* java/net/InetAddress.java (InetAddress): Make a private copy of
+	the address.
+	* java/net/Inet4Address.java (getAddress): Return a copy of the
+	address.
+	* java/net/Inet6Address.java (Inet6Address): Use private copy of
+	the address
+	(getAddress): Return a copy of the address.
+	(equals): Rewrote.
+
 2005-02-02  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.
