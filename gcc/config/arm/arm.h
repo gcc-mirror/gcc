@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM.
-   Copyright (C) 1991, 93-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1991, 93, 94, 05, 96, 97, 98, 99, 2000 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com)
@@ -48,7 +48,7 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_CPU_strongarm1100 0x0040
 #define TARGET_CPU_arm9		0x0080
 #define TARGET_CPU_arm9tdmi	0x0080
-/* Configure didn't specify */
+/* Configure didn't specify.  */
 #define TARGET_CPU_generic	0x8000
 
 enum arm_cond_code
@@ -365,7 +365,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
      "Generate re-entrant, PIC code" },				\
   {"no-apcs-reentrant",	       -ARM_FLAG_APCS_REENT, "" },	\
   {"alignment-traps",           ARM_FLAG_MMU_TRAPS,		\
-     "The MMU will trap on unaligned accesses" },\
+     "The MMU will trap on unaligned accesses" },		\
   {"no-alignment-traps",       -ARM_FLAG_MMU_TRAPS, "" },	\
   {"short-load-bytes",		ARM_FLAG_MMU_TRAPS, "" },	\
   {"no-short-load-bytes",      -ARM_FLAG_MMU_TRAPS, "" },	\
@@ -385,7 +385,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
      "Support calls between THUMB and ARM instructions sets" },	\
   {"no-thumb-interwork",       -ARM_FLAG_INTERWORK, "" },	\
   {"abort-on-noreturn",         ARM_FLAG_ABORT_NORETURN,	\
-   "Generate a call to abort if a noreturn function returns"},	\
+     "Generate a call to abort if a noreturn function returns"},\
   {"no-abort-on-noreturn",     -ARM_FLAG_ABORT_NORETURN, ""},	\
   {"sched-prolog",             -ARM_FLAG_NO_SCHED_PRO,		\
      "Do not move instructions into a function's prologue" },	\
@@ -394,7 +394,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
      "Do not load the PIC register in function prologues" },	\
   {"no-single-pic-base",       -ARM_FLAG_SINGLE_PIC_BASE, "" },	\
   {"long-calls",		ARM_FLAG_LONG_CALLS,		\
-   "Generate all call instructions as indirect calls"},		\
+     "Generate all call instructions as indirect calls"},	\
   {"no-long-calls",	       -ARM_FLAG_LONG_CALLS, ""},	\
   SUBTARGET_SWITCHES						\
   {"",				TARGET_DEFAULT, "" }		\
@@ -411,7 +411,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
   {"fp=",   & target_fp_name,					\
      "Specify the version of the floating point emulator" },	\
   { "structure-size-boundary=", & structure_size_string, 	\
-     "Specify the minumum bit alignment of structures" }, 	\
+     "Specify the minimum bit alignment of structures" }, 	\
   { "pic-register=", & arm_pic_register_string,			\
      "Specify the register to be used for PIC addressing" }	\
 }
@@ -1136,6 +1136,23 @@ enum reg_class
    than a word, or if they contain elements offset from zero in the struct. */
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
+/* A C type for declaring a variable that is used as the first argument of
+   `FUNCTION_ARG' and other related values.  For some target machines, the
+   type `int' suffices and can hold the number of bytes of argument so far.  */
+typedef struct
+{
+  /* This is the number of argument registers scanned so far.  */
+  int nregs;
+  /* instructions on how to process this call.  */
+  int call_cookie;
+}
+CUMULATIVE_ARGS;
+
+/* Flags for the call_cookie field of CUMULATIVE_ARGS.  */
+#define CALL_NORMAL		0	/* No special processing.  */
+#define CALL_LONG		1	/* Always call indirect.  */
+#define CALL_SHORT		2	/* Never call indirect.  */
+
 /* Define where to put the arguments to a function.
    Value is zero to push the argument on the stack,
    or a hard register in which to store the argument.
@@ -1154,38 +1171,29 @@ enum reg_class
    only in assign_parms, since SETUP_INCOMING_VARARGS is defined), say it is
    passed in the stack (function_prologue will indeed make it pass in the
    stack if necessary).  */
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)		\
-  ((NAMED)						\
-   ? ((CUM) >= NUM_ARG_REGS ? 0 : gen_rtx_REG (MODE, CUM))\
-   : 0)
+#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
+  arm_function_arg (&(CUM), (MODE), (TYPE), (NAMED))
 
 /* For an arg passed partly in registers and partly in memory,
    this is the number of registers used.
    For args passed entirely in registers or entirely in memory, zero.  */
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED)	\
-  (    NUM_ARG_REGS > (CUM)					\
-   && (NUM_ARG_REGS < ((CUM) + NUM_REGS2 (MODE, TYPE)))		\
-   ?   NUM_ARG_REGS - (CUM) : 0)
-
-/* A C type for declaring a variable that is used as the first argument of
-   `FUNCTION_ARG' and other related values.  For some target machines, the
-   type `int' suffices and can hold the number of bytes of argument so far.
-
-   On the ARM, this is the number of bytes of arguments scanned so far.  */
-#define CUMULATIVE_ARGS  int
+  (    NUM_ARG_REGS > (CUM).nregs				\
+   && (NUM_ARG_REGS < ((CUM).nregs + NUM_REGS2 (MODE, TYPE)))	\
+   ?   NUM_ARG_REGS - (CUM).nregs : 0)
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
    For a library call, FNTYPE is 0.
    On the ARM, the offset starts at 0.  */
-#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT)  \
-  ((CUM) = (((FNTYPE) && aggregate_value_p (TREE_TYPE ((FNTYPE)))) ? 1 : 0))
+#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT) \
+  arm_init_cumulative_args (&(CUM), (FNTYPE), (LIBNAME), (INDIRECT))
 
 /* Update the data in CUM to advance over an argument
    of mode MODE and data type TYPE.
    (TYPE is null for libcalls where that information may not be available.)  */
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	\
-  (CUM) += NUM_REGS2 (MODE, TYPE)
+  (CUM).nregs += NUM_REGS2 (MODE, TYPE)
 
 /* 1 if N is a possible register number for function argument passing.
    On the ARM, r0-r3 are used to pass args.  */
@@ -1209,8 +1217,8 @@ enum reg_class
 {									\
   extern int current_function_anonymous_args;				\
   current_function_anonymous_args = 1;					\
-  if ((CUM) < NUM_ARG_REGS)						\
-    (PRETEND_SIZE) = (NUM_ARG_REGS - (CUM)) * UNITS_PER_WORD;		\
+  if ((CUM).nregs < NUM_ARG_REGS)					\
+    (PRETEND_SIZE) = (NUM_ARG_REGS - (CUM).nregs) * UNITS_PER_WORD;	\
 }
 
 /* Generate assembly output for the start of a function.  */
@@ -1437,8 +1445,18 @@ enum reg_class
 
    On the ARM, allow any integer (invalid ones are removed later by insn
    patterns), nice doubles and symbol_refs which refer to the function's
-   constant pool XXX.  */
-#define LEGITIMATE_CONSTANT_P(X)	(! label_mentioned_p (X))
+   constant pool XXX.  
+   
+   When generating pic allow anything.  */
+#define LEGITIMATE_CONSTANT_P(X)	(flag_pic || ! label_mentioned_p (X))
+
+/* If we are referencing a function that is static or is known to be 
+   in this file, make the SYMBOL_REF special.  We can use this to indicate
+   that we can do direct call to that function.  */
+#define ARM_MARK_NEARBY_FUNCTION(decl)					\
+  if (TREE_CODE (decl) == FUNCTION_DECL			                \
+      && (TREE_ASM_WRITTEN (decl) || ! TREE_PUBLIC (decl)))             \
+    SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;                    \
 
 /* Symbols in the text segment can be accessed without indirecting via the
    constant pool; it may take an extra binary operation, but this is still
@@ -1457,6 +1475,13 @@ enum reg_class
                  ? TREE_CST_RTL (decl) : DECL_RTL (decl));		\
       SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 1;				\
     }									\
+									\
+  ARM_MARK_NEARBY_FUNCTION (decl)					\
+}
+#else
+#define ENCODE_SECTION_INFO(decl)					\
+{									\
+  ARM_MARK_NEARBY_FUNCTION (decl)					\
 }
 #endif
 
@@ -1875,16 +1900,30 @@ extern const char * arm_pic_register_string;
 
 /* We can't directly access anything that contains a symbol,
    nor can we indirect via the constant pool.  */
-#define LEGITIMATE_PIC_OPERAND_P(X)				\
-	(! symbol_mentioned_p (X)				\
-	 && (! CONSTANT_POOL_ADDRESS_P (X)			\
-	     || ! symbol_mentioned_p (get_pool_constant (X))))
+#define LEGITIMATE_PIC_OPERAND_P(X)					\
+	(   ! symbol_mentioned_p (X)					\
+	 && ! label_mentioned_p (X)					\
+	 && (! CONSTANT_POOL_ADDRESS_P (X)				\
+	     || (   ! symbol_mentioned_p (get_pool_constant (X)))  	\
+	         && ! label_mentioned_p (get_pool_constant (X))))
      
 /* We need to know when we are making a constant pool; this determines
    whether data needs to be in the GOT or can be referenced via a GOT
    offset.  */
 extern int making_const_table;
+
+/* If defined, a C expression whose value is nonzero if IDENTIFIER
+   with arguments ARGS is a valid machine specific attribute for TYPE.
+   The attributes in ATTRIBUTES have previously been assigned to TYPE.  */
+#define VALID_MACHINE_TYPE_ATTRIBUTE(TYPE, ATTRIBUTES, NAME, ARGS) \
+  (arm_valid_type_attribute_p (TYPE, ATTRIBUTES, NAME, ARGS))
 
+/* If defined, a C expression whose value is zero if the attributes on
+   TYPE1 and TYPE2 are incompatible, one if they are compatible, and
+   two if they are nearly compatible (which causes a warning to be
+   generated).  */
+#define COMP_TYPE_ATTRIBUTES(TYPE1, TYPE2) \
+  (arm_comp_type_attributes (TYPE1, TYPE2))
 
 /* Condition code information. */
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
