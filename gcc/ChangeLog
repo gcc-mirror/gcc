@@ -1,3 +1,12 @@
+2001-07-13  Andrew Haley  <aph@redhat.com>
+
+        * doc/tm.texi (MD_CAN_REDIRECT_BRANCH): New macro.
+        * config/sh/sh.h (MD_CAN_REDIRECT_BRANCH): New macro.
+        * config/sh/sh.c (sh_can_redirect_branch): New function.
+        * config/sh/sh-protos.h (sh_can_redirect_branch): Declare.
+        * reorg.c (steal_delay_list_from_target): Use
+        MD_CAN_REDIRECT_BRANCH to see if redirection is possible.
+
 Mon Jul 23 17:20:18 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* flow.c (try_simplify_condjump): Unlink insn chain on

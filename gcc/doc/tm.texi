@@ -8681,4 +8681,15 @@ ignored.  This function should return the result of the call to the
 built-in function.
 @end deftypefn
 
+@findex MD_CAN_REDIRECT_BRANCH
+@item MD_CAN_REDIRECT_BRANCH(@var{branch1}, @var{branch2})
+
+Take a branch insn in @var{branch1} and a another in @var{branch2}.
+Return true if redirecting @var{branch1} to the destination of
+@var{branch2} is possible.
+
+On some targets, branches may have a limited range.  Optimizing the
+filling of delay slots can result in branches being redirected, and this
+may in turn cause a branch offset to overflow.
+
 @end table

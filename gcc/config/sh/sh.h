@@ -2421,6 +2421,9 @@ do {									\
 #define EMIT_MODE_SET(ENTITY, MODE, HARD_REGS_LIVE) \
   fpscr_set_from_mem ((MODE), (HARD_REGS_LIVE))
 
+#define MD_CAN_REDIRECT_BRANCH(INSN, SEQ) \
+  sh_can_redirect_branch ((INSN), (SEQ))
+
 #define DWARF_LINE_MIN_INSTR_LENGTH 2
 
 /* SH constant pool breaks the devices in crtstuff.c to control section

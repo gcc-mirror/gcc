@@ -1272,6 +1272,14 @@ steal_delay_list_from_target (insn, condition, seq, delay_list,
       || ! single_set (XVECEXP (seq, 0, 0)))
     return delay_list;
 
+#ifdef MD_CAN_REDIRECT_BRANCH
+  /* On some targets, branches with delay slots can have a limited
+     displacement.  Give the back end a chance to tell us we can't do
+     this.  */
+  if (! MD_CAN_REDIRECT_BRANCH (insn, XVECEXP (seq, 0, 0)))
+    return delay_list;
+#endif
+
   for (i = 1; i < XVECLEN (seq, 0); i++)
     {
       rtx trial = XVECEXP (seq, 0, i);
