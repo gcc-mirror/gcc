@@ -1863,8 +1863,8 @@ hash_scan_set (pat, insn, set_p)
 	       && ((GET_CODE (src) == REG
 		    && REGNO (src) >= FIRST_PSEUDO_REGISTER
 		    && can_copy_p [GET_MODE (dest)])
-		   /* ??? CONST_INT:wip */
 		   || GET_CODE (src) == CONST_INT
+		   || GET_CODE (src) == SYMBOL_REF
 		   || GET_CODE (src) == CONST_DOUBLE)
 	       /* A copy is not available if its src or dest is subsequently
 		  modified.  Here we want to search from INSN+1 on, but
@@ -3719,7 +3719,8 @@ cprop_insn (insn, alter_jumps)
       src = SET_SRC (pat);
 
       /* Constant propagation.  */
-      if (GET_CODE (src) == CONST_INT || GET_CODE (src) == CONST_DOUBLE)
+      if (GET_CODE (src) == CONST_INT || GET_CODE (src) == CONST_DOUBLE
+	  || GET_CODE (src) == SYMBOL_REF)
 	{
 	  /* Handle normal insns first.  */
 	  if (GET_CODE (insn) == INSN

@@ -1,3 +1,8 @@
+Sat Aug  7 02:11:13 1999  Bernd Schmidt <bernds@cygnus.co.uk>
+
+	* gcse.c (hash_scan_set): Treat SYMBOL_REFs like CONST_INTs.
+	(cprop_insn): Treat SYMBOL_REFs like CONST_INTs.
+
 1999-08-07  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
 	* config/sparc/liteelf.h: New file to support sparclite-elf target
