@@ -7930,7 +7930,7 @@ make_field_assignment (x)
       && INTVAL (XEXP (assign, 1)) < HOST_BITS_PER_WIDE_INT
       && GET_CODE (src) == AND
       && GET_CODE (XEXP (src, 1)) == CONST_INT
-      && (INTVAL (XEXP (src, 1))
+      && ((unsigned HOST_WIDE_INT) INTVAL (XEXP (src, 1))
 	  == ((unsigned HOST_WIDE_INT) 1 << INTVAL (XEXP (assign, 1))) - 1))
     src = XEXP (src, 0);
 
