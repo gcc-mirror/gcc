@@ -57,6 +57,7 @@ Boston, MA 02111-1307, USA.  */
 #include "hash.h"
 #include "ggc.h"
 #include "tm_p.h"
+#include "integrate.h"
 
 #ifndef TRAMPOLINE_ALIGNMENT
 #define TRAMPOLINE_ALIGNMENT FUNCTION_BOUNDARY
@@ -7601,6 +7602,8 @@ mark_function_status (p)
   ggc_mark_rtx (p->x_nonlocal_goto_handler_labels);
   ggc_mark_rtx (p->x_nonlocal_goto_stack_level);
   ggc_mark_tree (p->x_nonlocal_labels);
+
+  mark_hard_reg_initial_vals (p);
 }
 
 /* Mark the function chain ARG (which is really a struct function **)

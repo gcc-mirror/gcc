@@ -65,6 +65,7 @@ Boston, MA 02111-1307, USA.  */
 #include "params.h"
 #include "reload.h"
 #include "dwarf2asm.h"
+#include "integrate.h"
 
 #ifdef DWARF_DEBUGGING_INFO
 #include "dwarfout.h"
@@ -2863,9 +2864,11 @@ rest_of_compilation (decl)
      distinguish between the return value of this function and the
      return value of called functions.  Also, we can remove all SETs
      of subregs of hard registers; they are only here because of
-     integrate.*/
+     integrate.  Also, we can now initialize pseudos intended to 
+     carry magic hard reg data throughout the function.  */
   rtx_equal_function_value_matters = 0;
   purge_hard_subreg_sets (get_insns ());
+  emit_initial_value_sets ();
 
   /* Don't return yet if -Wreturn-type; we need to do jump_optimize.  */
   if ((rtl_dump_and_exit || flag_syntax_only) && !warn_return_type)

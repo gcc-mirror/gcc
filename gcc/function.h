@@ -235,6 +235,10 @@ struct function
      inline.  */
   const char *cannot_inline;
 
+  /* Opaque pointer used by get_hard_reg_initial_val and
+     has_hard_reg_initial_val (see integrate.[hc]). */
+  struct initial_value_struct *hard_reg_initial_vals;
+
   /* Number of function calls seen so far in current function.  */
   int x_function_call_count;
 
