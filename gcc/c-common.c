@@ -1862,6 +1862,10 @@ truthvalue_conversion (expr)
 					    TREE_TYPE (TREE_OPERAND (expr, 0)),
 					    TREE_OPERAND (expr, 1))), 1);
 
+    case BIT_AND_EXPR:
+      if (integer_onep (TREE_OPERAND (expr, 1)))
+	return expr;
+
     case MODIFY_EXPR:
       if (warn_parentheses && C_EXP_ORIGINAL_CODE (expr) == MODIFY_EXPR)
 	warning ("suggest parentheses around assignment used as truth value");
