@@ -1,4 +1,4 @@
-2001-08-19  Brendan Kehoe  <brendan@zen.org>
+2001-10-19  Brendan Kehoe  <brendan@zen.org>
 
         * include/bits/std_complex.h: Default initialize second argument
 	of polar to 0, as specified in Library DR #79
