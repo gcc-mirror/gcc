@@ -3209,7 +3209,7 @@ move\\t%0,%z4\\n\\
 
 (define_insn "movsi_ulw"
   [(set (match_operand:SI 0 "register_operand" "=&d,&d")
-	(unspec [(match_operand:QI 1 "general_operand" "R,o")] 0))]
+	(unspec:SI [(match_operand:QI 1 "general_operand" "R,o")] 0))]
   ""
   "*
 {
@@ -3238,7 +3238,7 @@ move\\t%0,%z4\\n\\
 
 (define_insn "movsi_usw"
   [(set (match_operand:QI 0 "memory_operand" "=R,o")
-	(unspec [(match_operand:SI 1 "reg_or_0_operand" "dJ,dJ")] 1))]
+	(unspec:QI [(match_operand:SI 1 "reg_or_0_operand" "dJ,dJ")] 1))]
   ""
   "*
 {
@@ -4060,7 +4060,7 @@ move\\t%0,%z4\\n\\
 
 (define_insn "loadgp"
   [(set (reg:DI 28)
-	(unspec_volatile [(match_operand:DI 0 "address_operand" "")] 2))
+	(unspec_volatile:DI [(match_operand:DI 0 "address_operand" "")] 2))
    (clobber (reg:DI 1))]
   ""
   "%[lui\\t$1,%%hi(%%neg(%%gp_rel(%a0)))\\n\\taddiu\\t$1,$1,%%lo(%%neg(%%gp_rel(%a0)))\\n\\tdaddu\\t$gp,$1,$25%]"
