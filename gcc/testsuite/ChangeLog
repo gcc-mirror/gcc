@@ -1,5 +1,9 @@
 2004-12-14  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	* gcc.c-torture/20041214-1.c: New test.
+
+2004-12-14  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR c++/18965
 	* g++.dg/init/array17.C: New test.
 
@@ -31,7 +35,7 @@
 
 2004-12-13  Kazu Hirata  <kazu@cs.umass.edu>
 
-	* gcc.c-torture/execute/20041213-1.c: New test.
+	* gcc.c-torture/execute/20041213-2.c: New test.
 
 2004-12-13  Richard Henderson  <rth@redhat.com>
 
