@@ -177,7 +177,6 @@ extern int  complete_array_type                 PARAMS ((tree, tree, int));
 extern void declare_parm_level                  PARAMS ((int));
 extern tree define_label                        PARAMS ((const char *, int,
 							 tree));
-extern void delete_block                        PARAMS ((tree));
 extern void finish_decl                         PARAMS ((tree, tree, tree));
 extern void finish_decl_top_level               PARAMS ((tree, tree, tree));
 extern tree finish_enum                         PARAMS ((tree, tree, tree));

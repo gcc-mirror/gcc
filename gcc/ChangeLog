@@ -1,5 +1,10 @@
 2001-11-05  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
 
+	* c-decl.c (delete_block): Remove.
+	* c-tree.h (delete_block): Remove.
+
+2001-11-05  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
+
 	* cppexp.c (lex, parse_defined): Update warning about defined.
 
 2001-11-05  Geoffrey Keating  <geoffk@redhat.com>
