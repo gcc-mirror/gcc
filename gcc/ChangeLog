@@ -1,3 +1,8 @@
+Mon Feb 19 16:40:45 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.c (do_spec_1): 'n' for printing notices.
+	* i386.h (CC1_CPU_SPEC): Notice deprecated options as deprecated.
+
 Mon Feb 19 16:20:04 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* reg-stack.c (next_flags_user): Use current_block->end
