@@ -806,6 +806,17 @@
    (set_attr "length" "4,8")]
 )
 
+(define_expand "addsf3"
+  [(set (match_operand:SF          0 "s_register_operand" "")
+	(plus:SF (match_operand:SF 1 "s_register_operand" "")
+		 (match_operand:SF 2 "fpu_add_operand" "")))]
+  "TARGET_ARM && TARGET_ANY_HARD_FLOAT"
+  "
+  if (TARGET_CIRRUS
+      && !cirrus_fp_register (operands[2], SFmode))
+    operands[2] = force_reg (SFmode, operands[2]);
+")
+
 (define_insn "*arm_addsf3"
   [(set (match_operand:SF          0 "s_register_operand" "=f,f")
 	(plus:SF (match_operand:SF 1 "s_register_operand" "%f,f")
@@ -817,6 +828,17 @@
   [(set_attr "type" "farith")
    (set_attr "predicable" "yes")]
 )
+
+(define_expand "adddf3"
+  [(set (match_operand:DF          0 "s_register_operand" "")
+	(plus:DF (match_operand:DF 1 "s_register_operand" "")
+		 (match_operand:DF 2 "fpu_add_operand" "")))]
+  "TARGET_ARM && TARGET_ANY_HARD_FLOAT"
+  "
+  if (TARGET_CIRRUS
+      && !cirrus_fp_register (operands[2], DFmode))
+    operands[2] = force_reg (DFmode, operands[2]);
+")
 
 (define_insn "*arm_adddf3"
   [(set (match_operand:DF          0 "s_register_operand" "=f,f")
@@ -1068,6 +1090,21 @@
    (set_attr "length" "*,8")]
 )
 
+(define_expand "subsf3"
+  [(set (match_operand:SF           0 "s_register_operand" "")
+	(minus:SF (match_operand:SF 1 "fpu_rhs_operand" "")
+		  (match_operand:SF 2 "fpu_rhs_operand" "")))]
+  "TARGET_ARM && TARGET_ANY_HARD_FLOAT"
+  "
+  if (TARGET_CIRRUS)
+    {
+      if (!cirrus_fp_register (operands[1], SFmode))
+        operands[1] = force_reg (SFmode, operands[1]);
+      if (!cirrus_fp_register (operands[2], SFmode))
+        operands[2] = force_reg (SFmode, operands[2]);
+    }
+")
+
 (define_insn "*arm_subsf3"
   [(set (match_operand:SF 0 "s_register_operand" "=f,f")
 	(minus:SF (match_operand:SF 1 "fpu_rhs_operand" "f,G")
@@ -1078,6 +1115,21 @@
    rsf%?s\\t%0, %2, %1"
   [(set_attr "type" "farith")]
 )
+
+(define_expand "subdf3"
+  [(set (match_operand:DF           0 "s_register_operand" "")
+	(minus:DF (match_operand:DF 1 "fpu_rhs_operand"     "")
+		  (match_operand:DF 2 "fpu_rhs_operand"    "")))]
+  "TARGET_ARM && TARGET_ANY_HARD_FLOAT"
+  "
+  if (TARGET_CIRRUS)
+    {
+       if (!cirrus_fp_register (operands[1], DFmode))
+         operands[1] = force_reg (DFmode, operands[1]);
+       if (!cirrus_fp_register (operands[2], DFmode))
+         operands[2] = force_reg (DFmode, operands[2]);
+    }
+")
 
 (define_insn "*arm_subdf3"
   [(set (match_operand:DF           0 "s_register_operand" "=f,f")
@@ -1401,6 +1453,17 @@
   [(set_attr "type" "mult")
    (set_attr "predicable" "yes")])
 
+(define_expand "mulsf3"
+  [(set (match_operand:SF          0 "s_register_operand" "")
+	(mult:SF (match_operand:SF 1 "s_register_operand" "")
+		 (match_operand:SF 2 "fpu_rhs_operand" "")))]
+  "TARGET_ARM && TARGET_ANY_HARD_FLOAT"
+  "
+  if (TARGET_CIRRUS
+      && !cirrus_fp_register (operands[2], SFmode))
+    operands[2] = force_reg (SFmode, operands[2]);
+")
+
 (define_insn "*arm_mulsf3"
   [(set (match_operand:SF 0 "s_register_operand" "=f")
 	(mult:SF (match_operand:SF 1 "s_register_operand" "f")
@@ -1410,6 +1473,17 @@
   [(set_attr "type" "ffmul")
    (set_attr "predicable" "yes")]
 )
+
+(define_expand "muldf3"
+  [(set (match_operand:DF          0 "s_register_operand" "")
+	(mult:DF (match_operand:DF 1 "s_register_operand" "")
+		 (match_operand:DF 2 "fpu_rhs_operand" "")))]
+  "TARGET_ARM && TARGET_ANY_HARD_FLOAT"
+  "
+  if (TARGET_CIRRUS
+      && !cirrus_fp_register (operands[2], DFmode))
+    operands[2] = force_reg (DFmode, operands[2]);
+")
 
 (define_insn "*arm_muldf3"
   [(set (match_operand:DF 0 "s_register_operand" "=f")
@@ -2784,6 +2858,19 @@
   [(set_attr "length" "2")]
 )
 
+(define_expand "negsf2"
+  [(set (match_operand:SF         0 "s_register_operand" "")
+	(neg:SF (match_operand:SF 1 "s_register_operand" "")))]
+  "TARGET_ARM && TARGET_ANY_HARD_FLOAT"
+  ""
+)
+
+(define_expand "negdf2"
+  [(set (match_operand:DF         0 "s_register_operand" "")
+	(neg:DF (match_operand:DF 1 "s_register_operand" "")))]
+  "TARGET_ARM && TARGET_ANY_HARD_FLOAT"
+  "")
+
 (define_insn "*arm_negsf2"
   [(set (match_operand:SF         0 "s_register_operand" "=f")
 	(neg:SF (match_operand:SF 1 "s_register_operand" "f")))]
@@ -2817,6 +2904,14 @@
 ;; it does, but tell the final scan operator the truth.  Similarly for
 ;; (neg (abs...))
 
+(define_expand "abssi2"
+  [(parallel
+    [(set (match_operand:SI         0 "s_register_operand" "")
+	  (abs:SI (match_operand:SI 1 "s_register_operand" "")))
+     (clobber (reg:CC CC_REGNUM))])]
+  "TARGET_ARM"
+  "")
+
 (define_insn "*arm_abssi2"
   [(set (match_operand:SI         0 "s_register_operand" "=r,&r")
 	(abs:SI (match_operand:SI 1 "s_register_operand" "0,r")))
@@ -2845,6 +2940,12 @@
    (set_attr "length" "8")]
 )
 
+(define_expand "abssf2"
+  [(set (match_operand:SF         0 "s_register_operand" "")
+	(abs:SF (match_operand:SF 1 "s_register_operand" "")))]
+  "TARGET_ARM && TARGET_ANY_HARD_FLOAT"
+  "")
+
 (define_insn "*arm_abssf2"
   [(set (match_operand:SF          0 "s_register_operand" "=f")
 	 (abs:SF (match_operand:SF 1 "s_register_operand" "f")))]
@@ -2853,6 +2954,12 @@
   [(set_attr "type" "ffarith")
    (set_attr "predicable" "yes")]
 )
+
+(define_expand "absdf2"
+  [(set (match_operand:DF         0 "s_register_operand" "")
+	(abs:DF (match_operand:DF 1 "s_register_operand" "")))]
+  "TARGET_ARM && TARGET_ANY_HARD_FLOAT"
+  "")
 
 (define_insn "*arm_absdf2"
   [(set (match_operand:DF         0 "s_register_operand" "=f")
@@ -2966,6 +3073,18 @@
 
 ;; Fixed <--> Floating conversion insns
 
+(define_expand "floatsisf2"
+  [(set (match_operand:SF           0 "s_register_operand" "")
+	(float:SF (match_operand:SI 1 "s_register_operand" "")))]
+  "TARGET_ARM && TARGET_ANY_HARD_FLOAT"
+  "
+  if (TARGET_CIRRUS)
+    {
+      emit_insn (gen_cirrus_floatsisf2 (operands[0], operands[1]));
+      DONE;
+    }
+")
+
 (define_insn "*arm_floatsisf2"
   [(set (match_operand:SF           0 "s_register_operand" "=f")
 	(float:SF (match_operand:SI 1 "s_register_operand" "r")))]
@@ -2974,6 +3093,18 @@
   [(set_attr "type" "r_2_f")
    (set_attr "predicable" "yes")]
 )
+
+(define_expand "floatsidf2"
+  [(set (match_operand:DF           0 "s_register_operand" "")
+	(float:DF (match_operand:SI 1 "s_register_operand" "")))]
+  "TARGET_ARM && TARGET_ANY_HARD_FLOAT"
+  "
+  if (TARGET_CIRRUS)
+    {
+      emit_insn (gen_cirrus_floatsidf2 (operands[0], operands[1]));
+      DONE;
+    }
+")
 
 (define_insn "*arm_floatsidf2"
   [(set (match_operand:DF           0 "s_register_operand" "=f")
@@ -2984,6 +3115,22 @@
    (set_attr "predicable" "yes")]
 )
 
+(define_expand "fix_truncsfsi2"
+  [(set (match_operand:SI         0 "s_register_operand" "")
+	(fix:SI (match_operand:SF 1 "s_register_operand"  "")))]
+  "TARGET_ARM && TARGET_ANY_HARD_FLOAT"
+  "
+  if (TARGET_CIRRUS)
+    {
+      if (!cirrus_fp_register (operands[0], SImode))
+        operands[0] = force_reg (SImode, operands[0]);
+      if (!cirrus_fp_register (operands[1], SFmode))
+        operands[1] = force_reg (SFmode, operands[0]);
+      emit_insn (gen_cirrus_truncsfsi2 (operands[0], operands[1]));
+      DONE;
+    }
+")
+
 (define_insn "*arm_fix_truncsfsi2"
   [(set (match_operand:SI         0 "s_register_operand" "=r")
 	(fix:SI (match_operand:SF 1 "s_register_operand" "f")))]
@@ -2992,6 +3139,20 @@
   [(set_attr "type" "f_2_r")
    (set_attr "predicable" "yes")]
 )
+
+(define_expand "fix_truncdfsi2"
+  [(set (match_operand:SI         0 "s_register_operand" "")
+	(fix:SI (match_operand:DF 1 "s_register_operand"  "")))]
+  "TARGET_ARM && TARGET_ANY_HARD_FLOAT"
+  "
+  if (TARGET_CIRRUS)
+    {
+      if (!cirrus_fp_register (operands[1], DFmode))
+        operands[1] = force_reg (DFmode, operands[0]);
+      emit_insn (gen_cirrus_truncdfsi2 (operands[0], operands[1]));
+      DONE;
+    }
+")
 
 (define_insn "*arm_fix_truncdfsi2"
   [(set (match_operand:SI         0 "s_register_operand" "=r")
@@ -3003,6 +3164,14 @@
 )
 
 ;; Truncation insns
+
+(define_expand "truncdfsf2"
+  [(set (match_operand:SF  0 "s_register_operand" "")
+	(float_truncate:SF
+ 	 (match_operand:DF 1 "s_register_operand" "")))]
+  "TARGET_ARM && TARGET_ANY_HARD_FLOAT"
+  ""
+)
 
 (define_insn "*arm_truncdfsf2"
   [(set (match_operand:SF 0 "s_register_operand" "=f")
