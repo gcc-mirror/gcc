@@ -236,7 +236,8 @@ EOF
     # on at least one platform.
     inform "Building compiler"
     OBJECT_DIRECTORY=../objdir
-    contrib/gcc_build -d ${SOURCE_DIRECTORY} -o ${OBJECT_DIRECTORY} build || \
+    contrib/gcc_build -d ${SOURCE_DIRECTORY} -o ${OBJECT_DIRECTORY} \
+      -c "--enable-generated-files-in-srcdir" build || \
       error "Could not rebuild GCC"
 
     # Regenerate the Fotran NEWS and BUGS files.
