@@ -203,6 +203,8 @@ _Jv_MarkObj (void *addr, void *msp, void *msl, void * /* env */)
       MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c, cBlabel);
       p = (ptr_t) c->arrayclass;
       MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c, cDlabel);
+      p = (ptr_t) c->protectionDomain;
+      MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c, cPlabel);
 
 #ifdef INTERPRETER
       if (_Jv_IsInterpretedClass (c))
