@@ -1,3 +1,17 @@
+2004-09-30  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (legitimate_reload_constant_p): Remove
+	floating point constant workaround.
+	(s390_secondary_input_reload_class): Handle PLUS reloads
+	with too-large constant.
+	(s390_expand_plus_operand): Likewise.
+	* config/s390/s390.md ("movdi"): Do not call force_const_mem.
+	("movsi"): Likewise.  Also, remove workaround for non-general
+	operands.
+	("movdf"): Do not call force_const_mem.
+	("movsf"): Likewise.  Merge expander with *movsf insn.
+	("*movsf"): Remove, merge with movsf expander.
+
 2004-09-30  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/symbian.h (STARTFILE_SPEC): Remove crt*.o.
