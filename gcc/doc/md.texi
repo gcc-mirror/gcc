@@ -79,7 +79,7 @@ If a @code{define_insn} is used, the template given is inserted into the
 insn list.  If a @code{define_expand} is used, one of three things
 happens, based on the condition logic.  The condition logic may manually
 create new insns for the insn list, say via @code{emit_insn()}, and
-invoke DONE@.  For certain named patterns, it may invoke FAIL to tell the
+invoke @code{DONE}.  For certain named patterns, it may invoke @code{FAIL} to tell the
 compiler to use an alternate way of performing that task.  If it invokes
 neither @code{DONE} nor @code{FAIL}, the template given in the pattern
 is inserted, as if the @code{define_expand} were a @code{define_insn}.
@@ -3773,7 +3773,7 @@ from i386.md:
 @end smallexample
 
 In this case, the actual split condition will be
-"TARGET_ZERO_EXTEND_WITH_AND && !optimize_size && reload_completed."
+@samp{TARGET_ZERO_EXTEND_WITH_AND && !optimize_size && reload_completed}.
 
 The @code{define_insn_and_split} construction provides exactly the same
 functionality as two separate @code{define_insn} and @code{define_split}

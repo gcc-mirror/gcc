@@ -385,6 +385,7 @@ called @dfn{lexical scoping}.  For example, here we show a nested
 function which uses an inherited variable named @code{offset}:
 
 @example
+@group
 bar (int *array, int offset, int size)
 @{
   int access (int *array, int index)
@@ -394,6 +395,7 @@ bar (int *array, int offset, int size)
   for (i = 0; i < size; i++)
     @dots{} access (array, i) @dots{}
 @}
+@end group
 @end example
 
 Nested function definitions are permitted within functions in the places
@@ -884,7 +886,13 @@ conforming) and in C++.  In that format the
 @samp{0x} hex introducer and the @samp{p} or @samp{P} exponent field are
 mandatory.  The exponent is a decimal number that indicates the power of
 2 by which the significant part will be multiplied.  Thus @samp{0x1.f} is
-1 15/16, @samp{p3} multiplies it by 8, and the value of @code{0x1.fp3}
+@tex
+$1 {15\over16}$,
+@end tex
+@ifnottex
+1 15/16,
+@end ifnottex
+@samp{p3} multiplies it by 8, and the value of @code{0x1.fp3}
 is the same as @code{1.55e1}.
 
 Unlike for floating-point numbers in the decimal notation the exponent
@@ -1491,7 +1499,7 @@ double y;
 @end example
 
 @noindent
-both @code{x} and @code{y} can be cast to type @code{union} foo.
+both @code{x} and @code{y} can be cast to type @code{union foo}.
 
 Using the cast as the right-hand side of an assignment to a variable of
 union type is equivalent to storing in a member of the union:
@@ -1579,6 +1587,7 @@ their own functions that never return.  You can declare them
 @code{noreturn} to tell the compiler this fact.  For example,
 
 @smallexample
+@group
 void fatal () __attribute__ ((noreturn));
 
 void
@@ -1587,6 +1596,7 @@ fatal (@dots{})
   @dots{} /* @r{Print error message.} */ @dots{}
   exit (1);
 @}
+@end group
 @end smallexample
 
 The @code{noreturn} keyword tells the compiler to assume that
@@ -1971,7 +1981,8 @@ alternate stack.
 
 @smallexample
 void *alt_stack;
-void f () __attribute__ ((interrupt_handler, sp_switch ("alt_stack")));
+void f () __attribute__ ((interrupt_handler,
+                          sp_switch ("alt_stack")));
 @end smallexample
 
 @item trap_exit
@@ -3172,7 +3183,7 @@ asm volatile ("eieio" : : );
 @noindent
 Assume @code{addr} contains the address of a memory mapped device
 register.  The PowerPC @code{eieio} instruction (Enforce In-order
-Execution of I/O) tells the cpu to make sure that the store to that
+Execution of I/O) tells the CPU to make sure that the store to that
 device register happens before it issues any other I/O@.
 
 Note that even a volatile @code{asm} instruction can be moved in ways
@@ -4642,20 +4653,20 @@ and will be removed from g++ at some point.
 @cindex Backwards Compatibility
 @cindex ARM [Annotated C++ Reference Manual]
 
-Now that there is a definitive ISO standard C++, g++ has a specification
+Now that there is a definitive ISO standard C++, G++ has a specification
 to adhere to.  The C++ language evolved over time, and features that
 used to be acceptable in previous drafts of the standard, such as the ARM
 [Annotated C++ Reference Manual], are no longer accepted.  In order to allow
-compilation of C++ written to such drafts, g++ contains some backwards
+compilation of C++ written to such drafts, G++ contains some backwards
 compatibilities.  @emph{All such backwards compatibility features are
-liable to disappear in future versions of g++.} They should be considered
+liable to disappear in future versions of G++.} They should be considered
 deprecated @xref{Deprecated Features}.
 
 @table @code
 @item For scope
 If a variable is declared at for scope, it used to remain in scope until
 the end of the scope which contained the for statement (rather than just
-within the for scope).  g++ retains this, but issues a warning, if such a
+within the for scope).  G++ retains this, but issues a warning, if such a
 variable is accessed outside the for scope.
 
 @item implicit C language

@@ -188,7 +188,7 @@ included in the section entitled ``GNU Free Documentation License''.
 @sp 1
 @c The version number appears five times more in this file.
 
-@center for gcc-3.0
+@center for GCC 3.0
 @page
 @vskip 0pt plus 1filll
 Copyright @copyright{} 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1998,
@@ -197,7 +197,7 @@ Copyright @copyright{} 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1998,
 For GCC Version 3.0@*
 @sp 1
 Published by the Free Software Foundation @*
-59 Temple Place - Suite 330@*
+59 Temple Place---Suite 330@*
 Boston, MA 02111-1307, USA@*
 Last printed April, 1998.@*
 Printed copies are available for $50 each.@*
@@ -1138,9 +1138,11 @@ arguments do not work with GCC@.  For example, a program like this
 will not work:
 
 @example
+@group
 foobar (
 #define luser
         hack)
+@end group
 @end example
 
 ISO C does not permit such a construct.  It would make sense to support
@@ -3216,12 +3218,12 @@ and some files shared with Objective-C and C++.
 
 The source files for parsing C++ are in @file{cp/}.
 They are @file{parse.y},
-@file{class.c},@*
+@file{class.c},
 @file{cvt.c}, @file{decl.c}, @file{decl2.c},
-@file{except.c},@*
+@file{except.c},
 @file{expr.c}, @file{init.c}, @file{lex.c},
-@file{method.c}, @file{ptree.c},@*
-@file{search.c}, @file{spew.c}, @*
+@file{method.c}, @file{ptree.c},
+@file{search.c}, @file{spew.c},
 @file{semantics.c}, @file{tree.c},
 @file{typeck2.c}, and
 @file{typeck.c}, along with header files @file{cp-tree.def},

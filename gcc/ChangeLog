@@ -1,3 +1,10 @@
+2001-07-03  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/extend.texi, doc/gcc.texi, doc/invoke.texi, doc/md.texi,
+	doc/rtl.texi, doc/tm.texi: Improve formatting.  Improve
+	documentation of -std and -Wwrite-strings.
+	* doc/cpp.1, doc/gcc.1: Regenerate.
+
 2001-07-02  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* doc/install.texi: Various spelling and markup fixes.

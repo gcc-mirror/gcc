@@ -237,7 +237,8 @@ in the following sections.
 @xref{Debugging Options,,Options for Debugging Your Program or GCC}.
 @gccoptlist{
 -a  -ax  -d@var{letters}  -dumpspecs  -dumpmachine  -dumpversion @gol
--fdump-unnumbered -fdump-translation-unit@r{[}-@var{n}@r{]} -fdump-class-hierarchy@r{[}-@var{n}@r{]} @gol
+-fdump-unnumbered -fdump-translation-unit@r{[}-@var{n}@r{]} @gol
+-fdump-class-hierarchy@r{[}-@var{n}@r{]} @gol
 -fdump-ast-original@r{[}-@var{n}@r{]} -fdump-ast-optimized@r{[}-@var{n}@r{]} @gol
 -fmem-report  -fpretend-float @gol
 -fprofile-arcs  -ftest-coverage  -ftime-report @gol
@@ -285,12 +286,12 @@ in the following sections.
 -iprefix @var{file}  -iwithprefix @var{dir} @gol
 -iwithprefixbefore @var{dir}  -isystem @var{dir} @gol
 -M  -MM  -MF  -MG  -MP  -MQ  -MT  -nostdinc  -P  -remap @gol
--trigraphs  -undef  -U@var{macro}  -Wp\,@var{option}}
+-trigraphs  -undef  -U@var{macro}  -Wp,@var{option}}
 
 @item Assembler Option
 @xref{Assembler Options,,Passing Options to the Assembler}.
 @gccoptlist{
--Wa\,@var{option}}
+-Wa,@var{option}}
 
 @item Linker Options
 @xref{Link Options,,Options for Linking}.
@@ -298,7 +299,7 @@ in the following sections.
 @var{object-file-name}  -l@var{library} @gol
 -nostartfiles  -nodefaultlibs  -nostdlib @gol
 -s  -static  -static-libgcc  -shared  -shared-libgcc  -symbolic @gol
--Wl\,@var{option}  -Xlinker @var{option} @gol
+-Wl,@var{option}  -Xlinker @var{option} @gol
 -u @var{symbol}}
 
 @item Directory Options
@@ -525,7 +526,7 @@ in the following sections.
 
 @emph{System V Options}
 @gccoptlist{
--Qy  -Qn  -YP\,@var{paths}  -Ym\,@var{dir}}
+-Qy  -Qn  -YP,@var{paths}  -Ym,@var{dir}}
 
 @emph{ARC Options}
 @gccoptlist{
@@ -871,7 +872,7 @@ In C mode, support all ISO C89 programs.  In C++ mode,
 remove GNU extensions that conflict with ISO C++.
 
 This turns off certain features of GCC that are incompatible with ISO
-C (when compiling C code), or of standard C++ (when compiling C++ code),
+C89 (when compiling C code), or of standard C++ (when compiling C++ code),
 such as the @code{asm} and @code{typeof} keywords, and
 predefined macros such as @code{unix} and @code{vax} that identify the
 type of system you are using.  It also enables the undesirable and
@@ -905,40 +906,33 @@ affected.
 
 @item -std=
 @opindex std
-Determine the language standard.  A value for this option must be provided;
+Determine the language standard.  This option is currently only
+supported when compiling C@.  A value for this option must be provided;
 possible values are
 
 @table @samp
-@item iso9899:1990
-Same as @option{-ansi}
+@item c89
+@itemx iso9899:1990
+ISO C89 (same as @option{-ansi}).
 
 @item iso9899:199409
-ISO C as modified in amendment 1
-
-@item iso9899:1999
-ISO C99.  Note that this standard is not yet fully supported; see
-@w{@uref{http://gcc.gnu.org/gcc-3.0/c99status.html}} for more information.
-
-@item c89
-same as @option{-std=iso9899:1990}
+ISO C89 as modified in amendment 1.
 
 @item c99
-same as @option{-std=iso9899:1999}
+@itemx c9x
+@itemx iso9899:1999
+@itemx iso9899:199x
+ISO C99.  Note that this standard is not yet fully supported; see
+@w{@uref{http://gcc.gnu.org/c99status.html}} for more information.  The
+names @samp{c9x} and @samp{iso9899:199x} are deprecated.
 
 @item gnu89
-default, iso9899:1990 + gnu extensions
+Default, ISO C89 plus GNU extensions (including some C99 features).
 
 @item gnu99
-iso9899:1999 + gnu extensions
-
-@item iso9899:199x
-same as @option{-std=iso9899:1999}, deprecated
-
-@item c9x
-same as @option{-std=iso9899:1999}, deprecated
-
-@item gnu9x
-same as @option{-std=gnu99}, deprecated
+@itemx gnu9x
+ISO C99 plus GNU extensions.  When ISO C99 is fully implemented in GCC,
+this will become the default.  The name @samp{gnu9x} is deprecated.
 
 @end table
 
@@ -1263,7 +1257,7 @@ this check is normally unnecessary.
 
 An alternative to using this option is to specify that your
 @code{operator new} does not throw any exceptions; if you declare it
-@samp{throw()}, g++ will check the return value.  See also @samp{new
+@samp{throw()}, G++ will check the return value.  See also @samp{new
 (nothrow)}.
 
 @item -fconserve-space
@@ -1302,7 +1296,7 @@ identifiers.  However, ISO C and C++ forbid @samp{$} in identifiers.
 @opindex fno-elide-constructors
 The C++ standard allows an implementation to omit creating a temporary
 which is only used to initialize another object of the same type.
-Specifying this option disables that optimization, and forces g++ to
+Specifying this option disables that optimization, and forces G++ to
 call the copy constructor in all cases.
 
 @item -fno-enforce-eh-specs
@@ -1338,7 +1332,7 @@ a @i{for-init-statement} is limited to the @samp{for} loop itself,
 as specified by the C++ standard.
 If @option{-fno-for-scope} is specified, the scope of variables declared in
 a @i{for-init-statement} extends to the end of the enclosing scope,
-as was the case in old versions of gcc, and other (traditional)
+as was the case in old versions of G++, and other (traditional)
 implementations of C++.
 
 The default if neither flag is given to follow the standard,
@@ -1402,13 +1396,13 @@ synonyms as keywords.
 @item -fno-optional-diags
 @opindex fno-optional-diags
 Disable diagnostics that the standard says a compiler does not need to
-issue.  Currently, the only such diagnostic issued by g++ is the one for
+issue.  Currently, the only such diagnostic issued by G++ is the one for
 a name having multiple meanings within a class.
 
 @item -fpermissive
 @opindex fpermissive
 Downgrade messages about nonconformant code from errors to warnings.  By
-default, g++ effectively sets @option{-pedantic-errors} without
+default, G++ effectively sets @option{-pedantic-errors} without
 @option{-pedantic}; this option reverses that.  This behavior and this
 option are superseded by @option{-pedantic}, which works as it does for GNU C@.
 
@@ -1473,18 +1467,18 @@ Do not assume @samp{inline} for functions defined inside a class scope.
 functions will have linkage like inline functions; they just won't be
 inlined by default.
 
-@item -Wctor-dtor-privacy (C++ only)
+@item -Wctor-dtor-privacy @r{(C++ only)}
 @opindex Wctor-dtor-privacy
 Warn when a class seems unusable, because all the constructors or
 destructors in a class are private and the class has no friends or
 public static member functions.
 
-@item -Wnon-virtual-dtor (C++ only)
+@item -Wnon-virtual-dtor @r{(C++ only)}
 @opindex Wnon-virtual-dtor
 Warn when a class declares a non-virtual destructor that should probably
 be virtual, because it looks like the class will be used polymorphically.
 
-@item -Wreorder (C++ only)
+@item -Wreorder @r{(C++ only)}
 @opindex Wreorder
 @cindex reordering, warning
 @cindex warning for reordering of member initializers
@@ -1507,41 +1501,41 @@ members.
 The following @option{-W@dots{}} options are not affected by @option{-Wall}.
 
 @table @gcctabopt
-@item -Weffc++ (C++ only)
+@item -Weffc++ @r{(C++ only)}
 @opindex Weffc++
 Warn about violations of various style guidelines from Scott Meyers'
 @cite{Effective C++} books.  If you use this option, you should be aware
 that the standard library headers do not obey all of these guidelines;
 you can use @samp{grep -v} to filter out those warnings.
 
-@item -Wno-deprecated (C++ only)
+@item -Wno-deprecated @r{(C++ only)}
 @opindex Wno-deprecated
 Do not warn about usage of deprecated features.  @xref{Deprecated Features}.
 
-@item -Wno-non-template-friend (C++ only)
+@item -Wno-non-template-friend @r{(C++ only)}
 @opindex Wno-non-template-friend
 Disable warnings when non-templatized friend functions are declared
 within a template.  With the advent of explicit template specification
-support in g++, if the name of the friend is an unqualified-id (i.e.,
+support in G++, if the name of the friend is an unqualified-id (i.e.,
 @samp{friend foo(int)}), the C++ language specification demands that the
 friend declare or define an ordinary, nontemplate function.  (Section
-14.5.3).  Before g++ implemented explicit specification, unqualified-ids
+14.5.3).  Before G++ implemented explicit specification, unqualified-ids
 could be interpreted as a particular specialization of a templatized
 function.  Because this non-conforming behavior is no longer the default
-behavior for g++, @option{-Wnon-template-friend} allows the compiler to
+behavior for G++, @option{-Wnon-template-friend} allows the compiler to
 check existing code for potential trouble spots, and is on by default.
 This new compiler behavior can be turned off with
 @option{-Wno-non-template-friend} which keeps the conformant compiler code
 but disables the helpful warning.
 
-@item -Wold-style-cast (C++ only)
+@item -Wold-style-cast @r{(C++ only)}
 @opindex Wold-style-cast
 Warn if an old-style (C-style) cast is used within a C++ program.  The
 new-style casts (@samp{static_cast}, @samp{reinterpret_cast}, and
 @samp{const_cast}) are less vulnerable to unintended effects, and much
 easier to grep for.
 
-@item -Woverloaded-virtual (C++ only)
+@item -Woverloaded-virtual @r{(C++ only)}
 @opindex Woverloaded-virtual
 @cindex overloaded virtual fn, warning
 @cindex warning for overloaded virtual fn
@@ -1553,23 +1547,23 @@ compiler warns when you define a function with the same name as a
 virtual function, but with a type signature that does not match any
 declarations from the base class.
 
-@item -Wno-pmf-conversions (C++ only)
+@item -Wno-pmf-conversions @r{(C++ only)}
 @opindex Wno-pmf-conversions
 Disable the diagnostic for converting a bound pointer to member function
 to a plain pointer.
 
-@item -Wsign-promo (C++ only)
+@item -Wsign-promo @r{(C++ only)}
 @opindex Wsign-promo
 Warn when overload resolution chooses a promotion from unsigned or
 enumeral type to a signed type over a conversion to an unsigned type of
-the same size.  Previous versions of g++ would try to preserve
+the same size.  Previous versions of G++ would try to preserve
 unsignedness, but the standard mandates the current behavior.
 
-@item -Wsynth (C++ only)
+@item -Wsynth @r{(C++ only)}
 @opindex Wsynth
 @cindex warning for synthesized methods
 @cindex synthesized methods, warning
-Warn when g++'s synthesis behavior does not match that of cfront.  For
+Warn when G++'s synthesis behavior does not match that of cfront.  For
 instance:
 
 @smallexample
@@ -1585,7 +1579,7 @@ main ()
 @}
 @end smallexample
 
-In this example, g++ will synthesize a default @samp{A& operator =
+In this example, G++ will synthesize a default @samp{A& operator =
 (const A&);}, while cfront will use the user-defined @samp{operator =}.
 @end table
 
@@ -1666,7 +1660,7 @@ the remaining front ends would be able to digest them correctly.
 @item -fmessage-length=@var{n}
 @opindex fmessage-length
 Try to format error messages so that they fit on lines of about @var{n}
-characters.  The default is 72 characters for g++ and 0 for the rest of
+characters.  The default is 72 characters for @command{g++} and 0 for the rest of
 the front ends supported by GCC@.  If @var{n} is zero, then no
 line-wrapping will be done; each error message will appear on a single
 line.
@@ -1891,6 +1885,7 @@ Also warn about constructions where there may be confusion to which
 such a case:
 
 @smallexample
+@group
 @{
   if (a)
     if (b)
@@ -1898,6 +1893,7 @@ such a case:
   else
     bar ();
 @}
+@end group
 @end smallexample
 
 In C, every @code{else} branch belongs to the innermost possible @code{if}
@@ -1910,6 +1906,7 @@ To eliminate the warning, add explicit braces around the innermost
 the enclosing @code{if}.  The resulting code would look like this:
 
 @smallexample
+@group
 @{
   if (a)
     @{
@@ -1919,6 +1916,7 @@ the enclosing @code{if}.  The resulting code would look like this:
         bar ();
     @}
 @}
+@end group
 @end smallexample
 
 @item -Wsequence-point
@@ -2057,6 +2055,7 @@ despite appearing to have an error.  Here is one example of how
 this can happen:
 
 @smallexample
+@group
 @{
   int x;
   switch (y)
@@ -2069,6 +2068,7 @@ this can happen:
     @}
   foo (x);
 @}
+@end group
 @end smallexample
 
 @noindent
@@ -2103,7 +2103,7 @@ Some spurious warnings can be avoided if you declare all the functions
 you use that never return as @code{noreturn}.  @xref{Function
 Attributes}.
 
-@item -Wreorder (C++ only)
+@item -Wreorder @r{(C++ only)}
 @opindex Wreorder
 @cindex reordering, warning
 @cindex warning for reordering of member initializers
@@ -2242,7 +2242,7 @@ would check to see whether the two values have ranges that overlap; and
 this is done with the relational operators, so equality comparisons are
 probably mistaken.
 
-@item -Wtraditional (C only)
+@item -Wtraditional @r{(C only)}
 @opindex Wtraditional
 Warn about certain constructs that behave differently in traditional and
 ISO C@.  Also warn about ISO C constructs that have no traditional C
@@ -2347,7 +2347,7 @@ of @code{void}.  GNU C assigns these types a size of 1, for
 convenience in calculations with @code{void *} pointers and pointers
 to functions.
 
-@item -Wbad-function-cast (C only)
+@item -Wbad-function-cast @r{(C only)}
 @opindex Wbad-function-cast
 Warn whenever a function call is cast to a non-matching type.
 For example, warn if @code{int malloc()} is cast to @code{anything *}.
@@ -2367,9 +2367,12 @@ two- or four-byte boundaries.
 
 @item -Wwrite-strings
 @opindex Wwrite-strings
-Give string constants the type @code{const char[@var{length}]} so that
+When compiling C, give string constants the type @code{const
+char[@var{length}]} so that
 copying the address of one into a non-@code{const} @code{char *}
-pointer will get a warning.  These warnings will help you find at
+pointer will get a warning; when compiling C++, warn about the
+deprecated conversion from string constants to @code{char *}.
+These warnings will help you find at
 compile time code that can try to write into a string constant, but
 only if you have been very careful about using @code{const} in
 declarations and prototypes.  Otherwise, it will just be a nuisance;
@@ -2404,14 +2407,14 @@ Warn if any functions that return structures or unions are defined or
 called.  (In languages where you can return an array, this also elicits
 a warning.)
 
-@item -Wstrict-prototypes (C only)
+@item -Wstrict-prototypes @r{(C only)}
 @opindex Wstrict-prototypes
 Warn if a function is declared or defined without specifying the
 argument types.  (An old-style function definition is permitted without
 a warning if preceded by a declaration which specifies the argument
 types.)
 
-@item -Wmissing-prototypes (C only)
+@item -Wmissing-prototypes @r{(C only)}
 @opindex Wmissing-prototypes
 Warn if a global function is defined without a previous prototype
 declaration.  This warning is issued even if the definition itself
@@ -2480,7 +2483,7 @@ reduce the padding and so make the structure smaller.
 Warn if anything is declared more than once in the same scope, even in
 cases where multiple declaration is valid and changes nothing.
 
-@item -Wnested-externs (C only)
+@item -Wnested-externs @r{(C only)}
 @opindex Wnested-externs
 Warn if an @code{extern} declaration is encountered within a function.
 
@@ -2963,16 +2966,16 @@ numbers and line number note output.  This makes it more feasible to
 use diff on debugging dumps for compiler invocations with different
 options, in particular with and without @option{-g}.
 
-@item -fdump-translation-unit (C and C++ only)
-@item -fdump-translation-unit-@var{number} (C and C++ only)
+@item -fdump-translation-unit @r{(C and C++ only)}
+@itemx -fdump-translation-unit-@var{number} @r{(C and C++ only)}
 @opindex fdump-translation-unit
 Dump a representation of the tree structure for the entire translation
 unit to a file.  The file name is made by appending @file{.tu} to the
 source file name.  If the @samp{-@var{number}} form is used, @var{number}
 controls the details of the dump as described for the @option{-fdump-tree} options.
 
-@item -fdump-class-hierarchy (C++ only)
-@item -fdump-class-hierarchy-@var{number} (C++ only)
+@item -fdump-class-hierarchy @r{(C++ only)}
+@itemx -fdump-class-hierarchy-@var{number} @r{(C++ only)}
 @opindex fdump-class-hierarchy
 Dump a representation of each class's hierarchy and virtual function
 table layout to a file.  The file name is made by appending @file{.class}
@@ -2980,8 +2983,8 @@ to the source file name.  If the @samp{-@var{number}} form is used, @var{number}
 controls the details of the dump as described for the @option{-fdump-tree}
 options.
 
-@item -fdump-ast-@var{switch} (C++ only)
-@item -fdump-ast-@var{switch}-@var{number} (C++ only)
+@item -fdump-ast-@var{switch} @r{(C++ only)}
+@itemx -fdump-ast-@var{switch}-@var{number} @r{(C++ only)}
 @opindex fdump-ast
 Control the dumping at various stages of processing the abstract syntax
 tree to a file.  The file name is generated by appending a switch
@@ -3282,11 +3285,11 @@ allows the control of this limit for functions that are explicitly marked as
 inline (ie marked with the inline keyword or defined within the class
 definition in c++).  @var{n} is the size of functions that can be inlined in
 number of pseudo instructions (not counting parameter handling).  The default
-value of n is 10000.  Increasing this value can result in more inlined code at
+value of @var{n} is 10000.  Increasing this value can result in more inlined code at
 the cost of compilation time and memory consumption.  Decreasing usually makes
 the compilation faster and less code will be inlined (which presumably
 means slower programs).  This option is particularly useful for programs that
-use inlining heavily such as those based on recursive templates with c++.
+use inlining heavily such as those based on recursive templates with C++.
 
 @emph{Note:} pseudo instruction represents, in this particular context, an
 abstract measurement of function's size.  In no way, it represents a count
@@ -3404,7 +3407,7 @@ This pass also performs global constant and copy propagation.
 Use global dataflow analysis to identify and eliminate useless null
 pointer checks.  Programs which rely on NULL pointer dereferences @emph{not}
 halting the program may not work properly with this option.  Use
--fno-delete-null-pointer-checks to disable this optimizing for programs
+@option{-fno-delete-null-pointer-checks} to disable this optimizing for programs
 which depend on that behavior.
 
 @item -fexpensive-optimizations
@@ -4010,31 +4013,31 @@ converts them.  See the @option{-std} and @option{-ansi} options.
 The nine trigraph sequences are
 @table @samp
 @item ??(
--> @samp{[}
+@expansion{} @samp{[}
 
 @item ??)
--> @samp{]}
+@expansion{} @samp{]}
 
 @item ??<
--> @samp{@{}
+@expansion{} @samp{@{}
 
 @item ??>
--> @samp{@}}
+@expansion{} @samp{@}}
 
 @item ??=
--> @samp{#}
+@expansion{} @samp{#}
 
 @item ??/
--> @samp{\}
+@expansion{} @samp{\}
 
 @item ??'
--> @samp{^}
+@expansion{} @samp{^}
 
 @item ??!
--> @samp{|}
+@expansion{} @samp{|}
 
 @item ??-
--> @samp{~}
+@expansion{} @samp{~}
 
 @end table
 
@@ -4042,7 +4045,7 @@ Trigraph support is not popular, so many compilers do not implement it
 properly.  Portable code should not rely on trigraphs being either
 converted or ignored.
 
-@item -Wp\,@var{option}
+@item -Wp,@var{option}
 @opindex Wp
 Pass @var{option} as an option to the preprocessor.  If @var{option}
 contains commas, it is split into multiple options at the commas.
@@ -4055,7 +4058,7 @@ contains commas, it is split into multiple options at the commas.
 You can pass options to the assembler.
 
 @table @gcctabopt
-@item -Wa\,@var{option}
+@item -Wa,@var{option}
 @opindex Wa
 Pass @var{option} as an option to the assembler.  If @var{option}
 contains commas, it is split into multiple options at the commas.
@@ -4241,7 +4244,7 @@ For example, to pass @option{-assert definitions}, you must write
 @option{-Xlinker "-assert definitions"}, because this passes the entire
 string as a single argument, which is not what the linker expects.
 
-@item -Wl\,@var{option}
+@item -Wl,@var{option}
 @opindex Wl
 Pass @var{option} as an option to the linker.  If @var{option} contains
 commas, it is split into multiple options at the commas.
@@ -4544,7 +4547,7 @@ simply substituted with a file name chosen for the previous @samp{%u},
 without regard to any appended suffix.
 
 @item %j@var{SUFFIX}
-Substitutes the name of the HOST_BIT_BUCKET, if any, and if it is
+Substitutes the name of the @code{HOST_BIT_BUCKET}, if any, and if it is
 writable, and if save-temps is off; otherwise, substitute the name
 of a temporary file, just like @samp{%u}.  This temporary file is not
 meant for communication between processes, but rather as a junk
@@ -4589,7 +4592,7 @@ predefined macro, except for macros that start with @samp{__} or with
 C@.
 
 @item %I
-Substitute a @option{-iprefix} option made from GCC_EXEC_PREFIX@.
+Substitute a @option{-iprefix} option made from @env{GCC_EXEC_PREFIX}.
 
 @item %s
 Current argument is the name of a library or startup file of some sort.
@@ -5279,7 +5282,7 @@ With @option{-mflat}, the compiler does not generate save/restore instructions
 and will use a ``flat'' or single register window calling convention.
 This model uses %i7 as the frame pointer and is compatible with the normal
 register window model.  Code from either may be intermixed.
-The local registers and the input registers (0-5) are still treated as
+The local registers and the input registers (0--5) are still treated as
 ``call saved'' registers and will be saved on the stack as necessary.
 
 With @option{-mno-flat} (the default), the compiler emits save/restore
@@ -5842,12 +5845,16 @@ compiler is built for cross-compilation.
 @opindex mcpu
 This specifies the name of the target ARM processor.  GCC uses this name
 to determine what kind of instructions it can emit when generating
-assembly code.  Permissible names are: arm2, arm250, arm3, arm6, arm60,
-arm600, arm610, arm620, arm7, arm7m, arm7d, arm7dm, arm7di, arm7dmi,
-arm70, arm700, arm700i, arm710, arm710c, arm7100, arm7500, arm7500fe,
-arm7tdmi, arm8, strongarm, strongarm110, strongarm1100, arm8, arm810,
-arm9, arm9e, arm920, arm920t, arm940t, arm9tdmi, arm10tdmi, arm1020t,
-xscale.
+assembly code.  Permissible names are: @samp{arm2}, @samp{arm250},
+@samp{arm3}, @samp{arm6}, @samp{arm60}, @samp{arm600}, @samp{arm610},
+@samp{arm620}, @samp{arm7}, @samp{arm7m}, @samp{arm7d}, @samp{arm7dm},
+@samp{arm7di}, @samp{arm7dmi}, @samp{arm70}, @samp{arm700},
+@samp{arm700i}, @samp{arm710}, @samp{arm710c}, @samp{arm7100},
+@samp{arm7500}, @samp{arm7500fe}, @samp{arm7tdmi}, @samp{arm8},
+@samp{strongarm}, @samp{strongarm110}, @samp{strongarm1100},
+@samp{arm8}, @samp{arm810}, @samp{arm9}, @samp{arm9e}, @samp{arm920},
+@samp{arm920t}, @samp{arm940t}, @samp{arm9tdmi}, @samp{arm10tdmi},
+@samp{arm1020t}, @samp{xscale}.
 
 @itemx -mtune=@var{name}
 @opindex mtune
@@ -5865,8 +5872,9 @@ this option.
 This specifies the name of the target ARM architecture.  GCC uses this
 name to determine what kind of instructions it can emit when generating
 assembly code.  This option can be used in conjunction with or instead
-of the @option{-mcpu=} option.  Permissible names are: armv2, armv2a,
-armv3, armv3m, armv4, armv4t, armv5, armv5t, armv5te.
+of the @option{-mcpu=} option.  Permissible names are: @samp{armv2},
+@samp{armv2a}, @samp{armv3}, @samp{armv3m}, @samp{armv4}, @samp{armv4t},
+@samp{armv5}, @samp{armv5t}, @samp{armv5te}.
 
 @item -mfpe=@var{number}
 @itemx -mfp=@var{number}
@@ -5924,7 +5932,7 @@ pointers.
 
 @item -mnop-fun-dllimport
 @opindex mnop-fun-dllimport
-Disable support for the @emph{dllimport} attribute.
+Disable support for the @code{dllimport} attribute.
 
 @item -msingle-pic-base
 @opindex msingle-pic-base
@@ -7025,7 +7033,7 @@ the default if the configure option @option{--with-gnu-as} is used.
 @opindex msplit-addresses
 @opindex mno-split-addresses
 Generate code to load the high and low parts of address constants separately.
-This allows @code{gcc} to optimize away redundant loads of the high order
+This allows GCC to optimize away redundant loads of the high order
 bits of addresses.  This optimization requires GNU as and GNU ld.
 This optimization is enabled by default for some embedded targets where
 GNU as and GNU ld are standard.
@@ -8175,12 +8183,12 @@ Identify the versions of each tool used by the compiler, in a
 Refrain from adding @code{.ident} directives to the output file (this is
 the default).
 
-@item -YP\,@var{dirs}
+@item -YP,@var{dirs}
 @opindex YP
 Search the directories @var{dirs}, and no others, for libraries
 specified with @option{-l}.
 
-@item -Ym\,@var{dir}
+@item -Ym,@var{dir}
 @opindex Ym
 Look in the directory @var{dir} to find the M4 preprocessor.
 The assembler uses this option.
@@ -8233,8 +8241,8 @@ count register BK@.
 Enable (disable) generation of code using decrement and branch,
 DBcond(D), instructions.  This is enabled by default for the C4x.  To be
 on the safe side, this is disabled for the C3x, since the maximum
-iteration count on the C3x is 2^23 + 1 (but who iterates loops more than
-2^23 times on the C3x?).  Note that GCC will try to reverse a loop so
+iteration count on the C3x is @math{2^23 + 1} (but who iterates loops more than
+@math{2^23} times on the C3x?).  Note that GCC will try to reverse a loop so
 that it can utilise the decrement and branch instruction, but will give
 up if there is more than one memory reference in the loop.  Thus a loop
 where the loop counter is decremented can generate slightly more
@@ -8302,9 +8310,9 @@ instruction, it is disabled by default.
 @opindex mloop-unsigned
 @opindex mno-loop-unsigned
 The maximum iteration count when using RPTS and RPTB (and DB on the C40)
-is 2^31 + 1 since these instructions test if the iteration count is
+is @math{2^31 + 1} since these instructions test if the iteration count is
 negative to terminate the loop.  If the iteration count is unsigned
-there is a possibility than the 2^31 + 1 maximum iteration count may be
+there is a possibility than the @math{2^31 + 1} maximum iteration count may be
 exceeded.  This switch allows an unsigned iteration count.
 
 @item -mti
@@ -8620,7 +8628,7 @@ Output instruction sizes to the asm file.
 @item -minit-stack=@var{N}
 @opindex minit-stack
 Specify the initial stack address, which may be a symbol or numeric value,
-__stack is the default.
+@samp{__stack} is the default.
 
 @item -mno-interrupts
 @opindex mno-interrupts
