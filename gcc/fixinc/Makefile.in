@@ -23,7 +23,7 @@
 # Its purpose is to build the any-platforms fixinc.sh script.
 
 FL_LIST = $(CFLAGS) $(CPPFLAGS) $(WARN_CFLAGS)
-FIXINC_DEFS = -DIN_GCC $(FL_LIST) $(INCLUDES)
+FIXINC_DEFS = -DIN_GCC -DHAVE_CONFIG_H $(FL_LIST) $(INCLUDES)
 
 # Directory where sources are, from where we are.
 srcdir = @srcdir@

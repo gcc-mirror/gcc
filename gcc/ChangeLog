@@ -1,3 +1,10 @@
+2001-03-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fixinc/Makefile.in (FIXINC_DEFS): Add -DHAVE_CONFIG_H.
+
+	* fixinc/gnu-regex.c: Don't include auto-host.h since we get
+	config.h now.  Include libiberty.h to handle alloca.
+
 2001-03-06  Zack Weinberg  <zackw@stanford.edu>
 
 	* c-parse.in (yylexname): New function, split out of _yylex.
