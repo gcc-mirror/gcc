@@ -1,3 +1,10 @@
+2003-01-29	Joel Sherrill <joel@OARcorp.com>
+
+	* config.gcc (hppa1.1-rtems):  Did not include t-rtems nor enable
+	RTEMS threads.
+	* config/pa/rtems.h (LIB_SPEC): Use -N when linking.
+	This issue was tracked as PR9292.
+
 2003-01-25  Andrew Haley  <aph@redhat.com>
 
 	* tree-inline.c (walk_tree): Add CHAR_TYPE.

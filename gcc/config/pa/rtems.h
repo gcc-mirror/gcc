@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for PRO.
-   Copyright (C) 1997, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1997, 2000, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
 
 This file is part of GNU CC.
@@ -35,3 +35,6 @@ Boston, MA 02111-1307, USA.  */
 	builtin_assert ("system=rtems");	\
     }						\
   while (0)
+
+#undef LIB_SPEC
+#define LIB_SPEC "%{!p:%{!pg:-lc}}%{p: -lc}%{pg: -lc} -N"
