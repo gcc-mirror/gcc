@@ -87,12 +87,6 @@ static htab_t local_specializations;
 #define UNIFY_ALLOW_OUTER_LESS_CV_QUAL 64
 #define UNIFY_ALLOW_MAX_CORRECTION 128
 
-#define GTB_VIA_VIRTUAL 1 /* The base class we are examining is
-			     virtual, or a base class of a virtual
-			     base.  */
-#define GTB_IGNORE_TYPE 2 /* We don't need to try to unify the current
-			     type with the desired type.  */
-
 static void push_access_scope (tree);
 static void pop_access_scope (tree);
 static int resolve_overloaded_unification (tree, tree, tree, tree,
@@ -154,7 +148,7 @@ static tree process_partial_specialization (tree);
 static void set_current_access_from_decl (tree);
 static void check_default_tmpl_args (tree, tree, int, int);
 static tree tsubst_call_declarator_parms (tree, tree, tsubst_flags_t, tree);
-static tree get_template_base_recursive (tree, tree, tree, tree, tree, int); 
+static tree get_template_base_r (tree, void *);
 static tree get_template_base (tree, tree, tree, tree);
 static int verify_class_unification (tree, tree, tree);
 static tree try_class_unification (tree, tree, tree, tree);
@@ -9475,71 +9469,53 @@ try_class_unification (tree tparms, tree targs, tree parm, tree arg)
   return arg;
 }
 
-/* Subroutine of get_template_base.  RVAL, if non-NULL, is a base we
-   have already discovered to be satisfactory.  ARG_BINFO is the binfo
-   for the base class of ARG that we are currently examining.  */
+typedef struct get_template_base_data_s 
+{
+  /* Parameters for unification.  */
+  tree tparms;
+  tree targs;
+  tree parm;
+  /* Base we've found to be satisfactory.  */
+  tree rval;
+} get_template_base_data;
+
+/* Called from get_template_base via dfs_walk.  */
 
 static tree
-get_template_base_recursive (tree tparms, 
-                             tree targs, 
-                             tree parm,
-                             tree arg_binfo, 
-                             tree rval, 
-                             int flags)
+get_template_base_r (tree arg_binfo,
+		     void *data_)
 {
-  tree base_binfo;
-  int i;
-  tree arg = BINFO_TYPE (arg_binfo);
+  get_template_base_data *data = data_;
 
-  if (!(flags & GTB_IGNORE_TYPE))
+  /* Do not look at the most derived binfo -- that's not a proper
+     base.  */
+  if (BINFO_INHERITANCE_CHAIN (arg_binfo))
     {
-      tree r = try_class_unification (tparms, targs,
-				      parm, arg);
+      tree r = try_class_unification (data->tparms, data->targs,
+				      data->parm, BINFO_TYPE (arg_binfo));
 
-      /* If there is more than one satisfactory baseclass, then:
+      if (r)
+	{
+	  /* If there is more than one satisfactory baseclass, then:
 
-	   [temp.deduct.call]
+	       [temp.deduct.call]
 
-	   If they yield more than one possible deduced A, the type
-	   deduction fails.
+	      If they yield more than one possible deduced A, the type
+	      deduction fails.
 
-	   applies.  */
-      if (r && rval && !same_type_p (r, rval))
-	return error_mark_node;
-      else if (r)
-	rval = r;
+	     applies.  */
+	  if (data->rval && !same_type_p (r, data->rval))
+	    {
+	      data->rval = NULL_TREE;
+	      /* Terminate the walk with any non-NULL value.  */
+	      return r;
+	    }
+	  
+	  data->rval = r;
+	}
     }
 
-  /* Process base types.  */
-  for (i = 0; BINFO_BASE_ITERATE (arg_binfo, i, base_binfo); i++)
-    {
-      int this_virtual;
-
-      /* Skip this base, if we've already seen it.  */
-      if (BINFO_MARKED (base_binfo))
-	continue;
-
-      this_virtual = 
-	(flags & GTB_VIA_VIRTUAL) || BINFO_VIRTUAL_P (base_binfo);
-      
-      /* When searching for a non-virtual, we cannot mark virtually
-	 found binfos.  */
-      if (! this_virtual)
-	BINFO_MARKED (base_binfo) = 1;
-      
-      rval = get_template_base_recursive (tparms, targs,
-					  parm,
-					  base_binfo, 
-					  rval,
-					  GTB_VIA_VIRTUAL * this_virtual);
-      
-      /* If we discovered more than one matching base class, we can
-	 stop now.  */
-      if (rval == error_mark_node)
-	return error_mark_node;
-    }
-
-  return rval;
+  return NULL_TREE;
 }
 
 /* Given a template type PARM and a class type ARG, find the unique
@@ -9552,7 +9528,7 @@ get_template_base_recursive (tree tparms,
 static tree
 get_template_base (tree tparms, tree targs, tree parm, tree arg)
 {
-  tree rval;
+  get_template_base_data data;
   tree arg_binfo;
 
   gcc_assert (IS_AGGR_TYPE_CODE (TREE_CODE (arg)));
@@ -9561,17 +9537,15 @@ get_template_base (tree tparms, tree targs, tree parm, tree arg)
   if (!arg_binfo)
     /* The type could not be completed.  */
     return NULL_TREE;
-  
-  rval = get_template_base_recursive (tparms, targs,
-				      parm, arg_binfo, 
-				      NULL_TREE,
-				      GTB_IGNORE_TYPE);
 
-  /* Since get_template_base_recursive marks the bases classes, we
-     must unmark them here.  */
-  dfs_walk (arg_binfo, dfs_unmark, markedp, 0);
+  data.tparms = tparms;
+  data.targs = targs;
+  data.parm = parm;
+  data.rval = NULL_TREE;
 
-  return rval;
+  dfs_walk_real (arg_binfo, get_template_base_r, 0, 0, &data);
+
+  return data.rval;
 }
 
 /* Returns the level of DECL, which declares a template parameter.  */
@@ -10058,10 +10032,9 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 		       a class of the form template-id, A can be a
 		       pointer to a derived class pointed to by the
 		       deduced A.  */
-		  t = get_template_base (tparms, targs,
-					 parm, arg);
+		  t = get_template_base (tparms, targs, parm, arg);
 
-		  if (! t || t == error_mark_node)
+		  if (!t)
 		    return 1;
 		}
 	    }

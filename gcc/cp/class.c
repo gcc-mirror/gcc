@@ -1801,36 +1801,6 @@ base_derived_from (tree derived, tree base)
   return false;
 }
 
-typedef struct count_depth_data {
-  /* The depth of the current subobject, with "1" as the depth of the
-     most derived object in the hierarchy.  */
-  size_t depth;
-  /* The maximum depth found so far.  */
-  size_t max_depth;
-} count_depth_data;
-
-/* Called from find_final_overrider via dfs_walk.  */
-
-static tree
-dfs_depth_post (tree binfo ATTRIBUTE_UNUSED, void *data)
-{
-  count_depth_data *cd = (count_depth_data *) data;
-  if (cd->depth > cd->max_depth)
-    cd->max_depth = cd->depth;
-  cd->depth--;
-  return NULL_TREE;
-}
-
-/* Called from find_final_overrider via dfs_walk.  */
-
-static tree
-dfs_depth_q (tree derived, int i, void *data)
-{
-  count_depth_data *cd = (count_depth_data *) data;
-  cd->depth++;
-  return BINFO_BASE_BINFO (derived, i);
-}
-
 typedef struct find_final_overrider_data_s {
   /* The function for which we are trying to find a final overrider.  */
   tree fn;
@@ -1943,7 +1913,6 @@ static tree
 find_final_overrider (tree derived, tree binfo, tree fn)
 {
   find_final_overrider_data ffod;
-  count_depth_data cd;
 
   /* Getting this right is a little tricky.  This is valid:
 
@@ -1967,15 +1936,15 @@ find_final_overrider (tree derived, tree binfo, tree fn)
     fn = THUNK_TARGET (fn);
 
   /* Determine the depth of the hierarchy.  */
-  cd.depth = 0;
-  cd.max_depth = 0;
-  dfs_walk (derived, dfs_depth_post, dfs_depth_q, &cd);
-
   ffod.fn = fn;
   ffod.declaring_base = binfo;
   ffod.most_derived_type = BINFO_TYPE (derived);
   ffod.candidates = NULL_TREE;
-  ffod.vpath_list = (tree *) xcalloc (cd.max_depth, sizeof (tree));
+  /* The virtual depth cannot be greater than the number of virtual
+     bases.  */
+  ffod.vpath_list = (tree *) xcalloc
+    (VEC_length (tree, CLASSTYPE_VBASECLASSES (BINFO_TYPE (derived))),
+     sizeof (tree));
   ffod.vpath = ffod.vpath_list;
 
   dfs_walk_real (derived,
