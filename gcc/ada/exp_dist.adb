@@ -132,6 +132,7 @@ package body Exp_Dist is
       Is_Function               : Boolean;
       Spec                      : Node_Id;
       Stub_Type                 : Entity_Id := Empty;
+      RACW_Type                 : Entity_Id := Empty;
       Nod                       : Node_Id);
    --  Build calling stubs for general purpose. The parameters are:
    --    Decls             : a place to put declarations
@@ -159,6 +160,7 @@ package body Exp_Dist is
       Asynchronous             : Boolean;
       Dynamically_Asynchronous : Boolean   := False;
       Stub_Type                : Entity_Id := Empty;
+      RACW_Type                : Entity_Id := Empty;
       Locator                  : Entity_Id := Empty;
       New_Name                 : Name_Id   := No_Name) return Node_Id;
    --  Build the calling stub for a given subprogram with the subprogram ID
@@ -220,10 +222,9 @@ package body Exp_Dist is
    --  Return True if nothing prevents the program whose specification is
    --  given to be asynchronous (i.e. no out parameter).
 
-   function Get_Pkg_Name_String_Id (Decl_Node : Node_Id) return String_Id;
-   function Get_String_Id (Val : String) return String_Id;
-   --  Ugly functions used to retrieve a package name. Inherited from the
-   --  old exp_dist.adb and not rewritten yet ???
+   procedure Get_Pkg_Name_String (Decl_Node : Node_Id);
+   --  Retrieve the fully expanded name of the library unit declared by decl
+   --  into the name buffer.
 
    function Pack_Entity_Into_Stream_Access
      (Loc    : Source_Ptr;
@@ -308,7 +309,7 @@ package body Exp_Dist is
                          Hash       => Hash,
                          Equal      => "=");
    --  Mapping between a RCI package on which All_Calls_Remote applies and
-   --  the generic instantiation of RCI_Info for this package.
+   --  the generic instantiation of RCI_Locator for this package.
 
    package RCI_Calling_Stubs_Table is
       new Simple_HTable (Header_Num => Hash_Index,
@@ -369,7 +370,7 @@ package body Exp_Dist is
    function RCI_Package_Locator
      (Loc          : Source_Ptr;
       Package_Spec : Node_Id) return Node_Id;
-   --  Instantiate the generic package RCI_Info in order to locate the
+   --  Instantiate the generic package RCI_Locator in order to locate the
    --  RCI package whose spec is given as argument.
 
    function Make_Tag_Check (Loc : Source_Ptr; N : Node_Id) return Node_Id;
@@ -429,7 +430,7 @@ package body Exp_Dist is
 
    begin
       --  The first thing added is an instantiation of the generic package
-      --  System.Partition_interface.RCI_Info with the name of the (current)
+      --  System.Partition_interface.RCI_Locator with the name of this
       --  remote package. This will act as an interface with the name server
       --  to determine the Partition_ID and the RPC_Receiver for the
       --  receiver of this package.
@@ -1935,6 +1936,8 @@ package body Exp_Dist is
 
       Subp_Info_List : constant List_Id := New_List;
 
+      Register_Pkg_Actuals : constant List_Id := New_List;
+
       Dummy_Register_Name : Name_Id;
       Dummy_Register_Spec : Node_Id;
       Dummy_Register_Decl : Node_Id;
@@ -2277,9 +2280,46 @@ package body Exp_Dist is
         Make_Package_Declaration (Loc,
           Specification => Dummy_Register_Spec);
 
-      Append_To (Decls,
-        Dummy_Register_Decl);
+      Append_To (Decls, Dummy_Register_Decl);
       Analyze (Dummy_Register_Decl);
+
+      Get_Pkg_Name_String (Pkg_Spec);
+      Append_To (Register_Pkg_Actuals,
+         --  Name
+        Make_String_Literal (Loc,
+          Strval => String_From_Name_Buffer));
+
+      Append_To (Register_Pkg_Actuals,
+         --  Receiver
+        Make_Attribute_Reference (Loc,
+          Prefix         =>
+            New_Occurrence_Of (Pkg_RPC_Receiver, Loc),
+          Attribute_Name =>
+            Name_Unrestricted_Access));
+
+      Append_To (Register_Pkg_Actuals,
+         --  Version
+        Make_Attribute_Reference (Loc,
+          Prefix         =>
+            New_Occurrence_Of (Defining_Entity (Pkg_Spec), Loc),
+          Attribute_Name =>
+            Name_Version));
+
+      Append_To (Register_Pkg_Actuals,
+         --  Subp_Info
+        Make_Attribute_Reference (Loc,
+          Prefix         =>
+            New_Occurrence_Of (Subp_Info_Array, Loc),
+          Attribute_Name =>
+            Name_Address));
+
+      Append_To (Register_Pkg_Actuals,
+         --  Subp_Info_Len
+        Make_Attribute_Reference (Loc,
+          Prefix         =>
+            New_Occurrence_Of (Subp_Info_Array, Loc),
+          Attribute_Name =>
+            Name_Length));
 
       Dummy_Register_Body :=
         Make_Package_Body (Loc,
@@ -2294,29 +2334,7 @@ package body Exp_Dist is
                   Name                   =>
                     New_Occurrence_Of (RTE (RE_Register_Receiving_Stub), Loc),
 
-                  Parameter_Associations => New_List (
-                    Make_String_Literal (Loc,
-                      Strval => Get_Pkg_Name_String_Id (Pkg_Spec)),
-                    Make_Attribute_Reference (Loc,
-                      Prefix         =>
-                        New_Occurrence_Of (Pkg_RPC_Receiver, Loc),
-                      Attribute_Name =>
-                        Name_Unrestricted_Access),
-                    Make_Attribute_Reference (Loc,
-                      Prefix         =>
-                        New_Occurrence_Of (Defining_Entity (Pkg_Spec), Loc),
-                      Attribute_Name =>
-                        Name_Version),
-                    Make_Attribute_Reference (Loc,
-                      Prefix =>
-                        New_Occurrence_Of (Subp_Info_Array, Loc),
-                      Attribute_Name =>
-                        Name_Address),
-                    Make_Attribute_Reference (Loc,
-                      Prefix =>
-                        New_Occurrence_Of (Subp_Info_Array, Loc),
-                      Attribute_Name =>
-                        Name_Length))))));
+                  Parameter_Associations => Register_Pkg_Actuals))));
 
       Append_To (Decls, Dummy_Register_Body);
       Analyze (Dummy_Register_Body);
@@ -2473,6 +2491,7 @@ package body Exp_Dist is
       Is_Function               : Boolean;
       Spec                      : Node_Id;
       Stub_Type                 : Entity_Id := Empty;
+      RACW_Type                 : Entity_Id := Empty;
       Nod                       : Node_Id)
    is
       Loc : constant Source_Ptr := Sloc (Nod);
@@ -2501,6 +2520,9 @@ package body Exp_Dist is
       Extra_Formal_Statements : constant List_Id := New_List;
       --  List of statements for extra formal parameters. It will appear after
       --  the regular statements for writing out parameters.
+
+      pragma Warnings (Off, RACW_Type);
+      --  Unreferenced formal parameter.
 
    begin
       --  The general form of a calling stub for a given subprogram is:
@@ -3038,6 +3060,7 @@ package body Exp_Dist is
 
    procedure Build_Passive_Partition_Stub (U : Node_Id) is
       Pkg_Spec : Node_Id;
+      Pkg_Name : String_Id;
       L        : List_Id;
       Reg      : Node_Id;
       Loc      : constant Source_Ptr := Sloc (U);
@@ -3063,12 +3086,14 @@ package body Exp_Dist is
          L := Declarations (U);
       end if;
 
+      Get_Pkg_Name_String (Pkg_Spec);
+      Pkg_Name := String_From_Name_Buffer;
       Reg :=
         Make_Procedure_Call_Statement (Loc,
           Name                   =>
             New_Occurrence_Of (RTE (RE_Register_Passive_Package), Loc),
           Parameter_Associations => New_List (
-            Make_String_Literal (Loc, Get_Pkg_Name_String_Id (Pkg_Spec)),
+            Make_String_Literal (Loc, Pkg_Name),
             Make_Attribute_Reference (Loc,
               Prefix         =>
                 New_Occurrence_Of (Defining_Entity (Pkg_Spec), Loc),
@@ -3120,6 +3145,7 @@ package body Exp_Dist is
       Asynchronous             : Boolean;
       Dynamically_Asynchronous : Boolean   := False;
       Stub_Type                : Entity_Id := Empty;
+      RACW_Type                : Entity_Id := Empty;
       Locator                  : Entity_Id := Empty;
       New_Name                 : Name_Id   := No_Name) return Node_Id
    is
@@ -3325,6 +3351,7 @@ package body Exp_Dist is
                                     N_Function_Specification,
          Spec                  => Spec_To_Use,
          Stub_Type             => Stub_Type,
+         RACW_Type             => RACW_Type,
          Nod                   => Vis_Decl);
 
       RCI_Calling_Stubs_Table.Set
@@ -4049,11 +4076,11 @@ package body Exp_Dist is
       Pop_Scope;
    end Expand_Receiving_Stubs_Bodies;
 
-   ----------------------------
-   -- Get_Pkg_Name_string_Id --
-   ----------------------------
+   -------------------------
+   -- Get_Pkg_Name_string --
+   -------------------------
 
-   function Get_Pkg_Name_String_Id (Decl_Node : Node_Id) return String_Id is
+   procedure Get_Pkg_Name_String (Decl_Node : Node_Id) is
       Unit_Name_Id : constant Unit_Name_Type := Get_Unit_Name (Decl_Node);
 
    begin
@@ -4063,20 +4090,7 @@ package body Exp_Dist is
 
       Name_Len := Name_Len - 7;
       pragma Assert (Name_Buffer (Name_Len + 1) = ' ');
-
-      return Get_String_Id (Name_Buffer (1 .. Name_Len));
-   end Get_Pkg_Name_String_Id;
-
-   -------------------
-   -- Get_String_Id --
-   -------------------
-
-   function Get_String_Id (Val : String) return String_Id is
-   begin
-      Start_String;
-      Store_String_Chars (Val);
-      return End_String;
-   end Get_String_Id;
+   end Get_Pkg_Name_String;
 
    -----------------------
    -- Get_Subprogram_Id --
@@ -4331,21 +4345,26 @@ package body Exp_Dist is
      (Loc          : Source_Ptr;
       Package_Spec : Node_Id) return Node_Id
    is
-      Inst : constant Node_Id :=
-               Make_Package_Instantiation (Loc,
-                 Defining_Unit_Name   =>
-                   Make_Defining_Identifier (Loc, New_Internal_Name ('R')),
-                 Name                 =>
-                   New_Occurrence_Of (RTE (RE_RCI_Info), Loc),
-                 Generic_Associations => New_List (
-                   Make_Generic_Association (Loc,
-                     Selector_Name                     =>
-                       Make_Identifier (Loc, Name_RCI_Name),
-                     Explicit_Generic_Actual_Parameter =>
-                       Make_String_Literal (Loc,
-                         Strval => Get_Pkg_Name_String_Id (Package_Spec)))));
+      Inst : Node_Id;
+      Pkg_Name : String_Id;
 
    begin
+      Get_Pkg_Name_String (Package_Spec);
+      Pkg_Name := String_From_Name_Buffer;
+      Inst :=
+        Make_Package_Instantiation (Loc,
+          Defining_Unit_Name   =>
+            Make_Defining_Identifier (Loc, New_Internal_Name ('R')),
+          Name                 =>
+            New_Occurrence_Of (RTE (RE_RCI_Locator), Loc),
+          Generic_Associations => New_List (
+            Make_Generic_Association (Loc,
+              Selector_Name                     =>
+                Make_Identifier (Loc, Name_RCI_Name),
+              Explicit_Generic_Actual_Parameter =>
+                Make_String_Literal (Loc,
+                  Strval => Pkg_Name))));
+
       RCI_Locator_Table.Set (Defining_Unit_Name (Package_Spec),
         Defining_Unit_Name (Inst));
       return Inst;

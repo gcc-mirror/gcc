@@ -122,7 +122,7 @@ package body Snames is
      "text_io#" &
      "wide_text_io#" &
      "no_dsa#" &
-     "glade_dsa#" &
+     "garlic_dsa#" &
      "polyorb_dsa#" &
      "addr#" &
      "async#" &

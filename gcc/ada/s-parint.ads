@@ -42,7 +42,7 @@ package System.Partition_Interface is
 
    pragma Elaborate_Body;
 
-   type DSA_Implementation_Name is (No_DSA, GLADE_DSA, PolyORB_DSA);
+   type DSA_Implementation_Name is (No_DSA, GARLIC_DSA, PolyORB_DSA);
    DSA_Implementation : constant DSA_Implementation_Name := No_DSA;
 
    --  RCI receiving stubs contain a table of descriptors for
@@ -97,7 +97,7 @@ package System.Partition_Interface is
    --  unit has has the same version than the caller's one.
 
    function Get_Active_Partition_ID (Name : Unit_Name) return RPC.Partition_ID;
-   --  Similar in some respects to RCI_Info.Get_Active_Partition_ID
+   --  Similar in some respects to RCI_Locator.Get_Active_Partition_ID
 
    function Get_Active_Version (Name : Unit_Name) return String;
    --  Similar in some respects to Get_Active_Partition_ID
@@ -114,7 +114,7 @@ package System.Partition_Interface is
 
    function Get_RCI_Package_Receiver
      (Name : Unit_Name) return Interfaces.Unsigned_64;
-   --  Similar in some respects to RCI_Info.Get_RCI_Package_Receiver
+   --  Similar in some respects to RCI_Locator.Get_RCI_Package_Receiver
 
    procedure Get_Unique_Remote_Pointer
      (Handler : in out RACW_Stub_Type_Access);
@@ -149,10 +149,10 @@ package System.Partition_Interface is
 
    generic
       RCI_Name : String;
-   package RCI_Info is
+   package RCI_Locator is
       function Get_RCI_Package_Receiver return Interfaces.Unsigned_64;
       function Get_Active_Partition_ID return RPC.Partition_ID;
-   end RCI_Info;
+   end RCI_Locator;
    --  RCI package information caching
 
    procedure Run (Main : Main_Subprogram_Type := null);
