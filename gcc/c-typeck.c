@@ -2569,12 +2569,16 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 
 	  final_type = result_type;
 
-	  /* Handle the case that OP0 does not *contain* a conversion
+	  /* Handle the case that OP0 (or OP1) does not *contain* a conversion
 	     but it *requires* conversion to FINAL_TYPE.  */
 
-	  if (op0 == arg0 && TREE_TYPE (op0) != final_type)
+	  if ((TYPE_PRECISION (TREE_TYPE (op0))
+	       == TYPE_PRECISION (TREE_TYPE (arg0)))
+	      && TREE_TYPE (op0) != final_type)
 	    unsigned0 = TREE_UNSIGNED (TREE_TYPE (op0));
-	  if (op1 == arg1 && TREE_TYPE (op1) != final_type)
+	  if ((TYPE_PRECISION (TREE_TYPE (op1))
+	       == TYPE_PRECISION (TREE_TYPE (arg1)))
+	      && TREE_TYPE (op1) != final_type)
 	    unsigned1 = TREE_UNSIGNED (TREE_TYPE (op1));
 
 	  /* Now UNSIGNED0 is 1 if ARG0 zero-extends to FINAL_TYPE.  */
