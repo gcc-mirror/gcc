@@ -655,8 +655,9 @@ extern void tree_class_check_failed PARAMS ((const tree, int,
    If the data type is signed, the value is sign-extended to 2 words
    even though not all of them may really be in use.
    In an unsigned constant shorter than 2 words, the extra bits are 0.  */
-#define TREE_INT_CST_LOW(NODE) (INTEGER_CST_CHECK (NODE)->int_cst.int_cst_low)
-#define TREE_INT_CST_HIGH(NODE) (INTEGER_CST_CHECK (NODE)->int_cst.int_cst_high)
+#define TREE_INT_CST(NODE) (INTEGER_CST_CHECK (NODE)->int_cst.int_cst)
+#define TREE_INT_CST_LOW(NODE) (TREE_INT_CST (NODE).low)
+#define TREE_INT_CST_HIGH(NODE) (TREE_INT_CST (NODE).high)
 
 #define INT_CST_LT(A, B)  \
 (TREE_INT_CST_HIGH (A) < TREE_INT_CST_HIGH (B)			\
@@ -675,8 +676,13 @@ struct tree_int_cst
   struct tree_common common;
   struct rtx_def *rtl;	/* acts as link to register transfer language
 			   (rtl) info */
-  unsigned HOST_WIDE_INT int_cst_low;
-  HOST_WIDE_INT int_cst_high;
+  /* A sub-struct is necessary here because the function `const_hash'
+     wants to scan both words as a unit and taking the address of the
+     sub-struct yields the properly inclusive bounded pointer.  */
+  struct {
+    unsigned HOST_WIDE_INT low;
+    HOST_WIDE_INT high;
+  } int_cst;
 };
 
 /* In REAL_CST, STRING_CST, COMPLEX_CST nodes, and CONSTRUCTOR nodes,
