@@ -144,10 +144,10 @@ static void check_bitfield_decl PARAMS ((tree));
 static void check_field_decl PARAMS ((tree, tree, int *, int *, int *, int *));
 static void check_field_decls PARAMS ((tree, tree *, int *, int *, int *, 
 				     int *));
-static void build_base_field PARAMS ((record_layout_info, tree, int *,
+static bool build_base_field PARAMS ((record_layout_info, tree, int *,
+				     splay_tree));
+static bool build_base_fields PARAMS ((record_layout_info, int *,
 				      splay_tree));
-static void build_base_fields PARAMS ((record_layout_info, int *,
-				       splay_tree));
 static tree build_vbase_pointer_fields PARAMS ((record_layout_info, int *));
 static tree build_vtbl_or_vbase_field PARAMS ((tree, tree, tree, tree, tree,
 					       int *));
@@ -180,7 +180,7 @@ static void layout_nonempty_base_or_field PARAMS ((record_layout_info,
 						   tree, tree,
 						   splay_tree));
 static unsigned HOST_WIDE_INT end_of_class PARAMS ((tree, int));
-static void layout_empty_base PARAMS ((tree, tree, splay_tree));
+static bool layout_empty_base PARAMS ((tree, tree, splay_tree));
 static void accumulate_vtbl_inits PARAMS ((tree, tree, tree, tree, tree));
 static tree dfs_accumulate_vtbl_inits PARAMS ((tree, tree, tree, tree,
 					       tree));
@@ -1826,7 +1826,7 @@ mark_primary_virtual_base (binfo, base_binfo, type)
 
 static tree dfs_unshared_virtual_bases (binfo, data)
      tree binfo;
-     void *data;
+     void *data ATTRIBUTE_UNUSED;
 {
   if (TREE_VIA_VIRTUAL (binfo) && !BINFO_MARKED (binfo)
       && CLASSTYPE_HAS_PRIMARY_BASE_P (BINFO_TYPE (binfo)))
@@ -4016,9 +4016,10 @@ layout_nonempty_base_or_field (rli, decl, binfo, offsets)
 /* Layout the empty base BINFO.  EOC indicates the byte currently just
    past the end of the class, and should be correctly aligned for a
    class of the type indicated by BINFO; OFFSETS gives the offsets of
-   the empty bases allocated so far.  */
+   the empty bases allocated so far. Return non-zero iff we added it
+   at the end. */
 
-static void
+static bool
 layout_empty_base (binfo, eoc, offsets)
      tree binfo;
      tree eoc;
@@ -4026,6 +4027,7 @@ layout_empty_base (binfo, eoc, offsets)
 {
   tree alignment;
   tree basetype = BINFO_TYPE (binfo);
+  bool atend = false;
   
   /* This routine should only be used for empty classes.  */
   my_friendly_assert (is_empty_class (basetype), 20000321);
@@ -4040,6 +4042,7 @@ layout_empty_base (binfo, eoc, offsets)
     {
       /* That didn't work.  Now, we move forward from the next
 	 available spot in the class.  */
+      atend = true;
       propagate_binfo_offsets (binfo, convert (ssizetype, eoc));
       while (1) 
 	{
@@ -4054,14 +4057,16 @@ layout_empty_base (binfo, eoc, offsets)
 	  propagate_binfo_offsets (binfo, alignment);
 	}
     }
+  return atend;
 }
 
 /* Build a FIELD_DECL for the base given by BINFO in the class
    indicated by RLI.  If the new object is non-empty, clear *EMPTY_P.
    *BASE_ALIGN is a running maximum of the alignments of any base
-   class.  OFFSETS gives the location of empty base subobjects.  */
+   class.  OFFSETS gives the location of empty base subobjects. Return
+   non-zero if the new object cannot be nearly-empty. */
 
-static void
+static bool
 build_base_field (rli, binfo, empty_p, offsets)
      record_layout_info rli;
      tree binfo;
@@ -4070,11 +4075,12 @@ build_base_field (rli, binfo, empty_p, offsets)
 {
   tree basetype = BINFO_TYPE (binfo);
   tree decl;
+  bool atend = false;
 
   if (!COMPLETE_TYPE_P (basetype))
     /* This error is now reported in xref_tag, thus giving better
        location information.  */
-    return;
+    return atend;
   
   decl = build_decl (FIELD_DECL, NULL_TREE, basetype);
   DECL_ARTIFICIAL (decl) = 1;
@@ -4103,7 +4109,7 @@ build_base_field (rli, binfo, empty_p, offsets)
 	 byte-aligned.  */
       eoc = tree_low_cst (rli_size_unit_so_far (rli), 0);
       eoc = CEIL (eoc, DECL_ALIGN_UNIT (decl)) * DECL_ALIGN_UNIT (decl);
-      layout_empty_base (binfo, size_int (eoc), offsets);
+      atend |= layout_empty_base (binfo, size_int (eoc), offsets);
     }
 
   /* Record the offsets of BINFO and its base subobjects.  */
@@ -4111,12 +4117,14 @@ build_base_field (rli, binfo, empty_p, offsets)
 			    BINFO_OFFSET (binfo),
 			    offsets, 
 			    /*vbases_p=*/0);
+  return atend;
 }
 
 /* Layout all of the non-virtual base classes.  Record empty
-   subobjects in OFFSETS.  */
+   subobjects in OFFSETS. Return non-zero if the type cannot be nearly
+   empty.  */
 
-static void
+static bool
 build_base_fields (rli, empty_p, offsets)
      record_layout_info rli;
      int *empty_p;
@@ -4127,6 +4135,7 @@ build_base_fields (rli, empty_p, offsets)
   tree rec = rli->t;
   int n_baseclasses = CLASSTYPE_N_BASECLASSES (rec);
   int i;
+  bool atend = 0;
 
   /* Under the new ABI, the primary base class is always allocated
      first.  */
@@ -4153,8 +4162,9 @@ build_base_fields (rli, empty_p, offsets)
 	  && !BINFO_PRIMARY_P (base_binfo))
 	continue;
 
-      build_base_field (rli, base_binfo, empty_p, offsets);
+      atend |= build_base_field (rli, base_binfo, empty_p, offsets);
     }
+  return atend;
 }
 
 /* Go through the TYPE_METHODS of T issuing any appropriate
@@ -4829,7 +4839,7 @@ layout_virtual_bases (t, offsets)
      multiple such bases at the same location.  */
   eoc = end_of_class (t, /*include_virtuals_p=*/1);
   if (eoc * BITS_PER_UNIT > dsize)
-    dsize = (eoc + 1) * BITS_PER_UNIT;
+    dsize = eoc * BITS_PER_UNIT;
 
   /* Now, make sure that the total size of the type is a multiple of
      its alignment.  */
@@ -4868,6 +4878,7 @@ end_of_class (t, include_virtuals_p)
     {
       tree base_binfo;
       tree offset;
+      tree size;
       unsigned HOST_WIDE_INT end_of_base;
 
       base_binfo = BINFO_BASETYPE (TYPE_BINFO (t), i);
@@ -4877,9 +4888,16 @@ end_of_class (t, include_virtuals_p)
 	  && !BINFO_PRIMARY_P (base_binfo))
 	continue;
 
+      if (is_empty_class (BINFO_TYPE (base_binfo)))
+	/* An empty class has zero CLASSTYPE_SIZE_UNIT, but we need to
+	   allocate some space for it. It cannot have virtual bases,
+	   so TYPE_SIZE_UNIT is fine.  */
+	size = TYPE_SIZE_UNIT (BINFO_TYPE (base_binfo));
+      else
+	size = CLASSTYPE_SIZE_UNIT (BINFO_TYPE (base_binfo));
       offset = size_binop (PLUS_EXPR, 
 			   BINFO_OFFSET (base_binfo),
-			   CLASSTYPE_SIZE_UNIT (BINFO_TYPE (base_binfo)));
+			   size);
       end_of_base = tree_low_cst (offset, /*pos=*/1);
       if (end_of_base > result)
 	result = end_of_base;
@@ -4971,7 +4989,9 @@ layout_class_type (t, empty_p, vfuns_p,
   /* Build FIELD_DECLs for all of the non-virtual base-types.  */
   empty_base_offsets = splay_tree_new (splay_tree_compare_integer_csts, 
 				       NULL, NULL);
-  build_base_fields (rli, empty_p, empty_base_offsets);
+  if (build_base_fields (rli, empty_p, empty_base_offsets))
+    CLASSTYPE_NEARLY_EMPTY_P (t) = 0;
+  
   /* Add pointers to all of our virtual base-classes.  */
   TYPE_FIELDS (t) = chainon (build_vbase_pointer_fields (rli, empty_p),
 			     TYPE_FIELDS (t));
@@ -5061,7 +5081,7 @@ layout_class_type (t, empty_p, vfuns_p,
   if (TREE_CODE (rli_size_unit_so_far (rli)) == INTEGER_CST
       && compare_tree_int (rli_size_unit_so_far (rli), eoc) < 0)
     {
-      rli->offset = size_binop (MAX_EXPR, rli->offset, size_int (eoc + 1));
+      rli->offset = size_binop (MAX_EXPR, rli->offset, size_int (eoc));
       rli->bitpos = bitsize_zero_node;
     }
 
@@ -5070,7 +5090,7 @@ layout_class_type (t, empty_p, vfuns_p,
      if it has basetypes.  Therefore, we add the fake field after all
      the other fields; if there are already FIELD_DECLs on the list,
      their offsets will not be disturbed.  */
-  if (*empty_p)
+  if (!eoc && *empty_p)
     {
       tree padding;
 
@@ -6761,8 +6781,11 @@ dump_class_hierarchy (name, t)
         error ("could not open dump file `%s'", name);
       return;
     }
-  fprintf (stream, "%s\n",
-           type_as_string (t, TFF_PLAIN_IDENTIFIER));
+  fprintf (stream, "%s size=", type_as_string (t, TFF_PLAIN_IDENTIFIER));
+  fprintf (stream, HOST_WIDE_INT_PRINT_DEC,
+	   tree_low_cst (TYPE_SIZE (t), 0) / BITS_PER_UNIT);
+  fprintf (stream, " align=%lu\n",
+	   (unsigned long)(TYPE_ALIGN (t) / BITS_PER_UNIT));
   dump_class_hierarchy_r (stream, t, TYPE_BINFO (t), 0);
   fprintf (stream, "\n");
   if (name)
