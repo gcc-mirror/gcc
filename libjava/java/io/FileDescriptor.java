@@ -44,6 +44,8 @@ public final class FileDescriptor
   static final int APPEND = 4;
   // EXCL is used only when making a temp file.
   static final int EXCL   = 8;
+  static final int SYNC   = 16;
+  static final int DSYNC  = 32;
 
   // These are WHENCE values for seek.
   static final int SET = 0;
@@ -71,7 +73,7 @@ public final class FileDescriptor
   // past the end is ok (and if a subsequent write occurs the file
   // will grow).
   native int seek (long pos, int whence, boolean eof_trunc) throws IOException;
-  native long length () throws IOException;
+  native long getLength () throws IOException;
   native long getFilePointer () throws IOException;
   native int read () throws IOException;
   native int read (byte[] bytes, int offset, int len) throws IOException;

@@ -34,7 +34,7 @@ details.  */
 jlong
 gnu::java::nio::FileChannelImpl::size ()
 {
-  return fd->length ();
+  return fd->getLength ();
 }
 
 jlong

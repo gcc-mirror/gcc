@@ -244,7 +244,7 @@ java::io::FileDescriptor::seek (jlong pos, jint whence, jboolean eof_trunc)
 {
   JvAssert (whence == SET || whence == CUR);
 
-  jlong len = length();
+  jlong len = getLength();
   jlong here = getFilePointer();
 
   if (eof_trunc
@@ -272,7 +272,7 @@ java::io::FileDescriptor::getFilePointer(void)
 }
 
 jlong
-java::io::FileDescriptor::length(void)
+java::io::FileDescriptor::getLength(void)
 {
   DWORD high;
   DWORD low;
@@ -336,5 +336,5 @@ jint
 java::io::FileDescriptor::available(void)
 {
   // FIXME:
-  return length() - getFilePointer();
+  return getLength() - getFilePointer();
 }

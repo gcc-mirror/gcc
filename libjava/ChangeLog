@@ -1,5 +1,30 @@
 2003-05-13  Michael Koch  <konqueror@gmx.de>
 
+       * java/io/FileDescriptor.java
+       (SYNC): New constant.
+       (DSYNC): Likewise.
+       (getLength): Renamed from lenght() to match classpath's
+       FileDescriptor.java.
+       * java/io/RandomAccessFile.java
+       (RandomAccessFile): Removed unneeded mode check, implemented mode
+       "rws" and "rwd", merged documentation from classpath.
+       (setLength): Reformatted.
+       (length): Use new getLength() of FileDescriptor.
+       * java/io/natFileDescriptorEcos.cc
+       (getLength): Renamed from length().
+       * java/io/natFileDescriptorPosix.cc
+       (open): Implemented support for SYNC and DSYNC.
+       (seek): Use getLength() instead of length().
+       (getLength): Renamed from length().
+       * java/io/natFileDescriptorWin32.cc
+       (getLength): Renamed from length().
+       (seek): Use getLength() instead of length().
+       (available): Likewise.
+       * gnu/java/nio/natFileChannelImpl.cc
+       (size): Use getLength() instead of length().
+
+2003-05-13  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/nio/ByteBufferImpl.java
 	(ByteBufferImpl): All constructors revised.
 	(slice): Reimplemented.
