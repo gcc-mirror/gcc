@@ -4808,12 +4808,21 @@ unary_complex_lvalue (code, arg)
       || TREE_CODE (arg) == MIN_EXPR || TREE_CODE (arg) == MAX_EXPR)
     return rationalize_conditional_expr (code, arg);
 
+  /* Handle (a = b), (++a), and (--a) used as an "lvalue".  */
   if (TREE_CODE (arg) == MODIFY_EXPR
       || TREE_CODE (arg) == PREINCREMENT_EXPR
       || TREE_CODE (arg) == PREDECREMENT_EXPR)
-    return unary_complex_lvalue
-      (code, build (COMPOUND_EXPR, TREE_TYPE (TREE_OPERAND (arg, 0)),
-		    arg, TREE_OPERAND (arg, 0)));
+    {
+      tree lvalue = TREE_OPERAND (arg, 0);
+      if (TREE_SIDE_EFFECTS (lvalue))
+	{
+	  lvalue = stabilize_reference (lvalue);
+	  arg = build (TREE_CODE (arg), TREE_TYPE (arg),
+		       lvalue, TREE_OPERAND (arg, 1));
+	}
+      return unary_complex_lvalue
+	(code, build (COMPOUND_EXPR, TREE_TYPE (lvalue), arg, lvalue));
+    }
 
   if (code != ADDR_EXPR)
     return 0;

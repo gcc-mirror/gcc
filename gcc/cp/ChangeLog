@@ -1,3 +1,9 @@
+2001-07-09  Erik Rozendaal  <dlr@acm.org>
+
+	* typeck.c (unary_complex_lvalue): Do not duplicate the
+	argument to modify, pre-, or post-increment when used as an
+	lvalue and when the argument has side-effects.
+
 2001-07-08  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* decl.c (start_decl): Don't call SET_DEFAULT_DECL_ATTRIBUTES.
@@ -12,7 +18,7 @@
 
 2001-07-06  Ira Ruben   <ira@apple.com>
 
-        * cp-tree.def (TEMPLATE_DECL): Update comment. DECL_RESULT should
+	* cp-tree.def (TEMPLATE_DECL): Update comment. DECL_RESULT should
 	be DECL_TEMPLATE_RESULT.
 
 2001-07-05  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
