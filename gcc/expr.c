@@ -3176,7 +3176,7 @@ expand_expr (exp, target, tmode, modifier)
 	  rtx addr;
 
 	  /* Mark as non-local and addressable.  */
-	  TREE_NONLOCAL (exp) = 1;
+	  DECL_NONLOCAL (exp) = 1;
 	  mark_addressable (exp);
 	  if (GET_CODE (DECL_RTL (exp)) != MEM)
 	    abort ();
@@ -5829,7 +5829,7 @@ clear_pending_stack_adjust ()
 {
 #ifdef EXIT_IGNORE_STACK
   if (! flag_omit_frame_pointer && EXIT_IGNORE_STACK
-      && ! (TREE_INLINE (current_function_decl) && ! flag_no_inline)
+      && ! (DECL_INLINE (current_function_decl) && ! flag_no_inline)
       && ! flag_inline_functions)
     pending_stack_adjust = 0;
 #endif
