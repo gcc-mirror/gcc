@@ -304,7 +304,7 @@ layout_record (rec)
       record_align = MAX (record_align, desired_align);
 #else
       if (PCC_BITFIELD_TYPE_MATTERS && TREE_TYPE (field) != error_mark_node
-	  && DECL_BIT_FIELD (field)
+	  && DECL_BIT_FIELD_TYPE (field)
 	  && ! integer_zerop (TYPE_SIZE (TREE_TYPE (field))))
 	{
 	  /* For these machines, a zero-length field does not
@@ -354,7 +354,7 @@ layout_record (rec)
       if (PCC_BITFIELD_TYPE_MATTERS
 	  && TREE_CODE (field) == FIELD_DECL
 	  && TREE_TYPE (field) != error_mark_node
-	  && DECL_BIT_FIELD (field)
+	  && DECL_BIT_FIELD_TYPE (field)
 	  && !DECL_PACKED (field)
 	  && !integer_zerop (DECL_SIZE (field)))
 	{
@@ -376,7 +376,7 @@ layout_record (rec)
       if (BITFIELD_NBYTES_LIMITED
 	  && TREE_CODE (field) == FIELD_DECL
 	  && TREE_TYPE (field) != error_mark_node
-	  && DECL_BIT_FIELD (field)
+	  && DECL_BIT_FIELD_TYPE (field)
 	  && !DECL_PACKED (field)
 	  && !integer_zerop (DECL_SIZE (field)))
 	{
@@ -505,7 +505,7 @@ layout_union (rec)
 #ifdef PCC_BITFIELD_TYPE_MATTERS
       /* On the m88000, a bit field of declare type `int'
 	 forces the entire union to have `int' alignment.  */
-      if (PCC_BITFIELD_TYPE_MATTERS && DECL_BIT_FIELD (field))
+      if (PCC_BITFIELD_TYPE_MATTERS && DECL_BIT_FIELD_TYPE (field))
 	union_align = MAX (union_align, TYPE_ALIGN (TREE_TYPE (field)));
 #endif
 

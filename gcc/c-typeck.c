@@ -4461,7 +4461,7 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
   if (TREE_CODE (init) == NON_LVALUE_EXPR)
     inside_init = TREE_OPERAND (init, 0);
 
-  if (init && raw_constructor
+  if (inside_init && raw_constructor
       && CONSTRUCTOR_ELTS (inside_init) != 0
       && TREE_CHAIN (CONSTRUCTOR_ELTS (inside_init)) == 0)
     {
@@ -4672,8 +4672,12 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
 	({
 	  if (ofwhat)
 	    push_string (ofwhat);
-	  inside_init = convert_for_assignment (type, default_conversion (init),
-					 &initialization_message, NULL_TREE, 0);
+	  inside_init
+	    = convert_for_assignment (type,
+				      default_conversion (raw_constructor
+							  ? inside_init
+							  : init),
+				      &initialization_message, NULL_TREE, 0);
 	});
 
       if (require_constant && ! TREE_CONSTANT (inside_init))
