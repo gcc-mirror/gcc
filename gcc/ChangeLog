@@ -1,3 +1,8 @@
+2004-10-21  David Edelsohn  <edelsohn@gnu.org>
+
+	* dbxout.c (DBX_FINISH_SYMBOL): Add asm_out_file argument.
+	* xcoffout.h (DBX_FINISH_SYMBOL): Change asmfile to (ASMFILE).
+
 2004-10-21  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* expr.c (store_expr): Clean up by renaming want_value to

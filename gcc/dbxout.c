@@ -2774,7 +2774,7 @@ static void
 dbxout_finish_symbol (tree sym)
 {
 #ifdef DBX_FINISH_SYMBOL
-  DBX_FINISH_SYMBOL (sym);
+  DBX_FINISH_SYMBOL (asm_out_file, sym);
 #else
   int line = 0;
   if (use_gnu_debug_info_extensions && sym != 0)
