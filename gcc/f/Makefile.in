@@ -220,39 +220,27 @@ native: config.status ../f771$(exeext)
 
 # F77 language-specific files.
 
-# These macros expand to the corresponding g77-source .j files plus
-# the gcc-source files involved (each file itself, plus whatever
-# files on which it depends, but without including stuff resulting
-# from configuration, since we can't guess at that).  The files
-# that live in a distclean'd gcc source directory have "$(srcdir)/"
-# prefixes, while the others don't because they'll be created
-# only in the build directory.
-ASSERT_H = $(srcdir)/assert.j $(srcdir)/../assert.h
-CONFIG_H = $(srcdir)/config.j ../config.h
-CONVERT_H = $(srcdir)/convert.j $(srcdir)/../convert.h
-FLAGS_H = $(srcdir)/flags.j $(srcdir)/../flags.h
-GGC_H = $(srcdir)/ggc.j $(srcdir)/../ggc.h $(srcdir)/../varray.h
-GLIMITS_H = $(srcdir)/glimits.j $(srcdir)/../glimits.h
-HCONFIG_H = $(srcdir)/hconfig.j ../hconfig.h
-INPUT_H = $(srcdir)/input.j $(srcdir)/../input.h
-OUTPUT_H = $(srcdir)/output.j $(srcdir)/../output.h
-RTL_H = $(srcdir)/rtl.j $(srcdir)/../rtl.h $(srcdir)/../rtl.def \
+# These macros expand to the corresponding gcc-source files involved
+# (each file itself, plus whatever files on which it depends, but
+# without including stuff resulting from configuration, since we can't
+# guess at that).  The files that live in a distclean'd gcc source
+# directory have "$(srcdir)/" prefixes, while the others don't because
+# they'll be created only in the build directory.
+ASSERT_H = $(srcdir)/../assert.h
+CONFIG_H = ../config.h
+CONVERT_H = $(srcdir)/../convert.h
+FLAGS_H = $(srcdir)/../flags.h
+GGC_H = $(srcdir)/../ggc.h $(srcdir)/../varray.h
+GLIMITS_H = $(srcdir)/../glimits.h
+HCONFIG_H = ../hconfig.h
+INPUT_H = $(srcdir)/../input.h
+OUTPUT_H = $(srcdir)/../output.h
+RTL_H = $(srcdir)/../rtl.h $(srcdir)/../rtl.def \
 	$(srcdir)/../machmode.h $(srcdir)/../machmode.def
-SYSTEM_H = $(srcdir)/system.j $(srcdir)/../system.h
-TCONFIG_H = $(srcdir)/tconfig.j ../tconfig.h
-TM_H = $(srcdir)/tm.j ../tm.h
-TOPLEV_H = $(srcdir)/toplev.j $(srcdir)/../toplev.h
-TREE_H = $(srcdir)/tree.j $(srcdir)/../tree.h $(srcdir)/../real.h \
+SYSTEM_H = $(srcdir)/../system.h
+TOPLEV_H = $(srcdir)/../toplev.h
+TREE_H = $(srcdir)/../tree.h $(srcdir)/../real.h \
 	$(srcdir)/../tree.def $(srcdir)/../machmode.h $(srcdir)/../machmode.def
-
-#Build the first part of this list with the command line:
-#    cd gcc/; make deps-kinda -f f/Makefile.in
-#Note that this command uses the host C compiler;
-# use HOST_CC="./xgcc -B./" to use GCC in the build directory, for example.
-#Also note that this particular build file seems to want to use
-# substitions: $(CONFIG_H) for config.h; $(TREE_H) for tree.h;
-# $(RTL_H) for rtl.h; etc..  deps-kinda uses a sed script to do those
-# substitutions, plus others for elegance.
 
 ansify.o: ansify.c $(HCONFIG_H) $(SYSTEM_H) $(ASSERT_H)
 bad.o: bad.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) bad.h bad.def where.h \
@@ -422,8 +410,6 @@ version.o: version.c
 where.o: where.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) where.h $(GLIMITS_H) \
  top.h malloc.h lex.h $(GGC_H)
 
-# The rest of this list (Fortran 77 language-specific files) is hand-generated.
-
 stamp-str: str-1t.h str-1t.j str-2t.h str-2t.j \
  str-fo.h str-fo.j str-io.h str-io.j str-nq.h  str-nq.j \
  str-op.h str-op.j str-ot.h str-ot.j
@@ -461,44 +447,6 @@ fini.o:
 proj-h.o: proj.c proj.h $(HCONFIG_H) $(SYSTEM_H) $(ASSERT_H) $(GLIMITS_H)
 	$(HOST_CC) -c -DUSE_HCONFIG $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
 	      `echo $(srcdir)/proj.c | sed 's,^\./,,'` -o $@
-
-# Other than str-*.j, the *.j files are dummy #include files
-# that normally just #include the corresponding back-end *.h
-# files, but not if MAKING_DEPENDENCIES is #defined.  The str-*.j
-# files also are not actually included if MAKING_DEPENDENCIES
-# is #defined.  The point of all this is to come up with a clean
-# dependencies list whether working in a clean directory, such
-# that str-*.j and such do not exist, or in a directory full
-# of already-built files.  Any dependency on a str-*.j file
-# implies a dependency on str.h, so we key on that to replace
-# it with stamp-str, and dependencies on the other *.j files
-# are generally left alone (modulo special macros like RTL_H)
-# because we might not want to recompile all of g77 just
-# because a back-end file changes.  MG is usually "-MG" but
-# should be defined with "make MG= deps-kinda..." if using
-# a compiler that doesn't support -MG (gcc does as of 2.6) --
-# it prevents diagnostics when an #include file is missing,
-# as will be the case with proj.h in a clean directory.
-MG=-MG
-deps-kinda:
-	$(HOST_CC) -DMAKING_DEPENDENCIES -MM $(MG) *.c 2>&1 | \
-	  sed -e 's: \([.]/\)*assert[.]j: $$(ASSERT_H):g' \
-	      -e 's: \([.]/\)*config[.]j: $$(CONFIG_H):g' \
-	      -e 's: \([.]/\)*convert[.]j: $$(CONVERT_H):g' \
-	      -e 's: \([.]/\)*flags[.]j: $$(FLAGS_H):g' \
-	      -e 's: \([.]/\)*glimits[.]j: $$(GLIMITS_H):g' \
-	      -e 's: \([.]/\)*hconfig[.]j: $$(HCONFIG_H):g' \
-	      -e 's: \([.]/\)*input[.]j: $$(INPUT_H):g' \
-	      -e 's: \([.]/\)*output[.]j: $$(OUTPUT_H):g' \
-	      -e 's: \([.]/\)*rtl[.]j: $$(RTL_H):g' \
-	      -e 's: \([.]/\)*system[.]j: $$(SYSTEM_H):g' \
-	      -e 's: \([.]/\)*tconfig[.]j: $$(TCONFIG_H):g' \
-	      -e 's: \([.]/\)*tm[.]j: $$(TM_H):g' \
-	      -e 's: \([.]/\)*toplev[.]j: $$(TOPLEV_H):g' \
-	      -e 's: \([.]/\)*tree[.]j: $$(TREE_H):g' \
-	      -e 's: \([.]/\)*str[.]h: stamp-str:g' \
-	      -e 's:.*g77spec.*::g' \
-	      -e 's%^\(.*\)[ ]*: %\1: %g'
 
 # This rule is just a handy way to build the g77 derived files without
 # having the gcc source tree around.

@@ -38,9 +38,9 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "proj.h"
 #include "bad.h"
-#include "flags.j"
+#include "flags.h"
 #include "com.h"
-#include "toplev.j"
+#include "toplev.h"
 #include "where.h"
 
 /* Externals defined here. */

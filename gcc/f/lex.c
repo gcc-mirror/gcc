@@ -27,12 +27,11 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "malloc.h"
 #include "src.h"
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
-#include "flags.j"
-#include "input.j"
-#include "toplev.j"
-#include "tree.j"
-#include "output.j"  /* Must follow tree.j so TREE_CODE is defined! */
-#include "ggc.j"
+#include "flags.h"
+#include "input.h"
+#include "toplev.h"
+#include "output.h"
+#include "ggc.h"
 #endif
 
 #ifdef DWARF_DEBUGGING_INFO

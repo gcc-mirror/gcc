@@ -25,11 +25,11 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define _H_f_proj
 
 #ifdef USE_HCONFIG
-#include "hconfig.j"
+#include "hconfig.h"
 #else
-#include "config.j"
+#include "config.h"
 #endif
-#include "system.j"
+#include "system.h"
 
 #if (GCC_VERSION < 2000)
 #error "You have to use gcc 2.x to build g77 (might be fixed in g77-0.6)."
@@ -39,7 +39,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    <stddef.h> is needed for offsetof, but technically also NULL,
    size_t, ptrdiff_t, and so on.  */
 
-#include "assert.j"
+#include "assert.h"
 
 #if HAVE_STDDEF_H
 #include <stddef.h>

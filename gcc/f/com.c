@@ -88,13 +88,13 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "proj.h"
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
-#include "flags.j"
-#include "rtl.j"
-#include "toplev.j"
-#include "tree.j"
-#include "output.j"  /* Must follow tree.j so TREE_CODE is defined! */
-#include "convert.j"
-#include "ggc.j"
+#include "flags.h"
+#include "rtl.h"
+#include "toplev.h"
+#include "tree.h"
+#include "output.h"  /* Must follow tree.h so TREE_CODE is defined! */
+#include "convert.h"
+#include "ggc.h"
 #endif	/* FFECOM_targetCURRENT == FFECOM_targetGCC */
 
 #define FFECOM_GCC_INCLUDE 1	/* Enable -I. */

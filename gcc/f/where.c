@@ -33,7 +33,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "where.h"
 #include "lex.h"
 #include "malloc.h"
-#include "ggc.j"
+#include "ggc.h"
 
 /* Externals defined here. */
 
