@@ -1,5 +1,5 @@
 /* Generate code from machine description to recognize rtl as insns.
-   Copyright (C) 1987, 88, 92, 93, 94, 95, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92, 93, 94, 95, 97, 98 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1762,8 +1762,7 @@ from the machine description file `md'.  */\n\n");
    If the rtx is valid, recog returns a nonnegative number\n\
    which is the insn code number for the pattern that matched.\n");
   printf ("   This is the same as the order in the machine description of\n\
-   the entry that matched.  This number can be used as an index into\n\
-   entry that matched.  This number can be used as an index into various\n\
+   the entry that matched.  This number can be used as an index into various\n\
    insn_* tables, such as insn_templates, insn_outfun, and insn_n_operands\n\
    (found in insn-output.c).\n\n");
   printf ("   The third argument to recog is an optional pointer to an int.\n\

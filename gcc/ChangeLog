@@ -1,3 +1,7 @@
+Fri Feb 20 12:10:26 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* genrecog.c (main): Remove duplicated sentence in emitted comment.
+
 Thu Feb 19 22:36:53 1998  Andrey Slepuhin  <pooh@msu.net>
 			  David Edelsohn  <edelsohn@mhpcc.edu>
 
