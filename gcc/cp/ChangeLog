@@ -1,3 +1,17 @@
+2001-06-18  Jason Merrill  <jason_merrill@redhat.com>
+
+	Implement the Named Return Value optimization.
+	* cp-tree.h (struct cp_language_function): Add x_return_value.
+	(current_function_return_value): Now a macro.
+	* decl.c: Don't define it.
+	(define_label, finish_case_label): Don't clear it.
+	(init_decl_processing): Don't register it with GC.
+	* semantics.c (genrtl_finish_function): Don't check it for
+	no_return_label.  Copy the RTL from the return value to
+	current_function_return_value and walk, calling...
+	(nullify_returns_r): ...this new fn.
+	* typeck.c (check_return_expr): Set current_function_return_value.
+
 2001-06-15  Jason Merrill  <jason_merrill@redhat.com>
 
 	* class.c (dfs_accumulate_vtbl_inits): Just point to the base we're

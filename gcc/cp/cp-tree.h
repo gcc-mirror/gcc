@@ -863,6 +863,7 @@ struct cp_language_function
   tree x_eh_spec_block;
   tree x_in_charge_parm;
   tree x_vtt_parm;
+  tree x_return_value;
 
   tree *x_vcalls_possible_p;
 
@@ -953,7 +954,12 @@ struct cp_language_function
 
 #define in_function_try_handler cp_function_chain->in_function_try_handler
 
-extern tree current_function_return_value;
+/* Expression always returned from function, or error_mark_node
+   otherwise, for use by the automatic named return value optimization.  */
+
+#define current_function_return_value \
+  (cp_function_chain->x_return_value)
+
 extern tree global_namespace;
 
 #define ansi_opname(CODE) \

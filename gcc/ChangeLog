@@ -1,3 +1,11 @@
+2001-06-18  Jason Merrill  <jason_merrill@redhat.com>
+
+	* c-common.h (RETURN_NULLIFIED_P): New macro.
+	* c-semantics.c (genrtl_return_stmt): Check it.
+
+	* expr.c (clear_storage): Set TREE_NOTHROW on the decl for memset.
+	(emit_block_move): Likewise.
+
 Mon Jun 18 17:27:24 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* unroll.c: Include predict.h.
