@@ -1,3 +1,11 @@
+2003-01-31  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* reload.c (find_reloads): Do not use the mode specified in the insn
+	pattern as reload mode for address operands.  Do not generate optional
+	reloads for operands where a mandatory reload was already pushed.
+	Generate optional reloads only in the final pass though find_reloads.
+	(have_replacement_p): New function.
+
 2003-01-31  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi (Testing): Remove a reference to our obsolete
