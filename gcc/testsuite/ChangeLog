@@ -1,3 +1,14 @@
+2005-02-09  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/19787
+	* g++.dg/conversion/ambig1.C: New test.
+
+	PR c++/19739
+	* g++.dg/ext/attrib19.C: New test.
+
+	PR c++/19762
+	* g++.dg/template/dtor3.C: New test.
+
 2005-02-08  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/19733

@@ -6190,6 +6190,8 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup)
 				/*fn=*/NULL_TREE, /*argnum=*/0,
 				/*inner=*/-1,
 				/*issue_conversion_warnings=*/true);
+      if (error_operand_p (expr))
+	return error_mark_node;
       if (!real_lvalue_p (expr))
 	{
 	  tree init;

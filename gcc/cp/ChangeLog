@@ -1,3 +1,15 @@
+2005-02-09  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/19787
+	* call.c (initialize_reference): Robustify.
+
+	PR c++/19762
+	* parser.c (cp_parser_unqualified_id): Avoid creating destructor
+	names with invalid types.
+
+	PR c++/19739
+	* parser.c (cp_parser_attributes_list): Allow empty lists.
+
 2005-02-08  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/19733
