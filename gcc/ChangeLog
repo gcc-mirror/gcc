@@ -1095,8 +1095,8 @@ Thu Jan 28 09:41:11 1999  Jeffrey A Law  (law@cygnus.com)
 
 Wed Jan 27 23:39:53 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
-	* rtl.h (insn_first_p): Declare.
-	* rtlanal.c (insn_first_p): New function.
+	* rtl.h (insn_first_p, no_jumps_between_p): Declare.
+	* rtlanal.c (insn_first_p, no_jumps_between_p): New function.
 	* loop.h (varray.h): Include.
 	(struct induction): Change combined_with to unsigned.
 	New members derived, ix and last_use.
