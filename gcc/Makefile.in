@@ -114,6 +114,13 @@ RANLIB_FOR_TARGET = $(TARGET_TOOLPREFIX)ranlib
 RANLIB_TEST_FOR_TARGET = [ -f $(TARGET_TOOLPREFIX)ranlib ]
 CROSS_TOOLS =
 
+# There may be a premade insn-attrtab.c for this machine.
+# (You could rebuild it with genattrtab as usual, but it takes a long time.)
+# PREMADE_ATTRTAB is the file name of the file to use.
+# PREMADE_ATTRTAB_MD is the md file it corresponds to.
+PREMADE_ATTRTAB_MD = Makefile  # Guaranteed not to cmp equal to md.
+PREMADE_ATTRTAB = 
+
 target= ... `configure' substitutes actual target name here.
 xmake_file= ... `configure' substitutes actual x- file name here.
 tmake_file= ... `configure' substitutes actual t- file name here.
@@ -916,7 +923,13 @@ stamp-attr : md genattr $(srcdir)/move-if-change
 
 insn-attrtab.c: stamp-attrtab ;
 stamp-attrtab : md genattrtab $(srcdir)/move-if-change
-	./genattrtab md > tmp-attrtab.c
+	if cmp -s $(PREMADE_ATTRTAB_MD) md;	\
+	then					\
+	  echo Using $(PREMADE_ATTRTAB);	\
+	  cp $(srcdir)/$(PREMADE_ATTRTAB) tmp-attrtab.c;	\
+	else					\
+	  ./genattrtab md > tmp-attrtab.c;	\
+	fi
 	$(srcdir)/move-if-change tmp-attrtab.c insn-attrtab.c
 	touch stamp-attrtab
 
@@ -1201,7 +1214,11 @@ mostlyclean:
 # Delete all files made by compilation
 # that don't exist in the distribution.
 clean: mostlyclean
-	-rm -f libgcc.a libgcc1.a libgcc2.a libgcc2.ready
+# It may not be quite desirable to delete unprotoize.c here,
+# but the spec for `make clean' requires it.
+# Using unprotoize.c is not quite right in the first place, 
+# but what better way is there?
+	-rm -f libgcc.a libgcc1.a libgcc2.a libgcc2.ready unprotoize.c
 
 # Delete all files that users would normally create
 # while building and installing GCC.
