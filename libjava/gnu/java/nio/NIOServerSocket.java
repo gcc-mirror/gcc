@@ -1,5 +1,5 @@
-/* ServerSocketChannelImpl.java -- 
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+/* NIOServerSocket.java -- 
+   Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,90 +40,41 @@ package gnu.java.nio;
 
 import gnu.java.net.PlainSocketImpl;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketAddress;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.nio.channels.ClosedChannelException;
-import java.nio.channels.NotYetBoundException;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.nio.channels.spi.SelectorProvider;
 
-public final class ServerSocketChannelImpl extends ServerSocketChannel
+/**
+ * @author Michael Koch
+ */
+public final class NIOServerSocket extends ServerSocket
 {
-  NIOServerSocket serverSocket;
-  boolean blocking = true;
-  boolean connected = false;
-
-  protected ServerSocketChannelImpl (SelectorProvider provider)
+  private PlainSocketImpl impl;
+  private ServerSocketChannelImpl channel;
+    
+  protected NIOServerSocket (ServerSocketChannelImpl channel)
     throws IOException
   {
-    super (provider);
-    serverSocket = new NIOServerSocket (this);
+    super();
+    this.channel = channel;
   }
 
-  public int getNativeFD()
+  public native PlainSocketImpl getPlainSocketImpl();
+
+  public ServerSocketChannel getChannel()
   {
-    return serverSocket.getPlainSocketImpl().getNativeFD();
-  }
- 
-  public void finalizer()
-  {
-    if (connected)
-      {
-        try
-          {
-            close ();
-          }
-        catch (Exception e)
-          {
-          }
-      }
+    return channel;
   }
 
-  protected void implCloseSelectableChannel () throws IOException
+  public Socket accept() throws IOException
   {
-    connected = false;
-    serverSocket.close();
-  }
+    SecurityManager sm = System.getSecurityManager();
+    if (sm != null)
+      sm.checkListen (getLocalPort());
 
-  protected void implConfigureBlocking (boolean blocking) throws IOException
-  {
-    serverSocket.setSoTimeout (blocking ? 0 : NIOConstants.DEFAULT_TIMEOUT);
-    this.blocking = blocking;
-  }
-
-  public SocketChannel accept () throws IOException
-  {
-    if (!isOpen())
-      throw new ClosedChannelException();
-
-    if (!serverSocket.isBound())
-      throw new NotYetBoundException();
-
-    boolean completed = false;
-    
-    try
-      {
-        NIOSocket socket = (NIOSocket) serverSocket.accept();
-        completed = true;
-        return socket.getChannel();
-      }
-    catch (SocketTimeoutException e)
-      {
-        return null;
-      }
-    finally
-      {
-        end (completed);
-      }
-  }
-
-  public ServerSocket socket ()
-  {
-    return serverSocket;
+    SocketChannel socketChannel = channel.provider().openSocketChannel();
+    implAccept (socketChannel.socket());
+    return socketChannel.socket();
   }
 }

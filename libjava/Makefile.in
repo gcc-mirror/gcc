@@ -1906,6 +1906,7 @@ gnu/java/nio/DatagramChannelSelectionKey.java \
 gnu/java/nio/FileLockImpl.java \
 gnu/java/nio/NIOConstants.java \
 gnu/java/nio/NIODatagramSocket.java \
+gnu/java/nio/NIOServerSocket.java \
 gnu/java/nio/NIOSocket.java \
 gnu/java/nio/PipeImpl.java \
 gnu/java/nio/SelectionKeyImpl.java \
@@ -2377,7 +2378,7 @@ gnu/java/net/natPlainSocketImpl.cc \
 gnu/java/net/protocol/core/natCoreInputStream.cc \
 gnu/java/nio/natFileLockImpl.cc \
 gnu/java/nio/natSelectorImpl.cc \
-gnu/java/nio/natServerSocketChannelImpl.cc \
+gnu/java/nio/natNIOServerSocket.cc \
 java/io/natFile.cc \
 java/io/natFileDescriptor.cc \
 java/io/natObjectInputStream.cc \
@@ -2555,7 +2556,7 @@ gnu/java/net/natPlainDatagramSocketImpl.lo \
 gnu/java/net/natPlainSocketImpl.lo \
 gnu/java/net/protocol/core/natCoreInputStream.lo \
 gnu/java/nio/natFileLockImpl.lo gnu/java/nio/natSelectorImpl.lo \
-gnu/java/nio/natServerSocketChannelImpl.lo java/io/natFile.lo \
+gnu/java/nio/natNIOServerSocket.lo java/io/natFile.lo \
 java/io/natFileDescriptor.lo java/io/natObjectInputStream.lo \
 java/io/natVMObjectStreamClass.lo java/lang/natCharacter.lo \
 java/lang/natClass.lo java/lang/natClassLoader.lo \
@@ -3035,7 +3036,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/nio/DatagramChannelImpl.P \
 .deps/gnu/java/nio/DatagramChannelSelectionKey.P \
 .deps/gnu/java/nio/FileLockImpl.P .deps/gnu/java/nio/NIOConstants.P \
-.deps/gnu/java/nio/NIODatagramSocket.P .deps/gnu/java/nio/NIOSocket.P \
+.deps/gnu/java/nio/NIODatagramSocket.P \
+.deps/gnu/java/nio/NIOServerSocket.P .deps/gnu/java/nio/NIOSocket.P \
 .deps/gnu/java/nio/PipeImpl.P .deps/gnu/java/nio/SelectionKeyImpl.P \
 .deps/gnu/java/nio/SelectorImpl.P \
 .deps/gnu/java/nio/SelectorProviderImpl.P \
@@ -3052,8 +3054,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/nio/charset/UTF_16Encoder.P \
 .deps/gnu/java/nio/charset/UTF_16LE.P \
 .deps/gnu/java/nio/charset/UTF_8.P .deps/gnu/java/nio/natFileLockImpl.P \
+.deps/gnu/java/nio/natNIOServerSocket.P \
 .deps/gnu/java/nio/natSelectorImpl.P \
-.deps/gnu/java/nio/natServerSocketChannelImpl.P \
 .deps/gnu/java/rmi/RMIMarshalledObjectInputStream.P \
 .deps/gnu/java/rmi/RMIMarshalledObjectOutputStream.P \
 .deps/gnu/java/rmi/dgc/DGCImpl.P .deps/gnu/java/rmi/dgc/DGCImpl_Skel.P \

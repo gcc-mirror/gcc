@@ -63,16 +63,17 @@ import gnu.classpath.Configuration;
 
 public final class SocketChannelImpl extends SocketChannel
 {
+  private PlainSocketImpl impl;
   private NIOSocket socket;
   private boolean blocking = true;
-  private boolean connected = false;
   private boolean connectionPending = false;
 
   SocketChannelImpl (SelectorProvider provider)
     throws IOException
   {
     super (provider);
-    socket = new NIOSocket (new PlainSocketImpl(), this);
+    impl = new PlainSocketImpl();
+    socket = new NIOSocket (impl, this);
   }
   
   SocketChannelImpl (SelectorProvider provider,
@@ -80,8 +81,8 @@ public final class SocketChannelImpl extends SocketChannel
     throws IOException
   {
     super (provider);
+    this.impl = socket.getImpl();
     this.socket = socket;
-    this.connected = socket.isConnected();
   }
 
   public void finalizer()
@@ -98,6 +99,11 @@ public final class SocketChannelImpl extends SocketChannel
       }
   }
 
+  PlainSocketImpl getImpl()
+  {
+    return impl;
+  }
+
   int getNativeFD()
   {
     return socket.getImpl().getNativeFD();
@@ -105,7 +111,6 @@ public final class SocketChannelImpl extends SocketChannel
 
   protected void implCloseSelectableChannel () throws IOException
   {
-    connected = false;
     socket.close();
   }
 
@@ -136,7 +141,6 @@ public final class SocketChannelImpl extends SocketChannel
       {
         // Do blocking connect.
         socket.connect (remote);
-        connected = true;
         return true;
       }
 
@@ -144,7 +148,6 @@ public final class SocketChannelImpl extends SocketChannel
     try
       {
         socket.connect (remote, NIOConstants.DEFAULT_TIMEOUT);
-        connected = true;
         return true;
       }
     catch (SocketTimeoutException e)
@@ -174,7 +177,6 @@ public final class SocketChannelImpl extends SocketChannel
     if (isBlocking())
       {
         selector.select(); // blocking until channel is connected.
-        connected = true;
         connectionPending = false;
         return true;
       }
@@ -182,7 +184,6 @@ public final class SocketChannelImpl extends SocketChannel
     int ready = selector.selectNow(); // non-blocking
     if (ready == 1)
       {
-        connected = true;
         connectionPending = false;
         return true;
       }
@@ -192,7 +193,7 @@ public final class SocketChannelImpl extends SocketChannel
 
   public boolean isConnected ()
   {
-    return connected;
+    return socket.isConnected();
   }
     
   public boolean isConnectionPending ()
@@ -207,13 +208,21 @@ public final class SocketChannelImpl extends SocketChannel
 
   public int read (ByteBuffer dst) throws IOException
   {
-    if (!connected)
+    if (!isConnected())
       throw new NotYetConnectedException();
     
     byte[] data;
     int offset = 0;
+    InputStream input = socket.getInputStream();
+    int available = input.available();
     int len = dst.remaining();
 	
+    if (available == 0)
+      return 0;
+    
+    if (len > available)
+      len = available;
+
     if (dst.hasArray())
       {
         offset = dst.arrayOffset() + dst.position();
@@ -223,15 +232,6 @@ public final class SocketChannelImpl extends SocketChannel
       {
         data = new byte [len];
       }
-
-    InputStream input = socket.getInputStream();
-    int available = input.available();
-
-    if (available == 0)
-      return 0;
-    
-    if (len > available)
-      len = available;
 
     int readBytes = 0;
     boolean completed = false;
@@ -247,11 +247,15 @@ public final class SocketChannelImpl extends SocketChannel
         end (completed);
       }
 
-    if (readBytes > 0
-        && !dst.hasArray())
-      {
-        dst.put (data, offset, len);
-      }
+    if (readBytes > 0)
+      if (dst.hasArray())
+	{
+	  dst.position (dst.position() + readBytes);
+	}
+      else
+        {
+          dst.put (data, offset, len);
+        }
 
     return readBytes;
   }
@@ -259,7 +263,7 @@ public final class SocketChannelImpl extends SocketChannel
   public long read (ByteBuffer[] dsts, int offset, int length)
     throws IOException
   {
-    if (!connected)
+    if (!isConnected())
       throw new NotYetConnectedException();
     
     if ((offset < 0)
@@ -279,7 +283,7 @@ public final class SocketChannelImpl extends SocketChannel
   public int write (ByteBuffer src)
     throws IOException
   {
-    if (!connected)
+    if (!isConnected())
       throw new NotYetConnectedException();
     
     byte[] data;
@@ -301,13 +305,19 @@ public final class SocketChannelImpl extends SocketChannel
     
     OutputStream output = socket.getOutputStream();
     output.write (data, offset, len);
+
+    if (src.hasArray())
+      {
+	src.position (src.position() + len);
+      }
+    
     return len;
   }
 
   public long write (ByteBuffer[] srcs, int offset, int length)
     throws IOException
   {
-    if (!connected)
+    if (!isConnected())
       throw new NotYetConnectedException();
     
     if ((offset < 0)
