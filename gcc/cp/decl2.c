@@ -52,7 +52,7 @@ static int is_namespace_ancestor PROTO((tree, tree));
 static tree namespace_ancestor PROTO((tree, tree));
 static void add_using_namespace PROTO((tree, tree, int));
 static tree ambiguous_decl PROTO((tree, tree, tree));
-static tree find_representative_member PROTO((tree));
+static tree build_anon_union_vars PROTO((tree, tree*, int, int));
 
 extern int current_class_depth;
 
@@ -2145,40 +2145,73 @@ get_temp_regvar (type, init)
   return decl;
 }
 
-/* Hunt through ANON_DECL, which declares an anonymous union, for a named
-   member of the same size as ANON_DECL.  */
+/* Hunts through the global anonymous union ANON_DECL, building
+   appropriate VAR_DECLs.  Stores cleanups on the list of ELEMS, and
+   returns a VAR_DECL whose size is the same as the size of the
+   ANON_DECL, if one is available.  */
 
-tree
-find_representative_member (anon_decl)
+tree 
+build_anon_union_vars (anon_decl, elems, static_p, external_p)
      tree anon_decl;
+     tree* elems;
+     int static_p;
+     int external_p;
 {
-  tree field;
+  tree type = TREE_TYPE (anon_decl);
   tree main_decl = NULL_TREE;
+  tree field;
 
-  for (field = TYPE_FIELDS (TREE_TYPE (anon_decl));
+  for (field = TYPE_FIELDS (type); 
        field != NULL_TREE; 
        field = TREE_CHAIN (field))
     {
+      tree decl;
       if (TREE_CODE (field) != FIELD_DECL)
 	continue;
+
+      if (TREE_PRIVATE (field))
+	cp_pedwarn_at ("private member `%#D' in anonymous union", field);
+      else if (TREE_PROTECTED (field))
+	cp_pedwarn_at ("protected member `%#D' in anonymous union", field);
+
+      if (DECL_NAME (field) == NULL_TREE
+	  && TREE_CODE (TREE_TYPE (field)) == UNION_TYPE)
+	decl = build_anon_union_vars (field, elems, static_p, external_p);
+      else
+	{
+	  decl = build_decl (VAR_DECL, DECL_NAME (field), TREE_TYPE (field));
+	  /* tell `pushdecl' that this is not tentative.  */
+	  DECL_INITIAL (decl) = error_mark_node;
+	  TREE_PUBLIC (decl) = 0;
+	  TREE_STATIC (decl) = static_p;
+	  DECL_EXTERNAL (decl) = external_p;
+	  decl = pushdecl (decl);
+	  DECL_INITIAL (decl) = NULL_TREE;
+	}
 
       /* Only write out one anon union element--choose the one that
 	 can hold them all.  */
       if (main_decl == NULL_TREE
-	  && 1 == simple_cst_equal (DECL_SIZE (field),
-				    DECL_SIZE (anon_decl)))
-	{
-	  if (DECL_NAME (field))
-	    main_decl = field;
-	  else if (TREE_CODE (TREE_TYPE (field)) == UNION_TYPE)
-	    main_decl = find_representative_member (field);
-	}
-      else
+	  && simple_cst_equal (DECL_SIZE (decl),
+			       DECL_SIZE (anon_decl)) == 1)
+	main_decl = decl;
+      else 
 	/* ??? This causes there to be no debug info written out
 	   about this decl.  */
-	TREE_ASM_WRITTEN (field) = 1;
-    }
+	TREE_ASM_WRITTEN (decl) = 1;
+      
+      if (DECL_NAME (field) == NULL_TREE
+	  && TREE_CODE (TREE_TYPE (field)) == UNION_TYPE)
+	/* The remainder of the processing was already done in the
+	   recursive call.  */
+	continue;
 
+      /* If there's a cleanup to do, it belongs in the
+	 TREE_PURPOSE of the following TREE_LIST.  */
+      *elems = scratch_tree_cons (NULL_TREE, decl, *elems);
+      TREE_TYPE (*elems) = type;
+    }
+  
   return main_decl;
 }
 
@@ -2194,13 +2227,13 @@ finish_anon_union (anon_union_decl)
      tree anon_union_decl;
 {
   tree type = TREE_TYPE (anon_union_decl);
-  tree field = TYPE_FIELDS (type);
   tree elems = NULL_TREE;
+  tree main_decl;
   int public_p = TREE_PUBLIC (anon_union_decl);
   int static_p = TREE_STATIC (anon_union_decl);
   int external_p = DECL_EXTERNAL (anon_union_decl);
 
-  if (field == NULL_TREE)
+  if (TYPE_FIELDS (type) == NULL_TREE)
     return;
 
   if (public_p)
@@ -2209,44 +2242,11 @@ finish_anon_union (anon_union_decl)
       return;
     }
 
-  for (; field; field = TREE_CHAIN (field))
-    {
-      tree decl;
-      if (TREE_CODE (field) != FIELD_DECL)
-	continue;
-
-      if (TREE_PRIVATE (field))
-	cp_pedwarn_at ("private member `%#D' in anonymous union", field);
-      else if (TREE_PROTECTED (field))
-	cp_pedwarn_at ("protected member `%#D' in anonymous union", field);
-
-      if (DECL_NAME (field) == NULL_TREE
-	  && TREE_CODE (TREE_TYPE (field)) == UNION_TYPE
-	  && find_representative_member (field) == NULL_TREE)
-	/* The member is an empty anonymous union.  Don't make a
-	   declaration for it, as finish_file will otherwise try to
-	   call make_decl_rtl for it, and crash.  */
-	continue;
-
-      decl = build_decl (VAR_DECL, DECL_NAME (field), TREE_TYPE (field));
-      /* tell `pushdecl' that this is not tentative.  */
-      DECL_INITIAL (decl) = error_mark_node;
-      TREE_PUBLIC (decl) = public_p;
-      TREE_STATIC (decl) = static_p;
-      DECL_EXTERNAL (decl) = external_p;
-      decl = pushdecl (decl);
-
-      DECL_INITIAL (decl) = NULL_TREE;
-      /* If there's a cleanup to do, it belongs in the
-	 TREE_PURPOSE of the following TREE_LIST.  */
-      elems = scratch_tree_cons (NULL_TREE, decl, elems);
-      TREE_TYPE (elems) = type;
-    }
+  main_decl = build_anon_union_vars (anon_union_decl, &elems, 
+				     static_p, external_p);
 
   if (static_p)
     {
-      tree main_decl = find_representative_member (anon_union_decl);
-
       if (main_decl)
 	{
 	  make_decl_rtl (main_decl, 0, toplevel_bindings_p ());

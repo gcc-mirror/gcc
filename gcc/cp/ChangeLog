@@ -1,3 +1,9 @@
+1998-05-21  Mark Mitchell  <mmitchell@usa.net>
+
+	* decl2.c (find_representative_member): Rename to ...
+	(build_anon_union_vars): New function.
+	(finish_anon_union): Fix stupidity of previous change.
+
 1998-05-20  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (grokfndecl): Handle definition of specialization in
