@@ -1,3 +1,8 @@
+2004-01-12  Bernardo Innocenti  <bernie@develer.com>
+
+	* gcc/config/m68k/m68k.md: Switch from the "*..." syntax to the
+	brace-enclosed syntax in all C output statements.
+
 2004-01-12  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/13401
