@@ -307,6 +307,12 @@ Common
 finline-functions
 Common
 
+finline-limit-
+Common RejectNegative Joined UInteger
+
+finline-limit=
+Common RejectNegative Joined UInteger
+
 finstrument-functions
 Common
 

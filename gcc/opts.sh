@@ -114,6 +114,8 @@ ${AWK} '
 
 	    len = length (opts[i]);
 	    enum = "OPT_" opts[i]
+	    if (opts[i] == "finline-limit=")
+		enum = enum "eq"
 	    gsub ("[^A-Za-z0-9]", "_", enum)
 
 	    # If this switch takes joined arguments, back-chain all

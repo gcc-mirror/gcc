@@ -117,9 +117,6 @@ static void crash_signal (int) ATTRIBUTE_NORETURN;
 static void setup_core_dumping (void);
 static void compile_file (void);
 
-static int decode_f_option (const char *);
-static unsigned int independent_decode_option (char **);
-
 static int print_single_switch (FILE *, int, int, const char *,
 				const char *, const char *,
 				const char *, const char *);
@@ -4149,39 +4146,6 @@ decode_d_option (const char *arg)
       }
 }
 
-/* Parse a -f... command line switch.  ARG is the value after the -f.
-   It is safe to access 'ARG - 2' to generate the full switch name.
-   Return the number of strings consumed.  */
-
-static int
-decode_f_option (const char *arg)
-{
-  const char *option_value;
-
-  if ((option_value = skip_leading_substring (arg, "inline-limit-"))
-	   || (option_value = skip_leading_substring (arg, "inline-limit=")))
-    {
-      int val =
-	read_integral_parameter (option_value, arg - 2,
-				 MAX_INLINE_INSNS);
-      set_param_value ("max-inline-insns", val);
-      set_param_value ("max-inline-insns-single", val/2);
-      set_param_value ("max-inline-insns-auto", val/2);
-      set_param_value ("max-inline-insns-rtl", val);
-      if (val/4 < MIN_INLINE_INSNS)
-	{
-	  if (val/4 > 10)
-	    set_param_value ("min-inline-insns", val/4);
-	  else
-	    set_param_value ("min-inline-insns", 10);
-	}
-    }
-  else
-    return 0;
-
-  return 1;
-}
-
 /* Indexed by enum debug_info_type.  */
 const char *const debug_type_names[] =
 {
@@ -4304,25 +4268,6 @@ ignoring option `%s' due to invalid debug level specification",
 
   if (! da->arg)
     warning ("`-g%s': unknown or unsupported -g option", arg);
-}
-
-/* Decode the first argument in the argv as a language-independent option.
-   Return the number of strings consumed.  */
-
-static unsigned int
-independent_decode_option (char **argv)
-{
-  char *arg = argv[0];
-
-  if (arg[0] != '-' || arg[1] == 0)
-    return 1;
-
-  arg++;
-
-  if (*arg == 'f')
-    return decode_f_option (arg + 1);
-
-  return 0;
 }
 
 /* Decode -m switches.  */
@@ -4782,9 +4727,6 @@ parse_options_and_default_flags (int argc, char **argv)
 
       /* Give the language a chance to decode the option for itself.  */
       processed = handle_option (argc - i, argv + i, lang_mask);
-
-      if (!processed)
-	processed = independent_decode_option (argv + i);
 
       if (processed)
 	i += processed;
