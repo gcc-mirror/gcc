@@ -1,3 +1,8 @@
+2002-11-11  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	PR c/8467
+	* gcc.c-torture/execute/20021111-1.c
+
 2002-11-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR c/8439
