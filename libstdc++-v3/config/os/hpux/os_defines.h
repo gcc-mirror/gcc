@@ -1,6 +1,6 @@
 // Specific definitions for HPUX  -*- C++ -*-
 
-// Copyright (C) 2000, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2002, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -93,7 +93,7 @@ typedef long int __padding_type;
 
 /* We need explicit instantiation of the atomicity lock on HPPA if
    there is no weak support.  */
-#if !defined(_GLIBCXX_SUPPORTS_WEAK) && defined (__hppa__)
+#if !__GXX_WEAK__ && defined (__hppa__)
 #define _GLIBCXX_INST_ATOMICITY_LOCK 1
 #endif
 
