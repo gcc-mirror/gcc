@@ -244,6 +244,9 @@ struct iv_ca
   /* The candidates used.  */
   bitmap cands;
 
+  /* The number of candidates in the set.  */
+  unsigned n_cands;
+
   /* Total number of registers needed.  */
   unsigned n_regs;
 
@@ -287,6 +290,12 @@ struct iv_ca_delta
 
 #define MAX_CONSIDERED_USES \
   ((unsigned) PARAM_VALUE (PARAM_IV_MAX_CONSIDERED_USES))
+
+/* If there are at most this number of ivs in the set, try removing unnecessary
+   ivs from the set always.  */
+
+#define ALWAYS_PRUNE_CAND_SET_BOUND \
+  ((unsigned) PARAM_VALUE (PARAM_IV_ALWAYS_PRUNE_CAND_SET_BOUND))
 
 /* The list of trees for that the decl_rtl field must be reset is stored
    here.  */
@@ -3661,6 +3670,7 @@ iv_ca_set_no_cp (struct ivopts_data *data, struct iv_ca *ivs,
       /* Do not count the pseudocandidates.  */
       if (cp->cand->iv)
 	ivs->n_regs--;
+      ivs->n_cands--;
       ivs->cand_cost -= cp->cand->cost;
     }
 
@@ -3710,6 +3720,7 @@ iv_ca_set_cp (struct ivopts_data *data, struct iv_ca *ivs,
 	  /* Do not count the pseudocandidates.  */
 	  if (cp->cand->iv)
 	    ivs->n_regs++;
+	  ivs->n_cands++;
 	  ivs->cand_cost += cp->cand->cost;
 	}
 
@@ -3806,12 +3817,55 @@ iv_ca_delta_add (struct iv_use *use, struct cost_pair *old_cp,
   return change;
 }
 
+/* Joins two lists of changes L1 and L2.  Destructive -- old lists
+   are rewritten.   */
+
+static struct iv_ca_delta *
+iv_ca_delta_join (struct iv_ca_delta *l1, struct iv_ca_delta *l2)
+{
+  struct iv_ca_delta *last;
+
+  if (!l2)
+    return l1;
+
+  if (!l1)
+    return l2;
+
+  for (last = l1; last->next_change; last = last->next_change)
+    continue;
+  last->next_change = l2;
+
+  return l1;
+}
+
 /* Returns candidate by that USE is expressed in IVS.  */
 
 static struct cost_pair *
 iv_ca_cand_for_use (struct iv_ca *ivs, struct iv_use *use)
 {
   return ivs->cand_for_use[use->id];
+}
+
+/* Reverse the list of changes DELTA, forming the inverse to it.  */
+
+static struct iv_ca_delta *
+iv_ca_delta_reverse (struct iv_ca_delta *delta)
+{
+  struct iv_ca_delta *act, *next, *prev = NULL;
+  struct cost_pair *tmp;
+
+  for (act = delta; act; act = next)
+    {
+      next = act->next_change;
+      act->next_change = prev;
+      prev = act;
+
+      tmp = act->old_cp;
+      act->old_cp = act->new_cp;
+      act->new_cp = tmp;
+    }
+
+  return prev;
 }
 
 /* Commit changes in DELTA to IVS.  If FORWARD is false, the changes are
@@ -3822,23 +3876,21 @@ iv_ca_delta_commit (struct ivopts_data *data, struct iv_ca *ivs,
 		    struct iv_ca_delta *delta, bool forward)
 {
   struct cost_pair *from, *to;
+  struct iv_ca_delta *act;
 
-  for (; delta; delta = delta->next_change)
+  if (!forward)
+    delta = iv_ca_delta_reverse (delta);
+
+  for (act = delta; act; act = act->next_change)
     {
-      if (forward)
-	{
-	  from = delta->old_cp;
-	  to = delta->new_cp;
-	}
-      else
-	{
-	  from = delta->new_cp;
-	  to = delta->old_cp;
-	}
-
-      gcc_assert (iv_ca_cand_for_use (ivs, delta->use) == from);
-      iv_ca_set_cp (data, ivs, delta->use, to);
+      from = act->old_cp;
+      to = act->new_cp;
+      gcc_assert (iv_ca_cand_for_use (ivs, act->use) == from);
+      iv_ca_set_cp (data, ivs, act->use, to);
     }
+
+  if (!forward)
+    iv_ca_delta_reverse (delta);
 }
 
 /* Returns true if CAND is used in IVS.  */
@@ -3847,6 +3899,14 @@ static bool
 iv_ca_cand_used_p (struct iv_ca *ivs, struct iv_cand *cand)
 {
   return ivs->n_cand_uses[cand->id] > 0;
+}
+
+/* Returns number of induction variable candidates in the set IVS.  */
+
+static unsigned
+iv_ca_n_cands (struct iv_ca *ivs)
+{
+  return ivs->n_cands;
 }
 
 /* Free the list of changes DELTA.  */
@@ -3877,6 +3937,7 @@ iv_ca_new (struct ivopts_data *data)
   nw->cand_for_use = xcalloc (n_iv_uses (data), sizeof (struct cost_pair *));
   nw->n_cand_uses = xcalloc (n_iv_cands (data), sizeof (unsigned));
   nw->cands = BITMAP_XMALLOC ();
+  nw->n_cands = 0;
   nw->n_regs = 0;
   nw->cand_use_cost = 0;
   nw->cand_cost = 0;
@@ -3920,11 +3981,13 @@ iv_ca_dump (struct ivopts_data *data, FILE *file, struct iv_ca *ivs)
 }
 
 /* Try changing candidate in IVS to CAND for each use.  Return cost of the
-   new set, and store differences in DELTA.  */
+   new set, and store differences in DELTA.  Number of induction variables
+   in the new set is stored to N_IVS.  */
 
 static unsigned
 iv_ca_extend (struct ivopts_data *data, struct iv_ca *ivs,
-	      struct iv_cand *cand, struct iv_ca_delta **delta)
+	      struct iv_cand *cand, struct iv_ca_delta **delta,
+	      unsigned *n_ivs)
 {
   unsigned i, cost;
   struct iv_use *use;
@@ -3955,6 +4018,8 @@ iv_ca_extend (struct ivopts_data *data, struct iv_ca *ivs,
 
   iv_ca_delta_commit (data, ivs, *delta, true);
   cost = iv_ca_cost (ivs);
+  if (n_ivs)
+    *n_ivs = iv_ca_n_cands (ivs);
   iv_ca_delta_commit (data, ivs, *delta, false);
 
   return cost;
@@ -4044,6 +4109,55 @@ iv_ca_narrow (struct ivopts_data *data, struct iv_ca *ivs,
   return cost;
 }
 
+/* Try optimizing the set of candidates IVS by removing candidates different
+   from to EXCEPT_CAND from it.  Return cost of the new set, and store
+   differences in DELTA.  */
+
+static unsigned
+iv_ca_prune (struct ivopts_data *data, struct iv_ca *ivs,
+	     struct iv_cand *except_cand, struct iv_ca_delta **delta)
+{
+  bitmap_iterator bi;
+  struct iv_ca_delta *act_delta, *best_delta;
+  unsigned i, best_cost, acost;
+  struct iv_cand *cand;
+
+  best_delta = NULL;
+  best_cost = iv_ca_cost (ivs);
+
+  EXECUTE_IF_SET_IN_BITMAP (ivs->cands, 0, i, bi)
+    {
+      cand = iv_cand (data, i);
+
+      if (cand == except_cand)
+	continue;
+
+      acost = iv_ca_narrow (data, ivs, cand, &act_delta);
+
+      if (acost < best_cost)
+	{
+	  best_cost = acost;
+	  iv_ca_delta_free (&best_delta);
+	  best_delta = act_delta;
+	}
+      else
+	iv_ca_delta_free (&act_delta);
+    }
+
+  if (!best_delta)
+    {
+      *delta = NULL;
+      return best_cost;
+    }
+
+  /* Recurse to possibly remove other unnecessary ivs.  */
+  iv_ca_delta_commit (data, ivs, best_delta, true);
+  best_cost = iv_ca_prune (data, ivs, except_cand, delta);
+  iv_ca_delta_commit (data, ivs, best_delta, false);
+  *delta = iv_ca_delta_join (best_delta, *delta);
+  return best_cost;
+}
+
 /* Tries to extend the sets IVS in the best possible way in order
    to express the USE.  */
 
@@ -4088,7 +4202,7 @@ try_add_cand_for (struct ivopts_data *data, struct iv_ca *ivs,
 	continue;
 
       iv_ca_set_cp (data, ivs, use, cp);
-      act_cost = iv_ca_extend (data, ivs, cand, &act_delta);
+      act_cost = iv_ca_extend (data, ivs, cand, &act_delta, NULL);
       iv_ca_set_no_cp (data, ivs, use);
       act_delta = iv_ca_delta_add (use, NULL, cp, act_delta);
 
@@ -4121,7 +4235,7 @@ try_add_cand_for (struct ivopts_data *data, struct iv_ca *ivs,
 
 	  act_delta = NULL;
 	  iv_ca_set_cp (data, ivs, use, cp);
-	  act_cost = iv_ca_extend (data, ivs, cand, &act_delta);
+	  act_cost = iv_ca_extend (data, ivs, cand, &act_delta, NULL);
 	  iv_ca_set_no_cp (data, ivs, use);
 	  act_delta = iv_ca_delta_add (use, iv_ca_cand_for_use (ivs, use),
 				       cp, act_delta);
@@ -4168,25 +4282,36 @@ get_initial_solution (struct ivopts_data *data)
 static bool
 try_improve_iv_set (struct ivopts_data *data, struct iv_ca *ivs)
 {
-  unsigned i, acost, best_cost = iv_ca_cost (ivs);
-  struct iv_ca_delta *best_delta = NULL, *act_delta;
+  unsigned i, acost, best_cost = iv_ca_cost (ivs), n_ivs;
+  struct iv_ca_delta *best_delta = NULL, *act_delta, *tmp_delta;
   struct iv_cand *cand;
 
-  /* Try altering the set of induction variables by one.  */
+  /* Try extending the set of induction variables by one.  */
   for (i = 0; i < n_iv_cands (data); i++)
     {
       cand = iv_cand (data, i);
       
       if (iv_ca_cand_used_p (ivs, cand))
-	acost = iv_ca_narrow (data, ivs, cand, &act_delta);
-      else
-	acost = iv_ca_extend (data, ivs, cand, &act_delta);
+	continue;
+
+      acost = iv_ca_extend (data, ivs, cand, &act_delta, &n_ivs);
+      if (!act_delta)
+	continue;
+
+      /* If we successfully added the candidate and the set is small enough,
+	 try optimizing it by removing other candidates.  */
+      if (n_ivs <= ALWAYS_PRUNE_CAND_SET_BOUND)
+      	{
+	  iv_ca_delta_commit (data, ivs, act_delta, true);
+	  acost = iv_ca_prune (data, ivs, cand, &tmp_delta);
+	  iv_ca_delta_commit (data, ivs, act_delta, false);
+	  act_delta = iv_ca_delta_join (act_delta, tmp_delta);
+	}
 
       if (acost < best_cost)
 	{
 	  best_cost = acost;
-	  if (best_delta)
-	    iv_ca_delta_free (&best_delta);
+	  iv_ca_delta_free (&best_delta);
 	  best_delta = act_delta;
 	}
       else
@@ -4194,9 +4319,17 @@ try_improve_iv_set (struct ivopts_data *data, struct iv_ca *ivs)
     }
 
   if (!best_delta)
-    return false;
+    {
+      /* Try removing the candidates from the set instead.  */
+      best_cost = iv_ca_prune (data, ivs, NULL, &best_delta);
+
+      /* Nothing more we can do.  */
+      if (!best_delta)
+	return false;
+    }
 
   iv_ca_delta_commit (data, ivs, best_delta, true);
+  gcc_assert (best_cost == iv_ca_cost (ivs));
   iv_ca_delta_free (&best_delta);
   return true;
 }

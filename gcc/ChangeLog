@@ -4,6 +4,20 @@
 
 2004-12-18  Zdenek Dvorak  <dvorakz@suse.cz>
 
+        PR tree-optimization/18800
+        * params.def (PARAM_IV_ALWAYS_PRUNE_CAND_SET_BOUND): New parameter.
+        * tree-ssa-loop-ivopts.c (struct iv_ca): Add n_cands field.
+        (ALWAYS_PRUNE_CAND_SET_BOUND): New macro.
+        (iv_ca_set_no_cp, iv_ca_set_cp, iv_ca_new): Update n_cands field.
+        (iv_ca_delta_join, iv_ca_delta_reverse, iv_ca_n_cands, iv_ca_prune):
+        New functions.
+        (iv_ca_extend): Return number of candidates in the set.
+        (try_add_cand_for): Add argument to iv_ca_extend calls.
+        (try_improve_iv_set): Use iv_ca_prune.
+        * doc/invoke.texi (iv-always-prune-cand-set-bound): Document.
+
+2004-12-18  Zdenek Dvorak  <dvorakz@suse.cz>
+
 	PR rtl-optimization/19001
 	* loop-iv.c (iv_number_of_iterations): Record assumptions for loops
 	with power of two step to 'infinite' field.
