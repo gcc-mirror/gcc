@@ -1,3 +1,9 @@
+2003-06-30  Gary Benson  <gbenson@redhat.com>
+
+	For PR libgcj/11349:
+	* javax/naming/spi/NamingManager.java (getURLContext): Use
+	correct name for factory class.
+
 2003-06-17  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* include/powerpc-signal.h: New File.
