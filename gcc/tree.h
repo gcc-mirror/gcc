@@ -3010,7 +3010,7 @@ extern char *dwarf2out_cfi_label (void);
 
 /* Entry point to update the canonical frame address (CFA).  */
 
-extern void dwarf2out_def_cfa (const char *, unsigned, long);
+extern void dwarf2out_def_cfa (const char *, unsigned, HOST_WIDE_INT);
 
 /* Add the CFI for saving a register window.  */
 
@@ -3019,15 +3019,15 @@ extern void dwarf2out_window_save (const char *);
 /* Add a CFI to update the running total of the size of arguments pushed
    onto the stack.  */
 
-extern void dwarf2out_args_size (const char *, long);
+extern void dwarf2out_args_size (const char *, HOST_WIDE_INT);
 
 /* Entry point for saving a register to the stack.  */
 
-extern void dwarf2out_reg_save (const char *, unsigned, long);
+extern void dwarf2out_reg_save (const char *, unsigned, HOST_WIDE_INT);
 
 /* Entry point for saving the return address in the stack.  */
 
-extern void dwarf2out_return_save (const char *, long);
+extern void dwarf2out_return_save (const char *, HOST_WIDE_INT);
 
 /* Entry point for saving the return address in a register.  */
 
