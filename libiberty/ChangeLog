@@ -1,3 +1,14 @@
+2002-02-22  Jim Blandy  <jimb@redhat.com>
+
+	* splay-tree.c (splay_tree_xmalloc_allocate,
+	splay_tree_xmalloc_deallocate): New functions.
+	(splay_tree_new): Call splay_tree_new_with_allocator, passing the
+	above functions and a dummy data pointer.
+	(splay_tree_new_with_allocator): New function.
+	(splay_tree_delete_helper, splay_tree_delete, splay_tree_insert,
+	splay_tree_remove): Use the splay tree's allocation and
+	deallocation functions.
+
 2002-02-19  Scott Snyder  <snyder@fnal.gov>
 
 	* testsuite/demangle-expected: Add test case for infinite loop in

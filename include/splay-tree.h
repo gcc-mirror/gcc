@@ -61,6 +61,18 @@ typedef void (*splay_tree_delete_value_fn) PARAMS((splay_tree_value));
 /* The type of a function used to iterate over the tree.  */
 typedef int (*splay_tree_foreach_fn) PARAMS((splay_tree_node, void*));
 
+/* The type of a function used to allocate memory for tree root and
+   node structures.  The first argument is the number of bytes needed;
+   the second is a data pointer the splay tree functions pass through
+   to the allocator.  This function must never return zero.  */
+typedef void *(*splay_tree_allocate_fn) PARAMS((int, void *));
+
+/* The type of a function used to free memory allocated using the
+   corresponding splay_tree_allocate_fn.  The first argument is the
+   memory to be freed; the latter is a data pointer the splay tree
+   functions pass through to the freer.  */
+typedef void (*splay_tree_deallocate_fn) PARAMS((void *, void *));
+
 /* The nodes in the splay tree.  */
 struct splay_tree_node_s
 {
@@ -89,11 +101,24 @@ typedef struct splay_tree_s
 
   /* The deallocate-value function.  NULL if no cleanup is necessary.  */
   splay_tree_delete_value_fn delete_value;
+
+  /* Allocate/free functions, and a data pointer to pass to them.  */
+  splay_tree_allocate_fn allocate;
+  splay_tree_deallocate_fn deallocate;
+  void *allocate_data;
+
 } *splay_tree;
 
 extern splay_tree splay_tree_new        PARAMS((splay_tree_compare_fn,
 					        splay_tree_delete_key_fn,
 					        splay_tree_delete_value_fn));
+extern splay_tree splay_tree_new_with_allocator
+                                        PARAMS((splay_tree_compare_fn,
+					        splay_tree_delete_key_fn,
+					        splay_tree_delete_value_fn,
+                                                splay_tree_allocate_fn,
+                                                splay_tree_deallocate_fn,
+                                                void *));
 extern void splay_tree_delete           PARAMS((splay_tree));
 extern splay_tree_node splay_tree_insert          
 		                        PARAMS((splay_tree,
