@@ -1,3 +1,7 @@
+2003-02-04  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	* g++.dg/template/partial3.C: New test.
+
 2004-02-04  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gcc.dg/20020312-2.c, gcc.dg/builtin-inf-1.c,
