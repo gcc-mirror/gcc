@@ -3338,7 +3338,7 @@ toe53 (x, y)
 #else
 #ifdef IBM
 
-void 
+static void 
 etoe53 (x, e)
      unsigned EMUSHORT *x, *e;
 {
@@ -3354,7 +3354,7 @@ toe53 (x, y)
 
 #else  /* it's neither DEC nor IBM */
 
-void 
+static void 
 etoe53 (x, e)
      unsigned EMUSHORT *x, *e;
 {
@@ -3473,7 +3473,7 @@ toe53 (x, y)
 
 #ifdef IBM
 
-void 
+static void 
 etoe24 (x, e)
      unsigned EMUSHORT *x, *e;
 {
@@ -3489,7 +3489,7 @@ toe24 (x, y)
 
 #else
 
-void 
+static void 
 etoe24 (x, e)
      unsigned EMUSHORT *x, *e;
 {
@@ -5626,8 +5626,8 @@ ditoe (di, e)
 
 /* Convert e-type to unsigned 64-bit int. */
 
-void 
-static etoudi (x, i)
+static void 
+etoudi (x, i)
      unsigned EMUSHORT *x;
      unsigned EMUSHORT *i;
 {
