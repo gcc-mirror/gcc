@@ -159,7 +159,7 @@ fi
 
 # Finally, generate the installation documentation (but only for CVS HEAD).
 if [ "$RELEASE" = "HEAD" ]; then
-  SOURCEDIR=$WORKDIR
+  SOURCEDIR=$WORKDIR/gcc/gcc/doc
   DESTDIR=$WWWBASE_PREFORMATTED/install
   export SOURCEDIR
   export DESTDIR
