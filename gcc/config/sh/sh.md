@@ -561,6 +561,17 @@
 ;; We take advantage of the library routines which don't clobber as many
 ;; registers as a normal function call would.
 
+;; The INSN_REFERENCES_ARE_DELAYED in sh.h is problematic because it
+;; also has an effect on the register that holds the addres of the sfunc.
+;; To make this work, we have an extra dummy insns that shows the use
+;; of this register for reorg.
+
+(define_insn "use_sfunc_addr"
+  [(set (reg:SI 17) (unspec [(match_operand:SI 0 "register_operand" "r")] 5))]
+  ""
+  ""
+  [(set_attr "length" "0")])
+
 ;; We must use a pseudo-reg forced to reg 0 in the SET_DEST rather than
 ;; hard register 0.  If we used hard register 0, then the next instruction
 ;; would be a move from hard register 0 to a pseudo-reg.  If the pseudo-reg
@@ -2426,6 +2437,12 @@
   [(set_attr "needs_delay_slot" "yes")
    (set_attr "type" "jump_ind")])
 
+(define_insn "dummy_jump"
+  [(set (pc) (const_int 0))]
+  ""
+  ""
+  [(set_attr "length" "0")])
+
 ;; Call subroutine returning any type.
 ;; ??? This probably doesn't work.
 
@@ -2518,6 +2535,9 @@
 					 gen_rtx (LABEL_REF, VOIDmode, lab),
 					 operands[3]));
       emit_label (lab);
+      /* Put a fake jump after the label, lest some optimization might
+	 delete the barrier and LAB.  */
+      emit_jump_insn (gen_dummy_jump ());
     }
   else
     {
