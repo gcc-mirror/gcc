@@ -6815,18 +6815,19 @@ force_to_mode (x, mode, mask, reg, just_select)
 	  && GET_MODE_BITSIZE (op_mode) <= HOST_BITS_PER_WIDE_INT)
 	{
 	  rtx inner = XEXP (x, 0);
+	  unsigned HOST_WIDE_INT inner_mask;
 
 	  /* Select the mask of the bits we need for the shift operand.  */
-	  mask <<= INTVAL (XEXP (x, 1));
+	  inner_mask = mask << INTVAL (XEXP (x, 1));
 
 	  /* We can only change the mode of the shift if we can do arithmetic
-	     in the mode of the shift and MASK is no wider than the width of
-	     OP_MODE.  */
+	     in the mode of the shift and INNER_MASK is no wider than the
+	     width of OP_MODE.  */
 	  if (GET_MODE_BITSIZE (op_mode) > HOST_BITS_PER_WIDE_INT
-	      || (mask & ~ GET_MODE_MASK (op_mode)) != 0)
+	      || (inner_mask & ~ GET_MODE_MASK (op_mode)) != 0)
 	    op_mode = GET_MODE (x);
 
-	  inner = force_to_mode (inner, op_mode, mask, reg, next_select);
+	  inner = force_to_mode (inner, op_mode, inner_mask, reg, next_select);
 
 	  if (GET_MODE (x) != op_mode || inner != XEXP (x, 0))
 	    x = gen_binary (LSHIFTRT, op_mode, inner, XEXP (x, 1));
