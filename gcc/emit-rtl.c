@@ -4178,6 +4178,10 @@ init_emit_once (line_numbers)
     if (GET_MODE_CLASS (mode) == MODE_CC)
       const_tiny_rtx[0][(int) mode] = const0_rtx;
 
+  const_tiny_rtx[0][(int) BImode] = const0_rtx;
+  if (STORE_FLAG_VALUE == 1)
+    const_tiny_rtx[1][(int) BImode] = const1_rtx;
+
   /* For bounded pointers, `&const_tiny_rtx[0][0]' is not the same as
      `(rtx *) const_tiny_rtx'.  The former has bounds that only cover
      `const_tiny_rtx[0]', whereas the latter has bounds that cover all.  */

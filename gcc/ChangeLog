@@ -1,3 +1,8 @@
+2000-09-18  Richard Henderson  <rth@cygnus.com>
+
+	* emit-rtl.c (init_emit_once): Initialize const_tiny_rtx
+	for BImode.
+
 2000-09-18  Jim Wilson  <wilson@cygnus.com>
 
 	* unroll.c (loop_iterations): Pass increment to extend_for_giv_value
