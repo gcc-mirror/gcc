@@ -1,10 +1,22 @@
 2002-07-24  Benjamin Kosnik  <bkoz@redhat.com>
 
+	PR libstdc++/7230
+	* config/linker-map.gnu: Revert strstream patch from 2002-07-01.
+	* include/Makefile.am (backward_headers): Use strstream, not
+	strstream.h.
+	* include/Makefile.in: Regenerate.
+	* include/backward/strstream: Revert.
+	* include/backward/strstream.h: Remove.
+	* src/strstream.cc: Revert.
+	* testsuite/backward/strstream_members.cc: Change include.	
+
+2002-07-24  Benjamin Kosnik  <bkoz@redhat.com>
+
 	PR libstdc++/7219
-	* testsuite/27_io/ios_base_type.cc: New.
 	* include/bits/ios_base.h (ios_base::streampos): Add.
 	(ios_base::streamoff): Add.
-
+	* testsuite/27_io/ios_base_type.cc: New.
+	
 2002-07-24  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/7286

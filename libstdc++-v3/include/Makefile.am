@@ -137,7 +137,7 @@ backward_headers = \
 	${backward_srcdir}/tree.h \
 	${backward_srcdir}/vector.h \
 	${backward_srcdir}/fstream.h \
-	${backward_srcdir}/strstream.h \
+	${backward_srcdir}/strstream \
 	${backward_srcdir}/backward_warning.h
 
 ext_srcdir = ${glibcpp_srcdir}/include/ext

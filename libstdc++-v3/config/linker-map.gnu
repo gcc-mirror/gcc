@@ -38,11 +38,7 @@ GLIBCPP_3.1 {
       std::_S_bit_count;
       std::_S_first_one;
       std::__default_alloc_template*;
-      std::__malloc_alloc_template*;
-      strstreambuf::*;
-      istrstream::*;
-      ostrstream::*;
-      strstream::*
+      std::__malloc_alloc_template*
     };
 
     # Names not in an 'extern' block are mangled names.
