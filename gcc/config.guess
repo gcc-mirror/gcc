@@ -127,6 +127,9 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
     *:IRIX:*:*)
 	echo mips-sgi-irix${UNAME_RELEASE}
 	exit 0 ;;
+   ????????:AIX?:[12].1:2)   # AIX 2.2.1 or AIX 2.1.1 is RT/PC AIX.
+	echo romp-ibm-aix      # uname -m gives an 8 hex-code CPU id
+	exit 0 ;;              # Note that: echo "'`uname -s`'" gives 'AIX '
     i[34]86:AIX:*:*)
 	echo i386-ibm-aix
 	exit 0 ;;
@@ -170,6 +173,9 @@ EOF
     *:AIX:*:*)
 	echo rs6000-ibm-aix
 	exit 0 ;;
+    ibmrt:*BSD:*|romp-ibm:BSD:*)          # covers RT/PC NetBSD and 4.4BSD
+	echo romp-ibm-bsd${UNAME_RELEASE}   # and 4.3 with uname added to 
+	exit 0 ;;                           # report: romp-ibm BSD 4.3
     *:BOSX:*:*)
 	echo rs6000-bull-bosx
 	exit 0 ;;
