@@ -1,6 +1,6 @@
 /* Fold a constant sub-tree into a single node for C-compiler
-   Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 2002,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
+   2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -63,6 +63,7 @@ static void encode		PARAMS ((HOST_WIDE_INT *,
 static void decode		PARAMS ((HOST_WIDE_INT *,
 					 unsigned HOST_WIDE_INT *,
 					 HOST_WIDE_INT *));
+static bool negate_expr_p	PARAMS ((tree));
 static tree negate_expr		PARAMS ((tree));
 static tree split_tree		PARAMS ((tree, enum tree_code, tree *, tree *,
 					 tree *, int));
@@ -835,6 +836,55 @@ div_and_round_double (code, uns,
   return overflow;
 }
 
+/* Determine whether an expression T can be cheaply negated using
+   the function negate_expr.  */
+
+static bool
+negate_expr_p (t)
+     tree t;
+{
+  unsigned HOST_WIDE_INT val;
+  unsigned int prec;
+  tree type;
+
+  if (t == 0)
+    return false;
+
+  type = TREE_TYPE (t);
+
+  STRIP_SIGN_NOPS (t);
+  switch (TREE_CODE (t))
+    {
+    case INTEGER_CST:
+      if (TREE_UNSIGNED (type))
+	return false;
+
+      /* Check that -CST will not overflow type.  */
+      prec = TYPE_PRECISION (type);
+      if (prec > HOST_BITS_PER_WIDE_INT)
+	{
+	  if (TREE_INT_CST_LOW (t) != 0)
+	    return true;
+	  prec -= HOST_BITS_PER_WIDE_INT;
+	  val = TREE_INT_CST_HIGH (t);
+	}
+      else
+	val = TREE_INT_CST_LOW (t);
+      if (prec < HOST_BITS_PER_WIDE_INT)
+	val &= ((unsigned HOST_WIDE_INT) 1 << prec) - 1;
+      return val != ((unsigned HOST_WIDE_INT) 1 << (prec - 1));
+
+    case REAL_CST:
+    case NEGATE_EXPR:
+    case MINUS_EXPR:
+      return true;
+
+    default:
+      break;
+    }
+  return false;
+}
+
 /* Given T, an expression, return the negation of T.  Allow for T to be
    null, in which case return null.  */
 
@@ -5479,13 +5529,14 @@ fold (expr)
       /* A - (-B) -> A + B */
       if (TREE_CODE (arg1) == NEGATE_EXPR)
 	return fold (build (PLUS_EXPR, type, arg0, TREE_OPERAND (arg1, 0)));
-      /* (-A) - CST -> (-CST) - A   for floating point (what about ints ?)  */
-      if (TREE_CODE (arg0) == NEGATE_EXPR && TREE_CODE (arg1) == REAL_CST)
-	return
-	  fold (build (MINUS_EXPR, type,
-		       build_real (TREE_TYPE (arg1),
-				   REAL_VALUE_NEGATE (TREE_REAL_CST (arg1))),
-		       TREE_OPERAND (arg0, 0)));
+      /* (-A) - B -> (-B) - A  where B is easily negated and we can swap.  */
+      if (TREE_CODE (arg0) == NEGATE_EXPR
+	  && FLOAT_TYPE_P (type)
+	  && negate_expr_p (arg1)
+	  && (! TREE_SIDE_EFFECTS (arg0) || TREE_CONSTANT (arg1))
+	  && (! TREE_SIDE_EFFECTS (arg1) || TREE_CONSTANT (arg0)))
+	return fold (build (MINUS_EXPR, type, negate_expr (arg1),
+			    TREE_OPERAND (arg0, 0)));
 
       if (! FLOAT_TYPE_P (type))
 	{
