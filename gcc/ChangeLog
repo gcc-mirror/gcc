@@ -1,3 +1,8 @@
+Mon Jun  4 20:44:25 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* simplify-rtx.c (simplify_subreg): Fix combining of
+	paradoxical subregs.
+
 Mon Jun  4 20:15:25 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* rtlanal.c (rtx_unsable_p): ADDRESSOF is stable.

@@ -2297,41 +2297,63 @@ simplify_subreg (outermode, op, innermode, byte)
   if (GET_CODE (op) == SUBREG)
     {
       enum machine_mode innermostmode = GET_MODE (SUBREG_REG (op));
-      unsigned int final_offset = byte + SUBREG_BYTE (op);
+      int final_offset = byte + SUBREG_BYTE (op);
       rtx new;
 
       if (outermode == innermostmode
 	  && byte == 0 && SUBREG_BYTE (op) == 0)
 	return SUBREG_REG (op);
 
-      if ((WORDS_BIG_ENDIAN || BYTES_BIG_ENDIAN)
-	  && GET_MODE_SIZE (innermode) > GET_MODE_SIZE (outermode)
-	  && GET_MODE_SIZE (innermode) > GET_MODE_SIZE (innermostmode))
+      /* The SUBREG_BYTE represents offset, as if the value were stored
+	 in memory.  Irritating exception is paradoxical subreg, where
+	 we define SUBREG_BYTE to be 0.  On big endian machines, this
+	 value should be negative.  For a moment, undo this exception. */
+      if (byte == 0 && GET_MODE_SIZE (innermode) < GET_MODE_SIZE (outermode))
 	{
-	  /* Inner SUBREG is paradoxical, outer is not.  On big endian
-	     we have to special case this.  */
-	  if (SUBREG_BYTE (op))
-	    abort(); /* Can a paradoxical subreg have nonzero offset? */
-	  if (WORDS_BIG_ENDIAN && BYTES_BIG_ENDIAN)
-	    final_offset = (byte - GET_MODE_SIZE (innermode)
-			    + GET_MODE_SIZE (innermostmode));
-	  else if (WORDS_BIG_ENDIAN)
-	    final_offset = ((final_offset % UNITS_PER_WORD)
-			    + ((byte - GET_MODE_SIZE (innermode)
-			        + GET_MODE_SIZE (innermostmode))
-			       * UNITS_PER_WORD) / UNITS_PER_WORD);
-	  else
-	    final_offset = (((final_offset * UNITS_PER_WORD)
-			     / UNITS_PER_WORD)
-			    + ((byte - GET_MODE_SIZE (innermode)
-			        + GET_MODE_SIZE (innermostmode))
-			       % UNITS_PER_WORD));
+	  int difference = (GET_MODE_SIZE (innermode) - GET_MODE_SIZE (outermode));
+	  if (WORDS_BIG_ENDIAN)
+	    final_offset += (difference / UNITS_PER_WORD) * UNITS_PER_WORD;
+	  if (BYTES_BIG_ENDIAN)
+	    final_offset += difference % UNITS_PER_WORD;
+	}
+      if (SUBREG_BYTE (op) == 0
+	  && GET_MODE_SIZE (innermostmode) < GET_MODE_SIZE (innermode))
+	{
+	  int difference = (GET_MODE_SIZE (innermostmode) - GET_MODE_SIZE (innermode));
+	  if (WORDS_BIG_ENDIAN)
+	    final_offset += (difference / UNITS_PER_WORD) * UNITS_PER_WORD;
+	  if (BYTES_BIG_ENDIAN)
+	    final_offset += difference % UNITS_PER_WORD;
 	}
 
-      /* Bail out in case resulting subreg would be incorrect.  */
-      if (final_offset % GET_MODE_SIZE (outermode)
-	  || final_offset >= GET_MODE_SIZE (innermostmode))
-	return NULL;
+      /* See whether resulting subreg will be paradoxical.  */
+      if (GET_MODE_SIZE (innermostmode) < GET_MODE_SIZE (outermode))
+	{
+	  /* In nonparadoxical subregs we can't handle negative offsets.  */
+	  if (final_offset < 0)
+	    return NULL_RTX;
+	  /* Bail out in case resulting subreg would be incorrect.  */
+	  if (final_offset % GET_MODE_SIZE (outermode)
+	      || final_offset >= GET_MODE_SIZE (innermostmode))
+	    return NULL;
+	}
+      else
+	{
+	  int offset = 0;
+	  int difference = (GET_MODE_SIZE (innermostmode) - GET_MODE_SIZE (outermode));
+
+	  /* In paradoxical subreg, see if we are still looking on lower part.
+	     If so, our SUBREG_BYTE will be 0.  */
+	  if (WORDS_BIG_ENDIAN)
+	    offset += (difference / UNITS_PER_WORD) * UNITS_PER_WORD;
+	  if (BYTES_BIG_ENDIAN)
+	    offset += difference % UNITS_PER_WORD;
+	  if (offset == final_offset)
+	    final_offset = 0;
+	  else
+	    return NULL;
+	}
+
       /* Recurse for futher possible simplifications.  */
       new = simplify_subreg (outermode, SUBREG_REG (op),
 			     GET_MODE (SUBREG_REG (op)),
