@@ -7606,6 +7606,26 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
       return;
     }
 
+  /* Handling __FUNCTION__ and its ilk in a template-function requires
+     some special processing because we are called from
+     language-independent code.  */
+  if (current_function && processing_template_decl 
+      && current_function_name_declared == 2)
+    {
+      /* Since we're in a template function, we need to
+	 push_template_decl.  The language-independent code in
+	 declare_hidden_char_array doesn't know to do this.  */
+      retrofit_lang_decl (decl);
+      decl = push_template_decl (decl);
+
+      if (strcmp (IDENTIFIER_POINTER (DECL_NAME (decl)), 
+		  "__PRETTY_FUNCTION__") == 0)
+	{
+	  init = build (FUNCTION_NAME, const_string_type_node);
+	  DECL_PRETTY_FUNCTION_P (decl) = 1;
+	}
+    }
+
   /* If a name was specified, get the string.  */
   if (asmspec_tree)
       asmspec = TREE_STRING_POINTER (asmspec_tree);
@@ -7639,8 +7659,7 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
     return;
 
   /* Add this declaration to the statement-tree.  */
-  if (building_stmt_tree () 
-      && TREE_CODE (current_scope ()) == FUNCTION_DECL)
+  if (building_stmt_tree () && at_function_scope_p ())
     add_decl_stmt (decl);
 
   if (TYPE_HAS_MUTABLE_P (type))

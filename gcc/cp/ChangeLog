@@ -1,3 +1,26 @@
+1999-11-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.def (FUNCTION_NAME): New tree node.
+	* cp-tree.h (current_function_name_declared): Tweak documentation.
+	(lang_decl_flags): Add pretty_function_p, adjust dummy.
+	(DECL_PRETTY_FUNCTION_P): New macro.
+	* decl.c (cp_finish_decl): Handle declarations of __FUNCTION__,
+	etc., in a template function.  Use at_function_scope_p instead of
+	expanding it inline.
+	* pt.c (tsubst_decl): Handle DECL_PRETTY_FUNCTION_P declarations
+	specially.
+	(tsubst): Handle FUNCTION_NAME.
+	(tsubst_copy): Likewise.
+	(instantiate_decl): Prevent redeclarations of __PRETTY_FUNCTION__,
+	etc. in instantiation.
+	* semantics.c (begin_compound_stmt): Declare __FUNCTION__, etc.,
+	even in template functions.
+	(setup_vtbl_ptr): Don't declare __PRETTY_FUNCTION in the
+	conditional scope at the top of a destructor.
+	
+	* error.c (dump_function_decl): Use `[ with ... ]' syntax for
+	specializations too.
+
 1999-11-22  Nathan Sidwell  <nathan@acm.org>
 
 	* semantics.c (finish_unary_op_expr): Only set TREE_NEGATED_INT

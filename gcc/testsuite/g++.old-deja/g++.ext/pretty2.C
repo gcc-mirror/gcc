@@ -3,8 +3,6 @@
 
 // make sure __FUNCTION__ and __PRETTY_FUNCTION__ work in member functions
 
-// execution test - XFAIL *-*-*
-
 #include <stdio.h>
 #include <string.h>
 
