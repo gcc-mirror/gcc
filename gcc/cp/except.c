@@ -34,6 +34,7 @@ Boston, MA 02111-1307, USA.  */
 #include "except.h"
 #include "function.h"
 #include "defaults.h"
+#include "toplev.h"
 
 rtx expand_builtin_return_addr	PROTO((enum built_in_function, int, rtx));
 

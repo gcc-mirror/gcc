@@ -30,6 +30,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "except.h"
 #include "expr.h"
+#include "toplev.h"
 
 extern void compiler_error ();
 
