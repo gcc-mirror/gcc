@@ -45,8 +45,8 @@ Boston, MA 02111-1307, USA.  */
 #undef	LIB_SPEC
 #define	LIB_SPEC "%{mwindows:-subsystem:windows -entry:WinMainCRTStartup \
   USER32.LIB GDI32.LIB COMDLG32.LIB WINSPOOL.LIB} \
- %{!mwindows:-subsystem:console -entry:mainCRTStartup} \
- %{mcrtmt:LIBCMT.LIB KERNEL32.LIB} %{!mcrtmt:LIBC.LIB KERNEL32.LIB} \
+ %{!mwindows:-subsystem console -e mainCRTStartup} \
+ %{mcrtmt:LIBCMT.LIB KERNEL32.LIB} %{!mcrtmt:-lkernel32 -lcygwin} \
  %{v}"
 
 #undef	LINK_SPEC
@@ -249,6 +249,19 @@ toc_section ()						\
   fprintf (FILE, "\t.ualong ..");				\
   assemble_name (FILE, NAME);					\
   fprintf (FILE, ",.toc\n");				        \
+								\
+  if (lookup_attribute ("dllexport",				\
+			TYPE_ATTRIBUTES (TREE_TYPE (DECL))))	\
+    {								\
+      fprintf (FILE, "\t.globl __imp_");			\
+      assemble_name (FILE, NAME);				\
+      fprintf (FILE, "\n__imp_");				\
+      assemble_name (FILE, NAME);				\
+      fprintf (FILE, ":\n\t.ulong ");				\
+      assemble_name (FILE, NAME);				\
+      fprintf (FILE, "\n");					\
+    }								\
+								\
   fprintf (FILE, "\t.section .text\n\t.align 2\n..");		\
   assemble_name (FILE, NAME);					\
   fprintf (FILE, ":\n");					\

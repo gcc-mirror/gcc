@@ -37,6 +37,10 @@ Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "tree.h"
 
+#ifndef TARGET_NO_PROTOTYPE
+#define TARGET_NO_PROTOTYPE 0
+#endif
+
 extern char *language_string;
 extern int profile_block_flag;
 
@@ -836,6 +840,29 @@ input_operand (op, mode)
      for an add will be valid.  */
   return add_operand (op, mode);
 }
+
+/* Return 1 for an operand in small memory on V.4/eabi */
+
+int
+small_data_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  rtx sym_ref, const_part;
+
+  if (DEFAULT_ABI != ABI_V4)
+    return 0;
+
+  if (GET_CODE (op) != SYMBOL_REF && GET_CODE (op) != CONST)
+    return 0;
+
+  sym_ref = eliminate_constant_term (op, &const_part);
+  if (!sym_ref || GET_CODE (sym_ref) != SYMBOL_REF || *XSTR (sym_ref, 0) != '@')
+    return 0;
+
+  return 1;
+}
+
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
@@ -852,19 +879,19 @@ init_cumulative_args (cum, fntype, libname, incoming)
      int incoming;
 {
   static CUMULATIVE_ARGS zero_cumulative;
+  enum rs6000_abi abi = DEFAULT_ABI;
 
   *cum = zero_cumulative;
   cum->words = 0;
   cum->fregno = FP_ARG_MIN_REG;
   cum->prototype = (fntype && TYPE_ARG_TYPES (fntype));
+  cum->call_cookie = CALL_NORMAL;
 
   if (incoming)
     {
       cum->nargs_prototype = 1000;		/* don't return an EXPR_LIST */
-#ifdef TARGET_V4_CALLS
-      if (TARGET_V4_CALLS)
+      if (abi == ABI_V4)
 	cum->varargs_offset = RS6000_VARARGS_OFFSET;
-#endif
     }
 
   else if (cum->prototype)
@@ -876,6 +903,13 @@ init_cumulative_args (cum, fntype, libname, incoming)
     cum->nargs_prototype = 0;
 
   cum->orig_nargs = cum->nargs_prototype;
+
+  /* Check for DLL import functions */
+  if (abi == ABI_NT
+      && fntype
+      && lookup_attribute ("dllimport", TYPE_ATTRIBUTES (fntype)))
+    cum->call_cookie = CALL_NT_DLLIMPORT;
+
   if (TARGET_DEBUG_ARG)
     {
       fprintf (stderr, "\ninit_cumulative_args:");
@@ -886,10 +920,11 @@ init_cumulative_args (cum, fntype, libname, incoming)
 		   tree_code_name[ (int)TREE_CODE (ret_type) ]);
 	}
 
-#ifdef TARGET_V4_CALLS
-      if (TARGET_V4_CALLS && incoming)
+      if (abi == ABI_V4 && incoming)
 	fprintf (stderr, " varargs = %d, ", cum->varargs_offset);
-#endif
+
+      if (cum->call_cookie == CALL_NT_DLLIMPORT)
+	fprintf (stderr, " dllimport,");
 
       fprintf (stderr, " proto = %d, nargs = %d\n",
 	       cum->prototype, cum->nargs_prototype);
@@ -936,8 +971,7 @@ function_arg_advance (cum, mode, type, named)
   cum->words += align;
   cum->nargs_prototype--;
 
-#ifdef TARGET_V4_CALLS
-  if (TARGET_V4_CALLS)
+  if (DEFAULT_ABI == ABI_V4)
     {
       /* Long longs must not be split between registers and stack */
       if ((GET_MODE_CLASS (mode) != MODE_FLOAT || TARGET_SOFT_FLOAT)
@@ -963,7 +997,6 @@ function_arg_advance (cum, mode, type, named)
 	cum->words += RS6000_ARG_SIZE (mode, type, 1);
     }
   else
-#endif
     if (named)
       {
 	cum->words += RS6000_ARG_SIZE (mode, type, named);
@@ -1020,20 +1053,27 @@ function_arg (cum, mode, type, named)
      marker for software floating point, or compiler generated library calls.  */
   if (mode == VOIDmode)
     {
-#ifdef TARGET_V4_CALLS
-      if (TARGET_V4_CALLS && TARGET_HARD_FLOAT && cum->nargs_prototype < 0
-	  && type && (cum->prototype || TARGET_NO_PROTOTYPE))
-	return GEN_INT ((cum->fregno == FP_ARG_MIN_REG) ? -1 : 1);
-#endif
+      enum rs6000_abi abi = DEFAULT_ABI;
 
-      return GEN_INT (0);
+      if (abi == ABI_V4
+	  && TARGET_HARD_FLOAT
+	  && cum->nargs_prototype < 0
+	  && type && (cum->prototype || TARGET_NO_PROTOTYPE))
+	{
+	  if (cum->call_cookie != CALL_NORMAL)
+	    abort ();
+
+	  return GEN_INT ((cum->fregno == FP_ARG_MIN_REG)
+			  ? CALL_V4_SET_FP_ARGS
+			  : CALL_V4_CLEAR_FP_ARGS);
+	}
+
+      return GEN_INT (cum->call_cookie);
     }
 
   if (!named)
     {
-#ifdef TARGET_V4_CALLS
-      if (!TARGET_V4_CALLS)
-#endif
+      if (DEFAULT_ABI != ABI_V4)
 	return NULL_RTX;
     }
 
@@ -1043,9 +1083,7 @@ function_arg (cum, mode, type, named)
   if (USE_FP_FOR_ARG_P (*cum, mode, type))
     {
       if ((cum->nargs_prototype > 0)
-#ifdef TARGET_V4_CALLS
-	  || TARGET_V4_CALLS	/* V.4 never passes FP values in GP registers */
-#endif
+	  || (DEFAULT_ABI == ABI_V4)	/* V.4 never passes FP values in GP registers */
 	  || !type)
 	return gen_rtx (REG, mode, cum->fregno);
 
@@ -1056,14 +1094,12 @@ function_arg (cum, mode, type, named)
 		      gen_rtx (REG, mode, cum->fregno));
     }
 
-#ifdef TARGET_V4_CALLS
   /* Long longs won't be split between register and stack */
-  else if (TARGET_V4_CALLS &&
+  else if (DEFAULT_ABI == ABI_V4 &&
 	   align_words + RS6000_ARG_SIZE (mode, type, named) > GP_ARG_NUM_REG)
     {
       return NULL_RTX;
     }
-#endif
 
   else if (align_words < GP_ARG_NUM_REG)
     return gen_rtx (REG, mode, GP_ARG_MIN_REG + align_words);
@@ -1085,10 +1121,8 @@ function_arg_partial_nregs (cum, mode, type, named)
   if (! named)
     return 0;
 
-#ifdef TARGET_V4_CALLS
-  if (TARGET_V4_CALLS)
+  if (DEFAULT_ABI == ABI_V4)
     return 0;
-#endif
 
   if (USE_FP_FOR_ARG_P (*cum, mode, type))
     {
@@ -1124,15 +1158,13 @@ function_arg_pass_by_reference (cum, mode, type, named)
      tree type;
      int named;
 {
-#ifdef TARGET_V4_CALLS
-  if (TARGET_V4_CALLS && type && AGGREGATE_TYPE_P (type))
+  if (DEFAULT_ABI == ABI_V4 && type && AGGREGATE_TYPE_P (type))
     {
       if (TARGET_DEBUG_ARG)
 	fprintf (stderr, "function_arg_pass_by_reference: aggregate\n");
 
       return 1;
     }
-#endif
 
   return 0;
 }
@@ -1169,13 +1201,11 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
 	     "setup_vararg: words = %2d, fregno = %2d, nargs = %4d, proto = %d, mode = %4s, no_rtl= %d\n",
 	     cum->words, cum->fregno, cum->nargs_prototype, cum->prototype, GET_MODE_NAME (mode), no_rtl);
 
-#ifdef TARGET_V4_CALLS
-  if (TARGET_V4_CALLS && !no_rtl)
+  if (DEFAULT_ABI == ABI_V4 && !no_rtl)
     {
       rs6000_sysv_varargs_p = 1;
       save_area = plus_constant (frame_pointer_rtx, RS6000_VARARGS_OFFSET);
     }
-#endif
 
   if (cum->words < 8)
     {
@@ -1198,9 +1228,8 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
       *pretend_size = (GP_ARG_NUM_REG - first_reg_offset) * UNITS_PER_WORD;
     }
 
-#ifdef TARGET_V4_CALLS
   /* Save FP registers if needed.  */
-  if (TARGET_V4_CALLS && TARGET_HARD_FLOAT && !no_rtl)
+  if (DEFAULT_ABI == ABI_V4 && TARGET_HARD_FLOAT && !no_rtl)
     {
       int fregno     = cum->fregno;
       int num_fp_reg = FP_ARG_V4_MAX_REG + 1 - fregno;
@@ -1228,7 +1257,6 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
 	  emit_label (lab);
 	}
     }
-#endif
 }
 
 /* If defined, is a C expression that produces the machine-specific
@@ -2342,13 +2370,14 @@ print_operand_address (file, x)
   else if (GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == CONST)
     {
       output_addr_const (file, x);
-      /* When TARGET_MINIMAL_TOC, use the indirected toc table pointer instead
-	 of the toc pointer.  */
+      if (DEFAULT_ABI == ABI_V4 && small_data_operand (x, GET_MODE (x)))
+	fprintf (file, "@sda21(%s)", reg_names[0]);
+
 #ifdef TARGET_NO_TOC
-      if (TARGET_NO_TOC)
+      else if (TARGET_NO_TOC)
 	;
-      else
 #endif
+      else
 	fprintf (file, "(%s)", reg_names[ TARGET_MINIMAL_TOC ? 30 : 2 ]);
     }
   else if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 1)) == REG)
@@ -3996,3 +4025,185 @@ rs6000_initialize_trampoline (addr, fnaddr, cxt)
 
   return;
 }
+
+
+/* If defined, a C expression whose value is nonzero if IDENTIFIER
+   with arguments ARGS is a valid machine specific attribute for DECL.
+   The attributes in ATTRIBUTES have previously been assigned to DECL.  */
+
+int
+rs6000_valid_decl_attribute_p (decl, attributes, identifier, args)
+     tree decl;
+     tree attributes;
+     tree identifier;
+     tree args;
+{
+  return 0;
+}
+
+/* If defined, a C expression whose value is nonzero if IDENTIFIER
+   with arguments ARGS is a valid machine specific attribute for TYPE.
+   The attributes in ATTRIBUTES have previously been assigned to TYPE.  */
+
+int
+rs6000_valid_type_attribute_p (type, attributes, identifier, args)
+     tree type;
+     tree attributes;
+     tree identifier;
+     tree args;
+{
+  if (TREE_CODE (type) != FUNCTION_TYPE
+      && TREE_CODE (type) != FIELD_DECL
+      && TREE_CODE (type) != TYPE_DECL)
+    return 0;
+
+  if (DEFAULT_ABI == ABI_NT)
+    {
+      /* Stdcall attribute says callee is responsible for popping arguments
+	 if they are not variable.  */
+      if (is_attribute_p ("stdcall", identifier))
+	return (args == NULL_TREE);
+
+      /* Cdecl attribute says the callee is a normal C declaration */
+      if (is_attribute_p ("cdecl", identifier))
+	return (args == NULL_TREE);
+
+      /* Dllimport attribute says says the caller is to call the function
+	 indirectly through a __imp_<name> pointer.  */
+      if (is_attribute_p ("dllimport", identifier))
+	return (args == NULL_TREE);
+
+      /* Dllexport attribute says says the callee is to create a __imp_<name>
+	 pointer.  */
+      if (is_attribute_p ("dllexport", identifier))
+	return (args == NULL_TREE);
+    }
+
+  return 0;
+}
+
+/* If defined, a C expression whose value is zero if the attributes on
+   TYPE1 and TYPE2 are incompatible, one if they are compatible, and
+   two if they are nearly compatible (which causes a warning to be
+   generated).  */
+
+int
+rs6000_comp_type_attributes (type1, type2)
+     tree type1;
+     tree type2;
+{
+  return 1;
+}
+
+/* If defined, a C statement that assigns default attributes to newly
+   defined TYPE.  */
+
+void
+rs6000_set_default_type_attributes (type)
+     tree type;
+{
+}
+
+/* Return a dll import reference corresponding to to a call's SYMBOL_REF */
+struct rtx_def *
+rs6000_dll_import_ref (call_ref)
+     rtx call_ref;
+{
+  char *call_name;
+  int len;
+  char *p;
+  rtx reg1, reg2;
+  tree node;
+
+  if (GET_CODE (call_ref) != SYMBOL_REF)
+    abort ();
+
+  call_name = XSTR (call_ref, 0);
+  len = sizeof ("__imp_") + strlen (call_name);
+  p = alloca (len);
+  reg2 = gen_reg_rtx (Pmode);
+
+  strcpy (p, "__imp_");
+  strcat (p, call_name);
+  node = get_identifier (p);
+
+  reg1 = force_reg (Pmode, gen_rtx (SYMBOL_REF, VOIDmode, IDENTIFIER_POINTER (node)));
+  emit_move_insn (reg2, gen_rtx (MEM, Pmode, reg1));
+
+  return reg2;
+}
+
+
+/* A C statement or statements to switch to the appropriate section
+   for output of RTX in mode MODE.  You can assume that RTX is some
+   kind of constant in RTL.  The argument MODE is redundant except in
+   the case of a `const_int' rtx.  Select the section by calling
+   `text_section' or one of the alternatives for other sections.
+
+   Do not define this macro if you put all constants in the read-only
+   data section.  */
+
+#ifdef USING_SVR4_H
+
+void
+rs6000_select_rtx_section (mode, x)
+     enum machine_mode mode;
+     rtx x;
+{
+  if (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (x))
+    toc_section ();
+  else if (TARGET_SDATA && GET_MODE_SIZE (mode) > 0 && GET_MODE_SIZE (mode) <= 8)
+    sdata2_section ();
+  else
+    const_section ();
+}
+
+/* A C statement or statements to switch to the appropriate
+   section for output of DECL.  DECL is either a `VAR_DECL' node
+   or a constant of some sort.  RELOC indicates whether forming
+   the initial value of DECL requires link-time relocations.  */
+
+void
+rs6000_select_section (decl, reloc)
+     tree decl;
+     int reloc;
+{
+  int size = int_size_in_bytes (TREE_TYPE (decl));
+
+  if (TREE_CODE (decl) == STRING_CST)
+    {
+      if ((! flag_writable_strings) && TARGET_SDATA && (size <= 8))
+	sdata2_section ();
+      else if (! flag_writable_strings)
+	const_section ();
+      else if (TARGET_SDATA && (size <= 8))
+	sdata_section ();
+      else
+	data_section ();
+    }
+  else if (TREE_CODE (decl) == VAR_DECL)
+    {
+      if ((flag_pic && reloc)
+	  || !TREE_READONLY (decl)
+	  || TREE_SIDE_EFFECTS (decl)
+	  || !DECL_INITIAL (decl)
+	  || (DECL_INITIAL (decl) != error_mark_node
+	      && !TREE_CONSTANT (DECL_INITIAL (decl))))
+	{
+	  if (TARGET_SDATA && (size <= 8) && (size > 0))
+	    sdata_section ();
+	  else
+	    data_section ();
+	}
+      else
+	{
+	  if (TARGET_SDATA && (size <= 8) && (size > 0))
+	    sdata2_section ();
+	  else
+	    const_section ();
+	}
+    }
+  else
+    const_section ();
+}
+#endif /* USING_SVR4_H */

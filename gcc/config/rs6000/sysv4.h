@@ -25,7 +25,7 @@ Boston, MA 02111-1307, USA.  */
 #define	MASK_NO_BITFIELD_TYPE	0x40000000	/* Set PCC_BITFIELD_TYPE_MATTERS to 0 */
 #define	MASK_STRICT_ALIGN	0x20000000	/* Set STRICT_ALIGNMENT to 1.  */
 #define MASK_RELOCATABLE	0x10000000	/* GOT pointers are PC relative */
-#define	MASK_UNUSED		0x08000000	/* UNUSED, was no-traceback */
+#define	MASK_SDATA		0x08000000	/* use eabi .sdata/.sdata2/.sbss relocations */
 #define MASK_LITTLE_ENDIAN	0x04000000	/* target is little endian */
 #define MASK_CALLS_1		0x02000000	/* First ABI bit (AIX, AIXDESC) */
 #define MASK_PROTOTYPE		0x01000000	/* Only prototyped fcns pass variable args */
@@ -40,6 +40,7 @@ Boston, MA 02111-1307, USA.  */
 #define	TARGET_NO_BITFIELD_TYPE	(target_flags & MASK_NO_BITFIELD_TYPE)
 #define TARGET_STRICT_ALIGN	(target_flags & MASK_STRICT_ALIGN)
 #define TARGET_RELOCATABLE	(target_flags & MASK_RELOCATABLE)
+#define TARGET_SDATA		(target_flags & MASK_SDATA)
 #define TARGET_LITTLE_ENDIAN	(target_flags & MASK_LITTLE_ENDIAN)
 #define	TARGET_PROTOTYPE	(target_flags & MASK_PROTOTYPE)
 #define	TARGET_TOC		((target_flags & (MASK_64BIT		\
@@ -71,9 +72,12 @@ Boston, MA 02111-1307, USA.  */
   { "strict-align",	 MASK_STRICT_ALIGN },				\
   { "no-strict-align",	-MASK_STRICT_ALIGN },				\
   { "relocatable",	 MASK_RELOCATABLE | MASK_MINIMAL_TOC | MASK_NO_FP_IN_TOC }, \
+  { "relocatable",	-MASK_SDATA },					\
   { "no-relocatable",	-MASK_RELOCATABLE },				\
   { "relocatable-lib",	 MASK_RELOCATABLE | MASK_MINIMAL_TOC | MASK_NO_FP_IN_TOC }, \
   { "no-relocatable-lib", -MASK_RELOCATABLE },				\
+  { "sdata",		 MASK_SDATA },					\
+  { "no-sdata",		-MASK_SDATA },					\
   { "little-endian",	 MASK_LITTLE_ENDIAN },				\
   { "little",		 MASK_LITTLE_ENDIAN },				\
   { "big-endian",	-MASK_LITTLE_ENDIAN },				\
@@ -106,6 +110,23 @@ Boston, MA 02111-1307, USA.  */
 
 #define SUBTARGET_OVERRIDE_OPTIONS					\
 do {									\
+  rs6000_current_abi = ((TARGET_AIXDESC_CALLS) ? ABI_AIX :		\
+			(TARGET_NT_CALLS)      ? ABI_NT :		\
+			(TARGET_AIX_CALLS)     ? ABI_AIX_NODESC :	\
+						 ABI_V4);		\
+									\
+  if (TARGET_RELOCATABLE && TARGET_SDATA)				\
+    {									\
+      target_flags &= ~MASK_SDATA;					\
+      error ("-mrelocatable and -msdata are incompatible.");		\
+    }									\
+									\
+  if (TARGET_SDATA && DEFAULT_ABI != ABI_V4)				\
+    {									\
+      target_flags &= ~MASK_SDATA;					\
+      error ("-msdata and -mcall-aix are incompatible.");		\
+    }									\
+									\
   if (TARGET_RELOCATABLE && !TARGET_MINIMAL_TOC)			\
     {									\
       target_flags |= MASK_MINIMAL_TOC;					\
@@ -135,11 +156,6 @@ do {									\
       target_flags |= MASK_LITTLE_ENDIAN;				\
       error ("-mcall-nt must be little endian");			\
     }									\
-									\
-  rs6000_current_abi = ((TARGET_AIXDESC_CALLS) ? ABI_AIX :		\
-			(TARGET_NT_CALLS)      ? ABI_NT :		\
-			(TARGET_AIX_CALLS)     ? ABI_AIX_NODESC :	\
-						 ABI_V4);		\
 } while (0)
 
 /* Default ABI to compile code for */
@@ -156,8 +172,6 @@ do {									\
 /* System V.4 passes the first 8 floating arguments in registers,
    instead of the first 13 like AIX does.  */
 #undef	FP_ARG_MAX_REG
-#define	FP_ARG_AIX_MAX_REG	45
-#define	FP_ARG_V4_MAX_REG	40
 #define	FP_ARG_MAX_REG ((TARGET_AIX_CALLS) ? FP_ARG_AIX_MAX_REG : FP_ARG_V4_MAX_REG)
 
 /* Size of the V.4 varargs area if needed */
@@ -263,14 +277,20 @@ do {									\
 
 /* Besides the usual ELF sections, we need a toc section.  */
 #undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_const, in_ctors, in_dtors, in_toc
+#define EXTRA_SECTIONS in_const, in_ctors, in_dtors, in_toc, in_sdata, in_sdata2, in_sbss
 
 #undef EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS						\
   CONST_SECTION_FUNCTION						\
   CTORS_SECTION_FUNCTION						\
   DTORS_SECTION_FUNCTION						\
-  TOC_SECTION_FUNCTION
+  TOC_SECTION_FUNCTION							\
+  SDATA_SECTION_FUNCTION						\
+  SDATA2_SECTION_FUNCTION						\
+  SBSS_SECTION_FUNCTION
+
+extern void toc_section (), sdata_section (), sdata2_section ();
+extern void sbss_section ();
 
 #define TOC_SECTION_FUNCTION						\
 void									\
@@ -321,15 +341,64 @@ toc_section ()								\
 #define TOC_SECTION_ASM_OP "\t.section\t\".got\",\"aw\""
 #define MINIMAL_TOC_SECTION_ASM_OP "\t.section\t\".got1\",\"aw\""
 
-/* Use the TOC section for TOC entries.  */
+#define SDATA_SECTION_ASM_OP "\t.section\t\".sdata\",\"aw\""
+#define SDATA2_SECTION_ASM_OP "\t.section\t\".sdata2\",\"a\""
+#define SBSS_SECTION_ASM_OP "\t.section\t\".sbss\",\"aw\",@nobits"
+
+#define SDATA_SECTION_FUNCTION						\
+void									\
+sdata_section ()							\
+{									\
+  if (in_section != in_sdata)						\
+    {									\
+      in_section = in_sdata;						\
+      fprintf (asm_out_file, "%s\n", SDATA_SECTION_ASM_OP);		\
+    }									\
+}
+
+#define SDATA2_SECTION_FUNCTION						\
+void									\
+sdata2_section ()							\
+{									\
+  if (in_section != in_sdata2)						\
+    {									\
+      in_section = in_sdata2;						\
+      fprintf (asm_out_file, "%s\n", SDATA2_SECTION_ASM_OP);		\
+    }									\
+}
+
+#define SBSS_SECTION_FUNCTION						\
+void									\
+sbss_section ()								\
+{									\
+  if (in_section != in_sbss)						\
+    {									\
+      in_section = in_sbss;						\
+      fprintf (asm_out_file, "%s\n", SBSS_SECTION_ASM_OP);		\
+    }									\
+}
+
+/* A C statement or statements to switch to the appropriate section
+   for output of RTX in mode MODE.  You can assume that RTX is some
+   kind of constant in RTL.  The argument MODE is redundant except in
+   the case of a `const_int' rtx.  Select the section by calling
+   `text_section' or one of the alternatives for other sections.
+
+   Do not define this macro if you put all constants in the read-only
+   data section.  */
+
+extern void rs6000_select_rtx_section (), rs6000_select_section ();
 
 #undef SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE, X)		\
-{ if (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (X))	\
-    toc_section ();				\
-  else						\
-    const_section ();				\
-}
+#define SELECT_RTX_SECTION(MODE, X) rs6000_select_rtx_section (MODE, X)
+
+/* A C statement or statements to switch to the appropriate
+   section for output of DECL.  DECL is either a `VAR_DECL' node
+   or a constant of some sort.  RELOC indicates whether forming
+   the initial value of DECL requires link-time relocations.  */
+
+#undef SELECT_SECTION
+#define SELECT_SECTION(DECL,RELOC) rs6000_select_section (DECL, RELOC)
 
 /* Return non-zero if this entry is to be written into the constant pool
    in a special way.  We do so if this is a SYMBOL_REF, LABEL_REF or a CONST
@@ -423,12 +492,11 @@ extern int rs6000_pic_labelno;
 #define ASM_OUTPUT_INTERNAL_LABEL_PREFIX(FILE,PREFIX)	\
   fprintf (FILE, ".%s", PREFIX)
 
-/* Pass -mppc to the assembler, since that is what powerpc.h currently
-   implies.  */
+/* Pass various options to the assembler */
 #undef ASM_SPEC
 #define ASM_SPEC "-u %(asm_cpu) \
 %{V} %{v:%{!V:-V}} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
-%{mrelocatable} %{mrelocatable-lib} %{memb} \
+%{mrelocatable} %{mrelocatable-lib} %{memb} %{msdata: -memb} \
 %{mlittle} %{mlittle-endian} %{mbig} %{mbig-endian}"
 
 /* Output .file and comments listing what options there are */
@@ -528,14 +596,46 @@ do {									\
 	    XSTR (sym_ref, 0) = str;					\
 	  }								\
       }									\
+    else if (TARGET_SDATA && DEFAULT_ABI == ABI_V4			\
+	     && TREE_CODE (DECL) == VAR_DECL)				\
+      {									\
+	int size = int_size_in_bytes (TREE_TYPE (DECL));		\
+	tree section_name = DECL_SECTION_NAME (DECL);			\
+	char *name = ((section_name)					\
+			    ? IDENTIFIER_POINTER (section_name)		\
+			    : (char *)0);				\
+									\
+	if ((size > 0 && size <= 8)					\
+	    || (name							\
+		&& (strcmp (name, ".sdata") == 0			\
+		    || strcmp (name, ".sdata2") == 0			\
+		    || strcmp (name, ".sbss") == 0			\
+		    || strcmp (name, ".sbss2") == 0			\
+		    || strcmp (name, ".PPC.EMB.sdata0") == 0		\
+		    || strcmp (name, ".PPC.EMB.sbss0") == 0)))		\
+	  {								\
+	    rtx sym_ref = XEXP (DECL_RTL (DECL), 0);			\
+	    char *str = permalloc (2 + strlen (XSTR (sym_ref, 0)));	\
+	    strcpy (str, "@");						\
+	    strcat (str, XSTR (sym_ref, 0));				\
+	    XSTR (sym_ref, 0) = str;					\
+	  }								\
+      }									\
   } while (0)
 
 /* This macro gets just the user-specified name
    out of the string in a SYMBOL_REF.  Discard
-   a leading * */
+   a leading * or @. */
 #undef  STRIP_NAME_ENCODING
 #define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME) \
-  (VAR) = ((SYMBOL_NAME) + ((SYMBOL_NAME)[0] == '*'))
+  (VAR) = ((SYMBOL_NAME) + (((SYMBOL_NAME)[0] == '*') || ((SYMBOL_NAME)[0] == '@')))
+
+/* This is how to output a reference to a user-level label named NAME.
+   `assemble_name' uses this.  */
+
+#undef ASM_OUTPUT_LABELREF
+#define ASM_OUTPUT_LABELREF(FILE,NAME)	\
+  fputs ((NAME) + (NAME[0] == '@'), FILE)
 
 /* But, to make this work, we have to output the stabs for the function
    name *first*...  */
@@ -552,35 +652,29 @@ do {									\
   "-DPPC -Dunix -D__svr4__ -Asystem(unix) -Asystem(svr4) -Acpu(powerpc) -Amachine(powerpc)"
 
 /* Don't put -Y P,<path> for cross compilers */
-#undef LINK_SPEC
-#ifdef CROSS_COMPILE
-#define LINK_SPEC "\
-%{h*} %{V} %{v:%{!V:-V}} \
-%{b} %{Wl,*:%*} \
-%{static:-dn -Bstatic} \
-%{shared:-G -dy -z text %{!h*:%{o*:-h %*}}} \
-%{symbolic:-Bsymbolic -G -dy -z text %{!h*:%{o*:-h %*}}} \
-%{G:-G} \
-%{YP,*} \
-%{Qy:} %{!Qn:-Qy} \
-%{mlittle: -oformat elf32-powerpcle } %{mlittle-endian: -oformat elf32-powerpcle } \
-%{mbig: -oformat elf32-powerpc } %{mbig-endian: -oformat elf32-powerpc }"
-#else
-
-#define LINK_SPEC "\
-%{h*} %{V} %{v:%{!V:-V}} \
-%{b} %{Wl,*:%*} \
-%{static:-dn -Bstatic} \
-%{shared:-G -dy -z text %{!h*:%{o*:-h %*}}} \
-%{symbolic:-Bsymbolic -G -dy -z text %{!h*:%{o*:-h %*}}} \
-%{G:-G} \
-%{YP,*} \
+#undef LINK_PATH_SPEC
+#ifndef CROSS_COMPILE
+#define LINK_PATH_SPEC "\
 %{!nostdlib: %{!YP,*:%{p:-Y P,/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
-	     %{!p:-Y P,/usr/ccs/lib:/usr/lib}}} \
+%{!p:-Y P,/usr/ccs/lib:/usr/lib}}}"
+
+#else
+#define LINK_PATH_SPEC ""
+#endif
+
+#undef LINK_SPEC
+#define LINK_SPEC "\
+%{h*} %{V} %{v:%{!V:-V}} \
+%{b} %{Wl,*:%*} \
+%{static:-dn -Bstatic} \
+%{shared:-G -dy -z text %{!h*:%{o*:-h %*}}} \
+%{symbolic:-Bsymbolic -G -dy -z text %{!h*:%{o*:-h %*}}} \
+%{G:-G} \
+%{YP,*} \
+%(link_path) %(link_start) \
 %{Qy:} %{!Qn:-Qy} \
 %{mlittle: -oformat elf32-powerpcle } %{mlittle-endian: -oformat elf32-powerpcle } \
 %{mbig: -oformat elf32-powerpc } %{mbig-endian: -oformat elf32-powerpc }"
-#endif /* CROSS_COMPILE */
 
 #undef	CPP_SYSV_SPEC
 #define CPP_SYSV_SPEC \
@@ -612,4 +706,4 @@ do {									\
    `MULTILIB_OPTIONS' are set by default.  *Note Target Fragment::.  */
 
 #undef	MULTILIB_DEFAULTS
-#define	MULTILIB_DEFAULTS { "mbig", "mbig-endian", "mcall-sysv" }
+#define	MULTILIB_DEFAULTS { "mbig", "mbig-endian", "mcall-sysv", "mno-sdata" }
