@@ -1785,6 +1785,19 @@ immed_double_const (i0, i1, mode)
 	/* We cannot represent this value as a constant.  */
 	abort ();
 
+      /* If this would be an entire word for the target, but is not for
+	 the host, then sign-extend on the host so that the number will look
+	 the same way on the host that it would on the target.
+
+	 For example, when building a 64 bit alpha hosted 32 bit sparc
+	 targeted compiler, then we want the 32 bit unsigned value -1 to be
+	 represented as a 64 bit value -1, and not as 0x00000000ffffffff.
+	 The later confuses the sparc backend.  */
+
+      if (BITS_PER_WORD < HOST_BITS_PER_WIDE_INT && BITS_PER_WORD == width
+	  && (i0 & ((HOST_WIDE_INT) 1 << (width - 1))))
+	i0 |= ((HOST_WIDE_INT) (-1) << width);
+
       /* If MODE fits within HOST_BITS_PER_WIDE_INT, always use a CONST_INT.
 
 	 ??? Strictly speaking, this is wrong if we create a CONST_INT
