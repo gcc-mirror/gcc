@@ -98,7 +98,7 @@ EOF
 		esac
 	fi
 	rm -f dummy.s dummy
-	echo ${UNAME_MACHINE}-dec-osf`echo ${UNAME_RELEASE} | sed -e 's/^[VTX]//' | tr [[A-Z]] [[a-z]]`
+	echo ${UNAME_MACHINE}-dec-osf`echo ${UNAME_RELEASE} | sed -e 's/^[VTX]//' | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
 	exit 0 ;;
     21064:Windows_NT:50:3)
 	echo alpha-dec-winnt3.5
@@ -460,7 +460,7 @@ EOF
 	echo cray2-cray-unicos
         exit 0 ;;
     F300:UNIX_System_V:*:*)
-        FUJITSU_SYS=`uname -p | tr [A-Z] [a-z] | sed -e 's/\///'`
+        FUJITSU_SYS=`uname -p | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' | sed -e 's/\///'`
         FUJITSU_REL=`echo ${UNAME_RELEASE} | sed -e 's/ /_/'`
         echo "f300-fujitsu-${FUJITSU_SYS}${FUJITSU_REL}"
         exit 0 ;;

@@ -1,3 +1,8 @@
+Sun Aug 30 22:27:02 1998  Lutz Wohlrab <lutz.wohlrab@informatik.tu-chemnitz.de>
+
+	* config.guess: Avoid assumptions about "tr" behaves when
+	LANG is set to something other than English.
+
 Sun Aug 30 22:14:44 1998  H.J. Lu  (hjl@gnu.org)
 
 	* configure (gxx_include_dir): Changed to
