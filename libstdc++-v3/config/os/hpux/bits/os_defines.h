@@ -39,6 +39,11 @@
 #define __off64_t off64_t
 #define __ssize_t ssize_t
 
+#define __glibcpp_wchar_t_is_signed false
+
+#ifdef __LP64__
+#define __glibcpp_long_bits 64
 #endif
 
+#endif
 
