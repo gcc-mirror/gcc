@@ -327,19 +327,19 @@ void FN ()                                                            \
 
 #define CTOR_LIST_BEGIN                                 \
 asm (CTORS_SECTION_ASM_OP);                             \
-func_ptr __CTOR_LIST__[1] = { (func_ptr) (-1) }
+func_ptr __CTOR_LIST__ = (func_ptr) (-1)
  
 #define CTOR_LIST_END                                   \
 asm (CTORS_SECTION_ASM_OP);                             \
-func_ptr __CTOR_END__[1] = { (func_ptr) 0 };
+func_ptr __CTOR_END__ = (func_ptr) 0
  
 #define DTOR_LIST_BEGIN                                 \
 asm (DTORS_SECTION_ASM_OP);                             \
-func_ptr __DTOR_LIST__[1] = { (func_ptr) (-1) }
+func_ptr __DTOR_LIST__ = (func_ptr) (-1)
 
 #define DTOR_LIST_END                                   \
 asm (DTORS_SECTION_ASM_OP);                             \
-func_ptr __DTOR_END__[1] = { (func_ptr) 0 };
+func_ptr __DTOR_END__ = (func_ptr) 0
 
 /* Don't set the target flags, this is done by the linker script */
 #undef LIB_SPEC
