@@ -1,3 +1,8 @@
+2002-05-03  David S. Miller  <davem@redhat.com>
+
+	* haifa-sched.c (rank_for_schedule): Revert 2002-05-02 change,
+	no longer needed.
+
 2002-05-03  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/rs6000.c (altivec_expand_binop_builtin): Error out
