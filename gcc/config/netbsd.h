@@ -24,6 +24,8 @@ Boston, MA 02111-1307, USA.  */
   do						\
     {						\
       builtin_define ("__NetBSD__");		\
+      builtin_define ("__unix__");		\
+      builtin_assert ("system=bsd");		\
       builtin_assert ("system=unix");		\
       builtin_assert ("system=NetBSD");		\
     }						\

@@ -1,3 +1,8 @@
+2004-07-04  Neil Booth  <neil@duron.akihabara.co.uk>
+
+	* config/netbsd.h (NETBSD_OS_CPP_BUILTINS_COMMON): Define __unix__
+	and assert system is bsd.
+
 2004-07-04  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.h (MASK_DEBUG_C, TARGET_DEBUG_C_MODE): Delete.
