@@ -1,3 +1,9 @@
+2003-11-13  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* gnu/java/nio/natSelectorImplPosix.cc
+	(helper_put_filedescriptors): Change to static linkage.
+	(helper_get_filedescriptors): Likewise.
+
 2003-11-12  Tom Fitzsimmons  <fitzsim@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GtkComponentPeer.java (prepareImage): Remove

@@ -17,7 +17,7 @@ details.  */
 #include <gnu/java/nio/SelectorImpl.h>
 #include <java/io/IOException.h>
 
-void
+static void
 helper_put_filedescriptors (jintArray fdArray, fd_set& fds, int& max_fd)
 {
   jint* tmpFDArray = elements (fdArray);
@@ -31,7 +31,7 @@ helper_put_filedescriptors (jintArray fdArray, fd_set& fds, int& max_fd)
     }
 }
 
-void
+static void
 helper_get_filedescriptors (jintArray& fdArray, fd_set fds)
 {
   jint* tmpFDArray = elements (fdArray);
