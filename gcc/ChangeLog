@@ -1,3 +1,11 @@
+2002-07-16  Stan Shebs  <shebs@apple.com>
+
+	* darwin.c (func_name_maybe_scoped): Remove unused decl.
+	(machopic_function_base_name): Declare result to be const.
+	(machopic_non_lazy_ptr_name): Ditto.
+	(machopic_stub_name): Ditto.
+	* darwin-protos.h: Ditto for the prototypes.
+
 Wed Jul 17 00:22:39 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* m68hc11.c (m68hc11_reorg): Do not rebuild CFG.

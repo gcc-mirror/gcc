@@ -38,13 +38,11 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "ggc.h"
 #include "langhooks.h"
-
 #include "darwin-protos.h"
 
 extern void machopic_output_stub PARAMS ((FILE *, const char *, const char *));
 
 static int machopic_data_defined_p PARAMS ((const char *));
-static int func_name_maybe_scoped PARAMS ((const char *));
 static void update_non_lazy_ptrs PARAMS ((const char *));
 static void update_stubs PARAMS ((const char *));
 
@@ -227,7 +225,7 @@ static char function_base[32];
 
 static int current_pic_label_num;
 
-char *
+const char *
 machopic_function_base_name ()
 {
   static const char *name = NULL;
@@ -263,7 +261,7 @@ static GTY(()) tree machopic_non_lazy_pointers;
    either by finding it in our list of pointer names, or by generating
    a new one.  */
 
-char * 
+const char * 
 machopic_non_lazy_ptr_name (name)
      const char *name;
 {
@@ -326,7 +324,7 @@ static GTY(()) tree machopic_stubs;
 /* Return the name of the stub corresponding to the given name,
    generating a new stub name if necessary.  */
 
-char * 
+const char * 
 machopic_stub_name (name)
      const char *name;
 {
