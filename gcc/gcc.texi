@@ -166,7 +166,7 @@ instead of in the original English.
 @sp 2
 @center Richard M. Stallman
 @sp 3
-@center Last updated 13 January 2001
+@center Last updated 8 February 2001
 @sp 1
 @c The version number appears five times more in this file.
 
@@ -1629,8 +1629,10 @@ requires that this be treated as erroneous.
 
 A @dfn{preprocessing token} is a @dfn{preprocessing number} if it
 begins with a digit and is followed by letters, underscores, digits,
-periods and @samp{e+}, @samp{e-}, @samp{E+}, or @samp{E-} character
-sequences.
+periods and @samp{e+}, @samp{e-}, @samp{E+}, @samp{E-}, @samp{p+},
+@samp{p-}, @samp{P+}, or @samp{P-} character sequences.  (In strict C89
+mode, the sequences @samp{p+}, @samp{p-}, @samp{P+} and @samp{P-} cannot
+appear in preprocessing numbers.)
 
 To make the above program fragment valid, place whitespace in front of
 the minus sign.  This whitespace will end the preprocessing number.
