@@ -1,5 +1,13 @@
 2003-12-19  Michael Koch  <konqueror@gmx.de>
 
+	* java/util/SimpleTimeZone.java
+	(setStartRule): Reformated documentation.
+	(setEndRule): Reworked documentation.
+	(getDSTSavings): Fixed @since tag.
+	(setDSTSavings): New method.
+
+2003-12-19  Michael Koch  <konqueror@gmx.de>
+
 	* java/text/NumberFormat.java: Sorted imports.
 	(getCurrency): New method.
 	(setCurrency): New method.
