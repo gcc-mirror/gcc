@@ -1,5 +1,8 @@
 1999-03-16  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 
+	* cexp.y (yyerror): Call verror to get a usefull error message.
+	* cexp.c: Rebuilt.
+
 	* .gdbinit: Move command to put breakpoint at abort to end of file
 	so that gdb does not bail out early.
 
