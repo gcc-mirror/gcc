@@ -53,6 +53,7 @@ Boston, MA 02111-1307, USA.  */
      %{!pg:			\
        %{p:gcrt0%O%s}		\
        %{!p:crt0%O%s}}}		\
+   %:if-exists(crti%O%s)	\
    %{!shared:crtbegin%O%s} %{shared:crtbeginS%O%s}"
 
 
@@ -62,7 +63,8 @@ Boston, MA 02111-1307, USA.  */
 
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC		\
-  "%{!shared:crtend%O%s} %{shared:crtendS%O%s}"
+  "%{!shared:crtend%O%s} %{shared:crtendS%O%s} \
+   %:if-exists(crtn%O%s)"
 
 
 /* Provide a LINK_SPEC appropriate for NetBSD ELF.  Here we provide

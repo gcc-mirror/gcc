@@ -1,3 +1,26 @@
+2002-11-19  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* gcc.c (The Specs Language): Document spec functions.
+	(static_spec_functions, lookup_spec_function)
+	(eval_spec_function, handle_spec_function)
+	(if_exists_spec_function, alloc_args): New.
+	(execute): Abort if processing_spec_function is true.
+	(do_spec_1): Hand off spec to handle_spec_function if %:
+	is encountered.  If processing_spec_function is true,
+	end any pending argument when the end of the string is reached.
+	(main): Use alloc_args to allocate the initial argument vector.
+	* gcc.h (struct spec_function): New.
+	(lang_specific_spec_functions): New extern.
+
+	* config/netbsd-elf.h (STARTFILE_SPEC): Add if-exists(crti%O%s).
+	(ENDFILE_SPEC): Add if-exists(crtn%O%s).
+	* config/alpha/netbsd.h (ENDFILE_SPEC): Likewise.
+    
+	* doc/invoke.texi: Document spec functions.
+
+	* cppspec.c (lang_specific_spec_functions): New.
+	* gccspec.c: Likewise.
+
 2002-11-18  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/hpux_longdouble.h (FIXUNS_TRUNCTFSI2_LIBCALL): New.
