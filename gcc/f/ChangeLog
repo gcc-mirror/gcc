@@ -1,3 +1,7 @@
+2004-01-07  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* com.h (ffecom_gfrt_basictype): Correct return type.
+
 2003-12-29  Roger Sayle  <roger@eyesopen.com>
 
 	PR fortran/12632

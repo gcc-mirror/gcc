@@ -19,7 +19,6 @@ int main (void)
 	&& __builtin_types_compatible_p (typeof (hot), int)
 	&& __builtin_types_compatible_p (typeof (hot), typeof (laura))
 	&& __builtin_types_compatible_p (int[5], int[])
-	&& __builtin_types_compatible_p (typeof (dingos), typeof (cranberry))
 	&& __builtin_types_compatible_p (same1, same2)))
     abort ();
 
@@ -28,6 +27,7 @@ int main (void)
       || __builtin_types_compatible_p (char *, const char *)
       || __builtin_types_compatible_p (long double, double)
       || __builtin_types_compatible_p (typeof (i), typeof (d))
+      || __builtin_types_compatible_p (typeof (dingos), typeof (cranberry))
       || __builtin_types_compatible_p (char, int)
       || __builtin_types_compatible_p (char *, char **))
     abort ();
