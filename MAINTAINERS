@@ -133,7 +133,6 @@ libgcj			Tom Tromey		tromey@redhat.com
 libgcj			Bryce McKinlay		bryce@gcc.gnu.org
 libobjc			Nicola Pero		n.pero@mi.flashnet.it
 libobjc			Andrew Pinski		pinskia@physics.uc.edu
-alias analysis		John Carr		jfc@mit.edu
 loop unrolling		Jim Wilson		wilson@specifixinc.com
 loop discovery		Michael Hayes		m.hayes@elec.canterbury.ac.nz
 scheduler (+ haifa)	Jim Wilson		wilson@specifixinc.com
@@ -212,6 +211,7 @@ Robert Bowdidge                                 bowdidge@apple.com
 Joel Brobecker					brobecker@gnat.com
 Kevin Buettner					kevinb@redhat.com
 Andrew Cagney					cagney@redhat.com
+John Carr					jfc@mit.edu
 Steve Chamberlain				sac@transmeta.com
 Michael Chastain				mec.gnu@mindspring.com
 Chandra Chavva					cchavva@redhat.com
