@@ -5698,11 +5698,9 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
   DECL_INITIAL (decl1) = error_mark_node;
 
   /* If this definition isn't a prototype and we had a prototype declaration
-     before, copy the arg type info from that prototype.
-     But not if what we had before was a builtin function.  */
+     before, copy the arg type info from that prototype.  */
   old_decl = lookup_name_in_scope (DECL_NAME (decl1), current_scope);
   if (old_decl != 0 && TREE_CODE (TREE_TYPE (old_decl)) == FUNCTION_TYPE
-      && !DECL_BUILT_IN (old_decl)
       && comptypes (TREE_TYPE (TREE_TYPE (decl1)),
 		    TREE_TYPE (TREE_TYPE (old_decl)))
       && TYPE_ARG_TYPES (TREE_TYPE (decl1)) == 0)

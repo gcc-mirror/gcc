@@ -1,3 +1,11 @@
+2004-10-30  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/16666
+	* gcc.dg/dremf-type-compat-1.c, gcc.dg/dremf-type-compat-2.c,
+	gcc.dg/dremf-type-compat-3.c, gcc.dg/dremf-type-compat-4.c,
+	gcc.dg/old-style-prom-1.c, gcc.dg/old-style-prom-2.c,
+	gcc.dg/old-style-prom-3.c: New tests.
+
 2004-10-30  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* gcc.dg/bf-ms-attrib.c: Add protototype for abort.
