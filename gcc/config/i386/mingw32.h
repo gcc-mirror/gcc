@@ -37,12 +37,14 @@ Boston, MA 02111-1307, USA. */
 #undef STANDARD_INCLUDE_DIR
 #define STANDARD_INCLUDE_DIR "/usr/mingw32/include"
 
+#define STANDARD_INCLUDE_COMPONENT "MINGW32"
+
 /* For Windows applications, include more libraries, but always include
    kernel32.  */
 #undef LIB_SPEC
 #define LIB_SPEC "%{mwindows:-luser32 -lgdi32 -lcomdlg32} -lkernel32"
 
-/* Include in the Windows32 API libraries with libgcc */
+/* Include in the mingw32 libraries with libgcc */
 #undef LIBGCC_SPEC
 #define LIBGCC_SPEC "-lmingw32 -lgcc -lmoldname -lcrtdll"
 
