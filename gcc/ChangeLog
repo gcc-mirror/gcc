@@ -1,3 +1,12 @@
+2002-04-25  David S. Miller  <davem@redhat.com>
+
+	PR target/6422
+	* reorg.c (optimize_skip): Do not allow exception causing
+	instructions to be considered for delay slots.
+	(fill_simply_delay_slots, fill_slots_from_thread): Likewise.
+	(relax_delay_slots): Do not try to consider exception causing
+	instructions as redundant.
+
 2002-04-26  Richard Henderson  <rth@redhat.com>
 
 	PR c/5225

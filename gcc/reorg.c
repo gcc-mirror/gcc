@@ -750,7 +750,8 @@ optimize_skip (insn)
       || GET_CODE (PATTERN (trial)) == SEQUENCE
       || recog_memoized (trial) < 0
       || (! eligible_for_annul_false (insn, 0, trial, flags)
-	  && ! eligible_for_annul_true (insn, 0, trial, flags)))
+	  && ! eligible_for_annul_true (insn, 0, trial, flags))
+      || can_throw_internal (trial))
     return 0;
 
   /* There are two cases where we are just executing one insn (we assume
@@ -2127,7 +2128,8 @@ fill_simple_delay_slots (non_jumps_p)
 	  && GET_CODE (trial) == JUMP_INSN
 	  && simplejump_p (trial)
 	  && eligible_for_delay (insn, slots_filled, trial, flags)
-	  && no_labels_between_p (insn, trial))
+	  && no_labels_between_p (insn, trial)
+	  && ! can_throw_internal (trial))
 	{
 	  rtx *tmp;
 	  slots_filled++;
@@ -2197,7 +2199,7 @@ fill_simple_delay_slots (non_jumps_p)
 		  /* Can't separate set of cc0 from its use.  */
 		  && ! (reg_mentioned_p (cc0_rtx, pat) && ! sets_cc0_p (pat))
 #endif
-		  )
+		  && ! can_throw_internal (trial))
 		{
 		  trial = try_split (pat, trial, 1);
 		  next_trial = prev_nonnote_insn (trial);
@@ -2273,7 +2275,7 @@ fill_simple_delay_slots (non_jumps_p)
 
 	     Presumably, we should also check to see if we could get
 	     back to this function via `setjmp'.  */
-	  && !can_throw_internal (insn)
+	  && ! can_throw_internal (insn)
 	  && (GET_CODE (insn) != JUMP_INSN
 	      || ((condjump_p (insn) || condjump_in_parallel_p (insn))
 		  && ! simplejump_p (insn)
@@ -2340,7 +2342,8 @@ fill_simple_delay_slots (non_jumps_p)
 #endif
 		    && ! (maybe_never && may_trap_p (pat))
 		    && (trial = try_split (pat, trial, 0))
-		    && eligible_for_delay (insn, slots_filled, trial, flags))
+		    && eligible_for_delay (insn, slots_filled, trial, flags)
+		    && ! can_throw_internal(trial))
 		  {
 		    next_trial = next_nonnote_insn (trial);
 		    delay_list = add_to_delay_list (trial, delay_list);
@@ -2392,7 +2395,8 @@ fill_simple_delay_slots (non_jumps_p)
 #endif
 	      && ! (maybe_never && may_trap_p (PATTERN (next_trial)))
 	      && (next_trial = try_split (PATTERN (next_trial), next_trial, 0))
-	      && eligible_for_delay (insn, slots_filled, next_trial, flags))
+	      && eligible_for_delay (insn, slots_filled, next_trial, flags)
+	      && ! can_throw_internal (trial))
 	    {
 	      rtx new_label = next_active_insn (next_trial);
 
@@ -2496,7 +2500,7 @@ fill_simple_delay_slots (non_jumps_p)
 	  /* Don't want to mess with cc0 here.  */
 	  && ! reg_mentioned_p (cc0_rtx, pat)
 #endif
-	  )
+	  && ! can_throw_internal (trial))
 	{
 	  trial = try_split (pat, trial, 1);
 	  if (ELIGIBLE_FOR_EPILOGUE_DELAY (trial, slots_filled))
@@ -2637,7 +2641,7 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 	  && ! (reg_mentioned_p (cc0_rtx, pat)
 		&& (! own_thread || ! sets_cc0_p (pat)))
 #endif
-	  )
+	  && ! can_throw_internal (trial))
 	{
 	  rtx prior_insn;
 
@@ -2874,8 +2878,10 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
       trial = new_thread;
       pat = PATTERN (trial);
 
-      if (GET_CODE (trial) != INSN || GET_CODE (pat) != SET
-	  || ! eligible_for_delay (insn, 0, trial, flags))
+      if (GET_CODE (trial) != INSN
+	  || GET_CODE (pat) != SET
+	  || ! eligible_for_delay (insn, 0, trial, flags)
+	  || can_throw_internal (trial))
 	return 0;
 
       dest = SET_DEST (pat), src = SET_SRC (pat);
@@ -3286,7 +3292,8 @@ relax_delay_slots (first)
 	     insn, redirect the jump to the following insn process again.  */
 	  trial = next_active_insn (target_label);
 	  if (trial && GET_CODE (PATTERN (trial)) != SEQUENCE
-	      && redundant_insn (trial, insn, 0))
+	      && redundant_insn (trial, insn, 0)
+	      && ! can_throw_internal (trial))
 	    {
 	      rtx tmp;
 
