@@ -168,6 +168,8 @@ extern enum processor_type arm_cpu;
     {					\
       if (MODE == QImode)		\
 	UNSIGNEDP = 1;			\
+      else if (MODE == HImode)		\
+	UNSIGNEDP = 0;			\
       (MODE) = SImode;			\
     }
 
@@ -197,8 +199,13 @@ extern enum processor_type arm_cpu;
    in instructions that operate on numbered bit-fields.  */
 #define BITS_BIG_ENDIAN  0
 
-/* Define this if most significant byte of a word is the lowest numbered.  */
+/* Define this if most significant byte of a word is the lowest numbered.  
+   Most ARM processors are run in little endian mode, but it should now be
+   possible to build the compiler to support big endian code. (Note: This
+   is currently a compiler-build-time option, not a run-time one.  */
+#ifndef BYTES_BIG_ENDIAN
 #define BYTES_BIG_ENDIAN  0
+#endif
 
 /* Define this if most significant word of a multiword number is the lowest
    numbered.  */
@@ -1129,8 +1136,9 @@ do									\
    will either zero-extend or sign-extend.  The value of this macro should
    be the code that says which one of the two operations is implicitly
    done, NIL if none.  */
-#define LOAD_EXTEND_OP(MODE) \
-  ((MODE) == QImode ? ZERO_EXTEND : NIL)
+#define LOAD_EXTEND_OP(MODE)						\
+  ((MODE) == QImode ? ZERO_EXTEND					\
+   : ((BYTES_BIG_ENDIAN && (MODE) == HImode) ? SIGN_EXTEND : NIL))
 
 /* Define this if zero-extension is slow (more than one real instruction).
    On the ARM, it is more than one instruction only if not fetching from
