@@ -164,6 +164,8 @@ remember_protocol_qualifiers ()
       wordlist[i].name = "inout";
     else if (wordlist[i].rid == RID_BYCOPY)
       wordlist[i].name = "bycopy";
+    else if (wordlist[i].rid == RID_BYREF)
+      wordlist[i].name = "byref";
     else if (wordlist[i].rid == RID_ONEWAY)
       wordlist[i].name = "oneway";   
 }
@@ -256,6 +258,7 @@ init_lex ()
   ridpointers[(int) RID_OUT] = get_identifier ("out");
   ridpointers[(int) RID_INOUT] = get_identifier ("inout");
   ridpointers[(int) RID_BYCOPY] = get_identifier ("bycopy");
+  ridpointers[(int) RID_BYREF] = get_identifier ("byref");
   ridpointers[(int) RID_ONEWAY] = get_identifier ("oneway");
   forget_protocol_qualifiers();
 

@@ -1,3 +1,13 @@
+Thu Oct  8 12:21:14 1998  Richard Frith-Macdonald <richard@brainstorm.co.uk>
+
+	* c-lex.c (remember_protocol_qualifiers): Handle RID_BYREF.
+	(init_lex): Initialize ridpointers[RID_BYREF].
+	* c-lex.h (enum rid): Add RID_BYREF.
+	* c-parse.gperf: Add RID_BYREF as a type qualifier.
+	* objc/objc-act.c (is_objc_type_qualifiers): Handle RID_BYREF.
+	(encode_type_qualifiers): Similarly
+	* c-gperf.h: Rebuilt.
+
 Thu Oct  8 05:56:00 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* c-common.c (type_for_mode): Only return TItype nodes when
