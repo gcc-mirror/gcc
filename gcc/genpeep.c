@@ -1,5 +1,5 @@
 /* Generate code from machine description to perform peephole optimizations.
-   Copyright (C) 1987, 1989, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1989, 1992, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -264,6 +264,9 @@ match_rtx (x, path, fail_label)
     case ADDRESS:
       match_rtx (XEXP (x, 0), path, fail_label);
       return;
+      
+    default:
+      break;
     }
 
   printf ("  x = ");
