@@ -1,3 +1,9 @@
+2003-01-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* genautomata.c (output_internal_insn_latency_func,
+	output_print_reservation_func): Short circuit when there is no
+	automaton to generate code for.
+
 2003-01-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (ssa-ccp.o): Depend on coretypes.h $(TM_H).

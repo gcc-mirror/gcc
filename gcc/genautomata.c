@@ -8920,11 +8920,18 @@ output_internal_insn_latency_func ()
 	   INTERNAL_INSN_LATENCY_FUNC_NAME, INTERNAL_INSN_CODE_NAME,
 	   INTERNAL_INSN2_CODE_NAME, INSN_PARAMETER_NAME,
 	   INSN2_PARAMETER_NAME);
-  fprintf (output_file, "\n\tint %s;\n\tint %s;\n",
+  fprintf (output_file,
+	   "\n\tint %s ATTRIBUTE_UNUSED;\n\tint %s ATTRIBUTE_UNUSED;\n",
 	   INTERNAL_INSN_CODE_NAME, INTERNAL_INSN2_CODE_NAME);
   fprintf (output_file,
 	   "\trtx %s ATTRIBUTE_UNUSED;\n\trtx %s ATTRIBUTE_UNUSED;\n{\n",
 	   INSN_PARAMETER_NAME, INSN2_PARAMETER_NAME);
+
+  if (DECL_INSN_RESERV (advance_cycle_insn_decl)->insn_num == 0)
+    {
+      fputs ("  return 0;\n}\n\n", output_file);
+      return;
+    }
 
   fprintf (output_file, "  static const %s default_latencies[] =\n    {",
 	   tabletype);
@@ -9015,10 +9022,19 @@ output_print_reservation_func ()
   decl_t decl;
   int i, j;
 
-  fprintf (output_file, "void\n%s (%s, %s)\n\tFILE *%s;\n\trtx %s;\n{\n",
+  fprintf (output_file,
+	   "void\n%s (%s, %s)\n\tFILE *%s;\n\trtx %s ATTRIBUTE_UNUSED;\n{\n",
            PRINT_RESERVATION_FUNC_NAME, FILE_PARAMETER_NAME,
            INSN_PARAMETER_NAME, FILE_PARAMETER_NAME,
            INSN_PARAMETER_NAME);
+
+  if (DECL_INSN_RESERV (advance_cycle_insn_decl)->insn_num == 0)
+    {
+      fprintf (output_file, "  fputs (\"%s\", %s);\n}\n\n",
+	       NOTHING_NAME, FILE_PARAMETER_NAME);
+      return;
+    }
+
 
   fputs ("  static const char *const reservation_names[] =\n    {",
 	 output_file);
