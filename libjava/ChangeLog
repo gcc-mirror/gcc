@@ -3,8 +3,8 @@
 	* java/lang/natObject.cc (X86 compare_and_swap): Use +m constraint.
 	
 	* java/awt/image/PixelGrabber.java (grabPixels()): Call grabPixels(0).
-	* java/awt/image/PixelGrabber.java (grabPixels(long)): Wait to be
-	notified that the ImageProducer has completed.
+	(grabPixels(long)): Wait to be notified that the ImageProducer has 
+	completed.
 
 2002-01-24  Per Bothner  <per@bothner.com>
 
