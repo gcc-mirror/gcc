@@ -2675,7 +2675,7 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
       /* Handle special case of virtual register plus constant.  */
       if (CONSTANT_P (XEXP (x, 1)))
 	{
-	  rtx old;
+	  rtx old, new_offset;
 
 	  /* Check for (plus (plus VIRT foo) (const_int)) first.  */
 	  if (GET_CODE (XEXP (x, 0)) == PLUS)
@@ -2722,18 +2722,26 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 	      return 1;
 	    }
 
-	  old = XEXP (x, 0);
-	  XEXP (x, 0) = new;
-	  new = plus_constant (XEXP (x, 1), offset);
+	  new_offset = plus_constant (XEXP (x, 1), offset);
 
-	  /* If the new constant is zero, try to replace the sum with its
-	     first operand.  */
-	  if (new == const0_rtx
-	      && validate_change (object, loc, XEXP (x, 0), 0))
+	  /* If the new constant is zero, try to replace the sum with just
+	     the register.  */
+	  if (new_offset == const0_rtx
+	      && validate_change (object, loc, new, 0))
 	    return 1;
 
-	  /* Next try to replace constant with new one.  */
-	  if (!validate_change (object, &XEXP (x, 1), new, 0))
+	  /* Next try to replace the register and new offset.
+	     There are two changes to validate here and we can't assume that
+	     in the case of old offset equals new just changing the register
+	     will yield a valid insn.  In the interests of a little efficiency,
+	     however, we only call validate change once (we don't queue up the
+	     changes and then call apply_change_group). */
+
+	  old = XEXP (x, 0);
+	  if (offset == 0
+	      ? ! validate_change (object, &XEXP (x, 0), new, 0)
+	      : (XEXP (x, 0) = new,
+		 ! validate_change (object, &XEXP (x, 1), new_offset, 0)))
 	    {
 	      if (! extra_insns)
 		{
@@ -2744,15 +2752,16 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 	      /* Otherwise copy the new constant into a register and replace
 		 constant with that register.  */
 	      temp = gen_reg_rtx (Pmode);
+	      XEXP (x, 0) = new;
 	      if (validate_change (object, &XEXP (x, 1), temp, 0))
-		emit_insn_before (gen_move_insn (temp, new), object);
+		emit_insn_before (gen_move_insn (temp, new_offset), object);
 	      else
 		{
 		  /* If that didn't work, replace this expression with a
 		     register containing the sum.  */
 
-		  new = gen_rtx (PLUS, Pmode, XEXP (x, 0), new);
 		  XEXP (x, 0) = old;
+		  new = gen_rtx (PLUS, Pmode, new, new_offset);
 
 		  start_sequence ();
 		  temp = force_operand (new, NULL_RTX);
