@@ -1,5 +1,12 @@
 2003-05-02  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/rs6000/sysv4.h (SYMBOL_FLAG_SMALL_V4): Delete.
+	(SYMBOL_FLAG_SMALL_V4): Delete.
+	* config/rs6000/rs6000.c (small_data_operand): Use SYMBOL_REF_SMALL_P.
+	(rs6000_elf_encode_section_info): Don't set SYMBOL_FLAG_SMALL_V4.
+	(rs6000_elf_in_small_data_p): Add extra section names.  Add
+	comment about TREE_PUBLIC test.
+
 	* c-semantics.c (genrtl_switch_stmt, genrtl_if_stmt): Call
 	expand_stmt on result of expand_unreachable_stmt.
 

@@ -2210,7 +2210,7 @@ small_data_operand (op, mode)
       sym_ref = XEXP (sum, 0);
     }
 
-  return SYMBOL_REF_SMALL_V4_P (sym_ref);
+  return SYMBOL_REF_SMALL_P (sym_ref);
 #else
   return 0;
 #endif
@@ -12926,9 +12926,6 @@ rs6000_elf_unique_section (decl, reloc)
 /* For a SYMBOL_REF, set generic flags and then perform some
    target-specific processing.
 
-   Set SYMBOL_FLAG_SMALL_V4 for an operand in small memory on V.4/eabi;
-   this is different from the generic SYMBOL_FLAG_SMALL.
-
    When the AIX ABI is requested on a non-AIX system, replace the
    function name with the real name (with a leading .) rather than the
    function descriptor name.  This saves a lot of overriding code to
@@ -12954,33 +12951,6 @@ rs6000_elf_encode_section_info (decl, rtl, first)
       memcpy (str + 1, XSTR (sym_ref, 0), len + 1);
       XSTR (sym_ref, 0) = ggc_alloc_string (str, len + 1);
     }
-  else if (rs6000_sdata != SDATA_NONE
-	   && DEFAULT_ABI == ABI_V4
-	   && TREE_CODE (decl) == VAR_DECL)
-    {
-      rtx sym_ref = XEXP (rtl, 0);
-      int size = int_size_in_bytes (TREE_TYPE (decl));
-      tree section_name = DECL_SECTION_NAME (decl);
-      const char *name = (char *)0;
-
-      if (section_name)
-	{
-	  if (TREE_CODE (section_name) == STRING_CST)
-	    name = TREE_STRING_POINTER (section_name);
-	  else
-	    abort ();
-	}
-
-      if (name
-	  ? (strcmp (name, ".sdata") == 0
-	     || strcmp (name, ".sdata2") == 0
-	     || strcmp (name, ".sbss") == 0
-	     || strcmp (name, ".sbss2") == 0
-	     || strcmp (name, ".PPC.EMB.sdata0") == 0
-	     || strcmp (name, ".PPC.EMB.sbss0") == 0)
-	  : (size > 0 && size <= g_switch_value))
-	SYMBOL_REF_FLAGS (sym_ref) |= SYMBOL_FLAG_SMALL_V4;
-    }
 }
 
 static bool
@@ -12995,7 +12965,10 @@ rs6000_elf_in_small_data_p (decl)
       const char *section = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
       if (strcmp (section, ".sdata") == 0
 	  || strcmp (section, ".sdata2") == 0
-	  || strcmp (section, ".sbss") == 0)
+	  || strcmp (section, ".sbss") == 0
+	  || strcmp (section, ".sbss2") == 0
+	  || strcmp (section, ".PPC.EMB.sdata0") == 0
+	  || strcmp (section, ".PPC.EMB.sbss0") == 0)
 	return true;
     }
   else
@@ -13004,6 +12977,8 @@ rs6000_elf_in_small_data_p (decl)
 
       if (size > 0
 	  && size <= g_switch_value
+	  /* If it's not public, and we're not going to reference it there,
+	     there's no need to put it in the small data section.  */
 	  && (rs6000_sdata != SDATA_DATA || TREE_PUBLIC (decl)))
 	return true;
     }
