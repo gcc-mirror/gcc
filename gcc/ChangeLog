@@ -1,5 +1,7 @@
 2000-06-20  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* Makefile.in (fix-header): Link with $(LIBS) not $(HOST_LIBS).
+
 	* Makefile.in: Remove all references to HOST_INTLLIBS.
 
 	* cpplex.c (parse_name): Don't warn about $ in identifiers if

@@ -2002,10 +2002,12 @@ xsys-protos.h: $(GCC_PASSES) $(srcdir)/sys-protos.h deduced.h gen-protos Makefil
 	mv xsys-protos.hT xsys-protos.h
 	rm -rf fixtmp.c
 
-fix-header: fix-header.o scan-decls.o scan.o xsys-protos.h $(HOST_LIBDEPS) \
+# This is nominally a 'build' program, but it's run only when host==build,
+# so we can (indeed, must) use $(LIBDEPS) and $(LIBS).
+fix-header: fix-header.o scan-decls.o scan.o xsys-protos.h $(LIBDEPS) \
 	    libcpp.a
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ fix-header.o \
-	   scan-decls.o scan.o libcpp.a $(HOST_LIBS) ../libiberty/libiberty.a
+	   scan-decls.o scan.o libcpp.a $(LIBS)
 
 fix-header.o: fix-header.c $(OBSTACK_H) scan.h \
 	xsys-protos.h $(build_xm_file) system.h cpplib.h
