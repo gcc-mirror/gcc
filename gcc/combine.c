@@ -11839,8 +11839,9 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2)
 		     TEM is doing.  If so, delete TEM.  Otherwise, make this
 		     into a REG_UNUSED note instead. Don't delete sets to
 		     global register vars.  */
-		  if (reg_set_p (XEXP (note, 0), PATTERN (tem))
-		      && !global_regs [REGNO(XEXP (note, 0))])
+		  if ((REGNO (XEXP (note, 0)) >= FIRST_PSEUDO_REGISTER
+		       || !global_regs[REGNO (XEXP (note, 0))])
+		      && reg_set_p (XEXP (note, 0), PATTERN (tem)))
 		    {
 		      rtx set = single_set (tem);
 		      rtx inner_dest = 0;

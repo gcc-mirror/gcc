@@ -1,3 +1,8 @@
+2004-06-29  Zack Weinberg  <zack@codesourcery.com>
+
+	* combine.c (distribute_notes): Don't look at global_regs for
+	pseudos.
+
 2004-06-29  Richard Henderson  <rth@redhat.com>
 
 	* gimplify.c (gimplify_modify_expr_rhs): Move immediately before
@@ -98,7 +103,7 @@
 	* tree-ssa-dom.c (need_eh_cleanup): New.
 	(tree_ssa_dominator_optimize): Allocate it.  Cleanup eh edges.
 	(optimize_stmt): Cleanup eh stmts; set need_eh_cleanup.
-	
+
 2004-06-29  Alan Modra  <amodra@bigpond.net.au>
 
 	* function.c (assign_parms): Don't abort with zero size stack
@@ -204,7 +209,7 @@
 	tree_check4_failed, tree_check5_failed): Remove.
 	(TREE_CHECK, TREE_CHECK2, TREE_CHECK3, TREE_CHECK4,
 	TREE_CHECK5): Adjust.
-	(TREE_NOT_CHECK, TREE_NOT_CHECK2, TREE_NOT_CHECK3, TREE_NOT_CHECK4, 
+	(TREE_NOT_CHECK, TREE_NOT_CHECK2, TREE_NOT_CHECK3, TREE_NOT_CHECK4,
 	TREE_NOT_CHECK5): New.
 	(TREE_VEC_ELT_CHECK, PHI_NODE_ELT_CHECK, TREE_OPERAND_CHECK_CODE,
 	TREE_RTL_OPERAND_CHECK): Adjust.
@@ -232,7 +237,7 @@
 	(dump_generic_node, case DECL_EXPR): New case.
 	(dump_generic_node, case PLACEHOLDER_EXPR): Handle.
 	(print_declaration): Handle type and function declarations.
-	
+
 	* tree-nested.c (create_tmp_var_for): Allow ARRAY_TYPE.
 	(convert_nonlocal_reference, convert_local_reference): Properly
 	convert nest of handled component references.
@@ -320,7 +325,7 @@
 	<BIT_XOR_EXPR>: Optimize ~X|X and X|~X as -1.
 	<BIT_AND_EXPR>: Optimize ~X&X and X&~X as 0.
 	<TRUTH_AND_EXPR, TRUTH_ANDIF_EXPR>: Optimize !X&&X and X&&!X as false.
-        <TRUTH_OR_EXPR, TRUTH_ORIF_EXPR>: Optimize !X||X and !X||X as true.
+	<TRUTH_OR_EXPR, TRUTH_ORIF_EXPR>: Optimize !X||X and !X||X as true.
 	<TRUTH_XOR_EXPR>: Optimize !X^X and X^X! as true.  Now that
 	TRUTH_XOR_EXPR is a commutative tree code, don't test whether arg0
 	is a constant.
@@ -351,7 +356,7 @@
 	* tree.c (has_cleanups, case DECL_EXPR): New case.
 	* tree.def (DECL_EXPR): New code.
 	* tree.h (DECL_EXPR_DECL): New macro.
-	
+
 	* objc/objc-lang.c (LANG_HOOKS_SAFE_FROM_P): Deleted.
 
 2004-06-26  Andrew Pinski  <pinskia@physics.uc.edu>
@@ -1199,10 +1204,10 @@
 
 2004-06-21  Richard Henderson  <rth@redhat.com>
 
-        PR rtl-opt/16114
-        * cse.c (merge_equiv_classes): Also rehash in response to
-        delete_reg_equiv changes.
-        (rehash_using_reg): Don't exclude REGs from rehashing.
+	PR rtl-opt/16114
+	* cse.c (merge_equiv_classes): Also rehash in response to
+	delete_reg_equiv changes.
+	(rehash_using_reg): Don't exclude REGs from rehashing.
 
 2004-06-21  Richard Henderson  <rth@redhat.com>
 
