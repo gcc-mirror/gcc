@@ -1,3 +1,9 @@
+2004-09-16  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.md (call): Extend 32-bit addresses to DImode
+	for 32-bit TARGET_SHMEDIA.
+	(call_value): Likewise.
+
 2004-09-16  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-ssa-operands.c (add_call_clobber_ops): Make read-only
