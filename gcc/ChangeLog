@@ -1,3 +1,9 @@
+2000-07-11  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* aclocal.m4 (AC_FUNC_MMAP_ANYWHERE): Extend test to detect systems
+	with MAP_ANONYMOUS and MAP_ANON.
+	* configure, config.in: Rebuilt.
+
 2000-07-12  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* diagnostic.c (save_output_state): Remove.

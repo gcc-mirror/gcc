@@ -684,18 +684,23 @@ fi
 AC_SUBST($1)dnl
 ])
 
-# Check whether mmap can map an arbitrary page from /dev/zero, without
-# MAP_FIXED.
+# Check whether mmap can map an arbitrary page from /dev/zero or with
+# MAP_ANONYMOUS, without MAP_FIXED.
 AC_DEFUN([AC_FUNC_MMAP_ANYWHERE],
 [AC_CHECK_HEADERS(unistd.h)
 AC_CHECK_FUNCS(getpagesize)
-AC_CACHE_CHECK(for working mmap from /dev/zero, ac_cv_func_mmap_anywhere,
+AC_CACHE_CHECK(for working mmap which provides zeroed pages anywhere,
+  ac_cv_func_mmap_anywhere,
 [AC_TRY_RUN([
 /* Test by Richard Henderson and Alexandre Oliva.
-   Check whether mmap from /dev/zero works. */
+   Check whether mmap MAP_ANONYMOUS or mmap from /dev/zero works. */
 #include <sys/types.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+
+#if !defined (MAP_ANONYMOUS) && defined (MAP_ANON)
+# define MAP_ANONYMOUS MAP_ANON
+#endif
 
 /* This mess was copied from the GNU getpagesize.h.  */
 #ifndef HAVE_GETPAGESIZE
@@ -743,12 +748,19 @@ int main()
   char *x;
   int fd, pg;
 
+#ifndef MAP_ANONYMOUS
   fd = open("/dev/zero", O_RDWR);
   if (fd < 0)
     exit(1);
+#endif
 
   pg = getpagesize();
+#ifdef MAP_ANONYMOUS
+  x = (char*)mmap(0, pg, PROT_READ|PROT_WRITE,
+                  MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+#else
   x = (char*)mmap(0, pg, PROT_READ|PROT_WRITE, MAP_PRIVATE, fd, 0);
+#endif
   if (x == (char *) -1)
     exit(2);
 
@@ -762,7 +774,7 @@ int main()
 ac_cv_func_mmap_anywhere=no)])
 if test $ac_cv_func_mmap_anywhere = yes; then
   AC_DEFINE(HAVE_MMAP_ANYWHERE, 1,
-	    [Define if mmap can get us zeroed pages from /dev/zero.])
+	    [Define if mmap can get us zeroed pages without MAP_FIXED.])
 fi
 ])
 
