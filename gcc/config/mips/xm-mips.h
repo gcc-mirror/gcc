@@ -72,7 +72,7 @@ extern char * alloca ();
 
 /* Say if we have vprintf.  BSD Mips targets probably don't have vfprintf.  */
 #if defined(__OSF1__) || defined(__OSF__) || defined(__osf__)
-#define HAVE_VFPRINTF
+#define HAVE_VPRINTF
 #define HAVE_PUTENV
 
 #else
