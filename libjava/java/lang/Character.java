@@ -1488,7 +1488,7 @@ public final class Character implements Serializable, Comparable
    * @return a String containing the character
    * @since 1.4
    */
-  public String toString(char ch)
+  public static String toString(char ch)
   {
     // This assumes that String.valueOf(char) can create a single-character
     // String more efficiently than through the public API.
