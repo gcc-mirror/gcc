@@ -8165,8 +8165,7 @@ reload_cse_regs (first)
   init_alias_analysis ();
 
   reg_values = (rtx *) alloca (FIRST_PSEUDO_REGISTER * sizeof (rtx));
-  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    reg_values[i] = 0;
+  bzero (reg_values, FIRST_PSEUDO_REGISTER * sizeof (rtx));
 
   /* Create our EXPR_LIST structures on reload_obstack, so that we can
      free them when we are done.  */
@@ -8483,8 +8482,7 @@ reload_cse_simplify_set (set, insn)
 
   dclass = REGNO_REG_CLASS (dreg);
 
-  /* If memory loads are cheaper than register copies, don't change
-     them.  */
+  /* If memory loads are cheaper than register copies, don't change them.  */
   if (GET_CODE (src) == MEM
       && MEMORY_MOVE_COST (GET_MODE (src), dclass, 1) < 2)
     return 0;

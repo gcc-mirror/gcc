@@ -1,3 +1,7 @@
+Tue Jun 16 22:58:40 1998  Richard Henderson  <rth@cygnus.com>
+
+	* reload1.c (reload_cse_regs): Call bzero instead of looping.
+
 Tue Jun 16 18:30:35 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* dwarf2out.c (stripattributes): Prepend '*' to the section name.
