@@ -1337,10 +1337,12 @@ struct tree_opt_pass pass_redundant_phi =
    warning text is in MSGID and LOCUS may contain a location or be null.  */
 
 static void
-warn_uninit (tree t, const char *msgid, location_t *locus)
+warn_uninit (tree t, const char *msgid, void *data)
 {
   tree var = SSA_NAME_VAR (t);
   tree def = SSA_NAME_DEF_STMT (t);
+  tree context = (tree) data;
+  location_t * locus;
 
   /* Default uses (indicated by an empty definition statement),
      are uninitialized.  */
@@ -1360,8 +1362,9 @@ warn_uninit (tree t, const char *msgid, location_t *locus)
   if (TREE_NO_WARNING (var))
     return;
 
-  if (!locus)
-    locus = &DECL_SOURCE_LOCATION (var);
+  locus = (context != NULL && EXPR_HAS_LOCATION (context)
+	   ? EXPR_LOCUS (context)
+	   : &DECL_SOURCE_LOCATION (var));
   warning (msgid, locus, var);
   TREE_NO_WARNING (var) = 1;
 }
@@ -1372,13 +1375,12 @@ warn_uninit (tree t, const char *msgid, location_t *locus)
 static tree
 warn_uninitialized_var (tree *tp, int *walk_subtrees, void *data)
 {
-  location_t *locus = data;
   tree t = *tp;
 
   /* We only do data flow with SSA_NAMEs, so that's all we can warn about.  */
   if (TREE_CODE (t) == SSA_NAME)
     {
-      warn_uninit (t, "%H%qD is used uninitialized in this function", locus);
+      warn_uninit (t, "%H%qD is used uninitialized in this function", data);
       *walk_subtrees = 0;
     }
   else if (IS_TYPE_OR_DECL_P (t))
@@ -1416,8 +1418,11 @@ execute_early_warn_uninitialized (void)
 
   FOR_EACH_BB (bb)
     for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
-      walk_tree (bsi_stmt_ptr (bsi), warn_uninitialized_var,
-		 EXPR_LOCUS (bsi_stmt (bsi)), NULL);
+      {
+	tree context = bsi_stmt (bsi);
+	walk_tree (bsi_stmt_ptr (bsi), warn_uninitialized_var,
+		   context, NULL);
+      }
 }
 
 static void
