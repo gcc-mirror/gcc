@@ -1,5 +1,11 @@
 1999-03-23  Mark Mitchell  <mark@codesourcery.com>
 
+	* pt.c (convert_nontype_argument): Don't create things that aren't
+	PTRMEM_CSTs when applying a qualification conversion to a
+	PTRMEM_CST.
+
+1999-03-23  Mark Mitchell  <mark@codesourcery.com>
+
 	* Makefile.in (OBJS): Don't mention hash.o.
 	(OBJDEPS): Likewise.
 
