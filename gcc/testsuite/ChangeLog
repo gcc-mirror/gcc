@@ -1,3 +1,10 @@
+2002-06-02  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gcc.dg/wtr-int-type-1.c, gcc.dg/wtr-suffix-1.c,
+	gcc.dg/cpp/paste4.c, gcc.dg/cpp/sysmac2.c:
+	Update for mofified diagnostics.
+	* gcc.dg/c99-intconst-1.c: No longer fail.
+
 2002-06-02  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/uninit-A.c: Remove xfail markers.

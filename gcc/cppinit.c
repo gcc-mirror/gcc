@@ -1770,6 +1770,8 @@ cpp_post_options (pfile)
   if (CPP_OPTION (pfile, cplusplus))
     CPP_OPTION (pfile, warn_traditional) = 0;
 
+  /* The compiler front ends override this, but I think this is the
+     appropriate setting for the library.  */
   CPP_OPTION (pfile, warn_long_long) = (CPP_OPTION (pfile, pedantic)
 					&& !CPP_OPTION (pfile, c99));
 

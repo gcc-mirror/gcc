@@ -1,3 +1,18 @@
+2002-06-02  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-common.c (c_common_init): Override cpplib's default
+	warn_long_long setting.
+	* c-lex.c (lex_number): Replace with interpret_integer,
+	interpret_float, narrowest_unsigned_type and
+	narrowest_signed_type, taking advantage of the new
+	cpplib functionality.
+	* cpperror.c (_cpp_begin_message): If a warning is turned
+	into an error, avoid printing "warning:".
+	* cppexp.c (cpp_num_sign_extend): New.
+	* cppinit.c: Update comment.
+	* cpplib.h (cpp_num_sign_extend): New.
+	* tree.h: Update comment.
+
 2002-06-02  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* diagnostic.h (struct diagnostic_context):  Add new member

@@ -995,6 +995,33 @@ num_positive (num, precision)
   return (num.low & (cpp_num_part) 1 << (precision - 1)) == 0;
 }
 
+/* Sign extend a number, with PRECISION significant bits and all
+   others assumed clear, to fill out a cpp_num structure.  */
+cpp_num
+cpp_num_sign_extend (num, precision)
+     cpp_num num;
+     size_t precision;
+{
+  if (!num.unsignedp)
+    {
+      if (precision > PART_PRECISION)
+	{
+	  precision -= PART_PRECISION;
+	  if (precision < PART_PRECISION
+	      && (num.high & (cpp_num_part) 1 << (precision - 1)))
+	    num.high |= ~(~(cpp_num_part) 0 >> (PART_PRECISION - precision));
+	}
+      else if (num.low & (cpp_num_part) 1 << (precision - 1))
+	{
+	  if (precision < PART_PRECISION)
+	    num.low |= ~(~(cpp_num_part) 0 >> (PART_PRECISION - precision));
+	  num.high = ~(cpp_num_part) 0;
+	}
+    }
+
+  return num;
+}
+
 /* Returns the negative of NUM.  */
 static cpp_num
 num_negate (num, precision)

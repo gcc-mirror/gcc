@@ -625,6 +625,10 @@ extern unsigned cpp_classify_number PARAMS ((cpp_reader *, const cpp_token *));
 extern cpp_num cpp_interpret_integer PARAMS ((cpp_reader *, const cpp_token *,
 					      unsigned int type));
 
+/* Sign extend a number, with PRECISION significant bits and all
+   others assumed clear, to fill out a cpp_num structure.  */
+cpp_num cpp_num_sign_extend PARAMS ((cpp_num, size_t));
+
 /* Diagnostic levels.  To get a dianostic without associating a
    position in the translation unit with it, use cpp_error_with_line
    with a line number of zero.  */
