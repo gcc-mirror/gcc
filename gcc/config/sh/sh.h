@@ -1232,9 +1232,9 @@ extern struct rtx_def *sh_builtin_saveregs ();
 
 #define CASE_VECTOR_SHORTEN_MODE(MIN_OFFSET, MAX_OFFSET, BODY) \
 ((MIN_OFFSET) >= 0 && (MAX_OFFSET) <= 127 \
- ? (ADDR_DIFF_VEC_FLAGS (BODY).offset_unsigned = 1, QImode) \
- : (MIN_OFFSET) >= 0 && (MAX_OFFSET) <= 255 \
  ? (ADDR_DIFF_VEC_FLAGS (BODY).offset_unsigned = 0, QImode) \
+ : (MIN_OFFSET) >= 0 && (MAX_OFFSET) <= 255 \
+ ? (ADDR_DIFF_VEC_FLAGS (BODY).offset_unsigned = 1, QImode) \
  : (MIN_OFFSET) >= -32768 && (MAX_OFFSET) <= 32767 ? HImode \
  : SImode)
 
