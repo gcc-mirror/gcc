@@ -125,7 +125,8 @@ _Jv_HashCode (jobject obj)
 // Return a raw pointer to the elements of an array given the array
 // and its element type.  You might think we could just pick a single
 // array type and use elements() on it, but we can't because we must
-// account for alignment of the element type.
+// account for alignment of the element type.  When ARRAY is null, we
+// obtain the number of bytes taken by the base part of the array.
 inline char *
 _Jv_GetArrayElementFromElementType (jobject array,
 				    jclass element_type)
