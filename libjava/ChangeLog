@@ -1,3 +1,12 @@
+2004-07-14  Bryce McKinlay  <mckinlay@redhat.com>
+
+	PR libgcj/16204
+	* Makefile.am (AM_CXXFLAGS): Add -D_FILE_OFFSET_BITS=64 to enable
+	large file support.
+	* Makefile.in: Rebuilt.
+	* testsuite/libjava.lang/LargeFile.java: New test case.
+	* testsuite/libjava.lang/LargeFile.out: New file.
+
 2004-07-14  Jerry Quinn  <jlquinn@optonline.net>
 
 	* java/beans/EventHandler.java: Remove debugging statements.
