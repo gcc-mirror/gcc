@@ -2849,12 +2849,14 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		break;
 
 	      case 'E':
+#ifndef REAL_ARITHMETIC
 		/* Match any floating double constant, but only if
 		   we can examine the bits of it reliably.  */
 		if ((HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT
 		     || HOST_BITS_PER_WIDE_INT != BITS_PER_WORD)
 		    && GET_MODE (operand) != VOIDmode && ! flag_pretend_float)
 		  break;
+#endif
 		if (GET_CODE (operand) == CONST_DOUBLE)
 		  win = 1;
 		break;
@@ -2997,7 +2999,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	      /* If this is a constant that is reloaded into the desired
 		 class by copying it to memory first, count that as another
 		 reload.  This is consistent with other code and is
-		 required to avoid chosing another alternative when
+		 required to avoid choosing another alternative when
 		 the constant is moved into memory by this function on
 		 an early reload pass.  Note that the test here is 
 		 precisely the same as in the code below that calls
