@@ -640,7 +640,12 @@ extern int rs6000_altivec_abi;
 
 /* Most ABIs word-align FP doubles but doubleword-align 64-bit ints.  */
 #define ADJUST_FIELD_ALIGN(FIELD, COMPUTED) \
-  rs6000_field_alignment ((FIELD), (COMPUTED))
+  (DEFAULT_ABI == ABI_V4						\
+   ? ((TARGET_ALTIVEC							\
+       && TREE_CODE (get_inner_array_type (FIELD)) == VECTOR_TYPE)	\
+      ? 128 : (COMPUTED))						\
+   : ((TYPE_MODE (get_inner_array_type (FIELD)) == DFmode)		\
+      ? MIN (32, (COMPUTED)) : (COMPUTED)))
 
 /* Make strings word-aligned so strcpy from constants will be faster.
    Make vector constants quadword aligned.  */

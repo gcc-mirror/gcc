@@ -11534,24 +11534,3 @@ xcoff_asm_named_section (name, flags)
   fprintf (asm_out_file, "\t.csect %s\n", name);
 }
 #endif
-
-int
-rs6000_field_alignment (field, computed)
-     tree field;
-     int computed;
-{
-  tree type = get_inner_array_type (field);
-
-  if (DEFAULT_ABI == ABI_V4)
-    {
-      if (TARGET_ALTIVEC && TREE_CODE (type) == VECTOR_TYPE)
-	return 128;
-    }
-  else
-    {
-      if (TYPE_MODE (type) == DFmode)
-	return MIN (32, computed);
-    }
-
-  return computed;
-}
