@@ -126,18 +126,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define WCHAR_TYPE	"unsigned int"
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
 
-#if 0
-#define WCHAR_TYPE	((TARGET_WC8)					\
-				? "unsigned char"			\
-				: ((TARGET_WC16)			\
-					? "short unsigned int"		\
-					: "long unsigned int"))
-#endif
-
+/* OSF/1 uses gas, not the mips assembler.  */
 #define TARGET_DEFAULT MASK_GAS
 
 /* OSF/rose uses stabs, not ECOFF.  */
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+
+/* enable dwarf debugging for testing */
+#define DWARF_DEBUGGING_INFO
 
 /* Tell collect that the object format is OSF/rose.  */
 #define OBJECT_FORMAT_ROSE
@@ -146,6 +142,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define REAL_LD_FILE_NAME	"/usr/ccs/gcc/gld"
 #define REAL_NM_FILE_NAME	"/usr/ccs/bin/nm"
 #define REAL_STRIP_FILE_NAME	"/usr/ccs/bin/strip"
+
+/* Default to -G 0 unless doing ecoff work.  */
+#define MIPS_DEFAULT_GVALUE ((TARGET_MIPS_AS) ? 8 : 0)
 
 /* Use atexit for static constructors/destructors, instead of defining
    our own exit function.  */

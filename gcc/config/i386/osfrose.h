@@ -49,6 +49,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
      { "no-half-pic",	-MASK_HALF_PIC},				\
      { "debugb",	 MASK_HALF_PIC_DEBUG},
 
+/* OSF/rose uses stabs, not dwarf.  */
+#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+
+#ifndef DWARF_DEBUGGING_INFO
+#define DWARF_DEBUGGING_INFO	/* enable dwarf debugging for testing */
+#endif
+
 /* Prefix that appears before all global/static identifiers, except for
    temporary labels.  */
 

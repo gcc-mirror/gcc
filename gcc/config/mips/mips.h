@@ -645,7 +645,7 @@ while (0)
 
 /* Print subsidiary information on the compiler version in use.  */
 
-#define MIPS_VERSION "[AL 1.1, MM 37]"
+#define MIPS_VERSION "[AL 1.1, MM 38]"
 
 #ifndef MACHINE_TYPE
 #define MACHINE_TYPE "BSD Mips"
@@ -720,7 +720,8 @@ do {							\
 #define PUT_SDB_DEF(a)					\
 do {							\
   extern FILE *asm_out_text_file;			\
-  fprintf (asm_out_text_file, "\t#.def\t");		\
+  fprintf (asm_out_text_file, "\t%s.def\t",		\
+	   (TARGET_GAS) ? "" : "#");			\
   ASM_OUTPUT_LABELREF (asm_out_text_file, a); 		\
   fputc (';', asm_out_text_file);			\
 } while (0)
@@ -728,7 +729,8 @@ do {							\
 #define PUT_SDB_PLAIN_DEF(a)				\
 do {							\
   extern FILE *asm_out_text_file;			\
-  fprintf (asm_out_text_file, "\t#.def\t.%s;", (a));	\
+  fprintf (asm_out_text_file, "\t%s.def\t.%s;",		\
+	   (TARGET_GAS) ? "" : "#", (a));		\
 } while (0)
 
 #define PUT_SDB_ENDEF					\
@@ -796,8 +798,9 @@ do {							\
 do {							\
   extern FILE *asm_out_text_file;			\
   fprintf (asm_out_text_file,				\
-	   "$Lb%d:\n\t#.begin\t$Lb%d\t%d\n",		\
+	   "$Lb%d:\n\t%s.begin\t$Lb%d\t%d\n",		\
 	   sdb_label_count,				\
+	   (TARGET_GAS) ? "" : "#",			\
 	   sdb_label_count,				\
 	   (LINE));					\
   sdb_label_count++;					\
@@ -807,8 +810,9 @@ do {							\
 do {							\
   extern FILE *asm_out_text_file;			\
   fprintf (asm_out_text_file,				\
-	   "$Le%d:\n\t#.bend\t$Le%d\t%d\n",		\
+	   "$Le%d:\n\t%s.bend\t$Le%d\t%d\n",		\
 	   sdb_label_count,				\
+	   (TARGET_GAS) ? "" : "#",			\
 	   sdb_label_count,				\
 	   (LINE));					\
   sdb_label_count++;					\
@@ -3368,6 +3372,10 @@ do {									\
   assemble_string (p, size);						\
 }
 
+/* Default to -G 8 */
+#ifndef MIPS_DEFAULT_GVALUE
+#define MIPS_DEFAULT_GVALUE 8
+#endif
 
 /* Define the strings to put out for each section in the object file.  */
 #define TEXT_SECTION_ASM_OP	"\t.text"	/* instructions */
