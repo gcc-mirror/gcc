@@ -42,5 +42,5 @@ extern void incr_ticks_for_insn		PROTO((rtx));
 extern void mark_end_of_function_resources PROTO ((rtx, int));
 extern void init_resource_info		PROTO((rtx));
 extern void free_resource_info		PROTO((void));
-extern rtx find_free_register		PROTO((rtx, char *, int,
+extern rtx find_free_register		PROTO((rtx, rtx, char *, int,
 					       HARD_REG_SET *));

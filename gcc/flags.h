@@ -473,6 +473,9 @@ extern int flag_regmove;
 
 /* Instrument functions with calls at entry and exit, for profiling.  */
 extern int flag_instrument_function_entry_exit;
+
+/* Perform a peephole pass before sched2. */
+extern int flag_peephole2;
 
 /* Other basic status info about current function.  */
 

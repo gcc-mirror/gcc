@@ -114,6 +114,9 @@ extern void add_clobbers		PROTO((rtx, int));
 extern void insn_extract		PROTO((rtx));
 extern void extract_insn		PROTO((rtx));
 extern void preprocess_constraints	PROTO((void));
+extern rtx recog_next_insn		PROTO((rtx, int));
+extern void peephole2_optimize		PROTO((FILE *));
+extern rtx peephole2_insns		PROTO((rtx, rtx, rtx *));
 
 /* Nonzero means volatile operands are recognized.  */
 extern int volatile_ok;

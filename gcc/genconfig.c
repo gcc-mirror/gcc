@@ -43,6 +43,8 @@ static int register_constraint_flag;
 static int have_cc0_flag;
 static int have_cmove_flag;
 static int have_lo_sum_flag;
+static int have_peephole_flag;
+static int have_peephole2_flag;
 
 /* Maximum number of insns seen in a split.  */
 static int max_insns_per_split = 1;
@@ -313,8 +315,16 @@ from the machine description file `md'.  */\n\n");
 	gen_expand (desc);
       if (GET_CODE (desc) == DEFINE_SPLIT)
 	gen_split (desc);
+      if (GET_CODE (desc) == DEFINE_PEEPHOLE2)
+	{
+	  have_peephole2_flag = 1;
+	  gen_split (desc);
+	}
       if (GET_CODE (desc) == DEFINE_PEEPHOLE)
-	gen_peephole (desc);
+	{
+	  have_peephole_flag = 1;
+	  gen_peephole (desc);
+	}
     }
 
   printf ("\n#define MAX_RECOG_OPERANDS %d\n", max_recog_operands + 1);
@@ -337,6 +347,12 @@ from the machine description file `md'.  */\n\n");
 
   if (have_lo_sum_flag)
     printf ("#define HAVE_lo_sum\n");
+
+  if (have_peephole_flag)
+    printf ("#define HAVE_peephole\n");
+
+  if (have_peephole2_flag)
+    printf ("#define HAVE_peephole2\n");
 
   fflush (stdout);
   exit (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);

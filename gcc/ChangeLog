@@ -1,3 +1,48 @@
+Tue Aug 31 13:35:42 1999  Richard Henderson  <rth@cygnus.com>
+
+	Merge peephole2 from new_ia32_branch:
+	* Makefile.in (STAGESTUFF): Add *.peephole2.
+	(mostlyclean): Likewise.
+	(recog.o): Depend on resource.h.
+
+	* final.c (peephole): Conditionalize decl on HAVE_peephole.
+	(final_scan_insn): Likewise for the invocation of peephole.
+	* genconfig.c (main): Look for peephole and peephole2 patterns.
+	Emit HAVE_peephole* accordingly.
+	* genpeep.c (main): Conditionalize entire output on HAVE_peephole.
+	* flags.h (flag_peephole2): Declare.
+	* toplev.c: New pass peephole2.  New flag -fpeephole2.
+ 
+	* genattrtab.c (main): Count DEFINE_PEEPHOLE2.
+	* gencodes.c (main): Likewise.
+	* genextract.c (main): Likewise.
+	* genoutput.c (main): Likewise.
+	* genemit.c (max_operand_1): Look for the max scratch operand.
+	(gen_rtx_scratch): New.
+	(gen_exp): Use it, and pass on new arg subroutine_type.
+	(gen_expand): Take max scratch into account.
+	(gen_split): Emit peephole2 functions.
+	(output_peephole2_scratch): New.
+	(main): Include hard-reg-set.h and resource.h.  Handle peephole2.
+	* genrecog.c (routine_type): Add PEEPHOLE2.
+	(IS_SPLIT): New.
+	(make_insn_sequence): Match outer parallel for peep2.  Discard
+	top level scratches and dups.
+	(add_to_sequence): New args insn_type and top.  Update all callers.
+	Handle toplevel peep2 matching insns.
+	(write_subroutine): Handle peep2.
+	(write_tree_1): Likewise.
+	(write_tree): Likewise.
+	(main): Likewise.
+	(change_state): New arg afterward.  Update all callers.
+	Handle matching separate insns.
+	* recog.c (recog_next_insn): New.
+	(peephole2_optimize): New.
+	* rtl.def (DEFINE_PEEPHOLE2): New.
+	* resource.c (find_free_register): New argument last_insn.  Use it
+	to find a register available through the entire span.
+	* resource.h (find_free_register): Update prototype.
+
 Tue Aug 31 11:51:06 1999  Jim Kingdon  <http://developer.redhat.com>
 
 	* i386.c (output_strlen_unroll): Don't write xops[7]

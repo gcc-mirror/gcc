@@ -968,7 +968,8 @@ main (argc, argv)
 	gen_peephole (desc);
       if (GET_CODE (desc) == DEFINE_EXPAND)
 	gen_expand (desc);
-      if (GET_CODE (desc) == DEFINE_SPLIT)
+      if (GET_CODE (desc) == DEFINE_SPLIT
+ 	  || GET_CODE (desc) == DEFINE_PEEPHOLE2)
 	gen_split (desc);
       next_index_number++;
     }
