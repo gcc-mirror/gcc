@@ -1,3 +1,8 @@
+2003-06-26  Dhananjay Deshpande  <dhananjayd@kpitcummins.com>
+
+	* gcc/config/sh/sh.md (push_fpscr): Enable for TARGET_SH2E.
+	(pop_fpscr, fpu_switch): Likewise.
+
 2003-06-26  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* value-prof.c: New.

@@ -3343,7 +3343,7 @@
 
 (define_expand "push_fpscr"
   [(const_int 0)]
-  "TARGET_SH3E"
+  "TARGET_SH2E"
   "
 {
   rtx insn = emit_insn (gen_fpu_switch (gen_rtx (MEM, PSImode,
@@ -3356,7 +3356,7 @@
 
 (define_expand "pop_fpscr"
   [(const_int 0)]
-  "TARGET_SH3E"
+  "TARGET_SH2E"
   "
 {
   rtx insn = emit_insn (gen_fpu_switch (get_fpscr_rtx (),
@@ -8093,7 +8093,7 @@ mov.l\\t1f,r0\\n\\
 (define_insn "fpu_switch"
   [(set (match_operand:PSI 0 "general_movdst_operand" "=c,c,r,c,c,r,m,r,<")
 	(match_operand:PSI 1 "general_movsrc_operand" "c,>,m,m,r,r,r,!c,c"))]
-  "TARGET_SH3E
+  "TARGET_SH2E
    && (! reload_completed
        || true_regnum (operands[0]) != FPSCR_REG
        || GET_CODE (operands[1]) != MEM
