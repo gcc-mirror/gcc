@@ -541,9 +541,22 @@ verify_ssa (void)
       block_stmt_iterator bsi;
 
       for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
-	if (verify_def (bb, definition_block, PHI_RESULT (phi), phi,
+	{
+	  int i;
+	  if (verify_def (bb, definition_block, PHI_RESULT (phi), phi,
 			!is_gimple_reg (PHI_RESULT (phi))))
 	  goto err;
+	  for (i = 0; i < PHI_NUM_ARGS (phi); i++)
+	    {
+	      tree def = PHI_ARG_DEF (phi, i);
+	      if (TREE_CODE (def) != SSA_NAME && !is_gimple_min_invariant (def))
+		{
+		  error ("PHI argument is not SSA_NAME, or invariant");
+		  print_generic_stmt (stderr, phi, TDF_VOPS);
+		  goto err;
+		}
+	    }
+	}
 
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
 	{
