@@ -118,9 +118,7 @@ C Test simple GOTO.
       if (f .ne. 0) goto 100		! count(2)
 					! branch(end)
       gt1 = 1				! count(1)
-					! branch(100)
       goto 101				! count(1)
-					! branch(end)
   100 gt1 = 2				! count(1)
   101 continue				! count(2)
       end
@@ -136,9 +134,7 @@ C Test simple GOTO again, this time out of a DO loop.
          if (i .eq. f) goto 100		! count(19)
       end do
       gt2 = 4				! count(1)
-					! branch(100)
       goto 101				! count(1)
-					! branch(end)
   100 gt2 = 8				! count(1)
   101 continue				! count(2)
       end
@@ -149,17 +145,13 @@ C Test computed GOTO.
       integer i
       goto (101, 102, 103, 104), i	! count(2)
       gt3 = 8				! count(1)
-					! branch(100)
       goto 105				! count(1)
-					! branch(end)
   101 gt3 = 1024
       goto 105
   102 gt3 = 2048
       goto 105
   103 gt3 = 16				! count(1)
-					! branch(100)
       goto 105				! count(1)
-					! branch(end)
   104 gt3 = 4096
       goto 105
   105 gt3 = gt3 * 2			! count(2)

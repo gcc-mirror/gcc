@@ -1,3 +1,35 @@
+2003-03-31  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcov.c: Add -a & -u options.
+	(struct arc_info): Add local_span, is_call_non_return,
+	is_nonlocal_return, is_unconditional flags, remove is_call flag.
+	(struct block_info): Add flags, is_call_site, is_nonlocal_return
+	members. Make encodings a union with span member.
+	(struct function_info): Add blocks_executed, line, src, line_next
+	members.
+	(struct coverage_info): Make branches a union with blocks member.
+	(struct source_info): Add functions member.
+	(object_summary, program_count): New global variables.
+	(flag_all_blocks, flag_unconditional): New flags.
+	(find_source, output_branch_count): New functions.
+	(print_usage): Adjust.
+	(options): Adjust.
+	(process_args): Adjust.
+	(read_graph_file) <GCOV_TAG_FUNCTION>: Adjust.
+	<GCOV_TAG_BLOCKS>: Read flags.
+	<GCOV_TAG_LINES>: Adjust.
+	(read_count_file): Process SUMMARY tags.
+	(solve_flow_graph): Set is_unconditional and clear is_call_site
+	appropriately.
+	(add_branch_counts): Adjust. Don't count unconditional branches.
+	(add_line_counts): Deal with all-blocks mode, accumulate block
+	coverage.
+	(accumulate_line_counts): Adjust, generate local spanning tree for
+	all-blocks mode.
+	(output_lines): Adjust.
+	* profile.c (branch_prob): Alter GCOV_FUNCTION_TAG record.
+	* doc/gcov.texi: Document.
+
 2003-03-31  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md: Organize peephole2's that trasform

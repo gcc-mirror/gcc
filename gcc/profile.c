@@ -926,7 +926,7 @@ branch_prob ()
   unsigned num_edges, ignored_edges;
   struct edge_list *el;
   const char *name = IDENTIFIER_POINTER
-		      (DECL_ASSEMBLER_NAME (current_function_decl));
+    (DECL_ASSEMBLER_NAME (current_function_decl));
 
   profile_info.current_function_cfg_checksum = compute_checksum ();
   for (i = 0; i < profile_info.n_sections; i++)
@@ -1086,6 +1086,8 @@ branch_prob ()
   if (flag_test_coverage && bbg_file)
     {
       long offset;
+      const char *file = DECL_SOURCE_FILE (current_function_decl);
+      unsigned line = DECL_SOURCE_LINE (current_function_decl);
       
       /* Announce function */
       if (gcov_write_unsigned (bbg_file, GCOV_TAG_FUNCTION)
@@ -1094,6 +1096,8 @@ branch_prob ()
 			     strlen (name))
 	  || gcov_write_unsigned (bbg_file,
 			    profile_info.current_function_cfg_checksum)
+	  || gcov_write_string (bbg_file, file, strlen (file))
+	  || gcov_write_unsigned (bbg_file, line)
 	  || gcov_write_length (bbg_file, offset))
 	goto bbg_error;
 

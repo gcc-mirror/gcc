@@ -1,3 +1,8 @@
+2003-03-31  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* lib/gcov.exp: Adjust call return testing strings.
+	* g77.dg/gcov/gcov-1.f: Don't expect unconditional branches.
+
 2003-03-31  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/builtins-3.c: Add new tests for sin and cos.

@@ -90,6 +90,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    	bbg:  function-graph*
 	function-graph: announce_function basic_blocks {arcs | lines}*
 	announce_function: header string:name int32:checksum
+		string:source int32:lineno
 	basic_block: header int32:flags*
 	arcs: header int32:block_no arc*
 	arc:  int32:dest_block int32:flags
@@ -121,7 +122,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	summary: in32:checksum int32:runs int32:arcs int64:sum int64:max \
 		int64:max_sum int64:sum_max
 
-   The ANNOUNCE_FUNCTION record is the same as that in the BBG file.
+   The ANNOUNCE_FUNCTION record is the same as that in the BBG file,
+   but without the source location.
    The ARC_COUNTS gives the counter values for those arcs that are
    instrumented.  The SUMMARY records give information about the whole
    object file and about the whole program.  The checksum is used for
@@ -195,7 +197,7 @@ typedef long long gcov_type;
      	(GCOV_TAG_MASK (TAG) > GCOV_TAG_MASK (SUB))
 
 /* Basic block flags.  */
-#define GCOV_BLOCK_UNEXPECTED	(1 << 0)
+#define GCOV_BLOCK_UNEXPECTED	(1 << 1)
 
 /* Arc flags.  */
 #define GCOV_ARC_ON_TREE 	(1 << 0)
