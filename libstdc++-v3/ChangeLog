@@ -1,3 +1,15 @@
+2002-03-19  Steve Ellcey  <sje@cup.hp.com>
+
+	* acinclude.m4 (GLIBCPP_ENABLE_LIBUNWIND_EXCEPTIONS): Define
+	GLIBCPP_ENABLE_LIBUNWIND_EXCEPTIONS to set LIBUNWIND_FLAG if
+	--enable-libunwind-exceptions is set.
+	* configure.in (GLIBCPP_ENABLE_LIBUNWIND_EXCEPTIONS): Call new
+	macro to check for libunwind.
+	* configure: Regenerate.	
+	* src/Makefile.am (libstdc___la_LDFLAGS): Add
+	LIBUNWIND_FLAG to libstdc link line.
+	* src/Makefile.in: Regenerate.
+	
 2002-03-19  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* docs/html/faq/index.html: Add OS X workaround.
