@@ -291,7 +291,8 @@ prepare_call_address (funexp, fndecl, call_fusage, reg_parm_seen)
     {
       emit_move_insn (static_chain_rtx, static_chain_value);
 
-      use_reg (call_fusage, static_chain_rtx);
+      if (GET_CODE (static_chain_rtx) == REG)
+	use_reg (call_fusage, static_chain_rtx);
     }
 
   return funexp;
