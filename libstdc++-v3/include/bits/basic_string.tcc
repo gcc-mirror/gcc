@@ -273,6 +273,7 @@ namespace std
 	     traits_type::copy(_M_data(), __s, __n);
 	   else if (__pos)
 	     traits_type::move(_M_data(), __s, __n);
+	   _M_rep()->_M_set_sharable();
 	   _M_rep()->_M_length = __n;
 	   _M_data()[__n] = _Rep::_S_terminal;  // grr.
 	   return *this;
