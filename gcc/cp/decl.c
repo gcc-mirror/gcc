@@ -8860,7 +8860,7 @@ grokfndecl (tree ctype,
 	 or enumeration declared in a local scope) shall not be used to
 	 declare an entity with linkage.
 
-	 Only check this for public decls for now.  */
+	 Only check this for public decls for now.  See core 319, 389.  */
       t = no_linkage_check (TREE_TYPE (decl));
       if (t)
 	{
