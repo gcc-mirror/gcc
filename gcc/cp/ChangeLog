@@ -1,3 +1,7 @@
+1999-09-23  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* ir.texi: Fix formatting errors and typos.
+
 1999-09-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* ir.texi: Document CLEANUP_STMT, SCOPE_STMT, and START_CATCH_STMT.
