@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.2 $
+--                            $Revision: 1.3 $
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -76,12 +76,12 @@ package body Sem_Ch7 is
    --  the private part and the body of the package the defining occurrence
    --  contains the full declaration. To simplify the swap, the defining
    --  occurrence that currently holds the private declaration points to the
-   --  full declaration. During semantic processing the defining occurrence also
-   --  points to a list of private dependents, that is to say access types or
-   --  composite types whose designated types or component types are subtypes
-   --  or derived types of the private type in question. After the full decla-
-   --  ration has been seen, the private dependents are updated to indicate
-   --  that they have full definitions.
+   --  full declaration. During semantic processing the defining occurrence
+   --  also points to a list of private dependents, that is to say access types
+   --  or composite types whose designated types or component types are
+   --  subtypes or derived types of the private type in question. After the
+   --  full declaration has been seen, the private dependents are updated to
+   --  indicate that they have full definitions.
 
    -----------------------
    -- Local Subprograms --

@@ -1,3 +1,7 @@
+2001-12-15  Richard Henderson  <rth@redhat.com>
+
+	* sem_ch7.adb: Wrap comment.
+
 2001-12-16  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* 5ataprop.adb, 5atpopsp.adb, 5ftaprop.adb, 5gmastop.adb,
