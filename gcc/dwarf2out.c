@@ -494,6 +494,9 @@ static void def_cfa_1		 	PARAMS ((const char *, dw_cfa_location *));
 #define ASM_OUTPUT_DWARF_DELTA(FILE,LABEL1,LABEL2) \
   ASM_OUTPUT_DWARF_DELTA4 (FILE,LABEL1,LABEL2)
 
+#define ASM_OUTPUT_DWARF_DATA2(FILE,VALUE) \
+  assemble_integer (GEN_INT (VALUE), 2, 1)
+
 #define ASM_OUTPUT_DWARF_DATA4(FILE,VALUE) \
   assemble_integer (GEN_INT (VALUE), 4, 1)
 
@@ -603,7 +606,7 @@ expand_builtin_init_dwarf_reg_sizes (address)
 
   for (i = 0; i < DWARF_FRAME_REGISTERS; ++i)
     {
-      int offset = i * GET_MODE_SIZE (mode);
+      int offset = DWARF_FRAME_REGNUM (i) * GET_MODE_SIZE (mode);
       int size = GET_MODE_SIZE (reg_raw_mode[i]);
 
       emit_move_insn (change_address (mem, mode,
