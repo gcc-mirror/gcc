@@ -3763,17 +3763,17 @@ build_c_cast (type, expr)
 	  && TREE_CODE (otype) == POINTER_TYPE
 	  && TREE_CODE (expr) == ADDR_EXPR
 	  && DECL_P (TREE_OPERAND (expr, 0))
-	  && flag_strict_aliasing && extra_warnings
+	  && flag_strict_aliasing && warn_strict_aliasing
 	  && !VOID_TYPE_P (TREE_TYPE (type)))
 	{
  	  /* Casting the address of a decl to non void pointer. Warn
 	     if the cast breaks type based aliasing.  */
 	  if (!COMPLETE_TYPE_P (TREE_TYPE (type)))
-	    warning ("type punning to incomplete type might not be type based aliasing safe");
+	    warning ("type-punning to incomplete type might break strict-aliasing rules");
 	  else if (!alias_sets_conflict_p
 		   (get_alias_set (TREE_TYPE (TREE_OPERAND (expr, 0))),
 		    get_alias_set (TREE_TYPE (type))))
-	    warning ("type punning cast is not type based aliasing safe");
+	    warning ("dereferencing type-punned pointer will break strict-aliasing rules");
 	}
       
       ovalue = value;

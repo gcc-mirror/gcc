@@ -184,6 +184,11 @@ extern int warn_disabled_optimization;
 
 extern int warn_deprecated_decl;
 
+/* Nonzero means warn about constructs which might not be strict
+   aliasing safe.  */
+
+extern int warn_strict_aliasing;
+
 /* Nonzero if generating code to do profiling.  */
 
 extern int profile_flag;

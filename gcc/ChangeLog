@@ -1,3 +1,14 @@
+2002-10-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c-opts.c (c_common_decode_option): Add warn_strict_aliasing to
+	-Wall.
+	* c-typeck.c (build_c_cast): Use warn_strict_aliasing, tweak
+	message.
+	* flags.h (warn_strict_aliasing): Declare.
+	* toplev.c (warn_strict_aliasing): Define.
+	(lang_independent_options): Add it.
+	* doc/invoke.texi (-Wstrict-aliasing): Document it.
+
 2002-10-08  Zack Weinberg  <zack@codesourcery.com>
 
 	* system.h (GCCBUGURL): Delete.
