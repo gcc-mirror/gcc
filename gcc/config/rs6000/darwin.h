@@ -97,6 +97,14 @@ do {									\
 %{static: %{Zdynamic: %e conflicting code gen style switches are used}}\
 %{!static:%{!mdynamic-no-pic:-fPIC}}"
 
+#define ASM_SPEC "-arch ppc \
+  %{Zforce_cpusubtype_ALL:-force_cpusubtype_ALL} \
+  %{!Zforce_cpusubtype_ALL:%{faltivec:-force_cpusubtype_ALL}}"
+
+#undef SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS			\
+  { "darwin_arch", "ppc" },
+
 /* Make both r2 and r3 available for allocation.  */
 #define FIXED_R2 0
 #define FIXED_R13 0
