@@ -1,5 +1,9 @@
 2000-04-22  Richard Henderson  <rth@cygnus.com>
 
+	* flow.c (mark_used_reg): Hack around rs6000 eliminable pic reg.
+
+2000-04-22  Richard Henderson  <rth@cygnus.com>
+
 	* diagnostic.c (init_output_buffer): Don't initialize format_args.
 	(output_clear): Likewise.
 	(output_printf): Use va_copy.
