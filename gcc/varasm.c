@@ -1341,7 +1341,8 @@ contains_pointers_p (type)
 	tree fields;
 	/* For a type that has fields, see if the fields have pointers.  */
 	for (fields = TYPE_FIELDS (type); fields; fields = TREE_CHAIN (fields))
-	  if (contains_pointers_p (TREE_TYPE (fields)))
+	  if (TREE_CODE (fields) == FIELD_DECL
+	      && contains_pointers_p (TREE_TYPE (fields)))
 	    return 1;
 	return 0;
       }
