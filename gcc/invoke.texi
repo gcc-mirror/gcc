@@ -5664,9 +5664,12 @@ it.
 
 @table @code
 @item -fexceptions
-Enable exception handling, and generate extra code needed to propagate
-exceptions.  If you do not specify this option, GNU CC enables it by
-default for languages like C++ that normally require exception handling,
+Enable exception handling. Generates extra code needed to propagate
+exceptions.  For some targets, this implies generation of frame unwind 
+information for all functions. This can produce significant data size 
+overhead, although it does not affect execution.
+If you do not specify this option, it is enabled by
+default for languages like C++ which normally require exception handling,
 and disabled for languages like C that do not normally require it.
 However, when compiling C code that needs to interoperate properly with
 exception handlers written in C++, you may need to enable this option.
@@ -5920,14 +5923,6 @@ stack.  You should specify this flag if you are running in an
 environment with multiple threads, but only rarely need to specify it in
 a single-threaded environment since stack overflow is automatically
 detected on nearly all systems if there is only one stack.
-
-@item -fexceptions
-Enable exception handling.  For some targets, this implies
-generation of frame unwind information for all functions, which can produce
-significant data size overhead, though it does not affect execution.
-
-This option is on by default for languages that support exception
-handling (such as C++), and off for those that don't (such as C).
 
 @cindex aliasing of parameters
 @cindex parameters, aliased
