@@ -2122,6 +2122,11 @@ omitted.  This is done under the assumption that the zero initializer in
 user code appears conditioned on e.g. @code{__STDC__} to avoid missing
 initializer warnings and relies on default initialization to zero in the
 traditional C case.
+
+@item
+Conversions by prototypes.  This is similar to @samp{-Wconversion} in
+that it warns about width changes and fixed/floating point conversions,
+however it does not warn about changes in signedness.
 @end itemize
 
 @item -Wundef
