@@ -199,8 +199,8 @@ public class ObjectInputStream extends InputStream
 				   (class_name));
 	}
 
-	setBlockDataMode (true);
-	osc.setClass (resolveClass (osc));
+	Class cl = resolveClass (osc);
+	osc.setClass (cl);
 	setBlockDataMode (false);
 
 	if (this.realInputStream.readByte () != TC_ENDBLOCKDATA)
@@ -487,27 +487,15 @@ public class ObjectInputStream extends InputStream
   protected Class resolveClass (ObjectStreamClass osc)
     throws ClassNotFoundException, IOException
   {
-//    DEBUGln ("Resolving " + osc);
-
     SecurityManager sm = System.getSecurityManager ();
 
-    if (sm == null)
-      sm = new SecurityManager () {};
-
+    // FIXME: currentClassLoader doesn't yet do anything useful. We need
+    // to call forName() with the classloader of the class which called 
+    // readObject(). See SecurityManager.getClassContext().
     ClassLoader cl = currentClassLoader (sm);
 
-    if (cl == null)
-    {
-//      DEBUGln ("No class loader found");
-      return Class.forName (osc.getName ());
-    }
-    else
-    {
-//      DEBUGln ("Using " + cl);
-      return cl.loadClass (osc.getName ());
-    }
+    return Class.forName (osc.getName (), true, cl);
   }
-
 
   /**
      Allows subclasses to resolve objects that are read from the
