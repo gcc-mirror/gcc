@@ -1,3 +1,7 @@
+2005-01-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/vect/vect-66.c: Slightly tweak 3rd loop.
+
 2005-01-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* g++.dg/debug/typedef3.C: New test.
