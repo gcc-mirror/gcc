@@ -1771,7 +1771,7 @@ spill_restore_mem (reg, cfa_off)
     }
   else
     {
-      rtx seq;
+      rtx seq, insn;
 
       if (disp == 0)
 	seq = gen_movdi (spill_fill_data.iter_reg[iter],
@@ -1797,17 +1797,26 @@ spill_restore_mem (reg, cfa_off)
 
       /* Careful for being the first insn in a sequence.  */
       if (spill_fill_data.init_after)
-	spill_fill_data.init_after
-	  = emit_insn_after (seq, spill_fill_data.init_after);
+	insn = emit_insn_after (seq, spill_fill_data.init_after);
       else
 	{
 	  rtx first = get_insns ();
 	  if (first)
-	    spill_fill_data.init_after
-	      = emit_insn_before (seq, first);
+	    insn = emit_insn_before (seq, first);
 	  else
-	    spill_fill_data.init_after = emit_insn (seq);
+	    insn = emit_insn (seq);
 	}
+      spill_fill_data.init_after = insn;
+
+      /* If DISP is 0, we may or may not have a further adjustment
+	 afterward.  If we do, then the load/store insn may be modified
+	 to be a post-modify.  If we don't, then this copy may be
+	 eliminated by copyprop_hardreg_forward, which makes this
+	 insn garbage, which runs afoul of the sanity check in
+	 propagate_one_insn.  So mark this insn as legal to delete.  */
+      if (disp == 0)
+	REG_NOTES(insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD, const0_rtx,
+					     REG_NOTES (insn));
     }
 
   mem = gen_rtx_MEM (GET_MODE (reg), spill_fill_data.iter_reg[iter]);
