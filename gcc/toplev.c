@@ -2666,21 +2666,18 @@ rest_of_compilation (decl)
 
   if (DECL_SAVED_INSNS (decl) == 0)
     {
-      int specd = DECL_INLINE (decl);
+      int inlineable = 0;
       char *lose;
 
       /* If requested, consider whether to make this function inline.  */
-      if (specd || flag_inline_functions)
+      if (DECL_INLINE (decl) || flag_inline_functions)
 	TIMEVAR (integration_time,
 		 {
 		   lose = function_cannot_inline_p (decl);
-		   /* If not optimizing, then make sure the DECL_INLINE
-		      bit is off.  */
 		   if (lose || ! optimize)
 		     {
-		       if (warn_inline && specd)
+		       if (warn_inline && DECL_INLINE (decl))
 			 warning_with_decl (decl, lose);
-		       DECL_INLINE (decl) = 0;
 		       DECL_ABSTRACT_ORIGIN (decl) = 0;
 		       /* Don't really compile an extern inline function.
 			  If we can't make it inline, pretend
@@ -2692,7 +2689,11 @@ rest_of_compilation (decl)
 			 }
 		     }
 		   else
-		     DECL_INLINE (decl) = 1;
+		     /* ??? Note that this has the effect of making it look
+			like "inline" was specified for a function if we choose
+			to inline it.  This isn't quite right, but it's
+			probably not worth the trouble to fix.  */
+		     inlineable = DECL_INLINE (decl) = 1;
 		 });
 
       insns = get_insns ();
@@ -2720,7 +2721,7 @@ rest_of_compilation (decl)
 
       if (! current_function_contains_functions
 	  && (DECL_DEFER_OUTPUT (decl)
-	      || ((specd || DECL_INLINE (decl))
+	      || (DECL_INLINE (decl)
 		  && ((! TREE_PUBLIC (decl) && ! TREE_ADDRESSABLE (decl)
 		       && ! flag_keep_inline_functions)
 		      || DECL_EXTERNAL (decl)))))
@@ -2748,7 +2749,7 @@ rest_of_compilation (decl)
 
       /* If we have to compile the function now, save its rtl and subdecls
 	 so that its compilation will not affect what others get.  */
-      if (DECL_INLINE (decl) || DECL_DEFER_OUTPUT (decl))
+      if (inlineable || DECL_DEFER_OUTPUT (decl))
 	{
 #ifdef DWARF_DEBUGGING_INFO
 	  /* Generate the DWARF info for the "abstract" instance of
@@ -2769,7 +2770,7 @@ rest_of_compilation (decl)
 
       /* If specified extern inline but we aren't inlining it, we are
 	 done.  */
-      if (specd && DECL_EXTERNAL (decl))
+      if (DECL_INLINE (decl) && DECL_EXTERNAL (decl))
 	goto exit_rest_of_compilation;
     }
 
