@@ -3398,7 +3398,7 @@ demangle_substitution (dm, template_p)
 	    }
 	  else
 	    {
-	      RETURN_IF_ERROR (result_add (dm, "std::basic_istream<char, std::char_traints<char> >"));
+	      RETURN_IF_ERROR (result_add (dm, "std::basic_istream<char, std::char_traits<char> >"));
 	      new_last_source_name = "basic_istream";
 	    }
 	  *template_p = 0;
