@@ -1,3 +1,8 @@
+Fri Oct  3 10:13:13 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* iostream.cc, libio.h: Convert other uses of #ifdef
+	_G_HAVE_PRINTF_FP to #if.
+
 1997-10-02  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* iostream.cc (operator<<): Use `#if _G_HAVE_PRINTF_FP', not ifdef.
@@ -20,7 +25,7 @@ Sun Sep 28 12:04:21 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* libio.h: Don't use _IO_LOCK_T if it's not defined.
 
-Fri Sep 26 20:56:41 1997  
+Fri Sep 26 20:56:41 1997  Ulrich Drepper  <drepper@rtl.cygnus.com>
 
 	Based on a patch by H.J. Lu  (hjl@gnu.ai.mit.edu).
 

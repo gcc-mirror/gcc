@@ -718,7 +718,7 @@ ostream& ostream::operator<<(long double n)
       if (prec <= 0 && !(flags() & ios::fixed))
 	prec = 6; /* default */
 
-#ifdef _G_HAVE_PRINTF_FP
+#if _G_HAVE_PRINTF_FP
       // Do actual conversion.
       struct printf_info info = { prec: prec,
 				  width: width(0),
