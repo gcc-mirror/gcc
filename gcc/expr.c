@@ -147,6 +147,7 @@ static rtx store_field		PARAMS ((rtx, HOST_WIDE_INT,
 					 int));
 static rtx var_rtx		PARAMS ((tree));
 static HOST_WIDE_INT highest_pow2_factor PARAMS ((tree));
+static int is_aligning_offset	PARAMS ((tree, tree));
 static rtx expand_increment	PARAMS ((tree, int, int));
 static void do_jump_by_parts_greater PARAMS ((tree, int, rtx, rtx));
 static void do_jump_by_parts_equality PARAMS ((tree, rtx, rtx));
@@ -6927,6 +6928,12 @@ expand_expr (exp, target, tmode, modifier)
 				  highest_pow2_factor (offset));
 	  }
 
+	/* If OFFSET is making OP0 more aligned than BIGGEST_ALIGNMENT,
+	   record its alignment as BIGGEST_ALIGNMENT.  */
+	if (GET_CODE (op0) == MEM && bitpos == 0 && offset != 0
+	    && is_aligning_offset (offset, tem))
+	  set_mem_align (op0, BIGGEST_ALIGNMENT);
+
 	/* Don't forget about volatility even if this is a bitfield.  */
 	if (GET_CODE (op0) == MEM && volatilep && ! MEM_VOLATILE_P (op0))
 	  {
@@ -8821,6 +8828,56 @@ expand_expr (exp, target, tmode, modifier)
   if (temp == 0)
     abort ();
   return temp;
+}
+
+/* Subroutine of above: returns 1 if OFFSET corresponds to an offset that
+   when applied to the address of EXP produces an address known to be
+   aligned more than BIGGEST_ALIGNMENT.  */
+
+static int
+is_aligning_offset (offset, exp)
+     tree offset;
+     tree exp;
+{
+  /* Strip off any conversions and WITH_RECORD_EXPR nodes.  */
+  while (TREE_CODE (offset) == NON_LVALUE_EXPR
+	 || TREE_CODE (offset) == NOP_EXPR
+	 || TREE_CODE (offset) == CONVERT_EXPR
+	 || TREE_CODE (offset) == WITH_RECORD_EXPR)
+    offset = TREE_OPERAND (offset, 0);
+
+  /* We must now have a BIT_AND_EXPR with a constant that is one less than
+     power of 2 and which is larger than BIGGEST_ALIGNMENT.  */
+  if (TREE_CODE (offset) != BIT_AND_EXPR
+      || !host_integerp (TREE_OPERAND (offset, 1), 1)
+      || compare_tree_int (TREE_OPERAND (offset, 1), BIGGEST_ALIGNMENT) <= 0
+      || !exact_log2 (tree_low_cst (TREE_OPERAND (offset, 1), 1) + 1) < 0)
+    return 0;
+
+  /* Look at the first operand of BIT_AND_EXPR and strip any conversion.
+     It must be NEGATE_EXPR.  Then strip any more conversions.  */
+  offset = TREE_OPERAND (offset, 0);
+  while (TREE_CODE (offset) == NON_LVALUE_EXPR
+	 || TREE_CODE (offset) == NOP_EXPR
+	 || TREE_CODE (offset) == CONVERT_EXPR)
+    offset = TREE_OPERAND (offset, 0);
+
+  if (TREE_CODE (offset) != NEGATE_EXPR)
+    return 0;
+
+  offset = TREE_OPERAND (offset, 0);
+  while (TREE_CODE (offset) == NON_LVALUE_EXPR
+	 || TREE_CODE (offset) == NOP_EXPR
+	 || TREE_CODE (offset) == CONVERT_EXPR)
+    offset = TREE_OPERAND (offset, 0);
+
+  /* This must now be the address either of EXP or of a PLACEHOLDER_EXPR
+     whose type is the same as EXP.  */
+  return (TREE_CODE (offset) == ADDR_EXPR
+	  && (TREE_OPERAND (offset, 0) == exp
+	      || (TREE_CODE (TREE_OPERAND (offset, 0)) == PLACEHOLDER_EXPR
+		  && (TREE_TYPE (TREE_OPERAND (offset, 0))
+		      == TREE_TYPE (exp)))));
 }
 
 /* Return the tree node if a ARG corresponds to a string constant or zero
