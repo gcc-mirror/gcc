@@ -3186,7 +3186,7 @@ process_command (int argc, const char *const *argv)
 	  if (IS_DIR_SEPARATOR (*temp)
 	      && strncmp (temp + 1, "lib", 3) == 0
 	      && IS_DIR_SEPARATOR (temp[4])
-	      && strncmp (temp + 5, "gcc", 7) == 0)
+	      && strncmp (temp + 5, "gcc", 3) == 0)
 	    len -= sizeof ("/lib/gcc/") - 1;
 	}
 
