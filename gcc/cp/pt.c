@@ -118,14 +118,21 @@ finish_member_template_decl (template_parameters, decl)
 	}
       return NULL_TREE;
     }
-  else if (DECL_TEMPLATE_INFO (decl) &&
-	   !DECL_TEMPLATE_SPECIALIZATION (decl))
+  else if (DECL_TEMPLATE_INFO (decl))
     {
-      check_member_template (DECL_TI_TEMPLATE (decl));
-      return DECL_TI_TEMPLATE (decl);
-    }
+      if (!DECL_TEMPLATE_SPECIALIZATION (decl))
+	{
+	  check_member_template (DECL_TI_TEMPLATE (decl));
+	  return DECL_TI_TEMPLATE (decl);
+	}
+      else
+	return decl;
+    } 
+  else
+    cp_error ("invalid member template declaration `%D'", decl);
+	
 
-  return decl;
+  return error_mark_node;
 }
 
 /* Returns the template nesting level of the indicated class TYPE.
