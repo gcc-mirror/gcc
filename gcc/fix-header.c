@@ -612,7 +612,7 @@ read_scan_file (in_fname, argc, argv)
      int argc;
      char **argv;
 {
-  cpp_reader* scan_in;
+  cpp_reader *scan_in;
   cpp_callbacks *cb;
   cpp_options *options;
   struct fn_decl *fn;
