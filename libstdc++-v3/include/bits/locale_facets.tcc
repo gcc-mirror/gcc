@@ -798,8 +798,10 @@ namespace std
 	  // By itself __add_grouping cannot deal correctly with __ws when
 	  // ios::showbase is set and ios_base::oct || ios_base::hex.
 	  // Therefore we take care "by hand" of the initial 0, 0x or 0X.
+	  // However, remember that the latter do not occur if the number
+	  // printed is '0' (__len == 1).
 	  streamsize __off = 0;
-	  if (__io.flags() & ios_base::showbase)
+	  if ((__io.flags() & ios_base::showbase) && __len > 1)
 	    if (__basefield == ios_base::oct)
 	      {
 		__off = 1;
