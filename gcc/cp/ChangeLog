@@ -1,3 +1,10 @@
+2005-04-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/20723
+	* pt.c (more_specialized_fn): Member functions are unordered wrt
+	non-members.  Conversion operators are unordered wrt other
+	functions.
+
 2005-04-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* call.c (add_template_candidates_real): Remove length parameter
