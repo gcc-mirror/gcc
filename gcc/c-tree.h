@@ -42,12 +42,15 @@ struct lang_identifier
   enum rid rid_code;
 };
 
-/* Wrapping c_lang_decl in another struct is an unfortunate
-   necessity.  */
+/* Language-specific declaration information.  */
 
 struct lang_decl
 {
   struct c_lang_decl base;
+  /* The return types and parameter types may have variable size.
+     This is a list of any SAVE_EXPRs that need to be evaluated to
+     compute those sizes.  */
+  tree pending_sizes;
 };
 
 /* Macros for access to language-specific slots in an identifier.  */

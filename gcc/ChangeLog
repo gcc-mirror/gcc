@@ -1,3 +1,15 @@
+2001-06-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-tree.h (lang_decl): Add pending_sizes fields.
+	* c-decl.c (store_parm_decls): Save pending_sizes away for nested
+	functions.
+	(c_expand_body): Expand them.
+	(lang_mark_tree): Mark lang_decl:pending_sizes.
+	* function.c (expand_pending_sizes): New function, broken out 
+	from ...
+	(expand_function_start): ... here.
+	* tree.h (expand_pending_sizes): Declare it.
+	
 2001-06-04  Loren J. Rittle  <ljrittle@acm.org>
 
 	* doc/install.texi: Update FreeBSD information.  Generalize
