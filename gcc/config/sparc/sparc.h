@@ -42,17 +42,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define CC1_SPEC "%{sun4:} %{target:}"
 
-#if 0
-/* ??? This fails because REAL_VALUE_TYPE is `double' making it impossible to
-   represent and output `long double' constants.  This causes problems during
-   a bootstrap with enquire/float.h, and hence must be disabled for now.
-   To fix, we need to implement code for TFmode just like the existing XFmode
-   support in real.[ch].  */
-/* Sparc ABI says that long double is 4 words.  */
-
-#define LONG_DOUBLE_TYPE_SIZE 128
-#endif
-
 #define PTRDIFF_TYPE "int"
 /* In 2.4 it should work to delete this.
    #define SIZE_TYPE "int"  */
@@ -168,6 +157,21 @@ extern int target_flags;
 #define TARGET_DEFAULT 3
 
 /* target machine storage layout */
+
+#if 0
+/* ??? This fails because REAL_VALUE_TYPE is `double' making it impossible to
+   represent and output `long double' constants.  This causes problems during
+   a bootstrap with enquire/float.h, and hence must be disabled for now.
+   To fix, we need to implement code for TFmode just like the existing XFmode
+   support in real.[ch].  */
+/* Define for support of TFmode long double and REAL_ARITHMETIC.
+   Sparc ABI says that long double is 4 words.  */
+#define LONG_DOUBLE_TYPE_SIZE 128
+#endif
+
+/* Define for cross-compilation to a sparc target with no TFmode from a host
+   with a different float format (e.g. VAX).  */
+#define REAL_ARITHMETIC
 
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields.  */
@@ -1621,7 +1625,11 @@ extern struct rtx_def *legitimize_pic_address ();
 		 ASM_LONG, t[0], ASM_LONG, t[1]);			\
       }									\
     else								\
-      fprintf (FILE, "\t.double 0r%.17g\n", VALUE);			\
+      {									\
+	char str[30];							\
+	REAL_VALUE_TO_DECIMAL ((VALUE), "%.17g", str);			\
+	fprintf (FILE, "\t.double 0r%s\n", str);			\
+      }									\
   }
 
 /* This is how to output an assembler line defining a `float' constant.  */
@@ -1637,7 +1645,11 @@ extern struct rtx_def *legitimize_pic_address ();
 	fprintf (FILE, "\t%s\t0x%lx\n", ASM_LONG, t);			\
       }									\
     else								\
-      fprintf (FILE, "\t.single 0r%.9g\n", VALUE);			\
+      {									\
+	char str[30];							\
+	REAL_VALUE_TO_DECIMAL ((VALUE), "%.9g", str);			\
+	fprintf (FILE, "\t.single 0r%s\n", str);			\
+      }									\
   }
 
 /* This is how to output an assembler line defining a `long double'
