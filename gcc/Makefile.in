@@ -1775,7 +1775,7 @@ install-dir:
 	-if [ -d $(mandir) ] ; then true ; else mkdir $(mandir) ; fi
 
 # Install the compiler executables built during cross compilation.
-install-common: native install-dir xgcc g++ $(EXTRA_PARTS)
+install-common: native install-dir xgcc $(EXTRA_PARTS)
 	for file in $(COMPILERS); do \
 	  if [ -f $$file ] ; then \
 	    rm -f $(libsubdir)/$$file; \
