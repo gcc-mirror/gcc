@@ -1190,10 +1190,14 @@ extern struct rtx_def *gen_compare_reg ();
    that can be non-ldconst operands in rare cases are cost 1.  Other constants
    have higher costs.  */
 
+/* Must check for OUTER_CODE of SET for power2_operand, because
+   reload_cse_move2add calls us with OUTER_CODE of PLUS to decide when
+   to replace set with add.  */
+
 #define CONST_COSTS(RTX, CODE, OUTER_CODE)				\
   case CONST_INT:							\
     if ((INTVAL (RTX) >= 0 && INTVAL (RTX) < 32)			\
-	|| power2_operand (RTX, VOIDmode))				\
+	|| (OUTER_CODE == SET && power2_operand (RTX, VOIDmode)))	\
       return 0; 							\
     else if (INTVAL (RTX) >= -31 && INTVAL (RTX) < 0)			\
       return 1;								\
