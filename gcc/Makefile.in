@@ -3517,11 +3517,7 @@ TAGS: lang.tags
 	    incs="$$incs --include $$dir/TAGS.sub";	\
 	  fi;						\
 	done;						\
-	mkdir tmp-tags;					\
-	mv -f c-parse.[ch] tmp-tags;			\
-	etags -o TAGS.sub *.y *.h *.c;			\
-	mv tmp-tags/* .;				\
-	rmdir tmp-tags;					\
+	etags -o TAGS.sub *.y *.h *.c -l yacc c-parse.in; \
 	etags --include TAGS.sub $$incs)
 
 # ------------------------------------------------------
