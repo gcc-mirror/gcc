@@ -777,7 +777,7 @@ standard_conversion (to, from, expr)
 	{
 	  from = build_pointer_type
 	    (cp_build_qualified_type (void_type_node, 
-				      CP_TYPE_QUALS (TREE_TYPE (from))));
+				      cp_type_quals (TREE_TYPE (from))));
 	  conv = build_conv (PTR_CONV, from, conv);
 	}
       else if (ufcode == OFFSET_TYPE && utcode == OFFSET_TYPE)
@@ -803,7 +803,7 @@ standard_conversion (to, from, expr)
 	    {
 	      from = 
 		cp_build_qualified_type (TREE_TYPE (to),
-					 CP_TYPE_QUALS (TREE_TYPE (from)));
+					 cp_type_quals (TREE_TYPE (from)));
 	      from = build_pointer_type (from);
 	      conv = build_conv (PTR_CONV, from, conv);
 	    }
@@ -838,10 +838,10 @@ standard_conversion (to, from, expr)
 	  || !same_type_p (TREE_TYPE (fromfn), TREE_TYPE (tofn))
 	  || !compparms (TREE_CHAIN (TYPE_ARG_TYPES (fromfn)),
 			 TREE_CHAIN (TYPE_ARG_TYPES (tofn)))
-	  || CP_TYPE_QUALS (fbase) != CP_TYPE_QUALS (tbase))
+	  || cp_type_quals (fbase) != cp_type_quals (tbase))
 	return 0;
 
-      from = cp_build_qualified_type (tbase, CP_TYPE_QUALS (fbase));
+      from = cp_build_qualified_type (tbase, cp_type_quals (fbase));
       from = build_cplus_method_type (from, TREE_TYPE (fromfn),
 				      TREE_CHAIN (TYPE_ARG_TYPES (fromfn)));
       from = build_ptrmemfunc_type (build_pointer_type (from));

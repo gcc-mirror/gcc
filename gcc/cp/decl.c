@@ -6408,7 +6408,6 @@ cxx_init_decl_processing ()
   free_lang_status = &pop_cp_function_context;
   mark_lang_status = &mark_cp_function_context;
   lang_safe_from_p = &c_safe_from_p;
-  lang_dump_tree = &cp_dump_tree;
   lang_missing_noreturn_ok_p = &cp_missing_noreturn_ok_p;
 
   cp_parse_init ();
@@ -9206,7 +9205,7 @@ build_ptrmemfunc_type (type)
 
   /* Make sure that we always have the unqualified pointer-to-member
      type first.  */
-  if (CP_TYPE_QUALS (type) != TYPE_UNQUALIFIED)
+  if (cp_type_quals (type) != TYPE_UNQUALIFIED)
     unqualified_variant
       = build_ptrmemfunc_type (TYPE_MAIN_VARIANT (type));
 
@@ -9229,9 +9228,9 @@ build_ptrmemfunc_type (type)
      type, set the TYPE_MAIN_VARIANT for this type to be the
      unqualified type.  Since they are actually RECORD_TYPEs that are
      not variants of each other, we must do this manually.  */
-  if (CP_TYPE_QUALS (type) != TYPE_UNQUALIFIED)
+  if (cp_type_quals (type) != TYPE_UNQUALIFIED)
     {
-      t = build_qualified_type (t, CP_TYPE_QUALS (type));
+      t = build_qualified_type (t, cp_type_quals (type));
       TYPE_MAIN_VARIANT (t) = unqualified_variant;
       TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (unqualified_variant);
       TYPE_NEXT_VARIANT (unqualified_variant) = t;
@@ -10159,7 +10158,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
     {
       RIDBIT_RESET (RID_LONG, specbits);
       type = build_qualified_type (long_double_type_node,
-				   CP_TYPE_QUALS (type));
+				   cp_type_quals (type));
     }
 
   /* Check all other uses of type modifiers.  */
@@ -11129,7 +11128,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  && TYPE_NAME (type)
 	  && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
 	  && TYPE_ANONYMOUS_P (type)
-	  && CP_TYPE_QUALS (type) == TYPE_UNQUALIFIED)
+	  && cp_type_quals (type) == TYPE_UNQUALIFIED)
 	{
 	  tree oldname = TYPE_NAME (type);
 	  tree t;
@@ -13539,7 +13538,7 @@ start_function (declspecs, declarator, attrs, flags)
 	{
 	  DECL_RESULT (decl1)
 	    = build_decl (RESULT_DECL, 0, TYPE_MAIN_VARIANT (restype));
-	  c_apply_type_quals_to_decl (CP_TYPE_QUALS (restype),
+	  c_apply_type_quals_to_decl (cp_type_quals (restype),
 				      DECL_RESULT (decl1));
 	}
     }
@@ -14469,14 +14468,14 @@ revert_static_member_fn (decl)
   tree function = TREE_TYPE (decl);
   tree args = TYPE_ARG_TYPES (function);
 
-  if (CP_TYPE_QUALS (TREE_TYPE (TREE_VALUE (args)))
+  if (cp_type_quals (TREE_TYPE (TREE_VALUE (args)))
       != TYPE_UNQUALIFIED)
     cp_error ("static member function `%#D' declared with type qualifiers",
 	      decl);
 
   args = TREE_CHAIN (args);
   tmp = build_function_type (TREE_TYPE (function), args);
-  tmp = build_qualified_type (tmp, CP_TYPE_QUALS (function));
+  tmp = build_qualified_type (tmp, cp_type_quals (function));
   tmp = build_exception_variant (tmp,
 				 TYPE_RAISES_EXCEPTIONS (function));
   TREE_TYPE (decl) = tmp;

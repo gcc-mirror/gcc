@@ -1177,7 +1177,7 @@ build_aggr_init (exp, init, flags)
 	  cp_error ("bad array initializer");
 	  return error_mark_node;
 	}
-      if (CP_TYPE_QUALS (type) != TYPE_UNQUALIFIED)
+      if (cp_type_quals (type) != TYPE_UNQUALIFIED)
 	{
 	  TREE_TYPE (exp) = TYPE_MAIN_VARIANT (type);
 	  if (init)

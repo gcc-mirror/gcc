@@ -1159,8 +1159,8 @@ build_m_component_ref (datum, component)
     ;
   else
     {
-      type_quals = (CP_TYPE_QUALS (field_type)  
-		    | CP_TYPE_QUALS (TREE_TYPE (datum)));
+      type_quals = (cp_type_quals (field_type)  
+		    | cp_type_quals (TREE_TYPE (datum)));
 
       /* There's no such thing as a mutable pointer-to-member, so we don't
 	 need to deal with that here like we do in build_component_ref.  */

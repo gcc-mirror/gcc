@@ -657,7 +657,7 @@ convert_pointer_to_real (binfo, expr)
     }
 
   ptr_type = cp_build_qualified_type (type,
-				      CP_TYPE_QUALS (TREE_TYPE (intype)));
+				      cp_type_quals (TREE_TYPE (intype)));
   ptr_type = build_pointer_type (ptr_type);
   if (same_type_p (ptr_type, TYPE_MAIN_VARIANT (intype)))
     return expr;
@@ -1267,7 +1267,7 @@ type_promotes_to (type)
   if (type == error_mark_node)
     return error_mark_node;
 
-  type_quals = CP_TYPE_QUALS (type);
+  type_quals = cp_type_quals (type);
   type = TYPE_MAIN_VARIANT (type);
 
   /* bool always promotes to int (not unsigned), even if it's the same

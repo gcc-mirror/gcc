@@ -23,6 +23,7 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "toplev.h"
 #include "tree.h"
+#include "c-tree.h"
 #include "tree-inline.h"
 #include "rtl.h"
 #include "insn-config.h"
@@ -209,5 +210,27 @@ lhd_tree_inlining_anon_aggr_type_p (t)
      tree t ATTRIBUTE_UNUSED;
 {
   return 0;
+}
+
+/* lang_hooks.tree_dump.dump_tree:  Dump language-specific parts of tree 
+   nodes.  Returns non-zero if it does not want the usual dumping of the 
+   second argument.  */
+
+int
+lhd_tree_dump_dump_tree (di, t)
+     void *di ATTRIBUTE_UNUSED;
+     tree t ATTRIBUTE_UNUSED;
+{
+  return 0;
+}
+
+/* lang_hooks.tree_dump.type_qual:  Determine type qualifiers in a 
+   language-specific way.  */
+
+int
+lhd_tree_dump_type_quals (t)
+     tree t;
+{
+  return TYPE_QUALS (t);
 }
 

@@ -457,14 +457,6 @@ extern int warn_long_long;
 #define C_TYPE_FUNCTION_P(type) \
   (TREE_CODE (type) == FUNCTION_TYPE)
 
-/* Return the qualifiers that apply to this type.  In C++, that means
-   descending through array types.  Note that this macro evaluates its
-   arguments more than once.  */
-#define C_TYPE_QUALS(TYPE)				\
-  (TYPE_QUALS ((TREE_CODE (TYPE) == ARRAY_TYPE		\
-		&& c_language == clk_cplusplus)		\
-	       ? strip_array_types (TYPE) : TYPE))
-
 /* For convenience we define a single macro to identify the class of
    object or incomplete types.  */
 #define C_TYPE_OBJECT_OR_INCOMPLETE_P(type) \
@@ -818,45 +810,6 @@ extern int c_safe_from_p                        PARAMS ((rtx, tree));
 #endif
 
 extern int c_unsafe_for_reeval			PARAMS ((tree));
-
-/* In c-dump.c */
-
-/* Different tree dump places.  When you add new tree dump places,
-   extend the DUMP_FILES array in c-dump.c */
-enum tree_dump_index
-{
-  TDI_all,			/* dump the whole translation unit */
-  TDI_class,			/* dump class hierarchy */
-  TDI_original,			/* dump each function before optimizing it */
-  TDI_optimized,		/* dump each function after optimizing it */
-  TDI_inlined,			/* dump each function after inlining
-				   within it.  */
-  TDI_end
-};
-
-/* Bit masks to control tree dumping. Not all values are applicable to
-   all tree dumps. Add new ones at the end. When you define new
-   values, extend the DUMP_OPTIONS array in c-dump.c */
-#define TDF_ADDRESS	(1 << 0)	/* dump node addresses */
-#define TDF_SLIM	(1 << 1)	/* don't go wild following links */
-
-typedef struct dump_info *dump_info_p;
-
-/* A callback function used dump language-specific parts of tree
-   nodes.  Returns non-zero if it does not want the usual dumping of
-   the second argument.  */
-
-typedef int (*dump_tree_fn) PARAMS ((dump_info_p, tree));
-
-extern dump_tree_fn lang_dump_tree;
-
-extern int dump_flag			PARAMS ((dump_info_p, int, tree));
-extern int dump_enabled_p		PARAMS ((enum tree_dump_index));
-extern FILE *dump_begin			PARAMS ((enum tree_dump_index, int *));
-extern void dump_end			PARAMS ((enum tree_dump_index, FILE *));
-extern void dump_node			PARAMS ((tree, int, FILE *));
-extern int dump_switch_p                PARAMS ((const char *));
-extern const char *dump_flag_name	PARAMS ((enum tree_dump_index));
 
 /* Information recorded about each file examined during compilation.  */
 

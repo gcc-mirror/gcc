@@ -3059,6 +3059,37 @@ extern void dwarf2out_return_reg	PARAMS ((const char *, unsigned));
 
 typedef tree (*walk_tree_fn)		PARAMS ((tree *, int *, void *));
 
+/* In tree-dump.c */
+
+/* Different tree dump places.  When you add new tree dump places,
+   extend the DUMP_FILES array in tree-dump.c */
+enum tree_dump_index
+{
+  TDI_all,			/* dump the whole translation unit */
+  TDI_class,			/* dump class hierarchy */
+  TDI_original,			/* dump each function before optimizing it */
+  TDI_optimized,		/* dump each function after optimizing it */
+  TDI_inlined,			/* dump each function after inlining
+				   within it.  */
+  TDI_end
+};
+
+/* Bit masks to control tree dumping. Not all values are applicable to
+   all tree dumps. Add new ones at the end. When you define new
+   values, extend the DUMP_OPTIONS array in tree-dump.c */
+#define TDF_ADDRESS	(1 << 0)	/* dump node addresses */
+#define TDF_SLIM	(1 << 1)	/* don't go wild following links */
+
+typedef struct dump_info *dump_info_p;
+
+extern int dump_flag			PARAMS ((dump_info_p, int, tree));
+extern int dump_enabled_p		PARAMS ((enum tree_dump_index));
+extern FILE *dump_begin			PARAMS ((enum tree_dump_index, int *));
+extern void dump_end			PARAMS ((enum tree_dump_index, FILE *));
+extern void dump_node			PARAMS ((tree, int, FILE *));
+extern int dump_switch_p                PARAMS ((const char *));
+extern const char *dump_flag_name	PARAMS ((enum tree_dump_index));
+
 
 /* Redefine abort to report an internal error w/o coredump, and
    reporting the location of the error in the source file.  This logic

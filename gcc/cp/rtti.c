@@ -107,7 +107,7 @@ build_headof (exp)
   offset = build_vtbl_ref (build_indirect_ref (exp, NULL), index);
 
   type = build_qualified_type (ptr_type_node, 
-			       CP_TYPE_QUALS (TREE_TYPE (exp)));
+			       cp_type_quals (TREE_TYPE (exp)));
   return build (PLUS_EXPR, type, exp,
 		cp_convert (ptrdiff_type_node, offset));
 }
@@ -923,8 +923,8 @@ typeinfo_in_lib_p (type)
   /* The typeinfo objects for `T*' and `const T*' are in the runtime
      library for simple types T.  */
   if (TREE_CODE (type) == POINTER_TYPE
-      && (CP_TYPE_QUALS (TREE_TYPE (type)) == TYPE_QUAL_CONST
-	  || CP_TYPE_QUALS (TREE_TYPE (type)) == TYPE_UNQUALIFIED))
+      && (cp_type_quals (TREE_TYPE (type)) == TYPE_QUAL_CONST
+	  || cp_type_quals (TREE_TYPE (type)) == TYPE_UNQUALIFIED))
     type = TREE_TYPE (type);
 
   switch (TREE_CODE (type))
