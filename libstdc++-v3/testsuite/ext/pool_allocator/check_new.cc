@@ -22,6 +22,7 @@
 
 #include <cstdlib>
 #include <ext/pool_allocator.h>
+#include <testsuite_hooks.h>
 #include <testsuite_allocator.h>
 
 using __gnu_cxx::__pool_alloc;
@@ -30,7 +31,6 @@ void*
 operator new(std::size_t n) throw(std::bad_alloc)
 {
   new_called = true;
-  requested = n;
   return std::malloc(n);
 }
 
@@ -41,14 +41,16 @@ operator delete(void *v) throw()
   return std::free(v);
 }
 
-bool test03() 
+void test01() 
 { 
+  bool test __attribute__((unused)) = true;
   typedef __pool_alloc<unsigned int> allocator_type;
-  return (__gnu_test::check_new<allocator_type, true>() == true); 
+  VERIFY( bool(__gnu_test::check_new<allocator_type, true>()) ); 
 }
 
 int main()
 {
-  return test03();
+  test01();
+  return 0;
 }
 

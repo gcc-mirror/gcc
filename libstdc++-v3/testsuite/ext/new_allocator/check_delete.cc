@@ -46,7 +46,7 @@ void test01()
 { 
   bool test __attribute__((unused)) = true;
   typedef new_allocator<unsigned int> allocator_type;
-  VERIFY( bool(__gnu_test::check_new<allocator_type, true>()) ); 
+  VERIFY( bool(__gnu_test::check_delete<allocator_type, true>()) ); 
 }
 
 int main()

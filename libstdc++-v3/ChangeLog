@@ -1,3 +1,20 @@
+2004-10-29  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/testsuite_allocator.h (check_delete): New.
+	(check_new): Simplify.
+	* testsuite/ext/array_allocator/check_delete.cc: New.
+	* testsuite/ext/array_allocator/check_new.cc: Simplify.
+	* testsuite/ext/debug_allocator/check_delete.cc: New.
+	* testsuite/ext/debug_allocator/check_new.cc: Simplify.
+	* testsuite/ext/malloc_allocator/check_delete.cc: New.
+	* testsuite/ext/malloc_allocator/check_new.cc: Simplify.
+	* testsuite/ext/mt_allocator/check_delete.cc: New.
+	* testsuite/ext/mt_allocator/check_new.cc: Simplify.
+	* testsuite/ext/new_allocator/check_delete.cc: New.
+	* testsuite/ext/new_allocator/check_new.cc: Simplify.
+	* testsuite/ext/pool_allocator/check_delete.cc: New.
+	* testsuite/ext/pool_allocator/check_new.cc: Simplify.
+
 2004-10-28  Chris Jefferson  <chris@bubblescope.net>
 
 	PR libstdc++/18159
