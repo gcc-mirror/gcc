@@ -1265,13 +1265,15 @@ stmp-multilib-sub:
 $(T)crtbegin.o: crtstuff.c $(GCC_PASSES) $(CONFIG_H) \
   defaults.h frame.h gbl-ctors.h stmp-int-hdrs
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
-	  -finhibit-size-directive -fno-inline-functions -fno-exceptions $(CRTSTUFF_T_CFLAGS) \
+	  -finhibit-size-directive -fno-inline-functions \
+	  -fno-exceptions $(CRTSTUFF_T_CFLAGS) @inhibit_libc@ \
 	  -c $(srcdir)/crtstuff.c -DCRT_BEGIN -o $(T)crtbegin$(objext)
 
 $(T)crtend.o: crtstuff.c $(GCC_PASSES) $(CONFIG_H) \
   defaults.h frame.h gbl-ctors.h stmp-int-hdrs
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
-	  -finhibit-size-directive -fno-inline-functions -fno-exceptions $(CRTSTUFF_T_CFLAGS) \
+	  -finhibit-size-directive -fno-inline-functions \
+	  -fno-exceptions $(CRTSTUFF_T_CFLAGS) @inhibit_libc@ \
 	  -c $(srcdir)/crtstuff.c -DCRT_END -o $(T)crtend$(objext)
 
 # On some systems we also want to install versions of these files
@@ -1281,12 +1283,14 @@ crtbeginS.o crtendS.o: s-crtS ; @true
 s-crtS: crtstuff.c $(GCC_PASSES) $(CONFIG_H) \
   defaults.h frame.h gbl-ctors.h stmp-int-hdrs
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS_S) \
-	  -DCRT_BEGIN -DCRTSTUFFS_O -finhibit-size-directive -fno-inline-functions \
-	  -fno-exceptions -g0 -c $(srcdir)/crtstuff.c
+	  -DCRT_BEGIN -DCRTSTUFFS_O -finhibit-size-directive \
+	  -fno-inline-functions -fno-exceptions @inhibit_libc@ -g0 \
+	  -c $(srcdir)/crtstuff.c
 	mv crtstuff$(objext) crtbeginS$(objext)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS_S) \
-	  -DCRT_END -DCRTSTUFFS_O -finhibit-size-directive -fno-inline-functions \
-	  -fno-exceptions -g0 -c $(srcdir)/crtstuff.c -o crtendS$(objext)
+	  -DCRT_END -DCRTSTUFFS_O -finhibit-size-directive \
+	  -fno-inline-functions -fno-exceptions @inhibit_libc@ -g0 \
+	  -c $(srcdir)/crtstuff.c -o crtendS$(objext)
 	touch s-crtS
 
 # Compile the start modules crt0.o and mcrt0.o that are linked with every program

@@ -1,3 +1,9 @@
+Fri Jan  7 01:55:34 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (crtend.o): Pass @inhibit_libc@ to compilation of
+	crtstuff.c.
+	(crtbegin.o, s-crtS): Likewise.
+
 2000-01-06  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.md (adddi_2+1): Limit offset such that it will be
