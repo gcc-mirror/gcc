@@ -1,3 +1,7 @@
+2000-07-23  Oskar Liljeblad <osk@hem.passagen.se>
+
+	* java/io/StreamTokenizer.java: Merged with classpath.
+
 2000-07-20  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in: Rebuilt.
