@@ -562,14 +562,33 @@ common_type (t1, t2)
  	 But ANSI C++ specifies doing this with the qualifiers.
  	 So I turned it on again.  */
       {
-	tree tt1 = TYPE_MAIN_VARIANT (TREE_TYPE (t1));
-	tree tt2 = TYPE_MAIN_VARIANT (TREE_TYPE (t2));
-	int type_quals = (CP_TYPE_QUALS (TREE_TYPE (t1)) 
-			  | CP_TYPE_QUALS (TREE_TYPE (t2)));
+	tree tt1 = TREE_TYPE (t1);
+	tree tt2 = TREE_TYPE (t2);
+	tree b1, b2;
+	int type_quals;
 	tree target;
+
+	if (TREE_CODE (tt1) == OFFSET_TYPE)
+	  {
+	    b1 = TYPE_OFFSET_BASETYPE (tt1);
+	    b2 = TYPE_OFFSET_BASETYPE (tt2);
+	    tt1 = TREE_TYPE (tt1);
+	    tt2 = TREE_TYPE (tt2);
+	  }
+	else
+	  b1 = b2 = NULL_TREE;
+
+	type_quals = (CP_TYPE_QUALS (tt1) | CP_TYPE_QUALS (tt2));
+	tt1 = TYPE_MAIN_VARIANT (tt1);
+	tt2 = TYPE_MAIN_VARIANT (tt2);
 
 	if (tt1 == tt2)
 	  target = tt1;
+	else if (b1)
+	  {
+	    compiler_error ("common_type called with uncommon member types");
+	    target = tt1;
+	  }
 	else if (tt1 == void_type_node || tt2 == void_type_node)
 	  target = void_type_node;
 	else if (tt1 == unknown_type_node)
@@ -580,6 +599,16 @@ common_type (t1, t2)
 	  target = common_type (tt1, tt2);
 
 	target = cp_build_qualified_type (target, type_quals);
+
+	if (b1)
+	  {
+	    if (same_type_p (b1, b2)
+		|| (DERIVED_FROM_P (b1, b2) && binfo_or_else (b1, b2)))
+	      target = build_offset_type (b2, target);
+	    else if (binfo_or_else (b2, b1))
+	      target = build_offset_type (b1, target);
+	  }
+
 	if (code1 == POINTER_TYPE)
 	  t1 = build_pointer_type (target);
 	else
@@ -699,18 +728,9 @@ common_type (t1, t2)
       return build_type_attribute_variant (t1, attributes);
 
     case OFFSET_TYPE:
-      if (TREE_TYPE (t1) == TREE_TYPE (t2))
-	{
-	  tree b1 = TYPE_OFFSET_BASETYPE (t1);
-	  tree b2 = TYPE_OFFSET_BASETYPE (t2);
-
-	  if (same_type_p (b1, b2)
-	      || (DERIVED_FROM_P (b1, b2) && binfo_or_else (b1, b2)))
-	    return build_type_attribute_variant (t2, attributes);
-	  else if (binfo_or_else (b2, b1))
-	    return build_type_attribute_variant (t1, attributes);
-	}
-      compiler_error ("common_type called with uncommon member types");
+      /* Pointers to members should now be handled by the POINTER_TYPE
+	 case above.  */
+      my_friendly_abort (990325);
 
     default:
       return build_type_attribute_variant (t1, attributes);

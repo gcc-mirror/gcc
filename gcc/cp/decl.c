@@ -5291,7 +5291,7 @@ unqualified_namespace_lookup (name, flags)
 	if (!lookup_using_namespace (name, b, level->using_directives,
                                      scope, flags))
 	  /* Give up because of error. */
-	  return NULL_TREE;
+	  return error_mark_node;
 
       /* Add all _DECLs seen through global using-directives. */
       /* XXX local and global using lists should work equally. */
@@ -5301,7 +5301,7 @@ unqualified_namespace_lookup (name, flags)
 	  if (!lookup_using_namespace (name, b, DECL_NAMESPACE_USING (siter), 
 				       scope, flags))
 	    /* Give up because of error. */
-	    return NULL_TREE;
+	    return error_mark_node;
 	  if (siter == scope) break;
 	  siter = CP_DECL_CONTEXT (siter);
 	}
@@ -5388,8 +5388,6 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
       prefer_type = looking_for_typename;
 
       flags = lookup_flags (prefer_type, namespaces_only);
-      /* During parsing, we need to complain. */
-      flags |= LOOKUP_COMPLAIN;
       /* If the next thing is '<', class templates are types. */
       if (looking_for_template)
         flags |= LOOKUP_TEMPLATES_EXPECTED;
@@ -5463,7 +5461,11 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 	from_obj = val;
     }
   else
-    flags = lookup_flags (prefer_type, namespaces_only);
+    {
+      flags = lookup_flags (prefer_type, namespaces_only);
+      /* If we're not parsing, we need to complain. */
+      flags |= LOOKUP_COMPLAIN;
+    }
 
   /* First, look in non-namespace scopes.  */
   for (val = IDENTIFIER_BINDING (name); val; val = TREE_CHAIN (val))

@@ -2935,7 +2935,7 @@ do_identifier (token, parsing, args)
      expressions instead).  */
   if (args && !current_template_parms && (!id || is_global (id)))
     /* If we have arguments and we only found global names, do Koenig
-         lookup. */
+       lookup. */
     id = lookup_arg_dependent (token, id, args);
 
   /* Remember that this name has been used in the class definition, as per
@@ -2949,18 +2949,19 @@ do_identifier (token, parsing, args)
 	 after the class is complete.  (jason 3/12/97) */
       && TREE_CODE (id) != OVERLOAD)
     pushdecl_class_level (id);
-    
-  if (!id || id == error_mark_node)
-    {
-      if (id == error_mark_node && current_class_type != NULL_TREE)
-	{
-	  id = lookup_nested_field (token, 1);
-	  /* In lookup_nested_field(), we marked this so we can gracefully
-	     leave this whole mess.  */
-	  if (id && id != error_mark_node && TREE_TYPE (id) == error_mark_node)
-	    return id;
-	}
 
+  if (id == error_mark_node)
+    {
+      /* lookup_name quietly returns error_mark_node if we're parsing,
+	 as we don't want to complain about an identifier that ends up
+	 being used as a declarator.  So we call it again to get the error
+	 message.  */
+      id = lookup_name (token, 0);
+      return error_mark_node;
+    }
+      
+  if (!id)
+    {
       if (current_template_parms)
 	return build_min_nt (LOOKUP_EXPR, token);
       else if (IDENTIFIER_OPNAME_P (token))
