@@ -1,3 +1,7 @@
+2000-03-01  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* gcc.dg/cpp-redef.c: New test.
+
 2000-02-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.pt/unify7.C: New test.
