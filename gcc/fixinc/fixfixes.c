@@ -138,6 +138,7 @@ print_quote( q, text )
  *  this thing can be encountered countless times during a compile
  *  and not cause even a warning.
  */
+static const char *emit_gnu_type PARAMS ((const char *, regmatch_t *));
 static const char*
 emit_gnu_type ( text, rm )
   const char* text;
@@ -188,6 +189,7 @@ typedef __%s_TYPE__ %s_t;\n\
  *  '%' characters in other contexts and all other characters are
  *  copied out verbatim.
  */
+static void format_write PARAMS ((tCC *, tCC *, regmatch_t[]));
 static void
 format_write (format, text, av)
      tCC* format;
@@ -212,7 +214,7 @@ format_write (format, text, av)
      *  not emit the following character.  We will end on
      *  a NUL and we will emit only one of a pair of '%'.
      */
-    if (! isdigit( c ))
+    if (! ISDIGIT ( c ))
       {
         putchar( '%' );
         switch (c) {
@@ -373,12 +375,12 @@ FIX_PROC_HEAD( char_macro_use_fix )
       /* Found STR on this line.  If the macro needs fixing,
 	 the next few chars will be whitespace or uppercase,
 	 then an open paren, then a single letter.  */
-      while ((isspace (*p) || isupper (*p)) && p < limit) p++;
+      while ((ISSPACE (*p) || ISUPPER (*p)) && p < limit) p++;
       if (*p++ != '(')
 	continue;
-      if (!isalpha (*p))
+      if (!ISALPHA (*p))
 	continue;
-      if (isalnum (p[1]) || p[1] == '_')
+      if (ISALNUM (p[1]) || p[1] == '_')
 	continue;
 
       /* Splat all preceding text into the output buffer,
@@ -450,7 +452,7 @@ FIX_PROC_HEAD( char_macro_def_fix )
 	    goto found;
 	  p++;
 	}
-      while (isalpha (*p) || isalnum (*p) || *p == '_');
+      while (ISALPHA (*p) || ISALNUM (*p) || *p == '_');
       /* Hit end of macro name without finding the string.  */
       continue;
 
@@ -459,12 +461,12 @@ FIX_PROC_HEAD( char_macro_def_fix )
 	 there may be a few uppercase letters, then there will be an
 	 open paren with _no_ intervening whitespace, and then a
 	 single letter.  */
-      while (isupper (*p) && p < limit) p++;
+      while (ISUPPER (*p) && p < limit) p++;
       if (*p++ != '(')
 	continue;
-      if (!isalpha (*p))
+      if (!ISALPHA (*p))
 	continue;
-      if (isalnum (p[1]) || p[1] == '_')
+      if (ISALNUM (p[1]) || p[1] == '_')
 	continue;
 
       /* The character at P is the one to look for in the following
@@ -604,10 +606,10 @@ FIX_PROC_HEAD( wrap_fix )
   for (;;) {
     char ch = *(pz_src++);
 
-    if (islower(ch))
-      *(pz_dst++) = toupper( ch );
+    if (ISLOWER (ch))
+      *(pz_dst++) = TOUPPER ( ch );
 
-    else if (isalnum( ch ))
+    else if (ISALNUM ( ch ))
       *(pz_dst++) = ch;
 
     else if (ch == NUL) {
@@ -756,7 +758,7 @@ main( argc, argv )
     char* pz = argv[1];
     long  idx;
 
-    if (! isdigit( *pz ))
+    if (! ISDIGIT ( *pz ))
       goto usage_failure;
 
     idx = strtol( pz, &pz, 10 );
