@@ -117,7 +117,7 @@ maintainer-clean : clean
 install-bin : $(TARGETS)
 	./fixincl -v
 	@if [ -f ../fixinc.sh ] ; then rm -f ../fixinc.sh || \
-	    mv -f ../fixinc.sh ../fixinc.sh.$$ || exit 1 ; fi
+	    mv -f ../fixinc.sh ../fixinc.sh.$$ || exit 1 ; else : ; fi
 	@cp $(srcdir)/fixincl.sh ../fixinc.sh
 	chmod 755 ../fixinc.sh
 
