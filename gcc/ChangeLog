@@ -1,5 +1,10 @@
 2001-09-21  Richard Henderson  <rth@redhat.com>
 
+	* config/stormy16/stormy16.h (REG_CLASS_FROM_LETTER): Map 'd'
+	to R8_REGS.
+
+2001-09-21  Richard Henderson  <rth@redhat.com>
+
 	* tree.def (FDESC_EXPR): New.
 	* expr.c (expand_expr): Handle it.
 	* varasm.c (initializer_constant_valid_p): Likewise.
