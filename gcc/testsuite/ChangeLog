@@ -1,3 +1,13 @@
+2001-10-08  Aldy Hernandez  <aldyh@redhat.com>
+
+        * gcc.c-torture/execute/builtin-types-compatible-p.c: New.
+
+        * gcc.dg/builtin-choose-expr.c: New.
+
+2001-12-07  Aldy Hernandez  <aldyh@redhat.com>
+
+        * gcc.dg/altivec-2.c: New.
+
 2001-12-07  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/cpp/ucs.c: Adjust expected warning for 64-bit hosts.
