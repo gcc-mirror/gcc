@@ -61,7 +61,6 @@ static void add_mem_for_addr (cselib_val *, cselib_val *, rtx);
 static cselib_val *cselib_lookup_mem (rtx, int);
 static void cselib_invalidate_regno (unsigned int, enum machine_mode);
 static void cselib_invalidate_mem (rtx);
-static void cselib_invalidate_rtx (rtx, rtx, void *);
 static void cselib_record_set (rtx, cselib_val *, cselib_val *);
 static void cselib_record_sets (rtx);
 
@@ -1141,13 +1140,10 @@ cselib_invalidate_mem (rtx mem_rtx)
   *vp = &dummy_val;
 }
 
-/* Invalidate DEST, which is being assigned to or clobbered.  The second and
-   the third parameter exist so that this function can be passed to
-   note_stores; they are ignored.  */
+/* Invalidate DEST, which is being assigned to or clobbered.  */
 
-static void
-cselib_invalidate_rtx (rtx dest, rtx ignore ATTRIBUTE_UNUSED,
-		       void *data ATTRIBUTE_UNUSED)
+void
+cselib_invalidate_rtx (rtx dest)
 {
   while (GET_CODE (dest) == STRICT_LOW_PART || GET_CODE (dest) == SIGN_EXTRACT
 	 || GET_CODE (dest) == ZERO_EXTRACT || GET_CODE (dest) == SUBREG)
@@ -1163,7 +1159,16 @@ cselib_invalidate_rtx (rtx dest, rtx ignore ATTRIBUTE_UNUSED,
      invalidate the stack pointer correctly.  Note that invalidating
      the stack pointer is different from invalidating DEST.  */
   if (push_operand (dest, GET_MODE (dest)))
-    cselib_invalidate_rtx (stack_pointer_rtx, NULL_RTX, NULL);
+    cselib_invalidate_rtx (stack_pointer_rtx);
+}
+
+/* A wrapper for cselib_invalidate_rtx to be called via note_stores.  */
+
+static void
+cselib_invalidate_rtx_note_stores (rtx dest, rtx ignore ATTRIBUTE_UNUSED,
+				   void *data ATTRIBUTE_UNUSED)
+{
+  cselib_invalidate_rtx (dest);
 }
 
 /* Record the result of a SET instruction.  DEST is being set; the source
@@ -1296,7 +1301,7 @@ cselib_record_sets (rtx insn)
   /* Invalidate all locations written by this insn.  Note that the elts we
      looked up in the previous loop aren't affected, just some of their
      locations may go away.  */
-  note_stores (body, cselib_invalidate_rtx, NULL);
+  note_stores (body, cselib_invalidate_rtx_note_stores, NULL);
 
   /* If this is an asm, look for duplicate sets.  This can happen when the
      user uses the same value as an output multiple times.  This is valid
@@ -1384,7 +1389,7 @@ cselib_process_insn (rtx insn)
      unlikely to help.  */
   for (x = REG_NOTES (insn); x; x = XEXP (x, 1))
     if (REG_NOTE_KIND (x) == REG_INC)
-      cselib_invalidate_rtx (XEXP (x, 0), NULL_RTX, NULL);
+      cselib_invalidate_rtx (XEXP (x, 0));
 #endif
 
   /* Look for any CLOBBERs in CALL_INSN_FUNCTION_USAGE, but only
@@ -1392,7 +1397,7 @@ cselib_process_insn (rtx insn)
   if (CALL_P (insn))
     for (x = CALL_INSN_FUNCTION_USAGE (insn); x; x = XEXP (x, 1))
       if (GET_CODE (XEXP (x, 0)) == CLOBBER)
-	cselib_invalidate_rtx (XEXP (XEXP (x, 0), 0), NULL_RTX, NULL);
+	cselib_invalidate_rtx (XEXP (XEXP (x, 0), 0));
 
   cselib_current_insn = 0;
 

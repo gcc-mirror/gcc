@@ -118,6 +118,19 @@ reload_cse_simplify (rtx insn, rtx testreg)
       int count = 0;
       rtx value = NULL_RTX;
 
+      /* Registers mentioned in the clobber list for an asm cannot be reused
+	 within the body of the asm.  Invalidate those registers now so that
+	 we don't try to substitute values for them.  */
+      if (asm_noperands (body) >= 0)
+	{
+	  for (i = XVECLEN (body, 0) - 1; i >= 0; --i)
+	    {
+	      rtx part = XVECEXP (body, 0, i);
+	      if (GET_CODE (part) == CLOBBER && REG_P (XEXP (part, 0)))
+		cselib_invalidate_rtx (XEXP (part, 0));
+	    }
+	}
+
       /* If every action in a PARALLEL is a noop, we can delete
 	 the entire PARALLEL.  */
       for (i = XVECLEN (body, 0) - 1; i >= 0; --i)
