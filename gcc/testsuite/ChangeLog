@@ -1,5 +1,9 @@
 2000-06-26  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* gcc.dg/20000419-1.c, gcc.dg/cpp-mi.c, gcc.dg/cpp-tradwarn1.c,
+	gcc.dg/cpp-unc.c: Use "target *-*-*", not "target native", in
+	case we are cross-compiling.
+
 	* g++.old-deja/Makefile.in, g++.old-deja/configure.in,
 	g++.old-deja/g++.niklas/Makefile.in,           
 	g++.old-deja/g++.niklas/configure.in,

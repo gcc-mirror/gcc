@@ -11,5 +11,5 @@
 __REDIRECT (a, b, c)
 __ASMNAME2 (__USER_LABEL_PREFIX__, harumph)
 
-/* { dg-bogus "used without args" "no args, 1" { target native } 11 } */
-/* { dg-bogus "used without args" "no args, 1" { target native } 12 } */
+/* { dg-bogus "used without args" "no args, 1" { target *-*-* } 11 } */
+/* { dg-bogus "used without args" "no args, 1" { target *-*-* } 12 } */
