@@ -50,6 +50,4 @@ int main (void)
   return 0;
 }
 
-/* These are not yet vectorized on targets that do not model alignment-handling
-   mechanisms.  */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail i?86-*-* x86_64-*-* mipsisa64*-*-* } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail vect_no_align } } } */

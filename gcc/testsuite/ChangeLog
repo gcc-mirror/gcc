@@ -1,3 +1,27 @@
+2004-12-21  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_vect_no_max,
+	check_effective_target_vect_no_bitwise,
+	check_effective_target_vect_no_align): New.
+	* gcc.dg/vect/vect-13.c: Use them.
+	* gcc.dg/vect/vect-17.c: Ditto.
+	* gcc.dg/vect/vect-18.c: Ditto.
+	* gcc.dg/vect/vect-19.c: Ditto.
+	* gcc.dg/vect/vect-20.c: Ditto.
+	* gcc.dg/vect/vect-27.c: Ditto.
+	* gcc.dg/vect/vect-29.c: Ditto.
+	* gcc.dg/vect/vect-44.c: Ditto.
+	* gcc.dg/vect/vect-48.c: Ditto.
+	* gcc.dg/vect/vect-50.c: Ditto.
+	* gcc.dg/vect/vect-52.c: Ditto.
+	* gcc.dg/vect/vect-54.c: Ditto.
+	* gcc.dg/vect/vect-56.c: Ditto.
+	* gcc.dg/vect/vect-58.c: Ditto.
+	* gcc.dg/vect/vect-60.c: Ditto.
+	* gcc.dg/vect/vect-72.c: Ditto.
+	* gcc.dg/vect/vect-80.c: Ditto.
+
 2004-12-21  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/14075
