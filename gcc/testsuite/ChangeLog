@@ -1,5 +1,8 @@
 2003-03-24  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/10119
+	* g++.dg/template/ptrmem5.C: New test.
+
 	PR c++/10026
 	* g++.dg/lookup/koenig1.C: New test.
 
