@@ -1,3 +1,9 @@
+2003-11-09  Roger Sayle  <roger@eyesopen.com>
+
+	* loop.c (check_dbra_loop): Try swapping the comparison operands
+	of the loop condition to identify a suitable induction variable.
+	* unroll.c (loop_iterations): Likewise.
+
 2003-11-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* config/sparc/sparc.h (TARGET_CPU_CPP_BUILTINS): Fix sparc vs

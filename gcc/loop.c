@@ -8017,6 +8017,22 @@ check_dbra_loop (struct loop *loop, int insn_count)
 	break;
     }
 
+  /* Try swapping the comparison to identify a suitable biv.  */
+  if (!bl)
+    for (bl = ivs->list; bl; bl = bl->next)
+      if (bl->biv_count == 1
+	  && ! bl->biv->maybe_multiple
+	  && bl->biv->dest_reg == XEXP (comparison, 1)
+	  && ! reg_used_between_p (regno_reg_rtx[bl->regno], bl->biv->insn,
+				   first_compare))
+	{
+	  comparison = gen_rtx_fmt_ee (swap_condition (GET_CODE (comparison)),
+				       VOIDmode,
+				       XEXP (comparison, 1),
+				       XEXP (comparison, 0));
+	  break;
+	}
+
   if (! bl)
     return 0;
 
