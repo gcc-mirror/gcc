@@ -460,8 +460,7 @@ gen_eh_region (enum eh_region_type type, struct eh_region *outer)
   struct eh_region *new;
 
 #ifdef ENABLE_CHECKING
-  if (! doing_eh (0))
-    abort ();
+  gcc_assert (doing_eh (0));
 #endif
 
   /* Insert a new blank region as a leaf in the tree.  */
@@ -688,8 +687,7 @@ resolve_one_fixup_region (struct eh_region *fixup)
 	  && cleanup->u.cleanup.exp == fixup->u.fixup.cleanup_exp)
 	break;
     }
-  if (j > n)
-    abort ();
+  gcc_assert (j <= n);
 
   real = cleanup->outer;
   if (real && real->type == ERT_FIXUP)
@@ -811,14 +809,12 @@ remove_unreachable_regions (rtx insns)
 
       if (r->resume)
 	{
-	  if (uid_region_num[INSN_UID (r->resume)])
-	    abort ();
+	  gcc_assert (!uid_region_num[INSN_UID (r->resume)]);
 	  uid_region_num[INSN_UID (r->resume)] = i;
 	}
       if (r->label)
 	{
-	  if (uid_region_num[INSN_UID (r->label)])
-	    abort ();
+	  gcc_assert (!uid_region_num[INSN_UID (r->label)]);
 	  uid_region_num[INSN_UID (r->label)] = i;
 	}
     }
@@ -942,8 +938,7 @@ convert_from_eh_region_ranges_1 (rtx *pinsns, int *orig_sp, int cur)
 	}
     }
 
-  if (sp != orig_sp)
-    abort ();
+  gcc_assert (sp == orig_sp);
 }
 
 static void
@@ -1006,8 +1001,7 @@ add_ehl_entry (rtx label, struct eh_region *region)
      label.  After landing pad creation, the exception handlers may
      share landing pads.  This is ok, since maybe_remove_eh_handler
      only requires the 1-1 mapping before landing pad creation.  */
-  if (*slot && !cfun->eh->built_landing_pads)
-    abort ();
+  gcc_assert (!*slot || cfun->eh->built_landing_pads);
 
   *slot = entry;
 }
@@ -1104,7 +1098,7 @@ duplicate_eh_region_1 (struct eh_region *o, struct inline_remap *map)
       n->u.throw.type = o->u.throw.type;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   if (o->label)
@@ -1112,8 +1106,7 @@ duplicate_eh_region_1 (struct eh_region *o, struct inline_remap *map)
   if (o->resume)
     {
       n->resume = map->insn_map[INSN_UID (o->resume)];
-      if (n->resume == NULL)
-	abort ();
+      gcc_assert (n->resume);
     }
 
   return n;
@@ -1586,7 +1579,7 @@ build_post_landing_pads (void)
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
 }
@@ -1657,8 +1650,7 @@ connect_post_landing_pads (void)
       end_sequence ();
       barrier = emit_insn_before (seq, region->resume);
       /* Avoid duplicate barrier.  */
-      if (!BARRIER_P (barrier))
-	abort ();
+      gcc_assert (BARRIER_P (barrier));
       delete_insn (barrier);
       delete_insn (region->resume);
 
@@ -2049,8 +2041,7 @@ sjlj_emit_function_exit (void)
       /* Figure out whether the place we are supposed to insert libcall
          is inside the last basic block or after it.  In the other case
          we need to emit to edge.  */
-      if (e->src->next_bb != EXIT_BLOCK_PTR)
-	abort ();
+      gcc_assert (e->src->next_bb == EXIT_BLOCK_PTR);
       for (insn = NEXT_INSN (BB_END (e->src)); insn; insn = NEXT_INSN (insn))
 	if (insn == cfun->eh->sjlj_exit_after)
 	  break;
@@ -2258,8 +2249,7 @@ remove_exception_handler_label (rtx label)
   tmp.label = label;
   slot = (struct ehl_map_entry **)
     htab_find_slot (cfun->eh->exception_handler_label_map, &tmp, NO_INSERT);
-  if (! slot)
-    abort ();
+  gcc_assert (slot);
 
   htab_clear_slot (cfun->eh->exception_handler_label_map, (void **) slot);
 }
@@ -2330,8 +2320,7 @@ remove_eh_handler (struct eh_region *region)
 	   try->type == ERT_CATCH;
 	   try = try->next_peer)
 	continue;
-      if (try->type != ERT_TRY)
-	abort ();
+      gcc_assert (try->type == ERT_TRY);
 
       next = region->u.catch.next_catch;
       prev = region->u.catch.prev_catch;
@@ -2642,10 +2631,11 @@ reachable_next_level (struct eh_region *region, tree type_thrown,
     case ERT_FIXUP:
     case ERT_UNKNOWN:
       /* Shouldn't see these here.  */
+      gcc_unreachable ();
       break;
+    default:
+      gcc_unreachable ();
     }
-
-  abort ();
 }
 
 /* Invoke CALLBACK on each region reachable from REGION_NUMBER.  */
@@ -3259,7 +3249,7 @@ collect_one_action_chain (htab_t ar_hash, struct eh_region *region)
       return collect_one_action_chain (ar_hash, region->outer);
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -3763,8 +3753,8 @@ output_function_exception_table (void)
 		    cgraph_varpool_mark_needed_node (node);
 		}
 	    }
-	  else if (TREE_CODE (type) != INTEGER_CST)
-	    abort ();
+	  else
+	    gcc_assert (TREE_CODE (type) == INTEGER_CST);
 	}
 
       if (tt_format == DW_EH_PE_absptr || tt_format == DW_EH_PE_aligned)

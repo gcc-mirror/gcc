@@ -298,7 +298,7 @@ mode_for_extraction (enum extraction_pattern pattern, int opno)
       return MAX_MACHINE_MODE;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   if (opno == -1)
@@ -386,10 +386,9 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
       /* We could handle this, but we should always be called with a pseudo
 	 for our targets and all insns should take them as outputs.  */
-      if (! (*insn_data[icode].operand[0].predicate) (dest, mode0)
-	  || ! (*insn_data[icode].operand[1].predicate) (src, mode1)
-	  || ! (*insn_data[icode].operand[2].predicate) (rtxpos, mode2))
-	abort ();
+      gcc_assert ((*insn_data[icode].operand[0].predicate) (dest, mode0)
+		  && (*insn_data[icode].operand[1].predicate) (src, mode1)
+		  && (*insn_data[icode].operand[2].predicate) (rtxpos, mode2));
       pat = GEN_FCN (icode) (dest, src, rtxpos);
       seq = get_insns ();
       end_sequence ();
@@ -433,15 +432,14 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	{
 	  if (GET_CODE (op0) == SUBREG)
 	    {
-	      if (GET_MODE (SUBREG_REG (op0)) == fieldmode
-		  || GET_MODE_CLASS (fieldmode) == MODE_INT
-		  || GET_MODE_CLASS (fieldmode) == MODE_PARTIAL_INT)
-		op0 = SUBREG_REG (op0);
-	      else
-		/* Else we've got some float mode source being extracted into
-		   a different float mode destination -- this combination of
-		   subregs results in Severe Tire Damage.  */
-		abort ();
+	      /* Else we've got some float mode source being extracted
+		 into a different float mode destination -- this
+		 combination of subregs results in Severe Tire
+		 Damage.  */
+	      gcc_assert (GET_MODE (SUBREG_REG (op0)) == fieldmode
+			  || GET_MODE_CLASS (fieldmode) == MODE_INT
+			  || GET_MODE_CLASS (fieldmode) == MODE_PARTIAL_INT);
+	      op0 = SUBREG_REG (op0);
 	    }
 	  if (REG_P (op0))
 	    op0 = gen_rtx_SUBREG (fieldmode, op0, byte_offset);
@@ -462,10 +460,11 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       {
 	if (MEM_P (op0))
 	  op0 = adjust_address (op0, imode, 0);
-	else if (imode != BLKmode)
-	  op0 = gen_lowpart (imode, op0);
 	else
-	  abort ();
+	  {
+	    gcc_assert (imode != BLKmode);
+	    op0 = gen_lowpart (imode, op0);
+	  }
       }
   }
 
@@ -510,15 +509,13 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
       if (GET_CODE (op0) == SUBREG)
 	{
-	  if (GET_MODE (SUBREG_REG (op0)) == fieldmode
-	      || GET_MODE_CLASS (fieldmode) == MODE_INT
-	      || GET_MODE_CLASS (fieldmode) == MODE_PARTIAL_INT)
-	    op0 = SUBREG_REG (op0);
-	  else
-	    /* Else we've got some float mode source being extracted into
-	       a different float mode destination -- this combination of
-	       subregs results in Severe Tire Damage.  */
-	    abort ();
+	  /* Else we've got some float mode source being extracted into
+	     a different float mode destination -- this combination of
+	     subregs results in Severe Tire Damage.  */
+	  gcc_assert (GET_MODE (SUBREG_REG (op0)) == fieldmode
+		      || GET_MODE_CLASS (fieldmode) == MODE_INT
+		      || GET_MODE_CLASS (fieldmode) == MODE_PARTIAL_INT);
+	  op0 = SUBREG_REG (op0);
 	}
 
       emit_insn (GEN_FCN (icode)
@@ -589,12 +586,10 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 		 pseudo.  We can trivially remove a SUBREG that does not
 		 change the size of the operand.  Such a SUBREG may have been
 		 added above.  Otherwise, abort.  */
-	      if (GET_CODE (op0) == SUBREG
-		  && (GET_MODE_SIZE (GET_MODE (op0))
-		      == GET_MODE_SIZE (GET_MODE (SUBREG_REG (op0)))))
-		op0 = SUBREG_REG (op0);
-	      else
-		abort ();
+	      gcc_assert (GET_CODE (op0) == SUBREG
+			  && (GET_MODE_SIZE (GET_MODE (op0))
+			      == GET_MODE_SIZE (GET_MODE (SUBREG_REG (op0)))));
+	      op0 = SUBREG_REG (op0);
 	    }
 	  op0 = gen_rtx_SUBREG (mode_for_size (BITS_PER_WORD, MODE_INT, 0),
 		                op0, (offset * UNITS_PER_WORD));
@@ -731,12 +726,12 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	    }
 	  else if (GET_CODE (value) == CONST_INT)
 	    value1 = gen_int_mode (INTVAL (value), maxmode);
-	  else if (!CONSTANT_P (value))
+	  else
 	    /* Parse phase is supposed to make VALUE's data type
 	       match that of the component reference, which is a type
 	       at least as wide as the field; so VALUE should have
 	       a mode that corresponds to that type.  */
-	    abort ();
+	    gcc_assert (CONSTANT_P (value));
 	}
 
       /* If this machine's insv insists on a register,
@@ -790,8 +785,7 @@ store_fixed_bit_field (rtx op0, unsigned HOST_WIDE_INT offset,
 
   if (REG_P (op0) || GET_CODE (op0) == SUBREG)
     {
-      if (offset != 0)
-	abort ();
+      gcc_assert (!offset);
       /* Special treatment for a bit field split across two registers.  */
       if (bitsize + bitpos > BITS_PER_WORD)
 	{
@@ -1146,10 +1140,9 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
       /* We could handle this, but we should always be called with a pseudo
 	 for our targets and all insns should take them as outputs.  */
-      if (! (*insn_data[icode].operand[0].predicate) (dest, mode0)
-	  || ! (*insn_data[icode].operand[1].predicate) (src, mode1)
-	  || ! (*insn_data[icode].operand[2].predicate) (rtxpos, mode2))
-	abort ();
+      gcc_assert ((*insn_data[icode].operand[0].predicate) (dest, mode0)
+		  && (*insn_data[icode].operand[1].predicate) (src, mode1)
+		  && (*insn_data[icode].operand[2].predicate) (rtxpos, mode2));
 
       pat = GEN_FCN (icode) (dest, src, rtxpos);
       seq = get_insns ();
@@ -1170,10 +1163,11 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       {
 	if (MEM_P (op0))
 	  op0 = adjust_address (op0, imode, 0);
-	else if (imode != BLKmode)
-	  op0 = gen_lowpart (imode, op0);
 	else
-	  abort ();
+	  {
+	    gcc_assert (imode != BLKmode);
+	    op0 = gen_lowpart (imode, op0);
+	  }
       }
   }
 
@@ -1299,8 +1293,7 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 				 bitnum + bit_offset, 1, target_part, mode,
 				 word_mode);
 
-	  if (target_part == 0)
-	    abort ();
+	  gcc_assert (target_part);
 
 	  if (result_part != target_part)
 	    emit_move_insn (target_part, result_part);
@@ -1346,13 +1339,11 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
   int_mode = int_mode_for_mode (tmode);
   if (int_mode == BLKmode)
     int_mode = int_mode_for_mode (mode);
-  if (int_mode == BLKmode)
-    abort ();    /* Should probably push op0 out to memory and then
-		    do a load.  */
+  /* Should probably push op0 out to memory and then do a load.  */
+  gcc_assert (int_mode != BLKmode);
 
   /* OFFSET is the number of words or bytes (UNIT says which)
      from STR_RTX to the first word or byte containing part of the field.  */
-
   if (!MEM_P (op0))
     {
       if (offset != 0
@@ -2145,8 +2136,7 @@ expand_shift (enum tree_code code, enum machine_mode mode, rtx shifted,
 	 define_expand for lshrsi3 was added to vax.md.  */
     }
 
-  if (temp == 0)
-    abort ();
+  gcc_assert (temp);
   return temp;
 }
 
@@ -2649,7 +2639,7 @@ expand_mult_const (enum machine_mode mode, rtx op0, HOST_WIDE_INT val,
       val_so_far = 1;
     }
   else
-    abort ();
+    gcc_unreachable ();
 
   for (opno = 1; opno < alg->ops; opno++)
     {
@@ -2727,7 +2717,7 @@ expand_mult_const (enum machine_mode mode, rtx op0, HOST_WIDE_INT val,
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
 
       /* Write a REG_EQUAL note on the last insn so that we can cse
@@ -2762,8 +2752,7 @@ expand_mult_const (enum machine_mode mode, rtx op0, HOST_WIDE_INT val,
      in the result mode, to avoid sign-/zero-extension confusion.  */
   val &= GET_MODE_MASK (mode);
   val_so_far &= GET_MODE_MASK (mode);
-  if (val != val_so_far)
-    abort ();
+  gcc_assert (val == val_so_far);
 
   return accum;
 }
@@ -2848,8 +2837,7 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 		      && flag_trapv && (GET_MODE_CLASS(mode) == MODE_INT)
 		      ? smulv_optab : smul_optab,
 		      op0, op1, target, unsignedp, OPTAB_LIB_WIDEN);
-  if (op0 == 0)
-    abort ();
+  gcc_assert (op0);
   return op0;
 }
 
@@ -2893,18 +2881,15 @@ choose_multiplier (unsigned HOST_WIDE_INT d, int n, int precision,
   /* lgup = ceil(log2(divisor)); */
   lgup = ceil_log2 (d);
 
-  if (lgup > n)
-    abort ();
+  gcc_assert (lgup <= n);
 
   pow = n + lgup;
   pow2 = n + lgup - precision;
 
-  if (pow == 2 * HOST_BITS_PER_WIDE_INT)
-    {
-      /* We could handle this with some effort, but this case is much better
-	 handled directly with a scc insn, so rely on caller using that.  */
-      abort ();
-    }
+  /* We could handle this with some effort, but this case is much
+     better handled directly with a scc insn, so rely on caller using
+     that.  */
+  gcc_assert (pow != 2 * HOST_BITS_PER_WIDE_INT);
 
   /* mlow = 2^(N + lgup)/d */
  if (pow >= HOST_BITS_PER_WIDE_INT)
@@ -2928,13 +2913,11 @@ choose_multiplier (unsigned HOST_WIDE_INT d, int n, int precision,
   div_and_round_double (TRUNC_DIV_EXPR, 1, nl, nh, d, (HOST_WIDE_INT) 0,
 			&mhigh_lo, &mhigh_hi, &dummy1, &dummy2);
 
-  if (mhigh_hi && nh - d >= d)
-    abort ();
-  if (mhigh_hi > 1 || mlow_hi > 1)
-    abort ();
+  gcc_assert (!mhigh_hi || nh - d < d);
+  gcc_assert (mhigh_hi <= 1 && mlow_hi <= 1);
   /* Assert that mlow < mhigh.  */
-  if (! (mlow_hi < mhigh_hi || (mlow_hi == mhigh_hi && mlow_lo < mhigh_lo)))
-    abort ();
+  gcc_assert (mlow_hi < mhigh_hi
+	      || (mlow_hi == mhigh_hi && mlow_lo < mhigh_lo));
 
   /* If precision == N, then mlow, mhigh exceed 2^N
      (but they do not exceed 2^(N+1)).  */
@@ -3156,8 +3139,7 @@ expand_mult_highpart (enum machine_mode mode, rtx op0,
   rtx op1, tem;
 
   /* We can't support modes wider than HOST_BITS_PER_INT.  */
-  if (GET_MODE_BITSIZE (mode) > HOST_BITS_PER_WIDE_INT)
-    abort ();
+  gcc_assert (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT);
 
   op1 = gen_int_mode (cnst1, wider_mode);
   cnst1 &= GET_MODE_MASK (mode);
@@ -3662,8 +3644,7 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 			    mh = choose_multiplier (d >> pre_shift, size,
 						    size - pre_shift,
 						    &ml, &post_shift, &dummy);
-			    if (mh)
-			      abort ();
+			    gcc_assert (!mh);
 			  }
 			else
 			  pre_shift = 0;
@@ -3939,8 +3920,7 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 
 		    mh = choose_multiplier (d, size, size - 1,
 					    &ml, &post_shift, &lgup);
-		    if (mh)
-		      abort ();
+		    gcc_assert (!mh);
 
 		    if (post_shift < BITS_PER_WORD
 			&& size - 1 < BITS_PER_WORD)
@@ -4398,7 +4378,7 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 	return gen_lowpart (mode, rem_flag ? remainder : quotient);
 
       default:
-	abort ();
+	gcc_unreachable ();
       }
 
   if (quotient == 0)
@@ -4899,20 +4879,23 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
 	= compare_from_rtx (op0, op1, code, unsignedp, mode, NULL_RTX);
       if (CONSTANT_P (comparison))
 	{
-	  if (GET_CODE (comparison) == CONST_INT)
+	  switch (GET_CODE (comparison))
 	    {
+	    case CONST_INT:
 	      if (comparison == const0_rtx)
 		return const0_rtx;
-	    }
+	      break;
+	      
 #ifdef FLOAT_STORE_FLAG_VALUE
-	  else if (GET_CODE (comparison) == CONST_DOUBLE)
-	    {
+	    case CONST_DOUBLE:
 	      if (comparison == CONST0_RTX (GET_MODE (comparison)))
 		return const0_rtx;
-	    }
+	      break;
 #endif
-	  else
-	    abort ();
+	    default:
+	      gcc_unreachable ();
+	    }
+	  
 	  if (normalizep == 1)
 	    return const1_rtx;
 	  if (normalizep == -1)
@@ -4987,14 +4970,14 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
 	    op0 = expand_shift (RSHIFT_EXPR, compare_mode, op0,
 				size_int (GET_MODE_BITSIZE (compare_mode) - 1),
 				subtarget, normalizep == 1);
-	  else if (STORE_FLAG_VALUE & 1)
+	  else
 	    {
+	      gcc_assert (STORE_FLAG_VALUE & 1);
+	      
 	      op0 = expand_and (compare_mode, op0, const1_rtx, subtarget);
 	      if (normalizep == -1)
 		op0 = expand_unop (compare_mode, neg_optab, op0, op0, 0);
 	    }
-	  else
-	    abort ();
 
 	  /* If we were converting to a smaller mode, do the
 	     conversion now.  */
@@ -5262,19 +5245,17 @@ do_cmp_and_jump (rtx arg1, rtx arg2, enum rtx_code op, enum machine_mode mode,
 	  /* do_jump_by_parts_equality_rtx compares with zero.  Luckily
 	     that's the only equality operations we do */
 	case EQ:
-	  if (arg2 != const0_rtx || mode != GET_MODE(arg1))
-	    abort ();
+	  gcc_assert (arg2 == const0_rtx && mode == GET_MODE(arg1));
 	  do_jump_by_parts_equality_rtx (arg1, label2, label);
 	  break;
 
 	case NE:
-	  if (arg2 != const0_rtx || mode != GET_MODE(arg1))
-	    abort ();
+	  gcc_assert (arg2 == const0_rtx && mode == GET_MODE(arg1));
 	  do_jump_by_parts_equality_rtx (arg1, label, label2);
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
 
       emit_label (label2);

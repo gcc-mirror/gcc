@@ -1,5 +1,47 @@
 2004-09-08  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* emit-rtl.c (immed_double_const): Use gcc_assert and gcc_unreachable.
+	(gen_rtx_SUBREG, gen_reg_rtx, mark_user_reg, subreg_hard_regno,
+	gen_lowpart_common, gen_highpart, gen_highpart_mode,
+	subreg_highpart_offset, operand_subword, operand_subword_force,
+	mem_expr_equal_p, set_mem_attributes_minus_bitpos,
+	set_mem_alias_set, change_address_1, verify_rtx_sharing,
+	copy_most_rtx, set_first_insn, set_last_insn, prev_cc0_setter,
+	try_split, add_insn_after, add_insn_before, remove_insn,
+	remove_unnecessary_notes, emit_insn_before, emit_jump_insn_before,
+	emit_call_insn_before, emit_insn_after, emit_jump_insn_after,
+	emit_call_insn_after, emit_insn, emit_jump_insn, emit_call_insn,
+	set_unique_reg_note, emit, push_to_full_sequence, copy_insn_1,
+	gen_const_vector_0, emit_copy_of_insn_after): Likewise.
+	* et-forest.c (set_prev, set_next, et_check_occ_sanity,
+	record_path_before_1, check_path_after_1, check_path_after): Likewise.
+	* except.c (gen_eh_region, resolve_one_fixup_region,
+	remove_unreachable_regions, convert_from_eh_region_ranges_1,
+	add_ehl_entry, duplicate_eh_region_1, build_post_landing_pads,
+	connect_post_landing_pads, sjlj_emit_function_exit,
+	remove_exception_handler_label, remove_eh_handler,
+	reachable_next_level, collect_one_action_chain,
+	output_function_exception_table): Likewise.
+	* explow.c (trunc_int_for_mode, copy_to_mode_reg,
+	optimize_save_area_alloca, allocate_dynamic_stack_space,
+	probe_stack_range, hard_function_value): Likewise.
+	* expmed.c (mode_for_extraction, store_bit_field,
+	store_fixed_bit_field, extract_bit_field, expand_shift,
+	expand_mult_const, expand_mult, choose_multiplier,
+	expand_mult_highpart, expand_divmod, emit_store_flag,
+	do_cmp_and_jump): Likewise.
+	* expr.c (convert_move, convert_modes, move_by_pieces,
+	move_by_pieces_ninsns, move_by_pieces_1, emit_block_move,
+	move_block_from_reg, gen_group_rtx, emit_group_load,
+	emit_group_move, emit_group_store, use_reg, use_regs,
+	can_store_by_pieces, store_by_pieces, store_by_pieces_1,
+	emit_move_insn, emit_move_insn_1, emit_push_insn,
+	expand_assignment, store_expr, count_type_elements,
+	store_constructor, store_field, safe_from_p, expand_var,
+	expand_expr_addr_expr, expand_expr_real_1, do_store_flag): Likewise.
+
+2004-09-08  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* dbxout.c (dbxout_type, dbxout_type_name, dbxout_symbol): Use
 	gcc_assert and gcc_unreachable.
 	* ddg.c (create_ddg_dependence, add_deps_for_def,
@@ -6066,7 +6108,7 @@
 	* config/i386/xmmintrin.h: Include <mm_malloc.h>.
 
 2004-08-03  H.J. Lu  <hongjiu.lu@intel.com>
-	    Tanguy Fautr√É  <tfautre@pandora.be>
+	    Tanguy Fautr√  <tfautre@pandora.be>
 
 	* config/i386/pmm_malloc.h: New file.
 
