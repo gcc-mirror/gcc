@@ -1,3 +1,13 @@
+Tue Jan 27 23:26:07 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* config.shared: Emit everything which needs to be re-definable
+	via file descriptor 1; the generic stuff is emitted using redirection
+	onto fd 2.
+
+	* configure.in (package_makefile_rules_frag): New variable
+	which is used in the call to config.shared; redirect file descriptor 2
+	to ${package_makefile_rules_frag}.
+
 Tue Jan 27 10:35:22 1998  H.J. Lu  (hjl@gnu.org)
 
 	* configure.in (topsrcdir): New.
