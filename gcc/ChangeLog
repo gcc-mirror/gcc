@@ -1,3 +1,14 @@
+2000-09-19  Bernd Schmidt  <bernds@redhat.co.uk>
+
+	Fix misapplied earlier patch:
+	* config/sh/sh.md (floatsisf_ie): Reenable.  Remove explicit reference
+	to fpul.
+	(floatsisf2): Generate floatsisf_ie by default.
+	(floatsisf_i4): Conditional on TARGET_SH4.
+
+	(floatsisf2, floatsidf2, extendsfdf2): Also use reg_no_subreg_operand
+	predicate for the expanders.
+
 2000-09-19  Richard Henderson  <rth@cygnus.com>
 
 	* config/i386/i386.h (CPP_CPU_SPEC): Define i586 and i686 symbols
