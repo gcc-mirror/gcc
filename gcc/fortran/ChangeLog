@@ -1,3 +1,10 @@
+2005-01-16  Steven G. Kargl  <kargls@comcast.net>
+
+	PR 19168
+	* resolve.c (check_case_overlap): Typo in comment.
+	(validate_case_label_expr):  Fix up kinds of case values
+	(resolve_select): Properly handle kind mismatches.
+
 2004-01-16  Paul Brook  <paul@codesourcery.com>
 
 	PR fortran/17675
