@@ -608,7 +608,7 @@ find_substitution (tree node)
   
   <mangled-name>      ::= _Z <encoding>  */
 
-static inline void
+static void
 write_mangled_name (const tree decl, bool top_level)
 {
   MANGLE_TRACE_TREE ("mangled-name", decl);

@@ -312,7 +312,7 @@ check_path_after (struct et_occ *occ)
 
 /* Splay the occurence OCC to the root of the tree.  */
 
-static inline void
+static void
 et_splay (struct et_occ *occ)
 {
   struct et_occ *f, *gf, *ggf;
