@@ -29,7 +29,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
 #include "config.h"
-#include "libgfortran.h"
 
 #ifdef HAVE_STRING_H
 #include <string.h>
@@ -37,6 +36,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
+
+#include "libgfortran.h"
 
 void
 prefix(system_sub) (const char * fcmd, GFC_INTEGER_4 * status,
