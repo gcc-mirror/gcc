@@ -29,6 +29,11 @@ typedef char * __va___list;
 #define __va_rounded_size(TYPE)  \
   (((sizeof (TYPE) + sizeof (int) - 1) / sizeof (int)) * sizeof (int))
 
+/* Avoid errors if compiling GCC v2 with GCC v1.  */
+#if __GNUC__ == 1
+#define __extension__
+#endif
+
 /* RECORD_TYPE args passed using the C calling convention are
    passed by invisible reference.  ??? RECORD_TYPE args passed
    in the stack are made to be word-aligned; for an aggregate that is
