@@ -842,7 +842,7 @@ common_handle_option (size_t scode, const char *arg, int value)
       if (!flag_value_profile_transformations_set)
         flag_value_profile_transformations = value;
 #ifdef HAVE_prefetch
-      if (!flag_speculative_prefetching_set)
+      if (0 && !flag_speculative_prefetching_set)
 	flag_speculative_prefetching = value;
 #endif
       break;
@@ -855,7 +855,7 @@ common_handle_option (size_t scode, const char *arg, int value)
       if (!flag_value_profile_transformations_set)
         flag_value_profile_transformations = value;
 #ifdef HAVE_prefetch
-      if (!flag_speculative_prefetching_set)
+      if (0 && !flag_speculative_prefetching_set)
 	flag_speculative_prefetching = value;
 #endif
       break;
