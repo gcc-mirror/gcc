@@ -1146,7 +1146,7 @@ rest_of_handle_cse (void)
 
   reg_scan (get_insns (), max_reg_num (), 1);
 
-  tem = cse_main (get_insns (), max_reg_num (), 0, dump_file);
+  tem = cse_main (get_insns (), max_reg_num (), dump_file);
   if (tem)
     rebuild_jump_labels (get_insns ());
   if (purge_all_dead_edges (0))
@@ -1178,7 +1178,7 @@ rest_of_handle_cse2 (void)
   if (dump_file)
     dump_flow_info (dump_file);
   /* CFG is no longer maintained up-to-date.  */
-  tem = cse_main (get_insns (), max_reg_num (), 1, dump_file);
+  tem = cse_main (get_insns (), max_reg_num (), dump_file);
 
   /* Run a pass to eliminate duplicated assignments to condition code
      registers.  We have to run this after bypass_jumps, because it
@@ -1227,7 +1227,7 @@ rest_of_handle_gcse (void)
     {
       timevar_push (TV_CSE);
       reg_scan (get_insns (), max_reg_num (), 1);
-      tem2 = cse_main (get_insns (), max_reg_num (), 0, dump_file);
+      tem2 = cse_main (get_insns (), max_reg_num (), dump_file);
       purge_all_dead_edges (0);
       delete_trivially_dead_insns (get_insns (), max_reg_num ());
       timevar_pop (TV_CSE);
@@ -1248,7 +1248,7 @@ rest_of_handle_gcse (void)
 	{
 	  timevar_push (TV_CSE);
 	  reg_scan (get_insns (), max_reg_num (), 1);
-	  tem2 = cse_main (get_insns (), max_reg_num (), 0, dump_file);
+	  tem2 = cse_main (get_insns (), max_reg_num (), dump_file);
 	  purge_all_dead_edges (0);
 	  delete_trivially_dead_insns (get_insns (), max_reg_num ());
 	  timevar_pop (TV_CSE);
