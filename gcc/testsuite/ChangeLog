@@ -15,6 +15,13 @@
 	* gcc.dg/alias-7.c: Prefix asm-declared name with
 	__USER_LABEL_PREFIX__.
 
+2005-03-31  J"orn Rennecke <joern.rennecke@st.com>
+
+	Fix fallout from PR middle-end/15700:
+	* gcc.c-torture/compile/20011119-1.c: Take
+	__USER_LABEL_PREFIX__ into account.
+	* gcc.c-torture/compile/20011119-2.c: Likewise.
+
 2005-03-31  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	PR c++/18644
