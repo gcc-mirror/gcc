@@ -1846,8 +1846,7 @@ connect_post_landing_pads ()
       seq = get_insns ();
       end_sequence ();
       emit_insns_before (seq, region->resume);
-
-      /* Leave the RESX to be deleted by flow.  */
+      flow_delete_insn (region->resume);
     }
 }
 

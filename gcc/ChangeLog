@@ -1,3 +1,15 @@
+Fri Jul 20 13:24:16 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* integrate.c (copy_insn_list): handle
+	NOTE_INSN_DELETED_LABEL, as if it were CODE_LABEL.
+	(copy_rtx_and_substitute): Likewise; behave to NOTE_INSN_DELETED_LABEL
+	identically as to CODE_LABEL.
+
+	* fold-const (fold): Convert A/B/C to A/(B*C) and
+	A/(B/C) to (A/B)*C
+
+	* except.c (connect_post_landing_pads): Delete the RESX insns.
+
 2001-07-20  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/mips/mips.h (ISA_HAS_NMADD_NMSUB): New macro.
