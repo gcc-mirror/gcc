@@ -1,3 +1,18 @@
+2004-10-28  Frank Ch. Eigler  <fche@redhat.com>
+
+	* tree-mudflap.c (mudflap_init): Mark cache-lookup decls to
+	prevent their later unnecessary registration.
+	(mf_build_check_statement_for): Remove "addr" argument, and
+	related "__mf_value" generated code.  Update callers.
+	(mf_decl_eligible_p): New function, factored from mx_register_decls.
+	(mx_register_decls): Call it.
+	(mf_xform_derefs_1): Rewrite COMPONENT_REF and ARRAY_REF cases
+	to restore support for complex nested expressions.
+	(mudflap_enqueue_decl): Simplify.  Move registration call emission
+	out ...
+	(mudflap_finish_file): ... to here.
+	(mudflap_enqueue_constant): Remove dump code.
+
 2004-10-28  Zack Weinberg  <zack@codesourcery.com>
 
 	PR 18199
