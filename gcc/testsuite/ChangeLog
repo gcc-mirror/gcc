@@ -1,3 +1,9 @@
+Fri May 18 14:26:28 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* g++.old-deja/g++.ext/attrib5.C: XFAIL for hpux.
+	* g++.old-deja/g++.mike/eh33.C: No longer XFAIL for the PA.
+	* g++.old-deja/g++.mike/eh50.C: No longer XFAIL for the PA.
+
 2001-05-17  Mark Mitchell  <mark@codesourcery.com>
 
 	* objc/execute/formal_protocol-6.cexp: XFAIL it.
