@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.2 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -9299,6 +9299,10 @@ package body Sem_Ch3 is
          end if;
 
       --  Otherwise we have a subtype mark without a constraint
+
+      elsif Error_Posted (S) then
+         Rewrite (S, New_Occurrence_Of (Any_Id, Sloc (S)));
+         return Any_Type;
 
       else
          Find_Type (S);
