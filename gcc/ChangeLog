@@ -1,3 +1,8 @@
+2001-09-13  Andreas Schwab  <schwab@suse.de>
+
+	* config/float-m68k.h: Define DECIMAL_DIG and FLT_EVAL_METHOD for
+	C99.
+
 2001-09-12  Josh Martin  <josh.martin@abq.sc.philips.com>
 
 	* fixinc/inclhack.def(hpux11_size_t): Keep HP-UX headers from
