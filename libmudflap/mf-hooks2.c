@@ -52,7 +52,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include <string.h>
 #include <stdarg.h>
-#include <strings.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -64,7 +63,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <limits.h>
 #include <time.h>
 #include <ctype.h>
+#ifdef HAVE_DIRENT_H
 #include <dirent.h>
+#endif
 #ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
 #endif
@@ -1075,6 +1076,7 @@ WRAPPER2(void, setbuf, FILE *stream, char *buf)
 }
 
 
+#ifdef HAVE_DIRENT_H
 WRAPPER2(DIR *, opendir, const char *path)
 {
   DIR *p;
@@ -1121,6 +1123,7 @@ WRAPPER2(struct dirent *, readdir, DIR *dir)
   }
   return p;
 }
+#endif
 
 
 #ifdef HAVE_SYS_SOCKET_H

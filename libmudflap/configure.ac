@@ -63,7 +63,7 @@ AC_TRY_COMPILE([
 [AC_MSG_RESULT(no)
 enable_shared=no])
 
-AC_CHECK_HEADERS(stdint.h execinfo.h signal.h dlfcn.h \
+AC_CHECK_HEADERS(stdint.h execinfo.h signal.h dlfcn.h dirent.h \
   netdb.h sys/ipc.h sys/sem.h sys/shm.h sys/wait.h sys/socket.h ctype.h)
 AC_CHECK_FUNCS(backtrace backtrace_symbols gettimeofday signal)
 

@@ -1,3 +1,16 @@
+2004-06-29  Nick Clifton  <nickc@redhat.com>
+
+	* configure.ac (AC_CHECK_HEADERS): Add dirent.h
+	* configure: Regenerate.
+	* mf-hooks2.c: Surround uses of dirent.h with #ifdef
+	HAVE_DIRENT_H.
+	Remove spurious inclusion of <strings.h>.
+
+2004-06-29  Nick Clifton  <nickc@redhat.com>
+
+	* mf-runtime.c (pthread_join): Only apply the weak pragma if the
+	function actually exists.
+
 2004-06-25  Frank Ch. Eigler  <fche@redhat.com>
 
 	* ansidecl.h, libiberty.h: New dummy files for building splay-tree.
