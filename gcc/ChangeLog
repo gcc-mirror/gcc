@@ -1,3 +1,7 @@
+2003-07-21  Lisa M. Goldstein  <opus@gnu.org>
+
+	* doc/invoke.texi: Fixes to style, grammar and diction.
+
 2003-07-20  Mark Mitchell  <mark@codesourcery.com>
 
 	PR debug/11279
