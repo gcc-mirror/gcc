@@ -1,3 +1,7 @@
+2002-07-01  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config/mmix/t-mmix: Eliminate last reference to LIBGCC1_TEST.
+
 2002-07-01  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* README.Portability (Function prototypes): Give an example of
