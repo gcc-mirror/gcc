@@ -57,7 +57,7 @@
          <li><a href="#3_1">Can libstdc++-v3 be used with &lt;my
                             favorite compiler&gt;?</a>
          <li><a href="#3_2">[removed]</a>
-         <li><a href="#3_3">Building under DEC OSF kills the assembler</a>
+         <li><a href="#3_3">[removed]</a>
          <li><a href="#3_4">I can't use 'long long' on Solaris</a>
       </ol>
 
@@ -411,18 +411,9 @@ which is no longer available, thanks deja...-->
       </p>
 
 <hr>
-   <h2><a name="3_3">3.3 Building DEC OSF kills the assembler</a></h2>
-      <p>The <code>atomicity.h</code> header for the Alpha processor
-         currently uses pseudo-operators which the DEC assembler
-         doesn't understand (in particular, .subsection and .previous).
-         The simple solution is to install GNU <code>as</code> and arrange
-         for the GCC build to use it (or merge the sources and build
-         it during the bootstrap).
-      </p>
-      <p>Anyone who
-         <a href="http://gcc.gnu.org/ml/libstdc++/2000-12/msg00279.html">knows
-         the DEC assembler well enough</a> to provide the equivalent of
-         these two pseudos would win praise and accolades from many.
+   <h2><a name="3_3">3.3 [removed]</a></h2>
+      <p>This question has become moot and has been removed.  The stub
+         is here to preserve numbering (and hence links/bookmarks).
       </p>
 
 <hr>
@@ -515,10 +506,21 @@ New in 3.0.95:
          problems, you can find more information on the libstdc++ and
          the GCC mailing lists.
       </p>
+      <p>Before reporting a bug, examine the
+         <a href="http://gcc.gnu.org/bugs.html">bugs database</a> with the
+         category set to &quot;libstdc++&quot;.  The BUGS file in the source
+         tree also tracks known serious problems.
+      </p>
       <ul>
-         <li>As of 3.0.95, those bugs have all been fixed.  We look forward
-             to new ones, well, not exactly...  Existing bugs are listed in
-             the BUGS file, and the GCC GNATS database.
+         <li>Debugging is problematic, due to bugs in line-number generation
+             (mostly fixed in the compiler) and gdb lagging behind the
+             compiler (lack of personnel).  We recommend configuring the
+             compiler using <code>--with-dwarf2</code> if the DWARF2
+             debugging format is not already the default on your platform.
+             Also,
+<a href="http://gcc.gnu.org/ml/libstdc++/2002-02/msg00034.html">changing your
+             GDB settings</a> can have a profound effect on your C++ debugging
+             experiences.  :-)</li>
       </ul>
 
 <hr>
@@ -553,8 +555,7 @@ New in 3.0.95:
            libstdc++ &quot;-Weffc++-clean&quot; is not a goal of the project,
            for a few reasons.  Mainly, that option tries to enforce
            object-oriented programming, while the Standard Library isn't
-           necessarily trying to be OO.  There are multiple solutions
-           under discussion.
+           necessarily trying to be OO.
         </p>
       </a>
       <a name="4_4_iostreamclear">
