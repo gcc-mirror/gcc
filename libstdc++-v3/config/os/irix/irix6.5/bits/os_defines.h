@@ -52,6 +52,12 @@
 /* GCC does not use thunks on IRIX.  */
 #define _G_USING_THUNKS 0
 
+#define __glibcpp_long_double_bits 64
+
+#if __LONG_MAX__ > 2147483647
+#define __glibcpp_wchar_t_bits 64
+#define __glibcpp_long_bits 64
 #endif
 
+#endif
 

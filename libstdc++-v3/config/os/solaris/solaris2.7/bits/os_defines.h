@@ -45,4 +45,8 @@
 // Without this all the libio vtbls are offset wrongly.
 #define _G_USING_THUNKS 0
 
+#if defined(__sparc_v9) || defined(__arch64__)
+#define __glibcpp_long_bits 64
+#endif
+
 #endif
