@@ -58,7 +58,7 @@ case "${host}" in
  	enable_getenv_properties_default=no
 	;;
   i686-*|i586-*|i486-*|i386-*)
-	libgcj_flags="${libgcj_flags} -ffloat-store"
+	libgcj_flags="${libgcj_flags} -ffloat-store -D__NO_MATH_INLINES"
 	libgcj_interpreter=yes
 	DIVIDESPEC=-fno-use-divide-subroutine
 	;;
