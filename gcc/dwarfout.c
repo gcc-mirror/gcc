@@ -1563,7 +1563,7 @@ data_member_location_attribute (decl)
      it into a member-style AT_location descriptor, but that'll be
      tough to do.  -- rfg  */
 
-  if (TREE_CODE (bitpos) != CONST_INT)
+  if (TREE_CODE (bitpos) != INTEGER_CST)
     return;
 
   ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_location);
@@ -1608,8 +1608,7 @@ data_member_location_attribute (decl)
      this minor annoyance.
   */
 
-  if ((GET_MODE_ALIGNMENT (mode_for_size (containing_object_size_in_bits))
-       != containing_object_size_in_bits)
+  if ((GET_MODE_ALIGNMENT (TYPE_MODE (type)) != containing_object_size_in_bits)
       && (DECL_BIT_FIELD_TYPE (type) != NULL))
     warning_with_decl (decl, "debugging info won't necessarily be reliable");
 
@@ -1773,8 +1772,11 @@ inline void
 name_attribute (name_string)
      register char *name_string;
 {
-  ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_name);
-  ASM_OUTPUT_DWARF_STRING (asm_out_file, name_string);
+  if (name_string && *name_string)
+    {
+      ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_name);
+      ASM_OUTPUT_DWARF_STRING (asm_out_file, name_string);
+    }
 }
 
 inline void
@@ -2064,8 +2066,7 @@ bit_offset_attribute (decl)
   */
 
 #if 0
-  if (GET_MODE_ALIGNMENT (mode_for_size (containing_object_size_in_bits))
-       != containing_object_size_in_bits)
+  if (GET_MODE_ALIGNMENT (TYPE_MODE (type)) != containing_object_size_in_bits)
     warning_with_decl (decl, "debugging info won't necessarily be reliable");
 #endif
 
@@ -2297,11 +2298,9 @@ src_coords_attribute (src_fileno, src_lineno)
      register unsigned src_fileno;
      register unsigned src_lineno;
 {
-#ifdef DWARF_DECL_COORDINATES
   ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_src_coords);
   ASM_OUTPUT_DWARF_DATA2 (asm_out_file, src_fileno);
   ASM_OUTPUT_DWARF_DATA2 (asm_out_file, src_lineno);
-#endif
 }
 
 /************************* end of attributes *****************************/
@@ -2320,8 +2319,27 @@ name_and_src_coords_attributes (decl)
   if (decl_name && IDENTIFIER_POINTER (decl_name))
     {
       name_attribute (IDENTIFIER_POINTER (decl_name));
-      src_coords_attribute (lookup_filename (DECL_SOURCE_FILE (decl)),
-			    DECL_SOURCE_LINE (decl));
+#ifdef DWARF_DECL_COORDINATES
+      {
+	register unsigned file_index;
+
+	/* This is annoying, but we have to pop out of the .debug section
+	   for a moment while we call `lookup_filename' because calling it
+	   may cause a temporary switch into the .debug_sfnames section and
+	   most svr4 assemblers are not smart enough be be able to nest
+	   section switches to any depth greater than one.  Note that we
+	   also can't skirt this issue by delaying all output to the
+	   .debug_sfnames section unit the end of compilation because that
+	   would cause us to have inter-section forward references and
+	   Fred Fish sez that m68k/svr4 assemblers botch those.  */
+
+	ASM_OUTPUT_POP_SECTION (asm_out_file);
+	file_index = lookup_filename (DECL_SOURCE_FILE (decl));
+	ASM_OUTPUT_PUSH_SECTION (asm_out_file, DEBUG_SECTION);
+
+        src_coords_attribute (file_index, DECL_SOURCE_LINE (decl));
+      }
+#endif
     }
 }
 
