@@ -405,7 +405,7 @@ end_final (filename)
       }
 
       /* Make space for the table of counts.  */
-      if (flag_no_common || size == 0)
+      if (size == 0)
 	{
 	  /* Realign data section.  */
 	  ASM_OUTPUT_ALIGN (asm_out_file, align);

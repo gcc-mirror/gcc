@@ -37,7 +37,7 @@ Boston, MA 02111-1307, USA.  */
 
 extern struct obstack permanent_obstack;
 
-enum attrs {A_PACKED, A_NOCOMMON, A_NORETURN, A_CONST, A_T_UNION,
+enum attrs {A_PACKED, A_NOCOMMON, A_COMMON, A_NORETURN, A_CONST, A_T_UNION,
 	    A_CONSTRUCTOR, A_DESTRUCTOR, A_MODE, A_SECTION, A_ALIGNED,
 	    A_UNUSED, A_FORMAT, A_WEAK, A_ALIAS};
 
@@ -263,6 +263,7 @@ init_attributes ()
 {
   add_attribute (A_PACKED, "packed", 0, 0, 0);
   add_attribute (A_NOCOMMON, "nocommon", 0, 0, 1);
+  add_attribute (A_COMMON, "common", 0, 0, 1);
   add_attribute (A_NORETURN, "noreturn", 0, 0, 1);
   add_attribute (A_NORETURN, "volatile", 0, 0, 1);
   add_attribute (A_UNUSED, "unused", 0, 0, 1);
@@ -354,6 +355,13 @@ decl_attributes (node, attributes, prefix_attributes)
 	case A_NOCOMMON:
 	  if (TREE_CODE (decl) == VAR_DECL)
 	    DECL_COMMON (decl) = 0;
+	  else
+	    warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
+	  break;
+
+	case A_COMMON:
+	  if (TREE_CODE (decl) == VAR_DECL)
+	    DECL_COMMON (decl) = 1;
 	  else
 	    warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
 	  break;
