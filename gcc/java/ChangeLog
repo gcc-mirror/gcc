@@ -1,3 +1,8 @@
+2001-07-13  Tom Tromey  <tromey@redhat.com>
+
+	* jvspec.c (jvgenmain_spec): Remove -ffilelist-file from cc1
+	invocation.
+
 2001-07-12  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* parse.y (patch_method_invocation): Don't override primary if one
