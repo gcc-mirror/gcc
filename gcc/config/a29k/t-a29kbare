@@ -1,6 +1,9 @@
 LIBGCC1 = libgcc1.null
 CROSS_LIBGCC1 = libgcc1.null
 
+# We need crt0.o.
+LIBGCC1_TEST =
+
 # These are really part of libgcc1, but this will cause them to be
 # built correctly, so... 
 
