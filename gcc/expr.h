@@ -590,7 +590,7 @@ extern void move_block_to_reg PROTO((int, rtx, int, enum machine_mode));
 
 /* Copy all or part of a BLKmode value X out of registers starting at REGNO.
    The number of registers to be filled is NREGS.  */
-extern void move_block_from_reg PROTO((int, rtx, int));
+extern void move_block_from_reg PROTO((int, rtx, int, int));
 
 /* Mark NREGS consecutive regs, starting at REGNO, as being live now.  */
 extern void use_regs PROTO((int, int));
