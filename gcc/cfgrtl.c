@@ -156,9 +156,15 @@ delete_insn (rtx insn)
     LABEL_NUSES (JUMP_LABEL (insn))--;
 
   /* Also if deleting an insn that references a label.  */
-  else if ((note = find_reg_note (insn, REG_LABEL, NULL_RTX)) != NULL_RTX
-	   && GET_CODE (XEXP (note, 0)) == CODE_LABEL)
-    LABEL_NUSES (XEXP (note, 0))--;
+  else
+    {
+      while ((note = find_reg_note (insn, REG_LABEL, NULL_RTX)) != NULL_RTX
+	     && GET_CODE (XEXP (note, 0)) == CODE_LABEL)
+	{
+	  LABEL_NUSES (XEXP (note, 0))--;
+	  remove_note (insn, note);
+	}
+    }
 
   if (GET_CODE (insn) == JUMP_INSN
       && (GET_CODE (PATTERN (insn)) == ADDR_VEC

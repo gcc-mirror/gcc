@@ -1,5 +1,10 @@
 2003-10-31  Josef Zlomek  <zlomekj@suse.cz>
 
+	PR/10239
+	* cfgrtl.c (delete_insn): Decrease LABEL_NUSES for all REG_LABEL notes.
+
+2003-10-31  Josef Zlomek  <zlomekj@suse.cz>
+
 	PR/11640
 	* cfgrtl.c (try_redirect_by_replacing_jump): Move jump
 	immediatelly before BARRIER.
