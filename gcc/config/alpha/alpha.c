@@ -1915,151 +1915,6 @@ add_long_const (file, c, in_reg, out_reg, temp_reg)
 
 #if OPEN_VMS
 
-/* 
-   Quick and dirty vmskrunch routine to ensure symbols are within the
-   64 bytes limit imposed by VMS.
-
-   This is written specifically for GNAT, and may not work for C++.
-
-   This routine duplicates every symbol passed to it whether it is too
-   long or not, which is a waste of space, fix later.
-*/
-#include <string.h>
-char*
-vmskrunch (name)
-     char *name;
-{
-  char *foo;
-  int max = 60; /* Allow for the ..xx extension */
-  int len, tlen;
-
-  if (name[0] == '*')
-    return (&name[1]);
-
-  len = tlen = strlen (name);
-  foo = xstrdup (name);
-
-  /* Don't muck with the ..xx extenstion */
-  if ((foo [tlen-4] == '.') && (foo [tlen-3] == '.'))
-    {
-      max = max + 4;
-      if (tlen > max)
-	{
-	  foo [tlen-4] = 0;
-	  len = len - 4;
-	  max = max - 4;
-	}
-    }
-
-  if (len > max)
-    {
-      char *bar;
-      int i, j, slen, nlen, xlen, chopchar;
-
-      nlen = len;
-
-      /* Change all _ and . characters to spaces, if thats enough then quit.
-	 For example: "foobar__foo__bar" becomes "foobar  foo  bar" */
-
-      for (i = 0; bar = index (foo, '_'); i++)
-	*bar = ' ';
-      nlen = nlen - i;
-
-      for (i = 0; bar = index (foo, '.'); i++)
-	*bar = ' ';
-      nlen = nlen - i;
-
-      for (i = 0; bar = index (foo, '$'); i++)
-	*bar = ' ';
-      nlen = nlen - i;
-
-      /* Iteratively make blank the rightmost non-blank character on the
-	 longest leftmost substring delmited by blanks, until it's short
-	 enough. For example: "foobar  foo  bar" becomes, successively:
-	 "fooba   foo bar"
-	 "foob    foo bar"
-	 "foo     foo bar"
-	 "fo      foo bar"
-	 "fo      fo  bar"
-	 "fo      fo  ba "
-	 "f       fo  ba "
-	 "f       f   ba "
-	 "f       f   b  "
-	 etc.  */
-
-      while (nlen > max)
-	{
-	  j = 0;
-	  xlen = 0;
-
-	  while (foo[j])
-	    {
-	      /* Find first non-blank */
-	      if (foo[j])
-		for (i = j; foo[i]==' ' && foo[i]; i++)
-		  ;
-
-	      /* Find the first blank */
-	      j = i;
-	      if (foo[j])
-		for (i = j + 1; foo[i] != ' ' && foo[i]; i++)
-		  ;
-
-	      /* If this substring is the longest so far, remember the
-		 position of the character to chop off. */
-	      slen = i - j;
-	      if (slen > xlen)
-		{
-		  chopchar = i - 1;
-		  xlen = slen;
-		}
-
-	      j = i;
-	    }
-
-	  /* Try to avoid chopping uppercase suffix letters or digits */
-	  if (isupper (foo [chopchar]) || isdigit (foo [chopchar]))
-	    {
-	      for (i = chopchar;
-		   (isupper (foo[i]) || isdigit (foo[i]))
-                   && foo[i] != ' ' && i >= 0;
-		   i--)
-		;
-	      if (islower (foo[i]))
-		chopchar = i;
-	    }
-	  foo [chopchar] = ' ';
-	  nlen--;
-	}
-
-      /* Put the ..xx extension back */
-      if (len != tlen)
-	{
-	  foo [len] = '.';
-	  len = len + 4;
-	}
-
-      /* Collapse all the blanks */
-      j = 0;
-      for (i = 0; foo[i]; i++)
-	if (foo[i] != ' ')
-	  foo[j++] = foo[i];
-      foo[j] = 0;
-
-      return foo;
-    }
-
-  /* Put back the ..xx extension */
-  if (len != tlen)
-    {
-      foo [len] = '.';
-      len = len + 4;
-    }
-
-  free (foo);
-  return name;
-}
-
 /* On vms we have two kinds of functions:
 
    - stack frame (PROC_STACK)
@@ -2090,7 +1945,7 @@ output_prolog (file, size)
   /* Offset during register save.  */
   int reg_offset;
   /* Label for the procedure entry.  */
-  char entry_label[70];
+  char *entry_label = (char *) alloca (strlen (alpha_function_name) + 5);
   int i;
 
   sa_size = alpha_sa_size ();
@@ -2103,7 +1958,7 @@ output_prolog (file, size)
   fprintf (file, "\t.ent ");
   assemble_name (file, alpha_function_name);
   fprintf (file, "\n");
-  sprintf (entry_label, "%.64s..en", alpha_function_name);
+  sprintf (entry_label, "%s..en", alpha_function_name);
   ASM_OUTPUT_LABEL (file, entry_label);
   inside_function = TRUE;
 
