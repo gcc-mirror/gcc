@@ -1537,7 +1537,7 @@ __bb_exit_func (void)
 	      continue;
 	    }
 
-	  /* ??? Should first write a header to the file.  Perferably, a 4 byte
+	  /* ??? Should first write a header to the file.  Preferably, a 4 byte
 	     magic number, 4 bytes containing the time the program was
 	     compiled, 4 bytes containing the last modification time of the
 	     source file, and 4 bytes indicating the compiler options used.

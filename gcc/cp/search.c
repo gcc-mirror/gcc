@@ -1,6 +1,6 @@
 /* Breadth-first and depth-first routines for
    searching multiple-inheritance lattice for GNU C++.
-   Copyright (C) 1987, 89, 92, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 89, 92-96, 1997 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -3025,7 +3025,7 @@ expand_indirect_vtbls_init (binfo, true_exp, decl_ptr)
 
 	  /* Do all vtables from this virtual base.  */
 	  /* This assumes that virtual bases can never serve as parent
-	     binfos.  (in the CLASSTPE_VFIELD_PARENT sense)  */
+	     binfos.  (in the CLASSTYPE_VFIELD_PARENT sense)  */
 	  expand_direct_vtbls_init (vbases, TYPE_BINFO (BINFO_TYPE (vbases)),
 				    1, 0, addr);
 

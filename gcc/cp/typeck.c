@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C++ compiler.
-   Copyright (C) 1987, 88, 89, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-96, 1997 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -4683,7 +4683,7 @@ unary_complex_lvalue (code, arg)
 					   DECL_FIELD_BITPOS (t),
 					   size_int (BITS_PER_UNIT)));
 
-	  /* We offset all pointer to data memebers by 1 so that we can
+	  /* We offset all pointer to data members by 1 so that we can
 	     distinguish between a null pointer to data member and the first
 	     data member of a structure.  */
 	  offset = size_binop (PLUS_EXPR, offset, size_int (1));
@@ -6222,7 +6222,7 @@ get_delta_difference (from, to, force)
   binfo = get_binfo (from, to, 1);
   if (binfo == error_mark_node)
     {
-      error ("   in pointer to member function conversiona");
+      error ("   in pointer to member function conversion");
       return delta;
     }
   if (binfo == 0)

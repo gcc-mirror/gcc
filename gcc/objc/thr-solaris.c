@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include <synch.h>
 #include <errno.h>
 
-/* Key structure for maintiain thread specific storage */
+/* Key structure for maintaining thread specific storage */
 static thread_key_t     __objc_thread_data_key;
 
 /* Backend initialization functions */

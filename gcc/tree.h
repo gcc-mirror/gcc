@@ -752,7 +752,7 @@ struct tree_block
    the same way that the first union alternative would be passed.  */
 #define TYPE_TRANSPARENT_UNION(NODE) ((NODE)->type.transparent_union_flag)
 
-/* Indicated that objects of this type should be layed out in as
+/* Indicated that objects of this type should be laid out in as
    compact a way as possible.  */
 #define TYPE_PACKED(NODE) ((NODE)->type.packed_flag)
 
@@ -1713,8 +1713,8 @@ extern void expand_null_return			PROTO((void));
 extern void expand_return			PROTO((tree));
 extern void expand_start_bindings		PROTO((int));
 extern void expand_end_bindings			PROTO((tree, int, int));
-extern void start_cleanup_deferal		PROTO((void));
-extern void end_cleanup_deferal			PROTO((void));
+extern void start_cleanup_deferral		PROTO((void));
+extern void end_cleanup_deferral		PROTO((void));
 extern void mark_block_as_eh_region		PROTO((void));
 extern void mark_block_as_not_eh_region		PROTO((void));
 extern int is_eh_region				PROTO((void));

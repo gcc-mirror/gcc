@@ -1248,7 +1248,7 @@ free_temps_for_rtl_expr (t)
   combine_temp_slots ();
 }
 
-/* Mark all temporaries ever allocated in this functon as not suitable
+/* Mark all temporaries ever allocated in this function as not suitable
    for reuse until the current level is exited.  */
 
 void
@@ -3525,7 +3525,7 @@ aggregate_value_p (exp)
 
   if (RETURN_IN_MEMORY (type))
     return 1;
-  /* Types that are TREE_ADDRESSABLE must be contructed in memory,
+  /* Types that are TREE_ADDRESSABLE must be constructed in memory,
      and thus can't be returned in registers.  */
   if (TREE_ADDRESSABLE (type))
     return 1;
@@ -4080,7 +4080,7 @@ assign_parms (fndecl, second_time)
 	      /* ENTRY_PARM has been converted to PROMOTED_MODE, its
 		 mode, by the caller.  We now have to convert it to 
 		 NOMINAL_MODE, if different.  However, PARMREG may be in
-		 a diffent mode than NOMINAL_MODE if it is being stored
+		 a different mode than NOMINAL_MODE if it is being stored
 		 promoted.
 
 		 If ENTRY_PARM is a hard register, it might be in a register

@@ -344,7 +344,7 @@ convert_memory_address (to_mode, x)
     case PLUS:
     case MULT:
       /* For addition the second operand is a small constant, we can safely
-	 permute the converstion and addition operation.  We can always safely
+	 permute the conversion and addition operation.  We can always safely
 	 permute them if we are making the address narrower.  In addition,
 	 always permute the operations if this is a constant.  */
       if (GET_MODE_SIZE (to_mode) < GET_MODE_SIZE (from_mode)

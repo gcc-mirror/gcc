@@ -35,7 +35,7 @@ Boston, MA 02111-1307, USA.  */
   Obtain the maximum thread priority that can set for t.  Under the
   mach threading model, it is possible for the developer to adjust the
   maximum priority downward only-- cannot be raised without superuser
-  priviledges.  Once lowered, it cannot be raised.
+  privileges.  Once lowered, it cannot be raised.
   */
 static int __mach_get_max_thread_priority(cthread_t t, int *base)
 {
@@ -148,7 +148,7 @@ __objc_thread_get_priority(void)
   int maxPriority;
   int sys_priority = 0;
 
-  int interactiveT, backgroundT, lowT; /* threasholds */
+  int interactiveT, backgroundT, lowT; /* thresholds */
 
   maxPriority = __mach_get_max_thread_priority(cT, &basePriority);
 

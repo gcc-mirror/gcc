@@ -3192,16 +3192,16 @@ store_expr (exp, target, want_value)
       do_pending_stack_adjust ();
       NO_DEFER_POP;
       jumpifnot (TREE_OPERAND (exp, 0), lab1);
-      start_cleanup_deferal ();
+      start_cleanup_deferral ();
       store_expr (TREE_OPERAND (exp, 1), target, 0);
-      end_cleanup_deferal ();
+      end_cleanup_deferral ();
       emit_queue ();
       emit_jump_insn (gen_jump (lab2));
       emit_barrier ();
       emit_label (lab1);
-      start_cleanup_deferal ();
+      start_cleanup_deferral ();
       store_expr (TREE_OPERAND (exp, 2), target, 0);
-      end_cleanup_deferal ();
+      end_cleanup_deferral ();
       emit_queue ();
       emit_label (lab2);
       OK_DEFER_POP;
@@ -6880,7 +6880,7 @@ expand_expr (exp, target, tmode, modifier)
 	    else
 	      jumpifnot (TREE_OPERAND (exp, 0), op0);
 
-	    start_cleanup_deferal ();
+	    start_cleanup_deferral ();
 	    if (binary_op && temp == 0)
 	      /* Just touch the other operand.  */
 	      expand_expr (TREE_OPERAND (binary_op, 1),
@@ -6914,7 +6914,7 @@ expand_expr (exp, target, tmode, modifier)
 	    store_expr (TREE_OPERAND (exp, 1), temp, 0);
 	    jumpif (TREE_OPERAND (exp, 0), op0);
 
-	    start_cleanup_deferal ();
+	    start_cleanup_deferral ();
 	    store_expr (TREE_OPERAND (exp, 2), temp, 0);
 	    op1 = op0;
 	  }
@@ -6932,7 +6932,7 @@ expand_expr (exp, target, tmode, modifier)
 	    store_expr (TREE_OPERAND (exp, 2), temp, 0);
 	    jumpifnot (TREE_OPERAND (exp, 0), op0);
 
-	    start_cleanup_deferal ();
+	    start_cleanup_deferral ();
 	    store_expr (TREE_OPERAND (exp, 1), temp, 0);
 	    op1 = op0;
 	  }
@@ -6941,18 +6941,18 @@ expand_expr (exp, target, tmode, modifier)
 	    op1 = gen_label_rtx ();
 	    jumpifnot (TREE_OPERAND (exp, 0), op0);
 
-	    start_cleanup_deferal ();
+	    start_cleanup_deferral ();
 	    if (temp != 0)
 	      store_expr (TREE_OPERAND (exp, 1), temp, 0);
 	    else
 	      expand_expr (TREE_OPERAND (exp, 1),
 			   ignore ? const0_rtx : NULL_RTX, VOIDmode, 0);
-	    end_cleanup_deferal ();
+	    end_cleanup_deferral ();
 	    emit_queue ();
 	    emit_jump_insn (gen_jump (op1));
 	    emit_barrier ();
 	    emit_label (op0);
-	    start_cleanup_deferal ();
+	    start_cleanup_deferral ();
 	    if (temp != 0)
 	      store_expr (TREE_OPERAND (exp, 2), temp, 0);
 	    else
@@ -6960,7 +6960,7 @@ expand_expr (exp, target, tmode, modifier)
 			   ignore ? const0_rtx : NULL_RTX, VOIDmode, 0);
 	  }
 
-	end_cleanup_deferal ();
+	end_cleanup_deferral ();
 
 	emit_queue ();
 	emit_label (op1);
@@ -10292,18 +10292,18 @@ do_jump (exp, if_false_label, if_true_label)
       if (if_false_label == 0)
 	if_false_label = drop_through_label = gen_label_rtx ();
       do_jump (TREE_OPERAND (exp, 0), if_false_label, NULL_RTX);
-      start_cleanup_deferal ();
+      start_cleanup_deferral ();
       do_jump (TREE_OPERAND (exp, 1), if_false_label, if_true_label);
-      end_cleanup_deferal ();
+      end_cleanup_deferral ();
       break;
 
     case TRUTH_ORIF_EXPR:
       if (if_true_label == 0)
 	if_true_label = drop_through_label = gen_label_rtx ();
       do_jump (TREE_OPERAND (exp, 0), NULL_RTX, if_true_label);
-      start_cleanup_deferal ();
+      start_cleanup_deferral ();
       do_jump (TREE_OPERAND (exp, 1), if_false_label, if_true_label);
-      end_cleanup_deferal ();
+      end_cleanup_deferral ();
       break;
 
     case COMPOUND_EXPR:
@@ -10364,7 +10364,7 @@ do_jump (exp, if_false_label, if_true_label)
 
 	  do_jump (TREE_OPERAND (exp, 0), label1, NULL_RTX);
 
-	  start_cleanup_deferal ();
+	  start_cleanup_deferral ();
 	  /* Now the THEN-expression.  */
 	  do_jump (TREE_OPERAND (exp, 1),
 		   if_false_label ? if_false_label : drop_through_label,
@@ -10377,7 +10377,7 @@ do_jump (exp, if_false_label, if_true_label)
 	  do_jump (TREE_OPERAND (exp, 2),
 		   if_false_label ? if_false_label : drop_through_label,
 		   if_true_label ? if_true_label : drop_through_label);
-	  end_cleanup_deferal ();
+	  end_cleanup_deferral ();
 	}
       break;
 

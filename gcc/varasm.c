@@ -67,7 +67,7 @@ Boston, MA 02111-1307, USA.  */
 #else /* !NO_DOT_IN_LABEL */
 #define CHKR_PREFIX "chkr."
 #endif 
-#else /* !NO_DOLLAR_IN_LABLE */
+#else /* !NO_DOLLAR_IN_LABEL */
 #define CHKR_PREFIX "chkr$"
 #endif
 #define CHKR_PREFIX_SIZE (sizeof (CHKR_PREFIX) - 1)

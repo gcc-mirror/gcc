@@ -1397,7 +1397,7 @@ make_canonical (attr, exp)
       RTX_UNCHANGING_P (exp) = 1;
       exp = check_attr_value (exp, attr);
       /* Goto COND case since this is now a COND.  Note that while the
-         new expression is rescanned, all symbol_ref notes are mared as
+         new expression is rescanned, all symbol_ref notes are marked as
 	 unchanging.  */
       goto cond;
 

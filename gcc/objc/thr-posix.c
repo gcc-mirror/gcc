@@ -29,7 +29,7 @@ Boston, MA 02111-1307, USA.  */
 #include "runtime.h"
 #include <pthread.h>
 
-/* Key structure for maintiain thread specific storage */
+/* Key structure for maintaining thread specific storage */
 static pthread_key_t _objc_thread_storage;
 
 /* Backend initialization functions */

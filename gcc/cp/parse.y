@@ -1,5 +1,5 @@
 /* YACC parser for C++ syntax.
-   Copyright (C) 1988, 89, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1988, 89, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -763,7 +763,7 @@ base_init:
 		    error ("no base initializers given following ':'");
 		  setup_vtbl_ptr ();
 		  /* Always keep the BLOCK node associated with the outermost
-		     pair of curley braces of a function.  These are needed
+		     pair of curly braces of a function.  These are needed
 		     for correct operation of dwarfout.c.  */
 		  keep_next_level ();
 		}
@@ -1724,7 +1724,7 @@ nodecls:
 		    store_parm_decls ();
 		  setup_vtbl_ptr ();
 		  /* Always keep the BLOCK node associated with the outermost
-		     pair of curley braces of a function.  These are needed
+		     pair of curly braces of a function.  These are needed
 		     for correct operation of dwarfout.c.  */
 		  keep_next_level ();
 		}

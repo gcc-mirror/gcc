@@ -23,7 +23,7 @@ Boston, MA 02111-1307, USA.  */
 /* An exception is an event that can be signaled from within a
    function. This event can then be "caught" or "trapped" by the
    callers of this function. This potentially allows program flow to
-   be transferred to any arbitrary code assocated with a function call
+   be transferred to any arbitrary code associated with a function call
    several levels up the stack.
 
    The intended use for this mechanism is for signaling "exceptional
@@ -71,7 +71,7 @@ Boston, MA 02111-1307, USA.  */
    perform tasks such as destruction of objects allocated on the
    stack.
 
-   In the current implementaion, cleanups are handled by allocating an
+   In the current implementation, cleanups are handled by allocating an
    exception region for the area that the cleanup is designated for,
    and the handler for the region performs the cleanup and then
    rethrows the exception to the outer exception region. From the
@@ -279,7 +279,7 @@ Boston, MA 02111-1307, USA.  */
    when the unwinder isn't needed.  __unwind_function is used as an
    action of last resort.  If no other method can be used for
    unwinding, __unwind_function is used.  If it cannot unwind, it
-   should call __teminate.
+   should call __terminate.
 
    By default, if the target-specific backend doesn't supply a definition
    for __unwind_function and doesn't support DWARF2_UNWIND_INFO, inlined
@@ -377,7 +377,7 @@ Boston, MA 02111-1307, USA.  */
    for all the machine specific details.  There is no variable context
    of a throw, just the one implied by the dynamic handler stack
    pointed to by the dynamic handler chain.  There is no exception
-   table, and no calls to __register_excetpions.  __sjthrow is used
+   table, and no calls to __register_exceptions.  __sjthrow is used
    instead of __throw, and it works by using the dynamic handler
    chain, and longjmp.  -fasynchronous-exceptions has no effect, as
    the elimination of trivial exception regions is not yet performed.
@@ -444,7 +444,7 @@ rtx current_function_dhc;
 
 rtx current_function_dcc;
 
-/* A stack used for keeping track of the currectly active exception
+/* A stack used for keeping track of the currently active exception
    handling region.  As each exception region is started, an entry
    describing the region is pushed onto this stack.  The current
    region can be found by looking at the top of the stack, and as we
@@ -1268,7 +1268,7 @@ expand_start_all_catch ()
   label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
 
   /* The label for the exception handling block that we will save.
-     This is Lresume in the documention.  */
+     This is Lresume in the documentation.  */
   expand_label (label);
   
   if (exceptions_via_longjmp == 0)

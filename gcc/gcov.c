@@ -2,7 +2,7 @@
    source file.
    Copyright (C) 1990, 91, 92, 93, 94, 96, 1997 Free Software Foundation, Inc.
    Contributed by James E. Wilson of Cygnus Support.
-   Mongled by Bob Manson of Cygnus Support.
+   Mangled by Bob Manson of Cygnus Support.
 
 Gcov is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -924,7 +924,7 @@ function_summary ()
     {
       if (function_branches)
 	{
-	  fprintf (stdout, "%6.2lf%% of %d branches executed in funcion %s\n",
+	  fprintf (stdout, "%6.2lf%% of %d branches executed in function %s\n",
 		   (((double) function_branches_executed / function_branches)
 		    * 100), function_branches, function_name);
 	  fprintf (stdout,
@@ -1220,7 +1220,7 @@ output_data ()
       if (output_gcov_file)
 	{
 	  /* Now the statistics are ready.  Read in the source file one line
-	     at a time, and output that line to the gcov file preceeded by
+	     at a time, and output that line to the gcov file preceded by
 	     its execution count if non zero.  */
       
 	  source_file = fopen (source_file_name, "r");
@@ -1297,8 +1297,8 @@ output_data ()
 		 before the source line.  For lines which exist but were never
 		 executed, print ###### before the source line.  Otherwise,
 		 print the execution count before the source line.  */
-	      /* There are 16 spaces of identation added before the source line
-		 so that tabs won't be messed up.  */
+	      /* There are 16 spaces of indentation added before the source
+		 line so that tabs won't be messed up.  */
 	      if (line_exists[count])
 		{
 		  if (line_counts[count])
@@ -1311,7 +1311,7 @@ output_data ()
 		fprintf (gcov_file, "\t\t%s", string);
 
 	      /* In case the source file line is larger than our buffer, keep
-		 reading and outputing lines until we get a newline.  */
+		 reading and outputting lines until we get a newline.  */
 	      len = strlen (string);
 	      while ((len == 0 || string[strlen (string) - 1] != '\n')
 		     && retval != NULL)
@@ -1368,7 +1368,7 @@ output_data ()
 		fprintf (gcov_file, "\t\t%s", string);
 
 		/* In case the source file line is larger than our buffer, keep
-		   reading and outputing lines until we get a newline.  */
+		   reading and outputting lines until we get a newline.  */
 		len = strlen (string);
 		while ((len == 0 || string[strlen (string) - 1] != '\n')
 		       && retval != NULL)

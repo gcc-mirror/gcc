@@ -8071,7 +8071,7 @@ finish_objc ()
 #endif
 
   /* Process the static instances here because initialization of objc_symtab
-     dependens on them. */
+     depends on them. */
   if (objc_static_instances)
     generate_static_references ();
 

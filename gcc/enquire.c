@@ -782,7 +782,7 @@ int main(argc, argv) int argc; char *argv[]; {
 			size/=2;
 		}
 
-		Vprintf("%sMemory mallocatable ~= %ld Kbytes%s\n",
+		Vprintf("%sMemory allocable ~= %ld Kbytes%s\n",
 			co, (total+511)/512, oc);
 	}
 #endif

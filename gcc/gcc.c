@@ -5129,7 +5129,7 @@ validate_switches (start)
 }
 
 /* Check whether a particular argument was used.  The first time we
-   canonialize the switches to keep only the ones we care about.  */
+   canonicalize the switches to keep only the ones we care about.  */
 
 static int
 used_arg (p, len)

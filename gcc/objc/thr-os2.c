@@ -82,7 +82,7 @@ __objc_thread_set_priority(int priority)
   ULONG sys_priority = 0;
 
   /* OBJC_THREAD_INTERACTIVE_PRIORITY -> PRTYC_FOREGROUNDSERVER
-   * OBJC_THREAD_BACKGROUND_PRIORITY  -> PRTYC_REGULSR
+   * OBJC_THREAD_BACKGROUND_PRIORITY  -> PRTYC_REGULAR
    * OBJC_THREAD_LOW_PRIORITY         -> PRTYC_IDLETIME */
   
   switch (priority) {

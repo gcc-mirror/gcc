@@ -342,7 +342,7 @@ consume_count (type)
 }
 
 
-/* Like consume_count, but for counts that are preceeded and followed
+/* Like consume_count, but for counts that are preceded and followed
    by '_' if they are greater than 10.  Also, -1 is returned for
    failure, since 0 can be a valid value.  */
 

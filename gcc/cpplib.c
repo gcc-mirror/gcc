@@ -4717,8 +4717,8 @@ cpp_get_token (pfile)
 	      }
 
 	      /* OK, now bring us back to the state we were in before we entered
-		 this branch.  We need #line b/c the newline for the pragma
-		 could fuck things up.  */
+		 this branch.  We need #line because the newline for the pragma
+		 could mess things up.  */
 	      output_line_command (pfile, 0, same_file);
 	      *(obp++) = ' ';	/* just in case, if comments are copied thru */
 	      *(obp++) = '/';
@@ -5718,7 +5718,7 @@ finclude (pfile, f, fname, system_header_p, dirptr)
 /* This is called after options have been processed.
  * Check options for consistency, and setup for processing input
  * from the file named FNAME.  (Use standard input if FNAME==NULL.)
- * Return 1 on succes, 0 on failure.
+ * Return 1 on success, 0 on failure.
  */
 
 int

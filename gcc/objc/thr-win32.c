@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #include <windows.h>
 
-/* Key structure for maintiain thread specific storage */
+/* Key structure for maintaining thread specific storage */
 static DWORD	__objc_data_tls = (DWORD)-1;
 
 /* Backend initialization functions */

@@ -1755,7 +1755,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 		  continue;
 		}
 
-	      /* Ignore unknown register, error already signalled.  */
+	      /* Ignore unknown register, error already signaled.  */
 	      continue;
 	    }
 
@@ -4074,7 +4074,7 @@ expand_dcc_cleanup (decl)
 
 /* Arrange for the top element of the dynamic handler chain to be
    popped if we exit the current binding contour.  DECL is the
-   assciated declaration, if any, otherwise NULL_TREE.  If the current
+   associated declaration, if any, otherwise NULL_TREE.  If the current
    contour is left via an exception, then __sjthrow will pop the top
    element off the dynamic handler chain.  The code that avoids doing
    the action we push into the handler chain in the exceptional case
@@ -4244,10 +4244,10 @@ expand_cleanups (list, dont_do, in_fixup, reachable)
    context, so that any cleanup actions we register with
    expand_decl_init will be properly conditionalized when those
    cleanup actions are later performed.  Must be called before any
-   expression (tree) is expanded that is within a contidional context.  */
+   expression (tree) is expanded that is within a conditional context.  */
 
 void
-start_cleanup_deferal ()
+start_cleanup_deferral ()
 {
   /* block_stack can be NULL if we are inside the parameter list.  It is
      OK to do nothing, because cleanups aren't possible here.  */
@@ -4256,12 +4256,12 @@ start_cleanup_deferal ()
 }
 
 /* Mark the end of a conditional region of code.  Because cleanup
-   deferals may be nested, we may still be in a conditional region
+   deferrals may be nested, we may still be in a conditional region
    after we end the currently deferred cleanups, only after we end all
    deferred cleanups, are we back in unconditional code.  */
 
 void
-end_cleanup_deferal ()
+end_cleanup_deferral ()
 {
   /* block_stack can be NULL if we are inside the parameter list.  It is
      OK to do nothing, because cleanups aren't possible here.  */
@@ -4374,7 +4374,7 @@ expand_start_case (exit_flag, expr, type, printname)
 
   thiscase->data.case_stmt.start = get_last_insn ();
 
-  start_cleanup_deferal ();
+  start_cleanup_deferral ();
 }
 
 
@@ -4427,7 +4427,7 @@ expand_start_case_dummy ()
   thiscase->data.case_stmt.num_ranges = 0;
   case_stack = thiscase;
   nesting_stack = thiscase;
-  start_cleanup_deferal ();
+  start_cleanup_deferral ();
 }
 
 /* End a dummy case statement.  */
@@ -4435,7 +4435,7 @@ expand_start_case_dummy ()
 void
 expand_end_case_dummy ()
 {
-  end_cleanup_deferal ();
+  end_cleanup_deferral ();
   POPSTACK (case_stack);
 }
 
@@ -5429,7 +5429,7 @@ expand_end_case (orig_index)
       if (count != 0)
 	range = fold (build (MINUS_EXPR, index_type, maxval, minval));
 
-      end_cleanup_deferal ();
+      end_cleanup_deferral ();
 
       if (count == 0)
 	{
@@ -5699,7 +5699,7 @@ expand_end_case (orig_index)
 		     thiscase->data.case_stmt.start);
     }
   else
-    end_cleanup_deferal ();
+    end_cleanup_deferral ();
 
   if (thiscase->exit_label)
     emit_label (thiscase->exit_label);

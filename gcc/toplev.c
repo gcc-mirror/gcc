@@ -2951,7 +2951,7 @@ rest_of_compilation (decl)
 
   if (DECL_SAVED_INSNS (decl) == 0)
     {
-      int inlineable = 0;
+      int inlinable = 0;
       char *lose;
 
       /* If requested, consider whether to make this function inline.  */
@@ -2978,7 +2978,7 @@ rest_of_compilation (decl)
 			like "inline" was specified for a function if we choose
 			to inline it.  This isn't quite right, but it's
 			probably not worth the trouble to fix.  */
-		     inlineable = DECL_INLINE (decl) = 1;
+		     inlinable = DECL_INLINE (decl) = 1;
 		 });
 
       insns = get_insns ();
@@ -3008,7 +3008,7 @@ rest_of_compilation (decl)
 	 finish compiling ourselves.  Otherwise, wait until EOF.
 	 We have to do this because the purge_addressof transformation
 	 changes the DECL_RTL for many variables, which confuses integrate.  */
-      if (inlineable)
+      if (inlinable)
 	{
 	  if (decl_function_context (decl))
 	    purge_addressof (insns);
@@ -3051,14 +3051,14 @@ rest_of_compilation (decl)
 		}
 #endif
 	      TIMEVAR (integration_time, save_for_inline_nocopy (decl));
-	      RTX_INTEGRATED_P (DECL_SAVED_INSNS (decl)) = inlineable;
+	      RTX_INTEGRATED_P (DECL_SAVED_INSNS (decl)) = inlinable;
 	      goto exit_rest_of_compilation;
 	    }
 	}
 
       /* If we have to compile the function now, save its rtl and subdecls
 	 so that its compilation will not affect what others get.  */
-      if (inlineable || DECL_DEFER_OUTPUT (decl))
+      if (inlinable || DECL_DEFER_OUTPUT (decl))
 	{
 #ifdef DWARF_DEBUGGING_INFO
 	  /* Generate the DWARF info for the "abstract" instance of
@@ -3087,7 +3087,7 @@ rest_of_compilation (decl)
 	  saved_block_tree = DECL_INITIAL (decl);
 	  saved_arguments = DECL_ARGUMENTS (decl);
 	  TIMEVAR (integration_time, save_for_inline_copying (decl));
-	  RTX_INTEGRATED_P (DECL_SAVED_INSNS (decl)) = inlineable;
+	  RTX_INTEGRATED_P (DECL_SAVED_INSNS (decl)) = inlinable;
 	}
 
       /* If specified extern inline but we aren't inlining it, we are

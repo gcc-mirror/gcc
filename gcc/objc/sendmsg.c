@@ -313,8 +313,8 @@ __objc_send_initialize(Class class)
 /* Walk on the methods list of class and install the methods in the reverse
    order of the lists. Since methods added by categories are before the methods
    of class in the methods list, this allows categories to substitute methods
-   declared in class. However if more than one category replace the same method
-   nothing is guarranteed about what method will be used.
+   declared in class. However if more than one category replaces the same
+   method nothing is guaranteed about what method will be used.
    Assumes that __objc_runtime_mutex is locked down. */
 static void
 __objc_install_methods_in_dtable (Class class, MethodList_t method_list)

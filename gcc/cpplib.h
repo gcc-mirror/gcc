@@ -179,7 +179,7 @@ struct cpp_reader {
 
   /* A buffer used for both for cpp_get_token's output, and also internally. */
   unsigned char *token_buffer;
-  /* Alocated size of token_buffer.  CPP_RESERVE allocates space.  */
+  /* Allocated size of token_buffer.  CPP_RESERVE allocates space.  */
   int token_buffer_size;
   /* End of the written part of token_buffer. */
   unsigned char *limit;
@@ -491,7 +491,7 @@ struct cpp_options {
   int debug_output;
 
   /* Nonzero means pass #include lines through to the output,
-     even if they are ifdeffed out.  */
+     even if they are ifdefed out.  */
   int dump_includes;
 
   /* Pending -D, -U and -A options, in reverse order. */

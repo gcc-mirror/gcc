@@ -150,7 +150,7 @@ is_member_template (t)
 
   if (TREE_CODE (t) != FUNCTION_DECL
       && !DECL_FUNCTION_TEMPLATE_P (t))
-    /* Anything that isn't a template or a template functon is
+    /* Anything that isn't a template or a template function is
        certainly not a member template.  */
     return 0;
 
@@ -264,7 +264,7 @@ begin_specialization ()
 }
 
 
-/* Called at then end of processing a declaration preceeded by
+/* Called at then end of processing a declaration preceded by
    template<>.  */
 
 void 
@@ -308,9 +308,9 @@ processing_explicit_specialization (template_count)
   /* A function declaration is an explicit specialization of a member
      template if all of the following conditions hold:
      
-     o There was a template <...> preceeding the declaration.
+     o There was a template <...> preceding the declaration.
      o The last template <...> was in fact template <>.
-     o The number of template <...>'s preceeding the declaration, less
+     o The number of template <...>'s preceding the declaration, less
        the number of template classes with arguments specified used to
        qualify the function name, is 1.
 
@@ -501,7 +501,7 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	       an explicit instantiation.  */
 	    return 2;
 	  else if (pedantic)
-	    pedwarn ("Explicit specialization not preceeded by `template <>'");
+	    pedwarn ("Explicit specialization not preceded by `template <>'");
 	}
 
       if (TREE_CODE (declarator) != TEMPLATE_ID_EXPR)
@@ -2336,7 +2336,7 @@ tsubst (t, args, nargs, in_decl)
 		/* We pass the outermost template parameters to
 		   build_template_decl_overload since the innermost
 		   template parameters are still just template
-		   parameters; there are no corresponding subsitution
+		   parameters; there are no corresponding substitution
 		   arguments.  */
 		/* FIXME The messed up thing here is that we get here with
 		   full args and only one level of parms.  This is necessary
@@ -3473,7 +3473,7 @@ overload_template_name (type)
   pushdecl_class_level (decl);
 }
 
-/* Like type_unfication but designed specially to handle conversion
+/* Like type_unification but designed specially to handle conversion
    operators.  */
 
 int
@@ -4575,7 +4575,7 @@ instantiate_decl (d)
 
       setup_vtbl_ptr ();
       /* Always keep the BLOCK node associated with the outermost
-	 pair of curley braces of a function.  These are needed
+	 pair of curly braces of a function.  These are needed
 	 for correct operation of dwarfout.c.  */
       keep_next_level ();
 
