@@ -4473,72 +4473,61 @@ expand_builtin_va_arg (tree valist, tree type)
 tree
 std_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
 {
-  tree addr, t, type_size = NULL;
-  tree align, alignm1, malign;
-  tree rounded_size;
-  tree valist_tmp;
-  HOST_WIDE_INT boundary;
+  tree addr, t, type_size, rounded_size, valist_tmp;
+  unsigned int align, boundary;
+
+#ifdef ARGS_GROW_DOWNWARD
+  /* All of the alignment and movement below is for args-grow-up machines.
+     As of 2004, there are only 3 ARGS_GROW_DOWNWARD targets, and they all
+     implement their own specialized gimplify_va_arg_expr routines.  */
+  abort ();
+#endif
 
   /* Compute the rounded size of the type.  */
-  align = size_int (PARM_BOUNDARY / BITS_PER_UNIT);
-  alignm1 = size_int (PARM_BOUNDARY / BITS_PER_UNIT - 1);
-  malign = size_int (-(PARM_BOUNDARY / BITS_PER_UNIT));
+  align = PARM_BOUNDARY / BITS_PER_UNIT;
   boundary = FUNCTION_ARG_BOUNDARY (TYPE_MODE (type), type);
 
+  /* Hoist the valist value into a temporary for the moment.  */
   valist_tmp = get_initialized_tmp_var (valist, pre_p, NULL);
 
   /* va_list pointer is aligned to PARM_BOUNDARY.  If argument actually
      requires greater alignment, we must perform dynamic alignment.  */
-
   if (boundary > PARM_BOUNDARY)
     {
-      if (!PAD_VARARGS_DOWN)
-	{
-	  t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist_tmp,
-		      build2 (PLUS_EXPR, TREE_TYPE (valist), valist_tmp,
-			      build_int_2 (boundary / BITS_PER_UNIT - 1, 0)));
-	  gimplify_and_add (t, pre_p);
-	}
+      unsigned byte_bound = boundary / BITS_PER_UNIT;
+
+      t = fold_convert (TREE_TYPE (valist), size_int (byte_bound - 1));
       t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist_tmp,
-		  build2 (BIT_AND_EXPR, TREE_TYPE (valist), valist_tmp,
-			  build_int_2 (~(boundary / BITS_PER_UNIT - 1), -1)));
+		  build2 (PLUS_EXPR, TREE_TYPE (valist), valist_tmp, t));
+      gimplify_and_add (t, pre_p);
+
+      t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist_tmp,
+		  build2 (BIT_AND_EXPR, TREE_TYPE (valist), valist_tmp, t));
       gimplify_and_add (t, pre_p);
     }
-  if (type == error_mark_node
-      || (type_size = TYPE_SIZE_UNIT (TYPE_MAIN_VARIANT (type))) == NULL
-      || TREE_OVERFLOW (type_size))
-    rounded_size = size_zero_node;
-  else
-    {
-      rounded_size = fold (build2 (PLUS_EXPR, sizetype, type_size, alignm1));
-      rounded_size = fold (build2 (BIT_AND_EXPR, sizetype,
-				   rounded_size, malign));
-    }
+
+  type_size = size_in_bytes (type);
+  rounded_size = round_up (type_size, align);
 
   /* Reduce rounded_size so it's sharable with the postqueue.  */
   gimplify_expr (&rounded_size, pre_p, post_p, is_gimple_val, fb_rvalue);
 
   /* Get AP.  */
   addr = valist_tmp;
-  if (PAD_VARARGS_DOWN && ! integer_zerop (rounded_size))
+  if (PAD_VARARGS_DOWN && !integer_zerop (rounded_size))
     {
       /* Small args are padded downward.  */
-      addr = fold (build2 (PLUS_EXPR, TREE_TYPE (addr), addr,
-				fold (build3 (COND_EXPR, sizetype,
-					      fold (build2 (GT_EXPR, sizetype,
-							    rounded_size,
-							    align)),
-					      size_zero_node,
-					      fold (build2 (MINUS_EXPR,
-							    sizetype,
-							    rounded_size,
-							    type_size))))));
+      t = fold (build2 (GT_EXPR, sizetype, rounded_size, size_int (align)));
+      t = fold (build3 (COND_EXPR, sizetype, t, size_zero_node,
+			size_binop (MINUS_EXPR, rounded_size, type_size)));
+      t = fold_convert (TREE_TYPE (addr), t);
+      addr = build2 (PLUS_EXPR, TREE_TYPE (addr), addr, t);
     }
 
   /* Compute new value for AP.  */
-  t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist,
-	      fold (build2 (PLUS_EXPR, TREE_TYPE (valist),
-			    valist_tmp, rounded_size)));
+  t = fold_convert (TREE_TYPE (valist), rounded_size);
+  t = build2 (PLUS_EXPR, TREE_TYPE (valist), valist_tmp, t);
+  t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist, t);
   gimplify_and_add (t, pre_p);
 
   addr = fold_convert (build_pointer_type (type), addr);

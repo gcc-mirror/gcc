@@ -274,9 +274,24 @@ get_mode_alignment (enum machine_mode mode)
 tree
 round_up (tree value, int divisor)
 {
-  tree arg = size_int_type (divisor, TREE_TYPE (value));
+  tree t;
 
-  return size_binop (MULT_EXPR, size_binop (CEIL_DIV_EXPR, value, arg), arg);
+  /* If divisor is a power of two, simplify this to bit manipulation.  */
+  if (divisor == (divisor & -divisor))
+    {
+      t = size_int_type (divisor - 1, TREE_TYPE (value));
+      value = size_binop (PLUS_EXPR, value, t);
+      t = size_int_type (-divisor, TREE_TYPE (value));
+      value = size_binop (BIT_AND_EXPR, value, t);
+    }
+  else
+    {
+      t = size_int_type (divisor, TREE_TYPE (value));
+      value = size_binop (CEIL_DIV_EXPR, value, t);
+      value = size_binop (MULT_EXPR, value, t);
+    }
+
+  return value;
 }
 
 /* Likewise, but round down.  */
@@ -284,9 +299,22 @@ round_up (tree value, int divisor)
 tree
 round_down (tree value, int divisor)
 {
-  tree arg = size_int_type (divisor, TREE_TYPE (value));
+  tree t;
 
-  return size_binop (MULT_EXPR, size_binop (FLOOR_DIV_EXPR, value, arg), arg);
+  /* If divisor is a power of two, simplify this to bit manipulation.  */
+  if (divisor == (divisor & -divisor))
+    {
+      t = size_int_type (-divisor, TREE_TYPE (value));
+      value = size_binop (BIT_AND_EXPR, value, t);
+    }
+  else
+    {
+      t = size_int_type (divisor, TREE_TYPE (value));
+      value = size_binop (FLOOR_DIV_EXPR, value, t);
+      value = size_binop (MULT_EXPR, value, t);
+    }
+
+  return value;
 }
 
 /* Subroutine of layout_decl: Force alignment required for the data type.
