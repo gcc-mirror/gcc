@@ -1,3 +1,11 @@
+2000-07-24  Bruce Korb  <bkorb@gnu.org>
+
+	* fixincl/fixfixes.c(emit_gnu_type): rewrote to *rely* on GCC
+	defining the __xxx_TYPE__ macros.
+	* fixincl/fixincl.tpl(gnu_type_map): now obsolete
+	* fixincl/fixlib.h: don't need to include "tm.h" anymore
+	* fixincl/inclhack.def(type_map): now obsolete
+
 Thu Jul 27 11:54:17 2000  Andrew Cagney  <cagney@b1.cygnus.com>
 
 	* cpp.texi: Append a trailing full-stop to xrefs where needed.

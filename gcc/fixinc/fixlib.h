@@ -33,8 +33,6 @@ Boston, MA 02111-1307, USA.  */
 #include "machname.h"
 #include "libiberty.h"
 
-#include "tm.h"
-
 #ifndef STDIN_FILENO
 # define STDIN_FILENO   0
 #endif
@@ -149,7 +147,8 @@ typedef struct patch_desc tPatchDesc;
     a particular fix (which files, how to qualify them,
     how to actually make the fix, etc...)
 
-    NB:  the FD_ defines are BIT FLAGS
+    NB:  the FD_ defines are BIT FLAGS, even though
+         some are mutually exclusive
 
     */
 #define FD_MACH_ONLY      0x0000

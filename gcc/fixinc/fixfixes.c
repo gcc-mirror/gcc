@@ -136,58 +136,41 @@ emit_gnu_type ( text, rm )
   const char* text;
   regmatch_t* rm;
 {
-  extern t_gnu_type_map gnu_type_map[];
-  extern int gnu_type_map_ct;
-
-  const char*     pzt  = text + rm[GTYPE_SE_CT].rm_so;
-  t_gnu_type_map* p_tm = gnu_type_map;
-  int   ct = gnu_type_map_ct;
+  char z_TYPE[ 64 ];
+  char z_type[ 64 ];
 
   fwrite (text, rm[0].rm_so, 1, stdout);
-  text += rm[0].rm_eo;
 
-  for (;;)
-    {
-      if (strncmp (pzt, p_tm->pz_type, p_tm->type_name_len) == 0)
-        break;
+  {
+    const char* ps = text   + rm[1].rm_so;
+    const char* pe = text   + rm[1].rm_eo;
+    char* pd = z_type;
+    char* pD = z_TYPE;
 
-#ifdef DEBUG
-      if (--ct <= 0)
-        return (const char*)NULL;
-#else
-      if (--ct <= 0)
-        return text;
-#endif
-      p_tm++;
-    }
+    while (ps < pe)
+      *(pD++) = toupper( *(pd++) = *(ps++) );
+
+    *pD = *pd = NUL;
+  }
 
   /*
-   *  Now print out the reformed typedef
+   *  Now print out the reformed typedef,
+   *  with a C++ guard for WCHAR
    */
   {
     tSCC z_fmt[] = "\
-#ifndef __%s_TYPE__\n#define __%s_TYPE__ %s\n#endif\n\
-\
 #if !defined(_GCC_%s_T)%s\n\
-\
-#define _GCC_%s_T\ntypedef __%s_TYPE__ %s_t;\n#endif\n";
+#define _GCC_%s_T\n\
+typedef __%s_TYPE__ %s_t;\n\
+#endif\n";
 
-    const char* pz_guard;
+    const char* pz_guard = (strcmp (z_type, "wchar") == 0)
+                           ? " && ! defined(__cplusplus)" : "";
 
-    /*
-     *  We magically know that the first entry and only the first
-     *  entry needs guarding against __cplusplus (it is "wchar_t").
-     *  If others wind up needing similar special treatment, then
-     *  go look into inclhack.def.  This code, obviously, works closely
-     *  with that file  :-)
-     */
-    pz_guard = (p_tm == gnu_type_map) ? " && ! defined(__cplusplus)" : "";
-    printf (z_fmt, p_tm->pz_TYPE, p_tm->pz_TYPE, p_tm->pz_gtype,
-            p_tm->pz_TYPE, pz_guard,
-            p_tm->pz_TYPE, p_tm->pz_TYPE, p_tm->pz_type);
+    printf (z_fmt, z_TYPE, pz_guard, z_TYPE, z_TYPE, z_type);
   }
 
-  return text;
+  return text += rm[0].rm_eo;
 }
 
 
@@ -694,44 +677,7 @@ FIX_PROC_HEAD( gnu_type_fix )
 
   while (regexec (&re, text, GTYPE_SE_CT+1, rm, 0) == 0)
     {
-#ifndef DEBUG
       text = emit_gnu_type (text, rm);
-#else
-      tSCC z_mismatch[] = "``%s'' mismatched:\n";
-
-      /*
-       *  Make sure we matched *all* subexpressions
-       */
-      if (rm[GTYPE_SE_CT].rm_so == -1)
-        {
-          int i;
-
-          fprintf (stderr, z_mismatch, pz_pat);
-
-          for (i=0; i <= GTYPE_SE_CT; i++)
-            {
-              if (rm[i].rm_so != -1)
-                {
-                  fprintf( stderr, "%4d:  ``", i );
-                  fwrite( text + rm[i].rm_so, rm[i].rm_eo - rm[i].rm_so,
-                          1, stderr );
-                  fputs( "''\n", stderr );
-                }
-              else
-                {
-                  fprintf( stderr, "%4d:  BROKEN\n", i );
-                }
-            }
-          exit (EXIT_BROKEN);
-        }
-
-      text = emit_gnu_type (text, rm);
-      if (text == NULL)
-        {
-          fprintf (stderr, z_mismatch, pz_pat);
-          exit (EXIT_BROKEN);
-        }
-#endif
     }
 
   /*

@@ -203,22 +203,3 @@ _FOR fix ",\n" =]
 
 /fix=]
 };
-
-#define GNU_TYPE_CT [=_eval type_map _count =]
-int gnu_type_map_ct = GNU_TYPE_CT;
-
-/*
- *  The following table depends upon XXX_TYPE being #define-d to the
- *  correct string via defines in a header file pointed to by the
- *  generated file "tm.h".
- */
-t_gnu_type_map gnu_type_map[ GNU_TYPE_CT ] = {[=
-
-_FOR type_map ,
-
-=]
-  { [=_EVAL type_map _len=], "[=type_map=]", "[=type_map _up=]", [=
-  type_map _up=]_TYPE }[=
-
-/type_map=]
-};
