@@ -1,3 +1,13 @@
+2005-03-21  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* c-common.c (lvalue_or_else): Replace by lvalue_error; only give
+	diagnostic without checking whether an lvalue.
+	* c-common.h (lvalue_p): Remove.
+	(enum lvalue_use): Update comment.
+	(lvalue_or_else): Replace by lvalue_error.
+	* c-typeck.c (lvalue_p): Make static.
+	(lvalue_or_else): New.  Call lvalue_error.
+
 2005-03-21  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (rs6000_parm_start): New function.

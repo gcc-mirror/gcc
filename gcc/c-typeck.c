@@ -100,6 +100,8 @@ static void set_nonincremental_init (void);
 static void set_nonincremental_init_from_string (tree);
 static tree find_init_member (tree);
 static void readonly_error (tree, enum lvalue_use);
+static int lvalue_or_else (tree, enum lvalue_use);
+static int lvalue_p (tree);
 static void record_maybe_used_decl (tree);
 
 /* Do `exp = require_complete_type (exp);' to make sure exp
@@ -2742,7 +2744,7 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
    Lvalues can be assigned, unless their type has TYPE_READONLY.
    Lvalues can have their address taken, unless they have C_DECL_REGISTER.  */
 
-int
+static int
 lvalue_p (tree ref)
 {
   enum tree_code code = TREE_CODE (ref);
@@ -2806,6 +2808,22 @@ readonly_error (tree arg, enum lvalue_use use)
     error (READONLY_MSG (N_("assignment of read-only location"),
 			 N_("increment of read-only location"),
 			 N_("decrement of read-only location")));
+}
+
+
+/* Return nonzero if REF is an lvalue valid for this language;
+   otherwise, print an error message and return zero.  USE says
+   how the lvalue is being used and so selects the error message.  */
+
+static int
+lvalue_or_else (tree ref, enum lvalue_use use)
+{
+  int win = lvalue_p (ref);
+
+  if (!win)
+    lvalue_error (use);
+
+  return win;
 }
 
 /* Mark EXP saying that we need to be able to take the
