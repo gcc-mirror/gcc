@@ -1,3 +1,7 @@
+Wed Feb 18 08:44:25 1998 Bernd Schmidt <crux@ohara.Informatik.RWTH-Aachen.DE>
+
+	* Makefile.in (STAGESTUFF): Add genrtl.c, genrtl.h and gengenrtl.
+
 Tue Feb 17 23:30:20 1998 Bernd Schmidt <crux@ohara.Informatik.RWTH-Aachen.DE>
 
 	* c-common.c (c_expand_start_cond, c_expand_end_cond,
