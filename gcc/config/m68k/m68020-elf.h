@@ -39,4 +39,15 @@ Boston, MA 02111-1307, USA.  */
 
 #define LIB_SPEC "-lc"
 
+/* ??? Quick hack to get constructors working.  Make this look more like a
+   COFF target, so the existing dejagnu/libgloss support works.  A better
+   solution would be to make the necessary dejagnu and libgloss changes so
+   that we can use normal the ELF constructor mechanism.  */
+#undef INIT_SECTION_ASM_OP
+#undef FINI_SECTION_ASM_OP
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC ""
+#undef ENDFILE_SPEC
+#define ENDFILE_SPEC ""
+
 /* end of m68020-elf.h */

@@ -1,5 +1,8 @@
 Wed Mar  3 19:09:11 1999  Jim Wilson  <wilson@cygnus.com>
 
+	* m68k/m68020-elf.h (INIT_SECTION_ASM_OP, FINI_SECTION_ASM_OP): Undef.
+	(STARTFILE_SPEC, ENDFILE_SPEC): Define to empty string.
+
 	* sparc/elf.h (MULDI3_LIBCALL, DIVDI3_LIBCALL, UDIVDI3_LIBCALL,
 	MODDI3_LIBCALL, UMODDI3_LIBCALL, STDC_0_IN_SYSTEM_HEADERS): Undef.
 	(INIT_SUBTARGET_OPTABS): Define to empty.	
