@@ -986,11 +986,6 @@ yylex ()
       value = ENDFILE;
       break;
 
-    case '$':
-      if (dollars_in_ident)
-	goto letter;
-      return '$';
-
     case 'L':
       /* Capital L may start a wide-string or wide-character constant.  */
       {
@@ -1041,6 +1036,7 @@ yylex ()
     case 'u':  case 'v':  case 'w':  case 'x':  case 'y':
     case 'z':
     case '_':
+    case '$':
     letter:
       p = token_buffer;
       while (isalnum (c) || c == '_' || c == '$' || c == '@')
@@ -1048,8 +1044,13 @@ yylex ()
 	  /* Make sure this char really belongs in an identifier.  */
 	  if (c == '@' && ! doing_objc_thang)
 	    break;
-	  if (c == '$' && ! dollars_in_ident)
-	    break;
+	  if (c == '$')
+	    {
+	      if (! dollars_in_ident)
+		error ("`$' in identifier");
+	      else if (pedantic)
+		pedwarn ("`$' in identifier");
+	    }
 
 	  if (p >= token_buffer + maxtoken)
 	    p = extend_token_buffer (p);
@@ -1658,7 +1659,7 @@ yylex ()
 	ungetc (c, finput);
 	*p = 0;
 
-	if (isalnum (c) || c == '.' || c == '_'
+	if (isalnum (c) || c == '.' || c == '_' || c == '$'
 	    || (!flag_traditional && (c == '-' || c == '+')
 		&& (p[-1] == 'e' || p[-1] == 'E')))
 	  error ("missing white space after number `%s'", token_buffer);
