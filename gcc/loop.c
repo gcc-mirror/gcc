@@ -3301,6 +3301,12 @@ invariant_p (x)
       return VARRAY_INT (set_in_loop, REGNO (x)) == 0;
 
     case MEM:
+      /* Volatile memory references must be rejected.  Do this before
+	 checking for read-only items, so that volatile read-only items
+	 will be rejected also.  */
+      if (MEM_VOLATILE_P (x))
+	return 0;
+
       /* If we had a subroutine call, any location in memory could
 	 have been clobbered.  We used to test here for volatile and
 	 readonly, but true_dependence knows how to do that better
