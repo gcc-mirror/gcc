@@ -396,7 +396,8 @@ LSYM(Lml_x):
 	RET
 
 	@ Result is 0, but determine sign anyway.
-LSYM(Lml_z):	eor	r0, r0, r1
+LSYM(Lml_z):
+	eor	r0, r0, r1
 	bic	r0, r0, #0x7fffffff
 	RET
 
