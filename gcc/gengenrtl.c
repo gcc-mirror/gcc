@@ -49,7 +49,8 @@ struct rtx_definition defs[] =
 const char *formats[NUM_RTX_CODE];
 
 static const char *
-type_from_format (char c)
+type_from_format (c)
+     char c;
 {
   switch (c)
     {
@@ -70,7 +71,8 @@ type_from_format (char c)
 }
 
 static const char *
-accessor_from_format (char c)
+accessor_from_format (c)
+     char c;
 {
   switch (c)
     {
@@ -257,6 +259,23 @@ gencode (f)
   for (fmt = formats; *fmt; ++fmt)
     gendef (f, *fmt);
 }
+
+#if defined(USE_C_ALLOCA) && !defined(__GNUC__)
+char *
+xmalloc (nbytes)
+     int nbytes;
+{
+  char *tmp = (char *) malloc (nbytes);
+
+  if (!tmp)
+    {
+      fprintf (stderr, "can't allocate %d bytes (out of virtual memory)\n", nbytes);
+      exit (FATAL_EXIT_CODE);
+    }
+
+  return tmp;
+}
+#endif /* USE_C_ALLOCA && !__GNUC__ */
 
 int
 main(argc, argv)
