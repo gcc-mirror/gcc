@@ -1,3 +1,8 @@
+2004-06-07  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/14765
+	* gcc.dg/pr14765-1.c: New test.
+
 2004-06-07  Roger Sayle  <roger@eyesopen.com>
 
 	PR c/14649
