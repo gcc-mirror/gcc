@@ -1,3 +1,7 @@
+2001-06-13  Richard Henderson  <rth@redhat.com>
+
+	* ifcvt.c (dead_or_predicable): Fix return value last patch.
+
 2001-06-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* NEWS: Remove.
