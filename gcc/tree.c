@@ -2283,7 +2283,7 @@ size_in_bytes (type)
   if (t == 0)
     {
       incomplete_type_error (NULL_TREE, type);
-      return integer_zero_node;
+      return size_zero_node;
     }
 
   if (TREE_CODE (t) == INTEGER_CST)
