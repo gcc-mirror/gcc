@@ -5849,7 +5849,7 @@ fold (expr)
 	      && ! contains_placeholder_p (arg0))
 	    {
 	      tree arg = save_expr (arg0);
-	      return build (PLUS_EXPR, type, arg, arg);
+	      return fold (build (PLUS_EXPR, type, arg, arg));
 	    }
 
 	  if (flag_unsafe_math_optimizations)
@@ -5857,17 +5857,25 @@ fold (expr)
 	      enum built_in_function fcode0 = builtin_mathfn_code (arg0);
 	      enum built_in_function fcode1 = builtin_mathfn_code (arg1);
 
-	      /* Optimize sqrt(x)*sqrt(y) as sqrt(x*y).  */
+	      /* Optimizations of sqrt(...)*sqrt(...).  */
 	      if ((fcode0 == BUILT_IN_SQRT && fcode1 == BUILT_IN_SQRT)
 		  || (fcode0 == BUILT_IN_SQRTF && fcode1 == BUILT_IN_SQRTF)
 		  || (fcode0 == BUILT_IN_SQRTL && fcode1 == BUILT_IN_SQRTL))
 		{
-		  tree sqrtfn = TREE_OPERAND (TREE_OPERAND (arg0, 0), 0);
-		  tree arg = build (MULT_EXPR, type,
-				    TREE_VALUE (TREE_OPERAND (arg0, 1)),
-				    TREE_VALUE (TREE_OPERAND (arg1, 1)));
-		  tree arglist = build_tree_list (NULL_TREE, arg);
-		  return fold (build_function_call_expr (sqrtfn, arglist));
+		  tree sqrtfn, arg, arglist;
+		  tree arg00 = TREE_VALUE (TREE_OPERAND (arg0, 1));
+		  tree arg10 = TREE_VALUE (TREE_OPERAND (arg1, 1));
+
+		  /* Optimize sqrt(x)*sqrt(x) as x.  */
+		  if (operand_equal_p (arg00, arg10, 0)
+		      && ! HONOR_SNANS (TYPE_MODE (type)))
+		    return arg00;
+
+	          /* Optimize sqrt(x)*sqrt(y) as sqrt(x*y).  */
+		  sqrtfn = TREE_OPERAND (TREE_OPERAND (arg0, 0), 0);
+		  arg = fold (build (MULT_EXPR, type, arg00, arg10));
+		  arglist = build_tree_list (NULL_TREE, arg);
+		  return build_function_call_expr (sqrtfn, arglist);
 		}
 
 	      /* Optimize exp(x)*exp(y) as exp(x+y).  */
@@ -5879,8 +5887,43 @@ fold (expr)
 		  tree arg = build (PLUS_EXPR, type,
 				    TREE_VALUE (TREE_OPERAND (arg0, 1)),
 				    TREE_VALUE (TREE_OPERAND (arg1, 1)));
-		  tree arglist = build_tree_list (NULL_TREE, arg);
-		  return fold (build_function_call_expr (expfn, arglist));
+		  tree arglist = build_tree_list (NULL_TREE, fold (arg));
+		  return build_function_call_expr (expfn, arglist);
+		}
+
+	      /* Optimizations of pow(...)*pow(...).  */
+	      if ((fcode0 == BUILT_IN_POW && fcode1 == BUILT_IN_POW)
+		  || (fcode0 == BUILT_IN_POWF && fcode1 == BUILT_IN_POWF)
+		  || (fcode0 == BUILT_IN_POWL && fcode1 == BUILT_IN_POWL))
+		{
+		  tree arg00 = TREE_VALUE (TREE_OPERAND (arg0, 1));
+		  tree arg01 = TREE_VALUE (TREE_CHAIN (TREE_OPERAND (arg0,
+								     1)));
+		  tree arg10 = TREE_VALUE (TREE_OPERAND (arg1, 1));
+		  tree arg11 = TREE_VALUE (TREE_CHAIN (TREE_OPERAND (arg1,
+								     1)));
+
+		  /* Optimize pow(x,y)*pow(z,y) as pow(x*z,y).  */
+		  if (operand_equal_p (arg01, arg11, 0))
+		    {
+		      tree powfn = TREE_OPERAND (TREE_OPERAND (arg0, 0), 0);
+		      tree arg = build (MULT_EXPR, type, arg00, arg10);
+		      tree arglist = tree_cons (NULL_TREE, fold (arg),
+						build_tree_list (NULL_TREE,
+								 arg01));
+		      return build_function_call_expr (powfn, arglist);
+		    }
+
+		  /* Optimize pow(x,y)*pow(x,z) as pow(x,y+z).  */
+		  if (operand_equal_p (arg00, arg10, 0))
+		    {
+		      tree powfn = TREE_OPERAND (TREE_OPERAND (arg0, 0), 0);
+		      tree arg = fold (build (PLUS_EXPR, type, arg01, arg11));
+		      tree arglist = tree_cons (NULL_TREE, arg00,
+						build_tree_list (NULL_TREE,
+								 arg));
+		      return build_function_call_expr (powfn, arglist);
+		    }
 		}
 	    }
 	}
@@ -6052,10 +6095,10 @@ fold (expr)
 	 		      TREE_OPERAND (arg1, 1)));
 	}
 
-      /* Optimize x/exp(y) into x*exp(-y).  */
       if (flag_unsafe_math_optimizations)
 	{
 	  enum built_in_function fcode = builtin_mathfn_code (arg1);
+	  /* Optimize x/exp(y) into x*exp(-y).  */
 	  if (fcode == BUILT_IN_EXP
 	      || fcode == BUILT_IN_EXPF
 	      || fcode == BUILT_IN_EXPL)
@@ -6063,8 +6106,23 @@ fold (expr)
 	      tree expfn = TREE_OPERAND (TREE_OPERAND (arg1, 0), 0);
 	      tree arg = build1 (NEGATE_EXPR, type,
 				 TREE_VALUE (TREE_OPERAND (arg1, 1)));
-	      tree arglist = build_tree_list (NULL_TREE, arg);
+	      tree arglist = build_tree_list (NULL_TREE, fold (arg));
 	      arg1 = build_function_call_expr (expfn, arglist);
+	      return fold (build (MULT_EXPR, type, arg0, arg1));
+	    }
+
+	  /* Optimize x/pow(y,z) into x*pow(y,-z).  */
+	  if (fcode == BUILT_IN_POW
+	      || fcode == BUILT_IN_POWF
+	      || fcode == BUILT_IN_POWL)
+	    {
+	      tree powfn = TREE_OPERAND (TREE_OPERAND (arg1, 0), 0);
+	      tree arg10 = TREE_VALUE (TREE_OPERAND (arg1, 1));
+	      tree arg11 = TREE_VALUE (TREE_CHAIN (TREE_OPERAND (arg1, 1)));
+	      tree neg11 = fold (build1 (NEGATE_EXPR, type, arg11));
+	      tree arglist = tree_cons(NULL_TREE, arg10,
+				       build_tree_list (NULL_TREE, neg11));
+	      arg1 = build_function_call_expr (powfn, arglist);
 	      return fold (build (MULT_EXPR, type, arg0, arg1));
 	    }
 	}

@@ -1,5 +1,11 @@
 2003-04-08  Roger Sayle  <roger@eyesopen.com>
 
+	* fold-const.c (fold):  Use "fold" following build in more places.
+	Optimize sqrt(x)*sqrt(x) as x, pow(x,y)*pow(z,y) as pow(x*z,y),
+	pow(x,y)*pow(x,z) as pow(x,y+z) and x/pow(y,z) as x*pow(y,-z).
+
+2003-04-08  Roger Sayle  <roger@eyesopen.com>
+
 	* builtins.c (fold_builtin):  Constant fold expressions as x*0.5
 	instead of x/2.0.  Optimize sqrt(pow(x,y)) as pow(x,y*0.5),
 	log(pow(x,y)) as y*log(x), pow(exp(x),y) as exp(x*y),
