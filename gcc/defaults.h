@@ -296,5 +296,13 @@ do {								\
 #define BUILD_VA_LIST_TYPE(X) ((X) = ptr_type_node)
 #endif
 
+/* By default, the preprocessor should be invoked the same way in C++
+   as in C.  */
+#ifndef CPLUSPLUS_CPP_SPEC
+#ifdef CPP_SPEC
+#define CPLUSPLUS_CPP_SPEC CPP_SPEC
+#endif
+#endif
+
 #endif  /* GCC_DEFAULTS_H */
 

@@ -698,6 +698,10 @@ struct compiler
 				   whose names end in this suffix.  */
 
   const char *spec;		/* To use this compiler, run this spec.  */
+
+  const char *cpp_spec;         /* If non-NULL, substitute this spec
+				   for `%C', rather than the usual
+				   cpp_spec.  */
 };
 
 /* Pointer to a vector of `struct compiler' that gives the spec for
@@ -3870,6 +3874,9 @@ static int suffixed_basename_length;
 static const char *input_basename;
 static const char *input_suffix;
 
+/* The compiler used to process the current input file.  */
+static struct compiler *input_file_compiler;
+
 /* These are variables used within do_spec and do_spec_1.  */
 
 /* Nonzero if an arg has been started and not yet terminated
@@ -4441,9 +4448,15 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	    break;
 
 	  case 'C':
-	    value = do_spec_1 (cpp_spec, 0, NULL_PTR);
-	    if (value != 0)
-	      return value;
+	    {
+	      const char* spec 
+		= (input_file_compiler->cpp_spec 
+		   ? input_file_compiler->cpp_spec 
+		   : cpp_spec);
+	      value = do_spec_1 (spec, 0, NULL_PTR);
+	      if (value != 0)
+		return value;
+	    }
 	    break;
 
 	  case 'E':
@@ -5795,7 +5808,6 @@ main (argc, argv)
 
   for (i = 0; (int) i < n_infiles; i++)
     {
-      register struct compiler *cp = 0;
       int this_file_error = 0;
 
       /* Tell do_spec what to substitute for %i.  */
@@ -5809,17 +5821,18 @@ main (argc, argv)
 
       /* Figure out which compiler from the file's suffix.  */
 
-      cp = lookup_compiler (infiles[i].name, input_filename_length,
-			    infiles[i].language);
-
-      if (cp)
+      input_file_compiler
+	= lookup_compiler (infiles[i].name, input_filename_length,
+			   infiles[i].language);
+      
+      if (input_file_compiler)
 	{
 	  /* Ok, we found an applicable compiler.  Run its spec.  */
 
-	  if (cp->spec[0] == '#')
+	  if (input_file_compiler->spec[0] == '#')
 	    error ("%s: %s compiler not installed on this system",
-		   input_filename, &cp->spec[1]);
-	  value = do_spec (cp->spec);
+		   input_filename, &input_file_compiler->spec[1]);
+	  value = do_spec (input_file_compiler->spec);
 	  if (value < 0)
 	    this_file_error = 1;
 	}

@@ -1,3 +1,13 @@
+2001-02-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* defaults.h (CPLUSPLUS_CPP_SPEC): New macro.
+	* gcc.c (struct compiler): Add cpp_spec field.
+	(input_file_compiler): New variable.
+	(do_spec_1): Allow a particular compiler to handle `%C' 
+	specially.
+	(main): Store the current compiler in input_file_compiler.
+	* tm.texi (CPLUSPLUS_CPP_SPEC): Document.
+	
 2001-02-07  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* cpphash.h (struct spec_nodes): Add n_true and n_false.
