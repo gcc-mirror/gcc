@@ -62,7 +62,7 @@ CXX_EXTRA_HEADERS = $(srcdir)/cp/inc/typeinfo $(srcdir)/cp/inc/exception \
 
 # Extra code to include in libgcc2.
 CXX_LIB2FUNCS = tinfo.o tinfo2.o new.o opnew.o opnewnt.o opvnew.o opvnewnt.o \
-	opdel.o opdelnt.o opvdel.o opvdelnt.o exception.o
+	opdel.o opdelnt.o opvdel.o opvdelnt.o exception.o vec.o
 CXX_LIB2SRCS = $(srcdir)/cp/new.cc $(srcdir)/cp/new1.cc $(srcdir)/cp/new2.cc \
 	$(srcdir)/cp/exception.cc $(srcdir)/cp/tinfo.cc \
 	$(srcdir)/cp/tinfo2.cc $(srcdir)/cp/tinfo.h
@@ -173,6 +173,9 @@ opvdel.o: cc1plus$(exeext) $(srcdir)/cp/new2.cc
 opvdelnt.o: cc1plus$(exeext) $(srcdir)/cp/new2.cc
 	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(GXX_ABI_FLAG) $(CXXFLAGS) $(INCLUDES) \
 	  -c $(srcdir)/cp/new2.cc -DL_op_vdelnt -o opvdelnt.o
+vec.o: cc1plus$(exeext) $(srcdir)/cp/vec.cc
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(GXX_ABI_FLAG) $(CXXFLAGS) $(INCLUDES) \
+	  -c $(srcdir)/cp/vec.cc -o vec.o
 
 # We want to update cplib2.txt if any of the source files change...
 cplib2.txt: $(CXX_LIB2SRCS) $(CXX_EXTRA_HEADERS) cplib2.ready

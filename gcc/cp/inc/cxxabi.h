@@ -385,7 +385,33 @@ void *__dynamic_cast (const void *src_ptr,    /* object started from */
        -2: src_type is not a public base of dst_type
        -3: src_type is a multiple public non-virtual base of dst_type */
 
+/* array ctor/dtor routines */
 
+/* allocate and construct array */
+void *__cxa_vec_new (size_t __element_count,
+                     size_t __element_size,
+                     size_t __padding_size,
+                     void (*__constructor) (void *),
+                     void (*__destructor) (void *));
+
+/* construct array */
+void __cxa_vec_ctor (void *__array_address,
+                     size_t __element_count,
+                     size_t __element_size,
+                     void (*__constructor) (void *),
+                     void (*__destructor) (void *));
+
+/* destruct array */
+void __cxa_vec_dtor (void *__array_address,
+                     size_t __element_count,
+                     size_t __element_size,
+                     void (*__destructor) (void *));
+
+/* destruct and release array */
+void __cxa_vec_delete (void *__array_address,
+                       size_t __element_size,
+                       size_t __padding_size,
+                       void (*__destructor) (void *));
 
 } /* namespace __cxxabiv1 */
 
