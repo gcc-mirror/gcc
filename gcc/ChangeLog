@@ -1,3 +1,8 @@
+2005-01-08  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/i386/i386.md (addhi_4): Correct reference in comment.
+	(addqi_4): Same.
+
 2005-01-08  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/emmintrin.h (_mm_cvtsi128_si32): Move earlier.
