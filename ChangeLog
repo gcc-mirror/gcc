@@ -1,3 +1,7 @@
+Tue Mar  7 21:48:55 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* config.guess: Fix detection of ReliantUNIX.
+
 Sun Oct 24 23:54:10 PDT 1999 Jeff Law  (law@cygnus.com)
 
 	* gcc-2.95.2 Released.

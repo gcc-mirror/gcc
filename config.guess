@@ -828,6 +828,9 @@ EOF
     RM*:SINIX-*:*:*)
 	echo mips-sni-sysv4
 	exit 0 ;;
+    RM*:ReliantUNIX-*:*:*)
+	echo mips-sni-sysv4
+	exit 0 ;;
     *:SINIX-*:*:*)
 	if uname -p 2>/dev/null >/dev/null ; then
 		UNAME_MACHINE=`(uname -p) 2>/dev/null`
