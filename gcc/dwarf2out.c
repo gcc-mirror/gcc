@@ -2622,10 +2622,6 @@ output_loc_operands (loc)
   switch (loc->dw_loc_opc)
     {
 #ifdef DWARF2_DEBUGGING_INFO
-      /* We currently don't make any attempt to make sure these are
-         aligned properly like we do for the main unwind info, so
-         don't support emitting things larger than a byte if we're
-         only doing unwinding.  */
     case DW_OP_addr:
       ASM_OUTPUT_DWARF_ADDR_CONST (asm_out_file, val1->v.val_addr);
       fputc ('\n', asm_out_file);
@@ -2650,6 +2646,21 @@ output_loc_operands (loc)
       ASM_OUTPUT_DWARF_DATA2 (asm_out_file, val1->v.val_int);
       fputc ('\n', asm_out_file);
       break;
+#else
+    case DW_OP_addr:
+    case DW_OP_const2u:
+    case DW_OP_const2s:
+    case DW_OP_const4u:
+    case DW_OP_const4s:
+    case DW_OP_const8u:
+    case DW_OP_const8s:
+    case DW_OP_skip:
+    case DW_OP_bra:
+      /* We currently don't make any attempt to make sure these are
+         aligned properly like we do for the main unwind info, so
+         don't support emitting things larger than a byte if we're
+         only doing unwinding.  */
+      abort ();
 #endif
     case DW_OP_const1u:
     case DW_OP_const1s:
@@ -2731,7 +2742,8 @@ output_loc_operands (loc)
       fputc ('\n', asm_out_file);
       break;
     default:
-      abort ();
+      /* Other codes have no operands.  */
+      break;
     }
 }
 
