@@ -301,50 +301,47 @@ open_file_pch (cpp_reader *pfile, const char *filename)
     {
       size_t namelen = strlen (filename);
       char *pchname = alloca (namelen + 5);
-      struct include_file * file;
-      splay_tree_node nd;
+      struct include_file *file = NULL;
+      struct stat st;
       
       memcpy (pchname, filename, namelen);
       memcpy (pchname + namelen, ".gch", 5);
+      cpp_simplify_path (pchname);
 
-      nd = find_or_create_entry (pfile, pchname);
-      file = (struct include_file *) nd->value;
-
-      if (file != NULL)
+      if (stat (pchname, &st) == 0 && S_ISDIR (st.st_mode))
 	{
-	  if (stat (file->name, &file->st) == 0 && S_ISDIR (file->st.st_mode))
-	    {
-	      DIR * thedir;
-	      struct dirent *d;
-	      size_t subname_len = namelen + 64;
-	      char *subname = xmalloc (subname_len);
+	  DIR * thedir;
+	  struct dirent *d;
+	  size_t subname_len = namelen + 64;
+	  char *subname = xmalloc (subname_len);
 	      
-	      thedir = opendir (pchname);
-	      if (thedir == NULL)
-		return NULL;
-	      memcpy (subname, pchname, namelen + 4);
-	      subname[namelen+4] = '/';
-	      while ((d = readdir (thedir)) != NULL)
+	  thedir = opendir (pchname);
+	  if (thedir == NULL)
+	    return NULL;
+	  memcpy (subname, pchname, namelen + 4);
+	  subname[namelen+4] = '/';
+	  while ((d = readdir (thedir)) != NULL)
+	    {
+	      if (strlen (d->d_name) + namelen + 7 > subname_len)
 		{
-		  if (strlen (d->d_name) + namelen + 7 > subname_len)
-		    {
-		      subname_len = strlen (d->d_name) + namelen + 64;
-		      subname = xrealloc (subname, subname_len);
-		    }
-		  strcpy (subname + namelen + 5, d->d_name);
-		  file = validate_pch (pfile, filename, subname);
-		  if (file)
-		    break;
+		  subname_len = strlen (d->d_name) + namelen + 64;
+		  subname = xrealloc (subname, subname_len);
 		}
-	      closedir (thedir);
-	      free (subname);
+	      strcpy (subname + namelen + 5, d->d_name);
+	      file = validate_pch (pfile, filename, subname);
+	      if (file)
+		break;
 	    }
-	  else
-	    file = validate_pch (pfile, filename, pchname);
-	  if (file)
-	    return file;
+	  closedir (thedir);
+	  free (subname);
 	}
+      else
+	file = validate_pch (pfile, filename, pchname);
+
+      if (file)
+	return file;
     }
+
   return open_file (pfile, filename);
 }
 
