@@ -1,5 +1,8 @@
 2001-03-27  Richard Henderson  <rth@redhat.com>
 
+	* function.h (struct function): Move all boolean valued fields
+	to single bit fields at the end of the struct.
+
 	* bb-reorder.c, dwarf2out.c, except.c, except.h, flow.c,
 	jump.c, toplev.c:
 	Rename asynchronous_exceptions to flag_non_call_exceptions.

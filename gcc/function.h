@@ -191,6 +191,7 @@ struct function
 
   /* Name of this function.  */
   const char *name;
+
   /* Points to the FUNCTION_DECL of this function. */
   tree decl;
 
@@ -198,50 +199,6 @@ struct function
      Zero if no bytes are to be popped.
      May affect compilation of return insn or of function epilogue.  */
   int pops_args;
-
-  /* Nonzero if function being compiled needs to be given an address
-     where the value should be stored.  */
-  int returns_struct;
-
-  /* Nonzero if function being compiled needs to
-     return the address of where it has put a structure value.  */
-  int returns_pcc_struct;
-  
-  /* Nonzero if the current function returns a pointer type.  */
-  int returns_pointer;
-
-  /* Nonzero if function being compiled needs to be passed a static chain.  */
-  int needs_context;
-
-  /* Nonzero if function being compiled can call setjmp.  */
-  int calls_setjmp;
-
-  /* Nonzero if function being compiled can call longjmp.  */
-  int calls_longjmp;
-  
-  /* Nonzero if function being compiled can call alloca,
-     either as a subroutine or builtin.  */
-  int calls_alloca;
-
-  /* Nonzero if function being compiled receives nonlocal gotos
-     from nested functions.  */
-
-  int has_nonlocal_label;
-
-  /* Nonzero if function being compiled has nonlocal gotos to parent
-     function.  */
-  int has_nonlocal_goto;
-
-  /* Nonzero if function being compiled contains nested functions.  */
-  int contains_functions;
-
-  /* Nonzero if the function being compiled issues a computed jump.  */
-  int has_computed_jump;
-
-  /* Nonzero if the current function is a thunk (a lightweight function that
-     just adjusts one of its arguments and forwards to another function), so
-     we should try to cut corners where we can.  */
-  int is_thunk;
 
   /* If function's args have a fixed size, this is that size, in bytes.
      Otherwise, it is -1.
@@ -261,14 +218,6 @@ struct function
      anonymous arg can be found, if there is one.  */
   rtx arg_offset_rtx;
 
-  /* Nonzero if current function uses varargs.h or equivalent.
-     Zero for functions that use stdarg.h.  */
-  int varargs;
-
-  /* Nonzero if current function uses stdarg.h or equivalent.
-     Zero for functions that use varargs.h.  */
-  int stdarg;
-
   /* Quantities of various kinds of registers
      used for the current function's args.  */
   CUMULATIVE_ARGS args_info;
@@ -286,34 +235,8 @@ struct function
      inline.  */
   const char *cannot_inline;
 
-  /* Nonzero if instrumentation calls for function entry and exit should be
-     generated.  */
-  int instrument_entry_exit;
-
-  /* Nonzero if memory access checking be enabled in the current function.  */
-  int check_memory_usage;
-
-  /* Nonzero if stack limit checking should be enabled in the current
-     function.  */
-  int limit_stack;
-
   /* Number of function calls seen so far in current function.  */
   int x_function_call_count;
-
-  /* Nonzero if this function is being processed in function-at-a-time
-     mode.  In other words, if all tree structure for this function,
-     including the BLOCK tree, is created before RTL generation
-     commences.  */
-  int x_whole_function_mode_p;
-
-  /* Nonzero if the back-end should not keep track of expressions that
-     determine the size of variable-sized objects.  Normally, such
-     expressions are saved away, and then expanded when the next
-     function is started.  For example, if a parameter has a
-     variable-sized type, then the size of the parameter is computed
-     when the function body is entered.  However, some front-ends do
-     not desire this behavior.  */
-  int x_dont_save_pending_sizes_p;
 
   /* List (chain of TREE_LIST) of LABEL_DECLs for all nonlocal labels
      (labels to which there can be nonlocal gotos from nested functions)
@@ -442,13 +365,8 @@ struct function
   /* Highest label number in current function.  */
   int inl_max_label_num;
 
-  /* Nonzero if the current function uses the constant pool.  */
-  int uses_const_pool;
-
   /* For md files.  */
 
-  /* Nonzero if the current function uses pic_offset_table_rtx.  */
-  int uses_pic_offset_table;
   /* tm.h can use this to store whatever it likes.  */
   struct machine_function *machine;
   /* The largest alignment of slot allocated on the stack.  */
@@ -464,6 +382,94 @@ struct function
   /* If some insns can be deferred to the delay slots of the epilogue, the
      delay list for them is recorded here.  */
   rtx epilogue_delay_list;
+
+  /* Collected bit flags.  */
+
+  /* Nonzero if function being compiled needs to be given an address
+     where the value should be stored.  */
+  unsigned int returns_struct : 1;
+
+  /* Nonzero if function being compiled needs to
+     return the address of where it has put a structure value.  */
+  unsigned int returns_pcc_struct : 1;
+  
+  /* Nonzero if the current function returns a pointer type.  */
+  unsigned int returns_pointer : 1;
+
+  /* Nonzero if function being compiled needs to be passed a static chain.  */
+  unsigned int needs_context : 1;
+
+  /* Nonzero if function being compiled can call setjmp.  */
+  unsigned int calls_setjmp : 1;
+
+  /* Nonzero if function being compiled can call longjmp.  */
+  unsigned int calls_longjmp : 1;
+  
+  /* Nonzero if function being compiled can call alloca,
+     either as a subroutine or builtin.  */
+  unsigned int calls_alloca : 1;
+
+  /* Nonzero if function being compiled receives nonlocal gotos
+     from nested functions.  */
+  unsigned int has_nonlocal_label : 1;
+
+  /* Nonzero if function being compiled has nonlocal gotos to parent
+     function.  */
+  unsigned int has_nonlocal_goto : 1;
+
+  /* Nonzero if function being compiled contains nested functions.  */
+  unsigned int contains_functions : 1;
+
+  /* Nonzero if the function being compiled issues a computed jump.  */
+  unsigned int has_computed_jump : 1;
+
+  /* Nonzero if the current function is a thunk (a lightweight function that
+     just adjusts one of its arguments and forwards to another function), so
+     we should try to cut corners where we can.  */
+  unsigned int is_thunk : 1;
+
+  /* Nonzero if instrumentation calls for function entry and exit should be
+     generated.  */
+  unsigned int instrument_entry_exit : 1;
+
+  /* Nonzero if memory access checking be enabled in the current function.  */
+  unsigned int check_memory_usage : 1;
+
+  /* Nonzero if stack limit checking should be enabled in the current
+     function.  */
+  unsigned int limit_stack : 1;
+
+  /* Nonzero if current function uses varargs.h or equivalent.
+     Zero for functions that use stdarg.h.  */
+  unsigned int varargs : 1;
+
+  /* Nonzero if current function uses stdarg.h or equivalent.
+     Zero for functions that use varargs.h.  */
+  unsigned int stdarg : 1;
+
+  /* Nonzero if this function is being processed in function-at-a-time
+     mode.  In other words, if all tree structure for this function,
+     including the BLOCK tree, is created before RTL generation
+     commences.  */
+  unsigned int x_whole_function_mode_p : 1;
+
+  /* Nonzero if the back-end should not keep track of expressions that
+     determine the size of variable-sized objects.  Normally, such
+     expressions are saved away, and then expanded when the next
+     function is started.  For example, if a parameter has a
+     variable-sized type, then the size of the parameter is computed
+     when the function body is entered.  However, some front-ends do
+     not desire this behavior.  */
+  unsigned int x_dont_save_pending_sizes_p : 1;
+
+  /* Nonzero if the current function uses the constant pool.  */
+  unsigned int uses_const_pool : 1;
+
+  /* Nonzero if the current function uses pic_offset_table_rtx.  */
+  unsigned int uses_pic_offset_table : 1;
+
+  /* Nonzero if the current function needs an lsda for exception handling.  */
+  unsigned int uses_eh_lsda : 1;
 };
 
 /* The function currently being compiled.  */
