@@ -119,6 +119,7 @@ static int rs6000_sr_alias_set;
 static void rs6000_add_gc_roots PARAMS ((void));
 static int num_insns_constant_wide PARAMS ((HOST_WIDE_INT));
 static rtx expand_block_move_mem PARAMS ((enum machine_mode, rtx, rtx));
+static void rs6000_maybe_dead PARAMS ((rtx));
 static void rs6000_emit_stack_tie PARAMS ((void));
 static void rs6000_frame_related PARAMS ((rtx, rtx, HOST_WIDE_INT, rtx, rtx));
 static void rs6000_emit_allocate_stack PARAMS ((HOST_WIDE_INT, int));

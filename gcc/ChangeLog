@@ -1,3 +1,7 @@
+2000-08-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* rs6000.c (rs6000_maybe_dead): Prototype.
+
 2000-08-06  Richard Henderson  <rth@cygnus.com>
 
 	* stmt.c (expand_goto): Do virtual_stack_vars_rtx replacement for
