@@ -84,11 +84,11 @@ fi
 # the repository, then check out the release branch, then retag the release
 # branch.
 if test $dotag = yes; then
-  rm -rf egcs
-  cvs -Q rtag -d $release_tag egcs
-  cvs -Q co -r $release_branch egcs
+  rm -rf gcc
+  cvs -Q rtag -d $release_tag gcc
+  cvs -Q co -r $release_branch gcc
   cvs -Q tag -f $release_tag
-  rm -rf egcs
+  rm -rf gcc
 fi
 
 # Get a copy of the previous release.  Get it from the ftp dir to avoid minor
@@ -101,23 +101,23 @@ else
   zcat ~ftp/pub/gcc/releases/$last_release_name/$last_release_name.tar.gz | tar xf -
 fi
 
-# Files/directories which are not part of the egcs-core module.
+# Files/directories which are not part of the gcc-core module.
 noncore_files="gcc/cp libio libstdc++ gcc/f libf2c gcc/objc libobjc gcc/ch libchill gcc/java libjava gcc/testsuite"
 
-# Get the egcs core.  Note that the egcs-core module doesn't work yet, so
+# Get the gcc core.  Note that the gcc-core module doesn't work yet, so
 # we get the whole directory, then prune the things we do not want.
 #
 # Also, get the latest copy of the installation instructions and the
 # faq in html, build plaintext versions of those documents.
-cvs -Q export -ko -r$release_tag egcs
-cd egcs
+cvs -Q export -ko -r$release_tag gcc
+cd gcc
 contrib/gcc_update --touch
 cp ${GCCBASE}/gcc.pot gcc/po
 cd ..
 cvs -Q export -ko -Dnow wwwdocs/htdocs/install
 cvs -Q export -ko -Dnow wwwdocs/htdocs/faq.html
 #cvs -Q export -ko -Dnow wwwdocs/htdocs/bugs.html
-mv egcs $release_name
+mv gcc $release_name
 release_docs $release_name $$
 
 # Build a list of files in this release.
@@ -163,15 +163,15 @@ else
   zcat ~ftp/pub/gcc/releases/$last_release_name/$last_release_name.tar.gz | tar xf -
 fi
 
-cvs -Q export -ko -r$release_tag egcs
-cd egcs
+cvs -Q export -ko -r$release_tag gcc
+cd gcc
 contrib/gcc_update --touch
 cp ${GCCBASE}/gcc.pot gcc/po
 cd ..
 cvs -Q export -ko -Dnow wwwdocs/htdocs/install
 cvs -Q export -ko -Dnow wwwdocs/htdocs/faq.html
 #cvs -Q export -ko -Dnow wwwdocs/htdocs/bugs.html
-mv egcs $release_name
+mv gcc $release_name
 find $release_name/gcc/testsuite -type f -print | xargs rm -f
 release_docs $release_name $$
 
