@@ -11980,16 +11980,17 @@ grok_op_properties (decl, virtualp, friendp)
       if (IDENTIFIER_TYPENAME_P (name) && ! DECL_TEMPLATE_INFO (decl))
 	{
 	  tree t = TREE_TYPE (name);
-	  if (TREE_CODE (t) == VOID_TYPE)
-	    pedwarn ("void is not a valid type conversion operator");
-	  else if (! friendp)
+	  if (! friendp)
 	    {
 	      int ref = (TREE_CODE (t) == REFERENCE_TYPE);
 	      const char *what = 0;
+	      
 	      if (ref)
 		t = TYPE_MAIN_VARIANT (TREE_TYPE (t));
 
-	      if (t == current_class_type)
+	      if (TREE_CODE (t) == VOID_TYPE)
+	        what = "void";
+	      else if (t == current_class_type)
 		what = "the same type";
 	      /* Don't force t to be complete here.  */
 	      else if (IS_AGGR_TYPE (t)
