@@ -583,7 +583,7 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
 (define_insn "fixuns_truncdfdi2"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(unsigned_fix:DI
-	 (unsigned_fix:DF (match_operand:DF 1 "register_operand" "r"))))]
+	 (fix:DF (match_operand:DF 1 "register_operand" "r"))))]
   ""
   ;; ROUND_OFF
   "FIXU %0,1,%1")
