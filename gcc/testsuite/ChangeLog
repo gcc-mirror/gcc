@@ -1,3 +1,9 @@
+2000-11-20  Donald Lindsay  <dlindsay@redhat.com>
+
+	* gcc.dg/20000614-2.c: Bug fix. This test expected an unitialized
+	local variable to be zero: I made the variable global. Now
+	uses abort() and exit() instead of relying on main's return value.
+
 2000-11-20  Neil Booth  <neilb@earthling.net>
 
         * gcc.dg/cpp/paste2.c: Update test.
