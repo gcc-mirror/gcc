@@ -32,7 +32,7 @@
 
 int main ();
 
-short s = (short) &main;
-char c = (char) &main;
+short s = (short) &main;	// WARNING - small integer
+char c = (char) &main;		// WARNING - small integer
 
 int main () { return 0; }
