@@ -1,3 +1,21 @@
+2002-11-20  Michael Koch <konqueror@gmx.de>
+
+	* java/io/FileInputStream.java
+	(getChannel): New method.
+	* java/io/FileOutputStream.java
+	(getChannel): New method.
+	* java/net/ServerSocket.java
+	(bind): Removed duplicate code and called another bind method instead.
+	* java/nio/channels/SelectionKey.java
+	(isValid): Removed wrong exception documentation.
+	* java/nio/channels/ServerSocketChannel.java
+	(accept): Added exception documentation.
+	(open): Fixed typo, added exception documentation.
+	* java/nio/channels/spi/AbstractSelectableChannel.java
+	(implCloseChannel): Added exception documentation.
+	(add): Reformated.
+	(register): Added exception documentation.
+
 2002-11-20  Andreas Jaeger  <aj@suse.de>
 
 	* configure: Regenerated with new libtool.m4.

@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999, 2001  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2001, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -7,6 +7,8 @@ Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
  
 package java.io;
+
+import java.nio.channels.FileChannel;
 
 /**
  * @author Warren Levy <warrenl@cygnus.com>
@@ -22,6 +24,8 @@ public class FileInputStream extends InputStream
 {
   /* Contains the file descriptor for referencing the actual file. */
   private FileDescriptor fd;
+
+  private FileChannel ch;
 
   public FileInputStream(String name) throws FileNotFoundException
   {
@@ -91,5 +95,10 @@ public class FileInputStream extends InputStream
     long startPos = fd.getFilePointer();
     long endPos = fd.seek(n, FileDescriptor.CUR, true);
     return endPos - startPos;
+  }
+
+  public FileChannel getChannel ()
+  {
+    return ch;
   }
 }
