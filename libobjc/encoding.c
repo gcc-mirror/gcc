@@ -54,6 +54,8 @@ Boston, MA 02111-1307, USA.  */
 #define QUAL_UNION_TYPE _C_UNION_B
 #define ARRAY_TYPE      _C_ARY_B
 
+#define REAL_TYPE       _C_DBL
+
 #define TYPE_FIELDS(TYPE)     objc_skip_typespec (TYPE)
 
 #define DECL_MODE(TYPE) *(TYPE)
