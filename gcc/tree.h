@@ -1,5 +1,5 @@
 /* Front-end tree definitions for GNU compiler.
-   Copyright (C) 1989, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1989, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1158,7 +1158,7 @@ struct tree_decl
      alignment.  */
   union {
     struct rtx_def *r;
-    int i;
+    HOST_WIDE_INT i;
   } saved_insns;
   union tree_node *vindex;
   /* Points to a structure whose details depend on the language in use.  */
