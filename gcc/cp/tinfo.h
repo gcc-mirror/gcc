@@ -79,6 +79,11 @@ struct __user_type_info : public std::type_info {
     return (access_path & (contained_mask | contained_virtual_mask))
            == contained_mask;
   }
+  static inline bool contained_virtual_p (sub_kind access_path)
+  {
+    return (access_path & (contained_mask | contained_virtual_mask))
+           == (contained_mask | contained_virtual_mask);
+  }
   
   struct upcast_result
   {

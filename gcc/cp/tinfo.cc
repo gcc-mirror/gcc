@@ -286,7 +286,8 @@ do_upcast (sub_kind access_path,
 	sub_access = sub_kind (sub_access | contained_virtual_mask);
       if (base_list[i].access != PUBLIC)
         sub_access = sub_kind (sub_access & ~contained_public_mask);
-      if (base_list[i].base->do_upcast (sub_access, target, p, result2))
+      if (base_list[i].base->do_upcast (sub_access, target, p, result2)
+          && !contained_virtual_p (result2.whole2target))
         return true; // must fail
       if (result2.base_type)
         {
@@ -321,6 +322,8 @@ do_upcast (sub_kind access_path,
                   result.whole2target = contained_ambig;
                   return true;
                 }
+              result.whole2target
+                  = sub_kind (result.whole2target | result2.whole2target);
             }
         }
     }
@@ -1095,8 +1098,10 @@ __do_upcast (const __class_type_info *dst, const void *obj_ptr,
                 }
               else
                 {
+                  if (!virtual_p (result.part2dst))
+                    return true; // cannot have another path
                   if (!(vmi_flags & diamond_shaped_mask))
-                    return true; // cannot have a more accessible base
+                    return true; // cannot have a more accessible path
                 }
             }
           else if (result.dst_ptr != result2.dst_ptr)
@@ -1125,6 +1130,8 @@ __do_upcast (const __class_type_info *dst, const void *obj_ptr,
                   result.part2dst = __contained_ambig;
                   return true;
                 }
+              result.part2dst
+                  = __sub_kind (result.part2dst | result2.part2dst);
             }
         }
     }

@@ -1,3 +1,13 @@
+2000-05-25  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* tinfo.h (__user_type_info::contained_virtual_p): New
+	predicate.
+	* tinfo.cc (__user_type_info::do_upcast): Fix bug with diamond
+	shaped heirarchy.
+	(__vmi_class_type_info::__do_upcast): Fix bug with NULL pointer to
+	diamond shaped heirarchy. Add early out for mixed diamond and
+	duplicate shaped heirarchy.
+
 2000-05-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (build_delete): Change prototype.
