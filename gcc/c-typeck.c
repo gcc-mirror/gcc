@@ -6168,6 +6168,10 @@ process_init_element (value)
 	      break;
 	    }
 
+	  /* In the case of [LO .. HI] = VALUE, only evaluate VALUE once. */
+	  if (constructor_range_end)
+	    value = save_expr (value);
+
 	  /* Now output the actual element.
 	     Ordinarily, output once.
 	     If there is a range, repeat it till we advance past the range.  */
