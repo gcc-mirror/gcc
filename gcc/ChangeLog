@@ -1,5 +1,9 @@
 2001-03-03  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+        * cpplex.c (parse_string): Unconditionally pedwarn.
+
+2001-03-03  Neil Booth  <neil@daikokuya.demon.co.uk>
+
         * cpp.texi: Update.
         * cppexp.c (parse_number): Update. 
         * cpplex.c (parse_string): Pedwarn if multiline string does not
