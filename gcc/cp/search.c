@@ -497,7 +497,13 @@ lookup_field_1 (tree type, tree name, bool want_type)
   return NULL_TREE;
 }
 
-/* There are a number of cases we need to be aware of here:
+/* Return the FUNCTION_DECL, RECORD_TYPE, UNION_TYPE, or
+   NAMESPACE_DECL corresponding to the innermost non-block scope.  */  
+
+tree
+current_scope ()
+{
+  /* There are a number of cases we need to be aware of here:
 			 current_class_type	current_function_decl
      global			NULL			NULL
      fn-local			NULL			SET
@@ -505,30 +511,26 @@ lookup_field_1 (tree type, tree name, bool want_type)
      class->fn			SET			SET
      fn->class			SET			SET
 
-   Those last two make life interesting.  If we're in a function which is
-   itself inside a class, we need decls to go into the fn's decls (our
-   second case below).  But if we're in a class and the class itself is
-   inside a function, we need decls to go into the decls for the class.  To
-   achieve this last goal, we must see if, when both current_class_ptr and
-   current_function_decl are set, the class was declared inside that
-   function.  If so, we know to put the decls into the class's scope.  */
-
-tree
-current_scope (void)
-{
-  if (current_function_decl == NULL_TREE)
+     Those last two make life interesting.  If we're in a function which is
+     itself inside a class, we need decls to go into the fn's decls (our
+     second case below).  But if we're in a class and the class itself is
+     inside a function, we need decls to go into the decls for the class.  To
+     achieve this last goal, we must see if, when both current_class_ptr and
+     current_function_decl are set, the class was declared inside that
+     function.  If so, we know to put the decls into the class's scope.  */
+  if (current_function_decl && current_class_type
+      && ((DECL_FUNCTION_MEMBER_P (current_function_decl)
+	   && same_type_p (DECL_CONTEXT (current_function_decl),
+			   current_class_type))
+	  || (DECL_FRIEND_CONTEXT (current_function_decl)
+	      && same_type_p (DECL_FRIEND_CONTEXT (current_function_decl),
+			      current_class_type))))
+    return current_function_decl;
+  if (current_class_type)
     return current_class_type;
-  if (current_class_type == NULL_TREE)
+  if (current_function_decl)
     return current_function_decl;
-  if ((DECL_FUNCTION_MEMBER_P (current_function_decl)
-       && same_type_p (DECL_CONTEXT (current_function_decl),
-		       current_class_type))
-      || (DECL_FRIEND_CONTEXT (current_function_decl)
-	  && same_type_p (DECL_FRIEND_CONTEXT (current_function_decl),
-			  current_class_type)))
-    return current_function_decl;
-
-  return current_class_type;
+  return current_namespace;
 }
 
 /* Returns nonzero if we are currently in a function scope.  Note
@@ -556,9 +558,8 @@ at_class_scope_p (void)
 bool
 at_namespace_scope_p (void)
 {
-  /* We are in a namespace scope if we are not it a class scope or a
-     function scope.  */
-  return !current_scope();
+  tree cs = current_scope ();
+  return cs && TREE_CODE (cs) == NAMESPACE_DECL;
 }
 
 /* Return the scope of DECL, as appropriate when doing name-lookup.  */
@@ -833,9 +834,13 @@ friend_accessible_p (tree scope, tree decl, tree binfo)
 static tree
 dfs_accessible_post (tree binfo, void *data ATTRIBUTE_UNUSED)
 {
-  if (BINFO_ACCESS (binfo) != ak_none
-      && is_friend (BINFO_TYPE (binfo), current_scope ()))
-    return binfo;
+  if (BINFO_ACCESS (binfo) != ak_none)
+    {
+      tree scope = current_scope ();
+      if (scope && TREE_CODE (scope) != NAMESPACE_DECL
+	  && is_friend (BINFO_TYPE (binfo), scope))
+	return binfo;
+    }
   
   return NULL_TREE;
 }
@@ -1700,9 +1705,17 @@ dfs_walk_once_accessible_r (tree binfo, bool friends_p, bool once,
       /* If the base is inherited via private or protected
      	 inheritance, then we can't see it, unless we are a friend of
      	 the current binfo.  */
-      if (BINFO_BASE_ACCESS (binfo, ix) != access_public_node
-	  && !(friends_p && is_friend (BINFO_TYPE (binfo), current_scope ())))
-	continue;
+      if (BINFO_BASE_ACCESS (binfo, ix) != access_public_node)
+	{
+	  tree scope;
+	  if (!friends_p)
+	    continue;
+	  scope = current_scope ();
+	  if (!scope 
+	      || TREE_CODE (scope) == NAMESPACE_DECL
+	      || !is_friend (BINFO_TYPE (binfo), scope))
+	    continue;
+	}
 
       if (mark)
 	BINFO_MARKED (base_binfo) = 1;
