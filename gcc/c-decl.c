@@ -437,6 +437,10 @@ int flag_no_nonansi_builtin;
 
 int flag_traditional;
 
+/* Nonzero means to allow single precision math even if we're generally
+   being traditional. */
+int flag_allow_single_precision = 0;
+
 /* Nonzero means to treat bitfields as signed unless they say `unsigned'.  */
 
 int flag_signed_bitfields = 1;
@@ -537,6 +541,8 @@ c_decode_option (p)
       dollars_in_ident = 1;
 #endif
     }
+  else if (!strcmp (p, "-fallow-single-precision"))
+    flag_allow_single_precision = 1;
   else if (!strcmp (p, "-fnotraditional") || !strcmp (p, "-fno-traditional"))
     {
       flag_traditional = 0;
