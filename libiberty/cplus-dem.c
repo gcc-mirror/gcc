@@ -234,6 +234,7 @@ typedef enum type_kind_t
 { 
   tk_none,
   tk_pointer,
+  tk_reference,
   tk_integral, 
   tk_bool,
   tk_char, 
@@ -1424,7 +1425,7 @@ demangle_template_value_parm (work, mangled, s, tk)
 	    }
 	}
     }
-  else if (tk == tk_pointer)
+  else if (tk == tk_pointer || tk == tk_reference)
     {
       int symbol_len = consume_count (mangled);
       if (symbol_len == 0)
@@ -1442,7 +1443,8 @@ demangle_template_value_parm (work, mangled, s, tk)
 	     or type-code information we have built up thus far; it is
 	     mangled independently.  */
 	  q = cplus_demangle (p, work->options);
-	  string_appendn (s, "&", 1);
+	  if (tk == tk_pointer)
+	    string_appendn (s, "&", 1);
 	  /* FIXME: Pointer-to-member constants should get a
 	            qualifying class name here.  */
 	  if (q)
@@ -2611,7 +2613,7 @@ do_type (work, mangled, result)
 	  (*mangled)++;
 	  string_prepend (&decl, "&");
 	  if (tk == tk_none)
-	    tk = tk_pointer;
+	    tk = tk_reference;
 	  break;
 
 	  /* An array */
