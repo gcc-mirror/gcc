@@ -474,7 +474,7 @@ namespace std
     void
     basic_string<_CharT, _Traits, _Alloc>::reserve(size_type __res)
     {
-      if (__res > this->capacity() || _M_rep()->_M_is_shared())
+      if (__res != this->capacity() || _M_rep()->_M_is_shared())
         {
 	  if (__res > this->max_size())
 	    __throw_length_error("basic_string::reserve");
