@@ -46,7 +46,7 @@ import java.io.RandomAccessFile;
 /**
  * @author Michael Koch (konqueror@gmx.de)
  */
-public class FileImageOutputStream
+public class FileImageOutputStream extends ImageOutputStreamImpl
 {
   private RandomAccessFile file;
   
@@ -86,5 +86,48 @@ public class FileImageOutputStream
       {
         return -1L;
       }
+  }
+
+  public int read()
+    throws IOException
+  {
+    checkClosed();
+    
+    setBitOffset(0);
+    return file.read();
+  }
+
+  public int read(byte[] data, int offset, int len)
+    throws IOException
+  {
+    checkClosed();
+    
+    setBitOffset(0);
+    return file.read(data, offset, len);
+  }
+
+  public void seek(long position)
+    throws IOException
+  {
+    super.seek(position);
+    file.seek(position);
+  }
+
+  public void write(byte[] data, int offset, int len)
+    throws IOException
+  {
+    checkClosed();
+    
+    flushBits();
+    file.write(data, offset, len);
+  }
+
+  public void write(int value)
+    throws IOException
+  {
+    checkClosed();
+    
+    // FIXME: Flush pending bits.
+    file.write(value);
   }
 }

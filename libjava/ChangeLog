@@ -1,3 +1,67 @@
+2005-02-06  Jerry Quinn  <jlquinn@optonline.net>
+
+	* javax/imageio/metadata/IIOMetadataNode.java:
+	Implemented.
+	* javax/imageio/metadata/IIOAttr.java,
+	javax/imageio/metadata/IIONamedNodeMap.java,
+	javax/imageio/metadata/IIONodeList.java:
+	New files
+
+2005-02-06  Graydon Hoare  <graydon@redhat.com>
+
+	* gnu/java/awt/ClasspathToolkit.java
+	(registerImageIOSpis): New method.
+	* javax/imageio/ImageIO.java
+	(WriterFormatFilter.filter): Fix copy-and-paste typos.
+	(WriterMIMETypeFilter.filter): Likewise.
+	(ImageReaderIterator): Pass extension argument through to SPI.
+	(getReadersByFilter): Likewise.
+	(getWritersByFilter): Likewise.
+	(getImageReadersByFormatName): Likewise.
+	(getImageReadersByMIMEType): Likewise.
+	(getImageReadersBySuffix): Likewise.
+	(getImageWritersByFormatName): Likewise.
+	(getImageWritersByMIMEType): Likewise.
+	(getImageWritersBySuffix): Likewise.
+	(read): Implement.
+	(write): Implement.
+	* javax/imageio/ImageReader.java
+	(progressListeners): Initialize.
+	(setInput): Implement.
+	* javax/imageio/ImageWriter.java
+	(progressListeners): Initialize.
+	(warningListeners): Likewise.
+	(warningLocales): Likewise.
+	(setOutput): Test "isInstance" rather than class equality.
+	* javax/imageio/spi/IIORegistry.java
+	(static): Add reader and writer SPIs.
+	(IIORegistry): Call ClasspathToolkit.registerImageIOSpis.
+
+2004-02-06  Michael Koch  <konqueror@gmx.de>
+
+	* javax/imageio/metadata/IIOInvalidTreeException.java
+	(IIOInvalidTreeException): Reformatted.
+	* javax/imageio/spi/IIORegistry.java
+	(static): Register ImageReaderSpi.class and ImageWriterSpi.class.
+	* javax/imageio/stream/MemoryCacheImageInputStream.java:
+	Reworked import statements.
+
+2004-02-06  Michael Koch  <konqueror@gmx.de>
+
+	* javax/imageio/stream/FileImageOutputStream.java:
+	Implemented.
+
+2004-02-06  Michael Koch  <konqueror@gmx.de>
+
+	* javax/imageio/stream/FileCacheImageInputStream.java,
+	javax/imageio/stream/FileCacheImageOutputStream.java,
+	javax/imageio/stream/FileImageInputStream.java,
+	javax/imageio/stream/ImageInputStreamImpl.java,
+	javax/imageio/stream/ImageOutputStreamImpl.java,
+	javax/imageio/stream/MemoryCacheImageInputStream.java,
+	javax/imageio/stream/MemoryCacheImageOutputStream.java:
+	Added all missing methods in javax.imageio.stream.
+
 2005-02-02  David Daney  <ddaney@avtrex.com>
 
 	* java/net/InetAddress.java (InetAddress): Make a private copy of

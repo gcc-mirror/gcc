@@ -1,4 +1,4 @@
-/* FileImageInputStream.java --
+/* IIOAttr.java --
    Copyright (C) 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -35,74 +35,38 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+package javax.imageio.metadata;
 
-package javax.imageio.stream;
+import java.util.ArrayList;
+import java.util.List;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
- * @author Michael Koch (konqueror@gmx.de)
+ * Simple NodeList implementation for IIOMetadataNode.
+ *
+ * @author jlquinn
+ *
  */
-public class FileImageInputStream extends ImageInputStreamImpl
+class IIONodeList implements NodeList
 {
-  private RandomAccessFile file;
+  List children = new ArrayList();
   
-  public FileImageInputStream(File file)
-    throws FileNotFoundException, IOException
+  /* (non-Javadoc)
+   * @see org.w3c.dom.NodeList#item(int)
+   */
+  public Node item(int index)
   {
-    if (file == null)
-      throw new IllegalArgumentException ("file may not be null");
-
-    this.file = new RandomAccessFile(file, "r");
+    return (index < children.size()) ? (Node)children.get(index) : null;
   }
 
-  public FileImageInputStream(RandomAccessFile file)
+  /* (non-Javadoc)
+   * @see org.w3c.dom.NodeList#getLength()
+   */
+  public int getLength()
   {
-    if (file == null)
-      throw new IllegalArgumentException ("file may not be null");
-
-    this.file = file;
+    return children.size();
   }
 
-  public void close()
-    throws IOException
-  {
-    file.close();
-  }
-
-  public long length()
-  {
-    try
-      {
-        return file.length();
-      }
-    catch (IOException e)
-      {
-        return -1L;
-      }
-  }
-
-  public int read()
-    throws IOException
-  {
-    setBitOffset(0);
-    return file.read();
-  }
-
-  public int read(byte[] data, int offset, int len)
-    throws IOException
-  {
-    setBitOffset(0);
-    return file.read(data, offset, len);
-  }
-
-  public void seek(long position)
-    throws IOException
-  {
-    super.seek(position);
-    file.seek(position);
-  }
 }

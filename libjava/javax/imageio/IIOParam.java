@@ -141,6 +141,11 @@ public abstract class IIOParam
     this.destinationOffset = destinationOffset;
   }
 
+  public void setSourceBands(int[] sourceBands)
+  {
+    this.sourceBands = sourceBands;
+  }
+
   public void setSourceRegion(Rectangle sourceRegion)
   {
     if (sourceRegion != null
@@ -153,5 +158,14 @@ public abstract class IIOParam
     // FIXME: Throw IllegalStateException.
 
     this.sourceRegion = sourceRegion;
+  }
+
+  public void setSourceSubsampling(int sourceXSubsampling, int sourceYSubsampling,
+				   int subsamplingXOffset, int subsamplingYOffset)
+  {
+    this.sourceXSubsampling = sourceXSubsampling;
+    this.sourceYSubsampling = sourceYSubsampling;
+    this.subsamplingXOffset = subsamplingXOffset;
+    this.subsamplingYOffset = subsamplingYOffset;
   }
 }

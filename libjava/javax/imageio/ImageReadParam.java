@@ -94,6 +94,22 @@ public class ImageReadParam extends IIOParam
   {
     return sourceRenderSize;
   }
+
+  public void setDestination(BufferedImage destination)
+  {
+    this.destination = destination;
+  }
+
+  public void setDestinationBands(int[] destinationBands)
+  {
+    this.destinationBands = destinationBands;
+  }
+
+  public void setSourceProgressivePasses(int minPass, int numPasses)
+  {
+    this.minProgressivePass = minPass;
+    this.numProgressivePasses = numPasses;
+  }
   
   public void setSourceRenderSize(Dimension size)
     throws UnsupportedOperationException
