@@ -549,6 +549,8 @@ FFEBAD_MSGS1 (FFEBAD_ARRAY_AS_SFARG, FATAL,
 "Array supplied at %1 for dummy argument `%A' in statement function reference at %0")
 FFEBAD_MSGS1 (FFEBAD_FORMAT_UNSUPPORTED, FATAL,
 "Unsupported FORMAT specifier at %0")
+FFEBAD_MSGS1 (FFEBAD_FORMAT_VARIABLE, FATAL,
+"Variable-expression FORMAT specifier at %0 -- unsupported")
 FFEBAD_MSGS2 (FFEBAD_OPEN_UNSUPPORTED, WARN,
 "Unsupported OPEN control item at %0 -- ACTION=, ASSOCIATEVARIABLE=, BLOCKSIZE=, BUFFERCOUNT=, CARRIAGECONTROL=, DEFAULTFILE=, DELIM=, DISPOSE=, EXTENDSIZE=, INITIALSIZE=, KEY=, MAXREC=, NOSPANBLOCKS, ORGANIZATION=, PAD=, POSITION=, READONLY=, RECORDTYPE=, SHARED=, and USEROPEN= are not supported",
 "Unsupported OPEN control item at %0")
