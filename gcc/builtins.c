@@ -5003,6 +5003,11 @@ expand_builtin_signbit (tree exp, rtx target)
       bitpos = bitpos % BITS_PER_WORD;
     }
 
+  /* Force the intermediate word_mode (or narrower) result into a
+     register.  This avoids attempting to create paradoxical SUBREGs
+     of floating point modes below.  */
+  temp = force_reg (imode, temp);
+
   /* If the bitpos is within the "result mode" lowpart, the operation
      can be implement with a single bitwise AND.  Otherwise, we need
      a right shift and an AND.  */
