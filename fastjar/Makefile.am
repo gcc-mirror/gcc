@@ -85,14 +85,14 @@ POD2MAN = pod2man --center="GNU" --release="gcc-@gcc_version@"
 
 $(srcdir)/jar.1: $(srcdir)/fastjar.texi
 	-$(TEXI2POD) -D jar < $(srcdir)/fastjar.texi > fastjar.pod
-	($(POD2MAN) --section=1 fastjar.pod > jar.1.T$$$$ && \
+	-($(POD2MAN) --section=1 fastjar.pod > jar.1.T$$$$ && \
 		mv -f jar.1.T$$$$ $(srcdir)/jar.1) || \
 		(rm -f jar.1.T$$$$ && exit 1)
-	rm -f fastjar.pod
+	-rm -f fastjar.pod
 
 $(srcdir)/grepjar.1: $(srcdir)/fastjar.texi
 	-$(TEXI2POD) -D grepjar < $(srcdir)/fastjar.texi > grepjar.pod
-	($(POD2MAN) --section=1 grepjar.pod > grepjar.1.T$$$$ && \
+	-($(POD2MAN) --section=1 grepjar.pod > grepjar.1.T$$$$ && \
 		mv -f grepjar.1.T$$$$ $(srcdir)/grepjar.1) || \
 		(rm -f grepjar.1.T$$$$ && exit 1)
-	rm -f grepjar.pod
+	-rm -f grepjar.pod
