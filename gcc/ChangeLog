@@ -1,3 +1,7 @@
+2004-12-06  Eric Christopher  <echristo@redhat.com>
+
+	* doc/tm.texi (TARGET_VALID_POINTER_MODE): Document.
+
 2004-12-06  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/sysv4.h: Define RELOCATABLE_NEEDS_FIXUP to 1.
@@ -39,9 +43,9 @@
 	(combine_btr_defs): Don't bother with
 	other_def->other_btr_uses_after_use if it pertains to a different
 	register.
-	(move_btr_def): Set def->other_btr_uses_before_def after 
+	(move_btr_def): Set def->other_btr_uses_before_def after
 	calling combine_btr_defs."
-	
+
 	* bt-load.c (augment_live_range): New argument full_range.
 	Changed all callers.
 
