@@ -142,6 +142,7 @@ config/float-i64.h
 config/float-sh.h
 config/float-vax.h
 config/fp-bit.c
+config/freebsd.h
 config/fx80/fx80.c
 config/fx80/fx80.h
 config/fx80/xm-fx80.h
