@@ -3802,10 +3802,6 @@ extern tree set_guard (tree);
 extern void prepare_assemble_variable (tree);
 extern void lower_function (tree);
 
-extern void cp_error_at		(const char *msgid, ...);
-extern void cp_warning_at	(const char *msgid, ...);
-extern void cp_pedwarn_at	(const char *msgid, ...);
-
 /* XXX Not i18n clean.  */
 #define cp_deprecated(STR)						\
   do {									\
@@ -4343,5 +4339,19 @@ extern tree mangle_ref_init_variable            (tree);
 extern bool cp_dump_tree                         (void *, tree);
 
 /* -- end of C++ */
+
+/* In order for the format checking to accept the C++ frontend
+   diagnostic framework extensions, you must include this file before
+   toplev.h, not after.  */
+#define GCC_DIAG_STYLE __gcc_cxxdiag__
+#if GCC_VERSION >= 3004
+#define ATTRIBUTE_GCC_CXXDIAG(m, n) __attribute__ ((__format__ (GCC_DIAG_STYLE, m, n))) ATTRIBUTE_NONNULL(m)
+#else
+#define ATTRIBUTE_GCC_CXXDIAG(m, n) ATTRIBUTE_NONNULL(m)
+#endif
+
+extern void cp_error_at		(const char *, ...) ATTRIBUTE_GCC_CXXDIAG(1, 2);
+extern void cp_warning_at	(const char *, ...) ATTRIBUTE_GCC_CXXDIAG(1, 2);
+extern void cp_pedwarn_at	(const char *, ...) ATTRIBUTE_GCC_CXXDIAG(1, 2);
 
 #endif /* ! GCC_CP_TREE_H */

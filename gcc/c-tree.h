@@ -305,4 +305,9 @@ extern void c_finish_incomplete_decl (tree);
 extern GTY(()) tree static_ctors;
 extern GTY(()) tree static_dtors;
 
+/* In order for the format checking to accept the C frontend
+   diagnostic framework extensions, you must include this file before
+   toplev.h, not after.  */
+#define GCC_DIAG_STYLE __gcc_cdiag__
+
 #endif /* ! GCC_C_TREE_H */

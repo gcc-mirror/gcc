@@ -31,6 +31,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "varray.h"
 #include "c-common.h"
 #include "except.h"
+/* In order for the format checking to accept the C frontend
+   diagnostic framework extensions, you must define this token before
+   including toplev.h.  */
+#define GCC_DIAG_STYLE __gcc_cdiag__
 #include "toplev.h"
 #include "flags.h"
 #include "ggc.h"

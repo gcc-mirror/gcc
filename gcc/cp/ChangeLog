@@ -1,3 +1,9 @@
+2003-07-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cp-tree.h (GCC_DIAG_STYLE, ATTRIBUTE_GCC_CXXDIAG): Define.
+	(cp_error_at, cp_warning_at, cp_pedwarn_at): Mark with
+	ATTRIBUTE_GCC_CXXDIAG.
+
 2003-07-03  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (build_scoped_method_call): Use convert_to_void.

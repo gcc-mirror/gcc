@@ -26,10 +26,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "toplev.h"
 #include "flags.h"
 #include "tree.h"
 #include "c-tree.h"
+#include "toplev.h"
 
 enum formals_style_enum {
   ansi,

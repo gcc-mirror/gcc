@@ -26,7 +26,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "intl.h"
 #include "tree.h"
 #include "flags.h"
-#include "toplev.h"
 #include "output.h"
 #include "c-pragma.h"
 #include "rtl.h"
@@ -42,6 +41,11 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "langhooks.h"
 #include "tree-inline.h"
 #include "c-tree.h"
+/* In order to ensure we use a common subset of valid specifiers
+   (between the various C family frontends) in this file, we restrict
+   ourselves to the generic specifier set.  */
+#undef GCC_DIAG_STYLE
+#include "toplev.h"
 
 cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 

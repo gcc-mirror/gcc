@@ -50,11 +50,11 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "expr.h"
 #include "real.h"
 #include "except.h"
+#include "diagnostic.h"
 #include "toplev.h"
 #include "reload.h"
 #include "predict.h"
 #include "timevar.h"
-#include "diagnostic.h"
 
 /* Optimize jump y; x: ... y: jumpif... x?
    Don't know if it is worth bothering with.  */
