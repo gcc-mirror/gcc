@@ -1014,8 +1014,7 @@ static unsigned char size_lookup[257] =
   8
 };
 
-/* Allocate a chunk of memory of SIZE bytes.  If ZERO is nonzero, the
-   memory is zeroed; otherwise, its contents are undefined.  */
+/* Allocate a chunk of memory of SIZE bytes.  Its contents are undefined.  */
 
 void *
 ggc_alloc (size)
