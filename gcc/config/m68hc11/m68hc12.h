@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for m68hc12.
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Stephane Carrez (stcarrez@worldnet.fr).
 
 This file is part of GNU CC.
@@ -38,6 +38,3 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_DEFAULT		(MASK_M6812)
 
 #define TARGET_M68HC12
-
-#include "m68hc11/m68hc11.h"
-

@@ -1,3 +1,20 @@
+2001-03-27  Zack Weinberg  <zackw@stanford.edu>
+
+	* config.gcc (m68hc11-*-*, m68hc12-*-*): Convert to new tm.h
+	inclusion style.  xm-m68hc11.h no longer exists.
+	* config/m68hc11/xm-m68hc11.h: Delete file.
+	* config/m68hc11/m68hc12.h: Convert to new tm.h inclusion style.
+
+	* config/m68hc11/m68hc11.h: Convert to new tm.h inclusion style.
+	Don't define GCC_VERSION, N_, or PARAMS; don't include
+	gansidecl.h or stdio.h.  Define inhibit_libc here.
+	Make code conditioned on #if GCC_VERSION > 2095 unconditional.
+	Delete code conditioned on #if GCC_VERSION == 2095.
+
+	* config/m68hc11/m68hc11-protos.h, config/m68hc11/m68hc11.c:
+	Make code conditioned on #if GCC_VERSION > 2095 unconditional.
+	Delete code conditioned on #if GCC_VERSION == 2095.
+
 2001-03-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* system.h: Include symcat.h.
@@ -42,7 +59,7 @@
 	flag_no_inline is on.
 	* tree.h (DECL_FRAME_SIZE): Remove.
 	(tree_decl): Adjust accordingly.
-	
+
 2001-03-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* combine.c (try_combine): Use memcpy, not bcopy.
@@ -95,7 +112,7 @@ Mon Mar 26 14:35:18 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	Set xm_defines to MACRO=value instead.
 
 	* i370/xm-mvs.h: Delete.
-	
+
 	* ns32k/xm-pc532-min.h: Likewise.
 
 Sun Mar 25 15:01:40 CEST 2001  Jan Hubicka  <jh@suse.cz>
@@ -202,7 +219,7 @@ Sat Mar 24 21:13:28 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* varasm.c (make_decl_rtl): Add TREE_PUBLIC check to abort test.
 	(assemble_alias): Call make_decl_rtl.
-	
+
 Fri Mar 23 16:59:08 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* stor-layout.c (layout_type): Give OFFSET_TYPE a MODE_INT type.
@@ -343,7 +360,7 @@ Wed Mar 21 20:33:26 CET 2001  Jan Hubicka  <jh@suse.cz>
 	(ix86_expand_branch): DImode comparison is simple for x86_64.
 	(memory_address_length): Recognize memory addresses formed using
 	PRE/POST modify.
-	(ix86_data_alignment, ix86_local_alignment): Align arrays to 16 bytes 
+	(ix86_data_alignment, ix86_local_alignment): Align arrays to 16 bytes
 	for x86_64.
 	* i386.h (TARGET_USE_SAHF): Disable for 64bit.
 
@@ -411,7 +428,7 @@ Tue Mar 20 20:15:06 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	i386_pe_mark_dllimport.
 
 2001-03-20  David Billinghurst <David.Billinghurst@riotinto.com>
-  
+
 	* config/i386/cygwin.h: Include <stdio.h> Declare and constify
 	functions i386_pe_*.
 
@@ -487,7 +504,7 @@ Mon Mar 19 18:53:54 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-03-16  Andrew Haley  <aph@cambridge.redhat.com>
 
-        * config/ia64/libgcc-ia64.ver: Add __ia64_backtrace.
+	* config/ia64/libgcc-ia64.ver: Add __ia64_backtrace.
 
 2001-03-19  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 

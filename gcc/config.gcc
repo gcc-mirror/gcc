@@ -1595,17 +1595,15 @@ m32r-*-elf*)
 	;;
 # m68hc11 and m68hc12 share the same machine description.
 m68hc11-*-*|m6811-*-*)
-	tm_file="m68hc11/m68hc11.h"
-        xm_file="m68hc11/xm-m68hc11.h"
+	tm_file="elfos.h m68hc11/m68hc11.h"
 	tm_p_file="m68hc11/m68hc11-protos.h"
 	md_file="m68hc11/m68hc11.md"
 	out_file="m68hc11/m68hc11.c"
 	tmake_file="m68hc11/t-m68hc11-gas"
         ;;
 m68hc12-*-*|m6812-*-*)
-	tm_file="m68hc11/m68hc12.h"
+	tm_file="m68hc11/m68hc12.h elfos.h m68hc11/m68hc11.h"
 	tm_p_file="m68hc11/m68hc11-protos.h"
-        xm_file="m68hc11/xm-m68hc11.h"
 	md_file="m68hc11/m68hc11.md"
 	out_file="m68hc11/m68hc11.c"
 	tmake_file="m68hc11/t-m68hc11-gas"
