@@ -4693,10 +4693,6 @@ cpp_define_data_format (pfile)
 {
   const char *format;
 
-  /* Define endianness enumeration values.  */
-  cpp_define (pfile, "__GCC_LITTLE_ENDIAN__=0");
-  cpp_define (pfile, "__GCC_BIG_ENDIAN__=1");
-
   /* Define supported floating-point format enumeration values.  */
   cpp_define (pfile, "__UNKNOWN_FORMAT__=0");
   cpp_define (pfile, "__IEEE_FORMAT__=1");
@@ -4704,76 +4700,27 @@ cpp_define_data_format (pfile)
   cpp_define (pfile, "__C4X_FORMAT__=3");
   cpp_define (pfile, "__VAX_FORMAT__=4");
   
-  /* Define target endianness:
-       - bit order
-       - byte order
-       - word order in an integer that spans a multi-word
-       - word order in a floating-poing that spans a multi-word  */
-  if (BITS_BIG_ENDIAN)
-    cpp_define (pfile, "__TARGET_BITS_ORDER__=__GCC_BIG_ENDIAN__");
-  else
-    cpp_define (pfile, "__TARGET_BITS_ORDER__=__GCC_BIG_ENDIAN__");
-  if (BYTES_BIG_ENDIAN)
-    cpp_define (pfile, "__TARGET_BYTES_ORDER__=__GCC_BIG_ENDIAN__");
-  else
-    cpp_define (pfile, "__TARGET_BYTES_ORDER__=__GCC_LITTLE_ENDIAN__");
-  /* Define words order in a multi-word integer.  */
-  if (WORDS_BIG_ENDIAN)
-    cpp_define (pfile, "__TARGET_INT_WORDS_ORDER__=__GCC_BIG_ENDIAN__");
-  else
-    cpp_define (pfile, "__TARGET_INT_WORDS_ORDER__=__GCC_LITTLE_ENDIAN__");
-  /* Define words order in a multi-word floating point.  */
-  if (FLOAT_WORDS_BIG_ENDIAN)
-    cpp_define (pfile, "__TARGET_FLOAT_WORDS_ORDER__=__GCC_BIG_ENDIAN__");
-  else
-    cpp_define (pfile, "__TARGET_FLOAT_WORDS_ORDER__=__GCC_LITTLE_ENDIAN__");
-
   switch (TARGET_FLOAT_FORMAT)
     {
     case UNKNOWN_FLOAT_FORMAT:
       format = "__UNKNOWN_FORMAT__";
       break;
-
     case IEEE_FLOAT_FORMAT:
       format = "__IEEE_FORMAT__";
       break;
-
     case VAX_FLOAT_FORMAT:
       format = "__VAX_FORMAT__";
-      cpp_define (pfile, "__TARGET_USES_VAX_F_FLOAT__=1");
-#ifdef TARGET_G_FLOAT      
-      if (TARGET_G_FLOAT)
-        {
-          cpp_define (pfile, "__TARGET_USES_VAX_D_FLOAT__=0");
-          cpp_define (pfile, "__TARGET_USES_VAX_G_FLOAT__=1");
-        }
-      else
-        {
-          cpp_define (pfile, "__TARGET_USES_VAX_D_FLOAT__=1");
-          cpp_define (pfile, "__TARGET_USES_VAX_G_FLOAT__=0");
-        }
-#endif       
-      cpp_define (pfile, "__TARGET_USES_VAX_H_FLOAT__=1");
       break;
-
     case IBM_FLOAT_FORMAT:
       format = "__IBM_FORMAT__";
       break;
-
     case C4X_FLOAT_FORMAT:
       format = "__C4X_FORMAT__";
       break;
-
     default:
       abort();
     }
-  if (TARGET_FLOAT_FORMAT != VAX_FLOAT_FORMAT)
-    {
-      cpp_define (pfile, "__TARGET_USES_VAX_F_FLOAT__=0");
-      cpp_define (pfile, "__TARGET_USES_VAX_D_FLOAT__=0");
-      cpp_define (pfile, "__TARGET_USES_VAX_G_FLOAT__=0");
-      cpp_define (pfile, "__TARGET_USES_VAX_H_FLOAT__=0");
-    }
+
   builtin_define_with_value ("__GCC_FLOAT_FORMAT__", format, 0);
 }
 
