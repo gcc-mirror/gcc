@@ -244,7 +244,7 @@ public class ObjectInputStream extends InputStream
 	int handle = assignNewHandle (array);
 	readArrayElements (array, componentType);
 	for (int i=0, len=Array.getLength(array); i < len; i++)
-	  dumpElementln ("  ELEMENT[" + i + "]=" + Array.get(array, i).toString());
+	  dumpElementln ("  ELEMENT[" + i + "]=" + Array.get(array, i));
 	ret_val = processResolution (array, handle);
 	break;
       }
@@ -1401,6 +1401,7 @@ public class ObjectInputStream extends InputStream
       {
 	Class klass = obj.getClass ();
 	Field f = getField (klass, field_name);
+	f.setAccessible(true);
 	f.setBoolean (obj, val);
       }
     catch (Exception _)
@@ -1415,6 +1416,7 @@ public class ObjectInputStream extends InputStream
       {
 	Class klass = obj.getClass ();
 	Field f = getField (klass, field_name);
+	f.setAccessible(true);
 	f.setByte (obj, val);
       }
     catch (Exception _)
@@ -1429,6 +1431,7 @@ public class ObjectInputStream extends InputStream
       {
 	Class klass = obj.getClass ();
 	Field f = getField (klass, field_name);
+	f.setAccessible(true);
 	f.setChar (obj, val);
       }
     catch (Exception _)
@@ -1443,6 +1446,7 @@ public class ObjectInputStream extends InputStream
       {
 	Class klass = obj.getClass ();
 	Field f = getField (klass, field_name);
+	f.setAccessible(true);
 	f.setDouble (obj, val);
       }
     catch (Exception _)
@@ -1457,6 +1461,7 @@ public class ObjectInputStream extends InputStream
       {
 	Class klass = obj.getClass ();
 	Field f = getField (klass, field_name);
+	f.setAccessible(true);
 	f.setFloat (obj, val);
       }
     catch (Exception _)
@@ -1471,6 +1476,7 @@ public class ObjectInputStream extends InputStream
       {
 	Class klass = obj.getClass ();
 	Field f = getField (klass, field_name);
+	f.setAccessible(true);
 	f.setInt (obj, val);
       }
     catch (Exception _)
@@ -1486,6 +1492,7 @@ public class ObjectInputStream extends InputStream
       {
 	Class klass = obj.getClass ();
 	Field f = getField (klass, field_name);
+	f.setAccessible(true);
 	f.setLong (obj, val);
       }
     catch (Exception _)
@@ -1501,6 +1508,7 @@ public class ObjectInputStream extends InputStream
       {
 	Class klass = obj.getClass ();
 	Field f = getField (klass, field_name);
+	f.setAccessible(true);
 	f.setShort (obj, val);
       }
     catch (Exception _)
@@ -1516,6 +1524,7 @@ public class ObjectInputStream extends InputStream
       {
 	Class klass = obj.getClass ();
 	Field f = getField (klass, field_name);
+	f.setAccessible(true);
 	// FIXME: We should check the type_code here
 	f.set (obj, val);
       }
