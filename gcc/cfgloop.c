@@ -36,7 +36,7 @@ static void flow_loop_exit_edges_find	PARAMS ((struct loop *));
 static int flow_loop_nodes_find		PARAMS ((basic_block, struct loop *));
 static void flow_loop_pre_header_scan	PARAMS ((struct loop *));
 static basic_block flow_loop_pre_header_find PARAMS ((basic_block,
-						      const sbitmap *));
+						      dominance_info));
 static int flow_loop_level_compute	PARAMS ((struct loop *));
 static int flow_loops_level_compute	PARAMS ((struct loops *));
 static basic_block make_forwarder_block PARAMS ((basic_block, int, int,
@@ -224,7 +224,7 @@ flow_loops_free (loops)
       loops->parray = NULL;
 
       if (loops->cfg.dom)
-	sbitmap_vector_free (loops->cfg.dom);
+	free_dominance_info (loops->cfg.dom);
 
       if (loops->cfg.dfs_order)
 	free (loops->cfg.dfs_order);
@@ -415,7 +415,7 @@ flow_loop_pre_header_scan (loop)
 static basic_block
 flow_loop_pre_header_find (header, dom)
      basic_block header;
-     const sbitmap *dom;
+     dominance_info dom;
 {
   basic_block pre_header;
   edge e;
@@ -428,7 +428,7 @@ flow_loop_pre_header_find (header, dom)
       basic_block node = e->src;
 
       if (node != ENTRY_BLOCK_PTR
-	  && ! TEST_BIT (dom[node->index], header->index))
+	  && ! dominated_by_p (dom, node, header))
 	{
 	  if (pre_header == NULL)
 	    pre_header = node;
@@ -645,13 +645,12 @@ make_forwarder_block (bb, redirect_latch, redirect_nonlatch, except,
 static void
 canonicalize_loop_headers ()
 {
-  sbitmap *dom;
+  dominance_info dom;
   basic_block header;
   edge e;
   
   /* Compute the dominators.  */
-  dom = sbitmap_vector_alloc (last_basic_block, last_basic_block);
-  calculate_dominance_info (NULL, dom, CDI_DOMINATORS);
+  dom = calculate_dominance_info (CDI_DOMINATORS);
 
   alloc_aux_for_blocks (sizeof (int));
   alloc_aux_for_edges (sizeof (int));
@@ -670,7 +669,7 @@ canonicalize_loop_headers ()
 	    have_abnormal_edge = 1;
 
 	  if (latch != ENTRY_BLOCK_PTR
-	      && TEST_BIT (dom[latch->index], header->index))
+	      && dominated_by_p (dom, latch, header))
 	    {
 	      num_latches++;
 	      LATCH_EDGE (e) = 1;
@@ -747,7 +746,7 @@ canonicalize_loop_headers ()
 
   free_aux_for_blocks ();
   free_aux_for_edges ();
-  sbitmap_vector_free (dom);
+  free_dominance_info (dom);
 }
 
 /* Find all the natural loops in the function and save in LOOPS structure and
@@ -765,10 +764,11 @@ flow_loops_find (loops, flags)
   int num_loops;
   edge e;
   sbitmap headers;
-  sbitmap *dom;
+  dominance_info dom;
   int *dfs_order;
   int *rc_order;
-  basic_block header, bb;
+  basic_block header;
+  basic_block bb;
 
   /* This function cannot be repeatedly called with different
      flags to build up the loop information.  The loop tree
@@ -790,8 +790,7 @@ flow_loops_find (loops, flags)
   canonicalize_loop_headers ();
 
   /* Compute the dominators.  */
-  loops->cfg.dom = dom = sbitmap_vector_alloc (last_basic_block, last_basic_block);
-  calculate_dominance_info (NULL, dom, CDI_DOMINATORS);
+  dom = loops->cfg.dom = calculate_dominance_info (CDI_DOMINATORS);
 
   /* Count the number of loop headers.  This should be the
      same as the number of natural loops.  */
@@ -824,8 +823,7 @@ flow_loops_find (loops, flags)
 	     node (header) that dominates all the nodes in the
 	     loop.  It also has single back edge to the header
 	     from a latch node.  */
-	  if (latch != ENTRY_BLOCK_PTR && TEST_BIT (dom[latch->index],
-						    header->index))
+	  if (latch != ENTRY_BLOCK_PTR && dominated_by_p (dom, latch, header))
 	    {
 	      /* Shared headers should be eliminated by now.  */
 	      if (more_latches)
@@ -899,7 +897,7 @@ flow_loops_find (loops, flags)
 	      basic_block latch = e->src;
 
 	      if (latch != ENTRY_BLOCK_PTR
-		  && TEST_BIT (dom[latch->index], header->index))
+		  && dominated_by_p (dom, latch, header))
 		{
 		  loop->latch = latch;
 		  break;
@@ -925,7 +923,7 @@ flow_loops_find (loops, flags)
   else
     {
       loops->cfg.dom = NULL;
-      sbitmap_vector_free (dom);
+      free_dominance_info (dom);
     }
 #ifdef ENABLE_CHECKING
   verify_flow_info ();

@@ -1,3 +1,83 @@
+Thu Jun 20 19:42:21 CEST 2002  Jan Hubicka  <jh@suse.cz>
+			       Pavel Nejedly  <bim@atrey.karlin.mff.cuni.cz>
+
+	Mon Jun 10 20:42:34 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* basic-block.h: Do not include et-forest.h
+	(dominance_info): Declare as struct dominance-info.
+	* cfglayout.c (cleanup_unconditional_jumps): Remove the edge before
+	deleting block.
+	* dominance.c (struct dominance_info): Define.
+	(BB_NODE, SET_BB_NODE): New macros.
+	(bb_hash_func, bb_eq_func): Kill.
+	(calculate_dominace_info, free_dominacne_info, set_immediate_dominator,
+	nearest_common_dominator, dominated_by_p, recount_dominator,
+	add_to_dominance_info, delete_from_dominance_info): update for new
+	representation.
+	(get_dominated_by, redirect_immediate_dominators): Rewrite using
+	enumerate_sons.
+	* ifcvt.c (process_double_test_block, merge_if_block, find_cond_trap,
+	find_if_case_1, find_if_case_2): Remove killed blocks from dominance
+	structure.
+
+	* et-forest.h: Update copyright; revamp all function to operate on
+	nodes
+	(et_forest_value): Kill.
+	(et_forest_enumerate_sons, et_forest_node_value): New.
+	* et-forest.c: Update copyright.
+	* et-forest.h: Update copyright; revamp all function to operate on
+	nodes
+	(et_forest_value): Kill.
+	(et_forest_enumerate_sons, et_forest_node_value): New.
+
+	Thu Jun  6 22:43:43 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* basic-block.h: Inlude et-forest.h
+	(basic_block_def): Kill dominator.
+	(dominance_info): New type.
+	(loops): Use dominace_info.
+	(dominace handling functions): Take dominace_info as argument
+	instead of bitmaps.
+	(create_preheader): Likewise.
+	* cfg.c (entry_exit_blocks): Kill dominator.
+	(dump_flow_info): Do not dump dominators.
+	* cfglayout.c (cleanup_unconditonal_jumps): Delete deleted block from
+	dominators.
+	* cfgloop.c (flow_pre_header_find): Use dominacne_info.
+	(flow_loops_pre_header_scan, make_forwarder_block,
+	canonicale_loop_headers, flow_loops_find): Likewise.
+	* dominance.c: Include error.h
+	(idoms_to_doms): Kill.
+	(bb_hash_func, bb_eq_func): New static functions.
+	(debug_dominace_info): New global function.
+	(calculate_dominance_info): Use new et forest structure.
+	(free_dominace_info, get_immediate_dominator, set_immediate_dominator,
+	get_dominated_by, redirect_immediate_dominators,
+	nearest_common_dominator, dominated_by_p, verify_dominators,
+	recount_dominator, iterate_fix_dominators, add_to_dominace_info,
+	delete_from_dominance_info): New global functions.
+	* gcse.c (domnators): CHange to dominance_info.
+	(alloc_hoist_mem): Do not alloc dominators
+	(free_code_hoist_mem): Use free_dominance_info.
+	(compute_code_hoist_data): Use dominance_info.
+	(hoist_code): Likewise.
+	* ifcvt.c (post_dominators): Likewise.
+	(find_if_case_2, if_convert): Likewise.
+	* predict.c (process_note_predictions, process_note_prediction,
+	estimate-probability): Likewise.
+	* sched-rgn.c (find_rgns, init_regions): Likewise.
+	* ssa-dce.c (find_all_control_dependences, fint_control_depemndence,
+	find_pdom, delete_insn_bb, ssa_eliminate_dead_code): Likewise.
+	* ssa.c (compute_dominance_frontiers_1, rename_block, rename_registers,
+	find_evaluations, convert_to_ssa): Likewise.
+	* ssa.h (compute_dominance_frontiers): Likewise.
+
+	Thu Jun  6 22:57:34 CEST 2002  Pavel Nejedly <bim@atrey.karlin.mff.cuni.cz>
+
+	* Makefile.in (et-forest.c): Add.
+	* et-forest.c: New file.
+	* at-forest.h: New file.
+
 2002-06-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-decl.c (c_decode_option): Use ARRAY_SIZE in lieu of explicit
