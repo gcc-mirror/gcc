@@ -111,7 +111,8 @@ proc test_mauve {} {
 
   # Append -B and -I so that libgcj.spec and libgcj.jar are found
   # before they're installed.
-  set env(GCJ) "$GCJ_UNDER_TEST -B$objdir/../ -I$libgcj_jar"
+  # Append -Wno-deprecated since Mauve tests lots of deprecated stuff.
+  set env(GCJ) "$GCJ_UNDER_TEST -Wno-deprecated -B$objdir/../ -I$libgcj_jar"
 
   if {[catch {
     system "$env(MAUVEDIR)/configure --with-gcj 2>&1"

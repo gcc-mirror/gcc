@@ -1,3 +1,13 @@
+2003-06-05  Mark Wielaard  <mark@klomp.org>
+
+	* libjava.mauve/mauve.exp (test_mauve): Add -wno-deprecated to GCJ.
+	
+	PR libgcj/6181:
+	* libjava.mauve/xfails: Remove getBeanInfo() failures.
+
+	PR libgcj/6293:
+	* libjava.mauve/xfails: Remove PipedStream.close() failure.
+
 2003-05-31  Roger Sayle  <roger@eyesopen.com>
 
 	* libjava.lang/Overflow.java: New test.
