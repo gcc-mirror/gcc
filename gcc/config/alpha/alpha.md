@@ -2470,11 +2470,11 @@
 
 (define_insn ""
   [(set (match_operand:SF 0 "nonimmediate_operand" "=r,r,m,f,f,f,m")
-	(match_operand:SF 1 "input_operand" "r,m,rG,f,G,m,fG"))]
+	(match_operand:SF 1 "input_operand" "rG,m,rG,f,G,m,fG"))]
   "register_operand (operands[0], SFmode)
    || reg_or_fp0_operand (operands[1], SFmode)"
   "@
-   bis %1,%1,%0
+   bis %r1,%r1,%0
    ldl %0,%1
    stl %r1,%0
    cpys %1,%1,%0
@@ -2485,11 +2485,11 @@
 
 (define_insn ""
   [(set (match_operand:DF 0 "nonimmediate_operand" "=r,r,m,f,f,f,m")
-	(match_operand:DF 1 "input_operand" "r,m,rG,f,G,m,fG"))]
+	(match_operand:DF 1 "input_operand" "rG,m,rG,f,G,m,fG"))]
   "register_operand (operands[0], DFmode)
    || reg_or_fp0_operand (operands[1], DFmode)"
   "@
-   bis %1,%1,%0
+   bis %r1,%r1,%0
    ldq %0,%1
    stq %r1,%0
    cpys %1,%1,%0
