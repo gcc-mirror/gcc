@@ -33,7 +33,7 @@ foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.C]] {
     if ![runtest_file_p $runtests $test] {
 	continue
     }
-    set nshort [file tail [file dirname $test]]/[file tail $test]
+    set nshort "$subdir/[file tail $test]"
     set bname "[file rootname [file tail $test]]"
 
     catch { file delete "$bname.H.gch" }
@@ -80,7 +80,7 @@ foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.C]] {
 	    }
 
 	} else {
-	    untested $nshort
+	    untested "$nshort $flags"
 	    untested "$nshort $flags assembly comparison"
 	}
     }
