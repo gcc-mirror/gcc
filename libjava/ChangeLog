@@ -1,3 +1,8 @@
+2000-01-16  Anthony Green  <green@cygnus.com>
+
+	* java/lang/StringBuffer.java (StringBuffer): Don't special case
+	null argument.
+
 2000-01-16  Jeff Sturm  <jsturm@sigma6.com>
 
 	* java/io/StreamTokenizer.java (nextToken): Avoid unread(TT_EOF).

@@ -1,6 +1,6 @@
 // StringBuffer.java - Growable strings.
 
-/* Copyright (C) 1998, 1999  Cygnus Solutions
+/* Copyright (C) 1998, 1999, 2000  Red Hat
 
    This file is part of libgcj.
 
@@ -241,12 +241,9 @@ public final class StringBuffer implements Serializable
 
   public StringBuffer (String str)
     {
-      // Note: nowhere does it say that we should handle a null
-      // argument here.  In fact, the JCL implies that we should not.
-      // But this leads to an asymmetry: `null + ""' will fail, while
-      // `"" + null' will work.
-      if (str == null)
-	str = "null";
+      // The documentation is not clear, but experimentation with
+      // other implementations indicates that StringBuffer(null)
+      // should throw a NullPointerException.
       count = str.length();
       // JLS: The initial capacity of the string buffer is 16 plus the
       // length of the argument string.
