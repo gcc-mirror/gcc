@@ -1,3 +1,7 @@
+2001-03-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cpp.texi (poison): Explain the macro expansion exception.
+
 2001-03-12  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppinternals.texi: Update for file handling.
