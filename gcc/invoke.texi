@@ -1316,7 +1316,8 @@ unused variables and parameters, use the @samp{unused} attribute
 (@pxref{Variable Attributes}).
 
 @item -Wuninitialized
-An automatic variable is used without first being initialized.
+Warn if an automatic variable is used without first being initialized or
+if a variable may be clobbered by a @code{setjmp} call.
 
 These warnings are possible only in optimizing compilation,
 because they require data flow information that is computed only
@@ -1375,6 +1376,17 @@ Some spurious warnings can be avoided if you declare all the functions
 you use that never return as @code{noreturn}.  @xref{Function
 Attributes}.
 
+@cindex @code{longjmp} warnings
+A nonvolatile automatic variable might be changed by a call to
+@code{longjmp}.  These warnings as well are possible only in
+optimizing compilation.
+
+The compiler sees only the calls to @code{setjmp}.  It cannot know
+where @code{longjmp} will be called; in fact, a signal handler could
+call it at any point in the code.  As a result, you may get a warning
+even when there is in fact no problem because @code{longjmp} cannot
+in fact be called at the place which would cause a problem.
+
 @item -Wreorder (C++ only)
 @cindex reordering, warning
 @cindex warning for reordering of member initializers
@@ -1417,18 +1429,6 @@ the warning.
 Print extra warning messages for these events:
 
 @itemize @bullet
-@cindex @code{longjmp} warnings
-@item
-A nonvolatile automatic variable might be changed by a call to
-@code{longjmp}.  These warnings as well are possible only in
-optimizing compilation.
-
-The compiler sees only the calls to @code{setjmp}.  It cannot know
-where @code{longjmp} will be called; in fact, a signal handler could
-call it at any point in the code.  As a result, you may get a warning
-even when there is in fact no problem because @code{longjmp} cannot
-in fact be called at the place which would cause a problem.
-
 @item
 A function can return either with or without a value.  (Falling
 off the end of the function body is considered returning without
