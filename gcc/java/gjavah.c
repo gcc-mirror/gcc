@@ -440,9 +440,9 @@ cxx_keyword_subst (str, length)
 
       if (r == 0)
 	{
-	  char *str = xmalloc (9 + strlen (cxx_keywords[mid]));
-	  strcpy (str, "__dummy_");
-	  strcat (str, cxx_keywords[mid]);
+	  char *str = xmalloc (2 + strlen (cxx_keywords[mid]));
+	  strcpy (str, cxx_keywords[mid]);
+	  strcat (str, "$");
 	  return str;
 	}
       else if (r < 0)
@@ -759,18 +759,6 @@ DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags, synth),
 	 (not only for calls to this function for for other functions
 	 after it in the vtbl).  So we give it a dummy name instead.  */
       override = cxx_keyword_subst (str, length);
-      if (override)
-	{
-	  /* If the method is static or final, we can safely skip it.
-	     If we don't skip it then we'll have problems since the
-	     mangling will be wrong.  FIXME.  */
-	  if (METHOD_IS_FINAL (jcf->access_flags, flags)
-	      || (flags & ACC_STATIC))
-	    {
-	      free (override);
-	      return;
-	    }
-	}
     }
 
   if (! stubs && ! flag_jni)
@@ -1844,9 +1832,9 @@ DEFUN(process_file, (jcf, out),
     {
       if (flag_jni)
 	{
-	      fprintf (out, "\n#ifdef __cplusplus\n");
-	      fprintf (out, "}\n");
-	      fprintf (out, "#endif\n");
+	  fprintf (out, "\n#ifdef __cplusplus\n");
+	  fprintf (out, "}\n");
+	  fprintf (out, "#endif\n");
 	}
       else
 	{
@@ -1860,8 +1848,11 @@ DEFUN(process_file, (jcf, out),
 	  for (i = 0; i < add_count; ++i)
 	    fprintf (out, "  %s\n", add_specs[i]);
 
-	  if (! stubs)
-	    fputs ("};\n", out);
+	  /* Generate an entry for the class object.  */
+	  generate_access (out, ACC_PUBLIC);
+	  fprintf (out, "\n  static ::java::lang::Class class$;\n");
+
+	  fputs ("};\n", out);
 
 	  if (append_count > 0)
 	    fputc ('\n', out);
