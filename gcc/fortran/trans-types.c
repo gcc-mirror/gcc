@@ -104,12 +104,18 @@ gfc_init_kinds (void)
       if (!targetm.scalar_mode_supported_p (mode))
 	continue;
 
+      /* The middle end doesn't support constants larger than 2*HWI.
+	 Perhaps the target hook shouldn't have accepted these either,
+	 but just to be safe...  */
+      bitsize = GET_MODE_BITSIZE (mode);
+      if (bitsize > 2*HOST_BITS_PER_WIDE_INT)
+	continue;
+
       if (i_index == MAX_INT_KINDS)
 	abort ();
 
       /* Let the kind equal the bit size divided by 8.  This insulates the
 	 programmer from the underlying byte size.  */
-      bitsize = GET_MODE_BITSIZE (mode);
       kind = bitsize / 8;
 
       if (kind == 4)

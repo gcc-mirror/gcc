@@ -1,3 +1,9 @@
+2004-08-29  Richard Henderson  <rth@redhat.com>
+
+	* trans-const.c (gfc_conv_mpz_to_tree): Use mpz_export.
+	* trans-types.c (gfc_init_kinds): Reject integer kinds larger
+	than two HOST_WIDE_INT.
+
 2004-08-29  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/13910
