@@ -222,7 +222,7 @@ $(srcdir)/hash.h:
 spew.o : spew.c $(CONFIG_H) $(CXX_TREE_H) \
   $(PARSE_H) $(srcdir)/../flags.h lex.h
 lex.o : lex.c $(CONFIG_H) $(CXX_TREE_H) \
-  $(PARSE_H) input.c $(srcdir)/../flags.h hash.h lex.h
+  $(PARSE_H) input.c $(srcdir)/../flags.h hash.h lex.h $(srcdir)/../c-pragma.h
 decl.o : decl.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
   lex.h decl.h $(srcdir)/../stack.h
 decl2.o : decl2.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
