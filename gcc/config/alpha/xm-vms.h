@@ -37,6 +37,9 @@ Boston, MA 02111-1307, USA.  */
 /* Open files in stream mode if not otherwise explicitly specified */
 #define __UNIX_FOPEN 1
 
+/* Write to stdout using fputc to avoid record terminators in pipes */
+#define __UNIX_FWRITE 1
+
 #define STDC_HEADERS 1
 
 #define HOST_EXECUTABLE_SUFFIX ".exe"
