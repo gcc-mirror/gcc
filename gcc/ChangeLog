@@ -1,9 +1,21 @@
+2004-07-12  Paolo Bonzini  <bonzini@gnu.org>
+
+	* config/sh/sh.c (sh_use_dfa_interface): Remove.
+	(TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE): Set to
+	hook_int_void_1.
+	* config/sh/sh.md: Extract pipeline descriptions
+	into separate files.
+	* config/sh/sh1.md: New file, extracted from sh.md.
+	* config/sh/sh4.md: New file, extracted from sh.md.
+	* config/sh/shmedia.md: New file, extracted from sh.md
+	and rewritten using new-style pipeline description.
+
 2004-07-18  Zack Weinberg  <zack@codesourcery.com>
 
 	* config/pa/pa.md: Delete the two remaining define_peephole
 	patterns.
 
-2004-07-10  Steven Bosscher  <stevenb@suse.de>
+2004-07-18  Steven Bosscher  <stevenb@suse.de>
 	    Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-common.c (c_common_truthvalue_conversion): Don't warn if
