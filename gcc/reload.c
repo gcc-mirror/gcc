@@ -4471,8 +4471,7 @@ find_reloads_toplev (x, opnum, type, ind_levels, is_set_dest, insn,
 					reg_equiv_constant[regno])) != 0)
 	return tem;
 
-      if (GET_MODE_BITSIZE (GET_MODE (x)) == BITS_PER_WORD
-	  && regno >= FIRST_PSEUDO_REGISTER && reg_renumber[regno] < 0
+      if (regno >= FIRST_PSEUDO_REGISTER && reg_renumber[regno] < 0
 	  && reg_equiv_constant[regno] != 0)
 	{
 	  tem =
