@@ -1,3 +1,9 @@
+2003-05-05  Aldy Hernandez  <aldyh@redhat.com>
+
+        * testsuite/gcc.c-torture/compile/simd-6.c: New.
+
+        * c-typeck.c (digest_init): Handle arrays of vector constants.
+
 2003-05-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* builtins.c (expand_builtin_mempcpy): New function.
