@@ -1507,9 +1507,10 @@ m68k_rtx_costs (x, code, outer_code, total)
        for add and the time for shift, taking away a little more because
        sometimes move insns are needed.  */
     /* div?.w is relatively cheaper on 68000 counted in COSTS_N_INSNS terms.  */
-#define MULL_COST (TARGET_68060 ? 2 : TARGET_68040 ? 5 : 13)
-#define MULW_COST (TARGET_68060 ? 2 : TARGET_68040 ? 3 : TARGET_68020 ? 8 : 5)
-#define DIVW_COST (TARGET_68020 ? 27 : 12)
+#define MULL_COST (TARGET_68060 ? 2 : TARGET_68040 ? 5 : TARGET_CFV3 ? 3 : TARGET_COLDFIRE ? 10 : 13)
+#define MULW_COST (TARGET_68060 ? 2 : TARGET_68040 ? 3 : TARGET_68020 ? 8 : \
+			TARGET_CFV3 ? 2 : 5)
+#define DIVW_COST (TARGET_68020 ? 27 : TARGET_CF_HWDIV ? 11 : 12)
 
     case PLUS:
       /* An lea costs about three times as much as a simple add.  */
@@ -1521,7 +1522,11 @@ m68k_rtx_costs (x, code, outer_code, total)
 	  && (INTVAL (XEXP (XEXP (x, 0), 1)) == 2
 	      || INTVAL (XEXP (XEXP (x, 0), 1)) == 4
 	      || INTVAL (XEXP (XEXP (x, 0), 1)) == 8))
-	*total = COSTS_N_INSNS (3);	 /* lea an@(dx:l:i),am */
+	{
+	    /* lea an@(dx:l:i),am */
+	    *total = COSTS_N_INSNS (TARGET_COLDFIRE ? 2 : 3);
+	    return true;
+	}
       return false;
 
     case ASHIFT:
@@ -1532,7 +1537,7 @@ m68k_rtx_costs (x, code, outer_code, total)
           *total = COSTS_N_INSNS(1);
 	  return true;
 	}
-      if (! TARGET_68020)
+      if (! TARGET_68020 && ! TARGET_COLDFIRE)
         {
 	  if (GET_CODE (XEXP (x, 1)) == CONST_INT)
 	    {
@@ -1557,7 +1562,7 @@ m68k_rtx_costs (x, code, outer_code, total)
 	  && !(INTVAL (XEXP (x, 1)) > 0
 	       && INTVAL (XEXP (x, 1)) <= 8))
 	{
-	  *total = COSTS_N_INSNS (3);	 /* lsr #i,dn */
+	  *total = COSTS_N_INSNS (TARGET_COLDFIRE ? 1 : 3);	 /* lsr #i,dn */
 	  return true;
 	}
       return false;
@@ -1579,6 +1584,8 @@ m68k_rtx_costs (x, code, outer_code, total)
     case UMOD:
       if (GET_MODE (x) == QImode || GET_MODE (x) == HImode)
         *total = COSTS_N_INSNS (DIVW_COST);	/* div.w */
+      else if (TARGET_CF_HWDIV)
+        *total = COSTS_N_INSNS (18);
       else
 	*total = COSTS_N_INSNS (43);		/* div.l */
       return true;

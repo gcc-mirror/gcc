@@ -1,3 +1,10 @@
+2003-08-21  Bernardo Innocenti  <bernie@develer.com>
+            Paul Dale  <pauli@snapgear.com>
+            Peter Barada <peter@baradas.org>
+
+	* config/m68k/m68k.c (m68k_rtx_costs): Adjust mul/div costs for
+	ColdFire cores.
+
 2003-08-21  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.in (INCLUDES): Remove -I$(srcdir)/config.
