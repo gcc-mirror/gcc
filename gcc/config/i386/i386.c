@@ -694,6 +694,9 @@ override_options ()
 	   ix86_cmodel_string, TARGET_64BIT ? "64" : "32");
   if (ix86_cmodel == CM_LARGE)
     sorry ("Code model `large' not supported yet.");
+  if ((TARGET_64BIT != 0) != ((target_flags & MASK_64BIT) != 0))
+    sorry ("%i-bit mode not compiled in.",
+	   (target_flags & MASK_64BIT) ? 64 : 32);
 
   if (ix86_arch_string != 0)
     {

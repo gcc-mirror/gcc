@@ -181,7 +181,15 @@ extern int target_flags;
 #define TARGET_DEBUG_ARG (target_flags & MASK_DEBUG_ARG)
 
 /* 64bit Sledgehammer mode */
+#ifdef TARGET_BI_ARCH
 #define TARGET_64BIT (target_flags & MASK_64BIT)
+#else
+#ifdef TARGET_64BIT_DEFAULT
+#define TARGET_64BIT 1
+#else
+#define TARGET_64BIT 0
+#endif
+#endif
 
 #define TARGET_386 (ix86_cpu == PROCESSOR_I386)
 #define TARGET_486 (ix86_cpu == PROCESSOR_I486)
@@ -462,10 +470,24 @@ extern int ix86_arch;
 #endif
 #endif /* CPP_CPU_DEFAULT_SPEC */
 
-#ifndef CPP_CPU_SPEC
-#define CPP_CPU_SPEC "\
--Acpu=i386 -Amachine=i386 \
-%{!ansi:%{!std=c*:%{!std=i*:-Di386}}} -D__i386 -D__i386__ \
+#ifdef NO_BUILTIN_SIZE_TYPE
+#define CPP_CPU32_SIZE_TYPE_SPEC \
+  " -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int"
+#define CPP_CPU64_SIZE_TYPE_SPEC \
+  " -D__SIZE_TYPE__=unsigned\\ long\\ int -D__PTRDIFF_TYPE__=long\\ int"
+#else
+#define CPP_CPU32_SIZE_TYPE_SPEC ""
+#define CPP_CPU64_SIZE_TYPE_SPEC ""
+#endif
+
+#define CPP_CPU32_SPEC \
+  "-Acpu=i386 -Amachine=i386 %{!ansi:%{!std=c*:%{!std=i*:-Di386}}} -D__i386 \
+-D__i386__ %(cpp_cpu32sizet)"
+
+#define CPP_CPU64_SPEC \
+  "-Acpu=x86_64 -Amachine=x86_64 -D__x86_64 -D__x86_64__ %(cpp_cpu64sizet)"
+
+#define CPP_CPUCOMMON_SPEC "\
 %{march=i386:%{!mcpu*:-D__tune_i386__ }}\
 %{march=i486:-D__i486 -D__i486__ %{!mcpu*:-D__tune_i486__ }}\
 %{march=pentium|march=i586:-D__i586 -D__i586__ -D__pentium -D__pentium__ \
@@ -475,7 +497,7 @@ extern int ix86_arch;
   %{!mcpu*:-D__tune_i686__ -D__tune_pentiumpro__ }}\
 %{march=k6:-D__k6 -D__k6__ %{!mcpu*:-D__tune_k6__ }}\
 %{march=athlon:-D__athlon -D__athlon__ %{!mcpu*:-D__tune_athlon__ }}\
-%{mpentium4=pentium4:-D__pentium4 -D__pentium4__ %{!mcpu*:-D__tune_pentium4__ }}\
+%{march=pentium4:-D__pentium4 -D__pentium4__ %{!mcpu*:-D__tune_pentium4__ }}\
 %{m386|mcpu=i386:-D__tune_i386__ }\
 %{m486|mcpu=i486:-D__tune_i486__ }\
 %{mpentium|mcpu=pentium|mcpu=i586:-D__tune_i586__ -D__tune_pentium__ }\
@@ -484,6 +506,21 @@ extern int ix86_arch;
 %{mcpu=athlon:-D__tune_athlon__ }\
 %{mcpu=pentium4:-D__tune_pentium4__ }\
 %{!march*:%{!mcpu*:%{!m386:%{!m486:%{!mpentium*:%(cpp_cpu_default)}}}}}"
+
+#ifndef CPP_CPU_SPEC
+#ifdef TARGET_BI_ARCH
+#ifdef TARGET_64BIT_DEFAULT
+#define CPP_CPU_SPEC "%{m32:%(cpp_cpu32)}%{!m32:%(cpp_cpu64)} %(cpp_cpucommon)"
+#else
+#define CPP_CPU_SPEC "%{m64:%(cpp_cpu64)}%{!m64:%(cpp_cpu32)} %(cpp_cpucommon)"
+#endif
+#else
+#ifdef TARGET_64BIT_DEFAULT
+#define CPP_CPU_SPEC "%(cpp_cpu64) %(cpp_cpucommon)"
+#else
+#define CPP_CPU_SPEC "%(cpp_cpu32) %(cpp_cpucommon)"
+#endif
+#endif
 #endif
 
 #ifndef CC1_SPEC
@@ -507,6 +544,11 @@ extern int ix86_arch;
 #define EXTRA_SPECS							\
   { "cpp_cpu_default",	CPP_CPU_DEFAULT_SPEC },				\
   { "cpp_cpu",	CPP_CPU_SPEC },						\
+  { "cpp_cpu32", CPP_CPU32_SPEC },					\
+  { "cpp_cpu64", CPP_CPU64_SPEC },					\
+  { "cpp_cpu32sizet", CPP_CPU32_SIZE_TYPE_SPEC },			\
+  { "cpp_cpu64sizet", CPP_CPU64_SIZE_TYPE_SPEC },			\
+  { "cpp_cpucommon", CPP_CPUCOMMON_SPEC },				\
   { "cc1_cpu",  CC1_CPU_SPEC },						\
   SUBTARGET_EXTRA_SPECS
 
@@ -535,9 +577,16 @@ extern int ix86_arch;
 #define FLOAT_TYPE_SIZE 32
 #define LONG_TYPE_SIZE BITS_PER_WORD
 #define MAX_WCHAR_TYPE_SIZE 32
-#define MAX_LONG_TYPE_SIZE 64
 #define DOUBLE_TYPE_SIZE 64
 #define LONG_LONG_TYPE_SIZE 64
+
+#if defined (TARGET_BI_ARCH) || defined (TARGET_64BIT_DEFAULT)
+#define MAX_BITS_PER_WORD 64
+#define MAX_LONG_TYPE_SIZE 64
+#else
+#define MAX_BITS_PER_WORD 32
+#define MAX_LONG_TYPE_SIZE 32
+#endif
 
 /* Define if you don't want extended real, but do want to use the
    software floating point emulator for REAL_ARITHMETIC and
@@ -566,7 +615,6 @@ extern int ix86_arch;
    if using 16-bit ints on a 80386, this would still be 32.
    But on a machine with 16-bit registers, this would be 16.  */
 #define BITS_PER_WORD (TARGET_64BIT ? 64 : 32)
-#define MAX_BITS_PER_WORD 64
 
 /* Width of a word, in units (bytes).  */
 #define UNITS_PER_WORD (TARGET_64BIT ? 8 : 4)
