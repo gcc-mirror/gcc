@@ -1438,6 +1438,7 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
     }								\
   else if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == REG \
 	   && GET_CODE (XEXP (X, 1)) != CONST_INT		\
+	   && (TARGET_HARD_FLOAT || (MODE) != DFmode)		\
 	   && (MODE) != DImode && (MODE) != TImode) 		\
     {								\
       (X) = gen_rtx (PLUS, SImode, XEXP (X, 0),			\
