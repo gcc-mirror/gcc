@@ -1,3 +1,10 @@
+2000-09-23  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* stdstreams.cc: Include <libio.h>, not "libio.h".
+	* iolibio.h: Likewise.
+	(_IO_pos_BAD): Use _IO_off_t instead of _IO_fpos_t.
+	* libio.h (_IO_USER_LOCK): Define.
+
 2000-08-18  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* editbuf.h (edit_streambuf): Fix syntax error in
