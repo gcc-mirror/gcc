@@ -5593,14 +5593,31 @@ grok_reference_init (decl, type, init, cleanupp)
     goto fail;
   else if (tmp != NULL_TREE)
     {
+      tree subtype = TREE_TYPE (type);
       init = tmp;
 
-      if (TREE_CODE (init) == WITH_CLEANUP_EXPR)
+      /* Associate the cleanup with the reference so that we
+	 don't get burned by "aggressive" cleanup policy.  */
+      if (TYPE_NEEDS_DESTRUCTOR (subtype))
 	{
-	  /* Associate the cleanup with the reference so that we
-	     don't get burned by "aggressive" cleanup policy.  */
-	  *cleanupp = TREE_OPERAND (init, 2);
-	  TREE_OPERAND (init, 2) = error_mark_node;
+	  if (TREE_CODE (init) == WITH_CLEANUP_EXPR)
+	    {
+	      *cleanupp = TREE_OPERAND (init, 2);
+	      TREE_OPERAND (init, 2) = error_mark_node;
+	    }
+	  else
+	    {
+	      if (TREE_CODE (tmp) == ADDR_EXPR)
+		tmp = TREE_OPERAND (tmp, 0);
+	      if (TREE_CODE (tmp) == TARGET_EXPR)
+		{
+		  *cleanupp = build_delete
+		    (TYPE_POINTER_TO (subtype),
+		     build_unary_op (ADDR_EXPR, TREE_OPERAND (tmp, 0), 0),
+		     integer_two_node, LOOKUP_NORMAL|LOOKUP_DESTRUCTOR, 0);
+		  TREE_OPERAND (tmp, 2) = error_mark_node;
+		}
+	    }
 	}
 
       if (TREE_SIDE_EFFECTS (init))
@@ -10708,9 +10725,7 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
 	 defining how to inline.  So set DECL_EXTERNAL in that case.  */
       DECL_EXTERNAL (decl1) = current_extern_inline;
 
-      DECL_DEFER_OUTPUT (decl1)
-	= (DECL_INLINE (decl1) && (DECL_IMPLICIT_INSTANTIATION (decl1)
-				   || DECL_FUNCTION_MEMBER_P (decl1)));
+      DECL_DEFER_OUTPUT (decl1) = DECL_INLINE (decl1);
     }
 
   if (ctype != NULL_TREE && DECL_STATIC_FUNCTION_P (decl1))

@@ -4706,10 +4706,10 @@ instantiate_type (lhstype, rhs, complain)
 	  {
 	    elem = TREE_VALUE (baselink);
 	    while (elem)
-	      if (TREE_TYPE (elem) != lhstype)
-		elem = TREE_CHAIN (elem);
-	      else
+	      if (comptypes (lhstype, TREE_TYPE (elem), 1))
 		return elem;
+	      else
+		elem = TREE_CHAIN (elem);
 	  }
 
 	/* No exact match found, look for a compatible method.  */

@@ -2021,9 +2021,7 @@ init:
 	  expr_no_commas %prec '='
 	| '{' '}'
 		{ $$ = build_nt (CONSTRUCTOR, NULL_TREE, NULL_TREE);
-		  TREE_HAS_CONSTRUCTOR ($$) = 1;
-		  if (pedantic)
-		    pedwarn ("ANSI C++ forbids empty initializer braces"); }
+		  TREE_HAS_CONSTRUCTOR ($$) = 1; }
 	| '{' initlist '}'
 		{ $$ = build_nt (CONSTRUCTOR, NULL_TREE, nreverse ($2));
 		  TREE_HAS_CONSTRUCTOR ($$) = 1; }
