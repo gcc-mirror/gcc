@@ -333,9 +333,12 @@ extern int hard_regno_mode_ok[FIRST_PSEUDO_REGISTER];
 
    Used in flow.c, global-alloc.c, and reload1.c.  */
 extern int leaf_function;
+extern int compute_last_arg_offset ();
 
+/* Return 0 if span from stack ptr to last stack arg is too far.  */
 #define FRAME_POINTER_REQUIRED \
-  (! (leaf_function_p () && only_leaf_regs_used ()))
+  (! (leaf_function_p () && only_leaf_regs_used ()			\
+      && compute_last_arg_offset () < 4090))
 
 /* C statement to store the difference between the frame pointer
    and the stack pointer values immediately after the function prologue.
