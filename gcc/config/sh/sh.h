@@ -1705,7 +1705,8 @@ extern struct rtx_def *sh_builtin_saveregs ();
 	  && ((DSTCLASS) == GENERAL_REGS || (DSTCLASS) == R0_REGS)))	\
    ? 5									\
    : (((DSTCLASS) == FPUL_REGS						\
-       && ((SRCCLASS) == PR_REGS || (SRCCLASS) == MAC_REGS))		\
+       && ((SRCCLASS) == PR_REGS || (SRCCLASS) == MAC_REGS		\
+	    || (SRCCLASS) == T_REGS))					\
       || ((SRCCLASS) == FPUL_REGS					\
 	  && ((DSTCLASS) == PR_REGS || (DSTCLASS) == MAC_REGS)))	\
    ? 7									\

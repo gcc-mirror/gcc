@@ -1,3 +1,9 @@
+Fri Oct  8 19:46:03 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+				Diego Novillo <dnovillo@cygnus.com>
+
+	* config/sh/sh.h (REGISTER_MOVE_COST): Handle moves from T_REGS to
+	FPUL_REGS.
+
 Tue Oct 12 07:38:41 1999  Bruce Korb  <autogen@linuxbox.com>
 
 	* fixincl/*: Merged "no_bogosity" branch
