@@ -11405,8 +11405,12 @@ gen_field_die (decl, context_die)
      tree decl;
      dw_die_ref context_die;
 {
-  dw_die_ref decl_die = new_die (DW_TAG_member, context_die, decl);
+  dw_die_ref decl_die;
 
+  if (TREE_TYPE (decl) == error_mark_node)
+    return;
+    
+  decl_die = new_die (DW_TAG_member, context_die, decl);
   add_name_and_src_coords_attributes (decl_die, decl);
   add_type_attribute (decl_die, member_declared_type (decl),
 		      TREE_READONLY (decl), TREE_THIS_VOLATILE (decl),
