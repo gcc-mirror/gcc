@@ -1725,8 +1725,6 @@ do {									\
 
 #define BSS_SECTION_ASM_OP "\t.bss"
 
-#define ENCODE_SECTION_INFO_CHAR '@'
-
 #define IA64_DEFAULT_GVALUE 8
 
 /* Position Independent Code.  */

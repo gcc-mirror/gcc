@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.
-   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by James E. Wilson <wilson@cygnus.com> and
    		  David Mosberger <davidm@hpl.hp.com>.
 
@@ -190,8 +190,6 @@ static void emit_all_insn_group_barriers PARAMS ((FILE *, rtx));
 static void final_emit_insn_group_barriers PARAMS ((FILE *));
 static void emit_predicate_relation_info PARAMS ((void));
 static bool ia64_in_small_data_p PARAMS ((tree));
-static void ia64_encode_section_info PARAMS ((tree, int));
-static const char *ia64_strip_name_encoding PARAMS ((const char *));
 static void process_epilogue PARAMS ((void));
 static int process_set PARAMS ((FILE *, rtx));
 
@@ -302,10 +300,6 @@ static const struct attribute_spec ia64_attribute_table[] =
 
 #undef TARGET_IN_SMALL_DATA_P
 #define TARGET_IN_SMALL_DATA_P  ia64_in_small_data_p
-#undef TARGET_ENCODE_SECTION_INFO
-#define TARGET_ENCODE_SECTION_INFO ia64_encode_section_info
-#undef TARGET_STRIP_NAME_ENCODING
-#define TARGET_STRIP_NAME_ENCODING ia64_strip_name_encoding
 
 #undef TARGET_SCHED_ADJUST_COST
 #define TARGET_SCHED_ADJUST_COST ia64_adjust_cost
@@ -397,10 +391,7 @@ sdata_symbolic_operand (op, mode)
       if (CONSTANT_POOL_ADDRESS_P (op))
 	return GET_MODE_SIZE (get_pool_mode (op)) <= ia64_section_threshold;
       else
-	{
-	  const char *str = XSTR (op, 0);
-          return (str[0] == ENCODE_SECTION_INFO_CHAR && str[1] == 's');
-	}
+	return SYMBOL_REF_LOCAL_P (op) && SYMBOL_REF_SMALL_P (op);
 
     default:
       break;
@@ -481,25 +472,9 @@ tls_symbolic_operand (op, mode)
      rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  const char *str;
-
   if (GET_CODE (op) != SYMBOL_REF)
     return 0;
-  str = XSTR (op, 0);
-  if (str[0] != ENCODE_SECTION_INFO_CHAR)
-    return 0;
-  switch (str[1])
-    {
-    case 'G':
-      return TLS_MODEL_GLOBAL_DYNAMIC;
-    case 'L':
-      return TLS_MODEL_LOCAL_DYNAMIC;
-    case 'i':
-      return TLS_MODEL_INITIAL_EXEC;
-    case 'l':
-      return TLS_MODEL_LOCAL_EXEC;
-    }
-  return 0;
+  return SYMBOL_REF_TLS_MODEL (op);
 }
 
 
@@ -510,7 +485,7 @@ function_operand (op, mode)
      rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  if (GET_CODE (op) == SYMBOL_REF && SYMBOL_REF_FLAG (op))
+  if (GET_CODE (op) == SYMBOL_REF && SYMBOL_REF_FUNCTION_P (op))
     return 1;
   else
     return 0;
@@ -1124,7 +1099,7 @@ ia64_expand_load_address (dest, src)
       emit_insn (gen_load_gprel64 (dest, src));
       return;
     }
-  else if (GET_CODE (src) == SYMBOL_REF && SYMBOL_REF_FLAG (src))
+  else if (GET_CODE (src) == SYMBOL_REF && SYMBOL_REF_FUNCTION_P (src))
     {
       emit_insn (gen_load_fptr (dest, src));
       return;
@@ -3001,7 +2976,7 @@ ia64_assemble_integer (x, size, aligned_p)
       && aligned_p
       && !(TARGET_NO_PIC || TARGET_AUTO_PIC)
       && GET_CODE (x) == SYMBOL_REF
-      && SYMBOL_REF_FLAG (x))
+      && SYMBOL_REF_FUNCTION_P (x))
     {
       if (TARGET_ILP32)
 	fputs ("\tdata4\t@fptr(", asm_out_file);
@@ -7400,18 +7375,7 @@ ia64_eh_uses (regno)
   return 0;
 }
 
-/* For ia64, SYMBOL_REF_FLAG set means that it is a function.
-
-   We add @ to the name if this goes in small data/bss.  We can only put
-   a variable in small data/bss if it is defined in this module or a module
-   that we are statically linked with.  We can't check the second condition,
-   but TREE_STATIC gives us the first one.  */
-
-/* ??? If we had IPA, we could check the second condition.  We could support
-   programmer added section attributes if the variable is not defined in this
-   module.  */
-
-/* ??? See the v850 port for a cleaner way to do this.  */
+/* Return true if this goes in small data/bss.  */
 
 /* ??? We could also support own long data here.  Generating movl/add/ld8
    instead of addl,ld8/ld8.  This makes the code bigger, but should make the
@@ -7443,81 +7407,6 @@ ia64_in_small_data_p (exp)
     }
 
   return false;
-}
-
-static void
-ia64_encode_section_info (decl, first)
-     tree decl;
-     int first ATTRIBUTE_UNUSED;
-{
-  const char *symbol_str;
-  bool is_local;
-  rtx symbol;
-  char encoding = 0;
-
-  if (TREE_CODE (decl) == FUNCTION_DECL)
-    {
-      SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
-      return;
-    }
-
-  /* Careful not to prod global register variables.  */
-  if (TREE_CODE (decl) != VAR_DECL
-      || GET_CODE (DECL_RTL (decl)) != MEM
-      || GET_CODE (XEXP (DECL_RTL (decl), 0)) != SYMBOL_REF)
-    return;
-
-  symbol = XEXP (DECL_RTL (decl), 0);
-  symbol_str = XSTR (symbol, 0);
-
-  is_local = (*targetm.binds_local_p) (decl);
-
-  if (TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL (decl))
-    encoding = " GLil"[decl_tls_model (decl)];
-  /* Determine if DECL will wind up in .sdata/.sbss.  */
-  else if (is_local && ia64_in_small_data_p (decl))
-    encoding = 's';
-
-  /* Finally, encode this into the symbol string.  */
-  if (encoding)
-    {
-      char *newstr;
-      size_t len;
-
-      if (symbol_str[0] == ENCODE_SECTION_INFO_CHAR)
-	{
-	  if (encoding == symbol_str[1])
-	    return;
-	  /* ??? Sdata became thread or thread becaome not thread.  Lose.  */
-	  abort ();
-	}
-
-      len = strlen (symbol_str);
-      newstr = alloca (len + 3);
-      newstr[0] = ENCODE_SECTION_INFO_CHAR;
-      newstr[1] = encoding;
-      memcpy (newstr + 2, symbol_str, len + 1);
-
-      XSTR (symbol, 0) = ggc_alloc_string (newstr, len + 2);
-    }
-
-  /* This decl is marked as being in small data/bss but it shouldn't be;
-     one likely explanation for this is that the decl has been moved into
-     a different section from the one it was in when encode_section_info
-     was first called.  Remove the encoding.  */
-  else if (symbol_str[0] == ENCODE_SECTION_INFO_CHAR)
-    XSTR (symbol, 0) = ggc_strdup (symbol_str + 2);
-}
-
-static const char *
-ia64_strip_name_encoding (str)
-     const char *str;
-{
-  if (str[0] == ENCODE_SECTION_INFO_CHAR)
-    str += 2;
-  if (str[0] == '*')
-    str++;
-  return str;
 }
 
 /* Output assembly directives for prologue regions.  */
