@@ -1,1 +1,1 @@
-CC=/usr/local/gcc -DUSE_C_ALLOCA -D__inline=
+CC=/usr/local/bin/gcc -DUSE_C_ALLOCA -D__inline=
