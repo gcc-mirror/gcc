@@ -1,3 +1,7 @@
+2000-05-11  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* fixinc/fixfixes.c, fixinc/fixtests.c: Update commentary.
+
 Thu May 11 22:28:05 2000  Denis Chertykov  <denisc@overta.ru>
 
 	* config/avr/avr-protos.c (jump_over_one_insn_p): New declaration.

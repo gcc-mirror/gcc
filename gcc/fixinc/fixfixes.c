@@ -9,8 +9,7 @@
 
 NOTE TO DEVELOPERS
 
-The routines you write here must work closely with both the fixincl.c
-and the test_need.c program.
+The routines you write here must work closely with fixincl.c.
 
 Here are the rules:
 
@@ -27,23 +26,18 @@ Here are the rules:
 5.  Write to stderr only in the event of a reportable error
     In such an event, call "exit(1)".
 
-6.  If "MAIN" is _not_ defined, then you have access to the fixDescList
-    entry for the fix in question.  This may be useful, for example,
-    if there are pre-compiled selection expressions stored there.
+6.  You have access to the fixDescList entry for the fix in question.
+    This may be useful, for example, if there are pre-compiled
+    selection expressions stored there.
 
     For example, you may do this if you know that the first 
     test contains a useful regex.  This is okay because, remember,
     this code perforce works closely with the inclhack.def fixes!!
 
-
     tFixDesc*  pMyDesc = fixDescList + MY_FIX_NAME_FIXIDX;
     tTestDesc* pTestList = pMyDesc->p_test_desc;
 
     regexec (pTestList->p_test_regex, ...)
-
-
-    If MAIN _is_ defined, then you will have to compile it on
-    your own.
 
 = = = = = = = = = = = = = = = = = = = = = = = = =
 

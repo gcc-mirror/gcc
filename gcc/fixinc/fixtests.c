@@ -9,8 +9,7 @@
 
 NOTE TO DEVELOPERS
 
-The routines you write here must work closely with both the fixincl.c
-and the test_need.c program.
+The routines you write here must work closely with fixincl.c.
 
 Here are the rules:
 
