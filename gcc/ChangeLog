@@ -1,3 +1,12 @@
+Wed Sep 13 02:31:23 EDT 2000  John Wehle  (john@feith.com)
+
+	* alias.c (find_base_term): Use frame_pointer_rtx
+	when handling an ADDRESSOF.
+
+	* cse.c (canon_hash): Handle USE of BLKmode memory.
+	(cse_insn): Outgoing arguments for a libcall don't
+	affect any recorded expressions.
+
 2000-09-12  Tom Tromey  <tromey@cygnus.com>
 
 	* configure, config.in: Rebuilt.
