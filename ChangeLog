@@ -1,3 +1,7 @@
+1999-05-24  Nick Clifton  <nickc@cygnus.com>
+
+	* config.sub: Tidied up case statements.
+
 1999-05-22  Ben Elliston  <bje@cygnus.com>
 
 	* config.guess: Handle NEC UX/4800. Contributed by Jiro Takabatake
