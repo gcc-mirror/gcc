@@ -1,3 +1,12 @@
+1999-07-30  Richard Henderson  <rth@cygnus.com>
+
+	* c-typeck.c (initializer_constant_valid_p): Move ...
+	* c-common.c (initializer_constant_valid_p): ... here.  Use 
+	FOO_TYPE_P instead of tests against TREE_CODE.  Allow subtraction
+	of label addresses.
+	* c-common.h (initializer_constant_valid_p): Declare.
+	* c-tree.h (initializer_constant_valid_p): Remove.
+
 Fri Jul 30 16:33:42 1999  Mathias Froehlich  <frohlich@na.uni-tuebingen.de>
 
 	* config/i386/sol2-c1.asm: Align the stack.

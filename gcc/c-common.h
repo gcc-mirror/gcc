@@ -190,3 +190,5 @@ extern tree builtin_function			PROTO((const char *, tree, enum built_in_function
 extern void c_common_nodes_and_builtins		PROTO((int, int, int));
 
 extern tree build_va_arg			PROTO((tree, tree));
+
+extern tree initializer_constant_valid_p	PROTO((tree, tree));
