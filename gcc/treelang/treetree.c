@@ -545,27 +545,25 @@ tree_code_create_variable (unsigned int storage_class,
 
   DECL_SOURCE_LOCATION (var_decl) = loc;
 
+  DECL_EXTERNAL (var_decl) = 0;
+  TREE_PUBLIC (var_decl) = 0;
+  TREE_STATIC (var_decl) = 0;
   /* Set the storage mode and whether only visible in the same file.  */
   switch (storage_class)
     {
     case STATIC_STORAGE:
       TREE_STATIC (var_decl) = 1;
-      TREE_PUBLIC (var_decl) = 0;
       break;
 
     case AUTOMATIC_STORAGE:
-      TREE_STATIC (var_decl) = 0;
-      TREE_PUBLIC (var_decl) = 0;
       break;
 
     case EXTERNAL_DEFINITION_STORAGE:
-      TREE_STATIC (var_decl) = 0;
       TREE_PUBLIC (var_decl) = 1;
       break;
 
     case EXTERNAL_REFERENCE_STORAGE:
       DECL_EXTERNAL (var_decl) = 1;
-      TREE_PUBLIC (var_decl) = 0;
       break;
 
     default:
@@ -574,11 +572,6 @@ tree_code_create_variable (unsigned int storage_class,
 
   /* This should really only be set if the variable is used.  */
   TREE_USED (var_decl) = 1;
-
-  /* Expand declaration and initial value if any.  */
-
-  if (TREE_STATIC (var_decl))
-    rest_of_decl_compilation (var_decl, 0, 0);
 
   TYPE_NAME (TREE_TYPE (var_decl)) = TYPE_NAME (var_type);
   return pushdecl (copy_node (var_decl));
@@ -1127,6 +1120,12 @@ pushdecl (tree decl)
       && TYPE_NAME (TREE_TYPE (decl)) == 0)
     TYPE_NAME (TREE_TYPE (decl)) = DECL_NAME (decl);
 
+  /* Put automatic variables into the intermediate representation.  */
+  if (TREE_CODE (decl) == VAR_DECL && !DECL_EXTERNAL (decl)
+      && !TREE_STATIC (decl) && !TREE_PUBLIC (decl))
+    tree_code_output_expression_statement (build1 (DECL_EXPR, void_type_node,
+                                                   decl),
+                                           DECL_SOURCE_LOCATION (decl));
   return decl;
 }
 
