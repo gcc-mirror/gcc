@@ -4885,7 +4885,8 @@ like:
 A C expression that returns true if the conditional execution predicate
 @var{code1} is the inverse of @var{code2} and vice versa.  Define this to
 return 0 if the target has conditional execution predicates that cannot be
-reversed safely.  If none is specified, this macro expands to:
+reversed safely.  If no expansion is specified, this macro is defined as
+follows:
 
 @smallexample
 #define REVERSE_CONDEXEC_PREDICATES_P (x, y) ((x) == reverse_condition (y))
