@@ -399,7 +399,6 @@ find_base_decl (t)
     case '3':
       d0 = find_base_decl (TREE_OPERAND (t, 0));
       d1 = find_base_decl (TREE_OPERAND (t, 1));
-      d0 = find_base_decl (TREE_OPERAND (t, 0));
       d2 = find_base_decl (TREE_OPERAND (t, 2));
 
       /* Set any nonzero values from the last, then from the first.  */
