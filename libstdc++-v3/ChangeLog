@@ -1,5 +1,12 @@
 2003-12-16  Paolo Carlini  <pcarlini@suse.de>
 
+	* testsuite/performance/narrow_widen_char.cc: Tweak the
+	number of iterations for each test.
+	* testsuite/performance/narrow_widen_wchar_t.cc: Add a
+	missing clear_counters.
+
+2003-12-16  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/11723
 	* include/bits/locale_facets.h: Add _M_bit and _M_wmask,
 	used to speed up the computation of ctype::do_is.
