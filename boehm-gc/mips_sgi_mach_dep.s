@@ -24,7 +24,7 @@
 #   endif
     SAVE_GP(GPOFF)
     REG_S 	ra,RAOFF(sp)
-#   if (_MIPS_SIM == _MIPS_SIM_ABI32)
+#   if (_MIPS_SIM == _ABIO32)
     	call_push($2)
     	call_push($3)
 #   endif

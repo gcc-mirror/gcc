@@ -3465,7 +3465,7 @@ while (0)
    we need to load our GP.  We don't preserve $gp or $ra, since each
    init/fini chunk is supposed to initialize $gp, and crti/crtn
    already take care of preserving $ra and, when appropriate, $gp.  */
-#if _MIPS_SIM == _MIPS_SIM_ABI32
+#if (defined _ABIO32 && _MIPS_SIM == _ABIO32)
 #define CRT_CALL_STATIC_FUNCTION(SECTION_OP, FUNC)	\
    asm (SECTION_OP "\n\
 	.set noreorder\n\
