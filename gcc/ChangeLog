@@ -1,7 +1,14 @@
-2001-09-06  Aldy Hernandez  <aldyh@redhat.com>
+2001-09-07  Roman Lechtchinsky  <rl@cs.tu-berlin.de>
 
-       * config/mips/mips.c (override_options): Do not override ISA when ABI
-        specified if MIPS_CPU_STRING_DEFAULT was specified.
+	* c-common.c (signed_or_unsigned_type): Handle machine mode types
+	which have no corresponding C type.
+	* fold_const.c (target_isinf,target_isnan,target_negative): Update
+	the representation of 64-bit doubles to work with 64-bit ints.
+
+2001-09-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/mips/mips.c (override_options): Do not override ISA when ABI
+	specified if MIPS_CPU_STRING_DEFAULT was specified.
 
 2001-09-07  Richard Henderson  <rth@redhat.com>
 
@@ -111,7 +118,7 @@ Thu Sep  6 11:16:35 2001  Jeffrey A Law  (law@cygnus.com)
 
 2001-09-05  Ziemowit Laski  <zlaski@apple.com>
 
-        * objc/objc-act.c (build_message_expr): If a class method cannot
+	* objc/objc-act.c (build_message_expr): If a class method cannot
 	be found, do not issue a warning if a corresponding instance
 	method exists in the root class.
 
