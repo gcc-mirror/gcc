@@ -353,7 +353,7 @@ f77.install-common:
 	  echo '         (To turn off this warning, delete the file'; \
 	  echo '         f77-install-ok in the source or build directory.)'; \
 	  echo ''; \
-	fi
+	else true; fi
 
 # $(INSTALL_DATA) might be a relative pathname, so we can't cd into srcdir
 # to do the install.  The sed rule was copied from stmp-int-hdrs.
