@@ -1,3 +1,8 @@
+2003-06-30  Phil Edwards  <pme@gcc.gnu.org>
+
+	* testsuite/lib/libstdc++-v3-dg.exp:  Add comments.
+	(libstdc++-v3-init):  Also set LD_RUN_PATH.
+
 2003-06-30  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/std/std_streambuf.h (_M_mode): Move from here to

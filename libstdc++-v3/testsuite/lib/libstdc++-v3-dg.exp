@@ -20,6 +20,7 @@ load_lib dg.exp
 load_lib libgloss.exp
 load_lib prune.exp
 
+# Called once, by libstdc++-v3-init below.  "Static" to this file.
 proc libstdc++-v3-copy-files {srcfiles dstdir} {
     foreach f $srcfiles {
 	if { [catch { set symlink [file readlink $f] } x] } then {
@@ -35,6 +36,7 @@ proc libstdc++-v3-copy-files {srcfiles dstdir} {
     }
 }
 
+# Called once, from libstdc++-v3.dg/dg.exp.
 proc libstdc++-v3-init { args } {
     global srcdir
     global outdir
@@ -96,6 +98,8 @@ proc libstdc++-v3-init { args } {
     setenv  SHLIB_PATH          $ld_library_path
     setenv  LD_LIBRARYN32_PATH  $ld_library_path
     setenv  LD_LIBRARY64_PATH   $ld_library_path
+    setenv  LD_RUN_PATH         $ld_library_path
+    verbose -log "Set LD_*_PATHs to ${ld_library_path}"
 
     # Do a bunch of handstands and backflips for cross compiling and
     # finding simulators...
@@ -135,6 +139,7 @@ proc libstdc++-v3-init { args } {
     }
 }
 
+# Callback from system dg-test.
 proc libstdc++-v3-dg-test { prog do_what extra_tool_flags } {
     # Set up the compiler flags, based on what we're going to do.
 
@@ -181,7 +186,8 @@ proc libstdc++-v3-dg-test { prog do_what extra_tool_flags } {
     return [list $comp_output $output_file]
 }
 
-
+# Called from libstdc++-v3-dg-test above.  Calls back into system's
+# target_compile to actually do the work.
 proc libstdc++-v3_target_compile { source dest type options } {
     global gluefile 
     global wrap_flags
@@ -227,6 +233,8 @@ proc libstdc++-v3_target_compile { source dest type options } {
 #
 # Selecting individual tests can also be done with RUNTESTFLAGS, but
 # that doesn't really do all that we are trying to accomplish here.
+#
+# Essentially "static" to this file.
 proc v3-compute-tests { } {
     global srcdir
     global outdir
@@ -319,6 +327,7 @@ proc v3-compute-tests { } {
     close $f
 }
 
+# Called once, from libstdc++-v3.dg/dg.exp.
 proc v3-list-tests { filename } {
     global srcdir
     global outdir
