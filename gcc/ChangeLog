@@ -1,3 +1,9 @@
+Fri Jun  8 14:16:33 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* recog.c (split_insn): Break out from ...
+	(split_all_insns): ... here; do not use basic block information
+	when it is broken.
+
 Thu Jun  7 18:27:53 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* simplify-rtx.c (simplify_subreg):  Fix verification of

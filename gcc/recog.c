@@ -57,6 +57,7 @@ static void validate_replace_rtx_1	PARAMS ((rtx *, rtx, rtx, rtx));
 static rtx *find_single_use_1		PARAMS ((rtx, rtx *));
 static rtx *find_constant_term_loc	PARAMS ((rtx *));
 static void validate_replace_src_1 	PARAMS ((rtx *, void *));
+static rtx split_insn			PARAMS ((rtx));
 
 /* Nonzero means allow operands to be volatile.
    This should be 0 if you are generating rtl, such as if you are calling
@@ -2700,6 +2701,66 @@ reg_fits_class_p (operand, class, offset, mode)
   return 0;
 }
 
+/* Split single instruction.  Helper function for split_all_insns.
+   Return last insn in the sequence if succesfull, or NULL if unsuccesfull.  */
+static rtx
+split_insn (insn)
+     rtx insn;
+{
+  rtx set;
+  if (!INSN_P (insn))
+    ;
+  /* Don't split no-op move insns.  These should silently
+     disappear later in final.  Splitting such insns would
+     break the code that handles REG_NO_CONFLICT blocks.  */
+
+  else if ((set = single_set (insn)) != NULL && set_noop_p (set))
+    {
+      /* Nops get in the way while scheduling, so delete them
+         now if register allocation has already been done.  It
+         is too risky to try to do this before register
+         allocation, and there are unlikely to be very many
+         nops then anyways.  */
+      if (reload_completed)
+	{
+	  PUT_CODE (insn, NOTE);
+	  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+	  NOTE_SOURCE_FILE (insn) = 0;
+	}
+    }
+  else
+    {
+      /* Split insns here to get max fine-grain parallelism.  */
+      rtx first = PREV_INSN (insn);
+      rtx last = try_split (PATTERN (insn), insn, 1);
+
+      if (last != insn)
+	{
+	  /* try_split returns the NOTE that INSN became.  */
+	  PUT_CODE (insn, NOTE);
+	  NOTE_SOURCE_FILE (insn) = 0;
+	  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+
+	  /* ??? Coddle to md files that generate subregs in post-
+	     reload splitters instead of computing the proper 
+	     hard register.  */
+	  if (reload_completed && first != last)
+	    {
+	      first = NEXT_INSN (first);
+	      while (1)
+		{
+		  if (INSN_P (first))
+		    cleanup_subreg_operands (first);
+		  if (first == last)
+		    break;
+		  first = NEXT_INSN (first);
+		}
+	    }
+	  return last;
+	}
+    }
+  return NULL_RTX;
+}
 /* Split all insns in the function.  If UPD_LIFE, update life info after.  */
 
 void
@@ -2709,6 +2770,22 @@ split_all_insns (upd_life)
   sbitmap blocks;
   int changed;
   int i;
+
+  if (!upd_life)
+    {
+      rtx next, insn;
+
+      for (insn = get_insns (); insn ; insn = next)
+	{
+	  rtx last;
+
+	  /* Can't use `next_real_insn' because that might go across
+	     CODE_LABELS and short-out basic blocks.  */
+	  next = NEXT_INSN (insn);
+	  last = split_insn (insn);
+	}
+      return;
+    }
 
   blocks = sbitmap_alloc (n_basic_blocks);
   sbitmap_zero (blocks);
@@ -2721,82 +2798,26 @@ split_all_insns (upd_life)
 
       for (insn = bb->head; insn ; insn = next)
 	{
-	  rtx set;
+	  rtx last;
 
 	  /* Can't use `next_real_insn' because that might go across
 	     CODE_LABELS and short-out basic blocks.  */
 	  next = NEXT_INSN (insn);
-	  if (! INSN_P (insn))
-	    ;
-
-	  /* Don't split no-op move insns.  These should silently
-	     disappear later in final.  Splitting such insns would
-	     break the code that handles REG_NO_CONFLICT blocks.  */
-
-	  else if ((set = single_set (insn)) != NULL
-		   && set_noop_p (set))
+	  last = split_insn (insn);
+	  if (last)
 	    {
-	      /* Nops get in the way while scheduling, so delete them
-		 now if register allocation has already been done.  It
-		 is too risky to try to do this before register
-		 allocation, and there are unlikely to be very many
-		 nops then anyways.  */
-	      if (reload_completed)
-		{
-		  PUT_CODE (insn, NOTE);
-		  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-		  NOTE_SOURCE_FILE (insn) = 0;
-		}
-	    }
-	  else
-	    {
-	      /* Split insns here to get max fine-grain parallelism.  */
-	      rtx first = PREV_INSN (insn);
-	      rtx last = try_split (PATTERN (insn), insn, 1);
-
-	      if (last != insn)
-		{
-		  SET_BIT (blocks, i);
-		  changed = 1;
-
-		  /* try_split returns the NOTE that INSN became.  */
-		  PUT_CODE (insn, NOTE);
-		  NOTE_SOURCE_FILE (insn) = 0;
-		  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-
-		  /* ??? Coddle to md files that generate subregs in post-
-		     reload splitters instead of computing the proper 
-		     hard register.  */
-		  if (reload_completed && first != last)
-		    {
-		      first = NEXT_INSN (first);
-		      while (1)
-			{
-			  if (INSN_P (first))
-			    cleanup_subreg_operands (first);
-			  if (first == last)
-			    break;
-			  first = NEXT_INSN (first);
-			}
-		    }
-
-		  if (insn == bb->end)
-		    {
-		      bb->end = last;
-		      break;
-		    }
-		}
+	      SET_BIT (blocks, i);
+	      changed = 1;
+	      if (insn == bb->end)
+		bb->end = last;
+	      insn = last;
 	    }
 
 	  if (insn == bb->end)
 	    break;
 	}
 
-      /* ??? When we're called from just after reload, the CFG is in bad
-	 shape, and we may have fallen off the end.  This could be fixed
-	 by having reload not try to delete unreachable code.  Otherwise
-	 assert we found the end insn.  */
-      if (insn == NULL && upd_life)
+      if (insn == NULL)
 	abort ();
     }
 
