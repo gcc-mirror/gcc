@@ -748,6 +748,9 @@ parse_escape (string_ptr)
     case 'b':
       return TARGET_BS;
     case 'e':
+    case 'E':
+      if (pedantic)
+	pedwarn ("non-ANSI-standard escape sequence, `\\%c'", c);
       return 033;
     case 'f':
       return TARGET_FF;
