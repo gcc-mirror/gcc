@@ -975,6 +975,7 @@ gnu/gcj/convert/Output_ASCII.java \
 gnu/gcj/convert/Output_EUCJIS.java \
 gnu/gcj/convert/Output_JavaSrc.java \
 gnu/gcj/convert/Output_SJIS.java \
+gnu/gcj/convert/Output_UnicodeLittleUnmarked.java \
 gnu/gcj/convert/Output_UTF8.java \
 gnu/gcj/convert/Output_iconv.java \
 gnu/gcj/convert/UnicodeToBytes.java

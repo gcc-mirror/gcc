@@ -1,3 +1,9 @@
+2004-10-28  David Daney  <ddaney@avtrex.com>
+
+	* gnu/gcj/convert/Output_UnicodeLittleUnmarked.java: New file.
+	* Makefile.am: Build it.
+	* Makefile.in: Regenerate.
+
 2004-10-27  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
 
 	PR libgcj/18104
