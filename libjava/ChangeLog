@@ -1,5 +1,18 @@
 2003-02-13  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/NetPermission.java
+	(NetPermission): Make doucmentation match the method declaration.
+	* java/net/NetworkInterface.java
+	(equals): Reformated for GNU coding style.
+	* java/net/ServerSocket.java: Merged with classpath.
+	* java/net/Socket.java: Partly merged with classpath (Added some @since).
+	* java/net/SocketImpl.java
+	(localPort): Merged with classpath (initialize with -1).
+	* java/net/SocketPermission.java: Merged with classpath (reindented).
+	* java/net/URLDecoder.java: Merged with classpath (reindented).
+
+2003-02-13  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/GridBagConstraints.java
  	(FIRST_LINE_ENT, FIRST_LINE_START, LAST_LINE_END, LAST_LINE_START,
  	LINE_END, LINE_START, PAGE_END, PAGE_START): New constants.
