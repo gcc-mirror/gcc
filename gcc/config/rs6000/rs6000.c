@@ -17306,6 +17306,7 @@ rs6000_darwin_file_start (void)
     const char *name;
     int if_set;
   } mapping[] = {
+    { "ppc64", "ppc64", MASK_64BIT },
     { "970", "ppc970", MASK_PPC_GPOPT | MASK_MFCRF | MASK_POWERPC64 },
     { "power4", "ppc970", 0 },
     { "G5", "ppc970", 0 },
