@@ -95,3 +95,5 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef SDB_DEBUGGING_INFO
 #undef MIPS_DEBUGGING_INFO
 #undef PREFERRED_DEBUGGING_TYPE
+
+#define DWARF2_UNWIND_INFO 0
