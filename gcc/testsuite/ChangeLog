@@ -1,3 +1,7 @@
+1998-04-27  Dave Love  <d.love@dl.ac.uk>
+
+	* g77.f-torture/compile/980427-0.f: New test.
+
 1998-04-24  Dave Love  <d.love@dl.ac.uk>
 
 	* g77.f-torture/compile/980424-0.f: New test.
