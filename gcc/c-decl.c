@@ -6158,7 +6158,7 @@ start_function (tree declspecs, tree declarator, tree attributes)
    definitions (prototype format). The parms already have decls, so we
    need only record them as in effect and complain if any redundant
    old-style parm decls were written.  */
-void
+static void
 store_parm_decls_newstyle (tree fndecl, tree arg_info)
 {
   tree decl;
@@ -6436,6 +6436,16 @@ store_parm_decls_oldstyle (tree fndecl, tree arg_info)
 
       TYPE_ACTUAL_ARG_TYPES (TREE_TYPE (fndecl)) = actual;
     }
+}
+
+/* Store parameter declarations passed in ARG_INFO into the current
+   function declaration.  */
+
+void
+store_parm_decls_from (tree arg_info)
+{
+  current_function_arg_info = arg_info;
+  store_parm_decls ();
 }
 
 /* Store the parameter declarations into the current function declaration.
