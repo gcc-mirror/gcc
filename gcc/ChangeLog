@@ -1,3 +1,8 @@
+2001-08-07  Daniel Jacobowitz  <drow@mvista.com>
+
+        * config.gcc: Quote target_cpu_default2 correctly for
+        powerpc*-*-* targets.
+
 2001-08-07  David Edelsohn  <edelsohn@gnu.org>
 
 	* doc/install.texi: Document fine-grained multilib configuration.
