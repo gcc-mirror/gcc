@@ -66,7 +66,9 @@ static tree split_tree		PROTO((tree, enum tree_code, tree *, tree *,
 				       int));
 static tree associate_trees	PROTO((tree, tree, enum tree_code, tree));
 static tree int_const_binop	PROTO((enum tree_code, tree, tree, int, int));
+static void const_binop_1	PROTO((PTR));
 static tree const_binop		PROTO((enum tree_code, tree, tree, int));
+static void fold_convert_1	PROTO((PTR));
 static tree fold_convert	PROTO((tree, tree));
 static enum tree_code invert_tree_comparison PROTO((enum tree_code));
 static enum tree_code swap_tree_comparison PROTO((enum tree_code));
@@ -100,29 +102,31 @@ static tree strip_compound_expr PROTO((tree, tree));
 static int multiple_of_p	PROTO((tree, tree, tree));
 static tree constant_boolean_node PROTO((int, tree));
 static int count_cond		PROTO((tree, int));
-static void const_binop_1	PROTO((PTR));
-static void fold_convert_1	PROTO((PTR));
 
 #ifndef BRANCH_COST
 #define BRANCH_COST 1
 #endif
 
-/* Suppose A1 + B1 = SUM1, using 2's complement arithmetic ignoring overflow.
-   Suppose A, B and SUM have the same respective signs as A1, B1, and SUM1.
-   Then this yields nonzero if overflow occurred during the addition.
-   Overflow occurs if A and B have the same sign, but A and SUM differ in sign.
-   Use `^' to test whether signs differ, and `< 0' to isolate the sign.  */
-#define overflow_sum_sign(a, b, sum) ((~((a) ^ (b)) & ((a) ^ (sum))) < 0)
+/* We know that A1 + B1 = SUM1, using 2's complement arithmetic and ignoring
+   overflow.  Suppose A, B and SUM have the same respective signs as A1, B1,
+   and SUM1.  Then this yields nonzero if overflow occurred during the
+   addition.
+
+   Overflow occurs if A and B have the same sign, but A and SUM differ in
+   sign.  Use `^' to test whether signs differ, and `< 0' to isolate the
+   sign.  */
+#define OVERFLOW_SUM_SIGN(a, b, sum) ((~((a) ^ (b)) & ((a) ^ (sum))) < 0)
 
 /* To do constant folding on INTEGER_CST nodes requires two-word arithmetic.
    We do that by representing the two-word integer in 4 words, with only
-   HOST_BITS_PER_WIDE_INT/2 bits stored in each word, as a positive number.  */
+   HOST_BITS_PER_WIDE_INT / 2 bits stored in each word, as a positive
+   number.  The value of the word is LOWPART + HIGHPART * BASE.  */
 
 #define LOWPART(x) \
-  ((x) & (((unsigned HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT/2)) - 1))
+  ((x) & (((unsigned HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2)) - 1))
 #define HIGHPART(x) \
-  ((unsigned HOST_WIDE_INT) (x) >> HOST_BITS_PER_WIDE_INT/2)
-#define BASE ((unsigned HOST_WIDE_INT) 1 << HOST_BITS_PER_WIDE_INT/2)
+  ((unsigned HOST_WIDE_INT) (x) >> HOST_BITS_PER_WIDE_INT / 2)
+#define BASE ((unsigned HOST_WIDE_INT) 1 << HOST_BITS_PER_WIDE_INT / 2)
 
 /* Unpack a two-word integer into 4 words.
    LOW and HI are the integer, as two `HOST_WIDE_INT' pieces.
@@ -148,16 +152,16 @@ decode (words, low, hi)
      HOST_WIDE_INT *words;
      HOST_WIDE_INT *low, *hi;
 {
-  *low = words[0] | words[1] * BASE;
-  *hi = words[2] | words[3] * BASE;
+  *low = words[0] + words[1] * BASE;
+  *hi = words[2] + words[3] * BASE;
 }
 
-/* Make the integer constant T valid for its type
-   by setting to 0 or 1 all the bits in the constant
-   that don't belong in the type.
-   Yield 1 if a signed overflow occurs, 0 otherwise.
-   If OVERFLOW is nonzero, a signed overflow has already occurred
-   in calculating T, so propagate it.
+/* Make the integer constant T valid for its type by setting to 0 or 1 all
+   the bits in the constant that don't belong in the type.
+
+   Return 1 if a signed overflow occurs, 0 otherwise.  If OVERFLOW is
+   nonzero, a signed overflow has already occurred in calculating T, so
+   propagate it.
 
    Make the real constant T valid for its type by calling CHECK_FLOAT_VALUE,
    if it exists.  */
@@ -195,10 +199,8 @@ force_fit_type (t, overflow)
   if (prec == 2 * HOST_BITS_PER_WIDE_INT)
     ;
   else if (prec > HOST_BITS_PER_WIDE_INT)
-    {
-      TREE_INT_CST_HIGH (t)
-	&= ~((HOST_WIDE_INT) (-1) << (prec - HOST_BITS_PER_WIDE_INT));
-    }
+    TREE_INT_CST_HIGH (t)
+      &= ~((HOST_WIDE_INT) (-1) << (prec - HOST_BITS_PER_WIDE_INT));
   else
     {
       TREE_INT_CST_HIGH (t) = 0;
@@ -220,10 +222,8 @@ force_fit_type (t, overflow)
       /* Value is negative:
 	 set to 1 all the bits that are outside this type's precision.  */
       if (prec > HOST_BITS_PER_WIDE_INT)
-	{
-	  TREE_INT_CST_HIGH (t)
-	    |= ((HOST_WIDE_INT) (-1) << (prec - HOST_BITS_PER_WIDE_INT));
-	}
+	TREE_INT_CST_HIGH (t)
+	  |= ((HOST_WIDE_INT) (-1) << (prec - HOST_BITS_PER_WIDE_INT));
       else
 	{
 	  TREE_INT_CST_HIGH (t) = -1;
@@ -232,7 +232,7 @@ force_fit_type (t, overflow)
 	}
     }
 
-  /* Yield nonzero if signed overflow occurred.  */
+  /* Return nonzero if signed overflow occurred.  */
   return
     ((overflow | (low ^ TREE_INT_CST_LOW (t)) | (high ^ TREE_INT_CST_HIGH (t)))
      != 0);
@@ -255,7 +255,7 @@ add_double (l1, h1, l2, h2, lv, hv)
 
   *lv = l;
   *hv = h;
-  return overflow_sum_sign (h1, h2, h);
+  return OVERFLOW_SUM_SIGN (h1, h2, h);
 }
 
 /* Negate a doubleword integer with doubleword result.
@@ -975,10 +975,9 @@ fail:
   return 1;
 }
 
-
 /* Convert C9X hexadecimal floating point string constant S.  Return
    real value type in mode MODE.  This function uses the host computer's
-   fp arithmetic when there is no REAL_ARITHMETIC.  */
+   floating point arithmetic when there is no REAL_ARITHMETIC.  */
 
 REAL_VALUE_TYPE
 real_hex_to_f (s, mode)
@@ -988,8 +987,13 @@ real_hex_to_f (s, mode)
    REAL_VALUE_TYPE ip;
    char *p = s;
    unsigned HOST_WIDE_INT low, high;
-   int frexpon, expon, shcount, nrmcount, k;
-   int sign, expsign, decpt, isfloat, isldouble, gotp, lost;
+   int expon, shcount, nrmcount, k;
+   int sign, expsign, isfloat, isldouble;
+   int lost = 0;/* Nonzero low order bits shifted out and discarded.  */
+   int frexpon = 0;  /* Bits after the decimal point.  */
+   int expon = 0;  /* Value of exponent.  */
+   int decpt = 0;  /* How many decimal points.  */
+   int gotp = 0;  /* How many P's.  */
    char c;
 
    isldouble = 0;
@@ -1027,11 +1031,6 @@ real_hex_to_f (s, mode)
 
    high = 0;
    low = 0;
-   lost = 0; /* Nonzero low order bits shifted out and discarded.  */
-   frexpon = 0;  /* Bits after the decimal point.  */
-   expon = 0;  /* Value of exponent.  */
-   decpt = 0;  /* How many decimal points.  */
-   gotp = 0;  /* How many P's.  */
    shcount = 0;
    while ((c = *p) != '\0')
      {
@@ -1058,7 +1057,7 @@ real_hex_to_f (s, mode)
 	     {
 	       /* Record nonzero lost bits.  */
 	       lost |= k;
-	       if (!decpt)
+	       if (! decpt)
 		 frexpon -= 4;
 	     }
 	   ++p;
@@ -1068,6 +1067,7 @@ real_hex_to_f (s, mode)
 	   ++decpt;
 	   ++p;
 	 }
+
        else if (c == 'p' || c == 'P')
 	 {
 	   ++gotp;
@@ -1078,6 +1078,7 @@ real_hex_to_f (s, mode)
 	       expsign = -1;
 	       ++p;
 	     }
+
 	   /* Value of exponent.
 	      The exponent field is a decimal integer.  */
 	   while (ISDIGIT(*p))
@@ -1085,6 +1086,7 @@ real_hex_to_f (s, mode)
 	       k = (*p++ & 0x7f) - '0';
 	       expon = 10 * expon + k;
 	     }
+
 	   expon *= expsign;
 	   /* F suffix is ambiguous in the significand part
 	      so it must appear after the decimal exponent field.  */
@@ -1095,6 +1097,7 @@ real_hex_to_f (s, mode)
 	       break;
 	     }
 	 }
+
        else if (c == 'l' || c == 'L')
 	 {
 	   isldouble = 1;
@@ -1104,18 +1107,19 @@ real_hex_to_f (s, mode)
        else
 	 break;
      }
+
    /* Abort if last character read was not legitimate.  */
    c = *p;
    if ((c != '\0' && c != ' ' && c != '\n' && c != '\r') || (decpt > 1))
      abort ();
+
    /* There must be either one decimal point or one p.  */
    if (decpt == 0 && gotp == 0)
      abort ();
+
    shcount -= 4;
-   if ((high == 0) && (low == 0))
-     {
-       return dconst0;
-     }
+   if (high == 0 && low == 0))
+     return dconst0;
 
    /* Normalize.  */
    nrmcount = 0;
@@ -1125,6 +1129,7 @@ real_hex_to_f (s, mode)
        low = 0;
        nrmcount += 32;
      }
+
    /* Leave a high guard bit for carry-out.  */
    if ((high & 0x80000000) != 0)
      {
@@ -1133,18 +1138,21 @@ real_hex_to_f (s, mode)
        high = high >> 1;
        nrmcount -= 1;
      }
+
    if ((high & 0xffff8000) == 0)
      {
        high = (high << 16) + ((low >> 16) & 0xffff);
        low = low << 16;
        nrmcount += 16;
      }
+
    while ((high & 0xc0000000) == 0)
      {
        high = (high << 1) + ((low >> 31) & 1);
        low = low << 1;
        nrmcount += 1;
      }
+
    if (isfloat || GET_MODE_SIZE(mode) == UNITS_PER_WORD)
      {
        /* Keep 24 bits precision, bits 0x7fffff80.
@@ -1193,6 +1201,7 @@ real_hex_to_f (s, mode)
        low &= 0xffffff80;
 #endif
      }
+
    ip = (double) high;
    ip =  REAL_VALUE_LDEXP (ip, 32) + (double) low;
    /* Apply shifts and exponent value as power of 2.  */
@@ -1449,7 +1458,7 @@ int_const_binop (code, arg1, arg2, notrunc, forsize)
     case MINUS_EXPR:
       neg_double (int2l, int2h, &low, &hi);
       add_double (int1l, int1h, low, hi, &low, &hi);
-      overflow = overflow_sum_sign (hi, int2h, int1h);
+      overflow = OVERFLOW_SUM_SIGN (hi, int2h, int1h);
       break;
 
     case MULT_EXPR:
@@ -1515,21 +1524,18 @@ int_const_binop (code, arg1, arg2, notrunc, forsize)
     case MIN_EXPR:
     case MAX_EXPR:
       if (uns)
-	{
-	  low = (((unsigned HOST_WIDE_INT) int1h
-		  < (unsigned HOST_WIDE_INT) int2h)
-		 || (((unsigned HOST_WIDE_INT) int1h
-		      == (unsigned HOST_WIDE_INT) int2h)
-		     && ((unsigned HOST_WIDE_INT) int1l
-			 < (unsigned HOST_WIDE_INT) int2l)));
-	}
+	low = (((unsigned HOST_WIDE_INT) int1h
+		< (unsigned HOST_WIDE_INT) int2h)
+	       || (((unsigned HOST_WIDE_INT) int1h
+		    == (unsigned HOST_WIDE_INT) int2h)
+		   && ((unsigned HOST_WIDE_INT) int1l
+		       < (unsigned HOST_WIDE_INT) int2l)));
       else
-	{
-	  low = ((int1h < int2h)
-		 || ((int1h == int2h)
-		     && ((unsigned HOST_WIDE_INT) int1l
-			 < (unsigned HOST_WIDE_INT) int2l)));
-	}
+	low = ((int1h < int2h)
+	       || ((int1h == int2h)
+		   && ((unsigned HOST_WIDE_INT) int1l
+		       < (unsigned HOST_WIDE_INT) int2l)));
+
       if (low == (code == MIN_EXPR))
 	low = int1l, hi = int1h;
       else
@@ -1558,6 +1564,7 @@ int_const_binop (code, arg1, arg2, notrunc, forsize)
 	: force_fit_type (t, (!uns || forsize) && overflow) && ! no_overflow)
        | TREE_OVERFLOW (arg1)
        | TREE_OVERFLOW (arg2));
+
   /* If we're doing a size calculation, unsigned arithmetic does overflow.
      So check if force_fit_type truncated the value.  */
   if (forsize
@@ -1565,27 +1572,30 @@ int_const_binop (code, arg1, arg2, notrunc, forsize)
       && (TREE_INT_CST_HIGH (t) != hi
 	  || TREE_INT_CST_LOW (t) != low))
     TREE_OVERFLOW (t) = 1;
+
   TREE_CONSTANT_OVERFLOW (t) = (TREE_OVERFLOW (t)
 				| TREE_CONSTANT_OVERFLOW (arg1)
 				| TREE_CONSTANT_OVERFLOW (arg2));
   return t;
 }
 
+/* Define input and output argument for const_binop_1.  */
 struct cb_args
 {
-  /* Input */
-  tree arg1;
-  REAL_VALUE_TYPE d1, d2;
-  enum tree_code code;
-  /* Output */
-  tree t;
+  enum tree_code code;		/* Input: tree code for operation*/
+  tree type;			/* Input: tree type for operation. */
+  REAL_VALUE_TYPE d1, d2;	/* Input: floating point operands. */
+  tree t;			/* Output: constant for result. */
 };
+
+/* Do the real arithmetic for const_binop while protected by a
+   float overflow handler.  */
 
 static void
 const_binop_1 (data)
   PTR data;
 {
-  struct cb_args * args = (struct cb_args *) data;
+  struct cb_args *args = (struct cb_args *) data;
   REAL_VALUE_TYPE value;
 
 #ifdef REAL_ARITHMETIC
@@ -1626,16 +1636,15 @@ const_binop_1 (data)
       abort ();
     }
 #endif /* no REAL_ARITHMETIC */
-  args->t =
-    build_real (TREE_TYPE (args->arg1),
-		real_value_truncate (TYPE_MODE (TREE_TYPE (args->arg1)),
-				     value));
+
+  args->t
+    = build_real (args->type,
+		  real_value_truncate (TYPE_MODE (args->type), value));
 }
 
-/* Combine two constants ARG1 and ARG2 under operation CODE
-   to produce a new constant.
-   We assume ARG1 and ARG2 have the same data type,
-   or at least are the same kind of constant and the same machine mode.
+/* Combine two constants ARG1 and ARG2 under operation CODE to produce a new
+   constant.  We assume ARG1 and ARG2 have the same data type, or at least
+   are the same kind of constant and the same machine mode.
 
    If NOTRUNC is nonzero, do not truncate the result to fit the data type.  */
 
@@ -1670,19 +1679,17 @@ const_binop (code, arg1, arg2, notrunc)
 	return arg2;
 
       /* Setup input for const_binop_1() */
-      args.arg1 = arg1;
+      args.type = TREE_TYPE (arg1);
       args.d1 = d1;
       args.d2 = d2;
       args.code = code;
       
       if (do_float_handler (const_binop_1, (PTR) &args))
-	{
-	  /* Receive output from const_binop_1() */
-	  t = args.t;
-	}
+	/* Receive output from const_binop_1. */
+	t = args.t;
       else
 	{
-	  /* We got an exception from const_binop_1() */
+	  /* We got an exception from const_binop_1. */
 	  t = copy_node (arg1);
 	  overflow = 1;
 	}
@@ -1776,36 +1783,51 @@ const_binop (code, arg1, arg2, notrunc)
   return 0;
 }
 
-/* Return an INTEGER_CST with value V .  The type is determined by bit_p:
-   if it is zero, the type is taken from sizetype; if it is one, the type
-   is taken from bitsizetype.  */
+/* Return an INTEGER_CST with value whose HOST_BITS_PER_WIDE_INT bits are
+   given by HIGH and whose HOST_BITS_PER_WIDE_INT bits are given by NUMBER.
+
+   If BIT_P is nonzero, this represents a size in bit and the type of the
+   result will be bitsizetype, othewise it represents a size in bytes and
+   the type of the result will be sizetype.  */
 
 tree
 size_int_wide (number, high, bit_p)
      unsigned HOST_WIDE_INT number, high;
      int bit_p;
 {
+  /* Type-size nodes already made for small sizes.  */
+  static tree size_table[2 * HOST_BITS_PER_WIDE_INT + 1][2];
+  static int init_p = 0;
   tree t;
   
-  if (!ggc_p)
+  if (ggc_p && ! init_p)
     {
-      /* Type-size nodes already made for small sizes.  */
-      static tree size_table[2*HOST_BITS_PER_WIDE_INT + 1][2];
+      ggc_add_tree_root ((tree *) size_table,
+			 sizeof size_table / sizeof (tree));
+      init_p = 1;
+    }
 
-      if (number < 2*HOST_BITS_PER_WIDE_INT + 1 && ! high
-	  && size_table[number][bit_p] != 0)
-	return size_table[number][bit_p];
-      if (number < 2*HOST_BITS_PER_WIDE_INT + 1 && ! high)
+  if (number < 2*HOST_BITS_PER_WIDE_INT + 1 && high == 0
+      && size_table[number][bit_p] != 0)
+    return size_table[number][bit_p];
+
+  if (number < 2*HOST_BITS_PER_WIDE_INT + 1 && high == 0)
+    {
+      if (! ggc_p)
 	{
-	  push_obstacks_nochange ();
 	  /* Make this a permanent node.  */
+	  push_obstacks_nochange ();
 	  end_temporary_allocation ();
-	  t = build_int_2 (number, 0);
-	  TREE_TYPE (t) = bit_p ? bitsizetype : sizetype;
-	  size_table[number][bit_p] = t;
-	  pop_obstacks ();
-	  return t;
 	}
+
+      t = build_int_2 (number, 0);
+      TREE_TYPE (t) = bit_p ? bitsizetype : sizetype;
+      size_table[number][bit_p] = t;
+
+      if (! ggc_p)
+	pop_obstacks ();
+
+      return t;
     }
 
   t = build_int_2 (number, high);
@@ -1879,13 +1901,16 @@ ssize_binop (code, arg0, arg1)
   return fold (build (code, ssizetype, arg0, arg1));
 }
 
+/* This structure is used to communicate arguments to fold_convert_1.  */
 struct fc_args
 {
-  /* Input */
-  tree arg1, type;
-  /* Output */
-  tree t;
+  tree arg1;			/* Input: value to convert. */
+  tree type;			/* Input: type to convert value to. */
+  tree t;			/* Ouput: result of conversion. */
 };
+
+/* Function to convert floating-point constants, protected by floating
+   point exception handler.  */
 
 static void
 fold_convert_1 (data)
@@ -2400,11 +2425,8 @@ twoval_comparison_p (arg, cval1, cval2, save_p)
 	       || code == COMPOUND_EXPR))
     class = '2';
 
-  /* ??? Disable this since the SAVE_EXPR might already be in use outside
-     the expression.  There may be no way to make this work, but it needs
-     to be looked at again for 2.6.  */
-#if 0
-  else if (class == 'e' && code == SAVE_EXPR && SAVE_EXPR_RTL (arg) == 0)
+  else if (class == 'e' && code == SAVE_EXPR && SAVE_EXPR_RTL (arg) == 0
+	   && ! TREE_SIDE_EFFECTS (TREE_OPERAND (arg, 0)))
     {
       /* If we've already found a CVAL1 or CVAL2, this expression is
 	 two complex to handle.  */
@@ -2414,7 +2436,6 @@ twoval_comparison_p (arg, cval1, cval2, save_p)
       class = '1';
       *save_p = 1;
     }
-#endif
 
   switch (class)
     {
@@ -4513,6 +4534,7 @@ constant_boolean_node (value, type)
   else 
     {
       tree t = build_int_2 (value, 0);
+
       TREE_TYPE (t) = type;
       return t;
     }
@@ -4559,10 +4581,8 @@ fold (expr)
   register enum tree_code code = TREE_CODE (t);
   register int kind;
   int invert;
-
   /* WINS will be nonzero when the switch is done
      if all operands are constant.  */
-
   int wins = 1;
 
   /* Don't try to process an RTL_EXPR since its operands aren't trees. 
@@ -4737,11 +4757,13 @@ fold (expr)
 	      && (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 1), 0))
 		  == TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 2), 0)))
 	      && ! (INTEGRAL_TYPE_P (TREE_TYPE (t))
-		    && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 1), 0)))
+		    && (INTEGRAL_TYPE_P
+			(TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 1), 0))))
 		    && TYPE_PRECISION (TREE_TYPE (t)) <= BITS_PER_WORD))
 	    t = build1 (code, type,
 			build (COND_EXPR,
-			       TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 1), 0)),
+			       TREE_TYPE (TREE_OPERAND
+					  (TREE_OPERAND (t, 1), 0)),
 			       TREE_OPERAND (t, 0),
 			       TREE_OPERAND (TREE_OPERAND (t, 1), 0),
 			       TREE_OPERAND (TREE_OPERAND (t, 2), 0)));

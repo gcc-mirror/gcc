@@ -1,5 +1,5 @@
 /* C-compiler utilities for types and variables storage layout
-   Copyright (C) 1987, 88, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -21,7 +21,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
-
 #include "tree.h"
 #include "rtl.h"
 #include "tm_p.h"
@@ -67,6 +66,7 @@ get_pending_sizes ()
   /* Put each SAVE_EXPR into the current function.  */
   for (t = chain; t; t = TREE_CHAIN (t))
     SAVE_EXPR_CONTEXT (TREE_VALUE (t)) = current_function_decl;
+
   pending_sizes = 0;
   return chain;
 }
@@ -123,7 +123,8 @@ variable_size (size)
        Also, we would like to pass const0_rtx here, but don't have it.  */
     expand_expr (size, expand_expr (integer_zero_node, NULL_PTR, VOIDmode, 0),
 		 VOIDmode, 0);
-  else if (current_function && current_function->x_dont_save_pending_sizes_p)
+  else if (current_function != 0
+	   && current_function->x_dont_save_pending_sizes_p)
     /* The front-end doesn't want us to keep a list of the expressions
        that determine sizes for variable size objects.  */
     ;
@@ -203,7 +204,8 @@ int_mode_for_mode (mode)
     case MODE_RANDOM:
       if (mode == BLKmode)
         break;
-      /* FALLTHRU */
+
+      /* ... fall through ... */
 
     case MODE_CC:
     default:
@@ -282,8 +284,8 @@ layout_decl (decl, known_align)
 	   || (! DECL_PACKED (decl) &&  TYPE_ALIGN (type) > DECL_ALIGN (decl)))
     DECL_ALIGN (decl) = TYPE_ALIGN (type);
 
-  /* See if we can use an ordinary integer mode for a bit-field.  */
-  /* Conditions are: a fixed size that is correct for another mode
+  /* See if we can use an ordinary integer mode for a bit-field. 
+     Conditions are: a fixed size that is correct for another mode
      and occupying a complete byte or bytes on proper boundary.  */
   if (code == FIELD_DECL)
     {
@@ -385,6 +387,7 @@ layout_record (rec)
 	  pending_statics = tree_cons (NULL_TREE, field, pending_statics);
 	  continue;
 	}
+
       /* Enumerators and enum types which are local to this class need not
 	 be laid out.  Likewise for initialized constant fields.  */
       if (TREE_CODE (field) != FIELD_DECL)
@@ -639,7 +642,8 @@ layout_record (rec)
       tree unpacked_size;
       TYPE_PACKED (rec) = 0;
 #ifdef ROUND_TYPE_ALIGN
-      unpacked_align = ROUND_TYPE_ALIGN (rec, TYPE_ALIGN (rec), unpacked_align);
+      unpacked_align
+	= ROUND_TYPE_ALIGN (rec, TYPE_ALIGN (rec), unpacked_align);
 #else
       unpacked_align = MAX (TYPE_ALIGN (rec), unpacked_align);
 #endif
@@ -825,6 +829,7 @@ layout_type (type)
     case BOOLEAN_TYPE:  /* Used for Java, Pascal, and Chill. */
       if (TYPE_PRECISION (type) == 0)
 	TYPE_PRECISION (type) = 1; /* default to one byte/boolean. */
+
       /* ... fall through ... */
 
     case INTEGER_TYPE:
@@ -937,9 +942,11 @@ layout_type (type)
 	    element_size = TYPE_SIZE (element);
 	    if (TYPE_PACKED (type) && INTEGRAL_TYPE_P (element))
 	      {
-		HOST_WIDE_INT maxvalue, minvalue;
-		maxvalue = TREE_INT_CST_LOW (TYPE_MAX_VALUE (element));
-		minvalue = TREE_INT_CST_LOW (TYPE_MIN_VALUE (element));
+		HOST_WIDE_INT maxvalue
+		  = TREE_INT_CST_LOW (TYPE_MAX_VALUE (element));
+		HOST_WIDE_INT minvalue
+		  = TREE_INT_CST_LOW (TYPE_MIN_VALUE (element));
+
 		if (maxvalue - minvalue == 1
 		    && (maxvalue == 1 || maxvalue == 0))
 		  element_size = integer_one_node;
@@ -957,10 +964,8 @@ layout_type (type)
 	       set correctly in that case.  */
 	    if (TYPE_SIZE_UNIT (element) != 0
 		&& element_size != integer_one_node)
-	      {
-	        TYPE_SIZE_UNIT (type)
-		  = size_binop (MULT_EXPR, TYPE_SIZE_UNIT (element), length);
-	      }
+	      TYPE_SIZE_UNIT (type)
+		= size_binop (MULT_EXPR, TYPE_SIZE_UNIT (element), length);
 	  }
 
 	/* Now round the alignment and size,
@@ -976,12 +981,14 @@ layout_type (type)
 #ifdef ROUND_TYPE_SIZE
 	if (TYPE_SIZE (type) != 0)
 	  {
-	    tree tmp;
-	    tmp = ROUND_TYPE_SIZE (type, TYPE_SIZE (type), TYPE_ALIGN (type));
+	    tree tmp
+	      = ROUND_TYPE_SIZE (type, TYPE_SIZE (type), TYPE_ALIGN (type));
+
 	    /* If the rounding changed the size of the type, remove any
 	       pre-calculated TYPE_SIZE_UNIT.  */
 	    if (simple_cst_equal (TYPE_SIZE (type), tmp) != 1)
 	      TYPE_SIZE_UNIT (type) = NULL;
+
 	    TYPE_SIZE (type) = tmp;
 	  }
 #endif
@@ -999,7 +1006,8 @@ layout_type (type)
 			       MODE_INT, 1);
 
 	    if (STRICT_ALIGNMENT && TYPE_ALIGN (type) < BIGGEST_ALIGNMENT
-		&& (int)TYPE_ALIGN (type) < TREE_INT_CST_LOW (TYPE_SIZE (type))
+		&& ((int) TYPE_ALIGN (type)
+		    < TREE_INT_CST_LOW (TYPE_SIZE (type)))
 		&& TYPE_MODE (type) != BLKmode)
 	      {
 		TYPE_NO_FORCE_BLK (type) = 1;
@@ -1066,7 +1074,7 @@ layout_type (type)
 	     then stick with BLKmode.  */
 	  if (STRICT_ALIGNMENT
 	      && ! (TYPE_ALIGN (type) >= BIGGEST_ALIGNMENT
-		    || ((int)TYPE_ALIGN (type)
+		    || ((int) TYPE_ALIGN (type)
 			>= TREE_INT_CST_LOW (TYPE_SIZE (type)))))
 	    {
 	      if (TYPE_MODE (type) != BLKmode)
@@ -1190,14 +1198,13 @@ layout_type (type)
   /* If we failed to find a simple way to calculate the unit size
      of the type above, find it by division.  */
   if (TYPE_SIZE_UNIT (type) == 0 && TYPE_SIZE (type) != 0)
-    {
-      /* TYPE_SIZE (type) is computed in bitsizetype.  After the division, the
-	 result will fit in sizetype.  We will get more efficient code using
-	 sizetype, so we force a conversion.  */
-      tree unit_size = size_binop (FLOOR_DIV_EXPR, TYPE_SIZE (type),
-				   size_int (BITS_PER_UNIT));
-      TYPE_SIZE_UNIT (type) = convert (sizetype, unit_size);
-    }
+    /* TYPE_SIZE (type) is computed in bitsizetype.  After the division, the
+       result will fit in sizetype.  We will get more efficient code using
+       sizetype, so we force a conversion.  */
+    TYPE_SIZE_UNIT (type)
+      = convert (sizetype,
+		 size_binop (FLOOR_DIV_EXPR, TYPE_SIZE (type),
+			     size_int (BITS_PER_UNIT)));
 
   /* Once again evaluate only once, either now or as soon as safe.  */
   if (TYPE_SIZE_UNIT (type) != 0
@@ -1217,7 +1224,7 @@ layout_type (type)
 
       /* Copy it into all variants.  */
       for (variant = TYPE_MAIN_VARIANT (type);
-	   variant;
+	   variant != 0;
 	   variant = TYPE_NEXT_VARIANT (variant))
 	{
 	  TYPE_SIZE (variant) = size;
@@ -1265,14 +1272,12 @@ make_signed_type (precision)
 
   /* The first type made with this or `make_unsigned_type'
      is the type for size values.  */
-
   if (sizetype == 0)
     set_sizetype (type);
 
   /* Lay out the type: set its alignment, size, etc.  */
 
   layout_type (type);
-
   return type;
 }
 
@@ -1306,25 +1311,24 @@ void
 set_sizetype (type)
      tree type;
 {
-  int oprecision = TYPE_PRECISION (type), precision;
+  int oprecision = TYPE_PRECISION (type);
+  /* The *bitsizetype types use a precision that avoids overflows when
+     calculating signed sizes / offsets in bits.  However, when
+     cross-compiling from a 32 bit to a 64 bit host, we are limited to 64 bit
+     precision.  */
+  int precision = MAX (oprecision + BITS_PER_UNIT_LOG + 1,
+		       2 * HOST_BITS_PER_WIDE_INT);
 
   sizetype = type;
-
-  /* The *bitsizetype types use a precision that avoids overflows when
-     calculating signed sizes / offsets in bits.  */
-  precision = oprecision + BITS_PER_UNIT_LOG + 1;
-  /* However, when cross-compiling from a 32 bit to a 64 bit host,
-     we are limited to 64 bit precision.  */
-  if (precision > 2 * HOST_BITS_PER_WIDE_INT)
-    precision = 2 * HOST_BITS_PER_WIDE_INT;
-
   bitsizetype = make_node (INTEGER_TYPE);
   TYPE_NAME (bitsizetype) = TYPE_NAME (type);
   TYPE_PRECISION (bitsizetype) = precision;
+
   if (TREE_UNSIGNED (type))
     fixup_unsigned_type (bitsizetype);
   else
     fixup_signed_type (bitsizetype);
+
   layout_type (bitsizetype);
 
   if (TREE_UNSIGNED (type))
@@ -1343,7 +1347,8 @@ set_sizetype (type)
     }
   TYPE_NAME (bitsizetype) = TYPE_NAME (sizetype);
 
-  ggc_add_tree_root ((tree*) &sizetype_tab, sizeof(sizetype_tab)/sizeof(tree));
+  ggc_add_tree_root ((tree *) &sizetype_tab,
+		     sizeof sizetype_tab / sizeof (tree));
 }
 
 /* Set the extreme values of TYPE based on its precision in bits,

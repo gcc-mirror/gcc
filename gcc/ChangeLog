@@ -1,3 +1,21 @@
+Sat Dec 18 16:28:43 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* alias.c: Minor reformatting.
+	* flow.c: Likewise.
+	* regs.h: Likewise.
+	* stor-layout.c: Likewise.
+	* fold-const.c: Likewise.
+ 	(OVERFLOW_SUM_SIGN): Renamed from overflow_sum_sign.
+	(struct cb_args, const_binop_1, const_binop): Pass type of arg,
+	not arg itself.
+	(size_int_wide): Cache nodes even if garbage collecting.
+	(twoval_comparison_p): Reenable SAVE_EXPR case if operand
+	of SAVE_EXPR has no side effects.
+	* cse.c: Move a comment.
+	* tree.c: Minor reformatting.
+	(int_size_in_bytes): Return -1 if constant overflows.
+	* reload.c (combine_reloads): Do nothing if no output reload
+
 Sat Dec 18 18:30:20 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* unroll.c (copy_loop_body): Don't treat a REG like a PLUS.

@@ -103,8 +103,8 @@ Boston, MA 02111-1307, USA.  */
    a REG_INC element is added to the insn's REG_NOTES list.
 
    life_analysis fills in certain vectors containing information about
-   register usage: reg_n_refs, reg_n_deaths, reg_n_sets, reg_live_length,
-   reg_n_calls_crosses and reg_basic_block.
+   register usage: REG_N_REFS, REG_N_DEATHS, REG_N_SETS, REG_LIVE_LENGTH,
+   REG_N_CALLS_CROSSED and REG_BASIC_BLOCK.
 
    life_analysis sets current_function_sp_is_unchanging if the function
    doesn't modify the stack pointer.  */
@@ -178,10 +178,8 @@ varray_type basic_block_info;
 
 /* The special entry and exit blocks.  */
 
-struct basic_block_def entry_exit_blocks[2] = 
-{
-  {
-    NULL,			/* head */
+struct basic_block_def entry_exit_blocks[2]
+= {{NULL,			/* head */
     NULL,			/* end */
     NULL,			/* pred */
     NULL,			/* succ */
@@ -2392,8 +2390,10 @@ calculate_loop_depth (dump)
 
   /* The loop infrastructure does the real job for us.  */
   flow_loops_find (&loops);
+
   if (dump)
     flow_loops_dump (&loops, dump, 0);
+
   flow_loops_free (&loops);
 }
 
@@ -6802,6 +6802,7 @@ flow_loop_level_compute (loop, depth)
 /* Compute the loop nesting depth and enclosed loop level for the loop
    hierarchy tree specfied by LOOPS.  Return the maximum enclosed loop
    level.  */
+
 static int 
 flow_loops_level_compute (loops)
      struct loops *loops;
@@ -6813,6 +6814,7 @@ flow_loops_level_compute (loops)
 /* Find all the natural loops in the function and save in LOOPS structure
    and recalculate loop_depth information in basic block structures.
    Return the number of natural loops found.  */
+
 int 
 flow_loops_find (loops)
        struct loops *loops;
@@ -6872,8 +6874,8 @@ flow_loops_find (loops)
       flow_depth_first_order_compute (dfs_order);
 
       /* Allocate loop structures.  */
-      loops->array = (struct loop *)
-	xcalloc (num_loops, sizeof (struct loop));
+      loops->array
+	= (struct loop *) xcalloc (num_loops, sizeof (struct loop));
       
       headers = sbitmap_alloc (n_basic_blocks);
       sbitmap_zero (headers);
@@ -6921,8 +6923,8 @@ flow_loops_find (loops)
 		  
 		  /* Find nodes contained within the loop.  */
 		  loop->nodes = sbitmap_alloc (n_basic_blocks);
-		  loop->num_nodes =
-		    flow_loop_nodes_find (header, latch, loop->nodes);
+		  loop->num_nodes
+		    = flow_loop_nodes_find (header, latch, loop->nodes);
 		  
 		  /* Find edges which exit the loop.  Note that a node
 		     may have several exit edges.  */
