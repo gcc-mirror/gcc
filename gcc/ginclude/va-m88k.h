@@ -52,6 +52,9 @@ typedef struct
 #undef __va_reg_p
 #define __gnuc_va_list va_list
 #define _VA_LIST
+#else
+/* Similarly, if this gets included first, do nothing in _int_varargs.h.  */
+#define __INT_VARARGS_H
 #endif
 
 #define __va_reg_p(TYPE) \
