@@ -2,6 +2,8 @@
 
 	* g++.dg/other/cxa-atexit1.C: New test.
 
+	* gcc.dg/typeof-2.c: New test.
+
 2002-09-03  Neil Booth  <neil@daikokuya.co.uk>
 
 	* gcc.dg/cpp/_Pragma4.c: New test.
