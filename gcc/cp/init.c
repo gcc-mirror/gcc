@@ -696,10 +696,7 @@ sort_base_init (t, base_init_list, rbase_ptr, vbase_ptr)
 
    If there is a need for a call to a constructor, we must surround
    that call with a pushlevel/poplevel pair, since we are technically
-   at the PARM level of scope.
-
-   Note that emit_base_init does *not* initialize virtual base
-   classes.  That is done specially, elsewhere.  */
+   at the PARM level of scope.  */
 
 void
 emit_base_init (mem_init_list, base_init_list)
