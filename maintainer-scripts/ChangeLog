@@ -1,3 +1,9 @@
+2004-03-27  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* gcc_release: Fix sanity check for argument of -p command-line
+	options.  In snapshot mode, only generate diffs against the previous
+	snapshot if the user did not specify any old tarball explictly.
+
 2004-03-25  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* gcc_release (FTP_PATH): Use /var/ftp instead of ~ftp, and
