@@ -1,3 +1,14 @@
+Thu Oct 15 09:25:21 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* expr.c (build_chill_card): Use &&, not &, when comparing truth
+	values.
+
+	* parse.c (parse_spec_module): Remove unused variable
+	`module_name', but preserve function call from initialization.
+	(parse_operand6): Mark variable `location' with ATTRIBUTE_UNUSED.
+	
+	* inout.c (init_text_location): Remove unused variable `textlength'.
+
 Wed Oct 14 22:19:48 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* typeck.c (build_chill_cast): Fix typo in assignment statement.

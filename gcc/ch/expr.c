@@ -1372,7 +1372,8 @@ build_chill_card (powerset)
 	{ int size;
 
 	  /* Do constant folding, if possible. */
-	  if (TREE_CODE (powerset) == CONSTRUCTOR & TREE_CONSTANT (powerset)
+	  if (TREE_CODE (powerset) == CONSTRUCTOR
+	      && TREE_CONSTANT (powerset)
 	      && (size = int_size_in_bytes (TREE_TYPE (powerset))) >= 0)
 	    {
 	      int bit_size = size * BITS_PER_UNIT;

@@ -2221,7 +2221,6 @@ void init_text_location (decl, type)
      tree type;
 {
   tree indexmode = text_indexmode (type);
-  tree textlength = text_length (type);
   unsigned long accessflags = 0;
   unsigned long textflags = IO_TEXTLOCATION;
   tree lowindex = integer_zero_node;
