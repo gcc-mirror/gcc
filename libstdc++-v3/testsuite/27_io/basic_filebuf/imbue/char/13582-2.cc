@@ -42,7 +42,7 @@ void test01()
   const char* name = "tmp_fifo_13582-2";
   unlink(name);
   try_mkfifo(name, S_IRWXU);
-  
+
   int child = fork();
   if (child == 0)
     {
@@ -50,14 +50,12 @@ void test01()
       fbout.open(name, ios_base::out);
       fbout.sputn("12345", 5);
       fbout.pubsync();
-      sleep(2);
       fbout.close();
       exit(0);
     }
 
   filebuf fbin;
   fbin.open(name, ios_base::in);
-  sleep(1);
   filebuf::int_type n = fbin.sbumpc();
   VERIFY( n == '1' );
   fbin.pubimbue(loc_en);

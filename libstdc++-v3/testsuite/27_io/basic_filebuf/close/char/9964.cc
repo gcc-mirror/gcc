@@ -37,6 +37,7 @@ void test_07()
   using namespace std;
   using namespace __gnu_test;
   bool test __attribute__((unused)) = true;
+  semaphore s1, s2;
 
   const char* name = "tmp_fifo3";
 
@@ -52,18 +53,18 @@ void test_07()
     {
       filebuf fbin;
       fbin.open(name, ios_base::in);
-      sleep(2);
+      s1.wait ();
       fbin.close();
+      s2.signal ();
       exit(0);
     }
   
   filebuf fb;
-  sleep(1);
   filebuf* ret = fb.open(name, ios_base::in | ios_base::out);
   VERIFY( ret != NULL );
   VERIFY( fb.is_open() );
-
-  sleep(3);
+  s1.signal ();
+  s2.wait ();
   fb.sputc('a');
 
   ret = fb.close();

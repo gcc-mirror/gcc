@@ -1,3 +1,33 @@
+2005-01-03  Mark Mitchell  <mark@codesourcery.com>
+
+	* configure.ac: Check for sys/ipc.h and sys/sem.h. 
+	* config.h.in: Regenerated.
+	* configure: Likewise.
+	* testsuite/testsuite_hooks.cc (_GLIBCXX_SYSV_SEM): Conditionally
+	define.
+	(sys/types.h): Include.
+	(sys/ipc.h): Likewise.
+	(sys/sem.h): Likewise.
+	(__gnu_test::semun): New type.
+	(__gnu_test::semaphore::sempaphore): New function.
+	(__gnu_test::semaphore::~semaphore): Likewise.
+	(__gnu_test::semaphore::wait): Likewise.
+	(__gnu_test::semaphore::signal): Likewise.
+	* testsuite/testsuite_hooks.h (__gnu_test::semaphore): New class.
+	* testsuite/27_io/basic_filebuf/close/char/4789.cc: Use
+	semaphores, not sleep.
+	* testsuite/27_io/basic_filebuf/close/char/9964.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/char/13171-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/char/13582-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/14975-2.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/open/char/9507.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/char/10097.cc: Likewise.
+	* testsuite/27_io/objects/char/7.cc: Likewise.
+	* testsuite/27_io/objects/char/9661-1.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/7.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/9961-1.cc: Likewise.
+
 2005-01-03  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/istream.tcc (ignore(streamsize), ignore(streamsize,

@@ -58,6 +58,7 @@ void test16()
       VERIFY( false );
     }
   
+  semaphore s1;
   int fval = fork();
   if (fval == -1)
     {
@@ -71,14 +72,13 @@ void test16()
       VERIFY ( fbout.is_open() );
       fbout.sputn("0123456789", 10);
       fbout.pubsync();
-      sleep(2);
+      s1.wait ();
       fbout.close();
       exit(0);
     }
 
   UnderBuf fb;
   fb.open(name, ios_base::in);
-  sleep(1);
   
   fb.sgetc();
   streamsize n = fb.pub_showmanyc();
@@ -94,6 +94,7 @@ void test16()
     }
 
   fb.close();
+  s1.signal ();
 }
 
 int main() 

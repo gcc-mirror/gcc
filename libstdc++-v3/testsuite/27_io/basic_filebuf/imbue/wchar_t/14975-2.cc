@@ -42,26 +42,28 @@ void test01()
 
   unlink(name);  
   try_mkfifo(name, S_IRWXU);
-  
+  semaphore s1;
+
   int child = fork();
   VERIFY( child != -1 );
 
   if (child == 0)
     {
-      filebuf fbin;
-      fbin.open(name, ios_base::in);
-      sleep(2);
+      {
+	filebuf fbin;
+	fbin.open(name, ios_base::in);
+      }
+      s1.signal ();
       exit(0);
     }
   
   wfilebuf fb;
   fb.pubimbue(loc_us);
-  sleep(1);
   wfilebuf* ret = fb.open(name, ios_base::out);
   VERIFY( ret != NULL );
   VERIFY( fb.is_open() );
 
-  sleep(3);
+  s1.wait ();
 
   try
     {

@@ -43,24 +43,25 @@ void test01()
 
   unlink(name);  
   try_mkfifo(name, S_IRWXU);
+  semaphore s1, s2;
   
   int child = fork();
   VERIFY( child != -1 );
 
   if (child == 0)
     {
-      sleep(1);
       FILE* file = fopen(name, "r+");
       VERIFY (file != NULL);
       fputs("Whatever\n", file);
       fflush(file);
-      sleep(2);
+      s1.signal ();
+      s2.wait ();
       fclose(file);
       exit(0);
     }
   
   freopen(name, "r", stdin);
-  sleep(2);
+  s1.wait ();
 
   int c1 = fgetc(stdin);
   VERIFY( c1 != EOF );
@@ -78,6 +79,7 @@ void test01()
   int c5 = cin.rdbuf()->sgetc();
   VERIFY( c5 != EOF );
   VERIFY( c5 == c4 );
+  s2.signal ();
 }
 
 int main()

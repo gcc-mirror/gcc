@@ -42,6 +42,7 @@ void test07()
 
   unlink(name);  
   try_mkfifo(name, S_IRWXU);
+  semaphore s1;
   
   int child = fork();
   VERIFY( child != -1 );
@@ -49,18 +50,17 @@ void test07()
   if (child == 0)
     {
       wfilebuf fbout;
-      sleep(1);
       fbout.open(name, ios_base::out);
+      s1.wait();
       wcout.rdbuf(&fbout);
       fbout.sputc(L'a');
-      sleep(2);
       // NB: fbout is *not* destroyed here!
       exit(0);
     }
   
   wfilebuf fbin;
   fbin.open(name, ios_base::in);
-  sleep(2);
+  s1.signal ();
   wfilebuf::int_type c = fbin.sbumpc();
   VERIFY( c != wfilebuf::traits_type::eof() );
   VERIFY( c == wfilebuf::traits_type::to_int_type(L'a') );

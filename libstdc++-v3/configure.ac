@@ -117,7 +117,7 @@ if $GLIBCXX_IS_NATIVE; then
   # Check for available headers.
   AC_CHECK_HEADERS([nan.h ieeefp.h endian.h sys/isa_defs.h machine/endian.h \
   machine/param.h sys/machine.h fp.h locale.h float.h inttypes.h gconv.h \
-  sys/types.h])
+  sys/types.h sys/ipc.h sys/sem.h])
 
   GLIBCXX_CHECK_COMPILER_FEATURES
   GLIBCXX_CHECK_LINKER_FEATURES
