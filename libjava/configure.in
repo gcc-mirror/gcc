@@ -518,7 +518,7 @@ dnl for now.  If you change this, you also must update natFile.cc.
 AC_CHECK_HEADERS(dirent.h)
 
 AC_CHECK_TYPE([ssize_t], [int])
-AC_CHECK_TYPE([in_addr_t], [struct in_addr])
+AC_CHECK_TYPE([in_addr_t], [jint])
 
 AC_MSG_CHECKING([whether struct sockaddr_in6 is in netinet/in.h])
 AC_TRY_COMPILE([#include <netinet/in.h>], [struct sockaddr_in6 addr6;],

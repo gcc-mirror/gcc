@@ -4462,7 +4462,7 @@ fi
 echo "$ac_t""$ac_cv_type_in_addr_t" 1>&6
 if test $ac_cv_type_in_addr_t = no; then
   cat >> confdefs.h <<\EOF
-#define in_addr_t struct in_addr
+#define in_addr_t jint
 EOF
 
 fi
