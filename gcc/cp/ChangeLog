@@ -1,3 +1,11 @@
+1999-08-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* pt.c (check_default_tmpl_args): Don't check in local scopes.
+	(tsubst_decl): Make sure the declaration is on a saveable
+	obstack.  Clear DECL_DEAD_FOR_LOCAL when making a copy of a local
+	variable.
+	(tsubst_expr): Adjust now that DECL_STMTs really contain DECLs.
+	
 1999-08-14  Jason Merrill  <jason@yorick.cygnus.com>
 
 	Speed up Koenig lookup.
