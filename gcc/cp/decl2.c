@@ -4032,8 +4032,8 @@ build_expr_from_tree (t)
     case ARRAY_REF:
       if (TREE_OPERAND (t, 0) == NULL_TREE)
 	/* new-type-id */
-	return build_parse_node (ARRAY_REF, NULL_TREE,
-				 build_expr_from_tree (TREE_OPERAND (t, 1)));
+	return build_nt (ARRAY_REF, NULL_TREE,
+			 build_expr_from_tree (TREE_OPERAND (t, 1)));
       return grok_array_decl (build_expr_from_tree (TREE_OPERAND (t, 0)),
 			      build_expr_from_tree (TREE_OPERAND (t, 1)));
 

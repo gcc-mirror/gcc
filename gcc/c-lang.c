@@ -187,10 +187,9 @@ start_cdtor (method_type)
   tree body;
 
   start_function (void_list_node_1,
-		  build_parse_node (CALL_EXPR, fnname,
-				    tree_cons (NULL_TREE, NULL_TREE,
-					       void_list_node_1),
-				    NULL_TREE),
+		  build_nt (CALL_EXPR, fnname,
+			    tree_cons (NULL_TREE, NULL_TREE, void_list_node_1),
+			    NULL_TREE),
 		  NULL_TREE, NULL_TREE);
   store_parm_decls ();
 

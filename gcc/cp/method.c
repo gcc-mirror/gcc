@@ -2786,7 +2786,7 @@ implicitly_declare_fn (kind, type, const_p)
     {
     case sfk_destructor:
       /* Destructor.  */
-      name = build_parse_node (BIT_NOT_EXPR, name);
+      name = build_nt (BIT_NOT_EXPR, name);
       args = void_list_node;
       raises = synthesize_exception_spec (type, &locate_dtor, 0);
       break;
@@ -2844,7 +2844,7 @@ implicitly_declare_fn (kind, type, const_p)
   {
     tree declarator = make_call_declarator (name, args, NULL_TREE, raises);
     if (retref)
-      declarator = build_parse_node (ADDR_EXPR, declarator);
+      declarator = build_nt (ADDR_EXPR, declarator);
 
     fn = grokfield (declarator, declspecs, NULL_TREE, NULL_TREE, NULL_TREE);
   }

@@ -545,11 +545,11 @@ using_decl:
 
 namespace_using_decl:
 	  USING namespace_qualifier identifier
-	        { $$ = build_parse_node (SCOPE_REF, $2, $3); }
+	        { $$ = build_nt (SCOPE_REF, $2, $3); }
 	| USING global_scope identifier
-	        { $$ = build_parse_node (SCOPE_REF, global_namespace, $3); }
+	        { $$ = build_nt (SCOPE_REF, global_namespace, $3); }
 	| USING global_scope namespace_qualifier identifier
-	        { $$ = build_parse_node (SCOPE_REF, $3, $4); }
+	        { $$ = build_nt (SCOPE_REF, $3, $4); }
 	;
 
 using_directive:
@@ -1442,9 +1442,9 @@ expr_no_comma_rangle:
 
 notype_unqualified_id:
 	  '~' see_typename identifier
-		{ $$ = build_parse_node (BIT_NOT_EXPR, $3); }
+		{ $$ = build_nt (BIT_NOT_EXPR, $3); }
 	| '~' see_typename template_type
-		{ $$ = build_parse_node (BIT_NOT_EXPR, $3); }
+		{ $$ = build_nt (BIT_NOT_EXPR, $3); }
         | template_id
 	| operator_name
 	| IDENTIFIER
@@ -1500,9 +1500,9 @@ expr_or_declarator_intern:
 expr_or_declarator:
 	  notype_unqualified_id
 	| '*' expr_or_declarator_intern  %prec UNARY
-		{ $$ = build_parse_node (INDIRECT_REF, $2); }
+		{ $$ = build_nt (INDIRECT_REF, $2); }
 	| '&' expr_or_declarator_intern  %prec UNARY
-		{ $$ = build_parse_node (ADDR_EXPR, $2); }
+		{ $$ = build_nt (ADDR_EXPR, $2); }
 	| '(' expr_or_declarator_intern ')'
 		{ $$ = $2; }
 	;
@@ -2769,7 +2769,7 @@ new_type_id:
 		{
 		  if (pedantic)
 		    pedwarn ("ISO C++ forbids array dimensions with parenthesized type in new");
-		  $$.t = build_parse_node (ARRAY_REF, TREE_VALUE ($2.t), $5);
+		  $$.t = build_nt (ARRAY_REF, TREE_VALUE ($2.t), $5);
 		  $$.t = build_tree_list (TREE_PURPOSE ($2.t), $$.t);
 		  $$.new_type_flag = $2.new_type_flag;
 		}
@@ -2830,7 +2830,7 @@ after_type_declarator:
 		{ $$ = make_reference_declarator (NULL_TREE, $2); }
 	| ptr_to_mem cv_qualifiers after_type_declarator_intern
 		{ tree arg = make_pointer_declarator ($2, $3);
-		  $$ = build_parse_node (SCOPE_REF, $1, arg);
+		  $$ = build_nt (SCOPE_REF, $1, arg);
 		}
 	| direct_after_type_declarator
 	;
@@ -2839,14 +2839,14 @@ direct_after_type_declarator:
 	  direct_after_type_declarator maybe_parmlist cv_qualifiers exception_specification_opt  %prec '.'
 		{ $$ = make_call_declarator ($$, $2, $3, $4); }
 	| direct_after_type_declarator '[' expr ']'
-		{ $$ = build_parse_node (ARRAY_REF, $$, $3); }
+		{ $$ = build_nt (ARRAY_REF, $$, $3); }
 	| direct_after_type_declarator '[' ']'
-		{ $$ = build_parse_node (ARRAY_REF, $$, NULL_TREE); }
+		{ $$ = build_nt (ARRAY_REF, $$, NULL_TREE); }
 	| '(' after_type_declarator_intern ')'
 		{ $$ = $2; }
 	| nested_name_specifier type_name  %prec EMPTY
 		{ push_nested_class ($1, 3);
-		  $$ = build_parse_node (SCOPE_REF, $$, $2);
+		  $$ = build_nt (SCOPE_REF, $$, $2);
 		  TREE_COMPLEXITY ($$) = current_class_depth; }
 	| type_name  %prec EMPTY
 	;
@@ -2908,7 +2908,7 @@ notype_declarator:
 		{ $$ = make_reference_declarator (NULL_TREE, $2); }
 	| ptr_to_mem cv_qualifiers notype_declarator_intern
 		{ tree arg = make_pointer_declarator ($2, $3);
-		  $$ = build_parse_node (SCOPE_REF, $1, arg);
+		  $$ = build_nt (SCOPE_REF, $1, arg);
 		}
 	| direct_notype_declarator
 	;
@@ -2924,7 +2924,7 @@ complex_notype_declarator:
 		{ $$ = make_reference_declarator (NULL_TREE, $2); }
 	| ptr_to_mem cv_qualifiers notype_declarator_intern
 		{ tree arg = make_pointer_declarator ($2, $3);
-		  $$ = build_parse_node (SCOPE_REF, $1, arg);
+		  $$ = build_nt (SCOPE_REF, $1, arg);
 		}
 	| complex_direct_notype_declarator
 	;
@@ -2935,20 +2935,20 @@ complex_direct_notype_declarator:
 	| '(' complex_notype_declarator ')'
 		{ $$ = $2; }
 	| direct_notype_declarator '[' expr ']'
-		{ $$ = build_parse_node (ARRAY_REF, $$, $3); }
+		{ $$ = build_nt (ARRAY_REF, $$, $3); }
 	| direct_notype_declarator '[' ']'
-		{ $$ = build_parse_node (ARRAY_REF, $$, NULL_TREE); }
+		{ $$ = build_nt (ARRAY_REF, $$, NULL_TREE); }
 	| notype_qualified_id
                 { enter_scope_of ($1); }
 	| global_scope notype_qualified_id
                 { enter_scope_of ($2); $$ = $2;}
 	| global_scope notype_unqualified_id
-                { $$ = build_parse_node (SCOPE_REF, global_namespace, $2);
+                { $$ = build_nt (SCOPE_REF, global_namespace, $2);
 		  enter_scope_of ($$); 
 		}
         | nested_name_specifier notype_template_declarator
                 { got_scope = NULL_TREE;
-		  $$ = build_parse_node (SCOPE_REF, $1, $2);
+		  $$ = build_nt (SCOPE_REF, $1, $2);
 		  enter_scope_of ($$);
 		}
 	;
@@ -2956,19 +2956,19 @@ complex_direct_notype_declarator:
 qualified_id:
 	  nested_name_specifier unqualified_id
 		{ got_scope = NULL_TREE;
-		  $$ = build_parse_node (SCOPE_REF, $$, $2); }
+		  $$ = build_nt (SCOPE_REF, $$, $2); }
         | nested_name_specifier object_template_id
                 { got_scope = NULL_TREE;
- 		  $$ = build_parse_node (SCOPE_REF, $1, $2); }
+ 		  $$ = build_nt (SCOPE_REF, $1, $2); }
 	;
 
 notype_qualified_id:
 	  nested_name_specifier notype_unqualified_id
 		{ got_scope = NULL_TREE;
-		  $$ = build_parse_node (SCOPE_REF, $$, $2); }
+		  $$ = build_nt (SCOPE_REF, $$, $2); }
         | nested_name_specifier object_template_id
                 { got_scope = NULL_TREE;
-		  $$ = build_parse_node (SCOPE_REF, $1, $2); }
+		  $$ = build_nt (SCOPE_REF, $1, $2); }
 	;
 
 overqualified_id:
@@ -3175,11 +3175,11 @@ new_declarator:
 		{ $$ = make_reference_declarator ($2, NULL_TREE); }
 	| ptr_to_mem cv_qualifiers  %prec EMPTY
 		{ tree arg = make_pointer_declarator ($2, NULL_TREE);
-		  $$ = build_parse_node (SCOPE_REF, $1, arg);
+		  $$ = build_nt (SCOPE_REF, $1, arg);
 		}
 	| ptr_to_mem cv_qualifiers new_declarator
 		{ tree arg = make_pointer_declarator ($2, $3);
-		  $$ = build_parse_node (SCOPE_REF, $1, arg);
+		  $$ = build_nt (SCOPE_REF, $1, arg);
 		}
 	| direct_new_declarator  %prec EMPTY
 	;
@@ -3187,9 +3187,9 @@ new_declarator:
 /* ISO direct-new-declarator (5.3.4) */
 direct_new_declarator:
 	  '[' expr ']'
-		{ $$ = build_parse_node (ARRAY_REF, NULL_TREE, $2); }
+		{ $$ = build_nt (ARRAY_REF, NULL_TREE, $2); }
 	| direct_new_declarator '[' expr ']'
-		{ $$ = build_parse_node (ARRAY_REF, $$, $3); }
+		{ $$ = build_nt (ARRAY_REF, $$, $3); }
 	;
 
 absdcl_intern:
@@ -3222,11 +3222,11 @@ absdcl:
 		{ $$ = make_reference_declarator (NULL_TREE, NULL_TREE); }
 	| ptr_to_mem cv_qualifiers  %prec EMPTY
 		{ tree arg = make_pointer_declarator ($2, NULL_TREE);
-		  $$ = build_parse_node (SCOPE_REF, $1, arg);
+		  $$ = build_nt (SCOPE_REF, $1, arg);
 		}
 	| ptr_to_mem cv_qualifiers absdcl_intern
 		{ tree arg = make_pointer_declarator ($2, $3);
-		  $$ = build_parse_node (SCOPE_REF, $1, arg);
+		  $$ = build_nt (SCOPE_REF, $1, arg);
 		}
 	| direct_abstract_declarator  %prec EMPTY
 	;
@@ -3241,9 +3241,9 @@ direct_abstract_declarator:
 	| direct_abstract_declarator LEFT_RIGHT cv_qualifiers exception_specification_opt  %prec '.'
 		{ $$ = make_call_declarator ($$, empty_parms (), $3, $4); }
 	| direct_abstract_declarator '[' expr ']'  %prec '.'
-		{ $$ = build_parse_node (ARRAY_REF, $$, $3); }
+		{ $$ = build_nt (ARRAY_REF, $$, $3); }
 	| direct_abstract_declarator '[' ']'  %prec '.'
-		{ $$ = build_parse_node (ARRAY_REF, $$, NULL_TREE); }
+		{ $$ = build_nt (ARRAY_REF, $$, NULL_TREE); }
 	| '(' complex_parmlist ')' cv_qualifiers exception_specification_opt  %prec '.'
 		{ $$ = make_call_declarator (NULL_TREE, $2, $4, $5); }
 	| regcast_or_absdcl cv_qualifiers exception_specification_opt  %prec '.'
@@ -3251,9 +3251,9 @@ direct_abstract_declarator:
 	| fcast_or_absdcl cv_qualifiers exception_specification_opt  %prec '.'
 		{ set_quals_and_spec ($$, $2, $3); }
 	| '[' expr ']'  %prec '.'
-		{ $$ = build_parse_node (ARRAY_REF, NULL_TREE, $2); }
+		{ $$ = build_nt (ARRAY_REF, NULL_TREE, $2); }
 	| '[' ']'  %prec '.'
-		{ $$ = build_parse_node (ARRAY_REF, NULL_TREE, NULL_TREE); }
+		{ $$ = build_nt (ARRAY_REF, NULL_TREE, NULL_TREE); }
 	;
 
 /* For C++, decls and stmts can be intermixed, so we don't need to
@@ -3783,7 +3783,7 @@ conversion_declarator:
 		{ $$ = make_reference_declarator ($2, $3); }
 	| ptr_to_mem cv_qualifiers conversion_declarator
 		{ tree arg = make_pointer_declarator ($2, $3);
-		  $$ = build_parse_node (SCOPE_REF, $1, arg);
+		  $$ = build_nt (SCOPE_REF, $1, arg);
 		}
 	;
 

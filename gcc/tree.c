@@ -2504,36 +2504,6 @@ build_nt VPARAMS ((enum tree_code code, ...))
   return t;
 }
 
-/* Similar to `build_nt', except we build
-   on the temp_decl_obstack, regardless.  */
-
-tree
-build_parse_node VPARAMS ((enum tree_code code, ...))
-{
-#ifndef ANSI_PROTOTYPES
-  enum tree_code code;
-#endif
-  va_list p;
-  register tree t;
-  register int length;
-  register int i;
-
-  VA_START (p, code);
-
-#ifndef ANSI_PROTOTYPES
-  code = va_arg (p, enum tree_code);
-#endif
-
-  t = make_node (code);
-  length = TREE_CODE_LENGTH (code);
-
-  for (i = 0; i < length; i++)
-    TREE_OPERAND (t, i) = va_arg (p, tree);
-
-  va_end (p);
-  return t;
-}
-
 #if 0
 /* Commented out because this wants to be done very
    differently.  See cp-lex.c.  */

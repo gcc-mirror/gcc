@@ -149,7 +149,7 @@ make_pointer_declarator (cv_qualifiers, target)
   if (target && TREE_CODE (target) == IDENTIFIER_NODE
       && ANON_AGGRNAME_P (target))
     error ("type name expected before `*'");
-  target = build_parse_node (INDIRECT_REF, target);
+  target = build_nt (INDIRECT_REF, target);
   TREE_TYPE (target) = cv_qualifiers;
   return target;
 }
@@ -181,7 +181,7 @@ make_reference_declarator (cv_qualifiers, target)
       if (TREE_CODE (target) == IDENTIFIER_NODE && ANON_AGGRNAME_P (target))
 	  error ("type name expected before `&'");
     }
-  target = build_parse_node (ADDR_EXPR, target);
+  target = build_nt (ADDR_EXPR, target);
   TREE_TYPE (target) = cv_qualifiers;
   return target;
 }
@@ -190,11 +190,11 @@ tree
 make_call_declarator (target, parms, cv_qualifiers, exception_specification)
      tree target, parms, cv_qualifiers, exception_specification;
 {
-  target = build_parse_node (CALL_EXPR, target,
-			     tree_cons (parms, cv_qualifiers, NULL_TREE),
-			     /* The third operand is really RTL.  We
-				shouldn't put anything there.  */
-			     NULL_TREE);
+  target = build_nt (CALL_EXPR, target,
+		     tree_cons (parms, cv_qualifiers, NULL_TREE),
+		     /* The third operand is really RTL.  We
+			shouldn't put anything there.  */
+		     NULL_TREE);
   CALL_DECLARATOR_EXCEPTION_SPEC (target) = exception_specification;
   return target;
 }

@@ -1,3 +1,17 @@
+2001-01-29  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* decl2.c (build_expr_from_tree), lex.c (make_pointer_declarator,
+	make_reference_declarator, make_call_declarator), method.c
+	(implicitly_declare_fn), parse.y (namespace_using_decl,
+	notype_unqualified_id, expr_or_declarator, new_type_id,
+	after_type_declarator, direct_after_type_declarator,
+	notype_declarator, complex_notype_declarator,
+	complex_direct_notype_declarator, qualified_id,
+	notype_qualified_id, overqualified_id, direct_new_declarator,
+	absdcl, direct_abstract_declarator, conversion_declarator), pt.c
+	(tsubst), semantics.c (begin_constructor_declarator): Use build_nt
+	instead of build_parse_node.
+
 2001-01-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cp-tree.h (cp_tree_index): Delete CPTI_MINUS_ONE.

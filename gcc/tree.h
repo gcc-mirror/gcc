@@ -1915,7 +1915,6 @@ extern tree maybe_get_identifier	PARAMS ((const char *));
 
 extern tree build			PARAMS ((enum tree_code, tree, ...));
 extern tree build_nt			PARAMS ((enum tree_code, ...));
-extern tree build_parse_node		PARAMS ((enum tree_code, ...));
 
 extern tree build_int_2_wide		PARAMS ((unsigned HOST_WIDE_INT, HOST_WIDE_INT));
 extern tree build_real			PARAMS ((tree, REAL_VALUE_TYPE));
