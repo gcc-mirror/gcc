@@ -1,3 +1,7 @@
+2004-07-22  Brian Booth  <bbooth@redhat.com>
+
+	* gcc.dg/tree-ssa/20040721-1.c: New test.
+
 2004-07-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/template/crash20.c: New.

@@ -1,3 +1,25 @@
+2004-07-22  Brian Booth  <bbooth@redhat.com>
+
+	* tree-ssa-ccp.c (latticevalue): Add UNKNOWN_VAL.
+	(substitute_and_fold): Propigate into VUSE operands when possible.
+	(visit_phi_node): Handle UNKNOWN_VAL latticevalue.
+	(cp_lattice_meet): Handle merging of latticevalues when 
+	UNKNOWN_VAL is present.
+	(visit_stmt): Visit assignments with V_MUST_DEFs.
+	(visit_assignment): Gather ccp information for V_MUST_DEF operands.
+	(ccp_fold): Deal with RHS' that are constant and virtual.
+	(evaluate_stmt): Handle UNKNOWN_VAL likely values.
+	(dump_lattice_value): Dump UNKNOWN_VAL latticevalues.
+	(initialize): Mark statements with V_MUST_DEFs as VARYING only if the
+	V_MUST_DEF operand is VARYING. Fix comment and include VOPS when 
+	computing immediate uses.
+	(set_lattice_value): Disallow a UNKNOWN_VAL->UNDEFINED state 
+	transition.
+	(replace_vuse_in): New function.
+	(likely_value): Add check of vuse operands.
+	(get_default_value): Set the default value of virtually defined 
+	variables to UKNOWN_VAL instead of VARYING.
+
 2004-07-22  Richard Henderson  <rth@redhat.com>
 
 	* expr.c (emit_push_insn): Don't use set_mem_attributes.
@@ -1492,6 +1514,7 @@
 
 	* collect2.c (main):  Handle --no-demangle and --demangle flags.
 
+>>>>>>> 2.4547
 2004-07-13  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	* Makefile.in (OBJS-common): Add tree-data-ref.o.
