@@ -2243,7 +2243,7 @@ get_flag_spec (spec, flag, predicates)
       if (predicates != NULL)
 	{
 	  if (spec[i].predicate != 0
-	      && index (predicates, spec[i].predicate) != 0)
+	      && strchr (predicates, spec[i].predicate) != 0)
 	    return &spec[i];
 	}
       else if (spec[i].predicate == 0)
@@ -2612,9 +2612,10 @@ check_format_info_main (status, res, info, format_chars, format_length,
       /* Read any format flags, but do not yet validate them beyond removing
 	 duplicates, since in general validation depends on the rest of
 	 the format.  */
-      while (*format_chars != 0 && index (fki->flag_chars, *format_chars) != 0)
+      while (*format_chars != 0
+	     && strchr (fki->flag_chars, *format_chars) != 0)
 	{
-	  if (index (flag_chars, *format_chars) != 0)
+	  if (strchr (flag_chars, *format_chars) != 0)
 	    {
 	      const format_flag_spec *s = get_flag_spec (flag_specs,
 							 *format_chars, NULL);
@@ -2821,9 +2822,9 @@ check_format_info_main (status, res, info, format_chars, format_length,
       if (fki->modifier_chars != NULL)
 	{
 	  while (*format_chars != 0
-		 && index (fki->modifier_chars, *format_chars) != 0)
+		 && strchr (fki->modifier_chars, *format_chars) != 0)
 	    {
-	      if (index (flag_chars, *format_chars) != 0)
+	      if (strchr (flag_chars, *format_chars) != 0)
 		{
 		  const format_flag_spec *s = get_flag_spec (flag_specs,
 							     *format_chars, NULL);
@@ -2866,7 +2867,7 @@ check_format_info_main (status, res, info, format_chars, format_length,
       format_chars++;
       fci = fki->conversion_specs;
       while (fci->format_chars != 0
-	     && index (fci->format_chars, format_char) == 0)
+	     && strchr (fci->format_chars, format_char) == 0)
 	  ++fci;
       if (fci->format_chars == 0)
 	{
@@ -2895,7 +2896,7 @@ check_format_info_main (status, res, info, format_chars, format_length,
 	    flag_chars[i - d] = flag_chars[i];
 	    if (flag_chars[i] == fki->length_code_char)
 	      continue;
-	    if (index (fci->flag_chars, flag_chars[i]) == 0)
+	    if (strchr (fci->flag_chars, flag_chars[i]) == 0)
 	      {
 		status_warning (status, "%s used with `%%%c' %s format",
 				_(s->name), format_char, fki->name);
@@ -2925,23 +2926,23 @@ check_format_info_main (status, res, info, format_chars, format_length,
       }
 
       if ((fki->flags & FMT_FLAG_SCANF_A_KLUDGE)
-	  && index (flag_chars, 'a') != 0)
+	  && strchr (flag_chars, 'a') != 0)
 	aflag = 1;
 
       if (fki->suppression_char
-	  && index (flag_chars, fki->suppression_char) != 0)
+	  && strchr (flag_chars, fki->suppression_char) != 0)
 	suppressed = 1;
 
       /* Validate the pairs of flags used.  */
       for (i = 0; bad_flag_pairs[i].flag_char1 != 0; i++)
 	{
 	  const format_flag_spec *s, *t;
-	  if (index (flag_chars, bad_flag_pairs[i].flag_char1) == 0)
+	  if (strchr (flag_chars, bad_flag_pairs[i].flag_char1) == 0)
 	    continue;
-	  if (index (flag_chars, bad_flag_pairs[i].flag_char2) == 0)
+	  if (strchr (flag_chars, bad_flag_pairs[i].flag_char2) == 0)
 	    continue;
 	  if (bad_flag_pairs[i].predicate != 0
-	      && index (fci->flags2, bad_flag_pairs[i].predicate) == 0)
+	      && strchr (fci->flags2, bad_flag_pairs[i].predicate) == 0)
 	    continue;
 	  s = get_flag_spec (flag_specs, bad_flag_pairs[i].flag_char1, NULL);
 	  t = get_flag_spec (flag_specs, bad_flag_pairs[i].flag_char2, NULL);
@@ -2970,14 +2971,14 @@ check_format_info_main (status, res, info, format_chars, format_length,
       /* Give Y2K warnings.  */
       {
 	int y2k_level = 0;
-	if (index (fci->flags2, '4') != 0)
-	  if (index (flag_chars, 'E') != 0)
+	if (strchr (fci->flags2, '4') != 0)
+	  if (strchr (flag_chars, 'E') != 0)
 	    y2k_level = 3;
 	  else
 	    y2k_level = 2;
-	else if (index (fci->flags2, '3') != 0)
+	else if (strchr (fci->flags2, '3') != 0)
 	  y2k_level = 3;
-	else if (index (fci->flags2, '2') != 0)
+	else if (strchr (fci->flags2, '2') != 0)
 	  y2k_level = 2;
 	if (y2k_level == 3)
 	  status_warning (status, "`%%%c' yields only last 2 digits of year in some locales",
@@ -2986,7 +2987,7 @@ check_format_info_main (status, res, info, format_chars, format_length,
 	  status_warning (status, "`%%%c' yields only last 2 digits of year", format_char);
       }
 
-      if (index (fci->flags2, '[') != 0)
+      if (strchr (fci->flags2, '[') != 0)
 	{
 	  /* Skip over scan set, in case it happens to have '%' in it.  */
 	  if (*format_chars == '^')
@@ -3082,10 +3083,10 @@ check_format_info_main (status, res, info, format_chars, format_length,
 	  main_wanted_type.wanted_type_name = wanted_type_name;
 	  main_wanted_type.pointer_count = fci->pointer_count + aflag;
 	  main_wanted_type.char_lenient_flag = 0;
-	  if (index (fci->flags2, 'c') != 0)
+	  if (strchr (fci->flags2, 'c') != 0)
 	    main_wanted_type.char_lenient_flag = 1;
 	  main_wanted_type.writing_in_flag = 0;
-	  if (index (fci->flags2, 'W') != 0)
+	  if (strchr (fci->flags2, 'W') != 0)
 	    main_wanted_type.writing_in_flag = 1;
 	  main_wanted_type.name = NULL;
 	  main_wanted_type.param = cur_param;
@@ -3124,7 +3125,7 @@ check_format_types (status, types)
       int char_type_flag;
       cur_param = types->param;
       cur_type = TREE_TYPE (cur_param);
-      if (TREE_CODE (cur_type) == ERROR_MARK)
+      if (cur_type == error_mark_node)
 	continue;
       char_type_flag = 0;
       wanted_type = types->wanted_type;
@@ -3152,7 +3153,7 @@ check_format_types (status, types)
 	  if (TREE_CODE (cur_type) == POINTER_TYPE)
 	    {
 	      cur_type = TREE_TYPE (cur_type);
-	      if (TREE_CODE (cur_type) == ERROR_MARK)
+	      if (cur_type == error_mark_node)
 		break;
 
 	      /* Check for writing through a NULL pointer.  */
