@@ -2768,8 +2768,10 @@ get_first_block_beg ()
   return NULL_RTX;
 }
 
-/* Return 1 if EXP returns an aggregate value, for which an address
-   must be passed to the function or returned by the function.  */
+/* Return 1 if EXP is an aggregate type (or a value with aggregate type).
+   This means a type for which function calls must pass an address to the
+   function or get an address back from the function.
+   EXP may be a type node or an expression (whose type is tested).  */
 
 int
 aggregate_value_p (exp)
@@ -2777,19 +2779,25 @@ aggregate_value_p (exp)
 {
   int i, regno, nregs;
   rtx reg;
-  if (RETURN_IN_MEMORY (TREE_TYPE (exp)))
+  tree type;
+  if (TREE_CODE_CLASS (TREE_CODE (exp)) == 't')
+    type = exp;
+  else
+    type = TREE_TYPE (exp);
+
+  if (RETURN_IN_MEMORY (type))
     return 1;
   if (flag_pcc_struct_return
-      && (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE
-	  || TREE_CODE (TREE_TYPE (exp)) == UNION_TYPE
-	  || TREE_CODE (TREE_TYPE (exp)) == QUAL_UNION_TYPE
-	  || TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE))
+      && (TREE_CODE (type) == RECORD_TYPE
+	  || TREE_CODE (type) == UNION_TYPE
+	  || TREE_CODE (type) == QUAL_UNION_TYPE
+	  || TREE_CODE (type) == ARRAY_TYPE))
     return 1;
   /* Make sure we have suitable call-clobbered regs to return
      the value in; if not, we must return it in memory.  */
-  reg = hard_function_value (TREE_TYPE (exp), 0);
+  reg = hard_function_value (type, 0);
   regno = REGNO (reg);
-  nregs = HARD_REGNO_NREGS (regno, TYPE_MODE (TREE_TYPE (exp)));
+  nregs = HARD_REGNO_NREGS (regno, TYPE_MODE (type));
   for (i = 0; i < nregs; i++)
     if (! call_used_regs[regno + i])
       return 1;
