@@ -1,3 +1,8 @@
+2001-10-16  Krister Walfridsson  <cato@df.lth.se>
+ 
+	* config/i386/netbsd-elf.h (ASM_OUTPUT_ADDR_DIFF_ELT): Define.
+	(JUMP_TABLES_IN_TEXT_SECTION): Define.
+
 Wed Oct 17 00:21:31 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* cfg.c (free_edge): Break out from ....
