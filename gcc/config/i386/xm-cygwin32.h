@@ -1,6 +1,6 @@
 /* Configuration for GNU C-compiler for hosting on Windows NT.
    using a unix style C library.
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -25,3 +25,5 @@ Boston, MA 02111-1307, USA. */
 #define HAVE_FILE_H
 #define EXECUTABLE_SUFFIX ".exe"
 
+/* Even though we support "/", allow "\" since everybody tests both.  */
+#define DIR_SEPARATOR '\\'
