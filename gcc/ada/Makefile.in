@@ -179,7 +179,7 @@ target=@target@
 target_alias=@target_alias@
 xmake_file=@dep_host_xmake_file@
 tmake_file=@dep_tmake_file@
-host_canonical=@host_canonical@
+host_canonical=@host@
 #version=`sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/' < $(srcdir)/version.c`
 #mainversion=`sed -e 's/.*\"\([0-9]*\.[0-9]*\).*/\1/' < $(srcdir)/version.c`
 

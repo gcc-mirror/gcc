@@ -32,15 +32,9 @@ AC_CONFIG_HEADER(auto-host.h:config.in)
 # Determine the host, build, and target systems
 AC_CANONICAL_SYSTEM
 
-# Define variables host_canonical and build_canonical
-build_canonical=${build}
-host_canonical=${host}
-AC_SUBST(build_canonical)
-AC_SUBST(host_canonical)
+# Determine the target- and build-specific subdirectories
+GCC_TOPLEV_SUBDIRS
 
-target_subdir=${target_alias}
-AC_SUBST(target_subdir)
-	
 # Set program_transform_name
 AC_ARG_PROGRAM
 
@@ -1168,7 +1162,7 @@ else
 	cd ..
 	rm -rf $tempdir
 	build_auto=auto-build.h
-	FORBUILD=../build-$build_alias
+	FORBUILD=../$(build_subdir)
 fi
 AC_SUBST(FORBUILD)
 

@@ -2,7 +2,7 @@ RANLIB_FOR_TARGET = ` \
   if [ -f $(objdir)/../binutils/ranlib ] ; then \
     echo $(objdir)/../binutils/ranlib ; \
   else \
-    if [ "$(host_canonical)" = "$(target)" ] ; then \
+    if [ "$(host)" = "$(target)" ] ; then \
       echo ranlib; \
     else \
        if [ -f $(bindir)/$(target_alias)-ranlib ] ; then \
