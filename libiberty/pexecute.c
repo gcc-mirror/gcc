@@ -156,6 +156,8 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
   FILE *argfile;
   int i, el = flags & PEXECUTE_SEARCH ? 4 : 0;
 
+  if (temp_base == 0)
+    temp_base = choose_temp_base ();
   scmd = (char *) xmalloc (strlen (program) + strlen (temp_base) + 6 + el);
   rf = scmd + strlen(program) + 2 + el;
   sprintf (scmd, "%s%s @%s.gp", program,
