@@ -3189,15 +3189,18 @@ extract_range_from_cond (tree cond, tree *hi_p, tree *lo_p, int *inverted_p)
   tree op1 = TREE_OPERAND (cond, 1);
   tree high, low, type;
   int inverted;
-  
+
+  type = TREE_TYPE (op1);
+
   /* Experiments have shown that it's rarely, if ever useful to
      record ranges for enumerations.  Presumably this is due to
      the fact that they're rarely used directly.  They are typically
      cast into an integer type and used that way.  */
-  if (TREE_CODE (TREE_TYPE (op1)) != INTEGER_TYPE)
+  if (TREE_CODE (type) != INTEGER_TYPE
+      /* We don't know how to deal with types with variable bounds.  */
+      || TREE_CODE (TYPE_MIN_VALUE (type)) != INTEGER_CST
+      || TREE_CODE (TYPE_MAX_VALUE (type)) != INTEGER_CST)
     return 0;
-
-  type = TREE_TYPE (op1);
 
   switch (TREE_CODE (cond))
     {
