@@ -6,6 +6,8 @@ This software is copyrighted work licensed under the terms of the
 Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
+package java.awt.image;
+
 public interface ImageConsumer
 {
 
