@@ -35,7 +35,6 @@ Boston, MA 02111-1307, USA.  */
   %{!mno-power: %{mpowerpc*: -m601}} \
   %{!mno-power: %{!mpowerpc*: %{!mpower2: -mpwr}}}} \
 %{mcpu=common: -mcom} \
-%{mcpu=rs6000: -mpwr} \
 %{mcpu=power: -mpwr} \
 %{mcpu=power2: -mpwrx} \
 %{mcpu=powerpc: -mppc} \

@@ -192,7 +192,6 @@ toc_section ()								\
   %{!mno-powerpc: %{mpower: -m601}} \
   %{!mno-powerpc: %{!mpower: -mppc}}} \
 %{mcpu=common: -mcom} \
-%{mcpu=rs6000: -mpwr} \
 %{mcpu=power: -mpwr} \
 %{mcpu=power2: -mpwrx} \
 %{mcpu=powerpc: -mppc} \
