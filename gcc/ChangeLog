@@ -1,5 +1,10 @@
 2001-05-05  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
+	* config/m68hc11/m68hc11.c (m68hc11_gen_movhi): Optimize moves
+	between X and Y by using sequences of xgdx and xgdy.
+
+2001-05-05  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
 	* config/m68hc11/m68hc11.md ("*logicalsi3_silshr16"): Use '?' instead
 	of '!' for the 'D' alternative ('!' is too strong).
 	("*logicalsi3_silshl16"): Likewise.

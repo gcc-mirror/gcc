@@ -3149,8 +3149,20 @@ m68hc11_gen_movhi (insn, operands)
 	    }
 	  else if (Y_REG_P (operands[1]))
 	    {
-	      output_asm_insn ("sty\t%t1", operands);
-	      output_asm_insn ("ldx\t%t1", operands);
+              /* When both D and Y are dead, use the sequence xgdy, xgdx
+                 to move Y into X.  The D and Y registers are modified.  */
+              if (optimize && find_regno_note (insn, REG_DEAD, HARD_Y_REGNUM)
+                  && dead_register_here (insn, d_reg))
+                {
+                  output_asm_insn ("xgdy", operands);
+                  output_asm_insn ("xgdx", operands);
+                  CC_STATUS_INIT;
+                }
+              else
+                {
+                  output_asm_insn ("sty\t%t1", operands);
+                  output_asm_insn ("ldx\t%t1", operands);
+                }
 	    }
 	  else if (SP_REG_P (operands[1]))
 	    {
@@ -3179,8 +3191,20 @@ m68hc11_gen_movhi (insn, operands)
 	    }
 	  else if (X_REG_P (operands[1]))
 	    {
-	      output_asm_insn ("stx\t%t1", operands);
-	      output_asm_insn ("ldy\t%t1", operands);
+              /* When both D and X are dead, use the sequence xgdx, xgdy
+                 to move X into Y.  The D and X registers are modified.  */
+              if (optimize && find_regno_note (insn, REG_DEAD, HARD_X_REGNUM)
+                  && dead_register_here (insn, d_reg))
+                {
+                  output_asm_insn ("xgdx", operands);
+                  output_asm_insn ("xgdy", operands);
+                  CC_STATUS_INIT;
+                }
+              else
+                {
+                  output_asm_insn ("stx\t%t1", operands);
+                  output_asm_insn ("ldy\t%t1", operands);
+                }
 	    }
 	  else if (SP_REG_P (operands[1]))
 	    {
