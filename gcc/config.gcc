@@ -346,7 +346,7 @@ case $machine in
 		;;
 	*) echo 'Unknown thread configuration for FreeBSD'; exit 1;;
 	esac
-	fbsd_tm_file="${fbsd_tm_file} freebsd.h"
+	fbsd_tm_file="${fbsd_tm_file} freebsd-spec.h freebsd.h"
 	;;
 esac
 
