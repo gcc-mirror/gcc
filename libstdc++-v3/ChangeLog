@@ -1,5 +1,9 @@
 2002-05-18  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* docs/html/17_intro/RELEASE-NOTES (New): Update.
+
+2002-05-18  Benjamin Kosnik  <bkoz@redhat.com>
+
 	PR libstdc++/6518
 	* include/bits/ostream.tcc (ostream::operator<<(const char*)): Fix
 	for null case.
