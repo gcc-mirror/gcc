@@ -505,18 +505,28 @@ extern int snprintf (char *, size_t, const char *, ...);
    and even if it is, it is liable to be buggy.  
    This must be after all inclusion of system headers, as some of
    them will mess us up.  */
-#undef bool
-#undef true
-#undef false
+
 #undef TRUE
 #undef FALSE
 
-#define bool unsigned char
-#define true 1
-#define false 0
+#ifdef __cplusplus
+  /* Obsolete.  */
+# define TRUE true
+# define FALSE false
+#else /* !__cplusplus */
+# undef bool
+# undef true
+# undef false
 
-#define TRUE true
-#define FALSE false
+# define bool unsigned char
+# define true 1
+# define false 0
+
+  /* Obsolete.  */
+# define TRUE true
+# define FALSE false
+#endif /* !__cplusplus */
+
 
 /* Some compilers do not allow the use of unsigned char in bitfields.  */
 #define BOOL_BITFIELD unsigned int
