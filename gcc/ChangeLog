@@ -1,3 +1,8 @@
+2000-03-14  Richard Earnshaw <rearnsha@arm.com>
+
+	* function.c (prepare_function_start): Correctly initialize
+	cfun->stack_alignment_needed.
+
 2000-03-14  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cppfiles.c (find_include_file): Don't assume nshort is a
