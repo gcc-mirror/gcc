@@ -87,14 +87,14 @@ mul_shortway:
 .udiv:
 	save	%sp, -64, %sp
 	b	divide
-	mov	0, %i2		! result always positive
+	mov	0, %l2		! result always positive
 	.global .div
 	.proc 4
 .div:
 	save	%sp, -64, %sp
 	orcc	%i1, %i0, %g0	! is either operand negative
 	bge	divide		! if not, skip this junk
-	xor	%i1, %i0, %i2	! record sign of result in sign of %i2
+	xor	%i1, %i0, %l2	! record sign of result in sign of %l2
 	tst	%i1
 	bge	2f
 	tst	%i0
@@ -110,7 +110,7 @@ divide:
 	te	2			! if %i1 = 0
 	mov	%i0, %i3
 	mov	0, %i2
-	sethi	%hi(1<<(32-2-1)), %l3
+	sethi	%hi(1<<(32-4-1)), %l3
 	cmp 	%i3, %l3
 	blu	not_really_big
 	mov	0, %l0
@@ -137,7 +137,7 @@ divide:
 	! We are here if the %i1 overflowed when Shifting.
 	! This means that %i3 has the high-order bit set.
 	! Restore %l1 and subtract from %i3.
-	sll	%l3, 2, %l3
+	sll	%l3, 4, %l3
 	srl	%l1, 1, %l1
 	add	%l1, %l3, %l1
 	b	do_single_div
@@ -271,7 +271,7 @@ end_regular_divide:
 	! non-restoring fixup here
 	dec	%i2
 got_result:
-	tst	%i2
+	tst	%l2
 	bge	1f
 	restore
 	! answer < 0
@@ -289,14 +289,14 @@ got_result:
 .urem:
 	save	%sp, -64, %sp
 	b	divide
-	mov	0, %i2		! result always positive
+	mov	0, %l2		! result always positive
 	.global .rem
 	.proc 4
 .rem:
 	save	%sp, -64, %sp
 	orcc	%i1, %i0, %g0	! is either operand negative
 	bge	divide		! if not, skip this junk
-	mov	%i0, %i2	! record sign of result in sign of %i2
+	mov	%i0, %l2	! record sign of result in sign of %i2
 	tst	%i1
 	bge	2f
 	tst	%i0
@@ -312,7 +312,7 @@ divide:
 	te	2			! if %i1 = 0
 	mov	%i0, %i3
 	mov	0, %i2
-	sethi	%hi(1<<(32-2-1)), %l3
+	sethi	%hi(1<<(32-4-1)), %l3
 	cmp 	%i3, %l3
 	blu	not_really_big
 	mov	0, %l0
@@ -339,7 +339,7 @@ divide:
 	! We are here if the %i1 overflowed when Shifting.
 	! This means that %i3 has the high-order bit set.
 	! Restore %l1 and subtract from %i3.
-	sll	%l3, 2, %l3
+	sll	%l3, 4, %l3
 	srl	%l1, 1, %l1
 	add	%l1, %l3, %l1
 	b	do_single_div
@@ -473,7 +473,7 @@ end_regular_divide:
 	! non-restoring fixup here
 	add	%i3, %i1, %i3
 got_result:
-	tst	%i2
+	tst	%l2
 	bge	1f
 	restore
 	! answer < 0
