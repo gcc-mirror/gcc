@@ -1,3 +1,7 @@
+2002-03-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cp-tree.h (stabilize_expr): Prototype.
+
 2002-03-08  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	* cp-tree.h (CLEAR_BINFO_MARKED): Make both parts of
