@@ -46,7 +46,7 @@ libmath_la_LIBADD = \
 libmath_la_DEPENDENCIES = $(libmath_la_LIBADD)
 
 libmath_la_SOURCES = \
-	signbit.c signbitf.c cabs.c cabsf.c 
+	signbit.c signbitf.c
 
 LINK = $(LIBTOOL) --mode=link "$(CCLD)" $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 

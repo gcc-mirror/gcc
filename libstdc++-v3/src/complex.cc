@@ -1,6 +1,6 @@
 // The template and inlines for the -*- C++ -*- complex number classes.
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,7 +48,11 @@ namespace std
   template<>
   FLT
   abs(const complex<FLT>& __x)
-  { return cabs(__x._M_value); }
+  { 
+    // We don't use cabs here because some systems (IRIX 6.5, for
+    // example) define their own incompatible version.
+    return hypot (__real__ __x._M_value, __imag__ __x._M_value); 
+  }
 
   template<>
   FLT

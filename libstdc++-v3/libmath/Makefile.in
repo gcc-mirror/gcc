@@ -120,7 +120,7 @@ libmath_la_LIBADD =  	@LIBMATHOBJS@ 	$(EXTRA_LONG_DOUBLE_$(USE_COMPLEX_LONG_DOUB
 
 libmath_la_DEPENDENCIES = $(libmath_la_LIBADD)
 
-libmath_la_SOURCES =  	signbit.c signbitf.c cabs.c cabsf.c 
+libmath_la_SOURCES =  	signbit.c signbitf.c
 
 
 LINK = $(LIBTOOL) --mode=link "$(CCLD)" $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
@@ -147,7 +147,7 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 libmath_la_LDFLAGS = 
-libmath_la_OBJECTS =  signbit.lo signbitf.lo cabs.lo cabsf.lo
+libmath_la_OBJECTS =  signbit.lo signbitf.lo
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
