@@ -1,3 +1,10 @@
+2002-05-29  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (legitimate_pic_operand_p): Do not
+	accept symbolic LARL operands.
+	(s390_emit_epilogue): Do not set FRAME_RELATED_P on 
+	epilogue insns.
+ 
 2002-05-29  Hartmut Penner  <hpenner@de.ibm.com>
 
 	* config/s390/s390.md (cmpstr_64/31): Mark whole
