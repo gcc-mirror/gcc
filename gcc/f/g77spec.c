@@ -287,4 +287,4 @@ int lang_specific_pre_link ()  /* Not used for F77. */
 }
 
 /* Number of extra output files that lang_specific_pre_link may generate. */
-int lang_specific_extra_ofiles = 0;  /* Not used for F77. */
+int lang_specific_extra_outfiles = 0;  /* Not used for F77. */
