@@ -1549,7 +1549,7 @@ check_classfn (ctype, function)
      case we'll only confuse ourselves when the function is declared
      properly within the class.  */
   if (COMPLETE_TYPE_P (ctype))
-    add_method (ctype, methods, function);
+    add_method (ctype, function, /*error_p=*/1);
   return NULL_TREE;
 }
 

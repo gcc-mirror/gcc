@@ -1155,190 +1155,199 @@ add_virtual_function (new_virtuals_p, overridden_virtuals_p,
 
 extern struct obstack *current_obstack;
 
-/* Add method METHOD to class TYPE.
-
-   If non-NULL, FIELDS is the entry in the METHOD_VEC vector entry of
-   the class type where the method should be added.  */
+/* Add method METHOD to class TYPE.  If ERROR_P is true, we are adding
+   the method after the class has already been defined because a
+   declaration for it was seen.  (Even though that is erroneous, we
+   add the method for improved error recovery.)  */
 
 void
-add_method (type, fields, method)
-     tree type, *fields, method;
+add_method (type, method, error_p)
+     tree type;
+     tree method;
+     int error_p;
 {
   int using = (DECL_CONTEXT (method) != type);
-  
-  if (fields && *fields)
-    *fields = build_overload (method, *fields);
-  else 
+  int len;
+  int slot;
+  tree method_vec;
+
+  if (!CLASSTYPE_METHOD_VEC (type))
+    /* Make a new method vector.  We start with 8 entries.  We must
+       allocate at least two (for constructors and destructors), and
+       we're going to end up with an assignment operator at some point
+       as well.
+       
+       We could use a TREE_LIST for now, and convert it to a TREE_VEC
+       in finish_struct, but we would probably waste more memory
+       making the links in the list than we would by over-allocating
+       the size of the vector here.  Furthermore, we would complicate
+       all the code that expects this to be a vector.  */
+    CLASSTYPE_METHOD_VEC (type) = make_tree_vec (8);
+
+  method_vec = CLASSTYPE_METHOD_VEC (type);
+  len = TREE_VEC_LENGTH (method_vec);
+
+  /* Constructors and destructors go in special slots.  */
+  if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (method))
+    slot = CLASSTYPE_CONSTRUCTOR_SLOT;
+  else if (DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (method))
+    slot = CLASSTYPE_DESTRUCTOR_SLOT;
+  else
     {
-      int len;
-      int slot;
-      tree method_vec;
-
-      if (!CLASSTYPE_METHOD_VEC (type))
-	/* Make a new method vector.  We start with 8 entries.  We must
-	   allocate at least two (for constructors and destructors), and
-	   we're going to end up with an assignment operator at some
-	   point as well.  
-
-	   We could use a TREE_LIST for now, and convert it to a
-	   TREE_VEC in finish_struct, but we would probably waste more
-	   memory making the links in the list than we would by
-	   over-allocating the size of the vector here.  Furthermore,
-	   we would complicate all the code that expects this to be a
-	   vector.  */
-	CLASSTYPE_METHOD_VEC (type) = make_tree_vec (8);
-
-      method_vec = CLASSTYPE_METHOD_VEC (type);
-      len = TREE_VEC_LENGTH (method_vec);
-
-      /* Constructors and destructors go in special slots.  */
-      if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (method))
-	slot = CLASSTYPE_CONSTRUCTOR_SLOT;
-      else if (DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (method))
-	slot = CLASSTYPE_DESTRUCTOR_SLOT;
-      else
-	{
-	  /* See if we already have an entry with this name.  */
-	  for (slot = CLASSTYPE_FIRST_CONVERSION_SLOT; slot < len; ++slot)
-	    if (!TREE_VEC_ELT (method_vec, slot)
-		|| (DECL_NAME (OVL_CURRENT (TREE_VEC_ELT (method_vec, 
-							  slot))) 
-		    == DECL_NAME (method)))
-	      break;
+      /* See if we already have an entry with this name.  */
+      for (slot = CLASSTYPE_FIRST_CONVERSION_SLOT; slot < len; ++slot)
+	if (!TREE_VEC_ELT (method_vec, slot)
+	    || (DECL_NAME (OVL_CURRENT (TREE_VEC_ELT (method_vec, 
+						      slot))) 
+		== DECL_NAME (method)))
+	  break;
 		
-	  if (slot == len)
-	    {
-	      /* We need a bigger method vector.  */
-	      tree new_vec = make_tree_vec (2 * len);
-	      bcopy ((PTR) &TREE_VEC_ELT (method_vec, 0),
-		     (PTR) &TREE_VEC_ELT (new_vec, 0),
-		     len * sizeof (tree));
-	      len = 2 * len;
-	      method_vec = CLASSTYPE_METHOD_VEC (type) = new_vec;
-	    }
-
-	  if (DECL_CONV_FN_P (method) && !TREE_VEC_ELT (method_vec, slot))
-	    {
-	      /* Type conversion operators have to come before
-		 ordinary methods; add_conversions depends on this to
-		 speed up looking for conversion operators.  So, if
-		 necessary, we slide some of the vector elements up.
-		 In theory, this makes this algorithm O(N^2) but we
-		 don't expect many conversion operators.  */
-	      for (slot = 2; slot < len; ++slot)
-		{
-		  tree fn = TREE_VEC_ELT (method_vec, slot);
-  
-		  if (!fn)
-		    /* There are no more entries in the vector, so we
-		       can insert the new conversion operator here.  */
-		    break;
-  		  
-		  if (!DECL_CONV_FN_P (OVL_CURRENT (fn)))
-		    /* We can insert the new function right at the
-		       SLOTth position.  */
-		    break;
-		}
-  
-	      if (!TREE_VEC_ELT (method_vec, slot))
-		/* There is nothing in the Ith slot, so we can avoid
-		   moving anything.  */
-		; 
-	      else
-		{
-		  /* We know the last slot in the vector is empty
-		     because we know that at this point there's room
-		     for a new function.  */
-		  bcopy ((PTR) &TREE_VEC_ELT (method_vec, slot),
-			 (PTR) &TREE_VEC_ELT (method_vec, slot + 1),
-			 (len - slot - 1) * sizeof (tree));
-		  TREE_VEC_ELT (method_vec, slot) = NULL_TREE;
-		}
-	    }
-	}
-      
-      if (template_class_depth (type))
-	/* TYPE is a template class.  Don't issue any errors now; wait
-	   until instantiation time to complain.  */
-	  ;
-      else
+      if (slot == len)
 	{
-	  tree fns;
+	  /* We need a bigger method vector.  */
+	  int new_len;
+	  tree new_vec;
 
-	  /* Check to see if we've already got this method.  */
-	  for (fns = TREE_VEC_ELT (method_vec, slot);
-	       fns;
-	       fns = OVL_NEXT (fns))
-	    {
-	      tree fn = OVL_CURRENT (fns);
-		 
-	      if (TREE_CODE (fn) != TREE_CODE (method))
-		continue;
+	  /* In the non-error case, we are processing a class
+	     definition.  Double the size of the vector to give room
+	     for new methods.  */
+	  if (!error_p)
+	    new_len = 2 * len;
+	  /* In the error case, the vector is already complete.  We
+	     don't expect many errors, and the rest of the front-end
+	     will get confused if there are empty slots in the vector.  */
+	  else
+	    new_len = len + 1;
 
-	      if (TREE_CODE (method) != TEMPLATE_DECL)
-		{
-		  /* [over.load] Member function declarations with the
-		     same name and the same parameter types cannot be
-		     overloaded if any of them is a static member
-		     function declaration.  */
-		  if ((DECL_STATIC_FUNCTION_P (fn)
-		       != DECL_STATIC_FUNCTION_P (method))
-		      || using)
-		    {
-		      tree parms1 = TYPE_ARG_TYPES (TREE_TYPE (fn));
-		      tree parms2 = TYPE_ARG_TYPES (TREE_TYPE (method));
-
-		      if (! DECL_STATIC_FUNCTION_P (fn))
-			parms1 = TREE_CHAIN (parms1);
-		      if (! DECL_STATIC_FUNCTION_P (method))
-			parms2 = TREE_CHAIN (parms2);
-
-		      if (compparms (parms1, parms2))
-			{
-			  if (using)
-			    /* Defer to the local function.  */
-			    return;
-			  else
-			    cp_error ("`%#D' and `%#D' cannot be overloaded",
-				      fn, method);
-			}
-		    }
-
-		  /* Since this is an ordinary function in a
-		     non-template class, it's mangled name can be used
-		     as a unique identifier.  This technique is only
-		     an optimization; we would get the same results if
-		     we just used decls_match here.  */
-		  if (DECL_ASSEMBLER_NAME (fn) 
-		      != DECL_ASSEMBLER_NAME (method))
-		    continue;
-		}
-	      else if (!decls_match (fn, method))
-		continue;
-
-	      /* There has already been a declaration of this method
-		 or member template.  */
-	      cp_error_at ("`%D' has already been declared in `%T'", 
-			   method, type);
-
-	      /* We don't call duplicate_decls here to merge the
-		 declarations because that will confuse things if the
-		 methods have inline definitions.  In particular, we
-		 will crash while processing the definitions.  */
-	      return;
-	    }
+	  new_vec = make_tree_vec (new_len);
+	  bcopy ((PTR) &TREE_VEC_ELT (method_vec, 0),
+		 (PTR) &TREE_VEC_ELT (new_vec, 0),
+		 len * sizeof (tree));
+	  len = new_len;
+	  method_vec = CLASSTYPE_METHOD_VEC (type) = new_vec;
 	}
 
-      /* Actually insert the new method.  */
-      TREE_VEC_ELT (method_vec, slot) 
-	= build_overload (method, TREE_VEC_ELT (method_vec, slot));
+      if (DECL_CONV_FN_P (method) && !TREE_VEC_ELT (method_vec, slot))
+	{
+	  /* Type conversion operators have to come before ordinary
+	     methods; add_conversions depends on this to speed up
+	     looking for conversion operators.  So, if necessary, we
+	     slide some of the vector elements up.  In theory, this
+	     makes this algorithm O(N^2) but we don't expect many
+	     conversion operators.  */
+	  for (slot = 2; slot < len; ++slot)
+	    {
+	      tree fn = TREE_VEC_ELT (method_vec, slot);
+  
+	      if (!fn)
+		/* There are no more entries in the vector, so we
+		   can insert the new conversion operator here.  */
+		break;
+  		  
+	      if (!DECL_CONV_FN_P (OVL_CURRENT (fn)))
+		/* We can insert the new function right at the
+		   SLOTth position.  */
+		break;
+	    }
+  
+	  if (!TREE_VEC_ELT (method_vec, slot))
+	    /* There is nothing in the Ith slot, so we can avoid
+	       moving anything.  */
+		; 
+	  else
+	    {
+	      /* We know the last slot in the vector is empty
+		 because we know that at this point there's room
+		 for a new function.  */
+	      bcopy ((PTR) &TREE_VEC_ELT (method_vec, slot),
+		     (PTR) &TREE_VEC_ELT (method_vec, slot + 1),
+		     (len - slot - 1) * sizeof (tree));
+	      TREE_VEC_ELT (method_vec, slot) = NULL_TREE;
+	    }
+	}
+    }
+      
+  if (template_class_depth (type))
+    /* TYPE is a template class.  Don't issue any errors now; wait
+       until instantiation time to complain.  */
+    ;
+  else
+    {
+      tree fns;
+
+      /* Check to see if we've already got this method.  */
+      for (fns = TREE_VEC_ELT (method_vec, slot);
+	   fns;
+	   fns = OVL_NEXT (fns))
+	{
+	  tree fn = OVL_CURRENT (fns);
+		 
+	  if (TREE_CODE (fn) != TREE_CODE (method))
+	    continue;
+
+	  if (TREE_CODE (method) != TEMPLATE_DECL)
+	    {
+	      /* [over.load] Member function declarations with the
+		 same name and the same parameter types cannot be
+		 overloaded if any of them is a static member
+		 function declaration.  */
+	      if ((DECL_STATIC_FUNCTION_P (fn)
+		   != DECL_STATIC_FUNCTION_P (method))
+		  || using)
+		{
+		  tree parms1 = TYPE_ARG_TYPES (TREE_TYPE (fn));
+		  tree parms2 = TYPE_ARG_TYPES (TREE_TYPE (method));
+
+		  if (! DECL_STATIC_FUNCTION_P (fn))
+		    parms1 = TREE_CHAIN (parms1);
+		  if (! DECL_STATIC_FUNCTION_P (method))
+		    parms2 = TREE_CHAIN (parms2);
+
+		  if (compparms (parms1, parms2))
+		    {
+		      if (using)
+			/* Defer to the local function.  */
+			return;
+		      else
+			cp_error ("`%#D' and `%#D' cannot be overloaded",
+				  fn, method);
+		    }
+		}
+
+	      /* Since this is an ordinary function in a
+		 non-template class, it's mangled name can be used
+		 as a unique identifier.  This technique is only
+		 an optimization; we would get the same results if
+		 we just used decls_match here.  */
+	      if (DECL_ASSEMBLER_NAME (fn) 
+		  != DECL_ASSEMBLER_NAME (method))
+		continue;
+	    }
+	  else if (!decls_match (fn, method))
+	    continue;
+
+	  /* There has already been a declaration of this method
+	     or member template.  */
+	  cp_error_at ("`%D' has already been declared in `%T'", 
+		       method, type);
+
+	  /* We don't call duplicate_decls here to merge the
+	     declarations because that will confuse things if the
+	     methods have inline definitions.  In particular, we
+	     will crash while processing the definitions.  */
+	  return;
+	}
+    }
+
+  /* Actually insert the new method.  */
+  TREE_VEC_ELT (method_vec, slot) 
+    = build_overload (method, TREE_VEC_ELT (method_vec, slot));
 
       /* Add the new binding.  */ 
-      if (!DECL_CONSTRUCTOR_P (method)
-	  && !DECL_DESTRUCTOR_P (method))
-	push_class_level_binding (DECL_NAME (method),
-				  TREE_VEC_ELT (method_vec, slot));
-    }
+  if (!DECL_CONSTRUCTOR_P (method)
+      && !DECL_DESTRUCTOR_P (method))
+    push_class_level_binding (DECL_NAME (method),
+			      TREE_VEC_ELT (method_vec, slot));
 }
 
 /* Subroutines of finish_struct.  */
@@ -1567,7 +1576,7 @@ handle_using_decl (using_decl, t)
   if (flist)
     for (; flist; flist = OVL_NEXT (flist))
       {
-	add_method (t, 0, OVL_CURRENT (flist));
+	add_method (t, OVL_CURRENT (flist), /*error_p=*/0);
 	alter_access (t, OVL_CURRENT (flist), access);
       }
   else
@@ -3146,7 +3155,7 @@ add_implicitly_declared_members (t, cant_have_default_ctor,
   /* Now, hook all of the new functions on to TYPE_METHODS,
      and add them to the CLASSTYPE_METHOD_VEC.  */
   for (f = &implicit_fns; *f; f = &TREE_CHAIN (*f))
-    add_method (t, 0, *f);
+    add_method (t, *f, /*error_p=*/0);
   *f = TYPE_METHODS (t);
   TYPE_METHODS (t) = implicit_fns;
 
@@ -4203,10 +4212,10 @@ clone_function_decl (fn, update_method_vec_p)
 	 and a not-in-charge version.  */
       clone = build_clone (fn, complete_ctor_identifier);
       if (update_method_vec_p)
-	add_method (DECL_CONTEXT (clone), NULL, clone);
+	add_method (DECL_CONTEXT (clone), clone, /*error_p=*/0);
       clone = build_clone (fn, base_ctor_identifier);
       if (update_method_vec_p)
-	add_method (DECL_CONTEXT (clone), NULL, clone);
+	add_method (DECL_CONTEXT (clone), clone, /*error_p=*/0);
     }
   else
     {
@@ -4220,13 +4229,13 @@ clone_function_decl (fn, update_method_vec_p)
 	 function table.  */
       clone = build_clone (fn, deleting_dtor_identifier);
       if (update_method_vec_p)
-	add_method (DECL_CONTEXT (clone), NULL, clone);
+	add_method (DECL_CONTEXT (clone), clone, /*error_p=*/0);
       clone = build_clone (fn, complete_dtor_identifier);
       if (update_method_vec_p)
-	add_method (DECL_CONTEXT (clone), NULL, clone);
+	add_method (DECL_CONTEXT (clone), clone, /*error_p=*/0);
       clone = build_clone (fn, base_dtor_identifier);
       if (update_method_vec_p)
-	add_method (DECL_CONTEXT (clone), NULL, clone);
+	add_method (DECL_CONTEXT (clone), clone, /*error_p=*/0);
     }
 }
 
