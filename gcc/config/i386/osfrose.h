@@ -156,6 +156,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   fprintf (STREAM, "\t.long\t0x%08lx\t\t# %.12g\n", u2.l, u2.f);	\
 }
 
+/* Generate calls to memcpy, etc., not bcopy, etc.  */
+#define TARGET_MEM_FUNCTIONS
 
 
 /* Defines to be able to build libgcc.a with GCC.  */
