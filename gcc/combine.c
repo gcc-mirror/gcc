@@ -6043,10 +6043,11 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 	{
 	  if (tmode != inner_mode)
 	    {
-	      if (in_dest)
+	      /* We can't call gen_lowpart_for_combine in a DEST since we
+		 always want a SUBREG (see below) and it would sometimes
+		 return a new hard register.  */
+	      if (pos || in_dest)
 		{
-		  /* We can't call gen_lowpart_for_combine here since we always want
-		     a SUBREG and it would sometimes return a new hard register.  */
 		  HOST_WIDE_INT final_word = pos / BITS_PER_WORD;
 
 		  if (WORDS_BIG_ENDIAN
