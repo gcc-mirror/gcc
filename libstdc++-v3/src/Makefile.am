@@ -43,7 +43,7 @@ libstdc++-symbol.ver:  ${glibcxx_srcdir}/@SYMVER_MAP@
 	if test "x@port_specific_symbol_files@" != x; then \
 	  sed -n '1,/DO NOT DELETE/p' $@ > tmp.top; \
 	  sed -n '/DO NOT DELETE/,$$p' $@ > tmp.bottom; \
-	  cat tmp.top @port_specific_symbol_file@ tmp.bottom > $@; \
+	  cat tmp.top @port_specific_symbol_files@ tmp.bottom > $@; \
 	  rm tmp.top tmp.bottom; \
 	fi
 else

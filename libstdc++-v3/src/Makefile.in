@@ -491,7 +491,7 @@ mostlyclean distclean maintainer-clean
 @GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@	if test "x@port_specific_symbol_files@" != x; then \
 @GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@	  sed -n '1,/DO NOT DELETE/p' $@ > tmp.top; \
 @GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@	  sed -n '/DO NOT DELETE/,$$p' $@ > tmp.bottom; \
-@GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@	  cat tmp.top @port_specific_symbol_file@ tmp.bottom > $@; \
+@GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@	  cat tmp.top @port_specific_symbol_files@ tmp.bottom > $@; \
 @GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@	  rm tmp.top tmp.bottom; \
 @GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@	fi
 @GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE@libstdc++-symbol.ver:
