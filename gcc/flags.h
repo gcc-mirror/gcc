@@ -431,7 +431,7 @@ extern int flag_schedule_insns_after_reload;
 /* The following flags have effect only for scheduling before register
    allocation:
 
-   flag_schedule_interblock means schedule insns accross basic blocks.
+   flag_schedule_interblock means schedule insns across basic blocks.
    flag_schedule_speculative means allow speculative motion of non-load insns.
    flag_schedule_speculative_load means allow speculative motion of some
    load insns.
@@ -563,19 +563,10 @@ extern int flag_peephole2;
 /* Try to guess branch probablities.  */
 extern int flag_guess_branch_prob;
 
-/* -fbounded-pointers causes gcc to compile pointers as composite
-   objects occupying three words: the pointer value, the base address
-   of the referent object, and the address immediately beyond the end
-   of the referent object.  The base and extent allow us to perform
-   runtime bounds checking.  -fbounded-pointers implies -fcheck-bounds.  */
-extern int flag_bounded_pointers;
-
 /* -fcheck-bounds causes gcc to generate array bounds checks.
-   For C, C++: defaults to value of flag_bounded_pointers.
-   For ObjC: defaults to off.
+   For C, C++ and ObjC: defaults off.
    For Java: defaults to on.
-   For Fortran: defaults to off.
-   For CHILL: defaults to off.  */
+   For Fortran: defaults to off.  */
 extern int flag_bounds_check;
 
 /* This will attempt to merge constant section constants, if 1 only
