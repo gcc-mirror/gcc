@@ -4123,7 +4123,7 @@ extern int more_specialized			PARAMS ((tree, tree, tree));
 extern void mark_class_instantiated		PARAMS ((tree, int));
 extern void do_decl_instantiation		PARAMS ((tree, tree, tree));
 extern void do_type_instantiation		PARAMS ((tree, tree));
-extern tree instantiate_decl			PARAMS ((tree));
+extern tree instantiate_decl			PARAMS ((tree, int));
 extern tree get_bindings			PARAMS ((tree, tree, tree));
 extern void add_tree				PARAMS ((tree));
 extern void add_maybe_template			PARAMS ((tree, tree));
