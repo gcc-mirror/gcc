@@ -101,9 +101,9 @@ static void parse_warning_context (tree cl, const char *msg, ...)
   ATTRIBUTE_PRINTF_2;
 #ifdef USE_MAPPED_LOCATION
 static void issue_warning_error_from_context
-  (source_location, const char *msg, va_list) ATTRIBUTE_PRINTF (2, 0);
+  (source_location, const char *msg, va_list *) ATTRIBUTE_PRINTF (2, 0);
 #else
-static void issue_warning_error_from_context (tree, const char *msg, va_list)
+static void issue_warning_error_from_context (tree, const char *msg, va_list *)
   ATTRIBUTE_PRINTF (2, 0);
 #endif
 static void parse_ctor_invocation_error (void);
@@ -3143,7 +3143,7 @@ issue_warning_error_from_context (
 #else
 				  tree cl,
 #endif
-				  const char *msgid, va_list ap)
+				  const char *msgid, va_list *ap)
 {
 #ifdef USE_MAPPED_LOCATION
   source_location saved_location = input_location;
@@ -3156,7 +3156,7 @@ issue_warning_error_from_context (
   text_info text;
 
   text.err_no = errno;
-  text.args_ptr = &ap;
+  text.args_ptr = ap;
   text.format_spec = msgid;
   pp_format_text (global_dc->printer, &text);
   strncpy (buffer, pp_formatted_text (global_dc->printer), sizeof (buffer) - 1);
@@ -3204,9 +3204,9 @@ parse_error_context (tree cl, const char *msgid, ...)
   va_list ap;
   va_start (ap, msgid);
 #ifdef USE_MAPPED_LOCATION
-  issue_warning_error_from_context (EXPR_LOCATION (cl), msgid, ap);
+  issue_warning_error_from_context (EXPR_LOCATION (cl), msgid, &ap);
 #else
-  issue_warning_error_from_context (cl, msgid, ap);
+  issue_warning_error_from_context (cl, msgid, &ap);
 #endif
   va_end (ap);
 }
@@ -3222,9 +3222,9 @@ parse_warning_context (tree cl, const char *msgid, ...)
 
   do_warning = 1;
 #ifdef USE_MAPPED_LOCATION
-  issue_warning_error_from_context (EXPR_LOCATION (cl), msgid, ap);
+  issue_warning_error_from_context (EXPR_LOCATION (cl), msgid, &ap);
 #else
-  issue_warning_error_from_context (cl, msgid, ap);
+  issue_warning_error_from_context (cl, msgid, &ap);
 #endif
   do_warning = 0;
   va_end (ap);
