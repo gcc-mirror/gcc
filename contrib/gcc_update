@@ -43,6 +43,8 @@ UPDATE_OPTIONS=-P
 #        locally.
 # Add -A to reset any sticky tags, dates, or `-k' options.
 
+# Arrange for the value of $0 to be available for functions
+self=$0
 
 # This function prints a list of all generated files, along with their
 # dependencies.  Note that only one target is supported per line: the
@@ -117,7 +119,7 @@ touch_files () {
 # dependencies and rules will be used.
 touch_files_reexec () {
     echo "Adjusting file timestamps"
-    exec ${CONFIG_SHELL-/bin/sh} $0 --touch
+    exec ${CONFIG_SHELL-/bin/sh} $self --touch
 }    
 
 # This functions applies a patch to an existing tree.
