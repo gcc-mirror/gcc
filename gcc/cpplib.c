@@ -874,7 +874,8 @@ static void
 do_warning (pfile)
      cpp_reader *pfile;
 {
-  do_diagnostic (pfile, WARNING, 1);
+  /* We want #warning diagnostics to be emitted in system headers too.  */
+  do_diagnostic (pfile, WARNING_SYSHDR, 1);
 }
 
 /* Report program identification.  */

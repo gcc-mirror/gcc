@@ -389,7 +389,7 @@ extern unsigned char _cpp_trigraph_map[UCHAR_MAX + 1];
 #define HASHSTEP(r, c) ((r) * 67 + (c - 113));
 
 /* In cpperror.c  */
-enum error_type { WARNING = 0, PEDWARN, ERROR, FATAL, ICE };
+enum error_type { WARNING = 0, WARNING_SYSHDR, PEDWARN, ERROR, FATAL, ICE };
 extern int _cpp_begin_message PARAMS ((cpp_reader *, enum error_type,
 				       const char *, const cpp_lexer_pos *));
 
