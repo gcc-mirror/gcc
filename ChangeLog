@@ -1,3 +1,7 @@
+2000-04-05  Michael Meissner  <meissner@redhat.com>
+
+	* config.sub (d30v): Add d30v as a basic machine type.
+
 2000-03-29  Jason Merrill  <jason@casey.cygnus.com>
 
 	* configure.in: -linux-gnu*, not -linux-gnu.
