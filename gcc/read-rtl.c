@@ -245,13 +245,13 @@ apply_macro_to_string (const char *string, struct mapping *macro, int value)
     return string;
 
   base = p = copy = ASTRDUP (string);
-  while ((start = index (p, '<')) && (end = index (start, '>')))
+  while ((start = strchr (p, '<')) && (end = strchr (start, '>')))
     {
       p = start + 1;
 
       /* If there's a "macro:" prefix, check whether the macro name matches.
 	 Set ATTR to the start of the attribute name.  */
-      attr = index (p, ':');
+      attr = strchr (p, ':');
       if (attr == 0 || attr > end)
 	attr = p;
       else
