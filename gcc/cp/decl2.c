@@ -870,8 +870,16 @@ grok_x_components (specs, components)
 	    tcode = class_type_node;
 	  else if (IS_SIGNATURE (t))
 	    tcode = signature_type_node;
-	  
-	  t = xref_tag (tcode, TYPE_IDENTIFIER (t), NULL_TREE, 0);
+
+	  if (CLASSTYPE_IS_TEMPLATE (t))
+	    /* In this case, the TYPE_IDENTIFIER will be something
+	       like S<T>, rather than S, so to get the correct name we
+	       look at the template.  */
+	    x = DECL_NAME (CLASSTYPE_TI_TEMPLATE (t));
+	  else
+	    x = TYPE_IDENTIFIER (t);
+
+	  t = xref_tag (tcode, x, NULL_TREE, 0);
 	  return NULL_TREE;
 	  break;
 

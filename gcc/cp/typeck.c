@@ -763,26 +763,8 @@ comptypes (type1, type2, strict)
       if (CLASSTYPE_TEMPLATE_INFO (t1) && CLASSTYPE_TEMPLATE_INFO (t2)
 	  && (CLASSTYPE_TI_TEMPLATE (t1) == CLASSTYPE_TI_TEMPLATE (t2)
 	      || TREE_CODE (t1) == TEMPLATE_TEMPLATE_PARM))
-	{
-	  int i = TREE_VEC_LENGTH (CLASSTYPE_TI_ARGS (t1));
-	  tree *p1 = &TREE_VEC_ELT (CLASSTYPE_TI_ARGS (t1), 0);
-	  tree *p2 = &TREE_VEC_ELT (CLASSTYPE_TI_ARGS (t2), 0);
-	
-	  while (i--)
-	    {
-	      if (TREE_CODE_CLASS (TREE_CODE (p1[i])) == 't')
-		{
-		  if (! comptypes (p1[i], p2[i], 1))
-		    return 0;
-		}
-	      else
-		{
-		  if (simple_cst_equal (p1[i], p2[i]) <= 0)
-		    return 0;
-		}
-	    }
-	  return 1;
-	}
+	return comp_template_args (CLASSTYPE_TI_ARGS (t1),
+				   CLASSTYPE_TI_ARGS (t2));
       if (strict <= 0)
 	goto look_hard;
       return 0;

@@ -71,25 +71,17 @@ is_friend (type, supplicant)
 
 		  if (TREE_CODE (TREE_VALUE (friends)) == TEMPLATE_DECL)
 		    {
-		      tree t;
-
-		      /* Perhaps this function is a specialization of
-			 a friend template.  */
-		      for (t = supplicant;
-			   t != NULL_TREE;
-			   t = DECL_TEMPLATE_INFO (t) ? 
-			     DECL_TI_TEMPLATE (t) : NULL_TREE)
-			/* FIXME: The use of comptypes here, and below, is
-			   bogus, since two specializations of a
-			   template parameter with non-type parameters
-			   may have the same type, but be different.  */
-			if (comptypes (TREE_TYPE (t),
-				       TREE_TYPE (TREE_VALUE (friends)), 1))
-			  return 1;
+		      if (is_specialization_of (supplicant, 
+						TREE_VALUE (friends)))
+			return 1;
 
 		      continue;
 		    }
 
+		  /* FIXME: The use of comptypes here is bogus, since
+		     two specializations of a template with non-type
+		     parameters may have the same type, but be
+		     different.  */
 		  if (comptypes (TREE_TYPE (supplicant),
 				 TREE_TYPE (TREE_VALUE (friends)), 1))
 		    return 1;
@@ -106,8 +98,15 @@ is_friend (type, supplicant)
       
       list = CLASSTYPE_FRIEND_CLASSES (TREE_TYPE (TYPE_MAIN_DECL (type)));
       for (; list ; list = TREE_CHAIN (list))
-	if (supplicant == TREE_VALUE (list))
-	  return 1;
+	{
+	  tree t = TREE_VALUE (list);
+
+	  if (supplicant == t
+	      || (CLASSTYPE_IS_TEMPLATE (t)
+		  && is_specialization_of (TYPE_MAIN_DECL (supplicant),
+					   CLASSTYPE_TI_TEMPLATE (t))))
+	    return 1;
+	}
     }      
 
   if (declp && DECL_FUNCTION_MEMBER_P (supplicant))
@@ -249,7 +248,10 @@ make_friend_class (type, friend_type)
 	     IDENTIFIER_POINTER (TYPE_IDENTIFIER (friend_type)));
       return;
     }
-  if (type == friend_type)
+  /* If the TYPE is a template then it makes sense for it to be
+     friends with itself; this means that each instantiation is
+     friends with all other instantiations.  */
+  if (type == friend_type && !CLASSTYPE_IS_TEMPLATE (type))
     {
       pedwarn ("class `%s' is implicitly friends with itself",
 	       TYPE_NAME_STRING (type));

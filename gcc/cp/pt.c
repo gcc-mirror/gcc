@@ -75,7 +75,6 @@ static int push_tinst_level PROTO((tree));
 static tree classtype_mangled_name PROTO((tree));
 static char *mangle_class_name_for_template PROTO((char *, tree, tree, tree));
 static tree tsubst_expr_values PROTO((tree, tree));
-static int comp_template_args PROTO((tree, tree));
 static int list_eq PROTO((tree, tree));
 static tree get_class_bindings PROTO((tree, tree, tree, tree));
 static tree coerce_template_parms PROTO((tree, tree, tree, int, int, int));
@@ -100,6 +99,7 @@ static tree reduce_template_parm_level PROTO((tree, tree, int));
 static tree build_template_decl PROTO((tree, tree));
 static int mark_template_parm PROTO((tree, void *));
 static tree tsubst_friend_function PROTO((tree, tree));
+static tree tsubst_friend_class PROTO((tree, tree));
 static tree get_bindings_real PROTO((tree, tree, tree, int));
 static int template_decl_level PROTO((tree));
 static tree maybe_get_template_decl_from_type_decl PROTO((tree));
@@ -489,12 +489,25 @@ add_to_template_args (args, extra_args)
 void
 begin_template_parm_list ()
 {
+  /* We use a non-tag-transparent scope here, which causes pushtag to
+     put tags in this scope, rather than in the enclosing class or
+     namespace scope.  This is the right thing, since we want
+     TEMPLATE_DECLS, and not TYPE_DECLS for template classes.  For a
+     global template class, push_template_decl handles putting the
+     TEMPLATE_DECL into top-level scope.  For a nested template class,
+     e.g.:
+
+       template <class T> struct S1 {
+         template <class T> struct S2 {}; 
+       };
+
+     pushtag contains special code to call pushdecl_with_scope on the
+     TEMPLATE_DECL for S2.  */
   pushlevel (0);
   declare_pseudo_global_level ();
   ++processing_template_decl;
   note_template_header (0);
 }
-
 
 /* We've just seen template <>. */
 
@@ -504,7 +517,6 @@ begin_specialization ()
   note_template_header (1);
 }
 
-
 /* Called at then end of processing a declaration preceeded by
    template<>.  */
 
@@ -513,7 +525,6 @@ end_specialization ()
 {
   reset_specialization ();
 }
-
 
 /* Any template <>'s that we have seen thus far are not referring to a
    function specialization. */
@@ -525,7 +536,6 @@ reset_specialization ()
   template_header_count = 0;
 }
 
-
 /* We've just seen a template header.  If SPECIALIZATION is non-zero,
    it was of the form template <>.  */
 
@@ -536,7 +546,6 @@ note_template_header (specialization)
   processing_specialization = specialization;
   template_header_count++;
 }
-
 
 /* We're beginning an explicit instantiation.  */
 
@@ -553,7 +562,6 @@ end_explicit_instantiation ()
   my_friendly_assert(processing_explicit_instantiation > 0, 0);
   --processing_explicit_instantiation;
 }
-
 
 /* Retrieve the specialization (in the sense of [temp.spec] - a
    specialization is either an instantiation or an explicit
@@ -580,7 +588,38 @@ retrieve_specialization (tmpl, args)
   return NULL_TREE;
 }
 
+/* Returns non-zero iff DECL is a specialization of TMPL.  */
 
+int
+is_specialization_of (decl, tmpl)
+     tree decl;
+     tree tmpl;
+{
+  tree t;
+
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    {
+      for (t = decl; 
+	   t != NULL_TREE;
+	   t = DECL_TEMPLATE_INFO (t) ? DECL_TI_TEMPLATE (t) : NULL_TREE)
+	if (t == tmpl)
+	  return 1;
+    }
+  else 
+    {
+      my_friendly_assert (TREE_CODE (decl) == TYPE_DECL, 0);
+
+      for (t = TREE_TYPE (decl);
+	   t != NULL_TREE;
+	   t = CLASSTYPE_USE_TEMPLATE (t)
+	     ? TREE_TYPE (CLASSTYPE_TI_TEMPLATE (t)) : NULL_TREE)
+	if (comptypes (TYPE_MAIN_VARIANT (t), 
+		       TYPE_MAIN_VARIANT (TREE_TYPE (tmpl)), 1))
+	  return 1;
+    }  
+
+  return 0;
+}
 
 /* Register the specialization SPEC as a specialization of TMPL with
    the indicated ARGS.  */
@@ -648,7 +687,6 @@ register_specialization (spec, tmpl, args)
   DECL_TEMPLATE_SPECIALIZATIONS (tmpl)
      = perm_tree_cons (args, spec, DECL_TEMPLATE_SPECIALIZATIONS (tmpl));
 }
-
 
 /* Print the list of candidate FNS in an error message.  */
 
@@ -786,8 +824,7 @@ determine_specialization (template_id, decl, targs_out,
   *targs_out = TREE_PURPOSE (templates);
   return TREE_VALUE (templates);
 }
-
-	
+      
 /* Check to see if the function just declared, as indicated in
    DECLARATOR, and in DECL, is a specialization of a function
    template.  We may also discover that the declaration is an explicit
@@ -1160,7 +1197,6 @@ check_explicit_specialization (declarator, decl, template_count, flags)
   return decl;
 }
 
-
 /* Returns 1 iff PARMS1 and PARMS2 are identical sets of template
    parameters.  These are represented in the same format used for
    DECL_TEMPLATE_PARMS.  */
@@ -1213,7 +1249,6 @@ int comp_template_parms (parms1, parms2)
   return 1;
 }
 
-
 /* Return a new TEMPLATE_PARM_INDEX with the indicated INDEX, LEVEL,
    ORIG_LEVEL, DECL, and TYPE.  */
 
@@ -1234,7 +1269,6 @@ build_template_parm_index (index, level, orig_level, decl, type)
 
   return t;
 }
-
 
 /* Return a TEMPLATE_PARM_INDEX, similar to INDEX, but whose
    TEMPLATE_PARM_LEVEL has been decreased by LEVELS.  If such a
@@ -1520,19 +1554,22 @@ mark_template_parm (t, data)
 /* Creates a TEMPLATE_DECL for the indicated DECL using the template
    parameters given by current_template_args, or reuses a
    previously existing one, if appropriate.  Returns the DECL, or an
-   equivalent one, if it is replaced via a call to duplicate_decls.  */
+   equivalent one, if it is replaced via a call to duplicate_decls.  
+
+   If IS_FRIEND is non-zero, DECL is a friend declaration.  */
 
 tree
-push_template_decl (decl)
+push_template_decl_real (decl, is_friend)
      tree decl;
+     int is_friend;
 {
   tree tmpl;
   tree args;
   tree info;
   tree ctx;
   int primary;
-  int is_friend = (TREE_CODE (decl) == FUNCTION_DECL
-		   && DECL_FRIEND_P (decl));
+
+  is_friend |= (TREE_CODE (decl) == FUNCTION_DECL && DECL_FRIEND_P (decl));
 
   if (is_friend)
     /* For a friend, we want the context of the friend function, not
@@ -1550,16 +1587,17 @@ push_template_decl (decl)
   /* For determining whether this is a primary template or not, we're really
      interested in the lexical context, not the true context.  */
   if (is_friend)
-    info = DECL_CLASS_CONTEXT (decl);
+    /* For a TYPE_DECL, there is no DECL_CLASS_CONTEXT.  */
+    info = TREE_CODE (decl) == FUNCTION_DECL 
+      ? DECL_CLASS_CONTEXT (decl) : current_class_type;
   else
     info = ctx;
 
   if (info && TREE_CODE (info) == FUNCTION_DECL)
     primary = 0;
-  else if (! info
-	   || (TYPE_BEING_DEFINED (info) && template_header_count
-	       && ! processing_specialization)
-	   || (template_header_count > template_class_depth (info)))
+  /* Note that template_class_depth returns 0 if given NULL_TREE, so
+     this next line works even when we are at global scope.  */
+  else if (processing_template_decl > template_class_depth (info))
     primary = 1;
   else
     primary = 0;
@@ -1775,14 +1813,14 @@ push_template_decl (decl)
   DECL_TEMPLATE_RESULT (tmpl) = decl;
   TREE_TYPE (tmpl) = TREE_TYPE (decl);
 
-  if (! ctx && primary)
-    /* The check of PRIMARY ensures that we do not try to push a
-       global template friend declared in a template class; such a
-       thing may well depend on the template parameters of the class.  */
+  if (! ctx && !(is_friend && template_class_depth (info) > 0))
+    /* Note that we do not try to push a global template friend
+       declared in a template class; such a thing may well depend on
+       the template parameters of the class.  */
     tmpl = pushdecl_top_level (tmpl);
 
   if (primary)
-    TREE_TYPE (DECL_INNERMOST_TEMPLATE_PARMS (tmpl)) = tmpl;
+    DECL_PRIMARY_TEMPLATE (tmpl) = tmpl;
 
   info = perm_tree_cons (tmpl, args, NULL_TREE);
 
@@ -1800,18 +1838,26 @@ push_template_decl (decl)
   return DECL_TEMPLATE_RESULT (tmpl);
 }
 
-/* Called when a class template TYPE is redeclared, e.g.:
+tree
+push_template_decl (decl)
+     tree decl;
+{
+  return push_template_decl_real (decl, 0);
+}
+
+/* Called when a class template TYPE is redeclared with the indicated
+   template PARMS, e.g.:
 
      template <class T> struct S;
      template <class T> struct S {};  */
 
 void 
-redeclare_class_template (type)
+redeclare_class_template (type, parms)
      tree type;
+     tree parms;
 {
   tree tmpl = CLASSTYPE_TI_TEMPLATE (type);
-  tree tmpl_parms = DECL_INNERMOST_TEMPLATE_PARMS (tmpl);
-  tree parms = INNERMOST_TEMPLATE_PARMS (current_template_parms);
+  tree tmpl_parms;
   int i;
 
   if (!PRIMARY_TEMPLATE_P (tmpl))
@@ -1819,6 +1865,9 @@ redeclare_class_template (type)
        about here; there are no new template parameters for the nested
        type.  */
     return;
+
+  parms = INNERMOST_TEMPLATE_PARMS (parms);
+  tmpl_parms = DECL_INNERMOST_TEMPLATE_PARMS (tmpl);
 
   if (TREE_VEC_LENGTH (parms) != TREE_VEC_LENGTH (tmpl_parms))
     {
@@ -2484,7 +2533,7 @@ coerce_template_parms (parms, arglist, in_decl,
 /* Renturns 1 iff the OLDARGS and NEWARGS are in fact identical sets
    of template arguments.  Returns 0 otherwise.  */
 
-static int
+int
 comp_template_args (oldargs, newargs)
      tree oldargs, newargs;
 {
@@ -3251,7 +3300,6 @@ tinst_for_decl ()
   return p;
 }
 
-
 /* DECL is a friend FUNCTION_DECL or TEMPLATE_DECL.  ARGS is the
    vector of template arguments, as for tsubst.
 
@@ -3340,6 +3388,51 @@ tsubst_friend_function (decl, args)
   return new_friend;
 }
 
+/* FRIEND_TYPE is a friend RECORD_TYPE or UNION_TYPE.  ARGS is the
+   vector of template arguments, as for tsubst.
+
+   Returns an appropriate tsbust'd friend type.  */
+
+static tree
+tsubst_friend_class (friend_type, args)
+     tree friend_type;
+     tree args;
+{
+  tree tmpl = 
+    lookup_name (DECL_NAME (CLASSTYPE_TI_TEMPLATE (friend_type)), 1); 
+
+  tmpl = maybe_get_template_decl_from_type_decl (tmpl);
+
+  if (tmpl != NULL_TREE && DECL_CLASS_TEMPLATE_P (tmpl))
+    {
+      /* The friend template has already been declared.  Just
+	 check to see that the declarations match.  */
+      redeclare_class_template (TREE_TYPE (tmpl),
+				DECL_TEMPLATE_PARMS (CLASSTYPE_TI_TEMPLATE 
+						     (friend_type)));
+      friend_type = TREE_TYPE (tmpl);
+    }
+  else
+    {
+      /* The friend template has not already been declared.  In this
+	 case, the instantiation of the template class will cause the
+	 injection of this template into the global scope.  */
+      tmpl = tsubst (CLASSTYPE_TI_TEMPLATE (friend_type), args, NULL_TREE);
+
+      /* The new TMPL is not an instantiation of anything, so we
+ 	 forget its origins.  We don't reset CLASSTYPE_TI_TEMPLATE for
+	 the new type because that is supposed to be the corresponding
+	 template decl, i.e., TMPL.  */
+      DECL_USE_TEMPLATE (tmpl) = 0;
+      DECL_TEMPLATE_INFO (tmpl) = NULL_TREE;
+      CLASSTYPE_USE_TEMPLATE (TREE_TYPE (tmpl)) = 0;
+
+      /* Inject this template into the global scope.  */
+      friend_type = TREE_TYPE (pushdecl_top_level (tmpl));
+    }
+
+  return friend_type;
+}
 
 tree
 instantiate_class_template (type)
@@ -3604,12 +3697,25 @@ instantiate_class_template (type)
 	}
     }
 
-  t = CLASSTYPE_FRIEND_CLASSES (type)
-    = tsubst (CLASSTYPE_FRIEND_CLASSES (pattern), args, NULL_TREE);
+  for (t = CLASSTYPE_FRIEND_CLASSES (pattern);
+       t != NULL_TREE;
+       t = TREE_CHAIN (t))
+    {
+      tree friend_type = TREE_VALUE (t);
 
-  /* This does injection for friend classes.  */
-  for (; t; t = TREE_CHAIN (t))
-    TREE_VALUE (t) = xref_tag_from_type (TREE_VALUE (t), NULL_TREE, 1);
+      if (!CLASSTYPE_IS_TEMPLATE (friend_type))
+	/* The call to xref_tag_from_type does injection for friend
+	   classes.  */
+	friend_type = 
+	  xref_tag_from_type (tsubst (friend_type, args, NULL_TREE),
+			      NULL_TREE, 1);
+      else
+	friend_type = tsubst_friend_class (friend_type, args);
+
+      CLASSTYPE_FRIEND_CLASSES (type) = 
+	tree_cons (NULL_TREE, friend_type,
+		   CLASSTYPE_FRIEND_CLASSES (type));
+    }
 
   /* This does injection for friend functions. */
   if (!processing_template_decl)
