@@ -33,6 +33,7 @@ Boston, MA 02111-1307, USA.  */
       the external preprocessor if -save-temps is given.  */
 #if ENABLE_NEW_GXX_ABI
     "%{E|M|MM:cpp0 -lang-c++ -D_GNU_SOURCE %{!no-gcc:-D__GNUG__=%v1}\
+       %{!fno-exceptions:-D__EXCEPTIONS}\
        %{!fno-new-abi:-D__GXX_ABI_VERSION=100}\
        %{ansi:-D__STRICT_ANSI__ -trigraphs -$} %(cpp_options)}\
      %{!E:%{!M:%{!MM:\
@@ -51,6 +52,7 @@ Boston, MA 02111-1307, USA.  */
        %{!fsyntax-only:%(invoke_as)}}}}"
 #else
     "%{E|M|MM:cpp0 -lang-c++ %{!no-gcc:-D__GNUG__=%v1}\
+       %{!fno-exceptions:-D__EXCEPTIONS}\
        %{fnew-abi:-D__GXX_ABI_VERSION=100}\
        %{ansi:-D__STRICT_ANSI__ -trigraphs -$} %(cpp_options)}\
      %{!E:%{!M:%{!MM:\

@@ -1,3 +1,7 @@
+2001-02-09  Jason Merrill  <jason@redhat.com>
+
+	* lang-specs.h: Restore definition of __EXCEPTIONS.
+
 2001-02-08  Jason Merrill  <jason@redhat.com>
 
 	* search.c (shared_member_p): New function.
