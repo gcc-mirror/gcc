@@ -1555,9 +1555,9 @@
     return \"\\n1:\;call 2f\;sethi %%hi(%l1-1b),%0\\n2:\\tor %0,%%lo(%l1-1b),%0\;add %0,%%o7,%0\";
 }"
   [(set_attr "type" "multi")
-   ; 1024 = 4096 bytes / 4 bytes/insn
+   ; 960 = 4096 bytes / 4 bytes/insn - 64 (for not always perfect length calcs)
    (set (attr "length") (if_then_else (ltu (minus (match_dup 1) (pc))
-					   (const_int 1024))
+					   (const_int 960))
 				      (const_int 2)
 				      (const_int 4)))])
 
@@ -1583,9 +1583,9 @@
     return \"\\n1:\;rd %%pc,%%o7\;sethi %%hi(%l1-1b),%0\;add %0,%%lo(%l1-1b),%0\;sra %0,0,%0\;add %0,%%o7,%0\";
 }"
   [(set_attr "type" "multi")
-   ; 1024 = 4096 bytes / 4 bytes/insn
+   ; 960 = 4096 bytes / 4 bytes/insn - 64 (for not always perfect length calcs)
    (set (attr "length") (if_then_else (ltu (minus (match_dup 1) (pc))
-					   (const_int 1024))
+					   (const_int 960))
 				      (const_int 2)
 				      (const_int 5)))])
 
