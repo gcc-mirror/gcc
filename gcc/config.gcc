@@ -3222,11 +3222,6 @@ sparc-*-solaris2*)
 		tmake_file="$tmake_file t-slibgcc-sld"
 	fi
 	case $machine in
-	*-*-solaris2.[0-6] | *-*-solaris2.[0-6].*)
-		if test x$gnu_ld = xno; then
-			tm_file="${tm_file} sparc/sol26-sld.h"
-		fi
-		;;
 	*-*-solaris2.[789])
 		tm_file="sparc/biarch64.h ${tm_file} sparc/sol2-bi.h"
 		if test x$gnu_ld = xyes; then
@@ -3236,6 +3231,13 @@ sparc-*-solaris2*)
 			tm_file="${tm_file} sparc/sol2-gas-bi.h"
 		fi
 		tmake_file="$tmake_file sparc/t-sol2-64"
+		;;
+	esac
+	case $machine in
+	*-*-solaris2.[0-7] | *-*-solaris2.[0-7].*)
+		if test x$gnu_ld = xno; then
+			tm_file="${tm_file} sparc/sol27-sld.h"
+		fi
 		;;
 	esac
 	xm_defines=POSIX

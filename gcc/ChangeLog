@@ -1,5 +1,12 @@
 2002-04-30  Richard Henderson  <rth@redhat.com>
 
+	* config/sparc/sol27-sld.h: Rename from sol26-sld.h.
+	(PREFERRED_DEBUGGING_TYPE, ASM_DEBUG_SPEC): Undef.
+	* config.gcc (sparc-solaris): Adjust test for native ld bug.
+	Add it after the biarch headers.
+
+2002-04-30  Richard Henderson  <rth@redhat.com>
+
 	PR opt/6516
 	* toplev.c (rest_of_compilation): Don't run cross-jump before
 	bb-reorder.
