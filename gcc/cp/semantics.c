@@ -922,12 +922,6 @@ finish_object_call_expr (fn, object, args)
   tree real_fn = build_component_ref (object, fn, NULL_TREE, 1);
   return finish_call_expr (real_fn, args);
 #else
-  if (TREE_CODE (fn) == TYPE_DECL)
-    {
-      cp_error ("calling type `%T' like a method", fn);
-      return error_mark_node;
-    }
-
   return build_method_call (object, fn, args, NULL_TREE, LOOKUP_NORMAL);
 #endif
 }
