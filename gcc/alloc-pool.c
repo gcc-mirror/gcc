@@ -23,6 +23,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "config.h"
 #include "system.h"
 #include "alloc-pool.h"
+#include "hashtab.h"
 
 /* Redefine abort to report an internal error w/o coredump, and
    reporting the location of the error in the source file.  This logic
@@ -73,6 +74,56 @@ typedef struct allocation_object_def
 static ALLOC_POOL_ID_TYPE last_id;
 #endif
 
+#ifdef GATHER_STATISTICS
+
+/* Store infromation about each particular alloc_pool.  */
+struct alloc_pool_descriptor
+{
+  const char *name;
+  int allocated;
+  int created;
+  int peak;
+  int current;
+};
+
+/* Hashtable mapping alloc_pool names to descriptors.  */
+static htab_t alloc_pool_hash;
+
+/* Hashtable helpers.  */
+static hashval_t
+hash_descriptor (const void *p)
+{
+  const struct alloc_pool_descriptor *d = p;
+  return htab_hash_pointer (d->name);
+}
+static int
+eq_descriptor (const void *p1, const void *p2)
+{
+  const struct alloc_pool_descriptor *d = p1;
+  return d->name == p2;
+}
+
+/* For given name, return descriptor, create new if needed.  */
+static struct alloc_pool_descriptor *
+alloc_pool_descriptor (const char *name)
+{
+  struct alloc_pool_descriptor **slot;
+
+  if (!alloc_pool_hash)
+    alloc_pool_hash = htab_create (10, hash_descriptor, eq_descriptor, NULL);
+
+  slot = (struct alloc_pool_descriptor **)
+    htab_find_slot_with_hash (alloc_pool_hash, name,
+		    	      htab_hash_pointer (name),
+			      1);
+  if (*slot)
+    return *slot;
+  *slot = xcalloc (sizeof (**slot), 1);
+  (*slot)->name = name;
+  return *slot;
+}
+#endif
+
 /* Create a pool of things of size SIZE, with NUM in each block we
    allocate.  */
 
@@ -81,6 +132,9 @@ create_alloc_pool (const char *name, size_t size, size_t num)
 {
   alloc_pool pool;
   size_t pool_size, header_size;
+#ifdef GATHER_STATISTICS
+  struct alloc_pool_descriptor *desc;
+#endif
 
   if (!name)
     abort ();
@@ -108,7 +162,11 @@ create_alloc_pool (const char *name, size_t size, size_t num)
   pool = xmalloc (pool_size);
 
   /* Now init the various pieces of our pool structure.  */
-  pool->name = xstrdup (name);
+  pool->name = /*xstrdup (name)*/name;
+#ifdef GATHER_STATISTICS
+  desc = alloc_pool_descriptor (name);
+  desc->created++;
+#endif
   pool->elt_size = size;
   pool->elts_per_block = num;
 
@@ -140,6 +198,9 @@ void
 free_alloc_pool (alloc_pool pool)
 {
   alloc_pool_list block, next_block;
+#ifdef GATHER_STATISTICS
+  struct alloc_pool_descriptor *desc = alloc_pool_descriptor (pool->name);
+#endif
 
 #ifdef ENABLE_CHECKING
   if (!pool)
@@ -151,9 +212,11 @@ free_alloc_pool (alloc_pool pool)
     {
       next_block = block->next;
       free (block);
+#ifdef GATHER_STATISTICS
+      desc->current -= pool->block_size;
+#endif
     }
-  /* Lastly, free the pool and the name.  */
-  free (pool->name);
+  /* Lastly, free the pool.  */
   free (pool);
 }
 
@@ -163,6 +226,11 @@ pool_alloc (alloc_pool pool)
 {
   alloc_pool_list header;
   char *block;
+#ifdef GATHER_STATISTICS
+  struct alloc_pool_descriptor *desc = alloc_pool_descriptor (pool->name);
+
+  desc->allocated+=pool->elt_size;
+#endif
 
 #ifdef ENABLE_CHECKING
   if (!pool)
@@ -179,6 +247,11 @@ pool_alloc (alloc_pool pool)
       block = xmalloc (pool->block_size);
       block_header = (alloc_pool_list) block;
       block += align_eight (sizeof (struct alloc_pool_list_def));
+#ifdef GATHER_STATISTICS
+      desc->current += pool->block_size;
+      if (desc->peak < desc->current)
+	desc->peak = desc->current;
+#endif
 
       /* Throw it on the block list.  */
       block_header->next = pool->block_list;
@@ -241,4 +314,50 @@ pool_free (alloc_pool pool, void *ptr)
   header->next = pool->free_list;
   pool->free_list = header;
   pool->elts_free++;
+}
+/* Output per-alloc_pool statistics.  */
+#ifdef GATHER_STATISTICS
+
+/* Used to accumulate statistics about alloc_pool sizes.  */
+struct output_info
+{
+  int count;
+  int size;
+};
+
+/* Called via htab_traverse.  Output alloc_pool descriptor pointed out by SLOT
+   and update statistics.  */
+static int
+print_statistics (void **slot, void *b)
+{
+  struct alloc_pool_descriptor *d = (struct alloc_pool_descriptor *) *slot;
+  struct output_info *i = (struct output_info *) b;
+
+  if (d->allocated)
+    {
+      fprintf (stderr, "%-21s %6d %10d %10d %10d\n", d->name,
+	       d->created, d->allocated, d->peak, d->current);
+      i->size += d->allocated;
+      i->count += d->created;
+    }
+  return 1;
+}
+#endif
+
+/* Output per-alloc_pool memory usage statistics.  */
+void dump_alloc_pool_statistics (void)
+{
+#ifdef GATHER_STATISTICS
+  struct output_info info;
+
+  fprintf (stderr, "\nAlloc-pool Kind        Pools  Allocated      Peak        Leak\n");
+  fprintf (stderr, "-------------------------------------------------------------\n");
+  info.count = 0;
+  info.size = 0;
+  htab_traverse (alloc_pool_hash, print_statistics, &info);
+  fprintf (stderr, "-------------------------------------------------------------\n");
+  fprintf (stderr, "%-20s %7d %10d\n",
+	   "Total", info.count, info.size);
+  fprintf (stderr, "-------------------------------------------------------------\n");
+#endif
 }

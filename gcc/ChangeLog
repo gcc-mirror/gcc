@@ -1,5 +1,18 @@
 2004-01-30  Jan Hubicka  <jh@suse.cz>
 
+	* alloc-pool.c: Include hashtab.h
+	(alloc_pool_descriptor): New structure
+	(alloc_pool_hash): New global variable.
+	(hash_descriptor, eq_descriptor, alloc_pool_descriptor): New.
+	(create_alloc_pool): Update statistics.
+	(free_alloc_pool): Likewise.
+	(pool_alloc): Likewise.
+	(output_info): New structure
+	(print_statistics, dump_alloc_pool_statistics): New function.
+	* alloc-pool.h (alloc_pool_def): Turn name to be constant.
+	(dump_alloc_pool_statistics): Declare.
+	* toplev.c (finalize):  Dump statistics.
+
 	* varray.c:  Include hashtab.h
 	(varray_descriptor): New structure.
 	(hash_descriptor, eq_descriptor, varray_descriptor,
