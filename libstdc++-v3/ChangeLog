@@ -1,3 +1,12 @@
+2000-11-02  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* include/bits/std_complex.h (complex<>): Remove (cos<>, cosh<>,
+	exp<>, log<>, log<>, sin, sinh<>) friend declarations.
+	(cos, cosh, sin, sinh): Define primary templates.
+
+	* src/complex.cc (cos<>, cosh<>, sin<>, sinh<>): Comment out
+	definitions. 
+
 2000-11-01  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* bits/basic_file.h (_M_open_mode): Change signature, move

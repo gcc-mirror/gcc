@@ -177,21 +177,11 @@ namespace std
     friend class complex<double>;
     friend class complex<long double>;
 
-    // friend float abs<>(const complex<float>&);
-    //friend complex<float> conj<>(const complex<float>&);
-
-    friend complex<float> cos<>(const complex<float>&);
-    friend complex<float> cosh<>(const complex<float>&);
-    friend complex<float> exp<>(const complex<float>&);
-    friend complex<float> log<>(const complex<float>&);
-    friend complex<float> log10<>(const complex<float>&);
     friend complex<float> pow<>(const complex<float>&, int);
     friend complex<float> pow<>(const complex<float>&, const float&);
     friend complex<float> pow<>(const complex<float>&,
 				const complex<float>&);
     friend complex<float> pow<>(const float&, const complex<float>&);
-    friend complex<float> sin<>(const complex<float>&);
-    friend complex<float> sinh<>(const complex<float>&);
     friend complex<float> sqrt<>(const complex<float>&);
     friend complex<float> tan<>(const complex<float>&);
     friend complex<float> tanh<>(const complex<float>&);
@@ -252,20 +242,11 @@ namespace std
     friend class complex<float>;
     friend class complex<long double>;
 
-    // friend double abs<>(const complex<double>&);
-    // friend complex<double> conj<>(const complex<double>&);
-    friend complex<double> cos<>(const complex<double>&);
-    friend complex<double> cosh<>(const complex<double>&);
-    friend complex<double> exp<>(const complex<double>&);
-    friend complex<double> log<>(const complex<double>&);
-    friend complex<double> log10<>(const complex<double>&);
     friend complex<double> pow<>(const complex<double>&, int);
     friend complex<double> pow<>(const complex<double>&, const double&);
     friend complex<double> pow<>(const complex<double>&,
 				 const complex<double>&);
     friend complex<double> pow<>(const double&, const complex<double>&);
-    friend complex<double> sin<>(const complex<double>&);
-    friend complex<double> sinh<>(const complex<double>&);
     friend complex<double> sqrt<>(const complex<double>&);
     friend complex<double> tan<>(const complex<double>&);
     friend complex<double> tanh<>(const complex<double>&);
@@ -327,13 +308,6 @@ namespace std
     friend class complex<float>;
     friend class complex<double>;
 
-    // friend long double abs<>(const complex<long double>&);
-    //friend complex<long double> conj<>(const complex<long double>&);
-    friend complex<long double> cos<>(const complex<long double>&);
-    friend complex<long double> cosh<>(const complex<long double>&);
-    friend complex<long double> exp<>(const complex<long double>&);
-    friend complex<long double> log<>(const complex<long double>&);
-    friend complex<long double> log10<>(const complex<long double>&);
     friend complex<long double> pow<>(const complex<long double>&, int);
     friend complex<long double> pow<>(const complex<long double>&,
 				      const long double&);
@@ -341,8 +315,6 @@ namespace std
 				      const complex<long double>&);
     friend complex<long double> pow<>(const long double&,
 				      const complex<long double>&);
-    friend complex<long double> sin<>(const complex<long double>&);
-    friend complex<long double> sinh<>(const complex<long double>&);
     friend complex<long double> sqrt<>(const complex<long double>&);
     friend complex<long double> tan<>(const complex<long double>&);
     friend complex<long double> tanh<>(const complex<long double>&);
@@ -776,7 +748,7 @@ namespace std
     complex<_Tp>&
     complex<_Tp>::operator*=(const complex<_Up>& __z)
     {
-      _Tp __r = _M_real * __z.real() - _M_imag * __z.imag();
+      const _Tp __r = _M_real * __z.real() - _M_imag * __z.imag();
       _M_imag = _M_real * __z.imag() + _M_imag * __z.real();
       _M_real = __r;
       return *this;
@@ -789,8 +761,8 @@ namespace std
     complex<_Tp>&
     complex<_Tp>::operator/=(const complex<_Up>& __z)
     {
-      _Tp __r =  _M_real * __z.real() + _M_imag * __z.imag();
-      _Tp __n = norm(__z);
+      const _Tp __r =  _M_real * __z.real() + _M_imag * __z.imag();
+      const _Tp __n = norm(__z);
       _M_imag = (_M_real * __z.imag() - _M_imag * __z.real()) / __n;
       _M_real = __r / __n;
       return *this;
@@ -923,7 +895,7 @@ namespace std
     {
       _Tp __x = __z.real();
       _Tp __y = __z.imag();
-      _Tp __s = abs(__x) + abs(__y);
+      const _Tp __s = abs(__x) + abs(__y);
       if (__s == _Tp())  // well ...
         return __s;
       __x /= __s; __y /= __s;
@@ -962,6 +934,24 @@ namespace std
   // Transcendentals:
   template<typename _Tp>
     inline complex<_Tp>
+    cos(const complex<_Tp>& __z)
+    {
+      const _Tp __x = __z.real();
+      const _Tp __y = __z.imag();
+      return complex<_Tp>(cos(__x) * cosh(__y), -sin(__x) * sinh(__y));
+    }
+
+  template<typename _Tp>
+    inline complex<_Tp>
+    cosh(const complex<_Tp>& __z)
+    {
+      const _Tp __x = __z.real();
+      const _Tp __y = __z.imag();
+      return complex<_Tp>(cosh(__x) * cos(__y), sinh(__x) * sin(__y));
+    }
+
+  template<typename _Tp>
+    inline complex<_Tp>
     exp(const complex<_Tp>& __z)
     { return polar(exp(__z.real()), __z.imag()); }
 
@@ -974,7 +964,24 @@ namespace std
     inline complex<_Tp>
     log10(const complex<_Tp>& __z)
     { return log(__z) / log(_Tp(10.0)); }
-  
+
+  template<typename _Tp>
+    inline complex<_Tp>
+    sin(const complex<_Tp>& __z)
+    {
+      const _Tp __x = __z.real();
+      const _Tp __y = __z.imag();
+      return complex<_Tp>(sin(__x) * cosh(__y), cos(__x) * sinh(__y)); 
+    }
+
+  template<typename _Tp>
+    inline complex<_Tp>
+    sinh(const complex<_Tp>& __z)
+    {
+      const _Tp __x = __z.real();
+      const _Tp  __y = __z.imag();
+      return complex<_Tp>(sinh(__x) * cos(__y), cosh(__x) * sin(__y));
+    }
 } // namespace std
 
 #endif	/* _CPP_COMPLEX */
