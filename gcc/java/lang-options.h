@@ -50,4 +50,4 @@ DEFINE_LANG_NAME ("Java")
   { "-fno-use-divide-subroutine", "Use built-in instructions for division" },
   { "-Wredundant-modifiers", 
     "Warn if modifiers are specified when not necessary"},
-  { "-Wunsupported-jdk11", "Warn if `final' local variables are specified"}
+  { "-Wunsupported-jdk11", "Warn if `final' local variables are specified"},
