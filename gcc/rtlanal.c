@@ -1,5 +1,5 @@
 /* Analyze RTL for C-Compiler
-   Copyright (C) 1987, 1988, 1991, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1991, 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -472,7 +472,7 @@ modified_between_p (x, start, end)
 {
   enum rtx_code code = GET_CODE (x);
   char *fmt;
-  int i;
+  int i, j;
 
   switch (code)
     {
@@ -500,9 +500,67 @@ modified_between_p (x, start, end)
 
   fmt = GET_RTX_FORMAT (code);
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-    if (fmt[i] == 'e'
-	&& modified_between_p (XEXP (x, i), start, end))
+    {
+      if (fmt[i] == 'e' && modified_between_p (XEXP (x, i), start, end))
+	return 1;
+
+      if (fmt[i] == 'E')
+	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	  if (modified_between_p (XVECEXP (x, i, j), start, end))
+	    return 1;
+    }
+
+  return 0;
+}
+
+/* Similar to reg_set_p, but check all registers in X.  Return 0 only if none
+   of them are modified in INSN.  Return 1 if X contains a MEM; this routine
+   does not perform any memory aliasing.  */
+
+int
+modified_in_p (x, insn)
+     rtx x;
+     rtx insn;
+{
+  enum rtx_code code = GET_CODE (x);
+  char *fmt;
+  int i, j;
+
+  switch (code)
+    {
+    case CONST_INT:
+    case CONST_DOUBLE:
+    case CONST:
+    case SYMBOL_REF:
+    case LABEL_REF:
+      return 0;
+
+    case PC:
+    case CC0:
       return 1;
+
+    case MEM:
+      /* If the memory is not constant, assume it is modified.  If it is
+	 constant, we still have to check the address.  */
+      if (! RTX_UNCHANGING_P (x))
+	return 1;
+      break;
+
+    case REG:
+      return reg_set_p (x, insn);
+    }
+
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e' && modified_in_p (XEXP (x, i), insn))
+	return 1;
+
+      if (fmt[i] == 'E')
+	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	  if (modified_in_p (XVECEXP (x, i, j), insn))
+	    return 1;
+    }
 
   return 0;
 }
@@ -618,6 +676,18 @@ refers_to_regno_p (regno, endregno, x, loc)
     {
     case REG:
       i = REGNO (x);
+
+      /* If we modifying the stack, frame, or argument pointer, it will
+	 clobber a virtual register.  In fact, we could be more precise,
+	 but it isn't worth it.  */
+      if ((i == STACK_POINTER_REGNUM
+#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+	   || i == ARG_POINTER_REGNUM
+#endif
+	   || i == FRAME_POINTER_REGNUM)
+	  && regno >= FIRST_VIRTUAL_REGISTER && regno <= LAST_VIRTUAL_REGISTER)
+	return 1;
+
       return (endregno > i
 	      && regno < i + (i < FIRST_PSEUDO_REGISTER 
 			      ? HARD_REGNO_NREGS (i, GET_MODE (x))
