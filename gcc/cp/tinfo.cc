@@ -28,7 +28,6 @@
 #pragma implementation "typeinfo"
 
 #include <stddef.h>
-#include <string.h>
 #include "tinfo.h"
 #include "new"			// for placement new
 
