@@ -595,6 +595,7 @@ package body Snames is
      "binder#" &
      "linker#" &
      "compiler#" &
+     "gnatstub#" &
       "#";
 
    ---------------------

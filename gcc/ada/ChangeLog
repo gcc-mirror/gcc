@@ -1,3 +1,40 @@
+2001-12-11  Vincent Celier <celier@gnat.com>
+
+	* gnatmain.adb: Initial version.
+	
+	* gnatmain.ads: Initial version.
+	
+	* prj-attr.adb (Initialisation_Data): Add package Gnatstub.
+	
+	* snames.adb: Updated to match snames.ads.
+	
+	* snames.ads: Added Gnatstub.
+	
+2001-12-11  Vincent Celier <celier@gnat.com>
+
+	* prj-attr.adb (Initialization_Data): Change name from 
+	Initialisation_Data.
+	
+2001-12-11  Emmanuel Briot <briot@gnat.com>
+
+	* g-regpat.adb (Parse_Literal): Properly handle simple operators ?,
+	+ and * applied to backslashed expressions like \r.
+	
+2001-12-11  Vasiliy Fofanov <fofanov@gnat.com>
+
+	* g-os_lib.ads: String_List type added, Argument_List type is now 
+	subtype of String_List.
+	
+2001-12-11  Robert Dewar <dewar@gnat.com>
+
+	* g-os_lib.ads: Change copyright to FSF
+	Add comments for String_List type
+	
+2001-12-11  Vincent Celier <celier@gnat.com>
+
+	* g-dirope.adb (Expand_Path): Fix bug. (wrong length when adding a 
+	string to the buffer).
+
 2001-12-11  Ed Schonberg <schonber@gnat.com>
 
 	* freeze.adb: Make Freeze_Fixed_Point_Type visible, for use in

@@ -1,0 +1,38 @@
+------------------------------------------------------------------------------
+--                                                                          --
+--                         GNAT COMPILER COMPONENTS                         --
+--                                                                          --
+--                            G N A T M A I N                               --
+--                                                                          --
+--                                 S p e c                                  --
+--                                                                          --
+--                            $Revision$
+--                                                                          --
+--          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--                                                                          --
+-- GNAT is free software;  you can  redistribute it  and/or modify it under --
+-- terms of the  GNU General Public License as published  by the Free Soft- --
+-- ware  Foundation;  either version 2,  or (at your option) any later ver- --
+-- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
+-- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
+-- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
+-- for  more details.  You should have  received  a copy of the GNU General --
+-- Public License  distributed with GNAT;  see file COPYING.  If not, write --
+-- to  the Free Software Foundation,  59 Temple Place - Suite 330,  Boston, --
+-- MA 02111-1307, USA.                                                      --
+--                                                                          --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- It is now maintained by Ada Core Technologies Inc (http://www.gnat.com). --
+--                                                                          --
+------------------------------------------------------------------------------
+
+--  This procedure is the project-aware driver for the GNAT tools.
+--  For gnatls, gnatxref, gnatfind and gnatstub, it setup the environment
+--  variables ADA_INCLUDE_PATH and ADA_OBJECT_PATH and gather the switches
+--  and file names from the project file (if any) and from the common line,
+--  then call the non project-aware tool (gnatls, gnatxref, gnatfind or
+--  gnatstub).
+--  For other tools (compiler, binder, linker, gnatmake), it invokes
+--  gnatmake with the proper switches.
+
+procedure Gnatmain;

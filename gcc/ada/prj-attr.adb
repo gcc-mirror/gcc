@@ -49,7 +49,7 @@ package body Prj.Attr is
 
    --  End is indicated by two consecutive '#'.
 
-   Initialisation_Data : constant String :=
+   Initialization_Data : constant String :=
 
    --  project attributes
 
@@ -121,6 +121,11 @@ package body Prj.Attr is
      "Ladefault_switches#" &
      "LAswitches#" &
 
+   --  package Gnatstub
+
+     "Pgnatstub#" &
+     "LVswitches#" &
+
      "#";
 
    ----------------
@@ -128,7 +133,7 @@ package body Prj.Attr is
    ----------------
 
    procedure Initialize is
-      Start             : Positive           := Initialisation_Data'First;
+      Start             : Positive           := Initialization_Data'First;
       Finish            : Positive           := Start;
       Current_Package   : Package_Node_Id    := Empty_Package;
       Current_Attribute : Attribute_Node_Id  := Empty_Attribute;
@@ -145,9 +150,9 @@ package body Prj.Attr is
       Attributes.Set_Last (Attributes.First);
       Package_Attributes.Set_Last (Package_Attributes.First);
 
-      while Initialisation_Data (Start) /= '#' loop
+      while Initialization_Data (Start) /= '#' loop
          Is_An_Attribute := True;
-         case Initialisation_Data (Start) is
+         case Initialization_Data (Start) is
             when 'P' =>
 
                --  New allowed package
@@ -155,19 +160,19 @@ package body Prj.Attr is
                Start := Start + 1;
 
                Finish := Start;
-               while Initialisation_Data (Finish) /= '#' loop
+               while Initialization_Data (Finish) /= '#' loop
                   Finish := Finish + 1;
                end loop;
 
                Name_Len := Finish - Start;
                Name_Buffer (1 .. Name_Len) :=
-                 To_Lower (Initialisation_Data (Start .. Finish - 1));
+                 To_Lower (Initialization_Data (Start .. Finish - 1));
                Package_Name := Name_Find;
 
                for Index in Package_First .. Package_Attributes.Last loop
                   if Package_Name = Package_Attributes.Table (Index).Name then
                      Write_Line ("Duplicate package name """ &
-                                 Initialisation_Data (Start .. Finish - 1) &
+                                 Initialization_Data (Start .. Finish - 1) &
                                  """ in Prj.Attr body.");
                      raise Program_Error;
                   end if;
@@ -196,7 +201,7 @@ package body Prj.Attr is
             --  New attribute
 
             Start := Start + 1;
-            case Initialisation_Data (Start) is
+            case Initialization_Data (Start) is
                when 'V' =>
                   Kind_2 := Single;
                when 'A' =>
@@ -210,13 +215,13 @@ package body Prj.Attr is
             Start := Start + 1;
             Finish := Start;
 
-            while Initialisation_Data (Finish) /= '#' loop
+            while Initialization_Data (Finish) /= '#' loop
                Finish := Finish + 1;
             end loop;
 
             Name_Len := Finish - Start;
             Name_Buffer (1 .. Name_Len) :=
-              To_Lower (Initialisation_Data (Start .. Finish - 1));
+              To_Lower (Initialization_Data (Start .. Finish - 1));
             Attribute_Name := Name_Find;
             Attributes.Increment_Last;
             if Current_Attribute = Empty_Attribute then
@@ -234,7 +239,7 @@ package body Prj.Attr is
                   if Attribute_Name =
                     Attributes.Table (Index).Name then
                      Write_Line ("Duplicate attribute name """ &
-                                 Initialisation_Data (Start .. Finish - 1) &
+                                 Initialization_Data (Start .. Finish - 1) &
                                  """ in Prj.Attr body.");
                      raise Program_Error;
                   end if;

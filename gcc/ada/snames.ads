@@ -894,10 +894,11 @@ package Snames is
    Name_Binder                         : constant Name_Id := N + 549;
    Name_Linker                         : constant Name_Id := N + 550;
    Name_Compiler                       : constant Name_Id := N + 551;
+   Name_Gnatstub                       : constant Name_Id := N + 552;
 
    --  Mark last defined name for consistency check in Snames body
 
-   Last_Predefined_Name                : constant Name_Id := N + 551;
+   Last_Predefined_Name                : constant Name_Id := N + 552;
 
    subtype Any_Operator_Name is Name_Id range
      First_Operator_Name .. Last_Operator_Name;

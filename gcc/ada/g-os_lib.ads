@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.79 $
+--                            $Revision$
 --                                                                          --
---           Copyright (C) 1995-2001 Ada Core Technologies, Inc.            --
+--          Copyright (C) 1995-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -56,9 +56,14 @@ package GNAT.OS_Lib is
 pragma Elaborate_Body (OS_Lib);
 
    type String_Access is access all String;
+   --  General purpose string access type
 
    procedure Free is new Unchecked_Deallocation
      (Object => String, Name => String_Access);
+
+   type String_List is array (Positive range <>) of String_Access;
+   type String_List_Access is access all String_List;
+   --  General purpose array and pointer for list of string accesses
 
    ---------------------
    -- Time/Date Stuff --
@@ -381,12 +386,12 @@ pragma Elaborate_Body (OS_Lib);
    -- Subprocesses --
    ------------------
 
-   type Argument_List is array (Positive range <>) of String_Access;
+   subtype Argument_List is String_List;
    --  Type used for argument list in call to Spawn. The lower bound
    --  of the array should be 1, and the length of the array indicates
    --  the number of arguments.
 
-   type Argument_List_Access is access all Argument_List;
+   subtype Argument_List_Access is String_List_Access;
    --  Type used to return an Argument_List without dragging in secondary
    --  stack.
 
