@@ -90,7 +90,7 @@ enum {
 
 #define va_arg(__va, __type)						\
 (*(((__va).__offset += __va_tsize (__type)),				\
-   (__type *)((__va).__base + (__va).__offset				\
+   (__type *)(void *)((__va).__base + (__va).__offset			\
 	      - (((__builtin_classify_type (* (__type *) 0)		\
 		   == __real_type_class) && (__va).__offset <= (6 * 8))	\
 		 ? (6 * 8) + 8 : __va_tsize (__type)))))
