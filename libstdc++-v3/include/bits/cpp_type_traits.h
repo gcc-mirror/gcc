@@ -42,7 +42,7 @@
 //
 // This file provides some compile-time information about various types.
 // These representations were designed, on purpose, to be constant-expressions
-// and not types as found in <stl/bits/type_traits.h>.  In particular, they
+// and not types as found in <bits/type_traits.h>.  In particular, they
 // can be used in control structures and the optimizer hopefully will do
 // the obvious thing.
 //
@@ -76,6 +76,13 @@ namespace __gnu_internal
   template <typename _Tp>
   __two& __test_type (...);
 } // namespace __gnu_internal
+
+// Forward declaration hack, should really include this from somewhere.
+namespace __gnu_cxx
+{
+  template<typename _Iterator, typename _Container>
+    class __normal_iterator;
+} // namespace __gnu_cxx
 
 namespace std
 {
@@ -317,6 +324,28 @@ namespace std
 
   template<typename _Tp>
     struct __is_pointer<_Tp*>
+    {
+      enum
+	{
+	  _M_type = 1
+	};
+    };
+
+  //
+  // Normal iterator type
+  //
+  template<typename _Tp>
+    struct __is_normal_iterator
+    {
+      enum
+	{
+	  _M_type = 0
+	};
+    };
+
+  template<typename _Iterator, typename _Container>
+    struct __is_normal_iterator< __gnu_cxx::__normal_iterator<_Iterator,
+							      _Container> >
     {
       enum
 	{

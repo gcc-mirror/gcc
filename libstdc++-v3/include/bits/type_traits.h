@@ -378,26 +378,6 @@ template<>
     typedef __true_type _Integral;
   };
 
-template<typename _Tp>
-  struct _Is_normal_iterator
-  {
-    typedef __false_type _Normal;
-  };
-
-// Forward declaration hack, should really include this from somewhere.
-namespace __gnu_cxx
-{
-  template<typename _Iterator, typename _Container>
-    class __normal_iterator;
-}
-
-template<typename _Iterator, typename _Container>
-  struct _Is_normal_iterator< __gnu_cxx::__normal_iterator<_Iterator,
-							   _Container> >
-  {
-    typedef __true_type _Normal;
-  };
-
 #endif /* _TYPE_TRAITS_H */
 
 // Local Variables:
