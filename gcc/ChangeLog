@@ -1,3 +1,8 @@
+2001-06-16  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* doc/cpp.texi: Update.
+	* doc/cpp.1: Regenerate.
+
 2001-06-15  Loren J. Rittle  <ljrittle@acm.org>
 
 	* doc/install.texi: Use correct markup hints.
