@@ -10109,36 +10109,32 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
       return 1;
 
     default:
-      if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (parm))))
-	{
-
-	  /* We're looking at an expression.  This can happen with
-	     something like: 
+      gcc_assert (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (parm))));
+      
+      /* We must be looking at an expression.  This can happen with
+	 something like: 
 	   
-	       template <int I>
-	       void foo(S<I>, S<I + 2>);
+	   template <int I>
+	   void foo(S<I>, S<I + 2>);
 
-	     This is a "nondeduced context":
+	 This is a "nondeduced context":
 
-	       [deduct.type]
+	   [deduct.type]
 	   
-	       The nondeduced contexts are:
+	   The nondeduced contexts are:
 
-	       --A type that is a template-id in which one or more of
-	         the template-arguments is an expression that references
-	         a template-parameter.  
+	   --A type that is a template-id in which one or more of
+	     the template-arguments is an expression that references
+	     a template-parameter.  
 
-	     In these cases, we assume deduction succeeded, but don't
-	     actually infer any unifications.  */
+	 In these cases, we assume deduction succeeded, but don't
+	 actually infer any unifications.  */
 
-	  if (!uses_template_parms (parm)
-	      && !template_args_equal (parm, arg))
-	    return 1;
-	  else
-	    return 0;
-	}
-      gcc_unreachable ();
-      return 1;
+      if (!uses_template_parms (parm)
+	  && !template_args_equal (parm, arg))
+	return 1;
+      else
+	return 0;
     }
 }
 
