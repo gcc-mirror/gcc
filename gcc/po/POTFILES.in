@@ -180,6 +180,7 @@ config/c4x/c4x-protos.h
 config/c4x/c4x.c
 config/c4x/c4x.h
 config/c4x/rtems.h
+config/chorus.h
 config/clipper/clipper-protos.h
 config/clipper/clipper.c
 config/clipper/clipper.h
@@ -243,7 +244,6 @@ config/i386/att.h
 config/i386/beos-elf.h
 config/i386/bsd.h
 config/i386/bsd386.h
-config/i386/chorus.h
 config/i386/crtdll.h
 config/i386/cygwin.h
 config/i386/dgux.c
@@ -566,7 +566,6 @@ config/rs6000/aix41.h
 config/rs6000/aix43.h
 config/rs6000/aix51.h
 config/rs6000/beos.h
-config/rs6000/chorus.h
 config/rs6000/darwin.h
 config/rs6000/eabi.h
 config/rs6000/eabiaix.h
@@ -594,7 +593,6 @@ config/sh/sh.c
 config/sh/sh.h
 config/sparc/aout.h
 config/sparc/bsd.h
-config/sparc/chorus.h
 config/sparc/elf.h
 config/sparc/gmon-sol2.c
 config/sparc/hal.h

@@ -1,3 +1,8 @@
+2001-08-01  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* POTFILES.in: Remove chorus.h files from i386, rs6000 and sparc
+	config directories.  Add config/chorus.h instead.
+
 Mon Jul  9 13:27:15 2001  Jeffrey A Law  (law@cygnus.com)
 
         * POTFILES.in: Add ssa-ccp.c
