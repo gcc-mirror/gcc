@@ -3769,7 +3769,7 @@ subst (x, from, to, in_dest, unique_copy)
 		{
 		  rtx pat = PATTERN (other_insn), note = 0;
 
-		  if ((recog_for_combine (&pat, undobuf.other_insn, &note) < 0
+		  if ((recog_for_combine (&pat, other_insn, &note) < 0
 		       && ! check_asm_operands (pat)))
 		    {
 		      PUT_CODE (*cc_use, old_code);
