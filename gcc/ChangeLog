@@ -1,3 +1,13 @@
+2001-05-07  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.md (interspace_jump): Revise comment.
+	(builtin_longjmp): Block initial setup insns from delay slot of
+	interspace branch.
+	(builtin_setjmp_receiver): New expander to save and restore PIC
+	register.
+
+	* som.h (NM_FLAGS): Remove `-n' sort option.  Revise comment.
+
 Mon May  7 09:30:14 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* toplev.c (compile_file): Set up the output file before we call

@@ -1,5 +1,5 @@
 /* Definitions for SOM assembler support.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -52,9 +52,10 @@ Boston, MA 02111-1307, USA.  */
 	   "\t.stabs \"\",%d,0,0,L$text_end0000\nL$text_end0000:\n", N_SO)
 
 /* The HP supplied NM will print out the subspace names for each symbol it
-   finds, which can cause false matches when looking for ctors/dtors.  The
-   "-p" argument changes the output to not include subspace names.  */
-#define NM_FLAGS "-p -n"
+   finds, which can cause collect2 to find false matches when searching
+   for ctors/dtors.  The "-p" option changes the output to not include
+   subspace names.  The "-n" sorting option is unnecessary.  */
+#define NM_FLAGS "-p"
 
 /* HPUX has a program 'chatr' to list the dependencies of dynamically
    linked executables and shared libraries.  */
