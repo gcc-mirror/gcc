@@ -385,18 +385,16 @@ rotate_loop (edge back_edge, struct trace *trace, int trace_n)
 	  prev_bb->rbi->next = best_bb->rbi->next;
 
 	  /* Try to get rid of uncond jump to cond jump.  */
-	  if (EDGE_COUNT (prev_bb->succs) == 1)
+	  if (single_succ_p (prev_bb))
 	    {
-	      basic_block header = EDGE_SUCC (prev_bb, 0)->dest;
+	      basic_block header = single_succ (prev_bb);
 
 	      /* Duplicate HEADER if it is a small block containing cond jump
 		 in the end.  */
 	      if (any_condjump_p (BB_END (header)) && copy_bb_p (header, 0)
 		  && !find_reg_note (BB_END (header), REG_CROSSING_JUMP, 
 				     NULL_RTX))
-		{
-		  copy_bb (header, EDGE_SUCC (prev_bb, 0), prev_bb, trace_n);
-		}
+		copy_bb (header, single_succ_edge (prev_bb), prev_bb, trace_n);
 	    }
 	}
     }
@@ -655,7 +653,7 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 			{
 			  /* The loop has less than 4 iterations.  */
 
-			  if (EDGE_COUNT (bb->succs) == 1
+			  if (single_succ_p (bb)
 			      && copy_bb_p (best_edge->dest, !optimize_size))
 			    {
 			      bb = copy_bb (best_edge->dest, best_edge, bb,
@@ -695,12 +693,13 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 			&& (e->flags & EDGE_CAN_FALLTHRU)
 			&& !(e->flags & EDGE_COMPLEX)
 			&& !e->dest->rbi->visited
-			&& EDGE_COUNT (e->dest->preds) == 1
+			&& single_pred_p (e->dest)
 			&& !(e->flags & EDGE_CROSSING)
-			&& EDGE_COUNT (e->dest->succs) == 1
-			&& (EDGE_SUCC (e->dest, 0)->flags & EDGE_CAN_FALLTHRU)
-			&& !(EDGE_SUCC (e->dest, 0)->flags & EDGE_COMPLEX)
-			&& EDGE_SUCC (e->dest, 0)->dest == best_edge->dest
+			&& single_succ_p (e->dest) == 1
+			&& (single_succ_edge (e->dest)->flags
+			    & EDGE_CAN_FALLTHRU)
+			&& !(single_succ_edge (e->dest)->flags & EDGE_COMPLEX)
+			&& single_succ (e->dest) == best_edge->dest
 			&& 2 * e->dest->frequency >= EDGE_FREQUENCY (best_edge))
 		      {
 			best_edge = e;
@@ -1391,7 +1390,7 @@ add_labels_and_missing_jumps (edge *crossing_edges, int n_crossing_edges)
  		    /* bb just falls through.  */
  		    {
  		      /* make sure there's only one successor */
-		      gcc_assert (EDGE_COUNT (src->succs) == 1);
+		      gcc_assert (single_succ_p (src));
 		      
 		      /* Find label in dest block.  */
 		      label = block_label (dest);
@@ -1533,7 +1532,7 @@ fix_up_fall_thru_edges (void)
 			 partition as bb it's falling through from.  */
 
 		      BB_COPY_PARTITION (new_bb, cur_bb);
-		      EDGE_SUCC (new_bb, 0)->flags |= EDGE_CROSSING;
+		      single_succ_edge (new_bb)->flags |= EDGE_CROSSING;
  		    }
 		  
  		  /* Add barrier after new jump */
@@ -2085,17 +2084,17 @@ duplicate_computed_gotos (void)
       /* BB must have one outgoing edge.  That edge must not lead to
          the exit block or the next block.
 	 The destination must have more than one predecessor.  */
-      if (EDGE_COUNT(bb->succs) != 1
-	  || EDGE_SUCC(bb,0)->dest == EXIT_BLOCK_PTR
-	  || EDGE_SUCC(bb,0)->dest == bb->next_bb
-	  || EDGE_COUNT(EDGE_SUCC(bb,0)->dest->preds) <= 1)
+      if (!single_succ_p (bb)
+	  || single_succ (bb) == EXIT_BLOCK_PTR
+	  || single_succ (bb) == bb->next_bb
+	  || single_pred_p (single_succ (bb)))
 	continue;
 
       /* The successor block has to be a duplication candidate.  */
-      if (!bitmap_bit_p (candidates, EDGE_SUCC(bb,0)->dest->index))
+      if (!bitmap_bit_p (candidates, single_succ (bb)->index))
 	continue;
 
-      new_bb = duplicate_block (EDGE_SUCC(bb,0)->dest, EDGE_SUCC(bb,0));
+      new_bb = duplicate_block (single_succ (bb), single_succ_edge (bb));
       new_bb->rbi->next = bb->rbi->next;
       bb->rbi->next = new_bb;
       new_bb->rbi->visited = 1;

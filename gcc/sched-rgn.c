@@ -337,8 +337,8 @@ is_cfg_nonregular (void)
   FOR_EACH_BB (b)
     {
       if (EDGE_COUNT (b->preds) == 0
-	  || (EDGE_PRED (b, 0)->src == b
-	      && EDGE_COUNT (b->preds) == 1))
+	  || (single_pred_p (b)
+	      && single_pred (b) == b))
 	return 1;
     }
 
@@ -537,7 +537,7 @@ find_rgns (void)
 
   /* DFS traversal to find inner loops in the cfg.  */
 
-  current_edge = ei_start (EDGE_SUCC (ENTRY_BLOCK_PTR, 0)->dest->succs);
+  current_edge = ei_start (single_succ (ENTRY_BLOCK_PTR)->succs);
   sp = -1;
 
   while (1)
@@ -727,8 +727,8 @@ find_rgns (void)
 		  FOR_EACH_BB (jbb)
 		    /* Leaf nodes have only a single successor which must
 		       be EXIT_BLOCK.  */
-		    if (EDGE_COUNT (jbb->succs) == 1
-			&& EDGE_SUCC (jbb, 0)->dest == EXIT_BLOCK_PTR)
+		    if (single_succ_p (jbb)
+			&& single_succ (jbb) == EXIT_BLOCK_PTR)
 		      {
 			queue[++tail] = jbb->index;
 			SET_BIT (in_queue, jbb->index);
@@ -1323,7 +1323,7 @@ update_live (rtx insn, int src)
   (bb_from == bb_to							\
    || IS_RGN_ENTRY (bb_from)						\
    || (TEST_BIT (ancestor_edges[bb_to],					\
-	 EDGE_TO_BIT (EDGE_PRED (BASIC_BLOCK (BB_TO_BLOCK (bb_from)), 0)))))
+	 EDGE_TO_BIT (single_pred_edge (BASIC_BLOCK (BB_TO_BLOCK (bb_from)))))))
 
 /* Turns on the fed_by_spec_load flag for insns fed by load_insn.  */
 

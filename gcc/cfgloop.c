@@ -305,7 +305,7 @@ mark_single_exit_loops (struct loops *loops)
 	      /* If we have already seen an exit, mark this by the edge that
 		 surely does not occur as any exit.  */
 	      if (loop->single_exit)
-		loop->single_exit = EDGE_SUCC (ENTRY_BLOCK_PTR, 0);
+		loop->single_exit = single_succ_edge (ENTRY_BLOCK_PTR);
 	      else
 		loop->single_exit = e;
 	    }
@@ -318,7 +318,7 @@ mark_single_exit_loops (struct loops *loops)
       if (!loop)
 	continue;
 
-      if (loop->single_exit == EDGE_SUCC (ENTRY_BLOCK_PTR, 0))
+      if (loop->single_exit == single_succ_edge (ENTRY_BLOCK_PTR))
 	loop->single_exit = NULL;
     }
 
@@ -430,9 +430,9 @@ update_latch_info (basic_block jump)
 {
   alloc_aux_for_block (jump, sizeof (int));
   HEADER_BLOCK (jump) = 0;
-  alloc_aux_for_edge (EDGE_PRED (jump, 0), sizeof (int));
-  LATCH_EDGE (EDGE_PRED (jump, 0)) = 0;
-  set_immediate_dominator (CDI_DOMINATORS, jump, EDGE_PRED (jump, 0)->src);
+  alloc_aux_for_edge (single_pred_edge (jump), sizeof (int));
+  LATCH_EDGE (single_pred_edge (jump)) = 0;
+  set_immediate_dominator (CDI_DOMINATORS, jump, single_pred (jump));
 }
 
 /* A callback for make_forwarder block, to redirect all edges except for
@@ -494,16 +494,16 @@ canonicalize_loop_headers (void)
 	HEADER_BLOCK (header) = num_latches;
     }
 
-  if (HEADER_BLOCK (EDGE_SUCC (ENTRY_BLOCK_PTR, 0)->dest))
+  if (HEADER_BLOCK (single_succ (ENTRY_BLOCK_PTR)))
     {
       basic_block bb;
 
       /* We could not redirect edges freely here. On the other hand,
 	 we can simply split the edge from entry block.  */
-      bb = split_edge (EDGE_SUCC (ENTRY_BLOCK_PTR, 0));
+      bb = split_edge (single_succ_edge (ENTRY_BLOCK_PTR));
 
-      alloc_aux_for_edge (EDGE_SUCC (bb, 0), sizeof (int));
-      LATCH_EDGE (EDGE_SUCC (bb, 0)) = 0;
+      alloc_aux_for_edge (single_succ_edge (bb), sizeof (int));
+      LATCH_EDGE (single_succ_edge (bb)) = 0;
       alloc_aux_for_block (bb, sizeof (int));
       HEADER_BLOCK (bb) = 0;
     }
@@ -1124,12 +1124,12 @@ verify_loop_structure (struct loops *loops)
 	}
       if (loops->state & LOOPS_HAVE_SIMPLE_LATCHES)
 	{
-	  if (EDGE_COUNT (loop->latch->succs) != 1)
+	  if (!single_succ_p (loop->latch))
 	    {
 	      error ("Loop %d's latch does not have exactly 1 successor.", i);
 	      err = 1;
 	    }
-	  if (EDGE_SUCC (loop->latch, 0)->dest != loop->header)
+	  if (single_succ (loop->latch) != loop->header)
 	    {
 	      error ("Loop %d's latch does not have header as successor.", i);
 	      err = 1;

@@ -682,9 +682,9 @@ simplify_using_initial_conditions (struct loop *loop, tree expr,
        bb != ENTRY_BLOCK_PTR;
        bb = get_immediate_dominator (CDI_DOMINATORS, bb))
     {
-      e = EDGE_PRED (bb, 0);
-      if (EDGE_COUNT (bb->preds) > 1)
+      if (!single_pred_p (bb))
 	continue;
+      e = single_pred_edge (bb);
 
       if (!(e->flags & (EDGE_TRUE_VALUE | EDGE_FALSE_VALUE)))
 	continue;

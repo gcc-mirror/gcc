@@ -442,7 +442,7 @@ split_loop_exit_edge (edge exit)
 
   for (phi = phi_nodes (dest); phi; phi = PHI_CHAIN (phi))
     {
-      op_p = PHI_ARG_DEF_PTR_FROM_EDGE (phi, EDGE_SUCC (bb, 0));
+      op_p = PHI_ARG_DEF_PTR_FROM_EDGE (phi, single_succ_edge (bb));
 
       name = USE_FROM_PTR (op_p);
 
@@ -506,10 +506,10 @@ ip_normal_pos (struct loop *loop)
   basic_block bb;
   edge exit;
 
-  if (EDGE_COUNT (loop->latch->preds) > 1)
+  if (!single_pred_p (loop->latch))
     return NULL;
 
-  bb = EDGE_PRED (loop->latch, 0)->src;
+  bb = single_pred (loop->latch);
   last = last_stmt (bb);
   if (TREE_CODE (last) != COND_EXPR)
     return NULL;
@@ -757,7 +757,7 @@ lv_adjust_loop_entry_edge (basic_block first_head,
 
   /* Adjust edges appropriately to connect new head with first head
      as well as second head.  */
-  e0 = EDGE_SUCC (new_head, 0);
+  e0 = single_succ_edge (new_head);
   e0->flags &= ~EDGE_FALLTHRU;
   e0->flags |= EDGE_FALSE_VALUE;
   e1 = make_edge (new_head, first_head, EDGE_TRUE_VALUE);
@@ -816,12 +816,12 @@ tree_ssa_loop_version (struct loops *loops, struct loop * loop,
   *condition_bb = lv_adjust_loop_entry_edge (first_head, second_head, entry, 
 					    cond_expr); 
 
-  latch_edge = EDGE_SUCC (loop->latch->rbi->copy, 0);
+  latch_edge = single_succ_edge (loop->latch->rbi->copy);
   
   extract_true_false_edges_from_block (*condition_bb, &true_edge, &false_edge);
   nloop = loopify (loops, 
 		   latch_edge,
-		   EDGE_PRED (loop->header->rbi->copy, 0),
+		   single_pred_edge (loop->header->rbi->copy),
 		   *condition_bb, true_edge, false_edge,
 		   false /* Do not redirect all edges.  */);
 
@@ -842,7 +842,7 @@ tree_ssa_loop_version (struct loops *loops, struct loop * loop,
       (*condition_bb)->flags |= BB_IRREDUCIBLE_LOOP;
       loop_preheader_edge (loop)->flags |= EDGE_IRREDUCIBLE_LOOP;
       loop_preheader_edge (nloop)->flags |= EDGE_IRREDUCIBLE_LOOP;
-      EDGE_PRED ((*condition_bb), 0)->flags |= EDGE_IRREDUCIBLE_LOOP;
+      single_pred_edge ((*condition_bb))->flags |= EDGE_IRREDUCIBLE_LOOP;
     }
 
   /* At this point condition_bb is loop predheader with two successors, 

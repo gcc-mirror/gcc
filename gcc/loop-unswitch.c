@@ -443,7 +443,7 @@ unswitch_loop (struct loops *loops, struct loop *loop, basic_block unswitch_on,
   unswitch_on_alt = unswitch_on->rbi->copy;
   true_edge = BRANCH_EDGE (unswitch_on_alt);
   false_edge = FALLTHRU_EDGE (unswitch_on);
-  latch_edge = EDGE_SUCC (loop->latch->rbi->copy, 0);
+  latch_edge = single_succ_edge (loop->latch->rbi->copy);
 
   /* Create a block with the condition.  */
   prob = true_edge->probability;
@@ -474,7 +474,7 @@ unswitch_loop (struct loops *loops, struct loop *loop, basic_block unswitch_on,
 
   /* Loopify from the copy of LOOP body, constructing the new loop.  */
   nloop = loopify (loops, latch_edge,
-		   EDGE_PRED (loop->header->rbi->copy, 0), switch_bb,
+		   single_pred_edge (loop->header->rbi->copy), switch_bb,
 		   BRANCH_EDGE (switch_bb), FALLTHRU_EDGE (switch_bb), true);
 
   /* Remove branches that are now unreachable in new loops.  */

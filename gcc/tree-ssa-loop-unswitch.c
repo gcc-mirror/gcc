@@ -169,10 +169,10 @@ simplify_using_entry_checks (struct loop *loop, tree cond)
 		? boolean_true_node
 		: boolean_false_node);
 
-      if (EDGE_COUNT (e->src->preds) > 1)
+      if (!single_pred_p (e->src))
 	return cond;
 
-      e = EDGE_PRED (e->src, 0);
+      e = single_pred_edge (e->src);
       if (e->src == ENTRY_BLOCK_PTR)
 	return cond;
     }

@@ -3331,7 +3331,7 @@ find_implicit_sets (void)
 	    dest = GET_CODE (cond) == EQ ? BRANCH_EDGE (bb)->dest
 					 : FALLTHRU_EDGE (bb)->dest;
 
-	    if (dest && EDGE_COUNT (dest->preds) == 1
+	    if (dest && single_pred_p (dest)
 		&& dest != EXIT_BLOCK_PTR)
 	      {
 		new = gen_rtx_SET (VOIDmode, XEXP (cond, 0),
@@ -3662,7 +3662,7 @@ bypass_conditional_jumps (void)
 		  EXIT_BLOCK_PTR, next_bb)
     {
       /* Check for more than one predecessor.  */
-      if (EDGE_COUNT (bb->preds) > 1)
+      if (!single_pred_p (bb))
 	{
 	  setcc = NULL_RTX;
 	  for (insn = BB_HEAD (bb);
@@ -3976,8 +3976,8 @@ insert_insn_end_bb (struct expr *expr, basic_block bb, int pre)
 
   if (JUMP_P (insn)
       || (NONJUMP_INSN_P (insn)
-	  && (EDGE_COUNT (bb->succs) > 1
-	      || EDGE_SUCC (bb, 0)->flags & EDGE_ABNORMAL)))
+	  && (!single_succ_p (bb)
+	      || single_succ_edge (bb)->flags & EDGE_ABNORMAL)))
     {
 #ifdef HAVE_cc0
       rtx note;
@@ -4018,7 +4018,8 @@ insert_insn_end_bb (struct expr *expr, basic_block bb, int pre)
   /* Likewise if the last insn is a call, as will happen in the presence
      of exception handling.  */
   else if (CALL_P (insn)
-	   && (EDGE_COUNT (bb->succs) > 1 || EDGE_SUCC (bb, 0)->flags & EDGE_ABNORMAL))
+	   && (!single_succ_p (bb)
+	       || single_succ_edge (bb)->flags & EDGE_ABNORMAL))
     {
       /* Keeping in mind SMALL_REGISTER_CLASSES and parameters in registers,
 	 we search backward and place the instructions before the first

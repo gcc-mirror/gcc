@@ -644,8 +644,8 @@ loop_commit_inserts (void)
     {
       bb = BASIC_BLOCK (i);
       add_bb_to_loop (bb,
-		      find_common_loop (EDGE_SUCC (bb, 0)->dest->loop_father,
-					EDGE_PRED (bb, 0)->src->loop_father));
+		      find_common_loop (single_pred (bb)->loop_father,
+					single_succ (bb)->loop_father));
     }
 }
 

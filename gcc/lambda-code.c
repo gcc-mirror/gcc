@@ -2320,7 +2320,7 @@ perfect_nestify (struct loops *loops,
       VEC_safe_push (tree, phis, PHI_RESULT (phi));
       VEC_safe_push (tree, phis, PHI_ARG_DEF (phi, 0));
     }
-  e = redirect_edge_and_branch (EDGE_SUCC (preheaderbb, 0), headerbb);
+  e = redirect_edge_and_branch (single_succ_edge (preheaderbb), headerbb);
 
   /* Remove the exit phis from the old basic block.  Make sure to set
      PHI_RESULT to null so it doesn't get released.  */
@@ -2338,7 +2338,7 @@ perfect_nestify (struct loops *loops,
       def = VEC_pop (tree, phis);
       phiname = VEC_pop (tree, phis);      
       phi = create_phi_node (phiname, preheaderbb);
-      add_phi_arg (phi, def, EDGE_PRED (preheaderbb, 0));
+      add_phi_arg (phi, def, single_pred_edge (preheaderbb));
     }       
   flush_pending_stmts (e);
 

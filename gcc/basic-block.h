@@ -547,6 +547,56 @@ struct edge_list
 #define EDGE_PRED(bb,i)			VEC_index  (edge, (bb)->preds, (i))
 #define EDGE_SUCC(bb,i)			VEC_index  (edge, (bb)->succs, (i))
 
+/* Returns true if BB has precisely one successor.  */
+
+static inline bool
+single_succ_p (basic_block bb)
+{
+  return EDGE_COUNT (bb->succs) == 1;
+}
+
+/* Returns true if BB has precisely one predecessor.  */
+
+static inline bool
+single_pred_p (basic_block bb)
+{
+  return EDGE_COUNT (bb->preds) == 1;
+}
+
+/* Returns the single successor edge of basic block BB.  */
+
+static inline edge
+single_succ_edge (basic_block bb)
+{
+  gcc_assert (single_succ_p (bb));
+  return EDGE_SUCC (bb, 0);
+}
+
+/* Returns the single predecessor edge of basic block BB.  */
+
+static inline edge
+single_pred_edge (basic_block bb)
+{
+  gcc_assert (single_pred_p (bb));
+  return EDGE_PRED (bb, 0);
+}
+
+/* Returns the single successor block of basic block BB.  */
+
+static inline basic_block
+single_succ (basic_block bb)
+{
+  return single_succ_edge (bb)->dest;
+}
+
+/* Returns the single predecessor block of basic block BB.  */
+
+static inline basic_block
+single_pred (basic_block bb)
+{
+  return single_pred_edge (bb)->src;
+}
+
 /* Iterator object for edges.  */
 
 typedef struct {

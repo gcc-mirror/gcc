@@ -1052,10 +1052,10 @@ branch_prob (void)
 
 	      /* Notice GOTO expressions we eliminated while constructing the
 		 CFG.  */
-	      if (EDGE_COUNT (bb->succs) == 1 && EDGE_SUCC (bb, 0)->goto_locus)
+	      if (single_succ_p (bb) && single_succ_edge (bb)->goto_locus)
 		{
 		  /* ??? source_locus type is marked deprecated in input.h.  */
-		  source_locus curr_location = EDGE_SUCC (bb, 0)->goto_locus;
+		  source_locus curr_location = single_succ_edge (bb)->goto_locus;
 		  /* ??? The FILE/LINE API is inconsistent for these cases.  */
 #ifdef USE_MAPPED_LOCATION 
 		  output_location (LOCATION_FILE (curr_location),
