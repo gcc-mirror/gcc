@@ -1,4 +1,4 @@
-Wed Sep 30 19:03:02 1998  Kaveh R. Ghazi  <ghazi@snafu.rutgers.edu>
+Wed Sep 30 19:03:02 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* grant.c (decode_decl_selective): Cast switch's enum argument to
 	an int.
