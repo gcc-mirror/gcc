@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.2 $
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -619,7 +619,7 @@ private
      (S       : in out Source_File_Record;
       New_Max : Nat);
    --  Allocate or reallocate the lines table for the given source file so
-   --  that it can accomodate at least New_Max lines. Also allocates or
+   --  that it can accommodate at least New_Max lines. Also allocates or
    --  reallocates logical lines table if source ref pragmas are present.
 
    procedure Add_Line_Tables_Entry

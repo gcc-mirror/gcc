@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                             $Revision: 1.60 $
+--                             $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -162,7 +162,7 @@ package body Urealp is
 
       --  For based numbers, just subtract the decimal exponent from the
       --  high estimate of the number of digits in the numerator and add
-      --  one to accomodate possible round off errors for non-decimal
+      --  one to accommodate possible round off errors for non-decimal
       --  bases. For example:
 
       --     1_500_000 / 10**4 = 1.50E-2
@@ -202,7 +202,7 @@ package body Urealp is
 
       --  For based numbers, just subtract the decimal exponent from the
       --  low estimate of the number of digits in the numerator and subtract
-      --  one to accomodate possible round off errors for non-decimal
+      --  one to accommodate possible round off errors for non-decimal
       --  bases. For example:
 
       --     1_500_000 / 10**4 = 1.50E-2
@@ -988,7 +988,7 @@ package body Urealp is
          return UR_Is_Negative (Left);
 
       --  If we fall through, full gruesome test is required. This happens
-      --  if the numbers are close together, or in some wierd (/=10) base.
+      --  if the numbers are close together, or in some weird (/=10) base.
 
       else
          declare

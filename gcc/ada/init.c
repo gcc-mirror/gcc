@@ -4,7 +4,7 @@
  *                                                                          *
  *                                 I N I T                                  *
  *                                                                          *
- *                            $Revision$
+ *                            $Revision: 1.2 $
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
@@ -344,7 +344,7 @@ __gnat_error_handler (sig, sip, context)
 	}
       else
 	{
-	  /* See if the page before the faulting page is accessable.  Do that
+	  /* See if the page before the faulting page is accessible.  Do that
 	     by trying to access it.  We'd like to simply try to access
 	     4096 + the faulting address, but it's not guaranteed to be
 	     the actual address, just to be on the same page.  */
@@ -703,7 +703,7 @@ __gnat_error_handler (info)
 	}
       else
 	{
-	  /* See if the page before the faulting page is accessable.  Do that
+	  /* See if the page before the faulting page is accessible.  Do that
 	     by trying to access it. */
 	  recurse++;
 	  * ((volatile char *) (info->ExceptionRecord->ExceptionInformation[1]
@@ -1126,7 +1126,7 @@ __gnat_error_handler (sig, sip)
 	}
       else
 	{
-	  /* See if the page before the faulting page is accessable.  Do that
+	  /* See if the page before the faulting page is accessible.  Do that
 	     by trying to access it.  We'd like to simply try to access
 	     4096 + the faulting address, but it's not guaranteed to be
 	     the actual address, just to be on the same page.  */

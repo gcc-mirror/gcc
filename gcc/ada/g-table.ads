@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.12 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --            Copyright (C) 1998-2001 Ada Core Technologies, Inc.           --
 --                                                                          --
@@ -148,7 +148,7 @@ pragma Elaborate_Body (Table);
    procedure Set_Last (New_Val : Table_Index_Type);
    pragma Inline (Set_Last);
    --  This procedure sets Last to the indicated value. If necessary the
-   --  table is reallocated to accomodate the new value (i.e. on return
+   --  table is reallocated to accommodate the new value (i.e. on return
    --  the allocated table has an upper bound of at least Last). If Set_Last
    --  reduces the size of the table, then logically entries are removed
    --  from the table. If Set_Last increases the size of the table, then

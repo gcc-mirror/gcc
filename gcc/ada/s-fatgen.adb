@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.19 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -174,7 +174,7 @@ package body System.Fat_Gen is
 
          --  More useful would be defining Expo to be T'Machine_Emin - 1 or
          --  T'Machine_Emin - T'Machine_Mantissa, which would preserve
-         --  monotonicity of the exponent fuction ???
+         --  monotonicity of the exponent function ???
 
       --  Check for infinities, transfinites, whatnot.
 

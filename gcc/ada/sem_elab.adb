@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.3 $
 --                                                                          --
 --          Copyright (C) 1997-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -1035,7 +1035,7 @@ package body Sem_Elab is
 
       --  If none of those cases holds, but Dynamic_Elaboration_Checks mode
       --  is set, then we will do the check, but only in the inter-unit case
-      --  (this is to accomodate unguarded elaboration calls from other units
+      --  (this is to accommodate unguarded elaboration calls from other units
       --  in which this same mode is set). We don't want warnings in this case,
       --  it would generate warnings having nothing to do with elaboration.
 
@@ -1164,7 +1164,7 @@ package body Sem_Elab is
 
       --  If none of those cases holds, but Dynamic_Elaboration_Checks mode
       --  is set, then we will do the check, but only in the inter-unit case
-      --  (this is to accomodate unguarded elaboration calls from other units
+      --  (this is to accommodate unguarded elaboration calls from other units
       --  in which this same mode is set). We inhibit warnings in this case,
       --  since this instantiation is not occurring in elaboration code.
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.11 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --            Copyright (C) 2000-2001 Ada Core Technologies, Inc.           --
 --                                                                          --
@@ -142,7 +142,7 @@ package GNAT.Dynamic_Tables is
    procedure Set_Last (T : in out Instance; New_Val : Table_Index_Type);
    pragma Inline (Set_Last);
    --  This procedure sets Last to the indicated value. If necessary the
-   --  table is reallocated to accomodate the new value (i.e. on return
+   --  table is reallocated to accommodate the new value (i.e. on return
    --  the allocated table has an upper bound of at least Last). If
    --  Set_Last reduces the size of the table, then logically entries are
    --  removed from the table. If Set_Last increases the size of the

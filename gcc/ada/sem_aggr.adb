@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.232 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -2011,7 +2011,7 @@ package body Sem_Aggr is
 
       procedure Resolve_Aggr_Expr (Expr : Node_Id; Component : Node_Id);
       --  Analyzes and resolves expression Expr against the Etype of the
-      --  Component. This routine also applies all appropiate checks to Expr.
+      --  Component. This routine also applies all appropriate checks to Expr.
       --  It finally saves a Expr in the newly created association list that
       --  will be attached to the final record aggregate. Note that if the
       --  Parent pointer of Expr is not set then Expr was produced with a

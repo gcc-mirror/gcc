@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.44 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -306,7 +306,7 @@ package body Table is
       -- Tree_Read --
       ---------------
 
-      --  Note: we allocate only the space required to accomodate the data
+      --  Note: we allocate only the space required to accommodate the data
       --  actually written, which means that a Tree_Write/Tree_Read sequence
       --  does an implicit Release.
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---                             $Revision: 1.40 $
+--                             $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -453,7 +453,7 @@ package System.Task_Primitives.Operations is
    --  Suspend a specific task when the underlying thread library provides
    --  such functionality, unless the thread associated with T is
    --  Thread_Self.
-   --  Such functionnality is needed by gdb on some targets (e.g VxWorks)
+   --  Such functionality is needed by gdb on some targets (e.g VxWorks)
    --  Return True is the operation is successful
 
    function Resume_Task
@@ -462,7 +462,7 @@ package System.Task_Primitives.Operations is
    --  Resume a specific task when the underlying thread library provides
    --  such functionality, unless the thread associated with T is
    --  Thread_Self.
-   --  Such functionnality is needed by gdb on some targets (e.g VxWorks)
+   --  Such functionality is needed by gdb on some targets (e.g VxWorks)
    --  Return True is the operation is successful
 
    procedure Lock_All_Tasks_List;

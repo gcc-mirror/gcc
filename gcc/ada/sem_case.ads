@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.5 $                              --
+--                            $Revision: 1.1 $                              --
 --                                                                          --
 --            Copyright (C) 1996 Free Software Foundation, Inc.             --
 --                                                                          --
@@ -28,7 +28,7 @@
 
 with Types; use Types;
 
---  Package containing all the routines to proces a list of discrete choices.
+--  Package containing all the routines to process a list of discrete choices.
 --  Such lists can occur in 3 different constructs: case statements, array
 --  aggregates and record variants. We have factorized what used to be 3 very
 --  similar sets of routines here. If you didn't figure it out already Choi

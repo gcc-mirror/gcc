@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.2 $
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -1072,12 +1072,12 @@ package body Exp_Util is
    --    Val : T := Expr;
    --
    --  <elsif Expr is an entity_name>
-   --    Val : T (contraints taken from Expr) := Expr;
+   --    Val : T (constraints taken from Expr) := Expr;
    --
    --  <else>
    --    type Axxx is access all T;
    --    Rval : Axxx := Expr'ref;
-   --    Val  : T (contraints taken from Rval) := Rval.all;
+   --    Val  : T (constraints taken from Rval) := Rval.all;
 
    --    ??? note: when the Expression is allocated in the secondary stack
    --              we could use it directly instead of copying it by declaring

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.438 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -8534,7 +8534,7 @@ package body Exp_Ch9 is
 
       procedure Traverse is new Traverse_Proc;
 
-   --  Start of processsing for Update_Prival_Subtypes
+   --  Start of processing for Update_Prival_Subtypes
 
    begin
       Traverse (N);

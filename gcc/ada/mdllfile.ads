@@ -34,7 +34,7 @@ package MDLL.Files is
 
    function Get_Ext (Filename : in String)
                      return String;
-   --  return filename's extention.
+   --  return filename's extension.
 
    function Is_Ali (Filename : in String)
                     return Boolean;
@@ -47,6 +47,6 @@ package MDLL.Files is
    function Ext_To (Filename : in String;
                     New_Ext  : in String := No_Ext)
                     return String;
-   --  return Filename with the extention change to New_Ext.
+   --  return Filename with the extension change to New_Ext.
 
 end MDLL.Files;

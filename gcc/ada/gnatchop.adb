@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.44 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --            Copyright (C) 1998-2001 Ada Core Technologies, Inc.           --
 --                                                                          --
@@ -596,7 +596,7 @@ procedure Gnatchop is
 
       --  Call Gnat on the source filename argument with special options
       --  to generate offset information. If this special compilation completes
-      --  succesfully then we can do the actual gnatchop operation.
+      --  successfully then we can do the actual gnatchop operation.
 
       Spawn (Gnat_Cmd.all, Gnat_Args.all & Chop_Name, Success);
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.390 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -3049,8 +3049,8 @@ package body Sem_Ch13 is
          S := 1;
          B := Uint_1;
 
-         --  S = size, B = 2 ** (size - 1) (can accomodate -B .. +(B - 1))
-         --  Note that we accomodate the case where the bounds cross. This
+         --  S = size, B = 2 ** (size - 1) (can accommodate -B .. +(B - 1))
+         --  Note that we accommodate the case where the bounds cross. This
          --  can happen either because of the way the bounds are declared
          --  or because of the algorithm in Freeze_Fixed_Point_Type.
 
@@ -3075,7 +3075,7 @@ package body Sem_Ch13 is
             Hi := Lo;
          end if;
 
-         --  S = size, (can accomodate 0 .. (2**size - 1))
+         --  S = size, (can accommodate 0 .. (2**size - 1))
 
          S := 0;
          while Hi >= Uint_2 ** S loop
