@@ -1,5 +1,8 @@
 2000-08-23  Nick Clifton  <nickc@redhat.com>
 
+	* config/arm/lib1funcs.asm: Replace upper case condition codes
+	with lower case versions.
+
 	* config/arm/arm.h (STRUCT_VALUE): Define.
 	(STRUCT_VALUE_REGNUM): Delete.
 
