@@ -22,6 +22,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "tree.h"
 #include "ch-tree.h"
 #include "rtl.h"
+#include "toplev.h"
 
 /* On Suns this can get you to the right definition if you
    set the right value for TARGET.  */
@@ -51,13 +52,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #endif
 
 extern int  expand_exit_needed;
-extern tree build_chill_exception_decl PROTO((char *));
-extern void chill_handle_case_default  PROTO((void));
-extern void emit_jump                  PROTO((rtx));
-extern void expand_decl                PROTO((tree));
-extern void fatal                      PROTO((char *, ...));
-extern void make_decl_rtl              PROTO((tree, char *, int));
-extern void rest_of_decl_compilation   PROTO((tree, char *, int, int));
 
 static tree link_handler_decl;
 static tree handler_link_pointer_type;

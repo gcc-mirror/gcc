@@ -17,24 +17,18 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#include <stdio.h>
-#include <string.h>
-#include <limits.h>
 #include "config.h"
+#include "system.h"
 #include "tree.h"
 #include "ch-tree.h"
 #include "lex.h"
 #include "flags.h"
 #include "actions.h"
 #include "input.h"
-#include "errno.h"
 #include "rtl.h"
 #include "tasking.h"
-
-/* Disable possible macro over-rides, so the externs parse
-   portably. */
-#undef strchr
-#undef strrchr
+#include "toplev.h"
+#include "output.h"
 
 #define APPEND(X,Y) X = append (X, Y)
 #define PREPEND(X,Y) X = prepend (X, Y);
@@ -49,16 +43,7 @@ do                                             \
     APPEND (X, ";\n");                         \
 } while (0)
 
-extern void assemble_constructor PROTO((char *));
-extern void assemble_name PROTO((FILE *, char *));
-extern void error PROTO((char *, ...));
-extern tree tasking_list;
-extern void tasking_registry PROTO((void));
-extern void tasking_setup PROTO((void));
-extern void build_enum_tables PROTO((void));
 extern tree process_type;
-extern void warning PROTO((char *, ...));
-extern tree get_file_function_name PROTO((int));
 extern char *asm_file_name;
 extern char *dump_base_name;
 
@@ -1988,8 +1973,6 @@ decode_constant_selective (init, all_decls)
   MYSTRING *tmp_string;
   tree	    type = TREE_TYPE (init);
   tree	val = init;
-  char *op;
-  char	wrk[256];
   MYSTRING *mode_string;
     
   switch ((enum chill_tree_code)TREE_CODE (val))
@@ -2650,7 +2633,6 @@ write_grant_file ()
   p = gstring->str;
   while (*p)
     {
-      extern char* strchr ();
       p1 = strchr (p, '\n');
       c = *++p1;
       *p1 = '\0';
@@ -2677,8 +2659,6 @@ write_grant_file ()
 void
 set_default_grant_file ()
 {
-#undef strrchr
-    extern	char *strrchr ();
     char	*p, *tmp, *fname;
 
     if (dump_base_name)
@@ -2721,7 +2701,7 @@ set_default_grant_file ()
 
 void
 push_granted (name, decl)
-     tree name, decl;
+     tree name ATTRIBUTE_UNUSED, decl ATTRIBUTE_UNUSED;
 {
 #if 0
   IDENTIFIER_GRANTED_VALUE (name) = decl;

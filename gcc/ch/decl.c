@@ -179,8 +179,8 @@
 /* ??? not all decl nodes are given the most useful possible
    line numbers.  For example, the CONST_DECLs for enum values.  */
 
-#include <stdio.h>
 #include "config.h"
+#include "system.h"
 #include "tree.h"
 #include "flags.h"
 #include "ch-tree.h"
@@ -188,6 +188,7 @@
 #include "obstack.h"
 #include "input.h"
 #include "rtl.h"
+#include "toplev.h"
 
 #define IS_UNKNOWN_TYPE(type) (TYPE_SIZE(type)==0)
 #define BUILTIN_NESTING_LEVEL (-1)
@@ -203,30 +204,12 @@ extern struct obstack *saveable_obstack;
 extern tree signal_code;
 extern int special_UC;
 
-extern void tasking_init              PROTO((void));
-extern void error                     PROTO((char *, ...));
-extern void error_with_decl           PROTO((tree, char *, ...));
-extern void expand_decl               PROTO((tree));
 static tree get_next_decl             PROTO((void));
-extern tree get_parm_decls            PROTO((void));
-extern void end_temporary_allocation  PROTO((void));
-extern void indent_to                 PROTO((FILE *, int));
-#ifdef RTX_CODE
-extern rtx  label_rtx                 PROTO((tree));
+static tree lookup_name_for_seizing   PROTO((tree));
+#if 0
+static tree lookup_name_current_level PROTO((tree));
 #endif
-extern tree lookup_name_for_seizing   PROTO((tree));
-extern tree lookup_name_current_level PROTO((tree));
-extern int  operand_equal_p           PROTO((tree, tree, int));
-extern void pedwarn_with_decl         PROTO((tree, char *, ...));
-extern void print_node                PROTO((FILE *, char *, tree, int));
-extern void push_granted              PROTO((tree, tree));
-extern void push_obstacks             PROTO((struct obstack *, struct obstack *));
-extern void rest_of_decl_compilation  PROTO((tree, char *, int, int));
-extern void sorry                     PROTO((char *, ...));
 static void save_decl                 PROTO((tree));
-extern void start_identifier_warnings PROTO((void));
-extern void temporary_allocation      PROTO((void));
-extern void warning                   PROTO((char *, ...));
 
 extern struct obstack permanent_obstack;
 extern int in_pseudo_module;
@@ -547,7 +530,9 @@ struct scope
 
 /* The outermost binding level, for pre-defined (builtin) names. */
 
-static struct scope builtin_scope = { NULL, NULL, NULL_TREE};
+static struct scope builtin_scope = {
+  NULL, NULL, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE,
+  NULL_TREE, NULL_TREE, NULL, 0, 0, NULL, NULL, NULL};
 
 struct scope *global_scope;
 
@@ -560,21 +545,14 @@ struct scope *last_scope = &builtin_scope;
 
 /* Binding level structures are initialized by copying this one.  */
 
-static struct scope clear_scope
-  = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0};
+static struct scope clear_scope = {
+  NULL, NULL, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE,
+  NULL_TREE, NULL_TREE, NULL, 0, 0, NULL, NULL, NULL};
 
 /* Chain of decls accessible through IDENTIFIER_OUTER_VALUE.
    Decls with the same DECL_NAME are adjacent in the chain. */
 
 static tree outer_decls = NULL_TREE;
-
-/* Forward declarations.  */
-
-tree pushdecl ();
-tree builtin_function ();
-
-tree lookup_name_current_level ();
-static void layout_array_type ();
 
 /* C-specific option variables.  */
 
@@ -730,14 +708,14 @@ tree ALL_POSTFIX;
 
 void
 allocate_lang_decl (t)
-     tree t;
+     tree t ATTRIBUTE_UNUSED;
 {
   /* Nothing needed */
 }
 
 void
 copy_lang_decl (node)
-     tree node;
+     tree node ATTRIBUTE_UNUSED;
 {
   /* Nothing needed */
 }
@@ -757,7 +735,7 @@ build_lang_decl (code, name, type)
 
 int
 c_decode_option (argc, argv)
-     int argc;
+     int argc ATTRIBUTE_UNUSED;
      char **argv;
 {
   char *p = argv[0];
@@ -1342,8 +1320,8 @@ build_chill_function_type (return_type, argtypes, exceptions, recurse_p)
  */
 tree
 push_extern_function (name, typespec, argtypes, exceptions, granting)
-     tree name, typespec, argtypes, exceptions;
-     int granting; /* If 0 do pushdecl(); if 1 do push_granted(). */
+  tree name, typespec, argtypes, exceptions;
+  int granting ATTRIBUTE_UNUSED;/*If 0 do pushdecl(); if 1 do push_granted()*/
 {
   tree ftype, fndecl;
   
@@ -2211,7 +2189,9 @@ get_next_decl ()
 void
 switch_to_pass_2 ()
 {
+#if 0
   extern int errorcount, sorrycount;
+#endif
   if (current_scope != &builtin_scope)
     abort ();
   last_scope = &builtin_scope;
@@ -3163,7 +3143,6 @@ tree
 pushdecl (x)
      tree x;
 {
-  register tree t;
   register tree name = DECL_NAME (x);
   register struct scope *b = current_scope;
 
@@ -3336,9 +3315,10 @@ lookup_name (name)
   return val;
 }
 
+#if 0
 /* Similar to `lookup_name' but look only at current binding level.  */
 
-tree
+static tree
 lookup_name_current_level (name)
      tree name;
 {
@@ -3347,8 +3327,9 @@ lookup_name_current_level (name)
     return val;
   return NULL_TREE;
 }
+#endif
 
-tree
+static tree
 lookup_name_for_seizing (seize_decl)
      tree seize_decl;
 {
@@ -4320,7 +4301,6 @@ void
 finish_decl (decl)
      tree decl;
 {
-  register tree type = TREE_TYPE (decl);
   int was_incomplete = (DECL_SIZE (decl) == 0);
   int temporary = allocation_temporary_p ();
 
@@ -4425,7 +4405,7 @@ finish_decl (decl)
 
 tree
 maybe_build_cleanup (decl)
-     tree decl;
+     tree decl ATTRIBUTE_UNUSED;
 {
   /* There are no cleanups in C.  */
   return NULL_TREE;
@@ -4437,8 +4417,8 @@ maybe_build_cleanup (decl)
 
 int
 complete_array_type (type, initial_value, do_default)
-     tree type, initial_value;
-     int do_default;
+     tree type ATTRIBUTE_UNUSED, initial_value ATTRIBUTE_UNUSED;
+     int do_default ATTRIBUTE_UNUSED;
 {
   /* Only needed so we can link with ../c-typeck.c. */
   abort ();
@@ -4454,7 +4434,7 @@ complete_array_type (type, initial_value, do_default)
 tree
 start_struct (code, name)
      enum chill_tree_code code;
-     tree name;
+     tree name ATTRIBUTE_UNUSED;
 {
   /* If there is already a tag defined at this binding level
      (as a forward reference), just return it.  */
@@ -4538,7 +4518,7 @@ layout_array_type (t)
 
 tree
 start_enum (name)
-     tree name;
+     tree name ATTRIBUTE_UNUSED;
 {
   register tree enumtype;
 
@@ -5075,8 +5055,6 @@ void
 shadow_record_fields (struct_val)
      tree struct_val;
 {
-    tree type, parent;
-
     if (pass == 1 || struct_val == NULL_TREE)
       return;
 

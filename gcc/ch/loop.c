@@ -17,9 +17,8 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#include <stdio.h>
-#include <limits.h>
 #include "config.h"
+#include "system.h"
 #include "tree.h"
 #include "ch-tree.h"
 #include "lex.h"
@@ -29,18 +28,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "obstack.h"
 #include "assert.h"
 #include "rtl.h"
+#include "toplev.h"
 
 /* if the user codes '-flocal-loop-counter' on the command line,
    ch-actions.c (lang_decode_option) will set this flag. */
 int flag_local_loop_counter = 1;
-
-extern rtx  emit_line_note              PROTO((char *, int)); 
-extern void error                       PROTO((char *, ...));
-extern rtx  expand_assignment           PROTO((tree, tree, int, int));
-extern void save_expr_under_name        PROTO((tree, tree));
-extern void stamp_nesting_label         PROTO((tree));
-extern int  int_fits_type_p             PROTO((tree, tree));
-extern void warning                     PROTO((char *, ...));
 
 /* forward declarations */
 static int  declare_temps            PROTO((void));
@@ -50,7 +42,9 @@ static int  bottom_loop_end_check    PROTO((void));
 static int  increment_temps          PROTO((void));
 static tree build_temporary_variable PROTO((char *, tree));
 static tree maybe_make_for_temp      PROTO((tree, char *, tree));
+#if 0
 static tree chill_unsigned_type      PROTO((tree));
+#endif
 
 /* In terms of the parameters passed to build_loop_iterator,
  *   there are several types of loops.  They are encoded by
@@ -377,8 +371,6 @@ pop_loop_block ()
 void
 begin_loop_scope ()
 {
-  ITERATOR *firstp = loopstack->iter_list;
-
   pushlevel (1);
 
   if (pass >= 2)
@@ -417,8 +409,6 @@ end_loop_scope (opt_label)
 void
 nonvalue_begin_loop_scope ()
 {
-  ITERATOR *firstp = loopstack->iter_list;
-
   pushlevel (0); /* this happens only in pass 2 */
 
   declare_temps ();
@@ -1221,7 +1211,7 @@ maybe_make_for_temp (exp, temp_name, exp_type)
   return result;
 }
 
-
+#if 0
 /*
  * Adapt the C unsigned_type function to CHILL - we need to
  * account for any CHILL-specific integer types here.  So far,
@@ -1239,3 +1229,4 @@ chill_unsigned_type (type)
   else
     return unsigned_type (type);
 }
+#endif

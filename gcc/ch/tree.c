@@ -18,16 +18,15 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "config.h"
+#include "system.h"
 #include "obstack.h"
 #include "tree.h"
 #include "ch-tree.h"
+#include "toplev.h"
 
 /* Here is how primitive or already-canonicalized types' 
    hash codes are made.  */
 #define TYPE_HASH(TYPE) ((HOST_WIDE_INT) (TYPE) & 0777777)
-
-extern void error PROTO((char *, ...));
-extern int  get_type_precision PROTO((tree, tree));
 
 extern struct obstack permanent_obstack;
 /* This is special sentinel used to communicate from build_string_type

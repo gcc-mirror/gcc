@@ -270,34 +270,49 @@ $(srcdir)/hash.h:
 	$(RM) gperf.tmp gperf.tmp2 sed.tmp
 
 actions.o : actions.c $(CONFIG_H) $(CHILL_TREE_H) actions.h $(RTL_H) \
-	      lex.h $(srcdir)/../flags.h $(srcdir)/../../include/obstack.h $(srcdir)/../input.h $(srcdir)/../expr.h ../insn-codes.h
-convert.o : convert.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../flags.h $(srcdir)/../tree.h
-decl.o : decl.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../flags.h lex.h
-except.o : except.c $(CONFIG_H) $(srcdir)/../tree.h $(RTL_H) $(CHILL_TREE_H)
+	lex.h $(srcdir)/../flags.h $(srcdir)/../../include/obstack.h \
+	$(srcdir)/../input.h $(srcdir)/../expr.h ../insn-codes.h \
+	$(srcdir)/../system.h $(srcdir)/../toplev.h
+convert.o : convert.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../flags.h \
+	$(srcdir)/../tree.h $(srcdir)/../system.h $(srcdir)/../toplev.h
+decl.o : decl.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../flags.h lex.h \
+	$(srcdir)/../system.h $(srcdir)/../toplev.h
+except.o : except.c $(CONFIG_H) $(srcdir)/../tree.h $(RTL_H) $(CHILL_TREE_H) \
+	$(srcdir)/../toplev.h
 expr.o : expr.c $(CONFIG_H) $(RTL_H) $(CHILL_TREE_H) $(srcdir)/../flags.h \
-	$(srcdir)/../expr.h ../insn-codes.h $(srcdir)/../tree.h lex.h
-grant.o: grant.c $(CONFIG_H) $(CHILL_TREE_H) $(RTL_H) $(srcdir)/../flags.h $(srcdir)/../input.h \
-            lex.h actions.h $(srcdir)/../input.h
-inout.o : inout.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../flags.h $(srcdir)/../input.h
-lang.o : lang.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../input.h lex.h
-lex.o : lex.c $(CONFIG_H) $(CHILL_TREE_H) $(RTL_H) $(srcdir)/../flags.h $(srcdir)/../input.h \
-           $(srcdir)/parse.h $(srcdir)/../../include/obstack.h lex.h
+	$(srcdir)/../expr.h ../insn-codes.h $(srcdir)/../tree.h lex.h \
+	$(srcdir)/../system.h $(srcdir)/../toplev.h
+grant.o: grant.c $(CONFIG_H) $(CHILL_TREE_H) $(RTL_H) $(srcdir)/../flags.h \
+	$(srcdir)/../input.h lex.h actions.h $(srcdir)/../system.h \
+	$(srcdir)/../toplev.h $(srcdir)/../output.h
+inout.o : inout.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../flags.h \
+	$(srcdir)/../input.h $(srcdir)/../system.h $(srcdir)/../toplev.h
+lang.o : lang.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../input.h lex.h \
+	$(srcdir)/../system.h $(srcdir)/../toplev.h
+lex.o : lex.c $(CONFIG_H) $(CHILL_TREE_H) $(RTL_H) $(srcdir)/../flags.h \
+	$(srcdir)/../input.h $(srcdir)/parse.h $(srcdir)/../system.h \
+	$(srcdir)/../toplev.h $(srcdir)/../../include/obstack.h lex.h
 lex.c: hash.h
 loop.o : loop.c $(CONFIG_H) $(RTL_H) $(CHILL_TREE_H) lex.h \
 	$(srcdir)/../flags.h $(srcdir)/../input.h \
-	$(srcdir)/../../include/obstack.h $(srcdir)/../tree.h
+	$(srcdir)/../../include/obstack.h $(srcdir)/../tree.h \
+	$(srcdir)/../system.h $(srcdir)/../toplev.h
 parse.o : parse.c $(CONFIG_H) $(CHILL_TREE_H) parse.h \
-	lex.h actions.h tasking.h
+	lex.h actions.h tasking.h $(srcdir)/../system.h $(srcdir)/../toplev.h
 satisfy.o : satisfy.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../tree.h \
-	$(srcdir)/../flags.h lex.h
+	$(srcdir)/../flags.h lex.h $(srcdir)/../system.h $(srcdir)/../toplev.h
 timing.o : timing.c $(CONFIG_H) $(CHILL_TREE_H) $(RTL_H) $(srcdir)/../flags.h \
-	$(srcdir)/../input.h $(srcdir)/../../include/obstack.h lex.h
+	$(srcdir)/../input.h $(srcdir)/../../include/obstack.h lex.h \
+	$(srcdir)/../system.h $(srcdir)/../toplev.h
 tasking.o : tasking.c $(CONFIG_H) $(CHILL_TREE_H) $(RTL_H) \
 	$(srcdir)/../flags.h $(srcdir)/../input.h \
-	$(srcdir)/../../include/obstack.h lex.h
-tree.o : tree.c $(CONFIG_H) $(CHILL_TREE_H)
+	$(srcdir)/../../include/obstack.h lex.h $(srcdir)/../system.h \
+	$(srcdir)/../toplev.h
+tree.o : tree.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../system.h \
+	$(srcdir)/../toplev.h
 typeck.o : typeck.c $(CONFIG_H) $(CHILL_TREE_H) ../insn-codes.h \
-	$(srcdir)/../expr.h $(srcdir)/../flags.h lex.h
+	$(srcdir)/../expr.h $(srcdir)/../flags.h lex.h $(srcdir)/../system.h \
+	$(srcdir)/../toplev.h
 ch-version.o : ch-version.c
 ch-version.c : Makefile
 	echo 'char *gnuchill_version = "$(GNUCHILL_VERSION)";' > $@

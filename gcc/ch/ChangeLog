@@ -1,3 +1,150 @@
+Sun Sep 20 09:25:13 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (actions.o, convert.o, decl.o, expr.o, lang.o,
+	lex.o, loop.o, parse.o, satisfy.o, timing.o, tasking.o, tree.o,
+	typeck.o): Depend on system.h and toplev.h.
+	(except.o): Depend on toplev.h.
+	(grant.o): Depend on system.h, toplev.h and output.h.
+
+	* actions.c: Include system.h and toplev.h.  Remove redundant
+ 	prototypes.
+	(build_cause_exception): Add default case in switch.
+	(update_else_range_for_range): Add parentheses around && within ||.
+	(chill_handle_multi_case_label_list): Remove unused variable
+	`selector_value'.
+	(print_missing_cases): Reconcile format specifiers vs arguments in
+ 	calls to sprintf.
+
+	* ch-tree.h: Don't include stdio.h.  Wrap prototypes using FILE*
+ 	with macro BUFSIZ.  Add missing prototypes.
+
+	* convert.c: Include system.h and toplev.h.  Remove redundant
+	prototypes.
+  	(convert): Remove unused variable `errstr'.
+
+	* decl.c: Include system.h and toplev.h.  Remove redundant
+ 	prototypes.
+	(builtin_scope): Add missing initializers.
+	(clear_scope): Likewise.
+	(allocate_lang_decl): Mark parameter `t' with ATTRIBUTE_UNUSED.
+	(copy_lang_decl): Likewise for parameter `node'.
+	(c_decode_option): Likewise for parameter `argc'.
+	(push_extern_function): Likewise for parameter `granting'.
+	(switch_to_pass_2): Hide declaration of errorcount/sorrycount.
+	(pushdecl): Remove unused variable `t'.
+	(lookup_name_current_level): Make static and hide.
+	(lookup_name_for_seizing): Make static.
+	(finish_decl): Remove unused variable `type'.
+	(maybe_build_cleanup): Mark parameter `decl' with ATTRIBUTE_UNUSED.
+	(complete_array_type): Mark parameters `type', `initial_value' and
+ 	`do_default' with ATTRIBUTE_UNUSED.
+	(start_struct): Mark parameter `name' with ATTRIBUTE_UNUSED.
+	(start_enum): Likewise.
+	(shadow_record_fields): Remove unused variables `type' and `parent'.
+
+	* except.c: Include toplev.h.  Remove redundant prototypes.
+
+	* expr.c: Include system.h and toplev.h.  Don't define NULL.
+  	Remove redundant prototypes.
+	(internal_build_compound_expr): Mark parameter `first_p' with
+	ATTRIBUTE_UNUSED.
+	(build_allocate_getstack): Remove unused variable `init'.
+	(build_chill_pred_or_succ): Likewise for variable `limit'.
+	(varying_to_slice): Likewise for variable `doamin' [sic].
+	(finish_chill_binary_op): Likewise for variables `code0' and
+	`code1'.  Remove unused label `finish'.  Add explicit braces to
+	avoid ambiguous `else'.
+	(build_chill_addr_expr): Remove extra parameter in call to `error'.
+	(build_chill_unary_op): Remove unused variables `class' and `type0'.
+	(powersetlen): Remove unused variables `domain' and `temp'.
+
+	* grant.c: Include system.h, toplev.h and output.h.  Don't handle
+ 	strchr/strrchr.  Remove redundant prototypes.
+  	(decode_constant_selective): Remove unused variables `op' and `wrk'.
+	(push_granted): Mark parameters `name' and `decl' with
+ 	ATTRIBUTE_UNUSED.
+
+	* inout.c: Include system.h and toplev.h.  Remove redundant
+ 	prototypes.
+	(textlocation_mode): Use &&, not &, when comparing two truth
+	values.
+	(scanformcont): Remove unused label `do_the_action'.
+
+	* lang.c: Include system.h and toplev.h.  Remove redundant
+ 	prototypes.
+	(lookup_interface): Mark parameter `arg' with ATTRIBUTE_UNUSED.
+	(maybe_objc_comptypes): Likewise for parameters `lhs' and `rhs'.
+	(lang_print_xnode): Likewise for parameters `file', `node' and
+	`indent'.
+	(lang_decode_option): Explicitly declare `explicit_ignore_case'.
+	(incomplete_type_error): Mark parameters `value' and `type' with
+	ATTRIBUTE_UNUSED.
+
+	* lex.c: Include system.h and toplev.h.  Remove redundant
+ 	prototypes.  Don't handle strchr/strrchr.  Use CAPITALIZED
+	versions of ctype macros from system.h.  Cast ctype arguments to
+	unsigned char when necessary.
+	(last_token, RETURN_TOKEN): Hide definition.
+	(push_back): Remove unused function.
+	(readstring): Change variable `i' to unsigned.
+	(yywrap): Remove unused variable `node'.
+
+	* loop.c: Include system.h and toplev.h.  Remove redundant
+	prototypes.
+	(chill_unsigned_type): Hide prototype and definition.
+	(begin_loop_scope): Remove unused variable `firstp'.
+	(nonvalue_begin_loop_scope): Likewise.
+
+	* parse.c: Include system.h and toplev.h.  Remove redundant
+	prototypes.
+	(quasi_signal): Hide.
+	(PEEK_TOKEN): Change return type to `enum terminal'.
+	(parse_mode_definition_statement): Remove unused variable `names'.
+	(parse_formpar): Remove unused parameter `in_spec_module'.  All
+	callers changed.
+	(parse_formparlist): Likewise.
+	(parse_processpar): Remove unused variable `parms'.
+	(parse_definition): Add explicit braces to avoid ambiguous `else'.
+	(parse_multi_dimension_case_action): Initialize variable
+	`begin_test_label'.  Remove unused variable `new_test'.
+	(parse_case_action): Remove unused variable `caseaction_flag'.
+	(parse_asm_clobbers): Remove unused variable `expr'.
+	(parse_delay_case_action): Initialize variable `label_cnt'.
+	(parse_action): Make function static.
+	(parse_tuple_element): Remove unused variable `list'.
+	(parse_primval): Add default case in switch.
+	(parse_variant_alternative): Remove unused variables `x' and
+	`variant_fields'.
+
+	* satisfy.c: Include system.h and toplev.h.  Remove redundant
+	prototypes.
+
+	* tasking.c Include system.h and toplev.h.  Remove redundant
+	prototypes.
+	(data_name): Hide.
+	(get_struct_variable_name): Likewise.
+	(validate_process_parameters): Mark parameter `parms' with
+	ATTRIBUTE_UNUSED.
+	(build_start_process): Initialize variable `tuple'.
+	(build_receive_buffer_case_end): Remove unused variable `buffer_ptr'.
+
+	* timing.c: Include system.h and toplev.h.
+	(build_after_timeout_start): Remove unused variable `goto_where'.
+
+	* tree.c: Include system.h and toplev.h.  Remove redundant
+	prototypes.
+
+	* typeck.c: Include system.h and toplev.h.  Remove redundant
+	prototypes.
+	(extract_constant_from_buffer): Make function static.  Add
+ 	explicit braces to avoid ambiguous `else'.
+	(expand_constant_to_buffer): Likewise.
+	(build_chill_slice): remove unused variable `is_static'.
+	(chill_compatible): Add explicit braces to avoid ambiguous `else'. 
+	(apply_chill_array_layout): Remove unused variable `offset'.
+	(smash_dummy_type): Remove unused variable `save_lang_specific'.
+	(initializer_constant_valid_p): Add default case in switch.
+
 Mon Sep 14 16:46:36 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* typeck.c (build_chill_slice): Always use TYPE_DOMAIN to get the

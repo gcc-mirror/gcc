@@ -17,10 +17,8 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#include <stdio.h>
-#include <limits.h>
-#include <string.h>
 #include "config.h"
+#include "system.h"
 #include "tree.h"
 #include "rtl.h"
 #include "ch-tree.h"
@@ -30,13 +28,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "assert.h"
 #include "tasking.h"
 #include "lex.h"
-
-/* external functions */
-extern void emit_jump       PROTO((rtx));
-extern void error           PROTO((char *, ...));
-extern void error_with_decl PVPROTO ((tree, char *, ...));
-extern void push_obstacks   PROTO((struct obstack *, struct obstack *));
-extern void warning         PROTO((char *, ...));
+#include "toplev.h"
 
 /* from ch-lex.l, from compiler directives */
 extern tree process_type;
@@ -70,8 +62,10 @@ static char * struct_name = "__tmp_%s_arg_type";
 /* name template for process arguments for debugging type */
 static char * struct_debug_name = "__tmp_%s_debug_type";
 
+#if 0
 /* name template for process argument variable */
 static char * data_name = "__tmp_%s_arg_variable";
+#endif
 
 /* name template for process wrapper */
 static char * wrapper_name = "__tmp_%s_wrapper";
@@ -117,7 +111,7 @@ get_tasking_code_name (name)
   return get_identifier (tmpname);
 }
 
-
+#if 0
 static tree
 get_struct_variable_name (name)
      tree name;
@@ -128,6 +122,7 @@ get_struct_variable_name (name)
   sprintf (tmpname, data_name, idp);
   return get_identifier (tmpname);
 }
+#endif
 
 static tree
 get_process_wrapper_name (name)
@@ -498,7 +493,7 @@ build_process_wrapper (plabel, processdata)
 
 void
 validate_process_parameters (parms)
-     tree parms;
+     tree parms ATTRIBUTE_UNUSED;
 {
 }
 
@@ -522,7 +517,7 @@ build_start_process (process_name, copynum,
   tree process_decl, struct_type_node;
   tree result;
   tree valtail, typetail;
-  tree tuple, actuallist = NULL_TREE;
+  tree tuple = NULL_TREE, actuallist = NULL_TREE;
   tree typelist;
   int  parmno = 2;
   tree args;
@@ -2111,7 +2106,6 @@ build_receive_buffer_case_end (label_cnt, buf_list, else_clause)
       tree buffer_descr;
       tree buffer_descr_init;
       tree buffer_length;
-      tree buffer_ptr;
       tree field;
       char fldname[20];
 
