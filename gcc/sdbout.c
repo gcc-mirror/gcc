@@ -1536,9 +1536,7 @@ sdbout_end_block (unsigned int line, unsigned int n ATTRIBUTE_UNUSED)
    number LINE.  */
 
 static void
-sdbout_source_line (line, filename)
-     unsigned int line;
-     const char *filename ATTRIBUTE_UNUSED;
+sdbout_source_line (unsigned int line, const char *filename ATTRIBUTE_UNUSED)
 {
   /* COFF relative line numbers must be positive.  */
   if ((int) line > sdb_begin_function_line)
@@ -1578,9 +1576,7 @@ sdbout_begin_prologue (unsigned int line, const char *file ATTRIBUTE_UNUSED)
 #endif
 
 static void
-sdbout_end_prologue (line, file)
-     unsigned int line;
-     const char *file ATTRIBUTE_UNUSED;
+sdbout_end_prologue (unsigned int line, const char *file ATTRIBUTE_UNUSED)
 {
   sdb_begin_function_line = line - 1;
   PUT_SDB_FUNCTION_START (line);
