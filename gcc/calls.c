@@ -145,6 +145,13 @@ static void precompute_arguments 		PROTO ((int, int, int,
 							struct args_size *));
 static int compute_argument_block_size		PROTO ((int, 
 							struct args_size *));
+static void initialize_argument_information	PROTO ((int,
+							struct arg_data *,
+							struct args_size *,
+							int, tree, tree,
+							CUMULATIVE_ARGS,
+							int, rtx *, int *,
+							int *, int *));
 
 #if defined(ACCUMULATE_OUTGOING_ARGS) && defined(REG_PARM_STACK_SPACE)
 static rtx save_fixed_argument_area	PROTO ((int, rtx, int *, int *));
@@ -830,6 +837,287 @@ store_unaligned_arguments_into_pseudos (args, num_actuals)
       }
 }
 
+/* Fill in ARGS_SIZE and ARGS array based on the parameters found in
+   ACTPARMS. 
+
+   NUM_ACTUALS is the total number of parameters.
+
+   N_NAMED_ARGS is the total number of named arguments.
+
+   FNDECL is the tree code for the target of this call (if known)
+
+   ARGS_SO_FAR holds state needed by the target to know where to place
+   the next argument.
+
+   REG_PARM_STACK_SPACE is the number of bytes of stack space reserved
+   for arguments which are passed in registers.
+
+   OLD_STACK_LEVEL is a pointer to an rtx which olds the old stack level
+   and may be modified by this routine.
+
+   OLD_PENDING_ADJ, MUST_PREALLOCATE and IS_CONST are pointers to integer
+   flags which may may be modified by this routine.  */
+
+static void
+initialize_argument_information (num_actuals, args, args_size, n_named_args,
+				 actparms, fndecl, args_so_far,
+				 reg_parm_stack_space, old_stack_level,
+				 old_pending_adj, must_preallocate, is_const)
+     int num_actuals;
+     struct arg_data *args;
+     struct args_size *args_size;
+     int n_named_args;
+     tree actparms;
+     tree fndecl;
+     CUMULATIVE_ARGS args_so_far;
+     int reg_parm_stack_space;
+     rtx *old_stack_level;
+     int *old_pending_adj;
+     int *must_preallocate;
+     int *is_const;
+{
+  /* 1 if scanning parms front to back, -1 if scanning back to front.  */
+  int inc;
+
+  /* Count arg position in order args appear.  */
+  int argpos;
+
+  int i;
+  tree p;
+  
+  args_size->constant = 0;
+  args_size->var = 0;
+
+  /* In this loop, we consider args in the order they are written.
+     We fill up ARGS from the front or from the back if necessary
+     so that in any case the first arg to be pushed ends up at the front.  */
+
+#ifdef PUSH_ARGS_REVERSED
+  i = num_actuals - 1, inc = -1;
+  /* In this case, must reverse order of args
+     so that we compute and push the last arg first.  */
+#else
+  i = 0, inc = 1;
+#endif
+
+  /* I counts args in order (to be) pushed; ARGPOS counts in order written.  */
+  for (p = actparms, argpos = 0; p; p = TREE_CHAIN (p), i += inc, argpos++)
+    {
+      tree type = TREE_TYPE (TREE_VALUE (p));
+      int unsignedp;
+      enum machine_mode mode;
+
+      args[i].tree_value = TREE_VALUE (p);
+
+      /* Replace erroneous argument with constant zero.  */
+      if (type == error_mark_node || TYPE_SIZE (type) == 0)
+	args[i].tree_value = integer_zero_node, type = integer_type_node;
+
+      /* If TYPE is a transparent union, pass things the way we would
+	 pass the first field of the union.  We have already verified that
+	 the modes are the same.  */
+      if (TYPE_TRANSPARENT_UNION (type))
+	type = TREE_TYPE (TYPE_FIELDS (type));
+
+      /* Decide where to pass this arg.
+
+	 args[i].reg is nonzero if all or part is passed in registers.
+
+	 args[i].partial is nonzero if part but not all is passed in registers,
+	 and the exact value says how many words are passed in registers.
+
+	 args[i].pass_on_stack is nonzero if the argument must at least be
+	 computed on the stack.  It may then be loaded back into registers
+	 if args[i].reg is nonzero.
+
+	 These decisions are driven by the FUNCTION_... macros and must agree
+	 with those made by function.c.  */
+
+      /* See if this argument should be passed by invisible reference.  */
+      if ((TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST
+	   && contains_placeholder_p (TYPE_SIZE (type)))
+	  || TREE_ADDRESSABLE (type)
+#ifdef FUNCTION_ARG_PASS_BY_REFERENCE
+	  || FUNCTION_ARG_PASS_BY_REFERENCE (args_so_far, TYPE_MODE (type),
+					     type, argpos < n_named_args)
+#endif
+	  )
+	{
+	  /* If we're compiling a thunk, pass through invisible
+             references instead of making a copy.  */
+	  if (current_function_is_thunk
+#ifdef FUNCTION_ARG_CALLEE_COPIES
+	      || (FUNCTION_ARG_CALLEE_COPIES (args_so_far, TYPE_MODE (type),
+					     type, argpos < n_named_args)
+		  /* If it's in a register, we must make a copy of it too.  */
+		  /* ??? Is this a sufficient test?  Is there a better one? */
+		  && !(TREE_CODE (args[i].tree_value) == VAR_DECL
+		       && REG_P (DECL_RTL (args[i].tree_value)))
+		  && ! TREE_ADDRESSABLE (type))
+#endif
+	      )
+	    {
+	      /* C++ uses a TARGET_EXPR to indicate that we want to make a
+	         new object from the argument.  If we are passing by
+	         invisible reference, the callee will do that for us, so we
+	         can strip off the TARGET_EXPR.  This is not always safe,
+	         but it is safe in the only case where this is a useful
+	         optimization; namely, when the argument is a plain object.
+	         In that case, the frontend is just asking the backend to
+	         make a bitwise copy of the argument. */
+		 
+	      if (TREE_CODE (args[i].tree_value) == TARGET_EXPR
+		  && (TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND
+						  (args[i].tree_value, 1)))
+		      == 'd')
+		  && ! REG_P (DECL_RTL (TREE_OPERAND (args[i].tree_value, 1))))
+		args[i].tree_value = TREE_OPERAND (args[i].tree_value, 1);
+
+	      args[i].tree_value = build1 (ADDR_EXPR,
+					   build_pointer_type (type),
+					   args[i].tree_value);
+	      type = build_pointer_type (type);
+	    }
+	  else
+	    {
+	      /* We make a copy of the object and pass the address to the
+		 function being called.  */
+	      rtx copy;
+
+	      if (TYPE_SIZE (type) == 0
+		  || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST
+		  || (flag_stack_check && ! STACK_CHECK_BUILTIN
+		      && (TREE_INT_CST_HIGH (TYPE_SIZE (type)) != 0
+			  || (TREE_INT_CST_LOW (TYPE_SIZE (type))
+			      > STACK_CHECK_MAX_VAR_SIZE * BITS_PER_UNIT))))
+		{
+		  /* This is a variable-sized object.  Make space on the stack
+		     for it.  */
+		  rtx size_rtx = expr_size (TREE_VALUE (p));
+
+		  if (*old_stack_level == 0)
+		    {
+		      emit_stack_save (SAVE_BLOCK, old_stack_level, NULL_RTX);
+		      *old_pending_adj = pending_stack_adjust;
+		      pending_stack_adjust = 0;
+		    }
+
+		  copy = gen_rtx_MEM (BLKmode,
+				      allocate_dynamic_stack_space (size_rtx,
+								    NULL_RTX,
+								    TYPE_ALIGN (type)));
+		}
+	      else
+		{
+		  int size = int_size_in_bytes (type);
+		  copy = assign_stack_temp (TYPE_MODE (type), size, 0);
+		}
+
+	      MEM_SET_IN_STRUCT_P (copy, AGGREGATE_TYPE_P (type));
+
+	      store_expr (args[i].tree_value, copy, 0);
+	      *is_const = 0;
+
+	      args[i].tree_value = build1 (ADDR_EXPR,
+					   build_pointer_type (type),
+					   make_tree (type, copy));
+	      type = build_pointer_type (type);
+	    }
+	}
+
+      mode = TYPE_MODE (type);
+      unsignedp = TREE_UNSIGNED (type);
+
+#ifdef PROMOTE_FUNCTION_ARGS
+      mode = promote_mode (type, mode, &unsignedp, 1);
+#endif
+
+      args[i].unsignedp = unsignedp;
+      args[i].mode = mode;
+      args[i].reg = FUNCTION_ARG (args_so_far, mode, type,
+				  argpos < n_named_args);
+#ifdef FUNCTION_ARG_PARTIAL_NREGS
+      if (args[i].reg)
+	args[i].partial
+	  = FUNCTION_ARG_PARTIAL_NREGS (args_so_far, mode, type,
+					argpos < n_named_args);
+#endif
+
+      args[i].pass_on_stack = MUST_PASS_IN_STACK (mode, type);
+
+      /* If FUNCTION_ARG returned a (parallel [(expr_list (nil) ...) ...]),
+	 it means that we are to pass this arg in the register(s) designated
+	 by the PARALLEL, but also to pass it in the stack.  */
+      if (args[i].reg && GET_CODE (args[i].reg) == PARALLEL
+	  && XEXP (XVECEXP (args[i].reg, 0, 0), 0) == 0)
+	args[i].pass_on_stack = 1;
+
+      /* If this is an addressable type, we must preallocate the stack
+	 since we must evaluate the object into its final location.
+
+	 If this is to be passed in both registers and the stack, it is simpler
+	 to preallocate.  */
+      if (TREE_ADDRESSABLE (type)
+	  || (args[i].pass_on_stack && args[i].reg != 0))
+	*must_preallocate = 1;
+
+      /* If this is an addressable type, we cannot pre-evaluate it.  Thus,
+	 we cannot consider this function call constant.  */
+      if (TREE_ADDRESSABLE (type))
+	*is_const = 0;
+
+      /* Compute the stack-size of this argument.  */
+      if (args[i].reg == 0 || args[i].partial != 0
+	  || reg_parm_stack_space > 0
+	  || args[i].pass_on_stack)
+	locate_and_pad_parm (mode, type,
+#ifdef STACK_PARMS_IN_REG_PARM_AREA
+			     1,
+#else
+			     args[i].reg != 0,
+#endif
+			     fndecl, args_size, &args[i].offset,
+			     &args[i].size);
+
+#ifndef ARGS_GROW_DOWNWARD
+      args[i].slot_offset = *args_size;
+#endif
+
+      /* If a part of the arg was put into registers,
+	 don't include that part in the amount pushed.  */
+      if (reg_parm_stack_space == 0 && ! args[i].pass_on_stack)
+	args[i].size.constant -= ((args[i].partial * UNITS_PER_WORD)
+				  / (PARM_BOUNDARY / BITS_PER_UNIT)
+				  * (PARM_BOUNDARY / BITS_PER_UNIT));
+      
+      /* Update ARGS_SIZE, the total stack space for args so far.  */
+
+      args_size->constant += args[i].size.constant;
+      if (args[i].size.var)
+	{
+	  ADD_PARM_SIZE (*args_size, args[i].size.var);
+	}
+
+      /* Since the slot offset points to the bottom of the slot,
+	 we must record it after incrementing if the args grow down.  */
+#ifdef ARGS_GROW_DOWNWARD
+      args[i].slot_offset = *args_size;
+
+      args[i].slot_offset.constant = -args_size->constant;
+      if (args_size->var)
+	{
+	  SUB_PARM_SIZE (args[i].slot_offset, args_size->var);
+	}
+#endif
+
+      /* Increment ARGS_SO_FAR, which has info about which arg-registers
+	 have been used, etc.  */
+
+      FUNCTION_ARG_ADVANCE (args_so_far, TYPE_MODE (type), type,
+			    argpos < n_named_args);
+    }
+}
+
 /* Update ARGS_SIZE to contain the total size for the argument block.
    Return the original constant component of the argument block's size.
 
@@ -1071,8 +1359,6 @@ expand_call (exp, target, ignore)
   /* Number of named args.  Args after this are anonymous ones
      and they must all go on the stack.  */
   int n_named_args;
-  /* Count arg position in order args appear.  */
-  int argpos;
 
   /* Vector of information about each argument.
      Arguments are numbered in the order they will be pushed,
@@ -1104,8 +1390,6 @@ expand_call (exp, target, ignore)
   /* Size of the stack reserved for parameter registers.  */
   int reg_parm_stack_space = 0;
 
-  /* 1 if scanning parms front to back, -1 if scanning back to front.  */
-  int inc;
   /* Address of space preallocated for stack parms
      (on machines that lack push insns), or 0 if space not preallocated.  */
   rtx argblock = 0;
@@ -1477,237 +1761,13 @@ expand_call (exp, target, ignore)
   args = (struct arg_data *) alloca (num_actuals * sizeof (struct arg_data));
   bzero ((char *) args, num_actuals * sizeof (struct arg_data));
 
-  args_size.constant = 0;
-  args_size.var = 0;
-
-  /* In this loop, we consider args in the order they are written.
-     We fill up ARGS from the front or from the back if necessary
-     so that in any case the first arg to be pushed ends up at the front.  */
-
-#ifdef PUSH_ARGS_REVERSED
-  i = num_actuals - 1, inc = -1;
-  /* In this case, must reverse order of args
-     so that we compute and push the last arg first.  */
-#else
-  i = 0, inc = 1;
-#endif
-
-  /* I counts args in order (to be) pushed; ARGPOS counts in order written.  */
-  for (p = actparms, argpos = 0; p; p = TREE_CHAIN (p), i += inc, argpos++)
-    {
-      tree type = TREE_TYPE (TREE_VALUE (p));
-      int unsignedp;
-      enum machine_mode mode;
-
-      args[i].tree_value = TREE_VALUE (p);
-
-      /* Replace erroneous argument with constant zero.  */
-      if (type == error_mark_node || TYPE_SIZE (type) == 0)
-	args[i].tree_value = integer_zero_node, type = integer_type_node;
-
-      /* If TYPE is a transparent union, pass things the way we would
-	 pass the first field of the union.  We have already verified that
-	 the modes are the same.  */
-      if (TYPE_TRANSPARENT_UNION (type))
-	type = TREE_TYPE (TYPE_FIELDS (type));
-
-      /* Decide where to pass this arg.
-
-	 args[i].reg is nonzero if all or part is passed in registers.
-
-	 args[i].partial is nonzero if part but not all is passed in registers,
-	 and the exact value says how many words are passed in registers.
-
-	 args[i].pass_on_stack is nonzero if the argument must at least be
-	 computed on the stack.  It may then be loaded back into registers
-	 if args[i].reg is nonzero.
-
-	 These decisions are driven by the FUNCTION_... macros and must agree
-	 with those made by function.c.  */
-
-      /* See if this argument should be passed by invisible reference.  */
-      if ((TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST
-	   && contains_placeholder_p (TYPE_SIZE (type)))
-	  || TREE_ADDRESSABLE (type)
-#ifdef FUNCTION_ARG_PASS_BY_REFERENCE
-	  || FUNCTION_ARG_PASS_BY_REFERENCE (args_so_far, TYPE_MODE (type),
-					     type, argpos < n_named_args)
-#endif
-	  )
-	{
-	  /* If we're compiling a thunk, pass through invisible
-             references instead of making a copy.  */
-	  if (current_function_is_thunk
-#ifdef FUNCTION_ARG_CALLEE_COPIES
-	      || (FUNCTION_ARG_CALLEE_COPIES (args_so_far, TYPE_MODE (type),
-					     type, argpos < n_named_args)
-		  /* If it's in a register, we must make a copy of it too.  */
-		  /* ??? Is this a sufficient test?  Is there a better one? */
-		  && !(TREE_CODE (args[i].tree_value) == VAR_DECL
-		       && REG_P (DECL_RTL (args[i].tree_value)))
-		  && ! TREE_ADDRESSABLE (type))
-#endif
-	      )
-	    {
-	      /* C++ uses a TARGET_EXPR to indicate that we want to make a
-	         new object from the argument.  If we are passing by
-	         invisible reference, the callee will do that for us, so we
-	         can strip off the TARGET_EXPR.  This is not always safe,
-	         but it is safe in the only case where this is a useful
-	         optimization; namely, when the argument is a plain object.
-	         In that case, the frontend is just asking the backend to
-	         make a bitwise copy of the argument. */
-		 
-	      if (TREE_CODE (args[i].tree_value) == TARGET_EXPR
-		  && (TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND
-						  (args[i].tree_value, 1)))
-		      == 'd')
-		  && ! REG_P (DECL_RTL (TREE_OPERAND (args[i].tree_value, 1))))
-		args[i].tree_value = TREE_OPERAND (args[i].tree_value, 1);
-
-	      args[i].tree_value = build1 (ADDR_EXPR,
-					   build_pointer_type (type),
-					   args[i].tree_value);
-	      type = build_pointer_type (type);
-	    }
-	  else
-	    {
-	      /* We make a copy of the object and pass the address to the
-		 function being called.  */
-	      rtx copy;
-
-	      if (TYPE_SIZE (type) == 0
-		  || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST
-		  || (flag_stack_check && ! STACK_CHECK_BUILTIN
-		      && (TREE_INT_CST_HIGH (TYPE_SIZE (type)) != 0
-			  || (TREE_INT_CST_LOW (TYPE_SIZE (type))
-			      > STACK_CHECK_MAX_VAR_SIZE * BITS_PER_UNIT))))
-		{
-		  /* This is a variable-sized object.  Make space on the stack
-		     for it.  */
-		  rtx size_rtx = expr_size (TREE_VALUE (p));
-
-		  if (old_stack_level == 0)
-		    {
-		      emit_stack_save (SAVE_BLOCK, &old_stack_level, NULL_RTX);
-		      old_pending_adj = pending_stack_adjust;
-		      pending_stack_adjust = 0;
-		    }
-
-		  copy = gen_rtx_MEM (BLKmode,
-				      allocate_dynamic_stack_space (size_rtx,
-								    NULL_RTX,
-								    TYPE_ALIGN (type)));
-		}
-	      else
-		{
-		  int size = int_size_in_bytes (type);
-		  copy = assign_stack_temp (TYPE_MODE (type), size, 0);
-		}
-
-	      MEM_SET_IN_STRUCT_P (copy, AGGREGATE_TYPE_P (type));
-
-	      store_expr (args[i].tree_value, copy, 0);
-	      is_const = 0;
-
-	      args[i].tree_value = build1 (ADDR_EXPR,
-					   build_pointer_type (type),
-					   make_tree (type, copy));
-	      type = build_pointer_type (type);
-	    }
-	}
-
-      mode = TYPE_MODE (type);
-      unsignedp = TREE_UNSIGNED (type);
-
-#ifdef PROMOTE_FUNCTION_ARGS
-      mode = promote_mode (type, mode, &unsignedp, 1);
-#endif
-
-      args[i].unsignedp = unsignedp;
-      args[i].mode = mode;
-      args[i].reg = FUNCTION_ARG (args_so_far, mode, type,
-				  argpos < n_named_args);
-#ifdef FUNCTION_ARG_PARTIAL_NREGS
-      if (args[i].reg)
-	args[i].partial
-	  = FUNCTION_ARG_PARTIAL_NREGS (args_so_far, mode, type,
-					argpos < n_named_args);
-#endif
-
-      args[i].pass_on_stack = MUST_PASS_IN_STACK (mode, type);
-
-      /* If FUNCTION_ARG returned a (parallel [(expr_list (nil) ...) ...]),
-	 it means that we are to pass this arg in the register(s) designated
-	 by the PARALLEL, but also to pass it in the stack.  */
-      if (args[i].reg && GET_CODE (args[i].reg) == PARALLEL
-	  && XEXP (XVECEXP (args[i].reg, 0, 0), 0) == 0)
-	args[i].pass_on_stack = 1;
-
-      /* If this is an addressable type, we must preallocate the stack
-	 since we must evaluate the object into its final location.
-
-	 If this is to be passed in both registers and the stack, it is simpler
-	 to preallocate.  */
-      if (TREE_ADDRESSABLE (type)
-	  || (args[i].pass_on_stack && args[i].reg != 0))
-	must_preallocate = 1;
-
-      /* If this is an addressable type, we cannot pre-evaluate it.  Thus,
-	 we cannot consider this function call constant.  */
-      if (TREE_ADDRESSABLE (type))
-	is_const = 0;
-
-      /* Compute the stack-size of this argument.  */
-      if (args[i].reg == 0 || args[i].partial != 0
-	  || reg_parm_stack_space > 0
-	  || args[i].pass_on_stack)
-	locate_and_pad_parm (mode, type,
-#ifdef STACK_PARMS_IN_REG_PARM_AREA
-			     1,
-#else
-			     args[i].reg != 0,
-#endif
-			     fndecl, &args_size, &args[i].offset,
-			     &args[i].size);
-
-#ifndef ARGS_GROW_DOWNWARD
-      args[i].slot_offset = args_size;
-#endif
-
-      /* If a part of the arg was put into registers,
-	 don't include that part in the amount pushed.  */
-      if (reg_parm_stack_space == 0 && ! args[i].pass_on_stack)
-	args[i].size.constant -= ((args[i].partial * UNITS_PER_WORD)
-				  / (PARM_BOUNDARY / BITS_PER_UNIT)
-				  * (PARM_BOUNDARY / BITS_PER_UNIT));
-      
-      /* Update ARGS_SIZE, the total stack space for args so far.  */
-
-      args_size.constant += args[i].size.constant;
-      if (args[i].size.var)
-	{
-	  ADD_PARM_SIZE (args_size, args[i].size.var);
-	}
-
-      /* Since the slot offset points to the bottom of the slot,
-	 we must record it after incrementing if the args grow down.  */
-#ifdef ARGS_GROW_DOWNWARD
-      args[i].slot_offset = args_size;
-
-      args[i].slot_offset.constant = -args_size.constant;
-      if (args_size.var)
-	{
-	  SUB_PARM_SIZE (args[i].slot_offset, args_size.var);
-	}
-#endif
-
-      /* Increment ARGS_SO_FAR, which has info about which arg-registers
-	 have been used, etc.  */
-
-      FUNCTION_ARG_ADVANCE (args_so_far, TYPE_MODE (type), type,
-			    argpos < n_named_args);
-    }
+  /* Build up entries inthe ARGS array, compute the size of the arguments
+     into ARGS_SIZE, etc.  */
+  initialize_argument_information (num_actuals, args, &args_size, n_named_args,
+				   actparms, fndecl, args_so_far,
+				   reg_parm_stack_space, &old_stack_level,
+				   &old_pending_adj, &must_preallocate,
+				   &is_const);
 
 #ifdef FINAL_REG_PARM_STACK_SPACE
   reg_parm_stack_space = FINAL_REG_PARM_STACK_SPACE (args_size.constant,
