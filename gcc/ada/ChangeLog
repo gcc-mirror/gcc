@@ -1,3 +1,11 @@
+2005-01-27  Laurent GUERBY <laurent@guerby.net>
+
+	* Makefile.in: Rename GNAT RTEMS specific files.
+	* 5rtpopsp.adb, 4rintnam.ads, 5rosinte.adb,  
+ 	5rosinte.ads, 5rparame.adb: Replaced by files below.
+	* s-tpopsp-rtems.adb, a-intman-rtems.ads, s-osinte-rtems.adb,
+	s-osinte-rtems.ads, s-parame-rtems.adb: Replace files above.
+
 2005-01-27  Joel Sherrill <joel.sherrill@oarcorp.com>
 	    Laurent GUERBY <laurent@guerby.net>
 
