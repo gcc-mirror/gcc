@@ -1,3 +1,7 @@
+2005-02-21  Steven G. Kargl  <kargls@comcast.net>
+
+	* io/write.c (output_float):  Typo in error meesage.
+
 2005-02-20  Steven G. Kargl  <kargls@comcast.net>
 
         PR 20085
