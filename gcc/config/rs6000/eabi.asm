@@ -41,6 +41,7 @@
 	#include "ppc-asm.h"
 
 	 .section ".got2","aw"
+	.align	2
 .LCTOC1 = . /* +32768 */
 
 /* Table of addresses */
@@ -84,6 +85,7 @@
 	.long	.Linit_p			/* address of variable to say we've been called */
 
 	.data
+	.align	2
 .Linit_p:
 	.long	0
 
