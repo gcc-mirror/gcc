@@ -1,3 +1,10 @@
+2005-02-11  Janis Johnson  <janis187@us.ibm.com>
+
+	* testsuite/lib/libstdc++.exp: Load target-supports-dg.exp.
+	* testsuite/26_numerics/complex/13450.cc: XFAIL for broken_cplxf_arg.
+	* testsuite/26_numerics/complex/complex_value.cc: Ditto.
+	* testsuite/26_numerics/complex/pow.cc: Ditto.
+
 2005-02-09  Mike Stump  <mrs@apple.com>
 
 	* libsupc++/del_op.cc: Don't include cstdlib when !_GLIBCXX_HOSTED.

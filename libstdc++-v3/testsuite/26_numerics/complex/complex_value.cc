@@ -1,3 +1,4 @@
+// { dg-do run { xfail { powerpc*-*-linux* && broken_cplxf_arg } } }
 // { dg-options "-O0" }
 // 2000-11-20
 // Benjamin Kosnik bkoz@redhat.com
