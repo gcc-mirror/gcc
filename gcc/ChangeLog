@@ -1,3 +1,11 @@
+2004-11-16  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/18447
+	* config/sh/sh.c (prepare_move_operands): Emit blockage insns
+	before and after the insns for getting GOT address in non-PIC
+	TLS_MODEL_INITIAL_EXEC tls sequence when the first scheduling
+	is enabled.
+
 2004-11-16  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* gcc/cse.c (struct change_cc_mode_args): New structure.
