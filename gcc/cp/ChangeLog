@@ -1,3 +1,7 @@
+2000-03-01  Cor Veenman  <C.J.Veenman@its.tudelft.nl>
+
+	* typeck.c (convert_for_assignment): Warn about conversion to bool.
+
 2000-03-01  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* typeck.c (maybe_warn_about_returning_address_of_local): Reorganize
