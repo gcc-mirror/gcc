@@ -1,3 +1,8 @@
+2002-04-05  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* splay-tree.c (splay_tree_xmalloc_allocate): Use K & R syntax.
+	(splay_tree_xmalloc_deallocate): Likewise.
+
 2002-04-01  Phil Edwards  <pme@gcc.gnu.org>
 
 	* cp-demangle.c (__cxa_demangle):  Also protect with IN_GLIBCPP_V3.

@@ -230,13 +230,17 @@ splay_tree_foreach_helper (sp, node, fn, data)
 
 /* An allocator and deallocator based on xmalloc.  */
 static void *
-splay_tree_xmalloc_allocate (int size, void *data)
+splay_tree_xmalloc_allocate (size, data)
+     int size;
+     void *data ATTRIBUTE_UNUSED;
 {
   return xmalloc (size);
 }
 
 static void
-splay_tree_xmalloc_deallocate (void *object, void *data)
+splay_tree_xmalloc_deallocate (object, data)
+     void *object;
+     void *data ATTRIBUTE_UNUSED;
 {
   free (object);
 }
