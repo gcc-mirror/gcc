@@ -12568,12 +12568,15 @@ patch_assignment (node, wfl_op1, wfl_op2)
 	base = TREE_OPERAND (lvalue, 0);
       else
 	{
-	  base = TREE_OPERAND (base, 0);
-	  if (flag_bounds_check)
-	    base = TREE_OPERAND (base, 1);
-	  if (flag_check_references)
-	    base = TREE_OPERAND (base, 1);
-	  base = TREE_OPERAND (base, 0);	
+          tree op = TREE_OPERAND (base, 0);
+	  
+          /* We can have a SAVE_EXPR here when doing String +=.  */
+          if (TREE_CODE (op) == SAVE_EXPR)
+            op = TREE_OPERAND (op, 0);
+          if (flag_bounds_check)
+            base = TREE_OPERAND (TREE_OPERAND (op, 1), 0);
+          else
+            base = TREE_OPERAND (op, 0);
 	}
 
       /* Build the invocation of _Jv_CheckArrayStore */
@@ -12599,16 +12602,31 @@ patch_assignment (node, wfl_op1, wfl_op2)
 	    TREE_OPERAND (lvalue, 1) = build (COMPOUND_EXPR, lhs_type,
 					      check, TREE_OPERAND (lvalue, 1));
 	}
-      else 
+      else if (flag_bounds_check)
 	{
+          tree hook = lvalue;
+          tree compound = TREE_OPERAND (lvalue, 0);
+          tree bound_check, new_compound;
+
+          if (TREE_CODE (compound) == SAVE_EXPR)
+            {
+              compound = TREE_OPERAND (compound, 0);
+              hook = TREE_OPERAND (hook, 0);
+            }
+
+          /* Find the array bound check, hook the original array access. */
+          bound_check = TREE_OPERAND (compound, 0);
+          TREE_OPERAND (hook, 0) = TREE_OPERAND (compound, 1);
+
 	  /* Make sure the bound check will happen before the store check */
-	  if (flag_bounds_check)
-	    TREE_OPERAND (TREE_OPERAND (lvalue, 0), 0) =
-	      build (COMPOUND_EXPR, void_type_node,
-		     TREE_OPERAND (TREE_OPERAND (lvalue, 0), 0), check);
-	  else
-	    lvalue = build (COMPOUND_EXPR, lhs_type, check, lvalue);
-	}
+          new_compound =
+            build (COMPOUND_EXPR, void_type_node, bound_check, check);
+
+          /* Re-assemble the augmented array access. */
+          lvalue = build (COMPOUND_EXPR, lhs_type, new_compound, lvalue);
+        }
+      else
+        lvalue = build (COMPOUND_EXPR, lhs_type, check, lvalue);
     }
 
   /* Final locals can be used as case values in switch
