@@ -1,3 +1,8 @@
+2002-11-24  Paolo Carlini  <pcarlini@unitus.it>
+
+	* src/locale.cc (locale::locale(const char*)):
+	Trivial cosmetic tweaks.
+
 2002-11-22  Laszlo Ersek  <erseklaszlo@chello.hu>
             Paolo Carlini  <pcarlini@unitus.it>
 
