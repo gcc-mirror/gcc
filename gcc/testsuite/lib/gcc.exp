@@ -1,4 +1,4 @@
-# Copyright (C) 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+# Copyright (C) 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001, 2003, 2004 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -106,18 +106,8 @@ proc gcc_init { args } {
     if ![info exists tmpdir] then {
 	set tmpdir /tmp
     }
-    if {[target_info needs_status_wrapper] != "" && \
-	    [target_info needs_status_wrapper] != "0" && \
-	    ![info exists gluefile]} {
-	set gluefile ${tmpdir}/gcc-testglue.o;
-	set result [build_wrapper $gluefile];
-	if { $result != "" } {
-	    set gluefile [lindex $result 0];
-	    set wrap_flags [lindex $result 1];
-	} else {
-	    unset gluefile
-	}
-    }
+
+    gcc_maybe_build_wrapper "${tmpdir}/gcc-testglue.o"
 }
 
 #

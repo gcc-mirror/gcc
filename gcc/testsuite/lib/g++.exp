@@ -1,4 +1,4 @@
-# Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 2000, 2001, 2002, 2003
+# Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 2000, 2001, 2002, 2003, 2004
 # Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
@@ -249,16 +249,7 @@ proc g++_init { args } {
 	unset gluefile
     }
 
-    if { [target_info needs_status_wrapper] != "" } {
-	set gluefile ${tmpdir}/g++-testglue.o;
-	set result [build_wrapper $gluefile];
-	if { $result != "" } {
-	    set gluefile [lindex $result 0];
-	    set wrap_flags [lindex $result 1];
-	} else {
-	    unset gluefile
-	}
-    }
+    g++_maybe_build_wrapper "${tmpdir}/g++-testglue.o"
 
     set ALWAYS_CXXFLAGS ""
 

@@ -1,4 +1,4 @@
-# Copyright (C) 1992, 1993, 1994, 1996, 1997, 2000, 2001, 2002
+# Copyright (C) 1992, 1993, 1994, 1996, 1997, 2000, 2001, 2002, 2004
 # Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
@@ -107,16 +107,8 @@ proc objc_init { args } {
     if ![info exists tmpdir] then {
 	set tmpdir /tmp
     }
-    if { [target_info needs_status_wrapper]!="" && ![info exists gluefile] } {
-	set gluefile ${tmpdir}/objc-testglue.o;
-	set result [build_wrapper $gluefile];
-	if { $result != "" } {
-	    set gluefile [lindex $result 0];
-	    set wrap_flags [lindex $result 1];
-	} else {
-	    unset gluefile
-	}
-    }
+
+    objc_maybe_build_wrapper "${tmpdir}/objc-testglue.o"
 
     set objc_libgcc_s_path "${rootme}"
     set compiler [lindex $OBJC_UNDER_TEST 0]

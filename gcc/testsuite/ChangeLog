@@ -1,3 +1,15 @@
+2004-09-13  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* lib/gcc-defs.exp: Load wrapper.exp.
+	* lib/g++.exp (g++_init): Call g++_maybe_build_wrapper instead of
+	using local code.
+	* lib/gcc.exp (gcc_init): Similar.
+	* lib/gfortran.exp (gfortran_init): Similar.
+	* lib/objc.exp (objc_init): Similar.
+	* lib/treelang.exp (treelang_init): Similar.
+	* lib/wrapper.exp: New file with build_wrapper call machinery in
+	${tool}_maybe_build_wrapper.
+
 2004-09-13  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcc.dg/declspec-7.c: Don't expect diagnostic for duplicate
