@@ -2,8 +2,6 @@ SYSTEM_HEADER_DIR = /usr/cross64/usr/include
 
 AR = /usr/cross64/usr/bin/ar
 
-FLOAT_H = $(CROSS_FLOAT_H)
-
 # The rest of the file is identical to t-iris6.
 
 # Suppress building libgcc1.a, since the MIPS compiler port is complete

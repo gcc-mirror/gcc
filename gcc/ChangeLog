@@ -1,3 +1,21 @@
+Mon Mar  1 19:09:32 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* Makefile.in (CROSS_FLOAT_H): Delete.
+	(FLOAT_H): Use float_h_file.
+	(rest.cross, stmp-int-hdrs): Delete gfloat.h dependency.
+	(gfloat.h): Delete.
+	(stmp-int-hdrs): Use FLOAT_H instead of gfloat.h.
+	(mostlyclean): Delete gloat.h reference.
+	(install-cross-rest, install-float-h-cross, stmp-headers): Update
+	comments.
+	* configure.in (sparcv9-*-solaris2*): Set float_format to none.
+	(sparc-*-solaris2*): Set float_format to none for 2.5 and higher.
+	(float_h_file): Set from float_format.  Substitute into Makefile.in.
+	(float_format): No longer substitute into Makefile.in.	
+	* cross-make (FLOAT_H): Delete.
+	* config/mips/t-cross64 (FLOAT_H): Delete.
+	* configure: Rebuilt.
+	
 Mon Mar  1 16:36:18 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* mips.md (div_trap_normal, div_trap_mips16): Require the dependent

@@ -3088,7 +3088,7 @@ changequote([,])dnl
 		xmake_file=sparc/x-sysv4
 		extra_parts="crt1.o crti.o crtn.o gcrt1.o crtbegin.o crtend.o"
 		fixincludes=fixinc.wrap
-		float_format=i128
+		float_format=none
 		if test x${enable_threads} = x ; then
 		    enable_threads=$have_pthread_h
 		    if test x${enable_threads} = x ; then
@@ -3128,11 +3128,14 @@ changequote([,])dnl
 changequote(,)dnl
 		*-*-solaris2.[0-4])
 changequote([,])dnl
-			fixincludes=fixinc.svr4;;
+			fixincludes=fixinc.svr4
+			float_format=i128
+			;;
 		*)
-			fixincludes=fixinc.wrap;;
+			fixincludes=fixinc.wrap
+			float_format=none
+			;;
 		esac
-		float_format=i128
 		if test x${enable_threads} = x; then
 		    enable_threads=$have_pthread_h
 		    if test x${enable_threads} = x; then
@@ -3525,6 +3528,11 @@ fi
 
 if test x$float_format = x
 then float_format=i64
+fi
+
+if test $float_format = none
+then float_h_file=Makefile.in
+else float_h_file=float-$float_format.h
 fi
 
 if test x$enable_haifa = x
@@ -4278,7 +4286,7 @@ AC_SUBST(fixincludes)
 AC_SUBST(build_install_headers_dir)
 AC_SUBST(build_exeext)
 AC_SUBST(host_exeext)
-AC_SUBST(float_format)
+AC_SUBST(float_h_file)
 AC_SUBST(will_use_collect2)
 AC_SUBST(maybe_use_collect2)
 AC_SUBST(cc_set_by_configure)

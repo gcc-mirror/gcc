@@ -397,13 +397,9 @@ LIB1FUNCS_EXTRA =
 # Assembler files should have names ending in `.asm'.
 LIB2FUNCS_EXTRA = 
 
-# Default float.h source to use for cross-compiler.
-# This is overridden by configure.
-CROSS_FLOAT_H=$(srcdir)/config/float-@float_format@.h
-
 # We do not try to build float.h anymore.  Let configure select the
 # appropriate pre-built float.h file for the target.
-FLOAT_H=$(srcdir)/config/float-@float_format@.h
+FLOAT_H=@float_h_file@
 
 # Program to convert libraries.
 LIBCONVERT = 
@@ -850,7 +846,7 @@ PROTO: proto
 
 # On the target machine, finish building a cross compiler.
 # This does the things that can't be done on the host machine.
-rest.cross: $(LIBGCC) gfloat.h specs
+rest.cross: $(LIBGCC) specs
 
 # Verify that it works to compile and link libgcc1-test.
 # If it does, then there are sufficient replacements for libgcc1.a.
@@ -891,11 +887,6 @@ gcc-cross: xgcc$(exeext)
 
 cc1$(exeext): $(P) $(OBJS) $(C_OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(OBJS) $(C_OBJS) $(LIBS)
-
-# Copy float.h from its source.
-gfloat.h: $(FLOAT_H)
-	-rm -f gfloat.h
-	cp $(FLOAT_H) gfloat.h
 
 # Build the version of limits.h that we will install.
 xlimits.h: glimits.h limitx.h limity.h
@@ -2072,7 +2063,7 @@ gcov$(exeext): $(GCOV_OBJS) $(LIBDEPS)
 
 # Build the include directory including float.h (which no longer depends upon
 # enquire).
-stmp-int-hdrs: stmp-fixinc $(USER_H) xlimits.h gfloat.h
+stmp-int-hdrs: stmp-fixinc $(USER_H) xlimits.h
 # Copy in the headers provided with gcc.
 # The sed command gets just the last file name component;
 # this is necessary because VPATH could add a dirname.
@@ -2091,8 +2082,8 @@ stmp-int-hdrs: stmp-fixinc $(USER_H) xlimits.h gfloat.h
 	cp xlimits.h include/limits.h
 	chmod a+r include/limits.h
 	rm -f include/float.h
-	if [ -s gfloat.h ]; then \
-	  cp gfloat.h include/float.h && \
+	if [ x$(FLOAT_H) != xMakefile.in ]; then \
+	  cp $(srcdir)/config/$(FLOAT_H) include/float.h && \
 	  chmod a+r include/float.h; \
 	else :; fi
 # Install the README
@@ -2101,7 +2092,7 @@ stmp-int-hdrs: stmp-fixinc $(USER_H) xlimits.h gfloat.h
 	chmod a+r include/README
 	touch $@
 
-# Now that gfloat.h no longer depends upon enquire, this is actually a no-op.
+# Now that float.h no longer depends upon enquire, this is actually a no-op.
 stmp-headers:
 	touch $@
 
@@ -2296,7 +2287,7 @@ mostlyclean: intl.mostlyclean lang.mostlyclean
 	-rm -f */*.tree */*.loop */*.dbr */*.jump2 */*.sched */*.cse2
 	-rm -f */*.sched2 */*.stack */*.regmove */*.gcse
 # Delete some files made during installation.
-	-rm -f specs gfloat.h float.h-* enquire SYSCALLS.c.X SYSCALLS.c
+	-rm -f specs float.h-* enquire SYSCALLS.c.X SYSCALLS.c
 	-rm -f collect collect2 mips-tfile mips-tdump alloca.s
 # Delete files generated for fixproto
 	-rm -rf fix-header xsys-protos.h deduced.h tmp-deduced.h \
@@ -2408,10 +2399,12 @@ install-build: force
 
 # Run this on the target machine
 # to finish installation of cross compiler.
+# This is not used anymore now that float.h does not depend on enquire.
 install-cross-rest: install-float-h-cross
 
 # Install float.h for cross compiler.
 # Run this on the target machine!
+# This is not used anymore now that float.h does not depend on enquire.
 install-float-h-cross: installdirs
 #	if [ -f enquire ] ; then true; else false; fi
 # Note: don't use -.  We should fail right away if enquire was not made.
