@@ -2411,6 +2411,7 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
   int struct_value_size = 0;
   /* library calls are never indirect calls.  */
   int current_call_is_indirect = 0;
+  int is_const;
 
   VA_START (p, nargs);
 
@@ -2422,12 +2423,16 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
   nargs = va_arg (p, int);
 #endif
 
+  is_const = no_queue;
   fun = orgfun;
 
   /* If this kind of value comes back in memory,
      decide where in memory it should come back.  */
   if (aggregate_value_p (type_for_mode (outmode, 0)))
     {
+      /* This call returns a big structure.  */
+      is_const = 0;
+
 #ifdef PCC_STATIC_STRUCT_RETURN
       rtx pointer_reg
 	= hard_function_value (build_pointer_type (type_for_mode (outmode, 0)),
@@ -2729,7 +2734,7 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
 	       FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1),
 	       (outmode != VOIDmode && mem_value == 0
 		? hard_libcall_value (outmode) : NULL_RTX),
-	       old_inhibit_defer_pop + 1, use_insns, no_queue);
+	       old_inhibit_defer_pop + 1, use_insns, is_const);
 
   /* Now restore inhibit_defer_pop to its actual original value.  */
   OK_DEFER_POP;
