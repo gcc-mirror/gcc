@@ -4,6 +4,19 @@ Sun Nov  9 01:29:55 1997  Jim Wilson  (wilson@cygnus.com)
 	* init.c (build_vec_delete_1): Delete build_block and
 	add_block_current_level calls.
 
+Mon Nov 10 20:08:38 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (grokdeclarator): Tweak conditions for pedwarn in
+ 	previous change.
+
+Mon Nov 10 20:08:29 1997  Bruno Haible  <bruno@linuix.mathematik.uni-karlsruhe.de>
+
+	* pt.c (coerce_template_parms): Tweak error message.
+
+	* decl.c (grokdeclarator): If -Wreturn-type, warn everytime a
+	return type defaults to `int', even if there are storage-class
+	specifiers.
+
 Mon Nov 10 03:04:20 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	Complete nested exception support.

@@ -8104,10 +8104,15 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    }
 	  else if (RIDBIT_SETP (RID_TYPEDEF, specbits))
 	    pedwarn ("ANSI C++ forbids typedef which does not specify a type");
-	  else if (declspecs == NULL_TREE
-		   && (innermost_code != CALL_EXPR || pedantic))
-	    cp_pedwarn ("ANSI C++ forbids declaration `%D' with no type or storage class",
-			dname);
+	  else if (innermost_code != CALL_EXPR || pedantic
+		   || (warn_return_type && return_type == return_normal))
+	    {
+	      if (innermost_code == CALL_EXPR)
+		cp_pedwarn ("return-type of `%D' defaults to `int'", dname);
+	      else
+		cp_pedwarn ("ANSI C++ forbids declaration `%D' with no type",
+			    dname);
+	    }
 	  type = integer_type_node;
 	}
     }
