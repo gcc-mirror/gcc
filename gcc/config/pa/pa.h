@@ -101,6 +101,10 @@ extern int target_flags;
 
 #define TARGET_SOFT_FLOAT (target_flags & 256)
 
+/* Use 3-insn load/store sequences for access to large data segments
+   in shared libraries on hpux10.  */
+#define TARGET_LONG_LOAD_STORE (target_flags & 512)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -126,6 +130,8 @@ extern int target_flags;
    {"no-gas", -128},		\
    {"soft-float", 256},		\
    {"no-soft-float", -256},	\
+   {"long-load-store", 512},	\
+   {"no-long-load-store", -512},\
    {"linker-opt", 0},		\
    { "", TARGET_DEFAULT}}
 

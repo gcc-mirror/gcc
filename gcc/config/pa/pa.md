@@ -1693,9 +1693,19 @@
    && ! function_label_operand (operands[1])
    && ! read_only_operand (operands[1])
    && ! flag_pic"
-  "addil LR'%H1,%%r27"
+  "*
+{
+  if (TARGET_LONG_LOAD_STORE)
+    return \"addil NLR'%H1,%%r27\;ldo N'%H1(%%r1),%%r1\";
+  else
+    return \"addil LR'%H1,%%r27\";
+}"
   [(set_attr "type" "binary")
-   (set_attr "length" "4")])
+   (set (attr "length")
+      (if_then_else (eq (symbol_ref "TARGET_LONG_LOAD_STORE") (const_int 0))
+		    (const_int 4)
+		    (const_int 8)))])
+
 
 ;; This is for use in the prologue/epilogue code.  We need it
 ;; to add large constants to a stack pointer or frame pointer.
