@@ -146,13 +146,6 @@ esac
 # but thst's really meant for building the library itself, not using it)
 CXXFLAGS="-ggdb3 -DDEBUG_ASSERT @SECTION_FLAGS@ @SECTION_LDFLAGS@"
 
-# specific libtool flag(s) to force the use of shared libraries, if any
-SH_FLAGS=
-
-# specific libtool flag(s) to force the use of static libraries, if any
-ST_FLAGS="-static"
-#ST_FLAGS="-all-static"
-
 # LTCXX == how to call libtool when creating an executable
 # LIBS == any extra needed -l switches, etc (may need more libs, lose lose)
 case ${query} in

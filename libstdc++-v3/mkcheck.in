@@ -56,6 +56,13 @@ set `./tests_flags ${query} $*` || exit 1
 BUILD_DIR=$1; SRC_DIR=$2; PREFIX_DIR=$3; LTCXX=$4; LIBS=$5; LTEXE=$6; CXX=$7; CXXFLAGS=$8;
 IFS=$saved_ifs
 
+# specific libtool flag(s) to force the use of shared libraries, if any
+SH_FLAGS=
+
+# specific libtool flag(s) to force the use of static libraries, if any
+ST_FLAGS="-static"
+#ST_FLAGS="-all-static"
+
 # Set up the testing directory, which should be in a directory called
 # "testsuite" in the root level of the build directory.
 TEST_DIR="`pwd`/testsuite"

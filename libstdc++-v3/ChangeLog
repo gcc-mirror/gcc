@@ -1,5 +1,10 @@
 2000-11-29  Gabriel Dos Reis  <gdr@codesourcery.com>
 
+	* tests_flags (SH_FLAGS, ST_FLAGS): Move them back to ...
+	* mkcheck.in (SH_FLAGS, ST_FLAGS): ...here
+
+2000-11-29  Gabriel Dos Reis  <gdr@codesourcery.com>
+
 	* src/Makefile.am (sources): Add bitset.cc
 	* src/Makefile.in: Regenrate.
 
