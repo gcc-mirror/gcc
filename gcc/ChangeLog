@@ -1,3 +1,10 @@
+2003-07-31  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* configure.in (gcc_cv_ld_hidden): Also disable on mips-sgi-irix5*
+	without GNU ld.
+	Update comment.
+	* configure: Regenerate.
+
 2003-07-31  Vladimir Makarov  <vmakarov@redhat.com>
 
         * sched-deps.c (sched_analyze_2): Prevent interblock move of CC0
