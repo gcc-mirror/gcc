@@ -1,3 +1,13 @@
+2003-12-11  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	Backport from mainline:
+
+	2003-12-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/12965
+	* caller-save.c (save_call_clobbered_regs): Do not save/restore
+	registers around no-return calls.
+
 2003-12-10  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* emit-rtl.c (copy_rtx_if_shared_1): Fix warning.

@@ -407,7 +407,7 @@ save_call_clobbered_regs ()
 		  regno += insert_restore (chain, 1, regno, MOVE_MAX_WORDS, save_mode);
 	    }
 
-	  if (code == CALL_INSN)
+	  if (code == CALL_INSN && ! find_reg_note (insn, REG_NORETURN, NULL))
 	    {
 	      int regno;
 	      HARD_REG_SET hard_regs_to_save;
