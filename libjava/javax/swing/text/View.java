@@ -40,7 +40,7 @@ package javax.swing.text;
 import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.Shape;
-import java.util.Vector;
+
 import javax.swing.SwingConstants;
 
 public abstract class View implements SwingConstants

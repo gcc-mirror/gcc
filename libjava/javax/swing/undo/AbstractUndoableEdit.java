@@ -1,5 +1,5 @@
-/* AbstractUndoableEdit.java
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+/* AbstractUndoableEdit.java --
+   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,8 +39,8 @@ exception statement from your version. */
 package javax.swing.undo;
 
 import java.io.Serializable;
-import javax.swing.UIManager;
 
+import javax.swing.UIManager;
 
 /**
  * A default implementation of <code>UndoableEdit</code> that can be

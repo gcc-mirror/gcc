@@ -1,5 +1,5 @@
-/* ComponentUI.java
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+/* ComponentUI.java --
+   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,9 +40,9 @@ package javax.swing.plaf;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
+
 import javax.accessibility.Accessible;
 import javax.swing.JComponent;
-
 
 /**
  * The abstract base class for all delegates that provide the

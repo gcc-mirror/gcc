@@ -39,7 +39,8 @@ exception statement from your version. */
 #include "gtkpeer.h"
 #include "gnu_java_awt_peer_gtk_GtkCanvasPeer.h"
 
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkCanvasPeer_create
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkCanvasPeer_create
   (JNIEnv *env, jobject obj)
 {
   gpointer widget;

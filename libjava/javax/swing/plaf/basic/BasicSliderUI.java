@@ -1,4 +1,4 @@
-/* BasicSliderUI.java
+/* BasicSliderUI.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.plaf.basic;
 
 import java.awt.Color;
@@ -58,6 +59,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Dictionary;
 import java.util.Enumeration;
+
 import javax.swing.BoundedRangeModel;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -71,7 +73,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.SliderUI;
-
 
 /**
  * <p>
@@ -320,7 +321,7 @@ public class BasicSliderUI extends SliderUI
   /**
    * Helper class that listens for mouse events.
    */
-  protected class TrackListener extends MouseInputAdapter
+  public class TrackListener extends MouseInputAdapter
   {
     /** The current X position of the mouse. */
     protected int currentMouseX;
@@ -1955,10 +1956,10 @@ public class BasicSliderUI extends SliderUI
       }
 
     g.setColor(Color.WHITE);
-    g.drawPolygon(bright);
+    g.drawPolyline(bright.xpoints, bright.ypoints, bright.npoints);
 
     g.setColor(Color.BLACK);
-    g.drawPolygon(dark);
+    g.drawPolyline(dark.xpoints, dark.ypoints, dark.npoints);
 
     g.setColor(Color.GRAY);
     g.fillPolygon(all);

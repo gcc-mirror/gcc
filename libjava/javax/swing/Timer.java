@@ -35,14 +35,15 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.Serializable;
 import java.util.EventListener;
-import javax.swing.event.EventListenerList;
 
+import javax.swing.event.EventListenerList;
 
 /**
  * DOCUMENT ME!

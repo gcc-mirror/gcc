@@ -35,12 +35,13 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.plaf.basic;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.io.Serializable;
+
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
@@ -50,7 +51,6 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.UIResource;
-
 
 /**
  * This class is renderer for the combo box. 

@@ -44,33 +44,30 @@ Java_gnu_java_awt_peer_gtk_GtkLabelPeer_create
   (JNIEnv *env, jobject obj, jstring text, jfloat xalign)
 {
   GtkWidget *label;
-  GtkWidget *ebox;
-  GtkContainer *ebox_container;
+  GtkWidget *eventbox;
   const char *str;
 
-  /* Create global reference and save it for future use */
   NSA_SET_GLOBAL_REF (env, obj);
 
   str = (*env)->GetStringUTFChars (env, text, 0);
 
   gdk_threads_enter ();
 
-  ebox = gtk_event_box_new ();
-  ebox_container = GTK_CONTAINER (ebox);
+  eventbox = gtk_event_box_new ();
   label = gtk_label_new (str);
   gtk_misc_set_alignment (GTK_MISC (label), xalign, 0.5);
-  gtk_container_add (ebox_container, label);
+  gtk_container_add (GTK_CONTAINER (eventbox), label);
   gtk_widget_show (label);
 
   gdk_threads_leave ();
 
   (*env)->ReleaseStringUTFChars (env, text, str);
 
-  NSA_SET_PTR (env, obj, ebox);
+  NSA_SET_PTR (env, obj, eventbox);
 }
 
 JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_GtkLabelPeer_gtkSetFont
+Java_gnu_java_awt_peer_gtk_GtkLabelPeer_gtkWidgetModifyFont
   (JNIEnv *env, jobject obj, jstring name, jint style, jint size)
 {
   const char *font_name;
@@ -121,7 +118,7 @@ Java_gnu_java_awt_peer_gtk_GtkLabelPeer_setText
 
   gdk_threads_enter ();
 
-  label = gtk_bin_get_child (GTK_BIN(ptr));
+  label = gtk_bin_get_child (GTK_BIN (ptr));
 
   gtk_label_set_label (GTK_LABEL (label), str);
 
@@ -144,6 +141,39 @@ Java_gnu_java_awt_peer_gtk_GtkLabelPeer_nativeSetAlignment
   label = gtk_bin_get_child (GTK_BIN(ptr));
 
   gtk_misc_set_alignment (GTK_MISC (label), xalign, 0.5);
+
+  gdk_threads_leave ();
+}
+
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkLabelPeer_setNativeBounds
+  (JNIEnv *env, jobject obj, jint x, jint y, jint width, jint height)
+{
+  GtkWidget *widget;
+  void *ptr;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  gdk_threads_enter ();
+
+  widget = GTK_WIDGET (ptr);
+
+  /* We assume that -1 is a width or height and not a request for the
+     widget's natural size. */
+  width = width < 0 ? 0 : width;
+  height = height < 0 ? 0 : height;
+
+  if (!(width == 0 && height == 0))
+    {
+      /* Set the event box's size request... */
+      gtk_widget_set_size_request (widget, width, height);
+      /* ...and the label's size request. */
+      gtk_widget_set_size_request (gtk_bin_get_child (GTK_BIN (widget)),
+                                   width, height);
+
+      if (widget->parent != NULL)
+        gtk_fixed_move (GTK_FIXED (widget->parent), widget, x, y);
+    }
 
   gdk_threads_leave ();
 }

@@ -1,4 +1,5 @@
-/* Copyright (C) 1999, 2000, 2002  Free Software Foundation
+/* Canvas.java --
+   Copyright (C) 1999, 2000, 2002, 2004  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -37,17 +38,61 @@ exception statement from your version. */
 
 package java.awt;
 
+import java.awt.image.BufferStrategy;
 import java.awt.peer.ComponentPeer;
+import java.io.Serializable;
 
-public class Canvas extends Component implements java.io.Serializable
+import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleRole;
+
+/**
+ * The <code>Canvas</code> component provides a blank rectangular
+ * area, which the client application can use for drawing and for
+ * capturing events.  By overriding the <code>paint()</code> method,
+ * the canvas can be used for anything from simple line drawings to
+ * full-scale custom components.
+ *
+ * @author Original author unknown
+ * @author Tom Tromey  <tromey@redhat.com>
+ * @author Andrew John Hughes  <gnu_andrew@member.fsf.org>
+ * @since 1.0
+ */
+
+public class Canvas
+  extends Component
+  implements Serializable, Accessible
 {
+
+  /**
+   * Compatible with Sun's JDK.
+   */
+  private static final long serialVersionUID = -2284879212465893870L;
+
+  /**
+   * The graphics configuration associated with the canvas.
+   */
   transient GraphicsConfiguration graphicsConfiguration;
+
+  /**
+   * The buffer strategy associated with this canvas.
+   */
+  transient BufferStrategy bufferStrategy;
 
   /**
    * Initializes a new instance of <code>Canvas</code>.
    */
-  public Canvas() { }
+  public Canvas() 
+  { 
+  }
 
+  /**
+   * Initializes a new instance of <code>Canvas</code>
+   * with the supplied graphics configuration.
+   *
+   * @param graphicsConfiguration the graphics configuration to use
+   *        for this particular canvas.
+   */
   public Canvas(GraphicsConfiguration graphicsConfiguration)
   {
     this.graphicsConfiguration = graphicsConfiguration;
@@ -71,9 +116,11 @@ public class Canvas extends Component implements java.io.Serializable
   }
 
   /**
-   * Repaints the canvas window.  This method should be overriden by 
+   * Repaints the canvas window.  This method should be overridden by 
    * a subclass to do something useful, as this method simply paints
    * the window with the background color.
+   *
+   * @param gfx the <code>Graphics</code> to use for painting
    */
   public void paint(Graphics gfx)
   {
@@ -86,6 +133,86 @@ public class Canvas extends Component implements java.io.Serializable
     gfx.fillRect(0, 0, size.width, size.height);
   }
 
-  // Serialization constant
-  private static final long serialVersionUID = -2284879212465893870L;
+  /**
+   * This class provides accessibility support for the canvas.
+   */
+  protected class AccessibleAWTCanvas
+    extends AccessibleAWTComponent
+  {
+    /**
+     * For compatability with Sun's JDK
+     */
+    private static final long serialVersionUID = -6325592262103146699L;
+
+    /**
+     * Constructor for the accessible canvas.
+     */
+    protected AccessibleAWTCanvas()
+    {
+    }
+
+    /**
+     * Returns the accessible role for the canvas.
+     *
+     * @return an instance of <code>AccessibleRole</code>, describing
+     *         the role of the canvas.
+     */
+    public AccessibleRole getAccessibleRole()
+    {
+      return AccessibleRole.CANVAS;
+    }
+    
+  }
+
+  /**
+   * Gets the AccessibleContext associated with this <code>Canvas</code>.
+   * The context is created, if necessary.
+   *
+   * @return the associated context
+   */
+  public AccessibleContext getAccessibleContext()
+  {
+    /* Create the context if this is the first request */
+    if (accessibleContext == null)
+      {
+        /* Create the context */
+        accessibleContext = new AccessibleAWTCanvas();
+      }
+    return accessibleContext;
+  }
+
+  /**
+   * Returns the buffer strategy used by the canvas.
+   *
+   * @return the buffer strategy.
+   * @since 1.4
+   */
+  public BufferStrategy getBufferStrategy()
+  {
+    return bufferStrategy;
+  }
+
+  /**
+   * Updates the canvas in response to a request to
+   * <code>repaint()</code> it.  The canvas is cleared
+   * with the current background colour, before <code>paint()</code>
+   * is called to add the new contents.  Subclasses
+   * which override this method should either call this
+   * method via <code>super.update(graphics)</code> or re-implement
+   * this behaviour, so as to ensure that the canvas is
+   * clear before painting takes place.
+   *
+   * @param graphics the graphics context.
+   */
+  public void update(Graphics graphics)
+  {
+    Dimension size;
+
+    /* Clear the canvas */
+    size = getSize();
+    graphics.clearRect(0, 0, size.width, size.height);
+    /* Call the paint method */
+    paint(graphics);
+  }
+
 }

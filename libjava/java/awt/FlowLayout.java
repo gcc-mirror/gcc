@@ -1,6 +1,5 @@
-// FlowLayout.java - Grid-based layout engine
-
-/* Copyright (C) 1999, 2000, 2001, 2002  Free Software Foundation
+/* FlowLayout.java -- Grid-based layout engine
+   Copyright (C) 1999, 2000, 2001, 2002, 2004  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -47,7 +46,7 @@ import java.io.Serializable;
  * supports horizontal and vertical gaps.  These are used for spacing
  * between components.
  *
- * @author Tom Tromey <tromey@redhat.com>
+ * @author Tom Tromey (tromey@redhat.com)
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
 public class FlowLayout implements LayoutManager, Serializable
@@ -69,8 +68,12 @@ public class FlowLayout implements LayoutManager, Serializable
   // Serialization constant
   private static final long serialVersionUID = -7262534875583282631L;
 
-  /** Add a new component to the layout.  This particular implementation
+  /**
+   * Add a new component to the layout.  This particular implementation
    * does nothing.
+   *
+   * @param name the name
+   * @param comp the component 
    */
   public void addLayoutComponent (String name, Component comp)
   {

@@ -1,5 +1,5 @@
 /* Button.java -- AWT button widget
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,13 +44,21 @@ import java.awt.peer.ButtonPeer;
 import java.lang.reflect.Array;
 import java.util.EventListener;
 
+import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleAction;
+import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleRelation;
+import javax.accessibility.AccessibleRole;
+import javax.accessibility.AccessibleValue;
+
 /**
   * This class provides a button widget for the AWT. 
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   * @author Tom Tromey <tromey@cygnus.com>
   */
-public class Button extends Component implements java.io.Serializable
+public class Button extends Component
+  implements java.io.Serializable, Accessible
 {
 
 /*
@@ -84,7 +92,102 @@ private transient ActionListener action_listeners;
   /*
    * The number used to generate the name returned by getName.
    */
-  private static transient long next_button_number = 0;
+  private static transient long next_button_number;
+  
+  protected class AccessibleAWTButton extends AccessibleAWTComponent
+    implements AccessibleAction, AccessibleValue
+  {
+    protected AccessibleAWTButton() { }
+
+    /* (non-Javadoc)
+     * @see javax.accessibility.AccessibleAction#getAccessibleActionCount()
+     */
+    public int getAccessibleActionCount()
+    {
+      // Only 1 action possible
+      return 1;
+    }
+
+    /* (non-Javadoc)
+     * @see javax.accessibility.AccessibleAction#getAccessibleActionDescription(int)
+     */
+    public String getAccessibleActionDescription(int i)
+    {
+      // JDK 1.4.2 returns the string "click" for action 0.  However, the API
+      // docs don't say what the string to be returned is, beyond being a
+      // description of the action.  So we return the same thing for
+      // compatibility with 1.4.2.
+      if (i == 0)
+        return "click";
+      return null;
+    }
+
+    /* (non-Javadoc)
+     * @see javax.accessibility.AccessibleAction#doAccessibleAction(int)
+     */
+    public boolean doAccessibleAction(int i)
+    {
+      if (i != 0)
+        return false;
+      processActionEvent(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, actionCommand));
+      return true;
+    }
+    
+    public String getAccessibleName()
+    {
+      return label;
+    }
+    
+    public AccessibleAction getAccessibleAction()
+    {
+      return this;
+    }
+    
+    public AccessibleValue getAccessibleValue()
+    {
+      return this;
+    }
+
+    /* (non-Javadoc)
+     * @see javax.accessibility.AccessibleValue#getCurrentAccessibleValue()
+     */
+    public Number getCurrentAccessibleValue()
+    {
+      // Docs say return 1 if selected, but buttons can't be selected, right?
+      return new Integer(0);
+    }
+
+    /* (non-Javadoc)
+     * @see javax.accessibility.AccessibleValue#setCurrentAccessibleValue(java.lang.Number)
+     */
+    public boolean setCurrentAccessibleValue(Number number)
+    {
+      // Since there's no selection with buttons, we're ignoring this.
+      // TODO someone who knows shoulw check this.
+      return false;
+    }
+
+    /* (non-Javadoc)
+     * @see javax.accessibility.AccessibleValue#getMinimumAccessibleValue()
+     */
+    public Number getMinimumAccessibleValue()
+    {
+      return new Integer(0);
+    }
+
+    /* (non-Javadoc)
+     * @see javax.accessibility.AccessibleValue#getMaximumAccessibleValue()
+     */
+    public Number getMaximumAccessibleValue()
+    {
+      return new Integer(0);
+    }
+    
+    public AccessibleRole getAccessibleRole()
+    {
+      return AccessibleRole.PUSH_BUTTON;
+    }
+  }
 
 /*************************************************************************/
 
@@ -215,6 +318,13 @@ removeActionListener(ActionListener listener)
   action_listeners = AWTEventMulticaster.remove(action_listeners, listener);
 }
 
+  /**
+   * Returns all added <code>ActionListener</code> objects.
+   *
+   * @return an array of listeners
+   *
+   * @since 1.4
+   */
   public synchronized ActionListener[] getActionListeners()
   {
     return (ActionListener[])
@@ -222,10 +332,15 @@ removeActionListener(ActionListener listener)
                                        ActionListener.class);
   }
 
-/** Returns all registered EventListers of the given listenerType. 
+/**
+ * Returns all registered EventListers of the given listenerType. 
  * listenerType must be a subclass of EventListener, or a 
  * ClassClassException is thrown.
  *
+ * @param listenerType the listener type to return
+ *
+ * @return an array of listeners
+ * 
  * @exception ClassCastException If listenerType doesn't specify a class or
  * interface that implements @see java.util.EventListener.
  *
@@ -312,6 +427,11 @@ paramString()
 {
   return getName () + "," + getX () + "," + getY () + ","
     + getWidth () + "x" + getHeight () + ",label=" + getLabel ();
+}
+
+public AccessibleContext getAccessibleContext()
+{
+  return new AccessibleAWTButton();
 }
 
   /**

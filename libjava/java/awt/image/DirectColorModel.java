@@ -1,4 +1,5 @@
-/* Copyright (C) 1999, 2000, 2002  Free Software Foundation
+/* DirectColorModel.java --
+   Copyright (C) 1999, 2000, 2002, 2004  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -37,13 +38,14 @@ exception statement from your version. */
 
 package java.awt.image;
 
+import gnu.java.awt.Buffers;
+
 import java.awt.Point;
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
-import gnu.java.awt.Buffers;
 
 /**
- * @author Rolf W. Rasmussen <rolfwr@ii.uib.no>
+ * @author Rolf W. Rasmussen (rolfwr@ii.uib.no)
  * @author C. Brian Jones (cbj@gnu.org)
  * @author Mark Benvenuto (mcb54@columbia.edu)
  */
@@ -56,7 +58,7 @@ public class DirectColorModel extends PackedColorModel
    * most likely order of alpha, red, green, blue from the most significant
    * byte to the least significant byte.
    * 
-   * @param bits the number of bits wide used for bit size of pixel values
+   * @param pixelBits the number of bits wide used for bit size of pixel values
    * @param rmask the bits describing the red component of a pixel
    * @param gmask the bits describing the green component of a pixel
    * @param bmask the bits describing the blue component of a pixel 
@@ -77,7 +79,7 @@ public class DirectColorModel extends PackedColorModel
    * most likely order of red, green, blue from the most significant
    * byte to the least significant byte.
    * 
-   * @param bits the number of bits wide used for bit size of pixel values
+   * @param pixelBits the number of bits wide used for bit size of pixel values
    * @param rmask the bits describing the red component of a pixel
    * @param gmask the bits describing the green component of a pixel
    * @param bmask the bits describing the blue component of a pixel 
@@ -162,7 +164,7 @@ public class DirectColorModel extends PackedColorModel
     return extractAndScaleSample(pixel, 3);
   }
 
-  private final int extractAndNormalizeSample(int pixel, int component)
+  private int extractAndNormalizeSample(int pixel, int component)
   {
     int value = extractAndScaleSample(pixel, component);
     if (hasAlpha() && isAlphaPremultiplied())
@@ -170,7 +172,7 @@ public class DirectColorModel extends PackedColorModel
     return value;
   }
 
-  private final int extractAndScaleSample(int pixel, int component)
+  private int extractAndScaleSample(int pixel, int component)
   {
     int field = pixel & getMask(component);
     int to8BitShift =
@@ -303,7 +305,7 @@ public class DirectColorModel extends PackedColorModel
    * @param highBit the position of the most significant bit in the
    * val parameter.
    */
-  private final int valueToField(int val, int component, int highBit)
+  private int valueToField(int val, int component, int highBit)
   {
     int toFieldShift = 
       getComponentSize(component) + shifts[component] - highBit;
@@ -317,7 +319,7 @@ public class DirectColorModel extends PackedColorModel
    * Converts a 16 bit value to the correct field bits based on the
    * information derived from the field masks.
    */
-  private final int value16ToField(int val, int component)
+  private int value16ToField(int val, int component)
   {
     int toFieldShift = getComponentSize(component) + shifts[component] - 16;
     return (toFieldShift>0) ?

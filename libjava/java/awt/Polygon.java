@@ -1,5 +1,5 @@
 /* Polygon.java -- class representing a polygon
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,6 +39,7 @@ exception statement from your version. */
 package java.awt;
 
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Line2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -100,17 +101,8 @@ public class Polygon implements Shape, Serializable
    */
   protected Rectangle bounds;
 
-  /**
-   * Cached flattened version - condense points and parallel lines, so the
-   * result has area if there are >= 3 condensed vertices. flat[0] is the
-   * number of condensed points, and (flat[odd], flat[odd+1]) form the
-   * condensed points.
-   *
-   * @see #condense()
-   * @see #contains(double, double)
-   * @see #contains(double, double, double, double)
-   */
-  private transient int[] condensed;
+  /** A big number, but not so big it can't survive a few float operations */
+  private static final double BIG_VALUE = java.lang.Double.MAX_VALUE / 10.0;
 
   /**
    * Initializes an empty polygon.
@@ -168,7 +160,6 @@ public class Polygon implements Shape, Serializable
   public void invalidate()
   {
     bounds = null;
-    condensed = null;
   }
 
   /**
@@ -184,15 +175,14 @@ public class Polygon implements Shape, Serializable
     int i = npoints;
     while (--i >= 0)
       {
-        xpoints[i] += dx;
-        ypoints[i] += dy;
+	xpoints[i] += dx;
+	ypoints[i] += dy;
       }
     if (bounds != null)
       {
-        bounds.x += dx;
-        bounds.y += dy;
+	bounds.x += dx;
+	bounds.y += dy;
       }
-    condensed = null;
   }
 
   /**
@@ -206,45 +196,44 @@ public class Polygon implements Shape, Serializable
   {
     if (npoints + 1 > xpoints.length)
       {
-        int[] newx = new int[npoints + 1];
-        System.arraycopy(xpoints, 0, newx, 0, npoints);
-        xpoints = newx;
+	int[] newx = new int[npoints + 1];
+	System.arraycopy(xpoints, 0, newx, 0, npoints);
+	xpoints = newx;
       }
     if (npoints + 1 > ypoints.length)
       {
-        int[] newy = new int[npoints + 1];
-        System.arraycopy(ypoints, 0, newy, 0, npoints);
-        ypoints = newy;
+	int[] newy = new int[npoints + 1];
+	System.arraycopy(ypoints, 0, newy, 0, npoints);
+	ypoints = newy;
       }
     xpoints[npoints] = x;
     ypoints[npoints] = y;
     npoints++;
     if (bounds != null)
       {
-        if (npoints == 1)
-          {
-            bounds.x = x;
-            bounds.y = y;
-          }
-        else
-          {
-            if (x < bounds.x)
-              {
-                bounds.width += bounds.x - x;
-                bounds.x = x;
-              }
-            else if (x > bounds.x + bounds.width)
-              bounds.width = x - bounds.x;
-            if (y < bounds.y)
-              {
-                bounds.height += bounds.y - y;
-                bounds.y = y;
-              }
-            else if (y > bounds.y + bounds.height)
-              bounds.height = y - bounds.y;
-          }
+	if (npoints == 1)
+	  {
+	    bounds.x = x;
+	    bounds.y = y;
+	  }
+	else
+	  {
+	    if (x < bounds.x)
+	      {
+		bounds.width += bounds.x - x;
+		bounds.x = x;
+	      }
+	    else if (x > bounds.x + bounds.width)
+	      bounds.width = x - bounds.x;
+	    if (y < bounds.y)
+	      {
+		bounds.height += bounds.y - y;
+		bounds.y = y;
+	      }
+	    else if (y > bounds.y + bounds.height)
+	      bounds.height = y - bounds.y;
+	  }
       }
-    condensed = null;
   }
 
   /**
@@ -258,7 +247,7 @@ public class Polygon implements Shape, Serializable
    */
   public Rectangle getBounds()
   {
-    return getBoundingBox ();
+    return getBoundingBox();
   }
 
   /**
@@ -274,27 +263,27 @@ public class Polygon implements Shape, Serializable
   {
     if (bounds == null)
       {
-        if (npoints == 0)
-          return bounds = new Rectangle ();
-        int i = npoints - 1;
-        int minx = xpoints[i];
-        int maxx = minx;
-        int miny = ypoints[i];
-        int maxy = miny;
-        while (--i >= 0)
-          {
-            int x = xpoints[i];
-            int y = ypoints[i];
-            if (x < minx)
-              minx = x;
-            else if (x > maxx)
-              maxx = x;
-            if (y < miny)
-              miny = y;
-            else if (y > maxy)
-              maxy = y;
-          }
-        bounds = new Rectangle (minx, miny, maxx - minx, maxy - miny);
+	if (npoints == 0)
+	  return bounds = new Rectangle();
+	int i = npoints - 1;
+	int minx = xpoints[i];
+	int maxx = minx;
+	int miny = ypoints[i];
+	int maxy = miny;
+	while (--i >= 0)
+	  {
+	    int x = xpoints[i];
+	    int y = ypoints[i];
+	    if (x < minx)
+	      minx = x;
+	    else if (x > maxx)
+	      maxx = x;
+	    if (y < miny)
+	      miny = y;
+	    else if (y > maxy)
+	      maxy = y;
+	  }
+	bounds = new Rectangle(minx, miny, maxx - minx, maxy - miny);
       }
     return bounds;
   }
@@ -365,64 +354,7 @@ public class Polygon implements Shape, Serializable
    */
   public boolean contains(double x, double y)
   {
-    // First, the obvious bounds checks.
-    if (! condense() || ! getBounds().contains(x, y))
-      return false;
-    // A point is contained if a ray to (-inf, y) crosses an odd number
-    // of segments. This must obey the semantics of Shape when the point is
-    // exactly on a segment or vertex: a point is inside only if the adjacent
-    // point in the increasing x or y direction is also inside. Note that we
-    // are guaranteed that the condensed polygon has area, and no consecutive
-    // segments with identical slope.
-    boolean inside = false;
-    int limit = condensed[0];
-    int curx = condensed[(limit << 1) - 1];
-    int cury = condensed[limit << 1];
-    for (int i = 1; i <= limit; i++)
-      {
-        int priorx = curx;
-        int priory = cury;
-        curx = condensed[(i << 1) - 1];
-        cury = condensed[i << 1];
-        if ((priorx > x && curx > x) // Left of segment, or NaN.
-            || (priory > y && cury > y) // Below segment, or NaN.
-            || (priory < y && cury < y)) // Above segment.
-          continue;
-        if (priory == cury) // Horizontal segment, y == cury == priory
-          {
-            if (priorx < x && curx < x) // Right of segment.
-              {
-                inside = ! inside;
-                continue;
-              }
-            // Did we approach this segment from above or below?
-            // This mess is necessary to obey rules of Shape.
-            priory = condensed[((limit + i - 2) % limit) << 1];
-            boolean above = priory > cury;
-            if ((curx == x && (curx > priorx || above))
-                || (priorx == x && (curx < priorx || ! above))
-                || (curx > priorx && ! above) || above)
-              inside = ! inside;
-            continue;
-          }
-        if (priorx == x && priory == y) // On prior vertex.
-          continue;
-        if (priorx == curx // Vertical segment.
-            || (priorx < x && curx < x)) // Right of segment.
-          {
-            inside = ! inside;
-            continue;
-          }
-        // The point is inside the segment's bounding box, compare slopes.
-        double leftx = curx > priorx ? priorx : curx;
-        double lefty = curx > priorx ? priory : cury;
-        double slopeseg = (double) (cury - priory) / (curx - priorx);
-        double slopepoint = (double) (y - lefty) / (x - leftx);
-        if ((slopeseg > 0 && slopeseg > slopepoint)
-            || slopeseg < slopepoint)
-          inside = ! inside;
-      }
-    return inside;
+    return ((evaluateCrossings(x, y, false, BIG_VALUE) & 1) != 0);
   }
 
   /**
@@ -453,67 +385,17 @@ public class Polygon implements Shape, Serializable
    */
   public boolean intersects(double x, double y, double w, double h)
   {
-    // First, the obvious bounds checks.
-    if (w <= 0 || h <= 0 || npoints == 0 ||
-        ! getBounds().intersects(x, y, w, h))
-      return false; // Disjoint bounds.
-    if ((x <= bounds.x && x + w >= bounds.x + bounds.width
-         && y <= bounds.y && y + h >= bounds.y + bounds.height)
-        || contains(x, y))
-      return true; // Rectangle contains the polygon, or one point matches.
-    // If any vertex is in the rectangle, the two might intersect.
-    int curx = 0;
-    int cury = 0;
-    for (int i = 0; i < npoints; i++)
-      {
-        curx = xpoints[i];
-        cury = ypoints[i];
-        if (curx >= x && curx < x + w && cury >= y && cury < y + h
-            && contains(curx, cury)) // Boundary check necessary.
-          return true;
-      }
-    // Finally, if at least one of the four bounding lines intersect any
-    // segment of the polygon, return true. Be careful of the semantics of
-    // Shape; coinciding lines do not necessarily return true.
-    for (int i = 0; i < npoints; i++)
-      {
-        int priorx = curx;
-        int priory = cury;
-        curx = xpoints[i];
-        cury = ypoints[i];
-        if (priorx == curx) // Vertical segment.
-          {
-            if (curx < x || curx >= x + w) // Outside rectangle.
-              continue;
-            if ((cury >= y + h && priory <= y)
-                || (cury <= y && priory >= y + h))
-              return true; // Bisects rectangle.
-            continue;
-          }
-        if (priory == cury) // Horizontal segment.
-          {
-            if (cury < y || cury >= y + h) // Outside rectangle.
-              continue;
-            if ((curx >= x + w && priorx <= x)
-                || (curx <= x && priorx >= x + w))
-              return true; // Bisects rectangle.
-            continue;
-          }
-        // Slanted segment.
-        double slope = (double) (cury - priory) / (curx - priorx);
-        double intersect = slope * (x - curx) + cury;
-        if (intersect > y && intersect < y + h) // Intersects left edge.
-          return true;
-        intersect = slope * (x + w - curx) + cury;
-        if (intersect > y && intersect < y + h) // Intersects right edge.
-          return true;
-        intersect = (y - cury) / slope + curx;
-        if (intersect > x && intersect < x + w) // Intersects bottom edge.
-          return true;
-        intersect = (y + h - cury) / slope + cury;
-        if (intersect > x && intersect < x + w) // Intersects top edge.
-          return true;
-      }
+    /* Does any edge intersect? */
+    if (evaluateCrossings(x, y, false, w) != 0 /* top */
+        || evaluateCrossings(x, y + h, false, w) != 0 /* bottom */
+        || evaluateCrossings(x + w, y, true, h) != 0 /* right */
+        || evaluateCrossings(x, y, true, h) != 0) /* left */
+      return true;
+
+    /* No intersections, is any point inside? */
+    if ((evaluateCrossings(x, y, false, BIG_VALUE) & 1) != 0)
+      return true;
+
     return false;
   }
 
@@ -547,59 +429,21 @@ public class Polygon implements Shape, Serializable
    */
   public boolean contains(double x, double y, double w, double h)
   {
-    // First, the obvious bounds checks.
-    if (w <= 0 || h <= 0 || ! contains(x, y)
-        || ! bounds.contains(x, y, w, h))
+    if (! getBounds2D().intersects(x, y, w, h))
       return false;
-    // Now, if any of the four bounding lines intersects a polygon segment,
-    // return false. The previous check had the side effect of setting
-    // the condensed array, which we use. Be careful of the semantics of
-    // Shape; coinciding lines do not necessarily return false.
-    int limit = condensed[0];
-    int curx = condensed[(limit << 1) - 1];
-    int cury = condensed[limit << 1];
-    for (int i = 1; i <= limit; i++)
-      {
-        int priorx = curx;
-        int priory = cury;
-        curx = condensed[(i << 1) - 1];
-        cury = condensed[i << 1];
-        if (curx > x && curx < x + w && cury > y && cury < y + h)
-          return false; // Vertex is in rectangle.
-        if (priorx == curx) // Vertical segment.
-          {
-            if (curx < x || curx > x + w) // Outside rectangle.
-              continue;
-            if ((cury >= y + h && priory <= y)
-                || (cury <= y && priory >= y + h))
-              return false; // Bisects rectangle.
-            continue;
-          }
-        if (priory == cury) // Horizontal segment.
-          {
-            if (cury < y || cury > y + h) // Outside rectangle.
-              continue;
-            if ((curx >= x + w && priorx <= x)
-                || (curx <= x && priorx >= x + w))
-              return false; // Bisects rectangle.
-            continue;
-          }
-        // Slanted segment.
-        double slope = (double) (cury - priory) / (curx - priorx);
-        double intersect = slope * (x - curx) + cury;
-        if (intersect > y && intersect < y + h) // Intersects left edge.
-          return false;
-        intersect = slope * (x + w - curx) + cury;
-        if (intersect > y && intersect < y + h) // Intersects right edge.
-          return false;
-        intersect = (y - cury) / slope + curx;
-        if (intersect > x && intersect < x + w) // Intersects bottom edge.
-          return false;
-        intersect = (y + h - cury) / slope + cury;
-        if (intersect > x && intersect < x + w) // Intersects top edge.
-          return false;
-      }
-    return true;
+
+    /* Does any edge intersect? */
+    if (evaluateCrossings(x, y, false, w) != 0 /* top */
+        || evaluateCrossings(x, y + h, false, w) != 0 /* bottom */
+        || evaluateCrossings(x + w, y, true, h) != 0 /* right */
+        || evaluateCrossings(x, y, true, h) != 0) /* left */
+      return false;
+
+    /* No intersections, is any point inside? */
+    if ((evaluateCrossings(x, y, false, BIG_VALUE) & 1) != 0)
+      return true;
+
+    return false;
   }
 
   /**
@@ -631,47 +475,47 @@ public class Polygon implements Shape, Serializable
   public PathIterator getPathIterator(final AffineTransform transform)
   {
     return new PathIterator()
-    {
-      /** The current vertex of iteration. */
-      private int vertex;
-
-      public int getWindingRule()
       {
-        return WIND_EVEN_ODD;
-      }
+	/** The current vertex of iteration. */
+	private int vertex;
 
-      public boolean isDone()
-      {
-        return vertex > npoints;
-      }
+	public int getWindingRule()
+	{
+	  return WIND_EVEN_ODD;
+	}
 
-      public void next()
-      {
-        vertex++;
-      }
+	public boolean isDone()
+	{
+	  return vertex > npoints;
+	}
 
-      public int currentSegment(float[] coords)
-      {
-        if (vertex >= npoints)
-          return SEG_CLOSE;
-        coords[0] = xpoints[vertex];
-        coords[1] = ypoints[vertex];
-        if (transform != null)
-          transform.transform(coords, 0, coords, 0, 1);
-        return vertex == 0 ? SEG_MOVETO : SEG_LINETO;
-      }
+	public void next()
+	{
+	  vertex++;
+	}
 
-      public int currentSegment(double[] coords)
-      {
-        if (vertex >= npoints)
-          return SEG_CLOSE;
-        coords[0] = xpoints[vertex];
-        coords[1] = ypoints[vertex];
-        if (transform != null)
-          transform.transform(coords, 0, coords, 0, 1);
-        return vertex == 0 ? SEG_MOVETO : SEG_LINETO;
-      }
-    };
+	public int currentSegment(float[] coords)
+	{
+	  if (vertex >= npoints)
+	    return SEG_CLOSE;
+	  coords[0] = xpoints[vertex];
+	  coords[1] = ypoints[vertex];
+	  if (transform != null)
+	    transform.transform(coords, 0, coords, 0, 1);
+	  return vertex == 0 ? SEG_MOVETO : SEG_LINETO;
+	}
+
+	public int currentSegment(double[] coords)
+	{
+	  if (vertex >= npoints)
+	    return SEG_CLOSE;
+	  coords[0] = xpoints[vertex];
+	  coords[1] = ypoints[vertex];
+	  if (transform != null)
+	    transform.transform(coords, 0, coords, 0, 1);
+	  return vertex == 0 ? SEG_MOVETO : SEG_LINETO;
+	}
+      };
   }
 
   /**
@@ -684,7 +528,7 @@ public class Polygon implements Shape, Serializable
    * path iterator is not either.
    *
    * @param transform an optional transform to apply to the iterator
-   * @param double the maximum distance for deviation from the real boundary
+   * @param flatness the maximum distance for deviation from the real boundary
    * @return a new iterator over the boundary
    * @since 1.2
    */
@@ -695,57 +539,75 @@ public class Polygon implements Shape, Serializable
   }
 
   /**
-   * Helper for contains, which caches a condensed version of the polygon.
-   * This condenses all colinear points, so that consecutive segments in
-   * the condensed version always have different slope.
+   * Helper for contains, intersects, calculates the number of intersections
+   * between the polygon and a line extending from the point (x, y) along
+   * the positive X, or Y axis, within a given interval.
    *
-   * @return true if the condensed polygon has area
+   * @return the winding number.
    * @see #condensed
    * @see #contains(double, double)
    */
-  private boolean condense()
+  private int evaluateCrossings(double x, double y, boolean useYaxis,
+                                double distance)
   {
-    if (npoints <= 2)
-      return false;
-    if (condensed != null)
-      return condensed[0] > 2;
-    condensed = new int[npoints * 2 + 1];
-    int curx = xpoints[npoints - 1];
-    int cury = ypoints[npoints - 1];
-    double curslope = Double.NaN;
-    int count = 0;
-  outer:
-    for (int i = 0; i < npoints; i++)
+    double x0;
+    double x1;
+    double y0;
+    double y1;
+    double epsilon = 0.0;
+    int crossings = 0;
+    int[] xp;
+    int[] yp;
+
+    if (useYaxis)
       {
-        int priorx = curx;
-        int priory = cury;
-        double priorslope = curslope;
-        curx = xpoints[i];
-        cury = ypoints[i];
-        while (curx == priorx && cury == priory)
-          {
-            if (++i == npoints)
-              break outer;
-            curx = xpoints[i];
-            cury = ypoints[i];
-          }
-        curslope = (curx == priorx ? Double.POSITIVE_INFINITY
-                    : (double) (cury - priory) / (curx - priorx));
-        if (priorslope == curslope)
-          {
-            if (count > 1 && condensed[(count << 1) - 3] == curx
-                && condensed[(count << 1) - 2] == cury)
-              {
-                count--;
-                continue;
-              }
-          }
-        else
-          count++;
-        condensed[(count << 1) - 1] = curx;
-        condensed[count << 1] = cury;
+	xp = ypoints;
+	yp = xpoints;
+	double swap;
+	swap = y;
+	y = x;
+	x = swap;
       }
-    condensed[0] = count;
-    return count > 2;
+    else
+      {
+	xp = xpoints;
+	yp = ypoints;
+      }
+
+    /* Get a value which is small but not insignificant relative the path. */
+    epsilon = 1E-7;
+
+    x0 = xp[0] - x;
+    y0 = yp[0] - y;
+    for (int i = 1; i < npoints; i++)
+      {
+	x1 = xp[i] - x;
+	y1 = yp[i] - y;
+
+	if (y0 == 0.0)
+	  y0 -= epsilon;
+	if (y1 == 0.0)
+	  y1 -= epsilon;
+	if (y0 * y1 < 0)
+	  if (Line2D.linesIntersect(x0, y0, x1, y1, epsilon, 0.0, distance, 0.0))
+	    ++crossings;
+
+	x0 = xp[i] - x;
+	y0 = yp[i] - y;
+      }
+
+    // end segment
+    x1 = xp[0] - x;
+    y1 = yp[0] - y;
+    if (y0 == 0.0)
+      y0 -= epsilon;
+    if (y1 == 0.0)
+      y1 -= epsilon;
+    if (y0 * y1 < 0)
+      if (Line2D.linesIntersect(x0, y0, x1, y1, epsilon, 0.0, distance, 0.0))
+	++crossings;
+
+    return crossings;
   }
 } // class Polygon
+

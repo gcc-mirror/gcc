@@ -1,5 +1,5 @@
 /* GtkFontPeer.java -- Implements FontPeer with GTK+
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,20 +37,25 @@ exception statement from your version. */
 
 
 package gnu.java.awt.peer.gtk;
-import java.awt.peer.FontPeer;
-import java.awt.*;
-import java.awt.geom.*;
-import java.awt.font.*;
-import java.util.Locale;
-import java.util.ResourceBundle;
-import java.util.MissingResourceException;
-import java.text.*;
+
 import gnu.java.awt.peer.ClasspathFontPeer;
+
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
+import java.awt.font.LineMetrics;
+import java.awt.geom.Rectangle2D;
+import java.awt.peer.FontPeer;
+import java.text.CharacterIterator;
+import java.util.Locale;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 
 public class GtkFontPeer extends ClasspathFontPeer
 {
   private static ResourceBundle bundle;
-  
+
   static
   {
     try

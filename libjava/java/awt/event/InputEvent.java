@@ -1,5 +1,5 @@
 /* InputEvent.java -- common superclass of component input events
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,8 +38,9 @@ exception statement from your version. */
 
 package java.awt.event;
 
-import java.awt.Component;
 import gnu.java.awt.EventModifier;
+
+import java.awt.Component;
 
 /**
  * This is the common superclass for all component input classes. These are
@@ -349,6 +350,7 @@ public abstract class InputEvent extends ComponentEvent
    * XXX Sun claims this can be localized via the awt.properties file - how
    * do we implement that?
    *
+   * @param modifiers the modifiers
    * @return a string representation of the modifiers in this bitmask
    * @since 1.4
    */

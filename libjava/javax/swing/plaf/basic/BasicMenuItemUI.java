@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.plaf.basic;
 
 import java.awt.Color;
@@ -45,26 +46,21 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
-import java.awt.Stroke;
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Vector;
-import javax.swing.AbstractButton;
-import javax.swing.ButtonModel;
+
 import javax.swing.Icon;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.JRadioButtonMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.MenuElement;
 import javax.swing.MenuSelectionManager;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
@@ -75,7 +71,6 @@ import javax.swing.event.MenuKeyListener;
 import javax.swing.event.MouseInputListener;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.MenuItemUI;
-
 
 /**
  * UI Delegate for JMenuItem.
@@ -398,6 +393,9 @@ public class BasicMenuItemUI extends MenuItemUI
     selectionBackground = defaults.getColor("MenuItem.selectionBackground");
     selectionForeground = defaults.getColor("MenuItem.selectionForeground");
     acceleratorDelimiter = defaults.getString("MenuItem.acceleratorDelimiter");
+
+    menuItem.setHorizontalTextPosition(SwingConstants.TRAILING);
+    menuItem.setHorizontalAlignment(SwingConstants.LEADING);
   }
 
   /**
@@ -557,23 +555,14 @@ public class BasicMenuItemUI extends MenuItemUI
 	  }
       }
 
-    // paint icon
-    // FIXME: should paint different icon at different button state's.
-    // i.e disabled icon when button is disabled.. etc.
-    Icon i = m.getIcon();
-    if (i != null)
-      {
-	i.paintIcon(c, g, vr.x, vr.y);
-
-	// Adjust view rectangle, s.t text would be drawn after menu item's icon.
-	vr.x += i.getIconWidth() + defaultTextIconGap;
-      }
-
     // paint text and user menu icon if it exists	     
-    SwingUtilities.layoutCompoundLabel(c, fm, m.getText(), m.getIcon(),
+    Icon i = m.getIcon();
+    SwingUtilities.layoutCompoundLabel(c, fm, m.getText(), i,
                                        vertAlign, horAlign, vertTextPos,
                                        horTextPos, vr, ir, tr,
                                        defaultTextIconGap);
+    if (i != null)
+      i.paintIcon(c, g, ir.x, ir.y);
 
     paintText(g, m, tr, m.getText());
 

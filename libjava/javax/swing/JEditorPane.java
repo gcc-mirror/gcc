@@ -35,12 +35,13 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 
 import javax.accessibility.AccessibleContext;
@@ -153,16 +154,9 @@ public class JEditorPane extends JTextComponent
   }
 
   protected InputStream getStream(URL page)
+    throws IOException
   {
-    try
-      {
-	return page.openStream();
-      }
-    catch (Exception e)
-      {
-	System.out.println("Hhmmm, failed to open stream: " + e);
-      }
-    return null;
+    return page.openStream();
   }
 
   public String getText()
@@ -209,6 +203,7 @@ public class JEditorPane extends JTextComponent
    * This method initializes from a stream. 
    */
   public void read(InputStream in, Object desc)
+    throws IOException
   {
   }
 

@@ -1,5 +1,5 @@
-/* BasicTreeUI.java
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+/* BasicTreeUI.java --
+   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,11 +38,21 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Rectangle;
+
+import javax.swing.JComponent;
+import javax.swing.UIDefaults;
+import javax.swing.UIManager;
+import javax.swing.plaf.ComponentUI;
 import javax.swing.JTree;
 import javax.swing.plaf.TreeUI;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreePath;
-
+import javax.swing.tree.TreeModel;
 
 /**
  * A delegate providing the user interface for <code>JTree</code>
@@ -57,6 +67,7 @@ import javax.swing.tree.TreePath;
 public class BasicTreeUI
   extends TreeUI
 {
+
   /**
    * Determines the geometric extent of the label that is
    * drawn for a path.
@@ -191,7 +202,6 @@ public class BasicTreeUI
     return true;  // FIXME: not implemented
   }
 
-
   /**
    * Cancels editing a tree cell, discarding any entered value.
    * If no editing session is active, nothing happens. The cell
@@ -232,5 +242,158 @@ public class BasicTreeUI
   public TreePath getEditingPath(JTree tree)
   {
     return null;  // FIXME: not implemented
+  }
+
+  public static ComponentUI createUI(JComponent c)
+  {
+    return new BasicTreeUI();
+  }
+
+  int rightChildIndent;
+  int leftChildIndent;
+  int rowHeight;
+  Color hashColor;
+
+  protected void installDefaults(JTree tree) 
+  {
+    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+
+    tree.setFont(defaults.getFont("Tree.font"));
+    tree.setForeground(defaults.getColor("Tree.foreground"));
+    tree.setBackground(defaults.getColor("Tree.background"));
+    tree.setOpaque(true);
+
+    hashColor = defaults.getColor("Tree.hash");
+    rightChildIndent = defaults.getInt("Tree.rightChildIndent");
+    leftChildIndent = defaults.getInt("Tree.leftChildIndent");
+    rowHeight = defaults.getInt("Tree.rowHeight");
+  }
+
+  protected void installKeyboardActions() 
+  {
+  }
+
+  protected void installListeners() 
+  {
+  }
+
+  public void installUI(JComponent c)
+  {
+    installDefaults((JTree) c);
+  }
+
+
+  protected void uninstallDefaults(JTree tree) 
+  {
+    tree.setFont(null);
+    tree.setForeground(null);
+    tree.setBackground(null);
+
+    tree.setCellRenderer(null);
+  }
+
+  public void uninstallUI(JComponent c)
+  {
+    uninstallDefaults((JTree) c);
+  }
+
+  public Dimension getPreferredSize(JComponent c)
+  {
+    return new Dimension(200,200);
+  }
+
+  protected void paintLeaf(Graphics g, int x, int y, JTree tree, Object leaf)
+  {
+    Component c = tree.getCellRenderer().getTreeCellRendererComponent(tree, 
+                                                                      leaf, 
+                                                                      false, // selected
+                                                                      false, // expanded
+                                                                      true,  // leaf
+                                                                      0,     // row
+                                                                      false  // hasFocus
+                                                                      );
+    g.translate(x, y);
+    c.paint(g);
+    g.translate(-x, -y);
+  }
+
+  protected void paintNonLeaf(Graphics g, int x, int y, JTree tree, Object nonLeaf)
+  {
+    Component c = tree.getCellRenderer().getTreeCellRendererComponent(tree, 
+                                                                      nonLeaf, 
+                                                                      false, // selected
+                                                                      false, // expanded
+                                                                      false, // leaf
+                                                                      0,     // row
+                                                                      false  // hasFocus
+                                                                      );
+    g.translate(x, y);
+    c.paint(g);
+    g.translate(-x, -y);
+  }
+
+  protected int paintRecursive(Graphics g, 
+                               int indentation,
+                               int descent,
+                               int childNumber,
+                               int depth,
+                               JTree tree,
+                               TreeModel mod, 
+                               Object curr)
+  {
+    Rectangle clip = g.getClipBounds();
+    if (indentation > clip.x + clip.width + rightChildIndent ||
+        descent > clip.y + clip.height + rowHeight)
+      return descent;
+
+
+    int halfHeight = rowHeight / 2;
+    int halfWidth = rightChildIndent / 2;
+    int y0 = descent + halfHeight;
+        
+    if (mod.isLeaf(curr))
+      {
+        paintLeaf(g, indentation, descent, tree, curr);
+        descent += rowHeight;
+      }
+    else
+      {
+        if (depth > 0 || tree.isRootVisible())
+          {
+            paintNonLeaf(g, indentation, descent, tree, curr);
+            descent += rowHeight;
+            y0 += halfHeight;
+          }
+        int max = mod.getChildCount(curr);
+        for (int i = 0; i < max; ++i)
+          {
+            g.setColor(hashColor);
+            g.drawLine(indentation + halfWidth,        descent + halfHeight, 
+                       indentation + rightChildIndent, descent + halfHeight);
+            descent = paintRecursive(g, 
+                                     indentation + rightChildIndent, descent,
+                                     i, depth+1,
+                                     tree, mod, mod.getChild(curr, i));
+          }
+      }
+
+    int y1 = descent - halfHeight;
+    if (y0 != y1)
+      {
+        g.setColor(hashColor);
+        g.drawLine(indentation + halfWidth, y0, 
+                   indentation + halfWidth, y1);
+      }
+
+    return descent;
+  }
+
+  public void paint(Graphics g, JComponent c)
+  {
+    JTree tree = (JTree) c;
+    TreeModel mod = tree.getModel();
+    g.translate(10, 10);
+    paintRecursive(g, 0, 0, 0, 0, tree, mod, mod.getRoot());
+    g.translate(-10, -10);
   }
 }

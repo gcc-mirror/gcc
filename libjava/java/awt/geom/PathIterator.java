@@ -46,8 +46,8 @@ package java.awt.geom;
  *
  * @author Tom Tromey <tromey@cygnus.com>
  * @author Eric Blake <ebb9@email.byu.edu>
- * @see Shape
- * @see Stroke
+ * @see java.awt.Shape
+ * @see java.awt.Stroke
  * @see FlatteningPathIterator
  * @since 1.2
  * @status updated to 1.4

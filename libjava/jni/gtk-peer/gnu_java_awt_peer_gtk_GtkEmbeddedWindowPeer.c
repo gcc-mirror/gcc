@@ -45,22 +45,18 @@ Java_gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer_create
   (JNIEnv *env, jobject obj, jlong socket_id)
 {
   GtkWidget *window;
-  GtkWidget *vbox, *layout;
+  GtkWidget *fixed;
 
-  /* Create global reference and save it for future use */
   NSA_SET_GLOBAL_REF (env, obj);
 
   gdk_threads_enter ();
 
   window = gtk_plug_new ((GdkNativeWindow) socket_id);
 
-  vbox = gtk_vbox_new (0, 0);
-  layout = gtk_layout_new (NULL, NULL);
-  gtk_box_pack_end (GTK_BOX (vbox), layout, 1, 1, 0);
-  gtk_container_add (GTK_CONTAINER (window), vbox);
+  fixed = gtk_fixed_new ();
+  gtk_container_add (GTK_CONTAINER (window), fixed);
 
-  gtk_widget_show (layout);
-  gtk_widget_show (vbox);
+  gtk_widget_show (fixed);
 
   gdk_threads_leave ();
 

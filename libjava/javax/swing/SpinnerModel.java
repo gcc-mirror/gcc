@@ -1,5 +1,5 @@
 /* SpinnerModel.java -- 
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,10 +45,65 @@ import javax.swing.event.ChangeListener;
  */
 public interface SpinnerModel
 {
-  void setValue (Object value);
-  public Object getValue ();
-  public Object getNextValue ();
-  public Object getPreviousValue ();
-  void addChangeListener (ChangeListener listener);
-  void removeChangeListener (ChangeListener listener);
+  /**
+   * Sets the current value of the model to that specified.
+   * Implementations can choose to refuse to accept the value
+   * and throw an exception instead.  For example, a date model
+   * may throw invalid dates, or a list model may throw out
+   * values which don't exist in the underlying list.  Models
+   * may also throw out unusual values, such as null.  The decision
+   * is left to the discretion of the implementator.  If the
+   * operation succeeds, the implementation should also notify
+   * any registered <code>ChangeListener</code>s.
+   *
+   * @param value The new value of the model.
+   * @throws IllegalArgumentException if the model does not accept
+   *         the given value.
+   */
+  void setValue(Object value);
+
+  /**
+   * Returns the current value of the model.
+   *
+   * @return The current value.
+   */
+  Object getValue();
+
+  /**
+   * Returns the next value from the model.  If the model is bounded,
+   * this method may return null when the upper bound is met.
+   * The current value is not changed.
+   *
+   * @return The next value, or null if there are no more values
+   *         to retrieve.
+   */
+  Object getNextValue();
+
+  /**
+   * Returns the previous value from the model.  If the model is
+   * bounded, this method may return null when the lower bound is
+   * met.  The current value is not changed.
+   *
+   * @return The previous value, or null if there are no more
+   *         values to retrieve.
+   */
+  Object getPreviousValue();
+
+  /**
+   * Adds a <code>ChangeListener</code> to the list of registered
+   * listeners.  Each listener is notified when the current value
+   * is changed.
+   *
+   * @param listener The new listener to register.
+   */
+  void addChangeListener(ChangeListener listener);
+
+  /**
+   * Removes a given <code>ChangeListener</code> from the list
+   * of registered listeners.
+   *
+   * @param listener The listener to remove.
+   */
+  void removeChangeListener(ChangeListener listener);
+    
 }

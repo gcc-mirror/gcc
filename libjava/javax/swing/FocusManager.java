@@ -1,5 +1,5 @@
 /* FocusManager.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -148,6 +148,7 @@ public abstract class FocusManager extends DefaultKeyboardFocusManager
 
 	/**
 	 * disableSwingFocusManager
+	 * @deprecated 1.4
 	 */
 	public static void disableSwingFocusManager() {
 		// TODO
@@ -155,7 +156,8 @@ public abstract class FocusManager extends DefaultKeyboardFocusManager
 
 	/**
 	 * isFocusManagerEnabled
-	 * @returns boolean
+	 * @return boolean
+	 * @deprecated 1.4
 	 */
 	public static boolean isFocusManagerEnabled() {
 		return false; // TODO

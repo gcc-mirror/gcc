@@ -1,5 +1,5 @@
 /* MatteBorder.java -- 
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,8 +42,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Insets;
-import javax.swing.Icon;
 
+import javax.swing.Icon;
 
 /**
  * A border that is filled with either a solid color or with repeated

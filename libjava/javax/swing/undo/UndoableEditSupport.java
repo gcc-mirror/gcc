@@ -40,9 +40,9 @@ package javax.swing.undo;
 
 import java.util.Iterator;
 import java.util.Vector;
+
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
-
 
 /**
  * A helper class for supporting {@link

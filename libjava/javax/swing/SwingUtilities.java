@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
 import java.applet.Applet;
@@ -56,9 +57,9 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.lang.reflect.InvocationTargetException;
+
 import javax.swing.plaf.ActionMapUIResource;
 import javax.swing.plaf.InputMapUIResource;
-
 
 /**
  * This class contains a number of static utility functions which are
@@ -75,6 +76,11 @@ public class SwingUtilities implements SwingConstants
    */
   private static OwnerFrame ownerFrame;
 
+  private SwingUtilities()
+  {
+    // Do nothing.
+  }
+  
   /**
    * Calculates the portion of the base rectangle which is inside the
    * insets.
@@ -1013,5 +1019,171 @@ public class SwingUtilities implements SwingConstants
         if (child != null)
           child.setParent(uiInputMap);
       }
+  }
+
+  /**
+   * Subtracts a rectangle from another and return the area as an array
+   * of rectangles.
+   * Returns the areas of rectA which are not covered by rectB.
+   * If the rectangles do not overlap, or if either parameter is
+   * <code>null</code>, a zero-size array is returned.
+   * @param rectA The first rectangle
+   * @param rectB The rectangle to subtract from the first
+   * @return An array of rectangles representing the area in rectA
+   * not overlapped by rectB
+   */
+  public static Rectangle[] computeDifference(Rectangle rectA, Rectangle rectB)
+  {
+    if (rectA == null || rectB == null)
+      return new Rectangle[0];
+
+    Rectangle[] r = new Rectangle[4];
+    int x1 = rectA.x;
+    int y1 = rectA.y;
+    int w1 = rectA.width;
+    int h1 = rectA.height;
+    int x2 = rectB.x;
+    int y2 = rectB.y;
+    int w2 = rectB.width;
+    int h2 = rectB.height;
+
+    // (outer box = rectA)
+    // ------------- 
+    // |_____0_____|
+    // |  |rectB|  |
+    // |_1|_____|_2|
+    // |     3     |
+    // -------------
+    int H0 = (y2 > y1) ? y2 - y1 : 0; // height of box 0
+    int H3 = (y2 + h2 < y1 + h1) ? y1 + h1 - y2 - h2 : 0; // height box 3
+    int W1 = (x2 > x1) ? x2 - x1 : 0; // width box 1
+    int W2 = (x1 + w1 > x2 + w2) ? x1 + w1 - x2 - w2 : 0; // w. box 2
+    int H12 = (H0 + H3 < h1) ? h1 - H0 - H3 : 0; // height box 1 & 2
+
+    if (H0 > 0)
+      r[0] = new Rectangle(x1, y1, w1, H0);
+    else
+      r[0] = null;
+
+    if (W1 > 0 && H12 > 0)
+      r[1] = new Rectangle(x1, y1 + H0, W1, H12);
+    else
+      r[1] = null;
+
+    if (W2 > 0 && H12 > 0)
+      r[2] = new Rectangle(x2 + w2, y1 + H0, W2, H12);
+    else
+      r[2] = null;
+
+    if (H3 > 0)
+      r[3] = new Rectangle(x1, y1 + H0 + H12, w1, H3);
+    else
+      r[3] = null;
+
+    // sort out null objects
+    int n = 0;
+    for (int i = 0; i < 4; i++)
+      if (r[i] != null)
+	n++;
+    Rectangle[] out = new Rectangle[n];
+    for (int i = 3; i >= 0; i--)
+      if (r[i] != null)
+	out[--n] = r[i];
+
+    return out;
+  }
+
+  /**
+   * Calculates the intersection of two rectangles.
+   *
+   * @param x upper-left x coodinate of first rectangle
+   * @param x upper-left y coodinate of first rectangle
+   * @param w width of first rectangle
+   * @param h height of first rectangle
+   * @param rect a Rectangle object of the second rectangle
+   * @throws a NullPointerException if rect is null.
+   *
+   * @return a rectangle corresponding to the intersection of the
+   * two rectangles. A zero rectangle is returned if the rectangles
+   * do not overlap.
+   */
+  public static Rectangle computeIntersection(int x, int y, int w, int h,
+                                              Rectangle rect)
+  {
+    int x2 = (int) rect.getX();
+    int y2 = (int) rect.getY();
+    int w2 = (int) rect.getWidth();
+    int h2 = (int) rect.getHeight();
+
+    int dx = (x > x2) ? x : x2;
+    int dy = (y > y2) ? y : y2;
+    int dw = (x + w < x2 + w2) ? (x + w - dx) : (x2 + w2 - dx);
+    int dh = (y + h < y2 + h2) ? (y + h - dy) : (y2 + h2 - dy);
+
+    if (dw >= 0 && dh >= 0)
+      return new Rectangle(dx, dy, dw, dh);
+
+    return new Rectangle(0, 0, 0, 0);
+  }
+  
+  /**
+   * Calculates the width of a given string.
+   *
+   * @param fm the <code>FontMetrics</code> object to use
+   * @param str the string
+   * 
+   * @return the width of the the string.
+   */
+  public static int computeStringWidth(FontMetrics fm, String str)
+  {
+    return fm.stringWidth(str);
+  }
+
+  /**
+   * Calculates the union of two rectangles.
+   *
+   * @param x upper-left x coodinate of first rectangle
+   * @param x upper-left y coodinate of first rectangle
+   * @param w width of first rectangle
+   * @param h height of first rectangle
+   * @param rect a Rectangle object of the second rectangle
+   * @throws a NullPointerException if rect is null.
+   *
+   * @return a rectangle corresponding to the union of the
+   * two rectangles. A rectangle encompassing both is returned if the
+   * rectangles do not overlap.
+   */
+  public static Rectangle computeUnion(int x, int y, int w, int h,
+                                       Rectangle rect)
+  {
+    int x2 = (int) rect.getX();
+    int y2 = (int) rect.getY();
+    int w2 = (int) rect.getWidth();
+    int h2 = (int) rect.getHeight();
+
+    int dx = (x < x2) ? x : x2;
+    int dy = (y < y2) ? y : y2;
+    int dw = (x + w > x2 + w2) ? (x + w - dx) : (x2 + w2 - dx);
+    int dh = (y + h > y2 + h2) ? (y + h - dy) : (y2 + h2 - dy);
+
+    if (dw >= 0 && dh >= 0)
+      return new Rectangle(dx, dy, dw, dh);
+
+    return new Rectangle(0, 0, 0, 0);
+  }
+
+  /**
+   * Tests if a rectangle contains another.
+   * @param a first rectangle
+   * @param b second rectangle
+   * @return true if a contains b, false otherwise
+   * @throws NullPointerException
+   */
+  public static boolean isRectangleContainingRectangle(Rectangle a, Rectangle b)
+  {
+    // Note: zero-size rects inclusive, differs from Rectangle.contains()
+    return b.width >= 0 && b.height >= 0 && b.width >= 0 && b.height >= 0
+           && b.x >= a.x && b.x + b.width <= a.x + a.width && b.y >= a.y
+           && b.y + b.height <= a.y + a.height;
   }
 }

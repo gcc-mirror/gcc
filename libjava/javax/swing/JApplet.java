@@ -1,4 +1,4 @@
-/* JApplet.java -- 
+/* JApplet.java --
    Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -47,169 +47,200 @@ import java.awt.Graphics;
 import java.awt.LayoutManager;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
+
 import javax.accessibility.AccessibleContext;
 
-public class JApplet extends Applet implements RootPaneContainer
+public class JApplet extends Applet
+  implements RootPaneContainer
 {
   private static final long serialVersionUID = 7269359214497372587L;
-
-    public final static int HIDE_ON_CLOSE        = 0;
-    public final static int EXIT_ON_CLOSE        = 1;
-    public final static int DISPOSE_ON_CLOSE     = 2;
-    public final static int DO_NOTHING_ON_CLOSE  = 3;
-
-    private int close_action = EXIT_ON_CLOSE;
-    private boolean checking;  
-    protected  JRootPane         rootPane;
-
-    public JApplet()
-    {
-	frameInit();
-    }
   
-    public JApplet(String title)
-    {
-	frameInit();
-    }
+  public static final int HIDE_ON_CLOSE = 0;
+  public static final int EXIT_ON_CLOSE = 1;
+  public static final int DISPOSE_ON_CLOSE = 2;
+  public static final int DO_NOTHING_ON_CLOSE = 3;
+  
+  private int close_action = EXIT_ON_CLOSE;
 
-    protected  void frameInit()
-    {
-      super.setLayout(new BorderLayout(1, 1));
-      getRootPane(); // will do set/create
-    }
+  protected JRootPane rootPane;
+  protected boolean rootPaneCheckingEnabled;
+
+  public JApplet()
+  {
+    frameInit();
+  }
+
+  public JApplet(String title)
+  {
+    frameInit();
+  }
+
+  protected void frameInit()
+  {
+    super.setLayout(new BorderLayout(1, 1));
+    getRootPane(); // will do set/create
+  }
 
   public Dimension getPreferredSize()
   {
     Dimension d = super.getPreferredSize();
-    System.out.println("JFrame.getPrefSize(): " + d + " , comp="+ getComponentCount () + ", layout=" + getLayout());
+    System.out.println("JFrame.getPrefSize(): " + d + " , comp="
+                       + getComponentCount() + ", layout=" + getLayout());
     return d;
   }
 
-  public  void setLayout(LayoutManager manager)
-  {    super.setLayout(manager);  }
+  public void setLayout(LayoutManager manager)
+  {
+    super.setLayout(manager);
+  }
 
-   public void setLayeredPane(JLayeredPane layeredPane) 
-    {   getRootPane().setLayeredPane(layeredPane);   }
-  
-   public JLayeredPane getLayeredPane()
-    {   return getRootPane().getLayeredPane();     }
-  
-   public JRootPane getRootPane()
-    {
-        if (rootPane == null)
-            setRootPane(createRootPane());
-        return rootPane;          
-    }
+  public void setLayeredPane(JLayeredPane layeredPane)
+  {
+    getRootPane().setLayeredPane(layeredPane);
+  }
 
-   public void setRootPane(JRootPane root)
-    {
-        if (rootPane != null)
-            remove(rootPane);
-            
-        rootPane = root; 
-        add(rootPane, BorderLayout.CENTER);
-    }
+  public JLayeredPane getLayeredPane()
+  {
+    return getRootPane().getLayeredPane();
+  }
 
-   public JRootPane createRootPane()
-    {   return new JRootPane();    }
+  public JRootPane getRootPane()
+  {
+    if (rootPane == null)
+      setRootPane(createRootPane());
+    return rootPane;
+  }
 
-   public Container getContentPane()
-    {    return getRootPane().getContentPane();     }
+  public void setRootPane(JRootPane root)
+  {
+    if (rootPane != null)
+      remove(rootPane);
 
-   public void setContentPane(Container contentPane)
-    {    getRootPane().setContentPane(contentPane);    }
-  
-   public  Component getGlassPane()
-    {    return getRootPane().getGlassPane();   }
-  
-   public void setGlassPane(Component glassPane)
-    {   getRootPane().setGlassPane(glassPane);   }
+    rootPane = root;
+    add(rootPane, BorderLayout.CENTER);
+  }
 
+  public JRootPane createRootPane()
+  {
+    return new JRootPane();
+  }
 
-    /////////////////////////////////////////////////////////////////////////////////
-    protected  void addImpl(Component comp, Object constraints, int index)
-    {   super.addImpl(comp, constraints, index);    }
-  
-    public AccessibleContext getAccessibleContext()
-    {    return null;  }
-  
-    int getDefaultCloseOperation()
-    {    return close_action;   }
+  public Container getContentPane()
+  {
+    return getRootPane().getContentPane();
+  }
 
-    
-    public JMenuBar getJMenuBar()
-    {    return getRootPane().getJMenuBar();   }
-    
-    public void setJMenuBar(JMenuBar menubar)
-    {    getRootPane().setJMenuBar(menubar); }
-    
-    
-    protected  String paramString()
-    {   return "JFrame";     }
+  public void setContentPane(Container contentPane)
+  {
+    getRootPane().setContentPane(contentPane);
+  }
 
-    protected  void processKeyEvent(KeyEvent e)
-    {   super.processKeyEvent(e);    }
+  public Component getGlassPane()
+  {
+    return getRootPane().getGlassPane();
+  }
 
-    protected  void processWindowEvent(WindowEvent e)
-    {
-        //      System.out.println("PROCESS_WIN_EV-1: " + e);
+  public void setGlassPane(Component glassPane)
+  {
+    getRootPane().setGlassPane(glassPane);
+  }
 
-	//        super.processWindowEvent(e); 
+  protected void addImpl(Component comp, Object constraints, int index)
+  {
+    super.addImpl(comp, constraints, index);
+  }
 
-        //      System.out.println("PROCESS_WIN_EV-2: " + e);
-        switch (e.getID())
-            {
-            case WindowEvent.WINDOW_CLOSING:
-                {
-                    switch(close_action)
-                        {
-                        case EXIT_ON_CLOSE:
-                            {
-                                System.out.println("user requested exit on close");
-                                System.exit(1);
-                                break;
-                            }
-                        case DISPOSE_ON_CLOSE:
-                            {
-                                System.out.println("user requested dispose on close");
-                                //dispose();
-                                break;
-                            }
-                        case HIDE_ON_CLOSE:
+  public AccessibleContext getAccessibleContext()
+  {
+    return null;
+  }
 
-                        case DO_NOTHING_ON_CLOSE:
-                            break;
-                        }
-                    break;
-                }
-                
-            case WindowEvent.WINDOW_CLOSED:
-            case WindowEvent.WINDOW_OPENED:
-            case WindowEvent.WINDOW_ICONIFIED:
-            case WindowEvent.WINDOW_DEICONIFIED:
-            case WindowEvent.WINDOW_ACTIVATED:
-            case WindowEvent.WINDOW_DEACTIVATED:
-                break;
-            }
-    }
-    
+  int getDefaultCloseOperation()
+  {
+    return close_action;
+  }
 
-    public void remove(Component comp)
-    {   getContentPane().remove(comp);  }
-  
+  public JMenuBar getJMenuBar()
+  {
+    return getRootPane().getJMenuBar();
+  }
 
-    void setDefaultCloseOperation(int operation)
-    {  close_action = operation;   }
+  public void setJMenuBar(JMenuBar menubar)
+  {
+    getRootPane().setJMenuBar(menubar);
+  }
 
+  protected String paramString()
+  {
+    return "JFrame";
+  }
 
+  protected void processKeyEvent(KeyEvent e)
+  {
+    super.processKeyEvent(e);
+  }
 
-    protected  boolean isRootPaneCheckingEnabled()
-    {    return checking;        }
+  protected void processWindowEvent(WindowEvent e)
+  {
+    //      System.out.println("PROCESS_WIN_EV-1: " + e);
+    //        super.processWindowEvent(e); 
+    //      System.out.println("PROCESS_WIN_EV-2: " + e);
+    switch (e.getID())
+      {
+      case WindowEvent.WINDOW_CLOSING:
+        {
+	  switch (close_action)
+	    {
+	    case EXIT_ON_CLOSE:
+	      {
+		System.out.println("user requested exit on close");
+		System.exit(1);
+		break;
+	      }
+	    case DISPOSE_ON_CLOSE:
+	      {
+		System.out.println("user requested dispose on close");
+		//dispose();
+		break;
+	      }
+	    case HIDE_ON_CLOSE:
+	    case DO_NOTHING_ON_CLOSE:
+	      break;
+	    }
+	  break;
+        }
+      case WindowEvent.WINDOW_CLOSED:
+      case WindowEvent.WINDOW_OPENED:
+      case WindowEvent.WINDOW_ICONIFIED:
+      case WindowEvent.WINDOW_DEICONIFIED:
+      case WindowEvent.WINDOW_ACTIVATED:
+      case WindowEvent.WINDOW_DEACTIVATED:
+	break;
+      }
+  }
 
+  public void remove(Component comp)
+  {
+    getContentPane().remove(comp);
+  }
 
-    protected  void setRootPaneCheckingEnabled(boolean enabled)
-    { checking = enabled;  }
+  void setDefaultCloseOperation(int operation)
+  {
+    close_action = operation;
+  }
 
-    public void update(Graphics g)
-    {   paint(g);  }
+  protected boolean isRootPaneCheckingEnabled()
+  {
+    return rootPaneCheckingEnabled;
+  }
+
+  protected void setRootPaneCheckingEnabled(boolean enabled)
+  {
+    rootPaneCheckingEnabled = enabled;
+  }
+
+  public void update(Graphics g)
+  {
+    paint(g);
+  }
 }

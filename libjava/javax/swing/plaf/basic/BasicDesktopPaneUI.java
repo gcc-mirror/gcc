@@ -35,30 +35,24 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.plaf.basic;
 
 import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import java.awt.event.MouseEvent;
 import java.beans.PropertyVetoException;
+
 import javax.swing.AbstractAction;
 import javax.swing.DefaultDesktopManager;
 import javax.swing.DesktopManager;
 import javax.swing.JComponent;
 import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
-import javax.swing.JInternalFrame.JDesktopIcon;
 import javax.swing.KeyStroke;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
-import javax.swing.event.MouseInputAdapter;
-import javax.swing.event.MouseInputListener;
 import javax.swing.plaf.ComponentUI;
-import javax.swing.plaf.DesktopIconUI;
 import javax.swing.plaf.DesktopPaneUI;
-
 
 /**
  * This class is the UI delegate for JDesktopPane for the Basic look and feel.
@@ -267,24 +261,35 @@ public class BasicDesktopPaneUI extends DesktopPaneUI
     }
   }
 
-  /** The KeyStroke associated with closing JInternalFrames. */
+  /**
+   * The KeyStroke associated with closing JInternalFrames.
+   * @deprecated
+   */
   protected KeyStroke closeKey;
 
-  /** The KeyStroke associated with maximizing JInternalFrames. */
+  /**
+   * The KeyStroke associated with maximizing JInternalFrames.
+   * @deprecated
+   */
   protected KeyStroke maximizeKey;
 
-  /** The KeyStroke associated with minimizing JInternalFrames. */
+  /**
+   * The KeyStroke associated with minimizing JInternalFrames.
+   * @deprecated
+   */
   protected KeyStroke minimizeKey;
 
   /**
    * The KeyStroke associated with navigating (forward?) through
    * JInternalFrames.
+   * @deprecated
    */
   protected KeyStroke navigateKey;
 
   /**
    * The KeyStroke associated with navigating (backward?) through
    * JInternalFrames.
+   * @deprecated
    */
   protected KeyStroke navigateKey2;
 

@@ -56,8 +56,8 @@ import javax.swing.event.TableColumnModelListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.plaf.TableUI;
-import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
@@ -675,6 +675,11 @@ public class JTable extends JComponent
     return renderer;
   }
 
+  public void setDefaultRenderer(Class columnClass, TableCellRenderer rend)
+  {
+    defaultRenderersByColumnClass.put(columnClass, rend);
+  }
+
   public TableCellRenderer getDefaultRenderer(Class columnClass)
   {
     if (defaultRenderersByColumnClass.containsKey(columnClass))
@@ -1148,16 +1153,32 @@ public class JTable extends JComponent
    */ 
   public void setModel(TableModel m)
   {
+    // Throw exception is m is null.
     if (m == null)
       throw new IllegalArgumentException();
-    TableModel tmp = dataModel;
-    if (autoCreateColumnsFromModel)
-      createColumnsFromModel();
-    if (tmp != null)
-      tmp.removeTableModelListener(this);
+   
+    // Don't do anything if setting the current model again.
+    if (dataModel == m)
+      return;
+    
+    // Remove table as TableModelListener from old model.
+    if (dataModel != null)
+      dataModel.removeTableModelListener(this);
+    
     if (m != null)
-      m.addTableModelListener(this);
-    dataModel = m;
+      {
+	// Set property.
+        dataModel = m;
+
+	// Add table as TableModelListener to new model.
+	dataModel.addTableModelListener(this);
+
+	// Automatically create columns.
+	if (autoCreateColumnsFromModel)
+	  createColumnsFromModel();
+      }
+    
+    // Repaint table.
     revalidate();
     repaint();
   }
@@ -1540,15 +1561,29 @@ public class JTable extends JComponent
     doLayout();
   }
 
-
   public String getUIClassID()
   {
     return "TableUI";
   }
 
+  /**
+   * This method returns the table's UI delegate.
+   *
+   * @return The table's UI delegate.
+   */
   public TableUI getUI()
   {
     return (TableUI) ui;
+  }
+
+  /**
+   * This method sets the table's UI delegate.
+   *
+   * @param ui The table's UI delegate.
+   */
+  public void setUI(TableUI ui)
+  {
+    super.setUI(ui);
   }
 
   public void updateUI()

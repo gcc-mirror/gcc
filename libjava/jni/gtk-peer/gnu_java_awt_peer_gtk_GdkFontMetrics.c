@@ -1,5 +1,5 @@
 /* gdkfontmetrics.c
-   Copyright (C) 1999, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -36,110 +36,80 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 #include "gtkpeer.h"
+#include "gdkfont.h"
+
 #include "gnu_java_awt_peer_gtk_GdkFontMetrics.h"
 #include <gdk/gdkx.h>
 
-#define ASCENT      0
-#define MAX_ASCENT  1
-#define DESCENT     2
-#define MAX_DESCENT 3
-#define MAX_ADVANCE 4
-#define NUM_METRICS 5
-
-JNIEXPORT jintArray JNICALL Java_gnu_java_awt_peer_gtk_GdkFontMetrics_initState
-  (JNIEnv *env, jobject obj __attribute__((unused)),
-   jstring fname, jint style, jint size)
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GdkFontMetrics_getPeerFontMetrics
+   (JNIEnv *env, jclass clazz __attribute__ ((unused)), jobject java_font, jdoubleArray java_metrics)
 {
-  jintArray array;
-  jint *metrics;
-  const char *font_name;
-  PangoFontDescription *font_desc;
-  PangoContext *context;
+  struct peerfont *pfont = NULL;
+  jdouble *native_metrics = NULL;
   PangoFontMetrics *pango_metrics;
 
-  array = (*env)->NewIntArray (env, NUM_METRICS);
+  gdk_threads_enter();
 
-  metrics = (*env)->GetIntArrayElements (env, array, NULL);
-  font_name = (*env)->GetStringUTFChars (env, fname, NULL);
+  pfont = (struct peerfont *) NSA_GET_FONT_PTR (env, java_font);
+  g_assert (pfont != NULL);
 
-  gdk_threads_enter ();
-
-  font_desc = pango_font_description_from_string (font_name);
-  pango_font_description_set_size (font_desc, size * dpi_conversion_factor);
-
-  if (style & AWT_STYLE_BOLD)
-    pango_font_description_set_weight (font_desc, PANGO_WEIGHT_BOLD);
-
-  if (style & AWT_STYLE_ITALIC)
-    pango_font_description_set_style (font_desc, PANGO_STYLE_OBLIQUE);
-
-  context = gdk_pango_context_get();
-  pango_context_set_font_description (context, font_desc);
-
-  pango_metrics = pango_context_get_metrics (context, font_desc,
+  pango_metrics = pango_context_get_metrics (pfont->ctx, pfont->desc,
                                              gtk_get_default_language ());
 
-  metrics[ASCENT] =
-    PANGO_PIXELS (pango_font_metrics_get_ascent (pango_metrics));
-  metrics[MAX_ASCENT]  = metrics[ASCENT];
-  metrics[DESCENT] =
-    PANGO_PIXELS (pango_font_metrics_get_descent (pango_metrics));
-  metrics[MAX_DESCENT] = metrics[DESCENT];
-  metrics[MAX_ADVANCE] =
-    PANGO_PIXELS (pango_font_metrics_get_approximate_char_width (pango_metrics));
+  native_metrics = (*env)->GetDoubleArrayElements (env, java_metrics, NULL);
+  g_assert (native_metrics != NULL);
+
+  native_metrics[FONT_METRICS_ASCENT] = PANGO_PIXELS (pango_font_metrics_get_ascent (pango_metrics));
+  native_metrics[FONT_METRICS_MAX_ASCENT] = native_metrics[FONT_METRICS_ASCENT];
+  native_metrics[FONT_METRICS_DESCENT] = PANGO_PIXELS (pango_font_metrics_get_descent (pango_metrics));
+  if (native_metrics[FONT_METRICS_DESCENT] < 0)
+    native_metrics[FONT_METRICS_DESCENT] = - native_metrics[FONT_METRICS_DESCENT];
+  native_metrics[FONT_METRICS_MAX_DESCENT] = native_metrics[FONT_METRICS_DESCENT];
+  native_metrics[FONT_METRICS_MAX_ADVANCE] = PANGO_PIXELS (pango_font_metrics_get_approximate_char_width (pango_metrics));
+	 
+  (*env)->ReleaseDoubleArrayElements (env, java_metrics, native_metrics, 0);
 
   pango_font_metrics_unref (pango_metrics);
 
-  pango_font_description_free (font_desc);
-
-  gdk_threads_leave ();
-
-  (*env)->ReleaseStringUTFChars (env, fname, font_name);
-  (*env)->ReleaseIntArrayElements (env, array, metrics, 0);
-
-  return array;
+  gdk_threads_leave();
 }
 
-JNIEXPORT jint JNICALL Java_gnu_java_awt_peer_gtk_GdkFontMetrics_stringWidth
-  (JNIEnv *env, jobject obj __attribute__((unused)),
-   jstring fname, jint style, jint size, jstring str)
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GdkFontMetrics_getPeerTextMetrics
+   (JNIEnv *env, jclass clazz __attribute__ ((unused)), jobject java_font, jstring str, jdoubleArray java_metrics)
 {
-  PangoFontDescription *font_desc;
-  PangoContext *context;
-  PangoLayout *layout;
-  int width = 0;
-  const char *cstr;
-  const char *font_name;
+  struct peerfont *pfont = NULL;
+  const char *cstr = NULL;
+  jdouble *native_metrics = NULL;  
+  PangoRectangle log;
+
+  gdk_threads_enter();
+
+  pfont = (struct peerfont *)NSA_GET_FONT_PTR (env, java_font);
+  g_assert (pfont != NULL);
 
   cstr = (*env)->GetStringUTFChars (env, str, NULL);
-  font_name = (*env)->GetStringUTFChars (env, fname, NULL);
+  g_assert(cstr != NULL);
 
-  gdk_threads_enter ();
+  pango_layout_set_text (pfont->layout, cstr, -1);
+  pango_layout_get_extents (pfont->layout, NULL, &log);
 
-  font_desc = pango_font_description_from_string (font_name);
-  pango_font_description_set_size (font_desc, size * dpi_conversion_factor);
+  (*env)->ReleaseStringUTFChars (env, str, cstr);  
+  pango_layout_set_text (pfont->layout, "", -1);
 
-  if (style & AWT_STYLE_BOLD)
-    pango_font_description_set_weight (font_desc, PANGO_WEIGHT_BOLD);
+  native_metrics = (*env)->GetDoubleArrayElements (env, java_metrics, NULL);
+  g_assert (native_metrics != NULL);
 
-  if (style & AWT_STYLE_ITALIC)
-    pango_font_description_set_style (font_desc, PANGO_STYLE_OBLIQUE);
+  native_metrics[TEXT_METRICS_X_BEARING] = PANGO_PIXELS(log.x);
+  native_metrics[TEXT_METRICS_Y_BEARING] = PANGO_PIXELS(log.y);
+  native_metrics[TEXT_METRICS_WIDTH] = PANGO_PIXELS(log.width);
+  native_metrics[TEXT_METRICS_HEIGHT] = PANGO_PIXELS(log.height);
+  native_metrics[TEXT_METRICS_X_ADVANCE] = PANGO_PIXELS(log.x + log.width);
+  native_metrics[TEXT_METRICS_Y_ADVANCE] = PANGO_PIXELS(log.y + log.height);
+	 
+  (*env)->ReleaseDoubleArrayElements (env, java_metrics, native_metrics, 0);
 
-  context = gdk_pango_context_get();
-  pango_context_set_font_description (context, font_desc);
-
-  layout = pango_layout_new (context);
-
-  pango_layout_set_text (layout, cstr, -1);
-
-  pango_layout_get_pixel_size (layout, &width, NULL);
-
-  pango_font_description_free (font_desc);
-
-  gdk_threads_leave ();
-
-  (*env)->ReleaseStringUTFChars (env, fname, font_name);
-  (*env)->ReleaseStringUTFChars (env, str, cstr);
-
-  return width;
+  gdk_threads_leave();
 }
+

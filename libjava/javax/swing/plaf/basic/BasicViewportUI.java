@@ -1,4 +1,4 @@
-/* BasicViewportUI.java
+/* BasicViewportUI.java --
    Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -45,6 +45,7 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.ImageObserver;
+
 import javax.swing.JComponent;
 import javax.swing.JViewport;
 import javax.swing.ViewportLayout;
@@ -119,17 +120,16 @@ public class BasicViewportUI extends ViewportUI
   }
 
   public void paint(Graphics g, JComponent c)
-  {      
-
-    JViewport v = (JViewport)c;
-    Component view = v.getView();
+  {
+    JViewport port = (JViewport)c;
+    Component view = port.getView();
 
     if (view == null)
       return;
 
-    Point pos = v.getViewPosition();
+    Point pos = port.getViewPosition();
     Rectangle viewBounds = view.getBounds();
-    Rectangle portBounds = v.getBounds();
+    Rectangle portBounds = port.getBounds();
 
     if (viewBounds.width == 0 
         || viewBounds.height == 0
@@ -137,6 +137,51 @@ public class BasicViewportUI extends ViewportUI
         || portBounds.height == 0)
       return;
 
+    switch (port.getScrollMode())
+      {
+
+      case JViewport.BACKINGSTORE_SCROLL_MODE:
+        paintBackingStore(g, port, view, pos, viewBounds, portBounds);
+        break;
+
+      case JViewport.BLIT_SCROLL_MODE:
+        // FIXME: implement separate blit mode
+
+      case JViewport.SIMPLE_SCROLL_MODE:
+      default:
+        paintSimple(g, port, view, pos, viewBounds, portBounds);
+        break;
+      }
+  }
+
+  private void paintSimple(Graphics g, 
+                           JViewport v, 
+                           Component view, 
+                           Point pos, 
+                           Rectangle viewBounds, 
+                           Rectangle portBounds)
+  {
+    Rectangle oldClip = g.getClipBounds ();
+    g.setClip (oldClip.intersection (viewBounds));
+    g.translate (-pos.x, -pos.y);
+    try
+      {   
+        view.paint(g);
+      } 
+    finally 
+      {
+        g.translate (pos.x, pos.y);
+        g.setClip (oldClip);
+      }        
+  }
+
+  private void paintBackingStore(Graphics g, 
+                                 JViewport v, 
+                                 Component view, 
+                                 Point pos, 
+                                 Rectangle viewBounds, 
+                                 Rectangle portBounds)
+  {      
     if (backingStoreImage == null 
         || backingStoreWidth != viewBounds.width
         || backingStoreHeight != viewBounds.height)
@@ -148,18 +193,17 @@ public class BasicViewportUI extends ViewportUI
 
     Graphics g2 = backingStoreImage.getGraphics();
 
-
-    if (c.getBackground() != null)
+    if (v.getBackground() != null)
       {
         // fill the backing store background
         java.awt.Color save = g2.getColor();
-        g2.setColor(c.getBackground());
+        g2.setColor(v.getBackground());
         g2.fillRect (0, 0, backingStoreWidth, backingStoreHeight);
         g2.setColor(save);
 
         // fill the viewport background
         save = g.getColor();
-        g.setColor(c.getBackground());
+        g.setColor(v.getBackground());
         g.fillRect (0, 0, portBounds.width, portBounds.height);
         g.setColor(save);
 

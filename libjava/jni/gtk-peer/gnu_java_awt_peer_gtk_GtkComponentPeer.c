@@ -49,6 +49,7 @@ static gboolean focus_in_cb (GtkWidget *widget,
 static gboolean focus_out_cb (GtkWidget *widget,
                               GdkEventFocus *event,
                               jobject peer);
+
 /*
  * This method returns a GDK keyval that corresponds to one of the
  * keysyms in the X keymap table.  The return value is only used to
@@ -489,27 +490,33 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetSetParent
   widget = GTK_WIDGET (ptr);
   parent_widget = GTK_WIDGET (parent_ptr);
 
-  if (GTK_IS_WINDOW (parent_widget))
+  if (widget->parent == NULL)
     {
-      GList *children = gtk_container_children 
-        (GTK_CONTAINER (GTK_BIN (parent_widget)->child));
+      if (GTK_IS_WINDOW (parent_widget))
+        {
+          GList *children = gtk_container_children 
+            (GTK_CONTAINER (parent_widget));
 
-      if (GTK_IS_MENU_BAR (children->data))
-	gtk_layout_put (GTK_LAYOUT (children->next->data), widget, 0, 0);
+          if (GTK_IS_MENU_BAR (children->data))
+            gtk_fixed_put (GTK_FIXED (children->next->data), widget, 0, 0);
+          else
+            gtk_fixed_put (GTK_FIXED (children->data), widget, 0, 0);
+        }
       else
-	gtk_layout_put (GTK_LAYOUT (children->data), widget, 0, 0);
-    }
-  else
-    if (GTK_IS_SCROLLED_WINDOW (parent_widget))
-      {
-        gtk_scrolled_window_add_with_viewport 
-          (GTK_SCROLLED_WINDOW (parent_widget), widget);
-        gtk_viewport_set_shadow_type (GTK_VIEWPORT (widget->parent), 
-                                      GTK_SHADOW_NONE);
+        if (GTK_IS_SCROLLED_WINDOW (parent_widget))
+          {
+            gtk_scrolled_window_add_with_viewport 
+              (GTK_SCROLLED_WINDOW (parent_widget), widget);
+            gtk_viewport_set_shadow_type (GTK_VIEWPORT (widget->parent), 
+                                          GTK_SHADOW_NONE);
 
-      }
-    else
-      gtk_layout_put (GTK_LAYOUT (parent_widget), widget, 0, 0);
+          }
+        else
+          {
+            if (widget->parent == NULL)
+              gtk_fixed_put (GTK_FIXED (parent_widget), widget, 0, 0);
+          }
+    }
 
   gdk_threads_leave ();
 }
@@ -770,7 +777,8 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetGetPreferredDimensions
   (*env)->ReleaseIntArrayElements (env, jdims, dims, 0);
 }
 
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_setNativeBounds
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkComponentPeer_setNativeBounds
   (JNIEnv *env, jobject obj, jint x, jint y, jint width, jint height)
 {
   GtkWidget *widget;
@@ -791,8 +799,12 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_setNativeBoun
     gtk_widget_set_size_request (widget, width, height);
   else
     {
-      gtk_widget_set_size_request (widget, width, height);
-      gtk_layout_move (GTK_LAYOUT (widget->parent), widget, x, y);
+      if (!(width == 0 && height == 0))
+        {
+          gtk_widget_set_size_request (widget, width, height);
+          if (widget->parent != NULL)
+            gtk_fixed_move (GTK_FIXED (widget->parent), widget, x, y);
+        }
     }
 
   gdk_threads_leave ();
@@ -908,38 +920,6 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetSetForeground
 }
 
 JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkSetFont
-  (JNIEnv *env, jobject obj, jstring name, jint style, jint size)
-{
-  const char *font_name;
-  void *ptr;
-  PangoFontDescription *font_desc;
-
-  ptr = NSA_GET_PTR (env, obj);
-
-  font_name = (*env)->GetStringUTFChars (env, name, NULL);
-
-  gdk_threads_enter();
-
-  font_desc = pango_font_description_from_string (font_name);
-  pango_font_description_set_size (font_desc, size * dpi_conversion_factor);
-
-  if (style & AWT_STYLE_BOLD)
-    pango_font_description_set_weight (font_desc, PANGO_WEIGHT_BOLD);
-
-  if (style & AWT_STYLE_ITALIC)
-    pango_font_description_set_style (font_desc, PANGO_STYLE_OBLIQUE);
-
-  gtk_widget_modify_font (GTK_WIDGET(ptr), font_desc);
-
-  pango_font_description_free (font_desc);
-
-  gdk_threads_leave();
-
-  (*env)->ReleaseStringUTFChars (env, name, font_name);
-}
-
-JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkComponentPeer_show
   (JNIEnv *env, jobject obj)
 {
@@ -965,23 +945,6 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_hide
   gdk_threads_leave();
 }
 
-GtkLayout *
-find_gtk_layout (GtkWidget *parent)
-{
-  if (GTK_IS_WINDOW (parent))
-    {
-      GList *children = gtk_container_children 
-	                  (GTK_CONTAINER (GTK_BIN (parent)->child));
-
-      if (GTK_IS_MENU_BAR (children->data))
-	return GTK_LAYOUT (children->next->data);
-      else /* GTK_IS_LAYOUT (children->data) */
-	return GTK_LAYOUT (children->data);
-    }
-
-  return NULL;
-}
-
 JNIEXPORT jboolean JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkComponentPeer_isEnabled 
   (JNIEnv *env, jobject obj)
@@ -993,6 +956,25 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_isEnabled
 
   gdk_threads_enter ();
   ret_val = GTK_WIDGET_IS_SENSITIVE (GTK_WIDGET (ptr));
+  gdk_threads_leave ();
+
+  return ret_val;
+}
+
+JNIEXPORT jboolean JNICALL 
+Java_gnu_java_awt_peer_gtk_GtkComponentPeer_isRealized
+  (JNIEnv *env, jobject obj)
+{
+  void *ptr;
+  jboolean ret_val;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  if (ptr == NULL)
+    return FALSE;
+
+  gdk_threads_enter ();
+  ret_val = GTK_WIDGET_REALIZED (GTK_WIDGET (ptr));
   gdk_threads_leave ();
 
   return ret_val;
@@ -1013,197 +995,21 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_modalHasGrab
   return retval;
 }
 
-static gboolean
-filter_expose_event_handler (GtkWidget *widget, GdkEvent *event, jobject peer)
-{
-  /*
-   * Prevent the default event handler from getting this signal if applicable
-   * FIXME: I came up with these filters by looking for patterns in the unwanted
-   *        expose events that are fed back to us from gtk/X. Perhaps there is
-   *        a way to prevent them from occuring in the first place.
-   */
-  if (event->type == GDK_EXPOSE && (!GTK_IS_LAYOUT(widget)
-                                    || event->any.window != widget->window))
-    {
-      g_signal_stop_emission_by_name(GTK_OBJECT(widget), "event");
-      return FALSE;
-    }
-  else
-    {
-      /* There may be non-expose events that are triggered while we're
-        painting a heavyweight peer. */
-      return pre_event_handler(widget, event, peer);
-    }
-}
-
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_addExposeFilter
-  (JNIEnv *env, jobject obj)
-{
-  GtkObject *filterobj;
-  GtkWidget *vbox, *layout;
-  GList *children;
-  void *ptr = NSA_GET_PTR (env, obj);
-  jobject *gref = NSA_GET_GLOBAL_REF (env, obj);
-  gulong hid;
-
-  g_assert (gref);
-
-  gdk_threads_enter ();
-
-  /* GtkFramePeer is built as a GtkLayout inside a GtkVBox inside a GtkWindow.
-     Events go to the GtkLayout layer, so we filter them there. */
-  if (GTK_IS_WINDOW(ptr))
-    {
-      children = gtk_container_get_children(GTK_CONTAINER(ptr));
-      vbox = children->data;
-      g_assert (GTK_IS_VBOX(vbox));
-
-      children = gtk_container_get_children(GTK_CONTAINER(vbox));
-      do
-      {
-        layout = children->data;
-        children = children->next;
-      }
-      while (!GTK_IS_LAYOUT (layout) && children != NULL);
-      g_assert (GTK_IS_LAYOUT(layout));
-
-      filterobj = GTK_OBJECT(layout);
-    }
-  else if (GTK_IS_SCROLLED_WINDOW(ptr))
-    {
-      /* The event will go to the parent GtkLayout. */
-      filterobj = GTK_OBJECT(GTK_WIDGET(ptr)->parent);
-    }
-  else
-    {
-      filterobj = GTK_OBJECT(ptr);
-    }
-  hid = g_signal_handler_find(filterobj,
-                              G_SIGNAL_MATCH_FUNC,
-                              0, 0, NULL, *pre_event_handler, NULL);
-  if (hid > 0)
-  {
-    g_signal_handler_block(filterobj, hid);
-  }
-  g_signal_connect( filterobj, "event",
-                    G_CALLBACK(filter_expose_event_handler), *gref);
-
-  gdk_threads_leave ();
-}
-
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_removeExposeFilter
-  (JNIEnv *env, jobject obj)
-{
-  GtkObject *filterobj;
-  GtkWidget *vbox, *layout;
-  GList *children;
-  void *ptr = NSA_GET_PTR (env, obj);
-  jobject *gref = NSA_GET_GLOBAL_REF (env, obj);
-  gulong hid;
-
-  g_assert (gref);
-
-  gdk_threads_enter ();
-
-  /* GtkFramePeer is built as a GtkLayout inside a GtkVBox inside a GtkWindow.
-     Events go to the GtkLayout layer, so we filter them there. */
-  if (GTK_IS_WINDOW(ptr))
-    {
-      children = gtk_container_get_children(GTK_CONTAINER(ptr));
-      vbox = children->data;
-      g_assert (GTK_IS_VBOX(vbox));
-
-      children = gtk_container_get_children(GTK_CONTAINER(vbox));
-      do
-      {
-        layout = children->data;
-        children = children->next;
-      }
-      while (!GTK_IS_LAYOUT (layout) && children != NULL);
-      g_assert (GTK_IS_LAYOUT(layout));
-
-      filterobj = GTK_OBJECT(layout);
-    }
-  else if (GTK_IS_SCROLLED_WINDOW(ptr))
-    {
-      /* The event will go to the parent GtkLayout. */
-      filterobj = GTK_OBJECT(GTK_WIDGET(ptr)->parent);
-    }
-  else
-    {
-      filterobj = GTK_OBJECT(ptr);
-    }
-
-  g_signal_handlers_disconnect_by_func (filterobj,
-                                        *filter_expose_event_handler, *gref);
-  hid = g_signal_handler_find(filterobj,
-                              G_SIGNAL_MATCH_FUNC,
-                              0, 0, NULL, *pre_event_handler, NULL);
-  if (hid > 0)
-  {
-    g_signal_handler_unblock(filterobj, hid);
-  }
-
-  gdk_threads_leave ();
-}
-
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetQueueDrawArea
-  (JNIEnv *env, jobject obj, jint x, jint y, jint width, jint height)
-{
-  GdkRectangle rect;
-  void *ptr;
-
-  ptr = NSA_GET_PTR (env, obj);
-
-  rect.x = x + GTK_WIDGET(ptr)->allocation.x;
-  rect.y = y + GTK_WIDGET(ptr)->allocation.y;
-  rect.width = width;
-  rect.height = height;
-
-  gdk_threads_enter ();
-
-  gdk_window_invalidate_rect (GTK_WIDGET (ptr)->window, &rect, 0);
-  gdk_window_process_all_updates();
-
-  gdk_threads_leave ();
-}
-
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectJObject
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectSignals
   (JNIEnv *env, jobject obj)
 {
   void *ptr;
+  jobject *gref;
 
   ptr = NSA_GET_PTR (env, obj);
+  gref = NSA_GET_GLOBAL_REF (env, obj);
 
   gdk_threads_enter ();
-
-  gtk_widget_realize (GTK_WIDGET (ptr));
-
-  connect_awt_hook (env, obj, 1, GTK_WIDGET (ptr)->window);
-
-  gdk_threads_leave ();
-}
-
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectSignals
-  (JNIEnv *env, jobject obj)
-{
-  void *ptr = NSA_GET_PTR (env, obj);
-  jobject *gref = NSA_GET_GLOBAL_REF (env, obj);
-  g_assert (gref);
-
-  gdk_threads_enter ();
-
-  gtk_widget_realize (GTK_WIDGET (ptr));
-  
-  /* FIXME: We could check here if this is a scrolled window with a
-     single child that does not have an associated jobject.  This
-     means that it is one of our wrapped widgets like List or TextArea
-     and thus we could connect the signal to the child without having
-     to specialize this method. */
 
   /* Connect EVENT signal, which happens _before_ any specific signal. */
 
-  g_signal_connect (GTK_OBJECT (ptr), "event", 
+  g_signal_connect (GTK_OBJECT (ptr), "event",
                     G_CALLBACK (pre_event_handler), *gref);
 
   g_signal_connect (G_OBJECT (ptr), "focus-in-event",
@@ -1211,6 +1017,9 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectSignal
 
   g_signal_connect (G_OBJECT (ptr), "focus-out-event",
                     G_CALLBACK (focus_out_cb), *gref);
+
+  g_signal_connect_after (G_OBJECT (ptr), "realize",
+                          G_CALLBACK (connect_awt_hook_cb), *gref);
 
   gdk_threads_leave ();
 }
@@ -1235,19 +1044,7 @@ find_bg_color_widget (GtkWidget *widget)
 {
   GtkWidget *bg_color_widget;
 
-  if (GTK_IS_WINDOW (widget))
-    {
-      GtkWidget *vbox;
-      GList* children;
-
-      children = gtk_container_get_children(GTK_CONTAINER(widget));
-      vbox = children->data;
-
-      children = gtk_container_get_children(GTK_CONTAINER(vbox));
-      bg_color_widget = children->data;
-    }
-  else
-    bg_color_widget = widget;
+  bg_color_widget = widget;
 
   return bg_color_widget;
 }

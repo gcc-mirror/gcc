@@ -82,4 +82,6 @@ public class GtkGenericPeer
     // Let's assume this will never wrap.
     return next_native_state++;
   }
+
+  native void gtkWidgetModifyFont (String name, int style, int size);
 }

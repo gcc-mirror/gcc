@@ -41,11 +41,9 @@ package javax.swing.plaf.basic;
 import java.beans.PropertyChangeEvent;
 
 import javax.swing.JComponent;
-import javax.swing.JTextField;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.text.Element;
 import javax.swing.text.FieldView;
-import javax.swing.text.PlainDocument;
 import javax.swing.text.View;
 
 public class BasicTextFieldUI extends BasicTextUI

@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
 import java.awt.Component;
@@ -47,10 +48,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.EventListener;
+
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
-import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MenuDragMouseEvent;
@@ -528,19 +529,20 @@ public class JMenuItem extends AbstractButton implements Accessible,
    */
   public void menuSelectionChanged(boolean changed)
   {
+    Component parent = this.getParent();
     if (changed)
       {
       model.setArmed(true);
 
-	if (this.getParent() instanceof JPopupMenu)
-	  ((JPopupMenu) this.getParent()).setSelected(this);
+	if (parent != null && parent instanceof JPopupMenu)
+	  ((JPopupMenu) parent).setSelected(this);
       }
     else
       {
       model.setArmed(false);
 
-	if (this.getParent() instanceof JPopupMenu)
-	  ((JPopupMenu) this.getParent()).getSelectionModel().clearSelection();
+	if (parent != null && parent instanceof JPopupMenu)
+	  ((JPopupMenu) parent).getSelectionModel().clearSelection();
       }
   }
 

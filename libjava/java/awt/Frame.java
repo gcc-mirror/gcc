@@ -39,7 +39,6 @@ exception statement from your version. */
 package java.awt;
 
 import java.awt.peer.FramePeer;
-import java.util.Enumeration;
 import java.util.Vector;
 
 /**
@@ -199,8 +198,8 @@ private String title = "";
 
 /*
    * The number used to generate the name returned by getName.
- */
-  private static transient long next_frame_number = 0;
+   */
+  private static transient long next_frame_number;
 
 /**
   * Initializes a new instance of <code>Frame</code> that is not visible
@@ -317,6 +316,7 @@ setMenuBar(MenuBar menuBar)
       this.menuBar.removeNotify();  
     if (menuBar != null)
       menuBar.addNotify();
+    invalidateTree ();
     ((FramePeer) peer).setMenuBar(menuBar);
   }
   this.menuBar = menuBar;

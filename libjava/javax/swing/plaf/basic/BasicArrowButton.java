@@ -1,4 +1,4 @@
-/* BasicArrowButton.java
+/* BasicArrowButton.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -35,183 +35,98 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.plaf.basic;
 
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Insets;
 import java.awt.Graphics;
+import java.awt.Insets;
 import java.awt.Polygon;
 import java.awt.Rectangle;
-import javax.swing.border.Border;
-import javax.swing.Icon;
+
 import javax.swing.JButton;
 import javax.swing.SwingConstants;
-
+import javax.swing.border.Border;
 
 /**
  * This class draws simple arrow buttons for the Basic Look and Feel.
  */
 public class BasicArrowButton extends JButton implements SwingConstants
 {
-  /**
-   * A private helper class that draws icons.
-   */
-  private class arrowIcon implements Icon
-  {
-    /** The polygon that describes the icon. */
-    private Polygon arrow;
+  /** The default size of the Arrow buttons. */
+  private static int defaultSize = 10;
 
-    /** The size of the icon. */
-    private int size = 10;
+  /** The Polygon that points up. */
+  private static Polygon upIcon = new Polygon(new int[] { 0, 5, 9 },
+                                              new int[] { 7, 2, 7 }, 3);
 
-    /**
-     * Creates a new arrowIcon object using the given arrow polygon.
-     *
-     * @param arrow The polygon that describes the arrow.
-     */
-    public arrowIcon(Polygon arrow)
-    {
-      this.arrow = arrow;
-    }
+  /** The Polygon that points down. */
+  private static Polygon downIcon = new Polygon(new int[] { 1, 5, 9 },
+                                                new int[] { 3, 7, 3 }, 3);
 
-    /**
-     * Returns the height of the icon.
-     *
-     * @return The height of the icon.
-     */
-    public int getIconHeight()
-    {
-      return size;
-    }
+  /** The Polygon that points left. */
+  private static Polygon leftIcon = new Polygon(new int[] { 7, 3, 7 },
+                                                new int[] { 1, 5, 9 }, 3);
 
-    /**
-     * Returns the width of the icon.
-     *
-     * @return The width of the icon.
-     */
-    public int getIconWidth()
-    {
-      return size;
-    }
-
-    /**
-     * Sets the size of the icon.
-     *
-     * @param size The size of the icon.
-     */
-    public void setSize(int size)
-    {
-      this.size = size;
-    }
-
-    /**
-     * Sets the arrow polygon.
-     *
-     * @param arrow The arrow polygon.
-     */
-    public void setArrow(Polygon arrow)
-    {
-      this.arrow = arrow;
-    }
-
-    /**
-     * Paints the icon.
-     *
-     * @param c The Component to paint for.
-     * @param g The Graphics object to draw with.
-     * @param x The X coordinate to draw at.
-     * @param y The Y coordinate to draw at.
-     */
-    public void paintIcon(Component c, Graphics g, int x, int y)
-    {
-      Color arrowColor;
-      if (c.isEnabled())
-	arrowColor = darkShadow;
-      else
-	arrowColor = shadow;
-
-      paintIconImpl(g, x, y, arrowColor);
-    }
-
-    /**
-     * This method does the actual painting work.
-     *
-     * @param g The Graphics object to paint with.
-     * @param x The x coordinate to paint at.
-     * @param y The y coordinate to paint at.
-     * @param arrowColor The color to paint the arrow with.
-     */
-    public void paintIconImpl(Graphics g, int x, int y, Color arrowColor)
-    {
-      g.translate(x, y);
-
-      Color saved = g.getColor();
-
-      g.setColor(arrowColor);
-
-      g.fillPolygon(arrow);
-
-      g.setColor(saved);
-      g.translate(-x, -y);
-    }
-  }
+  /** The Polygon that points right. */
+  private static Polygon rightIcon = new Polygon(new int[] { 3, 7, 3 },
+                                                 new int[] { 1, 5, 9 }, 3);
 
   /** The direction to point in. */
   protected int direction;
 
-  /** The color the arrow is painted in if disabled and the bottom and
-   * right edges of the button. */
-  private transient Color shadow = Color.gray;
+  /**
+   * The color the arrow is painted in if disabled and the bottom and right
+   * edges of the button.
+   */
+  private transient Color shadow = Color.GRAY;
 
-  /** The color the arrow is painted in if enabled and the bottom and
-   * right edges of the button. */
-  private transient Color darkShadow = Color.BLACK;
+  /**
+   * The color the arrow is painted in if enabled and the bottom and right
+   * edges of the button.
+   */
+  private transient Color darkShadow = Color.DARK_GRAY;
 
   /** The top and left edges of the button. */
-  private transient Color highlight = Color.BLACK;
+  private transient Color highlight = Color.WHITE;
 
   /** The border around the ArrowButton. */
-  private transient Border tmpBorder = new Border()
-  {
-    public Insets getBorderInsets(Component c)
+  private transient Border buttonBorder = new Border()
     {
-      return new Insets(0, 0, 0, 0);
-    }
-    
-    public boolean isBorderOpaque()
-    {
-      return false;
-    }
-    
-    public void paintBorder(Component c, Graphics g, int x, int y, int w, int h)
-    {
-      Rectangle bounds = getBounds();
+      public Insets getBorderInsets(Component c)
+      {
+	return new Insets(2, 2, 2, 2);
+      }
 
-      Color saved = g.getColor();
-      g.setColor(highlight);
+      public boolean isBorderOpaque()
+      {
+	return true;
+      }
 
-      g.drawLine(bounds.x, bounds.y, bounds.x, bounds.y + bounds.height);
-      g.drawLine(bounds.x, bounds.y, bounds.x + bounds.width, bounds.y);
+      public void paintBorder(Component c, Graphics g, int x, int y, int w,
+                              int h)
+      {
+	Color saved = g.getColor();
+	g.setColor(highlight);
 
-      g.setColor(shadow);
+	g.drawLine(x + 1, y + 1, x + w - 1, y + 1);
+	g.drawLine(x + 1, y + 1, x + 1, y + h - 1);
 
-      g.drawLine(bounds.x + 1, bounds.y + bounds.height - 1,
-                 bounds.x + bounds.width - 1, bounds.y + bounds.height - 1);
-      g.drawLine(bounds.x + bounds.width - 1, bounds.y + 1,
-                 bounds.x + bounds.width - 1, bounds.y + bounds.height - 1);
+	g.setColor(shadow);
 
-      g.setColor(darkShadow);
+	g.drawLine(x + 1, y + h - 1, x + w - 1, y + h - 1);
+	g.drawLine(x + w - 1, y + 1, x + w - 1, y + h - 1);
 
-      g.drawLine(bounds.x, bounds.y + bounds.height, bounds.x + bounds.width,
-                 bounds.y + bounds.height);
-      g.drawLine(bounds.x + bounds.width, bounds.y, bounds.x + bounds.width,
-                 bounds.y + bounds.height);
+	g.setColor(darkShadow);
 
-      g.setColor(saved);
-    }
-  };
+	g.drawLine(x, y + h, x + w, y + h);
+	g.drawLine(x + w, y, x + w, y + h);
+
+	g.setColor(saved);
+      }
+    };
 
   /**
    * Creates a new BasicArrowButton object.
@@ -221,12 +136,12 @@ public class BasicArrowButton extends JButton implements SwingConstants
   public BasicArrowButton(int direction)
   {
     super();
+    setBorder(buttonBorder);
     setDirection(direction);
-    setBorder(tmpBorder);
   }
 
   /**
-   * Creates a new BasicArrowButton object with the given colors and 
+   * Creates a new BasicArrowButton object with the given colors and
    * direction.
    *
    * @param direction The direction to point in.
@@ -246,6 +161,16 @@ public class BasicArrowButton extends JButton implements SwingConstants
   }
 
   /**
+   * This method returns whether the focus can traverse to this component.
+   *
+   * @return Whether the focus can traverse to this component.
+   */
+  public boolean isFocusTraversable()
+  {
+    return false;
+  }
+
+  /**
    * This method returns the direction of the arrow.
    *
    * @return The direction of the arrow.
@@ -262,22 +187,25 @@ public class BasicArrowButton extends JButton implements SwingConstants
    */
   public void setDirection(int dir)
   {
-    Polygon arrow = getArrow(dir, 10);
-    if (getIcon() == null)
-      setIcon(new arrowIcon(arrow));
-    else
-      ((arrowIcon) getIcon()).setArrow(arrow);
     this.direction = dir;
   }
 
   /**
-   * This method paints the arrow button.
+   * This method paints the arrow button. The painting is delegated to the
+   * paintTriangle method.
    *
    * @param g The Graphics object to paint with.
    */
   public void paint(Graphics g)
   {
     super.paint(g);
+    Insets insets = getInsets();
+    Rectangle bounds = getBounds();
+    int x = insets.left
+            + (bounds.width - insets.left - insets.right - defaultSize) / 2;
+    int y = insets.top
+            + (bounds.height - insets.left - insets.right - defaultSize) / 2;
+    paintTriangle(g, x, y, defaultSize, direction, isEnabled());
   }
 
   /**
@@ -287,7 +215,11 @@ public class BasicArrowButton extends JButton implements SwingConstants
    */
   public Dimension getPreferredSize()
   {
-    return new Dimension(getIcon().getIconWidth(), getIcon().getIconHeight());
+    Insets insets = getInsets();
+    int w = defaultSize + insets.left + insets.right;
+    int h = defaultSize + insets.top + insets.bottom;
+
+    return new Dimension(w, h);
   }
 
   /**
@@ -311,8 +243,8 @@ public class BasicArrowButton extends JButton implements SwingConstants
   }
 
   /**
-   * The method paints a triangle with the given size and direction at
-   * the given x and y coordinates.
+   * The method paints a triangle with the given size and direction at the
+   * given x and y coordinates.
    *
    * @param g The Graphics object to paint with.
    * @param x The x coordinate to paint at.
@@ -324,61 +256,90 @@ public class BasicArrowButton extends JButton implements SwingConstants
   public void paintTriangle(Graphics g, int x, int y, int size, int direction,
                             boolean isEnabled)
   {
-    Polygon arrow = getArrow(direction, size);
-    arrowIcon arrowI = new arrowIcon(arrow);
-    arrowI.setSize(size);
-
-    Color arrowColor;
-    if (isEnabled())
-      arrowColor = darkShadow;
-    else
-      arrowColor = shadow;
-
-    arrowI.paintIconImpl(g, x, y, arrowColor);
-  }
-
-  /**
-   * This is a private helper that creates polygons for a given size 
-   * and direction.
-   *
-   * @param direction The direction of the arrow.
-   * @param size The size of the arrow.
-   *
-   * @return A new arrow polygon.
-   */
-  private Polygon getArrow(int direction, int size)
-  {
-    Polygon arrow;
-    double dsize = (double) size;
-		
-		int one = (int) (dsize * 1 / 10);
-    int two = (int) (dsize * 2 / 10);
-		int five = (int) (dsize * 5 / 10);
-    int eight = (int) (dsize * 8 / 10);
-		
+    Polygon arrow = null;
     switch (direction)
       {
       case NORTH:
-	arrow = new Polygon(new int[] { eight, five, one },
-	                    new int[] { eight, one, eight }, 3);
+	arrow = upIcon;
 	break;
       case SOUTH:
-	arrow = new Polygon(new int[] { eight, five, two },
-	                    new int[] { two, eight, two }, 3);
+	arrow = downIcon;
 	break;
       case EAST:
       case RIGHT:
-	arrow = new Polygon(new int[] { two, eight, two },
-	                    new int[] { two, five, eight }, 3);
+	arrow = rightIcon;
 	break;
       case WEST:
       case LEFT:
-	arrow = new Polygon(new int[] { eight, two, eight },
-	                    new int[] { two, five, eight }, 3);
+	arrow = leftIcon;
 	break;
-      default:
-	throw new IllegalArgumentException("Invalid direction given.");
       }
-    return arrow;
+
+    int[] xPoints = arrow.xpoints;
+    int[] yPoints = arrow.ypoints;
+    int x1;
+    int y1;
+    int x2;
+    int y2;
+    x1 = y1 = x2 = y2 = 0;
+
+    if (size != defaultSize)
+      {
+	float scale = size * 1f / defaultSize;
+	for (int i = 0; i < 3; i++)
+	  {
+	    xPoints[i] *= scale;
+	    yPoints[i] *= scale;
+	  }
+      }
+    g.translate(x, y);
+
+    switch (direction)
+      {
+      case NORTH:
+	x1 = xPoints[0] + 2;
+	y1 = yPoints[0];
+	y2 = y1;
+	x2 = xPoints[2] - 1;
+	break;
+      case SOUTH:
+	x1 = xPoints[1];
+	y1 = yPoints[1] + 1;
+	x2 = xPoints[2] - 1;
+	y2 = yPoints[2];
+	break;
+      case LEFT:
+      case WEST:
+	x1 = xPoints[0] + 1;
+	y1 = yPoints[0] + 1;
+	x2 = x1;
+	y2 = yPoints[2] + 1;
+	break;
+      case RIGHT:
+      case EAST:
+	x1 = xPoints[2];
+	y1 = yPoints[2] + 1;
+	x2 = xPoints[1] - 1;
+	y2 = yPoints[1] + 1;
+	break;
+      }
+    Color saved = g.getColor();
+
+    if (isEnabled)
+      {
+	g.setColor(Color.DARK_GRAY);
+
+	if (arrow != null)
+	  g.fillPolygon(xPoints, yPoints, 3);
+      }
+    else
+      {
+	g.setColor(Color.GRAY);
+	g.fillPolygon(xPoints, yPoints, 3);
+	g.setColor(Color.WHITE);
+	g.drawLine(x1, y1, x2, y2);
+      }
+    g.setColor(saved);
+    g.translate(-x, -y);
   }
 }

@@ -1,5 +1,5 @@
 /* NavigationFilter.java --
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,4 +40,32 @@ package javax.swing.text;
 
 public class NavigationFilter
 {
+  public abstract static class FilterBypass
+  {
+    public FilterBypass()
+    {
+      // Do nothing here.
+    }
+
+    public abstract Caret getCaret();
+    public abstract void moveDot(int dot, Position.Bias bias);
+    public abstract void setDot(int dot, Position.Bias bias);
+  }
+  
+  public NavigationFilter()
+  {
+    // Do nothing here.
+  }
+
+  public void moveDot(NavigationFilter.FilterBypass fb, int dot,
+		      Position.Bias bias)
+  {
+    fb.moveDot(dot, bias);
+  }
+
+  public void setDot(NavigationFilter.FilterBypass fb, int dot,
+		     Position.Bias bias)
+  {
+    fb.setDot(dot, bias);
+  }
 }

@@ -1,5 +1,5 @@
 /* KeyEvent.java -- event for key presses
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,10 +38,11 @@ exception statement from your version. */
 
 package java.awt.event;
 
+import gnu.java.awt.EventModifier;
+
 import java.awt.Component;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import gnu.java.awt.EventModifier;
 
 /**
  * This event is generated when a key is pressed or released. There are two

@@ -1,5 +1,6 @@
 /* Scrollbar.java -- AWT Scrollbar widget
-   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,10 +39,11 @@ exception statement from your version. */
 
 package java.awt;
 
-import java.awt.event.AdjustmentListener;
 import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.awt.peer.ScrollbarPeer;
 import java.util.EventListener;
+
 import javax.accessibility.Accessible;
 
 /**
@@ -123,7 +125,7 @@ private transient boolean valueIsAdjusting = false;
   /*
    * The number used to generate the name returned by getName.
    */
-  private static transient long next_scrollbar_number = 0;
+  private static transient long next_scrollbar_number;
 
 /*************************************************************************/
 
@@ -363,7 +365,7 @@ getVisible()
   * Sets the width of the scrollbar's thumb, in units relative to the
   * maximum and minimum value of the scrollbar.
   *
-  * @param visibileAmount The new visible amount value of the scrollbar.
+  * @param visibleAmount The new visible amount value of the scrollbar.
   */
 public void
 setVisibleAmount(int visibleAmount)

@@ -175,7 +175,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_setEchoChar
 }
 
 JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_gtkSetFont
+Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_gtkWidgetModifyFont
   (JNIEnv *env, jobject obj, jstring name, jint style, jint size)
 {
   const char *font_name;

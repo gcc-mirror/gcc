@@ -1,5 +1,5 @@
 /* AbstractLayoutCache.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,58 +40,43 @@ package javax.swing.tree;
 
 import java.awt.Rectangle;
 import java.util.Enumeration;
+
 import javax.swing.event.TreeModelEvent;
 
 /**
- * AbstractLayoutCache
+ * class AbstractLayoutCache
+ * 
  * @author Andrew Selkirk
  */
 public abstract class AbstractLayoutCache implements RowMapper
 {
-
-	//-------------------------------------------------------------
-	// Classes ----------------------------------------------------
-	//-------------------------------------------------------------
-
 	/**
-	 * NodeDimensions
+	 * class NodeDimensions
 	 */
-	public abstract static class NodeDimensions {
-
-		//-------------------------------------------------------------
-		// Initialization ---------------------------------------------
-		//-------------------------------------------------------------
-
+	public abstract static class NodeDimensions
+	{
 		/**
-		 * Constructor NodeDimensions
+		 * Creates <code>NodeDimensions</code> object.
 		 */
-		public NodeDimensions() {
-			// TODO
-		} // NodeDimensions()
-
-
-		//-------------------------------------------------------------
-		// Methods ----------------------------------------------------
-		//-------------------------------------------------------------
+		public NodeDimensions()
+		{
+			// Do nothing here.
+		}
 
 		/**
 		 * getNodeDimensions
+		 * 
 		 * @param value0 TODO
 		 * @param value1 TODO
 		 * @param value2 TODO
 		 * @param value3 TODO
 		 * @param value4 TODO
-		 * @returns Rectangle
+		 * @return Rectangle
 		 */
-		public abstract Rectangle getNodeDimensions(Object value0, int value1, int value2, boolean value3, Rectangle value4);
-
-
-	} // NodeDimensions
-
-
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
+		public abstract Rectangle getNodeDimensions(Object value0, int value1,
+		                                            int value2, boolean value3,
+		                                            Rectangle value4);
+	}
 
 	/**
 	 * nodeDimensions
@@ -118,201 +103,241 @@ public abstract class AbstractLayoutCache implements RowMapper
 	 */
 	protected int rowHeight;
 
-
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-
 	/**
 	 * Constructor AbstractLayoutCache
 	 */
-	public AbstractLayoutCache() {
-		// TODO
-	} // AbstractLayoutCache()
-
-
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
+	public AbstractLayoutCache()
+	{
+	  // Do nothing here.
+	}
 
 	/**
 	 * setNodeDimensions
-	 * @param value0 TODO
+	 * 
+	 * @param dimensions TODO
 	 */
-	public void setNodeDimensions(NodeDimensions value0) {
-		// TODO
-	} // setNodeDimensions()
+	public void setNodeDimensions(NodeDimensions dimensions)
+	{
+		nodeDimensions = dimensions;
+	}
 
 	/**
 	 * getNodeDimensions
-	 * @returns NodeDimensions
+	 * 
+	 * @return NodeDimensions
 	 */
-	public NodeDimensions getNodeDimensions() {
-		return null; // TODO
-	} // getNodeDimensions()
+	public NodeDimensions getNodeDimensions()
+	{
+		return nodeDimensions;
+	}
 
 	/**
 	 * getNodeDimensions
+	 * 
 	 * @param value0 TODO
 	 * @param value1 TODO
 	 * @param value2 TODO
 	 * @param value3 TODO
 	 * @param value4 TODO
-	 * @returns Rectangle
+	 * 
+	 * @return Rectangle
 	 */
-	protected Rectangle getNodeDimensions(Object value0, int value1, int value2, boolean value3, Rectangle value4) {
+	protected Rectangle getNodeDimensions(Object value0, int value1, int value2, boolean value3, Rectangle value4)
+	{
 		return null; // TODO
-	} // getNodeDimensions()
+	}
 
 	/**
-	 * setModel
-	 * @param value0 TODO
+	 * Sets the model that provides the tree data.
+	 * 
+	 * @param the model
 	 */
-	public void setModel(TreeModel value0) {
-		// TODO
-	} // setModel()
+	public void setModel(TreeModel model)
+	{
+	  treeModel = model;
+	}
 
 	/**
-	 * getModel
-	 * @returns TreeModel
+	 * Returns the model that provides the tree data.
+	 * 
+	 * @return the model
 	 */
-	public TreeModel getModel() {
-		return null; // TODO
-	} // getModel()
+	public TreeModel getModel()
+	{
+		return treeModel;
+	}
 
 	/**
 	 * setRootVisible
-	 * @param value0 TODO
+	 * 
+	 * @param visible <code>true</code> if root should be visible,
+	 * <code>false</code> otherwise
 	 */
-	public void setRootVisible(boolean value0) {
-		// TODO
-	} // setRootVisible()
+	public void setRootVisible(boolean visible)
+	{
+		rootVisible = visible;
+	}
 
 	/**
 	 * isRootVisible
-	 * @returns boolean
+	 * 
+	 * @return <code>true</code> if root is visible,
+	 * <code>false</code> otherwise
 	 */
-	public boolean isRootVisible() {
-		return false; // TODO
-	} // isRootVisible()
+	public boolean isRootVisible()
+	{
+		return rootVisible;
+	}
 
 	/**
 	 * setRowHeight
-	 * @param value0 TODO
+	 * 
+	 * @param height the row height
 	 */
-	public void setRowHeight(int value0) {
-		// TODO
-	} // setRowHeight()
+	public void setRowHeight(int height)
+	{
+		rowHeight = height;
+	}
 
 	/**
 	 * getRowHeight
-	 * @returns int
+	 * 
+	 * @return the row height
 	 */
-	public int getRowHeight() {
-		return 0; // TODO
-	} // getRowHeight()
+	public int getRowHeight()
+	{
+		return rowHeight;
+	}
 
 	/**
 	 * setSelectionModel
-	 * @param value0 TODO
+	 * 
+	 * @param model the model
 	 */
-	public void setSelectionModel(TreeSelectionModel value0) {
-		// TODO
-	} // setSelectionModel()
+	public void setSelectionModel(TreeSelectionModel model)
+	{
+		treeSelectionModel = model;
+	}
 
 	/**
 	 * getSelectionModel
-	 * @returns TreeSelectionModel
+	 * 
+	 * @return the model
 	 */
-	public TreeSelectionModel getSelectionModel() {
-		return null; // TODO
-	} // getSelectionModel()
+	public TreeSelectionModel getSelectionModel()
+	{
+		return treeSelectionModel;
+	}
 
 	/**
 	 * getPreferredHeight
-	 * @returns int
+	 * 
+	 * @return int
 	 */
-	public int getPreferredHeight() {
+	public int getPreferredHeight()
+	{
 		return 0; // TODO
-	} // getPreferredHeight()
+	}
 
 	/**
 	 * getPreferredWidth
+	 * 
 	 * @param value0 TODO
-	 * @returns int
+	 * 
+	 * @return int
 	 */
-	public int getPreferredWidth(Rectangle value0) {
+	public int getPreferredWidth(Rectangle value0)
+	{
 		return 0; // TODO
-	} // getPreferredWidth()
+	}
 
 	/**
 	 * isExpanded
+	 * 
 	 * @param value0 TODO
-	 * @returns boolean
+	 * 
+	 * @return boolean
 	 */
 	public abstract boolean isExpanded(TreePath value0);
 
 	/**
 	 * getBounds
+	 * 
 	 * @param value0 TODO
 	 * @param value1 TODO
-	 * @returns Rectangle
+	 * 
+	 * @return Rectangle
 	 */
 	public abstract Rectangle getBounds(TreePath value0, Rectangle value1);
 
 	/**
 	 * getPathForRow
-	 * @param value0 TODO
-	 * @returns TreePath
+	 * 
+	 * @param row the row
+	 * 
+	 * @return the tree path
 	 */
-	public abstract TreePath getPathForRow(int value0);
+	public abstract TreePath getPathForRow(int row);
 
 	/**
 	 * getRowForPath
-	 * @param value0 TODO
-	 * @returns int
+	 * 
+	 * @param path the tree path
+	 * 
+	 * @return the row
 	 */
-	public abstract int getRowForPath(TreePath value0);
+	public abstract int getRowForPath(TreePath path);
 
 	/**
 	 * getPathClosestTo
+	 * 
 	 * @param value0 TODO
 	 * @param value1 TODO
-	 * @returns TreePath
+	 * 
+	 * @return the tree path
 	 */
 	public abstract TreePath getPathClosestTo(int value0, int value1);
 
 	/**
 	 * getVisiblePathsFrom
-	 * @param value0 TODO
-	 * @returns Enumeration
+	 * 
+	 * @param path the tree path
+	 * 
+	 * @return Enumeration
 	 */
-	public abstract Enumeration getVisiblePathsFrom(TreePath value0);
+	public abstract Enumeration getVisiblePathsFrom(TreePath path);
 
 	/**
 	 * getVisibleChildCount
-	 * @param value0 TODO
-	 * @returns int
+	 * 
+	 * @param path the tree path
+	 * 
+	 * @return int
 	 */
 	public abstract int getVisibleChildCount(TreePath value0);
 
 	/**
 	 * setExpandedState
+	 * 
 	 * @param value0 TODO
+	 * 
 	 * @param value1 TODO
 	 */
 	public abstract void setExpandedState(TreePath value0, boolean value1);
 
 	/**
 	 * getExpandedState
-	 * @param value0 TODO
-	 * @returns boolean
+	 * 
+	 * @param path the tree path
+	 * 
+	 * @return boolean
 	 */
-	public abstract boolean getExpandedState(TreePath value0);
+	public abstract boolean getExpandedState(TreePath path);
 
 	/**
 	 * getRowCount
-	 * @returns int
+	 * 
+	 * @return the number of rows
 	 */
 	public abstract int getRowCount();
 
@@ -323,50 +348,58 @@ public abstract class AbstractLayoutCache implements RowMapper
 
 	/**
 	 * invalidatePathBounds
-	 * @param value0 TODO
+	 * 
+	 * @param path the tree path
 	 */
-	public abstract void invalidatePathBounds(TreePath value0);
+	public abstract void invalidatePathBounds(TreePath path);
 
 	/**
 	 * treeNodesChanged
-	 * @param value0 TODO
+	 * 
+	 * @param event the event to send
 	 */
-	public abstract void treeNodesChanged(TreeModelEvent value0);
+	public abstract void treeNodesChanged(TreeModelEvent event);
 
 	/**
 	 * treeNodesInserted
-	 * @param value0 TODO
+	 * 
+	 * @param event the event to send
 	 */
-	public abstract void treeNodesInserted(TreeModelEvent value0);
+	public abstract void treeNodesInserted(TreeModelEvent event);
 
 	/**
 	 * treeNodesRemoved
-	 * @param value0 TODO
+	 * 
+	 * @param event the event to send
 	 */
-	public abstract void treeNodesRemoved(TreeModelEvent value0);
+	public abstract void treeNodesRemoved(TreeModelEvent event);
 
 	/**
 	 * treeStructureChanged
-	 * @param value0 TODO
+	 * 
+	 * @param event the event to send
 	 */
-	public abstract void treeStructureChanged(TreeModelEvent value0);
+	public abstract void treeStructureChanged(TreeModelEvent event);
 
 	/**
 	 * getRowsForPaths
-	 * @param value0 TODO
-	 * @returns int[]
+	 * 
+	 * @param paths the tree paths
+	 * 
+	 * @return an array of rows
 	 */
-	public int[] getRowsForPaths(TreePath[] value0) {
+	public int[] getRowsForPaths(TreePath[] paths)
+	{
 		return null; // TODO
-	} // getRowsForPaths()
+	}
 
 	/**
 	 * isFixedRowHeight
-	 * @returns boolean
+	 * 
+	 * @return boolean
 	 */
-	protected boolean isFixedRowHeight() {
+	protected boolean isFixedRowHeight()
+	{
 		return false; // TODO
-	} // isFixedRowHeight()
-
-
-} // AbstractLayoutCache
+	}
+}

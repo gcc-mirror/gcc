@@ -1,5 +1,5 @@
 /* Choice.java -- Java choice button widget.
-   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,6 +45,10 @@ import java.io.Serializable;
 import java.util.EventListener;
 import java.util.Vector;
 
+import javax.accessibility.AccessibleAction;
+import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleRole;
+
 /**
   * This class implements a drop down choice list.
   *
@@ -78,6 +82,53 @@ private int selectedIndex = -1;
 
 // Listener chain
 private ItemListener item_listeners;
+
+  protected class AccessibleAWTChoice
+    extends Component.AccessibleAWTComponent
+    implements AccessibleAction
+  {
+    public AccessibleAction getAccessibleAction()
+    {
+      return this;
+    }
+
+    // FIXME: I think this is right, but should be checked by someone who
+    // knows better.
+    public AccessibleRole getAccessibleRole()
+    {
+      return AccessibleRole.POPUP_MENU;
+    }
+	  
+    /* (non-Javadoc)
+     * @see javax.accessibility.AccessibleAction#getAccessibleActionCount()
+     */
+    public int getAccessibleActionCount()
+    {
+      return pItems.size();
+    }
+
+    /* (non-Javadoc)
+     * @see javax.accessibility.AccessibleAction#getAccessibleActionDescription(int)
+     */
+    public String getAccessibleActionDescription(int i)
+    {
+      return (String) pItems.get(i);
+    }
+	  
+    /* (non-Javadoc)
+     * @see javax.accessibility.AccessibleAction#doAccessibleAction(int)
+     */
+    public boolean doAccessibleAction(int i)
+    {
+      if (i < 0 || i >= pItems.size())
+	return false;
+	    
+      Choice.this.processItemEvent(new ItemEvent(Choice.this,
+						 ItemEvent.ITEM_STATE_CHANGED,
+						 this, ItemEvent.SELECTED));
+      return true;
+    }
+  }
 
 /*************************************************************************/
 
@@ -169,6 +220,8 @@ add(String item)
       ChoicePeer cp = (ChoicePeer) peer;
       cp.add (item, i);
     }
+  else if (selectedIndex == -1) 
+    select(0);
 }
 
 /*************************************************************************/
@@ -218,6 +271,8 @@ insert(String item, int index)
       ChoicePeer cp = (ChoicePeer) peer;
       cp.add (item, index);
     }
+  else if (selectedIndex == -1 || selectedIndex >= index)
+    select(0);
 }
 
 /*************************************************************************/
@@ -260,6 +315,13 @@ remove(int index)
     {
       ChoicePeer cp = (ChoicePeer) peer;
       cp.remove (index);
+    }
+  else
+    {
+      if (getItemCount() == 0)
+	selectedIndex = -1;
+      else if (index == selectedIndex)
+	select(0);
     }
 
   if (selectedIndex > index)
@@ -500,5 +562,10 @@ paramString()
   public ItemListener[] getItemListeners ()
   {
     return (ItemListener[]) getListeners (ItemListener.class);
+  }
+
+  public AccessibleContext getAccessibleContext()
+  {
+    return new AccessibleAWTChoice();
   }
 } // class Choice 

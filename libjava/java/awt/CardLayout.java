@@ -1,6 +1,5 @@
-// CardLayout.java - Card-based layout engine
-
-/* Copyright (C) 1999, 2000, 2002, 2003  Free Software Foundation
+/* CardLayout.java -- Card-based layout engine
+   Copyright (C) 1999, 2000, 2002, 2003, 2004  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -39,21 +38,22 @@ exception statement from your version. */
 
 package java.awt;
 
+import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.io.Serializable;
 
-/** This class implements a card-based layout scheme.  Each included
+/**
+ * This class implements a card-based layout scheme.  Each included
  * component is treated as a card.  Only one card can be shown at a
  * time.  This class includes methods for changing which card is
  * shown.
  *
- * @author Tom Tromey <tromey@redhat.com>
+ * @author Tom Tromey (tromey@redhat.com)
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
 public class CardLayout implements LayoutManager2, Serializable
 {
-  static final long serialVersionUID = -4328196481005934313L;
+  private static final long serialVersionUID = -4328196481005934313L;
 
   /**
    * Initializes a new instance of <code>CardLayout</code> with horizontal
@@ -67,6 +67,7 @@ public class CardLayout implements LayoutManager2, Serializable
   /**
    * Create a new <code>CardLayout</code> object with the specified
    * horizontal and vertical gaps.
+   *
    * @param hgap The horizontal gap
    * @param vgap The vertical gap
    */
@@ -77,11 +78,14 @@ public class CardLayout implements LayoutManager2, Serializable
     this.tab = new Hashtable ();
   }
 
-  /** Add a new component to the layout.  The constraint must be a
+  /**
+   * Add a new component to the layout.  The constraint must be a
    * string which is used to name the component.  This string can
    * later be used to refer to the particular component.
+   *
    * @param comp The component to add
    * @param constraints The name by which the component can later be called
+   * 
    * @exception IllegalArgumentException If `constraints' is not a
    * <code>String</code>
    */
@@ -93,10 +97,13 @@ public class CardLayout implements LayoutManager2, Serializable
     addLayoutComponent ((String) constraints, comp);
   }
 
-  /** Add a new component to the layout.  The name can be used later
+  /**
+   * Add a new component to the layout.  The name can be used later
    * to refer to the component.
+   * 
    * @param name The name by which the component can later be called
    * @param comp The component to add
+   * 
    * @deprecated This method is deprecated in favor of
    * <code>addLayoutComponent(Component, Object)</code>.
    */
@@ -104,13 +111,12 @@ public class CardLayout implements LayoutManager2, Serializable
   {
     tab.put (name, comp);
     // First component added is the default component.
-    if (tab.size() == 1)
-      comp.setVisible(true);
-    else
-      comp.setVisible(false);
+    comp.setVisible(tab.size() == 1);
   }
 
-  /** Cause the first component in the container to be displayed.
+  /**
+   * Cause the first component in the container to be displayed.
+   *
    * @param parent The parent container
    */
   public void first (Container parent)
@@ -118,43 +124,63 @@ public class CardLayout implements LayoutManager2, Serializable
     gotoComponent (parent, FIRST);
   }
 
-  /** Return this layout manager's horizontal gap.  */
+  /**
+   * Return this layout manager's horizontal gap.
+   *
+   * @return the horizontal gap
+   */
   public int getHgap ()
   {
     return hgap;
   }
 
-  /** Return this layout manager's x alignment.  This method always
+  /**
+   * Return this layout manager's x alignment.  This method always
    * returns Component.CENTER_ALIGNMENT.
+   * 
    * @param parent Container using this layout manager instance
+   *
+   * @return the x-axis alignment
    */
   public float getLayoutAlignmentX (Container parent)
   {
     return Component.CENTER_ALIGNMENT;
   }
 
-  /** Returns this layout manager's y alignment.  This method always
+  /**
+   * Returns this layout manager's y alignment.  This method always
    * returns Component.CENTER_ALIGNMENT.
+   * 
    * @param parent Container using this layout manager instance
+   *
+   * @return the y-axis alignment
    */
   public float getLayoutAlignmentY (Container parent)
   {
     return Component.CENTER_ALIGNMENT;
   }
 
-  /** Return this layout manager's vertical gap.  */
+  /**
+   * Return this layout manager's vertical gap.
+   *
+   * @return the vertical gap
+   */
   public int getVgap ()
   {
     return vgap;
   }
 
-  /** Invalidate this layout manager's state.  */
+  /**
+   * Invalidate this layout manager's state.
+   */
   public void invalidateLayout (Container target)
   {
     // Do nothing.
   }
 
-  /** Cause the last component in the container to be displayed.
+  /**
+   * Cause the last component in the container to be displayed.
+   * 
    * @param parent The parent container
    */
   public void last (Container parent)
@@ -190,8 +216,12 @@ public class CardLayout implements LayoutManager2, Serializable
       }
   }
 
-  /** Get the maximum layout size of the container.
+  /**
+   * Get the maximum layout size of the container.
+   * 
    * @param target The parent container
+   *
+   * @return the maximum layout size
    */
   public Dimension maximumLayoutSize (Container target)
   {
@@ -200,17 +230,23 @@ public class CardLayout implements LayoutManager2, Serializable
     return getSize (target, MAX);
   }
 
-  /** Get the minimum layout size of the container.
+  /**
+   * Get the minimum layout size of the container.
+   * 
    * @param target The parent container
+   *
+   * @return the minimum layout size
    */
   public Dimension minimumLayoutSize (Container target)
   {
     return getSize (target, MIN);
   }
 
-  /** Cause the next component in the container to be displayed.  If
+  /**
+   * Cause the next component in the container to be displayed.  If
    * this current card is the  last one in the deck, the first
    * component is displayed.
+   * 
    * @param parent The parent container
    */
   public void next (Container parent)
@@ -218,17 +254,23 @@ public class CardLayout implements LayoutManager2, Serializable
     gotoComponent (parent, NEXT);
   }
 
-  /** Get the preferred layout size of the container.
-   * @param target The parent container
+  /**
+   * Get the preferred layout size of the container.
+   * 
+   * @param parent The parent container
+   *
+   * @return the preferred layout size
    */
   public Dimension preferredLayoutSize (Container parent)
   {
     return getSize (parent, PREF);
   }
 
-  /** Cause the previous component in the container to be displayed.
+  /**
+   * Cause the previous component in the container to be displayed.
    * If this current card is the first one in the deck, the last
    * component is displayed.
+   * 
    * @param parent The parent container
    */
   public void previous (Container parent)
@@ -236,7 +278,9 @@ public class CardLayout implements LayoutManager2, Serializable
     gotoComponent (parent, PREV);
   }
 
-  /** Remove the indicated component from this layout manager.
+  /**
+   * Remove the indicated component from this layout manager.
+   * 
    * @param comp The component to remove
    */
   public void removeLayoutComponent (Component comp)
@@ -255,7 +299,9 @@ public class CardLayout implements LayoutManager2, Serializable
       }
   }
 
-  /** Set this layout manager's horizontal gap.
+  /**
+   * Set this layout manager's horizontal gap.
+   * 
    * @param hgap The new gap
    */
   public void setHgap (int hgap)
@@ -263,7 +309,9 @@ public class CardLayout implements LayoutManager2, Serializable
     this.hgap = hgap;
   }
 
-  /** Set this layout manager's vertical gap.
+  /**
+   * Set this layout manager's vertical gap.
+   * 
    * @param vgap The new gap
    */
   public void setVgap (int vgap)
@@ -271,8 +319,10 @@ public class CardLayout implements LayoutManager2, Serializable
     this.vgap = vgap;
   }
 
-  /** Cause the named component to be shown.  If the component name is
+  /**
+   * Cause the named component to be shown.  If the component name is
    * unknown, this method does nothing.
+   * 
    * @param parent The parent container
    * @param name The name of the component to show
    */
@@ -307,7 +357,9 @@ public class CardLayout implements LayoutManager2, Serializable
     return getClass ().getName () + "[" + hgap + "," + vgap + "]";
   }
 
-  /** This implements first(), last(), next(), and previous().
+  /**
+   * This implements first(), last(), next(), and previous().
+   * 
    * @param parent The parent container
    * @param what The type of goto: FIRST, LAST, NEXT or PREV
    */
@@ -419,13 +471,13 @@ public class CardLayout implements LayoutManager2, Serializable
   private Hashtable tab;
 
   // These constants are used by the private gotoComponent method.
-  private int FIRST = 0;
-  private int LAST = 1;
-  private int NEXT = 2;
-  private int PREV = 3;
+  private static final int FIRST = 0;
+  private static final int LAST = 1;
+  private static final int NEXT = 2;
+  private static final int PREV = 3;
 
   // These constants are used by the private getSize method.
-  private int MIN = 0;
-  private int MAX = 1;
-  private int PREF = 2;
+  private static final int MIN = 0;
+  private static final int MAX = 1;
+  private static final int PREF = 2;
 }

@@ -95,7 +95,7 @@ public class Point extends Point2D implements Serializable
    * Initializes a new instance of <code>Point</code> with coordinates
    * identical to the coordinates of the specified points.
    *
-   * @param point the point to copy the coordinates from
+   * @param p the point to copy the coordinates from
    * @throws NullPointerException if p is null
    */
   public Point(Point p)

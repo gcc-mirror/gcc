@@ -66,11 +66,7 @@ public class GtkTextFieldPeer extends GtkTextComponentPeer
 	awtComponent.setFont (f);
       }
 
-    FontMetrics fm;
-    if (GtkToolkit.useGraphics2D ())
-      fm = new GdkClasspathFontPeerMetrics (f);
-    else
-      fm = new GdkFontMetrics (f);
+    FontMetrics fm = getFontMetrics (f);
 
     TextField tf = ((TextField) awtComponent);
     int cols = tf.getColumns ();
@@ -84,7 +80,7 @@ public class GtkTextFieldPeer extends GtkTextComponentPeer
 
   native int gtkEntryGetBorderWidth ();
 
-  native void gtkSetFont (String name, int style, int size);
+  native void gtkWidgetModifyFont (String name, int style, int size);
 
   public GtkTextFieldPeer (TextField tf)
   {
@@ -117,11 +113,7 @@ public class GtkTextFieldPeer extends GtkTextComponentPeer
     if (f == null)
       return new Dimension (2 * gtkEntryGetBorderWidth (), dim[1]);
 
-    FontMetrics fm;
-    if (GtkToolkit.useGraphics2D ())
-      fm = new GdkClasspathFontPeerMetrics (f);
-    else
-      fm = new GdkFontMetrics (f);
+    FontMetrics fm = getFontMetrics (f);
 
     int text_width = cols * fm.getMaxAdvance ();
 
@@ -140,11 +132,7 @@ public class GtkTextFieldPeer extends GtkTextComponentPeer
     if (f == null)
       return new Dimension (2 * gtkEntryGetBorderWidth (), dim[1]);
 
-    FontMetrics fm;
-    if (GtkToolkit.useGraphics2D ())
-      fm = new GdkClasspathFontPeerMetrics (f);
-    else
-      fm = new GdkFontMetrics (f);
+    FontMetrics fm = getFontMetrics (f);
 
     int text_width = cols * fm.getMaxAdvance ();
 

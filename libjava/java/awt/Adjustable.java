@@ -157,7 +157,7 @@ public interface Adjustable
    * Adds a listener that will receive adjustment events for this object.
    *
    * @param listener the adjustment listener to add
-   * @see AdjustmentEvent
+   * @see java.awt.event.AdjustmentEvent
    */
   void addAdjustmentListener(AdjustmentListener listener);
 
@@ -165,7 +165,7 @@ public interface Adjustable
    * Removes an adjustment listener from this object.
    *
    * @param listener the adjustment listener to remove
-   * @see AdjustmentEvent
+   * @see java.awt.event.AdjustmentEvent
    */
   void removeAdjustmentListener(AdjustmentListener listener);
 } // interface Adjustable

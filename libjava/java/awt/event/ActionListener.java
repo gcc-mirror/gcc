@@ -43,7 +43,7 @@ import java.util.EventListener;
 /**
  * This interface is for classes that listen for action events.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @see ActionEvent
  * @since 1.1
  * @status updated to 1.4
@@ -55,5 +55,5 @@ public interface ActionListener extends EventListener
    *
    * @param event the <code>ActionEvent</code> that occurred
    */
-  void actionPerformed(ActionEvent e);
-} // interface ActionListener
+  void actionPerformed(ActionEvent event);
+}

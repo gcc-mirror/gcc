@@ -39,7 +39,8 @@ exception statement from your version. */
 #include "gtkpeer.h"
 #include "gnu_java_awt_peer_gtk_GtkGenericPeer.h"
 
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkGenericPeer_dispose
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkGenericPeer_dispose
   (JNIEnv *env, jobject obj)
 {
   void *ptr;
@@ -57,3 +58,34 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkGenericPeer_dispose
   gdk_threads_leave ();
 }
 
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkGenericPeer_gtkWidgetModifyFont
+  (JNIEnv *env, jobject obj, jstring name, jint style, jint size)
+{
+  const char *font_name;
+  void *ptr;
+  PangoFontDescription *font_desc;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  font_name = (*env)->GetStringUTFChars (env, name, NULL);
+
+  gdk_threads_enter();
+
+  font_desc = pango_font_description_from_string (font_name);
+  pango_font_description_set_size (font_desc, size * dpi_conversion_factor);
+
+  if (style & AWT_STYLE_BOLD)
+    pango_font_description_set_weight (font_desc, PANGO_WEIGHT_BOLD);
+
+  if (style & AWT_STYLE_ITALIC)
+    pango_font_description_set_style (font_desc, PANGO_STYLE_OBLIQUE);
+
+  gtk_widget_modify_font (GTK_WIDGET(ptr), font_desc);
+
+  pango_font_description_free (font_desc);
+
+  gdk_threads_leave();
+
+  (*env)->ReleaseStringUTFChars (env, name, font_name);
+}

@@ -35,22 +35,20 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.KeyEvent;
+
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
-import javax.swing.Icon;
 import javax.swing.plaf.LabelUI;
 
-
 /**
- * <p>
  * A swing widget that displays a text message and/or an icon.
- * </p>
  */
 public class JLabel extends JComponent implements Accessible, SwingConstants
 {

@@ -54,7 +54,7 @@ public class GtkScrollPanePeer extends GtkContainerPeer
     create (awtComponent.getWidth (), awtComponent.getHeight ());
   }
 
-  native void gtkScrolledWindowSetScrollPosition(int x, int y);
+  // native void gtkScrolledWindowSetScrollPosition(int x, int y);
   native void gtkScrolledWindowSetHScrollIncrement (int u);
   native void gtkScrolledWindowSetVScrollIncrement (int u);
 

@@ -1,4 +1,4 @@
-/* BasicProgressBarUI.java
+/* BasicProgressBarUI.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.plaf.basic;
 
 import java.awt.Color;
@@ -49,6 +50,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+
 import javax.swing.JComponent;
 import javax.swing.JProgressBar;
 import javax.swing.SwingConstants;
@@ -60,7 +62,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.ProgressBarUI;
-
 
 /**
  * The Basic Look and Feel UI delegate for the 

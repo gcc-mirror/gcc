@@ -1,5 +1,5 @@
 /* RenderingHints.java --
-   Copyright (C) 2000, 2001, 2002  Free Software Foundation
+   Copyright (C) 2000, 2001, 2002, 2004  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -41,38 +41,75 @@ package java.awt;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
 /**
- * NEEDS DOCUMENTATION
+ * A collection of (key, value) items that provide 'hints' for the 
+ * {@link java.awt.Graphics2D} rendering pipeline.  Because these
+ * items are hints only, they may be ignored by a particular
+ * {@link java.awt.Graphics2D} implementation.
  *
  * @author Rolf W. Rasmussen <rolfwr@ii.uib.no>
  * @author Eric Blake <ebb9@email.byu.edu>
  */
 public class RenderingHints implements Map, Cloneable
 {
+  /**
+   * The base class used to represent keys.
+   */
   public abstract static class Key
   {
     private final int key;
 
+    /**
+     * Creates a new key.
+     * 
+     * @param privateKey  the private key.
+     */
     protected Key(int privateKey)
     {
       key = privateKey;
     }
 
+    /**
+     * Returns <code>true</code> if the specified value is compatible with
+     * this key, and <code>false</code> otherwise.
+     * 
+     * @param value  the value (<code>null</code> permitted).
+     * 
+     * @return A boolean.
+     */
     public abstract boolean isCompatibleValue(Object value);
 
+    /**
+     * Returns the private key for this instance.
+     * 
+     * @return The private key.
+     */
     protected final int intKey()
     {
       return key;
     }
 
+    /**
+     * Returns a hash code for the key.
+     * 
+     * @return A hash code.
+     */
     public final int hashCode()
     {
       return System.identityHashCode(this);
     }
 
+    /**
+     * Checks this key for equality with an arbitrary object.
+     * 
+     * @param other  the object (<code>null</code> permitted)
+     * 
+     * @return A boolean.
+     */
     public final boolean equals(Object other)
     {
       return this == other;
@@ -96,11 +133,24 @@ public class RenderingHints implements Map, Cloneable
       this.v3 = v3;
     }
 
+    /**
+     * Returns <code>true</code> if the specified value is compatible with
+     * this key, and <code>false</code> otherwise.
+     * 
+     * @param value  the value (<code>null</code> permitted).
+     * 
+     * @return A boolean.
+     */
     public boolean isCompatibleValue(Object value)
     {
       return value == v1 || value == v2 || value == v3;
     }
 
+    /**
+     * Returns a string representation of the key.
+     * 
+     * @return A string.
+     */
     public String toString()
     {
       return description;
@@ -109,102 +159,345 @@ public class RenderingHints implements Map, Cloneable
 
   private HashMap hintMap = new HashMap();
 
+  /**
+   * A key for the 'antialiasing' hint.  Permitted values are:
+   * <p>
+   * <table>
+   * <tr>
+   *   <td>{@link #VALUE_ANTIALIAS_OFF}</td>
+   *   <td>Render without antialiasing (better speed).</td>
+   * </tr>
+   * <tr>
+   *   <td>{@link #VALUE_ANTIALIAS_ON}</td>
+   *   <td>Render with antialiasing (better quality).</td>
+   * </tr>
+   * <tr>
+   *   <td>{@link #VALUE_ANTIALIAS_DEFAULT}</td>
+   *   <td>Use the default value for antialiasing.</td>
+   * </tr>
+   * </table>
+   */
   public static final Key KEY_ANTIALIASING;
 
+  /**
+   * This value is for use with the {@link #KEY_ANTIALIASING} key.
+   */
   public static final Object VALUE_ANTIALIAS_ON
     = "Antialiased rendering mode";
 
+  /**
+   * This value is for use with the {@link #KEY_ANTIALIASING} key.
+   */
   public static final Object VALUE_ANTIALIAS_OFF
     = "Nonantialiased rendering mode";
 
+  /**
+   * This value is for use with the {@link #KEY_ANTIALIASING} key.
+   */
   public static final Object VALUE_ANTIALIAS_DEFAULT
     = "Default antialiasing rendering mode";
 
+  /**
+   * A key for the 'rendering' hint.  Permitted values are:
+   * <p>
+   * <table>
+   * <tr>
+   *   <td>{@link #VALUE_RENDER_SPEED}</td>
+   *   <td>Prefer speed over quality when rendering.</td>
+   * </tr>
+   * <tr>
+   *   <td>{@link #VALUE_RENDER_QUALITY}</td>
+   *   <td>Prefer quality over speed when rendering.</td>
+   * </tr>
+   * <tr>
+   *   <td>{@link #VALUE_RENDER_DEFAULT}</td>
+   *   <td>Use the default value for quality vs. speed when rendering.</td>
+   * </tr>
+   * </table>
+   */
   public static final Key KEY_RENDERING;
 
+  /**
+   * This value is for use with the {@link #KEY_RENDERING} key.
+   */
   public static final Object VALUE_RENDER_SPEED
     = "Fastest rendering methods";
 
+  /**
+   * This value is for use with the {@link #KEY_RENDERING} key.
+   */
   public static final Object VALUE_RENDER_QUALITY
     = "Highest quality rendering methods";
 
+  /**
+   * This value is for use with the {@link #KEY_RENDERING} key.
+   */
   public static final Object VALUE_RENDER_DEFAULT
     = "Default rendering methods";
 
+  /**
+   * A key for the 'dithering' hint.  Permitted values are:
+   * <p>
+   * <table>
+   * <tr>
+   *   <td>{@link #VALUE_DITHER_DISABLE}</td>
+   *   <td>Disable dithering.</td>
+   * </tr>
+   * <tr>
+   *   <td>{@link #VALUE_DITHER_ENABLE}</td>
+   *   <td>Enable dithering.</td>
+   * </tr>
+   * <tr>
+   *   <td>{@link #VALUE_DITHER_DEFAULT}</td>
+   *   <td>Use the default value for dithering.</td>
+   * </tr>
+   * </table>
+   */
   public static final Key KEY_DITHERING;
 
+  /**
+   * This value is for use with the {@link #KEY_DITHERING} key.
+   */
   public static final Object VALUE_DITHER_DISABLE
     = "Nondithered rendering mode";
 
+  /**
+   * This value is for use with the {@link #KEY_DITHERING} key.
+   */
   public static final Object VALUE_DITHER_ENABLE
     = "Dithered rendering mode";
 
+  /**
+   * This value is for use with the {@link #KEY_DITHERING} key.
+   */
   public static final Object VALUE_DITHER_DEFAULT
     = "Default dithering mode";
 
+  /**
+   * A key for the 'text antialiasing' hint.  Permitted values are:
+   * <p>
+   * <table>
+   * <tr>
+   *   <td>{@link #VALUE_TEXT_ANTIALIAS_ON}</td>
+   *   <td>Render text with antialiasing (better quality usually).</td>
+   * </tr>
+   * <tr>
+   *   <td>{@link #VALUE_TEXT_ANTIALIAS_OFF}</td>
+   *   <td>Render test without antialiasing (better speed).</td>
+   * </tr>
+   * <tr>
+   *   <td>{@link #VALUE_TEXT_ANTIALIAS_DEFAULT}</td>
+   *   <td>Use the default value for text antialiasing.</td>
+   * </tr>
+   * </table>
+   */
   public static final Key KEY_TEXT_ANTIALIASING;
 
+  /**
+   * This value is for use with the {@link #KEY_TEXT_ANTIALIASING} key.
+   */
   public static final Object VALUE_TEXT_ANTIALIAS_ON
     = "Antialiased text mode";
 
+  /**
+   * This value is for use with the {@link #KEY_TEXT_ANTIALIASING} key.
+   */
   public static final Object VALUE_TEXT_ANTIALIAS_OFF
     = "Nonantialiased text mode";
 
+  /**
+   * This value is for use with the {@link #KEY_TEXT_ANTIALIASING} key.
+   */
   public static final Object VALUE_TEXT_ANTIALIAS_DEFAULT
     = "Default antialiasing text mode";
 
+  /**
+   * A key for the 'fractional metrics' hint.  Permitted values are:
+   * <p>
+   * <table>
+   * <tr>
+   *   <td>{@link #VALUE_FRACTIONALMETRICS_OFF}</td>
+   *   <td>Render text with fractional metrics off.</td>
+   * </tr>
+   * <tr>
+   *   <td>{@link #VALUE_FRACTIONALMETRICS_ON}</td>
+   *   <td>Render text with fractional metrics on.</td>
+   * </tr>
+   * <tr>
+   *   <td>{@link #VALUE_FRACTIONALMETRICS_DEFAULT}</td>
+   *   <td>Use the default value for fractional metrics.</td>
+   * </tr>
+   * </table>
+   */
   public static final Key KEY_FRACTIONALMETRICS;
 
+  /**
+   * This value is for use with the {@link #KEY_FRACTIONALMETRICS} key.
+   */
   public static final Object VALUE_FRACTIONALMETRICS_OFF
     = "Integer text metrics mode";
 
+  /**
+   * This value is for use with the {@link #KEY_FRACTIONALMETRICS} key.
+   */
   public static final Object VALUE_FRACTIONALMETRICS_ON
     = "Fractional text metrics mode";
 
+  /**
+   * This value is for use with the {@link #KEY_FRACTIONALMETRICS} key.
+   */
   public static final Object VALUE_FRACTIONALMETRICS_DEFAULT
     = "Default fractional text metrics mode";
 
+  /**
+   * A key for the 'interpolation' hint.  Permitted values are:
+   * <p>
+   * <table>
+   * <tr>
+   *   <td>{@link #VALUE_INTERPOLATION_NEAREST_NEIGHBOR}</td>
+   *   <td>Use nearest neighbour interpolation.</td>
+   * </tr>
+   * <tr>
+   *   <td>{@link #VALUE_INTERPOLATION_BILINEAR}</td>
+   *   <td>Use bilinear interpolation.</td>
+   * </tr>
+   * <tr>
+   *   <td>{@link #VALUE_INTERPOLATION_BICUBIC}</td>
+   *   <td>Use bicubic interpolation.</td>
+   * </tr>
+   * </table>
+   */
   public static final Key KEY_INTERPOLATION;
 
+  /**
+   * This value is for use with the {@link #KEY_INTERPOLATION} key.
+   */
   public static final Object VALUE_INTERPOLATION_NEAREST_NEIGHBOR
     = "Nearest Neighbor image interpolation mode";
 
+  /**
+   * This value is for use with the {@link #KEY_INTERPOLATION} key.
+   */
   public static final Object VALUE_INTERPOLATION_BILINEAR
     = "Bilinear image interpolation mode";
 
+  /**
+   * This value is for use with the {@link #KEY_INTERPOLATION} key.
+   */
   public static final Object VALUE_INTERPOLATION_BICUBIC
     = "Bicubic image interpolation mode";
 
+  /**
+   * A key for the 'alpha interpolation' hint.  Permitted values are:
+   * <p>
+   * <table>
+   * <tr>
+   *   <td>{@link #VALUE_ALPHA_INTERPOLATION_SPEED}</td>
+   *   <td>Prefer speed over quality.</td>
+   * </tr>
+   * <tr>
+   *   <td>{@link #VALUE_ALPHA_INTERPOLATION_QUALITY}</td>
+   *   <td>Prefer quality over speed.</td>
+   * </tr>
+   * <tr>
+   *   <td>{@link #VALUE_ALPHA_INTERPOLATION_DEFAULT}</td>
+   *   <td>Use the default setting.</td>
+   * </tr>
+   * </table>
+   */
   public static final Key KEY_ALPHA_INTERPOLATION;
 
+  /**
+   * This value is for use with the {@link #KEY_ALPHA_INTERPOLATION} key.
+   */
   public static final Object VALUE_ALPHA_INTERPOLATION_SPEED
     = "Fastest alpha blending methods";
 
+  /**
+   * This value is for use with the {@link #KEY_ALPHA_INTERPOLATION} key.
+   */
   public static final Object VALUE_ALPHA_INTERPOLATION_QUALITY
     = "Highest quality alpha blending methods";
 
+  /**
+   * This value is for use with the {@link #KEY_ALPHA_INTERPOLATION} key.
+   */
   public static final Object VALUE_ALPHA_INTERPOLATION_DEFAULT
     = "Default alpha blending methods";
 
+  /**
+   * A key for the 'color rendering' hint.  Permitted values are:
+   * <p>
+   * <table>
+   * <tr>
+   *   <td>{@link #VALUE_COLOR_RENDER_SPEED}</td>
+   *   <td>Prefer speed over quality.</td>
+   * </tr>
+   * <tr>
+   *   <td>{@link #VALUE_COLOR_RENDER_QUALITY}</td>
+   *   <td>Prefer quality over speed.</td>
+   * </tr>
+   * <tr>
+   *   <td>{@link #VALUE_COLOR_RENDER_DEFAULT}</td>
+   *   <td>Use the default setting.</td>
+   * </tr>
+   * </table>
+   */
   public static final Key KEY_COLOR_RENDERING;
 
+  /**
+   * This value is for use with the {@link #KEY_COLOR_RENDERING} key.
+   */
   public static final Object VALUE_COLOR_RENDER_SPEED
     = "Fastest color rendering mode";
 
+  /**
+   * This value is for use with the {@link #KEY_COLOR_RENDERING} key.
+   */
   public static final Object VALUE_COLOR_RENDER_QUALITY
     = "Highest quality color rendering mode";
 
+  /**
+   * This value is for use with the {@link #KEY_COLOR_RENDERING} key.
+   */
   public static final Object VALUE_COLOR_RENDER_DEFAULT
     = "Default color rendering mode";
 
+  /**
+   * A key for the 'stroke control' hint.  Permitted values are:
+   * <p>
+   * <table>
+   * <tr>
+   *   <td>{@link #VALUE_STROKE_DEFAULT}</td>
+   *   <td>Use the default setting.</td>
+   * </tr>
+   * <tr>
+   *   <td>{@link #VALUE_STROKE_NORMALIZE}</td>
+   *   <td>XXX</td>
+   * </tr>
+   * <tr>
+   *   <td>{@link #VALUE_STROKE_PURE}</td>
+   *   <td>XXX</td>
+   * </tr>
+   * </table>
+   */
   public static final Key KEY_STROKE_CONTROL;
 
+  /**
+   * This value is for use with the {@link #KEY_STROKE_CONTROL} key.
+   */
   public static final Object VALUE_STROKE_DEFAULT
     = "Default stroke normalization";
 
+  /**
+   * This value is for use with the {@link #KEY_STROKE_CONTROL} key.
+   */
   public static final Object VALUE_STROKE_NORMALIZE
     = "Normalize strokes for consistent rendering";
 
+  /**
+   * This value is for use with the {@link #KEY_STROKE_CONTROL} key.
+   */
   public static final Object VALUE_STROKE_PURE
     = "Pure stroke conversion for accurate paths";
 
@@ -250,26 +543,59 @@ public class RenderingHints implements Map, Cloneable
                                      VALUE_STROKE_PURE);
   }
 
+  /**
+   * Creates a new collection of hints containing all the (key, value) pairs
+   * in the specified map.
+   * 
+   * @param init  a map containing a collection of hints (<code>null</code> 
+   *              permitted).
+   */
   public RenderingHints(Map init)
   {
-    putAll(init);
+    if (init != null)
+      putAll(init);
   }
 
+  /**
+   * Creates a new collection containing a single (key, value) pair.
+   * 
+   * @param key  the key.
+   * @param value  the value.
+   */
   public RenderingHints(Key key, Object value)
   {
     put(key, value);
   }
 
+  /**
+   * Returns the number of hints in the collection.
+   * 
+   * @return The number of hints.
+   */
   public int size()
   {
     return hintMap.size();
   }
 
+  /**
+   * Returns <code>true</code> if there are no hints in the collection,
+   * and <code>false</code> otherwise.
+   * 
+   * @return A boolean.
+   */
   public boolean isEmpty()
   {
     return hintMap.isEmpty();
   }
 
+  /**
+   * Returns <code>true</code> if the collection of hints contains the
+   * specified key, and <code>false</code> otherwise.
+   * 
+   * @param key  the key.
+   * 
+   * @return A boolean.
+   */
   public boolean containsKey(Object key)
   {
     if (key == null)
@@ -277,16 +603,42 @@ public class RenderingHints implements Map, Cloneable
     return hintMap.containsKey((Key) key);
   }
 
+  /**
+   * Returns <code>true</code> if the collection of hints contains the
+   * specified value, and <code>false</code> otherwise.
+   * 
+   * @param value  the value.
+   * 
+   * @return A boolean.
+   */
   public boolean containsValue(Object value)
   {
     return hintMap.containsValue(value);
   }
 
+  /**
+   * Returns the value associated with the specified key.
+   * 
+   * @param key  the key.
+   * 
+   * @return The value.
+   */
   public Object get(Object key)
   {
     return hintMap.get((Key) key);
   }
 
+  /**
+   * Adds a (key, value) pair to the collection of hints (if the
+   * collection already contains the specified key, then the 
+   * value is updated).
+   * 
+   * @param key  the key.
+   * @param value  the value.
+   * 
+   * @return  the previous value of the key or <code>null</code> if the key
+   * didn't have a value yet.
+   */
   public Object put(Object key, Object value)
   {
     if (key == null || value == null)
@@ -296,51 +648,125 @@ public class RenderingHints implements Map, Cloneable
     return hintMap.put(key, value);
   }
 
+  /**
+   * Adds all the hints from a collection to this collection.
+   * 
+   * @param hints  the hint collection.
+   */
   public void add(RenderingHints hints)
   {
     hintMap.putAll(hints);
   }
 
+  /**
+   * Clears all the hints from this collection.
+   */
   public void clear()
   {
     hintMap.clear();
   }
 
+  /**
+   * Removes a hint from the collection.
+   * 
+   * @param key  the key.
+   * 
+   * @return The value that was associated with the key, or <code>null</code> if 
+   *         the key was not part of the collection
+   * 
+   * @throws ClassCastException if the key is not a subclass of 
+   *         {@link RenderingHints.Key}.
+   */
   public Object remove(Object key)
   {
-    return remove((Key) key);
+    // don't remove the (Key) cast, it is necessary to throw the exception
+    // required by the spec
+    return hintMap.remove((Key) key);  
   }
 
+  /**
+   * Adds a collection of (key, value) pairs to the collection.
+   * 
+   * @param m  a map containing (key, value) items.
+   * 
+   * @throws ClassCastException if the map contains a key that is not
+   *         a subclass of {@link RenderingHints.Key}.
+   * @throws IllegalArgumentException if the map contains a value that is
+   *         not compatible with its key.
+   */
   public void putAll(Map m)
   {
+    // preprocess map to generate appropriate exceptions
+    Iterator iterator = m.keySet().iterator();
+    while (iterator.hasNext())
+      {
+	Key key = (Key) iterator.next();
+	if (!key.isCompatibleValue(m.get(key)))
+	  throw new IllegalArgumentException();
+      }
+    // map is OK, update
     hintMap.putAll(m);
   }
 
+  /**
+   * Returns a set containing the keys from this collection.
+   * 
+   * @return A set of keys.
+   */
   public Set keySet()
   {
     return hintMap.keySet();
   }
 
+  /**
+   * Returns a collection of the values from this hint collection.  The
+   * collection is backed by the <code>RenderingHints</code> instance, 
+   * so updates to one will affect the other.
+   * 
+   * @return A collection of values.
+   */
   public Collection values()
   {
     return hintMap.values();
   }
 
+  /**
+   * Returns a set of entries from the collection.
+   * 
+   * @return A set of entries.
+   */
   public Set entrySet()
   {
     return Collections.unmodifiableSet(hintMap.entrySet());
   }
 
+  /**
+   * Checks this collection for equality with an arbitrary object.
+   * 
+   * @param o  the object (<code>null</code> permitted)
+   * 
+   * @return A boolean.
+   */
   public boolean equals(Object o)
   {
     return hintMap.equals(o);
   }
 
+  /**
+   * Returns a hash code for the collection of hints.
+   * 
+   * @return A hash code.
+   */
   public int hashCode()
   {
     return hintMap.hashCode();
   }
 
+  /**
+   * Creates a clone of this instance.
+   * 
+   * @return A clone.
+   */
   public Object clone()
   {
     try
@@ -355,6 +781,11 @@ public class RenderingHints implements Map, Cloneable
       }
   }
 
+  /**
+   * Returns a string representation of this instance.
+   * 
+   * @return A string.
+   */
   public String toString()
   {
     return hintMap.toString();

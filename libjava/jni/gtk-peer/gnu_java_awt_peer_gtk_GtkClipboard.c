@@ -148,8 +148,8 @@ selection_get (GtkWidget *widget __attribute__((unused)),
   utflen = (*gdk_env)->GetStringUTFLength (gdk_env, jstr);
   utf = (*gdk_env)->GetStringUTFChars (gdk_env, jstr, NULL);
 
-  gtk_selection_data_set (selection_data, GDK_TARGET_STRING, 8, 
-			  (char *)utf, utflen);
+  gtk_selection_data_set (selection_data, GDK_TARGET_STRING, 8,
+			  (const unsigned char*)utf, utflen);
 
   (*gdk_env)->ReleaseStringUTFChars (gdk_env, jstr, utf);
 }

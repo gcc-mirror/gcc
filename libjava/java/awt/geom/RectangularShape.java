@@ -354,7 +354,7 @@ public abstract class RectangularShape implements Shape, Cloneable
    * threadsafe if and only if the iterator returned by
    * {@link #getPathIterator(AffineTransform)} is as well.
    *
-   * @param transform an optional transform to apply to the iterator
+   * @param at an optional transform to apply to the iterator
    * @param flatness the desired flatness
    * @return a new iterator over the boundary
    * @throws IllegalArgumentException if flatness is invalid

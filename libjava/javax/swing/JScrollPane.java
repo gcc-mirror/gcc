@@ -497,14 +497,14 @@ public class JScrollPane
                       || vsb.getMaximum() != vs.height
                       || vsb.getValue() != vr.y
                       || vsb.getVisibleAmount() != vr.height))
-                  vsb.setValue(vr.y, vr.height, 0, vs.height);
+                vsb.setValues(vr.y, vr.height, 0, vs.height);
 
               if (hsb != null
                   && (hsb.getMinimum() != 0
                       || hsb.getMaximum() != vs.width
                       || hsb.getValue() != vr.width
                       || hsb.getVisibleAmount() != vr.height))
-                hsb.setValue(vr.x, vr.width, 0, vs.width);
+                hsb.setValues(vr.x, vr.width, 0, vs.width);
             }
           else
             {
@@ -593,7 +593,6 @@ public class JScrollPane
     return new JViewport();
   }
 
-
   public String getUIClassID()
   {
     return "ScrollPaneUI";
@@ -605,6 +604,25 @@ public class JScrollPane
     setUI(b);
   }  
 
+  /**
+   * This method returns the scrollpane's UI delegate.
+   *
+   * @return The scrollpane's UI delegate.
+   */
+  public ScrollPaneUI getUI()
+  {
+    return (ScrollPaneUI) ui;
+  }
+
+  /**
+   * This method sets the scrollpane's UI delegate.
+   *
+   * @param ui The scrollpane's UI delegate.
+   */
+  public void setUI(ScrollPaneUI ui)
+  {
+    super.setUI(ui);
+  }
 
   class ScrollBar 
     extends JScrollBar

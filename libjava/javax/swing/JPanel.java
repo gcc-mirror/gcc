@@ -35,14 +35,15 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
 import java.awt.FlowLayout;
 import java.awt.LayoutManager;
+
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.swing.plaf.PanelUI;
-
 
 /**
  * An instance of JPanel can be added to a panel, frame etc

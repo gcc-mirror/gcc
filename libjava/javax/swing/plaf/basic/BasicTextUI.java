@@ -38,7 +38,6 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
-import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -46,6 +45,8 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -56,7 +57,6 @@ import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
-import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.TextUI;
 import javax.swing.plaf.UIResource;
 import javax.swing.text.BadLocationException;
@@ -70,7 +70,6 @@ import javax.swing.text.Element;
 import javax.swing.text.Highlighter;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
-import javax.swing.text.PlainDocument;
 import javax.swing.text.PlainView;
 import javax.swing.text.Position;
 import javax.swing.text.View;
@@ -231,9 +230,20 @@ public abstract class BasicTextUI extends TextUI
     caret.setBlinkRate(defaults.getInt(prefix + ".caretBlinkRate"));
   }
 
+  private FocusListener focuslistener = new FocusListener() {
+      public void focusGained(FocusEvent e) 
+      {
+        textComponent.repaint();
+      }
+      public void focusLost(FocusEvent e)
+      {
+        textComponent.repaint();
+      }
+    };
+
   protected void installListeners()
   {
-    // Do nothing here.
+    textComponent.addFocusListener(focuslistener);
   }
 
   protected String getKeymapName()
@@ -331,7 +341,7 @@ public abstract class BasicTextUI extends TextUI
 
   protected void uninstallListeners()
   {
-    // Do nothing here.
+    textComponent.removeFocusListener(focuslistener);
   }
 
   protected void uninstallKeyboardActions()
@@ -370,7 +380,7 @@ public abstract class BasicTextUI extends TextUI
 
     rootView.paint(g, getVisibleEditorRect());
 
-    if (caret != null)
+    if (caret != null && textComponent.hasFocus())
       caret.paint(g);
   }
 
@@ -464,8 +474,17 @@ public abstract class BasicTextUI extends TextUI
 
   protected void modelChanged()
   {
+    if (textComponent == null || rootView == null) 
+      return;
     ViewFactory factory = rootView.getViewFactory();
-    Element elem = textComponent.getDocument().getDefaultRootElement();
+    if (factory == null) 
+      return;
+    Document doc = textComponent.getDocument();
+    if (doc == null)
+      return;
+    Element elem = doc.getDefaultRootElement();
+    if (elem == null)
+      return;
     setView(factory.create(elem));
   }
 }

@@ -35,12 +35,13 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
 import java.awt.Component;
 import java.awt.Toolkit;
-import javax.swing.text.JTextComponent;
 
+import javax.swing.text.JTextComponent;
 
 public abstract class LookAndFeel
 {

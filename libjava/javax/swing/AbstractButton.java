@@ -45,8 +45,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
@@ -240,7 +238,7 @@ public abstract class AbstractButton extends JComponent
   PropertyChangeListener actionPropertyChangeListener;
   
   /** ChangeEvent that is fired to button's ChangeEventListeners  */  
-  private ChangeEvent changeEvent = new ChangeEvent(this);
+  protected ChangeEvent changeEvent = new ChangeEvent(this);
   
   /** Fired in a PropertyChangeEvent when the "borderPainted" property changes. */
   public static final String BORDER_PAINTED_CHANGED_PROPERTY = "borderPainted";
@@ -441,8 +439,7 @@ public abstract class AbstractButton extends JComponent
     {
       return null; // TODO
     }
-    }
-
+  }
 
   /**
    * Creates a new AbstractButton object.
@@ -691,11 +688,8 @@ public abstract class AbstractButton extends JComponent
   /**
    * Calls {@link ChangeEvent.stateChanged} on each {@link ChangeListener}
    * in the button's listener list.
-   *
-   * @param e The event signifying a change in one of the (non-bound)
-   * properties of the button's model.
    */
-  public void fireStateChanged(ChangeEvent e)
+  public void fireStateChanged()
   {
     ChangeListener[] listeners = getChangeListeners();
 
@@ -785,8 +779,8 @@ public abstract class AbstractButton extends JComponent
   {
     if (index < -1 || (text != null && index >= text.length()))
       throw new IllegalArgumentException();
-    else
-      mnemonicIndex = index;
+  
+    mnemonicIndex = index;
   }
   
   /** 
@@ -892,14 +886,14 @@ public abstract class AbstractButton extends JComponent
    */
   public void setHorizontalAlignment(int a)
   {
+    if (horizontalAlignment == a)
+      return;
+
     int old = horizontalAlignment;
     horizontalAlignment = a;
-    if (old != a)
-      {
-        firePropertyChange(HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY, old, a);
-        revalidate();
-        repaint();
-      }
+    firePropertyChange(HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY, old, a);
+    revalidate();
+    repaint();
   }
 
   /**
@@ -929,14 +923,14 @@ public abstract class AbstractButton extends JComponent
    */
   public void setHorizontalTextPosition(int t)
   {
+    if (horizontalTextPosition == t)
+      return;
+
     int old = horizontalTextPosition;
     horizontalTextPosition = t;
-    if (old != t)
-      {
-        firePropertyChange(HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY, old, t);
-        revalidate();
-        repaint();
-      }
+    firePropertyChange(HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY, old, t);
+    revalidate();
+    repaint();
   }
 
   /**
@@ -964,14 +958,14 @@ public abstract class AbstractButton extends JComponent
    */
   public void setVerticalAlignment(int a)
   {
+    if (verticalAlignment == a)
+      return;
+    
     int old = verticalAlignment;
     verticalAlignment = a;
-    if (old != a)
-      {
-        firePropertyChange(VERTICAL_ALIGNMENT_CHANGED_PROPERTY, old, a);
-        revalidate();
-        repaint();
-      }
+    firePropertyChange(VERTICAL_ALIGNMENT_CHANGED_PROPERTY, old, a);
+    revalidate();
+    repaint();
   }
 
   /**
@@ -1001,14 +995,14 @@ public abstract class AbstractButton extends JComponent
    */
   public void setVerticalTextPosition(int t)
   {
+    if (verticalTextPosition == t)
+      return;
+    
     int old = verticalTextPosition;
     verticalTextPosition = t;
-    if (old != t)
-      {
-        firePropertyChange(VERTICAL_TEXT_POSITION_CHANGED_PROPERTY, old, t);
-        revalidate();
-        repaint();
-      }
+    firePropertyChange(VERTICAL_TEXT_POSITION_CHANGED_PROPERTY, old, t);
+    revalidate();
+    repaint();
   }
 
   /**
@@ -1032,14 +1026,14 @@ public abstract class AbstractButton extends JComponent
    */
   public void setBorderPainted(boolean b)
   {
+    if (borderPainted == b)
+      return;
+    
     boolean old = borderPainted;
-        borderPainted = b;
-    if (b != old)
-      {
-        firePropertyChange(BORDER_PAINTED_CHANGED_PROPERTY, old, b);
-        revalidate();
-        repaint();
-      }
+    borderPainted = b;
+    firePropertyChange(BORDER_PAINTED_CHANGED_PROPERTY, old, b);
+    revalidate();
+    repaint();
   }
 
   /**
@@ -1078,10 +1072,7 @@ public abstract class AbstractButton extends JComponent
             action.removePropertyChangeListener(actionPropertyChangeListener);
             actionPropertyChangeListener = null;
           }
-
-
-  }
-  
+      }
 
     Action old = action;
     action = a;
@@ -1112,14 +1103,14 @@ public abstract class AbstractButton extends JComponent
    */
   public void setIcon(Icon i)
   {
-    if (default_icon != i)
-      {
+    if (default_icon == i)
+      return;
+    
     Icon old = default_icon;      
     default_icon = i;      
     firePropertyChange(ICON_CHANGED_PROPERTY, old, i);
     revalidate();
     repaint();
-      }
   }
 
   /**
@@ -1138,6 +1129,8 @@ public abstract class AbstractButton extends JComponent
    * "text" property.
    *
    * @param label The new "label" property
+   *
+   * @deprecated use <code>setText(text)</code>
    */
   public void setLabel(String label)
   {
@@ -1149,6 +1142,8 @@ public abstract class AbstractButton extends JComponent
    * the "text" property.
    *
    * @return The current "label" property
+   *
+   * @deprecated use <code>getText()</code>
    */
   public String getLabel()
   {
@@ -1163,14 +1158,14 @@ public abstract class AbstractButton extends JComponent
    */
   public void setText(String t)
   {
+    if (text == t)
+      return;
+    
     String old = text;
     text = t;
-    if (t != old)
-      {
-        firePropertyChange(TEXT_CHANGED_PROPERTY, old, t);
+    firePropertyChange(TEXT_CHANGED_PROPERTY, old, t);
     revalidate();
     repaint();
-  }
   }
 
   /**
@@ -1180,14 +1175,14 @@ public abstract class AbstractButton extends JComponent
    */
   public void setIconTextGap(int i)
   {
+    if (iconTextGap == i)
+      return;
+    
     int old = iconTextGap;
     iconTextGap = i;
-    if (old != i)
-      {
-        fireStateChanged(new ChangeEvent(this));
-        revalidate();
-        repaint();
-      }
+    fireStateChanged();
+    revalidate();
+    repaint();
   }
 
   /**
@@ -1207,7 +1202,7 @@ public abstract class AbstractButton extends JComponent
    *
    * @return The current "margin" property
    */
-  public 	Insets getMargin()
+  public Insets getMargin()
   {
     return margin;
   }
@@ -1221,14 +1216,14 @@ public abstract class AbstractButton extends JComponent
    */
   public void setMargin(Insets m)
   {
+    if (margin == m)
+      return;
+    
     Insets old = margin;
     margin = m;
-    if (m != old)
-      {
-        firePropertyChange(MARGIN_CHANGED_PROPERTY, old, m);
-        revalidate();
+    firePropertyChange(MARGIN_CHANGED_PROPERTY, old, m);
+    revalidate();
     repaint();
-  }
   }
 
   /**
@@ -1254,14 +1249,14 @@ public abstract class AbstractButton extends JComponent
    */
   public void setPressedIcon(Icon pressedIcon)
   {
+    if (pressed_icon == pressedIcon)
+      return;
+    
     Icon old = pressed_icon;
     pressed_icon = pressedIcon;
-    if (pressed_icon != old)
-      {
-        firePropertyChange(PRESSED_ICON_CHANGED_PROPERTY, old, pressed_icon);
+    firePropertyChange(PRESSED_ICON_CHANGED_PROPERTY, old, pressed_icon);
     revalidate();
     repaint();
-  }
   }
 
   /**
@@ -1323,15 +1318,14 @@ public abstract class AbstractButton extends JComponent
    */
   public void setFocusPainted(boolean p)
   {
+    if (focusPainted == p)
+      return;
+    
     boolean old = focusPainted;
     focusPainted = p;
-
-    if (old != focusPainted)
-      {
-        firePropertyChange(FOCUS_PAINTED_CHANGED_PROPERTY, old, p);
-        revalidate();
-        repaint();
-      }
+    firePropertyChange(FOCUS_PAINTED_CHANGED_PROPERTY, old, p);
+    revalidate();
+    repaint();
   }
 
   /**
@@ -1554,7 +1548,7 @@ public abstract class AbstractButton extends JComponent
       {
         public void stateChanged(ChangeEvent e)
         {
-          AbstractButton.this.fireStateChanged(e);
+          AbstractButton.this.fireStateChanged();
           AbstractButton.this.repaint();          
         }
       };
@@ -1612,13 +1606,13 @@ public abstract class AbstractButton extends JComponent
     getModel().setArmed(true);
     getModel().setPressed(true);
     try
-  {
+      {
         java.lang.Thread.sleep(pressTime);
-  }
+      }
     catch (java.lang.InterruptedException e)
-  {
+      {
         // probably harmless
-  }
+      }
     getModel().setPressed(false);
     getModel().setArmed(false);
   }
@@ -1644,21 +1638,19 @@ public abstract class AbstractButton extends JComponent
    * <code>true</code>. This icon can be <code>null</code>, in which case
    * it is synthesized from the button's selected icon.
    *
-   * @param disabledSelectedIcon The new disabled selected icon
+   * @param icon The new disabled selected icon
    */
-  public void setDisabledSelectedIcon(Icon disabledSelectedIcon)
+  public void setDisabledSelectedIcon(Icon icon)
   {
+    if (disabledSelectedIcon == icon)
+      return;
+    
     Icon old = disabledSelectedIcon;
-    disabledSelectedIcon = disabledSelectedIcon;
-    if (old != disabledSelectedIcon)
-  {
-        firePropertyChange(DISABLED_SELECTED_ICON_CHANGED_PROPERTY, old, 
-                           disabledSelectedIcon);
-        revalidate();
-        repaint();        
+    disabledSelectedIcon = icon;
+    firePropertyChange(DISABLED_SELECTED_ICON_CHANGED_PROPERTY, old, icon);
+    revalidate();
+    repaint();        
   }
-  }
-
 
   /**
    * Return the button's rollover icon. The look and feel class should
@@ -1681,15 +1673,14 @@ public abstract class AbstractButton extends JComponent
    */
   public void setRolloverIcon(Icon r)
   {
+    if (rolloverIcon == r)
+      return;
+    
     Icon old = rolloverIcon;
     rolloverIcon = r;
-    if (old != rolloverIcon)
-  {
-        firePropertyChange(ROLLOVER_ICON_CHANGED_PROPERTY, old, 
-                           rolloverIcon);
-        revalidate();
-        repaint();
-      }
+    firePropertyChange(ROLLOVER_ICON_CHANGED_PROPERTY, old, rolloverIcon);
+    revalidate();
+    repaint();
   }
 
   /**
@@ -1715,17 +1706,15 @@ public abstract class AbstractButton extends JComponent
    */
   public void setRolloverSelectedIcon(Icon r)
   {
+    if (rolloverSelectedIcon == r)
+      return;
+    
     Icon old = rolloverSelectedIcon;
     rolloverSelectedIcon = r;
-    if (old != rolloverSelectedIcon)
-  {
-        firePropertyChange(ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY, old, 
-                           rolloverSelectedIcon);
-        revalidate();
-        repaint();
+    firePropertyChange(ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY, old, r);
+    revalidate();
+    repaint();
   }
-  }
-
 
   /**
    * Return the button's selected icon. The look and feel class should
@@ -1752,15 +1741,14 @@ public abstract class AbstractButton extends JComponent
    */
   public void setSelectedIcon(Icon s)
   {
+    if (selectedIcon == s)
+      return;
+    
     Icon old = selectedIcon;
     selectedIcon = s;
-    if (old != selectedIcon)
-    {
-        firePropertyChange(SELECTED_ICON_CHANGED_PROPERTY, old, 
-                           selectedIcon);
-        revalidate();
-        repaint();
-    }
+    firePropertyChange(SELECTED_ICON_CHANGED_PROPERTY, old, s);
+    revalidate();
+    repaint();
   }
 
   /**
@@ -1777,9 +1765,9 @@ public abstract class AbstractButton extends JComponent
         Object[] objs = new Object[1];
         objs[0] = getText();
         return objs;
-  }
+      }
     else
-  {
+     {
         return null;
       }
   }
@@ -1800,9 +1788,9 @@ public abstract class AbstractButton extends JComponent
    */
   public boolean imageUpdate(Image img, int infoflags, int x, int y, int w,
                              int h)
-        {
+  {
     return current_icon == img;
-        }
+  }
 
   /**
    * Returns the value of the button's "contentAreaFilled" property. This
@@ -1814,9 +1802,9 @@ public abstract class AbstractButton extends JComponent
    * @return The current value of the "contentAreaFilled" property
    */
   public boolean isContentAreaFilled()
-            {
+  {
     return contentAreaFilled;
-            }
+  }
 
   /**
    * Sets the value of the button's "contentAreaFilled" property. This
@@ -1828,16 +1816,16 @@ public abstract class AbstractButton extends JComponent
    * @param b The new value of the "contentAreaFilled" property
    */
   public void setContentAreaFilled(boolean b)
-            {
+  {
+    if (contentAreaFilled == b)
+      return;
+    
     boolean old = contentAreaFilled;
     contentAreaFilled = b;
-    if (b != old)
-      {
-        firePropertyChange(CONTENT_AREA_FILLED_CHANGED_PROPERTY, old, b);
-        revalidate();
-              repaint();
-            }
-        }
+    firePropertyChange(CONTENT_AREA_FILLED_CHANGED_PROPERTY, old, b);
+    revalidate();
+    repaint();
+   }
 
   /**
    * Paints the button's border, if the button's "borderPainted" property is
@@ -1846,10 +1834,10 @@ public abstract class AbstractButton extends JComponent
    * @param g The graphics context used to paint the border
    */
   protected void paintBorder(Graphics g)
-            {
+  {
     if (isBorderPainted())
       super.paintBorder(g);
-            }
+  }
 
   /**
    * Returns a string, used only for debugging, which identifies or somehow
@@ -1862,7 +1850,6 @@ public abstract class AbstractButton extends JComponent
     return "AbstractButton";
   }
 
-
   /**
    * Set the "UI" property of the button, which is a look and feel class
    * responsible for handling the button's input events and painting it.
@@ -1870,9 +1857,9 @@ public abstract class AbstractButton extends JComponent
    * @param ui The new "UI" property
    */
   public void setUI(ButtonUI ui)
-        {
+  {
     super.setUI(ui);
-        }
+  }
   
   /**
    * Set the "UI" property of the button, which is a look and feel class
@@ -1883,7 +1870,7 @@ public abstract class AbstractButton extends JComponent
   public ButtonUI getUI()
   {
     return (ButtonUI) ui;
-      }
+  }
   
   /**
    * Set the "UI" property to a class constructed, via the {@link

@@ -140,28 +140,19 @@ public abstract class RGBImageFilter extends ImageFilter
        @param y the y coordinate of the rectangle
        @param w the width of the rectangle
        @param h the height of the rectangle
-       @param model the <code>ColorModel</code> used to translate the pixels
        @param pixels the array of pixel values
        @param offset the index of the first pixels in the <code>pixels</code> array
        @param scansize the width to use in extracting pixels from the <code>pixels</code> array
     */
-    public void filterRGBPixels(int x,
-				int y,
-				int w,
-				int h,
-				int[] pixels,
-				int off,
-				int scansize)
+    public void filterRGBPixels(int x, int y, int w, int h, int[] pixels,
+				int offset, int scansize)
     {
-	int xp, yp, i;
-
-	i = 0;
-	for( xp = x; xp < ( x + w); xp++ )
-	    for( yp = y; yp < (y + h); yp++ )
-	    {
-		pixels[i] = filterRGB( xp, yp, pixels[i] );
-		i++;
-	    }
+      for (int xp = x; xp < (x + w); xp++)
+	for (int yp = y; yp < (y + h); yp++)
+	  {
+	    pixels[offset] = filterRGB(xp, yp, pixels[offset]);
+	    offset++;
+	  }
     }
 
 

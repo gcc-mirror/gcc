@@ -1,5 +1,5 @@
 /* BasicStroke.java -- 
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -69,7 +69,7 @@ public class BasicStroke implements Stroke
    * greater than or equal to 1.0f.
    * @param dash The array representing the dashing pattern. There must be at
    * least one non-zero entry.
-   * @param dash_phase is negative and dash is not null.
+   * @param dashPhase is negative and dash is not null.
    *
    * @exception IllegalArgumentException If one input parameter doesn't meet
    * its needs.

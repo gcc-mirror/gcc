@@ -35,13 +35,13 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Method;
@@ -51,7 +51,6 @@ import java.util.ListIterator;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
-import java.util.Set;
 
 import javax.swing.border.Border;
 import javax.swing.plaf.ComponentUI;
@@ -479,7 +478,7 @@ public class UIDefaults extends Hashtable
     propertyChangeSupport.addPropertyChangeListener(listener);
   }
 
-  void removePropertyChangeListener(PropertyChangeListener listener)
+  public void removePropertyChangeListener(PropertyChangeListener listener)
   {
     propertyChangeSupport.removePropertyChangeListener(listener);
   }

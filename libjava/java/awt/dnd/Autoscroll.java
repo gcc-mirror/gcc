@@ -1,5 +1,5 @@
 /* Autoscroll.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,10 +35,11 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.awt.dnd;
 
-import java.awt.Point;
 import java.awt.Insets;
+import java.awt.Point;
 
 /**
  * During DnD operations it is possible that a user may wish to drop the

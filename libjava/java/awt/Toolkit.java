@@ -53,8 +53,8 @@ import java.awt.image.ImageObserver;
 import java.awt.image.ImageProducer;
 import java.awt.peer.ButtonPeer;
 import java.awt.peer.CanvasPeer;
-import java.awt.peer.CheckboxPeer;
 import java.awt.peer.CheckboxMenuItemPeer;
+import java.awt.peer.CheckboxPeer;
 import java.awt.peer.ChoicePeer;
 import java.awt.peer.DialogPeer;
 import java.awt.peer.FileDialogPeer;
@@ -63,13 +63,13 @@ import java.awt.peer.FramePeer;
 import java.awt.peer.LabelPeer;
 import java.awt.peer.LightweightPeer;
 import java.awt.peer.ListPeer;
-import java.awt.peer.MenuPeer;
 import java.awt.peer.MenuBarPeer;
 import java.awt.peer.MenuItemPeer;
+import java.awt.peer.MenuPeer;
 import java.awt.peer.PanelPeer;
 import java.awt.peer.PopupMenuPeer;
-import java.awt.peer.ScrollbarPeer;
 import java.awt.peer.ScrollPanePeer;
+import java.awt.peer.ScrollbarPeer;
 import java.awt.peer.TextAreaPeer;
 import java.awt.peer.TextFieldPeer;
 import java.awt.peer.WindowPeer;
@@ -371,8 +371,8 @@ public abstract class Toolkit
    * should override this method and provide real system colors for the
    * native GUI platform.
    *
-   * @param colors The array to copy the system colors into.
-   *               It must be at least 26 elements.
+   * @param systemColors The array to copy the system colors into.
+   * It must be at least 26 elements.
    *
    * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
    *

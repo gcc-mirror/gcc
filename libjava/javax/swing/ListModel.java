@@ -36,6 +36,7 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 package javax.swing;
+
 import javax.swing.event.ListDataListener;
 
 /**

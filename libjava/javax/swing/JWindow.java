@@ -62,10 +62,10 @@ public class JWindow extends Window implements Accessible, RootPaneContainer
 {
   private static final long serialVersionUID = 5420698392125238833L;
   
-    public final static int HIDE_ON_CLOSE        = 0;
-    public final static int EXIT_ON_CLOSE        = 1;
-    public final static int DISPOSE_ON_CLOSE     = 2;
-    public final static int DO_NOTHING_ON_CLOSE  = 3;
+  public static final int HIDE_ON_CLOSE = 0;
+  public static final int EXIT_ON_CLOSE = 1;
+  public static final int DISPOSE_ON_CLOSE = 2;
+  public static final int DO_NOTHING_ON_CLOSE  = 3;
 
     protected  AccessibleContext accessibleContext;
 

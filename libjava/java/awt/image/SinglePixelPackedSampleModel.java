@@ -59,6 +59,16 @@ public class SinglePixelPackedSampleModel extends SampleModel
 				      int scanlineStride, int[] bitMasks)
   {
     super(dataType, w, h, bitMasks.length);
+
+    switch (dataType)
+      {
+      case DataBuffer.TYPE_BYTE:
+      case DataBuffer.TYPE_USHORT:
+      case DataBuffer.TYPE_INT:
+	break;
+      default:
+	throw new IllegalArgumentException("SinglePixelPackedSampleModel unsupported dataType");
+      }
     
     this.scanlineStride = scanlineStride;
     this.bitMasks = bitMasks;
@@ -382,7 +392,7 @@ public class SinglePixelPackedSampleModel extends SampleModel
    * @param y The y-coordinate of the pixel rectangle in <code>obj</code>.
    * @param w The width of the pixel rectangle in <code>obj</code>.
    * @param h The height of the pixel rectangle in <code>obj</code>.
-   * @param obj The primitive array containing the pixels to set.
+   * @param iArray The primitive array containing the pixels to set.
    * @param data The DataBuffer to store the pixels into.
    * @see java.awt.image.SampleModel#setPixels(int, int, int, int, int[], java.awt.image.DataBuffer)
    */

@@ -50,9 +50,9 @@ import java.awt.Shape;
 public class PlainView extends View
   implements TabExpander
 {
-  private Color selectedColor;
-  private Color unselectedColor;
-  private Font font;
+  Color selectedColor;
+  Color unselectedColor;
+  Font font;
   
   protected FontMetrics metrics;
 
@@ -130,7 +130,7 @@ public class PlainView extends View
       }
   }
 
-  public int drawSelectedText(Graphics g, int x, int y, int p0, int p1)
+  protected int drawSelectedText(Graphics g, int x, int y, int p0, int p1)
     throws BadLocationException
   {
     g.setColor(selectedColor);
@@ -139,7 +139,7 @@ public class PlainView extends View
     return Utilities.drawTabbedText(segment, x, y, g, this, 0);
   }
 
-  public int drawUnselectedText(Graphics g, int x, int y, int p0, int p1)
+  protected int drawUnselectedText(Graphics g, int x, int y, int p0, int p1)
     throws BadLocationException
   {
     g.setColor(unselectedColor);

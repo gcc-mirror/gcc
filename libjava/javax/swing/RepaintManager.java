@@ -1,5 +1,5 @@
 /* RepaintManager.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
 import java.awt.Component;
@@ -42,12 +43,11 @@ import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
-
 
 /**
  * <p>The repaint manager holds a set of dirty regions, invalid components,
@@ -309,6 +309,9 @@ public class RepaintManager
   public synchronized void addDirtyRegion(JComponent component, int x, int y,
                                           int w, int h)
   {
+    if (w == 0 || h == 0)
+      return;
+
     Rectangle r = new Rectangle(x, y, w, h);
     if (dirtyComponents.containsKey(component))
       r = r.union((Rectangle)dirtyComponents.get(component));

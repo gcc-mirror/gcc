@@ -59,6 +59,11 @@ public class HTML
 
   public static class UnknownTag extends Tag implements Serializable
   {
+    /**
+     * For compatability with Sun's JDK 1.4.2 rev. 5
+     */
+    private static final long serialVersionUID = -1534369342247250625L;
+
     public UnknownTag(String id)
     {
       super(id);

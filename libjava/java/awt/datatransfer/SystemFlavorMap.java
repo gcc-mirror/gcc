@@ -1,5 +1,5 @@
 /* SystemFlavorMap.java -- Maps between native flavor names and MIME types.
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,8 +39,8 @@ exception statement from your version. */
 package java.awt.datatransfer;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 
 /**
   * This class maps between native platform type names and DataFlavors.

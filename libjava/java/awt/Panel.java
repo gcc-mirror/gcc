@@ -1,5 +1,5 @@
 /* Panel.java -- Simple container object
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,7 +38,6 @@ exception statement from your version. */
 
 package java.awt;
 
-import java.awt.event.PaintEvent;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
@@ -47,8 +46,8 @@ import javax.accessibility.AccessibleRole;
  * A panel is a simple container class. It's default layout is the
  * <code>FlowLayout</code> manager.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see FlowLayout
  * @since 1.0
  * @status updated to 1.4
@@ -74,7 +73,7 @@ public class Panel extends Container implements Accessible
   /*
    * The number used to generate the name returned by getName.
    */
-  private static transient long next_panel_number = 0;
+  private static transient long next_panel_number;
 
   /**
    * Initializes a new instance of <code>Panel</code> that has a default
@@ -95,36 +94,6 @@ public class Panel extends Container implements Accessible
   public Panel(LayoutManager layoutManager)
   {
     setLayout(layoutManager);
-  }
-
-  /**
-   * Consume initial application-requested paint event if it has not
-   * already been consumed, and if the initial system-requested paint
-   * event has not already been handled.  Otherwise, call
-   * super.dispatchEventImpl.  These extra steps are required to
-   * prevent a Panel from being painted twice when it is initially
-   * shown.
-   *
-   * @param e the event to dispatch
-   */
-  void dispatchEventImpl (AWTEvent e)
-  {
-    if (e instanceof PaintEvent)
-      {
-        if (e.id == PaintEvent.UPDATE)
-          {
-            if (!initialUpdateConsumed
-                && !initialSystemUpdateDone)
-              {
-                e.consume ();
-                initialUpdateConsumed = true;
-              }
-          }
-        else if (e.id == PaintEvent.PAINT)
-          initialSystemUpdateDone = true;
-      }
-    else
-      super.dispatchEventImpl (e);
   }
 
   /**

@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package javax.swing.text;
 
+import java.util.ArrayList;
+
 public class PlainDocument extends AbstractDocument
 {
   private static final long serialVersionUID = 4758290289196893664L;
@@ -59,14 +61,53 @@ public class PlainDocument extends AbstractDocument
     rootElement = createDefaultRoot();
   }
 
+  protected void reindex()
+  {
+    Element[] lines;
+    try 
+      {
+        String str = content.getString(0, content.length());
+
+        ArrayList elts = new ArrayList();
+        int j = 0;
+        for (int i = str.indexOf('\n', 0); i != -1; i = str.indexOf('\n', i+1))
+          {
+            elts.add(createLeafElement(rootElement, null, j, i));
+            j = i;
+          }
+        
+        if (j < content.length())
+          elts.add(createLeafElement(rootElement, null, j, content.length()));
+        
+        lines = new Element[elts.size()];
+        for (int i = 0; i < elts.size(); ++i)
+          lines[i] = (Element) elts.get(i);
+        
+      }
+    catch (BadLocationException e)
+      {
+        lines = new Element[1];
+        lines[0] = createLeafElement(rootElement, null, 0, 1);
+      }
+
+    ((BranchElement) rootElement).replace(0, rootElement.getElementCount(), lines);
+  }
+
   protected AbstractDocument.AbstractElement createDefaultRoot()
   {
-    BranchElement rootElement =
-      (BranchElement) createBranchElement(null, null);
-    Element[] lines = new Element[1];
-    lines[0] = createLeafElement(rootElement, null, 0, 1);
-    rootElement.replace(0, 0, lines);
-    return rootElement;
+    rootElement = createBranchElement(null, null);
+    reindex();
+    return (AbstractElement) rootElement;
+  }
+
+  protected void insertUpdate(DefaultDocumentEvent chng, AttributeSet attr)
+  {
+    reindex();
+  }
+
+  protected void removeUpdate(DefaultDocumentEvent chng)
+  {
+    reindex();
   }
 
   public Element getDefaultRootElement()

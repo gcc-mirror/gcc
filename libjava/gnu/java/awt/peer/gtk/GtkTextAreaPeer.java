@@ -52,7 +52,7 @@ public class GtkTextAreaPeer extends GtkTextComponentPeer
 
   native void create (int width, int height, int scrollbarVisibility);
 
-  native void gtkSetFont (String name, int style, int size);
+  native void gtkWidgetModifyFont (String name, int style, int size);
   native void gtkWidgetRequestFocus ();
 
   void create ()
@@ -68,11 +68,7 @@ public class GtkTextAreaPeer extends GtkTextComponentPeer
 	awtComponent.setFont (f);
       }
 
-    FontMetrics fm;
-    if (GtkToolkit.useGraphics2D ())
-      fm = new GdkClasspathFontPeerMetrics (f);
-    else
-      fm = new GdkFontMetrics (f);
+    FontMetrics fm = getFontMetrics (f);
 
     TextArea ta = ((TextArea) awtComponent);
     int sizeRows = ta.getRows ();
@@ -130,11 +126,7 @@ public class GtkTextAreaPeer extends GtkTextComponentPeer
     if (f == null)
       return new Dimension (width, height);
 
-    FontMetrics fm;
-    if (GtkToolkit.useGraphics2D ())
-      fm = new GdkClasspathFontPeerMetrics (f);
-    else
-      fm = new GdkFontMetrics (f);
+    FontMetrics fm = getFontMetrics (f);
 
     int sizeRows = rows == 0 ? DEFAULT_ROWS : rows;
     int sizeCols = cols == 0 ? DEFAULT_COLS : cols;
@@ -163,11 +155,7 @@ public class GtkTextAreaPeer extends GtkTextComponentPeer
     if (f == null)
       return new Dimension (width, height);
 
-    FontMetrics fm;
-    if (GtkToolkit.useGraphics2D ())
-      fm = new GdkClasspathFontPeerMetrics (f);
-    else
-      fm = new GdkFontMetrics (f);
+    FontMetrics fm = getFontMetrics (f);
 
     int sizeRows = rows == 0 ? DEFAULT_ROWS : rows;
     int sizeCols = cols == 0 ? DEFAULT_COLS : cols;

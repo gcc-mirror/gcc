@@ -40,8 +40,8 @@ package gnu.java.awt.peer.gtk;
 
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Window;
 import java.awt.Frame;
+import java.awt.Window;
 import java.awt.event.WindowEvent;
 import java.awt.peer.WindowPeer;
 
@@ -106,7 +106,6 @@ public class GtkWindowPeer extends GtkContainerPeer
   {
   }
 
-  native void connectJObject ();
   native void connectSignals ();
 
   public GtkWindowPeer (Window window)

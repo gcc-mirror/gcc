@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing.text;
 
 import java.io.Serializable;
@@ -43,6 +44,7 @@ import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.EventListener;
 import java.util.Vector;
+
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.EventListenerList;
@@ -52,7 +54,6 @@ import javax.swing.tree.TreeNode;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoableEdit;
-
 
 public abstract class AbstractDocument
   implements Document, Serializable

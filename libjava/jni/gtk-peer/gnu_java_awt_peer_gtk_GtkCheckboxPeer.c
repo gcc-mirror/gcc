@@ -144,7 +144,7 @@ Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_gtkToggleButtonSetActive
 }
 
 JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_gtkSetFont
+Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_gtkWidgetModifyFont
   (JNIEnv *env, jobject obj, jstring name, jint style, jint size)
 {
   const char *font_name;

@@ -45,16 +45,19 @@ import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.EventListener;
 
+import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleAction;
+import javax.accessibility.AccessibleRole;
+import javax.accessibility.AccessibleValue;
+
 /**
   * This class represents an item in a menu.
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
 public class MenuItem extends MenuComponent
-  implements Serializable
+  implements Serializable, Accessible
 {
-
-// FIXME: The enabled event mask is not used at this time.
 
 /*
  * Static Variables
@@ -96,6 +99,110 @@ private MenuShortcut shortcut;
 
 // The list of action listeners for this menu item.
 private transient ActionListener action_listeners;
+
+  protected class AccessibleAWTMenuItem
+    extends MenuComponent.AccessibleAWTMenuComponent
+    implements AccessibleAction, AccessibleValue
+  {
+    /** Constructor */
+    public AccessibleAWTMenuItem()
+    {
+      super();
+    }
+  
+  
+  
+    public String getAccessibleName()
+    {
+      return label;
+    }
+  
+    public AccessibleAction getAccessibleAction()
+    {
+      return this;
+    }
+  
+    public AccessibleRole getAccessibleRole()
+    {
+      return AccessibleRole.MENU_ITEM;
+    }
+  
+    /* (non-Javadoc)
+     * @see javax.accessibility.AccessibleAction#getAccessibleActionCount()
+     */
+    public int getAccessibleActionCount()
+    {
+      return 1;
+    }
+
+    /* (non-Javadoc)
+     * @see javax.accessibility.AccessibleAction#getAccessibleActionDescription(int)
+     */
+    public String getAccessibleActionDescription(int i)
+    {
+      if (i == 0)
+	return label;
+      else
+	return null;
+    }
+
+    /* (non-Javadoc)
+     * @see javax.accessibility.AccessibleAction#doAccessibleAction(int)
+     */
+    public boolean doAccessibleAction(int i)
+    {
+      if (i != 0)
+	return false;
+      processActionEvent(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, actionCommand));
+      return true;
+    }
+
+    public AccessibleValue getAccessibleValue()
+    {
+      return this;
+    }
+  
+    /* (non-Javadoc)
+     * @see javax.accessibility.AccessibleValue#getCurrentAccessibleValue()
+     */
+    public Number getCurrentAccessibleValue()
+    {
+      return (enabled) ? new Integer(1) : new Integer(0);
+    }
+
+    /* (non-Javadoc)
+     * @see javax.accessibility.AccessibleValue#setCurrentAccessibleValue(java.lang.Number)
+     */
+    public boolean setCurrentAccessibleValue(Number number)
+    {
+      if (number.intValue() == 0)
+	{
+	  setEnabled(false);
+	  return false;
+	}
+    
+      setEnabled(true);
+      return true;
+    }
+
+    /* (non-Javadoc)
+     * @see javax.accessibility.AccessibleValue#getMinimumAccessibleValue()
+     */
+    public Number getMinimumAccessibleValue()
+    {
+      return new Integer(0);
+    }
+
+    /* (non-Javadoc)
+     * @see javax.accessibility.AccessibleValue#getMaximumAccessibleValue()
+     */
+    public Number getMaximumAccessibleValue()
+    {
+      return new Integer(0);
+    }
+  
+  }
+
 
 /*************************************************************************/
 

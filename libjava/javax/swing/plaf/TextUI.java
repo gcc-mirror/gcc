@@ -1,5 +1,5 @@
-/* TextUI.java
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+/* TextUI.java --
+   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,12 +40,12 @@ package javax.swing.plaf;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.View;
-
 
 /**
  * An abstract base class for delegates that provide the user

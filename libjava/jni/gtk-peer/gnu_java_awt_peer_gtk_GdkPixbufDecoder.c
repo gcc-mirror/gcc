@@ -99,14 +99,17 @@ area_updated (GdkPixbufLoader *loader,
   JNIEnv *env;
   union env_union e;
   jint stride_bytes, stride_pixels, n_channels, n_pixels;
-  int i;
   jintArray jpixels;  
   jint *java_pixels;
   guchar *gdk_pixels;
 
   GdkPixbuf *pixbuf_no_alpha = NULL;
   GdkPixbuf *pixbuf = NULL;
-  
+
+#ifndef WORDS_BIGENDIAN
+  int i;
+#endif
+
   pixbuf_no_alpha = gdk_pixbuf_loader_get_pixbuf (loader);
   if (pixbuf_no_alpha == NULL)
     return;
@@ -168,7 +171,8 @@ closed (GdkPixbufLoader *loader __attribute__((unused)), jobject *decoder)
 
 
 
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_initState
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_initState
   (JNIEnv *env, jobject obj)
 {
   GdkPixbufLoader *loader = NULL;
@@ -189,7 +193,8 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_initState
   NSA_SET_PB_PTR (env, obj, loader);
 }
 
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_initStaticState 
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_initStaticState 
   (JNIEnv *env, jclass clazz)
 {
   (*env)->GetJavaVM(env, &vm);
@@ -205,7 +210,8 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_initStaticSta
 }
 
 
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_finish
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_finish
   (JNIEnv *env, jobject obj)
 {
   GdkPixbufLoader *loader = NULL;
@@ -221,7 +227,8 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_finish
 }
 
 
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_pumpBytes
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_pumpBytes
   (JNIEnv *env, jobject obj, jbyteArray jarr, jint len)
 {
   GdkPixbufLoader *loader = NULL;

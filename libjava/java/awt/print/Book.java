@@ -93,7 +93,7 @@ getNumberOfPages()
   * This method returns the <code>PageFormat</code> object for the
   * specified page.
   *
-  * @param page_numbers The number of the page to get information for, where
+  * @param page_number The number of the page to get information for, where
   * page numbers start at 0.
   *
   * @return The <code>PageFormat</code> object for the specified page.
@@ -112,7 +112,7 @@ getPageFormat(int page_number)
   * This method returns the <code>Printable</code> object for the
   * specified page.
   *
-  * @param page_numbers The number of the page to get information for, where
+  * @param page_number The number of the page to get information for, where
   * page numbers start at 0.
   *
   * @return The <code>Printable</code> object for the specified page.
@@ -155,11 +155,11 @@ append(Printable printable, PageFormat page_format)
   * @exception NullPointerException If any argument is <code>null</code>.
   */
 public void
-append(Printable painter, PageFormat page_format, int num_pages)
+append(Printable printable, PageFormat page_format, int num_pages)
 {
   for (int i = 0; i < num_pages; i++)
     {
-      printables.addElement(painter);
+      printables.addElement(printable);
       page_formats.addElement(page_format);
     }
 }
@@ -175,7 +175,7 @@ append(Printable painter, PageFormat page_format, int num_pages)
   * @param printable The new <code>Printable</code> for the page.
   * @param page_format The new <code>PageFormat</code> for the page.
   *
-  * @param IndexOutOfBoundsException If the specified page does not exist.
+  * @throws IndexOutOfBoundsException If the specified page does not exist.
   */
 public void
 setPage(int page_num, Printable printable, PageFormat page_format)
@@ -183,6 +183,4 @@ setPage(int page_num, Printable printable, PageFormat page_format)
   printables.setElementAt(printable, page_num);
   page_formats.setElementAt(page_format, page_num);
 }
-
-} // class Book
-
+}

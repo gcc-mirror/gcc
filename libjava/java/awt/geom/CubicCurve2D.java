@@ -59,6 +59,7 @@ import java.util.NoSuchElementException;
 public abstract class CubicCurve2D implements Shape, Cloneable
 {
   private static final double BIG_VALUE = java.lang.Double.MAX_VALUE / 10.0;
+  private static final double EPSILON = 1E-10;
 
   /**
    * Constructs a new CubicCurve2D. Typical users will want to
@@ -1089,21 +1090,21 @@ public abstract class CubicCurve2D implements Shape, Cloneable
        If this is not done, bad behaviour may result for points on that axis.*/
     if (a0 == 0.0 || a3 == 0.0)
       {
-	double small = getFlatness() * (1E-10);
+	double small = getFlatness() * EPSILON;
 	if (a0 == 0.0)
-	  a0 += small;
+	  a0 -= small;
 	if (a3 == 0.0)
-	  a3 += small;
+	  a3 -= small;
       }
 
     if (useYaxis)
       {
-	if (Line2D.linesIntersect(b0, a0, b3, a3, 0.0, 0.0, distance, 0.0))
+	if (Line2D.linesIntersect(b0, a0, b3, a3, EPSILON, 0.0, distance, 0.0))
 	  nCrossings++;
       }
     else
       {
-	if (Line2D.linesIntersect(a0, b0, a3, b3, 0.0, 0.0, 0.0, distance))
+	if (Line2D.linesIntersect(a0, b0, a3, b3, 0.0, EPSILON, 0.0, distance))
 	  nCrossings++;
       }
 

@@ -1,5 +1,5 @@
 /* ICC_ColorSpace.java -- the canonical color space implementation
-   Copyright (C) 2000, 2002 Free Software Foundation
+   Copyright (C) 2000, 2002, 2004 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -38,9 +38,44 @@ exception statement from your version. */
 
 package java.awt.color;
 
+import gnu.java.awt.color.CieXyzConverter;
+import gnu.java.awt.color.ClutProfileConverter;
+import gnu.java.awt.color.ColorSpaceConverter;
+import gnu.java.awt.color.GrayProfileConverter;
+import gnu.java.awt.color.GrayScaleConverter;
+import gnu.java.awt.color.LinearRGBConverter;
+import gnu.java.awt.color.PyccConverter;
+import gnu.java.awt.color.RgbProfileConverter;
+import gnu.java.awt.color.SrgbConverter;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+
 /**
- * NEEDS DOCUMENTATION
+ * ICC_ColorSpace - an implementation of ColorSpace
  *
+ * While an ICC_Profile class abstracts the data in an ICC profile file
+ * an ICC_ColorSpace performs the color space conversions defined by
+ * an ICC_Profile instance.
+ *
+ * Typically, an ICC_Profile will either be created using getInstance,
+ * either from the built-in colorspaces, or from an ICC profile file.
+ * Then a ICC_Colorspace will be used to perform transforms from the
+ * device colorspace to and from the profile color space.
+ *
+ * The PCS used by ColorSpace is CIE XYZ relative a D50 white point.
+ * (Profiles using a CIE Lab PCS will have their input and output converted
+ * to D50 CIE XYZ accordingly.
+ *
+ * Note that a valid profile may not contain transforms in both directions,
+ * in which case the output may be undefined.
+ * All built-in colorspaces have bidirectional transforms, but developers
+ * using an ICC profile file may want to check the profile class using
+ * the ICC_Profile.getProfileClass() method. Input class profiles are
+ * guaranteed to have transforms to the PCS, output class profiles are
+ * guaranteed to have transforms from the PCS to device space.
+ *
+ * @author Sven de Marothy
  * @author Rolf W. Rasmussen <rolfwr@ii.uib.no>
  * @since 1.2
  */
@@ -82,6 +117,13 @@ public class ICC_ColorSpace extends ColorSpace
   private boolean needScaleInit;
 
   /**
+   * Tells us if the PCS is CIE LAB (must be CIEXYZ otherwise)
+   */
+  private transient int type;
+  private transient int nComponents;
+  private transient ColorSpaceConverter converter;
+
+  /**
    * Constructs a new ICC_ColorSpace from an ICC_Profile object.
    *
    * @exception IllegalArgumentException If profile is inappropriate for
@@ -89,10 +131,18 @@ public class ICC_ColorSpace extends ColorSpace
    */
   public ICC_ColorSpace(ICC_Profile profile)
   {
-    super(CS_sRGB, profile.getNumComponents());
+    super(profile.getColorSpaceType(), profile.getNumComponents());
+
+    converter = getConverter(profile);
     thisProfile = profile;
+    nComponents = profile.getNumComponents();
+    type = profile.getColorSpaceType();
+    makeArrays();
   }
 
+  /**
+   * Return the profile
+   */
   public ICC_Profile getProfile()
   {
     return thisProfile;
@@ -107,11 +157,7 @@ public class ICC_ColorSpace extends ColorSpace
    */
   public float[] toRGB(float[] colorvalue)
   {
-    if (colorvalue.length < numComponents)
-      throw new IllegalArgumentException ();
-      
-    // FIXME: Always assumes sRGB:
-    return colorvalue;
+    return converter.toRGB(colorvalue);
   }
 
   /**
@@ -123,11 +169,7 @@ public class ICC_ColorSpace extends ColorSpace
    */
   public float[] fromRGB(float[] rgbvalue)
   {
-    if (rgbvalue.length < 3)
-      throw new IllegalArgumentException ();
-    
-    // FIXME: Always assumes sRGB:
-    return rgbvalue;
+    return converter.fromRGB(rgbvalue);
   }
 
   /**
@@ -139,8 +181,7 @@ public class ICC_ColorSpace extends ColorSpace
    */
   public float[] toCIEXYZ(float[] colorvalue)
   {
-    // FIXME: Not implemented
-    throw new UnsupportedOperationException();
+    return converter.toCIEXYZ(colorvalue);
   }
 
   /**
@@ -152,8 +193,12 @@ public class ICC_ColorSpace extends ColorSpace
    */
   public float[] fromCIEXYZ(float[] colorvalue)
   {
-    // FIXME: Not implemented
-    throw new UnsupportedOperationException();
+    return converter.fromCIEXYZ(colorvalue);
+  }
+
+  public boolean isCS_sRGB()
+  {
+    return converter instanceof SrgbConverter;
   }
 
   /**
@@ -167,9 +212,11 @@ public class ICC_ColorSpace extends ColorSpace
    */
   public float getMinValue(int idx)
   {
-    if (type == TYPE_Lab && (idx == 1 || idx == 2))
-      return -128;
-    if (idx < 0 || idx >= numComponents)
+    // FIXME: Not 100% certain of this. 
+    if (type == ColorSpace.TYPE_Lab && (idx == 1 || idx == 2))
+      return -128f;
+
+    if (idx < 0 || idx >= nComponents)
       throw new IllegalArgumentException();
     return 0;
   }
@@ -185,17 +232,83 @@ public class ICC_ColorSpace extends ColorSpace
    */
   public float getMaxValue(int idx)
   {
-    if (type == TYPE_XYZ && idx >= 0 && idx <= 2)
+    if (type == ColorSpace.TYPE_XYZ && idx >= 0 && idx <= 2)
       return 1 + 32767 / 32768f;
-    else if (type == TYPE_Lab)
+    else if (type == ColorSpace.TYPE_Lab)
       {
-        if (idx == 0)
-          return 100;
-        if (idx == 1 || idx == 2)
-          return 127;
+	if (idx == 0)
+	  return 100;
+	if (idx == 1 || idx == 2)
+	  return 127;
       }
-    if (idx < 0 || idx >= numComponents)
+    if (idx < 0 || idx >= nComponents)
       throw new IllegalArgumentException();
     return 1;
+  }
+
+  /**
+   * Returns a colorspace converter suitable for a given profile
+   */
+  private ColorSpaceConverter getConverter(ICC_Profile profile)
+  {
+    ColorSpaceConverter converter;
+    switch (profile.isPredefined())
+      {
+      case CS_sRGB:
+	converter = new SrgbConverter();
+	break;
+      case CS_CIEXYZ:
+	converter = new CieXyzConverter();
+	break;
+      case CS_GRAY:
+	converter = new GrayScaleConverter();
+	break;
+      case CS_LINEAR_RGB:
+	converter = new LinearRGBConverter();
+	break;
+      case CS_PYCC:
+	converter = new PyccConverter();
+	break;
+      default:
+	if (profile instanceof ICC_ProfileRGB)
+	  converter = new RgbProfileConverter((ICC_ProfileRGB) profile);
+	else if (profile instanceof ICC_ProfileGray)
+	  converter = new GrayProfileConverter((ICC_ProfileGray) profile);
+	else
+	  converter = new ClutProfileConverter(profile);
+	break;
+      }
+    return converter;
+  }
+
+  /**
+   * Serialization compatibility requires these variable to be set,
+   * although we don't use them. Perhaps we should?
+   */
+  private void makeArrays()
+  {
+    minVal = new float[nComponents];
+    maxVal = new float[nComponents];
+
+    invDiffMinMax = diffMinMax = null;
+    for (int i = 0; i < nComponents; i++)
+      {
+	minVal[i] = getMinValue(i);
+	maxVal[i] = getMaxValue(i);
+      }
+    needScaleInit = true;
+  }
+
+  /**
+   * Deserializes the object
+   */
+  private void readObject(ObjectInputStream s)
+                   throws IOException, ClassNotFoundException
+  {
+    s.defaultReadObject();
+    // set up objects
+    converter = getConverter(thisProfile);
+    nComponents = thisProfile.getNumComponents();
+    type = thisProfile.getColorSpaceType();
   }
 } // class ICC_ColorSpace

@@ -162,7 +162,7 @@ public interface InputMethod
    * called on a previous client.</li>
    * </ul>
    *
-   * @param the client window's current bounds, or null
+   * @param bounds the client window's current bounds, or null
    */
   void notifyClientWindowChange(Rectangle bounds);
 
