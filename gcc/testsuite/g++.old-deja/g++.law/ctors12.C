@@ -14,7 +14,7 @@ public:
         complex() { re=im=0; magic=MAGIC; }
         complex(double d) { re=d; im=0; magic=MAGIC; }
         complex(double d, double d2) {re=d; im=d2; magic=MAGIC; }
-        ~complex() {if(magic!=MAGIC) {printf("FAIL\n");exit(0);}}
+        ~complex() {if(magic!=MAGIC) {printf("FAIL\n");exit(1);}}
         friend ostream& operator << (ostream& o, const complex& c)
                 { return o << "(" << c.re << "," << c.im << ")"; }
 };

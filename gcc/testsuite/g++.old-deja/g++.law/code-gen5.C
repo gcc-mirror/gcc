@@ -268,7 +268,7 @@ int main()
 	int i, j;
 
 	if (makeforms (cen,a,b) != 10)
-	  printf ("FAIL\n");
+	  { printf ("FAIL\n"); return 1; }
 	else
 	  printf ("PASS\n");
 

@@ -18,7 +18,7 @@ int main()
       if (type(0.0) != 2)
               ++i;
       if (i > 0)
-	printf ("FAIL\n");
+	{ printf ("FAIL\n"); return 1; }
       else
 	printf ("PASS\n");
 }

@@ -20,7 +20,7 @@ int main()
     if (Ack.a != 5
 	|| Ack.b != 7
 	|| Ack.c != 3)
-      printf ("FAIL\n");
+      { printf ("FAIL\n"); return 1; }
     else
       printf ("PASS\n");
 }

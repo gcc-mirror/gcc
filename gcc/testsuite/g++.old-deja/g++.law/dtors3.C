@@ -23,7 +23,7 @@ public:
     if (killed)
       {
 	printf ("FAIL\n");
-	exit (0);
+	exit (1);
       }
     return *this;
   }

@@ -29,7 +29,7 @@ int main() {
 	    && ob[3][0].get_a() == 7 && ob[3][1].get_a() == 8)
 	  printf ("PASS\n");
 	else
-	  printf ("FAIL\n");
+	  { printf ("FAIL\n"); return 1; }
 
         return 0;
 }

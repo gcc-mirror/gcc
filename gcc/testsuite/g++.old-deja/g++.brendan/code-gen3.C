@@ -26,7 +26,7 @@ int test2 (struct base formal_base, int v1)
 	formal_base.f1 = formal_base.f2;	// prevent warnings
 
 	if (v1 != 0x5e5e)
-	  printf ("FAIL\n");
+	  { printf ("FAIL\n"); return 1; }
 	else
 	  printf ("PASS\n");
 

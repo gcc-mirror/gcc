@@ -20,7 +20,7 @@ int main(void)
   ::delete ps1;             // Wrong T::operator delete() is called here
 
   if (delete_counter != -1)
-    printf ("FAIL\n");
+    { printf ("FAIL\n"); return 1; }
   else
     printf ("PASS\n");
   return 0;

@@ -38,5 +38,5 @@ int main() {
    if (i == 3)
      printf ("PASS\n");
    else
-     printf ("FAIL\n");
+     { printf ("FAIL\n"); return 1; }
 }

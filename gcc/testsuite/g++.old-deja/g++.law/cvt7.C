@@ -61,7 +61,7 @@ int main()
 	printf ("PASS\n");
         break;
     default:
-	printf ("FAIL\n");
+	{ printf ("FAIL\n"); return 1; }
     }
 
     B b(a);

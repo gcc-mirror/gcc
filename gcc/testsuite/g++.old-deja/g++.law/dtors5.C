@@ -29,5 +29,5 @@ int main() {
    if (things == 0)
      printf ("PASS\n");
    else
-     printf ("FAIL\n");
+     { printf ("FAIL\n"); return 1; }
 }

@@ -18,7 +18,7 @@ int main()
 {
   test(&xxx, &str::i) = 5;
   if (xxx.i == 0)
-    printf ("FAIL\n");
+    { printf ("FAIL\n"); return 1; }
   else
     printf ("PASS\n");
 }

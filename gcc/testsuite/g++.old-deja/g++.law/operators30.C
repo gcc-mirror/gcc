@@ -21,5 +21,5 @@ int main ()
 	if (a == 0)
 		printf("PASS\n");
 	else
-		printf("FAIL\n");
+		{ printf("FAIL\n"); return 1; }
 }

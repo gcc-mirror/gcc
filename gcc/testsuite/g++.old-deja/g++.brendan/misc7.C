@@ -9,7 +9,7 @@ int main()
   *pi = 4;
 
   if (i != 4)
-    printf ("FAIL\n");
+    { printf ("FAIL\n"); return 1; }
   else
     printf ("PASS\n");
 }

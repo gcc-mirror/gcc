@@ -63,7 +63,7 @@ int main() {
       || strcmp (Sig::sigTable[3].Magic, "FLOA")
       || strcmp (Sig::sigTable[4].Magic, "DOUB")
       || strcmp (Sig::sigTable[5].Magic, "COMP"))
-    printf ("FAIL\n");
+    { printf ("FAIL\n"); return 1; }
   else
     printf ("PASS\n");
 }

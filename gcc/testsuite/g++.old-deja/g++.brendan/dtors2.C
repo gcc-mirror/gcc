@@ -55,7 +55,7 @@ int main ()
 	test ();
 
 	if (errors)
-	  printf ("FAIL\n");
+	  { printf ("FAIL\n"); return 1; }
 	else
 	  printf ("PASS\n");
 

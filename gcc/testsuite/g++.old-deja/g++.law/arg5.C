@@ -10,7 +10,7 @@ extern "C" {
 int main()
 {
 	if (pow (2.0, 3.0) != 8.0)
-	  printf ("FAIL\n");
+	  { printf ("FAIL\n"); return 1; }
 	else
 	  printf ("PASS\n");
 }

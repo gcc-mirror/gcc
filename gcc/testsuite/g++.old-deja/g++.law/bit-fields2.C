@@ -28,7 +28,7 @@ main(int argc, char **argv)
         struct foo bar;
 
 	if (offsetof (struct foo, c) > sizeof (unsigned int))
-		printf ("FAIL\n");
+		{ printf ("FAIL\n"); return 1; }
 	else
 		printf ("PASS\n");
 	return 0;

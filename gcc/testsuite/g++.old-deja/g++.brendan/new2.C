@@ -41,7 +41,7 @@ int main ()
 	derived_ptr = new derived ();
 
 	if ((new_call_count != 2) || (errors != 0))
-	  printf ("FAIL\n");
+	  { printf ("FAIL\n"); return 1; }
 	else
 	  printf ("PASS\n");
 

@@ -19,6 +19,6 @@ int main( void) {
         if (&c == &b)
                 printf( "PASS\n");
         else
-                printf( "FAIL\n");
+                { printf( "FAIL\n"); return 1; }
         return 0;
 }

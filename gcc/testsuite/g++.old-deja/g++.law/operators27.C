@@ -26,7 +26,7 @@ int main(void)
 {
     K * pK = new (std::nothrow) K( 10);
     if ( FLAG != 1 )
-	printf ("FAIL\n");
+	{ printf ("FAIL\n"); return 1; }
     else
 	printf ("PASS\n");
     return 0;

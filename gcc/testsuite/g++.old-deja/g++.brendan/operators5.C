@@ -44,7 +44,7 @@ int main ()
 	k = !k;		// fib it!
 
 	if (k.i != 610)
-	  printf ("FAIL\n");
+	  { printf ("FAIL\n"); return 1; }
 	else
 	  printf ("PASS\n");
 

@@ -32,7 +32,7 @@ int main ()
 	sender_2 ();
 	sender_3 ();
 	if (ii_sum != 13 || jj_sum != 25)
-	  printf ("FAIL\n");
+	  { printf ("FAIL\n"); return 1; }
 	else
 	  printf ("PASS\n");
 

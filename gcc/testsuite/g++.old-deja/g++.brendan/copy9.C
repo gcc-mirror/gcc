@@ -37,5 +37,8 @@ main () {
 	if (b.doubleval == 23.2)
 	  cout << "PASS\n";
 	else
-	  cout << "FAIL\n";
+	  {
+	    cout << "FAIL\n";
+	    return 1;
+	  }
 }

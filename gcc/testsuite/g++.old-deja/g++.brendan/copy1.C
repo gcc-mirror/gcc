@@ -15,7 +15,7 @@ main ()
   C c2 (c1);
 
   if (count != 1)
-    printf ("FAIL\n");
+    { printf ("FAIL\n"); return 1; }
   else
     printf ("PASS\n");
 }

@@ -26,5 +26,5 @@ main()
     A b(a);
 
     printf ("FAIL\n");
-    return 0;
+    return 1;
 }

@@ -16,7 +16,7 @@ base global_base(0x55, 0x7e);
 int main ()
 {
 	if ((global_base.f1 != 0x55) || (global_base.f2 != 0x7e))
-	  printf ("FAIL\n");
+	  { printf ("FAIL\n"); return 1; }
 	else
 	  printf ("PASS\n");
 }

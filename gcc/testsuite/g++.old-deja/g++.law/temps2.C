@@ -48,7 +48,7 @@ int main()
     // method() returns a reference to the same object.
     f1().method().method();
     if (fail)
-      printf ("FAIL\n");
+      { printf ("FAIL\n"); return 1; }
     else
       printf ("PASS\n");
 }
