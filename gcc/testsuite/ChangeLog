@@ -1,5 +1,8 @@
 2003-07-14  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/7053
+	* g++.dg/template/friend20.C: New test.
+
 	PR c++/7019
 	* g++.dg/template/overload2.C: New test.
 
