@@ -561,48 +561,9 @@ toc_section ()						\
    use '.long' or '.word', but that aligns to a 4-byte boundary which
    is not what is required.  So we define a million macros...  */
 
-#define ASM_OUTPUT_DWARF_ADDR_VAR(FILE, LABEL, LENGTH)	\
- do {   fprintf ((FILE), "\t.vbyte\t%d,", LENGTH);	\
-        assemble_name (FILE, LABEL);			\
-  } while (0)
-
-#define ASM_OUTPUT_DWARF_DELTA_VAR(FILE, LABEL1, LABEL2, LENGTH)	\
- do {   fprintf ((FILE), "\t.vbyte\t%d,", LENGTH);			\
-        assemble_name (FILE, LABEL1);					\
-        fprintf (FILE, "-");						\
-        assemble_name (FILE, LABEL2);					\
-  } while (0)
-
-#define ASM_OUTPUT_DWARF_DELTA2(FILE, LABEL1, LABEL2)	\
- ASM_OUTPUT_DWARF_DELTA_VAR (FILE, LABEL1, LABEL2, 2)
-
-#define ASM_OUTPUT_DWARF_DELTA4(FILE, LABEL1, LABEL2)	\
- ASM_OUTPUT_DWARF_DELTA_VAR (FILE, LABEL1, LABEL2, 4)
-
-#define ASM_OUTPUT_DWARF_DELTA(FILE, LABEL1, LABEL2)			\
- ASM_OUTPUT_DWARF_DELTA_VAR (FILE, LABEL1, LABEL2, DWARF_OFFSET_SIZE)
-
-#define ASM_OUTPUT_DWARF_ADDR_DELTA(FILE, LABEL1, LABEL2)	\
- ASM_OUTPUT_DWARF_DELTA_VAR (FILE, LABEL1, LABEL2,		\
-			     POINTER_SIZE / BITS_PER_UNIT)
-
-#define ASM_OUTPUT_DWARF_ADDR(FILE, LABEL)				\
- ASM_OUTPUT_DWARF_ADDR_VAR (FILE, LABEL, POINTER_SIZE / BITS_PER_UNIT)
-
-#define ASM_OUTPUT_DWARF_DATA4(FILE, VALUE)			\
-  fprintf ((FILE), "\t.vbyte\t4,0x%x", (unsigned) (VALUE))
-
-#define ASM_OUTPUT_DWARF_DATA2(FILE, VALUE)			\
-  fprintf ((FILE), "\t.vbyte\t2,0x%x", (unsigned) (VALUE))
-
-#define ASM_OUTPUT_DWARF_OFFSET4(FILE, LABEL)	\
-  ASM_OUTPUT_DWARF_ADDR_VAR (FILE, LABEL, 4)
-
-#define ASM_OUTPUT_DWARF_OFFSET(FILE, LABEL)			\
-  ASM_OUTPUT_DWARF_ADDR_VAR (FILE, LABEL, DWARF_OFFSET_SIZE)
-
-/* dwarf2out keys off this, but we don't have to have a real definition.  */
-#define UNALIGNED_INT_ASM_OP bite_me
+#define UNALIGNED_SHORT_ASM_OP		"\t.vbyte\t2,"
+#define UNALIGNED_INT_ASM_OP		"\t.vbyte\t4,"
+#define UNALIGNED_DOUBLE_INT_ASM_OP	"\t.vbyte\t8,"
 
 /* Output before instructions.  */
 #define TEXT_SECTION_ASM_OP "\t.csect .text[PR]"

@@ -1,3 +1,50 @@
+2001-03-02  Richard Henderson  <rth@redhat.com>
+
+	* Makefile.in (OBJS): Add dwarf2asm.o.
+	* dwarf2asm.c, dwarf2asm.h: New files.
+	* dwarf2out.c (*): Use them.
+	(size_of_uleb128, size_of_sleb128): Remove.
+	(output_uleb128, output_sleb128): Remove.
+	(UNALIGNED_SHORT_ASM_OP, UNALIGNED_INT_ASM_OP): Remove.
+	(UNALIGNED_DOUBLE_INT_ASM_OP, ASM_BYTE_OP): Remove.
+	(UNALIGNED_OFFSET_ASM_OP, UNALIGNED_WORD_ASM_OP): Remove.
+	(FDE_LABEL, LINE_NUMBER_BEGIN_LABEL, LINE_NUMBER_END_LABEL): New.
+	(ASM_OUTPUT_DWARF_DATA1, ASM_OUTPUT_DWARF_DELTA1): Remove.
+	(ASM_OUTPUT_DWARF_DATA2, ASM_OUTPUT_DWARF_DELTA2): Remove.
+	(ASM_OUTPUT_DWARF_DATA4, ASM_OUTPUT_DWARF_DELTA4): Remove.
+	(ASM_OUTPUT_DWARF_DATA, ASM_OUTPUT_DWARF_DELTA): Remove.
+	(ASM_OUTPUT_DWARF_ADDR, ASM_OUTPUT_DWARF_ADDR_DATA): Remove.
+	(ASM_OUTPUT_DWARF_ADDR_DELTA, ASM_OUTPUT_DWARF_ADDR_CONST): Remove.
+	(ASM_OUTPUT_DWARF_OFFSET4, ASM_OUTPUT_DWARF_OFFSET): Remove.
+	(ASM_OUTPUT_DWARF_CONST_DOUBLE): Remove.
+	(ASM_OUTPUT_DWARF_NSTRING, ASM_OUTPUT_DWARF_STRING): Remove.
+	(dwarf2out_frame_debug): Remove unused variables.
+	(output_loc_operands): Don't abort on 8 byte constants if
+	host integers are wide enough.
+	(output_symbolic_ref): Remove.
+	(size_of_die): Don't assume 4 byte host integers.
+	(output_line_info): Use ASM_GENERATE_INTERNAL_LABEL for begin
+	and end labels.
+	(add_const_value_attribute) [CONST_INT]: Verify we're not doing
+	something stupid with HOST_WIDE_INT to long truncation.
+	[CONST_DOUBLE]: Likewise.
+
+	* config/arm/conix-elf.h (UNALIGNED_WORD_ASM_OP): Remove.
+	(ASM_OUTPUT_DWARF2_ADDR_CONST, ASM_OUTPUT_DWARF_ADDR_CONST): Remove.
+	* config/arm/unknown-elf.h: Likewise.
+	* config/rs6000/aix.h (UNALIGNED_SHORT_ASM_OP): New.
+	(UNALIGNED_INT_ASM_OP, UNALIGNED_DOUBLE_INT_ASM_OP): New.
+	(ASM_OUTPUT_DWARF_ADDR_VAR, ASM_OUTPUT_DWARF_DELTA_VAR): Remove.
+	(ASM_OUTPUT_DWARF_DELTA2, ASM_OUTPUT_DWARF_DELTA4): Remove.
+	(ASM_OUTPUT_DWARF_DELTA, ASM_OUTPUT_DWARF_ADDR_DELTA): Remove.
+	(ASM_OUTPUT_DWARF_ADDR, ASM_OUTPUT_DWARF_DATA4): Remove.
+	(ASM_OUTPUT_DWARF_DATA2, ASM_OUTPUT_DWARF_OFFSET4): Remove.
+	(ASM_OUTPUT_DWARF_OFFSET): Remove.
+	* config/rs6000/sysv4.h (ASM_OUTPUT_DWARF_ADDR): Remove.
+	* config/sparc/sp64-elf.h (UNALIGNED_DOUBLE_INT_ASM_OP): New.
+	(UNALIGNED_LONGLONG_ASM_OP, ASM_OUTPUT_DWARF_ADDR): Remove.
+	(ASM_OUTPUT_DWARF_ADDR_CONST, ASM_OUTPUT_DWARF_REF): Remove.
+
 2001-03-02  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* cselib.c (hash_rtx): Cast enums to unsigned int.
