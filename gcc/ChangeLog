@@ -1,3 +1,19 @@
+2005-03-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* builtins.c (fold_builtin_1): Update a call to
+	targetm.fold_builtin.
+	* hooks.c (hook_tree_tree_bool_null): Rename to
+	hook_tree_tree_tree_bool_null.  Take one more argument of type
+	tree.
+	* hooks.h: Update the prototype of hook_tree_tree_bool_null.
+	* target-def.h (TARGET_FOLD_BUILTIN): Define it as
+	hook_tree_tree_tree_bool_null.
+	* target.h (gcc_target): Update the prototype of fold_builtin.
+	* config/alpha/alpha.c (alpha_fold_builtin): Take decomposed
+	arguments of CALL_EXPR.
+	* doc/tm.texi (TARGET_FOLD_BUILTIN): Update.  Mention the
+	new prototype.
+
 2005-03-20  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.h (cgraph_node): Add prev_clone pointer.

@@ -7947,7 +7947,7 @@ fold_builtin_1 (tree exp, bool ignore)
   enum built_in_function fcode;
 
   if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
-    return targetm.fold_builtin (exp, ignore);
+    return targetm.fold_builtin (fndecl, arglist, ignore);
 
   fcode = DECL_FUNCTION_CODE (fndecl);
   switch (fcode)
