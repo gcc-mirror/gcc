@@ -3443,12 +3443,6 @@ static unsigned long next_die_offset;
 /* Record the root of the DIE's built for the current compilation unit.  */
 static GTY(()) dw_die_ref comp_unit_die;
 
-#ifdef DWARF2_DEBUGGING_INFO
-/* We need special handling in dwarf2out_start_source_file if it is
-   first one.  */
-static int is_main_source;
-#endif
-
 /* A list of DIEs with a NULL parent waiting to be relocated.  */
 static GTY(()) limbo_die_node *limbo_die_list;
 
@@ -12285,7 +12279,7 @@ dwarf2out_source_line (unsigned int line, const char *filename)
 static void
 dwarf2out_start_source_file (unsigned int lineno, const char *filename)
 {
-  if (flag_eliminate_dwarf2_dups && !is_main_source)
+  if (flag_eliminate_dwarf2_dups)
     {
       /* Record the beginning of the file for break_out_includes.  */
       dw_die_ref bincl_die;
@@ -12293,8 +12287,6 @@ dwarf2out_start_source_file (unsigned int lineno, const char *filename)
       bincl_die = new_die (DW_TAG_GNU_BINCL, comp_unit_die, NULL);
       add_AT_string (bincl_die, DW_AT_name, filename);
     }
-
-  is_main_source = 0;
 
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
     {
@@ -12396,7 +12388,6 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
      invoked when the given (base) source file was compiled.  We will fill
      in this value in dwarf2out_finish.  */
   comp_unit_die = gen_compile_unit_die (NULL);
-  is_main_source = 1;
 
   VARRAY_TREE_INIT (incomplete_types, 64, "incomplete_types");
 
