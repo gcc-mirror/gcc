@@ -366,8 +366,17 @@ __muldi3 (DWtype u, DWtype v)
 }
 #endif
 
+#if (defined (L_udivdi3) || defined (L_divdi3) || \
+     defined (L_umoddi3) || defined (L_moddi3))
+#define L_udiv_w_sdiv
+#endif
+
 #ifdef L_udiv_w_sdiv
 #if defined (sdiv_qrnnd)
+#if (defined (L_udivdi3) || defined (L_divdi3) || \
+     defined (L_umoddi3) || defined (L_moddi3))
+static inline
+#endif
 UWtype
 __udiv_w_sdiv (UWtype *rp, UWtype a1, UWtype a0, UWtype d)
 {
