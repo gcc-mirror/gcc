@@ -26,11 +26,15 @@ __CTOR_LIST__:
 __DTOR_LIST__:
 	data8	-1
 
+.section .jcr,"aw","progbits"
+	.align	8
+__JCR_LIST__:
+
 .section .sdata
 	.type dtor_ptr#,@object
 	.size dtor_ptr#,8
 dtor_ptr:
-	data8	__DTOR_LIST__# + 8
+	data8	@gprel(__DTOR_LIST__# + 8)
 
 	/* A handle for __cxa_finalize to manage c++ local destructors.  */
 	.global __dso_handle#
@@ -64,6 +68,24 @@ __dso_handle:
 .section .fini,"ax","progbits"
 	{ .mlx
 	  movl r2 = @pcrel(__do_global_dtors_aux# - 16)
+	}
+	{ .mii
+	  mov r3 = ip
+	  ;;
+	  add r2 = r2, r3
+	  ;;
+	}
+	{ .mib
+	  mov b6 = r2
+	  br.call.sptk.many b0 = b6
+	  ;;
+	}
+
+/* Likewise for _init.  */
+
+.section .init,"ax","progbits"
+	{ .mlx
+	  movl r2 = @pcrel(__do_jv_register_classes# - 16)
 	}
 	{ .mii
 	  mov r3 = ip
@@ -150,17 +172,20 @@ __do_global_dtors_aux:
 	{ .mmi
 	  ld8 r15 = [loc0]
 	  ;;
-	  ld8 r16 = [r15], 8
+	  add r16 = r15, gp
+	  adds r15 = 8, r15
 	  ;;
 	}
-	{ .mfb
-	  cmp.ne p6, p0 = r0, r16
-(p6)	  br.cond.sptk.few 0b
-	}
-	{ .mii
+	{ .mmi
+	  ld8 r16 = [r16]
 	  mov gp = loc2
 	  mov b0 = loc1
+	  ;;
+	}
+	{ .mib
+	  cmp.ne p6, p0 = r0, r16
 	  mov ar.pfs = loc3
+(p6)	  br.cond.sptk.few 0b
 	}
 	{ .bbb
 	  br.ret.sptk.many b0
@@ -168,6 +193,54 @@ __do_global_dtors_aux:
 	}
 	.endp	__do_global_dtors_aux#
 
+	.align	16
+	.proc	__do_jv_register_classes#
+__do_jv_register_classes:
+	{ .mlx
+	  alloc loc2 = ar.pfs, 0, 3, 1, 0
+	  movl out0 = @gprel(__JCR_LIST__)
+	  ;;
+	}
+	{ .mmi
+	  addl r14 = @ltoff(@fptr(_Jv_RegisterClasses)), gp
+	  add out0 = out0, gp
+	  ;;
+	}
+	{ .mmi
+	  ld8 r14 = [r14]
+	  ld8 r15 = [out0]
+	  cmp.ne p6, p0 = r0, r0
+	  ;;
+	}
+	{ .mib
+	  cmp.eq.or p6, p0 = r0, r14
+	  cmp.eq.or p6, p0 = r0, r15
+(p6)	  br.ret.sptk.many b0
+	}
+	{ .mii
+	  ld8 r15 = [r14], 8
+	  mov loc0 = b0
+	  mov loc1 = gp
+	  ;;
+	}
+	{ .mib
+	  ld8 gp = [r14]
+	  mov b6 = r15
+	  br.call.sptk.many b0 = b6
+	  ;;
+	}
+	{ .mii
+	  mov gp = loc1
+	  mov b0 = loc0
+	  mov ar.pfs = loc2
+	}
+	{ .bbb
+	  br.ret.sptk.many b0
+	  ;;
+	}
+	.endp	__do_jv_register_classes#
+
 #ifdef SHARED
 .weak __cxa_finalize#
 #endif
+.weak _Jv_RegisterClasses
