@@ -2124,6 +2124,8 @@ add_miranda_methods (tree base_class, tree search_class)
       tree elt = BINFO_TYPE (base_binfo);
 
       /* Ensure that interface methods are seen in declared order.  */
+      if (!CLASS_LOADED_P (elt))
+	load_class (elt, 1);
       layout_class_methods (elt);
 
       /* All base classes will have been laid out at this point, so the order 

@@ -1,3 +1,9 @@
+2004-09-28  Tom Tromey  <tromey@redhat.com>
+
+	PR java/15710:
+	* class.c (add_miranda_methods): Load superinterface if not
+	already loaded.
+
 2004-09-28  Andrew Haley  <aph@redhat.com>
 
 	PR java/17586
