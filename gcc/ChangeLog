@@ -1,3 +1,7 @@
+2003-09-22  Bernardo Innocenti <bernie@develer.com>
+
+	* doc/contrib.texi: Add Peter Barada, Paul Dale and myself.
+
 2003-09-22  Bernardo Innocenti  <bernie@develer.com>
 
 	* config/m68k/m68k.h (MASK_RTD, TARGET_RTD, RETURN_POPS_ARGS):
