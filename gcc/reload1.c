@@ -364,7 +364,6 @@ static int new_spill_reg		PROTO((int, int, int *, int *, int,
 					       FILE *));
 static void delete_dead_insn		PROTO((rtx));
 static void alter_reg  			PROTO((int, int));
-static void mark_scratch_live		PROTO((rtx));
 static void set_label_offsets		PROTO((rtx, rtx, int));
 static int eliminate_regs_in_insn	PROTO((rtx, int));
 static void mark_not_eliminable		PROTO((rtx, rtx));
@@ -644,10 +643,6 @@ reload (first, global, dumpfile)
 	if (! call_used_regs[i] && ! fixed_regs[i])
 	  regs_ever_live[i] = 1;
       }
-
-  for (i = 0; i < scratch_list_length; i++)
-    if (scratch_list[i])
-      mark_scratch_live (scratch_list[i]);
 
   /* Make sure that the last insn in the chain
      is not something that needs reloading.  */
@@ -1387,13 +1382,6 @@ reload (first, global, dumpfile)
     free (real_known_ptr);
   if (real_at_ptr)
     free (real_at_ptr);
-
-  if (scratch_list)
-    free (scratch_list);
-  scratch_list = 0;
-  if (scratch_block)
-    free (scratch_block);
-  scratch_block = 0;
 
   free (reg_equiv_constant);
   free (reg_equiv_memory_loc);
@@ -2687,20 +2675,6 @@ mark_home_live (regno)
   while (i < lim)
     regs_ever_live[i++] = 1;
 }
-
-/* Mark the registers used in SCRATCH as being live.  */
-
-static void
-mark_scratch_live (scratch)
-     rtx scratch;
-{
-  register int i;
-  int regno = REGNO (scratch);
-  int lim = regno + HARD_REGNO_NREGS (regno, GET_MODE (scratch));
-
-  for (i = regno; i < lim; i++)
-    regs_ever_live[i] = 1;
-}
 
 /* This function handles the tracking of elimination offsets around branches.
 
@@ -3824,33 +3798,6 @@ spill_hard_reg (regno, global, dumpfile, cant_eliminate)
 		       i, reg_renumber[i]);
 	  }
       }
-  for (i = 0; i < scratch_list_length; i++)
-    {
-     if (scratch_list[i] 
-          && regno >= REGNO (scratch_list[i]) 
-          && regno <  REGNO (scratch_list[i]) 
-                      + HARD_REGNO_NREGS (REGNO (scratch_list[i]),
-                                          GET_MODE (scratch_list[i])))
-	{
-	  if (! cant_eliminate && basic_block_needs[0]
-	      && ! basic_block_needs[(int) class][scratch_block[i]])
-	    {
-	      enum reg_class *p;
-
-	      for (p = reg_class_superclasses[(int) class];
-		   *p != LIM_REG_CLASSES; p++)
-		if (basic_block_needs[(int) *p][scratch_block[i]] > 0)
-		  break;
-
-	      if (*p == LIM_REG_CLASSES)
-		continue;
-	    }
-	  PUT_CODE (scratch_list[i], SCRATCH);
-	  scratch_list[i] = 0;
-	  something_changed = 1;
-	  continue;
-	}
-    }
 
   return something_changed;
 }

@@ -1,5 +1,24 @@
 Fri Oct  2 10:51:35 1998  Bernd Schmidt <crux@Pool.Informatik.RWTH-Aachen.DE>
 
+	* global.c (global_alloc): Delete code to manage the scratch_list.
+	* local-alloc.c (qty_scratch_rtx): Delete.
+	(scratch_block): Delete.
+	(scratch_list): Delete.
+	(scratch_list_length): Delete.
+	(scratch_index): Delete.
+	(alloc_qty_for_scratch): Delete.
+	(local-alloc): Update initialization of max_qty.
+	Delete code to manage the scratch list.
+	Delete code to allocate/initialize qty_scratch_rtx.
+	(block_alloc): Don't allocate quantities for scratches.
+	Delete code to manage the scratch list.
+	* regs.h (scratch_list): Delete declaration.
+	(scratch_block): Delete declaration.
+	(scratch_list_length): Delete declaration.
+	* reload1.c (reload): Delete code to manage the scratch list.
+	(spill_hard_reg): Likewise.
+	(mark_scratch_live): Delete.
+
 	* recog.c (alter_subreg): Delete declaration.
 
 1998-10-02  Andreas Jaeger  <aj@arthur.rhein-neckar.de>
