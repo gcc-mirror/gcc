@@ -1,3 +1,11 @@
+2002-07-03  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/6944
+	* init.c (build_aggr_init): Remove qualifiers of init before calling
+	build_vec_init.
+	(build_vec_init): Flatten multi-dimensional array during cleanup.
+	(build_vec_delete_1): Abort if the type of each element is array.
+
 2002-07-02  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/6716
