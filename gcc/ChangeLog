@@ -1,3 +1,9 @@
+2004-03-01  Mark Mitchell  <mark@codesourcery.com>
+
+	PR bootstrap/14356
+	* gcc.c (process_command): Remove const-qualification from argv.
+	(main): Likewise.
+
 2004-03-01  Mircea Namolaru  <namolaru@il.ibm.com>
 
 	* cfgloop.h (get_var_set_from_bct, is_bct_cond): Declaration of

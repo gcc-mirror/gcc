@@ -340,7 +340,7 @@ static void display_help (void);
 static void add_preprocessor_option (const char *, int);
 static void add_assembler_option (const char *, int);
 static void add_linker_option (const char *, int);
-static void process_command (int, const char *const *);
+static void process_command (int, const char **);
 static int execute (void);
 static void alloc_args (void);
 static void clear_args (void);
@@ -3074,7 +3074,7 @@ add_linker_option (const char *option, int len)
    Store its length in `n_switches'.  */
 
 static void
-process_command (int argc, const char *const *argv)
+process_command (int argc, const char **argv)
 {
   int i;
   const char *temp;
@@ -3312,10 +3312,10 @@ process_command (int argc, const char *const *argv)
     }
 
   /* Convert new-style -- options to old-style.  */
-  translate_options (&argc, &argv);
+  translate_options (&argc, (const char *const **) &argv);
 
   /* Do language-specific adjustment/addition of flags.  */
-  lang_specific_driver (&argc, &argv, &added_libraries);
+  lang_specific_driver (&argc, (const char *const **) &argv, &added_libraries);
 
   /* Scan argv twice.  Here, the first time, just count how many switches
      there will be in their vector, and how many input files in theirs.
@@ -5902,10 +5902,10 @@ fatal_error (int signum)
   kill (getpid (), signum);
 }
 
-extern int main (int, const char *const *);
+extern int main (int, const char **);
 
 int
-main (int argc, const char *const *argv)
+main (int argc, const char **argv)
 {
   size_t i;
   int value;
