@@ -1320,6 +1320,7 @@ while (0)
    Do not define this if the table should contain absolute addresses.  */
 /* #define CASE_VECTOR_PC_RELATIVE */
 
+#define CASE_DROPS_THROUGH
 /* Specify the tree operation to be used to convert reals to integers.  */
 #define IMPLICIT_FIX_EXPR FIX_ROUND_EXPR
 
