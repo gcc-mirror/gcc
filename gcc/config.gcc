@@ -458,7 +458,6 @@ case ${target} in
 	*) echo 'Unknown thread configuration for FreeBSD'; exit 1;;
 	esac
 	fbsd_tm_file="${fbsd_tm_file} freebsd-spec.h freebsd.h"
-	use_fixproto=no
 	;;
 *-*-darwin*)
 	tm_file="${tm_file} darwin.h"
@@ -519,6 +518,7 @@ alpha*-*-freebsd*)
 	target_cpu_default="MASK_GAS"
 	tmake_file="${tmake_file} alpha/t-crtfm alpha/t-alpha alpha/t-ieee"
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o"
+	use_fixproto=no
 	;;
 alpha*-*-netbsd*)
 	tm_file="${tm_file} netbsd.h alpha/elf.h netbsd-elf.h alpha/netbsd.h"
@@ -597,6 +597,7 @@ arm-semi-aof | armel-semi-aof)
 arm*-*-freebsd*|strongarm*-*-freebsd*)
 	tm_file="dbxelf.h elfos.h ${fbsd_tm_file} arm/elf.h arm/aout.h arm/freebsd.h arm/arm.h"
 	tmake_file="${tmake_file} arm/t-strongarm-elf"
+	use_fixproto=no
 	;;
 arm*-*-netbsdelf*)
 	tm_file="dbxelf.h elfos.h netbsd.h netbsd-elf.h arm/elf.h arm/aout.h arm/arm.h arm/netbsd-elf.h"
@@ -903,9 +904,11 @@ i[34567]86-*-beoself* | i[34567]86-*-beos*)
 i[34567]86-*-freebsd2 | i[34567]86-*-freebsd2.* | i[34567]86-*-freebsd*aout*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/gstabs.h i386/freebsd-aout.h"
 	tmake_file=t-freebsd
+	use_fixproto=no
 	;;
 i[34567]86-*-freebsd*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h ${fbsd_tm_file} i386/freebsd.h"
+	use_fixproto=no
 	;;
 x86_64-*-freebsd*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h ${fbsd_tm_file} i386/x86-64.h i386/freebsd.h i386/freebsd64.h"
@@ -1208,6 +1211,7 @@ ia64*-*-freebsd*)
 	target_cpu_default="MASK_GNU_AS|MASK_GNU_LD"
 	tmake_file="${tmake_file} ia64/t-ia64"
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtfastmath.o"
+	use_fixproto=no
 	;;
 ia64*-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h linux.h ia64/sysv4.h ia64/linux.h"
@@ -1612,6 +1616,7 @@ powerpc-*-darwin*)
 powerpc*-*-freebsd*)
 	tm_file="${tm_file} dbxelf.h elfos.h ${fbsd_tm_file} rs6000/sysv4.h rs6000/freebsd.h"
 	tmake_file="rs6000/t-fprules rs6000/t-ppcos ${tmake_file} rs6000/t-ppccomm"
+	use_fixproto=no
 	;;
 powerpc-*-netbsd*)
 	tm_file="${tm_file} dbxelf.h elfos.h netbsd.h netbsd-elf.h freebsd-spec.h rs6000/sysv4.h rs6000/netbsd.h"
@@ -2036,6 +2041,7 @@ sparc64-*-freebsd*|ultrasparc-*-freebsd*)
 		*) echo "$with_cpu not supported for freebsd target"; exit 1 ;;
 	esac
 	need_64bit_hwint=yes
+	use_fixproto=no
 	;;
 sparc64-*-linux*)		# 64-bit SPARC's running GNU/Linux
 	tmake_file="t-slibgcc-elf-ver t-linux sparc/t-linux64 sparc/t-crtfm"
