@@ -34,7 +34,7 @@ name of the function must be the same as the name of the file.
     * Add the source file name to CFILES.
 
     * Add the function to name to the funcs shell variable in
-      configure.in.
+      configure.ac.
 
     * Add the function to the AC_CHECK_FUNCS lists just after the
       setting of the funcs shell variable.  These AC_CHECK_FUNCS calls
