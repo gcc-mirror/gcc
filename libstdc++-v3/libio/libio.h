@@ -56,17 +56,13 @@
 #endif
 
 #ifndef __P
-# if _G_HAVE_SYS_CDEFS
-#  include <sys/cdefs.h>
+# ifdef __cplusplus
+#  define __THROW throw ()
 # else
-#  ifdef __STDC__
-#   define __P(p) p
-#   define __PMT(p) p
-#  else
-#   define __P(p) ()
-#   define __PMT(p) ()
-#  endif
+#  define __THROW
 # endif
+# define __P(p) p __THROW
+# define __PMT(p) p
 #endif /*!__P*/
 
 /* For backward compatibility */

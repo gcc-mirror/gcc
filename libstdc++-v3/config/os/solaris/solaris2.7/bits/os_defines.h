@@ -28,9 +28,20 @@
 // the GNU General Public License.
 
 
-#ifndef __P
-#  define __P(p) p
-#  define __PMT(p) p
-#endif
+#ifndef _GLIBCPP_OS_DEFINES
+#  define _GLIBCPP_OS_DEFINES
 
+// Need these to get sane definitions, esp. of 64-bit types and typedefs.
+#define _XOPEN_SOURCE        500
+#define _LARGEFILE64_SOURCE  1
+
+// These are typedefs which libio assumes are already in place (because
+// they really are, under Linux).
+#define __off_t     off_t
+#define __off64_t   off64_t
+#define __ssize_t   ssize_t
+
+
+
+#endif
 
