@@ -7512,7 +7512,21 @@ count_reg_usage (x, counts, dest, incr)
 
       note = find_reg_equal_equiv_note (x);
       if (note)
-        count_reg_usage (XEXP (note, 0), counts, NULL_RTX, incr);
+	{
+	  rtx eqv = XEXP (note, 0);
+
+	  if (GET_CODE (eqv) == EXPR_LIST)
+	  /* This REG_EQUAL note describes the result of a function call.
+	     Process all the arguments.  */
+	    do
+	      {
+		count_reg_usage (XEXP (eqv, 0), counts, NULL_RTX, incr);
+		eqv = XEXP (eqv, 1);
+	      }
+	    while (eqv && GET_CODE (eqv) == EXPR_LIST);
+	  else
+	    count_reg_usage (eqv, counts, NULL_RTX, incr);
+	}
       return;
 
     case EXPR_LIST:

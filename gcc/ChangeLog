@@ -1,3 +1,8 @@
+2003-05-23  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* cse.c (count_reg_usage): When processing an INSNs REG_EQUAL
+	note containing an EXPR_LIST, process all the arguments.
+
 Fri May 23 21:19:31 CEST 2003  Jan Hubicka  <jh@suse.cz>
 			       Andreas Jaeger  <aj@suse.de>
 
