@@ -149,7 +149,7 @@ package body Sem_Ch5 is
          elsif Nkind (N) = N_Indexed_Component then
             Diagnose_Non_Variable_Lhs (Prefix (N));
 
-         --  Another special case for assignment to discriminant.
+         --  Another special case for assignment to discriminant
 
          elsif Nkind (N) = N_Selected_Component then
             if Present (Entity (Selector_Name (N)))
@@ -939,7 +939,7 @@ package body Sem_Ch5 is
    -- Analyze_If_Statement --
    --------------------------
 
-   --  A special complication arises in the analysis of if statements.
+   --  A special complication arises in the analysis of if statements
 
    --  The expander has circuitry to completely delete code that it
    --  can tell will not be executed (as a result of compile time known
@@ -1141,20 +1141,23 @@ package body Sem_Ch5 is
          ---------------
 
          function One_Bound (Bound : Node_Id) return Node_Id is
-            Assign : Node_Id;
-            Id     : Entity_Id;
-            Decl   : Node_Id;
+            Assign   : Node_Id;
+            Id       : Entity_Id;
+            Decl     : Node_Id;
+            Decl_Typ : Entity_Id;
 
          begin
             --  If the bound is a constant or an object, no need for a
             --  separate declaration. If the bound is the result of previous
             --  expansion it is already analyzed and should not be modified.
+            --  Note that the Bound will be resolved later, if needed, as
+            --  part of the call to Make_Index (literal bounds may need to
+            --  be resolved to type Integer).
 
             if Nkind (Bound) = N_Integer_Literal
               or else Is_Entity_Name (Bound)
               or else Analyzed (Bound)
             then
-               Resolve (Bound, Typ);
                return Bound;
             end if;
 
@@ -1162,10 +1165,20 @@ package body Sem_Ch5 is
               Make_Defining_Identifier (Loc,
                 Chars => New_Internal_Name ('S'));
 
+            --  If the type of the discrete range is Universal_Integer, then
+            --  the bound's type must be resolved to Integer, so the object
+            --  used to hold the bound must also have type Integer.
+
+            if Typ = Universal_Integer then
+               Decl_Typ := Standard_Integer;
+            else
+               Decl_Typ := Typ;
+            end if;
+
             Decl :=
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Id,
-                Object_Definition   => New_Occurrence_Of (Typ, Loc));
+                Object_Definition   => New_Occurrence_Of (Decl_Typ, Loc));
 
             Insert_Before (Parent (N), Decl);
             Analyze (Decl);
@@ -1559,7 +1572,7 @@ package body Sem_Ch5 is
             Analyze (Identifier (S));
             Lab := Entity (Identifier (S));
 
-            --  If we found a label mark it as reachable.
+            --  If we found a label mark it as reachable
 
             if Ekind (Lab) = E_Label then
                Generate_Definition (Lab);
