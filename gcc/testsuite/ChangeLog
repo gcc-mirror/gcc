@@ -1,3 +1,7 @@
+2004-01-11  Zack Weinberg  <zack@codesourcery.com>
+
+	* gcc.dg/tls/diag-3.c: Tweak dg-error regexp.
+
 2004-01-11  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	PR c++/3478
