@@ -1,3 +1,7 @@
+2003-06-01  Andreas Jaeger  <aj@suse.de>
+
+	* gen-protos.c (main): Revert patch to check for argument.
+
 2003-06-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/11044

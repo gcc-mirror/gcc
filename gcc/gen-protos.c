@@ -137,9 +137,6 @@ main (int argc, char **argv)
   sstring linebuf;
   struct fn_decl fn_decl;
 
-  if (argc <= 1)
-    fatal ("no input file name");
-
   i = strlen (argv[0]);
   while (i > 0 && argv[0][i-1] != '/') --i;
   progname = &argv[0][i];
