@@ -55,6 +55,7 @@ declare_function_name ()
 		     char_array_type_node);
   TREE_STATIC (decl) = 1;
   TREE_READONLY (decl) = 1;
+  DECL_SOURCE_LINE (decl) = 0;
   DECL_IN_SYSTEM_HEADER (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
   init = build_string (strlen (name) + 1, name);
@@ -67,6 +68,7 @@ declare_function_name ()
 		     char_array_type_node);
   TREE_STATIC (decl) = 1;
   TREE_READONLY (decl) = 1;
+  DECL_SOURCE_LINE (decl) = 0;
   DECL_IN_SYSTEM_HEADER (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
   init = build_string (strlen (printable_name) + 1, printable_name);
