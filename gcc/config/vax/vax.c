@@ -66,6 +66,18 @@ static void vms_globalize_label PARAMS ((FILE *, const char *));
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
+/* Set global variables as needed for the options enabled.  */
+
+void
+override_options ()
+{
+  /* We're VAX floating point, not IEEE floating point.  */
+  memset (real_format_for_mode, 0, sizeof real_format_for_mode);
+  real_format_for_mode[SFmode - QFmode] = &vax_f_format;
+  real_format_for_mode[DFmode - QFmode]
+    = (TARGET_G_FLOAT ? &vax_g_format : &vax_d_format);
+}
+
 /* Generate the assembly code for function entry.  FILE is a stdio
    stream to output the code to.  SIZE is an int: how many units of
    temporary storage to allocate.

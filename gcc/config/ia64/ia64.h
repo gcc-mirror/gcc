@@ -381,9 +381,8 @@ while (0)
 
 #define LONG_DOUBLE_TYPE_SIZE 128
 
-/* Tell real.c that this is the 80-bit Intel extended float format
-   packaged in a 128-bit entity.  */
-
+/* By default we use the 80-bit Intel extended float format packaged
+   in a 128-bit entity.  */
 #define INTEL_EXTENDED_IEEE_FORMAT 1
 
 #define DEFAULT_SIGNED_CHAR 1

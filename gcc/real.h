@@ -95,10 +95,44 @@ extern char test_real_width
 # endif
 #endif
 
-/* Declare functions in real.c.  */
 
-/* Initialize the emulator.  */
-extern void init_real_once	PARAMS ((void));
+/* Describes the properties of the specific target format in use.  */
+struct real_format
+{
+  /* Move to and from the target bytes.  */
+  void (*encode) (const struct real_format *, long *, const REAL_VALUE_TYPE *);
+  void (*decode) (const struct real_format *, REAL_VALUE_TYPE *, const long *);
+
+  /* The radix of the exponent and digits of the significand.  */
+  int b;
+
+  /* log2(b).  */
+  int log2_b;
+
+  /* Size of the significand in digits of radix B.  */
+  int p;
+
+  /* The minimum negative integer, x, such that b**(x-1) is normalized.  */
+  int emin;
+
+  /* The maximum integer, x, such that b**(x-1) is representable.  */
+  int emax;
+
+  /* Properties of the format.  */
+  bool has_nans;
+  bool has_inf;
+  bool has_denorm;
+  bool has_signed_zero;
+  bool qnan_msb_set;
+};
+
+
+/* The target format used for each floating floating point mode.
+   Indexed by MODE - QFmode.  */
+extern const struct real_format *real_format_for_mode[TFmode - QFmode + 1];
+
+
+/* Declare functions in real.c.  */
 
 /* Binary or unary arithmetic on tree_code.  */
 extern void real_arithmetic	PARAMS ((REAL_VALUE_TYPE *, int,
@@ -156,9 +190,13 @@ extern void real_from_integer	PARAMS ((REAL_VALUE_TYPE *,
 					 unsigned HOST_WIDE_INT,
 					 HOST_WIDE_INT, int));
 
+extern long real_to_target_fmt	PARAMS ((long *, const REAL_VALUE_TYPE *,
+					 const struct real_format *));
 extern long real_to_target	PARAMS ((long *, const REAL_VALUE_TYPE *,
 					 enum machine_mode));
 
+extern void real_from_target_fmt PARAMS ((REAL_VALUE_TYPE *, const long *,
+					  const struct real_format *));
 extern void real_from_target	PARAMS ((REAL_VALUE_TYPE *, const long *,
 					 enum machine_mode));
 
@@ -170,6 +208,23 @@ extern bool real_nan		PARAMS ((REAL_VALUE_TYPE *, const char *,
 extern void real_2expN		PARAMS ((REAL_VALUE_TYPE *, int));
 
 extern unsigned int real_hash	PARAMS ((const REAL_VALUE_TYPE *));
+
+
+/* Target formats defined in real.c.  */
+extern const struct real_format ieee_single_format;
+extern const struct real_format ieee_double_format;
+extern const struct real_format ieee_extended_motorola_format;
+extern const struct real_format ieee_extended_intel_96_format;
+extern const struct real_format ieee_extended_intel_128_format;
+extern const struct real_format ieee_quad_format;
+extern const struct real_format vax_f_format;
+extern const struct real_format vax_d_format;
+extern const struct real_format vax_g_format;
+extern const struct real_format i370_single_format;
+extern const struct real_format i370_double_format;
+extern const struct real_format c4x_single_format;
+extern const struct real_format c4x_extended_format;
+
 
 /* ====================================================================== */
 /* Crap.  */

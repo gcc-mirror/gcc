@@ -106,6 +106,9 @@ extern int target_flags;
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_UNIX_ASM)
 #endif
+
+#define OVERRIDE_OPTIONS override_options ()
+
 
 /* Target machine storage layout */
 

@@ -18,8 +18,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* Tell real.c that we are not using INTEL_EXTENDED_IEEE_FORMAT */
-
+/* We are using IEEE quad precision, not a double-extended with padding.  */
 #undef INTEL_EXTENDED_IEEE_FORMAT
 #define INTEL_EXTENDED_IEEE_FORMAT 0
 

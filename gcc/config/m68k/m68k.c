@@ -174,6 +174,9 @@ override_options ()
       else
 	m68k_align_funcs = i;
     }
+
+  /* Tell the compiler which flavor of XFmode we're using.  */
+  real_format_for_mode[XFmode - QFmode] = &ieee_extended_motorola_format;
 }
 
 /* This function generates the assembly code for function entry.

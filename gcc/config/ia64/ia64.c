@@ -4182,6 +4182,10 @@ ia64_override_options ()
   ia64_section_threshold = g_switch_set ? g_switch_value : IA64_DEFAULT_GVALUE;
 
   init_machine_status = ia64_init_machine_status;
+
+  /* Tell the compiler which flavor of TFmode we're using.  */
+  if (INTEL_EXTENDED_IEEE_FORMAT)
+    real_format_for_mode[TFmode - QFmode] = &ieee_extended_intel_128_format;
 }
 
 static enum attr_itanium_requires_unit0 ia64_safe_itanium_requires_unit0 PARAMS((rtx));

@@ -294,6 +294,11 @@ c4x_override_options ()
      This provides compatibility with the old -mno-aliases option.  */
   if (! TARGET_ALIASES && ! flag_argument_noalias)
     flag_argument_noalias = 1;
+
+  /* We're C4X floating point, not IEEE floating point.  */
+  memset (real_format_for_mode, 0, sizeof real_format_for_mode);
+  real_format_for_mode[QFmode - QFmode] = &c4x_single_format;
+  real_format_for_mode[HFmode - QFmode] = &c4x_extended_format;
 }
 
 

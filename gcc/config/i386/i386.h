@@ -631,8 +631,7 @@ extern int x86_prefetch_sse;
 
 /* Define for XFmode or TFmode extended real floating point support.
    The XFmode is specified by i386 ABI, while TFmode may be faster
-   due to alignment and simplifications in the address calculations.
- */
+   due to alignment and simplifications in the address calculations.  */
 #define LONG_DOUBLE_TYPE_SIZE (TARGET_128BIT_LONG_DOUBLE ? 128 : 96)
 #define MAX_LONG_DOUBLE_TYPE_SIZE 128
 #ifdef __x86_64__
@@ -640,9 +639,6 @@ extern int x86_prefetch_sse;
 #else
 #define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 96
 #endif
-/* Tell real.c that this is the 80-bit Intel extended float format
-   packaged in a 128-bit or 96bit entity.  */
-#define INTEL_EXTENDED_IEEE_FORMAT 1
 
 /* Set the value of FLT_EVAL_METHOD in float.h.  When using only the
    FPU, assume that the fpcw is set to extended precision; when using

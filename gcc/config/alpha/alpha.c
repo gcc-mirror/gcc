@@ -567,6 +567,14 @@ override_options ()
 
   /* Set up function hooks.  */
   init_machine_status = alpha_init_machine_status;
+
+  /* Tell the compiler when we're using VAX floating point.  */
+  if (TARGET_FLOAT_VAX)
+    {
+      real_format_for_mode[SFmode - QFmode] = &vax_f_format;
+      real_format_for_mode[DFmode - QFmode] = &vax_g_format;
+      real_format_for_mode[TFmode - QFmode] = NULL;
+    }
 }
 
 /* Returns 1 if VALUE is a mask that contains full bytes of zero or ones.  */

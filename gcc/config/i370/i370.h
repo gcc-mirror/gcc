@@ -76,6 +76,8 @@ extern int mvs_function_name_length;
   { "no-char-instructions", -1, N_("Do not generate char instructions")}, \
   { "", TARGET_DEFAULT, 0} }
 
+#define OVERRIDE_OPTIONS  override_options ()
+
 /* To use IBM supplied macro function prologue and epilogue, define the
    following to 1.  Should only be needed if IBM changes the definition
    of their prologue and epilogue.  */

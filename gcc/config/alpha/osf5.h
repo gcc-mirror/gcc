@@ -18,8 +18,12 @@
    the Free Software Foundation, 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
+/* Tru64 5.1 uses IEEE QUAD format.  */
+/* ??? However, since there is no support for VAX H_floating, we must
+   drop back to a 64-bit long double to avoid a crash looking for the
+   format associated with TFmode.  */
 #undef LONG_DOUBLE_TYPE_SIZE
-#define LONG_DOUBLE_TYPE_SIZE  128
+#define LONG_DOUBLE_TYPE_SIZE  (TARGET_FLOAT_VAX ? 64 : 128)
 
 /* In Tru64 UNIX V5.1, Compaq introduced a new assembler
    (/usr/lib/cmplrs/cc/adu) which currently (versions between 3.04.29 and
