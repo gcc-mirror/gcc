@@ -3335,7 +3335,8 @@ subst (x, from, to, in_dest, unique_copy)
       if (GET_CODE (XEXP (x, 0)) == MINUS
 	  && (! FLOAT_MODE_P (mode)
 	      /* x-y != -(y-x) with IEEE floating point. */
-	      || TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT))
+	      || TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
+	      || flag_fast_math))
 	{
 	  x = gen_binary (MINUS, mode, XEXP (XEXP (x, 0), 1),
 			  XEXP (XEXP (x, 0), 0));
@@ -3428,7 +3429,8 @@ subst (x, from, to, in_dest, unique_copy)
 
       /* In IEEE floating point, x-0 is not the same as x.  */
       if ((TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-	   || ! FLOAT_MODE_P (GET_MODE (XEXP (x, 0))))
+	   || ! FLOAT_MODE_P (GET_MODE (XEXP (x, 0)))
+	   || flag_fast_math)
 	  && XEXP (x, 1) == CONST0_RTX (GET_MODE (XEXP (x, 0))))
 	return XEXP (x, 0);
       break;
@@ -9198,6 +9200,7 @@ reversible_comparison_p (x)
      rtx x;
 {
   if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
+      || flag_fast_math
       || GET_CODE (x) == NE || GET_CODE (x) == EQ)
     return 1;
 
