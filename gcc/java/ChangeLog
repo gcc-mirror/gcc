@@ -1,3 +1,7 @@
+Wed Dec 16 16:18:59 1998  Per Bothner  <bothner@cygnus.com>
+
+	* parse.y (create_interface):  Remove bogus test.
+
 Wed Dec 16 14:42:19 1998  Per Bothner  <bothner@cygnus.com>
 
 	* jcf-parse.c (get_constant):  Set TREE_TYPE for string constants.

@@ -5525,11 +5525,6 @@ create_interface (flags, id, super)
       (MODIFIER_WFL (ABSTRACT_TK),
        "Redundant use of `abstract' modifier. Interface `%s' is implicitely "
        "abstract", IDENTIFIER_POINTER (raw_name));
-  if (flags & ACC_PUBLIC && flags & ACC_ABSTRACT)
-    parse_error_context 
-      (MODIFIER_WFL (ABSTRACT_TK),
-       "Can't specify both `public' and `abstract' modifiers in the "
-       "definition of interface `%s'", IDENTIFIER_POINTER (raw_name));
 
   /* Create a new decl if DECL is NULL, otherwise fix it */
   decl = maybe_create_class_interface_decl (decl, q_name, id);
