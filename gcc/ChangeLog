@@ -1,3 +1,15 @@
+1999-12-21  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* reload1.c (emit_reload_insns): Break out code and variables into...
+	(input_reload_insns, other_input_address_reload_insns,
+	other_input_reload_insns, input_address_reload_insns,
+	inpaddr_address_reload_insns, output_reload_insns,
+	output_address_reload_insns, outaddr_address_reload_insns,
+	operand_reload_insns, other_operand_reload_insns,
+	other_output_reload_insns): ... new static variables, and...
+	(emit_input_reload_insns, emit_output_reload_insns, do_input_reload,
+	do_output_reload): ... new functions.
+
 Tue Dec 21 07:06:36 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* pa.h (FUNCTION_ARG_BOUNDARY): Never return 0.
