@@ -4,12 +4,12 @@
 
 extern "C" void abort ();
 
-void f (int i)
+void f (long i)
 {
   union
   {
-    int ui;
-    float uf[2];
+    long ui;
+    float uf[20];
   };
 
   ui = i;
@@ -19,7 +19,7 @@ void f (int i)
 
 int main ()
 {
-  union U { int i; float f[2]; } u;
+  union U { long i; float f[20]; } u;
   u.f[0] = 42.0;
   f (u.i);
 }
