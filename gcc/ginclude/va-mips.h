@@ -38,7 +38,8 @@ typedef char * __gnuc_va_list;
 #endif
 
 #ifdef _STDARG_H
-#define va_start(__AP, __LASTARG)	(__AP = __builtin_next_arg (__LASTARG))
+#define va_start(__AP, __LASTARG) \
+  (__AP = (__gnuc_va_list) __builtin_next_arg (__LASTARG))
 
 #else
 #define va_alist  __builtin_va_alist
