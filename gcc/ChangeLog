@@ -1,3 +1,10 @@
+2002-10-10  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/aix52.h: New file.
+	* config/rs6000/t-aix52: New File.
+	* config.gcc (rs6000-ibm-aix5.1.*): New entry.
+	(rs6000-ibm-aix[56789].*): Default to AIX 5.2.
+
 Thu Oct 10 19:37:54 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	PR target/5610
