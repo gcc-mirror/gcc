@@ -1,3 +1,7 @@
+2004-04-22  Alan Modra  <amodra@bigpond.net.au>
+
+	* name-lookup.c (anonymous_namespace_name): Make static.
+
 2004-04-19  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/14531
