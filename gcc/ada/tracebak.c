@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                            $Revision$
+ *                            $Revision: 1.2 $
  *                                                                          *
  *           Copyright (C) 2000-2001 Ada Core Technologies, Inc.            *
  *                                                                          *
@@ -61,10 +61,10 @@
 #endif
 
 #define Lock_Task system__soft_links__lock_task
-extern void (*Lock_Task) (void);
+extern void (*Lock_Task) PARAMS ((void));
 
 #define Unlock_Task system__soft_links__unlock_task
-extern void (*Unlock_Task) (void);
+extern void (*Unlock_Task) PARAMS ((void));
 
 #ifndef CURRENT_STACK_FRAME
 # define CURRENT_STACK_FRAME  ({ char __csf; &__csf; })
@@ -202,7 +202,6 @@ __gnat_backtrace (array, size, exclude_min, exclude_max)
   struct layout *current;
   void *top_frame;
   void *top_stack;
-  void *ret;
   int cnt = 0;
 
 #ifdef PROTECT_SEGV

@@ -1,3 +1,15 @@
+2001-11-17  Laurent Guerby  <guerby@acm.org>
+
+	* Make-lang.in (GNATLIBFLAGS): Add -W -Wall.
+	* gigi.h (init_decl_processing): Rename to gnat_init_decl_processing.
+	* io-aux.c: Provide K&R prototypes to all functions, reformat code.
+	* lang-spec.h: Add missing struct field to silence warnings.
+	* sysdep.c (rts_get_*): Provide K&R prototype.
+	* sysdep.c (Unlock_Task, Lock_Task): Move to K&R prototype.
+	* traceback.c (Unlock_Task, Lock_Task): Likewise.
+	* tracebak.c (__gnat_backtrace): Remove unused variable.
+	* utils.c (end_subprog_body): Move to K&R style.
+
 Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* trans.c, utils2.c: Remove PALIGN parameter to get_inner_reference.

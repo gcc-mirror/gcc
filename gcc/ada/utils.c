@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                            $Revision: 1.3 $
+ *                            $Revision: 1.4 $
  *                                                                          *
  *          Copyright (C) 1992-2001, Free Software Foundation, Inc.         *
  *                                                                          *
@@ -1829,7 +1829,7 @@ begin_subprog_body (subprog_decl)
    to assembler language output.  */
 
 void
-end_subprog_body (void)
+end_subprog_body ()
 {
   tree decl;
   tree cico_list;
