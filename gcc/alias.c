@@ -1431,7 +1431,7 @@ nonlocal_reference_p (x)
   /* Recursively scan the operands of this expression.  */
 
   {
-    register char *fmt = GET_RTX_FORMAT (code);
+    register const char *fmt = GET_RTX_FORMAT (code);
     register int i;
     
     for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)

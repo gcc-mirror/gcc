@@ -1,3 +1,7 @@
+Tue Aug 31 22:08:03 1999  Marc Espie <espie@cvs.openbsd.org>
+
+	* alias.c (non_local_reference_p): Constify fmt.
+
 Tue Aug 31 23:19:35 1999  Michael Meissner  <meissner@cygnus.com>
 
 	* config/i386/xm-cygwin.h (HAVE_DOS_BASED_FILE_SYSTEM): Define.
