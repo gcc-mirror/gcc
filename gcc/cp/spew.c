@@ -401,6 +401,9 @@ yylex ()
       break;
 
     case TYPESPEC:
+      /* If this provides a type for us, then revert lexical
+	 state to standard state.  */
+      looking_for_typename = 0;
       consume_token ();
       break;
 
