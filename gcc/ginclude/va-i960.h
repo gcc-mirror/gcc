@@ -31,8 +31,10 @@ typedef unsigned __gnuc_va_list[2];
 		       * __vali (T) + __vsiz (T))
 
 #ifdef _STDARG_H
-#define va_start(AP, LASTARG) ((AP)[1] = 0, \
-				*(AP) = (unsigned) __builtin_next_arg ())
+#define va_start(AP, LASTARG)				\
+__extension__						\
+({ __asm__ ("st	g14,%0" : "=m" (*(AP)));		\
+   (AP)[1] = (unsigned) __builtin_next_arg () - *AP; })
 #else
 
 #define	va_alist __builtin_va_alist
