@@ -72,8 +72,8 @@ Boston, MA 02111-1307, USA.  */
           or FIELD_DECL).
       NEED_TEMPORARY_P (in REF_BIND, BASE_CONV)
       SCOPE_PARTIAL_P (in SCOPE_STMT)
-   5: Not used.
-   6: Not used.
+   5: BINFO_PRIMARY_MARKED_P (in BINFO)
+   6: BINFO_VBASE_PRIMARY_P (in BINFO)
 
    Usage of TYPE_LANG_FLAG_?:
    0: C_TYPE_FIELDS_READONLY (in RECORD_TYPE or UNION_TYPE).
@@ -117,10 +117,13 @@ Boston, MA 02111-1307, USA.  */
    BINFO_VIRTUALS
      For a binfo, this is a TREE_LIST.  The TREE_PURPOSE of each node
      gives the amount by which to adjust the `this' pointer when
-     calling the function.  The TREE_VALUE is the declaration for the 
-     virtual function itself.  When CLASSTYPE_COM_INTERFACE_P does not
-     hold, the first entry does not have a TREE_VALUE; it is just an
-     offset.
+     calling the function.  If the method is an overriden version of a
+     base class method, then it is assumed that, prior to adjustment,
+     the this pointer points to an object of the base class.
+
+     The TREE_VALUE is the declaration for the virtual function
+     itself.  When CLASSTYPE_COM_INTERFACE_P does not hold, the first
+     entry does not have a TREE_VALUE; it is just an offset.
 
    DECL_ARGUMENTS
      For a VAR_DECL this is DECL_ANON_UNION_ELEMS.  */
@@ -1572,23 +1575,33 @@ struct lang_type
 #define SET_BINFO_PUSHDECLS_MARKED(NODE) SET_BINFO_VTABLE_PATH_MARKED (NODE)
 #define CLEAR_BINFO_PUSHDECLS_MARKED(NODE) CLEAR_BINFO_VTABLE_PATH_MARKED (NODE)
 
-/* Nonzero if this BINFO has been marked as a primary base class.  */
-#define BINFO_PRIMARY_MARKED_P(NODE)		\
-  (TREE_VIA_VIRTUAL (NODE) 			\
-   ? CLASSTYPE_MARKED5 (BINFO_TYPE (NODE))	\
-   : TREE_LANG_FLAG_5 (NODE))
+/* Nonzero if this BINFO is a primary base class.
 
-/* Mark NODE as a primary base class.  */
-#define SET_BINFO_PRIMARY_MARKED_P(NODE)	\
-  (TREE_VIA_VIRTUAL (NODE)			\
-   ? SET_CLASSTYPE_MARKED5 (BINFO_TYPE (NODE))	\
-   : (TREE_LANG_FLAG_5 (NODE) = 1))
+   In the TYPE_BINFO hierarchy, this flag is never set for a base
+   class of a non-primary virtual base because the copies of a
+   non-primary virtual base that appear in the TYPE_BINFO hierarchy do
+   not really exist.  Instead, it is the BINFOs in the
+   CLASSTYPE_VBASECLASSES list that are used.  In other words, this
+   flag is only valid for paths (given by BINFO_INHERITANCE_CHAIN)
+   that really exist in the final object.  
 
-/* Clear the primary base class mark.  */
-#define CLEAR_BINFO_PRIMARY_MARKED_P(NODE) 		\
-  (TREE_VIA_VIRTUAL (NODE)				\
-   ? CLEAR_CLASSTYPE_MARKED5 (BINFO_TYPE (NODE))	\
-   : (TREE_LANG_FLAG_5 (NODE) = 0))
+   For example, consider:
+
+      struct A {};
+      struct B : public A { };
+      struct C : virtual public B { void f(); };
+
+   `A' is the primary base class for `B'.  But, `B' is not a primary
+   base class for `C'.  So, in the copy of `A' that appears in the
+   TYPE_BINFO hierarcy for `C' does not have BINFO_PRIMARY_MARKED_P
+   set; the copy in the CLASSTYPE_VBASECLASSES list does have this
+   set.  */
+#define BINFO_PRIMARY_MARKED_P(NODE) TREE_LANG_FLAG_5 (NODE)
+
+/* Nonzero if the virtual baseclass with the type given by this BINFO
+   is primary *somewhere* in the hierarchy.  This flag is only set on 
+   entries in the CLASSTYPE_VBASECLASSES list.  */
+#define BINFO_VBASE_PRIMARY_P(NODE) TREE_LANG_FLAG_6 (NODE)
 
 /* Used by various search routines.  */
 #define IDENTIFIER_MARKED(NODE) TREE_LANG_FLAG_0 (NODE)
@@ -3937,7 +3950,10 @@ extern tree dfs_unmark                          PROTO((tree, void *));
 extern tree dfs_vbase_unmark                    PROTO((tree, void *));
 extern tree markedp                             PROTO((tree, void *));
 extern tree unmarkedp                           PROTO((tree, void *));
-extern tree dfs_mark_primary_bases_queue_p      PROTO((tree, void *));
+extern tree dfs_skip_nonprimary_vbases_unmarkedp PROTO((tree, void *));
+extern tree dfs_skip_nonprimary_vbases_markedp  PROTO((tree, void *));
+extern tree dfs_unmarked_real_bases_queue_p     PROTO((tree, void *));
+extern tree dfs_marked_real_bases_queue_p       PROTO((tree, void *));
 extern void mark_primary_bases                  PROTO((tree));
 
 /* in semantics.c */
