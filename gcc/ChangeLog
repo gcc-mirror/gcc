@@ -1,3 +1,33 @@
+2003-01-04  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300-protos.h: Add prototypes for
+	the new functions defined below.
+	* config/h8300/h8300.c (TARGET_ASM_FUNCTION_PROLOGUE): Do not
+	define.
+	(dosize): Emit RTL instead of assembly code.
+	(push): Likewise.
+	(pop): Likewise.
+	(h8300_output_function_prologue): Remove.
+	(h8300_expand_prologue): New.
+	(h8300_expand_epilogue): New.
+	(h8300_output_function_epilogue): Do only the reset of
+	pragma_saveall.
+	* config/h8300/h8300.md (push_h8300): New.
+	(push_h8300hs): Likewise.
+	(pop_h8300): Likewise.
+	(pop_h8300hs): Likewise.
+	(*stm_h8300s_2): Change the name to stm_h8300s_2.
+	(*stm_h8300s_3): Change the name to stm_h8300s_3.
+	(*stm_h8300s_4): Change the name to stm_h8300s_4.
+	(*ldm_h8300s_2): New.
+	(*ldm_h8300s_3): Likewise.
+	(*ldm_h8300s_4): Likewise.
+	(return): Likewise.
+	(*return_1): Likewise.
+	(prologue): Likewise.
+	(epilogue): Likewise.
+	(monitor_prologue): Likewise.
+
 2003-01-03  Dale Johannesen  <dalej@apple.com>
 
 	* config/darwin.h:  (EXTRA_SECTIONS):  Add machopic_symbol_stub1,
