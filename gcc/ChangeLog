@@ -18,6 +18,9 @@ Sun Jun  7 15:29:04 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.
 
 Sun Jun  7 09:30:31 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* reload.c (find_reloads): Give preference to pseudo that was the
+ 	reloaded output of previous insn.
+
 	* emit-rtl.c (init_emit_once): Provide default for DOUBLE_TYPE_SIZE.
 
 	* expr.c (init_expr_once): Free all RTL we generate here.
