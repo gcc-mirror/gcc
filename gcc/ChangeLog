@@ -1,3 +1,8 @@
+Thu May 11 01:19:31 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* configure.in (hppa*64*-*-hpux11*): New target for PA64 support.
+	* configure: Rebuilt.
+
 2000-05-10 Laurynas Biveinis <lauras@softhome.net>
 
 	* i386/xm-djgpp.h (XREF_FILE_NAME): Add mising brace.
