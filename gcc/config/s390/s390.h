@@ -730,7 +730,7 @@ CUMULATIVE_ARGS;
 
 /* Trampolines for nested functions.  */
 
-#define TRAMPOLINE_SIZE (TARGET_64BIT ? 36 : 20)
+#define TRAMPOLINE_SIZE (TARGET_64BIT ? 32 : 16)
 
 #define INITIALIZE_TRAMPOLINE(ADDR, FNADDR, CXT)                       \
    s390_initialize_trampoline ((ADDR), (FNADDR), (CXT))
