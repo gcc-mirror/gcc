@@ -1,5 +1,5 @@
 /* Demangler for GNU C++ 
-   Copyright 1989, 91, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
+   Copyright 1989, 1991, 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
    Written by James Clark (jjc@jclark.uucp)
    Rewritten by Fred Fish (fnf@cygnus.com) for ARM and Lucid demangling
    
@@ -229,8 +229,7 @@ static const struct optable
 #define LEN_STRING(str)         ( (STRING_EMPTY(str))?0:((str)->p - (str)->b))
 
 /* The scope separator appropriate for the language being demangled.  */
-#define SCOPE_STRING(work) \
-  (((work)->options & DMGL_JAVA) ? "." : "::")
+#define SCOPE_STRING(work) "::"
 
 #define ARM_VTABLE_STRING "__vtbl__"	/* Lucid/ARM virtual table prefix */
 #define ARM_VTABLE_STRLEN 8		/* strlen (ARM_VTABLE_STRING) */
@@ -443,6 +442,7 @@ cplus_demangle_opname (opname, result, options)
   len = strlen(opname);
   result[0] = '\0';
   ret = 0;
+  memset ((char *) work, 0, sizeof (work));
   work->options = options;
   
   if (opname[0] == '_' && opname[1] == '_'
@@ -1416,7 +1416,6 @@ demangle_template (work, mangled, tname, trawname, is_type, remember)
   int need_comma = 0;
   int success = 0;
   const char *start;
-  int is_java_array = 0;
   string temp;
   int bindex;
 
@@ -1460,19 +1459,13 @@ demangle_template (work, mangled, tname, trawname, is_type, remember)
 	    {
 	      return (0);
 	    }
-	  is_java_array = (work -> options & DMGL_JAVA)
-	    && strncmp (*mangled, "JArray1Z", 8) == 0;
-	  if (! is_java_array)
-	    {
-	      string_appendn (tname, *mangled, r);
-	      if (trawname)
-		string_appendn (trawname, *mangled, r);
-	    }
+	  string_appendn (tname, *mangled, r);
+	  if (trawname)
+	    string_appendn (trawname, *mangled, r);
 	  *mangled += r;
 	}
     }
-  if (!is_java_array)
-    string_append (tname, "<");
+  string_append (tname, "<");
   /* get size of template parameter list */
   if (!get_count (mangled, &r))
     {
@@ -1599,16 +1592,9 @@ demangle_template (work, mangled, tname, trawname, is_type, remember)
 	}
       need_comma = 1;
     }
-  if (is_java_array)
-    {
-      string_append (tname, "[]");
-    }
-  else
-    {
-      if (tname->p[-1] == '>')
-	string_append (tname, " ");
-      string_append (tname, ">");
-    }
+  if (tname->p[-1] == '>')
+    string_append (tname, " ");
+  string_append (tname, ">");
   
   if (is_type && remember)
     remember_Btype (work, tname->b, LEN_STRING (tname), bindex);
@@ -2534,8 +2520,7 @@ do_type (work, mangled, result)
 	case 'P':
 	case 'p':
 	  (*mangled)++;
-	  if (! (work -> options & DMGL_JAVA))
-	    string_prepend (&decl, "*");
+	  string_prepend (&decl, "*");
 	  break;
 
 	  /* A reference type */
@@ -3755,7 +3740,6 @@ static struct option long_options[] = {
   {"strip-underscores", no_argument, 0, '_'},
   {"format", required_argument, 0, 's'},
   {"help", no_argument, 0, 'h'},
-  {"java", no_argument, 0, 'j'},
   {"no-strip-underscores", no_argument, 0, 'n'},
   {"version", no_argument, 0, 'v'},
   {0, no_argument, 0, 0}
@@ -3799,9 +3783,6 @@ main (argc, argv)
 	  exit (0);
 	case '_':
 	  strip_underscore = 1;
-	  break;
-	case 'j':
-	  flags |= DMGL_JAVA;
 	  break;
 	case 's':
 	  if (strcmp (optarg, "gnu") == 0)
