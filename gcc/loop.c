@@ -361,7 +361,7 @@ loop_optimize (f, dumpfile)
 
   /* Get size to use for tables indexed by uids.
      Leave some space for labels allocated by find_and_verify_loops.  */
-  max_uid_for_loop = get_max_uid () + 1 + max_loop_num * 4;
+  max_uid_for_loop = get_max_uid () + 1 + max_loop_num * 32;
 
   uid_luid = (int *) alloca (max_uid_for_loop * sizeof (int));
   uid_loop_num = (int *) alloca (max_uid_for_loop * sizeof (int));
@@ -385,6 +385,10 @@ loop_optimize (f, dumpfile)
      find_and_verify_loops, because it might reorder the insns in the
      function.  */
   reg_scan (f, max_reg_num (), 1);
+
+  /* See if we went too far.  */
+  if (get_max_uid () > max_uid_for_loop)
+    abort ();
 
   /* Compute the mapping from uids to luids.
      LUIDs are numbers assigned to insns, like uids,
@@ -2240,7 +2244,8 @@ find_and_verify_loops (f)
 	    && (GET_CODE (PATTERN (insn)) == RETURN
 		|| (simplejump_p (insn)
 		    && (uid_loop_num[INSN_UID (JUMP_LABEL (insn))]
-			!= this_loop_num))))
+			!= this_loop_num)))
+	    && get_max_uid () < max_uid_for_loop)
 	  {
 	    rtx p;
 	    rtx our_next = next_real_insn (insn);
@@ -2299,8 +2304,7 @@ find_and_verify_loops (f)
 
 		    /* Verify that uid_loop_num is large enough and that
 		       we can invert P. */
-		   if (INSN_UID (new_label) < max_uid_for_loop
-		       && invert_jump (p, new_label))
+		   if (invert_jump (p, new_label))
 		     {
 		       rtx q, r;
 
