@@ -1,3 +1,9 @@
+2004-12-01  Bryce McKinlay  <mckinlay@redhat.com>
+
+	PR libgcj/18699
+	* testsuite/libjava.lang/PR18699.java, 
+	testsuite/libjava.lang/PR18699.out: New test.
+
 2004-11-30  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GdkGraphics.java (drawImage variants):
