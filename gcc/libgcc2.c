@@ -3688,6 +3688,7 @@ label:
   /* Now reset pc to the right throw point.  */
   pc = __eh_pc;
 
+  handler = 0;
   for (;;)
     { 
       frame_state *p = udata;
