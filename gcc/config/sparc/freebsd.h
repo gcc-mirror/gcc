@@ -27,7 +27,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define CPP_PREDEFINES FBSD_CPP_PREDEFINES
 
 #define LINK_SPEC "-m elf64_sparc %(link_arch)				\
-  %{!mno-relax:%{!r:-relax}						\
+  %{!mno-relax:%{!r:-relax}}						\
   %{p:%e`-p' not supported; use `-pg' and gprof(1)}			\
   %{Wl,*:%*}								\
   %{assert*} %{R*} %{rpath*} %{defsym*}					\
