@@ -245,9 +245,9 @@
 ;; NO_REGS, so we need not have any predicates here.
 
 (define_expand "reload_outsi"
-  [(set (match_operand:SI 0 "symbolic_memory_operand" "=m")
-	(match_operand:SI 1 "" "r"))
-   (match_operand:SI 2 "" "=&b")]
+  [(parallel [(set (match_operand:SI 0 "symbolic_memory_operand" "=m")
+		   (match_operand:SI 1 "" "r"))
+	      (clobber (match_operand:SI 2 "" "=&b"))])]
   ""
   "")
 
