@@ -3210,6 +3210,52 @@ legitimize_address (register rtx x, register rtx oldx ATTRIBUTE_UNUSED,
   return x;
 }
 
+/* Try a machine-dependent way of reloading an illegitimate address AD
+   operand.  If we find one, push the reload and and return the new address.
+
+   MODE is the mode of the enclosing MEM.  OPNUM is the operand number
+   and TYPE is the reload type of the current reload.  */
+
+rtx 
+legitimize_reload_address (rtx ad, enum machine_mode mode ATTRIBUTE_UNUSED,
+			   int opnum, int type)
+{
+  if (!optimize || TARGET_LONG_DISPLACEMENT)
+    return NULL_RTX;
+
+  if (GET_CODE (ad) == PLUS)
+    {
+      rtx tem = simplify_binary_operation (PLUS, Pmode,
+					   XEXP (ad, 0), XEXP (ad, 1));
+      if (tem)
+	ad = tem;
+    }
+
+  if (GET_CODE (ad) == PLUS
+      && GET_CODE (XEXP (ad, 0)) == REG
+      && GET_CODE (XEXP (ad, 1)) == CONST_INT
+      && !DISP_IN_RANGE (INTVAL (XEXP (ad, 1))))
+    {
+      HOST_WIDE_INT lower = INTVAL (XEXP (ad, 1)) & 0xfff;
+      HOST_WIDE_INT upper = INTVAL (XEXP (ad, 1)) ^ lower;
+      rtx cst, tem, new;
+
+      cst = GEN_INT (upper);
+      if (!legitimate_reload_constant_p (cst))
+	cst = force_const_mem (Pmode, cst);
+
+      tem = gen_rtx_PLUS (Pmode, XEXP (ad, 0), cst);
+      new = gen_rtx_PLUS (Pmode, tem, GEN_INT (lower));
+
+      push_reload (XEXP (tem, 1), 0, &XEXP (tem, 1), 0,
+		   BASE_REG_CLASS, Pmode, VOIDmode, 0, 0, 
+		   opnum, (enum reload_type) type);
+      return new;
+    }
+
+  return NULL_RTX;
+}
+
 /* Emit code to move LEN bytes from DST to SRC.  */
 
 void

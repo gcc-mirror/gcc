@@ -1,3 +1,17 @@
+2004-08-22  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* reload.c (find_reloads_address): Make return value tri-state.
+	Return -1 if LEGITIMIZE_RELOAD_ADDRESS succeeded.
+	(find_reloads): Assume that reloaded addresses match 'o' or
+	EXTRA_MEMORY_CONSTRAINT constraints only if find_reloads_address
+	returned 1 (not -1).  Omit optional reloads for address operands
+	only if find_reloads_address returned 1 (not -1).
+
+	* config/s390/s390.c (legitimize_reload_address): New function.
+	* config/s390/s390-protos.h (legitimize_reload_address): Declare.
+	* config/s390/s390.h (LEGITIMIZE_RELOAD_ADDRESS): Define.  Call
+	legitimize_reload_address.
+
 2004-08-22  Richard Hendersion  <rth@redhat.com>
 
 	* tree.h (SAVE_EXPR_RESOLVED_P): New.
