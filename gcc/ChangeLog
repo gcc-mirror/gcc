@@ -1,3 +1,8 @@
+2002-04-01  Jim Blandy  <jimb@redhat.com>
+
+	* cppmacro.c (cpp_macro_definition): Do not emit spaces after
+	macro formal parameter names.
+
 2002-04-01  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (xtensa_va_arg): Fix compiler warning
