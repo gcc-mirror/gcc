@@ -2397,7 +2397,7 @@ auto_inc_p (x)
    end of the extended sequence.  
  
    For now, this function only checks that the region contains whole
-   exception regiongs, but it could be extended to check additional
+   exception regions, but it could be extended to check additional
    conditions as well.  */
 
 int
