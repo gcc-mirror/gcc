@@ -63,7 +63,7 @@ public interface AclEntry extends Cloneable
    *
    * @return The <code>Principal</code> for this ACL entry
    */
-  public abstract Principal getPrincipal();
+  Principal getPrincipal();
 
   /**
    * This method sets ths <code>Principal</code> associated with this
@@ -74,7 +74,7 @@ public interface AclEntry extends Cloneable
    *
    * @return <code>true</code> if the <code>Principal</code> was successfully set or <code>false</code> if this entry already has a <code>Principal</code>.
    */
-  public abstract boolean setPrincipal(Principal user);
+  boolean setPrincipal(Principal user);
 
   /**
    * This method sets this ACL entry to be a <em>negative</em> entry, indicating
@@ -82,14 +82,14 @@ public interface AclEntry extends Cloneable
    * to the entry's <code>Principal</code>.  Note that there is no way to
    * undo this operation.
    */
-  public abstract void setNegativePermissions();
+  void setNegativePermissions();
 
   /**
    * This method tests whether or not this ACL entry is a negative entry or not.
    *
    * @return <code>true</code> if this ACL entry is negative, <code>false</code> otherwise
    */
-  public abstract boolean isNegative();
+  boolean isNegative();
 
   /**
    * This method adds the specified permission to this ACL entry.
@@ -98,7 +98,7 @@ public interface AclEntry extends Cloneable
    *
    * @return <code>true</code> if the permission was added or <code>false</code> if it was already set for this entry
    */
-  public abstract boolean addPermission(Permission permission);
+  boolean addPermission(Permission permission);
 
   /**
    * This method deletes the specified permission to this ACL entry.
@@ -107,7 +107,7 @@ public interface AclEntry extends Cloneable
    *
    * @return <code>true</code> if the permission was successfully deleted or <code>false</code> if the permission was not part of this ACL to begin with
    */
-  public abstract boolean removePermission(Permission perm);
+  boolean removePermission(Permission perm);
 
   /**
    * This method tests whether or not the specified permission is associated
@@ -117,7 +117,7 @@ public interface AclEntry extends Cloneable
    *
    * @return <code>true</code> if this permission is associated with this entry or <code>false</code> otherwise
    */
-  public abstract boolean checkPermission(Permission permission);
+  boolean checkPermission(Permission permission);
 
   /**
    * This method returns a list of all <code>Permission</code> objects
@@ -125,19 +125,19 @@ public interface AclEntry extends Cloneable
    *
    * @return A list of permissions for this ACL entry
    */
-  public abstract Enumeration permissions();
+  Enumeration permissions();
 
   /**
    * This method returns this object as a <code>String</code>.
    *
    * @return A <code>String</code> representation of this object
    */
-  public abstract String toString();
+  String toString();
 
   /**
    * This method returns a clone of this ACL entry
    *
    * @return A clone of this ACL entry
    */
-  public abstract Object clone();
+  Object clone();
 }

@@ -54,5 +54,5 @@ public interface RSAPublicKey extends PublicKey, RSAKey
    *
    * @return The public exponent value for this key
    */
-  public abstract BigInteger getPublicExponent();
+  BigInteger getPublicExponent();
 }

@@ -64,7 +64,7 @@ public interface Owner
    *
    * @exception NotOwnerException If the caller is not already an owner of this ACL
    */
-  public abstract boolean addOwner(Principal caller, Principal owner) 
+  boolean addOwner(Principal caller, Principal owner) 
     throws NotOwnerException;
 
   /**
@@ -82,7 +82,7 @@ public interface Owner
    * @exception NotOwnerException If the caller is not already an owner of this ACL
    * @exception LastOwnerException If completing the operation would delete the last ACL owner
    */
-  public abstract boolean deleteOwner(Principal caller, Principal owner) 
+  boolean deleteOwner(Principal caller, Principal owner) 
     throws NotOwnerException, LastOwnerException;
 
   /**
@@ -91,5 +91,5 @@ public interface Owner
    *
    * @return <code>true</code> if the <code>Principal</code> is an owner, <code>false</code> otherwise
    */
-  public abstract boolean isOwner(Principal owner);
+  boolean isOwner(Principal owner);
 }

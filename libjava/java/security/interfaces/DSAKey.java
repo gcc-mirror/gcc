@@ -52,5 +52,5 @@ public interface DSAKey
    *
    * @return The DSA parameters
    */
-  public abstract DSAParams getParams();
+  DSAParams getParams();
 }

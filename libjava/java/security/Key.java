@@ -64,7 +64,7 @@ public interface Key extends Serializable
   /**
    * The version identifier used for serialization.
    */
-  public static final long serialVersionUID = 6603384152749567654L;
+  long serialVersionUID = 6603384152749567654L;
 
   /**
    * This method returns the name of the algorithm for this key.  This is a

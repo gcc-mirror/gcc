@@ -52,5 +52,5 @@ public interface DSAPrivateKey extends DSAKey, PrivateKey
   /**
    * This method returns the value of the DSA private key
    */
-  public BigInteger getX();
+  BigInteger getX();
 }

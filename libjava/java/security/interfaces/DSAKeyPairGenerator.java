@@ -62,7 +62,7 @@ public interface DSAKeyPairGenerator
    *
    * @exception InvalidParameterException If the parameters passed are not valid
    */
-  public abstract void initialize(DSAParams params, SecureRandom random)
+  void initialize (DSAParams params, SecureRandom random)
     throws InvalidParameterException;
 
   /**
@@ -80,7 +80,6 @@ public interface DSAKeyPairGenerator
    *
    * @exception InvalidParameterException If a parameter is invalid
    */
-  public abstract void initialize(int modlen, boolean genParams, 
-				  SecureRandom random)
+  void initialize (int modlen, boolean genParams, SecureRandom random)
     throws InvalidParameterException;
 }

@@ -69,7 +69,7 @@ public interface Acl extends Owner
    *
    * @return The name of this ACL
    */
-  public abstract String getName();
+  String getName();
 
   /**
    * This method sets the name of the ACL
@@ -79,7 +79,7 @@ public interface Acl extends Owner
    *
    * @exception NotOwnerException If the caller is not an owner of this ACL.
    */
-  public abstract void setName(Principal caller, String name)
+  void setName(Principal caller, String name)
     throws NotOwnerException;
 
   /**
@@ -88,11 +88,13 @@ public interface Acl extends Owner
    * @param caller The <code>Principal</code> requesting the addition
    * @param entry The ACL entry to add
    *
-   * @return <code>true</code> if the entry was added, <code>false</code> if there is already an entry of the same type for the <code>Principal</code>.
+   * @return <code>true</code> if the entry was added, <code>false</code>
+   * if there is already an entry of the same type for the
+   * <code>Principal</code>.
    *
    * @exception NotOwnerException If the caller is not an owner of this ACL.
    */
-  public abstract boolean addEntry(Principal caller, AclEntry entry) 
+  boolean addEntry(Principal caller, AclEntry entry) 
     throws NotOwnerException;
 
   /**
@@ -101,11 +103,12 @@ public interface Acl extends Owner
    * @param caller The <code>Principal</code> requesting the deletion.
    * @param entry The ACL entry to delete
    *
-   * @return <code>true</code> if the entry was deleted, or <code>false</code> if this entry was not part of the ACL to begin with
+   * @return <code>true</code> if the entry was deleted, or <code>false</code>
+   * if this entry was not part of the ACL to begin with
    *
    * @exception NotOwnerException If the caller is not an owner of this ACL.
    */
-  public abstract boolean removeEntry(Principal caller, AclEntry entry)
+  boolean removeEntry(Principal caller, AclEntry entry)
     throws NotOwnerException;
 
   /**
@@ -114,7 +117,7 @@ public interface Acl extends Owner
    *
    * @return An enumeration of the ACL entries
    */
-  public abstract Enumeration entries();
+  Enumeration entries();
 
   /**
    * This method tests whether or not the specified <code>Principal</code>
@@ -123,9 +126,10 @@ public interface Acl extends Owner
    * @param user The <code>Principal</code> to test
    * @param perm The <code>Permission</code> to test for
    *
-   * @return <code>true</code> if the user has been granted the permission, <code>false</code> otherwise
+   * @return <code>true</code> if the user has been granted the permission,
+   * <code>false</code> otherwise
    */
-  public abstract boolean checkPermission(Principal user, Permission perm);
+  boolean checkPermission(Principal user, Permission perm);
 
   /**
    * This method returns a list of <code>Permission</code>'s that are granted
@@ -138,12 +142,12 @@ public interface Acl extends Owner
    *
    * @return A list of permissions for the <code>Principal</code>.
    */
-  public abstract Enumeration getPermissions(Principal user);
+  Enumeration getPermissions(Principal user);
 
   /**
    * This method returns the ACL as a <code>String</code>
    *
    * @return A <code>String</code> representation of this ACL
    */
-  public abstract String toString();
+  String toString();
 }

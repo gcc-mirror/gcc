@@ -54,19 +54,19 @@ public interface DSAParams
    *
    * @return The DSA base value
    */
-  public abstract BigInteger getG();
+  BigInteger getG();
 
   /**
    * Returns the prime, or 'p' value
    *
    * @return The DSA prime value
    */
-  public abstract BigInteger getP();
+  BigInteger getP();
 
   /**
    * Returns the subprime, or 'q' value
    *
    * @return The DSA subprime value
    */
-  public abstract BigInteger getQ();
+  BigInteger getQ();
 }

@@ -56,12 +56,12 @@ public interface Permission
    *
    * @return <code>true</code> if the specified permission is the same as this one, <code>false</code> otherwise
    */
-  public abstract boolean equals(Object perm);
+  boolean equals (Object perm);
 
   /**
    * This method returns this <code>Permission</code> as a <code>String</code>.
    *
    * @return A <code>String</code> representing this permission.
    */
-  public String toString();
+  String toString();
 }

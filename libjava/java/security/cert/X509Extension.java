@@ -81,7 +81,7 @@ public interface X509Extension
 
      @return true if has unsupported extension, false otherwise	
   */
-  public boolean hasUnsupportedCriticalExtension();
+  boolean hasUnsupportedCriticalExtension();
 
   /**
      Returns a set of the CRITICAL extension OIDs from the 
@@ -91,7 +91,7 @@ public interface X509Extension
      @return A Set containing the OIDs. If there are no CRITICAL
      extensions or extensions at all this returns null.
   */
-  public Set getCriticalExtensionOIDs();
+  Set getCriticalExtensionOIDs();
 
   /**
      Returns a set of the NON-CRITICAL extension OIDs from the 
@@ -101,13 +101,13 @@ public interface X509Extension
      @return A Set containing the OIDs. If there are no NON-CRITICAL
      extensions or extensions at all this returns null.
   */
-  public Set getNonCriticalExtensionOIDs();
+  Set getNonCriticalExtensionOIDs();
 
   /**
      Returns the DER encoded OCTET string for the specified
      extension value identified by a OID. The OID is a string
      of number separated by periods. Ex: 12.23.45.67
   */
-  public byte[] getExtensionValue(String oid);
+  byte[] getExtensionValue(String oid);
 
 }

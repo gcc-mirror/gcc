@@ -1,5 +1,27 @@
 2003-10-11  Michael Koch  <konqueror@gmx.de>
 
+	* java/security/Key.java,
+	* java/security/PrivateKey.java,
+	* java/security/PublicKey.java,
+	* java/security/acl/Acl.java,
+	* java/security/acl/AclEntry.java,
+	* java/security/acl/Group.java,
+	* java/security/acl/Owner.java,
+	* java/security/acl/Permission.java,
+	* java/security/cert/X509Extension.java,
+	* java/security/interfaces/DSAKey.java,
+	* java/security/interfaces/DSAKeyPairGenerator.java,
+	* java/security/interfaces/DSAParams.java,
+	* java/security/interfaces/DSAPrivateKey.java,
+	* java/security/interfaces/DSAPublicKey.java,
+	* java/security/interfaces/RSAKey.java,
+	* java/security/interfaces/RSAPrivateCrtKey.java,
+	* java/security/interfaces/RSAPrivateKey.java,
+	* java/security/interfaces/RSAPublicKey.java:
+	Removed redundant modifiers.
+
+2003-10-11  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/rmi/server/ProtocolConstants.java,
 	gnu/java/security/der/DER.java:
 	Removing redundant modifiers.
