@@ -182,15 +182,15 @@ enum processor_type ix86_cpu;
 int ix86_arch;
 
 /* Strings to hold which cpu and instruction set architecture  to use.  */
-char *ix86_cpu_string;		/* for -mcpu=<xxx> */
-char *ix86_arch_string;		/* for -march=<xxx> */
+const char *ix86_cpu_string;		/* for -mcpu=<xxx> */
+const char *ix86_arch_string;		/* for -march=<xxx> */
 
 /* Register allocation order */
-char *i386_reg_alloc_order;
+const char *i386_reg_alloc_order;
 static char regs_allocated[FIRST_PSEUDO_REGISTER];
 
 /* # of registers to use to pass arguments. */
-char *i386_regparm_string;
+const char *i386_regparm_string;
 
 /* i386_regparm_string as a number */
 int i386_regparm;
@@ -198,24 +198,24 @@ int i386_regparm;
 /* Alignment to use for loops and jumps:  */
 
 /* Power of two alignment for loops. */
-char *i386_align_loops_string;
+const char *i386_align_loops_string;
 
 /* Power of two alignment for non-loop jumps. */
-char *i386_align_jumps_string;
+const char *i386_align_jumps_string;
 
 /* Power of two alignment for stack boundary in bytes.  */
-char *i386_preferred_stack_boundary_string;
+const char *i386_preferred_stack_boundary_string;
 
 /* Preferred alignment for stack boundary in bits.  */
 int i386_preferred_stack_boundary;
 
 /* Values 1-5: see jump.c */
 int i386_branch_cost;
-char *i386_branch_cost_string;
+const char *i386_branch_cost_string;
 
 /* Power of two alignment for functions. */
 int i386_align_funcs;
-char *i386_align_funcs_string;
+const char *i386_align_funcs_string;
 
 /* Power of two alignment for loops. */
 int i386_align_loops;

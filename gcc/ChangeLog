@@ -1,3 +1,12 @@
+1999-08-26 23:09 -0700  Zack Weinberg  <zack@bitmover.com>
+
+	* i386.h: Declare ix86_cpu_string, ix86_arch_string,
+	i386_reg_alloc_order, i386_regparm_string,
+	i386_align_loops_string, i386_align_jumps_string,
+	i386_align_funcs_string, i386_preferred_stack_boundary_string,
+	and i386_branch_cost_string as type "const char *".
+	* i386.c: Define all above strings as type "const char *".
+
 Thu Aug 26 20:36:30 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* dwarf2out.c (output_aranges): Check DWARF_OFFSET_SIZE not PTR_SIZE
