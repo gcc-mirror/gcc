@@ -1,3 +1,8 @@
+2001-08-03  DJ Delorie  <dj@redhat.com>
+
+	* ifcvt.c (noce_get_alt_condition): Don't make an auxiliary
+	set from a constant part of the condition.
+
 2001-08-01  Andrew Cagney  <ac131313@redhat.com>
 
 	* mkdeps.c (deps_add_default_target): Make local variable
