@@ -2424,6 +2424,15 @@ declaration as a whole.  In the obsolescent usage where a type of
 specifiers and qualifiers may be an attribute specifier list with no
 other specifiers or qualifiers.
 
+At present, the first parameter in a function prototype must have some
+type specifier which is not an attribute specifier; this resolves an
+ambiguity in the interpretation of @code{void f(int
+(__attribute__((foo)) x))}, but is subject to change.  At present, if
+the parentheses of a function declarator contain only attributes then
+those attributes are ignored, rather than yielding an error or warning
+or implying a single parameter of type int, but this is subject to
+change.
+
 An attribute specifier list may appear immediately before a declarator
 (other than the first) in a comma-separated list of declarators in a
 declaration of more than one identifier using a single list of
