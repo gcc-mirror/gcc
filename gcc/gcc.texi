@@ -43,7 +43,9 @@
 @c
 @c anything else?                       --mew 10feb93
 
-
+@macro gcctabopt{body}
+@code{\body\}
+@end macro
 
 @ifset INTERNALS
 @ifset USING

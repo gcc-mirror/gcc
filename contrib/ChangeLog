@@ -1,3 +1,8 @@
+2001-01-10  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* texi2pod.pl: Handle @gcctabopt and @env in tables.  Handle
+	@command.  Format URLs and email addresses in bold.
+
 2001-01-03  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc_update: Add cpp.1 to the list of generated files.
