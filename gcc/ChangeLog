@@ -1,3 +1,11 @@
+2003-01-31  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/install.texi (Testing): Remove a reference to our obsolete
+	/testresults web pages and strip redundant information concerning
+	test results.
+	(Binaries): Refer to Microsoft Windows instead of listing all
+	possible variants.
+
 Sat Feb  1 00:28:30 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* loop.c (emit_prefetch_instructions):  Do conversion at right place in
