@@ -1193,7 +1193,7 @@ gfc_range_check (gfc_expr * e)
 
     case BT_COMPLEX:
       rc = gfc_check_real_range (e->value.complex.r, e->ts.kind);
-      if (rc != ARITH_OK)
+      if (rc == ARITH_OK)
 	rc = gfc_check_real_range (e->value.complex.i, e->ts.kind);
 
       break;
