@@ -50,6 +50,8 @@ struct fn_decl
   struct partial_proto *partial;
 };
 
+struct cpp_token;
+
 extern int lineno;
 extern void sstring_append _PARAMS((sstring *, sstring *));
 extern void make_sstring_space _PARAMS((sstring *, int));
@@ -58,8 +60,9 @@ extern int scan_ident _PARAMS((FILE *, sstring *, int));
 extern int scan_string _PARAMS((FILE *, sstring *, int));
 extern int read_upto _PARAMS((FILE *, sstring *, int));
 extern unsigned long hash _PARAMS((const char *));
-extern void recognized_function _PARAMS((const char *, int, int, const char *, int, int, const char *, int));
-extern void recognized_extern _PARAMS((const char *, int, const char *, int));
+extern void recognized_function _PARAMS((const struct cpp_token *, int, int,
+					 const char *));
+extern void recognized_extern _PARAMS((const struct cpp_token *));
 extern unsigned int hashstr _PARAMS((const char *, unsigned int));
 
 struct cpp_reader;

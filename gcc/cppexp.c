@@ -394,74 +394,22 @@ parse_assertion (pfile)
      cpp_reader *pfile;
 {
   struct operation op;
+  struct answer *answer;
   cpp_hashnode *hp;
-  struct predicate *pred;
-  cpp_toklist query;
-  enum cpp_ttype type;
-  U_CHAR *tok;
-  size_t len;
-  unsigned int old_written;
-  int specific = 0;
 
-  old_written = CPP_WRITTEN (pfile);
-  CPP_PUTC (pfile, '#');
-  pfile->no_macro_expand++;
-  type = _cpp_get_directive_token (pfile);
-  if (type == CPP_VSPACE)
-    SYNTAX_ERROR ("assertion without predicate");
-  else if (type != CPP_NAME)
-    SYNTAX_ERROR ("assertion predicate is not an identifier");
-
-  tok = pfile->token_buffer + old_written;
-  len = CPP_WRITTEN (pfile) - old_written;
-  hp = cpp_lookup (pfile, tok, len);
-
-  /* Look ahead for an open paren.  */
-  _cpp_skip_hspace (pfile);
-  if (CPP_BUF_PEEK (CPP_BUFFER (pfile)) == '(')
-    {
-      if (_cpp_get_directive_token (pfile) != CPP_OPEN_PAREN)
-	CPP_ICE ("impossible token, expecting ( in parse_assertion");
-
-      _cpp_init_toklist (&query, NO_DUMMY_TOKEN);
-      specific = 1;
-      if (_cpp_scan_until (pfile, &query, CPP_CLOSE_PAREN) != CPP_CLOSE_PAREN)
-	SYNTAX_ERROR ("missing close paren on assertion answer");
-
-      if (_cpp_get_directive_token (pfile) != CPP_CLOSE_PAREN)
-	CPP_ICE ("impossible token, expecting ) in parse_assertion");
-    }
-
-  /* If we get here, the syntax is valid.  */
-  op.op = INT;
-  op.value = 0;
-  /* Has this predicate been asserted at all?  */
-  if (hp->type == T_ASSERTION)
-    {
-      if (specific)
-	{
-	  for (pred = hp->value.pred; pred; pred = pred->next)
-	    if (_cpp_equiv_toklists (&query, &pred->answer))
-	      {
-		op.value = 1;
-		break;
-	      }
-	  _cpp_free_toklist (&query);
-	}
-      else
-	op.value = 1;
-    }
-
- out:
-  pfile->no_macro_expand--;
-  CPP_SET_WRITTEN (pfile, old_written);
-  return op;
-
- syntax_error:
-  if (specific)
-    _cpp_free_toklist (&query);
   op.op = ERROR;
-  goto out;
+  hp = _cpp_parse_assertion (pfile, &answer);
+  if (hp)
+    {
+      /* If we get here, the syntax is valid.  */
+      op.op = INT;
+      op.value = (hp->type == T_ASSERTION &&
+		  (answer == 0 || *find_answer (hp, &answer->list) != 0));
+
+      if (answer)
+	FREE_ANSWER (answer);
+    }
+  return op;
 }
 
 struct token
@@ -480,8 +428,6 @@ static const struct token tokentab2[] =
   {"!=", NOTEQUAL},
   {"<=", LEQ},
   {">=", GEQ},
-  {"++", ERROR},
-  {"--", ERROR},
   {NULL, ERROR}
 };
 
@@ -496,16 +442,20 @@ lex (pfile, skip_evaluation)
   enum cpp_ttype token;
   struct operation op;
   U_CHAR *tok_start, *tok_end;
-  long old_written;
+  long old_written = CPP_WRITTEN (pfile);
 
-  old_written = CPP_WRITTEN (pfile);
+ retry:
   token = _cpp_get_directive_token (pfile);
-
   tok_start = pfile->token_buffer + old_written;
   tok_end = CPP_PWRITTEN (pfile);
   CPP_SET_WRITTEN (pfile, old_written);
+
   switch (token)
     {
+    case CPP_PLACEMARKER:
+      CPP_SET_WRITTEN (pfile, old_written);
+      goto retry;
+
     case CPP_EOF: /* Should not happen ...  */
     case CPP_VSPACE:
       op.op = 0;
@@ -524,6 +474,7 @@ lex (pfile, skip_evaluation)
       return parse_charconst (pfile, tok_start, tok_end);
 
     case CPP_NAME:
+      /* FIXME:  could this not overflow the tok_start buffer? */
       if (!ustrncmp (tok_start, U"defined", 7))
 	return parse_defined (pfile);
 
@@ -539,7 +490,16 @@ lex (pfile, skip_evaluation)
     case CPP_HASH:
       return parse_assertion (pfile);
 
-    case CPP_OTHER:
+    case CPP_AND_AND:	op.op = ANDAND; return op;
+    case CPP_OR_OR:	op.op = OROR;	return op;
+    case CPP_LSHIFT:	op.op = LSH;	return op;
+    case CPP_RSHIFT:	op.op = RSH;	return op;
+    case CPP_EQ_EQ:	op.op = EQUAL;	return op;
+    case CPP_NOT_EQ:	op.op = NOTEQUAL; return op;
+    case CPP_LESS_EQ:	op.op = LEQ;	return op;
+    case CPP_GREATER_EQ:op.op = GEQ;	return op;
+
+    default:
       /* See if it is a special token of length 2.  */
       if (tok_start + 2 == tok_end)
         {
@@ -553,8 +513,6 @@ lex (pfile, skip_evaluation)
 	  op.op = toktab->token; 
 	  return op;
 	}
-      /* fall through */
-    default:
       op.op = *tok_start;
       return op;
   }
@@ -612,7 +570,7 @@ parse_escape (pfile, string_ptr, result_mask)
     case 'e':
     case 'E':
       if (CPP_PEDANTIC (pfile))
-	cpp_pedwarn (pfile, "non-ANSI-standard escape sequence, '\\%c'", c);
+	cpp_pedwarn (pfile, "non-ISO-standard escape sequence, '\\%c'", c);
       return TARGET_ESC;
     case 'f':
       return TARGET_FF;
@@ -844,9 +802,7 @@ _cpp_parse_expr (pfile)
   char buff[5];
 
   /* Save parser state and set it to something sane.  */
-  int save_only_seen_white = pfile->only_seen_white;
   int save_skipping = pfile->skipping;
-  pfile->only_seen_white = 0;
   pfile->skipping = 0;
 
   /* We've finished when we try to reduce this.  */
@@ -875,7 +831,8 @@ _cpp_parse_expr (pfile)
 	case ERROR:
 	  goto syntax_error;
 	default:
-	  SYNTAX_ERROR ("invalid character in #if");
+	  SYNTAX_ERROR2 ("invalid character '%s' in #if",
+			 op_to_str (op.op, buff));
 
 	push_immediate:
 	case INT:
@@ -1168,7 +1125,6 @@ _cpp_parse_expr (pfile)
   if (stack != init_stack)
     free (stack);
   CPP_SET_WRITTEN (pfile, old_written);
-  pfile->only_seen_white = save_only_seen_white;
   pfile->skipping = save_skipping;
   return result;
 }

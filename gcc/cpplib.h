@@ -108,7 +108,8 @@ typedef struct cpp_hashnode cpp_hashnode;
   T(CPP_DOT_STAR,	".*")			\
   T(CPP_MIN,		"<?")	/* extension */	\
   T(CPP_MAX,		">?")			\
-  C(CPP_OTHER,		0)	/* stray punctuation */ \
+  T(CPP_PLACEMARKER,	"")	/* Placemarker token.  */  \
+  C(CPP_OTHER,		0)	/* stray punctuation */    \
 \
   I(CPP_NAME,		0)	/* word */	\
   I(CPP_INT,		0)	/* 23 */	\
@@ -121,15 +122,11 @@ typedef struct cpp_hashnode cpp_hashnode;
 \
   I(CPP_COMMENT,	0)	/* Only if output comments.  */ \
   N(CPP_MACRO_ARG,      0)	/* Macro argument.  */          \
-  N(CPP_SUBLIST,        0)	/* Sublist.  */                 \
   N(CPP_EOF,		0)	/* End of file.  */		\
-  N(CPP_HEADER_NAME,	0)	/* <stdio.h> in #include */	\
+  I(CPP_HEADER_NAME,	0)	/* <stdio.h> in #include */	\
 \
   /* Obsolete - will be removed when no code uses them still.  */	\
-  T(CPP_VSPACE,		"\n")	/* End of line.  */		\
-  N(CPP_HSPACE,		0)	/* Horizontal white space.  */	\
-  N(CPP_DIRECTIVE,	0)	/* #define and the like */	\
-  N(CPP_MACRO,		0)	/* Like a NAME, but expanded.  */
+  T(CPP_VSPACE,		"\n")	/* End of line.  */
 
 #define T(e, s) e,
 #define I(e, s) e,
@@ -154,49 +151,42 @@ struct cpp_name
   const unsigned char *text;
 };
 
-/* Accessor macros for token lists - all expect you have a
-   list and an index.  */
-
-#define TOK_TYPE(l_, i_)   ((l_)->tokens[i_].type)
-#define TOK_FLAGS(l_, i_)  ((l_)->tokens[i_].flags)
-#define TOK_AUX(l_, i_)    ((l_)->tokens[i_].aux)
-#define TOK_COL(l_, i_)    ((l_)->tokens[i_].col)
-#define TOK_INT(l_, i_)    ((l_)->tokens[i_].val.integer)
-#define TOK_NAME(l_, i_)   ((l_)->tokens[i_].val.name.text)
-#define TOK_LEN(l_, i_)    ((l_)->tokens[i_].val.name.len)
-
-#define TOK_PREV_WHITE(l_, i_) (TOK_FLAGS(l_, i_) & PREV_WHITESPACE)
-
 /* Flags for the cpp_token structure.  */
-#define PREV_WHITESPACE     1	/* If whitespace before this token.  */
-#define BOL		    2   /* Beginning of line.  */
-#define DIGRAPH             4	/* If it was a digraph.  */
-#define UNSIGNED_INT        8   /* If int preprocessing token unsigned.  */
+#define PREV_WHITE	(1 << 0) /* If whitespace before this token.  */
+#define BOL		(1 << 1) /* Beginning of logical line.  */
+#define DIGRAPH         (1 << 2) /* If it was a digraph.  */
+#define STRINGIFY_ARG	(1 << 3) /* If macro argument to be stringified.  */
+#define PASTE_LEFT	(1 << 4) /* If on LHS of a ## operator.  */
+#define PASTED		(1 << 5) /* The result of a ## operator.  */
+#define GNU_VARARGS	(1 << 6) /* GNU ## kludge.   */
 
 /* A preprocessing token.  This has been carefully packed and should
-   occupy 16 bytes on both 32- and 64-bit hosts.  */
+   occupy 16 bytes on 32-bit hosts and 24 bytes on 64-bit hosts.  */
 struct cpp_token
 {
-  unsigned short col;			/* starting column of this token */
-  ENUM_BITFIELD(cpp_ttype) type : CHAR_BIT;  /* node type */
-  unsigned char flags;			/* flags - see above */
-  unsigned int aux;			/* CPP_OTHER character.  Hash of a
-					   NAME, or something - see uses
-					   in the code */
+  unsigned int line;		/* starting line number of this token */
+  unsigned short col;		/* starting column of this token */
+  ENUM_BITFIELD(cpp_ttype) type : CHAR_BIT;  /* token type */
+  unsigned char flags;		/* flags - see above */
+
   union
   {
-    struct cpp_name name;		/* a string */
-    HOST_WIDEST_INT integer;		/* an integer */
+    HOST_WIDEST_INT integer;	/* an integer */
+    struct cpp_name name;	/* a string */
+    unsigned int aux;		/* argument no. for a CPP_MACRO_ARG, or
+				   character represented by CPP_OTHER.  */
   } val;
 };
 
-/* General flags.  */
-#define LIST_OFFSET    (1 << 0)
+/* cpp_toklist flags.  */
+#define LIST_OFFSET     (1 << 0)
+#define VAR_ARGS	(1 << 1)
+#define BEG_OF_FILE	(1 << 2)
 
-/* Directive flags.  */
-#define SYNTAX_INCLUDE (1 << 8)
-
-typedef int (*directive_handler) PARAMS ((cpp_reader *));
+struct directive;		/* These are deliberately incomplete.  */
+struct answer;
+struct macro_args;
+struct cpp_context;
 
 struct cpp_toklist
 {
@@ -208,11 +198,15 @@ struct cpp_toklist
   unsigned int name_used;	/* _bytes_ used */
   unsigned int name_cap;	/* _bytes_ allocated */
 
+  /* If the list represents a directive, this points to it.  */
+  const struct directive *directive;
+
+  const char *file;		/* in file name */
   unsigned int line;		/* starting line number */
 
-  /* The handler to call after lexing the rest of this line.
-     -1 for none */
-  short dirno;
+  unsigned short params_len;	/* length of macro parameter names.  */
+
+  short int paramc;		/* no. of macro params (-1 = obj-like).  */
 
   /* Per-list flags, see above */
   unsigned short flags;
@@ -224,22 +218,18 @@ struct cpp_buffer
   const unsigned char *rlimit; /* end of valid data */
   const unsigned char *buf;	 /* entire buffer */
   const unsigned char *line_base; /* start of current line */
-  const unsigned char *mark;  /* Saved position for lengthy backtrack. */
 
   struct cpp_buffer *prev;
 
   /* Filename specified with #line command.  */
   const char *nominal_fname;
+
   /* Actual directory of this file, used only for "" includes */
   struct file_name_list *actual_dir;
 
   /* Pointer into the include table.  Used for include_next and
      to record control macros. */
   struct include_file *inc;
-
-  /* If the buffer is the expansion of a macro, this points to the
-     macro's hash table entry.  */
-  struct cpp_hashnode *macro;
 
   /* Value of if_stack at start of this file.
      Used to prohibit unmatched #endif (etc) in an include file.  */
@@ -248,29 +238,13 @@ struct cpp_buffer
   /* Line number at line_base (above). */
   unsigned int lineno;
 
-  /* True if buffer contains escape sequences.
-     Currently there are two kinds:
-     "\r-" means following identifier should not be macro-expanded.
-     "\r " means a token-separator.  This turns into " " in final output
-          if not stringizing and needed to separate tokens; otherwise nothing.
-     Any other two-character sequence beginning with \r is an error.
-
-     If this is NOT set, then \r is a one-character escape meaning backslash
-     newline.  This is guaranteed not to occur in the middle of a token.
-     The two interpretations of \r do not conflict, because the two-character
-     escapes are used only in macro buffers, and backslash-newline is removed
-     from macro expansion text in collect_expansion and/or macarg.  */
-  char has_escapes;
-
   /* True if we have already warned about C++ comments in this file.
      The warning happens only for C89 extended mode with -pedantic on,
      or for -Wtraditional, and only once per file (otherwise it would
      be far too noisy).  */
   char warned_cplusplus_comments;
 
-  /* In a file buffer, true if this buffer's data is mmapped
-     (currently never the case).  In a macro buffer, true if this
-     buffer's data must be freed.  */
+  /* True if this buffer's data is mmapped.  */
   char mapped;
 };
 
@@ -354,7 +328,7 @@ struct cpp_options
   /* Nonzero means don't copy comments into the output file.  */
   unsigned char discard_comments;
 
-  /* Nonzero means process the ANSI trigraph sequences.  */
+  /* Nonzero means process the ISO trigraph sequences.  */
   unsigned char trigraphs;
 
   /* Nonzero means print the names of included files rather than the
@@ -396,6 +370,10 @@ struct cpp_options
      with the # indented from the beginning of the line.  */
   unsigned char warn_traditional;
 
+  /* Nonzero means warn if ## is applied to two tokens that cannot be
+     pasted together.  */
+  unsigned char warn_paste;
+
   /* Nonzero means turn warnings into errors.  */
   unsigned char warnings_are_errors;
 
@@ -417,7 +395,7 @@ struct cpp_options
   /* Zero means dollar signs are punctuation. */
   unsigned char dollars_in_ident;
 
-  /* Nonzero means try to imitate old fashioned non-ANSI preprocessor.  */
+  /* Nonzero means try to imitate old fashioned non-ISO preprocessor.  */
   unsigned char traditional;
 
   /* Nonzero means warn if undefined identifiers are evaluated in an #if.  */
@@ -460,18 +438,17 @@ struct cpp_options
   unsigned char show_column;
 };
 
-
 /* A cpp_reader encapsulates the "state" of a pre-processor run.
    Applying cpp_get_token repeatedly yields a stream of pre-processor
    tokens.  Usually, there is only one cpp_reader object active. */
 
 struct cpp_reader
 {
+  /* HACK FIXME.  Maybe make into cpp_printer printer later.  */
+  cpp_printer *printer;
+
   /* Top of buffer stack.  */
   cpp_buffer *buffer;
-
-  /* Token list used by get_directive_token.  */
-  cpp_toklist directbuf;
 
   /* A buffer used for both for cpp_get_token's output, and also internally. */
   unsigned char *token_buffer;
@@ -483,8 +460,9 @@ struct cpp_reader
   /* Error counter for exit code */
   unsigned int errors;
 
-  /* Line where a newline was first seen in a string constant.  */
+  /* Line and column where a newline was first seen in a string constant.  */
   unsigned int multiline_string_line;
+  unsigned int multiline_string_column;
 
   /* Current depth in #include directives that use <...>.  */
   unsigned int system_include_depth;
@@ -509,18 +487,45 @@ struct cpp_reader
      for include files.  (Altered as we get more of them.)  */
   unsigned int max_include_len;
 
+  /* Potential controlling macro for the current buffer.  This is only
+     live between the #endif and the end of file, and there can only
+     be one at a time, so it is per-reader not per-buffer.  */
   const cpp_hashnode *potential_control_macro;
 
   /* Token column position adjustment owing to tabs in whitespace.  */
   unsigned int col_adjust;
 
+  /* Token list used to store logical lines with new lexer.  */
+  cpp_toklist token_list;
+
+  /* Temporary token store.  */
+  cpp_token **temp_tokens;
+  unsigned int temp_cap;
+  unsigned int temp_alloced;
+  unsigned int temp_used;
+
+  /* Date and time tokens.  Calculated together if either is requested.  */
+  cpp_token *date;
+  cpp_token *time;
+
+  /* The # of a the current directive. It may not be first in line if
+     we append, and finding it is tedious.  */
+  const cpp_token *first_directive_token;
+
+  /* Context stack.  Used for macro expansion and for determining
+     which macros are disabled.  */
+  unsigned int context_cap;
+  unsigned int cur_context;
+  unsigned int no_expand_level;
+  unsigned int paste_level;
+  struct cpp_context *contexts;
+
+  /* Current arguments when scanning arguments. Used for pointer
+     fix-up.  */
+  struct macro_args *args;
+
   /* Buffer of -M output.  */
   struct deps *deps;
-
-  /* A buffer used only by read_and_prescan (in cppfiles.c), which is
-     allocated once per cpp_reader object to keep it off the stack.  */
-  unsigned char *input_buffer;
-  size_t input_buffer_len;
 
   /* User visible options.  */
   struct cpp_options opts;
@@ -532,24 +537,8 @@ struct cpp_reader
   /* If non-zero, macros are not expanded.  */
   unsigned char no_macro_expand;
 
-  /* If non-zero, directives cause a hard error.  Used when parsing
-     macro arguments.  */
-  unsigned char no_directives;
-
   /* We're printed a warning recommending against using #import.  */
   unsigned char import_warning;
-
-  /* If true, characters between '<' and '>' are a single (string) token.  */
-  unsigned char parsing_include_directive;
-
-  /* True if escape sequences (as described for has_escapes in
-     parse_buffer) should be emitted.  */
-  unsigned char output_escapes;
-
-  /* 0: Have seen non-white-space on this line.
-     1: Only seen white space so far on this line.
-     2: Only seen white space so far in this file.  */
-  unsigned char only_seen_white;
 
   /* True after cpp_start_read completes.  Used to inhibit some
      warnings while parsing the command line.  */
@@ -557,6 +546,15 @@ struct cpp_reader
 
   /* True if we are skipping a failed conditional group.  */
   unsigned char skipping;
+
+  /* Do we need to save paramter spellings.  */
+  unsigned char save_parameter_spellings;
+
+  /* If we're in lex_line.  */
+  unsigned char in_lex_line;
+
+  /* True if output_line_command needs to output a newline.  */
+  unsigned char need_newline;
 };
 
 /* struct cpp_printer encapsulates state used to convert the stream of
@@ -611,13 +609,8 @@ enum node_type
   T_INCLUDE_LEVEL, /* `__INCLUDE_LEVEL__' */
   T_TIME,	   /* `__TIME__' */
   T_STDC,	   /* `__STDC__' */
-  T_CONST,	   /* Constant string, used by `__SIZE_TYPE__' etc */
-  T_XCONST,	   /* Ditto, but the string is malloced memory */
   T_POISON,	   /* poisoned identifier */
-  T_MACRO,	   /* object-like macro */
-  T_FMACRO,	   /* function-like macro */
-  T_IDENTITY,	   /* macro defined to itself */
-  T_EMPTY,	   /* macro defined to nothing */
+  T_MACRO,	   /* a macro, either object-like or function-like */
   T_ASSERTION	   /* predicate for #assert */
 };
 
@@ -634,11 +627,10 @@ struct cpp_hashnode
   ENUM_BITFIELD(node_type) type : 8;	/* node type */
   char disabled;			/* macro turned off for rescan? */
 
-  union {
-    const unsigned char *cpval;		/* some predefined macros */
-    const struct object_defn *odefn;	/* #define foo bar */
-    const struct funct_defn *fdefn;	/* #define foo(x) bar(x) */
-    struct predicate *pred;		/* #assert */
+  union
+  {
+    const cpp_toklist *expansion;	/* a macro's replacement list.  */
+    struct answer *answers;		/* answers to an assertion.  */
   } value;
 
   union tree_node *fe_value;		/* front end value */
@@ -646,23 +638,17 @@ struct cpp_hashnode
   const unsigned char name[1];		/* name[length] */
 };
 
-
-
-extern void _cpp_lex_file PARAMS((cpp_reader *));
 extern int cpp_handle_options PARAMS ((cpp_reader *, int, char **));
-extern enum cpp_ttype cpp_get_token PARAMS ((cpp_reader *));
-extern enum cpp_ttype cpp_get_non_space_token PARAMS ((cpp_reader *));
-
 extern void cpp_reader_init PARAMS ((cpp_reader *));
 extern cpp_printer *cpp_printer_init PARAMS ((cpp_reader *, cpp_printer *));
 extern int cpp_start_read PARAMS ((cpp_reader *, cpp_printer *, const char *));
-extern void cpp_output_tokens PARAMS ((cpp_reader *, cpp_printer *));
-extern void cpp_output_list PARAMS ((cpp_reader *, cpp_printer *,
-				     const cpp_toklist *));
+extern void cpp_output_tokens PARAMS ((cpp_reader *, cpp_printer *,
+				       unsigned int));
 extern void cpp_finish PARAMS ((cpp_reader *, cpp_printer *));
 extern void cpp_cleanup PARAMS ((cpp_reader *));
 
-extern cpp_buffer *cpp_file_buffer PARAMS((cpp_reader *));
+extern const cpp_token *cpp_get_token PARAMS ((cpp_reader *));
+
 extern void cpp_define PARAMS ((cpp_reader *, const char *));
 extern void cpp_assert PARAMS ((cpp_reader *, const char *));
 extern void cpp_undef  PARAMS ((cpp_reader *, const char *));

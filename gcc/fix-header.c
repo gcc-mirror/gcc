@@ -432,8 +432,6 @@ write_lbrac ()
 struct partial_proto
 {
   struct partial_proto *next;
-  char *fname;	/* name of function */
-  char *rtype;	/* return type */
   struct fn_decl *fn;
   int line_seen;
 };
@@ -497,15 +495,13 @@ recognized_macro (fname)
 }
 
 void
-recognized_extern (name, name_length, type, type_length)
-     const char *name;
-     const char *type ATTRIBUTE_UNUSED;
-     int name_length, type_length ATTRIBUTE_UNUSED;
+recognized_extern (name)
+     const cpp_token *name;
 {
   switch (special_file_handling)
     {
     case errno_h:
-      if (name_length == 5 && strncmp (name, "errno", 5) == 0 && !seen_errno)
+      if (!cpp_idcmp (name->val.name.text, name->val.name.len, "errno"))
 	seen_errno = 1, required_other--;
       break;
 
@@ -515,25 +511,17 @@ recognized_extern (name, name_length, type, type_length)
 }
 
 /* Called by scan_decls if it saw a function definition for a function
-   named FNAME, with return type RTYPE, and argument list ARGS,
-   in source file FILE_SEEN on line LINE_SEEN.
-   KIND is 'I' for an inline function;
-   'F' if a normal function declaration preceded by 'extern "C"'
-   (or nested inside 'extern "C"' braces); or
+   named FNAME, in source file FILE_SEEN on line LINE_SEEN.  KIND is
+   'I' for an inline function; 'F' if a normal function declaration
+   preceded by 'extern "C"' (or nested inside 'extern "C"' braces); or
    'f' for other function declarations.  */
 
 void
-recognized_function (fname, fname_length,
-		     kind, rtype, rtype_length,
-		     have_arg_list, file_seen, line_seen)
-     const char *fname;
-     int fname_length;
+recognized_function (fname, kind, have_arg_list, file_seen)
+     const cpp_token *fname;
      int kind; /* One of 'f' 'F' or 'I' */
-     const char *rtype;
-     int rtype_length;
      int have_arg_list;
      const char *file_seen;
-     int line_seen;
 {
   struct partial_proto *partial;
   int i;
@@ -543,7 +531,8 @@ recognized_function (fname, fname_length,
     missing_extern_C_count++;
 #endif
 
-  fn = lookup_std_proto (fname, fname_length);
+  fn = lookup_std_proto ((const char *)fname->val.name.text,
+			 fname->val.name.len);
 
   /* Remove the function from the list of required function.  */
   if (fn)
@@ -577,12 +566,7 @@ recognized_function (fname, fname_length,
   partial_count++;
   partial = (struct partial_proto *)
     obstack_alloc (&scan_file_obstack, sizeof (struct partial_proto));
-  partial->fname = obstack_alloc (&scan_file_obstack, fname_length + 1);
-  bcopy (fname, partial->fname, fname_length);
-  partial->fname[fname_length] = 0;
-  partial->rtype = obstack_alloc (&scan_file_obstack, rtype_length + 1);
-  sprintf (partial->rtype, "%.*s", rtype_length, rtype);
-  partial->line_seen = line_seen;
+  partial->line_seen = fname->line;
   partial->fn = fn;
   fn->partial = partial;
   partial->next = partial_proto_list;
@@ -590,7 +574,7 @@ recognized_function (fname, fname_length,
   if (verbose)
     {
       fprintf (stderr, "(%s: %s non-prototype function declaration.)\n",
-	       inc_filename, partial->fname);
+	       inc_filename, fn->fname);
     }
 }
 
@@ -646,19 +630,12 @@ read_scan_file (in_fname, argc, argv)
   for (cur_symbols = &symbol_table[0]; cur_symbols->names; cur_symbols++)
     check_macro_names (&scan_in, cur_symbols->names);
 
-  if (verbose && (scan_in.errors + warnings) > 0)
-    fprintf (stderr, "(%s: %d errors and %d warnings from cpp)\n",
-	     inc_filename, scan_in.errors, warnings);
-  if (scan_in.errors)
-    exit (SUCCESS_EXIT_CODE);
-
   /* Traditionally, getc and putc are defined in terms of _filbuf and _flsbuf.
      If so, those functions are also required.  */
   if (special_file_handling == stdio_h
       && (fn = lookup_std_proto ("_filbuf", 7)) != NULL)
     {
       static const unsigned char getchar_call[] = "getchar();";
-      int old_written = CPP_WRITTEN (&scan_in);
       int seen_filbuf = 0;
       cpp_buffer *buf = CPP_BUFFER (&scan_in);
       if (cpp_push_buffer (&scan_in, getchar_call,
@@ -668,14 +645,17 @@ read_scan_file (in_fname, argc, argv)
       /* Scan the macro expansion of "getchar();".  */
       for (;;)
 	{
-	  enum cpp_ttype token = cpp_get_token (&scan_in);
-	  int length = CPP_WRITTEN (&scan_in) - old_written;
-	  unsigned char *id = scan_in.token_buffer + old_written;
-	  
-	  CPP_SET_WRITTEN (&scan_in, old_written);
-	  if (token == CPP_EOF && CPP_BUFFER (&scan_in) == buf)
-	    break;
-	  if (token == CPP_NAME && cpp_idcmp (id, length, "_filbuf") == 0)
+	  const cpp_token *t = cpp_get_token (&scan_in);
+
+	  if (t->type == CPP_EOF)
+	    {
+	      cpp_pop_buffer (&scan_in);
+	      if (CPP_BUFFER (&scan_in) == buf)
+		break;
+	    }
+	  else if (t->type == CPP_NAME && cpp_idcmp (t->val.name.text,
+						     t->val.name.len,
+						     "_filbuf") == 0)
 	    seen_filbuf++;
 	}
       if (seen_filbuf)
@@ -1030,8 +1010,6 @@ check_protection (ifndef_line, endif_line)
 	}
       else if (!strcmp (buf.base, "define"))
 	{
-	  if (if_nesting != 1)
-	    goto skip_to_eol;
 	  c = inf_skip_spaces (c);
 	  c = inf_scan_ident (&buf, c);
 	  if (buf.base[0] > 0 && strcmp (buf.base, protect_name) == 0)

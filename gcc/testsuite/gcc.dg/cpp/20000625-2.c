@@ -7,6 +7,7 @@
 #define xstr(x) #x
 
 const char a[] = str(symbol_version(getrlimit, GLIBC_2.0));
+/* { dg-warning "valid preprocessing token" "" { target *-*-* } 9 } */
 const char b[] = str(getrlimit@GLIBC_2.0);
 const char c[] = "getrlimit@GLIBC_2.0";
 

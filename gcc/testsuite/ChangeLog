@@ -1,3 +1,16 @@
+2000-07-03  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* testsuite/gcc.dg/cpp/19951025-1.c: Adjust regexps.
+	* testsuite/gcc.dg/cpp/19990703-1.c: Likewise.
+	* testsuite/gcc.dg/cpp/20000625-1.c: Likewise.
+	* testsuite/gcc.dg/cpp/20000625-2.c: Likewise.
+
+	* testsuite/gcc.dg/cpp/macro1.c,
+	testsuite/gcc.dg/cpp/paste1.c, testsuite/gcc.dg/cpp/paste2.c,
+	testsuite/gcc.dg/cpp/paste3.c, testsuite/gcc.dg/cpp/paste4.c,
+	testsuite/gcc.dg/cpp/strify1.c,
+	testsuite/gcc.dg/cpp/strify2.c: New tests.
+
 2000-07-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/20000703-1.c: New test.

@@ -45,7 +45,7 @@ skip_to_closing_brace (pfile)
   int nesting = 1;
   for (;;)
     {
-      enum cpp_ttype token = cpp_get_token (pfile);
+      enum cpp_ttype token = cpp_get_token (pfile)->type;
       if (token == CPP_EOF)
 	break;
       if (token == CPP_OPEN_BRACE)
@@ -84,24 +84,17 @@ scan_decls (pfile, argc, argv)
      char **argv ATTRIBUTE_UNUSED;
 {
   int saw_extern, saw_inline;
-  int start_written;
-  /* If declarator_start is non-zero, it marks the start of the current
-     declarator.  If it is zero, we are either still parsing the
-     decl-specs, or prev_id_start marks the start of the declarator.  */
-  int declarator_start;
-  int prev_id_start, prev_id_end = 0;
-  enum cpp_ttype token;
+  const cpp_token *prev_id;
+  const cpp_token *token;
 
  new_statement:
-  CPP_SET_WRITTEN (pfile, 0);
-  start_written = 0;
   token = cpp_get_token (pfile);
 
  handle_statement:
   current_extern_C = 0;
   saw_extern = 0;
   saw_inline = 0;
-  if (token == CPP_OPEN_BRACE)
+  if (token->type == CPP_OPEN_BRACE)
     {
       /* Pop an 'extern "C"' nesting level, if appropriate.  */
       if (extern_C_braces_length
@@ -110,120 +103,112 @@ scan_decls (pfile, argc, argv)
       brace_nesting--;
       goto new_statement;
     }
-  if (token == CPP_OPEN_BRACE)
+  if (token->type == CPP_OPEN_BRACE)
     {
       brace_nesting++;
       goto new_statement;
     }
-  if (token == CPP_EOF)
+  if (token->type == CPP_EOF)
     {
+      cpp_pop_buffer (pfile);
       if (CPP_BUFFER (pfile) == NULL)
 	return 0;
-      else
-	goto new_statement;
+
+      goto new_statement;
     }
-  if (token == CPP_SEMICOLON)
+  if (token->type == CPP_SEMICOLON)
     goto new_statement;
-  if (token != CPP_NAME)
+  if (token->type != CPP_NAME)
     goto new_statement;
 
-  prev_id_start = 0;
-  declarator_start = 0;
+  prev_id = 0;
   for (;;)
     {
-      switch (token)
+      switch (token->type)
 	{
+	default:
+	  goto handle_statement;
+	case CPP_MULT:
+	case CPP_AND:
+	case CPP_PLACEMARKER:
+	  /* skip */
+	  break;
+
+	case CPP_COMMA:
+	case CPP_SEMICOLON:
+	  if (prev_id && saw_extern)
+	    {
+	      recognized_extern (prev_id);
+	    }
+	  if (token->type == CPP_COMMA)
+	    break;
+	  /* ... fall through ...  */
+	case CPP_OPEN_BRACE:  case CPP_CLOSE_BRACE:
+	  goto new_statement;
+	  
+	case CPP_EOF:
+	  cpp_pop_buffer (pfile);
+	  if (CPP_BUFFER (pfile) == NULL)
+	    return 0;
+	  break;
+
 	case CPP_OPEN_PAREN:
 	  /* Looks like this is the start of a formal parameter list.  */
-	  if (prev_id_start)
+	  if (prev_id)
 	    {
 	      int nesting = 1;
 	      int have_arg_list = 0;
-	      cpp_buffer *fbuf = cpp_file_buffer (pfile);
-	      unsigned int func_lineno = CPP_BUF_LINE (fbuf);
 	      for (;;)
 		{
 		  token = cpp_get_token (pfile);
-		  if (token == CPP_OPEN_PAREN)
+		  if (token->type == CPP_OPEN_PAREN)
 		    nesting++;
-		  else if (token == CPP_CLOSE_PAREN)
+		  else if (token->type == CPP_CLOSE_PAREN)
 		    {
 		      nesting--;
 		      if (nesting == 0)
 			break;
 		    }
-		  else if (token == CPP_EOF)
+		  else if (token->type == CPP_EOF)
 		    break;
-		  else if (token == CPP_NAME || token == CPP_ELLIPSIS)
+		  else if (token->type == CPP_NAME
+			   || token->type == CPP_ELLIPSIS)
 		    have_arg_list = 1;
 		}
-	      recognized_function (pfile->token_buffer + prev_id_start,
-				   prev_id_end - prev_id_start,
+	      recognized_function (prev_id, 
 				   (saw_inline ? 'I'
 				    : in_extern_C_brace || current_extern_C
-				    ? 'F' : 'f'),
-				   pfile->token_buffer, prev_id_start,
-				   have_arg_list,
-				   fbuf->nominal_fname, func_lineno);
-	      token = cpp_get_non_space_token (pfile);
-	      if (token == CPP_OPEN_BRACE)
+				    ? 'F' : 'f'), have_arg_list,
+				   CPP_BUFFER (pfile)->nominal_fname);
+	      token = cpp_get_token (pfile);
+	      if (token->type == CPP_OPEN_BRACE)
 		{
 		  /* skip body of (normally) inline function */
 		  skip_to_closing_brace (pfile);
 		  goto new_statement;
 		}
-	      goto maybe_handle_comma;
+	      if (token->type == CPP_SEMICOLON)
+		goto new_statement;
 	    }
-	  break;
-	case CPP_OTHER:
-	  if (CPP_WRITTEN (pfile) == (size_t) start_written + 1
-	      && (CPP_PWRITTEN (pfile)[-1] == '*'
-		  || CPP_PWRITTEN (pfile)[-1] == '&'))
-	    declarator_start = start_written;
-	  else
-	    goto handle_statement;
-	  break;
-	case CPP_COMMA:
-	case CPP_SEMICOLON:
-	  if (prev_id_start && saw_extern)
-	    {
-	      recognized_extern (pfile->token_buffer + prev_id_start,
-				 prev_id_end - prev_id_start,
-				 pfile->token_buffer,
-				 prev_id_start);
-	    }
-	  /* ... fall through ...  */
-	maybe_handle_comma:
-	  if (token != CPP_COMMA)
-	    goto new_statement;
-
-	  /* Handle multiple declarators in a single declaration,
-	     as in:  extern char *strcpy (), *strcat (), ... ; */
-	  if (declarator_start == 0)
-	    declarator_start = prev_id_start;
-	  CPP_SET_WRITTEN (pfile, declarator_start);
 	  break;
 	case CPP_NAME:
 	  /* "inline" and "extern" are recognized but skipped */
-	  if (!cpp_idcmp (pfile->token_buffer,
-			  CPP_WRITTEN (pfile), "inline"))
+	  if (!cpp_idcmp (token->val.name.text, token->val.name.len, "inline"))
 	    {
 	      saw_inline = 1;
-	      CPP_SET_WRITTEN (pfile, start_written);
 	    }
-	  else if (!cpp_idcmp (pfile->token_buffer,
-			       CPP_WRITTEN (pfile), "extern"))
+	  else if (!cpp_idcmp (token->val.name.text,
+			       token->val.name.len, "extern"))
 	    {
 	      saw_extern = 1;
-	      CPP_SET_WRITTEN (pfile, start_written);
-	      token = cpp_get_non_space_token (pfile);
-	      if (token == CPP_STRING
-		  && strcmp (pfile->token_buffer, "\"C\"") == 0)
+	      token = cpp_get_token (pfile);
+	      if (token->type == CPP_STRING
+		  && !cpp_idcmp (token->val.name.text,
+				 token->val.name.len, "C"))
 		{
-		  CPP_SET_WRITTEN (pfile, start_written);
 		  current_extern_C = 1;
-		  token = cpp_get_non_space_token (pfile);
-		  if (token == CPP_OPEN_BRACE)
+		  token = cpp_get_token (pfile);
+		  if (token->type == CPP_OPEN_BRACE)
 		    {
 		      brace_nesting++;
 		      extern_C_braces[extern_C_braces_length++]
@@ -236,29 +221,9 @@ scan_decls (pfile, argc, argv)
 	      break;
 	    }
 	  /* This may be the name of a variable or function.  */
-	  prev_id_start = start_written;
-	  prev_id_end = CPP_WRITTEN (pfile);
+	  prev_id = token;
 	  break;
-
-	case CPP_OPEN_BRACE:  case CPP_CLOSE_BRACE:  case CPP_DIRECTIVE:
-	  goto new_statement;  /* handle_statement? */
-	  
-	case CPP_EOF:
-	  if (CPP_BUFFER (pfile) == NULL)
-	    return 0;
-	  /* else fall through */
-
-	case CPP_HSPACE:  case CPP_VSPACE:  case CPP_COMMENT:
-	  /* Skip initial white space.  */
-	  if (start_written == 0)
-	    CPP_SET_WRITTEN (pfile, 0);
-	  break;
-
-	 default:
-	  prev_id_start = 0;
 	}
-
-      start_written = CPP_WRITTEN (pfile);
       token = cpp_get_token (pfile);
     }
 }

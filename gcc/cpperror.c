@@ -58,23 +58,27 @@ print_containing_files (pfile, ip)
       if (first)
 	{
 	  first = 0;
+	  /* N.B. The current line in each outer source file is one
+	     greater than the line of the #include, so we must
+	     subtract one to correct for that.  */
 	  fprintf (stderr,  _("In file included from %s:%u"),
-		   ip->nominal_fname, CPP_BUF_LINE (ip));
+		   ip->nominal_fname, CPP_BUF_LINE (ip) - 1);
 	}
       else
 	/* Translators note: this message is used in conjunction
 	   with "In file included from %s:%ld" and some other
 	   tricks.  We want something like this:
 
-	   In file included from sys/select.h:123,
-	                    from sys/types.h:234,
-	                    from userfile.c:31:
-	   bits/select.h:45: <error message here>
+	   | In file included from sys/select.h:123,
+	   |                  from sys/types.h:234,
+	   |                  from userfile.c:31:
+	   | bits/select.h:45: <error message here>
 
+	   with all the "from"s lined up.
 	   The trailing comma is at the beginning of this message,
 	   and the trailing colon is not translated.  */
 	fprintf (stderr, _(",\n                 from %s:%u"),
-		 ip->nominal_fname, CPP_BUF_LINE (ip));
+		 ip->nominal_fname, CPP_BUF_LINE (ip) - 1);
     }
   if (first == 0)
     fputs (":\n", stderr);
@@ -111,17 +115,14 @@ v_message (pfile, is_error, file, line, col, msg, ap)
      const char *msg;
      va_list ap;
 {
-  cpp_buffer *ip = cpp_file_buffer (pfile);
+  cpp_buffer *ip = CPP_BUFFER (pfile);
 
   if (ip)
     {
       if (file == NULL)
 	file = ip->nominal_fname;
       if (line == 0)
-	{
-	  line = CPP_BUF_LINE (ip);
-	  col = CPP_BUF_COL (ip);
-	}
+	line = _cpp_get_line (pfile, &col);
       print_containing_files (pfile, ip);
       print_file_and_line (file, line,
 			   CPP_OPTION (pfile, show_column) ? col : 0);
@@ -132,8 +133,12 @@ v_message (pfile, is_error, file, line, col, msg, ap)
   switch (is_error)
     {
     case 0:
-      fprintf (stderr, _("warning: "));
-      break;
+      if (! CPP_OPTION (pfile, warnings_are_errors))
+	{
+	  fprintf (stderr, _("warning: "));
+	  break;
+	}
+      /* else fall through */
     case 1:
       if (pfile->errors < CPP_FATAL_LIMIT)
 	pfile->errors++;

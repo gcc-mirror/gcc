@@ -14,7 +14,7 @@
 int
 main(void)
 {
-    char *x = SP1(0,MZ);
+    char *x = SP1(0,MZ);  /* { dg-warning "valid preprocessing token" "" } */
     char *y = "0-0";  /* should be the expansion of SP1(0,MZ) */
 
     if(strcmp(x, y))
