@@ -1,5 +1,5 @@
 /* Output dbx-format symbol table information from GNU compiler.
-   Copyright (C) 1987, 88, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1859,7 +1859,7 @@ dbxout_symbol (decl, local)
 	  /* else it is something we handle like a normal variable.  */
 	}
 
-      DECL_RTL (decl) = eliminate_regs (DECL_RTL (decl), 0, NULL_RTX);
+      DECL_RTL (decl) = eliminate_regs (DECL_RTL (decl), 0, NULL_RTX, 0);
 #ifdef LEAF_REG_REMAP
       if (leaf_function)
 	leaf_renumber_regs_insn (DECL_RTL (decl));
@@ -2171,8 +2171,8 @@ dbxout_parms (parms)
 	/* Perform any necessary register eliminations on the parameter's rtl,
 	   so that the debugging output will be accurate.  */
 	DECL_INCOMING_RTL (parms)
-	  = eliminate_regs (DECL_INCOMING_RTL (parms), 0, NULL_RTX);
-	DECL_RTL (parms) = eliminate_regs (DECL_RTL (parms), 0, NULL_RTX);
+	  = eliminate_regs (DECL_INCOMING_RTL (parms), 0, NULL_RTX, 0);
+	DECL_RTL (parms) = eliminate_regs (DECL_RTL (parms), 0, NULL_RTX, 0);
 #ifdef LEAF_REG_REMAP
 	if (leaf_function)
 	  {

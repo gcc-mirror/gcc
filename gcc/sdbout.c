@@ -1,5 +1,5 @@
 /* Output sdb-format symbol table information from GNU compiler.
-   Copyright (C) 1988, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -787,7 +787,7 @@ sdbout_symbol (decl, local)
       if (DECL_RTL (decl) == 0)
 	return;
 
-      DECL_RTL (decl) = eliminate_regs (DECL_RTL (decl), 0, NULL_RTX);
+      DECL_RTL (decl) = eliminate_regs (DECL_RTL (decl), 0, NULL_RTX, 0);
 #ifdef LEAF_REG_REMAP
       if (leaf_function)
 	leaf_renumber_regs_insn (DECL_RTL (decl));
@@ -1287,8 +1287,8 @@ sdbout_parms (parms)
 	/* Perform any necessary register eliminations on the parameter's rtl,
 	   so that the debugging output will be accurate.  */
 	DECL_INCOMING_RTL (parms) =
-	  eliminate_regs (DECL_INCOMING_RTL (parms), 0, NULL_RTX);
-	DECL_RTL (parms) = eliminate_regs (DECL_RTL (parms), 0, NULL_RTX);
+	  eliminate_regs (DECL_INCOMING_RTL (parms), 0, NULL_RTX, 0);
+	DECL_RTL (parms) = eliminate_regs (DECL_RTL (parms), 0, NULL_RTX, 0);
 
 	if (PARM_PASSED_IN_MEMORY (parms))
 	  {

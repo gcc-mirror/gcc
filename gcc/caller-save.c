@@ -1,5 +1,5 @@
 /* Save and restore call-clobbered registers which are live across a call.
-   Copyright (C) 1989, 1992, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1992, 1994, 1995, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -335,7 +335,7 @@ setup_save_areas (pchanged)
     for (j = 1; j <= MOVE_MAX / UNITS_PER_WORD; j++)
       if (regno_save_mem[i][j] != 0)
 	ok &= strict_memory_address_p (GET_MODE (regno_save_mem[i][j]),
-				       XEXP (eliminate_regs (regno_save_mem[i][j], 0, NULL_RTX), 0));
+				       XEXP (eliminate_regs (regno_save_mem[i][j], 0, NULL_RTX, 1), 0));
 
   return ok;
 }

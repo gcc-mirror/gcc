@@ -673,7 +673,7 @@ get_secondary_mem (x, mode, opnum, type)
   /* Get a version of the address doing any eliminations needed.  If that
      didn't give us a new MEM, make a new one if it isn't valid.  */
 
-  loc = eliminate_regs (secondary_memlocs[(int) mode], VOIDmode, NULL_RTX);
+  loc = eliminate_regs (secondary_memlocs[(int) mode], VOIDmode, NULL_RTX, 0);
   mem_valid = strict_memory_address_p (mode, XEXP (loc, 0));
 
   if (! mem_valid && loc == secondary_memlocs[(int) mode])
@@ -2604,7 +2604,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	      /* We must rerun eliminate_regs, in case the elimination
 		 offsets have changed.  */
 	      rtx address = XEXP (eliminate_regs (reg_equiv_memory_loc[regno],
-						  0, NULL_RTX),
+						  0, NULL_RTX, 0),
 				  0);
 
 	      if (rtx_varies_p (address))
@@ -4057,7 +4057,7 @@ find_reloads_toplev (x, opnum, type, ind_levels, is_set_dest)
 	  /* We must rerun eliminate_regs, in case the elimination
 	     offsets have changed.  */
 	  rtx addr = XEXP (eliminate_regs (reg_equiv_memory_loc[regno], 0,
-					   NULL_RTX),
+					   NULL_RTX, 0),
 			   0);
 
 	  if (rtx_varies_p (addr))
@@ -4141,7 +4141,7 @@ find_reloads_toplev (x, opnum, type, ind_levels, is_set_dest)
 	  /* We must rerun eliminate_regs, in case the elimination
 	     offsets have changed.  */
 	  rtx addr = XEXP (eliminate_regs (reg_equiv_memory_loc[regno], 0,
-					   NULL_RTX),
+					   NULL_RTX, 0),
 			   0);
 	  if (BYTES_BIG_ENDIAN)
 	    {
@@ -4181,7 +4181,7 @@ make_memloc (ad, regno)
   register int i;
   /* We must rerun eliminate_regs, in case the elimination
      offsets have changed.  */
-  rtx tem = XEXP (eliminate_regs (reg_equiv_memory_loc[regno], 0, NULL_RTX),
+  rtx tem = XEXP (eliminate_regs (reg_equiv_memory_loc[regno], 0, NULL_RTX, 0),
 		  0);
 
 #if 0 /* We cannot safely reuse a memloc made here;
