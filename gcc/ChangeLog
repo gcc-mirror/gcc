@@ -1,3 +1,8 @@
+2002-07-31  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.c (validate_condition_mode): Test flag_finite_math_only
+	for CCFPmode.
+
 2002-07-31  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/crtn.asm: Don't use __mips16 to determine the

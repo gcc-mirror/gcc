@@ -6674,9 +6674,10 @@ validate_condition_mode (code, mode)
     abort ();
   
   /* These should never be generated except for 
-     flag_unsafe_math_optimizations.  */
+     flag_unsafe_math_optimizations and flag_finite_math_only.  */
   if (mode == CCFPmode
       && ! flag_unsafe_math_optimizations
+      && ! flag_finite_math_only
       && (code == LE || code == GE
 	  || code == UNEQ || code == LTGT
 	  || code == UNGT || code == UNLT))
