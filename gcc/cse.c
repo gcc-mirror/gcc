@@ -4729,7 +4729,29 @@ fold_rtx (x, insn)
 		  if (op1)
 		    op1 = equiv_constant (op1);
 
-		  if (op0 && op1)
+		  /* If we are looking for the low SImode part of 
+		     (ashift:DI c (const_int 32)), it doesn't work
+		     to compute that in SImode, because a 32-bit shift
+		     in SImode is unpredictable.  We know the value is 0.  */
+		  if (op0 && op1
+		      && (GET_CODE (elt->exp) == ASHIFT
+			  || GET_CODE (elt->exp) == LSHIFT)
+		      && GET_CODE (op1) == CONST_INT
+		      && INTVAL (op1) >= GET_MODE_BITSIZE (mode))
+		    {
+		      if (INTVAL (op1) < GET_MODE_BITSIZE (GET_MODE (elt->exp)))
+			
+			/* If the count fits in the inner mode's width,
+			   but exceeds the outer mode's width,
+			   the value will get truncated to 0
+			   by the subreg.  */
+			new = const0_rtx;
+		      else
+			/* If the count exceeds even the inner mode's width,
+			   don't fold this expression.  */
+			new = 0;
+		    }
+		  else if (op0 && op1)
 		    new = simplify_binary_operation (GET_CODE (elt->exp), mode,
 						     op0, op1);
 		}
@@ -7100,6 +7122,9 @@ note_mem_written (written, writes_ptr)
 	  return;
 	}
       else if (GET_MODE (written) == BLKmode)
+	*writes_ptr = everything;
+      /* (mem (scratch)) means clobber everything.  */
+      else if (GET_CODE (addr) == SCRATCH)
 	*writes_ptr = everything;
       else if (cse_rtx_addr_varies_p (written))
 	{
