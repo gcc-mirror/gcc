@@ -126,7 +126,7 @@ for (i = 0; i < n_opts; i++)
 		if (help[i] == "")
 			hlp = "0"
 		else
-			hlp = "N_(" quote help[i] quote ")";
+			hlp = quote help[i] quote;
 
 		printf("  { %c-%s%c,\n    %s,\n    %s, %u, %s, %s, %s }%s\n",
 			quote, opts[i], quote, hlp, back_chain[i], len,

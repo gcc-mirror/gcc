@@ -1,3 +1,9 @@
+2004-04-06  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR other/20792
+	* Makefile.in (gcc.pot): Remove options.c dependency.
+	* optc-gen.awk: Don't quote help strings with N_().
+
 2005-04-06  James A. Morrison  <phython@gcc.gnu.org>
 
 	* c-common.c (handle_malloc_atttribute): Only set DECL_IS_MALLOC if

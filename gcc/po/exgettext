@@ -58,9 +58,6 @@ kopt=$pwd/$T/keyword-options
 emsg=$pwd/$T/emsgids.c
 posr=$pwd/$T/po-sources
 
-# Extra files to scan
-extra_files=$pwd/options.c
-
 # Locate files to scan, and generate the list.  All .c, .h, and .def files
 # in $srcdir are examined, likewise $srcdir/config and $srcdir/config/*
 # (directories).  Also, all subdirectories of $srcdir that contain a
@@ -83,7 +80,6 @@ echo "scanning for keywords and %e strings..." >&2
         do  eval echo $dir$glob
         done
     done;
-    echo $extra_files;
   } | tr ' ' "$nl" | grep -v '\*' |
   $AWK -v excl=po/EXCLUDES -v posr=$posr -v kopt=$kopt -v emsg=$emsg '
 function keyword_option(line) {
@@ -160,6 +156,29 @@ END {
     print emsg > posr
 }'
 )
+
+echo "scanning option files..." >&2
+
+( cd $srcdir; find . -name '*.opt' -print |
+  $AWK '{
+    file = $1
+    lineno = 1
+    field = 0
+    while (getline < file) {
+	if (/^[ \t]*(;|$)/ || !/^[^ \t]/) {
+	    field = 0
+	} else {
+	    if (field == 2) {
+		line = $0
+		gsub(".*\t", "", line)
+		printf("#line %d \"%s\"\n", lineno, file)
+		printf("_(\"%s\")\n", line)
+	    }
+	    field++;
+	}
+	lineno++;
+    }
+  }') >> $emsg
 
 # Run the xgettext command, with temporary added as a file to scan.
 echo "running xgettext..." >&2
