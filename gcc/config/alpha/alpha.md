@@ -2234,13 +2234,18 @@
   "
 {
   rtx op0,op1;
-  enum rtx_code code = GET_CODE (operands[1]);
+  enum rtx_code code = GET_CODE (operands[1]), code2 = NE;
 
   if (alpha_compare_fp_p)
     FAIL;
   switch (code)
     {
-    case EQ: case NE: case LE: case LT:
+    case EQ: case LE: case LT:
+      op0 = alpha_compare_op0;
+      op1 = alpha_compare_op1;
+      break;
+    case NE:
+      code = code2 = EQ;
       op0 = alpha_compare_op0;
       op1 = alpha_compare_op1;
       break;
@@ -2259,7 +2264,7 @@
     }
   operands[1] = gen_rtx (code, DImode, op0, op1);
   operands[4] = gen_reg_rtx (DImode);
-  operands[5] = gen_rtx (NE, VOIDmode, operands[4], CONST0_RTX (DImode));
+  operands[5] = gen_rtx (code2, VOIDmode, operands[4], CONST0_RTX (DImode));
 }")
 
 (define_expand "movdicc"
@@ -2272,13 +2277,18 @@
   "
 {
   rtx op0,op1;
-  enum rtx_code code = GET_CODE (operands[1]);
+  enum rtx_code code = GET_CODE (operands[1]), code2 = NE;
 
   if (alpha_compare_fp_p)
     FAIL;
   switch (code)
     {
-    case EQ: case NE: case LE: case LT:
+    case EQ: case LE: case LT:
+      op0 = alpha_compare_op0;
+      op1 = alpha_compare_op1;
+      break;
+    case NE:
+      code = code2 = EQ;
       op0 = alpha_compare_op0;
       op1 = alpha_compare_op1;
       break;
@@ -2297,7 +2307,7 @@
     }
   operands[1] = gen_rtx (code, DImode, op0, op1);
   operands[4] = gen_reg_rtx (DImode);
-  operands[5] = gen_rtx (NE, VOIDmode, operands[4], CONST0_RTX (DImode));
+  operands[5] = gen_rtx (code2, VOIDmode, operands[4], CONST0_RTX (DImode));
 }")
 
 (define_expand "movsfcc"
