@@ -8754,7 +8754,7 @@ delete_dead_from_cse (insns, nreg)
   rtx insn, prev;
   rtx tem;
   int i;
-  int in_libcall = 0;
+  int in_libcall = 0, dead_libcall = 0;
 
   /* First count the number of times each register is used.  */
   bzero ((char *) counts, sizeof (int) * nreg);
@@ -8767,17 +8767,41 @@ delete_dead_from_cse (insns, nreg)
   for (insn = prev_real_insn (get_last_insn ()); insn; insn = prev)
     {
       int live_insn = 0;
+      rtx note;
 
       prev = prev_real_insn (insn);
 
-      /* Don't delete any insns that are part of a libcall block.
+      /* Don't delete any insns that are part of a libcall block unless
+	 we can delete the whole libcall block.
+
 	 Flow or loop might get confused if we did that.  Remember
 	 that we are scanning backwards.  */
       if (find_reg_note (insn, REG_RETVAL, NULL_RTX))
-	in_libcall = 1;
+	{
+	  in_libcall = 1;
+	  live_insn = 1;
+	  dead_libcall = 0;
 
-      if (in_libcall)
-	live_insn = 1;
+	  /* See if there's a REG_EQUAL note on this insn and try to
+	     replace the source with the REG_EQUAL expression.
+	
+	     We assume that insns with REG_RETVALs can only be reg->reg
+	     copies at this point.  */
+	  note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
+	  if (note)
+	    {
+	      rtx set = single_set (insn);
+	      if (set
+		  && validate_change (insn, &SET_SRC (set), XEXP (note, 0), 0))
+		{
+		  remove_note (insn,
+			       find_reg_note (insn, REG_RETVAL, NULL_RTX));
+		  dead_libcall = 1;
+		}
+	    }
+	}
+      else if (in_libcall)
+	live_insn = ! dead_libcall;
       else if (GET_CODE (PATTERN (insn)) == SET)
 	{
 	  if (GET_CODE (SET_DEST (PATTERN (insn))) == REG
@@ -8839,6 +8863,9 @@ delete_dead_from_cse (insns, nreg)
 	}
 
       if (find_reg_note (insn, REG_LIBCALL, NULL_RTX))
-	in_libcall = 0;
+	{
+	  in_libcall = 0;
+	  dead_libcall = 0;
+	}
     }
 }
