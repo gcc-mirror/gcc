@@ -4180,6 +4180,10 @@ override_options (void)
          increase register pressure.  */
       flag_schedule_insns = 0;
 
+      /* Don't do hot/cold partitioning.  The constant layout code expects
+	 the whole function to be in a single section.  */
+      flag_reorder_blocks_and_partition = 0;
+
       /* Silently disable -mexplicit-relocs since it doesn't apply
 	 to mips16 code.  Even so, it would overly pedantic to warn
 	 about "-mips16 -mexplicit-relocs", especially given that
