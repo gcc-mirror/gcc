@@ -1850,11 +1850,19 @@ __gnat_initialize (void)
 
 #if DWARF2_UNWIND_INFO && defined (_ARCH_PPC)
  {
-   extern const int __module_has_ctors;
-   extern void __do_global_ctors ();
+   /* The scheme described above is only useful for the actual ZCX case, and
+      we don't want any reference to the crt provided symbols otherwise.  We
+      may not link with any of the crt objects in the non-ZCX case, e.g. from
+      documented procedures instructing the use of -nostdlib, and references
+      to the ctors symbols here would just remain unsatisfied.
 
-   if (! __module_has_ctors)
-     __do_global_ctors ();
+      We have no way to avoid those references in the right conditions in this
+      C module, because we have nothing like a IN_ZCX_RTS macro.  This aspect
+      is then deferred to an Ada routine, which can do that based on a test
+      against a constant System flag value.  */
+
+   extern void __gnat_vxw_setup_for_eh (void);
+   __gnat_vxw_setup_for_eh ();
  }
 #endif
 }
