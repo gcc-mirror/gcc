@@ -1,3 +1,16 @@
+2000-05-03  Robert Lipe <robertlipe@usa.net>
+        
+        * configure.in (i[34567]86-*-isc*) [tmake_file]: Add t-i386bare
+        to suppress libgcc1.
+        (i[34567]86-*-sco3.2v5*) Likewise.
+        (i[34567]86-*-sco3.2v4*) Likewise.
+        (i[34567]86-*-sco) Likewise.
+        (i[34567]86-*-solaris2) Likewise.
+        (i[34567]86-*-sysv5*) Likewise.
+        (i[34567]86-*-sysv4*) Likewise.
+        (i[34567]86-*-udk*) Likewise.
+        (i[34567]86-*-sysv*) Likewise.
+
 2000-05-03  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpphash.h (U): New define, to correct type of string constants.
