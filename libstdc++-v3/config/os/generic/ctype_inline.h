@@ -49,16 +49,14 @@
       return _M_table[static_cast<unsigned char>(__c)] & __m;
     else
       {
-	bool __ret = true;
-	bool __any_match = false;
-	const size_t __bitmasksize = 10; 
+	bool __ret = false;
+	const size_t __bitmasksize = 15; 
 	size_t __bitcur = 0; // Lowest bitmask in ctype_base == 0
-	for (;__ret && __bitcur <= __bitmasksize; ++__bitcur)
+	for (; __bitcur <= __bitmasksize; ++__bitcur)
 	  {
-	    mask __bit = static_cast<mask>(1 << __bitcur);
+	    const mask __bit = static_cast<mask>(1 << __bitcur);
 	    if (__m & __bit)
 	      {
-		__any_match = true;
 		bool __testis;
 		switch (__bit)
 		  {
@@ -99,10 +97,10 @@
 		    __testis = false;
 		    break;
 		  }
-		__ret &= __testis;
+		__ret |= __testis;
 	      }
 	  }
-	return __ret & __any_match;
+	return __ret;
       }
   }
    
@@ -116,7 +114,7 @@
     else
       {
 	// Highest bitmask in ctype_base == 10.
-	const size_t __bitmasksize = 10; 
+	const size_t __bitmasksize = 15; 
 	for (;__low < __high; ++__vec, ++__low)
 	  {
 	    mask __m = 0;
@@ -124,7 +122,7 @@
 	    size_t __i = 0; 
 	    for (;__i <= __bitmasksize; ++__i)
 	      {
-		mask __bit = static_cast<mask>(1 << __i);
+		const mask __bit = static_cast<mask>(1 << __i);
 		if (this->is(__bit, *__low))
 		  __m |= __bit;
 	      }
