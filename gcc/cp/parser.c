@@ -34,6 +34,7 @@
 #include "diagnostic.h"
 #include "toplev.h"
 #include "output.h"
+#include "target.h"
 
 
 /* The lexer.  */
@@ -995,6 +996,19 @@ cp_lexer_stop_debugging (cp_lexer* lexer)
 }
 
 
+/* Decl-specifiers.  */
+
+static void clear_decl_specs
+  (cp_decl_specifier_seq *);
+
+/* Set *DECL_SPECS to represent an empty decl-specifier-seq.  */
+
+static void
+clear_decl_specs (cp_decl_specifier_seq *decl_specs)
+{
+  memset (decl_specs, 0, sizeof (cp_decl_specifier_seq));
+}
+
 /* Declarators.  */
 
 /* Nothing other than the parser should be creating declarators;
@@ -1013,7 +1027,7 @@ static cp_declarator *make_pointer_declarator
 static cp_declarator *make_reference_declarator	
   (tree, cp_declarator *);
 static cp_parameter_declarator *make_parameter_declarator 
-  (tree, cp_declarator *, tree);
+  (cp_decl_specifier_seq *, cp_declarator *, tree);
 static cp_declarator *make_ptrmem_declarator	
   (tree, tree, cp_declarator *);
 
@@ -1153,7 +1167,7 @@ cp_parameter_declarator *no_parameters;
    DECLARATOR and DEFAULT_ARGUMENT.  */
 
 cp_parameter_declarator *
-make_parameter_declarator (tree decl_specifiers, 
+make_parameter_declarator (cp_decl_specifier_seq *decl_specifiers, 
 			   cp_declarator *declarator,
 			   tree default_argument)
 {
@@ -1162,7 +1176,10 @@ make_parameter_declarator (tree decl_specifiers,
   parameter = ((cp_parameter_declarator *) 
 	       alloc_declarator (sizeof (cp_parameter_declarator)));
   parameter->next = NULL;
-  parameter->decl_specifiers = decl_specifiers;
+  if (decl_specifiers)
+    parameter->decl_specifiers = *decl_specifiers;
+  else
+    clear_decl_specs (&parameter->decl_specifiers);
   parameter->declarator = declarator;
   parameter->default_argument = default_argument;
   parameter->ellipsis_p = false;
@@ -1627,16 +1644,17 @@ static void cp_parser_block_declaration
   (cp_parser *, bool);
 static void cp_parser_simple_declaration
   (cp_parser *, bool);
-static tree cp_parser_decl_specifier_seq
-  (cp_parser *, cp_parser_flags, tree *, int *);
+static void cp_parser_decl_specifier_seq
+  (cp_parser *, cp_parser_flags, cp_decl_specifier_seq *, int *);
 static tree cp_parser_storage_class_specifier_opt
   (cp_parser *);
 static tree cp_parser_function_specifier_opt
-  (cp_parser *);
+  (cp_parser *, cp_decl_specifier_seq *);
 static tree cp_parser_type_specifier
-  (cp_parser *, cp_parser_flags, bool, bool, int *, bool *);
+  (cp_parser *, cp_parser_flags, cp_decl_specifier_seq *, bool, 
+   int *, bool *);
 static tree cp_parser_simple_type_specifier
-  (cp_parser *, cp_parser_flags, bool);
+  (cp_parser *, cp_decl_specifier_seq *, cp_parser_flags);
 static tree cp_parser_type_name
   (cp_parser *);
 static tree cp_parser_elaborated_type_specifier
@@ -1669,7 +1687,7 @@ static void cp_parser_linkage_specification
 /* Declarators [gram.dcl.decl] */
 
 static tree cp_parser_init_declarator
-  (cp_parser *, tree, tree, bool, bool, int, bool *);
+  (cp_parser *, cp_decl_specifier_seq *, bool, bool, int, bool *);
 static cp_declarator *cp_parser_declarator
   (cp_parser *, cp_parser_declarator_kind, int *, bool *);
 static cp_declarator *cp_parser_direct_declarator
@@ -1684,8 +1702,8 @@ static tree cp_parser_declarator_id
   (cp_parser *);
 static tree cp_parser_type_id
   (cp_parser *);
-static tree cp_parser_type_specifier_seq
-  (cp_parser *);
+static void cp_parser_type_specifier_seq
+  (cp_parser *, cp_decl_specifier_seq *);
 static cp_parameter_declarator *cp_parser_parameter_declaration_clause
   (cp_parser *);
 static cp_parameter_declarator *cp_parser_parameter_declaration_list
@@ -1834,7 +1852,7 @@ static tree cp_parser_global_scope_opt
 static bool cp_parser_constructor_declarator_p
   (cp_parser *, bool);
 static tree cp_parser_function_definition_from_specifiers_and_declarator
-  (cp_parser *, tree, tree, const cp_declarator *);
+  (cp_parser *, cp_decl_specifier_seq *, tree, const cp_declarator *);
 static tree cp_parser_function_definition_after_declarator
   (cp_parser *, bool);
 static void cp_parser_template_declaration_after_export
@@ -1844,7 +1862,7 @@ static tree cp_parser_single_declaration
 static tree cp_parser_functional_cast
   (cp_parser *, tree);
 static tree cp_parser_save_member_function_body
-  (cp_parser *, tree, cp_declarator *, tree);
+  (cp_parser *, cp_decl_specifier_seq *, cp_declarator *, tree);
 static tree cp_parser_enclosed_template_argument_list
   (cp_parser *);
 static void cp_parser_save_default_args
@@ -1857,8 +1875,12 @@ static tree cp_parser_sizeof_operand
   (cp_parser *, enum rid);
 static bool cp_parser_declares_only_class_p
   (cp_parser *);
+static void cp_parser_set_storage_class
+  (cp_decl_specifier_seq *, cp_storage_class);
+static void cp_parser_set_decl_spec_type 
+  (cp_decl_specifier_seq *, tree, bool);
 static bool cp_parser_friend_p
-  (tree);
+  (const cp_decl_specifier_seq *);
 static cp_token *cp_parser_require
   (cp_parser *, enum cpp_ttype, const char *);
 static cp_token *cp_parser_require_keyword
@@ -2612,7 +2634,7 @@ cp_parser_translation_unit (cp_parser* parser)
       /* Create the error declarator.  */
       cp_error_declarator = make_declarator (cdk_error);
       /* Create the empty parameter list.  */
-      no_parameters = make_parameter_declarator (NULL_TREE, NULL, NULL_TREE);
+      no_parameters = make_parameter_declarator (NULL, NULL, NULL_TREE);
       /* Remember where the base of the declarator obstack lies.  */
       declarator_obstack_base = obstack_next_free (&declarator_obstack);
     }
@@ -3880,8 +3902,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	cp_parser_parse_tentatively (parser);
 	/* Look for the simple-type-specifier.  */
 	type = cp_parser_simple_type_specifier (parser,
-						CP_PARSER_FLAGS_NONE,
-						/*identifier_p=*/false);
+						/*decl_specs=*/NULL,
+						CP_PARSER_FLAGS_NONE);
 	/* Parse the cast itself.  */
 	if (!cp_parser_error_occurred (parser))
 	  postfix_expression
@@ -4850,7 +4872,7 @@ cp_parser_new_placement (cp_parser* parser)
 static tree
 cp_parser_new_type_id (cp_parser* parser, tree *nelts)
 {
-  tree type_specifier_seq;
+  cp_decl_specifier_seq type_specifier_seq;
   cp_declarator *new_declarator;
   cp_declarator *declarator;
   cp_declarator *outer_declarator;
@@ -4865,7 +4887,7 @@ cp_parser_new_type_id (cp_parser* parser, tree *nelts)
   parser->type_definition_forbidden_message
     = "types may not be defined in a new-type-id";
   /* Parse the type-specifier-seq.  */
-  type_specifier_seq = cp_parser_type_specifier_seq (parser);
+  cp_parser_type_specifier_seq (parser, &type_specifier_seq);
   /* Restore the old message.  */
   parser->type_definition_forbidden_message = saved_message;
   /* Parse the new-declarator.  */
@@ -4912,7 +4934,7 @@ cp_parser_new_type_id (cp_parser* parser, tree *nelts)
 	new_declarator = NULL;
     }
 
-  type = groktypename (type_specifier_seq, new_declarator);
+  type = groktypename (&type_specifier_seq, new_declarator);
   if (TREE_CODE (type) == ARRAY_TYPE && *nelts == NULL_TREE)
     {
       *nelts = array_type_nelts_top (type);
@@ -6257,7 +6279,7 @@ cp_parser_selection_statement (cp_parser* parser)
 static tree
 cp_parser_condition (cp_parser* parser)
 {
-  tree type_specifiers;
+  cp_decl_specifier_seq type_specifiers;
   const char *saved_message;
 
   /* Try the declaration first.  */
@@ -6268,7 +6290,7 @@ cp_parser_condition (cp_parser* parser)
   parser->type_definition_forbidden_message
     = "types may not be defined in conditions";
   /* Parse the type-specifier-seq.  */
-  type_specifiers = cp_parser_type_specifier_seq (parser);
+  cp_parser_type_specifier_seq (parser, &type_specifiers);
   /* Restore the saved message.  */
   parser->type_definition_forbidden_message = saved_message;
   /* If all is well, we might be looking at a declaration.  */
@@ -6301,7 +6323,7 @@ cp_parser_condition (cp_parser* parser)
       if (cp_parser_parse_definitely (parser))
 	{
 	  /* Create the declaration.  */
-	  decl = start_decl (declarator, type_specifiers,
+	  decl = start_decl (declarator, &type_specifiers,
 			     /*initialized_p=*/true,
 			     attributes, /*prefix_attributes=*/NULL_TREE);
 	  /* Parse the assignment-expression.  */
@@ -6911,8 +6933,7 @@ static void
 cp_parser_simple_declaration (cp_parser* parser,
                               bool function_definition_allowed_p)
 {
-  tree decl_specifiers;
-  tree attributes;
+  cp_decl_specifier_seq decl_specifiers;
   int declares_class_or_enum;
   bool saw_declarator;
 
@@ -6932,18 +6953,18 @@ cp_parser_simple_declaration (cp_parser* parser,
      omitted only when declaring a class or enumeration, that is when
      the decl-specifier-seq contains either a class-specifier, an
      elaborated-type-specifier, or an enum-specifier.  */
-  decl_specifiers
-    = cp_parser_decl_specifier_seq (parser,
-				    CP_PARSER_FLAGS_OPTIONAL,
-				    &attributes,
-				    &declares_class_or_enum);
+  cp_parser_decl_specifier_seq (parser,
+				CP_PARSER_FLAGS_OPTIONAL,
+				&decl_specifiers,
+				&declares_class_or_enum);
   /* We no longer need to defer access checks.  */
   stop_deferring_access_checks ();
 
   /* In a block scope, a valid declaration must always have a
      decl-specifier-seq.  By not trying to parse declarators, we can
      resolve the declaration/expression ambiguity more quickly.  */
-  if (!function_definition_allowed_p && !decl_specifiers)
+  if (!function_definition_allowed_p 
+      && !decl_specifiers.any_specifiers_p)
     {
       cp_parser_error (parser, "expected declaration");
       goto done;
@@ -6976,7 +6997,7 @@ cp_parser_simple_declaration (cp_parser* parser,
 
       saw_declarator = true;
       /* Parse the init-declarator.  */
-      decl = cp_parser_init_declarator (parser, decl_specifiers, attributes,
+      decl = cp_parser_init_declarator (parser, &decl_specifiers,
 					function_definition_allowed_p,
 					/*member_p=*/false,
 					declares_class_or_enum,
@@ -7039,7 +7060,7 @@ cp_parser_simple_declaration (cp_parser* parser,
   if (!saw_declarator)
     {
       if (cp_parser_declares_only_class_p (parser))
-	shadow_tag (decl_specifiers);
+	shadow_tag (&decl_specifiers);
       /* Perform any deferred access checks.  */
       perform_deferred_access_checks ();
     }
@@ -7068,14 +7089,7 @@ cp_parser_simple_declaration (cp_parser* parser,
    decl-specifier:
      attributes
 
-   Returns a TREE_LIST, giving the decl-specifiers in the order they
-   appear in the source code.  The TREE_VALUE of each node is the
-   decl-specifier.  For a keyword (such as `auto' or `friend'), the
-   TREE_VALUE is simply the corresponding TREE_IDENTIFIER.  For the
-   representation of a type-specifier, see cp_parser_type_specifier.
-
-   If there are attributes, they will be stored in *ATTRIBUTES,
-   represented as described above cp_parser_attributes.
+   Set *DECL_SPECS to a representation of the decl-specifier-seq.
 
    If FRIEND_IS_NOT_CLASS_P is non-NULL, and the `friend' specifier
    appears, and the entity that will be a friend is not going to be a
@@ -7090,30 +7104,28 @@ cp_parser_simple_declaration (cp_parser* parser,
         (i.e., a type declaration)
      2: one of the decl-specifiers is an enum-specifier or a
         class-specifier (i.e., a type definition)
-
+   
    */
 
-static tree
+static void
 cp_parser_decl_specifier_seq (cp_parser* parser,
-                              cp_parser_flags flags,
-                              tree* attributes,
+			      cp_parser_flags flags,
+			      cp_decl_specifier_seq *decl_specs,
 			      int* declares_class_or_enum)
 {
-  tree decl_specs = NULL_TREE;
-  bool friend_p = false;
   bool constructor_possible_p = !parser->in_declarator_p;
+
+  /* Clear DECL_SPECS.  */
+  clear_decl_specs (decl_specs);
 
   /* Assume no class or enumeration type is declared.  */
   *declares_class_or_enum = 0;
 
-  /* Assume there are no attributes.  */
-  *attributes = NULL_TREE;
-
   /* Keep reading specifiers until there are no more to read.  */
   while (true)
     {
-      tree decl_spec = NULL_TREE;
       bool constructor_p;
+      bool found_decl_spec;
       cp_token *token;
 
       /* Peek at the next token.  */
@@ -7122,25 +7134,22 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
       if (token->keyword == RID_ATTRIBUTE)
 	{
 	  /* Parse the attributes.  */
-	  decl_spec = cp_parser_attributes_opt (parser);
-	  /* Add them to the list.  */
-	  *attributes = chainon (*attributes, decl_spec);
+	  decl_specs->attributes 
+	    = chainon (decl_specs->attributes,
+		       cp_parser_attributes_opt (parser));
 	  continue;
 	}
+      /* Assume we will find a decl-specifier keyword.  */
+      found_decl_spec = true;
       /* If the next token is an appropriate keyword, we can simply
 	 add it to the list.  */
       switch (token->keyword)
 	{
-	case RID_FRIEND:
 	  /* decl-specifier:
 	       friend  */
-	  if (friend_p)
+	case RID_FRIEND:
+	  if (decl_specs->specs[(int) ds_friend]++)
 	    error ("duplicate `friend'");
-	  else
-	    friend_p = true;
-	  /* The representation of the specifier is simply the
-	     appropriate TREE_IDENTIFIER node.  */
-	  decl_spec = token->value;
 	  /* Consume the token.  */
 	  cp_lexer_consume_token (parser->lexer);
 	  break;
@@ -7152,15 +7161,13 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	case RID_INLINE:
 	case RID_VIRTUAL:
 	case RID_EXPLICIT:
-	  decl_spec = cp_parser_function_specifier_opt (parser);
+	  cp_parser_function_specifier_opt (parser, decl_specs);
 	  break;
 
 	  /* decl-specifier:
 	       typedef  */
 	case RID_TYPEDEF:
-	  /* The representation of the specifier is simply the
-	     appropriate TREE_IDENTIFIER node.  */
-	  decl_spec = token->value;
+	  ++decl_specs->specs[(int) ds_typedef];
 	  /* Consume the token.  */
 	  cp_lexer_consume_token (parser->lexer);
 	  /* A constructor declarator cannot appear in a typedef.  */
@@ -7180,35 +7187,67 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
              GNU Extension:
 	       thread  */
 	case RID_AUTO:
+	  /* Consume the token.  */
+	  cp_lexer_consume_token (parser->lexer);
+	  cp_parser_set_storage_class (decl_specs, sc_auto);
+	  break;
 	case RID_REGISTER:
+	  /* Consume the token.  */
+	  cp_lexer_consume_token (parser->lexer);
+	  cp_parser_set_storage_class (decl_specs, sc_register);
+	  break;
 	case RID_STATIC:
+	  /* Consume the token.  */
+	  cp_lexer_consume_token (parser->lexer);
+	  if (decl_specs->specs[(int) ds_thread])
+	    error ("`__thread' before `static'");
+	  else
+	    cp_parser_set_storage_class (decl_specs, sc_static);
+	  break;
 	case RID_EXTERN:
+	  /* Consume the token.  */
+	  cp_lexer_consume_token (parser->lexer);
+	  if (decl_specs->specs[(int) ds_thread])
+	    error ("`__thread' before `extern'");
+	  else
+	    cp_parser_set_storage_class (decl_specs, sc_extern);
+	  break;
 	case RID_MUTABLE:
+	  /* Consume the token.  */
+	  cp_lexer_consume_token (parser->lexer);
+	  cp_parser_set_storage_class (decl_specs, sc_mutable);
+	  break;
 	case RID_THREAD:
-	  decl_spec = cp_parser_storage_class_specifier_opt (parser);
+	  /* Consume the token.  */
+	  cp_lexer_consume_token (parser->lexer);
+	  ++decl_specs->specs[(int) ds_thread];
 	  break;
 
 	default:
+	  /* We did not yet find a decl-specifier yet.  */
+	  found_decl_spec = false;
 	  break;
 	}
 
       /* Constructors are a special case.  The `S' in `S()' is not a
 	 decl-specifier; it is the beginning of the declarator.  */
-      constructor_p = (!decl_spec
-		       && constructor_possible_p
-		       && cp_parser_constructor_declarator_p (parser,
-							      friend_p));
+      constructor_p 
+	= (!found_decl_spec
+	   && constructor_possible_p
+	   && (cp_parser_constructor_declarator_p 
+	       (parser, decl_specs->specs[(int) ds_friend] != 0)));
 
       /* If we don't have a DECL_SPEC yet, then we must be looking at
 	 a type-specifier.  */
-      if (!decl_spec && !constructor_p)
+      if (!found_decl_spec && !constructor_p)
 	{
 	  int decl_spec_declares_class_or_enum;
 	  bool is_cv_qualifier;
+	  tree type_spec;
 
-	  decl_spec
+	  type_spec
 	    = cp_parser_type_specifier (parser, flags,
-					friend_p,
+					decl_specs,
 					/*is_declaration=*/true,
 					&decl_spec_declares_class_or_enum,
 					&is_cv_qualifier);
@@ -7251,44 +7290,31 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	     user-defined types.  We *do* still allow things like `int
 	     int' to be considered a decl-specifier-seq, and issue the
 	     error message later.  */
-	  if (decl_spec && !is_cv_qualifier)
+	  if (type_spec && !is_cv_qualifier)
 	    flags |= CP_PARSER_FLAGS_NO_USER_DEFINED_TYPES;
 	  /* A constructor declarator cannot follow a type-specifier.  */
-	  if (decl_spec)
-	    constructor_possible_p = false;
+	  if (type_spec)
+	    {
+	      constructor_possible_p = false;
+	      found_decl_spec = true;
+	    }
 	}
 
       /* If we still do not have a DECL_SPEC, then there are no more
 	 decl-specifiers.  */
-      if (!decl_spec)
-	{
-	  /* Issue an error message, unless the entire construct was
-             optional.  */
-	  if (!(flags & CP_PARSER_FLAGS_OPTIONAL))
-	    {
-	      cp_parser_error (parser, "expected decl specifier");
-	      return error_mark_node;
-	    }
+      if (!found_decl_spec)
+	break;
 
-	  break;
-	}
-
-      /* Add the DECL_SPEC to the list of specifiers.  */
-      if (decl_specs == NULL || TREE_VALUE (decl_specs) != error_mark_node)
-	decl_specs = tree_cons (NULL_TREE, decl_spec, decl_specs);
-
+      decl_specs->any_specifiers_p = true;
       /* After we see one decl-specifier, further decl-specifiers are
 	 always optional.  */
       flags |= CP_PARSER_FLAGS_OPTIONAL;
     }
 
   /* Don't allow a friend specifier with a class definition.  */
-  if (friend_p && (*declares_class_or_enum & 2))
+  if (decl_specs->specs[(int) ds_friend] != 0
+      && (*declares_class_or_enum & 2))
     error ("class definition may not be declared a friend");
-
-  /* We have built up the DECL_SPECS in reverse order.  Return them in
-     the correct order.  */
-  return nreverse (decl_specs);
 }
 
 /* Parse an (optional) storage-class-specifier.
@@ -7333,22 +7359,36 @@ cp_parser_storage_class_specifier_opt (cp_parser* parser)
      virtual
      explicit
 
-   Returns an IDENTIFIER_NODE corresponding to the keyword used.  */
+   Returns an IDENTIFIER_NODE corresponding to the keyword used.
+   Updates DECL_SPECS, if it is non-NULL.  */
 
 static tree
-cp_parser_function_specifier_opt (cp_parser* parser)
+cp_parser_function_specifier_opt (cp_parser* parser,
+				  cp_decl_specifier_seq *decl_specs)
 {
   switch (cp_lexer_peek_token (parser->lexer)->keyword)
     {
     case RID_INLINE:
+      if (decl_specs)
+	++decl_specs->specs[(int) ds_inline];
+      break;
+
     case RID_VIRTUAL:
+      if (decl_specs)
+	++decl_specs->specs[(int) ds_virtual];
+      break;
+
     case RID_EXPLICIT:
-      /* Consume the token.  */
-      return cp_lexer_consume_token (parser->lexer)->value;
+      if (decl_specs)
+	++decl_specs->specs[(int) ds_explicit];
+      break;
 
     default:
       return NULL_TREE;
     }
+
+  /* Consume the token.  */
+  return cp_lexer_consume_token (parser->lexer)->value;
 }
 
 /* Parse a linkage-specification.
@@ -7497,20 +7537,20 @@ static tree
 cp_parser_conversion_type_id (cp_parser* parser)
 {
   tree attributes;
-  tree type_specifiers;
+  cp_decl_specifier_seq type_specifiers;
   cp_declarator *declarator;
 
   /* Parse the attributes.  */
   attributes = cp_parser_attributes_opt (parser);
   /* Parse the type-specifiers.  */
-  type_specifiers = cp_parser_type_specifier_seq (parser);
+  cp_parser_type_specifier_seq (parser, &type_specifiers);
   /* If that didn't work, stop.  */
-  if (type_specifiers == error_mark_node)
+  if (type_specifiers.type == error_mark_node)
     return error_mark_node;
   /* Parse the conversion-declarator.  */
   declarator = cp_parser_conversion_declarator_opt (parser);
 
-  return grokdeclarator (declarator, type_specifiers, TYPENAME,
+  return grokdeclarator (declarator, &type_specifiers, TYPENAME,
 			 /*initialized=*/0, &attributes);
 }
 
@@ -8114,7 +8154,7 @@ static tree
 cp_parser_template_parameter (cp_parser* parser, bool *is_non_type)
 {
   cp_token *token;
-  const cp_parameter_declarator *parameter_declarator;
+  cp_parameter_declarator *parameter_declarator;
 
   /* Assume it is a type parameter or a template parameter.  */
   *is_non_type = false;
@@ -8166,7 +8206,7 @@ cp_parser_template_parameter (cp_parser* parser, bool *is_non_type)
   return (build_tree_list 
 	  (parameter_declarator->default_argument,
 	   grokdeclarator (parameter_declarator->declarator,
-			   parameter_declarator->decl_specifiers,
+			   &parameter_declarator->decl_specifiers,
 			   PARM, /*initialized=*/0, 
 			   /*attrlist=*/NULL)));
 }
@@ -9005,8 +9045,7 @@ static void
 cp_parser_explicit_instantiation (cp_parser* parser)
 {
   int declares_class_or_enum;
-  tree decl_specifiers;
-  tree attributes;
+  cp_decl_specifier_seq decl_specifiers;
   tree extension_specifier = NULL_TREE;
 
   /* Look for an (optional) storage-class-specifier or
@@ -9016,7 +9055,9 @@ cp_parser_explicit_instantiation (cp_parser* parser)
       extension_specifier
 	= cp_parser_storage_class_specifier_opt (parser);
       if (!extension_specifier)
-	extension_specifier = cp_parser_function_specifier_opt (parser);
+	extension_specifier 
+	  = cp_parser_function_specifier_opt (parser,
+					      /*decl_specs=*/NULL);
     }
 
   /* Look for the `template' keyword.  */
@@ -9028,11 +9069,10 @@ cp_parser_explicit_instantiation (cp_parser* parser)
      control while processing explicit instantiation directives.  */
   push_deferring_access_checks (dk_no_check);
   /* Parse a decl-specifier-seq.  */
-  decl_specifiers
-    = cp_parser_decl_specifier_seq (parser,
-				    CP_PARSER_FLAGS_OPTIONAL,
-				    &attributes,
-				    &declares_class_or_enum);
+  cp_parser_decl_specifier_seq (parser,
+				CP_PARSER_FLAGS_OPTIONAL,
+				&decl_specifiers,
+				&declares_class_or_enum);
   /* If there was exactly one decl-specifier, and it declared a class,
      and there's no declarator, then we have an explicit type
      instantiation.  */
@@ -9040,7 +9080,7 @@ cp_parser_explicit_instantiation (cp_parser* parser)
     {
       tree type;
 
-      type = check_tag_decl (decl_specifiers);
+      type = check_tag_decl (&decl_specifiers);
       /* Turn access control back on for names used during
 	 template instantiation.  */
       pop_deferring_access_checks ();
@@ -9061,7 +9101,7 @@ cp_parser_explicit_instantiation (cp_parser* parser)
 						     declares_class_or_enum);
       if (declarator != cp_error_declarator)
 	{
-	  decl = grokdeclarator (declarator, decl_specifiers,
+	  decl = grokdeclarator (declarator, &decl_specifiers,
 				 NORMAL, 0, NULL);
 	  /* Turn access control back on for names used during
 	     template instantiation.  */
@@ -9146,11 +9186,9 @@ cp_parser_explicit_specialization (cp_parser* parser)
    type-specifier:
      __complex__
 
-   Returns a representation of the type-specifier.  If the
-   type-specifier is a keyword (like `int' or `const', or
-   `__complex__') then the corresponding IDENTIFIER_NODE is returned.
-   For a class-specifier, enum-specifier, or elaborated-type-specifier
-   a TREE_TYPE is returned; otherwise, a TYPE_DECL is returned.
+   Returns a representation of the type-specifier.  For a
+   class-specifier, enum-specifier, or elaborated-type-specifier, a
+   TREE_TYPE is returned; otherwise, a TYPE_DECL is returned.
 
    If IS_FRIEND is TRUE then this type-specifier is being declared a
    `friend'.  If IS_DECLARATION is TRUE, then this type-specifier is
@@ -9169,7 +9207,7 @@ cp_parser_explicit_specialization (cp_parser* parser)
 static tree
 cp_parser_type_specifier (cp_parser* parser,
 			  cp_parser_flags flags,
-			  bool is_friend,
+			  cp_decl_specifier_seq *decl_specs,
 			  bool is_declaration,
 			  int* declares_class_or_enum,
 			  bool* is_cv_qualifier)
@@ -9177,6 +9215,7 @@ cp_parser_type_specifier (cp_parser* parser,
   tree type_spec = NULL_TREE;
   cp_token *token;
   enum rid keyword;
+  cp_decl_spec ds = ds_last;
 
   /* Assume this type-specifier does not declare a new type.  */
   if (declares_class_or_enum)
@@ -9212,6 +9251,10 @@ cp_parser_type_specifier (cp_parser* parser,
 	{
 	  if (declares_class_or_enum)
 	    *declares_class_or_enum = 2;
+	  if (decl_specs)
+	    cp_parser_set_decl_spec_type (decl_specs,
+					  type_spec,
+					  /*user_defined_p=*/true);
 	  return type_spec;
 	}
 
@@ -9219,40 +9262,64 @@ cp_parser_type_specifier (cp_parser* parser,
 
     case RID_TYPENAME:
       /* Look for an elaborated-type-specifier.  */
-      type_spec = cp_parser_elaborated_type_specifier (parser,
-						       is_friend,
-						       is_declaration);
+      type_spec 
+	= (cp_parser_elaborated_type_specifier 
+	   (parser,
+	    decl_specs && decl_specs->specs[(int) ds_friend],
+	    is_declaration));
       /* We're declaring a class or enum -- unless we're using
 	 `typename'.  */
       if (declares_class_or_enum && keyword != RID_TYPENAME)
 	*declares_class_or_enum = 1;
+      if (decl_specs)
+	cp_parser_set_decl_spec_type (decl_specs,
+				      type_spec,
+				      /*user_defined_p=*/true);
       return type_spec;
 
     case RID_CONST:
-    case RID_VOLATILE:
-    case RID_RESTRICT:
-      type_spec = cp_parser_cv_qualifier_opt (parser);
-      /* Even though we call a routine that looks for an optional
-	 qualifier, we know that there should be one.  */
-      my_friendly_assert (type_spec != NULL, 20000328);
-      /* This type-specifier was a cv-qualified.  */
+      ds = ds_const;
       if (is_cv_qualifier)
 	*is_cv_qualifier = true;
+      break;
+      
+    case RID_VOLATILE:
+      ds = ds_volatile;
+      if (is_cv_qualifier)
+	*is_cv_qualifier = true;
+      break;
 
-      return type_spec;
+    case RID_RESTRICT:
+      ds = ds_restrict;
+      if (is_cv_qualifier)
+	*is_cv_qualifier = true;
+      break;
 
     case RID_COMPLEX:
       /* The `__complex__' keyword is a GNU extension.  */
-      return cp_lexer_consume_token (parser->lexer)->value;
+      ds = ds_complex;
+      break;
 
     default:
       break;
     }
 
+  /* Handle simple keywords.  */
+  if (ds != ds_last)
+    {
+      if (decl_specs)
+	{
+	  ++decl_specs->specs[(int)ds];
+	  decl_specs->any_specifiers_p = true;
+	}
+      return cp_lexer_consume_token (parser->lexer)->value;
+    }
+
   /* If we do not already have a type-specifier, assume we are looking
      at a simple-type-specifier.  */
-  type_spec = cp_parser_simple_type_specifier (parser, flags,
-					       /*identifier_p=*/true);
+  type_spec = cp_parser_simple_type_specifier (parser, 
+					       decl_specs,
+					       flags);
 
   /* If we didn't find a type-specifier, and a type-specifier was not
      optional in this context, issue an error message.  */
@@ -9288,14 +9355,13 @@ cp_parser_type_specifier (cp_parser* parser,
      __typeof__ unary-expression
      __typeof__ ( type-id )
 
-   For the various keywords, the value returned is simply the
-   TREE_IDENTIFIER representing the keyword if IDENTIFIER_P is true.
-   For the first two productions, and if IDENTIFIER_P is false, the
-   value returned is the indicated TYPE_DECL.  */
+   Returns the indicated TYPE_DECL.  If DECL_SPECS is not NULL, it is
+   appropriately updated.  */
 
 static tree
-cp_parser_simple_type_specifier (cp_parser* parser, cp_parser_flags flags,
-				 bool identifier_p)
+cp_parser_simple_type_specifier (cp_parser* parser, 
+				 cp_decl_specifier_seq *decl_specs,
+				 cp_parser_flags flags)
 {
   tree type = NULL_TREE;
   cp_token *token;
@@ -9307,6 +9373,8 @@ cp_parser_simple_type_specifier (cp_parser* parser, cp_parser_flags flags,
   switch (token->keyword)
     {
     case RID_CHAR:
+      if (decl_specs)
+	decl_specs->explicit_char_p = true;
       type = char_type_node;
       break;
     case RID_WCHAR:
@@ -9316,18 +9384,28 @@ cp_parser_simple_type_specifier (cp_parser* parser, cp_parser_flags flags,
       type = boolean_type_node;
       break;
     case RID_SHORT:
+      if (decl_specs)
+	++decl_specs->specs[(int) ds_short];
       type = short_integer_type_node;
       break;
     case RID_INT:
+      if (decl_specs)
+	decl_specs->explicit_int_p = true;
       type = integer_type_node;
       break;
     case RID_LONG:
+      if (decl_specs)
+	++decl_specs->specs[(int) ds_long];
       type = long_integer_type_node;
       break;
     case RID_SIGNED:
+      if (decl_specs)
+	++decl_specs->specs[(int) ds_signed];
       type = integer_type_node;
       break;
     case RID_UNSIGNED:
+      if (decl_specs)
+	++decl_specs->specs[(int) ds_unsigned];
       type = unsigned_type_node;
       break;
     case RID_FLOAT:
@@ -9341,19 +9419,19 @@ cp_parser_simple_type_specifier (cp_parser* parser, cp_parser_flags flags,
       break;
 
     case RID_TYPEOF:
-      {
-	tree operand;
+      /* Consume the `typeof' token.  */
+      cp_lexer_consume_token (parser->lexer);
+      /* Parse the operand to `typeof'.  */
+      type = cp_parser_sizeof_operand (parser, RID_TYPEOF);
+      /* If it is not already a TYPE, take its type.  */
+      if (!TYPE_P (type))
+	type = finish_typeof (type);
 
-	/* Consume the `typeof' token.  */
-	cp_lexer_consume_token (parser->lexer);
-	/* Parse the operand to `typeof'.  */
-	operand = cp_parser_sizeof_operand (parser, RID_TYPEOF);
-	/* If it is not already a TYPE, take its type.  */
-	if (!TYPE_P (operand))
-	  operand = finish_typeof (operand);
-
-	return operand;
-      }
+      if (decl_specs)
+	cp_parser_set_decl_spec_type (decl_specs, type,
+				      /*user_defined_p=*/true);
+	
+      return type;
 
     default:
       break;
@@ -9364,6 +9442,18 @@ cp_parser_simple_type_specifier (cp_parser* parser, cp_parser_flags flags,
     {
       tree id;
 
+      /* Record the type.  */
+      if (decl_specs
+	  && (token->keyword != RID_SIGNED
+	      && token->keyword != RID_UNSIGNED
+	      && token->keyword != RID_SHORT
+	      && token->keyword != RID_LONG))
+	cp_parser_set_decl_spec_type (decl_specs, 
+				      type,
+				      /*user_defined=*/false);
+      if (decl_specs)
+	decl_specs->any_specifiers_p = true;
+
       /* Consume the token.  */
       id = cp_lexer_consume_token (parser->lexer)->value;
 
@@ -9372,7 +9462,7 @@ cp_parser_simple_type_specifier (cp_parser* parser, cp_parser_flags flags,
 	 that the type was a template.  */
       cp_parser_check_for_invalid_template_id (parser, type);
 
-      return identifier_p ? id : TYPE_NAME (type);
+      return TYPE_NAME (type);
     }
 
   /* The type-specifier must be a user-defined type.  */
@@ -9427,6 +9517,9 @@ cp_parser_simple_type_specifier (cp_parser* parser, cp_parser_flags flags,
       if ((flags & CP_PARSER_FLAGS_OPTIONAL)
 	  && !cp_parser_parse_definitely (parser))
 	type = NULL_TREE;
+      if (type && decl_specs)
+	cp_parser_set_decl_spec_type (decl_specs, type,
+				      /*user_defined=*/true);
     }
 
   /* If we didn't get a type-name, issue an error message.  */
@@ -10370,8 +10463,7 @@ cp_parser_asm_definition (cp_parser* parser)
 
 static tree
 cp_parser_init_declarator (cp_parser* parser,
-			   tree decl_specifiers,
-			   tree prefix_attributes,
+			   cp_decl_specifier_seq *decl_specifiers,
 			   bool function_definition_allowed_p,
 			   bool member_p,
 			   int declares_class_or_enum,
@@ -10379,6 +10471,7 @@ cp_parser_init_declarator (cp_parser* parser,
 {
   cp_token *token;
   cp_declarator *declarator;
+  tree prefix_attributes;
   tree attributes;
   tree asm_specification;
   tree initializer;
@@ -10390,6 +10483,11 @@ cp_parser_init_declarator (cp_parser* parser,
   int ctor_dtor_or_conv_p;
   bool friend_p;
   bool pop_p = false;
+
+  /* Gather the attributes that were provided with the
+     decl-specifiers.  */
+  prefix_attributes = decl_specifiers->attributes;
+  decl_specifiers->attributes = NULL_TREE;
 
   /* Assume that this is not the declarator for a function
      definition.  */
@@ -10485,7 +10583,7 @@ cp_parser_init_declarator (cp_parser* parser,
      We explicitly postpone this check past the point where we handle
      function-definitions because we tolerate function-definitions
      that are missing their return types in some modes.  */
-  if (!decl_specifiers && ctor_dtor_or_conv_p <= 0)
+  if (!decl_specifiers->any_specifiers_p && ctor_dtor_or_conv_p <= 0)
     {
       cp_parser_error (parser,
 		       "expected constructor, destructor, or type conversion");
@@ -10514,11 +10612,11 @@ cp_parser_init_declarator (cp_parser* parser,
      sure this was intended to be a declarator.  Then continue
      declaring the variable(s), as int, to try to cut down on further
      errors.  */
-  if (decl_specifiers != NULL
-      && TREE_VALUE (decl_specifiers) == error_mark_node)
+  if (decl_specifiers->any_specifiers_p
+      && decl_specifiers->type == error_mark_node)
     {
       cp_parser_error (parser, "invalid type in declaration");
-      TREE_VALUE (decl_specifiers) = integer_type_node;
+      decl_specifiers->type = integer_type_node;
     }
 
   /* Check to see whether or not this declaration is a friend.  */
@@ -10535,9 +10633,7 @@ cp_parser_init_declarator (cp_parser* parser,
     {
       if (parser->in_unbraced_linkage_specification_p)
 	{
-	  decl_specifiers = tree_cons (error_mark_node,
-				       get_identifier ("extern"),
-				       decl_specifiers);
+	  decl_specifiers->storage_class = sc_extern;
 	  have_extern_spec = false;
 	}
       decl = start_decl (declarator, decl_specifiers,
@@ -11331,13 +11427,12 @@ cp_parser_declarator_id (cp_parser* parser)
 static tree
 cp_parser_type_id (cp_parser* parser)
 {
-  tree type_specifier_seq;
+  cp_decl_specifier_seq type_specifier_seq;
   cp_declarator *abstract_declarator;
 
   /* Parse the type-specifier-seq.  */
-  type_specifier_seq
-    = cp_parser_type_specifier_seq (parser);
-  if (type_specifier_seq == error_mark_node)
+  cp_parser_type_specifier_seq (parser, &type_specifier_seq);
+  if (type_specifier_seq.type == error_mark_node)
     return error_mark_node;
 
   /* There might or might not be an abstract declarator.  */
@@ -11350,7 +11445,7 @@ cp_parser_type_id (cp_parser* parser)
   if (!cp_parser_parse_definitely (parser))
     abstract_declarator = NULL;
 
-  return groktypename (type_specifier_seq, abstract_declarator);
+  return groktypename (&type_specifier_seq, abstract_declarator);
 }
 
 /* Parse a type-specifier-seq.
@@ -11363,14 +11458,16 @@ cp_parser_type_id (cp_parser* parser)
    type-specifier-seq:
      attributes type-specifier-seq [opt]
 
-   Returns a TREE_LIST.  Either the TREE_VALUE of each node is a
-   type-specifier, or the TREE_PURPOSE is a list of attributes.  */
+   Sets *TYPE_SPECIFIER_SEQ to represent the sequence.  */
 
-static tree
-cp_parser_type_specifier_seq (cp_parser* parser)
+static void
+cp_parser_type_specifier_seq (cp_parser* parser,
+			      cp_decl_specifier_seq *type_specifier_seq)
 {
   bool seen_type_specifier = false;
-  tree type_specifier_seq = NULL_TREE;
+
+  /* Clear the TYPE_SPECIFIER_SEQ.  */
+  clear_decl_specs (type_specifier_seq);
 
   /* Parse the type-specifiers and attributes.  */
   while (true)
@@ -11380,39 +11477,36 @@ cp_parser_type_specifier_seq (cp_parser* parser)
       /* Check for attributes first.  */
       if (cp_lexer_next_token_is_keyword (parser->lexer, RID_ATTRIBUTE))
 	{
-	  type_specifier_seq = tree_cons (cp_parser_attributes_opt (parser),
-					  NULL_TREE,
-					  type_specifier_seq);
+	  type_specifier_seq->attributes = 
+	    chainon (type_specifier_seq->attributes,
+		     cp_parser_attributes_opt (parser));
 	  continue;
 	}
 
-      /* After the first type-specifier, others are optional.  */
-      if (seen_type_specifier)
-	cp_parser_parse_tentatively (parser);
       /* Look for the type-specifier.  */
       type_specifier = cp_parser_type_specifier (parser,
-						 CP_PARSER_FLAGS_NONE,
-						 /*is_friend=*/false,
+						 CP_PARSER_FLAGS_OPTIONAL,
+						 type_specifier_seq,
 						 /*is_declaration=*/false,
 						 NULL,
 						 NULL);
       /* If the first type-specifier could not be found, this is not a
 	 type-specifier-seq at all.  */
-      if (!seen_type_specifier && type_specifier == error_mark_node)
-	return error_mark_node;
+      if (!seen_type_specifier && !type_specifier)
+	{
+	  cp_parser_error (parser, "expected type-specifier");
+	  type_specifier_seq->type = error_mark_node;
+	  return;
+	}
       /* If subsequent type-specifiers could not be found, the
 	 type-specifier-seq is complete.  */
-      else if (seen_type_specifier && !cp_parser_parse_definitely (parser))
+      else if (seen_type_specifier && !type_specifier)
 	break;
 
-      /* Add the new type-specifier to the list.  */
-      type_specifier_seq
-	= tree_cons (NULL_TREE, type_specifier, type_specifier_seq);
       seen_type_specifier = true;
     }
 
-  /* We built up the list in reverse order.  */
-  return nreverse (type_specifier_seq);
+  return;
 }
 
 /* Parse a parameter-declaration-clause.
@@ -11625,8 +11719,7 @@ cp_parser_parameter_declaration (cp_parser *parser,
 {
   int declares_class_or_enum;
   bool greater_than_is_operator_p;
-  tree decl_specifiers;
-  tree attributes;
+  cp_decl_specifier_seq decl_specifiers;
   cp_declarator *declarator;
   tree default_argument;
   cp_token *token;
@@ -11648,11 +11741,10 @@ cp_parser_parameter_declaration (cp_parser *parser,
     = "types may not be defined in parameter types";
 
   /* Parse the declaration-specifiers.  */
-  decl_specifiers
-    = cp_parser_decl_specifier_seq (parser,
-				    CP_PARSER_FLAGS_NONE,
-				    &attributes,
-				    &declares_class_or_enum);
+  cp_parser_decl_specifier_seq (parser,
+				CP_PARSER_FLAGS_NONE,
+				&decl_specifiers,
+				&declares_class_or_enum);
   /* If an error occurred, there's no reason to attempt to parse the
      rest of the declaration.  */
   if (cp_parser_error_occurred (parser))
@@ -11705,7 +11797,9 @@ cp_parser_parameter_declaration (cp_parser *parser,
 					 parenthesized_p);
       parser->default_arg_ok_p = saved_default_arg_ok_p;
       /* After the declarator, allow more attributes.  */
-      attributes = chainon (attributes, cp_parser_attributes_opt (parser));
+      decl_specifiers.attributes
+	= chainon (decl_specifiers.attributes, 
+		   cp_parser_attributes_opt (parser));
     }
 
   /* The restriction on defining new types applies only to the type
@@ -11846,11 +11940,7 @@ cp_parser_parameter_declaration (cp_parser *parser,
   else
     default_argument = NULL_TREE;
 
-  /* Create the representation of the parameter.  */
-  if (attributes)
-    decl_specifiers = tree_cons (attributes, NULL_TREE, decl_specifiers);
-
-  return make_parameter_declarator (decl_specifiers,
+  return make_parameter_declarator (&decl_specifiers,
 				    declarator,
 				    default_argument);
 }
@@ -12809,7 +12899,7 @@ cp_parser_member_specification_opt (cp_parser* parser)
 static void
 cp_parser_member_declaration (cp_parser* parser)
 {
-  tree decl_specifiers;
+  cp_decl_specifier_seq decl_specifiers;
   tree prefix_attributes;
   tree decl;
   int declares_class_or_enum;
@@ -12847,11 +12937,12 @@ cp_parser_member_declaration (cp_parser* parser)
     }
 
   /* Parse the decl-specifier-seq.  */
-  decl_specifiers
-    = cp_parser_decl_specifier_seq (parser,
-				    CP_PARSER_FLAGS_OPTIONAL,
-				    &prefix_attributes,
-				    &declares_class_or_enum);
+  cp_parser_decl_specifier_seq (parser,
+				CP_PARSER_FLAGS_OPTIONAL,
+				&decl_specifiers,
+				&declares_class_or_enum);
+  prefix_attributes = decl_specifiers.attributes;
+  decl_specifiers.attributes = NULL_TREE;
   /* Check for an invalid type-name.  */
   if (cp_parser_parse_and_diagnose_invalid_type_name (parser))
     return;
@@ -12868,7 +12959,7 @@ cp_parser_member_declaration (cp_parser* parser)
 
 	 Each member-declaration shall declare at least one member
 	 name of the class.  */
-      if (!decl_specifiers)
+      if (!decl_specifiers.any_specifiers_p)
 	{
 	  if (pedantic)
 	    pedwarn ("extra semicolon");
@@ -12878,10 +12969,10 @@ cp_parser_member_declaration (cp_parser* parser)
 	  tree type;
 
 	  /* See if this declaration is a friend.  */
-	  friend_p = cp_parser_friend_p (decl_specifiers);
+	  friend_p = cp_parser_friend_p (&decl_specifiers);
 	  /* If there were decl-specifiers, check to see if there was
 	     a class-declaration.  */
-	  type = check_tag_decl (decl_specifiers);
+	  type = check_tag_decl (&decl_specifiers);
 	  /* Nested classes have already been added to the class, but
 	     a `friend' needs to be explicitly registered.  */
 	  if (friend_p)
@@ -12898,27 +12989,10 @@ cp_parser_member_declaration (cp_parser* parser)
 
 		  A<T>::B will be represented by a TYPENAME_TYPE, and
 		  therefore not recognized by check_tag_decl.  */
-	       if (!type)
-		 {
-		   tree specifier;
-
-		   for (specifier = decl_specifiers;
-			specifier;
-			specifier = TREE_CHAIN (specifier))
-		     {
-		       tree s = TREE_VALUE (specifier);
-
-		       if (TREE_CODE (s) == IDENTIFIER_NODE)
-                         get_global_value_if_present (s, &type);
-		       if (TREE_CODE (s) == TYPE_DECL)
-			 s = TREE_TYPE (s);
-		       if (TYPE_P (s))
-			 {
-			   type = s;
-			   break;
-			 }
-		     }
-		 }
+	       if (!type 
+		   && decl_specifiers.type
+		   && TYPE_P (decl_specifiers.type))
+		 type = decl_specifiers.type;
 	       if (!type || !TYPE_P (type))
 		 error ("friend declaration does not name a class or "
 			"function");
@@ -12928,7 +13002,7 @@ cp_parser_member_declaration (cp_parser* parser)
 	    }
 	  /* If there is no TYPE, an error message will already have
 	     been issued.  */
-	  else if (!type)
+	  else if (!type || type == error_mark_node)
 	    ;
 	  /* An anonymous aggregate has to be handled specially; such
 	     a declaration really declares a data member (with a
@@ -12950,7 +13024,7 @@ cp_parser_member_declaration (cp_parser* parser)
   else
     {
       /* See if these declarations will be friends.  */
-      friend_p = cp_parser_friend_p (decl_specifiers);
+      friend_p = cp_parser_friend_p (&decl_specifiers);
 
       /* Keep going until we hit the `;' at the end of the
 	 declaration.  */
@@ -12999,7 +13073,7 @@ cp_parser_member_declaration (cp_parser* parser)
 	      decl = grokbitfield (identifier 
 				   ? make_id_declarator (identifier)
 				   : NULL,
-				   decl_specifiers,
+				   &decl_specifiers,
 				   width);
 	      /* Apply the attributes.  */
 	      cplus_decl_attributes (&decl, attributes, /*flags=*/0);
@@ -13095,7 +13169,7 @@ cp_parser_member_declaration (cp_parser* parser)
 		  if (initializer)
 		    error ("pure-specifier on function-definition");
 		  decl = cp_parser_save_member_function_body (parser,
-							      decl_specifiers,
+							      &decl_specifiers,
 							      declarator,
 							      attributes);
 		  /* If the member was not a friend, declare it here.  */
@@ -13111,7 +13185,7 @@ cp_parser_member_declaration (cp_parser* parser)
 	      else
 		{
 		  /* Create the declaration.  */
-		  decl = grokfield (declarator, decl_specifiers,
+		  decl = grokfield (declarator, &decl_specifiers,
 				    initializer, asm_specification,
 				    attributes);
 		  /* Any initialization must have been from a
@@ -13607,7 +13681,7 @@ static tree
 cp_parser_exception_declaration (cp_parser* parser)
 {
   tree decl;
-  tree type_specifiers;
+  cp_decl_specifier_seq type_specifiers;
   cp_declarator *declarator;
   const char *saved_message;
 
@@ -13625,7 +13699,7 @@ cp_parser_exception_declaration (cp_parser* parser)
     = "types may not be defined in exception-declarations";
 
   /* Parse the type-specifier-seq.  */
-  type_specifiers = cp_parser_type_specifier_seq (parser);
+  cp_parser_type_specifier_seq (parser, &type_specifiers);
   /* If it's a `)', then there is no declarator.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_PAREN))
     declarator = NULL;
@@ -13637,9 +13711,9 @@ cp_parser_exception_declaration (cp_parser* parser)
   /* Restore the saved message.  */
   parser->type_definition_forbidden_message = saved_message;
 
-  if (type_specifiers)
+  if (type_specifiers.any_specifiers_p)
     {
-      decl = grokdeclarator (declarator, type_specifiers, CATCHPARM, 1, NULL);
+      decl = grokdeclarator (declarator, &type_specifiers, CATCHPARM, 1, NULL);
       if (decl == NULL_TREE)
 	error ("invalid catch parameter");
     }
@@ -14628,7 +14702,7 @@ cp_parser_constructor_declarator_p (cp_parser *parser, bool friend_p)
 	  /* Look for the type-specifier.  */
 	  cp_parser_type_specifier (parser,
 				    CP_PARSER_FLAGS_NONE,
-				    /*is_friend=*/false,
+				    /*decl_specs=*/NULL,
 				    /*is_declarator=*/true,
 				    /*declares_class_or_enum=*/NULL,
 				    /*is_cv_qualifier=*/NULL);
@@ -14660,7 +14734,7 @@ cp_parser_constructor_declarator_p (cp_parser *parser, bool friend_p)
 static tree
 cp_parser_function_definition_from_specifiers_and_declarator
   (cp_parser* parser,
-   tree decl_specifiers,
+   cp_decl_specifier_seq *decl_specifiers,
    tree attributes,
    const cp_declarator *declarator)
 {
@@ -14859,8 +14933,7 @@ cp_parser_single_declaration (cp_parser* parser,
 {
   int declares_class_or_enum;
   tree decl = NULL_TREE;
-  tree decl_specifiers;
-  tree attributes;
+  cp_decl_specifier_seq decl_specifiers;
   bool function_definition_p = false;
 
   /* Defer access checks until we know what is being declared.  */
@@ -14868,13 +14941,12 @@ cp_parser_single_declaration (cp_parser* parser,
 
   /* Try the `decl-specifier-seq [opt] init-declarator [opt]'
      alternative.  */
-  decl_specifiers
-    = cp_parser_decl_specifier_seq (parser,
-				    CP_PARSER_FLAGS_OPTIONAL,
-				    &attributes,
-				    &declares_class_or_enum);
+  cp_parser_decl_specifier_seq (parser,
+				CP_PARSER_FLAGS_OPTIONAL,
+				&decl_specifiers,
+				&declares_class_or_enum);
   if (friend_p)
-    *friend_p = cp_parser_friend_p (decl_specifiers);
+    *friend_p = cp_parser_friend_p (&decl_specifiers);
   /* Gather up the access checks that occurred the
      decl-specifier-seq.  */
   stop_deferring_access_checks ();
@@ -14884,8 +14956,8 @@ cp_parser_single_declaration (cp_parser* parser,
     {
       if (cp_parser_declares_only_class_p (parser))
 	{
-	  decl = shadow_tag (decl_specifiers);
-	  if (decl)
+	  decl = shadow_tag (&decl_specifiers);
+	  if (decl && decl != error_mark_node)
 	    decl = TYPE_NAME (decl);
 	  else
 	    decl = error_mark_node;
@@ -14900,10 +14972,9 @@ cp_parser_single_declaration (cp_parser* parser,
      In that case, there's no need to warn about a missing declarator.  */
   if (!decl
       && (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON)
-	  || !value_member (error_mark_node, decl_specifiers)))
+	  || decl_specifiers.type != error_mark_node))
     decl = cp_parser_init_declarator (parser,
-				      decl_specifiers,
-				      attributes,
+				      &decl_specifiers,
 				      /*function_definition_allowed_p=*/true,
 				      member_p,
 				      declares_class_or_enum,
@@ -14966,7 +15037,7 @@ cp_parser_functional_cast (cp_parser* parser, tree type)
 
 static tree
 cp_parser_save_member_function_body (cp_parser* parser,
-				     tree decl_specifiers,
+				     cp_decl_specifier_seq *decl_specifiers,
 				     cp_declarator *declarator,
 				     tree attributes)
 {
@@ -15304,14 +15375,15 @@ cp_parser_sizeof_operand (cp_parser* parser, enum rid keyword)
       /* If all went well, then we're done.  */
       if (cp_parser_parse_definitely (parser))
 	{
-	  /* Build a list of decl-specifiers; right now, we have only
-	     a single type-specifier.  */
-	  type = build_tree_list (NULL_TREE,
-				  type);
+	  cp_decl_specifier_seq decl_specs;
+
+	  /* Build a trivial decl-specifier-seq.  */
+	  clear_decl_specs (&decl_specs);
+	  decl_specs.type = type;
 
 	  /* Call grokdeclarator to figure out what type this is.  */
 	  expr = grokdeclarator (NULL,
-				 type,
+				 &decl_specs,
 				 TYPENAME,
 				 /*initialized=*/0,
 				 /*attrlist=*/NULL);
@@ -15345,24 +15417,49 @@ cp_parser_declares_only_class_p (cp_parser *parser)
 	  || cp_lexer_next_token_is (parser->lexer, CPP_COMMA));
 }
 
+/* Update the DECL_SPECS to reflect the STORAGE_CLASS.  */
+
+static void
+cp_parser_set_storage_class (cp_decl_specifier_seq *decl_specs,
+			     cp_storage_class storage_class)
+{
+  if (decl_specs->storage_class != sc_none)
+    decl_specs->multiple_storage_classes_p = true;
+  else
+    decl_specs->storage_class = storage_class;
+}
+
+/* Update the DECL_SPECS to reflect the TYPE_SPEC.  If USER_DEFINED_P
+   is true, the type is a user-defined type; otherwise it is a
+   built-in type specified by a keyword.  */
+
+static void
+cp_parser_set_decl_spec_type (cp_decl_specifier_seq *decl_specs,
+			      tree type_spec,
+			      bool user_defined_p)
+{
+  decl_specs->any_specifiers_p = true;
+  if (decl_specs->type)
+    {
+      if (decl_specs->specs[(int)ds_typedef] && !user_defined_p)
+	decl_specs->redefined_builtin_type = type_spec;
+      else
+	decl_specs->multiple_types_p = true;
+    }
+  else
+    {
+      decl_specs->type = type_spec;
+      decl_specs->user_defined_type_p = user_defined_p;
+    }
+}
+
 /* DECL_SPECIFIERS is the representation of a decl-specifier-seq.
    Returns TRUE iff `friend' appears among the DECL_SPECIFIERS.  */
 
 static bool
-cp_parser_friend_p (tree decl_specifiers)
+cp_parser_friend_p (const cp_decl_specifier_seq *decl_specifiers)
 {
-  while (decl_specifiers)
-    {
-      /* See if this decl-specifier is `friend'.  */
-      if (TREE_CODE (TREE_VALUE (decl_specifiers)) == IDENTIFIER_NODE
-	  && C_RID_CODE (TREE_VALUE (decl_specifiers)) == RID_FRIEND)
-	return true;
-
-      /* Go on to the next decl-specifier.  */
-      decl_specifiers = TREE_CHAIN (decl_specifiers);
-    }
-
-  return false;
+  return decl_specifiers->specs[(int) ds_friend] != 0;
 }
 
 /* If the next token is of the indicated TYPE, consume it.  Otherwise,

@@ -34,7 +34,6 @@
 #include "tree-inline.h"
 #include "tree-mudflap.h"
 #include "except.h"
-#include "lex.h"
 #include "toplev.h"
 #include "flags.h"
 #include "rtl.h"
@@ -2145,36 +2144,6 @@ finish_member_declaration (tree decl)
       maybe_add_class_template_decl_list (current_class_type, decl, 
 					  /*friend_p=*/0);
     }
-}
-
-/* Finish processing the declaration of a member class template
-   TYPES whose template parameters are given by PARMS.  */
-
-tree
-finish_member_class_template (tree types)
-{
-  tree t;
-
-  /* If there are declared, but undefined, partial specializations
-     mixed in with the typespecs they will not yet have passed through
-     maybe_process_partial_specialization, so we do that here.  */
-  for (t = types; t != NULL_TREE; t = TREE_CHAIN (t))
-    if (IS_AGGR_TYPE_CODE (TREE_CODE (TREE_VALUE (t))))
-      maybe_process_partial_specialization (TREE_VALUE (t));
-
-  grok_x_components (types);
-  if (TYPE_CONTEXT (TREE_VALUE (types)) != current_class_type)
-    /* The component was in fact a friend declaration.  We avoid
-       finish_member_template_decl performing certain checks by
-       unsetting TYPES.  */
-    types = NULL_TREE;
-  
-  finish_member_template_decl (types);
-
-  /* As with other component type declarations, we do
-     not store the new DECL on the list of
-     component_decls.  */
-  return NULL_TREE;
 }
 
 /* Finish processing a complete template declaration.  The PARMS are

@@ -39,7 +39,6 @@ Boston, MA 02111-1307, USA.  */
 #include "cp-tree.h"
 #include "tree-inline.h"
 #include "decl.h"
-#include "lex.h"
 #include "output.h"
 #include "except.h"
 #include "toplev.h"
@@ -53,7 +52,7 @@ Boston, MA 02111-1307, USA.  */
 #include "timevar.h"
 #include "tree-flow.h"
 
-static tree grokparms (const cp_parameter_declarator *, tree *);
+static tree grokparms (cp_parameter_declarator *, tree *);
 static const char *redeclaration_error_message (tree, tree);
 
 static int decl_jump_unsafe (tree);
@@ -65,7 +64,7 @@ static tree grok_reference_init (tree, tree, tree, tree *);
 static tree grokfndecl (tree, tree, tree, tree, tree, int,
 			enum overload_flags, tree,
 			tree, int, int, int, int, int, int, tree);
-static tree grokvardecl (tree, tree, RID_BIT_TYPE *, int, int, tree);
+static tree grokvardecl (tree, tree, cp_decl_specifier_seq *, int, int, tree);
 static void record_unknown_type (tree, const char *);
 static tree builtin_function_1 (const char *, tree, tree, int,
                                 enum built_in_class, const char *,
@@ -241,11 +240,6 @@ enum deprecated_states {
 };
 
 static enum deprecated_states deprecated_state = DEPRECATED_NORMAL;
-
-/* Set by add_implicitly_declared_members() to keep those members from
-   being flagged as deprecated or reported as using deprecated
-   types.  */
-int adding_implicit_members = 0;
 
 /* True if a declaration with an `extern' linkage specifier is being
    processed.  */
@@ -3410,13 +3404,10 @@ fixup_anonymous_aggr (tree t)
    Returns the type declared; or NULL_TREE if none.  */
 
 tree
-check_tag_decl (tree declspecs)
+check_tag_decl (cp_decl_specifier_seq *declspecs)
 {
-  int found_type = 0;
-  int saw_friend = 0;
-  int saw_typedef = 0;
-  tree ob_modifier = NULL_TREE;
-  tree link;
+  int saw_friend = declspecs->specs[(int)ds_friend] != 0;
+  int saw_typedef = declspecs->specs[(int)ds_typedef] != 0;
   /* If a class, struct, or enum type is declared by the DECLSPECS
      (i.e, if a class-specifier, enum-specifier, or non-typename
      elaborated-type-specifier appears in the DECLSPECS),
@@ -3424,59 +3415,23 @@ check_tag_decl (tree declspecs)
   tree declared_type = NULL_TREE;
   bool error_p = false;
 
-  for (link = declspecs; link; link = TREE_CHAIN (link))
+  if (declspecs->multiple_types_p)
+    error ("multiple types in one declaration");
+  else if (declspecs->redefined_builtin_type)
     {
-      tree value = TREE_VALUE (link);
-
-      if (TYPE_P (value) || TREE_CODE (value) == TYPE_DECL
-	  || (TREE_CODE (value) == IDENTIFIER_NODE
-	      && is_typename_at_global_scope (value)))
-	{
-	  ++found_type;
-
-	  if (found_type == 2 && TREE_CODE (value) == IDENTIFIER_NODE)
-	    {
-	      if (! in_system_header)
-		pedwarn ("redeclaration of C++ built-in type `%T'", value);
-	      return NULL_TREE;
-	    }
-
-	  if (TYPE_P (value)
-	      && ((TREE_CODE (value) != TYPENAME_TYPE && IS_AGGR_TYPE (value))
-		  || TREE_CODE (value) == ENUMERAL_TYPE))
-	    {
-	      my_friendly_assert (TYPE_MAIN_DECL (value) != NULL_TREE, 261);
-	      declared_type = value;
-	    }
-	}
-      else if (value == ridpointers[(int) RID_TYPEDEF])
-        saw_typedef = 1;
-      else if (value == ridpointers[(int) RID_FRIEND])
-	{
-	  if (current_class_type == NULL_TREE
-	      || current_scope () != current_class_type)
-	    ob_modifier = value;
-	  else
-	    saw_friend = 1;
-	}
-      else if (value == ridpointers[(int) RID_STATIC]
-	       || value == ridpointers[(int) RID_EXTERN]
-	       || value == ridpointers[(int) RID_AUTO]
-	       || value == ridpointers[(int) RID_REGISTER]
-	       || value == ridpointers[(int) RID_INLINE]
-	       || value == ridpointers[(int) RID_VIRTUAL]
-	       || value == ridpointers[(int) RID_CONST]
-	       || value == ridpointers[(int) RID_VOLATILE]
-	       || value == ridpointers[(int) RID_EXPLICIT]
-	       || value == ridpointers[(int) RID_THREAD])
-	ob_modifier = value;
-      else if (value == error_mark_node)
-	error_p = true;
+      if (!in_system_header)
+	pedwarn ("redeclaration of C++ built-in type",
+		 declspecs->redefined_builtin_type);
+      return NULL_TREE;
     }
 
-  if (found_type > 1)
-    error ("multiple types in one declaration");
-
+  if (TYPE_P (declspecs->type)
+      && ((TREE_CODE (declspecs->type) != TYPENAME_TYPE 
+	   && IS_AGGR_TYPE (declspecs->type))
+	  || TREE_CODE (declspecs->type) == ENUMERAL_TYPE))
+    declared_type = declspecs->type;
+  else if (declspecs->type == error_mark_node)
+    error_p = true;
   if (declared_type == NULL_TREE && ! saw_friend && !error_p)
     pedwarn ("declaration does not declare anything");
   /* Check for an anonymous union.  */
@@ -3512,19 +3467,28 @@ check_tag_decl (tree declspecs)
 	pedwarn ("ISO C++ prohibits anonymous structs");
     }
 
-  else if (ob_modifier)
+  else
     {
-      if (ob_modifier == ridpointers[(int) RID_INLINE]
-	  || ob_modifier == ridpointers[(int) RID_VIRTUAL])
-	error ("`%D' can only be specified for functions", ob_modifier);
-      else if (ob_modifier == ridpointers[(int) RID_FRIEND])
-	error ("`%D' can only be specified inside a class", ob_modifier);
-      else if (ob_modifier == ridpointers[(int) RID_EXPLICIT])
-	error ("`%D' can only be specified for constructors",
-		  ob_modifier);
-      else
-	error ("`%D' can only be specified for objects and functions",
-		  ob_modifier);
+      if (declspecs->specs[(int)ds_inline]
+	  || declspecs->specs[(int)ds_virtual])
+	error ("`%s' can only be specified for functions", 
+	       declspecs->specs[(int)ds_inline] 
+	       ? "inline" : "virtual");
+      else if (saw_friend
+	       && (!current_class_type 
+		   || current_scope () != current_class_type))
+	error ("`friend' can only be specified inside a class");
+      else if (declspecs->specs[(int)ds_explicit])
+	error ("`explicit' can only be specified for constructors");
+      else if (declspecs->storage_class)
+	error ("a storage class can only be specified for objects "
+	       "and functions");
+      else if (declspecs->specs[(int)ds_const]
+	       || declspecs->specs[(int)ds_volatile]
+	       || declspecs->specs[(int)ds_restrict]
+	       || declspecs->specs[(int)ds_thread])
+	error ("qualifiers can only be specified for objects "
+	       "and functions");
     }
 
   return declared_type;
@@ -3544,7 +3508,7 @@ check_tag_decl (tree declspecs)
    Returns the TYPE declared -- or NULL_TREE if none.  */
 
 tree
-shadow_tag (tree declspecs)
+shadow_tag (cp_decl_specifier_seq *declspecs)
 {
   tree t = check_tag_decl (declspecs);
 
@@ -3576,12 +3540,14 @@ shadow_tag (tree declspecs)
 /* Decode a "typename", such as "int **", returning a ..._TYPE node.  */
 
 tree
-groktypename (tree type_specifiers, const cp_declarator *declarator)
+groktypename (cp_decl_specifier_seq *type_specifiers, 
+	      const cp_declarator *declarator)
 {
-  tree specs, attrs;
+  tree attrs;
   tree type;
-  split_specs_attrs (type_specifiers, &specs, &attrs);
-  type = grokdeclarator (declarator, specs, TYPENAME, 0, &attrs);
+  attrs = type_specifiers->attributes;
+  type_specifiers->attributes = NULL_TREE;
+  type = grokdeclarator (declarator, type_specifiers, TYPENAME, 0, &attrs);
   if (attrs)
     cplus_decl_attributes (&type, attrs, 0);
   return type;
@@ -3604,7 +3570,7 @@ groktypename (tree type_specifiers, const cp_declarator *declarator)
 
 tree
 start_decl (const cp_declarator *declarator, 
-            tree declspecs, 
+	    cp_decl_specifier_seq *declspecs,
             int initialized, 
             tree attributes, 
             tree prefix_attributes)
@@ -3616,8 +3582,7 @@ start_decl (const cp_declarator *declarator,
   /* This should only be done once on the top most decl.  */
   if (have_extern_spec)
     {
-      declspecs = tree_cons (NULL_TREE, get_identifier ("extern"),
-			     declspecs);
+      declspecs->storage_class = sc_extern;
       have_extern_spec = false;
     }
 
@@ -5758,25 +5723,22 @@ grokfndecl (tree ctype,
 static tree
 grokvardecl (tree type,
              tree name,
-             RID_BIT_TYPE * specbits_in,
+	     cp_decl_specifier_seq *declspecs,
              int initialized,
              int constp,
              tree scope)
 {
   tree decl;
-  RID_BIT_TYPE specbits;
 
   my_friendly_assert (!name || TREE_CODE (name) == IDENTIFIER_NODE, 
 		      20020808);
-
-  specbits = *specbits_in;
 
   /* Compute the scope in which to place the variable.  */
   if (!scope)
     {
       /* An explicit "extern" specifier indicates a namespace-scope
 	 variable.  */
-      if (RIDBIT_SETP (RID_EXTERN, specbits))
+      if (declspecs->storage_class == sc_extern)
 	scope = current_namespace;
       else if (!at_function_scope_p ())
 	{
@@ -5805,7 +5767,7 @@ grokvardecl (tree type,
   else
     DECL_CONTEXT (decl) = scope;
 
-  if (RIDBIT_SETP (RID_EXTERN, specbits))
+  if (declspecs->storage_class == sc_extern)
     {
       DECL_THIS_EXTERN (decl) = 1;
       DECL_EXTERNAL (decl) = !initialized;
@@ -5823,18 +5785,18 @@ grokvardecl (tree type,
      (perhaps tentative), and absence of `static' makes it public.  */
   else if (toplevel_bindings_p ())
     {
-      TREE_PUBLIC (decl) = (RIDBIT_NOTSETP (RID_STATIC, specbits)
+      TREE_PUBLIC (decl) = (declspecs->storage_class != sc_static
 			    && (DECL_THIS_EXTERN (decl) || ! constp));
       TREE_STATIC (decl) = ! DECL_EXTERNAL (decl);
     }
   /* Not at top level, only `static' makes a static definition.  */
   else
     {
-      TREE_STATIC (decl) = !! RIDBIT_SETP (RID_STATIC, specbits);
+      TREE_STATIC (decl) = declspecs->storage_class == sc_static;
       TREE_PUBLIC (decl) = DECL_EXTERNAL (decl);
     }
 
-  if (RIDBIT_SETP (RID_THREAD, specbits))
+  if (declspecs->specs[(int)ds_thread])
     {
       if (targetm.have_tls)
 	DECL_THREAD_LOCAL (decl) = 1;
@@ -6292,14 +6254,11 @@ check_special_function_return_type (special_function_kind sfk,
 
 tree
 grokdeclarator (const cp_declarator *declarator,
-                tree declspecs,
+		cp_decl_specifier_seq *declspecs,
                 enum decl_context decl_context,
                 int initialized,
                 tree* attrlist)
 {
-  RID_BIT_TYPE specbits;
-  int nclasses = 0;
-  tree spec;
   tree type = NULL_TREE;
   int longlong = 0;
   int type_quals;
@@ -6307,7 +6266,6 @@ grokdeclarator (const cp_declarator *declarator,
   int explicit_int = 0;
   int explicit_char = 0;
   int defaulted_int = 0;
-  int extern_langp = 0;
   tree dependant_name = NULL_TREE;
   
   tree typedef_decl = NULL_TREE;
@@ -6348,8 +6306,8 @@ grokdeclarator (const cp_declarator *declarator,
      this value will be NULL_TREE, even if the entity is located at
      namespace scope.  */ 
   tree in_namespace = NULL_TREE;
+  cp_decl_spec ds;
 
-  RIDBIT_RESET_ALL (specbits);
   if (decl_context == FUNCDEF)
     funcdef_flag = 1, decl_context = NORMAL;
   else if (decl_context == MEMFUNCDEF)
@@ -6503,7 +6461,7 @@ grokdeclarator (const cp_declarator *declarator,
 
   if (((dname && IDENTIFIER_OPNAME_P (dname)) || flags == TYPENAME_FLAG)
       && innermost_code != cdk_function
-      && ! (ctype && declspecs == NULL_TREE))
+      && ! (ctype && !declspecs->any_specifiers_p))
     {
       error ("declaration of `%D' as non-function", dname);
       return void_type_node;
@@ -6535,143 +6493,59 @@ grokdeclarator (const cp_declarator *declarator,
   if (name == NULL)
     name = decl_context == PARM ? "parameter" : "type name";
 
-  /* Look through the decl specs and record which ones appear.
-     Some typespecs are defined as built-in typenames.
-     Others, the ones that are modifiers of other types,
-     are represented by bits in SPECBITS: set the bits for
-     the modifiers that appear.  Storage class keywords are also in SPECBITS.
-
-     If there is a typedef name or a type, store the type in TYPE.
-     This includes builtin typedefs such as `int'.
-
-     Set EXPLICIT_INT if the type is `int' or `char' and did not
-     come from a user typedef.
-
-     Set LONGLONG if `long' is mentioned twice.
-
-     For C++, constructors and destructors have their own fast treatment.  */
-
-  for (spec = declspecs; spec; spec = TREE_CHAIN (spec))
+  /* If there were multiple types specified in the decl-specifier-seq,
+     issue an error message.  */
+  if (declspecs->multiple_types_p)
+    error ("two or more data types in declaration of `%s'", name);
+  /* Extract the basic type from the decl-specifier-seq.  */
+  type = declspecs->type;
+  if (type == error_mark_node)
+    type = NULL_TREE;
+  /* If the entire declaration is itself tagged as deprecated then
+     suppress reports of deprecated items.  */
+  if (type && TREE_DEPRECATED (type)
+      && deprecated_state != DEPRECATED_SUPPRESS)
+    warn_deprecated_use (type);
+  if (type && TREE_CODE (type) == TYPE_DECL)
     {
-      int i;
-      tree id;
+      typedef_decl = type;
+      type = TREE_TYPE (typedef_decl);
+    }
+  /* No type at all: default to `int', and set DEFAULTED_INT
+     because it was not a user-defined typedef.  */
+  if (type == NULL_TREE
+      && (declspecs->specs[(int)ds_signed]
+	  || declspecs->specs[(int)ds_unsigned]
+	  || declspecs->specs[(int)ds_long]
+	  || declspecs->specs[(int)ds_short]))
+    {
+      /* These imply 'int'.  */
+      type = integer_type_node;
+      defaulted_int = 1;
+    }
+  /* Gather flags.  */
+  explicit_int = declspecs->explicit_int_p;
+  explicit_char = declspecs->explicit_char_p;
 
-      /* Certain parse errors slip through.  For example,
-	 `int class;' is not caught by the parser. Try
-	 weakly to recover here.  */
-      if (TREE_CODE (spec) != TREE_LIST)
-	return 0;
-
-      id = TREE_VALUE (spec);
-
-      /* If the entire declaration is itself tagged as deprecated then
-         suppress reports of deprecated items.  */
-      if (!adding_implicit_members && id && TREE_DEPRECATED (id))
-        {
-	  if (deprecated_state != DEPRECATED_SUPPRESS)
-	    warn_deprecated_use (id);
-        }
-
-      if (TREE_CODE (id) == IDENTIFIER_NODE)
+  /* Check for repeated decl-specifiers.  */
+  for (ds = ds_first; ds != ds_last; ++ds) 
+    {
+      unsigned count = declspecs->specs[(int)ds];
+      if (count < 2)
+	continue;
+      /* The "long" specifier is a special case because of 
+	 "long long".  */
+      if (ds == ds_long)
 	{
-	  if (id == ridpointers[(int) RID_INT]
-	      || id == ridpointers[(int) RID_CHAR]
-	      || id == ridpointers[(int) RID_BOOL]
-	      || id == ridpointers[(int) RID_WCHAR])
-	    {
-	      if (type)
-		{
-		  if (id == ridpointers[(int) RID_BOOL])
-		    error ("`bool' is now a keyword");
-		  else
-		    error ("extraneous `%T' ignored", id);
-		}
-	      else
-		{
-		  if (id == ridpointers[(int) RID_INT])
-		    explicit_int = 1;
-		  else if (id == ridpointers[(int) RID_CHAR])
-		    explicit_char = 1;
-		  type = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (id));
-		}
-	      goto found;
-	    }
-	  /* C++ aggregate types.  */
-	  if (IDENTIFIER_HAS_TYPE_VALUE (id))
-	    {
-	      if (type)
-		error ("multiple declarations `%T' and `%T'", type, id);
-	      else
-		type = IDENTIFIER_TYPE_VALUE (id);
-	      goto found;
-	    }
-
-	  for (i = (int) RID_FIRST_MODIFIER; i <= (int) RID_LAST_MODIFIER; i++)
-	    {
-	      if (ridpointers[i] == id)
-		{
-		  if (i == (int) RID_LONG && RIDBIT_SETP (i, specbits))
-		    {
-		      if (pedantic && ! in_system_header && warn_long_long)
-			pedwarn ("ISO C++ does not support `long long'");
-		      if (longlong)
-			error ("`long long long' is too long for GCC");
-		      else
-			longlong = 1;
-		    }
-		  else if (RIDBIT_SETP (i, specbits))
-		    pedwarn ("duplicate `%E'", id);
-
-		  /* Diagnose "__thread extern" or "__thread static".  */
-		  if (RIDBIT_SETP (RID_THREAD, specbits))
-		    {
-		      if (i == (int)RID_EXTERN)
-			error ("`__thread' before `extern'");
-		      else if (i == (int)RID_STATIC)
-			error ("`__thread' before `static'");
-		    }
-
-		  if (i == (int)RID_EXTERN
-		      && TREE_PURPOSE (spec) == error_mark_node)
-		    /* This extern was part of a language linkage.  */
-		    extern_langp = 1;
-
-		  RIDBIT_SET (i, specbits);
-		  goto found;
-		}
-	    }
-	}
-      else if (TREE_CODE (id) == TYPE_DECL)
-	{
-	  if (type)
-	    error ("multiple declarations `%T' and `%T'", type,
-		      TREE_TYPE (id));
+	  if (count > 2)
+	    error ("`long long long' is too long for GCC");
+	  else if (pedantic && !in_system_header && warn_long_long)
+	    pedwarn ("ISO C++ does not support `long long'");
 	  else
-	    {
-	      type = TREE_TYPE (id);
-	      TREE_VALUE (spec) = type;
-	      typedef_decl = id;
-	    }
-	  goto found;
-	}
-      if (type)
-	error ("two or more data types in declaration of `%s'", name);
-      else if (TREE_CODE (id) == IDENTIFIER_NODE)
-	{
-	  tree t = lookup_name (id, 1);
-	  if (!t || TREE_CODE (t) != TYPE_DECL)
-	    error ("`%E' fails to be a typedef or built in type", id);
-	  else
-	    {
-	      type = TREE_TYPE (t);
-	      typedef_decl = t;
-	    }
-	}
-      else if (id != error_mark_node)
-	/* Can't change CLASS nodes into RECORD nodes here!  */
-	type = id;
-
-    found: ;
+	    longlong = 1;
+	} 
+      else if (declspecs->specs[(int)ds] > 1)
+	error ("duplicate decl-specifier");
     }
 
 #if 0
@@ -6681,19 +6555,6 @@ grokdeclarator (const cp_declarator *declarator,
 #endif
   typedef_type = type;
 
-  /* No type at all: default to `int', and set DEFAULTED_INT
-     because it was not a user-defined typedef.  */
-
-  if (type == NULL_TREE
-      && (RIDBIT_SETP (RID_SIGNED, specbits)
-	  || RIDBIT_SETP (RID_UNSIGNED, specbits)
-	  || RIDBIT_SETP (RID_LONG, specbits)
-	  || RIDBIT_SETP (RID_SHORT, specbits)))
-    {
-      /* These imply 'int'.  */
-      type = integer_type_node;
-      defaulted_int = 1;
-    }
 
   if (sfk != sfk_none)
     type = check_special_function_return_type (sfk, type,
@@ -6731,21 +6592,20 @@ grokdeclarator (const cp_declarator *declarator,
      and check for invalid combinations.  */
 
   /* Long double is a special combination.  */
-
-  if (RIDBIT_SETP (RID_LONG, specbits)
+  if (declspecs->specs[(int)ds_long]
       && TYPE_MAIN_VARIANT (type) == double_type_node)
     {
-      RIDBIT_RESET (RID_LONG, specbits);
+      declspecs->specs[(int)ds_long] = 0;
       type = build_qualified_type (long_double_type_node,
 				   cp_type_quals (type));
     }
 
   /* Check all other uses of type modifiers.  */
 
-  if (RIDBIT_SETP (RID_UNSIGNED, specbits)
-      || RIDBIT_SETP (RID_SIGNED, specbits)
-      || RIDBIT_SETP (RID_LONG, specbits)
-      || RIDBIT_SETP (RID_SHORT, specbits))
+  if (declspecs->specs[(int)ds_unsigned]
+      || declspecs->specs[(int)ds_signed]
+      || declspecs->specs[(int)ds_long]
+      || declspecs->specs[(int)ds_short])
     {
       int ok = 0;
 
@@ -6753,19 +6613,19 @@ grokdeclarator (const cp_declarator *declarator,
 	error ("short, signed or unsigned invalid for `%s'", name);
       else if (TREE_CODE (type) != INTEGER_TYPE)
 	error ("long, short, signed or unsigned invalid for `%s'", name);
-      else if (RIDBIT_SETP (RID_LONG, specbits)
-	       && RIDBIT_SETP (RID_SHORT, specbits))
+      else if (declspecs->specs[(int)ds_long]
+	       && declspecs->specs[(int)ds_short])
 	error ("long and short specified together for `%s'", name);
-      else if ((RIDBIT_SETP (RID_LONG, specbits)
-		|| RIDBIT_SETP (RID_SHORT, specbits))
+      else if ((declspecs->specs[(int)ds_long]
+		|| declspecs->specs[(int)ds_short])
 	       && explicit_char)
 	error ("long or short specified with char for `%s'", name);
-      else if ((RIDBIT_SETP (RID_LONG, specbits)
-		|| RIDBIT_SETP (RID_SHORT, specbits))
+      else if ((declspecs->specs[(int)ds_long]
+		|| declspecs->specs[(int)ds_short])
 	       && TREE_CODE (type) == REAL_TYPE)
 	error ("long or short specified with floating type for `%s'", name);
-      else if (RIDBIT_SETP (RID_SIGNED, specbits)
-	       && RIDBIT_SETP (RID_UNSIGNED, specbits))
+      else if (declspecs->specs[(int)ds_signed]
+	       && declspecs->specs[(int)ds_unsigned])
 	error ("signed and unsigned given together for `%s'", name);
       else
 	{
@@ -6782,24 +6642,24 @@ grokdeclarator (const cp_declarator *declarator,
       /* Discard the type modifiers if they are invalid.  */
       if (! ok)
 	{
-	  RIDBIT_RESET (RID_UNSIGNED, specbits);
-	  RIDBIT_RESET (RID_SIGNED, specbits);
-	  RIDBIT_RESET (RID_LONG, specbits);
-	  RIDBIT_RESET (RID_SHORT, specbits);
+	  declspecs->specs[(int)ds_unsigned] = 0;
+	  declspecs->specs[(int)ds_signed] = 0;
+	  declspecs->specs[(int)ds_long] = 0;
+	  declspecs->specs[(int)ds_short] = 0;
 	  longlong = 0;
 	}
     }
 
-  if (RIDBIT_SETP (RID_COMPLEX, specbits)
+  if (declspecs->specs[(int)ds_complex]
       && TREE_CODE (type) != INTEGER_TYPE && TREE_CODE (type) != REAL_TYPE)
     {
       error ("complex invalid for `%s'", name);
-      RIDBIT_RESET (RID_COMPLEX, specbits);
+      declspecs->specs[(int)ds_complex] = 0;
     }
 
   /* Decide whether an integer type is signed or not.
      Optionally treat bitfields as signed by default.  */
-  if (RIDBIT_SETP (RID_UNSIGNED, specbits)
+  if (declspecs->specs[(int)ds_unsigned]
       /* [class.bit]
 
 	 It is implementation-defined whether a plain (neither
@@ -6809,7 +6669,7 @@ grokdeclarator (const cp_declarator *declarator,
 	 Naturally, we extend this to long long as well.  Note that
 	 this does not include wchar_t.  */
       || (bitfield && !flag_signed_bitfields
-	  && RIDBIT_NOTSETP (RID_SIGNED, specbits)
+	  && !declspecs->specs[(int)ds_signed]
 	  /* A typedef for plain `int' without `signed' can be
 	     controlled just like plain `int', but a typedef for
 	     `signed int' cannot be so controlled.  */
@@ -6821,9 +6681,9 @@ grokdeclarator (const cp_declarator *declarator,
     {
       if (longlong)
 	type = long_long_unsigned_type_node;
-      else if (RIDBIT_SETP (RID_LONG, specbits))
+      else if (declspecs->specs[(int)ds_long])
 	type = long_unsigned_type_node;
-      else if (RIDBIT_SETP (RID_SHORT, specbits))
+      else if (declspecs->specs[(int)ds_short])
 	type = short_unsigned_type_node;
       else if (type == char_type_node)
 	type = unsigned_char_type_node;
@@ -6832,17 +6692,17 @@ grokdeclarator (const cp_declarator *declarator,
       else
 	type = unsigned_type_node;
     }
-  else if (RIDBIT_SETP (RID_SIGNED, specbits)
+  else if (declspecs->specs[(int)ds_signed]
 	   && type == char_type_node)
     type = signed_char_type_node;
   else if (longlong)
     type = long_long_integer_type_node;
-  else if (RIDBIT_SETP (RID_LONG, specbits))
+  else if (declspecs->specs[(int)ds_long])
     type = long_integer_type_node;
-  else if (RIDBIT_SETP (RID_SHORT, specbits))
+  else if (declspecs->specs[(int)ds_short])
     type = short_integer_type_node;
 
-  if (RIDBIT_SETP (RID_COMPLEX, specbits))
+  if (declspecs->specs[(int)ds_complex])
     {
       /* If we just have "complex", it is equivalent to
 	 "complex double", but if any modifiers at all are specified it is
@@ -6850,10 +6710,10 @@ grokdeclarator (const cp_declarator *declarator,
 	 "complex short int".  */
 
       if (defaulted_int && ! longlong
-	  && ! (RIDBIT_SETP (RID_LONG, specbits)
-		|| RIDBIT_SETP (RID_SHORT, specbits)
-		|| RIDBIT_SETP (RID_SIGNED, specbits)
-		|| RIDBIT_SETP (RID_UNSIGNED, specbits)))
+	  && ! (declspecs->specs[(int)ds_long]
+		|| declspecs->specs[(int)ds_short]
+		|| declspecs->specs[(int)ds_signed]
+		|| declspecs->specs[(int)ds_unsigned]))
 	type = complex_double_type_node;
       else if (type == integer_type_node)
 	type = complex_integer_type_node;
@@ -6868,11 +6728,11 @@ grokdeclarator (const cp_declarator *declarator,
     }
 
   type_quals = TYPE_UNQUALIFIED;
-  if (RIDBIT_SETP (RID_CONST, specbits))
+  if (declspecs->specs[(int)ds_const])
     type_quals |= TYPE_QUAL_CONST;
-  if (RIDBIT_SETP (RID_VOLATILE, specbits))
+  if (declspecs->specs[(int)ds_volatile])
     type_quals |= TYPE_QUAL_VOLATILE;
-  if (RIDBIT_SETP (RID_RESTRICT, specbits))
+  if (declspecs->specs[(int)ds_restrict])
     type_quals |= TYPE_QUAL_RESTRICT;
   if (sfk == sfk_conversion && type_quals != TYPE_UNQUALIFIED)
     error ("qualifiers are not allowed on declaration of `operator %T'",
@@ -6886,13 +6746,11 @@ grokdeclarator (const cp_declarator *declarator,
   type_quals = cp_type_quals (type);
   
   staticp = 0;
-  inlinep = !! RIDBIT_SETP (RID_INLINE, specbits);
-  virtualp = !! RIDBIT_SETP (RID_VIRTUAL, specbits);
-  RIDBIT_RESET (RID_VIRTUAL, specbits);
-  explicitp = !! RIDBIT_SETP (RID_EXPLICIT, specbits);
-  RIDBIT_RESET (RID_EXPLICIT, specbits);
+  inlinep = !! declspecs->specs[(int)ds_inline];
+  virtualp = !! declspecs->specs[(int)ds_virtual];
+  explicitp = !! declspecs->specs[(int)ds_explicit];
 
-  if (RIDBIT_SETP (RID_STATIC, specbits))
+  if (declspecs->storage_class == sc_static)
     staticp = 1 + (decl_context == FIELD);
 
   if (virtualp && staticp == 2)
@@ -6901,34 +6759,23 @@ grokdeclarator (const cp_declarator *declarator,
 		dname);
       staticp = 0;
     }
-  friendp = !! RIDBIT_SETP (RID_FRIEND, specbits);
-  RIDBIT_RESET (RID_FRIEND, specbits);
+  friendp = !! declspecs->specs[(int)ds_friend];
 
   if (dependant_name && !friendp)
     {
       error ("`%T::%D' is not a valid declarator", ctype, dependant_name);
       return void_type_node;
     }
-  
-  /* Warn if two storage classes are given. Default to `auto'.  */
 
-  if (RIDBIT_ANY_SET (specbits))
+  /* Issue errors about use of storage classes for parameters.  */
+  if (decl_context == PARM)
     {
-      if (RIDBIT_SETP (RID_STATIC, specbits)) nclasses++;
-      if (RIDBIT_SETP (RID_EXTERN, specbits) && !extern_langp) nclasses++;
-      if (RIDBIT_SETP (RID_THREAD, specbits)) nclasses++;
-      if (decl_context == PARM && nclasses > 0)
+      if (declspecs->specs[(int)ds_typedef])
+	error ("typedef declaration invalid in parameter declaration");
+      else if (declspecs->storage_class == sc_static
+	       || declspecs->storage_class == sc_extern
+	       || declspecs->specs[(int)ds_thread])
 	error ("storage class specifiers invalid in parameter declarations");
-      if (RIDBIT_SETP (RID_TYPEDEF, specbits))
-	{
-	  if (decl_context == PARM)
-	    error ("typedef declaration invalid in parameter declaration");
-	  nclasses++;
-	}
-      if (RIDBIT_SETP (RID_AUTO, specbits)) nclasses++;
-      if (RIDBIT_SETP (RID_REGISTER, specbits)) nclasses++;
-      if (!nclasses && !friendp && extern_langp)
-	nclasses++;
     }
 
   /* Give error if `virtual' is used outside of class declaration.  */
@@ -6941,33 +6788,27 @@ grokdeclarator (const cp_declarator *declarator,
 
   /* Static anonymous unions are dealt with here.  */
   if (staticp && decl_context == TYPENAME
-      && TREE_CODE (declspecs) == TREE_LIST
-      && ANON_AGGR_TYPE_P (TREE_VALUE (declspecs)))
+      && declspecs->type
+      && ANON_AGGR_TYPE_P (declspecs->type))
     decl_context = FIELD;
 
   /* Warn about storage classes that are invalid for certain
      kinds of declarations (parameters, typenames, etc.).  */
-
-  /* "static __thread" and "extern __thread" are allowed.  */
-  if (nclasses == 2
-      && RIDBIT_SETP (RID_THREAD, specbits)
-      && (RIDBIT_SETP (RID_EXTERN, specbits)
-	  || RIDBIT_SETP (RID_STATIC, specbits)))
-    nclasses = 1;
-    
-  if (nclasses > 1)
+  if (declspecs->multiple_storage_classes_p)
     error ("multiple storage classes in declaration of `%s'", name);
-  else if (decl_context != NORMAL && nclasses > 0)
+  else if (decl_context != NORMAL 
+	   && declspecs->storage_class != sc_none
+	   && declspecs->storage_class != sc_mutable)
     {
       if ((decl_context == PARM || decl_context == CATCHPARM)
-	  && (RIDBIT_SETP (RID_REGISTER, specbits)
-	      || RIDBIT_SETP (RID_AUTO, specbits)))
+	  && (declspecs->storage_class == sc_register
+	      || declspecs->storage_class == sc_auto))
 	;
-      else if (RIDBIT_SETP (RID_TYPEDEF, specbits))
+      else if (declspecs->specs[(int)ds_typedef])
 	;
       else if (decl_context == FIELD
 	       /* C++ allows static class elements.  */
-	       && RIDBIT_SETP (RID_STATIC, specbits))
+	       && declspecs->storage_class == sc_static)
 	/* C++ also allows inlines and signed and unsigned elements,
 	   but in those cases we don't come in here.  */
 	;
@@ -7005,13 +6846,15 @@ grokdeclarator (const cp_declarator *declarator,
 	      else
 		error ("storage class specified for typename");
 	    }
-	  RIDBIT_RESET (RID_REGISTER, specbits);
-	  RIDBIT_RESET (RID_AUTO, specbits);
-	  RIDBIT_RESET (RID_EXTERN, specbits);
-	  RIDBIT_RESET (RID_THREAD, specbits);
+	  if (declspecs->storage_class == sc_register
+	      || declspecs->storage_class == sc_auto
+	      || declspecs->storage_class == sc_extern
+	      || declspecs->specs[(int)ds_thread])
+	    declspecs->storage_class = sc_none;
 	}
     }
-  else if (RIDBIT_SETP (RID_EXTERN, specbits) && initialized && !funcdef_flag)
+  else if (declspecs->storage_class == sc_extern && initialized 
+	   && !funcdef_flag)
     {
       if (toplevel_bindings_p ())
 	{
@@ -7023,24 +6866,24 @@ grokdeclarator (const cp_declarator *declarator,
       else
 	error ("`%s' has both `extern' and initializer", name);
     }
-  else if (RIDBIT_SETP (RID_EXTERN, specbits) && funcdef_flag
+  else if (declspecs->storage_class == sc_extern && funcdef_flag
 	   && ! toplevel_bindings_p ())
     error ("nested function `%s' declared `extern'", name);
   else if (toplevel_bindings_p ())
     {
-      if (RIDBIT_SETP (RID_AUTO, specbits))
+      if (declspecs->storage_class == sc_auto)
 	error ("top-level declaration of `%s' specifies `auto'", name);
     }
-  else if (RIDBIT_SETP (RID_THREAD, specbits)
-	   && !RIDBIT_SETP (RID_EXTERN, specbits)
-	   && !RIDBIT_SETP (RID_STATIC, specbits))
+  else if (declspecs->specs[(int)ds_thread]
+	   && declspecs->storage_class != sc_extern
+	   && declspecs->storage_class != sc_static)
     {
       error ("function-scope `%s' implicitly auto and declared `__thread'",
 	     name);
-      RIDBIT_RESET (RID_THREAD, specbits);
+      declspecs->specs[(int)ds_thread] = 0;
     }
 
-  if (nclasses > 0 && friendp)
+  if (declspecs->storage_class && friendp)
     error ("storage class specifiers invalid in friend function declarations");
 
   if (!id_declarator)
@@ -7211,14 +7054,6 @@ grokdeclarator (const cp_declarator *declarator,
                                TREE_VALUE (quals));
 			quals = NULL_TREE;
 		      }
-		    {
-		      RID_BIT_TYPE tmp_bits;
-		      memcpy (&tmp_bits, &specbits, sizeof (RID_BIT_TYPE));
-		      RIDBIT_RESET (RID_INLINE, tmp_bits);
-		      RIDBIT_RESET (RID_STATIC, tmp_bits);
-		      if (RIDBIT_ANY_SET (tmp_bits))
-			error ("return value type specifier for constructor ignored");
-		    }
 		    if (decl_context == FIELD)
 		      {
 			if (! member_function_or_else (ctype,
@@ -7241,7 +7076,6 @@ grokdeclarator (const cp_declarator *declarator,
 		  {
 		    /* Cannot be both friend and virtual.  */
 		    error ("virtual functions cannot be friends");
-		    RIDBIT_RESET (RID_FRIEND, specbits);
 		    friendp = 0;
 		  }
 		if (decl_context == NORMAL)
@@ -7453,7 +7287,7 @@ grokdeclarator (const cp_declarator *declarator,
 	      return error_mark_node;
 	    }
 	}
-      else if (RIDBIT_SETP (RID_TYPEDEF, specbits)
+      else if (declspecs->specs[(int)ds_typedef]
 	       || COMPLETE_TYPE_P (complete_type (ctype)))
 	{
 	  /* Have to move this code elsewhere in this function.
@@ -7516,38 +7350,38 @@ grokdeclarator (const cp_declarator *declarator,
       explicitp = 0;
     }
 
-  if (RIDBIT_SETP (RID_MUTABLE, specbits))
+  if (declspecs->storage_class == sc_mutable)
     {
       if (decl_context != FIELD || friendp)
         {
 	  error ("non-member `%s' cannot be declared `mutable'", name);
-          RIDBIT_RESET (RID_MUTABLE, specbits);
+	  declspecs->storage_class = sc_none;
         }
-      else if (decl_context == TYPENAME || RIDBIT_SETP (RID_TYPEDEF, specbits))
+      else if (decl_context == TYPENAME || declspecs->specs[(int)ds_typedef])
 	{
 	  error ("non-object member `%s' cannot be declared `mutable'", name);
-	  RIDBIT_RESET (RID_MUTABLE, specbits);
+	  declspecs->storage_class = sc_none;
 	}
       else if (TREE_CODE (type) == FUNCTION_TYPE
                || TREE_CODE (type) == METHOD_TYPE)
         {
 	  error ("function `%s' cannot be declared `mutable'", name);
-	  RIDBIT_RESET (RID_MUTABLE, specbits);
+	  declspecs->storage_class = sc_none;
         }
       else if (staticp)
 	{
 	  error ("static `%s' cannot be declared `mutable'", name);
-	  RIDBIT_RESET (RID_MUTABLE, specbits);
+	  declspecs->storage_class = sc_none;
 	}
       else if (type_quals & TYPE_QUAL_CONST)
 	{
 	  error ("const `%s' cannot be declared `mutable'", name);
- 	  RIDBIT_RESET (RID_MUTABLE, specbits);
+	  declspecs->storage_class = sc_none;
 	}
     }
 
   /* If this is declaring a typedef name, return a TYPE_DECL.  */
-  if (RIDBIT_SETP (RID_TYPEDEF, specbits) && decl_context != TYPENAME)
+  if (declspecs->specs[(int)ds_typedef] && decl_context != TYPENAME)
     {
       tree decl;
 
@@ -7622,7 +7456,7 @@ grokdeclarator (const cp_declarator *declarator,
 	    grok_method_quals (ctype, decl, quals);
 	}
 
-      if (RIDBIT_SETP (RID_SIGNED, specbits)
+      if (declspecs->specs[(int)ds_signed]
 	  || (typedef_decl && C_TYPEDEF_EXPLICITLY_SIGNED (typedef_decl)))
 	C_TYPEDEF_EXPLICITLY_SIGNED (decl) = 1;
 
@@ -7944,8 +7778,8 @@ grokdeclarator (const cp_declarator *declarator,
 	    if (current_class_type
 		&& TYPE_NAME (current_class_type)
 		&& IDENTIFIER_TEMPLATE (TYPE_IDENTIFIER (current_class_type))
-		&& declspecs && TREE_VALUE (declspecs)
-		&& TREE_TYPE (TREE_VALUE (declspecs)) == type)
+		&& declspecs->type
+		&& declspecs->type == type)
 	      error ("  in instantiation of template `%T'",
 			current_class_type);
 
@@ -8039,10 +7873,10 @@ grokdeclarator (const cp_declarator *declarator,
 	      {
 		decl = build_decl (FIELD_DECL, unqualified_id, type);
 		DECL_NONADDRESSABLE_P (decl) = bitfield;
-		if (RIDBIT_SETP (RID_MUTABLE, specbits))
+		if (declspecs->storage_class == sc_mutable)
 		  {
 		    DECL_MUTABLE_P (decl) = 1;
-		    RIDBIT_RESET (RID_MUTABLE, specbits);
+		    declspecs->storage_class = sc_none;
 		  }
 	      }
 
@@ -8064,25 +7898,25 @@ grokdeclarator (const cp_declarator *declarator,
 	else
 	  original_name = unqualified_id;
 
-	if (RIDBIT_SETP (RID_AUTO, specbits))
+	if (declspecs->storage_class == sc_auto)
 	  error ("storage class `auto' invalid for function `%s'", name);
-	else if (RIDBIT_SETP (RID_REGISTER, specbits))
+	else if (declspecs->storage_class == sc_register)
 	  error ("storage class `register' invalid for function `%s'", name);
-	else if (RIDBIT_SETP (RID_THREAD, specbits))
+	else if (declspecs->specs[(int)ds_thread])
 	  error ("storage class `__thread' invalid for function `%s'", name);
 
 	/* Function declaration not at top level.
 	   Storage classes other than `extern' are not allowed
 	   and `extern' makes no difference.  */
 	if (! toplevel_bindings_p ()
-	    && (RIDBIT_SETP (RID_STATIC, specbits)
-		|| RIDBIT_SETP (RID_INLINE, specbits))
+	    && (declspecs->storage_class == sc_static
+		|| declspecs->specs[(int)ds_inline])
 	    && pedantic)
 	  {
-	    if (RIDBIT_SETP (RID_STATIC, specbits))
-	      pedwarn ("storage class `static' invalid for function `%s' declared out of global scope", name);
+	    if (declspecs->storage_class == sc_static)
+	      pedwarn ("`static' specified invalid for function `%s' declared out of global scope", name);
 	    else
-	      pedwarn ("storage class `inline' invalid for function `%s' declared out of global scope", name);
+	      pedwarn ("`inline' specifier invalid for function `%s' declared out of global scope", name);
 	  }
 
 	if (ctype == NULL_TREE)
@@ -8101,8 +7935,8 @@ grokdeclarator (const cp_declarator *declarator,
 
 	/* Record presence of `static'.  */
 	publicp = (ctype != NULL_TREE
-		   || RIDBIT_SETP (RID_EXTERN, specbits)
-		   || !RIDBIT_SETP (RID_STATIC, specbits));
+		   || declspecs->storage_class == sc_extern
+		   || declspecs->storage_class != sc_static);
 
 	decl = grokfndecl (ctype, type, original_name, parms, unqualified_id,
 			   virtualp, flags, quals, raises,
@@ -8133,7 +7967,7 @@ grokdeclarator (const cp_declarator *declarator,
 	    if (invalid_static)
 	      {
 		staticp = 0;
-		RIDBIT_RESET (RID_STATIC, specbits);
+		declspecs->storage_class = sc_none;
 	      }
 	  }
       }
@@ -8142,7 +7976,8 @@ grokdeclarator (const cp_declarator *declarator,
 	/* It's a variable.  */
 
 	/* An uninitialized decl with `extern' is a reference.  */
-	decl = grokvardecl (type, unqualified_id, &specbits,
+	decl = grokvardecl (type, unqualified_id, 
+			    declspecs,
 			    initialized,
 			    (type_quals & TYPE_QUAL_CONST) != 0,
 			    ctype ? ctype : in_namespace);
@@ -8156,34 +7991,30 @@ grokdeclarator (const cp_declarator *declarator,
 	      {
                 pedwarn ("`static' may not be used when defining (as opposed to declaring) a static data member");
 	        staticp = 0;
-		RIDBIT_RESET (RID_STATIC, specbits);
+		declspecs->storage_class = sc_none;
 	      }
-	    if (RIDBIT_SETP (RID_REGISTER, specbits) && TREE_STATIC (decl))
+	    if (declspecs->storage_class == sc_register && TREE_STATIC (decl))
 	      {
 		error ("static member `%D' declared `register'", decl);
-		RIDBIT_RESET (RID_REGISTER, specbits);
+		declspecs->storage_class = sc_none;
 	      }
-	    if (RIDBIT_SETP (RID_EXTERN, specbits) && pedantic)
+	    if (declspecs->storage_class == sc_extern && pedantic)
 	      {
 	        pedwarn ("cannot explicitly declare member `%#D' to have extern linkage",
 			    decl);
-		RIDBIT_RESET (RID_EXTERN, specbits);
+		declspecs->storage_class = sc_none;
 	      }
 	  }
       }
 
-    my_friendly_assert (!RIDBIT_SETP (RID_MUTABLE, specbits), 19990927);
-
     /* Record `register' declaration for warnings on &
        and in case doing stupid register allocation.  */
 
-    if (RIDBIT_SETP (RID_REGISTER, specbits))
+    if (declspecs->storage_class == sc_register)
       DECL_REGISTER (decl) = 1;
-
-    if (RIDBIT_SETP (RID_EXTERN, specbits))
+    else if (declspecs->storage_class == sc_extern)
       DECL_THIS_EXTERN (decl) = 1;
-
-    if (RIDBIT_SETP (RID_STATIC, specbits))
+    else if (declspecs->storage_class == sc_static)
       DECL_THIS_STATIC (decl) = 1;
 
     /* Record constancy and volatility.  There's no need to do this
@@ -8348,27 +8179,27 @@ check_default_argument (tree decl, tree arg)
    *PARMS is set to the chain of PARM_DECLs created.  */
 
 static tree
-grokparms (const cp_parameter_declarator *first_parm, tree *parms)
+grokparms (cp_parameter_declarator *first_parm, tree *parms)
 {
   tree result = NULL_TREE;
   tree decls = NULL_TREE;
   int ellipsis = !first_parm || first_parm->ellipsis_p;
-  const cp_parameter_declarator *parm;
+  cp_parameter_declarator *parm;
   int any_error = 0;
 
   for (parm = first_parm; parm != NULL; parm = parm->next)
     {
       tree type = NULL_TREE;
-      tree decl_specifiers = parm->decl_specifiers;
       tree init = parm->default_argument;
-      tree specs, attrs;
+      tree attrs;
       tree decl;
 
       if (parm == no_parameters)
         break;
 
-      split_specs_attrs (decl_specifiers, &specs, &attrs);
-      decl = grokdeclarator (parm->declarator, specs,
+      attrs = parm->decl_specifiers.attributes;
+      parm->decl_specifiers.attributes = NULL_TREE;
+      decl = grokdeclarator (parm->declarator, &parm->decl_specifiers,
 			     PARM, init != NULL_TREE, &attrs);
       if (! decl || TREE_TYPE (decl) == error_mark_node)
         continue;
@@ -10070,15 +9901,15 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
    yyparse to report a parse error.  */
 
 int
-start_function (tree declspecs, const cp_declarator *declarator,
+start_function (cp_decl_specifier_seq *declspecs, 
+		const cp_declarator *declarator,
 		tree attrs)
 {
   tree decl1;
 
   if (have_extern_spec)
     {
-      declspecs = tree_cons (NULL_TREE, get_identifier ("extern"), 
-			     declspecs);
+      declspecs->storage_class = sc_extern;
       /* This should only be done once on the outermost decl.  */
       have_extern_spec = false;
     }
@@ -10598,7 +10429,8 @@ finish_function (int flags)
    CHANGES TO CODE IN `grokfield'.  */
 
 tree
-start_method (tree declspecs, const cp_declarator *declarator, tree attrlist)
+start_method (cp_decl_specifier_seq *declspecs, 
+              const cp_declarator *declarator, tree attrlist)
 {
   tree fndecl = grokdeclarator (declarator, declspecs, MEMFUNCDEF, 0,
 				&attrlist);

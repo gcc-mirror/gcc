@@ -3082,11 +3082,6 @@ typedef enum base_kind {
 			     binfo.  */
 } base_kind;
 
-/* Set by add_implicitly_declared_members() to keep those members from
-   being flagged as deprecated or reported as using deprecated
-   types.  */
-extern int adding_implicit_members;
-
 /* in decl{2}.c */
 /* A node that is a list (length 1) of error_mark_nodes.  */
 extern GTY(()) tree error_mark_list;
@@ -3508,6 +3503,74 @@ extern GTY(()) operator_name_info_t operator_name_info
 extern GTY(()) operator_name_info_t assignment_operator_name_info
   [(int) LAST_CPLUS_TREE_CODE];
 
+/* A storage class.  */
+
+typedef enum cp_storage_class {
+  /* sc_none must be zero so that zeroing a cp_decl_specifier_seq
+     sets the storage_class field to sc_none.  */
+  sc_none = 0,
+  sc_auto,
+  sc_register,
+  sc_static,
+  sc_extern,
+  sc_mutable,
+} cp_storage_class;
+
+/* An individual decl-specifier.  */
+
+typedef enum cp_decl_spec {
+  ds_first,
+  ds_signed = ds_first,
+  ds_unsigned,
+  ds_short,
+  ds_long,
+  ds_const,
+  ds_volatile,
+  ds_restrict,
+  ds_inline,
+  ds_virtual,
+  ds_explicit,
+  ds_friend,
+  ds_typedef,
+  ds_complex,
+  ds_thread,
+  ds_last
+} cp_decl_spec;
+
+/* A decl-specifier-seq.  */
+
+typedef struct cp_decl_specifier_seq {
+  /* The number of times each of the keywords has been seen.  */
+  unsigned specs[(int) ds_last];
+  /* The primary type, if any, given by the decl-specifier-seq.
+     Modifiers, like "short", "const", and "unsigned" are not
+     reflected here.  This field will be a TYPE, unless a typedef-name
+     was used, in which case it will be a TYPE_DECL.  */
+  tree type;
+  /* The attributes, if any, provided with the specifier sequence.  */
+  tree attributes;
+  /* If non-NULL, a built-in type that the user attempted to redefine
+     to some other type.  */
+  tree redefined_builtin_type;
+  /* The storage class specified -- or sc_none if no storage class was
+     explicitly specified.  */
+  cp_storage_class storage_class;
+  /* True iff TYPE_SPEC indicates a user-defined type.  */
+  BOOL_BITFIELD user_defined_type_p : 1;
+  /* True iff multiple types were (erroneously) specified for this
+     decl-specifier-seq.  */
+  BOOL_BITFIELD multiple_types_p : 1;
+  /* True iff multiple storage classes were (erroneously) specified
+     for this decl-specifier-seq.  */
+  BOOL_BITFIELD multiple_storage_classes_p : 1;
+  /* True iff at least one decl-specifier was found.  */
+  BOOL_BITFIELD any_specifiers_p : 1;
+  /* True iff "int" was explicitly provided.  */
+  BOOL_BITFIELD explicit_int_p : 1;
+  /* True iff "char" was explicitly provided.  */
+  BOOL_BITFIELD explicit_char_p : 1;
+} cp_decl_specifier_seq;
+
 /* The various kinds of declarators.  */
 
 typedef enum cp_declarator_kind {
@@ -3531,7 +3594,7 @@ struct cp_parameter_declarator {
   /* The next parameter, or NULL_TREE if none.  */
   cp_parameter_declarator *next;
   /* The decl-specifiers-seq for the parameter.  */
-  tree decl_specifiers;
+  cp_decl_specifier_seq decl_specifiers;
   /* The declarator for the parameter.  */
   cp_declarator *declarator;
   /* The default-argument expression, or NULL_TREE, if none.  */
@@ -3735,10 +3798,10 @@ extern tree push_library_fn			(tree, tree);
 extern tree push_void_library_fn		(tree, tree);
 extern tree push_throw_library_fn		(tree, tree);
 extern int init_type_desc			(void);
-extern tree check_tag_decl			(tree);
-extern tree shadow_tag				(tree);
-extern tree groktypename			(tree, const cp_declarator *);
-extern tree start_decl				(const cp_declarator *, tree, int, tree, tree);
+extern tree check_tag_decl			(cp_decl_specifier_seq *);
+extern tree shadow_tag				(cp_decl_specifier_seq *);
+extern tree groktypename			(cp_decl_specifier_seq *, const cp_declarator *);
+extern tree start_decl				(const cp_declarator *, cp_decl_specifier_seq *, int, tree, tree);
 extern void start_decl_1			(tree);
 extern void cp_finish_decl			(tree, tree, tree, int);
 extern void finish_decl				(tree, tree, tree);
@@ -3759,11 +3822,11 @@ extern tree start_enum				(tree);
 extern void finish_enum				(tree);
 extern void build_enumerator			(tree, tree, tree);
 extern void start_preparsed_function            (tree, tree, int);
-extern int start_function			(tree, const cp_declarator *, tree);
+extern int start_function			(cp_decl_specifier_seq *, const cp_declarator *, tree);
 extern tree begin_function_body			(void);
 extern void finish_function_body		(tree);
 extern tree finish_function			(int);
-extern tree start_method			(tree, const cp_declarator *, tree);
+extern tree start_method			(cp_decl_specifier_seq *, const cp_declarator *, tree);
 extern tree finish_method			(tree);
 extern void maybe_register_incomplete_var       (tree);
 extern void complete_vars			(tree);
@@ -3804,7 +3867,6 @@ extern bool have_extern_spec;
 /* in decl2.c */
 extern bool check_java_method (tree);
 extern int grok_method_quals (tree, tree, tree);
-extern void grok_x_components (tree);
 extern void maybe_retrofit_in_chrg (tree);
 extern void maybe_make_one_only	(tree);
 extern void grokclassfn	(tree, tree, enum overload_flags, tree);
@@ -3812,8 +3874,8 @@ extern tree grok_array_decl (tree, tree);
 extern tree delete_sanity (tree, tree, bool, int);
 extern tree check_classfn (tree, tree, tree);
 extern void check_member_template (tree);
-extern tree grokfield (const cp_declarator *, tree, tree, tree, tree);
-extern tree grokbitfield (const cp_declarator *, tree, tree);
+extern tree grokfield (const cp_declarator *, cp_decl_specifier_seq *, tree, tree, tree);
+extern tree grokbitfield (const cp_declarator *, cp_decl_specifier_seq *, tree);
 extern tree groktypefield			(tree, tree);
 extern void cplus_decl_attributes (tree *, tree, int);
 extern void finish_anon_union (tree);
@@ -4157,7 +4219,6 @@ extern tree finish_template_type_parm           (tree, tree);
 extern tree finish_template_template_parm       (tree, tree);
 extern tree begin_class_definition              (tree);
 extern void finish_default_args                 (void);
-extern tree finish_member_class_template        (tree);
 extern void finish_template_decl                (tree);
 extern tree finish_template_type                (tree, tree, int);
 extern tree finish_base_specifier               (tree, tree, bool);
