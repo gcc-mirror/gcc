@@ -1750,8 +1750,7 @@ sh-*-elf* | sh[12346l]*-*-elf* | sh*-*-kaos* | \
 	sh5-64media-nofpu | sh5-64media | \
 	  sh5-32media-nofpu | sh5-32media | sh5-compact-nofpu | sh5-compact | \
 	  sh4-single-only | sh4-single | sh4-nofpu | sh4 | \
-	  sh3e | sh3 | sh2e | sh2 | sh1)
-		sh_multilibs="${sh_cpu_default},${sh_multilibs}" ;;
+	  sh3e | sh3 | sh2e | sh2 | sh1) ;;
 	"")	sh_cpu_default=${sh_cpu_target} ;;
 	*)	echo "with_cpu=$with_cpu not supported"; exit 1 ;;
 	esac
