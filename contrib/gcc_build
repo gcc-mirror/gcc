@@ -61,12 +61,14 @@ usage() {
 cat <<EOF
 gcc_build        [-c configure_options] 
 		 [-d destination_directory]
-		 [-m make_options]
+		 [-m make_boot_options]
 		 [-u username]
 		 [-p protocol]
 		 [-t tarfile]
+		 [bootstrap]
 		 [build]
 		 [checkout]
+		 [configure]
 		 [export]
 		 [install]
 		 [test]
@@ -128,9 +130,9 @@ update_gcc() {
 	error "Could not update GCC"
 }
 
-# Build GCC.
+# Configure for a build of GCC.
 
-build_gcc() {
+configure_gcc() {
     # Go to the source directory.
     changedir ${DESTINATION}
 
@@ -143,14 +145,23 @@ build_gcc() {
     changedir ${OBJDIR}
 
     # Configure the tree.
-    (eval ${DESTINATION}/configure ${CONFIGURE_OPTIONS} | 
-        tee -a ${LOGFILE}) 2>&1 || \
-	error "Could not configure GCC"
+    (eval ${DESTINATION}/configure ${CONFIGURE_OPTIONS} 2>&1 | 
+        tee -a ${LOGFILE}) || \
+	error "Could not configure the compiler"
+}
+
+# Bootstrap GCC.  Assume configuration has already occurred.
+
+bootstrap_gcc() {
+    # Go to the source directory.
+    changedir ${DESTINATION}
+    # Go to the object directory.
+    changedir ${OBJDIR}
 
     # Bootstrap the compiler
-    (eval ${MAKE} ${MAKE_OPTIONS} bootstrap 2>&1 |
+    (eval ${MAKE} ${MAKE_BOOTSTRAP_OPTIONS} bootstrap 2>&1 |
 	tee -a ${LOGFILE}) || \
-	error "Could not build GCC"
+	error "Could not bootstrap the compiler"
 }
 
 # Test GCC.
@@ -223,11 +234,12 @@ CONFIGURE_OPTIONS=
 # The `make' program.
 MAKE=${MAKE:-make}
 # Options to pass to make.
-MAKE_OPTIONS=
+MAKE_BOOTSTRAP_OPTIONS=
 
 # Modes of operation
-BUILD=0
+BOOTSTRAP=0
 CHECKOUT=0
+CONFIGURE=0
 EXPORT=0
 INSTALL=0
 TEST=0
@@ -242,7 +254,7 @@ while getopts "c:d:m:p:t:u:" ARG; do
     case $ARG in
     c)    CONFIGURE_OPTIONS="${OPTARG}";;
     d)    DESTINATION="${OPTARG}";;
-    m)    MAKE_OPTIONS="${OPTARG}";;
+    m)    MAKE_BOOTSTRAP_OPTIONS="${OPTARG}";;
     p)    CVS_PROTOCOL="${OPTARG}";;
     t)    CVS_TARGFILE="${OPTARG}";;
     u)    CVS_USERNAME="${OPTARG}";;
@@ -254,8 +266,10 @@ shift `expr ${OPTIND} - 1`
 # Handle the major modes.
 while [ $# -ne 0 ]; do
     case $1 in
-    build)    BUILD=1;;
+    bootstrap) BOOTSTRAP=1;;
+    build)    CONFIGURE=1; BOOTSTRAP=1;;
     checkout) CHECKOUT=1;;
+    configure) CONFIGURE=1;;
     export)   EXPORT=1;;
     install)  INSTALL=1;;
     test)     TEST=1;;
@@ -282,9 +296,14 @@ elif [ ${UPDATE} -ne 0 ]; then
     update_gcc
 fi
 
-# Build the compiler.
-if [ ${BUILD} -ne 0 ]; then
-    build_gcc
+# Configure to build the tree.
+if [ ${CONFIGURE} -ne 0 ]; then
+    configure_gcc
+fi
+
+# Bootstrap the compiler.
+if [ ${BOOTSTRAP} -ne 0 ]; then
+    bootstrap_gcc
 fi
 
 # Test the compiler
