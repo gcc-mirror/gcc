@@ -4595,7 +4595,7 @@ Here is an example, taken from the 68000 machine description:
   "FP_REG_P (operands[0]) && ! FP_REG_P (operands[1])"
 @{
   rtx xoperands[2];
-  xoperands[1] = gen_rtx (REG, SImode, REGNO (operands[1]) + 1);
+  xoperands[1] = gen_rtx_REG (SImode, REGNO (operands[1]) + 1);
 #ifdef MOTOROLA
   output_asm_insn ("move.l %1,(sp)", xoperands);
   output_asm_insn ("move.l %1,-(sp)", operands);

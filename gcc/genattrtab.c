@@ -549,7 +549,7 @@ attr_hash_add_string (int hashcode, char *str)
    In some cases we cannot uniquify; then we return an ordinary
    impermanent rtx with ATTR_PERMANENT_P clear.
 
-   Args are like gen_rtx, but without the mode:
+   Args are as follows:
 
    rtx attr_rtx (code, [element1, ..., elementn])  */
 

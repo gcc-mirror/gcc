@@ -1445,7 +1445,6 @@ extern rtx plus_constant_for_output_wide (rtx, HOST_WIDE_INT);
 extern void optimize_save_area_alloca (rtx);
 
 /* In emit-rtl.c */
-extern rtx gen_rtx (enum rtx_code, enum machine_mode, ...);
 extern rtvec gen_rtvec (int, ...);
 extern rtx copy_insn_1 (rtx);
 extern rtx copy_insn (rtx);
@@ -1874,8 +1873,7 @@ extern GTY(()) rtx return_address_pointer_rtx;
 
 /* There are some RTL codes that require special attention; the
    generation functions included above do the raw handling.  If you
-   add to this list, modify special_rtx in gengenrtl.c as well.  You
-   should also modify gen_rtx to use the special function.  */
+   add to this list, modify special_rtx in gengenrtl.c as well.  */
 
 extern rtx gen_rtx_CONST_INT (enum machine_mode, HOST_WIDE_INT);
 extern rtx gen_rtx_CONST_VECTOR (enum machine_mode, rtvec);
