@@ -1,3 +1,9 @@
+Sun Nov  9 01:29:55 1997  Jim Wilson  (wilson@cygnus.com)
+
+	* decl.c (add_block_current_level): Delete.
+	* init.c (build_vec_delete_1): Delete build_block and
+	add_block_current_level calls.
+
 Thu Nov  6 11:28:14 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* method.c (emit_thunk): Don't let the backend defer generic thunks.
