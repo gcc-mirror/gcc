@@ -4,11 +4,6 @@
 	* config/i386/i386.c (ix86_register_move_cost): Increase cost
 	for secondary_memory_needed pairs.
 
-2002-10-02  Matt Austern  <austern@apple.com>
-
-	* class.c (check_field_decls): Changed warning about const member
-	variables so that it doesn't get issued for a class aggregate.
-	
 2002-10-02  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* doc/vms.texi: Blow away false include file section.
@@ -27,10 +22,6 @@
 	* tree.h (enum ptrmemfunc_vbit_where_t): Move definition to
 	here from cp/cp-tree.h.
 
-2002-10-02  Matt Austern  <austern@apple.com>
-	* cp/decl.c (walk_vtables_r): Fixed typo that caused result to
-	never get a nonzero value.
-	
 Wed Oct  2 17:01:36 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (print_operand_address): Use RIP addressing for offsetted
