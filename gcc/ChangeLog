@@ -1,3 +1,15 @@
+2001-07-21 Neil Booth  <neil@daikokuya.demon.co.uk>
+	   Richard Henderson  <rth@redhat.com>
+
+	* dbxout.c (dbxout_global_decl): New.
+	(xcoff_debug_hooks, dbx_debug_hooks): Use it.
+	* sdbout.c (sdbout_finish): New.
+	(sdbout_debug_hooks): Use it, add comments.
+	(sdbout_global_decl): Defer initialised public vars to
+	sdbout_finish.
+	* varasm.c (assemble_variable): Don't output debug information
+	for file-scope variables.
+
 2001-07-21  H.J. Lu  (hjl@gnu.org)
 
 	* config/mips/mips.c (mips_cpu): Moved into ...

@@ -93,6 +93,7 @@ extern tree current_function_decl;
 #include "sdbout.h"
 
 static void sdbout_init			PARAMS ((const char *));
+static void sdbout_finish		PARAMS ((const char *));
 static void sdbout_start_source_file	PARAMS ((unsigned, const char *));
 static void sdbout_end_source_file	PARAMS ((unsigned));
 static void sdbout_begin_block		PARAMS ((unsigned, unsigned));
@@ -124,6 +125,7 @@ static void sdbout_field_types		PARAMS ((tree));
 static void sdbout_one_type		PARAMS ((tree));
 static void sdbout_parms		PARAMS ((tree));
 static void sdbout_reg_parms		PARAMS ((tree));
+static void sdbout_global_decl		PARAMS ((tree));
 
 /* Random macros describing parts of SDB data.  */
 
@@ -298,16 +300,16 @@ static struct sdb_file *current_file;
 /* The debug hooks structure.  */
 struct gcc_debug_hooks sdb_debug_hooks =
 {
-  sdbout_init,
-  debug_nothing_charstar,
-  debug_nothing_int_charstar,
-  debug_nothing_int_charstar,
-  sdbout_start_source_file,
-  sdbout_end_source_file,
-  sdbout_begin_block,
-  sdbout_end_block,
+  sdbout_init,			/* init */
+  sdbout_finish,		/* finish */
+  debug_nothing_int_charstar,	/* define */
+  debug_nothing_int_charstar,	/* undef */
+  sdbout_start_source_file,	/* start_source_file */
+  sdbout_end_source_file,	/* end_source_file */
+  sdbout_begin_block,		/* begin_block */
+  sdbout_end_block,		/* end_block */
   debug_true_tree,		/* ignore_block */
-  sdbout_source_line,
+  sdbout_source_line,		/* source_line */
 #ifdef MIPS_DEBUGGING_INFO
   /* Defer on MIPS systems so that parameter descriptions follow
      function entry.  */
@@ -317,11 +319,11 @@ struct gcc_debug_hooks sdb_debug_hooks =
   sdbout_begin_prologue,	/* begin_prologue */
   debug_nothing_int,		/* end_prologue */
 #endif
-  sdbout_end_epilogue,
-  sdbout_begin_function,
-  sdbout_end_function,
+  sdbout_end_epilogue,		/* end_epilogue */
+  sdbout_begin_function,	/* begin_function */
+  sdbout_end_function,		/* end_function */
   debug_nothing_tree,		/* function_decl */
-  sdbout_global_decl,
+  sdbout_global_decl,		/* global_decl */
   debug_nothing_tree,		/* deferred_inline_function */
   debug_nothing_tree,		/* outlining_inline_function */
   sdbout_label
@@ -1489,22 +1491,52 @@ sdbout_global_decl (decl)
      tree decl;
 {
   if (TREE_CODE (decl) == VAR_DECL
-      && DECL_INITIAL (decl)
-      && ! DECL_EXTERNAL (decl)
-      && DECL_RTL (decl) != 0)
+      && !DECL_EXTERNAL (decl)
+      && DECL_RTL_SET_P (decl))
     {
       /* The COFF linker can move initialized global vars to the end.
-	 And that can screw up the symbol ordering.  By putting the
-	 symbols in that order to begin with, we avoid a problem.
-	 mcsun!unido!fauern!tumuc!pes@uunet.uu.net.  */
-      if (TREE_PUBLIC (decl))
+	 And that can screw up the symbol ordering.  Defer those for
+	 sdbout_finish ().  */
+      if (!DECL_INITIAL (decl) || !TREE_PUBLIC (decl))
 	sdbout_symbol (decl, 0);
 
       /* Output COFF information for non-global file-scope initialized
 	 variables.  */
-      if (GET_CODE (DECL_RTL (decl)) == MEM)
+      if (DECL_INITIAL (decl) && GET_CODE (DECL_RTL (decl)) == MEM)
 	sdbout_toplevel_data (decl);
     }
+}
+
+/* Output initialized global vars at the end, in the order of
+   definition.  See comment in sdbout_global_decl.  */
+
+static void
+sdbout_finish (main_filename)
+     const char *main_filename ATTRIBUTE_UNUSED;
+{
+  tree decl = getdecls ();
+  unsigned int len = list_length (decl);
+  tree *vec = (tree *) xmalloc (sizeof (tree) * len);
+  unsigned int i;
+
+  /* Process the decls in reverse order--earliest first.  Put them
+     into VEC from back to front, then take out from front.  */
+
+  for (i = 0; i < len; i++, decl = TREE_CHAIN (decl))
+    vec[len - i - 1] = decl;
+
+  for (i = 0; i < len; i++)
+    {
+      decl = vec[i];
+      if (TREE_CODE (decl) == VAR_DECL
+	  && ! DECL_EXTERNAL (decl)
+	  && DECL_INITIAL (decl)
+	  && TREE_PUBLIC (decl)
+	  && DECL_RTL_SET_P (decl))
+	sdbout_symbol (decl, 0);
+    }
+
+  free (vec);
 }
 
 /* Describe the beginning of an internal block within a function.
