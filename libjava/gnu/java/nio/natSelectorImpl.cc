@@ -1,6 +1,6 @@
 // natSelectorImpl.cc
 
-/* Copyright (C) 2002  Free Software Foundation
+/* Copyright (C) 2002, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -14,66 +14,31 @@ details.  */
 #include <errno.h>
 #include <string.h>
 
-#if HAVE_BSTRING_H
-// Needed for bzero, implicitly used by FD_ZERO on IRIX 5.2 
-#include <bstring.h>
-#endif
-
-//#include <gcj/cni.h>
 #include <gnu/java/nio/SelectorImpl.h>
 #include <java/io/IOException.h>
 
 void
-helper_put_filedescriptors (jintArray java_fd_array, fd_set& fds, int& max_fd)
+helper_put_filedescriptors (jintArray fdArray, fd_set& fds, int& max_fd)
 {
-  int counter;
-  jint* java_fds;
+  jint* tmpFDArray = elements (fdArray);
 
-  java_fds = elements (java_fd_array);
-
-  for (counter = 0; counter < JvGetArrayLength (java_fd_array); counter++)
+  for (int index = 0; index < JvGetArrayLength (fdArray); index++)
     {
-      FD_SET (java_fds [counter], &fds);
+      FD_SET (tmpFDArray [index], &fds);
 
-      if (java_fds [counter] > max_fd)
-        {
-          max_fd = java_fds [counter];
-        }
+      if (tmpFDArray [index] > max_fd)
+        max_fd = tmpFDArray [index];
     }
 }
 
 void
-helper_get_filedescriptors (jintArray& java_fd_array, fd_set fds)
+helper_get_filedescriptors (jintArray& fdArray, fd_set fds)
 {
-  int counter;
-  int counter_fds;
-  jint* java_fds;
-  jintArray new_array_fds;
-  jint* new_data_fds;
-
-  counter_fds = 0;
-  java_fds = elements (java_fd_array);
-
-  for (counter = 0; counter < JvGetArrayLength (java_fd_array); counter++)
-    {
-      if (FD_ISSET (java_fds[counter], &fds))
-        {
-          counter_fds++;
-        }
-    }
-
-  new_array_fds = JvNewIntArray (counter_fds);
-  new_data_fds = elements (new_array_fds);
-
-  for (counter = 0; counter < JvGetArrayLength (java_fd_array); counter++)
-    {
-      if (FD_ISSET (java_fds[counter], &fds))
-        {
-          new_data_fds[counter] = java_fds[counter];
-        }      
-    }
-
-  java_fd_array = new_array_fds;
+  jint* tmpFDArray = elements (fdArray);
+  
+  for (int index = 0; index < JvGetArrayLength (fdArray); index++)
+    if (!FD_ISSET (tmpFDArray [index], &fds))
+      tmpFDArray [index] = 0;
 }
 
 jint
