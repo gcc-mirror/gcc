@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for AMD Am29000 CPU.
-   Copyright (C) 1988, 90-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1988, 90-98, 2000 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
 This file is part of GNU CC.
@@ -219,7 +219,7 @@ extern int target_flags;
 /* Set this non-zero if unaligned move instructions are extremely slow.
 
    On the 29k, they trap.  */
-#define SLOW_UNALIGNED_ACCESS 1
+#define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) 1
 
 /* Standard register usage.  */
 

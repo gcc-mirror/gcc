@@ -1,7 +1,7 @@
 /*{{{  Comment */ 
 
 /* Definitions of FR30 target. 
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
 This file is part of GNU CC.
@@ -2608,7 +2608,7 @@ do										\
    a memory access.
 
    If the value of this macro is always zero, it need not be defined.  */
-/* #define SLOW_UNALIGNED_ACCESS */
+/* #define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) */
 
 /* Define this macro to inhibit strength reduction of memory addresses.  (On
    some machines, such strength reduction seems to do harm rather than good.)  */
