@@ -1,3 +1,8 @@
+1999-09-13 12:18 -0700  Zack Weinberg  <zack@bitmover.com>
+
+	* config/i370/i370.md (mulsi, divsi, modsi anonymous insns):
+	Use DImode operation.
+
 1999-09-13 12:13 -0700  Zack Weinberg  <zack@bitmover.com>
 
 	* gcc.c: Include sys/resource.h.
