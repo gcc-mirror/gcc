@@ -1418,6 +1418,26 @@
   ""
   "andcc %1,0xff,%0"
   [(set_attr "type" "unary")])
+
+;; Similarly, handle SI->QI mode truncation followed by a compare.
+
+(define_insn ""
+  [(set (reg:CC 0)
+	(compare:CC (subreg:QI (match_operand:SI 0 "register_operand" "r") 0)
+		    (const_int 0)))]
+  ""
+  "andcc %0,0xff,%%g0"
+  [(set_attr "type" "compare")])
+
+(define_insn ""
+  [(set (reg:CC 0)
+	(compare:CC (subreg:QI (match_operand:SI 1 "register_operand" "r") 0)
+		    (const_int 0)))
+   (set (match_operand:QI 0 "register_operand" "=r")
+	(match_dup 1))]
+  ""
+  "andcc %1,0xff,%0"
+  [(set_attr "type" "unary")])
 
 ;;- sign extension instructions
 
