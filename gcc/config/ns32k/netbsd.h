@@ -105,3 +105,8 @@ Boston, MA 02111-1307, USA.
 
 #undef PCC_STATIC_STRUCT_RETURN
 #define DEFAULT_PCC_STRUCT_RETURN 0
+
+/* Until they use ELF or something that handles dwarf2 unwinds
+   and initialization stuff better.  */
+#define DWARF2_UNWIND_INFO 0
+
