@@ -4374,6 +4374,7 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 	  tree low_bound
 	    = domain ? TYPE_MIN_VALUE (domain) : integer_zero_node;
 	  tree index_type = TREE_TYPE (index);
+	  tree xindex;
 
 	  if (TYPE_PRECISION (index_type) != TYPE_PRECISION (sizetype))
 	    {
@@ -4391,21 +4392,27 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 	      index_type = TREE_TYPE (index);
 	    }
 
-	  index = fold (build (MULT_EXPR, sbitsizetype, index,
-			       convert (sbitsizetype,
-					TYPE_SIZE (TREE_TYPE (exp)))));
+	  xindex = fold (build (MULT_EXPR, sbitsizetype, index,
+			        convert (sbitsizetype,
+					 TYPE_SIZE (TREE_TYPE (exp)))));
 
-	  if (TREE_CODE (index) == INTEGER_CST
-	      && TREE_INT_CST_HIGH (index) == 0)
-	    *pbitpos += TREE_INT_CST_LOW (index);
+	  if (TREE_CODE (xindex) == INTEGER_CST
+	      && TREE_INT_CST_HIGH (xindex) == 0)
+	    *pbitpos += TREE_INT_CST_LOW (xindex);
 	  else
 	    {
-	      if (contains_placeholder_p (index))
-		index = build (WITH_RECORD_EXPR, sizetype, index, exp);
+	      /* Either the bit offset calculated above is not constant, or
+		 it overflowed.  In either case, redo the multiplication
+		 against the size in units.  This is especially important
+		 in the non-constant case to avoid a division at runtime.  */
+	      xindex = fold (build (MULT_EXPR, ssizetype, index,
+                                    convert (ssizetype,
+                                         TYPE_SIZE_UNIT (TREE_TYPE (exp)))));
 
-	      offset = size_binop (PLUS_EXPR, offset,
-				   size_binop (FLOOR_DIV_EXPR, index,
-					       size_int (BITS_PER_UNIT)));
+	      if (contains_placeholder_p (xindex))
+		xindex = build (WITH_RECORD_EXPR, sizetype, xindex, exp);
+
+	      offset = size_binop (PLUS_EXPR, offset, xindex);
 	    }
 	}
       else if (TREE_CODE (exp) != NON_LVALUE_EXPR

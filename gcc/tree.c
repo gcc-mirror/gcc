@@ -2162,16 +2162,17 @@ size_in_bytes (type)
 
   if (type == error_mark_node)
     return integer_zero_node;
+
   type = TYPE_MAIN_VARIANT (type);
-  if (TYPE_SIZE (type) == 0)
+  t = TYPE_SIZE_UNIT (type);
+  if (t == 0)
     {
       incomplete_type_error (NULL_TREE, type);
       return integer_zero_node;
     }
-  t = size_binop (CEIL_DIV_EXPR, TYPE_SIZE (type),
-		  size_int (BITS_PER_UNIT));
   if (TREE_CODE (t) == INTEGER_CST)
     force_fit_type (t, 0);
+
   return t;
 }
 
@@ -2188,16 +2189,10 @@ int_size_in_bytes (type)
     return 0;
 
   type = TYPE_MAIN_VARIANT (type);
-  if (TYPE_SIZE (type) == 0
-      || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
-    return -1;
-
-  if (TREE_INT_CST_HIGH (TYPE_SIZE (type)) == 0)
-    return ((TREE_INT_CST_LOW (TYPE_SIZE (type)) + BITS_PER_UNIT - 1)
-	  / BITS_PER_UNIT);
-
-  t = size_binop (CEIL_DIV_EXPR, TYPE_SIZE (type), size_int (BITS_PER_UNIT));
-  if (TREE_CODE (t) != INTEGER_CST || TREE_INT_CST_HIGH (t) != 0)
+  t = TYPE_SIZE_UNIT (type);
+  if (t == 0
+      || TREE_CODE (t) != INTEGER_CST
+      || TREE_INT_CST_HIGH (t) != 0)
     return -1;
 
   return TREE_INT_CST_LOW (t);
