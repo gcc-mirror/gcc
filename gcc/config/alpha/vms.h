@@ -464,7 +464,7 @@ do {									\
 }
 
 #undef LINK_SPEC
-#define LINK_SPEC "%{g3:-g3} %{g0:-g0} %{share:-share} %{v:-v}"
+#define LINK_SPEC "%{g3:-g3} %{g0:-g0} %{shared:-shared} %{v:-v}"
 
 #undef STARTFILE_SPEC
 
