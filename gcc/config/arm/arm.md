@@ -2399,6 +2399,12 @@
 	XEXP (operands[2], 0) = plus_constant (operands[3], low);
 	operands[1] = plus_constant (XEXP (operands[1], 0), offset - low);
       }
+    /* Ensure the sum is in correct canonical form */
+    else if (GET_CODE (operands[1]) == PLUS
+	     && GET_CODE (XEXP (operands[1], 1)) != CONST_INT
+	     && ! s_register_operand (XEXP (operands[1], 1), VOIDmode))
+      operands[1] = gen_rtx (PLUS, GET_MODE (operands[1]),
+			     XEXP (operands[1], 1), XEXP (operands[1], 0));
   }
 ")
 
@@ -2464,6 +2470,12 @@
 	XEXP (operands[2], 0) = plus_constant (operands[0], low);
 	operands[1] = plus_constant (XEXP (operands[1], 0), offset - low);
       }
+    /* Ensure the sum is in correct canonical form */
+    else if (GET_CODE (operands[1]) == PLUS
+	     && GET_CODE (XEXP (operands[1], 1)) != CONST_INT
+	     && ! s_register_operand (XEXP (operands[1], 1), VOIDmode))
+      operands[1] = gen_rtx (PLUS, GET_MODE (operands[1]),
+			     XEXP (operands[1], 1), XEXP (operands[1], 0));
   }
 ")
 

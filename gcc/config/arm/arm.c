@@ -55,7 +55,7 @@ static int arm_naked_function_p PROTO ((tree));
 static void init_fpa_table PROTO ((void));
 static enum machine_mode select_dominance_cc_mode PROTO ((enum rtx_code, rtx,
 							  rtx, HOST_WIDE_INT));
-static HOST_WIDE_INT add_constant PROTO ((rtx, enum machine_mode));
+static HOST_WIDE_INT add_constant PROTO ((rtx, enum machine_mode, int *));
 static void dump_table PROTO ((rtx));
 static int fixit PROTO ((rtx, enum machine_mode, int));
 static rtx find_barrier PROTO ((rtx, int));
@@ -1769,7 +1769,9 @@ bad_signed_byte_operand (op, mode)
 
   /* A sum of anything more complex than reg + reg or reg + const is bad */
   if ((GET_CODE (op) == PLUS || GET_CODE (op) == MINUS)
-      && ! s_register_operand (XEXP (op, 0), VOIDmode))
+      && (! s_register_operand (XEXP (op, 0), VOIDmode)
+	  || (! s_register_operand (XEXP (op, 1), VOIDmode)
+	      && GET_CODE (XEXP (op, 1)) != CONST_INT)))
     return 1;
 
   /* Big constants are also bad */
@@ -3446,18 +3448,30 @@ static pool_node pool_vector[MAX_POOL_SIZE];
 static int pool_size;
 static rtx pool_vector_label;
 
-/* Add a constant to the pool and return its label.  */
+/* Add a constant to the pool and return its offset within the current
+   pool.
+
+   X is the rtx we want to replace. MODE is its mode.  On return,
+   ADDRESS_ONLY will be non-zero if we really want the address of such
+   a constant, not the constant itself.  */
 static HOST_WIDE_INT
-add_constant (x, mode)
+add_constant (x, mode, address_only)
      rtx x;
      enum machine_mode mode;
+     int *address_only;
 {
   int i;
   HOST_WIDE_INT offset;
 
+  *address_only = 0;
   if (mode == SImode && GET_CODE (x) == MEM && CONSTANT_P (XEXP (x, 0))
       && CONSTANT_POOL_ADDRESS_P (XEXP (x, 0)))
     x = get_pool_constant (XEXP (x, 0));
+  else if (GET_CODE (x) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P(x))
+    {
+      *address_only = 1;
+      x = get_pool_constant (x);
+    }
 #ifndef AOF_ASSEMBLER
   else if (GET_CODE (x) == UNSPEC && XINT (x, 1) == 3)
     x = XVECEXP (x, 0, 0);
@@ -3709,6 +3723,7 @@ arm_reorg (first)
 		  rtx newsrc;
 		  rtx addr;
 		  int scratch;
+		  int address_only;
 
 		  /* If this is an HImode constant load, convert it into
 		     an SImode constant load.  Since the register is always
@@ -3722,39 +3737,50 @@ arm_reorg (first)
 		      PUT_MODE (dst, SImode);
 		    }
 
-		  offset = add_constant (src, mode);
+		  offset = add_constant (src, mode, &address_only);
 		  addr = plus_constant (gen_rtx (LABEL_REF, VOIDmode,
 						 pool_vector_label),
 					offset);
 
-		  /* For wide moves to integer regs we need to split the
-		     address calculation off into a separate insn, so that
-		     the load can then be done with a load-multiple.  This is
-		     safe, since we have already noted the length of such
-		     insns to be 8, and we are immediately over-writing the
-		     scratch we have grabbed with the final result.  */
-		  if (GET_MODE_SIZE (mode) > 4
+		  /* If we only want the address of the pool entry, or
+		     for wide moves to integer regs we need to split
+		     the address calculation off into a separate insn.
+		     If necessary, the load can then be done with a
+		     load-multiple.  This is safe, since we have
+		     already noted the length of such insns to be 8,
+		     and we are immediately over-writing the scratch
+		     we have grabbed with the final result.  */
+		  if ((address_only || GET_MODE_SIZE (mode) > 4)
 		      && (scratch = REGNO (dst)) < 16)
 		    {
-		      rtx reg = gen_rtx (REG, SImode, scratch);
+		      rtx reg;
+
+		      if (mode == SImode)
+			reg = dst;
+		      else 
+			reg = gen_rtx (REG, SImode, scratch);
+
 		      newinsn = emit_insn_after (gen_movaddr (reg, addr),
 						 newinsn);
 		      addr = reg;
 		    }
 
-		  newsrc = gen_rtx (MEM, mode, addr);
+		  if (! address_only)
+		    {
+		      newsrc = gen_rtx (MEM, mode, addr);
 
-		  /* Build a jump insn wrapper around the move instead
-		     of an ordinary insn, because we want to have room for
-		     the target label rtx in fld[7], which an ordinary
-		     insn doesn't have. */
-		  newinsn = emit_jump_insn_after (gen_rtx (SET, VOIDmode,
-							   dst, newsrc),
-						  newinsn);
-		  JUMP_LABEL (newinsn) = pool_vector_label;
+		      /* XXX Fixme -- I think the following is bogus.  */
+		      /* Build a jump insn wrapper around the move instead
+			 of an ordinary insn, because we want to have room for
+			 the target label rtx in fld[7], which an ordinary
+			 insn doesn't have. */
+		      newinsn = emit_jump_insn_after
+			(gen_rtx (SET, VOIDmode, dst, newsrc), newinsn);
+		      JUMP_LABEL (newinsn) = pool_vector_label;
 
-		  /* But it's still an ordinary insn */
-		  PUT_CODE (newinsn, INSN);
+		      /* But it's still an ordinary insn */
+		      PUT_CODE (newinsn, INSN);
+		    }
 
 		  /* Kill old insn */
 		  delete_insn (scan);

@@ -1,3 +1,15 @@
+Fri Oct  2 01:20:04 1998  Richard Earnshaw (rearnsha@arm.com)
+
+	* arm.c (add_constant): New parameter address_only, change caller.
+	Set it non-zero if taking the address of an item in the pool.
+	(arm_reorg): Handle cases where we need the address of an item in
+	the pool.
+
+	* arm.c (bad_signed_byte_operand): Check both arms of a sum in
+	a memory address.
+	* arm.md (splits for *extendqihi_insn and *extendqisi_insn): Handle
+	memory addresses that are not in standard canonical form.
+
 Fri Oct  2 01:16:02 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* reg-stack.c (straighten_stack): Do nothing if the virtual stack is
