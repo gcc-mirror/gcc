@@ -358,11 +358,10 @@ do { text_section ();							\
 #undef USE_COMMON_FOR_ONE_ONLY
 #define USE_COMMON_FOR_ONE_ONLY 0
 
-/* The Darwin linker doesn't like explicit template instantiations to be
-   coalesced, because it doesn't want coalesced symbols to appear in
+/* The Darwin linker doesn't want coalesced symbols to appear in
    a static archive's table of contents. */
-#undef TARGET_EXPLICIT_INSTANTIATIONS_ONE_ONLY
-#define TARGET_EXPLICIT_INSTANTIATIONS_ONE_ONLY 0
+#undef TARGET_WEAK_NOT_IN_ARCHIVE_TOC
+#define TARGET_WEAK_NOT_IN_ARCHIVE_TOC 1
 
 /* We make exception information linkonce. */
 #undef TARGET_USES_WEAK_UNWIND_INFO

@@ -1,3 +1,10 @@
+2004-06-03  Matt Austern  <austern@apple.com>
+
+	PR c++/15428
+	* decl2.c (maybe_emit_vtables): If TARGET_WEAK_NOT_IN_ARCHIVE_TOC
+	is nonzero, and if we see a noninline definition of a key method,
+	make the vtables nonweak.
+	
 2004-06-02  Matt Austern  <austern@apple.com>
 
 	* cp-tree.h (instantiate_decl): new boolean parameter,
