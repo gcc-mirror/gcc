@@ -635,11 +635,11 @@ while (0)
 
 /* Like `CALL_USED_REGISTERS' but used to overcome a historical 
    problem which makes CALL_USED_REGISTERS *always* include
-   all the FIXED_REGISTERS. Until this problem has been 
+   all the FIXED_REGISTERS.  Until this problem has been 
    resolved this macro can be used to overcome this situation.
    In particular, block_propagate() requires this list 
    be acurate, or we can remove registers which should be live.  
-   This macro is used in regs_invalidated_by_call ()*/
+   This macro is used in regs_invalidated_by_call.  */
 
 #define CALL_REALLY_USED_REGISTERS \
 { /* General registers.  */				\
@@ -668,7 +668,7 @@ while (0)
   /* Branch registers.  */				\
   1, 0, 0, 0, 0, 0, 1, 1,				\
   /*FP RA CCV UNAT PFS LC EC */				\
-     0, 0,  1,   1,  1, 0, 0				\
+     0, 0,  1,   0,  1, 0, 0				\
 }
 
 
@@ -2667,6 +2667,7 @@ do {									\
 { "condop_operator", {PLUS, MINUS, IOR, XOR, AND}},			\
 { "ar_lc_reg_operand", {REG}},						\
 { "ar_ccv_reg_operand", {REG}},						\
+{ "ar_pfs_reg_operand", {REG}},						\
 { "general_tfmode_operand", {SUBREG, REG, CONST_DOUBLE, MEM}},		\
 { "destination_tfmode_operand", {SUBREG, REG, MEM}},			\
 { "tfreg_or_fp01_operand", {REG, CONST_DOUBLE}},

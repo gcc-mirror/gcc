@@ -62,6 +62,7 @@ extern int not_postinc_memory_operand PARAMS((rtx, enum machine_mode));
 extern int predicate_operator PARAMS((rtx, enum machine_mode));
 extern int ar_lc_reg_operand PARAMS((rtx, enum machine_mode));
 extern int ar_ccv_reg_operand PARAMS((rtx, enum machine_mode));
+extern int ar_pfs_reg_operand PARAMS((rtx, enum machine_mode));
 extern int general_tfmode_operand PARAMS((rtx, enum machine_mode));
 extern int destination_tfmode_operand PARAMS((rtx, enum machine_mode));
 extern int tfreg_or_fp01_operand PARAMS((rtx, enum machine_mode));
