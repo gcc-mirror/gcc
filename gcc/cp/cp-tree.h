@@ -3533,6 +3533,7 @@ extern int current_lang_depth			PARAMS ((void));
 extern void push_lang_context			PARAMS ((tree));
 extern void pop_lang_context			PARAMS ((void));
 extern tree instantiate_type			PARAMS ((tree, tree, enum instantiate_type_flags));
+extern void print_class_statistics              PARAMS ((void));
 extern void cxx_print_statistics		PARAMS ((void));
 extern void cxx_print_xnode			PARAMS ((FILE *, tree, int));
 extern void cxx_print_decl			PARAMS ((FILE *, tree, int));

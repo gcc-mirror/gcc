@@ -1,3 +1,7 @@
+2001-11-16  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cp-tree.h (print_class_statistics): Restore.
+
 2001-11-15  Jason Merrill  <jason@redhat.com>
 
 	* method.c (use_thunk): Don't emit debugging information for thunks.
