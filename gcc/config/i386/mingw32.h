@@ -57,9 +57,6 @@ Boston, MA 02111-1307, USA. */
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{dll:dllcrt1%O%s} %{!dll:crt1%O%s}"
 
-#undef PATH_SEPARATOR
-#define PATH_SEPARATOR ';'
-
 /* Output STRING, a string representing a filename, to FILE.  We canonicalize
    it to be in MS-DOS format.  */
 #define OUTPUT_QUOTED_STRING(FILE, STRING) \
