@@ -1,3 +1,8 @@
+2000-02-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* integrate.c (copy_decl_for_inlining): Preserve TREE_ADDRESSABLE
+	when copying a PARM_DECL or RESULT_DECL.
+
 2000-02-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fix-header.c (recognized_function): Also fix prototypes for
