@@ -1469,7 +1469,7 @@ cse.o : cse.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h flags.h \
 gcse.o : gcse.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h flags.h \
    real.h insn-config.h $(RECOG_H) $(EXPR_H) $(BASIC_BLOCK_H) output.h
 profile.o : profile.c $(CONFIG_H) system.h $(RTL_H) flags.h insn-flags.h \
-   gcov-io.h $(TREE_H) output.h $(REGS_H) toplev.h
+   gcov-io.h $(TREE_H) output.h $(REGS_H) toplev.h insn-config.h
 loop.o : loop.c $(CONFIG_H) system.h $(RTL_H) flags.h loop.h insn-config.h \
    insn-flags.h $(REGS_H) hard-reg-set.h $(RECOG_H) $(EXPR_H) real.h \
    toplev.h
