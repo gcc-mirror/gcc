@@ -1,3 +1,18 @@
+2005-04-06  Geoffrey Keating  <geoffk@apple.com>
+
+	* config.host: Add a section for generic hosts, and a subsection
+	for Darwin.  Add a case for x86-darwin.  Update ppc-darwin case.
+	* config/host-darwin.c: New, split out of config/rs6000/host-darwin.c.
+	* config/host-darwin.h: New.
+	* config/x-darwin: New.
+	* config/i386/host-i386-darwin.c: New.
+	* config/i386/x-darwin: New.
+	* config/rs6000/host-darwin.c: Include host-darwin.h.
+	(darwin_rs6000_gt_pch_get_address): Move to config/host-darwin.c.
+	(darwin_rs6000_gt_pch_use_address): Likewise.
+	* config/rs6000/x-darwin: Change name of .o built, update
+	dependencies for changes to rs6000/host-darwin.c.
+
 2005-04-06  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
 	PR target/17824

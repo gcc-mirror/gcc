@@ -1,5 +1,5 @@
 /* Darwin/powerpc host-specific hook definitions.
-   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -23,11 +23,11 @@
 #include "coretypes.h"
 #include <signal.h>
 #include <sys/ucontext.h>
-#include <sys/mman.h>
 #include "hosthooks.h"
 #include "hosthooks-def.h"
 #include "toplev.h"
 #include "diagnostic.h"
+#include "config/host-darwin.h"
 
 static void segv_crash_handler (int);
 static void segv_handler (int, siginfo_t *, void *);
@@ -135,66 +135,6 @@ darwin_rs6000_extra_signals (void)
   sact.sa_sigaction = segv_handler;
   if (sigaction (SIGSEGV, &sact, 0) < 0) 
     fatal_error ("While setting up signal handler: %m");
-}
-
-#undef HOST_HOOKS_GT_PCH_GET_ADDRESS
-#define HOST_HOOKS_GT_PCH_GET_ADDRESS darwin_rs6000_gt_pch_get_address
-#undef HOST_HOOKS_GT_PCH_USE_ADDRESS
-#define HOST_HOOKS_GT_PCH_USE_ADDRESS darwin_rs6000_gt_pch_use_address
-
-/* Yes, this is really supposed to work.  */
-static char pch_address_space[1024*1024*1024] __attribute__((aligned (4096)));
-
-/* Return the address of the PCH address space, if the PCH will fit in it.  */
-
-static void *
-darwin_rs6000_gt_pch_get_address (size_t sz, int fd ATTRIBUTE_UNUSED)
-{
-  if (sz <= sizeof (pch_address_space))
-    return pch_address_space;
-  else
-    return NULL;
-}
-
-/* Check ADDR and SZ for validity, and deallocate (using munmap) that part of
-   pch_address_space beyond SZ.  */
-
-static int
-darwin_rs6000_gt_pch_use_address (void *addr, size_t sz, int fd, size_t off)
-{
-  const size_t pagesize = getpagesize();
-  void *mmap_result;
-  int ret;
-
-  if ((size_t)pch_address_space % pagesize != 0
-      || sizeof (pch_address_space) % pagesize != 0)
-    abort ();
-  
-  ret = (addr == pch_address_space && sz <= sizeof (pch_address_space));
-  if (! ret)
-    sz = 0;
-
-  /* Round the size to a whole page size.  Normally this is a no-op.  */
-  sz = (sz + pagesize - 1) / pagesize * pagesize;
-
-  if (munmap (pch_address_space + sz, sizeof (pch_address_space) - sz) != 0)
-    fatal_error ("couldn't unmap pch_address_space: %m\n");
-
-  if (ret)
-    {
-      mmap_result = mmap (addr, sz,
-			  PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_FIXED,
-			  fd, off);
-
-      /* The file might not be mmap-able.  */
-      ret = mmap_result != (void *) MAP_FAILED;
-
-      /* Sanity check for broken MAP_FIXED.  */
-      if (ret && mmap_result != addr)
-	abort ();
-    }
-
-  return ret;
 }
 
 
