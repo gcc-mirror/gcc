@@ -140,7 +140,7 @@ sparc_override_options ()
     char *name;
   } cpu_default[] = {
     { TARGET_CPU_sparc, "cypress" },
-    { TARGET_CPU_sparclet, "90c701" },
+    { TARGET_CPU_sparclet, "tsc701" },
     { TARGET_CPU_sparclite, "f930" },
     { TARGET_CPU_sparc64, "ultrasparc" },
     { 0 }
@@ -165,7 +165,7 @@ sparc_override_options ()
     { "f934",       PROCESSOR_F934, MASK_ISA, MASK_SPARCLITE|MASK_FPU },
     { "sparclet",   PROCESSOR_SPARCLET, MASK_ISA, MASK_SPARCLET },
     /* TEMIC sparclet */
-    { "90c701",     PROCESSOR_90C701, MASK_ISA, MASK_SPARCLET },
+    { "tsc701",     PROCESSOR_TSC701, MASK_ISA, MASK_SPARCLET },
     /* "v9" is used to specify a true 64 bit architecture.
        "v8plus" is what Sun calls Solaris2 running on UltraSPARC's.  */
     { "v8plus",     PROCESSOR_V8PLUS, MASK_ISA, MASK_V9 },
@@ -1108,6 +1108,10 @@ eligible_for_epilogue_delay (trial, slot)
 	return (get_attr_in_uncond_branch_delay (trial) == IN_BRANCH_DELAY_TRUE);
       return 0;
     }
+  /* If only trivial `restore' insns work, nothing can go in the
+     delay slot.  */
+  else if (TARGET_BROKEN_SAVERESTORE)
+    return 0;
 
   pat = PATTERN (trial);
 
@@ -3076,34 +3080,43 @@ output_function_prologue (file, size, leaf_function)
 
   if (actual_fsize == 0)
     /* do nothing.  */ ;
-  else if (actual_fsize <= 4096)
+  else if (! leaf_function && ! TARGET_BROKEN_SAVERESTORE)
     {
-      if (! leaf_function)
+      if (actual_fsize <= 4096)
 	fprintf (file, "\tsave %%sp,-%d,%%sp\n", actual_fsize);
-      else
-	fprintf (file, "\tadd %%sp,-%d,%%sp\n", actual_fsize);
-    }
-  else if (actual_fsize <= 8192)
-    {
-      /* For frames in the range 4097..8192, we can use just two insns.  */
-      if (! leaf_function)
+      else if (actual_fsize <= 8192)
 	{
 	  fprintf (file, "\tsave %%sp,-4096,%%sp\n");
 	  fprintf (file, "\tadd %%sp,-%d,%%sp\n", actual_fsize - 4096);
 	}
       else
 	{
-	  fprintf (file, "\tadd %%sp,-4096,%%sp\n");
-	  fprintf (file, "\tadd %%sp,-%d,%%sp\n", actual_fsize - 4096);
+	  build_big_number (file, -actual_fsize, "%g1");
+	  fprintf (file, "\tsave %%sp,%%g1,%%sp\n");
 	}
     }
   else
     {
-      build_big_number (file, -actual_fsize, "%g1");
-      if (! leaf_function)
-	fprintf (file, "\tsave %%sp,%%g1,%%sp\n");
+      /* If the target has a broken save insn (only handles save %g0,%g0,%g0),
+	 do the save and then handle like a leaf function.
+	 We assume the environment will properly handle or otherwise avoid
+	 trouble associated with an interrupt occuring after the `save' or
+	 trap occuring during it.  */
+      if (TARGET_BROKEN_SAVERESTORE)
+	fprintf (file, "\tsave\n");
+
+      if (actual_fsize <= 4096)
+	fprintf (file, "\tadd %%sp,-%d,%%sp\n", actual_fsize);
+      else if (actual_fsize <= 8192)
+	{
+	  fprintf (file, "\tadd %%sp,-4096,%%sp\n");
+	  fprintf (file, "\tadd %%sp,-%d,%%sp\n", actual_fsize - 4096);
+	}
       else
-	fprintf (file, "\tadd %%sp,%%g1,%%sp\n");
+	{
+	  build_big_number (file, -actual_fsize, "%g1");
+	  fprintf (file, "\tadd %%sp,%%g1,%%sp\n");
+	}
     }
 
   /* If doing anything with PIC, do it now.  */
