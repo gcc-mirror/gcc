@@ -1453,11 +1453,15 @@ restart:
   match_namelist_name(ioparm.namelist_name, ioparm.namelist_name_len);
 
   /* Ready to read namelist elements */
-  for (;;)
+  while (!input_complete)
     {
       c = next_char ();
       switch (c)
         {
+        case '/':
+          input_complete = 1;
+          next_record (0);
+          break;
         case '&':
           match_namelist_name("end",3);
           return;
@@ -1475,7 +1479,7 @@ restart:
           name_matched = 1;
           nl = find_nml_node (saved_string);
           if (nl == NULL)
-            internal_error ("Can not found a valid namelist var!");
+            internal_error ("Can not match a namelist variable");
           free_saved();
 
           len = nl->len;
@@ -1528,7 +1532,7 @@ restart:
           break;
 
         default :
-          push_char(c);
+          push_char(tolower(c));
           break;
         }
    }

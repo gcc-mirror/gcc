@@ -1,3 +1,9 @@
+2004-08-10  Victor Leikehman  <lei@il.ibm.com>
+
+	* io/list_read.c (namelist_read): Convert variable names
+	to lower case, so that mixed-case names are recognized.
+	Don't read beyond terminating slash.
+
 2004-08-09  Richard Henderson  <rth@redhat.com>
 	    Roger Sayle  <roger@eyesopen.com>
 
