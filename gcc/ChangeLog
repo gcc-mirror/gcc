@@ -1,3 +1,12 @@
+2000-08-28  Jason Merrill  <jason@redhat.com>
+
+	* dwarf2out.c (attr_checksum): Also ignore DW_AT_producer.
+
+2000-08-28  Daniel Berlin  <dberlin@redhat.com>
+
+	* dwarf2out.c (dwarf2out_finish): Don't bother calling
+	break_out_includes if it won't do anything.
+
 2000-08-28  Richard Henderson  <rth@cygnus.com>
 
 	* reload.c (push_secondary_reload): Revert 2000-08-16 change.
@@ -29,7 +38,55 @@
 	* md.texi: Update constraints documentation.
 	* tm.texi (EXTRA_CONSTRAINT): Update.
 
+2000-08-28  Daniel Berlin  <dberlin@redhat.com>
+
+	* dwarf2out.c (DIE_LABEL_PREFIX): Remove leading "__".
+	(print_die): If we don't know the offset of the
+	target die, try the symbol.  Add a trailing newline.
+	(reverse_all_dies): New fn.
+	(dwarf2out_finish): Call it.
+	(break_out_includes): Reorganize for clarity.
+	(add_sibling_attributes): Don't call reverse_die_lists.
+	(output_comp_unit): Rename from output_comdat_comp_unit.  Use for
+	primary CU, too.
+	* flags.h: Add flag_eliminate_dwarf2_dups.
+	* toplev.c (f_options): Support -feliminate-dwarf2-dups.
+
 2000-08-28  Jason Merrill  <jason@redhat.com>
+
+	* dwarf2.h (DW_TAG_GNU_BINCL, DW_TAG_GNU_EINCL): New tags.
+	* dwarf2out.c: #include "md5.h".
+	(DIE_LABEL_PREFIX): New macro.
+	(dw_val_struct): Add 'external' flag to val_die_ref.
+	(add_AT_die_ref, AT_ref): Adjust.
+	(AT_ref_external, set_AT_ref_external): New fns.
+	(build_abbrev_table): Call set_AT_ref_external.
+	(value_format): Call AT_ref_external.
+	(die_struct): Add die_symbol field.
+	(new_die): Clear it.
+	(dwarf_tag_name): Handle BINCL/EINCL.
+	(dwarf2out_start_source_file): Add BINCL DIE.
+	(dwarf2out_end_source_file): Add EINCL DIE.
+	(push_new_compile_unit, pop_compile_unit, clear_die_sizes): New fns.
+	(loc_checksum, attr_checksum, die_checksum): New fns.
+	(is_type_die, is_comdat_die, is_symbol_die): New fns.
+	(compute_section_prefix, assign_symbol_names): New fns.
+	(gen_internal_sym, output_die_symbol, output_symbolic_ref): New fns.
+	(output_die): Call output_die_symbol and AT_ref_external.
+	(output_comdat_comp_unit): New fn, split out from...
+	(dwarf2out_finish): ...here.  Also call add_sibling_attributes for 
+	secondary CUs.
+	(output_pubnames, output_aranges): Abort if we see entries from
+	secondary CUs.
+	* toplev.h: Declare file_name_nondirectory.
+	* toplev.c (file_name_nondirectory): New fn, moved from C++ frontend.
+	(rest_of_type_compilation): Call dwarf2out_decl if at toplevel.
+	(debug_start_source_file): Call dwarf2out_start_source_file
+	regardless of debug verbosity.
+	(debug_end_source_file): Similarly.
+	* tree.h: Declare clean_symbol_name.
+	* tree.c (clean_symbol_name): Split out from...
+	(get_file_function_name_long): ...here.
 
 	* dwarf2out.c (new_loc_descr): Use calloc.
 	(splice_child_die): Remove the die from the right parent.

@@ -5054,7 +5054,10 @@ attr_checksum (at, ctx)
   PROCESS (at->dw_attr);
 
   /* We don't care about differences in file numbering.  */
-  if (at->dw_attr == DW_AT_decl_file)
+  if (at->dw_attr == DW_AT_decl_file
+      /* Or that this was compiled with a different compiler snapshot; if
+	 the output is the same, that's what matters.  */
+      || at->dw_attr == DW_AT_producer)
     return;
 
   switch (AT_class (at))
@@ -10841,7 +10844,8 @@ dwarf2out_finish ()
 
   /* Generate separate CUs for each of the include files we've seen.
      They will go into limbo_die_list.  */
-  break_out_includes (comp_unit_die);
+  if (flag_eliminate_dwarf2_dups)
+    break_out_includes (comp_unit_die);
 
   /* Traverse the DIE's and add add sibling attributes to those DIE's
      that have children.  */
