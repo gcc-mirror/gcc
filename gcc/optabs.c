@@ -569,6 +569,220 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
       return target;
     }
 
+  /* Synthesize double word shifts from single word shifts.  */
+  if ((binoptab == lshl_optab || binoptab == lshr_optab
+       || binoptab == ashl_optab || binoptab == ashr_optab)
+      && class == MODE_INT
+      && GET_CODE (op1) == CONST_INT
+      && GET_MODE_SIZE (mode) == 2 * UNITS_PER_WORD
+      && binoptab->handlers[(int) word_mode].insn_code != CODE_FOR_nothing
+      && ashl_optab->handlers[(int) word_mode].insn_code != CODE_FOR_nothing
+      && lshr_optab->handlers[(int) word_mode].insn_code != CODE_FOR_nothing)
+    {
+      rtx insns, equiv_value;
+      rtx into_target, outof_target;
+      rtx into_input, outof_input;
+      int shift_count, left_shift, outof_word;
+
+      /* If TARGET is the same as one of the operands, the REG_EQUAL note
+	 won't be accurate, so use a new target.  */
+      if (target == 0 || target == op0 || target == op1)
+	target = gen_reg_rtx (mode);
+
+      start_sequence ();
+
+      shift_count = INTVAL (op1);
+
+      /* OUTOF_* is the word we are shifting bits away from, and
+	 INTO_* is the word that we are shifting bits towards, thus
+	 they differ depending on the direction of the shift and
+	 WORDS_BIG_ENDIAN.  */
+
+      left_shift = (binoptab == ashl_optab || binoptab == lshl_optab);
+      outof_word = left_shift ^ ! WORDS_BIG_ENDIAN;
+
+      outof_target = operand_subword (target, outof_word, 1, mode);
+      into_target = operand_subword (target, 1 - outof_word, 1, mode);
+
+      outof_input = operand_subword_force (op0, outof_word, mode);
+      into_input = operand_subword_force (op0, 1 - outof_word, mode);
+
+      if (shift_count >= BITS_PER_WORD)
+	{
+	  emit_move_insn (into_target,
+			  expand_binop (word_mode, binoptab,
+					outof_input,
+					GEN_INT (shift_count - BITS_PER_WORD),
+					into_target, unsignedp, methods));
+
+	  /* For a signed right shift, we must fill the word we are shifting
+	     out of with copies of the sign bit.  Otherwise it is zeroed.  */
+	  if (binoptab != ashr_optab)
+	    emit_move_insn (outof_target, CONST0_RTX (word_mode));
+	  else
+	    emit_move_insn (outof_target,
+			    expand_binop (word_mode, binoptab,
+					  outof_input,
+					  GEN_INT (BITS_PER_WORD - 1),
+					  outof_target, unsignedp, methods));
+	}
+      else
+	{
+	  rtx carries, into_temp;
+	  optab reverse_unsigned_shift, unsigned_shift;
+
+	  /* For a shift of less then BITS_PER_WORD, to compute the carry,
+	     we must do a logical shift in the opposite direction of the
+	     desired shift.  */
+
+	  /* We use ashl_optab instead of lshl_optab, because ashl is
+	     guaranteed to exist, but lshl may or may not exist.  */
+
+	  reverse_unsigned_shift = (left_shift ? lshr_optab : ashl_optab);
+
+	  /* For a shift of less than BITS_PER_WORD, to compute the word
+	     shifted towards, we need to unsigned shift the orig value of
+	     that word.  */
+
+	  unsigned_shift = (left_shift ? ashl_optab : lshr_optab);
+
+	  carries = expand_binop (word_mode, reverse_unsigned_shift,
+				  outof_input,
+				  GEN_INT (BITS_PER_WORD - shift_count),
+				  0, unsignedp, methods);
+
+	  emit_move_insn (outof_target,
+			  expand_binop (word_mode, binoptab,
+					outof_input,
+					op1, outof_target, unsignedp, methods));
+	  into_temp = expand_binop (word_mode, unsigned_shift,
+				    into_input,
+				    op1, 0, unsignedp, methods);
+
+	  emit_move_insn (into_target,
+			  expand_binop (word_mode, ior_optab,
+					carries, into_temp,
+					into_target, unsignedp, methods));
+	}
+
+      insns = get_insns ();
+      end_sequence ();
+
+      if (binoptab->code != UNKNOWN)
+	equiv_value = gen_rtx (binoptab->code, mode, op0, op1);
+      else
+	equiv_value = 0;
+
+      emit_no_conflict_block (insns, target, op0, op1, equiv_value);
+      return target;
+    }
+
+  /* Synthesize double word rotates from single word shifts.  */
+  if ((binoptab == rotl_optab || binoptab == rotr_optab)
+      && class == MODE_INT
+      && GET_CODE (op1) == CONST_INT
+      && GET_MODE_SIZE (mode) == 2 * UNITS_PER_WORD
+      && ashl_optab->handlers[(int) word_mode].insn_code != CODE_FOR_nothing
+      && lshr_optab->handlers[(int) word_mode].insn_code != CODE_FOR_nothing)
+    {
+      rtx insns, equiv_value;
+      rtx into_target, outof_target;
+      rtx into_input, outof_input;
+      int shift_count, left_shift, outof_word;
+
+      /* If TARGET is the same as one of the operands, the REG_EQUAL note
+	 won't be accurate, so use a new target.  */
+      if (target == 0 || target == op0 || target == op1)
+	target = gen_reg_rtx (mode);
+
+      start_sequence ();
+
+      shift_count = INTVAL (op1);
+
+      /* OUTOF_* is the word we are shifting bits away from, and
+	 INTO_* is the word that we are shifting bits towards, thus
+	 they differ depending on the direction of the shift and
+	 WORDS_BIG_ENDIAN.  */
+
+      left_shift = (binoptab == rotl_optab);
+      outof_word = left_shift ^ ! WORDS_BIG_ENDIAN;
+
+      outof_target = operand_subword (target, outof_word, 1, mode);
+      into_target = operand_subword (target, 1 - outof_word, 1, mode);
+
+      outof_input = operand_subword_force (op0, outof_word, mode);
+      into_input = operand_subword_force (op0, 1 - outof_word, mode);
+
+      if (shift_count == BITS_PER_WORD)
+	{
+	  /* This is just a word swap.  */
+	  emit_move_insn (outof_target, into_input);
+	  emit_move_insn (into_target, outof_input);
+	}
+      else
+	{
+	  rtx into_temp1, into_temp2, outof_temp1, outof_temp2;
+	  rtx first_shift_count, second_shift_count;
+	  optab reverse_unsigned_shift, unsigned_shift;
+
+	  reverse_unsigned_shift = (left_shift ^ (shift_count < BITS_PER_WORD)
+				    ? lshr_optab : ashl_optab);
+
+	  unsigned_shift = (left_shift ^ (shift_count < BITS_PER_WORD)
+			    ? ashl_optab : lshr_optab);
+
+	  if (shift_count > BITS_PER_WORD)
+	    {
+	      first_shift_count = GEN_INT (shift_count - BITS_PER_WORD);
+	      second_shift_count = GEN_INT (2*BITS_PER_WORD - shift_count);
+	    }
+	  else
+	    {
+	      first_shift_count = GEN_INT (BITS_PER_WORD - shift_count);
+	      second_shift_count = GEN_INT (shift_count);
+	    }
+
+	  into_temp1 = expand_binop (word_mode, unsigned_shift,
+				     outof_input, first_shift_count,
+				     0, unsignedp, methods);
+	  into_temp2 = expand_binop (word_mode, reverse_unsigned_shift,
+				     into_input, second_shift_count,
+				     into_target, unsignedp, methods);
+	  emit_move_insn (into_target,
+			  expand_binop (word_mode, ior_optab,
+					into_temp1, into_temp2,
+					into_target, unsignedp, methods));
+
+	  outof_temp1 = expand_binop (word_mode, unsigned_shift,
+				      into_input, first_shift_count,
+				      0, unsignedp, methods);
+	  outof_temp2 = expand_binop (word_mode, reverse_unsigned_shift,
+				      outof_input, second_shift_count,
+				      outof_target, unsignedp, methods);
+	  emit_move_insn (outof_target,
+			  expand_binop (word_mode, ior_optab,
+					outof_temp1, outof_temp2,
+					outof_target, unsignedp, methods));
+	}
+
+      insns = get_insns ();
+      end_sequence ();
+
+      if (binoptab->code != UNKNOWN)
+	equiv_value = gen_rtx (binoptab->code, mode, op0, op1);
+      else
+	equiv_value = 0;
+
+      /* We can't make this a no conflict block if this is a word swap,
+	 because the word swap case fails if the input and output values
+	 are in the same register.  */
+      if (shift_count != BITS_PER_WORD)
+	emit_no_conflict_block (insns, target, op0, op1, equiv_value);
+      else
+	emit_insns (insns);
+      return target;
+    }
+
   /* These can be done a word at a time by propagating carries.  */
   if ((binoptab == add_optab || binoptab == sub_optab)
       && class == MODE_INT
