@@ -48,6 +48,32 @@ int main()
       || sizeof (double) != sizeof (ull))
     exit (0);
   
+#if (defined __arm__ || defined __thumb__) && ! defined __ARMEB__
+  /* The ARM always stores FP numbers in big-wordian format,
+     even when running in little-byteian mode.  */
+  c(0x00000000369000000LL, 0x00000000U);
+  c(0x0000000136900000ULL, 0x00000001U);
+  c(0xffffffff369fffffULL, 0x00000001U);
+  c(0x0000000036A00000ULL, 0x00000001U);
+  c(0xffffffff36A7ffffULL, 0x00000001U);
+  c(0x0000000036A80000ULL, 0x00000002U);
+  c(0xffffffff36AfffffULL, 0x00000002U);
+  c(0x0000000036b00000ULL, 0x00000002U);
+  c(0x0000000136b00000ULL, 0x00000002U);
+  
+  c(0xdfffffff380fffffULL, 0x007fffffU);
+  c(0xe0000000380fffffULL, 0x00800000U);
+  c(0xe0000001380fffffULL, 0x00800000U);
+  c(0xffffffff380fffffULL, 0x00800000U);
+  c(0x0000000038100000ULL, 0x00800000U);
+  c(0x0000000138100000ULL, 0x00800000U);
+  c(0x1000000038100000ULL, 0x00800000U);
+  c(0x1000000138100000ULL, 0x00800001U);
+  c(0x2fffffff38100000ULL, 0x00800001U);
+  c(0x3000000038100000ULL, 0x00800002U);
+  c(0x5000000038100000ULL, 0x00800002U);
+  c(0x5000000138100000ULL, 0x00800003U);
+#else
   c(0x3690000000000000ULL, 0x00000000U);
   c(0x3690000000000001ULL, 0x00000001U);
   c(0x369fffffffffffffULL, 0x00000001U);
@@ -70,7 +96,8 @@ int main()
   c(0x3810000030000000ULL, 0x00800002U);
   c(0x3810000050000000ULL, 0x00800002U);
   c(0x3810000050000001ULL, 0x00800003U);
-    
+#endif
+
   if (failed)
     abort ();
   else

@@ -1,3 +1,8 @@
+2001-11-22  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* gcc.c-torture/execute/ieee/20000320-1.c: Fix patterns to work
+	for little endian ARMs.
+
 2001-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/compile/20011119-1.c: New test.
