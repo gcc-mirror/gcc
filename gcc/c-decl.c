@@ -2818,7 +2818,7 @@ init_decl_processing ()
   /* Either char* or void*.  */
   tree traditional_ptr_type_node;
   /* Data types of memcpy and strlen.  */
-  tree memcpy_ftype, strlen_ftype;
+  tree memcpy_ftype, memset_ftype, strlen_ftype;
   tree void_ftype_any;
   int wchar_type_size;
   tree temp;
@@ -3125,6 +3125,14 @@ init_decl_processing ()
 							    sizetype,
 							    endlink))));
 
+  memset_ftype	/* memset prototype */
+    = build_function_type (traditional_ptr_type_node,
+			   tree_cons (NULL_TREE, ptr_type_node,
+				      tree_cons (NULL_TREE, integer_type_node,
+						 tree_cons (NULL_TREE,
+							    sizetype,
+							    endlink))));
+
   builtin_function ("__builtin_constant_p", default_function_type,
 		    BUILT_IN_CONSTANT_P, NULL_PTR);
 
@@ -3233,6 +3241,8 @@ init_decl_processing ()
 		    BUILT_IN_MEMCPY, "memcpy");
   builtin_function ("__builtin_memcmp", int_ftype_cptr_cptr_sizet,
 		    BUILT_IN_MEMCMP, "memcmp");
+  builtin_function ("__builtin_memset", memset_ftype,
+		    BUILT_IN_MEMSET, NULL_PTR);
   builtin_function ("__builtin_strcmp", int_ftype_string_string,
 		    BUILT_IN_STRCMP, "strcmp");
   builtin_function ("__builtin_strcpy", string_ftype_ptr_ptr,
@@ -3286,6 +3296,7 @@ init_decl_processing ()
       builtin_function ("memcpy", memcpy_ftype, BUILT_IN_MEMCPY, NULL_PTR);
       builtin_function ("memcmp", int_ftype_cptr_cptr_sizet, BUILT_IN_MEMCMP,
 			NULL_PTR);
+      builtin_function ("memset", memset_ftype, BUILT_IN_MEMSET, NULL_PTR);
       builtin_function ("strcmp", int_ftype_string_string, BUILT_IN_STRCMP,
 			NULL_PTR);
       builtin_function ("strcpy", string_ftype_ptr_ptr, BUILT_IN_STRCPY,
