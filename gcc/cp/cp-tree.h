@@ -1855,6 +1855,12 @@ struct lang_decl_flags
 
 struct unparsed_text;
 
+struct lang_decl_inlined_fns
+{
+  size_t num_fns;
+  tree fns[1];
+};
+
 struct lang_decl
 {
   struct lang_decl_flags decl_flags;
@@ -1867,6 +1873,9 @@ struct lang_decl
 
   /* In a FUNCTION_DECL, this is DECL_CLONED_FUNCTION.  */
   tree cloned_function;
+
+  /* In a FUNCTION_DECL, this is a list of trees inlined into its body.  */
+  struct lang_decl_inlined_fns *inlined_fns;
 
   union
   {
@@ -1977,6 +1986,10 @@ struct lang_decl
    cloned.  */
 #define DECL_CLONED_FUNCTION(NODE) \
   (DECL_LANG_SPECIFIC (NODE)->cloned_function)
+
+/* List of FUNCION_DECLs inlined into this function's body.  */
+#define DECL_INLINED_FNS(NODE) \
+  (DECL_LANG_SPECIFIC (NODE)->inlined_fns)
 
 /* Non-zero if the VTT parm has been added to NODE.  */
 #define DECL_HAS_VTT_PARM_P(NODE) \
