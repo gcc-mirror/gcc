@@ -1,3 +1,7 @@
+2004-11-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/setjmp-2.c: New test.
+
 2004-11-16  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/18498

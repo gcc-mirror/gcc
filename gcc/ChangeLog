@@ -1,3 +1,18 @@
+2004-11-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	Backport from mainline:
+	2004-10-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
+                    Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/17813
+	* dojump.c (discard_pending_stack_adjust): New function.
+	(clear_pending_stack_adjust): Call it.
+	* expr.h (discard_pending_stack_adjust): Declare it.
+	* explow.c (emit_stack_save): Emit pending stack adjustments
+	before saving the stack pointer.
+	(emit_stack_restore): Discard pending stack adjustments before
+	restoring the stack pointer.
+
 2004-11-23  Ralf Corsepius <ralf.corsepius@rtems.org>
 
 	* config/c4x/t-rtems: New.

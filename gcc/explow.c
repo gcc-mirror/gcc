@@ -951,6 +951,7 @@ emit_stack_save (enum save_level save_level, rtx *psave, rtx after)
       rtx seq;
 
       start_sequence ();
+      do_pending_stack_adjust ();
       /* We must validize inside the sequence, to ensure that any instructions
 	 created by the validize call also get moved to the right place.  */
       if (sa != 0)
@@ -962,6 +963,7 @@ emit_stack_save (enum save_level save_level, rtx *psave, rtx after)
     }
   else
     {
+      do_pending_stack_adjust ();
       if (sa != 0)
 	sa = validize_mem (sa);
       emit_insn (fcn (sa, stack_pointer_rtx));
@@ -1017,6 +1019,8 @@ emit_stack_restore (enum save_level save_level, rtx sa, rtx after)
       emit_insn (gen_rtx_CLOBBER (VOIDmode,
 		    gen_rtx_MEM (BLKmode, stack_pointer_rtx)));
     }
+
+  discard_pending_stack_adjust ();
 
   if (after)
     {

@@ -48,6 +48,15 @@ init_pending_stack_adjust (void)
   pending_stack_adjust = 0;
 }
 
+/* Discard any pending stack adjustment.  This avoid relying on the
+   RTL optimizers to remove useless adjustments when we know the
+   stack pointer value is dead.  */
+void discard_pending_stack_adjust (void)
+{
+  stack_pointer_delta -= pending_stack_adjust;
+  pending_stack_adjust = 0;
+}
+
 /* When exiting from function, if safe, clear out any pending stack adjust
    so the adjustment won't get done.
 
@@ -62,10 +71,7 @@ clear_pending_stack_adjust (void)
       && EXIT_IGNORE_STACK
       && ! (DECL_INLINE (current_function_decl) && ! flag_no_inline)
       && ! flag_inline_functions)
-    {
-      stack_pointer_delta -= pending_stack_adjust,
-      pending_stack_adjust = 0;
-    }
+    discard_pending_stack_adjust ();
 }
 
 /* Pop any previously-pushed arguments that have not been popped yet.  */
