@@ -3018,7 +3018,7 @@ sparc-*-chorusos*)
 	;;
 sparc-*-elf*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sol2.h sparc/elf.h"
-	tmake_file=sparc/t-elf
+	tmake_file="sparc/t-elf sparc/t-crtfm"
 	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
 	#float_format=i128
 	float_format=i64
@@ -3029,14 +3029,14 @@ sparc-*-linux*aout*)		# Sparc's running GNU/Linux, a.out
 	;;
 sparc-*-linux*libc1*)	# Sparc's running GNU/Linux, libc5
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/linux.h"
-	tmake_file="t-slibgcc-elf-ver t-linux t-linux-gnulibc1"
+	tmake_file="t-slibgcc-elf-ver t-linux t-linux-gnulibc1 sparc/t-crtfm"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	gnu_ld=yes
 	float_format=sparc
 	;;
 sparc-*-linux*)		# Sparc's running GNU/Linux, libc6
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/linux.h"
-	tmake_file="t-slibgcc-elf-ver t-linux"
+	tmake_file="t-slibgcc-elf-ver t-linux sparc/t-crtfm"
 	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
 	gnu_ld=yes
 	if test x$enable_threads = xyes; then
@@ -3080,7 +3080,7 @@ sparcv9-*-solaris2* | sparc64-*-solaris2*)
 		tm_file=sparc/sol2-sld-64.h
 	fi
 	xm_defines=POSIX
-	tmake_file="sparc/t-sol2 sparc/t-sol2-64"
+	tmake_file="sparc/t-sol2 sparc/t-sol2-64 sparc/t-crtfm"
 	if test x$gnu_ld = xyes; then
 		tmake_file="$tmake_file t-slibgcc-elf-ver"
 	else
@@ -3105,7 +3105,7 @@ sparcv9-*-solaris2* | sparc64-*-solaris2*)
 sparc-hal-solaris2*)
         xm_defines=POSIX
         tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sol2.h sparc/hal.h"
-        tmake_file="sparc/t-halos sparc/t-sol2"
+        tmake_file="sparc/t-halos sparc/t-sol2 sparc/t-crtfm"
 	if test x$gnu_ld = xyes; then
 		tmake_file="$tmake_file t-slibgcc-elf-ver"
 	else
@@ -3130,7 +3130,7 @@ sparc-*-solaris2*)
 		tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sol2.h sparc/sol2-sld.h"
 	fi
 	xm_defines=POSIX
-	tmake_file=sparc/t-sol2
+	tmake_file="sparc/t-sol2 sparc/t-crtfm"
 	if test x$gnu_ld = xyes; then
 		tmake_file="$tmake_file t-slibgcc-elf-ver"
 	else
