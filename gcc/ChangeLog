@@ -1,3 +1,9 @@
+2003-05-05  Janis Johnson  <janis187@us.ibm.com>
+
+	* Makefile.in: (site.exp): Add ALT_CC_UNDER_TEST, add quotes around
+	expanded variables.
+	* doc/sourcebuild.texi (C tests): Describe gcc.dg/compat tests.
+
 2003-05-05  Zack Weinberg  <zack@codesourcery.com>
 
 	* rtl.h (STRING_POOL_ADDRESS_P): Rename to DEFERRED_CONSTANT_P.

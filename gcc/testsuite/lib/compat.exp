@@ -111,10 +111,11 @@ proc compat-run { testname objlist dest options optstr } {
 # compat-execute -- compile with compatible compilers
 #
 # SRC1 is the full pathname of the main file of the testcase.
+# SID identifies a test suite in the names of temporary files.
 # USE_ALT is nonzero if we're using an alternate compiler as well as
 #   the compiler under test.
 #
-proc compat-execute { src1 use_alt } {
+proc compat-execute { src1 sid use_alt } {
     global srcdir tmpdir
     global option_list
     global tool
@@ -144,11 +145,11 @@ proc compat-execute { src1 use_alt } {
     regsub "_main" $src1 "_y" src3
 
     # Define the names of the object files.
-    set obj1 "main_tst.o"
-    set obj2_tst "x_tst.o"
-    set obj2_alt "x_alt.o"
-    set obj3_tst "y_tst.o"
-    set obj3_alt "y_alt.o"
+    regsub "sid" "sid_main_tst.o" $sid obj1
+    regsub "sid" "sid_x_tst.o" $sid obj2_tst
+    regsub "sid" "sid_x_alt.o" $sid obj2_alt
+    regsub "sid" "sid_y_tst.o" $sid obj3_tst
+    regsub "sid" "sid_y_alt.o" $sid obj3_alt
 
     # Get the base name of this test, for use in messages.
     regsub "^$srcdir/?" $src1 "" testcase
@@ -181,10 +182,8 @@ proc compat-execute { src1 use_alt } {
 
 	set tst_options ""
 	set alt_options ""
-	if ![string match $extra_tool_flags ""] then {
-	    lappend tst_options "additional_flags=$extra_tool_flags $tst_option"
-	    lappend alt_options "additional_flags=$extra_tool_flags $alt_option"
-	}
+	lappend tst_options "additional_flags=$extra_tool_flags $tst_option"
+	lappend alt_options "additional_flags=$extra_tool_flags $alt_option"
 
 	# There's a unique name for each executable we generate, based on
 	# the set of options and how the pieces of the tests are compiled.
@@ -228,7 +227,7 @@ proc compat-execute { src1 use_alt } {
 	}
 
 	# Clean up object files.
-	set files [glob -nocomplain *.o]
+	set files [glob -nocomplain ${sid}_*.o]
 	if { $files != "" } {
 	    foreach objfile $files {
 		if { ![info exists gluefile] || $objfile != $gluefile } {

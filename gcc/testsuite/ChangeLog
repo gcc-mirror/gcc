@@ -1,3 +1,16 @@
+2003-05-05  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/compat.exp (compat-execute): New argument.
+	* g++.dg/compat/compat.exp: Pass new argument to compat-execute.
+	* gcc.dg/compat: New test directory.
+	* gcc.dg/compat/compat.exp: New expect script.
+	* gcc.dg/compat/scalar-by-value-1_main.c: New test file.
+	* gcc.dg/compat/scalar-by-value-1_x.c: New test file.
+	* gcc.dg/compat/scalar-by-value-1_y.c: New test file.
+	* gcc.dg/compat/scalar-by-value-2_main.c: New test file.
+	* gcc.dg/compat/scalar-by-value-2_x.c: New test file.
+	* gcc.dg/compat/scalar-by-value-2_y.c: New test file.
+
 2003-05-05  Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc.dg/const-elim-1.c, gcc.dg/const-elim-2.c: New testcases.
