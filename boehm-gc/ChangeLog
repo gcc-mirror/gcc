@@ -1,3 +1,13 @@
+2002-02-13  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* dbg_mlc.c (GC_debug_generic_malloc): Removed.
+	
+	* sparc_mach_dep.S: Rename from sparc_mach_dep.s as it is a 
+	preprocessor file.
+	* mips_sgi_mach_dep.S: Likewise.
+	* Makefile.am: Update for above changes.
+	* Makefile.in: Rebuilt.
+
 2002-02-12  Richard Henderson  <rth@redhat.com>
 
 	* configure.in: Re-apply 2001-06-26 configure change.

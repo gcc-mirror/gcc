@@ -39,8 +39,8 @@ libgcjgc_la_DEPENDENCIES = @addobjs@
 libgcjgc_la_LDFLAGS = -version-info 1:1:0 -rpath $(toolexeclibdir)
 
 EXTRA_libgcjgc_la_SOURCES = alpha_mach_dep.s \
-mips_sgi_mach_dep.s mips_ultrix_mach_dep.s powerpc_macosx_mach_dep.s \
-rs6000_mach_dep.s sparc_mach_dep.s sparc_netbsd_mach_dep.s \
+mips_sgi_mach_dep.S mips_ultrix_mach_dep.s powerpc_macosx_mach_dep.s \
+rs6000_mach_dep.s sparc_mach_dep.S sparc_netbsd_mach_dep.s \
 sparc_sunos4_mach_dep.s ia64_save_regs_in_stack.s
 
 AM_CXXFLAGS = @GC_CFLAGS@

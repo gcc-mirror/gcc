@@ -429,35 +429,6 @@ void GC_start_debugging()
     return (GC_store_debug_info(result, (word)lb, s, (word)i));
 }
 
-# ifdef __STDC__
-    GC_PTR GC_debug_generic_malloc(size_t lb, int k, GC_EXTRA_PARAMS)
-# else
-    GC_PTR GC_debug_malloc(lb, k, s, i)
-    size_t lb;
-    int k;
-    char * s;
-    int i;
-#   ifdef GC_ADD_CALLER
-	--> GC_ADD_CALLER not implemented for K&R C
-#   endif
-# endif
-{
-    GC_PTR result = GC_generic_malloc(lb + DEBUG_BYTES, k);
-    
-    if (result == 0) {
-        GC_err_printf1("GC_debug_malloc(%ld) returning NIL (",
-        	       (unsigned long) lb);
-        GC_err_puts(s);
-        GC_err_printf1(":%ld)\n", (unsigned long)i);
-        return(0);
-    }
-    if (!GC_debugging_started) {
-    	GC_start_debugging();
-    }
-    ADD_CALL_CHAIN(result, ra);
-    return (GC_store_debug_info(result, (word)lb, s, (word)i));
-}
-
 # ifdef DBG_HDRS_ALL
 /* 
  * An allocation function for internal use.
