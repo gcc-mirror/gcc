@@ -42,6 +42,22 @@ char *output_move_const_single ();
 static char *hi_reg_name[] = HI_REGISTER_NAMES;
 static char *qi_reg_name[] = QI_REGISTER_NAMES;
 static char *qi_high_reg_name[] = QI_HIGH_REGISTER_NAMES;
+
+/* Array of the smallest class containing reg number REGNO, indexed by
+   REGNO.  Used by REGNO_REG_CLASS in i386.h. */
+
+enum reg_class regclass_map[FIRST_PSEUDO_REGISTER] =
+{
+  /* ax, dx, cx, bx */
+  AREG, DREG, CREG, Q_REGS,
+  /* si, di, bp, sp */
+  SIREG, DIREG, INDEX_REGS, GENERAL_REGS,
+  /* FP registers */
+  FP_TOP_REG, FP_SECOND_REG, FLOAT_REGS, FLOAT_REGS,
+  FLOAT_REGS, FLOAT_REGS, FLOAT_REGS, FLOAT_REGS,       
+  /* arg pointer */
+  INDEX_REGS
+};
 
 /* Output an insn whose source is a 386 integer register.  SRC is the
    rtx for the register, and TEMPLATE is the op-code template.  SRC may
@@ -1227,11 +1243,14 @@ print_operand_address (file, addr)
    On the 80386, we assume that only test and compare insns, as well
    as SI, HI, & DI mode ADD, SUB, NEG, AND, IOR, XOR, ASHIFT, LSHIFT,
    ASHIFTRT, and LSHIFTRT instructions set the condition codes usefully.
-   Also, we assume that jumps and moves don't affect the condition codes.
-   All else, clobbers the condition codes, by assumption.
+   Also, we assume that jumps, moves and sCOND don't affect the condition
+   codes.  All else clobbers the condition codes, by assumption.
 
-   We assume that ALL add, minus, etc. instructions effect the condition
-   codes.  This MUST be consistent with i386.md.  */
+   We assume that ALL integer add, minus, etc. instructions effect the
+   condition codes.  This MUST be consistent with i386.md.
+
+   We don't record any float test or compare - the redundant test &
+   compare check in final.c does not handle stack-like regs correctly. */
 
 void
 notice_update_cc (exp)
@@ -1247,7 +1266,8 @@ notice_update_cc (exp)
 	 the RTX's which we remember the cc's came from.
 	 (Note that moving a constant 0 or 1 MAY set the cc's).  */
       if (REG_P (SET_DEST (exp))
-	  && (REG_P (SET_SRC (exp)) || GET_CODE (SET_SRC (exp)) == MEM))
+	  && (REG_P (SET_SRC (exp)) || GET_CODE (SET_SRC (exp)) == MEM
+	      || GET_RTX_CLASS (GET_CODE (SET_SRC (exp))) == '<'))
 	{
 	  if (cc_status.value1
 	      && reg_overlap_mentioned_p (SET_DEST (exp), cc_status.value1))
@@ -1259,7 +1279,9 @@ notice_update_cc (exp)
 	}
       /* Moving register into memory doesn't alter the cc's.
 	 It may invalidate the RTX's which we remember the cc's came from.  */
-      if (GET_CODE (SET_DEST (exp)) == MEM && REG_P (SET_SRC (exp)))
+      if (GET_CODE (SET_DEST (exp)) == MEM
+	  && (REG_P (SET_SRC (exp))
+	      || GET_RTX_CLASS (GET_CODE (SET_SRC (exp))) == '<'))
 	{
 	  if (cc_status.value1 && GET_CODE (cc_status.value1) == MEM)
 	    cc_status.value1 = 0;
@@ -1321,7 +1343,8 @@ notice_update_cc (exp)
       if (SET_DEST (XVECEXP (exp, 0, 0)) == cc0_rtx)
 	{
 	  CC_STATUS_INIT;
-	  cc_status.value1 = SET_SRC (XVECEXP (exp, 0, 0));
+	  if (! stack_regs_mentioned_p (SET_SRC (XVECEXP (exp, 0, 0))))
+	    cc_status.value1 = SET_SRC (XVECEXP (exp, 0, 0));
 	  return;
 	}
       CC_STATUS_INIT;
