@@ -26,12 +26,24 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #if !IN_GCOV
 static void gcov_write_block (unsigned);
-static unsigned char *gcov_write_bytes (unsigned);
+static gcov_unsigned_t *gcov_write_bytes (unsigned);
 #endif
-static const unsigned char *gcov_read_bytes (unsigned);
+static const gcov_unsigned_t *gcov_read_bytes (unsigned);
 #if !IN_LIBGCOV
 static void gcov_allocate (unsigned);
 #endif
+
+static inline gcov_unsigned_t from_file (gcov_unsigned_t value)
+{
+#if !IN_LIBGCOV
+  if (gcov_var.endian)
+    {
+      value = (value >> 16) | (value << 16);
+      value = ((value & 0xff00ff) << 8) | ((value >> 8) & 0xff00ff);
+    }
+#endif
+  return value;
+}
 
 /* Open a gcov file. NAME is the name of the file to open and MODE
    indicates whether a new file should be created, or an existing file
@@ -42,9 +54,15 @@ static void gcov_allocate (unsigned);
    opening an existing file and <0 on creating a new one.  */
 
 GCOV_LINKAGE int
+#if IN_LIBGCOV
+gcov_open (const char *name)
+#else
 gcov_open (const char *name, int mode)
+#endif
 {
-  int result = 1;
+#if IN_LIBGCOV
+  const int mode = 0;
+#endif
 #if GCOV_LOCKED
   struct flock s_flock;
 
@@ -61,20 +79,22 @@ gcov_open (const char *name, int mode)
   gcov_var.offset = gcov_var.length = 0;
   gcov_var.overread = -4u;
   gcov_var.error = 0;
+#if !IN_LIBGCOV
+  gcov_var.endian = 0;
+#endif
   if (mode >= 0)
     gcov_var.file = fopen (name, "r+b");
   if (gcov_var.file)
     gcov_var.mode = 1;
   else if (mode <= 0)
     {
-      result = -1;
       gcov_var.file = fopen (name, "w+b");
       if (gcov_var.file)
-	gcov_var.mode = -1;
+	gcov_var.mode = mode * 2 + 1;
     }
   if (!gcov_var.file)
     return 0;
-
+  
   setbuf (gcov_var.file, (char *)0);
   
 #if GCOV_LOCKED
@@ -83,7 +103,7 @@ gcov_open (const char *name, int mode)
     continue;
 #endif
 
-  return result;
+  return 1;
 }
 
 /* Close the current gcov file. Flushes data to disk. Returns nonzero
@@ -110,6 +130,27 @@ gcov_close (void)
   gcov_var.mode = 0;
   return gcov_var.error;
 }
+
+#if !IN_LIBGCOV
+/* Check if MAGIC is EXPECTED. Use it to determine endianness of the
+   file. Returns +1 for same endian, -1 for other endian and zero for
+   not EXPECTED.  */
+
+GCOV_LINKAGE int
+gcov_magic (gcov_unsigned_t magic, gcov_unsigned_t expected)
+{
+  if (magic == expected)
+    return 1;
+  magic = (magic >> 16) | (magic << 16);
+  magic = ((magic & 0xff00ff) << 8) | ((magic >> 8) & 0xff00ff);
+  if (magic == expected)
+    {
+      gcov_var.endian = 1;
+      return -1;
+    }
+  return 0;
+}
+#endif
 
 #if !IN_LIBGCOV
 static void
@@ -142,12 +183,13 @@ gcov_write_block (unsigned size)
 /* Allocate space to write BYTES bytes to the gcov file. Return a
    pointer to those bytes, or NULL on failure.  */
 
-static unsigned char *
+static gcov_unsigned_t *
 gcov_write_bytes (unsigned bytes)
 {
-  char unsigned *result;
+  gcov_unsigned_t *result;
 
   GCOV_CHECK_WRITING ();
+  GCOV_CHECK (!(bytes & 3));
 #if IN_LIBGCOV
   if (gcov_var.offset >= GCOV_BLOCK_SIZE)
     {
@@ -162,7 +204,7 @@ gcov_write_bytes (unsigned bytes)
   if (gcov_var.offset + bytes > gcov_var.alloc)
     gcov_allocate (gcov_var.offset + bytes);
 #endif
-  result = &gcov_var.buffer[gcov_var.offset];
+  result = (gcov_unsigned_t *)&gcov_var.buffer[gcov_var.offset];
   gcov_var.offset += bytes;
   
   return result;
@@ -174,18 +216,9 @@ gcov_write_bytes (unsigned bytes)
 GCOV_LINKAGE void
 gcov_write_unsigned (gcov_unsigned_t value)
 {
-  unsigned char *buffer = gcov_write_bytes (4);
-  unsigned ix;
+  gcov_unsigned_t *buffer = gcov_write_bytes (4);
 
-  for (ix = 4; ix--; )
-    {
-      buffer[ix] = value;
-      value >>= 8;
-    }
-  if (sizeof (value) > 4 && value)
-    gcov_var.error = -1;
-
-  return;
+  buffer[0] = value;
 }
 
 /* Write counter VALUE to coverage file.  Sets error flag
@@ -195,17 +228,16 @@ gcov_write_unsigned (gcov_unsigned_t value)
 GCOV_LINKAGE void
 gcov_write_counter (gcov_type value)
 {
-  unsigned char *buffer = gcov_write_bytes (8);
-  unsigned ix;
+  gcov_unsigned_t *buffer = gcov_write_bytes (8);
 
-  for (ix = 8; ix--; )
-    {
-      buffer[ix] = value;
-      value >>= 8;
-    }
-  if ((sizeof (value) > 8 && value) || value < 0)
+  buffer[0] = (gcov_unsigned_t) value;
+  if (sizeof (value) > sizeof (gcov_unsigned_t))
+    buffer[1] = (gcov_unsigned_t) (value >> 32);
+  else
+    buffer[1] = 0;
+  
+  if (value < 0)
     gcov_var.error = -1;
-  return;
 }
 #endif /* IN_LIBGCOV */
 
@@ -217,28 +249,20 @@ GCOV_LINKAGE void
 gcov_write_string (const char *string)
 {
   unsigned length = 0;
-  unsigned pad = 0;
-  unsigned rem = 0;
-  unsigned char *buffer;
-  unsigned ix;
-  unsigned value;
+  unsigned alloc = 0;
+  gcov_unsigned_t *buffer;
 
   if (string)
     {
       length = strlen (string);
-      rem = 4 - (length & 3);
+      alloc = (length + 4) >> 2;
     }
   
-  buffer = gcov_write_bytes (4 + length + rem);
+  buffer = gcov_write_bytes (4 + alloc * 4);
 
-  value = length;
-  for (ix = 4; ix--; )
-    {
-      buffer[ix] = value;
-      value >>= 8;
-    }
-  memcpy (buffer + 4, string, length);
-  memcpy (buffer + 4 + length, &pad, rem);
+  buffer[0] = alloc;
+  buffer[alloc] = 0;
+  memcpy (&buffer[1], string, length);
 }
 #endif
 
@@ -250,15 +274,11 @@ GCOV_LINKAGE gcov_position_t
 gcov_write_tag (gcov_unsigned_t tag)
 {
   gcov_position_t result = gcov_var.start + gcov_var.offset;
-  unsigned char *buffer = gcov_write_bytes (8);
-  unsigned ix;
+  gcov_unsigned_t *buffer = gcov_write_bytes (8);
 
-  for (ix = 4; ix--; )
-    {
-      buffer[ix] = tag;
-      tag >>= 8;
-    }
-  memset (buffer + 4, 0, 4);
+  buffer[0] = tag;
+  buffer[1] = 0;
+  
   return result;
 }
 
@@ -272,20 +292,15 @@ gcov_write_length (gcov_position_t position)
 {
   unsigned offset;
   gcov_unsigned_t length;
-  unsigned char *buffer;
-  unsigned ix;
+  gcov_unsigned_t *buffer;
 
   GCOV_CHECK_WRITING ();
   GCOV_CHECK (position + 8 <= gcov_var.start + gcov_var.offset);
   GCOV_CHECK (position >= gcov_var.start);
   offset = position - gcov_var.start;
   length = gcov_var.offset - offset - 8;
-  buffer = &gcov_var.buffer[offset + 4];
-  for (ix = 4; ix--; )
-    {
-      buffer[ix] = length;
-      length >>= 8;
-    }
+  buffer = (gcov_unsigned_t *) &gcov_var.buffer[offset];
+  buffer[1] = length;
   if (gcov_var.offset >= GCOV_BLOCK_SIZE)
     gcov_write_block (gcov_var.offset);
 }
@@ -297,20 +312,10 @@ gcov_write_length (gcov_position_t position)
 GCOV_LINKAGE void
 gcov_write_tag_length (gcov_unsigned_t tag, gcov_unsigned_t length)
 {
-  unsigned char *buffer = gcov_write_bytes (8);
-  unsigned ix;
+  gcov_unsigned_t *buffer = gcov_write_bytes (8);
 
-  for (ix = 4; ix--; )
-    {
-      buffer[ix] = tag;
-      tag >>= 8;
-    }
-  for (ix = 4; ix--; )
-    {
-      buffer[ix + 4] = length;
-      length >>= 8;
-    }
-  return;
+  buffer[0] = tag;
+  buffer[1] = length;
 }
 
 /* Write a summary structure to the gcov file.  Return nonzero on
@@ -340,13 +345,14 @@ gcov_write_summary (gcov_unsigned_t tag, const struct gcov_summary *summary)
 /* Return a pointer to read BYTES bytes from the gcov file. Returns
    NULL on failure (read past EOF).  */
 
-static const unsigned char *
+static const gcov_unsigned_t *
 gcov_read_bytes (unsigned bytes)
 {
-  const unsigned char *result;
+  const gcov_unsigned_t *result;
   unsigned excess = gcov_var.length - gcov_var.offset;
   
   GCOV_CHECK_READING ();
+  GCOV_CHECK (!(bytes & 3));
   if (excess < bytes)
     {
       gcov_var.start += gcov_var.offset;
@@ -379,7 +385,7 @@ gcov_read_bytes (unsigned bytes)
 	  return 0;
 	}
     }
-  result = &gcov_var.buffer[gcov_var.offset];
+  result = (gcov_unsigned_t *)&gcov_var.buffer[gcov_var.offset];
   gcov_var.offset += bytes;
   return result;
 }
@@ -390,20 +396,12 @@ gcov_read_bytes (unsigned bytes)
 GCOV_LINKAGE gcov_unsigned_t
 gcov_read_unsigned (void)
 {
-  gcov_unsigned_t value = 0;
-  unsigned ix;
-  const unsigned char *buffer = gcov_read_bytes (4);
+  gcov_unsigned_t value;
+  const gcov_unsigned_t *buffer = gcov_read_bytes (4);
 
   if (!buffer)
     return 0;
-  for (ix = sizeof (value); ix < 4; ix++)
-    if (buffer[ix])
-      gcov_var.error = -1;
-  for (ix = 0; ix != 4; ix++)
-    {
-      value <<= 8;
-      value |= buffer[ix];
-    }
+  value = from_file (buffer[0]);
   return value;
 }
 
@@ -413,20 +411,17 @@ gcov_read_unsigned (void)
 GCOV_LINKAGE gcov_type
 gcov_read_counter (void)
 {
-  gcov_type value = 0;
-  unsigned ix;
-  const unsigned char *buffer = gcov_read_bytes (8);
+  gcov_type value;
+  const gcov_unsigned_t *buffer = gcov_read_bytes (8);
 
   if (!buffer)
     return 0;
-  for (ix = sizeof (value); ix < 8; ix++)
-    if (buffer[ix])
-      gcov_var.error = -1;
-  for (ix = 0; ix != 8; ix++)
-    {
-      value <<= 8;
-      value |= buffer[ix];
-    }
+  value = from_file (buffer[0]);
+  if (sizeof (value) > sizeof (gcov_unsigned_t))
+    value |= ((gcov_type) from_file (buffer[1])) << 32;
+  else if (buffer[1])
+    gcov_var.error = -1;
+  
   if (value < 0)
     gcov_var.error = -1;
   return value;
@@ -445,7 +440,6 @@ gcov_read_string (void)
   if (!length)
     return 0;
 
-  length += 4 - (length & 3);
   return (const char *) gcov_read_bytes (length);
 }
 #endif

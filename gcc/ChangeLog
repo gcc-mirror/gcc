@@ -1,5 +1,40 @@
 2003-07-09  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* gcov-io.h: Update documentation.
+	(GCOV_GRAPH_SUFFIX, GCOV_GRAPH_MAGIC): Rename to GCOV_NOTE_SUFFIX,
+	GCOV_NOTE_MAGIC.
+	(GCOV_DATA_SUFFIX, GCOV_NOTE_SUFFIX): Update.
+	(GCOV_DATA_MAGIC, GCOV_NOTE_MAGIC): Make non-palindromic.
+	(struct gcov_var): Change buffer's type. Add endian flag.
+	(gcov_open): Remove mode in libgcov.
+	(gcov_magic): Prototype.
+	* gcov-io.c (from_file): New.
+	(gcov_open): Clear endian flag.
+	(gcov_magic): New.
+	(gcov_write_bytes, gcov_read_bytes): Return gcov_unsigned_t
+	pointers.
+	(gcov_write_unsigned, gcov_write_counter, gcov_write_string,
+	gcov_write_tag, gcov_write_length, gcov_write_tag_length): Update.
+	(gcov_read_unsigned, gcov_read_counter, gcov_read_string): Update.
+	* gcov-iov.c (main): Correct cast.
+	* coverage.c (read_counts_file): Use gcov_magic. Remove endianness
+	conversion.
+	(gcov_begin_output): Use GCOV_NOTE_MAGIC.
+	(coverage_init): Use GCOV_NOTE_SUFFIX.
+	* libgcov.c (gcov_version_mismatch): Remove endianness conversion.
+	Rename to gcov_version, and return flag.
+	(gcov_exit): Use gcov_version.
+	(__gcov_init): Use gcov_version.
+	* Makefile.in (coverageexts): Update.
+	* gcov.c (print_version): Remove endianness conversion.
+	(create_file_names): Use GCOV_NOTE_SUFFIX.
+	(read_graph_file): Use gcov_magic.
+	(read_count_file): Likewise.
+	* gcov-dump.c (dump_file): Remove endianness conversion, use
+	gcov_magic.
+
+2003-07-09  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* configure.in (BUILD_PREFIX, BUILD_PREFIX_1): Set if enable
 	coverage is on.
 	* configure: Regenerated.

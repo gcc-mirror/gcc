@@ -91,22 +91,19 @@ static struct gcov_info *gcov_list;
    object file included in multiple programs.  */
 static gcov_unsigned_t gcov_crc32;
 
-static void
-gcov_version_mismatch (struct gcov_info *ptr, gcov_unsigned_t version)
+static int
+gcov_version (struct gcov_info *ptr, gcov_unsigned_t version)
 {
   gcov_unsigned_t expected = GCOV_VERSION;
-  unsigned ix;
-  char e[4], v[4];
 
-  for (ix = 4; ix--; expected >>= 8, version >>= 8)
+  if (version != GCOV_VERSION)
     {
-      e[ix] = expected;
-      v[ix] = version;
+      fprintf (stderr,
+	       "profiling:%s:Version mismatch - expected %.4s got %.4s\n",
+	       ptr->filename, (const char *)&expected, (const char *)&version);
+      return 0;
     }
-  
-  fprintf (stderr,
-	   "profiling:%s:Version mismatch - expected %.4s got %.4s\n",
-	   ptr->filename, e, v);
+  return 1;
 }
 
 /* Dump the coverage counts. We merge with existing counts when
@@ -163,7 +160,6 @@ gcov_exit (void)
       struct gcov_ctr_summary *cs_ptr;
       struct gcov_ctr_summary *cs_obj, *cs_tobj, *cs_prg, *cs_tprg, *cs_all;
       int error = 0;
-      int merging;
       gcov_unsigned_t tag, length;
       gcov_position_t summary_pos = 0;
 
@@ -200,18 +196,17 @@ gcov_exit (void)
 	  fi_stride &= ~(__alignof__ (struct gcov_fn_info) - 1);
 	}
       
-      /* Open for modification, if possible */
-      merging = gcov_open (gi_ptr->filename, 0);
-      if (!merging)
+      if (!gcov_open (gi_ptr->filename))
 	{
 	  fprintf (stderr, "profiling:%s:Cannot open\n", gi_ptr->filename);
 	  continue;
 	}
-      
-      if (merging > 0)
+
+      tag = gcov_read_unsigned ();
+      if (tag)
 	{
 	  /* Merge data from file.  */
-	  if (gcov_read_unsigned () != GCOV_DATA_MAGIC)
+	  if (tag != GCOV_DATA_MAGIC)
 	    {
 	      fprintf (stderr, "profiling:%s:Not a gcov data file\n",
 		       gi_ptr->filename);
@@ -220,11 +215,8 @@ gcov_exit (void)
 	      continue;
 	    }
 	  length = gcov_read_unsigned ();
-	  if (length != GCOV_VERSION)
-	    {
-	      gcov_version_mismatch (gi_ptr, length);
-	      goto read_fatal;
-	    }
+	  if (!gcov_version (gi_ptr, length))
+	    goto read_fatal;
 
 	  length = gcov_read_unsigned ();
 	  if (length != gi_ptr->stamp)
@@ -299,16 +291,17 @@ gcov_exit (void)
 		  goto rewrite;
 		}
 	    }
-	  if (!gcov_is_eof ())
-	    {
-	    read_error:;
-	      fprintf (stderr, error < 0 ? "profiling:%s:Overflow merging\n"
-		       : "profiling:%s:Error merging\n", gi_ptr->filename);
-	      goto read_fatal;
-	    }
-	rewrite:;
-	  gcov_rewrite ();
 	}
+      
+      if (!gcov_is_eof ())
+ 	{
+ 	read_error:;
+ 	  fprintf (stderr, error < 0 ? "profiling:%s:Overflow merging\n"
+ 		   : "profiling:%s:Error merging\n", gi_ptr->filename);
+ 	  goto read_fatal;
+ 	}
+    rewrite:;
+      gcov_rewrite ();
       if (!summary_pos)
 	memset (&program, 0, sizeof (program));
 
@@ -414,9 +407,7 @@ __gcov_init (struct gcov_info *info)
 {
   if (!info->version)
     return;
-  if (info->version != GCOV_VERSION)
-    gcov_version_mismatch (info, info->version);
-  else
+  if (gcov_version (info, info->version))
     {
       const char *ptr = info->filename;
       gcov_unsigned_t crc32 = gcov_crc32;

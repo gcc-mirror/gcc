@@ -155,33 +155,32 @@ dump_file (const char *filename)
   /* magic */
   {
     unsigned magic = gcov_read_unsigned ();
-    unsigned version = gcov_read_unsigned ();
+    unsigned version;
     const char *type = NULL;
-    char e[4], v[4], m[4];
-    unsigned expected = GCOV_VERSION;
-    unsigned ix;
-    int different = version != GCOV_VERSION;
-
-    if (magic == GCOV_DATA_MAGIC)
+    int endianness = 0;
+    
+    if ((endianness = gcov_magic (magic, GCOV_DATA_MAGIC)))
       type = "data";
-    else if (magic == GCOV_GRAPH_MAGIC)
-      type = "graph";
+    else if ((endianness = gcov_magic (magic, GCOV_NOTE_MAGIC)))
+      type = "note";
     else
       {
 	printf ("%s:not a gcov file\n", filename);
 	gcov_close ();
 	return;
       }
-    for (ix = 4; ix--; expected >>= 8, version >>= 8, magic >>= 8)
+    version = gcov_read_unsigned ();
+    
+    printf ("%s:%s:magic `%.4s':version `%.4s'%s\n", filename, type,
+ 	    (const char *)&magic, (const char *)&version,
+	    endianness < 0 ? " (swapped endianness)" : "");
+    if (version != GCOV_VERSION)
       {
-	e[ix] = expected;
-	v[ix] = version;
-	m[ix] = magic;
+	unsigned expected = GCOV_VERSION;
+	
+	printf ("%s:warning:current version is `%.4s'\n", filename,
+		(const char *)expected);
       }
-
-    printf ("%s:%s:magic `%.4s':version `%.4s'\n", filename, type, m, v);
-    if (different)
-      printf ("%s:warning:current version is `%.4s'\n", filename, e);
   }
 
   /* stamp */

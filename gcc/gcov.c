@@ -417,13 +417,10 @@ print_usage (int error_p)
 static void
 print_version (void)
 {
-  char v[4];
   unsigned version = GCOV_VERSION;
-  unsigned ix;
 
-  for (ix = 4; ix--; version >>= 8)
-    v[ix] = version;
-  fnotice (stdout, "gcov %.4s (GCC %s)\n", v, version_string);
+  fnotice (stdout, "gcov %.4s (GCC %s)\n",
+	   (const char *)&version, version_string);
   fnotice (stdout, "Copyright (C) 2002 Free Software Foundation, Inc.\n");
   fnotice (stdout,
 	   "This is free software; see the source for copying conditions.  There is NO\n\
@@ -660,10 +657,10 @@ create_file_names (const char *file_name)
     *cptr = 0;
 
   length = strlen (name);
-
-  bbg_file_name = xmalloc (length + strlen (GCOV_GRAPH_SUFFIX) + 1);
+  
+  bbg_file_name = xmalloc (length + strlen (GCOV_NOTE_SUFFIX) + 1);
   strcpy (bbg_file_name, name);
-  strcpy (bbg_file_name + length, GCOV_GRAPH_SUFFIX);
+  strcpy (bbg_file_name + length, GCOV_NOTE_SUFFIX);
 
   da_file_name = xmalloc (length + strlen (GCOV_DATA_SUFFIX) + 1);
   strcpy (da_file_name, name);
@@ -715,7 +712,7 @@ read_graph_file (void)
       return 1;
     }
   bbg_file_time = gcov_time ();
-  if (gcov_read_unsigned () != GCOV_GRAPH_MAGIC)
+  if (!gcov_magic (gcov_read_unsigned (), GCOV_NOTE_MAGIC))
     {
       fnotice (stderr, "%s:not a gcov graph file\n", bbg_file_name);
       gcov_close ();
@@ -984,7 +981,7 @@ read_count_file (void)
       fnotice (stderr, "%s:cannot open data file\n", da_file_name);
       return 1;
     }
-  if (gcov_read_unsigned () != GCOV_DATA_MAGIC)
+  if (!gcov_magic (gcov_read_unsigned (), GCOV_DATA_MAGIC))
     {
       fnotice (stderr, "%s:not a gcov data file\n", da_file_name);
     cleanup:;
@@ -994,16 +991,10 @@ read_count_file (void)
   version = gcov_read_unsigned ();
   if (version != GCOV_VERSION)
     {
-      char v[4], e[4];
       unsigned desired = GCOV_VERSION;
-
-      for (ix = 4; ix--; desired >>= 8, version >>= 8)
-	{
-	  v[ix] = version;
-	  e[ix] = desired;
-	}
+      
       fnotice (stderr, "%s:version `%.4s', prefer version `%.4s'\n",
-	       da_file_name, v, e);
+	       da_file_name, (const char *)&version, (const char *)&desired);
     }
   tag = gcov_read_unsigned ();
   if (tag != bbg_stamp)

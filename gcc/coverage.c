@@ -150,8 +150,7 @@ static void
 read_counts_file (void)
 {
   gcov_unsigned_t fn_ident = 0;
-  gcov_unsigned_t version, checksum = -1;
-  unsigned ix;
+  gcov_unsigned_t checksum = -1;
   counts_entry_t *summaried = NULL;
   unsigned seen_summary = 0;
   gcov_unsigned_t tag;
@@ -160,24 +159,18 @@ read_counts_file (void)
   if (!gcov_open (da_file_name, 1))
     return;
 
-  if (gcov_read_unsigned () != GCOV_DATA_MAGIC)
+  if (!gcov_magic (gcov_read_unsigned (), GCOV_DATA_MAGIC))
     {
       warning ("`%s' is not a gcov data file", da_file_name);
       gcov_close ();
       return;
     }
-  else if ((version = gcov_read_unsigned ()) != GCOV_VERSION)
+  else if ((tag = gcov_read_unsigned ()) != GCOV_VERSION)
     {
-      char v[4], e[4];
       gcov_unsigned_t required = GCOV_VERSION;
 
-      for (ix = 4; ix--; required >>= 8, version >>= 8)
-	{
-	  v[ix] = version;
-	  e[ix] = required;
-	}
       warning ("`%s' is version `%.4s', expected version `%.4s'",
-	       da_file_name, v, e);
+ 	       da_file_name, (const char *)&tag, (const char *)&required);
       gcov_close ();
       return;
     }
@@ -446,7 +439,7 @@ coverage_begin_output (void)
 	    error ("cannot open %s", bbg_file_name);
 	  else
 	    {
-	      gcov_write_unsigned (GCOV_GRAPH_MAGIC);
+	      gcov_write_unsigned (GCOV_NOTE_MAGIC);
 	      gcov_write_unsigned (GCOV_VERSION);
 	      gcov_write_unsigned (local_tick);
 	    }
@@ -897,9 +890,9 @@ coverage_init (const char *filename)
   strcat (da_file_name, GCOV_DATA_SUFFIX);
 
   /* Name of bbg file.  */
-  bbg_file_name = (char *) xmalloc (len + strlen (GCOV_GRAPH_SUFFIX) + 1);
+  bbg_file_name = (char *) xmalloc (len + strlen (GCOV_NOTE_SUFFIX) + 1);
   strcpy (bbg_file_name, filename);
-  strcat (bbg_file_name, GCOV_GRAPH_SUFFIX);
+  strcat (bbg_file_name, GCOV_NOTE_SUFFIX);
 
   read_counts_file ();
 }
