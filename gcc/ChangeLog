@@ -1,3 +1,16 @@
+2001-05-15  Geoffrey Keating  <geoffk@redhat.com>
+
+	* config/rs6000/sysv4.h (ASM_PREFERRED_EH_DATA_FORMAT): Treat
+	TARGET_RELOCATABLE like flag_pic for now.
+
+2001-05-13  Geoff Keating  <geoffk@redhat.com>
+
+	* config/rs6000/rs6000.h (EXCEPTION_SECTION): Move to...
+	* config/rs6000/aix.h (EXCEPTION_SECTION): ... here.
+	* config/rs6000/sysv4.h (CONST_SECTION_ASM_OP): Delete.
+	(ASM_PREFERRED_EH_DATA_FORMAT): Define.
+	(EXCEPTION_SECTION): Define.
+
 2001-11-09  Jason Eckhardt  <jle@rice.edu>
 
 	* config/mips/mips.c (mips_output_conditional_branch): Do not hard

@@ -2308,12 +2308,6 @@ extern int rs6000_compare_fp_p;
 
 #define TARGET_MEM_FUNCTIONS
 
-/* Define the name of the section to use for the exception tables.
-   TODO: test and see if we can use read_only_data_section, if so,
-   remove this.  */
-
-#define EXCEPTION_SECTION data_section
-
 /* Flag to say the TOC is initialized */
 extern int toc_initialized;
 

@@ -591,6 +591,12 @@ toc_section ()						\
        putc ('\n', ASM_OUT_FILE);				\
   } while (0)
 
+/* Define the name of the section to use for the exception tables.
+   TODO: test and see if we can use read_only_data_section, if so,
+   remove this.  */
+
+#define EXCEPTION_SECTION data_section
+
 /* __throw will restore its own return address to be the same as the
    return address of the function that the throw is being made to.
    This is unfortunate, because we want to check the original
