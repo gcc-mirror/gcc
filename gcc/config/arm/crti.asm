@@ -57,6 +57,9 @@
 	.section	".init"
 	.align 2
 	.global	_init
+#ifdef __thumb__
+	.thumb_func
+#endif
 _init:
 	FUNC_START
 	
@@ -64,6 +67,9 @@ _init:
 	.section	".fini"
 	.align	2
 	.global	_fini
+#ifdef __thumb__
+	.thumb_func
+#endif
 _fini:
 	FUNC_START
 	
