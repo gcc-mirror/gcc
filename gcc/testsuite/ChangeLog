@@ -1,3 +1,8 @@
+1998-10-01  Robert Lipe  <robertl@dgii.com>
+
+	* lib/objc.exp (objc_target_compile): Add -L during compiles for
+	multilibbed hosts.   Idea grafted from g77.exp.
+
 1998-09-30  Dave Love  <d.love@dl.ac.uk>
 
 	* g77.f-torture/execute/u77-test.f (main): Excise `hostnm' to

@@ -139,6 +139,12 @@ proc objc_target_compile { source dest type options } {
     if [target_info exists objc,no_varargs] {
 	lappend options "additional_flags=-DNO_VARARGS"
     }
+    set objcpath "[get_multilibs]"
+    set libobjc_dir [lookfor_file ${objcpath} libobjc/libobjc.a]
+    if { $libobjc_dir != "" } {
+	set objc_link_flags "-L[file dirname ${libobjc_dir}]"
+	lappend options "additional_flags=${objc_link_flags}"
+    }
     lappend options "compiler=$OBJC_UNDER_TEST"
     return [target_compile $source $dest $type $options]
 }
