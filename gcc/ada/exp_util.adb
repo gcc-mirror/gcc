@@ -2503,9 +2503,14 @@ package body Exp_Util is
       --  choose to pack the rest of the record. Lead to less efficient code,
       --  but safer vis-a-vis of back-end choices.
 
+      -----------------------------
+      -- Partially_Packed_Record --
+      -----------------------------
+
       function In_Partially_Packed_Record (Comp : Entity_Id) return Boolean is
-         Rec_Type : constant Entity_Id := Scope (Comp);
+         Rec_Type  : constant Entity_Id := Scope (Comp);
          Prev_Comp : Entity_Id;
+
       begin
          Prev_Comp := First_Entity (Rec_Type);
          while Present (Prev_Comp) loop
@@ -2521,6 +2526,9 @@ package body Exp_Util is
 
          return False;
       end  In_Partially_Packed_Record;
+
+   --  Start of processing for Must_Be_Aligned
+
    begin
       --  If object is strictly aligned, we can quit now
 
