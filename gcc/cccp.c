@@ -102,6 +102,7 @@ static FILE * VMS_freopen ();
 static void hack_vms_include_specification ();
 typedef struct { unsigned :16, :16, :16; } vms_ino_t;
 #define ino_t vms_ino_t
+#define INCLUDE_LEN_FUDGE 10	/* leave room for VMS syntax conversion */
 #ifdef __GNUC__
 #define BSTRING			/* VMS/GCC supplies the bstring routines */
 #endif /* __GNUC__ */
@@ -126,6 +127,10 @@ typedef struct { unsigned :16, :16, :16; } vms_ino_t;
 
 #ifndef NULL_PTR
 #define NULL_PTR (char *) NULL
+#endif
+
+#ifndef INCLUDE_LEN_FUDGE
+#define INCLUDE_LEN_FUDGE 0
 #endif
 
 /* Exported declarations.  */
@@ -185,6 +190,7 @@ static int do_unassert ();
 static int do_warning ();
 
 static void add_import ();
+static void append_include_chain ();
 static void deps_output ();
 static void make_undef ();
 static void make_definition ();
@@ -515,7 +521,12 @@ static struct default_include *include_defaults = include_defaults_array;
 
 static struct file_name_list *include = 0;	/* First dir to search */
 	/* First dir to search for <file> */
+/* This is the first element to use for #include <...>.
+   If it is 0, use the entire chain for such includes.  */
 static struct file_name_list *first_bracket_include = 0;
+/* This is the first element in the chain that corresponds to
+   a directory of system header files.  */
+static struct file_name_list *first_system_include = 0;
 static struct file_name_list *last_include = 0;	/* Last in chain */
 
 /* Chain of include directories to put at the end of the other chain.  */
@@ -957,14 +968,6 @@ main (argc, argv)
   no_output = 0;
   cplusplus = 0;
 
-  for (i = 0; include_defaults[i].fname; i++)
-    max_include_len = MAX (max_include_len,
-			   strlen (include_defaults[i].fname));
-  /* Leave room for making file name longer when converting to VMS syntax.  */
-#ifdef VMS
-  max_include_len += 10;
-#endif
-
   bzero (pend_files, argc * sizeof (char *));
   bzero (pend_defs, argc * sizeof (char *));
   bzero (pend_undefs, argc * sizeof (char *));
@@ -1011,19 +1014,16 @@ main (argc, argv)
 	    xmalloc (sizeof (struct file_name_list));
 	  dirtmp->next = 0;	/* New one goes on the end */
 	  dirtmp->control_macro = 0;
-	  if (after_include == 0)
-	    after_include = dirtmp;
-	  else
-	    last_after_include->next = dirtmp;
-	  last_after_include = dirtmp; /* Tail follows the last one */
-
 	  if (i + 1 == argc)
 	    fatal ("Directory name missing after -idirafter option");
 	  else
 	    dirtmp->fname = argv[++i];
 
-	  if (strlen (dirtmp->fname) > max_include_len)
-	    max_include_len = strlen (dirtmp->fname);
+	  if (after_include == 0)
+	    after_include = dirtmp;
+	  else
+	    last_after_include->next = dirtmp;
+	  last_after_include = dirtmp; /* Tail follows the last one */
 	}
 	break;
 
@@ -1251,29 +1251,24 @@ main (argc, argv)
 	{
 	  struct file_name_list *dirtmp;
 
-	  if (! ignore_srcdir && !strcmp (argv[i] + 2, "-"))
+	  if (! ignore_srcdir && !strcmp (argv[i] + 2, "-")) {
 	    ignore_srcdir = 1;
+	    /* Don't use any preceding -I directories for #include <...>.  */
+	    first_bracket_include = 0;
+	  }
 	  else {
 	    dirtmp = (struct file_name_list *)
 	      xmalloc (sizeof (struct file_name_list));
 	    dirtmp->next = 0;		/* New one goes on the end */
 	    dirtmp->control_macro = 0;
-	    if (include == 0)
-	      include = dirtmp;
-	    else
-	      last_include->next = dirtmp;
-	    last_include = dirtmp;	/* Tail follows the last one */
 	    if (argv[i][2] != 0)
 	      dirtmp->fname = argv[i] + 2;
 	    else if (i + 1 == argc)
 	      fatal ("Directory name missing after -I option");
 	    else
 	      dirtmp->fname = argv[++i];
-	    if (strlen (dirtmp->fname) > max_include_len)
-	      max_include_len = strlen (dirtmp->fname);
-	    if (ignore_srcdir && first_bracket_include == 0)
-	      first_bracket_include = dirtmp;
-	    }
+	    append_include_chain (dirtmp, dirtmp);
+	  }
 	}
 	break;
 
@@ -1478,7 +1473,7 @@ main (argc, argv)
         if ((*endp == PATH_SEPARATOR
 #if 0 /* Obsolete, now that we use semicolons as the path separator.  */
 #ifdef __MSDOS__
-	     && (endp-startp != 1 || !isalpha (*startp)))
+	     && (endp-startp != 1 || !isalpha (*startp))
 #endif
 #endif
 	     )
@@ -1489,7 +1484,6 @@ main (argc, argv)
 	  else
 	    nstore[endp-startp] = '\0';
 
-	  max_include_len = MAX (max_include_len, endp-startp+2);
 	  include_defaults[num_dirs].fname = savestring (nstore);
 	  include_defaults[num_dirs].cplusplus = cplusplus;
 	  num_dirs++;
@@ -1505,6 +1499,7 @@ main (argc, argv)
     }
   }
 
+  first_system_include = 0;
   /* Unless -fnostdinc,
      tack on the standard include file dirs to the specified list */
   if (!no_standard_includes) {
@@ -1534,20 +1529,9 @@ main (argc, argv)
 	    strcat (str, p->fname + default_len);
 	    new->fname = str;
 	    new->control_macro = 0;
-
-	    /* Add elt to tail of list.  */
-	    if (include == 0)
-	      include = new;
-	    else
-	      last_include->next = new;
-	    /* Make sure list for #include <...> also has the standard dirs.  */
-	    if (ignore_srcdir && first_bracket_include == 0)
-	      first_bracket_include = new;
-	    /* Record new tail.  */
-	    last_include = new;
-	    /* Update max_include_len if necessary.  */
-	    if (this_len > max_include_len)
-	      max_include_len = this_len;
+	    append_include_chain (new, new);
+	    if (first_system_include == 0)
+	      first_system_include = new;
 	  }
 	}
       }
@@ -1558,32 +1542,18 @@ main (argc, argv)
 	struct file_name_list *new
 	  = (struct file_name_list *) xmalloc (sizeof (struct file_name_list));
 	new->control_macro = 0;
-	/* Add elt to tail of list.  */
-	if (include == 0)
-	  include = new;
-	else
-	  last_include->next = new;
-	/* Make sure list for #include <...> also has the standard dirs.  */
-	if (ignore_srcdir && first_bracket_include == 0)
-	  first_bracket_include = new;
-	/* Record new tail.  */
-	last_include = new;
 	new->fname = p->fname;
+	append_include_chain (new, new);
+	if (first_system_include == 0)
+	  first_system_include = new;
       }
     }
   }
 
   /* Tack the after_include chain at the end of the include chain.  */
-  if (last_include)
-    last_include->next = after_include;
-  else
-    include = after_include;
-  if (ignore_srcdir && first_bracket_include == 0)
-    first_bracket_include = after_include;
-
-  /* Terminate the after_include chain.  */
-  if (last_after_include)
-    last_after_include->next = 0;
+  append_include_chain (after_include, last_after_include);
+  if (first_system_include == 0)
+    first_system_include = after_include;
 
   /* Scan the -imacros files before the main input.
      Much like #including them, but with no_output set
@@ -1861,16 +1831,8 @@ path_include (path)
 	xmalloc (sizeof (struct file_name_list));
       dirtmp->next = 0;		/* New one goes on the end */
       dirtmp->control_macro = 0;
-      if (include == 0)
-	include = dirtmp;
-      else
-	last_include->next = dirtmp;
-      last_include = dirtmp;	/* Tail follows the last one */
       dirtmp->fname = name;
-      if (strlen (dirtmp->fname) > max_include_len)
-	max_include_len = strlen (dirtmp->fname);
-      if (ignore_srcdir && first_bracket_include == 0)
-	first_bracket_include = dirtmp;
+      append_include_chain (dirtmp, dirtmp);
 
       /* Advance past this name.  */
       p = q;
@@ -3698,7 +3660,8 @@ get_filename:
 	      dsp[0].fname = (char *) alloca (n + 1);
 	      strncpy (dsp[0].fname, nam, n);
 	      dsp[0].fname[n] = '\0';
-	      if (n > max_include_len) max_include_len = n;
+	      if (n + INCLUDE_LEN_FUDGE > max_include_len)
+		max_include_len = n + INCLUDE_LEN_FUDGE;
 	    } else {
 	      dsp[0].fname = 0; /* Current directory */
 	    }
@@ -3974,7 +3937,7 @@ is_system_include (filename)
 {
   struct file_name_list *searchptr;
 
-  for (searchptr = first_bracket_include; searchptr;
+  for (searchptr = first_system_include; searchptr;
        searchptr = searchptr->next)
     if (searchptr->fname) {
       register char *sys_dir = searchptr->fname;
@@ -8332,6 +8295,39 @@ make_assertion (option, str)
      does any output.... */
   do_assert (buf, buf + strlen (buf) , NULL_PTR, kt);
   --indepth;
+}
+
+/* Append a chain of `struct file_name_list's
+   to the end of the main include chain.
+   FIRST is the beginning of the chain to append, and LAST is the end.  */
+
+static void
+append_include_chain (first, last)
+     struct file_name_list *first, *last;
+{
+  struct file_name_list *dir;
+
+  if (!first || !last)
+    return;
+
+  if (include == 0)
+    include = first;
+  else
+    last_include->next = first;
+
+  if (first_bracket_include == 0)
+    first_bracket_include = dir;
+
+  for (dir = first; ; dir = dir->next) {
+    size_t len = strlen (dir->fname) + INCLUDE_LEN_FUDGE;
+    if (len > max_include_len)
+      max_include_len = len;
+    if (dir == last)
+      break;
+  }
+
+  last->next = NULL;
+  last_include = last;
 }
 
 /* Add output to `deps_buffer' for the -M switch.
