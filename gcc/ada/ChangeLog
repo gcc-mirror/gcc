@@ -1,3 +1,18 @@
+2001-10-26  Richard Kenner <kenner@gnat.com>
+
+	* decl.c (gnat_to_gnu_entity, case E_General_Access_Type): 
+	Make constant variant of designated type for Is_Access_Constant.
+	Call update_pointer_to with main variant.
+	
+	* trans.c (process_freeze_entity, process_type): 
+	Call update_pointer_to on main variant.
+	
+	* utils.c (update_pointer_to): Make corresponding variant for NEW_TYPE.
+	If main variant, update all other variants.
+	
+	* utils2.c (build_unary_op, case INDIRECT_REF): No longer set 
+	TREE_STATIC.
+
 2001-10-26  Robert Dewar <dewar@gnat.com>
 
 	* prj-util.adb: Minor reformatting

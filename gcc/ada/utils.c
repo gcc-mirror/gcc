@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                            $Revision: 1.4 $
+ *                            $Revision$
  *                                                                          *
  *          Copyright (C) 1992-2001, Free Software Foundation, Inc.         *
  *                                                                          *
@@ -2581,8 +2581,22 @@ update_pointer_to (old_type, new_type)
 {
   tree ptr = TYPE_POINTER_TO (old_type);
   tree ref = TYPE_REFERENCE_TO (old_type);
+  tree type;
 
-  if ((ptr == 0 && ref == 0) || old_type == new_type)
+  /* If this is the main variant, process all the other variants first.  */
+  if (TYPE_MAIN_VARIANT (old_type) == old_type)
+    for (type = TYPE_NEXT_VARIANT (old_type); type != 0;
+	 type = TYPE_NEXT_VARIANT (type))
+      update_pointer_to (type, new_type);
+
+  /* If no pointer or reference, we are done.  Otherwise, get the new type with
+     the same qualifiers as the old type and see if it is the same as the old
+     type.  */
+  if (ptr == 0 && ref == 0)
+    return;
+
+  new_type = build_qualified_type (new_type, TYPE_QUALS (old_type));
+  if (old_type == new_type)
     return;
 
   /* First handle the simple case.  */

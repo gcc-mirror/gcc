@@ -4048,7 +4048,8 @@ process_freeze_entity (gnat_node)
   if (gnu_old != 0)
     {
       DECL_NAME (gnu_new) = DECL_NAME (gnu_old);
-      update_pointer_to (TREE_TYPE (gnu_old), TREE_TYPE (gnu_new));
+      update_pointer_to (TYPE_MAIN_VARIANT (TREE_TYPE (gnu_old)),
+			 TREE_TYPE (gnu_new));
     }
 }
 
@@ -4725,7 +4726,8 @@ process_type (gnat_entity)
   /* If we have an old type and we've made pointers to this type,
      update those pointers.  */
   if (gnu_old != 0)
-    update_pointer_to (TREE_TYPE (gnu_old), TREE_TYPE (gnu_new));
+    update_pointer_to (TYPE_MAIN_VARIANT (TREE_TYPE (gnu_old)),
+		       TREE_TYPE (gnu_new));
 
   /* If this is a record type corresponding to a task or protected type 
      that is a completion of an incomplete type, perform a similar update
@@ -4744,7 +4746,8 @@ process_type (gnat_entity)
       save_gnu_tree (Corresponding_Concurrent_Type (gnat_entity),
 		     gnu_new, 0);
 
-      update_pointer_to (TREE_TYPE (gnu_task_old), TREE_TYPE (gnu_new));
+      update_pointer_to (TYPE_MAIN_VARIANT (TREE_TYPE (gnu_task_old)),
+			 TREE_TYPE (gnu_new));
     }
 }
 
