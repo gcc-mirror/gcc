@@ -5,7 +5,7 @@
    PR:		none.
    Originator:	<andreast@gcc.gnu.org> 20030828	 */
 
-/* { dg-do run } */
+/* { dg-do run { xfail mips*-*-* arm*-*-* strongarm*-*-* xscale*-*-* } } */
 #include "ffitest.h"
 
 typedef struct cls_struct_8byte {
@@ -26,10 +26,10 @@ cls_struct_8byte cls_struct_8byte_fn(struct cls_struct_8byte a1,
   return  result;
 }
 
-static void 
+static void
 cls_struct_8byte_gn(ffi_cif* cif, void* resp, void** args, void* userdata)
-{   
-  
+{
+
   struct cls_struct_8byte a1, a2;
 
   a1 = *(struct cls_struct_8byte*)(args[0]);
@@ -56,16 +56,16 @@ int main (void)
   struct cls_struct_8byte g_dbl = { 1, 2.0 };
   struct cls_struct_8byte f_dbl = { 4, 5.0 };
   struct cls_struct_8byte res_dbl;
-  
+
   cls_struct_fields[0] = &ffi_type_uint32;
   cls_struct_fields[1] = &ffi_type_float;
   cls_struct_fields[2] = NULL;
-  
+
   dbl_arg_types[0] = &cls_struct_type;
   dbl_arg_types[1] = &cls_struct_type;
   dbl_arg_types[2] = NULL;
-  
-  CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 2, &cls_struct_type, 
+
+  CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 2, &cls_struct_type,
 		     dbl_arg_types) == FFI_OK);
 
   args_dbl[0] = &g_dbl;
@@ -78,11 +78,11 @@ int main (void)
   CHECK( res_dbl.b == (g_dbl.b + f_dbl.b));
 
   CHECK(ffi_prep_closure(pcl, &cif, cls_struct_8byte_gn, NULL) == FFI_OK);
-  
+
   res_dbl = ((cls_struct_8byte(*)(cls_struct_8byte, cls_struct_8byte))(pcl))(g_dbl, f_dbl);
   /* { dg-output "\n1 2 4 5: 5 7" } */
   CHECK( res_dbl.a == (g_dbl.a + f_dbl.a));
   CHECK( res_dbl.b == (g_dbl.b + f_dbl.b));
 
   exit(0);
-} 
+}

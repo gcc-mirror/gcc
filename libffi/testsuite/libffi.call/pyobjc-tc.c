@@ -69,7 +69,7 @@ int main(void)
 	rect_type.elements[2] = NULL;
 
 	/*
-	 * Create a CIF 
+	 * Create a CIF
 	 */
 	arglist[0] = &ffi_type_sint;
 	arglist[1] = &ffi_type_pointer;

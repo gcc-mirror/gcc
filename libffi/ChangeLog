@@ -1,3 +1,37 @@
+2003-09-19  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* testsuite/libffi.call/closure_fn0.c: Xfail mips, arm,
+	strongarm, xscale. Cleanup whitespaces.
+	* testsuite/libffi.call/closure_fn1.c: Likewise.
+	* testsuite/libffi.call/closure_fn2.c: Likewise.
+	* testsuite/libffi.call/closure_fn3.c: Likewise.
+	* testsuite/libffi.call/cls_12byte.c: Likewise.
+	* testsuite/libffi.call/cls_16byte.c: Likewise.
+	* testsuite/libffi.call/cls_1_1byte.c: Likewise.
+	* testsuite/libffi.call/cls_20byte.c: Likewise.
+	* testsuite/libffi.call/cls_24byte.c: Likewise.
+	* testsuite/libffi.call/cls_2byte.c: Likewise.
+	* testsuite/libffi.call/cls_3_1byte.c: Likewise.
+	* testsuite/libffi.call/cls_3byte1.c: Likewise.
+	* testsuite/libffi.call/cls_3byte2.c: Likewise.
+	* testsuite/libffi.call/cls_4_1byte.c: Likewise.
+	* testsuite/libffi.call/cls_4byte.c: Likewise.
+	* testsuite/libffi.call/cls_5byte.c: Likewise.
+	* testsuite/libffi.call/cls_6byte.c: Likewise.
+	* testsuite/libffi.call/cls_7byte.c: Likewise.
+	* testsuite/libffi.call/cls_8byte.c: Likewise.
+	* testsuite/libffi.call/cls_double.c: Likewise.
+	* testsuite/libffi.call/cls_float.c: Likewise.
+	* testsuite/libffi.call/cls_uchar.c: Likewise.
+	* testsuite/libffi.call/cls_uint.c: Likewise.
+	* testsuite/libffi.call/cls_ulonglong.c: Likewise.
+	* testsuite/libffi.call/cls_ushort.c: Likewise.
+	* testsuite/libffi.call/nested_struct.c: Likewise.
+	* testsuite/libffi.call/nested_struct1.c: Likewise.
+	* testsuite/libffi.call/problem1.c: Likewise.
+	* testsuite/libffi.special/unwindtest.cc: Likewise.
+	* testsuite/libffi.call/pyobjc-tc.c: Cleanup whitespaces.
+
 2003-09-18  David Edelsohn  <edelsohn@gnu.org>
 
 	* src/powerpc/aix.S: Cleanup whitespaces.

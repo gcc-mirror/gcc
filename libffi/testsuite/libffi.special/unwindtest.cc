@@ -4,7 +4,7 @@
    PR:		none.
    Originator:	Jeff Sturm <jsturm@one-point.com>  */
 
-/* { dg-do run } */
+/* { dg-do run { xfail mips*-*-* arm*-*-* strongarm*-*-* xscale*-*-* } } */
 #include "ffitestcxx.h"
 
 void
@@ -15,34 +15,34 @@ closure_test_fn(ffi_cif* cif, void* resp, void** args, void* userdata)
 
 typedef void (*closure_test_type)();
 
-void closure_test_fn1(ffi_cif* cif,void* resp,void** args, 
+void closure_test_fn1(ffi_cif* cif,void* resp,void** args,
 			     void* userdata)
  {
     *(ffi_arg*)resp =
-      (int)*(float *)args[0] +(int)(*(float *)args[1]) + 
+      (int)*(float *)args[0] +(int)(*(float *)args[1]) +
       (int)(*(float *)args[2]) + (int)*(float *)args[3] +
       (int)(*(signed short *)args[4]) + (int)(*(float *)args[5]) +
-      (int)*(float *)args[6] + (int)(*(int *)args[7]) + 
-      (int)(*(double*)args[8]) + (int)*(int *)args[9] + 
-      (int)(*(int *)args[10]) + (int)(*(float *)args[11]) + 
-      (int)*(int *)args[12] + (int)(*(int *)args[13]) + 
+      (int)*(float *)args[6] + (int)(*(int *)args[7]) +
+      (int)(*(double*)args[8]) + (int)*(int *)args[9] +
+      (int)(*(int *)args[10]) + (int)(*(float *)args[11]) +
+      (int)*(int *)args[12] + (int)(*(int *)args[13]) +
       (int)(*(int *)args[14]) + *(int *)args[15] + (int)(long)userdata;
 
     printf("%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d: %d\n",
-    	   (int)*(float *)args[0], (int)(*(float *)args[1]), 
-    	   (int)(*(float *)args[2]), (int)*(float *)args[3], 
-    	   (int)(*(signed short *)args[4]), (int)(*(float *)args[5]),
-    	   (int)*(float *)args[6], (int)(*(int *)args[7]),
-    	   (int)(*(double *)args[8]), (int)*(int *)args[9],
-    	   (int)(*(int *)args[10]), (int)(*(float *)args[11]),
-    	   (int)*(int *)args[12], (int)(*(int *)args[13]),
-    	   (int)(*(int *)args[14]), *(int *)args[15],
-    	   (int)(long)userdata, (int)*(ffi_arg*)resp);
-    
+	   (int)*(float *)args[0], (int)(*(float *)args[1]),
+	   (int)(*(float *)args[2]), (int)*(float *)args[3],
+	   (int)(*(signed short *)args[4]), (int)(*(float *)args[5]),
+	   (int)*(float *)args[6], (int)(*(int *)args[7]),
+	   (int)(*(double *)args[8]), (int)*(int *)args[9],
+	   (int)(*(int *)args[10]), (int)(*(float *)args[11]),
+	   (int)*(int *)args[12], (int)(*(int *)args[13]),
+	   (int)(*(int *)args[14]), *(int *)args[15],
+	   (int)(long)userdata, (int)*(ffi_arg*)resp);
+
     throw (int)*(ffi_arg*)resp;
 }
 
-typedef int (*closure_test_type1)(float, float, float, float, signed short, 
+typedef int (*closure_test_type1)(float, float, float, float, signed short,
 				  float, float, int, double, int, int, float,
 				  int, int, int, int);
 
@@ -53,11 +53,11 @@ int main (void)
   ffi_type * cl_arg_types[17];
   {
     cl_arg_types[1] = NULL;
-    
+
     CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 0,
 		       &ffi_type_void, cl_arg_types) == FFI_OK);
     CHECK(ffi_prep_closure(&cl, &cif, closure_test_fn, NULL) == FFI_OK);
-    
+
     try
       {
 	(*((closure_test_type)(&cl)))();
@@ -65,7 +65,7 @@ int main (void)
       {
 	CHECK(exception_code == 9);
       }
-    
+
     printf("part one OK\n");
     /* { dg-output "part one OK" } */
     }
@@ -89,7 +89,7 @@ int main (void)
       cl_arg_types[14] = &ffi_type_uint;
       cl_arg_types[15] = &ffi_type_uint;
       cl_arg_types[16] = NULL;
-      
+
       /* Initialize the cif */
       CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 16,
 			 &ffi_type_sint, cl_arg_types) == FFI_OK);
@@ -105,7 +105,7 @@ int main (void)
 	} catch (int exception_code)
 	{
 	  CHECK(exception_code == 255);
-	}      
+	}
       printf("part two OK\n");
       /* { dg-output "\npart two OK" } */
     }
