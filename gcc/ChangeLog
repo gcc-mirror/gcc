@@ -1,3 +1,8 @@
+2002-04-12  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* function.c (fixup_var_refs_1) <SET, handling VAR in SET_SRC>:
+	For paradoxical (subreg VAR), replace VAR, don't try the subreg.
+
 2002-04-12  Andreas Schwab  <schwab@suse.de>
 
 	* config/ia64/ia64.h (EXTRA_SPECS): Fix missing backslash.
