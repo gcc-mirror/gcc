@@ -29,4 +29,4 @@ gzio.c infblock.c infblock.h infcodes.c infcodes.h inffast.c inffast.h \
 inffixed.h inflate.c inftrees.c inftrees.h infutil.c infutil.h trees.c \
 trees.h uncompr.c zconf.h zlib.h zutil.c zutil.h
 
-libzgcj_la_LDFLAGS = -release $(VERSION) -rpath $(toolexeclibdir)
+libzgcj_la_LDFLAGS = -version-info 0:0:0 -rpath $(toolexeclibdir)
