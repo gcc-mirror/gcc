@@ -3887,6 +3887,7 @@ compare_ics (ics1, ics2)
   return 0;
 }
 
+#if 0
 /* The source type for this standard conversion sequence.  */
 
 static tree
@@ -3902,6 +3903,7 @@ source_type (t)
     }
   my_friendly_abort (1823);
 }
+#endif
 
 /* Compare two candidates for overloading as described in
    [over.match.best].  Return values:
