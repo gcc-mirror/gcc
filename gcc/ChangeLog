@@ -1,3 +1,9 @@
+2004-11-22  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR rtl-optimization/18599
+	* regrename.c (copyprop_hardreg_forward): Speed up by putting
+	BB_VISITED flags on basic blocks as we process them.
+
 2004-11-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/rs6000/altivec.md (VI_char): New mode attribute.
