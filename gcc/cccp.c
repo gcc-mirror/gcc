@@ -233,6 +233,11 @@ static void hack_vms_include_specification ();
 #define INCLUDE_LEN_FUDGE 12	/* leave room for VMS syntax conversion */
 #endif /* VMS */
 
+/* Windows does not natively support inodes */
+#if defined (_WIN32) && ! defined (CYGWIN32)
+#define INO_T_EQ(a, b) 0
+#endif
+
 #ifndef O_RDONLY
 #define O_RDONLY 0
 #endif
