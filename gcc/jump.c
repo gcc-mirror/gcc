@@ -480,12 +480,9 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 				remove_death (dreg, trial);
 				break;
 			      }
-#ifdef PRESERVE_DEATH_INFO_REGNO_P
-			/* Deleting insn could lose a death-note for SREG
-			   so don't do it if final needs accurate
-			   death-notes.  */
-			if (PRESERVE_DEATH_INFO_REGNO_P (sreg)
-			    && (trial = find_regno_note (insn, REG_DEAD, sreg)))
+
+			/* Deleting insn could lose a death-note for SREG.  */
+			if ((trial = find_regno_note (insn, REG_DEAD, sreg)))
 			  {
 			    /* Change this into a USE so that we won't emit
 			       code for it, but still can keep the note.  */
@@ -497,7 +494,6 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 			    XEXP (trial, 1) = NULL_RTX;
 			  }
 			else
-#endif
 			  delete_insn (insn);
 		      }
 		  }
@@ -2434,8 +2430,7 @@ duplicate_loop_exit_test (loop_start)
 	 has a REG_RETVAL or REG_LIBCALL note (hard to adjust)
 	 is a NOTE_INSN_LOOP_BEG because this means we have a nested loop
 	 is a NOTE_INSN_BLOCK_{BEG,END} because duplicating these notes
-	      are not valid
-	    
+	      is not valid.
 
      We also do not do this if we find an insn with ASM_OPERANDS.  While
      this restriction should not be necessary, copying an insn with
@@ -2480,6 +2475,10 @@ duplicate_loop_exit_test (loop_start)
 	  break;
 	case JUMP_INSN:
 	case INSN:
+	  /* The code below would grossly mishandle REG_WAS_0 notes,
+	     so get rid of them here.  */
+	  while ((p = find_reg_note (insn, REG_WAS_0, NULL_RTX)) != 0)
+	    remove_note (insn, p);
 	  if (++num_insns > 20
 	      || find_reg_note (insn, REG_RETVAL, NULL_RTX)
 	      || find_reg_note (insn, REG_LIBCALL, NULL_RTX)

@@ -21,6 +21,10 @@ Wed Oct  7 02:27:52 1998  Jeffrey A Law  (law@cygnus.com)
 	
 Wed Oct  7 01:08:43 1998  Bernd Schmidt <crux@Pool.Informatik.RWTH-Aachen.DE>
 
+	* jump.c (duplicate_loop_exit_test): Strip REG_WAS_0 notes off all
+	insns we're going to copy.
+	* regclass.c (reg_scan_mark_refs): Don't test X for NULL_RTX.
+
 	* loop.c (count_one_set): Add prototype.
 
 	* caller-save.c (restore_referenced_regs): Lose mode argument.
