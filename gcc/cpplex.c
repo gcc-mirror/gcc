@@ -90,6 +90,9 @@ unsigned int spell_comment PARAMS ((unsigned char *, cpp_toklist *,
 				    cpp_token *token));
 unsigned int spell_name PARAMS ((unsigned char *, cpp_toklist *,
 				 cpp_token *token));
+static unsigned char * spell_token PARAMS ((cpp_reader *, cpp_token *,
+					    cpp_toklist *, unsigned char *,
+					    int));
 
 typedef unsigned int (* speller) PARAMS ((unsigned char *, cpp_toklist *,
 					  cpp_token *));
@@ -121,13 +124,11 @@ typedef unsigned int (* speller) PARAMS ((unsigned char *, cpp_toklist *,
 #define SPELL_HANDLER  1
 #define SPELL_CHAR     2
 #define SPELL_NONE     3
-#define SPELL_EOL      4
 
 #define T(e, s) {SPELL_TEXT, s},
 #define H(e, s) {SPELL_HANDLER, (PTR) s},
 #define C(e, s) {SPELL_CHAR, s},
 #define N(e, s) {SPELL_NONE, s},
-#define E(e, s) {SPELL_EOL, s},
 
 static const struct token_spelling
 {
@@ -139,7 +140,6 @@ static const struct token_spelling
 #undef H
 #undef C
 #undef N
-#undef E
 
 #define PUSH_TOKEN(ttype) cur_token++->type = ttype
 #define REVISE_TOKEN(ttype) cur_token[-1].type = ttype
@@ -148,8 +148,8 @@ static const struct token_spelling
   BACKUP_TOKEN(ttype); cur_token->flags |= DIGRAPH;} while (0)
 
 /* If there is this many bytes in a buffer, you have enough room to
-   spell the token, not including preceding whitespace.  */
-#define TOKEN_LEN(token) (4 + (token_spellings[token->type].type == \
+   spell the token, including preceding whitespace.  */
+#define TOKEN_LEN(token) (5 + (token_spellings[token->type].type == \
 			       SPELL_HANDLER ? token->val.name.len: 0))
 
 #endif
@@ -3350,6 +3350,65 @@ spell_name (buffer, list, token)
   return len;
 }
 
+/* Write the spelling of a token TOKEN to BUFFER.  The buffer must
+   already contain the enough space to hold the token's spelling.  If
+   WHITESPACE is true, and the token was preceded by whitespace,
+   output a single space before the token proper.  Returns a pointer
+   to the character after the last character written.  */
+
+static unsigned char *
+spell_token (pfile, token, list, buffer, whitespace)
+     cpp_reader *pfile;		/* Would be nice to be rid of this...  */
+     cpp_token *token;
+     cpp_toklist *list;		/* FIXME: get rid of this...  */
+     unsigned char *buffer;
+     int whitespace;
+{
+  /* Whitespace will not be wanted by handlers of the # and ##
+     operators calling this function, but will be wanted by the
+     function that writes out the preprocessed file.  */
+  if (whitespace && token->flags & PREV_WHITESPACE)
+    *buffer++ = ' ';
+
+  switch (token_spellings[token->type].type)
+    {
+    case SPELL_TEXT:
+      {
+	const unsigned char *spelling;
+	unsigned char c;
+
+	if (token->flags & DIGRAPH)
+	  spelling = digraph_spellings[token->type - CPP_FIRST_DIGRAPH];
+	else
+	  spelling = token_spellings[token->type].speller;
+	
+	while ((c = *spelling++) != '\0')
+	  *buffer++ = c;
+      }
+      break;
+
+    case SPELL_HANDLER:
+      {
+	speller s;
+
+	s = (speller) token_spellings[token->type].speller;
+	buffer += s (buffer, list, token);
+      }
+      break;
+
+    case SPELL_CHAR:
+      *buffer++ = token->aux;
+      break;
+
+    case SPELL_NONE:
+      cpp_ice (pfile, "Unspellable token");
+      break;
+    }
+
+  return buffer;
+}
+
+/* Temporary function for illustrative purposes.  */
 void
 _cpp_lex_file (pfile)
      cpp_reader* pfile;
@@ -3394,70 +3453,29 @@ _cpp_output_list (pfile, list)
   if (list->comments_used > 0)
     comment_token = list->tokens + list->comments[0].aux;
 
-  CPP_RESERVE (pfile, 2);	/* Always have room for " \n".  */
-  for (token = &list->tokens[0];; token++)
+  token = &list->tokens[0];
+  do
     {
-      if (token->flags & PREV_WHITESPACE)
+      /* Output comments if -C.  */
+      if (token == comment_token)
 	{
-	  /* Output comments if -C.  Otherwise a space will do.  */
-	  if (token == comment_token)
+	  cpp_token *comment = &list->comments[comment_no];
+	  do
 	    {
-	      cpp_token *comment = &list->comments[comment_no];
-	      do
-		{
-		  CPP_RESERVE (pfile, 2 + TOKEN_LEN (comment));
-		  pfile->limit += spell_comment (pfile->limit, list, comment);
-		  comment_no++, comment++;
-		  if (comment_no == list->comments_used)
-		    break;
-		  comment_token = comment->aux + list->tokens;
-		}
-	      while (comment_token == token);
+	      CPP_RESERVE (pfile, TOKEN_LEN (comment));
+	      pfile->limit += spell_comment (pfile->limit, list, comment);
+	      comment_no++, comment++;
+	      if (comment_no == list->comments_used)
+		break;
+	      comment_token = comment->aux + list->tokens;
 	    }
-	  else
-	    CPP_PUTC_Q (pfile, ' ');
+	  while (comment_token == token);
 	}
 
-      CPP_RESERVE (pfile, 2 + TOKEN_LEN (token));
-      switch (token_spellings[token->type].type)
-	{
-	case SPELL_TEXT:
-	  {
-	    const unsigned char *spelling;
-	    unsigned char c;
-
-	    if (token->flags & DIGRAPH)
-	      spelling = digraph_spellings[token->type - CPP_FIRST_DIGRAPH];
-	    else
-	      spelling = token_spellings[token->type].speller;
-
-	    while ((c = *spelling++) != '\0')
-	      CPP_PUTC_Q (pfile, c);
-	  }
-	  break;
-
-	case SPELL_HANDLER:
-	  {
-	    speller s;
-
-	    s = (speller) token_spellings[token->type].speller;
-	    pfile->limit += s (pfile->limit, list, token);
-	  }
-	  break;
-
-	case SPELL_CHAR:
-	  *pfile->limit++ = token->aux;
-	  break;
-
-	case SPELL_EOL:
-	  CPP_PUTC_Q (pfile, '\n');
-	  return;
-
-	case SPELL_NONE:
-	  cpp_error (pfile, "Unwriteable token");
-	  break;
-	}
+      CPP_RESERVE (pfile, TOKEN_LEN (token));
+      pfile->limit = spell_token (pfile, token, list, pfile->limit, 1);
     }
+  while (token++->type != CPP_VSPACE);
 }
 
 #endif
