@@ -3788,9 +3788,6 @@ thread_jumps_from_bb (basic_block bb)
 	  continue;
 	}
 
-      count = e->count;
-      freq = EDGE_FREQUENCY (e);
-
       /* Now walk through as many forwarder blocks as possible to find
 	 the ultimate destination we want to thread our jump to.  */
       last = EDGE_SUCC (e->dest, 0);
@@ -3839,6 +3836,8 @@ thread_jumps_from_bb (basic_block bb)
 
       /* Perform the redirection.  */
       retval = true;
+      count = e->count;
+      freq = EDGE_FREQUENCY (e);
       old_dest = e->dest;
       e = redirect_edge_and_branch (e, dest);
 
