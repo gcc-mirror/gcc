@@ -9,6 +9,9 @@
 	* tree-ssa-pre.c (compute_avail): Remove local variable val.
 	(mark_operand_necessary): Remove local variable ver.
 
+	* tree-vect-transform.c (vect_get_new_vect_var): Remove local
+	variable prefix_len.
+
 2005-03-12  Geoffrey Keating  <geoffk@apple.com>
 
 	* c-lex.c (c_lex_with_flags): Add parameter to call to 
