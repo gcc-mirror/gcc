@@ -1,5 +1,7 @@
 1999-07-06  Tom Tromey  <tromey@cygnus.com>
 
+	* libjava.lang/Final.xfail: Output fails, not exec.
+
 	* libjava.lang/Throw_1.xfail: New file.
 	* libjava.lang/Invoke_2.xfail: New file.
 	* libjava.lang/Shazam.xfail: New file.
