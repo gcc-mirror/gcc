@@ -2417,6 +2417,20 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 	  SUBST (*split, newdest);
 	  i2_code_number = recog_for_combine (&newi2pat, i2, &new_i2_notes);
 
+	  /* recog_for_combine might have added CLOBBERs to newi2pat.
+	     Make sure NEWPAT does not depend on the clobbered regs.  */
+	  if (GET_CODE (newi2pat) == PARALLEL)
+	    for (i = XVECLEN (newi2pat, 0) - 1; i >= 0; i--)
+	      if (GET_CODE (XVECEXP (newi2pat, 0, i)) == CLOBBER)
+		{
+		  rtx reg = XEXP (XVECEXP (newi2pat, 0, i), 0);
+		  if (reg_overlap_mentioned_p (reg, newpat))
+		    {
+		      undo_all ();
+		      return 0;
+		    }
+		}
+
 	  /* If the split point was a MULT and we didn't have one before,
 	     don't use one now.  */
 	  if (i2_code_number >= 0 && ! (split_code == MULT && ! have_mult))

@@ -1,3 +1,9 @@
+2005-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/20322
+	* combine.c (try_combine): If recog_for_combine added CLOBBERs
+	to NEWI2PAT, fail to combine if they are used by NEWPAT.
+
 2005-03-10  Aldy Hernandez  <aldyh@redhat.com>
 
         * doc/invoke.texi: Add 8540 to list of cpus in rs6000 cpu section.
