@@ -5946,7 +5946,10 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
       if (got_scope)
 	goto done;
       else if (got_object && val)
-	from_obj = val;
+	{
+	  from_obj = val;
+	  val = NULL_TREE;
+	}
     }
   else
     {
@@ -6015,13 +6018,12 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 	{
 	  if (looking_for_typename && TREE_CODE (from_obj) == TYPE_DECL
 	      && TREE_CODE (val) == TYPE_DECL
-	      && TREE_TYPE (from_obj) != TREE_TYPE (val))
-	    {
-	      cp_pedwarn ("lookup of `%D' in the scope of `%#T' (`%#T')",
-			  name, got_object, TREE_TYPE (from_obj));
-	      cp_pedwarn ("  does not match lookup in the current scope (`%#T')",
-			  TREE_TYPE (val));
-	    }
+	      && ! same_type_p (TREE_TYPE (from_obj), TREE_TYPE (val)))
+	    cp_pedwarn ("\
+lookup of `%D' in the scope of `%#T' (`%#T') \
+does not match lookup in the current scope (`%#T')",
+			name, got_object, TREE_TYPE (from_obj),
+			TREE_TYPE (val));
 
 	  /* We don't change val to from_obj if got_object depends on
 	     template parms because that breaks implicit typename for
