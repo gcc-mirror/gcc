@@ -12381,9 +12381,6 @@ abundantly clear also aids readability and self-documentation of the code.
 Note that due to ISO C++ specification requirements, operator new and
 operator delete must always be of default visibility.
 
-An overview of these techniques, their benefits and how to use them
-is at @w{@uref{http://www.nedprod.com/programs/gccvisibility.html}}.
-
 @end table
 
 @c man end

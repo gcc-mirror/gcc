@@ -1,3 +1,7 @@
+2005-03-04  Devang Patel  <dpatel@apple.com>
+
+	* doc/invoke.texi: Remove reference to webpage that does not exist.
+	
 2005-03-04  John David Anglin  <dave.danglin@nrc-cnrc.gc.ca>
 	    Joseph S. Myers  <joseph@codesourcery.com>
 
