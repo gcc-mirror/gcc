@@ -5134,27 +5134,6 @@ output_fp_conditional_move (which_alternative, operands)
      int which_alternative;
      rtx operands[];
 {
-  int code = GET_CODE (operands[1]);
-
-  /* This is very tricky. We have to do it right. For a code segement
-     like:
-
-	int foo;
-	double bar;
-	....
-	foo = foo - x;
-	if (foo >= 0)
-	  bar = y;
-
-     final_scan_insn () may delete the insn which sets CC. We have to
-     tell final_scan_insn () if it should be reinserted. When CODE is
-     GT or LE, we have to check the CC_NO_OVERFLOW bit and return
-     NULL_PTR to tell final to reinsert the test insn because the
-     conditional move cannot be handled properly without it. */
-  if ((code == GT || code == LE)
-      && (cc_prev_status.flags & CC_NO_OVERFLOW))
-    return NULL_PTR;
-
   switch (which_alternative)
     {
     case 0:

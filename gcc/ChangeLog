@@ -1,3 +1,11 @@
+Sun Jun 21 01:16:38 1998  John Wehle  (john@feith.com)
+
+	* i386.c (output_fp_conditional_move): Don't bother handling
+	(cc_prev_status.flags && CC_NO_OVERFLOW) since the INSN patterns
+	prevent this from happening.
+
+	* i386.md (nonlocal_goto_receiver): Delete.
+
 Sun Jun 21 00:42:20 1998  H.J. Lu  (hjl@gnu.org)
 
 	* flow.c (allocate_for_life_analysis, init_regset_vector):
