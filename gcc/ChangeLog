@@ -1,3 +1,14 @@
+Sat Apr  4 20:16:46 1998  Richard Henderson  <rth@cygnus.com>
+
+	* i386.c (asm_output_function_prefix, load_pic_register):
+	Use ASM_GENERATE_INTERNAL_LABEL properly.
+	(output_pic_addr_const): Recognize %X to supress any PIC sym suffix.
+	(print_operand): Ignore it.
+	(load_pic_register): Use it for the got load call.
+	* i386.md (prologue_set_got, prologue_get_pc): Likewise.
+	(prologue_get_pc_and_set_got): Likewise.
+	* i386.h: Update print_operand docs.
+
 Sat Apr  4 19:08:37 1998  Richard Henderson  <rth@cygnus.com>
 
 	* i386.md (ffssi, ffshi): Rewrite as define_expands.

@@ -2509,9 +2509,13 @@ do { long l;						\
    R -- print the prefix for register names.
    z -- print the opcode suffix for the size of the current operand.
    * -- print a star (in certain assembler syntax)
-   w -- print the operand as if it's a "word" (HImode) even if it isn't.
-   b -- print the operand as if it's a byte (QImode) even if it isn't.
-   c -- don't print special prefixes before constant operands.  */
+   P -- if PIC, print an @PLT suffix.
+   X -- don't print any sort of PIC '@' suffix for a symbol.
+   J -- print jump insn for arithmetic_comparison_operator.
+   s -- ??? something to do with double shifts.  not actually used, afaik.
+   C -- print a conditional move suffix corresponding to the op code.
+   c -- likewise, but reverse the condition.
+   F,f -- likewise, but for floating-point.  */
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE)				\
   ((CODE) == '*')
