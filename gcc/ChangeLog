@@ -1,3 +1,8 @@
+2003-10-09  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (define_asm_attributes): Specify
+	the length of an asm insn more precisely.
+
 2003-10-09  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/mips/iris6.h (SUBTARGET_CPP_SPEC): Define.
