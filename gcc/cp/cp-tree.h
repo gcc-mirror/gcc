@@ -3941,7 +3941,7 @@ extern tree build_overload_with_type		PARAMS ((tree, tree));
 extern tree build_destructor_name		PARAMS ((tree));
 extern tree build_opfncall			PARAMS ((enum tree_code, int, tree, tree, tree));
 extern tree hack_identifier			PARAMS ((tree, tree));
-extern tree make_thunk				PROTO((tree, int, int));
+extern tree make_thunk				PARAMS ((tree, int, int));
 extern void emit_thunk				PARAMS ((tree));
 extern void synthesize_method			PARAMS ((tree));
 extern tree get_id_2				PARAMS ((const char *, tree));
