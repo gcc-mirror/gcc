@@ -2099,7 +2099,10 @@ do {									\
        be at least 8 bytes.
 
    `U' handles all pseudo registers or a hard even numbered
-       integer register, needed for ldd/std instructions.  */
+       integer register, needed for ldd/std instructions.
+
+   'W' handles the memory operand when moving operands in/out
+       of 'e' constraint floating point registers.  */
 
 #define EXTRA_CONSTRAINT_BASE(OP, C)   \
    ((C) == 'Q' ? fp_sethi_p(OP)        \
@@ -2120,7 +2123,8 @@ do {									\
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_BASE_P(X)  REG_OK_FOR_INDEX_P (X)
 
-/* 'T', 'U' are for aligned memory loads which aren't needed for arch64.  */
+/* 'T', 'U' are for aligned memory loads which aren't needed for arch64.
+   'W' is like 'T' but is assumed true on arch64.  */
 
 #define EXTRA_CONSTRAINT(OP, C)				\
    (EXTRA_CONSTRAINT_BASE(OP, C)                        \
@@ -2128,7 +2132,10 @@ do {									\
         ? (mem_min_alignment (OP, 8))			\
         : ((! TARGET_ARCH64 && (C) == 'U')		\
             ? (register_ok_for_ldd (OP))		\
-            : 0)))
+            : ((C) == 'W'				\
+	       ? ((TARGET_ARCH64 && GET_CODE (OP) == MEM) \
+	          || mem_min_alignment (OP, 8)) \
+	       : 0))))
 
 #else
 
@@ -2146,7 +2153,11 @@ do {									\
               && (REGNO (OP) < FIRST_PSEUDO_REGISTER	\
 	          || reg_renumber[REGNO (OP)] >= 0)	\
               && register_ok_for_ldd (OP))		\
-           : 0)))
+           : ((C) == 'W'				\
+	      ? (((TARGET_ARCH64 && GET_CODE (OP) == MEM) \
+		  || mem_min_alignment (OP, 8))		\
+                 && strict_memory_address_p (Pmode, XEXP (OP, 0))) \
+	      : 0))))
 
 #endif
 

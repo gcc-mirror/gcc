@@ -3075,7 +3075,7 @@ sparc-*-rtems*|sparc-*-rtemself*)
 sparcv9-*-solaris2* | sparc64-*-solaris2*)
 	if test x$gnu_ld = xyes
 	then
-		tm_file="sparc/sol2-sld-64.h sparc/sol2-64.h"
+		tm_file="sparc/sol2-sld-64.h sparc/sol2-64.h sparc/sol2-gld.h"
 	else
 		tm_file=sparc/sol2-sld-64.h
 	fi
@@ -3107,6 +3107,7 @@ sparc-hal-solaris2*)
         tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sol2.h sparc/hal.h"
         tmake_file="sparc/t-halos sparc/t-sol2 sparc/t-crtfm"
 	if test x$gnu_ld = xyes; then
+		tm_file="${tm_file} sparc/sol2-gld.h"
 		tmake_file="$tmake_file t-slibgcc-elf-ver"
 	else
 		tmake_file="$tmake_file t-slibgcc-sld"
@@ -3125,7 +3126,7 @@ sparc-hal-solaris2*)
 sparc-*-solaris2*)
 	if test x$gnu_ld = xyes
 	then
-		tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sol2.h"
+		tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sol2.h sparc/sol2-gld.h"
 	else
 		tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sol2.h sparc/sol2-sld.h"
 	fi
@@ -3142,7 +3143,7 @@ sparc-*-solaris2*)
 	*-*-solaris2*)
 		if test x$gnu_ld = xyes
 		then
-			tm_file="sparc/sol2-sld-64.h sparc/sol2-64.h"
+			tm_file="sparc/sol2-sld-64.h sparc/sol2-64.h sparc/sol2-gld.h"
 		else
 			tm_file="sparc/sol2-sld-64.h"
 		fi

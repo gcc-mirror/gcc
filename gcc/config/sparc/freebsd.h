@@ -97,7 +97,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* The default code model.  */
 #undef  SPARC_DEFAULT_CMODEL
-#define SPARC_DEFAULT_CMODEL	CM_MEDMID
+#define SPARC_DEFAULT_CMODEL	CM_MEDLOW
 
 
 /************************[  Assembler stuff  ]********************************/
@@ -153,3 +153,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define ENDFILE_SPEC \
   	"%{ffast-math|funsafe-math-optimizations:crtfastmath.o%s}" \
 	FBSD_ENDFILE_SPEC
+
+/* We use GNU ld so undefine this so that attribute((init_priority)) works.  */
+#undef CTORS_SECTION_ASM_OP
+#undef DTORS_SECTION_ASM_OP
