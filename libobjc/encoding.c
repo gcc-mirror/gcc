@@ -402,6 +402,7 @@ objc_skip_type_qualifiers (const char* type)
 	 || *type == _C_INOUT
 	 || *type == _C_OUT 
 	 || *type == _C_BYCOPY
+         || *type == _C_BYREF
 	 || *type == _C_ONEWAY
 	 || *type == _C_GCINVISIBLE)
     {
@@ -661,6 +662,7 @@ objc_get_type_qualifiers (const char* type)
       case _C_INOUT:	res |= _F_INOUT; break;
       case _C_OUT:	res |= _F_OUT; break;
       case _C_BYCOPY:	res |= _F_BYCOPY; break;
+      case _C_BYREF:  res |= _F_BYREF; break;
       case _C_ONEWAY:	res |= _F_ONEWAY; break;
       case _C_GCINVISIBLE: res |= _F_GCINVISIBLE; break;
       default: flag = NO;

@@ -37,6 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #define _C_INOUT	'N'
 #define _C_OUT      	'o'
 #define _C_BYCOPY	'O'
+#define _C_BYREF	'R'
 #define _C_ONEWAY	'V'
 #define _C_GCINVISIBLE	'!'
 
@@ -45,8 +46,9 @@ Boston, MA 02111-1307, USA.  */
 #define _F_OUT		0x02
 #define _F_INOUT	0x03
 #define _F_BYCOPY	0x04
-#define _F_ONEWAY	0x08
-#define _F_GCINVISIBLE	0x10
+#define _F_BYREF	0x08
+#define _F_ONEWAY	0x10
+#define _F_GCINVISIBLE	0x20
 
 int objc_aligned_size (const char* type);
 int objc_sizeof_type (const char* type);

@@ -1,3 +1,10 @@
+Thu Oct  8 12:21:14 1998  Richard Frith-Macdonald <richard@brainstorm.co.uk>
+
+	* encoding.c (objc_skip_type_qualifiers): Handle _C_BYREF.
+	(objc_get_type_qualifiers): Similarly.
+	* objc/encoding.h (_C_BYREF): Define.
+	(_F_BYREF): Define.
+
 1998-10-07  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* objc/sarray.h: Make boffset be an unsigned long when sparc so it
