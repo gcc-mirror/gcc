@@ -1,3 +1,9 @@
+2002-09-18  Nick Clifton  <nickc@redhat.com>
+
+	* config/rs60000/rs6000.c (rs6000_emit_move): Handle V1DImode moves.
+	* config/rs60000/rs6000.c (SPE_VECTOR_MODE): Include V1DImode.
+	* config/rs6000/spe.md (movv1di, movv1di_internal): New patterns.
+
 2002-09-17  Zack Weinberg  <zack@codesourcery.com>
 
 	* ABOUT-GCC-NLS: Remove reference to enquire, and out-of-date

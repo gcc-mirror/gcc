@@ -876,6 +876,7 @@ extern int rs6000_default_long_calls;
 #define SPE_VECTOR_MODE(MODE)		\
 	((MODE) == V4HImode          	\
          || (MODE) == V2SFmode          \
+         || (MODE) == V1DImode          \
          || (MODE) == V2SImode)
 
 /* Define this macro to be nonzero if the port is prepared to handle
