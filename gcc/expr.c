@@ -7006,8 +7006,17 @@ expand_expr (exp, target, tmode, modifier)
                 if (TREE_OPERAND (exp, 1) == NULL_TREE)
                   return target;
 	      }
-
-	    DECL_RTL (slot) = target;
+	    else
+	      {
+		DECL_RTL (slot) = target;
+		/* If we must have an addressable slot, then make sure that
+		   the RTL that we just stored in slot is OK.  */
+		if (TREE_ADDRESSABLE (slot))
+		  {
+		    TREE_ADDRESSABLE (slot) = 0;
+		    mark_addressable (slot);
+		  }
+	      }
 	  }
 
 	exp1 = TREE_OPERAND (exp, 3) = TREE_OPERAND (exp, 1);
