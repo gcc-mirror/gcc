@@ -2424,7 +2424,7 @@ expand_case (tree exp)
 	  if (compare_tree_int (minval, 0) > 0
 	      && compare_tree_int (maxval, GET_MODE_BITSIZE (word_mode)) < 0)
 	    {
-	      minval = integer_zero_node;
+	      minval = fold_convert (index_type, integer_zero_node);
 	      range = maxval;
 	    }
 	  emit_case_bit_tests (index_type, index_expr, minval, range,
@@ -2502,7 +2502,6 @@ expand_case (tree exp)
 			    table_label, default_label))
 	    {
 	      bool ok;
-	      index_type = integer_type_node;
 
 	      /* Index jumptables from zero for suitable values of
                  minval to avoid a subtraction.  */
@@ -2510,7 +2509,7 @@ expand_case (tree exp)
 		  && compare_tree_int (minval, 0) > 0
 		  && compare_tree_int (minval, 3) < 0)
 		{
-		  minval = integer_zero_node;
+		  minval = fold_convert (index_type, integer_zero_node);
 		  range = maxval;
 		}
 
