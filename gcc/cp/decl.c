@@ -6755,10 +6755,6 @@ builtin_function_1 (name, type, context, code, class, libname, attrs)
   DECL_FUNCTION_CODE (decl) = code;
   DECL_CONTEXT (decl) = context;
 
-  /* The return builtins leave the current function.  */
-  if (code == BUILT_IN_RETURN || code == BUILT_IN_EH_RETURN)
-    TREE_THIS_VOLATILE (decl) = 1;
-
   pushdecl (decl);
 
   /* Since `pushdecl' relies on DECL_ASSEMBLER_NAME instead of DECL_NAME,

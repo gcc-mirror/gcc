@@ -59,9 +59,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    compiler, but does not correspond to a function in the standard
    library.  */
 #undef DEF_GCC_BUILTIN
-#define DEF_GCC_BUILTIN(ENUM, NAME, TYPE)			\
+#define DEF_GCC_BUILTIN(ENUM, NAME, TYPE, ATTRS)		\
   DEF_BUILTIN (ENUM, NAME, BUILT_IN_NORMAL, TYPE, BT_LAST,	\
-               false, false, false, ATTR_NULL)
+               false, false, false, ATTRS)
 
 
 /* A fallback builtin is a builtin (like __builtin_puts) that falls
@@ -364,49 +364,64 @@ DEF_UNUSED_BUILTIN(BUILT_IN_GETMAN)
 
 DEF_GCC_BUILTIN(BUILT_IN_SAVEREGS,
 		"__builtin_saveregs",
-		BT_FN_PTR_VAR)
+		BT_FN_PTR_VAR,
+		ATTR_NULL)
 DEF_GCC_BUILTIN(BUILT_IN_CLASSIFY_TYPE,
 		"__builtin_classify_type",
-		BT_FN_INT_VAR)
+		BT_FN_INT_VAR,
+		ATTR_NULL)
 DEF_GCC_BUILTIN(BUILT_IN_NEXT_ARG,
 		"__builtin_next_arg",
-		BT_FN_PTR_VAR)
+		BT_FN_PTR_VAR,
+		ATTR_NULL)
 DEF_GCC_BUILTIN(BUILT_IN_ARGS_INFO,
 		"__builtin_args_info",
-		BT_FN_INT_INT)
+		BT_FN_INT_INT,
+		ATTR_NULL)
 DEF_GCC_BUILTIN(BUILT_IN_CONSTANT_P, 
 		"__builtin_constant_p", 
-		BT_FN_INT_VAR)
+		BT_FN_INT_VAR,
+		ATTR_NULL)
 DEF_GCC_BUILTIN(BUILT_IN_FRAME_ADDRESS,
 		"__builtin_frame_address",
-		BT_FN_PTR_UNSIGNED)
+		BT_FN_PTR_UNSIGNED,
+		ATTR_NULL)
 DEF_GCC_BUILTIN(BUILT_IN_RETURN_ADDRESS, 
 		"__builtin_return_address",
-		BT_FN_PTR_UNSIGNED)
+		BT_FN_PTR_UNSIGNED,
+		ATTR_NULL)
 DEF_GCC_BUILTIN(BUILT_IN_AGGREGATE_INCOMING_ADDRESS,
 		"__builtin_aggregate_incoming_address",
-		BT_FN_PTR_VAR)
+		BT_FN_PTR_VAR,
+		ATTR_NULL)
 DEF_GCC_BUILTIN(BUILT_IN_APPLY_ARGS,
 		"__builtin_apply_args",
-		BT_FN_PTR_VAR)
+		BT_FN_PTR_VAR,
+		ATTR_NULL)
 DEF_GCC_BUILTIN(BUILT_IN_APPLY,
 		"__builtin_apply",
-		BT_FN_PTR_PTR_FN_VOID_VAR_PTR_SIZE)
+		BT_FN_PTR_PTR_FN_VOID_VAR_PTR_SIZE,
+		ATTR_NULL)
 DEF_GCC_BUILTIN(BUILT_IN_RETURN,
 		"__builtin_return",
-		BT_FN_VOID_PTR)
+		BT_FN_VOID_PTR,
+		ATTR_NORETURN_NOTHROW_LIST)
 DEF_GCC_BUILTIN(BUILT_IN_SETJMP,
 		"__builtin_setjmp",
-		BT_FN_INT_PTR)
+		BT_FN_INT_PTR,
+		ATTR_NULL)
 DEF_GCC_BUILTIN(BUILT_IN_LONGJMP,
 		"__builtin_longjmp",
-		BT_FN_VOID_PTR_INT)
+		BT_FN_VOID_PTR_INT,
+		ATTR_NORETURN_NOTHROW_LIST)
 DEF_GCC_BUILTIN(BUILT_IN_TRAP,
 		"__builtin_trap",
-		BT_FN_VOID)
+		BT_FN_VOID,
+		ATTR_NORETURN_NOTHROW_LIST)
 DEF_GCC_BUILTIN(BUILT_IN_PREFETCH,
 		"__builtin_prefetch",
-		BT_FN_VOID_CONST_PTR_VAR)
+		BT_FN_VOID_CONST_PTR_VAR,
+		ATTR_NULL)
 
 /* Stdio builtins.  */
 DEF_FALLBACK_BUILTIN(BUILT_IN_PUTCHAR,
@@ -480,66 +495,85 @@ DEF_EXT_FRONT_END_LIB_BUILTIN(BUILT_IN_FPRINTF_UNLOCKED,
   /* ISO C99 floating point unordered comparisons.  */
 DEF_GCC_BUILTIN(BUILT_IN_ISGREATER, 
 		"__builtin_isgreater",
-		BT_FN_INT_VAR)
+		BT_FN_INT_VAR,
+		ATTR_CONST_NOTHROW_LIST)
 DEF_GCC_BUILTIN(BUILT_IN_ISGREATEREQUAL,
 		"__builtin_isgreaterequal",
-		BT_FN_INT_VAR)
+		BT_FN_INT_VAR,
+		ATTR_CONST_NOTHROW_LIST)
 DEF_GCC_BUILTIN(BUILT_IN_ISLESS,
 		"__builtin_isless",
-		BT_FN_INT_VAR)
+		BT_FN_INT_VAR,
+		ATTR_CONST_NOTHROW_LIST)
 DEF_GCC_BUILTIN(BUILT_IN_ISLESSEQUAL,
 		"__builtin_islessequal",
-		BT_FN_INT_VAR)
+		BT_FN_INT_VAR,
+		ATTR_CONST_NOTHROW_LIST)
 DEF_GCC_BUILTIN(BUILT_IN_ISLESSGREATER,
 		"__builtin_islessgreater",
-		BT_FN_INT_VAR)
+		BT_FN_INT_VAR,
+		ATTR_CONST_NOTHROW_LIST)
 DEF_GCC_BUILTIN(BUILT_IN_ISUNORDERED,
 		"__builtin_isunordered",
-		BT_FN_INT_VAR)
+		BT_FN_INT_VAR,
+		ATTR_CONST_NOTHROW_LIST)
 
 /* Various hooks for the DWARF 2 __throw routine.  */
 DEF_GCC_BUILTIN(BUILT_IN_UNWIND_INIT,
 		"__builtin_unwind_init",
-		BT_FN_VOID)
+		BT_FN_VOID,
+		ATTR_NULL)
 DEF_GCC_BUILTIN(BUILT_IN_DWARF_CFA,
 		"__builtin_dwarf_cfa",
-		BT_FN_PTR)
+		BT_FN_PTR,
+		ATTR_NULL)
 DEF_GCC_BUILTIN(BUILT_IN_DWARF_FP_REGNUM,
 		"__builtin_dwarf_fp_regnum",
-		BT_FN_UNSIGNED)
+		BT_FN_UNSIGNED,
+		ATTR_NULL)
 DEF_GCC_BUILTIN(BUILT_IN_INIT_DWARF_REG_SIZES,
 		"__builtin_init_dwarf_reg_size_table",
-		BT_FN_VOID_PTR)
+		BT_FN_VOID_PTR,
+		ATTR_NULL)
 DEF_GCC_BUILTIN(BUILT_IN_FROB_RETURN_ADDR,
 		"__builtin_frob_return_addr",
-		BT_FN_PTR_PTR)
+		BT_FN_PTR_PTR,
+		ATTR_NULL)
 DEF_GCC_BUILTIN(BUILT_IN_EXTRACT_RETURN_ADDR,
 		"__builtin_extract_return_addr",
-		BT_FN_PTR_PTR)
+		BT_FN_PTR_PTR,
+		ATTR_NULL)
 DEF_GCC_BUILTIN(BUILT_IN_EH_RETURN,
 		"__builtin_eh_return",
-		BT_FN_VOID_PTRMODE_PTR)
+		BT_FN_VOID_PTRMODE_PTR,
+		ATTR_NORETURN_NOTHROW_LIST)
 DEF_GCC_BUILTIN(BUILT_IN_EH_RETURN_DATA_REGNO,
 		"__builtin_eh_return_data_regno",
-		BT_FN_INT_INT)
+		BT_FN_INT_INT,
+		ATTR_NULL)
 
 /* Variable argument list (stdarg.h) support */
 DEF_GCC_BUILTIN(BUILT_IN_VA_START,
 		"__builtin_va_start",
-		BT_FN_VOID_VALIST_REF_VAR)
+		BT_FN_VOID_VALIST_REF_VAR,
+		ATTR_NULL)
 DEF_GCC_BUILTIN(BUILT_IN_STDARG_START,		/* backward compat */
 		"__builtin_stdarg_start",
-		BT_FN_VOID_VALIST_REF_VAR)
+		BT_FN_VOID_VALIST_REF_VAR,
+		ATTR_NULL)
 DEF_GCC_BUILTIN(BUILT_IN_VA_END,
 		"__builtin_va_end",
-		BT_FN_VOID_VALIST_REF)
+		BT_FN_VOID_VALIST_REF,
+		ATTR_NULL)
 DEF_GCC_BUILTIN(BUILT_IN_VA_COPY,
 		"__builtin_va_copy",
-		BT_FN_VOID_VALIST_REF_VALIST_ARG)
+		BT_FN_VOID_VALIST_REF_VALIST_ARG,
+		ATTR_NULL)
 
 DEF_GCC_BUILTIN(BUILT_IN_EXPECT,
 		"__builtin_expect",
-		BT_FN_LONG_LONG_LONG)
+		BT_FN_LONG_LONG_LONG,
+		ATTR_NULL)
 
 /* C++ extensions */
 DEF_UNUSED_BUILTIN(BUILT_IN_NEW)

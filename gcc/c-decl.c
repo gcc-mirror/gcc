@@ -2966,10 +2966,6 @@ builtin_function (name, type, function_code, class, library_name, attrs)
   DECL_BUILT_IN_CLASS (decl) = class;
   DECL_FUNCTION_CODE (decl) = function_code;
 
-  /* The return builtins leave the current function.  */
-  if (function_code == BUILT_IN_RETURN || function_code == BUILT_IN_EH_RETURN)
-    TREE_THIS_VOLATILE (decl) = 1;
-
   /* Warn if a function in the namespace for users
      is used without an occasion to consider it declared.  */
   if (name[0] != '_' || name[1] != '_')
