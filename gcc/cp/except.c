@@ -645,12 +645,15 @@ expand_start_catch_block (declspecs, declarator)
          must call terminate.  See eh23.C.  */
       if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl)))
 	{
+	  int yes = suspend_momentary ();
+	  tree term = build_function_call (Terminate, NULL_TREE);
+	  resume_momentary (yes);
+
 	  /* Generate the copy constructor call directly so we can wrap it.
 	     See also expand_default_init.  */
 	  init = ocp_convert (TREE_TYPE (decl), init,
 			      CONV_IMPLICIT|CONV_FORCE_TEMP, 0);
-	  init = build (TRY_CATCH_EXPR, TREE_TYPE (init), init,
-			build_function_call (Terminate, NULL_TREE));
+	  init = build (TRY_CATCH_EXPR, TREE_TYPE (init), init, term);
 	}
 
       /* Let `cp_finish_decl' know that this initializer is ok.  */

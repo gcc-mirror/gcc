@@ -1,3 +1,8 @@
+Fri Dec 19 09:37:26 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* except.c (expand_start_catch_block): suspend_momentary for the
+	terminate handler.
+
 Thu Nov 27 09:39:31 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* except.c: Call terminate without caching so many bits.
