@@ -61,19 +61,19 @@ public interface Checksum
   /**
    * Returns the data checksum computed so far.
    */
-  public long getValue ();
+  long getValue();
 
   /**
    * Resets the data checksum as if no update was ever called.
    */
-  public void reset ();
+  void reset();
 
   /**
    * Adds one byte to the data checksum.
    *
    * @param bval the data value to add. The high byte of the int is ignored.
    */
-  public void update (int bval);
+  void update (int bval);
 
   /**
    * Adds the byte array to the data checksum.
@@ -82,5 +82,5 @@ public interface Checksum
    * @param off the offset in the buffer where the data starts
    * @param len the length of the data
    */
-  public void update (byte[] buf, int off, int len);
+  void update (byte[] buf, int off, int len);
 }

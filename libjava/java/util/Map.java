@@ -85,7 +85,7 @@ public interface Map
    *
    * @throws UnsupportedOperationException if clear is not supported
    */
-  public void clear();
+  void clear();
 
   /**
    * Returns true if this contains a mapping for the given key.
@@ -96,7 +96,7 @@ public interface Map
    * @throws NullPointerException if key is <code>null</code> but the map
    *         does not permit null keys
    */
-  public boolean containsKey(Object key);
+  boolean containsKey(Object key);
 
   /**
    * Returns true if this contains at least one mapping with the given value.
@@ -107,7 +107,7 @@ public interface Map
    * @param value the value to search for
    * @return true if the map contains the value
    */
-  public boolean containsValue(Object value);
+  boolean containsValue(Object value);
 
   /**
    * Returns a set view of the mappings in this Map.  Each element in the
@@ -123,7 +123,7 @@ public interface Map
    * @return the set view of all mapping entries
    * @see Map.Entry
    */
-  public Set entrySet();
+  Set entrySet();
 
   /**
    * Compares the specified object with this map for equality. Returns
@@ -136,7 +136,7 @@ public interface Map
    * @return true if the object equals this map
    * @see Set#equals(Object)
    */
-  public boolean equals(Object o);
+  boolean equals(Object o);
 
   /**
    * Returns the value mapped by the given key. Returns <code>null</code> if
@@ -149,7 +149,7 @@ public interface Map
    * @throws NullPointerException if this map does not accept null keys
    * @see #containsKey(Object)
    */
-  public Object get(Object key);
+  Object get(Object key);
 
   /**
    * Associates the given key to the given value (optional operation). If the
@@ -167,7 +167,7 @@ public interface Map
    * @throws NullPointerException if the map forbids null keys or values
    * @see #containsKey(Object)
    */
-  public Object put(Object key, Object value);
+  Object put(Object key, Object value);
 
   /**
    * Returns the hash code for this map. This is the sum of all hashcodes
@@ -178,14 +178,14 @@ public interface Map
    * @return the hash code
    * @see Map.Entry#hashCode()
    */
-  public int hashCode();
+  int hashCode();
 
   /**
    * Returns true if the map contains no mappings.
    *
    * @return true if the map is empty
    */
-  public boolean isEmpty();
+  boolean isEmpty();
 
   /**
    * Returns a set view of the keys in this Map.  The set is backed by the
@@ -199,7 +199,7 @@ public interface Map
    *
    * @return the set view of all keys
    */
-  public Set keySet();
+  Set keySet();
 
   /**
    * Copies all entries of the given map to this one (optional operation). If
@@ -214,7 +214,7 @@ public interface Map
    *         if <code>m</code> is null.
    * @see #put(Object, Object)
    */
-  public void putAll(Map m);
+  void putAll(Map m);
 
   /**
    * Removes the mapping for this key if present (optional operation). If
@@ -225,7 +225,7 @@ public interface Map
    * @return the value the key mapped to, or null if not present
    * @throws UnsupportedOperationException if deletion is unsupported
    */
-  public Object remove(Object o);
+  Object remove(Object o);
 
   /**
    * Returns the number of key-value mappings in the map. If there are more
@@ -233,7 +233,7 @@ public interface Map
    *
    * @return the number of mappings
    */
-  public int size();
+  int size();
 
   /**
    * Returns a collection (or bag) view of the values in this Map.  The
@@ -248,7 +248,7 @@ public interface Map
    *
    * @return the collection view of all values
    */
-  public Collection values();
+  Collection values();
 
   /**
    * A map entry (key-value pair). The Map.entrySet() method returns a set
@@ -264,14 +264,14 @@ public interface Map
    * @since 1.2
    * @status updated to 1.4
    */
-  public static interface Entry
+  static interface Entry
   {
     /**
      * Get the key corresponding to this entry.
      *
      * @return the key
      */
-    public Object getKey();
+    Object getKey();
 
     /**
      * Get the value corresponding to this entry. If you already called
@@ -279,7 +279,7 @@ public interface Map
      *
      * @return the value
      */
-    public Object getValue();
+    Object getValue();
 
     /**
      * Replaces the value with the specified object (optional operation).
@@ -294,7 +294,7 @@ public interface Map
      *         prevents it from existing in this map
      * @throws NullPointerException if the map forbids null values
      */
-    public Object setValue(Object value);
+    Object setValue(Object value);
 
 
     /**
@@ -307,7 +307,7 @@ public interface Map
      *
      * @return the hash code
      */
-    public int hashCode();
+    int hashCode();
 
     /**
      * Compares the specified object with this entry. Returns true only if
@@ -324,6 +324,6 @@ public interface Map
      *
      * @return <code>true</code> if it is equal
      */
-    public boolean equals(Object o);
+    boolean equals(Object o);
   }
 }
