@@ -1,5 +1,10 @@
 2000-12-09  Laurynas Biveinis  <lauras@softhome.net>
 
+	* Makefile.in: use $(build_exeext) for all build
+	system executable targets.
+
+2000-12-09  Laurynas Biveinis  <lauras@softhome.net>
+
 	* install.texi: remove i[345]86-*-winnt3.5 section.
 	* configur.bat: removed.
 	* config/msdos: directory removed.
