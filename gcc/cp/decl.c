@@ -9890,9 +9890,13 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		    && TREE_TYPE (size) == TREE_TYPE (TREE_OPERAND (size, 0)))
 		  size = TREE_OPERAND (size, 0);
 
-		/* If this involves a template parameter, it'll be
-		   constant, but we don't know what the value is yet.  */
-		if (uses_template_parms (size))
+		/* If this involves a template parameter, it will be a
+		   constant at instantiation time, but we don't know
+		   what the value is yet.  Even if no template
+		   parameters are involved, we may an expression that
+		   is not a constant; we don't even simplify `1 + 2'
+		   when processing a template.  */
+		if (processing_template_decl)
 		  {
 		    /* Resolve a qualified reference to an enumerator or
 		       static const data member of ours.  */

@@ -1,3 +1,12 @@
+1999-01-13  Mark Mitchell  <mark@markmitchell.com>
+
+	* decl.c (grokdeclarator): Undo 1998-12-14 change.
+	* tree.c (build_cplus_array_type_1): Likewise.
+	* pt.c (instantiate_class_template): Remove misleading comment.
+	(tsubst_aggr_type): Substitute if there are template parameters,
+	regardless of whether or not they use template arguments.
+	(unify): Likewise, but for unification.
+
 1999-01-12  Richard Henderson  <rth@cygnus.com>
 
 	* cp-tree.h (flag_permissive): Declare extern.
