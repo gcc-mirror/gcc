@@ -1,16 +1,13 @@
 /* Definitions of target machine for GNU compiler.
-   Copyright (C) 1990, 1993 Free Software Foundation, Inc.
-
-   Written by Robert Andersson, International Systems, Oslo, Norway.
-   Send bug reports, questions and improvements to ra@intsys.no.
-
    For NCR Tower 32/4x0 and 32/6x0 running System V Release 3.
+   Copyright (C) 1990, 1993 Free Software Foundation, Inc.
+   Written by Robert Andersson (ra@intsys.no), International Systems,
+   Oslo, Norway.
+
    This file outputs assembler source suitable for the native Tower as
    and with sdb debugging symbols.  See tower.h for more comments.
 
-   This file was based on m68k.h, hp320.h and 3b1.h
-   as of the 1.37.1 version.
-
+   This file was based on m68k.h, hp320.h and 3b1.h as of the 1.37.1 version.
 
 This file is part of GNU CC.
 
@@ -90,7 +87,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   fprintf (FILE, "\tident\t\"%s\" \n", NAME)
 
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN) \
-  { register int sp = 0, lp = 0; \
+  do { register int sp = 0, lp = 0; \
     fprintf ((FILE), "\tbyte\t"); \
   loop: \
     if ((PTR)[sp] > ' ' && ! ((PTR)[sp] & 0x80) && (PTR)[sp] != '\\') \
@@ -106,7 +103,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 	else \
 	  putc (',', (FILE)); \
 	goto loop; } \
-    putc ('\n', (FILE)); }
+    putc ('\n', (FILE)); } while (0)
 
 /* Translate Motorola opcodes such as `jbeq'
    into SGS/Tower opcodes such as `beq.w'.

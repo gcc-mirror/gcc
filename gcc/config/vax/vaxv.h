@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Vax sysV version.
-   Copyright (C) 1988 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -51,8 +51,8 @@ output_file_directive ((FILE), main_input_filename)
   fprintf ((FILE), ":\n\t.space %u\n", (ROUNDED)))
 
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN)			\
-{							\
-  unsigned char *s;						\
+do {							\
+  unsigned char *s;					\
   int i;						\
   for (i = 0, s = (PTR); i < (LEN); s++, i++)		\
     {							\
@@ -61,7 +61,7 @@ output_file_directive ((FILE), main_input_filename)
       fprintf ((FILE), "%s0x%x", (i%8?",":""), (unsigned)*s); \
     }							\
   fputs ("\n", (FILE));					\
-}
+} while (0)
 
 #undef ASM_OUTPUT_DOUBLE
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)			\

@@ -1,5 +1,5 @@
-/* Definitions of target machine for GNU compiler.  Vax sysV version.
-   Copyright (C) 1988 Free Software Foundation, Inc.
+/* Definitions of target machine for GNU compiler.  Clipper/Clix version.
+   Copyright (C) 1988, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -38,7 +38,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define HAVE_ATEXIT
 
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN)			\
-{							\
+do {							\
   unsigned char *s;					\
   int i;						\
   for (i = 0, s = (unsigned char *)(PTR); i < (LEN); s++, i++)	\
@@ -48,7 +48,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
       fprintf ((FILE), "%s0x%x", (i%8?",":""), (unsigned)*s); \
     }							\
   fputs ("\n", (FILE));					\
-}
+} while (0)
 
 #undef ASM_OUTPUT_DOUBLE
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)	\

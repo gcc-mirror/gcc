@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Iris version 4.
-   Copyright (C) 1991 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -27,7 +27,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    The quickest way to avoid the problem is not to use .ascii.  */
 #undef ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN)			\
-{							\
+do {							\
   unsigned char *s;					\
   int i;						\
   for (i = 0, s = (unsigned char *)(PTR); i < (LEN); s++, i++)	\
@@ -37,4 +37,4 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
       fprintf ((FILE), "%s0x%x", (i%8?",":""), (unsigned)*s); \
     }							\
   fputs ("\n", (FILE));					\
-}
+} while (0)

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Tahoe version.
-   Copyright (C) 1989 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -25,9 +25,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
  *
  * HCX/UX version by Piet van Oostrum (piet@cs.ruu.nl)
  *
- * Performance hacking by Michael Tiemann (tiemann@lurch.stanford.edu)
- *
- * Mail bugs reports or fixes to:	gcc@cs.buffalo.edu
+ * Performance hacking by Michael Tiemann (tiemann@cygnus.com)
  */
 
 /* define this for the HCX/UX version */
@@ -860,7 +858,7 @@ enum reg_class {NO_REGS,GENERAL_REGS,FPP_REG,ALL_REGS,LIM_REG_CLASSES};
 /* This is how to output an assembler line for an ASCII string.  */
 
 #define ASM_OUTPUT_ASCII(FILE, p, size)  		\
-{	register int i;					\
+do {	register int i;					\
 	  fprintf ((FILE), "\t.ascii \""); 		\
 	  for (i = 0; i < (size); i++) 			\
 	    {						\
@@ -874,7 +872,7 @@ enum reg_class {NO_REGS,GENERAL_REGS,FPP_REG,ALL_REGS,LIM_REG_CLASSES};
 		  fprintf ((FILE), "\\%03o", c);	\
 		}					\
 	    }						\
-	  fprintf ((FILE), "\"\n"); }
+	  fprintf ((FILE), "\"\n"); } while (0)
 #endif
 
 /* This is how to output an assembler line for a numeric constant byte.  */

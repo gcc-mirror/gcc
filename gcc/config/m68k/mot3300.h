@@ -1,12 +1,8 @@
 /* Definitions of target machine for GNU compiler.  
    SysV68 Motorola 3300 Delta Series
-
-   Written by Abramo and Roberto Bagnara
-   after Alex Crain's 3B1 definitions.
-
-   Bug reports to bagnara@dipisa.di.unipi.it
-
-   Copyright (C) 1987 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1993 Free Software Foundation, Inc.
+   Written by Abramo and Roberto Bagnara (bagnara@dipisa.di.unipi.it)
+   based on Alex Crain's 3B1 definitions.
 
 This file is part of GNU CC.
 
@@ -418,7 +414,7 @@ do { long l;					\
 
 #undef ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN) \
-  { register int sp = 0, lp = 0;				\
+  do { register int sp = 0, lp = 0;				\
     fprintf ((FILE), "\tbyte\t");				\
   loop:								\
     if ((PTR)[sp] > ' ' && ! ((PTR)[sp] & 0x80) && (PTR)[sp] != '\\')	\
@@ -434,7 +430,7 @@ do { long l;					\
 	else							\
 	  putc (',', (FILE));					\
 	goto loop; }						\
-    putc ('\n', (FILE)); }
+    putc ('\n', (FILE)); } while (0)
 
 /* Print operand X (an rtx) in assembler syntax to file FILE.
    CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.

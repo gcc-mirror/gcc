@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  HP-UX 68000/68020 version.
-   Copyright (C) 1987, 1988 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -594,7 +594,7 @@ do { long l[3];								\
     }}
 
 #define	ASM_OUTPUT_ASCII(f, p, size)	\
-{ register int i;			\
+do { register int i;			\
   int inside;				\
   inside = FALSE;			\
   for (i = 0; i < (size); i++) {	\
@@ -628,7 +628,7 @@ do { long l[3];								\
   if (inside)				\
     putc('"', (f));			\
   putc('\n', (f));			\
-}
+} while (0)
 
 /* Translate Motorola opcodes such as `jbeq'
    into SGS opcodes such as `beq.w'.

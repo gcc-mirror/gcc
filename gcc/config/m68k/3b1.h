@@ -1,10 +1,8 @@
 /* Definitions of target machine for GNU compiler.
    AT&T UNIX PC version (pc7300, 3b1)
+   Written by Alex Crain (alex@umbc3.umd.edu).
 
-   Written by Alex Crain
-   bug reports to alex@umbc3.umd.edu
-
-   Copyright (C) 1987 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -194,7 +192,7 @@ do { long l;					\
 /* Yet another null terminated string format. */
 
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN) \
-  { register int sp = 0, lp = 0; \
+  do { register int sp = 0, lp = 0; \
     fprintf ((FILE), "\tbyte\t"); \
   loop: \
     if ((PTR)[sp] > ' ' && ! ((PTR)[sp] & 0x80) && (PTR)[sp] != '\\') \
@@ -210,7 +208,7 @@ do { long l;					\
 	else \
 	  putc (',', (FILE)); \
 	goto loop; } \
-    putc ('\n', (FILE)); }
+    putc ('\n', (FILE)); } while (0)
 
 /* Note that in the case of the movhi which fetches an element of
    an ADDR_DIFF_VEC the offset output is too large by 2.
