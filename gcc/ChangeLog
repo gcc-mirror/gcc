@@ -1,3 +1,9 @@
+Thu Feb 25 19:13:42 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* rtl.h (insn_first_p): Don't declare.
+	* rtlanal.c (insn_first_p): Delete.
+	* loop.c (loop_insn_first_p): Faster implementation.
+
 Thu Feb 25 10:44:35 1999  Richard Earnshaw (rearnsha@arm.com)
 
 	* arm.h (TARGET_SWITCHES): Delete deprecated switches -m[236].

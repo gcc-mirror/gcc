@@ -8106,18 +8106,32 @@ maybe_eliminate_biv (bl, loop_start, end, eliminate_p, threshold, insn_count)
 }
 
 /* INSN and REFERENCE are instructions in the same insn chain.
-   Return non-zero if INSN is first.
-   This is like insn_first_p, except that we use the luid information if
-   available.  */
+   Return non-zero if INSN is first.  */
 
 int
 loop_insn_first_p (insn, reference)
      rtx insn, reference;
 {
-  return ((INSN_UID (insn) < max_uid_for_loop
-	   && INSN_UID (reference) < max_uid_for_loop)
-	  ? INSN_LUID (insn) < INSN_LUID (reference)
-	  : insn_first_p (insn, reference));
+  rtx p, q;
+
+  for (p = insn, q = reference; ;)
+    {
+      /* Start with test for not first so that INSN == REFERENCE yields not
+         first.  */
+      if (q == insn || ! p)
+        return 0;
+      if (p == reference || ! q)
+        return 1;
+
+      if (INSN_UID (p) < max_uid_for_loop
+	  && INSN_UID (q) < max_uid_for_loop)
+	return INSN_LUID (p) < INSN_LUID (q);
+
+      if (INSN_UID (p) >= max_uid_for_loop)
+	p = NEXT_INSN (p);
+      if (INSN_UID (q) >= max_uid_for_loop)
+	q = NEXT_INSN (q);
+    }
 }
 
 /* We are trying to eliminate BIV in INSN using GIV.  Return non-zero if
