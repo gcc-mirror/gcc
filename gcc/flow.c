@@ -376,7 +376,7 @@ find_basic_blocks (f, nregs, file)
   bb_eh_end = (rtx *) alloca (n_basic_blocks * sizeof (rtx));
 
   label_value_list = find_basic_blocks_1 (f, bb_eh_end);
-
+  
   /* Record the block to which an insn belongs.  */
   /* ??? This should be done another way, by which (perhaps) a label is
      tagged directly with the basic block that it starts.  It is used for
@@ -1241,7 +1241,7 @@ split_edge (edge_in)
 	  pos = emit_jump_insn_after (gen_jump (old_succ->head), pos);
 	  jump_block->end = pos;
 	  emit_barrier_after (pos);
-
+	  
 	  /* ... and clear fallthru on the outgoing edge.  */
 	  e->flags &= ~EDGE_FALLTHRU;
 
@@ -1649,6 +1649,7 @@ delete_block (b)
      notes.  */
 
   insn = b->head;
+  
   if (GET_CODE (insn) == CODE_LABEL)
     {
       rtx x, *prev = &exception_handler_labels;
@@ -1793,6 +1794,16 @@ can_delete_label_p (label)
     if (label == XEXP (x, 0))
       return 0;
 
+  /* User declared labels must be preserved, but we can
+     convert them into a NOTE instead. */
+  if (LABEL_NAME (label) != 0)
+    {
+      PUT_CODE (label, NOTE);
+      NOTE_LINE_NUMBER (label) = NOTE_INSN_DELETED_LABEL;
+      NOTE_SOURCE_FILE (label) = 0;
+      return 0;
+    }
+  
   return 1;
 }
 

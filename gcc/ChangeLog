@@ -1,3 +1,12 @@
+Sun Mar 21 12:13:01 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* flow.c (can_delete_label_p): Do not allow user specified
+	labels to be deleted.
+	* dwarf2out.c (gen_label_die): Generate addresses for deleted
+	(programmer specified) labels. 
+	* dwarfout.c (output_label_die): Generate addresses for deleted
+	(programmer specified) labels.
+
 1999-03-21  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Makefile.in (xgcc$(exeext)): Add intl.o to list of files to be

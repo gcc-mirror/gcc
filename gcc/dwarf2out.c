@@ -8583,7 +8583,13 @@ gen_label_die (decl, context_die)
   else
     {
       insn = DECL_RTL (decl);
-      if (GET_CODE (insn) == CODE_LABEL)
+
+      /* Deleted labels are programmer specified labels which have been
+	 eliminated because of various optimisations.  We still emit them
+	 here so that it is possible to put breakpoints on them.  */
+      if (GET_CODE (insn) == CODE_LABEL
+	  || ((GET_CODE (insn) == NOTE
+	       && NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED_LABEL)))
 	{
 	  /* When optimization is enabled (via -O) some parts of the compiler 
 	     (e.g. jump.c and cse.c) may try to delete CODE_LABEL insns which 
