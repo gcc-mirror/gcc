@@ -2615,7 +2615,7 @@ range_test (jcode, type, lo_code, hi_code, var, lo_cst, hi_cst)
 }
 
 /* Subroutine for fold_truthop: C is an INTEGER_CST interpreted as a P
-   bit value.  Arrange things so the extra bits will be set to zero if and]
+   bit value.  Arrange things so the extra bits will be set to zero if and
    only if C is signed-extended to its full width.  */
 
 static tree
@@ -3270,9 +3270,10 @@ fold (expr)
 	    }
 	  else
 	    {
+	      tree testtype = TREE_TYPE (arg1);
 	      test = arg1;
-	      true_value = integer_one_node;
-	      false_value = integer_zero_node;
+	      true_value = convert (testtype, integer_one_node);
+	      false_value = convert (testtype, integer_zero_node);
 	    }
 
 	  /* If ARG0 is complex we want to make sure we only evaluate
@@ -3325,9 +3326,10 @@ fold (expr)
 	    }
 	  else
 	    {
+	      tree testtype = TREE_TYPE (arg0);
 	      test = arg0;
-	      true_value = integer_one_node;
-	      false_value = integer_zero_node;
+	      true_value = convert (testtype, integer_one_node);
+	      false_value = convert (testtype, integer_zero_node);
 	    }
 
 	  if (TREE_CODE (arg1) != SAVE_EXPR
