@@ -143,6 +143,16 @@ fi
 AC_SUBST(LN)dnl
 ])
 
+dnl See whether the stage1 host compiler accepts the volatile keyword.
+AC_DEFUN(GCC_C_VOLATILE,
+[AC_CACHE_CHECK([for volatile], gcc_cv_c_volatile,
+[AC_TRY_COMPILE(, [volatile int foo;],
+        gcc_cv_c_volatile=yes, gcc_cv_c_volatile=no)])
+if test $gcc_cv_c_volatile = yes ; then
+  AC_DEFINE(HAVE_VOLATILE)
+fi
+])
+
 AC_DEFUN(EGCS_PROG_INSTALL,
 [AC_REQUIRE([AC_CONFIG_AUX_DIR_DEFAULT])dnl
 # Find a good install program.  We prefer a C program (faster),

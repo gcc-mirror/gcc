@@ -1,3 +1,16 @@
+Sun May 10 02:27:03 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* acconfig.h (HAVE_VOLATILE): Insert stub for autoconf.
+	* alocal.m4 (GCC_C_VOLATILE): New autoconf test.
+	* configure.in: Use GCC_C_VOLATILE.
+	* system.h (volatile): Define as empty if no volatile support is
+	available.
+
+Sun May 10 01:21:43 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* genemit.c (output_add_clobbers): Removed unused variable 'i' from
+	generated fucntion.
+
 Sat May  9 02:02:15 1998  Richard Henderson  <rth@cygnus.com>
 
 	* loop.c (get_condition): Don't combine when either compare is MODE_CC.
