@@ -68,7 +68,10 @@ extract_string (char **pp)
 	break;
       ++p;
       if (backquote)
-	obstack_1grow (&temporary_obstack, c);
+	{
+	  obstack_1grow (&temporary_obstack, c);
+	  backquote = 0;
+	}
       else if (! inside && c == ' ')
 	break;
       else if (! inside && c == '\\')
@@ -99,7 +102,7 @@ get_base_filename (const char *filename)
 	output = extract_string (&p);
       else if (strcmp (q, "-c") == 0)
 	compiling = 1;
-      }
+    }
 
   if (compiling && output)
     return output;
