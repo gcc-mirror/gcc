@@ -9,6 +9,12 @@
 
 
 
+#if defined( AIX_PTHREAD_CHECK )
+#define PTHREAD_MUTEX_INITIALIZER \
+{...init stuff...}
+#endif  /* AIX_PTHREAD_CHECK */
+
+
 #if defined( PTHREAD_PAGE_SIZE_CHECK )
 extern int __page_size;
 #endif  /* PTHREAD_PAGE_SIZE_CHECK */
