@@ -8191,7 +8191,7 @@ These synonyms are deprecated.
 
 @item -mfpmath=@var{unit}
 @opindex march
-generate floating point arithmetics for selected unit @var{unit}.  the choices
+Generate floating point arithmetics for selected unit @var{unit}.  The choices
 for @var{unit} are:
 
 @table @samp
@@ -8217,11 +8217,11 @@ For i387 you need to use @option{-march=@var{cpu-type}}, @option{-msse} or
 @option{-msse2} switches to enable SSE extensions and make this option
 effective.  For x86-64 compiler, these extensions are enabled by default.
 
-The resulting code should be considerably faster in majority of cases and avoid
+The resulting code should be considerably faster in the majority of cases and avoid
 the numerical instability problems of 387 code, but may break some existing
 code that expects temporaries to be 80bit.
 
-This is the default choice for x86-64 compiler.
+This is the default choice for the x86-64 compiler.
 
 @item pni
 Use all SSE extensions enabled by @option{-msse2} as well as the new
@@ -8234,7 +8234,7 @@ enables 2 builtin functions, @code{__builtin_ia32_monitor} and
 Attempt to utilize both instruction sets at once.  This effectively double the
 amount of available registers and on chips with separate execution units for
 387 and SSE the execution resources too.  Use this option with care, as it is
-still experimental, because gcc register allocator does not model separate
+still experimental, because the gcc register allocator does not model separate
 functional units well resulting in instable performance.
 @end table
 
@@ -8325,10 +8325,10 @@ Notice that neither of these options enable any extra precision over the x87
 standard of 80 bits for a @code{long double}.
 
 @strong{Warning:} if you override the default value for your target ABI, the
-structures and arrays containing @code{long double} will change their size as
-well as function calling convention for function taking @code{long double}
-will be modified.  Hence they will not be binary compatible with arrays or
-structures in code compiled without that switch.
+structures and arrays containing @code{long double} variables will change
+their size as well as function calling convention for function taking
+@code{long double} will be modified.  Hence they will not be binary
+compatible with arrays or structures in code compiled without that switch.
 
 
 @item -msvr3-shlib
