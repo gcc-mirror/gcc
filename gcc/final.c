@@ -1113,18 +1113,32 @@ shorten_branches (first)
 	       && NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
 	{
 	  rtx label;
+	  int nest = 0;
 
+	  /* Search for the label that starts the loop.
+	     Don't skip past the end of the loop, since that could
+	     lead to putting an alignment where it does not belong.
+	     However, a label after a nested (non-)loop would be OK.  */
 	  for (label = insn; label; label = NEXT_INSN (label))
-	    if (GET_CODE (label) == CODE_LABEL)
-	      {
-		log = LOOP_ALIGN (insn);
-		if (max_log < log)
-		  {
-		    max_log = log;
-		    max_skip = LOOP_ALIGN_MAX_SKIP;
-		  }
+	    {
+	      if (GET_CODE (label) == NOTE
+		  && NOTE_LINE_NUMBER (label) == NOTE_INSN_LOOP_BEG)
+		nest++;
+	      else if (GET_CODE (label) == NOTE
+		       && NOTE_LINE_NUMBER (label) == NOTE_INSN_LOOP_END
+		       && --nest == 0)
 		break;
-	      }
+	      else if (GET_CODE (label) == CODE_LABEL)
+		{
+		  log = LOOP_ALIGN (insn);
+		  if (max_log < log)
+		    {
+		      max_log = log;
+		      max_skip = LOOP_ALIGN_MAX_SKIP;
+		    }
+		  break;
+		}
+	    }
 	}
       else
 	continue;
