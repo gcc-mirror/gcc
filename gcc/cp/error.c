@@ -87,6 +87,7 @@ static const char *parm_to_string		PARAMS ((int, int));
 static const char *type_to_string		PARAMS ((tree, int));
 
 static void dump_type PARAMS ((tree, enum tree_string_flags));
+static void dump_typename PARAMS ((tree, enum tree_string_flags));
 static void dump_simple_decl PARAMS ((tree, tree, enum tree_string_flags));
 static void dump_decl PARAMS ((tree, enum tree_string_flags));
 static void dump_template_decl PARAMS ((tree, enum tree_string_flags));
@@ -503,9 +504,7 @@ dump_type (t, flags)
     }
     case TYPENAME_TYPE:
       OB_PUTS ("typename ");
-      dump_type (TYPE_CONTEXT (t), flags & ~TS_AGGR_TAGS);
-      OB_PUTS ("::");
-      dump_decl (TYPENAME_TYPE_FULLNAME (t), flags);
+      dump_typename (t, flags);
       break;
 
     case TYPEOF_TYPE:
@@ -523,6 +522,24 @@ dump_type (t, flags)
       OB_PUTS ("{type error}");
       break;
     }
+}
+
+/* Dump a TYPENAME_TYPE. We need to notice when the context is itself
+   a TYPENAME_TYPE.  */
+
+static void
+dump_typename (t, flags)
+     tree t;
+     enum tree_string_flags flags;
+{
+  tree ctx = TYPE_CONTEXT (t);
+  
+  if (TREE_CODE (ctx) == TYPENAME_TYPE)
+    dump_typename (ctx, flags);
+  else
+    dump_type (ctx, flags & ~TS_AGGR_TAGS);
+  OB_PUTS ("::");
+  dump_decl (TYPENAME_TYPE_FULLNAME (t), flags);
 }
 
 /* Return the name of the supplied aggregate, or enumeral type.  */

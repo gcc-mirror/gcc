@@ -1096,8 +1096,9 @@ comptypes (t1, t2, strict)
 	&& TEMPLATE_TYPE_LEVEL (t1) == TEMPLATE_TYPE_LEVEL (t2);
 
     case TYPENAME_TYPE:
-      if (TYPE_IDENTIFIER (t1) != TYPE_IDENTIFIER (t2))
-	return 0;
+      if (cp_tree_equal (TYPENAME_TYPE_FULLNAME (t1),
+                         TYPENAME_TYPE_FULLNAME (t2)) < 1)
+        return 0;
       return same_type_p (TYPE_CONTEXT (t1), TYPE_CONTEXT (t2));
 
     case COMPLEX_TYPE:
