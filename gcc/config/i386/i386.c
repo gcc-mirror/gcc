@@ -15928,4 +15928,25 @@ output_387_reg_move (rtx insn, rtx *operands)
   return "fst\t%y0";
 }
 
+/* Output code to perform a conditional jump to LABEL, if C2 flag in
+   FP status register is set.  */
+
+void
+ix86_emit_fp_unordered_jump (rtx label)
+{
+  rtx reg = gen_reg_rtx (HImode);
+  rtx temp;
+
+  emit_insn (gen_x86_fnstsw_1 (reg));
+  emit_insn (gen_x86_sahf_1 (reg));
+  
+  temp = gen_rtx_REG (CCmode, FLAGS_REG); 
+  temp = gen_rtx_UNORDERED (VOIDmode, temp, const0_rtx);
+  temp = gen_rtx_IF_THEN_ELSE (VOIDmode, temp,
+			      gen_rtx_LABEL_REF (VOIDmode, label),
+			      pc_rtx);
+  temp = gen_rtx_SET (VOIDmode, pc_rtx, temp);
+  emit_jump_insn (temp);
+}
+
 #include "gt-i386.h"

@@ -1,3 +1,34 @@
+2004-05-05  Uros Bizjak  <uros@kss-loka.si>
+
+	* optabs.h (enum optab_index): Add new OTI_fmod and OTI_drem.
+	(fmod_optab): Define corresponding macros.
+	* optabs.c (init_optabs): Initialize fmod_optab and drem_optab.
+	* genopinit.c (optabs): Implement fmod_optab and drem_optab
+	using fmod?f3 and drem?f3 patterns.
+	* builtins.c (expand_builtin_mathfn_2): Handle BUILT_IN_FMOD{,F,L}
+	using fmod_optab and BUILT_IN_DREM{,F,L} using drem_optab.
+	(expand_builtin): Expand BUILT_IN_FMOD{,F,L} and
+	BUILT_IN_DREM{,F,L} using expand_builtin_mathfn_2 if
+	flag_unsafe_math_optimizations is set.
+
+	* reg-stack.c (subst_stack_regs_pat): Handle UNSPEC_FPREM_F,
+	UNSPEC_FPREM_U, UNSPEC_FPREM1_F and UNSPEC_FPREM1_U.
+
+	* config/i386/i386.c (ix86_emit_fp_unordered_jump): New function.
+	* config/i386/i386-protos.h (ix86_emit_fp_unordered_jump):
+	Prototype here.
+	* config/i386/i386.md (UNSPEC_FPREM_F, UNSPEC_FPREM_U,
+	UNSPEC_FPREM1_F, UNSPEC_FPREM1_U): New unspecs to represent x87's
+	fprem and fprem1 instructions.
+	(*x86_fnstsw_1): Change input parameter to (reg:CCFP 18).
+	Rename insn definition to x86_fnstsw_1.
+	(fpremxf4, fprem1xf4): New patterns to implement fprem and fprem1
+	x87 instructions.
+	(fmodsf3, fmoddf3, fmodxf3): New expanders to implement fmodf, fmod
+	and fmodl built-ins as inline x87 intrinsics.
+	(dremsf3, dremdf3, dremxf3): New expanders to implement dremf, drem
+	and dreml built-ins as inline x87 intrinsics.
+
 2004-05-05  Roger Sayle  <roger@eyesopen.com>
 
 	* reload1.c (inherit_piecemeal_p): Mark parameters potentially unused.
