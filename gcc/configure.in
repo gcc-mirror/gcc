@@ -315,7 +315,21 @@ dwarf2=no)
 
 AC_ARG_ENABLE(shared,
 [  --disable-shared       don't provide a shared libgcc.],
-[], [enable_shared=yes])
+[
+  case $enable_shared in
+  yes | no) ;;
+  *)
+    enable_shared=no
+    IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS="${IFS}:,"
+    for pkg in $enableval; do
+      if test "X$pkg" = "Xgcc" || test "X$pkg" = "Xlibgcc"; then
+        enable_shared=yes
+      fi
+    done
+    IFS="$ac_save_ifs"
+    ;;
+  esac
+], [enable_shared=yes])
 AC_SUBST(enable_shared)
 
 # Determine the host, build, and target systems
