@@ -674,6 +674,51 @@ find_basic_blocks (f, nonlocal_label_list)
 		/* Turn the head into a deleted insn note.  */
 		if (GET_CODE (insn) == BARRIER)
 		  abort ();
+
+		/* If the head of this block is a CODE_LABEL, then it might
+		   be the label for an exception handler which can't be
+		   reached.
+
+		   We need to remove the label from the exception_handler_label
+		   list and remove the associated NOTE_EH_REGION_BEG and
+		   NOTE_EH_REGION_END notes.  */
+		if (GET_CODE (insn) == CODE_LABEL)
+		  {
+		    rtx x, *prev = &exception_handler_labels;
+
+		    for (x = exception_handler_labels; x; x = XEXP (x, 1))
+		      {
+			if (XEXP (x, 0) == insn)
+			  {
+			    /* Found a match, splice this label out of the
+			       EH label list.  */
+			    *prev = XEXP (x, 1);
+			    XEXP (x, 1) = NULL_RTX;
+			    XEXP (x, 0) = NULL_RTX;
+
+			    /* Now we have to find the EH_BEG and EH_END notes
+			       associated with this label and remove them.  */
+
+			    for (x = get_insns (); x; x = NEXT_INSN (x))
+			      {
+				if (GET_CODE (x) == NOTE
+				    && ((NOTE_LINE_NUMBER (x)
+					 == NOTE_INSN_EH_REGION_BEG)
+					|| (NOTE_LINE_NUMBER (x)
+					    == NOTE_INSN_EH_REGION_END))
+				    && (NOTE_BLOCK_NUMBER (x)
+					== CODE_LABEL_NUMBER (insn)))
+				  {
+				    NOTE_LINE_NUMBER (x) = NOTE_INSN_DELETED;
+				    NOTE_SOURCE_FILE (x) = 0;
+				  }
+			      }
+			    break;
+			  }
+			prev = &XEXP (x, 1);
+		      }
+		  }
+		 
 		PUT_CODE (insn, NOTE);
 		NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
 		NOTE_SOURCE_FILE (insn) = 0;
