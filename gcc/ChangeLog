@@ -1,5 +1,9 @@
 2004-08-20  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* fold-const.c (int_const_binop): Don't generate non-overflowing
+	size-types specially.
+	(fold_convert_const): Likewise.
+
 	* stor-layout.c (initialize_sizetypes): Set SIZETYPE earlier,
 	clear cache on copied sizetype.
 
