@@ -1374,6 +1374,7 @@ extern int reg_used_between_p		PARAMS ((rtx, rtx, rtx));
 extern int reg_referenced_between_p	PARAMS ((rtx, rtx, rtx));
 extern int reg_set_between_p		PARAMS ((rtx, rtx, rtx));
 extern int regs_set_between_p		PARAMS ((rtx, rtx, rtx));
+extern int commutative_operand_precedence PARAMS ((rtx));
 extern int swap_commutative_operands_p	PARAMS ((rtx, rtx));
 extern int modified_between_p		PARAMS ((rtx, rtx, rtx));
 extern int no_labels_between_p		PARAMS ((rtx, rtx));

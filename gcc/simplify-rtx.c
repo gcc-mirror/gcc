@@ -95,6 +95,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define HWI_SIGN_EXTEND(low) \
  ((((HOST_WIDE_INT) low) < 0) ? ((HOST_WIDE_INT) -1) : ((HOST_WIDE_INT) 0))
 
+static int simplify_plus_minus_op_data_cmp PARAMS ((const void *,
+						    const void *));
 static rtx simplify_plus_minus		PARAMS ((enum rtx_code,
 						 enum machine_mode, rtx, rtx));
 static void check_fold_consts		PARAMS ((PTR));
@@ -130,12 +132,15 @@ simplify_gen_binary (code, mode, op0, op1)
   /* Handle addition and subtraction of CONST_INT specially.  Otherwise,
      just form the operation.  */
 
-  if (code == PLUS && GET_CODE (op1) == CONST_INT
-      && GET_MODE (op0) != VOIDmode)
-    return plus_constant (op0, INTVAL (op1));
-  else if (code == MINUS && GET_CODE (op1) == CONST_INT
-	   && GET_MODE (op0) != VOIDmode)
-    return plus_constant (op0, - INTVAL (op1));
+  if (GET_CODE (op1) == CONST_INT
+      && GET_MODE (op0) != VOIDmode
+      && (code == PLUS || code == MINUS))
+    {
+      HOST_WIDE_INT value = INTVAL (op1);
+      if (code == MINUS)
+	value = -value;
+      return plus_constant (op0, value);
+    }
   else
     return gen_rtx_fmt_ee (code, mode, op0, op1);
 }
@@ -1124,7 +1129,11 @@ simplify_binary_operation (code, mode, op0, op1)
 
 	  if (INTEGRAL_MODE_P (mode)
 	      && (GET_CODE (op0) == PLUS || GET_CODE (op0) == MINUS
-		  || GET_CODE (op1) == PLUS || GET_CODE (op1) == MINUS)
+		  || GET_CODE (op1) == PLUS || GET_CODE (op1) == MINUS
+		  || (GET_CODE (op0) == CONST
+		      && GET_CODE (XEXP (op0, 0)) == PLUS)
+		  || (GET_CODE (op1) == CONST
+		      && GET_CODE (XEXP (op1, 0)) == PLUS))
 	      && (tem = simplify_plus_minus (code, mode, op0, op1)) != 0)
 	    return tem;
 	  break;
@@ -1162,8 +1171,8 @@ simplify_binary_operation (code, mode, op0, op1)
 #endif
 		return xop00;
 	    }
-
 	  break;	      
+
 	case MINUS:
 	  /* None of these optimizations can be done for IEEE
 	     floating point.  */
@@ -1257,7 +1266,11 @@ simplify_binary_operation (code, mode, op0, op1)
 
 	  if (INTEGRAL_MODE_P (mode)
 	      && (GET_CODE (op0) == PLUS || GET_CODE (op0) == MINUS
-		  || GET_CODE (op1) == PLUS || GET_CODE (op1) == MINUS)
+		  || GET_CODE (op1) == PLUS || GET_CODE (op1) == MINUS
+		  || (GET_CODE (op0) == CONST
+		      && GET_CODE (XEXP (op0, 0)) == PLUS)
+		  || (GET_CODE (op1) == CONST
+		      && GET_CODE (XEXP (op1, 0)) == PLUS))
 	      && (tem = simplify_plus_minus (code, mode, op0, op1)) != 0)
 	    return tem;
 
@@ -1680,17 +1693,34 @@ simplify_binary_operation (code, mode, op0, op1)
    and do all possible simplifications until no more changes occur.  Then
    we rebuild the operation.  */
 
+struct simplify_plus_minus_op_data
+{
+  rtx op;
+  int neg;
+};
+
+static int
+simplify_plus_minus_op_data_cmp (p1, p2)
+     const void *p1;
+     const void *p2;
+{
+  const struct simplify_plus_minus_op_data *d1 = p1;
+  const struct simplify_plus_minus_op_data *d2 = p2;
+
+  return (commutative_operand_precedence (d2->op)
+	  - commutative_operand_precedence (d1->op));
+}
+
 static rtx
 simplify_plus_minus (code, mode, op0, op1)
      enum rtx_code code;
      enum machine_mode mode;
      rtx op0, op1;
 {
-  rtx ops[8];
-  int negs[8];
+  struct simplify_plus_minus_op_data ops[8];
   rtx result, tem;
-  int n_ops = 2, input_ops = 2, input_consts = 0, n_consts = 0;
-  int first = 1, negate = 0, changed;
+  int n_ops = 2, input_ops = 2, input_consts = 0, n_consts;
+  int first, negate, changed;
   int i, j;
 
   memset ((char *) ops, 0, sizeof ops);
@@ -1699,153 +1729,204 @@ simplify_plus_minus (code, mode, op0, op1)
      changed.  If we run out of room in our array, give up; this should
      almost never happen.  */
 
-  ops[0] = op0, ops[1] = op1, negs[0] = 0, negs[1] = (code == MINUS);
+  ops[0].op = op0;
+  ops[0].neg = 0;
+  ops[1].op = op1;
+  ops[1].neg = (code == MINUS);
 
-  changed = 1;
-  while (changed)
+  do
     {
       changed = 0;
 
       for (i = 0; i < n_ops; i++)
-	switch (GET_CODE (ops[i]))
-	  {
-	  case PLUS:
-	  case MINUS:
-	    if (n_ops == 7)
-	      return 0;
+	{
+	  rtx this_op = ops[i].op;
+	  int this_neg = ops[i].neg;
+	  enum rtx_code this_code = GET_CODE (this_op);
 
-	    ops[n_ops] = XEXP (ops[i], 1);
-	    negs[n_ops++] = GET_CODE (ops[i]) == MINUS ? !negs[i] : negs[i];
-	    ops[i] = XEXP (ops[i], 0);
-	    input_ops++;
-	    changed = 1;
-	    break;
+	  switch (this_code)
+	    {
+	    case PLUS:
+	    case MINUS:
+	      if (n_ops == 7)
+		return 0;
 
-	  case NEG:
-	    ops[i] = XEXP (ops[i], 0);
-	    negs[i] = ! negs[i];
-	    changed = 1;
-	    break;
+	      ops[n_ops].op = XEXP (this_op, 1);
+	      ops[n_ops].neg = (this_code == MINUS) ^ this_neg;
+	      n_ops++;
 
-	  case CONST:
-	    ops[i] = XEXP (ops[i], 0);
-	    input_consts++;
-	    changed = 1;
-	    break;
+	      ops[i].op = XEXP (this_op, 0);
+	      input_ops++;
+	      changed = 1;
+	      break;
 
-	  case NOT:
-	    /* ~a -> (-a - 1) */
-	    if (n_ops != 7)
-	      {
-		ops[n_ops] = constm1_rtx;
-		negs[n_ops++] = negs[i];
-		ops[i] = XEXP (ops[i], 0);
-		negs[i] = ! negs[i];
-		changed = 1;
-	      }
-	    break;
+	    case NEG:
+	      ops[i].op = XEXP (this_op, 0);
+	      ops[i].neg = ! this_neg;
+	      changed = 1;
+	      break;
 
-	  case CONST_INT:
-	    if (negs[i])
-	      ops[i] = GEN_INT (- INTVAL (ops[i])), negs[i] = 0, changed = 1;
-	    break;
+	    case CONST:
+	      ops[i].op = XEXP (this_op, 0);
+	      input_consts++;
+	      changed = 1;
+	      break;
 
-	  default:
-	    break;
-	  }
+	    case NOT:
+	      /* ~a -> (-a - 1) */
+	      if (n_ops != 7)
+		{
+		  ops[n_ops].op = constm1_rtx;
+		  ops[n_ops].neg = this_neg;
+		  ops[i].op = XEXP (this_op, 0);
+		  ops[i].neg = !this_neg;
+		  changed = 1;
+		}
+	      break;
+
+	    case CONST_INT:
+	      if (this_neg)
+		{
+		  ops[i].op = GEN_INT (- INTVAL (this_op));
+		  ops[i].neg = 0;
+		  changed = 1;
+		}
+	      break;
+
+	    default:
+	      break;
+	    }
+	}
     }
+  while (changed);
 
   /* If we only have two operands, we can't do anything.  */
   if (n_ops <= 2)
-    return 0;
+    return NULL_RTX;
 
   /* Now simplify each pair of operands until nothing changes.  The first
      time through just simplify constants against each other.  */
 
-  changed = 1;
-  while (changed)
+  first = 1;
+  do
     {
       changed = first;
 
       for (i = 0; i < n_ops - 1; i++)
 	for (j = i + 1; j < n_ops; j++)
-	  if (ops[i] != 0 && ops[j] != 0
-	      && (! first || (CONSTANT_P (ops[i]) && CONSTANT_P (ops[j]))))
-	    {
-	      rtx lhs = ops[i], rhs = ops[j];
-	      enum rtx_code ncode = PLUS;
+	  {
+	    rtx lhs = ops[i].op, rhs = ops[j].op;
+	    int lneg = ops[i].neg, rneg = ops[j].neg;
 
-	      if (negs[i] && ! negs[j])
-		lhs = ops[j], rhs = ops[i], ncode = MINUS;
-	      else if (! negs[i] && negs[j])
-		ncode = MINUS;
+	    if (lhs != 0 && rhs != 0
+		&& (! first || (CONSTANT_P (lhs) && CONSTANT_P (rhs))))
+	      {
+		enum rtx_code ncode = PLUS;
 
-	      tem = simplify_binary_operation (ncode, mode, lhs, rhs);
-	      if (tem)
-		{
-		  ops[i] = tem, ops[j] = 0;
-		  negs[i] = negs[i] && negs[j];
-		  if (GET_CODE (tem) == NEG)
-		    ops[i] = XEXP (tem, 0), negs[i] = ! negs[i];
+		if (lneg != rneg)
+		  {
+		    ncode = MINUS;
+		    if (lneg)
+		      tem = lhs, lhs = rhs, rhs = tem;
+		  }
+		else if (swap_commutative_operands_p (lhs, rhs))
+		  tem = lhs, lhs = rhs, rhs = tem;
 
-		  if (GET_CODE (ops[i]) == CONST_INT && negs[i])
-		    ops[i] = GEN_INT (- INTVAL (ops[i])), negs[i] = 0;
-		  changed = 1;
-		}
-	    }
+		tem = simplify_binary_operation (ncode, mode, lhs, rhs);
+
+		/* Reject "simplifications" that just wrap the two 
+		   arguments in a CONST.  Failure to do so can result
+		   in infinite recursion with simplify_binary_operation
+		   when it calls us to simplify CONST operations.  */
+		if (tem
+		    && ! (GET_CODE (tem) == CONST
+			  && GET_CODE (XEXP (tem, 0)) == ncode
+			  && XEXP (XEXP (tem, 0), 0) == lhs
+			  && XEXP (XEXP (tem, 0), 1) == rhs))
+		  {
+		    lneg &= rneg;
+		    if (GET_CODE (tem) == NEG)
+		      tem = XEXP (tem, 0), lneg = !lneg;
+		    if (GET_CODE (tem) == CONST_INT && lneg)
+		      tem = GEN_INT (- INTVAL (tem)), lneg = 0;
+
+		    ops[i].op = tem;
+		    ops[i].neg = lneg;
+		    ops[j].op = NULL_RTX;
+		    changed = 1;
+		  }
+	      }
+	  }
 
       first = 0;
     }
+  while (changed);
 
-  /* Pack all the operands to the lower-numbered entries and give up if
-     we didn't reduce the number of operands we had.  Make sure we
-     count a CONST as two operands.  If we have the same number of
-     operands, but have made more CONSTs than we had, this is also
-     an improvement, so accept it.  */
-
+  /* Pack all the operands to the lower-numbered entries.  */
   for (i = 0, j = 0; j < n_ops; j++)
-    if (ops[j] != 0)
-      {
-	ops[i] = ops[j], negs[i++] = negs[j];
-	if (GET_CODE (ops[j]) == CONST)
-	  n_consts++;
-      }
-
-  if (i + n_consts > input_ops
-      || (i + n_consts == input_ops && n_consts <= input_consts))
-    return 0;
-
+    if (ops[j].op)
+      ops[i++] = ops[j];
   n_ops = i;
 
-  /* If we have a CONST_INT, put it last.  */
-  for (i = 0; i < n_ops - 1; i++)
-    if (GET_CODE (ops[i]) == CONST_INT)
-      {
-	tem = ops[n_ops - 1], ops[n_ops - 1] = ops[i] , ops[i] = tem;
-	j = negs[n_ops - 1], negs[n_ops - 1] = negs[i], negs[i] = j;
-      }
+  /* Sort the operations based on swap_commutative_operands_p.  */
+  qsort (ops, n_ops, sizeof (*ops), simplify_plus_minus_op_data_cmp);
+
+  /* We suppressed creation of trivial CONST expressions in the
+     combination loop to avoid recursion.  Create one manually now.
+     The combination loop should have ensured that there is exactly
+     one CONST_INT, and the sort will have ensured that it is last
+     in the array and that any other constant will be next-to-last.  */
+
+  if (n_ops > 1
+      && GET_CODE (ops[n_ops - 1].op) == CONST_INT
+      && CONSTANT_P (ops[n_ops - 2].op))
+    {
+      HOST_WIDE_INT value = INTVAL (ops[n_ops - 1].op);
+      if (ops[n_ops - 1].neg)
+	value = -value;
+      ops[n_ops - 2].op = plus_constant (ops[n_ops - 2].op, value);
+      n_ops--;
+    }
+
+  /* Count the number of CONSTs that we generated.  */
+  n_consts = 0;
+  for (i = 0; i < n_ops; i++)
+    if (GET_CODE (ops[i].op) == CONST)
+      n_consts++;
+
+  /* Give up if we didn't reduce the number of operands we had.  Make
+     sure we count a CONST as two operands.  If we have the same
+     number of operands, but have made more CONSTs than before, this
+     is also an improvement, so accept it.  */
+  if (n_ops + n_consts > input_ops
+      || (n_ops + n_consts == input_ops && n_consts <= input_consts))
+    return NULL_RTX;
 
   /* Put a non-negated operand first.  If there aren't any, make all
      operands positive and negate the whole thing later.  */
-  for (i = 0; i < n_ops && negs[i]; i++)
-    ;
 
+  negate = 0;
+  for (i = 0; i < n_ops && ops[i].neg; i++)
+    continue;
   if (i == n_ops)
     {
       for (i = 0; i < n_ops; i++)
-	negs[i] = 0;
+	ops[i].neg = 0;
       negate = 1;
     }
   else if (i != 0)
     {
-      tem = ops[0], ops[0] = ops[i], ops[i] = tem;
-      j = negs[0], negs[0] = negs[i], negs[i] = j;
+      tem = ops[0].op;
+      ops[0] = ops[i];
+      ops[i].op = tem;
+      ops[i].neg = 1;
     }
 
   /* Now make the result by performing the requested operations.  */
-  result = ops[0];
+  result = ops[0].op;
   for (i = 1; i < n_ops; i++)
-    result = simplify_gen_binary (negs[i] ? MINUS : PLUS, mode, result, ops[i]);
+    result = gen_rtx_fmt_ee (ops[i].neg ? MINUS : PLUS,
+			     mode, result, ops[i].op);
 
   return negate ? gen_rtx_NEG (mode, result) : result;
 }

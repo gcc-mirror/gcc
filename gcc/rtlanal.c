@@ -30,7 +30,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static void set_of_1		PARAMS ((rtx, rtx, void *));
 static void insn_dependent_p_1	PARAMS ((rtx, rtx, void *));
 static int computed_jump_p_1	PARAMS ((rtx));
-static int operand_preference	PARAMS ((rtx));
 static void parms_set 		PARAMS ((rtx, rtx, void *));
 
 /* Bit flags that specify the machine subtype we are compiling for.
@@ -2558,8 +2557,8 @@ regno_use_in (regno, x)
    We use negative values to indicate a preference for the first operand
    and positive values for the second operand.  */
 
-static int
-operand_preference (op)
+int
+commutative_operand_precedence (op)
      rtx op;
 {
   /* Constants always come the second operand.  Prefer "nice" constants.  */
@@ -2597,7 +2596,8 @@ int
 swap_commutative_operands_p (x, y)
      rtx x, y;
 {
-  return operand_preference (x) < operand_preference (y);
+  return (commutative_operand_precedence (x)
+	  < commutative_operand_precedence (y));
 }
 
 /* Return 1 if X is an autoincrement side effect and the register is
