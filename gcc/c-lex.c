@@ -1009,7 +1009,7 @@ readescape (p, limit, cptr)
   if (ISGRAPH (c))
     pedwarn ("unknown escape sequence '\\%c'", c);
   else
-    pedwarn ("unknown escape sequence: '\\' followed by char 0x%.2x", c);
+    pedwarn ("unknown escape sequence: '\\' followed by char 0x%x", c);
 
   *cptr = c;
   return p;

@@ -1,5 +1,9 @@
 Sun Sep 17 10:46:17 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* c-decl.c (grokdeclarator): Reorder tests to avoid looking at
+	TYPE_MAIN_VARIANT of ERROR_MARK.
+	* c-lex.c (readescape): Avoid using printf syntax we don't recognize.
+
 	* simplify-rtx.c (simplify_unary_operation): Add cases
 	FLOAT_EXTEND and FLOAT_TRUNCATE to ones that return 0.
 
