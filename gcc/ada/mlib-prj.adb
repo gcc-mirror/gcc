@@ -389,8 +389,9 @@ package body MLib.Prj is
       -----------------
 
       procedure Add_ALI_For (Source : Name_Id) is
-         ALI : constant String := ALI_File_Name (Get_Name_String (Source));
+         ALI    : constant String := ALI_File_Name (Get_Name_String (Source));
          ALI_Id : Name_Id;
+
       begin
          if Bind then
             Add_Argument (ALI);
@@ -665,7 +666,7 @@ package body MLib.Prj is
             Element  : Project_Element;
 
          begin
-            --  Nothing to do if process has already been processed.
+            --  Nothing to do if process has already been processed
 
             if not Processed_Projects.Get (Data.Name) then
                Processed_Projects.Set (Data.Name, True);
@@ -879,6 +880,7 @@ package body MLib.Prj is
             Library_ALIs.Reset;
             Interface_ALIs.Reset;
             Processed_ALIs.Reset;
+
             for Source in 1 .. Com.Units.Last loop
                Unit := Com.Units.Table (Source);
 
@@ -924,12 +926,12 @@ package body MLib.Prj is
                   exit when not Bind;
                end if;
             end loop;
-
          end;
 
          --  Continue setup and call gnatbind if Bind is True
 
          if Bind then
+
             --  Get an eventual --RTS from the ALI file
 
             if First_ALI /= No_Name then
@@ -991,7 +993,6 @@ package body MLib.Prj is
                Com.Fail ("could not bind standalone library ",
                          Get_Name_String (Data.Library_Name));
             end if;
-
          end if;
 
          --  Compile the binder generated file only if Link is true
@@ -1196,9 +1197,9 @@ package body MLib.Prj is
                         --  If in the object directory of an extended project,
                         --  do not consider generated object files.
 
-                        if In_Main_Object_Directory or else
-                          Last < 5 or else
-                          Filename (1 .. B_Start'Length) /= B_Start
+                        if In_Main_Object_Directory
+                          or else Last < 5
+                          or else Filename (1 .. B_Start'Length) /= B_Start
                         then
                            Name_Len := Last;
                            Name_Buffer (1 .. Name_Len) := Filename (1 .. Last);
@@ -1233,8 +1234,7 @@ package body MLib.Prj is
                                     Check_Libs (ALI_File);
 
                                  else
-                                    --  The object file is a foreign object
-                                    --  file.
+                                    --  Object file is a foreign object file
 
                                     Foreigns.Increment_Last;
                                     Foreigns.Table (Foreigns.Last) :=
@@ -1338,7 +1338,6 @@ package body MLib.Prj is
          if Object_Files'Length = 0 then
             Com.Fail ("no object files for library """ &
                       Lib_Filename.all & '"');
-
          end if;
 
          if not Opt.Quiet_Output then
@@ -1470,8 +1469,7 @@ package body MLib.Prj is
          Copy_Dir := Projects.Table (For_Project).Library_Dir;
          Clean (Copy_Dir);
 
-         --  Call the procedure to build the library, depending on the build
-         --  mode.
+         --  Call procedure to build the library, depending on the build mode
 
          case The_Build_Mode is
             when Dynamic | Relocatable =>
@@ -1501,11 +1499,11 @@ package body MLib.Prj is
                null;
          end case;
 
-         --  We need to copy the ALI files from the object directory
-         --  to the library directory, so that the linker find them there,
-         --  and does not need to look in the object directory where it would
-         --  also find the object files; and we don't want that: we want the
-         --  linker to use the library.
+         --  We need to copy the ALI files from the object directory to
+         --  the library directory, so that the linker find them there,
+         --  and does not need to look in the object directory where it
+         --  would also find the object files; and we don't want that:
+         --  we want the linker to use the library.
 
          --  Copy the ALI files and make the copies read-only. For interfaces,
          --  mark the copies as interfaces.
@@ -1521,8 +1519,8 @@ package body MLib.Prj is
            and then Projects.Table (For_Project).Library_Src_Dir /= No_Name
          then
             --  Clean the interface copy directory, if it is not also the
-            --  library directory. If it is also the library directory, it has
-            --  already been cleaned before the generation of the library.
+            --  library directory. If it is also the library directory, it
+            --  has already been cleaned before generation of the library.
 
             if Projects.Table (For_Project).Library_Src_Dir /= Copy_Dir then
                Copy_Dir := Projects.Table (For_Project).Library_Src_Dir;
@@ -1558,7 +1556,7 @@ package body MLib.Prj is
 
    procedure Check_Context is
    begin
-      --  check that each object file exists
+      --  Check that each object file exists
 
       for F in Object_Files'Range loop
          Check (Object_Files (F).all);
@@ -1609,7 +1607,6 @@ package body MLib.Prj is
                if Is_Obj (Name_Buffer (1 .. Name_Len))
                   and then Name_Buffer (1 .. B_Start'Length) /= B_Start
                then
-
                   --  Get the object file time stamp
 
                   Obj_TS := File_Stamp (Name_Find);

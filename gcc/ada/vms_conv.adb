@@ -793,7 +793,7 @@ package body VMS_Conv is
 
       for C in Real_Command_Type loop
          declare
-            Command : Item_Ptr := new Command_Item;
+            Command : constant Item_Ptr := new Command_Item;
 
             Last_Switch : Item_Ptr;
             --  Last switch in list
@@ -975,8 +975,9 @@ package body VMS_Conv is
                      P := P + 1; -- bump past =
                      while P <= SS'Last loop
                         declare
-                           Opt : Item_Ptr := new Option_Item;
+                           Opt : constant Item_Ptr := new Option_Item;
                            Q   : Natural;
+
                         begin
                            --  Link new option item into options list
 
@@ -1088,7 +1089,6 @@ package body VMS_Conv is
                   --  The first one must be a command name
 
                   if Arg_Num = 1 and then Arg_Idx = Argv'First then
-
                      Command := Matching_Name (Arg.all, Commands);
 
                      if Command = null then
@@ -1159,8 +1159,7 @@ package body VMS_Conv is
 
                                     if Sw.Translation = T_File
                                       and then Sw.Unix_String
-                                        (Sw.Unix_String'Last)
-                                    /= '='
+                                                (Sw.Unix_String'Last) /= '='
                                     then
                                        Put (' ');
                                     end if;
@@ -1171,8 +1170,8 @@ package body VMS_Conv is
                                     Put ("=nnn");
                                     Set_Col (53);
 
-                                    if Sw.Unix_String (Sw.Unix_String'First)
-                                    = '`'
+                                    if Sw.Unix_String
+                                         (Sw.Unix_String'First) = '`'
                                     then
                                        Put (Sw.Unix_String
                                               (Sw.Unix_String'First + 1
@@ -1187,8 +1186,8 @@ package body VMS_Conv is
                                     Put ("=xyz");
                                     Set_Col (53);
 
-                                    if Sw.Unix_String (Sw.Unix_String'First)
-                                    = '`'
+                                    if Sw.Unix_String
+                                         (Sw.Unix_String'First) = '`'
                                     then
                                        Put (Sw.Unix_String
                                               (Sw.Unix_String'First + 1
@@ -1208,8 +1207,8 @@ package body VMS_Conv is
 
                                     Put (Sw.Unix_String.all);
 
-                                    if Sw.Unix_String (Sw.Unix_String'Last)
-                                    /= '='
+                                    if Sw.Unix_String
+                                         (Sw.Unix_String'Last) /= '='
                                     then
                                        Put (' ');
                                     end if;
@@ -1297,8 +1296,8 @@ package body VMS_Conv is
                            when File | Optional_File =>
                               declare
                                  Normal_File : constant String_Access :=
-                                   To_Canonical_File_Spec
-                                     (Arg.all);
+                                                 To_Canonical_File_Spec
+                                                   (Arg.all);
 
                               begin
                                  Place (' ');
@@ -1314,12 +1313,12 @@ package body VMS_Conv is
 
                            when Unlimited_Files =>
                               declare
-                                 Normal_File :
-                                 constant String_Access :=
-                                   To_Canonical_File_Spec (Arg.all);
+                                 Normal_File : constant String_Access :=
+                                                 To_Canonical_File_Spec
+                                                   (Arg.all);
 
-                                 File_Is_Wild  : Boolean := False;
-                                 File_List     : String_Access_List_Access;
+                                 File_Is_Wild : Boolean := False;
+                                 File_List    : String_Access_List_Access;
 
                               begin
                                  for J in Arg'Range loop
@@ -1599,8 +1598,8 @@ package body VMS_Conv is
                                                        (Arg_Num + 1));
                                        Arg_Num := Arg_Num + 1;
                                        Arg_Idx := Argv'First;
-                                       Next_Arg_Idx
-                                       := Get_Arg_End (Argv.all, Arg_Idx);
+                                       Next_Arg_Idx :=
+                                         Get_Arg_End (Argv.all, Arg_Idx);
                                        Arg := new String'
                                          (Argv (Arg_Idx .. Next_Arg_Idx));
                                        goto Tryagain_After_Coalesce;
@@ -1621,14 +1620,15 @@ package body VMS_Conv is
                                     declare
                                        Dir_Is_Wild       : Boolean := False;
                                        Dir_Maybe_Is_Wild : Boolean := False;
+
                                        Dir_List : String_Access_List_Access;
+
                                     begin
                                        P2 := SwP;
 
                                        while P2 < Endp
                                          and then Arg (P2 + 1) /= ','
                                        loop
-
                                           --  A wildcard directory spec on
                                           --  VMS will contain either * or
                                           --  % or ...
@@ -1660,8 +1660,9 @@ package body VMS_Conv is
                                        end loop;
 
                                        if Dir_Is_Wild then
-                                          Dir_List := To_Canonical_File_List
-                                            (Arg (SwP .. P2), True);
+                                          Dir_List :=
+                                            To_Canonical_File_List
+                                              (Arg (SwP .. P2), True);
 
                                           for J in Dir_List.all'Range loop
                                              Place_Unix_Switches
@@ -1696,7 +1697,7 @@ package body VMS_Conv is
                                     --  here
 
                                     if Sw.Unix_String
-                                      (Sw.Unix_String'Last) /= '='
+                                         (Sw.Unix_String'Last) /= '='
                                     then
                                        Place (' ');
                                     end if;
@@ -1722,7 +1723,7 @@ package body VMS_Conv is
 
                                     if Sw.Translation = T_File
                                       and then Sw.Unix_String
-                                        (Sw.Unix_String'Last) /= '='
+                                                 (Sw.Unix_String'Last) /= '='
                                     then
                                        Place (' ');
                                     end if;
@@ -1733,9 +1734,7 @@ package body VMS_Conv is
                                  end if;
 
                               when T_Numeric =>
-                                 if
-                                   OK_Integer (Arg (SwP + 2 .. Arg'Last))
-                                 then
+                                 if OK_Integer (Arg (SwP + 2 .. Arg'Last)) then
                                     Place_Unix_Switches (Sw.Unix_String);
                                     Place (Arg (SwP + 2 .. Arg'Last));
 
@@ -1748,9 +1747,8 @@ package body VMS_Conv is
                                  end if;
 
                               when T_Alphanumplus =>
-                                 if
-                                   OK_Alphanumerplus
-                                     (Arg (SwP + 2 .. Arg'Last))
+                                 if OK_Alphanumerplus
+                                      (Arg (SwP + 2 .. Arg'Last))
                                  then
                                     Place_Unix_Switches (Sw.Unix_String);
                                     Place (Arg (SwP + 2 .. Arg'Last));
@@ -1768,7 +1766,7 @@ package body VMS_Conv is
                                  --  A String value must be extended to the
                                  --  end of the Argv, otherwise strings like
                                  --  "foo/bar" get split at the slash.
-                                 --
+
                                  --  The begining and ending of the string
                                  --  are flagged with embedded nulls which
                                  --  are removed when building the Spawn
@@ -1778,6 +1776,7 @@ package body VMS_Conv is
                                  --  difficult to embed them.
 
                                  Place_Unix_Switches (Sw.Unix_String);
+
                                  if Next_Arg_Idx /= Argv'Last then
                                     Next_Arg_Idx := Argv'Last;
                                     Arg := new String'
@@ -1789,6 +1788,7 @@ package body VMS_Conv is
                                        SwP := SwP + 1;
                                     end loop;
                                  end if;
+
                                  Place (ASCII.NUL);
                                  Place (Arg (SwP + 2 .. Arg'Last));
                                  Place (ASCII.NUL);
@@ -1803,9 +1803,8 @@ package body VMS_Conv is
                                              Sw.Unix_String'First + 5));
 
                                  if Sw.Unix_String
-                                   (Sw.Unix_String'First + 7 ..
-                                      Sw.Unix_String'Last) =
-                                     "MAKE"
+                                      (Sw.Unix_String'First + 7 ..
+                                         Sw.Unix_String'Last) = "MAKE"
                                  then
                                     Make_Commands_Active := null;
 
