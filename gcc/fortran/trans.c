@@ -215,7 +215,10 @@ gfc_finish_block (stmtblock_t * stmtblock)
   tree expr;
   tree block;
 
-  expr = rationalize_compound_expr (stmtblock->head);
+  expr = stmtblock->head;
+  if (!expr)
+    expr = build_empty_stmt ();
+
   stmtblock->head = NULL_TREE;
 
   if (stmtblock->has_scope)
@@ -387,10 +390,23 @@ gfc_add_expr_to_block (stmtblock_t * block, tree expr)
   if (expr == NULL_TREE || IS_EMPTY_STMT (expr))
     return;
 
-  expr = fold (expr);
+  if (TREE_CODE (expr) != STATEMENT_LIST)
+    expr = fold (expr);
+
   if (block->head)
-    block->head = build_v (COMPOUND_EXPR, block->head, expr);
+    {
+      if (TREE_CODE (block->head) != STATEMENT_LIST)
+	{
+	  tree tmp;
+
+	  tmp = block->head;
+	  block->head = NULL_TREE;
+	  append_to_statement_list (tmp, &block->head);
+	}
+      append_to_statement_list (expr, &block->head);
+    }
   else
+    /* Don't bother creating a list if we only have a single statement.  */
     block->head = expr;
 }
 
@@ -592,7 +608,11 @@ gfc_trans_code (gfc_code * code)
 
       if (res != NULL_TREE && ! IS_EMPTY_STMT (res))
 	{
-	  annotate_with_locus (res, input_location);
+	  if (TREE_CODE (res) == STATEMENT_LIST)
+	    annotate_all_with_locus (&res, input_location);
+	  else
+	    annotate_with_locus (res, input_location);
+
 	  /* Add the new statemment to the block.  */
 	  gfc_add_expr_to_block (&block, res);
 	}

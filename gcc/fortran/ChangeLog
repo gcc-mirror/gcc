@@ -1,3 +1,9 @@
+2004-05-03  Paul Brook  <paul@codesourcery.com>
+
+	* trans.c (gfc_finish_block, gfc_add_expr_to_block): Build statement
+	lists instead of compound expr chains.
+	(gfc_trans_code): Annotate statement lists.
+
 2004-06-03  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* trans-array.c: Fix spelling in comments.
