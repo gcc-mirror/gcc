@@ -90,7 +90,7 @@ lookup_base_r (tree binfo, tree base, base_access access,
   tree base_binfo;
   base_kind found = bk_not_base;
   
-  if (same_type_p (BINFO_TYPE (binfo), base))
+  if (SAME_BINFO_TYPE_P (BINFO_TYPE (binfo), base))
     {
       /* We have found a base. Check against what we have found
          already.  */
@@ -279,7 +279,7 @@ dynamic_cast_base_recurse (tree subtype, tree binfo, bool is_via_virtual,
   int i;
   int worst = -2;
   
-  if (BINFO_TYPE (binfo) == subtype)
+  if (SAME_BINFO_TYPE_P (BINFO_TYPE (binfo), subtype))
     {
       if (is_via_virtual)
         return -1;
@@ -2346,7 +2346,7 @@ binfo_from_vbase (tree binfo)
 tree
 binfo_via_virtual (tree binfo, tree limit)
 {
-  for (; binfo && (!limit || !same_type_p (BINFO_TYPE (binfo), limit));
+  for (; binfo && !SAME_BINFO_TYPE_P (BINFO_TYPE (binfo), limit);
        binfo = BINFO_INHERITANCE_CHAIN (binfo))
     {
       if (BINFO_VIRTUAL_P (binfo))
@@ -2382,7 +2382,7 @@ copied_binfo (tree binfo, tree here)
       
       cbinfo = copied_binfo (BINFO_INHERITANCE_CHAIN (binfo), here);
       for (ix = 0; BINFO_BASE_ITERATE (cbinfo, ix, base_binfo); ix++)
-	if (BINFO_TYPE (base_binfo) == BINFO_TYPE (binfo))
+	if (SAME_BINFO_TYPE_P (BINFO_TYPE (base_binfo), BINFO_TYPE (binfo)))
 	  {
 	    result = base_binfo;
 	    break;
@@ -2390,7 +2390,7 @@ copied_binfo (tree binfo, tree here)
     }
   else
     {
-      gcc_assert (BINFO_TYPE (here) == BINFO_TYPE (binfo));
+      gcc_assert (SAME_BINFO_TYPE_P (BINFO_TYPE (here), BINFO_TYPE (binfo)));
       result = here;
     }
 
@@ -2407,7 +2407,7 @@ binfo_for_vbase (tree base, tree t)
   
   for (vbases = CLASSTYPE_VBASECLASSES (t), ix = 0;
        VEC_iterate (tree, vbases, ix, binfo); ix++)
-    if (BINFO_TYPE (binfo) == base)
+    if (SAME_BINFO_TYPE_P (BINFO_TYPE (binfo), base))
       return binfo;
   return NULL;
 }
@@ -2422,7 +2422,7 @@ original_binfo (tree binfo, tree here)
 {
   tree result = NULL;
   
-  if (BINFO_TYPE (binfo) == BINFO_TYPE (here))
+  if (SAME_BINFO_TYPE_P (BINFO_TYPE (binfo), BINFO_TYPE (here)))
     result = here;
   else if (BINFO_VIRTUAL_P (binfo))
     result = (CLASSTYPE_VBASECLASSES (BINFO_TYPE (here))
@@ -2439,7 +2439,8 @@ original_binfo (tree binfo, tree here)
 	  tree base_binfo;
 	  
 	  for (ix = 0; (base_binfo = BINFO_BASE_BINFO (base_binfos, ix)); ix++)
-	    if (BINFO_TYPE (base_binfo) == BINFO_TYPE (binfo))
+	    if (SAME_BINFO_TYPE_P (BINFO_TYPE (base_binfo),
+				   BINFO_TYPE (binfo)))
 	      {
 		result = base_binfo;
 		break;
