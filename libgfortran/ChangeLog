@@ -1,3 +1,8 @@
+2004-08-24  David Edelsohn  <edelsohn@gnu.org>
+
+	* Makefile.am (libgfortran_la_LDFLAGS): Add -lm.
+	* Makefile.in: Rebuilt.
+
 2004-08-21  Bud Davis  <bdavis9659@comcast.net>
 
 	PR 16908
