@@ -128,7 +128,7 @@ Boston, MA 02111-1307, USA.  */
 #define LIBGCC_SPEC ""
 
 #undef  STARTFILE_SPEC
-#define STARTFILE_SPEC "crti.o%s crtbegin.o%s %{!nostart:start_dyn.o%s}"
+#define STARTFILE_SPEC "crti.o%s crtbegin.o%s %{!nostart:start_dyn.o%s} init_term_dyn.o%s %{p:i386-mcount.o%s}"
 
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC "crtend.o%s crtn.o%s"
@@ -157,133 +157,6 @@ Boston, MA 02111-1307, USA.  */
     else fprintf ((FILE), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP))
 #endif
 
-/*
- * Support for __declspec(dllimport) & __declspec(dllexport).
- */
-
-/* We don't care about dllimport.  */
-
-#define TARGET_NOP_FUN_DLLIMPORT 1
-
-/* A C expression whose value is nonzero if IDENTIFIER with arguments ARGS
-   is a valid machine specific attribute for DECL.
-   The attributes in ATTRIBUTES have previously been assigned to DECL.  */
-
-#undef VALID_MACHINE_DECL_ATTRIBUTE
-#define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRIBUTES, IDENTIFIER, ARGS) \
-  i386_pe_valid_decl_attribute_p (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
-extern int i386_pe_valid_decl_attribute_p ();
-
-/* A C expression whose value is nonzero if IDENTIFIER with arguments ARGS
-   is a valid machine specific attribute for TYPE.
-   The attributes in ATTRIBUTES have previously been assigned to TYPE.  */
-
-#undef VALID_MACHINE_TYPE_ATTRIBUTE
-#define VALID_MACHINE_TYPE_ATTRIBUTE(TYPE, ATTRIBUTES, IDENTIFIER, ARGS) \
-  i386_pe_valid_type_attribute_p (TYPE, ATTRIBUTES, IDENTIFIER, ARGS)
-extern int i386_pe_valid_type_attribute_p ();
-
-#define MERGE_MACHINE_DECL_ATTRIBUTES(OLD, NEW) \
-  i386_pe_merge_decl_attributes ((OLD), (NEW))
-extern union tree_node *i386_pe_merge_decl_attributes ();
-
-/* Used to implement dllexport overriding dllimport semantics.  It's also used
-   to handle vtables - the first pass won't do anything because
-   DECL_CONTEXT (DECL) will be 0 so i386_pe_dll{ex,im}port_p will return 0.
-   It's also used to handle dllimport override semantics.  */
-#if 0
-#define REDO_SECTION_INFO_P(DECL) \
-  ((DECL_MACHINE_ATTRIBUTES (DECL) != NULL_TREE) \
-   || (TREE_CODE (DECL) == VAR_DECL && DECL_VIRTUAL_P (DECL)))
-#else
-#define REDO_SECTION_INFO_P(DECL) 1
-#endif
-
-/* Used only here locally.  If the decl has been exported, emit the 
-   necessary assembly.  */
-
-#define ASM_EXPORT_DECL(FILE, NAME, DECL)				\
-  do {									\
-    if ((DECL) && i386_pe_dllexport_p (DECL))				\
-      {									\
-	fprintf ((FILE), ".section .exports\n");			\
-	fprintf ((FILE), "\t%s\t\"", STRING_ASM_OP);			\
-        assemble_name (FILE, NAME);					\
-	fprintf ((FILE), "\"\n.previous\n");				\
-      }									\
-  } while (0)
-
-/* Write the extra assembler code needed to declare a function properly.
-   Some svr4 assemblers need to also have something extra said about the
-   function's return value.  We allow for that here.  */
-
-#undef ASM_DECLARE_FUNCTION_NAME
-#define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
-  do {									\
-    ASM_EXPORT_DECL(FILE, NAME, DECL);					\
-    fprintf (FILE, "\t%s\t ", TYPE_ASM_OP);				\
-    assemble_name (FILE, NAME);						\
-    putc (',', FILE);							\
-    fprintf (FILE, TYPE_OPERAND_FMT, "function");			\
-    putc ('\n', FILE);							\
-    ASM_DECLARE_RESULT (FILE, DECL_RESULT (DECL));			\
-    ASM_OUTPUT_LABEL(FILE, NAME);					\
-  } while (0)
-
-/* Write the extra assembler code needed to declare an object properly.  */
-
-#undef ASM_DECLARE_OBJECT_NAME
-#define ASM_DECLARE_OBJECT_NAME(FILE, NAME, DECL)			\
-  do {									\
-    ASM_EXPORT_DECL(FILE, NAME, DECL);					\
-    fprintf (FILE, "\t%s\t ", TYPE_ASM_OP);				\
-    assemble_name (FILE, NAME);						\
-    putc (',', FILE);							\
-    fprintf (FILE, TYPE_OPERAND_FMT, "object");				\
-    putc ('\n', FILE);							\
-    size_directive_output = 0;						\
-    if (!flag_inhibit_size_directive && DECL_SIZE (DECL))		\
-      {									\
-        size_directive_output = 1;					\
-        fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);				\
-        assemble_name (FILE, NAME);					\
-        putc (',', FILE);						\
-        fprintf (FILE, HOST_WIDE_INT_PRINT_DEC,				\
-                 int_size_in_bytes (TREE_TYPE (DECL)));			\
-        fputc ('\n', FILE);						\
-      }									\
-    ASM_OUTPUT_LABEL(FILE, NAME);					\
-  } while (0)
-
-/* Similarly for COMMON symbols.  */
-
-#undef ASM_OUTPUT_ALIGNED_COMMON
-#undef ASM_OUTPUT_ALIGNED_DECL_COMMON
-#define ASM_OUTPUT_ALIGNED_DECL_COMMON(FILE, DECL, NAME, SIZE, ALIGN)	\
-  do {									\
-    ASM_EXPORT_DECL(FILE, NAME, DECL);					\
-    fprintf ((FILE), "\t%s\t", COMMON_ASM_OP);				\
-    assemble_name ((FILE), (NAME));					\
-    fprintf ((FILE), ",%u,%u\n", (SIZE), (ALIGN) / BITS_PER_UNIT);	\
-  } while (0)
-
-#undef ASM_OUTPUT_ALIGNED_LOCAL
-#undef ASM_OUTPUT_ALIGNED_DECL_LOCAL
-#define ASM_OUTPUT_ALIGNED_DECL_LOCAL(FILE, DECL, NAME, SIZE, ALIGN)	     \
-  do {									     \
-    fprintf ((FILE), "\t%s\t", LOCAL_ASM_OP);				     \
-    assemble_name ((FILE), (NAME));					     \
-    fprintf ((FILE), "\n");						     \
-    ASM_OUTPUT_ALIGNED_DECL_COMMON((FILE), (DECL), (NAME), (SIZE), (ALIGN)); \
-  } while (0)
-
-/* This macro gets just the user-specified name out of the string in a
-   SYMBOL_REF.  Discard trailing @[NUM] encoded by ENCODE_SECTION_INFO.  */
-/* Unused except to let winnt.c compile.  */
-
-#undef  STRIP_NAME_ENCODING
-#define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME) ((VAR) = (SYMBOL_NAME))
-
 /* For native compiler, use standard BeOS include file search paths
    rooted in /boot/develop/headers.  For a cross compiler, don't
    expect the host to use the BeOS directory scheme, and instead look
@@ -310,14 +183,25 @@ extern union tree_node *i386_pe_merge_decl_attributes ();
     { "/boot/develop/headers/be/kernel", 0, 0, 0 },\
     { "/boot/develop/headers/be/net", 0, 0, 0 },\
     { "/boot/develop/headers/be/midi", 0, 0, 0 },\
+    { "/boot/develop/headers/be/midi2", 0, 0, 0 },\
     { "/boot/develop/headers/be/media", 0, 0, 0 },\
     { "/boot/develop/headers/be/interface", 0, 0, 0 },\
     { "/boot/develop/headers/be/device", 0, 0, 0 },\
     { "/boot/develop/headers/be/app", 0, 0, 0 },\
+    { "/boot/develop/headers/be/precompiled", 0, 0, 0 },\
+    { "/boot/develop/headers/be/add-ons/input_server", 0, 0, 0 },\
+    { "/boot/develop/headers/be/add-ons/net_server", 0, 0, 0 },\
+    { "/boot/develop/headers/be/add-ons/screen_saver", 0, 0, 0 },\
+    { "/boot/develop/headers/be/add-ons/tracker", 0, 0, 0 },\
+    { "/boot/develop/headers/be/be_apps/Deskbar", 0, 0, 0 },\
+    { "/boot/develop/headers/be/be_apps/NetPositive", 0, 0, 0 },\
+    { "/boot/develop/headers/be/be_apps/Tracker", 0, 0, 0 },\
+    { "/boot/develop/headers/be/drivers/tty", 0, 0, 0 },\
+    { "/boot/develop/headers/be/net/netinet", 0, 0, 0 },\
+    { "/boot/develop/headers/be/storage", 0, 0, 0 },\
+    { "/boot/develop/headers/be", 0, 0, 0 },\
     { "/boot/develop/headers/cpp", 0, 0, 0 },\
     { "/boot/develop/headers/posix", 0, 0, 0 },\
-    { "/boot/develop/headers/be/precompiled", 0, 0, 0 },\
-    { "/boot/develop/headers/be", 0, 0, 0 },\
     { "/boot/develop/headers", 0, 0, 0 }, \
     { 0, 0, 0, 0 } \
     };
@@ -341,14 +225,25 @@ extern union tree_node *i386_pe_merge_decl_attributes ();
     { CROSS_INCLUDE_DIR "/be/kernel", 0, 0, 0 },\
     { CROSS_INCLUDE_DIR "/be/net", 0, 0, 0 },\
     { CROSS_INCLUDE_DIR "/be/midi", 0, 0, 0 },\
+    { CROSS_INCLUDE_DIR "/be/midi2", 0, 0, 0 },\
     { CROSS_INCLUDE_DIR "/be/media", 0, 0, 0 },\
     { CROSS_INCLUDE_DIR "/be/interface", 0, 0, 0 },\
     { CROSS_INCLUDE_DIR "/be/device", 0, 0, 0 },\
     { CROSS_INCLUDE_DIR "/be/app", 0, 0, 0 },\
+    { CROSS_INCLUDE_DIR "/be/precompiled", 0, 0, 0 },\
+    { CROSS_INCLUDE_DIR "/be/add-ons/input_server", 0, 0, 0 },\
+    { CROSS_INCLUDE_DIR "/be/add-ons/net_server", 0, 0, 0 },\
+    { CROSS_INCLUDE_DIR "/be/add-ons/screen_saver", 0, 0, 0 },\
+    { CROSS_INCLUDE_DIR "/be/add-ons/tracker", 0, 0, 0 },\
+    { CROSS_INCLUDE_DIR "/be/be_apps/Deskbar", 0, 0, 0 },\
+    { CROSS_INCLUDE_DIR "/be/be_apps/NetPositive", 0, 0, 0 },\
+    { CROSS_INCLUDE_DIR "/be/be_apps/Tracker", 0, 0, 0 },\
+    { CROSS_INCLUDE_DIR "/be/drivers/tty", 0, 0, 0 },\
+    { CROSS_INCLUDE_DIR "/be/net/netinet", 0, 0, 0 },\
+    { CROSS_INCLUDE_DIR "/be/storage", 0, 0, 0 },\
+    { CROSS_INCLUDE_DIR "/be", 0, 0, 0 },\
     { CROSS_INCLUDE_DIR "/cpp", 0, 0, 0 },\
     { CROSS_INCLUDE_DIR "/posix", 0, 0, 0 },\
-    { CROSS_INCLUDE_DIR "/be/precompiled", 0, 0, 0 },\
-    { CROSS_INCLUDE_DIR "/be", 0, 0, 0 },\
     { CROSS_INCLUDE_DIR , 0, 0, 0 }, \
     { 0, 0, 0, 0 } \
     };
