@@ -47,7 +47,7 @@ extern FILE * asm_out_file;
 /* Some function declarations.  */
 
 static HOST_WIDE_INT int_log2 PROTO ((HOST_WIDE_INT));
-static char *output_multi_immediate PROTO ((rtx *, char *, char *, int,
+static char * output_multi_immediate PROTO ((rtx *, char *, char *, int,
 					    HOST_WIDE_INT));
 static int arm_gen_constant PROTO ((enum rtx_code, enum machine_mode,
 				    HOST_WIDE_INT, rtx, rtx, int, int));
@@ -60,9 +60,9 @@ static void dump_table PROTO ((rtx));
 static int fixit PROTO ((rtx, enum machine_mode, int));
 static rtx find_barrier PROTO ((rtx, int));
 static int broken_move PROTO ((rtx));
-static char *fp_const_from_val PROTO ((REAL_VALUE_TYPE *));
+static char * fp_const_from_val PROTO ((REAL_VALUE_TYPE *));
 static int eliminate_lr2ip PROTO ((rtx *));
-static char *shift_op PROTO ((rtx, HOST_WIDE_INT *));
+static char * shift_op PROTO ((rtx, HOST_WIDE_INT *));
 static int pattern_really_clobbers_lr PROTO ((rtx));
 static int function_really_clobbers_lr PROTO ((rtx));
 static void emit_multi_reg_push PROTO ((int));
@@ -3100,7 +3100,7 @@ arm_naked_function_p (func)
 
   if (TREE_CODE (func) != FUNCTION_DECL)
     abort ();
-
+  
   a = lookup_attribute ("naked", DECL_MACHINE_ATTRIBUTES (func));
   return a != NULL_TREE;
 }
