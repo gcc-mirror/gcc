@@ -1,3 +1,8 @@
+2004-08-30  Richard Henderson  <rth@redhat.com>
+
+	* expr.c (expand_expr_addr_expr): New.
+	(expand_expr_real_1) <case ADDR_EXPR>: Use it.
+
 2004-08-30  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (MIPS_FP_CONDITIONS): New macro.
