@@ -259,7 +259,7 @@ define__GNUC__ (void)
      ([^0-9]*-)?[0-9]+[.][0-9]+([.][0-9]+)?([- ].*)?  */
   const char *q, *v = version_string;
 
-  while (*v && ! ISDIGIT (*v))
+  while (*v && !ISDIGIT (*v))
     v++;
   gcc_assert (*v && (v <= version_string || v[-1] == '-'));
 

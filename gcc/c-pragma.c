@@ -95,7 +95,7 @@ pop_alignment (tree id)
   align_stack * entry;
       
   if (alignment_stack == NULL)
-    GCC_BAD("#pragma pack (pop) encountered without matching #pragma pack (push)");
+    GCC_BAD ("#pragma pack (pop) encountered without matching #pragma pack (push)");
 
   /* If we got an identifier, strip away everything above the target
      entry so that the next step will restore the state just below it.  */
@@ -122,9 +122,9 @@ pop_alignment (tree id)
 #else  /* not HANDLE_PRAGMA_PACK_PUSH_POP */
 #define SET_GLOBAL_ALIGNMENT(ALIGN) (maximum_field_alignment = (ALIGN))
 #define push_alignment(ID, N) \
-    GCC_BAD("#pragma pack(push[, id], <n>) is not supported on this target")
+    GCC_BAD ("#pragma pack(push[, id], <n>) is not supported on this target")
 #define pop_alignment(ID) \
-    GCC_BAD("#pragma pack(pop[, id], <n>) is not supported on this target")
+    GCC_BAD ("#pragma pack(pop[, id], <n>) is not supported on this target")
 #endif /* HANDLE_PRAGMA_PACK_PUSH_POP */
 
 /* #pragma pack ()

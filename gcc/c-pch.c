@@ -99,7 +99,7 @@ static const char *get_ident (void);
    format.  */
 
 static const char *
-get_ident(void)
+get_ident (void)
 {
   static char result[IDENT_LENGTH];
   static const char template[IDENT_LENGTH] = "gpch.012";
@@ -122,7 +122,7 @@ pch_init (void)
   void *target_validity;
   static const char partial_pch[IDENT_LENGTH] = "gpcWrite";
   
-  if (! pch_file)
+  if (!pch_file)
     return;
   
   f = fopen (pch_file, "w+b");
@@ -484,7 +484,7 @@ c_common_pch_pragma (cpp_reader *pfile)
       return;
     }
 
-  if (! cpp_get_options (pfile)->preprocessed)
+  if (!cpp_get_options (pfile)->preprocessed)
     {
       error ("pch_preprocess pragma should only be used with -fpreprocessed");
       inform ("use #include instead");

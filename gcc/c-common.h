@@ -113,16 +113,16 @@ enum rid
 };
 
 #define OBJC_IS_AT_KEYWORD(rid) \
-  ((unsigned int)(rid) >= (unsigned int)RID_FIRST_AT && \
-   (unsigned int)(rid) <= (unsigned int)RID_LAST_AT)
+  ((unsigned int) (rid) >= (unsigned int) RID_FIRST_AT && \
+   (unsigned int) (rid) <= (unsigned int) RID_LAST_AT)
 
 #define OBJC_IS_PQ_KEYWORD(rid) \
-  ((unsigned int)(rid) >= (unsigned int)RID_FIRST_PQ && \
-   (unsigned int)(rid) <= (unsigned int)RID_LAST_PQ)
+  ((unsigned int) (rid) >= (unsigned int) RID_FIRST_PQ && \
+   (unsigned int) (rid) <= (unsigned int) RID_LAST_PQ)
 
 /* The elements of `ridpointers' are identifier nodes for the reserved
    type names and storage classes.  It is indexed by a RID_... value.  */
-extern GTY ((length ("(int)RID_MAX"))) tree *ridpointers;
+extern GTY ((length ("(int) RID_MAX"))) tree *ridpointers;
 
 /* Standard named or nameless data types of the C compiler.  */
 

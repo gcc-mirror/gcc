@@ -232,10 +232,10 @@ decode_format_attr (tree args, function_format_info *info, int validated_p)
    or inheriting from, for the purpose of format features supported.  */
 #define CPLUSPLUS_STD_VER	STD_C94
 /* The C standard version we are checking formats against when pedantic.  */
-#define C_STD_VER		((int)(c_dialect_cxx ()			  \
-				 ? CPLUSPLUS_STD_VER			  \
-				 : (flag_isoc99				  \
-				    ? STD_C99				  \
+#define C_STD_VER		((int) (c_dialect_cxx ()		   \
+				 ? CPLUSPLUS_STD_VER			   \
+				 : (flag_isoc99				   \
+				    ? STD_C99				   \
 				    : (flag_isoc94 ? STD_C94 : STD_C89))))
 /* The name to give to the standard version we are warning about when
    pedantic.  FEATURE_VER is the version in which the feature warned out
@@ -247,7 +247,7 @@ decode_format_attr (tree args, function_format_info *info, int validated_p)
 				    : "ISO C90"))
 /* Adjust a C standard version, which may be STD_C9L, to account for
    -Wno-long-long.  Returns other standard versions unchanged.  */
-#define ADJ_STD(VER)		((int)((VER) == STD_C9L			      \
+#define ADJ_STD(VER)		((int) ((VER) == STD_C9L		      \
 				       ? (warn_long_long ? STD_C99 : STD_C89) \
 				       : (VER)))
 
@@ -924,7 +924,7 @@ maybe_read_dollar_number (const char **format,
   int argnum;
   int overflow_flag;
   const char *fcp = *format;
-  if (! ISDIGIT (*fcp))
+  if (!ISDIGIT (*fcp))
     {
       if (dollar_needed)
 	{
@@ -1744,7 +1744,7 @@ check_format_info_main (format_check_results *res,
 	  ++fci;
       if (fci->format_chars == 0)
 	{
-          if (ISGRAPH(format_char))
+          if (ISGRAPH (format_char))
 	    warning ("unknown conversion type character %qc in format",
 		     format_char);
 	  else
@@ -2150,7 +2150,7 @@ check_format_types (format_wanted_type *types, const char *format_start,
 	 a second level of indirection.  */
       if (TREE_CODE (wanted_type) == INTEGER_TYPE
 	  && TREE_CODE (cur_type) == INTEGER_TYPE
-	  && (! pedantic || i == 0 || (i == 1 && char_type_flag))
+	  && (!pedantic || i == 0 || (i == 1 && char_type_flag))
 	  && (TYPE_UNSIGNED (wanted_type)
 	      ? wanted_type == c_common_unsigned_type (cur_type)
 	      : wanted_type == c_common_signed_type (cur_type)))
@@ -2158,7 +2158,7 @@ check_format_types (format_wanted_type *types, const char *format_start,
       /* Likewise, "signed char", "unsigned char" and "char" are
 	 equivalent but the above test won't consider them equivalent.  */
       if (wanted_type == char_type_node
-	  && (! pedantic || i < 2)
+	  && (!pedantic || i < 2)
 	  && char_type_flag)
 	continue;
       /* Now we have a type mismatch.  */
@@ -2350,7 +2350,7 @@ init_dynamic_diag_info (void)
       /* Assign the new data for use.  */
 
       /* All the GCC diag formats use the same length specs.  */
-      if (! diag_ls)
+      if (!diag_ls)
 	dynamic_format_types[gcc_diag_format_type].length_char_specs =
 	  dynamic_format_types[gcc_cdiag_format_type].length_char_specs =
 	  dynamic_format_types[gcc_cxxdiag_format_type].length_char_specs =
@@ -2371,12 +2371,12 @@ init_dynamic_diag_info (void)
 	}
 
       /* Handle the __gcc_diag__ format specifics.  */
-      if (! diag_fci)
+      if (!diag_fci)
 	dynamic_format_types[gcc_diag_format_type].conversion_specs =
 	  diag_fci = (format_char_info *)
 		     xmemdup (gcc_diag_char_table,
-			      sizeof(gcc_diag_char_table),
-			      sizeof(gcc_diag_char_table));
+			      sizeof (gcc_diag_char_table),
+			      sizeof (gcc_diag_char_table));
       if (loc)
         {
 	  i = find_char_info_specifier_index (diag_fci, 'H');
@@ -2391,12 +2391,12 @@ init_dynamic_diag_info (void)
 	}
 
       /* Handle the __gcc_cdiag__ format specifics.  */
-      if (! cdiag_fci)
+      if (!cdiag_fci)
 	dynamic_format_types[gcc_cdiag_format_type].conversion_specs =
 	  cdiag_fci = (format_char_info *)
 		      xmemdup (gcc_cdiag_char_table,
-			       sizeof(gcc_cdiag_char_table),
-			       sizeof(gcc_cdiag_char_table));
+			       sizeof (gcc_cdiag_char_table),
+			       sizeof (gcc_cdiag_char_table));
       if (loc)
         {
 	  i = find_char_info_specifier_index (cdiag_fci, 'H');
@@ -2415,12 +2415,12 @@ init_dynamic_diag_info (void)
 	}
 
       /* Handle the __gcc_cxxdiag__ format specifics.  */
-      if (! cxxdiag_fci)
+      if (!cxxdiag_fci)
 	dynamic_format_types[gcc_cxxdiag_format_type].conversion_specs =
 	  cxxdiag_fci = (format_char_info *)
 			xmemdup (gcc_cxxdiag_char_table,
-				 sizeof(gcc_cxxdiag_char_table),
-				 sizeof(gcc_cxxdiag_char_table));
+				 sizeof (gcc_cxxdiag_char_table),
+				 sizeof (gcc_cxxdiag_char_table));
       if (loc)
         {
 	  i = find_char_info_specifier_index (cxxdiag_fci, 'H');
@@ -2527,15 +2527,15 @@ handle_format_attribute (tree *node, tree ARG_UNUSED (name), tree args,
       /* If this is format __asm_fprintf__, we have to initialize
          GCC's notion of HOST_WIDE_INT for checking %wd.  */
       if (info.format_type == asm_fprintf_format_type)
-	init_dynamic_asm_fprintf_info();
+	init_dynamic_asm_fprintf_info ();
       /* If this is one of the diagnostic attributes, then we have to
          initialize 'location_t' and 'tree' at runtime.  */
       else if (info.format_type == gcc_diag_format_type
 	       || info.format_type == gcc_cdiag_format_type
 	       || info.format_type == gcc_cxxdiag_format_type)
-	init_dynamic_diag_info();
+	init_dynamic_diag_info ();
       else
-	gcc_unreachable();
+	gcc_unreachable ();
     }
 
   return NULL_TREE;

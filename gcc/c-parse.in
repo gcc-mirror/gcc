@@ -386,7 +386,7 @@ extdefs:
 	save_obstack_position { $<dsptype>$ = NULL; } extdef
 		{ obstack_free (&parser_obstack, $1); }
 	| extdefs save_obstack_position
-		{ $<dsptype>$ = NULL; ggc_collect(); } extdef
+		{ $<dsptype>$ = NULL; ggc_collect (); } extdef
 		{ obstack_free (&parser_obstack, $2); }
 	;
 
@@ -430,8 +430,8 @@ datadef:
 
 fndef:
 	  declspecs_ts setspecs declarator
-		{ if (! start_function (current_declspecs, $3,
-					all_prefix_attributes))
+		{ if (!start_function (current_declspecs, $3,
+				       all_prefix_attributes))
 		    YYERROR1;
 		}
 	  old_style_parm_decls save_location
@@ -443,8 +443,8 @@ fndef:
 	| declspecs_ts setspecs declarator error
 		{ POP_DECLSPEC_STACK; }
 	| declspecs_nots setspecs notype_declarator
-		{ if (! start_function (current_declspecs, $3,
-					all_prefix_attributes))
+		{ if (!start_function (current_declspecs, $3,
+				       all_prefix_attributes))
 		    YYERROR1;
 		}
 	  old_style_parm_decls save_location
@@ -456,8 +456,8 @@ fndef:
 	| declspecs_nots setspecs notype_declarator error
 		{ POP_DECLSPEC_STACK; }
 	| setspecs notype_declarator
-		{ if (! start_function (current_declspecs, $2,
-					all_prefix_attributes))
+		{ if (!start_function (current_declspecs, $2,
+				       all_prefix_attributes))
 		    YYERROR1;
 		}
 	  old_style_parm_decls save_location
@@ -690,7 +690,7 @@ primary:
 		  finish_init ();
 		  maybe_warn_string_init (type, init);
 
-		  if (pedantic && ! flag_isoc99)
+		  if (pedantic && !flag_isoc99)
 		    pedwarn ("ISO C90 forbids compound literals");
 		  $$.value = build_compound_literal (type, constructor);
 		  $$.original_code = ERROR_MARK;
@@ -1433,7 +1433,7 @@ initlist1:
    It may use braces.  */
 initelt:
 	  designator_list '=' initval
-		{ if (pedantic && ! flag_isoc99)
+		{ if (pedantic && !flag_isoc99)
 		    pedwarn ("ISO C90 forbids specifying subobject to initialize"); }
 	| designator initval
 		{ if (pedantic)
@@ -1479,8 +1479,8 @@ nested_function:
 		    pedwarn ("ISO C forbids nested functions");
 
 		  push_function_context ();
-		  if (! start_function (current_declspecs, $1,
-					all_prefix_attributes))
+		  if (!start_function (current_declspecs, $1,
+				       all_prefix_attributes))
 		    {
 		      pop_function_context ();
 		      YYERROR1;
@@ -1509,8 +1509,8 @@ notype_nested_function:
 		    pedwarn ("ISO C forbids nested functions");
 
 		  push_function_context ();
-		  if (! start_function (current_declspecs, $1,
-					all_prefix_attributes))
+		  if (!start_function (current_declspecs, $1,
+				       all_prefix_attributes))
 		    {
 		      pop_function_context ();
 		      YYERROR1;
@@ -1692,7 +1692,7 @@ maybecomma:
 maybecomma_warn:
 	  /* empty */
 	| ','
-		{ if (pedantic && ! flag_isoc99)
+		{ if (pedantic && !flag_isoc99)
 		    pedwarn ("comma at end of enumerator list"); }
 	;
 
@@ -2568,7 +2568,7 @@ identifiers_or_typenames:
 
 extension:
 	EXTENSION
-		{ $$ = SAVE_EXT_FLAGS();
+		{ $$ = SAVE_EXT_FLAGS ();
 		  pedantic = 0;
 		  warn_pointer_arith = 0;
 		  warn_traditional = 0;

@@ -37,7 +37,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 # define INO_T_EQ(A, B) (!memcmp (&(A), &(B), sizeof (A)))
 # define INO_T_COPY(DEST, SRC) memcpy(&(DEST), &(SRC), sizeof (SRC))
 #else
-# if (defined _WIN32 && ! defined (_UWIN)) || defined __MSDOS__
+# if (defined _WIN32 && !defined (_UWIN)) || defined __MSDOS__
 #  define INO_T_EQ(A, B) 0
 # else
 #  define INO_T_EQ(A, B) ((A) == (B))

@@ -559,7 +559,7 @@ gen_aux_info_record (tree fndecl, int is_definition, int is_implicit,
       /* Each output .X file must have a header line.  Write one now if we
 	 have not yet done so.  */
 
-      if (! compiled_from_record++)
+      if (!compiled_from_record++)
 	{
 	  /* The first line tells which directory file names are relative to.
 	     Currently, -aux-info works only for files in the working
