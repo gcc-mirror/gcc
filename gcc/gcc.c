@@ -35,6 +35,9 @@ compilation is specified by a string called a "spec".  */
 #include "config.h"
 #include "system.h"
 #include <signal.h>
+#if ! defined( SIGCHLD ) && defined( SIGCLD )
+#  define SIGCHLD SIGCLD
+#endif
 #include "obstack.h"
 #include "intl.h"
 #include "prefix.h"
@@ -5478,9 +5481,11 @@ main (argc, argv)
   if (signal (SIGPIPE, SIG_IGN) != SIG_IGN)
     signal (SIGPIPE, fatal_error);
 #endif
+#ifdef SIGCHLD
   /* We *MUST* set SIGCHLD to SIG_DFL so that the wait4() call will
      receive the signal.  A different setting is inheritable */
   signal (SIGCHLD, SIG_DFL);
+#endif
 
   argbuf_length = 10;
   argbuf = (const char **) xmalloc (argbuf_length * sizeof (const char *));
