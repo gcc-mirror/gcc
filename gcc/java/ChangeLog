@@ -1,3 +1,8 @@
+2001-03-22  Zack Weinberg  <zackw@stanford.edu>
+
+	* lang-specs.h: Add zero initializer for cpp_spec field to
+	all array elements.
+
 2001-03-20  Tom Tromey  <tromey@redhat.com>
 
 	* lex.c (java_read_unicode): Only accept leading `u's.

@@ -1,3 +1,9 @@
+2001-03-22  Zack Weinberg  <zackw@stanford.edu>
+
+	* lang-specs.h: Add zero initializer for cpp_spec field to
+	all array elements.  Don't put an #ifdef inside the initializer
+	list; set a default for CPLUSPLUS_CPP_SPEC and use it.
+
 2001-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* method.c (do_build_assign_ref): Don't use build_modify_expr for

@@ -21,7 +21,7 @@ Boston, MA 02111-1307, USA.  */
 /* This is the contribution to the `default_compilers' array in gcc.c for
    objc.  */
 
-  {".m", "@objective-c"},
+  {".m", "@objective-c", 0},
   {"@objective-c",
    /* cc1obj has an integrated ISO C preprocessor.  We should invoke the
       external preprocessor if -save-temps or -traditional is given.  */
@@ -36,8 +36,8 @@ Boston, MA 02111-1307, USA.  */
 	    cc1obj -fpreprocessed %{!pipe:%g.mi} %(cc1_options) %{gen-decls}}\
 	  %{!traditional:%{!ftraditional:%{!traditional-cpp:\
 	    cc1obj %{ansi:-std=c89} %(cpp_options) %(cc1_options) %{gen-decls}}}}}\
-        %{!fsyntax-only:%(invoke_as)}}}}"},
-  {".mi", "@objc-cpp-output"},
+        %{!fsyntax-only:%(invoke_as)}}}}", 0},
+  {".mi", "@objc-cpp-output", 0},
   {"@objc-cpp-output",
      "%{!M:%{!MM:%{!E:cc1obj -fpreprocessed %i %(cc1_options) %{gen-decls}\
-			     %{!fsyntax-only:%(invoke_as)}}}}"},
+			     %{!fsyntax-only:%(invoke_as)}}}}", 0},

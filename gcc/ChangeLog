@@ -1,3 +1,8 @@
+2001-03-22  Zack Weinberg  <zackw@stanford.edu>
+
+	* gcc.c, objc/lang-specs.h: Add zero initializer for cpp_spec field to
+	all array elements.
+
 2001-03-22  Brad Lucier  <lucier@math.purdue.edu>
 
 	* Makefile.in: Have splay-tree.o depend on $(GCONFIG_H).

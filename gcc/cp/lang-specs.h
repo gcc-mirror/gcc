@@ -22,12 +22,16 @@ Boston, MA 02111-1307, USA.  */
 /* This is the contribution to the `default_compilers' array in gcc.c for
    g++.  */
 
-  {".cc",  "@c++"},
-  {".cp",  "@c++"},
-  {".cxx", "@c++"},
-  {".cpp", "@c++"},
-  {".c++", "@c++"},
-  {".C",   "@c++"},
+#ifndef CPLUSPLUS_CPP_SPEC
+#define CPLUSPLUS_CPP_SPEC 0
+#endif
+
+  {".cc",  "@c++", 0},
+  {".cp",  "@c++", 0},
+  {".cxx", "@c++", 0},
+  {".cpp", "@c++", 0},
+  {".c++", "@c++", 0},
+  {".C",   "@c++", 0},
   {"@c++",
    /* cc1plus has an integrated ISO C preprocessor.  We should invoke
       the external preprocessor if -save-temps is given.  */
@@ -50,13 +54,10 @@ Boston, MA 02111-1307, USA.  */
 			    %{ansi:-D__STRICT_ANSI__}}\
        %{ansi:-trigraphs -$}\
        %(cc1_options) %2 %{+e1*}\
-       %{!fsyntax-only:%(invoke_as)}}}}"
-#ifdef CPLUSPLUS_CPP_SPEC
-     , CPLUSPLUS_CPP_SPEC
-#endif
-     },
-  {".ii", "@c++-cpp-output"},
+       %{!fsyntax-only:%(invoke_as)}}}}",
+     CPLUSPLUS_CPP_SPEC},
+  {".ii", "@c++-cpp-output", 0},
   {"@c++-cpp-output",
    "%{!M:%{!MM:%{!E:\
     cc1plus -fpreprocessed %i %(cc1_options) %2 %{+e*}\
-    %{!fsyntax-only:%(invoke_as)}}}}"},
+    %{!fsyntax-only:%(invoke_as)}}}}", 0},

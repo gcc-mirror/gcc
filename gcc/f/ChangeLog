@@ -1,3 +1,8 @@
+2001-03-22  Zack Weinberg  <zackw@stanford.edu>
+
+	* lang-specs.h: Add zero initializer for cpp_spec field to
+	all array elements.
+
 Mon Mar 19 15:05:39 2001  Mark Mitchell  <mark@codesourcery.com>
 
 	* com.c (builtin_function): Use SET_DECL_ASSEMBLER_NAME.
