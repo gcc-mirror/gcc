@@ -804,61 +804,66 @@
 ;; The divide and remainder operations always take their inputs from
 ;; r24 and r25, put their output in r27, and clobber r23 and r28.
 
-;; ??? comment out the divsi routines since the library functions
-;; don't seem to do the right thing with the high 32-bits of a
-;; register nonzero.
+;; ??? Force sign-extension here because some versions of OSF/1 don't
+;; do the right thing if the inputs are not properly sign-extended.
+;; But Linux, for instance, does not have this problem.  Is it worth
+;; the complication here to eliminate the sign extension?
 
-;(define_expand "divsi3"
-;  [(set (reg:SI 24) (match_operand:SI 1 "input_operand" ""))
-;   (set (reg:SI 25) (match_operand:SI 2 "input_operand" ""))
-;   (parallel [(set (reg:SI 27)
-;		   (div:SI (reg:SI 24)
-;			   (reg:SI 25)))
-;	      (clobber (reg:DI 23))
-;	      (clobber (reg:DI 28))])
-;   (set (match_operand:SI 0 "general_operand" "")
-;	(reg:SI 27))]
-;  "!TARGET_OPEN_VMS"
-;  "")
+(define_expand "divsi3"
+  [(set (reg:DI 24)
+	(sign_extend:DI (match_operand:SI 1 "nonimmediate_operand" "")))
+   (set (reg:DI 25)
+	(sign_extend:DI (match_operand:SI 2 "nonimmediate_operand" "")))
+   (parallel [(set (reg:DI 27)
+		   (sign_extend:DI (div:SI (reg:DI 24) (reg:DI 25))))
+	      (clobber (reg:DI 23))
+	      (clobber (reg:DI 28))])
+   (set (match_operand:SI 0 "general_operand" "")
+	(subreg:SI (reg:DI 27) 0))]
+  "!TARGET_OPEN_VMS"
+  "")
 
-;(define_expand "udivsi3"
-;  [(set (reg:SI 24) (match_operand:SI 1 "input_operand" ""))
-;   (set (reg:SI 25) (match_operand:SI 2 "input_operand" ""))
-;   (parallel [(set (reg:SI 27)
-;		   (udiv:SI (reg:SI 24)
-;			    (reg:SI 25)))
-;	      (clobber (reg:DI 23))
-;	      (clobber (reg:DI 28))])
-;   (set (match_operand:SI 0 "general_operand" "")
-;	(reg:SI 27))]
-;  "!TARGET_OPEN_VMS"
-;  "")
+(define_expand "udivsi3"
+  [(set (reg:DI 24)
+	(sign_extend:DI (match_operand:SI 1 "nonimmediate_operand" "")))
+   (set (reg:DI 25)
+	(sign_extend:DI (match_operand:SI 2 "nonimmediate_operand" "")))
+   (parallel [(set (reg:DI 27)
+		   (sign_extend:DI (udiv:SI (reg:DI 24) (reg:DI 25))))
+	      (clobber (reg:DI 23))
+	      (clobber (reg:DI 28))])
+   (set (match_operand:SI 0 "general_operand" "")
+	(subreg:SI (reg:DI 27) 0))]
+  "!TARGET_OPEN_VMS"
+  "")
 
-;(define_expand "modsi3"
-;  [(set (reg:SI 24) (match_operand:SI 1 "input_operand" ""))
-;   (set (reg:SI 25) (match_operand:SI 2 "input_operand" ""))
-;   (parallel [(set (reg:SI 27)
-;		   (mod:SI (reg:SI 24)
-;			   (reg:SI 25)))
-;	      (clobber (reg:DI 23))
-;	      (clobber (reg:DI 28))])
-;   (set (match_operand:SI 0 "general_operand" "")
-;	(reg:SI 27))]
-;  "!TARGET_OPEN_VMS"
-;  "")
+(define_expand "modsi3"
+  [(set (reg:DI 24)
+	(sign_extend:DI (match_operand:SI 1 "nonimmediate_operand" "")))
+   (set (reg:DI 25)
+	(sign_extend:DI (match_operand:SI 2 "nonimmediate_operand" "")))
+   (parallel [(set (reg:DI 27)
+		   (sign_extend:DI (mod:SI (reg:DI 24) (reg:DI 25))))
+	      (clobber (reg:DI 23))
+	      (clobber (reg:DI 28))])
+   (set (match_operand:SI 0 "general_operand" "")
+	(subreg:SI (reg:DI 27) 0))]
+  "!TARGET_OPEN_VMS"
+  "")
 
-;(define_expand "umodsi3"
-;  [(set (reg:SI 24) (match_operand:SI 1 "input_operand" ""))
-;   (set (reg:SI 25) (match_operand:SI 2 "input_operand" ""))
-;   (parallel [(set (reg:SI 27)
-;		   (umod:SI (reg:SI 24)
-;			    (reg:SI 25)))
-;	      (clobber (reg:DI 23))
-;	      (clobber (reg:DI 28))])
-;   (set (match_operand:SI 0 "general_operand" "")
-;	(reg:SI 27))]
-;  "!TARGET_OPEN_VMS"
-;  "")
+(define_expand "umodsi3"
+  [(set (reg:DI 24)
+	(sign_extend:DI (match_operand:SI 1 "nonimmediate_operand" "")))
+   (set (reg:DI 25)
+	(sign_extend:DI (match_operand:SI 2 "nonimmediate_operand" "")))
+   (parallel [(set (reg:DI 27)
+		   (sign_extend:DI (umod:SI (reg:DI 24) (reg:DI 25))))
+	      (clobber (reg:DI 23))
+	      (clobber (reg:DI 28))])
+   (set (match_operand:SI 0 "general_operand" "")
+	(subreg:SI (reg:DI 27) 0))]
+  "!TARGET_OPEN_VMS"
+  "")
 
 (define_expand "divdi3"
   [(set (reg:DI 24) (match_operand:DI 1 "input_operand" ""))
@@ -912,15 +917,15 @@
   "!TARGET_OPEN_VMS"
   "")
 
-;(define_insn ""
-;  [(set (reg:SI 27)
-;	(match_operator:SI 1 "divmod_operator"
-;			[(reg:SI 24) (reg:SI 25)]))
-;   (clobber (reg:DI 23))
-;   (clobber (reg:DI 28))]
-;  "!TARGET_OPEN_VMS"
-;  "%E1 $24,$25,$27"
-;  [(set_attr "type" "jsr")])
+(define_insn ""
+  [(set (reg:DI 27)
+	(sign_extend:DI (match_operator:SI 1 "divmod_operator"
+			[(reg:DI 24) (reg:DI 25)])))
+   (clobber (reg:DI 23))
+   (clobber (reg:DI 28))]
+  "!TARGET_OPEN_VMS"
+  "%E1 $24,$25,$27"
+  [(set_attr "type" "jsr")])
 
 (define_insn ""
   [(set (reg:DI 27)

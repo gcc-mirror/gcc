@@ -1,3 +1,8 @@
+Tue Jun  2 14:02:38 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.md (divsi3, udivsi3, modsi3, umodsi3): Enable, and work
+	around an OSF/1 library bug wrt sign-extension of inputs.
+
 Tue Jun  2 13:02:44 1998  Richard Henderson  <rth@cygnus.com>
 
 	* vax/netbsd.h (DWARF2_UNWIND_INFO): Must be undef, not defined 0.
