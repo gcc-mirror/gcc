@@ -1,5 +1,9 @@
 2004-10-01  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* lex.c: Fix a comment typo.
+
+2004-10-01  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* java-tree.h: Fix a comment typo.
 
 2004-09-30  Per Bothner  <per@bothner.com>
