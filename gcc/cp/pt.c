@@ -115,7 +115,7 @@ static tree convert_nontype_argument PARAMS ((tree, tree));
 static tree convert_template_argument PARAMS ((tree, tree, tree,
 					       tsubst_flags_t, int, tree));
 static tree get_bindings_overload PARAMS ((tree, tree, tree));
-static int for_each_template_parm PARAMS ((tree, tree_fn_t, void*));
+static int for_each_template_parm PARAMS ((tree, tree_fn_t, void*, htab_t));
 static tree build_template_parm_index PARAMS ((int, int, int, tree, tree));
 static int inline_needs_template_parms PARAMS ((tree));
 static void push_inline_template_parms_recursive PARAMS ((tree, int));
@@ -2237,7 +2237,8 @@ process_partial_specialization (decl)
       tpd.current_arg = i;
       for_each_template_parm (TREE_VEC_ELT (inner_args, i),
 			      &mark_template_parm,
-			      &tpd);
+			      &tpd,
+			      NULL);
     }
   for (i = 0; i < ntparms; ++i)
     if (tpd.parms[i] == 0)
@@ -2318,7 +2319,8 @@ process_partial_specialization (decl)
 	      memset ((PTR) tpd2.parms, 0, sizeof (int) * nargs);
 	      for_each_template_parm (type,
 				      &mark_template_parm,
-				      &tpd2);
+				      &tpd2,
+				      NULL);
 		  
 	      if (tpd2.arg_uses_template_parms [i])
 		{
@@ -2751,7 +2753,8 @@ push_template_decl_real (decl, is_friend)
 	  
 	  if (for_each_template_parm (TREE_TYPE (TREE_TYPE (tmpl)),
 				      template_parm_this_level_p,
-				      &depth))
+				      &depth,
+				      NULL))
 	    DECL_TEMPLATE_CONV_FN_P (tmpl) = 1;
 	}
     }
@@ -4337,6 +4340,7 @@ struct pair_fn_data
 {
   tree_fn_t fn;
   void *data;
+  htab_t visited;
 };
 
 /* Called from for_each_template_parm via walk_tree.  */
@@ -4351,9 +4355,20 @@ for_each_template_parm_r (tp, walk_subtrees, d)
   struct pair_fn_data *pfd = (struct pair_fn_data *) d;
   tree_fn_t fn = pfd->fn;
   void *data = pfd->data;
-  
+  void **slot;
+
+  /* If we have already visited this tree, there's no need to walk
+     subtrees.  Otherwise, add it to the visited table.  */
+  slot = htab_find_slot (pfd->visited, *tp, INSERT);
+  if (*slot)
+    {
+      *walk_subtrees = 0;
+      return NULL_TREE;
+    }
+  *slot = *tp;
+
   if (TYPE_P (t)
-      && for_each_template_parm (TYPE_CONTEXT (t), fn, data))
+      && for_each_template_parm (TYPE_CONTEXT (t), fn, data, pfd->visited))
     return error_mark_node;
 
   switch (TREE_CODE (t))
@@ -4368,20 +4383,21 @@ for_each_template_parm_r (tp, walk_subtrees, d)
       if (!TYPE_TEMPLATE_INFO (t))
 	*walk_subtrees = 0;
       else if (for_each_template_parm (TREE_VALUE (TYPE_TEMPLATE_INFO (t)),
-				       fn, data))
+				       fn, data, pfd->visited))
 	return error_mark_node;
       break;
 
     case METHOD_TYPE:
       /* Since we're not going to walk subtrees, we have to do this
 	 explicitly here.  */
-      if (for_each_template_parm (TYPE_METHOD_BASETYPE (t), fn, data))
+      if (for_each_template_parm (TYPE_METHOD_BASETYPE (t), fn, data,
+				  pfd->visited))
 	return error_mark_node;
       /* Fall through.  */
 
     case FUNCTION_TYPE:
       /* Check the return type.  */
-      if (for_each_template_parm (TREE_TYPE (t), fn, data))
+      if (for_each_template_parm (TREE_TYPE (t), fn, data, pfd->visited))
 	return error_mark_node;
 
       /* Check the parameter types.  Since default arguments are not
@@ -4394,7 +4410,8 @@ for_each_template_parm_r (tp, walk_subtrees, d)
 	tree parm;
 
 	for (parm = TYPE_ARG_TYPES (t); parm; parm = TREE_CHAIN (parm))
-	  if (for_each_template_parm (TREE_VALUE (parm), fn, data))
+	  if (for_each_template_parm (TREE_VALUE (parm), fn, data,
+				      pfd->visited))
 	    return error_mark_node;
 
 	/* Since we've already handled the TYPE_ARG_TYPES, we don't
@@ -4406,20 +4423,22 @@ for_each_template_parm_r (tp, walk_subtrees, d)
     case FUNCTION_DECL:
     case VAR_DECL:
       if (DECL_LANG_SPECIFIC (t) && DECL_TEMPLATE_INFO (t)
-	  && for_each_template_parm (DECL_TI_ARGS (t), fn, data))
+	  && for_each_template_parm (DECL_TI_ARGS (t), fn, data,
+				     pfd->visited))
 	return error_mark_node;
       /* Fall through.  */
 
     case CONST_DECL:
     case PARM_DECL:
       if (DECL_CONTEXT (t) 
-	  && for_each_template_parm (DECL_CONTEXT (t), fn, data))
+	  && for_each_template_parm (DECL_CONTEXT (t), fn, data,
+				     pfd->visited))
 	return error_mark_node;
       break;
 
     case BOUND_TEMPLATE_TEMPLATE_PARM:
       /* Record template parameters such as `T' inside `TT<T>'.  */
-      if (for_each_template_parm (TYPE_TI_ARGS (t), fn, data))
+      if (for_each_template_parm (TYPE_TI_ARGS (t), fn, data, pfd->visited))
 	return error_mark_node;
       /* Fall through.  */
 
@@ -4435,7 +4454,7 @@ for_each_template_parm_r (tp, walk_subtrees, d)
     case TEMPLATE_DECL:
       /* A template template parameter is encountered */
       if (DECL_TEMPLATE_TEMPLATE_PARM_P (t)
-	  && for_each_template_parm (TREE_TYPE (t), fn, data))
+	  && for_each_template_parm (TREE_TYPE (t), fn, data, pfd->visited))
 	return error_mark_node;
 
       /* Already substituted template template parameter */
@@ -4443,14 +4462,17 @@ for_each_template_parm_r (tp, walk_subtrees, d)
       break;
 
     case TYPENAME_TYPE:
-      if (!fn || for_each_template_parm (TYPENAME_TYPE_FULLNAME (t), fn, data))
+      if (!fn 
+	  || for_each_template_parm (TYPENAME_TYPE_FULLNAME (t), fn,
+				     data, pfd->visited))
 	return error_mark_node;
       break;
 
     case CONSTRUCTOR:
       if (TREE_TYPE (t) && TYPE_PTRMEMFUNC_P (TREE_TYPE (t))
 	  && for_each_template_parm (TYPE_PTRMEMFUNC_FN_TYPE
-				     (TREE_TYPE (t)), fn, data))
+				     (TREE_TYPE (t)), fn, data,
+				     pfd->visited))
 	return error_mark_node;
       break;
       
@@ -4482,7 +4504,8 @@ for_each_template_parm_r (tp, walk_subtrees, d)
 	 the BINFO hierarchy, which is circular, and therefore
 	 confuses walk_tree.  */
       *walk_subtrees = 0;
-      if (for_each_template_parm (BASELINK_FUNCTIONS (*tp), fn, data))
+      if (for_each_template_parm (BASELINK_FUNCTIONS (*tp), fn, data,
+				  pfd->visited))
 	return error_mark_node;
       break;
 
@@ -4504,10 +4527,11 @@ for_each_template_parm_r (tp, walk_subtrees, d)
    considered to be the function which always returns 1.  */
 
 static int
-for_each_template_parm (t, fn, data)
+for_each_template_parm (t, fn, data, visited)
      tree t;
      tree_fn_t fn;
      void* data;
+     htab_t visited;
 {
   struct pair_fn_data pfd;
 
@@ -4518,7 +4542,13 @@ for_each_template_parm (t, fn, data)
   /* Walk the tree.  (Conceptually, we would like to walk without
      duplicates, but for_each_template_parm_r recursively calls
      for_each_template_parm, so we would need to reorganize a fair
-     bit to use walk_tree_without_duplicates.)  */
+     bit to use walk_tree_without_duplicates, so we keep our own
+     visited list.)  */
+  if (visited)
+    pfd.visited = visited;
+  else
+    pfd.visited = htab_create (37, htab_hash_pointer, htab_eq_pointer, 
+			       NULL);
   return walk_tree (&t, 
 		    for_each_template_parm_r, 
 		    &pfd,
@@ -4529,7 +4559,7 @@ int
 uses_template_parms (t)
      tree t;
 {
-  return for_each_template_parm (t, 0, 0);
+  return for_each_template_parm (t, 0, 0, NULL);
 }
 
 static int tinst_depth;
