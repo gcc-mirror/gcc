@@ -263,6 +263,7 @@ static rtx get_exception_filter			PARAMS ((struct function *));
 static void collect_eh_region_array		PARAMS ((void));
 static void resolve_fixup_regions		PARAMS ((void));
 static void remove_fixup_regions		PARAMS ((void));
+static void remove_unreachable_regions		PARAMS ((rtx));
 static void convert_from_eh_region_ranges_1	PARAMS ((rtx *, int *, int));
 
 static struct eh_region *duplicate_eh_region_1	PARAMS ((struct eh_region *,
@@ -632,6 +633,7 @@ free_eh_status (f)
 
   free (eh);
   f->eh = NULL;
+  exception_handler_labels = NULL;
 }
 
 
@@ -1212,6 +1214,69 @@ remove_fixup_regions ()
     }
 }
 
+/* Remove all regions whose labels are not reachable from insns.  */
+
+static void
+remove_unreachable_regions (insns)
+     rtx insns;
+{
+  int i, *uid_region_num;
+  bool *reachable;
+  struct eh_region *r;
+  rtx insn;
+
+  uid_region_num = xcalloc (get_max_uid (), sizeof(int));
+  reachable = xcalloc (cfun->eh->last_region_number + 1, sizeof(bool));
+
+  for (i = cfun->eh->last_region_number; i > 0; --i)
+    {
+      r = cfun->eh->region_array[i];
+      if (!r || r->region_number != i)
+	continue;
+
+      if (r->resume)
+        {
+	  if (uid_region_num[INSN_UID (r->resume)])
+	    abort ();
+	  uid_region_num[INSN_UID (r->resume)] = i;
+        }
+      if (r->label)
+        {
+	  if (uid_region_num[INSN_UID (r->label)])
+	    abort ();
+	  uid_region_num[INSN_UID (r->label)] = i;
+        }
+      if (r->type == ERT_TRY && r->u.try.continue_label)
+        {
+	  if (uid_region_num[INSN_UID (r->u.try.continue_label)])
+	    abort ();
+	  uid_region_num[INSN_UID (r->u.try.continue_label)] = i;
+        }
+    }
+
+  for (insn = insns; insn; insn = NEXT_INSN (insn))
+    reachable[uid_region_num[INSN_UID (insn)]] = true;
+
+  for (i = cfun->eh->last_region_number; i > 0; --i)
+    {
+      r = cfun->eh->region_array[i];
+      if (r && r->region_number == i && !reachable[i])
+	{
+	  /* Don't remove ERT_THROW regions if their outer region
+	     is reachable.  */
+	  if (r->type == ERT_THROW
+	      && r->outer
+	      && reachable[r->outer->region_number])
+	    continue;
+
+	  remove_eh_handler (r);
+	}
+    }
+
+  free (reachable);
+  free (uid_region_num);
+}
+
 /* Turn NOTE_INSN_EH_REGION notes into REG_EH_REGION notes for each
    can_throw instruction in the region.  */
 
@@ -1314,6 +1379,7 @@ convert_from_eh_region_ranges ()
   free (stack);
 
   remove_fixup_regions ();
+  remove_unreachable_regions (insns);
 }
 
 void
@@ -1332,7 +1398,7 @@ find_exception_handler_labels ()
       struct eh_region *region = cfun->eh->region_array[i];
       rtx lab;
 
-      if (! region)
+      if (! region || region->region_number != i)
 	continue;
       if (cfun->eh->built_landing_pads)
 	lab = region->landing_pad;
@@ -2426,6 +2492,11 @@ remove_exception_handler_label (label)
      rtx label;
 {
   rtx *pl, l;
+
+  /* If exception_handler_labels was not built yet,
+     there is nothing to do.  */
+  if (exception_handler_labels == NULL)
+    return;
 
   for (pl = &exception_handler_labels, l = *pl;
        XEXP (l, 0) != label;
