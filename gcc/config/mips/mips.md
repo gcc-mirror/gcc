@@ -3729,14 +3729,39 @@ beq\t%2,%.,1b\;\
 ;;
 ;; We cope with this by making the mflo and mfhi patterns use both HI and LO.
 ;; Operand 1 is the register we want, operand 2 is the other one.
+;;
+;; When generating VR4120 or VR4130 code, we use macc{,hi} and
+;; dmacc{,hi} instead of mfhi and mflo.  This avoids both the normal
+;; MIPS III hi/lo hazards and the errata related to -mfix-vr4130.
 
-(define_insn "mfhilo_<mode>"
+(define_expand "mfhilo_<mode>"
+  [(set (match_operand:GPR 0 "register_operand")
+	(unspec:GPR [(match_operand:GPR 1 "register_operand")
+		     (match_operand:GPR 2 "register_operand")]
+		    UNSPEC_MFHILO))])
+
+(define_insn "*mfhilo_<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=d,d")
 	(unspec:GPR [(match_operand:GPR 1 "register_operand" "h,l")
 		     (match_operand:GPR 2 "register_operand" "l,h")]
 		    UNSPEC_MFHILO))]
-  ""
+  "!ISA_HAS_MACCHI"
   "mf%1\t%0"
+  [(set_attr "type" "mfhilo")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "*mfhilo_<mode>_macc"
+  [(set (match_operand:GPR 0 "register_operand" "=d,d")
+	(unspec:GPR [(match_operand:GPR 1 "register_operand" "h,l")
+		     (match_operand:GPR 2 "register_operand" "l,h")]
+		    UNSPEC_MFHILO))]
+  "ISA_HAS_MACCHI"
+{
+  if (REGNO (operands[1]) == HI_REGNUM)
+    return "<d>macchi\t%0,%.,%.";
+  else
+    return "<d>macc\t%0,%.,%.";
+}
   [(set_attr "type" "mfhilo")
    (set_attr "mode" "<MODE>")])
 

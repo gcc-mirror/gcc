@@ -558,7 +558,8 @@ Objective-C and Objective-C++ Dialects}.
 -mmemcpy  -mno-memcpy  -mlong-calls  -mno-long-calls @gol
 -mmad  -mno-mad  -mfused-madd  -mno-fused-madd  -nocpp @gol
 -mfix-r4000  -mno-fix-r4000  -mfix-r4400  -mno-fix-r4400 @gol
--mfix-vr4120  -mno-fix-vr4120  -mfix-sb1  -mno-fix-sb1 @gol
+-mfix-vr4120  -mno-fix-vr4120  -mfix-vr4130 @gol
+-mfix-sb1  -mno-fix-sb1 @gol
 -mflush-func=@var{func}  -mno-flush-func @gol
 -mbranch-likely  -mno-branch-likely @gol
 -mfp-exceptions -mno-fp-exceptions @gol
@@ -9847,6 +9848,14 @@ the @code{mips64vr*-elf} configurations.
 
 Other VR4120 errata require a nop to be inserted between certain pairs of
 instructions.  These errata are handled by the assembler, not by GCC itself.
+
+@item -mfix-vr4130
+@opindex mfix-vr4130
+Work around the VR4130 @code{mflo}/@code{mfhi} errata.  The
+workarounds are implemented by the assembler rather than by GCC,
+although GCC will avoid using @code{mflo} and @code{mfhi} if the
+VR4130 @code{macc}, @code{macchi}, @code{dmacc} and @code{dmacchi}
+instructions are available instead.
 
 @item -mfix-sb1
 @itemx -mno-fix-sb1
