@@ -360,6 +360,18 @@ extern int target_flags;
 
 #define CONDITIONAL_REGISTER_USAGE \
 {						\
+  if (!TARGET_SNAKE)				\
+    {						\
+      for (i = 56; i < 88; i++) 		\
+	fixed_regs[i] = call_used_regs[i] = 1; 	\
+      for (i = 33; i < 88; i += 2) 		\
+	fixed_regs[i] = call_used_regs[i] = 1; 	\
+    }						\
+  else if (TARGET_DISABLE_FPREGS)		\
+    {						\
+      for (i = 32; i < 88; i++) 		\
+	fixed_regs[i] = call_used_regs[i] = 1; 	\
+    }						\
   if (flag_pic)					\
     fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;	\
 }
@@ -393,6 +405,9 @@ extern int target_flags;
    1, 30,  0, 88}
 
 
+/* True if register is floating-point.  */
+#define FP_REGNO_P(N) ((N) >= 32 && (N) <= 87)
+
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
    This is ordinarily the length in words of a value of mode MODE
@@ -401,21 +416,19 @@ extern int target_flags;
    On the HP-PA, ordinary registers hold 32 bits worth;
    The floating point registers are 64 bits wide. Snake fp regs are 32
    bits wide */
-#define HARD_REGNO_NREGS(REGNO, MODE)   \
-   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
+#define HARD_REGNO_NREGS(REGNO, MODE)					\
+  (!TARGET_SNAKE && FP_REGNO_P (REGNO) ? 1				\
+   : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
    On the HP-PA, the cpu registers can hold any mode.  We
    force this to be an even register is it cannot hold the full mode.  */
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
   ((REGNO) == 0 ? (MODE) == CCmode || (MODE) == CCFPmode		\
-   : !TARGET_SNAKE && (REGNO) >= 32					\
-     /* On 1.0 machines, all fp registers are 64 bits. */		\
-     ? (((REGNO) & 1) == 0						\
-     /* On 1.0 machines, don't allow large non-fp values in fp regs. */	\
-	&& (GET_MODE_SIZE (MODE) <= 4					\
-	    || GET_MODE_CLASS (MODE) == MODE_FLOAT))			\
-   /* Make large values be in aligned registers. */			\
+   /* On 1.0 machines, don't allow wide non-fp modes in fp regs. */	\
+   : !TARGET_SNAKE && FP_REGNO_P (REGNO)				\
+     ? GET_MODE_SIZE (MODE) <= 4 || GET_MODE_CLASS (MODE) == MODE_FLOAT	\
+   /* Make wide modes be in aligned registers. */			\
    : GET_MODE_SIZE (MODE) <= 4 || ((REGNO) & 1) == 0)
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
@@ -497,8 +510,7 @@ extern int target_flags;
      fmpyadd and fmpysub are restricted.  */
 
 enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
-  SNAKE_FP_REGS, GENERAL_OR_SNAKE_FP_REGS,
-  NON_SHIFT_REGS, SHIFT_REGS, ALL_REGS, LIM_REG_CLASSES};
+  SHIFT_REGS, ALL_REGS, LIM_REG_CLASSES};
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
@@ -506,8 +518,7 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
 
 #define REG_CLASS_NAMES \
   {"NO_REGS", "R1_REGS", "GENERAL_REGS", "FP_REGS",			\
-   "GENERAL_OR_FP_REGS", "SNAKE_FP_REGS", "GENERAL_OR_SNAKE_FP_REGS",	\
-   "NON_SHIFT_REGS", "SHIFT_REGS", "ALL_REGS"}
+   "GENERAL_OR_FP_REGS", "SHIFT_REGS", "ALL_REGS"}
 
 /* Define which registers fit in which classes.
    This is an initializer for a vector of HARD_REG_SET
@@ -518,11 +529,8 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
  {{0x00000000, 0x00000000, 0x00000000},	/* NO_REGS */			\
   {0x00000002, 0x00000000, 0x00000000},	/* R1_REGS */			\
   {0xfffffffe, 0x00000000, 0x00000000},	/* GENERAL_REGS */		\
-  {0x00000000, 0x00ffffff, 0x00000000},	/* FP_REGS */			\
-  {0xfffffffe, 0x00ffffff, 0x00000000},	/* GENERAL_OR_FP_REGS */	\
-  {0x00000000, 0xffffffff, 0x00ffffff},	/* SNAKE_FP_REGS */		\
-  {0xfffffffe, 0xffffffff, 0x00ffffff},	/* GENERAL_OR_SNAKE_FP_REGS */	\
-  {0xfffffffe, 0xffffffff, 0x00ffffff},	/* NON_SHIFT_REGS */		\
+  {0x00000000, 0xffffffff, 0x00ffffff},	/* FP_REGS */			\
+  {0xfffffffe, 0xffffffff, 0x00ffffff},	/* GENERAL_OR_FP_REGS */	\
   {0x00000000, 0x00000000, 0x01000000},	/* SHIFT_REGS */		\
   {0xfffffffe, 0xffffffff, 0x01ffffff}}	/* ALL_REGS */
 
@@ -535,8 +543,7 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
   ((REGNO) == 0 ? NO_REGS 						\
    : (REGNO) == 1 ? R1_REGS						\
    : (REGNO) < 32 ? GENERAL_REGS					\
-   : (REGNO) < 44 && !TARGET_SNAKE ? FP_REGS				\
-   : (REGNO) < 88 && TARGET_SNAKE ? SNAKE_FP_REGS			\
+   : (REGNO) < 88 ? FP_REGS						\
    : SHIFT_REGS)
 
 /* The class value for index registers, and the one for base regs.  */
@@ -544,19 +551,15 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
 #define BASE_REG_CLASS GENERAL_REGS
 
 #define FP_REG_CLASS_P(CLASS) \
-  (CLASS == FP_REGS || CLASS == SNAKE_FP_REGS)
+  ((CLASS) == FP_REGS)
 
-/* Get reg_class from a letter such as appears in the machine description.
-   Note 'Z' is not the same as 'r' since SHIFT_REGS is not part of
-   GENERAL_REGS.  */
-
-/* OOPS Merge f and x? */
+/* Get reg_class from a letter such as appears in the machine description.  */
+/* Keep 'x' for backward compatibility with user asm.   */
 #define REG_CLASS_FROM_LETTER(C) \
-  ((C) == 'f' ? (!TARGET_SNAKE ? FP_REGS : NO_REGS) :		\
-   (C) == 'x' ? (TARGET_SNAKE ? SNAKE_FP_REGS : NO_REGS) :	\
+  ((C) == 'f' ? FP_REGS :					\
+   (C) == 'x' ? FP_REGS :					\
    (C) == 'q' ? SHIFT_REGS :					\
    (C) == 'a' ? R1_REGS :					\
-   (C) == 'z' ? SNAKE_FP_REGS :					\
    (C) == 'Z' ? ALL_REGS : NO_REGS)
 
 /* The letters I, J, K, L and M in a register constraint string
@@ -619,8 +622,9 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
 
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
-#define CLASS_MAX_NREGS(CLASS, MODE)	\
-  ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
+#define CLASS_MAX_NREGS(CLASS, MODE)					\
+  (!TARGET_SNAKE && (CLASS) == FP_REGS ? 1 :				\
+   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
 /* Stack layout; function entry, exit and calling.  */
 
@@ -719,7 +723,7 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
    as seen by the caller.  */
 
 #define FUNCTION_VALUE_REGNO_P(N) \
-  ((N) == 28 || (N) == 29 || (N) == 32 || (N) == 33)
+  ((N) == 28 || (N) == 32)
 
 /* 1 if N is a possible register number for function argument passing.  */
 
@@ -1124,8 +1128,7 @@ extern union tree_node *current_function_decl;
 #define REGNO_OK_FOR_BASE_P(REGNO)  \
   ((REGNO) && ((REGNO) < 32 || (unsigned) reg_renumber[REGNO] < 32))
 #define REGNO_OK_FOR_FP_P(REGNO) \
-  (((REGNO) >= 32 && (REGNO) <= 87)\
-   || (reg_renumber[REGNO] >= 32 && reg_renumber[REGNO] <= 87))
+  (FP_REGNO_P (REGNO) || FP_REGNO_P (reg_renumber[REGNO]))
 
 /* Now macros that check whether X is a register and also,
    strictly, whether it is in a specified class.
