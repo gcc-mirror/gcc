@@ -274,12 +274,6 @@ varray_type basic_block_for_insn;
 
 static rtx label_value_list;
 
-/* INSN_VOLATILE (insn) is 1 if the insn refers to anything volatile.  */
-
-#define INSN_VOLATILE(INSN) bitmap_bit_p (uid_volatile, INSN_UID (INSN))
-#define SET_INSN_VOLATILE(INSN) bitmap_set_bit (uid_volatile, INSN_UID (INSN))
-static bitmap uid_volatile;
-
 /* Forward declarations */
 static int count_basic_blocks		PARAMS ((rtx));
 static rtx find_basic_blocks_1		PARAMS ((rtx));
@@ -316,11 +310,11 @@ static void verify_wide_reg		PARAMS ((int, rtx, rtx));
 static void verify_local_live_at_start	PARAMS ((regset, basic_block));
 static int set_noop_p			PARAMS ((rtx));
 static int noop_move_p			PARAMS ((rtx));
-static void notice_stack_pointer_modification PARAMS ((rtx, rtx, void *));
-static void record_volatile_insns	PARAMS ((rtx));
+static void delete_noop_moves		PARAMS ((rtx));
+static void notice_stack_pointer_modification_1 PARAMS ((rtx, rtx, void *));
+static void notice_stack_pointer_modification PARAMS ((rtx));
 static void mark_reg			PARAMS ((rtx, void *));
 static void mark_regs_live_at_end	PARAMS ((regset));
-static void life_analysis_1		PARAMS ((rtx, int, int));
 static void calculate_global_regs_live	PARAMS ((sbitmap, sbitmap, int));
 static void propagate_block		PARAMS ((basic_block, regset,
 						 regset, int));
@@ -2460,26 +2454,24 @@ life_analysis (f, nregs, file, remove_dead_code)
      FILE *file;
      int remove_dead_code;
 {
+  register int i;
 #ifdef ELIMINABLE_REGS
-  register size_t i;
   static struct {int from, to; } eliminables[] = ELIMINABLE_REGS;
 #endif
   int flags;
-
+  sbitmap all_blocks;
+ 
   /* Record which registers will be eliminated.  We use this in
      mark_used_regs.  */
 
   CLEAR_HARD_REG_SET (elim_reg_set);
 
 #ifdef ELIMINABLE_REGS
-  for (i = 0; i < sizeof eliminables / sizeof eliminables[0]; i++)
+  for (i = 0; i < (int) (sizeof eliminables / sizeof eliminables[0]); i++)
     SET_HARD_REG_BIT (elim_reg_set, eliminables[i].from);
 #else
   SET_HARD_REG_BIT (elim_reg_set, FRAME_POINTER_REGNUM);
 #endif
-
-  /* Allocate a bitmap to be filled in by record_volatile_insns.  */
-  uid_volatile = BITMAP_XMALLOC ();
 
   /* We want alias analysis information for local dead store elimination.  */
   init_alias_analysis ();
@@ -2492,17 +2484,53 @@ life_analysis (f, nregs, file, remove_dead_code)
       if (! remove_dead_code)
 	flags &= ~(PROP_SCAN_DEAD_CODE | PROP_KILL_DEAD_CODE);
     }
-  life_analysis_1 (f, nregs, flags);
 
+  /* The post-reload life analysis have (on a global basis) the same
+     registers live as was computed by reload itself.  elimination
+     Otherwise offsets and such may be incorrect.
+
+     Reload will make some registers as live even though they do not
+     appear in the rtl.  */
+  if (reload_completed)
+    flags &= ~PROP_REG_INFO;
+
+  max_regno = nregs;
+
+  /* Always remove no-op moves.  Do this before other processing so
+     that we don't have to keep re-scanning them.  */
+  delete_noop_moves (f);
+
+  /* Some targets can emit simpler epilogues if they know that sp was
+     not ever modified during the function.  After reload, of course,
+     we've already emitted the epilogue so there's no sense searching.  */
   if (! reload_completed)
-    mark_constant_function ();
+    notice_stack_pointer_modification (f);
+    
+  /* Allocate and zero out data structures that will record the
+     data from lifetime analysis.  */
+  allocate_reg_life_data ();
+  allocate_bb_life_data ();
+  reg_next_use = (rtx *) xcalloc (nregs, sizeof (rtx));
+  all_blocks = sbitmap_alloc (n_basic_blocks);
+  sbitmap_ones (all_blocks);
 
+  /* Find the set of registers live on function exit.  */
+  mark_regs_live_at_end (EXIT_BLOCK_PTR->global_live_at_start);
+
+  /* "Update" life info from zero.  It'd be nice to begin the
+     relaxation with just the exit and noreturn blocks, but that set
+     is not immediately handy.  */
+  update_life_info (all_blocks, UPDATE_LIFE_GLOBAL, flags);
+
+  /* Clean up.  */
+  sbitmap_free (all_blocks);
+  free (reg_next_use);
+  reg_next_use = NULL;
   end_alias_analysis ();
 
   if (file)
     dump_flow_info (file);
 
-  BITMAP_XFREE (uid_volatile);
   free_basic_block_vars (1);
 }
 
@@ -2581,7 +2609,7 @@ verify_local_live_at_start (new_live_at_start, bb)
     }
 }
 
-/* Updates death notes starting with the basic blocks set in BLOCKS.
+/* Updates life information starting with the basic blocks set in BLOCKS.
    
    If LOCAL_ONLY, such as after splitting or peepholeing, we are only
    expecting local modifications to basic blocks.  If we find extra
@@ -2596,8 +2624,8 @@ verify_local_live_at_start (new_live_at_start, bb)
 
    BLOCK_FOR_INSN is assumed to be correct.
 
-   ??? PROP_FLAGS should not contain PROP_LOG_LINKS.  Need to set up
-   reg_next_use for that.  Including PROP_REG_INFO does not refresh
+   PROP_FLAGS should not contain PROP_LOG_LINKS unless the caller sets
+   up reg_next_use.  Including PROP_REG_INFO does not properly refresh
    regs_ever_live unless the caller resets it to zero.  */
 
 void
@@ -2634,6 +2662,35 @@ update_life_info (blocks, extent, prop_flags)
     });
 
   FREE_REG_SET (tmp);
+
+  if (prop_flags & PROP_REG_INFO)
+    {
+      /* The only pseudos that are live at the beginning of the function
+	 are those that were not set anywhere in the function.  local-alloc
+	 doesn't know how to handle these correctly, so mark them as not
+	 local to any one basic block.  */
+      EXECUTE_IF_SET_IN_REG_SET (ENTRY_BLOCK_PTR->global_live_at_end,
+				 FIRST_PSEUDO_REGISTER, i,
+				 { REG_BASIC_BLOCK (i) = REG_BLOCK_GLOBAL; });
+
+      /* We have a problem with any pseudoreg that lives across the setjmp. 
+	 ANSI says that if a user variable does not change in value between
+	 the setjmp and the longjmp, then the longjmp preserves it.  This
+	 includes longjmp from a place where the pseudo appears dead.
+	 (In principle, the value still exists if it is in scope.)
+	 If the pseudo goes in a hard reg, some other value may occupy
+	 that hard reg where this pseudo is dead, thus clobbering the pseudo.
+	 Conclusion: such a pseudo must not go in a hard reg.  */
+      EXECUTE_IF_SET_IN_REG_SET (regs_live_at_setjmp,
+				 FIRST_PSEUDO_REGISTER, i,
+				 {
+				   if (regno_reg_rtx[i] != 0)
+				     {
+				       REG_LIVE_LENGTH (i) = -1;
+				       REG_BASIC_BLOCK (i) = REG_BLOCK_UNKNOWN;
+				     }
+				 });
+    }
 }
 
 /* Free the variables allocated by find_basic_blocks.
@@ -2670,18 +2727,17 @@ set_noop_p (set)
 {
   rtx src = SET_SRC (set);
   rtx dst = SET_DEST (set);
-  if (GET_CODE (src) == REG && GET_CODE (dst) == REG
-      && REGNO (src) == REGNO (dst))
-    return 1;
-  if (GET_CODE (src) != SUBREG || GET_CODE (dst) != SUBREG
-      || SUBREG_WORD (src) != SUBREG_WORD (dst))
-    return 0;
-  src = SUBREG_REG (src);
-  dst = SUBREG_REG (dst);
-  if (GET_CODE (src) == REG && GET_CODE (dst) == REG
-      && REGNO (src) == REGNO (dst))
-    return 1;
-  return 0;
+
+  if (GET_CODE (src) == SUBREG && GET_CODE (dst) == SUBREG)
+    {
+      if (SUBREG_WORD (src) != SUBREG_WORD (dst))
+	return 0;
+      src = SUBREG_REG (src);
+      dst = SUBREG_REG (dst);
+    }
+
+  return (GET_CODE (src) == REG && GET_CODE (dst) == REG
+	  && REGNO (src) == REGNO (dst));
 }
 
 /* Return nonzero if an insn consists only of SETs, each of which only sets a
@@ -2721,8 +2777,29 @@ noop_move_p (insn)
   return 0;
 }
 
+/* Delete any insns that copy a register to itself.  */
+
 static void
-notice_stack_pointer_modification (x, pat, data)
+delete_noop_moves (f)
+     rtx f;
+{
+  rtx insn;
+  for (insn = f; insn; insn = NEXT_INSN (insn))
+    {
+      if (GET_CODE (insn) == INSN && noop_move_p (insn))
+	{
+	  PUT_CODE (insn, NOTE);
+	  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+	  NOTE_SOURCE_FILE (insn) = 0;
+	}
+    }
+}
+
+/* Determine if the stack pointer is constant over the life of the function.
+   Only useful before prologues have been emitted.  */
+
+static void
+notice_stack_pointer_modification_1 (x, pat, data)
      rtx x;
      rtx pat ATTRIBUTE_UNUSED;
      void *data ATTRIBUTE_UNUSED;
@@ -2740,57 +2817,28 @@ notice_stack_pointer_modification (x, pat, data)
     current_function_sp_is_unchanging = 0;
 }
 
-/* Record which insns refer to any volatile memory
-   or for any reason can't be deleted just because they are dead stores.
-   Also, delete any insns that copy a register to itself.
-   And see if the stack pointer is modified.  */
 static void
-record_volatile_insns (f)
+notice_stack_pointer_modification (f)
      rtx f;
 {
   rtx insn;
+
+  /* Assume that the stack pointer is unchanging if alloca hasn't
+     been used.  */
+  current_function_sp_is_unchanging = !current_function_calls_alloca;
+  if (! current_function_sp_is_unchanging)
+    return;
+
   for (insn = f; insn; insn = NEXT_INSN (insn))
     {
-      enum rtx_code code1 = GET_CODE (insn);
-      if (code1 == CALL_INSN)
-	SET_INSN_VOLATILE (insn);
-      else if (code1 == INSN || code1 == JUMP_INSN)
+      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	{
-	  if (GET_CODE (PATTERN (insn)) != USE
-	      && volatile_refs_p (PATTERN (insn)))
-	    SET_INSN_VOLATILE (insn);
-
-	  /* A SET that makes space on the stack cannot be dead.
-	     (Such SETs occur only for allocating variable-size data,
-	     so they will always have a PLUS or MINUS according to the
-	     direction of stack growth.)
-	     Even if this function never uses this stack pointer value,
-	     signal handlers do!  */
-	  else if (code1 == INSN && GET_CODE (PATTERN (insn)) == SET
-		   && SET_DEST (PATTERN (insn)) == stack_pointer_rtx
-#ifdef STACK_GROWS_DOWNWARD
-		   && GET_CODE (SET_SRC (PATTERN (insn))) == MINUS
-#else
-		   && GET_CODE (SET_SRC (PATTERN (insn))) == PLUS
-#endif
-		   && XEXP (SET_SRC (PATTERN (insn)), 0) == stack_pointer_rtx)
-	    SET_INSN_VOLATILE (insn);
-
-	  /* Delete (in effect) any obvious no-op moves.  */
-	  else if (noop_move_p (insn))
-	    {
-	      PUT_CODE (insn, NOTE);
-	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-	      NOTE_SOURCE_FILE (insn) = 0;
-	    }
+	  /* Check if insn modifies the stack pointer.  */
+	  note_stores (PATTERN (insn), notice_stack_pointer_modification_1,
+		       NULL);
+	  if (! current_function_sp_is_unchanging)
+	    return;
 	}
-
-      /* Check if insn modifies the stack pointer.  */
-      if ( current_function_sp_is_unchanging
-	   && GET_RTX_CLASS (GET_CODE (insn)) == 'i')
-	note_stores (PATTERN (insn),
-		     notice_stack_pointer_modification,
-		     NULL);
     }
 }
 
@@ -2880,117 +2928,6 @@ mark_regs_live_at_end (set)
 
   /* Mark function return value.  */
   diddle_return_value (mark_reg, set);
-}
-
-/* Determine which registers are live at the start of each
-   basic block of the function whose first insn is F.
-   NREGS is the number of registers used in F.
-   We allocate the vector basic_block_live_at_start
-   and the regsets that it points to, and fill them with the data.
-   regset_size and regset_bytes are also set here.  */
-
-static void
-life_analysis_1 (f, nregs, flags)
-     rtx f;
-     int nregs;
-     int flags;
-{
-  char save_regs_ever_live[FIRST_PSEUDO_REGISTER];
-  register int i;
-
-  max_regno = nregs;
-
-  /* Allocate and zero out many data structures
-     that will record the data from lifetime analysis.  */
-
-  allocate_reg_life_data ();
-  allocate_bb_life_data ();
-
-  reg_next_use = (rtx *) xcalloc (nregs, sizeof (rtx));
-
-  /* Assume that the stack pointer is unchanging if alloca hasn't been used.
-     This will be cleared by record_volatile_insns if it encounters an insn
-     which modifies the stack pointer.  */
-  current_function_sp_is_unchanging = !current_function_calls_alloca;
-  record_volatile_insns (f);
-
-  /* Find the set of registers live on function exit.  Do this before
-     zeroing regs_ever_live, as we use that data post-reload.  */
-  mark_regs_live_at_end (EXIT_BLOCK_PTR->global_live_at_start);
-
-  /* The post-reload life analysis have (on a global basis) the same
-     registers live as was computed by reload itself.  elimination
-     Otherwise offsets and such may be incorrect.
-
-     Reload will make some registers as live even though they do not
-     appear in the rtl.  */
-  if (reload_completed)
-    memcpy (save_regs_ever_live, regs_ever_live, sizeof (regs_ever_live));
-  memset (regs_ever_live, 0, sizeof regs_ever_live);
-
-  /* Compute register life at block boundaries.  It'd be nice to 
-     begin with just the exit and noreturn blocks, but that set 
-     is not immediately handy.  */
-  {
-    sbitmap blocks;
-    blocks = sbitmap_alloc (n_basic_blocks);
-    sbitmap_ones (blocks);
-    calculate_global_regs_live (blocks, blocks, flags & PROP_SCAN_DEAD_CODE);
-    sbitmap_free (blocks);
-  }
-
-  /* The only pseudos that are live at the beginning of the function are
-     those that were not set anywhere in the function.  local-alloc doesn't
-     know how to handle these correctly, so mark them as not local to any
-     one basic block.  */
-
-  EXECUTE_IF_SET_IN_REG_SET (ENTRY_BLOCK_PTR->global_live_at_end,
-			     FIRST_PSEUDO_REGISTER, i,
-			     { REG_BASIC_BLOCK (i) = REG_BLOCK_GLOBAL; });
-
-  /* Now the life information is accurate.  Make one more pass over each
-     basic block to delete dead stores, create autoincrement addressing
-     and record how many times each register is used, is set, or dies.  */
-  {
-    regset tmp;
-    tmp = ALLOCA_REG_SET ();
-
-    for (i = n_basic_blocks - 1; i >= 0; --i)
-      {
-        basic_block bb = BASIC_BLOCK (i);
-
-	COPY_REG_SET (tmp, bb->global_live_at_end);
-	propagate_block (bb, tmp, (regset) NULL, flags);
-      }
-
-    FREE_REG_SET (tmp);
-  }
-
-  /* We have a problem with any pseudoreg that lives across the setjmp. 
-     ANSI says that if a user variable does not change in value between
-     the setjmp and the longjmp, then the longjmp preserves it.  This
-     includes longjmp from a place where the pseudo appears dead.
-     (In principle, the value still exists if it is in scope.)
-     If the pseudo goes in a hard reg, some other value may occupy
-     that hard reg where this pseudo is dead, thus clobbering the pseudo.
-     Conclusion: such a pseudo must not go in a hard reg.  */
-  EXECUTE_IF_SET_IN_REG_SET (regs_live_at_setjmp,
-			     FIRST_PSEUDO_REGISTER, i,
-			     {
-			       if (regno_reg_rtx[i] != 0)
-				 {
-				   REG_LIVE_LENGTH (i) = -1;
-				   REG_BASIC_BLOCK (i) = REG_BLOCK_UNKNOWN;
-				 }
-			     });
-
-  /* Restore regs_ever_live that was provided by reload.  */
-  if (reload_completed)
-    memcpy (regs_ever_live, save_regs_ever_live, sizeof (regs_ever_live));
-
-  /* Clean up.  */
-  free (reg_next_use);
-  reg_next_use = NULL;
 }
 
 /* Propagate global life info around the graph of basic blocks.  Begin
@@ -3289,11 +3226,8 @@ propagate_block (bb, old, significant, flags)
 
 	  if (flags & PROP_SCAN_DEAD_CODE)
 	    {
-	      insn_is_dead = (insn_dead_p (PATTERN (insn), old, 0,
-					   REG_NOTES (insn))
-	                      /* Don't delete something that refers to
-				 volatile storage!  */
-	                      && ! INSN_VOLATILE (insn));
+	      insn_is_dead = insn_dead_p (PATTERN (insn), old, 0,
+					  REG_NOTES (insn));
 	      libcall_is_dead = (insn_is_dead && note != 0
 	                         && libcall_dead_p (PATTERN (insn), old,
 						    note, insn));
@@ -3576,18 +3510,29 @@ insn_dead_p (x, needed, call_ok, notes)
     {
       rtx r = SET_DEST (x);
 
-      /* A SET that is a subroutine call cannot be dead.  */
-      if (! call_ok && GET_CODE (SET_SRC (x)) == CALL)
-	return 0;
-
 #ifdef HAVE_cc0
       if (GET_CODE (r) == CC0)
 	return ! cc0_live;
 #endif
       
-      if (GET_CODE (r) == MEM && ! MEM_VOLATILE_P (r))
+      /* A SET that is a subroutine call cannot be dead.  */
+      if (GET_CODE (SET_SRC (x)) == CALL)
+	{
+	  if (! call_ok)
+	    return 0;
+	}
+
+      /* Don't eliminate loads from volatile memory or volatile asms.  */
+      else if (volatile_refs_p (SET_SRC (x)))
+	return 0;
+
+      if (GET_CODE (r) == MEM)
 	{
 	  rtx temp;
+
+	  if (MEM_VOLATILE_P (r))
+	    return 0;
+
 	  /* Walk the set of memory locations we are currently tracking
 	     and see if one is an identical match to this memory location.
 	     If so, this memory write is dead (remember, we're walking
@@ -3600,52 +3545,68 @@ insn_dead_p (x, needed, call_ok, notes)
 	      temp = XEXP (temp, 1);
 	    }
 	}
-
-      while (GET_CODE (r) == SUBREG || GET_CODE (r) == STRICT_LOW_PART
-	     || GET_CODE (r) == ZERO_EXTRACT)
-	r = XEXP (r, 0);
-
-      if (GET_CODE (r) == REG)
+      else
 	{
-	  int regno = REGNO (r);
+	  while (GET_CODE (r) == SUBREG
+		 || GET_CODE (r) == STRICT_LOW_PART
+		 || GET_CODE (r) == ZERO_EXTRACT)
+	    r = XEXP (r, 0);
 
-	  /* Don't delete insns to set global regs.  */
-	  if ((regno < FIRST_PSEUDO_REGISTER && global_regs[regno])
-	      /* Make sure insns to set frame pointer aren't deleted.  */
-	      || (regno == FRAME_POINTER_REGNUM
+	  if (GET_CODE (r) == REG)
+	    {
+	      int regno = REGNO (r);
+
+	      /* Obvious.  */
+	      if (REGNO_REG_SET_P (needed, regno))
+		return 0;
+
+	      /* If this is a hard register, verify that subsequent
+		 words are not needed.  */
+	      if (regno < FIRST_PSEUDO_REGISTER)
+		{
+		  int n = HARD_REGNO_NREGS (regno, GET_MODE (r));
+
+		  while (--n > 0)
+		    if (REGNO_REG_SET_P (needed, regno+n))
+		      return 0;
+		}
+
+	      /* Don't delete insns to set global regs.  */
+	      if (regno < FIRST_PSEUDO_REGISTER && global_regs[regno])
+		return 0;
+
+	      /* Make sure insns to set the stack pointer aren't deleted.  */
+	      if (regno == STACK_POINTER_REGNUM)
+		return 0;
+
+	      /* Make sure insns to set the frame pointer aren't deleted.  */
+	      if (regno == FRAME_POINTER_REGNUM
 		  && (! reload_completed || frame_pointer_needed))
+		return 0;
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-	      || (regno == HARD_FRAME_POINTER_REGNUM
+	      if (regno == HARD_FRAME_POINTER_REGNUM
 		  && (! reload_completed || frame_pointer_needed))
+		return 0;
 #endif
+
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
 	      /* Make sure insns to set arg pointer are never deleted
-		 (if the arg pointer isn't fixed, there will be a USE for
-		 it, so we can treat it normally).  */
-	      || (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
+		 (if the arg pointer isn't fixed, there will be a USE
+		 for it, so we can treat it normally).  */
+	      if (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
+		return 0;
 #endif
-	      || REGNO_REG_SET_P (needed, regno))
-	    return 0;
 
-	  /* If this is a hard register, verify that subsequent words are
-	     not needed.  */
-	  if (regno < FIRST_PSEUDO_REGISTER)
-	    {
-	      int n = HARD_REGNO_NREGS (regno, GET_MODE (r));
-
-	      while (--n > 0)
-		if (REGNO_REG_SET_P (needed, regno+n))
-		  return 0;
+	      /* Otherwise, the set is dead.  */
+	      return 1;
 	    }
-
-	  return 1;
 	}
     }
 
-  /* If performing several activities,
-     insn is dead if each activity is individually dead.
-     Also, CLOBBERs and USEs can be ignored; a CLOBBER or USE
-     that's inside a PARALLEL doesn't make the insn worth keeping.  */
+  /* If performing several activities, insn is dead if each activity
+     is individually dead.  Also, CLOBBERs and USEs can be ignored; a
+     CLOBBER or USE that's inside a PARALLEL doesn't make the insn
+     worth keeping.  */
   else if (code == PARALLEL)
     {
       int i = XVECLEN (x, 0);
@@ -4451,7 +4412,8 @@ mark_used_regs (needed, live, x, flags, insn)
 		   it was allocated to the pseudos.  If the register will not
 		   be eliminated, reload will set it live at that point.  */
 
-		if (! TEST_HARD_REG_BIT (elim_reg_set, regno))
+		if ((flags & PROP_REG_INFO)
+		    && ! TEST_HARD_REG_BIT (elim_reg_set, regno))
 		  regs_ever_live[regno] = 1;
 		return;
 	      }

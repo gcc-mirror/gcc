@@ -1,3 +1,7 @@
+2000-02-15  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* lang-specs.h: Add new __GNUC_PATCHLEVEL__ define to default spec.
+
 2000-01-16  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* decl2.c (lang_decode_option): Enable automatic line wrapping.

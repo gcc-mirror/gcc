@@ -1,3 +1,14 @@
+2000-02-15  Jonathan Larmour  <jlarmour@redhat.co.uk>
+
+	* gcc.c (default_compilers): Add new __GNUC_PATCHLEVEL__ define
+	to default cpp spec.
+	(do_spec_1): Add support for %v3 spec used by __GNUC_PATCHLEVEL__.
+	* cpp.texi: Document __GNUC_PATCHLEVEL__.
+	* cpp.1: Likewise.
+
+	* objc/lang-specs.h: Add new __GNUC_PATCHLEVEL__ define to
+	default spec.
+
 2000-02-15  Denis Chertykov  <denisc@overta.ru>
 
 	* configure.in: Add support for avr target.
@@ -32,7 +43,7 @@ Tue Feb 15 23:22:26 2000  Andrew Haley  <aph@cygnus.com>
 	* config/sh/sh.h: Correct comment about macros.
 
 Tue Feb 15 22:30:36 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
-                          Andrew MacLeod  <amacleod@cygnus.com>
+	                  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* Makefile.in (lcm.o): Depend on insn-attr.h.
 	* basic-block.h (optimize_mode_switching): Declare.
@@ -127,7 +138,7 @@ Tue Feb 15 22:30:36 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 	to import the frames themselves.
 
 Mon Feb 14 13:31:01 2000  Stan Cox  <scox@cygnus.com>
-                          Jason Eckhardt  <jle@cygnus.com>
+	                  Jason Eckhardt  <jle@cygnus.com>
 
 	* basic_block.h: Added prototype for reorder_basic_blocks.
 	* toplev.c: Changes to add -freorder-blocks and graph dump after
@@ -226,28 +237,28 @@ Sat Feb 12 01:44:26 MET 2000  Jan Hubicka  <jh@suse.cz>
 	two types have compatable, arm specific, attributes.
 
 	* config/arm/arm.h (CUMULATIVE_ARGS): Redefine to be a
-        structure.
+	structure.
 	(FUNCTION_ARG): Redefine to call arm_function_arg.
 	(FUNCTION_ARG_PARTIAL_NREGS): Redefine to use correct
-        structure field.
+	structure field.
 	(INIT_CUMULATIVE_ARGS): Redefine to call
-        arm_init_cumulative_args.
+	arm_init_cumulative_args.
 	(FUNCTION_ARG_ADVANCE): Redefine to use correct structure
-        field. 
+	field. 
 	(SETUP_INCOMING_VARARGS): Redefine to use correct structure 
-        field. 
+	field. 
 	(ARM_MARK_NEARBY_FUNCTION): New macro: Mark already compiled
-        functions.
+	functions.
 	(ENCODE_SECTION): Add call to ARM_MARK_NEARBY_FUNCTION.
 	(VALID_MACHINE_TYPE_ATTRIBUTE): Define.
 	(COMP_TYPE_ATTRIBUTES): Define.
 
 	* config/arm/arm.md (call): Call arm_is_long_call_p to decide
-        if a long call is needed.
+	if a long call is needed.
 	(call_value): Call arm_is_long_call_p to decide if a long call
-        is needed.
+	is needed.
 	(call_symbol): Call arm_is_long_call_p to decide if a long call
-        is needed.
+	is needed.
 
 	* config/arm/arm-protos.h: Add prototype for arm_is_long_call_p.
 
