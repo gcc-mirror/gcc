@@ -1,4 +1,5 @@
 /* Test for constant expressions: broken optimization with const variables.  */
+/* Reference: ISO 9989:1990 6.5.15 */
 /* Origin: Joseph Myers <jsm28@cam.ac.uk> */
 /* { dg-do compile } */
 /* { dg-options "-std=iso9899:1990 -O2" } */
