@@ -39,9 +39,9 @@ compilation is specified by a string called a "spec".  */
 #include "config.h"
 #include "obstack.h"
 #ifdef __STDC__
-#include "gstdarg.h"
+#include <stdarg.h>
 #else
-#include "gvarargs.h"
+#include <varargs.h>
 #endif
 #include <stdio.h>
 
