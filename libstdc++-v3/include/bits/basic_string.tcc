@@ -254,6 +254,117 @@ namespace std
 	}
       return *this;
     }
+
+   template<typename _CharT, typename _Traits, typename _Alloc>
+     basic_string<_CharT, _Traits, _Alloc>&
+     basic_string<_CharT, _Traits, _Alloc>::
+     assign(const basic_string& __str, size_type __pos, size_type __n)
+     {
+       const size_type __strsize = __str.size();
+       if (__pos > __strsize)
+	 __throw_out_of_range("basic_string::assign");
+       const bool __testn = __n < __strsize - __pos;
+       const size_type __newsize = __testn ? __n : __strsize - __pos;
+       return this->assign(__str._M_data() + __pos, __newsize);
+     }
+
+   template<typename _CharT, typename _Traits, typename _Alloc>
+     basic_string<_CharT, _Traits, _Alloc>&
+     basic_string<_CharT, _Traits, _Alloc>::
+     assign(const _CharT* __s, size_type __n)
+     {
+       if (__n > this->max_size())
+	 __throw_length_error("basic_string::assign");
+       if (_M_rep()->_M_is_shared() || less<const _CharT*>()(__s, _M_data())
+	   || less<const _CharT*>()(_M_data() + this->size(), __s))
+	 return _M_replace_safe(_M_ibegin(), _M_iend(), __s, __s + __n);
+       else
+	 {
+	   // Work in-place
+	   const size_type __pos = __s - _M_data();
+	   if (__pos >= __n)
+	     traits_type::copy(_M_data(), __s, __n);
+	   else if (__pos)
+	     traits_type::move(_M_data(), __s, __n);
+	   _M_rep()->_M_length = __n;
+	   _M_data()[__n] = _Rep::_S_terminal;  // grr.
+	   return *this;
+	 }
+     }
+
+   template<typename _CharT, typename _Traits, typename _Alloc>
+     basic_string<_CharT, _Traits, _Alloc>&
+     basic_string<_CharT, _Traits, _Alloc>::
+     insert(size_type __pos1, const basic_string& __str,
+            size_type __pos2, size_type __n)
+     {
+       const size_type __strsize = __str.size();
+       if (__pos2 > __strsize)
+	 __throw_out_of_range("basic_string::insert");
+       const bool __testn = __n < __strsize - __pos2;
+       const size_type __newsize = __testn ? __n : __strsize - __pos2;
+       return this->insert(__pos1, __str._M_data() + __pos2, __newsize);
+     }
+
+   template<typename _CharT, typename _Traits, typename _Alloc>
+     basic_string<_CharT, _Traits, _Alloc>&
+     basic_string<_CharT, _Traits, _Alloc>::
+     insert(size_type __pos, const _CharT* __s, size_type __n)
+     {
+       const size_type __size = this->size();
+       if (__pos > __size)
+         __throw_out_of_range("basic_string::insert");
+       if (__size > this->max_size() - __n)
+         __throw_length_error("basic_string::insert");
+       if (_M_rep()->_M_is_shared() || less<const _CharT*>()(__s, _M_data())
+           || less<const _CharT*>()(_M_data() + __size, __s))
+         return _M_replace_safe(_M_ibegin() + __pos, _M_ibegin() + __pos,
+                                __s, __s + __n);
+       else
+         {
+           // Work in-place. If _M_mutate reallocates the string, __s
+           // does not point anymore to valid data, therefore we save its
+           // offset, then we restore it.
+           const size_type __off = __s - _M_data();
+           _M_mutate(__pos, 0, __n);
+           __s = _M_data() + __off;
+           _CharT* __p = _M_data() + __pos;
+           if (__s  + __n <= __p)
+             traits_type::copy(__p, __s, __n);
+           else if (__s >= __p)
+             traits_type::copy(__p, __s + __n, __n);
+           else
+             {
+               traits_type::copy(__p, __s, __p - __s);
+               traits_type::copy(__p + (__p-__s), __p + __n, __n - (__p-__s));
+             }
+           return *this;
+         }
+     }
+ 
+   template<typename _CharT, typename _Traits, typename _Alloc>
+     basic_string<_CharT, _Traits, _Alloc>&
+     basic_string<_CharT, _Traits, _Alloc>::
+     replace(size_type __pos, size_type __n1, const _CharT* __s,
+	     size_type __n2)
+     {
+       const size_type __size = this->size();
+       if (__pos > __size)
+         __throw_out_of_range("basic_string::replace");
+       const bool __testn1 = __n1 < __size - __pos;
+       const size_type __foldn1 = __testn1 ? __n1 : __size - __pos;
+       if (__size - __foldn1 > this->max_size() - __n2)
+         __throw_length_error("basic_string::replace");
+       if (_M_rep()->_M_is_shared() || less<const _CharT*>()(__s, _M_data())
+           || less<const _CharT*>()(_M_data() + __size, __s))
+         return _M_replace_safe(_M_ibegin() + __pos,
+				_M_ibegin() + __pos + __foldn1, __s, __s + __n2);
+       // Todo: optimized in-place replace.
+       else
+	 return _M_replace(_M_ibegin() + __pos, _M_ibegin() + __pos + __foldn1,
+			   __s, __s + __n2,
+			   typename iterator_traits<const _CharT*>::iterator_category());
+     }
   
   template<typename _CharT, typename _Traits, typename _Alloc>
     void
