@@ -1,3 +1,14 @@
+2002-09-10  Gabriel Dos Reis  <gdr@soliton.integrable-solutions.net>
+
+	* include/bits/stl_vector.h (vector<>): Don't use a name with
+	different meanings before and after re-evaluation in the completed
+	scope. 
+	* include/bits/basic_string.h (basic_string<>): Likewise.
+	* include/bits/stl_bvector.h (vector<bool>): Likewise.
+	* include/bits/stl_deque.h (std): Likewise.
+	* include/bits/stl_list.h (list<>): Likewise.
+	* include/bits/stl_tree.h (_Rb_tree<>): Likewise.
+
 2002-09-10  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/codecvt.h (class __codecvt_abstract_base):

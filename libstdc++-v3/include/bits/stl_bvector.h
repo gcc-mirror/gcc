@@ -356,8 +356,8 @@ template <typename _Alloc>
     typedef _Bit_iterator                iterator;
     typedef _Bit_const_iterator          const_iterator;
   
-    typedef reverse_iterator<const_iterator> const_reverse_iterator;
-    typedef reverse_iterator<iterator> reverse_iterator;
+    typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+    typedef std::reverse_iterator<iterator> reverse_iterator;
   
     typedef typename _Bvector_base<_Alloc>::allocator_type allocator_type;
     allocator_type get_allocator() const {
