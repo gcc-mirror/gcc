@@ -1,3 +1,8 @@
+2002-12-18  Geoffrey Keating  <geoffk@apple.com>
+
+	* config.gcc: Set extra_objs in the generic Darwin rule,
+	not in the machine-specific rules.
+
 2002-12-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* ChangeLog: Follow spelling conventions.
