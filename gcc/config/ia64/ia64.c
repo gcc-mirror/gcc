@@ -255,6 +255,8 @@ static void ia64_hpux_file_end (void)
      ATTRIBUTE_UNUSED;
 static void ia64_hpux_init_libfuncs (void)
      ATTRIBUTE_UNUSED;
+static void ia64_vms_init_libfuncs (void)
+     ATTRIBUTE_UNUSED;
 
 static tree ia64_handle_model_attribute (tree *, tree, tree, int, bool *);
 static void ia64_encode_section_info (tree, rtx, int);
@@ -3132,7 +3134,7 @@ ia64_output_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 	grsave = current_frame_info.reg_save_pr;
     }
 
-  if (mask)
+  if (mask && TARGET_GNU_AS)
     fprintf (file, "\t.prologue %d, %d\n", mask,
 	     ia64_dbx_register_number (grsave));
   else
@@ -3214,6 +3216,19 @@ void
 ia64_initialize_trampoline (rtx addr, rtx fnaddr, rtx static_chain)
 {
   rtx addr_reg, eight = GEN_INT (8);
+
+  /* The Intel assembler requires that the global __ia64_trampoline symbol
+     be declared explicitly */
+  if (!TARGET_GNU_AS)
+    {
+      static bool declared_ia64_trampoline = false;
+
+      if (!declared_ia64_trampoline)
+	{
+	  declared_ia64_trampoline = true;
+	  fputs ("\t.global\t__ia64_trampoline\n", asm_out_file);
+	}
+    }
 
   /* Load up our iterator.  */
   addr_reg = gen_reg_rtx (Pmode);
@@ -8307,6 +8322,7 @@ ia64_hpux_file_end (void)
 }
 
 /* Rename all the TFmode libfuncs using the HPUX conventions.  */
+
 static void
 ia64_hpux_init_libfuncs (void)
 {
@@ -8338,6 +8354,21 @@ ia64_hpux_init_libfuncs (void)
 
   set_conv_libfunc (sfloat_optab, TFmode, SImode, "_U_Qfcnvxf_sgl_to_quad");
   set_conv_libfunc (sfloat_optab, TFmode, DImode, "_U_Qfcnvxf_dbl_to_quad");
+}
+
+/* Rename the division and modulus functions in VMS.  */
+
+static void
+ia64_vms_init_libfuncs (void)
+{
+  set_optab_libfunc (sdiv_optab, SImode, "OTS$DIV_I");
+  set_optab_libfunc (sdiv_optab, DImode, "OTS$DIV_L");
+  set_optab_libfunc (udiv_optab, SImode, "OTS$DIV_UI");
+  set_optab_libfunc (udiv_optab, DImode, "OTS$DIV_UL");
+  set_optab_libfunc (smod_optab, SImode, "OTS$REM_I");
+  set_optab_libfunc (smod_optab, DImode, "OTS$REM_L");
+  set_optab_libfunc (umod_optab, SImode, "OTS$REM_UI");
+  set_optab_libfunc (umod_optab, DImode, "OTS$REM_UL");
 }
 
 /* Switch to the section to which we should output X.  The only thing
