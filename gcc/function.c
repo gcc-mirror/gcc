@@ -715,7 +715,36 @@ assign_stack_temp (mode, size, keep)
 
   /* Make our best, if any, the one to use.  */
   if (best_p)
-    p = best_p;
+    {
+      /* If there are enough aligned bytes left over, make them into a new
+	 temp_slot so that the extra bytes don't get wasted.  Do this only
+	 for BLKmode slots, so that we can be sure of the alignment.  */
+      if (GET_MODE (best_p->slot) == BLKmode)
+	{
+	  int alignment = BIGGEST_ALIGNMENT / BITS_PER_UNIT;
+	  int rounded_size = CEIL_ROUND (size, alignment);
+
+	  if (best_p->size - rounded_size >= alignment)
+	    {
+	      p = (struct temp_slot *) oballoc (sizeof (struct temp_slot));
+	      p->in_use = 0;
+	      p->size = best_p->size - rounded_size;
+	      p->slot = gen_rtx (MEM, BLKmode,
+				 plus_constant (XEXP (best_p->slot, 0),
+						rounded_size));
+	      p->next = temp_slots;
+	      temp_slots = p;
+
+	      stack_slot_list = gen_rtx (EXPR_LIST, VOIDmode, p->slot,
+					 stack_slot_list);
+
+	      best_p->size = rounded_size;
+	    }
+	}
+
+      p = best_p;
+    }
+	      
 
   /* If we still didn't find one, make a new temporary.  */
   if (p == 0)
@@ -733,6 +762,43 @@ assign_stack_temp (mode, size, keep)
   p->level = temp_slot_level;
   p->keep = keep;
   return p->slot;
+}
+
+/* Combine temporary stack slots which are adjacent on the stack.
+
+   This allows for better use of already allocated stack space.  This is only
+   done for BLKmode slots because we can be sure that we won't have alignment
+   problems in this case.  */
+
+void
+combine_temp_slots ()
+{
+  struct temp_slot *p, *q;
+  struct temp_slot *prev_p, *prev_q;
+
+  for (p = temp_slots, prev_p = 0; p; prev_p = p, p = p->next)
+    if (! p->in_use && GET_MODE (p->slot) == BLKmode)
+      for (q = p->next, prev_q = p; q; prev_q = q, q = q->next)
+	if (! q->in_use && GET_MODE (q->slot) == BLKmode)
+	  {
+	    if (rtx_equal_p (plus_constant (XEXP (p->slot, 0), p->size),
+			     XEXP (q->slot, 0)))
+	      {
+		/* Combine q into p.  */
+		p->size += q->size;
+		prev_q->next = q->next;
+	      }
+	    else if (rtx_equal_p (plus_constant (XEXP (q->slot, 0), q->size),
+				  XEXP (p->slot, 0)))
+	      {
+		/* Combine p into q.  */
+		q->size += p->size;
+		if (prev_p)
+		  prev_p->next = p->next;
+		else
+		  temp_slots = p->next;
+	      }
+	  }
 }
 
 /* If X could be a reference to a temporary slot, mark that slot as belonging
@@ -779,6 +845,8 @@ free_temp_slots ()
   for (p = temp_slots; p; p = p->next)
     if (p->in_use && p->level == temp_slot_level && ! p->keep)
       p->in_use = 0;
+
+  combine_temp_slots ();
 }
 
 /* Push deeper into the nesting level for stack temporaries.  */
@@ -813,6 +881,8 @@ pop_temp_slots ()
   for (p = temp_slots; p; p = p->next)
     if (p->in_use && p->level == temp_slot_level)
       p->in_use = 0;
+
+  combine_temp_slots ();
 
   temp_slot_level--;
 }
