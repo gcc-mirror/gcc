@@ -8,7 +8,7 @@
 	subregs in BIG_ENDIAN mode.
 	(storehi_bigend): Match use of least significant byte.
 	(storeinthi): Remove extraneous SUBREG.
-	Add missing sonstruction of operands[2].
+	Add missing construction of operands[2].
 	(movhi): Use gen_lowpart in place of gen_rtx_SUBREG.
 	(movqi): Use gen_lowpart in place of gen_rtx_SUBREG.
 	Replace gen_rtx (SUBREG) with gen_rtx_SUBREG.
