@@ -85,12 +85,41 @@ do {									\
     }									\
 } while (0)
 
+#define EXECUTE_IF_SET_IN_SBITMAP_REV(SBITMAP, N, CODE)			\
+do {									\
+  unsigned int word_num_;						\
+  unsigned int bit_num_;						\
+  unsigned int size_ = (SBITMAP)->size;					\
+  SBITMAP_ELT_TYPE *ptr_ = (SBITMAP)->elms;				\
+									\
+  for (word_num_ = size_; word_num_ > 0; word_num_--)			\
+    {									\
+      SBITMAP_ELT_TYPE word_ = ptr_[word_num_ - 1];			\
+									\
+      if (word_ != 0)							\
+	for (bit_num_ = SBITMAP_ELT_BITS; bit_num_ > 0; bit_num_--)	\
+	  {								\
+	    SBITMAP_ELT_TYPE _mask = (SBITMAP_ELT_TYPE)1 << (bit_num_ - 1);\
+									\
+	    if ((word_ & _mask) != 0)					\
+	      {								\
+		word_ &= ~ _mask;					\
+		(N) = (word_num_ - 1) * SBITMAP_ELT_BITS + bit_num_ - 1;\
+		CODE;							\
+		if (word_ == 0)						\
+		  break;						\
+	      }								\
+	  }								\
+    }									\
+} while (0)
+
 #define sbitmap_free(MAP)		free(MAP)
 #define sbitmap_vector_free(VEC)	free(VEC)
 
 struct int_list;
 
 extern void dump_sbitmap		PARAMS ((FILE *, sbitmap));
+extern void dump_sbitmap_file		PARAMS ((FILE *, sbitmap));
 extern void dump_sbitmap_vector 	PARAMS ((FILE *, const char *,
 						 const char *, sbitmap *,
 						 int));

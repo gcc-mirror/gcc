@@ -731,7 +731,8 @@ OBJS = alias.o bb-reorder.o bitmap.o builtins.o caller-save.o calls.o	   \
  insn-extract.o insn-opinit.o insn-output.o insn-peep.o insn-recog.o	   \
  integrate.o intl.o jump.o  langhooks.o lcm.o lists.o local-alloc.o	   \
  loop.o mbchar.o optabs.o params.o predict.o print-rtl.o print-tree.o	   \
- profile.o real.o recog.o reg-stack.o regclass.o regmove.o regrename.o	   \
+ profile.o ra.o ra-build.o ra-colorize.o ra-debug.o ra-rewrite.o	   \
+ real.o recog.o reg-stack.o regclass.o regmove.o regrename.o		   \
  reload.o reload1.o reorg.o resource.o rtl.o rtlanal.o rtl-error.o	   \
  sbitmap.o sched-deps.o sched-ebb.o sched-rgn.o sched-vis.o sdbout.o	   \
  sibcall.o simplify-rtx.o ssa.o ssa-ccp.o ssa-dce.o stmt.o		   \
@@ -1562,6 +1563,19 @@ global.o : global.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) flags.h reload.h function.h
    $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h insn-config.h output.h toplev.h \
    $(TM_P_H)
 varray.o : varray.c $(CONFIG_H) $(SYSTEM_H) varray.h $(GGC_H) errors.h
+ra.o : ra.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H)  $(TM_P_H) insn-config.h \
+   $(RECOG_H) integrate.h function.h $(REGS_H) $(OBSTACK_H) hard-reg-set.h \
+   $(BASIC_BLOCK_H) df.h expr.h output.h toplev.h flags.h reload.h ra.h
+ra-build.o : ra-build.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TM_P_H) \
+   insn-config.h $(RECOG_H) function.h $(REGS_H) hard-reg-set.h \
+   $(BASIC_BLOCK_H) df.h output.h ggc.h ra.h gt-ra-build.h
+ra-colorize.o : ra-colorize.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TM_P_H) \
+    function.h $(REGS_H) hard-reg-set.h $(BASIC_BLOCK_H) df.h output.h ra.h
+ra-debug.o : ra-debug.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H)  insn-config.h \
+   $(RECOG_H) function.h hard-reg-set.h $(BASIC_BLOCK_H) df.h output.h ra.h
+ra-rewrite.o : ra-rewrite.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TM_P_H) \
+   function.h $(REGS_H) hard-reg-set.h $(BASIC_BLOCK_H) df.h expr.h \
+   output.h except.h ra.h
 reload.o : reload.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) flags.h output.h \
    $(EXPR_H) $(OPTABS_H) reload.h $(RECOG_H) hard-reg-set.h insn-config.h \
    $(REGS_H) function.h real.h toplev.h $(TM_P_H)
@@ -1820,7 +1834,8 @@ GTFILES = $(GCONFIG_H) $(srcdir)/location.h \
   $(srcdir)/except.c $(srcdir)/explow.c $(srcdir)/expr.c \
   $(srcdir)/fold-const.c $(srcdir)/function.c \
   $(srcdir)/gcse.c $(srcdir)/integrate.c $(srcdir)/lists.c $(srcdir)/optabs.c \
-  $(srcdir)/profile.c $(srcdir)/regclass.c $(srcdir)/reg-stack.c \
+  $(srcdir)/profile.c $(srcdir)/ra-build.c $(srcdir)/regclass.c \
+  $(srcdir)/reg-stack.c \
   $(srcdir)/sdbout.c $(srcdir)/stmt.c $(srcdir)/stor-layout.c \
   $(srcdir)/tree.c $(srcdir)/varasm.c \
   $(out_file) \
@@ -1836,7 +1851,7 @@ gt-integrate.h gt-stmt.h gt-tree.h gt-varasm.h gt-emit-rtl.h : s-gtype; @true
 gt-explow.h gt-stor-layout.h gt-regclass.h gt-lists.h : s-gtype; @true
 gt-alias.h gt-cselib.h gt-fold-const.h gt-gcse.h gt-profile.h : s-gtype; @true
 gt-expr.h gt-sdbout.h gt-optabs.h gt-bitmap.h gt-dwarf2out.h : s-gtype ; @true
-gt-reg-stack.h gt-dependence.h : s-gtype ; @true
+gt-ra-build.h gt-reg-stack.h gt-dependence.h : s-gtype ; @true
 gt-c-common.h gt-c-decl.h gt-c-parse.h gt-c-pragma.h : s-gtype; @true
 gt-c-objc-common.h gtype-c.h gt-location.h : s-gtype ; @true
 

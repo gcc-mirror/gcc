@@ -261,6 +261,12 @@ extern varray_type basic_block_info;
 #define FOR_EACH_BB_REVERSE(BB) \
   FOR_BB_BETWEEN (BB, EXIT_BLOCK_PTR->prev_bb, ENTRY_BLOCK_PTR, prev_bb)
 
+/* Cycles through _all_ basic blocks, even the fake ones (entry and
+   exit block).  */
+
+#define FOR_ALL_BB(BB) \
+  for (BB = ENTRY_BLOCK_PTR; BB; BB = BB->next_bb)
+
 /* What registers are live at the setjmp call.  */
 
 extern regset regs_live_at_setjmp;

@@ -270,7 +270,7 @@ in the following sections.
 -fif-conversion -fif-conversion2 @gol
 -finline-functions  -finline-limit=@var{n}  -fkeep-inline-functions @gol
 -fkeep-static-consts  -fmerge-constants  -fmerge-all-constants @gol
--fmove-all-movables  -fno-default-inline  -fno-defer-pop @gol
+-fmove-all-movables  -fnew-ra -fno-default-inline  -fno-defer-pop @gol
 -fno-function-cse  -fno-guess-branch-probability @gol
 -fno-inline  -fno-math-errno  -fno-peephole  -fno-peephole2 @gol
 -funsafe-math-optimizations -fno-trapping-math @gol
@@ -3394,6 +3394,12 @@ arrays or initialized constant variables with integral or floating point
 types.  Languages like C or C++ require each non-automatic variable to
 have distinct location, so using this option will result in non-conforming
 behavior.
+
+@item -fnew-ra
+@opindex fnew-ra
+Use a graph coloring register allocator.  Currently this option is meant
+for testing, so we are interested to hear about miscompilations with
+@option{-fnew-ra}.
 
 @item -fno-function-cse
 @opindex fno-function-cse

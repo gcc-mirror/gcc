@@ -9475,12 +9475,21 @@ fixup_abnormal_edges ()
 		{
 	          delete_insn (insn);
 
-		  /* We're not deleting it, we're moving it.  */
-		  INSN_DELETED_P (insn) = 0;
-		  PREV_INSN (insn) = NULL_RTX;
-		  NEXT_INSN (insn) = NULL_RTX;
+		  /* Sometimes there's still the return value USE.
+		     If it's placed after a trapping call (i.e. that
+		     call is the last insn anyway), we have no fallthru
+		     edge.  Simply delete this use and don't try to insert
+		     on the non-existant edge.  */
+		  if (GET_CODE (PATTERN (insn)) != USE)
+		    {
+		      rtx seq;
+		      /* We're not deleting it, we're moving it.  */
+		      INSN_DELETED_P (insn) = 0;
+		      PREV_INSN (insn) = NULL_RTX;
+		      NEXT_INSN (insn) = NULL_RTX;
 
-	          insert_insn_on_edge (insn, e);
+		      insert_insn_on_edge (insn, e);
+		    }
 		}
 	      insn = next;
 	    }
