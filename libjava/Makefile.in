@@ -2529,7 +2529,7 @@ libgcj-test.spec.in libgcj.spec.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
 DIST_SUBDIRS =  @DIRLTDL@ testsuite gcj include @DIRLTDL@ gcj include
 DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
@@ -4534,7 +4534,7 @@ maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
 $(gtk_c_headers): $(gtk_awt_peer_sources)
-	@input=`echo $@ | sed -e 's,jniinclude,,' -e 's,_,.,g' -e 's,.h$$,,'`; \
+	@input=`echo $@ | sed -e 's,jniinclude/,,' -e 's,_,.,g' -e 's,.h$$,,'`; \
 	echo "$(GCJH) -jni -d jniinclude -classpath '' -bootclasspath $(top_builddir) $$input"; \
 	$(GCJH) -jni -d jniinclude -classpath '' -bootclasspath $(top_builddir) $$input
 

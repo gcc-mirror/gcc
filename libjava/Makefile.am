@@ -231,7 +231,7 @@ gtk_c_headers = $(patsubst %.java,jniinclude/%.h,$(subst /,_,$(gtk_awt_peer_sour
 
 $(gtk_c_headers): $(gtk_awt_peer_sources)
 ## FIXME: GNU make.
-	@input=`echo $@ | sed -e 's,jniinclude,,' -e 's,_,.,g' -e 's,.h$$,,'`; \
+	@input=`echo $@ | sed -e 's,jniinclude/,,' -e 's,_,.,g' -e 's,.h$$,,'`; \
 	echo "$(GCJH) -jni -d jniinclude -classpath '' -bootclasspath $(top_builddir) $$input"; \
 	$(GCJH) -jni -d jniinclude -classpath '' -bootclasspath $(top_builddir) $$input
 
