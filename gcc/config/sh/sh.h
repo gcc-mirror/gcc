@@ -2321,12 +2321,18 @@ while (0)
 	   ? sh_const_vec ((OP), VOIDmode) \
 	   : sh_1el_vec ((OP), VOIDmode))))
 
+#define EXTRA_CONSTRAINT_Z(OP) \
+  (GET_CODE (OP) == CONST_INT \
+   && (INTVAL (OP) == (unsigned) 0xffffffff \
+       || INTVAL (OP) == (HOST_WIDE_INT) -1 << 32))
+
 #define EXTRA_CONSTRAINT(OP, C)		\
   ((C) == 'Q' ? EXTRA_CONSTRAINT_Q (OP)	\
    : (C) == 'S' ? EXTRA_CONSTRAINT_S (OP) \
    : (C) == 'T' ? EXTRA_CONSTRAINT_T (OP) \
    : (C) == 'U' ? EXTRA_CONSTRAINT_U (OP) \
    : (C) == 'W' ? EXTRA_CONSTRAINT_W (OP) \
+   : (C) == 'Z' ? EXTRA_CONSTRAINT_Z (OP) \
    : 0)
 
 /* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression

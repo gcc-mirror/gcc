@@ -1,3 +1,9 @@
+Mon Dec 16 17:20:04 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.h (EXTRA_CONSTRAINT_Z): New macro.
+	(EXTRA_CONSTRAINT): Use it.
+	* sh.md (anddi3): Use 'Z' constraint for alternative 2.
+
 2002-12-13  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.c (output_millicode_call): Correct typo.

@@ -1970,7 +1970,7 @@
 (define_insn_and_split "anddi3"
   [(set (match_operand:DI 0 "arith_reg_operand" "=r,r,r")
 	(and:DI (match_operand:DI 1 "arith_reg_operand" "%r,r,r")
-		(match_operand:DI 2 "and_operand" "r,P,n")))]
+		(match_operand:DI 2 "and_operand" "r,P,Z")))]
   "TARGET_SHMEDIA"
   "@
 	and	%1, %2, %0
