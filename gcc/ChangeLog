@@ -1,3 +1,8 @@
+2001-10-24  Roger Sayle <roger@eyesopen.com>
+ 
+	* stmt.c (expand_end_case): Index jumptables from zero for
+	suitably small values of minval.
+
 2001-10-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* stor-layout.c (place_union_field): If any field was aligned with
