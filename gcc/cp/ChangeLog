@@ -1,3 +1,9 @@
+2003-02-18  Zack Weinberg  <zack@codesourcery.com>
+
+	* cp/search.c (grow_bfs_bases): New subroutine of bfs_walk.
+	(bfs_walk): Rewritten using circular queue of BINFO_BASETYPES
+	vectors, for speed.
+
 2003-02-18  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9704
