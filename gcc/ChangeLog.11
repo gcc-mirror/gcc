@@ -1,6 +1,37 @@
-Sun Dec  7 18:24:30 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+Wed Dec 10 18:38:56 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* Version 2.8.0 released.
+
+Wed Dec 10 18:38:28 1997  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+ 
+        * libgcc2.c (__bb_exit_func): Fix test of return value of fopen.
+
+Wed Dec 10 07:07:37 1997  Bernd Schmidt <crux@starsky.Informatik.RWTH-Aachen.DE>
+	* combine.c (simplify_rtx, case ABS): Don't get confused by a
+	VOIDmode operand.
+
+Tue Dec  9 17:44:14 1997  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000.h (FUNCTION_ARG_PADDING): Define.
+	* rs6000.c (function_arg_padding): New function.
+
+Tue Dec  9 08:53:56 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* integrate.c (save_for_inline_copying): Make a new reg_parm_stack_loc.
+
+Mon Dec  8 19:23:58 1997  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* toplev.c (get_run_time): [#if VMS] Cast arg in times call.
+
+	* vax/xm-vms.h (HAVE_UNISTD_H): Define for DEC C.
+	* make-cccp.com [CC]: Add /Prefix=All for DEC C.
+
+Mon Dec  8 08:09:17 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* stmt.c (expand_decl_cleanup_no_eh): Properly return a value.
+
+	* fold-const.c (fold_convert): Don't flag overflow when converting
+	pointer to integer.
 
 Sun Dec  7 09:42:05 1997  Pat Rankin  <rankin@eql.caltech.edu>
 

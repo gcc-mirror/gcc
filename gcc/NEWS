@@ -44,7 +44,8 @@ New features in configuration, installation and specs file handling:
 
     New option --enable-c-cpplib to configure script.
 
-    Allow --with-cpu on configure command to specify a default CPU.
+    You can use --with-cpu on the configure command to specify the default
+    CPU that GCC should generate code for.
 
     The -specs=file switch allows you to override default specs used in
     invoking programs like cc1, as, etc.

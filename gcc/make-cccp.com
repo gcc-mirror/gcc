@@ -33,6 +33,7 @@ $   else
 $     if p1.eqs."DECC"
 $     then
 $	if f$trnlnm("DECC$CC_DEFAULT").nes."" then  CC = "cc/DECC"
+$	CC = CC + "/Prefix=All"
 $	LIBS = "alloca.obj"	!DECC$SHR will be found implicitly by linker
 $	define/noLog SYS DECC$LIBRARY_INCLUDE:
 $     else
