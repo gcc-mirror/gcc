@@ -1795,7 +1795,7 @@ check_explicit_specialization (tree declarator,
 	error("too few template parameter lists in declaration of %qD", decl);
       else
 	error("explicit specialization of %qD must be introduced by "
-	      "`template <>'", decl);
+	      "%<template <>%>", decl);
 
       /* Fall through.  */
     case tsk_expl_spec:
@@ -7407,7 +7407,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       }
 
     default:
-      sorry ("use of `%s' in template",
+      sorry ("use of %qs in template",
 	     tree_code_name [(int) TREE_CODE (t)]);
       return error_mark_node;
     }

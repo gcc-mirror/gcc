@@ -6827,11 +6827,11 @@ s390_emit_prologue (void)
 
       if (s390_warn_framesize > 0 
 	  && cfun_frame_layout.frame_size >= s390_warn_framesize)
-	warning ("frame size of `%s' is " HOST_WIDE_INT_PRINT_DEC " bytes", 
+	warning ("frame size of %qs is " HOST_WIDE_INT_PRINT_DEC " bytes", 
 		 current_function_name (), cfun_frame_layout.frame_size);
 
       if (s390_warn_dynamicstack_p && cfun->calls_alloca)
-	warning ("`%s' uses dynamic stack allocation", current_function_name ());
+	warning ("%qs uses dynamic stack allocation", current_function_name ());
 
       /* Save incoming stack pointer into temp reg.  */
       if (cfun_frame_layout.save_backchain_p || next_fpr)

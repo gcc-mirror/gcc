@@ -1005,14 +1005,14 @@ diagnose_arglist_conflict (tree newdecl, tree olddecl,
       if (TREE_CHAIN (t) == 0
 	  && TYPE_MAIN_VARIANT (type) != void_type_node)
 	{
-	  inform ("a parameter list with an ellipsis can't match "
+	  inform ("a parameter list with an ellipsis can%'t match "
 		  "an empty parameter name list declaration");
 	  break;
 	}
 
       if (c_type_promotes_to (type) != type)
 	{
-	  inform ("an argument type that has a default promotion can't match "
+	  inform ("an argument type that has a default promotion can%'t match "
 		  "an empty parameter name list declaration");
 	  break;
 	}
@@ -5063,7 +5063,7 @@ grokfield (struct c_declarator *declarator, struct c_declspecs *declspecs,
 	  return NULL_TREE;
 	}
       if (pedantic)
-	pedwarn ("ISO C doesn't support unnamed structs/unions");
+	pedwarn ("ISO C doesn%'t support unnamed structs/unions");
     }
 
   value = grokdeclarator (declarator, declspecs, FIELD, false,

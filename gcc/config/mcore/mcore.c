@@ -2984,7 +2984,7 @@ mcore_override_options (void)
 	  || (mcore_stack_increment == 0
 	      && (mcore_stack_increment_string[0] != '0'
 		  || mcore_stack_increment_string[1] != 0)))
-	error ("invalid option `-mstack-increment=%s'",
+	error ("invalid option %<-mstack-increment=%s%>",
 	       mcore_stack_increment_string);	
     }
   
@@ -3372,7 +3372,7 @@ mcore_handle_naked_attribute (tree * node, tree name, tree args ATTRIBUTE_UNUSED
     }
   else
     {
-      warning ("`%s' attribute only applies to functions",
+      warning ("%qs attribute only applies to functions",
 	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }

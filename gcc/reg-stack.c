@@ -759,7 +759,7 @@ check_asm_stack_operands (rtx insn)
 	  if (operands_match_p (recog_data.operand[j], recog_data.operand[i]))
 	    {
 	      error_for_asm (insn,
-			     "output operand %d must use `&' constraint", j);
+			     "output operand %d must use %<&%> constraint", j);
 	      malformed_asm = 1;
 	    }
       }

@@ -9613,7 +9613,7 @@ frv_int_to_acc (enum insn_code icode, int opnum, rtx opval)
 
   if (! (*insn_data[icode].operand[opnum].predicate) (reg, VOIDmode))
     {
-      error ("inappropriate accumulator for `%s'", insn_data[icode].name);
+      error ("inappropriate accumulator for %qs", insn_data[icode].name);
       return NULL_RTX;
     }
   return reg;
@@ -9702,12 +9702,12 @@ frv_check_constant_argument (enum insn_code icode, int opnum, rtx opval)
 {
   if (GET_CODE (opval) != CONST_INT)
     {
-      error ("`%s' expects a constant argument", insn_data[icode].name);
+      error ("%qs expects a constant argument", insn_data[icode].name);
       return FALSE;
     }
   if (! (*insn_data[icode].operand[opnum].predicate) (opval, VOIDmode))
     {
-      error ("constant argument out of range for `%s'", insn_data[icode].name);
+      error ("constant argument out of range for %qs", insn_data[icode].name);
       return FALSE;
     }
   return TRUE;

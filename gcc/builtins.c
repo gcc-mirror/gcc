@@ -929,7 +929,7 @@ expand_builtin_prefetch (tree arglist)
   /* Argument 1 must be either zero or one.  */
   if (INTVAL (op1) != 0 && INTVAL (op1) != 1)
     {
-      warning ("invalid second arg to __builtin_prefetch; using zero");
+      warning ("invalid second arg to %<__builtin_prefetch%>; using zero");
       op1 = const0_rtx;
     }
 
@@ -943,7 +943,7 @@ expand_builtin_prefetch (tree arglist)
   /* Argument 2 must be 0, 1, 2, or 3.  */
   if (INTVAL (op2) < 0 || INTVAL (op2) > 3)
     {
-      warning ("invalid third arg to __builtin_prefetch; using zero");
+      warning ("invalid third arg to %<__builtin_prefetch%>; using zero");
       op2 = const0_rtx;
     }
 
@@ -5486,7 +5486,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 
 	  if (value != const1_rtx)
 	    {
-	      error ("__builtin_longjmp second argument must be 1");
+	      error ("%<__builtin_longjmp%> second argument must be 1");
 	      return const0_rtx;
 	    }
 

@@ -101,7 +101,7 @@ segv_handler (int sig ATTRIBUTE_UNUSED,
 	    if (strcmp (shell_commands[i][0], shell_name + 1) == 0)
 	      {
 		fnotice (stderr, 
-			 "Try running `%s' in the shell to raise its limit.\n",
+			 "Try running '%s' in the shell to raise its limit.\n",
 			 shell_commands[i][1]);
 	      }
 	}

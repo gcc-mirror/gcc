@@ -5529,7 +5529,7 @@ push_lang_context (tree name)
       current_lang_name = name;
     }
   else
-    error ("language string `\"%E\"' not recognized", name);
+    error ("language string %<\"%E\"%> not recognized", name);
 }
   
 /* Get out of the current language scope.  */

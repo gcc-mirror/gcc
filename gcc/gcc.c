@@ -1266,7 +1266,7 @@ translate_options (int *argcp, const char *const **argvp)
 
 		  else if (strchr (arginfo, '*') != 0)
 		    {
-		      error ("incomplete `%s' option", option_map[j].name);
+		      error ("incomplete '%s' option", option_map[j].name);
 		      break;
 		    }
 
@@ -1277,7 +1277,7 @@ translate_options (int *argcp, const char *const **argvp)
 			{
 			  if (i + 1 == argc)
 			    {
-			      error ("missing argument to `%s' option",
+			      error ("missing argument to '%s' option",
 				     option_map[j].name);
 			      break;
 			    }
@@ -1290,7 +1290,7 @@ translate_options (int *argcp, const char *const **argvp)
 		  else if (strchr (arginfo, 'o') == 0)
 		    {
 		      if (arg != 0)
-			error ("extraneous argument to `%s' option",
+			error ("extraneous argument to '%s' option",
 			       option_map[j].name);
 		      arg = 0;
 		    }
@@ -2632,7 +2632,7 @@ add_sysrooted_prefix (struct path_prefix *pprefix, const char *prefix,
 		      int require_machine_suffix, int os_multilib)
 {
   if (!IS_ABSOLUTE_PATH (prefix))
-    fatal ("system path `%s' is not absolute", prefix);
+    fatal ("system path '%s' is not absolute", prefix);
 
   if (target_system_root)
     {
@@ -3198,7 +3198,7 @@ process_command (int argc, const char **argv)
 	      argv += 2;
 	    }
 	  else
-	    fatal ("`-%c' option must have argument", opt);
+	    fatal ("'-%c' option must have argument", opt);
 	  if (opt == 'V')
 	    new_version = arg;
 	  else
@@ -3220,7 +3220,7 @@ process_command (int argc, const char **argv)
       new_argv[0] = new_argv0;
 
       execvp (new_argv0, new_argv);
-      fatal ("couldn't run `%s': %s", new_argv0, xstrerror (errno));
+      fatal ("couldn't run '%s': %s", new_argv0, xstrerror (errno));
     }
 
   /* Set up the default search paths.  If there is no GCC_EXEC_PREFIX,
@@ -3509,7 +3509,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
       else if (strcmp (argv[i], "-Xlinker") == 0)
 	{
 	  if (i + 1 == argc)
-	    fatal ("argument to `-Xlinker' is missing");
+	    fatal ("argument to '-Xlinker' is missing");
 
 	  n_infiles++;
 	  i++;
@@ -3517,21 +3517,21 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
       else if (strcmp (argv[i], "-Xpreprocessor") == 0)
 	{
 	  if (i + 1 == argc)
-	    fatal ("argument to `-Xpreprocessor' is missing");
+	    fatal ("argument to '-Xpreprocessor' is missing");
 
 	  add_preprocessor_option (argv[i+1], strlen (argv[i+1]));
 	}
       else if (strcmp (argv[i], "-Xassembler") == 0)
 	{
 	  if (i + 1 == argc)
-	    fatal ("argument to `-Xassembler' is missing");
+	    fatal ("argument to '-Xassembler' is missing");
 
 	  add_assembler_option (argv[i+1], strlen (argv[i+1]));
 	}
       else if (strcmp (argv[i], "-l") == 0)
 	{
 	  if (i + 1 == argc)
-	    fatal ("argument to `-l' is missing");
+	    fatal ("argument to '-l' is missing");
 
 	  n_infiles++;
 	  i++;
@@ -3552,7 +3552,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	{
 	  struct user_specs *user = xmalloc (sizeof (struct user_specs));
 	  if (++i >= argc)
-	    fatal ("argument to `-specs' is missing");
+	    fatal ("argument to '-specs' is missing");
 
 	  user->next = (struct user_specs *) 0;
 	  user->filename = argv[i];
@@ -3566,7 +3566,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	{
 	  struct user_specs *user = xmalloc (sizeof (struct user_specs));
 	  if (strlen (argv[i]) == 7)
-	    fatal ("argument to `-specs=' is missing");
+	    fatal ("argument to '-specs=' is missing");
 
 	  user->next = (struct user_specs *) 0;
 	  user->filename = argv[i] + 7;
@@ -3603,7 +3603,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	    {
 	    case 'b':
 	    case 'V':
-	      fatal ("`-%c' must come at the start of the command line", c);
+	      fatal ("'-%c' must come at the start of the command line", c);
 	      break;
 
 	    case 'B':
@@ -3612,7 +3612,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 		int len;
 
 		if (p[1] == 0 && i + 1 == argc)
-		  fatal ("argument to `-B' is missing");
+		  fatal ("argument to '-B' is missing");
 		if (p[1] == 0)
 		  value = argv[++i];
 		else
@@ -4001,7 +4001,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	  if (c == 'x')
 	    {
 	      if (p[1] == 0 && i + 1 == argc)
-		fatal ("argument to `-x' is missing");
+		fatal ("argument to '-x' is missing");
 	      if (p[1] == 0)
 		spec_lang = argv[++i];
 	      else
@@ -4029,7 +4029,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 		  n_args = SWITCH_TAKES_ARG (c) - (p[1] != 0);
 		}
 	      if (i + n_args >= argc)
-		fatal ("argument to `-%s' is missing", p);
+		fatal ("argument to '-%s' is missing", p);
 	      switches[n_switches].args
 		= xmalloc ((n_args + 1) * sizeof(const char *));
 	      while (j < n_args)
@@ -4090,7 +4090,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
     }
 
   if (n_infiles == last_language_n_infiles && spec_lang != 0)
-    error ("warning: `-x %s' after last input file has no effect", spec_lang);
+    error ("warning: '-x %s' after last input file has no effect", spec_lang);
 
   /* Ensure we only invoke each subprocess once.  */
   if (target_help_flag || print_help_list)
@@ -4733,7 +4733,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 		    p += 2;
 		    /* We don't support extra suffix characters after %O.  */
 		    if (*p == '.' || ISALPHA ((unsigned char) *p))
-		      fatal ("spec '%s' has invalid `%%0%c'", spec, *p);
+		      fatal ("spec '%s' has invalid '%%0%c'", spec, *p);
 		    if (suffix_length == 0)
 		      suffix = TARGET_OBJECT_SUFFIX;
 		    else
@@ -4930,7 +4930,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	      int cur_index = argbuf_index;
 	      /* Handle the {...} following the %W.  */
 	      if (*p != '{')
-		fatal ("spec `%s' has invalid `%%W%c", spec, *p);
+		fatal ("spec '%s' has invalid '%%W%c", spec, *p);
 	      p = handle_braces (p + 1);
 	      if (p == 0)
 		return -1;
@@ -4961,7 +4961,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 
 	      /* Skip past the option value and make a copy.  */
 	      if (*p != '{')
-		fatal ("spec `%s' has invalid `%%x%c'", spec, *p);
+		fatal ("spec '%s' has invalid '%%x%c'", spec, *p);
 	      while (*p++ != '}')
 		;
 	      string = save_string (p1 + 1, p - p1 - 2);
@@ -5342,7 +5342,7 @@ eval_spec_function (const char *func, const char *args)
 
   sf = lookup_spec_function (func);
   if (sf == NULL)
-    fatal ("unknown spec function `%s'", func);
+    fatal ("unknown spec function '%s'", func);
 
   /* Push the spec processing context.  */
   save_argbuf_index = argbuf_index;
@@ -5361,7 +5361,7 @@ eval_spec_function (const char *func, const char *args)
 
   alloc_args ();
   if (do_spec_2 (args) < 0)
-    fatal ("error in args to spec function `%s'", func);
+    fatal ("error in args to spec function '%s'", func);
 
   /* argbuf_index is an index for the next argument to be inserted, and
      so contains the count of the args already inserted.  */
@@ -5654,7 +5654,7 @@ handle_braces (const char *p)
   return p;
   
  invalid:
-  fatal ("braced spec `%s' is invalid at `%c'", orig, *p);
+  fatal ("braced spec '%s' is invalid at '%c'", orig, *p);
   
 #undef SKIP_WHITE
 }
@@ -5742,7 +5742,7 @@ process_brace_body (const char *p, const char *atom, const char *end_atom,
   return p;
 
  invalid:
-  fatal ("braced spec body `%s' is invalid", body);
+  fatal ("braced spec body '%s' is invalid", body);
 }
 
 /* Return 0 iff switch number SWITCHNUM is obsoleted by a later switch
@@ -6271,7 +6271,7 @@ main (int argc, const char **argv)
 
   for (i = 0; (int) i < n_switches; i++)
     if (! switches[i].validated)
-      error ("unrecognized option `-%s'", switches[i].part1);
+      error ("unrecognized option '-%s'", switches[i].part1);
 
   /* Obey some of the options.  */
 
@@ -6467,7 +6467,7 @@ main (int argc, const char **argv)
 		  value = do_spec (input_file_compiler->spec);
 		  infiles[i].preprocessed = true;
 		  if (!have_o_argbuf_index)
-		    fatal ("spec `%s' is invalid", input_file_compiler->spec);
+		    fatal ("spec '%s' is invalid", input_file_compiler->spec);
 		  infiles[i].name = argbuf[have_o_argbuf_index];
 		  infiles[i].incompiler
 		    = lookup_compiler (infiles[i].name,
@@ -6935,7 +6935,7 @@ used_arg (const char *p, int len)
 	      if (*q == '\0')
 		{
 		invalid_matches:
-		  fatal ("multilib spec `%s' is invalid", multilib_matches);
+		  fatal ("multilib spec '%s' is invalid", multilib_matches);
 		}
 	      q++;
 	    }
@@ -7127,7 +7127,7 @@ set_multilib_dir (void)
 	  if (*p == '\0')
 	    {
 	    invalid_exclusions:
-	      fatal ("multilib exclusions `%s' is invalid",
+	      fatal ("multilib exclusions '%s' is invalid",
 		     multilib_exclusions);
 	    }
 
@@ -7185,7 +7185,7 @@ set_multilib_dir (void)
 	  if (*p == '\0')
 	    {
 	    invalid_select:
-	      fatal ("multilib select `%s' is invalid",
+	      fatal ("multilib select '%s' is invalid",
 		     multilib_select);
 	    }
 	  ++p;
@@ -7326,7 +7326,7 @@ print_multilib_info (void)
 	  if (*p == '\0')
 	    {
 	    invalid_select:
-	      fatal ("multilib select `%s' is invalid", multilib_select);
+	      fatal ("multilib select '%s' is invalid", multilib_select);
 	    }
 	  
 	  ++p;
@@ -7364,7 +7364,7 @@ print_multilib_info (void)
 		if (*e == '\0')
 		  {
 		  invalid_exclusion:
-		    fatal ("multilib exclusion `%s' is invalid",
+		    fatal ("multilib exclusion '%s' is invalid",
 			   multilib_exclusions);
 		  }
 

@@ -212,7 +212,7 @@ decode_format_attr (tree args, function_format_info *info, int validated_p)
 
   if (!get_constant (first_arg_num_expr, &info->first_arg_num, validated_p))
     {
-      error ("'...' has invalid operand number");
+      error ("%<...%> has invalid operand number");
       return false;
     }
 
@@ -2496,7 +2496,7 @@ handle_format_attribute (tree *node, tree ARG_UNUSED (name), tree args,
 	  if (arg_num != info.first_arg_num)
 	    {
 	      if (!(flags & (int) ATTR_FLAG_BUILT_IN))
-		error ("args to be formatted is not '...'");
+		error ("args to be formatted is not %<...%>");
 	      *no_add_attrs = true;
 	      return NULL_TREE;
 	    }

@@ -391,14 +391,14 @@ arc_handle_interrupt_attribute (tree *node ATTRIBUTE_UNUSED,
 
   if (TREE_CODE (value) != STRING_CST)
     {
-      warning ("argument of `%s' attribute is not a string constant",
+      warning ("argument of %qs attribute is not a string constant",
 	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
   else if (strcmp (TREE_STRING_POINTER (value), "ilink1")
 	   && strcmp (TREE_STRING_POINTER (value), "ilink2"))
     {
-      warning ("argument of `%s' attribute is not \"ilink1\" or \"ilink2\"",
+      warning ("argument of %qs attribute is not \"ilink1\" or \"ilink2\"",
 	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }

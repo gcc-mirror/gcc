@@ -1,3 +1,7 @@
+2004-11-09  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* objc-act.c: Use %q, %< and %> for quoting in diagnostics.
+
 2004-11-08  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR objc/16546

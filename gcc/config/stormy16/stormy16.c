@@ -1918,7 +1918,7 @@ xstormy16_print_operand (FILE *file, rtx x, int code)
 	if (GET_CODE (x) == CONST_INT)
 	  xx = INTVAL (x);
 	else
-	  output_operand_lossage ("`B' operand is not constant");
+	  output_operand_lossage ("'B' operand is not constant");
 	
 	/* GCC sign-extends masks with the MSB set, so we have to
 	   detect all the cases that differ only in sign extension
@@ -1945,7 +1945,7 @@ xstormy16_print_operand (FILE *file, rtx x, int code)
 	  }
 
 	if (l == -1)
-	  output_operand_lossage ("`B' operand has multiple bits set");
+	  output_operand_lossage ("'B' operand has multiple bits set");
 	
 	fprintf (file, IMMEDIATE_PREFIX HOST_WIDE_INT_PRINT_DEC, l);
 	return;
@@ -1971,7 +1971,7 @@ xstormy16_print_operand (FILE *file, rtx x, int code)
 	if (GET_CODE (x) == CONST_INT)
 	  xx = INTVAL (x);
 	else
-	  output_operand_lossage ("`o' operand is not constant");
+	  output_operand_lossage ("'o' operand is not constant");
 	
 	if (code == 'O')
 	  xx = -xx;
@@ -1989,7 +1989,7 @@ xstormy16_print_operand (FILE *file, rtx x, int code)
 	if (GET_CODE (x) == CONST_INT)
 	  xx = INTVAL (x);
 	else
-	  output_operand_lossage ("`B' operand is not constant");
+	  output_operand_lossage ("'B' operand is not constant");
 	
 	l = 7 - xx;
 	
@@ -2410,7 +2410,7 @@ xstormy16_handle_interrupt_attribute (tree *node, tree name,
 {
   if (TREE_CODE (*node) != FUNCTION_TYPE)
     {
-      warning ("`%s' attribute only applies to functions",
+      warning ("%qs attribute only applies to functions",
 	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
@@ -2431,7 +2431,7 @@ xstormy16_handle_below100_attribute (tree *node,
       && TREE_CODE (*node) != POINTER_TYPE
       && TREE_CODE (*node) != TYPE_DECL)
     {
-      warning ("`__BELOW100__' attribute only applies to variables");
+      warning ("%<__BELOW100__%> attribute only applies to variables");
       *no_add_attrs = true;
     }
   else if (args == NULL_TREE && TREE_CODE (*node) == VAR_DECL)

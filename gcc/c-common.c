@@ -4311,7 +4311,7 @@ handle_mode_attribute (tree *node, tree name, tree args,
 
       if (mode == VOIDmode)
 	{
-	  error ("unknown machine mode %<%s%>", p);
+	  error ("unknown machine mode %qs", p);
 	  return NULL_TREE;
 	}
 
@@ -4342,7 +4342,7 @@ handle_mode_attribute (tree *node, tree name, tree args,
 	}
       if (!valid_mode)
 	{
-	  error ("unable to emulate %<%s%>", p);
+	  error ("unable to emulate %qs", p);
 	  return NULL_TREE;
 	}
 
@@ -4352,7 +4352,7 @@ handle_mode_attribute (tree *node, tree name, tree args,
 
 	  if (!targetm.valid_pointer_mode (mode))
 	    {
-	      error ("invalid pointer mode %<%s%>", p);
+	      error ("invalid pointer mode %qs", p);
 	      return NULL_TREE;
 	    }
 

@@ -618,7 +618,7 @@ handle_pragma_visibility (cpp_reader *dummy ATTRIBUTE_UNUSED)
               visibility_options.inpragma = 1;
             }
           if (c_lex (&x) != CPP_CLOSE_PAREN)
-            GCC_BAD ("missing '(' after %<#pragma GCC visibility push%> - ignored");
+            GCC_BAD ("missing %<(%> after %<#pragma GCC visibility push%> - ignored");
         }
     }
   if (c_lex (&x) != CPP_EOF)

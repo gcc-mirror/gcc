@@ -961,7 +961,7 @@ grokfield (const cp_declarator *declarator,
 
     case FIELD_DECL:
       if (asmspec)
-	error ("`asm' specifiers are not permitted on non-static data members");
+	error ("%<asm%> specifiers are not permitted on non-static data members");
       if (DECL_INITIAL (value) == error_mark_node)
 	init = error_mark_node;
       cp_finish_decl (value, init, NULL_TREE, flags);
@@ -3030,7 +3030,7 @@ cp_finish_file (void)
 	     already verified there was a definition.  */
 	  && !DECL_EXPLICIT_INSTANTIATION (decl))
 	{
-	  cp_warning_at ("inline function `%D' used but never defined", decl);
+	  cp_warning_at ("inline function %qD used but never defined", decl);
 	  /* This symbol is effectively an "extern" declaration now.
 	     This is not strictly necessary, but removes a duplicate
 	     warning.  */

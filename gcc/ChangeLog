@@ -1,3 +1,24 @@
+2004-11-09  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* builtins.c, c-common.c, c-decl.c, c-format.c, c-format.h,
+	c-parse.in, c-pch.c, c-pragma.c, collect2.c, final.c, gcc.c,
+	gcov.c, opts.c, pretty-print.h, protoize.c, reg-stack.c, rtl.c,
+	tlink.c, config/alpha/alpha.c, config/arc/arc.c, config/arm/arm.c,
+	config/avr/avr.c, config/c4x/c4x.c, config/darwin.c,
+	config/frv/frv.c, config/h8300/h8300.c, config/i386/i386.c,
+	config/i386/winnt.c, config/ia64/ia64.c, config/ip2k/ip2k.c,
+	config/iq2000/iq2000.c, config/m32r/m32r.c,
+	config/m68hc11/m68hc11.c, config/m68k/m68k.c, config/m68k/m68k.h,
+	config/mcore/mcore.c, config/mips/mips.c, config/mmix/mmix.c,
+	config/ns32k/ns32k.c, config/rs6000/host-darwin.c,
+	config/rs6000/rs6000.c, config/s390/s390.c, config/sh/sh.c,
+	config/sh/symbian.c, config/stormy16/stormy16.c,
+	config/v850/v850.c: Avoid "`" as left quote, using "'" or %q, %<
+	and %> as appropriate.  Use %' as apostrophe in diagnostics where
+	applicable.  Use %< and %> in place of '' quotes where applicable.
+	Use %qs in place of %<%s%>.  Consistently quote __builtin function
+	names.
+
 2004-11-09  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* gdbinit.in (pbb, pbm): New macros.

@@ -1562,7 +1562,7 @@ collect_execute (const char *prog, char **argv, const char *redir)
      since we might not end up needing something that we could not find.  */
 
   if (argv[0] == 0)
-    fatal ("cannot find `%s'", prog);
+    fatal ("cannot find '%s'", prog);
 
   if (redir)
     {
@@ -2039,7 +2039,7 @@ scan_prog_file (const char *prog_name, enum pass which_pass)
 
   /* If we do not have an `nm', complain.  */
   if (nm_file_name == 0)
-    fatal ("cannot find `nm'");
+    fatal ("cannot find 'nm'");
 
   nm_argv[argc++] = nm_file_name;
   if (NM_FLAGS[0] != '\0')
@@ -2206,7 +2206,7 @@ scan_libraries (const char *prog_name)
   /* If we do not have an `ldd', complain.  */
   if (ldd_file_name == 0)
     {
-      error ("cannot find `ldd'");
+      error ("cannot find 'ldd'");
       return;
     }
 

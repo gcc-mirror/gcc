@@ -303,7 +303,7 @@ override_options (void)
       else if (! strcmp (alpha_tp_string, "i"))
 	alpha_tp = ALPHA_TP_INSN;
       else
-	error ("bad value `%s' for -mtrap-precision switch", alpha_tp_string);
+	error ("bad value %qs for -mtrap-precision switch", alpha_tp_string);
     }
 
   if (alpha_fprm_string)
@@ -317,7 +317,7 @@ override_options (void)
       else if (! strcmp (alpha_fprm_string,"d"))
 	alpha_fprm = ALPHA_FPRM_DYN;
       else
-	error ("bad value `%s' for -mfp-rounding-mode switch",
+	error ("bad value %qs for -mfp-rounding-mode switch",
 	       alpha_fprm_string);
     }
 
@@ -332,7 +332,7 @@ override_options (void)
       else if (strcmp (alpha_fptm_string, "sui") == 0)
 	alpha_fptm = ALPHA_FPTM_SUI;
       else
-	error ("bad value `%s' for -mfp-trap-mode switch", alpha_fptm_string);
+	error ("bad value %qs for -mfp-trap-mode switch", alpha_fptm_string);
     }
 
   if (alpha_tls_size_string)
@@ -344,7 +344,7 @@ override_options (void)
       else if (strcmp (alpha_tls_size_string, "64") == 0)
 	alpha_tls_size = 64;
       else
-	error ("bad value `%s' for -mtls-size switch", alpha_tls_size_string);
+	error ("bad value %qs for -mtls-size switch", alpha_tls_size_string);
     }
 
   alpha_cpu
@@ -363,7 +363,7 @@ override_options (void)
 	    break;
 	  }
       if (! cpu_table [i].name)
-	error ("bad value `%s' for -mcpu switch", alpha_cpu_string);
+	error ("bad value %qs for -mcpu switch", alpha_cpu_string);
     }
 
   if (alpha_tune_string)
@@ -375,7 +375,7 @@ override_options (void)
 	    break;
 	  }
       if (! cpu_table [i].name)
-	error ("bad value `%s' for -mcpu switch", alpha_tune_string);
+	error ("bad value %qs for -mcpu switch", alpha_tune_string);
     }
 
   /* Do some sanity checks on the above options.  */
@@ -457,7 +457,7 @@ override_options (void)
       }
     else
       {
-	warning ("bad value `%s' for -mmemory-latency", alpha_mlat_string);
+	warning ("bad value %qs for -mmemory-latency", alpha_mlat_string);
 	lat = 3;
       }
 

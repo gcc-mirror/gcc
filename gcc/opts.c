@@ -1034,7 +1034,7 @@ handle_param (const char *carg)
     {
       value = integral_argument (equal + 1);
       if (value == -1)
-	error ("invalid --param value `%s'", equal + 1);
+	error ("invalid --param value %qs", equal + 1);
       else
 	{
 	  *equal = '\0';
