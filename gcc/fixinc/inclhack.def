@@ -1255,6 +1255,25 @@ fix = {
 
 
 /*
+ *  Fix hpux 11.00 broken snprintf declaration
+ *  (third argument is char *, needs to be const char * to prevent
+ *  spurious warnings with -Wwrite-strings or in C++).
+ */
+fix = {
+    hackname = hpux11_snprintf;
+    files    = stdio.h;
+    select   = '(extern int snprintf *\(char *\*, *(|__|_hpux_)size_t,)'
+                                    ' *(char *\*, *\.\.\.\);)';
+    c_fix     = format;
+    c_fix_arg = '%1 const %3';
+
+    test_text = "extern int snprintf(char *, size_t, char *, ...);\n"
+                "extern int snprintf(char *, __size_t, char *, ...);\n"
+                "extern int snprintf(char *, _hpux_size_t, char *, ...);";
+};
+
+
+/*
  *  get rid of bogus inline definitions in HP-UX 8.0
  */
 fix = {
