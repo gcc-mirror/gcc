@@ -758,22 +758,6 @@
   DONE;
 }")
 
-;; Moves to and from the shift register.
-
-(define_insn ""
-  [(set (reg:SI 112)
-	(match_operand:SI 0 "register_operand" "r"))]
-  ""
-  "mtsar %0"
-  [(set_attr "type" "move")])
-
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(reg:SI 112))]
-  ""
-  "mfctl 11,%0"
-  [(set_attr "type" "move")])
-
 ;;; Experimental
 
 (define_insn "cmov"
@@ -843,19 +827,20 @@
 
 (define_insn ""
   [(set (match_operand:SI 0 "reg_or_nonsymb_mem_operand"
-			  "=r,r,Q,!*r,!fx,!fx")
-	(match_operand:SI 1 "move_operand" "rM,Q,rM,!fxy,!*r,!fx"))]
+			  "=r,r,Q,*q,!*r,!fx,!fx")
+	(match_operand:SI 1 "move_operand" "rM,Q,rM,rM,!fxy,!*r,!fx"))]
   "register_operand (operands[0], SImode)
    || reg_or_0_operand (operands[1], SImode)"
   "@
    copy %r1,%0
    ldw%M1 %1,%0
    stw%M0 %r1,%0
+   mtsar %r1
    fstws %1,-16(30)\;ldw -16(30),%0
    stw %1,-16(30)\;fldws -16(30),%0
    fcpy,sgl %1,%0"
-  [(set_attr "type" "move,load,store,load,fpload,fpalu")
-   (set_attr "length" "1,1,1,2,2,1")])
+  [(set_attr "type" "move,load,store,move,load,fpload,fpalu")
+   (set_attr "length" "1,1,1,1,2,2,1")])
 
 ;; For pic
 (define_insn ""
@@ -1403,7 +1388,6 @@
    stw%M0 %r1,%0"
   [(set_attr "type" "fpalu,move,load,fpload,fpload,load,fpstore,store")
    (set_attr "length" "1,1,2,2,1,1,1,1")])
-
 
 ;;- zero extension instructions
 
@@ -1559,7 +1543,7 @@
   [(set (match_operand:SF 0 "general_operand" "=fx")
 	(float:SF (match_operand:SI 1 "const_int_operand" "m")))]
   ""
-  "* return output_floatsisf2 (operands);"
+  "fldws %1,%0\;fcnvxf,sgl,sgl %0,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "2")])
 
@@ -1569,7 +1553,7 @@
   [(set (match_operand:SF 0 "general_operand" "=fx")
 	(float:SF (match_operand:SI 1 "register_operand" "fx")))]
   ""
-  "* return output_floatsisf2 (operands);"
+  "fcnvxf,sgl,sgl %1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "1")])
 
@@ -1582,7 +1566,7 @@
   [(set (match_operand:DF 0 "general_operand" "=fx")
 	(float:DF (match_operand:SI 1 "const_int_operand" "m")))]
   ""
-  "* return output_floatsidf2 (operands);"
+  "fldws %1,%0\;fcnvxf,sgl,dbl %0,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "2")])
 
@@ -1592,7 +1576,43 @@
   [(set (match_operand:DF 0 "general_operand" "=fx")
 	(float:DF (match_operand:SI 1 "register_operand" "fx")))]
   ""
-  "* return output_floatsidf2 (operands);"
+  "fcnvxf,sgl,dbl %1,%0"
+  [(set_attr "type" "fpalu")
+   (set_attr "length" "1")])
+
+(define_expand "floatunssisf2"
+  [(set (subreg:SI (match_dup 2) 1)
+	(match_operand:SI 1 "register_operand" ""))
+   (set (subreg:SI (match_dup 2) 0)
+	(const_int 0))
+   (set (match_operand:SF 0 "general_operand" "")
+	(float:SF (match_dup 2)))]
+  ""
+  "operands[2] = gen_reg_rtx (DImode);")
+
+(define_expand "floatunssidf2"
+  [(set (subreg:SI (match_dup 2) 1)
+	(match_operand:SI 1 "register_operand" ""))
+   (set (subreg:SI (match_dup 2) 0)
+	(const_int 0))
+   (set (match_operand:DF 0 "general_operand" "")
+	(float:DF (match_dup 2)))]
+  ""
+  "operands[2] = gen_reg_rtx (DImode);")
+
+(define_insn "floatdisf2"
+  [(set (match_operand:SF 0 "general_operand" "=fx")
+	(float:SF (match_operand:DI 1 "register_operand" "fx")))]
+  ""
+  "fcnvxf,dbl,sgl %1,%0"
+  [(set_attr "type" "fpalu")
+   (set_attr "length" "1")])
+
+(define_insn "floatdidf2"
+  [(set (match_operand:DF 0 "general_operand" "=fx")
+	(float:DF (match_operand:DI 1 "register_operand" "fx")))]
+  ""
+  "fcnvxf,dbl,dbl %1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "1")])
 
@@ -1621,6 +1641,21 @@
   [(set_attr "type" "fpalu,fpalu")
    (set_attr "length" "3,1")])
 
+(define_insn "fix_truncsfdi2"
+  [(set (match_operand:DI 0 "register_operand" "=fx")
+	(fix:DI (fix:SF (match_operand:SF 1 "register_operand" "fx"))))]
+  ""
+  "fcnvfxt,sgl,dbl %1,%0"
+  [(set_attr "type" "fpalu")
+   (set_attr "length" "1")])
+
+(define_insn "fix_truncdfdi2"
+  [(set (match_operand:DI 0 "register_operand" "=fx")
+	(fix:DI (fix:DF (match_operand:DF 1 "register_operand" "fx"))))]
+  ""
+  "fcnvfxt,dbl,dbl %1,%0"
+  [(set_attr "type" "fpalu")
+   (set_attr "length" "1")])
 
 ;;- arithmetic instructions
 
@@ -2190,16 +2225,6 @@
   ""
   "sh3add %2,%1,%0")
 
-(define_insn "sar_sub"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(if_then_else (gtu:SI (match_operand:SI 2 "register_operand" "r")
-			      (match_operand:SI 1 "int11_operand" "I"))
-		      (const_int 0)
-		      (minus:SI (match_dup 1) (match_dup 2))))]
-  ""
-  "subi,>>= %1,%2,%0\;copy 0,%0"
-  [(set_attr "length" "2" )])
-
 (define_expand "ashlsi3"
   [(set (match_operand:SI 0 "register_operand" "")
 	(ashift:SI (match_operand:SI 1 "register_operand" "")
@@ -2210,17 +2235,10 @@
   if (GET_CODE (operands[2]) != CONST_INT)
     {
       rtx temp = gen_reg_rtx (SImode);
-      emit_insn (gen_sar_sub (temp,
-			      gen_rtx (CONST_INT, VOIDmode, 31),
-			      operands[2]));
-      emit_insn (gen_rtx (SET, VOIDmode, gen_rtx (REG, SImode, 112), temp));
-      emit_insn (gen_rtx (SET, VOIDmode,
-			  operands[0],
-			  gen_rtx (ASHIFT, SImode,
-				   operands[1],
-				   gen_rtx (MINUS, SImode,
-					    gen_rtx (CONST_INT, VOIDmode, 31),
-					    gen_rtx (REG, SImode, 112)))));
+      emit_insn (gen_subsi3 (temp,
+			     gen_rtx (CONST_INT, VOIDmode, 31),
+			     operands[2]));
+      emit_insn (gen_zvdep32 (operands[0], operands[1], temp));
       DONE;
     }
 }")
@@ -2243,11 +2261,11 @@
   return \"\";
 }")
 
-(define_insn ""
+(define_insn "zvdep32"
  [(set (match_operand:SI 0 "register_operand" "=r")
        (ashift:SI (match_operand:SI 1 "register_operand" "r")
 		  (minus:SI (const_int 31)
-			    (reg:SI 112))))]
+			    (match_operand:SI 2 "register_operand" "q"))))]
  ""
  "zvdep %1,32,%0")
 
@@ -2261,17 +2279,10 @@
   if (GET_CODE (operands[2]) != CONST_INT)
     {
       rtx temp = gen_reg_rtx (SImode);
-      emit_insn (gen_sar_sub (temp,
-			      gen_rtx (CONST_INT, VOIDmode, 31),
-			      operands[2]));
-      emit_insn (gen_rtx (SET, VOIDmode, gen_rtx (REG, SImode, 112), temp));
-      emit_insn (gen_rtx (SET, VOIDmode,
-			  operands[0],
-			  gen_rtx (ASHIFTRT, SImode,
-				   operands[1],
-				   gen_rtx (MINUS, SImode,
-					    gen_rtx (CONST_INT, VOIDmode, 31),
-					    gen_rtx (REG, SImode, 112)))));
+      emit_insn (gen_subsi3 (temp,
+			     gen_rtx (CONST_INT, VOIDmode, 31),
+			     operands[2]));
+      emit_insn (gen_vextrs32 (operands[0], operands[1], temp));
       DONE;
     }
 }")
@@ -2294,64 +2305,84 @@
   return \"\";
 }")
 
-(define_insn ""
+(define_insn "vextrs32"
  [(set (match_operand:SI 0 "register_operand" "=r")
        (ashiftrt:SI (match_operand:SI 1 "register_operand" "r")
 		    (minus:SI (const_int 31)
-			      (reg:SI 112))))]
+			      (match_operand:SI 2 "register_operand" "q"))))]
  ""
  "vextrs %1,32,%0")
 
-(define_expand "lshrsi3"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(lshiftrt:SI (match_operand:SI 1 "register_operand" "")
-		     (match_operand:SI 2 "arith32_operand" "")))]
+(define_insn "lshrsi3"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(lshiftrt:SI (match_operand:SI 1 "register_operand" "r")
+		     (match_operand:SI 2 "arith32_operand" "qn")))]
   ""
-  "
+  "*
 {
-  if (GET_CODE (operands[2]) != CONST_INT)
+  if (GET_CODE (operands[2]) == CONST_INT)
     {
-      rtx temp = gen_reg_rtx (SImode);
-      emit_insn (gen_sar_sub (temp,
-			      gen_rtx (CONST_INT, VOIDmode, 31),
-			      operands[2]));
-      emit_insn (gen_rtx (SET, VOIDmode, gen_rtx (REG, SImode, 112), temp));
-      emit_insn (gen_rtx (SET, VOIDmode,
-			  operands[0],
-			  gen_rtx (LSHIFTRT, SImode,
-				   operands[1],
-				   gen_rtx (MINUS, SImode,
-					    gen_rtx (CONST_INT, VOIDmode, 31),
-					    gen_rtx (REG, SImode, 112)))));
-      DONE;
+      operands[3] = gen_rtx (CONST_INT, VOIDmode,
+			     32 - (INTVAL (operands[2]) & 31));
+      operands[2] = gen_rtx (CONST_INT, VOIDmode,
+			     31 - (INTVAL (operands[2]) & 31));
+      return \"extru %1,%2,%3,%0\";
     }
+  else
+    return \"vshd 0,%1,%0\";
 }")
 
-(define_insn ""
- [(set (match_operand:SI 0 "register_operand" "=r")
-       (lshiftrt:SI (match_operand:SI 1 "register_operand" "r")
-		    (match_operand:SI 2 "const_int_operand" "n")))]
- ""
- "*
+(define_insn "rotrsi3"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(rotatert:SI (match_operand:SI 1 "register_operand" "r")
+		     (match_operand:SI 2 "arith32_operand" "qn")))]
+  ""
+  "*
 {
-  rtx xoperands[4];
-  xoperands[0] = operands[0];
-  xoperands[1] = operands[1];
-  xoperands[2] = gen_rtx (CONST_INT, VOIDmode,
-			  31 - (INTVAL (operands[2]) & 31));
-  xoperands[3] = gen_rtx (CONST_INT, VOIDmode,
-			  32 - (INTVAL (operands[2]) & 31));
-  output_asm_insn (\"extru %1,%2,%3,%0\", xoperands);
-  return \"\";
-}")
+  if (GET_CODE (operands[2]) == CONST_INT)
+    return \"shd %1,%1,%2,%0\";
+  else
+    return \"vshd %1,%1,%0\";
+}"
+  [(set_attr "type" "binary")
+   (set_attr "length" "1")])
+
+(define_insn "rotlsi3"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(rotatert:SI (match_operand:SI 1 "register_operand" "r")
+		     (match_operand:SI 2 "const_int_operand" "n")))]
+  ""
+  "*
+{
+  operands[2] = gen_rtx (CONST_INT, VOIDmode, (32 - INTVAL (operands[2])) & 31);
+  return \"shd %1,%1,%2,%0\";
+}"
+  [(set_attr "type" "binary")
+   (set_attr "length" "1")])
 
 (define_insn ""
- [(set (match_operand:SI 0 "register_operand" "=r")
-       (lshiftrt:SI (match_operand:SI 1 "register_operand" "r")
-		    (minus:SI (const_int 31)
-			      (reg:SI 112))))]
- ""
- "vextru %1,32,%0")
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(match_operator:SI 5 "plus_xor_ior_operator"
+	  [(ashift:SI (match_operand:SI 1 "register_operand" "r")
+		      (match_operand:SI 3 "const_int_operand" "n"))
+	   (lshiftrt:SI (match_operand:SI 2 "register_operand" "r")
+			(match_operand:SI 4 "const_int_operand" "n"))]))]
+  "INTVAL (operands[3]) + INTVAL (operands[4]) == 32"
+  "shd %1,%2,%4,%0"
+  [(set_attr "type" "binary")
+   (set_attr "length" "1")])
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(match_operator:SI 5 "plus_xor_ior_operator"
+	  [(lshiftrt:SI (match_operand:SI 2 "register_operand" "r")
+			(match_operand:SI 4 "const_int_operand" "n"))
+	   (ashift:SI (match_operand:SI 1 "register_operand" "r")
+		      (match_operand:SI 3 "const_int_operand" "n"))]))]
+  "INTVAL (operands[3]) + INTVAL (operands[4]) == 32"
+  "shd %1,%2,%4,%0"
+  [(set_attr "type" "binary")
+   (set_attr "length" "1")])
 
 ;; Unconditional and other jump instructions.
 
