@@ -1,5 +1,8 @@
 Mon Feb 28 07:03:27 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* toplev.c (rest_of_compilation): Account for time in
+	optimize_mode_switching.
+
 	* jump.c (jump_optimize_1): Don't call delete_barrier_successors
 	if only marking labels.
 

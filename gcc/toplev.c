@@ -3315,8 +3315,8 @@ rest_of_compilation (decl)
 
       TIMEVAR (combine_time, 
 	       {
-		 rebuild_jump_labels_after_combine = 
-		   combine_instructions (insns, max_reg_num ());
+		 rebuild_jump_labels_after_combine
+		   = combine_instructions (insns, max_reg_num ());
 	       });
       
       /* Combining insns may have turned an indirect jump into a
@@ -3361,15 +3361,15 @@ rest_of_compilation (decl)
 	ggc_collect ();
     }
 
-  /* Print function header into sched dump now
-     because doing the sched analysis makes some of the dump.  */
-
   if (optimize && n_basic_blocks)
     {
-      optimize_mode_switching (NULL_PTR);
+      TIMEVAR (gcse_time, optimize_mode_switching (NULL_PTR));
     }
 
 #ifdef INSN_SCHEDULING
+
+  /* Print function header into sched dump now
+     because doing the sched analysis makes some of the dump.  */
   if (optimize > 0 && flag_schedule_insns)
     {
       if (sched_dump)
