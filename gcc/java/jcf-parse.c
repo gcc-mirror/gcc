@@ -129,7 +129,7 @@ set_source_filename (jcf, index)
 
 #define HANDLE_CONSTANTVALUE(INDEX) \
 { tree constant;  int index = INDEX; \
-  if (JPOOL_TAG (jcf, index) == CONSTANT_String) { \
+  if (! flag_emit_class_files && JPOOL_TAG (jcf, index) == CONSTANT_String) { \
     tree name = get_name_constant (jcf, JPOOL_USHORT1 (jcf, index)); \
     constant = build_utf8_ref (name); \
   } \
@@ -312,6 +312,7 @@ get_constant (jcf, index)
 	  }
 
 	value = make_node (STRING_CST);
+	TREE_TYPE (value) = build_pointer_type (string_type_node);
 	TREE_STRING_LENGTH (value) = 2 * str_len;
 	TREE_STRING_POINTER (value)
 	  = obstack_alloc (expression_obstack, 2 * str_len);
