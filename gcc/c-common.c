@@ -2210,7 +2210,7 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
 	 we want to be sure we use the highest and lowest values corresponding
 	 to the mode, not the type, because we may be optimizing a test
 	 to ensure the value is within its defined range (e.g., for enums).  */
-      type = type_for_size (unsignedp, TYPE_PRECISION (TREE_TYPE (primop0)));
+      type = type_for_size (TYPE_PRECISION (TREE_TYPE (primop0)), unsignedp);
 
       maxval = TYPE_MAX_VALUE (type);
       minval = TYPE_MIN_VALUE (type);
