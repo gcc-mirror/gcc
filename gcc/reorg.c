@@ -607,6 +607,22 @@ mark_set_resources (x, res, in_dest, include_delayed_effects)
       mark_set_resources (XEXP (x, 0), res, 0, 0);
       return;
 
+    case SUBREG:
+      if (in_dest)
+	{
+	  if (GET_CODE (SUBREG_REG (x)) != REG)
+	    mark_set_resources (SUBREG_REG (x), res,
+				in_dest, include_delayed_effects);
+	  else
+	    {
+	      int regno = REGNO (SUBREG_REG (x)) + SUBREG_WORD (x);
+	      int last_regno = regno + HARD_REGNO_NREGS (regno, GET_MODE (x));
+	      for (i = regno; i < last_regno; i++)
+		SET_HARD_REG_BIT (res->regs, i);
+	    }
+	}
+      return;
+
     case REG:
       if (in_dest)
         for (i = 0; i < HARD_REGNO_NREGS (REGNO (x), GET_MODE (x)); i++)
