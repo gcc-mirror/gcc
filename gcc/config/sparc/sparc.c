@@ -3350,7 +3350,7 @@ sparc_frw_output_function_prologue (file, size, ignored)
   int tsize;
   char *sp_str = reg_names[STACK_POINTER_REGNUM];
   frame_base_name
-    = (!frame_pointer_needed) ? "%sp+64" : reg_names[FRAME_POINTER_REGNUM];
+    = (!frame_pointer_needed) ? "%sp+80" : reg_names[FRAME_POINTER_REGNUM];
 
   fprintf (file, "\t!#PROLOGUE# 0\n");
 
