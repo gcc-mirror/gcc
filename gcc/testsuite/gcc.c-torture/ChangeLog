@@ -1,3 +1,7 @@
+2000-03-22  Geoff Keating  <geoffk@cygnus.com>
+
+	* execute/ieee/20000320-1.c: New test for denormals.
+
 Fri Mar 10 01:15:19 2000  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* execute/divconst-2.c: Rewrite to check for standards-compliant
