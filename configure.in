@@ -1325,16 +1325,17 @@ if test "${shared}" = "yes" ; then
       Makefile > Makefile.tem
   rm -f Makefile
   mv -f Makefile.tem Makefile
-
-  case "${host}" in
-  *-*-hpux*)
-    sed -e 's/^RPATH_ENVVAR[ 	]*=.*$/RPATH_ENVVAR = SHLIB_PATH/' \
-	Makefile > Makefile.tem
-    rm -f Makefile
-    mv -f Makefile.tem Makefile
-    ;;
-  esac
 fi
+
+
+case "${host}" in
+  *-*-hpux*) RPATH_ENVVAR=SHLIB_PATH ;;
+  *) RPATH_ENVVAR=LD_LIBRARY_PATH ;;
+esac
+sed -e "s/@RPATH_ENVVAR@/${RPATH_ENVVAR}/" Makefile > Makefile.tem
+rm -f Makefile
+mv -f Makefile.tem Makefile
+
 
 # Base args.  Strip norecursion, cache-file, srcdir, host, build, target.
 # These are the ones we might not want to pass down to subconfigures.

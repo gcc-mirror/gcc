@@ -208,7 +208,7 @@ SET_LIB_PATH =
 
 # This is the name of the environment variable used for the path to
 # the libraries.  This may be changed by configure.in.
-RPATH_ENVVAR = LD_LIBRARY_PATH
+RPATH_ENVVAR = @RPATH_ENVVAR@
 
 # This is the list of directories that may be needed in RPATH_ENVVAR
 # so that programs built for the host machine work.
