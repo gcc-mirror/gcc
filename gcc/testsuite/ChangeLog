@@ -1,3 +1,8 @@
+2003-05-03  Zack Weinberg  <zack@codesourcery.com>
+
+	PR c/10604
+	* gcc.dg/compare7.c, g++.dg/warn/compare1.C: New testcases.
+
 2003-05-03  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gcc.dg/m-un-2.c: Fix the typedef of size_t.
@@ -43,7 +48,7 @@
 	* lib/old-dejagnu.exp: Remove.
 	* g++.old-deja/old-deja.exp: Use dg.exp, not old-dejagnu.exp.
 	* g++.old-deja: Revise all tests to use dg commands.
-	
+
 2003-04-30  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/9432, c++/9528
@@ -151,7 +156,7 @@
 
 	PR c++/10451
 	* g++.dg/parse/crash4.C: New test.
-	
+
 	PR c++/9847
 	* g++.dg/parse/crash5.C: New test.
 
@@ -166,7 +171,7 @@
 2003-04-22  Devang Patel  <dpatel@apple.com>
 
 	* gcc.dg/cpp/trad/funlike-5.c: New test.
-	
+
 2003-04-21  Andreas Tobler <a.tobler@schweiz.ch>
 
 	* g++.dg/other/packed1.C: Fix dg options.

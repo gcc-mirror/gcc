@@ -4793,7 +4793,7 @@ build_x_compound_expr (list)
       /* the left-hand operand of a comma expression is like an expression
          statement: we should warn if it doesn't have any side-effects,
          unless it was explicitly cast to (void).  */
-      if ((extra_warnings || warn_unused_value)
+      if (warn_unused_value
            && !(TREE_CODE (TREE_VALUE(list)) == CONVERT_EXPR
                 && VOID_TYPE_P (TREE_TYPE (TREE_VALUE(list)))))
         warning("left-hand operand of comma expression has no effect");

@@ -2174,7 +2174,7 @@ expand_expr_stmt_value (exp, want_value, maybe_last)
     {
       if (! TREE_SIDE_EFFECTS (exp))
 	{
-	  if ((extra_warnings || warn_unused_value)
+	  if (warn_unused_value
 	      && !(TREE_CODE (exp) == CONVERT_EXPR
 		   && VOID_TYPE_P (TREE_TYPE (exp))))
 	    warning_with_file_and_line (emit_filename, emit_lineno,

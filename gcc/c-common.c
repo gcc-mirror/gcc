@@ -304,9 +304,10 @@ int warn_parentheses;
 int warn_missing_braces;
 
 /* Warn about comparison of signed and unsigned values.
-   If -1, neither -Wsign-compare nor -Wno-sign-compare has been specified.  */
+   If -1, neither -Wsign-compare nor -Wno-sign-compare has been specified
+   (in which case -Wextra gets to decide).  */
 
-int warn_sign_compare;
+int warn_sign_compare = -1;
 
 /* Nonzero means warn about usage of long long when `-pedantic'.  */
 
