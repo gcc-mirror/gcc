@@ -36,13 +36,32 @@
 
 namespace std
 {
+  using __gnu_cxx::stdio_filebuf;
+
   template
     const unsigned long 
     __gnu_cxx::rope<char, std::allocator<char> >::_S_min_len;
 
-  using __gnu_cxx::stdio_filebuf;
+  template
+    char
+    __gnu_cxx::rope<char, std::allocator<char> >::
+    _S_fetch(__gnu_cxx::_Rope_RopeRep<char, std::allocator<char> >*,
+	     unsigned long);
+
   template class stdio_filebuf<char>;
+
 #ifdef _GLIBCPP_USE_WCHAR_T
+  template
+    const unsigned long
+    __gnu_cxx::rope<wchar_t, std::allocator<wchar_t> >::_S_min_len;
+
+  template
+    wchar_t
+    __gnu_cxx::rope<wchar_t, std::allocator<wchar_t> >::
+    _S_fetch(__gnu_cxx::_Rope_RopeRep<wchar_t, std::allocator<wchar_t> >*,
+	     unsigned long);
+
   template class stdio_filebuf<wchar_t>;
 #endif
+
 } // namespace std

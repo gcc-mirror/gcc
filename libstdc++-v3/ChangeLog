@@ -1,3 +1,8 @@
+2002-06-20  Steve Ellcey  <sje@cup.hp.com>
+	* src/ext-inst.cc (_S_fetch): Add explicit templates for char and
+	wchar types.
+	(_S_min_len): Ditto.
+
 2002-06-20  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/Makefile.am: Add rules.
