@@ -116,20 +116,6 @@ int size_directive_output;
 
 tree last_assemble_variable_decl;
 
-
-#ifdef HANDLE_PRAGMA_WEAK
-/* Any weak symbol declarations waiting to be emitted.  */
-
-struct weak_syms
-{
-  struct weak_syms *next;
-  char *name;
-  char *value;
-};
-
-static struct weak_syms *weak_decls;
-#endif
-
 /* Nonzero if at least one function definition has been seen.  */
 
 static int function_defined;
@@ -4246,38 +4232,6 @@ output_constructor (exp, size)
     assemble_zeros (size - total_bytes);
 }
 
-#ifdef HANDLE_PRAGMA_WEAK
-/* Output asm to handle ``#pragma weak'' */
-
-void
-handle_pragma_weak (what, name, value)
-     enum pragma_state what;
-     char *name, *value;
-{
-  if (what == ps_name || what == ps_value)
-    {
-      struct weak_syms *weak =
-	(struct weak_syms *)permalloc (sizeof (struct weak_syms));
-      weak->next = weak_decls;
-      weak->name = permalloc (strlen (name) + 1);
-      strcpy (weak->name, name);
-
-      if (what != ps_value)
-	weak->value = NULL_PTR;
-
-      else
-	{
-	  weak->value = permalloc (strlen (value) + 1);
-	  strcpy (weak->value, value);
-	}
-
-      weak_decls = weak;
-    }
-  else if (! (what == ps_done || what == ps_start))
-    warning ("malformed `#pragma weak'");
-}
-#endif /* HANDLE_PRAGMA_WEAK */
-
 /* Declare DECL to be a weak symbol.  */
 
 void
@@ -4293,6 +4247,10 @@ declare_weak (decl)
 }
 
 /* Emit any pending weak declarations.  */
+
+#ifdef HANDLE_PRAGMA_WEAK
+struct weak_syms * weak_decls;
+#endif
 
 void
 weak_finish ()

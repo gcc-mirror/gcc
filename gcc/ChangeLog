@@ -1,10 +1,45 @@
 Thu Oct  1 10:42:27 1998  Nick Clifton  <nickc@cygnus.com>
 
+	* c-pragma.c: Add support for HANDLE_PRAGMA_PACK and
+	HANDLE_PRAGMA_PACK_PUSH_POP.
+	(push_alignment): New function: Cache an alignment requested
+	by a #pragma pack(push,<n>).
+	(pop_alignment): New function: Pop an alignment from the
+	alignment stack.
+	(insert_pack_attributes): New function: Generate __packed__
+	and __aligned__ attributes for new decls whilst a #pragma pack
+	is in effect. 
+	(add_weak): New function: Cache a #pragma weak directive.
+	(handle_pragma_token): Document calling conventions.  Add
+	support for #pragma pack(push,<n>) and #pragma pack (pop).
+
+	* c-pragma.h: If HANDLE_SYSV_PRAGMA or HANDLE_PRAGMA_PACK_PUSH_POP
+	are defined enable HANDLE_PRAGMA_PACK.
+	Move 'struct weak_syms' here (from varasm.c).
+	Add pragma states for push and pop pragmas.
+
+	* c-common.c (decl_attributes): Call PRAGMA_INSERT_ATTRIBUTES
+	if it is defined.
+
+	* c-lex.c: Replace occurances of HANDLE_SYSV_PRAGMA with
+	HANDLE_GENERIC_PRAGMAS.
+	
+	* varasm.c: Move definition of 'struct weak_syms' into
+	c-pragma.h. 
+	(handle_pragma_weak): Deleted.
+
+	* config/i386/i386.h: Define HANDLE_PRAGMA_PACK_PUSH_POP.
+
+	* config/winnt/win-nt.h: Define HANDLE_PRAGMA_PACK_PUSH_POP.
+
 	* c-decl.c (start_function): Add invocation of
 	SET_DEFAULT_DECL_ATTRIBUTES, if defined.
 
 	* tm.texi: Remove description of non-existant macro
 	SET_DEFAULT_SECTION_NAME.
+	
+	(HANDLE_SYSV_PRAGMA): Document.
+	(HANDLE_PRAGMA_PACK_PUSH_POP): Document.
 
 Wed Sep 30 22:27:53 1998  Robert Lipe  <robertl@dgii.com>
 

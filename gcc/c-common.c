@@ -27,6 +27,7 @@ Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "toplev.h"
 #include "output.h"
+#include "c-pragma.h"
 
 #if USE_CPPLIB
 #include "cpplib.h"
@@ -420,6 +421,14 @@ decl_attributes (node, attributes, prefix_attributes)
   else if (TREE_CODE_CLASS (TREE_CODE (node)) == 't')
     type = node, is_type = 1;
 
+#ifdef PRAGMA_INSERT_ATTRIBUTES
+  /* If the code in c-pragma.c wants to insert some attributes then
+     allow it to do so.  Do this before allowing machine back ends to
+     insert attributes, so that they have the opportunity to override
+     anything done here.  */
+  PRAGMA_INSERT_ATTRIBUTES (node, & attributes, & prefix_attributes);
+#endif
+  
 #ifdef INSERT_ATTRIBUTES
   INSERT_ATTRIBUTES (node, & attributes, & prefix_attributes);
 #endif

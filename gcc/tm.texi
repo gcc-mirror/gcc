@@ -7345,10 +7345,10 @@ C++, which is to pretend that the file's contents are enclosed in
 @findex HANDLE_PRAGMA
 @findex #pragma
 @findex pragma
-@item HANDLE_PRAGMA (@var{getc}, @var{ungetc}, @var{node})
+@item HANDLE_PRAGMA (@var{getc}, @var{ungetc}, @var{name})
 Define this macro if you want to implement any pragmas.  If defined, it
 is a C expression whose value is 1 if the pragma was handled by the
-function, zero otherwise.  The argument @var{getc} is a function of type
+macro, zero otherwise.  The argument @var{getc} is a function of type
 @samp{int (*)(void)} which will return the next character in the input
 stream, or EOF if no characters are left.  The argument @var{ungetc} is
 a function of type @samp{void (*)(int)} which will push a character back
@@ -7356,8 +7356,8 @@ into the input stream.  The argument @var{name} is the word following
 #pragma in the input stream.  The input stream pointer will be pointing
 just beyond the end of this word.  The input stream should be left
 undistrubed if the expression returns zero, otherwise it should be
-pointing at the last character after the end of the pragma (newline or
-end-of-file). 
+pointing at the next character after the end of the pragma.  Any
+characters remaining on the line will be ignored.
 
 It is generally a bad idea to implement new uses of @code{#pragma}.  The
 only reason to define this macro is for compatibility with other
@@ -7370,6 +7370,37 @@ If the pragma can be implemented by atttributes then the macro
 Note: older versions of this macro only had two arguments: @var{stream}
 and @var{token}.  The macro was changed in order to allow it to work
 when gcc is built both with and without a cpp library.
+
+@findex HANDLE_SYSV_PRAGMA
+@findex #pragma
+@findex pragma
+@item HANDLE_SYSV_PRAGMA
+Define this macro (to a value of 1) if you want the System V style
+pragmas @samp{#pragma pack(<n>)} and @samp{#pragma weak <name>
+[=<value>]} to be supported by gcc.
+
+The pack pragma specifies the maximum alignment (in bytes) of fields
+within a structure, in much the same way as the @samp{__aligned__} and
+@samp{__packed__} @code{__attribute__}s do.  A pack value of zero resets
+the behaviour to the default.
+
+The weak pragma only works if @code{SUPPORTS_WEAK} and
+@code{ASM_WEAKEN_LABEL} are defined.  If enabled it allows the creation
+of specifically named weak labels, optionally with a value.
+
+@findex HANDLE_PRAGMA_PACK_PUSH_POP
+@findex #pragma
+@findex pragma
+@item HANDLE_PRAGMA_PACK_PUSH_POP
+Define this macro (to a value of 1) if you want to support the Win32
+style pragmas @samp{#pragma pack(push,<n>)} and @samp{#pragma
+pack(pop)}.  The pack(push,<n>) pragma specifies the maximum alignment
+(in bytes) of fields within a structure, in much the same way as the
+@samp{__aligned__} and @samp{__packed__} @code{__attribute__}s do.  A
+pack value of zero resets the behaviour to the default.  Successive
+invocations of this pragma cause the previous values to be stacked, so
+that invocations of @samp{#pragma pack(pop)} will return to the previous
+value.
 
 @findex VALID_MACHINE_DECL_ATTRIBUTE
 @item VALID_MACHINE_DECL_ATTRIBUTE (@var{decl}, @var{attributes}, @var{identifier}, @var{args})
