@@ -34,31 +34,31 @@ integer f_back(alist *a)
 	f = b->ufd;	/* may have changed in t_runc() */
 	if(b->url>0)
 	{
-		x=ftell(f);
+		x=FTELL(f);
 		y = x % b->url;
 		if(y == 0) x--;
 		x /= b->url;
 		x *= b->url;
-		(void) fseek(f,x,SEEK_SET);
+		FSEEK(f,x,SEEK_SET);
 		return(0);
 	}
 
 	if(b->ufmt==0)
-	{	fseek(f,-(long)sizeof(uiolen),SEEK_CUR);
+	{	FSEEK(f,-(off_t)sizeof(uiolen),SEEK_CUR);
 		fread((char *)&n,sizeof(uiolen),1,f);
-		fseek(f,-(long)n-2*sizeof(uiolen),SEEK_CUR);
+		FSEEK(f,-(off_t)n-2*sizeof(uiolen),SEEK_CUR);
 		return(0);
 	}
-	w = x = ftell(f);
+	w = x = FTELL(f);
 	z = 0;
  loop:
 	while(x) {
 		x -= x < 64 ? x : 64;
-		fseek(f,x,SEEK_SET);
+		FSEEK(f,x,SEEK_SET);
 		for(y = x; y < w; y++) {
 			if (getc(f) != '\n')
 				continue;
-			v = ftell(f);
+			v = FTELL(f);
 			if (v == w) {
 				if (z)
 					goto break2;
@@ -69,6 +69,6 @@ integer f_back(alist *a)
 		err(a->aerr,(EOF),"backspace");
 		}
  break2:
-	fseek(f, z, SEEK_SET);
+	FSEEK(f, z, SEEK_SET);
 	return 0;
 }

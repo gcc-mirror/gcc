@@ -471,7 +471,7 @@ rd_ed(struct syl *p, char *ptr, ftnlen len)
 			f__icptr += f__cursor;
 		}
 		else if(f__curunit && f__curunit->useek)
-			(void) fseek(f__cf,(long) f__cursor,SEEK_CUR);
+			FSEEK(f__cf,(off_t)f__cursor,SEEK_CUR);
 		else
 			err(f__elist->cierr,106,"fmt");
 		f__recpos += f__cursor;

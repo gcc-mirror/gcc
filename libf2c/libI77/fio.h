@@ -15,6 +15,16 @@
 #define SEEK_END 2
 #endif
 
+/* Only use fseeko/ftello if they are both there.  */
+
+#if defined (HAVE_FSEEKO) && defined (HAVE_FTELLO)
+#define FSEEK fseeko
+#define FTELL ftello
+#else
+#define FSEEK fseek
+#define FTELL ftell
+#endif
+
 #if defined (MSDOS) && !defined (GO32)
 #ifndef NON_UNIX_STDIO
 #define NON_UNIX_STDIO

@@ -15,6 +15,12 @@
 /* Define if you have the ANSI C header files.  */
 #undef STDC_HEADERS
 
+/* Define if you have the fseeko function.  */
+#undef HAVE_FSEEKO
+
+/* Define if you have the ftello function.  */
+#undef HAVE_FTELLO
+
 /* Define if you have the ftruncate function.  */
 #undef HAVE_FTRUNCATE
 

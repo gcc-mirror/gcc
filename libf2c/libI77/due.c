@@ -25,7 +25,7 @@ c_due(cilist *a)
 	if(f__curunit->ufd==NULL) err(a->cierr,114,"cdue");
 	if(a->cirec <= 0)
 		err(a->cierr,130,"due");
-	fseek(f__cf,(long)(a->cirec-1)*f__curunit->url,SEEK_SET);
+	FSEEK(f__cf,(a->cirec-1)*f__curunit->url,SEEK_SET);
 	f__curunit->uend = 0;
 	return(0);
 }
@@ -60,8 +60,8 @@ integer e_rdue(Void)
 	f__init = 1;
 	if(f__curunit->url==1 || f__recpos==f__curunit->url)
 		return(0);
-	fseek(f__cf,(long)(f__curunit->url-f__recpos),SEEK_CUR);
-	if(ftell(f__cf)%f__curunit->url)
+	FSEEK(f__cf,(f__curunit->url-f__recpos),SEEK_CUR);
+	if(FTELL(f__cf)%f__curunit->url)
 		err(f__elist->cierr,200,"syserr");
 	return(0);
 }

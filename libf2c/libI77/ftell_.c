@@ -22,7 +22,7 @@ G77_ftell_0 (integer *Unit)
 #endif
 {
 	FILE *f;
-	return (f = unit_chk(*Unit, "ftell")) ? ftell(f) : -1L;
+	return (f = unit_chk(*Unit, "ftell")) ? FTELL(f) : -1L;
 	}
 
  integer
@@ -43,5 +43,5 @@ G77_fseek_0 (integer *Unit, integer *offset, integer *xwhence)
 	w = wohin[w];
 #endif
 	return	!(f = unit_chk(*Unit, "fseek"))
-		|| fseek(f, *offset, w) ? 1 : 0;
+		|| FSEEK(f, *offset, w) ? 1 : 0;
 	}

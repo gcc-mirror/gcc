@@ -1,3 +1,22 @@
+2001-07-06  Toon Moene  <toon@moene.indiv.nluug.nl>
+            Pedro Vazquez  <vazquez@penelope.iqm.unicamp.br>
+
+	* configure.in: Check for fseeko, ftello.
+	* configure: Rebuilt.
+	* config.h.in: Rebuilt.
+	* fio.h: Define FSEEK to be fseek or fseeko, depending
+	on configure's findings.  Ditto for FTELL and ftell / ftello.
+	* backspace.c (f_back): Use FSEEK for fseek, FTELL for ftell.
+	* dfe.c (c_dfe): Ditto.
+	* due.c (c_due, e_rdue): Ditto.
+	* endfile.c (t_runc): Ditto.
+	* err.c (f__nowreading, f__nowwriting): Ditto.
+	* ftell_.c (G77_ftell_0, G77_fseek_0): Ditto.
+	* inquire.c (f_inqu): Ditto.
+	* open.c (f_open): Ditto.
+	* rdfmt.c (rd_ed): Ditto.
+	* sue.c (s_wsue, e_wsue, e_rsue): Ditto.
+
 2001-07-04  Zack Weinberg  <zackw@stanford.edu>
 
 	* Makefile.in: Take PICFLAG and RUNTESTFLAGS out of FLAGS_TO_PASS.

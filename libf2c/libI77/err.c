@@ -219,7 +219,7 @@ f__nowreading(unit *x)
 	if (!x->ufnm)
 		goto cantread;
 	ufmt = x->url ? 0 : x->ufmt;
-	loc = ftell(x->ufd);
+	loc = FTELL(x->ufd);
 	urw = 3;
 	if (!freopen(x->ufnm, f__w_mode[ufmt|2], x->ufd)) {
 		urw = 1;
@@ -229,7 +229,7 @@ f__nowreading(unit *x)
 			return 1;
 			}
 		}
-	fseek(x->ufd,loc,SEEK_SET);
+	FSEEK(x->ufd,loc,SEEK_SET);
 	x->urw = urw;
  done:
 	x->uwrt = 0;
@@ -257,7 +257,7 @@ f__nowwriting(unit *x)
 		x->urw = 2;
 		}
 	else {
-		loc=ftell(x->ufd);
+		loc=FTELL(x->ufd);
 		if (!(f__cf = x->ufd =
 			freopen(x->ufnm, f__w_mode[ufmt |= 2], x->ufd)))
 			{
@@ -267,7 +267,7 @@ f__nowwriting(unit *x)
 			return(1);
 			}
 		x->urw = 3;
-		fseek(x->ufd,loc,SEEK_SET);
+		FSEEK(x->ufd,loc,SEEK_SET);
 		}
  done:
 	x->uwrt = 1;
