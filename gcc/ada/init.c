@@ -4,7 +4,7 @@
  *                                                                          *
  *                                 I N I T                                  *
  *                                                                          *
- *                            $Revision: 1.2 $
+ *                            $Revision$
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
@@ -86,12 +86,12 @@ extern int    (*Check_Abort_Status) PARAMS ((void));
 #define Raise_From_Signal_Handler \
                       ada__exceptions__raise_from_signal_handler
 extern void   Raise_From_Signal_Handler PARAMS ((struct Exception_Data *,
-						char *));
+						const char *));
 
 #define Propagate_Signal_Exception \
                       __gnat_propagate_sig_exc
 extern void   Propagate_Signal_Exception
-	PARAMS ((struct Machine_State *, struct Exception_Data *, char *));
+	PARAMS ((struct Machine_State *, struct Exception_Data *, const char *));
 
 
 /* Copies of global values computed by the binder */
@@ -226,7 +226,7 @@ __gnat_error_handler (sig)
      int sig;
 {
   struct Exception_Data *exception;
-  char *msg;
+  const char *msg;
 
   switch (sig)
     {
@@ -557,7 +557,7 @@ __gnat_error_handler (sig)
      int sig;
 {
   struct Exception_Data *exception;
-  char *msg;
+  const char *msg;
   static int recurse = 0;
 
   struct sigcontext *info

@@ -295,9 +295,11 @@ __gnat_ttyname (filedes)
   || defined (__MACHTEN__)
 #include <termios.h>
 
-#elif defined (VMS)
+#else
+#if defined (VMS)
 extern char *decc$ga_stdscr;
 static int initted = 0;
+#endif
 #endif
 
 /* Implements the common processing for getc_immediate and
@@ -422,7 +424,8 @@ getc_immediate_common (stream, ch, end_of_file, avail, waiting)
     }
 
   else
-#elif defined (VMS)
+#else
+#if defined (VMS)
   int fd = fileno (stream);
 
   if (isatty (fd))
@@ -444,7 +447,8 @@ getc_immediate_common (stream, ch, end_of_file, avail, waiting)
       decc$bsd_nocbreak ();
     }
   else
-#elif defined (__MINGW32__)
+#else
+#if defined (__MINGW32__)
   int fd = fileno (stream);
   int char_waiting;
   int eot_ch = 4; /* Ctrl-D */
@@ -486,6 +490,8 @@ getc_immediate_common (stream, ch, end_of_file, avail, waiting)
 	}
     }
   else
+#endif
+#endif
 #endif
     {
       /* If we're not on a terminal, then we don't need any fancy processing.
@@ -571,9 +577,14 @@ __gnat_localtime_r (timer, tp)
   return tp;
 }
 
-#elif defined (__Lynx__)
+#else
+#if defined (__Lynx__) && defined (___THREADS_POSIX4ad4__)
 
-/* LynxOS provides a non standard localtime_r */
+/* As of LynxOS 3.1.0a patch level 040, LynuxWorks changes the
+   prototype to the C library function localtime_r from the POSIX.4
+   Draft 9 to the POSIX 1.c version. Before this change the following
+   spec is required. Only use when ___THREADS_POSIX4ad4__ is defined,
+   the Lynx convention when building against the legacy API. */
 
 extern struct tm *__gnat_localtime_r PARAMS ((const time_t *, struct tm *));
 
@@ -582,10 +593,12 @@ __gnat_localtime_r (timer, tp)
      const time_t *timer;
      struct tm *tp;
 {
-  return localtime_r (tp, timer);
+  localtime_r (tp, timer);
+  return NULL;
 }
 
-#elif defined (VMS) || defined (__MINGW32__)
+#else
+#if defined (VMS) || defined (__MINGW32__)
 
 /* __gnat_localtime_r is not needed on NT and VMS */
 
@@ -602,4 +615,6 @@ __gnat_localtime_r (timer, tp)
 {
   return (struct tm *) localtime_r (timer, tp);
 }
+#endif
+#endif
 #endif
