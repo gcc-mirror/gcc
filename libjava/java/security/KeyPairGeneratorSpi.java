@@ -1,5 +1,5 @@
 /* KeyPairGeneratorSpi.java --- Key Pair Generator SPI Class
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -90,4 +90,20 @@ public abstract class KeyPairGeneratorSpi
      @return a key pair
    */
   public abstract KeyPair generateKeyPair();
+
+  /**
+     Returns a clone of this class.
+
+     If cloning is not supported, then by default the class throws a
+     CloneNotSupportedException.  The MessageDigestSpi provider
+     implementation has to overload this class in order to be
+     cloneable.
+   */
+  public Object clone() throws CloneNotSupportedException
+  {
+    if (this instanceof Cloneable)
+      return super.clone();
+    else
+      throw new CloneNotSupportedException();
+  }
 }

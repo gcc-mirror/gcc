@@ -1,5 +1,6 @@
+
 /* MessageDigest.java --- The message digest interface.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,7 +41,7 @@ package java.security;
 public abstract class MessageDigest extends MessageDigestSpi
 {
   private String algorithm;
-  private Provider provider;
+  Provider provider;
   private byte[] lastDigest;
 
   /**
@@ -63,19 +64,20 @@ public abstract class MessageDigest extends MessageDigestSpi
      @param algorithm the name of digest algorithm to choose
      @return a MessageDigest representing the desired algorithm
 
-     @exception NoSuchAlgorithmException if the algorithm is not implemented by providers
+     @exception NoSuchAlgorithmException if the algorithm is not implemented by
+    					 providers
    */
   public static MessageDigest getInstance(String algorithm)
     throws NoSuchAlgorithmException
   {
     Provider[] p = Security.getProviders();
-    String name = "MessageDigest." + algorithm;
-
     for (int i = 0; i < p.length; i++)
       {
-	String classname = p[i].getProperty(name);
-	if (classname != null)
-	  return getInstance(classname, algorithm, p[i]);
+	try
+	  {
+	    return getInstance(algorithm, p[i]);
+	  }
+	catch (NoSuchAlgorithmException ignored) {}
       }
 
     throw new NoSuchAlgorithmException(algorithm);
@@ -92,7 +94,8 @@ public abstract class MessageDigest extends MessageDigestSpi
      @param provider the name of the provider to find the algorithm in
      @return a MessageDigest representing the desired algorithm
 
-     @exception NoSuchAlgorithmException if the algorithm is not implemented by the provider
+     @exception NoSuchAlgorithmException if the algorithm is not implemented by
+     					 the provider
      @exception NoSuchProviderException if the provider is not found
    */
 
@@ -104,8 +107,32 @@ public abstract class MessageDigest extends MessageDigestSpi
     if (p == null)
       throw new NoSuchProviderException(provider);
 
-    return getInstance(p.getProperty("MessageDigest." + algorithm),
-		       algorithm, p);
+    return getInstance(algorithm, p);
+  }
+
+  private static MessageDigest getInstance(String algorithm, Provider p)
+    throws NoSuchAlgorithmException
+  {
+    // try the name as is
+    String className = p.getProperty("MessageDigest." + algorithm);
+    if (className == null) { // try all uppercase
+      String upper = algorithm.toUpperCase();
+      className = p.getProperty("MessageDigest." + upper);
+      if (className == null) { // try if it's an alias
+        String alias = p.getProperty("Alg.Alias.MessageDigest." +algorithm);
+        if (alias == null) { // try all-uppercase alias name
+          alias = p.getProperty("Alg.Alias.MessageDigest." +upper);
+          if (alias == null) { // spit the dummy
+            throw new NoSuchAlgorithmException(algorithm);
+          }
+        }
+        className = p.getProperty("MessageDigest." + alias);
+        if (className == null) {
+          throw new NoSuchAlgorithmException(algorithm);
+        }
+      }
+    }
+    return getInstance(className, algorithm, p);
   }
 
   private static MessageDigest getInstance(String classname,
@@ -116,13 +143,22 @@ public abstract class MessageDigest extends MessageDigestSpi
     if (classname == null)
       throw new NoSuchAlgorithmException(algorithm);
 
+    MessageDigest result = null;
     try
       {
-	MessageDigest m =
-	  (MessageDigest) Class.forName(classname).newInstance();
-	m.algorithm = algorithm;
-	m.provider = provider;
-	return m;
+        Object obj = Class.forName(classname).newInstance();
+        if (obj instanceof MessageDigest) {
+          result = (MessageDigest) obj;
+          result.algorithm = algorithm;
+        } else if (obj instanceof MessageDigestSpi) {
+          result = new DummyMessageDigest((MessageDigestSpi) obj, algorithm);
+        } else {
+          throw new ClassCastException("Class "+classname+" from Provider "
+              +provider.getName()
+              +" does not extend java.security.MessageDigestSpi");
+        }
+        result.provider = provider;
+        return result;
       }
     catch (ClassNotFoundException cnfe)
       {
@@ -212,7 +248,7 @@ public abstract class MessageDigest extends MessageDigestSpi
      then computes a final digest and returns it. It calls 
      update(input) and then digest();
 
-     @param buf An array of bytes to perform final update with
+     @param input An array of bytes to perform final update with
      @return a byte array representing the message digest
    */
   public byte[] digest(byte[]input)

@@ -1,5 +1,5 @@
-/* DummySignature.java
-   Copyright (C) 1999 Free Software Foundation, Inc.
+/* DummySignature.java - Signature wrapper for SignatureSpi.
+   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,6 +45,17 @@ final class DummySignature extends Signature
   {
     super(algorithm);
     this.sigSpi = sigSpi;
+  }
+
+  public Object clone() throws CloneNotSupportedException
+  {
+    if (!(sigSpi instanceof Cloneable))
+      throw new CloneNotSupportedException();
+
+    Signature result = new DummySignature
+	    ((SignatureSpi) sigSpi.clone(), this.getAlgorithm());
+    result.provider = this.getProvider();
+    return result;
   }
 
   protected void engineInitVerify(PublicKey publicKey)

@@ -1,5 +1,5 @@
 /* KeyPairGenerator.java --- Key Pair Generator Class
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -36,6 +36,7 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 package java.security;
+
 import java.security.spec.AlgorithmParameterSpec;
 
 /**
@@ -51,7 +52,7 @@ import java.security.spec.AlgorithmParameterSpec;
  */
 public abstract class KeyPairGenerator extends KeyPairGeneratorSpi
 {
-  private Provider provider;
+  Provider provider;
   private String algorithm;
 
   /**
@@ -83,19 +84,21 @@ public abstract class KeyPairGenerator extends KeyPairGeneratorSpi
      @param algorithm the name of algorithm to choose
      @return a AlgorithmParameterGenerator repesenting the desired algorithm
 
-     @throws NoSuchAlgorithmException if the algorithm is not implemented by providers
+     @throws NoSuchAlgorithmException if the algorithm is not implemented by
+     				      providers
    */
   public static KeyPairGenerator getInstance(String algorithm) throws
     NoSuchAlgorithmException
   {
     Provider[] p = Security.getProviders();
 
-    String name = "KeyPairGenerator." + algorithm;
     for (int i = 0; i < p.length; i++)
       {
-	String classname = p[i].getProperty(name);
-	if (classname != null)
-	  return getInstance(classname, algorithm, p[i]);
+	try
+	  {
+	    return getInstance(algorithm, p[i]);
+	  }
+	catch (NoSuchAlgorithmException ignored) {}
       }
 
     throw new NoSuchAlgorithmException(algorithm);
@@ -110,7 +113,8 @@ public abstract class KeyPairGenerator extends KeyPairGeneratorSpi
      @param provider the name of the provider to find the algorithm in
      @return a AlgorithmParameterGenerator repesenting the desired algorithm
 
-     @throws NoSuchAlgorithmException if the algorithm is not implemented by the provider
+     @throws NoSuchAlgorithmException if the algorithm is not implemented by
+     				      the provider
      @throws NoSuchProviderException if the provider is not found
    */
   public static KeyPairGenerator getInstance(String algorithm, String provider)
@@ -118,10 +122,34 @@ public abstract class KeyPairGenerator extends KeyPairGeneratorSpi
   {
     Provider p = Security.getProvider(provider);
     if (p == null)
-      throw new NoSuchProviderException();
+      throw new NoSuchProviderException(provider);
 
-    return getInstance(p.getProperty("KeyPairGenerator." + algorithm),
-		       algorithm, p);
+    return getInstance(algorithm, p);
+  }
+
+  private static KeyPairGenerator getInstance(String algorithm, Provider p)
+    throws NoSuchAlgorithmException
+  {
+    // try the name as is
+    String className = p.getProperty("KeyPairGenerator." + algorithm);
+    if (className == null) { // try all uppercase
+      String upper = algorithm.toUpperCase();
+      className = p.getProperty("KeyPairGenerator." + upper);
+      if (className == null) { // try if it's an alias
+        String alias = p.getProperty("Alg.Alias.KeyPairGenerator." + algorithm);
+        if (alias == null) { // try all-uppercase alias name
+          alias = p.getProperty("Alg.Alias.KeyPairGenerator." + upper);
+          if (alias == null) { // spit the dummy
+            throw new NoSuchAlgorithmException(algorithm);
+          }
+        }
+        className = p.getProperty("KeyPairGenerator." + alias);
+        if (className == null) {
+          throw new NoSuchAlgorithmException(algorithm);
+        }
+      }
+    }
+    return getInstance(className, algorithm, p);
   }
 
   private static KeyPairGenerator getInstance(String classname,
@@ -134,10 +162,7 @@ public abstract class KeyPairGenerator extends KeyPairGeneratorSpi
 	Object o = Class.forName(classname).newInstance();
 	KeyPairGenerator kpg;
 	if (o instanceof KeyPairGeneratorSpi)
-	  kpg =
-	    (KeyPairGenerator) (new
-				DummyKeyPairGenerator((KeyPairGeneratorSpi) o,
-						      algorithm));
+	  kpg = new DummyKeyPairGenerator((KeyPairGeneratorSpi) o, algorithm);
 	else
 	  {
 	    kpg = (KeyPairGenerator) o;

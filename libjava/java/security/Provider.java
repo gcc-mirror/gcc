@@ -1,5 +1,5 @@
 /* Provider.java -- Security provider information
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -119,16 +119,40 @@ public abstract class Provider extends Properties implements Serializable
   }
 
   /**
-   * This method sets the specified key to have the specified value.
+   * Sets the key property to have the specified value.
+   * <p>
+   * <bold>NOT IMPLEMENTED YET</bold>[
+   * First, if there is a security manager, its <code>checkSecurityAccess</code>
+   * method is called with the string "putProviderProperty."+name, where name is
+   * the provider name, to see if it's ok to set this provider's property
+   * values.
+   * If the default implementation of <code>checkSecurityAccess</code> is used
+   * (that is, that method is not overriden), then this results in a call to the
+   * security manager's <code>checkPermission</code> method with a
+   * <code>SecurityPermission("putProviderProperty."+name)</code>
+   * permission.<br>]
    *
-   * @param key The property key
-   * @param value The property value
+   * @param key The property key.
+   * @param value The property value.
    *
-   * @return The previous value for this key, or <code>null</code> if no previous value.
+   * @return The previous value of the specified property (<code>key</code>),
+   *         or <code>null</code> if it did not have one.
+   * @throws SecurityException If a security manager exists and its
+   * {@link java.lang.SecurityManager.checkSecurityAccess(java.lang.String)}
+   * method denies access to set property values.
+   * @since Classpath 0.4+cvs, JDK 1.2
+   * @see java.lang.Object.equals(Object)
+   * @see java.util.Hashtable.get(Object)
    */
   public Object put(Object key, Object value)
   {
-    return (super.put(key, value));
+    return super.put(toCanonicalKey(key), value);
+  }
+  
+  // overrides same in java.util.Hashtable
+  public Object get(Object key)
+  {
+    return super.get(toCanonicalKey(key));
   }
 
   /**
@@ -137,11 +161,12 @@ public abstract class Provider extends Properties implements Serializable
    * 
    * @param key The key to remove
    *
-   * @return The previous value for this key, or <code>null</code> if no previous value.
+   * @return The previous value for this key, or <code>null</code> if no
+   * previous value.
    */
   public Object remove(Object key)
   {
-    return (super.remove(key));
+    return super.remove(toCanonicalKey(key));
   }
 
   /**
@@ -165,5 +190,13 @@ public abstract class Provider extends Properties implements Serializable
   {
     return (getClass().getName() + ": name=" + getName() + " version=" +
 	    version);
+  }
+  
+  private Object toCanonicalKey(Object key)
+  {
+    if (key.getClass().isAssignableFrom(String.class)) // is it ours?
+      return ((String) key).toUpperCase(); // use default locale
+    else
+      return key;
   }
 }
