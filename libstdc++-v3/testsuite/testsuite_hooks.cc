@@ -296,13 +296,15 @@ namespace __gnu_test
     // Get a semaphore set with one semaphore.
     sem_set_ = semget(IPC_PRIVATE, 1, SEM_R | SEM_A);
     if (sem_set_ == -1)
-      throw std::runtime_error ("could not obtain semaphore set");
+      __throw_exception_again 
+	std::runtime_error ("could not obtain semaphore set");
 
     // Initialize the semaphore.
     union semun val;
     val.val = 0;
     if (semctl(sem_set_, 0, SETVAL, val) == -1)
-      throw std::runtime_error("could not initialize semaphore");
+      __throw_exception_again
+	std::runtime_error("could not initialize semaphore");
 #else
     // There are no semaphores on this system.  We have no way to mark
     // a test as "unsupported" at runtime, so we just exit, pretending
@@ -327,7 +329,8 @@ namespace __gnu_test
       { 0, 1, 0 }
     };
     if (semop(sem_set_, op, 1) == -1)
-      throw std::runtime_error("could not signal semaphore");
+      __throw_exception_again
+	std::runtime_error("could not signal semaphore");
 #endif
   }
 
@@ -338,7 +341,8 @@ namespace __gnu_test
       { 0, -1, SEM_UNDO }
     };
     if (semop(sem_set_, op, 1) == -1)
-      throw std::runtime_error("could not wait for semaphore");
+      __throw_exception_again
+	std::runtime_error("could not wait for semaphore");
 #endif    
   }
 }; // namespace __gnu_test

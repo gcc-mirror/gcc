@@ -1,5 +1,8 @@
 2005-01-03  Mark Mitchell  <mark@codesourcery.com>
 
+	* testsuite/testsuite_hooks.cc: Use __throw_exception_again
+	instead of just throw.
+
 	* testsuite/testsuite_hooks.cc: Update coypright and follow style
 	guidelines.
 	* testsuite/testsuite_hooks.h: Likewise.
