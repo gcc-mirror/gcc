@@ -50,7 +50,7 @@ Print the tree-code of the tree node that is $.
 end
 
 define pdn
-output $.decl.name->identifier.pointer
+output $.decl.name->identifier.id.str
 echo \n
 end
 
@@ -59,7 +59,7 @@ Print the name of the decl-node that is $.
 end
 
 define ptn
-output $.type.name->decl.name->identifier.pointer
+output $.type.name->decl.name->identifier.id.str
 echo \n
 end
 
