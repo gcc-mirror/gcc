@@ -23,7 +23,8 @@ Fri Aug 28 19:00:44 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 	(sparc_emit_set_const64): Remove unused variable i.
 	(sparc_splitdi_legitimate): Likewise for addr_part.
 	(ultra_code_from_mask): Likewise for mask.
-	(ultra_cmove_results_ready_p): Fixup entry modulo calc.
+	(ultra_cmove_results_ready_p): Fixup entry modulo calc. and
+	reverse return values so it matches usage and comments.
 	(ultra_flush_pipeline): Likewise.
 	(ultra_fpmode_conflict_exists): Likewise, remove unused variable
 	this_type, and allow loads and stores of differing FP modes as

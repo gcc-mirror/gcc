@@ -6310,9 +6310,9 @@ ultra_cmove_results_ready_p (insn)
   slot = 4;
   while (--slot >= 0)
     if (up->group[slot] == insn)
-      return 1;
+      return 0;
 
-  return 0;
+  return 1;
 }
 
 /* Walk backwards in pipeline history looking for FPU
