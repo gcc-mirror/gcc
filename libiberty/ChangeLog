@@ -1,3 +1,8 @@
+2002-01-31  Adam Megacz  <adam@xwt.org>
+
+	* gcc/libiberty/configure.in: Treat mingw the same as cywin
+	wrt HAVE_SYS_ERRLIST.
+
 2002-01-30  Phil Edwards  <pme@gcc.gnu.org>
 
 	* cp-demangle.c (cp_demangle_type):  Do not protect with IN_LIBGCC2.
