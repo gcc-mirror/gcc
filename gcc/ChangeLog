@@ -1,3 +1,7 @@
+2000-05-25  Richard Henderson  <rth@cygnus.com>
+
+	* stmt.c (expand_end_bindings): Fix thinko last change.
+
 2000-05-25  Andrew MacLeod  <amacleod@cygnus.com>
             Andrew Haley  <aph@cygnus.com>
 

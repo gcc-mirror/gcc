@@ -3688,7 +3688,7 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
       insn = get_last_insn ();
       if (GET_CODE (insn) == NOTE)
 	insn = prev_nonnote_insn (insn);
-      reachable = GET_CODE (insn) != BARRIER;
+      reachable = (! insn || GET_CODE (insn) != BARRIER);
       
       /* Do the cleanups.  */
       expand_cleanups (thisblock->data.block.cleanups, NULL_TREE, 0, reachable);
