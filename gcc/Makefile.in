@@ -30,6 +30,9 @@
 srcdir = @srcdir@
 VPATH = @srcdir@
 
+# Pointer to the GCC Project website
+website=http://gcc.gnu.org
+
 # Variables that exist for you to override.
 # See below for how to change them for certain systems.
 
@@ -1333,8 +1336,7 @@ $(srcdir)/c-parse.y: c-parse.in
 $(srcdir)/c-gperf.h: c-parse.gperf
 	gperf -L C -F ', 0, 0' -p -j1 -i 1 -g -o -t -G -N is_reserved_word \
 	   -k1,3,$$ $(srcdir)/c-parse.gperf >tmp-gperf.h || ( \
-	echo "Please update your 'gperf' from the GCC infrastructure" >&2 ; \
-	echo "	ftp://sourceware.cygnus.com/pub/egcs/infrastructure/gperf*" >&2 ; \
+	echo "See " $(website)/cvs.html#generated_files >&2 ; \
 	exit 1 )
 	 $(SHELL) $(srcdir)/move-if-change tmp-gperf.h $(srcdir)/c-gperf.h
 
