@@ -1,3 +1,8 @@
+Sat Jun 13 14:16:34 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* expr.c (do_jump, case EQ_EXPR, NE_EXPR): When comparing complex
+	prevent operands from being evaluated twice.
+
 Sat Jun 13 12:53:22 1998  Richard Earnshaw (rearnsha@arm.com)
 
 	* unroll.c (verify_addresses): Use validate_replace_rtx to undo 
