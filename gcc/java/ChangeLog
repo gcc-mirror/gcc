@@ -1,5 +1,9 @@
 2003-11-20  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	* Make-lang.in (java.extraclean): Delete.
+
+2003-11-20  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	* Make-lang.in (check-java): Add.
 
 2003-11-19  Jeff Sturm  <jsturm@one-point.com>

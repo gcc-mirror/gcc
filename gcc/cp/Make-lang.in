@@ -25,7 +25,7 @@
 # foo.all.build, foo.all.cross, foo.start.encap, foo.rest.encap,
 # foo.install-normal, foo.install-common, foo.install-man,
 # foo.uninstall,
-# foo.mostlyclean, foo.clean, foo.distclean, foo.extraclean,
+# foo.mostlyclean, foo.clean, foo.distclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
 #
 # where `foo' is the name of the language.
@@ -204,7 +204,6 @@ c++.mostlyclean:
 c++.clean:
 c++.distclean:
 	-rm -f cp/config.status cp/Makefile
-c++.extraclean:
 c++.maintainer-clean:
 #
 # Stage hooks:

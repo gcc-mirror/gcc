@@ -29,7 +29,7 @@
 # foo.all.build, foo.all.cross, foo.start.encap, foo.rest.encap,
 # foo.install-normal, foo.install-common, foo.install-man,
 # foo.uninstall,
-# foo.mostlyclean, foo.clean, foo.distclean, foo.extraclean,
+# foo.mostlyclean, foo.clean, foo.distclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
 #
 # where `foo' is the name of the language.
@@ -231,7 +231,6 @@ java.clean:
 java.distclean:
 	-rm -f java/config.status java/Makefile
 	-rm -f java/parse.output
-java.extraclean:
 java.maintainer-clean:
 	-rm -f $(parsedir)/java/parse.c $(parsedir)/java/parse-scan.c java/parse.output java/y.tab.c
 	-rm -f $(docobjdir)/gcj.1 $(docobjdir)/gcjh.1

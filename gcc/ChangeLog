@@ -1,5 +1,13 @@
 2003-11-20  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	* Makefile.in (extraclean): Delete.
+	* configure.in (target_list): Remove extraclean.
+	* configure: Regenerate.
+	* doc/makefile.texi, doc/sourcebuild.texi: Update.
+	* objc/Make-lang.in (objc.extraclean): Delete.
+
+2003-11-20  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	* Makefile.in (lang_checks): Add.
 	(check-c++, check-f77, check-java, check-g++, check-g77,
 	check-objc): Remove hardcoded targets.

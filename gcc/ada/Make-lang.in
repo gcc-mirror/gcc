@@ -24,7 +24,7 @@
 #
 # foo.all.cross, foo.start.encap, foo.rest.encap,
 # foo.install-normal, foo.install-common, foo.install-man,
-# foo.uninstall, foo.mostlyclean, foo.clean, foo.distclean, foo.extraclean,
+# foo.uninstall, foo.mostlyclean, foo.clean, foo.distclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
 #
 # where `foo' is the name of the language.
@@ -913,7 +913,6 @@ ada.distclean:
 	-$(RMDIR) ada/rts
 	-$(RM) ada/tools/*
 	-$(RMDIR) ada/tools
-ada.extraclean:
 ada.maintainer-clean:
 	-$(RM) ada/a-sinfo.h
 	-$(RM) ada/a-einfo.h

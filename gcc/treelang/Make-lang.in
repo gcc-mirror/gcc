@@ -26,7 +26,7 @@
 # foo.all.build, foo.all.cross, foo.start.encap, foo.rest.encap,
 # foo.install-normal, foo.install-common, foo.install-man,
 # foo.uninstall, foo.distdir,
-# foo.mostlyclean, foo.clean, foo.distclean, foo.extraclean,
+# foo.mostlyclean, foo.clean, foo.distclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
 #
 # where `foo' is the name of the language.
@@ -233,9 +233,7 @@ treelang.distclean: treelang.clean
 	-rm -f treelang/config.status
 	-rm -f treelang/*.output
 
-treelang.extraclean: treelang.distclean
-
-treelang.maintainer-clean: treelang.extraclean
+treelang.maintainer-clean: treelang.distclean
 	for name in $(TREE_GENERATED); \
 	do \
 	  if [ -f $(srcdir)/treelang/$$name ] ; then \
