@@ -181,6 +181,10 @@ extern int flag_traditional;
 
 extern int flag_isoc99;
 
+/* Nonzero means accept digraphs.  */
+
+extern int flag_digraphs;
+
 /* Nonzero means warn about suggesting putting in ()'s.  */
 
 extern int warn_parentheses;

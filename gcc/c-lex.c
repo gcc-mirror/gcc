@@ -2385,17 +2385,20 @@ yylex ()
 
 	      /* digraphs */
 	    case ':':
-	      if (c1 == '>')
+	      if (c1 == '>' && flag_digraphs)
 		{ value = ']'; goto done; }
 	      break;
 	    case '<':
-	      if (c1 == '%')
-		{ value = '{'; indent_level++; goto done; }
-	      if (c1 == ':')
-		{ value = '['; goto done; }
+	      if (flag_digraphs)
+		{
+		  if (c1 == '%')
+		    { value = '{'; indent_level++; goto done; }
+		  if (c1 == ':')
+		    { value = '['; goto done; }
+		}
 	      break;
 	    case '%':
-	      if (c1 == '>')
+	      if (c1 == '>' && flag_digraphs)
 		{ value = '}'; indent_level--; goto done; }
 	      break;
 	    }

@@ -1,3 +1,10 @@
+2000-07-13  Neil Booth  <NeilB@earthling.net>
+
+	* c-common.h (flag_digraphs): New.
+	* c-decl.c (c_decode_option): Set flag_digraphs as appropriate.
+	* c-lex.c (yylex): Use flag_digraphs to decide whether to
+	honour digraphs.
+	
 2000-07-13  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* gcc.c (do_spec_1): Add new %B operator.

@@ -1,3 +1,9 @@
+2000-07-13  Neil Booth  <NeilB@earthling.net>
+
+	* testsuite/gcc.dg/cpp/digraph1.c,
+	testsuite/gcc.dg/cpp/digraph2.c,
+	testsuite/gcc.dg/cpp/digraphs.c: New tests.
+
 2000-07-12  David Billinghurst  <David Billinghurst@riotinto.com.au>
 
 	* g77.f-torture/compile/20000630-2.f:  New test.
