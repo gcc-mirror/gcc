@@ -1,3 +1,15 @@
+2001-10-11  Geert Bosch  <bosch@gnat.com>
+
+	* einfo.h: Regenerate.
+
+	* nmake.ads: Regenerate.
+
+	* nmake.adb: Regenerate.
+
+	* sinfo.h: Regenerate.
+
+	* treeprs.adb: Regenerate.
+
 2001-10-10  Geert Bosch  <bosch@gnat.com>
 
 	* gnat-style.texi: New file describing coding guidelines for Ada.
