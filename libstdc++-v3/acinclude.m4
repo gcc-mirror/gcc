@@ -591,6 +591,33 @@ AC_DEFUN(GLIBCPP_CHECK_STDLIB_DECL_AND_LINKAGE_3, [
   fi
 ])
 
+dnl
+dnl Check to see if the (unistd function) argument passed is
+dnl 1) declared when using the c++ compiler
+dnl 2) has "C" linkage
+dnl
+dnl argument 1 is name of function to check
+dnl
+dnl ASSUMES argument is a function with ONE parameter
+dnl
+dnl GLIBCPP_CHECK_UNISTD_DECL_AND_LINKAGE_1
+AC_DEFUN(GLIBCPP_CHECK_UNISTD_DECL_AND_LINKAGE_1, [
+  AC_MSG_CHECKING([for $1 declaration])
+  if test x${glibcpp_cv_func_$1_use+set} != xset; then
+    AC_CACHE_VAL(glibcpp_cv_func_$1_use, [
+      AC_LANG_SAVE
+      AC_LANG_CPLUSPLUS
+      AC_TRY_COMPILE([#include <unistd.h>], 
+                     [ $1(0);], 
+                     [glibcpp_cv_func_$1_use=yes], [glibcpp_cv_func_$1_use=no])
+      AC_LANG_RESTORE
+    ])
+  fi
+  AC_MSG_RESULT($glibcpp_cv_func_$1_use)
+  if test x$glibcpp_cv_func_$1_use = x"yes"; then
+    AC_CHECK_FUNCS($1)    
+  fi
+])
 
 dnl
 dnl Because the builtins are picky picky picky about the arguments they take, 
@@ -702,9 +729,8 @@ AC_DEFUN(GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT, [
   fi
 ])
 
-
 dnl
-dnl Check to see what the underlying c library 
+dnl Check to see what the underlying c library is like
 dnl These checks need to do two things: 
 dnl 1) make sure the name is declared when using the c++ compiler
 dnl 2) make sure the name has "C" linkage
@@ -727,6 +753,25 @@ AC_DEFUN(GLIBCPP_CHECK_STDLIB_SUPPORT, [
   CXXFLAGS="$ac_save_CXXFLAGS"
 ])
 
+dnl
+dnl Check to see what the underlying c library is like
+dnl These checks need to do two things: 
+dnl 1) make sure the name is declared when using the c++ compiler
+dnl 2) make sure the name has "C" linkage
+dnl This might seem like overkill but experience has shown that it's not...
+dnl
+dnl Define HAVE_ISATTY if "isatty" is declared and links
+dnl
+dnl GLIBCPP_CHECK_UNISTD_SUPPORT
+AC_DEFUN(GLIBCPP_CHECK_UNISTD_SUPPORT, [
+  ac_test_CXXFLAGS="${CXXFLAGS+set}"
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS='-fno-builtins -D_GNU_SOURCE'
+
+  GLIBCPP_CHECK_UNISTD_DECL_AND_LINKAGE_1(isatty)
+  
+  CXXFLAGS="$ac_save_CXXFLAGS"
+])
 
 dnl
 dnl Check to see what the underlying c library or math library is like.
