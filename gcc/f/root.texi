@@ -2,7 +2,7 @@
 @c as compared to a release version.  When making a release
 @c (e.g. a release branch in the CVS repository for egcs),
 @c clear this and set the version information correctly.
-@set DEVELOPMENT
+@clear DEVELOPMENT
 @set version-g77 0.5.25
 @set version-egcs 1.2
 @set version-gcc 2.95

@@ -1,3 +1,7 @@
+Sat Jul 17 21:57:07 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* root.texi: Clear DEVEOPMENT per Craig's instructions.
+
 1999-07-17  Alexandre Oliva  <oliva@dcc.unicamp.br>
         
 	* root.texi: Update e-mail addresses to gcc.gnu.org.
