@@ -88,9 +88,32 @@ cd $dir/support
 
 cp $testdir/support/*.ada $testdir/support/*.a $testdir/support/*.tst $dir/support
 
+# Find out the size in bit of an address on the target
+target_gnatmake $testdir/support/impbit.adb >> $dir/acats.log 2>&1
+target_run $dir/support/impbit > $dir/support/impbit.out 2>&1
+target_bit=`cat $dir/support/impbit.out`
+display target_bit="$target_bit"
+
+# Find out a suitable asm statement
+# Adapted from configure.ac gcc_cv_as_dwarf2_debug_line
+case "$target" in
+  ia64*-*-* | s390*-*-*)
+    target_insn="nop 0"
+    ;;
+  mmix-*-*)
+    target_insn="swym 0"
+    ;;
+  *)
+    target_insn="nop"
+    ;;
+esac
+display target_insn="$target_insn"
+
 sed -e "s,ACATS4GNATDIR,$dir,g" \
   < $testdir/support/impdef.a > $dir/support/impdef.a
 sed -e "s,ACATS4GNATDIR,$dir,g" \
+  -e "s,ACATS4GNATBIT,$target_bit,g" \
+  -e "s,ACATS4GNATINSN,$target_insn,g" \
   < $testdir/support/macro.dfs > $dir/support/MACRO.DFS
 sed -e "s,ACATS4GNATDIR,$dir,g" \
   < $testdir/support/tsttests.dat > $dir/support/TSTTESTS.DAT
