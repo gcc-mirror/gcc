@@ -4020,7 +4020,7 @@ macroexpand (hp, op)
 	= macarg ((i < nargs || (nargs == 0 && i == 0)) ? &args[i] : 0);
       if (parse_error)
 	{
-	  error_with_line (line_for_error (start_line), parse_error);
+	  error_with_line (line_for_error (start_line), "%s", parse_error);
 	  break;
 	}
       i++;

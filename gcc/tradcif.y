@@ -28,7 +28,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include <setjmp.h>
 
   static int yylex PARAMS ((void));
-  static void yyerror PARAMS ((const char *msgid));
+  static void yyerror PARAMS ((const char *msgid)) ATTRIBUTE_NORETURN;
 
   static int parse_number PARAMS ((int));
   static int parse_escape PARAMS ((const char **));
@@ -537,7 +537,7 @@ static void
 yyerror (s)
      const char *s;
 {
-  error (s);
+  error ("%s", s);
   longjmp (parse_return_error, 1);
 }
 
