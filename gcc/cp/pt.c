@@ -1491,7 +1491,7 @@ convert_nontype_argument (type, expr)
 	  return error_mark_node;
 	}
     }
-  else if (TREE_CODE (expr_type) == VAR_DECL)
+  else if (TREE_CODE (expr) == VAR_DECL)
     {
       if (!TREE_PUBLIC (expr))
 	goto bad_argument;
