@@ -1557,6 +1557,15 @@ write_expression (expr)
 	  code = TREE_CODE (expr);
 	}
 
+      /* When we bind a variable or function to a non-type template
+	 argument with reference type, we create an ADDR_EXPR to show
+	 the fact that the entity's address has been taken.  But, we
+	 don't actually want to output a mangling code for the `&'.  */
+      if (TREE_CODE (expr) == ADDR_EXPR
+	  && TREE_TYPE (expr)
+	  && TREE_CODE (TREE_TYPE (expr)) == REFERENCE_TYPE)
+	expr = TREE_OPERAND (expr, 0);
+
       /* If it wasn't any of those, recursively expand the expression.  */
       write_string (operator_name_info[(int) code].mangled_name);
 

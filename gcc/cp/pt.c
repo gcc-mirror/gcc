@@ -2762,8 +2762,9 @@ convert_nontype_argument (type, expr)
       tree e = expr;
       STRIP_NOPS (e);
 
-      if (TREE_CODE (type) == REFERENCE_TYPE
-	  || TREE_CODE (expr_type) == ARRAY_TYPE)
+      if (TREE_CODE (expr_type) == ARRAY_TYPE
+	  || (TREE_CODE (type) == REFERENCE_TYPE
+	      && TREE_CODE (e) != ADDR_EXPR))
 	referent = e;
       else
 	{
@@ -2950,6 +2951,15 @@ convert_nontype_argument (type, expr)
       {
 	tree type_referred_to = TREE_TYPE (type);
 
+	/* If this expression already has reference type, get the
+	   underling object.  */
+	if (TREE_CODE (expr_type) == REFERENCE_TYPE) 
+	  {
+	    my_friendly_assert (TREE_CODE (expr) == ADDR_EXPR, 20000604);
+	    expr = TREE_OPERAND (expr, 0);
+	    expr_type = TREE_TYPE (expr);
+	  }
+
 	if (TREE_CODE (type_referred_to) == FUNCTION_TYPE)
 	  {
 	    /* For a non-type template-parameter of type reference to
@@ -2957,17 +2967,16 @@ convert_nontype_argument (type, expr)
 	       template-argument represents a set of overloaded
 	       functions, the matching function is selected from the
 	       set (_over.over_).  */
-	    tree fns = expr;
 	    tree fn;
 
-	    fn = instantiate_type (type_referred_to, fns, 0);
+	    fn = instantiate_type (type_referred_to, expr, 0);
 
 	    if (fn == error_mark_node)
 	      return error_mark_node;
 
 	    if (!TREE_PUBLIC (fn))
 	      {
-		if (really_overloaded_fn (fns))
+		if (really_overloaded_fn (expr))
 		  /* Don't issue an error here; we might get a different
 		     function if the overloading had worked out
 		     differently.  */
@@ -2980,7 +2989,7 @@ convert_nontype_argument (type, expr)
 					     TREE_TYPE (fn)),
 				0);
 
-	    return fn;
+	    expr = fn;
 	  }
 	else
 	  {
@@ -2990,15 +2999,16 @@ convert_nontype_argument (type, expr)
 	       identical) type of the template-argument.  The
 	       template-parameter is bound directly to the
 	       template-argument, which must be an lvalue.  */
-	    if ((TYPE_MAIN_VARIANT (expr_type)
-		 != TYPE_MAIN_VARIANT (type_referred_to))
+	    if (!same_type_p (TYPE_MAIN_VARIANT (expr_type),
+			      TYPE_MAIN_VARIANT (type_referred_to))
 		|| !at_least_as_qualified_p (type_referred_to,
 					     expr_type)
 		|| !real_lvalue_p (expr))
-	      return error_mark_node;
-	    else
-	      return expr;
+	      expr = error_mark_node;
 	  }
+
+	mark_addressable (expr);
+	return build1 (ADDR_EXPR, type, expr);
       }
       break;
 
@@ -8589,7 +8599,7 @@ unify (tparms, targs, parm, arg, strict)
 	  return 1;
 	if (TREE_VEC_LENGTH (parm) != TREE_VEC_LENGTH (arg))
 	  return 1;
-	for (i = TREE_VEC_LENGTH (parm) - 1; i >= 0; i--)
+	for (i = 0; i < TREE_VEC_LENGTH (parm); ++i)
 	  if (unify (tparms, targs,
 		     TREE_VEC_ELT (parm, i), TREE_VEC_ELT (arg, i),
 		     UNIFY_ALLOW_NONE))
