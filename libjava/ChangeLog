@@ -1,4 +1,12 @@
 2005-02-15  Mark Wielaard  <mark@klomp.org>
+
+	* java/net/URLClassLoader.java (JarURLLoader.JarURLLoader): Don't look
+	aside for "GCJLIBS" in directory where jarfiles are loaded.
+	(JarURLLoader.getClass): Removed method.
+	(JarURLLoader.toString): Removed method.
+	(FileResource.toString): Removed method.
+
+2005-02-15  Mark Wielaard  <mark@klomp.org>
  
 	* javax/net/ssl/SSLContext.java (getInstance): Add exception message
 	and/or cause before throwing.
