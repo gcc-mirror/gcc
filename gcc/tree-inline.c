@@ -1036,7 +1036,10 @@ inline_forbidden_p_1 (tree *nodep, int *walk_subtrees ATTRIBUTE_UNUSED,
 	 UNION_TYPE nodes, then it goes into infinite recursion on a
 	 structure containing a pointer to its own type.  If it doesn't,
 	 then the type node for S doesn't get adjusted properly when
-	 F is inlined, and we abort in find_function_data.  */
+	 F is inlined, and we abort in find_function_data.
+
+	 ??? This is likely no longer true, but it's too late in the 4.0
+	 cycle to try to find out.  This should be checked for 4.1.  */
       for (t = TYPE_FIELDS (node); t; t = TREE_CHAIN (t))
 	if (variably_modified_type_p (TREE_TYPE (t), NULL))
 	  {
