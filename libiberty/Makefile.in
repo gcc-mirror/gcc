@@ -59,7 +59,7 @@ MULTISUBDIR =
 MULTIDO = true
 MULTICLEAN = true
 
-INSTALL = install -c
+INSTALL = $(SHELL) $(srcdir)/../install-sh -c
 INSTALL_PROGRAM = $(INSTALL)
 INSTALL_DATA = $(INSTALL)
 
