@@ -7692,7 +7692,7 @@ add_const_value_attribute (die, rtl)
 
 	if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 	  {
-	    register unsigned length = GET_MODE_SIZE (mode) / sizeof (long);
+	    register unsigned length = GET_MODE_SIZE (mode) / 4;
  	    long *array = (long *) xmalloc (sizeof (long) * length);
 	    REAL_VALUE_TYPE rv;
 
