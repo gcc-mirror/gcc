@@ -3087,6 +3087,13 @@ input.  Subsequent lines are counted from @var{linenum}.
 effect.  In addition, @var{filename} is a string constant.  The
 following line and all subsequent lines are reported to come from the
 file it specifies, until something else happens to change that.
+@var{filename} is interpreted according to the normal rules for a string
+constant: backslash escapes are interpreted.  This is different from
+@samp{#include}.
+
+Previous versions of GNU CPP did not interpret escapes in @samp{#line};
+we have changed it because the standard requires they be interpreted,
+and most other compilers do.
 
 @item #line @var{anything else}
 @var{anything else} is checked for macro calls, which are expanded.
@@ -3304,7 +3311,8 @@ of the form
 These are called @dfn{linemarkers}.  They are inserted as needed into
 the output (but never within a string or character constant).  They mean
 that the following line originated in file @var{filename} at line
-@var{linenum}.
+@var{linenum}.  @var{filename} will never contain any non-printing
+characters; they are replaced with octal escape sequences.
 
 After the file name comes zero or more flags, which are @samp{1},
 @samp{2}, @samp{3}, or @samp{4}.  If there are multiple flags, spaces
@@ -3867,6 +3875,17 @@ The @samp{#line} directive used to change GCC's notion of the
 ``directory containing the current file,'' used by @samp{#include} with
 a double-quoted header file name.  In 3.0 and later, it does not.
 @xref{Line Control}, for further explanation.
+
+@item Syntax of @samp{#line}
+
+In GCC 2.95 and previous, the string constant argument to @samp{#line}
+was treated the same way as the argument to @samp{#include}: backslash
+escapes were not honored, and the string ended at the second @samp{"}.
+This is not compliant with the C standard.  In GCC 3.0, an attempt was
+made to correct the behavior, so that the string was treated as a real
+string constant, but it turned out to be buggy.  In 3.1, the bugs have
+been fixed.  (We are not fixing the bugs in 3.0 because they affect
+relatively few people and the fix is quite invasive.)
 
 @end itemize
 
