@@ -476,7 +476,10 @@ push_reload (in, out, inloc, outloc, class,
      we can't handle it here because CONST_INT does not indicate a mode.
 
      Similarly, we must reload the inside expression if we have a
-     STRICT_LOW_PART (presumably, in == out in the cas).  */
+     STRICT_LOW_PART (presumably, in == out in the cas).
+
+     Also reload the inner expression if it does not require a secondary
+     reload but the SUBREG does.  */
 
   if (in != 0 && GET_CODE (in) == SUBREG
       && (GET_CODE (SUBREG_REG (in)) != REG
@@ -494,7 +497,15 @@ push_reload (in, out, inloc, outloc, class,
 		      && ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (in)))
 			   / UNITS_PER_WORD)
 			  != HARD_REGNO_NREGS (REGNO (SUBREG_REG (in)),
-					       GET_MODE (SUBREG_REG (in)))))))))
+					       GET_MODE (SUBREG_REG (in)))))))
+#ifdef SECONDARY_INPUT_RELOAD_CLASS
+	  || (SECONDARY_INPUT_RELOAD_CLASS (class, inmode, in) != NO_REGS
+	      && (SECONDARY_INPUT_RELOAD_CLASS (class,
+						GET_MODE (SUBREG_REG (in)),
+						SUBREG_REG (in))
+		  == NO_REGS))
+#endif
+	  ))
     {
       in_subreg_loc = inloc;
       inloc = &SUBREG_REG (in);
@@ -529,7 +540,15 @@ push_reload (in, out, inloc, outloc, class,
 		      && ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (out)))
 			   / UNITS_PER_WORD)
 			  != HARD_REGNO_NREGS (REGNO (SUBREG_REG (out)),
-					       GET_MODE (SUBREG_REG (out)))))))))
+					       GET_MODE (SUBREG_REG (out)))))))
+#ifdef SECONDARY_OUTPUT_RELOAD_CLASS
+	  || (SECONDARY_OUTPUT_RELOAD_CLASS (class, outmode, out) != NO_REGS
+	      && (SECONDARY_OUTPUT_RELOAD_CLASS (class,
+						 GET_MODE (SUBREG_REG (out)),
+						 SUBREG_REG (out))
+		  == NO_REGS))
+#endif
+	  ))
     {
       out_subreg_loc = outloc;
       outloc = &SUBREG_REG (out);
