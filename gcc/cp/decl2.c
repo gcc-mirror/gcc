@@ -532,7 +532,8 @@ lang_f_options[] =
 
 /* Decode the string P as a language-specific option.
    Return the number of strings consumed for a valid option.
-   Otherwise return 0.  */
+   Otherwise return 0.  Should not complain if it does not
+   recognise the option.  */
 
 int   
 lang_decode_option (argc, argv)

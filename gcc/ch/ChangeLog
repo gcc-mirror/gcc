@@ -1,3 +1,7 @@
+1999-09-20  Nick Clifton  <nickc@cygnus.com>
+
+	* lang.c (lang_decode_option): Extend comment.
+
 1999-09-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* lex.c (maybe_downcase, getlc, handle_generic_pragma,

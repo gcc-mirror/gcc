@@ -161,6 +161,7 @@ GNU_xref_end ()
 
 /*
  * process chill-specific compiler command-line options
+ * do not complain if the option is not recognised
  */
 int
 lang_decode_option (argc, argv)

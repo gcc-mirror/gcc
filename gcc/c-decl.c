@@ -454,7 +454,8 @@ int warn_multichar = 1;
 int dollars_in_ident = DOLLARS_IN_IDENTIFIERS;
 
 /* Decode the string P as a language-specific option for C.
-   Return the number of strings consumed.  */
+   Return the number of strings consumed.  Should not complain
+   if it does not recognise the option.  */
    
 int
 c_decode_option (argc, argv)

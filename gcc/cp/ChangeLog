@@ -1,3 +1,7 @@
+1999-09-20  Nick Clifton  <nickc@cygnus.com>
+
+	* decl2.c (lang_decode_option): Extend comment.
+
 Mon Sep 20 10:49:05 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* typeck.c: Include "tm_p.h".
