@@ -7591,7 +7591,7 @@ alpha_align_insns (insns, max_align, next_group, next_nop)
 
   if (align_functions < 4)
     align = 4;
-  else if (align_functions < max_align)
+  else if ((unsigned int) align_functions < max_align)
     align = align_functions;
   else
     align = max_align;

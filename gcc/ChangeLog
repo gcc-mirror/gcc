@@ -1,5 +1,7 @@
 Wed Dec 26 17:55:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* config/alpha/alpha.c (alpha_align_insns): Remove warning.
+
 	* config/sparc/sparc.md (call struct patterns): Show starting
 	at two words long.
 
