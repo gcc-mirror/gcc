@@ -141,7 +141,7 @@ extern int add_weak PARAMS ((const char *, const char *));
 
 /* Functions in flow.c */
 extern void allocate_for_life_analysis	PARAMS ((void));
-extern int regno_uninitialized		PARAMS ((int));
+extern int regno_uninitialized		PARAMS ((unsigned int));
 extern int regno_clobbered_at_setjmp	PARAMS ((int));
 extern void find_basic_blocks		PARAMS ((rtx, int, FILE *));
 extern bool cleanup_cfg			PARAMS ((int));
