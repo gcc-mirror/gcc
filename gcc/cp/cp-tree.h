@@ -776,9 +776,11 @@ extern tree cp_global_trees[CPTI_MAX];
 
 /* Global state.  */
 
-struct saved_scope {
+struct saved_scope
+{
   tree old_bindings;
   tree old_namespace;
+  tree decl_ns_list;
   tree class_name;
   tree class_type;
   tree access_specifier;
@@ -808,6 +810,10 @@ struct saved_scope {
 /* The current open namespace.  */
 
 #define current_namespace scope_chain->old_namespace
+
+/* The stack for namespaces of current declarations. */
+
+#define decl_namespace_list scope_chain->decl_ns_list
 
 /* IDENTIFIER_NODE: name of current class */
 

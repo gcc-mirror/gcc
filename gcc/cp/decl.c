@@ -2422,6 +2422,7 @@ mark_saved_scope (arg)
       mark_binding_level (&t->class_bindings);
       ggc_mark_tree (t->old_bindings);
       ggc_mark_tree (t->old_namespace);
+      ggc_mark_tree (t->decl_ns_list);
       ggc_mark_tree (t->class_name);
       ggc_mark_tree (t->class_type);
       ggc_mark_tree (t->access_specifier);
@@ -5750,7 +5751,7 @@ unqualified_namespace_lookup (name, flags, spacesp)
      tree *spacesp;
 {
   tree b = make_node (CPLUS_BINDING);
-  tree initial = current_decl_namespace();
+  tree initial = current_decl_namespace ();
   tree scope = initial;
   tree siter;
   struct binding_level *level;

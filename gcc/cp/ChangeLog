@@ -1,3 +1,11 @@
+2001-04-12  Jason Merrill  <jason_merrill@redhat.com>
+
+	* cp-tree.h (decl_namespace_list): New macro.
+	(struct saved_scope): Add decl_ns_list.
+	* decl.c (mark_saved_scope): Mark it.
+	* decl2.c: Lose static decl_namespace_list.
+	(init_decl2): Don't save it.
+
 2001-04-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cp-tree.h (warn_return_type, yylex): Delete redundant
