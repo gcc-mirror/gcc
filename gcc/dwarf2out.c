@@ -8054,6 +8054,9 @@ gen_compile_unit_die (main_input_filename)
   else if (strcmp (language_string, "GNU F77") == 0)
     add_AT_unsigned (comp_unit_die, DW_AT_language, DW_LANG_Fortran77);
 
+  else if (strcmp (language_string, "GNU Pascal") == 0)
+    add_AT_unsigned (comp_unit_die, DW_AT_language, DW_LANG_Pascal83);
+
   else if (flag_traditional)
     add_AT_unsigned (comp_unit_die, DW_AT_language, DW_LANG_C);
 
