@@ -1,3 +1,8 @@
+1998-11-27  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* test_summary (address): added Marc Lehmann's testsuite-results
+	to the default e-mail address
+
 1998-11-25  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* test_summary (-p, prepend_logs): add these before the summary
