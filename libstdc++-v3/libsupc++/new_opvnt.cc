@@ -30,7 +30,7 @@
 #include "new"
 
 void *
-operator new[] (size_t sz, const std::nothrow_t& nothrow) throw()
+operator new[] (std::size_t sz, const std::nothrow_t& nothrow) throw()
 {
   return ::operator new(sz, nothrow);
 }

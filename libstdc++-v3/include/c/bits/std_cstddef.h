@@ -38,3 +38,10 @@
 # pragma GCC system_header
 # include_next <stddef.h>
 #endif
+
+namespace std {
+  using ::size_t;
+  using ::ptrdiff_t;
+} // namespace std
+
+

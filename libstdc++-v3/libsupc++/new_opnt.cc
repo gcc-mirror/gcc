@@ -31,11 +31,11 @@
 using std::new_handler;
 using std::bad_alloc;
 
-extern "C" void *malloc (size_t);
+extern "C" void *malloc (std::size_t);
 extern new_handler __new_handler;
 
 void *
-operator new (size_t sz, const std::nothrow_t&) throw()
+operator new (std::size_t sz, const std::nothrow_t&) throw()
 {
   void *p;
 

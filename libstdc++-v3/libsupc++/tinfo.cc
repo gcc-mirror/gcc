@@ -29,7 +29,7 @@
 
 #pragma implementation "typeinfo"
 
-#include <stddef.h>
+#include <cstddef>
 #include "tinfo.h"
 #include "new"			// for placement new
 
@@ -73,7 +73,7 @@ operator== (const std::type_info& arg) const
 
 extern "C" void
 __rtti_class (void *addr, const char *name,
-	      const __class_type_info::base_info *bl, size_t bn)
+	      const __class_type_info::base_info *bl, std::size_t bn)
 { new (addr) __class_type_info (name, bl, bn); }
 
 extern "C" void
@@ -274,7 +274,7 @@ do_upcast (sub_kind access_path,
       return contained_nonpublic_p (access_path);
     }
   
-  for (size_t i = n_bases; i--;)
+  for (std::size_t i = n_bases; i--;)
     {
       upcast_result result2;
       void *p = objptr;
@@ -366,7 +366,7 @@ do_dyncast (int boff, sub_kind access_path,
       return false;
     }
   bool result_ambig = false;
-  for (size_t i = n_bases; i--;)
+  for (std::size_t i = n_bases; i--;)
     {
       dyncast_result result2;
       void *p;
@@ -513,7 +513,7 @@ do_find_public_subobj (int boff, const type_info &subtype, void *objptr, void *s
   if (objptr == subptr && subtype == *this)
     return contained_public;
   
-  for (size_t i = n_bases; i--;)
+  for (std::size_t i = n_bases; i--;)
     {
       if (base_list[i].access != PUBLIC)
         continue; // Not public, can't be here.
@@ -767,7 +767,7 @@ __do_find_public_src (ptrdiff_t src2dst,
   if (obj_ptr == src_ptr && *this == *src_type)
     return __contained_public;
   
-  for (size_t i = __base_count; i--;)
+  for (std::size_t i = __base_count; i--;)
     {
       if (!__base_info[i].__is_public_p ())
         continue; // Not public, can't be here.
@@ -894,7 +894,7 @@ __do_dyncast (ptrdiff_t src2dst,
     }
 
   bool result_ambig = false;
-  for (size_t i = __base_count; i--;)
+  for (std::size_t i = __base_count; i--;)
     {
       __dyncast_result result2 (result.whole_details);
       void const *base = obj_ptr;
@@ -1089,7 +1089,7 @@ __do_upcast (const __class_type_info *dst, const void *obj_ptr,
   if (src_details & __flags_unknown_mask)
     src_details = __flags;
   
-  for (size_t i = __base_count; i--;)
+  for (std::size_t i = __base_count; i--;)
     {
       __upcast_result result2 (src_details);
       const void *base = obj_ptr;

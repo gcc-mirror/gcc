@@ -32,7 +32,6 @@
 
 #pragma interface "new"
 #include <cstddef>
-//#include <stddef.h>
 #include <exception>
 
 extern "C++" {
@@ -52,18 +51,18 @@ namespace std {
 } // namespace std
 
 // replaceable signatures
-void *operator new (size_t) throw (std::bad_alloc);
-void *operator new[] (size_t) throw (std::bad_alloc);
+void *operator new (std::size_t) throw (std::bad_alloc);
+void *operator new[] (std::size_t) throw (std::bad_alloc);
 void operator delete (void *) throw();
 void operator delete[] (void *) throw();
-void *operator new (size_t, const std::nothrow_t&) throw();
-void *operator new[] (size_t, const std::nothrow_t&) throw();
+void *operator new (std::size_t, const std::nothrow_t&) throw();
+void *operator new[] (std::size_t, const std::nothrow_t&) throw();
 void operator delete (void *, const std::nothrow_t&) throw();
 void operator delete[] (void *, const std::nothrow_t&) throw();
 
 // default placement versions of operator new
-inline void *operator new(size_t, void *place) throw() { return place; }
-inline void *operator new[](size_t, void *place) throw() { return place; }
+inline void *operator new(std::size_t, void *place) throw() { return place; }
+inline void *operator new[](std::size_t, void *place) throw() { return place; }
 } // extern "C++"
 
 #endif

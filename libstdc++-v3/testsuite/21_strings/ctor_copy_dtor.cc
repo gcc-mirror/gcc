@@ -59,7 +59,9 @@ int test01(void)
     VERIFY( false );
   }
 
-
+#if 0
+  // XXX These tests have been temporarily disabled.
+  //http://sources.redhat.com/ml/libstdc++/2000-10/msg00033.html
   // basic_string(const char* s, size_type n, alloc)
   csz01 = str01.max_size();
   // NB: As strlen(str_lit01) != csz01, this test is undefined. It
@@ -89,7 +91,7 @@ int test01(void)
     VERIFY( false );
   }
 
-  // Build a maxsize-1 lengthed string consisting of all A's
+  // Build a maxsize - 1 lengthed string consisting of all A's
   try {
     std::string str03(csz01 - 1, 'A');
     VERIFY( str03.size() == csz01 - 1 );
@@ -103,7 +105,7 @@ int test01(void)
   catch(...) {
     VERIFY( false );
   }
-
+#endif
 
   // basic_string(const char* s, const allocator& a = allocator())
   std::string str04(str_lit01);
