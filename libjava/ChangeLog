@@ -1,3 +1,8 @@
+2004-01-24  Michael Koch  <konqueror@gmx.de>
+
+	* Makefile.am: Added library version to gtk peer lib.
+	* Makefile.in: Regenerated.
+
 2004-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* include/powerpc-signal.h: Add #ifndef __powerpc64__ around the
