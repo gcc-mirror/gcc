@@ -1,3 +1,8 @@
+Tue Aug 26 12:03:49 1997  Jim Wilson  (wilson@cygnus.com)
+
+	* dwarfout.c (dwarfout_file_scope_decl, case TYPE_DECL): Check
+	TYPE_DECL_IS_STUB instead of DECL_NAME.
+
 Mon Aug 25 23:27:10 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
 
 	* objc/Make-lang.in ($(OBJC_O)): Also depend on cc1obj.

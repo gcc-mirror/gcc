@@ -5144,7 +5144,7 @@ dwarfout_file_scope_decl (decl, set_finalizing)
 	 a return type or a formal parameter type of some function.  */
 
       if (debug_info_level <= DINFO_LEVEL_TERSE)
-	if (DECL_NAME (decl) != NULL
+	if (! TYPE_DECL_IS_STUB (decl)
 	    || ! TYPE_USED_FOR_FUNCTION (TREE_TYPE (decl)))
           return;
 
