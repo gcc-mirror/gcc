@@ -1017,9 +1017,8 @@ public class BigInteger extends Number implements Comparable
     return xy;
   }
 
-  private static final void euclidInv(BigInteger a, BigInteger b,
-                                      BigInteger prevDiv, BigInteger xy0,
-                                      BigInteger xy1, BigInteger xy2)
+  private static final BigInteger[] euclidInv(BigInteger a, BigInteger b,
+					      BigInteger prevDiv)
   {
     if (b.isZero())
       throw new ArithmeticException("not invertible");
@@ -1028,20 +1027,20 @@ public class BigInteger extends Number implements Comparable
       {
 	// Success:  values are indeed invertible!
 	// Bottom of the recursion reached; start unwinding.
-        // WARNING: xy1 is, and xy0 may be, a shared BI!
-	xy0 = neg(prevDiv);
-	xy1 = ONE;
-	return;
+	return new BigInteger[] { neg(prevDiv), ONE };
       }
 
+    BigInteger[] result;
     // Recursion happens in the following conditional!
 
     // If a just contains an int, then use integer math for the rest.
     if (a.words == null)
       {
         int[] xyInt = euclidInv(b.ival, a.ival % b.ival, a.ival / b.ival);
-	xy0 = new BigInteger(xyInt[0]); // non-shared BI
-	xy1 = new BigInteger(xyInt[1]); // non-shared BI
+	result = new BigInteger[] { // non-shared BI
+	  new BigInteger(xyInt[0]),
+	  new BigInteger(xyInt[1])
+	};
       }
     else
       {
@@ -1051,15 +1050,13 @@ public class BigInteger extends Number implements Comparable
         // quot and rem may not be in canonical form. ensure
         rem.canonicalize();
         quot.canonicalize();
-        euclidInv(b, rem, quot, xy0, xy1, xy2);
+	result = euclidInv(b, rem, quot);
       }
 
-    // xy2 is just temp storage for intermediate results in the following
-    // calculation.  This saves us a bit of space over having a BigInteger
-    // allocated at every level of this recursive method.
-    xy2 = xy0;
-    xy0 = add(xy1, times(xy2, prevDiv), -1);
-    xy1 = xy2;
+    BigInteger t = result[0];
+    result[0] = add(result[1], times(t, prevDiv), -1);
+    result[1] = t;
+    return result;
   }
 
   public BigInteger modInverse(BigInteger y)
@@ -1129,8 +1126,8 @@ public class BigInteger extends Number implements Comparable
         quot.canonicalize();
         BigInteger xy0 = new BigInteger();
         BigInteger xy1 = new BigInteger();
-        euclidInv(y, rem, quot, xy0, xy1, result);
-	result = swapped ? xy0 : xy1;
+	BigInteger[] xy = euclidInv(y, rem, quot);
+	result = swapped ? xy[0] : xy[1];
 
 	// Result can't be negative, so make it positive by adding the
 	// original modulus, y (which is now x if they were swapped).

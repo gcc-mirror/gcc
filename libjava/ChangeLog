@@ -1,3 +1,8 @@
+2003-02-17  Raif S. Naffah <raif@fl.net.au>
+
+	* java/math/BigInteger.java (euclidInv): Return array of
+	`BigInteger's.  Changed all callers.
+
 2003-02-17  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* java/util/Properties.java (store): Move the code formerly in
