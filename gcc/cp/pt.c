@@ -149,6 +149,8 @@ static tree try_class_unification PROTO((tree, tree, tree, tree));
 static int coerce_template_template_parms PROTO((tree, tree, int,
 						 tree, tree));
 static tree determine_specialization PROTO((tree, tree, tree *, int));
+static int template_args_equal PROTO((tree, tree));
+static void print_template_context PROTO((int));
 
 /* We use TREE_VECs to hold template arguments.  If there is only one
    level of template arguments, then the TREE_VEC contains the
@@ -896,7 +898,7 @@ print_candidates (fns)
 {
   tree fn;
 
-  char* str = "candidates are:";
+  const char *str = "candidates are:";
 
   for (fn = fns; fn != NULL_TREE; fn = TREE_CHAIN (fn))
     {
@@ -2136,7 +2138,7 @@ check_default_tmpl_args (decl, parms, is_primary, is_partial)
      int is_primary;
      int is_partial;
 {
-  char* msg;
+  const char *msg;
   int   last_level_to_check;
 
   /* [temp.param] 
@@ -3284,7 +3286,7 @@ coerce_template_parms (parms, args, in_decl,
 
 /* Returns 1 if template args OT and NT are equivalent.  */
 
-int
+static int
 template_args_equal (ot, nt)
      tree ot, nt;
 {
@@ -4671,7 +4673,7 @@ instantiate_class_template (type)
 
       if (t == error_mark_node)
 	{
-	  char *str = "candidates are:";
+	  const char *str = "candidates are:";
 	  cp_error ("ambiguous class template instantiation for `%#T'", type);
 	  for (t = DECL_TEMPLATE_SPECIALIZATIONS (template); t; 
 	       t = TREE_CHAIN (t))

@@ -54,18 +54,16 @@ extern struct obstack permanent_obstack;
 extern struct obstack *current_obstack, *saveable_obstack;
 
 extern void yyprint PROTO((FILE *, int, YYSTYPE));
-extern void compiler_error PROTO((char *, HOST_WIDE_INT,
-				  HOST_WIDE_INT));
 
-static tree get_time_identifier PROTO((char *));
+static tree get_time_identifier PROTO((const char *));
 static int check_newline PROTO((void));
 static int skip_white_space PROTO((int));
 static void finish_defarg PROTO((void));
 static int my_get_run_time PROTO((void));
 static int get_last_nonwhite_on_line PROTO((void));
-static int interface_strcmp PROTO((char *));
+static int interface_strcmp PROTO((const char *));
 static int readescape PROTO((int *));
-static char *extend_token_buffer PROTO((char *));
+static char *extend_token_buffer PROTO((const char *));
 static void consume_string PROTO((struct obstack *, int));
 static void set_typedecl_interface_info PROTO((tree, tree));
 static void feed_defarg PROTO((tree, tree));
@@ -73,7 +71,7 @@ static int set_vardecl_interface_info PROTO((tree, tree));
 static void store_pending_inline PROTO((tree, struct pending_inline *));
 static void reinit_parse_for_expr PROTO((struct obstack *));
 static int *init_cpp_parse PROTO((void));
-static int handle_cp_pragma PROTO((char *));
+static int handle_cp_pragma PROTO((const char *));
 #ifdef HANDLE_GENERIC_PRAGMAS
 static int handle_generic_pragma PROTO((int));
 #endif
@@ -85,12 +83,14 @@ static int token_cmp PROTO((int *, int *));
 #endif
 static void begin_definition_of_inclass_inline PROTO((struct pending_inline*));
 static void parse_float PROTO((PTR));
+static int is_global PROTO((tree));
+static void init_filename_times PROTO((void));
 
 /* Given a file name X, return the nondirectory portion.
    Keep in mind that X can be computed more than once.  */
 char *
 file_name_nondirectory (x)
-     char *x;
+     const char *x;
 {
   char *tmp = (char *) rindex (x, '/');
   if (DIR_SEPARATOR != '/' && ! tmp)
@@ -98,7 +98,7 @@ file_name_nondirectory (x)
   if (tmp)
     return (char *) (tmp + 1);
   else
-    return x;
+    return (char *) x;
 }
 
 /* This obstack is needed to hold text.  It is not safe to use
@@ -314,7 +314,7 @@ static int ignore_escape_flag = 0;
 
 static tree
 get_time_identifier (name)
-     char *name;
+     const char *name;
 {
   tree time_identifier;
   int len = strlen (name);
@@ -379,7 +379,7 @@ int cplus_tree_code_length[] = {
    Used for printing out the tree and error messages.  */
 #define DEFTREECODE(SYM, NAME, TYPE, LEN) NAME,
 
-char *cplus_tree_code_name[] = {
+const char *cplus_tree_code_name[] = {
   "@@dummy",
 #include "cp-tree.def"
 };
@@ -429,7 +429,7 @@ lang_identify ()
   return "cplusplus";
 }
 
-void
+static void
 init_filename_times ()
 {
   this_filename_time = get_time_identifier ("<top level>");
@@ -1158,15 +1158,15 @@ extract_interface_info ()
 
 static int
 interface_strcmp (s)
-     char *s;
+     const char *s;
 {
   /* Set the interface/implementation bits for this scope.  */
   struct impl_files *ifiles;
-  char *s1;
+  const char *s1;
 
   for (ifiles = impl_file_chain; ifiles; ifiles = ifiles->next)
     {
-      char *t1 = ifiles->filename;
+      const char *t1 = ifiles->filename;
       s1 = s;
 
       if (*s1 != *t1 || *s1 == 0)
@@ -2197,7 +2197,7 @@ skip_white_space (c)
 
 static char *
 extend_token_buffer (p)
-     char *p;
+     const char *p;
 {
   int offset = p - token_buffer;
 
@@ -2255,8 +2255,6 @@ pragma_ungetc (arg)
    Otherwise, return the line's first non-whitespace character.  */
 
 int linemode;
-
-static int handle_cp_pragma PROTO((char *));
 
 static int
 check_newline ()
@@ -4780,18 +4778,27 @@ dump_time_statistics ()
 }
 
 void
-compiler_error (s, v, v2)
-     char *s;
-     HOST_WIDE_INT v, v2;			/* @@also used as pointer */
+compiler_error VPROTO ((const char *msg, ...))
 {
+#ifndef ANSI_PROTOTYPES
+  const char *msg;
+#endif
   char buf[1024];
-  sprintf (buf, s, v, v2);
+  va_list ap;
+  
+  VA_START (ap, msg);
+  
+#ifndef ANSI_PROTOTYPES
+  msg = va_arg (ap, const char *);
+#endif
+
+  vsprintf (buf, msg, ap);
   error_with_file_and_line (input_filename, lineno, "%s (compiler error)", buf);
 }
 
 void
 yyerror (string)
-     char *string;
+     const char *string;
 {
   extern int end_of_file;
   char buf[200];
@@ -4821,7 +4828,7 @@ yyerror (string)
 
 static int
 handle_cp_pragma (pname)
-     char *pname;
+     const char *pname;
 {
   register int token;
 

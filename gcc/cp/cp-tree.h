@@ -2451,10 +2451,11 @@ extern int current_function_parms_stored;
 #endif /* !defined(NO_DOLLAR_IN_LABEL) || !defined(NO_DOT_IN_LABEL) */
 
 /* Store the vbase pointer field name for type TYPE into pointer BUF.  */
-#define FORMAT_VBASE_NAME(BUF,TYPE) do {				\
-  BUF = (char *) alloca (TYPE_ASSEMBLER_NAME_LENGTH (TYPE)		\
+#define FORMAT_VBASE_NAME(BUF,TYPE) do { 				\
+  char *wbuf = (char *) alloca (TYPE_ASSEMBLER_NAME_LENGTH (TYPE)	\
 			 + sizeof (VBASE_NAME) + 1);			\
-  sprintf (BUF, VBASE_NAME_FORMAT, TYPE_ASSEMBLER_NAME_STRING (TYPE));	\
+  sprintf (wbuf, VBASE_NAME_FORMAT, TYPE_ASSEMBLER_NAME_STRING (TYPE));	\
+  (BUF) = wbuf;								\
 } while (0)
 
 /* Returns non-zero iff ID_NODE is an IDENTIFIER_NODE whose name is
@@ -2861,8 +2862,8 @@ extern tree auto_function			PROTO((tree, tree, enum built_in_function));
 extern void init_decl_processing		PROTO((void));
 extern int init_type_desc			PROTO((void));
 extern tree define_function
-	PROTO((char *, tree, enum built_in_function,
-	       void (*) (tree), char *));
+	PROTO((const char *, tree, enum built_in_function,
+	       void (*) (tree), const char *));
 extern tree check_tag_decl			PROTO((tree));
 extern void shadow_tag				PROTO((tree));
 extern tree groktypename			PROTO((tree));
@@ -2940,7 +2941,8 @@ extern tree get_temp_name			PROTO((tree, int));
 extern tree get_temp_regvar			PROTO((tree, tree));
 extern void finish_anon_union			PROTO((tree));
 extern tree finish_table			PROTO((tree, tree, tree, int));
-extern void finish_builtin_type			PROTO((tree, char *, tree *, int, tree));
+extern void finish_builtin_type			PROTO((tree, const char *,
+						       tree *, int, tree));
 extern tree coerce_new_type			PROTO((tree));
 extern tree coerce_delete_type			PROTO((tree));
 extern void comdat_linkage			PROTO((tree));
@@ -2976,14 +2978,15 @@ extern tree handle_class_head			PROTO((tree, tree, tree));
 extern tree lookup_arg_dependent                PROTO((tree, tree, tree));
 
 /* in errfn.c */
-extern void cp_error				();
-extern void cp_error_at				();
-extern void cp_warning				();
-extern void cp_warning_at			();
-extern void cp_pedwarn				();
-extern void cp_pedwarn_at			();
-extern void cp_compiler_error			();
-extern void cp_sprintf				();
+/* The cp_* functions aren't suitable for ATTRIBUTE_PRINTF. */
+extern void cp_error				PVPROTO((const char *, ...));
+extern void cp_error_at				PVPROTO((const char *, ...));
+extern void cp_warning				PVPROTO((const char *, ...));
+extern void cp_warning_at			PVPROTO((const char *, ...));
+extern void cp_pedwarn				PVPROTO((const char *, ...));
+extern void cp_pedwarn_at			PVPROTO((const char *, ...));
+extern void cp_compiler_error			PVPROTO((const char *, ...));
+extern void cp_sprintf				PVPROTO((const char *, ...));
 
 /* in error.c */
 extern void init_error				PROTO((void));
@@ -3053,7 +3056,7 @@ extern tree build_vec_delete			PROTO((tree, tree, tree, tree, int));
 /* in input.c */
 
 /* in lex.c */
-extern char *file_name_nondirectory		PROTO((char *));
+extern char *file_name_nondirectory		PROTO((const char *));
 extern tree make_pointer_declarator		PROTO((tree, tree));
 extern tree make_reference_declarator		PROTO((tree, tree));
 extern tree make_call_declarator		PROTO((tree, tree, tree, tree));
@@ -3061,7 +3064,6 @@ extern void set_quals_and_spec			PROTO((tree, tree, tree));
 extern char *operator_name_string		PROTO((tree));
 extern void lang_init				PROTO((void));
 extern void lang_finish				PROTO((void));
-extern void init_filename_times			PROTO((void));
 #if 0
 extern void reinit_lang_specific		PROTO((void));
 #endif
@@ -3093,8 +3095,9 @@ extern tree build_lang_field_decl		PROTO((enum tree_code, tree, tree));
 extern void copy_lang_decl			PROTO((tree));
 extern tree make_lang_type			PROTO((enum tree_code));
 extern void dump_time_statistics		PROTO((void));
-/* extern void compiler_error			PROTO((char *, HOST_WIDE_INT, HOST_WIDE_INT)); */
-extern void yyerror				PROTO((char *));
+extern void compiler_error			PVPROTO((const char *, ...))
+  ATTRIBUTE_PRINTF_1;
+extern void yyerror				PROTO((const char *));
 extern void clear_inline_text_obstack		PROTO((void));
 extern void maybe_snarf_defarg			PROTO((void));
 extern tree snarf_defarg			PROTO((void));
@@ -3188,7 +3191,7 @@ extern int processing_template_parmlist;
 /* in repo.c */
 extern void repo_template_used			PROTO((tree));
 extern void repo_template_instantiated		PROTO((tree, int));
-extern void init_repo				PROTO((char*));
+extern void init_repo				PROTO((const char *));
 extern void finish_repo				PROTO((void));
 
 /* in rtti.c */
@@ -3384,7 +3387,6 @@ extern tree make_temp_vec			PROTO((int));
 extern tree build_ptr_wrapper			PROTO((void *));
 extern tree build_expr_ptr_wrapper		PROTO((void *));
 extern tree build_int_wrapper			PROTO((int));
-extern tree build_srcloc			PROTO((char *, int));
 extern tree build_srcloc_here			PROTO((void));
 extern int varargs_function_p			PROTO((tree));
 extern int really_overloaded_fn			PROTO((tree));
@@ -3441,8 +3443,8 @@ extern tree build_object_ref			PROTO((tree, tree, tree));
 extern tree build_component_ref_1		PROTO((tree, tree, int));
 extern tree build_component_ref			PROTO((tree, tree, tree, int));
 extern tree build_x_component_ref		PROTO((tree, tree, tree, int));
-extern tree build_x_indirect_ref		PROTO((tree, char *));
-extern tree build_indirect_ref			PROTO((tree, char *));
+extern tree build_x_indirect_ref		PROTO((tree, const char *));
+extern tree build_indirect_ref			PROTO((tree, const char *));
 extern tree build_array_ref			PROTO((tree, tree));
 extern tree build_x_function_call		PROTO((tree, tree, tree));
 extern tree get_member_function_from_ptrfunc	PROTO((tree *, tree));
@@ -3453,7 +3455,7 @@ extern tree convert_arguments			PROTO((tree, tree, tree, int));
 extern tree build_x_binary_op			PROTO((enum tree_code, tree, tree));
 extern tree build_binary_op			PROTO((enum tree_code, tree, tree, int));
 extern tree build_binary_op_nodefault		PROTO((enum tree_code, tree, tree, enum tree_code));
-extern tree build_component_addr		PROTO((tree, tree, char *));
+extern tree build_component_addr		PROTO((tree, tree, const char *));
 extern tree build_x_unary_op			PROTO((enum tree_code, tree));
 extern tree build_unary_op			PROTO((enum tree_code, tree, int));
 extern tree unary_complex_lvalue		PROTO((enum tree_code, tree));
@@ -3468,8 +3470,7 @@ extern tree build_const_cast			PROTO((tree, tree));
 extern tree build_c_cast			PROTO((tree, tree));
 extern tree build_x_modify_expr			PROTO((tree, enum tree_code, tree));
 extern tree build_modify_expr			PROTO((tree, enum tree_code, tree));
-extern void warn_for_assignment			PROTO((char *, char *, char *, tree, int, int));
-extern tree convert_for_initialization		PROTO((tree, tree, tree, int, char *, tree, int));
+extern tree convert_for_initialization		PROTO((tree, tree, tree, int, const char *, tree, int));
 extern void c_expand_asm_operands		PROTO((tree, tree, tree, tree, int, char *, int));
 extern void c_expand_return			PROTO((tree));
 extern tree c_expand_start_case			PROTO((tree));
@@ -3488,7 +3489,7 @@ extern tree pfn_from_ptrmemfunc                 PROTO((tree));
 /* in typeck2.c */
 extern tree error_not_base_type			PROTO((tree, tree));
 extern tree binfo_or_else			PROTO((tree, tree));
-extern void readonly_error			PROTO((tree, char *, int));
+extern void readonly_error			PROTO((tree, const char *, int));
 extern void abstract_virtuals_error		PROTO((tree, tree));
 extern void signature_error			PROTO((tree, tree));
 extern void incomplete_type_error		PROTO((tree, tree));
@@ -3503,18 +3504,18 @@ extern tree build_m_component_ref		PROTO((tree, tree));
 extern tree build_functional_cast		PROTO((tree, tree));
 extern char *enum_name_string			PROTO((tree, tree));
 extern void report_case_error			PROTO((int, tree, tree, tree));
-extern void check_for_new_type			PROTO((char *,flagged_type_tree));
+extern void check_for_new_type			PROTO((const char *, flagged_type_tree));
 extern tree initializer_constant_valid_p	PROTO((tree, tree));
 
 /* in xref.c */
-extern void GNU_xref_begin			PROTO((char *));
+extern void GNU_xref_begin			PROTO((const char *));
 extern void GNU_xref_end			PROTO((int));
-extern void GNU_xref_file			PROTO((char *));
+extern void GNU_xref_file			PROTO((const char *));
 extern void GNU_xref_start_scope		PROTO((HOST_WIDE_INT));
 extern void GNU_xref_end_scope			PROTO((HOST_WIDE_INT, HOST_WIDE_INT, int, int));
-extern void GNU_xref_ref			PROTO((tree, char *));
+extern void GNU_xref_ref			PROTO((tree, const char *));
 extern void GNU_xref_decl			PROTO((tree, tree));
-extern void GNU_xref_call			PROTO((tree, char *));
+extern void GNU_xref_call			PROTO((tree, const char *));
 extern void GNU_xref_function			PROTO((tree, tree));
 extern void GNU_xref_assign			PROTO((tree));
 extern void GNU_xref_hier			PROTO((tree, tree, int, int, int));

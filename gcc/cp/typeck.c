@@ -39,9 +39,7 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "toplev.h"
 
-extern void compiler_error ();
-
-static tree convert_for_assignment PROTO((tree, tree, char*, tree,
+static tree convert_for_assignment PROTO((tree, tree, const char *, tree,
 					  int));
 static tree pointer_int_sum PROTO((enum tree_code, tree, tree));
 static tree rationalize_conditional_expr PROTO((enum tree_code, tree));
@@ -59,6 +57,7 @@ static tree lookup_anon_field PROTO((tree, tree));
 static tree pointer_diff PROTO((tree, tree, tree));
 static tree qualify_type PROTO((tree, tree));
 static tree get_delta_difference PROTO((tree, tree, int));
+static int comp_cv_target_types PROTO((tree, tree, int));
 
 /* Return the target type of TYPE, which meas return T for:
    T*, T&, T[], T (...), and otherwise, just T.  */
@@ -2322,7 +2321,7 @@ build_x_component_ref (datum, component, basetype_path, protect)
 tree
 build_x_indirect_ref (ptr, errorstring)
      tree ptr;
-     char *errorstring;
+     const char *errorstring;
 {
   tree rval;
 
@@ -2339,7 +2338,7 @@ build_x_indirect_ref (ptr, errorstring)
 tree
 build_indirect_ref (ptr, errorstring)
      tree ptr;
-     char *errorstring;
+     const char *errorstring;
 {
   register tree pointer, type;
 
@@ -3084,7 +3083,7 @@ convert_arguments (typelist, values, fndecl, flags)
 {
   register tree typetail, valtail;
   register tree result = NULL_TREE;
-  char *called_thing = 0;
+  const char *called_thing = 0;
   int i = 0;
 
   /* Argument passing is always copy-initialization.  */
@@ -4247,7 +4246,7 @@ pointer_diff (op0, op1, ptrtype)
 tree
 build_component_addr (arg, argtype, msg)
      tree arg, argtype;
-     char *msg;
+     const char *msg;
 {
   tree field = TREE_OPERAND (arg, 1);
   tree basetype = decl_type_context (field);
@@ -4359,7 +4358,7 @@ build_unary_op (code, xarg, noconvert)
   /* No default_conversion here.  It causes trouble for ADDR_EXPR.  */
   register tree arg = xarg;
   register tree argtype = 0;
-  char *errstring = NULL;
+  const char *errstring = NULL;
   tree val;
 
   if (arg == error_mark_node)
@@ -6643,7 +6642,7 @@ pfn_from_ptrmemfunc (t)
 static tree
 convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
      tree type, rhs;
-     char *errtype;
+     const char *errtype;
      tree fndecl;
      int parmnum;
 {
@@ -7078,7 +7077,7 @@ tree
 convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
      tree exp, type, rhs;
      int flags;
-     char *errtype;
+     const char *errtype;
      tree fndecl;
      int parmnum;
 {

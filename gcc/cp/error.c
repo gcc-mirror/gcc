@@ -110,6 +110,7 @@ static void dump_parameters PROTO((tree, int, int));
 static void dump_exception_spec PROTO((tree, int));
 static char *aggr_variety PROTO((tree));
 static tree ident_fndecl PROTO((tree));
+static int interesting_scope_p PROTO((tree));
 
 void
 init_error ()

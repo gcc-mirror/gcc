@@ -32,8 +32,6 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "toplev.h"
 
-extern void compiler_error ();
-
 /* In C++, structures with well-defined constructors are initialized by
    those constructors, unasked.  CURRENT_BASE_INIT_LIST
    holds a list of stmts for a BASE_INIT term in the grammar.
@@ -54,13 +52,14 @@ static tree build_vec_delete_1 PROTO((tree, tree, tree, tree, tree,
 static void perform_member_init PROTO((tree, tree, tree, int));
 static void sort_base_init PROTO((tree, tree *, tree *));
 static tree build_builtin_delete_call PROTO((tree));
-static int member_init_ok_or_else PROTO((tree, tree, char *));
+static int member_init_ok_or_else PROTO((tree, tree, const char *));
 static void expand_virtual_init PROTO((tree, tree));
 static tree sort_member_init PROTO((tree));
 static tree build_partial_cleanup_for PROTO((tree));
 static tree initializing_context PROTO((tree));
 static void expand_vec_init_try_block PROTO((tree));
 static void expand_vec_init_catch_clause PROTO((tree, tree, tree, tree));
+static tree build_java_class_ref PROTO((tree));
 
 /* Cache the identifier nodes for the magic field of a new cookie.  */
 static tree nc_nelts_field_id;
@@ -848,7 +847,7 @@ static int
 member_init_ok_or_else (field, type, member_name)
      tree field;
      tree type;
-     char *member_name;
+     const char *member_name;
 {
   if (field == error_mark_node)
     return 0;
@@ -2061,7 +2060,7 @@ static tree jclass_node = NULL_TREE;
 
 /* Given a Java class, return a decl for the corresponding java.lang.Class. */
 
-tree
+static tree
 build_java_class_ref (type)
      tree type;
 {

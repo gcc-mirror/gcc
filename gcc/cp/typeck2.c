@@ -38,6 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 
 static tree process_init_constructor PROTO((tree, tree, tree *));
+static void ack PVPROTO ((const char *, ...)) ATTRIBUTE_PRINTF_1;
 
 extern int errorcount;
 extern int sorrycount;
@@ -80,11 +81,11 @@ binfo_or_else (parent_or_type, type)
 void
 readonly_error (arg, string, soft)
      tree arg;
-     char *string;
+     const char *string;
      int soft;
 {
-  char *fmt;
-  void (*fn)();
+  const char *fmt;
+  void (*fn) PVPROTO ((const char *, ...));
 
   if (soft)
     fn = cp_pedwarn;
@@ -274,19 +275,28 @@ retry:
 /* Like error(), but don't call report_error_function().  */
 
 static void
-ack (s, v, v2)
-     char *s;
-     HOST_WIDE_INT v;
-     HOST_WIDE_INT v2;
+ack VPROTO ((const char *msg, ...))
 {
+#ifndef ANSI_PROTOTYPES
+  const char *msg;
+#endif
+  va_list ap;
   extern char * progname;
+  
+  VA_START (ap, msg);
+
+#ifndef ANSI_PROTOTYPES
+  msg = va_arg (ap, const char *);
+#endif
   
   if (input_filename)
     fprintf (stderr, "%s:%d: ", input_filename, lineno);
   else
     fprintf (stderr, "%s: ", progname);
 
-  fprintf (stderr, s, v, v2);
+  vfprintf (stderr, msg, ap);
+  va_end (ap);
+  
   fprintf (stderr, "\n");
 }
   
@@ -1640,7 +1650,7 @@ report_case_error (code, type, new_value, old_value)
 
 void
 check_for_new_type (string, inptree)
-     char *string;
+     const char *string;
      flagged_type_tree inptree;
 {
   if (inptree.new_type_flag

@@ -134,7 +134,7 @@ static struct stack_level *decl_stack;
 
 static tree grokparms				PROTO((tree, int));
 static tree lookup_nested_type			PROTO((tree, tree));
-static char *redeclaration_error_message	PROTO((tree, tree));
+static const char *redeclaration_error_message	PROTO((tree, tree));
 
 static struct stack_level *push_decl_level PROTO((struct stack_level *,
 						  struct obstack *));
@@ -167,10 +167,10 @@ static tree lookup_tag PROTO((enum tree_code, tree,
 			      struct binding_level *, int));
 static void set_identifier_type_value_with_scope
 	PROTO((tree, tree, struct binding_level *));
-static void record_builtin_type PROTO((enum rid, char *, tree));
-static void record_unknown_type PROTO((tree, char *));
-static int member_function_or_else PROTO((tree, tree, char *));
-static void bad_specifiers PROTO((tree, char *, int, int, int, int,
+static void record_builtin_type PROTO((enum rid, const char *, tree));
+static void record_unknown_type PROTO((tree, const char *));
+static int member_function_or_else PROTO((tree, tree, const char *));
+static void bad_specifiers PROTO((tree, const char *, int, int, int, int,
 				  int));
 static void lang_print_error_function PROTO((char *));
 static tree maybe_process_template_type_declaration PROTO((tree, int, struct binding_level*));
@@ -181,6 +181,13 @@ static void push_binding PROTO((tree, tree, struct binding_level*));
 static void add_binding PROTO((tree, tree));
 static void pop_binding PROTO((tree, tree));
 static tree local_variable_p PROTO((tree));
+static tree find_binding PROTO((tree, tree));
+static tree select_decl PROTO((tree, int));
+static tree unqualified_namespace_lookup PROTO((tree, int));
+static int lookup_flags PROTO((int, int));
+static tree qualify_lookup PROTO((tree, int));
+static tree record_builtin_java_type PROTO((const char *, int));
+static const char *tag_name PROTO((enum tag_types code));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
 static void indent PROTO((void));
@@ -2815,9 +2822,9 @@ warn_extern_redeclared_static (newdecl, olddecl)
 {
   tree name;
 
-  static char *explicit_extern_static_warning
+  static const char *explicit_extern_static_warning
     = "`%D' was declared `extern' and later `static'";
-  static char *implicit_extern_static_warning
+  static const char *implicit_extern_static_warning
     = "`%D' was declared implicitly `extern' and later `static'";
 
   if (TREE_CODE (newdecl) == TYPE_DECL)
@@ -3042,7 +3049,7 @@ duplicate_decls (newdecl, olddecl)
     return 1;
   else
     {
-      char *errmsg = redeclaration_error_message (newdecl, olddecl);
+      const char *errmsg = redeclaration_error_message (newdecl, olddecl);
       if (errmsg)
 	{
 	  cp_error (errmsg, newdecl);
@@ -3895,7 +3902,7 @@ pushdecl (x)
 		   /* No shadow warnings for vars made for inlining.  */
 		   && ! DECL_FROM_INLINE (x))
 	    {
-	      char *warnstring = NULL;
+	      const char *warnstring = NULL;
 
 	      if (oldlocal != NULL_TREE && TREE_CODE (oldlocal) == PARM_DECL)
 		warnstring = "declaration of `%s' shadows a parameter";
@@ -4372,7 +4379,7 @@ implicitly_declare (functionid)
    Otherwise return an error message format string with a %s
    where the identifier should go.  */
 
-static char *
+static const char *
 redeclaration_error_message (newdecl, olddecl)
      tree newdecl, olddecl;
 {
@@ -5737,7 +5744,7 @@ static int builtin_type_tdescs_len, builtin_type_tdescs_max;
 static void
 record_builtin_type (rid_index, name, type)
      enum rid rid_index;
-     char *name;
+     const char *name;
      tree type;
 {
   tree rname = NULL_TREE, tname = NULL_TREE;
@@ -5780,7 +5787,7 @@ record_builtin_type (rid_index, name, type)
 
 static tree
 record_builtin_java_type (name, size)
-     char *name;
+     const char *name;
      int size;
 {
   tree type, decl;
@@ -5809,7 +5816,7 @@ record_builtin_java_type (name, size)
 static void
 record_unknown_type (type, name)
      tree type;
-     char *name;
+     const char *name;
 {
   tree decl = pushdecl (build_decl (TYPE_DECL, get_identifier (name), type));
   /* Make sure the "unknown type" typedecl gets ignored for debug info.  */
@@ -6628,11 +6635,11 @@ lang_print_error_function (file)
 
 tree
 define_function (name, type, function_code, pfn, library_name)
-     char *name;
+     const char *name;
      tree type;
      enum built_in_function function_code;
      void (*pfn) PROTO((tree));
-     char *library_name;
+     const char *library_name;
 {
   tree decl = build_lang_decl (FUNCTION_DECL, get_identifier (name), type);
   DECL_EXTERNAL (decl) = 1;
@@ -8303,7 +8310,7 @@ complete_array_type (type, initial_value, do_default)
 static int
 member_function_or_else (ctype, cur_type, string)
      tree ctype, cur_type;
-     char *string;
+     const char *string;
 {
   if (ctype && ctype != cur_type)
     {
@@ -8321,7 +8328,7 @@ member_function_or_else (ctype, cur_type, string)
 static void
 bad_specifiers (object, type, virtualp, quals, inlinep, friendp, raises)
      tree object;
-     char *type;
+     const char *type;
      int virtualp, quals, friendp, raises, inlinep;
 {
   if (virtualp)
@@ -11923,7 +11930,7 @@ grok_op_properties (decl, virtualp, friendp)
 	  else if (! friendp)
 	    {
 	      int ref = (TREE_CODE (t) == REFERENCE_TYPE);
-	      char *what = 0;
+	      const char *what = 0;
 	      if (ref)
 		t = TYPE_MAIN_VARIANT (TREE_TYPE (t));
 
@@ -12078,7 +12085,7 @@ grok_op_properties (decl, virtualp, friendp)
     }
 }
 
-static char *
+static const char *
 tag_name (code)
      enum tag_types code;
 {

@@ -58,6 +58,18 @@ static int is_namespace_ancestor PROTO((tree, tree));
 static void add_using_namespace PROTO((tree, tree, int));
 static tree ambiguous_decl PROTO((tree, tree, tree,int));
 static tree build_anon_union_vars PROTO((tree, tree*, int, int));
+static int acceptable_java_type PROTO((tree));
+static void output_vtable_inherit PROTO((tree));
+static void setup_initp PROTO((void));
+static void start_objects PROTO((int, int));
+static void finish_objects PROTO((int, int));
+static void do_dtors PROTO((tree));
+static void do_ctors PROTO((tree));
+static tree merge_functions PROTO((tree, tree));
+static tree decl_namespace PROTO((tree));
+static tree validate_nonmember_using_decl PROTO((tree, tree *, tree *));
+static void do_nonmember_using_decl PROTO((tree, tree, tree, tree,
+					   tree *, tree *));
 
 extern int current_class_depth;
 
@@ -441,7 +453,8 @@ int flag_permissive;
     if `-fSTRING' is seen as an option.
    (If `-fno-STRING' is seen as an option, the opposite value is stored.)  */
 
-static struct { char *string; int *variable; int on_value;} lang_f_options[] =
+static struct { const char *string; int *variable; int on_value;}
+lang_f_options[] =
 {
   /* C/C++ options.  */
   {"signed-char", &flag_signed_char, 1},
@@ -1234,7 +1247,7 @@ check_member_template (tmpl)
 
 /* Return true iff TYPE is a valid Java parameter or return type. */
 
-int
+static int
 acceptable_java_type (type)
      tree type;
 {
@@ -2202,7 +2215,7 @@ finish_anon_union (anon_union_decl)
 void
 finish_builtin_type (type, name, fields, len, align_type)
      tree type;
-     char *name;
+     const char *name;
      tree fields[];
      int len;
      tree align_type;
@@ -4272,7 +4285,7 @@ set_decl_namespace (decl, scope, friendp)
 
 /* Compute the namespace where a declaration is defined. */
 
-tree
+static tree
 decl_namespace (decl)
      tree decl;
 {
@@ -4364,6 +4377,9 @@ struct arg_lookup
 static int arg_assoc         PROTO((struct arg_lookup*, tree));
 static int arg_assoc_args    PROTO((struct arg_lookup*, tree));
 static int arg_assoc_type    PROTO((struct arg_lookup*, tree));
+static int add_function      PROTO((struct arg_lookup *, tree));
+static int arg_assoc_namespace PROTO((struct arg_lookup *, tree));
+static int arg_assoc_class   PROTO((struct arg_lookup *, tree));
 
 /* Add a function to the lookup structure.
    Returns 1 on error.  */

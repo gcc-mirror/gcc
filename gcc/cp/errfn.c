@@ -22,6 +22,7 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include "system.h"
 #include "tree.h"
+#include "cp-tree.h"
 #include "toplev.h"
 
 /* cp_printer is the type of a function which converts an argument into
@@ -39,6 +40,7 @@ int cp_silent = 0;
 
 typedef void errorfn ();	/* deliberately vague */
 
+static void cp_thing PROTO ((errorfn *, int, const char *, va_list));
 extern char* cp_file_of PROTO((tree));
 extern int   cp_line_of PROTO((tree));
 
@@ -246,8 +248,6 @@ cp_pedwarn VPROTO((const char *format, ...))
   va_end (ap);
 }
 
-extern errorfn compiler_error;
-
 void
 cp_compiler_error VPROTO((const char *format, ...))
 {
@@ -263,7 +263,7 @@ cp_compiler_error VPROTO((const char *format, ...))
 #endif
 
   if (! cp_silent)
-    cp_thing (compiler_error, 0, format, ap);
+    cp_thing ((errorfn *) compiler_error, 0, format, ap);
   va_end (ap);
 }
 

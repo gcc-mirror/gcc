@@ -35,7 +35,7 @@ Boston, MA 02111-1307, USA.  */
 
 extern struct obstack permanent_obstack;
 
-static tree call_void_fn PROTO((char *));
+static tree call_void_fn PROTO((const char *));
 static tree build_headof_sub PROTO((tree));
 static tree build_headof PROTO((tree));
 static tree get_tinfo_var PROTO((tree));
@@ -45,7 +45,7 @@ static void expand_si_desc PROTO((tree, tree));
 static void expand_class_desc PROTO((tree, tree));
 static void expand_attr_desc PROTO((tree, tree));
 static void expand_ptr_desc PROTO((tree, tree));
-static void expand_generic_desc PROTO((tree, tree, char *));
+static void expand_generic_desc PROTO((tree, tree, const char *));
 static tree throw_bad_cast PROTO((void));
 static tree throw_bad_typeid PROTO((void));
 
@@ -133,7 +133,7 @@ build_headof (exp)
 
 static tree
 call_void_fn (name)
-     char *name;
+     const char *name;
 {
   tree d = get_identifier (name);
   tree type;
@@ -719,7 +719,7 @@ expand_si_desc (tdecl, type)
      tree type;
 {
   tree t, elems, fn;
-  char *name = build_overload_name (type, 1, 1);
+  const char *name = build_overload_name (type, 1, 1);
   tree name_string = combine_strings (build_string (strlen (name)+1, name));
 
   type = BINFO_TYPE (TREE_VEC_ELT (TYPE_BINFO_BASETYPES (type), 0));
@@ -767,7 +767,7 @@ expand_class_desc (tdecl, type)
 {
   tree name_string;
   tree fn, tmp;
-  char *name;
+  const char *name;
 
   int i = CLASSTYPE_N_BASECLASSES (type);
   int base_cnt = 0;
@@ -827,7 +827,7 @@ expand_class_desc (tdecl, type)
       if (TREE_VIA_VIRTUAL (binfo))
 	{
 	  tree t = BINFO_TYPE (binfo);
-	  char *name;
+	  const char *name;
 	  tree field;
 
 	  FORMAT_VBASE_NAME (name, t);
@@ -947,7 +947,7 @@ expand_ptr_desc (tdecl, type)
      tree type;
 {
   tree t, elems, fn;
-  char *name = build_overload_name (type, 1, 1);
+  const char *name = build_overload_name (type, 1, 1);
   tree name_string = combine_strings (build_string (strlen (name)+1, name));
 
   type = TREE_TYPE (type);
@@ -994,7 +994,7 @@ expand_attr_desc (tdecl, type)
      tree type;
 {
   tree elems, t, fn;
-  char *name = build_overload_name (type, 1, 1);
+  const char *name = build_overload_name (type, 1, 1);
   tree name_string = combine_strings (build_string (strlen (name)+1, name));
   tree attrval = build_int_2 (TYPE_QUALS (type), 0);
 
@@ -1040,9 +1040,9 @@ static void
 expand_generic_desc (tdecl, type, fnname)
      tree tdecl;
      tree type;
-     char *fnname;
+     const char *fnname;
 {
-  char *name = build_overload_name (type, 1, 1);
+  const char *name = build_overload_name (type, 1, 1);
   tree name_string = combine_strings (build_string (strlen (name)+1, name));
   tree elems = tree_cons
     (NULL_TREE, decay_conversion (tdecl), tree_cons

@@ -33,8 +33,6 @@ extern struct obstack *current_obstack;
 extern struct obstack permanent_obstack;
 extern struct obstack *saveable_obstack;
 
-extern void compiler_error ();
-
 static tree save_this PROTO((tree));
 static tree build_sptr_ref PROTO((tree));
 static tree build_member_function_pointer PROTO((tree));
@@ -63,14 +61,14 @@ build_signature_pointer_or_reference_name (to_type, type_quals, refp)
      int type_quals;
      int refp;
 {
-  char * sig_name = TYPE_NAME_STRING (to_type);
+  const char * sig_name = TYPE_NAME_STRING (to_type);
   int name_len = TYPE_NAME_LENGTH (to_type) + 3 /* Enough room for
 						   C,V,R.  */;
   char * name;
 
-  char *const_rep = (type_quals & TYPE_QUAL_CONST) ? "C" : "";
-  char *restrict_rep = (type_quals & TYPE_QUAL_RESTRICT) ? "R" : ""; 
-  char *volatile_rep = (type_quals & TYPE_QUAL_VOLATILE) ? "C" : "";
+  const char *const_rep = (type_quals & TYPE_QUAL_CONST) ? "C" : "";
+  const char *restrict_rep = (type_quals & TYPE_QUAL_RESTRICT) ? "R" : ""; 
+  const char *volatile_rep = (type_quals & TYPE_QUAL_VOLATILE) ? "C" : "";
 
   if (refp)
     {
@@ -288,8 +286,8 @@ get_sigtable_name (sig_type, rhs_type)
   char *buf = (char *) alloca (sizeof (SIGTABLE_NAME_FORMAT_LONG)
 			       + IDENTIFIER_LENGTH (sig_type_id)
 			       + IDENTIFIER_LENGTH (rhs_type_id) + 20);
-  char *sig_ptr = IDENTIFIER_POINTER (sig_type_id);
-  char *rhs_ptr = IDENTIFIER_POINTER (rhs_type_id);
+  const char *sig_ptr = IDENTIFIER_POINTER (sig_type_id);
+  const char *rhs_ptr = IDENTIFIER_POINTER (rhs_type_id);
   int i, j;
 
   for (i = 0; sig_ptr[i] == OPERATOR_TYPENAME_FORMAT[i]; i++)
@@ -316,7 +314,7 @@ static tree
 build_member_function_pointer (member)
      tree member;
 {
-  char *namstr = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (member));
+  const char *namstr = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (member));
   int namlen = IDENTIFIER_LENGTH (DECL_ASSEMBLER_NAME (member));
   char *name;
   tree entry;

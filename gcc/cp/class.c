@@ -134,6 +134,10 @@ static void check_member_decl_is_same_in_complete_scope PROTO((tree, tree));
 static tree make_method_vec PROTO((int));
 static void free_method_vec PROTO((tree));
 static tree add_implicitly_declared_members PROTO((tree, int, int, int));
+static tree fixed_type_or_null PROTO((tree, int *));
+static tree resolve_address_of_overloaded_function PROTO((tree, tree, int,
+							  int, tree));
+static void build_vtable_entry_ref PROTO((tree, tree, tree));
 
 /* Way of stacking language names.  */
 tree *current_lang_base, *current_lang_stack;
@@ -604,7 +608,7 @@ get_vtable_name (type)
   tree type_id = build_typename_overload (type);
   char *buf = (char *) alloca (strlen (VTABLE_NAME_FORMAT)
 			       + IDENTIFIER_LENGTH (type_id) + 2);
-  char *ptr = IDENTIFIER_POINTER (type_id);
+  const char *ptr = IDENTIFIER_POINTER (type_id);
   int i;
   for (i = 0; ptr[i] == OPERATOR_TYPENAME_FORMAT[i]; i++) ;
 #if 0
@@ -3718,7 +3722,7 @@ finish_struct_1 (t, warn_anon)
 		      
 	      if (code == UNION_TYPE)
 		{
-		  char *fie = NULL;
+		  const char *fie = NULL;
 		  if (TYPE_NEEDS_CONSTRUCTING (type))
 		    fie = "constructor";
 		  else if (TYPE_NEEDS_DESTRUCTOR (type))
@@ -4496,7 +4500,7 @@ finish_struct (t, attributes, warn_anon)
    *NONNULL is set iff INSTANCE can be known to be nonnull, regardless
    of our knowledge of its type.  */
 
-tree
+static tree
 fixed_type_or_null (instance, nonnull)
      tree instance;
      int *nonnull;
