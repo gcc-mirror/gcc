@@ -1,5 +1,8 @@
 1999-08-26  Mark Mitchell  <mark@codesourcery.com>
 
+	* tree.c (store_parm_decls): Reset immediate_size_expand.
+	(finish_function): Likewise.
+	
 	* tree.c (cplus_unsave_expr_now): Don't return a value.
 
 	* semantics.c (do_poplevel): Always initialize the return value.
