@@ -1,3 +1,54 @@
+2004-09-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* configure.ac: Check for COMDAT support.  Robustify check for
+	SHF_MERGE support.
+	* configure: Regenerated.
+	* config.in: Likewise.
+	* langhooks-def.h (lhd_comdat_group): New function.
+	(LANG_HOOKS_COMDAT_GROUP): New macro.
+	(LANG_HOOKS_DECLS): Use it.
+	* langhooks.c (lhd_comdat_group): Define.
+	* langhooks.h (lang_hooks_for_decls): Add comdat_group.
+	* output.h (named_section_flags): Make it a macro.
+	(named_section_real): New function.
+	(default_no_named_section): Add decl parameter.
+	(default_elf_asm_named_section): Likewise.
+	(default_coff_asm_named_section): Likewise.
+	(default_pe_asm_named_section): Likewise.
+	* target.h (gcc_target): Adjust type of named_section.
+	* varasm.c (named_section_flags): Rename to named_section_real.
+	Add decl parameter.
+	(default_no_named_section): Add decl parameter.
+	(default_elf_asm_named_section): Use COMDAT, if available.  Deal
+	with the case that ASM_COMMENT_START is "@".
+	(default_coff_asm_named_section): Add decl parameter.
+	(default_pe_asm_named_section): Likewise.
+	* config/alpha/alpha.c (vms_asm_named_section): Add decl
+	parameter.
+	(unicosmk_asm_named_section): Likewise.
+	* config/arm/arm.c (arm_elf_asm_named_section): Remove.
+	* config/arm/elf.h (TARGET_ASM_NAMED_SECTION): Likewise.
+	* config/c4x/c4x.c (c4x_asm_named_section): Add decl parameter.
+	* config/cris/cris-protos.h (cris_target_asm_named_section):
+	Likewise.
+	* config/cris/cris.c (cris_target_asm_named_section):
+	Likewise.
+	* config/darwin/darwin-protos.h (darwin_asm_named_section):
+	Likewise.
+	* config/darwin/darwin.c (darwin_asm_named_section): Likewise.
+	* config/h8300/h8300.c (h8300_asm_named_section): Likewise.
+	* config/i386/i386-protos.h (i386_pe_asm_named_section):
+	Likewise.
+	* config/i386/winnt.c (i386_pe_asm_named_section): Likewise.
+	* config/m68k/m68k.c (m68k_coff_asm_named_section): Likewise.
+	* config/mcore/mcore.c (mcore_asm_named_section): Likewise.
+	* config/rs6000/rs6000.c (rs6000_xcoff_asm_named_section):
+	Likewise.
+	* config/sparc/sparc.c (sparce_elf_asm_named_section): Likewise.
+	* cp/cp-lang.h (LANG_HOOKS_COMDAT_GROUP): Define.
+	* cp/cp-tree.h (cxx_comdat_group): Declare.
+	* cp/decl.c (cxx_comdat_group): New function.
+
 2004-09-15  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa.c (verify_flow_sensitive_alias_info): Do not walk dead nodes.

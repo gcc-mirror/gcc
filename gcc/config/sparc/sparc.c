@@ -304,7 +304,7 @@ static void emit_restore_regs (void);
 static void sparc_asm_function_prologue (FILE *, HOST_WIDE_INT);
 static void sparc_asm_function_epilogue (FILE *, HOST_WIDE_INT);
 #ifdef OBJECT_FORMAT_ELF
-static void sparc_elf_asm_named_section (const char *, unsigned int);
+static void sparc_elf_asm_named_section (const char *, unsigned int, tree);
 #endif
 
 static int sparc_adjust_cost (rtx, rtx, rtx, int);
@@ -8060,13 +8060,14 @@ sparc_profile_hook (int labelno)
 
 #ifdef OBJECT_FORMAT_ELF
 static void
-sparc_elf_asm_named_section (const char *name, unsigned int flags)
+sparc_elf_asm_named_section (const char *name, unsigned int flags,
+			     tree decl)
 {
   if (flags & SECTION_MERGE)
     {
       /* entsize cannot be expressed in this section attributes
 	 encoding style.  */
-      default_elf_asm_named_section (name, flags);
+      default_elf_asm_named_section (name, flags, decl);
       return;
     }
 

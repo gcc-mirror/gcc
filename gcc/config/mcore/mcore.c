@@ -138,7 +138,7 @@ const struct attribute_spec mcore_attribute_table[];
 static tree       mcore_handle_naked_attribute  (tree *, tree, tree, int, bool *);
 #ifdef OBJECT_FORMAT_ELF
 static void	  mcore_asm_named_section       (const char *,
-							unsigned int);
+						 unsigned int, tree);
 #endif
 static void       mcore_unique_section	        (tree, int);
 static void mcore_encode_section_info		(tree, rtx, int);
@@ -3424,7 +3424,9 @@ mcore_naked_function_p (void)
 
 #ifdef OBJECT_FORMAT_ELF
 static void
-mcore_asm_named_section (const char *name, unsigned int flags ATTRIBUTE_UNUSED)
+mcore_asm_named_section (const char *name, 
+			 unsigned int flags ATTRIBUTE_UNUSED,
+			 tree decl ATTRIBUTE_UNUSED)
 {
   fprintf (asm_out_file, "\t.section %s\n", name);
 }

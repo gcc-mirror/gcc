@@ -10883,4 +10883,24 @@ cp_missing_noreturn_ok_p (tree decl)
   return DECL_MAIN_P (decl);
 }
 
+/* Return the COMDAT group into which DECL should be placed.  */
+
+const char *
+cxx_comdat_group (tree decl)
+{
+  tree name;
+
+  /* Virtual tables, construction virtual tables, and virtual table
+     tables all go in a single COMDAT group, named after the primary
+     virtual table.  */
+  if (TREE_CODE (decl) == VAR_DECL && DECL_VTABLE_OR_VTT_P (decl))
+    name = DECL_ASSEMBLER_NAME (CLASSTYPE_VTABLES (DECL_CONTEXT (decl)));
+  /* For all other DECLs, the COMDAT group is the mangled name of the
+     declaration itself.  */
+  else
+    name = DECL_ASSEMBLER_NAME (decl);
+
+  return IDENTIFIER_POINTER (name);
+}
+
 #include "gt-cp-decl.h"

@@ -8455,7 +8455,8 @@ vms_section_type_flags (tree decl, const char *name, int reloc)
    the section; 0 if the default should be used.  */
 
 static void
-vms_asm_named_section (const char *name, unsigned int flags)
+vms_asm_named_section (const char *name, unsigned int flags, 
+		       tree decl ATTRIBUTE_UNUSED)
 {
   fputc ('\n', asm_out_file);
   fprintf (asm_out_file, ".section\t%s", name);
@@ -8679,7 +8680,8 @@ unicosmk_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED)
    the section; 0 if the default should be used.  */
 
 static void
-unicosmk_asm_named_section (const char *name, unsigned int flags)
+unicosmk_asm_named_section (const char *name, unsigned int flags, 
+			    tree decl ATTRIBUTE_UNUSED)
 {
   const char *kind;
 

@@ -108,7 +108,7 @@ static const char *singlemove_string (rtx *);
 static void m68k_output_function_prologue (FILE *, HOST_WIDE_INT);
 static void m68k_output_function_epilogue (FILE *, HOST_WIDE_INT);
 #ifdef M68K_TARGET_COFF
-static void m68k_coff_asm_named_section (const char *, unsigned int);
+static void m68k_coff_asm_named_section (const char *, unsigned int, tree);
 #endif /* M68K_TARGET_COFF */
 static void m68k_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 					  HOST_WIDE_INT, tree);
@@ -3324,7 +3324,8 @@ output_xorsi3 (rtx *operands)
 /* Output assembly to switch to section NAME with attribute FLAGS.  */
 
 static void
-m68k_coff_asm_named_section (const char *name, unsigned int flags)
+m68k_coff_asm_named_section (const char *name, unsigned int flags, 
+			     tree decl ATTRIBUTE_UNUSED)
 {
   char flagchar;
 

@@ -3789,6 +3789,7 @@ extern tree builtin_function (const char *name, tree type,
 			      const char *libname, tree attrs);
 extern tree check_elaborated_type_specifier     (enum tag_types, tree, bool);
 extern void warn_extern_redeclared_static (tree, tree);
+extern const char *cxx_comdat_group             (tree);
 extern bool cp_missing_noreturn_ok_p		(tree);
 extern void initialize_artificial_var            (tree, tree);
 

@@ -69,7 +69,7 @@ extern void machopic_select_rtx_section (enum machine_mode, rtx,
 					 unsigned HOST_WIDE_INT);
 
 extern void darwin_unique_section (tree decl, int reloc);
-extern void darwin_asm_named_section (const char *, unsigned int);
+extern void darwin_asm_named_section (const char *, unsigned int, tree);
 extern unsigned int darwin_section_type_flags (tree, const char *, int);
 extern void darwin_non_lazy_pcrel (FILE *, rtx);
 

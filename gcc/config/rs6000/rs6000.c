@@ -16932,7 +16932,8 @@ rs6000_xcoff_asm_globalize_label (FILE *stream, const char *name)
 }
 
 static void
-rs6000_xcoff_asm_named_section (const char *name, unsigned int flags)
+rs6000_xcoff_asm_named_section (const char *name, unsigned int flags,
+				tree decl ATTRIBUTE_UNUSED)
 {
   int smclass;
   static const char * const suffix[3] = { "PR", "RO", "RW" };

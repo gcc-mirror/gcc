@@ -417,17 +417,19 @@ set_named_section_flags (const char *section, unsigned int flags)
   return true;
 }
 
-/* Tell assembler to change to section NAME with attributes FLAGS.  */
+/* Tell assembler to change to section NAME with attributes FLAGS.  If
+   DECL is non-NULL, it is the VAR_DECL or FUNCTION_DECL with which
+   this section is associated.  */
 
 void
-named_section_flags (const char *name, unsigned int flags)
+named_section_real (const char *name, unsigned int flags, tree decl)
 {
   if (in_section != in_named || strcmp (name, in_named_name) != 0)
     {
       if (! set_named_section_flags (name, flags))
 	abort ();
 
-      targetm.asm_out.named_section (name, flags);
+      targetm.asm_out.named_section (name, flags, decl);
 
       if (flags & SECTION_FORGET)
 	in_section = no_section;
@@ -478,7 +480,7 @@ named_section (tree decl, const char *name, int reloc)
 	error ("%J%D causes a section type conflict", decl, decl);
     }
 
-  named_section_flags (name, flags);
+  named_section_real (name, flags, decl);
 }
 
 /* If required, set DECL_SECTION_NAME to a unique name.  */
@@ -4582,7 +4584,8 @@ default_section_type_flags_1 (tree decl, const char *name, int reloc,
 
 void
 default_no_named_section (const char *name ATTRIBUTE_UNUSED,
-			  unsigned int flags ATTRIBUTE_UNUSED)
+			  unsigned int flags ATTRIBUTE_UNUSED,
+			  tree decl ATTRIBUTE_UNUSED)
 {
   /* Some object formats don't support named sections at all.  The
      front-end should already have flagged this as an error.  */
@@ -4590,11 +4593,17 @@ default_no_named_section (const char *name ATTRIBUTE_UNUSED,
 }
 
 void
-default_elf_asm_named_section (const char *name, unsigned int flags)
+default_elf_asm_named_section (const char *name, unsigned int flags,
+			       tree decl ATTRIBUTE_UNUSED)
 {
   char flagchars[10], *f = flagchars;
 
-  if (! named_section_first_declaration (name))
+  /* If we have already declared this section, we can use an
+     abbreviated form to switch back to it -- unless this section is
+     part of a COMDAT groups, in which case GAS requires the full
+     declaration every time.  */
+  if (!(HAVE_GAS_COMDAT_GROUP && (flags & SECTION_LINKONCE))
+      && ! named_section_first_declaration (name))
     {
       fprintf (asm_out_file, "\t.section\t%s\n", name);
       return;
@@ -4614,6 +4623,8 @@ default_elf_asm_named_section (const char *name, unsigned int flags)
     *f++ = 'S';
   if (flags & SECTION_TLS)
     *f++ = 'T';
+  if (HAVE_GAS_COMDAT_GROUP && (flags & SECTION_LINKONCE))
+    *f++ = 'G';
   *f = '\0';
 
   fprintf (asm_out_file, "\t.section\t%s,\"%s\"", name, flagchars);
@@ -4621,23 +4632,35 @@ default_elf_asm_named_section (const char *name, unsigned int flags)
   if (!(flags & SECTION_NOTYPE))
     {
       const char *type;
+      const char *format;
 
       if (flags & SECTION_BSS)
 	type = "nobits";
       else
 	type = "progbits";
 
-      fprintf (asm_out_file, ",@%s", type);
+      format = ",@%s";
+#ifdef ASM_COMMENT_START
+      /* On platforms that use "@" as the assembly comment character,
+	 use "%" instead.  */
+      if (strcmp (ASM_COMMENT_START, "@") == 0)
+	format = ",%%%s";
+#endif
+      fprintf (asm_out_file, format, type);
 
       if (flags & SECTION_ENTSIZE)
 	fprintf (asm_out_file, ",%d", flags & SECTION_ENTSIZE);
+      if (HAVE_GAS_COMDAT_GROUP && (flags & SECTION_LINKONCE))
+	fprintf (asm_out_file, ",%s,comdat", 
+		 lang_hooks.decls.comdat_group (decl));
     }
 
   putc ('\n', asm_out_file);
 }
 
 void
-default_coff_asm_named_section (const char *name, unsigned int flags)
+default_coff_asm_named_section (const char *name, unsigned int flags, 
+				tree decl ATTRIBUTE_UNUSED)
 {
   char flagchars[8], *f = flagchars;
 
@@ -4651,9 +4674,10 @@ default_coff_asm_named_section (const char *name, unsigned int flags)
 }
 
 void
-default_pe_asm_named_section (const char *name, unsigned int flags)
+default_pe_asm_named_section (const char *name, unsigned int flags,
+			      tree decl)
 {
-  default_coff_asm_named_section (name, flags);
+  default_coff_asm_named_section (name, flags, decl);
 
   if (flags & SECTION_LINKONCE)
     {

@@ -478,15 +478,17 @@ extern void no_asm_to_stream (FILE *);
 
 extern unsigned int get_named_section_flags (const char *);
 extern bool set_named_section_flags (const char *, unsigned int);
-extern void named_section_flags (const char *, unsigned int);
+#define named_section_flags(NAME, FLAGS) \
+  named_section_real((NAME), (FLAGS), /*decl=*/NULL_TREE)
+extern void named_section_real (const char *, unsigned int, tree);
 extern bool named_section_first_declaration (const char *);
 extern unsigned int default_section_type_flags (tree, const char *, int);
 extern unsigned int default_section_type_flags_1 (tree, const char *, int, int);
 
-extern void default_no_named_section (const char *, unsigned int);
-extern void default_elf_asm_named_section (const char *, unsigned int);
-extern void default_coff_asm_named_section (const char *, unsigned int);
-extern void default_pe_asm_named_section (const char *, unsigned int);
+extern void default_no_named_section (const char *, unsigned int, tree);
+extern void default_elf_asm_named_section (const char *, unsigned int, tree);
+extern void default_coff_asm_named_section (const char *, unsigned int, tree);
+extern void default_pe_asm_named_section (const char *, unsigned int, tree);
 
 extern void default_stabs_asm_out_destructor (rtx, int);
 extern void default_named_section_asm_out_destructor (rtx, int);

@@ -119,9 +119,6 @@
 #define TARGET_ASM_FILE_START_APP_OFF true
 #define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
 
-#undef  TARGET_ASM_NAMED_SECTION
-#define TARGET_ASM_NAMED_SECTION  arm_elf_asm_named_section
-
 
 /* For PIC code we need to explicitly specify (PLT) and (GOT) relocs.  */
 #define NEED_PLT_RELOC	flag_pic

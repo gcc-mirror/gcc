@@ -183,6 +183,15 @@ struct lang_hooks_for_decls
 
   /* True if this decl may be called via a sibcall.  */
   bool (*ok_for_sibcall) (tree);
+
+  /* Return the COMDAT group into which this DECL should be placed.
+     It is known that the DECL belongs in *some* COMDAT group when
+     this hook is called.  The return value will be used immediately,
+     but not explicitly deallocated, so implementations should not use
+     xmalloc to allocate the string returned.  (Typically, the return
+     value will be the string already stored in an
+     IDENTIFIER_NODE.)  */
+  const char * (*comdat_group) (tree);
 };
 
 /* Language-specific hooks.  See langhooks-def.h for defaults.  */

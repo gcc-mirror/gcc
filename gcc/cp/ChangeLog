@@ -1,3 +1,9 @@
+2004-09-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-objcp-common.h (LANG_HOOKS_COMDAT_GROUP): Define.
+	* cp-tree.h (cxx_comdat_group): Declare.
+	* decl.c (cxx_comdat_group): New function.
+
 2004-09-15  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* search.c (get_pure_virtuals): Remove unused variables.
