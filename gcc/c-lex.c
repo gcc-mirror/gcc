@@ -49,7 +49,6 @@ Boston, MA 02111-1307, USA.  */
 #include "cpplib.h"
 extern cpp_reader  parse_in;
 extern cpp_options parse_options;
-extern int errorcount;
 #else
 /* Stream for reading from the input file.  */
 FILE *finput;

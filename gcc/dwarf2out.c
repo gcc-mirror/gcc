@@ -8374,7 +8374,6 @@ gen_subprogram_die (decl, context_die)
 	     we should detect this case and ignore it.  For now, if we have
 	     already reported an error, any error at all, then assume that
 	     we got here because of a input error, not a dwarf2 bug.  */
-	  extern int errorcount;
 	  if (errorcount)
 	    return;
 	  abort ();
