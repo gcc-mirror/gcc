@@ -463,6 +463,7 @@ config/rs6000/sysv4le.h
 config/rs6000/vxppc.h
 config/rs6000/xm-beos.h
 config/rs6000/xm-cygwin.h
+config/rs6000/xm-darwin.h
 config/rs6000/xm-lynx.h
 config/rs6000/xm-mach.h
 config/rs6000/xm-rs6000.h
