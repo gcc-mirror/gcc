@@ -195,7 +195,7 @@ Statement expressions are not supported fully in G++, and their fate
 there is unclear.  (It is possible that they will become fully supported
 at some point, or that they will be deprecated, or that the bugs that
 are present will continue to exist indefinitely.)  Presently, statement
-expressions do not work well as default arguments. 
+expressions do not work well as default arguments.
 
 In addition, there are semantic issues with statement-expressions in
 C++.  If you try to use statement-expressions instead of inline
@@ -338,7 +338,7 @@ Another use of label values is in an interpreter for threaded code.
 The labels within the interpreter function can be stored in the
 threaded code for super-fast dispatching.
 
-You may not use this mechanism to jump to code in a different function. 
+You may not use this mechanism to jump to code in a different function.
 If you do that, totally unpredictable things will happen.  The best way to
 avoid this is to store the label address only in automatic variables and
 never pass it as an argument.
@@ -918,7 +918,7 @@ thisline->length = this_length;
 In ISO C89, you would have to give @code{contents} a length of 1, which
 means either you waste space or complicate the argument to @code{malloc}.
 
-In ISO C99, you would use a @dfn{flexible array member}, which is 
+In ISO C99, you would use a @dfn{flexible array member}, which is
 slightly different in syntax and semantics:
 
 @itemize @bullet
@@ -933,7 +933,7 @@ of zero-length arrays, @code{sizeof} evaluates to zero.
 
 @item
 Flexible array members may only appear as the last member of a
-@code{struct} that is otherwise non-empty.  GCC currently allows 
+@code{struct} that is otherwise non-empty.  GCC currently allows
 zero-length arrays anywhere.  You may encounter problems, however,
 defining structures containing only a zero-length array.  Such usage
 is deprecated, and we recommend using zero-length arrays only in
@@ -2528,10 +2528,10 @@ section, consider using the facilities of the linker instead.
 
 @item shared
 @cindex @code{shared} variable attribute
-On Windows NT, in addition to putting variable definitions in a named 
-section, the section can also be shared among all running copies of an 
-executable or DLL. For example, this small program defines shared data 
-by putting it in a named section "shared" and marking the section 
+On Windows NT, in addition to putting variable definitions in a named
+section, the section can also be shared among all running copies of an
+executable or DLL. For example, this small program defines shared data
+by putting it in a named section "shared" and marking the section
 shareable:
 
 @smallexample
@@ -2547,7 +2547,7 @@ main()
 
 @noindent
 You may only use the @code{shared} attribute along with @code{section}
-attribute with a fully initialized global definition because of the way 
+attribute with a fully initialized global definition because of the way
 linkers work.  See @code{section} attribute for more information.
 
 The @code{shared} attribute is only available on Windows NT.
@@ -2822,7 +2822,7 @@ inc (int *a)
 (If you are writing a header file to be included in ISO C programs, write
 @code{__inline__} instead of @code{inline}.  @xref{Alternate Keywords}.)
 You can also make all ``simple enough'' functions inline with the option
-@samp{-finline-functions}. 
+@samp{-finline-functions}.
 
 Note that certain usages in a function definition can make it unsuitable
 for inline substitution.  Among these usages are: use of varargs, use of
@@ -3139,7 +3139,7 @@ across a volatile @code{asm} instruction.  For example:
 asm volatile ("eieio" : : );
 @end example
 
-@noindent 
+@noindent
 Assume @code{addr} contains the address of a memory mapped device
 register.  The PowerPC @code{eieio} instruction (Enforce In-order
 Execution of I/O) tells the cpu to make sure that the store to that
@@ -3838,7 +3838,7 @@ specify the @samp{-O} option.
 
 @findex __builtin_expect
 @item __builtin_expect(@var{exp}, @var{c})
-You may use @code{__builtin_expect} to provide the compiler with 
+You may use @code{__builtin_expect} to provide the compiler with
 branch prediction information.  In general, you should prefer to
 use actual profile feedback for this (@samp{-fprofile-arcs}), as
 programmers are notoriously bad at predicting how their programs
@@ -4518,10 +4518,10 @@ relative ordering.
 @item java_interface
 @cindex java_interface attribute
 
-This type attribute informs C++ that the class is a Java interface.  It may 
+This type attribute informs C++ that the class is a Java interface.  It may
 only be applied to classes declared within an @code{extern "Java"} block.
-Calls to methods declared in this interface will be dispatched using GCJ's 
-interface table mechanism, instead of regular virtual table dispatch.  
+Calls to methods declared in this interface will be dispatched using GCJ's
+interface table mechanism, instead of regular virtual table dispatch.
 
 @end table
 

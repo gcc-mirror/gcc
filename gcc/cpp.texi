@@ -47,7 +47,7 @@ into another language, under the above conditions for modified versions.
 @author Richard M. Stallman
 @page
 @vskip 2pc
-This booklet is eventually intended to form the first chapter of a GNU 
+This booklet is eventually intended to form the first chapter of a GNU
 C Language manual.
 
 @vskip 0pt plus 1filll
@@ -553,7 +553,7 @@ this goal.
 
 @dfn{Inheritance} is what happens when one object or file derives some
 of its contents by virtual copying from another object or file.  In
-the case of C header files, inheritance means that one header file 
+the case of C header files, inheritance means that one header file
 includes another header file and then replaces or adds something.
 
 If the inheriting header file and the base header file have different
@@ -585,7 +585,7 @@ means that any change in where the system's header files are kept
 requires a change somewhere else.
 
 @findex #include_next
-The clean way to solve this problem is to use 
+The clean way to solve this problem is to use
 @samp{#include_next}, which means, ``Include the @emph{next} file with
 this name.''  This directive works like @samp{#include} except in
 searching for the specified file: it starts searching the list of header
@@ -1138,7 +1138,7 @@ used to work around differences between different patch level releases
 of the compiler (for example, if GCC 2.6.2 is known to contain a bug,
 whereas GCC 2.6.3 contains a fix, and you have code which can workaround
 the problem depending on whether the bug is fixed or not, you can test for
-@code{__GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ > 6) || 
+@code{__GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ > 6) ||
 (__GNUC__ == 2 && __GNUC_MINOR__ == 6 && __GNUC_PATCHLEVEL__ >= 3)}).
 
 @item __GNUG__
@@ -1147,8 +1147,8 @@ The GNU C compiler defines this when the compilation language is
 C++; use @samp{__GNUG__} to distinguish between GNU C and GNU
 C++.
 
-@item __cplusplus 
-@findex __cplusplus 
+@item __cplusplus
+@findex __cplusplus
 The ISO standard for C++ requires predefining this variable.  You can
 use @samp{__cplusplus} to test whether a header is compiled by a C
 compiler or a C++ compiler. The compiler currently uses a value of
@@ -1343,7 +1343,7 @@ following definition:
 #define CPP_PREDEFINES "-Dmc68000 -Dsun -Dunix -Dm68k"
 @end example
 
-@noindent 
+@noindent
 This macro is usually specified in @file{tm.h}.
 
 @node Stringification, Concatenation, Predefined, Macros
@@ -2307,7 +2307,7 @@ it looks like:
 #endif /* Not @var{expression} */
 @end example
 
-If @var{expression} is nonzero, and thus the @var{text-if-true} is 
+If @var{expression} is nonzero, and thus the @var{text-if-true} is
 active, then @samp{#else} acts like a failing conditional and the
 @var{text-if-false} is ignored.  Conversely, if the @samp{#if}
 conditional fails, the @var{text-if-false} is considered included.
@@ -3036,7 +3036,7 @@ In the current version of the preprocessor, if @samp{##} appears between
 a comma and a variable arguments parameter, and the variable argument is
 omitted entirely, the comma will be removed from the expansion.  If the
 variable argument is empty, or the token before @samp{##} is not a
-comma, then @samp{##} behaves as a normal token paste.  
+comma, then @samp{##} behaves as a normal token paste.
 
 Portable code should avoid this extension at all costs.
 
@@ -3484,7 +3484,7 @@ preprocessor; assuming you have no file @samp{foo.h}, the command
 touch foo.h; cpp -dM foo.h
 @end example
 
-@noindent 
+@noindent
 will show the values of any predefined macros.
 
 @item -dD
@@ -3600,7 +3600,7 @@ main input.
 @item -include @var{file}
 @findex -include
 Process @var{file} as input, and include all the resulting output,
-before processing the regular input file.  
+before processing the regular input file.
 
 @item -idirafter @var{dir}
 @findex -idirafter

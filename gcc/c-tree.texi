@@ -94,7 +94,7 @@ not appear in C.
 @menu
 * Deficiencies::        Topics net yet covered in this document.
 * Overview::            All about @code{tree}s.
-* Types::               Fundamental and aggregate types.        
+* Types::               Fundamental and aggregate types.
 * Scopes::              Namespaces and classes.
 * Functions::           Overloading, function bodies, and linkage.
 * Declarations::        Type declarations and variables.
@@ -397,7 +397,7 @@ This macro holds if the type is @code{restrict}-qualified.
 @item CP_TYPE_CONST_NON_VOLATILE_P
 This predicate holds for a type that is @code{const}-qualified, but
 @emph{not} @code{volatile}-qualified; other cv-qualifiers are ignored as
-well: only the @code{const}-ness is tested. 
+well: only the @code{const}-ness is tested.
 
 @item TYPE_MAIN_VARIANT
 This macro returns the unqualified version of a type.  It may be applied
@@ -426,7 +426,7 @@ named class type.
 
 @item CP_INTEGRAL_TYPE
 This predicate holds if the type is an integral type.  Notice that in
-C++, enumerations are @emph{not} integral types. 
+C++, enumerations are @emph{not} integral types.
 
 @item ARITHMETIC_TYPE_P
 This predicate holds if the type is an integral type (in the C++ sense)
@@ -443,7 +443,7 @@ This predicate holds if the type is a pointer to data member.
 
 @item TYPE_PTR_P
 This predicate holds if the type is a pointer type, and the pointee is
-not a data member. 
+not a data member.
 
 @item TYPE_PTRFN_P
 This predicate holds for a pointer to function type.
@@ -499,7 +499,7 @@ double} types.  The number of bits in the floating-point representation
 is given by @code{TYPE_PRECISION}, as in the @code{INTEGER_TYPE} case.
 
 @item COMPLEX_TYPE
-Used to represent GCC builtin @code{__complex__} data types.  The 
+Used to represent GCC builtin @code{__complex__} data types.  The
 @code{TREE_TYPE} is the type of the real and imaginary parts.
 
 @item ENUMERAL_TYPE
@@ -603,7 +603,7 @@ base-class.
 @item TYPEOF_TYPE
 Used to represent the @code{__typeof__} extension.  The
 @code{TYPE_FIELDS} is the expression the type of which is being
-represented. 
+represented.
 
 @item UNION_TYPE
 Used to represent @code{union} types.  For more information, @pxref{Classes}.
@@ -708,7 +708,7 @@ the @code{global_namespace} is @code{NULL_TREE}.
 @item DECL_NAMESPACE_ALIAS
 If this declaration is for a namespace alias, then
 @code{DECL_NAMESPACE_ALIAS} is the namespace for which this one is an
-alias.  
+alias.
 
 Do not attempt to use @code{cp_namespace_decls} for a namespace which is
 an alias.  Instead, follow @code{DECL_NAMESPACE_ALIAS} links until you
@@ -717,14 +717,14 @@ reach an ordinary, non-alias, namespace, and call
 
 @item DECL_NAMESPACE_STD_P
 This predicate holds if the namespace is the special @code{::std}
-namespace. 
+namespace.
 
 @item cp_namespace_decls
 This function will return the declarations contained in the namespace,
 including types, overloaded functions, other namespaces, and so forth.
 If there are no declarations, this function will return
 @code{NULL_TREE}.  The declarations are connected through their
-@code{TREE_CHAIN} fields.  
+@code{TREE_CHAIN} fields.
 
 Although most entries on this list will be declarations,
 @code{TREE_LIST} nodes may also appear.  In this case, the
@@ -827,7 +827,7 @@ virtually.
 
 FIXME: Talk about @code{TYPE_NONCOPIED_PARTS}.
 
-The following macros can be used on a tree node representing a class-type. 
+The following macros can be used on a tree node representing a class-type.
 
 @ftable @code
 @item LOCAL_CLASS_P
@@ -844,30 +844,30 @@ default constructor.
 
 @item CLASSTYPE_HAS_MUTABLE
 @item TYPE_HAS_MUTABLE_P
-These predicates hold for a class-type having a mutable data member. 
+These predicates hold for a class-type having a mutable data member.
 
 @item CLASSTYPE_NON_POD_P
 This predicate holds only for class-types that are not PODs.
 
 @item TYPE_HAS_NEW_OPERATOR
-This predicate holds for a class-type that defines 
+This predicate holds for a class-type that defines
 @code{operator new}.
 
 @item TYPE_HAS_ARRAY_NEW_OPERATOR
-This predicate holds for a class-type for which 
+This predicate holds for a class-type for which
 @code{operator new[]} is defined.
 
 @item TYPE_OVERLOADS_CALL_EXPR
-This predicate holds for class-type for which the function call 
+This predicate holds for class-type for which the function call
 @code{operator()} is overloaded.
 
 @item TYPE_OVERLOADS_ARRAY_REF
-This predicate holds for a class-type that overloads 
+This predicate holds for a class-type that overloads
 @code{operator[]}
 
 @item TYPE_OVERLOADS_ARROW
 This predicate holds for a class-type for which @code{operator->} is
-overloaded. 
+overloaded.
 
 @end ftable
 
@@ -921,7 +921,7 @@ compiler (like @code{__builtin_memcpy}), this will be the string
 This macro returns the line number at which the entity was declared, as
 an @code{int}.
 
-@item DECL_ARTIFICIAL 
+@item DECL_ARTIFICIAL
 This predicate holds if the declaration was implicitly generated by the
 compiler.  For example, this predicate will hold of an implicitly
 declared member function, or of the @code{TYPE_DECL} implicitly
@@ -946,7 +946,7 @@ This predicate holds if the entity was declared at a class scope.
 
 @item DECL_FUNCTION_SCOPE_P
 This predicate holds if the entity was declared inside a function
-body. 
+body.
 
 @end ftable
 
@@ -985,7 +985,7 @@ than the @code{TYPE_SIZE} and @code{TYPE_ALIGN} given by the
 variable to give it a particular size and alignment. You may use the
 predicates @code{DECL_THIS_STATIC} or @code{DECL_THIS_EXTERN} to test
 whether the storage class specifiers @code{static} or @code{extern} were
-used to declare a variable. 
+used to declare a variable.
 
 If this variable is initialized (but does not require a constructor),
 the @code{DECL_INITIAL} will be an expression for the initializer.  The
@@ -1137,7 +1137,7 @@ The following macros and functions can be used on a @code{FUNCTION_DECL}:
 @ftable @code
 @item DECL_MAIN_P
 This predicate holds for a function that is the program entry point
-@code{::code}. 
+@code{::code}.
 
 @item DECL_NAME
 This macro returns the unqualified name of the function, as an
@@ -1171,7 +1171,7 @@ though it has a global scope.
 
 @item DECL_ANTICIPATED
 This predicate holds if the function is a built-in function but its
-prototype is not yet explicitly declared. 
+prototype is not yet explicitly declared.
 
 @item DECL_EXTERN_C_FUNCTION_P
 This predicate holds if the function is declared as an
@@ -1250,7 +1250,7 @@ returns, control is transferred directly to the caller, without
 returning to the thunk.  The first parameter to the thunk is always the
 @code{this} pointer; the thunk should add @code{THUNK_DELTA} to this
 value.  (The @code{THUNK_DELTA} is an @code{int}, not an
-@code{INTEGER_CST}.)  
+@code{INTEGER_CST}.)
 
 Then, if @code{THUNK_VCALL_OFFSET} (an @code{INTEGER_CST}) is non-zero
 the adjusted @code{this} pointer must be adjusted again.  The complete
@@ -1421,7 +1421,7 @@ Here is the list of the various statement nodes, and the macros used to
 access them.  This documentation describes the use of these nodes in
 non-template functions (including instantiations of template functions).
 In template functions, the same nodes are used, but sometimes in
-slightly different ways.  
+slightly different ways.
 
 Many of the statements have substatements.  For example, a @code{while}
 loop will have a body, which is itself a statement.  If the substatement
@@ -1443,7 +1443,7 @@ void process_stmt (stmt)
           process_stmt (THEN_CLAUSE (stmt));
           /* More processing here.  */
           break;
-        
+
         ...
         @}
 
@@ -1465,7 +1465,7 @@ statement like:
 asm ("mov x, y");
 @end example
 The @code{ASM_STRING} macro will return a @code{STRING_CST} node for
-@code{"mov x, y"}.  If the original statement made use of the 
+@code{"mov x, y"}.  If the original statement made use of the
 extended-assembly syntax, then @code{ASM_OUTPUTS},
 @code{ASM_INPUTS}, and @code{ASM_CLOBBERS} will be the outputs, inputs,
 and clobbers for the statement, represented as @code{STRING_CST} nodes.
@@ -1589,7 +1589,7 @@ always have pointer type.
 @item IF_STMT
 
 Used to represent an @code{if} statement.  The @code{IF_COND} is the
-expression. 
+expression.
 
 If the condition is a @code{TREE_LIST}, then the @code{TREE_PURPOSE} is
 a statement (usually a @code{DECL_STMT}).  Each time the coondition is
@@ -1825,7 +1825,7 @@ constants is obtained with @code{TREE_TYPE}; they are not always of type
 @code{int}.  In particular, @code{char} constants are represented with
 @code{INTEGER_CST} nodes.  The value of the integer constant @code{e} is
 given by @example
-((TREE_INT_CST_HIGH (e) << HOST_BITS_PER_WIDE_INT) 
+((TREE_INT_CST_HIGH (e) << HOST_BITS_PER_WIDE_INT)
 + TREE_INST_CST_LOW (e))
 @end example
 @noindent
@@ -1861,7 +1861,7 @@ comparisons, and so forth.
 
 @item COMPLEX_CST
 These nodes are used to represent complex number constants, that is a
-@code{__complex__} whose parts are constant nodes.  The 
+@code{__complex__} whose parts are constant nodes.  The
 @code{TREE_REALPART} and @code{TREE_IMAGPART} return the real and the
 imaginary parts respectively.
 
@@ -1945,7 +1945,7 @@ this case, the operand of the @code{ADDR_EXPR} will be a
 If the object addressed is not an lvalue, a temporary is created, and
 the address of the temporary is used.
 
-@item INDIRECT_REF 
+@item INDIRECT_REF
 These nodes are used to represent the object pointed to by a pointer.
 The operand is the pointer being dereferenced; it will always have
 pointer or reference type.
@@ -1959,7 +1959,7 @@ operand is rounded towards zero.
 @item FLOAT_EXPR
 These nodes represent conversion of an integral (or boolean) value to a
 floating-point value.  The single operand will have integral type, while
-the complete expression will have a floating-point type.  
+the complete expression will have a floating-point type.
 
 FIXME: How is the operand supposed to be rounded?  Is this dependent on
 -mieee?
@@ -2122,7 +2122,7 @@ the @code{?:} operator may be omitted in the source, like this:
 x ? : 3
 @end example
 @noindent
-which is equivalent to 
+which is equivalent to
 
 @example
 x ? x : 3
