@@ -1,3 +1,7 @@
+2002-11-20  Douglas B Rupp  <rupp@gnat.com>
+
+	* hwint.h (HAVE___INT64): Fix typo (was HAVE__INT64).
+
 2002-11-20  DJ Delorie  <dj@redhat.com>
 
 	* config/stormy16/stormy16.c (s16builtins,
