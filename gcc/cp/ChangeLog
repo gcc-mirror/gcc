@@ -1,3 +1,8 @@
+1999-03-12  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* decl.c (select_decl): Allow class templates when we need types.
+	* decl2.c (ambiguous_decl): Likewise.
+
 1999-03-12  Mark Mitchell  <mark@markmitchell.com>
 
 	* lex.c (do_identifier): Correct call to enforce_access.

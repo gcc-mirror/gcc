@@ -5246,7 +5246,8 @@ select_decl (binding, flags)
     val = TYPE_STUB_DECL (BINDING_TYPE (binding));
   /* Don't return non-types if we really prefer types. */
   else if (val && LOOKUP_TYPES_ONLY (flags)  && TREE_CODE (val) != TYPE_DECL
-	   && (!looking_for_template || TREE_CODE (val) != TEMPLATE_DECL))
+	   && (TREE_CODE (val) != TEMPLATE_DECL
+	       || !DECL_CLASS_TEMPLATE_P (val)))
     val = NULL_TREE;
 
   return val;
