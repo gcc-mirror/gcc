@@ -2448,7 +2448,7 @@ legitimate_offset_address_p (enum machine_mode mode, rtx x, int strict)
 
     case DFmode:
     case DImode:
-      if (TARGET_32BIT)
+      if (!TARGET_POWERPC64)
 	extra = 4;
       else if (offset & 3)
 	return false;
@@ -2456,7 +2456,7 @@ legitimate_offset_address_p (enum machine_mode mode, rtx x, int strict)
 
     case TFmode:
     case TImode:
-      if (TARGET_32BIT)
+      if (!TARGET_POWERPC64)
 	extra = 12;
       else if (offset & 3)
 	return false;
