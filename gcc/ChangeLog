@@ -1,3 +1,8 @@
+Wed Sep 30 18:29:26 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* loop.c (check_dbra_loop): Use a vanilla loop reversal if the biv is
+	used to compute a giv or as some other non-counting use.
+
 Wed Sep 30 18:19:27 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* regs.h (HARD_REGNO_CALLER_SAVE_MODE): New macro.
