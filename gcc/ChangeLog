@@ -1,3 +1,13 @@
+2002-01-28  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config.gcc (*-*-netbsdelf*): Set up generic parameters.
+	(*-*-netbsd*): Always use collect2.  Remove collect2 settings from
+	other non-elf netbsd config frags.
+	* config/netbsd-aout.h (STARTFILE_SPEC): Don't pull in c++rt0 since
+	collect2 will does that.
+	* config/netbsd.h (LIBGCC_SPEC): Add white space before -lgcc, so that
+	shared-lib frobbing will work.
+
 2002-01-28  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.h: Fix formatting.
