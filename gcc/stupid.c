@@ -521,7 +521,7 @@ stupid_mark_refs (x, insn)
 		 behavior (e.g., it not causing an output reload on
 		 an insn setting CC) will operate correctly.  */
 	      if (GET_CODE (SET_DEST (x)) == REG
-		  &&& REGNO_FIRST_UID (regno) == INSN_UID (insn)
+		  && REGNO_FIRST_UID (regno) == INSN_UID (insn)
 		  && REGNO_LAST_UID (regno) == INSN_UID (insn)
 		  && (code == CLOBBER || ! reg_mentioned_p (SET_DEST (x),
 							    SET_SRC (x))))
