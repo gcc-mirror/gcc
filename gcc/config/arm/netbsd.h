@@ -46,10 +46,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include <netbsd.h>
 
-/* Until they use ELF or something that handles dwarf2 unwinds
-   and initialization stuff better.  */
-#undef DWARF2_UNWIND_INFO
-
 /* Some defines for CPP.
    arm32 is the NetBSD port name, so we always define arm32 and __arm32__.  */
 #undef CPP_PREDEFINES

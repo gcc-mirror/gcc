@@ -8802,6 +8802,9 @@
 	emit_move_insn (ra, operands[2]);
 	operands[2] = ra;
       }
+    /* This is a hack -- we may have crystalized the function type too
+       early.  */
+    cfun->machine->func_type = 0;
   }"
 )
 

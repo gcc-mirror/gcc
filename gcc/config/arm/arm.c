@@ -820,12 +820,14 @@ use_return_insn (iscond)
      int iscond;
 {
   int regno;
-  unsigned int func_type = arm_current_func_type ();
+  unsigned int func_type;
 
   /* Never use a return instruction before reload has run.  */
   if (!reload_completed)
     return 0;
       
+  func_type = arm_current_func_type ();
+
   /* Naked functions, volatile functiond and interrupt
      functions all need special consideration.  */
   if (func_type & (ARM_FT_INTERRUPT | ARM_FT_VOLATILE | ARM_FT_NAKED))
@@ -7492,10 +7494,12 @@ arm_output_epilogue (really_return)
 	}
     }
 
+#if 0
   if (ARM_FUNC_TYPE (func_type) == ARM_FT_EXCEPTION_HANDLER)
     /* Adjust the stack to remove the exception handler stuff.  */
     asm_fprintf (f, "\tadd\t%r, %r, %r\n", SP_REGNUM, SP_REGNUM,
 		 REGNO (eh_ofs));
+#endif
 
   if (! really_return)
     return "";
@@ -7579,6 +7583,7 @@ emit_multi_reg_push (mask)
      int mask;
 {
   int num_regs = 0;
+  int num_dwarf_regs;
   int i, j;
   rtx par;
   rtx dwarf;
@@ -7591,6 +7596,11 @@ emit_multi_reg_push (mask)
 
   if (num_regs == 0 || num_regs > 16)
     abort ();
+
+  /* We don't record the PC in the dwarf frame information.  */
+  num_dwarf_regs = num_regs;
+  if (mask & (1 << PC_REGNUM))
+    num_dwarf_regs--;
 
   /* For the body of the insn we are going to generate an UNSPEC in
      parallel with several USEs.  This allows the insn to be recognised
@@ -7619,14 +7629,13 @@ emit_multi_reg_push (mask)
            (set (mem:SI (plus:SI (reg:SI sp) (const_int 4))) (reg:SI fp))
            (set (mem:SI (plus:SI (reg:SI sp) (const_int 8))) (reg:SI ip))
            (set (mem:SI (plus:SI (reg:SI sp) (const_int 12))) (reg:SI lr))
-           (set (mem:SI (plus:SI (reg:SI sp) (const_int 16))) (reg:SI pc))
         ])
 
       This sequence is used both by the code to support stack unwinding for
       exceptions handlers and the code to generate dwarf2 frame debugging.  */
   
   par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (num_regs));
-  dwarf = gen_rtx_SEQUENCE (VOIDmode, rtvec_alloc (num_regs + 1));
+  dwarf = gen_rtx_SEQUENCE (VOIDmode, rtvec_alloc (num_dwarf_regs + 1));
   RTX_FRAME_RELATED_P (dwarf) = 1;
   dwarf_par_index = 1;
 
@@ -7643,14 +7652,17 @@ emit_multi_reg_push (mask)
 							 stack_pointer_rtx)),
 			   gen_rtx_UNSPEC (BLKmode,
 					   gen_rtvec (1, reg),
-					   2));
+					   UNSPEC_PUSH_MULT));
 
-	  tmp = gen_rtx_SET (VOIDmode,
-			     gen_rtx_MEM (SImode, stack_pointer_rtx),
-			     reg);
-	  RTX_FRAME_RELATED_P (tmp) = 1;
-	  XVECEXP (dwarf, 0, dwarf_par_index) = tmp;
-	  dwarf_par_index ++;
+	  if (i != PC_REGNUM)
+	    {
+	      tmp = gen_rtx_SET (VOIDmode,
+				 gen_rtx_MEM (SImode, stack_pointer_rtx),
+				 reg);
+	      RTX_FRAME_RELATED_P (tmp) = 1;
+	      XVECEXP (dwarf, 0, dwarf_par_index) = tmp;
+	      dwarf_par_index++;
+	    }
 
 	  break;
 	}
@@ -7664,15 +7676,17 @@ emit_multi_reg_push (mask)
 
 	  XVECEXP (par, 0, j) = gen_rtx_USE (VOIDmode, reg);
 
-	  tmp = gen_rtx_SET (VOIDmode,
-			     gen_rtx_MEM (SImode,
-					  gen_rtx_PLUS (SImode,
-							stack_pointer_rtx,
-							GEN_INT (4 * j))),
-			     reg);
-	  RTX_FRAME_RELATED_P (tmp) = 1;
-	  XVECEXP (dwarf, 0, dwarf_par_index ++) = tmp;
-			   
+	  if (i != PC_REGNUM)
+	    {
+	      tmp = gen_rtx_SET (VOIDmode,
+				 gen_rtx_MEM (SImode,
+					      plus_constant (stack_pointer_rtx,
+							     4 * j)),
+				 reg);
+	      RTX_FRAME_RELATED_P (tmp) = 1;
+	      XVECEXP (dwarf, 0, dwarf_par_index++) = tmp;
+	    }
+
 	  j++;
 	}
     }
