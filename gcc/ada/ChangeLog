@@ -1,3 +1,13 @@
+2003-03-04  Olivier Hainque <hainque@act-europe.fr>
+
+        PR ada/9911
+	* a-except.adb (Unwind_RaiseException): Import a GNAT specific
+	wrapper, which name remains constant whatever underlying GCC
+	scheme.
+
+	* raise.c (__gnat_Unwind_RaiseException): New wrappers, providing
+	the stable interface needed for a-except.
+
 2003-02-04  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gnat_rm.texi, gnat_ug.texi: Update to GFDL 1.2.
@@ -7,7 +17,8 @@
 2003-01-29  Laurent Guerby <guerby@acm.org>
 
         PR ada/8344
-        * final.c: rename to adafinal.c to avoid file name conflicts with gcc file.
+        * final.c: rename to adafinal.c to avoid file name conflicts with 
+        gcc file.
         * Makefile.in: match previous change. 
         * Make-lang.in: match previous change. 
 
