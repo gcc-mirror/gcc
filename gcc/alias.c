@@ -626,6 +626,10 @@ rtx_equal_for_memref_p (x, y)
     return XSTR (x, 0) == XSTR (y, 0);
   if (code == CONST_INT)
     return INTVAL (x) == INTVAL (y);
+  /* There's no need to compare the contents of CONST_DOUBLEs because
+     they're unique. */
+  if (code == CONST_DOUBLE)
+    return 0;
   if (code == ADDRESSOF)
     return REGNO (XEXP (x, 0)) == REGNO (XEXP (y, 0)) && XINT (x, 1) == XINT (y, 1);
 

@@ -1,3 +1,8 @@
+Wed Sep  8 16:12:04 1999  Andrew Haley  <aph@cygnus.com>
+
+	* alias.c (rtx_equal_for_memref_p): Allow CONST_DOUBLEs to be used
+	as pointers.
+
 Fri Sep 10 11:58:55 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* i386.md (ashlqi3): For NON_QI_REG_P regs, use sall.  Fix some
