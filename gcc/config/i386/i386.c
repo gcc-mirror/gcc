@@ -3139,7 +3139,7 @@ q_regs_operand (op, mode)
     return 0;
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
-  return QI_REG_P (op);
+  return ANY_QI_REG_P (op);
 }
 
 /* Return true if op is a NON_Q_REGS class register.  */

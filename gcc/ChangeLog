@@ -1,3 +1,7 @@
+Mon May  6 18:03:11 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (q_regs_operand): Use ANY_QI_REGS_P.
+
 2002-05-06  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/sparc.c (emit_soft_tfmode_libcall): Do not
