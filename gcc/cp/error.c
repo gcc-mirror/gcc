@@ -90,6 +90,7 @@ enum pad { none, before, after };
 
 static void dump_type PROTO((tree, int));
 static void dump_type_real PROTO((tree, int, int));
+static void dump_simple_decl PROTO((tree, tree, int));
 static void dump_decl PROTO((tree, int));
 static void dump_function_decl PROTO((tree, int));
 static void dump_expr PROTO((tree, int));
@@ -646,6 +647,33 @@ dump_global_iord (t)
 }
 
 static void
+dump_simple_decl (t, type, v)
+     tree t;
+     tree type;
+     int v;
+{
+  if (v > 0)
+    {
+      dump_type_prefix (type, v, 0);
+      OB_PUTC (' ');
+      dump_readonly_or_volatile (t, after);
+    }
+  /* DECL_CLASS_CONTEXT isn't being set in some cases.  Hmm...  */
+  if (DECL_CONTEXT (t)
+      && TREE_CODE_CLASS (TREE_CODE (DECL_CONTEXT (t))) == 't')
+    {
+      dump_type (DECL_CONTEXT (t), 0);
+      OB_PUTC2 (':', ':');
+    }
+  if (DECL_NAME (t))
+    dump_decl (DECL_NAME (t), v);
+  else
+    OB_PUTS ("{anon}");
+  if (v > 0)
+    dump_type_suffix (type, v, 0);
+}
+
+static void
 dump_decl (t, v)
      tree t;
      int v;			/* verbosity */
@@ -674,7 +702,8 @@ dump_decl (t, v)
       }
       if (v > 0)
 	OB_PUTS ("typedef ");
-      goto general;
+      dump_simple_decl (t, DECL_ORIGINAL_TYPE (t) 
+			? DECL_ORIGINAL_TYPE (t) : TREE_TYPE (t), v);
       break;
       
     case VAR_DECL:
@@ -687,26 +716,7 @@ dump_decl (t, v)
       /* else fall through */
     case FIELD_DECL:
     case PARM_DECL:
-    general:
-      if (v > 0)
-	{
-	  dump_type_prefix (TREE_TYPE (t), v, 0);
-	  OB_PUTC (' ');
-	  dump_readonly_or_volatile (t, after);
-	}
-      /* DECL_CLASS_CONTEXT isn't being set in some cases.  Hmm...  */
-      if (DECL_CONTEXT (t)
-	  && TREE_CODE_CLASS (TREE_CODE (DECL_CONTEXT (t))) == 't')
-	{
-	  dump_type (DECL_CONTEXT (t), 0);
-	  OB_PUTC2 (':', ':');
-	}
-      if (DECL_NAME (t))
-	dump_decl (DECL_NAME (t), v);
-      else
-	OB_PUTS ("{anon}");
-      if (v > 0)
-	dump_type_suffix (TREE_TYPE (t), v, 0);
+      dump_simple_decl (t, TREE_TYPE (t), v);
       break;
 
     case NAMESPACE_DECL:
@@ -875,7 +885,7 @@ dump_decl (t, v)
       if ((TREE_TYPE (t) != NULL_TREE && NEXT_CODE (t) == ENUMERAL_TYPE)
 	  || (DECL_INITIAL (t) &&
 	      TREE_CODE (DECL_INITIAL (t)) == TEMPLATE_PARM_INDEX))
-	goto general;
+	dump_simple_decl (t, TREE_TYPE (t), v);
       else if (DECL_NAME (t))
 	dump_decl (DECL_NAME (t), v);
       else if (DECL_INITIAL (t))

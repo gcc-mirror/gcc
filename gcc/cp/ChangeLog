@@ -1,3 +1,8 @@
+Tue May 12 07:24:18 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* error.c (dump_simple_decl): New function, broken out from ...
+	(dump_decl): Use it.
+
 Mon May 11 11:38:07 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* ptree.c (lang_print_xnode): Add missing `break'.
