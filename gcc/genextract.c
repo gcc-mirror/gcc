@@ -504,7 +504,7 @@ from the machine description file `md'.  */\n\n");
 	  if (p->oplocs[i] == 0)
 	    {
 	      printf ("      ro[%d] = const0_rtx;\n", i);
-	      printf ("      ro_loc[%d] = &junk;\n", i, i);
+	      printf ("      ro_loc[%d] = &junk;\n", i);
 	    }
 	  else
 	    {
