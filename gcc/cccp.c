@@ -9031,16 +9031,18 @@ dump_single_macro (hp, of)
   concat = 0;
   for (ap = defn->pattern; ap != NULL; ap = ap->next) {
     dump_defn_1 (defn->expansion, offset, ap->nchars, of);
-    if (ap->nchars != 0)
-      concat = 0;
     offset += ap->nchars;
-    if (ap->stringify)
-      fprintf (of, " #");
-    if (ap->raw_before && !concat)
-      fprintf (of, " ## ");
-    concat = 0;
+    if (!traditional) {
+      if (ap->nchars != 0)
+	concat = 0;
+      if (ap->stringify)
+	fprintf (of, " #");
+      if (ap->raw_before && !concat)
+	fprintf (of, " ## ");
+      concat = 0;
+    }
     dump_arg_n (defn, ap->argno, of);
-    if (ap->raw_after) {
+    if (!traditional && ap->raw_after) {
       fprintf (of, " ## ");
       concat = 1;
     }
@@ -9069,7 +9071,7 @@ dump_all_macros ()
 /* Output to OF a substring of a macro definition.
    BASE is the beginning of the definition.
    Output characters START thru LENGTH.
-   Discard newlines outside of strings, thus
+   Unless traditional, discard newlines outside of strings, thus
    converting funny-space markers to ordinary spaces.  */
 
 static void
@@ -9082,16 +9084,20 @@ dump_defn_1 (base, start, length, of)
   U_CHAR *p = base + start;
   U_CHAR *limit = base + start + length;
 
-  while (p < limit) {
-    if (*p == '\"' || *p =='\'') {
-      U_CHAR *p1 = skip_quoted_string (p, limit, 0, NULL_PTR,
-				       NULL_PTR, NULL_PTR);
-      fwrite (p, p1 - p, 1, of);
-      p = p1;
-    } else {
-      if (*p != '\n')
-	putc (*p, of);
-      p++;
+  if (traditional)
+    fwrite (p, sizeof (*p), length, of);
+  else {
+    while (p < limit) {
+      if (*p == '\"' || *p =='\'') {
+	U_CHAR *p1 = skip_quoted_string (p, limit, 0, NULL_PTR,
+					 NULL_PTR, NULL_PTR);
+	fwrite (p, sizeof (*p), p1 - p, of);
+	p = p1;
+      } else {
+	if (*p != '\n')
+	  putc (*p, of);
+	p++;
+      }
     }
   }
 }
