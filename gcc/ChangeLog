@@ -1,5 +1,6 @@
 2004-04-23  Alan Modra  <amodra@bigpond.net.au>
 
+	PR bootstrap/14992
 	* gcc.c (init_gcc_specs): Test USE_LD_AS_NEEDED, not HAVE_LD_AS_NEEDED.
 	* config/linux.h (USE_LD_AS_NEEDED): Define.
 	* gcc/config/alpha/linux.h (USE_LD_AS_NEEDED): Define.
