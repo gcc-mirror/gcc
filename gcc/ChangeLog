@@ -1,3 +1,8 @@
+2004-03-26  Diego Novillo  <dnovillo@redhat.com>
+
+	* c-typeck.c (comptypes): Replace calls to TYPE_DOMAIN
+	  with TYPE_ORIG_SIZE_TYPE.
+
 2004-03-25  Aldy Hernandez  <aldyh@redhat.com>
  
         PR 14219
