@@ -1,5 +1,5 @@
 % texinfo.tex -- TeX macros to handle Texinfo files.
-% $Id: texinfo.tex,v 2.239 1998/06/10 20:50:51 karl Exp $
+% $Id: texinfo.tex,v 2.240 1998/06/18 12:32:13 karl Exp $
 %
 % Copyright (C) 1985, 86, 88, 90, 91, 92, 93, 94, 95, 96, 97, 98
 % Free Software Foundation, Inc.
@@ -58,7 +58,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.239 $
+\deftexinfoversion$Revision: 2.240 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -4377,7 +4377,6 @@ width0pt\relax} \fi
 
 \def\deftpx #1 {\errmessage{@deftpx in invalid context}}
 
-
 \message{macros,}
 % @macro.
 
@@ -4386,9 +4385,8 @@ width0pt\relax} \fi
 \ifx\eTeXversion\undefined
  \newwrite\macscribble
  \def\scantokens#1{%
-%   \toks0={#1}%
    \immediate\openout\macscribble=\jobname.tmp
-   \immediate\write\macscribble{#1}%\the\toks0}%
+   \immediate\write\macscribble{#1}%
    \immediate\closeout\macscribble
    \input \jobname.tmp
 }
@@ -4410,6 +4408,10 @@ width0pt\relax} \fi
 % all characters are catcode 10, 11 or 12, except \ which is active
 % (as in normal texinfo). It is necessary to change the definition of \.
 
+% It's necessary to get hard CRs in the scribble file when using Knuth
+% TeX, and it can't hurt with e-TeX.  Texinfo sets \newlinechar=`^^J,
+% so we redefine the \endlinechar to ^^J when reading the macro body.
+
 \def\macrobodyctxt{%
   \catcode`\~=12
   \catcode`\^=12
@@ -4421,7 +4423,7 @@ width0pt\relax} \fi
   \catcode`\{=12
   \catcode`\}=12
   \catcode`\@=12
-  \catcode`\^^M=10
+  \endlinechar`^^J%
   \usembodybackslash}
 
 % \mbodybackslash is the definition of \ in @macro bodies.
@@ -4430,28 +4432,21 @@ width0pt\relax} \fi
 % We define \csname macarg.\endcsname to be \realbackslash, so
 % \\ in macro replacement text gets you a backslash.
 
-{\catcode`@=0 \catcode`\\=\active
+{\catcode`@=0 @catcode`@\=@active
  @gdef@usembodybackslash{@let\=@mbodybackslash}
  @gdef@mbodybackslash#1\{@csname macarg.#1@endcsname}
 }
 \expandafter\def\csname macarg.\endcsname{\realbackslash}
 
-% The catcode games are necessary because @macro may or may not
-% have a brace-surrounded list of arguments, and we need to do
-% different stuff in each case.  Making {, } \other is the only 
-% way to prevent their being deleted by the tokenizer.
-\def\macro{\recursivefalse
-  \bgroup\catcode`\{=\other\catcode`\}=\other\parsearg\macroxxx}
-\def\rmacro{\recursivetrue
-  \bgroup\catcode`\{=\other\catcode`\}=\other\parsearg\macroxxx}
+\def\macro{\recursivefalse\parsearg\macroxxx}
+\def\rmacro{\recursivetrue\parsearg\macroxxx}
 
-\def\macroxxx#1{\egroup   % started in \macro
-  \getargs{#1}%           now \macname is the macname and \toks0 the arglist
-  \edef\temp{\the\toks0}%
-  \ifx\temp\empty       % no arguments
+\def\macroxxx#1{%
+  \getargs{#1}%           now \macname is the macname and \argl the arglist
+  \ifx\argl\empty       % no arguments
      \paramno=0%
   \else
-     \expandafter\parsemargdef \the\toks0;% 
+     \expandafter\parsemargdef \argl;% 
   \fi
   \expandafter\ifx \csname macsave.\the\macname\endcsname \relax
      \cslet{macsave.\the\macname}{\the\macname}%
@@ -4464,7 +4459,7 @@ width0pt\relax} \fi
   \fi}
 
 \def\unmacro{\parsearg\unmacroxxx}
-\def\unmacroxxx#1{
+\def\unmacroxxx#1{%
   \expandafter\ifx \csname macsave.\the\macname\endcsname \relax
     \errmessage{Macro \the\macname\ not defined.}%
   \else
@@ -4473,43 +4468,54 @@ width0pt\relax} \fi
   \fi
 }
 
+% This makes use of the obscure feature that if the last token of a
+% <parameter list> is #, then the preceding argument is delimited by
+% an opening brace, and that opening brace is not consumed.
+\def\getargs#1{\getargsxxx#1{}}
+\def\getargsxxx#1#{\getmacname #1 \relax\getmacargs}
+\def\getmacname #1 #2\relax{\macname={#1}}
+\def\getmacargs#1{\def\argl{#1}}
+
 % Parse the optional {params} list.  Set up \paramno and \paramlist
 % so \defmacro knows what to do.  Define \macarg.blah for each blah
 % in the params list, to be ##N where N is the position in that list.
 % That gets used by \mbodybackslash (above).
 
-% This code has to take great care with `macro parameter char #'.  The
-% eight hashes in a row on the macarg.#1 line collapse to four in the
-% definition of \macarg.blah, to two when \parsemacbody expands the
-% macro replacement text, and to one when \defmacro writes the macro
-% definiton.  The games with \twohash are to postpone expansion till
-% the very end, when \parsemargdefyyy crunches \paramlist into
-% something that can be splatted into a \expandafter\def\blah line (in
-% \defmacro).
-\def\parsemargdef#1;{\paramno=0\def\paramlist{}\parsemargdefxxx#1,;,}
+% We need to get `macro parameter char #' into several definitions.
+% The technique used is stolen from LaTeX:  let \hash be something
+% unexpandable, insert that wherever you need a #, and then redefine
+% it to # just before using the token list produced.
+
+\def\parsemargdef#1;{\paramno=0\def\paramlist{}%
+        \let\hash\relax\parsemargdefxxx#1,;,}
 \def\parsemargdefxxx#1,{%
-  \let\twohash\relax
-  \if#1;\let\next=\parsemargdefyyy
+  \if#1;\let\next=\relax
   \else \let\next=\parsemargdefxxx
     \advance\paramno by 1%
-    \expandafter\edef\csname macarg.#1\endcsname{########\the\paramno}%
-    \edef\paramlist{\paramlist\twohash\twohash\the\paramno,}%
+    \eatspaces#1 \relax% output to \toks0
+    \expandafter\edef\csname macarg.\the\toks0\endcsname
+        {\ignorespaces \hash\the\paramno}%
+    \edef\paramlist{\paramlist\hash\the\paramno,}%
   \fi\next}
-\def\parsemargdefyyy{\let\twohash##\relax \edef\paramlist{\paramlist}}
+\def\eatspaces#1 #2\relax{\def\temp{#1}%
+  \ifx\temp\empty \let\nexteat\eatspaces
+  \else \toks0={#1}\let\nexteat\eatspacesx \fi
+  \nexteat#2 \relax}
+\def\eatspacesx#1 \relax{}
 
 % These two commands read recursive and nonrecursive macro bodies.
 % (They're different since rec and nonrec macros end differently.)
 
-\long\def\parsemacbody#1@end macro%
-{\xdef\temp{#1} \endgroup\defmacro}%
-\long\def\parsermacbody#1@end macro%
-{\xdef\temp{#1} \endgroup\defmacro}%
-
+\long\def\parsemacbody#1^^J@end macro^^J%
+{\xdef\temp{#1}\endgroup\defmacro}%
+\long\def\parsermacbody#1^^J@end rmacro^^J%
+{\xdef\temp{#1}\endgroup\defmacro}%
 
 % This defines the macro itself. There are six cases: recursive and
 % nonrecursive macros of zero, one, and many arguments.
 % Much magic with \expandafter here.
 \def\defmacro{%
+  \let\hash=##% convert placeholders to macro parameter chars
   \ifrecursive
     \ifcase\paramno
     % 0
@@ -4539,7 +4545,7 @@ width0pt\relax} \fi
       \expandafter\edef\csname\the\macname\endcsname{%
          \noexpand\braceorline\csname\the\macname xxx\endcsname}%
       \expandafter\edef\csname\the\macname xxx\endcsname##1{%
-        \noexpand\norecurse{\the\macname}
+        \noexpand\norecurse{\the\macname}%
         \noexpand\scantokens{\temp}\egroup}%
     \else % many
       \expandafter\edef\csname\the\macname\endcsname##1{%
@@ -4549,7 +4555,7 @@ width0pt\relax} \fi
       \expandafter\expandafter
       \csname\the\macname xxx\endcsname
       \paramlist{%
-          \noexpand\norecurse{\the\macname}
+          \noexpand\norecurse{\the\macname}%
           \noexpand\scantokens{\temp}\egroup}%
     \fi
   \fi}
@@ -4565,31 +4571,6 @@ width0pt\relax} \fi
   \ifx\nchar\bgroup\else
     \expandafter\parsearg 
   \fi \next}
-
-% We need {} to be \other inside these commands. [] are temporary
-% grouping symbols.
-\begingroup
-\catcode`\{=\other \catcode`\}=\other
-\catcode`\[=1  \catcode`\]=2
-
-% @macro can be called with or without a brace-surrounded macro
-% argument list.  These three sequences extract the macro name and arg
-% list in hopefully all cases.  Note that anything on the line after the
-% first pair of braces will be thrown out (Makeinfo puts it into the
-% macro body).
-\gdef\getargs#1[\getargsxxx|#1 {}|]
-\gdef\getargsxxx|#1 {#2}#3|[%
-  \toks0=[#2]%
-  \edef\tmp[\the\toks0]%
-  \ifx\tmp\empty
-     \getargsnospaces|#1{}|%
-  \else
-     \macname=[#1]%
-  \fi]
-\gdef\getargsnospaces|#1{#2}#3|[\macname=[#1]\toks0=[#2]]
-
-\endgroup
-
 
 \message{cross references,}
 \newwrite\auxfile
