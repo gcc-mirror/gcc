@@ -1,3 +1,8 @@
+Mon Apr 10 07:21:13 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* regrename.c: Minor cleanups, including chang some variables
+	to unsigned int.
+
 2000-04-10  Neil Booth  <NeilB@earthling.net>
 
 	* cpplex.c (skip_block_comment): Use pointer arithmetic rather
