@@ -1,13 +1,4 @@
-#ifdef DBG
-#include <stdio.h>
-#define DEBUG_FPUTS(x) fputs (x, stdout)
-#define DEBUG_DOT putc ('.', stdout)
-#define DEBUG_NL putc ('\n', stdout)
-#else
-#define DEBUG_FPUTS(x)
-#define DEBUG_DOT
-#define DEBUG_NL
-#endif
+#include "compat-common.h"
 
 #define T(N, TYPE)						\
 struct S##TYPE##N { TYPE i[N]; };				\
@@ -67,6 +58,7 @@ void								\
 testit##TYPE##N (void)						\
 {								\
   DEBUG_FPUTS (#TYPE "[" #N "]");				\
+  DEBUG_FPUTS (" init: ");					\
   init##TYPE##N  ( &g1s##TYPE##N,  1*16);			\
   init##TYPE##N  ( &g2s##TYPE##N,  2*16);			\
   init##TYPE##N  ( &g3s##TYPE##N,  3*16);			\
@@ -84,7 +76,9 @@ testit##TYPE##N (void)						\
   init##TYPE##N  (&g15s##TYPE##N, 15*16);			\
   init##TYPE##N  (&g16s##TYPE##N, 16*16);			\
   checkg##TYPE##N ();						\
-  DEBUG_FPUTS (" test");					\
+  DEBUG_NL;							\
+  DEBUG_FPUTS (#TYPE "[" #N "]");				\
+  DEBUG_FPUTS (" test: ");					\
   test##TYPE##N (g1s##TYPE##N, g2s##TYPE##N,			\
 		 g3s##TYPE##N, g4s##TYPE##N,			\
 		 g5s##TYPE##N, g6s##TYPE##N,			\
@@ -93,7 +87,9 @@ testit##TYPE##N (void)						\
 		 g11s##TYPE##N, g12s##TYPE##N,			\
 		 g13s##TYPE##N, g14s##TYPE##N,			\
 		 g15s##TYPE##N, g16s##TYPE##N);			\
-  DEBUG_FPUTS (" testva");					\
+  DEBUG_NL;							\
+  DEBUG_FPUTS (#TYPE "[" #N "]");				\
+  DEBUG_FPUTS (" testva:");					\
   testva##TYPE##N (16,						\
 		   g1s##TYPE##N, g2s##TYPE##N,			\
 		   g3s##TYPE##N, g4s##TYPE##N,			\
@@ -103,7 +99,9 @@ testit##TYPE##N (void)						\
 		   g11s##TYPE##N, g12s##TYPE##N,		\
 		   g13s##TYPE##N, g14s##TYPE##N,		\
 		   g15s##TYPE##N, g16s##TYPE##N);		\
-  DEBUG_FPUTS (" test2");					\
+  DEBUG_NL;							\
+  DEBUG_FPUTS (#TYPE "[" #N "]");				\
+  DEBUG_FPUTS (" test2: ");					\
   test2_##TYPE##N (g1s##TYPE##N, g3s##TYPE##N,			\
 		   g5s##TYPE##N, g7s##TYPE##N,			\
 		   g9s##TYPE##N, g11s##TYPE##N,			\
@@ -119,19 +117,17 @@ typedef struct { int i; short s; } Sis;
 typedef struct { char c; short s; int i; } Scsi;
 typedef struct { char c; int i; short s; } Scis;
 
-extern void abort (void);
-
-void checkSc (Sc x, int i) { if (x.c != i/16) { DEBUG_NL; abort (); } }
-void checkSs (Ss x, int i) { if (x.s != i) { DEBUG_NL; abort (); } }
-void checkSi (Si x, int i) { if (x.i != i) { DEBUG_NL; abort (); } }
+void checkSc (Sc x, int i) { if (x.c != i/16) DEBUG_CHECK }
+void checkSs (Ss x, int i) { if (x.s != i) DEBUG_CHECK }
+void checkSi (Si x, int i) { if (x.i != i) DEBUG_CHECK }
 void checkSsc (Ssc x, int i)
-{ if (x.s != i || x.c != (i/16)+1) { DEBUG_NL; abort (); } }
+{ if (x.s != i || x.c != (i/16)+1) DEBUG_CHECK }
 void checkSis (Sis x, int i)
-{ if (x.i != i || x.s != i+1) { DEBUG_NL; abort (); } }
+{ if (x.i != i || x.s != i+1) DEBUG_CHECK }
 void checkScsi (Scsi x, int i)
-{ if (x.c != i/16 || x.s != i+1 || x.i != i+2) { DEBUG_NL; abort (); } }
+{ if (x.c != i/16 || x.s != i+1 || x.i != i+2) DEBUG_CHECK }
 void checkScis (Scis x, int i)
-{ if (x.c != i/16 || x.i != i+1 || x.s != i+2) { DEBUG_NL; abort (); } }
+{ if (x.c != i/16 || x.i != i+1 || x.s != i+2) DEBUG_CHECK }
 
 T(0, Ssc)
 T(1, Ssc)
@@ -205,6 +201,9 @@ T(12, Sis)
 T(13, Sis)
 T(14, Sis)
 T(15, Sis)
+
+if (fails != 0)
+  abort ();
 
 #undef T
 }

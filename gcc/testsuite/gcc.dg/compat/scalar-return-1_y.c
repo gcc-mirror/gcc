@@ -1,22 +1,6 @@
 #include <stdarg.h>
 
-#ifdef DBG
-#include <stdio.h>
-#define DEBUG_FPUTS(x) fputs (x, stdout)
-#define DEBUG_DOT putc ('.', stdout)
-#define DEBUG_NL putc ('\n', stdout)
-#else
-#define DEBUG_FPUTS(x)
-#define DEBUG_DOT
-#define DEBUG_NL
-#endif
-
-/* Turn off checking for variable arguments with -DSKIPVA.  */
-#ifdef SKIPVA
-const int test_va = 0;
-#else
-const int test_va = 1;
-#endif
+#include "compat-common.h"
 
 #define T(NAME, TYPE, INITVAL)					\
 extern TYPE g01##NAME, g02##NAME, g03##NAME, g04##NAME;		\
@@ -71,16 +55,10 @@ testva##NAME (int n, ...)					\
   int i;							\
   TYPE rslt;							\
   va_list ap;							\
-  if (test_va)							\
-    {								\
-      va_start (ap, n);						\
-      for (i = 0; i < n; i++)					\
-	{							\
-	  rslt = va_arg (ap, TYPE);				\
-	  DEBUG_DOT;						\
-	}							\
-      va_end (ap);						\
-    }								\
+  va_start (ap, n);						\
+  for (i = 0; i < n; i++)					\
+    rslt = va_arg (ap, TYPE);					\
+  va_end (ap);							\
   return rslt;							\
 }
 

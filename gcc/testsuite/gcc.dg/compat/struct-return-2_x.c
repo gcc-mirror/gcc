@@ -1,12 +1,10 @@
-#ifdef DBG
-#include <stdio.h>
-#define DEBUG_FPUTS(x) fputs (x, stdout)
-#define DEBUG_DOT putc ('.', stdout)
-#define DEBUG_NL putc ('\n', stdout)
+#include "compat-common.h"
+
+/* Turn off checking for variable arguments with -DSKIPVA.  */
+#ifdef SKIPVA
+const int test_va = 0;
 #else
-#define DEBUG_FPUTS(x)
-#define DEBUG_DOT
-#define DEBUG_NL
+const int test_va = 1;
 #endif
 
 #define T(N, NAME, TYPE)					\
@@ -30,11 +28,11 @@ void								\
 check##NAME##N (struct S##NAME##N *p, int i)			\
 {								\
   int j;							\
+  DEBUG_DOT;							\
   for (j = 0; j < N; j++)					\
     if (p->i[j] != (TYPE) (i + j))				\
       {								\
-	DEBUG_NL;						\
-	abort ();						\
+	DEBUG_FAIL;						\
       }								\
 }								\
 								\
@@ -43,6 +41,7 @@ testit##NAME##N (void)						\
 {								\
   struct S##NAME##N rslt;					\
   DEBUG_FPUTS (#NAME "[" #N "]");				\
+  DEBUG_FPUTS (" init: ");					\
   init##NAME##N  ( &g1s##NAME##N,  1*16);			\
   init##NAME##N  ( &g2s##NAME##N,  2*16);			\
   init##NAME##N  ( &g3s##NAME##N,  3*16);			\
@@ -60,41 +59,48 @@ testit##NAME##N (void)						\
   init##NAME##N  (&g15s##NAME##N, 15*16);			\
   init##NAME##N  (&g16s##NAME##N, 16*16);			\
   checkg##NAME##N ();						\
-  DEBUG_FPUTS (" test0");					\
+  DEBUG_NL;							\
+  DEBUG_FPUTS (#NAME "[" #N "]");				\
+  DEBUG_FPUTS (" test0: ");					\
   rslt = test0##NAME##N ();					\
   check##NAME##N (&rslt, 1*16);					\
-  DEBUG_FPUTS (" test1");					\
+  DEBUG_NL;							\
+  DEBUG_FPUTS (#NAME "[" #N "]");				\
+  DEBUG_FPUTS (" test1: ");					\
   rslt = test1##NAME##N (g1s##NAME##N);				\
   check##NAME##N (&rslt, 1*16);					\
-  DEBUG_FPUTS (" testva");					\
-  rslt = testva##NAME##N (1, g1s##NAME##N);			\
-  check##NAME##N (&rslt, 1*16);					\
-  rslt = testva##NAME##N (5,					\
-			  g1s##NAME##N, g2s##NAME##N,		\
-			  g3s##NAME##N, g4s##NAME##N,		\
-			  g5s##NAME##N);			\
-  check##NAME##N (&rslt, 5*16);					\
-  rslt = testva##NAME##N (9,					\
-			  g1s##NAME##N, g2s##NAME##N,		\
-			  g3s##NAME##N, g4s##NAME##N,		\
-			  g5s##NAME##N, g6s##NAME##N,		\
-			  g7s##NAME##N, g8s##NAME##N,		\
-			  g9s##NAME##N);			\
-  check##NAME##N (&rslt, 9*16);					\
-  rslt = testva##NAME##N (16,					\
-			  g1s##NAME##N, g2s##NAME##N,		\
-			  g3s##NAME##N, g4s##NAME##N,		\
-			  g5s##NAME##N, g6s##NAME##N,		\
-			  g7s##NAME##N, g8s##NAME##N,		\
-			  g9s##NAME##N, g10s##NAME##N,		\
-			  g11s##NAME##N, g12s##NAME##N,		\
-			  g13s##NAME##N, g14s##NAME##N,		\
-			  g15s##NAME##N, g16s##NAME##N);	\
-  check##NAME##N (&rslt, 16*16);					\
+  if (test_va)							\
+    {								\
+      DEBUG_NL;							\
+      DEBUG_FPUTS (#NAME "[" #N "]");				\
+      DEBUG_FPUTS (" testva: ");				\
+      rslt = testva##NAME##N (1, g1s##NAME##N);			\
+      check##NAME##N (&rslt, 1*16);				\
+      rslt = testva##NAME##N (5,				\
+			      g1s##NAME##N, g2s##NAME##N,	\
+			      g3s##NAME##N, g4s##NAME##N,	\
+			      g5s##NAME##N);			\
+      check##NAME##N (&rslt, 5*16);				\
+      rslt = testva##NAME##N (9,				\
+			      g1s##NAME##N, g2s##NAME##N,	\
+			      g3s##NAME##N, g4s##NAME##N,	\
+			      g5s##NAME##N, g6s##NAME##N,	\
+			      g7s##NAME##N, g8s##NAME##N,	\
+			      g9s##NAME##N);			\
+      check##NAME##N (&rslt, 9*16);				\
+      rslt = testva##NAME##N (16,				\
+			      g1s##NAME##N, g2s##NAME##N,	\
+			      g3s##NAME##N, g4s##NAME##N,	\
+			      g5s##NAME##N, g6s##NAME##N,	\
+			      g7s##NAME##N, g8s##NAME##N,	\
+			      g9s##NAME##N, g10s##NAME##N,	\
+			      g11s##NAME##N, g12s##NAME##N,	\
+			      g13s##NAME##N, g14s##NAME##N,	\
+			      g15s##NAME##N, g16s##NAME##N);	\
+      check##NAME##N (&rslt, 16*16);				\
+    }								\
   DEBUG_NL;							\
 }
-
-extern void abort (void);
 
 T(0, uc, unsigned char)
 T(1, uc, unsigned char)
@@ -200,6 +206,9 @@ T(12, ui, unsigned int)
 T(13, ui, unsigned int)
 T(14, ui, unsigned int)
 T(15, ui, unsigned int)
+
+if (fails != 0)
+  abort ();
 
 #undef T
 }

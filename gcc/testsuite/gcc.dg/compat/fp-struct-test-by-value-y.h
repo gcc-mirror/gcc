@@ -33,37 +33,21 @@ test##TYPE (TYPE s1, TYPE s2, TYPE s3, TYPE s4,			\
 	    TYPE s9, TYPE s10, TYPE s11, TYPE s12,		\
 	    TYPE s13, TYPE s14, TYPE s15, TYPE s16)		\
 {								\
-  DEBUG_DOT;							\
   check##TYPE (s1, (TYPE2)1);					\
-  DEBUG_DOT;							\
   check##TYPE (s2, (TYPE2)2);					\
-  DEBUG_DOT;							\
   check##TYPE (s3, (TYPE2)3);					\
-  DEBUG_DOT;							\
   check##TYPE (s4, (TYPE2)4);					\
-  DEBUG_DOT;							\
   check##TYPE (s5, (TYPE2)5);					\
-  DEBUG_DOT;							\
   check##TYPE (s6, (TYPE2)6);					\
-  DEBUG_DOT;							\
   check##TYPE (s7, (TYPE2)7);					\
-  DEBUG_DOT;							\
   check##TYPE (s8, (TYPE2)8);					\
-  DEBUG_DOT;							\
   check##TYPE (s9, (TYPE2)9);					\
-  DEBUG_DOT;							\
   check##TYPE (s10, (TYPE2)10);					\
-  DEBUG_DOT;							\
   check##TYPE (s11, (TYPE2)11);					\
-  DEBUG_DOT;							\
   check##TYPE (s12, (TYPE2)12);					\
-  DEBUG_DOT;							\
   check##TYPE (s13, (TYPE2)13);					\
-  DEBUG_DOT;							\
   check##TYPE (s14, (TYPE2)14);					\
-  DEBUG_DOT;							\
   check##TYPE (s15, (TYPE2)15);					\
-  DEBUG_DOT;							\
   check##TYPE (s16, (TYPE2)16);					\
 }								\
 								\
@@ -78,7 +62,6 @@ testva##TYPE (int n, ...)					\
       for (i = 0; i < n; i++)					\
 	{							\
 	  TYPE t = va_arg (ap, TYPE);				\
-	  DEBUG_DOT;						\
 	  check##TYPE (t, (TYPE2)i+1);				\
 	}							\
       va_end (ap);						\

@@ -1,15 +1,6 @@
 #include <stdarg.h>
 
-#ifdef DBG
-#include <stdio.h>
-#define DEBUG_FPUTS(x) fputs (x, stdout)
-#define DEBUG_DOT putc ('.', stdout)
-#define DEBUG_NL putc ('\n', stdout)
-#else
-#define DEBUG_FPUTS(x)
-#define DEBUG_DOT
-#define DEBUG_NL
-#endif
+#include "compat-common.h"
 
 /* Turn off checking for variable arguments with -DSKIPVA.  */
 #ifdef SKIPVA
@@ -88,7 +79,6 @@ testva##NAME (int n, ...)					\
       for (i = 0; i < n; i++)					\
 	{							\
 	  TYPE t = va_arg (ap, TYPE);				\
-	  DEBUG_DOT;						\
 	  check##NAME (t, i+1);					\
 	}							\
       va_end (ap);						\

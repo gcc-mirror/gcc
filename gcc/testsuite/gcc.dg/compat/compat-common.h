@@ -1,0 +1,23 @@
+/*  Several of the binary compatibility tests use these macros to
+    allow debugging the test or tracking down a failure by getting an
+    indication of whether each individual check passed or failed.
+    When DBG is defined, each check is shown by a dot (pass) or 'F'
+    (fail) rather than aborting as soon as a failure is detected.  */
+ 
+#ifdef DBG
+#include <stdio.h>
+#define DEBUG_FPUTS(x) fputs (x, stdout)
+#define DEBUG_DOT putc ('.', stdout)
+#define DEBUG_NL putc ('\n', stdout)
+#define DEBUG_FAIL putc ('F', stdout); fails++
+#define DEBUG_CHECK { DEBUG_FAIL; } else { DEBUG_DOT; }
+#else
+#define DEBUG_FPUTS(x)
+#define DEBUG_DOT
+#define DEBUG_NL
+#define DEBUG_FAIL abort ()
+#define DEBUG_CHECK abort ();
+#endif
+
+extern void abort (void);
+extern int fails;
