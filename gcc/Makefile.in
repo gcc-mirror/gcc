@@ -315,6 +315,7 @@ target_cpu_default=@target_cpu_default@
 GCC_THREAD_FILE=@thread_file@
 OBJC_BOEHM_GC=@objc_boehm_gc@
 GTHREAD_FLAGS=@gthread_flags@
+host_hook_obj=@out_host_hook_obj@
 # Be prepared for gcc2 merges.
 gcc_version=@gcc_version@
 gcc_version_trigger=@gcc_version_trigger@
@@ -784,7 +785,8 @@ OBJS = alias.o bb-reorder.o bitmap.o builtins.o caller-save.o calls.o	   \
  sibcall.o simplify-rtx.o ssa.o ssa-ccp.o ssa-dce.o stmt.o		   \
  stor-layout.o stringpool.o timevar.o toplev.o tracer.o tree.o tree-dump.o \
  tree-inline.o unroll.o varasm.o varray.o version.o vmsdbgout.o xcoffout.o \
- alloc-pool.o et-forest.o $(GGC) $(out_object_file) $(EXTRA_OBJS)
+ alloc-pool.o et-forest.o						   \
+ $(GGC) $(out_object_file) $(EXTRA_OBJS) $(host_hook_obj)
 
 BACKEND = main.o libbackend.a
 
@@ -1428,11 +1430,14 @@ toplev.o : toplev.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_
    dwarf2out.h sdbout.h dbxout.h $(EXPR_H) hard-reg-set.h $(BASIC_BLOCK_H) \
    graph.h $(LOOP_H) except.h $(REGS_H) $(TIMEVAR_H) $(lang_options_files) \
    ssa.h $(PARAMS_H) $(TM_P_H) reload.h dwarf2asm.h $(TARGET_H) \
-   langhooks.h insn-flags.h options.h cfglayout.h real.h cfgloop.h
+   langhooks.h insn-flags.h options.h cfglayout.h real.h cfgloop.h hosthooks.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DTARGET_NAME=\"$(target_alias)\" \
 	  -c $(srcdir)/toplev.c $(OUTPUT_OPTION)
 main.o : main.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) toplev.h
+
+host-default.o : host-default.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+	hosthooks.h hosthooks-def.h
 
 rtl-error.o: rtl-error.c $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(INSN_ATTR_H) \
    insn-config.h input.h toplev.h intl.h diagnostic.h $(CONFIG_H)

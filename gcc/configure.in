@@ -956,6 +956,7 @@ else
 		echo "	$srcdir/config/$f"
 	done
 fi
+echo "Using ${out_host_hook_obj} for host machine hooks."
 
 if test "$host_xm_file" != "$build_xm_file"; then
 	count=a
@@ -2858,6 +2859,7 @@ AC_SUBST(host_extra_gcc_objs)
 AC_SUBST(host_xm_file_list)
 AC_SUBST(host_xm_file)
 AC_SUBST(host_xm_defines)
+AC_SUBST(out_host_hook_obj)
 AC_SUBST(install)
 AC_SUBST(lang_options_files)
 AC_SUBST(lang_specs_files)

@@ -74,6 +74,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "langhooks.h"
 #include "cfglayout.h"
 #include "cfgloop.h"
+#include "hosthooks.h"
 
 #if defined (DWARF2_UNWIND_INFO) || defined (DWARF2_DEBUGGING_INFO)
 #include "dwarf2out.h"
@@ -4758,6 +4759,9 @@ general_init (argv0)
 #ifdef SIGFPE
   signal (SIGFPE, crash_signal);
 #endif
+
+  /* Other host-specific signal setup.  */
+  (*host_hooks.extra_signals)();
 
   /* Initialize the diagnostics reporting machinery, so option parsing
      can give warnings and errors.  */
