@@ -3390,6 +3390,21 @@ With @option{-O}, the compiler tries to reduce code size and execution
 time, without performing any optimizations that take a great deal of
 compilation time.
 
+@option{-O} turns on the following optimization flags: 
+@gccoptlist{-fdefer-pop 
+-fmerge-constants
+-fthread-jumps
+-floop-optimize
+-fcrossjumping
+-fif-conversion
+-fif-conversion2
+-fdelayed-branch
+-fguess-branch-probability
+-fcprop-registers}
+
+@option{-O} also turns on @option{-fomit-frame-pointer} on machines
+where doing so does not interfere with debugging.
+
 @item -O2
 @opindex O2
 Optimize even more.  GCC performs nearly all supported optimizations
@@ -3398,11 +3413,25 @@ perform loop unrolling or function inlining when you specify @option{-O2}.
 As compared to @option{-O}, this option increases both compilation time
 and the performance of the generated code.
 
-@option{-O2} turns on all optional optimizations except for loop
-unrolling, function inlining, and register renaming.  It also turns on
-the @option{-fforce-mem} and @option{-fstrict-aliasing} option on all
-machines and frame pointer elimination on machines where doing so does
-not interfere with debugging.
+@option{-O2} turns on all optimization flags specified by @option{-O}.  It
+also turns on the following optimization flags:
+@gccoptlist{-fforce-mem
+-foptimize-sibling-calls
+-fstrength-reduce
+-fcse-follow-jumps  -fcse-skip-blocks
+-frerun-cse-after-loop  -frerun-loop-opt
+-fgcse   -fgcse-lm   -fgcse-sm
+-fdelete-null-pointer-checks
+-fexpensive-optimizations
+-fregmove
+-fschedule-insns  -fschedule-insns2
+-fsched-interblock -fsched-spec
+-fcaller-saves
+-fpeephole2
+-freorder-blocks  -freorder-functions
+-fstrict-aliasing
+-falign-functions  -falign-jumps
+-falign-loops  -falign-labels}
 
 Please note the warning under @option{-fgcse} about
 invoking @option{-O2} on programs that use computed gotos.
@@ -3415,13 +3444,17 @@ Optimize yet more.  @option{-O3} turns on all optimizations specified by
 
 @item -O0
 @opindex O0
-Do not optimize.
+Do not optimize.  This is the default.
 
 @item -Os
 @opindex Os
 Optimize for size.  @option{-Os} enables all @option{-O2} optimizations that
 do not typically increase code size.  It also performs further
 optimizations designed to reduce code size.
+
+@option{-Os} disables the following optimization flags:
+@gccoptlist{-falign-functions  -falign-jumps  -falign-loops
+-falign-labels  -freorder-blocks -fprefetch-loop-arrays}
 
 If you use multiple @option{-O} options, with or without level numbers,
 the last such option is the one that is effective.

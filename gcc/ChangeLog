@@ -1,3 +1,8 @@
+2002-12-31  Jerry Quinn  <jlquinn@optonline.net>
+
+	* gcc/doc/invoke.texi (Optimization Options): List the options
+	enabled by each -O flag.
+
 2002-12-31  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi (Configuration): Explicitly refer
