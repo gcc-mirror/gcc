@@ -222,6 +222,17 @@ decl_attributes (decl, attributes)
 	/* We can't set DECL_PACKED for a VAR_DECL, because the bit is
 	   used for DECL_REGISTER.  It wouldn't mean anything anyway.  */
       }
+    else if (TREE_VALUE (a) == get_identifier ("noreturn")
+	     || TREE_VALUE (a) == get_identifier ("volatile"))
+      {
+	if (TREE_CODE (decl) == FUNCTION_DECL)
+	  TREE_THIS_VOLATILE (decl) = 1;
+      }
+    else if (TREE_VALUE (a) == get_identifier ("const"))
+      {
+	if (TREE_CODE (decl) == FUNCTION_DECL)
+	  TREE_READONLY (decl) = 1;
+      }
     else if (TREE_VALUE (a) != 0
 	     && TREE_CODE (TREE_VALUE (a)) == TREE_LIST
 	     && TREE_PURPOSE (TREE_VALUE (a)) == get_identifier ("mode"))
