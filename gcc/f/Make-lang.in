@@ -308,7 +308,9 @@ f77.install-normal:
 
 # Install the driver program as $(target)-g77
 # and also as either g77 (if native) or $(tooldir)/bin/g77.
-f77.install-common:
+# Make sure `installdirs' target (from gcc Makefile) has been
+# run, since we use libsubdir to store our `flag' file, lang-f77.
+f77.install-common: installdirs
 	case "$(LANGUAGES)" in \
 	  *[fF]77*) touch $(libsubdir)/lang-f77;; \
 	  *) rm -f $(libsubdir)/lang-f77;; \
@@ -337,7 +339,9 @@ f77.install-common:
 
 # $(INSTALL_DATA) might be a relative pathname, so we can't cd into srcdir
 # to do the install.  The sed rule was copied from stmp-int-hdrs.
-f77.install-info: f77.info
+# Make sure `installdirs' target (from gcc Makefile) has been
+# run, since we use libsubdir to store our `flag' file, lang-f77.
+f77.install-info: f77.info installdirs
 	case "$(LANGUAGES)" in \
 	  *[fF]77*) touch $(libsubdir)/lang-f77;; \
 	  *) rm -f $(libsubdir)/lang-f77;; \
@@ -358,7 +362,9 @@ f77.install-info: f77.info
 	else : ; fi
 	rm -f $(libsubdir)/lang-f77
 
-f77.install-man: $(srcdir)/f/g77.1
+# Make sure `installdirs' target (from gcc Makefile) has been
+# run, since we use libsubdir to store our `flag' file, lang-f77.
+f77.install-man: $(srcdir)/f/g77.1 installdirs
 	case "$(LANGUAGES)" in \
 	  *[fF]77*) touch $(libsubdir)/lang-f77;; \
 	  *) rm -f $(libsubdir)/lang-f77;; \
@@ -376,7 +382,9 @@ f77.install-man: $(srcdir)/f/g77.1
 	else true; fi
 	rm -f $(libsubdir)/lang-f77
 
-f77.uninstall:
+# Make sure `installdirs' target (from gcc Makefile) has been
+# run, since we use libsubdir to store our `flag' file, lang-f77.
+f77.uninstall: installdirs
 	case "$(LANGUAGES)" in \
 	  *[fF]77*) touch $(libsubdir)/lang-f77;; \
 	  *) rm -f $(libsubdir)/lang-f77;; \
