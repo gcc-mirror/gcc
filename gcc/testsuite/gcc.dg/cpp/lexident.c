@@ -1,7 +1,7 @@
 /* Copyright (C) 2000 Free Software Foundation, Inc.  */
 
 /* { dg-do preprocess } */
-/* { dg-options "-trigraphs" } */
+/* { dg-options "-trigraphs -fdollars-in-identifiers" } */
 
 /* Test lexing of identifiers.  */
 

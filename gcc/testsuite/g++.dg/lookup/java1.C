@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "" }
+// { dg-options "-fdollars-in-identifiers" }
 // Origin: Giovanni Bajo <giovannibajo at libero dot it>
 // Make sure that Java special functions can be called correctly.
 
