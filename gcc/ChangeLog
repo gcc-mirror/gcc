@@ -1,3 +1,8 @@
+Wed Dec  8 03:45:40 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (secondary_reload_class): For !BWX, sub-simode
+	outputs require a register.
+
 1999-12-08  Brendan Kehoe  <brendan@cygnus.com>
 
 	* Makefile.in (FPBIT_FUNCS, DPBIT_FUNCS): Add _sf_to_usi
