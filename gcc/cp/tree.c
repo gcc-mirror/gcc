@@ -1311,10 +1311,13 @@ int
 is_overloaded_fn (x)
      tree x;
 {
-  /* XXX A baselink is also considered an overloaded function. */
+  /* XXX A baselink is also considered an overloaded function.
+     As is a placeholder from push_class_decls.  */
   if (TREE_CODE (x) == TREE_LIST)
     {
-      my_friendly_assert (TREE_CODE (TREE_PURPOSE (x)) == TREE_VEC, 388);
+      my_friendly_assert (TREE_CODE (TREE_PURPOSE (x)) == TREE_VEC
+			  || TREE_CODE (TREE_PURPOSE (x)) == IDENTIFIER_NODE,
+			  388);
       x = TREE_VALUE (x);
     }
   return (TREE_CODE (x) == FUNCTION_DECL

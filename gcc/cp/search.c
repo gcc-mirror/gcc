@@ -3495,7 +3495,11 @@ dfs_pushdecls (binfo)
 	     If we can't do that, keep a TREE_LIST with possibly ambiguous
 	     decls in there.  */
 	  maybe_push_cache_obstack ();
-	  envelope_add_decl (type, OVL_CURRENT (*methods), &TREE_PURPOSE (class_value));
+	  /* Arbitrarily choose the first function in the list.  This is OK
+	     because this is only used for initial lookup; anything that
+	     actually uses the function will look it up again.  */
+	  envelope_add_decl (type, OVL_CURRENT (*methods),
+			     &TREE_PURPOSE (class_value));
 	  pop_obstacks ();
 
 	  methods++;

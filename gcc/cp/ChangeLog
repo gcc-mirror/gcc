@@ -1,3 +1,8 @@
+Tue May 19 20:36:23 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.c (is_overloaded_fn): Don't abort on placeholders from
+	push_class_decls.
+
 Tue May 19 15:16:22 1998  Brendan Kehoe  <brendan@cygnus.com>
 
 	* class.c (is_empty_class): Return 0 if TYPE is an error_mark_node.
