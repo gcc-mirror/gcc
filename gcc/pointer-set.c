@@ -87,7 +87,7 @@ void pointer_set_destroy (struct pointer_set_t *pset)
 
    Collisions are resolved by linear probing.  More complicated
    collision management schemes are only useful when the load factor
-   significatly exceeds 0.5, and we never let that happen. */
+   significantly exceeds 0.5, and we never let that happen. */
 int
 pointer_set_contains (struct pointer_set_t *pset, void *p)
 {
