@@ -170,8 +170,7 @@ scan_decls (pfile, argc, argv)
 			   || token.type == CPP_ELLIPSIS)
 		    have_arg_list = 1;
 		}
-	      recognized_function (&prev_id, 
-				   cpp_get_line (pfile)->line,
+	      recognized_function (&prev_id, token->line,
 				   (saw_inline ? 'I'
 				    : in_extern_C_brace || current_extern_C
 				    ? 'F' : 'f'), have_arg_list);

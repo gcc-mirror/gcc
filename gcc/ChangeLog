@@ -1,3 +1,28 @@
+2001-09-14  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpperror.c (print_location): Take line and column, for
+	default positioning use the previously lexed token.
+	(_cpp_begin_message): Take line and column.
+	(cpp_ice, cpp_fatal, cpp_error, cpp_error_with_line, cpp_warning,
+	cpp_warning_with_line, cpp_pedwarn, cpp_pedwarn_with_line): Update.
+	* cpphash.h (_cpp_begin_message): Update prototype.
+	* cppinit.c (push_include): Don't set output line.
+	* cpplex.c (_cpp_lex_token): Callback for start of new output lines.
+	* cpplib.c (do_diagnostic, _cpp_pop_buffer): Update.
+	(do_pragma): Kludge for front ends.  Don't expand macros at all.
+	* cpplib.h (cpp_lookahead, cpp_token_with_pos, cpp_get_line): Remove.
+	(struct cpp_token): Remove output_line.
+	(struct cpp_callbacks): New member line_change.
+	* cppmacro.c (builtin_macro, paste_all_tokens, replace_args,
+	cpp_get_token): Preserve BOL flag.
+	(cpp_get_line): Remove.
+	(_cpp_backup_tokens): Remove useless abort().
+	* cppmain.c (cb_line_change): New.
+	(scan_translation_unit): Don't worry about starting new lines here.
+	* scan-decls.c (scan_decls): Update.
+	* c-lex.c (c_lex, init_c_lex): Update.
+	(cb_line_change, src_lineno): New.
+
 Fri Sep 14 13:54:50 EDT 2001  John Wehle  (john@feith.com)
 
 	* tree.c (append_random_chars): Generate the random

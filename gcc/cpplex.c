@@ -955,13 +955,14 @@ _cpp_lex_token (pfile, dest)
 
       if (result->flags & BOL)
 	{
-	  pfile->lexer_pos.output_line = result->line;
 	  /* Is this a directive.  If _cpp_handle_directive returns
 	     false, it is an assembler #.  */
 	  if (result->type == CPP_HASH
 	      && !pfile->state.parsing_args
 	      && _cpp_handle_directive (pfile, result->flags & PREV_WHITE))
 	    continue;
+	  if (pfile->cb.line_change && !pfile->state.skipping)
+	    (*pfile->cb.line_change)(pfile, result, pfile->state.parsing_args);
 	}
 
       /* We don't skip tokens in directives.  */

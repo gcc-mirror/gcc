@@ -799,7 +799,7 @@ do_diagnostic (pfile, code, print_dir)
      enum error_type code;
      int print_dir;
 {
-  if (_cpp_begin_message (pfile, code, 0))
+  if (_cpp_begin_message (pfile, code, 0, 0))
     {
       if (print_dir)
 	fprintf (stderr, "#%s ", pfile->directive->name);
@@ -987,7 +987,14 @@ do_pragma (pfile)
 	}
     }
 
-  pfile->state.prevent_expansion--;
+  /* FIXME.  This is an awful kludge to get the front ends to update
+     their notion of line number for diagnostic purposes.  The line
+     number should be passed to the handler and they should do it
+     themselves.  Stand-alone CPP must ignore us, otherwise it will
+     prefix the directive with spaces, hence the 1.  Ugh.  */
+  if (pfile->cb.line_change)
+    (*pfile->cb.line_change)(pfile, &tok, 1);
+
   if (handler)
     (*handler) (pfile);
   else if (pfile->cb.def_pragma)
@@ -995,6 +1002,7 @@ do_pragma (pfile)
       _cpp_backup_tokens (pfile, count);
       (*pfile->cb.def_pragma) (pfile, pfile->directive_line);
     }
+  pfile->state.prevent_expansion--;
 }
 
 static void
@@ -1773,11 +1781,7 @@ _cpp_pop_buffer (pfile)
     cpp_error_with_line (pfile, ifs->pos.line, ifs->pos.col,
 			 "unterminated #%s", dtable[ifs->type].name);
 
-  /* The output line can fall out of sync if we missed the final
-     newline from the previous buffer, for example because of an
-     unterminated comment.  Similarly, skipping needs to be cleared in
-     case of a missing #endif.  */
-  pfile->lexer_pos.output_line = pfile->line;
+  /* In case of a missing #endif.  */
   pfile->state.skipping = 0;
 
   /* Update the reader's buffer before _cpp_do_file_change.  */

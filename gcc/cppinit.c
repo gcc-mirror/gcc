@@ -886,7 +886,7 @@ push_include (pfile, p)
   header.val.str.text = (const unsigned char *) p->arg;
   header.val.str.len = strlen (p->arg);
   /* Make the command line directive take up a line.  */
-  pfile->lexer_pos.line = pfile->lexer_pos.output_line = ++pfile->line;
+  pfile->lexer_pos.line = ++pfile->line;
 
   return _cpp_execute_include (pfile, &header, IT_CMDLINE);
 }

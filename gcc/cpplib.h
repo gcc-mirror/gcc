@@ -42,7 +42,6 @@ typedef struct cpp_string cpp_string;
 typedef struct cpp_hashnode cpp_hashnode;
 typedef struct cpp_macro cpp_macro;
 typedef struct cpp_lexer_pos cpp_lexer_pos;
-typedef struct cpp_lookahead cpp_lookahead;
 typedef struct cpp_callbacks cpp_callbacks;
 
 struct answer;
@@ -191,24 +190,7 @@ struct cpp_token
 struct cpp_lexer_pos
 {
   unsigned int line;
-  unsigned int output_line;
   unsigned short col;
-};
-
-typedef struct cpp_token_with_pos cpp_token_with_pos;
-struct cpp_token_with_pos
-{
-  cpp_token token;
-  cpp_lexer_pos pos;
-};
-
-/* Token lookahead.  */
-struct cpp_lookahead
-{
-  struct cpp_lookahead *next;
-  cpp_token_with_pos *tokens;
-  cpp_lexer_pos pos;
-  unsigned int cur, count, cap;
 };
 
 /* A standalone character.  We may want to make it unsigned for the
@@ -390,13 +372,15 @@ struct cpp_options
 /* Call backs.  */
 struct cpp_callbacks
 {
-    void (*file_change) PARAMS ((cpp_reader *, const struct line_map *));
-    void (*include) PARAMS ((cpp_reader *, unsigned int,
-			     const unsigned char *, const cpp_token *));
-    void (*define) PARAMS ((cpp_reader *, unsigned int, cpp_hashnode *));
-    void (*undef) PARAMS ((cpp_reader *, unsigned int, cpp_hashnode *));
-    void (*ident) PARAMS ((cpp_reader *, unsigned int, const cpp_string *));
-    void (*def_pragma) PARAMS ((cpp_reader *, unsigned int));
+  /* Called when a new line of preprocessed output is started.  */
+  void (*line_change) PARAMS ((cpp_reader *, const cpp_token *, int));
+  void (*file_change) PARAMS ((cpp_reader *, const struct line_map *));
+  void (*include) PARAMS ((cpp_reader *, unsigned int,
+			   const unsigned char *, const cpp_token *));
+  void (*define) PARAMS ((cpp_reader *, unsigned int, cpp_hashnode *));
+  void (*undef) PARAMS ((cpp_reader *, unsigned int, cpp_hashnode *));
+  void (*ident) PARAMS ((cpp_reader *, unsigned int, const cpp_string *));
+  void (*def_pragma) PARAMS ((cpp_reader *, unsigned int));
 };
 
 #define CPP_FATAL_LIMIT 1000
@@ -522,7 +506,6 @@ extern int cpp_avoid_paste PARAMS ((cpp_reader *, const cpp_token *,
 extern enum cpp_ttype cpp_can_paste PARAMS ((cpp_reader *, const cpp_token *,
 					     const cpp_token *, int *));
 extern void cpp_get_token PARAMS ((cpp_reader *, cpp_token *));
-extern const cpp_lexer_pos *cpp_get_line PARAMS ((cpp_reader *));
 extern const unsigned char *cpp_macro_definition PARAMS ((cpp_reader *,
 						  const cpp_hashnode *));
 extern void _cpp_backup_tokens PARAMS ((cpp_reader *, unsigned int));
