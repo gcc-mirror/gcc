@@ -1,3 +1,8 @@
+2003-07-24  Nathan Myers  <ncm-nospam@cantrip.org>
+
+        * testsuite/23_containers/map_operators.cc: Conform to 
+        container requirement as value must be Assignable.
+
 2003-07-18  Andreas Jaeger  <aj@suse.de>
 
 	* config/abi/sparc-linux-gnu/baseline_symbols.txt: New file.

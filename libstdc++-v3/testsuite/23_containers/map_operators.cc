@@ -1,6 +1,6 @@
 // 2000-09-07 bgarcia@laurelnetworks.com
 
-// Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,11 +28,11 @@
 // http://gcc.gnu.org/ml/libstdc++/2000-11/msg00093.html
 void test02()
 {
-  typedef std::map<int,const int> MapInt;
+  typedef std::map<int, int> MapInt;
   
   MapInt m;
   
-  for (unsigned i=0;i<10;++i)
+  for (unsigned i = 0; i < 10; ++i)
     m.insert(MapInt::value_type(i,i));
   
   for (MapInt::const_iterator i = m.begin(); i != m.end(); ++i)
