@@ -58,6 +58,8 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=common: -D_ARCH_COM} \
 %{mcpu=power: -D_ARCH_PWR} \
 %{mcpu=power2: -D_ARCH_PWR2} \
+%{mcpu=power3: -D_ARCH_PPC} \
+%{mcpu=power4: -D_ARCH_PPC} \
 %{mcpu=powerpc: -D_ARCH_PPC} \
 %{mcpu=rios: -D_ARCH_PWR} \
 %{mcpu=rios1: -D_ARCH_PWR} \
@@ -98,6 +100,8 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=common: -mcom} \
 %{mcpu=power: -mpwr} \
 %{mcpu=power2: -mpwrx} \
+%{mcpu=power3: -m604} \
+%{mcpu=power4: -m604} \
 %{mcpu=powerpc: -mppc} \
 %{mcpu=rios: -mpwr} \
 %{mcpu=rios1: -mpwr} \
@@ -116,6 +120,7 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=604: -mppc} \
 %{mcpu=604e: -mppc} \
 %{mcpu=620: -mppc} \
+%{mcpu=630: -m604} \
 %{mcpu=740: -mppc} \
 %{mcpu=7400: -mppc} \
 %{mcpu=7450: -mppc} \
@@ -395,7 +400,8 @@ enum processor_type
    PROCESSOR_PPC630,
    PROCESSOR_PPC750,
    PROCESSOR_PPC7400,
-   PROCESSOR_PPC7450
+   PROCESSOR_PPC7450,
+   PROCESSOR_POWER4
 };
 
 extern enum processor_type rs6000_cpu;
@@ -2298,6 +2304,7 @@ do {									     \
         return COSTS_N_INSNS (4);					\
       case PROCESSOR_PPC620:						\
       case PROCESSOR_PPC630:						\
+      case PROCESSOR_POWER4:						\
         return (GET_CODE (XEXP (X, 1)) != CONST_INT			\
 		? GET_MODE (XEXP (X, 1)) != DImode			\
 		? COSTS_N_INSNS (5) : COSTS_N_INSNS (7)			\
@@ -2337,6 +2344,7 @@ do {									     \
 	return COSTS_N_INSNS (20);					\
       case PROCESSOR_PPC620:						\
       case PROCESSOR_PPC630:						\
+      case PROCESSOR_POWER4:						\
         return (GET_MODE (XEXP (X, 1)) != DImode			\
 		? COSTS_N_INSNS (21)					\
 		: COSTS_N_INSNS (37));					\
