@@ -1244,6 +1244,19 @@ insert_regs (x, classp, modified)
 		  return 1;
 		}
 
+	  /* Mention_regs for a SUBREG checks if REG_TICK is exactly one larger
+	     than REG_IN_TABLE to find out if there was only a single preceding
+	     invalidation - for the SUBREG - or another one, which would be
+	     for the full register.  However, if we find here that REG_TICK
+	     indicates that the register is invalid, it means that it has
+	     been invalidated in a separate operation.  The SUBREG might be used
+	     now (then this is a recursive call), or we might use the full REG
+	     now and a SUBREG of it later.  So bump up REG_TICK so that
+	     mention_regs will do the right thing.  */
+	  if (! modified
+	      && REG_IN_TABLE (regno) >= 0
+	      && REG_TICK (regno) == REG_IN_TABLE (regno) + 1)
+	    REG_TICK (regno)++;
 	  make_new_qty (regno, GET_MODE (x));
 	  return 1;
 	}
@@ -1263,15 +1276,6 @@ insert_regs (x, classp, modified)
       unsigned int regno = REGNO (SUBREG_REG (x));
 
       insert_regs (SUBREG_REG (x), NULL_PTR, 0);
-      /* Mention_regs checks if REG_TICK is exactly one larger than
-	 REG_IN_TABLE to find out if there was only a single preceding
-	 invalidation - for the SUBREG - or another one, which would be
-	 for the full register.  Since we don't invalidate the SUBREG
-	 here first, we might have to bump up REG_TICK so that mention_regs
-	 will do the right thing.  */
-      if (REG_IN_TABLE (regno) >= 0
-	  && REG_TICK (regno) == REG_IN_TABLE (regno) + 1)
-	REG_TICK (regno)++;
       mention_regs (x);
       return 1;
     }
