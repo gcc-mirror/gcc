@@ -8062,6 +8062,9 @@ arm_final_prescan_insn (insn)
 		      break;
 		    }
 		}
+	      else
+		fail = TRUE;	/* Unrecognized jump (eg epilogue).  */
+
 	      break;
 
 	    case INSN:

@@ -1,3 +1,8 @@
+2000-09-03  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (final_prescan_insn): If the form of a jump insn isn't 
+	recognized, don't try to conditionally execute it.
+
 Sun Sep  3 13:10:56 2000  Denis Chertykov  <denisc@overta.ru>
 
 	* config/avr/avr.md ("*tablejump_lib"): New pattern.
