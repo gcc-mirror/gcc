@@ -1180,8 +1180,6 @@ sched_analyze_1 (x, insn)
   /* Analyze reads.  */
   if (GET_CODE (x) == SET)
     sched_analyze_2 (SET_SRC (x), insn);
-  else if (GET_CODE (x) != CLOBBER)
-    sched_analyze_2 (dest, insn);
 }
 
 /* Analyze the uses of memory and registers in rtx X in INSN.  */
@@ -1201,161 +1199,174 @@ sched_analyze_2 (x, insn)
 
   code = GET_CODE (x);
 
-  /* Get rid of the easy cases first.  */
-
-  /* Ignore constants.  Note that we must handle CONST_DOUBLE here
-     because it may have a cc0_rtx in its CONST_DOUBLE_CHAIN field, but
-     this does not mean that this insn is using cc0.  */
-  if (code == CONST_INT || code == CONST_DOUBLE || code == SYMBOL_REF
-      || code == CONST || code == LABEL_REF)
-    return;
+  switch (code)
+    {
+    case CONST_INT:
+    case CONST_DOUBLE:
+    case SYMBOL_REF:
+    case CONST:
+    case LABEL_REF:
+      /* Ignore constants.  Note that we must handle CONST_DOUBLE here
+	 because it may have a cc0_rtx in its CONST_DOUBLE_CHAIN field, but
+	 this does not mean that this insn is using cc0.  */
+      return;
 
 #ifdef HAVE_cc0
-  else if (code == CC0)
-    {
-      rtx link;
+    case CC0:
+      {
+	rtx link;
 
-      /* User of CC0 depends on immediately preceding insn.
-	 All notes are removed from the list of insns to schedule before we
-	 reach here, so the previous insn must be the setter of cc0.  */
-      if (GET_CODE (PREV_INSN (insn)) != INSN)
-	abort ();
-      SCHED_GROUP_P (insn) = 1;
+	/* User of CC0 depends on immediately preceding insn.
+	   All notes are removed from the list of insns to schedule before we
+	   reach here, so the previous insn must be the setter of cc0.  */
+	if (GET_CODE (PREV_INSN (insn)) != INSN)
+	  abort ();
+	SCHED_GROUP_P (insn) = 1;
 
-      /* Make a copy of all dependencies on PREV_INSN, and add to this insn.
-	 This is so that all the dependencies will apply to the group.  */
+	/* Make a copy of all dependencies on PREV_INSN, and add to this insn.
+	   This is so that all the dependencies will apply to the group.  */
 
-      for (link = LOG_LINKS (PREV_INSN (insn)); link; link = XEXP (link, 1))
-	add_dependence (insn, XEXP (link, 0), GET_MODE (link));
+	for (link = LOG_LINKS (PREV_INSN (insn)); link; link = XEXP (link, 1))
+	  add_dependence (insn, XEXP (link, 0), GET_MODE (link));
 
-      return;
-    }
+	return;
+      }
 #endif
 
-  else if (code == REG)
-    {
-      int regno = REGNO (x);
-      if (regno < FIRST_PSEUDO_REGISTER)
-	{
-	  int i;
+    case REG:
+      {
+	int regno = REGNO (x);
+	if (regno < FIRST_PSEUDO_REGISTER)
+	  {
+	    int i;
 
-	  i = HARD_REGNO_NREGS (regno, GET_MODE (x));
-	  while (--i >= 0)
-	    {
-	      reg_last_uses[regno + i]
-		= gen_rtx (INSN_LIST, VOIDmode,
-			   insn, reg_last_uses[regno + i]);
-	      if (reg_last_sets[regno + i])
-		add_dependence (insn, reg_last_sets[regno + i], 0);
-	      if ((call_used_regs[regno + i] || global_regs[regno + i])
-		  && last_function_call)
-		/* Function calls clobber all call_used regs.  */
-		add_dependence (insn, last_function_call, REG_DEP_ANTI);
-	    }
-	}
-      else
-	{
-	  reg_last_uses[regno]
-	    = gen_rtx (INSN_LIST, VOIDmode, insn, reg_last_uses[regno]);
-	  if (reg_last_sets[regno])
-	    add_dependence (insn, reg_last_sets[regno], 0);
+	    i = HARD_REGNO_NREGS (regno, GET_MODE (x));
+	    while (--i >= 0)
+	      {
+		reg_last_uses[regno + i]
+		  = gen_rtx (INSN_LIST, VOIDmode,
+			     insn, reg_last_uses[regno + i]);
+		if (reg_last_sets[regno + i])
+		  add_dependence (insn, reg_last_sets[regno + i], 0);
+		if ((call_used_regs[regno + i] || global_regs[regno + i])
+		    && last_function_call)
+		  /* Function calls clobber all call_used regs.  */
+		  add_dependence (insn, last_function_call, REG_DEP_ANTI);
+	      }
+	  }
+	else
+	  {
+	    reg_last_uses[regno]
+	      = gen_rtx (INSN_LIST, VOIDmode, insn, reg_last_uses[regno]);
+	    if (reg_last_sets[regno])
+	      add_dependence (insn, reg_last_sets[regno], 0);
 
-	  /* If the register does not already cross any calls, then add this
-	     insn to the sched_before_next_call list so that it will still
-	     not cross calls after scheduling.  */
-	  if (reg_n_calls_crossed[regno] == 0)
-	    add_dependence (sched_before_next_call, insn, REG_DEP_ANTI);
-	}
+	    /* If the register does not already cross any calls, then add this
+	       insn to the sched_before_next_call list so that it will still
+	       not cross calls after scheduling.  */
+	    if (reg_n_calls_crossed[regno] == 0)
+	      add_dependence (sched_before_next_call, insn, REG_DEP_ANTI);
+	  }
+	return;
+      }
+
+    case MEM:
+      {
+	/* Reading memory.  */
+
+	/* Don't create a dependence for memory references which are known to
+	   be unchanging, such as constant pool accesses.  These will never
+	   conflict with any other memory access.  */
+	if (RTX_UNCHANGING_P (x) == 0)
+	  {
+	    rtx pending, pending_mem;
+
+	    pending = pending_read_insns;
+	    pending_mem = pending_read_mems;
+	    while (pending)
+	      {
+		/* If a dependency already exists, don't create a new one.  */
+		if (! find_insn_list (XEXP (pending, 0), LOG_LINKS (insn)))
+		  if (read_dependence (XEXP (pending_mem, 0), x))
+		    add_dependence (insn, XEXP (pending, 0), REG_DEP_ANTI);
+
+		pending = XEXP (pending, 1);
+		pending_mem = XEXP (pending_mem, 1);
+	      }
+
+	    pending = pending_write_insns;
+	    pending_mem = pending_write_mems;
+	    while (pending)
+	      {
+		/* If a dependency already exists, don't create a new one.  */
+		if (! find_insn_list (XEXP (pending, 0), LOG_LINKS (insn)))
+		  if (true_dependence (XEXP (pending_mem, 0), x))
+		    add_dependence (insn, XEXP (pending, 0), 0);
+
+		pending = XEXP (pending, 1);
+		pending_mem = XEXP (pending_mem, 1);
+	      }
+	    if (last_pending_memory_flush)
+	      add_dependence (insn, last_pending_memory_flush, REG_DEP_ANTI);
+
+	    /* Always add these dependencies to pending_reads, since
+	       this insn may be followed by a write.  */
+	    add_insn_mem_dependence (&pending_read_insns, &pending_read_mems,
+				     insn, x);
+	  }
+	/* Take advantage of tail recursion here.  */
+	sched_analyze_2 (XEXP (x, 0), insn);
+	return;
+      }
+
+    case ASM_OPERANDS:
+    case ASM_INPUT:
+    case UNSPEC_VOLATILE:
+      {
+	rtx u;
+
+	/* Traditional and volatile asm instructions must be considered to use
+	   and clobber all hard registers and all of memory.  So must
+	   UNSPEC_VOLATILE operations.  */
+	if ((code == ASM_OPERANDS && MEM_VOLATILE_P (x)) || code == ASM_INPUT
+	    || code == UNSPEC_VOLATILE)
+	  {
+	    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	      {
+		for (u = reg_last_uses[i]; u; u = XEXP (u, 1))
+		  if (GET_CODE (PATTERN (XEXP (u, 0))) != USE)
+		    add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
+		reg_last_uses[i] = 0;
+		if (reg_last_sets[i]
+		    && GET_CODE (PATTERN (reg_last_sets[i])) != USE)
+		  add_dependence (insn, reg_last_sets[i], 0);
+		reg_last_sets[i] = insn;
+	      }
+
+	    flush_pending_lists (insn);
+	  }
+
+	/* For all ASM_OPERANDS, we must traverse the vector of input operands.
+	   We can not just fall through here since then we would be confused
+	   by the ASM_INPUT rtx inside ASM_OPERANDS, which do not indicate
+	   traditional asms unlike their normal usage.  */
+
+	if (code == ASM_OPERANDS)
+	  {
+	    for (j = 0; j < ASM_OPERANDS_INPUT_LENGTH (x); j++)
+	      sched_analyze_2 (ASM_OPERANDS_INPUT (x, j), insn);
+	    return;
+	  }
+	break;
+      }
+
+    case PRE_DEC:
+    case POST_DEC:
+    case PRE_INC:
+    case POST_INC:
+      /* These read and modify the result; just consider them writes.  */
+      sched_analyze_1 (x, insn);
       return;
-    }
-
-  /* The interesting case.  */
-  else if (code == MEM)
-    {
-      /* Reading memory.  */
-
-      /* Don't create a dependence for memory references which are known to
-	 be unchanging, such as constant pool accesses.  These will never
-	 conflict with any other memory access.  */
-      if (RTX_UNCHANGING_P (x) == 0)
-	{
-	  rtx pending, pending_mem;
-
-	  pending = pending_read_insns;
-	  pending_mem = pending_read_mems;
-	  while (pending)
-	    {
-	      /* If a dependency already exists, don't create a new one.  */
-	      if (! find_insn_list (XEXP (pending, 0), LOG_LINKS (insn)))
-		if (read_dependence (XEXP (pending_mem, 0), x))
-		  add_dependence (insn, XEXP (pending, 0), REG_DEP_ANTI);
-
-	      pending = XEXP (pending, 1);
-	      pending_mem = XEXP (pending_mem, 1);
-	    }
-
-	  pending = pending_write_insns;
-	  pending_mem = pending_write_mems;
-	  while (pending)
-	    {
-	      /* If a dependency already exists, don't create a new one.  */
-	      if (! find_insn_list (XEXP (pending, 0), LOG_LINKS (insn)))
-		if (true_dependence (XEXP (pending_mem, 0), x))
-		  add_dependence (insn, XEXP (pending, 0), 0);
-
-	      pending = XEXP (pending, 1);
-	      pending_mem = XEXP (pending_mem, 1);
-	    }
-	  if (last_pending_memory_flush)
-	    add_dependence (insn, last_pending_memory_flush, REG_DEP_ANTI);
-
-	  /* Always add these dependencies to pending_reads, since
-	     this insn may be followed by a write.  */
-	  add_insn_mem_dependence (&pending_read_insns, &pending_read_mems,
-				   insn, x);
-	}
-      /* Take advantage of tail recursion here.  */
-      sched_analyze_2 (XEXP (x, 0), insn);
-      return;
-    }
-
-  else if (code == ASM_OPERANDS || code == ASM_INPUT
-	   || code == UNSPEC_VOLATILE)
-    {
-      rtx u;
-
-      /* Traditional and volatile asm instructions must be considered to use
-	 and clobber all hard registers and all of memory.  So must
-	 UNSPEC_VOLATILE operations.  */
-      if ((code == ASM_OPERANDS && MEM_VOLATILE_P (x)) || code == ASM_INPUT
-	  || code == UNSPEC_VOLATILE)
-	{
-	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	    {
-	      for (u = reg_last_uses[i]; u; u = XEXP (u, 1))
-		if (GET_CODE (PATTERN (XEXP (u, 0))) != USE)
-		  add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
-	      reg_last_uses[i] = 0;
-	      if (reg_last_sets[i]
-		  && GET_CODE (PATTERN (reg_last_sets[i])) != USE)
-		add_dependence (insn, reg_last_sets[i], 0);
-	      reg_last_sets[i] = insn;
-	    }
-
-	  flush_pending_lists (insn);
-	}
-
-      /* For all ASM_OPERANDS, we must traverse the vector of input operands.
-	 We can not just fall through here since then we would be confused
-	 by the ASM_INPUT rtx inside ASM_OPERANDS, which do not indicate
-	 traditional asms unlike their normal usage.  */
-
-      if (code == ASM_OPERANDS)
-	{
-	  for (j = 0; j < ASM_OPERANDS_INPUT_LENGTH (x); j++)
-	    sched_analyze_2 (ASM_OPERANDS_INPUT (x, j), insn);
-	  return;
-	}
     }
 
   /* Other cases: walk the insn.  */
@@ -1395,56 +1406,6 @@ sched_analyze_insn (x, insn)
     }
   else
     sched_analyze_2 (x, insn);
-
-  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
-    {
-      /* Any REG_INC note is a SET of the register indicated.  */
-      if (REG_NOTE_KIND (link) == REG_INC)
-	{
-	  rtx dest = XEXP (link, 0);
-	  int regno = REGNO (dest);
-	  int i;
-
-	  /* A hard reg in a wide mode may really be multiple registers.
-	     If so, mark all of them just like the first.  */
-	  if (regno < FIRST_PSEUDO_REGISTER)
-	    {
-	      i = HARD_REGNO_NREGS (regno, GET_MODE (dest));
-	      while (--i >= 0)
-		{
-		  rtx u;
-		  
-		  for (u = reg_last_uses[regno+i]; u; u = XEXP (u, 1))
-		    add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
-		  reg_last_uses[regno + i] = 0;
-		  if (reg_last_sets[regno + i])
-		    add_dependence (insn, reg_last_sets[regno + i],
-				    REG_DEP_OUTPUT);
-		  reg_last_sets[regno + i] = insn;
-		  if ((call_used_regs[i] || global_regs[i])
-		      && last_function_call)
-		    /* Function calls clobber all call_used regs.  */
-		    add_dependence (insn, last_function_call, REG_DEP_ANTI);
-		}
-	    }
-	  else
-	    {
-	      rtx u;
-	      
-	      for (u = reg_last_uses[regno]; u; u = XEXP (u, 1))
-		add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
-	      reg_last_uses[regno] = 0;
-	      if (reg_last_sets[regno])
-		add_dependence (insn, reg_last_sets[regno], REG_DEP_OUTPUT);
-	      reg_last_sets[regno] = insn;
-
-	      /* Don't let it cross a call after scheduling if it doesn't
-		 already cross one.  */
-	      if (reg_n_calls_crossed[regno] == 0 && last_function_call)
-		add_dependence (insn, last_function_call, 0);
-	    }
-	}
-    }
 
   /* Handle function calls.  */
   if (GET_CODE (insn) == CALL_INSN)
