@@ -320,8 +320,8 @@ namespace std
      {
        __glibcxx_requires_string_len(__s, __n);
        __pos = _M_check(__pos, "basic_string::insert");
-       if (this->size() > this->max_size() - __n)
-         __throw_length_error("basic_string::insert");
+       if (this->max_size() - this->size() < __n)
+	 __throw_length_error("basic_string::insert");
        if (_M_rep()->_M_is_shared() || less<const _CharT*>()(__s, _M_data())
            || less<const _CharT*>()(_M_data() + this->size(), __s))
          return _M_replace_safe(__pos, size_type(0), __s, __n);
@@ -356,15 +356,17 @@ namespace std
        __glibcxx_requires_string_len(__s, __n2);
        __pos = _M_check(__pos, "basic_string::replace");
        __n1 = _M_limit(__pos, __n1);
-       if (this->size() - __n1 > this->max_size() - __n2)
+       if (this->max_size() - (this->size() - __n1) < __n2)
          __throw_length_error("basic_string::replace");
        if (_M_rep()->_M_is_shared() || less<const _CharT*>()(__s, _M_data())
-           || less<const _CharT*>()(_M_data() + this->size(), __s))
+	   || less<const _CharT*>()(_M_data() + this->size(), __s))
          return _M_replace_safe(__pos, __n1, __s, __n2);
-       // Todo: optimized in-place replace.
        else
-	 return _M_replace(_M_ibegin() + __pos, _M_ibegin() + __pos + __n1,
-			   __s, __s + __n2);
+	 {
+	   // Todo: optimized in-place replace.	   
+	   const basic_string __tmp(__s, __n2);
+	   return _M_replace_safe(__pos, __n1, __tmp._M_data(), __n2);
+	 }
      }
   
   template<typename _CharT, typename _Traits, typename _Alloc>
@@ -609,7 +611,7 @@ namespace std
     _M_replace_aux(size_type __pos1, size_type __n1, size_type __n2,
 		   _CharT __c)
     {
-      if (this->size() - __n1 > this->max_size() - __n2)
+      if (this->max_size() - (this->size() - __n1) < __n2)
 	__throw_length_error("basic_string::_M_replace_aux");
       _M_mutate(__pos1, __n1, __n2);
       if (__n2)
@@ -627,7 +629,10 @@ namespace std
 		 _InputIterator __k2)
       {
 	const basic_string __s(__k1, __k2);
-	return _M_replace_safe(__i1 - _M_ibegin(), __i2 - __i1, __s._M_data(),
+	const size_type __n1 = __i2 - __i1;
+	if (this->max_size() - (this->size() - __n1) < __s.size())
+	  __throw_length_error("basic_string::_M_replace");
+	return _M_replace_safe(__i1 - _M_ibegin(), __n1, __s._M_data(),
 			       __s.size());
       }
 
@@ -639,8 +644,6 @@ namespace std
     _M_replace_safe(size_type __pos1, size_type __n1, const _CharT* __s,
 		    size_type __n2)
     {
-      if (this->size() - __n1 > this->max_size() - __n2)
-	__throw_length_error("basic_string::_M_replace_safe");
       _M_mutate(__pos1, __n1, __n2);
       if (__n2)
 	traits_type::copy(_M_data() + __pos1, __s, __n2);
@@ -665,7 +668,7 @@ namespace std
     {
       // Iff appending itself, string needs to pre-reserve the
       // correct size so that _M_mutate does not clobber the
-      // iterators formed here.
+      // pointer __str._M_data() formed here.
       const size_type __size = __str.size();
       const size_type __len = __size + this->size();
       if (__len > this->capacity())
@@ -681,7 +684,7 @@ namespace std
     {
       // Iff appending itself, string needs to pre-reserve the
       // correct size so that _M_mutate does not clobber the
-      // iterators formed here.
+      // pointer __str._M_data() formed here.
       __pos = __str._M_check(__pos, "basic_string::append");
       __n = __str._M_limit(__pos, __n);
       const size_type __len = __n + this->size();
@@ -740,10 +743,9 @@ namespace std
     {
       __pos = _M_check(__pos, "basic_string::copy");
       __n = _M_limit(__pos, __n);
-
       __glibcxx_requires_string_len(__s, __n);
-      
-      traits_type::copy(__s, _M_data() + __pos, __n);
+      if (__n)
+	traits_type::copy(__s, _M_data() + __pos, __n);
       // 21.3.5.7 par 3: do not append null.  (good.)
       return __n;
     }
@@ -781,7 +783,6 @@ namespace std
 	}
       return __ret;
     }
-
 
   template<typename _CharT, typename _Traits, typename _Alloc>
     typename basic_string<_CharT, _Traits, _Alloc>::size_type
@@ -963,7 +964,6 @@ namespace std
       return __r;
     }
 
-
   template<typename _CharT, typename _Traits, typename _Alloc>
     int
     basic_string<_CharT, _Traits, _Alloc>::
@@ -978,7 +978,6 @@ namespace std
 	__r = __size - __osize;
       return __r;
     }
-
 
   template<typename _CharT, typename _Traits, typename _Alloc>
     int

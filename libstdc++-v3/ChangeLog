@@ -1,3 +1,23 @@
+2004-01-23  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/basic_string.tcc (insert(size_type,
+	const _CharT*, size_type __n)): Fix length_error check.
+	(replace(size_type, size_type, const _CharT*, size_type):
+	Ditto; call _M_replace_safe.
+	(_M_replace_aux(size_type, size_type, size_type, _CharT):
+	Fix length_error check.
+	(_M_replace(iterator, iterator, _InputIterator,
+	_InputIterator)): Ditto, tweak.
+	(_M_replace_safe(size_type, size_type, const _CharT*,
+	size_type)): Remove length_error check.
+
+	* include/bits/basic_string.tcc (append(const basic_string&),
+	append(const basic_string&, size_type, size_type)): Tweak
+	comment.
+
+	* include/bits/basic_string.tcc (copy(_CharT*, size_type,
+	size_type)): If __n == 0 don't call traits::copy.
+
 2004-01-23  Stefan Olsson  <stefan@snon.net>
 
 	* include/ext/mt_allocator.h: Reduce lock contention.
