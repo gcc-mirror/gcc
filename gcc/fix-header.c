@@ -778,6 +778,8 @@ write_rbrac ()
 	  /* In the case of memmove, protect in case the application
 	     defines it as a macro before including the header.  */
 	  if (!strcmp (fn->fname, "memmove")
+	      || !strcmp (fn->fname, "putc")
+	      || !strcmp (fn->fname, "getc")
 	      || !strcmp (fn->fname, "vprintf")
 	      || !strcmp (fn->fname, "vfprintf")
 	      || !strcmp (fn->fname, "vsprintf")

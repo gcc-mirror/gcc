@@ -1,3 +1,8 @@
+2000-09-01  Fred Fish  <fnf@be.com>
+
+	* fix-header.c (write_rbrac): Add putc and getc to list of
+	functions to protect against prior definition as a macro.
+ 
 2000-09-01  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.h (enum c_tree_index): Add CTI_C_SIZE_TYPE.
