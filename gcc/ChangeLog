@@ -1,4 +1,10 @@
-2004-05-07 Fariborz Jahanian <fjahanian@apple.com>
+2004-05-07  Ziemowit Laski  <zlaski@apple.com>
+
+	* config/rs6000/altivec.h (vector, pixel, bool): Do not
+	define as macros #ifdef __APPLE_ALTIVEC__.
+
+2004-05-07  Fariborz Jahanian  <fjahanian@apple.com>
+
 	* config/rs6000/rs6000.c (rs6000_mixed_function_arg):
 	Generate appropriate parallels for vector arguments
 	passed to vararg functions. (function_arg): make the call
