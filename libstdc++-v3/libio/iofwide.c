@@ -35,6 +35,7 @@
 # include <langinfo.h>
 # include <locale/localeinfo.h>
 # include <wcsmbs/wcsmbsload.h>
+# include <iconv/gconv_int.h>
 #endif
 
 
@@ -76,6 +77,14 @@ struct _IO_codecvt __libio_codecvt =
 };
 
 
+/* static struct __gconv_trans_data libio_translit =*/
+#ifdef _LIBC
+struct __gconv_trans_data libio_translit =
+{
+  .__trans_fct = __gconv_transliterate
+};
+#endif
+
 /* Return orientation of stream.  If mode is nonzero try to change
    the orientation first.  */
 #undef _IO_fwide
@@ -91,9 +100,6 @@ _IO_fwide (fp, mode)
     /* The caller simply wants to know about the current orientation
        or the orientation already has been determined.  */
     return fp->_mode;
-
-  _IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile, fp);
-  _IO_flockfile (fp);
 
   /* Set the orientation appropriately.  */
   if (mode > 0)
@@ -138,7 +144,11 @@ _IO_fwide (fp, mode)
 	cc->__cd_out.__cd.__data[0].__statep = &fp->_wide_data->_IO_state;
 
 	/* XXX For now no transliteration.  */
+#ifdef _LIBC
+	cc->__cd_out.__cd.__data[0].__trans = &libio_translit;
+#else
 	cc->__cd_out.__cd.__data[0].__trans = NULL;
+#endif
       }
 #else
 # ifdef _GLIBCPP_USE_WCHAR_T
@@ -178,9 +188,6 @@ _IO_fwide (fp, mode)
 
   /* Set the mode now.  */
   fp->_mode = mode;
-
-  _IO_funlockfile (fp);
-  _IO_cleanup_region_end (0);
 
   return mode;
 }

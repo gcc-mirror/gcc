@@ -1,3 +1,13 @@
+2000-07-31  Benjamin Kosnik  <bkoz@cygnus.com>
+
+	* libio/fileops.cc: Update to current glibc sources.
+	* libio/genops.c: Same.
+	* libio/iofwide.c: Same.
+	* libio/libio.h: Same.
+	* libio/libioP.h: Same.
+	* libio/wfiledoalloc.c: Same.
+	* libio/wgenops.c: Same.
+	
 2000-07-28  Alexandre Oliva  <aoliva@redhat.com>
 
 	* acinclude.m4: Include ../libtool.m4.
