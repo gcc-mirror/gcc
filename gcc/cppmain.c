@@ -39,6 +39,7 @@ struct printer
 
 int main		PARAMS ((int, char **));
 static void general_init PARAMS ((const char *));
+static void do_preprocessing PARAMS ((int, char **));
 static void setup_callbacks PARAMS ((void));
 
 /* General output routines.  */
@@ -63,7 +64,6 @@ static void cb_def_pragma PARAMS ((cpp_reader *));
 const char *progname;		/* Needs to be global.  */
 static cpp_reader *pfile;	/* An opaque handle.  */
 static cpp_options *options;	/* Options of pfile.  */
-static cpp_callbacks *cb;	/* Callbacks of pfile.  */
 static struct printer print;
 
 int
@@ -71,58 +71,16 @@ main (argc, argv)
      int argc;
      char **argv;
 {
-  int argi = 1;  /* Next argument to handle.  */
-
   general_init (argv[0]);
-  /* Default language is GNU C89.  */
+
+  /* Contruct a reader with default language GNU C89.  */
   pfile = cpp_create_reader (CLK_GNUC89);
   options = cpp_get_options (pfile);
-  cb = cpp_get_callbacks (pfile);
   
-  argi += cpp_handle_options (pfile, argc - argi , argv + argi);
-  if (argi < argc && ! CPP_FATAL_ERRORS (pfile))
-    cpp_fatal (pfile, "Invalid option %s", argv[argi]);
-  cpp_post_options (pfile);
-  if (CPP_FATAL_ERRORS (pfile))
-    return (FATAL_EXIT_CODE);
+  do_preprocessing (argc, argv);
 
-  /* If cpp_handle_options saw --help or --version on the command
-     line, it will have set pfile->help_only to indicate this.  Exit
-     successfully.  [The library does not exit itself, because
-     e.g. cc1 needs to print its own --help message at this point.]  */
-  if (options->help_only)
-    return (SUCCESS_EXIT_CODE);
-
-  /* Open the output now.  We must do so even if no_output is on,
-     because there may be other output than from the actual
-     preprocessing (e.g. from -dM).  */
-  if (printer_init (pfile))
-    return (FATAL_EXIT_CODE);
-
-  setup_callbacks ();
-
-  if (! cpp_start_read (pfile, options->in_fname))
-    return (FATAL_EXIT_CODE);
-
-  /* A successful cpp_start_read guarantees that we can call
-     cpp_scan_buffer_nooutput or cpp_get_token next.  */
-  if (options->no_output)
-    cpp_scan_buffer_nooutput (pfile, 1);
-  else
-    scan_buffer (pfile);
-
-  /* -dM command line option.  */
-  if (options->dump_macros == dump_only)
-    cpp_forall_identifiers (pfile, dump_macro, NULL);
-
-  cpp_finish (pfile);
+  /* Reader destructor.  */
   cpp_cleanup (pfile);
-
-  /* Flush any pending output.  */
-  if (print.printed)
-    putc ('\n', print.outf);
-  if (ferror (print.outf) || fclose (print.outf))
-    cpp_notice_from_errno (pfile, options->out_fname);
 
   if (cpp_errors (pfile))
     return FATAL_EXIT_CODE;
@@ -141,8 +99,8 @@ general_init (const char *argv0)
 
   xmalloc_set_program_name (progname);
 
-/* LC_CTYPE determines the character set used by the terminal so it has be set
-   to output messages correctly.  */
+/* LC_CTYPE determines the character set used by the terminal so it
+   has to be set to output messages correctly.  */
 
 #ifdef HAVE_LC_MESSAGES
   setlocale (LC_CTYPE, "");
@@ -155,10 +113,71 @@ general_init (const char *argv0)
   (void) textdomain (PACKAGE);
 }
 
+/* Handle switches, preprocess and output.  */
+static void
+do_preprocessing (argc, argv)
+     int argc;
+     char **argv;
+{
+  int argi = 1;  /* Next argument to handle.  */
+
+  argi += cpp_handle_options (pfile, argc - argi , argv + argi);
+  if (CPP_FATAL_ERRORS (pfile))
+    return;
+
+  if (argi < argc)
+    cpp_fatal (pfile, "Invalid option %s", argv[argi]);
+  else
+    cpp_post_options (pfile);
+
+  if (CPP_FATAL_ERRORS (pfile))
+    return;
+
+  /* If cpp_handle_options saw --help or --version on the command
+     line, it will have set pfile->help_only to indicate this.  Exit
+     successfully.  [The library does not exit itself, because
+     e.g. cc1 needs to print its own --help message at this point.]  */
+  if (options->help_only)
+    return;
+
+  /* Open the output now.  We must do so even if no_output is on,
+     because there may be other output than from the actual
+     preprocessing (e.g. from -dM).  */
+  if (printer_init (pfile))
+    return;
+
+  setup_callbacks ();
+
+  if (cpp_start_read (pfile, options->in_fname))
+    {
+      /* A successful cpp_start_read guarantees that we can call
+	 cpp_scan_buffer_nooutput or cpp_get_token next.  */
+      if (options->no_output)
+	cpp_scan_buffer_nooutput (pfile, 1);
+      else
+	scan_buffer (pfile);
+
+      /* -dM command line option.  Should this be in cpp_finish?  */
+      if (options->dump_macros == dump_only)
+	cpp_forall_identifiers (pfile, dump_macro, NULL);
+
+      cpp_finish (pfile);
+    }
+
+  /* Flush any pending output.  */
+  if (print.printed)
+    putc ('\n', print.outf);
+
+  if (ferror (print.outf) || fclose (print.outf))
+    cpp_notice_from_errno (pfile, options->out_fname);
+}
+
 /* Set up the callbacks as appropriate.  */
 static void
 setup_callbacks ()
 {
+  cpp_callbacks *cb = cpp_get_callbacks (pfile);
+
   if (! options->no_output)
     {
       cb->ident      = cb_ident;
@@ -264,10 +283,11 @@ printer_init (pfile)
       print.outf = fopen (options->out_fname, "w");
       if (! print.outf)
 	{
-	  cpp_notice_from_errno (pfile, options-> out_fname);
+	  cpp_notice_from_errno (pfile, options->out_fname);
 	  return 1;
 	}
     }
+
   return 0;
 }
 
@@ -324,7 +344,7 @@ print_line (special_flags)
 	   print.lineno, print.last_fname, special_flags, print.syshdr_flags);
 }
 
-/* Callbacks */
+/* Callbacks.  */
 
 static void
 cb_ident (pfile, str)

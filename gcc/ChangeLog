@@ -1,3 +1,12 @@
+2001-01-14  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cppmain.c (do_preprocessing): New function; most of the old
+        main.
+        (main): Call it to do most of the work.
+        (cb): Move from global scope to set_callbacks ().
+        (setup_callbacks): Get the callback pointer.
+        (general_init, printer_init): Clean up code and comments.
+
 2001-01-14  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/arm/semi.h (ASM_SPEC): Pass -k to the assembler when 
