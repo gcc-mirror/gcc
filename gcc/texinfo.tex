@@ -1,5 +1,5 @@
 % texinfo.tex -- TeX macros to handle Texinfo files.
-% $Id: texinfo.tex,v 2.235 1998/05/26 21:43:18 karl Exp $
+% $Id: texinfo.tex,v 2.236 1998/06/04 15:21:05 karl Exp $
 %
 % Copyright (C) 1985, 86, 88, 90, 91, 92, 93, 94, 95, 96, 97, 98
 % Free Software Foundation, Inc.
@@ -36,10 +36,6 @@
 % Please include a precise test case in each bug report,
 % including a complete document with which we can reproduce the problem.
 % 
-% Texinfo macros (with @macro) are *not* supported by texinfo.tex.  You
-% have to run makeinfo -E to expand macros first; the texi2dvi script
-% does this.
-% 
 % To process a Texinfo manual with TeX, it's most reliable to use the
 % texi2dvi shell script that comes with the distribution.  For simple
 % manuals, you can get away with:
@@ -60,7 +56,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.235 $
+\deftexinfoversion$Revision: 2.236 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -791,13 +787,6 @@ where each line of input produces a line of output.}
 \def\menu{\doignore{menu}}
 \def\direntry{\doignore{direntry}}
 
-% Also ignore @macro ... @end macro.  The user must run texi2dvi,
-% which runs makeinfo to do macro expansion.  Ignore @unmacro, too.
-\def\macro{\doignore{macro}}
-\def\macrocsname{macro}
-\let\unmacro = \comment
-
-
 % @dircategory CATEGORY  -- specify a category of the dir file
 % which this file should belong to.  Ignore this in TeX.
 \let\dircategory = \comment
@@ -828,13 +817,7 @@ where each line of input produces a line of output.}
   %   @c @end ifinfo
   % and the @end ifinfo will be properly ignored.
   % (We've just changed @ to catcode 12.)
-  % 
-  % But we can't do this if #1 is `macro', since that actually contains a c.
-  % Happily, none of the other conditionals have the letter `c' in their names!
-  \def\temp{#1}%
-  \ifx\temp\macrocsname \else
-    \catcode`\c = 14
-  \fi
+  \catcode`\c = 14
   %
   % And now expand that command.
   \doignoretext
@@ -1122,22 +1105,6 @@ where each line of input produces a line of output.}
 
 % @bye.
 \outer\def\bye{\pagealignmacro\tracingstats=1\ptexend}
-
-% \def\macro#1{\begingroup\ignoresections\catcode`\#=6\def\macrotemp{#1}\parsearg\macroxxx}
-% \def\macroxxx#1#2 \end macro{%
-% \expandafter\gdef\macrotemp#1{#2}%
-% \endgroup}
-
-%\def\linemacro#1{\begingroup\ignoresections\catcode`\#=6\def\macrotemp{#1}\parsearg\linemacroxxx}
-%\def\linemacroxxx#1#2 \end linemacro{%
-%\let\parsearg=\relax
-%\edef\macrotempx{\csname M\butfirst\expandafter\string\macrotemp\endcsname}%
-%\expandafter\xdef\macrotemp{\parsearg\macrotempx}%
-%\expandafter\gdef\macrotempx#1{#2}%
-%\endgroup}
-
-%\def\butfirst#1{}
-
 
 \message{fonts,}
 
@@ -4385,91 +4352,196 @@ width0pt\relax} \fi
 
 \message{macros,}
 % @macro.
-% The basic scheme is as follows:
-% We read the first line and split it up into macro name and parameter
-% list.  We then walk the parameter list defining control sequences
-% named \MAC@<macro name><parameter name>.  Each expands to another
-% control sequence named \MAC@<macro name>.<parameter number>.  Those
-% control sequences will be defined at macro runtime to be the
-% parameter expansion text.
-%
-% The body is then read in as a single argument in a context where \
-% is an active character, and the cs \MACb.<macro name> is defined as
-% the macro body.  The active character \ takes one argument delimited
-% by another \, and uses it to index the table of macro arguments
-% described above.
-%
-% Finally, we define a control sequence \<macro name> which calls one
-% of the six (!) macro execution commands.  These six commands
-% correspond to recursive and nonrecursive macros with no, one, and
-% many arguments.  They all take one argument, <macro name>, set up
-% the environment appropriately, and call the real macro.
-%
-% \macsave@<macro name> holds the old definition of \<macro name>.  
 
-\newcount\paramno
-\newtoks\macname
+% To do this right we need a feature of e-TeX, \scantokens, 
+% which we arrange to emulate with a temporary file in ordinary TeX.
+\ifx\eTeXversion\undefined
+ \newwrite\macscribble
+ \def\scantokens#1{%
+%   \toks0={#1}%
+   \immediate\openout\macscribble=\jobname.tmp
+   \immediate\write\macscribble{#1}%\the\toks0}%
+   \immediate\closeout\macscribble
+   \input \jobname.tmp
+}
+\fi
 
-% This does \let #1 = #2, except with \csnames.
+\newcount\paramno   % Count of parameters
+\newtoks\macname    % Macro name
+\newif\ifrecursive  % Is it recursive?
+
+% Utility: does \let #1 = #2, except with \csnames.
 \def\cslet#1#2{%
-\expandafter\expandafter\expandafter
-\let
+\expandafter\expandafter
+\expandafter\let
 \expandafter\expandafter
 \csname#1\endcsname
 \csname#2\endcsname}
 
-% We have to play lots of games with the catcodes.  Initially { and }
-% are made `other' so that \splitarg (below) can use them as argument
-% delimiters.  Then - is made a letter so that \iimacro can recognize
-% @allow-recursion.
-\def\macro{\bgroup\catcode`\{=\other\catcode`\}=\other\parsearg\imacro}
-\def\imacro#1{\egroup  % started in \macro
-  \splitarg{#1}%         now \macname is the macname and \toks0 the arglist
-  \paramno=0%
-  \edef\tmp{\the\toks0}%
-  \ifx\tmp\empty       % no arguments
+% Macro bodies are absorbed as an argument in a context where
+% all characters are catcode 10, 11 or 12, except \ which is active
+% (as in normal texinfo). It is necessary to change the definition of \.
+
+\def\macrobodyctxt{%
+  \catcode`\~=12
+  \catcode`\^=12
+  \catcode`\_=12
+  \catcode`\|=12
+  \catcode`\<=12
+  \catcode`\>=12
+  \catcode`\+=12
+  \catcode`\{=12
+  \catcode`\}=12
+  \catcode`\@=12
+  \catcode`\^^M=10
+  \usembodybackslash}
+
+% \mbodybackslash is the definition of \ in @macro bodies.
+% It maps \foo\ => \csname macarg.foo\endcsname => #N 
+% where N is the macro parameter number.
+% We define \csname macarg.\endcsname to be \realbackslash, so
+% \\ in macro replacement text gets you a backslash.
+
+{\catcode`@=0 \catcode`\\=\active
+ @gdef@usembodybackslash{@let\=@mbodybackslash}
+ @gdef@mbodybackslash#1\{@csname macarg.#1@endcsname}
+}
+\expandafter\def\csname macarg.\endcsname{\realbackslash}
+
+% The catcode games are necessary because @macro may or may not
+% have a brace-surrounded list of arguments, and we need to do
+% different stuff in each case.  Making {, } \other is the only 
+% way to prevent their being deleted by the tokenizer.
+\def\macro{\recursivefalse
+  \bgroup\catcode`\{=\other\catcode`\}=\other\parsearg\macroxxx}
+\def\rmacro{\recursivetrue
+  \bgroup\catcode`\{=\other\catcode`\}=\other\parsearg\macroxxx}
+
+\def\macroxxx#1{\egroup   % started in \macro
+  \getargs{#1}%           now \macname is the macname and \toks0 the arglist
+  \edef\temp{\the\toks0}%
+  \ifx\temp\empty       % no arguments
+     \paramno=0%
   \else
      \expandafter\parsemargdef \the\toks0;% 
   \fi
-  \bgroup\catcode`\-=11\global\futurelet\nxt\iimacro}
-
-% \imacro has noted whether the macro takes one, two, or many
-% arguments (in \paramno). \iimacro figures out whether it's
-% recursive, and then uses the argument count and the recursivity to
-% select one of the six macro execution sequences.  Then we save the
-% original definition of @foo in \macsave@foo, and define @foo to call
-% the selected execution sequence.  \edef conveniently just expands
-% the token registers, not the deep structure.
-\def\iimacro{%
-  \egroup % started in \imacro
-  \ifx\nxt\allowrecur
-    \let\next\parserbody
-    \toks0=\expandafter{\csname dormacro\ifcase\paramno na\or oa\fi\endcsname}%
+  \expandafter\ifx \csname macsave.\the\macname\endcsname \relax
+     \cslet{macsave.\the\macname}{\the\macname}%
   \else
-    \let\next\parsebody
-    \toks0=\expandafter{\csname domacro\ifcase\paramno na\or oa\fi\endcsname}%
+     \message{Warning: redefining \the\macname}%
   \fi
-  \expandafter\ifx \csname macsave@\the\macname\endcsname \relax
-    \cslet{macsave@\the\macname}{\the\macname}%
+  \begingroup \macrobodyctxt
+  \ifrecursive \expandafter\parsermacbody
+  \else \expandafter\parsemacbody 
+  \fi}
+
+\def\unmacro{\parsearg\unmacroxxx}
+\def\unmacroxxx#1{
+  \expandafter\ifx \csname macsave.\the\macname\endcsname \relax
+    \errmessage{Macro \the\macname\ not defined.}%
   \else
-    \errmessage{warning: redefining macro \the\macname}%
+    \cslet{#1}{macsave.#1}%
+    \expandafter\let \csname macsave.\the\macname\endcsname \undefined
   \fi
-  \expandafter\edef\csname\the\macname\endcsname{\the\toks0{\the\macname}}%
-\next}
+}
 
-% @allow-recursion is noticed and handled by \iimacro.  It should
-% never actually be executed.  It has two names so we don't need
-% strange catcodes while defining \iimacro.
-\def\allowrecur{\errmessage{Internal error: \noexpand\allowrecur executed}}
-{\catcode`\-=11\global\let\allow-recursion\allowrecur}
+% Parse the optional {params} list.  Set up \paramno and \paramlist
+% so \defmacro knows what to do.  Define \macarg.blah for each blah
+% in the params list, to be ##N where N is the position in that list.
+% That gets used by \mbodybackslash (above).
 
-% unmacro just restores the old meaning; the MAC@<macname> macros
-% remain defined.  (Memory leak!)  \norecurse is defined below, near
-% the execution commands.
-\def\unmacro{\parsearg\iunmacro}
-\def\iunmacro#1{\macname={#1} \norecurse}
+% This code has to take great care with `macro parameter char #'.  The
+% eight hashes in a row on the macarg.#1 line collapse to four in the
+% definition of \macarg.blah, to two when \parsemacbody expands the
+% macro replacement text, and to one when \defmacro writes the macro
+% definiton.  The games with \twohash are to postpone expansion till
+% the very end, when \parsemargdefyyy crunches \paramlist into
+% something that can be splatted into a \expandafter\def\blah line (in
+% \defmacro).
+\def\parsemargdef#1;{\paramno=0\def\paramlist{}\parsemargdefxxx#1,;,}
+\def\parsemargdefxxx#1,{%
+  \let\twohash\relax
+  \if#1;\let\next=\parsemargdefyyy
+  \else \let\next=\parsemargdefxxx
+    \advance\paramno by 1%
+    \expandafter\edef\csname macarg.#1\endcsname{########\the\paramno}%
+    \edef\paramlist{\paramlist\twohash\twohash\the\paramno,}%
+  \fi\next}
+\def\parsemargdefyyy{\let\twohash##\relax \edef\paramlist{\paramlist}}
 
-% We need {} to be ordinary inside these commands. [] are temporary
+% These two commands read recursive and nonrecursive macro bodies.
+% (They're different since rec and nonrec macros end differently.)
+
+\long\def\parsemacbody#1@end macro%
+{\xdef\temp{#1} \endgroup\defmacro}%
+\long\def\parsermacbody#1@end macro%
+{\xdef\temp{#1} \endgroup\defmacro}%
+
+
+% This defines the macro itself. There are six cases: recursive and
+% nonrecursive macros of zero, one, and many arguments.
+% Much magic with \expandafter here.
+\def\defmacro{%
+  \ifrecursive
+    \ifcase\paramno
+    % 0
+      \expandafter\edef\csname\the\macname\endcsname{%
+        \noexpand\scantokens{\temp}}%
+    \or % 1
+      \expandafter\edef\csname\the\macname\endcsname{%
+         \noexpand\braceorline\csname\the\macname xxx\endcsname}%
+      \expandafter\edef\csname\the\macname xxx\endcsname##1{%
+         \noexpand\scantokens{\temp}}%
+    \else % many
+      \expandafter\edef\csname\the\macname\endcsname##1{%
+          \csname\the\macname xxx\endcsname ##1,}%
+      \expandafter\expandafter
+      \expandafter\edef
+      \expandafter\expandafter
+        \csname\the\macname xxx\endcsname 
+          \paramlist{\noexpand\scantokens{\temp}}%
+    \fi
+  \else
+    \ifcase\paramno
+    % 0
+      \expandafter\edef\csname\the\macname\endcsname{%
+        \noexpand\norecurse{\the\macname}%
+        \noexpand\scantokens{\temp}\egroup}%
+    \or % 1
+      \expandafter\edef\csname\the\macname\endcsname{%
+         \noexpand\braceorline\csname\the\macname xxx\endcsname}%
+      \expandafter\edef\csname\the\macname xxx\endcsname##1{%
+        \noexpand\norecurse{\the\macname}
+        \noexpand\scantokens{\temp}\egroup}%
+    \else % many
+      \expandafter\edef\csname\the\macname\endcsname##1{%
+          \csname\the\macname xxx\endcsname ##1,}%
+      \expandafter\expandafter
+      \expandafter\edef
+      \expandafter\expandafter
+      \csname\the\macname xxx\endcsname
+      \paramlist{%
+          \noexpand\norecurse{\the\macname}
+          \noexpand\scantokens{\temp}\egroup}%
+    \fi
+  \fi}
+
+\def\norecurse#1{\bgroup\cslet{#1}{macsave.#1}}
+
+% \braceorline decides whether the next nonwhitespace character is a
+% {.  If so it reads up to the closing }, if not, it reads the whole
+% line.  Whatever was read is then fed to the next control sequence
+% as an argument (by \parsebrace or \parsearg)
+\def\braceorline{\bgroup
+\catcode`\{=\other\catcode`\}=\other \futurelet\nxt\braceorlinexxx}
+\def\braceorlinexxx{%
+  \ifx\nxt\brace
+    \expandafter\parsebrace 
+  \else
+    \egroup \expandafter\parsearg 
+  \fi}
+
+% We need {} to be \other inside these commands. [] are temporary
 % grouping symbols.
 \begingroup
 \catcode`\{=\other \catcode`\}=\other
@@ -4477,108 +4549,28 @@ width0pt\relax} \fi
 
 % @macro can be called with or without a brace-surrounded macro
 % argument list.  These three sequences extract the macro name and arg
-% list in hopefully all cases.  *Note, anything on the line after the
-% first pair of braces will be thrown out.
-\gdef\splitarg#1[\isplitarg|#1 {}|]
-\gdef\isplitarg|#1 {#2}#3|[%
+% list in hopefully all cases.  Note that anything on the line after the
+% first pair of braces will be thrown out (Makeinfo puts it into the
+% macro body).
+\gdef\getargs#1[\getargsxxx|#1 {}|]
+\gdef\getargsxxx|#1 {#2}#3|[%
   \toks0=[#2]%
   \edef\tmp[\the\toks0]%
   \ifx\tmp\empty
-     \isplitargnospaces|#1{}|%
+     \getargsnospaces|#1{}|%
   \else
      \macname=[#1]%
   \fi]
-\gdef\isplitargnospaces|#1{#2}#3|[\macname=[#1] \toks0=[#2]]
+\gdef\getargsnospaces|#1{#2}#3|[\macname=[#1]\toks0=[#2]]
 
 % \parsebrace gets around the situation produced by \braceorline
-% (below) where the { has the wrong catcode because of \futurelet.
+% (above) where the { has the wrong catcode because of \futurelet.
 % The \egroup matches a \bgroup in \braceorline.
 \gdef\parsebrace#1{#2}[\egroup\let\next=#1\next[#2]]
 
-\global\let\brace={ % used by \braceorline, below
+\global\let\brace={ % used by \braceorline
 
 \endgroup
-
-
-% Argument parsing.
-% These routines iterate over a comma-separated list defining
-% tokens that map macro formal to actual parameters.
-% \parsemargdef sets the formal -> positional correspondence at macro
-% definition time; \parsemarg sets positional -> actual at runtime.
-%
-% The definitions are not symmetric because the callers have the
-% argument list in different places (token register and #arg)
-\def\parsemargdef#1;{\paramno=0\iparsemargdef#1,;,}
-\def\iparsemargdef#1,{%
-  \if#1;\let\next=\relax
-  \else \let\next=\iparsemargdef
-    \advance\paramno by 1%
-    \expandafter\edef\csname MAC@\the\macname#1\endcsname
-      {\csname MAC@\the\macname.\the\paramno\endcsname}%
-  \fi\next}
-
-\def\parsemarg#1{\paramno=1\iparsemarg#1,;,}
-\def\iparsemarg#1,{%
-  \if#1;\let\next=\relax
-  \else \let\next=\iparsemarg
-    \expandafter\def\csname MAC@\the\macname.\the\paramno\endcsname{#1}%
-    \advance\paramno by 1%
-  \fi\next}
-
-% Argument substitution.
-% \ is active when the body is read and tokenized; it converts its
-% argument to a macro-argument name and expands it.  We use | as a
-% temporary escape character.
-{
-\catcode`\|=0 |catcode`|\=|active
-|gdef\#1\{|csname MAC@|the|macname#1|endcsname}
-}
-
-% These sequences read and save the macro body.  \parserbody absorbs
-% the @allow-recursion in its argument, and then falls through to
-% \parsebody.
-\def\parsebody{\begingroup\catcode`\\=\active\iparsebody}
-\def\parserbody#1{\parsebody}
-
-% \iparsebody reads the entire macro in as an argument.  \ was made
-% active by \parsebody while the reading occurs.
-\long\def\iparsebody#1 \end macro% The space eats the final CR.
-{\endgroup % started in \parsebody
-\expandafter\def\csname MACb.\the\macname \endcsname{#1}}
-
-% These six sequences execute recursive and nonrecursive macros of no,
-% one, and many arguments.  We need to distinguish one arg from many
-% args because a one-argument macro invoked with no arguments gets the
-% rest of the line as its argument.
-%
-% Please note that all macros are executed inside a group, so any
-% changes made by a macro (@set, etc.) won't stick.
-\def\dormacrona#1{\begingroup\macname={#1}\idomacro{}}
-\def\dormacrooa#1{\begingroup\macname={#1}\braceorline}
-\def\dormacro#1{\begingroup\macname={#1}\idomacro}
-
-\def\domacrona#1{\begingroup\macname={#1}\norecurse\idomacro{}}
-\def\domacrooa#1{\begingroup\macname={#1}\norecurse\braceorline}
-\def\domacro#1{\begingroup\macname={#1}\norecurse\idomacro}
-
-% some helpers:
-\def\norecurse{\cslet{\the\macname}{macsave@\the\macname}}
-\def\idomacro#1{\parsemarg{#1}\csname MACb.\the\macname\endcsname\endgroup}
-
-% \braceorline decides whether the next nonwhitespace character is a
-% {.  If so it reads up to the closing }, if not, it reads the whole
-% line.  Whatever was read is then fed to \idomacro.  \parsebrace is
-% defined above, near \splitarg, in a strange catcode environment;
-% this is necessary because \futurelet freezes the catcode of the
-% peeked-at character.
-\def\braceorline{\bgroup
-\catcode`\{=\other\catcode`\}=\other \futurelet\nxt\ibraceorline}
-\def\ibraceorline{%
-\ifx\nxt\brace
-    \expandafter\parsebrace 
-  \else
-    \egroup \expandafter\parsearg 
-  \fi \idomacro}
 
 
 \message{cross references,}
