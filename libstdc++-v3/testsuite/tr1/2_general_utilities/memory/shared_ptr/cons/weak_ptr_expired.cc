@@ -1,3 +1,4 @@
+// { dg-do run { xfail *-*-* } }
 // Copyright (C) 2005 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -34,6 +35,7 @@ test01()
   std::tr1::shared_ptr<A> a1(new A);
   std::tr1::weak_ptr<A> wa(a1);
   a1.reset();
+  VERIFY( wa.expired() );
   try
   {
     std::tr1::shared_ptr<A> a2(wa);
@@ -41,13 +43,12 @@ test01()
   catch (const std::tr1::bad_weak_ptr&)
   {
     // Expected.
+      __throw_exception_again;
   }
   catch (...)
   {
     // Failed.
-    __throw_exception_again;
   }
-  VERIFY( wa.expired() );
 
   return 0;
 }

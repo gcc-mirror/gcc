@@ -47,6 +47,4 @@ main()
   test01();
   return 0;
 }
-// { dg-error "In constructor" "" { target *-*-* } 0 }
-// { dg-error "cannot convert" "" { target *-*-* } 0 }
-// { dg-error "instantiated from" "" { target *-*-* } 0 }
+// { dg-excess-errors "In constructor" }
