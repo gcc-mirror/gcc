@@ -2855,10 +2855,11 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		    pre_shift = floor_log2 (d);
 		    if (rem_flag)
 		      {
-			remainder = expand_binop (compute_mode, and_optab, op0,
-						  GEN_INT (((HOST_WIDE_INT) 1 << pre_shift) - 1),
-						  remainder, 1,
-						  OPTAB_LIB_WIDEN);
+			remainder =
+			  expand_binop (compute_mode, and_optab, op0,
+					GEN_INT (((HOST_WIDE_INT) 1 << pre_shift) - 1),
+					remainder, 1,
+					OPTAB_LIB_WIDEN);
 			if (remainder)
 			  return gen_lowpart (mode, remainder);
 		      }
@@ -2866,80 +2867,83 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 					     build_int_2 (pre_shift, 0),
 					     tquotient, 1);
 		  }
-		else if (d >= ((unsigned HOST_WIDE_INT) 1 << (size - 1)))
-		  {
-		    /* Most significant bit of divisor is set, emit a scc insn.
-		       emit_store_flag needs to be passed a place for the
-		       result.  */
-		    quotient = emit_store_flag (tquotient, GEU, op0, op1,
-						compute_mode, 1, 1);
-		    if (quotient == 0)
-		      goto fail1;
-		  }
 		else if (size <= HOST_BITS_PER_WIDE_INT)
 		  {
-		    /* Find a suitable multiplier and right shift count instead
-		       of multiplying with D.  */
-
-		    mh = choose_multiplier (d, size, size,
-					    &ml, &post_shift, &dummy);
-
-		    /* If the suggested multiplier is more than SIZE bits, we
-		       can do better for even divisors, using an initial right
-		       shift.  */
-		    if (mh != 0 && (d & 1) == 0)
+		    if (d >= ((unsigned HOST_WIDE_INT) 1 << (size - 1)))
 		      {
-			pre_shift = floor_log2 (d & -d);
-			mh = choose_multiplier (d >> pre_shift, size,
-						size - pre_shift,
+			/* Most significant bit of divisor is set; emit an scc
+			   insn.  */
+			quotient = emit_store_flag (tquotient, GEU, op0, op1,
+						    compute_mode, 1, 1);
+			if (quotient == 0)
+			  goto fail1;
+		      }
+		    else
+		      {
+			/* Find a suitable multiplier and right shift count
+			   instead of multiplying with D.  */
+
+			mh = choose_multiplier (d, size, size,
 						&ml, &post_shift, &dummy);
-			if (mh)
-			  abort ();
-		      }
-		    else
-		      pre_shift = 0;
 
-		    if (mh != 0)
-		      {
-			rtx t1, t2, t3, t4;
+			/* If the suggested multiplier is more than SIZE bits,
+			   we can do better for even divisors, using an
+			   initial right shift.  */
+			if (mh != 0 && (d & 1) == 0)
+			  {
+			    pre_shift = floor_log2 (d & -d);
+			    mh = choose_multiplier (d >> pre_shift, size,
+						    size - pre_shift,
+						    &ml, &post_shift, &dummy);
+			    if (mh)
+			      abort ();
+			  }
+			else
+			  pre_shift = 0;
 
-			extra_cost = (shift_cost[post_shift - 1]
-				      + shift_cost[1] + 2 * add_cost);
-			t1 = expand_mult_highpart (compute_mode, op0, ml,
-						   NULL_RTX, 1,
-						   max_cost - extra_cost);
-			if (t1 == 0)
-			  goto fail1;
-			t2 = force_operand (gen_rtx (MINUS, compute_mode,
-						     op0, t1),
-					    NULL_RTX);
-			t3 = expand_shift (RSHIFT_EXPR, compute_mode, t2,
-					   build_int_2 (1, 0), NULL_RTX, 1);
-			t4 = force_operand (gen_rtx (PLUS, compute_mode,
-						     t1, t3),
-					    NULL_RTX);
-			quotient = expand_shift (RSHIFT_EXPR, compute_mode, t4,
-						 build_int_2 (post_shift - 1,
-							      0),
-						 tquotient, 1);
-		      }
-		    else
-		      {
-			rtx t1, t2;
+			if (mh != 0)
+			  {
+			    rtx t1, t2, t3, t4;
 
-			t1 = expand_shift (RSHIFT_EXPR, compute_mode, op0,
-					   build_int_2 (pre_shift, 0),
-					   NULL_RTX, 1);
-			extra_cost = (shift_cost[pre_shift]
-				      + shift_cost[post_shift]);
-			t2 = expand_mult_highpart (compute_mode, t1, ml,
-						   NULL_RTX, 1,
-						   max_cost - extra_cost);
-			if (t2 == 0)
-			  goto fail1;
-			quotient = expand_shift (RSHIFT_EXPR, compute_mode, t2,
-						 build_int_2 (post_shift, 0),
-						 tquotient, 1);
+			    extra_cost = (shift_cost[post_shift - 1]
+					  + shift_cost[1] + 2 * add_cost);
+			    t1 = expand_mult_highpart (compute_mode, op0, ml,
+						       NULL_RTX, 1,
+						       max_cost - extra_cost);
+			    if (t1 == 0)
+			      goto fail1;
+			    t2 = force_operand (gen_rtx (MINUS, compute_mode,
+							 op0, t1),
+						NULL_RTX);
+			    t3 = expand_shift (RSHIFT_EXPR, compute_mode, t2,
+					       build_int_2 (1, 0), NULL_RTX,1);
+			    t4 = force_operand (gen_rtx (PLUS, compute_mode,
+							 t1, t3),
+						NULL_RTX);
+			    quotient =
+			      expand_shift (RSHIFT_EXPR, compute_mode, t4,
+					    build_int_2 (post_shift - 1, 0),
+					    tquotient, 1);
+			  }
+			else
+			  {
+			    rtx t1, t2;
+
+			    t1 = expand_shift (RSHIFT_EXPR, compute_mode, op0,
+					       build_int_2 (pre_shift, 0),
+					       NULL_RTX, 1);
+			    extra_cost = (shift_cost[pre_shift]
+					  + shift_cost[post_shift]);
+			    t2 = expand_mult_highpart (compute_mode, t1, ml,
+						       NULL_RTX, 1,
+						       max_cost - extra_cost);
+			    if (t2 == 0)
+			      goto fail1;
+			    quotient =
+			      expand_shift (RSHIFT_EXPR, compute_mode, t2,
+					    build_int_2 (post_shift, 0),
+					    tquotient, 1);
+			  }
 		      }
 		  }
 		else		/* Too wide mode to use tricky code */
