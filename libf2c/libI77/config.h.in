@@ -30,6 +30,15 @@
 /* Define if you have the tempnam function.  */
 #undef HAVE_TEMPNAM
 
+/* Get Single Unix Specification semantics */
+#undef _XOPEN_SOURCE
+
+/* Get Single Unix Specification semantics */
+#undef _XOPEN_SOURCE_EXTENDED
+
+/* Get 64-bit file size support */
+#undef _FILE_OFFSET_BITS
+
 /* Define if fcntl.h is missing. */
 #undef NO_FCNTL
 
@@ -50,10 +59,4 @@
 
 /* Define to skip f2c undefs. */
 #undef Skip_f2c_Undefs
-
-/* Get Single Unix Specification semantics */
-#undef _XOPEN_SOURCE
-
-/* Get 64-bit file size support */
-#undef _FILE_OFFSET_BITS
 

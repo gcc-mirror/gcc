@@ -1,3 +1,10 @@
+2001-07-18  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* libI77/configure.in (_XOPEN_SOURCE, _FILE_OFFSET_BITS): Move
+	these defines before tests which might be affected by them.
+	(_XOPEN_SOURCE_EXTENDED): Define.
+	* libI77/configure, libI77/config.h.in: Regenerate.
+
 Wed Jul 18 11:14:33 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* libU77/configure.in (_XOPEN_SOURCE, _FILE_OFFSET_BITS): Move
