@@ -204,6 +204,16 @@ const char *s390_arch_string;		/* for -march=<xxx> */
 const char *s390_backchain_string = ""; /* "" no-backchain ,"1" backchain,
 					   "2" kernel-backchain */
 
+const char *s390_warn_framesize_string;
+const char *s390_warn_dynamicstack_string;
+const char *s390_stack_size_string;
+const char *s390_stack_guard_string;
+
+HOST_WIDE_INT s390_warn_framesize = 0;
+bool s390_warn_dynamicstack_p = 0;
+HOST_WIDE_INT s390_stack_size = 0;
+HOST_WIDE_INT s390_stack_guard = 0;
+
 /* The following structure is embedded in the machine 
    specific part of struct function.  */
 
@@ -1147,6 +1157,44 @@ override_options (void)
     error ("z/Architecture mode not supported on %s.", s390_arch_string);
   if (TARGET_64BIT && !TARGET_ZARCH)
     error ("64-bit ABI not supported in ESA/390 mode.");
+
+  if (s390_warn_framesize_string)
+    {
+      if (sscanf (s390_warn_framesize_string, HOST_WIDE_INT_PRINT_DEC,
+		  &s390_warn_framesize) != 1)
+	error ("invalid value for -mwarn-framesize");
+    }
+
+  if (s390_warn_dynamicstack_string)
+    s390_warn_dynamicstack_p = 1;
+  
+  if (s390_stack_size_string)
+    {
+      if (sscanf (s390_stack_size_string, HOST_WIDE_INT_PRINT_DEC, 
+		  &s390_stack_size) != 1)
+	error ("invalid value for -mstack-size");
+      
+      if (exact_log2 (s390_stack_size) == -1)
+	error ("stack size must be an exact power of 2");
+      
+      if (s390_stack_guard_string)
+	{
+	  if (sscanf (s390_stack_guard_string, HOST_WIDE_INT_PRINT_DEC, 
+		      &s390_stack_guard) != 1)
+	    error ("invalid value for -mstack-guard");
+	  
+	  if (s390_stack_guard >= s390_stack_size)
+	    error ("stack size must be greater than the stack guard value");
+ 
+	  if (exact_log2 (s390_stack_guard) == -1)
+	    error ("stack guard value must be an exact power of 2");
+	}
+      else
+	error ("-mstack-size implies use of -mstack-guard");
+    }
+  
+  if (s390_stack_guard_string && !s390_stack_size_string)
+    error ("-mstack-guard implies use of -mstack-size"); 
 }
 
 /* Map for smallest class containing reg regno.  */
@@ -6268,6 +6316,33 @@ s390_emit_prologue (void)
   if (cfun_frame_layout.frame_size > 0)
     {
       rtx frame_off = GEN_INT (-cfun_frame_layout.frame_size);
+
+      if (s390_stack_size)
+  	{
+	  HOST_WIDE_INT stack_check_mask = ((s390_stack_size - 1)
+					    & ~(s390_stack_guard - 1));
+	  rtx t = gen_rtx_AND (Pmode, stack_pointer_rtx,
+			       GEN_INT (stack_check_mask));
+
+	  if (TARGET_64BIT)
+	    gen_cmpdi (t, const0_rtx);
+	  else
+	    gen_cmpsi (t, const0_rtx);
+
+	  emit_insn (gen_conditional_trap (gen_rtx_EQ (CCmode, 
+						       gen_rtx_REG (CCmode, 
+								    CC_REGNUM),
+						       const0_rtx),
+					   const0_rtx));
+  	}
+
+      if (s390_warn_framesize > 0 
+	  && cfun_frame_layout.frame_size >= s390_warn_framesize)
+	warning ("frame size of `%s' is " HOST_WIDE_INT_PRINT_DEC " bytes", 
+		 current_function_name (), cfun_frame_layout.frame_size);
+
+      if (s390_warn_dynamicstack_p && cfun->calls_alloca)
+	warning ("`%s' uses dynamic stack allocation", current_function_name ());
 
       /* Save incoming stack pointer into temp reg.  */
       if (cfun_frame_layout.save_backchain_p || next_fpr)

@@ -62,6 +62,11 @@ extern const char *s390_arch_string;
 
 extern const char *s390_backchain_string;
 
+extern const char *s390_warn_framesize_string;
+extern const char *s390_warn_dynamicstack_string;
+extern const char *s390_stack_size_string;
+extern const char *s390_stack_guard_string;
+
 #define TARGET_CPU_IEEE_FLOAT \
 	(s390_arch_flags & PF_IEEE_FLOAT)
 #define TARGET_CPU_ZARCH \
@@ -142,17 +147,29 @@ extern int target_flags;
   { "fused-madd",   -256, N_("enable fused multiply/add instructions")}, \
   { "", TARGET_DEFAULT, 0 } }
 
-#define TARGET_OPTIONS                                          \
-{ { "tune=",            &s390_tune_string,                      \
-    N_("Schedule code for given CPU"), 0},                      \
-  { "arch=",            &s390_arch_string,                      \
-    N_("Generate code for given CPU"), 0},                      \
-  { "backchain",        &s390_backchain_string,                 \
-    N_("Set backchain"), "1"},                                  \
-  { "no-backchain",     &s390_backchain_string,                 \
-    N_("Do not set backchain"), ""},                            \
-  { "kernel-backchain", &s390_backchain_string,                 \
-    N_("Set backchain appropriate for the linux kernel"), "2"}, \
+#define TARGET_OPTIONS                                                         \
+{ { "tune=",            &s390_tune_string,                                     \
+    N_("Schedule code for given CPU"), 0},                                     \
+  { "arch=",            &s390_arch_string,                                     \
+    N_("Generate code for given CPU"), 0},                                     \
+  { "backchain",        &s390_backchain_string,                                \
+    N_("Set backchain"), "1"},                                                 \
+  { "no-backchain",     &s390_backchain_string,                                \
+    N_("Do not set backchain"), ""},                                           \
+  { "kernel-backchain", &s390_backchain_string,                                \
+    N_("Set backchain appropriate for the linux kernel"), "2"},                \
+  { "warn-framesize=",   &s390_warn_framesize_string,                          \
+    N_("Warn if a single function's framesize exceeds the given framesize"),   \
+       0},                                                                     \
+  { "warn-dynamicstack", &s390_warn_dynamicstack_string,                       \
+    N_("Warn if a function uses alloca or creates an array with dynamic size"),\
+       0},                                                                     \
+  { "stack-size=",       &s390_stack_size_string,                              \
+    N_("Emit extra code in the function prologue in order to trap if the stack"\
+       "size exceeds the given limit"), 0},                                    \
+  { "stack-guard=",      &s390_stack_guard_string,                             \
+    N_("Set the max. number of bytes which has to be left to stack size "      \
+       "before a trap instruction is triggered"), 0},                          \
 }
 
 /* Support for configure-time defaults.  */

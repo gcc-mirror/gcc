@@ -1,3 +1,20 @@
+2004-08-18  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.md (s390_warn_framesize_string)
+	(s390_warn_dynamic_string, s390_stack_size_string)
+	(s390_stack_guard_string): New global string variables.
+	(s390_warn_framesize, s390_warn_dynamicstack_p, s390_stack_size)
+	(s390_stack_guard): New global variables.
+	(override_options): Added checks for the new options.
+	(s390_emit_prologue): Emit stack check and trap code and perform
+	compile time stack size checking.
+	
+	* config/s390/s390.h (TARGET_OPTIONS): Added new options 
+	"warn-framesize", "warn-dynamicstack", "stack-size" and
+	"stack-guard".
+
+	* doc/invoke.texi: Added documentation for the new options.
+
 2004-08-19  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* unwind-dw2-fde.c (get_cie_encoding): Cast argument to strlen
