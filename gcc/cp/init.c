@@ -647,7 +647,8 @@ emit_base_init (t, immediately)
 	  from_init_list = 0;
 
 	  /* Effective C++ rule 12.  */
-	  if (extra_warnings && init == NULL_TREE
+	  if (warn_ecpp && init == NULL_TREE
+	      && !DECL_ARTIFICIAL (member)
 	      && TREE_CODE (TREE_TYPE (member)) != ARRAY_TYPE)
 	    cp_warning ("`%D' should be initialized in the member initialization list", member);	    
 	}
@@ -1895,7 +1896,6 @@ build_offset_ref (type, name)
 	  tree access;
 
 	  /* unique functions are handled easily.  */
-	unique:
 	  access = compute_access (basebinfo, t);
 	  if (access == access_protected_node)
 	    {
@@ -2415,10 +2415,12 @@ build_new (placement, decl, init, use_global_new)
       return error_mark_node;
     }
 
-  nothrow = (placement
-	     && TREE_TYPE (placement)
-	     && IS_AGGR_TYPE (TREE_TYPE (placement))
-	     && (TYPE_IDENTIFIER (TREE_TYPE (placement))
+  /* If the first placement arg is of type nothrow_t, it's allowed to
+     return 0 on allocation failure.  */
+  nothrow = (placement && TREE_VALUE (placement)
+	     && TREE_TYPE (TREE_VALUE (placement))
+	     && IS_AGGR_TYPE (TREE_TYPE (TREE_VALUE (placement)))
+	     && (TYPE_IDENTIFIER (TREE_TYPE (TREE_VALUE (placement)))
 		 == get_identifier ("nothrow_t")));
 
   check_new = flag_check_new || nothrow;
@@ -3152,11 +3154,9 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
      int flags;
      int use_global_delete;
 {
-  tree function;
   tree member;
   tree expr;
   tree ref;
-  int ptr;
 
   if (addr == error_mark_node)
     return error_mark_node;
@@ -3190,7 +3190,6 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
       /* throw away const and volatile on target type of addr */
       addr = convert_force (build_pointer_type (type), addr, 0);
       ref = build_indirect_ref (addr, NULL_PTR);
-      ptr = 1;
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
     {
@@ -3221,7 +3220,6 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	addr = convert_force (build_pointer_type (type), addr, 0);
 
       ref = build_indirect_ref (addr, NULL_PTR);
-      ptr = 0;
     }
 
   my_friendly_assert (IS_AGGR_TYPE (type), 220);
@@ -3250,12 +3248,9 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
      of the base classes; otherwise, we must do that here.  */
   if (TYPE_HAS_DESTRUCTOR (type))
     {
-      tree parms = build_tree_list (NULL_TREE, addr);
-      tree dtor = DECL_MAIN_VARIANT (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), 1));
       tree passed_auto_delete;
       tree do_delete = NULL_TREE;
       tree ifexp;
-      int nonnull;
 
       if (use_global_delete)
 	{

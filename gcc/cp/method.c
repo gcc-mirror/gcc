@@ -1698,22 +1698,22 @@ make_thunk (function, delta)
     }
   if (thunk == NULL_TREE)
     {
-      thunk = build_lang_decl (FUNCTION_DECL, thunk_id, TREE_TYPE (func_decl));
-      DECL_RESULT (thunk)
-	= build_decl (RESULT_DECL, 0, TYPE_MAIN_VARIANT (TREE_TYPE (vtable_entry_type)));
-      TREE_READONLY (thunk) = TYPE_READONLY (TREE_TYPE (vtable_entry_type));
-      TREE_THIS_VOLATILE (thunk) = TYPE_VOLATILE (TREE_TYPE (vtable_entry_type));
-      make_function_rtl (thunk);
+      thunk = build_decl (FUNCTION_DECL, thunk_id, TREE_TYPE (func_decl));
+      TREE_READONLY (thunk) = TREE_READONLY (func_decl);
+      TREE_THIS_VOLATILE (thunk) = TREE_THIS_VOLATILE (func_decl);
       comdat_linkage (thunk);
       TREE_SET_CODE (thunk, THUNK_DECL);
       DECL_INITIAL (thunk) = function;
       THUNK_DELTA (thunk) = delta;
       DECL_EXTERNAL (thunk) = 1;
+      DECL_ARTIFICIAL (thunk) = 1;
       /* So that finish_file can write out any thunks that need to be: */
       pushdecl_top_level (thunk);
     }
   return thunk;
 }
+
+/* Emit the definition of a C++ multiple inheritance vtable thunk.  */
 
 void
 emit_thunk (thunk_fndecl)
@@ -1721,7 +1721,6 @@ emit_thunk (thunk_fndecl)
 {
   tree function = TREE_OPERAND (DECL_INITIAL (thunk_fndecl), 0);
   int delta = THUNK_DELTA (thunk_fndecl);
-  char *fnname = XSTR (XEXP (DECL_RTL (thunk_fndecl), 0), 0);
 
   if (TREE_ASM_WRITTEN (thunk_fndecl))
     return;
@@ -1736,20 +1735,30 @@ emit_thunk (thunk_fndecl)
 
   TREE_SET_CODE (thunk_fndecl, FUNCTION_DECL);
 
-#ifdef ASM_OUTPUT_MI_THUNK
-  current_function_decl = thunk_fndecl;
-  temporary_allocation ();
-  assemble_start_function (thunk_fndecl, fnname);
-  ASM_OUTPUT_MI_THUNK (asm_out_file, thunk_fndecl, delta, function);
-  assemble_end_function (thunk_fndecl, fnname);
-  permanent_allocation (1);
-  current_function_decl = 0;
-#else /* ASM_OUTPUT_MI_THUNK */
-  if (varargs_function_p (function))
-    cp_error ("generic thunk code does not work for variadic function `%#D'",
-	      function);
   {
+#ifdef ASM_OUTPUT_MI_THUNK
+    char *fnname;
+    current_function_decl = thunk_fndecl;
+    temporary_allocation ();
+    DECL_RESULT (thunk_fndecl)
+      = build_decl (RESULT_DECL, 0, integer_type_node);
+    make_function_rtl (thunk_fndecl);
+    fnname = XSTR (XEXP (DECL_RTL (thunk_fndecl), 0), 0);
+    assemble_start_function (thunk_fndecl, fnname);
+    ASM_OUTPUT_MI_THUNK (asm_out_file, thunk_fndecl, delta, function);
+    assemble_end_function (thunk_fndecl, fnname);
+    permanent_allocation (1);
+    current_function_decl = 0;
+#else /* ASM_OUTPUT_MI_THUNK */
+  /* If we don't have the necessary macro for efficient thunks, generate a
+     thunk function that just makes a call to the real function.
+     Unfortunately, this doesn't work for varargs.  */
+
     tree a, t;
+
+    if (varargs_function_p (function))
+      cp_error ("generic thunk code fails for method `%#D' which uses `...'",
+		function);
 
     /* Set up clone argument trees for the thunk.  */
     t = NULL_TREE;
@@ -1763,9 +1772,14 @@ emit_thunk (thunk_fndecl)
     a = nreverse (t);
     DECL_ARGUMENTS (thunk_fndecl) = a;
     DECL_RESULT (thunk_fndecl) = NULL_TREE;
+    DECL_LANG_SPECIFIC (thunk_fndecl) = DECL_LANG_SPECIFIC (function);
+    copy_lang_decl (thunk_fndecl);
+    DECL_INTERFACE_KNOWN (thunk_fndecl) = 1;
+    DECL_NOT_REALLY_EXTERN (thunk_fndecl) = 1;
 
     start_function (NULL_TREE, thunk_fndecl, NULL_TREE, 1);
     store_parm_decls ();
+    current_function_is_thunk = 1;
 
     /* Build up the call to the real function.  */
     t = build_int_2 (delta, -1 * (delta < 0));
@@ -1779,8 +1793,8 @@ emit_thunk (thunk_fndecl)
     c_expand_return (t);
 
     finish_function (lineno, 0, 0);
-  }
 #endif /* ASM_OUTPUT_MI_THUNK */
+  }
 
   TREE_SET_CODE (thunk_fndecl, THUNK_DECL);
 }

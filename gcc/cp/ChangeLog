@@ -1,3 +1,46 @@
+Thu May  1 18:26:37 1997  Mike Stump  <mrs@cygnus.com>
+
+	* except.c (expand_exception_blocks): Ensure that we flow through
+ 	the end of the exception region for the exception specification.
+  	Move exception region for the exception specification in, so that
+ 	it doesn't protect the parm cleanup.  Remove some obsolete code.
+  	* decl.c (store_parm_decls): Likewise.
+	(finish_function): Likewise.
+
+Tue Apr 29 15:38:54 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* init.c (build_new): Fix nothrow handling.
+
+Tue Apr 29 14:29:50 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* init.c (emit_base_init): Don't warn about the initialization
+	list for an artificial member.
+
+Fri Apr 25 17:47:59 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* expr.c (do_case): Handle !START case for the error msg.
+
+Fri Apr 25 11:55:23 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c, lang-options.h: New option -Weffc++.
+	* class.c, decl.c, init.c, typeck.c: Move Effective C++ warnings
+	to -Weffc++.
+
+	* decl2.c (finish_prevtable_vardecl): Change NO_LINKAGE_HEURISTICS
+ 	to MULTIPLE_SYMBOL_SPACES.
+
+Wed Apr 23 18:06:50 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* method.c (emit_thunk, generic case): Set current_function_is_thunk.
+
+	* method.c (emit_thunk, macro case): Set up DECL_RESULT.
+
+	* typeck.c (c_expand_return): Don't complain about returning void
+	to void in an artificial function.
+	* method.c (make_thunk): Change settings of READONLY/VOLATILE, 
+	don't set DECL_RESULT, set DECL_ARTIFICIAL.
+	(emit_thunk, generic code): Also set up DECL_LANG_SPECIFIC. 
+
 Wed Apr 23 14:43:06 1997  Mike Stump  <mrs@cygnus.com>
 
 	* init.c (init_decl_processing): Add supoprt for setjmp/longjmp based

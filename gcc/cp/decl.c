@@ -10137,7 +10137,7 @@ grok_op_properties (decl, virtualp, friendp)
 	    }
 
 	  /* More Effective C++ rule 6.  */
-	  if (extra_warnings
+	  if (warn_ecpp
 	      && (name == ansi_opname[(int) POSTINCREMENT_EXPR]
 		  || name == ansi_opname[(int) POSTDECREMENT_EXPR]))
 	    {
@@ -10182,7 +10182,7 @@ grok_op_properties (decl, virtualp, friendp)
 	    }
 
 	  /* More Effective C++ rule 7.  */
-	  if (extra_warnings
+	  if (warn_ecpp
 	      && (name == ansi_opname [TRUTH_ANDIF_EXPR]
 		  || name == ansi_opname [TRUTH_ORIF_EXPR]
 		  || name == ansi_opname [COMPOUND_EXPR]))
@@ -10191,7 +10191,7 @@ grok_op_properties (decl, virtualp, friendp)
 	}
 
       /* Effective C++ rule 23.  */
-      if (extra_warnings
+      if (warn_ecpp
 	  && list_length (argtypes) == 3
 	  && (name == ansi_opname [PLUS_EXPR]
 	      || name == ansi_opname [MINUS_EXPR]
@@ -10499,7 +10499,7 @@ xref_basetypes (code_type_node, name, ref, binfo)
 
 	  /* Effective C++ rule 14.  The case of virtual functions but
 	     non-virtual dtor is handled in finish_struct_1.  */
-	  if (warn_nonvdtor && ! TYPE_VIRTUAL_P (basetype)
+	  if (warn_ecpp && ! TYPE_VIRTUAL_P (basetype)
 	      && TYPE_HAS_DESTRUCTOR (basetype))
 	    cp_warning ("base class `%#T' has a non-virtual destructor",
 			basetype);
@@ -11030,7 +11030,7 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
     warning ("return-type defaults to `int'");
 
   /* Effective C++ rule 15.  See also c_expand_return.  */
-  if (extra_warnings
+  if (warn_ecpp
       && DECL_NAME (decl1) == ansi_opname[(int) MODIFY_EXPR]
       && TREE_TYPE (fntype) == void_type_node)
     cp_warning ("`operator=' should return a reference to `*this'");
@@ -11379,10 +11379,22 @@ store_parm_decls ()
   if (! processing_template_decl)
     expand_function_start (fndecl, parms_have_cleanups);
 
+  current_function_parms_stored = 1;
+
+  /* If this function is `main', emit a call to `__main'
+     to run global initializers, etc.  */
+  if (DECL_NAME (fndecl)
+      && IDENTIFIER_LENGTH (DECL_NAME (fndecl)) == 4
+      && strcmp (IDENTIFIER_POINTER (DECL_NAME (fndecl)), "main") == 0
+      && DECL_CONTEXT (fndecl) == NULL_TREE)
+    {
+      expand_main_function ();
+    }
+
   /* Now that we have initialized the parms, we can start their
      cleanups.  We cannot do this before, since expand_decl_cleanup
      should not be called before the parm can be used.  */
-  if (parms_have_cleanups
+  if (cleanups
       && ! processing_template_decl)      
     {
       for (cleanups = nreverse (cleanups); cleanups; cleanups = TREE_CHAIN (cleanups))
@@ -11402,41 +11414,13 @@ store_parm_decls ()
       expand_start_bindings (0);
     }
 
-  current_function_parms_stored = 1;
-
-  /* If this function is `main', emit a call to `__main'
-     to run global initializers, etc.  */
-  if (DECL_NAME (fndecl)
-      && IDENTIFIER_LENGTH (DECL_NAME (fndecl)) == 4
-      && strcmp (IDENTIFIER_POINTER (DECL_NAME (fndecl)), "main") == 0
-      && DECL_CONTEXT (fndecl) == NULL_TREE)
-    {
-      expand_main_function ();
-    }
-
-  /* Take care of exception handling things. */
   if (! processing_template_decl && flag_exceptions)
     {
-      rtx insns;
-      start_sequence ();
-
-#if 0
-      /* Mark the start of a stack unwinder if we need one.  */
-      start_eh_unwinder ();
-#endif
-
-#if 0
       /* Do the starting of the exception specifications, if we have any.  */
       if (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (current_function_decl)))
 	expand_start_eh_spec ();
-#endif
-
-      insns = get_insns ();
-      end_sequence ();
-
-      if (insns)
-	store_after_parms (insns);
     }
+
   last_dtor_insn = get_last_insn ();
 }
 
@@ -11881,6 +11865,9 @@ finish_function (lineno, call_poplevel, nested)
 	       && ! DECL_NAME (DECL_RESULT (current_function_decl)))
 	no_return_label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
 
+      if (flag_exceptions)
+	expand_exception_blocks ();
+
       /* If this function is supposed to return a value, ensure that
 	 we do not fall into the cleanups by mistake.  The end of our
 	 function will look like this:
@@ -11913,11 +11900,10 @@ finish_function (lineno, call_poplevel, nested)
 	     to catch cleanup-generated temporaries.  */
 	  expand_end_bindings (0, 0, 0);
 	  poplevel (0, 0, 0);
-	}
 
-      if (cleanup_label)
-	/* Emit label at beginning of cleanup code for parameters.  */
-	emit_label (cleanup_label);
+	  /* Emit label at beginning of cleanup code for parameters.  */
+	  emit_label (cleanup_label);
+	}
 
       /* Get return value into register if that's where it's supposed to be.  */
       if (original_result_rtx)
@@ -11937,9 +11923,6 @@ finish_function (lineno, call_poplevel, nested)
 
       /* Generate rtl for function exit.  */
       expand_function_end (input_filename, lineno, 1);
-
-      if (flag_exceptions)
-	expand_exception_blocks ();
     }
 
   /* This must come after expand_function_end because cleanups might

@@ -917,13 +917,11 @@ void
 expand_exception_blocks ()
 {
   rtx funcend;
-  rtx insn, insns;
-  rtx eh_spec_insns = NULL_RTX;
+  rtx insns;
 
   start_sequence ();
 
   funcend = gen_label_rtx ();
-  emit_jump (funcend);
 
   start_sequence ();
 
@@ -935,32 +933,26 @@ expand_exception_blocks ()
 
   insns = get_insns ();
   end_sequence ();
-  
-  /* Do this after we expand leftover cleanups, so that the expand_eh_region_end
-     that expand_end_eh_spec does will match the right expand_eh_region_start,
-     and make sure it comes out before the terminate protected region.  */
+
+#if 1
+  /* Do this after we expand leftover cleanups, so that the
+     expand_eh_region_end that expand_end_eh_spec does will match the
+     right expand_eh_region_start, and make sure it comes out before
+     the terminate protected region.  */
   if (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (current_function_decl)))
     {
-#if 1
-      {
-	rtx insns;
-	/* New...  */
-	start_sequence ();
-	expand_start_eh_spec ();
-	eh_spec_insns = get_insns ();
-	end_sequence ();
-      }
+     expand_end_eh_spec (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (current_function_decl)));
+     push_to_sequence (insns);
+
+     /* Now expand any new ones.  */
+     expand_leftover_cleanups ();
+
+     insns = get_insns ();
+     end_sequence ();
+    }
 #endif
 
-      expand_end_eh_spec (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (current_function_decl)));
-      push_to_sequence (insns);
-
-      /* Now expand any new ones.  */
-      expand_leftover_cleanups ();
-
-      insns = get_insns ();
-      end_sequence ();
-    }
+  emit_jump (funcend);
 
   if (insns)
     {
@@ -983,22 +975,6 @@ expand_exception_blocks ()
       expand_leftover_cleanups ();
     }
 
-  {
-    /* Mark the end of the stack unwinder.  */
-    rtx unwind_insns;
-    start_sequence ();
-#if 0
-    end_eh_unwinder ();
-#endif
-    unwind_insns = get_insns ();
-    end_sequence ();
-    if (unwind_insns)
-      {
-	insns = unwind_insns;
-	emit_insns (insns);
-      }
-  }
-
   emit_label (funcend);
 
   /* Only if we had previous insns do we want to emit the jump around
@@ -1007,22 +983,7 @@ expand_exception_blocks ()
     insns = get_insns ();
   end_sequence ();
 
-#if 1
-  if (eh_spec_insns)
-    emit_insns_after (eh_spec_insns, get_insns ());
-#else
-  if (eh_spec_insns)
-    store_after_parms (eh_spec_insns);
-#endif
-
-  insn = get_last_insn ();
-  while (GET_CODE (insn) == NOTE
-	 || (GET_CODE (insn) == INSN
-	     && (GET_CODE (PATTERN (insn)) == USE
-		 || GET_CODE (PATTERN (insn)) == CLOBBER)))
-    insn = PREV_INSN (insn);
-    
-  emit_insns_after (insns, insn);
+  emit_insns (insns);
 }
 
 tree
