@@ -106,11 +106,19 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "insn-config.h"	/* For REGISTER_CONSTRAINTS */
 
-#ifndef VMS
-#ifndef USG
-#include <sys/time.h>
-#include <sys/resource.h>
+#ifdef TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
+#else
+# if HAVE_SYS_TIME_H
+# include <sys/time.h>
+# else
+#  include <time.h>
 #endif
+#endif
+
+#ifdef HAVE_SYS_RESOURCE_H
+# include <sys/resource.h>
 #endif
 
 /* We must include obstack.h after <sys/time.h>, to avoid lossage with

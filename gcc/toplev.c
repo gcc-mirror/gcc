@@ -36,21 +36,31 @@ Boston, MA 02111-1307, USA.  */
 #include <ctype.h>
 #include <sys/stat.h>
 
-#ifndef _WIN32
-#ifdef USG
 #undef FLOAT
+#ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
-/* This is for hpux.  It is a real screw.  They should change hpux.  */
-#undef FLOAT
-#include <sys/times.h>
-#include <time.h>   /* Correct for hpux at least.  Is it good on other USG?  */
+#endif
+
+#undef FLOAT /* This is for hpux. They should change hpux.  */
 #undef FFS  /* Some systems define this in param.h.  */
+
+#ifdef TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
 #else
-#ifndef VMS
-#include <sys/time.h>
-#include <sys/resource.h>
+# if HAVE_SYS_TIME_H
+# include <sys/time.h>
+# else
+#  include <time.h>
 #endif
 #endif
+
+#ifdef HAVE_SYS_RESOURCE_H
+# include <sys/resource.h>
+#endif
+
+#ifdef HAVE_TIMES
+# include <times.h>
 #endif
 
 #include "input.h"

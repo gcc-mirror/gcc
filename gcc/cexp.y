@@ -29,26 +29,16 @@ Boston, MA 02111-1307, USA.
 #include <setjmp.h>
 /* #define YYDEBUG 1 */
 
-/* The following symbols should be autoconfigured:
-	STDC_HEADERS
-   In the mean time, we'll get by with approximations based
-   on existing GCC configuration symbols.  */
 
-#ifdef POSIX
-# ifndef STDC_HEADERS
-# define STDC_HEADERS 1
-# endif
-#endif /* defined (POSIX) */
-
-#if STDC_HEADERS
+#ifdef HAVE_STRING_H
 # include <string.h>
 #endif
 
-#if HAVE_STDLIB_H || defined (MULTIBYTE_CHARS)
+#ifdef HAVE_STDLIB_H
 # include <stdlib.h>
 #endif
 
-#if HAVE_LIMITS_H
+#ifdef HAVE_LIMITS_H
 # include <limits.h>
 #endif
 
