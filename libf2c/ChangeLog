@@ -1,3 +1,11 @@
+Thu Feb  5 15:08:08 2004  Geoffrey Keating  <geoffk@apple.com>
+
+	PR 12179
+	* aclocal.m4 (GLIBCPP_EXPORT_INSTALL_INFO): Use 'gcc', not 'gcc-lib'.
+	Add comment about poorly-named variables.
+	* Makefile.in (libsubdir): Use 'gcc', not 'gcc-lib'.
+	* configure: Regenerate.
+
 2004-01-14 Kelley Cook  <kcook@gcc.gnu.org>
 
 	* libF77/configure.in: Update to AC_PREREQ(2.13)

@@ -1,4 +1,4 @@
-# generated automatically by aclocal 1.7.8 -*- Autoconf -*-
+# generated automatically by aclocal 1.7.9 -*- Autoconf -*-
 
 # Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002
 # Free Software Foundation, Inc.
@@ -775,11 +775,12 @@ AC_DEFUN(GLIBCXX_EXPORT_INSTALL_INFO, [
   if test $version_specific_libs = yes; then
     # Need the gcc compiler version to know where to install libraries
     # and header files if --enable-version-specific-runtime-libs option
-    # is selected.
+    # is selected.  FIXME: these variables are misnamed, there are
+    # no executables installed in _toolexecdir or _toolexeclibdir.
     if test x"$gxx_include_dir" = x"no"; then
-      gxx_include_dir='${libdir}/gcc-lib/${host_alias}/'$gcc_version/include/c++
+      gxx_include_dir='${libdir}/gcc/${host_alias}/'$gcc_version/include/c++
     fi
-    glibcxx_toolexecdir='${libdir}/gcc-lib/${host_alias}'
+    glibcxx_toolexecdir='${libdir}/gcc/${host_alias}'
     glibcxx_toolexeclibdir='${toolexecdir}/'$gcc_version'$(MULTISUBDIR)'
   fi
 
@@ -791,7 +792,7 @@ AC_DEFUN(GLIBCXX_EXPORT_INSTALL_INFO, [
       glibcxx_toolexecdir='${exec_prefix}/${host_alias}'
       glibcxx_toolexeclibdir='${toolexecdir}/lib'
     else
-      glibcxx_toolexecdir='${libdir}/gcc-lib/${host_alias}'
+      glibcxx_toolexecdir='${libdir}/gcc/${host_alias}'
       glibcxx_toolexeclibdir='${libdir}'
     fi
     multi_os_directory=`$CXX -print-multi-os-directory`
@@ -1996,7 +1997,7 @@ AC_DEFUN([AM_AUTOMAKE_VERSION],[am__api_version="1.7"])
 # Call AM_AUTOMAKE_VERSION so it can be traced.
 # This function is AC_REQUIREd by AC_INIT_AUTOMAKE.
 AC_DEFUN([AM_SET_CURRENT_AUTOMAKE_VERSION],
-	 [AM_AUTOMAKE_VERSION([1.7.8])])
+	 [AM_AUTOMAKE_VERSION([1.7.9])])
 
 # Helper functions for option handling.                    -*- Autoconf -*-
 
