@@ -44,6 +44,18 @@ details.  */
 #define _Jv_platform_solib_prefix "lib"
 #define _Jv_platform_solib_suffix ".so"
 
+// Separator for file name components.
+#define _Jv_platform_file_separator ((jchar) '/')
+// Separator for path components.
+#define _Jv_platform_path_separator ((jchar) ':')
+
+// List of names for `JNI_OnLoad'.
+#define _Jv_platform_onload_names { "JNI_OnLoad", NULL }
+
+// Type of libffi ABI used by JNICALL methods.  NOTE: This must agree
+// with the JNICALL definition in jni.h
+#define _Jv_platform_ffi_abi FFI_DEFAULT_ABI
+
 #ifndef DISABLE_JAVA_NET
 #include <java/net/InetAddress.h>
 #endif
