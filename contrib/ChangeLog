@@ -1,3 +1,7 @@
+2001-01-24  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* texi2pod.pl: Handle "\,".
+
 2001-01-15  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* texi2pod.pl: Fix regular expression for @r to avoid exponential

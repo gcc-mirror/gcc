@@ -144,6 +144,7 @@ while(<STDIN>)
     s/\@TeX\{\}/TeX/g;
     s/\@pounds\{\}/\#/g;
     s/\@minus(?:\{\})?/-/g;
+    s/\\,/,/g;
 
     # Now the ones that have to be replaced by special escapes
     # (which will be turned back into text by unmunge())
