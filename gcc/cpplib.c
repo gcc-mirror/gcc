@@ -1512,7 +1512,7 @@ create_definition (buf, limit, pfile, predefinition)
       while (is_idchar[*bp]) {
 	bp++;
 	/* do we have a "special" rest-args extension here? */
-	if (limit - bp > REST_EXTENSION_LENGTH
+	if ((size_t)(limit - bp) > REST_EXTENSION_LENGTH
 	    && strncmp (rest_extension, bp, REST_EXTENSION_LENGTH) == 0) {
 	  rest_args = 1;
 	  temp->rest_args = 1;
@@ -2747,7 +2747,7 @@ macroexpand (pfile, hp)
 			     one space except within an string or char token.*/
 			  if (is_space[c])
 			    {
-			      if (CPP_WRITTEN (pfile) > arg->stringified
+			      if (CPP_WRITTEN (pfile) > (unsigned)arg->stringified
 				  && (CPP_PWRITTEN (pfile))[-1] == '@')
 				{
 				  /* "@ " escape markers are removed */
@@ -5528,7 +5528,7 @@ open_include_file (pfile, filename, searchptr)
 	p = filename;
       if (searchptr
 	  && searchptr->fname
-	  && strlen (searchptr->fname) == p - filename
+	  && strlen (searchptr->fname) == (size_t) (p - filename)
 	  && ! strncmp (searchptr->fname, filename, p - filename))
 	{
 	  /* FILENAME is in SEARCHPTR, which we've already checked.  */
