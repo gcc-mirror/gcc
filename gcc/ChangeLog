@@ -1,3 +1,27 @@
+Fri Aug 14 00:34:34 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* config/sparc/sparc.c (const64_operand, const64_high_operand):
+	Get it right when HOST_BITS_PER_WIDE_INT is not 64.
+	(input_operand): Fixup test for what we accept for constant
+	integers.
+	(sparc_emit_set_const32, sparc_emit_set_symbolic_const64): Give
+	set VOIDmode.
+	(safe_constDI): Remove.
+	(sparc_emit_set_safe_HIGH64, gen_safe_SET64, gen_safe_OR64,
+	gen_safe_XOR64): New functions.
+	(sparc_emit_set_const64_quick1, sparc_emit_set_const64_quick2,
+	sparc_emit_set_const64_longway, sparc_emit_set_const64): Use
+	them.
+	* config/sparc/sparc.md (define_insn xordi3_sp64_dbl): Only make
+	available when HOST_BITS_PER_WIDE_INT is not 64.
+	(define_insn movdi_sp64_dbl, movdi_const64_special): Likewise and
+	move before movdi_insn_sp64 pattern.
+	(define_insn movdi_lo_sum_sp64_dbl, movdi_high_sp64_dbl): Remove.
+	(define_insn sethi_di_medlow, seth44, setm44, sethh): Use
+	symbolic_operand as predicate for second operand.
+	(DImode minus split on arch32, negsi2 expander, one_cmplsi2
+	expander): Give set VOIDmode.
+	
 Fri Aug 14 01:45:06 1998  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* i386/cygwin32 (DEFAULT_PCC_STRUCT_RETURN): Define.
