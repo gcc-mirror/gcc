@@ -187,6 +187,10 @@ struct diagnostic_context
   /* The number of times we have issued diagnostics.  */
   int diagnostic_count[DK_LAST_DIAGNOSTIC_KIND];
 
+  /* True if we should display the "warnings are being tread as error"
+     message, usually displayed once per compiler run.  */
+  bool warnings_are_errors_message;
+
   /* This function is called before any message is printed out.  It is
      responsible for preparing message prefix and such.  For example, it
      might say:
@@ -284,7 +288,7 @@ extern void diagnostic_initialize	PARAMS ((diagnostic_context *));
 extern void diagnostic_report_current_module PARAMS ((diagnostic_context *));
 extern void diagnostic_report_current_function PARAMS ((diagnostic_context *));
 extern void diagnostic_flush_buffer	PARAMS ((diagnostic_context *));
-extern bool diagnostic_count_error      PARAMS ((diagnostic_context *,
+extern bool diagnostic_count_diagnostic PARAMS ((diagnostic_context *,
                                                  diagnostic_t));
 extern void diagnostic_report_diagnostic PARAMS ((diagnostic_context *,
                                                  diagnostic_info *));

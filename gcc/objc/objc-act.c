@@ -3416,7 +3416,7 @@ error_with_ivar (message, decl, rawdecl)
      tree decl;
      tree rawdecl;
 {
-  diagnostic_count_error (global_dc, DK_ERROR);
+  diagnostic_count_diagnostic (global_dc, DK_ERROR);
 
   diagnostic_report_current_function (global_dc);
 
@@ -6895,7 +6895,7 @@ warn_with_method (message, mtype, method)
      int mtype;
      tree method;
 {
-  if (!diagnostic_count_error (global_dc, DK_WARNING))
+  if (!diagnostic_count_diagnostic (global_dc, DK_WARNING))
     return;
 
   diagnostic_report_current_function (global_dc);

@@ -203,7 +203,7 @@ ffebad_start_ (bool lex_override, ffebad errnum, ffebadSeverity sev,
       if ((ffebad_severity_ != FFEBAD_severityPEDANTIC)
 	  || !flag_pedantic_errors)
 	{
-	  if (!diagnostic_count_error (global_dc, DK_WARNING))
+	  if (!diagnostic_count_diagnostic (global_dc, DK_WARNING))
 	    {			/* User wants no warnings. */
 	      ffebad_is_temp_inhibited_ = TRUE;
 	      return FALSE;
@@ -215,7 +215,7 @@ ffebad_start_ (bool lex_override, ffebad errnum, ffebadSeverity sev,
     case FFEBAD_severityWEIRD:
     case FFEBAD_severitySEVERE:
     case FFEBAD_severityDISASTER:
-      diagnostic_count_error (global_dc, DK_ERROR);
+      diagnostic_count_diagnostic (global_dc, DK_ERROR);
       break;
 
     default:
