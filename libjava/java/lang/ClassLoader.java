@@ -177,14 +177,18 @@ public abstract class ClassLoader
 
     if (c == null)
       {
-	try {
-	  if (parent != null)
-	    return parent.loadClass (name, link);
-	  else
-	    c = gnu.gcj.runtime.VMClassLoader.instance.findClass (name);
-	} catch (ClassNotFoundException ex) {
-	  /* ignore, we'll try findClass */;
-	}
+	try
+	  {
+	    ClassLoader cl = parent;
+	    if (parent == null)
+	      cl = gnu.gcj.runtime.VMClassLoader.instance;
+	    if (cl != this)
+	      c = cl.loadClass (name, link);
+	  }
+	catch (ClassNotFoundException ex)
+	  {
+	    /* ignore, we'll try findClass */;
+	  }
       }
 
     if (c == null)
