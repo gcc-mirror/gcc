@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for
    Motorola m88100 in an 88open OCS/BCS environment.
-   Copyright (C) 1988, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92-99, 2000 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
    Currently maintained by (gcc@dg-rtp.dg.com)
 
@@ -93,9 +93,9 @@ enum processor_type {
 
 /* External variables/functions defined in m88k.c.  */
 
-extern char *m88k_pound_sign;
-extern char *m88k_short_data;
-extern char *m88k_version;
+extern const char *m88k_pound_sign;
+extern const char *m88k_short_data;
+extern const char *m88k_version;
 extern char m88k_volatile_code;
 
 extern unsigned m88k_gp_threshold;
@@ -110,46 +110,6 @@ extern struct rtx_def *m88k_compare_op0;
 extern struct rtx_def *m88k_compare_op1;
 
 extern enum processor_type m88k_cpu;
-
-extern int null_prologue ();
-extern int integer_ok_for_set ();
-extern int m88k_debugger_offset ();
-
-
-extern void emit_bcnd ();
-extern void expand_block_move ();
-extern void m88k_layout_frame ();
-extern void m88k_expand_prologue ();
-extern void m88k_begin_prologue ();
-extern void m88k_end_prologue ();
-extern void m88k_expand_epilogue ();
-extern void m88k_begin_epilogue ();
-extern void m88k_end_epilogue ();
-extern void output_function_profiler ();
-extern void output_function_block_profiler ();
-extern void output_block_profiler ();
-extern void output_file_start ();
-extern void output_ascii ();
-extern void output_label ();
-extern void print_operand ();
-extern void print_operand_address ();
-
-extern char *output_load_const_int ();
-extern char *output_load_const_float ();
-extern char *output_load_const_double ();
-extern char *output_load_const_dimode ();
-extern char *output_and ();
-extern char *output_ior ();
-extern char *output_xor ();
-extern char *output_call ();
-
-extern struct rtx_def *emit_test ();
-extern struct rtx_def *legitimize_address ();
-extern struct rtx_def *legitimize_operand ();
-extern struct rtx_def *m88k_function_arg ();
-extern struct rtx_def *m88k_builtin_saveregs ();
-
-extern enum m88k_instruction classify_integer ();
 
 /* external variables defined elsewhere in the compiler */
 
@@ -329,7 +289,7 @@ extern int flag_pic;				/* -fpic */
 									     \
     if (m88k_short_data)						     \
       {									     \
-	char *p = m88k_short_data;					     \
+	const char *p = m88k_short_data;				     \
 	while (*p)							     \
 	  if (*p >= '0' && *p <= '9')					     \
 	    p++;							     \
@@ -1076,17 +1036,14 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 /* Define the `__builtin_va_list' type for the ABI.  */
 #define BUILD_VA_LIST_TYPE(VALIST) \
   (VALIST) = m88k_build_va_list ()
-extern union tree_node *m88k_build_va_list ();
 
 /* Implement `va_start' for varargs and stdarg.  */
 #define EXPAND_BUILTIN_VA_START(stdarg, valist, nextarg) \
   m88k_va_start (stdarg, valist, nextarg)
-extern void m88k_va_start ();
 
 /* Implement `va_arg'.  */
 #define EXPAND_BUILTIN_VA_ARG(valist, type) \
   m88k_va_arg (valist, type)
-extern struct rtx_def *m88k_va_arg ();
 
 /* Generate the assembly code for function entry. */
 #define FUNCTION_PROLOGUE(FILE, SIZE) m88k_begin_prologue(FILE, SIZE)
@@ -1858,8 +1815,11 @@ extern struct rtx_def *m88k_va_arg ();
 /* Override svr[34].h.  */
 #undef	ASM_FILE_START
 #define ASM_FILE_START(FILE) \
-  output_file_start (FILE, f_options, sizeof f_options / sizeof f_options[0], \
-		     W_options, sizeof W_options / sizeof W_options[0])
+  output_file_start (FILE, \
+	(struct m88k_lang_independent_options *) f_options, \
+	sizeof f_options / sizeof f_options[0], \
+	(struct m88k_lang_independent_options *) W_options, \
+	sizeof W_options / sizeof W_options[0])
 
 #undef	ASM_FILE_END
 
@@ -1898,7 +1858,7 @@ extern struct rtx_def *m88k_va_arg ();
 #define ASM_OUTPUT_OPCODE(STREAM, PTR)					\
   {									\
     int ch;								\
-    char *orig_ptr;							\
+    const char *orig_ptr;						\
 									\
     for (orig_ptr = (PTR);						\
 	 (ch = *(PTR)) && ch != ' ' && ch != '\t' && ch != '\n' && ch != '%'; \
@@ -1929,7 +1889,7 @@ extern struct rtx_def *m88k_va_arg ();
    is our `condition code' register), so that condition codes can easily
    be clobbered by an asm.  The carry bit in the PSR is now used.  */
 
-#define ADDITIONAL_REGISTER_NAMES	{"psr", 0, "cc", 0}
+#define ADDITIONAL_REGISTER_NAMES	{{"psr", 0}, {"cc", 0}}
 
 /* How to renumber registers for dbx and gdb.  */
 #define DBX_REGISTER_NUMBER(REGNO) (REGNO)
@@ -1985,7 +1945,7 @@ extern struct rtx_def *m88k_va_arg ();
 #undef ASM_FINISH_DECLARE_OBJECT
 #define ASM_FINISH_DECLARE_OBJECT(FILE, DECL, TOP_LEVEL, AT_END)	 \
 do {									 \
-     char *name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);			 \
+     const char *name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);		 \
      if (!flag_inhibit_size_directive && DECL_SIZE (DECL)		 \
 	 && DECLARE_ASM_NAME						 \
          && ! AT_END && TOP_LEVEL					 \
@@ -2117,8 +2077,8 @@ do {									 \
   do {									\
     union { REAL_VALUE_TYPE d; long l[2]; } x;				\
     x.d = (VALUE);							\
-    fprintf (FILE, "\t%s\t 0x%.8x, 0x%.8x\n", INT_ASM_OP,			\
-	     x.l[0], x.l[1]);						\
+    fprintf (FILE, "\t%s\t 0x%.8lx, 0x%.8lx\n", INT_ASM_OP,		\
+	     (long) x.l[0], (long) x.l[1]);				\
   } while (0)
 
 /* This is how to output an assembler line defining a `float' constant.  */
@@ -2317,7 +2277,7 @@ do {									 \
 #define PUT_SDB_SCL(a)						\
   do {								\
     register int s = (a);					\
-    register char *scl;						\
+    register const char *scl;					\
     switch (s)							\
       {								\
       case C_EFCN:	scl = "end of function";	break;	\
@@ -2357,9 +2317,10 @@ do {									 \
   do {								\
     register int t = (a);					\
     static char buffer[100];					\
-    register char *p = buffer, *q;				\
+    register char *p = buffer;					\
+    register const char *q;					\
     register int typ = t;					\
-    register int i,d;						\
+    register int i;						\
 								\
     for (i = 0; i <= 5; i++)					\
       {								\
@@ -2611,6 +2572,7 @@ sdata_section ()							\
 #define ENCODE_SECTION_INFO(DECL)					\
   do {									\
     if (m88k_gp_threshold > 0)						\
+    {									\
       if (TREE_CODE (DECL) == VAR_DECL)					\
 	{								\
 	  if (!TREE_READONLY (DECL) || TREE_SIDE_EFFECTS (DECL))	\
@@ -2625,6 +2587,7 @@ sdata_section ()							\
 	       && flag_writable_strings					\
 	       && TREE_STRING_LENGTH (DECL) <= m88k_gp_threshold)	\
 	SYMBOL_REF_FLAG (XEXP (TREE_CST_RTL (DECL), 0)) = 1;		\
+    }									\
   } while (0)
 
 /* Print operand X (an rtx) in assembler syntax to file FILE.

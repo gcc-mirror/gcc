@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Motorola 88000.
-   Copyright (C) 1988, 92, 93, 94, 95, 96, 1997, 1998, 1999 Free Software
+   Copyright (C) 1988, 92-99, 2000 Free Software
    Foundation, Inc. 
    Contributed by Michael Tiemann (tiemann@mcc.com)
    Currently maintained by (gcc@dg-rtp.dg.com)
@@ -37,14 +37,17 @@ Boston, MA 02111-1307, USA.  */
 #include "c-tree.h"
 #include "expr.h"
 #include "flags.h"
+#include "recog.h"
+#include "toplev.h"
+#include "tm_p.h"
 
 extern char *version_string;
 extern int flag_traditional;
 extern FILE *asm_out_file;
 
-char *m88k_pound_sign = "";	/* Either # for SVR4 or empty for SVR3 */
-char *m88k_short_data;
-char *m88k_version;
+const char *m88k_pound_sign = ""; /* Either # for SVR4 or empty for SVR3 */
+const char *m88k_short_data;
+const char *m88k_version;
 char m88k_volatile_code;
 
 unsigned m88k_gp_threshold = 0;
@@ -68,8 +71,6 @@ classify_integer (mode, value)
      enum machine_mode mode;
      register int value;
 {
-  register int mask;
-
   if (value == 0)
     return m88k_zero;
   else if (SMALL_INTVAL (value))
@@ -120,12 +121,12 @@ integer_ok_for_set (value)
   return (value && POWER_OF_2_or_0 (mask + 1));
 }
 
-char *
+const char *
 output_load_const_int (mode, operands)
      enum machine_mode mode;
      rtx *operands;
 {
-  static char *patterns[] =
+  static const char *const patterns[] =
     { "or %0,%#r0,0",
       "or %0,%#r0,%1",
       "subu %0,%#r0,%n1",
@@ -145,7 +146,7 @@ output_load_const_int (mode, operands)
 /* These next two routines assume that floating point numbers are represented
    in a manner which is consistent between host and target machines.  */
 
-char *
+const char *
 output_load_const_float (operands)
      rtx *operands;
 {
@@ -156,7 +157,7 @@ output_load_const_float (operands)
   return output_load_const_int (SImode, operands);
 }
 
-char *
+const char *
 output_load_const_double (operands)
      rtx *operands;
 {
@@ -178,7 +179,7 @@ output_load_const_double (operands)
   return output_load_const_int (SImode, operands);
 }
 
-char *
+const char *
 output_load_const_dimode (operands)
      rtx *operands;
 {
@@ -340,7 +341,7 @@ legitimize_address (pic, orig, reg, scratch)
 	}
       else if (GET_CODE (addr) == CONST)
 	{
-	  rtx base, offset;
+	  rtx base;
 
 	  if (GET_CODE (XEXP (addr, 0)) == PLUS
 	      && XEXP (XEXP (addr, 0), 0) == pic_offset_table_rtx)
@@ -466,17 +467,21 @@ static int max_from_align[] = {0, MOVSTR_QI, MOVSTR_HI, 0, MOVSTR_SI,
 static int all_from_align[] = {0, MOVSTR_QI, MOVSTR_ODD_HI, 0, MOVSTR_ODD_SI,
 			       0, 0, 0, MOVSTR_ODD_DI};
 
-static int best_from_align[3][9] =
-  {0, MOVSTR_QI_LIMIT_88100, MOVSTR_HI_LIMIT_88100, 0, MOVSTR_SI_LIMIT_88100, 
-   0, 0, 0, MOVSTR_DI_LIMIT_88100,
-   0, MOVSTR_QI_LIMIT_88110, MOVSTR_HI_LIMIT_88110, 0, MOVSTR_SI_LIMIT_88110, 
-   0, 0, 0, MOVSTR_DI_LIMIT_88110,  
-   0, MOVSTR_QI_LIMIT_88000, MOVSTR_HI_LIMIT_88000, 0, MOVSTR_SI_LIMIT_88000,
-   0, 0, 0, MOVSTR_DI_LIMIT_88000};
+static int best_from_align[3][9] = {
+  {0, MOVSTR_QI_LIMIT_88100, MOVSTR_HI_LIMIT_88100, 0, MOVSTR_SI_LIMIT_88100,
+   0, 0, 0, MOVSTR_DI_LIMIT_88100},
+  {0, MOVSTR_QI_LIMIT_88110, MOVSTR_HI_LIMIT_88110, 0, MOVSTR_SI_LIMIT_88110,
+   0, 0, 0, MOVSTR_DI_LIMIT_88110},
+  {0, MOVSTR_QI_LIMIT_88000, MOVSTR_HI_LIMIT_88000, 0, MOVSTR_SI_LIMIT_88000,
+   0, 0, 0, MOVSTR_DI_LIMIT_88000}
+};
 
-static void block_move_loop ();
-static void block_move_no_loop ();
-static void block_move_sequence ();
+static void block_move_loop PARAMS ((rtx, rtx, rtx, rtx, int, int));
+static void block_move_no_loop PARAMS ((rtx, rtx, rtx, rtx, int, int));
+static void block_move_sequence PARAMS ((rtx, rtx, rtx, rtx, int, int, int));
+static void output_short_branch_defs PARAMS ((FILE *));
+static int output_option PARAMS ((FILE *, const char *, const char *,
+				  const char *, const char *, int, int));
 
 /* Emit code to perform a block move.  Choose the best method.
 
@@ -751,7 +756,7 @@ block_move_sequence (dest, dest_mem, src, src_mem, size, align, offset)
 
 /* Emit the code to do an AND operation.  */
 
-char *
+const char *
 output_and (operands)
      rtx operands[];
 {
@@ -777,7 +782,7 @@ output_and (operands)
 
 /* Emit the code to do an inclusive OR operation.  */
 
-char *
+const char *
 output_ior (operands)
      rtx operands[];
 {
@@ -799,7 +804,7 @@ output_ior (operands)
 
 /* Emit the instructions for doing an XOR.  */
 
-char *
+const char *
 output_xor (operands)
      rtx operands[];
 {
@@ -831,7 +836,7 @@ static rtx sb_name = 0;
 static rtx sb_high = 0;
 static rtx sb_low = 0;
 
-char *
+const char *
 output_call (operands, addr)
      rtx operands[];
      rtx addr;
@@ -852,7 +857,7 @@ output_call (operands, addr)
       if (GET_CODE (jump) == JUMP_INSN)
 	{
 	  rtx low, high;
-	  char *last;
+	  const char *last;
 	  rtx dest = XEXP (SET_SRC (PATTERN (jump)), 0);
 	  int delta = 4 * (insn_addresses[INSN_UID (dest)]
 			   - insn_addresses[INSN_UID (seq_insn)]
@@ -1071,6 +1076,8 @@ mostly_false_jump (jump_insn, condition)
       if (XEXP (condition, 1) == const0_rtx)
 	return 0;
       break;
+    default:
+      break;
     }
 
   return 0;
@@ -1082,7 +1089,7 @@ mostly_false_jump (jump_insn, condition)
 int
 real_power_of_2_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   union {
     REAL_VALUE_TYPE d;
@@ -1196,7 +1203,7 @@ move_operand (op, mode)
 int
 call_address_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (REG_P (op) || symbolic_address_p (op));
 }
@@ -1278,7 +1285,7 @@ arith64_operand (op, mode)
 int
 int5_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT && (unsigned) INTVAL (op) < 32);
 }
@@ -1286,7 +1293,7 @@ int5_operand (op, mode)
 int
 int32_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT);
 }
@@ -1353,7 +1360,7 @@ real_or_0_operand (op, mode)
 int
 partial_ccmode_register_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return register_operand (op, CCmode) || register_operand (op, CCEVENmode);
 }
@@ -1363,7 +1370,7 @@ partial_ccmode_register_operand (op, mode)
 int
 relop (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   switch (GET_CODE (op))
     {
@@ -1386,7 +1393,7 @@ relop (op, mode)
 int
 even_relop (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   switch (GET_CODE (op))
     {
@@ -1404,7 +1411,7 @@ even_relop (op, mode)
 int
 odd_relop (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   switch (GET_CODE (op))
     {
@@ -1425,7 +1432,7 @@ odd_relop (op, mode)
 int
 relop_no_unsigned (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   switch (GET_CODE (op))
     {
@@ -1454,7 +1461,7 @@ relop_no_unsigned (op, mode)
 int
 equality_op (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == EQ || GET_CODE (op) == NE);
 }
@@ -1464,32 +1471,40 @@ equality_op (op, mode)
 int
 pc_or_label_ref (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == PC || GET_CODE (op) == LABEL_REF);
 }
 
 /* Output to FILE the start of the assembler file.  */
 
-struct options
+/* This definition must match lang_independent_options from toplev.c.  */
+struct m88k_lang_independent_options
 {
-  char *string;
+  const char *string;
   int *variable;
   int on_value;
-  char *description;
+  const char *description;
 };
+
+static void output_options PARAMS ((FILE *,
+				    struct m88k_lang_independent_options *,
+				    int,
+				    struct m88k_lang_independent_options *,
+				    int, int, int, const char *, const char *,
+				    const char *));
 
 static int
 output_option (file, sep, type, name, indent, pos, max)
      FILE *file;
-     char *sep;
-     char *type;
-     char *name;
-     char *indent;
+     const char *sep;
+     const char *type;
+     const char *name;
+     const char *indent;
      int pos;
      int max;
 {
-  if (strlen (sep) + strlen (type) + strlen (name) + pos > max)
+  if ((long)(strlen (sep) + strlen (type) + strlen (name) + pos) > max)
     {
       fprintf (file, indent);
       return fprintf (file, "%s%s", type, name);
@@ -1497,19 +1512,20 @@ output_option (file, sep, type, name, indent, pos, max)
   return pos + fprintf (file, "%s%s%s", sep, type, name);
 }
 
-static struct { char *name; int value; } m_options[] = TARGET_SWITCHES;
+static struct { const char *name; int value; } m_options[] = TARGET_SWITCHES;
 
 static void
 output_options (file, f_options, f_len, W_options, W_len,
 		pos, max, sep, indent, term)
      FILE *file;
-     struct options *f_options;
-     struct options *W_options;
+     struct m88k_lang_independent_options *f_options;
+     struct m88k_lang_independent_options *W_options;
      int f_len, W_len;
      int pos;
      int max;
-     char *indent;
-     char *term;
+     const char *sep;
+     const char *indent;
+     const char *term;
 {
   register int j;
 
@@ -1534,7 +1550,7 @@ output_options (file, f_options, f_len, W_options, W_len,
       pos = output_option (file, sep, "-W", W_options[j].string,
 			   indent, pos, max);
 
-  for (j = 0; j < sizeof m_options / sizeof m_options[0]; j++)
+  for (j = 0; j < (long) (sizeof m_options / sizeof m_options[0]); j++)
     if (m_options[j].name[0] != '\0'
 	&& m_options[j].value > 0
 	&& ((m_options[j].value & target_flags)
@@ -1552,8 +1568,8 @@ output_options (file, f_options, f_len, W_options, W_len,
 void
 output_file_start (file, f_options, f_len, W_options, W_len)
      FILE *file;
-     struct options *f_options;
-     struct options *W_options;
+     struct m88k_lang_independent_options *f_options;
+     struct m88k_lang_independent_options *W_options;
      int f_len, W_len;
 {
   register int pos;
@@ -1595,9 +1611,9 @@ output_file_start (file, f_options, f_len, W_options, W_len)
 void
 output_ascii (file, opcode, max, p, size)
      FILE *file;
-     char *opcode;
+     const char *opcode;
      int max;
-     unsigned char *p;
+     const unsigned char *p;
      int size;
 {
   int i;
@@ -1741,10 +1757,11 @@ output_label (label_number)
   variable space.
   */
 
-static void emit_add ();
-static void preserve_registers ();
-static void emit_ldst ();
-static void output_tdesc ();
+static void emit_add PARAMS ((rtx, rtx, int));
+static void preserve_registers PARAMS ((int, int));
+static void emit_ldst PARAMS ((int, int, enum machine_mode, int));
+static void output_tdesc PARAMS ((FILE *, int));
+static int uses_arg_area_p PARAMS ((void));
 
 static int  nregs;
 static int  nxregs;
@@ -1922,8 +1939,8 @@ uses_arg_area_p ()
 
 void
 m88k_begin_prologue (stream, size)
-     FILE *stream;
-     int size;
+     FILE *stream ATTRIBUTE_UNUSED;
+     int size ATTRIBUTE_UNUSED;
 {
   if (TARGET_OMIT_LEAF_FRAME_POINTER && ! quiet_flag && leaf_function_p ())
     fprintf (stderr, "$");
@@ -2022,7 +2039,7 @@ m88k_begin_epilogue (stream)
 void
 m88k_end_epilogue (stream, size)
      FILE *stream;
-     int size;
+     int size ATTRIBUTE_UNUSED;
 {
   rtx insn = get_last_insn ();
 
@@ -2341,9 +2358,9 @@ output_tdesc (file, offset)
   ASM_GENERATE_INTERNAL_LABEL (buf, OCS_END_PREFIX, m88k_function_number);
   fprintf (file, ",%s%s", buf+1, flag_pic ? "#rel" : "");
 
-  fprintf (file, ",0x%x,0x%x,0x%x,0x%x",
+  fprintf (file, ",0x%x,0x%x,0x%lx,0x%lx",
 	   /* 8:1,17:0x%.3x,1:0,1:%d,5:%d */
-	   (((xmask ? 3 : 1) << (17+1+1+5))
+	   (int)(((xmask ? 3 : 1) << (17+1+1+5))
 	    | (mask << (1+1+5))
 	    | ((!!save_regs[1]) << 5)
 	    | (frame_pointer_needed
@@ -2353,7 +2370,7 @@ output_tdesc (file, offset)
 	   return_address_info,
 	   register_save_offset);
   if (xmask)
-    fprintf (file, ",0x%x%04x", xmask, (0xffff & xregister_save_offset));
+    fprintf (file, ",0x%lx%04lx", xmask, (0xffff & xregister_save_offset));
   fputc ('\n', file);
 
   text_section ();
@@ -2368,7 +2385,7 @@ void
 output_function_profiler (file, labelno, name, savep)
      FILE *file;
      int labelno;
-     char *name;
+     const char *name;
      int savep;
 {
   char label[256];
@@ -2526,7 +2543,7 @@ m88k_function_arg (args_so_far, mode, type, named)
      CUMULATIVE_ARGS args_so_far;
      enum machine_mode mode;
      tree type;
-     int named;
+     int named ATTRIBUTE_UNUSED;
 {
   int bytes, words;
 
@@ -2655,7 +2672,7 @@ m88k_build_va_list ()
 
 void
 m88k_va_start (stdarg_p, valist, nextarg)
-     int stdarg_p;
+     int stdarg_p ATTRIBUTE_UNUSED;
      tree valist;
      rtx nextarg ATTRIBUTE_UNUSED;
 {
@@ -2840,7 +2857,7 @@ void
 print_operand (file, x, code)
     FILE *file;
     rtx x;
-    char code;
+    int code;
 {
   enum rtx_code xc = (x ? GET_CODE (x) : UNKNOWN);
   register int value = (xc == CONST_INT ? INTVAL (x) : 0);
