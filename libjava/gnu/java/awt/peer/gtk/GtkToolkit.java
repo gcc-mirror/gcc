@@ -52,6 +52,9 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Properties;
+import gnu.java.awt.EmbeddedWindow;
+import gnu.java.awt.EmbeddedWindowSupport;
+import gnu.java.awt.peer.EmbeddedWindowPeer;
 import gnu.classpath.Configuration;
 
 /* This class uses a deprecated method java.awt.peer.ComponentPeer.getPeer().
@@ -61,7 +64,8 @@ import gnu.classpath.Configuration;
    this class.  If getPeer() ever goes away, we can implement a hash table
    that will keep up with every window's peer, but for now this is faster. */
 
-public class GtkToolkit extends java.awt.Toolkit
+public class GtkToolkit extends Toolkit
+  implements EmbeddedWindowSupport
 {
   GtkMainThread main;
   Hashtable containers = new Hashtable();
@@ -297,6 +301,11 @@ public class GtkToolkit extends java.awt.Toolkit
   protected WindowPeer createWindow (Window w)
   {
     return new GtkWindowPeer (w);
+  }
+
+  public EmbeddedWindowPeer createEmbeddedWindow (EmbeddedWindow w)
+  {
+    return new GtkEmbeddedWindowPeer (w);
   }
 
   protected FontPeer getFontPeer (String name, int style) 

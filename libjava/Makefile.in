@@ -255,6 +255,7 @@ jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxPeer.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkChoicePeer.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkClipboard.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkFileDialogPeer.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkImagePainter.c \
@@ -295,6 +296,7 @@ gnu/java/awt/peer/gtk/GtkClipboard.java	\
 gnu/java/awt/peer/gtk/GtkComponentPeer.java \
 gnu/java/awt/peer/gtk/GtkContainerPeer.java \
 gnu/java/awt/peer/gtk/GtkDialogPeer.java \
+gnu/java/awt/peer/gtk/GtkEmbeddedWindowPeer.java \
 gnu/java/awt/peer/gtk/GtkFileDialogPeer.java \
 gnu/java/awt/peer/gtk/GtkFontPeer.java \
 gnu/java/awt/peer/gtk/GtkFramePeer.java	\
@@ -529,6 +531,7 @@ gnu/java/awt/EventModifier.java \
 gnu/java/awt/GLightweightPeer.java \
 gnu/java/awt/image/ImageDecoder.java \
 gnu/java/awt/image/XBMDecoder.java \
+gnu/java/awt/peer/EmbeddedWindowPeer.java \
 gnu/java/beans/editors/ColorEditor.java	\
 gnu/java/beans/editors/FontEditor.java \
 gnu/java/beans/editors/NativeBooleanEditor.java	\
@@ -2591,6 +2594,7 @@ gnu/java/awt/peer/gtk/GtkClipboard.lo \
 gnu/java/awt/peer/gtk/GtkComponentPeer.lo \
 gnu/java/awt/peer/gtk/GtkContainerPeer.lo \
 gnu/java/awt/peer/gtk/GtkDialogPeer.lo \
+gnu/java/awt/peer/gtk/GtkEmbeddedWindowPeer.lo \
 gnu/java/awt/peer/gtk/GtkFileDialogPeer.lo \
 gnu/java/awt/peer/gtk/GtkFontPeer.lo \
 gnu/java/awt/peer/gtk/GtkFramePeer.lo \
@@ -2623,6 +2627,7 @@ jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxPeer.lo \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkChoicePeer.lo \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkClipboard.lo \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.lo \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer.lo \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.lo \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkFileDialogPeer.lo \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkImagePainter.lo \
@@ -2785,6 +2790,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/awt/image/ImageDecoder.P \
 .deps/gnu/java/awt/image/XBMDecoder.P \
 .deps/gnu/java/awt/natEmbeddedWindow.P \
+.deps/gnu/java/awt/peer/EmbeddedWindowPeer.P \
 .deps/gnu/java/awt/peer/gtk/GdkFontMetrics.P \
 .deps/gnu/java/awt/peer/gtk/GdkGraphics.P \
 .deps/gnu/java/awt/peer/gtk/GtkArg.P \
@@ -2799,6 +2805,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/awt/peer/gtk/GtkComponentPeer.P \
 .deps/gnu/java/awt/peer/gtk/GtkContainerPeer.P \
 .deps/gnu/java/awt/peer/gtk/GtkDialogPeer.P \
+.deps/gnu/java/awt/peer/gtk/GtkEmbeddedWindowPeer.P \
 .deps/gnu/java/awt/peer/gtk/GtkFileDialogPeer.P \
 .deps/gnu/java/awt/peer/gtk/GtkFontPeer.P \
 .deps/gnu/java/awt/peer/gtk/GtkFramePeer.P \
@@ -4226,6 +4233,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkChoicePeer.P \
 .deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkClipboard.P \
 .deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.P \
+.deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer.P \
 .deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.P \
 .deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkFileDialogPeer.P \
 .deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkImagePainter.P \

@@ -1,4 +1,5 @@
-/* EmbeddedWindowSupport.java --
+/* gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer.c -- Native
+   implementation of GtkEmbeddedWindowPeer
    Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -36,30 +37,36 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package gnu.java.awt;
+#include "gtkpeer.h"
+#include "gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer.h"
 
-import gnu.java.awt.peer.EmbeddedWindowPeer;
-
-/**
- * Declares a method for creating native embedded window peers.
- *
- * All classes inherited from java.awt.Toolkit that implement this
- * interface are assumed to support the creation of embedded window
- * peers. To create an embedded window, use
- * gnu.java.awt.EmbeddedWindow.
- *
- * @see gnu.java.awt.EmbeddedWindow
- * @see java.awt.Toolkit
- *
- * @author Michael Koch <konqueror@gmx.de>
- */
-public interface EmbeddedWindowSupport
+JNIEXPORT void JNICALL 
+Java_gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer_create 
+  (JNIEnv *env, jobject obj)
 {
-  /**
-   * Creates an embedded window peer, and associates it with an
-   * EmbeddedWindow object.
-   *
-   * @param w The embedded window with which to associate a peer.
-   */
-  public EmbeddedWindowPeer createEmbeddedWindow (EmbeddedWindow w);
+  gpointer window;
+
+  gdk_threads_enter ();
+
+  /* Create an "unplugged" GtkPlug. */
+  window = gtk_plug_new (0);
+
+  gdk_threads_leave ();
+
+  NSA_SET_PTR (env, obj, window);
+}
+
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer_construct
+  (JNIEnv *env, jobject obj, jint window_id)
+{
+  void *ptr;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  gdk_threads_enter ();
+
+  gtk_plug_construct (GTK_PLUG (ptr), window_id);
+  
+  gdk_threads_leave ();
 }
