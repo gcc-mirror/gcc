@@ -288,7 +288,7 @@ tree va_list_type_node;
 static tree global_type_node;
 
 /* Namespace std.  */
-int in_std = 0;
+int in_std;
 
 /* Expect only namespace names now. */
 static int only_namespace_names;
@@ -338,6 +338,9 @@ tree vt_off_identifier;
 
 /* Exception specifier used for throw().  */
 tree empty_except_spec;
+
+/* Nonzero if we're in a handler for a function-try-block.  */
+int in_function_try_handler;
 
 struct named_label_list
 {
@@ -12982,6 +12985,7 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
   current_member_init_list = NULL_TREE;
   ctor_label = dtor_label = NULL_TREE;
   static_labelno = 0;
+  in_function_try_handler = 0;
 
   clear_temp_name ();
 
@@ -14622,6 +14626,7 @@ struct cp_function
   struct cp_function *next;
   struct binding_level *binding_level;
   int static_labelno;
+  int in_function_try_handler;
 };
 
 static struct cp_function *cp_function_chain;
@@ -14664,6 +14669,7 @@ push_cp_function_context (context)
   p->current_class_ptr = current_class_ptr;
   p->current_class_ref = current_class_ref;
   p->static_labelno = static_labelno;
+  p->in_function_try_handler = in_function_try_handler;
 }
 
 /* Restore the variables used during compilation of a C++ function.  */
@@ -14706,6 +14712,7 @@ pop_cp_function_context (context)
   current_class_ptr = p->current_class_ptr;
   current_class_ref = p->current_class_ref;
   static_labelno = p->static_labelno;
+  in_function_try_handler = p->in_function_try_handler;
 
   free (p);
 }

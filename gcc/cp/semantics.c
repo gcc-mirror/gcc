@@ -586,6 +586,27 @@ begin_try_block ()
     }
 }
 
+/* Likewise, for a function-try-block.  */
+
+tree
+begin_function_try_block ()
+{
+  if (processing_template_decl)
+    {
+      tree r = build_min_nt (TRY_BLOCK, NULL_TREE,
+			     NULL_TREE);
+      add_tree (r);
+      return r;
+    }
+  else
+    {
+      if (! current_function_parms_stored)
+	store_parm_decls ();
+      expand_start_early_try_stmts ();
+      return NULL_TREE;
+    }
+}
+
 /* Finish a try-block, which may be given by TRY_BLOCK.  */
 
 void
@@ -600,6 +621,22 @@ finish_try_block (try_block)
     }
 }
 
+/* Likewise, for a function-try-block.  */
+
+void
+finish_function_try_block (try_block)
+     tree try_block;
+{
+  if (processing_template_decl)
+    RECHAIN_STMTS_FROM_LAST (try_block, TRY_STMTS (try_block));
+  else
+    {
+      end_protect_partials ();
+      expand_start_all_catch ();
+      in_function_try_handler = 1;
+    }
+}
+
 /* Finish a handler-sequence for a try-block, which may be given by
    TRY_BLOCK.  */
 
@@ -611,6 +648,21 @@ finish_handler_sequence (try_block)
     RECHAIN_STMTS_FROM_CHAIN (try_block, TRY_HANDLERS (try_block));
   else
     {
+      expand_end_all_catch ();
+    }
+}
+
+/* Likewise, for a function-try-block.  */
+
+void
+finish_function_handler_sequence (try_block)
+     tree try_block;
+{
+  if (processing_template_decl)
+    RECHAIN_STMTS_FROM_CHAIN (try_block, TRY_HANDLERS (try_block));
+  else
+    {
+      in_function_try_handler = 0;
       expand_end_all_catch ();
     }
 }

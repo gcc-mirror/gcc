@@ -6858,6 +6858,14 @@ c_expand_return (retval)
       expand_goto (dtor_label);
       return;
     }
+  else if (in_function_try_handler
+	   && DECL_CONSTRUCTOR_P (current_function_decl))
+    {
+      /* If a return statement appears in a handler of the
+         function-try-block of a constructor, the program is ill-formed. */
+      error ("cannot return from a handler of a function-try-block of a constructor");
+      return;
+    }
 
   /* Only operator new(...) throw(), can return NULL [expr.new/13].  */
   if ((DECL_NAME (current_function_decl) == ansi_opname[(int) NEW_EXPR]

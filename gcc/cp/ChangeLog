@@ -1,3 +1,24 @@
+1999-08-09  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* semantics.c (begin_function_try_block, finish_function_try_block,
+	finish_function_handler_sequence): New fns.
+	* parse.y (function_try_block): Use them.
+	* pt.c (instantiate_decl): Likewise.
+
+	* cp-tree.h: Declare in_function_try_handler.
+	* decl.c: Define it.
+	(start_function): Clear it.
+	(struct cp_function, push_cp_function_context): Save it.
+	(pop_cp_function_context): Restore it.
+	* parse.y (function_try_block): Set and clear it.
+	* except.c (expand_end_catch_block): Rethrow if we reach the end
+	of a function-try-block handler in a ctor or dtor.
+	* typeck.c (c_expand_return): Complain about returning from a
+	function-try-block handler of a ctor.
+
+	* parse.y (function_try_block): Call end_protect_partials
+	before expand_start_all_catch.
+
 1999-08-08  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (struct binding_level): Add eh_region field.
