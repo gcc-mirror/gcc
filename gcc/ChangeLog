@@ -1,3 +1,14 @@
+2004-12-15  Richard Henderson  <rth@redhat.com>
+
+        PR target/19005
+        * config/i386/i386.md (swaphi_1): Swap with swaphi_2, allow with
+        optimize_size.
+        (swapqi_1): Rename from swapqi.  Enable only for no partial reg
+        stall and optimize_size.
+        (swapqi_2): New.
+        (swaphi_1, swaphi_2, swapqi_1): Add athlon_decode.
+        (swapsi, swaphi_1, swaphi_2, swapqi_1, swapdi): Remove modrm override.
+
 2004-12-13  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/18730
