@@ -1,5 +1,12 @@
 2002-01-03  Kazu Hirata  <kazu@hxi.com>
 
+	* c-common.c: Fix formatting.
+	* diagnostic.c: Likewise.
+	* doloop.c: Likewise.
+	* dwarf2out.c: Likewise.
+
+2002-01-03  Kazu Hirata  <kazu@hxi.com>
+
 	* config/h8300/h8300.c (output_logical_op): Use 'not.w' instead
 	of 'neg.w' when xoring with 0x0000ffff or 0xffff0000.
 
