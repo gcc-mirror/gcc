@@ -267,7 +267,7 @@ while [ $# != 0 ]; do
 # identifiers below start with `d' or `l'.  It also greatly improves
 # performance, since many files contain lines of the form `#if ... defined ...'
 # or `#if lint'.
-    if egrep '//|[ 	_]_IO|CTRL|^#define.NULL|^#e[nl][ds][ief]*[ 	]+[!-.0-~]|^#[el]*if.*[^a-zA-Z0-9_][_a-ce-km-z][a-z0-9]' $file >/dev/null; then
+    if egrep '//|[ 	_]_IO|CTRL|^#define.NULL|^#e[nl][ds][ief]*[ 	]+[!-.0-~]|^#[el]*if.*[^a-zA-Z0-9_][_a-ce-km-zA-Z][a-zA-Z0-9]' $file >/dev/null; then
       if [ -r $file ]; then
 	cp $file $2/$file >/dev/null 2>&1	\
 	|| echo "Can't copy $file"
@@ -302,10 +302,12 @@ while [ $# != 0 ]; do
 		s/[a-zA-Z0-9_][a-zA-Z0-9_]*/ & /g
 
 		s/ bsd4\([0-9]\) / __bsd4\1__ /g
+		s/ _*host_mips / __host_mips__ /g
 		s/ _*i386 / __i386__ /g
 		s/ is68k / __is68k__ /g
 		s/ m68k / __m68k__ /g
 		s/ mc680\([0-9]\)0 / __mc680\10__ /g
+		s/ _*mips / __mips__ /g
 		s/ news\([0-9]*\) / __news\1__ /g
 		s/ ns32000 / __ns32000__ /g
 		s/ pyr / __pyr__ /g
@@ -314,6 +316,9 @@ while [ $# != 0 ]; do
 		s/ sun\([a-z0-9]*\) / __sun\1__ /g
 		s/ unix / __unix__ /g
 		s/ vax / __vax__ /g
+		s/ _*MIPSE\([LB]\) / __MIPSE\1__ /g
+		s/ _*R\([34]\)000 / __R\1000__ /g
+		s/ _*SYSTYPE_\([A-Z0-9]*\) / __SYSTYPE_\1__ /g
 
 		s/ \([a-zA-Z0-9_][a-zA-Z0-9_]*\) /\1/g
 	  }
@@ -340,7 +345,7 @@ done
 cd ${INPUT}
 
 # Install the proper definition of size_t in header files that it comes from.
-for file in sys/types.h stdlib.h sys/stdtypes.h; do
+for file in sys/types.h stdlib.h sys/stdtypes.h stddef.h memory.h unistd.h; do
   if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
     cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
     chmod +w ${LIB}/$file 2>/dev/null
@@ -1145,6 +1150,21 @@ if [ -r ${LIB}/$file ]; then
   echo Fixing $file, nested comment
   sed -e 's@^\( \*	int protocol;  \)/\*@\1*/ /*@' \
     ${LIB}/$file > ${LIB}/$file.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  fi
+fi
+
+# This file in RISC/os uses /**/ to concatenate two tokens.
+file=bsd43/bsd43_.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+if [ -r ${LIB}/$file ]; then
+  sed -e 's|/\*\*/|##|' ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
     rm -f ${LIB}/$file
