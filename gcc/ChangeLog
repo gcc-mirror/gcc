@@ -1,5 +1,10 @@
 2002-09-16  Richard Henderson  <rth@redhat.com>
 
+	* expr.c (emit_block_move): Set memory block size as appropriate
+	for the copy.
+
+2002-09-16  Richard Henderson  <rth@redhat.com>
+
 	PR fortran/3924
         * sdbout.c (sdbout_symbol): Don't handle offsets from a symbol.
 
