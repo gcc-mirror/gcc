@@ -1,3 +1,9 @@
+Sun Dec  9 20:25:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* hwint.h (HOST_BITS_PER_LONGLONG): Deal with __int64 type.
+	* vmsdbg.h (DST_SRC_COMMAND): Test for type of long long or __int64,
+	not GNUC.
+
 Sun Dec  9 20:19:32 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 			  Douglas B. Rupp  <rupp@gnat.com>
 
