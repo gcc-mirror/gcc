@@ -1,3 +1,12 @@
+2004-02-09  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/14072
+	* include/bits/basic_ios.tcc (basic_ios<>::_M_cache_locale):
+	Don't leave dangling pointers.
+	* testsuite/27_io/basic_ios/imbue/14072.cc: New.
+	* testsuite/22_locale/numpunct/members/pod/2.cc: Tweak, the num_put
+	facet is needed in the final test.
+
 2004-02-09  Bernardo Innocenti  <bernie@develer.com>
 
 	* crossconfig.m4: Don't enable _GLIBCXX_USE_LFS on *-uclinux*.

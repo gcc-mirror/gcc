@@ -1,6 +1,6 @@
 // basic_ios member functions -*- C++ -*-
 
-// Copyright (C) 1999, 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,7 +41,7 @@ namespace std
       if (this->rdbuf())
 	_M_streambuf_state = __state;
       else
-	  _M_streambuf_state = __state | badbit;
+	_M_streambuf_state = __state | badbit;
       if (this->exceptions() & this->rdstate())
 	__throw_ios_failure(__N("basic_ios::clear"));
     }
@@ -171,10 +171,18 @@ namespace std
     {
       if (__builtin_expect(has_facet<__ctype_type>(__loc), true))
 	_M_ctype = &use_facet<__ctype_type>(__loc);
+      else
+	_M_ctype = 0;
+
       if (__builtin_expect(has_facet<__num_put_type>(__loc), true))
 	_M_num_put = &use_facet<__num_put_type>(__loc); 
+      else
+	_M_num_put = 0;
+
       if (__builtin_expect(has_facet<__num_get_type>(__loc), true))
-	_M_num_get = &use_facet<__num_get_type>(__loc); 
+	_M_num_get = &use_facet<__num_get_type>(__loc);
+      else
+	_M_num_get = 0;
     }
 
   // Inhibit implicit instantiations for required instantiations,
