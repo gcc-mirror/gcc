@@ -1,5 +1,10 @@
 2002-10-21  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* libgcc2.c: Inline __udiv_w_sdiv when compiling __udivdi3,
+	__divdi3, __umoddi3, or __moddi3.
+
+2002-10-21  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* c-opts.c (missing_arg): Use cl_options[opt_index].opt_code
 	instead of just opt_index as switch expression.
 
