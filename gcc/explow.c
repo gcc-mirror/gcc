@@ -633,6 +633,44 @@ copy_to_suggested_reg (x, target, mode)
   return temp;
 }
 
+/* Return the mode to use to store a scalar of TYPE and MODE.
+   PUNSIGNEDP points to the signedness of the type and may be adjusted
+   to show what signedness to use on extension operations.
+
+   FOR_CALL is non-zero if this call is promoting args for a call.  */
+
+enum machine_mode
+promote_mode (type, mode, punsignedp, for_call)
+     tree type;
+     enum machine_mode mode;
+     int *punsignedp;
+     int for_call;
+{
+  enum tree_code code = TREE_CODE (type);
+  int unsignedp = *punsignedp;
+
+#ifdef PROMOTE_FOR_CALL_ONLY
+  if (! for_call)
+    return mode;
+#endif
+
+  switch (code)
+    {
+#ifdef PROMOTE_MODE
+    case INTEGER_TYPE:   case ENUMERAL_TYPE:   case BOOLEAN_TYPE:
+    case CHAR_TYPE:      case REAL_TYPE:       case OFFSET_TYPE:
+      PROMOTE_MODE (mode, unsignedp, type);
+      break;
+#endif
+
+    case POINTER_TYPE:
+      break;
+    }
+
+  *punsignedp = unsignedp;
+  return mode;
+}
+
 /* Adjust the stack pointer by ADJUST (an rtx for a number of bytes).
    This pops when ADJUST is positive.  ADJUST need not be constant.  */
 
