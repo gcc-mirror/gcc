@@ -1,3 +1,7 @@
+Mon Feb  5 11:23:16 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* config/mips/mips.c (override_options): Fix typo in last change.
+
 2001-02-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* invoke.texi (-fdump-class-layout): Document.
