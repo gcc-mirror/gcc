@@ -1,5 +1,7 @@
 2005-04-02  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/rs6000/t-darwin8: Comment out ppc64 multilib.
+
 	PR 20650
 	* config/rs6000/rs6000.md (fix_truncdfsi2): Make destination
 	a register.
