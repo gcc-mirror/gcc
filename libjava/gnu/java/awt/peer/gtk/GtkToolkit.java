@@ -39,18 +39,19 @@ exception statement from your version. */
 package gnu.java.awt.peer.gtk;
 
 import java.awt.*;
-import java.awt.datatransfer.*;
+import java.awt.datatransfer.Clipboard;
 import java.awt.dnd.DragGestureEvent;
 import java.awt.dnd.peer.DragSourceContextPeer;
 import java.awt.im.InputMethodHighlight;
-import java.awt.image.*;
+import java.awt.image.ColorModel;
+import java.awt.image.ImageObserver;
+import java.awt.image.ImageProducer;
 import java.awt.peer.*;
-import java.net.*;
+import java.net.URL;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Properties;
-import gnu.java.awt.image.*;
 import gnu.classpath.Configuration;
 
 /* This class uses a deprecated method java.awt.peer.ComponentPeer.getPeer().
