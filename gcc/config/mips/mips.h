@@ -707,7 +707,7 @@ while (0)
 #ifndef CC1_SPEC
 #define CC1_SPEC "\
 %{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
-%{mips1:-mfp32 -mgp32}%{mips2:-mfp32 -mgp32}\
+%{mips1:-mfp32 -mgp32} %{mips2:-mfp32 -mgp32}\
 %{mips3:%{!msingle-float:%{!m4650:-mfp64}} -mgp64} \
 %{mips4:%{!msingle-float:%{!m4650:-mfp64}} -mgp64} \
 %{mfp64:%{msingle-float:%emay not use both -mfp64 and -msingle-float}} \
