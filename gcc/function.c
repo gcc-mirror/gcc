@@ -1227,6 +1227,21 @@ free_temps_for_rtl_expr (t)
   combine_temp_slots ();
 }
 
+/* Mark all temporaries ever allocated in this functon as not suitable
+   for reuse until the current level is exited.  */
+
+void
+mark_all_temps_used ()
+{
+  struct temp_slot *p;
+
+  for (p = temp_slots; p; p = p->next)
+    {
+      p->in_use = 1;
+      p->level = temp_slot_level;
+    }
+}
+
 /* Push deeper into the nesting level for stack temporaries.  */
 
 void
