@@ -1,3 +1,10 @@
+2001-05-03  Alexandre Oliva  <aoliva@redhat.com>
+
+	Re-installed 2001-01-09's patch:
+	* hwint.h (HOST_BITS_PER_WIDE_INT, HOST_WIDE_INT): Use long long
+	if it's wider than long and the target's long is wider than the
+	host's.
+
 2001-05-02  David O'Brien  <obrien@FreeBSD.org>
 
 	* config.gcc, config/rs6000/aix51.h, config/rs6000/mach.h:  Do not
