@@ -102,10 +102,6 @@ static int frame_base_offset;
 
 static rtx find_addr_reg ();
 static void sparc_init_modes ();
-
-#ifdef DWARF2_DEBUGGING_INFO
-extern char *dwarf2out_cfi_label ();
-#endif
 
 /* Option handling.  */
 
