@@ -6,6 +6,18 @@
 
 2002-12-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/8674
+	* call.c (build_over_call): Check specifically for TARGET_EXPR
+	when eliding.
+
+	PR c++/8461, c++/8625
+	* call.c (convert_for_arg_passing): Don't mess with error_mark_node.
+	(cp_convert_parm_for_inlining): Remove.
+	* cp-lang.c (LANG_HOOKS_TREE_INLINING_CONVERT_PARM_FOR_INLINING): 
+	Remove.
+	* cp-tree.h (ADDR_IS_INVISIREF): Remove.
+	* except.c (stabilize_throw_expr): Remove ADDR_IS_INVISIREF code.
+
 	* call.c (build_user_type_conversion_1): Don't set ICS_BAD_FLAG on
 	an ambiguous conversion.
 

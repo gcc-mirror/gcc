@@ -344,12 +344,36 @@ copy_decl_for_inlining (decl, from_fn, to_fn)
   /* Copy the declaration.  */
   if (TREE_CODE (decl) == PARM_DECL || TREE_CODE (decl) == RESULT_DECL)
     {
+      tree type;
+      int invisiref = 0;
+
+      /* See if the frontend wants to pass this by invisible reference.  */
+      if (TREE_CODE (decl) == PARM_DECL
+	  && DECL_ARG_TYPE (decl) != TREE_TYPE (decl)
+	  && POINTER_TYPE_P (DECL_ARG_TYPE (decl))
+	  && TREE_TYPE (DECL_ARG_TYPE (decl)) == TREE_TYPE (decl))
+	{
+	  invisiref = 1;
+	  type = DECL_ARG_TYPE (decl);
+	}
+      else
+	type = TREE_TYPE (decl);
+
       /* For a parameter, we must make an equivalent VAR_DECL, not a
 	 new PARM_DECL.  */
-      copy = build_decl (VAR_DECL, DECL_NAME (decl), TREE_TYPE (decl));
-      TREE_ADDRESSABLE (copy) = TREE_ADDRESSABLE (decl);
-      TREE_READONLY (copy) = TREE_READONLY (decl);
-      TREE_THIS_VOLATILE (copy) = TREE_THIS_VOLATILE (decl);
+      copy = build_decl (VAR_DECL, DECL_NAME (decl), type);
+      if (!invisiref)
+	{
+	  TREE_ADDRESSABLE (copy) = TREE_ADDRESSABLE (decl);
+	  TREE_READONLY (copy) = TREE_READONLY (decl);
+	  TREE_THIS_VOLATILE (copy) = TREE_THIS_VOLATILE (decl);
+	}
+      else
+	{
+	  TREE_ADDRESSABLE (copy) = 0;
+	  TREE_READONLY (copy) = 1;
+	  TREE_THIS_VOLATILE (copy) = 0;
+	}
     }
   else
     {
