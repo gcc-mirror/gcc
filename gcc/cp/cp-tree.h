@@ -630,7 +630,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 
 struct saved_scope GTY(())
 {
-  cxx_saved_binding *old_bindings;
+  VEC(cxx_saved_binding) *old_bindings;
   tree old_namespace;
   tree decl_ns_list;
   tree class_name;
@@ -4015,7 +4015,6 @@ extern void maybe_suppress_debug_info		(tree);
 extern void note_debug_info_needed		(tree);
 extern void push_class_decls			(tree);
 extern void pop_class_decls			(void);
-extern void unuse_fields			(tree);
 extern void print_search_statistics		(void);
 extern void init_search_processing		(void);
 extern void reinit_search_statistics		(void);

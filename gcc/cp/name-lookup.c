@@ -4809,22 +4809,6 @@ pushtag (tree name, tree type, int globalize)
   timevar_pop (TV_NAME_LOOKUP);
 }
 
-/* Allocate storage for saving a C++ binding.  */
-#define cxx_saved_binding_make() \
-  (ggc_alloc (sizeof (cxx_saved_binding)))
-
-struct cxx_saved_binding GTY(())
-{
-  /* Link that chains saved C++ bindings for a given name into a stack.  */
-  cxx_saved_binding *previous;
-  /* The name of the current binding.  */
-  tree identifier;
-  /* The binding we're saving.  */
-  cxx_binding *binding;
-  tree class_value;
-  tree real_type_value;
-};
-
 /* Subroutines for reverting temporarily to top-level for instantiation
    of templates and such.  We actually need to clear out the class- and
    local-value slots of all identifiers, so that only the global values
@@ -4832,46 +4816,39 @@ struct cxx_saved_binding GTY(())
    scope isn't enough, because more binding levels may be pushed.  */
 struct saved_scope *scope_chain;
 
-/* If ID is not already in the SEARCH_BINDINGS, prepend its binding
-   information to OLD_BINDINGS.  Returns the new OLD_BINDINGS
-   list.  */
+/* If ID has not already been marked, add an appropriate binding to
+   *OLD_BINDINGS.  */
 
-static cxx_saved_binding *
-store_binding (tree id,
-	       cxx_saved_binding *old_bindings,
-	       cxx_saved_binding *search_bindings)
+static void
+store_binding (tree id, VEC(cxx_saved_binding) **old_bindings)
 {
   cxx_saved_binding *saved;
-  cxx_saved_binding *t1;
 
   if (!id
       /* Note that we may have an IDENTIFIER_CLASS_VALUE even when
 	 we have no IDENTIFIER_BINDING if we have left the class
 	 scope, but cached the class-level declarations.  */
       || !(IDENTIFIER_BINDING (id) || IDENTIFIER_CLASS_VALUE (id)))
-     return old_bindings;
+    return;
 
-  for (t1 = search_bindings; t1; t1 = t1->previous)
-    if (t1->identifier == id)
-     return old_bindings;
+  if (IDENTIFIER_MARKED (id))
+    return;
+  
+  IDENTIFIER_MARKED (id) = 1;
 
-  my_friendly_assert (TREE_CODE (id) == IDENTIFIER_NODE, 135);
-  saved = cxx_saved_binding_make ();
-  saved->previous = old_bindings;
+  saved = VEC_safe_push (cxx_saved_binding, *old_bindings, NULL);
   saved->identifier = id;
   saved->binding = IDENTIFIER_BINDING (id);
   saved->class_value = IDENTIFIER_CLASS_VALUE (id);;
   saved->real_type_value = REAL_IDENTIFIER_TYPE_VALUE (id);
   IDENTIFIER_BINDING (id) = NULL;
   IDENTIFIER_CLASS_VALUE (id) = NULL_TREE;
-  return saved;
 }
 
-static cxx_saved_binding *
-store_bindings (tree names, cxx_saved_binding *old_bindings)
+static void
+store_bindings (tree names, VEC(cxx_saved_binding) **old_bindings)
 {
   tree t;
-  cxx_saved_binding *search_bindings = old_bindings;
 
   timevar_push (TV_NAME_LOOKUP);
   for (t = names; t; t = TREE_CHAIN (t))
@@ -4883,30 +4860,27 @@ store_bindings (tree names, cxx_saved_binding *old_bindings)
       else
 	id = DECL_NAME (t);
 
-      old_bindings 
-	= store_binding (id, old_bindings, search_bindings);
+      store_binding (id, old_bindings);
     }
-  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, old_bindings);
+  timevar_pop (TV_NAME_LOOKUP);
 }
 
 /* Like store_bindings, but NAMES is a vector of cp_class_binding
    objects, rather than a TREE_LIST.  */
 
-static cxx_saved_binding *
+static void
 store_class_bindings (VEC(cp_class_binding) *names, 
-		      cxx_saved_binding *old_bindings)
+		      VEC(cxx_saved_binding) **old_bindings)
 {
   size_t i;
   cp_class_binding *cb;
-  cxx_saved_binding *search_bindings = old_bindings;
 
   timevar_push (TV_NAME_LOOKUP);
   for (i = 0; 
        (cb = VEC_iterate(cp_class_binding, names, i));
        ++i)
-    old_bindings 
-      = store_binding (cb->identifier, old_bindings, search_bindings);
-  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, old_bindings);
+    store_binding (cb->identifier, old_bindings);
+  timevar_pop (TV_NAME_LOOKUP);
 }
 
 void
@@ -4914,7 +4888,8 @@ push_to_top_level (void)
 {
   struct saved_scope *s;
   struct cp_binding_level *b;
-  cxx_saved_binding *old_bindings;
+  cxx_saved_binding *sb;
+  size_t i;
   int need_pop;
 
   timevar_push (TV_NAME_LOOKUP);
@@ -4931,10 +4906,9 @@ push_to_top_level (void)
   else
     need_pop = 0;
 
-  old_bindings = NULL;
   if (scope_chain && previous_class_level)
-    old_bindings = store_class_bindings (previous_class_level->class_shadowed,
-					 old_bindings);
+    store_class_bindings (previous_class_level->class_shadowed,
+			  &s->old_bindings);
 
   /* Have to include the global scope, because class-scope decls
      aren't listed anywhere useful.  */
@@ -4949,18 +4923,23 @@ push_to_top_level (void)
       if (global_scope_p (b))
 	break;
 
-      old_bindings = store_bindings (b->names, old_bindings);
+      store_bindings (b->names, &s->old_bindings);
       /* We also need to check class_shadowed to save class-level type
 	 bindings, since pushclass doesn't fill in b->names.  */
       if (b->kind == sk_class)
-	old_bindings = store_class_bindings (b->class_shadowed, old_bindings);
+	store_class_bindings (b->class_shadowed, &s->old_bindings);
 
       /* Unwind type-value slots back to top level.  */
       for (t = b->type_shadowed; t; t = TREE_CHAIN (t))
 	SET_IDENTIFIER_TYPE_VALUE (TREE_PURPOSE (t), TREE_VALUE (t));
     }
+
+  for (i = 0;
+       (sb = VEC_iterate (cxx_saved_binding, s->old_bindings, i));
+       ++i)
+    IDENTIFIER_MARKED (sb->identifier) = 0;
+
   s->prev = scope_chain;
-  s->old_bindings = old_bindings;
   s->bindings = b;
   s->need_pop_function_context = need_pop;
   s->function_decl = current_function_decl;
@@ -4978,6 +4957,7 @@ pop_from_top_level (void)
 {
   struct saved_scope *s = scope_chain;
   cxx_saved_binding *saved;
+  size_t i;
 
   timevar_push (TV_NAME_LOOKUP); 
   /* Clear out class-level bindings cache.  */
@@ -4987,7 +4967,9 @@ pop_from_top_level (void)
   current_lang_base = 0;
 
   scope_chain = s->prev;
-  for (saved = s->old_bindings; saved; saved = saved->previous)
+  for (i = 0; 
+       (saved = VEC_iterate (cxx_saved_binding, s->old_bindings, i));
+       ++i)
     {
       tree id = saved->identifier;
 

@@ -1,3 +1,7 @@
+2004-07-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/parse/defarg8.C: New test.
+
 2004-07-11  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/16433

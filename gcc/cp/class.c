@@ -5569,7 +5569,6 @@ pushclass (tree type)
 	  if (type_decl && TREE_CODE (type_decl) == TYPE_DECL)
 	    set_identifier_type_value (id, type_decl);
 	}
-      unuse_fields (type);
     }
   
   cxx_remember_type_decls (CLASSTYPE_NESTED_UTDS (type));

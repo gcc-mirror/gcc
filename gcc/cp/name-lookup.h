@@ -51,10 +51,6 @@ extern void binding_table_foreach (binding_table, bt_foreach_proc, void *);
 extern binding_entry binding_table_find (binding_table, tree);
 extern void cxx_remember_type_decls (binding_table);
 
-/* Datatype used to temporarily save C++ bindings (for implicit
-   instantiations purposes and like).  Implemented in decl.c.  */
-typedef struct cxx_saved_binding cxx_saved_binding;
-
 /* Datatype that represents binding established by a declaration between
    a name and a C++ entity.  */
 typedef struct cxx_binding cxx_binding;
@@ -83,6 +79,20 @@ struct cxx_binding GTY(())
   unsigned value_is_inherited : 1;
   unsigned is_local : 1;
 };
+
+/* Datatype used to temporarily save C++ bindings (for implicit
+   instantiations purposes and like).  Implemented in decl.c.  */
+typedef struct cxx_saved_binding GTY(())
+{
+  /* The name of the current binding.  */
+  tree identifier;
+  /* The binding we're saving.  */
+  cxx_binding *binding;
+  tree class_value;
+  tree real_type_value;
+} cxx_saved_binding;
+
+DEF_VEC_O(cxx_saved_binding);
 
 extern tree identifier_type_value (tree);
 extern void set_identifier_type_value (tree, tree);
