@@ -633,7 +633,7 @@ public class ObjectOutputStream extends OutputStream
   /**
      @see java.io.DataOutputStream#write (byte[])
   */
-  public void write (byte b[]) throws IOException
+  public void write (byte[] b) throws IOException
   {
     write (b, 0, b.length);
   }
@@ -642,7 +642,7 @@ public class ObjectOutputStream extends OutputStream
   /**
      @see java.io.DataOutputStream#write (byte[],int,int)
   */
-  public void write (byte b[], int off, int len) throws IOException
+  public void write (byte[] b, int off, int len) throws IOException
   {
     if (writeDataAsBlocks)
     {
@@ -1175,22 +1175,35 @@ public class ObjectOutputStream extends OutputStream
 
   private void callWriteMethod (Object obj) throws IOException
   {
+    Class klass = obj.getClass ();
     try
       {
-	Class classArgs[] = {Class.forName ("java.io.ObjectOutputStream")};
-	Class klass = obj.getClass ();
+	Class classArgs[] = {ObjectOutputStream.class};
 	Method m = getMethod (klass, "writeObject", classArgs);
 	if (m == null)
 	  return;
 	Object args[] = {this};
 	m.invoke (obj, args);	
       }
-    catch (Exception _)
+    catch (InvocationTargetException x)
       {
-	throw new IOException ();
+        /* Rethrow if possible. */
+	Throwable exception = x.getTargetException();
+	if (exception instanceof RuntimeException)
+	  throw (RuntimeException) exception;
+	if (exception instanceof IOException)
+	  throw (IOException) exception;
+
+	throw new IOException ("Exception thrown from writeObject() on " +
+			       klass + ": " + exception.getClass().getName());
+      }
+    catch (Exception x)
+      {
+	throw new IOException ("Failure invoking writeObject() on " +
+			       klass + ": " + x.getClass().getName());
       }
   }
-    
+
   private boolean getBooleanField (Object obj, String field_name) throws IOException
   {
     try
@@ -1331,7 +1344,7 @@ public class ObjectOutputStream extends OutputStream
   private static native Field getField (Class klass, String name)
     throws java.lang.NoSuchFieldException;
 
-  private static native Method getMethod (Class klass, String name, Class args[])
+  private static native Method getMethod (Class klass, String name, Class[] args)
     throws java.lang.NoSuchMethodException;
 
   // this value comes from 1.2 spec, but is used in 1.1 as well

@@ -577,21 +577,23 @@ public class ObjectInputStream extends InputStream
     {
       if (this.blockDataPosition >= this.blockDataBytes)
 	readNextBlock ();
-      return this.blockData[this.blockDataPosition++];
+      return (this.blockData[this.blockDataPosition++] & 0xff);
     }
     else
       return this.realInputStream.read ();
   }
 
-  public int read (byte data[], int offset, int length) throws IOException
+  public int read (byte[] data, int offset, int length) throws IOException
   {
     if (this.readDataFromBlock)
     {
-      if (this.blockDataPosition + length >= this.blockDataBytes)
+      if (this.blockDataPosition + length > this.blockDataBytes)
 	readNextBlock ();
 
       System.arraycopy (this.blockData, this.blockDataPosition,
 			data, offset, length);
+      blockDataPosition += length;	
+
       return length;
     }
     else
@@ -1359,16 +1361,29 @@ public class ObjectInputStream extends InputStream
   {
     try
       {
-	Class classArgs[] = {Class.forName ("java.io.ObjectInputStream")};
+	Class classArgs[] = {ObjectInputStream.class};
 	Method m = getMethod (klass, "readObject", classArgs);
 	if (m == null)
 	  return;
 	Object args[] = {this};
-	m.invoke (obj, args);	
+	m.invoke (obj, args);
       }
-    catch (Exception _)
+    catch (InvocationTargetException x)
       {
-	throw new IOException ();
+        /* Rethrow if possible. */
+	Throwable exception = x.getTargetException();
+	if (exception instanceof RuntimeException)
+	  throw (RuntimeException) exception;
+	if (exception instanceof IOException)
+	  throw (IOException) exception;
+
+	throw new IOException ("Exception thrown from readObject() on " +
+			       klass + ": " + exception.getClass().getName());
+      }
+    catch (Exception x)
+      {
+	throw new IOException ("Failure invoking readObject() on " +
+			       klass + ": " + x.getClass().getName());
       }
   }
     

@@ -1,3 +1,13 @@
+2001-01-27  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/io/ObjectInputStream.java (read): AND byte with 0xff to make
+	result unsigned.
+	(read (byte[], int, int)): Only call readNextBlock() if the block 
+	buffer would actually be overrun. Increment blockDataPosition.
+	(callReadMethod): Propagate exceptions from invocation target.
+	* java/io/ObjectOutputStream.java (callWriteMethod): Propagate 
+	exceptions from invocation target.
+
 2001-01-26  Tom Tromey  <tromey@redhat.com>
 
 	* jni.cc (_Jv_JNI_GetAnyMethodID): Rewrite signature from external
