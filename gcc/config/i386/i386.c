@@ -668,13 +668,13 @@ static void ix86_mark_machine_status PARAMS ((struct function *));
 static void ix86_free_machine_status PARAMS ((struct function *));
 static int ix86_split_to_parts PARAMS ((rtx, rtx *, enum machine_mode));
 static int ix86_safe_length_prefix PARAMS ((rtx));
-static int ix86_nsaved_regs PARAMS((void));
-static void ix86_emit_save_regs PARAMS((void));
+static int ix86_nsaved_regs PARAMS ((void));
+static void ix86_emit_save_regs PARAMS ((void));
 static void ix86_emit_save_regs_using_mov PARAMS ((rtx, HOST_WIDE_INT));
 static void ix86_emit_restore_regs_using_mov PARAMS ((rtx, int, int));
 static void ix86_set_move_mem_attrs_1 PARAMS ((rtx, rtx, rtx, rtx, rtx));
-static void ix86_sched_reorder_pentium PARAMS((rtx *, rtx *));
-static void ix86_sched_reorder_ppro PARAMS((rtx *, rtx *));
+static void ix86_sched_reorder_pentium PARAMS ((rtx *, rtx *));
+static void ix86_sched_reorder_ppro PARAMS ((rtx *, rtx *));
 static HOST_WIDE_INT ix86_GOT_alias_set PARAMS ((void));
 static void ix86_adjust_counter PARAMS ((rtx, HOST_WIDE_INT));
 static rtx ix86_expand_aligntest PARAMS ((rtx, int));
@@ -2138,7 +2138,7 @@ function_arg (cum, mode, type, named)
 	       words, cum->words, cum->nregs, GET_MODE_NAME (mode), named);
 
       if (ret)
-	fprintf (stderr, ", reg=%%e%s", reg_names[ REGNO(ret) ]);
+	fprintf (stderr, ", reg=%%e%s", reg_names[ REGNO (ret) ]);
       else
 	fprintf (stderr, ", stack");
 
@@ -2449,7 +2449,7 @@ ix86_va_start (stdarg_p, valist, nextarg)
 
   if (TARGET_DEBUG_ARG)
     fprintf (stderr, "va_start: words = %d, n_gpr = %d, n_fpr = %d\n",
-	     (int)words, (int)n_gpr, (int)n_fpr);
+	     (int) words, (int) n_gpr, (int) n_fpr);
 
   t = build (MODIFY_EXPR, TREE_TYPE (gpr), gpr,
 	     build_int_2 (n_gpr * 8, 0));
@@ -2547,7 +2547,7 @@ ix86_va_arg (valist, type)
 	      for (i = 0; i < XVECLEN (container, 0) && !need_temp; i++)
 		{
 		  rtx slot = XVECEXP (container, 0, i);
-		  if (REGNO (XEXP (slot, 0)) != FIRST_SSE_REG + (unsigned int)i
+		  if (REGNO (XEXP (slot, 0)) != FIRST_SSE_REG + (unsigned int) i
 		      || INTVAL (XEXP (slot, 1)) != i * 16)
 		    need_temp = 1;
 		}
@@ -2559,7 +2559,7 @@ ix86_va_arg (valist, type)
 	      for (i = 0; i < XVECLEN (container, 0) && !need_temp; i++)
 		{
 		  rtx slot = XVECEXP (container, 0, i);
-		  if (REGNO (XEXP (slot, 0)) != (unsigned int)i
+		  if (REGNO (XEXP (slot, 0)) != (unsigned int) i
 		      || INTVAL (XEXP (slot, 1)) != i * 8)
 		    need_temp = 1;
 		}
@@ -3318,7 +3318,7 @@ binary_fp_operator (op, mode)
 }
 
 int
-mult_operator(op, mode)
+mult_operator (op, mode)
     register rtx op;
     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
@@ -3326,7 +3326,7 @@ mult_operator(op, mode)
 }
 
 int
-div_operator(op, mode)
+div_operator (op, mode)
     register rtx op;
     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
@@ -3658,7 +3658,7 @@ x86_64_zero_extended_value (value)
 	if (HOST_BITS_PER_WIDE_INT == 32)
 	  return INTVAL (value) >= 0;
 	else
-	  return !(INTVAL (value) & ~(HOST_WIDE_INT)0xffffffff);
+	  return !(INTVAL (value) & ~(HOST_WIDE_INT) 0xffffffff);
 	break;
 
       /* For certain code models, the symbolic references are known to fit.  */
@@ -3812,7 +3812,7 @@ load_pic_register ()
   rtx gotsym, pclab;
 
   if (TARGET_64BIT)
-    abort();
+    abort ();
 
   gotsym = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
 
@@ -3867,7 +3867,7 @@ ix86_save_reg (regno, maybe_eh_return)
       unsigned i;
       for (i = 0; ; i++)
 	{
-	  unsigned test = EH_RETURN_DATA_REGNO(i);
+	  unsigned test = EH_RETURN_DATA_REGNO (i);
 	  if (test == INVALID_REGNUM)
 	    break;
 	  if (test == (unsigned) regno)
@@ -4131,7 +4131,7 @@ ix86_expand_prologue ()
       rtx arg0, sym;
 
       if (TARGET_64BIT)
-	abort();
+	abort ();
 
       arg0 = gen_rtx_REG (SImode, 0);
       emit_move_insn (arg0, GEN_INT (allocate));
@@ -4341,7 +4341,7 @@ ix86_expand_epilogue (style)
 
 	  /* There are is no "pascal" calling convention in 64bit ABI.  */
 	  if (TARGET_64BIT)
-	    abort();
+	    abort ();
 
 	  emit_insn (gen_popsi1 (ecx));
 	  emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx, popc));
@@ -5074,7 +5074,7 @@ legitimize_address (x, oldx, mode)
   /* Canonicalize shifts by 0, 1, 2, 3 into multiply */
   if (GET_CODE (x) == ASHIFT
       && GET_CODE (XEXP (x, 1)) == CONST_INT
-      && (log = (unsigned)exact_log2 (INTVAL (XEXP (x, 1)))) < 4)
+      && (log = (unsigned) exact_log2 (INTVAL (XEXP (x, 1)))) < 4)
     {
       changed = 1;
       x = gen_rtx_MULT (Pmode, force_reg (Pmode, XEXP (x, 0)),
@@ -5087,7 +5087,7 @@ legitimize_address (x, oldx, mode)
 
       if (GET_CODE (XEXP (x, 0)) == ASHIFT
 	  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
-	  && (log = (unsigned)exact_log2 (INTVAL (XEXP (XEXP (x, 0), 1)))) < 4)
+	  && (log = (unsigned) exact_log2 (INTVAL (XEXP (XEXP (x, 0), 1)))) < 4)
 	{
 	  changed = 1;
 	  XEXP (x, 0) = gen_rtx_MULT (Pmode,
@@ -5097,7 +5097,7 @@ legitimize_address (x, oldx, mode)
 
       if (GET_CODE (XEXP (x, 1)) == ASHIFT
 	  && GET_CODE (XEXP (XEXP (x, 1), 1)) == CONST_INT
-	  && (log = (unsigned)exact_log2 (INTVAL (XEXP (XEXP (x, 1), 1)))) < 4)
+	  && (log = (unsigned) exact_log2 (INTVAL (XEXP (XEXP (x, 1), 1)))) < 4)
 	{
 	  changed = 1;
 	  XEXP (x, 1) = gen_rtx_MULT (Pmode,
@@ -5410,7 +5410,7 @@ put_condition_code (code, mode, reverse, fp, file)
       enum rtx_code second_code, bypass_code;
       ix86_fp_comparison_codes (code, &bypass_code, &code, &second_code);
       if (bypass_code != NIL || second_code != NIL)
-	abort();
+	abort ();
       code = ix86_fp_compare_code_to_integer (code);
       mode = CCmode;
     }
@@ -7827,7 +7827,7 @@ ix86_expand_setcc (code, dest)
       if (bypass_test)
 	{
 	  if (second_test)
-	    abort();
+	    abort ();
 	  test = bypass_test;
 	  bypass = 1;
 	  PUT_CODE (test, reverse_condition_maybe_unordered (GET_CODE (test)));
@@ -7860,7 +7860,7 @@ ix86_expand_int_movcc (operands)
   if ((code == LEU || code == GTU)
       && GET_CODE (ix86_compare_op1) == CONST_INT
       && mode != HImode
-      && (unsigned int)INTVAL (ix86_compare_op1) != 0xffffffff
+      && (unsigned int) INTVAL (ix86_compare_op1) != 0xffffffff
       && GET_CODE (operands[2]) == CONST_INT
       && GET_CODE (operands[3]) == CONST_INT)
     {
@@ -8356,7 +8356,7 @@ ix86_expand_fp_movcc (operands)
   if (!fcmov_comparison_operator (compare_op, VOIDmode))
     {
       if (second_test != NULL || bypass_test != NULL)
-	abort();
+	abort ();
       tmp = gen_reg_rtx (QImode);
       ix86_expand_setcc (code, tmp);
       code = NE;
@@ -8519,7 +8519,7 @@ ix86_split_to_parts (operand, parts, mode)
 	        parts[0]
 		  = GEN_INT (trunc_int_for_mode
 		      ((l[0] & (((HOST_WIDE_INT) 2 << 31) - 1))
-		       + ((((HOST_WIDE_INT)l[1]) << 31) << 1),
+		       + ((((HOST_WIDE_INT) l[1]) << 31) << 1),
 		       DImode));
 	      else
 	        parts[0] = immed_double_const (l[0], l[1], DImode);
@@ -8658,7 +8658,7 @@ ix86_split_long_move (operands)
 	      else if (REG_P (part[1][1]))
 		part[1][1] = gen_rtx_REG (DImode, REGNO (part[1][1]));
 	      else
-		abort();
+		abort ();
 	      if (GET_MODE (part[1][0]) == SImode)
 		part[1][0] = part[1][1];
 	    }
@@ -8994,7 +8994,7 @@ ix86_expand_movstr (dst, src, count_exp, align_exp)
   else if (count != 0
 	   && (align >= 8
 	       || (!TARGET_PENTIUMPRO && !TARGET_64BIT && align >= 4)
-	       || optimize_size || count < (unsigned int)64))
+	       || optimize_size || count < (unsigned int) 64))
     {
       int size = TARGET_64BIT && !optimize_size ? 8 : 4;
       if (count & ~(size - 1))
@@ -9063,7 +9063,7 @@ ix86_expand_movstr (dst, src, count_exp, align_exp)
 
       if (count == 0
 	  && align < (TARGET_PENTIUMPRO && (count == 0
-					    || count >= (unsigned int)260)
+					    || count >= (unsigned int) 260)
 		      ? 8 : UNITS_PER_WORD))
 	{
 	  label = gen_label_rtx ();
@@ -9088,7 +9088,7 @@ ix86_expand_movstr (dst, src, count_exp, align_exp)
 	}
       if (align <= 4
 	  && ((TARGET_PENTIUMPRO && (count == 0
-				     || count >= (unsigned int)260))
+				     || count >= (unsigned int) 260))
 	      || TARGET_64BIT))
 	{
 	  rtx label = ix86_expand_aligntest (destreg, 4);
@@ -9206,7 +9206,7 @@ ix86_expand_clrstr (src, count_exp, align_exp)
   else if (count != 0
 	   && (align >= 8
 	       || (!TARGET_PENTIUMPRO && !TARGET_64BIT && align >= 4)
-	       || optimize_size || count < (unsigned int)64))
+	       || optimize_size || count < (unsigned int) 64))
     {
       int size = TARGET_64BIT && !optimize_size ? 8 : 4;
       zeroreg = copy_to_mode_reg (size == 4 ? SImode : DImode, const0_rtx);
@@ -9259,7 +9259,7 @@ ix86_expand_clrstr (src, count_exp, align_exp)
 
       if (count == 0
 	  && align < (TARGET_PENTIUMPRO && (count == 0
-					    || count >= (unsigned int)260)
+					    || count >= (unsigned int) 260)
 		      ? 8 : UNITS_PER_WORD))
 	{
 	  label = gen_label_rtx ();
@@ -9285,7 +9285,7 @@ ix86_expand_clrstr (src, count_exp, align_exp)
 	  LABEL_NUSES (label) = 1;
 	}
       if (align <= 4 && TARGET_PENTIUMPRO && (count == 0
-					      || count >= (unsigned int)260))
+					      || count >= (unsigned int) 260))
 	{
 	  rtx label = ix86_expand_aligntest (destreg, 4);
 	  emit_insn (gen_strsetsi (destreg, (TARGET_64BIT
@@ -10065,7 +10065,7 @@ ix86_safe_length (insn)
      rtx insn;
 {
   if (recog_memoized (insn) >= 0)
-    return get_attr_length(insn);
+    return get_attr_length (insn);
   else
     return 128;
 }
@@ -10075,7 +10075,7 @@ ix86_safe_length_prefix (insn)
      rtx insn;
 {
   if (recog_memoized (insn) >= 0)
-    return get_attr_length(insn);
+    return get_attr_length (insn);
   else
     return 0;
 }
@@ -10085,7 +10085,7 @@ ix86_safe_memory (insn)
      rtx insn;
 {
   if (recog_memoized (insn) >= 0)
-    return get_attr_memory(insn);
+    return get_attr_memory (insn);
   else
     return MEMORY_UNKNOWN;
 }
@@ -10095,7 +10095,7 @@ ix86_safe_pent_pair (insn)
      rtx insn;
 {
   if (recog_memoized (insn) >= 0)
-    return get_attr_pent_pair(insn);
+    return get_attr_pent_pair (insn);
   else
     return PENT_PAIR_NP;
 }
@@ -10708,7 +10708,7 @@ x86_initialize_trampoline (tramp, fnaddr, cxt)
 		      GEN_INT (trunc_int_for_mode (0xe3, QImode)));
       offset += 3;
       if (offset > TRAMPOLINE_SIZE)
-	abort();
+	abort ();
     }
 }
 
