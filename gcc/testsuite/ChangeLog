@@ -1,3 +1,14 @@
+2001-02-11  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* g++.old-deja/g++.other/crash26.C: XFAIL if parser produces
+	excess errors message but not if it crashes.
+	* g++.old-deja/g++.other/crash27.C: Likewise.
+	* g++.old-deja/g++.other/crash28.C: Likewise.
+	* g++.old-deja/g++.other/crash30.C: Likewise.
+	* g++.old-deja/g++.other/crash32.C: Likewise.
+	* g++.old-deja/g++.other/crash35.C: Likewise.
+	* g++.old-deja/g++.pt/inherit2.C: Likewise.
+
 2001-02-08  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* config/default.exp, gcc.dg/cpp/cpp.exp, gcc.dg/dg.exp,
