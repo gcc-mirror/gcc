@@ -46,7 +46,11 @@ Boston, MA 02111-1307, USA.  */
 #define SUCCESS_EXIT_CODE 0
 #define FATAL_EXIT_CODE 33
 
+#ifdef __linux__
+#include "xm-linux.h"
+#else
 #include "xm-svr4.h"
+#endif
 
 /* if not compiled with GNU C, use the C alloca and use only int bitfields. */
 #ifndef __GNUC__
