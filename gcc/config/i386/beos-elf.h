@@ -369,3 +369,15 @@ extern union tree_node *i386_pe_merge_decl_attributes ();
    without user intervention.  For instance, under Microsoft Windows
    symbols must be explicitly imported from shared libraries (DLLs).  */
 #define MULTIPLE_SYMBOL_SPACES
+
+/* A C statement to output assembler commands which will identify the object
+   file as having been compiled with GNU CC.  This isn't needed for BeOS
+   because we use DWARF and DWARF has an DW_AT_producer tag that does the
+   same thing.  BeOS debuggers, like bdb, that don't know about this hack
+   can get confused when they find two symbols with the same address, and
+   print the wrong one (gcc2_compiled) in things like backtraces.  The most
+   likely ill effect of disabling this is that a BeOS port of gdb would not
+   be able to tell that an executable was compiled with gcc if there was no
+   DWARF info. */
+#undef ASM_IDENTIFY_GCC
+#define ASM_IDENTIFY_GCC(FILE) 

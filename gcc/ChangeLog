@@ -1,3 +1,8 @@
+2000-02-07  Fred Fish  <fnf@be.com>
+
+	* i386/beos-elf.h: (ASM_IDENTIFY_GCC): Define to nothing
+	so the gcc2_compiled symbol doesn't confuse BeOS debuggers.
+
 2000-02-07  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cppfiles.c (deps_output): Count spacers in deps_column.
