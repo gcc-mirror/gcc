@@ -302,7 +302,7 @@ extern void shadow_record_fields                PROTO((tree));
 extern void shadow_tag                          PROTO((tree));
 extern void shadow_tag_warned                   PROTO((tree, int));
 extern tree start_enum                          PROTO((tree));
-extern int  start_function                      PROTO((tree, tree, int));
+extern int  start_function                      PROTO((tree, tree, tree, int));
 extern tree start_decl                          PROTO((tree, tree, int));
 extern tree start_struct                        PROTO((enum tree_code, tree));
 extern void store_parm_decls                    PROTO((void));
