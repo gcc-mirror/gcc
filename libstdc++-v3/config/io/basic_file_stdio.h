@@ -98,12 +98,10 @@ namespace std
       xsgetn(char* __s, streamsize __n);
 
       streampos
-      seekoff(streamoff __off, ios_base::seekdir __way, 
-	      ios_base::openmode __mode = ios_base::in | ios_base::out);
+      seekoff(streamoff __off, ios_base::seekdir __way);
 
       streampos
-      seekpos(streampos __pos, 
-	      ios_base::openmode __mode = ios_base::in | ios_base::out);
+      seekpos(streampos __pos);
 
       int 
       sync();

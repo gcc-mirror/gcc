@@ -34,15 +34,13 @@ void test02(std::filebuf& in, bool pass)
 
   // seekpos
   p = in.pubseekpos(0, ios_base::in);
-  VERIFY( p == bad );
+  VERIFY( pass == (p != bad) );  // See libstdc++/12232
 
   p = in.pubseekpos(0, ios_base::out); 
-  if (pass)
-    VERIFY( p != bad );
+  VERIFY( pass == (p != bad) );
 
-  p = in.pubseekpos(0); 
-  if (pass)
-    VERIFY( p != bad );
+  p = in.pubseekpos(0);
+  VERIFY( pass == (p != bad) );
 }
 
 const char name_01[] = "filebuf_virtuals-1.tst"; // file with data in it
