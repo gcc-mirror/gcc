@@ -3981,13 +3981,14 @@ mark_referenced_methods ()
       chain = CLASS_CLS_METHODS (impent->imp_context);
       while (chain)
 	{
-	  cgraph_mark_needed_node (cgraph_node (METHOD_DEFINITION (chain)), 1);
+	  cgraph_mark_needed_node (cgraph_node (METHOD_DEFINITION (chain)));
 	  chain = TREE_CHAIN (chain);
 	}
+
       chain = CLASS_NST_METHODS (impent->imp_context);
       while (chain)
 	{
-	  cgraph_mark_needed_node (cgraph_node (METHOD_DEFINITION (chain)), 1);
+	  cgraph_mark_needed_node (cgraph_node (METHOD_DEFINITION (chain)));
 	  chain = TREE_CHAIN (chain);
 	}
     }

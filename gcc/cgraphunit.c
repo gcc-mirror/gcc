@@ -62,6 +62,64 @@ static int overall_insns;
    record_calls_1.  */
 static htab_t visited_nodes;
 
+/* Determine if function DECL is needed.  That is, visible to something
+   either outside this translation unit, something magic in the system
+   configury, or (if not doing unit-at-a-time) to something we havn't
+   seen yet.  */
+
+static bool
+decide_is_function_needed (struct cgraph_node *node, tree decl)
+{
+  /* If we decided it was needed before, but at the time we didn't have
+     the body of the function available, then it's still needed.  We have
+     to go back and re-check its dependencies now.  */
+  if (node->needed)
+    return true;
+
+  /* Externally visible functions must be output.  The exception is
+     COMDAT functions that must be output only when they are needed.  */
+  if (TREE_PUBLIC (decl) && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
+    return true;
+
+  /* Constructors and destructors are reachable from the runtime by
+     some mechanism.  */
+  if (DECL_STATIC_CONSTRUCTOR (decl) || DECL_STATIC_DESTRUCTOR (decl))
+    return true;
+
+  /* If the user told us it is used, then it must be so.  */
+  if (lookup_attribute ("used", DECL_ATTRIBUTES (decl)))
+    return true;
+
+  /* ??? If the assembler name is set by hand, it is possible to assemble
+     the name later after finalizing the function and the fact is noticed
+     in assemble_name then.  This is arguably a bug.  */
+  if (DECL_ASSEMBLER_NAME_SET_P (decl)
+      && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
+    return true;
+
+  if (flag_unit_at_a_time)
+    return false;
+
+  /* If not doing unit at a time, then we'll only defer this function
+     if its marked for inlining.  Otherwise we want to emit it now.  */
+
+  /* "extern inline" functions are never output locally.  */
+  if (DECL_EXTERNAL (decl))
+    return false;
+  /* ??? */
+  if (node->origin)
+    return false;
+  if (!DECL_INLINE (decl)
+      || (!node->local.disregard_inline_limits
+	  /* When declared inline, defer even the uninlinable functions.
+	     This allows them to be elliminated when unused.  */
+	  && !DECL_DECLARED_INLINE_P (decl) 
+	  && (node->local.inlinable || !cgraph_default_inline_p (node))))
+    return true;
+
+  return false;
+}
+
 /* Analyze function once it is parsed.  Set up the local information
    available - create cgraph edges for function calls via BODY.  */
 
@@ -73,42 +131,16 @@ cgraph_finalize_function (tree decl, tree body ATTRIBUTE_UNUSED)
   node->decl = decl;
   node->local.finalized = true;
 
-  /* Function now has DECL_SAVED_TREE set.  Enqueue it into cgraph_nodes_queue
-     if needed.  */
-  if (node->needed)
-    cgraph_mark_needed_node (node, 0);
+  /* If not unit at a time, then we need to create the call graph
+     now, so that called functions can be queued and emitted now.  */
   if (!flag_unit_at_a_time)
     cgraph_analyze_function (node);
-  if (/* Externally visible functions must be output.  The exception are
-	 COMDAT functions that must be output only when they are needed.
-	 Similarly are handled deferred functions and
-	 external functions (GCC extension "extern inline") */
-      (TREE_PUBLIC (decl) && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
-      /* ??? Constructors and destructors not called otherwise can be inlined
-	 into single construction/destruction function per section to save some
-	 resources.  For now just mark it as reachable.  */
-      || DECL_STATIC_CONSTRUCTOR (decl)
-      || DECL_STATIC_DESTRUCTOR (decl)
-      /* Function whose name is output to the assembler file must be produced.
-	 It is possible to assemble the name later after finalizing the function
-	 and the fact is noticed in assemble_name then.  */
-      || (DECL_ASSEMBLER_NAME_SET_P (decl)
-	  && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
-      || lookup_attribute ("used", DECL_ATTRIBUTES (decl)))
-     cgraph_mark_needed_node (node, 1);
-  /* When not doing unit-at-a-time deffer only inline functions.  */
-  else if (!flag_unit_at_a_time
-	   && !DECL_EXTERNAL (decl)
-	   && !node->origin
-	   && (!DECL_INLINE (decl)
-	       || (!node->local.disregard_inline_limits
-		   /* When declared inline, deffer even the uninlinable functions.
-		      This allows them to be elliminated when unused.  */
-		   && !DECL_DECLARED_INLINE_P (decl) 
-		   && (node->local.inlinable
-		       || !cgraph_default_inline_p (node)))))
-     cgraph_mark_needed_node (node, 1);
 
+  if (decide_is_function_needed (node, decl))
+    cgraph_mark_needed_node (node);
+
+  /* If not unit at a time, go ahead and emit everything we've
+     found to be reachable at this time.  */
   if (!flag_unit_at_a_time)
     while (cgraph_nodes_queue)
       {
@@ -118,7 +150,9 @@ cgraph_finalize_function (tree decl, tree body ATTRIBUTE_UNUSED)
 	   cgraph_expand_function (n);
       }
 
-  (*debug_hooks->deferred_inline_function) (decl);
+  /* If we've not yet emitted decl, tell the debug info about it.  */
+  if (flag_unit_at_a_time || !node->reachable)
+    (*debug_hooks->deferred_inline_function) (decl);
 }
 
 /* Walk tree and record all calls.  Called via walk_tree.  */
@@ -133,7 +167,7 @@ record_call_1 (tree *tp, int *walk_subtrees, void *data)
     {
       tree decl = TREE_OPERAND (*tp, 0);
       if (TREE_CODE (decl) == FUNCTION_DECL)
-        cgraph_mark_needed_node (cgraph_node (decl), 1);
+        cgraph_mark_needed_node (cgraph_node (decl));
     }
   else if (TREE_CODE (*tp) == CALL_EXPR)
     {
@@ -251,13 +285,14 @@ cgraph_finalize_compilation_unit (void)
 	abort ();
 
       cgraph_analyze_function (node);
+
       for (edge = node->callees; edge; edge = edge->next_callee)
-      {
 	if (!edge->callee->reachable)
-	    cgraph_mark_needed_node (edge->callee, 0);
-      }
+	  cgraph_mark_reachable_node (edge->callee);
+
       cgraph_varpool_assemble_pending_decls ();
     }
+
   /* Collect entry points to the unit.  */
 
   if (cgraph_dump_file)

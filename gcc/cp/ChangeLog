@@ -1,3 +1,8 @@
+2003-09-04  Richard Henderson  <rth@redhat.com>
+
+	* decl2.c (mark_member_pointers_and_eh_handlers): Update for
+	change in cgraph_mark_needed_node arguments.
+
 2003-09-02  Geoffrey Keating  <geoffk@apple.com>
 
 	PR 12161

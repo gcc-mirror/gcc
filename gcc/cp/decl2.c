@@ -2570,7 +2570,7 @@ mark_member_pointers_and_eh_handlers (tree *tp,
     {
     case PTRMEM_CST:
       if (TYPE_PTRMEMFUNC_P (TREE_TYPE (*tp)))
-	cgraph_mark_needed_node (cgraph_node (PTRMEM_CST_MEMBER (*tp)), 1);
+	cgraph_mark_needed_node (cgraph_node (PTRMEM_CST_MEMBER (*tp)));
       break;
 
     /* EH handlers will emit EH tables referencing typeinfo.  */

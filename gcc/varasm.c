@@ -1662,7 +1662,7 @@ mark_referenced (tree id)
 	{
 	  node = cgraph_node_for_identifier (id);
 	  if (node)
-	    cgraph_mark_needed_node (node, 1);
+	    cgraph_mark_needed_node (node);
 	}
 
       vnode = cgraph_varpool_node_for_identifier (id);
