@@ -822,6 +822,21 @@ gen_imagpart (mode, x)
   else
     return gen_highpart (mode, x);
 }
+
+/* Return 1 iff X, assumed to be a SUBREG,
+   refers to the real part of the complex value in its containing reg.
+   Complex values are always stored with the real part in the first word,
+   regardless of WORDS_BIG_ENDIAN.  */
+
+int
+subreg_realpart_p (x)
+     rtx x;
+{
+  if (GET_CODE (x) != SUBREG)
+    abort ();
+
+  return SUBREG_WORD (x) == 0;
+}
 
 /* Assuming that X is an rtx (e.g., MEM, REG or SUBREG) for a value,
    return an rtx (MEM, SUBREG, or CONST_INT) that refers to the
