@@ -24,7 +24,7 @@
 # foo.all.build, foo.all.cross, foo.start.encap, foo.rest.encap,
 # foo.info, foo.dvi,
 # foo.install-normal, foo.install-common, foo.install-info, foo.install-man,
-# foo.uninstall, foo.distdir,
+# foo.uninstall,
 # foo.mostlyclean, foo.clean, foo.distclean, foo.extraclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
 #
@@ -56,7 +56,7 @@ F77 f77: f771$(exeext)
   f77.install-normal \
   f77.install-common f77.install-info f77.install-man \
   f77.uninstall f77.mostlyclean f77.clean f77.distclean \
-  f77.extraclean f77.maintainer-clean f77.distdir f77.rebuilt \
+  f77.extraclean f77.maintainer-clean f77.rebuilt \
   f77.stage1 f77.stage2 f77.stage3 f77.stage4
 
 g77spec.o: $(srcdir)/f/g77spec.c $(srcdir)/f/version.h system.h $(GCC_H)
@@ -233,15 +233,11 @@ $(srcdir)/f/BUGS: f/bugs0.texi f/bugs.texi f/root.texi
 	cd $(srcdir)/f; $(MAKEINFO) -D BUGSONLY --no-header --no-split \
 	  --no-validate -o BUGS bugs0.texi
 
-$(srcdir)/f/INSTALL: f/install0.texi f/g77install.texi f/root.texi
-	cd $(srcdir)/f; $(MAKEINFO) -D INSTALLONLY --no-header --no-split \
-	  --no-validate -o INSTALL install0.texi
-
 $(srcdir)/f/NEWS: f/news0.texi f/news.texi f/root.texi
 	cd $(srcdir)/f; $(MAKEINFO) -D NEWSONLY --no-header --no-split \
 	  --no-validate -o NEWS news0.texi
 
-f77.rebuilt: f/g77.info $(srcdir)/f/BUGS $(srcdir)/f/INSTALL \
+f77.rebuilt: f/g77.info $(srcdir)/f/BUGS \
   $(srcdir)/f/NEWS 
 
 #
@@ -364,7 +360,7 @@ f77.distclean:
 	-rm -f lang-f77 f/Makefile
 f77.extraclean:
 f77.maintainer-clean:
-	-rm -f f/g77.info* f/g77.*aux f/TAGS f/BUGS f/INSTALL f/NEWS f/intdoc.texi
+	-rm -f f/g77.info* f/g77.*aux f/TAGS f/BUGS f/NEWS f/intdoc.texi
 #
 # Stage hooks:
 # The main makefile has already created stage?/f.
@@ -387,23 +383,6 @@ f77.stage3: stage3-start
 f77.stage4: stage4-start
 	-if [ -f lang-f77 ]; then \
 	  mv -f $(G77STAGESTUFF) stage4/f; \
-	fi
-#
-# Maintenance hooks:
-
-# This target creates the files that can be rebuilt, but go in the
-# distribution anyway.  It then copies the files to the distdir directory.
-f77.distdir: f77.rebuilt
-	case "$(LANGUAGES)" in \
-	  *[fF]77*) touch lang-f77;; \
-	  *) rm -f lang-f77;; \
-	esac
-	-if [ -f lang-f77 ]; then \
-	  mkdir tmp/f; \
-	  cd f; \
-	  for file in *[0-9a-zA-Z+]; do \
-	    $(LN_S) $$file ../tmp/f; \
-	  done; \
 	fi
 
 #

@@ -5033,7 +5033,7 @@ touch Make-hooks
 target_list="all.build all.cross start.encap rest.encap \
 	info dvi \
 	install-normal install-common install-info install-man \
-	uninstall distdir \
+	uninstall \
 	mostlyclean clean distclean extraclean maintainer-clean \
 	stage1 stage2 stage3 stage4"
 for t in $target_list

@@ -29,7 +29,7 @@
 # foo.all.build, foo.all.cross, foo.start.encap, foo.rest.encap,
 # foo.info, foo.dvi,
 # foo.install-normal, foo.install-common, foo.install-info, foo.install-man,
-# foo.uninstall, foo.distdir,
+# foo.uninstall,
 # foo.mostlyclean, foo.clean, foo.distclean, foo.extraclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
 #
@@ -210,17 +210,6 @@ java.stage3: stage3-start
 	-mv java/*$(objext) stage3/java
 java.stage4: stage4-start
 	-mv java/*$(objext) stage4/java
-#
-# Maintenance hooks:
-
-# This target creates the files that can be rebuilt, but go in the
-# distribution anyway.  It then copies the files to the distdir directory.
-java.distdir: java/parse.c java/hash.h
-	mkdir tmp/java
-	cd java; \
-	for file in *[0-9a-zA-Z+]; do \
-	  ln $$file ../tmp/java >/dev/null 2>&1 || cp $$file ../tmp/java; \
-	done
 
 #
 # .o:.h dependencies.

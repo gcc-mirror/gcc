@@ -1,3 +1,12 @@
+2000-11-05  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* Makefile.in: Remove all targets related to building
+	distributions and diffs, or INSTALL.
+	* INSTALL, install1.texi: Remove.
+	* configure.in: Remove mention of distdir.
+	* configure: Regenerate.
+	* objc/Make-lang.in: Remove mention of distdir.
+
 2000-11-04  Neil Booth  <neilb@earthling.net>
 
 	* cpp.texi: Update for _Pragma.
