@@ -999,6 +999,8 @@ fixup_var_refs_insns (var, promoted_mode, unsignedp, insn, toplevel)
      rtx insn;
      int toplevel;
 {
+  rtx call_dest = 0;
+
   while (insn)
     {
       rtx next = NEXT_INSN (insn);
@@ -1022,6 +1024,46 @@ fixup_var_refs_insns (var, promoted_mode, unsignedp, insn, toplevel)
 	    }
 	  else
 	    {
+	      struct fixup_replacement *replacements = 0;
+	      rtx next_insn = NEXT_INSN (insn);
+
+#ifdef SMALL_REGISTER_CLASSES
+	      /* If the insn that copies the results of a CALL_INSN
+		 into a pseudo now references VAR, we have to use an
+		 intermediate pseudo since we want the life of the
+		 return value register to be only a single insn.
+
+		 If we don't use an intermediate pseudo, such things as
+		 address computations to make the address of VAR valid
+		 if it is not can be placed beween the CALL_INSN and INSN.
+
+		 To make sure this doesn't happen, we record the destination
+		 of the CALL_INSN and see if the next insn uses both that
+		 and VAR.  */
+
+	      if (call_dest != 0 && GET_CODE (insn) == INSN
+		  && reg_mentioned_p (var, PATTERN (insn))
+		  && reg_mentioned_p (call_dest, PATTERN (insn)))
+		{
+		  rtx temp = gen_reg_rtx (GET_MODE (call_dest));
+
+		  emit_insn_before (gen_move_insn (temp, call_dest), insn);
+
+		  PATTERN (insn) = replace_rtx (PATTERN (insn),
+						call_dest, temp);
+		}
+	      
+	      if (GET_CODE (insn) == CALL_INSN
+		  && GET_CODE (PATTERN (insn)) == SET)
+		call_dest = SET_DEST (PATTERN (insn));
+	      else if (GET_CODE (insn) == CALL_INSN
+		       && GET_CODE (PATTERN (insn)) == PARALLEL
+		       && GET_CODE (XVECEXP (PATTERN (insn), 0, 0)) == SET)
+		call_dest = SET_DEST (XVECEXP (PATTERN (insn), 0, 0));
+	      else
+		call_dest = 0;
+#endif
+
 	      /* See if we have to do anything to INSN now that VAR is in
 		 memory.  If it needs to be loaded into a pseudo, use a single
 		 pseudo for the entire insn in case there is a MATCH_DUP
@@ -1032,9 +1074,6 @@ fixup_var_refs_insns (var, promoted_mode, unsignedp, insn, toplevel)
 		 
 		 If it allocated a pseudo for any replacement, we copy into
 		 it here.  */
-
-	      struct fixup_replacement *replacements = 0;
-	      rtx next_insn = NEXT_INSN (insn);
 
 	      fixup_var_refs_1 (var, promoted_mode, &PATTERN (insn), insn,
 				&replacements);
