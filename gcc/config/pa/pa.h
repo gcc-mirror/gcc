@@ -2018,12 +2018,19 @@ DTORS_SECTION_FUNCTION
        fprintf (FILE, "\t.word 0x%lx\n", l);				\
      } while (0)
 
-/* This is how to output an assembler line defining an `int' constant.  */
+/* This is how to output an assembler line defining an `int' constant. 
+
+   This is made more complicated by the fact that functions must be
+   prefixed by a P% as well as code label references for the exception
+   table -- otherwise the linker chokes.  */
 
 #define ASM_OUTPUT_INT(FILE,VALUE)  \
 { fputs ("\t.word ", FILE);			\
   if (function_label_operand (VALUE, VOIDmode)	\
       && !TARGET_PORTABLE_RUNTIME)		\
+    fputs ("P%", FILE);			\
+  if (in_section == in_named		\
+      && ! strcmp (".gcc_except_table", in_named_name))\
     fputs ("P%", FILE);			\
   output_addr_const (FILE, (VALUE));		\
   fputs ("\n", FILE);}

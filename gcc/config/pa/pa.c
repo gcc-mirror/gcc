@@ -2320,7 +2320,7 @@ output_function_epilogue (file, size)
   for (i = 0; i < n_deferred_plabels; i++)
     {
       ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (deferred_plabels[i].internal_label));
-      ASM_OUTPUT_INT (file, deferred_plabels[i].symbol);
+      assemble_integer (deferred_plabels[i].symbol, 4, 1);
     }
   n_deferred_plabels = 0;
 }
@@ -3065,10 +3065,9 @@ print_operand (file, x, code)
     }
   if (GET_CODE (x) == REG)
     {
+      fputs (reg_names [REGNO (x)], file);
       if (FP_REG_P (x) && GET_MODE_SIZE (GET_MODE (x)) <= 4 && (REGNO (x) & 1) == 0)
-	fprintf (file, "%sL", reg_names [REGNO (x)]);
-      else
-	fprintf (file, "%s", reg_names [REGNO (x)]);
+	fputs ("L", file);
     }
   else if (GET_CODE (x) == MEM)
     {
