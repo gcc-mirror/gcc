@@ -1382,12 +1382,6 @@ i960-*-*)			# Default i960 environment.
 	c_target_objs="i960-c.o"
 	cxx_target_objs="i960-c.o"
 	;;
-ia64*-*-aix*)
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h ia64/sysv4.h ia64/aix.h"
-	tmake_file="ia64/t-ia64 ia64/t-aix"
-	target_cpu_default="MASK_GNU_AS|MASK_GNU_LD"
-	extra_parts="crti.o crtn.o crtbegin.o crtend.o crtbeginS.o crtendS.o"
-	;;
 ia64*-*-elf*)
 	tm_file="${tm_file} dbxelf.h elfos.h ia64/sysv4.h ia64/elf.h"
 	tmake_file="ia64/t-ia64"

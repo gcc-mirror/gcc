@@ -1,3 +1,9 @@
+2003-01-28  Richard Henderson  <rth@redhat.com>
+
+	* config.gcc (ia64*-*-aix*): Remove.
+	* config/ia64/aix.h, config/ia64/t-aix: Remove file.
+	* config/ia64/unwind-aix.c: Remove file.
+
 2003-01-28  Andreas Schwab  <schwab@suse.de>
 
         * config/m68k/m68k.md (tablejump+2): Don't sign extend an address
