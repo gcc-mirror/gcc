@@ -3,7 +3,7 @@
 ;;  Changes by       Michael Meissner, meissner@osf.org
 ;;  64 bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
 ;;  Brendan Eich, brendan@microunity.com.
-;;  Copyright (C) 1989, 90, 91, 92, 93, 94, 95 Free Software Foundation, Inc.
+;;  Copyright (C) 1989, 90-5, 1996 Free Software Foundation, Inc.
 
 ;; This file is part of GNU CC.
 
@@ -21,12 +21,6 @@
 ;; along with GNU CC; see the file COPYING.  If not, write to
 ;; the Free Software Foundation, 59 Temple Place - Suite 330,
 ;; Boston, MA 02111-1307, USA.
-
-;; ??? MIPS4 has 8 floating point condition codes.  This is not supported yet.
-
-;; ??? MIPS4 has floating point doubleword/word load/stores that accept a
-;; base+index addressing mode.  There are no such load/stores for the integer
-;; registers.  This is not supported yet.
 
 ;; ??? Currently does not have define_function_unit support for the R8000.
 ;; Must include new entries for fmadd in addition to existing entries.
@@ -93,7 +87,8 @@
 ;;          (const_string "default"))))
 
 ;; ??? Fix everything that tests this attribute.
-(define_attr "cpu" "default,r3000,r6000,r4000,r4100,r4300,r4600,r4650,r8000"
+(define_attr "cpu"
+  "default,r3000,r6000,r4000,r4100,r4300,r4600,r4650,r5000,r8000"
   (const (symbol_ref "mips_cpu_attr")))
 
 ;; Attribute defining whether or not we can use the branch-likely instructions
@@ -151,11 +146,13 @@
 ;; Make the default case (PROCESSOR_DEFAULT) handle the worst case
 
 (define_function_unit "memory" 1 0
-  (and (eq_attr "type" "load") (eq_attr "cpu" "!r3000,r4600,r4650,r4100,r4300"))
+  (and (eq_attr "type" "load")
+       (eq_attr "cpu" "!r3000,r4600,r4650,r4100,r4300,r5000"))
   3 0)
 
 (define_function_unit "memory" 1 0
-  (and (eq_attr "type" "load") (eq_attr "cpu" "r3000,r4600,r4650,r4100,r4300"))
+  (and (eq_attr "type" "load")
+       (eq_attr "cpu" "r3000,r4600,r4650,r4100,r4300,r5000"))
   2 0)
 
 (define_function_unit "memory"   1 0 (eq_attr "type" "store") 1 0)
@@ -167,7 +164,8 @@
   1 3)
 
 (define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "imul") (eq_attr "cpu" "!r3000,r4000,r4600,r4650,r4100,r4300"))
+  (and (eq_attr "type" "imul")
+       (eq_attr "cpu" "!r3000,r4000,r4600,r4650,r4100,r4300,r5000"))
   17 17)
 
 (define_function_unit "imuldiv"  1 0
@@ -183,23 +181,33 @@
   4 4)
 
 (define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "imul") (and (eq_attr "mode" "SI") (eq_attr "cpu" "r4100")))
+  (and (eq_attr "type" "imul")
+       (and (eq_attr "mode" "SI") (eq_attr "cpu" "r4100")))
   1 1)
 
 (define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "imul") (and (eq_attr "mode" "DI") (eq_attr "cpu" "r4100")))
+  (and (eq_attr "type" "imul")
+       (and (eq_attr "mode" "DI") (eq_attr "cpu" "r4100")))
   4 4)
 
 (define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "imul") (and (eq_attr "mode" "SI") (eq_attr "cpu" "r4300")))
+  (and (eq_attr "type" "imul")
+       (and (eq_attr "mode" "SI") (eq_attr "cpu" "r4300,r5000")))
   5 5)
 
 (define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "imul") (and (eq_attr "mode" "DI") (eq_attr "cpu" "r4300")))
+  (and (eq_attr "type" "imul")
+       (and (eq_attr "mode" "DI") (eq_attr "cpu" "r4300")))
   8 8)
 
 (define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "idiv") (eq_attr "cpu" "!r3000,r4000,r4600,r4650,r4100,r4300"))
+  (and (eq_attr "type" "imul")
+       (and (eq_attr "mode" "DI") (eq_attr "cpu" "r5000")))
+  9 9)
+
+(define_function_unit "imuldiv"  1 0
+  (and (eq_attr "type" "idiv")
+       (eq_attr "cpu" "!r3000,r4000,r4600,r4650,r4100,r4300,r5000"))
   38 38)
 
 (define_function_unit "imuldiv"  1 0
@@ -219,20 +227,34 @@
   69 69)
 
 (define_function_unit "imuldiv" 1 0
-  (and (eq_attr "type" "idiv") (and (eq_attr "mode" "SI") (eq_attr "cpu" "r4100")))
+  (and (eq_attr "type" "idiv")
+       (and (eq_attr "mode" "SI") (eq_attr "cpu" "r4100")))
   35 35)
 
 (define_function_unit "imuldiv" 1 0
-  (and (eq_attr "type" "idiv") (and (eq_attr "mode" "DI") (eq_attr "cpu" "r4100")))
+  (and (eq_attr "type" "idiv")
+       (and (eq_attr "mode" "DI") (eq_attr "cpu" "r4100")))
   67 67)
 
 (define_function_unit "imuldiv" 1 0
-  (and (eq_attr "type" "idiv") (and (eq_attr "mode" "SI") (eq_attr "cpu" "r4300")))
+  (and (eq_attr "type" "idiv")
+       (and (eq_attr "mode" "SI") (eq_attr "cpu" "r4300")))
   37 37)
 
 (define_function_unit "imuldiv" 1 0
-  (and (eq_attr "type" "idiv") (and (eq_attr "mode" "DI") (eq_attr "cpu" "r4300")))
+  (and (eq_attr "type" "idiv")
+       (and (eq_attr "mode" "DI") (eq_attr "cpu" "r4300")))
   69 69)
+
+(define_function_unit "imuldiv" 1 0
+  (and (eq_attr "type" "idiv")
+       (and (eq_attr "mode" "SI") (eq_attr "cpu" "r5000")))
+  36 36)
+
+(define_function_unit "imuldiv" 1 0
+  (and (eq_attr "type" "idiv")
+       (and (eq_attr "mode" "DI") (eq_attr "cpu" "r5000")))
+  68 68)
 
 ;; The R4300 does *NOT* have a seperate Floating Point Unit, instead
 ;; the FP hardware is part of the normal ALU circuitry.  This means FP
@@ -242,12 +264,16 @@
 ;; instructions to be processed in the "imuldiv" unit.
 
 (define_function_unit "adder" 1 1
-  (and (eq_attr "type" "fcmp") (eq_attr "cpu" "!r3000,r6000,r4300"))
+  (and (eq_attr "type" "fcmp") (eq_attr "cpu" "!r3000,r6000,r4300,r5000"))
   3 0)
 
 (define_function_unit "adder" 1 1
   (and (eq_attr "type" "fcmp") (eq_attr "cpu" "r3000,r6000"))
   2 0)
+
+(define_function_unit "adder" 1 1
+  (and (eq_attr "type" "fcmp") (eq_attr "cpu" "r5000"))
+  1 0)
 
 (define_function_unit "adder" 1 1
   (and (eq_attr "type" "fadd") (eq_attr "cpu" "!r3000,r6000,r4300"))
@@ -262,88 +288,128 @@
   3 0)
 
 (define_function_unit "adder" 1 1
-  (and (eq_attr "type" "fabs,fneg") (eq_attr "cpu" "!r3000,r4600,r4650,r4300"))
+  (and (eq_attr "type" "fabs,fneg")
+       (eq_attr "cpu" "!r3000,r4600,r4650,r4300,r5000"))
   2 0)
 
 (define_function_unit "adder" 1 1
-  (and (eq_attr "type" "fabs,fneg") (eq_attr "cpu" "r3000,r4600,r4650"))
+  (and (eq_attr "type" "fabs,fneg") (eq_attr "cpu" "r3000,r4600,r4650,r5000"))
   1 0)
 
 (define_function_unit "mult" 1 1
-  (and (eq_attr "type" "fmul") (and (eq_attr "mode" "SF") (eq_attr "cpu" "!r3000,r6000,r4600,r4650,r4300")))
+  (and (eq_attr "type" "fmul")
+       (and (eq_attr "mode" "SF")
+	    (eq_attr "cpu" "!r3000,r6000,r4600,r4650,r4300,r5000")))
   7 0)
 
 (define_function_unit "mult" 1 1
-  (and (eq_attr "type" "fmul") (and (eq_attr "mode" "SF") (eq_attr "cpu" "r3000")))
+  (and (eq_attr "type" "fmul")
+       (and (eq_attr "mode" "SF") (eq_attr "cpu" "r3000,r5000")))
   4 0)
 
 (define_function_unit "mult" 1 1
-  (and (eq_attr "type" "fmul") (and (eq_attr "mode" "SF") (eq_attr "cpu" "r6000")))
+  (and (eq_attr "type" "fmul")
+       (and (eq_attr "mode" "SF") (eq_attr "cpu" "r6000")))
   5 0)
 
 (define_function_unit "mult" 1 1
-  (and (eq_attr "type" "fmul") (and (eq_attr "mode" "SF") (eq_attr "cpu" "r4600,r4650")))
+  (and (eq_attr "type" "fmul")
+       (and (eq_attr "mode" "SF") (eq_attr "cpu" "r4600,r4650")))
   8 0)
 
 (define_function_unit "mult" 1 1
-  (and (eq_attr "type" "fmul") (and (eq_attr "mode" "DF") (eq_attr "cpu" "!r3000,r6000,r4300")))
+  (and (eq_attr "type" "fmul")
+       (and (eq_attr "mode" "DF") (eq_attr "cpu" "!r3000,r6000,r4300,r5000")))
   8 0)
 
 (define_function_unit "mult" 1 1
-  (and (eq_attr "type" "fmul") (and (eq_attr "mode" "DF") (eq_attr "cpu" "r3000")))
+  (and (eq_attr "type" "fmul")
+       (and (eq_attr "mode" "DF") (eq_attr "cpu" "r3000,r5000")))
   5 0)
 
 (define_function_unit "mult" 1 1
-  (and (eq_attr "type" "fmul") (and (eq_attr "mode" "DF") (eq_attr "cpu" "r6000")))
+  (and (eq_attr "type" "fmul")
+       (and (eq_attr "mode" "DF") (eq_attr "cpu" "r6000")))
   6 0)
 
 (define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fdiv") (and (eq_attr "mode" "SF") (eq_attr "cpu" "!r3000,r6000,r4600,r4650,r4300")))
+  (and (eq_attr "type" "fdiv")
+       (and (eq_attr "mode" "SF")
+	    (eq_attr "cpu" "!r3000,r6000,r4600,r4650,r4300,r5000")))
   23 0)
 
 (define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fdiv") (and (eq_attr "mode" "SF") (eq_attr "cpu" "r3000")))
+  (and (eq_attr "type" "fdiv")
+       (and (eq_attr "mode" "SF") (eq_attr "cpu" "r3000")))
   12 0)
 
 (define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fdiv") (and (eq_attr "mode" "SF") (eq_attr "cpu" "r6000")))
+  (and (eq_attr "type" "fdiv")
+       (and (eq_attr "mode" "SF") (eq_attr "cpu" "r6000")))
   15 0)
 
 (define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fdiv") (and (eq_attr "mode" "SF") (eq_attr "cpu" "r4600,r4650")))
+  (and (eq_attr "type" "fdiv")
+       (and (eq_attr "mode" "SF") (eq_attr "cpu" "r4600,r4650")))
   32 0)
 
 (define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fdiv") (and (eq_attr "mode" "DF") (eq_attr "cpu" "!r3000,r6000,r4600,r4650,r4300")))
+  (and (eq_attr "type" "fdiv")
+       (and (eq_attr "mode" "SF") (eq_attr "cpu" "r5000")))
+  21 0)
+
+(define_function_unit "divide" 1 1
+  (and (eq_attr "type" "fdiv")
+       (and (eq_attr "mode" "DF")
+	    (eq_attr "cpu" "!r3000,r6000,r4600,r4650,r4300")))
   36 0)
 
 (define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fdiv") (and (eq_attr "mode" "DF") (eq_attr "cpu" "r3000")))
+  (and (eq_attr "type" "fdiv")
+       (and (eq_attr "mode" "DF") (eq_attr "cpu" "r3000")))
   19 0)
 
 (define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fdiv") (and (eq_attr "mode" "DF") (eq_attr "cpu" "r6000")))
+  (and (eq_attr "type" "fdiv")
+       (and (eq_attr "mode" "DF") (eq_attr "cpu" "r6000")))
   16 0)
 
 (define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fdiv") (and (eq_attr "mode" "DF") (eq_attr "cpu" "r4600,r4650")))
+  (and (eq_attr "type" "fdiv")
+       (and (eq_attr "mode" "DF") (eq_attr "cpu" "r4600,r4650")))
   61 0)
 
 ;;; ??? Is this number right?
 (define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fsqrt") (and (eq_attr "mode" "SF") (eq_attr "cpu" "!r4600,r4650,r4300")))
+  (and (eq_attr "type" "fsqrt")
+       (and (eq_attr "mode" "SF") (eq_attr "cpu" "!r4600,r4650,r4300,r5000")))
   54 0)
+
 (define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fsqrt") (and (eq_attr "mode" "SF") (eq_attr "cpu" "r4600,r4650")))
+  (and (eq_attr "type" "fsqrt")
+       (and (eq_attr "mode" "SF") (eq_attr "cpu" "r4600,r4650")))
   31 0)
+
+(define_function_unit "divide" 1 1
+  (and (eq_attr "type" "fsqrt")
+       (and (eq_attr "mode" "SF") (eq_attr "cpu" "r5000")))
+  21 0)
 
 ;;; ??? Is this number right?
 (define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fsqrt") (and (eq_attr "mode" "DF") (eq_attr "cpu" "!r4600,r4650,r4300")))
+  (and (eq_attr "type" "fsqrt")
+       (and (eq_attr "mode" "DF") (eq_attr "cpu" "!r4600,r4650,r4300,r5000")))
   112 0)
+
 (define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fsqrt") (and (eq_attr "mode" "DF") (eq_attr "cpu" "r4600,r4650")))
+  (and (eq_attr "type" "fsqrt")
+       (and (eq_attr "mode" "DF") (eq_attr "cpu" "r4600,r4650")))
   60 0)
+
+(define_function_unit "divide" 1 1
+  (and (eq_attr "type" "fsqrt")
+       (and (eq_attr "mode" "DF") (eq_attr "cpu" "r5000")))
+  36 0)
 
 ;; R4300 FP instruction classes treated as part of the "imuldiv"
 ;; functional unit:
@@ -1286,7 +1352,7 @@
 	(plus:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
 			  (match_operand:DF 2 "register_operand" "f"))
 		 (match_operand:DF 3 "register_operand" "f")))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "mips_isa >= 4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "madd.d\\t%0,%3,%1,%2"
   [(set_attr "type"	"fmadd")
    (set_attr "mode"	"DF")
@@ -1308,7 +1374,7 @@
 	(minus:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
 			   (match_operand:DF 2 "register_operand" "f"))
 		  (match_operand:DF 3 "register_operand" "f")))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "mips_isa >= 4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "msub.d\\t%0,%3,%1,%2"
   [(set_attr "type"	"fmadd")
    (set_attr "mode"	"DF")
@@ -1331,7 +1397,7 @@
 	(neg:DF (plus:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
 				  (match_operand:DF 2 "register_operand" "f"))
 			 (match_operand:DF 3 "register_operand" "f"))))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "mips_isa >= 4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "nmadd.d\\t%0,%3,%1,%2"
   [(set_attr "type"	"fmadd")
    (set_attr "mode"	"DF")
@@ -1353,7 +1419,7 @@
 	(minus:DF (match_operand:DF 1 "register_operand" "f")
 		  (mult:DF (match_operand:DF 2 "register_operand" "f")
 			   (match_operand:DF 3 "register_operand" "f"))))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "mips_isa >= 4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "nmsub.d\\t%0,%1,%2,%3"
   [(set_attr "type"	"fmadd")
    (set_attr "mode"	"DF")
@@ -1394,6 +1460,26 @@
 		(match_operand:SF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT"
   "div.s\\t%0,%1,%2"
+  [(set_attr "type"	"fdiv")
+   (set_attr "mode"	"SF")
+   (set_attr "length"	"1")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(div:DF (match_operand:DF 1 "const_float_1_operand" "")
+		(match_operand:DF 2 "register_operand" "f")))]
+  "mips_isa >= 4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && flag_fast_math"
+  "recip.d\\t%0,%2"
+  [(set_attr "type"	"fdiv")
+   (set_attr "mode"	"DF")
+   (set_attr "length"	"1")])
+
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(div:SF (match_operand:SF 1 "const_float_1_operand" "")
+		(match_operand:SF 2 "register_operand" "f")))]
+  "mips_isa >= 4 && TARGET_HARD_FLOAT && flag_fast_math"
+  "recip.s\\t%0,%2"
   [(set_attr "type"	"fdiv")
    (set_attr "mode"	"SF")
    (set_attr "length"	"1")])
@@ -1637,6 +1723,26 @@
 	(sqrt:SF (match_operand:SF 1 "register_operand" "f")))]
   "TARGET_HARD_FLOAT && HAVE_SQRT_P()"
   "sqrt.s\\t%0,%1"
+  [(set_attr "type"	"fsqrt")
+   (set_attr "mode"	"SF")
+   (set_attr "length"	"1")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(div:DF (match_operand:DF 1 "const_float_1_operand" "")
+		(sqrt:DF (match_operand:DF 2 "register_operand" "f"))))]
+  "mips_isa >= 4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && flag_fast_math"
+  "rsqrt.d\\t%0,%2"
+  [(set_attr "type"	"fsqrt")
+   (set_attr "mode"	"DF")
+   (set_attr "length"	"1")])
+
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(div:SF (match_operand:SF 1 "const_float_1_operand" "")
+		(sqrt:SF (match_operand:SF 2 "register_operand" "f"))))]
+  "mips_isa >= 4 && TARGET_HARD_FLOAT && flag_fast_math"
+  "rsqrt.s\\t%0,%2"
   [(set_attr "type"	"fsqrt")
    (set_attr "mode"	"SF")
    (set_attr "length"	"1")])
@@ -3499,6 +3605,182 @@ move\\t%0,%z4\\n\\
   DONE;
 }")
 
+;; This insn handles moving CCmode values.  It's really just a
+;; slightly simplified copy of movsi_internal2, with additional cases
+;; to move a condition register to a general register and to move
+;; between the general registers and the floating point registers.
+
+(define_insn "movcc"
+  [(set (match_operand:CC 0 "nonimmediate_operand" "=d,*d,*d,*d,*R,*m,*d,*f,*f,*f,*f,*R,*m")
+	(match_operand:CC 1 "general_operand" "z,*d,*R,*m,*d,*d,*f,*d,*f,*R,*m,*f,*f"))]
+  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "* return mips_move_1word (operands, insn, FALSE);"
+  [(set_attr "type"	"move,move,load,load,store,store,xfer,xfer,move,load,load,store,store")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"2,1,1,2,1,2,1,1,1,1,2,1,2")])
+
+;; Reload condition code registers.  These need scratch registers.
+
+(define_expand "reload_incc"
+  [(set (match_operand:CC 0 "register_operand" "=z")
+	(match_operand:CC 1 "general_operand" "z"))
+   (clobber (match_operand:TF 2 "register_operand" "=&f"))]
+  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "
+{
+  rtx source;
+  rtx fp1, fp2;
+
+  /* This is called when are copying some value into a condition code
+     register.  Operand 0 is the condition code register.  Operand 1
+     is the source.  Operand 2 is a scratch register; we use TFmode
+     because we actually need two floating point registers.  */
+  if (! ST_REG_P (true_regnum (operands[0]))
+      || ! FP_REG_P (true_regnum (operands[2])))
+    abort ();
+
+  /* We need to get the source in SFmode so that the insn is
+     recognized.  */
+  if (GET_CODE (operands[1]) == MEM)
+    source = change_address (operands[1], SFmode, NULL_RTX);
+  else if (GET_CODE (operands[1]) == REG || GET_CODE (operands[1]) == SUBREG)
+    source = gen_rtx (REG, SFmode, true_regnum (operands[1]));
+  else
+    source = operands[1];
+
+  fp1 = gen_rtx (REG, SFmode, REGNO (operands[2]));
+  fp2 = gen_rtx (REG, SFmode, REGNO (operands[2]) + 1);
+
+  emit_insn (gen_move_insn (fp1, source));
+  emit_insn (gen_move_insn (fp2, gen_rtx (REG, SFmode, 0)));
+  emit_insn (gen_rtx (SET, VOIDmode, operands[0],
+		      gen_rtx (LT, CCmode, fp2, fp1)));
+
+  DONE;
+}")
+
+(define_expand "reload_outcc"
+  [(set (match_operand:CC 0 "general_operand" "=z")
+	(match_operand:CC 1 "register_operand" "z"))
+   (clobber (match_operand:CC 2 "register_operand" "=&d"))]
+  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "
+{
+  /* This is called when we are copying a condition code register out
+     to save it somewhere.  Operand 0 should be the location we are
+     going to save it to.  Operand 1 should be the condition code
+     register.  Operand 2 should be a scratch general purpose register
+     created for us by reload.  The mips_secondary_reload_class
+     function should have told reload that we don't need a scratch
+     register if the destination is a general purpose register anyhow.  */
+  if (ST_REG_P (true_regnum (operands[0]))
+      || GP_REG_P (true_regnum (operands[0]))
+      || ! ST_REG_P (true_regnum (operands[1]))
+      || ! GP_REG_P (true_regnum (operands[2])))
+    abort ();
+
+  /* All we have to do is copy the value from the condition code to
+     the data register, which movcc can handle, and then store the
+     value into the real final destination.  */
+  emit_insn (gen_move_insn (operands[2], operands[1]));
+  emit_insn (gen_move_insn (operands[0], operands[2]));
+
+  DONE;
+}")
+
+;; MIPS4 supports loading and storing a floating point register from
+;; the sum of two general registers.  We use two versions for each of
+;; these four instructions: one where the two general registers are
+;; SImode, and one where they are DImode.  This is because general
+;; registers will be in SImode when they hold 32 bit values, but,
+;; since the 32 bit values are always sign extended, the [ls][wd]xc1
+;; instructions will still work correctly.
+
+;; ??? Perhaps it would be better to support these instructions by
+;; modifying GO_IF_LEGITIMATE_ADDRESS and friends.  However, since
+;; these instructions can only be used to load and store floating
+;; point registers, that would probably cause trouble in reload.
+
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(mem:SF (plus:SI (match_operand:SI 1 "register_operand" "d")
+			 (match_operand:SI 2 "register_operand" "d"))))]
+  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "lwxc1\\t%0,%1(%2)"
+  [(set_attr "type"	"load")
+   (set_attr "mode"	"SF")
+   (set_attr "length"	"1")])
+
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(mem:SF (plus:DI (match_operand:DI 1 "register_operand" "d")
+			 (match_operand:DI 2 "register_operand" "d"))))]
+  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "lwxc1\\t%0,%1(%2)"
+  [(set_attr "type"	"load")
+   (set_attr "mode"	"SF")
+   (set_attr "length"	"1")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(mem:DF (plus:SI (match_operand:SI 1 "register_operand" "d")
+			 (match_operand:SI 2 "register_operand" "d"))))]
+  "mips_isa >= 4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
+  "ldxc1\\t%0,%1(%2)"
+  [(set_attr "type"	"load")
+   (set_attr "mode"	"DF")
+   (set_attr "length"	"1")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(mem:DF (plus:DI (match_operand:DI 1 "register_operand" "d")
+			 (match_operand:DI 2 "register_operand" "d"))))]
+  "mips_isa >= 4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
+  "ldxc1\\t%0,%1(%2)"
+  [(set_attr "type"	"load")
+   (set_attr "mode"	"DF")
+   (set_attr "length"	"1")])
+
+(define_insn ""
+  [(set (mem:SF (plus:SI (match_operand:SI 1 "register_operand" "d")
+			 (match_operand:SI 2 "register_operand" "d")))
+	(match_operand:SF 0 "register_operand" "=f"))]
+  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "swxc1\\t%0,%1(%2)"
+  [(set_attr "type"	"store")
+   (set_attr "mode"	"SF")
+   (set_attr "length"	"1")])
+
+(define_insn ""
+  [(set (mem:SF (plus:DI (match_operand:DI 1 "register_operand" "d")
+			 (match_operand:DI 2 "register_operand" "d")))
+	(match_operand:SF 0 "register_operand" "=f"))]
+  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "swxc1\\t%0,%1(%2)"
+  [(set_attr "type"	"store")
+   (set_attr "mode"	"SF")
+   (set_attr "length"	"1")])
+
+(define_insn ""
+  [(set (mem:DF (plus:SI (match_operand:SI 1 "register_operand" "d")
+			 (match_operand:SI 2 "register_operand" "d")))
+	(match_operand:DF 0 "register_operand" "=f"))]
+  "mips_isa >= 4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
+  "sdxc1\\t%0,%1(%2)"
+  [(set_attr "type"	"store")
+   (set_attr "mode"	"DF")
+   (set_attr "length"	"1")])
+
+(define_insn ""
+  [(set (mem:DF (plus:DI (match_operand:DI 1 "register_operand" "d")
+			 (match_operand:DI 2 "register_operand" "d")))
+	(match_operand:DF 0 "register_operand" "=f"))]
+  "mips_isa >= 4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
+  "sdxc1\\t%0,%1(%2)"
+  [(set_attr "type"	"store")
+   (set_attr "mode"	"DF")
+   (set_attr "length"	"1")])
+
 ;; 16-bit Integer moves
 
 ;; Unlike most other insns, the move insns can't be split with
@@ -4625,8 +4907,8 @@ move\\t%0,%z4\\n\\
 
 (define_expand "cmpdf"
   [(set (cc0)
-	(compare:CC_FP (match_operand:DF 0 "register_operand" "")
-		       (match_operand:DF 1 "register_operand" "")))]
+	(compare:CC (match_operand:DF 0 "register_operand" "")
+		    (match_operand:DF 1 "register_operand" "")))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "
 {
@@ -4641,8 +4923,8 @@ move\\t%0,%z4\\n\\
 
 (define_expand "cmpsf"
   [(set (cc0)
-	(compare:CC_FP (match_operand:SF 0 "register_operand" "")
-		       (match_operand:SF 1 "register_operand" "")))]
+	(compare:CC (match_operand:SF 0 "register_operand" "")
+		    (match_operand:SF 1 "register_operand" "")))]
   "TARGET_HARD_FLOAT"
   "
 {
@@ -4665,31 +4947,15 @@ move\\t%0,%z4\\n\\
 
 (define_insn "branch_fp_ne"
   [(set (pc)
-	(if_then_else (ne:CC_FP (reg:CC_FP 67)
-				(const_int 0))
-		      (match_operand 0 "pc_or_label_operand" "")
-		      (match_operand 1 "pc_or_label_operand" "")))]
+	(if_then_else (ne:CC (match_operand:CC 0 "register_operand" "z")
+			     (const_int 0))
+		      (match_operand 1 "pc_or_label_operand" "")
+		      (match_operand 2 "pc_or_label_operand" "")))]
   "TARGET_HARD_FLOAT"
   "*
 {
   mips_branch_likely = (final_sequence && INSN_ANNULLED_BRANCH_P (insn));
-  return (operands[0] != pc_rtx) ? \"%*bc1t%?\\t%0\" : \"%*bc1f%?\\t%1\";
-}"
-  [(set_attr "type"	"branch")
-   (set_attr "mode"	"none")
-   (set_attr "length"	"1")])
-
-(define_insn "branch_fp_ne_rev"
-  [(set (pc)
-	(if_then_else (ne:CC_REV_FP (reg:CC_REV_FP 67)
-				    (const_int 0))
-		      (match_operand 0 "pc_or_label_operand" "")
-		      (match_operand 1 "pc_or_label_operand" "")))]
-  "TARGET_HARD_FLOAT"
-  "*
-{
-  mips_branch_likely = (final_sequence && INSN_ANNULLED_BRANCH_P (insn));
-  return (operands[0] != pc_rtx) ? \"%*bc1f%?\\t%0\" : \"%*bc1t%?\\t%1\";
+  return (operands[1] != pc_rtx) ? \"%*bc1t%?\\t%Z0%1\" : \"%*bc1f%?\\t%Z0%2\";
 }"
   [(set_attr "type"	"branch")
    (set_attr "mode"	"none")
@@ -4697,36 +4963,19 @@ move\\t%0,%z4\\n\\
 
 (define_insn "branch_fp_eq"
   [(set (pc)
-	(if_then_else (eq:CC_FP (reg:CC_FP 67)
-				(const_int 0))
-		      (match_operand 0 "pc_or_label_operand" "")
-		      (match_operand 1 "pc_or_label_operand" "")))]
+	(if_then_else (eq:CC (match_operand:CC 0 "register_operand" "z")
+			     (const_int 0))
+		      (match_operand 1 "pc_or_label_operand" "")
+		      (match_operand 2 "pc_or_label_operand" "")))]
   "TARGET_HARD_FLOAT"
   "*
 {
   mips_branch_likely = (final_sequence && INSN_ANNULLED_BRANCH_P (insn));
-  return (operands[0] != pc_rtx) ? \"%*bc1f%?\\t%0\" : \"%*bc1t%?\\t%1\";
+  return (operands[1] != pc_rtx) ? \"%*bc1f%?\\t%Z0%1\" : \"%*bc1t%?\\t%Z0%2\";
 }"
   [(set_attr "type"	"branch")
    (set_attr "mode"	"none")
    (set_attr "length"	"1")])
-
-(define_insn "branch_fp_eq_rev"
-  [(set (pc)
-	(if_then_else (eq:CC_REV_FP (reg:CC_REV_FP 67)
-				    (const_int 0))
-		      (match_operand 0 "pc_or_label_operand" "")
-		      (match_operand 1 "pc_or_label_operand" "")))]
-  "TARGET_HARD_FLOAT"
-  "*
-{
-  mips_branch_likely = (final_sequence && INSN_ANNULLED_BRANCH_P (insn));
-  return (operands[0] != pc_rtx) ? \"%*bc1t%?\\t%0\" : \"%*bc1f%?\\t%1\";
-}"
-  [(set_attr "type"	"branch")
-   (set_attr "mode"	"none")
-   (set_attr "length"	"1")])
-
 
 (define_insn "branch_zero"
   [(set (pc)
@@ -4860,8 +5109,8 @@ move\\t%0,%z4\\n\\
 
 (define_expand "beq"
   [(set (pc)
-	(if_then_else (eq:CC_EQ (cc0)
-				(const_int 0))
+	(if_then_else (eq:CC (cc0)
+			     (const_int 0))
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   ""
@@ -4876,8 +5125,8 @@ move\\t%0,%z4\\n\\
 
 (define_expand "bne"
   [(set (pc)
-	(if_then_else (ne:CC_EQ (cc0)
-				(const_int 0))
+	(if_then_else (ne:CC (cc0)
+			     (const_int 0))
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   ""
@@ -5749,216 +5998,130 @@ move\\t%0,%z4\\n\\
 ;;  ....................
 
 (define_insn "seq_df"
-  [(set (reg:CC_FP 67)
-	(eq:CC_FP (match_operand:DF 0 "register_operand" "f")
-		  (match_operand:DF 1 "register_operand" "f")))]
+  [(set (match_operand:CC 0 "register_operand" "=z")
+	(eq:CC (match_operand:DF 1 "register_operand" "f")
+	       (match_operand:DF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "*
 {
-  rtx xoperands[10];
-  xoperands[0] = gen_rtx (REG, CC_FPmode, FPSW_REGNUM);
-  xoperands[1] = operands[0];
-  xoperands[2] = operands[1];
-
-  return mips_fill_delay_slot (\"c.eq.d\\t%0,%1\", DELAY_FCMP, xoperands, insn);
-}"
- [(set_attr "type"	"fcmp")
-  (set_attr "mode"	"FPSW")
-  (set_attr "length"	"1")])
-
-(define_insn "sne_df"
-  [(set (reg:CC_REV_FP 67)
-	(ne:CC_REV_FP (match_operand:DF 0 "register_operand" "f")
-		      (match_operand:DF 1 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
-  "*
-{
-  rtx xoperands[10];
-  xoperands[0] = gen_rtx (REG, CC_FPmode, FPSW_REGNUM);
-  xoperands[1] = operands[0];
-  xoperands[2] = operands[1];
-
-  return mips_fill_delay_slot (\"c.eq.d\\t%0,%1\", DELAY_FCMP, xoperands, insn);
+  return mips_fill_delay_slot (\"c.eq.d\\t%Z0%1,%2\", DELAY_FCMP, operands, insn);
 }"
  [(set_attr "type"	"fcmp")
   (set_attr "mode"	"FPSW")
   (set_attr "length"	"1")])
 
 (define_insn "slt_df"
-  [(set (reg:CC_FP 67)
-	(lt:CC_FP (match_operand:DF 0 "register_operand" "f")
-		  (match_operand:DF 1 "register_operand" "f")))]
+  [(set (match_operand:CC 0 "register_operand" "=z")
+	(lt:CC (match_operand:DF 1 "register_operand" "f")
+	       (match_operand:DF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "*
 {
-  rtx xoperands[10];
-  xoperands[0] = gen_rtx (REG, CC_FPmode, FPSW_REGNUM);
-  xoperands[1] = operands[0];
-  xoperands[2] = operands[1];
-
-  return mips_fill_delay_slot (\"c.lt.d\\t%0,%1\", DELAY_FCMP, xoperands, insn);
+  return mips_fill_delay_slot (\"c.lt.d\\t%Z0%1,%2\", DELAY_FCMP, operands, insn);
 }"
  [(set_attr "type"	"fcmp")
   (set_attr "mode"	"FPSW")
   (set_attr "length"	"1")])
 
 (define_insn "sle_df"
-  [(set (reg:CC_FP 67)
-	(le:CC_FP (match_operand:DF 0 "register_operand" "f")
-		  (match_operand:DF 1 "register_operand" "f")))]
+  [(set (match_operand:CC 0 "register_operand" "=z")
+	(le:CC (match_operand:DF 1 "register_operand" "f")
+	       (match_operand:DF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "*
 {
-  rtx xoperands[10];
-  xoperands[0] = gen_rtx (REG, CC_FPmode, FPSW_REGNUM);
-  xoperands[1] = operands[0];
-  xoperands[2] = operands[1];
-
-  return mips_fill_delay_slot (\"c.le.d\\t%0,%1\", DELAY_FCMP, xoperands, insn);
+  return mips_fill_delay_slot (\"c.le.d\\t%Z0%1,%2\", DELAY_FCMP, operands, insn);
 }"
  [(set_attr "type"	"fcmp")
   (set_attr "mode"	"FPSW")
   (set_attr "length"	"1")])
 
 (define_insn "sgt_df"
-  [(set (reg:CC_FP 67)
-	(gt:CC_FP (match_operand:DF 0 "register_operand" "f")
-		  (match_operand:DF 1 "register_operand" "f")))]
+  [(set (match_operand:CC 0 "register_operand" "=z")
+	(gt:CC (match_operand:DF 1 "register_operand" "f")
+	       (match_operand:DF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "*
 {
-  rtx xoperands[10];
-  xoperands[0] = gen_rtx (REG, CC_FPmode, FPSW_REGNUM);
-  xoperands[1] = operands[0];
-  xoperands[2] = operands[1];
-
-  return mips_fill_delay_slot (\"c.lt.d\\t%1,%0\", DELAY_FCMP, xoperands, insn);
+  return mips_fill_delay_slot (\"c.lt.d\\t%Z0%2,%1\", DELAY_FCMP, operands, insn);
 }"
  [(set_attr "type"	"fcmp")
   (set_attr "mode"	"FPSW")
   (set_attr "length"	"1")])
 
 (define_insn "sge_df"
-  [(set (reg:CC_FP 67)
-	(ge:CC_FP (match_operand:DF 0 "register_operand" "f")
-		  (match_operand:DF 1 "register_operand" "f")))]
+  [(set (match_operand:CC 0 "register_operand" "=z")
+	(ge:CC (match_operand:DF 1 "register_operand" "f")
+	       (match_operand:DF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "*
 {
-  rtx xoperands[10];
-  xoperands[0] = gen_rtx (REG, CC_FPmode, FPSW_REGNUM);
-  xoperands[1] = operands[0];
-  xoperands[2] = operands[1];
-
-  return mips_fill_delay_slot (\"c.le.d\\t%1,%0\", DELAY_FCMP, xoperands, insn);
+  return mips_fill_delay_slot (\"c.le.d\\t%Z0%2,%1\", DELAY_FCMP, operands, insn);
 }"
  [(set_attr "type"	"fcmp")
   (set_attr "mode"	"FPSW")
   (set_attr "length"	"1")])
 
 (define_insn "seq_sf"
-  [(set (reg:CC_FP 67)
-	(eq:CC_FP (match_operand:SF 0 "register_operand" "f")
-		  (match_operand:SF 1 "register_operand" "f")))]
+  [(set (match_operand:CC 0 "register_operand" "=z")
+	(eq:CC (match_operand:SF 1 "register_operand" "f")
+	       (match_operand:SF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT"
   "*
 {
-  rtx xoperands[10];
-  xoperands[0] = gen_rtx (REG, CC_FPmode, FPSW_REGNUM);
-  xoperands[1] = operands[0];
-  xoperands[2] = operands[1];
-
-  return mips_fill_delay_slot (\"c.eq.s\\t%0,%1\", DELAY_FCMP, xoperands, insn);
-}"
- [(set_attr "type"	"fcmp")
-  (set_attr "mode"	"FPSW")
-  (set_attr "length"	"1")])
-
-(define_insn "sne_sf"
-  [(set (reg:CC_REV_FP 67)
-	(ne:CC_REV_FP (match_operand:SF 0 "register_operand" "f")
-		      (match_operand:SF 1 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT"
-  "*
-{
-  rtx xoperands[10];
-  xoperands[0] = gen_rtx (REG, CC_FPmode, FPSW_REGNUM);
-  xoperands[1] = operands[0];
-  xoperands[2] = operands[1];
-
-  return mips_fill_delay_slot (\"c.eq.s\\t%0,%1\", DELAY_FCMP, xoperands, insn);
+  return mips_fill_delay_slot (\"c.eq.s\\t%Z0%1,%2\", DELAY_FCMP, operands, insn);
 }"
  [(set_attr "type"	"fcmp")
   (set_attr "mode"	"FPSW")
   (set_attr "length"	"1")])
 
 (define_insn "slt_sf"
-  [(set (reg:CC_FP 67)
-	(lt:CC_FP (match_operand:SF 0 "register_operand" "f")
-		  (match_operand:SF 1 "register_operand" "f")))]
+  [(set (match_operand:CC 0 "register_operand" "=z")
+	(lt:CC (match_operand:SF 1 "register_operand" "f")
+	       (match_operand:SF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT"
   "*
 {
-  rtx xoperands[10];
-  xoperands[0] = gen_rtx (REG, CC_FPmode, FPSW_REGNUM);
-  xoperands[1] = operands[0];
-  xoperands[2] = operands[1];
-
-  return mips_fill_delay_slot (\"c.lt.s\\t%0,%1\", DELAY_FCMP, xoperands, insn);
+  return mips_fill_delay_slot (\"c.lt.s\\t%Z0%1,%2\", DELAY_FCMP, operands, insn);
 }"
  [(set_attr "type"	"fcmp")
   (set_attr "mode"	"FPSW")
   (set_attr "length"	"1")])
 
 (define_insn "sle_sf"
-  [(set (reg:CC_FP 67)
-	(le:CC_FP (match_operand:SF 0 "register_operand" "f")
-		  (match_operand:SF 1 "register_operand" "f")))]
+  [(set (match_operand:CC 0 "register_operand" "=z")
+	(le:CC (match_operand:SF 1 "register_operand" "f")
+	       (match_operand:SF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT"
   "*
 {
-  rtx xoperands[10];
-  xoperands[0] = gen_rtx (REG, CC_FPmode, FPSW_REGNUM);
-  xoperands[1] = operands[0];
-  xoperands[2] = operands[1];
-
-  return mips_fill_delay_slot (\"c.le.s\\t%0,%1\", DELAY_FCMP, xoperands, insn);
+  return mips_fill_delay_slot (\"c.le.s\\t%Z0%1,%2\", DELAY_FCMP, operands, insn);
 }"
  [(set_attr "type"	"fcmp")
   (set_attr "mode"	"FPSW")
   (set_attr "length"	"1")])
 
 (define_insn "sgt_sf"
-  [(set (reg:CC_FP 67)
-	(gt:CC_FP (match_operand:SF 0 "register_operand" "f")
-		  (match_operand:SF 1 "register_operand" "f")))]
+  [(set (match_operand:CC 0 "register_operand" "=z")
+	(gt:CC (match_operand:SF 1 "register_operand" "f")
+	       (match_operand:SF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT"
   "*
 {
-  rtx xoperands[10];
-  xoperands[0] = gen_rtx (REG, CC_FPmode, FPSW_REGNUM);
-  xoperands[1] = operands[0];
-  xoperands[2] = operands[1];
-
-  return mips_fill_delay_slot (\"c.lt.s\\t%1,%0\", DELAY_FCMP, xoperands, insn);
+  return mips_fill_delay_slot (\"c.lt.s\\t%Z0%2,%1\", DELAY_FCMP, operands, insn);
 }"
  [(set_attr "type"	"fcmp")
   (set_attr "mode"	"FPSW")
   (set_attr "length"	"1")])
 
 (define_insn "sge_sf"
-  [(set (reg:CC_FP 67)
-	(ge:CC_FP (match_operand:SF 0 "register_operand" "f")
-		  (match_operand:SF 1 "register_operand" "f")))]
+  [(set (match_operand:CC 0 "register_operand" "=z")
+	(ge:CC (match_operand:SF 1 "register_operand" "f")
+	       (match_operand:SF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT"
   "*
 {
-  rtx xoperands[10];
-  xoperands[0] = gen_rtx (REG, CC_FPmode, FPSW_REGNUM);
-  xoperands[1] = operands[0];
-  xoperands[2] = operands[1];
-
-  return mips_fill_delay_slot (\"c.le.s\\t%1,%0\", DELAY_FCMP, xoperands, insn);
+  return mips_fill_delay_slot (\"c.le.s\\t%Z0%2,%1\", DELAY_FCMP, operands, insn);
 }"
  [(set_attr "type"	"fcmp")
   (set_attr "mode"	"FPSW")
@@ -6769,13 +6932,16 @@ move\\t%0,%z4\\n\\
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=d,d")
 	(if_then_else:SI
-	 (match_operator 3 "equality_op" [(reg:CC_FP 67) (const_int 0)])
+	 (match_operator 3 "equality_op" [(match_operand:CC 4
+							    "register_operand"
+							    "z,z")
+					  (const_int 0)])
 	 (match_operand:SI 1 "reg_or_0_operand" "dJ,0")
 	 (match_operand:SI 2 "reg_or_0_operand" "0,dJ")))]
-  "mips_isa >= 4"
+  "mips_isa >= 4 && TARGET_HARD_FLOAT"
   "@
-    mov%T3\\t%0,%z1,$fcc0
-    mov%t3\\t%0,%z2,$fcc0"
+    mov%T3\\t%0,%z1,%4
+    mov%t3\\t%0,%z2,%4"
   [(set_attr "type" "move")
    (set_attr "mode" "SI")])
 
@@ -6812,13 +6978,16 @@ move\\t%0,%z4\\n\\
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=d,d")
 	(if_then_else:DI
-	 (match_operator 3 "equality_op" [(reg:CC_FP 67) (const_int 0)])
+	 (match_operator 3 "equality_op" [(match_operand:CC 4
+							    "register_operand"
+							    "z,z")
+					  (const_int 0)])
 	 (match_operand:DI 1 "reg_or_0_operand" "dJ,0")
 	 (match_operand:DI 2 "reg_or_0_operand" "0,dJ")))]
-  "mips_isa >= 4"
+  "mips_isa >= 4 && TARGET_HARD_FLOAT"
   "@
-    mov%T3\\t%0,%z1,$fcc0
-    mov%t3\\t%0,%z2,$fcc0"
+    mov%T3\\t%0,%z1,%4
+    mov%t3\\t%0,%z2,%4"
   [(set_attr "type" "move")
    (set_attr "mode" "DI")])
 
@@ -6840,13 +7009,16 @@ move\\t%0,%z4\\n\\
 (define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=f,f")
 	(if_then_else:SF
-	 (match_operator 3 "equality_op" [(reg:CC_FP 67) (const_int 0)])
+	 (match_operator 3 "equality_op" [(match_operand:CC 4
+							    "register_operand"
+							    "z,z")
+					  (const_int 0)])
 	 (match_operand:SF 1 "register_operand" "f,0")
 	 (match_operand:SF 2 "register_operand" "0,f")))]
   "mips_isa >= 4 && TARGET_HARD_FLOAT"
   "@
-    mov%T3.s\\t%0,%1,$fcc0
-    mov%t3.s\\t%0,%2,$fcc0"
+    mov%T3.s\\t%0,%1,%4
+    mov%t3.s\\t%0,%2,%4"
   [(set_attr "type" "move")
    (set_attr "mode" "SF")])
 
@@ -6858,7 +7030,7 @@ move\\t%0,%z4\\n\\
 			  (const_int 0)])
 	 (match_operand:DF 2 "register_operand" "f,0")
 	 (match_operand:DF 3 "register_operand" "0,f")))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "mips_isa >= 4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "@
     mov%B4.d\\t%0,%2,%1
     mov%b4.d\\t%0,%3,%1"
@@ -6868,13 +7040,16 @@ move\\t%0,%z4\\n\\
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f,f")
 	(if_then_else:DF
-	 (match_operator 3 "equality_op" [(reg:CC_FP 67) (const_int 0)])
+	 (match_operator 3 "equality_op" [(match_operand:CC 4
+							    "register_operand"
+							    "z,z")
+					  (const_int 0)])
 	 (match_operand:DF 1 "register_operand" "f,0")
 	 (match_operand:DF 2 "register_operand" "0,f")))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "mips_isa >= 4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "@
-    mov%T3.d\\t%0,%1,$fcc0
-    mov%t3.d\\t%0,%2,$fcc0"
+    mov%T3.d\\t%0,%1,%4
+    mov%t3.d\\t%0,%2,%4"
   [(set_attr "type" "move")
    (set_attr "mode" "DF")])
 
@@ -6889,85 +7064,45 @@ move\\t%0,%z4\\n\\
   "mips_isa >= 4"
   "
 {
-  rtx op0 = branch_cmp[0];
-  rtx op1 = branch_cmp[1];
-  enum machine_mode mode = GET_MODE (branch_cmp[0]);
-  enum rtx_code compare_code = GET_CODE (operands[1]);
-  enum rtx_code move_code = NE;
-
-  if (GET_MODE_CLASS (mode) != MODE_FLOAT)
-    {
-      switch (compare_code)
-	{
-	case EQ:
-	  compare_code = XOR;
-	  move_code = EQ;
-	  break;
-	case NE:
-	  compare_code = XOR;
-	  break;
-	case LT:
-	  break;
-	case GE:
-	  compare_code = LT;
-	  move_code = EQ;
-	  break;
-	case GT:
-	  compare_code = LT;
-	  op0 = force_reg (mode, branch_cmp[1]);
-	  op1 = branch_cmp[0];
-	  break;
-	case LE:
-	  compare_code = LT;
-	  op0 = force_reg (mode, branch_cmp[1]);
-	  op1 = branch_cmp[0];
-	  move_code = EQ;
-	  break;
-	case LTU:
-	  break;
-	case GEU:
-	  compare_code = LTU;
-	  move_code = EQ;
-	  break;
-	case GTU:
-	  compare_code = LTU;
-	  op0 = force_reg (mode, branch_cmp[1]);
-	  op1 = branch_cmp[0];
-	  break;
-	case LEU:
-	  compare_code = LTU;
-	  op0 = force_reg (mode, branch_cmp[1]);
-	  op1 = branch_cmp[0];
-	  move_code = EQ;
-	  break;
-	default:
-	  abort ();
-	}
-    }
-  else
-    {
-      if (compare_code == NE)
-	{
-	  /* ??? Perhaps we need to use CC_FP_REVmode here?  */
-	  compare_code = EQ;
-	  move_code = EQ;
-	}
-    }
-	  
-  if (mode == SImode || mode == DImode)
-    {
-      operands[1] = gen_rtx (compare_code, mode, op0, op1);
-      operands[4] = gen_reg_rtx (mode);
-    }
-  else if (mode == SFmode || mode == DFmode)
-    {
-      operands[1] = gen_rtx (compare_code, CC_FPmode, op0, op1);
-      operands[4] = gen_rtx (REG, CC_FPmode, FPSW_REGNUM);
-    }
-
-  operands[5] = gen_rtx (move_code, VOIDmode, operands[4],
-			 CONST0_RTX (SImode));
+  gen_conditional_move (operands);
+  DONE;
 }")
 
-;; ??? Need movdicc, movsfcc, and movdfcc patterns.  They should be
-;; very similar to the above movsicc pattern.
+(define_expand "movdicc"
+  [(set (match_dup 4) (match_operand 1 "comparison_operator" ""))
+   (set (match_operand:DI 0 "register_operand" "")
+	(if_then_else:DI (match_dup 5)
+			 (match_operand:DI 2 "reg_or_0_operand" "")
+			 (match_operand:DI 3 "reg_or_0_operand" "")))]
+  "mips_isa >= 4"
+  "
+{
+  gen_conditional_move (operands);
+  DONE;
+}")
+
+(define_expand "movsfcc"
+  [(set (match_dup 4) (match_operand 1 "comparison_operator" ""))
+   (set (match_operand:SF 0 "register_operand" "")
+	(if_then_else:SF (match_dup 5)
+			 (match_operand:SF 2 "reg_or_0_operand" "")
+			 (match_operand:SF 3 "reg_or_0_operand" "")))]
+  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "
+{
+  gen_conditional_move (operands);
+  DONE;
+}")
+
+(define_expand "movdfcc"
+  [(set (match_dup 4) (match_operand 1 "comparison_operator" ""))
+   (set (match_operand:DF 0 "register_operand" "")
+	(if_then_else:DF (match_dup 5)
+			 (match_operand:DF 2 "reg_or_0_operand" "")
+			 (match_operand:DF 3 "reg_or_0_operand" "")))]
+  "mips_isa >= 4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
+  "
+{
+  gen_conditional_move (operands);
+  DONE;
+}")

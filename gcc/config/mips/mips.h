@@ -70,6 +70,7 @@ enum processor_type {
   PROCESSOR_R4300,
   PROCESSOR_R4600,
   PROCESSOR_R4650,
+  PROCESSOR_R5000,
   PROCESSOR_R8000
 };
 
@@ -168,6 +169,7 @@ extern int		function_arg_partial_nregs ();
 extern void		function_epilogue ();
 extern void		function_prologue ();
 extern void		gen_conditional_branch ();
+extern void		gen_conditional_move ();
 extern struct rtx_def * gen_int_relational ();
 extern void		init_cumulative_args ();
 extern int		large_int ();
@@ -554,6 +556,18 @@ do									\
 	int regno;							\
 									\
 	for (regno = FP_REG_FIRST; regno <= FP_REG_LAST; regno++)	\
+	  fixed_regs[regno] = call_used_regs[regno] = 1;		\
+	for (regno = ST_REG_FIRST; regno <= ST_REG_LAST; regno++)	\
+	  fixed_regs[regno] = call_used_regs[regno] = 1;		\
+      }									\
+    else if (mips_isa < 4)						\
+      {									\
+	int regno;							\
+									\
+	/* We only have a single condition code register.  We		\
+           implement this by hiding all the condition code registers,	\
+           and generating RTL that refers directly to ST_REG_FIRST.  */	\
+	for (regno = ST_REG_FIRST; regno <= ST_REG_LAST; regno++)	\
 	  fixed_regs[regno] = call_used_regs[regno] = 1;		\
       }									\
     SUBTARGET_CONDITIONAL_REGISTER_USAGE				\
@@ -1200,14 +1214,16 @@ do {                                                  \
    even those that are not normally considered general registers.
 
    On the Mips, we have 32 integer registers, 32 floating point
-   registers and the special registers hi, lo, hilo, fp status, and rap.
-   The hilo register is only used in 64 bit mode.  It represents a 64
-   bit value stored as two 32 bit values in the hi and lo registers;
-   this is the result of the mult instruction.  rap is a pointer to the
-   stack where the return address reg ($31) was stored.  This is needed
-   for C++ exception handling.  */
+   registers, 8 condition code registers, and the special registers
+   hi, lo, hilo, and rap.  The 8 condition code registers are only
+   used if mips_isa >= 4.  The hilo register is only used in 64 bit
+   mode.  It represents a 64 bit value stored as two 32 bit values in
+   the hi and lo registers; this is the result of the mult
+   instruction.  rap is a pointer to the stack where the return
+   address reg ($31) was stored.  This is needed for C++ exception
+   handling.  */
 
-#define FIRST_PSEUDO_REGISTER 69
+#define FIRST_PSEUDO_REGISTER 76
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
@@ -1220,7 +1236,7 @@ do {                                                  \
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1,			\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
-  0, 0, 0, 1, 1								\
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1					\
 }
 
 
@@ -1237,7 +1253,7 @@ do {                                                  \
   0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1,			\
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
   1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
-  1, 1, 1, 1, 1								\
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1					\
 }
 
 
@@ -1260,21 +1276,25 @@ do {                                                  \
 #define MD_REG_NUM   (MD_REG_LAST - MD_REG_FIRST + 1)
 
 #define ST_REG_FIRST 67
-#define ST_REG_LAST  67
+#define ST_REG_LAST  74
 #define ST_REG_NUM   (ST_REG_LAST - ST_REG_FIRST + 1)
 
-#define RAP_REG_NUM   68
+#define RAP_REG_NUM   75
 
 #define AT_REGNUM	(GP_REG_FIRST + 1)
 #define HI_REGNUM	(MD_REG_FIRST + 0)
 #define LO_REGNUM	(MD_REG_FIRST + 1)
 #define HILO_REGNUM	(MD_REG_FIRST + 2)
+
+/* FPSW_REGNUM is the single condition code used if mips_isa < 4.  If
+   mips_isa >= 4, it should not be used, and an arbitrary ST_REG
+   should be used instead.  */
 #define FPSW_REGNUM	ST_REG_FIRST
 
 #define GP_REG_P(REGNO) ((unsigned) ((REGNO) - GP_REG_FIRST) < GP_REG_NUM)
 #define FP_REG_P(REGNO) ((unsigned) ((REGNO) - FP_REG_FIRST) < FP_REG_NUM)
 #define MD_REG_P(REGNO) ((unsigned) ((REGNO) - MD_REG_FIRST) < MD_REG_NUM)
-#define ST_REG_P(REGNO) ((REGNO) == ST_REG_FIRST)
+#define ST_REG_P(REGNO) ((unsigned) ((REGNO) - ST_REG_FIRST) < ST_REG_NUM)
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
@@ -1464,8 +1484,8 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x00000002 },	/* lo register */	\
   { 0x00000000, 0x00000000, 0x00000004 },	/* hilo register */	\
   { 0x00000000, 0x00000000, 0x00000003 },	/* mul/div registers */	\
-  { 0x00000000, 0x00000000, 0x00000008 },	/* status registers */	\
-  { 0xffffffff, 0xffffffff, 0x0000000f }	/* all registers */	\
+  { 0x00000000, 0x00000000, 0x000007f8 },	/* status registers */	\
+  { 0xffffffff, 0xffffffff, 0x000007ff }	/* all registers */	\
 }
 
 
@@ -1625,7 +1645,8 @@ extern enum reg_class mips_char_to_class[];
 	   || (CLASS2 == GR_REGS && CLASS1 == FP_REGS))))
 
 /* The HI and LO registers can only be reloaded via the general
-   registers.  */
+   registers.  Condition code registers can only be loaded to the
+   general registers, and from the floating point registers.  */
 
 #define SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, X)			\
   mips_secondary_reload_class (CLASS, MODE, X, 1)
@@ -2868,7 +2889,8 @@ while (0)
       enum machine_mode xmode = GET_MODE (X);				\
       if (xmode == SFmode)						\
 	{								\
-	  if (mips_cpu == PROCESSOR_R3000)				\
+	  if (mips_cpu == PROCESSOR_R3000				\
+	      || mips_cpu == PROCESSOR_R5000)				\
 	    return COSTS_N_INSNS (4);					\
 	  else if (mips_cpu == PROCESSOR_R6000)				\
 	    return COSTS_N_INSNS (5);					\
@@ -2878,7 +2900,8 @@ while (0)
 									\
       if (xmode == DFmode)						\
 	{								\
-	  if (mips_cpu == PROCESSOR_R3000)				\
+	  if (mips_cpu == PROCESSOR_R3000				\
+	      || mips_cpu == PROCESSOR_R5000)				\
 	    return COSTS_N_INSNS (5);					\
 	  else if (mips_cpu == PROCESSOR_R6000)				\
 	    return COSTS_N_INSNS (6);					\
@@ -2890,6 +2913,8 @@ while (0)
 	return COSTS_N_INSNS (12);					\
       else if (mips_cpu == PROCESSOR_R6000)				\
 	return COSTS_N_INSNS (17);					\
+      else if (mips_cpu == PROCESSOR_R5000)				\
+	return COSTS_N_INSNS (5);					\
       else								\
 	return COSTS_N_INSNS (10);					\
     }									\
@@ -2926,6 +2951,8 @@ while (0)
       return COSTS_N_INSNS (35);					\
     else if (mips_cpu == PROCESSOR_R6000)				\
       return COSTS_N_INSNS (38);					\
+    else if (mips_cpu == PROCESSOR_R5000)				\
+      return COSTS_N_INSNS (36);					\
     else								\
       return COSTS_N_INSNS (69);
 
@@ -3001,6 +3028,8 @@ while (0)
    : (((TO) == HI_REG || (TO) == LO_REG					\
        || (TO) == MD_REGS || (FROM) == HILO_REG)			\
       && (FROM) == GR_REGS) ? 6						\
+   : (FROM) == ST_REGS && (TO) == GR_REGS ? 4				\
+   : (FROM) == FP_REGS && (TO) == ST_REGS ? 8				\
    : 12)
 
 /* ??? Fix this to be right for the R8000.  */
@@ -3053,6 +3082,7 @@ while (0)
   {"small_int",			{ CONST_INT }},				\
   {"large_int",			{ CONST_INT }},				\
   {"mips_const_double_ok",	{ CONST_DOUBLE }},			\
+  {"const_float_1_operand",	{ CONST_DOUBLE }},			\
   {"simple_memory_operand",	{ MEM, SUBREG }},			\
   {"equality_op",		{ EQ, NE }},				\
   {"cmp_op",			{ EQ, NE, GT, GE, GTU, GEU, LT, LE,	\
@@ -3081,40 +3111,6 @@ while (0)
 
 #define FINAL_PRESCAN_INSN(INSN, OPVEC, NOPERANDS)			\
   final_prescan_insn (INSN, OPVEC, NOPERANDS)
-
-
-/* Tell final.c how to eliminate redundant test instructions.
-   Here we define machine-dependent flags and fields in cc_status
-   (see `conditions.h').  */
-
-/* A list of names to be used for additional modes for condition code
-   values in registers.  These names are added to `enum machine_mode'
-   and all have class `MODE_CC'.  By convention, they should start
-   with `CC' and end with `mode'.
-
-   You should only define this macro if your machine does not use
-   `cc0' and only if additional modes are required.
-
-   On the MIPS, we use CC_FPmode for all floating point except for not
-   equal, CC_REV_FPmode for not equal (to reverse the sense of the
-   jump), CC_EQmode for integer equality/inequality comparisons,
-   CC_0mode for comparisons against 0, and CCmode for other integer
-   comparisons. */
-
-#define EXTRA_CC_MODES CC_EQmode, CC_FPmode, CC_0mode, CC_REV_FPmode
-
-/* A list of C strings giving the names for the modes listed in
-   `EXTRA_CC_MODES'.  */
-
-#define EXTRA_CC_NAMES "CC_EQ", "CC_FP", "CC_0", "CC_REV_FP"
-
-/* Returns a mode from class `MODE_CC' to be used when comparison
-   operation code OP is applied to rtx X.  */
-
-#define SELECT_CC_MODE(OP, X, Y)					\
-  (GET_MODE_CLASS (GET_MODE (X)) != MODE_FLOAT				\
-	? SImode							\
-	: ((OP == NE) ? CC_REV_FPmode : CC_FPmode))
 
 
 /* Control the assembler format that we output.  */
@@ -3217,6 +3213,13 @@ while (0)
   &mips_reg_names[66][0],						\
   &mips_reg_names[67][0],						\
   &mips_reg_names[68][0],						\
+  &mips_reg_names[69][0],						\
+  &mips_reg_names[70][0],						\
+  &mips_reg_names[71][0],						\
+  &mips_reg_names[72][0],						\
+  &mips_reg_names[73][0],						\
+  &mips_reg_names[74][0],						\
+  &mips_reg_names[75][0],						\
 }
 
 /* print-rtl.c can't use REGISTER_NAMES, since it depends on mips.c.
@@ -3231,7 +3234,8 @@ while (0)
   "$f8",  "$f9",  "$f10", "$f11", "$f12", "$f13", "$f14", "$f15",	\
   "$f16", "$f17", "$f18", "$f19", "$f20", "$f21", "$f22", "$f23",	\
   "$f24", "$f25", "$f26", "$f27", "$f28", "$f29", "$f30", "$f31",	\
-  "hi",   "lo",   "accum","$fcr31","$rap"				\
+  "hi",   "lo",   "accum","$fcc0","$fcc1","$fcc2","$fcc3","$fcc4",	\
+  "$fcc5","$fcc6","$fcc7","$rap"					\
 }
 
 /* If defined, a C initializer for an array of structures
@@ -3310,8 +3314,7 @@ while (0)
   { "fp",	30 + GP_REG_FIRST },					\
   { "ra",	31 + GP_REG_FIRST },					\
   { "$sp",	29 + GP_REG_FIRST },					\
-  { "$fp",	30 + GP_REG_FIRST },					\
-  { "cc",	FPSW_REGNUM },						\
+  { "$fp",	30 + GP_REG_FIRST }					\
 }
 
 /* Define results of standard character escape sequences.  */
