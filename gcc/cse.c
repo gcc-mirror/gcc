@@ -6112,11 +6112,16 @@ cse_insn (insn, in_libcall_block)
 	  sets[i].rtl = 0;
 	}
 
-      /* No further processing for this assignment if destination
-	 is volatile.  */
+      /* If destination is volatile, invalidate it and then do no further
+	 processing for this assignment.  */
 
       else if (do_not_record)
-	sets[i].rtl = 0;
+	{
+	  if (GET_CODE (dest) == REG || GET_CODE (dest) == SUBREG
+	      || GET_CODE (dest) == MEM)
+	    invalidate (dest);
+	  sets[i].rtl = 0;
+	}
 
       if (sets[i].rtl != 0 && dest != SET_DEST (sets[i].rtl))
 	sets[i].dest_hash_code = HASH (SET_DEST (sets[i].rtl), mode);

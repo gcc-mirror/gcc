@@ -2254,6 +2254,14 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
       op1 = convert_to_mode (compute_mode, op1, unsignedp);
     }
 
+  /* If we are computing the remainder and one of the operands is a volatile
+     MEM, copy it into a register.  */
+
+  if (rem_flag && GET_CODE (op0) == MEM && MEM_VOLATILE_P (op0))
+    adjusted_op0 = op0 = force_reg (compute_mode, op0), can_clobber_op0 = 1;
+  if (rem_flag && GET_CODE (op1) == MEM && MEM_VOLATILE_P (op1))
+    op1 = force_reg (compute_mode, op1);
+
   if (target == 0 || GET_MODE (target) != compute_mode)
     target = gen_reg_rtx (compute_mode);
 

@@ -1437,18 +1437,7 @@ toc_section ()						\
   RS6000_OUTPUT_BASENAME (FILE, NAME);				\
   fprintf (FILE, ":\n");					\
   if (write_symbols == XCOFF_DEBUG)				\
-    {								\
-      dbxout_symbol (DECL, 0);					\
-      fprintf (FILE, "\t.function .");				\
-      RS6000_OUTPUT_BASENAME (FILE, NAME);			\
-      fprintf (FILE, ",.");					\
-      RS6000_OUTPUT_BASENAME (FILE, NAME);			\
-      fprintf (FILE, ",16,044,L..end_");			\
-      RS6000_OUTPUT_BASENAME (FILE, NAME);			\
-      fprintf (FILE, "-.");					\
-      RS6000_OUTPUT_BASENAME (FILE, NAME);			\
-      fprintf (FILE, "\n");					\
-    }								\
+    xcoffout_declare_function (FILE, DECL, NAME);		\
 }
 
 /* Return non-zero if this entry is to be written into the constant pool
