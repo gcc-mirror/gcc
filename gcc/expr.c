@@ -8494,6 +8494,14 @@ expand_increment (exp, post)
 			   TREE_TYPE (exp),
 			   incremented,
 			   TREE_OPERAND (exp, 1));
+
+      while (TREE_CODE (incremented) == NOP_EXPR
+	     || TREE_CODE (incremented) == CONVERT_EXPR)
+	{
+	  newexp = convert (TREE_TYPE (incremented), newexp);
+	  incremented = TREE_OPERAND (incremented, 0);
+	}
+
       temp = expand_assignment (incremented, newexp, ! post, 0);
       return post ? op0 : temp;
     }
