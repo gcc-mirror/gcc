@@ -1,5 +1,9 @@
 2005-03-23  Joseph S. Myers  <joseph@codesourcery.com>
 
+	* cp-objcp-common.h (LANG_HOOKS_TRUTHVALUE_CONVERSION): Remove.
+
+2005-03-23  Joseph S. Myers  <joseph@codesourcery.com>
+
 	* cp-tree.h (perform_integral_promotions): Remove.
 	(default_conversion): Add.
 

@@ -124,7 +124,6 @@ struct language_function GTY(())
   char junk; /* dummy field to ensure struct is not empty */
 };
 
-static tree tree_lang_truthvalue_conversion (tree expr);
 static bool tree_mark_addressable (tree exp);
 static tree tree_lang_type_for_size (unsigned precision, int unsignedp);
 static tree tree_lang_type_for_mode (enum machine_mode mode, int unsignedp);
@@ -153,8 +152,6 @@ static void treelang_expand_function (tree fndecl);
    end).  These are not really very language-dependent, i.e.
    treelang, C, Mercury, etc. can all use almost the same definitions.  */
 
-#undef LANG_HOOKS_TRUTHVALUE_CONVERSION
-#define LANG_HOOKS_TRUTHVALUE_CONVERSION tree_lang_truthvalue_conversion
 #undef LANG_HOOKS_MARK_ADDRESSABLE
 #define LANG_HOOKS_MARK_ADDRESSABLE tree_mark_addressable
 #undef LANG_HOOKS_SIGNED_TYPE
@@ -780,13 +777,6 @@ dt (tree t)
 /* This variable keeps a table for types for each precision so that we only 
    allocate each of them once. Signed and unsigned types are kept separate.  */
 static GTY(()) tree signed_and_unsigned_types[MAX_BITS_PER_WORD + 1][2];
-
-/* XXX is this definition OK? */
-static tree
-tree_lang_truthvalue_conversion (tree expr)
-{
-  return expr;
-}
 
 /* Mark EXP saying that we need to be able to take the
    address of it; it should not be allocated in a register.

@@ -1,3 +1,7 @@
+2005-03-23  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* misc.c (LANG_HOOKS_TRUTHVALUE_CONVERSION): Remove.
+
 2005-03-17  Pascal Obry  <obry@adacore.com>
 
 	* adaint.h, adaint.c (__gnat_waitpid): Moved to expect.c where it is

@@ -2073,10 +2073,6 @@ gimple_boolify (tree expr)
   if (TREE_CODE (type) == BOOLEAN_TYPE)
     return expr;
 
-  /* If this is the predicate of a COND_EXPR, it might not even be a
-     truthvalue yet.  */
-  expr = lang_hooks.truthvalue_conversion (expr);
-
   switch (TREE_CODE (expr))
     {
     case TRUTH_AND_EXPR:
