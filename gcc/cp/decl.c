@@ -7857,18 +7857,21 @@ make_rtl_for_nonlocal_decl (decl, init, asmspec)
      DECL_STMT is expanded.  */
   defer_p = DECL_FUNCTION_SCOPE_P (decl) || DECL_VIRTUAL_P (decl);
 
-  /* We try to defer namespace-scope static constants so that they are
-     not emitted into the object file unnecessarily.  */
-  if (!DECL_VIRTUAL_P (decl)
-      && TREE_READONLY (decl)
-      && DECL_INITIAL (decl) != NULL_TREE
-      && DECL_INITIAL (decl) != error_mark_node
-      && ! EMPTY_CONSTRUCTOR_P (DECL_INITIAL (decl))
-      && toplev
-      && !TREE_PUBLIC (decl))
+  /* We try to defer namespace-scope static constants and template
+     instantiations so that they are not emitted into the object file
+     unnecessarily.  */
+  if ((!DECL_VIRTUAL_P (decl)
+       && TREE_READONLY (decl)
+       && DECL_INITIAL (decl) != NULL_TREE
+       && DECL_INITIAL (decl) != error_mark_node
+       && ! EMPTY_CONSTRUCTOR_P (DECL_INITIAL (decl))
+       && toplev
+       && !TREE_PUBLIC (decl))
+      || DECL_COMDAT (decl))
     {
-      /* Fool with the linkage according to #pragma interface.  */
-      if (!interface_unknown)
+      /* Fool with the linkage of static consts according to #pragma
+	 interface.  */
+      if (!interface_unknown && !TREE_PUBLIC (decl))
 	{
 	  TREE_PUBLIC (decl) = 1;
 	  DECL_EXTERNAL (decl) = interface_only;
@@ -8064,7 +8067,7 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
 
   /* If a name was specified, get the string.  */
   if (asmspec_tree)
-      asmspec = TREE_STRING_POINTER (asmspec_tree);
+    asmspec = TREE_STRING_POINTER (asmspec_tree);
 
   if (init && TREE_CODE (init) == NAMESPACE_DECL)
     {
@@ -14206,16 +14209,15 @@ finish_function (flags)
     DECL_UNINLINABLE (fndecl) = 1;
 
   /* Complain if there's just no return statement.  */
-  if (warn_return_type
-      && !processing_template_decl
+  if (!processing_template_decl
       && TREE_CODE (TREE_TYPE (fntype)) != VOID_TYPE
       && !current_function_returns_value && !current_function_returns_null
+      && !DECL_NAME (DECL_RESULT (fndecl))
       /* Don't complain if we abort or throw.  */
       && !current_function_returns_abnormally
-      && !DECL_NAME (DECL_RESULT (fndecl))
-      /* Normally, with -Wreturn-type, flow will complain.  Unless we're an
+      /* If we have -Wreturn-type, let flow complain.  Unless we're an
 	 inline function, as we might never be compiled separately.  */
-      && DECL_INLINE (fndecl))
+      && (!warn_return_type || DECL_INLINE (fndecl)))
     warning ("no return statement in function returning non-void");
     
   /* Clear out memory we no longer need.  */

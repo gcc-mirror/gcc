@@ -1939,16 +1939,24 @@ wrapup_global_declarations (vec, len)
 	     to force a constant to be written if and only if it is
 	     defined in a main file, as opposed to an include file.  */
 
-	  if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl)
-	      && (((! TREE_READONLY (decl) || TREE_PUBLIC (decl))
-		   && !DECL_COMDAT (decl))
-		  || (!optimize
-		      && flag_keep_static_consts
-		      && !DECL_ARTIFICIAL (decl))
-		  || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))))
+	  if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl))
 	    {
-	      reconsider = 1;
-	      rest_of_decl_compilation (decl, NULL, 1, 1);
+	      bool needed = 1;
+
+	      if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
+		/* needed */;
+	      else if (DECL_COMDAT (decl))
+		needed = 0;
+	      else if (TREE_READONLY (decl) && !TREE_PUBLIC (decl)
+		       && (optimize || !flag_keep_static_consts
+			   || DECL_ARTIFICIAL (decl)))
+		needed = 0;
+
+	      if (needed)
+		{
+		  reconsider = 1;
+		  rest_of_decl_compilation (decl, NULL, 1, 1);
+		}
 	    }
 
 	  if (TREE_CODE (decl) == FUNCTION_DECL
