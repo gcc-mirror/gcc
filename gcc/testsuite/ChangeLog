@@ -1,3 +1,7 @@
+2004-06-13  Eric Christopher  <echristo@redhat.com>
+
+	* gcc.dg/noncompile/redecl-1.c: Fix error message.
+
 2004-06-12  Paul Brook  <paul@codesourcery.com>
 
 	* gfortran.fortran-torture/execute/contained_3.f90: New test.
@@ -11,8 +15,8 @@
 
 	PR fortran/14957
 	* gfortran.fortran-torture/execute/stack_varsize.f90: Correct
-        syntax errors in end statements of contained subroutines. 
-	
+        syntax errors in end statements of contained subroutines.
+
 2004-06-12  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/12841
@@ -17021,4 +17025,3 @@ rlsruhe.de>
 	correspond to c-torture	1.11.
 
 	* New file.
-

@@ -598,7 +598,7 @@ comptypes (tree type1, tree type2, int flags)
   if (TREE_CODE (t1) != TREE_CODE (t2))
     return 0;
 
-  /* Qualifiers must match.  */
+  /* Qualifiers must match. C99 6.7.3p9 */
 
   if (TYPE_QUALS (t1) != TYPE_QUALS (t2))
     return 0;
