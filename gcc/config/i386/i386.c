@@ -2506,14 +2506,27 @@ legitimate_address_p (mode, addr, strict)
 	      goto error;
 	    }
 
-	  /* Verify that a symbolic pic displacement includes 
-	     the pic_offset_table_rtx register.  */
-	  if (base != pic_offset_table_rtx
-	      && (index != pic_offset_table_rtx || scale != 1))
-	    {
-	      reason = "pic displacement against invalid base";
-	      goto error;
-	    }
+          /* This code used to verify that a symbolic pic displacement
+	     includes the pic_offset_table_rtx register. 
+	    
+	     While this is good idea, unfortunately these constructs may
+	     be created by "adds using lea" optimization for incorrect
+	     code like:
+
+	     int a;
+	     int foo(int i)
+	       {
+	         return *(&a+i);
+	       }
+
+	     This code nonsential, but results in addressing
+	     GOT table with pic_offset_table_rtx base.  We can't
+	     just refuse it easilly, since it gets matched by
+	     "addsi3" pattern, that later gets split to lea in the
+	     case output register differs from input.  While this
+	     can be handled by separate addsi pattern for this case
+	     that never results in lea, this seems to be easier and
+	     correct fix for crash to disable this test.  */
 	}
       else if (HALF_PIC_P ())
 	{
