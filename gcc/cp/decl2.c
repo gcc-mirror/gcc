@@ -3936,13 +3936,12 @@ arg_assoc_class (struct arg_lookup *k, tree type)
   /* Process friends.  */
   for (list = DECL_FRIENDLIST (TYPE_MAIN_DECL (type)); list; 
        list = TREE_CHAIN (list))
-    if (k->name == TREE_PURPOSE (list))
-      for (friends = TREE_VALUE (list); friends; 
+    if (k->name == FRIEND_NAME (list))
+      for (friends = FRIEND_DECLS (list); friends; 
 	   friends = TREE_CHAIN (friends))
 	/* Only interested in global functions with potentially hidden
            (i.e. unqualified) declarations.  */
-	if (TREE_PURPOSE (friends) == error_mark_node && TREE_VALUE (friends)
-	    && decl_namespace (TREE_VALUE (friends)) == context)
+	if (decl_namespace (TREE_VALUE (friends)) == context)
 	  if (add_function (k, TREE_VALUE (friends)))
 	    return true;
 

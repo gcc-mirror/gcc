@@ -58,8 +58,7 @@ static tree resolve_args (tree);
 static struct z_candidate *build_user_type_conversion_1 (tree, tree, int);
 static void print_z_candidates (struct z_candidate *);
 static tree build_this (tree);
-static struct z_candidate *splice_viable (struct z_candidate *);
-static bool any_viable (struct z_candidate *);
+static struct z_candidate *splice_viable (struct z_candidate *, bool, bool *);
 static bool any_strictly_viable (struct z_candidate *);
 static struct z_candidate *add_template_candidate
         (struct z_candidate **, tree, tree, tree, tree, tree, 
@@ -958,6 +957,7 @@ convert_class_to_reference (tree t, tree s, tree expr)
   tree reference_type;
   struct z_candidate *candidates;
   struct z_candidate *cand;
+  bool any_viable_p;
 
   conversions = lookup_conversions (s);
   if (!conversions)
@@ -1053,12 +1053,12 @@ convert_class_to_reference (tree t, tree s, tree expr)
       conversions = TREE_CHAIN (conversions);
     }
 
+  candidates = splice_viable (candidates, pedantic, &any_viable_p);
   /* If none of the conversion functions worked out, let our caller
      know.  */
-  if (!any_viable (candidates))
+  if (!any_viable_p)
     return NULL_TREE;
-  
-  candidates = splice_viable (candidates);
+
   cand = tourney (candidates);
   if (!cand)
     return NULL_TREE;
@@ -2373,14 +2373,42 @@ add_template_conv_candidate (struct z_candidate **candidates, tree tmpl,
 				 conversion_path, 0, obj, DEDUCE_CONV);
 }
 
+/* The CANDS are the set of candidates that were considered for
+   overload resolution.  Return the set of viable candidates.  If none
+   of the candidates were viable, set *ANY_VIABLE_P to true.  STRICT_P
+   is true if a candidate should be considered viable only if it is
+   strictly viable.  */
 
-static bool
-any_viable (struct z_candidate *cands)
+static struct z_candidate*
+splice_viable (struct z_candidate *cands,
+	       bool strict_p,
+	       bool *any_viable_p)
 {
-  for (; cands; cands = cands->next)
-    if (pedantic ? cands->viable == 1 : cands->viable)
-      return true;
-  return false;
+  struct z_candidate *viable;
+  struct z_candidate **last_viable;
+  struct z_candidate **cand;
+
+  viable = NULL;
+  last_viable = &viable;
+  *any_viable_p = false;
+
+  cand = &cands; 
+  while (*cand) 
+    {
+      struct z_candidate *c = *cand;
+      if (strict_p ? c->viable == 1 : c->viable)
+	{
+	  *last_viable = c;
+	  *cand = c->next;
+	  c->next = NULL;
+	  last_viable = &c->next;
+	  *any_viable_p = true;
+	}
+      else
+	cand = &c->next;
+    }
+
+  return viable ? viable : cands;
 }
 
 static bool
@@ -2392,22 +2420,6 @@ any_strictly_viable (struct z_candidate *cands)
   return false;
 }
 
-static struct z_candidate *
-splice_viable (struct z_candidate *cands)
-{
-  struct z_candidate **p = &cands;
-
-  for (; *p; )
-    {
-      if (pedantic ? (*p)->viable == 1 : (*p)->viable)
-	p = &((*p)->next);
-      else
-	*p = (*p)->next;
-    }
-
-  return cands;
-}
-
 static tree
 build_this (tree obj)
 {
@@ -2415,10 +2427,49 @@ build_this (tree obj)
   return build_unary_op (ADDR_EXPR, obj, 0);
 }
 
+/* Returns true iff functions are equivalent. Equivalent functions are
+   not '==' only if one is a function-local extern function or if
+   both are extern "C".  */
+
+static inline int
+equal_functions (tree fn1, tree fn2)
+{
+  if (DECL_LOCAL_FUNCTION_P (fn1) || DECL_LOCAL_FUNCTION_P (fn2)
+      || DECL_EXTERN_C_FUNCTION_P (fn1))
+    return decls_match (fn1, fn2);
+  return fn1 == fn2;
+}
+
 static void
 print_z_candidates (struct z_candidate *candidates)
 {
-  const char *str = "candidates are:";
+  const char *str;
+  struct z_candidate *cand1;
+  struct z_candidate **cand2;
+
+  /* There may be duplicates in the set of candidates.  We put off
+     checking this condition as long as possible, since we have no way
+     to eliminate duplicates from a set of functions in less than n^2
+     time.  Now we are about to emit an error message, so it is more
+     permissible to go slowly.  */
+  for (cand1 = candidates; cand1; cand1 = cand1->next)
+    {
+      tree fn = cand1->fn;
+      /* Skip builtin candidates and conversion functions.  */
+      if (TREE_CODE (fn) != FUNCTION_DECL)
+	continue;
+      cand2 = &cand1->next;
+      while (*cand2)
+	{
+	  if (TREE_CODE ((*cand2)->fn) == FUNCTION_DECL
+	      && equal_functions (fn, (*cand2)->fn))
+	    *cand2 = (*cand2)->next;
+	  else
+	    cand2 = &(*cand2)->next;
+	}
+    }
+
+  str = "candidates are:";
   for (; candidates; candidates = candidates->next)
     {
       if (TREE_CODE (candidates->fn) == IDENTIFIER_NODE)
@@ -2487,6 +2538,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags)
   tree fromtype = TREE_TYPE (expr);
   tree ctors = NULL_TREE, convs = NULL_TREE;
   tree args = NULL_TREE;
+  bool any_viable_p;
 
   /* We represent conversion within a hierarchy using RVALUE_CONV and
      BASE_CONV, as specified by [over.best.ics]; these become plain
@@ -2602,12 +2654,11 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags)
 	}
     }
 
-  if (! any_viable (candidates))
+  candidates = splice_viable (candidates, pedantic, &any_viable_p);
+  if (!any_viable_p)
     return 0;
 
-  candidates = splice_viable (candidates);
   cand = tourney (candidates);
-
   if (cand == 0)
     {
       if (flags & LOOKUP_COMPLAIN)
@@ -2802,15 +2853,11 @@ perform_overload_resolution (tree fn,
 		  LOOKUP_NORMAL,
 		  candidates);
 
-  if (! any_viable (*candidates))
-    {
-      *any_viable_p = false;
-      return NULL;
-    }
+  *candidates = splice_viable (*candidates, pedantic, any_viable_p);
+  if (!*any_viable_p)
+    return NULL;
 
-  *candidates = splice_viable (*candidates);
   cand = tourney (*candidates);
-
   return cand;
 }
 
@@ -2840,7 +2887,7 @@ build_new_function_call (tree fn, tree args)
 	       DECL_NAME (OVL_CURRENT (fn)), args);
       else
 	error ("call of overloaded `%D(%A)' is ambiguous",
-	       DECL_NAME (OVL_FUNCTION (fn)), args);
+	       DECL_NAME (OVL_CURRENT (fn)), args);
       if (candidates)
 	print_z_candidates (candidates);
       return error_mark_node;
@@ -2884,7 +2931,7 @@ build_operator_new_call (tree fnname, tree args, tree *size, tree *cookie_size)
 	       DECL_NAME (OVL_CURRENT (fns)), args);
       else
 	error ("call of overlopaded `%D(%A)' is ambiguous",
-	       DECL_NAME (OVL_FUNCTION (fns)), args);
+	       DECL_NAME (OVL_CURRENT (fns)), args);
       if (candidates)
 	print_z_candidates (candidates);
       return error_mark_node;
@@ -2943,6 +2990,7 @@ build_object_call (tree obj, tree args)
   struct z_candidate *candidates = 0, *cand;
   tree fns, convs, mem_args = NULL_TREE;
   tree type = TREE_TYPE (obj);
+  bool any_viable_p;
 
   if (TYPE_PTRMEMFUNC_P (type))
     {
@@ -3011,16 +3059,15 @@ build_object_call (tree obj, tree args)
 	  }
     }
 
-  if (! any_viable (candidates))
+  candidates = splice_viable (candidates, pedantic, &any_viable_p);
+  if (!any_viable_p)
     {
       error ("no match for call to `(%T) (%A)'", TREE_TYPE (obj), args);
       print_z_candidates (candidates);
       return error_mark_node;
     }
 
-  candidates = splice_viable (candidates);
   cand = tourney (candidates);
-
   if (cand == 0)
     {
       error ("call of `(%T) (%A)' is ambiguous", TREE_TYPE (obj), args);
@@ -3302,6 +3349,7 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3)
     {
       tree args[3];
       tree conv;
+      bool any_viable_p;
 
       /* Rearrange the arguments so that add_builtin_candidate only has
 	 to know about two args.  In build_builtin_candidates, the
@@ -3320,13 +3368,13 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3)
 
 	 If the overload resolution fails, the program is
 	 ill-formed.  */
-      if (!any_viable (candidates))
+      candidates = splice_viable (candidates, pedantic, &any_viable_p);
+      if (!any_viable_p)
 	{
 	  op_error (COND_EXPR, NOP_EXPR, arg1, arg2, arg3, "no match");
 	  print_z_candidates (candidates);
 	  return error_mark_node;
 	}
-      candidates = splice_viable (candidates);
       cand = tourney (candidates);
       if (!cand)
 	{
@@ -3565,7 +3613,8 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3)
   tree args[3];
   enum tree_code code2 = NOP_EXPR;
   tree conv;
-  bool viable_candidates;
+  bool strict_p;
+  bool any_viable_p;
 
   if (error_operand_p (arg1) 
       || error_operand_p (arg2) 
@@ -3675,15 +3724,16 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3)
 	 operators.  The built-in candidate set for COMPONENT_REF
 	 would be empty too, but since there are no such built-in
 	 operators, we accept non-strict matches for them.  */
-      viable_candidates = any_strictly_viable (candidates);
+      strict_p = true;
       break;
 
     default:
-      viable_candidates = any_viable (candidates);
+      strict_p = pedantic;
       break;
     }      
 
-  if (! viable_candidates)
+  candidates = splice_viable (candidates, strict_p, &any_viable_p);
+  if (!any_viable_p)
     {
       switch (code)
 	{
@@ -3717,9 +3767,8 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3)
 	}
       return error_mark_node;
     }
-  candidates = splice_viable (candidates);
-  cand = tourney (candidates);
 
+  cand = tourney (candidates);
   if (cand == 0)
     {
       if (flags & LOOKUP_COMPLAIN)
@@ -4885,6 +4934,7 @@ build_new_method_call (tree instance, tree fns, tree args,
   tree fn;
   tree class_type;
   int template_only = 0;
+  bool any_viable_p;
 
   my_friendly_assert (instance != NULL_TREE, 20020729);
 
@@ -5001,7 +5051,8 @@ build_new_method_call (tree instance, tree fns, tree args,
 				flags);
     }
 
-  if (! any_viable (candidates))
+  candidates = splice_viable (candidates, pedantic, &any_viable_p);
+  if (!any_viable_p)
     {
       /* XXX will LOOKUP_SPECULATIVELY be needed when this is done?  */
       if (flags & LOOKUP_SPECULATIVELY)
@@ -5023,9 +5074,8 @@ build_new_method_call (tree instance, tree fns, tree args,
       print_z_candidates (candidates);
       return error_mark_node;
     }
-  candidates = splice_viable (candidates);
-  cand = tourney (candidates);
 
+  cand = tourney (candidates);
   if (cand == 0)
     {
       char *pretty_name;
@@ -5555,19 +5605,6 @@ add_warning (struct z_candidate *winner, struct z_candidate *loser)
 				winner->warnings);
 }
 
-/* Returns true iff functions are equivalent. Equivalent functions are
-   not '==' only if one is a function-local extern function or if
-   both are extern "C".  */
-
-static inline int
-equal_functions (tree fn1, tree fn2)
-{
-  if (DECL_LOCAL_FUNCTION_P (fn1) || DECL_LOCAL_FUNCTION_P (fn2)
-      || DECL_EXTERN_C_FUNCTION_P (fn1))
-    return decls_match (fn1, fn2);
-  return fn1 == fn2;
-}
-
 /* Compare two candidates for overloading as described in
    [over.match.best].  Return values:
 
@@ -5748,7 +5785,6 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn)
          TREE_VEC_LENGTH (cand1->convs)
 	 - (DECL_NONSTATIC_MEMBER_FUNCTION_P (cand1->fn)
 	    - DECL_CONSTRUCTOR_P (cand1->fn)));
-      /* HERE */
       if (winner)
         return winner;
     }
@@ -5805,7 +5841,7 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn)
   if (DECL_P (cand1->fn) && DECL_P (cand2->fn)
       && equal_functions (cand1->fn, cand2->fn))
     return 1;
-
+ 
 tweak:
 
   /* Extension: If the worst conversion for one candidate is worse than the
