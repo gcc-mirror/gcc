@@ -1109,37 +1109,40 @@ build_indirect_ref (ptr, errorstring)
   register tree type = TREE_TYPE (pointer);
 
   if (TREE_CODE (type) == POINTER_TYPE)
-    if (TREE_CODE (pointer) == ADDR_EXPR
-	&& (TREE_TYPE (TREE_OPERAND (pointer, 0))
-	    == TREE_TYPE (type)))
-      return TREE_OPERAND (pointer, 0);
-    else
-      {
-	tree t = TREE_TYPE (type);
-	register tree ref = build1 (INDIRECT_REF,
-				    TYPE_MAIN_VARIANT (t), pointer);
+    {
+      if (TREE_CODE (pointer) == ADDR_EXPR
+	  && !flag_volatile
+	  && (TREE_TYPE (TREE_OPERAND (pointer, 0))
+	      == TREE_TYPE (type)))
+	return TREE_OPERAND (pointer, 0);
+      else
+	{
+	  tree t = TREE_TYPE (type);
+	  register tree ref = build1 (INDIRECT_REF,
+				      TYPE_MAIN_VARIANT (t), pointer);
 
-	if (TYPE_SIZE (t) == 0 && TREE_CODE (t) != ARRAY_TYPE)
-	  {
-	    error ("dereferencing pointer to incomplete type");
-	    return error_mark_node;
-	  }
-	if (TREE_CODE (t) == VOID_TYPE)
-	  warning ("dereferencing `void *' pointer");
+	  if (TYPE_SIZE (t) == 0 && TREE_CODE (t) != ARRAY_TYPE)
+	    {
+	      error ("dereferencing pointer to incomplete type");
+	      return error_mark_node;
+	    }
+	  if (TREE_CODE (t) == VOID_TYPE)
+	    warning ("dereferencing `void *' pointer");
 
-	/* We *must* set TREE_READONLY when dereferencing a pointer to const,
-	   so that we get the proper error message if the result is used
-	   to assign to.  Also, &* is supposed to be a no-op.
-	   And ANSI C seems to specify that the type of the result
-	   should be the const type.  */
-	/* A de-reference of a pointer to const is not a const.  It is valid
-	   to change it via some other pointer.  */
-	TREE_READONLY (ref) = TYPE_READONLY (t);
-	TREE_SIDE_EFFECTS (ref)
-	  = TYPE_VOLATILE (t) || TREE_SIDE_EFFECTS (pointer) || flag_volatile;
-	TREE_THIS_VOLATILE (ref) = TYPE_VOLATILE (t) || flag_volatile;
-	return ref;
-      }
+	  /* We *must* set TREE_READONLY when dereferencing a pointer to const,
+	     so that we get the proper error message if the result is used
+	     to assign to.  Also, &* is supposed to be a no-op.
+	     And ANSI C seems to specify that the type of the result
+	     should be the const type.  */
+	  /* A de-reference of a pointer to const is not a const.  It is valid
+	     to change it via some other pointer.  */
+	  TREE_READONLY (ref) = TYPE_READONLY (t);
+	  TREE_SIDE_EFFECTS (ref)
+	    = TYPE_VOLATILE (t) || TREE_SIDE_EFFECTS (pointer) || flag_volatile;
+	  TREE_THIS_VOLATILE (ref) = TYPE_VOLATILE (t) || flag_volatile;
+	  return ref;
+	}
+    }
   else if (TREE_CODE (pointer) != ERROR_MARK)
     error ("invalid type argument of `%s'", errorstring);
   return error_mark_node;
