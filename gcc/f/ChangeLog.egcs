@@ -1,3 +1,8 @@
+Thu Oct 16 02:04:08 1997  Paul Koning <pkoning@xedia.com>
+
+	* Make-lang.in (stmp-f2c.h): Don't configure the runtime
+	directory if LANGUAGES does not include f77.
+
 Mon Oct 13 12:12:41 1997  Richard Henderson  <rth@cygnus.com>
 
 	* Make-lang.in (g77*): Copied from cp/Make-lang.in g++*.
