@@ -1,3 +1,14 @@
+2004-03-11  Guilhem Lavaux  <guilhem@kaffe.org>
+
+	* java/io/BufferedInputStream.java (marktarget): New field for max
+	mark limit.
+	(CHUNKSIZE): New constant for incremental mark buffer allocation.
+	(mark): Use new fields.
+	(read): Likewise.
+	(read(byte[],int,int)): Likewise.
+	(skip): Likewise.
+	(refill): Likewise.
+
 2004-03-11  Mark Wielaard  <mark@klomp.org>
 
 	* java/beans/BeanDescriptor.java (BeanDescriptor):
