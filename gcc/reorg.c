@@ -570,6 +570,7 @@ delete_from_delay_slot (rtx insn)
   rtx trial, seq_insn, seq, prev;
   rtx delay_list = 0;
   int i;
+  int had_barrier = 0;
 
   /* We first must find the insn containing the SEQUENCE with INSN in its
      delay slot.  Do this by finding an insn, TRIAL, where
@@ -582,6 +583,9 @@ delete_from_delay_slot (rtx insn)
 
   seq_insn = PREV_INSN (NEXT_INSN (trial));
   seq = PATTERN (seq_insn);
+
+  if (NEXT_INSN (seq_insn) && GET_CODE (NEXT_INSN (seq_insn)) == BARRIER)
+    had_barrier = 1;
 
   /* Create a delay list consisting of all the insns other than the one
      we are deleting (unless we were the only one).  */
@@ -597,8 +601,8 @@ delete_from_delay_slot (rtx insn)
   delete_related_insns (seq_insn);
   add_insn_after (trial, prev);
 
-  if (GET_CODE (trial) == JUMP_INSN
-      && (simplejump_p (trial) || GET_CODE (PATTERN (trial)) == RETURN))
+  /* If there was a barrier after the old SEQUENCE, remit it.  */
+  if (had_barrier)
     emit_barrier_after (trial);
 
   /* If there are any delay insns, remit them.  Otherwise clear the
