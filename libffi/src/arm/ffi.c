@@ -108,6 +108,11 @@ void ffi_prep_args(char *stack, extended_cif *ecif)
 /* Perform machine dependent cif processing */
 ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
 {
+  /* Round the stack up to a multiple of 8 bytes.  This isn't needed 
+     everywhere, but it is on some platforms, and it doesn't harm anything
+     when it isn't needed.  */
+  cif->bytes = (cif->bytes + 7) & ~7;
+
   /* Set the return type flag */
   switch (cif->rtype->type)
     {
@@ -116,6 +121,11 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
     case FFI_TYPE_FLOAT:
     case FFI_TYPE_DOUBLE:
       cif->flags = (unsigned) cif->rtype->type;
+      break;
+
+    case FFI_TYPE_SINT64:
+    case FFI_TYPE_UINT64:
+      cif->flags = (unsigned) FFI_TYPE_SINT64;
       break;
 
     default:
