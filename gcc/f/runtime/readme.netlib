@@ -521,9 +521,18 @@ with F8X_NML_ELIDE_QUOTES #defined.  wrtfmt.o: wrt_G: tweak to print
 the right number of 0's for zero under G format.
 
 Sat Aug 16 05:45:32 EDT 1997
-  libI77: iio.c: fix bug in internal writes to an array of character
+  libi77: iio.c: fix bug in internal writes to an array of character
 strings that sometimes caused one more array element than required by
 the format to be blank-filled.  Example: format(1x).
+
+Wed Sep 17 00:39:29 EDT 1997
+  libi77: fmt.[ch] rdfmt.c wrtfmt.c: tweak struct syl for machines
+with 64-bit pointers and 32-bit ints that did not 64-bit align
+struct syl (e.g., Linux on the DEC Alpha).  This change should be
+invisible on other machines.
+
+Sun Sep 21 22:05:19 EDT 1997
+  libf77: [de]time_.c (Unix systems only): change return type to double.
 
 Current timestamps of files in "all from f2c/src", sorted by time,
 appear below (mm/dd/year hh:mm:ss).  To bring your source up to date,

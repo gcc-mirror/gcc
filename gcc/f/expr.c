@@ -7504,15 +7504,17 @@ static ffelexHandler
 ffeexpr_cb_comma_c_ (ffelexToken ft, ffebld expr, ffelexToken t)
 {
   ffeexprExpr_ e;
-  ffeinfoBasictype lty = ffeinfo_basictype (ffebld_info (ffeexpr_stack_->expr));
-  ffeinfoBasictype rty = ffeinfo_basictype (ffebld_info (expr));
+  ffeinfoBasictype lty = (ffeexpr_stack_->expr == NULL)
+    ? FFEINFO_basictypeNONE : ffeinfo_basictype (ffebld_info (ffeexpr_stack_->expr));
+  ffeinfoBasictype rty = (expr == NULL)
+    ? FFEINFO_basictypeNONE : ffeinfo_basictype (ffebld_info (expr));
   ffeinfoKindtype lkt;
   ffeinfoKindtype rkt;
   ffeinfoKindtype nkt;
   bool ok = TRUE;
   ffebld orig;
 
-  if ((expr == NULL)
+  if ((ffeexpr_stack_->expr == NULL)
       || (ffebld_op (ffeexpr_stack_->expr) != FFEBLD_opCONTER)
       || (((orig = ffebld_conter_orig (ffeexpr_stack_->expr)) != NULL)
 	  && (((ffebld_op (orig) != FFEBLD_opUMINUS)
@@ -10589,7 +10591,7 @@ ffeexpr_reduced_eqop2_ (ffebld reduced, ffeexprExpr_ l, ffeexprExpr_ op,
       && (lbt != FFEINFO_basictypeCOMPLEX) && (lbt != FFEINFO_basictypeCHARACTER))
     {
       if ((rbt != FFEINFO_basictypeINTEGER) && (rbt != FFEINFO_basictypeREAL)
-	  && (rbt != FFEINFO_basictypeCOMPLEX) && (lbt != FFEINFO_basictypeCHARACTER))
+	  && (rbt != FFEINFO_basictypeCOMPLEX) && (rbt != FFEINFO_basictypeCHARACTER))
 	{
 	  if ((lbt != FFEINFO_basictypeANY) && (rbt != FFEINFO_basictypeANY)
 	      && ffebad_start (FFEBAD_EQOP_ARGS_TYPE))
@@ -11206,7 +11208,7 @@ ffeexpr_reduced_relop2_ (ffebld reduced, ffeexprExpr_ l, ffeexprExpr_ op,
       && (lbt != FFEINFO_basictypeCHARACTER))
     {
       if ((rbt != FFEINFO_basictypeINTEGER) && (rbt != FFEINFO_basictypeREAL)
-	  && (lbt != FFEINFO_basictypeCHARACTER))
+	  && (rbt != FFEINFO_basictypeCHARACTER))
 	{
 	  if ((lbt != FFEINFO_basictypeANY) && (rbt != FFEINFO_basictypeANY)
 	      && ffebad_start (FFEBAD_RELOP_ARGS_TYPE))

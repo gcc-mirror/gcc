@@ -1,4 +1,4 @@
-static char junk[] = "\n@(#)LIBF77 VERSION 19970404\n";
+static char junk[] = "\n@(#)LIBF77 VERSION 19970919\n";
 
 /*
 */
@@ -53,6 +53,8 @@ char __G77_LIBF77_VERSION__[] = "0.5.21";
 			benefit of g77.)
 	4 April 1997: [cz]_div.c: tweaks invisible on most systems (that may
 			affect systems using gratuitous extra precision).
+	19 Sept. 1997: [de]time_.c (Unix systems only): change return
+			type to double.
 */
 
 #include <stdio.h>

@@ -1,9 +1,9 @@
-static char junk[] = "\n@(#) LIBI77 VERSION pjw,dmg-mods 19970816\n";
+static char junk[] = "\n@(#) LIBI77 VERSION pjw,dmg-mods 19970916\n";
 
 /*
 */
 
-char __G77_LIBI77_VERSION__[] = "0.5.21";
+char __G77_LIBI77_VERSION__[] = "0.5.22-19970930";
 
 /*
 2.01	$ format added
@@ -264,6 +264,14 @@ wrtfmt.c:
 		 strings that sometimes caused one more array element than
 		 required by the format to be blank-filled.  Example:
 		 format(1x). */
+/* 16 Sept. 1997:fmt.[ch] rdfmt.c wrtfmt.c: tweak struct syl for machines
+		 with 64-bit pointers and 32-bit ints that did not 64-bit
+		 align struct syl (e.g., Linux on the DEC Alpha). */
+
+
+
+/* Changes for GNU Fortran (g77) version of libf2c:  */
+
 /* 17 June 1997: detect recursive I/O and call f__fatal explaining it. */
 
 #include <stdio.h>
