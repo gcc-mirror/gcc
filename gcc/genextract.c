@@ -381,8 +381,7 @@ from the machine description file `md'.  */\n\n");
      of any missing operand whose numbers are skipped by a given pattern.  */
   printf ("static rtx junk ATTRIBUTE_UNUSED;\n");
 
-  printf ("void\ninsn_extract (insn)\n");
-  printf ("     rtx insn;\n");
+  printf ("void\ninsn_extract (rtx insn)\n");
   printf ("{\n");
   printf ("  rtx *ro = recog_data.operand;\n");
   printf ("  rtx **ro_loc = recog_data.operand_loc;\n");

@@ -259,15 +259,12 @@ gendef (const char *format)
   /* Start by writing the definition of the function name and the types
      of the arguments.  */
 
-  printf ("rtx\ngen_rtx_fmt_%s (code, mode", format);
+  printf ("rtx\ngen_rtx_fmt_%s (RTX_CODE code, enum machine_mode mode", format);
   for (p = format, i = 0; *p != 0; p++)
     if (*p != '0')
-      printf (", arg%d", i++);
+      printf (",\n\t%sarg%d", type_from_format (*p), i++);
 
-  puts (")\n     RTX_CODE code;\n     enum machine_mode mode;");
-  for (p = format, i = 0; *p != 0; p++)
-    if (*p != '0')
-      printf ("     %sarg%d;\n", type_from_format (*p), i++);
+  puts (")");
 
   /* Now write out the body of the function itself, which allocates
      the memory and initializes it.  */

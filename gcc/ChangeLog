@@ -1,3 +1,18 @@
+2003-07-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* genattr.c (internal_dfa_insn_code): Output prototype.
+	* genattrtab.c: Don't output unnecessary decls, output in ISO C.
+	* genautomata.c: Likewise.
+	* genconditions.c: Likewise.
+	* genemit.c: Likewise.
+	* genextract.c: Likewise.
+	* gengenrtl.c: Likewise.
+	* gengtype.c: Likewise.
+	* genopinit.c: Likewise.
+	* genoutput.c: Likewise.
+	* genpeep.c: Likewise.
+	* genrecog.c: Likewise.
+
 2003-07-04  Zack Weinberg  <zack@codesourcery.com>
 
 	* cpplib.h (CPP_AT_NAME, CPP_OBJC_STRING): New token types.

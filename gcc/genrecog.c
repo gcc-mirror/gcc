@@ -2272,28 +2272,18 @@ write_subroutine (struct decision_head *head, enum routine_type type)
   switch (type)
     {
     case RECOG:
-      printf ("%sint recog%s (rtx, rtx, int *);\n", s_or_e, extension);
       printf ("%sint\n\
-recog%s (x0, insn, pnum_clobbers)\n\
-     rtx x0 ATTRIBUTE_UNUSED;\n\
-     rtx insn ATTRIBUTE_UNUSED;\n\
-     int *pnum_clobbers ATTRIBUTE_UNUSED;\n", s_or_e, extension);
+recog%s (rtx x0 ATTRIBUTE_UNUSED,\n\trtx insn ATTRIBUTE_UNUSED,\n\tint *pnum_clobbers ATTRIBUTE_UNUSED)\n", s_or_e, extension);
       break;
     case SPLIT:
-      printf ("%srtx split%s (rtx, rtx);\n", s_or_e, extension);
       printf ("%srtx\n\
-split%s (x0, insn)\n\
-     rtx x0 ATTRIBUTE_UNUSED;\n\
-     rtx insn ATTRIBUTE_UNUSED;\n", s_or_e, extension);
+split%s (rtx x0 ATTRIBUTE_UNUSED, rtx insn ATTRIBUTE_UNUSED)\n",
+	      s_or_e, extension);
       break;
     case PEEPHOLE2:
-      printf ("%srtx peephole2%s (rtx, rtx, int *);\n",
-	      s_or_e, extension);
       printf ("%srtx\n\
-peephole2%s (x0, insn, _pmatch_len)\n\
-     rtx x0 ATTRIBUTE_UNUSED;\n\
-     rtx insn ATTRIBUTE_UNUSED;\n\
-     int *_pmatch_len ATTRIBUTE_UNUSED;\n", s_or_e, extension);
+peephole2%s (rtx x0 ATTRIBUTE_UNUSED,\n\trtx insn ATTRIBUTE_UNUSED,\n\tint *_pmatch_len ATTRIBUTE_UNUSED)\n",
+	      s_or_e, extension);
       break;
     }
 
