@@ -1385,6 +1385,7 @@ duplicate_decls (tree newdecl, tree olddecl, int different_binding_level,
       if (! DECL_EXTERNAL (newdecl))
 	{
 	  DECL_CONTEXT (newdecl) = DECL_CONTEXT (olddecl);
+	  DECL_COMMON (newdecl) = DECL_COMMON (olddecl);
 	  /* If we have two non-EXTERNAL file-scope decls that are
 	     the same, only one of them should be written out.  */
 	  if (different_tu)
