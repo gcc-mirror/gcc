@@ -1799,7 +1799,7 @@ all_iter_stmt_simple:
 	    $<itype>$ = 0;
 	    if (TREE_CODE ($3) != VAR_DECL)
 	      error ("invalid `for (ITERATOR)' syntax");
-	    if (! ITERATOR_P ($3))
+	    else if (! ITERATOR_P ($3))
 	      error ("`%s' is not an iterator",
 		     IDENTIFIER_POINTER (DECL_NAME ($3)));
 	    else if (ITERATOR_BOUND_P ($3))
