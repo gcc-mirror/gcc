@@ -1782,6 +1782,7 @@ ix86_expand_prologue ()
       emit_insn (gen_prologue_set_got (xops[0], 
 		 gen_rtx (SYMBOL_REF, Pmode, "$_GLOBAL_OFFSET_TABLE_"), 
 		 gen_rtx (CONST_INT, Pmode, CODE_LABEL_NUMBER(xops[1]))));
+      SCHED_GROUP_P (get_last_insn()) = 1;
 /*      output_asm_insn ("addl $_GLOBAL_OFFSET_TABLE_,%0", xops);*/
     }
   else if (pic_reg_used)
@@ -1798,6 +1799,7 @@ ix86_expand_prologue ()
       emit_insn (gen_prologue_set_got (xops[0], 
 		 gen_rtx (SYMBOL_REF, Pmode, "$_GLOBAL_OFFSET_TABLE_"), 
 		 gen_rtx (CONST_INT, Pmode, CODE_LABEL_NUMBER (xops[1]))));
+    SCHED_GROUP_P (get_last_insn()) = 1;
 /*      output_asm_insn ("addl $_GLOBAL_OFFSET_TABLE_+[.-%P1],%0", xops);*/
   } 
 }
@@ -2681,6 +2683,8 @@ put_condition_code (code, file)
    w -- print the operand as if it's a "word" (HImode) even if it isn't.
    c -- don't print special prefixes before constant operands.
    J -- print the appropriate jump operand.
+   s -- print a shift double count, followed by the assemblers argument
+	delimiter.
 */
 
 void
@@ -2796,6 +2800,14 @@ print_operand (file, x, code)
 	    /* no matching branches for GT nor LE */
 	    }
 	  abort ();
+
+	case 's':
+	  if (GET_CODE (x) == CONST_INT || ! SHIFT_DOUBLE_OMITS_COUNT)
+	    {
+	      PRINT_OPERAND (file, x, 0);
+	      fputs (AS2C (,) + 1, file);
+	    }
+	  return;
 
 	  /* This is used by the conditional move instructions.  */
 	case 'C':
