@@ -120,6 +120,7 @@ required_stdlib_h="abort abs atexit atof atoi atol bsearch calloc exit free gete
 required_unistd_h="_exit access alarm chdir chown close ctermid cuserid dup dup2 execl execle execlp execv execve execvp fork fpathconf getcwd getegid geteuid getgid getlogin getopt getpgrp getpid getppid getuid isatty link lseek pathconf pause pipe read rmdir setgid setpgid setsid setuid sleep sysconf tcgetpgrp tcsetpgrp ttyname unlink write"
 
 done_dirs=""
+subdirs_made=""
 echo "" >fixproto.list
 
 for code in ALL STD ; do
@@ -174,7 +175,9 @@ for code in ALL STD ; do
 
       abs_target_subdir=${abs_target_dir}/${rel_source_subdir}
       if [ \! -d $abs_target_subdir ] ; then
-        mkdir $abs_target_subdir
+	if mkdir $abs_target_subdir ; then
+	  subdirs_made="$abs_target_subdir $subdirs_made"
+	fi
       fi
       # Append "/"; remove initial "./". Hence "." -> "" and "sys" -> "sys/".
       rel_source_prefix=`echo $rel_source_subdir | sed -e 's|$|/|' -e 's|^./||'`
@@ -199,7 +202,9 @@ for code in ALL STD ; do
 	      # Create the dir where this file will go when fixed.
 	      xxdir=`echo ./$file | sed -e 's|/[^/]*$||'`
 	      if [ \! -d $abs_target_subdir/$xxdir ] ; then
-		mkdir $abs_target_subdir/$xxdir
+		if mkdir $abs_target_subdir/$xxdir ; then
+		  subdirs_made="$abs_target_subdir/$xxdir $subdirs_made"
+		fi
 	      fi
 	      # Just in case we have edited out a symbolic link
 	      if [ -f $src_dir_std/$file -a -f $src_dir_std/$xxfile ] ; then
@@ -270,4 +275,8 @@ EOF
     rm tmp.h
   fi
 done
+
+# Remove any directories that we made that are still empty.
+rmdir $subdirs_made 2>/dev/null
+
 exit 0
