@@ -1,3 +1,7 @@
+2002-03-08  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/sysv4.h (BIGGEST_ALIGNMENT): Change for altivec.
+
 Fri Mar  8 21:27:49 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* cfgrtl.c (purge_dead_edges): Set BB_DRITY flags if edge has been
