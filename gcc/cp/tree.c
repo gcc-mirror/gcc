@@ -406,15 +406,6 @@ break_out_calls (exp)
       return exp;
 
     case 'd':  /* A decl node */
-#if 0                               /* This is bogus.  jason 9/21/94 */
-
-      t1 = break_out_calls (DECL_INITIAL (exp));
-      if (t1 != DECL_INITIAL (exp))
-	{
-	  exp = copy_node (exp);
-	  DECL_INITIAL (exp) = t1;
-	}
-#endif
       return exp;
 
     case 'b':  /* A block node */
