@@ -291,13 +291,11 @@ report_symbol_info(const symbol_info& symbol, std::size_t n, bool ret = true)
 {
   using namespace std;
   const char tab = '\t';
-  cout << tab << n << endl;
-  cout << tab << "symbol"<< endl;
-  cout << tab << symbol.name << endl;
 
   // Add any other information to display here.
-  cout << tab << "demangled symbol"<< endl;
   cout << tab << symbol.demangled_name << endl;
+  cout << tab << symbol.name << endl;
+  cout << tab << symbol.version_name << endl;
 
   if (ret)
     cout << endl;
