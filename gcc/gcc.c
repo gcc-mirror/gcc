@@ -235,14 +235,14 @@ static int used_arg		PROTO((char *, int));
 static int default_arg		PROTO((char *, int));
 static void set_multilib_dir	PROTO((void));
 static void print_multilib_info	PROTO((void));
-static void pfatal_with_name	PROTO((char *));
+static void pfatal_with_name	PROTO((char *)) ATTRIBUTE_NORETURN;
 static void perror_with_name	PROTO((char *));
-static void pfatal_pexecute	PROTO((char *, char *));
-static void fatal		PVPROTO((char *, ...));
+static void pfatal_pexecute	PROTO((char *, char *)) ATTRIBUTE_NORETURN;
+static void fatal		PVPROTO((char *, ...)) ATTRIBUTE_NORETURN;
 static void error		PVPROTO((char *, ...));
 static void display_help 	PROTO((void));
 
-void fancy_abort ();
+void fancy_abort		PROTO((void)) ATTRIBUTE_NORETURN;
 char *xmalloc ();
 char *xrealloc ();
 

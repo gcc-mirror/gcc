@@ -195,7 +195,7 @@ char *reg_note_name[] = { "", "REG_DEAD", "REG_INC", "REG_EQUIV", "REG_WAS_0",
 			  "REG_BR_PRED", "REG_EH_CONTEXT",
 			  "REG_FRAME_RELATED_EXPR" };
 
-static void dump_and_abort	PROTO((int, int, FILE *));
+static void dump_and_abort	PROTO((int, int, FILE *)) ATTRIBUTE_NORETURN;
 static void read_name		PROTO((char *, FILE *));
 
 /* Allocate an rtx vector of N elements.

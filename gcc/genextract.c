@@ -100,10 +100,11 @@ static void walk_rtx PROTO ((rtx, char *));
 static void print_path PROTO ((char *));
 char *xmalloc PROTO ((unsigned));
 char *xrealloc PROTO ((char *, unsigned));
-static void fatal PVPROTO ((char *, ...)) ATTRIBUTE_PRINTF_1;
+static void fatal PVPROTO ((char *, ...))
+  ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 static char *copystr PROTO ((char *));
 static void mybzero ();
-void fancy_abort PROTO ((void));
+void fancy_abort PROTO ((void)) ATTRIBUTE_NORETURN;
 
 static void
 gen_insn (insn)

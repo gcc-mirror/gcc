@@ -284,7 +284,8 @@ static void dump_interface			PROTO((FILE *, tree));
 
 /* Everything else.  */
 
-static void objc_fatal				PROTO((void));
+static void objc_fatal				PROTO((void))
+  ATTRIBUTE_NORETURN;
 static tree define_decl				PROTO((tree, tree));
 static tree lookup_method_in_protocol_list	PROTO((tree, tree, int));
 static tree lookup_protocol_in_reflist		PROTO((tree, tree));

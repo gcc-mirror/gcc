@@ -94,7 +94,7 @@ extern void
 collect_execute PARAMS ((char *, char **, char *));
 
 extern void
-collect_exit PARAMS ((int));
+collect_exit PARAMS ((int)) ATTRIBUTE_NORETURN;
 
 extern int
 collect_wait PARAMS ((char *));

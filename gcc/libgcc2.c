@@ -1403,6 +1403,9 @@ __builtin_saveregs ()
 #undef NULL /* Avoid errors if stdio.h and our stddef.h mismatch.  */
 #include <stdio.h>
 /* This is used by the `assert' macro.  */
+extern void __eprintf (const char *, const char *, unsigned int, const char *)
+  __attribute__ ((__noreturn__));
+
 void
 __eprintf (const char *string, const char *expression,
 	   unsigned int line, const char *filename)
@@ -3023,6 +3026,8 @@ int atexit (func_ptr func)
 
 /* Shared exception handling support routines.  */
 
+extern void __default_terminate (void) __attribute__ ((__noreturn__));
+
 void
 __default_terminate ()
 {
@@ -3226,6 +3231,8 @@ __get_dynamic_handler_chain ()
    dynamic handler chain, and use longjmp to transfer back to the associated
    handler.  */
 
+extern void __sjthrow (void) __attribute__ ((__noreturn__));
+
 void
 __sjthrow ()
 {
@@ -3301,6 +3308,8 @@ __sjthrow ()
    handler, then pop the handler off the dynamic handler stack, and
    then throw.  This is used to skip the first handler, and transfer
    control to the next handler in the dynamic handler stack.  */
+
+extern void __sjpopnthrow (void) __attribute__ ((__noreturn__));
 
 void
 __sjpopnthrow ()
@@ -3627,6 +3636,8 @@ next_stack_level (void *pc, frame_state *udata, frame_state *caller_udata)
 
    If we find one, then we unwind the frames down to the one that
    has the handler and transfer control into the handler.  */
+
+extern void __throw(void) __attribute__ ((__noreturn__));
 
 void
 __throw ()

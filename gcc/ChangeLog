@@ -1,3 +1,53 @@
+Wed Oct 14 13:26:05 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cppalloc.c (memory_full): Mark function prototype with
+	ATTRIBUTE_NORETURN.
+
+	* demangle.h (collect_exit): Likewise.
+
+	* fix-header.c (v_fatal, fatal): Likewise.
+
+	* gcc.c (pfatal_with_name, pfatal_pexecute, fatal, fancy_abort):
+	Likewise.
+
+	* gcov.c (print_usage): Likewise.
+
+	* genattr.c (fatal, fancy_abort): Likewise.
+
+	* genattrtab.c (fatal, fancy_abort): Likewise.
+
+	* gencodes.c (fatal, fancy_abort): Likewise.
+
+	* genconfig.c (fatal, fancy_abort): Likewise.
+
+	* genemit.c (fatal, fancy_abort): Likewise.
+
+	* genextract.c (fatal, fancy_abort): Likewise.
+
+	* genflags.c (fatal, fancy_abort): Likewise.
+
+	* genopinit.c (fatal, fancy_abort): Likewise.
+
+	* genoutput.c (fatal, fancy_abort): Likewise.
+
+	* genpeep.c (fatal, fancy_abort): Likewise.
+
+	* genrecog.c (fatal, fancy_abort): Likewise.
+
+	* libgcc2.c (__eprintf, __default_terminate, __sjthrow,
+	__sjpopnthrow, __throw): Likewise.
+
+	* objc/objc-act.c (objc_fatal): Likewise.
+
+	* protoize.c (usage, aux_info_corrupted,
+	declare_source_confusing): Likewise.
+
+	* rtl.c (dump_and_abort): Likewise.
+
+	* rtl.h (sets_cc0_p): Likewise.
+
+	* toplev.c (float_signal, pipe_closed): Likewise.
+	
 1998-10-14  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 
 	* dwarf2out.c (expand_builtin_dwarf_reg_size): Look at all ranges
