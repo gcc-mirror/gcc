@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.34 2000/10/06 23:31:22 bkoz Exp $
+## $Id: Makefile.am,v 1.35 2000/10/07 01:05:37 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -92,21 +92,16 @@ else
 CSHADOW_INCLUDES =
 endif
 
-CONFIG_INCLUDES = \
-	-I$(top_srcdir)/@cpu_include_dir@ \
-	-I$(top_srcdir)/@ctype_include_dir@
-
 INCLUDES = \
 	-D_GNU_SOURCE -D_ISOC99_SOURCE -nostdinc++ $(CSHADOW_INCLUDES) \
 	-I$(top_builddir) -I$(glibcpp_includedir) \
-	 $(CONFIG_INCLUDES) $(LIBIO_INCLUDES) $(LIBMATH_INCLUDES) \
+	 $(LIBIO_INCLUDES) $(LIBMATH_INCLUDES) \
 	 $(TOPLEVEL_INCLUDES)	
 
 
 headers = \
-	bits/cpp_type_traits.h \
-	bits/std_cctype.h bits/ctype_base.h bits/ctype_specializations.h \
-	bits/char_traits.h bits/codecvt.h \
+	bits/std_cctype.h \
+	bits/cpp_type_traits.h bits/char_traits.h bits/codecvt.h \
 	bits/basic_string.h bits/std_string.h  bits/string.tcc \
 	bits/generic_shadow.h bits/std_utility.h \
 	bits/std_complex.h \
@@ -196,13 +191,12 @@ else
 libio_headers =
 endif
 
-generated_headers = \
-	 $(top_builddir)/bits/std_limits.h $(top_builddir)/bits/c++config.h \
-	 $(top_builddir)/bits/c++io.h $(top_builddir)/bits/c++threads.h 
-
-cpu_headers = \
-	 $(top_srcdir)/@cpu_include_dir@/bits/atomicity.h 
-
+build_headers = \
+	$(top_builddir)/bits/std_limits.h $(top_builddir)/bits/c++config.h \
+	$(top_builddir)/bits/c++io.h $(top_builddir)/bits/c++threads.h \
+	$(top_builddir)/bits/atomicity.h $(top_builddir)/bits/ctype_base.h \
+	$(top_builddir)/bits/ctype_noninline.h \
+	$(top_builddir)/bits/ctype_inline.h 
 
 sources = \
 	limitsMEMBERS.cc \
@@ -218,7 +212,6 @@ wstring_sources = \
 
 VPATH += $(top_srcdir) $(top_srcdir)/src
 VPATH += $(glibcpp_includedir) $(top_srcdir)/std
-VPATH += $(top_srcdir)/@ctype_include_dir@
 
 
 # Actual sources for the distro, but don't build these.
@@ -271,7 +264,7 @@ myinstallheaders: $(headers:%=$(myincludep)%)
 	  echo "$(INSTALL_DATA) $(glibcpp_includedir)/std/$$i $(myincludep)"; \
 	        $(INSTALL_DATA) $(glibcpp_includedir)/std/$$i $(myincludep); \
 	done; \
-	for i in $(generated_headers); do \
+	for i in $(build_headers); do \
 	  echo "$(INSTALL_DATA) $$i $(myincludep)bits/"; \
 	        $(INSTALL_DATA) $$i $(myincludep)bits/; \
 	done; \
@@ -280,8 +273,6 @@ myinstallheaders: $(headers:%=$(myincludep)%)
           echo "$(INSTALL_DATA) $$i $(myincludep)"; \
                 $(INSTALL_DATA) $$i $(myincludep); \
 	done; \
-	echo "$(INSTALL_DATA) $(cpu_headers) $(myincludep)bits/"; \
-	$(INSTALL_DATA) $(cpu_headers) $(myincludep)bits/; \
 	fi;
 
 $(headers:%=$(myincludep)%): $(myincludep)%: %
@@ -293,9 +284,9 @@ $(headers:%=$(myincludep)%): $(myincludep)%: %
 
 # All the (now removed) machinations with string instantiations messes up the
 # automake-generated TAGS rule. Make a simple one here.
-TAGS: $(generated_headers) $(cpu_headers) 
+TAGS: $(build_headers) $(cpu_headers) 
 	etags -C $(top_srcdir)/bits/*.h $(top_srcdir)/bits/*.tcc \
-	$(generated_headers) $(cpu_headers) $(libio_headers) \
+	$(build_headers) $(libio_headers) \
 	$(top_srcdir)/src/*.cc \
 	$(top_builddir)/src/limitsMEMBERS.cc $(top_builddir)/src/c++io.cc \
 	-o $(top_builddir)/TAGS
@@ -319,6 +310,8 @@ wstring-inst.o: string-inst.cc
 wstring-inst.lo: string-inst.cc
 	$(LTCXXCOMPILE) -fimplicit-templates -c -DC=wchar_t $< -o $@
 
+
+# Alexandre put this in here for some libtool-related reason.
 all: libstdc++.INC
 libstdc++.INC: Makefile
 	$(MAKE) \
@@ -330,6 +323,15 @@ libstdc++.INC: Makefile
 
 tmp-libstdc++.INC: Makefile
 	echo -I$(top_builddir) $(INCLUDES) > $@
+
+
+
+
+
+
+
+
+
 
 
 

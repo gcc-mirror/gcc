@@ -67,7 +67,6 @@ AR = @AR@
 AS = @AS@
 CC = @CC@
 CPP = @CPP@
-CPU_FLAGS = @CPU_FLAGS@
 CSHADOWFLAGS = @CSHADOWFLAGS@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
@@ -94,17 +93,10 @@ RANLIB = @RANLIB@
 SECTION_FLAGS = @SECTION_FLAGS@
 SECTION_LDFLAGS = @SECTION_LDFLAGS@
 STRIP = @STRIP@
-THREADDEPS = @THREADDEPS@
-THREADINCS = @THREADINCS@
-THREADLIBS = @THREADLIBS@
-THREADOBJS = @THREADOBJS@
-THREADSPEC = @THREADSPEC@
 USE_COMPLEX_LONG_DOUBLE = @USE_COMPLEX_LONG_DOUBLE@
 VERSION = @VERSION@
 WERROR = @WERROR@
 WFMT_FLAGS = @WFMT_FLAGS@
-cpu_include_dir = @cpu_include_dir@
-ctype_include_dir = @ctype_include_dir@
 glibcpp_basedir = @glibcpp_basedir@
 ifGNUmake = @ifGNUmake@
 libinst_wstring_la = @libinst_wstring_la@
@@ -133,7 +125,7 @@ WARN_CXXFLAGS =  	-Wall -Wno-format -W -Wwrite-strings -Winline 	$(WERROR) @WFMT
 # These bits are all figured out from configure. Look in acinclude.m4
 # or configure.in to see how they are set.
 # NB: DEBUGFLAGS have to be at the end so that -O2 can be overridden.
-CONFIG_CXXFLAGS =  	@CPU_FLAGS@ @EXTRA_CXX_FLAGS@ 	@SECTION_FLAGS@ @CSHADOWFLAGS@ @DEBUG_FLAGS@ 
+CONFIG_CXXFLAGS =  	@EXTRA_CXX_FLAGS@ 	@SECTION_FLAGS@ @CSHADOWFLAGS@ @DEBUG_FLAGS@ 
 
 
 # Multilib support.

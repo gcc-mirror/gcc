@@ -684,18 +684,14 @@ AC_DEFUN(GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT, [
 ])
 
 
-dnl Check to see what architecture we are compiling for. If it's
-dnl supported, use special hand-crafted routines to provide thread
-dnl primitives. Also, if architecture-specific flags are required for 
-dnl compilation, add them here.
+dnl Check to see what architecture we are compiling for. Also, if 
+dnl architecture-specific flags are required for compilation, add them here.
 dnl 
-dnl Depending on what is found, select configure/cpu/*/bits/atomicity.h 
-dnl If not found, select configure/cpu/generic/bits/atomicity.h
-dnl
 dnl GLIBCPP_CHECK_CPU
 AC_DEFUN(GLIBCPP_CHECK_CPU, [
-    AC_MSG_CHECKING([for cpu primitives directory])
-    CPU_FLAGS=			
+    AC_MSG_CHECKING([for cpu config directory])
+# Currently unused, but could be useful.
+#    CPU_FLAGS=			
     case "${target_cpu}" in
       alpha*)
 	cpu_include_dir="config/cpu/alpha"
@@ -714,7 +710,6 @@ AC_DEFUN(GLIBCPP_CHECK_CPU, [
         ;;
       powerpc | rs6000)
 	cpu_include_dir="config/cpu/powerpc"
-    	CPU_FLAGS='-mcpu=powerpc'
         ;;
       sparc64 | ultrasparc)
 	cpu_include_dir="config/cpu/sparc/sparc64"
@@ -727,11 +722,47 @@ AC_DEFUN(GLIBCPP_CHECK_CPU, [
         ;;
     esac
     AC_MSG_RESULT($cpu_include_dir)
-    AC_SUBST(cpu_include_dir)
-    AC_SUBST(CPU_FLAGS)
 ])
 
  
+dnl Check to see what OS we are compiling for. Also, if os-specific flags 
+dnl are required for compilation, add them here.
+dnl 
+dnl GLIBCPP_CHECK_OS
+AC_DEFUN(GLIBCPP_CHECK_OS, [
+    AC_MSG_CHECKING([for os config directory])
+# Currently unused, but could be useful.
+#    OS_FLAGS=
+    case "${target_os}" in
+      aix*)
+	os_include_dir="config/os/aix"
+        ;;
+      bsd* | freebsd*)
+	os_include_dir="config/os/bsd"
+        ;;
+      linux*)
+	os_include_dir="config/os/gnu-linux"
+	;;
+      irix*)
+	os_include_dir="config/os/irix"
+	;;
+      solaris2.5*)
+	os_include_dir="config/os/solaris/solaris2.5"
+        ;;
+      solaris2.6*)
+	os_include_dir="config/os/solaris/solaris2.6"
+        ;;
+      solaris2.7* | solaris2.8*)
+	os_include_dir="config/os/solaris/solaris2.7"
+        ;;
+      *)
+	os_include_dir="config/os/generic"
+        ;;
+    esac
+    AC_MSG_RESULT($os_include_dir)
+])
+
+
 dnl
 dnl Check to see what the underlying c library's interface to ctype looks
 dnl like. Bits of locale rely on things like isspace, toupper, etc. This
@@ -758,7 +789,7 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
     ctype_linux=yes, ctype_linux=no)
     AC_MSG_RESULT($ctype_linux)
     if test $ctype_linux = "yes"; then
-      ctype_include_dir="config/gnu-linux"
+      ctype_include_dir="config/os/gnu-linux"
       ctype_default=no
     fi
 
@@ -773,7 +804,7 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
     ctype_bsd=yes, ctype_bsd=no)
     AC_MSG_RESULT($ctype_bsd)
     if test $ctype_bsd = "yes"; then
-      ctype_include_dir="config/bsd"
+      ctype_include_dir="config/os/bsd"
       ctype_default=no
     fi
     fi
@@ -789,7 +820,7 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
     ctype_freebsd34=yes, ctype_freebsd34=no)
     AC_MSG_RESULT($ctype_freebsd34)
     if test $ctype_freebsd34 = "yes"; then
-      ctype_include_dir="config/bsd"
+      ctype_include_dir="config/os/bsd"
       ctype_default=no
     fi
     fi
@@ -814,11 +845,11 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
       ctype_solaris26=yes, ctype_solaris26=no)
       AC_LANG_C
       if test $ctype_solaris26 = "yes"; then
-        ctype_include_dir="config/solaris/solaris2.6"
+        ctype_include_dir="config/os/solaris/solaris2.6"
         AC_MSG_RESULT([Solaris 2.6])
         ctype_default=no
       else
-        ctype_include_dir="config/solaris/solaris2.7"
+        ctype_include_dir="config/os/solaris/solaris2.7"
         AC_MSG_RESULT([Solaris 7,8])
         ctype_default=no
       fi
@@ -836,7 +867,7 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
     ctype_solaris25=yes, ctype_solaris25=no)
     AC_MSG_RESULT($ctype_solaris25)
     if test $ctype_solaris25 = "yes"; then
-      ctype_include_dir="config/solaris/solaris2.5"
+      ctype_include_dir="config/os/solaris/solaris2.5"
       ctype_default=no
     fi
     fi
@@ -853,7 +884,7 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
     ctype_aix=yes, ctype_aix=no)
     AC_MSG_RESULT($ctype_aix)
     if test $ctype_aix = "yes"; then
-      ctype_include_dir="config/aix"
+      ctype_include_dir="config/os/aix"
       ctype_default=no
     fi
     fi
@@ -875,10 +906,14 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
     fi
 
     if test $ctype_default = "yes"; then
-      ctype_include_dir="config/generic"
+      ctype_include_dir="config/os/generic"
       AC_MSG_WARN("Using default ctype headers.")
     fi
-    AC_SUBST(ctype_include_dir)
+
+    AC_LINK_FILES($ctype_include_dir/bits/ctype_base.h, bits/ctype_base.h)
+    AC_LINK_FILES($ctype_include_dir/bits/ctype_inline.h, bits/ctype_inline.h)
+    AC_LINK_FILES($ctype_include_dir/bits/ctype_noninline.h, \
+    bits/ctype_noninline.h)
   ])
 ])
 
@@ -1321,16 +1356,13 @@ AC_DEFUN(GLIBCPP_ENABLE_THREADS, [
   esac
 
   dnl Check for thread package actually supported in libstdc++ 
+  THREADH=
   case "$target_thread_file" in
     no | none | single)
-      THREADS=none
+      THREADH=threads-no.h
       ;;
     posix | pthreads)
-      THREADS=posix
-      case "$target" in
-        *-*-linux*)
-	;;
-      esac
+      THREADH=threads-posix.h
       ;;
     decosf1 | irix | mach | os2 | solaris | win32 | dce | vxworks)
       AC_MSG_ERROR(thread package $THREADS not yet supported)
@@ -1339,35 +1371,30 @@ AC_DEFUN(GLIBCPP_ENABLE_THREADS, [
       AC_MSG_ERROR($THREADS is an unknown thread package)
       ;;
   esac
-  AC_MSG_RESULT($THREADS)
+  AC_MSG_RESULT($THREADH)
 
-  THREADLIBS=
-  THREADINCS=
-  THREADDEPS=
-  THREADOBJS=
-  THREADH=
-  THREADSPEC=
-  case "$THREADS" in
-    posix)
-      AC_CHECK_HEADER(pthread.h, [have_pthread_h=yes], [have_pthread_h=])
-      THREADLIBS=-lpthread
-      THREADSPEC=-lpthread
-      dnl Not presently used
-      dnl THREADOBJS=threads-posix.lo
-      THREADH=threads-posix.h
-      ;;
-    none)
-      dnl Not presently used
-      dnl THREADOBJS=threads-no.lo
-      THREADH=threads-no.h
-      ;;
-  esac
-  AC_SUBST(THREADLIBS)
-  AC_SUBST(THREADINCS)
-  AC_SUBST(THREADDEPS)
-  AC_SUBST(THREADOBJS)
-  AC_SUBST(THREADSPEC)
   AC_LINK_FILES(config/$THREADH, bits/c++threads.h)
+])
+
+
+dnl Enable atomic locking
+dnl GLIBCPP_ENABLE_ATOMICITY
+AC_DEFUN(GLIBCPP_ENABLE_ATOMICITY, [
+    AC_MSG_CHECKING([for atomicity.h])
+    case "$target" in
+      *-*-linux*)
+	ATOMICITYH=$cpu_include_dir
+	;;	
+      *-*-aix*)
+        ATOMICITYH=$os_include_dir
+	;;
+      *)
+	echo "$enable_threads is an unknown thread package" 1>&2
+	exit 1
+	;;
+    esac
+    AC_MSG_RESULT($ATOMICITYH/bits/atomicity.h)
+    AC_LINK_FILES($ATOMICITYH/bits/atomicity.h, bits/atomicity.h)
 ])
 
 

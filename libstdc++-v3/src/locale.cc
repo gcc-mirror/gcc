@@ -777,7 +777,7 @@ namespace std {
   ~_Bad_use_facet() throw() { }
   
   // Platform-specific initialization code for ctype tables.
-  #include <ctype.cc>
+  #include <bits/ctype_noninline.h>
 
   locale::id ctype<char>::id;
 

@@ -27,6 +27,7 @@ AM_CONFIG_HEADER(config.h)
 # Check for c++ or library specific bits that don't require linking.
 GLIBCPP_CHECK_COMPILER_VERSION
 GLIBCPP_CHECK_CPU
+GLIBCPP_CHECK_OS
 
 AC_CACHE_SAVE
 
@@ -36,6 +37,7 @@ GLIBCPP_ENABLE_CSTDIO
 GLIBCPP_ENABLE_LONG_LONG(yes)
 GLIBCPP_ENABLE_SHADOW(no)
 GLIBCPP_ENABLE_THREADS
+GLIBCPP_ENABLE_ATOMICITY
 #GLIBCPP_ENABLE_RELIBGCC([../..])
 GLIBCPP_ENABLE_CXX_FLAGS([none])
 
@@ -70,8 +72,13 @@ if test -n "$with_cross_host"; then
     	AC_DEFINE(HAVE__FPCLASS)
     	AC_DEFINE(HAVE_MODF)
 
-    	ctype_include_dir="config/wince"
-    	AC_SUBST(ctype_include_dir)
+    	ctype_include_dir="config/os/wince"
+   	AC_LINK_FILES($ctype_include_dir/bits/ctype_base.h, bits/ctype_base.h)
+    	AC_LINK_FILES($ctype_include_dir/bits/ctype_inline.h, \
+	bits/ctype_inline.h)
+    	AC_LINK_FILES($ctype_include_dir/bits/ctype_noninline.h, \
+	bits/ctype_noninline.h)
+
 
     	AC_DEFINE(_GLIBCPP_NEED_MBSTATE_T)
 
@@ -87,8 +94,12 @@ if test -n "$with_cross_host"; then
     	AC_DEFINE(HAVE_ISINF)
     	AC_DEFINE(HAVE_ISINFF)
 
-    	ctype_include_dir="config/newlib"
-    	AC_SUBST(ctype_include_dir)
+    	ctype_include_dir="config/os/newlib"
+   	AC_LINK_FILES($ctype_include_dir/bits/ctype_base.h, bits/ctype_base.h)
+    	AC_LINK_FILES($ctype_include_dir/bits/ctype_inline.h, \
+	bits/ctype_inline.h)
+    	AC_LINK_FILES($ctype_include_dir/bits/ctype_noninline.h, \
+	bits/ctype_noninline.h)
 
     	AC_DEFINE(_GLIBCPP_NEED_MBSTATE_T)
 
