@@ -56,11 +56,10 @@ extern int general_no_elim_operand PARAMS ((rtx, enum machine_mode));
 extern int nonmemory_no_elim_operand PARAMS ((rtx, enum machine_mode));
 extern int q_regs_operand PARAMS ((rtx, enum machine_mode));
 extern int non_q_regs_operand PARAMS ((rtx, enum machine_mode));
-extern int no_comparison_operator PARAMS ((rtx, enum machine_mode));
 extern int sse_comparison_operator PARAMS ((rtx, enum machine_mode));
 extern int fcmov_comparison_operator PARAMS ((rtx, enum machine_mode));
-extern int uno_comparison_operator PARAMS ((rtx, enum machine_mode));
 extern int cmp_fp_expander_operand PARAMS ((rtx, enum machine_mode));
+extern int ix86_comparison_operator PARAMS ((rtx, enum machine_mode));
 extern int ext_register_operand PARAMS ((rtx, enum machine_mode));
 extern int binary_fp_operator PARAMS ((rtx, enum machine_mode));
 extern int mult_operator PARAMS ((rtx, enum machine_mode));
@@ -71,6 +70,7 @@ extern int memory_displacement_operand PARAMS ((rtx, enum machine_mode));
 extern int cmpsi_operand PARAMS ((rtx, enum machine_mode));
 extern int long_memory_operand PARAMS ((rtx, enum machine_mode));
 extern int aligned_operand PARAMS ((rtx, enum machine_mode));
+extern enum machine_mode ix86_cc_mode PARAMS ((enum rtx_code, rtx, rtx));
 
 
 extern int legitimate_pic_address_disp_p PARAMS ((rtx));
