@@ -2307,7 +2307,7 @@ optimize_bit_field_compare (code, compare_type, lhs, rhs)
      extraction at all and so can do nothing.  */
   linner = get_inner_reference (lhs, &lbitsize, &lbitpos, &offset, &lmode,
 				&lunsignedp, &lvolatilep);
-  if (lbitsize == GET_MODE_BITSIZE (lmode) || lbitsize < 0
+  if (linner == lhs || lbitsize == GET_MODE_BITSIZE (lmode) || lbitsize < 0
       || offset != 0)
     return 0;
 
@@ -2318,7 +2318,7 @@ optimize_bit_field_compare (code, compare_type, lhs, rhs)
      rinner = get_inner_reference (rhs, &rbitsize, &rbitpos, &offset,
 				   &rmode, &runsignedp, &rvolatilep);
 
-     if (lbitpos != rbitpos || lbitsize != rbitsize
+     if (rinner == rhs || lbitpos != rbitpos || lbitsize != rbitsize
 	 || lunsignedp != runsignedp || offset != 0)
        return 0;
    }
@@ -2510,7 +2510,7 @@ decode_field_reference (exp, pbitsize, pbitpos, pmode, punsignedp,
 
   inner = get_inner_reference (exp, pbitsize, pbitpos, &offset, pmode,
 			       punsignedp, pvolatilep);
-  if (*pbitsize < 0 || offset != 0)
+  if (inner == exp || *pbitsize < 0 || offset != 0)
     return 0;
   
   if (mask == 0)
