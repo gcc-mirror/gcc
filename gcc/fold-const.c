@@ -7875,7 +7875,8 @@ fold (tree expr)
     case FLOOR_MOD_EXPR:
     case ROUND_MOD_EXPR:
     case TRUNC_MOD_EXPR:
-      if (integer_onep (arg1))
+      /* 0 % X is always zero as is X % 1.  */
+      if (integer_zerop (arg0) || integer_onep (arg1))
 	return omit_one_operand (type, integer_zero_node, arg0);
       if (integer_zerop (arg1))
 	return t;
