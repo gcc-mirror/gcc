@@ -1,3 +1,12 @@
+2004-07-04  Neil Booth  <neil@duron.akihabara.co.uk>
+
+	PR preprocessor/16192
+	PR preprocessor/15913
+	PR preprocessor/15572
+	* expr.c (_cpp_parse_expr): Handle remaining cases where an
+	expression is missing.
+	* init.c (post_options): Traditional cpp doesn't do // comments.
+
 2004-06-30  Per Bothner  <per@bothner.com>
 
 	* include/line-map.h (fileline):  Remove old typedef.
