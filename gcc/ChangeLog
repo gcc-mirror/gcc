@@ -1,3 +1,19 @@
+2002-05-28  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (ix86_save_reg): Examine regs_ever_live,
+	not current_function_uses_pic_offset_table and
+	current_function_uses_const_pool; examine current_function_profile.
+	(ix86_expand_prologue): Likewise.  Add pic_offset_table_rtx as
+	input to blockage if needed.
+	(ix86_expand_call): Do not set current_function_uses_pic_offset_table.
+	(legitimize_pic_address): Likewise.  Set regs_ever_live for
+	pic_offset_table_rtx when invoked during reload.
+	* config/i386/i386.h (FINALIZE_PIC): Remove.
+	* config/i386/i386.md (tablejump): Reformat.  Do not set
+	current_function_uses_pic_offset_table.
+	(tls_global_dynamic, tls_local_dynamic_base): Likewise.
+	(blockage): Accept anything as operand 0.
+
 2002-05-28  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/netbsd-aout.h (NETBSD_OS_CPP_BUILTINS_AOUT): Define
