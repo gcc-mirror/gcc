@@ -1,3 +1,9 @@
+2004-02-22  Christopher Faylor  <cgf@redhat.com>
+
+	* config.gcc (i[34567]86-*-pe|i[34567]86-*-cygwin*): *Really* specify
+	extra host object file when targetting cygwin rather than generic
+	object files.
+
 2004-02-22  Matthias Klose  <doko@debian.org>
 
 	Taken from mainline:

@@ -1145,7 +1145,7 @@ i[34567]86-*-pe | i[34567]86-*-cygwin*)
 	extra_objs=winnt.o
 	c_target_objs=cygwin2.o
 	cxx_target_objs=cygwin2.o
-	host_extra_objs=cygwin1.o
+	host_extra_gcc_objs=cygwin1.o
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
 	fi
