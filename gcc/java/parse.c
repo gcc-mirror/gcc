@@ -7621,7 +7621,7 @@ note_possible_classname (name, len)
     return 0;
   node = ident_subst (name, len, "", '/', '.', "");
   IS_A_CLASSFILE_NAME (node) = 1; /* Or soon to be */
-  QUALIFIED_P (node) = 1; /* As soon as we turn / into . */
+  QUALIFIED_P (node) = strchr (name, '/') ? 1 : 0;
   return 1;
 }
 

@@ -1,3 +1,8 @@
+Mon Jun  7 16:09:51 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (note_possible_classname): Mark returned node with
+ 	QUALIFIED_P only if the original class name contained a '/'.
+
 Sat Jun  5 11:46:59 1999  Anthony Green  <green@cygnus.com>
 
 	* Make-lang.in (gcjh): More parallel build fixes.
