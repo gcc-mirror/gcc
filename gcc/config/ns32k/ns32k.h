@@ -511,6 +511,11 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
  *  .
  *
  * If a frame pointer is not needed we need assembler of the form
+ *
+ *  # Make space on the stack
+ *
+ *  adjspd <local stack space + 4>
+ *
  *  # Save any general purpose registers necessary
  *
  *  save [<general purpose regs to save>]
@@ -529,20 +534,32 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
   for (regno = 0; regno < 8; regno++)				\
     if (regs_ever_live[regno]					\
 	&& ! call_used_regs[regno])				\
-    {								\
-      *bufp++ = regno; g_regs_used++;				\
-    }								\
+      {								\
+        *bufp++ = regno; g_regs_used++;				\
+      }								\
   *bufp = -1;							\
   for (; regno < 16; regno++)					\
-    if (regs_ever_live[regno] && !call_used_regs[regno]) {	\
-      *fbufp++ = regno;						\
-    }								\
+    if (regs_ever_live[regno] && !call_used_regs[regno])	\
+      {								\
+        *fbufp++ = regno;					\
+      }								\
   *fbufp = -1;							\
   bufp = used_regs_buf;						\
   if (frame_pointer_needed)					\
     fprintf (FILE, "\tenter [");				\
-  else if (g_regs_used)						\
-    fprintf (FILE, "\tsave [");					\
+  else								\
+    {								\
+      if (SIZE)							\
+        fprintf (FILE, "\tadjspd %d\n", SIZE + 4);		\
+      if (g_regs_used && g_regs_used > 4)			\
+        fprintf (FILE, "\tsave [");				\
+      else							\
+	{							\
+	  while (*bufp >= 0)					\
+            fprintf (FILE, "\tmovd r%d,tos\n", *bufp++);	\
+	  g_regs_used = 0;					\
+	}							\
+    }								\
   while (*bufp >= 0)						\
     {								\
       fprintf (FILE, "r%d", *bufp++);				\
@@ -610,7 +627,12 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
     .
     .
     .
-    restore [<general purpose regs to save>]  */
+    restore [<general purpose regs to save>]
+
+    # reclaim space allocated on stack
+
+    adjspd <-(local stack space + 4)> */
+
 
 #define FUNCTION_EPILOGUE(FILE, SIZE) \
 { register int regno, g_regs_used = 0, f_regs_used = 0;		\
@@ -619,16 +641,17 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
   extern char call_used_regs[];					\
   *fbufp++ = -2;						\
   for (regno = 8; regno < 16; regno++)				\
-    if (regs_ever_live[regno] && !call_used_regs[regno]) {	\
+    if (regs_ever_live[regno] && !call_used_regs[regno])	\
+      {								\
        *fbufp++ = regno; f_regs_used++;				\
-    }								\
+      }								\
   fbufp--;							\
   for (regno = 0; regno < 8; regno++)				\
     if (regs_ever_live[regno]					\
 	&& ! call_used_regs[regno])				\
-    {                                                         	\
-      *bufp++ = regno; g_regs_used++;				\
-    }                                                         	\
+      {                                                        	\
+        *bufp++ = regno; g_regs_used++;				\
+      }                                                        	\
   while (fbufp > used_fregs_buf)				\
     {								\
       if ((*fbufp & 1) && fbufp[0] == fbufp[-1] + 1)		\
@@ -640,8 +663,17 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
     }								\
   if (frame_pointer_needed)					\
     fprintf (FILE, "\texit [");					\
-  else if (g_regs_used)						\
-    fprintf (FILE, "\trestore [");				\
+  else								\
+    {								\
+      if (g_regs_used && g_regs_used > 4)			\
+        fprintf (FILE, "\trestore [");				\
+      else							\
+        {							\
+	  while (bufp > used_regs_buf)				\
+            fprintf (FILE, "\tmovd tos,r%d\n", *--bufp);	\
+	  g_regs_used = 0;					\
+        }							\
+    }								\
   while (bufp > used_regs_buf)					\
     {								\
       fprintf (FILE, "r%d", *--bufp);				\
@@ -650,6 +682,8 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
     }								\
   if (g_regs_used || frame_pointer_needed)			\
     fprintf (FILE, "]\n");					\
+  if (SIZE && !frame_pointer_needed)				\
+    fprintf (FILE, "\tadjspd %d\n", -(SIZE + 4));		\
   if (current_function_pops_args)				\
     fprintf (FILE, "\tret %d\n", current_function_pops_args);	\
   else fprintf (FILE, "\tret 0\n"); }
@@ -666,7 +700,8 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
   for (regno = 0; regno < 16; regno++)				\
     if (regs_ever_live[regno] && ! call_used_regs[regno])	\
       offset += 4;						\
-  (DEPTH) = offset - get_frame_size ();				\
+  (DEPTH) = (offset + get_frame_size ()				\
+	     + (get_frame_size () == 0 ? 0 : 4));		\
 }
 
 
