@@ -3,7 +3,7 @@
    all should end up in a read-only section.  PR c/12165.  */
 /* Origin: Joseph Myers <jsm@polyomino.org.uk> */
 /* { dg-do compile } */
-/* { dg-final { scan-assembler-not "\\.data(?!\\.rel\\.ro)" } } */
+/* { dg-final { scan-assembler-not "\\.data(?!\\.rel\\.ro)" { xfail powerpc*-*-aix* } } } */
 static const int a[2] = { 1, 2 };
 const int a1[2] = { 1, 2 };
 typedef const int ci;
