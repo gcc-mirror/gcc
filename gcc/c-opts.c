@@ -1399,6 +1399,7 @@ c_common_decode_option (argc, argv)
 
     case OPT_lang_asm:
       cpp_set_lang (parse_in, CLK_ASM);
+      cpp_opts->dollars_in_ident = false;
       break;
 
     case OPT_lang_objc:

@@ -1,3 +1,9 @@
+2003-05-19  Neil Booth  <neil@daikokuya.co.uk>
+
+	* c-opts.c (c_common_decode_option): Don't accept dollars
+	as identifier characters in assembly.
+	* doc/cpp.texi: Document this.
+
 2003-05-19  Seth Arnold  <sarnold@wirex.com>
 	    Aldy Hernandez  <aldyh@redhat.com>
 
