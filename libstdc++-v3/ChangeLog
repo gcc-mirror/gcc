@@ -1,3 +1,13 @@
+2000-05-26  Phil Edwards  <pme@sourceware.cygnus.com>
+
+	* acinclude.m4 (GLIBCPP_ENABLE_LONG_LONG):  If strtoll isn't
+	  available, force --disable.  Need to flesh this out; make smarter.
+	* aclocal.m4:  Regenerate.
+	* configure:  Regenerate.
+
+	* mkcheck.in:  Minor tweaks.
+	* docs/download.html:  Fix typo.
+
 2000-05-25  Benjamin Kosnik  <bkoz@milou.soma.redhat.com>
 
 	* inclosure: Change to...
