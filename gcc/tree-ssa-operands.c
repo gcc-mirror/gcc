@@ -128,11 +128,6 @@ static bool clobbered_aliased_loads;
 static bool clobbered_aliased_stores;
 static bool ro_call_aliased_loads;
 
-#ifdef ENABLE_CHECKING
-/* Used to make sure operand construction is working on the proper stmt.  */
-tree check_build_stmt;
-#endif
-
 def_operand_p NULL_DEF_OPERAND_P = { NULL };
 use_operand_p NULL_USE_OPERAND_P = { NULL };
 
