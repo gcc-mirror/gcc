@@ -91,6 +91,22 @@ Improve documentation and indexing,
 including information on Year 2000 (Y2K) compliance.
 @end itemize
 
+@heading In 0.5.24 and @code{egcs} 1.1.2 (versus 0.5.23 and 1.1.1):
+@itemize @bullet
+@item
+Fix the @samp{Date_and_Time} intrinsic (in @code{libg2c})
+to return the milliseconds value properly
+in @var{Values}(8).
+
+@item
+Fix the @samp{LStat} intrinsic (in @code{libg2c})
+to return device-ID information properly
+in @var{SArray}(7).
+
+@item
+Improve documentation.
+@end itemize
+
 @heading In 0.5.24 and @code{egcs} 1.1.1 (versus 0.5.23 and 1.1):
 @itemize @bullet
 @item

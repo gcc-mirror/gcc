@@ -1,3 +1,7 @@
+Wed Mar  3 00:05:52 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* news.texi: Copy over 1.1.2 news.
+
 1999-03-02  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.texi (Bug Reporting): Clarify whether to use -E.
