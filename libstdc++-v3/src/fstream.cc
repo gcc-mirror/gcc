@@ -64,7 +64,6 @@ namespace std
 	  // Sync internal and external buffers.
 	  // NB: __testget -> __testput as _M_buf_unified here.
 	  const bool __testget = _M_in_beg < _M_in_cur;
-	  const bool __testinit = _M_is_indeterminate();
 	  if (__testget)
 	    {
 	      if (__testout)
@@ -74,7 +73,7 @@ namespace std
 				ios_base::cur, __testsync, ios_base::in);
 	    }
 
-	  if (__testinit || __testget)
+	  if (_M_buf_size)
 	    {
 	      streamsize __elen = 0;
 	      streamsize __ilen = 0;
@@ -86,8 +85,6 @@ namespace std
 	      if (0 < __ilen)
 		{
 		  _M_set_determinate(__ilen);
-		  if (__testout)
-		    _M_out_cur = _M_in_cur;
 		  __ret = traits_type::to_int_type(*_M_in_cur);
 		  if (__bump)
 		    _M_move_in_cur(1);
@@ -145,7 +142,6 @@ namespace std
 	  // Sync internal and external buffers.
 	  // NB: __testget -> __testput as _M_buf_unified here.
 	  const bool __testget = _M_in_beg < _M_in_cur;
-	  const bool __testinit = _M_is_indeterminate();
 	  if (__testget)
 	    {
 	      if (__testout)
@@ -155,7 +151,7 @@ namespace std
 				ios_base::cur, __testsync, ios_base::in);
 	    }
 
-	  if (__testinit || __testget)
+	  if (_M_buf_size)
 	    {
 	      streamsize __elen = 0;
 	      streamsize __ilen = 0;
@@ -191,8 +187,6 @@ namespace std
 	      if (0 < __ilen)
 		{
 		  _M_set_determinate(__ilen);
-		  if (__testout)
-		    _M_out_cur = _M_in_cur;
 		  __ret = traits_type::to_int_type(*_M_in_cur);
 		  if (__bump)
 		    _M_move_in_cur(1);

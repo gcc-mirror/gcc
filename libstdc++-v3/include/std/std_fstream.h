@@ -201,8 +201,6 @@ namespace std
 
 	    this->setg(this->_M_buf, _M_pback_cur_save + __off_cur, 
 		       _M_pback_end_save + __off_end);
-	    _M_pback_cur_save = NULL;
-	    _M_pback_end_save = NULL;
 	    _M_pback_init = false;
 	  }
       }
@@ -452,7 +450,7 @@ namespace std
       void
       _M_output_unshift();
 
-      // These three functions are used to clarify internal buffer
+      // These two functions are used to clarify internal buffer
       // maintenance. After an overflow, or after a seekoff call that
       // started at beg or end, or possibly when the stream becomes
       // unbuffered, and a myrid other obscure corner cases, the
@@ -483,33 +481,9 @@ namespace std
 	if (__testout)
 	  {
 	    this->setp(this->_M_buf, this->_M_buf + this->_M_buf_size);
-	    this->_M_out_lim = this->_M_buf + __off;
+	    this->_M_out_lim += __off;
 	  }
 	_M_filepos = this->_M_buf + __off;
-      }
-
-      /**
-       *  @if maint
-       *  @doctodo
-       *  @endif
-      */
-      bool
-      _M_is_indeterminate(void)
-      { 
-	const bool __testin = this->_M_mode & ios_base::in;
-	const bool __testout = this->_M_mode & ios_base::out;
-	bool __ret = false;
-	// Don't return true if unbuffered.
-	if (this->_M_buf)
-	  {
-	    if (__testin)
-	      __ret = this->_M_in_beg == this->_M_in_cur
-		&& this->_M_in_cur == this->_M_in_end;
-	    if (__testout)
-	      __ret = this->_M_out_beg == this->_M_out_cur
-		&& this->_M_out_cur == this->_M_out_lim;
-	  }
-	return __ret;
       }
     };
 

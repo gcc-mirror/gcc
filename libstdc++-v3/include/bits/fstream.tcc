@@ -143,8 +143,8 @@ namespace std
 	      
 	  // NB: Do this here so that re-opened filebufs will be cool...
 	  this->_M_mode = ios_base::openmode(0);
+	  this->_M_pback_init = false;
 	  _M_destroy_internal_buffer();
-	  _M_destroy_pback();
 	  
 	  if (!_M_file.close())
 	    __testfail = true;

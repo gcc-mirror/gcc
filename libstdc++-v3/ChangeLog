@@ -1,3 +1,25 @@
+2003-05-07  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/std/std_fstream.h (_M_is_indeterminate): Remove.
+	* src/fstream.cc
+	(basic_filebuf<char/wchar_t>::_M_underflow): Simplify: either
+	there is no buffer or __testget == !__testinit.
+
+	* src/fstream.cc
+	(basic_filebuf<char/wchar_t>::_M_underflow): _M_set_determinate()
+	automatically sets, if appropriate, _M_out_cur == _M_in_cur.
+
+	* include/std/std_fstream.h (_M_destroy_pback): Don't set
+	unnecessarily _M_pback_cur_save and _M_pback_end_save.
+
+	* include/std/std_fstream.h (_M_set_determinate): Minor tweak.
+
+	* include/std/std_sstream.h (_M_sync): Minor tweak.
+
+	* include/bits/fstream.tcc (close): No need to call
+	_M_destroy_pback, setting _M_pback_init to false suffices
+	to clean up.
+
 2003-05-06  Benjamin Kosnik  <bkoz@redhat.com>
 	
 	* include/bits/stl_algo.h: Enums as _S_.
