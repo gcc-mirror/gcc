@@ -1,3 +1,7 @@
+2004-09-28  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree.c: Fix a comment typo.
+
 2004-09-28  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* class.c (VTT_TOP_LEVEL_P, VTT_MARKED_BINFO_P): Remove.
