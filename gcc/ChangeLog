@@ -1,3 +1,10 @@
+2004-07-09  Mike Stump  <mrs@apple.com>
+
+	* config/darwin.c (no_dead_strip): Add.
+	(HAVE_DEAD_STRIP): Add.
+	(darwin_emit_unwind_label): Ensure that we don't dead code strip
+	the .eh label.
+
 2004-07-09  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* tree-ssa-loop-im.c: New file.
