@@ -63,6 +63,15 @@ Boston, MA 02111-1307, USA.  */
 #undef	TARGET_PROTOTYPE
 #define	TARGET_PROTOTYPE	0
 
+/* Reuse sysv4 mask bits we made available above.  */
+#define	MASK_PROFILE_KERNEL	0x08000000
+
+/* Non-standard profiling for kernels, which just saves LR then calls
+   _mcount without worrying about arg saves.  The idea is to change
+   the function prologue as little as possible as it isn't easy to
+   account for arg save/restore code added just for _mcount.  */
+#define TARGET_PROFILE_KERNEL	(target_flags & MASK_PROFILE_KERNEL)
+
 /* Override sysv4.h.  */
 #undef	SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES						\
@@ -89,7 +98,11 @@ Boston, MA 02111-1307, USA.  */
   {"regnames",		 MASK_REGNAMES,					\
     N_("Use alternate register names") },				\
   {"no-regnames",	-MASK_REGNAMES,					\
-    N_("Don't use alternate register names") },
+    N_("Don't use alternate register names") },				\
+  {"profile-kernel",	 MASK_PROFILE_KERNEL,				\
+   N_("Call mcount for profiling before a function prologue") },	\
+  {"no-profile-kernel",	-MASK_PROFILE_KERNEL,				\
+   N_("Call mcount for profiling after a function prologue") },
 
 #undef	SUBTARGET_OPTIONS
 #define	SUBTARGET_OPTIONS
@@ -99,19 +112,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* We use glibc _mcount for profiling.  */
 #define NO_PROFILE_COUNTERS 1
-#undef  PROFILE_BEFORE_PROLOGUE
-
-/* Define this for kernel profiling, which just saves LR then calls
-   _mcount without worrying about arg saves.  The idea is to change
-   the function prologue as little as possible as it isn't easy to
-   account for arg save/restore code added just for _mcount.  */
-/* #define PROFILE_KERNEL 1 */
-#if PROFILE_KERNEL
-#define PROFILE_BEFORE_PROLOGUE 1
-#undef  PROFILE_HOOK
-#else
 #define PROFILE_HOOK(LABEL) output_profile_hook (LABEL)
-#endif
 
 /* We don't need to generate entries in .fixup.  */
 #undef RELOCATABLE_NEEDS_FIXUP

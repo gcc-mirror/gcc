@@ -335,6 +335,9 @@ static const char alt_reg_names[][8] =
 #ifndef MASK_STRICT_ALIGN
 #define MASK_STRICT_ALIGN 0
 #endif
+#ifndef TARGET_PROFILE_KERNEL
+#define TARGET_PROFILE_KERNEL 0
+#endif
 
 /* The VRSAVE bitmask puts bit %v0 as the most significant bit.  */
 #define ALTIVEC_REG_BIT(REGNO) (0x80000000 >> ((REGNO) - FIRST_ALTIVEC_REGNO))
@@ -9225,7 +9228,9 @@ rs6000_stack_info ()
 
   /* Determine if we need to save the link register.  */
   if (rs6000_ra_ever_killed ()
-      || (DEFAULT_ABI == ABI_AIX && current_function_profile)
+      || (DEFAULT_ABI == ABI_AIX
+	  && current_function_profile
+	  && !TARGET_PROFILE_KERNEL)
 #ifdef TARGET_RELOCATABLE
       || (TARGET_RELOCATABLE && (get_pool_size () != 0))
 #endif
@@ -12234,6 +12239,9 @@ void
 output_profile_hook (labelno)
      int labelno ATTRIBUTE_UNUSED;
 {
+  if (TARGET_PROFILE_KERNEL)
+    return;
+
   if (DEFAULT_ABI == ABI_AIX)
     {
 #ifdef NO_PROFILE_COUNTERS
@@ -12285,7 +12293,6 @@ output_function_profiler (file, labelno)
   char buf[100];
   int save_lr = 8;
 
-  ASM_GENERATE_INTERNAL_LABEL (buf, "LP", labelno);
   switch (DEFAULT_ABI)
     {
     default:
@@ -12301,6 +12308,7 @@ output_function_profiler (file, labelno)
 	  warning ("no profiling of 64-bit code for this ABI");
 	  return;
 	}
+      ASM_GENERATE_INTERNAL_LABEL (buf, "LP", labelno);
       fprintf (file, "\tmflr %s\n", reg_names[0]);
       if (flag_pic == 1)
 	{
@@ -12355,7 +12363,29 @@ output_function_profiler (file, labelno)
 
     case ABI_AIX:
     case ABI_DARWIN:
-      /* Don't do anything, done in output_profile_hook ().  */
+      if (!TARGET_PROFILE_KERNEL)
+	{
+	  /* Don't do anything, done in output_profile_hook (). */
+	}
+      else
+	{
+	  if (TARGET_32BIT)
+	    abort ();
+
+	  asm_fprintf (file, "\tmflr %s\n", reg_names[0]);
+	  asm_fprintf (file, "\tstd %s,16(%s)\n", reg_names[0], reg_names[1]);
+
+	  if (current_function_needs_context)
+	    {
+	      asm_fprintf (file, "\tstd %s,24(%s)\n",
+			   reg_names[STATIC_CHAIN_REGNUM], reg_names[1]);
+	      fprintf (file, "\tbl %s\n", RS6000_MCOUNT);
+	      asm_fprintf (file, "\tld %s,24(%s)\n",
+			   reg_names[STATIC_CHAIN_REGNUM], reg_names[1]);
+	    }
+	  else
+	    fprintf (file, "\tbl %s\n", RS6000_MCOUNT);
+	}
       break;
     }
 }
