@@ -254,7 +254,7 @@ compute_predicate_codes (rtx exp, char codes[NUM_RTX_CODE])
     case NOT:
       compute_predicate_codes (XEXP (exp, 0), op0_codes);
       for (i = 0; i < NUM_RTX_CODE; i++)
-	codes[i] = TRISTATE_NOT (codes[i]);
+	codes[i] = TRISTATE_NOT (op0_codes[i]);
       break;
 
     case IF_THEN_ELSE:
