@@ -101,13 +101,14 @@ malloc_kill_area_ (mallocPool pool UNUSED, mallocArea_ a)
 #if MALLOC_DEBUG
   assert (strcmp (a->name, ((char *) (a->where)) + a->size) == 0);
 #endif
-  malloc_kill_ (a->where, a->size);
+  malloc_kill_ (a->where - sizeof(mallocArea_*), a->size);
   a->next->previous = a->previous;
   a->previous->next = a->next;
 #if MALLOC_DEBUG
   pool->freed += a->size;
   pool->frees++;
 #endif
+  
   malloc_kill_ (a,
 		offsetof (struct _malloc_area_, name)
 		+ strlen (a->name) + 1);
@@ -303,21 +304,9 @@ malloc_display_ (mallocArea_ a UNUSED)
 mallocArea_
 malloc_find_inpool_ (mallocPool pool, void *ptr)
 {
-  mallocArea_ a;
-  mallocArea_ b = (mallocArea_) &pool->first;
-  int n = 0;
-
-  for (a = pool->first; a != (mallocArea_) &pool->first; a = a->next)
-    {
-      assert (("Infinite loop detected" != NULL) && (a != b));
-      if (a->where == ptr)
-	return a;
-      ++n;
-      if (n & 1)
-	b = b->next;
-    }
-  assert ("Couldn't find object in pool!" == NULL);
-  return NULL;
+  mallocArea_ *t;
+  t = (mallocArea_ *) (ptr - sizeof(mallocArea_));
+  return *t;
 }
 
 /* malloc_kill_inpool_ -- Kill object
@@ -388,6 +377,7 @@ malloc_new_inpool_ (mallocPool pool, mallocType_ type, const char *name, mallocS
   void *ptr;
   mallocArea_ a;
   unsigned short i;
+  mallocArea_ *temp;
 
   if (pool == NULL)
     pool = malloc_pool_image ();
@@ -397,11 +387,14 @@ malloc_new_inpool_ (mallocPool pool, mallocType_ type, const char *name, mallocS
 	  || malloc_pool_find_ (pool, malloc_pool_image ()));
 #endif
 
-  ptr = malloc_new_ (s + (i = (MALLOC_DEBUG ? strlen (name) + 1 : 0)));
+  ptr = malloc_new_ (sizeof(mallocArea_*) + s + (i = (MALLOC_DEBUG ? strlen (name) + 1 : 0)));
 #if MALLOC_DEBUG
   strcpy (((char *) (ptr)) + s, name);
 #endif
   a = malloc_new_ (offsetof (struct _malloc_area_, name) + i);
+  temp = (mallocArea_ *) ptr;
+  *temp = a; 
+  ptr = ptr + sizeof(mallocArea_*);
   switch (type)
     {				/* A little optimization to speed up killing
 				   of non-permanent stuff. */
@@ -477,6 +470,7 @@ malloc_resize_inpool_ (mallocPool pool, mallocType_ type UNUSED,
 		       void *ptr, mallocSize ns, mallocSize os UNUSED)
 {
   mallocArea_ a;
+  mallocArea_ *temp;
 
   if (pool == NULL)
     pool = malloc_pool_image ();
@@ -493,7 +487,10 @@ malloc_resize_inpool_ (mallocPool pool, mallocType_ type UNUSED,
     assert (a->size == os);
   assert (strcmp (a->name, ((char *) (ptr)) + os) == 0);
 #endif
-  ptr = malloc_resize_ (ptr, ns + (MALLOC_DEBUG ? strlen (a->name) + 1: 0));
+  ptr = malloc_resize_ (ptr - sizeof(mallocArea_*), sizeof(mallocArea_*) + ns + (MALLOC_DEBUG ? strlen (a->name) + 1: 0));
+  temp = (mallocArea_ *) ptr;
+  *temp = a;
+  ptr = ptr + sizeof(mallocArea_*);
   a->where = ptr;
 #if MALLOC_DEBUG
   a->size = ns;

@@ -1,5 +1,5 @@
 /* bld.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995, 1996, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 2003, 2004 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -382,38 +382,52 @@ ffebld_constant_new_character1 (ffelexToken t)
 ffebldConstant
 ffebld_constant_new_character1_val (ffetargetCharacter1 val)
 {
-  ffebldConstant c;
   ffebldConstant nc;
-  int cmp;
-
-  ffetarget_verify_character1 (ffebld_constant_pool(), val);
-
-  for (c = (ffebldConstant) &ffebld_constant_character1_;
-       c->next != NULL;
-       c = c->next)
-    {
-      malloc_verify_kp (ffebld_constant_pool(),
-			c->next,
-			sizeof (*(c->next)));
-      ffetarget_verify_character1 (ffebld_constant_pool(),
-				   ffebld_constant_character1 (c->next));
-      cmp = ffetarget_cmp_character1 (val,
-				      ffebld_constant_character1 (c->next));
-      if (cmp == 0)
-	return c->next;
-      if (cmp > 0)
-	break;
-    }
+  ffebldConstant P;
+  ffebldConstant Q;
+  int cmp = 0;
+  P = ffebld_constant_character1_;
+  Q = P;
+  if (!P)
+   {
+    /* make this node the root */
+     nc = malloc_new_kp (ffebld_constant_pool(),
+                         "FFEBLD_constCHARACTER1",
+                         sizeof (*nc));
+     nc->consttype = FFEBLD_constCHARACTER1;
+     nc->u.character1 = val;
+     nc->hook = FFECOM_constantNULL;
+     nc->llink = NULL;
+     nc->rlink = NULL;
+     ffebld_constant_character1_ = nc;
+     return nc;
+   }
+  else
+    while (P)
+     {
+       Q = P;
+       cmp = ffetarget_cmp_character1 (val, ffebld_constant_character1 (P));
+       if (cmp > 0)
+         P = P->llink;
+       else if (cmp < 0)
+         P = P->rlink;
+       else
+         return P;
+     }
 
   nc = malloc_new_kp (ffebld_constant_pool(),
 		      "FFEBLD_constCHARACTER1",
 		      sizeof (*nc));
-  nc->next = c->next;
   nc->consttype = FFEBLD_constCHARACTER1;
   nc->u.character1 = val;
   nc->hook = FFECOM_constantNULL;
-  c->next = nc;
+  nc->llink = NULL;
+  nc->rlink = NULL;
 
+  if (cmp < 0)
+    Q->llink = nc;
+  else
+    Q->rlink = nc;
   return nc;
 }
 
@@ -443,33 +457,56 @@ ffebld_constant_new_complex1 (ffebldConstant real,
 ffebldConstant
 ffebld_constant_new_complex1_val (ffetargetComplex1 val)
 {
-  ffebldConstant c;
   ffebldConstant nc;
-  int cmp;
-
-  for (c = (ffebldConstant) &ffebld_constant_complex1_;
-       c->next != NULL;
-       c = c->next)
-    {
-      cmp = ffetarget_cmp_real1 (val.real, ffebld_constant_complex1 (c->next).real);
-      if (cmp == 0)
-	cmp = ffetarget_cmp_real1 (val.imaginary,
-			      ffebld_constant_complex1 (c->next).imaginary);
-      if (cmp == 0)
-	return c->next;
-      if (cmp > 0)
-	break;
-    }
+  ffebldConstant P;
+  ffebldConstant Q;
+  int cmp = 0;
+  P = ffebld_constant_complex1_;
+  Q = P;
+  if (!P)
+   {
+    /* make this node the root */
+     nc = malloc_new_kp (ffebld_constant_pool(),
+                         "FFEBLD_constCOMPLEX1",
+                         sizeof (*nc));
+     nc->consttype = FFEBLD_constCOMPLEX1;
+     nc->u.complex1 = val;
+     nc->hook = FFECOM_constantNULL;
+     nc->llink = NULL;
+     nc->rlink = NULL;
+     ffebld_constant_complex1_ = nc;
+     return nc;
+   }
+  else
+    while (P)
+     {
+       Q = P;
+       cmp = ffetarget_cmp_real1 (val.real, 
+                                  ffebld_constant_complex1 (P).real);
+       if (cmp == 0)
+         cmp = ffetarget_cmp_real1 (val.imaginary,
+                                  ffebld_constant_complex1 (P).imaginary);
+       if (cmp > 0)
+         P = P->llink;
+       else if (cmp < 0)
+         P = P->rlink;
+       else
+         return P;
+     }
 
   nc = malloc_new_kp (ffebld_constant_pool(),
 		      "FFEBLD_constCOMPLEX1",
 		      sizeof (*nc));
-  nc->next = c->next;
   nc->consttype = FFEBLD_constCOMPLEX1;
   nc->u.complex1 = val;
   nc->hook = FFECOM_constantNULL;
-  c->next = nc;
+  nc->llink = NULL;
+  nc->rlink = NULL;
 
+  if (cmp < 0)
+    Q->llink = nc;
+  else
+    Q->rlink = nc;
   return nc;
 }
 
@@ -499,33 +536,56 @@ ffebld_constant_new_complex2 (ffebldConstant real,
 ffebldConstant
 ffebld_constant_new_complex2_val (ffetargetComplex2 val)
 {
-  ffebldConstant c;
   ffebldConstant nc;
-  int cmp;
-
-  for (c = (ffebldConstant) &ffebld_constant_complex2_;
-       c->next != NULL;
-       c = c->next)
-    {
-      cmp = ffetarget_cmp_real2 (val.real, ffebld_constant_complex2 (c->next).real);
-      if (cmp == 0)
-	cmp = ffetarget_cmp_real2 (val.imaginary,
-			      ffebld_constant_complex2 (c->next).imaginary);
-      if (cmp == 0)
-	return c->next;
-      if (cmp > 0)
-	break;
-    }
+  ffebldConstant P;
+  ffebldConstant Q;
+  int cmp = 0;
+  P = ffebld_constant_complex2_;
+  Q = P;
+  if (!P)
+   {
+    /* make this node the root */
+     nc = malloc_new_kp (ffebld_constant_pool(),
+                         "FFEBLD_constCOMPLEX2",
+                         sizeof (*nc));
+     nc->consttype = FFEBLD_constCOMPLEX2;
+     nc->u.complex2 = val;
+     nc->hook = FFECOM_constantNULL;
+     nc->llink = NULL;
+     nc->rlink = NULL;
+     ffebld_constant_complex2_ = nc;
+     return nc;
+   }
+  else
+    while (P)
+     {
+       Q = P;
+       cmp = ffetarget_cmp_real2 (val.real,
+                                  ffebld_constant_complex2 (P).real);
+       if (cmp == 0)
+         cmp = ffetarget_cmp_real2 (val.imaginary,
+                                    ffebld_constant_complex2 (P).imaginary);   
+       if (cmp > 0)
+         P = P->llink;
+       else if (cmp < 0)
+         P = P->rlink;
+       else
+         return P;
+     }
 
   nc = malloc_new_kp (ffebld_constant_pool(),
 		      "FFEBLD_constCOMPLEX2",
 		      sizeof (*nc));
-  nc->next = c->next;
   nc->consttype = FFEBLD_constCOMPLEX2;
   nc->u.complex2 = val;
   nc->hook = FFECOM_constantNULL;
-  c->next = nc;
+  nc->llink = NULL;
+  nc->rlink = NULL;
 
+  if (cmp < 0)
+    Q->llink = nc;
+  else
+    Q->rlink = nc;
   return nc;
 }
 
@@ -550,30 +610,52 @@ ffebld_constant_new_hollerith (ffelexToken t)
 ffebldConstant
 ffebld_constant_new_hollerith_val (ffetargetHollerith val)
 {
-  ffebldConstant c;
   ffebldConstant nc;
-  int cmp;
-
-  for (c = (ffebldConstant) &ffebld_constant_hollerith_;
-       c->next != NULL;
-       c = c->next)
-    {
-      cmp = ffetarget_cmp_hollerith (val, ffebld_constant_hollerith (c->next));
-      if (cmp == 0)
-	return c->next;
-      if (cmp > 0)
-	break;
-    }
+  ffebldConstant P;
+  ffebldConstant Q;
+  int cmp = 0;
+  P = ffebld_constant_hollerith_;
+  Q = P;
+  if (!P)
+   {
+    /* make this node the root */
+     nc = malloc_new_kp (ffebld_constant_pool(),
+                         "FFEBLD_constHOLLERITH",
+                         sizeof (*nc));
+     nc->consttype = FFEBLD_constHOLLERITH;
+     nc->u.hollerith = val;
+     nc->hook = FFECOM_constantNULL;
+     nc->llink = NULL;
+     nc->rlink = NULL;
+     ffebld_constant_hollerith_ = nc;
+     return nc;
+   }
+  else
+    while (P)
+     {
+       Q = P;
+       cmp = ffetarget_cmp_hollerith (val, ffebld_constant_hollerith (P));
+       if (cmp > 0)
+         P = P->llink;
+       else if (cmp < 0)
+         P = P->rlink;
+       else
+         return P;
+     }
 
   nc = malloc_new_kp (ffebld_constant_pool(),
 		      "FFEBLD_constHOLLERITH",
 		      sizeof (*nc));
-  nc->next = c->next;
   nc->consttype = FFEBLD_constHOLLERITH;
   nc->u.hollerith = val;
   nc->hook = FFECOM_constantNULL;
-  c->next = nc;
+  nc->llink = NULL;
+  nc->rlink = NULL;
 
+  if (cmp < 0)
+    Q->llink = nc;
+  else
+    Q->rlink = nc;
   return nc;
 }
 
@@ -605,30 +687,53 @@ ffebld_constant_new_integer1 (ffelexToken t)
 ffebldConstant
 ffebld_constant_new_integer1_val (ffetargetInteger1 val)
 {
-  ffebldConstant c;
-  ffebldConstant nc;
-  int cmp;
 
-  for (c = (ffebldConstant) &ffebld_constant_integer1_;
-       c->next != NULL;
-       c = c->next)
-    {
-      cmp = ffetarget_cmp_integer1 (val, ffebld_constant_integer1 (c->next));
-      if (cmp == 0)
-	return c->next;
-      if (cmp > 0)
-	break;
-    }
+  ffebldConstant nc;
+  ffebldConstant P;
+  ffebldConstant Q;
+  int cmp = 0;
+  P = ffebld_constant_integer1_;
+  Q = P;
+  if (!P)
+   {
+    /* make this node the root */
+     nc = malloc_new_kp (ffebld_constant_pool(),
+                         "FFEBLD_constINTEGER1",
+                         sizeof (*nc));
+     nc->consttype = FFEBLD_constINTEGER1;
+     nc->u.integer1 = val;
+     nc->hook = FFECOM_constantNULL;
+     nc->llink = NULL;
+     nc->rlink = NULL;
+     ffebld_constant_integer1_ = nc;
+     return nc;
+   }
+  else
+    while (P)
+     {
+       Q = P;
+       cmp = ffetarget_cmp_integer1 (val, ffebld_constant_integer1 (P));
+       if (cmp > 0)
+         P = P->llink;
+       else if (cmp < 0)
+         P = P->rlink;
+       else
+         return P;
+     }
 
   nc = malloc_new_kp (ffebld_constant_pool(),
 		      "FFEBLD_constINTEGER1",
 		      sizeof (*nc));
-  nc->next = c->next;
   nc->consttype = FFEBLD_constINTEGER1;
   nc->u.integer1 = val;
   nc->hook = FFECOM_constantNULL;
-  c->next = nc;
+  nc->llink = NULL;
+  nc->rlink = NULL;
 
+  if (cmp < 0)
+    Q->llink = nc;
+  else
+    Q->rlink = nc;
   return nc;
 }
 
@@ -641,30 +746,52 @@ ffebld_constant_new_integer1_val (ffetargetInteger1 val)
 ffebldConstant
 ffebld_constant_new_integer2_val (ffetargetInteger2 val)
 {
-  ffebldConstant c;
   ffebldConstant nc;
-  int cmp;
-
-  for (c = (ffebldConstant) &ffebld_constant_integer2_;
-       c->next != NULL;
-       c = c->next)
-    {
-      cmp = ffetarget_cmp_integer2 (val, ffebld_constant_integer2 (c->next));
-      if (cmp == 0)
-	return c->next;
-      if (cmp > 0)
-	break;
-    }
+  ffebldConstant P;
+  ffebldConstant Q;
+  int cmp = 0;
+  P = ffebld_constant_integer2_;
+  Q = P;
+  if (!P)
+   {
+    /* make this node the root */
+     nc = malloc_new_kp (ffebld_constant_pool(),
+                         "FFEBLD_constINTEGER2",
+                         sizeof (*nc));
+     nc->consttype = FFEBLD_constINTEGER2;
+     nc->u.integer2 = val;
+     nc->hook = FFECOM_constantNULL;
+     nc->llink = NULL;
+     nc->rlink = NULL;
+     ffebld_constant_integer2_ = nc;
+     return nc;
+   }
+  else
+    while (P)
+     {
+       Q = P;
+       cmp = ffetarget_cmp_integer2 (val, ffebld_constant_integer2 (P));
+       if (cmp > 0)
+         P = P->llink;
+       else if (cmp < 0)
+         P = P->rlink;
+       else
+         return P;
+     }
 
   nc = malloc_new_kp (ffebld_constant_pool(),
 		      "FFEBLD_constINTEGER2",
 		      sizeof (*nc));
-  nc->next = c->next;
   nc->consttype = FFEBLD_constINTEGER2;
   nc->u.integer2 = val;
   nc->hook = FFECOM_constantNULL;
-  c->next = nc;
+  nc->llink = NULL;
+  nc->rlink = NULL;
 
+  if (cmp < 0)
+    Q->llink = nc;
+  else
+    Q->rlink = nc;
   return nc;
 }
 
@@ -677,30 +804,52 @@ ffebld_constant_new_integer2_val (ffetargetInteger2 val)
 ffebldConstant
 ffebld_constant_new_integer3_val (ffetargetInteger3 val)
 {
-  ffebldConstant c;
   ffebldConstant nc;
-  int cmp;
-
-  for (c = (ffebldConstant) &ffebld_constant_integer3_;
-       c->next != NULL;
-       c = c->next)
-    {
-      cmp = ffetarget_cmp_integer3 (val, ffebld_constant_integer3 (c->next));
-      if (cmp == 0)
-	return c->next;
-      if (cmp > 0)
-	break;
-    }
+  ffebldConstant P;
+  ffebldConstant Q;
+  int cmp = 0;
+  P = ffebld_constant_integer3_;
+  Q = P;
+  if (!P)
+   {
+    /* make this node the root */
+     nc = malloc_new_kp (ffebld_constant_pool(),
+                         "FFEBLD_constINTEGER3",
+                         sizeof (*nc));
+     nc->consttype = FFEBLD_constINTEGER3;
+     nc->u.integer3 = val;
+     nc->hook = FFECOM_constantNULL;
+     nc->llink = NULL;
+     nc->rlink = NULL;
+     ffebld_constant_integer3_ = nc;
+     return nc;
+   }
+  else
+    while (P)
+     {
+       Q = P;
+       cmp = ffetarget_cmp_integer3 (val, ffebld_constant_integer3 (P));
+       if (cmp > 0)
+         P = P->llink;
+       else if (cmp < 0)
+         P = P->rlink;
+       else
+         return P;
+     }
 
   nc = malloc_new_kp (ffebld_constant_pool(),
 		      "FFEBLD_constINTEGER3",
 		      sizeof (*nc));
-  nc->next = c->next;
   nc->consttype = FFEBLD_constINTEGER3;
   nc->u.integer3 = val;
   nc->hook = FFECOM_constantNULL;
-  c->next = nc;
+  nc->llink = NULL;
+  nc->rlink = NULL;
 
+  if (cmp < 0)
+    Q->llink = nc;
+  else
+    Q->rlink = nc;
   return nc;
 }
 
@@ -713,30 +862,52 @@ ffebld_constant_new_integer3_val (ffetargetInteger3 val)
 ffebldConstant
 ffebld_constant_new_integer4_val (ffetargetInteger4 val)
 {
-  ffebldConstant c;
   ffebldConstant nc;
-  int cmp;
-
-  for (c = (ffebldConstant) &ffebld_constant_integer4_;
-       c->next != NULL;
-       c = c->next)
-    {
-      cmp = ffetarget_cmp_integer4 (val, ffebld_constant_integer4 (c->next));
-      if (cmp == 0)
-	return c->next;
-      if (cmp > 0)
-	break;
-    }
+  ffebldConstant P;
+  ffebldConstant Q;
+  int cmp = 0;
+  P = ffebld_constant_integer4_;
+  Q = P;
+  if (!P)
+   {
+    /* make this node the root */
+     nc = malloc_new_kp (ffebld_constant_pool(),
+                         "FFEBLD_constINTEGER4",
+                         sizeof (*nc));
+     nc->consttype = FFEBLD_constINTEGER4;
+     nc->u.integer4 = val;
+     nc->hook = FFECOM_constantNULL;
+     nc->llink = NULL;
+     nc->rlink = NULL;
+     ffebld_constant_integer4_ = nc;
+     return nc;
+   }
+  else
+    while (P)
+     {
+       Q = P;
+       cmp = ffetarget_cmp_integer4 (val, ffebld_constant_integer4 (P));
+       if (cmp > 0)
+         P = P->llink;
+       else if (cmp < 0)
+         P = P->rlink;
+       else
+         return P;
+     }
 
   nc = malloc_new_kp (ffebld_constant_pool(),
 		      "FFEBLD_constINTEGER4",
 		      sizeof (*nc));
-  nc->next = c->next;
   nc->consttype = FFEBLD_constINTEGER4;
   nc->u.integer4 = val;
   nc->hook = FFECOM_constantNULL;
-  c->next = nc;
+  nc->llink = NULL;
+  nc->rlink = NULL;
 
+  if (cmp < 0)
+    Q->llink = nc;
+  else
+    Q->rlink = nc;
   return nc;
 }
 
@@ -824,30 +995,52 @@ ffebld_constant_new_logical1 (bool truth)
 ffebldConstant
 ffebld_constant_new_logical1_val (ffetargetLogical1 val)
 {
-  ffebldConstant c;
   ffebldConstant nc;
-  int cmp;
-
-  for (c = (ffebldConstant) &ffebld_constant_logical1_;
-       c->next != NULL;
-       c = c->next)
-    {
-      cmp = ffetarget_cmp_logical1 (val, ffebld_constant_logical1 (c->next));
-      if (cmp == 0)
-	return c->next;
-      if (cmp > 0)
-	break;
-    }
+  ffebldConstant P;
+  ffebldConstant Q;
+  int cmp = 0;
+  P = ffebld_constant_logical1_;
+  Q = P;
+  if (!P)
+   {
+    /* make this node the root */
+     nc = malloc_new_kp (ffebld_constant_pool(),
+                         "FFEBLD_constLOGICAL1",
+                         sizeof (*nc));
+     nc->consttype = FFEBLD_constLOGICAL1;
+     nc->u.logical1 = val;
+     nc->hook = FFECOM_constantNULL;
+     nc->llink = NULL;
+     nc->rlink = NULL;
+     ffebld_constant_logical1_ = nc;
+     return nc;
+   }
+  else
+    while (P)
+     {
+       Q = P;
+       cmp = ffetarget_cmp_logical1 (val, ffebld_constant_logical1 (P));
+       if (cmp > 0)
+         P = P->llink;
+       else if (cmp < 0)
+         P = P->rlink;
+       else
+         return P;
+     }
 
   nc = malloc_new_kp (ffebld_constant_pool(),
 		      "FFEBLD_constLOGICAL1",
 		      sizeof (*nc));
-  nc->next = c->next;
   nc->consttype = FFEBLD_constLOGICAL1;
   nc->u.logical1 = val;
   nc->hook = FFECOM_constantNULL;
-  c->next = nc;
+  nc->llink = NULL;
+  nc->rlink = NULL;
 
+  if (cmp < 0)
+    Q->llink = nc;
+  else
+    Q->rlink = nc;
   return nc;
 }
 
@@ -860,30 +1053,52 @@ ffebld_constant_new_logical1_val (ffetargetLogical1 val)
 ffebldConstant
 ffebld_constant_new_logical2_val (ffetargetLogical2 val)
 {
-  ffebldConstant c;
   ffebldConstant nc;
-  int cmp;
-
-  for (c = (ffebldConstant) &ffebld_constant_logical2_;
-       c->next != NULL;
-       c = c->next)
-    {
-      cmp = ffetarget_cmp_logical2 (val, ffebld_constant_logical2 (c->next));
-      if (cmp == 0)
-	return c->next;
-      if (cmp > 0)
-	break;
-    }
+  ffebldConstant P;
+  ffebldConstant Q;
+  int cmp = 0;
+  P = ffebld_constant_logical2_;
+  Q = P;
+  if (!P)
+   {
+    /* make this node the root */
+     nc = malloc_new_kp (ffebld_constant_pool(),
+                         "FFEBLD_constLOGICAL2",
+                         sizeof (*nc));
+     nc->consttype = FFEBLD_constLOGICAL2;
+     nc->u.logical2 = val;
+     nc->hook = FFECOM_constantNULL;
+     nc->llink = NULL;
+     nc->rlink = NULL;
+     ffebld_constant_logical2_ = nc;
+     return nc;
+   }
+  else
+    while (P)
+     {
+       Q = P;
+       cmp = ffetarget_cmp_logical2 (val, ffebld_constant_logical2 (P));
+       if (cmp > 0)
+         P = P->llink;
+       else if (cmp < 0)
+         P = P->rlink;
+       else
+         return P;
+     }
 
   nc = malloc_new_kp (ffebld_constant_pool(),
 		      "FFEBLD_constLOGICAL2",
 		      sizeof (*nc));
-  nc->next = c->next;
   nc->consttype = FFEBLD_constLOGICAL2;
   nc->u.logical2 = val;
   nc->hook = FFECOM_constantNULL;
-  c->next = nc;
+  nc->llink = NULL;
+  nc->rlink = NULL;
 
+  if (cmp < 0)
+    Q->llink = nc;
+  else
+    Q->rlink = nc;
   return nc;
 }
 
@@ -896,30 +1111,52 @@ ffebld_constant_new_logical2_val (ffetargetLogical2 val)
 ffebldConstant
 ffebld_constant_new_logical3_val (ffetargetLogical3 val)
 {
-  ffebldConstant c;
   ffebldConstant nc;
-  int cmp;
-
-  for (c = (ffebldConstant) &ffebld_constant_logical3_;
-       c->next != NULL;
-       c = c->next)
-    {
-      cmp = ffetarget_cmp_logical3 (val, ffebld_constant_logical3 (c->next));
-      if (cmp == 0)
-	return c->next;
-      if (cmp > 0)
-	break;
-    }
+  ffebldConstant P;
+  ffebldConstant Q;
+  int cmp = 0;
+  P = ffebld_constant_logical3_;
+  Q = P;
+  if (!P)
+   {
+    /* make this node the root */
+     nc = malloc_new_kp (ffebld_constant_pool(),
+                         "FFEBLD_constLOGICAL3",
+                         sizeof (*nc));
+     nc->consttype = FFEBLD_constLOGICAL3;
+     nc->u.logical3 = val;
+     nc->hook = FFECOM_constantNULL;
+     nc->llink = NULL;
+     nc->rlink = NULL;
+     ffebld_constant_logical3_ = nc;
+     return nc;
+   }
+  else
+    while (P)
+     {
+       Q = P;
+       cmp = ffetarget_cmp_logical3 (val, ffebld_constant_logical3 (P));
+       if (cmp > 0)
+         P = P->llink;
+       else if (cmp < 0)
+         P = P->rlink;
+       else
+         return P;
+     }
 
   nc = malloc_new_kp (ffebld_constant_pool(),
 		      "FFEBLD_constLOGICAL3",
 		      sizeof (*nc));
-  nc->next = c->next;
   nc->consttype = FFEBLD_constLOGICAL3;
   nc->u.logical3 = val;
   nc->hook = FFECOM_constantNULL;
-  c->next = nc;
+  nc->llink = NULL;
+  nc->rlink = NULL;
 
+  if (cmp < 0)
+    Q->llink = nc;
+  else
+    Q->rlink = nc;
   return nc;
 }
 
@@ -932,30 +1169,52 @@ ffebld_constant_new_logical3_val (ffetargetLogical3 val)
 ffebldConstant
 ffebld_constant_new_logical4_val (ffetargetLogical4 val)
 {
-  ffebldConstant c;
   ffebldConstant nc;
-  int cmp;
-
-  for (c = (ffebldConstant) &ffebld_constant_logical4_;
-       c->next != NULL;
-       c = c->next)
-    {
-      cmp = ffetarget_cmp_logical4 (val, ffebld_constant_logical4 (c->next));
-      if (cmp == 0)
-	return c->next;
-      if (cmp > 0)
-	break;
-    }
+  ffebldConstant P;
+  ffebldConstant Q;
+  int cmp = 0;
+  P = ffebld_constant_logical4_;
+  Q = P;
+  if (!P)
+   {
+    /* make this node the root */
+     nc = malloc_new_kp (ffebld_constant_pool(),
+                         "FFEBLD_constLOGICAL4",
+                         sizeof (*nc));
+     nc->consttype = FFEBLD_constLOGICAL4;
+     nc->u.logical4 = val;
+     nc->hook = FFECOM_constantNULL;
+     nc->llink = NULL;
+     nc->rlink = NULL;
+     ffebld_constant_logical4_ = nc;
+     return nc;
+   }
+  else
+    while (P)
+     {
+       Q = P;
+       cmp = ffetarget_cmp_logical4 (val, ffebld_constant_logical4 (P));
+       if (cmp > 0)
+         P = P->llink;
+       else if (cmp < 0)
+         P = P->rlink;
+       else
+         return P;
+     }
 
   nc = malloc_new_kp (ffebld_constant_pool(),
 		      "FFEBLD_constLOGICAL4",
 		      sizeof (*nc));
-  nc->next = c->next;
   nc->consttype = FFEBLD_constLOGICAL4;
   nc->u.logical4 = val;
   nc->hook = FFECOM_constantNULL;
-  c->next = nc;
+  nc->llink = NULL;
+  nc->rlink = NULL;
 
+  if (cmp < 0)
+    Q->llink = nc;
+  else
+    Q->rlink = nc;
   return nc;
 }
 
@@ -986,30 +1245,52 @@ ffebld_constant_new_real1 (ffelexToken integer, ffelexToken decimal,
 ffebldConstant
 ffebld_constant_new_real1_val (ffetargetReal1 val)
 {
-  ffebldConstant c;
   ffebldConstant nc;
-  int cmp;
-
-  for (c = (ffebldConstant) &ffebld_constant_real1_;
-       c->next != NULL;
-       c = c->next)
-    {
-      cmp = ffetarget_cmp_real1 (val, ffebld_constant_real1 (c->next));
-      if (cmp == 0)
-	return c->next;
-      if (cmp > 0)
-	break;
-    }
+  ffebldConstant P;
+  ffebldConstant Q;
+  int cmp = 0;
+  P = ffebld_constant_real1_;
+  Q = P;
+  if (!P)
+   {
+    /* make this node the root */
+     nc = malloc_new_kp (ffebld_constant_pool(),
+                         "FFEBLD_constREAL1",
+                         sizeof (*nc));
+     nc->consttype = FFEBLD_constREAL1;
+     nc->u.real1 = val;
+     nc->hook = FFECOM_constantNULL;
+     nc->llink = NULL;
+     nc->rlink = NULL;
+     ffebld_constant_real1_ = nc;
+     return nc;
+   }
+  else
+    while (P)
+     {
+       Q = P;
+       cmp = ffetarget_cmp_real1 (val, ffebld_constant_real1 (P));
+       if (cmp > 0)
+         P = P->llink;
+       else if (cmp < 0)
+         P = P->rlink;
+       else
+         return P;
+     }
 
   nc = malloc_new_kp (ffebld_constant_pool(),
 		      "FFEBLD_constREAL1",
 		      sizeof (*nc));
-  nc->next = c->next;
   nc->consttype = FFEBLD_constREAL1;
   nc->u.real1 = val;
   nc->hook = FFECOM_constantNULL;
-  c->next = nc;
+  nc->llink = NULL;
+  nc->rlink = NULL;
 
+  if (cmp < 0)
+    Q->llink = nc;
+  else
+    Q->rlink = nc;
   return nc;
 }
 
@@ -1040,30 +1321,52 @@ ffebld_constant_new_real2 (ffelexToken integer, ffelexToken decimal,
 ffebldConstant
 ffebld_constant_new_real2_val (ffetargetReal2 val)
 {
-  ffebldConstant c;
   ffebldConstant nc;
-  int cmp;
-
-  for (c = (ffebldConstant) &ffebld_constant_real2_;
-       c->next != NULL;
-       c = c->next)
-    {
-      cmp = ffetarget_cmp_real2 (val, ffebld_constant_real2 (c->next));
-      if (cmp == 0)
-	return c->next;
-      if (cmp > 0)
-	break;
-    }
+  ffebldConstant P;
+  ffebldConstant Q;
+  int cmp = 0;
+  P = ffebld_constant_real2_;
+  Q = P;
+  if (!P)
+   {
+    /* make this node the root */
+     nc = malloc_new_kp (ffebld_constant_pool(),
+                         "FFEBLD_constREAL2",
+                         sizeof (*nc));
+     nc->consttype = FFEBLD_constREAL1;
+     nc->u.real2 = val;
+     nc->hook = FFECOM_constantNULL;
+     nc->llink = NULL;
+     nc->rlink = NULL;
+     ffebld_constant_real2_ = nc;
+     return nc;
+   }
+  else
+    while (P)
+     {
+       Q = P;
+       cmp = ffetarget_cmp_real2 (val, ffebld_constant_real2 (P));
+       if (cmp > 0)
+         P = P->llink;
+       else if (cmp < 0)
+         P = P->rlink;
+       else
+         return P;
+     }
 
   nc = malloc_new_kp (ffebld_constant_pool(),
 		      "FFEBLD_constREAL2",
 		      sizeof (*nc));
-  nc->next = c->next;
   nc->consttype = FFEBLD_constREAL2;
   nc->u.real2 = val;
   nc->hook = FFECOM_constantNULL;
-  c->next = nc;
+  nc->llink = NULL;
+  nc->rlink = NULL;
 
+  if (cmp < 0)
+    Q->llink = nc;
+  else
+    Q->rlink = nc;
   return nc;
 }
 
@@ -1203,31 +1506,54 @@ ffebld_constant_new_typeless_ov (ffelexToken t)
 ffebldConstant
 ffebld_constant_new_typeless_val (ffebldConst type, ffetargetTypeless val)
 {
-  ffebldConstant c;
-  ffebldConstant nc;
-  int cmp;
 
-  for (c = (ffebldConstant) &ffebld_constant_typeless_[type
-					      - FFEBLD_constTYPELESS_FIRST];
-       c->next != NULL;
-       c = c->next)
-    {
-      cmp = ffetarget_cmp_typeless (val, ffebld_constant_typeless (c->next));
-      if (cmp == 0)
-	return c->next;
-      if (cmp > 0)
-	break;
-    }
+  ffebldConstant nc;
+  ffebldConstant P;
+  ffebldConstant Q;
+  int cmp = 0;
+  P = ffebld_constant_typeless_[type
+                            - FFEBLD_constTYPELESS_FIRST];
+  Q = P;
+  if (!P)
+   {
+    /* make this node the root */
+     nc = malloc_new_kp (ffebld_constant_pool(),
+                         "FFEBLD_constTYPELESS",
+                         sizeof (*nc));
+     nc->consttype = type;
+     nc->u.typeless = val;
+     nc->hook = FFECOM_constantNULL;
+     nc->llink = NULL;
+     nc->rlink = NULL;
+     ffebld_constant_typeless_[type- FFEBLD_constTYPELESS_FIRST] = nc;
+     return nc;
+   }
+  else
+    while (P)
+     {
+       Q = P;
+       cmp = ffetarget_cmp_typeless (val, ffebld_constant_typeless (P));
+       if (cmp > 0)
+         P = P->llink;
+       else if (cmp < 0)
+         P = P->rlink;
+       else
+         return P;
+     }
 
   nc = malloc_new_kp (ffebld_constant_pool(),
 		      "FFEBLD_constTYPELESS",
 		      sizeof (*nc));
-  nc->next = c->next;
   nc->consttype = type;
   nc->u.typeless = val;
   nc->hook = FFECOM_constantNULL;
-  c->next = nc;
+  nc->llink = NULL;
+  nc->rlink = NULL;
 
+  if (cmp < 0)
+    Q->llink = nc;
+  else
+    Q->rlink = nc;
   return nc;
 }
 

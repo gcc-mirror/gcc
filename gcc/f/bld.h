@@ -299,10 +299,10 @@ struct _ffebld_
 
 struct _ffebld_constant_
   {
-    ffebldConstant next;
+    ffebldConstant rlink;
+    ffebldConstant llink;
     ffebldConstant first_complex;	/* First complex const with me as
 					   real. */
-    ffebldConstant negated;	/* We point to each other through here. */
     ffebldConst consttype;
     ffecomConstant hook;	/* Whatever the compiler/backend wants! */
     bool numeric;		/* A numeric kind of constant. */

@@ -1,3 +1,18 @@
+2004-07-12  Bud Davis  <bdavis9659@comcast.net>
+
+	* bld.c (ffebld_constant_new_character1, ffebld_constant_new_complex{1,2},
+	ffebld_constant_new_hollerith, ffebld_constant_new_integer1,
+	ffebld_constant_new_integer{1,2,3,4}_val, ffebld_constant_new_logical1,
+	ffebld_constant_new_logical{1,2,3,4}_val, ffebld_constant_new_real{1,2},
+	ffebld_constant_new_typeless_ov):
+	Fill and use `rlink' and `llink' pointers in _ffebld_ struct.
+	* bld.h (struct _ffebld_): remove 'next' pointer, add
+	`rlink, llink' pointers; remove `negate' entry.
+	* malloc.c (malloc_kill_area_): Adapt for new `mallocArea' pointer.
+	(malloc_display_): Adapt.
+	(malloc_new_inpool_): Set it.
+	(malloc_resize_inpool_): Ditto.
+
 2004-07-01  Release Manager
 
 	* GCC 3.4.1 released.
