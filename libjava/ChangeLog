@@ -1,3 +1,13 @@
+2003-02-04  Tom Tromey  <tromey@redhat.com>
+
+	* java/io/PipedOutputStream.java (flush): Declare as throwing
+	IOException.
+	(close): Likewise.
+	* java/io/PipedWriter.java (close): Declare as throwing
+	IOException.
+	* java/io/StringWriter.java (close): Declare as throwing
+	IOException.
+
 2003-02-03  Ranjit Mathew <rmathew@hotmail.com>
 
 	* java/lang/natRuntime.cc (java::lang::Runtime::_load)): Take care

@@ -1,5 +1,5 @@
 /* PipedOutputStream.java -- Write portion of piped streams.
-   Copyright (C) 1998, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2000, 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -154,7 +154,7 @@ public class PipedOutputStream extends OutputStream
     *           had read all available data. Thats not the case - this method
     *           appears to be a no-op?
     */
-  public void flush()
+  public void flush() throws IOException
   {
   }
   
@@ -165,7 +165,7 @@ public class PipedOutputStream extends OutputStream
     *
     * @exception IOException If an error occurs
     */
-  public void close()
+  public void close() throws IOException
   {
     // A close call on an unconnected PipedOutputStream has no effect.
     if (sink != null)
