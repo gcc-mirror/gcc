@@ -21,7 +21,6 @@
 
 #include "config.h"
 #include "system.h"
-#include <sys/resource.h>
 
 #ifdef HAVE_SYS_TIMES_H
 # include <sys/times.h>
