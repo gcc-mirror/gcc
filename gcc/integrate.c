@@ -103,11 +103,6 @@ function_cannot_inline_p (fndecl)
   if (current_function_contains_functions)
     return "function with nested functions cannot be inline";
 
-  /* This restriction may be eliminated sometime soon.  But for now, don't
-     worry about remapping the static chain.  */
-  if (current_function_needs_context)
-    return "nested function cannot be inline";
-
   /* If its not even close, don't even look.  */
   if (!DECL_INLINE (fndecl) && get_max_uid () > 3 * max_insns)
     return "function too large to be inline";
@@ -1147,6 +1142,7 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
   struct inline_remap *map;
   rtx cc0_insn = 0;
   rtvec arg_vector = ORIGINAL_ARG_VECTOR (header);
+  rtx static_chain_value = 0;
 
   /* Allow for equivalences of the pseudos we make for virtual fp and ap.  */
   max_regno = MAX_REGNUM (header) + 3;
@@ -1332,6 +1328,10 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
      that this function's PIC offset table must be used.  */
   if (FUNCTION_FLAGS (header) & FUNCTION_FLAGS_USES_PIC_OFFSET_TABLE)
     current_function_uses_pic_offset_table = 1;
+
+  /* If this function needs a context, set it up.  */
+  if (FUNCTION_FLAGS (header) & FUNCTION_FLAGS_NEEDS_CONTEXT)
+    static_chain_value = lookup_static_chain (fndecl);
 
   /* Process each argument.  For each, set up things so that the function's
      reference to the argument will refer to the argument being passed.
@@ -1586,6 +1586,20 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 		}
 	      else
 		break;
+	    }
+	  /* If this is setting the static chain pseudo, set it from
+	     the value we want to give it instead.  */
+	  else if (static_chain_value != 0
+		   && GET_CODE (pattern) == SET
+		   && rtx_equal_p (SET_SRC (pattern),
+				   static_chain_incoming_rtx))
+	    {
+	      rtx newdest = copy_rtx_and_substitute (SET_DEST (pattern), map);
+
+	      copy = emit_insn (gen_rtx (SET, VOIDmode, newdest,
+					 static_chain_value));
+
+	      static_chain_value = 0;
 	    }
 	  else
 	    copy = emit_insn (copy_rtx_and_substitute (pattern, map));
@@ -2812,8 +2826,6 @@ output_inline_function (fndecl)
   rtx head = DECL_SAVED_INSNS (fndecl);
   rtx last;
 
-  temporary_allocation ();
-
   current_function_decl = fndecl;
 
   /* This call is only used to initialize global variables.  */
@@ -2897,6 +2909,4 @@ output_inline_function (fndecl)
   rest_of_compilation (fndecl);
 
   current_function_decl = 0;
-
-  permanent_allocation ();
 }
