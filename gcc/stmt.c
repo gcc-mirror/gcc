@@ -1427,7 +1427,6 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	    break;
 
 	  case '?':  case '!':  case '*':  case '%':  case '&':
-	  case '0':  case '1':  case '2':  case '3':  case '4':
 	  case 'V':  case 'm':  case 'o':  case '<':  case '>':
 	  case 'E':  case 'F':  case 'G':  case 'H':  case 'X':
 	  case 's':  case 'i':  case 'n':
@@ -1439,6 +1438,12 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	    break;
 
 	  case 'p':  case 'g':  case 'r':
+	    /* Whether or not a numeric constraint allows a register is
+	       decided by the matching constraint, and so there is no need
+	       to do anything special with them.  We must handle them in
+	       the default case, so that we don't unnecessarily force
+	       operands to memory.  */
+	  case '0':  case '1':  case '2':  case '3':  case '4':
 	  default:
 	    allows_reg = 1;
 	    break;
@@ -1543,8 +1548,13 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 #endif
 	    break;
 
-	  case '0':  case '1':  case '2':  case '3':  case '4':
 	  case 'p':  case 'g':  case 'r':
+	    /* Whether or not a numeric constraint allows a register is
+	       decided by the matching constraint, and so there is no need
+	       to do anything special with them.  We must handle them in
+	       the default case, so that we don't unnecessarily force
+	       operands to memory.  */
+	  case '0':  case '1':  case '2':  case '3':  case '4':
 	  default:
 	    allows_reg = 1;
 	    break;
