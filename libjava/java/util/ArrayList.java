@@ -8,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -33,6 +33,8 @@ import java.io.Serializable;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.ObjectInputStream.GetField;
+import java.io.ObjectOutputStream.PutField;
 import java.io.ObjectStreamField;
 
 /**
@@ -41,34 +43,34 @@ import java.io.ObjectStreamField;
  * to or removing from the end of a list, checking the size, &c.
  *
  * @author        Jon A. Zeppieri
- * @version       $Id: ArrayList.java,v 1.4 2000/03/15 21:59:06 rao Exp $
+ * @version       $Id: ArrayList.java,v 1.6 2000/10/26 10:19:00 bryce Exp $
  * @see           java.util.AbstractList
  * @see           java.util.List
  */
-public class ArrayList extends AbstractList 
+public class ArrayList extends AbstractList
   implements List, Cloneable, Serializable
 {
   /** the default capacity for new ArrayLists */
   private static final int DEFAULT_CAPACITY = 16;
 
   /** the number of elements in this list */
-  int _iSize;
+  int size;
 
   /** where the data is stored */
-  Object[] _arData;
+  Object[] data;
 
   /** used for serialization -- denotes which fields are serialized */
   private static final ObjectStreamField[] serialPersistentFields =
-  {new ObjectStreamField("size", int.class)};
+    { new ObjectStreamField("size", int.class) };
 
   /** 
    * Construct a new ArrayList with the supplied initial capacity. 
    *
-   * @param     iCapacity
+   * @param capacity Initial capacity of this ArrayList
    */
-  public ArrayList(int iCapacity)
+  public ArrayList(int capacity)
   {
-    _arData = new Object[iCapacity];
+    data = new Object[capacity];
   }
 
 
@@ -85,60 +87,63 @@ public class ArrayList extends AbstractList
    * in the supplied Collection; Sun specs say that the initial 
    * capacity is 110% of the Collection's size.
    *
-   * @param        oCollection     the collection whose elements will
-   *                               initialize this list
+   * @param c the collection whose elements will initialize this list
    */
-  public ArrayList(Collection oCollection)
+  public ArrayList(Collection c)
   {
-    this((int) (oCollection.size() * 1.1));
-    addAll(oCollection);
+    this((int) (c.size() * 1.1));
+    addAll(c);
   }
 
   /**
    * Guarantees that this list will have at least enough capacity to
-   * hold iMinCapacity elements.
+   * hold minCapacity elements. 
    *
-   * @param      iMinCapacity     the minimum guaranteed capacity
+   * @specnote This implementation will grow the list to 
+   *   max(current * 2, minCapacity) if (minCapacity > current). The JCL says
+   *   explictly that "this method increases its capacity to minCap", while
+   *   the JDK 1.3 online docs specify that the list will grow to at least the
+   *   size specified.
+   * @param minCapacity the minimum guaranteed capacity
    */
-  public void ensureCapacity(int iMinCapacity)
+  public void ensureCapacity(int minCapacity)
   {
-    Object[] arNewData;
-    int iCapacity = _arData.length;
+    Object[] newData;
+    int current = data.length;
 
-    if (iMinCapacity > iCapacity)
-    {
-      arNewData = new Object[Math.max((iCapacity * 2), iMinCapacity)];
-      System.arraycopy(_arData, 0, arNewData, 0, iCapacity);
-      _arData = arNewData;
-    }
+    if (minCapacity > current)
+      {
+	newData = new Object[Math.max((current * 2), minCapacity)];
+	System.arraycopy(data, 0, newData, 0, size);
+	data = newData;
+      }
   }
 
   /**
    * Appends the supplied element to the end of this list.
    *
-   * @param       oElement      the element to be appended to this list
+   * @param       e      the element to be appended to this list
    */
-  public boolean add(Object oElement)
+  public boolean add(Object e)
   {
-    ensureCapacity(_iSize + 1);
-    _arData[_iSize++] = oElement;
     modCount++;
+    ensureCapacity(size + 1);
+    data[size++] = e;
     return true;
   }
 
   /**
    * Retrieves the element at the user-supplied index.
    *
-   * @param    iIndex        the index of the element we are fetching
+   * @param    index        the index of the element we are fetching
    * @throws   IndexOutOfBoundsException  (iIndex < 0) || (iIndex >= size())
    */
-  public Object get(int iIndex)
+  public Object get(int index)
   {
-    if (iIndex >= _iSize)
-      throw new IndexOutOfBoundsException("ArrayList size=" +
-                                          String.valueOf(_iSize) + "; " +
-                                          "index=" + String.valueOf(iIndex));
-    return _arData[iIndex];
+    if (index < 0 || index >= size)
+      throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + 
+                                          size);
+    return data[index];
   }
 
   /**
@@ -146,7 +151,7 @@ public class ArrayList extends AbstractList
    */
   public int size()
   {
-    return _iSize;
+    return size;
   }
 
   /**
@@ -156,152 +161,102 @@ public class ArrayList extends AbstractList
    * @return    the removed Object
    * @throws    IndexOutOfBoundsException  (iIndex < 0) || (iIndex >= size())
    */
-  public Object remove(int iIndex)
+  public Object remove(int index)
   {
-    Object oResult;
-
-    if (iIndex >= _iSize)
-      throw new IndexOutOfBoundsException("ArrayList size=" +
-                                          String.valueOf(_iSize) + "; " +
-                                          "index=" + String.valueOf(iIndex));
-
-    oResult = _arData[iIndex];
-
-    if (iIndex != --_iSize)
-      System.arraycopy(_arData, (iIndex + 1), _arData, iIndex, 
-                       (_iSize - iIndex));
-  
     modCount++;
-    _arData[_iSize] = null;
-
-    return oResult;
+    if (index < 0 || index > size)
+      throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + 
+                                          size);
+    Object r = data[index];
+    if (index != --size)
+      System.arraycopy(data, (index + 1), data, index, (size - index));
+    data[size] = null;
+    return r;
   }
 
   /**
    * Removes all elements in the half-open interval [iFromIndex, iToIndex).
    *
-   * @param     iFromIndex   the first index which will be removed
-   * @param     iToIndex     one greater than the last index which will be 
+   * @param     fromIndex   the first index which will be removed
+   * @param     toIndex     one greater than the last index which will be 
    *                         removed
    */
-  public void removeRange(int iFromIndex, int iToIndex)
+  protected void removeRange(int fromIndex, int toIndex)
   {
-    int iReduction;
-    int i;
-
-    if ((iFromIndex >= _iSize) || (iToIndex >= _iSize))
-    {
-      throw new IndexOutOfBoundsException("ArrayList size=" +
-                                          String.valueOf(_iSize) + "; " +
-                                          "indices=" + 
-                                          String.valueOf(iFromIndex) + "," +
-                                          String.valueOf(iToIndex));
-    }
-    else if (iFromIndex > iToIndex)
-    {
-      throw new IllegalArgumentException("fromIndex(" + 
-                                         String.valueOf(iFromIndex) + 
-                                         ") > toIndex(" +
-                                         String.valueOf(iToIndex) + ")");
-    }
-    else if (iFromIndex != iToIndex)
-    {
-      iReduction = iToIndex - iFromIndex;
-      System.arraycopy(_arData, (iFromIndex + iReduction), _arData,
-                       iFromIndex, (_iSize - iFromIndex - iReduction));
-      modCount++;
-
-      for (i = (iFromIndex + iReduction); i < _iSize; i++)
-        _arData[i] = null;
-
-      _iSize -= iReduction;
-    }
+    modCount++;
+    if (fromIndex != toIndex)
+      {
+	System.arraycopy(data, toIndex, data, fromIndex, size - toIndex);
+	size -= (fromIndex - toIndex);
+      }
   }
 
   /**
    * Adds the supplied element at the specified index, shifting all
    * elements currently at that index or higher one to the right.
    *
-   * @param     iIndex      the index at which the element is being added
-   * @param     oElement    the element being added
+   * @param     index      the index at which the element is being added
+   * @param     e          the item being added
    */
-  public void add(int iIndex, Object oElement)
+  public void add(int index, Object e)
   {
-    if (iIndex > _iSize)
-      throw new IndexOutOfBoundsException("ArrayList size=" +
-                                          String.valueOf(_iSize) + "; " +
-                                          "index=" + String.valueOf(iIndex));
-
-    ensureCapacity(_iSize + 1);
-    System.arraycopy(_arData, iIndex, _arData, 
-                      (iIndex + 1), (_iSize - iIndex));
-    _arData[iIndex] = oElement;
-    _iSize++;
     modCount++;
+    if (index < 0 || index > size)
+      throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + 
+                                          size);
+    ensureCapacity(size + 1);
+    if (index != size)
+      System.arraycopy(data, index, data, index + 1, size - index);    
+    data[index] = e;
+    size++;
   }
 
   /** 
    * Add each element in the supplied Collection to this List.
    *
-   * @param        oCollection     a Collection containing elements to be 
-   *                               added to this List
+   * @param        c          a Collection containing elements to be 
+   *                          added to this List
    */
-  public boolean addAll(Collection oCollection)
+  public boolean addAll(Collection c)
   {
-    Iterator itElements;
-    int iLen = oCollection.size();
-
-    if (iLen > 0)
-    {
-      ensureCapacity(_iSize + iLen);
-      modCount++;
-
-      itElements = oCollection.iterator();
-
-      while (itElements.hasNext())
-        _arData[_iSize++] = itElements.next();
-
-      return true;
-    }
-    return false;
+    Iterator itr = c.iterator();
+    int csize = c.size();
+    modCount++;
+    ensureCapacity(size + csize);
+    for (int pos = 0; pos < csize; pos++)
+      {
+	data[size++] = itr.next();
+      }
+    return (csize > 0);
   }
 
   /** 
    * Add all elements in the supplied collection, inserting them beginning
    * at the specified index.
    *
-   * @param     iIndex       the index at which the elements will be inserted
-   * @param     oCollection  the Collection containing the elements to be
-   *                         inserted
+   * @param     index       the index at which the elements will be inserted
+   * @param     c           the Collection containing the elements to be
+   *                        inserted
    */
-  public boolean addAll(int iIndex, Collection oCollection)
+  public boolean addAll(int index, Collection c)
   {
-    Iterator itElements;
-    int iLen;
+    Iterator itr = c.iterator();
+    int csize = c.size();
 
-    if (iIndex > _iSize)
-      throw new IndexOutOfBoundsException("ArrayList size=" +
-                                          String.valueOf(_iSize) + "; " +
-                                          "index=" + String.valueOf(iIndex));
-
-    iLen = oCollection.size();
-
-    if (iLen > 0)
-    {
-      ensureCapacity(_iSize + iLen);
-
-      System.arraycopy(_arData, iIndex, _arData, 
-                       (iIndex + iLen), (_iSize - iIndex));
-      modCount++;
-      _iSize += iLen;
-
-      itElements = oCollection.iterator();
-      while (itElements.hasNext())
-        _arData[iIndex++] = itElements.next();
-
-      return true;
-   }
-    return false;
+    modCount++;
+    if (index < 0 || index > size)
+      throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + 
+                                          size);
+    ensureCapacity(size + csize);
+    int end = index + csize;
+    if (size > 0 && index != size)
+      System.arraycopy(data, index, data, end, csize);
+    size += csize;
+    for (; index < end; index++)
+      {
+        data[index] = itr.next();
+      }
+    return (csize > 0);
   }
 
   /**
@@ -309,48 +264,44 @@ public class ArrayList extends AbstractList
    */
   public Object clone()
   {
-    ArrayList oClone;
-
+    ArrayList clone = null;
     try
-    {
-      oClone = (ArrayList) super.clone();
-      oClone._arData = _arData;
-      oClone._iSize = _iSize;
-    }
-    catch(CloneNotSupportedException e)
-    {
-      oClone = null;
-    }
-    return oClone;
+      {
+	clone = (ArrayList) super.clone();
+	clone.data = new Object[data.length];
+	System.arraycopy(data, 0, clone.data, 0, size);
+      }
+    catch (CloneNotSupportedException e) {}
+    return clone;
   }
 
   /** 
    * Returns true iff oElement is in this ArrayList.
    *
-   * @param     oElement     the element whose inclusion in the List is being
-   *                         tested
+   * @param     e     the element whose inclusion in the List is being
+   *                  tested
    */
-  public boolean contains(Object oElement)
+  public boolean contains(Object e)
   {
-    return (indexOf(oElement) != -1);
+    return (indexOf(e) != -1);
   }
 
   /**
    * Returns the lowest index at which oElement appears in this List, or 
    * -1 if it does not appear.
    *
-   * @param    oElement       the element whose inclusion in the List is being
-   *                          tested
+   * @param    e       the element whose inclusion in the List is being
+   *                   tested
    */
-  public int indexOf(Object oElement)
+  public int indexOf(Object e)
   {
     int i;
 
-    for (i = 0; i < _iSize; i++)
-    {
-      if (doesEqual(oElement, _arData[i]))
-        return i;
-    }
+    for (i = 0; i < size; i++)
+      {
+	if (e == null ? data[i] == null : e.equals(data[i]))
+	  return i;
+      }
     return -1;
   }
 
@@ -358,18 +309,18 @@ public class ArrayList extends AbstractList
    * Returns the highest index at which oElement appears in this List, or 
    * -1 if it does not appear.
    *
-   * @param    oElement       the element whose inclusion in the List is being
-   *                          tested
+   * @param    e       the element whose inclusion in the List is being
+   *                   tested
    */
-  public int lastIndexOf(Object oElement)
+  public int lastIndexOf(Object e)
   {
     int i;
 
-    for (i = _iSize - 1; i >= 0; i--)
-    {
-      if (doesEqual(oElement, _arData[i]))
-        return i;
-    }
+    for (i = size - 1; i >= 0; i--)
+      {
+	if (e == null ? data[i] == null : e.equals(data[i]))
+	  return i;
+      }
     return -1;
   }
 
@@ -378,39 +329,28 @@ public class ArrayList extends AbstractList
    */
   public void clear()
   {
-    int i;
-
-    if (_iSize > 0)
-    {
-      modCount++;
-      _iSize = 0;
-
-      for (i = 0; i < _iSize; i++)
-        _arData[i] = null;
-    }      
+    modCount++;
+    size = 0;
   }
 
   /**
    * Sets the element at the specified index.
    *
-   * @param     iIndex     the index at which the element is being set
-   * @param     oElement   the element to be set
+   * @param     index   the index at which the element is being set
+   * @param     e       the element to be set
    * @return    the element previously at the specified index, or null if
    *            none was there
    */
-  public Object set(int iIndex, Object oElement)
+  public Object set(int index, Object e)
   {
-    Object oResult;
-
-    if (iIndex >= _iSize)
-      throw new IndexOutOfBoundsException("ArrayList size=" +
-                                          String.valueOf(_iSize) + "; " +
-                                          "index=" + String.valueOf(iIndex));
-    oResult = _arData[iIndex];
+    Object result;
+    if (index < 0 || index >= size)
+      throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + 
+                                          size);
+    result = data[index];
     // SEH: no structural change, so don't update modCount
-    _arData[iIndex] = oElement;
-
-    return oResult;
+    data[index] = e;
+    return result;
   }
 
   /**
@@ -418,9 +358,9 @@ public class ArrayList extends AbstractList
    */
   public Object[] toArray()
   {
-    Object[] arObjects = new Object[_iSize];
-    System.arraycopy(_arData, 0, arObjects, 0, _iSize);
-    return arObjects;
+    Object[] array = new Object[size];
+    System.arraycopy(data, 0, array, 0, size);
+    return array;
   }
 
   /**
@@ -429,69 +369,61 @@ public class ArrayList extends AbstractList
    * elements in this ArrayList.  If the passed-in Array is not large enough
    * to store all of the elements in this List, a new Array will be created 
    * and returned; if the passed-in Array is <i>larger</i> than the size
-   * of this List, then size() + 1 index will be set to null.
+   * of this List, then size() index will be set to null.
    *
-   * @param      arObjects      the passed-in Array
+   * @param      array      the passed-in Array
    */
-  public Object[] toArray(Object[] arObjects)
+  public Object[] toArray(Object[] array)
   {
-    Object[] arReturn = (arObjects.length >= _iSize)
-      ? arObjects 
-      : (Object[])
-      Array.newInstance(arObjects.getClass().getComponentType(), _iSize);
-
-    System.arraycopy(_arData, 0, arReturn, 0, _iSize);
-
-    if (arReturn.length > _iSize)
-      arReturn[_iSize] = null;
-
-    return arReturn;
+    if (array.length < size)
+      array = (Object[]) Array.newInstance(array.getClass().getComponentType(), 
+        				   size);
+    else if (array.length > size)
+      array[size] = null;
+    System.arraycopy(data, 0, array, 0, size);
+    return array;
   }
 
   /**
-   * Trims the capacity of tjis List to be equal to its size; 
-   * a memory saver. 
+   * Trims the capacity of this List to be equal to its size; 
+   * a memory saver.   
    */
   public void trimToSize()
   {
-    Object[] arNewData = new Object[_iSize];
-    System.arraycopy(_arData, 0, arNewData, 0, _iSize);
-    modCount++;
-    _arData = arNewData;
+    // not a structural change from the perspective of iterators on this list, 
+    // so don't update modCount
+    Object[] newData = new Object[size];
+    System.arraycopy(data, 0, newData, 0, size);
+    data = newData;
   }
 
-  private void writeObject(ObjectOutputStream oOut)
-    throws IOException
+  private void writeObject(ObjectOutputStream out) throws IOException
   {
     int i;
 
-    ObjectOutputStream.PutField oFields = oOut.putFields();
-    oFields.put("size", _iSize);
-    oOut.writeFields();
+    ObjectOutputStream.PutField fields = out.putFields();
+    fields.put("size", size);
+    out.writeFields();
 
-    oOut.writeInt(_arData.length);
-    for (i = 0; i < _arData.length; i++)
-      oOut.writeObject(_arData[i]);
+    // FIXME: Do we really want to serialize unused list entries??
+    out.writeInt(data.length);
+    for (i = 0; i < data.length; i++)
+      out.writeObject(data[i]);
   }
 
-  private void readObject(ObjectInputStream oIn)
+  private void readObject(ObjectInputStream in)
     throws IOException, ClassNotFoundException
   {
     int i;
-    int iCapacity;
+    int capacity;
 
-    ObjectInputStream.GetField oFields = oIn.readFields();
-    _iSize = oFields.get("size", 0);
+    ObjectInputStream.GetField fields = in.readFields();
+    size = fields.get("size", 0);
 
-    iCapacity = oIn.readInt();
-    _arData = new Object[iCapacity];
+    capacity = in.readInt();
+    data = new Object[capacity];
 
-    for (i = 0; i < iCapacity; i++)
-      _arData[i] = oIn.readObject();
-  }
-
-  private static final boolean doesEqual(Object oOne, Object oTwo)
-  {
-    return ((oOne == null) ? (oTwo == null) : oOne.equals(oTwo));
+    for (i = 0; i < capacity; i++)
+      data[i] = in.readObject();
   }
 }
