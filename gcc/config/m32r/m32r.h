@@ -241,7 +241,7 @@ extern int target_flags;
 
 /* Support extended instruction set of m32r2.  */
 #define TARGET_M32R2_MASK       (1 << 6)
-#define TARGET_M32R2            (target_flags & TARGET_M32RX_MASK)
+#define TARGET_M32R2            (target_flags & TARGET_M32R2_MASK)
 #undef  TARGET_M32R
 #define TARGET_M32R             (! TARGET_M32RX && ! TARGET_M32R2)
 
