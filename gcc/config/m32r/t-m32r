@@ -32,12 +32,12 @@ CRTSTUFF_T_CFLAGS =
 crtinit.o: $(srcdir)/config/m32r/initfini.c $(GCC_PASSES) $(CONFIG_H)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS) \
 	  -DCRT_INIT -finhibit-size-directive -fno-inline-functions \
-	  -g0 -c $(srcdir)/config/m32r/initfini.c -o crtinit.o
+	  -g0 -mmodel=medium -c $(srcdir)/config/m32r/initfini.c -o crtinit.o
 
 crtfini.o: $(srcdir)/config/m32r/initfini.c $(GCC_PASSES) $(CONFIG_H)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS) \
 	  -DCRT_FINI -finhibit-size-directive -fno-inline-functions \
-	  -g0 -c $(srcdir)/config/m32r/initfini.c -o crtfini.o
+	  -g0 -mmodel=medium -c $(srcdir)/config/m32r/initfini.c -o crtfini.o
 
 
 # -mmodel={small,medium} requires separate libraries.

@@ -1,3 +1,11 @@
+1999-07-26  Andrew Haley  <aph@cygnus.com>
+
+	* config/m32r/initfini.c (__init): Use a full word immediate for
+	__fini: this allows it to be placed in any memory region.
+
+	* config/m32r/t-m32r: Compile crtinit.o and crtfini.o for
+	-mmodel=medium.  This is OK for all memory models.
+
 Mon Jul 26 11:58:46 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/arm.c: Replace %R%s in asm_fprintf strings with %r.
