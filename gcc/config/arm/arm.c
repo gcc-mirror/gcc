@@ -497,6 +497,12 @@ arm_override_options ()
   if (write_symbols != NO_DEBUG && flag_omit_frame_pointer)
     warning ("-g with -fomit-frame-pointer may not give sensible debugging");
   
+  if (TARGET_BUGGY_RETURN_IN_MEMORY && TARGET_ATPCS)
+    {
+      warning ("-mbuggy-return-in-memory is overriden by -matpcs.");
+      target_flags &= ~ARM_FLAG_BUGGY_RETURN_IN_MEMORY;
+    }
+  
   /* If stack checking is disabled, we can use r10 as the PIC register,
      which keeps r9 available.  */
   if (flag_pic && ! TARGET_APCS_STACK)
@@ -1393,16 +1399,19 @@ arm_return_in_memory (type)
      tree type;
 {
   if (! AGGREGATE_TYPE_P (type))
-    {
-      /* All simple types are returned in registers. */
-      return 0;
-    }
-  else if (int_size_in_bytes (type) > 4)
-    {
-      /* All structures/unions bigger than one word are returned in memory. */
-      return 1;
-    }
-  else if (TREE_CODE (type) == RECORD_TYPE)
+    /* All simple types are returned in registers. */
+    return 0;
+
+  if (int_size_in_bytes (type) > 4)
+    /* All structures/unions bigger than one word are returned in memory. */
+    return 1;
+
+  if (TARGET_ATPCS)
+    /* The ATPCS says that any structure or union of no larger than
+       one word is returned in a register.  */
+    return 0;
+  
+  if (TREE_CODE (type) == RECORD_TYPE)
     {
       tree field;
 
@@ -1424,13 +1433,21 @@ arm_return_in_memory (type)
 
       /* Check that the first field is valid for returning in a register...  */
 
-      /* ... Floats are not allowed */
-      if (FLOAT_TYPE_P (TREE_TYPE (field)))
+      /* The APCS only says that the structrue must be integer-like.  It
+	 does not say that it may not contain integer values.  Thus
+	 struct { float a; } should be returned in a register.  Earlier
+	 implementations got this wrong.  */
+      if (TARGET_BUGGY_RETURN_IN_MEMORY
+	  && FLOAT_TYPE_P (TREE_TYPE (field)))
 	return 1;
 
-      /* ... Aggregates that are not themselves valid for returning in
-	 a register are not allowed.  */
-      if (RETURN_IN_MEMORY (TREE_TYPE (field)))
+      /* Similarly the APCS only insists that all the sub-fields of a
+	 structure be addressible.  It does not insist that if these
+	 sub-fields themselves are structures that they also conform
+	 to the integer-like specification.  This is another thing
+	 that the old compiler did incorrectly.  */
+      if (TARGET_BUGGY_RETURN_IN_MEMORY
+	  && RETURN_IN_MEMORY (TREE_TYPE (field)))
 	return 1;
 
       /* Now check the remaining fields, if any.  Only bitfields are allowed,
@@ -1448,7 +1465,8 @@ arm_return_in_memory (type)
 
       return 0;
     }
-  else if (TREE_CODE (type) == UNION_TYPE)
+  
+  if (TREE_CODE (type) == UNION_TYPE)
     {
       tree field;
 
@@ -1471,8 +1489,8 @@ arm_return_in_memory (type)
       return 0;
     }
   
-  /* XXX Not sure what should be done for other aggregates, so put them in
-     memory. */
+  /* XXX Not sure what should be done for
+     other aggregates so put them in memory.  */
   return 1;
 }
 
@@ -1631,6 +1649,20 @@ arm_comp_type_attributes (type1, type2)
   return 1;
 }
 
+/* Check the ARM specific attributes on the given function decl.
+   If any of them would prevent the function from being inlined,
+   return a tesxtual description of why not.  Otherwise return NULL.  */
+const char *
+arm_function_attribute_inlineable_p (fndecl)
+     tree fndecl;
+{
+  if (lookup_attribute ("naked", DECL_MACHINE_ATTRIBUTES (fndecl)))
+    return "naked functions cannot be inlined";
+
+  /* Allow functions with short_call and long_call attributes to be inlined.  */
+  return NULL;
+}
+     
 /*  Encode long_call or short_call attribute by prefixing
     symbol name in DECL with a special character FLAG.  */
 void
@@ -3464,17 +3496,17 @@ multi_register_push (op, mode)
 }
 
 
-/* Routines for use with attributes */
+/* Routines for use with attributes.  */
 
 /* Return nonzero if ATTR is a valid attribute for DECL.
-   ATTRIBUTES are any existing attributes and ARGS are the arguments
-   supplied with ATTR.
+   ATTRIBUTES are any existing attributes and ARGS are
+   the arguments supplied with ATTR.
 
    Supported attributes:
 
-   naked: don't output any prologue or epilogue code, the user is assumed
-   to do the right thing.  */
-
+     naked: don't output any prologue or epilogue code,
+            the user is assumed to do the right thing.
+*/
 int
 arm_valid_machine_decl_attribute (decl, attr, args)
      tree decl;
@@ -6206,8 +6238,8 @@ arm_output_epilogue ()
 	      asm_fprintf (f, "\tbx\t%r\n", LR_REGNUM);
 	    }
 	  else if (lr_save_eliminated)
-	    asm_fprintf (f, "\tmov%c\t%r, %r\n",
-			 TARGET_APCS_32 ? ' ' : 's',
+	    asm_fprintf (f, 
+			 TARGET_APCS_32 ? "\tmov\t%r, %r\n" : "\tmovs\t%r, %r\n",
 			 PC_REGNUM, LR_REGNUM);
 	  else
 	    print_multi_reg (f, "ldmfd\t%r!", SP_REGNUM, live_regs_mask | 0x8000,
