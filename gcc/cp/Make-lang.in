@@ -114,6 +114,9 @@ c++.all.cross: g++-cross$(exeext)
 c++.start.encap: g++$(exeext)
 c++.rest.encap:
 
+c++.tags: force
+	cd $(srcdir)/cp; etags *.c *.h
+
 c++.info: 
 c++.dvi:
 c++.generated-manpages:
