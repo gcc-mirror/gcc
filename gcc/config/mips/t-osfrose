@@ -8,5 +8,6 @@ LIMITS_H	=
 # Suppress building libgcc1.a, since the MIPS compiler port is complete
 # and does not need anything from libgcc1.a.
 LIBGCC1 = libgcc1.null
+CROSS_LIBGCC1 = libgcc1.null
 
 halfpic.o: halfpic.c $(CONFIG_H) $(CONFIG2_H) $(RTL_H) $(TREE_H)
