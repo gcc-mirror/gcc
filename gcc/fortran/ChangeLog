@@ -4,6 +4,8 @@
 	* simplify.c (twos_complement): New function.
 	(gfc_simplify_ishft, gfc_simplify_ishftc): Revise.
 
+	* simplify.c (gfc_simplify_abs): Use mpfr_hypot for CABS.
+
 2004-10-06  Paul Brook  <paul@codesourcery.com>
 
 	* trans-stmt.c (gfc_trans_simple_do): New function.

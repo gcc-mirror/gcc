@@ -176,7 +176,6 @@ gfc_expr *
 gfc_simplify_abs (gfc_expr * e)
 {
   gfc_expr *result;
-  mpfr_t a, b;
 
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
@@ -203,17 +202,9 @@ gfc_simplify_abs (gfc_expr * e)
       result = gfc_constant_result (BT_REAL, e->ts.kind, &e->where);
 
       gfc_set_model_kind (e->ts.kind);
-      mpfr_init (a);
-      mpfr_init (b);
-      /* FIXME:  Possible numerical problems.  */
-      mpfr_mul (a, e->value.complex.r, e->value.complex.r, GFC_RND_MODE);
-      mpfr_mul (b, e->value.complex.i, e->value.complex.i, GFC_RND_MODE);
-      mpfr_add (a, a, b, GFC_RND_MODE);
-      mpfr_sqrt (result->value.real, a, GFC_RND_MODE);
 
-      mpfr_clear (a);
-      mpfr_clear (b);
-
+      mpfr_hypot (result->value.real, e->value.complex.r, 
+		  e->value.complex.i, GFC_RND_MODE);
       result = range_check (result, "CABS");
       break;
 
