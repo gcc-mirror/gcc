@@ -1,3 +1,21 @@
+2000-03-06  Tom Tromey  <tromey@cygnus.com>
+
+	* jni.cc (MARK_NONE): New define.
+	(MARK_USER): Likewise.
+	(MARK_SYSTEM): Likewise.
+	(struct _Jv_JNI_LocalFrame): Made `marker' bigger and `size'
+	smaller.
+	(_Jv_JNI_DeleteLocalRef): Use MARK_NONE in assert.
+	(_Jv_JNI_EnsureLocalCapacity): Use MARK_NONE.
+	(_Jv_JNI_PushLocalFrame): Use MARK_USER.
+	(_Jv_JNI_PopLocalFrame): New version with additional `stop'
+	argument.
+	(call): Use MARK_SYSTEM.
+	(_Jv_GetJNIEnvNewFrame): New function.
+	(_Jv_LookupJNIMethod): New function.
+	(_Jv_JNI_PopSystemFrame): New function.
+	(call): Use _Jv_JNI_PopSystemFrame and _Jv_LookupJNIMethod.
+
 2000-03-05  Tom Tromey  <tromey@cygnus.com>
 
 	Fix for PR libgcj/43:
