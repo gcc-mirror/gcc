@@ -664,8 +664,14 @@ extern PTR_T	xcalloc		__proto((Size_t, Size_t));
 extern PTR_T	xrealloc	__proto((PTR_T, Size_t));
 extern void	xfree		__proto((PTR_T));
 
+#ifdef HAVE_VPRINTF
 extern void	fatal		__proto((char *format, ...));
 extern void	error		__proto((char *format, ...));
+#else
+/* We must not provide any prototype here, even if ANSI C.  */
+extern void	fatal		__proto(());
+extern void	error		__proto(());
+#endif
 
 
 #ifndef MIPS_DEBUGGING_INFO
