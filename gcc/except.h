@@ -1,5 +1,6 @@
 /* Exception Handling interface routines.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001
+   Free Software Foundation, Inc.
    Contributed by Mike Stump <mrs@cygnus.com>.
 
 This file is part of GNU CC.
@@ -130,6 +131,7 @@ extern void output_function_exception_table	PARAMS ((void));
 extern void expand_builtin_unwind_init		PARAMS ((void));
 extern rtx expand_builtin_eh_return_data_regno	PARAMS ((tree));
 extern rtx expand_builtin_extract_return_addr	PARAMS ((tree));
+extern void expand_builtin_init_dwarf_reg_sizes PARAMS ((tree));
 extern rtx expand_builtin_frob_return_addr	PARAMS ((tree));
 extern rtx expand_builtin_dwarf_fp_regnum	PARAMS ((void));
 extern void expand_builtin_eh_return		PARAMS ((tree, tree));
