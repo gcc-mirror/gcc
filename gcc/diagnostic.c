@@ -152,7 +152,7 @@ init_output_buffer (buffer, prefix, max_length)
      char *prefix;
      int max_length;
 {
-  int prefix_length = strlen (prefix);
+  int prefix_length = prefix == 0 ? 0 : strlen (prefix);
 
   obstack_init (&buffer->obstack);
   buffer->prefix = prefix;
