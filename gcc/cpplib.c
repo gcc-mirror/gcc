@@ -358,6 +358,10 @@ struct file_name_list
     int got_name_map;
   };
 
+/* If a buffer's dir field is SELF_DIR_DUMMY, it means the file was found
+   via the same directory as the file that #included it. */
+#define SELF_DIR_DUMMY ((struct file_name_list*)(~0))
+
 /* #include "file" looks in source file dir, then stack. */
 /* #include <file> just looks in the stack. */
 /* -I directories are added to the end, then the defaults are added. */
@@ -3338,7 +3342,9 @@ do_include (pfile, keyword, unused1, unused2)
 	  {
 	    /* fp->dir is null if the containing file was specified with
 	       an absolute file name.  In that case, don't skip anything.  */
-	    if (fp->dir)
+	    if (fp->dir == SELF_DIR_DUMMY)
+	      search_start = CPP_OPTIONS (pfile)->include;
+	    else if (fp->dir)
 	      search_start = fp->dir->next;
 	    break;
 	  }
@@ -3580,7 +3586,7 @@ do_include (pfile, keyword, unused1, unused2)
     
     /* Actually process the file */
     if (finclude (pfile, f, fname, is_system_include (pfile, fname),
-		  searchptr))
+		  searchptr != dsp ? searchptr : SELF_DIR_DUMMY))
       {
 	output_line_command (pfile, 0, enter_file);
 	pfile->only_seen_white = 2;
@@ -5620,7 +5626,7 @@ open_include_file (filename, searchptr)
    "system" include directories (as decided by the `is_system_include'
    function above).
    DIRPTR is the link in the dir path through which this file was found,
-   or 0 if the file name was absolute.
+   or 0 if the file name was absolute or via the current directory.
    Return 1 on success, 0 on failure. */
 
 static int
@@ -6241,7 +6247,7 @@ push_parse_file (pfile, fname)
     pedwarn ("file does not end in newline");
 
 #endif
-  if (finclude (pfile, f, fname, 0, 0))
+  if (finclude (pfile, f, fname, 0, NULL_PTR))
     output_line_command (pfile, 0, same_file);
   return SUCCESS_EXIT_CODE;
 }
