@@ -63,7 +63,7 @@ LIBERTY = ../../libiberty/libiberty.a
 LIBOBJ  = gnu-regex.o fixlib.o $(LIBERTY)
 FIOBJ   = fixincl.o server.o procopen.o $(LIBOBJ)
 
-HDR = server.h gnu-regex.h fixlib.h
+HDR = server.h gnu-regex.h fixlib.h machname.h
 
 SH_TARGET  = inclhack.sh fixincl.sh
 BIN_TARGET = fixincl fixfixes fixtests
@@ -106,7 +106,7 @@ fixincl.sh: inclhack.tpl
 	cd $(srcdir) ; ./genfixes $@
 
 clean:
-	rm -f *.o $(TARGETS) fixincl.x
+	rm -f *.o $(TARGETS) fixincl.x machname.h
 
 #  Ensure all the targets are built.  If the program "fixincl"
 #  failed to compile, link or load, then we install the
