@@ -2248,6 +2248,7 @@ expand_return (retval)
 	  emit_label_after (tail_recursion_label,
 			    tail_recursion_reentry);
 	}
+      emit_queue ();
       expand_goto_internal (0, tail_recursion_label, last_insn);
       emit_barrier ();
       return;
