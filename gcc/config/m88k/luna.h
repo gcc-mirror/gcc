@@ -27,7 +27,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define DEFAULT_GDB_EXTENSIONS 0
 
 #include "aoutos.h"
-#include "m88k.h"
+#include "m88k/m88k.h"
 
 /* Identify the compiler.  */
 #undef  VERSION_INFO1
