@@ -1,6 +1,6 @@
 // 2003-02-26 Benjamin Kosnik <bkoz@redhat.com>
 
-// Copyright (C) 2003 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,7 +31,9 @@ int main()
   // or variable "f" 
   // int f;
   // B f
-  verify_demangle("f", "error code = -2: invalid mangled name");
+  // f is ambiguous between variable external name and internal built-in type
+  // name.  The ambiguity is resolved to the built-in type name.
+  verify_demangle("f", "float");
 
   return 0;
 }
