@@ -6627,7 +6627,8 @@ expand_expr (exp, target, tmode, modifier)
  	    && GET_MODE_SIZE (mode) == 1
 	    && modifier != EXPAND_WRITE)
  	  return
-	    GEN_INT (TREE_STRING_POINTER (string)[TREE_INT_CST_LOW (index)]);
+	    GEN_INT (trunc_int_for_mode (TREE_STRING_POINTER (string)
+					 [TREE_INT_CST_LOW (index)], mode));
 
 	op0 = expand_expr (exp1, NULL_RTX, VOIDmode, EXPAND_SUM);
 	op0 = memory_address (mode, op0);
@@ -6677,7 +6678,8 @@ expand_expr (exp, target, tmode, modifier)
 	    && GET_MODE_CLASS (mode) == MODE_INT
 	    && GET_MODE_SIZE (mode) == 1)
 	  return
-	    GEN_INT (TREE_STRING_POINTER (array)[TREE_INT_CST_LOW (index)]);
+	    GEN_INT (trunc_int_for_mode (TREE_STRING_POINTER (array)
+					 [TREE_INT_CST_LOW (index)], mode));
 
 	/* If this is a constant index into a constant array,
 	   just get the value from the array.  Handle both the cases when
@@ -6737,9 +6739,9 @@ expand_expr (exp, target, tmode, modifier)
 
 		    if (GET_MODE_CLASS (mode) == MODE_INT
 			&& GET_MODE_SIZE (mode) == 1)
-		      return (GEN_INT
-			      (TREE_STRING_POINTER
-			       (init)[TREE_INT_CST_LOW (index)]));
+		      return GEN_INT (trunc_int_for_mode
+				      (TREE_STRING_POINTER (init)
+				       [TREE_INT_CST_LOW (index)], mode));
 		  }
 	      }
 	  }

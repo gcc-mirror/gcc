@@ -1,3 +1,8 @@
+2002-03-17  David Edelsohn  <edelsohn@gnu.org>
+
+	* expr.c (expand_expr): Sign-extend CONST_INT generated from
+	TREE_STRING_POINTER.
+
 2002-03-16  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/ia64.c (ia64_attribute_table): Move before
