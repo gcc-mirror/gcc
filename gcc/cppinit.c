@@ -1156,34 +1156,7 @@ new_pending_directive (pend, text, handler)
   DEF_OPT("MT",                       no_tgt, OPT_MT)                         \
   DEF_OPT("P",                        0,      OPT_P)                          \
   DEF_OPT("U",                        no_mac, OPT_U)                          \
-  DEF_OPT("Wall",                     0,      OPT_Wall)                       \
-  DEF_OPT("Wcomment",                 0,      OPT_Wcomment)                   \
-  DEF_OPT("Wcomments",                0,      OPT_Wcomments)                  \
-  DEF_OPT("Wendif-labels",            0,      OPT_Wendif_labels)              \
-  DEF_OPT("Werror",                   0,      OPT_Werror)                     \
-  DEF_OPT("Wimport",                  0,      OPT_Wimport)                    \
-  DEF_OPT("Wno-comment",              0,      OPT_Wno_comment)                \
-  DEF_OPT("Wno-comments",             0,      OPT_Wno_comments)               \
-  DEF_OPT("Wno-endif-labels",         0,      OPT_Wno_endif_labels)           \
-  DEF_OPT("Wno-error",                0,      OPT_Wno_error)                  \
-  DEF_OPT("Wno-import",               0,      OPT_Wno_import)                 \
-  DEF_OPT("Wno-system-headers",       0,      OPT_Wno_system_headers)         \
-  DEF_OPT("Wno-traditional",          0,      OPT_Wno_traditional)            \
-  DEF_OPT("Wno-trigraphs",            0,      OPT_Wno_trigraphs)              \
-  DEF_OPT("Wno-undef",                0,      OPT_Wno_undef)                  \
-  DEF_OPT("Wno-unused-macros",        0,      OPT_Wno_unused_macros)          \
-  DEF_OPT("Wsystem-headers",          0,      OPT_Wsystem_headers)            \
-  DEF_OPT("Wtraditional",             0,      OPT_Wtraditional)               \
-  DEF_OPT("Wtrigraphs",               0,      OPT_Wtrigraphs)                 \
-  DEF_OPT("Wundef",                   0,      OPT_Wundef)                     \
-  DEF_OPT("Wunused-macros",           0,      OPT_Wunused_macros)             \
   DEF_OPT("d",                        no_arg, OPT_d)                          \
-  DEF_OPT("fno-operator-names",       0,      OPT_fno_operator_names)         \
-  DEF_OPT("fno-preprocessed",         0,      OPT_fno_preprocessed)           \
-  DEF_OPT("fno-show-column",          0,      OPT_fno_show_column)            \
-  DEF_OPT("fpreprocessed",            0,      OPT_fpreprocessed)              \
-  DEF_OPT("fshow-column",             0,      OPT_fshow_column)               \
-  DEF_OPT("ftabstop=",                no_num, OPT_ftabstop)                   \
   DEF_OPT("h",                        0,      OPT_h)                          \
   DEF_OPT("idirafter",                no_dir, OPT_idirafter)                  \
   DEF_OPT("imacros",                  no_fil, OPT_imacros)                    \
@@ -1200,8 +1173,6 @@ new_pending_directive (pend, text, handler)
   DEF_OPT("nostdinc",                 0,      OPT_nostdinc)                   \
   DEF_OPT("nostdinc++",               0,      OPT_nostdincplusplus)           \
   DEF_OPT("o",                        no_fil, OPT_o)                          \
-  DEF_OPT("pedantic",                 0,      OPT_pedantic)                   \
-  DEF_OPT("pedantic-errors",          0,      OPT_pedantic_errors)            \
   DEF_OPT("remap",                    0,      OPT_remap)                      \
   DEF_OPT("std=c++98",                0,      OPT_std_cplusplus98)            \
   DEF_OPT("std=c89",                  0,      OPT_std_c89)                    \
@@ -1363,31 +1334,6 @@ cpp_handle_option (pfile, argc, argv)
 	{
 	case N_OPTS: /* Shut GCC up.  */
 	  break;
-	case OPT_fno_operator_names:
-	  CPP_OPTION (pfile, operator_names) = 0;
-	  break;
-	case OPT_fpreprocessed:
-	  CPP_OPTION (pfile, preprocessed) = 1;
-	  break;
-	case OPT_fno_preprocessed:
-	  CPP_OPTION (pfile, preprocessed) = 0;
-	  break;
-	case OPT_fshow_column:
-	  CPP_OPTION (pfile, show_column) = 1;
-	  break;
-	case OPT_fno_show_column:
-	  CPP_OPTION (pfile, show_column) = 0;
-	  break;
-	case OPT_ftabstop:
-	  /* Silently ignore empty string, non-longs and silly values.  */
-	  if (arg[0] != '\0')
-	    {
-	      char *endptr;
-	      long tabstop = strtol (arg, &endptr, 10);
-	      if (*endptr == '\0' && tabstop >= 1 && tabstop <= 100)
-		CPP_OPTION (pfile, tabstop) = tabstop;
-	    }
-	  break;
 	case OPT_w:
 	  CPP_OPTION (pfile, inhibit_warnings) = 1;
 	  break;
@@ -1420,13 +1366,6 @@ cpp_handle_option (pfile, argc, argv)
 	  break;
 	case OPT_D:
 	  new_pending_directive (pend, arg, cpp_define);
-	  break;
-	case OPT_pedantic_errors:
-	  CPP_OPTION (pfile, pedantic_errors) = 1;
-	  /* fall through */
-	case OPT_pedantic:
-	  CPP_OPTION (pfile, pedantic) = 1;
-	  CPP_OPTION (pfile, warn_endif_labels) = 1;
 	  break;
 	case OPT_trigraphs:
 	  CPP_OPTION (pfile, trigraphs) = 1;
@@ -1666,77 +1605,6 @@ cpp_handle_option (pfile, argc, argv)
 	case OPT_idirafter:
 	  /* Add directory to end of path for includes.  */
 	  append_include_chain (pfile, xstrdup (arg), AFTER, 0);
-	  break;
-
-	case OPT_Wall:
-	  CPP_OPTION (pfile, warn_trigraphs) = 1;
-	  CPP_OPTION (pfile, warn_comments) = 1;
-	  CPP_OPTION (pfile, warn_num_sign_change) = 1;
-	  break;
-
-	case OPT_Wtraditional:
-	  CPP_OPTION (pfile, warn_traditional) = 1;
-	  break;
-	case OPT_Wno_traditional:
-	  CPP_OPTION (pfile, warn_traditional) = 0;
-	  break;
-
-	case OPT_Wtrigraphs:
-	  CPP_OPTION (pfile, warn_trigraphs) = 1;
-	  break;
-	case OPT_Wno_trigraphs:
-	  CPP_OPTION (pfile, warn_trigraphs) = 0;
-	  break;
-
-	case OPT_Wcomment:
-	case OPT_Wcomments:
-	  CPP_OPTION (pfile, warn_comments) = 1;
-	  break;
-	case OPT_Wno_comment:
-	case OPT_Wno_comments:
-	  CPP_OPTION (pfile, warn_comments) = 0;
-	  break;
-
-	case OPT_Wunused_macros:
-	  CPP_OPTION (pfile, warn_unused_macros) = 1;
-	  break;
-	case OPT_Wno_unused_macros:
-	  CPP_OPTION (pfile, warn_unused_macros) = 0;
-	  break;
-
-	case OPT_Wundef:
-	  CPP_OPTION (pfile, warn_undef) = 1;
-	  break;
-	case OPT_Wno_undef:
-	  CPP_OPTION (pfile, warn_undef) = 0;
-	  break;
-
-	case OPT_Wimport:
-	  CPP_OPTION (pfile, warn_import) = 1;
-	  break;
-	case OPT_Wno_import:
-	  CPP_OPTION (pfile, warn_import) = 0;
-	  break;
-
-	case OPT_Wendif_labels:
-	  CPP_OPTION (pfile, warn_endif_labels) = 1;
-	  break;
-	case OPT_Wno_endif_labels:
-	  CPP_OPTION (pfile, warn_endif_labels) = 0;
-	  break;
-
-	case OPT_Werror:
-	  CPP_OPTION (pfile, warnings_are_errors) = 1;
-	  break;
-	case OPT_Wno_error:
-	  CPP_OPTION (pfile, warnings_are_errors) = 0;
-	  break;
-
-	case OPT_Wsystem_headers:
-	  CPP_OPTION (pfile, warn_system_headers) = 1;
-	  break;
-	case OPT_Wno_system_headers:
-	  CPP_OPTION (pfile, warn_system_headers) = 0;
 	  break;
 	}
     }

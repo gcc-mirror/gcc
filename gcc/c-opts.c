@@ -30,6 +30,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tree-inline.h"
 #include "diagnostic.h"
 
+static cpp_options *cpp_opts;
+
 static void missing_arg PARAMS ((size_t));
 static size_t parse_option PARAMS ((const char *, int));
 static void set_Wimplicit PARAMS ((int));
@@ -52,24 +54,42 @@ static void write_langs PARAMS ((char *, int));
 /* This is the list of all command line options, with the leading "-"
    removed.  It must be sorted in ASCII collating order.  All options
    beginning with "f" or "W" are implicitly assumed to take a "no-"
-   form; this form should not be listed.  If you don't want a "no-"
-   form, your handler should check and reject it.
+   form; this form should not be listed.  The variable "on" is true if
+   the positive form is given, otherwise it is false.  If you don't
+   want to allow a "no-" form, your handler should reject "on" being
+   false by returning zero.  See, for example, the handling of
+   -ftabstop=.
 
    If the user gives an option to a front end that doesn't support it,
    an error is output, mentioning which front ends the option is valid
    for.  If you don't want this, you must accept it for all front
-   ends, and test for the front end in the option handler.  */
+   ends, and test for the front end in the option handler.  See, for
+   example, the handling of -Wno-strict-prototypes for C++.
+
+   If you request an argument with CL_JOINED, CL_SEPARATE or their
+   combination CL_ARG, it is stored in the variable "arg", which is
+   guaranteed non-NULL.  It points to the argument either within the
+   argv[] vector or within one of its strings, and so the text is not
+   temporary and copies need not be made.
+
+   If you use the CL_SEPARATE flag (which is also in CL_ARG) be sure
+   to add an error message in missing_arg().  */
+
 #define COMMAND_LINE_OPTIONS						     \
   OPT("E",			CL_ALL,   OPT_E)			     \
   OPT("Wall",			CL_ALL,   OPT_Wall)			     \
   OPT("Wbad-function-cast",	CL_C,     OPT_Wbad_function_cast)	     \
   OPT("Wcast-qual",		CL_ALL,   OPT_Wcast_qual)		     \
   OPT("Wchar-subscripts",	CL_ALL,   OPT_Wchar_subscripts)		     \
+  OPT("Wcomment",		CL_ALL,   OPT_Wcomment)			     \
+  OPT("Wcomments",              CL_ALL,   OPT_Wcomments)		     \
   OPT("Wconversion",		CL_ALL,   OPT_Wconversion)		     \
   OPT("Wctor-dtor-privacy",	CL_CXX,   OPT_Wctor_dtor_privacy)	     \
   OPT("Wdeprecated",		CL_CXX,   OPT_Wdeprecated)		     \
   OPT("Wdiv-by-zero",		CL_C,     OPT_Wdiv_by_zero)		     \
   OPT("Weffc++",		CL_CXX,   OPT_Weffcxx)			     \
+  OPT("Wendif-labels",		CL_ALL,   OPT_Wendif_labels)		     \
+  OPT("Werror",                 CL_ALL,   OPT_Werror)			     \
   OPT("Werror-implicit-function-declaration",				     \
 	     			CL_C,     OPT_Werror_implicit_function_decl) \
   OPT("Wfloat-equal",		CL_ALL,   OPT_Wfloat_equal)		     \
@@ -83,6 +103,7 @@ static void write_langs PARAMS ((char *, int));
   OPT("Wimplicit",		CL_CXX,   OPT_Wimplicit)		     \
   OPT("Wimplicit-function-declaration",	CL_C, OPT_Wimplicit_function_decl)   \
   OPT("Wimplicit-int",		CL_C,	  OPT_Wimplicit_int)		     \
+  OPT("Wimport",                CL_ALL,   OPT_Wimport)			     \
   OPT("Wlong-long",		CL_ALL,   OPT_Wlong_long)		     \
   OPT("Wmain",			CL_C,     OPT_Wmain)			     \
   OPT("Wmissing-braces",	CL_ALL,   OPT_Wmissing_braces)		     \
@@ -109,8 +130,12 @@ static void write_langs PARAMS ((char *, int));
   OPT("Wsign-promo",		CL_CXX,   OPT_Wsign_promo)		     \
   OPT("Wstrict-prototypes",	CL_ALL,   OPT_Wstrict_prototypes)	     \
   OPT("Wsynth",			CL_CXX,   OPT_Wsynth)			     \
+  OPT("Wsystem-headers",	CL_ALL,   OPT_Wsystem_headers)		     \
   OPT("Wtraditional",		CL_C,     OPT_Wtraditional)		     \
+  OPT("Wtrigraphs",		CL_ALL,   OPT_Wtrigraphs)		     \
+  OPT("Wundef",			CL_ALL,   OPT_Wundef)			     \
   OPT("Wunknown-pragmas",	CL_ALL,   OPT_Wunknown_pragmas)		     \
+  OPT("Wunused-macros",		CL_ALL,   OPT_Wunused_macros)		     \
   OPT("Wwrite-strings",		CL_ALL,   OPT_Wwrite_strings)		     \
   OPT("ansi",			CL_ALL,   OPT_ansi)			     \
   OPT("faccess-control",	CL_CXX,   OPT_faccess_control)		     \
@@ -151,18 +176,22 @@ static void write_langs PARAMS ((char *, int));
   OPT("fnext-runtime",		CL_OBJC,  OPT_fnext_runtime)		     \
   OPT("fnonansi-builtins",	CL_CXX,   OPT_fnonansi_builtins)	     \
   OPT("fnonnull-objects",	CL_CXX,   OPT_fnonnull_objects)		     \
+  OPT("foperator-names",	CL_CXX,   OPT_foperator_names)		     \
   OPT("foptional-diags",	CL_CXX,   OPT_foptional_diags)		     \
   OPT("fpermissive",		CL_CXX,   OPT_fpermissive)		     \
+  OPT("fpreprocessed",		CL_ALL,   OPT_fpreprocessed)		     \
   OPT("frepo",			CL_CXX,   OPT_frepo)			     \
   OPT("frtti",			CL_CXX,   OPT_frtti)			     \
   OPT("fshort-double",		CL_ALL,   OPT_fshort_double)		     \
   OPT("fshort-enums",		CL_ALL,   OPT_fshort_enums)		     \
   OPT("fshort-wchar",		CL_ALL,   OPT_fshort_wchar)		     \
+  OPT("fshow-column",		CL_ALL,   OPT_fshow_column)		     \
   OPT("fsigned-bitfields",	CL_ALL,   OPT_fsigned_bitfields)	     \
   OPT("fsigned-char",		CL_ALL,   OPT_fsigned_char)		     \
   OPT("fsquangle",		CL_CXX,   OPT_fsquangle)		     \
   OPT("fstats",			CL_CXX,   OPT_fstats)			     \
   OPT("fstrict-prototype",	CL_CXX,   OPT_fstrict_prototype)	     \
+  OPT("ftabstop=",              CL_ALL | CL_JOINED,   OPT_ftabstop)	     \
   OPT("ftemplate-depth-",	CL_CXX | CL_JOINED, OPT_ftemplate_depth)     \
   OPT("fthis-is-variable",	CL_CXX,   OPT_fthis_is_variable)	     \
   OPT("funsigned-bitfields",	CL_ALL,   OPT_funsigned_bitfields)	     \
@@ -173,6 +202,8 @@ static void write_langs PARAMS ((char *, int));
   OPT("fweak",			CL_CXX,   OPT_fweak)			     \
   OPT("fxref",			CL_CXX,   OPT_fxref)			     \
   OPT("gen-decls",		CL_OBJC,  OPT_gen_decls)		     \
+  OPT("pedantic",		CL_ALL,   OPT_pedantic)			     \
+  OPT("pedantic-errors",	CL_ALL,   OPT_pedantic_errors)		     \
   OPT("print-objc-runtime-info", CL_OBJC, OPT_print_objc_runtime_info)	     \
   OPT("std=",			CL_ALL | CL_JOINED, OPT_std_bad)	     \
   OPT("std=c++98",		CL_CXX,	  OPT_std_cplusplus98)		     \
@@ -337,8 +368,10 @@ c_common_init_options (lang)
   c_language = lang;
   parse_in = cpp_create_reader (lang == clk_c || lang == clk_objective_c
 				? CLK_GNUC89 : CLK_GNUCXX);
+  cpp_opts = cpp_get_options (parse_in);
+
   if (lang == clk_objective_c)
-    cpp_get_options (parse_in)->objc = 1;
+    cpp_opts->objc = 1;
 
   flag_const_strings = (lang == clk_cplusplus);
   warn_pointer_arith = (lang == clk_cplusplus);
@@ -472,6 +505,10 @@ c_common_decode_option (argc, argv)
 	  warn_reorder = on;
 	  warn_nontemplate_friend = on;
 	}
+
+      cpp_opts->warn_trigraphs = on;
+      cpp_opts->warn_comments = on;
+      cpp_opts->warn_num_sign_change = on;
       break;
 
     case OPT_Wbad_function_cast:
@@ -484,6 +521,11 @@ c_common_decode_option (argc, argv)
 
     case OPT_Wchar_subscripts:
       warn_char_subscripts = on;
+      break;
+
+    case OPT_Wcomment:
+    case OPT_Wcomments:
+      cpp_opts->warn_comments = on;
       break;
 
     case OPT_Wconversion:
@@ -504,6 +546,14 @@ c_common_decode_option (argc, argv)
 
     case OPT_Weffcxx:
       warn_ecpp = on;
+      break;
+
+    case OPT_Wendif_labels:
+      cpp_opts->warn_endif_labels = on;
+      break;
+
+    case OPT_Werror:
+      cpp_opts->warnings_are_errors = on;
       break;
 
     case OPT_Werror_implicit_function_decl:
@@ -557,6 +607,10 @@ c_common_decode_option (argc, argv)
 
     case OPT_Wimplicit_int:
       warn_implicit_int = on;
+      break;
+
+    case OPT_Wimport:
+      cpp_opts->warn_import = on;
       break;
 
     case OPT_Wlong_long:
@@ -669,14 +723,31 @@ c_common_decode_option (argc, argv)
       warn_synth = on;
       break;
 
+    case OPT_Wsystem_headers:
+      cpp_opts->warn_system_headers = on;
+      break;
+
     case OPT_Wtraditional:
       warn_traditional = on;
+      cpp_opts->warn_traditional = on;
+      break;
+
+    case OPT_Wtrigraphs:
+      cpp_opts->warn_trigraphs = on;
+      break;
+
+    case OPT_Wundef:
+      cpp_opts->warn_undef = on;
       break;
 
     case OPT_Wunknown_pragmas:
       /* Set to greater than 1, so that even unknown pragmas in
 	 system headers will be warned about.  */  
       warn_unknown_pragmas = on * 2;
+      break;
+
+    case OPT_Wunused_macros:
+      cpp_opts->warn_unused_macros = on;
       break;
 
     case OPT_Wwrite_strings:
@@ -869,12 +940,20 @@ c_common_decode_option (argc, argv)
       flag_no_nonansi_builtin = !on;
       break;
 
+    case OPT_foperator_names:
+      cpp_opts->operator_names = on;
+      break;
+
     case OPT_foptional_diags:
       flag_optional_diags = on;
       break;
 
     case OPT_fpermissive:
       flag_permissive = on;
+      break;
+
+    case OPT_fpreprocessed:
+      cpp_opts->preprocessed = on;
       break;
 
     case OPT_frepo:
@@ -887,8 +966,27 @@ c_common_decode_option (argc, argv)
       flag_rtti = on;
       break;
 
+    case OPT_fshow_column:
+      cpp_opts->show_column = on;
+      break;
+
     case OPT_fstats:
       flag_detailed_statistics = on;
+      break;
+
+    case OPT_ftabstop:
+      /* Don't recognise -fno-tabstop=.  */
+      if (!on)
+	return 0;
+
+      /* It is documented that we silently ignore silly values.  */
+      if (*arg)
+	{
+	  char *endptr;
+	  long tabstop = strtol (arg, &endptr, 10);
+	  if (*endptr == '\0' && tabstop >= 1 && tabstop <= 100)
+	    cpp_opts->tabstop = tabstop;
+	}
       break;
 
     case OPT_ftemplate_depth:
@@ -909,6 +1007,17 @@ c_common_decode_option (argc, argv)
 
     case OPT_gen_decls:
       flag_gen_declaration = 1;
+      break;
+
+      /* We need to handle the -pedantic switches here, rather than in
+	 c_common_post_options, so that a subsequent -Wno-endif-labels
+	 is not overridden.  */
+    case OPT_pedantic_errors:
+      cpp_opts->pedantic_errors = 1;
+      /* fall through */
+    case OPT_pedantic:
+      cpp_opts->pedantic = 1;
+      cpp_opts->warn_endif_labels = 1;
       break;
 
     case OPT_print_objc_runtime_info:
