@@ -1,3 +1,7 @@
+2000-05-01  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* i386/cygwin.h (INT_ASM_OP): Define.
+
 Mon May  1 18:20:06 2000  Denis Chertykov  <denisc@overta.ru>
 
 	* config/avr/avr.c (address_cost): renamed to avr_address_cost.
