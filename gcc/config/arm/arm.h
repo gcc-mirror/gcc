@@ -22,6 +22,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* Configuration triples for ARM ports work as follows:
+   (This is a bit of a mess and needs some thought)
    arm-*-*: little endian
    armel-*-*: little endian
    armeb-*-*: big endian
@@ -41,7 +42,6 @@ extern char *output_mov_long_double_fpu_from_arm ();
 extern char *output_mov_long_double_arm_from_fpu ();
 extern char *output_mov_long_double_arm_from_arm ();
 extern char *output_mov_immediate ();
-extern char *output_multi_immediate ();
 extern char *output_return_instruction ();
 extern char *output_load_symbol ();
 extern char *emit_ldm_seq ();
@@ -135,7 +135,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 #define CPP_PREDEFINES  "-Darm -Acpu(arm) -Amachine(arm)"
 #endif
 
-#define CPP_SPEC "%(cpp_cpu_arch) %(cpp_apcs_pc) %(cpp_float) %(cpp_enidan)"
+#define CPP_SPEC "%(cpp_cpu_arch) %(cpp_apcs_pc) %(cpp_float) %(cpp_endian)"
 
 #define CPP_CPU_ARCH_SPEC "\
 %{m2:-D__arm2__ -D__ARM_ARCH_2__} \
@@ -191,18 +191,8 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 %{mbig-endian: \
   %{mlittle-endian: \
     %e-mbig-endian and -mlittle-endian may not be used together} \
-  -D__ARMEB__ %{mwords-little-endian:-D__ARMWEL__} \
-  %{mle: \
-    %e-mbig-endian and -mle may not be used together} \
   -D__ARMEB__ %{mwords-little-endian:-D__ARMWEL__}} \
-%{mbe: \
-  %{mlittle-endian: \
-    %e-mbe and -mlittle-endian may not be used together} \
-  -D__ARMEB__ %{mwords-little-endian:-D__ARMWEL__} \
-  %{mle: \
-    %e-mbe and -mle may not be used together} \
-  -D__ARMEB__ %{mwords-little-endian:-D__ARMWEL__}} \
-%{!mlittle-endian:%{!mbig-endian:%{!mbe:%{!mle:%(cpp_endian_default)}}}} \
+%{!mlittle-endian:%{!mbig-endian:%(cpp_endian_default)}} \
 "
 
 /* Default is little endian, which doesn't define anything. */
@@ -210,15 +200,11 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 
 /* Translate (for now) the old -m[236] option into the appropriate -mcpu=...
    and -mapcs-xx equivalents. 
-   ??? Remove support for this style in 2.9.
-   Also handle -mbe and -mle by expanding them into big-endian and
-   little-endian.  */
+   ??? Remove support for this style in 2.9.*/
 #define CC1_SPEC "\
 %{m2:-mcpu=arm2 -mapcs-26} \
 %{m3:-mcpu=arm3 -mapcs-26} \
 %{m6:-mcpu=arm6 -mapcs-32} \
-%{mbe:-mbig-endian} \
-%{mle:-mlittle-endian} \
 "
 
 /* This macro defines names of additional specifications to put in the specs
