@@ -5645,7 +5645,7 @@ output_init_element (value, type, field, pending)
 		{
 		  /* Advance to offset of this element.  */
 		  if (! tree_int_cst_equal (constructor_bit_index,
-					    DECL_FIELD_BITPOS (constructor_fields)))
+					    DECL_FIELD_BITPOS (field)))
 		    {
 		      int next = (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field))
 				  / BITS_PER_UNIT);
@@ -5663,9 +5663,8 @@ output_init_element (value, type, field, pending)
 	      if (TREE_CODE (constructor_type) == RECORD_TYPE
 		  || TREE_CODE (constructor_type) == UNION_TYPE)
 		{
-		  tree temp = size_binop (PLUS_EXPR,
-					  DECL_FIELD_BITPOS (constructor_fields),
-					  DECL_SIZE (constructor_fields));
+		  tree temp = size_binop (PLUS_EXPR, DECL_FIELD_BITPOS (field),
+					  DECL_SIZE (field));
 		  TREE_INT_CST_LOW (constructor_bit_index)
 		    = TREE_INT_CST_LOW (temp);
 		  TREE_INT_CST_HIGH (constructor_bit_index)
@@ -5777,20 +5776,30 @@ output_pending_init_elements (all)
       if (TREE_CODE (constructor_type) == RECORD_TYPE
 	  || TREE_CODE (constructor_type) == UNION_TYPE)
 	{
-	  /* Find the last field written out.  */
+	  /* Find the last field written out, if any.  */
 	  for (tail = TYPE_FIELDS (constructor_type); tail;
 	       tail = TREE_CHAIN (tail))
 	    if (TREE_CHAIN (tail) == constructor_unfilled_fields)
 	      break;
-	  /* Find the offset of the end of that field.  */
-	  filled = size_binop (CEIL_DIV_EXPR,
-			       size_binop (PLUS_EXPR,
-					   DECL_FIELD_BITPOS (tail),
-					   DECL_SIZE (tail)),
-			       size_int (BITS_PER_UNIT));
+
+	  if (tail)
+	    /* Find the offset of the end of that field.  */
+	    filled = size_binop (CEIL_DIV_EXPR,
+				 size_binop (PLUS_EXPR,
+					     DECL_FIELD_BITPOS (tail),
+					     DECL_SIZE (tail)),
+				 size_int (BITS_PER_UNIT));
+	  else
+	    filled = size_int (0);
+
 	  nextpos_tree = size_binop (CEIL_DIV_EXPR,
 				     DECL_FIELD_BITPOS (next),
 				     size_int (BITS_PER_UNIT));
+
+	  TREE_INT_CST_HIGH (constructor_bit_index)
+	    = TREE_INT_CST_HIGH (DECL_FIELD_BITPOS (next));
+	  TREE_INT_CST_LOW (constructor_bit_index)
+	    = TREE_INT_CST_LOW (DECL_FIELD_BITPOS (next));
 	  constructor_unfilled_fields = next;
 	}
       else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
