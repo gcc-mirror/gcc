@@ -1,6 +1,6 @@
 /* Convert tree expression to rtl instructions, for GNU compiler.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -164,6 +164,7 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
   int i;
   tree type;
   enum machine_mode mode;
+  rtx drop_through_label = 0;
 
   switch (code)
     {
@@ -293,10 +294,29 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
       do_jump (TREE_OPERAND (exp, 0), if_true_label, if_false_label);
       break;
 
+    case COND_EXPR:
+      {
+	rtx label1 = gen_label_rtx ();
+	if (!if_true_label || !if_false_label)
+	  {
+	    drop_through_label = gen_label_rtx ();
+	    if (!if_true_label)
+	      if_true_label = drop_through_label;
+	    if (!if_false_label)
+	      if_false_label = drop_through_label;
+	  }
+
+        do_pending_stack_adjust ();
+        do_jump (TREE_OPERAND (exp, 0), label1, NULL_RTX);
+        do_jump (TREE_OPERAND (exp, 1), if_false_label, if_true_label);
+        emit_label (label1);
+        do_jump (TREE_OPERAND (exp, 2), if_false_label, if_true_label);
+	break;
+      }
+
     case TRUTH_ANDIF_EXPR:
     case TRUTH_ORIF_EXPR:
     case COMPOUND_EXPR:
-    case COND_EXPR:
       /* Lowered by gimplify.c.  */
       gcc_unreachable ();
 
@@ -478,7 +498,6 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
             tree op0 = save_expr (TREE_OPERAND (exp, 0));
             tree op1 = save_expr (TREE_OPERAND (exp, 1));
             tree cmp0, cmp1;
-	    rtx drop_through_label = 0;
 
             /* If the target doesn't support combined unordered
                compares, decompose into two comparisons.  */
@@ -489,12 +508,6 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
             cmp1 = fold (build2 (tcode2, TREE_TYPE (exp), op0, op1));
 	    do_jump (cmp0, 0, if_true_label);
 	    do_jump (cmp1, if_false_label, if_true_label);
-
-	    if (drop_through_label)
-	      {
-		do_pending_stack_adjust ();
-		emit_label (drop_through_label);
-	      }
           }
       }
       break;
@@ -567,6 +580,12 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
 				   GET_MODE (temp), NULL_RTX,
 				   if_false_label, if_true_label);
 	}
+    }
+
+  if (drop_through_label)
+    {
+      do_pending_stack_adjust ();
+      emit_label (drop_through_label);
     }
 }
 
