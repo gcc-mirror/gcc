@@ -52,7 +52,7 @@ T_CPPFLAGS =
 
 CC = cc
 BISON = bison
-BISONFLAGS = -v
+BISONFLAGS =
 AR = ar
 OLDAR_FLAGS = qc
 AR_FLAGS = rc
