@@ -1,3 +1,13 @@
+2002-01-15  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/Float.java (equals): Preserve old code.
+	* java/lang/Double.java (equals): Preserve old code.
+
+2002-01-15  Eric Blake  <ebb9@email.byu.edu>
+
+	* java/lang/Double.java (equals, compare): Fix 0.0 vs. -0.0 math.
+	* java/lang/Float.java (equals, compare): Ditto.
+
 2002-01-13  Mark Wielaard  <mark@klomp.org>
 
 	* java/net/DatagramSocket.java (getReceiveBufferSize): new 1.2 method.

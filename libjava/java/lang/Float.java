@@ -1,5 +1,5 @@
 /* java.lang.Float
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -232,9 +232,12 @@ public final class Float extends Number implements Comparable
     if (!(obj instanceof Float))
       return false;
 
-    Float f = (Float) obj;
+    float f = ((Float) obj).value;
 
-    return floatToIntBits (value) == floatToIntBits (f.floatValue ());
+    // GCJ LOCAL: this implementation is probably faster than
+    // Classpath's, especially once we inline floatToIntBits.
+    return floatToIntBits (value) == floatToIntBits (f);
+    // END GCJ LOCAL
   }
 
   /**
@@ -484,10 +487,9 @@ public final class Float extends Number implements Comparable
       return isNaN (y) ? 0 : 1;
     if (isNaN (y))
       return -1;
-    if (x == 0.0 && y == -0.0)
-      return 1;
-    if (x == -0.0 && y == 0.0)
-      return -1;
+    // recall that 0.0 == -0.0, so we convert to infinities and try again
+    if (x == 0 && y == 0)
+      return (int) (1 / x - 1 / y);
     if (x == y)
       return 0;
 
