@@ -117,6 +117,7 @@ struct basic_block_def entry_exit_blocks[2]
 };
 
 void debug_flow_info			PARAMS ((void));
+static void free_edge			PARAMS ((edge));
 
 /* Called once at intialization time.  */
 
@@ -142,23 +143,53 @@ init_flow ()
     }
 }
 
+/* Helper function for remove_edge and clear_edges.  Frees edge structure
+   without actually unlinking it from the pred/succ lists.  */
+
+static void
+free_edge (e)
+     edge e;
+{
+  n_edges--;
+  memset (e, 0, sizeof (*e));
+  e->succ_next = first_deleted_edge;
+  first_deleted_edge = e;
+}
+
 /* Free the memory associated with the edge structures.  */
 
 void
 clear_edges ()
 {
   int i;
+  edge e;
 
   for (i = 0; i < n_basic_blocks; ++i)
     {
       basic_block bb = BASIC_BLOCK (i);
+      edge e = bb->succ;
 
-      while (bb->succ)
-	remove_edge (bb->succ);
+      while (e)
+	{
+	  edge next = e->succ_next;
+
+	  free_edge (e);
+	  e = next;
+	}
+      bb->succ = NULL;
+      bb->pred = NULL;
     }
 
-  while (ENTRY_BLOCK_PTR->succ)
-    remove_edge (ENTRY_BLOCK_PTR->succ);
+  e = ENTRY_BLOCK_PTR->succ;
+  while (e)
+    {
+      edge next = e->succ_next;
+
+      free_edge (e);
+      e = next;
+    }
+  EXIT_BLOCK_PTR->pred = NULL;
+  ENTRY_BLOCK_PTR->succ = NULL;
 
   if (n_edges)
     abort ();
@@ -335,10 +366,7 @@ remove_edge (e)
   else
     dest->pred = e->pred_next;
 
-  n_edges--;
-  memset (e, 0, sizeof (*e));
-  e->succ_next = first_deleted_edge;
-  first_deleted_edge = e;
+  free_edge (e);
 }
 
 /* Redirect an edge's successor from one block to another.  */
