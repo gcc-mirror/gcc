@@ -3585,6 +3585,8 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 			 every -D and at the end of each arg,  */
 		      while (1)
 			{
+			  int flag;
+
 			  if (! strncmp (y, "-D", 2))
 			    {
 			      *x++ = '-';
@@ -3592,16 +3594,18 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 			      *x++ = '_';
 			      *x++ = '_';
 			      y += 2;
+			      flag = 1;
+			      continue;
 			    }
-			  else if (*y == ' ' || *y == 0)
+                          else if (flag && (*y == ' ' || *y == '\t' || *y == '='
+                                            || *y == '}' || *y == 0))
 			    {
 			      *x++ = '_';
 			      *x++ = '_';
-			      if (*y == 0)
-				break;
-			      else
-				*x++ = *y++;
+			      flag = 0;
 			    }
+                          if (*y == 0)
+			    break;
 			  else
 			    *x++ = *y++;
 			}
