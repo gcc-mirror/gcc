@@ -16,9 +16,9 @@ int main()
     }
   catch (...)
     {
-      return 42;
+      return -42;
     }
 }
 
 // The catch block should be optimized away.
-// { dg-final { scan-tree-dump-times "42" 0 "optimized" } }
+// { dg-final { scan-tree-dump-times "-42" 0 "optimized" } }

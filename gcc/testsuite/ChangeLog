@@ -1,5 +1,9 @@
 2004-11-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* g++.dg/opt/nothrow1.C: Use -42 instead of 42.
+
+2004-11-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* gcc.dg/compat/generate-random.c (generate_random_data unsafe_state):
 	Do not use C99 designators.
 
