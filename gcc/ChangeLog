@@ -1,3 +1,13 @@
+2003-04-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/i386/winnt.c (i386_pe_mark_dllimport): Make the new RTL
+	have the same form as the old RTL.
+
+2003-04-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* cfgrtl.c (try_redirect_by_replacing_jump): Create a basic block
+	for orphaned jump tables.
+
 2003-04-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR/8705
