@@ -86,8 +86,8 @@ struct lang_type GTY(()) {tree t; };
   TYPE_LANG_FLAG_1 (FUNCTION_TYPE_CHECK (NODE))
 
 /* For RECORD_TYPE, UNION_TYPE, and QUAL_UNION_TYPE, nonzero if this denotes
-   a left-justified modular type (will only be true for RECORD_TYPE).  */
-#define TYPE_LEFT_JUSTIFIED_MODULAR_P(NODE) \
+   a justified modular type (will only be true for RECORD_TYPE).  */
+#define TYPE_JUSTIFIED_MODULAR_P(NODE) \
   TYPE_LANG_FLAG_1 (RECORD_OR_UNION_CHECK (NODE))
 
 /* Nonzero in an arithmetic subtype if this is a subtype not known to the
@@ -290,4 +290,4 @@ struct lang_type GTY(()) {tree t; };
 #define REGION_STMT_BLOCK(NODE)	TREE_OPERAND_CHECK_CODE (NODE, REGION_STMT, 2)
 #define HANDLER_STMT_ARG(NODE) TREE_OPERAND_CHECK_CODE (NODE, HANDLER_STMT, 0)
 #define HANDLER_STMT_LIST(NODE)	TREE_OPERAND_CHECK_CODE (NODE, HANDLER_STMT, 1)
-#define HANDLER_STMT_BLOCK(NODE) TREE_OPERAND_CHECK_CODE (NODE, HANDLER_STMT, 2)
+#define HANDLER_STMT_BLOCK(NODE) TREE_OPERAND_CHECK_CODE(NODE, HANDLER_STMT, 2)

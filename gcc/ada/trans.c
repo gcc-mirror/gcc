@@ -1606,7 +1606,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 							gnu_target,
 							false)),
 		     NULL_TREE);
-						   
+
     }
 
   /* The only way we can be making a call via an access type is if Name is an
@@ -1668,7 +1668,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	      tree gnu_temp;
 
 	      /* Remove any unpadding on the actual and make a copy.  But if
-		 the actual is a left-justified modular type, first convert
+		 the actual is a justified modular type, first convert
 		 to it.  */
 	      if (TREE_CODE (gnu_name) == COMPONENT_REF
 		  && ((TREE_CODE (TREE_TYPE (TREE_OPERAND (gnu_name, 0)))
@@ -1677,7 +1677,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 			  (TREE_TYPE (TREE_OPERAND (gnu_name, 0))))))
 		gnu_name = gnu_copy = TREE_OPERAND (gnu_name, 0);
 	      else if (TREE_CODE (gnu_name_type) == RECORD_TYPE
-		       && (TYPE_LEFT_JUSTIFIED_MODULAR_P (gnu_name_type)))
+		       && (TYPE_JUSTIFIED_MODULAR_P (gnu_name_type)))
 		gnu_name = convert (gnu_name_type, gnu_name);
 
 	      gnu_actual = save_expr (gnu_name);
@@ -1714,7 +1714,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
       if (Ekind (gnat_formal) != E_In_Parameter
 	  && TREE_CODE (gnu_name) == CONSTRUCTOR
 	  && TREE_CODE (TREE_TYPE (gnu_name)) == RECORD_TYPE
-	  && TYPE_LEFT_JUSTIFIED_MODULAR_P (TREE_TYPE (gnu_name)))
+	  && TYPE_JUSTIFIED_MODULAR_P (TREE_TYPE (gnu_name)))
 	gnu_name = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_name))),
 			    gnu_name);
 
@@ -1829,7 +1829,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
       else
 	{
 	  tree gnu_actual_size = TYPE_SIZE (TREE_TYPE (gnu_actual));
-	  
+
 	  if (Ekind (gnat_formal) != E_In_Parameter)
 	    gnu_name_list = tree_cons (NULL_TREE, gnu_name, gnu_name_list);
 
@@ -2082,7 +2082,6 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
     add_stmt (build_call_1_expr (set_jmpbuf_decl,
 				 build_unary_op (ADDR_EXPR, NULL_TREE,
 						 gnu_jmpbuf_decl)));
-
 
   if (Present (First_Real_Statement (gnat_node)))
     process_decls (Statements (gnat_node), Empty,
@@ -2521,11 +2520,11 @@ gnat_to_gnu (Node_Id gnat_node)
 	tree gnu_type;
 
 	/* Get the type of the result, looking inside any padding and
-	   left-justified modular types.  Then get the value in that type.  */
+	   justified modular types.  Then get the value in that type.  */
 	gnu_type = gnu_result_type = get_unpadded_type (Etype (gnat_node));
 
 	if (TREE_CODE (gnu_type) == RECORD_TYPE
-	    && TYPE_LEFT_JUSTIFIED_MODULAR_P (gnu_type))
+	    && TYPE_JUSTIFIED_MODULAR_P (gnu_type))
 	  gnu_type = TREE_TYPE (TYPE_FIELDS (gnu_type));
 
 	gnu_result = UI_To_gnu (Intval (gnat_node), gnu_type);
@@ -4102,7 +4101,7 @@ gnat_to_gnu (Node_Id gnat_node)
 		   && (CONTAINS_PLACEHOLDER_P
 		       (TYPE_SIZE (TREE_TYPE (gnu_result))))))
 	   && !(TREE_CODE (gnu_result_type) == RECORD_TYPE
-		&& TYPE_LEFT_JUSTIFIED_MODULAR_P (gnu_result_type))))
+		&& TYPE_JUSTIFIED_MODULAR_P (gnu_result_type))))
     {
       /* In this case remove padding only if the inner object is of
 	 self-referential size: in that case it must be an object of
@@ -4521,7 +4520,7 @@ gnat_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p ATTRIBUTE_UNUSED)
 	  return GS_ALL_DONE;
 	}
       return GS_UNHANDLED;
-	 
+
     case COMPONENT_REF:
       /* We have a kludge here.  If the FIELD_DECL is from a fat pointer and is
 	 from an early dummy type, replace it with the proper FIELD_DECL.  */
@@ -5062,7 +5061,7 @@ emit_index_check (tree gnu_array_object,
 
 /* GNU_COND contains the condition corresponding to an access, discriminant or
    range check of value GNU_EXPR.  Build a COND_EXPR that returns GNU_EXPR if
-   GNU_COND is false and raises a CONSTRAINT_ERROR if GNU_COND is true. 
+   GNU_COND is false and raises a CONSTRAINT_ERROR if GNU_COND is true.
    REASON is the code that says why the exception was raised.  */
 
 static tree
