@@ -322,7 +322,8 @@ EOF
 	exit 0 ;;
     CRAY*[A-Z]90:*:*:*)
 	echo ${UNAME_MACHINE}-cray-unicos${UNAME_RELEASE} \
-	| sed -e 's/CRAY.*\([A-Z]90\)/\1/' | tr '[A-Z]' '[a-z]'
+	| sed -e 's/CRAY.*\([A-Z]90\)/\1/' \
+	      -e y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/
 	exit 0 ;;
     CRAY-2:*:*:*)
 	echo cray2-cray-unicos
