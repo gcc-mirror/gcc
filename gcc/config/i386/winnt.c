@@ -427,9 +427,6 @@ i386_pe_encode_section_info (decl, rtl, first)
      rtx rtl;
      int first;
 {
-  if (!first)
-    return;
-
   default_encode_section_info (decl, rtl, first);
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
@@ -445,7 +442,8 @@ i386_pe_encode_section_info (decl, rtl, first)
     }
 
   /* Mark the decl so we can tell from the rtl whether the object is
-     dllexport'd or dllimport'd.  */
+     dllexport'd or dllimport'd.  This also handles dllexport/dllimport
+     override semantics.   */
 
   if (i386_pe_dllexport_p (decl))
     i386_pe_mark_dllexport (decl);
