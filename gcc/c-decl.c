@@ -3675,12 +3675,13 @@ complete_array_type (type, initial_value, do_default)
 	{
 	  int eltsize
 	    = int_size_in_bytes (TREE_TYPE (TREE_TYPE (initial_value)));
-	  maxindex = build_int_2 (TREE_STRING_LENGTH (initial_value) / eltsize - 1, 0);
+	  maxindex = build_int_2 ((TREE_STRING_LENGTH (initial_value)
+				   / eltsize) - 1, 0);
 	}
       else if (TREE_CODE (initial_value) == CONSTRUCTOR)
 	{
 	  tree elts = CONSTRUCTOR_ELTS (initial_value);
-	  maxindex = integer_zero_node;
+	  maxindex = size_binop (MINUS_EXPR, integer_zero_node, size_one_node);
 	  for (; elts; elts = TREE_CHAIN (elts))
 	    {
 	      if (TREE_PURPOSE (elts))
