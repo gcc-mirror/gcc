@@ -1,3 +1,8 @@
+Wed Feb 14 01:03:14 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* regclass.c (init_reg_sets_1): Optimize calculation of move_cost
+	arrays.
+
 Tue Feb 13 07:52:04 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/sparc/sparc.c (function_value): Treat all non-record
