@@ -1,3 +1,8 @@
+2003-11-19  Richard SAndiford  <rsandifo@redhat.com>
+
+	* emit-rtl.c (gen_lowpart): Don't force MEMs into a register unless
+	the register lowpart is a TRULY_NOOP_TRUNCATION.
+
 2003-11-19  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (print_reg): Handle QI and HI modes for
