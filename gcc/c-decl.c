@@ -6749,3 +6749,12 @@ pop_c_function_context ()
 
   free (p);
 }
+
+/* integrate_decl_tree calls this function, but since we don't use the
+   DECL_LANG_SPECIFIC field, this is a no-op.  */
+
+void
+copy_lang_decl (node)
+     tree node;
+{
+}
