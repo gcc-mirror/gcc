@@ -1,4 +1,14 @@
 2003-09-15  Andreas Jaeger  <aj@suse.de>
+            Kaveh R. Ghazi <ghazi@caip.rutgers.edu>
+
+	* doc/invoke.texi (Warning Options): Describe -Wold-style-definition.
+	* c-opts.c (c_common_handle_option): Handle OPT_Wold_style_definition.
+	* c-parse.in: Warn about old-style parameter definition.
+	* c-common.c: Define warn_old_style_defintion.
+	* c-common.h: Declare it.
+	* c.opt: Add Wold-style-defintion.
+
+2003-09-15  Andreas Jaeger  <aj@suse.de>
 
 	* config/rs6000/altivec.h: Convert () prototypes to ISO C90.
 	* config/rs6000/rs6000.c: Likewise.
