@@ -1065,6 +1065,12 @@ template_arg:
 		  if (DECL_TEMPLATE_TEMPLATE_PARM_P ($$))
 		    $$ = TREE_TYPE ($$);
 		}
+	| global_scope PTYPENAME
+		{
+		  $$ = lastiddecl;
+		  if (DECL_TEMPLATE_TEMPLATE_PARM_P ($$))
+		    $$ = TREE_TYPE ($$);
+		}
 	| expr_no_comma_rangle
 	;
 
