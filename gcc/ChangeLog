@@ -1,3 +1,8 @@
+2004-01-30  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.in (abs_docdir, abs_srcdir): Define.
+	(doc/%.dvi, doc/gccinstall.dvi): Use $(abs_docdir).
+
 2004-01-30  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* genconfig.c (main): Have CC0_P check its operand even on a

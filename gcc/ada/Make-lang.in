@@ -550,26 +550,26 @@ dvi:: doc/gnat_ug_vms.dvi doc/gnat_ug_wnt.dvi doc/gnat_ug_unx.dvi \
 
 doc/gnat_ug_unx.dvi: $(srcdir)/ada/gnat_ug_unx.texi \
 	$(docdir)/include/fdl.texi $(docdir)/include/gcc-common.texi
-	$(TEXI2DVI) -c -I $(docdir)/include -o $@ $<
+	$(TEXI2DVI) -c -I $(abs_docdir)/include -o $@ $<
 
 doc/gnat_ug_vms.dvi: $(srcdir)/ada/gnat_ug_vms.texi \
 	$(docdir)/include/fdl.texi $(docdir)/include/gcc-common.texi
-	$(TEXI2DVI) -c -I $(docdir)/include -o $@ $<
+	$(TEXI2DVI) -c -I $(abs_docdir)/include -o $@ $<
 
 doc/gnat_ug_vxw.dvi: $(srcdir)/ada/gnat_ug_vxw.texi \
 	$(docdir)/include/fdl.texi $(docdir)/include/gcc-common.texi
-	$(TEXI2DVI) -c -I $(docdir)/include -o $@ $<
+	$(TEXI2DVI) -c -I $(abs_docdir)/include -o $@ $<
 
 doc/gnat_ug_wnt.dvi: $(srcdir)/ada/gnat_ug_wnt.texi \
 	$(docdir)/include/fdl.texi $(docdir)/include/gcc-common.texi
-	$(TEXI2DVI) -c -I $(docdir)/include -o $@ $<
+	$(TEXI2DVI) -c -I $(abs_docdir)/include -o $@ $<
 
 doc/gnat_rm.dvi: ada/gnat_rm.texi \
 	$(docdir)/include/fdl.texi $(docdir)/include/gcc-common.texi
-	$(TEXI2DVI) -c -I $(docdir)/include -o $@ $<
+	$(TEXI2DVI) -c -I $(abs_docdir)/include -o $@ $<
 
 doc/gnat-style.dvi: ada/gnat-style.texi $(docdir)/include/fdl.texi
-	$(TEXI2DVI) -c -I $(docdir)/include -o $@ $<
+	$(TEXI2DVI) -c -I $(abs_docdir)/include -o $@ $<
 
 
 # Install hooks:

@@ -371,7 +371,7 @@ doc/gcj.info: java/gcj.texi $(docdir)/include/fdl.texi \
 
 doc/gcj.dvi: java/gcj.texi $(docdir)/include/fdl.texi \
 	 $(docdir)/include/gpl.texi $(docdir)/include/gcc-common.texi
-	$(TEXI2DVI) -I $(docdir)/include -o $@ $<
+	$(TEXI2DVI) -I $(abs_docdir)/include -o $@ $<
 
 .INTERMEDIATE: gcj.pod gcjh.pod jv-scan.pod jcf-dump.pod gij.pod \
   jv-convert.pod rmic.pod rmiregistry.pod
