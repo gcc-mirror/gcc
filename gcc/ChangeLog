@@ -1,3 +1,8 @@
+2000-06-17  Michael Meissner  <meissner@redhat.com>
+
+	* gcc.c (do_spec_1, '%v3' case): Do not abort if patch level is
+	not present and there is a field after a '-'.
+
 2000-06-17  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/check.tpl:  finish the implementation of multiple tests
