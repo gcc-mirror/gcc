@@ -1,3 +1,8 @@
+Thu Apr 27 21:49:36 1995  Doug Evans  <dje@cygnus.com>
+
+	* typeck.c (common_type): Call lookup_attribute instead of
+	value_member.
+
 Tue Apr 25 18:07:43 1995  Richard Kenner  (kenner@vlsi1.ultra.nyu.edu)
 
 	* Make-lang.in: Change "realclean" to "maintainer-clean".
