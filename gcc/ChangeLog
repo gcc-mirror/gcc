@@ -1,3 +1,10 @@
+2002-03-07  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/gofast.h (GOFAST_RENAME_LIBCALLS): Set gt and ge as
+	NULL_RTX.  Set all HFmode operations as NULL_RTX.
+	* optabs.c (prepare_float_lib_cmp) <GT, GE, LT, LE>: If libfunc is
+	NULL_RTX, try reversing the comparison and the operands.
+
 2002-03-06  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* genextract.c (walk_rtx): Recurse into MATCH_PAR_DUP.

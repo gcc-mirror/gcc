@@ -1,5 +1,5 @@
 /* US Software GOFAST floating point library support.
-   Copyright (C) 1994, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1998, 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -43,6 +43,11 @@ Boston, MA 02111-1307, USA.  */
       neg_optab->handlers[(int) mode].libfunc = NULL_RTX; \
   } while (0)
 
+/* GCC does not use fpcmp/dpcmp for gt or ge because its own
+   FP-emulation library returns +1 for both > and unord.  So we leave
+   gt and ge unset, such that, instead of fpcmp(a,b) >[=], we generate
+   fpcmp(b,a) <[=] 0, which is unambiguous.  For unord libfuncs, we
+   use our own functions, since GOFAST doesn't supply them.  */
 #define GOFAST_RENAME_LIBCALLS \
   add_optab->handlers[(int) SFmode].libfunc = init_one_libfunc ("fpadd"); \
   add_optab->handlers[(int) DFmode].libfunc = init_one_libfunc ("dpadd"); \
@@ -58,17 +63,24 @@ Boston, MA 02111-1307, USA.  */
   extendsfdf2_libfunc = init_one_libfunc ("fptodp"); \
   truncdfsf2_libfunc = init_one_libfunc ("dptofp"); \
 \
+  eqhf2_libfunc = NULL_RTX; \
+  nehf2_libfunc = NULL_RTX; \
+  gthf2_libfunc = NULL_RTX; \
+  gehf2_libfunc = NULL_RTX; \
+  lthf2_libfunc = NULL_RTX; \
+  lehf2_libfunc = NULL_RTX; \
+\
   eqsf2_libfunc = init_one_libfunc ("fpcmp"); \
   nesf2_libfunc = init_one_libfunc ("fpcmp"); \
-  gtsf2_libfunc = init_one_libfunc ("fpcmp"); \
-  gesf2_libfunc = init_one_libfunc ("fpcmp"); \
+  gtsf2_libfunc = NULL_RTX; \
+  gesf2_libfunc = NULL_RTX; \
   ltsf2_libfunc = init_one_libfunc ("fpcmp"); \
   lesf2_libfunc = init_one_libfunc ("fpcmp"); \
 \
   eqdf2_libfunc = init_one_libfunc ("dpcmp"); \
   nedf2_libfunc = init_one_libfunc ("dpcmp"); \
-  gtdf2_libfunc = init_one_libfunc ("dpcmp"); \
-  gedf2_libfunc = init_one_libfunc ("dpcmp"); \
+  gtdf2_libfunc = NULL_RTX; \
+  gedf2_libfunc = NULL_RTX; \
   ltdf2_libfunc = init_one_libfunc ("dpcmp"); \
   ledf2_libfunc = init_one_libfunc ("dpcmp"); \
 \
