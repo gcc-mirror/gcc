@@ -1,5 +1,76 @@
 2001-09-04  Tom Tromey  <tromey@redhat.com>
 
+	* java/text/SimpleDateFormat.java: Re-merged with Classpath.
+	* gnu/gcj/text/LocaleData.java, gnu/gcj/text/LocaleData_en.java,
+	gnu/gcj/text/LocaleData_en_US.java: Removed.
+	* java/text/DateFormatSymbols.java (clone): Use Classpath
+	implementation.
+	(equals): Simplified.
+	(DateFormatSymbols): Look in gnu.java.locale for information.
+	(DateFormatSymbols(DateFormatSymbols)): Removed.
+	(safeGetResource): Removed.
+	(DateFormatSymbols): Throws MissingResourceException.
+	(ampmsDefault, erasDefault, localPatternCharsDefault,
+	monthsDefault, shortMonthsDefault, shortWeekdaysDefault,
+	weekdaysDefault, zoneStringsDefault): Removed.
+	* java/text/Collator.java (getAvailableLocales): Use modified
+	Classpath implementation.
+	(getInstance): Look in gnu.java.locale for information.
+	(clone): Rewrote.
+	* java/text/MessageFormat.java: Reindented.
+	(clone): Rewrote.
+	* java/text/FieldPosition.java: Merged with Classpath.
+	* java/text/ParsePosition.java: Merged with Classpath.
+	* java/text/Format.java: Merged with Classpath.
+	* java/text/StringCharacterIterator.java
+	(StringCharacterIterator(StringCharacterIterator,int,int)): New
+	constructor from Classpath.
+	* java/text/Annotation.java,
+	java/text/AttributedCharacterIterator.java,
+	java/text/AttributedString.java,
+	java/text/AttributedStringIterator.java: New from Classpath.
+	* java/text/CharacterIterator.java: Copied from Classpath.
+	* java/text/ChoiceFormat.java: Reindented.
+	(clone): Removed.
+	* gnu/java/text/BaseBreakIterator.java,
+	gnu/java/text/CharacterBreakIterator.java,
+	gnu/java/text/LineBreakIterator.java,
+	gnu/java/text/LocaleData_en.java,
+	gnu/java/text/LocaleData_en_US.java,
+	gnu/java/text/SentenceBreakIterator.java,
+	gnu/java/text/WordBreakIterator.java: Renamed from gnu/gcj/text/*.
+	* gnu/gcj/text/BaseBreakIterator.java (last): Advance past final
+	character.
+	* java/text/BreakIterator.java (getAvailableLocales): Use
+	Classpath implementation.
+	(getInstance): Look in gnu.java.locale for information.
+	(getCharacterInstance, getLineInstance, getSentenceInstance,
+	getWordInstance): Look in gnu.java.text for implementations.
+	* java/text/DecimalFormatSymbols.java: Reindented
+	(clone): Use Classpath implementation.
+	(DecimalFormatSymbols(DecimalFormatSymbols)): Removed.
+	(DecimalFormatSymbols(Locale)): Look in gnu.java.locale for
+	information.
+	* java/text/DateFormat.java: Merged with Classpath.
+	(getAvailableLocales): Use Classpath implementation.
+	(format(Object,StringBuffer,FieldPosition)): Minor cleanup.
+	(computeInstance): Look in gnu.java.locale for information.
+	* java/text/NumberFormat.java: Reindented.
+	(computeInstance): Look in gnu.java.locale for information.
+	(getAvailableLocales): Use implementation from Classpath.
+	(setMaximumIntegerDigits): Likewise.
+	(setMinimumIntegerDigits): Likewise.
+	(setMaximumFractionDigits): Likewise.
+	(clone): Removed.
+	* java/text/DecimalFormat.java: Reindented.
+	* gnu/java/locale/LocaleInformation_en.java: Copied from Classpath.
+	* gnu/java/locale/LocaleInformation_en_US.java: Copied from Classpath.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (ordinary_java_source_files): Added all new files.
+	(ordinary_java_source_files): Renamed or removed gnu/gcj/text/*.
+	* java/security/spec/AlgorithmParameterSpec.java,
+	java/security/spec/KeySpec.java: Re-merged with Classpath.
+
 	Fix for PR libgcj/4213:
 	* Makefile.am (ordinary_java_source_files): Added new file.
 	* gnu/gcj/text/LocaleData.java: New file.

@@ -207,6 +207,7 @@ public class SimpleDateFormat extends DateFormat
   {
     super();
     calendar = new GregorianCalendar();
+    computeCenturyStart ();
     tokens = new Vector();
     this.formatData = formatData;
     compileFormat(pattern);

@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -13,16 +13,15 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 /**
+ * This class acts as container for locale specific date/time formatting
+ * information such as the days of the week and the months of the year.
  * @author Per Bothner <bothner@cygnus.com>
  * @date October 24, 1998.
  */
-
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3.
  * Status:  Believed complete and correct.
  */
-
-public class DateFormatSymbols extends Object
-  implements java.io.Serializable, Cloneable
+public class DateFormatSymbols implements java.io.Serializable, Cloneable
 {
   String[] ampms;
   String[] eras;
@@ -36,63 +35,9 @@ public class DateFormatSymbols extends Object
   private static final long serialVersionUID = -5987973545549424702L;
 
   // The order of these prefixes must be the same as in DateFormat
-  // FIXME: XXX: Note that this differs from the Classpath implemention
-  // in that there is no "default" entry; that is due to differing
-  // implementations where DateFormat.DEFAULT is MEDIUM here but 4 in
-  // Classpath (the JCL says it should be MEDIUM).  That will need to be 
-  // resolved in the merge.
-  private static final String[] formatPrefixes = { "full", "long", "medium", "short" };
-
-  private static final String[] ampmsDefault = {"AM", "PM" };
-  private static final String[] erasDefault = {"BC", "AD" };
-  // localPatternCharsDefault is used by SimpleDateFormat.
-  private static final String localPatternCharsDefault
-    = "GyMdkHmsSEDFwWahKz";
-  private static final String[] monthsDefault = {
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December", ""
-  };
-  private static final String[] shortMonthsDefault = {
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", ""
-  };
-  private static final String[] shortWeekdaysDefault = {
-    "", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
-  };
-  private static final String[] weekdaysDefault = {
-    "", "Sunday", "Monday", "Tuesday",
-    "Wednesday", "Thursday", "Friday", "Saturday"
-  };
-
-  private static String[][] zoneStringsDefault = {
-    { "GMT", "Greenwich Mean Time", "GMT",
-      /**/   "Greenwich Mean Time", "GMT", "GMT" },
-    { "PST", "Pacific Standard Time", "PST",
-      /**/   "Pacific Daylight Time", "PDT", "San Francisco" },
-    { "MST", "Mountain Standard Time", "MST",
-      /**/   "Mountain Daylight Time", "MDT", "Denver" },
-    { "PNT", "Mountain Standard Time", "MST",
-      /**/   "Mountain Standard Time", "MST", "Phoenix" },
-    { "CST", "Central Standard Time", "CST",
-      /**/   "Central Daylight Time", "CDT", "Chicago" },
-    { "EST", "Eastern Standard Time", "EST",
-      /**/   "Eastern Daylight Time", "EDT", "Boston" },
-    { "IET", "Eastern Standard Time", "EST",
-      /**/   "Eastern Standard Time", "EST", "Indianapolis" },
-    { "PRT", "Atlantic Standard Time", "AST",
-      /**/   "Atlantic Daylight Time", "ADT", "Halifax" },
-    { "CNT", "Newfoundland Standard Time", "NST",
-      /**/   "Newfoundland Daylight Time", "NDT", "St. Johns" },
-    { "ECT", "Central European Standard Time", "CET",
-      /**/   "Central European Daylight Time", "CEST", "Paris" },
-    { "CTT", "China Standard Time", "CST",
-      /**/   "China Standard Time", "CST", "Shanghai" },
-    { "JST", "Japan Standard Time", "JST",
-      /**/   "Japan Standard Time", "JST", "Tokyo" },
-    { "HST", "Hawaii Standard Time", "HST",
-      /**/   "Hawaii Standard Time", "HST", "Honolulu" },
-    { "AST", "Alaska Standard Time", "AKST",
-      /**/   "Alaska Daylight Time", "AKDT", "Anchorage" }
+  private static final String[] formatPrefixes =
+  {
+    "full", "long", "medium", "short"
   };
 
   // These are each arrays with a value for SHORT, MEDIUM, LONG, FULL,
@@ -113,146 +58,312 @@ public class DateFormatSymbols extends Object
     return values;
   }
 
-  private final Object safeGetResource (ResourceBundle res,
-					String key, Object def)
+  /**
+   * This method initializes a new instance of <code>DateFormatSymbols</code>
+   * by loading the date format information for the specified locale.
+   *
+   * @param locale The locale for which date formatting symbols should
+   *               be loaded. 
+   */
+  public DateFormatSymbols (Locale locale) throws MissingResourceException
   {
-    if (res != null)
-      {
-	try
-	  {
-	    return res.getObject(key);
-	  }
-	catch (MissingResourceException x)
-	  {
-	  }
-      }
-    return def;
-  }
+    ResourceBundle res
+      = ResourceBundle.getBundle("gnu.java.locale.LocaleInformation", locale);
 
-  public DateFormatSymbols (Locale locale)
-  {
-    ResourceBundle res;
-    try
-      {
-	res = ResourceBundle.getBundle("gnu.gcj.text.LocaleData", locale);
-      }
-    catch (MissingResourceException x)
-      {
-	res = null;
-      }
-    ampms = (String[]) safeGetResource (res, "ampm", ampmsDefault);
-    eras = (String[]) safeGetResource (res, "eras", erasDefault);
-    localPatternChars = (String) safeGetResource (res, "datePatternChars",
-						  localPatternCharsDefault);
-    months = (String[]) safeGetResource (res, "months", monthsDefault);
-    shortMonths = (String[]) safeGetResource (res, "shortMonths",
-					      shortMonthsDefault);
-    shortWeekdays = (String[]) safeGetResource (res, "shortWeekdays",
-						shortWeekdaysDefault);
-    weekdays = (String[]) safeGetResource (res, "weekdays", weekdaysDefault);
-    zoneStrings = (String[][]) safeGetResource (res, "zoneStrings",
-						zoneStringsDefault);
+    ampms = res.getStringArray ("ampms");
+    eras = res.getStringArray ("eras");
+    localPatternChars = res.getString ("localPatternChars");
+    months = res.getStringArray ("months");
+    shortMonths = res.getStringArray ("shortMonths");
+    shortWeekdays = res.getStringArray ("shortWeekdays");
+    weekdays = res.getStringArray ("weekdays");
+    zoneStrings = (String[][]) res.getObject ("zoneStrings");
 
     dateFormats = formatsForKey(res, "DateFormat");
     timeFormats = formatsForKey(res, "TimeFormat");
   }
 
-  public DateFormatSymbols ()
+  /**
+   * This method loads the format symbol information for the default
+   * locale.
+   */
+  public DateFormatSymbols () throws MissingResourceException
   {
     this (Locale.getDefault());
   }
 
-  // Copy constructor.
-  private DateFormatSymbols (DateFormatSymbols old)
-  {
-    ampms = old.ampms;
-    eras = old.eras;
-    localPatternChars = old.localPatternChars;
-    months = old.months;
-    shortMonths = old.shortMonths;
-    shortWeekdays = old.shortWeekdays;
-    weekdays = old.weekdays;
-    zoneStrings = old.zoneStrings;
-    dateFormats = old.dateFormats;
-    timeFormats = old.timeFormats;
-  }
-
+  /**
+   * This method returns the list of strings used for displaying AM or PM.
+   * This is a two element <code>String</code> array indexed by
+   * <code>Calendar.AM</code> and <code>Calendar.PM</code>
+   *
+   * @return The list of AM/PM display strings.
+   */
   public String[] getAmPmStrings()
   {
     return ampms;
   }
 
+  /**
+    * This method returns the list of strings used for displaying eras
+    * (e.g., "BC" and "AD").  This is a two element <code>String</code>
+    * array indexed by <code>Calendar.BC</code> and <code>Calendar.AD</code>.
+    *
+    * @return The list of era disply strings.
+    */
   public String[] getEras()
   {
     return eras;
   }
 
-
+  /**
+    * This method returns the pattern character information for this
+    * object.  This is an 18 character string that contains the characters
+    * that are used in creating the date formatting strings in 
+    * <code>SimpleDateFormat</code>.   The following are the character
+    * positions in the string and which format character they correspond
+    * to (the character in parentheses is the default value in the US English
+    * locale):
+    * <p>
+    * <ul>
+    * <li>0 - era (G)
+    * <li>1 - year (y)
+    * <li>2 - month (M)
+    * <li 3 - day of month (d)
+    * <li>4 - hour out of 12, from 1-12 (h)
+    * <li>5 - hour out of 24, from 0-23 (H)
+    * <li>6 - minute (m)
+    * <li>7 - second (s)
+    * <li>8 - millisecond (S)
+    * <li>9 - date of week (E)
+    * <li>10 - date of year (D)
+    * <li>11 - day of week in month, eg. "4th Thur in Nov" (F)
+    * <li>12 - week in year (w)
+    * <li>13 - week in month (W)
+    * <li>14 - am/pm (a)
+    * <li>15 - hour out of 24, from 1-24 (k)
+    * <li>16 - hour out of 12, from 0-11 (K)
+    * <li>17 - time zone (z)
+    * </ul>
+    *
+    * @return The format patter characters
+    */
   public String getLocalPatternChars()
   {
     return localPatternChars;
   }
 
+  /**
+   * This method returns the list of strings used for displaying month
+   * names (e.g., "January" and "February").  This is a thirteen element
+   * string array indexed by <code>Calendar.JANUARY</code> through
+   * <code>Calendar.UNDECEMBER</code>.  Note that there are thirteen
+   * elements because some calendars have thriteen months.
+   *
+   * @return The list of month display strings.
+   */
   public String[] getMonths ()
   {
     return months;
   }
 
+  /**
+   * This method returns the list of strings used for displaying abbreviated
+   * month names (e.g., "Jan" and "Feb").  This is a thirteen element
+   * <code>String</code> array indexed by <code>Calendar.JANUARY</code>
+   * through <code>Calendar.UNDECEMBER</code>.  Note that there are thirteen
+   * elements because some calendars have thirteen months.
+   *
+   * @return The list of abbreviated month display strings.
+   */
   public String[] getShortMonths ()
   {
     return shortMonths;
   }
 
+  /**
+   * This method returns the list of strings used for displaying abbreviated 
+   * weekday names (e.g., "Sun" and "Mon").  This is an eight element
+   * <code>String</code> array indexed by <code>Calendar.SUNDAY</code>
+   * through <code>Calendar.SATURDAY</code>.  Note that the first element
+   * of this array is ignored.
+   *
+   * @return This list of abbreviated weekday display strings.
+   */
   public String[] getShortWeekdays ()
   {
     return shortWeekdays;
   }
 
+  /**
+   * This method returns the list of strings used for displaying weekday
+   * names (e.g., "Sunday" and "Monday").  This is an eight element
+   * <code>String</code> array indexed by <code>Calendar.SUNDAY</code>
+   * through <code>Calendar.SATURDAY</code>.  Note that the first element
+   * of this array is ignored.
+   *
+   * @return This list of weekday display strings.
+   */
   public String[] getWeekdays ()
   {
     return weekdays;
   }
 
+  /**
+   * This method returns this list of localized timezone display strings.
+   * This is a two dimensional <code>String</code> array where each row in
+   * the array contains five values:
+   * <P>
+   * <ul>
+   * <li>0 - The non-localized time zone id string.
+   * <li>1 - The long name of the time zone (standard time).
+   * <li>2 - The short name of the time zone (standard time).
+   * <li>3 - The long name of the time zone (daylight savings time).
+   * <li>4 - the short name of the time zone (daylight savings time).
+   *
+   * @return The list of time zone display strings.
+   */
   public String[] [] getZoneStrings ()
   {
     return zoneStrings;
   }
 
+  /**
+   * This method sets the list of strings used to display AM/PM values to
+   * the specified list.
+   * This is a two element <code>String</code> array indexed by
+   * <code>Calendar.AM</code> and <code>Calendar.PM</code>
+   *
+   * @param ampms The new list of AM/PM display strings.
+   */
   public void setAmPmStrings (String[] value)
   {
     ampms = value;
   }
 
+  /**
+   * This method sets the list of strings used to display time eras to
+   * to the specified list.
+   * This is a two element <code>String</code>
+   * array indexed by <code>Calendar.BC</code> and <code>Calendar.AD</code>.
+   *
+   * @param eras The new list of era disply strings.
+   */
   public void setEras (String[] value)
   {
     eras = value;
   }
 
+  /**
+    * This method sets the list of characters used to specific date/time
+    * formatting strings.
+    * This is an 18 character string that contains the characters
+    * that are used in creating the date formatting strings in 
+    * <code>SimpleDateFormat</code>.   The following are the character
+    * positions in the string and which format character they correspond
+    * to (the character in parentheses is the default value in the US English
+    * locale):
+    * <p>
+    * <ul>
+    * <li>0 - era (G)
+    * <li>1 - year (y)
+    * <li>2 - month (M)
+    * <li 3 - day of month (d)
+    * <li>4 - hour out of 12, from 1-12 (h)
+    * <li>5 - hour out of 24, from 0-23 (H)
+    * <li>6 - minute (m)
+    * <li>7 - second (s)
+    * <li>8 - millisecond (S)
+    * <li>9 - date of week (E)
+    * <li>10 - date of year (D)
+    * <li>11 - day of week in month, eg. "4th Thur in Nov" (F)
+    * <li>12 - week in year (w)
+    * <li>13 - week in month (W)
+    * <li>14 - am/pm (a)
+    * <li>15 - hour out of 24, from 1-24 (k)
+    * <li>16 - hour out of 12, from 0-11 (K)
+    * <li>17 - time zone (z)
+    * </ul>
+    *
+    * @param localPatternChars The new format patter characters
+    */
   public void setLocalPatternChars (String value)
   {
     localPatternChars = value;
   }
 
+  /**
+    * This method sets the list of strings used to display month names.
+    * This is a thirteen element
+    * string array indexed by <code>Calendar.JANUARY</code> through
+    * <code>Calendar.UNDECEMBER</code>.  Note that there are thirteen
+    * elements because some calendars have thriteen months.
+    *
+    * @param months The list of month display strings.
+    */
   public void setMonths (String[] value)
   {
     months = value;
   }
 
+  /**
+   * This method sets the list of strings used to display abbreviated month
+   * names.
+   * This is a thirteen element
+   * <code>String</code> array indexed by <code>Calendar.JANUARY</code>
+   * through <code>Calendar.UNDECEMBER</code>.  Note that there are thirteen
+   * elements because some calendars have thirteen months.
+   *
+   * @param shortMonths The new list of abbreviated month display strings.
+   */
   public void setShortMonths (String[] value)
   {
     shortMonths = value;
   }
 
+  /**
+   * This method sets the list of strings used to display abbreviated
+   * weekday names.
+   * This is an eight element
+   * <code>String</code> array indexed by <code>Calendar.SUNDAY</code>
+   * through <code>Calendar.SATURDAY</code>.  Note that the first element
+   * of this array is ignored.
+   *
+   * @param shortWeekdays This list of abbreviated weekday display strings.
+   */
   public void setShortWeekdays (String[] value)
   {
     shortWeekdays = value;
   }
 
+  /**
+   * This method sets the list of strings used to display weekday names.
+   * This is an eight element
+   * <code>String</code> array indexed by <code>Calendar.SUNDAY</code>
+   * through <code>Calendar.SATURDAY</code>.  Note that the first element
+   * of this array is ignored.
+   *
+   * @param weekdays This list of weekday display strings.
+   */
   public void setWeekdays (String[] value)
   {
     weekdays = value;
   }
 
+  /**
+   * This method sets the list of display strings for time zones.
+   * This is a two dimensional <code>String</code> array where each row in
+   * the array contains five values:
+   * <P>
+   * <ul>
+   * <li>0 - The non-localized time zone id string.
+   * <li>1 - The long name of the time zone (standard time).
+   * <li>2 - The short name of the time zone (standard time).
+   * <li>3 - The long name of the time zone (daylight savings time).
+   * <li>4 - the short name of the time zone (daylight savings time).
+   *
+   * @return The list of time zone display strings.
+   */
   public void setZoneStrings (String[][] value)
   {
     zoneStrings = value;
@@ -292,9 +403,24 @@ public class DateFormatSymbols extends Object
     return hash;
   }
 
+  /**
+   * This method tests a specified object for equality against this object.
+   * This will be true if and only if the specified object:
+   * <p>
+   * <ul>
+   * <li> Is not <code>null</code>.
+   * <li> Is an instance of <code>DateFormatSymbols</code>.
+   * <li> Contains identical formatting symbols to this object.
+   * </ul>
+   * 
+   * @param obj The <code>Object</code> to test for equality against.
+   *
+   * @return <code>true</code> if the specified object is equal to this one,
+   * </code>false</code> otherwise.
+   */
   public boolean equals (Object obj)
   {
-    if (obj == null || ! (obj instanceof DateFormatSymbols))
+    if (! (obj instanceof DateFormatSymbols))
       return false;
     DateFormatSymbols other = (DateFormatSymbols) obj;
     return (equals(ampms, other.ampms)
@@ -307,11 +433,28 @@ public class DateFormatSymbols extends Object
 	    && equals(zoneStrings, other.zoneStrings));
   }
 
+  /**
+   * Returns a new copy of this object.
+   *
+   * @param A copy of this object
+   */
   public Object clone ()
   {
-    return new DateFormatSymbols (this);
+    try
+      {
+        return super.clone ();
+      } 
+    catch (CloneNotSupportedException e) 
+      {
+        return null;
+      }
   }
 
+  /**
+   * This method returns a hash value for this object.
+   *
+   * @return A hash value for this object.
+   */
   public int hashCode ()
   {
     return (hashCode(ampms)

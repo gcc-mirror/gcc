@@ -873,14 +873,6 @@ gnu/gcj/protocol/jar/Handler.java \
 gnu/gcj/runtime/FileDeleter.java \
 gnu/gcj/runtime/FirstThread.java \
 gnu/gcj/runtime/VMClassLoader.java \
-gnu/gcj/text/BaseBreakIterator.java \
-gnu/gcj/text/CharacterBreakIterator.java \
-gnu/gcj/text/LineBreakIterator.java \
-gnu/gcj/text/LocaleData.java	\
-gnu/gcj/text/LocaleData_en.java	\
-gnu/gcj/text/LocaleData_en_US.java \
-gnu/gcj/text/SentenceBreakIterator.java	\
-gnu/gcj/text/WordBreakIterator.java \
 gnu/java/io/ClassLoaderObjectInputStream.java \
 gnu/java/io/NullOutputStream.java \
 gnu/java/io/ObjectIdentityWrapper.java \
@@ -891,10 +883,20 @@ gnu/java/locale/Calendar.java \
 gnu/java/locale/Calendar_de.java \
 gnu/java/locale/Calendar_en.java \
 gnu/java/locale/Calendar_nl.java \
+gnu/java/locale/LocaleInformation.java \
+gnu/java/locale/LocaleInformation_de.java \
+gnu/java/locale/LocaleInformation_en.java \
+gnu/java/locale/LocaleInformation_en_US.java \
+gnu/java/locale/LocaleInformation_nl.java \
 gnu/java/security/provider/DefaultPolicy.java \
 gnu/java/security/provider/Gnu.java \
 gnu/java/security/provider/SHA.java \
 gnu/java/security/provider/SHA1PRNG.java \
+gnu/java/text/BaseBreakIterator.java \
+gnu/java/text/CharacterBreakIterator.java \
+gnu/java/text/LineBreakIterator.java \
+gnu/java/text/SentenceBreakIterator.java	\
+gnu/java/text/WordBreakIterator.java \
 gnu/java/util/DoubleEnumeration.java \
 java/lang/ref/PhantomReference.java \
 java/lang/ref/Reference.java \
@@ -1083,6 +1085,10 @@ java/sql/Struct.java	\
 java/sql/Time.java \
 java/sql/Timestamp.java	\
 java/sql/Types.java \
+java/text/Annotation.java \
+java/text/AttributedCharacterIterator.java \
+java/text/AttributedString.java	\
+java/text/AttributedStringIterator.java	\
 java/text/BreakIterator.java \
 java/text/CharacterIterator.java \
 java/text/ChoiceFormat.java \
@@ -1491,14 +1497,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/gcj/protocol/jar/Handler.P \
 .deps/gnu/gcj/runtime/FileDeleter.P .deps/gnu/gcj/runtime/FirstThread.P \
 .deps/gnu/gcj/runtime/VMClassLoader.P \
-.deps/gnu/gcj/runtime/natFirstThread.P \
-.deps/gnu/gcj/text/BaseBreakIterator.P \
-.deps/gnu/gcj/text/CharacterBreakIterator.P \
-.deps/gnu/gcj/text/LineBreakIterator.P .deps/gnu/gcj/text/LocaleData.P \
-.deps/gnu/gcj/text/LocaleData_en.P \
-.deps/gnu/gcj/text/LocaleData_en_US.P \
-.deps/gnu/gcj/text/SentenceBreakIterator.P \
-.deps/gnu/gcj/text/WordBreakIterator.P .deps/gnu/gcj/xlib/Clip.P \
+.deps/gnu/gcj/runtime/natFirstThread.P .deps/gnu/gcj/xlib/Clip.P \
 .deps/gnu/gcj/xlib/Colormap.P .deps/gnu/gcj/xlib/Display.P \
 .deps/gnu/gcj/xlib/Drawable.P .deps/gnu/gcj/xlib/Font.P \
 .deps/gnu/gcj/xlib/GC.P .deps/gnu/gcj/xlib/Pixmap.P \
@@ -1543,6 +1542,11 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/lang/reflect/TypeSignature.P \
 .deps/gnu/java/locale/Calendar.P .deps/gnu/java/locale/Calendar_de.P \
 .deps/gnu/java/locale/Calendar_en.P .deps/gnu/java/locale/Calendar_nl.P \
+.deps/gnu/java/locale/LocaleInformation.P \
+.deps/gnu/java/locale/LocaleInformation_de.P \
+.deps/gnu/java/locale/LocaleInformation_en.P \
+.deps/gnu/java/locale/LocaleInformation_en_US.P \
+.deps/gnu/java/locale/LocaleInformation_nl.P \
 .deps/gnu/java/rmi/dgc/DGCImpl.P .deps/gnu/java/rmi/dgc/DGCImpl_Skel.P \
 .deps/gnu/java/rmi/dgc/DGCImpl_Stub.P \
 .deps/gnu/java/rmi/registry/RegistryImpl.P \
@@ -1565,6 +1569,11 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/security/provider/Gnu.P \
 .deps/gnu/java/security/provider/SHA.P \
 .deps/gnu/java/security/provider/SHA1PRNG.P \
+.deps/gnu/java/text/BaseBreakIterator.P \
+.deps/gnu/java/text/CharacterBreakIterator.P \
+.deps/gnu/java/text/LineBreakIterator.P \
+.deps/gnu/java/text/SentenceBreakIterator.P \
+.deps/gnu/java/text/WordBreakIterator.P \
 .deps/gnu/java/util/DoubleEnumeration.P .deps/interpret.P \
 .deps/java/applet/Applet.P .deps/java/applet/AppletContext.P \
 .deps/java/applet/AppletStub.P .deps/java/applet/AudioClip.P \
@@ -2024,6 +2033,10 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/sql/SQLOutput.P .deps/java/sql/SQLWarning.P \
 .deps/java/sql/Statement.P .deps/java/sql/Struct.P \
 .deps/java/sql/Time.P .deps/java/sql/Timestamp.P .deps/java/sql/Types.P \
+.deps/java/text/Annotation.P \
+.deps/java/text/AttributedCharacterIterator.P \
+.deps/java/text/AttributedString.P \
+.deps/java/text/AttributedStringIterator.P \
 .deps/java/text/BreakIterator.P .deps/java/text/CharacterIterator.P \
 .deps/java/text/ChoiceFormat.P \
 .deps/java/text/CollationElementIterator.P \
