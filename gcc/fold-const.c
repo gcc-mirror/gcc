@@ -4655,6 +4655,37 @@ fold (expr)
 
 	  STRIP_NOPS (xarg0);
 
+	  /* Look inside the dividend and simplify using EXACT_DIV_EXPR
+	     if possible.  */
+	  if (TREE_CODE (xarg0) == MULT_EXPR
+	      && multiple_of_p (type, TREE_OPERAND (xarg0, 0), arg1))
+	    {
+	      tree t;
+
+	      t = fold (build (MULT_EXPR, type,
+			       fold (build (EXACT_DIV_EXPR, type,
+					    TREE_OPERAND (xarg0, 0), arg1)),
+			       TREE_OPERAND (xarg0, 1)));
+	      if (have_save_expr)
+		t = save_expr (t);
+	      return t;
+
+	    }
+
+	  if (TREE_CODE (xarg0) == MULT_EXPR
+	      && multiple_of_p (type, TREE_OPERAND (xarg0, 1), arg1))
+	    {
+	      tree t;
+
+	      t = fold (build (MULT_EXPR, type,
+			       fold (build (EXACT_DIV_EXPR, type,
+					    TREE_OPERAND (xarg0, 1), arg1)),
+			       TREE_OPERAND (xarg0, 0)));
+	      if (have_save_expr)
+		t = save_expr (t);
+	      return t;
+	    }
+
 	  if (TREE_CODE (xarg0) == PLUS_EXPR
 	      && TREE_CODE (TREE_OPERAND (xarg0, 1)) == INTEGER_CST)
 	    c2 = TREE_OPERAND (xarg0, 1), xarg0 = TREE_OPERAND (xarg0, 0);
