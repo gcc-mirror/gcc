@@ -1,3 +1,17 @@
+1999-04-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (BASELINK_P): New macro.
+	(SET_BASELINK_P): Likewise.
+	* init.c (build_member_call): Remove needless assignment in if
+	statement.
+	* search.c (lookup_field_r): Fix handling when we are looking
+	specifically for a type; these are not hidden by functions and
+	variables.
+	(lookup_member): Use SET_BASELINK_P.
+	* tree.c (is_overloaded_fn): Use BASELINK_P.
+	(really_overloaed_fn): Likewise.
+	(get_first_fn): Likewise.
+	
 1999-04-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (lookup_name_current_level): Tweak, and improve

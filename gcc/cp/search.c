@@ -1207,17 +1207,20 @@ lookup_field_r (binfo, data)
 {
   struct lookup_field_info *lfi = (struct lookup_field_info *) data;
   tree type = BINFO_TYPE (binfo);
-  tree nval;
-  int idx;
+  tree nval = NULL_TREE;
   int from_dep_base_p;
 
   /* First, look for a function.  There can't be a function and a data
      member with the same name, and if there's a function and a type
      with the same name, the type is hidden by the function.  */
-  idx = lookup_fnfields_here (type, lfi->name);
-  if (idx >= 0)
-    nval = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), idx);
-  else
+  if (!lfi->want_type)
+    {
+      int idx = lookup_fnfields_here (type, lfi->name);
+      if (idx >= 0)
+	nval = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), idx);
+    }
+
+  if (!nval)
     /* Look for a data member or type.  */
     nval = lookup_field_1 (type, lfi->name);
 
@@ -1225,6 +1228,17 @@ lookup_field_r (binfo, data)
      then there's nothing to do.  */
   if (!nval)
     return NULL_TREE;
+
+  /* If we're looking up a type (as with an elaborated type specifier)
+     we ignore all non-types we find.  */
+  if (lfi->want_type && TREE_CODE (nval) != TYPE_DECL)
+    {
+      nval = purpose_member (lfi->name, CLASSTYPE_TAGS (type));
+      if (nval)
+	nval = TYPE_MAIN_DECL (TREE_VALUE (nval));
+      else 
+	return NULL_TREE;
+    }
 
   /* You must name a template base class with a template-id.  */
   if (!same_type_p (type, lfi->type) 
@@ -1285,41 +1299,24 @@ lookup_field_r (binfo, data)
     }
   else
     {
-      /* The new lookup is the best we've got so far.  Verify that
-	 it's the kind of thing we're looking for.  */
-      if (lfi->want_type && TREE_CODE (nval) != TYPE_DECL)
+      /* If the thing we're looking for is a virtual base class, then
+	 we know we've got what we want at this point; there's no way
+	 to get an ambiguity.  */
+      if (VBASE_NAME_P (lfi->name))
 	{
-	  nval = purpose_member (lfi->name, CLASSTYPE_TAGS (type));
-	  if (nval)
-	    {
-	      nval = TYPE_MAIN_DECL (TREE_VALUE (nval));
-	      if (!same_type_p (type, lfi->type)
-		  && template_self_reference_p (type, nval))
-		nval = NULL_TREE;
-	    }
+	  lfi->rval = nval;
+	  return nval;
 	}
 
-      if (nval)
-	{
-	  /* If the thing we're looking for is a virtual base class,
-	     then we know we've got what we want at this point;
-	     there's no way to get an ambiguity.  */
-	  if (VBASE_NAME_P (lfi->name))
-	    {
-	      lfi->rval = nval;
-	      return nval;
-	    }
-
-	  if (from_dep_base_p && TREE_CODE (nval) != TYPE_DECL
-	      /* We need to return a member template class so we can
-		 define partial specializations.  Is there a better
-		 way?  */
-	      && !DECL_CLASS_TEMPLATE_P (nval))
-	    /* The thing we're looking for isn't a type, so the implicit
-	       typename extension doesn't apply, so we just pretend we
-	       didn't find anything.  */
-	    return NULL_TREE;
-	}
+      if (from_dep_base_p && TREE_CODE (nval) != TYPE_DECL
+	  /* We need to return a member template class so we can
+	     define partial specializations.  Is there a better
+	     way?  */
+	  && !DECL_CLASS_TEMPLATE_P (nval))
+	/* The thing we're looking for isn't a type, so the implicit
+	   typename extension doesn't apply, so we just pretend we
+	   didn't find anything.  */
+	return NULL_TREE;
 
       lfi->rval = nval;
       lfi->from_dep_base_p = from_dep_base_p;
@@ -1444,8 +1441,11 @@ lookup_member (xbasetype, name, protect, want_type)
 						name, name,
 						TREE_TYPE (rval)));
 
-  if (rval && is_overloaded_fn (rval))
-    rval = scratch_tree_cons (basetype_path, rval, NULL_TREE);
+  if (rval && is_overloaded_fn (rval)) 
+    {
+      rval = scratch_tree_cons (basetype_path, rval, NULL_TREE);
+      SET_BASELINK_P (rval);
+    }
 
   return rval;
 }

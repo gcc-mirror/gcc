@@ -33,7 +33,7 @@ Boston, MA 02111-1307, USA.  */
       TREE_INDIRECT_USING (in NAMESPACE_DECL).
       IDENTIFIER_MARKED (used by search routines).
       LOCAL_BINDING_P (in CPLUS_BINDING)
-   1:  IDENTIFIER_VIRTUAL_P.
+   1: IDENTIFIER_VIRTUAL_P.
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
       DELETE_EXPR_USE_VEC (in DELETE_EXPR).
@@ -41,6 +41,7 @@ Boston, MA 02111-1307, USA.  */
       TYPE_USES_COMPLEX_INHERITANCE (in _TYPE).
       C_DECLARED_LABEL_FLAG.
       INHERITED_VALUE_BINDING_P (in CPLUS_BINDING)
+      BASELINK_P (in TREE_LIST)
    2: IDENTIFIER_OPNAME_P.
       BINFO_VBASE_MARKED.
       BINFO_FIELDS_MARKED.
@@ -190,6 +191,14 @@ struct tree_overload
   char common[sizeof (struct tree_common)];
   tree function;
 };
+
+/* A `baselink' is a TREE_LIST whose TREE_PURPOSE is a BINFO
+   indicating a particular base class, and whose TREE_VALUE is a
+   (possibly overloaded) function from that base class.  */
+#define BASELINK_P(NODE) \
+  (TREE_CODE ((NODE)) == TREE_LIST && TREE_LANG_FLAG_1 ((NODE)))
+#define SET_BASELINK_P(NODE) \
+  (TREE_LANG_FLAG_1 ((NODE)) = 1)
 
 #define WRAPPER_PTR(NODE) (((struct tree_wrapper*)NODE)->u.ptr)
 #define WRAPPER_INT(NODE) (((struct tree_wrapper*)NODE)->u.i)
