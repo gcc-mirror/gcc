@@ -179,6 +179,36 @@ char* __cxa_demangle (const char* mangled_name, char* output_buffer,
 } // namespace abi
 
 // // // // // // // // // // // // // // // // // // // // // // // //
+/** @addtogroup binarysearch Binary search algorithms
+These algorithms are variations of a classic binary search.  They all assume
+that the sequence being searched is already sorted.
+
+The number of comparisons will be logarithmic (and as few as possible).
+The number of steps through the sequence will be logarithmic for
+random-access iterators (e.g., pointers), and linear otherwise.
+
+The LWG has passed Defect Report 270, which notes:  <em>The proposed
+resolution reinterprets binary search. Instead of thinking about searching
+for a value in a sorted range, we view that as an important special
+case of a more general algorithm: searching for the partition point in a
+partitioned range.  We also add a guarantee that the old wording did not:
+we ensure that the upper bound is no earlier than the lower bound, that
+the pair returned by equal_range is a valid range, and that the first part
+of that pair is the lower bound.</em>
+
+The actual effect of the first sentence is that a comparison functor
+passed by the user doesn't necessarily need to induce a strict weak ordering
+relation.  Rather, it partitions the range.
+*/
+
+// // // // // // // // // // // // // // // // // // // // // // // //
+
+// // // // // // // // // // // // // // // // // // // // // // // //
+/* * @addtogroup groupname description of group
+placeholder text
+*/
+
+// // // // // // // // // // // // // // // // // // // // // // // //
 
 // vim:et:noai:
 
