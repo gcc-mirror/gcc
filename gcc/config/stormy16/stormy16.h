@@ -2435,12 +2435,7 @@ typedef int CUMULATIVE_ARGS;
    FUNCTION instead of jumping to it.  The generic approach does not support
    varargs.  */
 #define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION)	\
-{									\
-  fprintf (FILE, "\tadd r2,#0x%x\n", (DELTA) & 0xFFFF);			\
-  fputs ("\tjmpf ", FILE);						\
-  assemble_name (FILE, XSTR (XEXP (DECL_RTL (function), 0), 0));	\
-  putc ('\n', FILE);							\
-}  
+  stormy16_asm_output_mi_thunk (FILE, THUNK_FNDECL, DELTA, FUNCTION)
 
 
 /* Generating Code for Profiling.  */
