@@ -1,5 +1,12 @@
 2003-10-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/6392
+	* c-common.c (c_build_qualified_type): Look through arrays first.
+	(c_apply_type_quals_to_decl): Look through arrays.
+
+	* c-common.c (c_apply_type_quals_to_decl): Unset TREE_READONLY for
+	types with constructors.
+
 	* coverage.c (build_ctr_info_value): Use build_decl to make a
 	VAR_DECL.
 	(create_coverage): Likewise.
