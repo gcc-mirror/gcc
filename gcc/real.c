@@ -1818,8 +1818,8 @@ eisnan (x)
   return (0);
 }
 
-/*  Fill e-type number X with infinity pattern (IEEE)
-    or largest possible number (non-IEEE).  */
+/* Fill e-type number X with infinity pattern (IEEE)
+   or largest possible number (non-IEEE).  */
 
 static void
 einfin (x)
@@ -1858,6 +1858,49 @@ einfin (x)
 	}
     }
 #endif
+}
+
+/* Similar, except return it as a REAL_VALUE_TYPE.  */
+
+REAL_VALUE_TYPE
+ereal_inf (mode)
+     enum machine_mode mode;
+{
+  REAL_VALUE_TYPE r;
+  UEMUSHORT e[NE];
+  int prec, rndsav;
+
+  switch (mode)
+    {
+    case QFmode:
+    case SFmode:
+      prec = 24;
+      break;
+    case HFmode:
+    case DFmode:
+      prec = 53;
+      break;
+    case TFmode:
+      if (!INTEL_EXTENDED_IEEE_FORMAT)
+	{
+	  prec = 113;
+	  break;
+	}
+      /* FALLTHRU */
+    case XFmode:
+      prec = 64;
+      break;
+    default:
+      abort ();
+    }
+
+  rndsav = rndprc;
+  rndprc = prec;
+  einfin (e);
+  rndprc = rndsav;
+
+  PUT_REAL (e, &r);
+  return r;
 }
 
 /* Output an e-type NaN.

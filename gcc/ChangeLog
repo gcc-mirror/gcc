@@ -1,5 +1,17 @@
 2002-09-04  Richard Henderson  <rth@redhat.com>
 
+	* builtin-types.def (BT_FN_FLOAT): New.
+	(BT_FN_DOUBLE, BT_FN_LONG_DOUBLE): New.
+	* builtins.def (BUILT_IN_INF, BUILT_IN_INFF, BUILT_IN_INFL,
+	BUILT_IN_HUGE_VAL, BUILT_IN_HUGE_VALF, BUILT_IN_HUGE_VALL): New.
+	* builtins.c (fold_builtin_inf): New.
+	(fold_builtin): Call it.
+	* real.c (ereal_inf): New.
+	* real.h: Declare it.
+	* doc/extend.texi: Document new builtins.
+
+2002-09-04  Richard Henderson  <rth@redhat.com>
+
 	* cse.c (cse_insn): Avoid subreg games if the equivalence
 	is already in the proper mode.
 
