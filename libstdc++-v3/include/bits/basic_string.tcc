@@ -512,7 +512,8 @@ namespace std
   // This is a special replace helper, which does not buffer internally
   // and can be used in the "safe" situations involving forward-iterators,
   // i.e., when source and destination ranges are known to not overlap.
-  // Presently, is called by _M_replace and by the various append.
+  // Presently, is called by _M_replace, by the various append and by
+  // the assigns.
   template<typename _CharT, typename _Traits, typename _Alloc>
     template<typename _ForwardIter>
       basic_string<_CharT, _Traits, _Alloc>&

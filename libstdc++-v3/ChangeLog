@@ -1,3 +1,14 @@
+2001-12-15  Paolo Carlini  <pcarlini@unitus.it>
+            Nathan Myers  <ncm@cantrip.org>
+
+	* include/bits/basic_string.h
+	(assign(__str, __pos, __n), assign(__s, __n)):  Optimize
+	by avoiding unnecessary temporaries.
+	(assign(__s)): Call assign(__s, __n).
+	* include/bits/basic_string.tcc (_M_replace_safe): Adjust comment.
+	* include/bits/std_string.h: include stl_function.h.
+	* testsuite/21_strings/assign.cc (test02, test03): New tests.
+
 2001-12-15  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* acinclude.m4 (GLIBCPP_ENABLE_CLOCALE): Enable gnu locale model

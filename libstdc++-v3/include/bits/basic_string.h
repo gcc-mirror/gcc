@@ -477,17 +477,53 @@ namespace std
 
       basic_string& 
       assign(const basic_string& __str, size_type __pos, size_type __n)
-      { 
-	return this->assign(__str._M_check(__pos), __str._M_fold(__pos, __n)); 
+      {
+	if (__pos > __str.size())
+	  __throw_out_of_range("basic_string::assign");
+	if (_M_rep()->_M_is_shared() || _M_rep() != __str._M_rep())
+	  return _M_replace_safe(_M_ibegin(), _M_iend(), 
+				 __str._M_check(__pos),
+				 __str._M_fold(__pos, __n));
+	else
+	  {
+	    // Work in-place.
+	    bool __testn = __n < __str.size() - __pos;
+	    const size_type __newsize = __testn ? __n : __str.size() - __pos;
+	    // Avoid move, if possible.
+	    if (__pos >= __newsize)
+	      traits_type::copy(_M_data(), __str._M_data() + __pos, __newsize);
+	    else if (__pos)	      
+	      traits_type::move(_M_data(), __str._M_data() + __pos, __newsize);
+	    // else nothing (avoid calling move unnecessarily)
+	    _M_rep()->_M_length = __newsize;
+	    return *this;
+	  }
       }
 
       basic_string& 
       assign(const _CharT* __s, size_type __n)
-      { return this->assign(__s, __s + __n); }
+      {
+	if (__n > this->max_size())
+	  __throw_length_error("basic_string::assign");
+	if (_M_rep()->_M_is_shared() || less<const _CharT*>()(__s, _M_data())
+	    || less<const _CharT*>()(_M_data() + this->size(), __s))
+	  return _M_replace_safe(_M_ibegin(), _M_iend(), __s, __s + __n);
+	else
+	  {
+	    // Work in-place
+	    const size_type __pos = __s - _M_data();
+	    if (__pos >= __n)
+	      traits_type::copy(_M_data(), __s, __n);
+	    else if (__pos)
+	      traits_type::move(_M_data(), __s, __n);
+	    _M_rep()->_M_length = __n;
+	    return *this;
+	  }
+      }
 
       basic_string& 
       assign(const _CharT* __s)
-      { return this->assign(__s, __s + traits_type::length(__s)); }
+      { return this->assign(__s, traits_type::length(__s)); }
 
       basic_string& 
       assign(size_type __n, _CharT __c)

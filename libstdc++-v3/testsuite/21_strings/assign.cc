@@ -39,8 +39,71 @@ test01()
   VERIFY(aux == "Hawaii");
 }
 
+// assign(const basic_string& __str, size_type __pos, size_type __n)
+void
+test02()
+{
+  bool test = true;
+
+  using namespace std;
+  
+  string one = "Selling England by the pound";
+  string two = one;
+  string three = "Brilliant trees";
+
+  one.assign(one, 8, 100);
+  VERIFY( one == "England by the pound" );
+
+  one.assign(one, 8, 0);
+  VERIFY( one == "" );
+ 
+  one.assign(two, 8, 7);
+  VERIFY( one == "England" );
+
+  one.assign(three, 10, 100);
+  VERIFY( one == "trees" );
+
+  three.assign(one, 0, 3);
+  VERIFY( three == "tre" );
+}
+
+// assign(const _CharT* __s, size_type __n)
+// assign(const _CharT* __s)
+void
+test03()
+{
+  bool test = true;
+
+  using namespace std;
+ 
+  string one; 
+  string two;
+  string three = two;
+  const char * source = "Selling England by the pound";
+
+  one.assign(source);
+  VERIFY( one == "Selling England by the pound" );
+
+  one.assign(source, 28);
+  VERIFY( one == "Selling England by the pound" );
+
+  two.assign(source, 7);
+  VERIFY( two == "Selling" );
+  
+  one.assign(one.c_str() + 8, 20);
+  VERIFY( one == "England by the pound" );
+
+  one.assign(one.c_str() + 8, 6);
+  VERIFY( one == "by the" );
+}
+
+
+
 int main()
 { 
   test01();
+  test02();
+  test03();
+
   return 0;
 }
