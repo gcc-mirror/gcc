@@ -1,5 +1,5 @@
 /* Hash tables.
-   Copyright (C) 2000, 2001, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2003, 2004 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -68,6 +68,7 @@ ht_create (unsigned int order)
   obstack_alignment_mask (&table->stack) = 0;
 
   table->entries = xcalloc (nslots, sizeof (hashnode));
+  table->entries_owned = true;
   table->nslots = nslots;
   return table;
 }
@@ -78,7 +79,8 @@ void
 ht_destroy (hash_table *table)
 {
   obstack_free (&table->stack, NULL);
-  free (table->entries);
+  if (table->entries_owned)
+    free (table->entries);
   free (table);
 }
 
@@ -199,7 +201,9 @@ ht_expand (hash_table *table)
       }
   while (++p < limit);
 
-  free (table->entries);
+  if (table->entries_owned)
+    free (table->entries);
+  table->entries_owned = true;
   table->entries = nentries;
   table->nslots = size;
 }
@@ -220,6 +224,20 @@ ht_forall (hash_table *table, ht_cb cb, const void *v)
 	  break;
       }
   while (++p < limit);
+}
+
+/* Restore the hash table.  */
+void
+ht_load (hash_table *ht, hashnode *entries,
+	 unsigned int nslots, unsigned int nelements,
+	 bool own)
+{
+  if (ht->entries_owned)
+    free (ht->entries);
+  ht->entries = entries;
+  ht->nslots = nslots;
+  ht->nelements = nelements;
+  ht->entries_owned = own;
 }
 
 /* Dump allocation statistics to stderr.  */

@@ -1,5 +1,5 @@
 /* Hash tables.
-   Copyright (C) 2000, 2001, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2003, 2004 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -58,6 +58,9 @@ struct ht
   /* Table usage statistics.  */
   unsigned int searches;
   unsigned int collisions;
+
+  /* Should 'entries' be freed when it is no longer needed?  */
+  bool entries_owned;
 };
 
 /* Initialize the hashtable with 2 ^ order entries.  */
@@ -74,6 +77,10 @@ extern hashnode ht_lookup (hash_table *, const unsigned char *,
    if the callback returns zero.  */
 typedef int (*ht_cb) (struct cpp_reader *, hashnode, const void *);
 extern void ht_forall (hash_table *, ht_cb, const void *);
+
+/* Restore the hash table.  */
+extern void ht_load (hash_table *ht, hashnode *entries,
+		     unsigned int nslots, unsigned int nelements, bool own);
 
 /* Dump allocation statistics to stderr.  */
 extern void ht_dump_statistics (hash_table *);

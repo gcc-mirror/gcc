@@ -1,3 +1,16 @@
+2004-05-29  Geoffrey Keating  <geoffk@apple.com>
+
+	* gengtype-yacc.y: Add NESTED_PTR token.
+	(option): Record `nested_ptr' option.
+	* gengtype-lex.l: Handle `nested_ptr' keyword.
+	* gengtype.c (walk_type): Process `nested_ptr' option.
+	* gengtype.h (struct nested_ptr_data): New.
+	* doc/gty.texi (GTY Options): Document `nested_ptr' option.
+	* stringpool.c (struct string_pool_data): Make 'entries' point to
+	ht_identifier instead of tree.
+	(gt_pch_save_stringpool): Don't adjust pointers.
+	(gt_pch_restore_stringpool): Call ht_load.
+
 2004-05-29  Jason Merrill  <jason@redhat.com>
 
 	* gimplify.c (gimplify_expr): Don't build a statement list

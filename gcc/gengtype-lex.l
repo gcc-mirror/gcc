@@ -1,6 +1,6 @@
 /* -*- indented-text -*- */
 /* Process source files and output type information.
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -235,6 +235,7 @@ ITYPE	{IWORD}({WS}{IWORD})*
 "struct"/[^[:alnum:]_]		{ return STRUCT; }
 "enum"/[^[:alnum:]_]		{ return ENUM; }
 "ptr_alias"/[^[:alnum:]_]	{ return ALIAS; }
+"nested_ptr"/[^[:alnum:]_]	{ return NESTED_PTR; }
 [0-9]+				{ return NUM; }
 "param"[0-9]*"_is"/[^[:alnum:]_]		{ 
   yylval.s = xmemdup (yytext, yyleng, yyleng+1);

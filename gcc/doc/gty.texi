@@ -291,6 +291,19 @@ this field is always @code{NULL}.  This is used to avoid requiring
 backends to define certain optional structures.  It doesn't work with
 language frontends.
 
+@findex nested_ptr
+@item nested_ptr (@var{type}, "@var{to expression}", "@var{from expression}")
+
+The type machinery expects all pointers to point to the start of an
+object.  Sometimes for abstraction purposes it's convenient to have
+a pointer which points inside an object.  So long as it's possible to
+convert the original object to and from the pointer, such pointers
+can still be used.  @var{type} is the type of the original object,
+the @var{to expression} returns the pointer given the original object,
+and the @var{from expression} returns the original object given
+the pointer.  The pointer will be available using the @code{%h}
+escape.
+
 @findex chain_next
 @findex chain_prev
 @item chain_next ("@var{expression}")
