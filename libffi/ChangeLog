@@ -1,3 +1,9 @@
+2004-01-24  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* testsuite/libffi.call/pyobjc-tc.c (main): Treat result value
+	as of type ffi_arg.
+	* testsuite/libffi.call/struct3.c (main): Fix CHECK.
+
 2004-01-22  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* testsuite/libffi.call/cls_uint.c (cls_ret_uint_fn): Treat result

@@ -93,7 +93,7 @@ int main(void)
 	int   o = 0;
 	int   l = 42;
 	char* m = "myMethod";
-	int   result;
+	ffi_arg result;
 
 	values[0] = &o;
 	values[1] = &m;
