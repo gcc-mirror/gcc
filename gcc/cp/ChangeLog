@@ -1,3 +1,25 @@
+2002-12-30  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (THUNK_TARGET): New macro.
+	(THUNK_VIRTUAL_OFFSET): For result thunks it is always a binfo.
+	(finish_thunk): Remove offset parms.
+	* class.c (find_final_overrider): Look through thunks.
+	(get_vcall_index): Use THUNK_TARGET.
+	(update_vtable_entry_for_fn): Look through thunks. Set covariant
+	fixed offset here. Adjust finish_thunk call.
+	(build_vtbl_initializer): Adjust finish_thunk calls.
+	* mangle.c (mangle_call_offset): Remove superfluous if.
+	(mangle_thunk): Adjust.
+	* method.c (make_thunk): Adjust.
+	(finish_thunk): Adjust.
+	(thunk_adjust): Remove assert.
+	(use_thunk): Use THUNK_TARGET
+	* dump1.c (cp_dump_tree): Adjust thunk dumping.
+
+	PR c++/9054
+	* class.c (layout_class_type): Set TYPE_CONTEXT of type for base.
+	* dump.c (cp_dump_tree, RECORD_TYPE): Deal with type for base types.
+
 2002-12-28  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	Remove traditional C constructs 4/n.
