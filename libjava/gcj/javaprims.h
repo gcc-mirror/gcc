@@ -280,6 +280,8 @@ extern "Java"
       class Hashtable$Entry;
       class Hashtable$Enumerator;
       class Hashtable$HashIterator;
+      class IdentityHashMap;
+      class IdentityHashMap$IdentityIterator;
       class Iterator;
       class LinkedList;
       class LinkedList$Entry;
