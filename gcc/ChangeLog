@@ -1,3 +1,9 @@
+2004-05-18  Steven Bosscher  <stevenb@suse.de>
+
+	* config/s390/s390.c (s390_expand_movstr, s390_expand_clrstr,
+	s390_expand_cmpmem): Do not use expand_start_loop and
+	expand_end_loop, instead build the loop manually.
+
 2004-05-18  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.md (ctrsi_internal3): Delete.
