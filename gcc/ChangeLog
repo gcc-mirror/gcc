@@ -1,3 +1,7 @@
+2004-06-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* real.c: Fix bit count in head comment.
+
 2004-06-14  Jeff Law  <law@redhat.com>
 
 	* tree-ssa.c (kill_redundant_phi_nodes): More correctly handle
