@@ -1,3 +1,25 @@
+2002-01-08  Zack Weinberg  <zack@codesourcery.com>
+
+	* Makefile.in (cs-tconfig.h): Don't depend on $(CONFIG_H) or
+	except.h.  Remove commands to define USING_SJLJ_EXCEPTIONS.
+	(cppinit.o): Depend on except.h.
+	(gencheck.h, options.h, specs.h, s-gencheck, s-options,
+	s-specs): New rules.
+
+	* configure.in: Don't AC_DEFINE_UNQUOTED PACKAGE or VERSION.
+	Don't create specs.h/options.h/gencheck.h here.  Remove
+	unnecessary variable settings from last argument of AC_OUTPUT.
+	* config.in, configure: Regenerate.
+	* intl.c: Hardcode package name as "gcc".
+
+	* cppinit.c: Include except.h.
+	(builtin_array): Define __USING_SJLJ_EXCEPTIONS__ when
+	appropriate.
+	* unwind-dw2.c, unwind-sjlj.c, config/ia64/unwind-ia64.c:
+	Use #if(n)def __USING_SJLJ_EXCEPTIONS, not #if
+	(!)USING_SJLJ_EXCEPTIONS.
+	* doc/cpp.texi: Document __USING_SJLJ_EXCEPTIONS__.
+
 2002-01-08  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/tm.texi (ASM_OUTPUT_EH_REGION_BEG, ASM_OUTPUT_EH_REGION_END,
@@ -20,7 +42,7 @@ Tue Jan  8 15:56:41 2002  Nicola Pero  <nicola@brainstorm.co.uk>
 	* config/s390/linux.h (ASM_OUTPUT_LABELREF): Remove.
 	* config/s390/s390.c (s390_emit_epilog): Add REG_FRAME_RELATED_EXPR
 	to insn adjusting stack/frame pointer.
-	* config/s390/s390.md (reload_la_64, reload_la_31): Do not 
+	* config/s390/s390.md (reload_la_64, reload_la_31): Do not
 	accept operands that cause the insn to be non-splittable.
 
 2002-01-08  Graham Stott  <grahams@redhat.com>
@@ -71,13 +93,13 @@ Tue Jan  8 15:56:41 2002  Nicola Pero  <nicola@brainstorm.co.uk>
 
 2002-01-07  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.c (bdesc_2arg): Add altivec predicates.
-        (altivec_init_builtins): New node v4si_ftype_v16qi_v16qi.
+	* config/rs6000/rs6000.c (bdesc_2arg): Add altivec predicates.
+	(altivec_init_builtins): New node v4si_ftype_v16qi_v16qi.
 
-        * config/rs6000/rs6000.h (rs6000_builtins): Add enums for altivec
-        predicates.
+	* config/rs6000/rs6000.h (rs6000_builtins): Add enums for altivec
+	predicates.
 
-        * config/rs6000/rs6000.md: Add altivec predicate patterns.
+	* config/rs6000/rs6000.md: Add altivec predicate patterns.
 
 2002-01-07  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
@@ -89,11 +111,11 @@ Tue Jan  8 15:56:41 2002  Nicola Pero  <nicola@brainstorm.co.uk>
 
 2002-01-07  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.c (print_operand): Remove extra space.
-        (altivec_expand_unop_builtin): Fix thinko.
-        (altivec_expand_binop_builtin): Same.
-        (altivec_expand_ternop_builtin): Same.
-        (altivec_expand_builtin): Same.
+	* config/rs6000/rs6000.c (print_operand): Remove extra space.
+	(altivec_expand_unop_builtin): Fix thinko.
+	(altivec_expand_binop_builtin): Same.
+	(altivec_expand_ternop_builtin): Same.
+	(altivec_expand_builtin): Same.
 
 2002-01-07  Richard Henderson  <rth@redhat.com>
 
@@ -114,16 +136,16 @@ Tue Jan  8 15:56:41 2002  Nicola Pero  <nicola@brainstorm.co.uk>
 
 2002-01-07  Aldy Hernandez  <aldyh@redhat.com>
 
-        * rs6000.c (altivec_expand_ternop_builtin): Don't die on invalid
-        arguments.
-        (altivec_expand_binop_builtin): Same.
-        (altivec_expand_unop_builtin): Same.
-        (print_operand): Fix typo.
-        (bdesc_1arg): Add vupk* variants.
+	* rs6000.c (altivec_expand_ternop_builtin): Don't die on invalid
+	arguments.
+	(altivec_expand_binop_builtin): Same.
+	(altivec_expand_unop_builtin): Same.
+	(print_operand): Fix typo.
+	(bdesc_1arg): Add vupk* variants.
 
-        * rs6000.h (rs6000_builtins): Add vupk* enums.
+	* rs6000.h (rs6000_builtins): Add vupk* enums.
 
-        * rs6000.md: Add altivec_vupk* variants.
+	* rs6000.md: Add altivec_vupk* variants.
 
 2002-01-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
@@ -151,92 +173,92 @@ Mon Jan  7 11:59:34 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-01-07  Graham Stott  <grahams@redhat.com>
 
-        * config/i386/i386.h: Update copyright date.
-        (HALF_PIC_PTR): Add parenthesis.
-        (OPTIMIZATION_OPTIONS): Whitespace, add parenthesis and wrap.
-        (CONSTANT_ALIGNMENT): Add parenthesis.
-        (DATA_ALIGNMENT): Likewise.
-        (LOCAL_ALIGNMENT): Likewise.
-        (FUNCTION_ARG_BOUNDARY): Whitespace, add parenthesis and wrap.
-        (IS_STACK_MODE): Uppercase macro parameter, add parenthesis and wrap.
-        (CONDITIONAL_REGISTER_USAGE): Wrap in do {...} while (0).
-        (HARD_REGNO_NREGS): Add paranethesis.
-        (VALID_SSE_REG_MODE): Whitespace.
-        (VALID_MMX_REG_MODE): Whitespace.
-        (VALID_FP_MODE_P): Uppercase macros parameter and whitespace.
-        (ix86_hard_regno_mode_ok): Add parenthesis.
-        (HARD_REGNO_CALLER_SAVE_MODE): Whitespace.
-        (RETURN_IN_MEMORY): Whitespace.
-        (N_REG_CLASSES): Add parenthesis.
-        (INTEGER_CLASS_P): Add parenthesis and wrap.
-        (FLOAT_CLASS_P): Likewise.
-        (SSE_CLASS_P): Likewise.
-        (MMX_CLASS_P): Likewise.
-        (MAYBE_INTEGER_CLASS_P): Likewise.
-        (MAYBE_FLOAT_CLASS_P): Likewise.
-        (MAYBE_SSE_CLASS_P): Likewise.
-        (MAYBE_MMX_CLASS_P): Likewise. 
-        (Q_CLASS_P): Likewise.
-        (GENERAL_REGNO_P): Uppercase macro parameter.
-        (REX_INT_REGNO_P): Uppercase macro parameter and wrap.
-        (FP_REGNO_P): Likewise.
-        (ANY_FP_REGNO_P): Uppercase macro parameter.
-        (SSE_REGNO_P): Likewise.
-        (SSE_REGNO): Likewise.
-        (SSE_REG_P): Likewise.
-        (SSE_FLOAT_MODE_P): Likewise.
-        (MMX_REGNO_P): Likewise.
-        (MMX_REG_P):Likewise. 
-        (STACK_REG_P): Likewise.
-        (NON_STACK_REG_P): Likewise.
-        (STACK_TOP_P): Likewise.
-        (CONVERT_HARD_REGISTER_TO_SSA_P): Add parenthesis.
-        (PREFERRED_RELOAD_CLASS): Add parenthesis and whitespace.
-        (SECONDARY_MEMORY_NEEDED): Likewise.
-        (SECONDARY_OUTPUT_RELOAD_CLASS): Whitespace.
-        (MD_ASM_CLOBBERS): Whitespace and wrap.
-        (MUST_PASS_IN_STACK): Whitespace and wrap.
-        (RETURN_POPS_ARGS): Add parenthesis.
-        (INIT_CUMULATIVE_ARGS): Likewise.
-        (FUNCTION_ARG): Likewise.
-        (FUNCTION_OK_FOR_SIBCALL): Add parenthesis and whitespace.
-        (SETUP_INCOMING_VARARGS): Likewise.
-        (BUILD_VA_LIST_TYPE):  Add parenthesis.
-        (EXPAND_BUILTIN_VA_START): Uppercase macro paremeters and add
-        parenthsis.
-        (EXPAND_BUILTIN_VA_ARG): Likewise.
-        (FUNCTION_PROFILER): Wrap in do { ... } while (0) and add parenthesis.
-        (INITIALIZE_TRAMPOLINE): Add parenthesis.
-        (INITIAL_ELIMINATION_OFFSET): Likewise.
-        (REGNO_OK_FOR_INDEX_P): Add parenthesis.
-        (REGNO_OK_FOR_BASE_P): Likewise.
-        (REGNO_OK_FOR_SIREG_P): Add parenthesis and wrap.
-        (REGNO_OK_FOR_DIREG_P): Likewise.
-        (REG_OK_FOR_INDEX_P): Whitespace.
-        (REG_OK_FOR_BASE_P): Whitespace.
-        (GO_IF_LEGITIMATE_ADDRESS): Wrap in do { ... } while (0) and add
-        parenthesis.
-        (FIND_BASE_TERM): Fix typo.
-        (LEGITIMIZE_ADDRESS): Wrap in  { .. } while (0) and add parenthesis.
-        (REWRITE_ADDRESS): Uppercase macro parameter and whitespace.
-        (SYMBOLIC_CONST; Whitespace.
-        (GO_IF_MODE_DEPENDENT_ADDRESS):Wrap in  { .. } while (0) and wrap.
-        (ENCODE_SECTION_INFO): Whitespace.
-        (FINALIZE_PIC): Remove do { ... } while (0).
-        (PROMOTE_MODE): Wrap in do { ... } while (0).
-        (CONST_COSTS): Whitespace.
-        (RTX_COSTS): Add paramethesis, whitespace and wrap.
-        (REGISTER_MOVE_COST): Add parenthesis.
-        (MEMORY_MOVE_COST): Likewise.
-        (EXTRA_CC_MODES): Whitespace.
-        (SELECT_CC_MODE): Add parenthesis and whitespace.
-        (DBX_REGISTER_NUMBER): Uppercase macro parameter and add parenthsis.
-        (ASM_PREFERRED_EH_DATA_FORMAT): Add parenthesis and whitespace.
-        (ASM_OUTPUT_LABEL): Add paramethesis.
-        (ASM_OUTPUT_REG_PUSH): Add parenthesis and whitespace.
-        (ASM_OUTPUT_REG_POP): Likewise.
-        (ASM_OUTPUT_ADDR_VEC_ELT): Add parenthesis.
-        (ASM_OUTPUT_ADDR_DIFF_ELT): Likewise.
+	* config/i386/i386.h: Update copyright date.
+	(HALF_PIC_PTR): Add parenthesis.
+	(OPTIMIZATION_OPTIONS): Whitespace, add parenthesis and wrap.
+	(CONSTANT_ALIGNMENT): Add parenthesis.
+	(DATA_ALIGNMENT): Likewise.
+	(LOCAL_ALIGNMENT): Likewise.
+	(FUNCTION_ARG_BOUNDARY): Whitespace, add parenthesis and wrap.
+	(IS_STACK_MODE): Uppercase macro parameter, add parenthesis and wrap.
+	(CONDITIONAL_REGISTER_USAGE): Wrap in do {...} while (0).
+	(HARD_REGNO_NREGS): Add paranethesis.
+	(VALID_SSE_REG_MODE): Whitespace.
+	(VALID_MMX_REG_MODE): Whitespace.
+	(VALID_FP_MODE_P): Uppercase macros parameter and whitespace.
+	(ix86_hard_regno_mode_ok): Add parenthesis.
+	(HARD_REGNO_CALLER_SAVE_MODE): Whitespace.
+	(RETURN_IN_MEMORY): Whitespace.
+	(N_REG_CLASSES): Add parenthesis.
+	(INTEGER_CLASS_P): Add parenthesis and wrap.
+	(FLOAT_CLASS_P): Likewise.
+	(SSE_CLASS_P): Likewise.
+	(MMX_CLASS_P): Likewise.
+	(MAYBE_INTEGER_CLASS_P): Likewise.
+	(MAYBE_FLOAT_CLASS_P): Likewise.
+	(MAYBE_SSE_CLASS_P): Likewise.
+	(MAYBE_MMX_CLASS_P): Likewise.
+	(Q_CLASS_P): Likewise.
+	(GENERAL_REGNO_P): Uppercase macro parameter.
+	(REX_INT_REGNO_P): Uppercase macro parameter and wrap.
+	(FP_REGNO_P): Likewise.
+	(ANY_FP_REGNO_P): Uppercase macro parameter.
+	(SSE_REGNO_P): Likewise.
+	(SSE_REGNO): Likewise.
+	(SSE_REG_P): Likewise.
+	(SSE_FLOAT_MODE_P): Likewise.
+	(MMX_REGNO_P): Likewise.
+	(MMX_REG_P):Likewise.
+	(STACK_REG_P): Likewise.
+	(NON_STACK_REG_P): Likewise.
+	(STACK_TOP_P): Likewise.
+	(CONVERT_HARD_REGISTER_TO_SSA_P): Add parenthesis.
+	(PREFERRED_RELOAD_CLASS): Add parenthesis and whitespace.
+	(SECONDARY_MEMORY_NEEDED): Likewise.
+	(SECONDARY_OUTPUT_RELOAD_CLASS): Whitespace.
+	(MD_ASM_CLOBBERS): Whitespace and wrap.
+	(MUST_PASS_IN_STACK): Whitespace and wrap.
+	(RETURN_POPS_ARGS): Add parenthesis.
+	(INIT_CUMULATIVE_ARGS): Likewise.
+	(FUNCTION_ARG): Likewise.
+	(FUNCTION_OK_FOR_SIBCALL): Add parenthesis and whitespace.
+	(SETUP_INCOMING_VARARGS): Likewise.
+	(BUILD_VA_LIST_TYPE):  Add parenthesis.
+	(EXPAND_BUILTIN_VA_START): Uppercase macro paremeters and add
+	parenthsis.
+	(EXPAND_BUILTIN_VA_ARG): Likewise.
+	(FUNCTION_PROFILER): Wrap in do { ... } while (0) and add parenthesis.
+	(INITIALIZE_TRAMPOLINE): Add parenthesis.
+	(INITIAL_ELIMINATION_OFFSET): Likewise.
+	(REGNO_OK_FOR_INDEX_P): Add parenthesis.
+	(REGNO_OK_FOR_BASE_P): Likewise.
+	(REGNO_OK_FOR_SIREG_P): Add parenthesis and wrap.
+	(REGNO_OK_FOR_DIREG_P): Likewise.
+	(REG_OK_FOR_INDEX_P): Whitespace.
+	(REG_OK_FOR_BASE_P): Whitespace.
+	(GO_IF_LEGITIMATE_ADDRESS): Wrap in do { ... } while (0) and add
+	parenthesis.
+	(FIND_BASE_TERM): Fix typo.
+	(LEGITIMIZE_ADDRESS): Wrap in  { .. } while (0) and add parenthesis.
+	(REWRITE_ADDRESS): Uppercase macro parameter and whitespace.
+	(SYMBOLIC_CONST; Whitespace.
+	(GO_IF_MODE_DEPENDENT_ADDRESS):Wrap in  { .. } while (0) and wrap.
+	(ENCODE_SECTION_INFO): Whitespace.
+	(FINALIZE_PIC): Remove do { ... } while (0).
+	(PROMOTE_MODE): Wrap in do { ... } while (0).
+	(CONST_COSTS): Whitespace.
+	(RTX_COSTS): Add paramethesis, whitespace and wrap.
+	(REGISTER_MOVE_COST): Add parenthesis.
+	(MEMORY_MOVE_COST): Likewise.
+	(EXTRA_CC_MODES): Whitespace.
+	(SELECT_CC_MODE): Add parenthesis and whitespace.
+	(DBX_REGISTER_NUMBER): Uppercase macro parameter and add parenthsis.
+	(ASM_PREFERRED_EH_DATA_FORMAT): Add parenthesis and whitespace.
+	(ASM_OUTPUT_LABEL): Add paramethesis.
+	(ASM_OUTPUT_REG_PUSH): Add parenthesis and whitespace.
+	(ASM_OUTPUT_REG_POP): Likewise.
+	(ASM_OUTPUT_ADDR_VEC_ELT): Add parenthesis.
+	(ASM_OUTPUT_ADDR_DIFF_ELT): Likewise.
 
 	* config/i386/i386.c: Update copyright.
 	(CHECK_STACK_LIMIT): Add parenthesis.
@@ -260,7 +282,7 @@ Mon Jan  7 11:59:34 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-01-06  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config.gcc: Add support for --enable-altivec.
+	* config.gcc: Add support for --enable-altivec.
 
 2002-01-06  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
@@ -338,7 +360,7 @@ Mon Jan  7 11:59:34 CET 2002  Jan Hubicka  <jh@suse.cz>
 	* lcm.c: Revert change, due to performance regression it causes on
 	SPEC because it's slightly more conservative (sigh, I hate
 	edge-based LCM).
-	
+
 Sat Jan  5 11:52:05 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* cfgcleanup.c (try_forward_edges): Allow multiple jump threading.
@@ -402,15 +424,15 @@ Sat Jan  5 01:35:29 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 Fri Jan  4 11:45:05 2002  Jeffrey A Law  (law@redhat.com)
 
-        * c-common.c (c_expand_start_cond): Expect the IF_STMT node to
-        be passed in, do not build it.
-        (c_begin_if_stmt): New function.
-        (c_begin_while_stmt, c_finish_while_stmt_cond): Likewise.
-        * c-common.h (c_expand_start_cond): Update prototype.
-        (c_begin_if_stmt): Prototype new function.
-        (c_begin_while_stmt, c_finish_while_stmt_cond): Likewise.
-        * c-parse.in (if_prefix): Use c_begin_if_stmt,
-        c_begin_while_stmt and c_finish_while_stmt_cond.
+	* c-common.c (c_expand_start_cond): Expect the IF_STMT node to
+	be passed in, do not build it.
+	(c_begin_if_stmt): New function.
+	(c_begin_while_stmt, c_finish_while_stmt_cond): Likewise.
+	* c-common.h (c_expand_start_cond): Update prototype.
+	(c_begin_if_stmt): Prototype new function.
+	(c_begin_while_stmt, c_finish_while_stmt_cond): Likewise.
+	* c-parse.in (if_prefix): Use c_begin_if_stmt,
+	c_begin_while_stmt and c_finish_while_stmt_cond.
 
 2002-01-04  William Cohen  <wcohen@redhat.com>
 
@@ -725,9 +747,9 @@ Fri Jan  4 11:45:05 2002  Jeffrey A Law  (law@redhat.com)
 2002-01-03  Graham Stott  <grahams@redhat.com>
 
 	* loop.h: Update copyright date.
-        (LOOP_MOVABLES): Fix typo.
-        (LOOP_REGS): Likewise.
-        (LOOP_IVS): Likewise.
+	(LOOP_MOVABLES): Fix typo.
+	(LOOP_REGS): Likewise.
+	(LOOP_IVS): Likewise.
 
 2002-01-03  Graham Stott  <grahams@redhat.com>
 

@@ -39,8 +39,8 @@ gcc_init_libintl ()
   setlocale (LC_ALL, "");
 #endif
 
-  (void) bindtextdomain (PACKAGE, LOCALEDIR);
-  (void) textdomain (PACKAGE);
+  (void) bindtextdomain ("gcc", LOCALEDIR);
+  (void) textdomain ("gcc");
 }
 
 #endif

@@ -1975,6 +1975,10 @@ typedefs, respectively.  They exist to make the standard header files
 these macros directly; instead, include the appropriate headers and use
 the typedefs.
 
+@item __USING_SJLJ_EXCEPTIONS__
+This macro is defined, with value 1, if the compiler uses the old
+mechanism based on @code{setjmp} and @code{longjmp} for exception
+handling.
 @end table
 
 @node System-specific Predefined Macros

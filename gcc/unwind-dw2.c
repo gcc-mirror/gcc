@@ -27,7 +27,7 @@
 #include "gthr.h"
 
 
-#if !USING_SJLJ_EXCEPTIONS
+#ifndef __USING_SJLJ_EXCEPTIONS__
 
 #ifndef STACK_GROWS_DOWNWARD
 #define STACK_GROWS_DOWNWARD 0

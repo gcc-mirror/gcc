@@ -839,19 +839,10 @@ cs-hconfig.h: Makefile
 	TARGET_CPU_DEFAULT="$(target_cpu_default)" \
 	$(SHELL) $(srcdir)/mkconfig.sh hconfig.h
 
-cs-tconfig.h: Makefile $(CONFIG_H) except.h
+cs-tconfig.h: Makefile
 	HEADERS="$(xm_file)" DEFINES="$(xm_defines)" \
 	TARGET_CPU_DEFAULT="" \
 	$(SHELL) $(srcdir)/mkconfig.sh tconfig.h
-# ??? Need extra help to get this definition copied to where libgcc can
-# see it.  It shouldn't matter which compiler we use to get there.
-	echo '#include "config.h"' > conftest.c
-	echo '#include "except.h"' >> conftest.c
-	echo 'xyzzy USING_SJLJ_EXCEPTIONS' >> conftest.c
-	$(HOST_CC) -E conftest.c $(ALL_CFLAGS) $(INCLUDES) > conftest.out
-	sed -e 's/xyzzy/#define USING_SJLJ_EXCEPTIONS/' -e '/#define/p' \
-		-e d conftest.out >> tconfig.h
-	rm conftest.*
 
 cs-tm_p.h: Makefile
 	HEADERS="$(tm_p_file)" DEFINES="" TARGET_CPU_DEFAULT="" \
@@ -1272,6 +1263,30 @@ gencheck.o : gencheck.c gencheck.h tree.def $(HCONFIG_H) $(SYSTEM_H) \
              $(lang_tree_files)
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
 	  $(srcdir)/gencheck.c $(OUTPUT_OPTION)
+
+gencheck.h : s-gencheck ; @true
+s-gencheck : Makefile
+	for t in $(lang_tree_files); do \
+	    echo "#include \"$$t\""; \
+	done | sed 's|$(srcdir)/||' > tmp-gencheck.h
+	$(SHELL) $(srcdir)/move-if-change tmp-gencheck.h gencheck.h
+	$(STAMP) s-gencheck
+
+options.h : s-options ; @true
+s-options : Makefile
+	for t in $(lang_options_files); do \
+	    echo "#include \"$$t\""; \
+	done | sed 's|$(srcdir)/||' > tmp-options.h
+	$(SHELL) $(srcdir)/move-if-change tmp-options.h options.h
+	$(STAMP) s-options
+
+specs.h : s-specs ; @true
+s-specs : Makefile
+	for t in $(lang_specs_files); do \
+	    echo "#include \"$$t\""; \
+	done | sed 's|$(srcdir)/||' > tmp-specs.h
+	$(SHELL) $(srcdir)/move-if-change tmp-specs.h specs.h
+	$(STAMP) s-specs
 
 dumpvers: dumpvers.c
 
@@ -1964,7 +1979,7 @@ cpplib.o:   cpplib.c   $(CONFIG_H) $(LIBCPP_DEPS)
 cpphash.o:  cpphash.c  $(CONFIG_H) $(LIBCPP_DEPS)
 cppfiles.o: cppfiles.c $(CONFIG_H) $(LIBCPP_DEPS) $(SPLAY_TREE_H) mkdeps.h
 cppinit.o:  cppinit.c  $(CONFIG_H) $(LIBCPP_DEPS) cppdefault.h \
-		mkdeps.h prefix.h version.h
+		mkdeps.h prefix.h version.h except.h
 
 cppdefault.o: cppdefault.c $(CONFIG_H) $(SYSTEM_H) cppdefault.h Makefile
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
