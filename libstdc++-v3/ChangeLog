@@ -1,3 +1,27 @@
+2003-04-28  Petur Runolfsson  <peturr02@ru.is>
+ 
+        PR libstdc++/9523
+        * include/bits/ios_base.h (Init::_S_ios_create,
+        Init::_S_ios_destroy):  Remove declarations.
+        (Init::_S_create_buffers,
+        Init::_S_destroy_buffers):  Declare
+        * src/ios.cc (Init::_S_ios_create):  Remove
+        (Init::_S_create_buffers):  Create buffers and add to streams.
+        (Init::_S_ios_destroy):  Rename to...
+        (Init::_S_destroy_buffers):  this.
+        (Init::Init):  Only construct streams once.
+        (Init::~Init):  Flush streams, don't destroy them.
+        (ios_base::sync_with_stdio):  Don't destroy streams, only buffers.
+        * testsuite/27_io/ios_base/sync_with_stdio/9523.cc:  New test.
+        * testsuite/27_io/objects/char/5.cc:  New test.
+        * testsuite/27_io/objects/char/5268.cc:  Avoid undefined behavior.
+        * testsuite/27_io/objects/char/6.cc:  New test.
+        * testsuite/27_io/objects/char/7.cc:  New test.
+
+2003-04-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+        * testsuite/27_io/objects/char/8.cc:  New test.
+	
 2003-04-28  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/22_locale/codecvt/unicode/char.cc: Remove bom usage.

@@ -36,6 +36,7 @@ void test04()
   std::stringbuf b1;
   std::cout.rdbuf( &b1 );
   std::cout << "hello\n";
+  std::cout.rdbuf(NULL);
 }
 
 int main()
