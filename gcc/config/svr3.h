@@ -184,9 +184,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #define USE_CONST_SECTION	0
 
-#define INIT_SECTION_ASM_OP     "\t.section\t.init"
+#define INIT_SECTION_ASM_OP     ".section\t.init"
 #define FINI_SECTION_ASM_OP     ".section .fini,\"x\""
-#define CONST_SECTION_ASM_OP	"\t.section\t.rodata, \"x\""
+#define CONST_SECTION_ASM_OP	".section\t.rodata, \"x\""
 
 #define DTORS_SECTION_ASM_OP    FINI_SECTION_ASM_OP
 /* CTORS_SECTION_ASM_OP is machine-dependent
