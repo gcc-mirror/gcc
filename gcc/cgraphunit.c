@@ -889,7 +889,8 @@ cgraph_remove_unreachable_nodes (void)
       abort ();
 #endif
   for (node = cgraph_nodes; node; node = node->next)
-    if (node->needed && (!DECL_EXTERNAL (node->decl) || !node->analyzed))
+    if (node->needed && !node->global.inlined_to
+	&& (!DECL_EXTERNAL (node->decl) || !node->analyzed))
       {
 	node->aux = first;
 	first = node;
@@ -932,6 +933,7 @@ cgraph_remove_unreachable_nodes (void)
 	  int local_insns;
 	  tree decl = node->decl;
 
+          node->global.inlined_to = NULL;
 	  if (DECL_STRUCT_FUNCTION (decl))
 	    local_insns = node->local.self_insns;
 	  else

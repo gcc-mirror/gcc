@@ -1,3 +1,9 @@
+2004-05-05  Jan Hubicka  <jh@suse.cz>
+
+	PR opt/14980
+	* cgraphunit.c (cgraph_remove_unreachable_nodes): Deal properly with
+	inline clones.
+
 2004-05-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/15290
