@@ -1,5 +1,18 @@
 2004-01-24  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/net/protocol/jar/Connection.java
+	(hdrHash): Removed.
+	(hdrVec): Removed.
+	(gotHeaders): Removed.
+	(getHeaderField): Removed.
+	(getHeaderFields): Removed.
+	(getHeaderFieldKey): Removed.
+	(getKey): Removed.
+	(getField): Removed.
+	(getHeaders): Removed.
+
+2004-01-24  Michael Koch  <konqueror@gmx.de>
+
 	* Makefile.am: Added library version to gtk peer lib.
 	* Makefile.in: Regenerated.
 
