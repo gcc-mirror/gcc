@@ -1,3 +1,17 @@
+Wed Nov  3 15:11:27 1999  David S. Miller  <davem@redhat.com>
+
+	* config/sparc/sparc.md: Remove insn type fpsqrt, add fpsqrts
+	and fpsqrtd.  Use them and create fdiv function unit to more
+	accurately represent fpu sqrt pipeline semantics on UltraSparc.
+	* config/sparc/sparc.c: Account for fpsqrt{s,d} changes.
+
+Wed Nov  3 15:11:27 1999  Matteo Frigo <athena@fftw.org>
+
+	* config/sparc/sparc.md: Adjust FADD/FMUL result latencies to
+	3 on UltraSparc.
+	* config/sparc/sparc.c (ultra_schedule_insn): Insert launched
+	insn into ready list, do not use just a raw swap.
+
 Wed Nov  3 14:51:59 1999  Mark P. Mitchell  <mark@codesourcery.com>
 
 	* rtl.h (renumber_insns): New function.
