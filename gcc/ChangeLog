@@ -1,3 +1,8 @@
+2000-07-20  Geoff Keating  <geoffk@cygnus.com>
+
+	* config/rs6000/rs6000.h (PREFERRED_RELOAD_CLASS): If we have a
+	choice, don't put integer values in FP regs.
+
 Thu Jul 20 18:13:52 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* flow.c (verify_flow_info): Revamp code to verify that the
