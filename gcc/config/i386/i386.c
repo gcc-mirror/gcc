@@ -4077,7 +4077,7 @@ ix86_expand_fp_compare (code, op0, op1, unordered)
 	    {
 	      /*
 	       * The numbers below correspond to the bits of the FPSW in AH.
-	       * C3, C2, and C0 are in bits 0x40, 0x40, and 0x01 respectively.
+	       * C3, C2, and C0 are in bits 0x40, 0x4, and 0x01 respectively.
 	       *
 	       *    cmp    C3 C2 C0
 	       *    >      0  0  0
@@ -4091,7 +4091,7 @@ ix86_expand_fp_compare (code, op0, op1, unordered)
 	      switch (code)
 		{
 		case GT:
-		  mask = 0x01;
+		  mask = 0x41;
 		  code = EQ;
 		  break;
 		case LT:
