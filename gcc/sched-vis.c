@@ -82,6 +82,7 @@ insn_print_units (insn)
 #define MAX_VISUAL_LINES 100
 #define INSN_LEN 30
 int n_visual_lines;
+static unsigned visual_tbl_line_length;
 char *visual_tbl;
 int n_vis_no_unit;
 rtx vis_no_unit[10];
@@ -132,6 +133,8 @@ get_visual_tbl_length ()
 	n += n1;
   n += n1;
   n += strlen ("\n") + 2;
+
+  visual_tbl_line_length = n;
 
   /* Compute length of visualization string.  */
   return (MAX_VISUAL_LINES * n);
@@ -897,6 +900,9 @@ visualize_stall_cycles (stalls)
      int stalls;
 {
   int i;
+  const char *prefix = ";;       ";
+  const char *suffix = "\n";
+  char *p;
 
   /* If no more room, split table into two.  */
   if (n_visual_lines >= MAX_VISUAL_LINES)
@@ -907,10 +913,21 @@ visualize_stall_cycles (stalls)
 
   n_visual_lines++;
 
-  sprintf (visual_tbl + strlen (visual_tbl), ";;       ");
-  for (i = 0; i < stalls; i++)
-    sprintf (visual_tbl + strlen (visual_tbl), ".");
-  sprintf (visual_tbl + strlen (visual_tbl), "\n");
+  p = visual_tbl + strlen (visual_tbl);
+  strcpy (p, prefix);
+  p += strlen (prefix);
+
+  if ((unsigned)stalls >
+      visual_tbl_line_length - strlen (prefix) - strlen (suffix))
+    {
+      suffix = "[...]\n";
+      stalls = visual_tbl_line_length - strlen (prefix) - strlen (suffix);
+    }
+
+  memset (p, '.', stalls);
+  p += stalls;
+
+  strcpy (p, suffix);
 }
 
 /* Allocate data used for visualization during scheduling.  */
