@@ -13960,6 +13960,30 @@ fi
 
 # Target-specific assembler checks.
 
+echo "$as_me:$LINENO: checking linker -Bstatic/-Bdynamic option" >&5
+echo $ECHO_N "checking linker -Bstatic/-Bdynamic option... $ECHO_C" >&6
+gcc_cv_ld_static_dynamic=no
+if test $in_tree_ld = yes ; then
+  if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 10; then
+    gcc_cv_ld_static_dynamic=yes
+  fi
+elif test x$gcc_cv_ld != x; then
+	# Check if linker supports -Bstatic/-Bdynamic option
+	if $gcc_cv_ld --help 2>/dev/null | grep -- -Bstatic > /dev/null \
+	  && $gcc_cv_ld --help 2>/dev/null | grep -- -Bdynamic > /dev/null; then
+		gcc_cv_ld_static_dynamic=yes
+	fi
+fi
+if test x"$gcc_cv_ld_static_dynamic" = xyes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_LD_STATIC_DYNAMIC 1
+_ACEOF
+
+fi
+echo "$as_me:$LINENO: result: $gcc_cv_ld_static_dynamic" >&5
+echo "${ECHO_T}$gcc_cv_ld_static_dynamic" >&6
+
 if test x"$demangler_in_ld" = xyes; then
   echo "$as_me:$LINENO: checking linker --demangle support" >&5
 echo $ECHO_N "checking linker --demangle support... $ECHO_C" >&6
