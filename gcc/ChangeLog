@@ -1,5 +1,34 @@
 2005-01-14  Aldy Hernandez  <aldyh@redhat.com>
 
+	* config/rs6000/rs6000.h (CLASS_MAX_NREGS): DF goes in 1 register
+	on e500v2.
+	(CANNOT_CHANGE_MODE_CLASS): Restrict DI mode changes on e500v2.
+	(PREDICATE_CODES): Add rs6k_nonimmediate_operand.
+
+	* config/rs6000/rs6000.c (invalid_e500_subreg): New.
+	(rs6k_nonimmediate_operand): New.
+	(rs6000_legitimate_offset_address_p): Handle DI modes on e500v2
+	correctly.
+	(legitimate_lo_sum_address_p): Same.
+	(rs6000_legitimize_address): Same.
+	(rs6000_legitimize_reload_address): Same.
+	(rs6000_legitimate_address): Same.
+	(spe_build_register_parallel): Pass DF and DC modes in a DI
+	register.
+
+	* config/rs6000/rs6000.md ("*movsi_internal1"): Change predicate
+	to rs6k_nonimmediate_operand.
+
+	* config/rs6000/spe.md ("*frob_df_di"): New.
+	("*frob_di_df"): New.
+	("*frob_di_df_2"): New.
+	("*mov_sidf_e500_subreg0"): New.
+	("*mov_sidf_e500_subreg4"): New.
+	("*movdf_e500_double"): Change predicate to
+	rs6k_nonimmediate_operand.
+
+2005-01-14  Aldy Hernandez  <aldyh@redhat.com>
+
 	* postreload.c (move2add_note_store): Only call
 	trunc_int_for_mode on scalar integers.
 
