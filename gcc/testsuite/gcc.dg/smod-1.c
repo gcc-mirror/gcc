@@ -3,7 +3,7 @@
 
 /* { dg-do run } */
 /* { dg-options "-std=c99" } */
-/* { dg-options "-std=c99 -mtune=i486" { target i?86-*-* x86_64-*-* } } */
+/* { dg-options "-std=c99 -mtune=i486" { target i?86-*-* } } */
 
 #include <limits.h>
 
