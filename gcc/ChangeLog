@@ -1,3 +1,8 @@
+2002-02-26  Zack Weinberg  <zack@codesourcery.com>
+
+	* doc/cpp.texi: Clarify documentation of relationship between
+	#line and #include.
+
 2002-02-26  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300-protos.h: Update the prototype for
