@@ -83,10 +83,6 @@ extern int target_flags;
    use fast return insns, but lose some generality.  */
 #define TARGET_EPILOGUE (target_flags & 2)
 
-/* Nonzero if we assume that all calls will fall within a 16MB
-   pc-relative range.  Useful with -fomit-frame-pointer.  */
-#define TARGET_TAIL_CALL (target_flags & 8)
-
 /* Nonzero means that reference doublewords as if they were guaranteed
    to be aligned...if they aren't, too bad for the user!
    Like -fast in Sun cc.  */
@@ -106,7 +102,6 @@ extern int target_flags;
     {"soft-float", -1},		\
     {"epilogue", 2},		\
     {"no-epilogue", -2},	\
-    {"tail-call", 8},		\
     {"hope-align", 16},		\
     {"force-align", 48},	\
     { "", TARGET_DEFAULT}}
@@ -866,7 +861,7 @@ extern int current_function_outgoing_args_size;
 extern union tree_node *current_function_decl;
 
 #define FUNCTION_EPILOGUE(FILE, SIZE)				\
-  output_function_epilogue (FILE, SIZE, leaf_function, 1)
+  output_function_epilogue (FILE, SIZE, leaf_function)
 
 #define DELAY_SLOTS_FOR_EPILOGUE 1
 #define ELIGIBLE_FOR_EPILOGUE_DELAY(trial, slots_filled)	\

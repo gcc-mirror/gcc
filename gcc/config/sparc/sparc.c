@@ -1923,17 +1923,16 @@ output_function_prologue (file, size, leaf_function)
 }
 
 void
-output_function_epilogue (file, size, leaf_function, true_epilogue)
+output_function_epilogue (file, size, leaf_function)
      FILE *file;
      int size;
+     int leaf_function;
 {
   int n_fregs, i;
   char *ret;
 
   if (leaf_label)
     {
-      if (leaf_function < 0)
-	abort ();
       emit_label_after (leaf_label, get_last_insn ());
       final_scan_insn (get_last_insn (), file, 0, 0, 1);
     }
@@ -1962,66 +1961,46 @@ output_function_epilogue (file, size, leaf_function, true_epilogue)
   else
     ret = (current_function_returns_struct ? "jmp %i7+12" : "ret");
 
-  /* Tail calls have to do this work themselves.  */
-  if (leaf_function >= 0)
+  if (TARGET_EPILOGUE || leaf_label)
     {
-      if (TARGET_EPILOGUE || leaf_label)
-	{
-	  int old_target_epilogue = TARGET_EPILOGUE;
-	  target_flags &= ~old_target_epilogue;
+      int old_target_epilogue = TARGET_EPILOGUE;
+      target_flags &= ~old_target_epilogue;
 
-	  if (! leaf_function)
+      if (! leaf_function)
+	{
+	  /* If we wound up with things in our delay slot, flush them here.  */
+	  if (current_function_epilogue_delay_list)
 	    {
-	      /* If we wound up with things in our delay slot,
-		 flush them here.  */
-	      if (current_function_epilogue_delay_list)
-		{
-		  rtx insn = emit_jump_insn_after (gen_rtx (RETURN, VOIDmode),
-						   get_last_insn ());
-		  PATTERN (insn) = gen_rtx (PARALLEL, VOIDmode,
-					    gen_rtvec (2,
-						       PATTERN (XEXP (current_function_epilogue_delay_list, 0)),
-						       PATTERN (insn)));
-		  final_scan_insn (insn, file, 1, 0, 1);
-		}
-	      else
-		fprintf (file, "\t%s\n\trestore\n", ret);
-	    }
-	  else if (actual_fsize < 4096)
-	    {
-	      if (current_function_epilogue_delay_list)
-		{
-		  fprintf (file, "\t%s\n", ret);
-		  final_scan_insn (XEXP (current_function_epilogue_delay_list, 0),
-				   file, 1, 0, 1);
-		}
-	      else
-		fprintf (file, "\t%s\n\tadd %%sp,%d,%%sp\n",
-			 ret, actual_fsize);
+	      rtx insn = emit_jump_insn_after (gen_rtx (RETURN, VOIDmode),
+					       get_last_insn ());
+	      PATTERN (insn) = gen_rtx (PARALLEL, VOIDmode,
+					gen_rtvec (2,
+						   PATTERN (XEXP (current_function_epilogue_delay_list, 0)),
+						   PATTERN (insn)));
+	      final_scan_insn (insn, file, 1, 0, 1);
 	    }
 	  else
-	    {
-	      if (current_function_epilogue_delay_list)
-		abort ();
-	      fprintf (file, "\tsethi %%hi(%d),%%g1\n\tor %%g1,%%lo(%d),%%g1\n\t%s\n\tadd %%sp,%%g1,%%sp\n",
-		       actual_fsize, actual_fsize, ret);
-	    }
-	  target_flags |= old_target_epilogue;
+	    fprintf (file, "\t%s\n\trestore\n", ret);
 	}
-    }
-  else if (true_epilogue)
-    {
-      /* We may still need a return insn!  Somebody could jump around
-	 the tail-calls that this function makes.  */
-      if (TARGET_EPILOGUE)
+      else if (actual_fsize < 4096)
 	{
-	  rtx last = get_last_insn ();
-
-	  last = prev_nonnote_insn (last);
-	  if (last == 0
-	      || (GET_CODE (last) != JUMP_INSN && GET_CODE (last) != BARRIER))
-	    fprintf (file, "\t%s\n\tnop\n", ret);
+	  if (current_function_epilogue_delay_list)
+	    {
+	      fprintf (file, "\t%s\n", ret);
+	      final_scan_insn (XEXP (current_function_epilogue_delay_list, 0),
+			       file, 1, 0, 1);
+	    }
+	  else
+	    fprintf (file, "\t%s\n\tadd %%sp,%d,%%sp\n", ret, actual_fsize);
 	}
+      else
+	{
+	  if (current_function_epilogue_delay_list)
+	    abort ();
+	  fprintf (file, "\tsethi %%hi(%d),%%g1\n\tor %%g1,%%lo(%d),%%g1\n\t%s\n\tadd %%sp,%%g1,%%sp\n",
+		   actual_fsize, actual_fsize, ret);
+	}
+      target_flags |= old_target_epilogue;
     }
 }
 
@@ -2213,25 +2192,6 @@ output_floatsidf2 (operands)
     return "fitod %1,%0";
   return "st %r1,[%%fp-4]\n\tld [%%fp-4],%0\n\tfitod %0,%0";
 }
-
-int
-tail_call_valid_p ()
-{
-  static int checked = 0;
-  static int valid_p = 0;
-
-  if (! checked)
-    {
-      register int i;
-
-      checked = 1;
-      for (i = 32; i < FIRST_PSEUDO_REGISTER; i++)
-	if (! fixed_regs[i] && ! call_used_regs[i])
-	  return 0;
-      valid_p = 1;
-    }
-  return valid_p;
-}
 
 /* Leaf functions and non-leaf functions have different needs.  */
 
@@ -2307,93 +2267,6 @@ output_arc_profiler (arcno, insert_after)
   emit_insn_after (gen_rtx (SET, VOIDmode, mem_ref, profiler_reg),
 		   insert_after);
 }
-
-/* All the remaining routines in this file have been turned off.  */
-#if 0
-char *
-output_tail_call (operands, insn)
-     rtx *operands;
-     rtx insn;
-{
-  int this_fsize = actual_fsize;
-  rtx next;
-  int need_nop_at_end = 0;
-
-  next = next_real_insn (insn);
-  while (next && GET_CODE (next) == CODE_LABEL)
-    next = next_real_insn (insn);
-
-  if (final_sequence && this_fsize > 0)
-    {
-      rtx xoperands[1];
-
-      /* If we have to restore any registers, don't take any chances
-	 restoring a register before we discharge it into
-	 its home.  If the frame size is only 88, we are guaranteed
-	 that the epilogue will fit in the delay slot.  */
-      rtx delay_insn = XVECEXP (final_sequence, 0, 1);
-      if (GET_CODE (PATTERN (delay_insn)) == SET)
-	{
-	  rtx dest = SET_DEST (PATTERN (delay_insn));
-	  if (GET_CODE (dest) == REG
-	      && reg_mentioned_p (dest, insn))
-	    abort ();
-	}
-      else if (GET_CODE (PATTERN (delay_insn)) == PARALLEL)
-	abort ();
-      xoperands[0] = operands[0];
-      final_scan_insn (delay_insn, asm_out_file, 0, 0, 1);
-      operands[0] = xoperands[0];
-      final_sequence = 0;
-    }
-
-  /* Make sure we are clear to return.  */
-  output_function_epilogue (asm_out_file, get_frame_size (), -1, 0);
-
-  /* Strip the MEM.  */
-  operands[0] = XEXP (operands[0], 0);
-
-  if (final_sequence == 0
-      && (next == 0
-	  || GET_CODE (next) == CALL_INSN
-	  || GET_CODE (next) == JUMP_INSN))
-    need_nop_at_end = 1;
-
-  if (flag_pic)
-    return output_pic_sequence_2 (2, 3, 0, "jmpl %%g1+%3", operands, need_nop_at_end);
-
-  if (GET_CODE (operands[0]) == REG)
-    output_asm_insn ("jmpl %a0,%%g0", operands);
-  else if (TARGET_TAIL_CALL)
-    {
-      /* We assume all labels will be within 16 MB of our call.  */
-      if (need_nop_at_end || final_sequence)
-	output_asm_insn ("b %a0", operands);
-      else
-	output_asm_insn ("b,a %a0", operands);
-    }
-  else if (! final_sequence)
-    {
-      output_asm_insn ("sethi %%hi(%a0),%%g1\n\tjmpl %%g1+%%lo(%a0),%%g1",
-		       operands);
-    }
-  else
-    {
-      int i;
-      rtx x = PATTERN (XVECEXP (final_sequence, 0, 1));
-      for (i = 1; i < 32; i++)
-	if ((i == 1 || ! fixed_regs[i])
-	    && call_used_regs[i]
-	    && ! refers_to_regno_p (i, i+1, x, 0))
-	  break;
-      if (i == 32)
-	abort ();
-      operands[1] = gen_rtx (REG, SImode, i);
-      output_asm_insn ("sethi %%hi(%a0),%1\n\tjmpl %1+%%lo(%a0),%1", operands);
-    }
-  return (need_nop_at_end ? "nop" : "");
-}
-#endif
 
 /* Print operand X (an rtx) in assembler syntax to file FILE.
    CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.
