@@ -281,6 +281,10 @@ do {								\
    your target, you should override these values by defining the
    appropriate symbols in your tm.h file.  */
 
+#ifndef BITS_PER_UNIT
+#define BITS_PER_UNIT 8
+#endif
+
 #ifndef CHAR_TYPE_SIZE
 #define CHAR_TYPE_SIZE BITS_PER_UNIT
 #endif

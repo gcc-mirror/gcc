@@ -126,9 +126,6 @@ extern int avr_enhanced_p;
    numbered.  */
 #define WORDS_BIG_ENDIAN 0
 
-/* number of bits in an addressable storage unit */
-#define BITS_PER_UNIT 8
-
 /* Width in bits of a "word", which is the contents of a machine register.
    Note that this is not necessarily the width of data type `int';  */
 #define BITS_PER_WORD 8

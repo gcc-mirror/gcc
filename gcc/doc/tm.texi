@@ -924,7 +924,7 @@ multi-word integers.
 @findex BITS_PER_UNIT
 @item BITS_PER_UNIT
 Define this macro to be the number of bits in an addressable storage
-unit (byte); normally 8.
+unit (byte).  If you do not define this macro the default is 8.
 
 @findex BITS_PER_WORD
 @item BITS_PER_WORD

@@ -321,9 +321,6 @@ extern int target_flags;
    So let's be consistent.  */
 #define WORDS_BIG_ENDIAN 1
 
-/* number of bits in an addressable storage unit */
-#define BITS_PER_UNIT 8
-
 /* Width in bits of a "word", which is the contents of a machine register.
    Note that this is not necessarily the width of data type `int';
    if using 16-bit ints on a 68000, this would still be 32.

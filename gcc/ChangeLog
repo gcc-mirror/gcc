@@ -1,3 +1,14 @@
+2002-03-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* a29k.h, alpha.h, arc.h, arm.h, avr.h, clipper.h, convex.h,
+	cris.h, d30v.h, elxsi.h, fr30.h, h8300.h, i370.h, i386.h, i860.h,
+	i960.h, ia64.h, m32r.h, m68hc11.h, m68k.h, m88k.h, mcore.h,
+	mips.h, mmix.h, mn10200.h, mn10300.h, ns32k.h, pa.h, pdp11.h,
+	pj.h, romp.h, rs6000.h, s390.h, sh.h, sparc.h, stormy16.h, v850.h,
+	vax.h, we32k.h, xtensa.h: (BITS_PER_UNIT): Delete.
+	* defaults.h (BITS_PER_UNIT): Define.
+	* doc/tm.texi (BITS_PER_UNIT): Document default value.
+
 2002-03-02  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300-protos.h: Add a prototype for

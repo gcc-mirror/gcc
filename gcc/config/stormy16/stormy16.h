@@ -89,8 +89,6 @@ extern int target_flags;
 
 #define WORDS_BIG_ENDIAN 0
 
-#define BITS_PER_UNIT 8
-
 #define BITS_PER_WORD 16
 
 #define UNITS_PER_WORD 2

@@ -86,10 +86,6 @@ extern int mvs_function_name_length;
 
 #define WORDS_BIG_ENDIAN 1
 
-/* Number of bits in an addressable storage unit.  */
-
-#define BITS_PER_UNIT 8
-
 /* Width in bits of a "word", which is the contents of a machine register.  */
 
 #define BITS_PER_WORD 32
