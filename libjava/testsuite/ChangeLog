@@ -1,3 +1,9 @@
+2000-03-05  Anthony Green  <green@redhat.com>
+
+	* libjava.compile/PR129_B.java: New file.
+	* libjava.compile/support/PR129_A.java: New file.
+	For PR gcj/129.
+
 2000-03-04  Anthony Green  <green@redhat.com>
 
 	* libjava.lang/PR160.java: New file.
