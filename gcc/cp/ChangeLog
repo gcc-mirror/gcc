@@ -1,7 +1,21 @@
+2003-07-21  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (hack_identifier): Remove.
+	* method.c (hack_identifier): Remove.
+	* semantics.c (finish_id_expression): Expand hack_identifier
+	here. Simplify.
+
 2003-07-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* call.c class.c decl.c decl2.c g++spec.c lex.c parser.c pt.c rtti.c
 	semantics.c typeck.c: Remove unnecessary casts.
+
+2003-07-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (hack_identifier): Remove.
+	* method.c (hack_identifier): Remove.
+	* semantics.c (finish_id_expression): Expand hack_identifier
+	here. Simplify.
 
 2003-07-18  Nathan Sidwell  <nathan@codesourcery.com>
 
