@@ -275,7 +275,7 @@ Switches for gcc
 * Stack Overflow Checking::
 * Using gcc for Syntax Checking::
 * Using gcc for Semantic Checking::
-* Compiling Ada 83 Programs::
+* Compiling Different Versions of Ada::
 * Character Set Control::
 * File Naming Control::
 * Subprogram Inlining Control::
@@ -377,7 +377,6 @@ GNAT Project Manager
 * Variables from Imported Projects::
 * Naming Schemes::
 * Library Projects::
-* Using Third-Party Libraries through Projects::
 * Stand-alone Library Projects::
 * Switches Related to Project Files::
 * Tools Supporting Project Files::
@@ -599,7 +598,6 @@ Inline Assembler
 * Input Variables in Inline Assembler::
 * Inlining Inline Assembler Code::
 * Other Asm Functionality::
-* A Complete Example::
 
 Compatibility and Porting Guide
 
@@ -3622,6 +3620,12 @@ compilation process. These switches are fully described in this section.
 First we briefly list all the switches, in alphabetical order, then we
 describe the switches in more detail in functionally grouped sections.
 
+More switches exist for GCC than those documented here, especially
+for specific targets. However, their use is not recommended as
+they may change code generation in ways that are incompatible with
+the Ada run-time library, or can cause inconsistencies between
+compilation units.
+
 @menu
 * Output and Error Message Control::
 * Warning Message Control::
@@ -3632,7 +3636,7 @@ describe the switches in more detail in functionally grouped sections.
 * Stack Overflow Checking::
 * Using gcc for Syntax Checking::
 * Using gcc for Semantic Checking::
-* Compiling Ada 83 Programs::
+* Compiling Different Versions of Ada::
 * Character Set Control::
 * File Naming Control::
 * Subprogram Inlining Control::
@@ -3705,6 +3709,14 @@ where it can be read by the debugger. You must use the
 @item -gnat83
 @cindex @option{-gnat83} (@command{gcc})
 Enforce Ada 83 restrictions.
+
+@item -gnat95
+@cindex @option{-gnat95} (@command{gcc})
+Enforce Ada 95 restrictions.
+
+@item -gnat05
+@cindex @option{-gnat05} (@command{gcc})
+Allow full Ada 2005 features.
 
 @item -gnata
 @cindex @option{-gnata} (@command{gcc})
@@ -3824,7 +3836,8 @@ Output full source listing with embedded error messages.
 
 @item -gnatL
 @cindex @option{-gnatL} (@command{gcc})
-Use the longjmp/setjmp method for exception handling
+This switch is deprecated. You can use @option{--RTS=sjlj} instead to enable
+@code{setjmp/longjmp} exception mechanism.
 
 @item -gnatm=@var{n}
 @cindex @option{-gnatm} (@command{gcc})
@@ -3953,7 +3966,8 @@ to be generated and compiled).
 @end ifset
 
 @item -gnatZ
-Use the zero cost method for exception handling
+This switch is deprecated. When zero cost exception handling is not the
+default and this is supported, you can use @option{--RTS=zcx} instead.
 
 @item ^-I^/SEARCH=^@var{dir}
 @cindex @option{^-I^/SEARCH^} (@command{gcc})
@@ -5880,11 +5894,20 @@ units that would not normally be compiled (subunits,
 and specifications where a separate body is present).
 @end table
 
-@node Compiling Ada 83 Programs
-@subsection Compiling Ada 83 Programs
+@node Compiling Different Versions of Ada
+@subsection Compiling Different Versions of Ada
 @table @option
-@cindex Ada 83 compatibility
-@item -gnat83
+@cindex Compatibility with Ada 83
+@cindex Ada 83 mode
+@cindex Ada 95 mode
+@cindex Ada 2005 mode
+
+GNAT is primarily an Ada 95 compiler, but the switches described in
+this section allow operation in Ada 83 compatibility mode, and also
+allow the use of a preliminary implementation of many of the expected
+new features in Ada 2005, the forthcoming new version of the standard.
+
+@item -gnat83 (Ada 83 Compatibility Mode)
 @cindex @option{-gnat83} (@command{gcc})
 @cindex ACVC, Ada 83 tests
 
@@ -5911,6 +5934,47 @@ exceptions, Ada 95 is upwardly compatible with Ada 83. This
 means that a correct Ada 83 program is usually also a correct Ada 95
 program.
 For further information, please refer to @ref{Compatibility and Porting Guide}.
+
+@item -gnat95 (Ada 95 mode)
+@cindex @option{-gnat95} (@command{gcc})
+
+@noindent
+GNAT is primarily an Ada 95 compiler, and all current releases of GNAT Pro
+compile in Ada 95 mode by default. Typically, Ada 95 is sufficiently upwards
+compatible with Ada 83, that legacy Ada 83 programs may be compiled using
+this default Ada95 mode without problems (see section above describing the
+use of @option{-gnat83} to run in Ada 83 mode).
+
+In Ada 95 mode, the use of Ada 2005 features will in general cause error
+messages or warnings. Some specialized releases of GNAT (notably the GAP
+academic version) operate in Ada 2005 mode by default (see section below
+describing the use of @option{-gnat05} to run in Ada 2005 mode). For such
+versions the @option{-gnat95} switch may be used to enforce Ada 95 mode.
+This option also can be used to cancel the effect of a previous
+@option{-gnat83} or @option{-gnat05} switch earlier in the command line.
+
+
+@item -gnat05 (Ada 2005 mode)
+@cindex @option{-gnat05} (@command{gcc})
+
+@noindent
+Although GNAT is primarily an Ada 95 compiler, it can be set to operate
+in Ada 2005 mode using this option. Although the new standard has not
+yet been issued (as of early 2005), many features have been discussed and
+approved in ``Ada Issues'' (AI's). For the text of these AI's, see
+@url{www.ada-auth.org/cgi-bin/cvsweb.cgi/AIs}. Included with GNAT
+releases is a file @file{features-ada0y} that describes the current set
+of implemented Ada 2005 features.
+
+If these features are used in Ada 95 mode (which is the normal default),
+then error messages or warnings may be
+generated, reflecting the fact that these new features are otherwise
+unauthorized extensions to Ada 95. The use of the @option{-gnat05}
+switch (or an equivalent pragma) causes these messages to be suppressed.
+
+Note that some specialized releases of GNAT (notably the GAP academic
+version) have Ada 2005 mode on by default, and in such environments,
+the Ada 2005 features can be used freely without the use of switches.
 
 @end table
 
@@ -6300,7 +6364,7 @@ speed up compilation, but means that these tools cannot be used.
 
 @noindent
 GNAT uses two methods for handling exceptions at run-time. The
-@code{longjmp/setjmp} method saves the context when entering
+@code{setjmp/longjmp} method saves the context when entering
 a frame with an exception handler. Then when an exception is
 raised, the context can be restored immediately, without the
 need for tracing stack frames. This method provides very fast
@@ -6327,39 +6391,35 @@ two exception handling methods is used.
 @table @option
 @c !sort!
 
-@item -gnatL
-@cindex @option{-gnatL} (@command{gcc})
-This switch causes the longjmp/setjmp approach to be used
+@item --RTS=sjlj
+@cindex @option{--RTS=sjlj} (@command{gnatmake})
+This switch causes the setjmp/longjmp run-time to be used
 for exception handling. If this is the default mechanism for the
 target (see below), then this has no effect. If the default
 mechanism for the target is zero cost exceptions, then
-this switch can be used to modify this default, but it must be
-used for all units in the partition, including all run-time
-library units. One way to achieve this is to use the
-@option{-a} and @option{-f} switches for @command{gnatmake}.
+this switch can be used to modify this default, and must be
+used for all units in the partition.
 This option is rarely used. One case in which it may be
 advantageous is if you have an application where exception
 raising is common and the overall performance of the
 application is improved by favoring exception propagation.
 
-@item -gnatZ
-@cindex @option{-gnatZ} (@command{gcc})
+@item --RTS=zcx
+@cindex @option{--RTS=zcx} (@command{gnatmake})
 @cindex Zero Cost Exceptions
-This switch causes the zero cost approach to be sed
+This switch causes the zero cost approach to be used
 for exception handling. If this is the default mechanism for the
 target (see below), then this has no effect. If the default
-mechanism for the target is longjmp/setjmp exceptions, then
-this switch can be used to modify this default, but it must be
-used for all units in the partition, including all run-time
-library units. One way to achieve this is to use the
-@option{-a} and @option{-f} switches for @command{gnatmake}.
+mechanism for the target is setjmp/longjmp exceptions, then
+this switch can be used to modify this default, and must be
+used for all units in the partition.
 This option can only be used if the zero cost approach
 is available for the target in use (see below).
 @end table
 
 @noindent
-The @code{longjmp/setjmp} approach is available on all targets, but
-the @code{zero cost} approach is only available on selected targets.
+The @code{setjmp/longjmp} approach is available on all targets, while
+the @code{zero cost} approach is available on selected targets.
 To determine whether zero cost exceptions can be used for a
 particular target, look at the private part of the file system.ads.
 Either @code{GCC_ZCX_Support} or @code{Front_End_ZCX_Support} must
@@ -9966,6 +10026,7 @@ recognized by @code{GNAT}:
 @smallexample
    Ada_83
    Ada_95
+   Ada_05
    C_Pass_By_Copy
    Component_Alignment
    Detect_Blocking
@@ -10324,7 +10385,6 @@ are used in this example.
 * Variables from Imported Projects::
 * Naming Schemes::
 * Library Projects::
-* Using Third-Party Libraries through Projects::
 * Stand-alone Library Projects::
 * Switches Related to Project Files::
 * Tools Supporting Project Files::
@@ -12592,66 +12652,11 @@ All @file{ALI} files will also be copied from the object directory to the
 library directory. To build executables, @command{gnatmake} will use the
 library rather than the individual object files.
 
-@c **********************************************
-@c * Using Third-Party Libraries through Projects
-@c **********************************************
-@node Using Third-Party Libraries through Projects
-@section Using Third-Party Libraries through Projects
-
-Whether you are exporting your own library to make it available to
-clients, or you are using a library provided by a third party, it is
-convenient to have project files that automatically set the correct
-command line switches for the compiler and linker.
-
-Such project files are very similar to the library project files;
-@xref{Library Projects}. The only difference is that you set the
-@code{Source_Dirs} and @code{Object_Dir} attribute so that they point to the
-directories where, respectively, the sources and the read-only ALI files have
-been installed.
-
-If you need to interface with a set of libraries, as opposed to a
-single one, you need to create one library project for each of the
-libraries. In addition, a top-level project that imports all these
-library projects should be provided, so that the user of your library
-has a single @code{with} clause to add to his own projects.
-
-For instance, let's assume you are providing two static libraries
-@file{liba.a} and @file{libb.a}. The user needs to link with
-both of these libraries. Each of these is associated with its
-own set of header files. Let's assume furthermore that all the
-header files for the two libraries have been installed in the same
-directory @file{headers}. The @file{ALI} files are found in the same
-@file{headers} directory.
-
-In this case, you should provide the following three projects:
-
-@smallexample @c projectfile
-@group
-with "liba", "libb";
-project My_Library is
-  for Source_Dirs use ("headers");
-  for Object_Dir  use "headers";
-end My_Library;
-@end group
-
-@group
-project Liba is
-   for Source_Dirs use ();
-   for Library_Dir use "lib";
-   for Library_Name use "a";
-   for Library_Kind use "static";
-end Liba;
-@end group
-
-@group
-project Libb is
-   for Source_Dirs use ();
-   for Library_Dir use "lib";
-   for Library_Name use "b";
-   for Library_Kind use "static";
-end Libb;
-@end group
-@end smallexample
+@ifclear vms
+It is also possible to create library project files for third-party libraries
+that are precompiled and cannot be compiled locally thanks to the
+@code{externally_built} attribute. (See @ref{Installing a library}).
+@end ifclear
 
 @c *******************************
 @c * Stand-alone Library Projects *
@@ -15382,16 +15387,15 @@ A casing schema is a string that has the following syntax:
 
 @smallexample
 @cartouche
-  @var{casing_schema} ::= @var{identifier} | [*]@var{simple_identifier}[*]
+  @var{casing_schema} ::= @var{identifier} | *@var{simple_identifier}*
 
   @var{simple_identifier} ::= @var{letter}@{@var{letter_or_digit}@}
 @end cartouche
 @end smallexample
 
 @noindent
-(The @code{[]} metanotation stands for an optional part;
-see @cite{Ada Reference Manual}, Section 2.3) for the definition of the
-@var{identifier} lexical element and the @var{letter_or_digit} category).
+(See @cite{Ada Reference Manual}, Section 2.3) for the definition of the
+@var{identifier} lexical element and the @var{letter_or_digit} category.)
 
 The casing schema string can be followed by white space and/or an Ada-style
 comment; any amount of white space is allowed before the string.
@@ -15415,22 +15419,15 @@ if the whole name is in the dictionary, @command{gnatpp} uses for this name
 the casing defined by the dictionary; no subwords are checked for this word
 
 @item
-for the first subword (that is, for the subword preceding the leftmost
-``_''), @command{gnatpp} checks if the dictionary contains the corresponding
-string of the form @code{@var{simple_identifier}*}, and if it does, the
+for every subword @command{gnatpp} checks if the dictionary contains the
+corresponding string of the form @code{*@var{simple_identifier}*}, and if it does, the
 casing of this @var{simple_identifier} is used for this subword
 
 @item
-for the last subword (following the rightmost ``_'') @command{gnatpp}
-checks if the dictionary contains the corresponding string of the form
-@code{*@var{simple_identifier}}, and if it does, the casing of this
-@var{simple_identifier} is used for this subword
-
-@item
-for every intermediate subword (surrounded by two'_') @command{gnatpp} checks
-if the dictionary contains the corresponding string of the form
-@code{*@var{simple_identifier}*}, and if it does, the casing of this
-simple_identifier is used for this subword
+if the whole name does not contain any ``_'' inside, and if for this name
+the dictionaty contains two entries - one of the form @var{identifier},
+and another - of the form *@var{simple_identifier}*, then the first one
+is applied to define the casing of this name
 
 @item
 if more than one dictionary file is passed as @command{gnatpp} switches, each
@@ -15466,7 +15463,7 @@ And suppose we have two dictionaries:
 @i{dict1:}
    NAME1
    *NaMe3*
-   *NAME2
+   *Name1*
 @end cartouche
 
 @cartouche
@@ -15494,11 +15491,11 @@ then we will get the following name casing in the @command{gnatpp} output:
 @cartouche
 procedure Test is
    NAME1             : Integer := 1;
-   Name4_NAME3_NAME2 : integer := 2;
+   Name4_NAME3_Name2 : Integer := 2;
    Name2_NAME3_Name4 : Boolean;
    Name1_Var         : Float;
 begin
-   Name2_NAME3_Name4 := Name4_NAME3_NAME2 > NAME1;
+   Name2_NAME3_Name4 := Name4_NAME3_Name2 > NAME1;
 end Test;
 @end cartouche
 @end smallexample
@@ -16734,7 +16731,7 @@ Source Search Path:
 Object Search Path:
    <Current_Directory>
    ../
-   /home/comar/local/lib/gcc-lib/mips-sni-sysv4/2.7.2/adalib/
+   /home/comar/local/lib/gcc-lib/x86-linux/3.4.3/adalib/
 
 Project Search Path:
    <Current_Directory>
@@ -17247,13 +17244,17 @@ third-party library @file{liba.a}:
 @smallexample @c projectfile
 @group
 project Liba is
-   for Source_Dirs use ();
+   for Externally_Built use "true";
    for Library_Dir use "lib";
    for Library_Name use "a";
    for Library_Kind use "static";
 end Liba;
 @end group
 @end smallexample
+This is an alternative to the use of @code{pragma Linker_Options}. It is
+especially interesting in the context of systems with several interdependant
+static libraries where finding a proper linker order is not easy and best be
+left to the tools having visibility over project dependancy information.
 
 @noindent
 In order to use an Ada library manually, you need to make sure that this
@@ -20822,6 +20823,8 @@ GNAT also supplies a number of implementation-defined pragmas as follows:
 
 @item  ADA_95
 
+@item  ADA_05
+
 @item  ANNOTATE
 
 @item  ASSERT
@@ -21916,18 +21919,27 @@ this option) is required.
 The easiest way to build a 64bit application is to add
 @option{-m64 --RTS=m64} to the @command{gnatmake} flags.
 
-To debug these applications, dwarf-2 debug information is required, so you
-have to add @option{-gdwarf-2} to your gnatmake arguments.
-In addition, a special
-version of gdb, called @command{gdb64}, needs to be used.
+To debug these applications, a special version of gdb called @command{gdb64}
+needs to be used.
 
 To summarize, building and debugging a ``Hello World'' program in 64-bit mode
 amounts to:
 
 @smallexample
-     $ gnatmake -m64 -gdwarf-2 --RTS=m64 hello.adb
+     $ gnatmake -m64 -g --RTS=m64 hello.adb
      $ gdb64 hello
 @end smallexample
+
+In addition, the following capabilities are not supported when using the
+@option{-m64} option:
+
+@table @code
+@item -fstack-check does not work together with -m64.
+Any application combining these options crashes at startup time.
+
+@item Call-chain backtrace computation does not work with -m64.
+Thus the gnatbind switch -E is not supported.
+@end table
 
 @node IRIX-Specific Considerations
 @section IRIX-Specific Considerations
@@ -24600,7 +24612,6 @@ and with assembly language programming.
 * Input Variables in Inline Assembler::
 * Inlining Inline Assembler Code::
 * Other Asm Functionality::
-* A Complete Example::
 @end menu
 
 @c ---------------------------------------------------------------------------
@@ -25274,901 +25285,6 @@ optimizations, it will also disable other optimizations that might be
 important for efficiency. In general, you should set @code{Volatile}
 to @code{True} only if the compiler's optimizations have created
 problems.
-
-@c ---------------------------------------------------------------------------
-@node A Complete Example
-@section A Complete Example
-
-@noindent
-This section contains a complete program illustrating a realistic usage
-of GNAT's Inline Assembler capabilities.  It comprises a main procedure
-@code{Check_CPU} and a package @code{Intel_CPU}.
-The package declares a collection of functions that detect the properties
-of the 32-bit x86 processor that is running the program.
-The main procedure invokes these functions and displays the information.
-
-The Intel_CPU package could be enhanced by adding functions to
-detect the type of x386 co-processor, the processor caching options and
-special operations such as the SIMD extensions.
-
-Although the Intel_CPU package has been written for 32-bit Intel
-compatible CPUs, it is OS neutral. It has been tested on DOS,
-Windows/NT and GNU/Linux.
-
-@menu
-* Check_CPU Procedure::
-* Intel_CPU Package Specification::
-* Intel_CPU Package Body::
-@end menu
-
-@c ---------------------------------------------------------------------------
-@node Check_CPU Procedure
-@subsection @code{Check_CPU} Procedure
-@cindex Check_CPU procedure
-
-@smallexample @c adanocomment
----------------------------------------------------------------------
---                                                                 --
---  Uses the Intel_CPU package to identify the CPU the program is  --
---  running on, and some of the features it supports.              --
---                                                                 --
----------------------------------------------------------------------
-
-with Intel_CPU;                     --  Intel CPU detection functions
-with Ada.Text_IO;                   --  Standard text I/O
-with Ada.Command_Line;              --  To set the exit status
-
-procedure Check_CPU is
-
-   Type_Found : Boolean := False;
-   --  Flag to indicate that processor was identified
-
-   Features   : Intel_CPU.Processor_Features;
-   --  The processor features
-
-   Signature  : Intel_CPU.Processor_Signature;
-   --  The processor type signature
-
-begin
-
-   -----------------------------------
-   --  Display the program banner.  --
-   -----------------------------------
-
-   Ada.Text_IO.Put_Line (Ada.Command_Line.Command_Name &
-                         ": check Intel CPU version and features, v1.0");
-   Ada.Text_IO.Put_Line ("distribute freely, but no warranty whatsoever");
-   Ada.Text_IO.New_Line;
-
-   -----------------------------------------------------------------------
-   --  We can safely start with the assumption that we are on at least  --
-   --  a x386 processor. If the CPUID instruction is present, then we   --
-   --  have a later processor type.                                     --
-   -----------------------------------------------------------------------
-
-   if Intel_CPU.Has_CPUID = False then
-
-      --  No CPUID instruction, so we assume this is indeed a x386
-      --  processor. We can still check if it has a FP co-processor.
-      if Intel_CPU.Has_FPU then
-         Ada.Text_IO.Put_Line
-           ("x386-type processor with a FP co-processor");
-      else
-         Ada.Text_IO.Put_Line
-           ("x386-type processor without a FP co-processor");
-      end if;  --  check for FPU
-
-      --  Program done
-      Ada.Command_Line.Set_Exit_Status (Ada.Command_Line.Success);
-      return;
-
-   end if;  --  check for CPUID
-
-   -----------------------------------------------------------------------
-   --  If CPUID is supported, check if this is a true Intel processor,  --
-   --  if it is not, display a warning.                                 --
-   -----------------------------------------------------------------------
-
-   if Intel_CPU.Vendor_ID /= Intel_CPU.Intel_Processor then
-      Ada.Text_IO.Put_Line ("*** This is a Intel compatible processor");
-      Ada.Text_IO.Put_Line ("*** Some information may be incorrect");
-   end if;  --  check if Intel
-
-   ----------------------------------------------------------------------
-   --  With the CPUID instruction present, we can assume at least a    --
-   --  x486 processor. If the CPUID support level is < 1 then we have  --
-   --  to leave it at that.                                            --
-   ----------------------------------------------------------------------
-
-   if Intel_CPU.CPUID_Level < 1 then
-
-      --  Ok, this is a x486 processor. we still can get the Vendor ID
-      Ada.Text_IO.Put_Line ("x486-type processor");
-      Ada.Text_IO.Put_Line ("Vendor ID is " & Intel_CPU.Vendor_ID);
-
-      --  We can also check if there is a FPU present
-      if Intel_CPU.Has_FPU then
-         Ada.Text_IO.Put_Line ("Floating-Point support");
-      else
-         Ada.Text_IO.Put_Line ("No Floating-Point support");
-      end if;  --  check for FPU
-
-      --  Program done
-      Ada.Command_Line.Set_Exit_Status (Ada.Command_Line.Success);
-      return;
-
-   end if;  --  check CPUID level
-
-   ---------------------------------------------------------------------
-   --  With a CPUID level of 1 we can use the processor signature to  --
-   --  determine it's exact type.                                     --
-   ---------------------------------------------------------------------
-
-   Signature := Intel_CPU.Signature;
-
-   ----------------------------------------------------------------------
-   --  Ok, now we go into a lot of messy comparisons to get the        --
-   --  processor type. For clarity, no attememt to try to optimize the --
-   --  comparisons has been made. Note that since Intel_CPU does not   --
-   --  support getting cache info, we cannot distinguish between P5    --
-   --  and Celeron types yet.                                          --
-   ----------------------------------------------------------------------
-
-   --  x486SL
-   if Signature.Processor_Type = 2#00#   and
-     Signature.Family          = 2#0100# and
-     Signature.Model           = 2#0100# then
-      Type_Found := True;
-      Ada.Text_IO.Put_Line ("x486SL processor");
-   end if;
-
-   --  x486DX2 Write-Back
-   if Signature.Processor_Type = 2#00#   and
-     Signature.Family          = 2#0100# and
-     Signature.Model           = 2#0111# then
-      Type_Found := True;
-      Ada.Text_IO.Put_Line ("Write-Back Enhanced x486DX2 processor");
-   end if;
-
-   --  x486DX4
-   if Signature.Processor_Type = 2#00#   and
-     Signature.Family          = 2#0100# and
-     Signature.Model           = 2#1000# then
-      Type_Found := True;
-      Ada.Text_IO.Put_Line ("x486DX4 processor");
-   end if;
-
-   --  x486DX4 Overdrive
-   if Signature.Processor_Type = 2#01#   and
-     Signature.Family          = 2#0100# and
-     Signature.Model           = 2#1000# then
-      Type_Found := True;
-      Ada.Text_IO.Put_Line ("x486DX4 OverDrive processor");
-   end if;
-
-   --  Pentium (60, 66)
-   if Signature.Processor_Type = 2#00#   and
-     Signature.Family          = 2#0101# and
-     Signature.Model           = 2#0001# then
-      Type_Found := True;
-      Ada.Text_IO.Put_Line ("Pentium processor (60, 66)");
-   end if;
-
-   --  Pentium (75, 90, 100, 120, 133, 150, 166, 200)
-   if Signature.Processor_Type = 2#00#   and
-     Signature.Family          = 2#0101# and
-     Signature.Model           = 2#0010# then
-      Type_Found := True;
-      Ada.Text_IO.Put_Line
-        ("Pentium processor (75, 90, 100, 120, 133, 150, 166, 200)");
-   end if;
-
-   --  Pentium OverDrive (60, 66)
-   if Signature.Processor_Type = 2#01#   and
-     Signature.Family          = 2#0101# and
-     Signature.Model           = 2#0001# then
-      Type_Found := True;
-      Ada.Text_IO.Put_Line ("Pentium OverDrive processor (60, 66)");
-   end if;
-
-   --  Pentium OverDrive (75, 90, 100, 120, 133, 150, 166, 200)
-   if Signature.Processor_Type = 2#01#   and
-     Signature.Family          = 2#0101# and
-     Signature.Model           = 2#0010# then
-      Type_Found := True;
-      Ada.Text_IO.Put_Line
-        ("Pentium OverDrive cpu (75, 90, 100, 120, 133, 150, 166, 200)");
-   end if;
-
-   --  Pentium OverDrive processor for x486 processor-based systems
-   if Signature.Processor_Type = 2#01#   and
-     Signature.Family          = 2#0101# and
-     Signature.Model           = 2#0011# then
-      Type_Found := True;
-      Ada.Text_IO.Put_Line
-        ("Pentium OverDrive processor for x486 processor-based systems");
-   end if;
-
-   --  Pentium processor with MMX technology (166, 200)
-   if Signature.Processor_Type = 2#00#   and
-     Signature.Family          = 2#0101# and
-     Signature.Model           = 2#0100# then
-      Type_Found := True;
-      Ada.Text_IO.Put_Line
-        ("Pentium processor with MMX technology (166, 200)");
-   end if;
-
-   --  Pentium OverDrive with MMX for Pentium (75, 90, 100, 120, 133)
-   if Signature.Processor_Type = 2#01#   and
-     Signature.Family          = 2#0101# and
-     Signature.Model           = 2#0100# then
-      Type_Found := True;
-      Ada.Text_IO.Put_Line
-        ("Pentium OverDrive processor with MMX " &
-         "technology for Pentium processor (75, 90, 100, 120, 133)");
-   end if;
-
-   --  Pentium Pro processor
-   if Signature.Processor_Type = 2#00#   and
-     Signature.Family          = 2#0110# and
-     Signature.Model           = 2#0001# then
-      Type_Found := True;
-      Ada.Text_IO.Put_Line ("Pentium Pro processor");
-   end if;
-
-   --  Pentium II processor, model 3
-   if Signature.Processor_Type = 2#00#   and
-     Signature.Family          = 2#0110# and
-     Signature.Model           = 2#0011# then
-      Type_Found := True;
-      Ada.Text_IO.Put_Line ("Pentium II processor, model 3");
-   end if;
-
-   --  Pentium II processor, model 5 or Celeron processor
-   if Signature.Processor_Type = 2#00#   and
-     Signature.Family          = 2#0110# and
-     Signature.Model           = 2#0101# then
-      Type_Found := True;
-      Ada.Text_IO.Put_Line
-        ("Pentium II processor, model 5 or Celeron processor");
-   end if;
-
-   --  Pentium Pro OverDrive processor
-   if Signature.Processor_Type = 2#01#   and
-     Signature.Family          = 2#0110# and
-     Signature.Model           = 2#0011# then
-      Type_Found := True;
-      Ada.Text_IO.Put_Line ("Pentium Pro OverDrive processor");
-   end if;
-
-   --  If no type recognized, we have an unknown. Display what
-   --  we _do_ know
-   if Type_Found = False then
-      Ada.Text_IO.Put_Line ("Unknown processor");
-   end if;
-
-   -----------------------------------------
-   --  Display processor stepping level.  --
-   -----------------------------------------
-
-   Ada.Text_IO.Put_Line ("Stepping level:" & Signature.Stepping'Img);
-
-   ---------------------------------
-   --  Display vendor ID string.  --
-   ---------------------------------
-
-   Ada.Text_IO.Put_Line ("Vendor ID: " & Intel_CPU.Vendor_ID);
-
-   ------------------------------------
-   --  Get the processors features.  --
-   ------------------------------------
-
-   Features := Intel_CPU.Features;
-
-   -----------------------------
-   --  Check for a FPU unit.  --
-   -----------------------------
-
-   if Features.FPU = True then
-      Ada.Text_IO.Put_Line ("Floating-Point unit available");
-   else
-      Ada.Text_IO.Put_Line ("no Floating-Point unit");
-   end if;  --  check for FPU
-
-   --------------------------------
-   --  List processor features.  --
-   --------------------------------
-
-   Ada.Text_IO.Put_Line ("Supported features: ");
-
-   --  Virtual Mode Extension
-   if Features.VME = True then
-      Ada.Text_IO.Put_Line ("    VME    - Virtual Mode Extension");
-   end if;
-
-   --  Debugging Extension
-   if Features.DE = True then
-      Ada.Text_IO.Put_Line ("    DE     - Debugging Extension");
-   end if;
-
-   --  Page Size Extension
-   if Features.PSE = True then
-      Ada.Text_IO.Put_Line ("    PSE    - Page Size Extension");
-   end if;
-
-   --  Time Stamp Counter
-   if Features.TSC = True then
-      Ada.Text_IO.Put_Line ("    TSC    - Time Stamp Counter");
-   end if;
-
-   --  Model Specific Registers
-   if Features.MSR = True then
-      Ada.Text_IO.Put_Line ("    MSR    - Model Specific Registers");
-   end if;
-
-   --  Physical Address Extension
-   if Features.PAE = True then
-      Ada.Text_IO.Put_Line ("    PAE    - Physical Address Extension");
-   end if;
-
-   --  Machine Check Extension
-   if Features.MCE = True then
-      Ada.Text_IO.Put_Line ("    MCE    - Machine Check Extension");
-   end if;
-
-   --  CMPXCHG8 instruction supported
-   if Features.CX8 = True then
-      Ada.Text_IO.Put_Line ("    CX8    - CMPXCHG8 instruction");
-   end if;
-
-   --  on-chip APIC hardware support
-   if Features.APIC = True then
-      Ada.Text_IO.Put_Line ("    APIC   - on-chip APIC hardware support");
-   end if;
-
-   --  Fast System Call
-   if Features.SEP = True then
-      Ada.Text_IO.Put_Line ("    SEP    - Fast System Call");
-   end if;
-
-   --  Memory Type Range Registers
-   if Features.MTRR = True then
-      Ada.Text_IO.Put_Line ("    MTTR   - Memory Type Range Registers");
-   end if;
-
-   --  Page Global Enable
-   if Features.PGE = True then
-      Ada.Text_IO.Put_Line ("    PGE    - Page Global Enable");
-   end if;
-
-   --  Machine Check Architecture
-   if Features.MCA = True then
-      Ada.Text_IO.Put_Line ("    MCA    - Machine Check Architecture");
-   end if;
-
-   --  Conditional Move Instruction Supported
-   if Features.CMOV = True then
-      Ada.Text_IO.Put_Line
-        ("    CMOV   - Conditional Move Instruction Supported");
-   end if;
-
-   --  Page Attribute Table
-   if Features.PAT = True then
-      Ada.Text_IO.Put_Line ("    PAT    - Page Attribute Table");
-   end if;
-
-   --  36-bit Page Size Extension
-   if Features.PSE_36 = True then
-      Ada.Text_IO.Put_Line ("    PSE_36 - 36-bit Page Size Extension");
-   end if;
-
-   --  MMX technology supported
-   if Features.MMX = True then
-      Ada.Text_IO.Put_Line ("    MMX    - MMX technology supported");
-   end if;
-
-   --  Fast FP Save and Restore
-   if Features.FXSR = True then
-      Ada.Text_IO.Put_Line ("    FXSR   - Fast FP Save and Restore");
-   end if;
-
-   ---------------------
-   --  Program done.  --
-   ---------------------
-
-   Ada.Command_Line.Set_Exit_Status (Ada.Command_Line.Success);
-
-exception
-
-   when others =>
-      Ada.Command_Line.Set_Exit_Status (Ada.Command_Line.Failure);
-      raise;
-
-end Check_CPU;
-@end smallexample
-
-@c ---------------------------------------------------------------------------
-@node Intel_CPU Package Specification
-@subsection @code{Intel_CPU} Package Specification
-@cindex Intel_CPU package specification
-
-@smallexample @c adanocomment
--------------------------------------------------------------------------
---                                                                     --
---  file: intel_cpu.ads                                                --
---                                                                     --
---           *********************************************             --
---           * WARNING: for 32-bit Intel processors only *             --
---           *********************************************             --
---                                                                     --
---  This package contains a number of subprograms that are useful in   --
---  determining the Intel x86 CPU (and the features it supports) on    --
---  which the program is running.                                      --
---                                                                     --
---  The package is based upon the information given in the Intel       --
---  Application Note AP-485: "Intel Processor Identification and the   --
---  CPUID Instruction" as of April 1998. This application note can be  --
---  found on www.intel.com.                                            --
---                                                                     --
---  It currently deals with 32-bit processors only, will not detect    --
---  features added after april 1998, and does not guarantee proper     --
---  results on Intel-compatible processors.                            --
---                                                                     --
---  Cache info and x386 fpu type detection are not supported.          --
---                                                                     --
---  This package does not use any privileged instructions, so should   --
---  work on any OS running on a 32-bit Intel processor.                --
---                                                                     --
--------------------------------------------------------------------------
-
-with Interfaces;             use Interfaces;
---  for using unsigned types
-
-with System.Machine_Code;    use System.Machine_Code;
---  for using inline assembler code
-
-with Ada.Characters.Latin_1; use Ada.Characters.Latin_1;
---  for inserting control characters
-
-package Intel_CPU is
-
-   ----------------------
-   --  Processor bits  --
-   ----------------------
-
-   subtype Num_Bits is Natural range 0 .. 31;
-   --  the number of processor bits (32)
-
-   --------------------------
-   --  Processor register  --
-   --------------------------
-
-   --  define a processor register type for easy access to
-   --  the individual bits
-
-   type Processor_Register is array (Num_Bits) of Boolean;
-   pragma Pack (Processor_Register);
-   for Processor_Register'Size use 32;
-
-   -------------------------
-   --  Unsigned register  --
-   -------------------------
-
-   --  define a processor register type for easy access to
-   --  the individual bytes
-
-   type Unsigned_Register is
-      record
-         L1 : Unsigned_8;
-         H1 : Unsigned_8;
-         L2 : Unsigned_8;
-         H2 : Unsigned_8;
-      end record;
-
-   for Unsigned_Register use
-      record
-         L1 at 0 range  0 ..  7;
-         H1 at 0 range  8 .. 15;
-         L2 at 0 range 16 .. 23;
-         H2 at 0 range 24 .. 31;
-      end record;
-
-   for Unsigned_Register'Size use 32;
-
-   ---------------------------------
-   --  Intel processor vendor ID  --
-   ---------------------------------
-
-   Intel_Processor : constant String (1 .. 12) := "GenuineIntel";
-   --  indicates an Intel manufactured processor
-
-   ------------------------------------
-   --  Processor signature register  --
-   ------------------------------------
-
-   --  a register type to hold the processor signature
-
-   type Processor_Signature is
-      record
-         Stepping       : Natural range 0 .. 15;
-         Model          : Natural range 0 .. 15;
-         Family         : Natural range 0 .. 15;
-         Processor_Type : Natural range 0 .. 3;
-         Reserved       : Natural range 0 .. 262143;
-      end record;
-
-   for Processor_Signature use
-      record
-         Stepping       at 0 range  0 ..  3;
-         Model          at 0 range  4 ..  7;
-         Family         at 0 range  8 .. 11;
-         Processor_Type at 0 range 12 .. 13;
-         Reserved       at 0 range 14 .. 31;
-      end record;
-
-   for Processor_Signature'Size use 32;
-
-   -----------------------------------
-   --  Processor features register  --
-   -----------------------------------
-
-   --  a processor register to hold the processor feature flags
-
-   type Processor_Features is
-      record
-         FPU    : Boolean;                --  floating point unit on chip
-         VME    : Boolean;                --  virtual mode extension
-         DE     : Boolean;                --  debugging extension
-         PSE    : Boolean;                --  page size extension
-         TSC    : Boolean;                --  time stamp counter
-         MSR    : Boolean;                --  model specific registers
-         PAE    : Boolean;                --  physical address extension
-         MCE    : Boolean;                --  machine check extension
-         CX8    : Boolean;                --  cmpxchg8 instruction
-         APIC   : Boolean;                --  on-chip apic hardware
-         Res_1  : Boolean;                --  reserved for extensions
-         SEP    : Boolean;                --  fast system call
-         MTRR   : Boolean;                --  memory type range registers
-         PGE    : Boolean;                --  page global enable
-         MCA    : Boolean;                --  machine check architecture
-         CMOV   : Boolean;                --  conditional move supported
-         PAT    : Boolean;                --  page attribute table
-         PSE_36 : Boolean;                --  36-bit page size extension
-         Res_2  : Natural range 0 .. 31;  --  reserved for extensions
-         MMX    : Boolean;                --  MMX technology supported
-         FXSR   : Boolean;                --  fast FP save and restore
-         Res_3  : Natural range 0 .. 127; --  reserved for extensions
-      end record;
-
-   for Processor_Features use
-      record
-         FPU    at 0 range  0 ..  0;
-         VME    at 0 range  1 ..  1;
-         DE     at 0 range  2 ..  2;
-         PSE    at 0 range  3 ..  3;
-         TSC    at 0 range  4 ..  4;
-         MSR    at 0 range  5 ..  5;
-         PAE    at 0 range  6 ..  6;
-         MCE    at 0 range  7 ..  7;
-         CX8    at 0 range  8 ..  8;
-         APIC   at 0 range  9 ..  9;
-         Res_1  at 0 range 10 .. 10;
-         SEP    at 0 range 11 .. 11;
-         MTRR   at 0 range 12 .. 12;
-         PGE    at 0 range 13 .. 13;
-         MCA    at 0 range 14 .. 14;
-         CMOV   at 0 range 15 .. 15;
-         PAT    at 0 range 16 .. 16;
-         PSE_36 at 0 range 17 .. 17;
-         Res_2  at 0 range 18 .. 22;
-         MMX    at 0 range 23 .. 23;
-         FXSR   at 0 range 24 .. 24;
-         Res_3  at 0 range 25 .. 31;
-      end record;
-
-   for Processor_Features'Size use 32;
-
-   -------------------
-   --  Subprograms  --
-   -------------------
-
-   function Has_FPU return Boolean;
-   --  return True if a FPU is found
-   --  use only if CPUID is not supported
-
-   function Has_CPUID return Boolean;
-   --  return True if the processor supports the CPUID instruction
-
-   function CPUID_Level return Natural;
-   --  return the CPUID support level (0, 1 or 2)
-   --  can only be called if the CPUID instruction is supported
-
-   function Vendor_ID return String;
-   --  return the processor vendor identification string
-   --  can only be called if the CPUID instruction is supported
-
-   function Signature return Processor_Signature;
-   --  return the processor signature
-   --  can only be called if the CPUID instruction is supported
-
-   function Features return Processor_Features;
-   --  return the processors features
-   --  can only be called if the CPUID instruction is supported
-
-private
-
-   ------------------------
-   --  EFLAGS bit names  --
-   ------------------------
-
-   ID_Flag : constant Num_Bits := 21;
-   --  ID flag bit
-
-end Intel_CPU;
-@end smallexample
-
-@c ---------------------------------------------------------------------------
-@node Intel_CPU Package Body
-@subsection @code{Intel_CPU} Package Body
-@cindex Intel_CPU package body
-
-@smallexample @c adanocomment
-package body Intel_CPU is
-
-   ---------------------------
-   --  Detect FPU presence  --
-   ---------------------------
-
-   --  There is a FPU present if we can set values to the FPU Status
-   --  and Control Words.
-
-   function Has_FPU return Boolean is
-
-      Register : Unsigned_16;
-      --  processor register to store a word
-
-   begin
-
-      --  check if we can change the status word
-      Asm (
-
-           --  the assembler code
-           "finit"              & LF & HT &    --  reset status word
-           "movw $0x5A5A, %%ax" & LF & HT &    --  set value status word
-           "fnstsw %0"          & LF & HT &    --  save status word
-           "movw %%ax, %0",                    --  store status word
-
-           --  output stored in Register
-           --  register must be a memory location
-           Outputs => Unsigned_16'Asm_output ("=m", Register),
-
-           --  tell compiler that we used eax
-           Clobber => "eax");
-
-      --  if the status word is zero, there is no FPU
-      if Register = 0 then
-         return False;   --  no status word
-      end if;  --  check status word value
-
-      --  check if we can get the control word
-      Asm (
-
-           --  the assembler code
-           "fnstcw %0",   --  save the control word
-
-           --  output into Register
-           --  register must be a memory location
-           Outputs => Unsigned_16'Asm_output ("=m", Register));
-
-      --  check the relevant bits
-      if (Register and 16#103F#) /= 16#003F# then
-         return False;   --  no control word
-      end if;  --  check control word value
-
-      --  FPU found
-      return True;
-
-   end Has_FPU;
-
-   --------------------------------
-   --  Detect CPUID instruction  --
-   --------------------------------
-
-   --  The processor supports the CPUID instruction if it is possible
-   --  to change the value of ID flag bit in the EFLAGS register.
-
-   function Has_CPUID return Boolean is
-
-      Original_Flags, Modified_Flags : Processor_Register;
-      --  EFLAG contents before and after changing the ID flag
-
-   begin
-
-      --  try flipping the ID flag in the EFLAGS register
-      Asm (
-
-           --  the assembler code
-           "pushfl"               & LF & HT &     --  push EFLAGS on stack
-           "pop %%eax"            & LF & HT &     --  pop EFLAGS into eax
-           "movl %%eax, %0"       & LF & HT &     --  save EFLAGS content
-           "xor $0x200000, %%eax" & LF & HT &     --  flip ID flag
-           "push %%eax"           & LF & HT &     --  push EFLAGS on stack
-           "popfl"                & LF & HT &     --  load EFLAGS register
-           "pushfl"               & LF & HT &     --  push EFLAGS on stack
-           "pop %1",                              --  save EFLAGS content
-
-           --  output values, may be anything
-           --  Original_Flags is %0
-           --  Modified_Flags is %1
-           Outputs =>
-              (Processor_Register'Asm_output ("=g", Original_Flags),
-               Processor_Register'Asm_output ("=g", Modified_Flags)),
-
-           --  tell compiler eax is destroyed
-           Clobber => "eax");
-
-      --  check if CPUID is supported
-      if Original_Flags(ID_Flag) /= Modified_Flags(ID_Flag) then
-         return True;   --  ID flag was modified
-      else
-         return False;  --  ID flag unchanged
-      end if;  --  check for CPUID
-
-   end Has_CPUID;
-
-   -------------------------------
-   --  Get CPUID support level  --
-   -------------------------------
-
-   function CPUID_Level return Natural is
-
-      Level : Unsigned_32;
-      --  returned support level
-
-   begin
-
-      --  execute CPUID, storing the results in the Level register
-      Asm (
-
-           --  the assembler code
-           "cpuid",    --  execute CPUID
-
-           --  zero is stored in eax
-           --  returning the support level in eax
-           Inputs => Unsigned_32'Asm_input ("a", 0),
-
-           --  eax is stored in Level
-           Outputs => Unsigned_32'Asm_output ("=a", Level),
-
-           --  tell compiler ebx, ecx and edx registers are destroyed
-           Clobber => "ebx, ecx, edx");
-
-      --  return the support level
-      return Natural (Level);
-
-   end CPUID_Level;
-
-   --------------------------------
-   --  Get CPU Vendor ID String  --
-   --------------------------------
-
-   --  The vendor ID string is returned in the ebx, ecx and edx register
-   --  after executing the CPUID instruction with eax set to zero.
-   --  In case of a true Intel processor the string returned is
-   --  "GenuineIntel"
-
-   function Vendor_ID return String is
-
-      Ebx, Ecx, Edx : Unsigned_Register;
-      --  registers containing the vendor ID string
-
-      Vendor_ID : String (1 .. 12);
-      -- the vendor ID string
-
-   begin
-
-      --  execute CPUID, storing the results in the processor registers
-      Asm (
-
-           --  the assembler code
-           "cpuid",    --  execute CPUID
-
-           --  zero stored in eax
-           --  vendor ID string returned in ebx, ecx and edx
-           Inputs => Unsigned_32'Asm_input ("a", 0),
-
-           --  ebx is stored in Ebx
-           --  ecx is stored in Ecx
-           --  edx is stored in Edx
-           Outputs => (Unsigned_Register'Asm_output ("=b", Ebx),
-                       Unsigned_Register'Asm_output ("=c", Ecx),
-                       Unsigned_Register'Asm_output ("=d", Edx)));
-
-      --  now build the vendor ID string
-      Vendor_ID( 1) := Character'Val (Ebx.L1);
-      Vendor_ID( 2) := Character'Val (Ebx.H1);
-      Vendor_ID( 3) := Character'Val (Ebx.L2);
-      Vendor_ID( 4) := Character'Val (Ebx.H2);
-      Vendor_ID( 5) := Character'Val (Edx.L1);
-      Vendor_ID( 6) := Character'Val (Edx.H1);
-      Vendor_ID( 7) := Character'Val (Edx.L2);
-      Vendor_ID( 8) := Character'Val (Edx.H2);
-      Vendor_ID( 9) := Character'Val (Ecx.L1);
-      Vendor_ID(10) := Character'Val (Ecx.H1);
-      Vendor_ID(11) := Character'Val (Ecx.L2);
-      Vendor_ID(12) := Character'Val (Ecx.H2);
-
-      --  return string
-      return Vendor_ID;
-
-   end Vendor_ID;
-
-   -------------------------------
-   --  Get processor signature  --
-   -------------------------------
-
-   function Signature return Processor_Signature is
-
-      Result : Processor_Signature;
-      --  processor signature returned
-
-   begin
-
-      --  execute CPUID, storing the results in the Result variable
-      Asm (
-
-           --  the assembler code
-           "cpuid",    --  execute CPUID
-
-           --  one is stored in eax
-           --  processor signature returned in eax
-           Inputs => Unsigned_32'Asm_input ("a", 1),
-
-           --  eax is stored in Result
-           Outputs => Processor_Signature'Asm_output ("=a", Result),
-
-           --  tell compiler that ebx, ecx and edx are also destroyed
-           Clobber => "ebx, ecx, edx");
-
-      --  return processor signature
-      return Result;
-
-   end Signature;
-
-   ------------------------------
-   --  Get processor features  --
-   ------------------------------
-
-   function Features return Processor_Features is
-
-      Result : Processor_Features;
-      --  processor features returned
-
-   begin
-
-      --  execute CPUID, storing the results in the Result variable
-      Asm (
-
-           --  the assembler code
-           "cpuid",    --  execute CPUID
-
-           --  one stored in eax
-           --  processor features returned in edx
-           Inputs => Unsigned_32'Asm_input ("a", 1),
-
-           --  edx is stored in Result
-           Outputs => Processor_Features'Asm_output ("=d", Result),
-
-           --  tell compiler that ebx and ecx are also destroyed
-           Clobber => "ebx, ecx");
-
-      --  return processor signature
-      return Result;
-
-   end Features;
-
-end Intel_CPU;
-@end smallexample
 @c END OF INLINE ASSEMBLER CHAPTER
 @c ===============================
 
@@ -26367,7 +25483,7 @@ new Ada 95 reserved words are treated simply as identifiers as in Ada 83.
 However,
 in practice, it is usually advisable to make the necessary modifications
 to the program to remove the need for using this switch.
-See @ref{Compiling Ada 83 Programs}.
+See @ref{Compiling Different Versions of Ada}.
 
 @item Support for removed Ada 83 pragmas and attributes
 A number of pragmas and attributes from Ada 83 have been removed from Ada 95,
