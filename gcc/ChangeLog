@@ -1,5 +1,12 @@
 2004-07-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	PR target/13926
+	* config/sparc/sparc-protos.h (output_ubranch): New prototype.
+	* config/sparc/sparc.c (output_ubranch): New function.
+	* config/sparc/sparc.md (jump pattern): Use it.
+
+2004-07-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	PR target/16494
 	* config/sparc/sparc.c (output_cbranch): Properly guard
 	the code handling far branches with TARGET_V9.

@@ -6085,18 +6085,77 @@ sparc_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
   return build_fold_indirect_ref (addr);
 }
 
+/* Return the string to output an unconditional branch to LABEL, which is
+   the operand number of the label.
+
+   DEST is the destination insn (i.e. the label), INSN is the source.  */
+
+const char *
+output_ubranch (rtx dest, int label, rtx insn)
+{
+  static char string[64];
+  bool noop = false;
+  char *p;
+
+  /* TurboSPARC is reported to have problems with
+     with
+	foo: b,a foo
+     i.e. an empty loop with the annul bit set.  The workaround is to use 
+        foo: b foo; nop
+     instead.  */
+
+  if (! TARGET_V9 && flag_delayed_branch
+      && (INSN_ADDRESSES (INSN_UID (dest))
+	  == INSN_ADDRESSES (INSN_UID (insn))))
+    {
+      strcpy (string, "b\t");
+      noop = true;
+    }
+  else
+    {
+      bool v9_form = false;
+
+      if (TARGET_V9 && INSN_ADDRESSES_SET_P ())
+	{
+	  int delta = (INSN_ADDRESSES (INSN_UID (dest))
+		       - INSN_ADDRESSES (INSN_UID (insn)));
+	  /* Leave some instructions for "slop".  */
+	  if (delta >= -260000 && delta < 260000)
+	    v9_form = true;
+	}
+
+      if (v9_form)
+	strcpy (string, "ba%*,pt\t%%xcc, ");
+      else
+	strcpy (string, "b%*\t");
+    }
+
+  p = strchr (string, '\0');
+  *p++ = '%';
+  *p++ = 'l';
+  *p++ = '0' + label;
+  *p++ = '%';
+  if (noop)
+    *p++ = '#';
+  else
+    *p++ = '(';
+  *p = '\0';
+
+  return string;
+}
+
 /* Return the string to output a conditional branch to LABEL, which is
    the operand number of the label.  OP is the conditional expression.
    XEXP (OP, 0) is assumed to be a condition code register (integer or
    floating point) and its mode specifies what kind of comparison we made.
 
+   DEST is the destination insn (i.e. the label), INSN is the source.
+
    REVERSED is nonzero if we should reverse the sense of the comparison.
 
    ANNUL is nonzero if we should generate an annulling branch.
 
-   NOOP is nonzero if we have to follow this branch by a noop.
-
-   INSN, if set, is the insn.  */
+   NOOP is nonzero if we have to follow this branch by a noop.  */
 
 const char *
 output_cbranch (rtx op, rtx dest, int label, int reversed, int annul,
@@ -6556,6 +6615,8 @@ sparc_emit_fixunsdi (rtx *operands, enum machine_mode mode)
    register REG.  LABEL is the operand number of the label; REG is the
    operand number of the reg.  OP is the conditional expression.  The mode
    of REG says what kind of comparison we made.
+
+   DEST is the destination insn (i.e. the label), INSN is the source.
 
    REVERSED is nonzero if we should reverse the sense of the comparison.
 
