@@ -496,14 +496,15 @@ noce_emit_store_flag (if_info, x, reversep, normalize)
   if (cond_complex)
     cond = XEXP (SET_SRC (pc_set (if_info->jump)), 0);
 
+  if (reversep)
+    code = reversed_comparison_code (cond, if_info->jump);
+  else
+    code = GET_CODE (cond);
+
   if ((if_info->cond_earliest == if_info->jump || cond_complex)
       && (normalize == 0 || STORE_FLAG_VALUE == normalize))
     {
       rtx tmp;
-
-      code = GET_CODE (cond);
-      if (reversep)
-	code = reverse_condition (code);
 
       tmp = gen_rtx_fmt_ee (code, GET_MODE (x), XEXP (cond, 0),
 			    XEXP (cond, 1));
@@ -529,10 +530,6 @@ noce_emit_store_flag (if_info, x, reversep, normalize)
   /* Don't even try if the comparison operands are weird.  */
   if (cond_complex)
     return NULL_RTX;
-
-  code = GET_CODE (cond);
-  if (reversep)
-    code = reverse_condition (code);
 
   return emit_store_flag (x, code, XEXP (cond, 0),
 			  XEXP (cond, 1), VOIDmode,
@@ -560,7 +557,8 @@ noce_try_store_flag (if_info)
   else if (if_info->b == const0_rtx
 	   && GET_CODE (if_info->a) == CONST_INT
 	   && INTVAL (if_info->a) == STORE_FLAG_VALUE
-	   && can_reverse_comparison_p (if_info->cond, if_info->jump))
+	   && (reversed_comparison_code (if_info->cond, if_info->jump)
+	       != UNKNOWN))
     reversep = 1;
   else
     return FALSE;
@@ -605,7 +603,8 @@ noce_try_store_flag_constants (if_info)
       itrue = INTVAL (if_info->b);
       diff = itrue - ifalse;
 
-      can_reverse = can_reverse_comparison_p (if_info->cond, if_info->jump);
+      can_reverse = (reversed_comparison_code (if_info->cond, if_info->jump)
+		     != UNKNOWN);
 
       reversep = 0;
       if (diff == STORE_FLAG_VALUE || diff == -STORE_FLAG_VALUE)
@@ -729,7 +728,8 @@ noce_try_store_flag_inc (if_info)
       && (XEXP (if_info->a, 1) == const1_rtx
 	  || XEXP (if_info->a, 1) == constm1_rtx)
       && rtx_equal_p (XEXP (if_info->a, 0), if_info->x)
-      && can_reverse_comparison_p (if_info->cond, if_info->jump))
+      && (reversed_comparison_code (if_info->cond, if_info->jump)
+	  != UNKNOWN))
     {
       if (STORE_FLAG_VALUE == INTVAL (XEXP (if_info->a, 1)))
 	subtract = 0, normalize = 0;
@@ -785,8 +785,9 @@ noce_try_store_flag_mask (if_info)
 	  || STORE_FLAG_VALUE == -1)
       && ((if_info->a == const0_rtx
 	   && rtx_equal_p (if_info->b, if_info->x))
-	  || ((reversep = can_reverse_comparison_p (if_info->cond,
-						    if_info->jump))
+	  || ((reversep = (reversed_comparison_code (if_info->cond,
+						     if_info->jump)
+			   != UNKNOWN))
 	      && if_info->b == const0_rtx
 	      && rtx_equal_p (if_info->a, if_info->x))))
     {
@@ -964,7 +965,7 @@ noce_try_cmove_arith (if_info)
   insn_b = if_info->insn_b;
 
   /* Possibly rearrange operands to make things come out more natural.  */
-  if (can_reverse_comparison_p (if_info->cond, if_info->jump))
+  if (reversed_comparison_code (if_info->cond, if_info->jump) != UNKNOWN)
     {
       int reversep = 0;
       if (rtx_equal_p (b, x))
@@ -974,7 +975,7 @@ noce_try_cmove_arith (if_info)
 
       if (reversep)
 	{
-	  code = reverse_condition (code);
+	  code = reversed_comparison_code (if_info->cond, if_info->jump);
 	  tmp = a, a = b, b = tmp;
 	  tmp = insn_a, insn_a = insn_b, insn_b = tmp;
 	}
