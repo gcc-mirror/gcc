@@ -5011,12 +5011,10 @@ fold_builtin (exp)
 	  if (TREE_CODE (arg) == REAL_CST
 	      && ! TREE_CONSTANT_OVERFLOW (arg))
 	    {
-	      enum machine_mode mode;
 	      REAL_VALUE_TYPE r, x;
 
 	      x = TREE_REAL_CST (arg);
-	      mode = TYPE_MODE (type);
-	      if (real_sqrt (&r, mode, &x)
+	      if (real_sqrt (&r, TYPE_MODE (type), &x)
 		  || (!flag_trapping_math && !flag_errno_math))
 		return build_real (type, r);
 	    }
@@ -5227,6 +5225,28 @@ fold_builtin (exp)
 		    {
 		      tree arglist = build_tree_list (NULL_TREE, arg0);
 		      return build_function_call_expr (sqrtfn, arglist);
+		    }
+		}
+
+	      /* Attempt to evaluate pow at compile-time.  */
+	      if (TREE_CODE (arg0) == REAL_CST
+		  && ! TREE_CONSTANT_OVERFLOW (arg0))
+		{
+		  REAL_VALUE_TYPE cint;
+		  HOST_WIDE_INT n;
+
+		  n = real_to_integer(&c);
+		  real_from_integer (&cint, VOIDmode, n,
+				     n < 0 ? -1 : 0, 0);
+		  if (real_identical (&c, &cint))
+		    {
+		      REAL_VALUE_TYPE x;
+		      bool inexact;
+
+		      x = TREE_REAL_CST (arg0);
+		      inexact = real_powi (&x, TYPE_MODE (type), &x, n);
+		      if (flag_unsafe_math_optimizations || !inexact)
+			return build_real (type, x);
 		    }
 		}
 	    }

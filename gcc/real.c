@@ -4606,7 +4606,7 @@ real_sqrt (r, mode, x)
 
   if (!init)
     {
-      real_arithmetic (&halfthree, PLUS_EXPR, &dconst1, &dconsthalf);
+      do_add (&halfthree, &dconst1, &dconsthalf, 0);
       init = true;
     }
 
@@ -4618,11 +4618,11 @@ real_sqrt (r, mode, x)
   for (iter = 0; iter < 16; iter++)
     {
       /* i(n+1) = i(n) * (1.5 - 0.5*i(n)*i(n)*x).  */
-      real_arithmetic (&t, MULT_EXPR, x, &i);
-      real_arithmetic (&h, MULT_EXPR, &t, &i);
-      real_arithmetic (&t, MULT_EXPR, &h, &dconsthalf);
-      real_arithmetic (&h, MINUS_EXPR, &halfthree, &t);
-      real_arithmetic (&t, MULT_EXPR, &i, &h);
+      do_multiply (&t, x, &i);
+      do_multiply (&h, &t, &i);
+      do_multiply (&t, &h, &dconsthalf);
+      do_add (&h, &halfthree, &t, 1);
+      do_multiply (&t, &i, &h);
 
       /* Check for early convergence.  */
       if (iter >= 6 && real_identical (&i, &t))
@@ -4633,16 +4633,72 @@ real_sqrt (r, mode, x)
     }
 
   /* Final iteration: r = i*x + 0.5*i*x*(1.0 - i*(i*x)).  */
-  real_arithmetic (&t, MULT_EXPR, x, &i);
-  real_arithmetic (&h, MULT_EXPR, &t, &i);
-  real_arithmetic (&i, MINUS_EXPR, &dconst1, &h);
-  real_arithmetic (&h, MULT_EXPR, &t, &i);
-  real_arithmetic (&i, MULT_EXPR, &dconsthalf, &h);
-  real_arithmetic (&h, PLUS_EXPR, &t, &i);
+  do_multiply (&t, x, &i);
+  do_multiply (&h, &t, &i);
+  do_add (&i, &dconst1, &h, 1);
+  do_multiply (&h, &t, &i);
+  do_multiply (&i, &dconsthalf, &h);
+  do_add (&h, &t, &i, 0);
 
   /* ??? We need a Tuckerman test to get the last bit.  */
 
   real_convert (r, mode, &h);
   return true;
+}
+
+/* Calculate X raised to the integer exponent N in mode MODE and store
+   the result in R.  Return true if the result may be inexact due to
+   loss of precision.  The algorithm is the classic "left-to-right binary
+   method" described in section 4.6.3 of Donald Knuth's "Seminumerical
+   Algorithms", "The Art of Computer Programming", Volume 2.  */
+
+bool
+real_powi (r, mode, x, n)
+     REAL_VALUE_TYPE *r;
+     enum machine_mode mode;
+     const REAL_VALUE_TYPE *x;
+     HOST_WIDE_INT n;
+{
+  unsigned HOST_WIDE_INT bit;
+  REAL_VALUE_TYPE t;
+  bool inexact = false;
+  bool init = false;
+  bool neg;
+  int i;
+
+  if (n == 0)
+    {
+      *r = dconst1;
+      return false;
+    }
+  else if (n < 0)
+    {
+      /* Don't worry about overflow, from now on n is unsigned.  */
+      neg = true;
+      n = -n;
+    }
+  else
+    neg = false;
+
+  t = *x;
+  bit = (unsigned HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT - 1);
+  for (i = 0; i < HOST_BITS_PER_WIDE_INT; i++)
+    {
+      if (init)
+	{
+	  inexact |= do_multiply (&t, &t, &t);
+	  if (n & bit)
+	    inexact |= do_multiply (&t, &t, x);
+	}
+      else if (n & bit)
+	init = true;
+      bit >>= 1;
+    }
+
+  if (neg)
+    inexact |= do_divide (&t, &dconst1, &t);
+
+  real_convert (r, mode, &t);
+  return inexact;
 }
 

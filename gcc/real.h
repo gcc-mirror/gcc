@@ -365,4 +365,10 @@ extern bool real_sqrt			PARAMS ((REAL_VALUE_TYPE *,
 						 enum machine_mode,
 						 const REAL_VALUE_TYPE *));
 
+/* Calculate R as X raised to the integer exponent N in mode MODE. */
+extern bool real_powi			PARAMS ((REAL_VALUE_TYPE *,
+						 enum machine_mode,
+						 const REAL_VALUE_TYPE *,
+						 HOST_WIDE_INT));
+
 #endif /* ! GCC_REAL_H */
