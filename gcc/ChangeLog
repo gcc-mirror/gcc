@@ -1,3 +1,7 @@
+2000-09-11  Philip Blundell  <pb@futuretv.com>
+
+	* config/arm/elf.h (SUBTARGET_CPP_SPEC): Don't define `arm_elf'.
+
 Mon Sep 11 10:48:41 2000  Ulrich Drepper <drepper@redhat.com>
 
 	* install.texi (LANGUAGES): Update to include new languages.
