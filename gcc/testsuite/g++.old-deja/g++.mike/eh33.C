@@ -1,6 +1,8 @@
 // Special g++ Options: -fexceptions
 // excess errors test - XFAIL hppa*-*-* a29k-*-* sparc64-*-elf sh-*-* z8k-*-* arm-*-pe**-*
 
+#include <exception>
+
 void my_unexpected() {
   throw 42;
 }
