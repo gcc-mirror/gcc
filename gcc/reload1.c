@@ -6815,13 +6815,16 @@ emit_reload_insns (chain)
 		     See comments in get_secondary_reload in reload.c.  */
 		  /* If it is a pseudo that cannot be replaced with its
 		     equivalent MEM, we must fall back to reload_in, which
-		     will have all the necessary substitutions registered.  */
+		     will have all the necessary substitutions registered.
+		     Likewise for a pseudo that can't be replaced with its
+		     equivalent constant.  */
 				
 		  if (GET_CODE (oldequiv) == REG
 		      && REGNO (oldequiv) >= FIRST_PSEUDO_REGISTER
-		      && reg_equiv_memory_loc[REGNO (oldequiv)] != 0)
+		      && (reg_equiv_memory_loc[REGNO (oldequiv)] != 0
+			  || reg_equiv_constant[REGNO (oldequiv)] != 0))
 		    {
-		      if (reg_equiv_address[REGNO (oldequiv)]
+		      if (! reg_equiv_mem[REGNO (oldequiv)]
 			  || num_not_at_initial_offset)
 			real_oldequiv = reload_in[j];
 		      else
@@ -6830,9 +6833,10 @@ emit_reload_insns (chain)
 
 		  if (GET_CODE (old) == REG
 		      && REGNO (old) >= FIRST_PSEUDO_REGISTER
-		      && reg_equiv_memory_loc[REGNO (old)] != 0)
+		      && (reg_equiv_memory_loc[REGNO (old)] != 0
+			  || reg_equiv_constant[REGNO (old)] != 0))
 		    {
-		      if (reg_equiv_address[REGNO (old)]
+		      if (! reg_equiv_mem[REGNO (old)]
 			  || num_not_at_initial_offset)
 			real_old = reload_in[j];
 		      else
@@ -6938,13 +6942,16 @@ emit_reload_insns (chain)
 
 		  if ((GET_CODE (oldequiv) == REG
 		       && REGNO (oldequiv) >= FIRST_PSEUDO_REGISTER
-		       && reg_equiv_memory_loc[REGNO (oldequiv)] != 0)
+		       && (reg_equiv_memory_loc[REGNO (oldequiv)] != 0
+			   || reg_equiv_constant[REGNO (oldequiv)] != 0))
 		      || (GET_CODE (oldequiv) == SUBREG
 			  && GET_CODE (SUBREG_REG (oldequiv)) == REG
 			  && (REGNO (SUBREG_REG (oldequiv))
 			      >= FIRST_PSEUDO_REGISTER)
-			  && (reg_equiv_memory_loc
-			      [REGNO (SUBREG_REG (oldequiv))] != 0)))
+			  && ((reg_equiv_memory_loc
+			       [REGNO (SUBREG_REG (oldequiv))] != 0)
+			      || (reg_equiv_constant
+				  [REGNO (SUBREG_REG (oldequiv))] != 0))))
 		    real_oldequiv = reload_in[j];
 		  gen_reload (reloadreg, real_oldequiv, reload_opnum[j],
 			      reload_when_needed[j]);
