@@ -1,3 +1,8 @@
+2003-06-22  Zack Weinberg  <zack@codesourcery.com>
+
+	* config/i370/i370.c, config/i370/i370.h: Use HOST_CHARSET_ASCII
+	and HOST_CHARSET_EBCDIC, not HC_ASCII and HC_EBCDIC.
+
 2003-06-22  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* doc/rtl.texi: Fix the @findex for pre_modify.

@@ -1,3 +1,11 @@
+2003-06-22  Zack Weinberg  <zack@codesourcery.com>
+
+	* safe-ctype.c: Use HOST_CHARSET_ASCII and HOST_CHARSET_EBCDIC,
+	not HC_ASCII and HC_EBCDIC.
+	Add documentation in form expected by gather-docs.
+	* hex.c: Use HOST_CHARSET, not hand-coded check of character set.
+	* Makefile.in, functions.texi: Regenerate.
+
 2003-06-21  Zack Weinberg  <zack@codesourcery.com>
 
 	* safe-ctype.c: Separate out EOF==-1 check.  Use HOST_CHARSET

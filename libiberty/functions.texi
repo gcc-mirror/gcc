@@ -3,6 +3,28 @@
 @c Edit the *.c files, configure with --enable-maintainer-mode,
 @c and let gather-docs build you a new copy.
 
+@c safe-ctype.c:24
+@defvr Extension HOST_CHARSET
+This macro indicates the basic character set and encoding used by the
+host: more precisely, the encoding used for character constants in
+preprocessor @samp{#if} statements (the C "execution character set").
+It is defined by @file{safe-ctype.h}, and will be an integer constant
+with one of the following values:
+
+@ftable @code
+@item HOST_CHARSET_UNKNOWN
+The host character set is unknown - that is, not one of the next two
+possibilities.
+
+@item HOST_CHARSET_ASCII
+The host character set is ASCII.
+
+@item HOST_CHARSET_EBCDIC
+The host character set is some variant of EBCDIC.  (Only one of the
+nineteen EBCDIC varying characters is tested; exercise caution.)
+@end ftable
+@end defvr
+
 @c alloca.c:26
 @deftypefn Replacement void* alloca (size_t @var{size})
 
@@ -317,7 +339,7 @@ between calls to @code{getpwd}.
 
 @end deftypefn
 
-@c hex.c:25
+@c hex.c:30
 @deftypefn Extension void hex_init (void)
 
 Initializes the array mapping the current character set to
@@ -327,7 +349,7 @@ default ASCII-based table will normally be used on ASCII systems.
 
 @end deftypefn
 
-@c hex.c:34
+@c hex.c:39
 @deftypefn Extension int hex_p (int @var{c})
 
 Evaluates to non-zero if the given character is a valid hex character,
@@ -336,7 +358,7 @@ or zero if it is not.  Note that the value you pass will be cast to
 
 @end deftypefn
 
-@c hex.c:42
+@c hex.c:47
 @deftypefn Extension unsigned int hex_value (int @var{c})
 
 Returns the numeric equivalent of the given character when interpreted
@@ -381,6 +403,78 @@ struct qelem @{
 @end example
 
 @end deftypefn
+
+@c safe-ctype.c:45
+@deffn  Extension ISALPHA  (@var{c})
+@deffnx Extension ISALNUM  (@var{c})
+@deffnx Extension ISBLANK  (@var{c})
+@deffnx Extension ISCNTRL  (@var{c})
+@deffnx Extension ISDIGIT  (@var{c})
+@deffnx Extension ISGRAPH  (@var{c})
+@deffnx Extension ISLOWER  (@var{c})
+@deffnx Extension ISPRINT  (@var{c})
+@deffnx Extension ISPUNCT  (@var{c})
+@deffnx Extension ISSPACE  (@var{c})
+@deffnx Extension ISUPPER  (@var{c})
+@deffnx Extension ISXDIGIT (@var{c})
+
+These twelve macros are defined by @file{safe-ctype.h}.  Each has the
+same meaning as the corresponding macro (with name in lowercase)
+defined by the standard header @file{ctype.h}.  For example,
+@code{ISALPHA} returns true for alphabetic characters and false for
+others.  However, there are two differences between these macros and
+those provided by @file{ctype.h}:
+
+@itemize @bullet
+@item These macros are guaranteed to have well-defined behavior for all 
+values representable by @code{signed char} and @code{unsigned char}, and
+for @code{EOF}.
+
+@item These macros ignore the current locale; they are true for these
+fixed sets of characters:
+@multitable {@code{XDIGIT}} {yada yada yada yada yada yada yada yada}
+@item @code{ALPHA}  @tab @kbd{A-Za-z}
+@item @code{ALNUM}  @tab @kbd{A-Za-z0-9}
+@item @code{BLANK}  @tab @kbd{space tab}
+@item @code{CNTRL}  @tab @code{!PRINT}
+@item @code{DIGIT}  @tab @kbd{0-9}
+@item @code{GRAPH}  @tab @code{ALNUM || PUNCT}
+@item @code{LOWER}  @tab @kbd{a-z}
+@item @code{PRINT}  @tab @code{GRAPH ||} @kbd{space}
+@item @code{PUNCT}  @tab @kbd{`~!@@#$%^&*()_-=+[@{]@}\|;:'",<.>/?}
+@item @code{SPACE}  @tab @kbd{space tab \n \r \f \v}
+@item @code{UPPER}  @tab @kbd{A-Z}
+@item @code{XDIGIT} @tab @kbd{0-9A-Fa-f}
+@end multitable
+
+Note that, if the host character set is ASCII or a superset thereof,
+all these macros will return false for all values of @code{char} outside
+the range of 7-bit ASCII.  In particular, both ISPRINT and ISCNTRL return
+false for characters with numeric values from 128 to 255.
+@end itemize
+@end deffn
+
+@c safe-ctype.c:94
+@deffn  Extension ISIDNUM         (@var{c})
+@deffnx Extension ISIDST          (@var{c})
+@deffnx Extension IS_VSPACE       (@var{c})
+@deffnx Extension IS_NVSPACE      (@var{c})
+@deffnx Extension IS_SPACE_OR_NUL (@var{c})
+@deffnx Extension IS_ISOBASIC     (@var{c})
+These six macros are defined by @file{safe-ctype.h} and provide
+additional character classes which are useful when doing lexical
+analysis of C or similar languages.  They are true for the following
+sets of characters:
+
+@multitable {@code{SPACE_OR_NUL}} {yada yada yada yada yada yada yada yada}
+@item @code{IDNUM}        @tab @kbd{A-Za-z0-9_}
+@item @code{IDST}         @tab @kbd{A-Za-z_}
+@item @code{VSPACE}       @tab @kbd{\r \n}
+@item @code{NVSPACE}      @tab @kbd{space tab \f \v \0}
+@item @code{SPACE_OR_NUL} @tab @code{VSPACE || NVSPACE}
+@item @code{ISOBASIC}     @tab @code{VSPACE || NVSPACE || PRINT}
+@end multitable
+@end deffn
 
 @c lbasename.c:23
 @deftypefn Replacement {const char*} lbasename (const char *@var{name})

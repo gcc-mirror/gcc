@@ -19,6 +19,11 @@ Boston, MA 02111-1307, USA.  */
 
 #include <stdio.h>  /* for EOF */
 #include "libiberty.h"
+#include "safe-ctype.h" /* for HOST_CHARSET_ASCII */
+
+#if EOF != -1
+ #error "hex.c requires EOF == -1"
+#endif
 
 /*
 
@@ -62,9 +67,7 @@ systems.
 
 
 /* Are we ASCII? */
-#if '\n' == 0x0A && ' ' == 0x20 && '0' == 0x30 \
-  && 'A' == 0x41 && 'a' == 0x61 && '!' == 0x21 \
-  && EOF == -1
+#if HOST_CHARSET == HOST_CHARSET_ASCII
 
 const unsigned char _hex_value[_hex_array_size] =
 {
