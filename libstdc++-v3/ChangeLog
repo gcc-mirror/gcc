@@ -1,6 +1,12 @@
+2001-10-31  Edward E. Meyer  <edward.e.meyer@boeing.com>
+
+	libstdc++/4622
+	* include/bits/std_complex.h (complex::operator/=): Correct sign.
+
 2001-10-30  Paolo Carlini  <pcarlini@unitus.it>
 	    Benjamin Kosnik  <bkoz@redhat.com>
 
+	libstdc++/4354
 	* include/bits/basic_string.h: Tweaks.
 	* include/bits/basic_string.tcc (string::_M_replace(iterator,
 	iterator, _ForwardIter, _ForwardIter, forward_iterator_tag): Fix.

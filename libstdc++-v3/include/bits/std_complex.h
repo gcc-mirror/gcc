@@ -237,7 +237,7 @@ namespace std
     {
       const _Tp __r =  _M_real * __z.real() + _M_imag * __z.imag();
       const _Tp __n = norm(__z);
-      _M_imag = (_M_real * __z.imag() - _M_imag * __z.real()) / __n;
+      _M_imag = (_M_imag * __z.real() - _M_real * __z.imag()) / __n;
       _M_real = __r / __n;
       return *this;
     }
