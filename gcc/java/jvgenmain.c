@@ -33,6 +33,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "java-tree.h"
 
 static char * do_mangle_classname PARAMS ((const char *string));
+void error PARAMS ((const char *, ...)) ATTRIBUTE_PRINTF_1;
 
 struct obstack  name_obstack;
 struct obstack *mangle_obstack = &name_obstack;
@@ -64,6 +65,27 @@ usage (const char *name)
 {
   fprintf (stderr, "Usage: %s [OPTIONS]... CLASSNAME [OUTFILE]\n", name);
   exit (1);
+}
+
+/* This function is defined here to help us link jvgenmain at
+   bootstrap.  */
+
+void
+error VPARAMS ((const char *msgid, ...))
+{
+#ifndef ANSI_PROTOTYPES
+  const char *msgid;
+#endif
+  va_list ap;
+  
+  VA_START (ap, msgid);
+  
+#ifndef ANSI_PROTOTYPES
+  msgid = va_arg (ap, const char *);
+#endif
+  
+  vfprintf (stderr, msgid, ap);
+  va_end (ap);
 }
 
 int
