@@ -6374,6 +6374,7 @@ main (int argc, const char **argv)
       int n;
       const char *thrmod;
 
+      notice ("Target: %s\n", spec_machine);
       notice ("Configured with: %s\n", configuration_arguments);
 
 #ifdef THREAD_MODEL_SPEC
