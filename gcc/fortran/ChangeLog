@@ -1,11 +1,18 @@
-2004-06-25  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
-	Andrew Vaught <andyv@firstinter.net>
+2004-06-26  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+	Andrew Vaught  <andyv@firstinter.net>
+
+	* decl.c (contained_procedure): New function.
+	(match_end): Verify correctness of END STATEMENT in
+	all cases.
+
+2004-06-26  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+	Andrew Vaught  <andyv@firstinter.net>
 
 	PR fortran/15190
 	* decl.c (gfc_match_type_spec), io.c (match_io), parse.c
 	(decode_statement): Enforce required space in free-form.
 
-2004-06-21  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+2004-06-22  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* f95-lang.c (LANG_HOOKS_GIMPLE_BEFORE_INLINING): Deleted.
 	* trans-array.c (gfc_conv_descriptor_data): Add operand
@@ -20,7 +27,7 @@
 	(transfer_expr): Likewise.
 	* trans-decl.c (gfc_trans_auto_character_variable):
 	Set up to get DECL_SIZE and DECL_SIZE_UNIT gimplified.
-	(gfc_simplify_function): New function.
+	(gfc_gimplify_function): New function.
 	(gfc_generate_function-code): Properly handle nested functions.
 	* trans.c (gfc_build_array_ref): Add two new operands for ARRAY_REF.
 
