@@ -1525,7 +1525,7 @@ extern char *output_far_jump();
    text can be read.  CH is the first character after the #pragma.  The
    result of the expression is the terminating character found
    (newline or EOF).  */
-#define HANDLE_PRAGMA(FILE, CH) handle_pragma (FILE, CH)
+#define HANDLE_PRAGMA(FILE, NODE) handle_pragma (FILE, NODE)
 
 /* Set when processing a function with pragma interrupt turned on.  */
 
