@@ -1,5 +1,29 @@
 2002-07-31  Benjamin Kosnik  <bkoz@redhat.com>
 
+	PR libstdc++/7442
+	* libsupc++/cxxabi.h 
+	(__base_class_info): Change to __base_class_type_info. 2.9.5p6c
+	(__base_class_info::__base): Change to __base_type. 2.9.5p6c
+	(__base_class_info::offset_shift): Change to __offset_shift. 2.9.5p6c
+	(__vmi_class_type_info::__base_info): Don't make const, of type
+	__base_class_type_info, as per 2.9.5p6c
+	(__pbase_type_info::__qualifier_flags): Change to __flags, as per
+	2.9.5p7.
+	(__pbase_type_info::__qualifier_masks): Change to __masks, as per
+	2.9.5p7.
+	(__pointer_to_member_type_info::__context_class): Change member to
+	__context, as per 2.9.5p9.
+	* libsupc++/tinfo2.cc (__pointer_catch): Change __context_class to
+	__context.
+	* libsupc++/tinfo2.cc (__do_catch): Change __qualifier_flags to
+	__flags.
+	* libsupc++/tinfo.cc (__do_find_public_src): Change __base to
+	__base_type.
+	* libsupc++/tinfo.cc (__do_dyncast): Same.
+	* libsupc++/tinfo.cc (__do_upcast): Same.
+
+2002-07-31  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* src/fstream.cc: Add _GLIBCPP_USE_WCHAR_T guards.
 
 2002-07-31  Simon Whomsley  <whomsley@avacadcam.com>

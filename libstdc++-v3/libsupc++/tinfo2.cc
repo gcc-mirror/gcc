@@ -1,6 +1,6 @@
 // Methods for type_info for -*- C++ -*- Run Time Type Identification.
 
-// Copyright (C) 1994, 1996, 1997, 1998, 1999, 2000, 2001 
+// Copyright (C) 1994, 1996, 1997, 1998, 1999, 2000, 2001, 2002
 // Free Software Foundation
 //
 // This file is part of GNU CC.
@@ -116,11 +116,11 @@ __do_catch (const type_info *thr_type,
   const __pbase_type_info *thrown_type =
     static_cast <const __pbase_type_info *> (thr_type);
   
-  if (thrown_type->__qualifier_flags & ~__qualifier_flags)
+  if (thrown_type->__flags & ~__flags)
     // We're less qualified.
     return false;
   
-  if (!(__qualifier_flags & __const_mask))
+  if (!(__flags & __const_mask))
     outer &= ~1;
   
   return __pointer_catch (thrown_type, thr_obj, outer);
@@ -158,7 +158,7 @@ __pointer_catch (const __pbase_type_info *thr_type,
   const __pointer_to_member_type_info *thrown_type =
     static_cast <const __pointer_to_member_type_info *> (thr_type);
   
-  if (*__context_class != *thrown_type->__context_class)
+  if (*__context != *thrown_type->__context)
     return false;     // not pointers to member of same class
   
   return __pbase_type_info::__pointer_catch (thrown_type, thr_obj, outer);
