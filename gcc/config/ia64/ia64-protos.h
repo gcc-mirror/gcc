@@ -118,7 +118,7 @@ extern void ia64_encode_section_info PARAMS((tree));
 
 extern int ia64_register_move_cost PARAMS((enum reg_class, enum reg_class));
 extern int ia64_epilogue_uses PARAMS((int));
-extern void ia64_file_start PARAMS((FILE *));
+extern void emit_safe_across_calls PARAMS((FILE *));
 extern void ia64_output_end_prologue PARAMS((FILE *));
 extern void ia64_init_builtins PARAMS((void));
 extern void ia64_override_options PARAMS((void));

@@ -24,6 +24,23 @@
 
 2000-09-01  Jim Wilson  <wilson@cygnus.com>
 
+	* calls.c (emit_call_1): Add REG_NORETURN note to call if ECF_NORETURN.
+	* combine.c (distribute_notes): Handle REG_NORETURN.
+	* rtl.c (reg_note_name): Add REG_NORETURN.
+	* rtl.h (enum reg_note): Likewise.
+
+	* config/ia64/ia64-protos.h (emit_safe_across_calls): Renamed from
+	ia64_file_start.
+	* config/ia64/ia64.c (emit_safe_across_calls): Likewise.
+	(rtx_needs_barrier): Handle unspec_volatile 8 and 9.
+	(emit_predicate_relation_info): Handle conditional calls with
+	REG_NORETURN.
+	* config/ia64/ia64.h (ASM_FILE_START): Call emit_safe_across_calls
+	instead of ia64_file_start.
+	* config/ia64/sysv4.h (ASM_FILE_START): Likewise.
+	* config/ia64/ia64.md (safe_across_calls_all,
+	save_across_calls_normal): New patterns.
+
 	* loop.c (check_final_value): Check for biv use before checking for
 	giv use.  Check for both biv and giv uses.  Always set last_giv_use
 	if there is a giv use.

@@ -543,7 +543,10 @@ enum reg_note
      a value which might not be used later, and if so it's OK to delete
      the insn.  Normally, deleting any insn in the prologue is an error. 
      At present the parameter is unused and set to (const_int 0).  */
-  REG_MAYBE_DEAD
+  REG_MAYBE_DEAD,
+
+  /* Indicates that a call does not return.  */
+  REG_NORETURN
 };
 
 /* The base value for branch probability notes.  */

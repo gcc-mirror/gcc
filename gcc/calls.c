@@ -605,6 +605,10 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
     REG_NOTES (call_insn) = gen_rtx_EXPR_LIST (REG_EH_REGION, const0_rtx,
 					       REG_NOTES (call_insn));
 
+  if (ecf_flags & ECF_NORETURN)
+    REG_NOTES (call_insn) = gen_rtx_EXPR_LIST (REG_NORETURN, const0_rtx,
+					       REG_NOTES (call_insn));
+
   SIBLING_CALL_P (call_insn) = ((ecf_flags & ECF_SIBCALL) != 0);
 
   /* Restore this now, so that we do defer pops for this call's args

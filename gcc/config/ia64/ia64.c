@@ -984,7 +984,7 @@ spill_tfmode_operand (in, force)
 /* Begin the assembly file.  */
 
 void
-ia64_file_start (f)
+emit_safe_across_calls (f)
      FILE *f;
 {
   unsigned int rs, re;
@@ -4003,6 +4003,8 @@ rtx_needs_barrier (x, flags, pred)
           break;
 
 	case 7: /* pred.rel.mutex */
+	case 8: /* safe_across_calls all */
+	case 9: /* safe_across_calls normal */
 	  return 0;
 
 	default:
@@ -4248,6 +4250,35 @@ emit_predicate_relation_info (insns)
 	      bb->end = n;
 	    head = n;
 	  }
+    }
+
+  /* Look for conditional calls that do not return, and protect predicate
+     relations around them.  Otherwise the assembler will assume the call
+     returns, and complain about uses of call-clobbered predicates after
+     the call.  */
+  for (i = n_basic_blocks - 1; i >= 0; --i)
+    {
+      basic_block bb = BASIC_BLOCK (i);
+      rtx insn = bb->head;
+      
+      while (1)
+	{
+	  if (GET_CODE (insn) == CALL_INSN
+	      && GET_CODE (PATTERN (insn)) == COND_EXEC
+	      && find_reg_note (insn, REG_NORETURN, NULL_RTX))
+	    {
+	      rtx b = emit_insn_before (gen_safe_across_calls_all (), insn);
+	      rtx a = emit_insn_after (gen_safe_across_calls_normal (), insn);
+	      if (bb->head == insn)
+		bb->head = b;
+	      if (bb->end == insn)
+		bb->end = a;
+	    }
+	  
+	  if (insn == bb->end)
+	    break;
+	  insn = NEXT_INSN (insn);
+	}
     }
 }
 
