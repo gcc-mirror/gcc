@@ -1,3 +1,7 @@
+2000-09-07  Catherine Moore  <clm@redhat.com>
+
+        * gcc.c-torture/execute/unroll-1.c: New test.
+
 2000-09-06  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* g++.old-deja/g++.benjamin/13478.C: Put meaningful tags on
