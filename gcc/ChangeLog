@@ -1,3 +1,10 @@
+2000-05-12  Alexandre Oliva  <aoliva@cygnus.com>
+
+	* config/mn10300/mn10300.h (PREFERRED_DEBUGGING_TYPE): Redefine as
+	DWARF2_DEBUG.
+	(DWARF2_ASM_LINE_DEBUG_INFO): Define.
+	(ASM_OUTPUT_DWARF2_ADDR_CONST): Define.
+
 2000-05-11  Richard Henderson  <rth@cygnus.com>
 
 	* calls.c: Revert both 05-09 patches.
