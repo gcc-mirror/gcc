@@ -1,3 +1,7 @@
+Fri Apr 24 16:45:03 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* (gen_shl_and, in case 1): Fix comparison with mask.
+
 Fri Apr 24 06:46:40 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/thumb.h (GO_IF_LEGITIMATE_ADDRESS): Disallow frame
