@@ -1,3 +1,12 @@
+Thu Jan  6 00:54:10 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* jcf-write.c (generate_byecode_conditional): Fixed indentation in
+	method invocation and typo in conditional expression.
+        (generate_bytecode_insns): COND_EXPR can be part of a binop. Issue
+ 	the appropriate NOTE_POP.
+	* parse.y (patch_binop): Shift value mask to feature the right
+ 	type.
+
 1999-12-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* class.c (assume_compiled, assume_compiled_node): Add static
@@ -48,12 +57,6 @@
 	patch_throw_statement, check_thrown_exceptions,
 	patch_conditional_expr): Likewise.
 
-1999-12-17  Tom Tromey  <tromey@cygnus.com>
-
-	* gjavah.c (decode_signature_piece): Print "::" in JArray<>.  This
-	fixes PR gcj/119.
-	(process_file): Use `\n\' at end of each line in string.
-
 Fri Dec 24 00:25:29 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* Makefile.in (LIBDEPS): Added gcc's errors.o
@@ -86,6 +89,12 @@ Fri Dec 24 00:25:29 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(do_resolve_class): Use already parsed package names to qualify
  	and lookup class candidate. 
 	(java_pre_expand_clinit): Removed unnecessary local variable.	
+
+1999-12-17  Tom Tromey  <tromey@cygnus.com>
+
+	* gjavah.c (decode_signature_piece): Print "::" in JArray<>.  This
+	fixes PR gcj/119.
+	(process_file): Use `\n\' at end of each line in string.
 
 Thu Dec 16 00:09:45 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 

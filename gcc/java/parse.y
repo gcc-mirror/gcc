@@ -9850,13 +9850,11 @@ patch_binop (node, wfl_op1, wfl_op2)
          type of the left-hand operand */
       prom_type = TREE_TYPE (op1);
 
-      /* Shift int only up to 0x1f and long up to 0x3f */
-      if (prom_type == int_type_node)
-	op2 = fold (build (BIT_AND_EXPR, int_type_node, op2, 
-			   build_int_2 (0x1f, 0)));
-      else
-	op2 = fold (build (BIT_AND_EXPR, int_type_node, op2, 
-			   build_int_2 (0x3f, 0)));
+      /* Shift int only up to 0x1f and long up to 0x3f. The bytecode
+	 generator should take care of removing this operation. FIXME */
+      op2 = fold (build (BIT_AND_EXPR, prom_type, convert (prom_type, op2), 
+			 (prom_type == int_type_node ? build_int_2 (0x1f, 0) :
+			  convert (prom_type, build_int_2 (0x3f, 0)))));
 
       /* The >>> operator is a >> operating on unsigned quantities */
       if (code == URSHIFT_EXPR && ! flag_emit_class_files)
