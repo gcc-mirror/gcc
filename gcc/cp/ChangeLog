@@ -1,3 +1,10 @@
+1999-09-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (layout_var_decl): Change prototype.  Call layout_decl
+	even when the declaration is external.
+	(cp_finish_decl): Adjust call to layout_var_decl.
+	* pt.c (tsubst_expr): Make sure to initialize stmt before using it.
+
 1999-09-18  Martin von Loewis  <loewis@informatik.hu-berlin.de>
 
 	* typeck.c (get_member_function_from_ptrfunc): Always consider

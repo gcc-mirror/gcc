@@ -166,7 +166,7 @@ static tree make_label_decl PROTO((tree, int));
 static void pop_label PROTO((tree));
 static void pop_labels PROTO((tree));
 static void maybe_deduce_size_from_array_init PROTO((tree, tree));
-static tree layout_var_decl PROTO((tree, tree));
+static void layout_var_decl PROTO((tree));
 static void maybe_commonize_var PROTO((tree));
 static tree check_initializer PROTO((tree, tree));
 static void make_rtl_for_nonlocal_decl PROTO((tree, tree, const char *));
@@ -7088,23 +7088,23 @@ maybe_deduce_size_from_array_init (decl, init)
 }
 
 /* Set DECL_SIZE, DECL_ALIGN, etc. for DECL (a VAR_DECL), and issue
-   any appropriate error messages regarding the layout.  INIT is a
-   the initializer for DECL; returns a modified version.  */
+   any appropriate error messages regarding the layout.  */
 
-static tree
-layout_var_decl (decl, init)
+static void
+layout_var_decl (decl)
      tree decl;
-     tree init;
 {
-  tree ttype = target_type (TREE_TYPE (decl));
+  tree type = TREE_TYPE (decl);
+  tree ttype = target_type (type);
 
-  /* If we haven't already layed out this declaration, and we know its
-     type, do so now.  Note that we must not call complete type for an
-     external object because it's type might involve templates that we
-     are not supposed to isntantiate yet.  */
-  if (!DECL_EXTERNAL (decl)  
-      && DECL_SIZE (decl) == NULL_TREE
-      && TYPE_SIZE (complete_type (TREE_TYPE (decl))) != NULL_TREE)
+  /* If we haven't already layed out this declaration, do so now.
+     Note that we must not call complete type for an external object
+     because it's type might involve templates that we are not
+     supposed to isntantiate yet.  (And it's perfectly legal to say 
+     `extern X x' for some incomplete type `X'.)  */
+  if (!DECL_EXTERNAL (decl))
+    complete_type (type);
+  if (!DECL_SIZE (decl)&& TYPE_SIZE (type))
     layout_decl (decl, 0);
 
   if (!DECL_EXTERNAL (decl) && DECL_SIZE (decl) == NULL_TREE)
@@ -7131,8 +7131,6 @@ layout_var_decl (decl, init)
       else
 	cp_error ("storage size of `%D' isn't constant", decl);
     }
-
-  return init;
 }
 
 /* If a local static variable is declared in an inline function, or if
@@ -7746,7 +7744,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
     end_temporary_allocation ();
 
   if (TREE_CODE (decl) == VAR_DECL)
-    init = layout_var_decl (decl, init);
+    layout_var_decl (decl);
 
   /* Output the assembler code and/or RTL code for variables and functions,
      unless the type is an undefined structure or union.

@@ -7446,7 +7446,7 @@ tsubst_expr (t, args, complain, in_decl)
       prep_stmt (t);
       if (CLEANUP_P (t))
 	{
-	  begin_try_block ();
+	  stmt = begin_try_block ();
 	  tsubst_expr (TRY_STMTS (t), args, complain, in_decl);
 	  finish_cleanup_try_block (stmt);
 	  finish_cleanup (tsubst_expr (TRY_HANDLERS (t), args,
