@@ -983,6 +983,10 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
       && ((bitsize >= BITS_PER_WORD && bitsize == GET_MODE_BITSIZE (mode)
 	   && bitpos % BITS_PER_WORD == 0)
 	  || (mode_for_size (bitsize, GET_MODE_CLASS (tmode), 0) != BLKmode
+	      /* ??? The big endian test here is wrong.  This is correct
+		 if the value is in a register, and if mode_for_size is not
+		 the same mode as op0.  This causes us to get unnecessarily
+		 inefficient code from the Thumb port when -mbig-endian.  */
 	      && (BYTES_BIG_ENDIAN
 		  ? bitpos + bitsize == BITS_PER_WORD
 		  : bitpos == 0))))

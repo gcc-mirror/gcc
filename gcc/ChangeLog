@@ -1,3 +1,7 @@
+Wed Sep 23 16:22:01 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* expmed.c (extract_bit_field): Add comment from Jim Wilson. 
+
 Wed Sep 23 13:26:02 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (get_aligned_mem): Revert Sep 20 change.
