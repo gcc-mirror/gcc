@@ -1,3 +1,24 @@
+2004-05-31  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/15742
+	* g++.dg/warn/Wreturn-1.C: New test.
+
+	PR c++/15696
+	* g++.dg/expr/ptrmem5.C: New test.
+
+	PR c++/15625
+	* g++.dg/template/friend27.C: New test.
+
+	PR c++/15629
+	* g++.dg/template/friend28.C: New test.
+	* g++.dg/template/friend.C: Do not depend on <iostream>.  Add
+	error message.
+
+	PR c++/15209
+	* g++.dg/ext/packed3.C: Remove bogus error.
+	* g++.dg/ext/packed4.C: Remove bogus check.
+	* g++.dg/ext/packed6.C: New test.
+
 2004-05-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/15083

@@ -1,9 +1,8 @@
 // Contribued by Gabriel Dos Reis <gdr@codesourcery.com>
 // Origin: iskey@i100.ryd.student.liu.se
-// { dg-do link }
 
-#include <iostream>
-using namespace std;
+class ostream;
+extern ostream& cout;
 
 template <class T> struct s;
 
@@ -26,5 +25,5 @@ struct s {
 int main()
 {
   s<int>::t y;
-  cout << y;
+  cout << y; // { dg-error "" }
 }

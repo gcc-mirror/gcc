@@ -59,10 +59,6 @@ int Foo (Packed &p, int i, int ui)
   
   if ((r = ConstRef (p.i, &p.i, i)))
     return r + 6;
-  if ((r = ConstRef (p.u.i, &p.u.i, ui)))
-    return r + 8;
-  if ((r = ConstRef (p.u, &p.u, ui)))
-    return r + 10;
 
   return 0;
 }

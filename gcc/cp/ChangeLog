@@ -1,3 +1,27 @@
+2004-05-31  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/15742
+	* call.c (build_over_call): Set
+	current_function_returns_abnormally even in template functions.
+
+	PR c++/15696
+	* cp-tree.h (invalid_nonstatic_memfn_p): New function.
+	* cvt.c (convert_to_void): Use it.
+	* typeck.c (invalid_nonstatic_memfn_p): New function.
+	(decay_conversion): Use it.
+
+	PR c++/15625
+	* pt.c (tsubst_decl): Set DECL_FRIEND_CONTEXT for instantiated
+	templates.
+
+	PR c++/15629
+	* name-lookup.c (arg_assoc_class): Do not find template
+	specializations.
+
+	PR c++/15209
+	* tree.c (lvalue_p_1): Only consider the right-hand side of "."
+	expressions when determining whether or not an express is packed.
+
 2004-05-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/15083
