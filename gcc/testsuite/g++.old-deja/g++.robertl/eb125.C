@@ -1,3 +1,6 @@
+// This is a crash test; we don't care how many normal errors we get.
+// excess errors test - XFAIL *-*-*
+
 struct test_box
     {
      void print(void);
@@ -17,5 +20,4 @@ template <class BOX> void test(BOX *the_box)  // ERROR - semicolon missing
     the_box->print();
     };
 
-template void test<> (test_box *);     // gets bogus error - test is declared XFAIL *-*-*
-
+template void test<> (test_box *);
