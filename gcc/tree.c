@@ -2605,6 +2605,13 @@ unsave_expr_1 (expr)
       break;
 
     case TARGET_EXPR:
+      /* Don't mess with a TARGET_EXPR that hasn't been expanded.
+         It's OK for this to happen if it was part of a subtree that
+         isn't immediately expanded, such as operand 2 of another
+         TARGET_EXPR.  */
+      if (TREE_OPERAND (expr, 1))
+	break;
+
       TREE_OPERAND (expr, 1) = TREE_OPERAND (expr, 3);
       TREE_OPERAND (expr, 3) = NULL_TREE;
       break;
