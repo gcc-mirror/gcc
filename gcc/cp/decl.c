@@ -4118,8 +4118,10 @@ pushdecl (x)
 
 	  /* Warn if shadowing an argument at the top level of the body.  */
 	  else if (oldlocal != NULL_TREE && !DECL_EXTERNAL (x)
-	      && TREE_CODE (oldlocal) == PARM_DECL
-	      && TREE_CODE (x) != PARM_DECL)
+		   && TREE_CODE (oldlocal) == PARM_DECL
+		   /* Don't complain if it's from an enclosing function.  */
+		   && DECL_CONTEXT (oldlocal) == current_function_decl
+		   && TREE_CODE (x) != PARM_DECL)
 	    {
 	      /* Go to where the parms should be and see if we
 		 find them there.  */

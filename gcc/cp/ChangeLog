@@ -1,3 +1,8 @@
+1999-08-05  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (pushdecl): Only give an error for shadowing a parm 
+	from *this* function.
+
 Thu Aug  5 02:40:42 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* typeck2.c: Update URLs and mail addresses.
