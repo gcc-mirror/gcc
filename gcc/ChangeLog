@@ -1,6 +1,6 @@
 Thu Aug 26 13:12:29 1999  Jeffrey A Law  (law@cygnus.com)
 
-	* pa.md (cint_ok_for_move): Use CONST_INT_OK_FOR_LETTER_P macros
+	* pa.c (cint_ok_for_move): Use CONST_INT_OK_FOR_LETTER_P macros
 	instead of duplicating code.
 
 Thu Aug 26 18:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
