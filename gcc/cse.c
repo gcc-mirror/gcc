@@ -453,7 +453,7 @@ struct table_elt
       : (FIXED_REGNO_P (REGNO (X))			\
 	 && REGNO_REG_CLASS (REGNO (X)) != NO_REGS) ? 0	\
       : 2)						\
-   : rtx_cost (X) * 2)					\
+   : rtx_cost (X, SET) * 2)
 
 /* Determine if the quantity number for register X represents a valid index
    into the `qty_...' variables.  */
@@ -569,8 +569,9 @@ static void cse_set_around_loop ();
 #define COSTS_N_INSNS(N) ((N) * 4 - 2)
 
 int
-rtx_cost (x)
+rtx_cost (x, outer_code)
      rtx x;
+     enum rtx_code outer_code;
 {
   register int i, j;
   register enum rtx_code code;
@@ -627,9 +628,9 @@ rtx_cost (x)
 			      + GET_MODE_SIZE (GET_MODE (x)) / UNITS_PER_WORD);
       return 2;
 #ifdef RTX_COSTS
-      RTX_COSTS (x, code);
+      RTX_COSTS (x, code, outer_code);
 #endif 
-      CONST_COSTS (x, code);
+      CONST_COSTS (x, code, outer_code);
     }
 
   /* Sum the costs of the sub-rtx's, plus cost of this operation,
@@ -638,10 +639,10 @@ rtx_cost (x)
   fmt = GET_RTX_FORMAT (code);
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     if (fmt[i] == 'e')
-      total += rtx_cost (XEXP (x, i));
+      total += rtx_cost (XEXP (x, i), code);
     else if (fmt[i] == 'E')
       for (j = 0; j < XVECLEN (x, i); j++)
-	total += rtx_cost (XVECEXP (x, i, j));
+	total += rtx_cost (XVECEXP (x, i, j), code);
 
   return total;
 }
@@ -815,7 +816,7 @@ mention_regs (x)
   register int changed = 0;
 
   if (x == 0)
-    return;
+    return 0;
 
   code = GET_CODE (x);
   if (code == REG)
@@ -4157,6 +4158,11 @@ fold_rtx (x, insn)
 	  && (new = lookup_as_function (x, CONST_INT)) != 0)
 	return new;
 
+      /* If this is a paradoxical SUBREG, we can't do anything with
+	 it because we have no idea what value the extra bits would have.  */
+      if (GET_MODE_SIZE (mode) > GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
+	return x;
+
       /* Fold SUBREG_REG.  If it changed, see if we can simplify the SUBREG.
 	 We might be able to if the SUBREG is extracting a single word in an
 	 integral mode or extracting the low part.  */
@@ -4180,6 +4186,86 @@ fold_rtx (x, insn)
 	  if (new)
 	    return new;
 	}
+
+      /* If this is a narrowing SUBREG and our operand is a REG, see if
+	 we can find an equivalence for REG that is a arithmetic operation
+	 in a wider mode where both operands are paradoxical SUBREGs
+	 from objects of our result mode.  In that case, we couldn't report
+	 an equivalent value for that operation, since we don't know what the
+	 extra bits will be.  But we can find an equivalence for this SUBREG
+	 by folding that operation is the narrow mode.  This allows us to
+	 fold arithmetic in narrow modes when the machine only supports
+	 word-sized arithmetic.  */
+
+      if (GET_CODE (folded_arg0) == REG
+	  && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (folded_arg0)))
+	{
+	  struct table_elt *elt;
+
+	  /* We can use HASH here since we know that canon_hash won't be
+	     called.  */
+	  elt = lookup (folded_arg0,
+			HASH (folded_arg0, GET_MODE (folded_arg0)),
+			GET_MODE (folded_arg0));
+
+	  if (elt)
+	    elt = elt->first_same_value;
+
+	  for (; elt; elt = elt->next_same_value)
+	    {
+	      /* Just check for unary and binary operations.  */
+	      if (GET_RTX_CLASS (GET_CODE (elt->exp)) == '1'
+		  && GET_CODE (elt->exp) != SIGN_EXTEND
+		  && GET_CODE (elt->exp) != ZERO_EXTEND
+		  && GET_CODE (XEXP (elt->exp, 0)) == SUBREG
+		  && GET_MODE (SUBREG_REG (XEXP (elt->exp, 0))) == mode)
+		{
+		  rtx op0 = SUBREG_REG (XEXP (elt->exp, 0));
+
+		  if (GET_CODE (op0) != REG && ! CONSTANT_P (op0))
+		    op0 = fold_rtx (op0, 0);
+
+		  op0 = equiv_constant (op0);
+		  if (op0)
+		    new = simplify_unary_operation (GET_CODE (elt->exp), mode,
+						    op0, mode);
+		}
+	      else if ((GET_RTX_CLASS (GET_CODE (elt->exp)) == '2'
+			|| GET_RTX_CLASS (GET_CODE (elt->exp)) == 'c')
+		       && ((GET_CODE (XEXP (elt->exp, 0)) == SUBREG
+			    && (GET_MODE (SUBREG_REG (XEXP (elt->exp, 0)))
+				== mode))
+			   || CONSTANT_P (XEXP (elt->exp, 0)))
+		       && ((GET_CODE (XEXP (elt->exp, 1)) == SUBREG
+			    && (GET_MODE (SUBREG_REG (XEXP (elt->exp, 1)))
+				== mode))
+			   || CONSTANT_P (XEXP (elt->exp, 1))))
+		{
+		  rtx op0 = gen_lowpart_common (mode, XEXP (elt->exp, 0));
+		  rtx op1 = gen_lowpart_common (mode, XEXP (elt->exp, 1));
+
+		  if (op0 && GET_CODE (op0) != REG && ! CONSTANT_P (op0))
+		    op0 = fold_rtx (op0, 0);
+
+		  if (op0)
+		    op0 = equiv_constant (op0);
+
+		  if (op1 && GET_CODE (op1) != REG && ! CONSTANT_P (op1))
+		    op1 = fold_rtx (op1, 0);
+
+		  if (op1)
+		    op1 = equiv_constant (op1);
+
+		  if (op0 && op1)
+		    new = simplify_binary_operation (GET_CODE (elt->exp), mode,
+						     op0, op1);
+		}
+
+	      if (new)
+		return new;
+	    }
+	}
+
       return x;
 
     case NOT:
