@@ -119,6 +119,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #endif /* Not HPUX_ASM */
 
+/* Translate -static for HPUX linker.  */
+#define LINK_SPEC "%{static:-a archive}"
+
 /* Names to predefine in the preprocessor for this target machine
    (for non-strict-ANSI programs only).  */
 /* These are the ones defined by HPUX cc, plus mc68000 for uniformity with
