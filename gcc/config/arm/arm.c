@@ -9314,10 +9314,9 @@ arm_init_builtins ()
 
   tree int_ftype_int, void_ftype_pchar;
 
-  /* void func (void *) */
+  /* void func (char *) */
   void_ftype_pchar
-    = build_function_type (void_type_node,
-			   tree_cons (NULL_TREE, pchar_type_node, endlink));
+    = build_function_type_list (void_type_node, pchar_type_node, NULL_TREE);
 
   /* int func (int) */
   int_ftype_int
