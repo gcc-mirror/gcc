@@ -1943,6 +1943,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 do {									 \
      char *name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);			 \
      if (!flag_inhibit_size_directive && DECL_SIZE (DECL)		 \
+	 && DECLARE_ASM_NAME						 \
          && ! AT_END && TOP_LEVEL					 \
 	 && DECL_INITIAL (DECL) == error_mark_node			 \
 	 && !size_directive_output)					 \
