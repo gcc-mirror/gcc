@@ -1,5 +1,15 @@
 2003-06-01  Andreas Jaeger  <aj@suse.de>
 
+	* doc/tm.texi (Storage Layout): Remove ROUND_TYPE_SIZE and
+	ROUND_TYPE_SIZE_UNIT.
+
+	* stor-layout.c (finalize_record_size): Remove usages of
+	ROUND_TYPE_SIZE and ROUND_TYPE_SIZE_UNIT.
+	(finalize_type_size): Likewise.
+	(layout_type): Likewise.
+
+	* system.h: Poison ROUND_TYPE_SIZE and ROUND_TYPE_SIZE_UNIT.
+
 	* loop.c (check_insn_for_givs): Remove DONT_REDUCE_ADDR macro.
 
 	* config/d30v/d30v.h: Remove text copied from the manual.
