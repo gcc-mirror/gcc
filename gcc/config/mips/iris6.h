@@ -40,6 +40,13 @@ Boston, MA 02111-1307, USA.  */
   -D_SVR4_SOURCE -D_MODERN_C -D__DSO__ \
   -Asystem(unix) -Asystem(svr4) -Acpu(mips) -Amachine(sgi)"
 
+#undef SUBTARGET_CPP_SIZE_SPEC
+#define SUBTARGET_CPP_SIZE_SPEC "\
+%{mabi=32: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
+%{mabi=n32: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
+%{mabi=64: -D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
+%{!mabi=32:%{!mabi=n32: %{!mabi=64: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}}}"
+
 /* We must make -mips3 do what -mlong64 used to do.  */
 /* ??? If no mipsX option given, but a mabi=X option is, then should set
    _MIPS_ISA based on the mabi=X option.  */
@@ -71,10 +78,6 @@ Boston, MA 02111-1307, USA.  */
 %{mabi=64: -D_MIPS_SZPTR=64} \
 %{!mabi=32: %{!mabi=n32: %{!mabi=64: -D_MIPS_SZPTR=32}}} \
 %{!mips1:%{!mips2: -D_COMPILER_VERSION=601}}		\
-%{mabi=32: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
-%{mabi=n32: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
-%{mabi=64: -D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
-%{!mabi=32:%{!mabi=n32: %{!mabi=64: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}}} \
 %{!mips1:%{!mips2:%{!mips3:%{!mips4: -U__mips -D__mips=3}}}} \
 %{mabi=32: -U__mips64} \
 %{mabi=n32: -D__mips64} \
