@@ -1,3 +1,9 @@
+Wed May 12 07:30:31 1999  Bruce Korb <ddsinc09@ix.netcom.com>
+
+	* fixinc/fixincl.c(quoted_file_exists): new procedure to ensure that
+	a file exists before trying to copy it into the destination
+	(extract_quoted_files): use that routine.
+
 Wed May 12 07:27:31 1999  Craig Burley  <craig@jcb-sc.com>
 
 	Allow front end (like g77's) to override maintenance of errno:
