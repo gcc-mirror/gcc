@@ -1,3 +1,7 @@
+2002-04-13  David S. Miller  <davem@redhat.com>
+
+	* gcc.c-torture/execute/20020413-1.c: New test.
+
 2002-04-13  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.dg/asm-6.c,
