@@ -1,5 +1,8 @@
 #! /bin/sh
 
+SHELL=/bin/sh
+export SHELL
+
 echo AutoGen-ing inclhack.sh
 autogen inclhack.def
 
