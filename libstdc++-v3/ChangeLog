@@ -1,9 +1,22 @@
 2000-08-30  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* testsuite/22_locale/ctype_wchar_t_members.cc (test01): New file.
+
+	* docs/22_locale/codecvt.html: Re-number.
+	* docs/22_locale/howto.html: Add entry for ctype
+	documentation. Add entry for Nathan's introduction to locales
+	paper.
+	* docs/22_locale/ctype.html: New file. In progress...
+
 	* docs/22_locale/codecvt.html: Formatting cleanups.
 	* src/locale.cc (ctype<wchar_t>::do_is): Fix thinko.
 
-2000-08-30  Benjamin Kosnik  <bkoz@redhat.com>
+2000-08-30  Phil Edwards  <pme@sources.redhat.com>
+
+	* docs/22_locale/codecvt.html:  Behind-the-scenes ASCII->HTML
+	  tweaks for certain browsers.
+
+2000-08-29  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* bits/locale_facets.h (ctype<char>): Remove __table_type.
 	Add include for bits/std_cwctype.h, for wctype_t.
@@ -14,13 +27,8 @@
 	* config/gnu-linux/ctype.cc: Tweak.	
 	* testsuite/22_locale/ctype.cc: Tweak.
 	
-	* bits/codecvt.h (__enc_traits): Mangle names.
+	* bits/codecvt.h (__enc_traits): Uglify names.
 	
-2000-08-30  Phil Edwards  <pme@sources.redhat.com>
-
-	* docs/22_locale/codecvt.html:  Behind-the-scenes ASCII->HTML
-	  tweaks for certain browsers.
-
 2000-08-28  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* docs/22_locale/codecvt.html: Add more bits, format. 
