@@ -1,3 +1,8 @@
+2004-08-03  Paul Brook  <paul@codesourcery.com>
+
+	* configure.in: Check for MPFR as well as GMP.
+	* configure: Regenerate.
+
 2004-08-01  Robert Millan  <robertmh@gnu.org>
 
 	* configure.in: Turn mt-linux into mt-gnu. Use mt-gnu and enable
