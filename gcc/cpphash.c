@@ -44,8 +44,12 @@ struct hashdummy
 /* Stores basic information about a macro, before it is allocated.  */
 struct macro_info
 {
-  unsigned int paramlen;
-  short paramc;
+  const cpp_token *first_param;	/* First parameter token.  */
+  const cpp_token *first;	/* First expansion token.  */
+  unsigned int paramlen;	/* Length of parameter names. */
+  unsigned int len;		/* Length of token strings.  */
+  unsigned int ntokens;		/* Number of tokens in expansion.  */
+  short paramc;			/* Number of parameters.  */
   unsigned char flags;
 };
 
@@ -55,26 +59,18 @@ struct macro_info
 static unsigned int hash_HASHNODE PARAMS ((const void *));
 static int eq_HASHNODE		  PARAMS ((const void *, const void *));
 static int dump_hash_helper	  PARAMS ((void **, void *));
-
 static void dump_funlike_macro	PARAMS ((cpp_reader *, cpp_hashnode *));
-
-static const cpp_token *count_params PARAMS ((cpp_reader *,
-					      const cpp_token *,
-					      struct macro_info *));
+static void count_params PARAMS ((cpp_reader *, struct macro_info *));
 static int is__va_args__ PARAMS ((cpp_reader *, const cpp_token *));
-static const cpp_toklist * parse_define PARAMS((cpp_reader *));
+
+static int parse_define PARAMS((cpp_reader *, struct macro_info *));
 static int check_macro_redefinition PARAMS((cpp_reader *, cpp_hashnode *hp,
-					     const cpp_toklist *));
+					    const cpp_toklist *));
 static const cpp_toklist * save_expansion PARAMS((cpp_reader *,
-						  const cpp_token *,
-						  const cpp_token *,
-						  struct macro_info *));
+ 						  struct macro_info *));
 static unsigned int find_param PARAMS ((const cpp_token *,
-					const cpp_token *));
-static cpp_toklist * alloc_macro PARAMS ((cpp_reader *,
-					  struct macro_info *,
-					  unsigned int, unsigned int));
-static void free_macro PARAMS((const cpp_toklist *));
+ 					const cpp_token *));
+static cpp_toklist * alloc_macro PARAMS ((cpp_reader *, struct macro_info *));
 
 /* Calculate hash of a string of length LEN.  */
 unsigned int
@@ -186,7 +182,7 @@ _cpp_free_definition (h)
      cpp_hashnode *h;
 {
   if (h->type == T_MACRO)
-    free_macro (h->value.expansion);
+    free ((PTR) h->value.expansion);
   h->value.expansion = NULL;
 }
 
@@ -231,29 +227,38 @@ is__va_args__ (pfile, token)
 /* Counts the parameters to a function-like macro, the length of their
    null-terminated names, and whether the macro is a variable-argument
    one.  FIRST is the token immediately after the open parenthesis,
-   INFO stores the data, and should have paramlen and flags zero.
+   INFO stores the data.
 
-   Returns the token that we stopped scanning at; if it's type isn't
-   CPP_CLOSE_PAREN there was an error, which has been reported.  */
-static const cpp_token *
-count_params (pfile, first, info)
+   On success, info->first is updated to the token after the closing
+   parenthesis, i.e. the first token of the expansion.  Otherwise
+   there was an error, which has been reported.  */
+static void
+count_params (pfile, info)
      cpp_reader *pfile;
-     const cpp_token *first;
      struct macro_info *info;
 {
   unsigned int prev_ident = 0;
   const cpp_token *token;
 
   info->paramc = 0;
-  for (token = first;; token++)
+  info->paramlen = 0;
+  info->flags = 0;
+  info->first = info->first_param; /* Not a ')' indicating success.  */
+
+  for (token = info->first_param;; token++)
     {
       switch (token->type)
 	{
+	default:
+	  cpp_error_with_line (pfile, token->line, token->col,
+			       "illegal token in macro parameter list");
+	  return;
+
 	case CPP_EOF:
 	missing_paren:
 	  cpp_error_with_line (pfile, token->line, token->col,
 			       "missing ')' in macro parameter list");
-	  goto out;
+	  return;
 
 	case CPP_COMMENT:
 	  continue;		/* Ignore -C comments.  */
@@ -263,36 +268,30 @@ count_params (pfile, first, info)
 	    {
 	      cpp_error_with_line (pfile, token->line, token->col,
 			   "macro parameters must be comma-separated");
-	      goto out;
+	      return;
 	    }
 
 	  /* Constraint 6.10.3.5  */
 	  if (is__va_args__ (pfile, token))
-	    goto out;
+	    return;
 
 	  /* Constraint 6.10.3.6 - duplicate parameter names.  */
-	  if (find_param (first, token))
+	  if (find_param (info->first, token))
 	    {
 	      cpp_error_with_line (pfile, token->line, token->col,
 				   "duplicate macro parameter \"%s\"",
 				   token->val.node->name);
-	      goto out;
+	      return;
 	    }
 
 	  prev_ident = 1;
 	  info->paramc++;
-	  if (pfile->save_parameter_spellings)
-	    info->paramlen += token->val.node->length + 1;
-	  break;
-
-	default:
-	  cpp_error_with_line (pfile, token->line, token->col,
-			       "illegal token in macro parameter list");
-	  goto out;
+	  info->paramlen += token->val.node->length + 1;
+	  continue;
 
 	case CPP_CLOSE_PAREN:
 	  if (prev_ident || info->paramc == 0)
-	    goto out;
+	    break;
 
 	  /* Fall through to pick up the error.  */
 	case CPP_COMMA:
@@ -300,12 +299,10 @@ count_params (pfile, first, info)
 	    {
 	      cpp_error_with_line (pfile, token->line, token->col,
 				   "parameter name expected");
-	      if (token->type == CPP_CLOSE_PAREN)
-		token--;		/* Return the ',' not ')'.  */
-	      goto out;
+	      return;
 	    }
 	  prev_ident = 0;
-	  break;
+	  continue;
 
 	case CPP_ELLIPSIS:
 	  /* Convert ISO-style var_args to named varargs by changing
@@ -319,8 +316,7 @@ count_params (pfile, first, info)
 	      tok->val.node = pfile->spec_nodes->n__VA_ARGS__;
 
 	      info->paramc++;
-	      if (pfile->save_parameter_spellings)
-		info->paramlen += tok->val.node->length + 1;
+	      info->paramlen += tok->val.node->length + 1;
 
 	      if (CPP_PEDANTIC (pfile) && ! CPP_OPTION (pfile, c99))
 		cpp_pedwarn (pfile,
@@ -337,22 +333,26 @@ count_params (pfile, first, info)
 	  info->flags |= VAR_ARGS;
 	  token++;
 	  if (token->type == CPP_CLOSE_PAREN)
-	    goto out;
+	    break;
 	  goto missing_paren;
 	}
-    }
 
- out:
-  return token;
+      /* Success.  */
+      info->first = token + 1;
+      if (!pfile->save_parameter_spellings)
+	info->paramlen = 0;
+      return;
+    }
 }
 
-/* Parses a #define directive.  Returns null pointer on error.  */
-static const cpp_toklist *
-parse_define (pfile)
+/* Parses a #define directive.  On success, returns zero, and INFO is
+   filled in appropriately.  */
+static int
+parse_define (pfile, info)
      cpp_reader *pfile;
+     struct macro_info *info;
 {
-  const cpp_token *token, *first_param;
-  struct macro_info info;
+  const cpp_token *token;
   int prev_white = 0;
 
   /* The first token after the macro's name.  */
@@ -360,34 +360,85 @@ parse_define (pfile)
 
   /* Constraint 6.10.3.5  */
   if (is__va_args__ (pfile, token - 1))
-    return 0;
+    return 1;
 
   while (token->type == CPP_COMMENT)
     token++, prev_white = 1;
-  first_param = token + 1;
+  prev_white |= token->flags & PREV_WHITE;
 
-  /* Assume object-like macro.  */
-  info.paramc = -1;
-  info.paramlen = 0;
-  info.flags = 0;
-
-  if (!prev_white && !(token->flags & PREV_WHITE))
+  if (token->type == CPP_OPEN_PAREN && !prev_white)
     {
-      if (token->type == CPP_OPEN_PAREN)
-	{
-	  token = count_params (pfile, first_param, &info);
-	  if (token->type != CPP_CLOSE_PAREN)
-	    return 0;
-	  token++;
-	}
-      else if (token->type != CPP_EOF)
-	cpp_pedwarn (pfile,
-		     "ISO C requires whitespace after the macro name");
+      /* A function-like macro.  */
+      info->first_param = token + 1;
+      count_params (pfile, info);
+      if (info->first[-1].type != CPP_CLOSE_PAREN)
+	return 1;
+    }
+  else
+    {
+      /* An object-like macro.  */
+      info->paramc = -1;
+      info->paramlen = 0;
+      info->flags = 0;
+      info->first = token;
+      if (!prev_white && token->type != CPP_EOF)
+	cpp_pedwarn (pfile, "ISO C requires whitespace after the macro name");
     }
 
-  return save_expansion (pfile, token, first_param, &info);
+  /* Count tokens in expansion.  We drop paste tokens, and stringize
+     tokens, so don't count them.  */
+  info->ntokens = info->len = 0;
+  for (token = info->first; token->type != CPP_EOF; token++)
+    {
+      if (token->type == CPP_PASTE)
+	{
+	  /* Token-paste ##, can appear in both object-like and
+	     function-like macros, but not at the ends.  Constraint
+	     6.10.3.3.1 */
+	  if (token == info->first || token[1].type == CPP_EOF)
+	    {
+	      cpp_error_with_line (pfile, token->line, token->col,
+		"'##' cannot appear at either end of a macro expansion");
+	      return 1;
+	    }
+	  continue;
+	}
+      else if (token->type == CPP_HASH)
+	{
+	  /* Stringifying #, but a normal character in object-like
+             macros.  Must come before a parameter name.  Constraint
+             6.10.3.2.1.  */
+	  if (info->paramc >= 0)
+	    {
+	      if (token[1].type == CPP_NAME
+		  && find_param (info->first_param, token + 1))
+		continue;
+	      if (! CPP_OPTION (pfile, lang_asm))
+		{
+		  cpp_error_with_line (pfile, token->line, token->col,
+			       "'#' is not followed by a macro parameter");
+		  return 1;
+		}
+	    }
+	}
+      else if (token->type == CPP_NAME)
+	{
+	  /* Constraint 6.10.3.5  */
+	  if (!(info->flags & VAR_ARGS) && is__va_args__ (pfile, token))
+	    return 1;
+	  /* It might be worth doing a check here that we aren't a
+	     macro argument, since we don't store the text of macro
+	     arguments.  This would reduce "len" and save space.  */
+	}
+      info->ntokens++;
+      if (TOKEN_SPELL (token) == SPELL_STRING)
+	info->len += token->val.str.len;
+    }
+  
+  return 0;
 }
 
+/* Returns non-zero if a macro redefinition is trivial.  */
 static int
 check_macro_redefinition (pfile, hp, list2)
      cpp_reader *pfile;
@@ -434,28 +485,31 @@ struct toklist_dummy
    reasons.  Therefore, this token list cannot be expanded like a
    normal token list.  Try to do so, and you lose.  */
 static cpp_toklist *
-alloc_macro (pfile, info, ntokens, len)
+alloc_macro (pfile, info)
      cpp_reader *pfile;
      struct macro_info *info;
-     unsigned int ntokens, len;
 {
   unsigned int size;
   struct toklist_dummy *dummy;
   cpp_toklist *list;
 
+  /* Empty macros become a single placemarker token.  */
+  if (info->ntokens == 0)
+    info->ntokens = 1;
+
   size = sizeof (struct toklist_dummy);
-  size += (ntokens - 1) * sizeof(cpp_token);
-  size += len + info->paramlen;
+  size += (info->ntokens - 1) * sizeof(cpp_token);
+  size += info->len + info->paramlen;
 
   dummy = (struct toklist_dummy *) xmalloc (size);
   list = (cpp_toklist *) dummy;
   
   /* Initialize the monster.  */
   list->tokens = &dummy->first_token;
-  list->tokens_used = list->tokens_cap = ntokens;
+  list->tokens_used = list->tokens_cap = info->ntokens;
 
-  list->namebuf = (unsigned char *) &list->tokens[ntokens];
-  list->name_used = list->name_cap = len + info->paramlen;
+  list->namebuf = (unsigned char *) &list->tokens[info->ntokens];
+  list->name_used = list->name_cap = info->len + info->paramlen;
 
   list->directive = 0;
   list->line = pfile->token_list.line;
@@ -467,96 +521,32 @@ alloc_macro (pfile, info, ntokens, len)
   return list;
 }
 
-/* Free a macro allocated by allocate_macro.  */
-static void
-free_macro (list)
-     const cpp_toklist *list;
-{
-  free ((PTR) list);
-}
-
-/* Copy the tokens of the expansion, beginning with FIRST until
-   CPP_EOF.  For a function-like macro, FIRST_PARAM points to the
-   first parameter.  INFO contains information about the macro.
+/* Copy the tokens of the expansion, beginning with info->first until
+   CPP_EOF.  INFO contains information about the macro.
 
    Change the type of macro arguments in the expansion from CPP_NAME
    to CPP_MACRO_ARG.  Remove #'s that represent stringification,
    flagging the CPP_MACRO_ARG it operates on STRINGIFY.  Remove ##'s,
    flagging the token on its immediate left PASTE_LEFT.  Returns the
-   token list for the macro expansion, or 0 on error.  */
+   token list for the macro expansion.  */
 static const cpp_toklist *
-save_expansion (pfile, first, first_param, info)
+save_expansion (pfile, info)
      cpp_reader *pfile;
-     const cpp_token *first;
-     const cpp_token *first_param;
      struct macro_info *info;
 {
   const cpp_token *token;
   cpp_toklist *list;
   cpp_token *dest;
-  unsigned int len, ntokens;
   unsigned char *buf;
       
-  /* Count tokens in expansion.  We drop paste tokens, and stringize
-     tokens, so don't count them.  */
-  ntokens = len = 0;
-  for (token = first; token->type != CPP_EOF; token++)
-    {
-      if (token->type == CPP_PASTE)
-	{
-	  /* Token-paste ##, can appear in both object-like and
-	     function-like macros, but not at the ends.  Constraint
-	     6.10.3.3.1 */
-	  if (token == first || token[1].type == CPP_EOF)
-	    {
-	      cpp_error_with_line (pfile, token->line, token->col,
-		"'##' cannot appear at either end of a macro expansion");
-	      return 0;
-	    }
-	  continue;
-	}
-      else if (token->type == CPP_HASH)
-	{
-	  /* Stringifying #, but a normal character in object-like
-             macros.  Must come before a parameter name.  Constraint
-             6.10.3.2.1.  */
-	  if (info->paramc >= 0)
-	    {
-	      if (token[1].type == CPP_NAME
-		  && find_param (first_param, token + 1))
-		continue;
-	      if (! CPP_OPTION (pfile, lang_asm))
-		{
-		  cpp_error_with_line (pfile, token->line, token->col,
-			       "'#' is not followed by a macro parameter");
-		  return 0;
-		}
-	    }
-	}
-      else if (token->type == CPP_NAME)
-	{
-	  /* Constraint 6.10.3.5  */
-	  if (!(info->flags & VAR_ARGS) && is__va_args__ (pfile, token))
-	    return 0;
-	  /* It might be worth doing a check here that we aren't a
-	     macro argument, since we don't store the text of macro
-	     arguments.  This would reduce "len" and save space.  */
-	}
-      ntokens++;
-      if (TOKEN_SPELL (token) == SPELL_STRING)
-	len += token->val.str.len;
-    }
-
-  if (ntokens == 0)
-    ntokens++;
-  list = alloc_macro (pfile, info, ntokens, len);
+  list = alloc_macro (pfile, info);
   buf = list->namebuf;
 
   /* Store the null-terminated parameter spellings of a macro, to
      provide pedantic warnings to satisfy 6.10.3.2, or for use when
      dumping macro definitions.  They must go first.  */
   if (list->params_len)
-    for (token = first_param; token < first; token++)
+    for (token = info->first_param; token < info->first; token++)
       if (token->type == CPP_NAME)
 	{
 	  /* Copy null too.  */
@@ -565,7 +555,7 @@ save_expansion (pfile, first, first_param, info)
 	}
 
   dest = list->tokens;
-  for (token = first; token->type != CPP_EOF; token++)
+  for (token = info->first; token->type != CPP_EOF; token++)
     {
       unsigned int param_no;
 
@@ -576,7 +566,7 @@ save_expansion (pfile, first, first_param, info)
 	    break;
 
 	  /* Check if the name is a macro parameter.  */
-	  param_no = find_param (first_param, token);
+	  param_no = find_param (info->first_param, token);
 	  if (param_no == 0)
 	    break;
 	  dest->val.aux = param_no - 1;
@@ -596,7 +586,7 @@ save_expansion (pfile, first, first_param, info)
 	case CPP_HASH:
 	  /* Stringifying #.  Constraint 6.10.3.2.1  */
 	  if (list->paramc >= 0 && token[1].type == CPP_NAME
-	      && find_param (first_param, token + 1))
+	      && find_param (info->first_param, token + 1))
 	    continue;
 	  break;
 
@@ -615,6 +605,7 @@ save_expansion (pfile, first, first_param, info)
       dest++;
     }
 
+  /* Empty macros become a single placemarker token.  */
   if (dest == list->tokens)
     {
       dest->type = CPP_PLACEMARKER;
@@ -624,16 +615,18 @@ save_expansion (pfile, first, first_param, info)
   return list;
 }
 
+/* Parse a macro and save its expansion.  Returns non-zero on success.  */
 int
 _cpp_create_definition (pfile, hp)
      cpp_reader *pfile;
      cpp_hashnode *hp;
 {
+  struct macro_info info;
   const cpp_toklist *list;
 
-  list = parse_define (pfile);
-  if (!list)
+  if (parse_define (pfile, &info))
     return 0;
+  list = save_expansion (pfile, &info);
 
   /* Check for a redefinition.  Redefinition of a macro is allowed if
      and only if the old and new definitions are the same.
