@@ -1,3 +1,7 @@
+Mon Apr 13 11:31:49 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.h (BINFO_OFFSET_ZEROP): Use integer_zerop.
+
 Sun Apr 12 20:55:32 1998  Catherine Moore <clm@cygnus.com>
 
 	* invoke.texi (ld options)  Include memset requirements
@@ -1955,6 +1959,11 @@ Fri Feb 20 16:22:13 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* collect2.c (main): Still handle !do_collecting for non-AIX targets.
 
+1998-02-16  Mark Mitchell  <mmitchell@usa.net>
+
+	* toplev.c (rest_of_compilation): Do not defer the output of a
+	nested function.
+
 Fri Feb 20 10:39:47 1998  Michael Tiemann  <michael@impact.tiemann.org>
 
 	* ginclude/va-mips.h (va_arg): Remove trailing space after '\'
@@ -2239,6 +2248,12 @@ Sat Feb 14 02:02:41 1998  Jeffrey A Law  (law@cygnus.com)
 	(iteration_info): Similarly for 'b'.
 	* varasm.c (assemble_string): Similarly for 'i'.
 	* i386.h (LEGITIMIZE_ADDRESS): Similarly for 'orig_x'.
+
+1998-02-13  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+
+	* c-lang.c (lang_print_xnode): New function.
+	* objc/objc-act.c (lang_print_xnode): Likewise.
+	* print-tree.c (print_node): Call it
 
 Fri Feb 13 14:38:34 1998  Jim Wilson  <wilson@cygnus.com>
 
