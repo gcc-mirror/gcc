@@ -639,8 +639,8 @@
    (set_attr  "length" "4")])
 
 (define_insn "spe_evfscfsi"
-  [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
-        (fix:V2SI (match_operand:V2SF 1 "gpc_reg_operand" "r")))]
+  [(set (match_operand:V2SF 0 "gpc_reg_operand" "=r")
+        (float:V2SF (match_operand:V2SI 1 "gpc_reg_operand" "r")))]
   "TARGET_SPE"
   "evfscfsi %0,%1"
   [(set_attr "type" "vecfloat")
