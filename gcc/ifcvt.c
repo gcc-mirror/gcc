@@ -487,7 +487,7 @@ noce_emit_store_flag (if_info, x, reversep, normalize)
      build the store_flag insn directly.  */
 
   if (cond_complex)
-    cond = XEXP (SET_SRC (PATTERN (if_info->jump)), 0);
+    cond = XEXP (SET_SRC (pc_set (if_info->jump)), 0);
 
   if ((if_info->cond_earliest == if_info->jump || cond_complex)
       && (normalize == 0 || STORE_FLAG_VALUE == normalize))
