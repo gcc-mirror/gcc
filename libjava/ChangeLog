@@ -1,3 +1,8 @@
+2002-04-16  DJ Delorie  <dj@redhat.com>
+
+	* configure.in: Allow building in $srcdir.
+	* configure: Regenerated.
+
 2002-04-16  Tom Tromey  <tromey@redhat.com>
 
 	Fix for PR libgcj/6081:

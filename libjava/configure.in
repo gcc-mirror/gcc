@@ -428,7 +428,8 @@ AC_SUBST(THREADOBJS)
 AC_SUBST(THREADSPEC)
 AC_SUBST(THREADLDFLAGS)
 
-AC_LINK_FILES(sysdep/$sysdeps_dir, sysdep)
+if test -d sysdep; then true; else mkdir sysdep; fi
+AC_LINK_FILES(sysdep/$sysdeps_dir/locks.h, sysdep/locks.h)
 
 HASH_SYNC_SPEC=
 # Hash synchronization is only useful with posix threads right now.
@@ -450,7 +451,7 @@ GCC_UNWIND_INCLUDE='-I$(libgcj_basedir)/../gcc'
 
 # Figure out where generated headers like libgcj-config.h get installed.
 changequote(,)dnl
-gcc_version_trigger=${srcdir}/../gcc/version.c
+gcc_version_trigger=${libgcj_basedir}/../gcc/version.c
 gcc_version_full=`grep version_string ${gcc_version_trigger} | sed -e 's/.*\"\([^\"]*\)\".*/\1/'`
 gcc_version=`echo ${gcc_version_full} | sed -e 's/\([^ ]*\) .*/\1/'`
 tool_include_dir='$(libdir)/gcc-lib/$(target_alias)/'${gcc_version}/include
