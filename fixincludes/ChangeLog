@@ -1,3 +1,7 @@
+2004-10-04  Loren J. Rittle  <ljrittle@acm.org>
+
+	* tests/base/sys/cdefs.h: Update from test area.
+
 2004-09-17  Roger Sayle  <roger@eyesopen.com>
 
 	* inclhack.def (linux_ia64_ucontext): New fix.
