@@ -994,6 +994,20 @@
   "ldo R'%G2(%1),%0"
   [(set_attr "length" "1")])
 
+;; Now that a symbolic_address plus a constant is broken up early
+;; in the compilation phase (for better CSE) we need a special
+;; combiner pattern to load the symbolic address plus the constant
+;; in only 2 instructions. (For cases where the symbolic address 
+;; was not a common subexpression.)
+(define_split
+  [(set (match_operand:SI 0 "register_operand" "")
+	(match_operand 1 "symbolic_operand" ""))
+   (clobber (match_operand:SI 2 "register_operand" ""))]
+  ""
+  [(set (match_dup 2) (high:SI (match_dup 1)))
+   (set (match_dup 0) (lo_sum:SI (match_dup 2) (match_dup 1)))]
+  "")
+
 (define_expand "movhi"
   [(set (match_operand:HI 0 "general_operand" "")
 	(match_operand:HI 1 "general_operand" ""))]
