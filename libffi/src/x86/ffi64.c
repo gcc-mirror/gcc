@@ -285,7 +285,8 @@ ffi_prep_args (stackLayout *stack, extended_cif *ecif)
   /* First check if the return value should be passed in memory. If so,
      pass the pointer as the first argument.  */
   gprcount = ssecount = 0;
-  if (examine_argument (ecif->cif->rtype, 1, &g, &s) == 0)
+  if (ecif->cif->rtype->type != FFI_TYPE_VOID 
+      && examine_argument (ecif->cif->rtype, 1, &g, &s) == 0)
     (void *)stack->gpr[gprcount++] = ecif->rvalue;
 
   for (i=ecif->cif->nargs, p_arg=ecif->cif->arg_types, p_argv = ecif->avalue;
@@ -389,8 +390,8 @@ ffi_prep_cif_machdep (ffi_cif *cif)
 
   /* If the return value should be passed in memory, pass the pointer
      as the first argument. The actual memory isn't allocated here.  */
-
-  if (examine_argument (cif->rtype, 1, &g, &s) == 0)
+  if (cif->rtype->type != FFI_TYPE_VOID 
+      && examine_argument (cif->rtype, 1, &g, &s) == 0)
     gprcount = 1;
 
   /* Go over all arguments and determine the way they should be passed.

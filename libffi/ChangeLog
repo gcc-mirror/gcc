@@ -1,3 +1,9 @@
+2003-01-14  Andrew Haley  <aph@redhat.com>
+
+	* src/x86/ffi64.c (ffi_prep_args): Check for void retval.
+	(ffi_prep_cif_machdep): Likewise.
+	* src/x86/unix64.S: Add unwind info.
+
 2003-01-14  Andreas Jaeger  <aj@suse.de>
 
 	* src/ffitest.c (main): Only use ffi_closures if those are
