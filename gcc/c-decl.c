@@ -5418,7 +5418,7 @@ finish_struct (t, fieldlist)
 #endif
 	    }
 	}
-      else
+      else if (TREE_TYPE (x) != error_mark_node)
 	{
 	  int min_align = (DECL_PACKED (x) ? BITS_PER_UNIT
 			   : TYPE_ALIGN (TREE_TYPE (x)));
