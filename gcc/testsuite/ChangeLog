@@ -1,3 +1,8 @@
+2003-12-05  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/13166
+	* g++.dg/parse/defarg6.C: New test.
+
 2003-12-05  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/13256
