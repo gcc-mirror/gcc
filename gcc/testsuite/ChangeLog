@@ -1,3 +1,8 @@
+2005-01-26  Alexander Malmberg  <alexander@malmberg.org>
+
+	PR objc/18862
+	* objc.dg/selector-2.m: New test.
+
 2005-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/opt/range-test-2.C: New test.
