@@ -1,3 +1,8 @@
+2004-10-28  Chris Jefferson  <chris@bubblescope.net>
+
+	PR libstdc++/18159
+	* include/tr1/tuple: Fix, change formatting.
+
 2004-10-28  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/ext/mt_allocator.h (__common_pool_policy): Add template
