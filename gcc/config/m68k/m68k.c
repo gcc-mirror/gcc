@@ -3185,6 +3185,18 @@ memory_src_operand (rtx op, enum machine_mode mode)
   return memory_operand (op, mode);
 }
 
+int
+post_inc_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return MEM_P (op) && GET_CODE (XEXP (op, 0)) == POST_INC;
+}
+
+int
+pre_dec_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return MEM_P (op) && GET_CODE (XEXP (op, 0)) == PRE_DEC;
+}
+
 /* Predicate that accepts only a pc-relative address.  This is needed
    because pc-relative addresses don't satisfy the predicate
    "general_src_operand".  */

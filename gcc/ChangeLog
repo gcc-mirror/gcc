@@ -1,3 +1,13 @@
+2004-08-06  Roman Zippel  <zippel@linux-m68k.org>
+ 
+        * config/m68k/m68k.c (post_inc_operand,pre_dec_operand): New.
+        * config/m68k/m68k.h (PREDICATE_CODES): add post_inc_operand,
+        pre_dec_operand.
+        * config/m68k/m68k.md (zero_extend*2): delay the splitting of the
+        pattern until reload is finished to allow better code generation
+        and split them completely into separate instrunctions.
+        (*andsi3_split): New pattern.
+
 2004-08-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.c (handle_dll_attribute): Move here from i383/winnt.c.
