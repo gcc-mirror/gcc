@@ -77,6 +77,7 @@ extern int ia64_function_arg_partial_nregs (CUMULATIVE_ARGS *,
 					    enum machine_mode, tree, int);
 extern void ia64_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 				       tree, int);
+extern int ia64_function_arg_boundary (enum machine_mode, tree);
 extern void ia64_asm_output_external (FILE *, tree, const char *);
 #endif /* TREE_CODE */
 
