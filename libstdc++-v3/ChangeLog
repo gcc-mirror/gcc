@@ -1,3 +1,8 @@
+2001-12-11  Jason Merrill  <jason@redhat.com>
+
+	* include/bits/locale_facets.tcc (_M_extract_int): Avoid
+	uninitialized warning.
+
 2001-12-11  Loren Rittle <ljrittle@acm.org>
 
 	* config/cpu/sparc/sparc32/bits/atomicity.h
@@ -22,6 +27,7 @@
 	
 	* include/bits/locale_facets.h (__num_base::_S_scale_hex): Add.
 	(__num_base::_S_scale_oct): Add.
+	* include/bits/locale_facets.tcc (_M_extract_int): Use them.
 	* src/locale.cc: Add definitions.
 	* testsuite/27_io/istream_extractor_arith.cc (main): Call test13.
 
