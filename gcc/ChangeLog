@@ -1,3 +1,7 @@
+Tue Nov  7 19:44:30 2000  J"orn Rennecke <amylaar@redhat.com>
+
+	* combine.c (distribute_notes): Fix typo in last change.
+
 2000-11-07  Geoff Keating  <geoffk@redhat.com>
 
 	* config/rs6000/rs6000.md (movdi_internal32+1): Use
