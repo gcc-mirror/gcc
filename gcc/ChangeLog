@@ -1,3 +1,7 @@
+2004-11-12  Ziemowit Laski  <zlaski@apple.com>
+
+	* config/rs6000/darwin.h: Fix confusing typo in comment.
+
 2004-11-12  Devang Patel  <dpatel@apple.com>
 
 	* optabs.c (vector_compare_rtx): Use COMPARISON_CLASS_P.
