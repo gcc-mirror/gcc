@@ -1,5 +1,9 @@
 2000-03-18  Richard Henderson  <rth@cygnus.com>
 
+	* flow.c (make_edges): Use INTVAL to access REG_EH_REGION value.
+
+2000-03-18  Richard Henderson  <rth@cygnus.com>
+
 	* i386.c (call_insn_operand): Always allow SYMBOL_REF,
 	care for HALF_PIC_P.
 	(expander_call_insn_operand): Remove.
