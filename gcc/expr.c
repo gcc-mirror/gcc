@@ -6289,6 +6289,7 @@ expand_expr (exp, target, tmode, modifier)
 	{
 	  layout_decl (exp, 0);
 	  PUT_MODE (DECL_RTL (exp), DECL_MODE (exp));
+	  set_mem_align (DECL_RTL (exp), DECL_ALIGN (exp));
 	}
 
       /* Although static-storage variables start off initialized, according to
@@ -8674,7 +8675,7 @@ expand_expr (exp, target, tmode, modifier)
 		= assign_stack_temp_for_type
 		  (TYPE_MODE (inner_type),
 		   MEM_SIZE (op0) ? INTVAL (MEM_SIZE (op0))
-		   : int_size_in_bytes (TREE_TYPE (inner_type)),
+		   : int_size_in_bytes (inner_type),
 		   1, build_qualified_type (inner_type,
 					    (TYPE_QUALS (inner_type)
 					     | TYPE_QUAL_CONST)));
