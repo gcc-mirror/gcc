@@ -98,30 +98,27 @@ EOF
 }
 
 
-# This function checks whether its first argument is newer than all
-# the other arguments.  It returns success (0) otherwise.
-is_out_of_date () {
-  test `ls -1dt ${1+"$@"} | sed 1q` != "$1"
-}
-
-
 # This function touches generated files such that the ``end'' user does
 # not have to rebuild them.
 touch_files () {
-    files_and_dependencies | while read f deps; do
-	if test -f $f && is_out_of_date "$f" $deps; then
-	    echo Touching "$f"...
-	    touch $f
-	    if is_out_of_date "$f" $deps; then
-		# Hmm, it may have got the same timestamp as one of
-		# its touched dependencies.  Wait a second and retry.
-		sleep 1
-		echo Touching "$f" once more...
-		touch $f
-	    fi
-	fi
-    done
+    rm -f Makefile.$$
+    echo 'all: \' > Makefile.$$
+    files_and_dependencies | sed 's, .*, \\,' >> Makefile.$$
+    echo '; @true' >> Makefile.$$
+    files_and_dependencies | sed 's, ,: ,' >> Makefile.$$
+    files_and_dependencies | sed 's, .*, \\,' >> Makefile.$$
+    echo ':' >> Makefile.$$
+    echo '	@for f in $?; do test ! -f $$f && exit 0; done; \' >> Makefile.$$
+    echo '	echo Touching $@...; \' >> Makefile.$$
+    echo '	echo Touching $@... 1>&2; \' >> Makefile.$$
+    echo '	touch $@' >> Makefile.$$
+    files_and_dependencies | sed 's,[^ ]* ,,;s,$, :,' >> Makefile.$$
+    while ${MAKE-make} -f Makefile.$$ all | grep . > /dev/null; do
+      sleep 1
+    done 2>&1
+    rm -f Makefile.$$
 }
+
 
 # Whenever we update the tree or install a patch, we may be modifying
 # this script.  By re-execing it, we ensure that the appropriate
