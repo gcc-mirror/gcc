@@ -1,3 +1,15 @@
+Wed Sep 30 10:44:15 1998  Tristan Gingold  <gingold@gavroche.enst.fr>
+
+	* c-decl.c (finish_decl): Set the assembler name to the current
+	decl if it was specified.
+	(finish_function): Use assembler name for constructor and
+	destructor name.
+	(duplicate_decls): Copy the assembler name.
+
+Wed Sep 30 10:42:49 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* regmove.c (struct match): Change char to int.
+
 Tue Sep 29 09:57:26 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* regmove.c (regmove_profitable_p): For shift, use 1 as third arg.
