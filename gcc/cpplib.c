@@ -459,6 +459,9 @@ run_directive (pfile, dir_no, buf, count)
 {
   cpp_push_buffer (pfile, (const uchar *) buf, count,
 		   /* from_stage3 */ true, 1);
+  /* Disgusting hack.  */
+  if (dir_no == T_PRAGMA)
+    pfile->buffer->inc = pfile->buffer->prev->inc;
   start_directive (pfile);
   /* We don't want a leading # to be interpreted as a directive.  */
   pfile->buffer->saved_flags = 0;
@@ -467,6 +470,8 @@ run_directive (pfile, dir_no, buf, count)
     prepare_directive_trad (pfile);
   (void) (*pfile->directive->handler) (pfile);
   end_directive (pfile, 1);
+  if (dir_no == T_PRAGMA)
+    pfile->buffer->inc = NULL;
   _cpp_pop_buffer (pfile);
 }
 
