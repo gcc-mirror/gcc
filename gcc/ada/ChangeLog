@@ -1,3 +1,19 @@
+2001-12-05  Robert Dewar <dewar@gnat.com>
+
+	* checks.adb (Determine_Range): Increase cache size for checks. 
+	Minor reformatting
+	
+	* exp_ch6.adb: Minor reformatting
+	(Expand_N_Subprogram_Body): Reset Is_Pure for any subprogram that has
+	a parameter whose root type is System.Address, since treating such
+	subprograms as pure in the code generator is almost surely a mistake
+	that will lead to unexpected results.
+	
+	* exp_util.adb (Remove_Side_Effects): Clean up old ??? comment and 
+	change handling of conversions.
+	
+	* g-regexp.adb: Use System.IO instead of Ada.Text_IO.
+
 2001-12-05  Ed Schonberg <schonber@gnat.com>
 
 	* sem_ch3.adb (Analyze_Object_Declaration): If expression is an 

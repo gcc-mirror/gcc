@@ -2861,13 +2861,13 @@ package body Exp_Util is
       --  circumstances: for change of representations, and also when this
       --  is a view conversion to a smaller object, where gigi can end up
       --  its own temporary of the wrong size.
+
       --  ??? this transformation is inhibited for elementary types that are
       --  not involved in a change of representation because it causes
       --  regressions that are not fully understood yet.
 
       elsif Nkind (Exp) = N_Type_Conversion
-        and then (not Is_Elementary_Type (Underlying_Type (Exp_Type))
-                   or else Nkind (Parent (Exp)) = N_Assignment_Statement)
+        and then not Name_Req
       then
          Remove_Side_Effects (Expression (Exp), Variable_Ref);
          Scope_Suppress := Svg_Suppress;
