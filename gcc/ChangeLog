@@ -1,5 +1,12 @@
 2005-04-02  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/rs6000/predicates.md (indexed_or_indirect_operand): New.
+	(word_offset_memref_operand): New.
+	* config/rs6000/rs6000-protos.h (word_offset_memref_operand): Delete.
+	(indexed_or_indirect_operand): Delete.
+	* config/rs6000/rs6000.c (word_offset_memref_operand): Delete.
+	(indexed_or_indirect_operand): Delete.
+
 	* config/rs6000/t-darwin8: Comment out ppc64 multilib.
 
 	PR 20650
