@@ -1,3 +1,8 @@
+2004-03-09  Nathan Sidwell  <nathan@garibaldi.home>
+
+	PR c++/14397
+	* g++.dg/overload/ref1.C: New.
+
 2004-03-09  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/14289

@@ -1,3 +1,9 @@
+2004-03-09  Nathan Sidwell  <nathan@garibaldi.home>
+
+	PR c++/14397
+	* call.c (convert_like_real): Build a const qualified temporary,
+	when testing ctor access.
+
 2004-03-09  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (initialize_reference): Fix typo.

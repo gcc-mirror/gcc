@@ -3991,18 +3991,19 @@ convert_like_real (tree convs, tree expr, tree fn, int argnum, int inner,
     case IDENTITY_CONV:
       if (type_unknown_p (expr))
 	expr = instantiate_type (totype, expr, tf_error | tf_warning);
-      /* Convert a non-array constant variable to its underlying value, unless we
-	 are about to bind it to a reference, in which case we need to
-	 leave it as an lvalue.  */
+      /* Convert a non-array constant variable to its underlying
+	 value, unless we are about to bind it to a reference, in
+	 which case we need to leave it as an lvalue.  */
       if (inner >= 0
 	  && TREE_CODE (TREE_TYPE (expr)) != ARRAY_TYPE)
 	expr = decl_constant_value (expr);
       if (CHECK_COPY_CONSTRUCTOR_P (convs))
 	/* Generate a temporary copy purely to generate the required
 	   diagnostics.  */
-	build_temp (build_dummy_object (totype), totype, 
-		    LOOKUP_NORMAL|LOOKUP_ONLYCONVERTING,
-		    &diagnostic_fn);
+	build_temp
+	  (build_dummy_object
+	   (build_qualified_type (totype, TYPE_QUAL_CONST)),
+	   totype, LOOKUP_NORMAL|LOOKUP_ONLYCONVERTING, &diagnostic_fn);
 	return expr;
     case AMBIG_CONV:
       /* Call build_user_type_conversion again for the error.  */
