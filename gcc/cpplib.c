@@ -259,7 +259,6 @@ extern char *xmalloc ();
 static void add_import ();
 static void append_include_chain ();
 static void make_undef ();
-static void make_definition ();
 static void make_assertion ();
 static void path_include ();
 static void initialize_builtins ();
@@ -614,8 +613,8 @@ cpp_grow_buffer (pfile, n)
  * be identifier=definition.
  */
 
-static void
-make_definition (pfile, str)
+void
+cpp_define (pfile, str)
      cpp_reader *pfile;
      U_CHAR *str;
 {
@@ -2479,9 +2478,8 @@ special_symbol (hp, pfile)
 
     case T_SPECLINE:
       {
-	long line = CPP_BUFFER (pfile)->lineno;
-	long col = CPP_BUFFER (pfile)->colno;
-	cpp_buffer *ip = CPP_BUFFER (pfile);
+	long line = ip->lineno;
+	long col = ip->colno;
 	adjust_position (CPP_LINE_BASE (ip), ip->cur, &line, &col);
 
 	buf = (char *) alloca (10);
@@ -5223,7 +5221,7 @@ cpp_get_token (pfile)
 	       unneeded extra spaces (for the sake of cpp-using tools like
 	       imake).  Here we remove the space if it is safe to do so. */
 	    if (pfile->buffer->rlimit - pfile->buffer->cur >= 2
-		&& pfile->buffer->cur[-1] == ' ')
+		&& pfile->buffer->rlimit[-1] == ' ')
 	      {
 		int c1 = pfile->buffer->rlimit[-2];
 		int c2 = CPP_BUF_PEEK (CPP_PREV_BUFFER (CPP_BUFFER (pfile)));
@@ -5807,7 +5805,7 @@ push_parse_file (pfile, fname)
 	  *p++= 0;
 	if (opts->debug_output)
 	  output_line_command (pfile, 0, same_file);
-	make_definition (pfile, q);
+	cpp_define (pfile, q);
 	while (*p == ' ' || *p == '\t')
 	  p++;
       } else if (p[0] == '-' && p[1] == 'A') {
@@ -5880,7 +5878,7 @@ push_parse_file (pfile, fname)
 	    case 'D':
 	      if (opts->debug_output)
 		output_line_command (pfile, 0, same_file);
-	      make_definition (pfile, pend->arg);
+	      cpp_define (pfile, pend->arg);
 	      break;
 	    case 'A':
 	      make_assertion (pfile, "-A", pend->arg);
