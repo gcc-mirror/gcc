@@ -1,6 +1,7 @@
 // Locale support (codecvt) -*- C++ -*-
 
-// Copyright (C) 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005
+//  Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,67 +32,66 @@
 // ISO C++ 14882: 22.2.1.5 Template class codecvt
 //
 
-// Warning: this file is not meant for user inclusion.  Use <locale>.
-
-// Written by Benjamin Kosnik <bkoz@cygnus.com>
+// Written by Benjamin Kosnik <bkoz@redhat.com>
 
 /** @file bits/codecvt_specializations.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+ *  This file is a GNU extension to the Standard C++ Library.
  */
 
   // XXX
   // Define this here so codecvt.cc can have _S_max_size definition.
-#define _GLIBCXX_USE___ENC_TRAITS 1
+#define _GLIBCXX_USE_ENCODING_STATE 1
 
+namespace __gnu_cxx
+{
   /// @brief  Extension to use icov for dealing with character encodings.
   // This includes conversions and comparisons between various character
   // sets.  This object encapsulates data that may need to be shared between
   // char_traits, codecvt and ctype.
-  class __enc_traits
+  class encoding_state
   {
   public:
     // Types: 
     // NB: A conversion descriptor subsumes and enhances the
     // functionality of a simple state type such as mbstate_t.
-    typedef iconv_t	__desc_type;
+    typedef iconv_t	descriptor_type;
     
   protected:
-    // Data Members:
-    // Max size of charset encoding name
-    static const int 	_S_max_size = 32;
     // Name of internal character set encoding.
-    char	       	_M_int_enc[_S_max_size];
+    std::string	       	_M_int_enc;
+
     // Name of external character set encoding.
-    char  	       	_M_ext_enc[_S_max_size];
+    std::string  	_M_ext_enc;
 
     // Conversion descriptor between external encoding to internal encoding.
-    __desc_type		_M_in_desc;
-    // Conversion descriptor between internal encoding to external encoding.
-    __desc_type		_M_out_desc;
+    descriptor_type	_M_in_desc;
 
-    // Details the byte-order marker for the external encoding, if necessary.
+    // Conversion descriptor between internal encoding to external encoding.
+    descriptor_type	_M_out_desc;
+
+    // The byte-order marker for the external encoding, if necessary.
     int			_M_ext_bom;
 
-    // Details the byte-order marker for the internal encoding, if necessary.
+    // The byte-order marker for the internal encoding, if necessary.
     int			_M_int_bom;
 
-  public:
-    explicit __enc_traits() 
-    : _M_in_desc(0), _M_out_desc(0), _M_ext_bom(0), _M_int_bom(0) 
-    {
-      memset(_M_int_enc, 0, _S_max_size);
-      memset(_M_ext_enc, 0, _S_max_size);
-    }
+    // Number of external bytes needed to construct one complete
+    // character in the internal encoding.
+    // NB: -1 indicates variable, or stateful, encodings.
+    int 		_M_bytes;
 
-    explicit __enc_traits(const char* __int, const char* __ext, 
-			  int __ibom = 0, int __ebom = 0)
-    : _M_in_desc(0), _M_out_desc(0), _M_ext_bom(__ebom), _M_int_bom(__ibom)
-    {
-      strncpy(_M_int_enc, __int, _S_max_size);
-      strncpy(_M_ext_enc, __ext, _S_max_size);
-      _M_init();
-    }
+  public:
+    explicit 
+    encoding_state() 
+    : _M_in_desc(0), _M_out_desc(0), _M_ext_bom(0), _M_int_bom(0), _M_bytes(0)
+    { }
+
+    explicit 
+    encoding_state(const char* __int, const char* __ext, 
+		   int __ibom = 0, int __ebom = 0, int __bytes = 1)
+    : _M_int_enc(__int), _M_ext_enc(__ext), _M_in_desc(0), _M_out_desc(0), 
+      _M_ext_bom(__ebom), _M_int_bom(__ibom), _M_bytes(__bytes)
+    { init(); }
 
     // 21.1.2 traits typedefs
     // p4
@@ -101,56 +101,95 @@
     // NB: This does not preseve the actual state of the conversion
     // descriptor member, but it does duplicate the encoding
     // information.
-    __enc_traits(const __enc_traits& __obj): _M_in_desc(0), _M_out_desc(0)
-    {
-      strncpy(_M_int_enc, __obj._M_int_enc, _S_max_size);
-      strncpy(_M_ext_enc, __obj._M_ext_enc, _S_max_size);
-      _M_ext_bom = __obj._M_ext_bom;
-      _M_int_bom = __obj._M_int_bom;
-      _M_destroy();
-      _M_init();
-    }
+    encoding_state(const encoding_state& __obj) : _M_in_desc(0), _M_out_desc(0)
+    { construct(__obj); }
 
     // Need assignment operator as well.
-    __enc_traits&
-    operator=(const __enc_traits& __obj)
+    encoding_state&
+    operator=(const encoding_state& __obj)
     {
-      strncpy(_M_int_enc, __obj._M_int_enc, _S_max_size);
-      strncpy(_M_ext_enc, __obj._M_ext_enc, _S_max_size);
-      _M_ext_bom = __obj._M_ext_bom;
-      _M_int_bom = __obj._M_int_bom;
-      _M_destroy();
-      _M_init();
+      construct(__obj);
       return *this;
     }
 
-    ~__enc_traits()
-    { _M_destroy(); } 
+    ~encoding_state()
+    { destroy(); } 
 
+    bool
+    good() const throw()
+    { 
+      const descriptor_type __err = reinterpret_cast<iconv_t>(-1);
+      bool __test = _M_in_desc && _M_in_desc != __err; 
+      __test &=  _M_out_desc && _M_out_desc != __err;
+      return __test;
+    }
+    
+    int
+    character_ratio() const
+    { return _M_bytes; }
+
+    const std::string
+    internal_encoding() const
+    { return _M_int_enc; }
+
+    int 
+    internal_bom() const
+    { return _M_int_bom; }
+
+    const std::string
+    external_encoding() const
+    { return _M_ext_enc; }
+
+    int 
+    external_bom() const
+    { return _M_ext_bom; }
+
+    const descriptor_type&
+    in_descriptor() const
+    { return _M_in_desc; }
+
+    const descriptor_type&
+    out_descriptor() const
+    { return _M_out_desc; }
+
+  protected:
     void
-    _M_init()
+    init()
     {
-      const __desc_type __err = reinterpret_cast<iconv_t>(-1);
-      if (!_M_in_desc)
+      const descriptor_type __err = reinterpret_cast<iconv_t>(-1);
+      const bool __have_encodings = _M_int_enc.size() && _M_ext_enc.size();
+      if (!_M_in_desc && __have_encodings)
 	{
-	  _M_in_desc = iconv_open(_M_int_enc, _M_ext_enc);
+	  _M_in_desc = iconv_open(_M_int_enc.c_str(), _M_ext_enc.c_str());
 	  if (_M_in_desc == __err)
-	    __throw_runtime_error(__N("__enc_traits::_M_init "
-				  "creating iconv input descriptor failed"));
+	    std::__throw_runtime_error(__N("encoding_state::_M_init "
+				    "creating iconv input descriptor failed"));
 	}
-      if (!_M_out_desc)
+      if (!_M_out_desc && __have_encodings)
 	{
-	  _M_out_desc = iconv_open(_M_ext_enc, _M_int_enc);
+	  _M_out_desc = iconv_open(_M_ext_enc.c_str(), _M_int_enc.c_str());
 	  if (_M_out_desc == __err)
-	    __throw_runtime_error(__N("__enc_traits::_M_init "
+	    std::__throw_runtime_error(__N("encoding_state::_M_init "
 				  "creating iconv output descriptor failed"));
 	}
     }
 
     void
-    _M_destroy()
+    construct(const encoding_state& __obj)
     {
-      const __desc_type __err = reinterpret_cast<iconv_t>(-1);
+      destroy();
+      _M_int_enc = __obj._M_int_enc;
+      _M_ext_enc = __obj._M_ext_enc;
+      _M_ext_bom = __obj._M_ext_bom;
+      _M_int_bom = __obj._M_int_bom;
+      _M_bytes = __obj._M_bytes;
+      init();
+    }
+
+    void
+    destroy() throw()
+    {
+      const descriptor_type __err = reinterpret_cast<iconv_t>(-1);
       if (_M_in_desc && _M_in_desc != __err) 
 	{
 	  iconv_close(_M_in_desc);
@@ -162,56 +201,38 @@
 	  _M_out_desc = 0;
 	}
     }
-
-    bool
-    _M_good()
-    { 
-      const __desc_type __err = reinterpret_cast<iconv_t>(-1);
-      bool __test = _M_in_desc && _M_in_desc != __err; 
-      __test &=  _M_out_desc && _M_out_desc != __err;
-      return __test;
-    }
-
-    const __desc_type* 
-    _M_get_in_descriptor()
-    { return &_M_in_desc; }
-
-    const __desc_type* 
-    _M_get_out_descriptor()
-    { return &_M_out_desc; }
-
-    int 
-    _M_get_external_bom()
-    { return _M_ext_bom; }
-
-    int 
-    _M_get_internal_bom()
-    { return _M_int_bom; }
-
-    const char* 
-    _M_get_internal_enc()
-    { return _M_int_enc; }
-
-    const char* 
-    _M_get_external_enc()
-    { return _M_ext_enc; }    
   };
 
-  /// @brief  class codecvt<InternT, _ExternT, __enc_traits> specialization.
+  /// @brief  encoding_char_traits.
+  // Custom traits type with encoding_state for the state type, and the
+  // associated fpos<encoding_state> for the position type, all other
+  // bits equivalent to the required char_traits instantiations.
+  template<typename _CharT>
+    struct encoding_char_traits : public std::char_traits<_CharT>
+    {
+      typedef encoding_state				state_type;
+      typedef typename std::fpos<state_type>		pos_type;
+    };
+} // namespace __gnu_cxx
+
+namespace std
+{
+  using __gnu_cxx::encoding_state;
+
+  /// @brief  codecvt<InternT, _ExternT, encoding_state> specialization.
   // This partial specialization takes advantage of iconv to provide
   // code conversions between a large number of character encodings.
   template<typename _InternT, typename _ExternT>
-    class codecvt<_InternT, _ExternT, __enc_traits>
-    : public __codecvt_abstract_base<_InternT, _ExternT, __enc_traits>
+    class codecvt<_InternT, _ExternT, encoding_state>
+    : public __codecvt_abstract_base<_InternT, _ExternT, encoding_state>
     {
     public:      
       // Types:
       typedef codecvt_base::result			result;
       typedef _InternT 					intern_type;
       typedef _ExternT 					extern_type;
-      typedef __enc_traits 				state_type;
-      typedef __enc_traits::__desc_type 		__desc_type;
-      typedef __enc_traits				__enc_type;
+      typedef __gnu_cxx::encoding_state 		state_type;
+      typedef state_type::descriptor_type 		descriptor_type;
 
       // Data Members:
       static locale::id 		id;
@@ -222,11 +243,11 @@
       { }
 
       explicit 
-      codecvt(__enc_type* __enc, size_t __refs = 0)
+      codecvt(state_type& __enc, size_t __refs = 0)
       : __codecvt_abstract_base<intern_type, extern_type, state_type>(__refs)
       { }
 
-    protected:
+     protected:
       virtual 
       ~codecvt() { }
 
@@ -262,7 +283,7 @@
 
   template<typename _InternT, typename _ExternT>
     locale::id 
-    codecvt<_InternT, _ExternT, __enc_traits>::id;
+    codecvt<_InternT, _ExternT, encoding_state>::id;
 
   // This adaptor works around the signature problems of the second
   // argument to iconv():  SUSv2 and others use 'const char**', but glibc 2.2
@@ -277,16 +298,16 @@
 
   template<typename _InternT, typename _ExternT>
     codecvt_base::result
-    codecvt<_InternT, _ExternT, __enc_traits>::
+    codecvt<_InternT, _ExternT, encoding_state>::
     do_out(state_type& __state, const intern_type* __from, 
 	   const intern_type* __from_end, const intern_type*& __from_next,
 	   extern_type* __to, extern_type* __to_end,
 	   extern_type*& __to_next) const
     {
       result __ret = codecvt_base::error;
-      if (__state._M_good())
+      if (__state.good())
 	{
-	  const __desc_type* __desc = __state._M_get_out_descriptor();
+	  const descriptor_type& __desc = __state.out_descriptor();
 	  const size_t __fmultiple = sizeof(intern_type);
 	  size_t __fbytes = __fmultiple * (__from_end - __from);
 	  const size_t __tmultiple = sizeof(extern_type);
@@ -303,7 +324,7 @@
 	  // value for the byte order marker is NULL, so if this is
 	  // the case, it's not necessary and we can just go on our
 	  // merry way.
-	  int __int_bom = __state._M_get_internal_bom();
+	  int __int_bom = __state.internal_bom();
 	  if (__int_bom)
 	    {	  
 	      size_t __size = __from_end - __from;
@@ -312,14 +333,14 @@
 	      __cfixed[0] = static_cast<intern_type>(__int_bom);
 	      char_traits<intern_type>::copy(__cfixed + 1, __from, __size);
 	      __cfrom = reinterpret_cast<char*>(__cfixed);
-	      __conv = __iconv_adaptor(iconv, *__desc, &__cfrom,
+	      __conv = __iconv_adaptor(iconv, __desc, &__cfrom,
                                         &__fbytes, &__cto, &__tbytes); 
 	    }
 	  else
 	    {
 	      intern_type* __cfixed = const_cast<intern_type*>(__from);
 	      __cfrom = reinterpret_cast<char*>(__cfixed);
-	      __conv = __iconv_adaptor(iconv, *__desc, &__cfrom, &__fbytes, 
+	      __conv = __iconv_adaptor(iconv, __desc, &__cfrom, &__fbytes, 
 				       &__cto, &__tbytes); 
 	    }
 
@@ -346,21 +367,21 @@
 
   template<typename _InternT, typename _ExternT>
     codecvt_base::result
-    codecvt<_InternT, _ExternT, __enc_traits>::
+    codecvt<_InternT, _ExternT, encoding_state>::
     do_unshift(state_type& __state, extern_type* __to, 
 	       extern_type* __to_end, extern_type*& __to_next) const
     {
       result __ret = codecvt_base::error;
-      if (__state._M_good())
+      if (__state.good())
 	{
-	  const __desc_type* __desc = __state._M_get_in_descriptor();
+	  const descriptor_type& __desc = __state.in_descriptor();
 	  const size_t __tmultiple = sizeof(intern_type);
 	  size_t __tlen = __tmultiple * (__to_end - __to); 
 	  
 	  // Argument list for iconv specifies a byte sequence. Thus,
 	  // all to/from arrays must be brutally casted to char*.
 	  char* __cto = reinterpret_cast<char*>(__to);
-	  size_t __conv = __iconv_adaptor(iconv,*__desc, NULL, NULL,
+	  size_t __conv = __iconv_adaptor(iconv,__desc, NULL, NULL,
                                           &__cto, &__tlen); 
 	  
 	  if (__conv != size_t(-1))
@@ -381,16 +402,16 @@
    
   template<typename _InternT, typename _ExternT>
     codecvt_base::result
-    codecvt<_InternT, _ExternT, __enc_traits>::
+    codecvt<_InternT, _ExternT, encoding_state>::
     do_in(state_type& __state, const extern_type* __from, 
 	  const extern_type* __from_end, const extern_type*& __from_next,
 	  intern_type* __to, intern_type* __to_end, 
 	  intern_type*& __to_next) const
     { 
       result __ret = codecvt_base::error;
-      if (__state._M_good())
+      if (__state.good())
 	{
-	  const __desc_type* __desc = __state._M_get_in_descriptor();
+	  const descriptor_type& __desc = __state.in_descriptor();
 	  const size_t __fmultiple = sizeof(extern_type);
 	  size_t __flen = __fmultiple * (__from_end - __from);
 	  const size_t __tmultiple = sizeof(intern_type);
@@ -407,7 +428,7 @@
 	  // value for the byte order marker is NULL, so if this is
 	  // the case, it's not necessary and we can just go on our
 	  // merry way.
-	  int __ext_bom = __state._M_get_external_bom();
+	  int __ext_bom = __state.external_bom();
 	  if (__ext_bom)
 	    {	  
 	      size_t __size = __from_end - __from;
@@ -416,14 +437,14 @@
 	      __cfixed[0] = static_cast<extern_type>(__ext_bom);
 	      char_traits<extern_type>::copy(__cfixed + 1, __from, __size);
 	      __cfrom = reinterpret_cast<char*>(__cfixed);
-	      __conv = __iconv_adaptor(iconv, *__desc, &__cfrom,
+	      __conv = __iconv_adaptor(iconv, __desc, &__cfrom,
                                        &__flen, &__cto, &__tlen); 
 	    }
 	  else
 	    {
 	      extern_type* __cfixed = const_cast<extern_type*>(__from);
 	      __cfrom = reinterpret_cast<char*>(__cfixed);
-	      __conv = __iconv_adaptor(iconv, *__desc, &__cfrom,
+	      __conv = __iconv_adaptor(iconv, __desc, &__cfrom,
                                        &__flen, &__cto, &__tlen); 
 	    }
 
@@ -451,24 +472,24 @@
   
   template<typename _InternT, typename _ExternT>
     int 
-    codecvt<_InternT, _ExternT, __enc_traits>::
+    codecvt<_InternT, _ExternT, encoding_state>::
     do_encoding() const throw()
     {
       int __ret = 0;
       if (sizeof(_ExternT) <= sizeof(_InternT))
-	__ret = sizeof(_InternT)/sizeof(_ExternT);
+	__ret = sizeof(_InternT) / sizeof(_ExternT);
       return __ret; 
     }
   
   template<typename _InternT, typename _ExternT>
     bool 
-    codecvt<_InternT, _ExternT, __enc_traits>::
+    codecvt<_InternT, _ExternT, encoding_state>::
     do_always_noconv() const throw()
     { return false; }
   
   template<typename _InternT, typename _ExternT>
     int 
-    codecvt<_InternT, _ExternT, __enc_traits>::
+    codecvt<_InternT, _ExternT, encoding_state>::
     do_length(state_type&, const extern_type* __from, 
 	      const extern_type* __end, size_t __max) const
     { return std::min(__max, static_cast<size_t>(__end - __from)); }
@@ -477,7 +498,8 @@
   // 74.  Garbled text for codecvt::do_max_length
   template<typename _InternT, typename _ExternT>
     int 
-    codecvt<_InternT, _ExternT, __enc_traits>::
+    codecvt<_InternT, _ExternT, encoding_state>::
     do_max_length() const throw()
     { return 1; }
+} // namespace std
 
