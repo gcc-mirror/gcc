@@ -1736,6 +1736,15 @@ set_mem_attributes (ref, t, objectp)
       /* If this is an INDIRECT_REF, we know its alignment.  */
       else if (TREE_CODE (t) == INDIRECT_REF)
 	align = TYPE_ALIGN (type);
+
+      /* Likewise for constants.  */
+      else if (TREE_CODE_CLASS (TREE_CODE (t)) == 'c')
+	{
+	  align = TYPE_ALIGN (type);
+#ifdef CONSTANT_ALIGNMENT
+	  align = CONSTANT_ALIGNMENT (t, align);
+#endif
+	}
     }
 
   /* Now set the attributes we computed above.  */
