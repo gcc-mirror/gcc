@@ -6495,6 +6495,8 @@ expand_expr (exp, target, tmode, modifier)
     case LABELED_BLOCK_EXPR:
       if (LABELED_BLOCK_BODY (exp))
 	expand_expr_stmt (LABELED_BLOCK_BODY (exp));
+      /* Should perhaps use expand_label, but this is simpler and safer. */
+      do_pending_stack_adjust ();
       emit_label (label_rtx (LABELED_BLOCK_LABEL (exp)));
       return const0_rtx;
 

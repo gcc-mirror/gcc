@@ -1,3 +1,8 @@
+2001-05-01  Per Bothner  <per@bothner.com>
+
+	* expr.c (expand_expr):  When compiling LABELED_BLOCK_EXPR,
+	call do_pending_stack_adjust before emiting label.
+
 2001-05-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* extend.texi: Fix typo.
