@@ -336,7 +336,9 @@ main (int argc, char **argv)
     }
   else
     {
-      printf ("#define CC0_P(X) 0\n");
+      /* We output CC0_P this way to make sure that X is declared
+	 somewhere.  */
+      printf ("#define CC0_P(X) ((X) ? 0 : 0)\n");
     }
 
   if (have_cmove_flag)
