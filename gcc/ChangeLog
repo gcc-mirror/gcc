@@ -1,3 +1,7 @@
+2001-09-09  Richard Henderson  <rth@redhat.com>
+
+	* emit-rtl.c (adjust_address): Fix mode for LO_SUM.
+
 Sun Sep  9 10:43:17 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* loop.c (combine_givs): Fix computing of benefit once giv is combined.
