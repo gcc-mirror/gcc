@@ -1,3 +1,9 @@
+2002-06-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* mips.md (fixuns_truncdfsi2, fixuns_truncdfdi2,
+	fixuns_truncsfsi2, fixuns_truncsfdi2): Avoid automatic aggregate
+	initialization.
+
 2002-06-24  Jeff Law <law@redhat.com>
 
 	* flow.c (propagate_one_insn): When removing an insn
