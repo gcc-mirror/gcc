@@ -1,3 +1,10 @@
+2003-10-05  Chris Demetriou  <cgd@broadcom.com>
+
+	* config/mips/mips.md (*divsf3): Move description of
+	SB-1 F2 erratum from here to...
+	(divsf3): Here.  Disable if TARGET_FIX_SB1 is set and
+	flag_unsafe_math_optimizations is not.
+
 2003-10-05  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/linuxspe.h: Define TARGET_SPE_ABI, TARGET_SPE,
