@@ -1,3 +1,8 @@
+2004-02-24  Josef Zlomek  <zlomekj@suse.cz>
+
+	PR/14240
+	* rtlanal.c (replace_label): Fix replacing labels in constant pool.
+
 2004-02-24  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa-protos.h (xtensa_copy_incoming_a7): Update.

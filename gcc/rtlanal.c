@@ -2707,7 +2707,6 @@ int
 replace_label (rtx *x, void *data)
 {
   rtx l = *x;
-  rtx tmp;
   rtx old_label = ((replace_label_data *) data)->r1;
   rtx new_label = ((replace_label_data *) data)->r2;
   bool update_label_nuses = ((replace_label_data *) data)->update_label_nuses;
@@ -2715,12 +2714,10 @@ replace_label (rtx *x, void *data)
   if (l == NULL_RTX)
     return 0;
 
-  if (GET_CODE (l) == MEM
-      && (tmp = XEXP (l, 0)) != NULL_RTX
-      && GET_CODE (tmp) == SYMBOL_REF
-      && CONSTANT_POOL_ADDRESS_P (tmp))
+  if (GET_CODE (l) == SYMBOL_REF
+      && CONSTANT_POOL_ADDRESS_P (l))
     {
-      rtx c = get_pool_constant (tmp);
+      rtx c = get_pool_constant (l);
       if (rtx_referenced_p (old_label, c))
 	{
 	  rtx new_c, new_l;
@@ -2736,7 +2733,7 @@ replace_label (rtx *x, void *data)
 
 	  /* Add the new constant NEW_C to constant pool and replace
 	     the old reference to constant by new reference.  */
-	  new_l = force_const_mem (get_pool_mode (tmp), new_c);
+	  new_l = XEXP (force_const_mem (get_pool_mode (l), new_c), 0);
 	  *x = replace_rtx (l, l, new_l);
 	}
       return 0;
