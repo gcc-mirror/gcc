@@ -67,6 +67,8 @@ Boston, MA 02111-1307, USA.  */
   "-fmemoize-lookups",
   "-fno-memoize-lookups",
   "-fname-mangling-version-",
+  "-fnew-abi",
+  "-fno-new-abi",
   "-fnonnull-objects",
   "-fno-nonnull-objects",
   "-foperator-names",
