@@ -79,6 +79,9 @@ inline void swap(T& a, T& b) {
 
 #ifndef __BORLANDC__
 
+#undef min
+#undef max
+
 template <class T>
 inline const T& min(const T& a, const T& b) {
   return b < a ? b : a;
