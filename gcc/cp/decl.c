@@ -13765,13 +13765,6 @@ finish_function (lineno, flags, nested)
       expand_function_end (input_filename, lineno, 1);
     }
   
-  /* Must mark the RESULT_DECL as being in this function.  */
-  DECL_CONTEXT (DECL_RESULT (fndecl)) = fndecl;
-
-  /* Set the BLOCK_SUPERCONTEXT of the outermost function scope to point
-     to the FUNCTION_DECL node itself.  */
-  BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;
-
   /* If we're processing a template, squirrel away the definition
      until we do an instantiation.  */
   if (processing_template_decl)
@@ -13810,6 +13803,13 @@ finish_function (lineno, flags, nested)
       ctype = current_class_type;
       pop_nested_class (1);
     }
+
+  /* Must mark the RESULT_DECL as being in this function.  */
+  DECL_CONTEXT (DECL_RESULT (fndecl)) = fndecl;
+
+  /* Set the BLOCK_SUPERCONTEXT of the outermost function scope to point
+     to the FUNCTION_DECL node itself.  */
+  BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;
 
   if (!in_template)
     {
