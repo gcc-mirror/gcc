@@ -1,5 +1,5 @@
 /* JEditorPane.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,6 +41,7 @@ package javax.swing;
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 import java.io.InputStream;
+import java.io.IOException;
 import java.net.URL;
 import javax.accessibility.AccessibleContext;
 import javax.swing.text.EditorKit;
@@ -63,6 +64,7 @@ public class JEditorPane extends JTextComponent
     }
 
     public JEditorPane(String url)
+      throws IOException
     {
 	this();
 	setPage(url);
@@ -75,6 +77,7 @@ public class JEditorPane extends JTextComponent
     }
     
     public JEditorPane(URL url)
+      throws IOException
     {
 	setPage(url);
     }

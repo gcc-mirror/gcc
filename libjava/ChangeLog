@@ -1,3 +1,26 @@
+2004-01-28  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/JComponent.java
+	(listenerList): Initalize globally.
+	(ancestor_list): Removed.
+	(veto_list): Removed.
+	(change_list): Removed.
+	(get_veto_list): Removed.
+	(get_change_list): Removed.
+	(get_ancestor_list): Removed.
+	(removeAncestorListener): Reimplemented.
+	(removePropertyChangeListener): Likewise.
+	(removeVetoableChangeListener): Likewise.
+	(addAncestorListener): Likewise.
+	(addPropertyChangeListener): Likewise.
+	(addVetoableChangeListener): Likewise.
+	(getListeners): New method.
+	(getAncestorListeners): Likewise.
+	(getVetoableChangeListeners): Likewise.
+	(fireVetoableChange): Throws PropertyVetoException.
+	* javax/swing/JEditorPane.java
+	(JEditorPane): Throws IOException.
+
 2004-01-28  David Jee  <djee@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GtkFramePeer.java
