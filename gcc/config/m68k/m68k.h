@@ -172,6 +172,8 @@ extern int target_flags;
     { "68302", - (MASK_5200|MASK_68060|MASK_68040|MASK_68020|MASK_BITFIELD)}, \
     { "68332", - (MASK_5200|MASK_68060|MASK_68040|MASK_BITFIELD)},	\
     { "68332", MASK_68020},						\
+    { "cpu32", - (MASK_5200|MASK_68060|MASK_68040|MASK_BITFIELD)},	\
+    { "cpu32", MASK_68020},						\
     { "align-int", MASK_ALIGN_INT },					\
     { "no-align-int", -MASK_ALIGN_INT },				\
     SUBTARGET_SWITCHES							\
