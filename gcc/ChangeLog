@@ -1,5 +1,12 @@
 2004-10-18  Diego Novillo  <dnovillo@redhat.com>
 
+	* tree-cfg.c (bsi_for_stmt): Rename from stmt_for_bsi.
+	Update all callers.
+	* tree-ssa.c (replace_immediate_uses): Call bsi_for_stmt.
+	Don't call fold_stmt more than once, use bsi_replace.
+
+2004-10-18  Diego Novillo  <dnovillo@redhat.com>
+
 	PR tree-optimization/17656
 	* tree-ssa.c (replace_immediate_uses): When replacing a
 	constant, if the call to fold_stmt produced a different

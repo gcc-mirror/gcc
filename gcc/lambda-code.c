@@ -1937,7 +1937,7 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
 		  LBV_COEFFICIENTS (lbv)[i] = 1;
 		  lbv = lambda_body_vector_compute_new (transform, lbv);
 		  newiv = lbv_to_gcc_expression (lbv, new_ivs, &stmts);
-		  bsi = stmt_for_bsi (stmt);
+		  bsi = bsi_for_stmt (stmt);
 		  /* Insert the statements to build that
 		     expression.  */
 		  bsi_insert_before (&bsi, stmts, BSI_SAME_STMT);

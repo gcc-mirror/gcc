@@ -3878,7 +3878,7 @@ remove_statement (tree stmt, bool including_defined_name)
     }
   else
     {
-      block_stmt_iterator bsi = stmt_for_bsi (stmt);
+      block_stmt_iterator bsi = bsi_for_stmt (stmt);
 
       bsi_remove (&bsi);
     }
@@ -3916,7 +3916,7 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
 
     case MODIFY_EXPR:
       tgt = TREE_OPERAND (use->stmt, 0);
-      bsi = stmt_for_bsi (use->stmt);
+      bsi = bsi_for_stmt (use->stmt);
       break;
 
     default:
@@ -4055,7 +4055,7 @@ rewrite_use_address (struct ivopts_data *data,
 {
   tree comp = unshare_expr (get_computation (data->current_loop,
 					     use, cand));
-  block_stmt_iterator bsi = stmt_for_bsi (use->stmt);
+  block_stmt_iterator bsi = bsi_for_stmt (use->stmt);
   tree stmts;
   tree op = force_gimple_operand (comp, &stmts, true, NULL_TREE);
 
@@ -4074,7 +4074,7 @@ rewrite_use_compare (struct ivopts_data *data,
 {
   tree comp;
   tree *op_p, cond, op, stmts, bound;
-  block_stmt_iterator bsi = stmt_for_bsi (use->stmt);
+  block_stmt_iterator bsi = bsi_for_stmt (use->stmt);
   enum tree_code compare;
   
   if (may_eliminate_iv (data->current_loop,
