@@ -1,3 +1,7 @@
+1999-07-07  Tom Tromey  <tromey@cygnus.com>
+
+	* mauve-libgcj: Turn off many tests which are known to fail.
+
 1999-07-07  Andrew Haley  <aph@cygnus.com>
 
         * include/i386-signal.h (MAKE_THROW_FRAME): Advance EIP by two

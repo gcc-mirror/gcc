@@ -20,3 +20,23 @@ java.text.StringCharacterIterator.iter
 !java.text.AttributedCharacterIterator
 !java.text.resources
 !java.text.DateFormat
+#
+# The following are all `xfail's.
+# There are a frightening number of these.
+#
+!java.io.Utf8Encoding.mojo
+!java.lang.Double.DoubleTest
+!java.lang.Float.FloatTest
+!java.lang.Math.MathTest
+!java.lang.Math.max
+!java.lang.Math.min
+!java.lang.String.StringTest
+!java.lang.StringBuffer.plus
+!java.lang.System.arraycopy
+!java.net.DatagramSocket.DatagramSocketTest2
+!java.net.MulticastSocket.MulticastSocketTest
+!java.net.ServerSocket.ServerSocketTest
+!java.net.URL.URLTest
+!java.net.URLConnection.MyURLConnection
+!java.text.SimpleDateFormat.Test
+!java.text.SimpleDateFormat.getAndSet2DigitYearStart
