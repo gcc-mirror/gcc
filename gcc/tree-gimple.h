@@ -33,8 +33,6 @@ extern tree get_initialized_tmp_var (tree, tree *, tree *);
 extern tree get_formal_tmp_var (tree, tree *);
 extern void declare_tmp_vars (tree, tree);
 
-extern tree rationalize_compound_expr (tree);
-extern tree right_assocify_expr (tree);
 extern void annotate_all_with_locus (tree *, location_t);
 
 /* Validation of GIMPLE expressions.  Note that these predicates only check

@@ -1652,10 +1652,6 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
     {
       tree save_decl;
 
-      /* Keep the new trees in gimple form.  */
-      BIND_EXPR_BODY (expr)
-	= rationalize_compound_expr (BIND_EXPR_BODY (expr));
-
       /* We want to create a new variable to hold the result of the inlined
 	 body.  This new variable needs to be added to the function which we
 	 are inlining into, thus the saving and restoring of
