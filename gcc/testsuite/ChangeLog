@@ -1,3 +1,8 @@
+2002-06-27  Aldy Hernandez  <aldyh@redhat.com>
+
+        * gcc.c-torture/execute/string-opt-8.c (strncmp): Fix typo in
+        return type.
+
 Thu Jun 27 15:23:21 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* gcc.c-torture/execute/simd-2.c (i, j): Add initializer elements to
