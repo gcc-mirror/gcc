@@ -1,3 +1,9 @@
+Thu Feb  5 01:45:19 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+	Undo this change (the problem was actually in reload):
+	Fri Jan 23 23:28:59 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	  * sh.md (movqi_i+1): New peephole.
+
 Tue Feb  3 01:11:12 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* jump.c (jump_optimize): Lose calls to modified_in_p they are
