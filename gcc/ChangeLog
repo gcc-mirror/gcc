@@ -1,3 +1,7 @@
+2002-12-21  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (zero_extendqisi2): Correct the
+	length.
 
 2002-12-19  Devang Patel <dpatel@apple.com>
 
