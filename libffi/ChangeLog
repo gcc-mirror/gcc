@@ -1,3 +1,10 @@
+2004-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* src/ia64/unix.S (ffi_call_unix): Insert group barrier break
+	fp_done.
+	(ffi_closure_UNIX): Fix f14/f15 adjustment if FLOAT_SZ is ever
+	changed from 8.
+
 2004-04-26  Joe Buck <jbuck@welsh-buck.org>
 
 	Bug 15093
