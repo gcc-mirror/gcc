@@ -1,5 +1,9 @@
 2003-01-01  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.md: Reorder some patterns.
+
+2003-01-01  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.c (output_logical_op): Fix a warning.
 
 2003-01-01  Neil Booth  <neil@daikokuya.co.uk>
