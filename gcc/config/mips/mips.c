@@ -1350,6 +1350,27 @@ mips_fetch_insns (rtx x)
 }
 
 
+/* Return the number of instructions needed for an integer division.  */
+
+int
+mips_idiv_insns (void)
+{
+  int count;
+
+  count = 1;
+  if (TARGET_CHECK_ZERO_DIV)
+    {
+      if (TARGET_MIPS16)
+	count += 2;
+      else
+	count += 3;
+    }
+  if (TARGET_FIX_R4000)
+    count++;
+  return count;
+}
+
+
 /* Return truth value of whether OP can be used as an operands
    where a register or 16 bit unsigned integer is needed.  */
 
@@ -5111,6 +5132,12 @@ override_options (void)
       mips_hi_relocs[SYMBOL_GOTOFF_LOADGP] = "%hi(%neg(%gp_rel(";
       mips_lo_relocs[SYMBOL_GOTOFF_LOADGP] = "%lo(%neg(%gp_rel(";
     }
+
+  /* Default to working around R4000 errata only if the processor
+     was selected explicitly.  */
+  if ((target_flags_explicit & MASK_FIX_R4000) == 0
+      && mips_matching_cpu_name_p (mips_arch_info->name, "r4000"))
+    target_flags |= MASK_FIX_R4000;
 }
 
 /* Implement CONDITIONAL_REGISTER_USAGE.  */
@@ -9185,21 +9212,37 @@ mips_output_conditional_branch (rtx insn, rtx *operands, int two_operands_p,
 /* Used to output div or ddiv instruction DIVISION, which has the
    operands given by OPERANDS.  If we need a divide-by-zero check,
    output the instruction and return an asm string that traps if
-   operand 2 is zero.  Otherwise just return DIVISION itself.  */
+   operand 2 is zero.
+
+   The original R4000 has a cpu bug.  If a double-word or a variable
+   shift executes immediately after starting an integer division, the
+   shift may give an incorrect result.  Avoid this by adding a nop on
+   the R4000.  See quotations of errata #16 and #28 from "MIPS
+   R4000PC/SC Errata, Processor Revision 2.2 and 3.0" in mips.md for
+   details.
+
+   Otherwise just return DIVISION itself.  */
 
 const char *
 mips_output_division (const char *division, rtx *operands)
 {
+  const char *s = division;
+
   if (TARGET_CHECK_ZERO_DIV)
     {
-      output_asm_insn (division, operands);
+      output_asm_insn (s, operands);
 
       if (TARGET_MIPS16)
-	return "bnez\t%2,1f\n\tbreak\t7\n1:";
+	s = "bnez\t%2,1f\n\tbreak\t7\n1:";
       else
-	return "bne\t%2,%.,1f%#\n\tbreak\t7\n1:";
+	s = "bne\t%2,%.,1f%#\n\tbreak\t7\n1:";
     }
-  return division;
+  if (TARGET_FIX_R4000)
+    {
+      output_asm_insn (s, operands);
+      s = "nop";
+    }
+  return s;
 }
 
 /* Return true if GIVEN is the same as CANONICAL, or if it is CANONICAL

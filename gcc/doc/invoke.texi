@@ -478,8 +478,9 @@ in the following sections.
 -mcheck-zero-division  -mno-check-zero-division @gol
 -mmemcpy  -mno-memcpy  -mlong-calls  -mno-long-calls @gol
 -mmad  -mno-mad  -mfused-madd  -mno-fused-madd  -nocpp @gol
--mfix-sb1  -mno-fix-sb1  -mflush-func=@var{func} @gol
--mno-flush-func  -mbranch-likely  -mno-branch-likely}
+-mfix-r4000  -mno-fix-r4000  -mfix-sb1  -mno-fix-sb1 @gol
+-mflush-func=@var{func}  -mno-flush-func @gol
+-mbranch-likely  -mno-branch-likely}
 
 @emph{i386 and x86-64 Options}
 @gccoptlist{-mtune=@var{cpu-type}  -march=@var{cpu-type} @gol
@@ -8044,6 +8045,17 @@ circumstances.
 @opindex nocpp
 Tell the MIPS assembler to not run its preprocessor over user
 assembler files (with a @samp{.s} suffix) when assembling them.
+
+@item -mfix-r4000
+@itemx -mno-fix-r4000
+@opindex mfix-r4000
+@opindex mno-fix-r4000
+Work around certain R4000 CPU errata:
+@itemize @minus
+@item
+A double-word or a variable shift may give an incorrect result if executed
+immediately after starting an integer division.
+@end itemize
 
 @item -mfix-sb1
 @itemx -mno-fix-sb1
