@@ -12192,9 +12192,10 @@ gen_decl_die (tree decl, dw_die_ref context_die)
 
     case FIELD_DECL:
       /* Ignore the nameless fields that are used to skip bits but handle C++
-	 anonymous unions.  */
+	 anonymous unions and structs.  */
       if (DECL_NAME (decl) != NULL_TREE
-	  || TREE_CODE (TREE_TYPE (decl)) == UNION_TYPE)
+	  || TREE_CODE (TREE_TYPE (decl)) == UNION_TYPE
+	  || TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE)
 	{
 	  gen_type_die (member_declared_type (decl), context_die);
 	  gen_field_die (decl, context_die);
