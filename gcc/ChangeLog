@@ -1,3 +1,8 @@
+Wed Jul 28 11:19:06 1999  Richard Henderson  <rth@cygnus.com>
+
+	* builtins.c (std_expand_builtin_va_arg): Use int_size_in_bytes
+	rather than play with TREE_INT_CST_LOW.
+
 1999-07-27  Philip Blundell  <pb@nexus.co.uk>
 
 	* config/arm/telf.h: Include dbxelf.h.
