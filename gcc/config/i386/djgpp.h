@@ -112,11 +112,12 @@ Boston, MA 02111-1307, USA.  */
         (((NAME)[0] >= 'A') && ((NAME)[0] <= 'z') && ((NAME)[1] == ':')))
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__MSDOS__ -Asystem=msdos"
+#define CPP_PREDEFINES "-D__MSDOS__ -D__GO32__ -Asystem=msdos"
 
 /* Include <sys/version.h> so __DJGPP__ and __DJGPP_MINOR__ are defined.  */
 #undef CPP_SPEC
 #define CPP_SPEC "-remap %(cpp_cpu) %{posix:-D_POSIX_SOURCE} \
+  %{!ansi:%{!std=c*:%{!std=i*:-DMSDOS}}} %{!ansi:%{!std=c*:%{!std=i*:-DGO32}}} \
   -imacros %s../include/sys/version.h"
 
 /* We need to override link_command_spec in gcc.c so support -Tdjgpp.djl.
@@ -265,22 +266,27 @@ dtor_section ()							\
 /* Used to be defined in xm-djgpp.h, but moved here for cross-compilers.  */
 #define LIBSTDCXX "-lstdcxx"
 
-/* Add command line option -mbnu210 to indicate we can use binutil 2.10's features.  */
+/* -mbnu210 is now ignored and obsolete. It was used to enable support for
+   weak symbols, and .gnu.linkonce support.  */
 #undef MASK_BNU210
 #define MASK_BNU210 (0x40000000)
 
 #undef SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES 		\
-  { "bnu210", -MASK_BNU210, "Enable weak symbol and enhanced C++ template support. Binutils 2.10 or higher required." }, \
-  { "no-bnu210", MASK_BNU210, "Disable weak symbol and enhanced C++ template support." },
+#define SUBTARGET_SWITCHES \
+  { "no-bnu210", -MASK_BNU210, "Ignored (obsolete)." }, \
+  { "bnu210", MASK_BNU210, "Ignored (obsolete)." },
 
-/* Weak symbols and .gnu.linkonce are only in Binutils-2.10 and later. 
-   Default to using Binutils 2.10 features.  */
-#undef SUPPORTS_WEAK
-#define SUPPORTS_WEAK ((target_flags & MASK_BNU210) == 0)
-
-#undef SUPPORTS_ONE_ONLY
-#define SUPPORTS_ONE_ONLY ((target_flags & MASK_BNU210) == 0)
+/* Warn that -mbnu210 is now obsolete.  */
+#undef  SUBTARGET_OVERRIDE_OPTIONS
+#define SUBTARGET_OVERRIDE_OPTIONS \
+do \
+  { \
+    if (target_flags & MASK_BNU210) \
+      {	\
+        warning ("-mbnu210 is ignored (option is obsolete)."); \
+      }	\
+  } \
+while (0)
 
 /* Support for C++ templates.  */
 #undef MAKE_DECL_ONE_ONLY
