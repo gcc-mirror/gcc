@@ -1,3 +1,7 @@
+2001-08-02  Lars Brinkhoff  <lars@nocrew.org>
+
+	* config/vax/vax.c: include expr.h.
+
 2001-08-02  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* Makefile.in ($(srcdir)/configure): Only rebuild in
