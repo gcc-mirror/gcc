@@ -1,3 +1,7 @@
+2002-05-21  Richard Henderson  <rth@redhat.com>
+
+	* flow.c (life_analysis): Fix test for deleted label.
+
 2002-05-21  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* doc/tm.texi: Fix typo.

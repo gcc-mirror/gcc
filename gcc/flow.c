@@ -493,12 +493,12 @@ life_analysis (f, file, flags)
     for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
       {
 	rtx inote = find_reg_note (insn, REG_LABEL, NULL_RTX);
-
-	if (inote && GET_CODE (inote) == NOTE_INSN_DELETED_LABEL)
+	if (inote && GET_CODE (XEXP (inote, 0)) != CODE_LABEL)
 	  abort ();
       }
   }
 #endif
+
   /* Removing dead insns should've made jumptables really dead.  */
   delete_dead_jumptables ();
 }
