@@ -1,3 +1,9 @@
+Wed Feb 16 03:21:43 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.h (OVERRIDE_OPTIONS): Don't set sh_addr_diff_vec_mode.
+	(sh_addr_diff_vec_mode): Don't declare.
+	* sh.c (sh_addr_diff_vec_mode): Delete.
+
 Wed Feb 16 01:27:52 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.md (mulsi3_highpart): Add REG_EQUAL note to last insn.
