@@ -1,3 +1,7 @@
+2002-02-28  Richard Henderson  <rth@redhat.com>
+
+	* g++.dg/opt/vtgc1.C: Adjust patterns for ia64.
+
 2002-02-27  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* gcc.c-torture/execute/20020227-1.c: New test.
@@ -85,7 +89,7 @@
 
 2002-02-21  Aldy Hernandez  <aldyh@redhat.com>
 
-        * gcc.dg/attr-alwaysinline.c: New.
+	* gcc.dg/attr-alwaysinline.c: New.
 
 2002-02-21  Jakub Jelinek  <jakub@redhat.com>
 
@@ -162,7 +166,7 @@
 
 2002-02-13  Stan Shebs  <shebs@apple.com>
 
-        * gcc.dg/altivec-3.c: New.
+	* gcc.dg/altivec-3.c: New.
 
 2002-02-12  Jakub Jelinek  <jakub@redhat.com>
 
@@ -268,13 +272,13 @@
 2002-02-06  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* g++.dg/ext/align1.C: Do not use an explicit alignment value
-        as certain file formats cannot support particularly large
-        alignments.
+	as certain file formats cannot support particularly large
+	alignments.
 
 	* g++.dg/warn/weak1.C: Expect a warning from COFF toolchains,
 	and do not expect to be able to link the executable.
 
-        * g++.old-deja/g++.ext/attrib5.C: Expect the compilation to
+	* g++.old-deja/g++.ext/attrib5.C: Expect the compilation to
 	fail because the COFF format does not support the weak attribute.
 
 2002-02-05  David Billinghurst <David.Billinghurst@riotinto.com>
@@ -283,8 +287,8 @@
 
 2002-02-05  Aldy Hernandez  <aldyh@redhat.com>
 
-        * gcc.dg/altivec-4.c: AltiVec builtin predicates changed format.
-        Fix testcase accordingly.
+	* gcc.dg/altivec-4.c: AltiVec builtin predicates changed format.
+	Fix testcase accordingly.
 
 2002-02-04  Richard Henderson  <rth@redhat.com>
 
