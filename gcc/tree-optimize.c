@@ -648,7 +648,7 @@ tree_rest_of_compilation (tree fndecl, bool nested_p)
       if (!flag_unit_at_a_time)
 	{
 	  struct cgraph_edge *e;
-	  verify_cgraph ();
+
 	  while (node->callees)
 	    cgraph_remove_edge (node->callees);
 	  node->callees = saved_node->callees;
