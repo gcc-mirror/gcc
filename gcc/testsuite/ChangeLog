@@ -1,3 +1,28 @@
+2002-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.old-deja/g++.other/eh5.C: New test.
+	* g++.old-deja/g++.other/sibcall2.C: New test.
+	* g++.old-deja/g++.other/array9.C: New test.
+	* g++.old-deja/g++.other/typename2.C: New test.
+	* g++.old-deja/g++.other/crash60.C: New test.
+	* g++.old-deja/g++.other/conv9.C: New test.
+	* g++.old-deja/g++.other/mangle10.C: New test.
+	* g++.old-deja/g++.other/unchanging1.C: New test.
+	* g++.old-deja/g++.other/exprstmt1.C: New test.
+	* g++.old-deja/g++.other/inline23.C: New test.
+	* g++.old-deja/g++.eh/ia64-1.C: New test.
+	* g++.old-deja/g++.other/dwarf2-1.C: New test.
+	* g++.old-deja/g++.other/mangle11.C: New test.
+	* g++.old-deja/g++.other/reload1.C: New test.
+	* g++.old-deja/g++.other/static20.C: New test.
+	* g++.old-deja/g++.other/local-alloc1.C: New test.
+	* g++.old-deja/g++.other/conv8.C: New test.
+	* g++.old-deja/g++.other/stmtexpr2.C: New test.
+	* g++.old-deja/g++.other/storeexpr1.C: New test.
+	* g++.old-deja/g++.other/storeexpr2.C: New test.
+	* g++.dg/eh/template2.C: New test.
+	* g++.dg/warn/weak1.C: New test.
+
 2002-01-25  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* lib/scanasm.exp (scan-assembler-dem, scan-assembler-dem-not):
