@@ -1,3 +1,8 @@
+2005-01-18  Richard Henderson  <rth@redhat.com>
+
+	PR target/19496
+	* config/i386/i386.c (ix86_expand_fp_movcc): Fail for LTGT and UNEQ.
+
 2005-01-18  Marc Espie  <espie@openbsd.org>
 	* config/i386/openbsdelf.h: Typo.
 
