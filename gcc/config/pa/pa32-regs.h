@@ -177,7 +177,7 @@
      ? GET_MODE_SIZE (MODE) <= 4 || ((REGNO) & 1) == 0			\
    /* Make wide modes be in aligned registers. */			\
    : (GET_MODE_SIZE (MODE) <= UNITS_PER_WORD				\
-      || GET_MODE_SIZE (MODE) <= 2 * UNITS_PER_WORD && ((REGNO) & 1) == 0))
+      || (GET_MODE_SIZE (MODE) <= 2 * UNITS_PER_WORD && ((REGNO) & 1) == 0)))
 
 /* How to renumber registers for dbx and gdb.
 

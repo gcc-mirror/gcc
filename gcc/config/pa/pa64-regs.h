@@ -165,7 +165,7 @@ Boston, MA 02111-1307, USA.  */
    ? (MODE) == CCmode || (MODE) == CCFPmode				\
    /* Make wide modes be in aligned registers. */			\
    : (GET_MODE_SIZE (MODE) <= UNITS_PER_WORD				\
-      || GET_MODE_SIZE (MODE) <= 2 * UNITS_PER_WORD && ((REGNO) & 1) == 0))
+      || (GET_MODE_SIZE (MODE) <= 2 * UNITS_PER_WORD && ((REGNO) & 1) == 0)))
 
 /* How to renumber registers for dbx and gdb.
 

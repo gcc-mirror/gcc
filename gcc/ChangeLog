@@ -1,3 +1,8 @@
+2000-04-26  <RodneyBrown@pmsc.com>
+	
+	* pa/pa32-regs.h (HARD_REGNO_MODE_OK): Warning removal.
+	* pa/pa64-regs.h (HARD_REGNO_MODE_OK): Warning removal.
+
 2000-04-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* dwarf2out.c (dw_cfi_oprnd_struct, dw_fde_struct, add_fde_cfi,
