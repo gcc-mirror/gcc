@@ -1,6 +1,6 @@
 2002-05-02  Kazu Hirata  <kazu@hxi.com>
 
-	* combine.c: Fix comment formatting.
+	* combine.c: Fix comment typos.
 	* expr.c: Likewise.
 	* genautomata.c: Likewise.
 	* stmt.c: Likewise.
