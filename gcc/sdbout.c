@@ -387,6 +387,17 @@ plain_type (type)
   return val;
 }
 
+static int
+template_name_p (name)
+     tree name;
+{
+  register char *ptr = IDENTIFIER_POINTER (name);
+  while (*ptr && *ptr != '<')
+    ptr++;
+
+  return *ptr != '\0';
+}
+
 static void
 sdbout_record_type_name (type)
      tree type;
@@ -410,11 +421,16 @@ sdbout_record_type_name (type)
 	       && TYPE_LANG_SPECIFIC (type))
 	{
 	  t = DECL_NAME (TYPE_NAME (type));
+	  /* The DECL_NAME for templates includes "<>", which breaks
+	     most assemblers.  Use its assembler name instead, which
+	     has been mangled into being safe.  */
+	  if (t && template_name_p (t))
+	    t = DECL_ASSEMBLER_NAME (TYPE_NAME (type));
 	}
 #endif
 
       /* Now get the name as a string, or invent one.  */
-      if (t != 0)
+      if (t != NULL_TREE)
 	name = IDENTIFIER_POINTER (t);
     }
 
@@ -636,7 +652,10 @@ sdbout_symbol (decl, local)
 	return;
 
       /* Output typedef name.  */
-      PUT_SDB_DEF (IDENTIFIER_POINTER (DECL_NAME (decl)));
+      if (template_name_p (DECL_NAME (decl)))
+	PUT_SDB_DEF (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
+      else
+	PUT_SDB_DEF (IDENTIFIER_POINTER (DECL_NAME (decl)));
       PUT_SDB_SCL (C_TPDEF);
       break;
 
