@@ -7,7 +7,7 @@ int __attribute__((mode(V4SI))) x, y;
 
 vector int i,j,k;
 vector short s,t,u;
-vector char c,d,e;
+vector signed char c,d,e;
 vector float f,g,h;
 
 void
