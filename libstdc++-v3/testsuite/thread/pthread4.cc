@@ -20,7 +20,7 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// { dg-do run { target *-*-freebsd* *-*-linux* *-*-solaris* } }
+// { dg-do run { target *-*-freebsd* *-*-linux* *-*-solaris* *-*-cygwin } }
 // { dg-options "-pthread" { target *-*-freebsd* *-*-linux* } }
 // { dg-options "-pthreads" { target *-*-solaris* } }
 
@@ -36,7 +36,11 @@ using namespace std;
 static list<string> foo;
 static pthread_mutex_t fooLock = PTHREAD_MUTEX_INITIALIZER;
 static unsigned max_size = 10;
+#if defined(__CYGWIN__)
+static int iters = 10000;
+#else
 static int iters = 1000000;
+#endif
 
 void*
 produce (void*)

@@ -1,3 +1,12 @@
+2002-01-25  David Billinghurst <David.Billinghurst@riotinto.com>
+
+	* testsuite/thread/pthread1.cc: Enable on cygwin.
+	* testsuite/thread/pthread2.cc: Likewise.
+	* testsuite/thread/pthread3.cc: Likewise.
+	* testsuite/thread/pthread4.cc: Likewise.
+	* testsuite/thread/pthread5.cc: Likewise.
+	* testsuite/thread/pthread6.cc: Likewise.
+
 2002-01-24  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/27_io/ostream_inserter_char.cc (test07): New. 
