@@ -25,7 +25,7 @@ Boston, MA 02111-1307, USA.  */
    deal with the Alpha's FP issues.  */
 
 #undef  CPP_SPEC
-#define CPP_SPEC "%(cpp_cpu)						\
+#define CPP_SPEC "%(cpp_cpu) %(cpp_subtarget) -D__ELF__			\
   %{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__}		\
   %{posix:-D_POSIX_SOURCE}						\
   %{mieee:-D_IEEE_FP}							\
@@ -44,16 +44,6 @@ Boston, MA 02111-1307, USA.  */
       %{!dynamic-linker:-dynamic-linker /usr/libexec/ld-elf.so.1}}	\
     %{static:-Bstatic}}"
 
-/* Provide an ASM_SPEC appropriate for a FreeBSD/Alpha target.  This differs
-   from the generic FreeBSD ASM_SPEC in that no special handling of PIC is
-   necessary on the Alpha.  */
-/* Per Richard Henderson <rth@cygnus.com>, it is better to use the `.arch'
-   directive in the assembly file.  alpha/elf.h gives us this in
-   "ASM_FILE_START".
-#undef  ASM_SPEC
-#define ASM_SPEC " %| %{mcpu=*:-m%*}"
-*/
-
 
 /************************[  Target stuff  ]***********************************/
 
@@ -65,18 +55,18 @@ Boston, MA 02111-1307, USA.  */
 #undef WCHAR_TYPE
 
 #undef  WCHAR_UNSIGNED
-#define WCHAR_UNSIGNED 0
+#define WCHAR_UNSIGNED	0
 
 #undef  WCHAR_TYPE_SIZE
-#define WCHAR_TYPE_SIZE 32
+#define WCHAR_TYPE_SIZE	32
 
 #undef  TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (FreeBSD/alpha ELF)");
 
-#define TARGET_ELF		1
+#define TARGET_ELF	1
 
 #undef  TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_FP | MASK_FPREGS | MASK_GAS)
+#define TARGET_DEFAULT	(MASK_FP | MASK_FPREGS | MASK_GAS)
 
 #undef HAS_INIT_SECTION
 
