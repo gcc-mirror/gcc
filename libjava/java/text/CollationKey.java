@@ -140,12 +140,12 @@ public final class CollationKey implements Comparable
    * this object.  This will be true if and only if:
    * <p>
    * <ul>
-   * <li>The specified object must not be <code>null</code>
-   * <li>The specified object is an instance of <code>CollationKey</code>.
+   * <li>The specified object must not be <code>null</code></li>
+   * <li>The specified object is an instance of <code>CollationKey</code>.</li>
    * <li>The specified object was created from the same <code>Collator</code>
-   * as this object.
+   * as this object.</li>
    * <li>The specified object has the same source string and bit key as
-   * this object.
+   * this object.</li>
    * </ul>
    *
    * @param obj The <code>Object</code> to test for equality.

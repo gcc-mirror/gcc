@@ -314,10 +314,10 @@ public final class StringCharacterIterator implements CharacterIterator
    * object.  This will be true if and only if the specified object:
    * <p>
    * <ul>
-   * <li>is not <code>null</code>.
-   * <li>is an instance of <code>StringCharacterIterator</code>
-   * <li>has the same text as this object
-   * <li>has the same beginning, ending, and current index as this object.
+   * <li>is not <code>null</code>.</li>
+   * <li>is an instance of <code>StringCharacterIterator</code></li>
+   * <li>has the same text as this object</li>
+   * <li>has the same beginning, ending, and current index as this object.</li>
    * </ul>
    *
    * @param obj The object to test for equality against.

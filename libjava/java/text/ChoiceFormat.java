@@ -45,7 +45,7 @@ import java.util.Vector;
  * To use this class, first specify two lists of formats and range terminators.
  * These lists must be arrays of equal length.  The format of index 
  * <code>i</code> will be selected for value <code>X</code> if 
- * <code>terminator[i] <= X < limit[i + 1]</code>.  If the value X is not
+ * <code>terminator[i] &lt;= X &lt; limit[i + 1]</code>.  If the value X is not
  * included in any range, then either the first or last format will be 
  * used depending on whether the value X falls outside the range.
  * <p>
@@ -196,10 +196,10 @@ public class ChoiceFormat extends NumberFormat
    * This method tests this object for equality with the specified 
    * object.  This will be true if and only if:
    * <ul>
-   * <li>The specified object is not <code>null</code>.
-   * <li>The specified object is an instance of <code>ChoiceFormat</code>.
+   * <li>The specified object is not <code>null</code>.</li>
+   * <li>The specified object is an instance of <code>ChoiceFormat</code>.</li>
    * <li>The termination ranges and format strings are identical to
-   *     this object's. 
+   *     this object's. </li>
    * </ul>
    *
    * @param obj The object to test for equality against.

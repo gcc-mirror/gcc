@@ -67,7 +67,7 @@ import gnu.java.security.Engine;
  *  system parameters, for example, the parameter generation values usually
  *  consist of the size of the prime modulus and the size of the random
  *  exponent, both specified in number of bits.</li>
- * <ul>
+ * </ul>
  *
  * <p>In case the client does not explicitly initialize the
  * <code>AlgorithmParameterGenerator</code> (via a call to an <code>init()</code>

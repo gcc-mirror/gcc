@@ -208,7 +208,7 @@ public class KeyStore
 
   /**
    * Returns the default KeyStore type. This method looks up the
-   * type in <JAVA_HOME>/lib/security/java.security with the 
+   * type in &lt;JAVA_HOME&gt;/lib/security/java.security with the 
    * property "keystore.type" or if that fails then "jks" .
    */
   public static final String getDefaultType()

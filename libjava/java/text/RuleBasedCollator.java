@@ -56,9 +56,9 @@ import java.util.Vector;
  * <p>
  * Rules take the form of a <code>String</code> with the following syntax
  * <ul>
- * <li> Modifier: '@' 
- * <li> Relation: '&lt;' | ';' | ',' | '=' : <text>
- * <li> Reset: '&amp;' : <text>
+ * <li> Modifier: '@'</li>
+ * <li> Relation: '&lt;' | ';' | ',' | '=' : &lt;text&gt;</li>
+ * <li> Reset: '&amp;' : &lt;text&gt;</li>
  * </ul>
  * The modifier character indicates that accents sort backward as is the
  * case with French.  The modifier applies to all rules <b>after</b>
@@ -69,12 +69,12 @@ import java.util.Vector;
  * the following meanings:
  * <ul>
  * <li>'&lt;' - The text argument is greater than the prior term at the primary
- * difference level.
+ * difference level.</li>
  * <li>';' - The text argument is greater than the prior term at the secondary
- * difference level.
+ * difference level.</li>
  * <li>',' - The text argument is greater than the prior term at the tertiary
- * difference level.
- * <li>'=' - The text argument is equal to the prior term
+ * difference level.</li>
+ * <li>'=' - The text argument is equal to the prior term</li>
  * </ul>
  * <p>
  * As for the text argument itself, this is any sequence of Unicode
@@ -131,15 +131,15 @@ import java.util.Vector;
  * A <code>ParseException</code> will be thrown for any of the following
  * conditions:
  * <ul>
- * <li>Unquoted punctuation characters in a text argument.
- * <li>A relational or reset operator not followed by a text argument
+ * <li>Unquoted punctuation characters in a text argument.</li>
+ * <li>A relational or reset operator not followed by a text argument</li>
  * <li>A reset operator where the text argument is not present in
- * the previous rule string section.
+ * the previous rule string section.</li>
  * </ul>
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
- * @author Tom Tromey <tromey@cygnus.com>
- * @author Guilhem Lavaux <guilhem@kaffe.org>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Tom Tromey (tromey@cygnus.com)
+ * @author Guilhem Lavaux (guilhem@kaffe.org)
  */
 public class RuleBasedCollator extends Collator
 {

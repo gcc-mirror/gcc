@@ -44,14 +44,16 @@ import java.rmi.registry.LocateRegistry;
 
 public final class Naming {
 
-/** <pre>
+/**
  * Looks for the remote object that is associated with the named service.
  * Name and location is given in form of a URL without a scheme:
- * 
- *   //host:port/service-name
+ *
+ * <pre>
+ * //host:port/service-name
+ * </pre>
  *  
  * The port is optional.
- * </pre>
+ * 
  * @param name the service name and location
  * @return Remote-object that implements the named service
  * @throws NotBoundException if no object implements the service

@@ -35,10 +35,7 @@ module.  An independent module is a module which is not derived from
 or based on this library.  If you modify this library, you may extend
 this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
-exception statement from your version.
-
-*/
-
+exception statement from your version. */
 
 package java.util.logging;
 
@@ -53,28 +50,22 @@ package java.util.logging;
  * value, a default is taken without an exception being thrown.
  *
  * <ul>
- *
  * <li><code>java.util.MemoryHandler.level</code> - specifies
  *     the initial severity level threshold. Default value:
  *     <code>Level.ALL</code>.</li>
- *
  * <li><code>java.util.MemoryHandler.filter</code> - specifies
  *     the name of a Filter class. Default value: No Filter.</li>
- *
  * <li><code>java.util.MemoryHandler.size</code> - specifies the
  *     maximum number of log records that are kept in the circular
  *     buffer.  Default value: 1000.</li>
- *
  * <li><code>java.util.MemoryHandler.push</code> - specifies the
  *     <code>pushLevel</code>. Default value:
  *     <code>Level.SEVERE</code>.</li>
- *
  * <li><code>java.util.MemoryHandler.target</code> - specifies the
  *     name of a subclass of {@link Handler} that will be used as the
  *     target handler.  There is no default value for this property;
  *     if it is not set, the no-argument MemoryHandler constructor
  *     will throw an exception.</li>
- *
  * </ul>
  *
  * @author Sascha Brawer (brawer@acm.org)

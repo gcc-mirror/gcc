@@ -48,14 +48,14 @@ import java.util.Map;
 /**
  * This interface provides access to the data set returned by a SQL
  * statement.  An instance of this interface is returned by the various
- * execution methods in the <code>Statement</code.
- * <p>
- * This class models a cursor, which can be stepped through one row at a
+ * execution methods in the <code>Statement</code>.
+ *
+ * <p> This class models a cursor, which can be stepped through one row at a
  * time.  Methods are provided for accessing columns by column name or by
- * index.
- * <p>
- * Note that a result set is invalidated if the statement that returned
- * it is closed.
+ * index.</p>
+ *
+ * <p> Note that a result set is invalidated if the statement that returned
+ * it is closed.</p>
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */

@@ -54,7 +54,7 @@ import java.io.InputStream;
  *
  * If there is also a class for this resource and the same locale, the
  * class will be chosen. The properties file should have the name of the
- * resource bundle, appended with the locale (e.g. <code>_de</code) and the
+ * resource bundle, appended with the locale (e.g. <code>_de</code> and the
  * extension <code>.properties</code>. The file should have the same format
  * as for <code>Properties.load()</code>
  *

@@ -279,7 +279,7 @@ public abstract class SignatureSpi
    * @param param the string name of the parameter.
    * @return the object that represents the parameter value, or <code>null</code>
    * if there is none.
-   * @throws InvalidParameterException if <code>param<?code> is an invalid
+   * @throws InvalidParameterException if <code>param</code> is an invalid
    * parameter for this engine, or another exception occurs while trying to get
    * this parameter.
    * @deprecated

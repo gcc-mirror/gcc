@@ -1,5 +1,5 @@
 /* DSAPublicKeySpec.java --- DSA Public Key Specificaton class
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,7 +47,7 @@ import java.math.BigInteger;
 
 	@author Mark Benvenuto
 */
-public class DSAPublicKeySpec extends Object implements KeySpec 
+public class DSAPublicKeySpec implements KeySpec 
 {
   private BigInteger y = null;
   private BigInteger p = null;

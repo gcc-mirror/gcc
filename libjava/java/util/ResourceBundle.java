@@ -51,7 +51,7 @@ import gnu.classpath.Configuration;
  * <code>getObject</code> or <code>getString</code> on that bundle.
  *
  * <p>When a bundle is demanded for a specific locale, the ResourceBundle
- * is searched in following order (<i>def. language<i> stands for the
+ * is searched in following order (<i>def. language</i> stands for the
  * two letter ISO language code of the default locale (see
  * <code>Locale.getDefault()</code>).
  *
@@ -251,18 +251,22 @@ public abstract class ResourceBundle
    *
    * <p>A sequence of candidate bundle names are generated, and tested in
    * this order, where the suffix 1 means the string from the specified
-   * locale, and the suffix 2 means the string from the default locale:<ul>
+   * locale, and the suffix 2 means the string from the default locale:</p>
+   *
+   * <ul>
    * <li>baseName + "_" + language1 + "_" + country1 + "_" + variant1</li>
    * <li>baseName + "_" + language1 + "_" + country1</li>
    * <li>baseName + "_" + language1</li>
    * <li>baseName + "_" + language2 + "_" + country2 + "_" + variant2</li>
    * <li>baseName + "_" + language2 + "_" + country2</li>
-   * <li>baseName + "_" + language2<li>
+   * <li>baseName + "_" + language2</li>
    * <li>baseName</li>
    * </ul>
    *
    * <p>In the sequence, entries with an empty string are ignored. Next,
-   * <code>getBundle</code> tries to instantiate the resource bundle:<ul>
+   * <code>getBundle</code> tries to instantiate the resource bundle:</p>
+   *
+   * <ul>
    * <li>First, an attempt is made to load a class in the specified classloader
    * which is a subclass of ResourceBundle, and which has a public constructor
    * with no arguments, via reflection.</li>
@@ -277,7 +281,7 @@ public abstract class ResourceBundle
    * in the above sequence are tested in a similar manner, and if any results
    * in a resource bundle, it is assigned as the parent of the first bundle
    * using the <code>setParent</code> method (unless the first bundle already
-   * has a parent).
+   * has a parent).</p>
    *
    * <p>For example, suppose the following class and property files are
    * provided: MyResources.class, MyResources_fr_CH.properties,
@@ -286,10 +290,12 @@ public abstract class ResourceBundle
    * all files are valid (that is, public non-abstract subclasses of
    * ResourceBundle with public nullary constructors for the ".class" files,
    * syntactically correct ".properties" files). The default locale is
-   * Locale("en", "UK").
+   * Locale("en", "UK").</p>
    *
    * <p>Calling getBundle with the shown locale argument values instantiates
-   * resource bundles from the following sources:<ul>
+   * resource bundles from the following sources:</p>
+   *
+   * <ul>
    * <li>Locale("fr", "CH"): result MyResources_fr_CH.class, parent
    *   MyResources_fr.properties, parent MyResources.class</li>
    * <li>Locale("fr", "FR"): result MyResources_fr.properties, parent
@@ -301,8 +307,9 @@ public abstract class ResourceBundle
    * <li>Locale("es", "ES"): result MyResources_es_ES.class, parent
    *   MyResources.class</li>
    * </ul>
-   * The file MyResources_fr_CH.properties is never used because it is hidden
-   * by MyResources_fr_CH.class.
+   * 
+   * <p>The file MyResources_fr_CH.properties is never used because it is hidden
+   * by MyResources_fr_CH.class.</p>
    *
    * @param baseName the name of the ResourceBundle
    * @param locale A locale

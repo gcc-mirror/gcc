@@ -159,17 +159,22 @@ public class CodeSource implements Serializable
    * object must have all the certifcates this object has (but may have more),
    * and must have a location that is a subset of this object's.  In order
    * for this object to imply the specified object, the following must be
-   * true:<ol>
+   * true:
+   *
+   * <ol>
    * <li><em>codesource</em> must not be <code>null</code>.</li>
    * <li>If <em>codesource</em> has a certificate list, all of it's
    *     certificates must be present in the certificate list of this
    *     code source.</li>
    * <li>If this object does not have a <code>null</code> location, then
-   *     the following addtional tests must be passed.<ol>
+   *     the following addtional tests must be passed.
+   *
+   *     <ol>
    *     <li><em>codesource</em> must not have a <code>null</code>
    *         location.</li>
    *     <li><em>codesource</em>'s location must be equal to this object's
-   *         location, or<br><ul>
+   *         location, or
+   *         <ul>
    *         <li><em>codesource</em>'s location protocol, port, and ref (aka,
    *             anchor) must equal this objects</li>
    *         <li><em>codesource</em>'s location host must imply this object's
@@ -183,19 +188,21 @@ public class CodeSource implements Serializable
    *             location file must start with this object's location file
    *             with the '/' character appended to it.</li>
    *         </ul></li>
-   *     </ol>
+   *     </ol></li>
    * </ol>
    *
    * <p>For example, each of these locations imply the location
-   * "http://java.sun.com/classes/foo.jar":<ul>
+   * "http://java.sun.com/classes/foo.jar":</p>
+   * 
    * <pre>
    * http:
    * http://*.sun.com/classes/*
    * http://java.sun.com/classes/-
    * http://java.sun.com/classes/foo.jar
    * </pre>
-   * Note that the code source with null location and null certificates implies
-   * all other code sources.
+   * 
+   * <p>Note that the code source with null location and null certificates implies
+   * all other code sources.</p>
    *
    * @param cs the <code>CodeSource</code> to test against this object
    * @return true if this specified <code>CodeSource</code> is implied
@@ -245,7 +252,7 @@ public class CodeSource implements Serializable
   /**
    * This method returns a <code>String</code> that represents this object.
    * The result is in the format <code>"(" + getLocation()</code> followed
-   * by a space separated list of certificates (or "<no certificates>"),
+   * by a space separated list of certificates (or "&lt;no certificates&gt;"),
    * followed by <code>")"</code>.
    *
    * @return a <code>String</code> for this object
