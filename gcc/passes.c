@@ -1678,7 +1678,7 @@ rest_of_compilation (void)
       && !user_defined_section_attribute)
     rest_of_handle_partition_blocks ();
 
-  if (optimize > 0 && (flag_regmove || flag_expensive_optimizations))
+  if (optimize > 0 && flag_regmove)
     rest_of_handle_regmove ();
 
   /* Do unconditional splitting before register allocation to allow machine
