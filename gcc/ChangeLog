@@ -1,3 +1,12 @@
+2005-03-01  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (cceq splitter): Use operand mode, not
+	CCEQ mode for branch_positive_comparison_operator test.
+	* config/rs6000/predicates (branch_comparison_operator): Revert to
+	define_predicate.
+	(scc_comparison_operator): Same.
+	(branch_positive_comparison_operator): Same.
+
 2005-03-01  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.c (cris_eligible_for_epilogue_delay)
