@@ -1,3 +1,12 @@
+2003-07-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/i386/emmintrin.h: Fix comment typos.
+	* config/i386/i386.c: Likewise.
+	* config/i386/i386.h: Likewise.
+	* config/i386/sco5.h: Likewise.
+	* config/ia64/ia64.c: Likewise.
+	* config/ia64/itanium2.md: Likewise.
+
 2003-07-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* dbxout.c (pending_bincls): Replace DBX_USE_BINCLS with

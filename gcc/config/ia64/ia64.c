@@ -4268,7 +4268,7 @@ ia64_secondary_reload_class (class, mode, x)
       break;
 
     case FR_REGS:
-      /* Need to go through general regsters to get to other class regs.  */
+      /* Need to go through general registers to get to other class regs.  */
       if (regno >= 0 && ! (FR_REGNO_P (regno) || GENERAL_REGNO_P (regno)))
 	return GR_REGS;
  
