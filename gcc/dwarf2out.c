@@ -7563,6 +7563,17 @@ gen_subprogram_die (decl, context_die)
       subr_die = new_die (DW_TAG_subprogram, context_die);
       add_abstract_origin_attribute (subr_die, origin);
     }
+  else if (old_die && DECL_ABSTRACT (decl)
+	   && get_AT_unsigned (old_die, DW_AT_inline))
+    {
+      /* This must be a redefinition of an extern inline function.
+	 We can just reuse the old die here.  */
+      subr_die = old_die;
+
+      /* Clear out the inlined attribute and parm types.  */
+      remove_AT (subr_die, DW_AT_inline);
+      remove_children (subr_die);
+    }
   else if (old_die)
     {
       register unsigned file_index
@@ -7647,6 +7658,10 @@ gen_subprogram_die (decl, context_die)
     }
   else if (DECL_ABSTRACT (decl))
     {
+      /* ??? Checking DECL_DEFER_OUTPUT is correct for static inline functions,
+	 but not for extern inline functions.  We can't get this completely
+	 correct because information about whether the function was declared
+	 inline is not saved anywhere.  */
       if (DECL_DEFER_OUTPUT (decl))
 	{
 	  if (DECL_INLINE (decl))
