@@ -413,7 +413,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(plus:DI (match_operand:DI 1 "register_operand" "r")
 		 (high:DI (match_operand:DI 2 "local_symbolic_operand" ""))))]
-  "TARGET_EXPLICIT_RELOCS"
+  "TARGET_EXPLICIT_RELOCS && reload_completed"
   "ldah %0,%2(%1)\t\t!gprelhigh"
   [(set_attr "usegp" "yes")])
 
