@@ -1,3 +1,14 @@
+2003-05-25  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/Checkbox.java,
+	java/awt/Dialog.java,
+	java/awt/Font.java,
+	java/awt/Frame.java,
+	java/awt/ScrollPaneAdjustable.java,
+	java/awt/Scrollbar.java,
+	java/awt/Window.java:
+	New versions from classpath.
+
 2003-05-22	Jeff Sturm	<jsturm@one-point.com>
 
 	PR libgcj/10838:

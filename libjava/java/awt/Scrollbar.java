@@ -119,6 +119,8 @@ private int visibleAmount;
 // List of AdjustmentListener's.
 private AdjustmentListener adjustment_listeners;
 
+private transient boolean valueIsAdjusting = false;
+
 /*************************************************************************/
 
 /*
@@ -724,6 +726,26 @@ paramString()
   public AdjustmentListener[] getAdjustmentListeners ()
   {
     return (AdjustmentListener[]) getListeners (AdjustmentListener.class);
+  }
+
+  /**
+   * Returns true if the value is in the process of changing.
+   *
+   * @since 1.4
+   */
+  public boolean getValueIsAdjusting ()
+  {
+    return valueIsAdjusting;
+  }
+
+  /**
+   * Sets the value of valueIsAdjusting.
+   *
+   * @since 1.4
+   */
+  public void setValueIsAdjusting (boolean valueIsAdjusting)
+  {
+    this.valueIsAdjusting = valueIsAdjusting;
   }
 } // class Scrollbar 
 

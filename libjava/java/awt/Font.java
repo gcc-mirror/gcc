@@ -406,6 +406,8 @@ getStyle()
   * Returns a native peer object for this font.
   *
   * @return A native peer object for this font.
+  *
+  * @deprecated
   */
 public FontPeer
 getPeer()

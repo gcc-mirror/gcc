@@ -201,6 +201,16 @@ private int state;
   */
 private String title = "";
 
+  /**
+   * Maximized bounds for this frame.
+   */
+  private Rectangle maximizedBounds;
+
+  /**
+   * This field indicates whether the frame is undecorated or not.
+   */
+  private boolean undecorated = false;
+
 /*************************************************************************/
 
 /*
@@ -456,14 +466,6 @@ paramString()
   return(getClass().getName());
 }
 
-public int
-getState()
-{
-  /* FIXME: State might have changed in the peer... Must check. */
-    
-  return state;
-}
-
 public static Frame[]
 getFrames()
 {
@@ -475,5 +477,86 @@ getFrames()
   throw new UnsupportedOperationException(msg);
 }
 
+  public void setState (int state)
+  {
+    int current_state = getExtendedState ();
+
+    if (state == NORMAL
+        && (current_state & ICONIFIED) != 0)
+      setExtendedState (current_state | ICONIFIED);
+    
+    if (state == ICONIFIED
+        && (current_state & ~ICONIFIED) == 0)
+      setExtendedState (current_state & ~ICONIFIED);
+  }
+
+  public int getState ()
+  {
+    /* FIXME: State might have changed in the peer... Must check. */
+  
+    return (state & ICONIFIED) != 0 ? ICONIFIED : NORMAL;
+  }
+
+  /**
+   * @since 1.4
+   */
+  public void setExtendedState (int state)
+  {
+    this.state = state;
+  }
+
+  /**
+   * @since 1.4
+   */
+  public int getExtendedState ()
+  {
+    return state;
+  }
+
+  /**
+   * @since 1.4
+   */
+  public void setMaximizedBounds (Rectangle maximizedBounds)
+  {
+    throw new Error ("not implemented");
+  }
+
+  /**
+   * Returns the maximized bounds of this frame.
+   *
+   * @return the maximized rectangle, may be null.
+   *
+   * @since 1.4
+   */
+  public Rectangle getMaximizedBounds ()
+  {
+    return maximizedBounds;
+  }
+
+  /**
+   * Returns whether this frame is undecorated or not.
+   * 
+   * @since 1.4
+   */
+  public boolean isUndecorated ()
+  {
+    return undecorated;
+  }
+
+  /**
+   * Disables or enables decorations for this frame. This method can only be
+   * called while the frame is not displayable.
+   * 
+   * @exception IllegalComponentStateException If this frame is displayable.
+   * 
+   * @since 1.4
+   */
+  public void setUndecorated (boolean undecorated)
+  {
+    if (!isDisplayable ())
+      throw new IllegalComponentStateException ();
+
+    this.undecorated = undecorated;
+  }
 } // class Frame 
 

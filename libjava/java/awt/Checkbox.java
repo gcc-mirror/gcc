@@ -307,7 +307,11 @@ addNotify()
   super.addNotify ();
 }
 
-/*************************************************************************/
+  public ItemListener[] getItemListeners ()
+  {
+    return (ItemListener[])
+      AWTEventMulticaster.getListeners (item_listeners, ItemListener.class);
+  }
 
 /**
   * Adds a new listeners to the list of registered listeners for this object.
