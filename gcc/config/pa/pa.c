@@ -1170,7 +1170,21 @@ emit_move_sequence (operands, mode, scratch_reg)
 		   && FP_REG_CLASS_P (REGNO_REG_CLASS (REGNO (operand1)))))
 	   && scratch_reg)
     {
-      emit_move_insn (scratch_reg, operand1);
+      /* D might not fit in 14 bits either; for such cases load D into
+	 scratch reg.  */
+      if (GET_CODE (operand1) == MEM
+	  && !memory_address_p (SImode, XEXP (operand1, 0)))
+	{
+	  emit_move_insn (scratch_reg, XEXP (XEXP (operand1, 0), 1));	
+	  emit_move_insn (scratch_reg, gen_rtx (GET_CODE (XEXP (operand1, 0)),
+						SImode,
+						XEXP (XEXP (operand1, 0), 0),
+						scratch_reg));
+	  emit_move_insn (scratch_reg, gen_rtx (MEM, GET_MODE (operand1),
+						scratch_reg));
+	}
+      else
+	emit_move_insn (scratch_reg, operand1);
       emit_move_insn (operand0, scratch_reg);
       return 1;
     }
