@@ -1,3 +1,15 @@
+2005-03-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* Makefile.in: Set gcc_version directly, not via substitution.
+	(libsubdir): Use $(gcc_version), not $(version).
+	(mkheaders.almost): New rule.
+	(mkheaders): Generate from mkheaders.almost.
+	(clean): Also delete mkheaders.almost.
+	* aclocal.m4: Do not include ../config/gcc-version.m4.
+	* configure.ac: Do not invoke TL_AC_GCC_VERSION.  Generate
+	mkheaders.almost from mkheaders.in.
+	* configure: Regenerate.
+
 2005-03-21  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	PR target/20166
@@ -123,7 +135,7 @@
 
 	* inclhack.def (stdio_va_list): Break out clients from here...
 	(stdio_va_list_clients): ...to here.  Also, don't fix if stdarg.h is
-        included or ifdef va_start.
+	included or ifdef va_start.
 	* fixincl.x: Regenerate.
 
 2004-10-28  Mike Stump  <mrs@apple.com>
