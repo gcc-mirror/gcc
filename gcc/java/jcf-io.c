@@ -192,7 +192,7 @@ DEFUN(read_zip_member, (jcf, zipd, zipf),
 	      jcf->read_ptr = jcf->buffer;
 	      jcf->read_end = jcf->buffer_end;
 	      if (lseek (zipf->fd, zipd->filestart, 0) < 0
-		  || read (zipf->fd, jcf->buffer, zipd->size) != zipd->size)
+		  || read (zipf->fd, jcf->buffer, zipd->size) != (long) zipd->size)
 	        return -2;
 	    }
 	  else
@@ -213,7 +213,7 @@ DEFUN(read_zip_member, (jcf, zipd, zipf),
 	      d_stream.next_in = buffer;
 	      d_stream.avail_in = zipd->size;
 	      if (lseek (zipf->fd, zipd->filestart, 0) < 0
-		  || read (zipf->fd, buffer, zipd->size) != zipd->size)
+		  || read (zipf->fd, buffer, zipd->size) != (long) zipd->size)
 		return -2;
 	      /* Handle NO_HEADER using undocumented zlib feature.
                  This is a very common hack.  */

@@ -1,3 +1,17 @@
+2001-04-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* jcf-io.c (read_zip_member): Cast to long in comparison with
+	signed value.
+
+	* jvspec.c (lang_specific_driver): Initialize variables.
+
+	* mangle.c (find_compression_record_match): Likewise.
+
+	* typeck.c (build_null_signature): Provide static prototype.  Mark
+	parameter with ATTRIBUTE_UNUSED.
+
+	* verify.c (verify_jvm_instructions): Initialize variable.
+
 2001-04-27  Per Bothner  <per@bothner.com>
 
 	* parse.y (java_expand_classes):  Don't change ctxp_for_generation
