@@ -782,3 +782,17 @@ _arm_return:
 	SIZE	(_interwork_call_via_lr)
 	
 #endif /* L_interwork_call_via_rX */
+
+#ifdef L_ieee754_dp
+	/* These functions are coded in ARM state, even when called from
+	   Thumb.  */
+	.arm
+#include "ieee754-df.S"
+#endif
+
+#ifdef L_ieee754_sp
+	/* These functions are coded in ARM state, even when called from
+	   Thumb.  */
+	.arm
+#include "ieee754-sf.S"
+#endif
