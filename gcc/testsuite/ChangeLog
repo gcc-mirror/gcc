@@ -1,3 +1,7 @@
+2000-11-21  Richard Henderson  <rth@redhat.com>
+
+	* gcc.c-torture/compile/20001121-1.c: New test.
+
 2000-11-20  Neil Booth  <neilb@earthling.net>
 
 	* gcc.dg/cpp/integrated1.c: New test.
