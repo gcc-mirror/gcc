@@ -1,3 +1,9 @@
+2004-11-24  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.in: Regenrate with Automake 1.9.3.
+	* aclocal.m4: Likewise.
+	* configure: Regenerate.
+
 2004-06-15  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.in: Regenerate with Automake 1.8.5.
