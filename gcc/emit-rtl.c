@@ -932,6 +932,12 @@ gen_highpart (mode, x)
 		 - MAX (GET_MODE_SIZE (mode), UNITS_PER_WORD))
 		/ UNITS_PER_WORD);
 
+      /*
+       * ??? This fails miserably for complex values being passed in registers
+       * where the sizeof the real and imaginary part are not equal to the
+       * sizeof SImode.  FIXME
+       */
+
       if (REGNO (x) < FIRST_PSEUDO_REGISTER
 	  /* integrate.c can't handle parts of a return value register. */
 	  && (! REG_FUNCTION_VALUE_P (x)
