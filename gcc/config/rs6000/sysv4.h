@@ -1137,7 +1137,7 @@ do {						\
 %{!mnewlib: -lc }"
 #else
 #define LIB_LINUX_SPEC "%{mnewlib: --start-group -llinux -lc --end-group } \
-%{!mnewlib: %{shared:-lc} %{!shared: %{pthread:-lpthread } \
+%{!mnewlib: %{pthread:-lpthread} %{shared:-lc} %{!shared: \
 %{profile:-lc_p} %{!profile:-lc}}}"
 #endif
 

@@ -1,5 +1,11 @@
 2004-03-29  Matthias Klose  <doko@debian.org>
 
+	2003-09-17  Daniel Jacobowitz  <drow@mvista.com>
+
+	* config/rs6000/sysv4.h (LIB_LINUX_SPEC): Give -lpthread before -lc.
+
+2004-03-29  Matthias Klose  <doko@debian.org>
+
 	Backport:
 	2004-01-15  Andreas Schwab  <schwab@suse.de>
  
