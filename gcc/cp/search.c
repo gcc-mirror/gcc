@@ -1251,7 +1251,9 @@ is_subobject_of_p (parent, binfo, most_derived)
 
 /* Very similar to lookup_fnfields_1 but it ensures that at least one
    function was declared inside the class given by TYPE.  It really should
-   only return functions that match the given TYPE.  */
+   only return functions that match the given TYPE.  Therefore, it should
+   only be called for situations that ignore using-declarations, such as
+   determining overrides.  */
 
 static int
 lookup_fnfields_here (type, name)
@@ -1359,7 +1361,7 @@ lookup_field_r (binfo, data)
      with the same name, the type is hidden by the function.  */
   if (!lfi->want_type)
     {
-      int idx = lookup_fnfields_here (type, lfi->name);
+      int idx = lookup_fnfields_1 (type, lfi->name);
       if (idx >= 0)
 	nval = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), idx);
     }

@@ -156,15 +156,11 @@ build_field_call (basetype_path, instance_ptr, name, parms)
       if (IS_AGGR_TYPE (TREE_TYPE (instance)))
 	return build_opfncall (CALL_EXPR, LOOKUP_NORMAL,
 			       instance, parms, NULL_TREE);
-      else if (TREE_CODE (TREE_TYPE (instance)) == POINTER_TYPE)
-	{
-	  if (TREE_CODE (TREE_TYPE (TREE_TYPE (instance))) == FUNCTION_TYPE)
-	    return build_function_call (instance, parms);
-	  else if (TREE_CODE (TREE_TYPE (TREE_TYPE (instance)))
-		   == METHOD_TYPE)
-	    return build_function_call
-	      (instance, tree_cons (NULL_TREE, instance_ptr, parms));
-	}
+      else if (TREE_CODE (TREE_TYPE (instance)) == FUNCTION_TYPE
+	       || (TREE_CODE (TREE_TYPE (instance)) == POINTER_TYPE
+		   && (TREE_CODE (TREE_TYPE (TREE_TYPE (instance)))
+		       == FUNCTION_TYPE)))
+	return build_function_call (instance, parms);
     }
 
   return NULL_TREE;
@@ -1422,13 +1418,19 @@ add_conv_candidate (candidates, fn, obj, arglist)
      tree fn, obj, arglist;
 {
   tree totype = TREE_TYPE (TREE_TYPE (fn));
-  tree parmlist = TYPE_ARG_TYPES (TREE_TYPE (totype));
-  int i, len = list_length (arglist) + 1;
-  tree convs = make_tree_vec (len);
-  tree parmnode = parmlist;
-  tree argnode = arglist;
-  int viable = 1;
-  int flags = LOOKUP_NORMAL;
+  int i, len, viable, flags;
+  tree parmlist, convs, parmnode, argnode;
+
+  for (parmlist = totype; TREE_CODE (parmlist) != FUNCTION_TYPE; )
+    parmlist = TREE_TYPE (parmlist);
+  parmlist = TYPE_ARG_TYPES (parmlist);
+
+  len = list_length (arglist) + 1;
+  convs = make_tree_vec (len);
+  parmnode = parmlist;
+  argnode = arglist;
+  viable = 1;
+  flags = LOOKUP_NORMAL;
 
   /* Don't bother looking up the same type twice.  */
   if (candidates && candidates->fn == totype)
@@ -2659,8 +2661,12 @@ build_object_call (obj, args)
       tree totype = TREE_TYPE (TREE_TYPE (OVL_CURRENT (fns)));
 
       if ((TREE_CODE (totype) == POINTER_TYPE
-	   || TREE_CODE (totype) == REFERENCE_TYPE)
-	  && TREE_CODE (TREE_TYPE (totype)) == FUNCTION_TYPE)
+	   && TREE_CODE (TREE_TYPE (totype)) == FUNCTION_TYPE)
+	  || (TREE_CODE (totype) == REFERENCE_TYPE
+	      && TREE_CODE (TREE_TYPE (totype)) == FUNCTION_TYPE)
+	  || (TREE_CODE (totype) == REFERENCE_TYPE
+	      && TREE_CODE (TREE_TYPE (totype)) == POINTER_TYPE
+	      && TREE_CODE (TREE_TYPE (TREE_TYPE (totype))) == FUNCTION_TYPE))
 	for (; fns; fns = OVL_NEXT (fns))
 	  {
 	    tree fn = OVL_CURRENT (fns);

@@ -957,9 +957,10 @@ process_init_constructor (type, init, elts)
    the A part of the C object named by X.  In this case,
    DATUM would be x, and BASETYPE would be A.
 
-   Note that this is nonconformant; the standard specifies that first
-   we look up ii in A, then convert x to an L& and pull out the ii part.
-   But narrowing seems to be standard practice, so let's do it anyway.  */
+   I used to think that this was nonconformant, that the standard specified
+   that first we look up ii in A, then convert x to an L& and pull out the
+   ii part.  But in fact, it does say that we convert x to an A&; A here
+   is known as the "naming class".  (jason 2000-12-19) */
 
 tree
 build_scoped_ref (datum, basetype)
@@ -967,15 +968,9 @@ build_scoped_ref (datum, basetype)
      tree basetype;
 {
   tree ref;
-  tree type = TREE_TYPE (datum);
 
   if (datum == error_mark_node)
     return error_mark_node;
-
-  /* Don't do this if it would cause an error or if we're being pedantic.  */
-  if (! ACCESSIBLY_UNIQUELY_DERIVED_P (basetype, type)
-      || pedantic)
-    return datum;
 
   ref = build_unary_op (ADDR_EXPR, datum, 0);
   ref = convert_pointer_to (basetype, ref);

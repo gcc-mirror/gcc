@@ -2051,6 +2051,24 @@ dump_expr (t, flags)
 	}
       break;
 
+    case STATIC_CAST_EXPR:
+      output_add_string (scratch_buffer, "static_cast<");
+      goto cast;
+    case REINTERPRET_CAST_EXPR:
+      output_add_string (scratch_buffer, "reinterpret_cast<");
+      goto cast;
+    case CONST_CAST_EXPR:
+      output_add_string (scratch_buffer, "const_cast<");
+      goto cast;
+    case DYNAMIC_CAST_EXPR:
+      output_add_string (scratch_buffer, "dynamic_cast<");
+    cast:
+      dump_type (TREE_TYPE (t), flags);
+      output_add_string (scratch_buffer, ">(");
+      dump_expr (TREE_OPERAND (t, 0), flags);
+      print_right_paren (scratch_buffer);
+      break;
+
     case LOOKUP_EXPR:
       print_tree_identifier (scratch_buffer, TREE_OPERAND (t, 0));
       break;

@@ -317,37 +317,6 @@ get_target_expr (init)
   return build_target_expr_with_type (init, TREE_TYPE (init));
 }
 
-/* Recursively search EXP for CALL_EXPRs that need cleanups and replace
-   these CALL_EXPRs with tree nodes that will perform the cleanups.  */
-
-tree
-break_out_cleanups (exp)
-     tree exp;
-{
-  tree tmp = exp;
-
-  if (TREE_CODE (tmp) == CALL_EXPR
-      && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (tmp)))
-    return build_cplus_new (TREE_TYPE (tmp), tmp);
-
-  while (TREE_CODE (tmp) == NOP_EXPR
-	 || TREE_CODE (tmp) == CONVERT_EXPR
-	 || TREE_CODE (tmp) == NON_LVALUE_EXPR)
-    {
-      if (TREE_CODE (TREE_OPERAND (tmp, 0)) == CALL_EXPR
-	  && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (TREE_OPERAND (tmp, 0))))
-	{
-	  TREE_OPERAND (tmp, 0)
-	    = build_cplus_new (TREE_TYPE (TREE_OPERAND (tmp, 0)),
-			       TREE_OPERAND (tmp, 0));
-	  break;
-	}
-      else
-	tmp = TREE_OPERAND (tmp, 0);
-    }
-  return exp;
-}
-
 /* Recursively perform a preorder search EXP for CALL_EXPRs, making
    copies where they are found.  Returns a deep copy all nodes transitively
    containing CALL_EXPRs.  */
