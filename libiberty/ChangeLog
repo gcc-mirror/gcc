@@ -1,3 +1,7 @@
+2003-03-03  Mark Mitchell  <mark@codesourcery.com>
+
+	* cplus-dem.c: Add license exception to copyright notice.
+
 2003-02-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* physmem.c: Formatting changes from upstream.
