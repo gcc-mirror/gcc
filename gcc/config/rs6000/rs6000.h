@@ -1486,11 +1486,15 @@ typedef struct rs6000_stack {
    controls this instead of DEFAULT_ABI; V.4 targets needing backward
    compatibility can change DRAFT_V4_STRUCT_RET to override the
    default, and -m switches get the final word.  See
-   rs6000_override_options for more details.  */
-   
+   rs6000_override_options for more details.
+
+   int_size_in_bytes returns -1 for variable size objects, which go in
+   memory always.  The cast to unsigned makes -1 > 8.  */
+
 #define RETURN_IN_MEMORY(TYPE) \
   (AGGREGATE_TYPE_P (TYPE) && \
-   (TARGET_AIX_STRUCT_RET || int_size_in_bytes (TYPE) > 8))
+   (TARGET_AIX_STRUCT_RET || \
+    (unsigned HOST_WIDEST_INT) int_size_in_bytes (TYPE) > 8))
 
 /* DRAFT_V4_STRUCT_RET defaults off.  */
 #define DRAFT_V4_STRUCT_RET 0
