@@ -33,7 +33,7 @@ case ${query} in
       echo ${INCLUDES}
       ;;
     --build-includes)
-      INCLUDES="-nostdinc++ @GLIBCXX_INCLUDES@ -I${SRC_DIR}/libsupc++ 
+      INCLUDES="-nostdinc++ @GLIBCXX_INCLUDES@ 
                 -I${SRC_DIR}/include/backward -I${SRC_DIR}/testsuite"
       echo ${INCLUDES}
       ;;

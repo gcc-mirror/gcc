@@ -1,5 +1,14 @@
 2004-10-25  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* testsuite/Makefile.am (GLIBCXX_INCLUDES): Add.
+	(AUTOMAKE_OPTIONS): Add nostdinc.
+	* testsuite/Makefile.in: Regenerate.
+	* scripts/testsuite_flags.in (build-includes): Remove redundant
+	search for libsupc++.
+	* fragment.am: Clean.
+	
+2004-10-25  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* include/Makefile.am (tr1_headers): Add tuple.
 	* include/Makefile.in: Regenerate.
 
