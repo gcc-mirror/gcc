@@ -1,3 +1,7 @@
+Thu Aug 27 20:10:46 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* i386.c (print_operand): Remove obsolete 'c' docs.
+
 Wed Aug 26 17:13:37 1998  Tom Tromey  <tromey@cygnus.com>
 
 	* gthr.h: Document __GTHREAD_MUTEX_INIT_FUNCTION.
