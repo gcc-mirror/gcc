@@ -9,3 +9,4 @@ LIB1ASMFUNCS = \
 MULTILIB_OPTIONS = $(MULTILIB_ENDIAN) m5-32media-nofpu/m5-compact/m5-compact-nofpu/m5-64media/m5-64media-nofpu
 MULTILIB_DIRNAMES= $(MULTILIB_ENDIAN) nofpu compact nofpu/compact media64 nofpu/media64
 MULTILIB_MATCHES=
+MULTILIB_EXCEPTIONS=
