@@ -1,0 +1,10 @@
+1999-05-04  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Replace with automake-generated file.
+	* Makefile.am: New file.
+	* configure: Replaced with autoconf-generated script.
+	* aclocal.m4: New file.
+	* acinclude.m4: New file.
+	* configure.in: New file.
+	* Makefile: Removed.
+
