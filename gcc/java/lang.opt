@@ -62,8 +62,8 @@ Java
 ; Documented for C
 
 Wdeprecated
-Java Var(flag_deprecated) Init(1)
-Warn if deprecated class, method, or field is used
+Java Var(warn_deprecated) VarExists
+Warn if a deprecated compiler feature, class, method, or field is used
 
 Wextraneous-semicolon
 Java Var(flag_extraneous_semicolon)

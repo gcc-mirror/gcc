@@ -1,3 +1,10 @@
+2004-08-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* java-tree.h (flag_deprecated): Removed.
+	* lang.opt (Wdeprecated): Use existing Var(warn_deprecated).
+	* parse.y (check_deprecation): Check warn_deprecated instead of
+	flag_deprecated.
+
 2004-08-06  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* lang.c (flag_emit_class_files, flag_filelist_file, flag_redundant,
