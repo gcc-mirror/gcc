@@ -762,7 +762,7 @@ reload (first, global)
     {
       rtx set = single_set (insn);
 
-      if (GET_CODE (insn) == NOTE && CONST_CALL_P (insn)
+      if (GET_CODE (insn) == NOTE && CONST_OR_PURE_CALL_P (insn)
 	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_SETJMP)
 	for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	  if (! call_used_regs[i])

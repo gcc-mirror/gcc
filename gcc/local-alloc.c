@@ -499,7 +499,7 @@ validate_equiv_mem (start, reg, memref)
 	return 1;
 
       if (GET_CODE (insn) == CALL_INSN && ! RTX_UNCHANGING_P (memref)
-	  && ! CONST_CALL_P (insn))
+	  && ! CONST_OR_PURE_CALL_P (insn))
 	return 0;
 
       note_stores (PATTERN (insn), validate_equiv_mem_from_store, NULL);

@@ -1521,7 +1521,7 @@ delete_prior_computation (note, insn)
       /* If we reach a CALL which is not calling a const function
 	 or the callee pops the arguments, then give up.  */
       if (GET_CODE (our_prev) == CALL_INSN
-	  && (! CONST_CALL_P (our_prev)
+	  && (! CONST_OR_PURE_CALL_P (our_prev)
 	      || GET_CODE (pat) != SET || GET_CODE (SET_SRC (pat)) != CALL))
 	break;
 

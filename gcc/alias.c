@@ -1941,7 +1941,7 @@ nonlocal_mentioned_p (x)
     {
       /* Constant functions can be constant if they don't use
          scratch memory used to mark function w/o side effects.  */
-      if (code == CALL_INSN && CONST_CALL_P (x))
+      if (code == CALL_INSN && CONST_OR_PURE_CALL_P (x))
         {
 	  x = CALL_INSN_FUNCTION_USAGE (x);
 	  if (x == 0)

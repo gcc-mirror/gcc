@@ -2512,7 +2512,8 @@ need_fake_edge_p (insn)
 
   if ((GET_CODE (insn) == CALL_INSN
        && !SIBLING_CALL_P (insn)
-       && !find_reg_note (insn, REG_NORETURN, NULL) && !CONST_CALL_P (insn)))
+       && !find_reg_note (insn, REG_NORETURN, NULL)
+       && !CONST_OR_PURE_CALL_P (insn)))
     return true;
 
   return ((GET_CODE (PATTERN (insn)) == ASM_OPERANDS
@@ -5392,7 +5393,7 @@ propagate_one_insn (pbi, insn)
 	    cond = COND_EXEC_TEST (PATTERN (insn));
 
 	  /* Non-constant calls clobber memory.  */
-	  if (! CONST_CALL_P (insn))
+	  if (! CONST_OR_PURE_CALL_P (insn))
 	    {
 	      free_EXPR_LIST_list (&pbi->mem_set_list);
 	      pbi->mem_set_list_len = 0;

@@ -2882,7 +2882,7 @@ df_insns_modify (df, bb, first_insn, last_insn)
 	 it does, we need to create a new basic block.  Ouch.  The
 	 same applies for a label.  */
       if ((GET_CODE (insn) == CALL_INSN
-	   && ! CONST_CALL_P (insn))
+	   && ! CONST_OR_PURE_CALL_P (insn))
 	  || GET_CODE (insn) == CODE_LABEL)
 	abort ();
 

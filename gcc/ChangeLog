@@ -1,3 +1,26 @@
+Tue Aug  7 14:56:16 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* alias.c (nonlocal_mentioned_p):
+	Rename CONST_CALL_P to CONST_OR_PURE_CALL_P
+	* calls.c (emit_call_1): Likewise.
+	* cse.c (cse_insn, invalidate_skipped_block): Likewise.
+	* cselib.c (cselib_process_insn): Likewise.
+	* df.c (df_insns_modify): Likewise.
+	* flow.c (need_fake_edge_p): Likewise.
+	(propagate_one_insn): Likewise.
+	* haifa-sched.c (reemit_notes): Likewise.
+	* integrate.c (copy_insn_list): Likewise.
+	* jump.c (delete_prior_computation): Likewise.
+	* local-alloc.c (validate_equiv_mem): Likewise.
+	* loop.c (scan_loop): Likewise.
+	* predict.c (estimate_probability): Likewise.
+	* reload.c (reload): Likewise.
+	* sched-deps (sched_analyze): Likewise.
+	* rtl.h (CONST_CALL_P): rename to CONST_OR_PURE_CALL_P.
+	* gcse.c (compute_hash_table): Likewise.
+	(mark_call): Likewise.
+	(store_killed_in_insn): Likewise.
+
 2001-08-07  Jason Merrill  <jason_merrill@redhat.com>
 
 	* c-semantics.c (make_rtl_for_local_static): Use DECL_RTL_SET_P.

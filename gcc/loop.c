@@ -950,7 +950,7 @@ scan_loop (loop, flags)
       /* Past a call insn, we get to insns which might not be executed
 	 because the call might exit.  This matters for insns that trap.
 	 Constant and pure call insns always return, so they don't count.  */
-      else if (GET_CODE (p) == CALL_INSN && ! CONST_CALL_P (p))
+      else if (GET_CODE (p) == CALL_INSN && ! CONST_OR_PURE_CALL_P (p))
 	call_passed = 1;
       /* Past a label or a jump, we get to insns for which we
 	 can't count on whether or how many times they will be
@@ -2364,7 +2364,7 @@ prescan_loop (loop)
 	}
       else if (GET_CODE (insn) == CALL_INSN)
 	{
-	  if (! CONST_CALL_P (insn))
+	  if (! CONST_OR_PURE_CALL_P (insn))
 	    {
 	      loop_info->unknown_address_altered = 1;
 	      loop_info->has_nonconst_call = 1;

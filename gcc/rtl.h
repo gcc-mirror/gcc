@@ -393,8 +393,8 @@ extern void rtvec_check_failed_bounds PARAMS ((rtvec, int,
 /* 1 if insn has been deleted.  */
 #define INSN_DELETED_P(INSN) ((INSN)->volatil)
 
-/* 1 if insn is a call to a const function.  */
-#define CONST_CALL_P(INSN) ((INSN)->unchanging)
+/* 1 if insn is a call to a const or pure function.  */
+#define CONST_OR_PURE_CALL_P(INSN) ((INSN)->unchanging)
 
 /* 1 if insn (assumed to be a CALL_INSN) is a sibling call.  */
 #define SIBLING_CALL_P(INSN) ((INSN)->jump)
