@@ -662,7 +662,7 @@ enum update_life_extent
 				 | PROP_SCAN_DEAD_STORES)
 #define PROP_POSTRELOAD		(PROP_DEATH_NOTES  \
 				 | PROP_KILL_DEAD_CODE  \
-				 | PROP_SCAN_DEAD_CODE | PROP_AUTOINC \
+				 | PROP_SCAN_DEAD_CODE \
 				 | PROP_SCAN_DEAD_STORES)
 
 #define CLEANUP_EXPENSIVE	1	/* Do relatively expensive optimizations
