@@ -1,3 +1,9 @@
+2002-07-31  Alan Modra  <amodra@bigpond.net.au>
+
+	* configure.in: Move generic linux case to end.	 Copy generic
+	linux noconfigdirs to mips*-*-linux* entry and new
+	powerpc64*-*-linux* entry.  Add target-libffi for the latter.
+
 2002-07-19  Michael Matz  <matz@suse.de>
 
 	* MAINTAINERS: Add myself as ra* maintainer.

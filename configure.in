@@ -454,9 +454,6 @@ case "${target}" in
     # if the --with-newlib option has been given, because otherwise
     # 'target-newlib' will appear in skipdirs.
     ;;
-  *-*-linux*)
-    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
-    ;;
   i[3456]86-*-mingw32*)
     target_configdirs="$target_configdirs target-mingw"
     noconfigdirs="$noconfigdirs expect target-libgloss ${libgcj}"
@@ -544,6 +541,11 @@ case "${target}" in
   powerpc-*-eabi)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
+  powerpc64*-*-linux*)
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+    # not yet ported.
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
   rs6000-*-lynxos*)
     noconfigdirs="$noconfigdirs target-newlib gprof ${libgcj}"
     ;;
@@ -578,6 +580,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs gprof ${libgcj}"   # same as generic mips
    ;;
   mips*-*-linux*)
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     noconfigdirs="$noconfigdirs target-libffi"
     ;;
   mips*-*-*)
@@ -637,6 +640,9 @@ case "${target}" in
     ;;
   ip2k-*-*)
     noconfigdirs="$noconfigdirs target-libiberty ${libstdcxx_version} ${libgcj}"
+    ;;
+  *-*-linux*)
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     ;;
   *-*-lynxos*)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss ${libgcj}"
