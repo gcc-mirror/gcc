@@ -38,9 +38,13 @@ __builtin_saveregs:
 ___builtin_saveregs:
 
 	andnot	0x0f,%sp,%sp	/* round down to 16-byte boundary */
+#if 0
 	adds	-96,%sp,%sp  /* allocate stack space for reg save
 			   area and also for a new va_list
 			   structure */
+#else
+	adds	-80,%sp,%sp  /* allocate stack space for reg save area */
+#endif
 	/* Save all argument registers in the arg reg save area.  The
 	   arg reg save area must have the following layout (according
 	   to the svr4 ABI):
@@ -70,10 +74,12 @@ ___builtin_saveregs:
 	st.l	%r26,72(%sp)
 	st.l	%r27,76(%sp)
 
+#if 0
 	adds	80,%sp,%r16  /* compute the address of the new
 			   va_list structure.  Put in into
 			   r16 so that it will be returned
 			   to the caller.  */
+#endif
 
 	/* Initialize all fields of the new va_list structure.  This
 	   structure looks like:
@@ -86,11 +92,16 @@ ___builtin_saveregs:
 	} va_list;
 	*/
 
+#if 0
 	st.l	%r0, 0(%r16) /* nfixed */
 	st.l	%r0, 4(%r16) /* nfloating */
 	st.l    %sp, 8(%r16) /* __va_ctl points to __va_struct.  */
 	bri	%r1	/* delayed return */
 	st.l	%r28,12(%r16) /* pointer to overflow args */
+#else
+	bri	%r1	/* delayed return */
+	or	%sp,%r0,%r16  /* Return the address of the reg save area.  */
+#endif
 
 #else /* not __svr4__ */
 #if defined(__PARAGON__)
