@@ -1,3 +1,7 @@
+2001-12-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/20011113-1.c: New test.
+
 2001-12-13  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* g++.old-deja/g++.jason/template31.C: Remove templates for classes

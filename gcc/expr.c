@@ -8547,7 +8547,11 @@ expand_expr (exp, target, tmode, modifier)
 	  op0 = force_operand (XEXP (op0, 0), target);
 	}
 
-      if (flag_force_addr && GET_CODE (op0) != REG)
+      if (flag_force_addr
+	  && GET_CODE (op0) != REG
+	  && modifier != EXPAND_CONST_ADDRESS
+	  && modifier != EXPAND_INITIALIZER
+	  && modifier != EXPAND_SUM)
 	op0 = force_reg (Pmode, op0);
 
       if (GET_CODE (op0) == REG
