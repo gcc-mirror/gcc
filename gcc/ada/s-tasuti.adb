@@ -26,8 +26,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
+-- GNARL was developed by the GNARL team at Florida State University.       --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -181,9 +181,15 @@ package body System.Tasking.Utilities is
    procedure Cancel_Queued_Entry_Calls (T : Task_ID) is
       Next_Entry_Call : Entry_Call_Link;
       Entry_Call      : Entry_Call_Link;
-      Caller          : Task_ID;
-      Level           : Integer;
       Self_Id         : constant Task_ID := STPO.Self;
+
+      Caller : Task_ID;
+      pragma Unreferenced (Caller);
+      --  Should this be removed ???
+
+      Level : Integer;
+      pragma Unreferenced (Level);
+      --  Should this be removed ???
 
    begin
       pragma Assert (T = Self or else T.Common.State = Terminated);
@@ -192,6 +198,7 @@ package body System.Tasking.Utilities is
          Queuing.Dequeue_Head (T.Entry_Queues (J), Entry_Call);
 
          while Entry_Call /= null loop
+
             --  Leave Entry_Call.Done = False, since this is cancelled
 
             Caller := Entry_Call.Self;
@@ -260,6 +267,7 @@ package body System.Tasking.Utilities is
       Environment_Task      : constant Task_ID := STPO.Environment_Task;
       Parent                : constant Task_ID := Self_Id.Common.Parent;
       Parent_Needs_Updating : Boolean := False;
+      Master_of_Task        : Integer;
 
    begin
       if Self_Id.Known_Tasks_Index /= -1 then
@@ -278,6 +286,7 @@ package body System.Tasking.Utilities is
       pragma Assert (Parent = Environment_Task
         or else Self_Id.Master_of_Task = Library_Task_Level);
 
+      Master_of_Task := Self_Id.Master_of_Task;
       Self_Id.Master_of_Task := Independent_Task_Level;
 
       --  The run time assumes that the parent of an independent task is the
@@ -311,6 +320,18 @@ package body System.Tasking.Utilities is
          Environment_Task.Awake_Count := Environment_Task.Awake_Count + 1;
          Environment_Task.Alive_Count := Environment_Task.Alive_Count + 1;
          Unlock (Parent);
+      end if;
+
+      --  In case the environment task is already waiting for children to
+      --  complete.
+      --  ??? There may be a race condition if the environment task was not in
+      --  master completion sleep when this task was created, but now is
+
+      if Environment_Task.Common.State = Master_Completion_Sleep and then
+        Master_of_Task = Environment_Task.Master_Within
+      then
+         Environment_Task.Common.Wait_Count :=
+           Environment_Task.Common.Wait_Count - 1;
       end if;
 
       Unlock (Environment_Task);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -87,7 +87,18 @@ package body System.Img_Real is
       S : String (1 .. Long_Long_Float'Width);
 
    begin
-      if not Is_Negative (V) then
+      --  Decide wether a blank should be prepended before the call to
+      --  Set_Image_Real. We generate a blank for positive values, and
+      --  also for positive zeroes. For negative zeroes, we generate a
+      --  space only if Signed_Zeroes is True (the RM only permits the
+      --  output of -0.0 on targets where this is the case). We can of
+      --  course still see a -0.0 on a target where Signed_Zeroes is
+      --  False (since this attribute refers to the proper handling of
+      --  negative zeroes, not to their existence).
+
+      if not Is_Negative (V)
+        or else (not Long_Long_Float'Signed_Zeros and then V = -0.0)
+      then
          S (1) := ' ';
          P := 1;
       end if;
@@ -466,6 +477,47 @@ package body System.Img_Real is
       Reset;
       Scale := 0;
 
+      --  Deal with invalid values first,
+
+      if not V'Valid then
+
+         --  Note that we're taking our chances here, as V might be
+         --  an invalid bit pattern resulting from erroneous execution
+         --  (caused by using uninitialized variables for example).
+
+         --  No matter what, we'll at least get reasonable behaviour,
+         --  converting to infinity or some other value, or causing an
+         --  exception to be raised is fine.
+
+         --  If the following test succeeds, then we definitely have
+         --  an infinite value, so we print Inf.
+
+         if V > Long_Long_Float'Last then
+            Set ('+');
+            Set ('I');
+            Set ('n');
+            Set ('f');
+            Set_Special_Fill (4);
+
+         --  In all other cases we print NaN
+
+         elsif V < Long_Long_Float'First then
+            Set ('-');
+            Set ('I');
+            Set ('n');
+            Set ('f');
+            Set_Special_Fill (4);
+
+         else
+            Set ('N');
+            Set ('a');
+            Set ('N');
+            Set_Special_Fill (3);
+         end if;
+
+         return;
+      end if;
+
       --  Positive values
 
       if V > 0.0 then
@@ -499,44 +551,22 @@ package body System.Img_Real is
          end if;
 
          return;
+
+      else
+         --  It should not be possible for a NaN to end up here.
+         --  Either the 'Valid test has failed, or we have some form
+         --  of erroneous execution. Raise Constraint_Error instead of
+         --  attempting to go ahead printing the value.
+
+         raise Constraint_Error;
       end if;
 
-      --  Deal with invalid values
-
-      if not X'Valid then
-
-         --  Note that we're taking our chances here, as X might be
-         --  an invalid bit pattern resulting from erroneous execution
-         --  (caused by using uninitialized variables for example).
-
-         --  No matter what, we'll at least get reasonable behaviour,
-         --  converting to infinity or some other value, or causing an
-         --  exception to be raised is fine.
-
-         --  If the following test succeeds, then we definitely have
-         --  an infinite value, so we print Inf.
-
-         if X > Long_Long_Float'Last then
-            Set (Sign);
-            Set ('I');
-            Set ('n');
-            Set ('f');
-            Set_Special_Fill (4);
-
-         --  In all other cases we print NaN
-
-         else
-            Set ('N');
-            Set ('a');
-            Set ('N');
-            Set_Special_Fill (3);
-         end if;
-
-         return;
+      --  X and Sign are set here, and X is known to be a valid,
+      --  non-zero floating-point number.
 
       --  Case of non-zero value with Exp = 0
 
-      elsif Exp = 0 then
+      if Exp = 0 then
 
          --  First step is to multiply by 10 ** Nfrac to get an integer
          --  value to be output, an then add 0.5 to round the result.

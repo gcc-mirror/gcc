@@ -128,8 +128,7 @@ package body System.Secondary_Stack is
                        ((Mark_Id (Storage_Size) + Max_Align - 1) / Max_Align)
                          * Max_Align;
 
-      Count_Unreleased_Chunks : Natural;
-      To_Be_Released_Chunk    : Chunk_Ptr;
+      To_Be_Released_Chunk : Chunk_Ptr;
 
    begin
       --  If the secondary stack is fixed in the primary stack, then the
@@ -158,8 +157,6 @@ package body System.Secondary_Stack is
 
       --  Find out if the available memory in the current chunk is sufficient.
       --  if not, go to the next one and eventally create the necessary room
-
-      Count_Unreleased_Chunks := 0;
 
       while Chunk.Last - Stack.Top + 1 < Max_Size loop
          if Chunk.Next /= null then

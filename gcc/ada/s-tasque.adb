@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2002, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2003, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,8 +26,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
+-- GNARL was developed by the GNARL team at Florida State University.       --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -477,16 +477,13 @@ package body System.Tasking.Queuing is
       Temp_Call   : Entry_Call_Link;
       Entry_Index : Protected_Entry_Index := Null_Entry; -- stop warning
 
-      --  ??? should add comment as to why Entry_Index is always initialized
-
    begin
       Entry_Call := null;
 
       begin
+         --  Priority queuing case
+
          if Priority_Queuing then
-
-            --  Priority queuing
-
             for J in Object.Entry_Queues'Range loop
                Temp_Call := Head (Object.Entry_Queues (J));
 
@@ -497,8 +494,8 @@ package body System.Tasking.Queuing is
                        (Object.Compiler_Info, J)).
                           Barrier (Object.Compiler_Info, J)
                then
-                  if (Entry_Call = null or else
-                    Entry_Call.Prio < Temp_Call.Prio)
+                  if Entry_Call = null
+                    or else Entry_Call.Prio < Temp_Call.Prio
                   then
                      Entry_Call := Temp_Call;
                      Entry_Index := J;
@@ -506,9 +503,9 @@ package body System.Tasking.Queuing is
                end if;
             end loop;
 
-         else
-            --  FIFO queuing
+         --  FIFO queueing case
 
+         else
             for J in Object.Entry_Queues'Range loop
                Temp_Call := Head (Object.Entry_Queues (J));
 

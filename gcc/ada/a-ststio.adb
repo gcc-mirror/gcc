@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -114,11 +114,14 @@ package body Ada.Streams.Stream_IO is
       Name : in String := "";
       Form : in String := "")
    is
-      File_Control_Block : Stream_AFCB;
+      Dummy_File_Control_Block : Stream_AFCB;
+      pragma Warnings (Off, Dummy_File_Control_Block);
+      --  Yes, we know this is never assigned a value, only the tag
+      --  is used for dispatching purposes, so that's expected.
 
    begin
       FIO.Open (File_Ptr  => AP (File),
-                Dummy_FCB => File_Control_Block,
+                Dummy_FCB => Dummy_File_Control_Block,
                 Mode      => To_FCB (Mode),
                 Name      => Name,
                 Form      => Form,
@@ -212,11 +215,14 @@ package body Ada.Streams.Stream_IO is
       Name : in String;
       Form : in String := "")
    is
-      File_Control_Block : Stream_AFCB;
+      Dummy_File_Control_Block : Stream_AFCB;
+      pragma Warnings (Off, Dummy_File_Control_Block);
+      --  Yes, we know this is never assigned a value, only the tag
+      --  is used for dispatching purposes, so that's expected.
 
    begin
       FIO.Open (File_Ptr  => AP (File),
-                Dummy_FCB => File_Control_Block,
+                Dummy_FCB => Dummy_File_Control_Block,
                 Mode      => To_FCB (Mode),
                 Name      => Name,
                 Form      => Form,
@@ -228,7 +234,19 @@ package body Ada.Streams.Stream_IO is
 
       Reset (File, Mode);
 
-      File.Last_Op := Op_Read;
+      --  Set last operation. The purpose here is to ensure proper handling
+      --  of the initial operation. In general, a write after a read requires
+      --  resetting and doing a seek, so we set the last operation as Read
+      --  for an In_Out file, but for an Out file we set the last operation
+      --  to Op_Write, since in this case it is not necessary to do a seek
+      --  (and furthermore there are situations (such as the case of writing
+      --  a sequential Posix FIFO file) where the lseek would cause problems.
+
+      if Mode = Out_File then
+         File.Last_Op := Op_Write;
+      else
+         File.Last_Op := Op_Read;
+      end if;
    end Open;
 
    ----------

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1998-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1998-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,45 +27,103 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University.       --
--- Extensive contributions were provided by Ada Core Technologies Inc.      --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
 --  This is the NT version of this package
 
 with Ada.Exceptions;
-with System.OS_Interface;
+with Interfaces.C;
 
 package body System.OS_Primitives is
 
-   use System.OS_Interface;
+   ---------------------------
+   -- Win32 API Definitions --
+   ---------------------------
 
-   ---------------------------------------
+   --  These definitions are copied from System.OS_Interface because we do not
+   --  want to depend on gnarl here.
+
+   type DWORD is new Interfaces.C.unsigned_long;
+
+   type LARGE_INTEGER is delta 1.0 range -2.0**63 .. 2.0**63 - 1.0;
+
+   type BOOL is new Boolean;
+   for BOOL'Size use Interfaces.C.unsigned_long'Size;
+
+   procedure GetSystemTimeAsFileTime (lpFileTime : access Long_Long_Integer);
+   pragma Import (Stdcall, GetSystemTimeAsFileTime, "GetSystemTimeAsFileTime");
+
+   function QueryPerformanceCounter
+     (lpPerformanceCount : access LARGE_INTEGER) return BOOL;
+   pragma Import
+     (Stdcall, QueryPerformanceCounter, "QueryPerformanceCounter");
+
+   function QueryPerformanceFrequency
+     (lpFrequency : access LARGE_INTEGER) return BOOL;
+   pragma Import
+     (Stdcall, QueryPerformanceFrequency, "QueryPerformanceFrequency");
+
+   procedure Sleep (dwMilliseconds : DWORD);
+   pragma Import (Stdcall, Sleep, External_Name => "Sleep");
+
+   ----------------------------------------
    -- Data for the high resolution clock --
-   ---------------------------------------
+   ----------------------------------------
 
-   Tick_Frequency       : aliased LARGE_INTEGER;
+   --  Declare some pointers to access multi-word data above. This is needed
+   --  to workaround a limitation in the GNU/Linker auto-import feature used
+   --  to build the GNAT runtime DLLs. In fact the Clock and Monotonic_Clock
+   --  routines are inlined and they are using some multi-word variables.
+   --  GNU/Linker will fail to auto-import those variables when building
+   --  libgnarl.dll. The indirection level introduced here has no measurable
+   --  penalties.
+   --
+   --  Note that access variables below must not be declared as constant
+   --  otherwise the compiler optimization will remove this indirect access.
+
+   type DA is access all Duration;
+   --  Use to have indirect access to multi-word variables
+
+   type LIA is access all LARGE_INTEGER;
+   --  Use to have indirect access to multi-word variables
+
+   type LLIA is access all Long_Long_Integer;
+   --  Use to have indirect access to multi-word variables
+
+   Tick_Frequency : aliased LARGE_INTEGER;
+   TFA : LIA := Tick_Frequency'Access;
    --  Holds frequency of high-performance counter used by Clock
    --  Windows NT uses a 1_193_182 Hz counter on PCs.
 
-   Base_Ticks           : aliased LARGE_INTEGER;
+   Base_Ticks : aliased LARGE_INTEGER;
+   BTA : LIA := Base_Ticks'Access;
    --  Holds the Tick count for the base time.
 
-   Base_Clock           : Duration;
+   Base_Monotonic_Ticks : aliased LARGE_INTEGER;
+   BMTA : LIA := Base_Monotonic_Ticks'Access;
+   --  Holds the Tick count for the base monotonic time.
+
+   Base_Clock : aliased Duration;
+   BCA : DA := Base_Clock'Access;
    --  Holds the current clock for the standard clock's base time
 
-   Base_Monotonic_Clock : Duration;
+   Base_Monotonic_Clock : aliased Duration;
+   BMCA : DA := Base_Monotonic_Clock'Access;
    --  Holds the current clock for monotonic clock's base time
 
-   Base_Time            : aliased Long_Long_Integer;
+   Base_Time : aliased Long_Long_Integer;
+   BTiA : LLIA := Base_Time'Access;
    --  Holds the base time used to check for system time change, used with
    --  the standard clock.
 
    procedure Get_Base_Time;
-   --  Retrieve the base time. This base time will be used by clock to
-   --  compute the current time by adding to it a fraction of the
+   --  Retrieve the base time and base ticks. These values will be used by
+   --  clock to compute the current time by adding to it a fraction of the
    --  performance counter. This is for the implementation of a
-   --  high-resolution clock.
+   --  high-resolution clock. Note that this routine does not change the base
+   --  monotonic values used by the monotonic clock.
 
    -----------
    -- Clock --
@@ -78,8 +136,8 @@ package body System.OS_Primitives is
    --  microsecs to complete.
 
    function Clock return Duration is
-      Max_Shift            : constant Duration := 2.0;
-      Hundreds_Nano_In_Sec : constant := 1E7;
+      Max_Shift            : constant Duration        := 2.0;
+      Hundreds_Nano_In_Sec : constant Long_Long_Float := 1.0E7;
       Current_Ticks        : aliased LARGE_INTEGER;
       Elap_Secs_Tick       : Duration;
       Elap_Secs_Sys        : Duration;
@@ -93,26 +151,27 @@ package body System.OS_Primitives is
       GetSystemTimeAsFileTime (Now'Access);
 
       Elap_Secs_Sys :=
-        Duration (abs (Now - Base_Time) / Hundreds_Nano_In_Sec);
+        Duration (Long_Long_Float (abs (Now - BTiA.all)) /
+                    Hundreds_Nano_In_Sec);
 
       Elap_Secs_Tick :=
-        Duration (Long_Long_Float (Current_Ticks - Base_Ticks) /
-                  Long_Long_Float (Tick_Frequency));
+        Duration (Long_Long_Float (Current_Ticks - BTA.all) /
+                  Long_Long_Float (TFA.all));
 
       --  If we have a shift of more than Max_Shift seconds we resynchonize the
       --  Clock. This is probably due to a manual Clock adjustment, an DST
-      --  adjustment or an NNTP synchronisation. And we want to adjust the
+      --  adjustment or an NTP synchronisation. And we want to adjust the
       --  time for this system (non-monotonic) clock.
 
       if abs (Elap_Secs_Sys - Elap_Secs_Tick) > Max_Shift then
          Get_Base_Time;
 
          Elap_Secs_Tick :=
-           Duration (Long_Long_Float (Current_Ticks - Base_Ticks) /
-                     Long_Long_Float (Tick_Frequency));
+           Duration (Long_Long_Float (Current_Ticks - BTA.all) /
+                     Long_Long_Float (TFA.all));
       end if;
 
-      return Base_Clock + Elap_Secs_Tick;
+      return BCA.all + Elap_Secs_Tick;
    end Clock;
 
    -------------------
@@ -120,8 +179,6 @@ package body System.OS_Primitives is
    -------------------
 
    procedure Get_Base_Time is
-      use System.OS_Interface;
-
       --  The resolution for GetSystemTime is 1 millisecond.
 
       --  The time to get both base times should take less than 1 millisecond.
@@ -174,10 +231,10 @@ package body System.OS_Primitives is
       end if;
 
       Elap_Secs_Tick :=
-        Duration (Long_Long_Float (Current_Ticks - Base_Ticks) /
-                  Long_Long_Float (Tick_Frequency));
+        Duration (Long_Long_Float (Current_Ticks - BMTA.all) /
+                  Long_Long_Float (TFA.all));
 
-      return Base_Monotonic_Clock + Elap_Secs_Tick;
+      return BMCA.all + Elap_Secs_Tick;
    end Monotonic_Clock;
 
    -----------------
@@ -221,5 +278,9 @@ begin
 
    Get_Base_Time;
 
+   --  Keep base clock and ticks for the monotonic clock. These values should
+   --  never be changed to ensure proper behavior of the monotonic clock.
+
    Base_Monotonic_Clock := Base_Clock;
+   Base_Monotonic_Ticks := Base_Ticks;
 end System.OS_Primitives;

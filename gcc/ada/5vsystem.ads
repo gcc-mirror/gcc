@@ -118,23 +118,34 @@ private
    Backend_Divide_Checks     : constant Boolean := False;
    Backend_Overflow_Checks   : constant Boolean := False;
    Command_Line_Args         : constant Boolean := True;
+   Configurable_Run_Time     : constant Boolean := False;
    Denorm                    : constant Boolean := False;
+   Duration_32_Bits          : constant Boolean := False;
    Exit_Status_Supported     : constant Boolean := True;
    Fractional_Fixed_Ops      : constant Boolean := False;
    Frontend_Layout           : constant Boolean := False;
    Functions_Return_By_DSP   : constant Boolean := False;
-   High_Integrity_Mode       : constant Boolean := False;
-   Long_Shifts_Inlined       : constant Boolean := False;
    Machine_Overflows         : constant Boolean := False;
    Machine_Rounds            : constant Boolean := True;
    OpenVMS                   : constant Boolean := True;
    Signed_Zeros              : constant Boolean := True;
    Stack_Check_Default       : constant Boolean := True;
    Stack_Check_Probes        : constant Boolean := True;
+   Support_64_Bit_Divides    : constant Boolean := True;
+   Support_Aggregates        : constant Boolean := True;
+   Support_Composite_Assign  : constant Boolean := True;
+   Support_Composite_Compare : constant Boolean := True;
+   Support_Long_Shifts       : constant Boolean := True;
+   Suppress_Standard_Library : constant Boolean := False;
    Use_Ada_Main_Program_Name : constant Boolean := False;
    ZCX_By_Default            : constant Boolean := True;
    GCC_ZCX_Support           : constant Boolean := False;
    Front_End_ZCX_Support     : constant Boolean := True;
+
+   --  Obsolete entries, to be removed eventually (bootstrap issues!)
+
+   High_Integrity_Mode       : constant Boolean := False;
+   Long_Shifts_Inlined       : constant Boolean := False;
 
    --------------------------
    -- Underlying Priorities --

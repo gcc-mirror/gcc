@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-1998 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,7 +36,7 @@ with System.Finalization_Root;
 package System.Finalization_Implementation is
 pragma Elaborate_Body (Finalization_Implementation);
 
-   package SFR  renames System.Finalization_Root;
+   package SFR renames System.Finalization_Root;
 
    ------------------------------------------------
    -- Finalization Management Abstract Interface --
@@ -58,7 +58,7 @@ pragma Elaborate_Body (Finalization_Implementation);
    --  attachement, 1 for simple linked lists or 2 for doubly linked lists
    --  or even 3 for a simple attachement of a whole array of elements.
    --  Attachement to a simply linked list is not protected against
-   --  concurrent access and should only be used in context where it
+   --  concurrent access and should only be used in contexts where it
    --  doesn't matter, such as for objects allocated on the stack. In the
    --  case of an attachment on a doubly linked list, L must not be null
    --  and Obj will be inserted AFTER the first element and the attachment
@@ -80,33 +80,33 @@ pragma Elaborate_Body (Finalization_Implementation);
      (L : in out SFR.Finalizable_Ptr;
       A : System.Address;
       B : Short_Short_Integer);
-   --  Generic initialize for tagged objects with controlled components. A
-   --  is the address of the object, L the finalization list when it needs
-   --  to be attached and B the attachement level (see Attach_To_Final_List)
+   --  Generic initialize for tagged objects with controlled components.
+   --  A is the address of the object, L the finalization list when it needs
+   --  to be attached and B the attachement level (see Attach_To_Final_List).
 
    procedure Deep_Tag_Adjust
      (L : in out SFR.Finalizable_Ptr;
       A : System.Address;
       B : Short_Short_Integer);
-   --  Generic adjust for tagged objects with controlled components. A
-   --  is the address of the object, L the finalization list when it needs
-   --  to be attached and B the attachement level (see Attach_To_Final_List)
+   --  Generic adjust for tagged objects with controlled components.
+   --  A is the address of the object, L the finalization list when it needs
+   --  to be attached and B the attachement level (see Attach_To_Final_List).
 
    procedure Deep_Tag_Finalize
      (L : in out SFR.Finalizable_Ptr;
       A : System.Address;
       B : Boolean);
-   --  Generic finalize for tagged objects with controlled components. A
-   --  is the address of the object, L the finalization list when it needs
-   --  to be attached and B the attachement level (see Attach_To_Final_List)
+   --  Generic finalize for tagged objects with controlled components.
+   --  A is the address of the object, L the finalization list when it needs
+   --  to be attached and B the attachement level (see Attach_To_Final_List).
 
    procedure Deep_Tag_Attach
      (L : in out SFR.Finalizable_Ptr;
       A : System.Address;
       B : Short_Short_Integer);
-   --  Generic attachement for tagged objects with controlled components. A
-   --  is the address of the object, L the finalization list when it needs
-   --  to be attached and B the attachement level (see Attach_To_Final_List)
+   --  Generic attachement for tagged objects with controlled components.
+   --  A is the address of the object, L the finalization list when it needs
+   --  to be attached and B the attachement level (see Attach_To_Final_List).
 
    -----------------------------
    -- Record Controller Types --
@@ -115,18 +115,18 @@ pragma Elaborate_Body (Finalization_Implementation);
    --  Definition of the types of the controller component that is included
    --  in records containing controlled components. This controller is
    --  attached to the finalization chain of the upper-level and carries
-   --  the pointer of the finalization chain for the lower level
+   --  the pointer of the finalization chain for the lower level.
 
    type Limited_Record_Controller is new SFR.Root_Controlled with record
       F : SFR.Finalizable_Ptr;
    end record;
 
    procedure Initialize (Object : in out Limited_Record_Controller);
-   --  Does nothing
+   --  Does nothing.
 
    procedure Finalize (Object : in out Limited_Record_Controller);
    --  Finalize the controlled components of the enclosing record by
-   --  following the list starting at Object.F
+   --  following the list starting at Object.F.
 
    type Record_Controller is
       new Limited_Record_Controller with record
@@ -137,13 +137,13 @@ pragma Elaborate_Body (Finalization_Implementation);
    --  Initialize the field My_Address to the Object'Address
 
    procedure Adjust (Object : in out Record_Controller);
-   --  Adjust the components and their finalization pointers by subtracting
-   --  by the offset of the target and the source addresses of the assignment
+   --  Adjust the components and their finalization pointers by substracting
+   --  by the offset of the target and the source addresses of the assignment.
 
    --  Inherit Finalize from Limited_Record_Controller
 
    procedure Detach_From_Final_List (Obj : in out SFR.Finalizable);
-   --  Remove the specified object from its Final list which must be a
+   --  Remove the specified object from its Final list, which must be a
    --  doubly linked list.
 
 end System.Finalization_Implementation;

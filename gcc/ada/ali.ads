@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -64,6 +64,9 @@ package ALI is
    type Source_Id is range 5_000_000 .. 5_999_999;
    --  Id values used for Source table entries
 
+   type Interrupt_State_Id is range 6_000_000 .. 6_999_999;
+   --  Id values used for Interrupt_State table entries
+
    --------------------
    -- ALI File Table --
    --------------------
@@ -96,10 +99,15 @@ package ALI is
       --  this ALI file, since the body if present is always first).
 
       Ver : String (1 .. Ver_Len_Max);
-      --  Value of library version (V line in ALI file)
+      --  Value of library version (V line in ALI file). Not set if
+      --  V lines are ignored as a result of the Ignore_Lines parameter.
 
       Ver_Len : Natural;
-      --  Length of characters stored in Ver
+      --  Length of characters stored in Ver. Not set if V lines are
+      --  ignored as a result of the Ignore_Lines parameter.
+
+      Interface : Boolean;
+      --  Set True when this is an interface to a standalone library
 
       First_Unit : Unit_Id;
       --  Id of first Unit table entry for this file
@@ -114,63 +122,83 @@ package ALI is
       --  Id of last Sdep table entry for this file
 
       Main_Program : Main_Program_Type;
-      --  Indicator of whether first unit can be used as main program
+      --  Indicator of whether first unit can be used as main program.
+      --  Not set if 'M' appears in Ignore_Lines.
 
       Main_Priority : Int;
       --  Indicates priority value if Main_Program field indicates that
       --  this can be a main program. A value of -1 (No_Main_Priority)
       --  indicates that no parameter was found, or no M line was present.
+      --  Not set if 'M' appears in Ignore_Lines.
 
       Time_Slice_Value : Int;
       --  Indicates value of time slice parameter from T=xxx on main program
       --  line. A value of -1 indicates that no T=xxx parameter was found,
       --  or no M line was present.
+      --  Not set if 'M' appears in Ignore_Lines.
 
       WC_Encoding : Character;
       --  Wide character encoding if main procedure. Otherwise not relevant.
+      --  Not set if 'M' appears in Ignore_Lines.
 
       Locking_Policy : Character;
       --  Indicates locking policy for units in this file. Space means
       --  tasking was not used, or that no Locking_Policy pragma was
       --  present or that this is a language defined unit. Otherwise set
       --  to first character (upper case) of policy name.
+      --  Not set if 'P' appears in Ignore_Lines.
 
       Queuing_Policy : Character;
       --  Indicates queuing policy for units in this file. Space means
       --  tasking was not used, or that no Queuing_Policy pragma was
       --  present or that this is a language defined unit. Otherwise set
       --  to first character (upper case) of policy name.
+      --  Not set if 'P' appears in Ignore_Lines.
 
       Task_Dispatching_Policy : Character;
       --  Indicates task dispatching policy for units in this file. Space
       --  means tasking was not used, or that no Task_Dispatching_Policy
       --  pragma was present or that this is a language defined unit.
       --  Otherwise set to first character (upper case) of policy name.
+      --  Not set if 'P' appears in Ignore_Lines.
 
       Compile_Errors : Boolean;
       --  Set to True if compile errors for unit. Note that No_Object
       --  will always be set as well in this case.
+      --  Not set if 'P' appears in Ignore_Lines.
 
       Float_Format : Character;
-      --  Set to float format (set to I if no float-format given)
+      --  Set to float format (set to I if no float-format given).
+      --  Not set if 'P' appears in Ignore_Lines.
 
       No_Object : Boolean;
-      --  Set to True if no object file generated
-
-      No_Run_Time : Boolean;
-      --  Set to True if file was compiled with pragma No_Run_Time
+      --  Set to True if no object file generated.
+      --  Not set if 'P' appears in Ignore_Lines.
 
       Normalize_Scalars : Boolean;
-      --  Set to True if file was compiled with Normalize_Scalars
+      --  Set to True if file was compiled with Normalize_Scalars.
+      --  Not set if 'P' appears in Ignore_Lines.
 
       Unit_Exception_Table : Boolean;
-      --  Set to True if unit exception table pointer generated
+      --  Set to True if unit exception table pointer generated.
+      --  Not set if 'P' appears in Ignore_Lines.
 
       Zero_Cost_Exceptions : Boolean;
-      --  Set to True if file was compiled with zero cost exceptions
+      --  Set to True if file was compiled with zero cost exceptions.
+      --  Not set if 'P' appears in Ignore_Lines.
 
       Restrictions : Restrictions_String;
-      --  Copy of restrictions letters from R line
+      --  Copy of restrictions letters from R line.
+      --  Not set if 'R' appears in Ignore_Lines.
+
+      First_Interrupt_State : Interrupt_State_Id;
+      Last_Interrupt_State  : Interrupt_State_Id'Base;
+      --  These point to the first and last entries in the interrupt
+      --  state table for this unit. If there are no entries, then
+      --  Last_Interrupt_State = First_Interrupt_State - 1 (that's
+      --  why the 'Base reference is there, it can be one less than
+      --  the lower bound of the subtype).
+      --  Not set if 'I' appears in Ignore_Lines
 
    end record;
 
@@ -308,6 +336,12 @@ package ALI is
       --  Set True if IS qualifier appears in ALI file, indicating that
       --  an Initialize_Scalars pragma applies to the unit.
 
+      Interface : Boolean;
+      --  Set True when this is an interface to a standalone library
+
+      Body_Needed_For_SAL : Boolean;
+      --  Indicates that the source for the body of the unit (subprogram,
+      --  package, or generic unit) must be included in a standalone library.
    end record;
 
    package Units is new Table.Table (
@@ -318,6 +352,34 @@ package ALI is
      Table_Increment      => 200,
      Table_Name           => "Unit");
 
+   ---------------------------
+   -- Interrupt State Table --
+   ---------------------------
+
+   --  An entry is made in this table for each I (interrupt state) line
+   --  encountered in the input ALI file. The First/Last_Interrupt_Id
+   --  fields of the ALI file entry show the range of entries defined
+   --  within a particular ALI file.
+
+   type Interrupt_State_Record is record
+      Interrupt_Id : Nat;
+      --  Id from interrupt state entry
+
+      Interrupt_State : Character;
+      --  State from interrupt state entry ('u'/'r'/'s')
+
+      IS_Pragma_Line : Nat;
+      --  Line number of Interrupt_State pragma
+   end record;
+
+   package Interrupt_States is new Table.Table (
+     Table_Component_Type => Interrupt_State_Record,
+     Table_Index_Type     => Interrupt_State_Id'Base,
+     Table_Low_Bound      => Interrupt_State_Id'First,
+     Table_Initial        => 100,
+     Table_Increment      => 200,
+     Table_Name           => "Interrupt_States");
+
    --------------
    -- Switches --
    --------------
@@ -325,8 +387,11 @@ package ALI is
    --  These switches record status information about ali files that
    --  have been read, for quick reference without searching tables.
 
+   --  Note: a switch will be left set at its default value if the line
+   --  which might otherwise set it is ignored (from Ignore_Lines).
+
    Dynamic_Elaboration_Checks_Specified : Boolean := False;
-   --  Set to False by Initialize_ALI. Set to True if Read_ALI reads
+   --  Set to False by Initialize_ALI. Set to True if Scan_ALI reads
    --  a unit for which dynamic elaboration checking is enabled.
 
    Float_Format_Specified : Character := ' ';
@@ -352,10 +417,6 @@ package ALI is
    Normalize_Scalars_Specified : Boolean := False;
    --  Set to False by Initialize_ALI. Set to True if an ali file indicates
    --  that the file was compiled in Normalize_Scalars mode.
-
-   No_Run_Time_Specified : Boolean := False;
-   --  Set to False by Initialize_ALI, Set to True if an ali file indicates
-   --  that the file was compiled in No_Run_Time mode.
 
    Queuing_Policy_Specified : Character := ' ';
    --  Set to blank by Initialize_ALI. Set to the appropriate queuing policy
@@ -391,6 +452,8 @@ package ALI is
 
    --  Each With line (W line) in an ALI file generates a Withs table entry
 
+   --  Note: there will be no entries in this table if 'W' lines are ignored
+
    No_With_Id : constant With_Id := With_Id'First;
    --  Special value indicating no withs table entry
 
@@ -417,6 +480,9 @@ package ALI is
       Elab_All_Desirable : Boolean;
       --  Indicates presence of ED parameter
 
+      Interface : Boolean := False;
+      --  True if the Unit is an Interface of a Stand-Alole Library
+
    end record;
 
    package Withs is new Table.Table (
@@ -432,6 +498,8 @@ package ALI is
    ---------------------
 
    --  Each Arg line (A line) in an ALI file generates an Args table entry
+
+   --  Note: there will be no entries in this table if 'A' lines are ignored
 
    No_Arg_Id : constant Arg_Id := Arg_Id'First;
    --  Special value indicating no args table entry
@@ -456,6 +524,8 @@ package ALI is
    --  appears in a given ALI file, then the arguments are concatenated
    --  to form the entry in this table, using a NUL character as the
    --  separator, and a final NUL character is appended to the end.
+
+   --  Note: there will be no entries in this table if 'L' lines are ignored
 
    type Linker_Option_Record is record
       Name : Name_Id;
@@ -497,6 +567,8 @@ package ALI is
    --  as read from E lines in the ali file. The stored values do not
    --  include the terminating quote characters.
 
+   --  Note: there will be no entries in this table if 'E' lines are ignored
+
    type Vindex is range 0 .. 98;
    --  Type to define range of headers
 
@@ -520,6 +592,8 @@ package ALI is
 
    --  Each source dependency (D line) in an ALI file generates an
    --  entry in the Sdep table.
+
+   --  Note: there will be no entries in this table if 'D' lines are ignored
 
    No_Sdep_Id : constant Sdep_Id := Sdep_Id'First;
    --  Special value indicating no Sdep table entry
@@ -584,8 +658,8 @@ package ALI is
 
    --  The following table records cross-reference sections, there is one
    --  entry for each X header line in the ALI file for an xref section.
-   --  Note that there will be no entries in this table if the Read_Xref
-   --  parameter to Scan_ALI was set to False.
+
+   --  Note: there will be no entries in this table if 'X' lines are ignored
 
    type Xref_Section_Record is record
       File_Num : Sdep_Id;
@@ -599,7 +673,6 @@ package ALI is
 
       Last_Entity : Nat;
       --  Last entry in Xref_Entity table
-
    end record;
 
    package Xref_Section is new Table.Table (
@@ -627,7 +700,7 @@ package ALI is
 
       Etype : Character;
       --  Set to the identification character for the entity. See section
-      --  "Cross-Reference Entity Identifiers in lib-xref.ads for details.
+      --  "Cross-Reference Entity Identifiers" in lib-xref.ads for details.
 
       Col : Pos;
       --  Column number of definition
@@ -665,7 +738,7 @@ package ALI is
       --  This field is set to blank if no typeref is present, or if the
       --  typeref refers to an entity in standard. Otherwise it contains
       --  the identification character for the typeref entity. See section
-      --  "Cross-Reference Entity Identifiers in lib-xref.ads for details.
+      --  "Cross-Reference Entity Identifiers" in lib-xref.ads for details.
 
       Tref_Col : Nat;
       --  This field is set to zero if no typeref is present, or if the
@@ -740,12 +813,14 @@ package ALI is
    --  Initialize the ALI tables. Also resets all switch values to defaults.
 
    function Scan_ALI
-     (F         : File_Name_Type;
-      T         : Text_Buffer_Ptr;
-      Ignore_ED : Boolean;
-      Err       : Boolean;
-      Read_Xref : Boolean := False)
-      return      ALI_Id;
+     (F            : File_Name_Type;
+      T            : Text_Buffer_Ptr;
+      Ignore_ED    : Boolean;
+      Err          : Boolean;
+      Read_Xref    : Boolean := False;
+      Read_Lines   : String := "";
+      Ignore_Lines : String := "X")
+      return         ALI_Id;
    --  Given the text, T, of an ALI file, F, scan and store the information
    --  from the file, and return the Id of the resulting entry in the ALI
    --  table. Switch settings may be modified as described above in the
@@ -760,8 +835,30 @@ package ALI is
    --    is terminated. If Err is True, then no error message is output,
    --    and No_ALI_Id is returned.
    --
+   --    Ignore_Lines requests that Scan_ALI ignore any lines that start
+   --    with any given key character. The default value of X causes all
+   --    Xref lines to be ignored. The corresponding data in the ALI
+   --    tables will not be filled in in this case. It is not possible
+   --    to ignore U (unit) lines, they are always read.
+   --
+   --    Read_Lines requests that Scan_ALI process only lines that start
+   --    with one of the given characters. The corresponding data in the
+   --    ALI file for any characters not given in the list will not be
+   --    set. The default value of the null string indicates that all
+   --    lines should be read (unless Ignore_Lines is specified). U
+   --    (unit) lines are always read regardless of the value of this
+   --    parameter.
+   --
+   --    Note: either Ignore_Lines or Read_Lines should be non-null.
+   --    but not both. If both are given then only the Read_Lines
+   --    value is processed, and the Ignore_Lines parameter is
+   --    not processed.
+   --
    --    Read_XREF is set True to read and acquire the cross-reference
-   --    information, otherwise the scan is terminated when a cross-
-   --    reference line is encountered.
+   --    information. If Read_XREF is set to True, then the effect is
+   --    to ignore all lines other than U, W, D and X lines and the
+   --    Ignore_Lines and Read_Lines parameters are ignored (i.e. the
+   --    use of True for Read_XREF is equivalent to specifying an
+   --    argument of "UWDX" for Read_Lines.
 
 end ALI;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2000-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 2000-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -91,9 +91,9 @@ package body Live is
    -------------
 
    function Body_Of (E : Entity_Id) return Node_Id is
-      Decl    : Node_Id := Unit_Declaration_Node (E);
-      Result  : Node_Id;
-      Kind    : Node_Kind := Nkind (Decl);
+      Decl   : constant Node_Id   := Unit_Declaration_Node (E);
+      Kind   : constant Node_Kind := Nkind (Decl);
+      Result : Node_Id;
 
    begin
       if Kind = N_Subprogram_Body then
@@ -279,6 +279,8 @@ package body Live is
 
       procedure Process (N : Node_Id) is
          Result : Traverse_Result;
+         pragma Warnings (Off, Result);
+
       begin
          Result := Process (N);
       end Process;

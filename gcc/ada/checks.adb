@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,18 +32,23 @@ with Exp_Ch2;  use Exp_Ch2;
 with Exp_Util; use Exp_Util;
 with Elists;   use Elists;
 with Freeze;   use Freeze;
+with Lib;      use Lib;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
+with Output;   use Output;
 with Restrict; use Restrict;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Eval; use Sem_Eval;
+with Sem_Ch8;  use Sem_Ch8;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sem_Warn; use Sem_Warn;
 with Sinfo;    use Sinfo;
+with Sinput;   use Sinput;
 with Snames;   use Snames;
+with Sprint;   use Sprint;
 with Stand;    use Stand;
 with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
@@ -71,9 +76,115 @@ package body Checks is
    --  the ability to emit constraint error warning for static expressions
    --  even when we are not generating code.
 
-   ----------------------------
-   -- Local Subprogram Specs --
-   ----------------------------
+   -------------------------------------
+   -- Suppression of Redundant Checks --
+   -------------------------------------
+
+   --  This unit implements a limited circuit for removal of redundant
+   --  checks. The processing is based on a tracing of simple sequential
+   --  flow. For any sequence of statements, we save expressions that are
+   --  marked to be checked, and then if the same expression appears later
+   --  with the same check, then under certain circumstances, the second
+   --  check can be suppressed.
+
+   --  Basically, we can suppress the check if we know for certain that
+   --  the previous expression has been elaborated (together with its
+   --  check), and we know that the exception frame is the same, and that
+   --  nothing has happened to change the result of the exception.
+
+   --  Let us examine each of these three conditions in turn to describe
+   --  how we ensure that this condition is met.
+
+   --  First, we need to know for certain that the previous expression has
+   --  been executed. This is done principly by the mechanism of calling
+   --  Conditional_Statements_Begin at the start of any statement sequence
+   --  and Conditional_Statements_End at the end. The End call causes all
+   --  checks remembered since the Begin call to be discarded. This does
+   --  miss a few cases, notably the case of a nested BEGIN-END block with
+   --  no exception handlers. But the important thing is to be conservative.
+   --  The other protection is that all checks are discarded if a label
+   --  is encountered, since then the assumption of sequential execution
+   --  is violated, and we don't know enough about the flow.
+
+   --  Second, we need to know that the exception frame is the same. We
+   --  do this by killing all remembered checks when we enter a new frame.
+   --  Again, that's over-conservative, but generally the cases we can help
+   --  with are pretty local anyway (like the body of a loop for example).
+
+   --  Third, we must be sure to forget any checks which are no longer valid.
+   --  This is done by two mechanisms, first the Kill_Checks_Variable call is
+   --  used to note any changes to local variables. We only attempt to deal
+   --  with checks involving local variables, so we do not need to worry
+   --  about global variables. Second, a call to any non-global procedure
+   --  causes us to abandon all stored checks, since such a all may affect
+   --  the values of any local variables.
+
+   --  The following define the data structures used to deal with remembering
+   --  checks so that redundant checks can be eliminated as described above.
+
+   --  Right now, the only expressions that we deal with are of the form of
+   --  simple local objects (either declared locally, or IN parameters) or
+   --  such objects plus/minus a compile time known constant. We can do
+   --  more later on if it seems worthwhile, but this catches many simple
+   --  cases in practice.
+
+   --  The following record type reflects a single saved check. An entry
+   --  is made in the stack of saved checks if and only if the expression
+   --  has been elaborated with the indicated checks.
+
+   type Saved_Check is record
+      Killed : Boolean;
+      --  Set True if entry is killed by Kill_Checks
+
+      Entity : Entity_Id;
+      --  The entity involved in the expression that is checked
+
+      Offset : Uint;
+      --  A compile time value indicating the result of adding or
+      --  subtracting a compile time value. This value is to be
+      --  added to the value of the Entity. A value of zero is
+      --  used for the case of a simple entity reference.
+
+      Check_Type : Character;
+      --  This is set to 'R' for a range check (in which case Target_Type
+      --  is set to the target type for the range check) or to 'O' for an
+      --  overflow check (in which case Target_Type is set to Empty).
+
+      Target_Type : Entity_Id;
+      --  Used only if Do_Range_Check is set. Records the target type for
+      --  the check. We need this, because a check is a duplicate only if
+      --  it has a the same target type (or more accurately one with a
+      --  range that is smaller or equal to the stored target type of a
+      --  saved check).
+   end record;
+
+   --  The following table keeps track of saved checks. Rather than use an
+   --  extensible table. We just use a table of fixed size, and we discard
+   --  any saved checks that do not fit. That's very unlikely to happen and
+   --  this is only an optimization in any case.
+
+   Saved_Checks : array (Int range 1 .. 200) of Saved_Check;
+   --  Array of saved checks
+
+   Num_Saved_Checks : Nat := 0;
+   --  Number of saved checks
+
+   --  The following stack keeps track of statement ranges. It is treated
+   --  as a stack. When Conditional_Statements_Begin is called, an entry
+   --  is pushed onto this stack containing the value of Num_Saved_Checks
+   --  at the time of the call. Then when Conditional_Statements_End is
+   --  called, this value is popped off and used to reset Num_Saved_Checks.
+
+   --  Note: again, this is a fixed length stack with a size that should
+   --  always be fine. If the value of the stack pointer goes above the
+   --  limit, then we just forget all saved checks.
+
+   Saved_Checks_Stack : array (Int range 1 .. 100) of Nat;
+   Saved_Checks_TOS : Nat := 0;
+
+   -----------------------
+   -- Local Subprograms --
+   -----------------------
 
    procedure Apply_Selected_Length_Checks
      (Ck_Node    : Node_Id;
@@ -94,6 +205,26 @@ package body Checks is
    --  Expr, Target_Typ and Source_Typ are as described for the above
    --  routine. The Do_Static flag indicates that only a static check is
    --  to be done.
+
+   procedure Find_Check
+     (Expr        : Node_Id;
+      Check_Type  : Character;
+      Target_Type : Entity_Id;
+      Entry_OK    : out Boolean;
+      Check_Num   : out Nat;
+      Ent         : out Entity_Id;
+      Ofs         : out Uint);
+   --  This routine is used by Enable_Range_Check and Enable_Overflow_Check
+   --  to see if a check is of the form for optimization, and if so, to see
+   --  if it has already been performed. Expr is the expression to check,
+   --  and Check_Type is 'R' for a range check, 'O' for an overflow check.
+   --  Target_Type is the target type for a range check, and Empty for an
+   --  overflow check. If the entry is not of the form for optimization,
+   --  then Entry_OK is set to False, and the remaining out parameters
+   --  are undefined. If the entry is OK, then Ent/Ofs are set to the
+   --  entity and offset from the expression. Check_Num is the number of
+   --  a matching saved entry in Saved_Checks, or zero if no such entry
+   --  is located.
 
    function Get_Discriminal (E : Entity_Id; Bound : Node_Id) return Node_Id;
    --  If a discriminal is used in constraining a prival, Return reference
@@ -142,8 +273,11 @@ package body Checks is
 
    function Access_Checks_Suppressed (E : Entity_Id) return Boolean is
    begin
-      return Scope_Suppress.Access_Checks
-        or else (Present (E) and then Suppress_Access_Checks (E));
+      if Present (E) and then Checks_May_Be_Suppressed (E) then
+         return Is_Check_Suppressed (E, Access_Check);
+      else
+         return Scope_Suppress (Access_Check);
+      end if;
    end Access_Checks_Suppressed;
 
    -------------------------------------
@@ -152,8 +286,11 @@ package body Checks is
 
    function Accessibility_Checks_Suppressed (E : Entity_Id) return Boolean is
    begin
-      return Scope_Suppress.Accessibility_Checks
-        or else (Present (E) and then Suppress_Accessibility_Checks (E));
+      if Present (E) and then Checks_May_Be_Suppressed (E) then
+         return Is_Check_Suppressed (E, Accessibility_Check);
+      else
+         return Scope_Suppress (Accessibility_Check);
+      end if;
    end Accessibility_Checks_Suppressed;
 
    -------------------------
@@ -167,8 +304,9 @@ package body Checks is
       Static_Sloc  : Source_Ptr;
       Flag_Node    : Node_Id)
    is
-      Internal_Flag_Node   : Node_Id    := Flag_Node;
-      Internal_Static_Sloc : Source_Ptr := Static_Sloc;
+      Internal_Flag_Node   : constant Node_Id    := Flag_Node;
+      Internal_Static_Sloc : constant Source_Ptr := Static_Sloc;
+
       Checks_On : constant Boolean :=
                     (not Index_Checks_Suppressed (Suppress_Typ))
                        or else
@@ -219,17 +357,53 @@ package body Checks is
          Check_Unset_Reference (P);
       end if;
 
-      if Is_Entity_Name (P)
-        and then Access_Checks_Suppressed (Entity (P))
-      then
+      --  Don't need access check if prefix is known to be non-null
+
+      if Known_Non_Null (P) then
          return;
+
+      --  Don't need access checks if they are suppressed on the type
 
       elsif Access_Checks_Suppressed (Etype (P)) then
          return;
-
-      else
-         Set_Do_Access_Check (N, True);
       end if;
+
+      --  Case where P is an entity name
+
+      if Is_Entity_Name (P) then
+         declare
+            Ent : constant Entity_Id := Entity (P);
+
+         begin
+            if Access_Checks_Suppressed (Ent) then
+               return;
+            end if;
+
+            --  Otherwise we are going to generate an access check, and
+            --  are we have done it, the entity will now be known non null
+            --  But we have to check for safe sequential semantics here!
+
+            if Safe_To_Capture_Value (N, Ent) then
+               Set_Is_Known_Non_Null (Ent);
+            end if;
+         end;
+      end if;
+
+      --  Access check is required
+
+      declare
+         Loc : constant Source_Ptr := Sloc (N);
+
+      begin
+         Insert_Action (N,
+           Make_Raise_Constraint_Error (Sloc (N),
+              Condition =>
+                Make_Op_Eq (Loc,
+                  Left_Opnd => Duplicate_Subexpr_Move_Checks (P),
+                  Right_Opnd =>
+                    Make_Null (Loc)),
+              Reason => CE_Access_Check_Failed));
+      end;
    end Apply_Access_Check;
 
    -------------------------------
@@ -290,7 +464,13 @@ package body Checks is
       Loc  : Source_Ptr;
 
    begin
-      if No (AC) or else Range_Checks_Suppressed (E) then
+      --  See if check needed. Note that we never need a check if the
+      --  maximum alignment is one, since the check will always succeed
+
+      if No (AC)
+        or else not Check_Address_Alignment (AC)
+        or else Maximum_Alignment = 1
+      then
          return;
       end if;
 
@@ -341,7 +521,7 @@ package body Checks is
                         Left_Opnd =>
                           Unchecked_Convert_To
                            (RTE (RE_Integer_Address),
-                            Duplicate_Subexpr (Expr)),
+                            Duplicate_Subexpr_No_Checks (Expr)),
                         Right_Opnd =>
                           Make_Attribute_Reference (Loc,
                             Prefix => New_Occurrence_Of (E, Loc),
@@ -353,6 +533,10 @@ package body Checks is
       end if;
 
       return;
+
+   exception
+      when RE_Not_Available =>
+         return;
    end Apply_Alignment_Check;
 
    -------------------------------------
@@ -376,11 +560,11 @@ package body Checks is
       Ctyp  : Entity_Id;
       Opnd  : Node_Id;
       Cent  : RE_Id;
-      Lo    : Uint;
-      Hi    : Uint;
-      OK    : Boolean;
 
    begin
+      --  Skip this if overflow checks are done in back end, or the overflow
+      --  flag is not set anyway, or we are not doing code expansion.
+
       if Backend_Overflow_Checks_On_Target
         or not Do_Overflow_Check (N)
         or not Expander_Active
@@ -388,36 +572,8 @@ package body Checks is
          return;
       end if;
 
-      --  Nothing to do if the range of the result is known OK
-
-      Determine_Range (N, OK, Lo, Hi);
-
-      --  Note in the test below that we assume that if a bound of the
-      --  range is equal to that of the type. That's not quite accurate
-      --  but we do this for the following reasons:
-
-      --   a) The way that Determine_Range works, it will typically report
-      --      the bounds of the value are the bounds of the type, because
-      --      it either can't tell anything more precise, or does not think
-      --      it is worth the effort to be more precise.
-
-      --   b) It is very unusual to have a situation in which this would
-      --      generate an unnecessary overflow check (an example would be
-      --      a subtype with a range 0 .. Integer'Last - 1 to which the
-      --      literal value one is added.
-
-      --   c) The alternative is a lot of special casing in this routine
-      --      which would partially duplicate the Determine_Range processing.
-
-      if OK
-        and then Lo > Expr_Value (Type_Low_Bound  (Typ))
-        and then Hi < Expr_Value (Type_High_Bound (Typ))
-      then
-         return;
-      end if;
-
-      --  None of the special case optimizations worked, so there is nothing
-      --  for it but to generate the full general case code:
+      --  Otherwise, we generate the full general code for front end overflow
+      --  detection, which works by doing arithmetic in a larger type:
 
       --    x op y
 
@@ -503,13 +659,30 @@ package body Checks is
       --  Now build the outer conversion
 
       Opnd := OK_Convert_To (Typ, Opnod);
-
       Analyze (Opnd);
       Set_Etype (Opnd, Typ);
-      Set_Analyzed (Opnd, True);
-      Set_Do_Overflow_Check (Opnd, True);
 
-      Rewrite (N, Opnd);
+      --  In the discrete type case, we directly generate the range check
+      --  for the outer operand. This range check will implement the required
+      --  overflow check.
+
+      if Is_Discrete_Type (Typ) then
+         Rewrite (N, Opnd);
+         Generate_Range_Check (Expression (N), Typ, CE_Overflow_Check_Failed);
+
+      --  For other types, we enable overflow checking on the conversion,
+      --  after setting the node as analyzed to prevent recursive attempts
+      --  to expand the conversion node.
+
+      else
+         Set_Analyzed (Opnd, True);
+         Enable_Overflow_Check (Opnd);
+         Rewrite (N, Opnd);
+      end if;
+
+   exception
+      when RE_Not_Available =>
+         return;
    end Apply_Arithmetic_Overflow_Check;
 
    ----------------------------
@@ -605,7 +778,7 @@ package body Checks is
          return;
       end if;
 
-      --  It is pointless to insert this check inside an _init_proc, because
+      --  It is pointless to insert this check inside an  init proc, because
       --  that's too late, we have already built the object to be the right
       --  size, and if it's too large, too bad!
 
@@ -688,9 +861,7 @@ package body Checks is
          Insert_Action (N,
            Make_Raise_Storage_Error (Loc,
              Reason => SE_Object_Too_Large));
-         Warn_On_Instance := True;
          Error_Msg_N ("?Storage_Error will be raised at run-time", N);
-         Warn_On_Instance := False;
          Uintp.Release (Umark);
          return;
       end if;
@@ -715,13 +886,12 @@ package body Checks is
 
       Sizx :=
         Make_Attribute_Reference (Loc,
-          Prefix => New_Occurrence_Of (Ctyp, Loc),
+          Prefix         => New_Occurrence_Of (Ctyp, Loc),
           Attribute_Name => Name_Size);
 
       Indx := First_Index (Typ);
 
       for J in 1 .. Number_Dimensions (Typ) loop
-
          if Sloc (Etype (Indx)) = Sloc (N) then
             Ensure_Defined (Etype (Indx), N);
          end if;
@@ -942,8 +1112,7 @@ package body Checks is
       if Nkind (Original_Node (N)) /= N_Allocator
         and then (No (Lhs)
           or else not Is_Entity_Name (Lhs)
-          or else (Ekind (Entity (Lhs)) /=  E_In_Out_Parameter
-                    and then Ekind (Entity (Lhs)) /=  E_Out_Parameter))
+          or else No (Param_Entity (Lhs)))
       then
          if (Etype (N) = Typ
               or else (Do_Access and then Designated_Type (Typ) = S_Typ))
@@ -960,7 +1129,8 @@ package body Checks is
         and then Is_Entity_Name (Expression (Original_Node (N)))
       then
          declare
-            Alloc_Typ : Entity_Id := Entity (Expression (Original_Node (N)));
+            Alloc_Typ : constant Entity_Id :=
+                          Entity (Expression (Original_Node (N)));
 
          begin
             if Alloc_Typ = T_Typ
@@ -979,7 +1149,7 @@ package body Checks is
       --  all the constraints are constants. In this case, we can do the
       --  check successfully at compile time.
 
-      --  we skip this check for the case where the node is a rewritten`
+      --  We skip this check for the case where the node is a rewritten`
       --  allocator, because it already carries the context subtype, and
       --  extracting the discriminants from the aggregate is messy.
 
@@ -1079,7 +1249,6 @@ package body Checks is
         Make_Raise_Constraint_Error (Loc,
           Condition => Cond,
           Reason    => CE_Discriminant_Check_Failed));
-
    end Apply_Discriminant_Check;
 
    ------------------------
@@ -1116,7 +1285,7 @@ package body Checks is
                  Make_Raise_Constraint_Error (Loc,
                    Condition =>
                      Make_Op_Eq (Loc,
-                       Left_Opnd => Duplicate_Subexpr (Right),
+                       Left_Opnd => Duplicate_Subexpr_Move_Checks (Right),
                        Right_Opnd => Make_Integer_Literal (Loc, 0)),
                    Reason => CE_Divide_By_Zero));
             end if;
@@ -1142,11 +1311,13 @@ package body Checks is
                         Make_And_Then (Loc,
 
                            Make_Op_Eq (Loc,
-                             Left_Opnd  => Duplicate_Subexpr (Left),
+                             Left_Opnd  =>
+                               Duplicate_Subexpr_Move_Checks (Left),
                              Right_Opnd => Make_Integer_Literal (Loc, LLB)),
 
                            Make_Op_Eq (Loc,
-                             Left_Opnd => Duplicate_Subexpr (Right),
+                             Left_Opnd =>
+                               Duplicate_Subexpr (Right),
                              Right_Opnd =>
                                Make_Integer_Literal (Loc, -1))),
                       Reason => CE_Overflow_Check_Failed));
@@ -1218,6 +1389,10 @@ package body Checks is
       procedure Bad_Value;
       --  Procedure called if value is determined to be out of range
 
+      ---------------
+      -- Bad_Value --
+      ---------------
+
       procedure Bad_Value is
       begin
          Apply_Compile_Time_Constraint_Error
@@ -1225,6 +1400,8 @@ package body Checks is
             Ent => Target_Typ,
             Typ => Target_Typ);
       end Bad_Value;
+
+   --  Start of processing for Apply_Scalar_Range_Check
 
    begin
       if Inside_A_Generic then
@@ -1261,21 +1438,21 @@ package body Checks is
             --  Check array type and its base type
 
             if Index_Checks_Suppressed (Arr_Typ)
-              or else Suppress_Index_Checks (Base_Type (Arr_Typ))
+              or else Index_Checks_Suppressed (Base_Type (Arr_Typ))
             then
                return;
 
             --  Check array itself if it is an entity name
 
             elsif Is_Entity_Name (Arr)
-              and then Suppress_Index_Checks (Entity (Arr))
+              and then Index_Checks_Suppressed (Entity (Arr))
             then
                return;
 
             --  Check expression itself if it is an entity name
 
             elsif Is_Entity_Name (Expr)
-              and then Suppress_Index_Checks (Entity (Expr))
+              and then Index_Checks_Suppressed (Entity (Expr))
             then
                return;
             end if;
@@ -1286,14 +1463,14 @@ package body Checks is
             --  Check target type and its base type
 
             if Range_Checks_Suppressed (Target_Typ)
-              or else Suppress_Range_Checks (Base_Type (Target_Typ))
+              or else Range_Checks_Suppressed (Base_Type (Target_Typ))
             then
                return;
 
             --  Check expression itself if it is an entity name
 
             elsif Is_Entity_Name (Expr)
-              and then Suppress_Range_Checks (Entity (Expr))
+              and then Range_Checks_Suppressed (Entity (Expr))
             then
                return;
 
@@ -1302,11 +1479,28 @@ package body Checks is
 
             elsif Nkind (Parnt) = N_Assignment_Statement
               and then Is_Entity_Name (Name (Parnt))
-              and then Suppress_Range_Checks (Entity (Name (Parnt)))
+              and then Range_Checks_Suppressed (Entity (Name (Parnt)))
             then
                return;
             end if;
          end if;
+      end if;
+
+      --  Do not set range checks if they are killed
+
+      if Nkind (Expr) = N_Unchecked_Type_Conversion
+        and then Kill_Range_Check (Expr)
+      then
+         return;
+      end if;
+
+      --  Do not set range checks for any values from System.Scalar_Values
+      --  since the whole idea of such values is to avoid checking them!
+
+      if Is_Entity_Name (Expr)
+        and then Is_RTU (Scope (Entity (Expr)), System_Scalar_Values)
+      then
+         return;
       end if;
 
       --  Now see if we need a check
@@ -1325,7 +1519,8 @@ package body Checks is
         Is_Subscr_Ref and then not Is_Constrained (Arr_Typ);
 
       --  Always do a range check if the source type includes infinities
-      --  and the target type does not include infinities.
+      --  and the target type does not include infinities. We do not do
+      --  this if range checks are killed.
 
       if Is_Floating_Point_Type (S_Typ)
         and then Has_Infinities (S_Typ)
@@ -1360,23 +1555,44 @@ package body Checks is
             if Compile_Time_Known_Value (Tlo)
               and then Compile_Time_Known_Value (Thi)
             then
-               Determine_Range (Expr, OK, Lo, Hi);
+               declare
+                  Lov : constant Uint := Expr_Value (Tlo);
+                  Hiv : constant Uint := Expr_Value (Thi);
 
-               if OK then
-                  declare
-                     Lov : constant Uint := Expr_Value (Tlo);
-                     Hiv : constant Uint := Expr_Value (Thi);
+               begin
+                  --  If range is null, we for sure have a constraint error
+                  --  (we don't even need to look at the value involved,
+                  --  since all possible values will raise CE).
 
-                  begin
+                  if Lov > Hiv then
+                     Bad_Value;
+                     return;
+                  end if;
+
+                  --  Otherwise determine range of value
+
+                  Determine_Range (Expr, OK, Lo, Hi);
+
+                  if OK then
+
+                     --  If definitely in range, all OK
+
                      if Lo >= Lov and then Hi <= Hiv then
                         return;
+
+                     --  If definitely not in range, warn
 
                      elsif Lov > Hi or else Hiv < Lo then
                         Bad_Value;
                         return;
+
+                     --  Otherwise we don't know
+
+                     else
+                        null;
                      end if;
-                  end;
-               end if;
+                  end if;
+               end;
             end if;
          end;
       end if;
@@ -1386,10 +1602,9 @@ package body Checks is
           or else (Is_Fixed_Point_Type (S_Typ) and then not Fixed_Int);
 
       --  Check if we can determine at compile time whether Expr is in the
-      --  range of the target type. Note that if S_Typ is within the
-      --  bounds of Target_Typ then this must be the case. This checks is
-      --  only meaningful if this is not a conversion between integer and
-      --  real types.
+      --  range of the target type. Note that if S_Typ is within the bounds
+      --  of Target_Typ then this must be the case. This check is meaningful
+      --  only if this is not a conversion between integer and real types.
 
       if not Is_Unconstrained_Subscr_Ref
         and then
@@ -1405,27 +1620,21 @@ package body Checks is
          Bad_Value;
          return;
 
-      --  Do not set range checks if they are killed
+      --  In the floating-point case, we only do range checks if the
+      --  type is constrained. We definitely do NOT want range checks
+      --  for unconstrained types, since we want to have infinities
 
-      elsif Nkind (Expr) = N_Unchecked_Type_Conversion
-        and then Kill_Range_Check (Expr)
-      then
-         return;
+      elsif Is_Floating_Point_Type (S_Typ) then
+         if Is_Constrained (S_Typ) then
+            Enable_Range_Check (Expr);
+         end if;
 
-      --  ??? We only need a runtime check if the target type is constrained
-      --  (the predefined type Float is not for instance).
-      --  so the following should really be
-      --
-      --    elsif Is_Constrained (Target_Typ) then
-      --
-      --  but it isn't because certain types do not have the Is_Constrained
-      --  flag properly set (see 1503-003).
+      --  For all other cases we enable a range check unconditionally
 
       else
          Enable_Range_Check (Expr);
          return;
       end if;
-
    end Apply_Scalar_Range_Check;
 
    ----------------------------------
@@ -1457,7 +1666,6 @@ package body Checks is
         Selected_Length_Checks (Ck_Node, Target_Typ, Source_Typ, Empty);
 
       for J in 1 .. 2 loop
-
          R_Cno := R_Result (J);
          exit when No (R_Cno);
 
@@ -1613,9 +1821,7 @@ package body Checks is
          else
             Install_Static_Check (R_Cno, Loc);
          end if;
-
       end loop;
-
    end Apply_Selected_Range_Checks;
 
    -------------------------------
@@ -1667,9 +1873,8 @@ package body Checks is
    procedure Apply_Type_Conversion_Checks (N : Node_Id) is
       Target_Type : constant Entity_Id := Etype (N);
       Target_Base : constant Entity_Id := Base_Type (Target_Type);
-
-      Expr      : constant Node_Id   := Expression (N);
-      Expr_Type : constant Entity_Id := Etype (Expr);
+      Expr        : constant Node_Id   := Expression (N);
+      Expr_Type   : constant Entity_Id := Etype (Expr);
 
    begin
       if Inside_A_Generic then
@@ -1682,14 +1887,10 @@ package body Checks is
          return;
 
       --  Scalar type conversions of the form Target_Type (Expr) require
-      --  two checks:
-      --
-      --    - First there is an overflow check to insure that Expr is
-      --      in the base type of Target_Typ (4.6 (28)),
-      --
-      --    - After we know Expr fits into the base type, we must perform a
-      --      range check to ensure that Expr meets the constraints of the
-      --      Target_Type.
+      --  a range check if we cannot be sure that Expr is in the base type
+      --  of Target_Typ and also that Expr is in the range of Target_Typ.
+      --  These are not quite the same condition from an implementation
+      --  point of view, but clearly the second includes the first.
 
       elsif Is_Scalar_Type (Target_Type) then
          declare
@@ -1699,8 +1900,6 @@ package body Checks is
             --  then fixed point values must be read as integral values.
 
          begin
-            --  Overflow check.
-
             if not Overflow_Checks_Suppressed (Target_Base)
               and then not In_Subrange_Of (Expr_Type, Target_Base, Conv_OK)
             then
@@ -1720,26 +1919,28 @@ package body Checks is
         and then Is_Derived_Type (Target_Type)
         and then not Is_Tagged_Type (Target_Type)
         and then not Is_Constrained (Target_Type)
-        and then Present (Girder_Constraint (Target_Type))
+        and then Present (Stored_Constraint (Target_Type))
       then
-         --  A unconstrained derived type may have inherited discriminants.
-         --  Build an actual discriminant constraint list using the girder
+         --  An unconstrained derived type may have inherited discriminant
+         --  Build an actual discriminant constraint list using the stored
          --  constraint, to verify that the expression of the parent type
          --  satisfies the constraints imposed by the (unconstrained!)
          --  derived type. This applies to value conversions, not to view
          --  conversions of tagged types.
 
          declare
-            Loc             : constant Source_Ptr := Sloc (N);
-            Cond            : Node_Id;
-            Constraint      : Elmt_Id;
-            Discr_Value     : Node_Id;
-            Discr           : Entity_Id;
-            New_Constraints : Elist_Id := New_Elmt_List;
-            Old_Constraints : Elist_Id := Discriminant_Constraint (Expr_Type);
+            Loc         : constant Source_Ptr := Sloc (N);
+            Cond        : Node_Id;
+            Constraint  : Elmt_Id;
+            Discr_Value : Node_Id;
+            Discr       : Entity_Id;
+
+            New_Constraints : constant Elist_Id := New_Elmt_List;
+            Old_Constraints : constant Elist_Id :=
+                                Discriminant_Constraint (Expr_Type);
 
          begin
-            Constraint := First_Elmt (Girder_Constraint (Target_Type));
+            Constraint := First_Elmt (Stored_Constraint (Target_Type));
 
             while Present (Constraint) loop
                Discr_Value := Node (Constraint);
@@ -1755,13 +1956,14 @@ package body Checks is
                      --  Parent is constrained by new discriminant. Obtain
                      --  Value of original discriminant in expression. If
                      --  the new discriminant has been used to constrain more
-                     --  than one of the girder ones, this will provide the
-                     --  required consistency check.
+                     --  than one of the stored discriminants, this will
+                     --  provide the required consistency check.
 
                      Append_Elmt (
                         Make_Selected_Component (Loc,
                           Prefix =>
-                            Duplicate_Subexpr (Expr, Name_Req => True),
+                            Duplicate_Subexpr_No_Checks
+                              (Expr, Name_Req => True),
                           Selector_Name =>
                             Make_Identifier (Loc, Chars (Discr))),
                                 New_Constraints);
@@ -1773,11 +1975,12 @@ package body Checks is
                   end if;
 
                --  Derived type definition has an explicit value for
-               --  this girder discriminant.
+               --  this stored discriminant.
 
                else
                   Append_Elmt
-                    (Duplicate_Subexpr (Discr_Value), New_Constraints);
+                    (Duplicate_Subexpr_No_Checks (Discr_Value),
+                     New_Constraints);
                end if;
 
                Next_Elmt (Constraint);
@@ -1797,12 +2000,14 @@ package body Checks is
                 Reason    => CE_Discriminant_Check_Failed));
          end;
 
-      --  should there be other checks here for array types ???
+      --  For arrays, conversions are applied during expansion, to take
+      --  into accounts changes of representation.  The checks become range
+      --  checks on the base type or length checks on the subtype, depending
+      --  on whether the target type is unconstrained or constrained.
 
       else
          null;
       end if;
-
    end Apply_Type_Conversion_Checks;
 
    ----------------------------------------------
@@ -1831,6 +2036,18 @@ package body Checks is
 
       elsif not Comes_From_Source (N) then
          return;
+
+      --  If the prefix is a selected component that depends on a discriminant
+      --  the check may improperly expose a discriminant instead of using
+      --  the bounds of the object itself. Set the type of the attribute to
+      --  the base type of the context, so that a check will be imposed when
+      --  needed (e.g. if the node appears as an index).
+
+      elsif Nkind (Prefix (N)) = N_Selected_Component
+        and then Ekind (Typ) = E_Signed_Integer_Subtype
+        and then Depends_On_Discriminant (Scalar_Range (Typ))
+      then
+         Set_Etype (N, Base_Type (Typ));
 
       --  Otherwise, replace the attribute node with a type conversion
       --  node whose expression is the attribute, retyped to universal
@@ -1866,14 +2083,14 @@ package body Checks is
       Cond     : Node_Id;
       Disc     : Elmt_Id;
       Disc_Ent : Entity_Id;
+      Dref     : Node_Id;
       Dval     : Node_Id;
 
    begin
       Cond := Empty;
       Disc := First_Elmt (Discriminant_Constraint (T_Typ));
 
-      --  For a fully private type, use the discriminants of the parent
-      --  type.
+      --  For a fully private type, use the discriminants of the parent type
 
       if Is_Private_Type (T_Typ)
         and then No (Full_View (T_Typ))
@@ -1884,7 +2101,6 @@ package body Checks is
       end if;
 
       while Present (Disc) loop
-
          Dval := Node (Disc);
 
          if Nkind (Dval) = N_Identifier
@@ -1892,17 +2108,21 @@ package body Checks is
          then
             Dval := New_Occurrence_Of (Discriminal (Entity (Dval)), Loc);
          else
-            Dval := Duplicate_Subexpr (Dval);
+            Dval := Duplicate_Subexpr_No_Checks (Dval);
          end if;
+
+         Dref :=
+           Make_Selected_Component (Loc,
+             Prefix =>
+               Duplicate_Subexpr_No_Checks (N, Name_Req => True),
+             Selector_Name =>
+               Make_Identifier (Loc, Chars (Disc_Ent)));
+
+         Set_Is_In_Discriminant_Check (Dref);
 
          Evolve_Or_Else (Cond,
            Make_Op_Ne (Loc,
-             Left_Opnd =>
-               Make_Selected_Component (Loc,
-                 Prefix =>
-                   Duplicate_Subexpr (N, Name_Req => True),
-                 Selector_Name =>
-                   Make_Identifier (Loc, Chars (Disc_Ent))),
+             Left_Opnd => Dref,
              Right_Opnd => Dval));
 
          Next_Elmt (Disc);
@@ -1948,6 +2168,63 @@ package body Checks is
          Check_Valid_Lvalue_Subscripts (Prefix (Expr));
       end if;
    end Check_Valid_Lvalue_Subscripts;
+
+   ----------------------------------
+   -- Conditional_Statements_Begin --
+   ----------------------------------
+
+   procedure Conditional_Statements_Begin is
+   begin
+      Saved_Checks_TOS := Saved_Checks_TOS + 1;
+
+      --  If stack overflows, kill all checks, that way we know to
+      --  simply reset the number of saved checks to zero on return.
+      --  This should never occur in practice.
+
+      if Saved_Checks_TOS > Saved_Checks_Stack'Last then
+         Kill_All_Checks;
+
+      --  In the normal case, we just make a new stack entry saving
+      --  the current number of saved checks for a later restore.
+
+      else
+         Saved_Checks_Stack (Saved_Checks_TOS) := Num_Saved_Checks;
+
+         if Debug_Flag_CC then
+            w ("Conditional_Statements_Begin: Num_Saved_Checks = ",
+               Num_Saved_Checks);
+         end if;
+      end if;
+   end Conditional_Statements_Begin;
+
+   --------------------------------
+   -- Conditional_Statements_End --
+   --------------------------------
+
+   procedure Conditional_Statements_End is
+   begin
+      pragma Assert (Saved_Checks_TOS > 0);
+
+      --  If the saved checks stack overflowed, then we killed all
+      --  checks, so setting the number of saved checks back to
+      --  zero is correct. This should never occur in practice.
+
+      if Saved_Checks_TOS > Saved_Checks_Stack'Last then
+         Num_Saved_Checks := 0;
+
+      --  In the normal case, restore the number of saved checks
+      --  from the top stack entry.
+
+      else
+         Num_Saved_Checks := Saved_Checks_Stack (Saved_Checks_TOS);
+         if Debug_Flag_CC then
+            w ("Conditional_Statements_End: Num_Saved_Checks = ",
+               Num_Saved_Checks);
+         end if;
+      end if;
+
+      Saved_Checks_TOS := Saved_Checks_TOS - 1;
+   end Conditional_Statements_End;
 
    ---------------------
    -- Determine_Range --
@@ -2175,12 +2452,14 @@ package body Checks is
 
          when N_Op_Mod =>
             if OK_Operands then
-               if Lo_Right = Hi_Right then
+               if Lo_Right = Hi_Right
+                 and then Lo_Right /= 0
+               then
                   if Lo_Right > 0 then
                      Lor := Uint_0;
                      Hir := Lo_Right - 1;
 
-                  elsif Lo_Right < 0 then
+                  else -- Lo_Right < 0
                      Lor := Lo_Right + 1;
                      Hir := Uint_0;
                   end if;
@@ -2195,7 +2474,9 @@ package body Checks is
 
          when N_Op_Rem =>
             if OK_Operands then
-               if Lo_Right = Hi_Right then
+               if Lo_Right = Hi_Right
+                 and then Lo_Right /= 0
+               then
                   declare
                      Dval : constant Uint := (abs Lo_Right) - 1;
 
@@ -2386,7 +2667,6 @@ package body Checks is
             Hi := No_Uint;
             return;
          end if;
-
    end Determine_Range;
 
    ------------------------------------
@@ -2395,8 +2675,15 @@ package body Checks is
 
    function Discriminant_Checks_Suppressed (E : Entity_Id) return Boolean is
    begin
-      return Scope_Suppress.Discriminant_Checks
-        or else (Present (E) and then Suppress_Discriminant_Checks (E));
+      if Present (E) then
+         if Is_Unchecked_Union (E) then
+            return True;
+         elsif Checks_May_Be_Suppressed (E) then
+            return Is_Check_Suppressed (E, Discriminant_Check);
+         end if;
+      end if;
+
+      return Scope_Suppress (Discriminant_Check);
    end Discriminant_Checks_Suppressed;
 
    --------------------------------
@@ -2405,8 +2692,11 @@ package body Checks is
 
    function Division_Checks_Suppressed (E : Entity_Id) return Boolean is
    begin
-      return Scope_Suppress.Division_Checks
-        or else (Present (E) and then Suppress_Division_Checks (E));
+      if Present (E) and then Checks_May_Be_Suppressed (E) then
+         return Is_Check_Suppressed (E, Division_Check);
+      else
+         return Scope_Suppress (Division_Check);
+      end if;
    end Division_Checks_Suppressed;
 
    -----------------------------------
@@ -2415,23 +2705,354 @@ package body Checks is
 
    function Elaboration_Checks_Suppressed (E : Entity_Id) return Boolean is
    begin
-      return Scope_Suppress.Elaboration_Checks
-        or else (Present (E) and then Suppress_Elaboration_Checks (E));
+      if Present (E) then
+         if Kill_Elaboration_Checks (E) then
+            return True;
+         elsif Checks_May_Be_Suppressed (E) then
+            return Is_Check_Suppressed (E, Elaboration_Check);
+         end if;
+      end if;
+
+      return Scope_Suppress (Elaboration_Check);
    end Elaboration_Checks_Suppressed;
+
+   ---------------------------
+   -- Enable_Overflow_Check --
+   ---------------------------
+
+   procedure Enable_Overflow_Check (N : Node_Id) is
+      Typ : constant Entity_Id  := Base_Type (Etype (N));
+      Chk : Nat;
+      OK  : Boolean;
+      Ent : Entity_Id;
+      Ofs : Uint;
+      Lo  : Uint;
+      Hi  : Uint;
+
+   begin
+      if Debug_Flag_CC then
+         w ("Enable_Overflow_Check for node ", Int (N));
+         Write_Str ("  Source location = ");
+         wl (Sloc (N));
+         pg (N);
+      end if;
+
+      --  Nothing to do if the range of the result is known OK. We skip
+      --  this for conversions, since the caller already did the check,
+      --  and in any case the condition for deleting the check for a
+      --  type conversion is different in any case.
+
+      if Nkind (N) /= N_Type_Conversion then
+         Determine_Range (N, OK, Lo, Hi);
+
+         --  Note in the test below that we assume that if a bound of the
+         --  range is equal to that of the type. That's not quite accurate
+         --  but we do this for the following reasons:
+
+         --   a) The way that Determine_Range works, it will typically report
+         --      the bounds of the value as being equal to the bounds of the
+         --      type, because it either can't tell anything more precise, or
+         --      does not think it is worth the effort to be more precise.
+
+         --   b) It is very unusual to have a situation in which this would
+         --      generate an unnecessary overflow check (an example would be
+         --      a subtype with a range 0 .. Integer'Last - 1 to which the
+         --      literal value one is added.
+
+         --   c) The alternative is a lot of special casing in this routine
+         --      which would partially duplicate Determine_Range processing.
+
+         if OK
+           and then Lo > Expr_Value (Type_Low_Bound  (Typ))
+           and then Hi < Expr_Value (Type_High_Bound (Typ))
+         then
+            if Debug_Flag_CC then
+               w ("No overflow check required");
+            end if;
+
+            return;
+         end if;
+      end if;
+
+      --  If not in optimizing mode, set flag and we are done. We are also
+      --  done (and just set the flag) if the type is not a discrete type,
+      --  since it is not worth the effort to eliminate checks for other
+      --  than discrete types. In addition, we take this same path if we
+      --  have stored the maximum number of checks possible already (a
+      --  very unlikely situation, but we do not want to blow up!)
+
+      if Optimization_Level = 0
+        or else not Is_Discrete_Type (Etype (N))
+        or else Num_Saved_Checks = Saved_Checks'Last
+      then
+         Set_Do_Overflow_Check (N, True);
+
+         if Debug_Flag_CC then
+            w ("Optimization off");
+         end if;
+
+         return;
+      end if;
+
+      --  Otherwise evaluate and check the expression
+
+      Find_Check
+        (Expr        => N,
+         Check_Type  => 'O',
+         Target_Type => Empty,
+         Entry_OK    => OK,
+         Check_Num   => Chk,
+         Ent         => Ent,
+         Ofs         => Ofs);
+
+      if Debug_Flag_CC then
+         w ("Called Find_Check");
+         w ("  OK = ", OK);
+
+         if OK then
+            w ("  Check_Num = ", Chk);
+            w ("  Ent       = ", Int (Ent));
+            Write_Str ("  Ofs       = ");
+            pid (Ofs);
+         end if;
+      end if;
+
+      --  If check is not of form to optimize, then set flag and we are done
+
+      if not OK then
+         Set_Do_Overflow_Check (N, True);
+         return;
+      end if;
+
+      --  If check is already performed, then return without setting flag
+
+      if Chk /= 0 then
+         if Debug_Flag_CC then
+            w ("Check suppressed!");
+         end if;
+
+         return;
+      end if;
+
+      --  Here we will make a new entry for the new check
+
+      Set_Do_Overflow_Check (N, True);
+      Num_Saved_Checks := Num_Saved_Checks + 1;
+      Saved_Checks (Num_Saved_Checks) :=
+        (Killed      => False,
+         Entity      => Ent,
+         Offset      => Ofs,
+         Check_Type  => 'O',
+         Target_Type => Empty);
+
+      if Debug_Flag_CC then
+         w ("Make new entry, check number = ", Num_Saved_Checks);
+         w ("  Entity = ", Int (Ent));
+         Write_Str ("  Offset = ");
+         pid (Ofs);
+         w ("  Check_Type = O");
+         w ("  Target_Type = Empty");
+      end if;
+
+   --  If we get an exception, then something went wrong, probably because
+   --  of an error in the structure of the tree due to an incorrect program.
+   --  Or it may be a bug in the optimization circuit. In either case the
+   --  safest thing is simply to set the check flag unconditionally.
+
+   exception
+      when others =>
+         Set_Do_Overflow_Check (N, True);
+
+         if Debug_Flag_CC then
+            w ("  exception occurred, overflow flag set");
+         end if;
+
+         return;
+   end Enable_Overflow_Check;
 
    ------------------------
    -- Enable_Range_Check --
    ------------------------
 
    procedure Enable_Range_Check (N : Node_Id) is
+      Chk  : Nat;
+      OK   : Boolean;
+      Ent  : Entity_Id;
+      Ofs  : Uint;
+      Ttyp : Entity_Id;
+      P    : Node_Id;
+
    begin
+      --  Return if unchecked type conversion with range check killed.
+      --  In this case we never set the flag (that's what Kill_Range_Check
+      --  is all about!)
+
       if Nkind (N) = N_Unchecked_Type_Conversion
         and then Kill_Range_Check (N)
       then
          return;
-      else
-         Set_Do_Range_Check (N, True);
       end if;
+
+      --  Debug trace output
+
+      if Debug_Flag_CC then
+         w ("Enable_Range_Check for node ", Int (N));
+         Write_Str ("  Source location = ");
+         wl (Sloc (N));
+         pg (N);
+      end if;
+
+      --  If not in optimizing mode, set flag and we are done. We are also
+      --  done (and just set the flag) if the type is not a discrete type,
+      --  since it is not worth the effort to eliminate checks for other
+      --  than discrete types. In addition, we take this same path if we
+      --  have stored the maximum number of checks possible already (a
+      --  very unlikely situation, but we do not want to blow up!)
+
+      if Optimization_Level = 0
+        or else No (Etype (N))
+        or else not Is_Discrete_Type (Etype (N))
+        or else Num_Saved_Checks = Saved_Checks'Last
+      then
+         Set_Do_Range_Check (N, True);
+
+         if Debug_Flag_CC then
+            w ("Optimization off");
+         end if;
+
+         return;
+      end if;
+
+      --  Otherwise find out the target type
+
+      P := Parent (N);
+
+      --  For assignment, use left side subtype
+
+      if Nkind (P) = N_Assignment_Statement
+        and then Expression (P) = N
+      then
+         Ttyp := Etype (Name (P));
+
+      --  For indexed component, use subscript subtype
+
+      elsif Nkind (P) = N_Indexed_Component then
+         declare
+            Atyp : Entity_Id;
+            Indx : Node_Id;
+            Subs : Node_Id;
+
+         begin
+            Atyp := Etype (Prefix (P));
+
+            if Is_Access_Type (Atyp) then
+               Atyp := Designated_Type (Atyp);
+            end if;
+
+            Indx := First_Index (Atyp);
+            Subs := First (Expressions (P));
+            loop
+               if Subs = N then
+                  Ttyp := Etype (Indx);
+                  exit;
+               end if;
+
+               Next_Index (Indx);
+               Next (Subs);
+            end loop;
+         end;
+
+      --  For now, ignore all other cases, they are not so interesting
+
+      else
+         if Debug_Flag_CC then
+            w ("  target type not found, flag set");
+         end if;
+
+         Set_Do_Range_Check (N, True);
+         return;
+      end if;
+
+      --  Evaluate and check the expression
+
+      Find_Check
+        (Expr        => N,
+         Check_Type  => 'R',
+         Target_Type => Ttyp,
+         Entry_OK    => OK,
+         Check_Num   => Chk,
+         Ent         => Ent,
+         Ofs         => Ofs);
+
+      if Debug_Flag_CC then
+         w ("Called Find_Check");
+         w ("Target_Typ = ", Int (Ttyp));
+         w ("  OK = ", OK);
+
+         if OK then
+            w ("  Check_Num = ", Chk);
+            w ("  Ent       = ", Int (Ent));
+            Write_Str ("  Ofs       = ");
+            pid (Ofs);
+         end if;
+      end if;
+
+      --  If check is not of form to optimize, then set flag and we are done
+
+      if not OK then
+         if Debug_Flag_CC then
+            w ("  expression not of optimizable type, flag set");
+         end if;
+
+         Set_Do_Range_Check (N, True);
+         return;
+      end if;
+
+      --  If check is already performed, then return without setting flag
+
+      if Chk /= 0 then
+         if Debug_Flag_CC then
+            w ("Check suppressed!");
+         end if;
+
+         return;
+      end if;
+
+      --  Here we will make a new entry for the new check
+
+      Set_Do_Range_Check (N, True);
+      Num_Saved_Checks := Num_Saved_Checks + 1;
+      Saved_Checks (Num_Saved_Checks) :=
+        (Killed      => False,
+         Entity      => Ent,
+         Offset      => Ofs,
+         Check_Type  => 'R',
+         Target_Type => Ttyp);
+
+      if Debug_Flag_CC then
+         w ("Make new entry, check number = ", Num_Saved_Checks);
+         w ("  Entity = ", Int (Ent));
+         Write_Str ("  Offset = ");
+         pid (Ofs);
+         w ("  Check_Type = R");
+         w ("  Target_Type = ", Int (Ttyp));
+         pg (Ttyp);
+      end if;
+
+   --  If we get an exception, then something went wrong, probably because
+   --  of an error in the structure of the tree due to an incorrect program.
+   --  Or it may be a bug in the optimization circuit. In either case the
+   --  safest thing is simply to set the check flag unconditionally.
+
+   exception
+      when others =>
+         Set_Do_Range_Check (N, True);
+
+         if Debug_Flag_CC then
+            w ("  exception occurred, range flag set");
+         end if;
+
+         return;
    end Enable_Range_Check;
 
    ------------------
@@ -2447,14 +3068,24 @@ package body Checks is
       if not Validity_Checks_On then
          return;
 
+      --  Ignore call if range checks suppressed on entity in question
+
+      elsif Is_Entity_Name (Expr)
+        and then Range_Checks_Suppressed (Entity (Expr))
+      then
+         return;
+
       --  No check required if expression is from the expander, we assume
       --  the expander will generate whatever checks are needed. Note that
       --  this is not just an optimization, it avoids infinite recursions!
 
       --  Unchecked conversions must be checked, unless they are initialized
-      --  scalar values, as in a component assignment in an init_proc.
+      --  scalar values, as in a component assignment in an init proc.
+
+      --  In addition, we force a check if Force_Validity_Checks is set
 
       elsif not Comes_From_Source (Expr)
+        and then not Force_Validity_Checks
         and then (Nkind (Expr) /= N_Unchecked_Type_Conversion
                     or else Kill_Range_Check (Expr))
       then
@@ -2515,11 +3146,19 @@ package body Checks is
                end if;
 
                --  Only need to worry if we are argument of a procedure
-               --  call since functions don't have out parameters.
+               --  call since functions don't have out parameters. If this
+               --  is an indirect or dispatching call, get signature from
+               --  the subprogram type.
 
                if Nkind (P) = N_Procedure_Call_Statement then
                   L := Parameter_Associations (P);
-                  E := Entity (Name (P));
+
+                  if Is_Entity_Name (Name (P)) then
+                     E := Entity (Name (P));
+                  else
+                     pragma Assert (Nkind (Name (P)) = N_Explicit_Dereference);
+                     E := Etype (Name (P));
+                  end if;
 
                   --  Only need to worry if there are indeed actuals, and
                   --  if this could be a procedure call, otherwise we cannot
@@ -2647,6 +3286,683 @@ package body Checks is
       end if;
    end Expr_Known_Valid;
 
+   ----------------
+   -- Find_Check --
+   ----------------
+
+   procedure Find_Check
+     (Expr        : Node_Id;
+      Check_Type  : Character;
+      Target_Type : Entity_Id;
+      Entry_OK    : out Boolean;
+      Check_Num   : out Nat;
+      Ent         : out Entity_Id;
+      Ofs         : out Uint)
+   is
+      function Within_Range_Of
+        (Target_Type : Entity_Id;
+         Check_Type  : Entity_Id)
+         return        Boolean;
+      --  Given a requirement for checking a range against Target_Type, and
+      --  and a range Check_Type against which a check has already been made,
+      --  determines if the check against check type is sufficient to ensure
+      --  that no check against Target_Type is required.
+
+      ---------------------
+      -- Within_Range_Of --
+      ---------------------
+
+      function Within_Range_Of
+        (Target_Type : Entity_Id;
+         Check_Type  : Entity_Id)
+         return        Boolean
+      is
+      begin
+         if Target_Type = Check_Type then
+            return True;
+
+         else
+            declare
+               Tlo : constant Node_Id := Type_Low_Bound  (Target_Type);
+               Thi : constant Node_Id := Type_High_Bound (Target_Type);
+               Clo : constant Node_Id := Type_Low_Bound  (Check_Type);
+               Chi : constant Node_Id := Type_High_Bound (Check_Type);
+
+            begin
+               if (Tlo = Clo
+                     or else (Compile_Time_Known_Value (Tlo)
+                                and then
+                              Compile_Time_Known_Value (Clo)
+                                and then
+                              Expr_Value (Clo) >= Expr_Value (Tlo)))
+                 and then
+                  (Thi = Chi
+                     or else (Compile_Time_Known_Value (Thi)
+                                and then
+                              Compile_Time_Known_Value (Chi)
+                                and then
+                              Expr_Value (Chi) <= Expr_Value (Clo)))
+               then
+                  return True;
+               else
+                  return False;
+               end if;
+            end;
+         end if;
+      end Within_Range_Of;
+
+   --  Start of processing for Find_Check
+
+   begin
+      --  Establish default, to avoid warnings from GCC.
+
+      Check_Num := 0;
+
+      --  Case of expression is simple entity reference
+
+      if Is_Entity_Name (Expr) then
+         Ent := Entity (Expr);
+         Ofs := Uint_0;
+
+      --  Case of expression is entity + known constant
+
+      elsif Nkind (Expr) = N_Op_Add
+        and then Compile_Time_Known_Value (Right_Opnd (Expr))
+        and then Is_Entity_Name (Left_Opnd (Expr))
+      then
+         Ent := Entity (Left_Opnd (Expr));
+         Ofs := Expr_Value (Right_Opnd (Expr));
+
+      --  Case of expression is entity - known constant
+
+      elsif Nkind (Expr) = N_Op_Subtract
+        and then Compile_Time_Known_Value (Right_Opnd (Expr))
+        and then Is_Entity_Name (Left_Opnd (Expr))
+      then
+         Ent := Entity (Left_Opnd (Expr));
+         Ofs := UI_Negate (Expr_Value (Right_Opnd (Expr)));
+
+      --  Any other expression is not of the right form
+
+      else
+         Ent := Empty;
+         Ofs := Uint_0;
+         Entry_OK := False;
+         return;
+      end if;
+
+      --  Come here with expression of appropriate form, check if
+      --  entity is an appropriate one for our purposes.
+
+      if (Ekind (Ent) = E_Variable
+            or else
+          Ekind (Ent) = E_Constant
+            or else
+          Ekind (Ent) = E_Loop_Parameter
+            or else
+          Ekind (Ent) = E_In_Parameter)
+        and then not Is_Library_Level_Entity (Ent)
+      then
+         Entry_OK := True;
+      else
+         Entry_OK := False;
+         return;
+      end if;
+
+      --  See if there is matching check already
+
+      for J in reverse 1 .. Num_Saved_Checks loop
+         declare
+            SC : Saved_Check renames Saved_Checks (J);
+
+         begin
+            if SC.Killed = False
+              and then SC.Entity = Ent
+              and then SC.Offset = Ofs
+              and then SC.Check_Type = Check_Type
+              and then Within_Range_Of (Target_Type, SC.Target_Type)
+            then
+               Check_Num := J;
+               return;
+            end if;
+         end;
+      end loop;
+
+      --  If we fall through entry was not found
+
+      Check_Num := 0;
+      return;
+   end Find_Check;
+
+   ---------------------------------
+   -- Generate_Discriminant_Check --
+   ---------------------------------
+
+   --  Note: the code for this procedure is derived from the
+   --  emit_discriminant_check routine a-trans.c v1.659.
+
+   procedure Generate_Discriminant_Check (N : Node_Id) is
+      Loc  : constant Source_Ptr := Sloc (N);
+      Pref : constant Node_Id    := Prefix (N);
+      Sel  : constant Node_Id    := Selector_Name (N);
+
+      Orig_Comp : constant Entity_Id :=
+                    Original_Record_Component (Entity (Sel));
+      --  The original component to be checked
+
+      Discr_Fct : constant Entity_Id :=
+                    Discriminant_Checking_Func (Orig_Comp);
+      --  The discriminant checking function
+
+      Discr : Entity_Id;
+      --  One discriminant to be checked in the type
+
+      Real_Discr : Entity_Id;
+      --  Actual discriminant in the call
+
+      Pref_Type : Entity_Id;
+      --  Type of relevant prefix (ignoring private/access stuff)
+
+      Args : List_Id;
+      --  List of arguments for function call
+
+      Formal : Entity_Id;
+      --  Keep track of the formal corresponding to the actual we build
+      --  for each discriminant, in order to be able to perform the
+      --  necessary type conversions.
+
+      Scomp : Node_Id;
+      --  Selected component reference for checking function argument
+
+   begin
+      Pref_Type := Etype (Pref);
+
+      --  Force evaluation of the prefix, so that it does not get evaluated
+      --  twice (once for the check, once for the actual reference). Such a
+      --  double evaluation is always a potential source of inefficiency,
+      --  and is functionally incorrect in the volatile case, or when the
+      --  prefix may have side-effects. An entity or a component of an
+      --  entity requires no evaluation.
+
+      if Is_Entity_Name (Pref) then
+         if Treat_As_Volatile (Entity (Pref)) then
+            Force_Evaluation (Pref, Name_Req => True);
+         end if;
+
+      elsif Treat_As_Volatile (Etype (Pref)) then
+            Force_Evaluation (Pref, Name_Req => True);
+
+      elsif Nkind (Pref) = N_Selected_Component
+        and then Is_Entity_Name (Prefix (Pref))
+      then
+         null;
+
+      else
+         Force_Evaluation (Pref, Name_Req => True);
+      end if;
+
+      --  For a tagged type, use the scope of the original component to
+      --  obtain the type, because ???
+
+      if Is_Tagged_Type (Scope (Orig_Comp)) then
+         Pref_Type := Scope (Orig_Comp);
+
+      --  For an untagged derived type, use the discriminants of the
+      --  parent which have been renamed in the derivation, possibly
+      --  by a one-to-many discriminant constraint.
+      --  For non-tagged type, initially get the Etype of the prefix
+
+      else
+         if Is_Derived_Type (Pref_Type)
+           and then Number_Discriminants (Pref_Type) /=
+                    Number_Discriminants (Etype (Base_Type (Pref_Type)))
+         then
+            Pref_Type := Etype (Base_Type (Pref_Type));
+         end if;
+      end if;
+
+      --  We definitely should have a checking function, This routine should
+      --  not be called if no discriminant checking function is present.
+
+      pragma Assert (Present (Discr_Fct));
+
+      --  Create the list of the actual parameters for the call. This list
+      --  is the list of the discriminant fields of the record expression to
+      --  be discriminant checked.
+
+      Args   := New_List;
+      Formal := First_Formal (Discr_Fct);
+      Discr  := First_Discriminant (Pref_Type);
+      while Present (Discr) loop
+
+         --  If we have a corresponding discriminant field, and a parent
+         --  subtype is present, then we want to use the corresponding
+         --  discriminant since this is the one with the useful value.
+
+         if Present (Corresponding_Discriminant (Discr))
+           and then Ekind (Pref_Type) = E_Record_Type
+           and then Present (Parent_Subtype (Pref_Type))
+         then
+            Real_Discr := Corresponding_Discriminant (Discr);
+         else
+            Real_Discr := Discr;
+         end if;
+
+         --  Construct the reference to the discriminant
+
+         Scomp :=
+           Make_Selected_Component (Loc,
+             Prefix =>
+               Unchecked_Convert_To (Pref_Type,
+                 Duplicate_Subexpr (Pref)),
+             Selector_Name => New_Occurrence_Of (Real_Discr, Loc));
+
+         --  Manually analyze and resolve this selected component. We really
+         --  want it just as it appears above, and do not want the expander
+         --  playing discriminal games etc with this reference. Then we
+         --  append the argument to the list we are gathering.
+
+         Set_Etype (Scomp, Etype (Real_Discr));
+         Set_Analyzed (Scomp, True);
+         Append_To (Args, Convert_To (Etype (Formal), Scomp));
+
+         Next_Formal_With_Extras (Formal);
+         Next_Discriminant (Discr);
+      end loop;
+
+      --  Now build and insert the call
+
+      Insert_Action (N,
+        Make_Raise_Constraint_Error (Loc,
+          Condition =>
+            Make_Function_Call (Loc,
+              Name => New_Occurrence_Of (Discr_Fct, Loc),
+              Parameter_Associations => Args),
+          Reason => CE_Discriminant_Check_Failed));
+   end Generate_Discriminant_Check;
+
+   ----------------------------
+   --  Generate_Index_Checks --
+   ----------------------------
+
+   procedure Generate_Index_Checks (N : Node_Id) is
+      Loc : constant Source_Ptr := Sloc (N);
+      A   : constant Node_Id    := Prefix (N);
+      Sub : Node_Id;
+      Ind : Nat;
+      Num : List_Id;
+
+   begin
+      Sub := First (Expressions (N));
+      Ind := 1;
+      while Present (Sub) loop
+         if Do_Range_Check (Sub) then
+            Set_Do_Range_Check (Sub, False);
+
+            --  Force evaluation except for the case of a simple name of
+            --  a non-volatile entity.
+
+            if not Is_Entity_Name (Sub)
+              or else Treat_As_Volatile (Entity (Sub))
+            then
+               Force_Evaluation (Sub);
+            end if;
+
+            --  Generate a raise of constraint error with the appropriate
+            --  reason and a condition of the form:
+
+            --    Base_Type(Sub) not in array'range (subscript)
+
+            --  Note that the reason we generate the conversion to the
+            --  base type here is that we definitely want the range check
+            --  to take place, even if it looks like the subtype is OK.
+            --  Optimization considerations that allow us to omit the
+            --  check have already been taken into account in the setting
+            --  of the Do_Range_Check flag earlier on.
+
+            if Ind = 1 then
+               Num := No_List;
+            else
+               Num :=  New_List (Make_Integer_Literal (Loc, Ind));
+            end if;
+
+            Insert_Action (N,
+              Make_Raise_Constraint_Error (Loc,
+                Condition =>
+                  Make_Not_In (Loc,
+                    Left_Opnd  =>
+                      Convert_To (Base_Type (Etype (Sub)),
+                        Duplicate_Subexpr_Move_Checks (Sub)),
+                    Right_Opnd =>
+                      Make_Attribute_Reference (Loc,
+                        Prefix         => Duplicate_Subexpr_Move_Checks (A),
+                        Attribute_Name => Name_Range,
+                        Expressions    => Num)),
+                Reason => CE_Index_Check_Failed));
+         end if;
+
+         Ind := Ind + 1;
+         Next (Sub);
+      end loop;
+   end Generate_Index_Checks;
+
+   --------------------------
+   -- Generate_Range_Check --
+   --------------------------
+
+   procedure Generate_Range_Check
+     (N           : Node_Id;
+      Target_Type : Entity_Id;
+      Reason      : RT_Exception_Code)
+   is
+      Loc              : constant Source_Ptr := Sloc (N);
+      Source_Type      : constant Entity_Id  := Etype (N);
+      Source_Base_Type : constant Entity_Id  := Base_Type (Source_Type);
+      Target_Base_Type : constant Entity_Id  := Base_Type (Target_Type);
+
+   begin
+      --  First special case, if the source type is already within the
+      --  range of the target type, then no check is needed (probably we
+      --  should have stopped Do_Range_Check from being set in the first
+      --  place, but better late than later in preventing junk code!
+
+      --  We do NOT apply this if the source node is a literal, since in
+      --  this case the literal has already been labeled as having the
+      --  subtype of the target.
+
+      if In_Subrange_Of (Source_Type, Target_Type)
+        and then not
+          (Nkind (N) = N_Integer_Literal
+             or else
+           Nkind (N) = N_Real_Literal
+             or else
+           Nkind (N) = N_Character_Literal
+             or else
+           (Is_Entity_Name (N)
+              and then Ekind (Entity (N)) = E_Enumeration_Literal))
+      then
+         return;
+      end if;
+
+      --  We need a check, so force evaluation of the node, so that it does
+      --  not get evaluated twice (once for the check, once for the actual
+      --  reference). Such a double evaluation is always a potential source
+      --  of inefficiency, and is functionally incorrect in the volatile case.
+
+      if not Is_Entity_Name (N)
+        or else Treat_As_Volatile (Entity (N))
+      then
+         Force_Evaluation (N);
+      end if;
+
+      --  The easiest case is when Source_Base_Type and Target_Base_Type
+      --  are the same since in this case we can simply do a direct
+      --  check of the value of N against the bounds of Target_Type.
+
+      --    [constraint_error when N not in Target_Type]
+
+      --  Note: this is by far the most common case, for example all cases of
+      --  checks on the RHS of assignments are in this category, but not all
+      --  cases are like this. Notably conversions can involve two types.
+
+      if Source_Base_Type = Target_Base_Type then
+         Insert_Action (N,
+           Make_Raise_Constraint_Error (Loc,
+             Condition =>
+               Make_Not_In (Loc,
+                 Left_Opnd  => Duplicate_Subexpr (N),
+                 Right_Opnd => New_Occurrence_Of (Target_Type, Loc)),
+             Reason => Reason));
+
+      --  Next test for the case where the target type is within the bounds
+      --  of the base type of the source type, since in this case we can
+      --  simply convert these bounds to the base type of T to do the test.
+
+      --    [constraint_error when N not in
+      --       Source_Base_Type (Target_Type'First)
+      --         ..
+      --       Source_Base_Type(Target_Type'Last))]
+
+      --  The conversions will always work and need no check.
+
+      elsif In_Subrange_Of (Target_Type, Source_Base_Type) then
+         Insert_Action (N,
+           Make_Raise_Constraint_Error (Loc,
+             Condition =>
+               Make_Not_In (Loc,
+                 Left_Opnd  => Duplicate_Subexpr (N),
+
+                 Right_Opnd =>
+                   Make_Range (Loc,
+                     Low_Bound =>
+                       Convert_To (Source_Base_Type,
+                         Make_Attribute_Reference (Loc,
+                           Prefix =>
+                             New_Occurrence_Of (Target_Type, Loc),
+                           Attribute_Name => Name_First)),
+
+                     High_Bound =>
+                       Convert_To (Source_Base_Type,
+                         Make_Attribute_Reference (Loc,
+                           Prefix =>
+                             New_Occurrence_Of (Target_Type, Loc),
+                           Attribute_Name => Name_Last)))),
+             Reason => Reason));
+
+      --  Note that at this stage we now that the Target_Base_Type is
+      --  not in the range of the Source_Base_Type (since even the
+      --  Target_Type itself is not in this range). It could still be
+      --  the case that the Source_Type is in range of the target base
+      --  type, since we have not checked that case.
+
+      --  If that is the case, we can freely convert the source to the
+      --  target, and then test the target result against the bounds.
+
+      elsif In_Subrange_Of (Source_Type, Target_Base_Type) then
+
+         --  We make a temporary to hold the value of the converted
+         --  value (converted to the base type), and then we will
+         --  do the test against this temporary.
+
+         --     Tnn : constant Target_Base_Type := Target_Base_Type (N);
+         --     [constraint_error when Tnn not in Target_Type]
+
+         --  Then the conversion itself is replaced by an occurrence of Tnn
+
+         declare
+            Tnn : constant Entity_Id :=
+                    Make_Defining_Identifier (Loc,
+                      Chars => New_Internal_Name ('T'));
+
+         begin
+            Insert_Actions (N, New_List (
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Tnn,
+                Object_Definition   =>
+                  New_Occurrence_Of (Target_Base_Type, Loc),
+                Constant_Present    => True,
+                Expression          =>
+                  Make_Type_Conversion (Loc,
+                    Subtype_Mark => New_Occurrence_Of (Target_Base_Type, Loc),
+                    Expression   => Duplicate_Subexpr (N))),
+
+              Make_Raise_Constraint_Error (Loc,
+                Condition =>
+                  Make_Not_In (Loc,
+                    Left_Opnd  => New_Occurrence_Of (Tnn, Loc),
+                    Right_Opnd => New_Occurrence_Of (Target_Type, Loc)),
+
+                Reason => Reason)));
+
+            Rewrite (N, New_Occurrence_Of (Tnn, Loc));
+         end;
+
+      --  At this stage, we know that we have two scalar types, which are
+      --  directly convertible, and where neither scalar type has a base
+      --  range that is in the range of the other scalar type.
+
+      --  The only way this can happen is with a signed and unsigned type.
+      --  So test for these two cases:
+
+      else
+         --  Case of the source is unsigned and the target is signed
+
+         if Is_Unsigned_Type (Source_Base_Type)
+           and then not Is_Unsigned_Type (Target_Base_Type)
+         then
+            --  If the source is unsigned and the target is signed, then we
+            --  know that the source is not shorter than the target (otherwise
+            --  the source base type would be in the target base type range).
+
+            --  In other words, the unsigned type is either the same size
+            --  as the target, or it is larger. It cannot be smaller.
+
+            pragma Assert
+              (Esize (Source_Base_Type) >= Esize (Target_Base_Type));
+
+            --  We only need to check the low bound if the low bound of the
+            --  target type is non-negative. If the low bound of the target
+            --  type is negative, then we know that we will fit fine.
+
+            --  If the high bound of the target type is negative, then we
+            --  know we have a constraint error, since we can't possibly
+            --  have a negative source.
+
+            --  With these two checks out of the way, we can do the check
+            --  using the source type safely
+
+            --  This is definitely the most annoying case!
+
+            --    [constraint_error
+            --       when (Target_Type'First >= 0
+            --               and then
+            --                 N < Source_Base_Type (Target_Type'First))
+            --         or else Target_Type'Last < 0
+            --         or else N > Source_Base_Type (Target_Type'Last)];
+
+            --  We turn off all checks since we know that the conversions
+            --  will work fine, given the guards for negative values.
+
+            Insert_Action (N,
+              Make_Raise_Constraint_Error (Loc,
+                Condition =>
+                  Make_Or_Else (Loc,
+                    Make_Or_Else (Loc,
+                      Left_Opnd =>
+                        Make_And_Then (Loc,
+                          Left_Opnd => Make_Op_Ge (Loc,
+                            Left_Opnd =>
+                              Make_Attribute_Reference (Loc,
+                                Prefix =>
+                                  New_Occurrence_Of (Target_Type, Loc),
+                                Attribute_Name => Name_First),
+                            Right_Opnd => Make_Integer_Literal (Loc, Uint_0)),
+
+                          Right_Opnd =>
+                            Make_Op_Lt (Loc,
+                              Left_Opnd => Duplicate_Subexpr (N),
+                              Right_Opnd =>
+                                Convert_To (Source_Base_Type,
+                                  Make_Attribute_Reference (Loc,
+                                    Prefix =>
+                                      New_Occurrence_Of (Target_Type, Loc),
+                                    Attribute_Name => Name_First)))),
+
+                      Right_Opnd =>
+                        Make_Op_Lt (Loc,
+                          Left_Opnd =>
+                            Make_Attribute_Reference (Loc,
+                              Prefix => New_Occurrence_Of (Target_Type, Loc),
+                              Attribute_Name => Name_Last),
+                            Right_Opnd => Make_Integer_Literal (Loc, Uint_0))),
+
+                    Right_Opnd =>
+                      Make_Op_Gt (Loc,
+                        Left_Opnd => Duplicate_Subexpr (N),
+                        Right_Opnd =>
+                          Convert_To (Source_Base_Type,
+                            Make_Attribute_Reference (Loc,
+                              Prefix => New_Occurrence_Of (Target_Type, Loc),
+                              Attribute_Name => Name_Last)))),
+
+                Reason => Reason),
+              Suppress  => All_Checks);
+
+         --  Only remaining possibility is that the source is signed and
+         --  the target is unsigned
+
+         else
+            pragma Assert (not Is_Unsigned_Type (Source_Base_Type)
+                             and then Is_Unsigned_Type (Target_Base_Type));
+
+            --  If the source is signed and the target is unsigned, then
+            --  we know that the target is not shorter than the source
+            --  (otherwise the target base type would be in the source
+            --  base type range).
+
+            --  In other words, the unsigned type is either the same size
+            --  as the target, or it is larger. It cannot be smaller.
+
+            --  Clearly we have an error if the source value is negative
+            --  since no unsigned type can have negative values. If the
+            --  source type is non-negative, then the check can be done
+            --  using the target type.
+
+            --    Tnn : constant Target_Base_Type (N) := Target_Type;
+
+            --    [constraint_error
+            --       when N < 0 or else Tnn not in Target_Type];
+
+            --  We turn off all checks for the conversion of N to the
+            --  target base type, since we generate the explicit check
+            --  to ensure that the value is non-negative
+
+            declare
+               Tnn : constant Entity_Id :=
+                       Make_Defining_Identifier (Loc,
+                         Chars => New_Internal_Name ('T'));
+
+            begin
+               Insert_Actions (N, New_List (
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Tnn,
+                   Object_Definition   =>
+                     New_Occurrence_Of (Target_Base_Type, Loc),
+                   Constant_Present    => True,
+                   Expression          =>
+                     Make_Type_Conversion (Loc,
+                       Subtype_Mark =>
+                         New_Occurrence_Of (Target_Base_Type, Loc),
+                       Expression   => Duplicate_Subexpr (N))),
+
+                 Make_Raise_Constraint_Error (Loc,
+                   Condition =>
+                     Make_Or_Else (Loc,
+                       Left_Opnd =>
+                         Make_Op_Lt (Loc,
+                           Left_Opnd  => Duplicate_Subexpr (N),
+                           Right_Opnd => Make_Integer_Literal (Loc, Uint_0)),
+
+                       Right_Opnd =>
+                         Make_Not_In (Loc,
+                           Left_Opnd  => New_Occurrence_Of (Tnn, Loc),
+                           Right_Opnd =>
+                             New_Occurrence_Of (Target_Type, Loc))),
+
+                   Reason => Reason)),
+                 Suppress => All_Checks);
+
+               --  Set the Etype explicitly, because Insert_Actions may
+               --  have placed the declaration in the freeze list for an
+               --  enclosing construct, and thus it is not analyzed yet.
+
+               Set_Etype (Tnn, Target_Base_Type);
+               Rewrite (N, New_Occurrence_Of (Tnn, Loc));
+            end;
+         end if;
+      end if;
+   end Generate_Range_Check;
+
    ---------------------
    -- Get_Discriminal --
    ---------------------
@@ -2704,7 +4020,7 @@ package body Checks is
            Make_And_Then (Loc,
              Left_Opnd =>
                Make_Op_Ne (Loc,
-                 Left_Opnd  => Duplicate_Subexpr (Ck_Node),
+                 Left_Opnd  => Duplicate_Subexpr_No_Checks (Ck_Node),
                  Right_Opnd => Make_Null (Loc)),
              Right_Opnd => Cond);
       end if;
@@ -2716,8 +4032,11 @@ package body Checks is
 
    function Index_Checks_Suppressed (E : Entity_Id) return Boolean is
    begin
-      return Scope_Suppress.Index_Checks
-        or else (Present (E) and then Suppress_Index_Checks (E));
+      if Present (E) and then Checks_May_Be_Suppressed (E) then
+         return Is_Check_Suppressed (E, Index_Check);
+      else
+         return Scope_Suppress (Index_Check);
+      end if;
    end Index_Checks_Suppressed;
 
    ----------------
@@ -2842,7 +4161,7 @@ package body Checks is
                Right_Opnd =>
                  Make_Attribute_Reference (Loc,
                    Prefix =>
-                     Duplicate_Subexpr (Exp, Name_Req => True),
+                     Duplicate_Subexpr_No_Checks (Exp, Name_Req => True),
                    Attribute_Name => Name_Valid)),
            Reason => CE_Invalid_Data),
          Suppress => All_Checks);
@@ -2867,14 +4186,59 @@ package body Checks is
       Set_Is_Static_Expression (R_Cno, Stat);
    end Install_Static_Check;
 
+   ---------------------
+   -- Kill_All_Checks --
+   ---------------------
+
+   procedure Kill_All_Checks is
+   begin
+      if Debug_Flag_CC then
+         w ("Kill_All_Checks");
+      end if;
+
+      --  We reset the number of saved checks to zero, and also modify
+      --  all stack entries for statement ranges to indicate that the
+      --  number of checks at each level is now zero.
+
+      Num_Saved_Checks := 0;
+
+      for J in 1 .. Saved_Checks_TOS loop
+         Saved_Checks_Stack (J) := 0;
+      end loop;
+   end Kill_All_Checks;
+
+   -----------------
+   -- Kill_Checks --
+   -----------------
+
+   procedure Kill_Checks (V : Entity_Id) is
+   begin
+      if Debug_Flag_CC then
+         w ("Kill_Checks for entity", Int (V));
+      end if;
+
+      for J in 1 .. Num_Saved_Checks loop
+         if Saved_Checks (J).Entity = V then
+            if Debug_Flag_CC then
+               w ("   Checks killed for saved check ", J);
+            end if;
+
+            Saved_Checks (J).Killed := True;
+         end if;
+      end loop;
+   end Kill_Checks;
+
    ------------------------------
    -- Length_Checks_Suppressed --
    ------------------------------
 
    function Length_Checks_Suppressed (E : Entity_Id) return Boolean is
    begin
-      return Scope_Suppress.Length_Checks
-        or else (Present (E) and then Suppress_Length_Checks (E));
+      if Present (E) and then Checks_May_Be_Suppressed (E) then
+         return Is_Check_Suppressed (E, Length_Check);
+      else
+         return Scope_Suppress (Length_Check);
+      end if;
    end Length_Checks_Suppressed;
 
    --------------------------------
@@ -2883,8 +4247,11 @@ package body Checks is
 
    function Overflow_Checks_Suppressed (E : Entity_Id) return Boolean is
    begin
-      return Scope_Suppress.Overflow_Checks
-        or else (Present (E) and then Suppress_Overflow_Checks (E));
+      if Present (E) and then Checks_May_Be_Suppressed (E) then
+         return Is_Check_Suppressed (E, Overflow_Check);
+      else
+         return Scope_Suppress (Overflow_Check);
+      end if;
    end Overflow_Checks_Suppressed;
 
    -----------------
@@ -2909,12 +4276,21 @@ package body Checks is
 
    function Range_Checks_Suppressed (E : Entity_Id) return Boolean is
    begin
-      --  Note: for now we always suppress range checks on Vax float types,
-      --  since Gigi does not know how to generate these checks.
+      if Present (E) then
 
-      return Scope_Suppress.Range_Checks
-        or else (Present (E) and then Suppress_Range_Checks (E))
-        or else Vax_Float (E);
+         --  Note: for now we always suppress range checks on Vax float types,
+         --  since Gigi does not know how to generate these checks.
+
+         if Vax_Float (E) then
+            return True;
+         elsif Kill_Range_Checks (E) then
+            return True;
+         elsif Checks_May_Be_Suppressed (E) then
+            return Is_Check_Suppressed (E, Range_Check);
+         end if;
+      end if;
+
+      return Scope_Suppress (Range_Check);
    end Range_Checks_Suppressed;
 
    -------------------
@@ -2923,6 +4299,7 @@ package body Checks is
 
    procedure Remove_Checks (Expr : Node_Id) is
       Discard : Traverse_Result;
+      pragma Warnings (Off, Discard);
 
       function Process (N : Node_Id) return Traverse_Result;
       --  Process a single node during the traversal
@@ -2948,17 +4325,10 @@ package body Checks is
                return Skip;
 
             when N_Attribute_Reference =>
-               Set_Do_Access_Check (N, False);
                Set_Do_Overflow_Check (N, False);
-
-            when N_Explicit_Dereference =>
-               Set_Do_Access_Check (N, False);
 
             when N_Function_Call =>
                Set_Do_Tag_Check (N, False);
-
-            when N_Indexed_Component =>
-               Set_Do_Access_Check (N, False);
 
             when N_Op =>
                Set_Do_Overflow_Check (N, False);
@@ -2991,16 +4361,12 @@ package body Checks is
                return Skip;
 
             when N_Selected_Component =>
-               Set_Do_Access_Check (N, False);
                Set_Do_Discriminant_Check (N, False);
 
-            when N_Slice =>
-               Set_Do_Access_Check (N, False);
-
             when N_Type_Conversion =>
-               Set_Do_Length_Check (N, False);
+               Set_Do_Length_Check   (N, False);
+               Set_Do_Tag_Check      (N, False);
                Set_Do_Overflow_Check (N, False);
-               Set_Do_Tag_Check (N, False);
 
             when others =>
                null;
@@ -3046,7 +4412,7 @@ package body Checks is
       function Same_Bounds (L : Node_Id; R : Node_Id) return Boolean;
       --  True for equal literals and for nodes that denote the same constant
       --  entity, even if its value is not a static constant. This includes the
-      --  case of a discriminal reference within an init_proc. Removes some
+      --  case of a discriminal reference within an init proc. Removes some
       --  obviously superfluous checks.
 
       function Length_E_Cond
@@ -3090,9 +4456,9 @@ package body Checks is
       ------------------
 
       function Get_E_Length (E : Entity_Id; Indx : Nat) return Node_Id is
+         Pt : constant Entity_Id := Scope (Scope (E));
          N  : Node_Id;
          E1 : Entity_Id := E;
-         Pt : Entity_Id := Scope (Scope (E));
 
       begin
          if Ekind (Scope (E)) = E_Record_Type
@@ -3155,11 +4521,11 @@ package body Checks is
 
                if Do_Expand then
                   if not Is_Entity_Name (Lo) then
-                     Lo := Duplicate_Subexpr (Lo);
+                     Lo := Duplicate_Subexpr_No_Checks (Lo);
                   end if;
 
                   if not Is_Entity_Name (Hi) then
-                     Lo := Duplicate_Subexpr (Hi);
+                     Lo := Duplicate_Subexpr_No_Checks (Hi);
                   end if;
 
                   N :=
@@ -3215,7 +4581,7 @@ package body Checks is
            Make_Attribute_Reference (Loc,
              Attribute_Name => Name_Length,
              Prefix =>
-               Duplicate_Subexpr (N, Name_Req => True),
+               Duplicate_Subexpr_No_Checks (N, Name_Req => True),
              Expressions => New_List (
                Make_Integer_Literal (Loc, Indx)));
 
@@ -3354,7 +4720,9 @@ package body Checks is
 
             --    T_Typ'Length = string-literal-length
 
-            if Nkind (Expr_Actual) = N_String_Literal then
+            if Nkind (Expr_Actual) = N_String_Literal
+              and then Ekind (Etype (Expr_Actual)) = E_String_Literal_Subtype
+            then
                Cond :=
                  Make_Op_Ne (Loc,
                    Left_Opnd  => Get_E_Length (T_Typ, 1),
@@ -3374,19 +4742,35 @@ package body Checks is
 
             elsif Is_Constrained (Exptyp) then
                declare
-                  L_Index : Node_Id;
-                  R_Index : Node_Id;
-                  Ndims   : Nat := Number_Dimensions (T_Typ);
+                  Ndims : constant Nat := Number_Dimensions (T_Typ);
 
-                  L_Low  : Node_Id;
-                  L_High : Node_Id;
-                  R_Low  : Node_Id;
-                  R_High : Node_Id;
-
+                  L_Index  : Node_Id;
+                  R_Index  : Node_Id;
+                  L_Low    : Node_Id;
+                  L_High   : Node_Id;
+                  R_Low    : Node_Id;
+                  R_High   : Node_Id;
                   L_Length : Uint;
                   R_Length : Uint;
+                  Ref_Node : Node_Id;
 
                begin
+
+                  --  At the library level, we need to ensure that the
+                  --  type of the object is elaborated before the check
+                  --  itself is emitted.
+
+                  if Is_Itype (Exptyp)
+                    and then
+                      Ekind (Cunit_Entity (Current_Sem_Unit)) = E_Package
+                    and then
+                      not In_Package_Body (Cunit_Entity (Current_Sem_Unit))
+                  then
+                     Ref_Node := Make_Itype_Reference (Sloc (Ck_Node));
+                     Set_Itype (Ref_Node, Exptyp);
+                     Insert_Action (Ck_Node, Ref_Node);
+                  end if;
+
                   L_Index := First_Index (T_Typ);
                   R_Index := First_Index (Exptyp);
 
@@ -3470,7 +4854,7 @@ package body Checks is
 
             else
                declare
-                  Ndims : Nat := Number_Dimensions (T_Typ);
+                  Ndims : constant Nat := Number_Dimensions (T_Typ);
 
                begin
                   --  Build the condition for the explicit dereference case
@@ -3554,7 +4938,7 @@ package body Checks is
       function Get_N_First (N : Node_Id; Indx : Nat) return Node_Id;
       function Get_N_Last  (N : Node_Id; Indx : Nat) return Node_Id;
       --  Returns expression to compute:
-      --    N'First or N'Last using Duplicate_Subexpr
+      --    N'First or N'Last using Duplicate_Subexpr_No_Checks
 
       function Range_E_Cond
         (Exptyp : Entity_Id;
@@ -3615,7 +4999,8 @@ package body Checks is
              Left_Opnd =>
                Make_Op_Lt (Loc,
                  Left_Opnd =>
-                   Convert_To (Base_Type (Typ), Duplicate_Subexpr (Expr)),
+                   Convert_To (Base_Type (Typ),
+                     Duplicate_Subexpr_No_Checks (Expr)),
                  Right_Opnd =>
                    Convert_To (Base_Type (Typ),
                                Get_E_First_Or_Last (Typ, 0, Name_First))),
@@ -3623,7 +5008,8 @@ package body Checks is
              Right_Opnd =>
                Make_Op_Gt (Loc,
                  Left_Opnd =>
-                   Convert_To (Base_Type (Typ), Duplicate_Subexpr (Expr)),
+                   Convert_To (Base_Type (Typ),
+                     Duplicate_Subexpr_No_Checks (Expr)),
                  Right_Opnd =>
                    Convert_To
                      (Base_Type (Typ),
@@ -3660,7 +5046,7 @@ package body Checks is
            Make_Op_Lt (Loc,
              Left_Opnd  =>
                Convert_To
-                 (Base_Type (Typ), Duplicate_Subexpr (LB)),
+                 (Base_Type (Typ), Duplicate_Subexpr_No_Checks (LB)),
 
              Right_Opnd =>
                Convert_To
@@ -3694,7 +5080,7 @@ package body Checks is
            Make_Op_Gt (Loc,
              Left_Opnd  =>
                Convert_To
-                 (Base_Type (Typ), Duplicate_Subexpr (HB)),
+                 (Base_Type (Typ), Duplicate_Subexpr_No_Checks (HB)),
 
              Right_Opnd =>
                Convert_To
@@ -3753,7 +5139,50 @@ package body Checks is
          if Nkind (Bound) = N_Identifier
            and then Ekind (Entity (Bound)) = E_Discriminant
          then
-            return New_Occurrence_Of (Discriminal (Entity (Bound)), Loc);
+            --  If this is a task discriminant, and we are the body, we must
+            --  retrieve the corresponding body discriminal. This is another
+            --  consequence of the early creation of discriminals, and the
+            --  need to generate constraint checks before their declarations
+            --  are made visible.
+
+            if Is_Concurrent_Record_Type (Scope (Entity (Bound)))  then
+               declare
+                  Tsk : constant Entity_Id :=
+                          Corresponding_Concurrent_Type
+                           (Scope (Entity (Bound)));
+                  Disc : Entity_Id;
+
+               begin
+                  if In_Open_Scopes (Tsk)
+                    and then Has_Completion (Tsk)
+                  then
+                     --  Find discriminant of original task, and use its
+                     --  current discriminal, which is the renaming within
+                     --  the task body.
+
+                     Disc :=  First_Discriminant (Tsk);
+                     while Present (Disc) loop
+                        if Chars (Disc) = Chars (Entity (Bound)) then
+                           Set_Scope (Discriminal (Disc), Tsk);
+                           return New_Occurrence_Of (Discriminal (Disc), Loc);
+                        end if;
+
+                        Next_Discriminant (Disc);
+                     end loop;
+
+                     --  That loop should always succeed in finding a matching
+                     --  entry and returning. Fatal error if not.
+
+                     raise Program_Error;
+
+                  else
+                     return
+                       New_Occurrence_Of (Discriminal (Entity (Bound)), Loc);
+                  end if;
+               end;
+            else
+               return New_Occurrence_Of (Discriminal (Entity (Bound)), Loc);
+            end if;
 
          elsif Nkind (Bound) = N_Identifier
            and then Ekind (Entity (Bound)) = E_In_Parameter
@@ -3765,7 +5194,7 @@ package body Checks is
             return  Make_Integer_Literal (Loc, Intval (Bound));
 
          else
-            return Duplicate_Subexpr (Bound);
+            return Duplicate_Subexpr_No_Checks (Bound);
          end if;
       end Get_E_First_Or_Last;
 
@@ -3779,7 +5208,7 @@ package body Checks is
            Make_Attribute_Reference (Loc,
              Attribute_Name => Name_First,
              Prefix =>
-               Duplicate_Subexpr (N, Name_Req => True),
+               Duplicate_Subexpr_No_Checks (N, Name_Req => True),
              Expressions => New_List (
                Make_Integer_Literal (Loc, Indx)));
 
@@ -3795,7 +5224,7 @@ package body Checks is
            Make_Attribute_Reference (Loc,
              Attribute_Name => Name_Last,
              Prefix =>
-               Duplicate_Subexpr (N, Name_Req => True),
+               Duplicate_Subexpr_No_Checks (N, Name_Req => True),
              Expressions => New_List (
               Make_Integer_Literal (Loc, Indx)));
 
@@ -4030,7 +5459,7 @@ package body Checks is
                   --  the record declaration, it is a use of the discriminant
                   --  in a constraint of a component, and nothing can be
                   --  checked here. The check will be emitted within the
-                  --  init_proc. Before then, the discriminal has no real
+                  --  init proc. Before then, the discriminal has no real
                   --  meaning.
 
                   if Nkind (LB) = N_Identifier
@@ -4062,8 +5491,8 @@ package body Checks is
                     Make_And_Then (Loc,
                       Left_Opnd =>
                         Make_Op_Ge (Loc,
-                          Left_Opnd  => Duplicate_Subexpr (HB),
-                          Right_Opnd => Duplicate_Subexpr (LB)),
+                          Left_Opnd  => Duplicate_Subexpr_No_Checks (HB),
+                          Right_Opnd => Duplicate_Subexpr_No_Checks (LB)),
                       Right_Opnd => Cond);
                end;
 
@@ -4180,14 +5609,14 @@ package body Checks is
 
             elsif Is_Constrained (Exptyp) then
                declare
+                  Ndims : constant Nat := Number_Dimensions (T_Typ);
+
                   L_Index : Node_Id;
                   R_Index : Node_Id;
-                  Ndims   : Nat := Number_Dimensions (T_Typ);
-
-                  L_Low  : Node_Id;
-                  L_High : Node_Id;
-                  R_Low  : Node_Id;
-                  R_High : Node_Id;
+                  L_Low   : Node_Id;
+                  L_High  : Node_Id;
+                  R_Low   : Node_Id;
+                  R_High  : Node_Id;
 
                begin
                   L_Index := First_Index (T_Typ);
@@ -4243,7 +5672,7 @@ package body Checks is
 
             else
                declare
-                  Ndims   : Nat := Number_Dimensions (T_Typ);
+                  Ndims : constant Nat := Number_Dimensions (T_Typ);
 
                begin
                   --  Build the condition for the explicit dereference case
@@ -4279,6 +5708,17 @@ package body Checks is
                           and then
                             Is_In_Range
                              (High_Bound (Opnd_Index), Etype (Targ_Index))
+                        then
+                           null;
+
+                        --  If null range, no check needed.
+                        elsif
+                          Compile_Time_Known_Value (High_Bound (Opnd_Index))
+                            and then
+                          Compile_Time_Known_Value (Low_Bound (Opnd_Index))
+                            and then
+                             Expr_Value (High_Bound (Opnd_Index)) <
+                                 Expr_Value (Low_Bound (Opnd_Index))
                         then
                            null;
 
@@ -4330,8 +5770,11 @@ package body Checks is
 
    function Storage_Checks_Suppressed (E : Entity_Id) return Boolean is
    begin
-      return Scope_Suppress.Storage_Checks
-        or else (Present (E) and then Suppress_Storage_Checks (E));
+      if Present (E) and then Checks_May_Be_Suppressed (E) then
+         return Is_Check_Suppressed (E, Storage_Check);
+      else
+         return Scope_Suppress (Storage_Check);
+      end if;
    end Storage_Checks_Suppressed;
 
    ---------------------------
@@ -4340,8 +5783,15 @@ package body Checks is
 
    function Tag_Checks_Suppressed (E : Entity_Id) return Boolean is
    begin
-      return Scope_Suppress.Tag_Checks
-        or else (Present (E) and then Suppress_Tag_Checks (E));
+      if Present (E) then
+         if Kill_Tag_Checks (E) then
+            return True;
+         elsif Checks_May_Be_Suppressed (E) then
+            return Is_Check_Suppressed (E, Tag_Check);
+         end if;
+      end if;
+
+      return Scope_Suppress (Tag_Check);
    end Tag_Checks_Suppressed;
 
 end Checks;

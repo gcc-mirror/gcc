@@ -26,8 +26,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
+-- GNARL was developed by the GNARL team at Florida State University.       --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -318,9 +318,7 @@ package body System.Tasking.Async_Delays is
       Timedout         : Boolean;
       Yielded          : Boolean;
       Now              : Duration;
-      Dequeued,
-      Tpred,
-      Tsucc            : Delay_Block_Access;
+      Dequeued         : Delay_Block_Access;
       Dequeued_Task    : Task_ID;
 
    begin
@@ -376,7 +374,7 @@ package body System.Tasking.Async_Delays is
             --  Dequeue the waiting task from the front of the queue.
 
             pragma Debug (System.Tasking.Debug.Trace
-              ("Timer service: waking up waiting task", 'E'));
+              (Timer_Server_ID, "Timer service: waking up waiting task", 'E'));
 
             Dequeued := Timer_Queue.Succ;
             Timer_Queue.Succ := Dequeued.Succ;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,7 +33,7 @@
 
 --  This package contains definitions of standard unsigned types that
 --  correspond in size to the standard signed types declared in Standard.
---  and (unlike the types in Interfaces have corresponding names). It
+--  and (unlike the types in Interfaces) have corresponding names. It
 --  also contains some related definitions for other specialized types
 --  used by the compiler in connection with packed array types.
 
@@ -55,6 +55,7 @@ pragma Pure (Unsigned_Types);
 
    type Packed_Bytes1 is array (Natural range <>) of Packed_Byte;
    for Packed_Bytes1'Alignment use 1;
+   for Packed_Bytes1'Component_Size use Packed_Byte'Size;
    --  This is the type used to implement packed arrays where no alignment
    --  is required. This includes the cases of 1,2,4 (where we use direct
    --  masking operations), and all odd component sizes (where the clusters

@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with GNAT.Exceptions; use GNAT.Exceptions;
+with System.Pure_Exceptions; use System.Pure_Exceptions;
 
 with Interfaces; use Interfaces;
 with Unchecked_Conversion;

@@ -4,10 +4,9 @@
  *                                                                          *
  *                                 L I N K                                  *
  *                                                                          *
- *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2001, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2003, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -159,9 +158,9 @@ const char *object_library_extension = ".a";
 const char *object_file_option = "";
 const char *run_path_option = "-Wl,-rpath,";
 char shared_libgnat_default = STATIC;
-int link_max = 2147483647;
-unsigned char objlist_file_supported = 0;
-unsigned char using_gnu_linker = 0;
+int link_max = 8192;
+unsigned char objlist_file_supported = 1;
+unsigned char using_gnu_linker = 1;
 const char *object_library_extension = ".a";
 
 #elif defined (__svr4__) && defined (i386)

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   S p e c                                --
 --                                                                          --
---            Copyright (C) 1999 - 2002 Ada Core Technologies, Inc.         --
+--             Copyright (C) 1999-2003 Ada Core Technologies, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,9 +26,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- GNARL was developed by the GNARL team at Florida State University.       --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -36,14 +35,15 @@
 --  In particular, it interfaces with the VxWorks hardware interrupt
 --  facilities, allowing the use of low-latency direct-vectored
 --  interrupt handlers. Note that such handlers have a variety of
---  restrictions regarding system calls. Less restrictive, but higher-
---  latency handlers can be written using Ada protected procedures,
---  Ada 83 style interrupt entries, or by signalling an Ada task
---  from within an interrupt handler using a binary semaphore as
---  described in the VxWorks Programmer's Manual
+--  restrictions regarding system calls and language constructs. In particular,
+--  the use of exception handlers and functions returning variable-length
+--  objects cannot be used. Less restrictive, but higher-latency handlers can
+--  be written using Ada protected procedures, Ada 83 style interrupt entries,
+--  or by signalling an Ada task from within an interrupt handler using a
+--  binary semaphore as described in the VxWorks Programmer's Manual.
 --
 --  For complete documentation of the operations in this package, please
---  consult the VxWorks Programmer's Manual and VxWorks Reference Manual
+--  consult the VxWorks Programmer's Manual and VxWorks Reference Manual.
 
 with System.VxWorks;
 

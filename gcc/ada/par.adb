@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,15 +45,13 @@ with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Style;
 with Table;
+with Tbuild;   use Tbuild;
 
 function Par (Configuration_Pragmas : Boolean) return List_Id is
 
    Num_Library_Units : Natural := 0;
    --  Count number of units parsed (relevant only in syntax check only mode,
    --  since in semantics check mode only a single unit is permitted anyway)
-
-   Unit_Node : Node_Id;
-   --  Stores compilation unit node for current unit
 
    Save_Config_Switches : Config_Switches_Type;
    --  Variable used to save values of config switches while we parse the
@@ -733,6 +731,10 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  starts a declaration (but we make sure to skip at least one token
       --  in this case, to avoid getting stuck in a loop).
 
+      procedure Resync_To_Semicolon;
+      --  Similar to Resync_Past_Semicolon, except that the scan pointer is
+      --  left pointing to the semicolon rather than past it.
+
       procedure Resync_Past_Semicolon_Or_To_Loop_Or_Then;
       --  Used if an error occurs while scanning a sequence of statements.
       --  The scan pointer is positioned past the next semicolon, or to the
@@ -748,7 +750,7 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  Used if an error occurs while scanning a parenthesized list of items
       --  separated by semicolons. The scan pointer is advanced to the next
       --  semicolon or right parenthesis at the outer parenthesis level, or
-      --  to the next is or RETURN keyword occurrence, whichever comes first.
+      --  to the next is or RETURN keyword occurence, whichever comes first.
 
       procedure Resync_Cunit;
       --  Synchronize to next token which could be the start of a compilation
@@ -956,6 +958,9 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       pragma Inline (Token_Is_At_Start_Of_Line);
       --  Determines if the current token is the first token on the line
 
+      function Token_Is_At_End_Of_Line return Boolean;
+      --  Determines if the current token is the last token on the line
+
    end Util;
 
    ---------------------------------------
@@ -1057,8 +1062,8 @@ begin
 
    if Configuration_Pragmas then
       declare
-         Ecount  : constant Int := Total_Errors_Detected;
-         Pragmas : List_Id := Empty_List;
+         Ecount  : constant Int     := Serious_Errors_Detected;
+         Pragmas : constant List_Id := Empty_List;
          P_Node  : Node_Id;
 
       begin
@@ -1073,7 +1078,7 @@ begin
             else
                P_Node := P_Pragma;
 
-               if Total_Errors_Detected > Ecount then
+               if Serious_Errors_Detected > Ecount then
                   return Error_List;
                end if;
 
@@ -1146,7 +1151,7 @@ begin
          Last_Resync_Point := No_Location;
 
          Label_List := New_Elmt_List;
-         Unit_Node := P_Compilation_Unit;
+         Discard_Node (P_Compilation_Unit);
 
          --  If we are not at an end of file, then this means that we are
          --  in syntax scan mode, and we can have another compilation unit,
@@ -1154,7 +1159,6 @@ begin
 
          exit when Token = Tok_EOF;
          Restore_Opt_Config_Switches (Save_Config_Switches);
-         Set_Comes_From_Source_Default (False);
       end loop;
 
       --  Now that we have completely parsed the source file, we can

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -37,13 +37,13 @@
 
 package body Ada.Exceptions.Traceback is
 
-   function Tracebacks
-     (E    : Exception_Occurrence)
-      return GNAT.Traceback.Tracebacks_Array
-   is
+   ----------------
+   -- Tracebacks --
+   ----------------
+
+   function Tracebacks (E : Exception_Occurrence) return Tracebacks_Array is
    begin
-      return
-        GNAT.Traceback.Tracebacks_Array (E.Tracebacks (1 .. E.Num_Tracebacks));
+      return Tracebacks_Array (E.Tracebacks (1 .. E.Num_Tracebacks));
    end Tracebacks;
 
 end Ada.Exceptions.Traceback;

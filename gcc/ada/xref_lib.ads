@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---       Copyright (C) 1998-2001 Free Software Foundation, Inc.             --
+--       Copyright (C) 1998-2002 Free Software Foundation, Inc.             --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -19,19 +19,20 @@
 -- to  the Free Software Foundation,  59 Temple Place - Suite 330,  Boston, --
 -- MA 02111-1307, USA.                                                      --
 --                                                                          --
--- Extensive contributions were provided by Ada Core Technologies Inc.   --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  Miscellaneous utilities for the cross-referencing tool
+
 with Hostparm;
+with Xr_Tabls;  use Xr_Tabls;
+
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 with GNAT.OS_Lib;               use GNAT.OS_Lib;
 with GNAT.Dynamic_Tables;
-
-with Xr_Tabls;                  use Xr_Tabls;
 with GNAT.Regexp;               use GNAT.Regexp;
-
---  Misc. utilities for the cross-referencing tool
 
 package Xref_Lib is
 
@@ -43,6 +44,7 @@ package Xref_Lib is
    ---------------------
    -- Directory Input --
    ---------------------
+
    type Rec_DIR is limited private;
    --  This one is used for recursive search of .ali files
 
@@ -73,12 +75,6 @@ package Xref_Lib is
    Invalid_Argument : exception;
    --  Exception raised when there is a syntax error in the command line
 
-   function Match
-     (Pattern : Search_Pattern;
-      Symbol  : String)
-      return    Boolean;
-   --  Returns true if Symbol matches one of the entities in the command line
-
    -----------------------
    -- Output Algorithms --
    -----------------------
@@ -97,8 +93,9 @@ package Xref_Lib is
    ------------------------
    -- General Algorithms --
    ------------------------
+
    function Default_Project_File (Dir_Name : in String) return String;
-   --  Returns the default Project file name
+   --  Returns the default Project file name for the directory Dir_Name.
 
    procedure Search
      (Pattern       : Search_Pattern;
@@ -107,13 +104,20 @@ package Xref_Lib is
       Read_Only     : Boolean;
       Der_Info      : Boolean;
       Type_Tree     : Boolean);
-   --  Search every ali file (following the Readdir rule above), for
-   --  each line matching Pattern, and executes Process on these
-   --  lines. If World is True, Search will look into every .ali file
-   --  in the object search path. If Read_Only is True, we parse the
-   --  read-only ali files too. If Der_Mode is true then the derived type
-   --  information will be processed. If Type_Tree is true then the type
-   --  hierarchy will be search going from pattern to the parent type
+   --  Search every ALI file for entities matching Pattern, and add
+   --  these entities to the internal symbol tables.
+   --
+   --  If Wide_Search is True, all ALI files found in the object path
+   --  are searched.
+   --
+   --  If Read_Only is True, read-only ALI files will also be parsed,
+   --  similar to gnatmake -a.
+   --
+   --  If Der_Info is true, then the derived type information will be
+   --  processed.
+   --
+   --  If Type_Tree is true, then the type hierarchy wil be searched
+   --  going from the pattern to the parent type.
 
    procedure Search_Xref
      (Local_Symbols : Boolean;
@@ -123,34 +127,6 @@ package Xref_Lib is
    --  dependencies. If Read_Only is True, we parse the read-only ali
    --  files too. If Der_Mode is true then the derived type information will
    --  be processed
-
-   ---------------
-   -- ALI files --
-   ---------------
-
-   function Current_Xref_File
-     (File : ALI_File)
-      return Xr_Tabls.File_Reference;
-   --  Returns the name of the file in which the last identifier
-   --  is declared
-
-   function File_Name
-     (File : ALI_File;
-      Num  : Positive)
-      return Xr_Tabls.File_Reference;
-   --  Returns the dependency file name number Num
-
-   function Get_Full_Type (Abbrev : Character) return String;
-   --  Returns the full type corresponding to a type letter as found in
-   --  the .ali files.
-
-   procedure Open
-     (Name         : in  String;
-      File         : out ALI_File;
-      Dependencies : in  Boolean := False);
-   --  Open a new ALI file
-   --  if Dependencies is True, the insert every library file 'with'ed in
-   --  the files database (used for gnatxref)
 
 private
    type Rec_DIR is limited record
@@ -193,6 +169,9 @@ private
       --  File is a list of the places where the declaration of the entities
       --  has to be. When the user enters a file:line:column on the command
       --  line, it is stored as "Entity_Name Declaration_File:line:column"
+
+      File_Ref : Xr_Tabls.File_Reference;
+      --  A reference to the source file, if any.
 
       Initialized : Boolean := False;
       --  Set to True when Entity has been initialized.

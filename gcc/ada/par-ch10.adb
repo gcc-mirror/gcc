@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -405,8 +405,12 @@ package body Ch10 is
          --  If we scanned a subprogram body, make sure we did not have private
 
          elsif Private_Sloc /= No_Location
-           and then Nkind (Unit (Comp_Unit_Node)) /= N_Function_Instantiation
-           and then Nkind (Unit (Comp_Unit_Node)) /= N_Procedure_Instantiation
+           and then
+             Nkind (Unit (Comp_Unit_Node)) /= N_Function_Instantiation
+           and then
+             Nkind (Unit (Comp_Unit_Node)) /= N_Procedure_Instantiation
+           and then
+             Nkind (Unit (Comp_Unit_Node)) /= N_Subprogram_Renaming_Declaration
          then
             Error_Msg ("cannot have private subprogram body", Private_Sloc);
 
@@ -748,9 +752,10 @@ package body Ch10 is
    --  Error recovery: Cannot raise Error_Resync
 
    function P_Context_Clause return List_Id is
-      Item_List  : List_Id;
-      With_Node  : Node_Id;
-      First_Flag : Boolean;
+      Item_List   : List_Id;
+      Has_Limited : Boolean := False;
+      With_Node   : Node_Id;
+      First_Flag  : Boolean;
 
    begin
       Item_List := New_List;
@@ -771,6 +776,34 @@ package body Ch10 is
          P_Pragmas_Opt (Item_List);
 
          --  Processing for WITH clause
+
+         --  First check for LIMITED WITH
+
+         if Token = Tok_Limited then
+            Has_Limited := True;
+            Scan; -- past LIMITED
+
+            --  In the context, LIMITED can only appear in a with_clause
+
+            if Token /= Tok_With then
+               Error_Msg_SC ("unexpected LIMITED ignored");
+            end if;
+
+            if not Extensions_Allowed then
+               Error_Msg_SP ("`LIMITED WITH` is an Ada0X extension");
+
+               if OpenVMS then
+                  Error_Msg_SP
+                    ("\unit must be compiled with " &
+                     "'/'E'X'T'E'N'S'I'O'N'S'_'A'L'L'O'W'E'D qualifier");
+               else
+                  Error_Msg_SP
+                    ("\unit must be compiled with -gnatX switch");
+               end if;
+            end if;
+         else
+            Has_Limited := False;
+         end if;
 
          if Token = Tok_With then
             Scan; -- past WITH
@@ -829,6 +862,7 @@ package body Ch10 is
 
                   Set_Name (With_Node, P_Qualified_Simple_Name);
                   Set_First_Name (With_Node, First_Flag);
+                  Set_Limited_Present (With_Node, Has_Limited);
                   First_Flag := False;
                   exit when Token /= Tok_Comma;
                   Scan; -- past comma

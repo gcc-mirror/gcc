@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -379,7 +379,7 @@ package body Ada.Strings.Wide_Fixed is
          raise Index_Error;
       else
          declare
-            Result_Length : Natural :=
+            Result_Length : constant Natural :=
                               Natural'Max
                                 (Source'Length,
                                  Position - Source'First + New_Item'Length);
@@ -588,7 +588,8 @@ package body Ada.Strings.Wide_Fixed is
 
       else
          declare
-            Result : Wide_String (1 .. High - Low + 1) := Source (Low .. High);
+            Result : constant Wide_String (1 .. High - Low + 1) :=
+                       Source (Low .. High);
 
          begin
             return Result;

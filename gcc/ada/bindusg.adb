@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                        GBIND BINDER COMPONENTS                           --
+--                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
 --                             B I N D U S G                                --
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -84,6 +84,13 @@ begin
    Write_Str ("  -E        Store tracebacks in Exception occurrences");
    Write_Eol;
 
+   --  The -f switch is voluntarily omitted, because it is obsolete
+
+   --  Line for -F switch
+
+   Write_Str ("  -F        Force checking of elaboration Flags");
+   Write_Eol;
+
    --  Line for -h switch
 
    Write_Str ("  -h        Output this usage (help) infor");
@@ -123,7 +130,7 @@ begin
    --  Line for -m switch
 
    Write_Str ("  -mnnn     Limit number of detected error");
-   Write_Str ("s to nnn (1-999)");
+   Write_Str ("s to nnn (1-999999)");
    Write_Eol;
 
    --  Line for -n switch

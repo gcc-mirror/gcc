@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---             Copyright (C) 1991-2001 Florida State University             --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,9 +26,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- GNARL was developed by the GNARL team at Florida State University.       --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -65,30 +64,30 @@ package System.Tasking.Protected_Objects.Single_Entry is
    ---------------------------------
 
    --  The compiler will expand in the GNAT tree the following construct:
-   --
+
    --  protected PO is
    --     entry E;
    --     procedure P;
    --  private
    --     Open : Boolean := False;
    --  end PO;
-   --
+
    --  protected body PO is
    --     entry E when Open is
    --        ...variable declarations...
    --     begin
    --        ...B...
    --     end E;
-   --
+
    --     procedure P is
    --        ...variable declarations...
    --     begin
    --        ...C...
    --     end P;
    --  end PO;
-   --
+
    --  as follows:
-   --
+
    --  protected type poT is
    --     entry e;
    --     procedure p;
@@ -109,19 +108,19 @@ package System.Tasking.Protected_Objects.Single_Entry is
    --     barrier => poPT__B2s'unrestricted_access,
    --     action => poPT__E1s'unrestricted_access);
    --  freeze poTV [
-   --     procedure _init_proc (_init : in out poTV) is
+   --     procedure poTVIP (_init : in out poTV) is
    --     begin
    --        _init.open := false;
-   --        _init_proc (_init._object);
+   --        object-init-proc (_init._object);
    --        initialize_protection_entry (_init._object'unchecked_access,
    --          unspecified_priority, _init'address, poTA'
    --          unrestricted_access);
    --        return;
-   --     end _init_proc;
+   --     end poTVIP;
    --  ]
    --  po : poT;
-   --  _init_proc (poTV!(po));
-   --
+   --  poTVIP (poTV!(po));
+
    --  function poPT__B2s (O : address; E : protected_entry_index) return
    --    boolean is
    --     type poTVP is access poTV;
@@ -131,7 +130,7 @@ package System.Tasking.Protected_Objects.Single_Entry is
    --  begin
    --     return open;
    --  end poPT__B2s;
-   --
+
    --  procedure poPT__E1s (O : address; P : address; E :
    --    protected_entry_index) is
    --     type poTVP is access poTV;
@@ -152,7 +151,7 @@ package System.Tasking.Protected_Objects.Single_Entry is
    --          unchecked_access, get_gnat_exception);
    --        return;
    --  end poPT__E1s;
-   --
+
    --  procedure poPT__pN (_object : in out poTV) is
    --     poR : protection_entry renames _object._object;
    --     openP : boolean renames _object.open;
@@ -161,7 +160,7 @@ package System.Tasking.Protected_Objects.Single_Entry is
    --     ...C...
    --     return;
    --  end poPT__pN;
-   --
+
    --  procedure poPT__pP (_object : in out poTV) is
    --     procedure _clean is
    --     begin
@@ -284,9 +283,5 @@ private
       Entry_Body        : Entry_Body_Access;
       Entry_Queue       : Entry_Call_Link;
    end record;
-   pragma Volatile (Protection_Entry);
-   for Protection_Entry'Alignment use Standard'Maximum_Alignment;
-   --  Use maximum alignement so that one can convert a protection_entry_access
-   --  to a task_id.
 
 end System.Tasking.Protected_Objects.Single_Entry;

@@ -5,9 +5,8 @@
 --                     S Y S T E M . T A S K _ I N F O                      --
 --                                                                          --
 --                                 S p e c                                  --
---                           (Compiler Interface)                           --
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,19 +32,23 @@
 ------------------------------------------------------------------------------
 
 --  This package contains the definitions and routines associated with the
---  implementation of the Task_Info pragma. It is specialized appropriately
---  for targets that make use of this pragma.
+--  implementation and use of the Task_Info pragma. It is specialized
+--  appropriately for targets that make use of this pragma.
 
 --  Note: the compiler generates direct calls to this interface, via Rtsfind.
 --  Any changes to this interface may require corresponding compiler changes.
 
+--  This unit may be used directly from an application program by providing
+--  an appropriate WITH, and the interface can be expected to remain stable.
+
+--  This is the IRIX (kernel threads) version of this package
+
 with Interfaces.C;
 with System.OS_Interface;
-with Unchecked_Deallocation;
 
 package System.Task_Info is
-pragma Elaborate_Body;
---  To ensure that a body is allowed
+   pragma Elaborate_Body;
+   --  To ensure that a body is allowed
 
    package OSI renames System.OS_Interface;
 
@@ -126,13 +129,6 @@ pragma Elaborate_Body;
        No_Specified_Priority, ANY_CPU);
 
    type Task_Info_Type is access all Thread_Attributes;
-
-   type Task_Image_Type is access String;
-   --  Used to generate a meaningful identifier for tasks that are variables
-   --  and components of variables.
-
-   procedure Free_Task_Image is new
-     Unchecked_Deallocation (String, Task_Image_Type);
 
    Unspecified_Task_Info : constant Task_Info_Type := null;
    --  Value passed to task in the absence of a Task_Info pragma

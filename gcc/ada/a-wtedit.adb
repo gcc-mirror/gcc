@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -896,9 +896,9 @@ package body Ada.Wide_Text_IO.Editing is
 
             elsif Dollar then
                if Pic.Radix_Position > Pic.Start_Currency then
-                  return Wide_String' (1 .. Pic.Radix_Position - 1 => '*') &
+                  return Wide_String'(1 .. Pic.Radix_Position - 1 => '*') &
                      Radix_Point &
-                     Wide_String' (Pic.Radix_Position + 1 .. Last => '*');
+                     Wide_String'(Pic.Radix_Position + 1 .. Last => '*');
 
                else
                   return
@@ -920,7 +920,7 @@ package body Ada.Wide_Text_IO.Editing is
             end if;
          end if;
 
-         return Wide_String' (1 .. Last => '*');
+         return Wide_String'(1 .. Last => '*');
       end if;
 
       --  This was once a simple return statement, now there are nine
@@ -929,7 +929,7 @@ package body Ada.Wide_Text_IO.Editing is
 
       --  Processing the radix and sign expansion separately
       --  would require lots of copying--the string and some of its
-      --  indices--without really simplifying the logic.  The cases are:
+      --  indicies--without really simplifying the logic.  The cases are:
 
       --  1) Expand $, replace '.' with Radix_Point
       --  2) No currency expansion, replace '.' with Radix_Point

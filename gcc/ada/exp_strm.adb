@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,20 +24,19 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Einfo;    use Einfo;
-with Lib;      use Lib;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Rtsfind;  use Rtsfind;
-with Sinfo;    use Sinfo;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with Tbuild;   use Tbuild;
-with Ttypes;   use Ttypes;
-with Exp_Tss;  use Exp_Tss;
-with Uintp;    use Uintp;
+with Atree;   use Atree;
+with Einfo;   use Einfo;
+with Namet;   use Namet;
+with Nlists;  use Nlists;
+with Nmake;   use Nmake;
+with Rtsfind; use Rtsfind;
+with Sinfo;   use Sinfo;
+with Snames;  use Snames;
+with Stand;   use Stand;
+with Tbuild;  use Tbuild;
+with Ttypes;  use Ttypes;
+with Exp_Tss; use Exp_Tss;
+with Uintp;   use Uintp;
 
 package body Exp_Strm is
 
@@ -80,24 +79,23 @@ package body Exp_Strm is
    --  Decls and Stms are the declarations and statements for the body and
    --  The parameter Fnam is the name of the constructed function.
 
-   procedure Build_Stream_Procedure
-     (Loc  : Source_Ptr;
-      Typ  : Entity_Id;
-      Decl : out Node_Id;
-      Pnam : Entity_Id;
-      Stms : List_Id;
-      Outp : Boolean);
-   --  Called to build an array or record stream procedure. The first three
-   --  arguments are the same as Build_Record_Or_Elementary_Output_Procedure.
-   --  Stms is the list of statements for the body (the declaration list is
-   --  always null), and Pnam is the name of the constructed procedure.
-
    function Has_Stream_Standard_Rep (U_Type : Entity_Id) return Boolean;
    --  This function is used to test U_Type, which is a type
    --  Returns True if U_Type has a standard representation for stream
    --  purposes, i.e. there is no non-standard enumeration representation
    --  clause, and the size of the first subtype is the same as the size
    --  of the root type.
+
+   function Make_Stream_Subprogram_Name
+     (Loc : Source_Ptr;
+      Typ : Entity_Id;
+      Nam : TSS_Name_Type) return Entity_Id;
+   --  Return the entity that identifies the stream subprogram for type Typ
+   --  that is identified by the given Nam. This procedure deals with the
+   --  difference between tagged types (where a single subprogram associated
+   --  with the type is generated) and all other cases (where a subprogram
+   --  is generated at the point of the stream attribute reference). The
+   --  Loc parameter is used as the Sloc of the created entity.
 
    function Stream_Base_Type (E : Entity_Id) return Entity_Id;
    --  Stream attributes work on the basis of the base type except for the
@@ -114,7 +112,7 @@ package body Exp_Strm is
 
    --  The function we build looks like
 
-   --    function InputN (S : access RST) return Typ is
+   --    function typSI[_nnn] (S : access RST) return Typ is
    --      L1 : constant Index_Type_1 := Index_Type_1'Input (S);
    --      H1 : constant Index_Type_1 := Index_Type_1'Input (S);
    --      L2 : constant Index_Type_2 := Index_Type_2'Input (S);
@@ -128,7 +126,11 @@ package body Exp_Strm is
    --    begin
    --      Typ'Read (S, V);
    --      return V;
-   --    end InputN
+   --    end typSI[_nnn]
+
+   --  Note: the suffix [_nnn] is present for non-tagged types, where we
+   --  generate a local subprogram at the point of the occurrence of the
+   --  attribute reference, so the name must be unique.
 
    procedure Build_Array_Input_Function
      (Loc  : Source_Ptr;
@@ -221,8 +223,7 @@ package body Exp_Strm is
 
       Fnam :=
         Make_Defining_Identifier (Loc,
-          Chars =>
-            New_External_Name (Name_uInput, ' ', Increment_Serial_Number));
+          Chars => Make_TSS_Name_Local (Typ, TSS_Stream_Input));
 
       Build_Stream_Function (Loc, Typ, Decl, Fnam, Decls, Stms);
    end Build_Array_Input_Function;
@@ -288,8 +289,7 @@ package body Exp_Strm is
 
       Pnam :=
         Make_Defining_Identifier (Loc,
-          Chars =>
-            New_External_Name (Name_uOutput, ' ', Increment_Serial_Number));
+          Chars => Make_TSS_Name_Local (Typ, TSS_Stream_Output));
 
       Build_Stream_Procedure (Loc, Typ, Decl, Pnam, Stms, False);
    end Build_Array_Output_Procedure;
@@ -309,9 +309,7 @@ package body Exp_Strm is
    begin
       Pnam :=
         Make_Defining_Identifier (Loc,
-          New_External_Name
-            (Name_uRead, ' ', Increment_Serial_Number));
-
+          Chars => Make_TSS_Name_Local (Typ, TSS_Stream_Read));
       Build_Array_Read_Write_Procedure (Nod, Typ, Decl, Pnam, Name_Read);
    end Build_Array_Read_Procedure;
 
@@ -343,8 +341,7 @@ package body Exp_Strm is
       Pnam : Entity_Id;
       Nam  : Name_Id)
    is
-      Loc : constant Source_Ptr := Sloc (Nod);
-
+      Loc  : constant Source_Ptr := Sloc (Nod);
       Ndim : constant Pos        := Number_Dimensions (Typ);
       Ctyp : constant Entity_Id  := Component_Type (Typ);
 
@@ -378,9 +375,9 @@ package body Exp_Strm is
       --  generate any additional freezing actions in any case. See 5509-003.
 
       if Nam = Name_Read then
-         RW := TSS (Base_Type (Ctyp), Name_uRead);
+         RW := TSS (Base_Type (Ctyp), TSS_Stream_Read);
       else
-         RW := TSS (Base_Type (Ctyp), Name_uWrite);
+         RW := TSS (Base_Type (Ctyp), TSS_Stream_Write);
       end if;
 
       if Present (RW)
@@ -435,9 +432,7 @@ package body Exp_Strm is
    begin
       Pnam :=
         Make_Defining_Identifier (Loc,
-          Chars =>
-            New_External_Name (Name_uWrite, ' ', Increment_Serial_Number));
-
+          Chars => Make_TSS_Name_Local (Typ, TSS_Stream_Write));
       Build_Array_Read_Write_Procedure (Nod, Typ, Decl, Pnam, Name_Write);
    end Build_Array_Write_Procedure;
 
@@ -452,7 +447,9 @@ package body Exp_Strm is
       Rt_Type : constant Entity_Id  := Root_Type (U_Type);
       FST     : constant Entity_Id  := First_Subtype (U_Type);
       P_Size  : constant Uint       := Esize (FST);
+      Res     : Node_Id;
       Strm    : constant Node_Id    := First (Expressions (N));
+      Targ    : constant Node_Id    := Next (Strm);
       Lib_RE  : RE_Id;
 
    begin
@@ -580,15 +577,32 @@ package body Exp_Strm is
       end if;
 
       --  Call the function, and do an unchecked conversion of the result
-      --  to the actual type of the prefix.
+      --  to the actual type of the prefix. If the target is a discriminant,
+      --  set target type to force a constraint check (13.13.2 (35)).
 
-      return
-        Unchecked_Convert_To (P_Type,
-          Make_Function_Call (Loc,
-            Name => New_Occurrence_Of (RTE (Lib_RE), Loc),
-            Parameter_Associations => New_List (
-              Relocate_Node (Strm))));
+      if Nkind (Targ) = N_Selected_Component
+        and then Present (Entity (Selector_Name (Targ)))
+        and then Ekind (Entity (Selector_Name (Targ)))
+          = E_Discriminant
+      then
+         Res :=
+           Unchecked_Convert_To (Base_Type (P_Type),
+             Make_Function_Call (Loc,
+               Name => New_Occurrence_Of (RTE (Lib_RE), Loc),
+               Parameter_Associations => New_List (
+                 Relocate_Node (Strm))));
 
+         Set_Do_Range_Check (Res);
+         return Res;
+
+      else
+         return
+           Unchecked_Convert_To (P_Type,
+             Make_Function_Call (Loc,
+               Name => New_Occurrence_Of (RTE (Lib_RE), Loc),
+               Parameter_Associations => New_List (
+                 Relocate_Node (Strm))));
+      end if;
    end Build_Elementary_Input_Call;
 
    ---------------------------------
@@ -746,7 +760,6 @@ package body Exp_Strm is
             Relocate_Node (Strm),
             Unchecked_Convert_To (Etype (Next_Formal (First_Formal (Libent))),
               Relocate_Node (Item))));
-
    end Build_Elementary_Write_Call;
 
    -----------------------------------------
@@ -793,9 +806,7 @@ package body Exp_Strm is
 
       Pnam :=
         Make_Defining_Identifier (Loc,
-          Chars =>
-            New_External_Name (Name_uRead, ' ', Increment_Serial_Number));
-
+          Chars => Make_TSS_Name_Local (Typ, TSS_Stream_Read));
       Build_Record_Read_Write_Procedure (Loc, Typ, Decl, Pnam, Name_Read);
 
       --  Read the discriminants before the rest of the components, so
@@ -860,9 +871,7 @@ package body Exp_Strm is
 
       Pnam :=
         Make_Defining_Identifier (Loc,
-          Chars =>
-            New_External_Name (Name_uWrite, ' ', Increment_Serial_Number));
-
+          Chars => Make_TSS_Name_Local (Typ, TSS_Stream_Write));
       Build_Record_Read_Write_Procedure (Loc, Typ, Decl, Pnam, Name_Write);
 
       --  Write the discriminants before the rest of the components, so
@@ -987,18 +996,7 @@ package body Exp_Strm is
          Make_Return_Statement (Loc,
            Expression => Make_Identifier (Loc, Name_V)));
 
-      --  For tagged types, we use a canonical name so that it matches the
-      --  primitive spec. For all other cases, we use a serialized name so
-      --  that multiple generations of the same procedure do not clash.
-
-      if Is_Tagged_Type (Typ) then
-         Fnam := Make_Defining_Identifier (Loc, Name_uInput);
-      else
-         Fnam :=
-           Make_Defining_Identifier (Loc,
-             Chars =>
-               New_External_Name (Name_uInput, ' ', Increment_Serial_Number));
-      end if;
+      Fnam := Make_Stream_Subprogram_Name (Loc, Typ, TSS_Stream_Input);
 
       Build_Stream_Function (Loc, Typ, Decl, Fnam, Decls, Stms);
    end Build_Record_Or_Elementary_Input_Function;
@@ -1049,19 +1047,7 @@ package body Exp_Strm is
             Make_Identifier (Loc, Name_S),
             Make_Identifier (Loc, Name_V))));
 
-      --  For tagged types, we use a canonical name so that it matches the
-      --  primitive spec. For all other cases, we use a serialized name so
-      --  that multiple generations of the same procedure do not clash.
-
-      if Is_Tagged_Type (Typ) then
-         Pnam := Make_Defining_Identifier (Loc, Name_uOutput);
-      else
-         Pnam :=
-           Make_Defining_Identifier (Loc,
-             Chars =>
-               New_External_Name
-                 (Name_uOutput, ' ', Increment_Serial_Number));
-      end if;
+      Pnam := Make_Stream_Subprogram_Name (Loc, Typ, TSS_Stream_Output);
 
       Build_Stream_Procedure (Loc, Typ, Decl, Pnam, Stms, False);
    end Build_Record_Or_Elementary_Output_Procedure;
@@ -1077,19 +1063,7 @@ package body Exp_Strm is
       Pnam : out Entity_Id)
    is
    begin
-      --  For tagged types, we use a canonical name so that it matches the
-      --  primitive spec. For all other cases, we use a serialized name so
-      --  that multiple generations of the same procedure do not clash.
-
-      if Is_Tagged_Type (Typ) then
-         Pnam := Make_Defining_Identifier (Loc, Name_uRead);
-      else
-         Pnam :=
-           Make_Defining_Identifier (Loc,
-             Chars =>
-               New_External_Name (Name_uRead, ' ', Increment_Serial_Number));
-      end if;
-
+      Pnam := Make_Stream_Subprogram_Name (Loc, Typ, TSS_Stream_Read);
       Build_Record_Read_Write_Procedure (Loc, Typ, Decl, Pnam, Name_Read);
    end Build_Record_Read_Procedure;
 
@@ -1283,7 +1257,8 @@ package body Exp_Strm is
       --  Write do not read or write the discriminant values. All handling
       --  of discriminants occurs in the Input and Output subprograms.
 
-      Rdef := Type_Definition (Declaration_Node (Underlying_Type (Typt)));
+      Rdef := Type_Definition
+                (Declaration_Node (Base_Type (Underlying_Type (Typt))));
       Stms := Empty_List;
 
       --  In record extension case, the fields we want, including the _Parent
@@ -1302,7 +1277,6 @@ package body Exp_Strm is
 
       Build_Stream_Procedure
         (Loc, Typ, Decl, Pnam, Stms, Nam = Name_Read);
-
    end Build_Record_Read_Write_Procedure;
 
    ----------------------------------
@@ -1316,19 +1290,7 @@ package body Exp_Strm is
       Pnam : out Entity_Id)
    is
    begin
-      --  For tagged types, we use a canonical name so that it matches the
-      --  primitive spec. For all other cases, we use a serialized name so
-      --  that multiple generations of the same procedure do not clash.
-
-      if Is_Tagged_Type (Typ) then
-         Pnam := Make_Defining_Identifier (Loc, Name_uWrite);
-      else
-         Pnam :=
-           Make_Defining_Identifier (Loc,
-             Chars =>
-               New_External_Name (Name_uWrite, ' ', Increment_Serial_Number));
-      end if;
-
+      Pnam := Make_Stream_Subprogram_Name (Loc, Typ, TSS_Stream_Write);
       Build_Record_Read_Write_Procedure (Loc, Typ, Decl, Pnam, Name_Write);
    end Build_Record_Write_Procedure;
 
@@ -1337,27 +1299,26 @@ package body Exp_Strm is
    -------------------------------
 
    function Build_Stream_Attr_Profile
-     (Loc  : Source_Ptr;
-      Typ  : Entity_Id;
-      Nam  : Name_Id)
-      return List_Id
+     (Loc : Source_Ptr;
+      Typ : Entity_Id;
+      Nam : TSS_Name_Type) return List_Id
    is
       Profile : List_Id;
 
    begin
       Profile := New_List (
         Make_Parameter_Specification (Loc,
-          Defining_Identifier =>  Make_Defining_Identifier (Loc, Name_S),
+          Defining_Identifier => Make_Defining_Identifier (Loc, Name_S),
           Parameter_Type      =>
           Make_Access_Definition (Loc,
              Subtype_Mark => New_Reference_To (
                Class_Wide_Type (RTE (RE_Root_Stream_Type)), Loc))));
 
-      if Nam /= Name_uInput then
+      if Nam /= TSS_Stream_Input then
          Append_To (Profile,
            Make_Parameter_Specification (Loc,
              Defining_Identifier => Make_Defining_Identifier (Loc, Name_V),
-             Out_Present         => (Nam = Name_uRead),
+             Out_Present         => (Nam = TSS_Stream_Read),
              Parameter_Type      => New_Reference_To (Typ, Loc)));
       end if;
 
@@ -1402,7 +1363,6 @@ package body Exp_Strm is
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc,
               Statements => Stms));
-
    end Build_Stream_Function;
 
    ----------------------------
@@ -1446,7 +1406,6 @@ package body Exp_Strm is
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc,
               Statements => Stms));
-
    end Build_Stream_Procedure;
 
    -----------------------------
@@ -1457,12 +1416,37 @@ package body Exp_Strm is
    begin
       if Has_Non_Standard_Rep (U_Type) then
          return False;
-
       else
          return
            Esize (First_Subtype (U_Type)) = Esize (Root_Type (U_Type));
       end if;
    end Has_Stream_Standard_Rep;
+
+   ---------------------------------
+   -- Make_Stream_Subprogram_Name --
+   ---------------------------------
+
+   function Make_Stream_Subprogram_Name
+     (Loc : Source_Ptr;
+      Typ : Entity_Id;
+      Nam : TSS_Name_Type) return Entity_Id
+   is
+      Sname : Name_Id;
+
+   begin
+      --  For tagged types, we are dealing with a TSS associated with the
+      --  declaration, so we use the standard primitive function name. For
+      --  other types, generate a local TSS name since we are generating
+      --  the subprogram at the point of use.
+
+      if Is_Tagged_Type (Typ) then
+         Sname := Make_TSS_Name (Typ, Nam);
+      else
+         Sname := Make_TSS_Name_Local (Typ, Nam);
+      end if;
+
+      return Make_Defining_Identifier (Loc, Sname);
+   end Make_Stream_Subprogram_Name;
 
    ----------------------
    -- Stream_Base_Type --
@@ -1474,7 +1458,6 @@ package body Exp_Strm is
         and then Is_First_Subtype (E)
       then
          return E;
-
       else
          return Base_Type (E);
       end if;

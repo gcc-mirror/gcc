@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -85,6 +85,9 @@ procedure XEinfo is
    OldS      : VString := Nul;
    Rtn       : VString := Nul;
    Term      : VString := Nul;
+
+   InB : File_Type;
+   --  Used to read initial header from body
 
    InF   : File_Type;
    --  Used to read full text of both spec and body
@@ -243,12 +246,10 @@ begin
       Create (Ofile, Out_File, "a-einfo.h");
    end if;
 
+   Open (InB, In_File, "einfo.adb");
    Open (InF, In_File, "einfo.ads");
 
    Lineno := 0;
-
-   --  Write header to output file
-
    loop
       Line := Get_Line (InF);
       Lineno := Lineno + 1;
@@ -257,7 +258,6 @@ begin
       Match (Line,
              "--                                 S p e c       ",
              "--                              C Header File    ");
-
       Match (Line, "--", "/*");
       Match (Line, Rtab (2) * A & "--", M);
       Replace (M, A & "*/");
@@ -377,7 +377,7 @@ begin
 
    while Match (Line, Get_FN) loop
 
-      --  Non-inlined function
+      --  Non-inlined funcion
 
       if not Present (Inlined, FN) then
          Put_Line (Ofile, "");
@@ -404,6 +404,7 @@ begin
 
    --  Read body to find inlined functions
 
+   Close (InB);
    Close (InF);
    Open (InF, In_File, "einfo.adb");
    Lineno := 0;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2001 Free Software Foundation, Inc.            --
+--             Copyright (C) 2001-2003 Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,7 +23,7 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
---
+
 --  This package is the Project File Pretty Printer.
 --  It is used to output a project file from a project file tree.
 --  It is used by gnatname to update or create project files.
@@ -51,7 +51,8 @@ package Prj.PP is
       Minimize_Empty_Lines               : Boolean       := False;
       W_Char                             : Write_Char_Ap := null;
       W_Eol                              : Write_Eol_Ap  := null;
-      W_Str                              : Write_Str_Ap  := null);
+      W_Str                              : Write_Str_Ap  := null;
+      Backward_Compatibility             : Boolean);
    --  Output a project file, using either the default output
    --  routines, or the ones specified by W_Char, W_Eol and W_Str.
    --
@@ -67,6 +68,11 @@ package Prj.PP is
    --  after the last with clause, after the line declaring the project name,
    --  after the last declarative item of the project and before each
    --  package declaration. Otherwise, more empty lines are output.
+   --
+   --  If Backward_Compatibility is True, then new attributes (Spec,
+   --  Spec_Suffix, Body, Body_Suffix) will be replaced by obsolete ones
+   --  (Specification, Specification_Suffix, Implementation,
+   --  Implementation_Suffix).
 
 private
 

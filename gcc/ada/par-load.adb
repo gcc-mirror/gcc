@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,7 +48,7 @@ procedure Load is
    File_Name : File_Name_Type;
    --  Name of file for current unit, derived from unit name
 
-   Cur_Unum : Unit_Number_Type := Current_Source_Unit;
+   Cur_Unum : constant Unit_Number_Type := Current_Source_Unit;
    --  Unit number of unit that we just finished parsing. Note that we need
    --  to capture this, because Source_Unit will change as we parse new
    --  source files in the multiple main source file case.

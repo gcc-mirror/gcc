@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2000-2002 Ada Core Technologies, Inc.           --
+--            Copyright (C) 2000-2003 Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -61,6 +62,11 @@ package GNAT.Dynamic_Tables is
    --  integer type. The effect is roughly to declare:
 
    --    Table : array (Table_Low_Bound .. <>) of Table_Component_Type;
+
+   --    Note: since the upper bound can be one less than the lower
+   --    bound for an empty array, the table index type must be able
+   --    to cover this range, e.g. if the lower bound is 1, then the
+   --    Table_Index_Type should be Natural rather than Positive.
 
    --  Table_Component_Type may be any Ada type, except that controlled
    --  types are not supported. Note however that default initialization
@@ -148,11 +154,11 @@ package GNAT.Dynamic_Tables is
 
    procedure Increment_Last (T : in out Instance);
    pragma Inline (Increment_Last);
-   --  Adds 1 to Last (same as Set_Last (Last + 1).
+   --  Adds 1 to Last (same as Set_Last (Last + 1)
 
    procedure Decrement_Last (T : in out Instance);
    pragma Inline (Decrement_Last);
-   --  Subtracts 1 from Last (same as Set_Last (Last - 1).
+   --  Subtracts 1 from Last (same as Set_Last (Last - 1)
 
    procedure Append (T : in out Instance; New_Val : Table_Component_Type);
    pragma Inline (Append);
@@ -174,7 +180,29 @@ package GNAT.Dynamic_Tables is
 
    procedure Allocate (T : in out Instance; Num : Integer := 1);
    pragma Inline (Allocate);
-   --  Adds Num to Last.
+   --  Adds Num to Last
+
+   generic
+     with procedure Action
+       (Index : Table_Index_Type;
+        Item  : Table_Component_Type;
+        Quit  : in out Boolean) is <>;
+   procedure For_Each (Table : Instance);
+   --  Calls procedure Action for each component of the table Table, or until
+   --  one of these calls set Quit to True.
+
+   generic
+     with function Lt (Comp1, Comp2 : Table_Component_Type) return Boolean;
+   procedure Sort_Table (Table : in out Instance);
+   --  This procedure sorts the components of table Table into ascending
+   --  order making calls to Lt to do required comparisons, and using
+   --  assignments to move components around. The Lt function returns True
+   --  if Comp1 is less than Comp2 (in the sense of the desired sort), and
+   --  False if Comp1 is greater than Comp2. For equal objects it does not
+   --  matter if True or False is returned (it is slightly more efficient
+   --  to return False). The sort is not stable (the order of equal items
+   --  in the table is not preserved).
+
 
 private
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -56,7 +56,7 @@ with Unchecked_Conversion;
 package System.Standard_Library is
 
    pragma Suppress (All_Checks);
-   --  Suppress explicitly all the checks to work around the Solaris linker
+   --  Suppress explicitely all the checks to work around the Solaris linker
    --  bug when using gnatmake -f -a (but without -gnatp). This is not needed
    --  with Solaris 2.6, so eventually can be removed ???
 
@@ -89,6 +89,9 @@ package System.Standard_Library is
    -------------------------------------
    -- Exception Declarations and Data --
    -------------------------------------
+
+   type Raise_Action is access procedure;
+   --  A pointer to a procedure used in the Raise_Hook field
 
    type Exception_Data;
    type Exception_Data_Ptr is access all Exception_Data;
@@ -134,6 +137,13 @@ package System.Standard_Library is
       --  implementations (we might well extend this mechanism for other
       --  systems in the future).
 
+      Raise_Hook : Raise_Action;
+      --  This field can be used to place a "hook" on an exception. If the
+      --  value is non-null, then it points to a procedure which is called
+      --  whenever the exception is raised. This call occurs immediately,
+      --  before any other actions taken by the raise (and in particular
+      --  before any unwinding of the stack occurs).
+
    end record;
 
    --  Definitions for standard predefined exceptions defined in Standard,
@@ -157,7 +167,8 @@ package System.Standard_Library is
       Name_Length           => Constraint_Error_Name'Length,
       Full_Name             => To_Ptr (Constraint_Error_Name'Address),
       HTable_Ptr            => null,
-      Import_Code           => 0);
+      Import_Code           => 0,
+      Raise_Hook            => null);
 
    Numeric_Error_Def : aliased Exception_Data :=
      (Not_Handled_By_Others => False,
@@ -165,7 +176,8 @@ package System.Standard_Library is
       Name_Length           => Numeric_Error_Name'Length,
       Full_Name             => To_Ptr (Numeric_Error_Name'Address),
       HTable_Ptr            => null,
-      Import_Code           => 0);
+      Import_Code           => 0,
+      Raise_Hook            => null);
 
    Program_Error_Def : aliased Exception_Data :=
      (Not_Handled_By_Others => False,
@@ -173,7 +185,8 @@ package System.Standard_Library is
       Name_Length           => Program_Error_Name'Length,
       Full_Name             => To_Ptr (Program_Error_Name'Address),
       HTable_Ptr            => null,
-      Import_Code           => 0);
+      Import_Code           => 0,
+      Raise_Hook            => null);
 
    Storage_Error_Def : aliased Exception_Data :=
      (Not_Handled_By_Others => False,
@@ -181,7 +194,8 @@ package System.Standard_Library is
       Name_Length           => Storage_Error_Name'Length,
       Full_Name             => To_Ptr (Storage_Error_Name'Address),
       HTable_Ptr            => null,
-      Import_Code           => 0);
+      Import_Code           => 0,
+      Raise_Hook            => null);
 
    Tasking_Error_Def : aliased Exception_Data :=
      (Not_Handled_By_Others => False,
@@ -189,7 +203,8 @@ package System.Standard_Library is
       Name_Length           => Tasking_Error_Name'Length,
       Full_Name             => To_Ptr (Tasking_Error_Name'Address),
       HTable_Ptr            => null,
-      Import_Code           => 0);
+      Import_Code           => 0,
+      Raise_Hook            => null);
 
    Abort_Signal_Def : aliased Exception_Data :=
      (Not_Handled_By_Others => True,
@@ -197,7 +212,8 @@ package System.Standard_Library is
       Name_Length           => Abort_Signal_Name'Length,
       Full_Name             => To_Ptr (Abort_Signal_Name'Address),
       HTable_Ptr            => null,
-      Import_Code           => 0);
+      Import_Code           => 0,
+      Raise_Hook            => null);
 
    pragma Export (C, Constraint_Error_Def, "constraint_error");
    pragma Export (C, Numeric_Error_Def,    "numeric_error");

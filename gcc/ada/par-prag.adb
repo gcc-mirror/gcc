@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -70,8 +70,8 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
    --  an error message and raise Error_Resync.
 
    procedure Check_No_Identifier (Arg : Node_Id);
-   --  Checks that the given argument does not have an identifier. If an
-   --  identifier is present, then an error message is issued, and
+   --  Checks that the given argument does not have an identifier. If
+   --  an identifier is present, then an error message is issued, and
    --  Error_Resync is raised.
 
    procedure Check_Optional_Identifier (Arg : Node_Id; Id : Name_Id);
@@ -353,11 +353,12 @@ begin
          List_Pragmas.Increment_Last;
          List_Pragmas.Table (List_Pragmas.Last) := (Page, Semi);
 
-      -----------------------------
-      -- Source_File_Name (GNAT) --
-      -----------------------------
+      ----------------------------------------------------------
+      -- Source_File_Name and Source_File_Name_Project (GNAT) --
+      ----------------------------------------------------------
 
-      --  There are five forms of this pragma:
+      --  These two pragmas have the same syntax and semantics.
+      --  There are five forms of these pragmas:
 
       --  pragma Source_File_Name (
       --    [UNIT_NAME      =>] unit_NAME,
@@ -384,242 +385,281 @@ begin
 
       --  CASING_SPEC ::= Uppercase | Lowercase | Mixedcase
 
+      --  Pragma Source_File_Name_Project (SFNP) is equivalent to pragma
+      --  Source_File_Name (SFN), however their usage is exclusive:
+      --  SFN can only be used when no project file is used, while
+      --  SFNP can only be used when a project file is used.
+
+      --  The Project Manager produces a configuration pragmas file that
+      --  is communicated to the compiler with -gnatec switch. This file
+      --  contains only SFNP pragmas (at least two for the default naming
+      --  scheme. As this configuration pragmas file is always the first
+      --  processed by the compiler, it prevents the use of pragmas SFN in
+      --  other config files when a project file is in use.
+
       --  Note: we process this during parsing, since we need to have the
       --  source file names set well before the semantic analysis starts,
       --  since we load the spec and with'ed packages before analysis.
 
-      when Pragma_Source_File_Name => Source_File_Name : declare
-         Unam  : Unit_Name_Type;
-         Expr1 : Node_Id;
-         Pat   : String_Ptr;
-         Typ   : Character;
-         Dot   : String_Ptr;
-         Cas   : Casing_Type;
-         Nast  : Nat;
+      when Pragma_Source_File_Name | Pragma_Source_File_Name_Project =>
+         Source_File_Name : declare
+            Unam  : Unit_Name_Type;
+            Expr1 : Node_Id;
+            Pat   : String_Ptr;
+            Typ   : Character;
+            Dot   : String_Ptr;
+            Cas   : Casing_Type;
+            Nast  : Nat;
 
-         function Get_Fname (Arg : Node_Id) return Name_Id;
-         --  Process file name from unit name form of pragma
+            function Get_Fname (Arg : Node_Id) return Name_Id;
+            --  Process file name from unit name form of pragma
 
-         function Get_String_Argument (Arg : Node_Id) return String_Ptr;
-         --  Process string literal value from argument
+            function Get_String_Argument (Arg : Node_Id) return String_Ptr;
+            --  Process string literal value from argument
 
-         procedure Process_Casing (Arg : Node_Id);
-         --  Process Casing argument of pattern form of pragma
+            procedure Process_Casing (Arg : Node_Id);
+            --  Process Casing argument of pattern form of pragma
 
-         procedure Process_Dot_Replacement (Arg : Node_Id);
-         --  Process Dot_Replacement argument of patterm form of pragma
+            procedure Process_Dot_Replacement (Arg : Node_Id);
+            --  Process Dot_Replacement argument of patterm form of pragma
 
-         ---------------
-         -- Get_Fname --
-         ---------------
+            ---------------
+            -- Get_Fname --
+            ---------------
 
-         function Get_Fname (Arg : Node_Id) return Name_Id is
-         begin
-            String_To_Name_Buffer (Strval (Expression (Arg)));
+            function Get_Fname (Arg : Node_Id) return Name_Id is
+            begin
+               String_To_Name_Buffer (Strval (Expression (Arg)));
 
-            for J in 1 .. Name_Len loop
-               if Is_Directory_Separator (Name_Buffer (J)) then
-                  Error_Msg
-                    ("directory separator character not allowed",
-                     Sloc (Expression (Arg)) + Source_Ptr (J));
-               end if;
-            end loop;
-
-            return Name_Find;
-         end Get_Fname;
-
-         -------------------------
-         -- Get_String_Argument --
-         -------------------------
-
-         function Get_String_Argument (Arg : Node_Id) return String_Ptr is
-            Str : String_Id;
-
-         begin
-            if Nkind (Expression (Arg)) /= N_String_Literal
-              and then
-               Nkind (Expression (Arg)) /= N_Operator_Symbol
-            then
-               Error_Msg_N
-                 ("argument for pragma% must be string literal", Arg);
-               raise Error_Resync;
-            end if;
-
-            Str := Strval (Expression (Arg));
-
-            --  Check string has no wide chars
-
-            for J in 1 .. String_Length (Str) loop
-               if Get_String_Char (Str, J) > 255 then
-                  Error_Msg
-                    ("wide character not allowed in pattern for pragma%",
-                     Sloc (Expression (Arg2)) + Text_Ptr (J) - 1);
-               end if;
-            end loop;
-
-            --  Acquire string
-
-            String_To_Name_Buffer (Str);
-            return new String'(Name_Buffer (1 .. Name_Len));
-         end Get_String_Argument;
-
-         --------------------
-         -- Process_Casing --
-         --------------------
-
-         procedure Process_Casing (Arg : Node_Id) is
-            Expr : constant Node_Id := Expression (Arg);
-
-         begin
-            Check_Required_Identifier (Arg, Name_Casing);
-
-            if Nkind (Expr) = N_Identifier then
-               if Chars (Expr) = Name_Lowercase then
-                  Cas := All_Lower_Case;
-                  return;
-               elsif Chars (Expr) = Name_Uppercase then
-                  Cas := All_Upper_Case;
-                  return;
-               elsif Chars (Expr) = Name_Mixedcase then
-                  Cas := Mixed_Case;
-                  return;
-               end if;
-            end if;
-
-            Error_Msg_N
-              ("Casing argument for pragma% must be " &
-               "one of Mixedcase, Lowercase, Uppercase",
-               Arg);
-         end Process_Casing;
-
-         -----------------------------
-         -- Process_Dot_Replacement --
-         -----------------------------
-
-         procedure Process_Dot_Replacement (Arg : Node_Id) is
-         begin
-            Check_Required_Identifier (Arg, Name_Dot_Replacement);
-            Dot := Get_String_Argument (Arg);
-         end Process_Dot_Replacement;
-
-      --  Start of processing for Source_File_Name pragma
-
-      begin
-         --  We permit from 1 to 3 arguments
-
-         if Arg_Count not in 1 .. 3 then
-            Check_Arg_Count (1);
-         end if;
-
-         Expr1 := Expression (Arg1);
-
-         --  If first argument is identifier or selected component, then
-         --  we have the specific file case of the Source_File_Name pragma,
-         --  and the first argument is a unit name.
-
-         if Nkind (Expr1) = N_Identifier
-           or else
-             (Nkind (Expr1) = N_Selected_Component
-               and then
-              Nkind (Selector_Name (Expr1)) = N_Identifier)
-         then
-            if Nkind (Expr1) = N_Identifier
-              and then Chars (Expr1) = Name_System
-            then
-               Error_Msg_N
-                 ("pragma Source_File_Name may not be used for System", Arg1);
-               return Error;
-            end if;
-
-            Check_Arg_Count (2);
-
-            Check_Optional_Identifier (Arg1, Name_Unit_Name);
-            Unam := Get_Unit_Name (Expr1);
-
-            Check_Arg_Is_String_Literal (Arg2);
-
-            if Chars (Arg2) = Name_Spec_File_Name then
-               Set_File_Name (Get_Spec_Name (Unam), Get_Fname (Arg2));
-
-            elsif Chars (Arg2) = Name_Body_File_Name then
-               Set_File_Name (Unam, Get_Fname (Arg2));
-
-            else
-               Error_Msg_N ("pragma% argument has incorrect identifier", Arg2);
-               return Pragma_Node;
-            end if;
-
-         --  If the first argument is not an identifier, then we must have
-         --  the pattern form of the pragma, and the first argument must be
-         --  the pattern string with an appropriate name.
-
-         else
-            if Chars (Arg1) = Name_Spec_File_Name then
-               Typ := 's';
-
-            elsif Chars (Arg1) = Name_Body_File_Name then
-               Typ := 'b';
-
-            elsif Chars (Arg1) = Name_Subunit_File_Name then
-               Typ := 'u';
-
-            elsif Chars (Arg1) = Name_Unit_Name then
-               Error_Msg_N
-                 ("Unit_Name parameter for pragma% must be an identifier",
-                  Arg1);
-               raise Error_Resync;
-
-            else
-               Error_Msg_N ("pragma% argument has incorrect identifier", Arg1);
-               raise Error_Resync;
-            end if;
-
-            Pat := Get_String_Argument (Arg1);
-
-            --  Check pattern has exactly one asterisk
-
-            Nast := 0;
-            for J in Pat'Range loop
-               if Pat (J) = '*' then
-                  Nast := Nast + 1;
-               end if;
-            end loop;
-
-            if Nast /= 1 then
-               Error_Msg_N
-                 ("file name pattern must have exactly one * character",
-                  Arg2);
-               return Pragma_Node;
-            end if;
-
-            --  Set defaults for Casing and Dot_Separator parameters
-
-            Cas := All_Lower_Case;
-
-            Dot := new String'(".");
-
-            --  Process second and third arguments if present
-
-            if Arg_Count > 1 then
-               if Chars (Arg2) = Name_Casing then
-                  Process_Casing (Arg2);
-
-                  if Arg_Count = 3 then
-                     Process_Dot_Replacement (Arg3);
+               for J in 1 .. Name_Len loop
+                  if Is_Directory_Separator (Name_Buffer (J)) then
+                     Error_Msg
+                       ("directory separator character not allowed",
+                        Sloc (Expression (Arg)) + Source_Ptr (J));
                   end if;
+               end loop;
+
+               return Name_Find;
+            end Get_Fname;
+
+            -------------------------
+            -- Get_String_Argument --
+            -------------------------
+
+            function Get_String_Argument (Arg : Node_Id) return String_Ptr is
+               Str : String_Id;
+
+            begin
+               if Nkind (Expression (Arg)) /= N_String_Literal
+                 and then
+                  Nkind (Expression (Arg)) /= N_Operator_Symbol
+               then
+                  Error_Msg_N
+                    ("argument for pragma% must be string literal", Arg);
+                  raise Error_Resync;
+               end if;
+
+               Str := Strval (Expression (Arg));
+
+               --  Check string has no wide chars
+
+               for J in 1 .. String_Length (Str) loop
+                  if Get_String_Char (Str, J) > 255 then
+                     Error_Msg
+                       ("wide character not allowed in pattern for pragma%",
+                        Sloc (Expression (Arg2)) + Text_Ptr (J) - 1);
+                  end if;
+               end loop;
+
+               --  Acquire string
+
+               String_To_Name_Buffer (Str);
+               return new String'(Name_Buffer (1 .. Name_Len));
+            end Get_String_Argument;
+
+            --------------------
+            -- Process_Casing --
+            --------------------
+
+            procedure Process_Casing (Arg : Node_Id) is
+               Expr : constant Node_Id := Expression (Arg);
+
+            begin
+               Check_Required_Identifier (Arg, Name_Casing);
+
+               if Nkind (Expr) = N_Identifier then
+                  if Chars (Expr) = Name_Lowercase then
+                     Cas := All_Lower_Case;
+                     return;
+                  elsif Chars (Expr) = Name_Uppercase then
+                     Cas := All_Upper_Case;
+                     return;
+                  elsif Chars (Expr) = Name_Mixedcase then
+                     Cas := Mixed_Case;
+                     return;
+                  end if;
+               end if;
+
+               Error_Msg_N
+                 ("Casing argument for pragma% must be " &
+                  "one of Mixedcase, Lowercase, Uppercase",
+                  Arg);
+            end Process_Casing;
+
+            -----------------------------
+            -- Process_Dot_Replacement --
+            -----------------------------
+
+            procedure Process_Dot_Replacement (Arg : Node_Id) is
+            begin
+               Check_Required_Identifier (Arg, Name_Dot_Replacement);
+               Dot := Get_String_Argument (Arg);
+            end Process_Dot_Replacement;
+
+         --  Start of processing for Source_File_Name and
+         --  Source_File_Name_Project pragmas.
+
+         begin
+
+            if Get_Pragma_Id (Pragma_Name) = Pragma_Source_File_Name then
+               if Project_File_In_Use = In_Use then
+                  Error_Msg
+                    ("pragma Source_File_Name cannot be used " &
+                     "with a project file", Pragma_Sloc);
 
                else
-                  Process_Dot_Replacement (Arg2);
+                  Project_File_In_Use := Not_In_Use;
+               end if;
 
-                  if Arg_Count = 3 then
-                     Process_Casing (Arg3);
-                  end if;
+            else
+               if Project_File_In_Use = Not_In_Use then
+                  Error_Msg
+                    ("pragma Source_File_Name_Project should only be used " &
+                     "with a project file", Pragma_Sloc);
+
+               else
+                  Project_File_In_Use := In_Use;
                end if;
             end if;
 
-            Set_File_Name_Pattern (Pat, Typ, Dot, Cas);
-         end if;
-      end Source_File_Name;
+            --  We permit from 1 to 3 arguments
+
+            if Arg_Count not in 1 .. 3 then
+               Check_Arg_Count (1);
+            end if;
+
+            Expr1 := Expression (Arg1);
+
+            --  If first argument is identifier or selected component, then
+            --  we have the specific file case of the Source_File_Name pragma,
+            --  and the first argument is a unit name.
+
+            if Nkind (Expr1) = N_Identifier
+              or else
+                (Nkind (Expr1) = N_Selected_Component
+                  and then
+                 Nkind (Selector_Name (Expr1)) = N_Identifier)
+            then
+               if Nkind (Expr1) = N_Identifier
+                 and then Chars (Expr1) = Name_System
+               then
+                  Error_Msg_N
+                    ("pragma Source_File_Name may not be used for System",
+                     Arg1);
+                  return Error;
+               end if;
+
+               Check_Arg_Count (2);
+
+               Check_Optional_Identifier (Arg1, Name_Unit_Name);
+               Unam := Get_Unit_Name (Expr1);
+
+               Check_Arg_Is_String_Literal (Arg2);
+
+               if Chars (Arg2) = Name_Spec_File_Name then
+                  Set_File_Name (Get_Spec_Name (Unam), Get_Fname (Arg2));
+
+               elsif Chars (Arg2) = Name_Body_File_Name then
+                  Set_File_Name (Unam, Get_Fname (Arg2));
+
+               else
+                  Error_Msg_N
+                    ("pragma% argument has incorrect identifier", Arg2);
+                  return Pragma_Node;
+               end if;
+
+            --  If the first argument is not an identifier, then we must have
+            --  the pattern form of the pragma, and the first argument must be
+            --  the pattern string with an appropriate name.
+
+            else
+               if Chars (Arg1) = Name_Spec_File_Name then
+                  Typ := 's';
+
+               elsif Chars (Arg1) = Name_Body_File_Name then
+                  Typ := 'b';
+
+               elsif Chars (Arg1) = Name_Subunit_File_Name then
+                  Typ := 'u';
+
+               elsif Chars (Arg1) = Name_Unit_Name then
+                  Error_Msg_N
+                    ("Unit_Name parameter for pragma% must be an identifier",
+                     Arg1);
+                  raise Error_Resync;
+
+               else
+                  Error_Msg_N
+                    ("pragma% argument has incorrect identifier", Arg1);
+                  raise Error_Resync;
+               end if;
+
+               Pat := Get_String_Argument (Arg1);
+
+               --  Check pattern has exactly one asterisk
+
+               Nast := 0;
+               for J in Pat'Range loop
+                  if Pat (J) = '*' then
+                     Nast := Nast + 1;
+                  end if;
+               end loop;
+
+               if Nast /= 1 then
+                  Error_Msg_N
+                    ("file name pattern must have exactly one * character",
+                     Arg2);
+                  return Pragma_Node;
+               end if;
+
+               --  Set defaults for Casing and Dot_Separator parameters
+
+               Cas := All_Lower_Case;
+
+               Dot := new String'(".");
+
+               --  Process second and third arguments if present
+
+               if Arg_Count > 1 then
+                  if Chars (Arg2) = Name_Casing then
+                     Process_Casing (Arg2);
+
+                     if Arg_Count = 3 then
+                        Process_Dot_Replacement (Arg3);
+                     end if;
+
+                  else
+                     Process_Dot_Replacement (Arg2);
+
+                     if Arg_Count = 3 then
+                        Process_Casing (Arg3);
+                     end if;
+                  end if;
+               end if;
+
+               Set_File_Name_Pattern (Pat, Typ, Dot, Cas);
+            end if;
+         end Source_File_Name;
 
       -----------------------------
       -- Source_Reference (GNAT) --
@@ -736,7 +776,7 @@ begin
                S   := Strval (A);
 
                declare
-                  Slen    : Natural := Natural (String_Length (S));
+                  Slen    : constant Natural := Natural (String_Length (S));
                   Options : String (1 .. Slen);
                   J       : Natural;
                   Ptr     : Natural;
@@ -825,123 +865,144 @@ begin
       --  For all other pragmas, checking and processing is handled
       --  entirely in Sem_Prag, and no further checking is done by Par.
 
-      when Pragma_Abort_Defer              |
-           Pragma_AST_Entry                |
-           Pragma_All_Calls_Remote         |
-           Pragma_Annotate                 |
-           Pragma_Assert                   |
-           Pragma_Asynchronous             |
-           Pragma_Atomic                   |
-           Pragma_Atomic_Components        |
-           Pragma_Attach_Handler           |
-           Pragma_Convention_Identifier    |
-           Pragma_CPP_Class                |
-           Pragma_CPP_Constructor          |
-           Pragma_CPP_Virtual              |
-           Pragma_CPP_Vtable               |
-           Pragma_C_Pass_By_Copy           |
-           Pragma_Comment                  |
-           Pragma_Common_Object            |
-           Pragma_Complex_Representation   |
-           Pragma_Component_Alignment      |
-           Pragma_Controlled               |
-           Pragma_Convention               |
-           Pragma_Discard_Names            |
-           Pragma_Eliminate                |
-           Pragma_Elaborate                |
-           Pragma_Elaborate_All            |
-           Pragma_Elaborate_Body           |
-           Pragma_Elaboration_Checks       |
-           Pragma_Export                   |
-           Pragma_Export_Exception         |
-           Pragma_Export_Function          |
-           Pragma_Export_Object            |
-           Pragma_Export_Procedure         |
-           Pragma_Export_Valued_Procedure  |
-           Pragma_Extend_System            |
-           Pragma_External                 |
-           Pragma_External_Name_Casing     |
-           Pragma_Finalize_Storage_Only    |
-           Pragma_Float_Representation     |
-           Pragma_Ident                    |
-           Pragma_Import                   |
-           Pragma_Import_Exception         |
-           Pragma_Import_Function          |
-           Pragma_Import_Object            |
-           Pragma_Import_Procedure         |
-           Pragma_Import_Valued_Procedure  |
-           Pragma_Initialize_Scalars       |
-           Pragma_Inline                   |
-           Pragma_Inline_Always            |
-           Pragma_Inline_Generic           |
-           Pragma_Inspection_Point         |
-           Pragma_Interface                |
-           Pragma_Interface_Name           |
-           Pragma_Interrupt_Handler        |
-           Pragma_Interrupt_Priority       |
-           Pragma_Java_Constructor         |
-           Pragma_Java_Interface           |
-           Pragma_License                  |
-           Pragma_Link_With                |
-           Pragma_Linker_Alias             |
-           Pragma_Linker_Options           |
-           Pragma_Linker_Section           |
-           Pragma_Locking_Policy           |
-           Pragma_Long_Float               |
-           Pragma_Machine_Attribute        |
-           Pragma_Main                     |
-           Pragma_Main_Storage             |
-           Pragma_Memory_Size              |
-           Pragma_No_Return                |
-           Pragma_No_Run_Time              |
-           Pragma_Normalize_Scalars        |
-           Pragma_Optimize                 |
-           Pragma_Pack                     |
-           Pragma_Passive                  |
-           Pragma_Polling                  |
-           Pragma_Preelaborate             |
-           Pragma_Priority                 |
-           Pragma_Propagate_Exceptions     |
-           Pragma_Psect_Object             |
-           Pragma_Pure                     |
-           Pragma_Pure_Function            |
-           Pragma_Queuing_Policy           |
-           Pragma_Remote_Call_Interface    |
-           Pragma_Remote_Types             |
-           Pragma_Restrictions             |
-           Pragma_Restricted_Run_Time      |
-           Pragma_Ravenscar                |
-           Pragma_Reviewable               |
-           Pragma_Share_Generic            |
-           Pragma_Shared                   |
-           Pragma_Shared_Passive           |
-           Pragma_Storage_Size             |
-           Pragma_Storage_Unit             |
-           Pragma_Stream_Convert           |
-           Pragma_Subtitle                 |
-           Pragma_Suppress                 |
-           Pragma_Suppress_All             |
-           Pragma_Suppress_Debug_Info      |
-           Pragma_Suppress_Initialization  |
-           Pragma_System_Name              |
-           Pragma_Task_Dispatching_Policy  |
-           Pragma_Task_Info                |
-           Pragma_Task_Name                |
-           Pragma_Task_Storage             |
-           Pragma_Time_Slice               |
-           Pragma_Title                    |
-           Pragma_Unchecked_Union          |
-           Pragma_Unimplemented_Unit       |
-           Pragma_Universal_Data           |
-           Pragma_Unreferenced             |
-           Pragma_Unreserve_All_Interrupts |
-           Pragma_Unsuppress               |
-           Pragma_Use_VADS_Size            |
-           Pragma_Volatile                 |
-           Pragma_Volatile_Components      |
-           Pragma_Weak_External            |
-           Pragma_Validity_Checks          =>
+      when Pragma_Abort_Defer                  |
+           Pragma_AST_Entry                    |
+           Pragma_All_Calls_Remote             |
+           Pragma_Annotate                     |
+           Pragma_Assert                       |
+           Pragma_Asynchronous                 |
+           Pragma_Atomic                       |
+           Pragma_Atomic_Components            |
+           Pragma_Attach_Handler               |
+           Pragma_Compile_Time_Warning         |
+           Pragma_Convention_Identifier        |
+           Pragma_CPP_Class                    |
+           Pragma_CPP_Constructor              |
+           Pragma_CPP_Virtual                  |
+           Pragma_CPP_Vtable                   |
+           Pragma_C_Pass_By_Copy               |
+           Pragma_Comment                      |
+           Pragma_Common_Object                |
+           Pragma_Complex_Representation       |
+           Pragma_Component_Alignment          |
+           Pragma_Controlled                   |
+           Pragma_Convention                   |
+           Pragma_Discard_Names                |
+           Pragma_Eliminate                    |
+           Pragma_Elaborate                    |
+           Pragma_Elaborate_All                |
+           Pragma_Elaborate_Body               |
+           Pragma_Elaboration_Checks           |
+           Pragma_Explicit_Overriding          |
+           Pragma_Export                       |
+           Pragma_Export_Exception             |
+           Pragma_Export_Function              |
+           Pragma_Export_Object                |
+           Pragma_Export_Procedure             |
+           Pragma_Export_Value                 |
+           Pragma_Export_Valued_Procedure      |
+           Pragma_Extend_System                |
+           Pragma_External                     |
+           Pragma_External_Name_Casing         |
+           Pragma_Finalize_Storage_Only        |
+           Pragma_Float_Representation         |
+           Pragma_Ident                        |
+           Pragma_Import                       |
+           Pragma_Import_Exception             |
+           Pragma_Import_Function              |
+           Pragma_Import_Object                |
+           Pragma_Import_Procedure             |
+           Pragma_Import_Valued_Procedure      |
+           Pragma_Initialize_Scalars           |
+           Pragma_Inline                       |
+           Pragma_Inline_Always                |
+           Pragma_Inline_Generic               |
+           Pragma_Inspection_Point             |
+           Pragma_Interface                    |
+           Pragma_Interface_Name               |
+           Pragma_Interrupt_Handler            |
+           Pragma_Interrupt_State              |
+           Pragma_Interrupt_Priority           |
+           Pragma_Java_Constructor             |
+           Pragma_Java_Interface               |
+           Pragma_Keep_Names                   |
+           Pragma_License                      |
+           Pragma_Link_With                    |
+           Pragma_Linker_Alias                 |
+           Pragma_Linker_Options               |
+           Pragma_Linker_Section               |
+           Pragma_Locking_Policy               |
+           Pragma_Long_Float                   |
+           Pragma_Machine_Attribute            |
+           Pragma_Main                         |
+           Pragma_Main_Storage                 |
+           Pragma_Memory_Size                  |
+           Pragma_No_Return                    |
+           Pragma_Obsolescent                  |
+           Pragma_No_Run_Time                  |
+           Pragma_Normalize_Scalars            |
+           Pragma_Optimize                     |
+           Pragma_Optional_Overriding          |
+           Pragma_Overriding                   |
+           Pragma_Pack                         |
+           Pragma_Passive                      |
+           Pragma_Polling                      |
+           Pragma_Persistent_Data              |
+           Pragma_Persistent_Object            |
+           Pragma_Preelaborate                 |
+           Pragma_Priority                     |
+           Pragma_Propagate_Exceptions         |
+           Pragma_Psect_Object                 |
+           Pragma_Pure                         |
+           Pragma_Pure_Function                |
+           Pragma_Queuing_Policy               |
+           Pragma_Remote_Call_Interface        |
+           Pragma_Remote_Types                 |
+           Pragma_Restrictions                 |
+           Pragma_Restriction_Warnings         |
+           Pragma_Restricted_Run_Time          |
+           Pragma_Ravenscar                    |
+           Pragma_Reviewable                   |
+           Pragma_Share_Generic                |
+           Pragma_Shared                       |
+           Pragma_Shared_Passive               |
+           Pragma_Storage_Size                 |
+           Pragma_Storage_Unit                 |
+           Pragma_Stream_Convert               |
+           Pragma_Subtitle                     |
+           Pragma_Suppress                     |
+           Pragma_Suppress_All                 |
+           Pragma_Suppress_Debug_Info          |
+           Pragma_Suppress_Exception_Locations |
+           Pragma_Suppress_Initialization      |
+           Pragma_System_Name                  |
+           Pragma_Task_Dispatching_Policy      |
+           Pragma_Task_Info                    |
+           Pragma_Task_Name                    |
+           Pragma_Task_Storage                 |
+           Pragma_Time_Slice                   |
+           Pragma_Title                        |
+           Pragma_Unchecked_Union              |
+           Pragma_Unimplemented_Unit           |
+           Pragma_Universal_Data               |
+           Pragma_Unreferenced                 |
+           Pragma_Unreserve_All_Interrupts     |
+           Pragma_Unsuppress                   |
+           Pragma_Use_VADS_Size                |
+           Pragma_Volatile                     |
+           Pragma_Volatile_Components          |
+           Pragma_Weak_External                |
+           Pragma_Validity_Checks              =>
          null;
+
+      --------------------
+      -- Unknown_Pragma --
+      --------------------
+
+      --  Should be impossible, since we excluded this case earlier on
+
+      when Unknown_Pragma =>
+         raise Program_Error;
 
    end case;
 

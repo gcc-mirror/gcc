@@ -4,7 +4,6 @@
  *                                                                          *
  *                                 I N I T                                  *
  *                                                                          *
- *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
  *          Copyright (C) 1992-2003 Free Software Foundation, Inc.          *
@@ -101,13 +100,15 @@ int   __gl_time_slice_val           = -1;
 char  __gl_wc_encoding              = 'n';
 char  __gl_locking_policy           = ' ';
 char  __gl_queuing_policy           = ' ';
-char *__gl_restrictions             = 0;
 char  __gl_task_dispatching_policy  = ' ';
+char *__gl_restrictions             = 0;
+char *__gl_interrupt_states         = 0;
+int   __gl_num_interrupt_states     = 0;
 int   __gl_unreserve_all_interrupts = 0;
 int   __gl_exception_tracebacks     = 0;
 int   __gl_zero_cost_exceptions     = 0;
 
-/* Indication of whether synchronous signal handler has already been 
+/* Indication of whether synchronous signal handler has already been
    installed by a previous call to adainit */
 int  __gnat_handler_installed      = 0;
 
@@ -115,6 +116,32 @@ int  __gnat_handler_installed      = 0;
    is defined. If this is not set them a void implementation will be defined
    at the end of this unit. */
 #undef HAVE_GNAT_INIT_FLOAT
+
+/******************************/
+/* __gnat_get_interrupt_state */
+/******************************/
+
+char __gnat_get_interrupt_state (int);
+
+/* This routine is called from the runtime as needed to determine the state
+   of an interrupt, as set by an Interrupt_State pragma appearing anywhere
+   in the current partition. The input argument is the interrupt number,
+   and the result is one of the following:
+
+       'n'   this interrupt not set by any Interrupt_State pragma
+       'u'   Interrupt_State pragma set state to User
+       'r'   Interrupt_State pragma set state to Runtime
+       's'   Interrupt_State pragma set state to System */
+
+char
+__gnat_get_interrupt_state (intrup)
+     int intrup;
+{
+  if (intrup >= __gl_num_interrupt_states)
+    return 'n';
+  else
+    return __gl_interrupt_states [intrup];
+}
 
 /**********************/
 /* __gnat_set_globals */
@@ -129,16 +156,30 @@ int  __gnat_handler_installed      = 0;
    boundaries like this are not handled correctly in all systems.  */
 
 void
-__gnat_set_globals (main_priority, time_slice_val, wc_encoding, locking_policy,
-		    queuing_policy, task_dispatching_policy, restrictions,
-		    unreserve_all_interrupts, exception_tracebacks,
+__gnat_set_globals (main_priority,
+                    time_slice_val,
+                    wc_encoding,
+                    locking_policy,
+		    queuing_policy,
+		    task_dispatching_policy,
+		    restrictions,
+                    interrupt_states,
+                    num_interrupt_states,
+		    unreserve_all_interrupts,
+		    exception_tracebacks,
 		    zero_cost_exceptions)
      int main_priority;
      int time_slice_val;
      char wc_encoding;
-     char locking_policy, queuing_policy, task_dispatching_policy;
+     char locking_policy;
+     char queuing_policy;
+     char task_dispatching_policy;
      char *restrictions;
-     int unreserve_all_interrupts, exception_tracebacks, zero_cost_exceptions;
+     char *interrupt_states;
+     int num_interrupt_states;
+     int unreserve_all_interrupts;
+     int exception_tracebacks;
+     int zero_cost_exceptions;
 {
   static int already_called = 0;
 
@@ -150,7 +191,12 @@ __gnat_set_globals (main_priority, time_slice_val, wc_encoding, locking_policy,
      method. This default affects only Wide_Text_IO where no explicit
      coding method is given, and there is no particular reason to let
      this default be affected by the source representation of a library
-     in any case. 
+     in any case.
+
+     We do not check either for the consistency of exception tracebacks,
+     because exception tracebacks are not normally set in Stand-Alone
+     libraries. If a library or the main program set the exception
+     tracebacks, then they are never reset afterwards (see below).
 
      The value of main_priority is meaningful only when we are invoked
      from the main program elaboration routine of an Ada application.
@@ -172,9 +218,14 @@ __gnat_set_globals (main_priority, time_slice_val, wc_encoding, locking_policy,
 	  || __gl_queuing_policy           != queuing_policy
 	  || __gl_task_dispatching_policy  != task_dispatching_policy
 	  || __gl_unreserve_all_interrupts != unreserve_all_interrupts
-	  || __gl_exception_tracebacks     != exception_tracebacks
 	  || __gl_zero_cost_exceptions     != zero_cost_exceptions)
 	__gnat_raise_program_error (__FILE__, __LINE__);
+
+      /* If either a library or the main program set the exception traceback
+         flag, it is never reset later */
+
+      if (exception_tracebacks != 0)
+         __gl_exception_tracebacks = exception_tracebacks;
 
       return;
     }
@@ -186,6 +237,8 @@ __gnat_set_globals (main_priority, time_slice_val, wc_encoding, locking_policy,
   __gl_locking_policy           = locking_policy;
   __gl_queuing_policy           = queuing_policy;
   __gl_restrictions             = restrictions;
+  __gl_interrupt_states         = interrupt_states;
+  __gl_num_interrupt_states     = num_interrupt_states;
   __gl_task_dispatching_policy  = task_dispatching_policy;
   __gl_unreserve_all_interrupts = unreserve_all_interrupts;
   __gl_exception_tracebacks     = exception_tracebacks;
@@ -216,21 +269,26 @@ __gnat_set_globals (main_priority, time_slice_val, wc_encoding, locking_policy,
    code where initialization is required. */
 
 /***********************************/
-/* __gnat_initialize (AIX version) */
+/* __gnat_initialize (AIX Version) */
 /***********************************/
 
 #if defined (_AIX)
 
-/* AiX doesn't have SA_NODEFER */
-
-#define SA_NODEFER 0
-
+#include <signal.h>
 #include <sys/time.h>
 
-/* AiX doesn't have nanosleep, but provides nsleep instead */
+/* Some versions of AIX don't define SA_NODEFER. */
+
+#ifndef SA_NODEFER
+#define SA_NODEFER 0
+#endif /* SA_NODEFER */
+
+/* Versions of AIX before 4.3 don't have nanosleep but provide
+   nsleep instead. */
+
+#ifndef _AIXVERSION_430
 
 extern int nanosleep PARAMS ((struct timestruc_t *, struct timestruc_t *));
-static void __gnat_error_handler PARAMS ((int));
 
 int
 nanosleep (Rqtp, Rmtp)
@@ -239,7 +297,9 @@ nanosleep (Rqtp, Rmtp)
   return nsleep (Rqtp, Rmtp);
 }
 
-#include <signal.h>
+#endif /* _AIXVERSION_430 */
+
+static void __gnat_error_handler PARAMS ((int));
 
 static void
 __gnat_error_handler (sig)
@@ -285,13 +345,20 @@ __gnat_install_handler ()
 
   act.sa_handler = __gnat_error_handler;
   act.sa_flags = SA_NODEFER | SA_RESTART;
-  (void) sigemptyset (&act.sa_mask);
+  sigemptyset (&act.sa_mask);
 
-  (void) sigaction (SIGABRT, &act, NULL);
-  (void) sigaction (SIGFPE,  &act, NULL);
-  (void) sigaction (SIGILL,  &act, NULL);
-  (void) sigaction (SIGSEGV, &act, NULL);
-  (void) sigaction (SIGBUS,  &act, NULL);
+  /* Do not install handlers if interrupt state is "System" */
+  if (__gnat_get_interrupt_state (SIGABRT) != 's')
+    sigaction (SIGABRT, &act, NULL);
+  if (__gnat_get_interrupt_state (SIGFPE) != 's')
+    sigaction (SIGFPE,  &act, NULL);
+  if (__gnat_get_interrupt_state (SIGILL) != 's')
+    sigaction (SIGILL,  &act, NULL);
+  if (__gnat_get_interrupt_state (SIGSEGV) != 's')
+    sigaction (SIGSEGV, &act, NULL);
+  if (__gnat_get_interrupt_state (SIGBUS) != 's')
+    sigaction (SIGBUS,  &act, NULL);
+
   __gnat_handler_installed = 1;
 }
 
@@ -301,7 +368,7 @@ __gnat_initialize ()
 }
 
 /****************************************/
-/* __gnat_initialize (Dec Unix version) */
+/* __gnat_initialize (Dec Unix Version) */
 /****************************************/
 
 #elif defined(__alpha__) && defined(__osf__) && ! defined(__alpha_vxworks)
@@ -406,13 +473,19 @@ __gnat_install_handler ()
 
   act.sa_handler = (void (*) PARAMS ((int))) __gnat_error_handler;
   act.sa_flags = SA_ONSTACK | SA_RESTART | SA_NODEFER | SA_SIGINFO;
-  (void) sigemptyset (&act.sa_mask);
+  sigemptyset (&act.sa_mask);
 
-  (void) sigaction (SIGABRT, &act, NULL);
-  (void) sigaction (SIGFPE,  &act, NULL);
-  (void) sigaction (SIGILL,  &act, NULL);
-  (void) sigaction (SIGSEGV, &act, NULL);
-  (void) sigaction (SIGBUS,  &act, NULL);
+  /* Do not install handlers if interrupt state is "System" */
+  if (__gnat_get_interrupt_state (SIGABRT) != 's')
+    sigaction (SIGABRT, &act, NULL);
+  if (__gnat_get_interrupt_state (SIGFPE) != 's')
+    sigaction (SIGFPE,  &act, NULL);
+  if (__gnat_get_interrupt_state (SIGILL) != 's')
+    sigaction (SIGILL,  &act, NULL);
+  if (__gnat_get_interrupt_state (SIGSEGV) != 's')
+    sigaction (SIGSEGV, &act, NULL);
+  if (__gnat_get_interrupt_state (SIGBUS) != 's')
+    sigaction (SIGBUS,  &act, NULL);
 
   __gnat_handler_installed = 1;
 }
@@ -449,9 +522,9 @@ __gnat_machine_state_length ()
   return sizeof (struct sigcontext);
 }
 
-/***********************************/
-/* __gnat_initialize (HPUX version) */
-/***********************************/
+/************************************/
+/* __gnat_initialize (HPUX Version) */
+/************************************/
 
 #elif defined (hpux)
 
@@ -514,17 +587,23 @@ __gnat_install_handler ()
   stack.ss_size  = sizeof (handler_stack);
   stack.ss_flags = 0;
 
-  (void) sigaltstack (&stack, NULL);
+  sigaltstack (&stack, NULL);
 
   act.sa_handler = __gnat_error_handler;
   act.sa_flags = SA_NODEFER | SA_RESTART | SA_ONSTACK;
-  (void) sigemptyset (&act.sa_mask);
+  sigemptyset (&act.sa_mask);
 
-  (void) sigaction (SIGABRT, &act, NULL);
-  (void) sigaction (SIGFPE,  &act, NULL);
-  (void) sigaction (SIGILL,  &act, NULL);
-  (void) sigaction (SIGSEGV, &act, NULL);
-  (void) sigaction (SIGBUS,  &act, NULL);
+  /* Do not install handlers if interrupt state is "System" */
+  if (__gnat_get_interrupt_state (SIGABRT) != 's')
+    sigaction (SIGABRT, &act, NULL);
+  if (__gnat_get_interrupt_state (SIGFPE) != 's')
+    sigaction (SIGFPE,  &act, NULL);
+  if (__gnat_get_interrupt_state (SIGILL) != 's')
+    sigaction (SIGILL,  &act, NULL);
+  if (__gnat_get_interrupt_state (SIGSEGV) != 's')
+    sigaction (SIGSEGV, &act, NULL);
+  if (__gnat_get_interrupt_state (SIGBUS) != 's')
+    sigaction (SIGBUS,  &act, NULL);
 
   __gnat_handler_installed = 1;
 }
@@ -534,9 +613,9 @@ __gnat_initialize ()
 {
 }
 
-/*************************************/
-/* __gnat_initialize (GNU/Linux version) */
-/*************************************/
+/*****************************************/
+/* __gnat_initialize (GNU/Linux Version) */
+/*****************************************/
 
 #elif defined (linux) && defined (i386) && !defined (__RT__)
 
@@ -662,13 +741,19 @@ __gnat_install_handler ()
 
   act.sa_handler = __gnat_error_handler;
   act.sa_flags = SA_NODEFER | SA_RESTART;
-  (void) sigemptyset (&act.sa_mask);
+  sigemptyset (&act.sa_mask);
 
-  (void) sigaction (SIGABRT, &act, NULL);
-  (void) sigaction (SIGFPE,  &act, NULL);
-  (void) sigaction (SIGILL,  &act, NULL);
-  (void) sigaction (SIGSEGV, &act, NULL);
-  (void) sigaction (SIGBUS,  &act, NULL);
+  /* Do not install handlers if interrupt state is "System" */
+  if (__gnat_get_interrupt_state (SIGABRT) != 's')
+    sigaction (SIGABRT, &act, NULL);
+  if (__gnat_get_interrupt_state (SIGFPE) != 's')
+    sigaction (SIGFPE,  &act, NULL);
+  if (__gnat_get_interrupt_state (SIGILL) != 's')
+    sigaction (SIGILL,  &act, NULL);
+  if (__gnat_get_interrupt_state (SIGSEGV) != 's')
+    sigaction (SIGSEGV, &act, NULL);
+  if (__gnat_get_interrupt_state (SIGBUS) != 's')
+    sigaction (SIGBUS,  &act, NULL);
 
   __gnat_handler_installed = 1;
 }
@@ -679,23 +764,23 @@ __gnat_initialize ()
 }
 
 /******************************************/
-/* __gnat_initialize (NT-mingw32 version) */
+/* __gnat_initialize (NT-mingw32 Version) */
 /******************************************/
 
 #elif defined (__MINGW32__)
 #include <windows.h>
 
-static LONG __gnat_error_handler PARAMS ((PEXCEPTION_POINTERS));
+static LONG WINAPI __gnat_error_handler PARAMS ((PEXCEPTION_POINTERS));
 
 /* __gnat_initialize (mingw32).  */
 
-static LONG
+static LONG WINAPI
 __gnat_error_handler (info)
      PEXCEPTION_POINTERS info;
 {
   static int recurse;
   struct Exception_Data *exception;
-  char *msg;
+  const char *msg;
 
   switch (info->ExceptionRecord->ExceptionCode)
     {
@@ -802,6 +887,7 @@ __gnat_error_handler (info)
 
   recurse = 0;
   Raise_From_Signal_Handler (exception, msg);
+  return 0; /* This is never reached, avoid compiler warning */
 }
 
 void
@@ -827,9 +913,9 @@ __gnat_initialize ()
    __gnat_plist_init();
 }
 
-/**************************************/
-/* __gnat_initialize (Interix version) */
-/**************************************/
+/***************************************/
+/* __gnat_initialize (Interix Version) */
+/***************************************/
 
 #elif defined (__INTERIX)
 
@@ -880,15 +966,17 @@ __gnat_install_handler ()
 
   act.sa_handler = __gnat_error_handler;
   act.sa_flags = 0;
-  (void) sigemptyset (&act.sa_mask);
+  sigemptyset (&act.sa_mask);
 
   /* Handlers for signals besides SIGSEGV cause c974013 to hang */
-/*  (void) sigaction (SIGILL,  &act, NULL); */
-/*  (void) sigaction (SIGABRT, &act, NULL); */
-/*  (void) sigaction (SIGFPE,  &act, NULL); */
-/*  (void) sigaction (SIGBUS,  &act, NULL); */
+/*  sigaction (SIGILL,  &act, NULL); */
+/*  sigaction (SIGABRT, &act, NULL); */
+/*  sigaction (SIGFPE,  &act, NULL); */
+/*  sigaction (SIGBUS,  &act, NULL); */
 
-  (void) sigaction (SIGSEGV, &act, NULL);
+  /* Do not install handlers if interrupt state is "System" */
+  if (__gnat_get_interrupt_state (SIGSEGV) != 's')
+    sigaction (SIGSEGV, &act, NULL);
 
   __gnat_handler_installed = 1;
 }
@@ -900,7 +988,7 @@ __gnat_initialize ()
 }
 
 /**************************************/
-/* __gnat_initialize (LynxOS version) */
+/* __gnat_initialize (LynxOS Version) */
 /**************************************/
 
 #elif defined (__Lynx__)
@@ -943,7 +1031,7 @@ __gnat_install_handler ()
 }
 
 /***********************************/
-/* __gnat_initialize (SGI version) */
+/* __gnat_initialize (SGI Version) */
 /***********************************/
 
 #elif defined (sgi)
@@ -1049,7 +1137,6 @@ __gnat_error_handler (sig, code, sc)
     memcpy ((void *) mstate, (const void *) sc, sizeof (sigcontext_t));
 
   Raise_From_Signal_Handler (exception, msg);
-
 }
 
 void
@@ -1064,15 +1151,23 @@ __gnat_install_handler ()
 
   act.sa_handler = __gnat_error_handler;
   act.sa_flags = SA_NODEFER + SA_RESTART;
-  (void) sigfillset (&act.sa_mask);
-  (void) sigemptyset (&act.sa_mask);
+  sigfillset (&act.sa_mask);
+  sigemptyset (&act.sa_mask);
 
-  (void) sigaction (SIGABRT, &act, NULL);
-  (void) sigaction (SIGFPE,  &act, NULL);
-  (void) sigaction (SIGILL,  &act, NULL);
-  (void) sigaction (SIGSEGV, &act, NULL);
-  (void) sigaction (SIGBUS,  &act, NULL);
-  (void) sigaction (SIGADAABORT,  &act, NULL);
+  /* Do not install handlers if interrupt state is "System" */
+  if (__gnat_get_interrupt_state (SIGABRT) != 's')
+    sigaction (SIGABRT, &act, NULL);
+  if (__gnat_get_interrupt_state (SIGFPE) != 's')
+    sigaction (SIGFPE,  &act, NULL);
+  if (__gnat_get_interrupt_state (SIGILL) != 's')
+    sigaction (SIGILL,  &act, NULL);
+  if (__gnat_get_interrupt_state (SIGSEGV) != 's')
+    sigaction (SIGSEGV, &act, NULL);
+  if (__gnat_get_interrupt_state (SIGBUS) != 's')
+    sigaction (SIGBUS,  &act, NULL);
+  if (__gnat_get_interrupt_state (SIGADAABORT) != 's')
+    sigaction (SIGADAABORT,  &act, NULL);
+
   __gnat_handler_installed = 1;
 }
 
@@ -1082,7 +1177,7 @@ __gnat_initialize ()
 }
 
 /*************************************************/
-/* __gnat_initialize (Solaris and SunOS version) */
+/* __gnat_initialize (Solaris and SunOS Version) */
 /*************************************************/
 
 #elif defined (sun) && defined (__SVR4) && !defined (__vxworks)
@@ -1099,7 +1194,7 @@ __gnat_error_handler (sig, sip)
 {
   struct Exception_Data *exception;
   static int recurse = 0;
-  const char *msg;
+  char *msg;
 
   /* If this was an explicit signal from a "kill", just resignal it.  */
   if (SI_FROMUSER (sip))
@@ -1171,95 +1266,17 @@ __gnat_install_handler ()
 
   act.sa_handler = __gnat_error_handler;
   act.sa_flags = SA_NODEFER | SA_RESTART | SA_SIGINFO;
-  (void) sigemptyset (&act.sa_mask);
+  sigemptyset (&act.sa_mask);
 
-  (void) sigaction (SIGABRT, &act, NULL);
-  (void) sigaction (SIGFPE,  &act, NULL);
-  (void) sigaction (SIGSEGV, &act, NULL);
-  (void) sigaction (SIGBUS,  &act, NULL);
-
-  __gnat_handler_installed = 1;
-}
-
-void
-__gnat_initialize ()
-{
-}
-
-/***********************************/
-/* __gnat_initialize (SNI version) */
-/***********************************/
-
-#elif defined (__sni__)
-
-/* SNI needs special defines and includes */
-
-#define _XOPEN_SOURCE
-#define _POSIX_SOURCE
-#include <signal.h>
-
-extern size_t __gnat_getpagesize PARAMS ((void));
-static void __gnat_error_handler PARAMS ((int));
-
-/* The run time needs this function which is a #define in SNI */
-
-size_t
-__gnat_getpagesize ()
-{
-  return getpagesize ();
-}
-
-static void
-__gnat_error_handler (sig)
-     int sig;
-{
-  struct Exception_Data *exception;
-  char *msg;
-
-  switch (sig)
-    {
-    case SIGSEGV:
-      /* FIXME: we need to detect the case of a *real* SIGSEGV */
-      exception = &storage_error;
-      msg = "stack overflow or erroneous memory access";
-      break;
-
-    case SIGBUS:
-      exception = &constraint_error;
-      msg = "SIGBUS";
-      break;
-
-    case SIGFPE:
-      exception = &constraint_error;
-      msg = "SIGFPE";
-      break;
-
-    default:
-      exception = &program_error;
-      msg = "unhandled signal";
-    }
-
-  Raise_From_Signal_Handler (exception, msg);
-}
-
-void
-__gnat_install_handler ()
-{
-  struct sigaction act;
-
-  /* Set up signal handler to map synchronous signals to appropriate
-     exceptions.  Make sure that the handler isn't interrupted by another
-     signal that might cause a scheduling event! */
-
-  act.sa_handler = __gnat_error_handler;
-  act.sa_flags = SA_NODEFER | SA_RESTART;
-  (void) sigemptyset (&act.sa_mask);
-
-  (void) sigaction (SIGABRT, &act, NULL);
-  (void) sigaction (SIGFPE,  &act, NULL);
-  (void) sigaction (SIGILL,  &act, NULL);
-  (void) sigaction (SIGSEGV, &act, NULL);
-  (void) sigaction (SIGBUS,  &act, NULL);
+  /* Do not install handlers if interrupt state is "System" */
+  if (__gnat_get_interrupt_state (SIGABRT) != 's')
+    sigaction (SIGABRT, &act, NULL);
+  if (__gnat_get_interrupt_state (SIGFPE) != 's')
+    sigaction (SIGFPE,  &act, NULL);
+  if (__gnat_get_interrupt_state (SIGSEGV) != 's')
+    sigaction (SIGSEGV, &act, NULL);
+  if (__gnat_get_interrupt_state (SIGBUS) != 's')
+    sigaction (SIGBUS,  &act, NULL);
 
   __gnat_handler_installed = 1;
 }
@@ -1270,7 +1287,7 @@ __gnat_initialize ()
 }
 
 /***********************************/
-/* __gnat_initialize (VMS version) */
+/* __gnat_initialize (VMS Version) */
 /***********************************/
 
 #elif defined (VMS)
@@ -1333,7 +1350,7 @@ __gnat_error_handler (sigargs, mechargs)
   long curr_invo_handle;
   long *mstate;
 
-  /* Resignaled conditions aren't effected by by pragma Import_Exception */
+  /* Resignaled condtions aren't effected by by pragma Import_Exception */
 
   switch (sigargs[1])
   {
@@ -1476,7 +1493,7 @@ __gnat_initialize()
 }
 
 /***************************************/
-/* __gnat_initialize (VXWorks version) */
+/* __gnat_initialize (VXWorks Version) */
 /***************************************/
 
 #elif defined(__vxworks)
@@ -1486,24 +1503,8 @@ __gnat_initialize()
 #include <intLib.h>
 #include <iv.h>
 
-static void __gnat_init_handler PARAMS ((int));
-extern int __gnat_inum_to_ivec PARAMS ((int));
-static void __gnat_error_handler PARAMS ((int, int, struct sigcontext *));
-
-static void
-__gnat_int_handler (interr)
-      int interr;
-{
-  /* Note that we should use something like Raise_From_Int_Handler here, but
-     for now Raise_From_Signal_Handler will do the job. ??? */
-
-  Raise_From_Signal_Handler (&storage_error, "stack overflow");
-}
-
-/* Used for stack-checking on VxWorks. Must be task-local in
-   tasking programs */
-
-void *__gnat_stack_limit = NULL;
+extern int __gnat_inum_to_ivec (int);
+static void __gnat_error_handler (int, int, struct sigcontext *);
 
 #ifndef __alpha_vxworks
 
@@ -1542,14 +1543,14 @@ __gnat_error_handler (sig, code, sc)
      will reenable it on a longjmp.  GNAT does not generate a longjmp to
      return from a signal handler so the signal will still be masked unless
      we unmask it. */
-  (void) sigprocmask (SIG_SETMASK, NULL, &mask);
+  sigprocmask (SIG_SETMASK, NULL, &mask);
   sigdelset (&mask, sig);
-  (void) sigprocmask (SIG_SETMASK, &mask, NULL);
+  sigprocmask (SIG_SETMASK, &mask, NULL);
 
   /* VxWorks will suspend the task when it gets a hardware exception.  We
      take the liberty of resuming the task for the application. */
   if (taskIsSuspended (taskIdSelf ()) != 0)
-    (void) taskResume (taskIdSelf ());
+    taskResume (taskIdSelf ());
 
   switch (sig)
     {
@@ -1588,12 +1589,14 @@ __gnat_install_handler ()
 
   act.sa_handler = __gnat_error_handler;
   act.sa_flags = SA_SIGINFO | SA_ONSTACK;
-  (void) sigemptyset (&act.sa_mask);
+  sigemptyset (&act.sa_mask);
 
-  (void) sigaction (SIGFPE,  &act, NULL);
-  (void) sigaction (SIGILL,  &act, NULL);
-  (void) sigaction (SIGSEGV, &act, NULL);
-  (void) sigaction (SIGBUS,  &act, NULL);
+  /* For VxWorks, install all signal handlers, since pragma Interrupt_State
+     applies to vectored hardware interrupts, not signals */
+  sigaction (SIGFPE,  &act, NULL);
+  sigaction (SIGILL,  &act, NULL);
+  sigaction (SIGSEGV, &act, NULL);
+  sigaction (SIGBUS,  &act, NULL);
 
   __gnat_handler_installed = 1;
 }
@@ -1603,26 +1606,137 @@ __gnat_install_handler ()
 void
 __gnat_init_float ()
 {
-#if defined (_ARCH_PPC) && !defined (_SOFT_FLOAT)
   /* Disable overflow/underflow exceptions on the PPC processor, this is needed
-      to get correct Ada semantic */
+     to get correct Ada semantic.  */
+#if defined (_ARCH_PPC) && !defined (_SOFT_FLOAT)
   asm ("mtfsb0 25");
   asm ("mtfsb0 26");
+#endif
+
+  /* Similarily for sparc64. Achieved by masking bits in the Trap Enable Mask
+     field of the Floating-point Status Register (see the Sparc Architecture
+     Manual Version 9, p 48).  */
+#if defined (sparc64)
+
+#define FSR_TEM_NVM (1 << 27)  /* Invalid operand  */
+#define FSR_TEM_OFM (1 << 26)  /* Overflow  */
+#define FSR_TEM_UFM (1 << 25)  /* Underflow  */
+#define FSR_TEM_DZM (1 << 24)  /* Division by Zero  */
+#define FSR_TEM_NXM (1 << 23)  /* Inexact result  */
+  {
+    unsigned int fsr;
+
+    __asm__("st %%fsr, %0" : "=m" (fsr));
+    fsr &= ~(FSR_TEM_OFM | FSR_TEM_UFM);
+    __asm__("ld %0, %%fsr" : : "m" (fsr));
+  }
 #endif
 }
 
 void
 __gnat_initialize ()
 {
-  TASK_DESC pTaskDesc;
-
-  if (taskInfoGet (taskIdSelf (), &pTaskDesc) != OK)
-    printErr ("Cannot get task info");
-
-  __gnat_stack_limit = (void *) pTaskDesc.td_pStackLimit;
-
   __gnat_init_float ();
 
+  /* Assume an environment task stack size of 20kB.
+
+     Using a constant is necessary because we do not want each Ada application
+     to depend on the optional taskShow library,
+     which is required to get the actual stack information.
+
+     The consequence of this is that with -fstack-check
+     the environment task must have an actual stack size
+     of at least 20kB and the usable size will be about 14kB.
+  */
+
+  __gnat_set_stack_size (14336);
+  /* Allow some head room for the stack checking code, and for
+     stack space consumed during initialization */
+}
+
+/********************************/
+/* __gnat_initialize for NetBSD */
+/********************************/
+
+#elif defined(__NetBSD__)
+
+#include <signal.h>
+#include <unistd.h>
+
+static void
+__gnat_error_handler (sig)
+  int sig;
+{
+  struct Exception_Data *exception;
+  const char *msg;
+
+  switch(sig)
+  {
+    case SIGFPE:
+      exception = &constraint_error;
+      msg = "SIGFPE";
+      break;
+    case SIGILL:
+      exception = &constraint_error;
+      msg = "SIGILL";
+      break;
+    case SIGSEGV:
+      exception = &storage_error;
+      msg = "stack overflow or erroneous memory access";
+      break;
+    case SIGBUS:
+      exception = &constraint_error;
+      msg = "SIGBUS";
+      break;
+    default:
+      exception = &program_error;
+      msg = "unhandled signal";
+    }
+
+    Raise_From_Signal_Handler(exception, msg);
+}
+
+void
+__gnat_install_handler()
+{
+  struct sigaction act;
+
+  act.sa_handler = __gnat_error_handler;
+  act.sa_flags = SA_NODEFER | SA_RESTART;
+  sigemptyset (&act.sa_mask);
+
+  /* Do not install handlers if interrupt state is "System" */
+  if (__gnat_get_interrupt_state (SIGFPE) != 's')
+    sigaction (SIGFPE,  &act, NULL);
+  if (__gnat_get_interrupt_state (SIGILL) != 's')
+    sigaction (SIGILL,  &act, NULL);
+  if (__gnat_get_interrupt_state (SIGSEGV) != 's')
+    sigaction (SIGSEGV, &act, NULL);
+  if (__gnat_get_interrupt_state (SIGBUS) != 's')
+    sigaction (SIGBUS,  &act, NULL);
+}
+
+void
+__gnat_initialize ()
+{
+  __gnat_install_handler ();
+  __gnat_init_float ();
+}
+
+/***************************************/
+/* __gnat_initialize (RTEMS version) */
+/***************************************/
+
+#elif defined(__rtems__)
+
+extern void __gnat_install_handler ();
+
+/* For RTEMS, each bsp will provide a custom __gnat_install_handler (). */
+
+void
+__gnat_initialize ()
+{
+   __gnat_install_handler ();
 }
 
 /***************************************/
@@ -1647,7 +1761,7 @@ __gnat_initialize ()
    installation do nothing */
 
 /***************************************/
-/* __gnat_initialize (default version) */
+/* __gnat_initialize (Default Version) */
 /***************************************/
 
 void
@@ -1656,7 +1770,7 @@ __gnat_initialize ()
 }
 
 /********************************************/
-/* __gnat_install_handler (default version) */
+/* __gnat_install_handler (Default Version) */
 /********************************************/
 
 void
@@ -1676,7 +1790,7 @@ __gnat_install_handler ()
    WIN32 and could be used under OS/2 */
 
 #if defined (_WIN32) || defined (__INTERIX) || defined (__EMX__) \
-  || defined (__Lynx__)
+  || defined (__Lynx__) || defined(__NetBSD__)
 
 #define HAVE_GNAT_INIT_FLOAT
 

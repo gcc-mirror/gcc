@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -79,8 +79,6 @@ package body Sem is
          Debug_A_Exit ("analyzing  ", N, "  (done, analyzed already)");
          return;
       end if;
-
-      Current_Error_Node := N;
 
       --  Otherwise processing depends on the node kind
 
@@ -640,7 +638,6 @@ package body Sem is
       if Nkind (N) not in N_Subexpr then
          Expand (N);
       end if;
-
    end Analyze;
 
    --  Version with check(s) suppressed
@@ -649,7 +646,7 @@ package body Sem is
    begin
       if Suppress = All_Checks then
          declare
-            Svg : constant Suppress_Record := Scope_Suppress;
+            Svg : constant Suppress_Array := Scope_Suppress;
 
          begin
             Scope_Suppress := (others => True);
@@ -659,12 +656,12 @@ package body Sem is
 
       else
          declare
-            Svg : constant Boolean := Get_Scope_Suppress (Suppress);
+            Svg : constant Boolean := Scope_Suppress (Suppress);
 
          begin
-            Set_Scope_Suppress (Suppress, True);
+            Scope_Suppress (Suppress) := True;
             Analyze (N);
-            Set_Scope_Suppress (Suppress, Svg);
+            Scope_Suppress (Suppress) := Svg;
          end;
       end if;
    end Analyze;
@@ -690,7 +687,7 @@ package body Sem is
    begin
       if Suppress = All_Checks then
          declare
-            Svg : constant Suppress_Record := Scope_Suppress;
+            Svg : constant Suppress_Array := Scope_Suppress;
 
          begin
             Scope_Suppress := (others => True);
@@ -700,15 +697,85 @@ package body Sem is
 
       else
          declare
-            Svg : constant Boolean := Get_Scope_Suppress (Suppress);
+            Svg : constant Boolean := Scope_Suppress (Suppress);
 
          begin
-            Set_Scope_Suppress (Suppress, True);
+            Scope_Suppress (Suppress) := True;
             Analyze_List (L);
-            Set_Scope_Suppress (Suppress, Svg);
+            Scope_Suppress (Suppress) := Svg;
          end;
       end if;
    end Analyze_List;
+
+   --------------------------
+   -- Copy_Suppress_Status --
+   --------------------------
+
+   procedure Copy_Suppress_Status
+     (C    : Check_Id;
+      From : Entity_Id;
+      To   : Entity_Id)
+   is
+   begin
+      if not Checks_May_Be_Suppressed (From) then
+         return;
+      end if;
+
+      --  First search the local entity suppress table, we search this in
+      --  reverse order so that we get the innermost entry that applies to
+      --  this case if there are nested entries. Note that for the purpose
+      --  of this procedure we are ONLY looking for entries corresponding
+      --  to a two-argument Suppress, where the second argument matches From.
+
+      for J in
+        reverse Local_Entity_Suppress.First .. Local_Entity_Suppress.Last
+      loop
+         declare
+            R : Entity_Check_Suppress_Record
+                  renames Local_Entity_Suppress.Table (J);
+
+         begin
+            if R.Entity = From
+              and then (R.Check = All_Checks or else R.Check = C)
+            then
+               if R.Suppress then
+                  Set_Checks_May_Be_Suppressed (To, True);
+                  Local_Entity_Suppress.Append
+                    ((Entity   => To,
+                      Check    => C,
+                      Suppress => True));
+                  return;
+               end if;
+            end if;
+         end;
+      end loop;
+
+      --  Now search the global entity suppress table for a matching entry
+      --  We also search this in reverse order so that if there are multiple
+      --  pragmas for the same entity, the last one applies.
+
+      for J in
+        reverse Global_Entity_Suppress.First .. Global_Entity_Suppress.Last
+      loop
+         declare
+            R : Entity_Check_Suppress_Record
+                 renames Global_Entity_Suppress.Table (J);
+
+         begin
+            if R.Entity = From
+              and then (R.Check = All_Checks or else R.Check = C)
+            then
+               if R.Suppress then
+                  Set_Checks_May_Be_Suppressed (To, True);
+                  Local_Entity_Suppress.Append
+                    ((Entity   => To,
+                      Check    => C,
+                      Suppress => True));
+               end if;
+            end if;
+         end;
+      end loop;
+   end Copy_Suppress_Status;
 
    -------------------------
    -- Enter_Generic_Scope --
@@ -730,48 +797,75 @@ package body Sem is
       if S = Outer_Generic_Scope then
          Outer_Generic_Scope := Empty;
       end if;
-   end  Exit_Generic_Scope;
+   end Exit_Generic_Scope;
+
+   -----------------------
+   -- Explicit_Suppress --
+   -----------------------
+
+   function Explicit_Suppress (E : Entity_Id; C : Check_Id) return Boolean is
+   begin
+      if not Checks_May_Be_Suppressed (E) then
+         return False;
+
+      else
+         for J in
+           reverse Global_Entity_Suppress.First .. Global_Entity_Suppress.Last
+         loop
+            declare
+               R : Entity_Check_Suppress_Record
+                     renames Global_Entity_Suppress.Table (J);
+
+            begin
+               if R.Entity = E
+                 and then (R.Check = All_Checks or else R.Check = C)
+               then
+                  return R.Suppress;
+               end if;
+            end;
+         end loop;
+
+         return False;
+      end if;
+   end Explicit_Suppress;
 
    -----------------------------
    -- External_Ref_In_Generic --
    -----------------------------
 
    function External_Ref_In_Generic (E : Entity_Id) return Boolean is
-   begin
+      Scop : Entity_Id;
 
+   begin
       --  Entity is global if defined outside of current outer_generic_scope:
       --  Either the entity has a smaller depth that the outer generic, or it
-      --  is in a different compilation unit.
+      --  is in a different compilation unit, or it is defined within a unit
+      --  in the same compilation, that is not within the outer_generic.
 
-      return Present (Outer_Generic_Scope)
-        and then (Scope_Depth (Scope (E)) < Scope_Depth (Outer_Generic_Scope)
-                   or else not In_Same_Source_Unit (E, Outer_Generic_Scope));
+      if No (Outer_Generic_Scope) then
+         return False;
+
+      elsif Scope_Depth (Scope (E)) < Scope_Depth (Outer_Generic_Scope)
+        or else not In_Same_Source_Unit (E, Outer_Generic_Scope)
+      then
+         return True;
+
+      else
+         Scop := Scope (E);
+
+         while Present (Scop) loop
+            if Scop = Outer_Generic_Scope then
+               return False;
+            elsif Scope_Depth (Scop) < Scope_Depth (Outer_Generic_Scope) then
+               return True;
+            else
+               Scop := Scope (Scop);
+            end if;
+         end loop;
+
+         return True;
+      end if;
    end External_Ref_In_Generic;
-
-   ------------------------
-   -- Get_Scope_Suppress --
-   ------------------------
-
-   function Get_Scope_Suppress (C : Check_Id) return Boolean is
-      S : Suppress_Record renames Scope_Suppress;
-
-   begin
-      case C is
-         when Access_Check        => return S.Access_Checks;
-         when Accessibility_Check => return S.Accessibility_Checks;
-         when Discriminant_Check  => return S.Discriminant_Checks;
-         when Division_Check      => return S.Division_Checks;
-         when Elaboration_Check   => return S.Discriminant_Checks;
-         when Index_Check         => return S.Elaboration_Checks;
-         when Length_Check        => return S.Discriminant_Checks;
-         when Overflow_Check      => return S.Overflow_Checks;
-         when Range_Check         => return S.Range_Checks;
-         when Storage_Check       => return S.Storage_Checks;
-         when Tag_Check           => return S.Tag_Checks;
-         when All_Checks =>
-            raise Program_Error;
-      end case;
-   end Get_Scope_Suppress;
 
    ----------------
    -- Initialize --
@@ -779,7 +873,8 @@ package body Sem is
 
    procedure Initialize is
    begin
-      Entity_Suppress.Init;
+      Local_Entity_Suppress.Init;
+      Global_Entity_Suppress.Init;
       Scope_Stack.Init;
       Unloaded_Subunits := False;
    end Initialize;
@@ -821,18 +916,19 @@ package body Sem is
             end loop;
          end if;
       end if;
-
    end Insert_After_And_Analyze;
 
    --  Version with check(s) suppressed
 
    procedure Insert_After_And_Analyze
-     (N : Node_Id; M : Node_Id; Suppress : Check_Id)
+     (N        : Node_Id;
+      M        : Node_Id;
+      Suppress : Check_Id)
    is
    begin
       if Suppress = All_Checks then
          declare
-            Svg : constant Suppress_Record := Scope_Suppress;
+            Svg : constant Suppress_Array := Scope_Suppress;
 
          begin
             Scope_Suppress := (others => True);
@@ -842,12 +938,12 @@ package body Sem is
 
       else
          declare
-            Svg : constant Boolean := Get_Scope_Suppress (Suppress);
+            Svg : constant Boolean := Scope_Suppress (Suppress);
 
          begin
-            Set_Scope_Suppress (Suppress, True);
+            Scope_Suppress (Suppress) := True;
             Insert_After_And_Analyze (N, M);
-            Set_Scope_Suppress (Suppress, Svg);
+            Scope_Suppress (Suppress) := Svg;
          end;
       end if;
    end Insert_After_And_Analyze;
@@ -882,18 +978,19 @@ package body Sem is
             Next (Node);
          end loop;
       end if;
-
    end Insert_Before_And_Analyze;
 
    --  Version with check(s) suppressed
 
    procedure Insert_Before_And_Analyze
-     (N : Node_Id; M : Node_Id; Suppress : Check_Id)
+     (N        : Node_Id;
+      M        : Node_Id;
+      Suppress : Check_Id)
    is
    begin
       if Suppress = All_Checks then
          declare
-            Svg : constant Suppress_Record := Scope_Suppress;
+            Svg : constant Suppress_Array := Scope_Suppress;
 
          begin
             Scope_Suppress := (others => True);
@@ -903,12 +1000,12 @@ package body Sem is
 
       else
          declare
-            Svg : constant Boolean := Get_Scope_Suppress (Suppress);
+            Svg : constant Boolean := Scope_Suppress (Suppress);
 
          begin
-            Set_Scope_Suppress (Suppress, True);
+            Scope_Suppress (Suppress) := True;
             Insert_Before_And_Analyze (N, M);
-            Set_Scope_Suppress (Suppress, Svg);
+            Scope_Suppress (Suppress) := Svg;
          end;
       end if;
    end Insert_Before_And_Analyze;
@@ -944,7 +1041,6 @@ package body Sem is
             Next (Node);
          end loop;
       end if;
-
    end Insert_List_After_And_Analyze;
 
    --  Version with check(s) suppressed
@@ -955,7 +1051,7 @@ package body Sem is
    begin
       if Suppress = All_Checks then
          declare
-            Svg : constant Suppress_Record := Scope_Suppress;
+            Svg : constant Suppress_Array := Scope_Suppress;
 
          begin
             Scope_Suppress := (others => True);
@@ -965,12 +1061,12 @@ package body Sem is
 
       else
          declare
-            Svg : constant Boolean := Get_Scope_Suppress (Suppress);
+            Svg : constant Boolean := Scope_Suppress (Suppress);
 
          begin
-            Set_Scope_Suppress (Suppress, True);
+            Scope_Suppress (Suppress) := True;
             Insert_List_After_And_Analyze (N, L);
-            Set_Scope_Suppress (Suppress, Svg);
+            Scope_Suppress (Suppress) := Svg;
          end;
       end if;
    end Insert_List_After_And_Analyze;
@@ -1005,7 +1101,6 @@ package body Sem is
             Next (Node);
          end loop;
       end if;
-
    end Insert_List_Before_And_Analyze;
 
    --  Version with check(s) suppressed
@@ -1016,7 +1111,7 @@ package body Sem is
    begin
       if Suppress = All_Checks then
          declare
-            Svg : constant Suppress_Record := Scope_Suppress;
+            Svg : constant Suppress_Array := Scope_Suppress;
 
          begin
             Scope_Suppress := (others => True);
@@ -1026,15 +1121,69 @@ package body Sem is
 
       else
          declare
-            Svg : constant Boolean := Get_Scope_Suppress (Suppress);
+            Svg : constant Boolean := Scope_Suppress (Suppress);
 
          begin
-            Set_Scope_Suppress (Suppress, True);
+            Scope_Suppress (Suppress) := True;
             Insert_List_Before_And_Analyze (N, L);
-            Set_Scope_Suppress (Suppress, Svg);
+            Scope_Suppress (Suppress) := Svg;
          end;
       end if;
    end Insert_List_Before_And_Analyze;
+
+   -------------------------
+   -- Is_Check_Suppressed --
+   -------------------------
+
+   function Is_Check_Suppressed (E : Entity_Id; C : Check_Id) return Boolean is
+   begin
+      --  First search the local entity suppress table, we search this in
+      --  reverse order so that we get the innermost entry that applies to
+      --  this case if there are nested entries.
+
+      for J in
+        reverse Local_Entity_Suppress.First .. Local_Entity_Suppress.Last
+      loop
+         declare
+            R : Entity_Check_Suppress_Record
+                  renames Local_Entity_Suppress.Table (J);
+
+         begin
+            if (R.Entity = Empty or else R.Entity = E)
+              and then (R.Check = All_Checks or else R.Check = C)
+            then
+               return R.Suppress;
+            end if;
+         end;
+      end loop;
+
+      --  Now search the global entity suppress table for a matching entry
+      --  We also search this in reverse order so that if there are multiple
+      --  pragmas for the same entity, the last one applies (not clear what
+      --  or whether the RM specifies this handling, but it seems reasonable).
+
+      for J in
+        reverse Global_Entity_Suppress.First .. Global_Entity_Suppress.Last
+      loop
+         declare
+            R : Entity_Check_Suppress_Record
+                  renames Global_Entity_Suppress.Table (J);
+
+         begin
+            if R.Entity = E
+              and then (R.Check = All_Checks or else R.Check = C)
+            then
+               return R.Suppress;
+            end if;
+         end;
+      end loop;
+
+      --  If we did not find a matching entry, then use the normal scope
+      --  suppress value after all (actually this will be the global setting
+      --  since it clearly was not overridden at any point)
+
+      return Scope_Suppress (C);
+   end Is_Check_Suppressed;
 
    ----------
    -- Lock --
@@ -1042,9 +1191,11 @@ package body Sem is
 
    procedure Lock is
    begin
-      Entity_Suppress.Locked := True;
+      Local_Entity_Suppress.Locked := True;
+      Global_Entity_Suppress.Locked := True;
       Scope_Stack.Locked := True;
-      Entity_Suppress.Release;
+      Local_Entity_Suppress.Release;
+      Global_Entity_Suppress.Release;
       Scope_Stack.Release;
    end Lock;
 
@@ -1067,6 +1218,13 @@ package body Sem is
       S_Outer_Gen_Scope  : constant Entity_Id        := Outer_Generic_Scope;
       S_Sem_Unit         : constant Unit_Number_Type := Current_Sem_Unit;
 
+      Generic_Main       : constant Boolean :=
+                             Nkind (Unit (Cunit (Main_Unit)))
+                               in N_Generic_Declaration;
+
+      --  If the main unit is generic, every compiled unit, including its
+      --  context, is compiled with expansion disabled.
+
       Save_Config_Switches : Config_Switches_Type;
       --  Variable used to save values of config switches while we analyze
       --  the new unit, to be restored on exit for proper recursive behavior.
@@ -1074,6 +1232,10 @@ package body Sem is
       procedure Do_Analyze;
       --  Procedure to analyze the compilation unit. This is called more
       --  than once when the high level optimizer is activated.
+
+      ----------------
+      -- Do_Analyze --
+      ----------------
 
       procedure Do_Analyze is
       begin
@@ -1101,14 +1263,18 @@ package body Sem is
          Restore_Scope_Stack;
       end Do_Analyze;
 
-   --  Start of processing for Sem
+   --  Start of processing for Semantics
 
    begin
       Compiler_State        := Analyzing;
       Current_Sem_Unit      := Get_Cunit_Unit_Number (Comp_Unit);
 
-      Expander_Mode_Save_And_Set
-        (Operating_Mode = Generate_Code or Debug_Flag_X);
+      if Generic_Main then
+         Expander_Mode_Save_And_Set (False);
+      else
+         Expander_Mode_Save_And_Set
+           (Operating_Mode = Generate_Code or Debug_Flag_X);
+      end if;
 
       Full_Analysis         := True;
       Inside_A_Generic      := False;
@@ -1153,30 +1319,4 @@ package body Sem is
       Expander_Mode_Restore;
 
    end Semantics;
-
-   ------------------------
-   -- Set_Scope_Suppress --
-   ------------------------
-
-   procedure Set_Scope_Suppress (C : Check_Id; B : Boolean) is
-      S : Suppress_Record renames Scope_Suppress;
-
-   begin
-      case C is
-         when Access_Check        => S.Access_Checks        := B;
-         when Accessibility_Check => S.Accessibility_Checks := B;
-         when Discriminant_Check  => S.Discriminant_Checks  := B;
-         when Division_Check      => S.Division_Checks      := B;
-         when Elaboration_Check   => S.Discriminant_Checks  := B;
-         when Index_Check         => S.Elaboration_Checks   := B;
-         when Length_Check        => S.Discriminant_Checks  := B;
-         when Overflow_Check      => S.Overflow_Checks      := B;
-         when Range_Check         => S.Range_Checks         := B;
-         when Storage_Check       => S.Storage_Checks       := B;
-         when Tag_Check           => S.Tag_Checks           := B;
-         when All_Checks =>
-            raise Program_Error;
-      end case;
-   end Set_Scope_Suppress;
-
 end Sem;

@@ -19,11 +19,12 @@
 -- to  the Free Software Foundation,  59 Temple Place - Suite 330,  Boston, --
 -- MA 02111-1307, USA.                                                      --
 --                                                                          --
--- Extensive contributions were provided by Ada Core Technologies Inc.   --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Strings.Unbounded;
+with GNAT.OS_Lib;
 
 package Xr_Tabls is
 
@@ -32,45 +33,19 @@ package Xr_Tabls is
    -------------------
 
    function ALI_File_Name (Ada_File_Name : String) return String;
-   --  Returns the ali file name corresponding to Ada_File_Name, using the
-   --  information provided in gnat.adc if it exists
+   --  Returns the ali file name corresponding to Ada_File_Name.
 
-   procedure Create_Project_File
-     (Name           : String);
-   --  Open and parse a new project file
-   --  If the file Name could not be open or is not a valid project file
-   --  then a project file associated with the standard default directories
-   --  is returned
-
-   function Find_ALI_File (Short_Name  : String) return String;
-   --  Returns the directory name for the file Short_Name
-   --  takes into account the obj_dir lines in the project file,
-   --  and the default paths for Gnat
-
-   function Find_Source_File (Short_Name  : String) return String;
-   --  Returns the directory name for the file Short_Name
-   --  takes into account the src_dir lines in the project file,
-   --  and the default paths for Gnat
-
-   function Next_Src_Dir return String;
-   --  Returns the next directory to visit to find related source files
-   --  If there are no more such directory, Length = 0
+   procedure Create_Project_File (Name : String);
+   --  Open and parse a new project file. If the file Name could not be
+   --  opened or is not a valid project file, then a project file associated
+   --  with the standard default directories is returned
 
    function Next_Obj_Dir return String;
    --  Returns the next directory to visit to find related ali files
-   --  If there are no more such directory, Length = 0
+   --  If there are no more such directories, returns a null string.
 
    function Current_Obj_Dir return String;
    --  Returns the obj_dir which was returned by the last Next_Obj_Dir call
-
-   procedure Parse_Gnatls
-     (Gnatls_Src_Cache : out Ada.Strings.Unbounded.Unbounded_String;
-      Gnatls_Obj_Cache : out Ada.Strings.Unbounded.Unbounded_String);
-   --  Parse the output of Gnatls, to find the standard
-   --  directories for source files
-
-   procedure Reset_Src_Dir;
-   --  Reset the iterator for Src_Dir
 
    procedure Reset_Obj_Dir;
    --  Reset the iterator for Obj_Dir
@@ -82,24 +57,37 @@ package Xr_Tabls is
    type Declaration_Reference is private;
    Empty_Declaration : constant Declaration_Reference;
 
+   type Declaration_Array is array (Natural range <>) of Declaration_Reference;
+   type Declaration_Array_Access is access Declaration_Array;
+
    type File_Reference is private;
    Empty_File : constant File_Reference;
 
    type Reference is private;
    Empty_Reference : constant Reference;
 
-   type File_Table is limited private;
-   type Entity_Table is limited private;
+   type Reference_Array is array (Natural range <>) of Reference;
+   type Reference_Array_Access is access Reference_Array;
+
+   procedure Free (Arr : in out Reference_Array_Access);
 
    function Add_Declaration
-     (File_Ref  : File_Reference;
-      Symbol    : String;
-      Line      : Natural;
-      Column    : Natural;
-      Decl_Type : Character)
-      return      Declaration_Reference;
+     (File_Ref     : File_Reference;
+      Symbol       : String;
+      Line         : Natural;
+      Column       : Natural;
+      Decl_Type    : Character;
+      Remove_Only  : Boolean := False;
+      Symbol_Match : Boolean := True)
+      return         Declaration_Reference;
    --  Add a new declaration in the table and return the index to it.
-   --  Decl_Type is the type of the entity
+   --  Decl_Type is the type of the entity Any previous instance of this
+   --  entity in the htable is removed. If Remove_Only is True, then any
+   --  previous instance is removed, but the new entity is never inserted.
+   --  Symbol_Match should be set to False if the name of the symbol doesn't
+   --  match the pattern from the command line. In that case, the entity will
+   --  not be output by gnatfind. If Symbol_Match is True, the entity will only
+   --  be output if the file name itself matches.
 
    procedure Add_Parent
      (Declaration : in out Declaration_Reference;
@@ -110,17 +98,15 @@ package Xr_Tabls is
    --  The parent declaration (Symbol in file File_Ref at position Line and
    --  Column) information is added to Declaration.
 
-   procedure Add_To_Xref_File
+   function Add_To_Xref_File
      (File_Name       : String;
-      File_Existed    : out Boolean;
-      Ref             : out File_Reference;
       Visited         : Boolean := True;
       Emit_Warning    : Boolean := False;
       Gnatchop_File   : String  := "";
-      Gnatchop_Offset : Integer := 0);
+      Gnatchop_Offset : Integer := 0)
+      return            File_Reference;
    --  Add a new reference to a file in the table. Ref is used to return the
-   --  index in the table where this file is stored On exit, File_Existed is
-   --  True if the file was already in the table Visited is the value which
+   --  index in the table where this file is stored. Visited is the value which
    --  will be used in the table (if True, the file will not be returned by
    --  Next_Unvisited_File). If Emit_Warning is True and the ali file does
    --  not exist or does not have cross-referencing information, then a
@@ -133,35 +119,49 @@ package Xr_Tabls is
      (File   : File_Reference;
       Line   : Natural;
       Column : Natural);
-   --  Add a new reference in a file, which the user has provided
-   --  on the command line. This is used for a optimized matching
-   --  algorithm.
+   --  Add a new reference in a file, which the user has provided on the
+   --  command line. This is used for an optimized matching algorithm.
 
    procedure Add_Reference
-     (Declaration : Declaration_Reference;
-      File_Ref    : File_Reference;
-      Line        : Natural;
-      Column      : Natural;
-      Ref_Type    : Character);
+     (Declaration   : Declaration_Reference;
+      File_Ref      : File_Reference;
+      Line          : Natural;
+      Column        : Natural;
+      Ref_Type      : Character;
+      Labels_As_Ref : Boolean);
    --  Add a new reference (Ref_Type = 'r'), body (Ref_Type = 'b') or
-   --  modification (Ref_Type = 'm') to an entity
+   --  modification (Ref_Type = 'm') to an entity. If Labels_As_Ref is True,
+   --  then the references to the entity after the end statements ("end Foo")
+   --  are counted as actual references. This means that the entity will never
+   --  be reported as unreferenced (for instance in the case of gnatxref -u).
 
-   type Compare_Result is (LessThan, Equal, GreaterThan);
-   function Compare (Ref1, Ref2 : Reference) return Compare_Result;
-   function Compare
-     (Decl1 : Declaration_Reference;
-      File2 : File_Reference;
-      Line2 : Integer;
-      Col2  : Integer;
-      Symb2 : String)
-      return  Compare_Result;
-   --  Compare two references
+   function Get_Declarations
+     (Sorted : Boolean := True)
+      return   Declaration_Array_Access;
+   --  Return a sorted list of all the declarations in the application.
+   --  Freeing this array is the responsability of the caller, however it
+   --  shouldn't free the actual contents of the array, which are pointers
+   --  to internal data
 
-   function First_Body (Decl : Declaration_Reference) return Reference;
-   function First_Declaration return Declaration_Reference;
-   function First_Modif (Decl : Declaration_Reference) return Reference;
-   function First_Reference (Decl : Declaration_Reference) return Reference;
-   --  Initialize the iterators
+   function References_Count
+     (Decl       : Declaration_Reference;
+      Get_Reads  : Boolean := False;
+      Get_Writes : Boolean := False;
+      Get_Bodies : Boolean := False)
+      return       Natural;
+   --  Return the number of references in Decl for the categories specified
+   --  by the Get_* parameters (read-only accesses, write accesses and bodies)
+
+   function Get_References
+     (Decl : Declaration_Reference;
+      Get_Reads  : Boolean := False;
+      Get_Writes : Boolean := False;
+      Get_Bodies : Boolean := False)
+      return       Reference_Array_Access;
+   --  Return a sorted list of all references to the entity in decl.
+   --  The parameters Get_* are used to specify what kind of references
+   --  should be merged and returned (read-only accesses, write accesses
+   --  and bodies).
 
    function Get_Column (Decl : Declaration_Reference) return String;
    function Get_Column (Ref : Reference) return String;
@@ -176,7 +176,7 @@ package Xr_Tabls is
 
    function Get_Parent
      (Decl : Declaration_Reference)
-     return Declaration_Reference;
+      return Declaration_Reference;
    --  Returns reference to Decl's parent declaration
 
    function Get_Emit_Warning (File : File_Reference) return Boolean;
@@ -230,17 +230,24 @@ package Xr_Tabls is
    function Get_Line     (Ref : Reference)              return String;
    function Get_Symbol   (Decl : Declaration_Reference) return String;
    function Get_Type     (Decl : Declaration_Reference) return Character;
-   --  Functions that return the content of a declaration
+   function Is_Parameter (Decl : Declaration_Reference) return Boolean;
+   --  Functions that return the contents of a declaration
 
    function Get_Source_Line (Ref : Reference)              return String;
    function Get_Source_Line (Decl : Declaration_Reference) return String;
    --  Return the source line associated with the reference
 
    procedure Grep_Source_Files;
-   --  Parse all the source files which have at least one reference, and
-   --  grep the appropriate lines so that we'll be able to display them.
-   --  This function should be called once all the .ali files have been
-   --  parsed, and only if the appropriate user switch has been used.
+   --  Parse all the source files which have at least one reference,
+   --  and grep the appropriate source lines so that we'll be able to
+   --  display them.  This function should be called once all the .ali
+   --  files have been parsed, and only if the appropriate user switch
+   --  has been used (gnatfind -s).
+   --
+   --  Note: To save memory, the strings for the source lines are shared.
+   --  Thus it is no longer possible to free the references, or we would
+   --  free the same chunk multiple times. It doesn't matter, though, since
+   --  this is only called once, prior to exiting gnatfind.
 
    function Longest_File_Name return Natural;
    --  Returns the longest file name found
@@ -256,26 +263,34 @@ package Xr_Tabls is
    --  Returns True if File:Line:Column was given on the command line
    --  by the user
 
-   function Next (Decl : Declaration_Reference) return Declaration_Reference;
-   function Next (Ref  : Reference)             return Reference;
-   --  Returns the next declaration, or Empty_Declaration
-
    function Next_Unvisited_File return File_Reference;
    --  Returns the next unvisited library file in the list
-   --  If there is no more unvisited file, return Empty_File
+   --  If there is no more unvisited file, return Empty_File.
+   --  Two calls to this subprogram will return different files.
 
    procedure Set_Default_Match (Value : Boolean);
    --  Set the default value for match in declarations.
    --  This is used so that if no file was provided in the
    --  command line, then every file match
 
-   procedure Set_Directory
-     (File : File_Reference;
-      Dir  : String);
-   --  Set the directory for a file
+   procedure Reset_Directory (File : File_Reference);
+   --  Reset the cached directory for file. Next time Get_File is
+   --  called, the directory willl be recomputed.
 
-   procedure Set_Unvisited (File_Ref : in File_Reference);
+   procedure Set_Unvisited (File_Ref : File_Reference);
    --  Set File_Ref as unvisited. So Next_Unvisited_File will return it.
+
+   procedure Read_File
+     (File_Name : String;
+      Contents  : out GNAT.OS_Lib.String_Access);
+   --  Reads File_Name into the newly allocated strig Contents. A
+   --  Types.EOF character will be added to the returned Contents to
+   --  simplify parsing. Name_Error is raised if the file was not found.
+   --  End_Error is raised if the file could not be read correctly. For
+   --  most systems correct reading means that the number of bytes read
+   --  is equal to the file size. The exception is OpenVMS where correct
+   --  reading means that the number of bytes read is less than or equal
+   --  to the file size.
 
 private
    type Project_File (Src_Dir_Length, Obj_Dir_Length : Natural) is record
@@ -291,8 +306,6 @@ private
    --  This is actually a list of all the directories to be searched,
    --  either for source files or for library files
 
-   type String_Access is access all String;
-
    type Ref_In_File;
    type Ref_In_File_Ptr is access all Ref_In_File;
 
@@ -306,14 +319,17 @@ private
    type File_Reference is access all File_Record;
 
    Empty_File : constant File_Reference := null;
+   type Cst_String_Access is access constant String;
 
-   type File_Record (File_Length : Natural) is record
-      File            : String (1 .. File_Length);
-      Dir             : String_Access   := null;
+   procedure Free (Str : in out Cst_String_Access);
+
+   type File_Record is record
+      File            : Cst_String_Access;
+      Dir             : GNAT.OS_Lib.String_Access;
       Lines           : Ref_In_File_Ptr := null;
       Visited         : Boolean         := False;
       Emit_Warning    : Boolean         := False;
-      Gnatchop_File   : String_Access   := null;
+      Gnatchop_File   : GNAT.OS_Lib.String_Access   := null;
       Gnatchop_Offset : Integer         := 0;
       Next            : File_Reference  := null;
    end record;
@@ -322,6 +338,9 @@ private
    --  extracted From. Gnatchop_Offset contains the index of the first line of
    --  File within Gnatchop_File. These two fields are used to properly support
    --  gnatchop files and pragma Source_Reference.
+   --
+   --  Lines is used for files that were given on the command line, to
+   --  memorize the lines and columns that the user specified.
 
    type Reference_Record;
    type Reference is access all Reference_Record;
@@ -332,12 +351,13 @@ private
       File        : File_Reference;
       Line        : Natural;
       Column      : Natural;
-      Source_Line : Ada.Strings.Unbounded.Unbounded_String;
+      Source_Line : Cst_String_Access;
       Next        : Reference := null;
    end record;
    --  File is a reference to the Ada source file
    --  Source_Line is the Line as it appears in the source file. This
-   --  field is only used when the switch is set on the command line
+   --  field is only used when the switch is set on the command line of
+   --  gnatfind.
 
    type Declaration_Record;
    type Declaration_Reference is access all Declaration_Record;
@@ -345,30 +365,22 @@ private
    Empty_Declaration : constant Declaration_Reference := null;
 
    type Declaration_Record (Symbol_Length : Natural) is record
-      Symbol     : String (1 .. Symbol_Length);
-      Decl       : aliased Reference_Record;
-      Decl_Type  : Character;
-      Body_Ref   : Reference := null;
-      Ref_Ref    : Reference := null;
-      Modif_Ref  : Reference := null;
-      Match      : Boolean := False;
-      Par_Symbol : Declaration_Reference := null;
-      Next       : Declaration_Reference := null;
+      Key          : Cst_String_Access;
+      Symbol       : String (1 .. Symbol_Length);
+      Decl         : Reference;
+      Is_Parameter : Boolean := False; -- True if entity is subprog param
+      Decl_Type    : Character;
+      Body_Ref     : Reference := null;
+      Ref_Ref      : Reference := null;
+      Modif_Ref    : Reference := null;
+      Match        : Boolean := False;
+      Par_Symbol   : Declaration_Reference := null;
+      Next         : Declaration_Reference := null;
    end record;
+   --  The lists of referenced (Body_Ref, Ref_Ref and Modif_Ref) are
+   --  kept unsorted until the results needs to be printed. This saves
+   --  lots of time while the internal tables are created.
 
-   type File_Table is record
-      Table        : File_Reference := null;
-      Longest_Name : Natural := 0;
-   end record;
-
-   type Entity_Table is record
-      Table : Declaration_Reference := null;
-   end record;
-
-   pragma Inline (First_Body);
-   pragma Inline (First_Declaration);
-   pragma Inline (First_Modif);
-   pragma Inline (First_Reference);
    pragma Inline (Get_Column);
    pragma Inline (Get_Emit_Warning);
    pragma Inline (Get_File);
@@ -377,6 +389,4 @@ private
    pragma Inline (Get_Symbol);
    pragma Inline (Get_Type);
    pragma Inline (Longest_File_Name);
-   pragma Inline (Next);
-
 end Xr_Tabls;

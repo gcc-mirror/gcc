@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,25 +25,40 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
+with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Smem; use Exp_Smem;
+with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Exp_VFpt; use Exp_VFpt;
 with Nmake;    use Nmake;
+with Opt;      use Opt;
 with Sem;      use Sem;
+with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
+with Sem_Warn; use Sem_Warn;
 with Sinfo;    use Sinfo;
+with Stand;    use Stand;
 with Tbuild;   use Tbuild;
-with Snames;   use Snames;
+with Uintp;    use Uintp;
 
 package body Exp_Ch2 is
 
    -----------------------
    -- Local Subprograms --
    -----------------------
+
+   procedure Expand_Current_Value (N : Node_Id);
+   --  Given a node N for a variable whose Current_Value field is set.
+   --  If the node is for a discrete type, replaces the node with a
+   --  copy of the referenced value. This provides a limited form of
+   --  value propagation for variables which are initialized and have
+   --  not been modified at the time of reference. The call has no
+   --  effect if the Current_Value refers to a conditional with a
+   --  condition other than equality.
 
    procedure Expand_Discriminant (N : Node_Id);
    --  An occurrence of a discriminant within a discriminated type is replaced
@@ -96,6 +111,151 @@ package body Exp_Ch2 is
    --  Exp_Ch8.Expand_N_Object_Renaming.Evaluate_Name) so this gives
    --  the correct renaming semantics.
 
+   --------------------------
+   -- Expand_Current_Value --
+   --------------------------
+
+   procedure Expand_Current_Value (N : Node_Id) is
+      Loc : constant Source_Ptr := Sloc (N);
+      E   : constant Entity_Id  := Entity (N);
+      CV  : constant Node_Id    := Current_Value (E);
+      T   : constant Entity_Id  := Etype (N);
+      Val : Node_Id;
+      Op  : Node_Kind;
+
+      function In_Appropriate_Scope return Boolean;
+      --  Returns true if the current scope is the scope of E, or is a nested
+      --  (to any level) package declaration, package body, or block of this
+      --  scope. The idea is that such references are in the sequential
+      --  execution sequence of statements executed after E is elaborated.
+
+      --------------------------
+      -- In_Appropriate_Scope --
+      --------------------------
+
+      function In_Appropriate_Scope return Boolean is
+         ES : constant Entity_Id := Scope (E);
+         CS : Entity_Id;
+
+      begin
+         CS := Current_Scope;
+
+         loop
+            --  If we are in right scope, replacement is safe
+
+            if CS = ES then
+               return True;
+
+            --  Packages do not affect the determination of safety
+
+            elsif Ekind (CS) = E_Package then
+               CS := Scope (CS);
+               exit when CS = Standard_Standard;
+
+            --  Blocks do not affect the determination of safety
+
+            elsif Ekind (CS) = E_Block then
+               CS := Scope (CS);
+
+            --  Otherwise, the reference is dubious, and we cannot be
+            --  sure that it is safe to do the replacement. Note in
+            --  particular, in a loop (except for the special case
+            --  tested above), we cannot safely do a replacement since
+            --  there may be an assignment at the bottom of the loop
+            --  that will affect a reference at the top of the loop.
+
+            else
+               exit;
+            end if;
+         end loop;
+
+         return False;
+      end In_Appropriate_Scope;
+
+   --  Start of processing for Expand_Current_Value
+
+   begin
+      if True
+
+         --  Do this only for discrete types
+
+         and then Is_Discrete_Type (T)
+
+         --  Do not replace biased types, since it is problematic to
+         --  consistently generate a sensible constant value in this case.
+
+         and then not Has_Biased_Representation (T)
+
+         --  Do not replace lvalues
+
+         and then not Is_Lvalue (N)
+
+         --  Do not replace occurrences that are not in the current scope,
+         --  because in a nested subprogram we know absolutely nothing about
+         --  the sequence of execution.
+
+         and then In_Appropriate_Scope
+
+         --  Do not replace statically allocated objects, because they may
+         --  be modified outside the current scope.
+
+         and then not Is_Statically_Allocated (E)
+
+         --  Do not replace aliased or volatile objects, since we don't know
+         --  what else might change the value
+
+         and then not Is_Aliased (E) and then not Treat_As_Volatile (E)
+
+         --  Debug flag -gnatdM disconnects this optimization
+
+         and then not Debug_Flag_MM
+
+         --  Do not replace occurrences in pragmas (where names typically
+         --  appear not as values, but as simply names. If there are cases
+         --  where values are required, it is only a very minor efficiency
+         --  issue that they do not get replaced when they could be).
+
+         and then Nkind (Parent (N)) /= N_Pragma_Argument_Association
+      then
+         --  Case of Current_Value is a compile time known value
+
+         if Nkind (CV) in N_Subexpr then
+            Val := CV;
+
+         --  Case of Current_Value is a conditional expression reference
+
+         else
+            Get_Current_Value_Condition (N, Op, Val);
+
+            if Op /= N_Op_Eq then
+               return;
+            end if;
+         end if;
+
+         --  If constant value is an occurrence of an enumeration literal,
+         --  then we just make another occurence of the same literal.
+
+         if Is_Entity_Name (Val)
+           and then Ekind (Entity (Val)) = E_Enumeration_Literal
+         then
+            Rewrite (N,
+              Unchecked_Convert_To (T,
+                New_Occurrence_Of (Entity (Val), Loc)));
+
+         --  Otherwise get the value, and convert to appropriate type
+
+         else
+            Rewrite (N,
+              Unchecked_Convert_To (T,
+                Make_Integer_Literal (Loc,
+                  Intval => Expr_Rep_Value (Val))));
+         end if;
+
+         Analyze_And_Resolve (N, T);
+         Set_Is_Static_Expression (N, False);
+      end if;
+   end Expand_Current_Value;
+
    -------------------------
    -- Expand_Discriminant --
    -------------------------
@@ -117,7 +277,6 @@ package body Exp_Ch2 is
       if Ekind (Scop) = E_Record_Type
         or Ekind (Scop) in Incomplete_Or_Private_Kind
       then
-
          --  Find the origin by walking up the tree till the component
          --  declaration
 
@@ -158,11 +317,10 @@ package body Exp_Ch2 is
          if Present (Parent_P)
            and then Present (Corresponding_Spec (Parent_P))
          then
-
             declare
                Loc    : constant Source_Ptr := Sloc (N);
-               D_Fun  : Entity_Id := Corresponding_Spec  (Parent_P);
-               Formal : Entity_Id := First_Formal (D_Fun);
+               D_Fun  : constant Entity_Id := Corresponding_Spec  (Parent_P);
+               Formal : constant Entity_Id := First_Formal (D_Fun);
                New_N  : Node_Id;
                Disc   : Entity_Id;
 
@@ -224,6 +382,12 @@ package body Exp_Ch2 is
       elsif Ekind (E) = E_Component
         and then Is_Protected_Private (E)
       then
+         --  Protect against junk use of tasking in no run time mode
+
+         if No_Run_Time_Mode then
+            return;
+         end if;
+
          Expand_Protected_Private (N);
 
       elsif Ekind (E) = E_Entry_Index_Parameter then
@@ -239,6 +403,23 @@ package body Exp_Ch2 is
         and then Is_Shared_Passive (E)
       then
          Expand_Shared_Passive_Variable (N);
+
+      elsif (Ekind (E) = E_Variable
+               or else
+             Ekind (E) = E_In_Out_Parameter
+               or else
+             Ekind (E) = E_Out_Parameter)
+        and then Present (Current_Value (E))
+        and then Nkind (Current_Value (E)) /= N_Raise_Constraint_Error
+      then
+         Expand_Current_Value (N);
+
+         --  We do want to warn for the case of a boolean variable (not
+         --  a boolean constant) whose value is known at compile time.
+
+         if Is_Boolean_Type (Etype (N)) then
+            Warn_On_Known_Condition (N);
+         end if;
       end if;
    end Expand_Entity_Reference;
 
@@ -264,7 +445,61 @@ package body Exp_Ch2 is
       Addr_Ent   : constant Entity_Id  := Node (Last_Elmt (Acc_Stack));
       P_Comp_Ref : Entity_Id;
 
+      function In_Assignment_Context (N : Node_Id) return Boolean;
+      --  Check whether this is a context in which the entry formal may
+      --  be assigned to.
+
+      ---------------------------
+      -- In_Assignment_Context --
+      ---------------------------
+
+      function In_Assignment_Context (N : Node_Id) return Boolean is
+      begin
+         if Nkind (Parent (N)) = N_Procedure_Call_Statement
+           or else Nkind (Parent (N)) = N_Entry_Call_Statement
+           or else
+             (Nkind (Parent (N)) = N_Assignment_Statement
+                 and then N = Name (Parent (N)))
+         then
+            return True;
+
+         elsif Nkind (Parent (N)) = N_Parameter_Association then
+            return In_Assignment_Context (Parent (N));
+
+         elsif (Nkind (Parent (N)) = N_Selected_Component
+                 or else Nkind (Parent (N)) = N_Indexed_Component)
+           and then In_Assignment_Context (Parent (N))
+         then
+            return True;
+         else
+            return False;
+         end if;
+      end In_Assignment_Context;
+
+   --  Start of processing for Expand_Entry_Parameter
+
    begin
+      if Is_Task_Type (Scope (Ent_Spec))
+        and then Comes_From_Source (Ent_Formal)
+      then
+         --  Before replacing the formal with the local renaming that is
+         --  used in the accept block, note if this is an assignment
+         --  context, and note the modification to avoid spurious warnings,
+         --  because the original entity is not used further.
+         --  If the formal is unconstrained, we also generate an extra
+         --  parameter to hold the Constrained attribute of the actual. No
+         --  renaming is generated for this flag.
+
+         if Ekind (Entity (N)) /= E_In_Parameter
+           and then In_Assignment_Context (N)
+         then
+            Note_Possible_Modification (N);
+         end if;
+
+         Rewrite (N, New_Occurrence_Of (Renamed_Object (Entity (N)), Loc));
+         return;
+      end if;
+
       --  What we need is a reference to the corresponding component of the
       --  parameter record object. The Accept_Address field of the entry
       --  entity references the address variable that contains the address
@@ -302,7 +537,7 @@ package body Exp_Ch2 is
 
    begin
       if Is_Protected_Type (Scope (Subp))
-        and then Chars (Subp) /= Name_uInit_Proc
+        and then not Is_Init_Proc (Subp)
         and then Present (Protected_Formal (E))
       then
          Set_Entity (N, Protected_Formal (E));
@@ -453,11 +688,13 @@ package body Exp_Ch2 is
    --  This would be trivial, simply a test for an identifier that was a
    --  reference to a formal, if it were not for the fact that a previous
    --  call to Expand_Entry_Parameter will have modified the reference
-   --  to the identifier to be of the form
+   --  to the identifier. A formal of a protected entity is rewritten as
 
    --    typ!(recobj).rec.all'Constrained
 
    --  where rec is a selector whose Entry_Formal link points to the formal
+   --  For a formal of a task entity, the formal is rewritten as a local
+   --  renaming.
 
    function Param_Entity (N : Node_Id) return Entity_Id is
    begin
@@ -465,6 +702,11 @@ package body Exp_Ch2 is
 
       if Nkind (N) = N_Identifier then
          if Is_Formal (Entity (N)) then
+            return Entity (N);
+
+         elsif Nkind (Parent (Entity (N))) = N_Object_Renaming_Declaration
+           and then Nkind (Parent (Parent (Entity (N)))) = N_Accept_Statement
+         then
             return Entity (N);
          end if;
 

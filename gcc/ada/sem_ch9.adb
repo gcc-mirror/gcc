@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -91,7 +91,7 @@ package body Sem_Ch9 is
             Error_Msg_N ("expect task name for ABORT", T_Name);
             return;
          else
-            Resolve (T_Name,  Etype (T_Name));
+            Resolve (T_Name);
          end if;
 
          Next (T_Name);
@@ -113,11 +113,11 @@ package body Sem_Ch9 is
          Analyze_List (Pragmas_Before (N));
       end if;
 
-      Analyze (Accept_Statement (N));
-
       if Present (Condition (N)) then
          Analyze_And_Resolve (Condition (N), Any_Boolean);
       end if;
+
+      Analyze (Accept_Statement (N));
 
       if Is_Non_Empty_List (Statements (N)) then
          Analyze_Statements (Statements (N));
@@ -149,17 +149,21 @@ package body Sem_Ch9 is
       --  local variable that renames it in the task body.
 
       function Actual_Index_Type (E : Entity_Id) return Entity_Id is
-         Typ   : Entity_Id := Entry_Index_Type (E);
-         Lo    : Node_Id := Type_Low_Bound  (Typ);
-         Hi    : Node_Id := Type_High_Bound (Typ);
+         Typ   : constant Entity_Id := Entry_Index_Type (E);
+         Lo    : constant Node_Id   := Type_Low_Bound  (Typ);
+         Hi    : constant Node_Id   := Type_High_Bound (Typ);
          New_T : Entity_Id;
 
          function Actual_Discriminant_Ref (Bound : Node_Id) return Node_Id;
          --  If bound is discriminant reference, replace with corresponding
          --  local variable of the same name.
 
+         -----------------------------
+         -- Actual_Discriminant_Ref --
+         -----------------------------
+
          function Actual_Discriminant_Ref (Bound : Node_Id) return Node_Id is
-            Typ : Entity_Id := Etype (Bound);
+            Typ : constant Entity_Id := Etype (Bound);
             Ref : Node_Id;
 
          begin
@@ -343,17 +347,6 @@ package body Sem_Ch9 is
          Error_Msg_N ("invalid entry index in accept for simple entry", N);
       end if;
 
-      --  If statements are present, they must be analyzed in the context
-      --  of the entry, so that references to formals are correctly resolved.
-      --  We also have to add the declarations that are required by the
-      --  expansion of the accept statement in this case if expansion active.
-
-      --  In the case of a select alternative of a selective accept,
-      --  the expander references the address declaration even if there
-      --  is no statement list.
-
-      Exp_Ch9.Expand_Accept_Declarations (N, Entry_Nam);
-
       --  If label declarations present, analyze them. They are declared
       --  in the enclosing task, but their enclosing scope is the entry itself,
       --  so that goto's to the label are recognized as local to the accept.
@@ -380,12 +373,31 @@ package body Sem_Ch9 is
          end;
       end if;
 
-      --  Set Not_Source_Assigned flag on all entry formals
+      --  If statements are present, they must be analyzed in the context
+      --  of the entry, so that references to formals are correctly resolved.
+      --  We also have to add the declarations that are required by the
+      --  expansion of the accept statement in this case if expansion active.
+
+      --  In the case of a select alternative of a selective accept,
+      --  the expander references the address declaration even if there
+      --  is no statement list.
+      --  We also need to create the renaming declarations for the local
+      --  variables that will replace references to the formals within
+      --  the accept.
+
+      Exp_Ch9.Expand_Accept_Declarations (N, Entry_Nam);
+
+      --  Set Never_Set_In_Source and clear Is_True_Constant/Current_Value
+      --  fields on all entry formals (this loop ignores all other entities).
 
       E := First_Entity (Entry_Nam);
-
       while Present (E) loop
-         Set_Not_Source_Assigned (E, True);
+         if Is_Formal (E) then
+            Set_Never_Set_In_Source (E, True);
+            Set_Is_True_Constant    (E, False);
+            Set_Current_Value       (E, Empty);
+         end if;
+
          Next_Entity (E);
       end loop;
 
@@ -396,6 +408,7 @@ package body Sem_Ch9 is
          Install_Declarations (Entry_Nam);
 
          Set_Actual_Subtypes (N, Current_Scope);
+
          Analyze (Stats);
          Process_End_Label (Handled_Statement_Sequence (N), 't', Entry_Nam);
          End_Scope;
@@ -418,9 +431,12 @@ package body Sem_Ch9 is
       Check_Restriction (Max_Asynchronous_Select_Nesting, N);
       Check_Restriction (No_Select_Statements, N);
 
-      Analyze (Triggering_Alternative (N));
+      --  Analyze the statements. We analyze statements in the abortable part
+      --  first, because this is the section that is executed first, and that
+      --  way our remembering of saved values and checks is accurate.
 
       Analyze_Statements (Statements (Abortable_Part (N)));
+      Analyze (Triggering_Alternative (N));
    end Analyze_Asynchronous_Select;
 
    ------------------------------------
@@ -557,7 +573,65 @@ package body Sem_Ch9 is
          then
             Entry_Name := E;
             Set_Convention (Id, Convention (E));
+            Set_Corresponding_Body (Parent (Entry_Name), Id);
             Check_Fully_Conformant (Id, E, N);
+
+            if Ekind (Id) = E_Entry_Family then
+               if not Fully_Conformant_Discrete_Subtypes (
+                  Discrete_Subtype_Definition (Parent (E)),
+                  Discrete_Subtype_Definition
+                    (Entry_Index_Specification (Formals)))
+               then
+                  Error_Msg_N
+                    ("index not fully conformant with previous declaration",
+                      Discrete_Subtype_Definition
+                       (Entry_Index_Specification (Formals)));
+
+               else
+                  --  The elaboration of the entry body does not recompute
+                  --  the bounds of the index, which may have side effects.
+                  --  Inherit the bounds from the entry declaration. This
+                  --  is critical if the entry has a per-object constraint.
+                  --  If a bound is given by a discriminant, it must be
+                  --  reanalyzed in order to capture the discriminal of the
+                  --  current entry, rather than that of the protected type.
+
+                  declare
+                     Index_Spec : constant Node_Id :=
+                                    Entry_Index_Specification (Formals);
+
+                     Def : constant Node_Id :=
+                             New_Copy_Tree
+                               (Discrete_Subtype_Definition (Parent (E)));
+
+                  begin
+                     if Nkind
+                       (Original_Node
+                         (Discrete_Subtype_Definition (Index_Spec))) = N_Range
+                     then
+                        Set_Etype (Def, Empty);
+                        Set_Analyzed (Def, False);
+                        Set_Discrete_Subtype_Definition (Index_Spec, Def);
+                        Set_Analyzed (Low_Bound (Def), False);
+                        Set_Analyzed (High_Bound (Def), False);
+
+                        if Denotes_Discriminant (Low_Bound (Def)) then
+                           Set_Entity (Low_Bound (Def), Empty);
+                        end if;
+
+                        if Denotes_Discriminant (High_Bound (Def)) then
+                           Set_Entity (High_Bound (Def), Empty);
+                        end if;
+
+                        Analyze (Def);
+                        Make_Index (Def, Index_Spec);
+                        Set_Etype
+                          (Defining_Identifier (Index_Spec), Etype (Def));
+                     end if;
+                  end;
+               end if;
+            end if;
+
             exit;
          end if;
 
@@ -603,7 +677,60 @@ package body Sem_Ch9 is
          Analyze (Stats);
       end if;
 
+      --  Check for unreferenced variables etc. Before the Check_References
+      --  call, we transfer Never_Set_In_Source and Referenced flags from
+      --  parameters in the spec to the corresponding entities in the body,
+      --  since we want the warnings on the body entities. Note that we do
+      --  not have to transfer Referenced_As_LHS, since that flag can only
+      --  be set for simple variables.
+
+      --  At the same time, we set the flags on the spec entities to suppress
+      --  any warnings on the spec formals, since we also scan the spec.
+
+      declare
+         E1  : Entity_Id;
+         E2  : Entity_Id;
+
+      begin
+         E1 := First_Entity (Entry_Name);
+         while Present (E1) loop
+            E2 := First_Entity (Id);
+            while Present (E2) loop
+               exit when Chars (E1) = Chars (E2);
+               Next_Entity (E2);
+            end loop;
+
+            --  If no matching body entity, then we already had
+            --  a detected error of some kind, so just forget
+            --  about worrying about these warnings.
+
+            if No (E2) then
+               goto Continue;
+            end if;
+
+            if Ekind (E1) = E_Out_Parameter then
+               Set_Never_Set_In_Source (E2, Never_Set_In_Source (E1));
+               Set_Never_Set_In_Source (E1, False);
+            end if;
+
+            Set_Referenced (E2, Referenced (E1));
+            Set_Referenced (E1);
+
+         <<Continue>>
+            Next_Entity (E1);
+         end loop;
+
+         Check_References (Id);
+      end;
+
+      --  We still need to check references for the spec, since objects
+      --  declared in the body are chained (in the First_Entity sense) to
+      --  the spec rather than the body in the case of entries.
+
       Check_References (Entry_Name);
+
+      --  Process the end label, and terminate the scope
+
       Process_End_Label (Handled_Statement_Sequence (N), 't', Entry_Name);
       End_Scope;
 
@@ -640,7 +767,6 @@ package body Sem_Ch9 is
          Process_Formals (Formals, Parent (N));
          End_Scope;
       end if;
-
    end Analyze_Entry_Body_Formal_Part;
 
    ------------------------------------
@@ -648,6 +774,8 @@ package body Sem_Ch9 is
    ------------------------------------
 
    procedure Analyze_Entry_Call_Alternative (N : Node_Id) is
+      Call : constant Node_Id := Entry_Call_Statement (N);
+
    begin
       Tasking_Used := True;
 
@@ -655,7 +783,17 @@ package body Sem_Ch9 is
          Analyze_List (Pragmas_Before (N));
       end if;
 
-      Analyze (Entry_Call_Statement (N));
+      if Nkind (Call) = N_Attribute_Reference then
+
+         --  Possibly a stream attribute, but definitely illegal. Other
+         --  illegalitles, such as procedure calls, are diagnosed after
+         --  resolution.
+
+         Error_Msg_N ("entry call alternative requires an entry call", Call);
+         return;
+      end if;
+
+      Analyze (Call);
 
       if Is_Non_Empty_List (Statements (N)) then
          Analyze_Statements (Statements (N));
@@ -667,9 +805,9 @@ package body Sem_Ch9 is
    -------------------------------
 
    procedure Analyze_Entry_Declaration (N : Node_Id) is
-      Id      : Entity_Id := Defining_Identifier (N);
-      D_Sdef  : Node_Id   := Discrete_Subtype_Definition (N);
-      Formals : List_Id   := Parameter_Specifications (N);
+      Formals : constant List_Id   := Parameter_Specifications (N);
+      Id      : constant Entity_Id := Defining_Identifier (N);
+      D_Sdef  : constant Node_Id   := Discrete_Subtype_Definition (N);
 
    begin
       Generate_Definition (Id);
@@ -699,7 +837,6 @@ package body Sem_Ch9 is
       if Ekind (Id) = E_Entry then
          New_Overloaded_Entity (Id);
       end if;
-
    end Analyze_Entry_Declaration;
 
    ---------------------------------------
@@ -717,16 +854,25 @@ package body Sem_Ch9 is
    --  be knwown to routines that process entry families.
 
    procedure Analyze_Entry_Index_Specification (N : Node_Id) is
-      Iden    : constant Node_Id := Defining_Identifier (N);
-      Def     : constant Node_Id := Discrete_Subtype_Definition (N);
-      Loop_Id : Entity_Id :=
+      Iden    : constant Node_Id   := Defining_Identifier (N);
+      Def     : constant Node_Id   := Discrete_Subtype_Definition (N);
+      Loop_Id : constant Entity_Id :=
                   Make_Defining_Identifier (Sloc (N),
                     Chars => New_Internal_Name ('L'));
 
    begin
       Tasking_Used := True;
       Analyze (Def);
-      Make_Index (Def, N);
+
+      --  There is no elaboration of the entry index specification. Therefore,
+      --  if the index is a range, it is not resolved and expanded, but the
+      --  bounds are inherited from the entry declaration, and reanalyzed.
+      --  See Analyze_Entry_Body.
+
+      if Nkind (Def) /= N_Range then
+         Make_Index (Def, N);
+      end if;
+
       Set_Ekind (Loop_Id, E_Loop);
       Set_Scope (Loop_Id, Current_Scope);
       New_Scope (Loop_Id);
@@ -875,6 +1021,11 @@ package body Sem_Ch9 is
       Def_Id : constant Entity_Id := Defining_Identifier (N);
 
    begin
+      if No_Run_Time_Mode then
+         Error_Msg_CRT ("protected type", N);
+         return;
+      end if;
+
       Tasking_Used := True;
       Check_Restriction (No_Protected_Types, N);
 
@@ -890,7 +1041,7 @@ package body Sem_Ch9 is
       Set_Etype              (T, T);
       Set_Is_First_Subtype   (T, True);
       Set_Has_Delayed_Freeze (T, True);
-      Set_Girder_Constraint  (T, No_Elist);
+      Set_Stored_Constraint  (T, No_Elist);
       New_Scope (T);
 
       if Present (Discriminant_Specifications (N)) then
@@ -946,7 +1097,6 @@ package body Sem_Ch9 is
          Exp_Ch9.Expand_N_Protected_Type_Declaration (N);
          Process_Full_View (N, T, Def_Id);
       end if;
-
    end Analyze_Protected_Type;
 
    ---------------------
@@ -997,9 +1147,9 @@ package body Sem_Ch9 is
       --  the restrictions of 9.5.4(6).
 
       if Present (Target_Obj) then
-         --  Locate containing concurrent unit and determine
-         --  enclosing entry body or outermost enclosing accept
-         --  statement within the unit.
+
+         --  Locate containing concurrent unit and determine enclosing entry
+         --  body or outermost enclosing accept statement within the unit.
 
          Outer_Ent := Empty;
          for S in reverse 0 .. Scope_Stack.Last loop
@@ -1039,7 +1189,6 @@ package body Sem_Ch9 is
          Entry_Id := Empty;
 
          while Present (It.Nam) loop
-
             if No (First_Formal (It.Nam))
               or else Subtype_Conformant (Enclosing, It.Nam)
             then
@@ -1107,34 +1256,51 @@ package body Sem_Ch9 is
       if not Is_Entry (Entry_Id) then
          Error_Msg_N ("expect entry name in requeue statement", Name (N));
       elsif Ekind (Entry_Id) = E_Entry_Family
-
         and then Nkind (Entry_Name) /= N_Indexed_Component
       then
          Error_Msg_N ("missing index for entry family component", Name (N));
 
       else
          Resolve_Entry (Name (N));
+         Generate_Reference (Entry_Id, Entry_Name);
 
          if Present (First_Formal (Entry_Id)) then
             Check_Subtype_Conformant (Enclosing, Entry_Id, Name (N));
 
-            --  Mark any output parameters as assigned
+            --  Processing for parameters accessed by the requeue
 
             declare
                Ent : Entity_Id := First_Formal (Enclosing);
 
             begin
                while Present (Ent) loop
-                  if Ekind (Ent) = E_Out_Parameter then
-                     Set_Not_Source_Assigned (Ent, False);
+
+                  --  For OUT or IN OUT parameter, the effect of the requeue
+                  --  is to assign the parameter a value on exit from the
+                  --  requeued body, so we can set it as source assigned.
+                  --  We also clear the Is_True_Constant indication. We do
+                  --  not need to clear Current_Value, since the effect of
+                  --  the requeue is to perform an unconditional goto so
+                  --  that any further references will not occur anyway.
+
+                  if Ekind (Ent) = E_Out_Parameter
+                       or else
+                     Ekind (Ent) = E_In_Out_Parameter
+                  then
+                     Set_Never_Set_In_Source (Ent, False);
+                     Set_Is_True_Constant    (Ent, False);
                   end if;
 
+                  --  For all parameters, the requeue acts as a reference,
+                  --  since the value of the parameter is passed to the
+                  --  new entry, so we want to suppress unreferenced warnings.
+
+                  Set_Referenced (Ent);
                   Next_Formal (Ent);
                end loop;
             end;
          end if;
       end if;
-
    end Analyze_Requeue;
 
    ------------------------------
@@ -1153,6 +1319,7 @@ package body Sem_Ch9 is
 
    begin
       Check_Restriction (No_Select_Statements, N);
+      Check_Restriction (Max_Select_Alternatives, N);
       Tasking_Used := True;
 
       Alt := First (Alts);
@@ -1163,8 +1330,8 @@ package body Sem_Ch9 is
          if Nkind (Alt) = N_Delay_Alternative then
             if Delay_Present then
 
-               if (Relative_Present /=
-                 (Nkind (Delay_Statement (Alt)) = N_Delay_Relative_Statement))
+               if Relative_Present /=
+                   (Nkind (Delay_Statement (Alt)) = N_Delay_Relative_Statement)
                then
                   Error_Msg_N
                     ("delay_until and delay_relative alternatives ", Alt);
@@ -1410,6 +1577,17 @@ package body Sem_Ch9 is
          return;
       end if;
 
+      if Has_Completion (Spec_Id)
+        and then Present (Corresponding_Body (Parent (Spec_Id)))
+      then
+         if Nkind (Parent (Spec_Id)) = N_Task_Type_Declaration then
+            Error_Msg_NE ("duplicate body for task type&", N, Spec_Id);
+
+         else
+            Error_Msg_NE ("duplicate body for task&", N, Spec_Id);
+         end if;
+      end if;
+
       Ref_Id := Spec_Id;
       Generate_Reference (Ref_Id, Body_Id, 'b', Set_Ref => False);
       Style.Check_Identifier (Body_Id, Spec_Id);
@@ -1444,6 +1622,7 @@ package body Sem_Ch9 is
       Analyze (Handled_Statement_Sequence (N));
       Check_Completion (Body_Id);
       Check_References (Body_Id);
+      Check_References (Spec_Id);
 
       --  Check for entries with no corresponding accept
 
@@ -1510,7 +1689,6 @@ package body Sem_Ch9 is
 
    begin
       Tasking_Used := True;
-      Check_Restriction (Max_Tasks, N);
       Check_Restriction (No_Tasking, N);
       T := Find_Type_Name (N);
       Generate_Definition (T);
@@ -1526,7 +1704,7 @@ package body Sem_Ch9 is
       Init_Size_Align        (T);
       Set_Etype              (T, T);
       Set_Has_Delayed_Freeze (T, True);
-      Set_Girder_Constraint (T, No_Elist);
+      Set_Stored_Constraint  (T, No_Elist);
       New_Scope (T);
 
       if Present (Discriminant_Specifications (N)) then
@@ -1599,7 +1777,8 @@ package body Sem_Ch9 is
    ------------------------------------
 
    procedure Analyze_Triggering_Alternative (N : Node_Id) is
-      Trigger : Node_Id := Triggering_Statement (N);
+      Trigger : constant Node_Id := Triggering_Statement (N);
+
    begin
       Tasking_Used := True;
 
@@ -1632,6 +1811,10 @@ package body Sem_Ch9 is
       procedure Count (L : List_Id);
       --  Count entries in given declaration list
 
+      -----------
+      -- Count --
+      -----------
+
       procedure Count (L : List_Id) is
          D : Node_Id;
 
@@ -1648,8 +1831,12 @@ package body Sem_Ch9 is
                           Discrete_Subtype_Definition (D);
 
                begin
+                  --  If not an entry family, then just one entry
+
                   if No (DSD) then
                      Ecount := Ecount + 1;
+
+                  --  If entry family with static bounds, count entries
 
                   elsif Is_OK_Static_Subtype (Etype (DSD)) then
                      declare
@@ -1666,7 +1853,9 @@ package body Sem_Ch9 is
                         end if;
                      end;
 
-                  else
+                  --  If entry family with non-static bounds, give error msg
+
+                  elsif Restriction_Parameters (R) /= No_Uint then
                      Error_Msg_N
                        ("static subtype required by Restriction pragma", DSD);
                   end if;
@@ -1680,10 +1869,11 @@ package body Sem_Ch9 is
    --  Start of processing for Check_Max_Entries
 
    begin
-      if Restriction_Parameters (R) >= 0 then
-         Ecount := Uint_0;
-         Count (Visible_Declarations (Def));
-         Count (Private_Declarations (Def));
+      Ecount := Uint_0;
+      Count (Visible_Declarations (Def));
+      Count (Private_Declarations (Def));
+
+      if Ecount > 0 then
          Check_Restriction (R, Ecount, Def);
       end if;
    end Check_Max_Entries;

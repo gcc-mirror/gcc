@@ -6,8 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *                                                                          *
- *          Copyright (C) 1992-2002 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2003 Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -33,10 +32,8 @@
 #define Name_uParent    (First_Name_Id + 256 + 0)
 #define Name_uTag       (First_Name_Id + 256 + 1)
 #define Name_Off        (First_Name_Id + 256 + 2)
-#define Name_Space		(First_Name_Id + 256 + 3)
+#define Name_Space      (First_Name_Id + 256 + 3)
 #define Name_Time       (First_Name_Id + 256 + 4)
-#define Name_uInit_Proc (First_Name_Id + 256 + 5)
-#define Name_uSize      (First_Name_Id + 256 + 6)
 
 /* Define the function to return one of the numeric values below. Note
    that it actually returns a char since an enumeration value of less
@@ -44,9 +41,9 @@
    field value.  */
 
 #define Get_Attribute_Id snames__get_attribute_id
-extern char Get_Attribute_Id PARAMS ((int));
+extern unsigned char Get_Attribute_Id (int);
 
-/* Define the numeric values for the attributes.  */
+/* Define the numeric values for attributes.  */
 
 #define  Attr_Abort_Signal                   0
 #define  Attr_Access                         1
@@ -112,77 +109,80 @@ extern char Get_Attribute_Id PARAMS ((int));
 #define  Attr_Object_Size                   61
 #define  Attr_Partition_ID                  62
 #define  Attr_Passed_By_Reference           63
-#define  Attr_Pos                           64
-#define  Attr_Position                      65
-#define  Attr_Range                         66
-#define  Attr_Range_Length                  67
-#define  Attr_Round                         68
-#define  Attr_Safe_Emax                     69
-#define  Attr_Safe_First                    70
-#define  Attr_Safe_Large                    71
-#define  Attr_Safe_Last                     72
-#define  Attr_Safe_Small                    73
-#define  Attr_Scale                         74
-#define  Attr_Scaling                       75
-#define  Attr_Signed_Zeros                  76
-#define  Attr_Size                          77
-#define  Attr_Small                         78
-#define  Attr_Storage_Size                  79
-#define  Attr_Storage_Unit                  80
-#define  Attr_Tag                           81
-#define  Attr_Terminated                    82
-#define  Attr_To_Address                    83
-#define  Attr_Type_Class                    84
-#define  Attr_UET_Address                   85
-#define  Attr_Unbiased_Rounding             86
-#define  Attr_Unchecked_Access              87
-#define  Attr_Universal_Literal_String      88
-#define  Attr_Unrestricted_Access           89
-#define  Attr_VADS_Size                     90
-#define  Attr_Val                           91
-#define  Attr_Valid                         92
-#define  Attr_Value_Size                    93
-#define  Attr_Version                       94
-#define  Attr_Wide_Character_Size           95
-#define  Attr_Wide_Width                    96
-#define  Attr_Width                         97
-#define  Attr_Word_Size                     98
+#define  Attr_Pool_Address                  64
+#define  Attr_Pos                           65
+#define  Attr_Position                      66
+#define  Attr_Range                         67
+#define  Attr_Range_Length                  68
+#define  Attr_Round                         69
+#define  Attr_Safe_Emax                     70
+#define  Attr_Safe_First                    71
+#define  Attr_Safe_Large                    72
+#define  Attr_Safe_Last                     73
+#define  Attr_Safe_Small                    74
+#define  Attr_Scale                         75
+#define  Attr_Scaling                       76
+#define  Attr_Signed_Zeros                  77
+#define  Attr_Size                          78
+#define  Attr_Small                         79
+#define  Attr_Storage_Size                  80
+#define  Attr_Storage_Unit                  81
+#define  Attr_Tag                           82
+#define  Attr_Target_Name                   83
+#define  Attr_Terminated                    84
+#define  Attr_To_Address                    85
+#define  Attr_Type_Class                    86
+#define  Attr_UET_Address                   87
+#define  Attr_Unbiased_Rounding             88
+#define  Attr_Unchecked_Access              89
+#define  Attr_Unconstrained_Array           90
+#define  Attr_Universal_Literal_String      91
+#define  Attr_Unrestricted_Access           92
+#define  Attr_VADS_Size                     93
+#define  Attr_Val                           94
+#define  Attr_Valid                         95
+#define  Attr_Value_Size                    96
+#define  Attr_Version                       97
+#define  Attr_Wide_Character_Size           98
+#define  Attr_Wide_Width                    99
+#define  Attr_Width                        100
 
-#define  Attr_Adjacent                      99
-#define  Attr_Ceiling                      100
-#define  Attr_Copy_Sign                    101
-#define  Attr_Floor                        102
-#define  Attr_Fraction                     103
-#define  Attr_Image                        104
-#define  Attr_Input                        105
-#define  Attr_Machine                      106
-#define  Attr_Max                          107
-#define  Attr_Min                          108
-#define  Attr_Model                        109
-#define  Attr_Pred                         110
-#define  Attr_Remainder                    111
-#define  Attr_Rounding                     112
-#define  Attr_Succ                         113
-#define  Attr_Truncation                   114
-#define  Attr_Value                        115
-#define  Attr_Wide_Image                   116
-#define  Attr_Wide_Value                   117
+#define  Attr_Word_Size                    101
+#define  Attr_Adjacent                     102
+#define  Attr_Ceiling                      103
+#define  Attr_Copy_Sign                    104
+#define  Attr_Floor                        105
+#define  Attr_Fraction                     106
+#define  Attr_Image                        107
+#define  Attr_Input                        108
+#define  Attr_Machine                      109
+#define  Attr_Max                          110
+#define  Attr_Min                          111
+#define  Attr_Model                        112
+#define  Attr_Pred                         113
+#define  Attr_Remainder                    114
+#define  Attr_Rounding                     115
+#define  Attr_Succ                         116
+#define  Attr_Truncation                   117
+#define  Attr_Value                        118
+#define  Attr_Wide_Image                   119
+#define  Attr_Wide_Value                   120
 
-#define  Attr_Output                       118
-#define  Attr_Read                         119
-#define  Attr_Write                        120
+#define  Attr_Output                       121
+#define  Attr_Read                         122
+#define  Attr_Write                        123
 
-#define  Attr_Elab_Body                    121
-#define  Attr_Elab_Spec                    122
-#define  Attr_Storage_Pool                 123
+#define  Attr_Elab_Body                    124
+#define  Attr_Elab_Spec                    125
+#define  Attr_Storage_Pool                 126
 
-#define  Attr_Base                         124
-#define  Attr_Class                        125
+#define  Attr_Base                         127
+#define  Attr_Class                        128
 
 /* Define the function to check if a Name_Id value is a valid pragma */
 
 #define Is_Pragma_Name snames__is_pragma_name
-extern Boolean Is_Pragma_Name PARAMS ((Name_Id));
+extern Boolean Is_Pragma_Name (Name_Id);
 
 /* Define the function to return one of the numeric values below.  Note
    that it actually returns a char since an enumeration value of less
@@ -190,144 +190,157 @@ extern Boolean Is_Pragma_Name PARAMS ((Name_Id));
    field value.  */
 
 #define Get_Pragma_Id snames__get_pragma_id
-extern char Get_Pragma_Id PARAMS ((int));
+extern unsigned char Get_Pragma_Id (int);
 
 /* Define the numeric values for the pragmas. */
 
 /* Configuration pragmas first */
 
-#define  Pragma_Ada_83                       0
-#define  Pragma_Ada_95                       1
-#define  Pragma_C_Pass_By_Copy               2
-#define  Pragma_Component_Alignment          3
-#define  Pragma_Convention_Identifier        4
-#define  Pragma_Discard_Names                5
-#define  Pragma_Elaboration_Checking         6
-#define  Pragma_Eliminate                    7
-#define  Pragma_Extend_System                8
-#define  Pragma_Extensions_Allowed           9
-#define  Pragma_External_Name_Casing        10
-#define  Pragma_Float_Representation        11
-#define  Pragma_Initialize                  12
-#define  Pragma_License                     13
-#define  Pragma_Locking_Policy              14
-#define  Pragma_Long_Float                  15
-#define  Pragma_No_Run_Time                 16
-#define  Pragma_Normalize_Scalars           17
-#define  Pragma_Polling                     18
-#define  Pragma_Propagate_Exceptions        19
-#define  Pragma_Queuing_Policy              20
-#define  Pragma_Ravenscar                   21
-#define  Pragma_Restricted_Run_Time         22
-#define  Pragma_Restrictions                23
-#define  Pragma_Reviewable                  24
-#define  Pragma_Source_File_Name            25
-#define  Pragma_Style_Checks                26
-#define  Pragma_Suppress                    27
-#define  Pragma_Task_Dispatching_Policy     28
-#define  Pragma_Unsuppress                  29
-#define  Pragma_Use_VADS_Size               30
-#define  Pragma_Validity_Checks             31
-#define  Pragma_Warnings                    32
+#define  Pragma_Ada_83                        0
+#define  Pragma_Ada_95                        1
+#define  Pragma_C_Pass_By_Copy                2
+#define  Pragma_Compile_Time_Warning          3
+#define  Pragma_Component_Alignment           4
+#define  Pragma_Convention_Identifier         5
+#define  Pragma_Discard_Names                 6
+#define  Pragma_Elaboration_Checking          7
+#define  Pragma_Eliminate                     8
+#define  Pragma_Explicit_Overriding           9
+#define  Pragma_Extend_System                10
+#define  Pragma_Extensions_Allowed           11
+#define  Pragma_External_Name_Casing         12
+#define  Pragma_Float_Representation         13
+#define  Pragma_Initialize_Scalars           14
+#define  Pragma_Interrupt_State              15
+#define  Pragma_License                      16
+#define  Pragma_Locking_Policy               17
+#define  Pragma_Long_Float                   18
+#define  Pragma_No_Run_Time                  19
+#define  Pragma_Normalize_Scalars            20
+#define  Pragma_Polling                      21
+#define  Pragma_Persistent_Data              22
+#define  Pragma_Persistent_Object            23
+#define  Pragma_Propagate_Exceptions         24
+#define  Pragma_Queuing_Policy               25
+#define  Pragma_Ravenscar                    26
+#define  Pragma_Restricted_Run_Time          27
+#define  Pragma_Restrictions                 28
+#define  Pragma_Restriction_Warnings         29
+#define  Pragma_Reviewable                   30
+#define  Pragma_Source_File_Name             31
+#define  Pragma_Source_File_Name_Project     32
+#define  Pragma_Style_Checks                 33
+#define  Pragma_Suppress                     34
+#define  Pragma_Suppress_Exception_Locations 35
+#define  Pragma_Task_Dispatching_Policy      36
+#define  Pragma_Universal_Data               37
+#define  Pragma_Unsuppress                   38
+#define  Pragma_Use_VADS_Size                39
+#define  Pragma_Validity_Checks              40
+#define  Pragma_Warnings                     41
 
 /* Remaining pragmas */
 
-#define  Pragma_Abort_Defer                 33
-#define  Pragma_All_Calls_Remote            34
-#define  Pragma_Annotate                    35
-#define  Pragma_Assert                      36
-#define  Pragma_Asynchronous                37
-#define  Pragma_Atomic                      38
-#define  Pragma_Atomic_Components           39
-#define  Pragma_Attach_Handler              40
-#define  Pragma_Comment                     41
-#define  Pragma_Common_Object               42
-#define  Pragma_Complex_Representation      43
-#define  Pragma_Controlled                  44
-#define  Pragma_Convention                  45
-#define  Pragma_CPP_Class                   46
-#define  Pragma_CPP_Constructor             47
-#define  Pragma_CPP_Virtual                 48
-#define  Pragma_CPP_Vtable                  49
-#define  Pragma_Debug                       50
-#define  Pragma_Elaborate                   51
-#define  Pragma_Elaborate_All               52
-#define  Pragma_Elaborate_Body              53
-#define  Pragma_Export                      54
-#define  Pragma_Export_Exception            55
-#define  Pragma_Export_Function             56
-#define  Pragma_Export_Object               57
-#define  Pragma_Export_Procedure            58
-#define  Pragma_Export_Valued_Procedure     59
-#define  Pragma_External                    60
-#define  Pragma_Finalize_Storage_Only       61
-#define  Pragma_Ident                       62
-#define  Pragma_Import                      63
-#define  Pragma_Import_Exception            64
-#define  Pragma_Import_Function             65
-#define  Pragma_Import_Object               66
-#define  Pragma_Import_Procedure            67
-#define  Pragma_Import_Valued_Procedure     68
-#define  Pragma_Inline                      69
-#define  Pragma_Inline_Always               70
-#define  Pragma_Inline_Generic              71
-#define  Pragma_Inspection_Point            72
-#define  Pragma_Interface                   73
-#define  Pragma_Interface_Name              74
-#define  Pragma_Interrupt_Handler           75
-#define  Pragma_Interrupt_Priority          76
-#define  Pragma_Java_Constructor            77
-#define  Pragma_Java_Interface              78
-#define  Pragma_Link_With                   79
-#define  Pragma_Linker_Alias                80
-#define  Pragma_Linker_Options              81
-#define  Pragma_Linker_Section              82
-#define  Pragma_List                        83
-#define  Pragma_Machine_Attribute           84
-#define  Pragma_Main                        85
-#define  Pragma_Main_Storage                86
-#define  Pragma_Memory_Size                 87
-#define  Pragma_No_Return                   88
-#define  Pragma_Optimize                    89
-#define  Pragma_Pack                        90
-#define  Pragma_Page                        91
-#define  Pragma_Passive                     92
-#define  Pragma_Preelaborate                93
-#define  Pragma_Priority                    94
-#define  Pragma_Psect_Object                95
-#define  Pragma_Pure                        96
-#define  Pragma_Pure_Function               97
-#define  Pragma_Remote_Call_Interface       98
-#define  Pragma_Remote_Types                99
-#define  Pragma_Share_Generic              100
-#define  Pragma_Shared                     101
-#define  Pragma_Shared_Passive             102
-#define  Pragma_Source_Reference           103
-#define  Pragma_Stream_Convert             104
-#define  Pragma_Subtitle                   105
-#define  Pragma_Suppress_All               106
-#define  Pragma_Suppress_Debug_Info        107
-#define  Pragma_Suppress_Initialization    108
-#define  Pragma_System_Name                109
-#define  Pragma_Task_Info                  110
-#define  Pragma_Task_Name                  111
-#define  Pragma_Task_Storage               112
-#define  Pragma_Time_Slice                 113
-#define  Pragma_Title                      114
-#define  Pragma_Unchecked_Union            115
-#define  Pragma_Unimplemented_Unit         116
-#define  Pragma_Universal_Data             117
-#define  Pragma_Unreferenced               118
-#define  Pragma_Unreserve_All_Interrupts   119
-#define  Pragma_Volatile                   120
-#define  Pragma_Volatile_Components        121
-#define  Pragma_Weak_External              122
+#define  Pragma_Abort_Defer                  42
+#define  Pragma_All_Calls_Remote             43
+#define  Pragma_Annotate                     44
+#define  Pragma_Assert                       45
+#define  Pragma_Asynchronous                 46
+#define  Pragma_Atomic                       47
+#define  Pragma_Atomic_Components            48
+#define  Pragma_Attach_Handler               49
+#define  Pragma_Comment                      50
+#define  Pragma_Common_Object                51
+#define  Pragma_Complex_Representation       52
+#define  Pragma_Controlled                   53
+#define  Pragma_Convention                   54
+#define  Pragma_CPP_Class                    55
+#define  Pragma_CPP_Constructor              56
+#define  Pragma_CPP_Virtual                  57
+#define  Pragma_CPP_Vtable                   58
+#define  Pragma_Debug                        59
+#define  Pragma_Elaborate                    60
+#define  Pragma_Elaborate_All                61
+#define  Pragma_Elaborate_Body               62
+#define  Pragma_Export                       63
+#define  Pragma_Export_Exception             64
+#define  Pragma_Export_Function              65
+#define  Pragma_Export_Object                66
+#define  Pragma_Export_Procedure             67
+#define  Pragma_Export_Value                 68
+#define  Pragma_Export_Valued_Procedure      69
+#define  Pragma_External                     70
+#define  Pragma_Finalize_Storage_Only        71
+#define  Pragma_Ident                        72
+#define  Pragma_Import                       73
+#define  Pragma_Import_Exception             74
+#define  Pragma_Import_Function              75
+#define  Pragma_Import_Object                76
+#define  Pragma_Import_Procedure             77
+#define  Pragma_Import_Valued_Procedure      78
+#define  Pragma_Inline                       79
+#define  Pragma_Inline_Always                80
+#define  Pragma_Inline_Generic               81
+#define  Pragma_Inspection_Point             82
+#define  Pragma_Interface                    83
+#define  Pragma_Interface_Name               84
+#define  Pragma_Interrupt_Handler            85
+#define  Pragma_Interrupt_Priority           86
+#define  Pragma_Java_Constructor             87
+#define  Pragma_Java_Interface               88
+#define  Pragma_Keep_Names                   89
+#define  Pragma_Link_With                    90
+#define  Pragma_Linker_Alias                 91
+#define  Pragma_Linker_Options               92
+#define  Pragma_Linker_Section               93
+#define  Pragma_List                         94
+#define  Pragma_Machine_Attribute            95
+#define  Pragma_Main                         96
+#define  Pragma_Main_Storage                 97
+#define  Pragma_Memory_Size                  98
+#define  Pragma_No_Return                    99
+#define  Pragma_Obsolescent                 100
+#define  Pragma_Optimize                    101
+#define  Pragma_Optional_Overriding         102
+#define  Pragma_Overriding                  103
+#define  Pragma_Pack                        104
+#define  Pragma_Page                        105
+#define  Pragma_Passive                     106
+#define  Pragma_Preelaborate                107
+#define  Pragma_Priority                    108
+#define  Pragma_Psect_Object                109
+#define  Pragma_Pure                        110
+#define  Pragma_Pure_Function               111
+#define  Pragma_Remote_Call_Interface       112
+#define  Pragma_Remote_Types                113
+#define  Pragma_Share_Generic               114
+#define  Pragma_Shared                      115
+#define  Pragma_Shared_Passive              116
+#define  Pragma_Source_Reference            117
+#define  Pragma_Stream_Convert              118
+#define  Pragma_Subtitle                    119
+#define  Pragma_Suppress_All                120
+#define  Pragma_Suppress_Debug_Info         121
+#define  Pragma_Suppress_Initialization     122
+#define  Pragma_System_Name                 123
+#define  Pragma_Task_Info                   124
+#define  Pragma_Task_Name                   125
+#define  Pragma_Task_Storage                126
+#define  Pragma_Time_Slice                  127
+#define  Pragma_Title                       128
+#define  Pragma_Unchecked_Union             129
+#define  Pragma_Unimplemented_Unit          130
+#define  Pragma_Unreferenced                131
+#define  Pragma_Unreserve_All_Interrupts    132
+#define  Pragma_Volatile                    133
+#define  Pragma_Volatile_Components         134
+#define  Pragma_Weak_External               135
 
 /* The following are deliberately out of alphabetical order, see Snames */
 
-#define  Pragma_AST_Entry                  123
-#define  Pragma_Storage_Size               124
-#define  Pragma_Storage_Unit               125
+#define  Pragma_AST_Entry                   136
+#define  Pragma_Storage_Size                137
+#define  Pragma_Storage_Unit                138
 
 /* Define the numeric values for the conventions.  */
 
@@ -343,3 +356,5 @@ extern char Get_Pragma_Id PARAMS ((int));
 #define  Convention_Java                     9
 #define  Convention_Stdcall                 10
 #define  Convention_Stubbed                 11
+
+/* End of snames.h (C version of Snames package spec) */

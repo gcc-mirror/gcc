@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---              Copyright (C) 2001 Ada Core Technologies, Inc.              --
+--              Copyright (C) 2001-2003 Ada Core Technologies, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,36 +26,39 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  This package provides a target dependent thin interface to the sockets
+--  layer for use by the GNAT.Sockets package (g-socket.ads). This package
+--  should not be directly with'ed by an applications program.
+
+--  This is the default version
+
 with GNAT.OS_Lib; use GNAT.OS_Lib;
+with GNAT.Task_Lock;
 
 with Interfaces.C; use Interfaces.C;
 
 package body GNAT.Sockets.Thin is
 
+   Non_Blocking_Sockets : constant Fd_Set_Access
+     := New_Socket_Set (No_Socket_Set);
    --  When this package is initialized with Process_Blocking_IO set
    --  to True, sockets are set in non-blocking mode to avoid blocking
    --  the whole process when a thread wants to perform a blocking IO
-   --  operation. But the user can set a socket in non-blocking mode
-   --  by purpose. We track the socket in such a mode by redefining
-   --  C_Ioctl. In blocking IO operations, we exit normally when the
-   --  non-blocking flag is set by user, we poll and try later when
-   --  this flag is set automatically by this package.
-
-   type Socket_Info is record
-      Non_Blocking : Boolean := False;
-   end record;
-
-   Table : array (C.int range 0 .. 31) of Socket_Info;
-   --  Get info on blocking flag. This array is limited to 32 sockets
-   --  because the select operation allows socket set of less then 32
-   --  sockets.
+   --  operation. But the user can also set a socket in non-blocking
+   --  mode by purpose. In order to make a difference between these
+   --  two situations, we track the origin of non-blocking mode in
+   --  Non_Blocking_Sockets. If S is in Non_Blocking_Sockets, it has
+   --  been set in non-blocking mode by the user.
 
    Quantum : constant Duration := 0.2;
-   --  comment needed ???
+   --  When Thread_Blocking_IO is False, we set sockets in
+   --  non-blocking mode and we spend a period of time Quantum between
+   --  two attempts on a blocking operation.
 
    Thread_Blocking_IO : Boolean := True;
 
@@ -121,7 +124,8 @@ package body GNAT.Sockets.Thin is
       return C.int;
    pragma Import (C, Syscall_Socket, "socket");
 
-   procedure Set_Non_Blocking (S : C.int);
+   function  Non_Blocking_Socket (S : C.int) return Boolean;
+   procedure Set_Non_Blocking_Socket (S : C.int; V : Boolean);
 
    --------------
    -- C_Accept --
@@ -133,29 +137,34 @@ package body GNAT.Sockets.Thin is
       Addrlen : access C.int)
       return    C.int
    is
-      Res : C.int;
+      R   : C.int;
+      Val : aliased C.int := 1;
+
+      Discard : C.int;
+      pragma Warnings (Off, Discard);
 
    begin
       loop
-         Res := Syscall_Accept (S, Addr, Addrlen);
+         R := Syscall_Accept (S, Addr, Addrlen);
          exit when Thread_Blocking_IO
-           or else Res /= Failure
-           or else Table (S).Non_Blocking
+           or else R /= Failure
+           or else Non_Blocking_Socket (S)
            or else Errno /= Constants.EWOULDBLOCK;
          delay Quantum;
       end loop;
 
       if not Thread_Blocking_IO
-        and then Res /= Failure
+        and then R /= Failure
       then
          --  A socket inherits the properties ot its server especially
-         --  the FNDELAY flag.
+         --  the FIONBIO flag. Do not use C_Ioctl as this subprogram
+         --  tracks sockets set in non-blocking mode by user.
 
-         Table (Res).Non_Blocking := Table (S).Non_Blocking;
-         Set_Non_Blocking (Res);
+         Set_Non_Blocking_Socket (R, Non_Blocking_Socket (S));
+         Discard := Syscall_Ioctl (R, Constants.FIONBIO, Val'Unchecked_Access);
       end if;
 
-      return Res;
+      return R;
    end C_Accept;
 
    ---------------
@@ -175,33 +184,39 @@ package body GNAT.Sockets.Thin is
 
       if Thread_Blocking_IO
         or else Res /= Failure
-        or else Table (S).Non_Blocking
+        or else Non_Blocking_Socket (S)
         or else Errno /= Constants.EINPROGRESS
       then
          return Res;
       end if;
 
       declare
-         Set : aliased Fd_Set;
-         Now : aliased Timeval;
+         WSet : Fd_Set_Access;
+         Now  : aliased Timeval;
 
       begin
+         WSet := New_Socket_Set (No_Socket_Set);
          loop
-            Set := 2 ** Natural (S);
+            Insert_Socket_In_Set (WSet, S);
             Now := Immediat;
             Res := C_Select
               (S + 1,
-               null, Set'Unchecked_Access,
-               null, Now'Unchecked_Access);
+               No_Fd_Set,
+               WSet,
+               No_Fd_Set,
+               Now'Unchecked_Access);
 
             exit when Res > 0;
 
             if Res = Failure then
+               Free_Socket_Set (WSet);
                return Res;
             end if;
 
             delay Quantum;
          end loop;
+
+         Free_Socket_Set (WSet);
       end;
 
       Res := Syscall_Connect (S, Name, Namelen);
@@ -229,7 +244,9 @@ package body GNAT.Sockets.Thin is
       if not Thread_Blocking_IO
         and then Req = Constants.FIONBIO
       then
-         Table (S).Non_Blocking := (Arg.all /= 0);
+         if Arg.all /= 0 then
+            Set_Non_Blocking_Socket (S, True);
+         end if;
       end if;
 
       return Syscall_Ioctl (S, Req, Arg);
@@ -253,7 +270,7 @@ package body GNAT.Sockets.Thin is
          Res := Syscall_Recv (S, Msg, Len, Flags);
          exit when Thread_Blocking_IO
            or else Res /= Failure
-           or else Table (S).Non_Blocking
+           or else Non_Blocking_Socket (S)
            or else Errno /= Constants.EWOULDBLOCK;
          delay Quantum;
       end loop;
@@ -281,7 +298,7 @@ package body GNAT.Sockets.Thin is
          Res := Syscall_Recvfrom (S, Msg, Len, Flags, From, Fromlen);
          exit when Thread_Blocking_IO
            or else Res /= Failure
-           or else Table (S).Non_Blocking
+           or else Non_Blocking_Socket (S)
            or else Errno /= Constants.EWOULDBLOCK;
          delay Quantum;
       end loop;
@@ -307,7 +324,7 @@ package body GNAT.Sockets.Thin is
          Res := Syscall_Send (S, Msg, Len, Flags);
          exit when Thread_Blocking_IO
            or else Res /= Failure
-           or else Table (S).Non_Blocking
+           or else Non_Blocking_Socket (S)
            or else Errno /= Constants.EWOULDBLOCK;
          delay Quantum;
       end loop;
@@ -335,7 +352,7 @@ package body GNAT.Sockets.Thin is
          Res := Syscall_Sendto (S, Msg, Len, Flags, To, Tolen);
          exit when Thread_Blocking_IO
            or else Res /= Failure
-           or else Table (S).Non_Blocking
+           or else Non_Blocking_Socket (S)
            or else Errno /= Constants.EWOULDBLOCK;
          delay Quantum;
       end loop;
@@ -353,44 +370,27 @@ package body GNAT.Sockets.Thin is
       Protocol : C.int)
       return     C.int
    is
-      Res : C.int;
+      R   : C.int;
+      Val : aliased C.int := 1;
+
+      Discard : C.int;
+      pragma Unreferenced (Discard);
 
    begin
-      Res := Syscall_Socket (Domain, Typ, Protocol);
+      R := Syscall_Socket (Domain, Typ, Protocol);
 
       if not Thread_Blocking_IO
-        and then Res /= Failure
+        and then R /= Failure
       then
-         Set_Non_Blocking (Res);
+         --  Do not use C_Ioctl as this subprogram tracks sockets set
+         --  in non-blocking mode by user.
+
+         Discard := Syscall_Ioctl (R, Constants.FIONBIO, Val'Unchecked_Access);
+         Set_Non_Blocking_Socket (R, False);
       end if;
 
-      return Res;
+      return R;
    end C_Socket;
-
-   -----------
-   -- Clear --
-   -----------
-
-   procedure Clear
-     (Item   : in out Fd_Set;
-      Socket : in C.int)
-   is
-      Mask : constant Fd_Set := 2 ** Natural (Socket);
-
-   begin
-      if (Item and Mask) /= 0 then
-         Item := Item xor Mask;
-      end if;
-   end Clear;
-
-   -----------
-   -- Empty --
-   -----------
-
-   procedure Empty  (Item : in out Fd_Set) is
-   begin
-      Item := 0;
-   end Empty;
 
    --------------
    -- Finalize --
@@ -410,65 +410,87 @@ package body GNAT.Sockets.Thin is
       Thread_Blocking_IO := not Process_Blocking_IO;
    end Initialize;
 
-   --------------
-   -- Is_Empty --
-   --------------
+   -------------------------
+   -- Non_Blocking_Socket --
+   -------------------------
 
-   function Is_Empty (Item : Fd_Set) return Boolean is
+   function Non_Blocking_Socket (S : C.int) return Boolean is
+      R : Boolean;
+
    begin
-      return Item = 0;
-   end Is_Empty;
+      Task_Lock.Lock;
+      R := Is_Socket_In_Set (Non_Blocking_Sockets, S);
+      Task_Lock.Unlock;
+      return R;
+   end Non_Blocking_Socket;
 
-   ------------
-   -- Is_Set --
-   ------------
+   -----------------
+   -- Set_Address --
+   -----------------
 
-   function Is_Set (Item : Fd_Set; Socket : C.int) return Boolean is
-   begin
-      return (Item and 2 ** Natural (Socket)) /= 0;
-   end Is_Set;
-
-   ---------
-   -- Max --
-   ---------
-
-   function Max (Item : Fd_Set) return C.int
+   procedure Set_Address
+     (Sin     : Sockaddr_In_Access;
+      Address : In_Addr)
    is
-      L : C.int  := -1;
-      C : Fd_Set := Item;
+   begin
+      Sin.Sin_Addr   := Address;
+   end Set_Address;
+
+   ----------------
+   -- Set_Family --
+   ----------------
+
+   procedure Set_Family
+     (Sin    : Sockaddr_In_Access;
+      Family : C.int)
+   is
+   begin
+      Sin.Sin_Family := C.unsigned_short (Family);
+   end Set_Family;
+
+   ----------------
+   -- Set_Length --
+   ----------------
+
+   procedure Set_Length
+     (Sin : Sockaddr_In_Access;
+      Len : C.int)
+   is
+      pragma Unreferenced (Sin);
+      pragma Unreferenced (Len);
 
    begin
-      while C /= 0 loop
-         L := L + 1;
-         C := C / 2;
-      end loop;
-      return L;
-   end Max;
+      null;
+   end Set_Length;
 
-   ---------
-   -- Set --
-   ---------
+   -----------------------------
+   -- Set_Non_Blocking_Socket --
+   -----------------------------
 
-   procedure Set (Item : in out Fd_Set; Socket : in C.int) is
+   procedure Set_Non_Blocking_Socket (S : C.int; V : Boolean) is
    begin
-      Item := Item or 2 ** Natural (Socket);
-   end Set;
+      Task_Lock.Lock;
 
-   ----------------------
-   -- Set_Non_Blocking --
-   ----------------------
+      if V then
+         Insert_Socket_In_Set (Non_Blocking_Sockets, S);
+      else
+         Remove_Socket_From_Set (Non_Blocking_Sockets, S);
+      end if;
 
-   procedure Set_Non_Blocking (S : C.int) is
-      Res : C.int;
-      Val : aliased C.int := 1;
+      Task_Lock.Unlock;
+   end Set_Non_Blocking_Socket;
 
+   --------------
+   -- Set_Port --
+   --------------
+
+   procedure Set_Port
+     (Sin  : Sockaddr_In_Access;
+      Port : C.unsigned_short)
+   is
    begin
-
-      --  Do not use C_Fcntl because this subprogram tracks the
-      --  sockets set by user in non-blocking mode.
-
-      Res := Syscall_Ioctl (S, Constants.FIONBIO, Val'Unchecked_Access);
-   end Set_Non_Blocking;
+      Sin.Sin_Port   := Port;
+   end Set_Port;
 
    --------------------------
    -- Socket_Error_Message --

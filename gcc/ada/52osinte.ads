@@ -6,7 +6,8 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1999-2001 Free Software Foundation, Inc.          --
+--                                                                          --
+--          Copyright (C) 1999-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,7 +28,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University.       --
--- Extensive contributions were provided by Ada Core Technologies Inc.      --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -456,6 +457,9 @@ package System.OS_Interface is
       arg           : System.Address) return int;
    pragma Inline (pthread_create);
    --  LynxOS has a non standard pthread_create
+
+   function pthread_detach (thread : pthread_t) return int;
+   pragma Inline (pthread_detach);
 
    procedure pthread_exit (status : System.Address);
    pragma Import (C, pthread_exit, "pthread_exit");

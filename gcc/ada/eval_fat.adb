@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,6 +25,7 @@
 ------------------------------------------------------------------------------
 
 with Einfo;    use Einfo;
+with Errout;   use Errout;
 with Sem_Util; use Sem_Util;
 with Ttypef;   use Ttypef;
 with Targparm; use Targparm;
@@ -72,10 +73,6 @@ package body Eval_Fat is
    --  using biased rounding (halfway cases round away from zero), round to
    --  even, a floor operation or a ceiling operation depending on the setting
    --  of Mode (see corresponding descriptions in Urealp).
-   --
-   --  In case rounding was specified, Rounding_Was_Biased is set True
-   --  if the input was indeed halfway between to machine numbers and
-   --  got rounded away from zero to an odd number.
 
    function Eps_Model (RT : R) return T;
    --  Return the smallest model number of R.
@@ -83,8 +80,11 @@ package body Eval_Fat is
    function Eps_Denorm (RT : R) return T;
    --  Return the smallest denormal of type R.
 
+   function Machine_Emin (RT : R) return Int;
+   --  Return value of the Machine_Emin attribute
+
    function Machine_Mantissa (RT : R) return Nat;
-   --  Get value of machine mantissa
+   --  Return value of the Machine_Mantissa attribute
 
    --------------
    -- Adjacent --
@@ -396,8 +396,6 @@ package body Eval_Fat is
          --  Determine correct rounding based on the remainder
          --  which is in N and the divisor D.
 
-         Rounding_Was_Biased := False; -- Until proven otherwise
-
          case Mode is
             when Round_Even =>
 
@@ -420,10 +418,6 @@ package body Eval_Fat is
 
                if N * 2 >= D then
                   Fraction := Fraction + 1;
-
-                  Rounding_Was_Biased := Even and then N * 2 = D;
-                  --  Check for the case where the result is actually
-                  --  different from Round_Even.
                end if;
 
             when Ceiling =>
@@ -451,54 +445,9 @@ package body Eval_Fat is
    ----------------
 
    function Eps_Denorm (RT : R) return T is
-      Digs : constant UI := Digits_Value (RT);
-      Emin : Int;
-      Mant : Int;
-
    begin
-      if Vax_Float (RT) then
-         if Digs = VAXFF_Digits then
-            Emin := VAXFF_Machine_Emin;
-            Mant := VAXFF_Machine_Mantissa;
-
-         elsif Digs = VAXDF_Digits then
-            Emin := VAXDF_Machine_Emin;
-            Mant := VAXDF_Machine_Mantissa;
-
-         else
-            pragma Assert (Digs = VAXGF_Digits);
-            Emin := VAXGF_Machine_Emin;
-            Mant := VAXGF_Machine_Mantissa;
-         end if;
-
-      elsif Is_AAMP_Float (RT) then
-         if Digs = AAMPS_Digits then
-            Emin := AAMPS_Machine_Emin;
-            Mant := AAMPS_Machine_Mantissa;
-
-         else
-            pragma Assert (Digs = AAMPL_Digits);
-            Emin := AAMPL_Machine_Emin;
-            Mant := AAMPL_Machine_Mantissa;
-         end if;
-
-      else
-         if Digs = IEEES_Digits then
-            Emin := IEEES_Machine_Emin;
-            Mant := IEEES_Machine_Mantissa;
-
-         elsif Digs = IEEEL_Digits then
-            Emin := IEEEL_Machine_Emin;
-            Mant := IEEEL_Machine_Mantissa;
-
-         else
-            pragma Assert (Digs = IEEEX_Digits);
-            Emin := IEEEX_Machine_Emin;
-            Mant := IEEEX_Machine_Mantissa;
-         end if;
-      end if;
-
-      return Float_Radix ** UI_From_Int (Emin - Mant);
+      return Float_Radix ** UI_From_Int
+                                  (Machine_Emin (RT) - Machine_Mantissa (RT));
    end Eps_Denorm;
 
    ---------------
@@ -506,45 +455,8 @@ package body Eval_Fat is
    ---------------
 
    function Eps_Model (RT : R) return T is
-      Digs : constant UI := Digits_Value (RT);
-      Emin : Int;
-
    begin
-      if Vax_Float (RT) then
-         if Digs = VAXFF_Digits then
-            Emin := VAXFF_Machine_Emin;
-
-         elsif Digs = VAXDF_Digits then
-            Emin := VAXDF_Machine_Emin;
-
-         else
-            pragma Assert (Digs = VAXGF_Digits);
-            Emin := VAXGF_Machine_Emin;
-         end if;
-
-      elsif Is_AAMP_Float (RT) then
-         if Digs = AAMPS_Digits then
-            Emin := AAMPS_Machine_Emin;
-
-         else
-            pragma Assert (Digs = AAMPL_Digits);
-            Emin := AAMPL_Machine_Emin;
-         end if;
-
-      else
-         if Digs = IEEES_Digits then
-            Emin := IEEES_Machine_Emin;
-
-         elsif Digs = IEEEL_Digits then
-            Emin := IEEEL_Machine_Emin;
-
-         else
-            pragma Assert (Digs = IEEEX_Digits);
-            Emin := IEEEX_Machine_Emin;
-         end if;
-      end if;
-
-      return Float_Radix ** UI_From_Int (Emin);
+      return Float_Radix ** UI_From_Int (Machine_Emin (RT));
    end Eps_Model;
 
    --------------
@@ -624,18 +536,142 @@ package body Eval_Fat is
    -- Machine --
    -------------
 
-   function Machine (RT : R; X : T; Mode : Rounding_Mode) return T is
+   function Machine
+     (RT    : R;
+      X     : T;
+      Mode  : Rounding_Mode;
+      Enode : Node_Id)
+      return  T
+   is
+      pragma Warnings (Off, Enode); -- not yet referenced
+
       X_Frac : T;
       X_Exp  : UI;
+      Emin   : constant UI := UI_From_Int (Machine_Emin (RT));
 
    begin
       if UR_Is_Zero (X) then
          return X;
+
       else
          Decompose (RT, X, X_Frac, X_Exp, Mode);
+
+         --  Case of denormalized number or (gradual) underflow
+
+         --  A denormalized number is one with the minimum exponent Emin, but
+         --  that breaks the assumption that the first digit of the mantissa
+         --  is a one. This allows the first non-zero digit to be in any
+         --  of the remaining Mant - 1 spots. The gap between subsequent
+         --  denormalized numbers is the same as for the smallest normalized
+         --  numbers. However, the number of significant digits left decreases
+         --  as a result of the mantissa now having leading seros.
+
+         if X_Exp < Emin then
+            declare
+               Emin_Den : constant UI :=
+                            UI_From_Int
+                              (Machine_Emin (RT) - Machine_Mantissa (RT) + 1);
+            begin
+               if X_Exp < Emin_Den or not Denorm_On_Target then
+                  if UR_Is_Negative (X) then
+                     Error_Msg_N
+                       ("floating-point value underflows to -0.0?", Enode);
+                     return Ureal_M_0;
+
+                  else
+                     Error_Msg_N
+                       ("floating-point value underflows to 0.0?", Enode);
+                     return Ureal_0;
+                  end if;
+
+               elsif Denorm_On_Target then
+
+                  --  Emin - Mant <= X_Exp < Emin, so result is denormal.
+                  --  Handle gradual underflow by first computing the
+                  --  number of significant bits still available for the
+                  --  mantissa and then truncating the fraction to this
+                  --  number of bits.
+
+                  --  If this value is different from the original
+                  --  fraction, precision is lost due to gradual underflow.
+
+                  --  We probably should round here and prevent double
+                  --  rounding as a result of first rounding to a model
+                  --  number and then to a machine number. However, this
+                  --  is an extremely rare case that is not worth the extra
+                  --  complexity. In any case, a warning is issued in cases
+                  --  where gradual underflow occurs.
+
+                  declare
+                     Denorm_Sig_Bits : constant UI := X_Exp - Emin_Den + 1;
+
+                     X_Frac_Denorm   : constant T := UR_From_Components
+                       (UR_Trunc (Scaling (RT, abs X_Frac, Denorm_Sig_Bits)),
+                        Denorm_Sig_Bits,
+                        Radix,
+                        UR_Is_Negative (X));
+
+                  begin
+                     if X_Frac_Denorm /= X_Frac then
+                        Error_Msg_N
+                          ("gradual underflow causes loss of precision?",
+                           Enode);
+                        X_Frac := X_Frac_Denorm;
+                     end if;
+                  end;
+               end if;
+            end;
+         end if;
+
          return Scaling (RT, X_Frac, X_Exp);
       end if;
    end Machine;
+
+   ------------------
+   -- Machine_Emin --
+   ------------------
+
+   function Machine_Emin (RT : R) return Int is
+      Digs : constant UI := Digits_Value (RT);
+      Emin : Int;
+
+   begin
+      if Vax_Float (RT) then
+         if Digs = VAXFF_Digits then
+            Emin := VAXFF_Machine_Emin;
+
+         elsif Digs = VAXDF_Digits then
+            Emin := VAXDF_Machine_Emin;
+
+         else
+            pragma Assert (Digs = VAXGF_Digits);
+            Emin := VAXGF_Machine_Emin;
+         end if;
+
+      elsif Is_AAMP_Float (RT) then
+         if Digs = AAMPS_Digits then
+            Emin := AAMPS_Machine_Emin;
+
+         else
+            pragma Assert (Digs = AAMPL_Digits);
+            Emin := AAMPL_Machine_Emin;
+         end if;
+
+      else
+         if Digs = IEEES_Digits then
+            Emin := IEEES_Machine_Emin;
+
+         elsif Digs = IEEEL_Digits then
+            Emin := IEEEL_Machine_Emin;
+
+         else
+            pragma Assert (Digs = IEEEX_Digits);
+            Emin := IEEEX_Machine_Emin;
+         end if;
+      end if;
+
+      return Emin;
+   end Machine_Emin;
 
    ----------------------
    -- Machine_Mantissa --

@@ -6,8 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *                                                                          *
- *          Copyright (C) 1992-2002, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2003, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -28,7 +27,7 @@
 /* This is the C file that corresponds to the Ada package spec Types. It was
    created manually from the files types.ads and types.adb.
 
-   This package contains host independent type definitions which are used 
+   This package contains host independent type definitions which are used
    throughout the compiler modules. The comments in the C version are brief
    reminders of the purpose of each declaration.  For complete documentation,
    see the Ada version of these definitions.  */
@@ -81,15 +80,15 @@ typedef Char *Str_Ptr;
 /* Types for the fat pointer used for strings and the template it
    points to.  */
 typedef struct {int Low_Bound, High_Bound; } String_Template;
-typedef struct {const char *Array; String_Template *Bounds; } 
+typedef struct {const char *Array; String_Template *Bounds; }
 	__attribute ((aligned (sizeof (char *) * 2))) Fat_Pointer;
 
 /* Types for Node/Entity Kinds:  */
 
 /* The reason that these are defined here in the C version, rather than in the
    corresponding packages is that the requirement for putting bodies of
-   inlined stuff IN the C header changes the dependencies.  Both a-sinfo.h
-   and a-einfo.h now reference routines defined in tree.h.
+   inlined stuff IN the C header changes the dependencies.  Both sinfo.h
+   and einfo.h now reference routines defined in tree.h.
 
    Note: these types would more naturally be defined as unsigned  char, but
    once again, the annoying restriction on bit fields for some compilers
@@ -352,9 +351,9 @@ typedef Int Mechanism_Type;
 #define PE_Duplicated_Entry_Address        15
 #define PE_Explicit_Raise                  16
 #define PE_Finalize_Raised_Exception       17
-#define PE_Invalid_Data                    18
-#define PE_Misaligned_Address_Value        19
-#define PE_Missing_Return                  20
+#define PE_Misaligned_Address_Value        18
+#define PE_Missing_Return                  19
+#define PE_Overlaid_Controlled_Object      20
 #define PE_Potentially_Blocking_Operation  21
 #define PE_Stubbed_Subprogram_Called       22
 #define PE_Unchecked_Union_Restriction     23

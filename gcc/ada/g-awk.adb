@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2000-2001 Ada Core Technologies, Inc.           --
+--            Copyright (C) 2000-2003 Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -381,7 +382,7 @@ package body GNAT.AWK is
         (A       : Simple_Action;
          Session : Session_Type)
       is
-         pragma Warnings (Off, Session);
+         pragma Unreferenced (Session);
 
       begin
          A.Proc.all;
@@ -446,7 +447,7 @@ package body GNAT.AWK is
          Session : Session_Type)
          return    Boolean
       is
-         pragma Warnings (Off, Session);
+         pragma Unreferenced (Session);
 
       begin
          return P.Pattern.all;
@@ -457,7 +458,7 @@ package body GNAT.AWK is
       -------------
 
       procedure Release (P : in out Pattern) is
-         pragma Warnings (Off, P);
+         pragma Unreferenced (P);
 
       begin
          null;
@@ -493,10 +494,10 @@ package body GNAT.AWK is
          Line   : constant String := To_String (Session.Data.Current_Line);
          Fields : Field_Table.Instance renames Session.Data.Fields;
 
-         Start : Positive;
+         Start : Natural;
          Stop  : Natural;
 
-         Seps  : Maps.Character_Set := Maps.To_Set (S.Separators);
+         Seps  : constant Maps.Character_Set := Maps.To_Set (S.Separators);
 
       begin
          --  First field start here
@@ -520,7 +521,7 @@ package body GNAT.AWK is
 
             Fields.Table (Field_Table.Last (Fields)).Last := Stop - 1;
 
-            --  if separators are set to the default (space and tab) we skip
+            --  If separators are set to the default (space and tab) we skip
             --  all spaces and tabs following current field.
 
             if S.Separators = Default_Separators then
@@ -529,6 +530,10 @@ package body GNAT.AWK is
                   Maps.To_Set (Default_Separators),
                   Outside,
                   Strings.Forward);
+
+               if Start = 0 then
+                  Start := Stop + 1;
+               end if;
             else
                Start := Stop + 1;
             end if;
@@ -1046,6 +1051,8 @@ package body GNAT.AWK is
       Session    : Session_Type := Current_Session)
    is
       Filter_Active : Boolean;
+      pragma Unreferenced (Filter_Active);
+
    begin
       Open (Separators, Filename, Session);
 
@@ -1178,7 +1185,7 @@ package body GNAT.AWK is
    is
       Filters : Pattern_Action_Table.Instance renames Session.Data.Filters;
 
-      A_Pattern : Patterns.Pattern_Matcher_Access :=
+      A_Pattern : constant Patterns.Pattern_Matcher_Access :=
                     new Regpat.Pattern_Matcher'(Pattern);
    begin
       Pattern_Action_Table.Increment_Last (Filters);
@@ -1196,7 +1203,7 @@ package body GNAT.AWK is
    is
       Filters : Pattern_Action_Table.Instance renames Session.Data.Filters;
 
-      A_Pattern : Patterns.Pattern_Matcher_Access :=
+      A_Pattern : constant Patterns.Pattern_Matcher_Access :=
                     new Regpat.Pattern_Matcher'(Pattern);
    begin
       Pattern_Action_Table.Increment_Last (Filters);

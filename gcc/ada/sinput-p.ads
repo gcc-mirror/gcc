@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,6 +36,15 @@ package Sinput.P is
    function Load_Project_File (Path : String) return Source_File_Index;
    --  Load into memory the source of a project source file.
    --  Initialize the Scans state.
+
+   function Source_File_Is_Subunit (X : Source_File_Index) return Boolean;
+   --  This function determines if a source file represents a subunit. It
+   --  works by scanning for the first compilation unit token, and returning
+   --  True if it is the token SEPARATE. It will return False otherwise,
+   --  meaning that the file cannot possibly be a legal subunit. This
+   --  function does NOT do a complete parse of the file, or build a
+   --  tree. It is used in gnatmake to decide if a body without a spec
+   --  in a project file needs to be compiled or not.
 
    type Saved_Project_Scan_State is limited private;
    --  Used to save project scan state in following two routines

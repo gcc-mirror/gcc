@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---              Copyright (C) 2001, Ada Core Technologies, Inc.             --
+--              Copyright (C) 2001-2003, Ada Core Technologies, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -20,74 +20,191 @@
 -- MA 02111-1307, USA.                                                      --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
--- It is now maintained by Ada Core Technologies Inc (http://www.gnat.com). --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
+
+with ALI;      use ALI;
+with Hostparm;
+with MLib.Fil; use MLib.Fil;
+with MLib.Tgt; use MLib.Tgt;
+with MLib.Utl; use MLib.Utl;
+with Namet;    use Namet;
+with Opt;
+with Output;   use Output;
+with Prj.Com;  use Prj.Com;
+with Prj.Env;  use Prj.Env;
+with Prj.Util; use Prj.Util;
+with Sinput.P;
+with Snames;   use Snames;
+with Table;
+with Types;    use Types;
 
 with Ada.Characters.Handling;
 
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
-with GNAT.OS_Lib;   use GNAT.OS_Lib;
-with MLib.Fil;
-with MLib.Tgt;
-with Opt;
-with Output;        use Output;
-with Osint;         use Osint;
-with Namet;         use Namet;
-with Table;
-with Types;         use Types;
+with GNAT.HTable;
+with GNAT.OS_Lib;               use GNAT.OS_Lib;
+with Interfaces.C_Streams;      use Interfaces.C_Streams;
+with System;                    use System;
+with System.Case_Util;          use System.Case_Util;
 
 package body MLib.Prj is
 
-   package Files  renames MLib.Fil;
-   package Target renames MLib.Tgt;
+   Prj_Add_Obj_Files : Types.Int;
+   pragma Import (C, Prj_Add_Obj_Files, "__gnat_prj_add_obj_files");
+   Add_Object_Files : constant Boolean := Prj_Add_Obj_Files /= 0;
+   --  Indicates if object files in pragmas Linker_Options (found in the
+   --  binder generated file) should be taken when linking aq stand-alone
+   --  library.
+   --  False for Windows, True for other platforms.
+
+   ALI_Suffix : constant String := ".ali";
+   B_Start    : String := "b~";
+
+   S_Osinte_Ads : Name_Id := No_Name;
+   --  Name_Id for "s-osinte.ads"
+
+   S_Dec_Ads : Name_Id := No_Name;
+   --  Name_Id for "dec.ads"
+
+   No_Argument_List : aliased String_List := (1 .. 0 => null);
+   No_Argument      : constant String_List_Access := No_Argument_List'Access;
+
+   Arguments : String_List_Access := No_Argument;
+   --  Used to accumulate arguments for the invocation of gnatbind and of
+   --  the compiler. Also used to collect the interface ALI when copying
+   --  the ALI files to the library directory.
+
+   Argument_Number : Natural := 0;
+   --  Index of the last argument in Arguments
+
+   Initial_Argument_Max : constant := 10;
+
+   No_Main_String : aliased String := "-n";
+   No_Main : constant String_Access := No_Main_String'Access;
+
+   Output_Switch_String : aliased String := "-o";
+   Output_Switch : constant String_Access := Output_Switch_String'Access;
+
+   Compile_Switch_String : aliased String := "-c";
+   Compile_Switch : constant String_Access := Compile_Switch_String'Access;
 
    --  List of objects to put inside the library
 
    Object_Files : Argument_List_Access;
+
    package Objects is new Table.Table
      (Table_Name           => "Mlib.Prj.Objects",
       Table_Component_Type => String_Access,
       Table_Index_Type     => Natural,
       Table_Low_Bound      => 1,
       Table_Initial        => 50,
-      Table_Increment      => 50);
+      Table_Increment      => 100);
+
+   package Objects_Htable is new GNAT.HTable.Simple_HTable
+     (Header_Num => Com.Header_Num,
+      Element    => Boolean,
+      No_Element => False,
+      Key        => Name_Id,
+      Hash       => Com.Hash,
+      Equal      => "=");
 
    --  List of non-Ada object files
 
    Foreign_Objects : Argument_List_Access;
+
    package Foreigns is new Table.Table
      (Table_Name           => "Mlib.Prj.Foreigns",
       Table_Component_Type => String_Access,
       Table_Index_Type     => Natural,
       Table_Low_Bound      => 1,
       Table_Initial        => 20,
-      Table_Increment      => 20);
+      Table_Increment      => 100);
 
    --  List of ALI files
 
    Ali_Files : Argument_List_Access;
-   package Alis is new Table.Table
+
+   package ALIs is new Table.Table
      (Table_Name           => "Mlib.Prj.Alis",
       Table_Component_Type => String_Access,
       Table_Index_Type     => Natural,
       Table_Low_Bound      => 1,
       Table_Initial        => 50,
-      Table_Increment      => 50);
+      Table_Increment      => 100);
 
    --  List of options set in the command line.
 
    Options : Argument_List_Access;
+
    package Opts is new Table.Table
      (Table_Name           => "Mlib.Prj.Opts",
       Table_Component_Type => String_Access,
       Table_Index_Type     => Natural,
       Table_Low_Bound      => 1,
       Table_Initial        => 5,
-      Table_Increment      => 5);
+      Table_Increment      => 100);
 
-   type Build_Mode_State is
-     (None, Static, Dynamic, Relocatable);
+   --  All the ALI file in the library
+
+   package Library_ALIs is new GNAT.HTable.Simple_HTable
+     (Header_Num => Com.Header_Num,
+      Element    => Boolean,
+      No_Element => False,
+      Key        => Name_Id,
+      Hash       => Com.Hash,
+      Equal      => "=");
+
+   --  The ALI files in the interface sets
+
+   package Interface_ALIs is new GNAT.HTable.Simple_HTable
+     (Header_Num => Com.Header_Num,
+      Element    => Boolean,
+      No_Element => False,
+      Key        => Name_Id,
+      Hash       => Com.Hash,
+      Equal      => "=");
+
+   --  The ALI files that have been processed to check if the corresponding
+   --  library unit is in the interface set.
+
+   package Processed_ALIs is new GNAT.HTable.Simple_HTable
+     (Header_Num => Com.Header_Num,
+      Element    => Boolean,
+      No_Element => False,
+      Key        => Name_Id,
+      Hash       => Com.Hash,
+      Equal      => "=");
+
+   --  The projects imported directly or indirectly.
+
+   package Processed_Projects is new GNAT.HTable.Simple_HTable
+     (Header_Num => Com.Header_Num,
+      Element    => Boolean,
+      No_Element => False,
+      Key        => Name_Id,
+      Hash       => Com.Hash,
+      Equal      => "=");
+
+   --  The library projects imported directly or indirectly.
+
+   package Library_Projs is new Table.Table (
+     Table_Component_Type => Project_Id,
+     Table_Index_Type     => Integer,
+     Table_Low_Bound      => 1,
+     Table_Initial        => 10,
+     Table_Increment      => 10,
+     Table_Name           => "Make.Library_Projs");
+
+   type Build_Mode_State is (None, Static, Dynamic, Relocatable);
+
+   procedure Add_Argument (S : String);
+   --  Add one argument to the array Arguments.
+   --  If Arguments is full, double its size.
+
+   function ALI_File_Name (Source : String) return String;
+   --  Return the ALI file name corresponding to a source.
 
    procedure Check (Filename : String);
    --  Check if filename is a regular file. Fail if it is not.
@@ -96,26 +213,537 @@ package body MLib.Prj is
    --  Check each object files in table Object_Files
    --  Fail if any of them is not a regular file
 
+   procedure Clean (Directory : Name_Id);
+   --  Attempt to delete all files in Directory, but not subdirectories
+
+   procedure Copy_Interface_Sources
+     (For_Project : Project_Id;
+      Interfaces  : Argument_List;
+      To_Dir      : Name_Id);
+   --  Copy the interface sources of a SAL to directory To_Dir
+
+   procedure Display (Executable : String);
+   --  Display invocation of gnatbind and of the compiler with the arguments
+   --  in Arguments, except when Quiet_Output is True.
+
+   procedure Process_Binder_File (Name : String);
+   --  For Stand-Alone libraries, get the Linker Options in the binder
+   --  generated file.
+
    procedure Reset_Tables;
    --  Make sure that all the above tables are empty
-   --  (Objects, Foreign_Objects, Ali_Files, Options)
+   --  (Objects, Foreign_Objects, Ali_Files, Options).
+
+   ------------------
+   -- Add_Argument --
+   ------------------
+
+   procedure Add_Argument (S : String) is
+   begin
+      if Argument_Number = Arguments'Last then
+         declare
+            New_Args : constant String_List_Access :=
+              new String_List (1 .. 2 * Arguments'Last);
+
+         begin
+            --  Copy the String_Accesses and set them to null in Arguments
+            --  so that they will not be deallocated by the call to
+            --  Free (Arguments).
+
+            New_Args (Arguments'Range) := Arguments.all;
+            Arguments.all := (others => null);
+            Free (Arguments);
+            Arguments := New_Args;
+         end;
+      end if;
+
+      Argument_Number := Argument_Number + 1;
+      Arguments (Argument_Number) := new String'(S);
+   end Add_Argument;
+
+   -------------------
+   -- ALI_File_Name --
+   -------------------
+
+   function ALI_File_Name (Source : String) return String is
+   begin
+      --  If the source name has an extension, then replace it with
+      --  the ALI suffix.
+
+      for Index in reverse Source'First + 1 .. Source'Last loop
+         if Source (Index) = '.' then
+            return Source (Source'First .. Index - 1) & ALI_Suffix;
+         end if;
+      end loop;
+
+      --  If there is no dot, or if it is the first character, just add the
+      --  ALI suffix.
+
+      return Source & ALI_Suffix;
+   end ALI_File_Name;
 
    -------------------
    -- Build_Library --
    -------------------
 
-   procedure Build_Library (For_Project : Project_Id) is
-      Data : constant Project_Data := Projects.Table (For_Project);
+   procedure Build_Library
+     (For_Project   : Project_Id;
+      Gnatbind      : String;
+      Gnatbind_Path : String_Access;
+      Gcc           : String;
+      Gcc_Path      : String_Access;
+      Bind          : Boolean := True;
+      Link          : Boolean := True)
+   is
+      Warning_For_Library : Boolean := False;
+      --  Set to True for the first warning about a unit missing from the
+      --  interface set.
 
-      Project_Name : constant String :=
-                       Get_Name_String (Data.Name);
+      Libgnarl_Needed   : Boolean := False;
+      --  Set to True if library needs to be linked with libgnarl
+
+      Libdecgnat_Needed : Boolean := False;
+      --  On OpenVMS, set to True if library needs to be linked with libdecgnat
+
+      Data : Project_Data := Projects.Table (For_Project);
+
+      Object_Directory_Path : constant String :=
+                          Get_Name_String (Data.Object_Directory);
+
+      Standalone   : constant Boolean := Data.Standalone_Library;
+
+      Project_Name : constant String := Get_Name_String (Data.Name);
+
+      DLL_Address  : constant String_Access :=
+                       new String'(Default_DLL_Address);
+
+      Current_Dir  : constant String := Get_Current_Dir;
 
       Lib_Filename : String_Access;
-      Lib_Dirpath  : String_Access := new String'(".");
-      DLL_Address  : String_Access := new String'(Target.Default_DLL_Address);
+      Lib_Dirpath  : String_Access;
       Lib_Version  : String_Access := new String'("");
 
       The_Build_Mode : Build_Mode_State := None;
+
+      Success : Boolean := False;
+
+      Library_Options : Variable_Value := Nil_Variable_Value;
+
+      Library_GCC     : Variable_Value := Nil_Variable_Value;
+
+      Driver_Name : Name_Id := No_Name;
+
+      In_Main_Object_Directory : Boolean := True;
+
+      Rpath : String_Access := null;
+      --  Allocated only if Path Option is supported
+
+      Rpath_Last : Natural := 0;
+      --  Index of last valid character of Rpath
+
+      Initial_Rpath_Length : constant := 200;
+      --  Initial size of Rpath, when first allocated
+
+      Path_Option : String_Access := Linker_Library_Path_Option;
+      --  If null, Path Option is not supported.
+      --  Not a constant so that it can be deallocated.
+
+      Copy_Dir : Name_Id;
+      --  Directory where to copy ALI files and possibly interface sources
+
+      procedure Add_ALI_For (Source : Name_Id);
+      --  Add the name of the ALI file corresponding to Source to the
+      --  Arguments.
+
+      procedure Add_Rpath (Path : String);
+      --  Add a path name to Rpath
+
+      function Check_Project (P : Project_Id) return Boolean;
+      --  Returns True if P is For_Project or a project extended by For_Project
+
+      procedure Check_Libs (ALI_File : String);
+      --  Set Libgnarl_Needed if the ALI_File indicates that there is a need
+      --  to link with -lgnarl (this is the case when there is a dependency
+      --  on s-osinte.ads). On OpenVMS, set Libdecgnat_Needed if the ALI file
+      --  indicates that there is a need to link with -ldecgnat (this is the
+      --  case when there is a dependency on dec.ads).
+
+      procedure Process (The_ALI : File_Name_Type);
+      --  Check if the closure of a library unit which is or should be in the
+      --  interface set is also in the interface set. Issue a warning for each
+      --  missing library unit.
+
+      procedure Process_Imported_Libraries;
+      --  Add the -L and -l switches for the imported Library Project Files,
+      --  and, if Path Option is supported, the library directory path names
+      --  to Rpath.
+
+      -----------------
+      -- Add_ALI_For --
+      -----------------
+
+      procedure Add_ALI_For (Source : Name_Id) is
+         ALI : constant String := ALI_File_Name (Get_Name_String (Source));
+      begin
+         Add_Argument (ALI);
+
+         --  Add the ALI file name to the library ALIs
+
+         Name_Len := 0;
+         Add_Str_To_Name_Buffer (S => ALI);
+         Library_ALIs.Set (Name_Find, True);
+      end Add_ALI_For;
+
+      ---------------
+      -- Add_Rpath --
+      ---------------
+
+      procedure Add_Rpath (Path : String) is
+
+         procedure Double;
+         --  Double Rpath size
+
+         ------------
+         -- Double --
+         ------------
+
+         procedure Double is
+            New_Rpath : constant String_Access :=
+                          new String (1 .. 2 * Rpath'Length);
+         begin
+            New_Rpath (1 .. Rpath_Last) := Rpath (1 .. Rpath_Last);
+            Free (Rpath);
+            Rpath := New_Rpath;
+         end Double;
+
+      --  Start of processing for Add_Rpath
+
+      begin
+         --  If firt path, allocate initial Rpath
+
+         if Rpath = null then
+            Rpath := new String (1 .. Initial_Rpath_Length);
+            Rpath_Last := 0;
+
+         else
+            --  Otherwise, add a path separator between two path names
+
+            if Rpath_Last = Rpath'Last then
+               Double;
+            end if;
+
+            Rpath_Last := Rpath_Last + 1;
+            Rpath (Rpath_Last) := Path_Separator;
+         end if;
+
+         --  Increase Rpath size until it is large enough
+
+         while Rpath_Last + Path'Length > Rpath'Last loop
+            Double;
+         end loop;
+
+         --  Add the path name
+
+         Rpath (Rpath_Last + 1 .. Rpath_Last + Path'Length) := Path;
+         Rpath_Last := Rpath_Last + Path'Length;
+      end Add_Rpath;
+
+      -------------------
+      -- Check_Project --
+      -------------------
+
+      function Check_Project (P : Project_Id) return Boolean is
+      begin
+         if P = For_Project then
+            return True;
+
+         elsif P /= No_Project then
+            declare
+               Data : Project_Data := Projects.Table (For_Project);
+
+            begin
+               while Data.Extends /= No_Project loop
+                  if P = Data.Extends then
+                     return True;
+                  end if;
+
+                  Data := Projects.Table (Data.Extends);
+               end loop;
+            end;
+         end if;
+
+         return False;
+      end Check_Project;
+
+      ----------------
+      -- Check_Libs --
+      ----------------
+
+      procedure Check_Libs (ALI_File : String) is
+         Lib_File : Name_Id;
+         Text     : Text_Buffer_Ptr;
+         Id       : ALI.ALI_Id;
+
+         pragma Warnings (Off, Id);
+         --  Comment needed ???
+
+      begin
+         if not Libgnarl_Needed or
+           (Hostparm.OpenVMS and then (not Libdecgnat_Needed))
+         then
+            --  Scan the ALI file
+
+            Name_Len := ALI_File'Length;
+            Name_Buffer (1 .. Name_Len) := ALI_File;
+            Lib_File := Name_Find;
+            Text := Read_Library_Info (Lib_File, True);
+
+            Id  := ALI.Scan_ALI
+                         (F          => Lib_File,
+                          T          => Text,
+                          Ignore_ED  => False,
+                          Err        => True,
+                          Read_Lines => "D");
+            Free (Text);
+
+            --  Look for s-osinte.ads in the dependencies
+
+            for Index in ALI.ALIs.Table (Id).First_Sdep ..
+                         ALI.ALIs.Table (Id).Last_Sdep
+            loop
+               if ALI.Sdep.Table (Index).Sfile = S_Osinte_Ads then
+                  Libgnarl_Needed := True;
+
+               elsif Hostparm.OpenVMS and then
+                     ALI.Sdep.Table (Index).Sfile = S_Dec_Ads
+               then
+                  Libdecgnat_Needed := True;
+               end if;
+            end loop;
+         end if;
+      end Check_Libs;
+
+      -------------
+      -- Process --
+      -------------
+
+      procedure Process (The_ALI : File_Name_Type) is
+         Text       : Text_Buffer_Ptr;
+         Idread     : ALI_Id;
+         First_Unit : ALI.Unit_Id;
+         Last_Unit  : ALI.Unit_Id;
+         Unit_Data  : Unit_Record;
+         Afile      : File_Name_Type;
+
+      begin
+         --  Nothing to do if the ALI file has already been processed.
+         --  This happens if an interface imports another interface.
+
+         if not Processed_ALIs.Get (The_ALI) then
+            Processed_ALIs.Set (The_ALI, True);
+            Text := Read_Library_Info (The_ALI);
+
+            if Text /= null then
+               Idread :=
+                 Scan_ALI
+                   (F         => The_ALI,
+                    T         => Text,
+                    Ignore_ED => False,
+                    Err       => True);
+               Free (Text);
+
+               if Idread /= No_ALI_Id then
+                  First_Unit := ALI.ALIs.Table (Idread).First_Unit;
+                  Last_Unit  := ALI.ALIs.Table (Idread).Last_Unit;
+
+                  --  Process both unit (spec and body) if the body is needed
+                  --  by the spec (inline or generic). Otherwise, just process
+                  --  the spec.
+
+                  if First_Unit /= Last_Unit and then
+                    not ALI.Units.Table (Last_Unit).Body_Needed_For_SAL
+                  then
+                     First_Unit := Last_Unit;
+                  end if;
+
+                  for Unit in First_Unit .. Last_Unit loop
+                     Unit_Data := ALI.Units.Table (Unit);
+
+                     --  Check if each withed unit which is in the library is
+                     --  also in the interface set, if it has not yet been
+                     --  processed.
+
+                     for W in Unit_Data.First_With .. Unit_Data.Last_With loop
+                        Afile := Withs.Table (W).Afile;
+
+                        if Library_ALIs.Get (Afile)
+                          and then not Processed_ALIs.Get (Afile)
+                        then
+                           if not Interface_ALIs.Get (Afile) then
+                              if not Warning_For_Library then
+                                 Write_Str ("Warning: In library project """);
+                                 Get_Name_String (Data.Name);
+                                 To_Mixed (Name_Buffer (1 .. Name_Len));
+                                 Write_Str (Name_Buffer (1 .. Name_Len));
+                                 Write_Line ("""");
+                                 Warning_For_Library := True;
+                              end if;
+
+                              Write_Str ("         Unit """);
+                              Get_Name_String (Withs.Table (W).Uname);
+                              To_Mixed (Name_Buffer (1 .. Name_Len - 2));
+                              Write_Str (Name_Buffer (1 .. Name_Len - 2));
+                              Write_Line (""" is not in the interface set");
+                              Write_Str ("         but it is needed by ");
+
+                              case Unit_Data.Utype is
+                                 when Is_Spec =>
+                                    Write_Str ("the spec of ");
+
+                                 when Is_Body =>
+                                    Write_Str ("the body of ");
+
+                                 when others =>
+                                    null;
+                              end case;
+
+                              Write_Str ("""");
+                              Get_Name_String (Unit_Data.Uname);
+                              To_Mixed (Name_Buffer (1 .. Name_Len - 2));
+                              Write_Str (Name_Buffer (1 .. Name_Len - 2));
+                              Write_Line ("""");
+                           end if;
+
+                           --  Now, process this unit
+
+                           Process (Afile);
+                        end if;
+                     end loop;
+                  end loop;
+               end if;
+            end if;
+         end if;
+      end Process;
+
+      --------------------------------
+      -- Process_Imported_Libraries --
+      --------------------------------
+
+      procedure Process_Imported_Libraries is
+         Current : Project_Id;
+
+         procedure Process_Project (Project : Project_Id);
+         --  Process Project and its imported projects recursively.
+         --  Add any library projects to table Library_Projs.
+
+         ---------------------
+         -- Process_Project --
+         ---------------------
+
+         procedure Process_Project (Project : Project_Id) is
+            Data     : constant Project_Data := Projects.Table (Project);
+            Imported : Project_List := Data.Imported_Projects;
+            Element  : Project_Element;
+
+         begin
+            --  Nothing to do if process has already been processed.
+
+            if not Processed_Projects.Get (Data.Name) then
+               Processed_Projects.Set (Data.Name, True);
+
+               --  If it is a library project, add it to Library_Projs
+
+               if Project /= For_Project and then Data.Library then
+                  Library_Projs.Increment_Last;
+                  Library_Projs.Table (Library_Projs.Last) := Project;
+               end if;
+
+               --  Call Process_Project recursively for any imported project
+
+               while Imported /= Empty_Project_List loop
+                  Element := Project_Lists.Table (Imported);
+
+                  if Element.Project /= No_Project then
+                     Process_Project (Element.Project);
+                  end if;
+
+                  Imported := Element.Next;
+               end loop;
+            end if;
+         end Process_Project;
+
+      --  Start of processing for Process_Imported_Libraries
+
+      begin
+         --  Build list of library projects imported directly or indirectly
+
+         Process_Project (For_Project);
+
+         --  If there are more that one library project file, make sure
+         --  that if libA depends on libB, libB is first in order.
+
+         if Library_Projs.Last > 1 then
+            declare
+               Index : Integer := 1;
+               Proj1 : Project_Id;
+               Proj2 : Project_Id;
+               List  : Project_List := Empty_Project_List;
+
+            begin
+               Library_Loop : while Index < Library_Projs.Last loop
+                  Proj1 := Library_Projs.Table (Index);
+                  List  := Projects.Table (Proj1).Imported_Projects;
+
+                  List_Loop : while List /= Empty_Project_List loop
+                     Proj2 := Project_Lists.Table (List).Project;
+
+                     for J in Index + 1 .. Library_Projs.Last loop
+                        if Proj2 = Library_Projs.Table (J) then
+                           Library_Projs.Table (J) := Proj1;
+                           Library_Projs.Table (Index) := Proj2;
+                           exit List_Loop;
+                        end if;
+                     end loop;
+
+                     List := Project_Lists.Table (List).Next;
+                  end loop List_Loop;
+
+                  if List = Empty_Project_List then
+                     Index := Index + 1;
+                  end if;
+               end loop Library_Loop;
+            end;
+         end if;
+
+         --  Now that we have a correct order, add the -L and -l switches and,
+         --  if the Rpath option is supported, add the directory to the Rpath.
+
+         for Index in 1 .. Library_Projs.Last loop
+            Current := Library_Projs.Table (Index);
+
+            Opts.Increment_Last;
+            Opts.Table (Opts.Last) :=
+              new String'
+                ("-L" &
+                 Get_Name_String
+                   (Projects.Table (Current).Library_Dir));
+
+            if Path_Option /= null then
+               Add_Rpath
+                  (Get_Name_String
+                     (Projects.Table (Current).Library_Dir));
+            end if;
+
+            Opts.Increment_Last;
+            Opts.Table (Opts.Last) :=
+              new String'
+                ("-l" &
+                 Get_Name_String
+                   (Projects.Table (Current).Library_Name));
+         end loop;
+      end Process_Imported_Libraries;
+
+   --  Start of processing for Build_Library
 
    begin
       Reset_Tables;
@@ -123,178 +751,623 @@ package body MLib.Prj is
       --  Fail if project is not a library project
 
       if not Data.Library then
-         Fail ("project """, Project_Name, """ has no library");
+         Com.Fail ("project """, Project_Name, """ has no library");
       end if;
 
-      Lib_Dirpath := new String'(Get_Name_String (Data.Library_Dir));
-      Lib_Filename := new String'(Get_Name_String (Data.Library_Name));
+      --  If this is the first time Build_Library is called, get the Name_Id
+      --  of "s-osinte.ads".
 
-      case Data.Library_Kind is
-         when Static =>
-            The_Build_Mode := Static;
+      if S_Osinte_Ads = No_Name then
+         Name_Len := 12;
+         Name_Buffer (1 .. Name_Len) := "s-osinte.ads";
+         S_Osinte_Ads := Name_Find;
+      end if;
 
-         when Dynamic =>
-            The_Build_Mode := Dynamic;
+      if S_Dec_Ads = No_Name then
+         Name_Len := 7;
+         Name_Buffer (1 .. Name_Len) := "dec.ads";
+         S_Dec_Ads := Name_Find;
+      end if;
 
-         when Relocatable =>
-            The_Build_Mode := Relocatable;
+      --  We work in the object directory
 
-            if Target.PIC_Option /= "" then
-               Opts.Increment_Last;
-               Opts.Table (Opts.Last) := new String'(Target.PIC_Option);
+      Change_Dir (Object_Directory_Path);
+
+      if Standalone then
+         --  Call gnatbind only if Bind is True
+
+         if Bind then
+            if Gnatbind_Path = null then
+               Com.Fail ("unable to locate ", Gnatbind);
             end if;
-      end case;
 
-      --  Get the library version, if any
+            if Gcc_Path = null then
+               Com.Fail ("unable to locate ", Gcc);
+            end if;
 
-      if Data.Lib_Internal_Name /= No_Name then
-         Lib_Version := new String'(Get_Name_String (Data.Lib_Internal_Name));
+            --  Allocate Arguments, if it is the first time we see a standalone
+            --  library.
+
+            if Arguments = No_Argument then
+               Arguments := new String_List (1 .. Initial_Argument_Max);
+            end if;
+
+            --  Add "-n -o b~<lib>.adb (b$<lib>.adb on VMS) -L<lib>"
+
+            Argument_Number := 2;
+            Arguments (1) := No_Main;
+            Arguments (2) := Output_Switch;
+
+            if Hostparm.OpenVMS then
+               B_Start (B_Start'Last) := '$';
+            end if;
+
+            Add_Argument
+              (B_Start & Get_Name_String (Data.Library_Name) & ".adb");
+            Add_Argument ("-L" & Get_Name_String (Data.Library_Name));
+
+            --  Get all the ALI files of the project file
+
+            declare
+               Unit : Unit_Data;
+
+            begin
+               Library_ALIs.Reset;
+               Interface_ALIs.Reset;
+               Processed_ALIs.Reset;
+               for Source in 1 .. Com.Units.Last loop
+                  Unit := Com.Units.Table (Source);
+
+                  if Unit.File_Names (Body_Part).Name /= No_Name
+                    and then Unit.File_Names (Body_Part).Path /= Slash
+                  then
+                     if
+                       Check_Project (Unit.File_Names (Body_Part).Project)
+                     then
+                        if Unit.File_Names (Specification).Name = No_Name then
+                           declare
+                              Src_Ind : Source_File_Index;
+
+                           begin
+                              Src_Ind := Sinput.P.Load_Project_File
+                                (Get_Name_String
+                                   (Unit.File_Names
+                                      (Body_Part).Path));
+
+                              --  Add the ALI file only if it is not a subunit
+
+                              if
+                              not Sinput.P.Source_File_Is_Subunit (Src_Ind)
+                              then
+                                 Add_ALI_For
+                                   (Unit.File_Names (Body_Part).Name);
+                              end if;
+                           end;
+
+                        else
+                           Add_ALI_For (Unit.File_Names (Body_Part).Name);
+                        end if;
+                     end if;
+
+                  elsif Unit.File_Names (Specification).Name /= No_Name
+                    and then Unit.File_Names (Specification).Path /= Slash
+                    and then Check_Project
+                      (Unit.File_Names (Specification).Project)
+                  then
+                     Add_ALI_For (Unit.File_Names (Specification).Name);
+                  end if;
+               end loop;
+            end;
+
+            --  Set the paths
+
+            Set_Ada_Paths
+              (Project => For_Project, Including_Libraries => True);
+
+            --  Display the gnatbind command, if not in quiet output
+
+            Display (Gnatbind);
+
+            --  Invoke gnatbind
+
+            GNAT.OS_Lib.Spawn
+              (Gnatbind_Path.all, Arguments (1 .. Argument_Number), Success);
+
+            if not Success then
+               Com.Fail ("could not bind standalone library ",
+                         Get_Name_String (Data.Library_Name));
+            end if;
+
+         end if;
+
+         --  Compile the binder generated file only if Link is true
+
+         if Link then
+            --  Set the paths
+
+            Set_Ada_Paths
+              (Project => For_Project, Including_Libraries => True);
+
+            --  Invoke <gcc> -c b$$<lib>.adb
+
+            --  Allocate Arguments, if it is the first time we see a standalone
+            --  library.
+
+            if Arguments = No_Argument then
+               Arguments := new String_List (1 .. Initial_Argument_Max);
+            end if;
+
+            Argument_Number := 1;
+            Arguments (1) := Compile_Switch;
+
+            if Hostparm.OpenVMS then
+               B_Start (B_Start'Last) := '$';
+            end if;
+
+            Add_Argument
+              (B_Start & Get_Name_String (Data.Library_Name) & ".adb");
+
+            --  If necessary, add the PIC option
+
+            if PIC_Option /= "" then
+               Add_Argument (PIC_Option);
+            end if;
+
+            Display (Gcc);
+            GNAT.OS_Lib.Spawn
+              (Gcc_Path.all, Arguments (1 .. Argument_Number), Success);
+
+            if not Success then
+               Com.Fail
+                 ("could not compile binder generated file for library ",
+                  Get_Name_String (Data.Library_Name));
+            end if;
+
+            --  Process binder generated file for pragmas Linker_Options
+
+            Process_Binder_File (Arguments (2).all & ASCII.NUL);
+         end if;
       end if;
 
-      --  Add the objects found in the object directory
+      --  Build the library only if Link is True
 
-      declare
-         Object_Dir : Dir_Type;
-         Filename : String (1 .. 255);
-         Last : Natural;
-         Object_Dir_Path : constant String :=
-           Get_Name_String (Data.Object_Directory);
-      begin
-         Open (Dir => Object_Dir, Dir_Name => Object_Dir_Path);
+      if Link then
+         --  If attribute Library_GCC was specified, get the driver name
 
-         --  For all entries in the object directory
+         Library_GCC := Value_Of (Name_Library_GCC, Data.Decl.Attributes);
+
+         if not Library_GCC.Default then
+            Driver_Name := Library_GCC.Value;
+         end if;
+
+         --  If attribute Library_Options was specified, add these additional
+         --  options.
+
+         Library_Options :=
+           Value_Of (Name_Library_Options, Data.Decl.Attributes);
+
+         if not Library_Options.Default then
+            declare
+               Current : String_List_Id := Library_Options.Values;
+               Element : String_Element;
+
+            begin
+               while Current /= Nil_String loop
+                  Element := String_Elements.Table (Current);
+                  Get_Name_String (Element.Value);
+
+                  if Name_Len /= 0 then
+                     Opts.Increment_Last;
+                     Opts.Table (Opts.Last) :=
+                       new String'(Name_Buffer (1 .. Name_Len));
+                  end if;
+
+                  Current := Element.Next;
+               end loop;
+            end;
+         end if;
+
+         Lib_Dirpath  := new String'(Get_Name_String (Data.Library_Dir));
+         Lib_Filename := new String'(Get_Name_String (Data.Library_Name));
+
+         case Data.Library_Kind is
+            when Static =>
+               The_Build_Mode := Static;
+
+            when Dynamic =>
+               The_Build_Mode := Dynamic;
+
+            when Relocatable =>
+               The_Build_Mode := Relocatable;
+
+               if PIC_Option /= "" then
+                  Opts.Increment_Last;
+                  Opts.Table (Opts.Last) := new String'(PIC_Option);
+               end if;
+         end case;
+
+         --  Get the library version, if any
+
+         if Data.Lib_Internal_Name /= No_Name then
+            Lib_Version :=
+              new String'(Get_Name_String (Data.Lib_Internal_Name));
+         end if;
+
+         --  Add the objects found in the object directory and the object
+         --  directories of the extended files, if any, except for generated
+         --  object files (b~.. or B$..) from extended projects.
+         --  When there are one or more extended files, only add an object file
+         --  if no object file with the same name have already been added.
+
+         In_Main_Object_Directory := True;
 
          loop
-            Read (Object_Dir, Filename, Last);
+            declare
+               Object_Dir_Path : constant String :=
+                                   Get_Name_String (Data.Object_Directory);
+               Object_Dir      : Dir_Type;
+               Filename        : String (1 .. 255);
+               Last            : Natural;
+               Id              : Name_Id;
 
-            exit when Last = 0;
+            begin
+               Open (Dir => Object_Dir, Dir_Name => Object_Dir_Path);
 
-            --  Check if it is an object file
+               --  For all entries in the object directory
 
-            if Files.Is_Obj (Filename (1 .. Last)) then
-               --  record this object file
+               loop
+                  Read (Object_Dir, Filename, Last);
 
-               Objects.Increment_Last;
-               Objects.Table (Objects.Last) :=
-                 new String' (Object_Dir_Path & Directory_Separator &
-                              Filename (1 .. Last));
+                  exit when Last = 0;
 
-               if Is_Regular_File
-                 (Object_Dir_Path &
-                  Files.Ext_To (Object_Dir_Path &
-                                Filename (1 .. Last), "ali"))
-               then
-                  --  Record the corresponding ali file
+                  --  Check if it is an object file
 
-                  Alis.Increment_Last;
-                  Alis.Table (Alis.Last) :=
-                    new String' (Object_Dir_Path &
-                                 Files.Ext_To
-                                 (Filename (1 .. Last), "ali"));
+                  if Is_Obj (Filename (1 .. Last)) then
+                     declare
+                        Object_Path : String :=
+                          Normalize_Pathname
+                            (Object_Dir_Path & Directory_Separator &
+                             Filename (1 .. Last));
 
-               else
-                  --  The object file is a foreign object file
+                     begin
+                        Canonical_Case_File_Name (Object_Path);
+                        Canonical_Case_File_Name (Filename (1 .. Last));
 
-                  Foreigns.Increment_Last;
-                  Foreigns.Table (Foreigns.Last) :=
-                    new String'(Object_Dir_Path &
-                                Filename (1 .. Last));
+                        --  If in the object directory of an extended project,
+                        --  do not consider generated object files.
 
-               end if;
-            end if;
+                        if In_Main_Object_Directory or else
+                          Last < 5 or else
+                          Filename (1 .. B_Start'Length) /= B_Start
+                        then
+                           Name_Len := Last;
+                           Name_Buffer (1 .. Name_Len) := Filename (1 .. Last);
+                           Id := Name_Find;
+
+                           if not Objects_Htable.Get (Id) then
+
+                              --  Record this object file
+
+                              Objects_Htable.Set (Id, True);
+                              Objects.Increment_Last;
+                              Objects.Table (Objects.Last) :=
+                                new String'(Object_Path);
+
+                              declare
+                                 ALI_File : constant String :=
+                                              Ext_To (Object_Path, "ali");
+
+                              begin
+                                 if Is_Regular_File (ALI_File) then
+
+                                    --  Record the ALI file
+
+                                    ALIs.Increment_Last;
+                                    ALIs.Table (ALIs.Last) :=
+                                      new String'(ALI_File);
+
+                                    --  Find out if for this ALI file,
+                                    --  libgnarl or libdecgnat (on OpenVMS)
+                                    --  is necessary.
+
+                                    Check_Libs (ALI_File);
+
+                                 else
+                                    --  The object file is a foreign object
+                                    --  file.
+
+                                    Foreigns.Increment_Last;
+                                    Foreigns.Table (Foreigns.Last) :=
+                                      new String'(Object_Path);
+                                 end if;
+                              end;
+                           end if;
+                        end if;
+                     end;
+                  end if;
+               end loop;
+
+               Close (Dir => Object_Dir);
+
+            exception
+               when Directory_Error =>
+                  Com.Fail ("cannot find object directory """,
+                            Get_Name_String (Data.Object_Directory),
+                            """");
+            end;
+
+            exit when Data.Extends = No_Project;
+
+            In_Main_Object_Directory  := False;
+            Data := Projects.Table (Data.Extends);
          end loop;
 
-         Close (Dir => Object_Dir);
+         --  Add the -L and -l switches for the imported Library Project Files,
+         --  and, if Path Option is supported, the library directory path names
+         --  to Rpath.
 
-      exception
-         when Directory_Error =>
-            Fail ("cannot find object directory """,
-                  Get_Name_String (Data.Object_Directory),
-                  """");
-      end;
+         Process_Imported_Libraries;
 
-      --  We want to link some Ada files, so we need to link with
-      --  the GNAT runtime (libgnat & libgnarl)
+         --  Link with libgnat and possibly libgnarl
 
-      if The_Build_Mode = Dynamic or else The_Build_Mode = Relocatable then
          Opts.Increment_Last;
-         Opts.Table (Opts.Last) := new String' ("-lgnarl");
+         Opts.Table (Opts.Last) := new String'("-L" & Lib_Directory);
+
+         --  If Path Option is supported, add libgnat directory path name to
+         --  Rpath.
+
+         if Path_Option /= null then
+            Add_Rpath (Lib_Directory);
+         end if;
+
+         if Libgnarl_Needed then
+            Opts.Increment_Last;
+            Opts.Table (Opts.Last) := new String'("-lgnarl");
+         end if;
+
+         if Libdecgnat_Needed then
+            Opts.Increment_Last;
+            Opts.Table (Opts.Last) :=
+              new String'("-L" & Lib_Directory & "/../declib");
+            Opts.Increment_Last;
+            Opts.Table (Opts.Last) := new String'("-ldecgnat");
+         end if;
+
          Opts.Increment_Last;
-         Opts.Table (Opts.Last) := new String' ("-lgnat");
+         Opts.Table (Opts.Last) := new String'("-lgnat");
+
+         --  If Path Option is supported, add the necessary switch with the
+         --  content of Rpath. As Rpath contains at least libgnat directory
+         --  path name, it is guaranteed that it is not null.
+
+         if Path_Option /= null then
+            Opts.Increment_Last;
+            Opts.Table (Opts.Last) :=
+              new String'(Path_Option.all & Rpath (1 .. Rpath_Last));
+            Free (Path_Option);
+            Free (Rpath);
+         end if;
+
+         Object_Files :=
+           new Argument_List'
+             (Argument_List (Objects.Table (1 .. Objects.Last)));
+
+         Foreign_Objects :=
+           new Argument_List'(Argument_List
+                                (Foreigns.Table (1 .. Foreigns.Last)));
+
+         Ali_Files :=
+           new Argument_List'(Argument_List (ALIs.Table (1 .. ALIs.Last)));
+
+         Options :=
+           new Argument_List'(Argument_List (Opts.Table (1 .. Opts.Last)));
+
+         --  We fail if there are no object to put in the library
+         --  (Ada or foreign objects).
+
+         if Object_Files'Length = 0 then
+            Com.Fail ("no object files for library """ &
+                      Lib_Filename.all & '"');
+
+         end if;
+
+         if not Opt.Quiet_Output then
+            Write_Eol;
+            Write_Str  ("building ");
+            Write_Str (Ada.Characters.Handling.To_Lower
+                         (Build_Mode_State'Image (The_Build_Mode)));
+            Write_Str  (" library for project ");
+            Write_Line (Project_Name);
+
+            Write_Eol;
+
+            Write_Line ("object files:");
+
+            for Index in Object_Files'Range loop
+               Write_Str  ("   ");
+               Write_Line (Object_Files (Index).all);
+            end loop;
+
+            Write_Eol;
+
+            if Ali_Files'Length = 0 then
+               Write_Line ("NO ALI files");
+
+            else
+               Write_Line ("ALI files:");
+
+               for Index in Ali_Files'Range loop
+                  Write_Str  ("   ");
+                  Write_Line (Ali_Files (Index).all);
+               end loop;
+            end if;
+
+            Write_Eol;
+         end if;
+
+         --  We check that all object files are regular files
+
+         Check_Context;
+
+         --  Delete the existing library file, if it exists.
+         --  Fail if the library file is not writable, or if it is not possible
+         --  to delete the file.
+
+         declare
+            DLL_Name : aliased String :=
+                         Lib_Dirpath.all & "/lib" &
+                           Lib_Filename.all & "." & DLL_Ext;
+
+            Archive_Name : aliased String :=
+                             Lib_Dirpath.all & "/lib" &
+                               Lib_Filename.all & "." & Archive_Ext;
+
+            type Str_Ptr is access all String;
+            --  This type is necessary to meet the accessibility rules of Ada.
+            --  It is not possible to use String_Access here.
+
+            Full_Lib_Name : Str_Ptr;
+            --  Designates the full library path name. Either DLL_Name or
+            --  Archive_Name, depending on the library kind.
+
+            Success : Boolean := False;
+            --  Used to call Delete_File
+
+         begin
+            if The_Build_Mode = Static then
+               Full_Lib_Name := Archive_Name'Access;
+            else
+               Full_Lib_Name := DLL_Name'Access;
+            end if;
+
+            if Is_Regular_File (Full_Lib_Name.all) then
+               if Is_Writable_File (Full_Lib_Name.all) then
+                  Delete_File (Full_Lib_Name.all, Success);
+               end if;
+
+               if Is_Regular_File (Full_Lib_Name.all) then
+                  Com.Fail ("could not delete """ & Full_Lib_Name.all & """");
+               end if;
+            end if;
+         end;
+
+         Argument_Number := 0;
+
+         --  If we have a standalone library, gather all the interface ALI.
+         --  They are passed to Build_Dynamic_Library, where they are used by
+         --  some platforms (VMS, for example) to decide what symbols should be
+         --  exported. They are also flagged as Interface when we copy them to
+         --  the library directory (by Copy_ALI_Files, below).
+
+         if Standalone then
+            Data := Projects.Table (For_Project);
+
+            declare
+               Interface : String_List_Id := Data.Lib_Interface_ALIs;
+               ALI       : File_Name_Type;
+
+            begin
+               while Interface /= Nil_String loop
+                  ALI := String_Elements.Table (Interface).Value;
+                  Interface_ALIs.Set (ALI, True);
+                  Get_Name_String (String_Elements.Table (Interface).Value);
+                  Add_Argument (Name_Buffer (1 .. Name_Len));
+                  Interface := String_Elements.Table (Interface).Next;
+               end loop;
+
+               Interface := Data.Lib_Interface_ALIs;
+
+               if not Opt.Quiet_Output then
+
+                  --  Check that the interface set is complete: any unit in the
+                  --  library that is needed by an interface should also be an
+                  --  interface. If it is not the case, output a warning.
+
+                  while Interface /= Nil_String loop
+                     ALI := String_Elements.Table (Interface).Value;
+                     Process (ALI);
+                     Interface := String_Elements.Table (Interface).Next;
+                  end loop;
+               end if;
+            end;
+         end if;
+
+         --  Clean the library directory, if it is also the directory where
+         --  the ALI files are copied, either because there is no interface
+         --  copy directory or because the interface copy directory is the
+         --  same as the library directory.
+
+         Copy_Dir := Projects.Table (For_Project).Library_Dir;
+         Clean (Copy_Dir);
+
+         --  Call the procedure to build the library, depending on the build
+         --  mode.
+
+         case The_Build_Mode is
+            when Dynamic | Relocatable =>
+               Build_Dynamic_Library
+                 (Ofiles        => Object_Files.all,
+                  Foreign       => Foreign_Objects.all,
+                  Afiles        => Ali_Files.all,
+                  Options       => Options.all,
+                  Interfaces    => Arguments (1 .. Argument_Number),
+                  Lib_Filename  => Lib_Filename.all,
+                  Lib_Dir       => Lib_Dirpath.all,
+                  Driver_Name   => Driver_Name,
+                  Lib_Address   => DLL_Address.all,
+                  Lib_Version   => Lib_Version.all,
+                  Relocatable   => The_Build_Mode = Relocatable,
+                  Auto_Init     => Data.Lib_Auto_Init);
+
+            when Static =>
+               MLib.Build_Library
+                 (Object_Files.all,
+                  Ali_Files.all,
+                  Lib_Filename.all,
+                  Lib_Dirpath.all);
+
+            when None =>
+               null;
+         end case;
+
+         --  We need to copy the ALI files from the object directory
+         --  to the library directory, so that the linker find them there,
+         --  and does not need to look in the object directory where it would
+         --  also find the object files; and we don't want that: we want the
+         --  linker to use the library.
+
+         --  Copy the ALI files and make the copies read-only. For interfaces,
+         --  mark the copies as interfaces.
+
+         Copy_ALI_Files
+           (Files      => Ali_Files.all,
+            To         => Copy_Dir,
+            Interfaces => Arguments (1 .. Argument_Number));
+
+         --  Copy interface sources if Library_Src_Dir specified
+
+         if Standalone
+           and then Projects.Table (For_Project).Library_Src_Dir /= No_Name
+         then
+            --  Clean the interface copy directory, if it is not also the
+            --  library directory. If it is also the library directory, it has
+            --  already been cleaned before the generation of the library.
+
+            if Projects.Table (For_Project).Library_Src_Dir /= Copy_Dir then
+               Copy_Dir := Projects.Table (For_Project).Library_Src_Dir;
+               Clean (Copy_Dir);
+            end if;
+
+            Copy_Interface_Sources
+              (For_Project => For_Project,
+               Interfaces => Arguments (1 .. Argument_Number),
+               To_Dir => Copy_Dir);
+         end if;
       end if;
 
-      Object_Files :=
-        new Argument_List'(Argument_List (Objects.Table (1 .. Objects.Last)));
+      --  Reset the current working directory to its previous value
 
-      Foreign_Objects :=
-        new Argument_List'(Argument_List
-                           (Foreigns.Table (1 .. Foreigns.Last)));
-
-      Ali_Files :=
-        new Argument_List'(Argument_List (Alis.Table (1 .. Alis.Last)));
-
-      Options :=
-        new Argument_List'(Argument_List (Opts.Table (1 .. Opts.Last)));
-
-      --  We fail if there are no object to put in the library
-      --  (Ada or foreign objects)
-
-      if Object_Files'Length = 0 then
-         Fail ("no object files");
-
-      end if;
-
-      if not Opt.Quiet_Output then
-         Write_Eol;
-         Write_Str  ("building ");
-         Write_Str (Ada.Characters.Handling.To_Lower
-                    (Build_Mode_State'Image (The_Build_Mode)));
-         Write_Str  (" library for project ");
-         Write_Line (Project_Name);
-         Write_Eol;
-      end if;
-
-      --  We check that all object files are regular files
-
-      Check_Context;
-
-      --  And we call the procedure to build the library,
-      --  depending on the build mode
-
-      case The_Build_Mode is
-         when Dynamic | Relocatable =>
-            Target.Build_Dynamic_Library
-              (Ofiles        => Object_Files.all,
-               Foreign       => Foreign_Objects.all,
-               Afiles        => Ali_Files.all,
-               Options       => Options.all,
-               Lib_Filename  => Lib_Filename.all,
-               Lib_Dir       => Lib_Dirpath.all,
-               Lib_Address   => DLL_Address.all,
-               Lib_Version   => Lib_Version.all,
-               Relocatable   => The_Build_Mode = Relocatable);
-
-         when Static =>
-            MLib.Build_Library
-              (Object_Files.all,
-               Ali_Files.all,
-               Lib_Filename.all,
-               Lib_Dirpath.all);
-
-         when None =>
-            null;
-      end case;
-
-      --  We need to copy the ALI files from the object directory
-      --  to the library directory, so that the linker find them
-      --  there, and does not need to look in the object directory
-      --  where it would also find the object files; and we don't want
-      --  that: we want the linker to use the library.
-
-      Target.Copy_ALI_Files
-        (From => Projects.Table (For_Project).Object_Directory,
-         To   => Projects.Table (For_Project).Library_Dir);
-
+      Change_Dir (Current_Dir);
    end Build_Library;
 
    -----------
@@ -304,8 +1377,7 @@ package body MLib.Prj is
    procedure Check (Filename : String) is
    begin
       if not Is_Regular_File (Filename) then
-         Fail (Filename, " not found.");
-
+         Com.Fail (Filename, " not found.");
       end if;
    end Check;
 
@@ -315,12 +1387,414 @@ package body MLib.Prj is
 
    procedure Check_Context is
    begin
-      --  check that each object file exist
+      --  check that each object file exists
 
       for F in Object_Files'Range loop
          Check (Object_Files (F).all);
       end loop;
    end Check_Context;
+
+   -------------------
+   -- Check_Library --
+   -------------------
+
+   procedure Check_Library (For_Project : Project_Id) is
+      Data : constant Project_Data := Projects.Table (For_Project);
+
+   begin
+      if Data.Library and not Data.Flag1 then
+         declare
+            Current  : constant Dir_Name_Str := Get_Current_Dir;
+            Lib_Name : constant Name_Id := Library_File_Name_For (For_Project);
+            Lib_TS   : Time_Stamp_Type;
+            Obj_TS   : Time_Stamp_Type;
+
+            Object_Dir : Dir_Type;
+
+         begin
+            if Hostparm.OpenVMS then
+               B_Start (B_Start'Last) := '$';
+            end if;
+
+            Change_Dir (Get_Name_String (Data.Library_Dir));
+
+            Lib_TS := File_Stamp (Lib_Name);
+
+            --  If the library file does not exist, then the time stamp will
+            --  be Empty_Time_Stamp, earlier than any other time stamp.
+
+            Change_Dir (Get_Name_String (Data.Object_Directory));
+            Open (Dir => Object_Dir, Dir_Name => ".");
+
+            --  For all entries in the object directory
+
+            loop
+               Read (Object_Dir, Name_Buffer, Name_Len);
+               exit when Name_Len = 0;
+
+               --  Check if it is an object file, but ignore any binder
+               --  generated file.
+
+               if Is_Obj (Name_Buffer (1 .. Name_Len))
+                  and then Name_Buffer (1 .. B_Start'Length) /= B_Start
+               then
+
+                  --  Get the object file time stamp
+
+                  Obj_TS := File_Stamp (Name_Find);
+
+                  --  If library file time stamp is earlier, set Flag1 and
+                  --  return. String comparaison is used, otherwise time stamps
+                  --  may be too close and the comparaison would return True,
+                  --  which would trigger an unnecessary rebuild of the
+                  --  library.
+
+                  if String (Lib_TS) < String (Obj_TS) then
+
+                     --  Library must be rebuilt
+
+                     Projects.Table (For_Project).Flag1 := True;
+                     exit;
+                  end if;
+               end if;
+            end loop;
+
+            Change_Dir (Current);
+         end;
+      end if;
+   end Check_Library;
+
+   -----------
+   -- Clean --
+   -----------
+
+   procedure Clean (Directory : Name_Id) is
+      Current  : constant Dir_Name_Str := Get_Current_Dir;
+
+      Dir : Dir_Type;
+
+      Name : String (1 .. 200);
+      Last : Natural;
+
+      Disregard : Boolean;
+
+      procedure Set_Writable (Name : System.Address);
+      pragma Import (C, Set_Writable, "__gnat_set_writable");
+
+   begin
+      Get_Name_String (Directory);
+
+      --  Change the working directory to the directory to clean
+
+      begin
+         Change_Dir (Name_Buffer (1 .. Name_Len));
+
+      exception
+         when others =>
+            Com.Fail
+              ("unable to access directory """,
+               Name_Buffer (1 .. Name_Len),
+               """");
+      end;
+
+      Open (Dir, ".");
+
+      --  For each regular file in the directory, make it writable and
+      --  delete the file.
+
+      loop
+         Read (Dir, Name, Last);
+         exit when Last = 0;
+
+         if Is_Regular_File (Name (1 .. Last)) then
+            Name (Last + 1) := ASCII.NUL;
+            Set_Writable (Name (1)'Address);
+            Delete_File (Name (1 .. Last), Disregard);
+         end if;
+      end loop;
+
+      Close (Dir);
+
+      --  Restore the initial working directory
+
+      Change_Dir (Current);
+   end Clean;
+
+   ----------------------------
+   -- Copy_Interface_Sources --
+   ----------------------------
+
+   procedure Copy_Interface_Sources
+     (For_Project : Project_Id;
+      Interfaces  : Argument_List;
+      To_Dir      : Name_Id)
+   is
+      Current  : constant Dir_Name_Str := Get_Current_Dir;
+      Target   : constant Dir_Name_Str := Get_Name_String (To_Dir);
+
+      Text     : Text_Buffer_Ptr;
+      The_ALI  : ALI.ALI_Id;
+      Lib_File : Name_Id;
+
+      First_Unit  : ALI.Unit_Id;
+      Second_Unit : ALI.Unit_Id;
+
+      Data : Unit_Data;
+
+      Copy_Subunits : Boolean := False;
+
+      procedure Copy (File_Name : Name_Id);
+      --  Copy one source of the project to the target directory
+
+      ----------
+      -- Copy --
+      ----------
+
+      procedure Copy (File_Name : Name_Id) is
+         Success : Boolean := False;
+
+      begin
+         Unit_Loop :
+         for Index in 1 .. Com.Units.Last loop
+            Data := Com.Units.Table (Index);
+
+            for J in Data.File_Names'Range loop
+               if Data.File_Names (J).Project = For_Project
+                 and then Data.File_Names (J).Name = File_Name
+               then
+                  Copy_File
+                    (Get_Name_String (Data.File_Names (J).Path),
+                     Target,
+                     Success,
+                     Mode => Overwrite,
+                     Preserve => Preserve);
+                  exit Unit_Loop;
+               end if;
+            end loop;
+         end loop Unit_Loop;
+      end Copy;
+
+      use ALI;
+
+   --  Start of processing for Copy_Interface_Sources
+
+   begin
+      --  Change the working directory to the object directory
+
+      Change_Dir
+        (Get_Name_String (Projects.Table (For_Project).Object_Directory));
+
+      for Index in Interfaces'Range loop
+
+         --  First, load the ALI file
+
+         Name_Len := 0;
+         Add_Str_To_Name_Buffer (Interfaces (Index).all);
+         Lib_File := Name_Find;
+         Text := Read_Library_Info (Lib_File);
+         The_ALI := Scan_ALI (Lib_File, Text, Ignore_ED => False, Err => True);
+         Free (Text);
+
+         Second_Unit := No_Unit_Id;
+         First_Unit := ALI.ALIs.Table (The_ALI).First_Unit;
+         Copy_Subunits := True;
+
+         --  If there is both a spec and a body, check if they are both needed
+
+         if ALI.Units.Table (First_Unit).Utype = Is_Body then
+            Second_Unit := ALI.ALIs.Table (The_ALI).Last_Unit;
+
+            --  If the body is not needed, then reset First_Unit
+
+            if not ALI.Units.Table (Second_Unit).Body_Needed_For_SAL then
+               First_Unit := No_Unit_Id;
+               Copy_Subunits := False;
+            end if;
+
+         elsif ALI.Units.Table (First_Unit).Utype = Is_Spec_Only then
+            Copy_Subunits := False;
+         end if;
+
+         --  Copy the file(s) that need to be copied
+
+         if First_Unit /= No_Unit_Id then
+            Copy (File_Name => ALI.Units.Table (First_Unit).Sfile);
+         end if;
+
+         if Second_Unit /= No_Unit_Id then
+            Copy (File_Name => ALI.Units.Table (Second_Unit).Sfile);
+         end if;
+
+         --  Copy all the separates, if any
+
+         if Copy_Subunits then
+            for Dep in ALI.ALIs.Table (The_ALI).First_Sdep ..
+              ALI.ALIs.Table (The_ALI).Last_Sdep
+            loop
+               if Sdep.Table (Dep).Subunit_Name /= No_Name then
+                  Copy (File_Name => Sdep.Table (Dep).Sfile);
+               end if;
+            end loop;
+         end if;
+      end loop;
+
+      --  Restore the initial working directory
+
+      Change_Dir (Current);
+   end Copy_Interface_Sources;
+
+   -------------
+   -- Display --
+   -------------
+
+   procedure Display (Executable : String) is
+   begin
+      if not Opt.Quiet_Output then
+         Write_Str (Executable);
+
+         for Index in 1 .. Argument_Number loop
+            Write_Char (' ');
+            Write_Str (Arguments (Index).all);
+         end loop;
+
+         Write_Eol;
+      end if;
+   end Display;
+
+   -------------------------
+   -- Process_Binder_File --
+   -------------------------
+
+   procedure Process_Binder_File (Name : String) is
+      Fd : FILEs;
+      --  Binder file's descriptor
+
+      Read_Mode  : constant String := "r" & ASCII.Nul;
+      --  For fopen
+
+      Status : Interfaces.C_Streams.int;
+      --  For fclose
+
+      Begin_Info : String := "--  BEGIN Object file/option list";
+      End_Info   : String := "--  END Object file/option list   ";
+
+      Next_Line : String (1 .. 1000);
+      --  Current line value
+      --  Where does this odd constant 1000 come from, looks suspicious ???
+
+      Nlast : Integer;
+      --  End of line slice (the slice does not contain the line terminator)
+
+      procedure Get_Next_Line;
+      --  Read the next line from the binder file without the line terminator
+
+      -------------------
+      -- Get_Next_Line --
+      -------------------
+
+      procedure Get_Next_Line is
+         Fchars : chars;
+
+      begin
+         Fchars := fgets (Next_Line'Address, Next_Line'Length, Fd);
+
+         if Fchars = System.Null_Address then
+            Fail ("Error reading binder output");
+         end if;
+
+         Nlast := 1;
+         while Nlast <= Next_Line'Last
+           and then Next_Line (Nlast) /= ASCII.LF
+           and then Next_Line (Nlast) /= ASCII.CR
+         loop
+            Nlast := Nlast + 1;
+         end loop;
+
+         Nlast := Nlast - 1;
+      end Get_Next_Line;
+
+   --  Start of processing for Process_Binder_File
+
+   begin
+      Fd := fopen (Name'Address, Read_Mode'Address);
+
+      if Fd = NULL_Stream then
+         Fail ("Failed to open binder output");
+      end if;
+
+      --  Skip up to the Begin Info line
+
+      loop
+         Get_Next_Line;
+         exit when Next_Line (1 .. Nlast) = Begin_Info;
+      end loop;
+
+      --  Find the first switch
+
+      loop
+         Get_Next_Line;
+
+         exit when Next_Line (1 .. Nlast) = End_Info;
+
+         --  As the binder generated file is in Ada, remove the first eight
+         --  characters "   --   ".
+
+         Next_Line (1 .. Nlast - 8) := Next_Line (9 .. Nlast);
+         Nlast := Nlast - 8;
+
+         --  Stop when the first switch is found
+
+         exit when Next_Line (1) = '-';
+      end loop;
+
+      if Next_Line (1 .. Nlast) /= End_Info then
+         loop
+            --  Disregard -static and -shared, as -shared will be used
+            --  in any case.
+
+            --  Disregard -lgnat, -lgnarl and -ldecgnat as they will be added
+            --  later, because they are also needed for non Stand-Alone shared
+            --  libraries.
+
+            if Next_Line (1 .. Nlast) /= "-static" and then
+               Next_Line (1 .. Nlast) /= "-shared" and then
+               Next_Line (1 .. Nlast) /= "-ldecgnat" and then
+               Next_Line (1 .. Nlast) /= "-lgnarl" and then
+               Next_Line (1 .. Nlast) /= "-lgnat"
+            then
+               if Next_Line (1) /= '-' then
+
+                  --  This is not an option, should we add it?
+
+                  if Add_Object_Files then
+                     Opts.Increment_Last;
+                     Opts.Table (Opts.Last) :=
+                       new String'(Next_Line (1 .. Nlast));
+                  end if;
+
+               else
+                  --  Add all other options
+
+                  Opts.Increment_Last;
+                  Opts.Table (Opts.Last) :=
+                    new String'(Next_Line (1 .. Nlast));
+               end if;
+            end if;
+
+            --  Next option, if any
+
+            Get_Next_Line;
+            exit when Next_Line (1 .. Nlast) = End_Info;
+
+            --  Remove first eight characters "   --   "
+
+            Next_Line (1 .. Nlast - 8) := Next_Line (9 .. Nlast);
+            Nlast := Nlast - 8;
+         end loop;
+      end if;
+
+      Status := fclose (Fd);
+   end Process_Binder_File;
 
    ------------------
    -- Reset_Tables --
@@ -329,9 +1803,12 @@ package body MLib.Prj is
    procedure Reset_Tables is
    begin
       Objects.Init;
+      Objects_Htable.Reset;
       Foreigns.Init;
-      Alis.Init;
+      ALIs.Init;
       Opts.Init;
+      Processed_Projects.Reset;
+      Library_Projs.Init;
    end Reset_Tables;
 
 end MLib.Prj;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,8 +33,8 @@
 
 --  This is an Alpha/VMS package.
 
-with GNAT.HTable;
-pragma Elaborate_All (GNAT.HTable);
+with System.HTable;
+pragma Elaborate_All (System.HTable);
 
 package body System.VMS_Exception_Table is
 
@@ -64,7 +64,7 @@ package body System.VMS_Exception_Table is
    function Hash (F : Natural) return HTable_Headers;
    function Get_Key (T : Exception_Code_Data_Ptr) return Natural;
 
-   package Exception_Code_HTable is new GNAT.HTable.Static_HTable (
+   package Exception_Code_HTable is new System.HTable.Static_HTable (
      Header_Num => HTable_Headers,
      Element    => Exception_Code_Data,
      Elmt_Ptr   => Exception_Code_Data_Ptr,
@@ -128,11 +128,10 @@ package body System.VMS_Exception_Table is
    ----------------------------
 
    procedure Register_VMS_Exception (Code : Integer) is
+      Excode : constant Integer := (Code / 8) * 8;
       --  Mask off lower 3 bits which are the severity
 
-      Excode : Integer := (Code / 8) * 8;
    begin
-
       --  This allocates an empty exception that gets filled in by
       --  __gnat_error_handler when the exception is raised. Allocating
       --  it here prevents having to allocate it each time the exception
@@ -142,7 +141,14 @@ package body System.VMS_Exception_Table is
          Exception_Code_HTable.Set
            (new Exception_Code_Data'
              (Excode,
-              new Exception_Data'(False, 'V', 0, null, null, 0),
+              new Exception_Data'
+               (Not_Handled_By_Others => False,
+                Lang                  => 'V',
+                Name_Length           => 0,
+                Full_Name             => null,
+                HTable_Ptr            => null,
+                Import_Code           => 0,
+                Raise_Hook            => null),
               null));
       end if;
    end Register_VMS_Exception;

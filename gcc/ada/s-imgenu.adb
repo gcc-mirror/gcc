@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2000 Free Software Foundation, Inc.             --
+--          Copyright (C) 2000-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,8 +54,8 @@ package body System.Img_Enum is
 
       IndexesT : constant Index_Table_Ptr := To_Index_Table_Ptr (Indexes);
 
-      Start : Natural := Natural (IndexesT (Pos));
-      Next  : Natural := Natural (IndexesT (Pos + 1));
+      Start : constant Natural := Natural (IndexesT (Pos));
+      Next  : constant Natural := Natural (IndexesT (Pos + 1));
 
       subtype Result_Type is String (1 .. Next - Start);
       --  We need this result type to force the result to have the
@@ -84,8 +84,8 @@ package body System.Img_Enum is
 
       IndexesT : constant Index_Table_Ptr := To_Index_Table_Ptr (Indexes);
 
-      Start : Natural := Natural (IndexesT (Pos));
-      Next  : Natural := Natural (IndexesT (Pos + 1));
+      Start : constant Natural := Natural (IndexesT (Pos));
+      Next  : constant Natural := Natural (IndexesT (Pos + 1));
 
       subtype Result_Type is String (1 .. Next - Start);
       --  We need this result type to force the result to have the
@@ -114,8 +114,8 @@ package body System.Img_Enum is
 
       IndexesT : constant Index_Table_Ptr := To_Index_Table_Ptr (Indexes);
 
-      Start : Natural := Natural (IndexesT (Pos));
-      Next  : Natural := Natural (IndexesT (Pos + 1));
+      Start : constant Natural := Natural (IndexesT (Pos));
+      Next  : constant Natural := Natural (IndexesT (Pos + 1));
 
       subtype Result_Type is String (1 .. Next - Start);
       --  We need this result type to force the result to have the

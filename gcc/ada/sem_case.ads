@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---         Copyright (C) 1996-2001 Free Software Foundation, Inc.           --
+--         Copyright (C) 1996-2002 Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,11 +26,12 @@
 
 with Types; use Types;
 
---  Package containing all the routines to process a list of discrete choices.
---  Such lists can occur in 3 different constructs: case statements, array
---  aggregates and record variants. We have factorized what used to be 3 very
---  similar sets of routines here. If you didn't figure it out already Choi
---  in the package name stands for Choices.
+--  Package containing the routines to process a list of discrete choices.
+--  Such lists can occur in two different constructs: case statements and
+--  record variants. We have factorized what used to be two very similar
+--  sets of routines in one place. These are not currently used for the
+--  aggregate case, since issues with nested aggregates make that case
+--  substantially different.
 
 package Sem_Case is
 
@@ -46,7 +47,7 @@ package Sem_Case is
 
    procedure No_OP (C : Node_Id);
    --  The no-operation routine. Does absolutely nothing. Can be used
-   --  in the following generic for the parameter Process_Empty_Choice.
+   --  in the following generic for the parameter Proces_Empty_Choice.
 
    generic
       with function Get_Alternatives (N : Node_Id) return List_Id;
@@ -83,7 +84,7 @@ package Sem_Case is
       procedure Analyze_Choices
         (N              : Node_Id;
          Subtyp         : Entity_Id;
-         Choice_Table   : in out Choice_Table_Type;
+         Choice_Table   : out Choice_Table_Type;
          Last_Choice    : out Nat;
          Raises_CE      : out Boolean;
          Others_Present : out Boolean);
@@ -113,7 +114,8 @@ package Sem_Case is
       --  error the flag Raise_CE is set.
       --
       --  Finally Others_Present is set to True if an Others choice is
-      --  present in the list of choices.
+      --  present in the list of choices, and in this case the call also
+      --  sets Others_Discrete_Choices in the N_Others_Choice node.
 
    end Generic_Choices_Processing;
 

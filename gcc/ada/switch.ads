@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -74,7 +74,7 @@ private
    Too_Many_Output_Files : exception;
    --  Exception raised if the -o switch is encountered more than once
 
-   Switch_Max_Value : constant := 999;
+   Switch_Max_Value : constant := 999_999;
    --  Maximum value permitted in switches that take a value
 
    procedure Scan_Nat

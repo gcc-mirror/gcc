@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-1998 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -284,7 +284,7 @@ package body Sem_Maps is
    -------------
 
    function New_Map (Num_Assoc : Int) return Map is
-      Header_Size : Header_Index := Find_Header_Size (Num_Assoc);
+      Header_Size : constant Header_Index := Find_Header_Size (Num_Assoc);
       Res         : Map_Info;
 
    begin

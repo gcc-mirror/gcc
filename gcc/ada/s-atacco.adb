@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,31 +31,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Unchecked_Conversion;
 package body System.Address_To_Access_Conversions is
-
-   ----------------
-   -- To_Address --
-   ----------------
-
-   function To_Address (Value : Object_Pointer) return Address is
+   --  This body is now superfluous and should be removed.
+   procedure Nothing is
    begin
-      if Value = null then
-         return Null_Address;
-      else
-         return Value.all'Address;
-      end if;
-   end To_Address;
-
-   ----------------
-   -- To_Pointer --
-   ----------------
-
-   function To_Pointer (Value : Address) return Object_Pointer is
-      function A_To_P is new Unchecked_Conversion (Address, Object_Pointer);
-
-   begin
-      return A_To_P (Value);
-   end To_Pointer;
-
+      null;
+   end Nothing;
 end System.Address_To_Access_Conversions;

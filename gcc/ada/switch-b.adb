@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 2001-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,9 +37,9 @@ package body Switch.B is
    --------------------------
 
    procedure Scan_Binder_Switches (Switch_Chars : String) is
-      Ptr : Integer := Switch_Chars'First;
-      Max : Integer := Switch_Chars'Last;
-      C   : Character := ' ';
+      Max : constant Integer := Switch_Chars'Last;
+      Ptr : Integer          := Switch_Chars'First;
+      C   : Character        := ' ';
 
    begin
       --  Skip past the initial character (must be the switch character)
@@ -149,6 +149,12 @@ package body Switch.B is
          when 'f' =>
             Ptr := Ptr + 1;
             Force_RM_Elaboration_Order := True;
+
+         --  Processing for F switch
+
+         when 'F' =>
+            Ptr := Ptr + 1;
+            Force_Checking_Of_Elaboration_Flags := True;
 
          --  Processing for g switch
 
@@ -281,6 +287,7 @@ package body Switch.B is
             Ptr := Ptr + 1;
             Time_Slice_Set := True;
             Scan_Nat (Switch_Chars, Max, Ptr, Time_Slice_Value);
+            Time_Slice_Value := Time_Slice_Value * 1_000;
 
          --  Processing for v switch
 
@@ -371,21 +378,36 @@ package body Switch.B is
                   Opt.RTS_Switch := True;
 
                   declare
-                     Src_Path_Name : String_Ptr := Get_RTS_Search_Dir
-                       (Switch_Chars (Ptr + 4 .. Switch_Chars'Last), Include);
-                     Lib_Path_Name : String_Ptr := Get_RTS_Search_Dir
-                       (Switch_Chars (Ptr + 4 .. Switch_Chars'Last), Objects);
+                     Src_Path_Name : constant String_Ptr :=
+                                       Get_RTS_Search_Dir
+                                         (Switch_Chars
+                                           (Ptr + 4 .. Switch_Chars'Last),
+                                          Include);
+                     Lib_Path_Name : constant String_Ptr :=
+                                       Get_RTS_Search_Dir
+                                         (Switch_Chars
+                                           (Ptr + 4 .. Switch_Chars'Last),
+                                          Objects);
+
                   begin
                      if Src_Path_Name /= null and then
                        Lib_Path_Name /= null
                      then
-                        Add_Search_Dirs (Src_Path_Name, Include);
-                        Add_Search_Dirs (Lib_Path_Name, Objects);
-                        --  we can exit as there can not be another switch
+                        --  Set the RTS_*_Path_Name variables, so that the
+                        --  correct directories will be set when
+                        --  Osint.Add_Default_Search_Dirs will be called later.
+
+                        RTS_Src_Path_Name := Src_Path_Name;
+                        RTS_Lib_Path_Name := Lib_Path_Name;
+
+                        --  We can exit as there can not be another switch
                         --  after --RTS
+
                         exit;
+
                      elsif  Src_Path_Name = null
-                       and Lib_Path_Name = null then
+                       and then Lib_Path_Name = null
+                     then
                         Osint.Fail ("RTS path not valid: missing " &
                                     "adainclude and adalib directories");
                      elsif Src_Path_Name = null then
@@ -414,7 +436,7 @@ package body Switch.B is
          Osint.Fail ("invalid switch: ", (1 => C));
 
       when Bad_Switch_Value =>
-         Osint.Fail ("numeric value too big for switch: ", (1 => C));
+         Osint.Fail ("numeric value out of range for switch: ", (1 => C));
 
       when Missing_Switch_Value =>
          Osint.Fail ("missing numeric value for switch: ", (1 => C));

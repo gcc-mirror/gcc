@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -94,6 +94,11 @@ pragma Pure (Parameters);
    --    when Size < Minimum_Stack_Size, return Minimum_Stack_Size
    --    otherwise return given Size
 
+   Default_Env_Stack_Size : constant Size_Type := 8_192_000;
+   --  Assumed size of the environment task, if no other information
+   --  is available. This value is used when stack checking is
+   --  enabled and no GNAT_STACK_LIMIT environment variable is set.
+
    Stack_Grows_Down  : constant Boolean := True;
    --  This constant indicates whether the stack grows up (False) or
    --  down (True) in memory as functions are called. It is used for
@@ -136,8 +141,8 @@ pragma Pure (Parameters);
    ---------------------
 
    --  In the following sections, constant parameters are defined to
-   --  allow some optimizations within the tasking run time based on
-   --  restrictions on the tasking features.
+   --  allow some optimizations and fine tuning within the tasking run time
+   --  based on restrictions on the tasking features.
 
    ----------------------
    -- Locking Strategy --
@@ -176,6 +181,14 @@ pragma Pure (Parameters);
    --  poll for pending base priority changes at every abort completion
    --  point. A value of False for Dynamic_Priority_Support corresponds
    --  to pragma Restrictions (No_Dynamic_Priorities);
+
+   ---------------------
+   -- Task Attributes --
+   ---------------------
+
+   Default_Attribute_Count : constant := 4;
+   --  Number of pre-allocated Address-sized task attributes stored in the
+   --  task control block.
 
    --------------------
    -- Runtime Traces --

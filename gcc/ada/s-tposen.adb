@@ -26,8 +26,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
+-- GNARL was developed by the GNARL team at Florida State University.       --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -444,7 +444,7 @@ package body System.Tasking.Protected_Objects.Single_Entry is
 
    function Protected_Count_Entry (Object : Protection_Entry) return Natural is
    begin
-      if Object.Call_In_Progress /= null then
+      if Object.Entry_Queue /= null then
          return 1;
       else
          return 0;
@@ -519,13 +519,12 @@ package body System.Tasking.Protected_Objects.Single_Entry is
       Self_Id       : constant Task_ID := STPO.Self;
       Entry_Call    : constant Entry_Call_Link := Object.Entry_Queue;
       Caller        : Task_ID;
-      Barrier_Value : Boolean;
 
    begin
       if Entry_Call /= null then
-         Barrier_Value := Object.Entry_Body.Barrier (Object.Compiler_Info, 1);
+         if Object.Entry_Body.Barrier (Object.Compiler_Info, 1) then
+            Object.Entry_Queue := null;
 
-         if Barrier_Value then
             if Object.Call_In_Progress /= null then
                --  This violates the No_Entry_Queue restriction, send
                --  Program_Error to the caller.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,19 +31,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Exceptions; use Ada.Exceptions;
 with Gnatvsn; use Gnatvsn;
 with System;  use System;
 with Tree_IO; use Tree_IO;
 
 package body Opt is
-
-   Tree_Version_String : String (Gnat_Version_String'Range);
-   --  Used to store the compiler version string read from a tree file to
-   --  check if it is the same as stored in the version ctring in Gnatvsn.
-   --  Therefore its length is taken directly from the version string in
-   --  Gnatvsn. If the length of the version string stored in the three is
-   --  different, then versions are for sure different.
 
    Immediate_Errors : Boolean := True;
    --  This is an obsolete flag that is no longer present in opt.ads. We
@@ -57,13 +49,14 @@ package body Opt is
 
    procedure Register_Opt_Config_Switches is
    begin
-      Ada_83_Config                     := Ada_83;
-      Dynamic_Elaboration_Checks_Config := Dynamic_Elaboration_Checks;
-      Extensions_Allowed_Config         := Extensions_Allowed;
-      External_Name_Exp_Casing_Config   := External_Name_Exp_Casing;
-      External_Name_Imp_Casing_Config   := External_Name_Imp_Casing;
-      Polling_Required_Config           := Polling_Required;
-      Use_VADS_Size_Config              := Use_VADS_Size;
+      Ada_83_Config                         := Ada_83;
+      Dynamic_Elaboration_Checks_Config     := Dynamic_Elaboration_Checks;
+      Exception_Locations_Suppressed_Config := Exception_Locations_Suppressed;
+      Extensions_Allowed_Config             := Extensions_Allowed;
+      External_Name_Exp_Casing_Config       := External_Name_Exp_Casing;
+      External_Name_Imp_Casing_Config       := External_Name_Imp_Casing;
+      Polling_Required_Config               := Polling_Required;
+      Use_VADS_Size_Config                  := Use_VADS_Size;
    end Register_Opt_Config_Switches;
 
    ---------------------------------
@@ -72,14 +65,15 @@ package body Opt is
 
    procedure Restore_Opt_Config_Switches (Save : Config_Switches_Type) is
    begin
-      Ada_83                     := Save.Ada_83;
-      Ada_95                     := not Ada_83;
-      Dynamic_Elaboration_Checks := Save.Dynamic_Elaboration_Checks;
-      Extensions_Allowed         := Save.Extensions_Allowed;
-      External_Name_Exp_Casing   := Save.External_Name_Exp_Casing;
-      External_Name_Imp_Casing   := Save.External_Name_Imp_Casing;
-      Polling_Required           := Save.Polling_Required;
-      Use_VADS_Size              := Save.Use_VADS_Size;
+      Ada_83                         := Save.Ada_83;
+      Ada_95                         := not Ada_83;
+      Dynamic_Elaboration_Checks     := Save.Dynamic_Elaboration_Checks;
+      Exception_Locations_Suppressed := Save.Exception_Locations_Suppressed;
+      Extensions_Allowed             := Save.Extensions_Allowed;
+      External_Name_Exp_Casing       := Save.External_Name_Exp_Casing;
+      External_Name_Imp_Casing       := Save.External_Name_Imp_Casing;
+      Polling_Required               := Save.Polling_Required;
+      Use_VADS_Size                  := Save.Use_VADS_Size;
    end Restore_Opt_Config_Switches;
 
    ------------------------------
@@ -88,13 +82,14 @@ package body Opt is
 
    procedure Save_Opt_Config_Switches (Save : out Config_Switches_Type) is
    begin
-      Save.Ada_83                     := Ada_83;
-      Save.Dynamic_Elaboration_Checks := Dynamic_Elaboration_Checks;
-      Save.Extensions_Allowed         := Extensions_Allowed;
-      Save.External_Name_Exp_Casing   := External_Name_Exp_Casing;
-      Save.External_Name_Imp_Casing   := External_Name_Imp_Casing;
-      Save.Polling_Required           := Polling_Required;
-      Save.Use_VADS_Size              := Use_VADS_Size;
+      Save.Ada_83                         := Ada_83;
+      Save.Dynamic_Elaboration_Checks     := Dynamic_Elaboration_Checks;
+      Save.Exception_Locations_Suppressed := Exception_Locations_Suppressed;
+      Save.Extensions_Allowed             := Extensions_Allowed;
+      Save.External_Name_Exp_Casing       := External_Name_Exp_Casing;
+      Save.External_Name_Imp_Casing       := External_Name_Imp_Casing;
+      Save.Polling_Required               := Polling_Required;
+      Save.Use_VADS_Size                  := Use_VADS_Size;
    end Save_Opt_Config_Switches;
 
    -----------------------------
@@ -122,7 +117,8 @@ package body Opt is
          Use_VADS_Size              := Use_VADS_Size_Config;
       end if;
 
-      Polling_Required := Polling_Required_Config;
+      Exception_Locations_Suppressed := Exception_Locations_Suppressed_Config;
+      Polling_Required               := Polling_Required_Config;
    end Set_Opt_Config_Switches;
 
    ---------------
@@ -133,12 +129,13 @@ package body Opt is
       Tree_Version_String_Len : Nat;
 
    begin
+      Tree_Read_Int  (Tree_ASIS_Version_Number);
       Tree_Read_Bool (Brief_Output);
       Tree_Read_Bool (GNAT_Mode);
       Tree_Read_Char (Identifier_Character_Set);
       Tree_Read_Int  (Maximum_File_Name_Length);
       Tree_Read_Data (Suppress_Options'Address,
-                      Suppress_Record'Object_Size / Storage_Unit);
+                      Suppress_Array'Object_Size / Storage_Unit);
       Tree_Read_Bool (Verbose_Mode);
       Tree_Read_Data (Warning_Mode'Address,
                       Warning_Mode_Type'Object_Size / Storage_Unit);
@@ -148,20 +145,23 @@ package body Opt is
       Tree_Read_Bool (Enable_Overflow_Checks);
       Tree_Read_Bool (Full_List);
 
-      --  Read and check version string
+      --  Read version string: we have to check the length first
 
       Tree_Read_Int (Tree_Version_String_Len);
 
       if Tree_Version_String_Len = Tree_Version_String'Length then
          Tree_Read_Data
-           (Tree_Version_String'Address, Tree_Version_String'Length);
-      end if;
+           (Tree_Version_String'Address, Tree_Version_String_Len);
+      else
+         Tree_Version_String := (others => '?');
 
-      if Tree_Version_String_Len /= Tree_Version_String'Length
-        or else Tree_Version_String /= Gnat_Version_String
-      then
-         Raise_Exception
-           (Program_Error'Identity, "Inconsistent versions of GNAT and ASIS");
+         declare
+            Tmp : String (1 .. Integer (Tree_Version_String_Len));
+         begin
+            Tree_Read_Data
+              (Tmp'Address, Tree_Version_String_Len);
+         end;
+
       end if;
 
       Tree_Read_Data (Distribution_Stub_Mode'Address,
@@ -170,7 +170,7 @@ package body Opt is
       Tree_Read_Bool (Inline_Active);
       Tree_Read_Bool (Inline_Processing_Required);
       Tree_Read_Bool (List_Units);
-      Tree_Read_Bool (No_Run_Time);
+      Tree_Read_Bool (Configurable_Run_Time_Mode);
       Tree_Read_Data (Operating_Mode'Address,
                       Operating_Mode_Type'Object_Size / Storage_Unit);
       Tree_Read_Bool (Suppress_Checks);
@@ -187,12 +187,13 @@ package body Opt is
 
    procedure Tree_Write is
    begin
+      Tree_Write_Int  (ASIS_Version_Number);
       Tree_Write_Bool (Brief_Output);
       Tree_Write_Bool (GNAT_Mode);
       Tree_Write_Char (Identifier_Character_Set);
       Tree_Write_Int  (Maximum_File_Name_Length);
       Tree_Write_Data (Suppress_Options'Address,
-                       Suppress_Record'Object_Size / Storage_Unit);
+                       Suppress_Array'Object_Size / Storage_Unit);
       Tree_Write_Bool (Verbose_Mode);
       Tree_Write_Data (Warning_Mode'Address,
                        Warning_Mode_Type'Object_Size / Storage_Unit);
@@ -210,7 +211,7 @@ package body Opt is
       Tree_Write_Bool (Inline_Active);
       Tree_Write_Bool (Inline_Processing_Required);
       Tree_Write_Bool (List_Units);
-      Tree_Write_Bool (No_Run_Time);
+      Tree_Write_Bool (Configurable_Run_Time_Mode);
       Tree_Write_Data (Operating_Mode'Address,
                        Operating_Mode_Type'Object_Size / Storage_Unit);
       Tree_Write_Bool (Suppress_Checks);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -389,7 +389,15 @@ private
 
    type Unbounded_Wide_String is new AF.Controlled with record
       Reference : Wide_String_Access := Null_Wide_String'Access;
+      Last      : Natural            := 0;
    end record;
+
+   --  The Unbounded_Wide_String is using a buffered implementation to increase
+   --  speed of the Append/Delete/Insert procedures. The Reference string
+   --  pointer above contains the current string value and extra room at the
+   --  end to be used by the next Append routine. Last is the index of the
+   --  string ending character. So the current string value is really
+   --  Reference (1 .. Last).
 
    pragma Stream_Convert
      (Unbounded_Wide_String, To_Unbounded_Wide, To_Wide_String);
@@ -401,6 +409,6 @@ private
    procedure Finalize   (Object : in out Unbounded_Wide_String);
 
    Null_Unbounded_Wide_String : constant Unbounded_Wide_String :=
-     (AF.Controlled with Reference => Null_Wide_String'Access);
+     (AF.Controlled with Reference => Null_Wide_String'Access, Last => 0);
 
 end Ada.Strings.Wide_Unbounded;

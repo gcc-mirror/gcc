@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,13 +27,13 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University.       --
--- Extensive contributions were provided by Ada Core Technologies Inc.      --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
 --  This package provides necessary definitions to handle simple (i.e without
 --  entries) protected objects.
---
+
 --  All the routines that handle protected objects with entries have been moved
 --  to two children: Entries and Operations. Note that Entries only contains
 --  the type declaration and the OO primitives. This is needed to avoid
@@ -55,13 +55,13 @@ package System.Tasking.Protected_Objects is
    ---------------------------------
 
    --  The compiler will expand in the GNAT tree the following construct:
-   --
+
    --  protected PO is
    --     procedure P;
    --  private
    --     open : boolean := false;
    --  end PO;
-   --
+
    --  protected body PO is
    --     procedure P is
    --        ...variable declarations...
@@ -69,9 +69,9 @@ package System.Tasking.Protected_Objects is
    --        ...B...
    --     end P;
    --  end PO;
-   --
+
    --  as follows:
-   --
+
    --  protected type poT is
    --     procedure p;
    --  private
@@ -84,18 +84,18 @@ package System.Tasking.Protected_Objects is
    --  procedure poPT__pN (_object : in out poTV);
    --  procedure poPT__pP (_object : in out poTV);
    --  freeze poTV [
-   --     procedure _init_proc (_init : in out poTV) is
+   --     procedure poTVI (_init : in out poTV) is
    --     begin
    --        _init.open := false;
-   --        _init_proc (_init._object);
+   --        object-init-proc (_init._object);
    --        initialize_protection (_init._object'unchecked_access,
    --          unspecified_priority);
    --        return;
    --     end _init_proc;
    --  ]
    --  po : poT;
-   --  _init_proc (poTV!(po));
-   --
+   --  poTVI (poTV!(po));
+
    --  procedure poPT__pN (_object : in out poTV) is
    --     poR : protection renames _object._object;
    --     openP : boolean renames _object.open;
@@ -104,7 +104,7 @@ package System.Tasking.Protected_Objects is
    --     ...B...
    --     return;
    --  end poPT__pN;
-   --
+
    --  procedure poPT__pP (_object : in out poTV) is
    --     procedure _clean is
    --     begin
@@ -209,10 +209,6 @@ private
       L       : aliased Task_Primitives.Lock;
       Ceiling : System.Any_Priority;
    end record;
-   pragma Volatile (Protection);
-   for Protection'Alignment use Standard'Maximum_Alignment;
-   --  Needed so that we can uncheck convert a Protection_Access to a
-   --  Protection_Entries_Access.
 
    procedure Finalize_Protection (Object : in out Protection);
    --  Clean up a Protection object; in particular, finalize the associated

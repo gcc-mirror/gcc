@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -56,7 +56,7 @@ package body Ada.Text_IO is
    -------------------
 
    function AFCB_Allocate (Control_Block : Text_AFCB) return FCB.AFCB_Ptr is
-      pragma Warnings (Off, Control_Block);
+      pragma Unreferenced (Control_Block);
 
    begin
       return new Text_AFCB;
@@ -136,11 +136,14 @@ package body Ada.Text_IO is
       Name : in String := "";
       Form : in String := "")
    is
-      File_Control_Block : Text_AFCB;
+      Dummy_File_Control_Block : Text_AFCB;
+      pragma Warnings (Off, Dummy_File_Control_Block);
+      --  Yes, we know this is never assigned a value, only the tag
+      --  is used for dispatching purposes, so that's expected.
 
    begin
       FIO.Open (File_Ptr  => AP (File),
-                Dummy_FCB => File_Control_Block,
+                Dummy_FCB => Dummy_File_Control_Block,
                 Mode      => To_FCB (Mode),
                 Name      => Name,
                 Form      => Form,
@@ -338,6 +341,15 @@ package body Ada.Text_IO is
       return End_Of_Page (Current_In);
    end End_Of_Page;
 
+   --------------
+   -- EOF_Char --
+   --------------
+
+   function EOF_Char return Integer is
+   begin
+      return EOF;
+   end EOF_Char;
+
    -----------
    -- Flush --
    -----------
@@ -481,7 +493,9 @@ package body Ada.Text_IO is
       end_of_file : int;
 
       procedure getc_immediate
-        (stream : FILEs; ch : out int; end_of_file : out int);
+        (stream      : FILEs;
+         ch          : out int;
+         end_of_file : out int);
       pragma Import (C, getc_immediate, "getc_immediate");
 
    begin
@@ -503,7 +517,6 @@ package body Ada.Text_IO is
       end if;
 
       Item := Character'Val (ch);
-
    end Get_Immediate;
 
    procedure Get_Immediate
@@ -913,11 +926,14 @@ package body Ada.Text_IO is
       Name : in String;
       Form : in String := "")
    is
-      File_Control_Block : Text_AFCB;
+      Dummy_File_Control_Block : Text_AFCB;
+      pragma Warnings (Off, Dummy_File_Control_Block);
+      --  Yes, we know this is never assigned a value, only the tag
+      --  is used for dispatching purposes, so that's expected.
 
    begin
       FIO.Open (File_Ptr  => AP (File),
-                Dummy_FCB => File_Control_Block,
+                Dummy_FCB => Dummy_File_Control_Block,
                 Mode      => To_FCB (Mode),
                 Name      => Name,
                 Form      => Form,
@@ -1046,6 +1062,9 @@ package body Ada.Text_IO is
      (File : in File_Type;
       Item : in String)
    is
+      Ilen   : Natural := Item'Length;
+      Istart : Natural := Item'First;
+
    begin
       FIO.Check_Write_Status (AP (File));
 
@@ -1065,13 +1084,25 @@ package body Ada.Text_IO is
       --  tasking programs, since often the OS will treat the entire put
       --  operation as an atomic operation.
 
+      --  We only do this if the message is 512 characters or less in length,
+      --  since otherwise Put_Line would use an unbounded amount of stack
+      --  space and could cause undetected stack overflow. If we have a
+      --  longer string, then output the first part separately to avoid this.
+
+      if Ilen > 512 then
+         FIO.Write_Buf (AP (File), Item'Address, size_t (Ilen - 512));
+         Istart := Istart + Ilen - 512;
+         Ilen   := 512;
+      end if;
+
+      --  Now prepare the string with its terminator
+
       declare
-         Ilen   : constant Natural := Item'Length;
          Buffer : String (1 .. Ilen + 2);
          Plen   : size_t;
 
       begin
-         Buffer (1 .. Ilen) := Item;
+         Buffer (1 .. Ilen) := Item (Istart .. Item'Last);
          Buffer (Ilen + 1) := Character'Val (LM);
 
          if File.Page_Length /= 0
@@ -1121,7 +1152,8 @@ package body Ada.Text_IO is
       Item : out Stream_Element_Array;
       Last : out Stream_Element_Offset)
    is
-      ch : int;
+      Discard_ch : int;
+      pragma Warnings (Off, Discard_ch);
 
    begin
       if File.Mode /= FCB.In_File then
@@ -1143,7 +1175,7 @@ package body Ada.Text_IO is
          --  be expected if stream and text input are mixed this way?
 
          if File.Before_LM_PM then
-            ch := ungetc (PM, File.Stream);
+            Discard_ch := ungetc (PM, File.Stream);
             File.Before_LM_PM := False;
          end if;
 

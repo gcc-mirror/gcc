@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUNTIME COMPONENTS                          --
+--                          GNAT RUNTIME COMPONENTS                         --
 --                                                                          --
 --            A D A . S T R I N G S . U N B O U N D E D . A U X             --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-1998, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,7 +39,7 @@
 package Ada.Strings.Unbounded.Aux is
 pragma Preelaborate (Aux);
 
-   function Get_String (U  : Unbounded_String) return String_Access;
+   function Get_String (U : Unbounded_String) return String_Access;
    pragma Inline (Get_String);
    --  This function returns the internal string pointer used in the
    --  representation of an unbounded string. There is no copy involved,

@@ -33,6 +33,26 @@ Wall
 Ada
 ; Documented for C
 
+Wmissing-prototypes
+Ada
+; Documented for C
+
+Wstrict-prototypes
+Ada
+; Documented for C
+
+Wwrite-strings
+Ada
+; Documented for C
+
+Wno-long-long
+Ada
+; Documented for C
+
+nostdinc
+Ada RejectNegative
+; Don't look for source files
+
 fRTS
 Ada RejectNegative
 
@@ -42,6 +62,6 @@ Ada Joined Undocumented
 
 gnat
 Ada Joined
--gnat<option>	Specify options to GNAT
+-gnat<options>	Specify options to GNAT
 
 ; This comment is to ensure we retain the blank line above.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,6 +23,8 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
+
+with GNAT.Strings; use GNAT.Strings;
 
 with Atree;    use Atree;
 with Checks;
@@ -44,6 +46,7 @@ with Opt;      use Opt;
 with Osint;
 with Output;   use Output;
 with Par;
+with Prepcomp;
 with Rtsfind;
 with Sprint;
 with Scn;      use Scn;
@@ -55,14 +58,12 @@ with Sem_Warn; use Sem_Warn;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Sinput.L; use Sinput.L;
+with Tbuild;   use Tbuild;
 with Types;    use Types;
 
 procedure Frontend is
-      Pragmas : List_Id;
-      Prag    : Node_Id;
-
-      Save_Style_Check : constant Boolean := Opt.Style_Check;
-      --  Save style check mode so it can be restored later
+      Config_Pragmas : List_Id;
+      --  Gather configuration pragmas
 
 begin
    --  Carry out package initializations. These are initializations which
@@ -86,102 +87,115 @@ begin
 
    CStand.Create_Standard;
 
-   --  Read and process gnat.adc file if one is present
+   --  Check possible symbol definitions specified by -gnateD switches
 
-   if Opt.Config_File then
+   Prepcomp.Process_Command_Line_Symbol_Definitions;
 
-      --  We always analyze the gnat.adc file with style checks off,
-      --  since we don't want a miscellaneous gnat.adc that is around
-      --  to discombobulate intended -gnatg compilations.
+   --  If -gnatep= was specified, parse the preprocessing data file
+
+   if Preprocessing_Data_File /= null then
+      Name_Len := Preprocessing_Data_File'Length;
+      Name_Buffer (1 .. Name_Len) := Preprocessing_Data_File.all;
+      Prepcomp.Parse_Preprocessing_Data_File (Name_Find);
+
+   --  Otherwise, check if there were preprocessing symbols on the command
+   --  line and set preprocessing if there are.
+
+   else
+      Prepcomp.Check_Symbols;
+   end if;
+
+   --  Now that the preprocessing situation is established, we are able to
+   --  load the main source (this is no longer done by Lib.Load.Initalize).
+
+   Lib.Load.Load_Main_Source;
+
+   --  Read and process configuration pragma files if present
+
+   declare
+      Save_Style_Check : constant Boolean := Opt.Style_Check;
+      --  Save style check mode so it can be restored later
+
+      Source_Config_File : Source_File_Index;
+      --  Source reference for -gnatec configuration file
+
+      Prag : Node_Id;
+
+   begin
+      --  We always analyze config files with style checks off, since
+      --  we don't want a miscellaneous gnat.adc that is around to
+      --  discombobulate intended -gnatg or -gnaty compilations.
 
       Opt.Style_Check := False;
+      Style_Check := False;
 
       --  Capture current suppress options, which may get modified
 
       Scope_Suppress := Opt.Suppress_Options;
 
-      Name_Buffer (1 .. 8) := "gnat.adc";
-      Name_Len := 8;
-      Source_gnat_adc := Load_Config_File (Name_Enter);
+      --  First deal with gnat.adc file
 
-      if Source_gnat_adc /= No_Source_File then
-         Initialize_Scanner (No_Unit, Source_gnat_adc);
-         Pragmas := Par (Configuration_Pragmas => True);
+      if Opt.Config_File then
+         Name_Buffer (1 .. 8) := "gnat.adc";
+         Name_Len := 8;
+         Source_gnat_adc := Load_Config_File (Name_Enter);
 
-         if Pragmas /= Error_List
-           and then Operating_Mode /= Check_Syntax
-         then
-            Prag := First (Pragmas);
-            while Present (Prag) loop
-               Analyze_Pragma (Prag);
-               Next (Prag);
-            end loop;
+         if Source_gnat_adc /= No_Source_File then
+            Initialize_Scanner (No_Unit, Source_gnat_adc);
+            Config_Pragmas := Par (Configuration_Pragmas => True);
+
+         else
+            Config_Pragmas := Empty_List;
          end if;
+
+      else
+         Config_Pragmas := Empty_List;
       end if;
 
-      --  Restore style check, but if gnat.adc turned on checks, leave on!
+      --  Now deal with specified config pragmas files if there are any
+
+      if Opt.Config_File_Names /= null then
+         for Index in Opt.Config_File_Names'Range loop
+            Name_Len := Config_File_Names (Index)'Length;
+            Name_Buffer (1 .. Name_Len) := Config_File_Names (Index).all;
+            Source_Config_File := Load_Config_File (Name_Enter);
+
+            if Source_Config_File = No_Source_File then
+               Osint.Fail
+                 ("cannot find configuration pragmas file ",
+                  Config_File_Names (Index).all);
+            end if;
+
+            Initialize_Scanner (No_Unit, Source_Config_File);
+            Append_List_To
+              (Config_Pragmas, Par (Configuration_Pragmas => True));
+         end loop;
+      end if;
+
+      --  Now analyze all pragmas except those whose analysis must be
+      --  deferred till after the main unit is analyzed.
+
+      if Config_Pragmas /= Error_List
+        and then Operating_Mode /= Check_Syntax
+      then
+         Prag := First (Config_Pragmas);
+         while Present (Prag) loop
+            if not Delay_Config_Pragma_Analyze (Prag) then
+               Analyze_Pragma (Prag);
+            end if;
+
+            Next (Prag);
+         end loop;
+      end if;
+
+      --  Restore style check, but if config file turned on checks, leave on!
 
       Opt.Style_Check := Save_Style_Check or Style_Check;
 
       --  Capture any modifications to suppress options from config pragmas
 
       Opt.Suppress_Options := Scope_Suppress;
-   end if;
-
-   --  Read and process the configuration pragmas file if one is present
-
-   if Config_File_Name /= null then
-
-      declare
-         New_Pragmas        : List_Id;
-         Style_Check_Saved  : constant Boolean  := Opt.Style_Check;
-         Source_Config_File : Source_File_Index := No_Source_File;
-
-      begin
-         --  We always analyze the config pragmas file with style checks off,
-         --  since we don't want it to discombobulate intended
-         --  -gnatg compilations.
-
-         Opt.Style_Check := False;
-
-         --  Capture current suppress options, which may get modified
-
-         Scope_Suppress := Opt.Suppress_Options;
-
-         Name_Buffer (1 .. Config_File_Name'Length) := Config_File_Name.all;
-         Name_Len := Config_File_Name'Length;
-         Source_Config_File := Load_Config_File (Name_Enter);
-
-         if Source_Config_File = No_Source_File then
-            Osint.Fail
-              ("cannot find configuration pragmas file ",
-               Config_File_Name.all);
-         end if;
-
-         Initialize_Scanner (No_Unit, Source_Config_File);
-         New_Pragmas := Par (Configuration_Pragmas => True);
-
-         if New_Pragmas /= Error_List
-           and then Operating_Mode /= Check_Syntax
-         then
-            Prag := First (New_Pragmas);
-            while Present (Prag) loop
-               Analyze_Pragma (Prag);
-               Next (Prag);
-            end loop;
-         end if;
-
-         --  Restore style check, but if the config pragmas file
-         --  turned on checks, leave on!
-
-         Opt.Style_Check := Style_Check_Saved or Style_Check;
-
-         --  Capture any modifications to suppress options from config pragmas
-
-         Opt.Suppress_Options := Scope_Suppress;
-      end;
-
-   end if;
+   end;
 
    --  If there was a -gnatem switch, initialize the mappings of unit names to
    --  file names and of file names to path names from the mapping file.
@@ -228,90 +242,117 @@ begin
    --  the check syntax mode, but in that case we won't go on to the
    --  semantics in any case).
 
-   declare
-      Discard : List_Id;
-
-   begin
-      Discard := Par (Configuration_Pragmas => False);
-   end;
+   Discard_List (Par (Configuration_Pragmas => False));
 
    --  The main unit is now loaded, and subunits of it can be loaded,
    --  without reporting spurious loading circularities.
 
    Set_Loading (Main_Unit, False);
 
-   --  Now on to the semantics. We skip the semantics if we are in syntax
-   --  only mode, or if we encountered a fatal error during the parsing.
+   --  Now that the main unit is installed, we can complete the analysis
+   --  of the pragmas in gnat.adc and the configuration file, that require
+   --  a context for their semantic processing.
 
-   if Operating_Mode /= Check_Syntax
-     and then not Fatal_Error (Main_Unit)
+   if Config_Pragmas /= Error_List
+     and then Operating_Mode /= Check_Syntax
    then
-      --  Reset Operating_Mode to Check_Semantics for subunits. We cannot
-      --  actually generate code for subunits, so we suppress expansion.
-      --  This also corrects certain problems that occur if we try to
-      --  incorporate subunits at a lower level.
+      --  Pragmas that require some semantic activity, such as
+      --  Interrupt_State, cannot be processed until the main unit
+      --  is installed, because they require a compilation unit on
+      --  which to attach with_clauses, etc. So analyze them now.
 
-      if Operating_Mode = Generate_Code
-         and then Nkind (Unit (Cunit (Main_Unit))) = N_Subunit
-      then
-         Operating_Mode := Check_Semantics;
-      end if;
+      declare
+         Prag : Node_Id;
 
-      --  Analyze (and possibly expand) main unit
+      begin
+         Prag := First (Config_Pragmas);
+         while Present (Prag) loop
+            if Delay_Config_Pragma_Analyze (Prag) then
+               Analyze_Pragma (Prag);
+            end if;
 
-      Scope_Suppress := Suppress_Options;
-      Semantics (Cunit (Main_Unit));
+            Next (Prag);
+         end loop;
+      end;
+   end if;
 
-      --  Cleanup processing after completing main analysis
+   --  Now on to the semantics. Skip if in syntax only mode
 
-      if Operating_Mode = Generate_Code
-         or else (Operating_Mode = Check_Semantics
-                   and then Tree_Output)
-      then
-         Instantiate_Bodies;
-      end if;
+   if Operating_Mode /= Check_Syntax then
 
-      if Operating_Mode = Generate_Code then
+      --  Install the configuration pragmas in the tree
 
-         if Inline_Processing_Required then
-            Analyze_Inlined_Bodies;
+      Set_Config_Pragmas (Aux_Decls_Node (Cunit (Main_Unit)), Config_Pragmas);
+
+      --  Following steps are skipped if we had a fatal error during parsing
+
+      if not Fatal_Error (Main_Unit) then
+
+         --  Reset Operating_Mode to Check_Semantics for subunits. We cannot
+         --  actually generate code for subunits, so we suppress expansion.
+         --  This also corrects certain problems that occur if we try to
+         --  incorporate subunits at a lower level.
+
+         if Operating_Mode = Generate_Code
+            and then Nkind (Unit (Cunit (Main_Unit))) = N_Subunit
+         then
+            Operating_Mode := Check_Semantics;
          end if;
 
-         --  Remove entities from program that do not have any
-         --  execution time references.
+         --  Analyze (and possibly expand) main unit
 
-         if Debug_Flag_UU then
-            Collect_Garbage_Entities;
+         Scope_Suppress := Suppress_Options;
+         Semantics (Cunit (Main_Unit));
+
+         --  Cleanup processing after completing main analysis
+
+         if Operating_Mode = Generate_Code
+            or else (Operating_Mode = Check_Semantics
+                      and then ASIS_Mode)
+         then
+            Instantiate_Bodies;
          end if;
 
-         Check_Elab_Calls;
+         if Operating_Mode = Generate_Code then
+            if Inline_Processing_Required then
+               Analyze_Inlined_Bodies;
+            end if;
 
-         --  Build unit exception table. We leave this up to the end to
-         --  make sure that all the necessary information is at hand.
+            --  Remove entities from program that do not have any
+            --  execution time references.
 
-         Exp_Ch11.Generate_Unit_Exception_Table;
+            if Debug_Flag_UU then
+               Collect_Garbage_Entities;
+            end if;
+
+            Check_Elab_Calls;
+
+            --  Build unit exception table. We leave this up to the end to
+            --  make sure that all the necessary information is at hand.
+
+            Exp_Ch11.Generate_Unit_Exception_Table;
+         end if;
+
+         --  List library units if requested
+
+         if List_Units then
+            Lib.List;
+         end if;
+
+         --  Output any messages for unreferenced entities
+
+         Output_Unreferenced_Messages;
+         Sem_Warn.Check_Unused_Withs;
       end if;
-
-      --  List library units if requested
-
-      if List_Units then
-         Lib.List;
-      end if;
-
-      --  Output any messages for unreferenced entities
-
-      Output_Unreferenced_Messages;
-      Sem_Warn.Check_Unused_Withs;
    end if;
 
    --  Qualify all entity names in inner packages, package bodies, etc.,
    --  except when compiling for the JVM back end, which depends on
-   --  having unqualified names in certain cases and handles the generation
-   --  of qualified names when needed.
+   --  having unqualified names in certain cases and handles the
+   --  generation of qualified names when needed.
 
    if not Java_VM then
       Exp_Dbug.Qualify_All_Entity_Names;
-      Exp_Dbug.Generate_Auxiliary_Types;
    end if;
 
    --  Dump the source now. Note that we do this as soon as the analysis
@@ -320,11 +361,12 @@ begin
 
    Sprint.Source_Dump;
 
-   --  If a mapping file has been specified by a -gnatem switch,
-   --  update it if there has been some sourcs that were not in the mappings.
+   --  If a mapping file has been specified by a -gnatem switch, update
+   --  it if there has been some sourcs that were not in the mappings.
 
    if Mapping_File_Name /= null then
       Fmap.Update_Mapping_File (Mapping_File_Name.all);
    end if;
 
+   return;
 end Frontend;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -77,8 +77,7 @@ package Fname is
 
    function Is_Predefined_File_Name
      (Fname              : File_Name_Type;
-      Renamings_Included : Boolean := True)
-      return               Boolean;
+      Renamings_Included : Boolean := True) return Boolean;
    --  This function determines if the given file name (which must be a simple
    --  file name with no directory information) is the file name for one of
    --  the predefined library units. On return, Name_Buffer contains the
@@ -86,6 +85,10 @@ package Fname is
    --  J renamings such as Text_IO are to be considered as predefined. If
    --  Renamings_Included is True, then Text_IO will return True, otherwise
    --  only children of Ada, Interfaces and System return True.
+
+   function Is_Predefined_File_Name
+     (Renamings_Included : Boolean := True) return Boolean;
+   --  This version is called with the file name already in Name_Buffer
 
    function Is_Internal_File_Name
      (Fname              : File_Name_Type;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,6 +42,8 @@ with Opt;      use Opt;
 with Output;   use Output;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
+with Snames;   use Snames;
+with Stand;    use Stand;
 with Table;    use Table;
 with Uname;    use Uname;
 with Urealp;   use Urealp;
@@ -52,6 +54,7 @@ package body Repinfo is
    --  Value for Storage_Unit, we do not want to get this from TTypes, since
    --  this introduces problematic dependencies in ASIS, and in any case this
    --  value is assumed to be 8 for the implementation of the DDA.
+
    --  This is wrong for AAMP???
 
    ---------------------------------------
@@ -97,20 +100,26 @@ package body Repinfo is
       Table_Increment      => Alloc.Rep_Table_Increment,
       Table_Name           => "FE_Rep_Table");
 
-   -----------------------
-   -- Local Subprograms --
-   -----------------------
-
    Unit_Casing : Casing_Type;
    --  Identifier casing for current unit
 
-   procedure Spaces (N : Natural);
-   --  Output given number of spaces
+   Need_Blank_Line : Boolean;
+   --  Set True if a blank line is needed before outputting any
+   --  information for the current entity. Set True when a new
+   --  entity is processed, and false when the blank line is output.
+
+   -----------------------
+   -- Local Subprograms --
+   -----------------------
 
    function Back_End_Layout return Boolean;
    --  Test for layout mode, True = back end, False = front end. This
    --  function is used rather than checking the configuration parameter
    --  because we do not want Repinfo to depend on Targparm (for ASIS)
+
+   procedure Blank_Line;
+   --  Called before outputting anything for an entity. Ensures that
+   --  a blank line precedes the output for a particular entity.
 
    procedure List_Entities (Ent : Entity_Id);
    --  This procedure lists the entities associated with the entity E,
@@ -125,6 +134,10 @@ package body Repinfo is
    procedure List_Array_Info (Ent : Entity_Id);
    --  List representation info for array type Ent
 
+   procedure List_Mechanisms (Ent : Entity_Id);
+   --  List mechanism information for parameters of Ent, which is a
+   --  subprogram, subprogram type, or an entry or entry family.
+
    procedure List_Object_Info (Ent : Entity_Id);
    --  List representation info for object Ent
 
@@ -138,6 +151,9 @@ package body Repinfo is
    --  Returns True if Val represents a variable value, and False if it
    --  represents a value that is fixed at compile time.
 
+   procedure Spaces (N : Natural);
+   --  Output given number of spaces
+
    procedure Write_Info_Line (S : String);
    --  Routine to write a line to Repinfo output file. This routine is
    --  passed as a special output procedure to Output.Set_Special_Output.
@@ -145,6 +161,9 @@ package body Repinfo is
    --  end of each line, as per the Output spec, but the internal call
    --  to the appropriate routine in Osint requires that the end of line
    --  sequence be stripped off.
+
+   procedure Write_Mechanism (M : Mechanism_Type);
+   --  Writes symbolic string for mechanism represented by M
 
    procedure Write_Val (Val : Node_Ref_Or_Val; Paren : Boolean := False);
    --  Given a representation value, write it out. No_Uint values or values
@@ -163,6 +182,18 @@ package body Repinfo is
 
       return Rep_Table.Last > 0;
    end Back_End_Layout;
+
+   ----------------
+   -- Blank_Line --
+   ----------------
+
+   procedure Blank_Line is
+   begin
+      if Need_Blank_Line then
+         Write_Eol;
+         Need_Blank_Line := False;
+      end if;
+   end Blank_Line;
 
    ------------------------
    -- Create_Discrim_Ref --
@@ -286,40 +317,104 @@ package body Repinfo is
    -------------------
 
    procedure List_Entities (Ent : Entity_Id) is
-      E : Entity_Id;
+      Body_E : Entity_Id;
+      E      : Entity_Id;
+
+      function Find_Declaration (E : Entity_Id) return Node_Id;
+      --  Utility to retrieve declaration node for entity in the
+      --  case of package bodies and subprograms.
+
+      ----------------------
+      -- Find_Declaration --
+      ----------------------
+
+      function Find_Declaration (E : Entity_Id) return Node_Id is
+         Decl : Node_Id;
+      begin
+         Decl := Parent (E);
+
+         while Present (Decl)
+           and then  Nkind (Decl) /= N_Package_Body
+           and then Nkind (Decl) /= N_Subprogram_Declaration
+           and then Nkind (Decl) /= N_Subprogram_Body
+         loop
+            Decl := Parent (Decl);
+         end loop;
+
+         return Decl;
+      end Find_Declaration;
+
+   --  Start of processing for List_Entities
 
    begin
       if Present (Ent) then
+
+         --  If entity is a subprogram and we are listing mechanisms,
+         --  then we need to list mechanisms for this entity.
+
+         if List_Representation_Info_Mechanisms
+           and then (Is_Subprogram (Ent)
+                       or else Ekind (Ent) = E_Entry
+                       or else Ekind (Ent) = E_Entry_Family)
+         then
+            Need_Blank_Line := True;
+            List_Mechanisms (Ent);
+         end if;
+
          E := First_Entity (Ent);
          while Present (E) loop
+            Need_Blank_Line := True;
 
             --  We list entities that come from source (excluding private
-            --  types, where we will list the info for the full view). If
-            --  debug flag A is set, all entities are listed
+            --  or incomplete types or deferred constants, where we will
+            --  list the info for the full view). If debug flag A is set,
+            --  then all entities are listed
 
-            if (Comes_From_Source (E) and then not Is_Private_Type (E))
+            if (Comes_From_Source (E)
+              and then not Is_Incomplete_Or_Private_Type (E)
+              and then not (Ekind (E) = E_Constant
+                              and then Present (Full_View (E))))
               or else Debug_Flag_AA
             then
-               if Is_Record_Type (E) then
-                  List_Record_Info (E);
+               if Is_Subprogram (E)
+                       or else
+                     Ekind (E) = E_Entry
+                       or else
+                     Ekind (E) = E_Entry_Family
+                       or else
+                     Ekind (E) = E_Subprogram_Type
+               then
+                  if List_Representation_Info_Mechanisms then
+                     List_Mechanisms (E);
+                  end if;
+
+               elsif Is_Record_Type (E) then
+                  if List_Representation_Info >= 1 then
+                     List_Record_Info (E);
+                  end if;
 
                elsif Is_Array_Type (E) then
-                  List_Array_Info (E);
+                  if List_Representation_Info >= 1 then
+                     List_Array_Info (E);
+                  end if;
 
-               elsif List_Representation_Info >= 2 then
-                  if Is_Type (E) then
+               elsif Is_Type (E) then
+                  if List_Representation_Info >= 2 then
                      List_Type_Info (E);
+                  end if;
 
-                  elsif Ekind (E) = E_Variable
-                          or else
-                        Ekind (E) = E_Constant
-                          or else
-                        Ekind (E) = E_Loop_Parameter
-                          or else
-                        Is_Formal (E)
-                  then
+               elsif Ekind (E) = E_Variable
+                       or else
+                     Ekind (E) = E_Constant
+                       or else
+                     Ekind (E) = E_Loop_Parameter
+                       or else
+                     Is_Formal (E)
+               then
+                  if List_Representation_Info >= 2 then
                      List_Object_Info (E);
                   end if;
+
                end if;
 
                --  Recurse into nested package, but not if they are
@@ -357,6 +452,35 @@ package body Repinfo is
 
             E := Next_Entity (E);
          end loop;
+
+         --  For a package body, the entities of the visible subprograms
+         --  are declared in the corresponding spec. Iterate over its
+         --  entities in order to handle properly the subprogram bodies.
+         --  Skip bodies in subunits, which are listed independently.
+
+         if Ekind (Ent) = E_Package_Body
+           and then Present (Corresponding_Spec (Find_Declaration (Ent)))
+         then
+            E := First_Entity (Corresponding_Spec (Find_Declaration (Ent)));
+
+            while Present (E) loop
+               if Is_Subprogram (E)
+                 and then
+                   Nkind (Find_Declaration (E)) = N_Subprogram_Declaration
+               then
+                  Body_E := Corresponding_Body (Find_Declaration (E));
+
+                  if Present (Body_E)
+                    and then
+                      Nkind (Parent (Find_Declaration (Body_E))) /= N_Subunit
+                  then
+                     List_Entities (Body_E);
+                  end if;
+               end if;
+
+               Next_Entity (E);
+            end loop;
+         end if;
       end if;
    end List_Entities;
 
@@ -366,10 +490,14 @@ package body Repinfo is
 
    procedure List_GCC_Expression (U : Node_Ref_Or_Val) is
 
-      procedure P (Val : Node_Ref_Or_Val);
+      procedure Print_Expr (Val : Node_Ref_Or_Val);
       --  Internal recursive procedure to print expression
 
-      procedure P (Val : Node_Ref_Or_Val) is
+      ----------------
+      -- Print_Expr --
+      ----------------
+
+      procedure Print_Expr (Val : Node_Ref_Or_Val) is
       begin
          if Val >= 0 then
             UI_Write (Val, Decimal);
@@ -381,26 +509,30 @@ package body Repinfo is
                procedure Binop (S : String);
                --  Output text for binary operator with S being operator name
 
+               -----------
+               -- Binop --
+               -----------
+
                procedure Binop (S : String) is
                begin
                   Write_Char ('(');
-                  P (Node.Op1);
+                  Print_Expr (Node.Op1);
                   Write_Str (S);
-                  P (Node.Op2);
+                  Print_Expr (Node.Op2);
                   Write_Char (')');
                end Binop;
 
-            --  Start of processing for P
+            --  Start of processing for Print_Expr
 
             begin
                case Node.Expr is
                   when Cond_Expr =>
                      Write_Str ("(if ");
-                     P (Node.Op1);
+                     Print_Expr (Node.Op1);
                      Write_Str (" then ");
-                     P (Node.Op2);
+                     Print_Expr (Node.Op2);
                      Write_Str (" else ");
-                     P (Node.Op3);
+                     Print_Expr (Node.Op3);
                      Write_Str (" end)");
 
                   when Plus_Expr =>
@@ -435,7 +567,7 @@ package body Repinfo is
 
                   when Negate_Expr =>
                      Write_Char ('-');
-                     P (Node.Op1);
+                     Print_Expr (Node.Op1);
 
                   when Min_Expr =>
                      Binop (" min ");
@@ -445,7 +577,7 @@ package body Repinfo is
 
                   when Abs_Expr =>
                      Write_Str ("abs ");
-                     P (Node.Op1);
+                     Print_Expr (Node.Op1);
 
                   when Truth_Andif_Expr =>
                      Binop (" and if ");
@@ -464,7 +596,7 @@ package body Repinfo is
 
                   when Truth_Not_Expr =>
                      Write_Str ("not ");
-                     P (Node.Op1);
+                     Print_Expr (Node.Op1);
 
                   when Lt_Expr =>
                      Binop (" < ");
@@ -491,7 +623,7 @@ package body Repinfo is
                end case;
             end;
          end if;
-      end P;
+      end Print_Expr;
 
    --  Start of processing for List_GCC_Expression
 
@@ -499,9 +631,104 @@ package body Repinfo is
       if U = No_Uint then
          Write_Str ("??");
       else
-         P (U);
+         Print_Expr (U);
       end if;
    end List_GCC_Expression;
+
+   ---------------------
+   -- List_Mechanisms --
+   ---------------------
+
+   procedure List_Mechanisms (Ent : Entity_Id) is
+      Plen : Natural;
+      Form : Entity_Id;
+
+   begin
+      Blank_Line;
+
+      case Ekind (Ent) is
+         when E_Function =>
+            Write_Str ("function ");
+
+         when E_Operator =>
+            Write_Str ("operator ");
+
+         when E_Procedure =>
+            Write_Str ("procedure ");
+
+         when E_Subprogram_Type =>
+            Write_Str ("type ");
+
+         when E_Entry | E_Entry_Family =>
+            Write_Str ("entry ");
+
+         when others =>
+            raise Program_Error;
+      end case;
+
+      Get_Unqualified_Decoded_Name_String (Chars (Ent));
+      Write_Str (Name_Buffer (1 .. Name_Len));
+      Write_Str (" declared at ");
+      Write_Location (Sloc (Ent));
+      Write_Eol;
+
+      Write_Str ("  convention : ");
+
+      case Convention (Ent) is
+         when Convention_Ada       => Write_Line ("Ada");
+         when Convention_Intrinsic => Write_Line ("InLineinsic");
+         when Convention_Entry     => Write_Line ("Entry");
+         when Convention_Protected => Write_Line ("Protected");
+         when Convention_Assembler => Write_Line ("Assembler");
+         when Convention_C         => Write_Line ("C");
+         when Convention_COBOL     => Write_Line ("COBOL");
+         when Convention_CPP       => Write_Line ("C++");
+         when Convention_Fortran   => Write_Line ("Fortran");
+         when Convention_Java      => Write_Line ("Java");
+         when Convention_Stdcall   => Write_Line ("Stdcall");
+         when Convention_Stubbed   => Write_Line ("Stubbed");
+      end case;
+
+      --  Find max length of formal name
+
+      Plen := 0;
+      Form := First_Formal (Ent);
+      while Present (Form) loop
+         Get_Unqualified_Decoded_Name_String (Chars (Form));
+
+         if Name_Len > Plen then
+            Plen := Name_Len;
+         end if;
+
+         Next_Formal (Form);
+      end loop;
+
+      --  Output formals and mechanisms
+
+      Form := First_Formal (Ent);
+      while Present (Form) loop
+         Get_Unqualified_Decoded_Name_String (Chars (Form));
+
+         while Name_Len <= Plen loop
+            Name_Len := Name_Len + 1;
+            Name_Buffer (Name_Len) := ' ';
+         end loop;
+
+         Write_Str ("  ");
+         Write_Str (Name_Buffer (1 .. Plen + 1));
+         Write_Str (": passed by ");
+
+         Write_Mechanism (Mechanism (Form));
+         Write_Eol;
+         Next_Formal (Form);
+      end loop;
+
+      if Etype (Ent) /= Standard_Void_Type then
+         Write_Str ("  returns by ");
+         Write_Mechanism (Mechanism (Ent));
+         Write_Eol;
+      end if;
+   end List_Mechanisms;
 
    ---------------
    -- List_Name --
@@ -525,7 +752,7 @@ package body Repinfo is
 
    procedure List_Object_Info (Ent : Entity_Id) is
    begin
-      Write_Eol;
+      Blank_Line;
 
       Write_Str ("for ");
       List_Name (Ent);
@@ -546,7 +773,6 @@ package body Repinfo is
 
    procedure List_Record_Info (Ent : Entity_Id) is
       Comp  : Entity_Id;
-      Esiz  : Uint;
       Cfbit : Uint;
       Sunit : Uint;
 
@@ -554,6 +780,7 @@ package body Repinfo is
       Max_Suni_Length : Natural;
 
    begin
+      Blank_Line;
       List_Type_Info (Ent);
 
       Write_Str ("for ");
@@ -585,7 +812,6 @@ package body Repinfo is
                Set_Normalized_Position (Comp, Cfbit / SSU);
                Set_Normalized_First_Bit (Comp, Cfbit mod SSU);
 
-               Esiz  := Esize (Comp);
                Sunit := Cfbit / SSU;
                UI_Image (Sunit);
             end if;
@@ -746,47 +972,47 @@ package body Repinfo is
       Col : Nat;
 
    begin
-      for U in Main_Unit .. Last_Unit loop
-         if In_Extended_Main_Source_Unit (Cunit_Entity (U)) then
+      if Debug_Flag_AA then
+         List_Representation_Info := 3;
+         List_Representation_Info_Mechanisms := True;
+      end if;
 
-            --  Normal case, list to standard output
+      if List_Representation_Info /= 0
+        or else List_Representation_Info_Mechanisms
+      then
+         for U in Main_Unit .. Last_Unit loop
+            if In_Extended_Main_Source_Unit (Cunit_Entity (U)) then
 
-            if not List_Representation_Info_To_File then
-               Unit_Casing := Identifier_Casing (Source_Index (U));
-               Write_Eol;
-               Write_Str ("Representation information for unit ");
-               Write_Unit_Name (Unit_Name (U));
-               Col := Column;
-               Write_Eol;
+               --  Normal case, list to standard output
 
-               for J in 1 .. Col - 1 loop
-                  Write_Char ('-');
-               end loop;
+               if not List_Representation_Info_To_File then
+                  Unit_Casing := Identifier_Casing (Source_Index (U));
+                  Write_Eol;
+                  Write_Str ("Representation information for unit ");
+                  Write_Unit_Name (Unit_Name (U));
+                  Col := Column;
+                  Write_Eol;
 
-               Write_Eol;
-               List_Entities (Cunit_Entity (U));
+                  for J in 1 .. Col - 1 loop
+                     Write_Char ('-');
+                  end loop;
 
-            --  List representation information to file
+                  Write_Eol;
+                  List_Entities (Cunit_Entity (U));
 
-            else
-               Creat_Repinfo_File_Access.all (File_Name (Source_Index (U)));
-               Set_Special_Output (Write_Info_Line'Access);
-               List_Entities (Cunit_Entity (U));
-               Set_Special_Output (null);
-               Close_Repinfo_File_Access.all;
+               --  List representation information to file
+
+               else
+                  Creat_Repinfo_File_Access.all (File_Name (Source_Index (U)));
+                  Set_Special_Output (Write_Info_Line'Access);
+                  List_Entities (Cunit_Entity (U));
+                  Set_Special_Output (null);
+                  Close_Repinfo_File_Access.all;
+               end if;
             end if;
-         end if;
-      end loop;
+         end loop;
+      end if;
    end List_Rep_Info;
-
-   ---------------------
-   -- Write_Info_Line --
-   ---------------------
-
-   procedure Write_Info_Line (S : String) is
-   begin
-      Write_Repinfo_Line_Access.all (S (S'First .. S'Last - 1));
-   end Write_Info_Line;
 
    --------------------
    -- List_Type_Info --
@@ -794,7 +1020,7 @@ package body Repinfo is
 
    procedure List_Type_Info (Ent : Entity_Id) is
    begin
-      Write_Eol;
+      Blank_Line;
 
       --  Do not list size info for unconstrained arrays, not meaningful
 
@@ -1069,6 +1295,60 @@ package body Repinfo is
    begin
       Rep_Table.Tree_Write;
    end Tree_Write;
+
+   ---------------------
+   -- Write_Info_Line --
+   ---------------------
+
+   procedure Write_Info_Line (S : String) is
+   begin
+      Write_Repinfo_Line_Access.all (S (S'First .. S'Last - 1));
+   end Write_Info_Line;
+
+   ---------------------
+   -- Write_Mechanism --
+   ---------------------
+
+   procedure Write_Mechanism (M : Mechanism_Type) is
+   begin
+      case M is
+         when 0 =>
+            Write_Str ("default");
+
+         when -1 =>
+            Write_Str ("copy");
+
+         when -2 =>
+            Write_Str ("reference");
+
+         when -3 =>
+            Write_Str ("descriptor");
+
+         when -4 =>
+            Write_Str ("descriptor (UBS)");
+
+         when -5 =>
+            Write_Str ("descriptor (UBSB)");
+
+         when -6 =>
+            Write_Str ("descriptor (UBA)");
+
+         when -7 =>
+            Write_Str ("descriptor (S)");
+
+         when -8 =>
+            Write_Str ("descriptor (SB)");
+
+         when -9 =>
+            Write_Str ("descriptor (A)");
+
+         when -10 =>
+            Write_Str ("descriptor (NCA)");
+
+         when others =>
+            raise Program_Error;
+      end case;
+   end Write_Mechanism;
 
    ---------------
    -- Write_Val --

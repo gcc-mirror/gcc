@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,11 +32,17 @@
 ------------------------------------------------------------------------------
 
 with System; use System;
-with System.Address_To_Access_Conversions;
+with System.Storage_Elements; use System.Storage_Elements;
+
+with Unchecked_Conversion;
 
 package body Interfaces.C.Strings is
 
-   package Char_Access is new Address_To_Access_Conversions (char);
+   function To_chars_ptr is
+      new Unchecked_Conversion (Address, chars_ptr);
+
+   function To_Address is
+      new Unchecked_Conversion (chars_ptr, Address);
 
    -----------------------
    -- Local Subprograms --
@@ -72,7 +78,7 @@ package body Interfaces.C.Strings is
 
    function "+" (Left : chars_ptr; Right : size_t) return chars_ptr is
    begin
-      return Left + chars_ptr (Right);
+      return To_chars_ptr (To_Address (Left) + Storage_Offset (Right));
    end "+";
 
    ----------
@@ -119,7 +125,7 @@ package body Interfaces.C.Strings is
                  Offset => 0,
                  Chars  => Chars,
                  Check  => False);
-         Poke (nul, into => Pointer + size_t '(Chars'Length));
+         Poke (nul, into => Pointer + size_t'(Chars'Length));
       end if;
 
       return Pointer;
@@ -139,9 +145,8 @@ package body Interfaces.C.Strings is
    ----------
 
    function Peek (From : chars_ptr) return char is
-      use Char_Access;
    begin
-      return To_Pointer (Address (To_Address (From))).all;
+      return char (From.all);
    end Peek;
 
    ----------
@@ -149,9 +154,8 @@ package body Interfaces.C.Strings is
    ----------
 
    procedure Poke (Value : char; Into : chars_ptr) is
-      use Char_Access;
    begin
-      To_Pointer (Address (To_Address (Into))).all := Value;
+      Into.all := Character (Value);
    end Poke;
 
    ---------------------
@@ -207,7 +211,8 @@ package body Interfaces.C.Strings is
       then
          raise Terminator_Error;
       else
-         return To_Integer (Item (Item'First)'Address);
+         return To_chars_ptr (Item (Item'First)'Address);
+
       end if;
    end To_Chars_Ptr;
 

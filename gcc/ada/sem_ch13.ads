@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -60,6 +60,17 @@ package Sem_Ch13 is
    --  the type is already biased, then Minimum_Size returns the biased size,
    --  regardless of the setting of Biased. Also, fixed-point types are never
    --  biased in the current implementation.
+
+   procedure Check_Constant_Address_Clause (Expr : Node_Id; U_Ent : Entity_Id);
+   --  Expr is an expression for an address clause. This procedure checks
+   --  that the expression is constant, in the limited sense that it is safe
+   --  to evaluate it at the point the object U_Ent is declared, rather than
+   --  at the point of the address clause. The condition for this to be true
+   --  is that the expression has no variables, no constants declared after
+   --  U_Ent, and no calls to non-pure functions. If this condition is not
+   --  met, then an appropriate error message is posted. This check is applied
+   --  at the point an object with an address clause is frozen, as well as for
+   --  address clauses for tasks and entries.
 
    procedure Check_Size
      (N      : Node_Id;

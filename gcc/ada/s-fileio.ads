@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,7 +49,7 @@ package System.File_IO is
 
    procedure Open
      (File_Ptr  : in out FCB.AFCB_Ptr;
-      Dummy_FCB : in out FCB.AFCB'Class;
+      Dummy_FCB : in FCB.AFCB'Class;
       Mode      : FCB.File_Mode;
       Name      : String;
       Form      : String;

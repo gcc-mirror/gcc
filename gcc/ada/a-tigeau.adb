@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -432,12 +432,11 @@ package body Ada.Text_IO.Generic_Aux is
    begin
       File.Col := File.Col + 1;
 
-      if Ptr = Buf'Last then
-         raise Data_Error;
-      else
+      if Ptr < Buf'Last then
          Ptr := Ptr + 1;
-         Buf (Ptr) := Character'Val (ch);
       end if;
+
+      Buf (Ptr) := Character'Val (ch);
    end Store_Char;
 
    -----------------

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -511,7 +511,6 @@ package body Atree is
 
             return NL;
          end if;
-
       end Copy_List;
 
       -------------------
@@ -664,7 +663,6 @@ package body Atree is
       Delete_Field (Field3 (Node));
       Delete_Field (Field4 (Node));
       Delete_Field (Field5 (Node));
-
    end Delete_Tree;
 
    -----------
@@ -811,7 +809,6 @@ package body Atree is
       then
          Set_Parent (List_Id (Field), New_Node);
       end if;
-
    end Fix_Parent;
 
    -----------------------------------
@@ -838,8 +835,12 @@ package body Atree is
 
    procedure Initialize is
       Dummy : Node_Id;
+      pragma Warnings (Off, Dummy);
 
    begin
+      Atree_Private_Part.Nodes.Init;
+      Orig_Nodes.Init;
+
       --  Allocate Empty node
 
       Dummy := New_Node (N_Empty, No_Location);
@@ -1383,7 +1384,10 @@ package body Atree is
                   else
                      E := First_Elmt (Actual_Map);
                      while Present (E) loop
-                        if Old_Node = Associated_Node_For_Itype (Node (E)) then
+                        if Is_Itype (Node (E))
+                          and then
+                            Old_Node = Associated_Node_For_Itype (Node (E))
+                        then
                            Set_Associated_Node_For_Itype
                              (Node (Next_Elmt (E)), New_Node);
                         end if;
@@ -1590,7 +1594,7 @@ package body Atree is
                   Set_Associated_Node_For_Itype (Ent, New_Itype);
                end if;
 
-            --  Csae of hash tables not used
+            --  Case of hash tables not used
 
             else
                E := First_Elmt (Actual_Map);
@@ -1600,7 +1604,10 @@ package body Atree is
                        (New_Itype, Node (Next_Elmt (E)));
                   end if;
 
-                  if Old_Itype = Associated_Node_For_Itype (Node (E)) then
+                  if Is_Type (Node (E))
+                    and then
+                      Old_Itype = Associated_Node_For_Itype (Node (E))
+                  then
                      Set_Associated_Node_For_Itype
                        (Node (Next_Elmt (E)), New_Itype);
                   end if;
@@ -1813,8 +1820,14 @@ package body Atree is
       New_Sloc      : Source_Ptr)
       return          Entity_Id
    is
+      Ent : Entity_Id;
+
       procedure New_Entity_Debugging_Output;
       --  Debugging routine for debug flag N
+
+      ---------------------------------
+      -- New_Entity_Debugging_Output --
+      ---------------------------------
 
       procedure New_Entity_Debugging_Output is
       begin
@@ -1837,7 +1850,16 @@ package body Atree is
       pragma Assert (New_Node_Kind in N_Entity);
 
       Nodes.Increment_Last;
-      Current_Error_Node := Nodes.Last;
+      Ent := Nodes.Last;
+
+      --  If this is a node with a real location and we are generating
+      --  source nodes, then reset Current_Error_Node. This is useful
+      --  if we bomb during parsing to get a error location for the bomb.
+
+      if Default_Node.Comes_From_Source and then New_Sloc > No_Location then
+         Current_Error_Node := Ent;
+      end if;
+
       Nodes.Table (Nodes.Last)        := Default_Node;
       Nodes.Table (Nodes.Last).Nkind  := New_Node_Kind;
       Nodes.Table (Nodes.Last).Sloc   := New_Sloc;
@@ -1858,7 +1880,7 @@ package body Atree is
       Orig_Nodes.Set_Last (Nodes.Last);
       Allocate_List_Tables (Nodes.Last);
       Node_Count := Node_Count + 1;
-      return Current_Error_Node;
+      return Ent;
    end New_Entity;
 
    --------------
@@ -1870,8 +1892,14 @@ package body Atree is
       New_Sloc      : Source_Ptr)
       return          Node_Id
    is
+      Nod : Node_Id;
+
       procedure New_Node_Debugging_Output;
       --  Debugging routine for debug flag N
+
+      --------------------------
+      -- New_Debugging_Output --
+      --------------------------
 
       procedure New_Node_Debugging_Output is
       begin
@@ -1897,13 +1925,21 @@ package body Atree is
       Nodes.Table (Nodes.Last).Nkind  := New_Node_Kind;
       Nodes.Table (Nodes.Last).Sloc   := New_Sloc;
       pragma Debug (New_Node_Debugging_Output);
-      Current_Error_Node := Nodes.Last;
-      Node_Count := Node_Count + 1;
+      Nod := Nodes.Last;
 
+      --  If this is a node with a real location and we are generating
+      --  source nodes, then reset Current_Error_Node. This is useful
+      --  if we bomb during parsing to get a error location for the bomb.
+
+      if Default_Node.Comes_From_Source and then New_Sloc > No_Location then
+         Current_Error_Node := Nod;
+      end if;
+
+      Node_Count := Node_Count + 1;
       Orig_Nodes.Increment_Last;
       Allocate_List_Tables (Nodes.Last);
       Orig_Nodes.Table (Nodes.Last) := Nodes.Last;
-      return Nodes.Last;
+      return Nod;
    end New_Node;
 
    -----------
@@ -2032,6 +2068,14 @@ package body Atree is
       --  not get set.
 
       Set_Parent (New_Node, Parent (Source));
+
+      --  If the node being relocated was a rewriting of some original
+      --  node, then the relocated node has the same original node.
+
+      if Orig_Nodes.Table (Source) /= Source then
+         Orig_Nodes.Table (New_Node) := Orig_Nodes.Table (Source);
+      end if;
+
       return New_Node;
    end Relocate_Node;
 
@@ -2077,7 +2121,6 @@ package body Atree is
       --  Finally delete the source, since it is now copied
 
       Delete_Node (New_Node);
-
    end Replace;
 
    -------------
@@ -2126,7 +2169,7 @@ package body Atree is
          Sav_Node := Nodes.Last;
          Nodes.Table (Sav_Node)         := Nodes.Table (Old_Node);
          Nodes.Table (Sav_Node).In_List := False;
-         Nodes.Table (Sav_Node).Link    := Union_Id (Empty);
+         Nodes.Table (Sav_Node).Link    := Union_Id (Parent (Old_Node));
 
          Orig_Nodes.Increment_Last;
          Allocate_List_Tables (Nodes.Last);
@@ -2152,7 +2195,6 @@ package body Atree is
       Fix_Parent (Field3 (Old_Node), New_Node, Old_Node);
       Fix_Parent (Field4 (Old_Node), New_Node, Old_Node);
       Fix_Parent (Field5 (Old_Node), New_Node, Old_Node);
-
    end Rewrite;
 
    ------------------
@@ -2281,7 +2323,9 @@ package body Atree is
 
             --  Traverse descendent that is syntactic subtree node
 
-            if Parent (Node_Id (Fld)) = Node then
+            if Parent (Node_Id (Fld)) = Node
+              or else Original_Node (Parent (Node_Id (Fld))) = Node
+            then
                return Traverse_Func (Node_Id (Fld));
 
             --  Node that is not a syntactic subtree
@@ -2296,8 +2340,9 @@ package body Atree is
 
             --  Traverse descendent that is a syntactic subtree list
 
-            if Parent (List_Id (Fld)) = Node then
-
+            if Parent (List_Id (Fld)) = Node
+              or else Original_Node (Parent (List_Id (Fld))) = Node
+            then
                declare
                   Elmt : Node_Id := First (List_Id (Fld));
                begin
@@ -2374,7 +2419,6 @@ package body Atree is
                end if;
             end;
       end case;
-
    end Traverse_Func;
 
    -------------------
@@ -2384,6 +2428,7 @@ package body Atree is
    procedure Traverse_Proc (Node : Node_Id) is
       function Traverse is new Traverse_Func (Process);
       Discard : Traverse_Result;
+      pragma Warnings (Off, Discard);
 
    begin
       Discard := Traverse (Node);

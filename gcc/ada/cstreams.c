@@ -6,8 +6,7 @@
  *                                                                          *
  *              Auxiliary C functions for Interfaces.C.Streams              *
  *                                                                          *
- *                                                                          *
- *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2003 Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -65,14 +64,16 @@
 #ifdef stdout
 #  undef stdout
 #endif
+
 #endif
 
-/* The _IONBF value in CYGNUS or MINGW32 stdio.h is wrong.  */
+/* The _IONBF value in MINGW32 stdio.h is wrong.  */
 #if defined (WINNT) || defined (_WINNT)
+#if OLD_MINGW
 #undef _IONBF
 #define _IONBF 0004
 #endif
-
+#endif
 
 int
 __gnat_feof (stream)
@@ -189,19 +190,20 @@ __gnat_full_name (nam, buffer)
   realpath (nam, buffer);
 
 #elif defined (VMS)
-  strcpy (buffer, __gnat_to_canonical_file_spec (nam));
+  strncpy (buffer, __gnat_to_canonical_file_spec (nam), __gnat_max_path_len);
 
-  if (buffer[0] == '/')
-    strcpy (buffer, __gnat_to_host_file_spec (buffer));
+  if (buffer[0] == '/' || strchr (buffer, '!'))  /* '!' means decnet node */
+    strncpy (buffer, __gnat_to_host_file_spec (buffer), __gnat_max_path_len);
   else
     {
       char *nambuffer = alloca (__gnat_max_path_len);
 
-      strcpy (nambuffer, buffer);
-      strcpy (buffer, getcwd (buffer, __gnat_max_path_len, 0));
-      strcat (buffer, "/");
-      strcat (buffer, nambuffer);
-      strcpy (buffer, __gnat_to_host_file_spec (buffer));
+      strncpy (nambuffer, buffer, __gnat_max_path_len);
+      strncpy
+	(buffer, getcwd (buffer, __gnat_max_path_len, 0), __gnat_max_path_len);
+      strncat (buffer, "/", __gnat_max_path_len);
+      strncat (buffer, nambuffer, __gnat_max_path_len);
+      strncpy (buffer, __gnat_to_host_file_spec (buffer), __gnat_max_path_len);
     }
 
   return buffer;

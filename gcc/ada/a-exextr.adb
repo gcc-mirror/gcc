@@ -1,0 +1,327 @@
+------------------------------------------------------------------------------
+--                                                                          --
+--                         GNAT COMPILER COMPONENTS                         --
+--                                                                          --
+--                      ADA.EXCEPTIONS.EXCEPTION_TRACES                     --
+--                                                                          --
+--                                 B o d y                                  --
+--                                                                          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--                                                                          --
+-- GNAT is free software;  you can  redistribute it  and/or modify it under --
+-- terms of the  GNU General Public License as published  by the Free Soft- --
+-- ware  Foundation;  either version 2,  or (at your option) any later ver- --
+-- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
+-- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
+-- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
+-- for  more details.  You should have  received  a copy of the GNU General --
+-- Public License  distributed with GNAT;  see file COPYING.  If not, write --
+-- to  the Free Software Foundation,  59 Temple Place - Suite 330,  Boston, --
+-- MA 02111-1307, USA.                                                      --
+--                                                                          --
+-- As a special exception,  if other files  instantiate  generics from this --
+-- unit, or you link  this unit with other files  to produce an executable, --
+-- this  unit  does not  by itself cause  the resulting  executable  to  be --
+-- covered  by the  GNU  General  Public  License.  This exception does not --
+-- however invalidate  any other reasons why  the executable file  might be --
+-- covered by the  GNU Public License.                                      --
+--                                                                          --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
+--                                                                          --
+------------------------------------------------------------------------------
+
+with Unchecked_Conversion;
+
+separate (Ada.Exceptions)
+package body Exception_Traces is
+
+   Nline : constant String := String'(1 => ASCII.LF);
+   --  Convenient shortcut
+
+   type Exception_Action is access procedure (E : Exception_Occurrence);
+   Global_Action : Exception_Action := null;
+   pragma Export
+     (Ada, Global_Action, "__gnat_exception_actions_global_action");
+   --  Global action, executed whenever an exception is raised.  Changing the
+   --  export name must be coordinated with code in g-excact.adb.
+
+   Raise_Hook_Initialized : Boolean := False;
+   pragma Export
+     (Ada, Raise_Hook_Initialized, "__gnat_exception_actions_initialized");
+
+   function To_Action is new Unchecked_Conversion
+     (Raise_Action, Exception_Action);
+
+   -----------------------
+   -- Local Subprograms --
+   -----------------------
+
+   procedure Notify_Exception (Excep : EOA; Is_Unhandled : Boolean);
+   --  Factorizes the common processing for Notify_Handled_Exception and
+   --  Notify_Unhandled_Exception. Is_Unhandled is set to True only in the
+   --  latter case because Notify_Handled_Exception may be called for an
+   --  actually unhandled occurrence in the Front-End-SJLJ case.
+
+   procedure To_Stderr (S : String);
+   pragma Export (Ada, To_Stderr, "__gnat_to_stderr");
+   --  Little routine to output string to stderr that is also used
+   --  in the tasking run time.
+
+   ---------------------------------
+   -- Debugger Interface Routines --
+   ---------------------------------
+
+   --  The routines here are null routines that normally have no effect.
+   --  They are provided for the debugger to place breakpoints on their
+   --  entry points to get control on an exception.
+
+   procedure Unhandled_Exception;
+   pragma Export (C, Unhandled_Exception, "__gnat_unhandled_exception");
+   --  Hook for GDB to support "break exception unhandled".
+
+   --  For "break exception", GDB uses __gnat_raise_nodefer_with_msg, which
+   --  is not in this section because it fullfills other purposes than a mere
+   --  debugger interface.
+
+   --------------------------------
+   -- Import Run-Time C Routines --
+   --------------------------------
+
+   --  The purpose of the following pragma Import is to ensure that we
+   --  generate appropriate subprogram descriptors for all C routines in
+   --  the standard GNAT library that can raise exceptions. This ensures
+   --  that the exception propagation can properly find these routines
+
+   pragma Propagate_Exceptions;
+
+   procedure Unhandled_Terminate;
+   pragma No_Return (Unhandled_Terminate);
+   pragma Import (C, Unhandled_Terminate, "__gnat_unhandled_terminate");
+   --  Perform system dependent shutdown code
+
+   ----------------------
+   -- Notify_Exception --
+   ----------------------
+
+   procedure Notify_Exception (Excep : EOA; Is_Unhandled : Boolean) is
+   begin
+      --  Output the exception information required by the Exception_Trace
+      --  configuration. Take care not to output information about internal
+      --  exceptions.
+
+      --  ??? In the Front-End ZCX case, the traceback entries we have at this
+      --  point only include the ones we stored while walking up the stack *up
+      --  to the handler*. All the frames above the subprogram in which the
+      --  handler is found are missing.
+
+      if not Excep.Id.Not_Handled_By_Others
+        and then
+        (Exception_Trace = Every_Raise
+         or else (Exception_Trace = Unhandled_Raise and then Is_Unhandled))
+      then
+         To_Stderr (Nline);
+
+         if Is_Unhandled then
+            To_Stderr ("Unhandled ");
+         end if;
+
+         To_Stderr ("Exception raised");
+         To_Stderr (Nline);
+         To_Stderr (Tailored_Exception_Information (Excep.all));
+      end if;
+
+      --  Call the user-specific actions
+      --  ??? We should presumably look at the reraise status here.
+
+      if Raise_Hook_Initialized
+        and then Exception_Data_Ptr (Excep.Id).Raise_Hook /= null
+      then
+         To_Action (Exception_Data_Ptr (Excep.Id).Raise_Hook) (Excep.all);
+      end if;
+
+      if Global_Action /= null then
+         Global_Action (Excep.all);
+      end if;
+   end Notify_Exception;
+
+   ------------------------------
+   -- Notify_Handled_Exception --
+   ------------------------------
+
+   procedure Notify_Handled_Exception is
+   begin
+      Notify_Exception (Get_Current_Excep.all, Is_Unhandled => False);
+   end Notify_Handled_Exception;
+
+   --------------------------------
+   -- Notify_Unhandled_Exception --
+   --------------------------------
+
+   procedure Notify_Unhandled_Exception is
+   begin
+      Notify_Exception (Get_Current_Excep.all, Is_Unhandled => True);
+      Unhandled_Exception;
+   end Notify_Unhandled_Exception;
+
+   -------------------------
+   -- Unhandled_Exception --
+   -------------------------
+
+   procedure Unhandled_Exception is
+   begin
+      null;
+   end Unhandled_Exception;
+
+   -----------------------------------
+   -- Unhandled_Exception_Terminate --
+   -----------------------------------
+
+   type int is new Integer;
+
+   procedure Unhandled_Exception_Terminate is
+      Excep : constant EOA := Save_Occurrence (Get_Current_Excep.all.all);
+      --  This occurrence will be used to display a message after finalization.
+      --  It is necessary to save a copy here, or else the designated value
+      --  could be overwritten if an exception is raised during finalization
+      --  (even if that exception is caught).
+
+      Msg : constant String := Excep.Msg (1 .. Excep.Msg_Length);
+
+      Max_Static_Exc_Info : constant := 1024;
+      --  That should be enough for most exception information cases
+      --  eventhough tailorising introduces some uncertainty.  the
+      --  name+message should not exceed 320 chars, so that leaves at
+      --  least 35 backtrace slots (each slot needs 19 chars for
+      --  representing a 64 bit address).
+      --  And what happens on overflow ???
+
+      subtype Exc_Info_Type is String (1 .. Max_Static_Exc_Info);
+      type Str_Ptr is access Exc_Info_Type;
+      Exc_Info : Str_Ptr;
+      Exc_Info_Last : Natural := 0;
+      --  Buffer that is allocated to store the tailored exception
+      --  information while Adafinal is run. This buffer is allocated
+      --  on the heap only when it is needed. It is better to allocate
+      --  on the heap than on the stack since stack overflows are more
+      --  common that heap overflows.
+
+   --  Start of processing for Unhandled_Exception_Terminate
+
+   begin
+      --  First allocate & store the exception info in a buffer when
+      --  we know it will be needed. This needs to be done before
+      --  Adafinal because it implicitly uses the secondary stack.
+
+      if Excep.Id.Full_Name.all (1) /= '_'
+        and then Excep.Num_Tracebacks /= 0
+      then
+         Exc_Info := new Exc_Info_Type;
+         if Exc_Info /= null then
+            Tailored_Exception_Information
+              (Excep.all, Exc_Info.all, Exc_Info_Last);
+         end if;
+      end if;
+
+      --  Let's shutdown the runtime now. The rest of the procedure
+      --  needs to be careful not to use anything that would require
+      --  runtime support. In particular, function returing strings
+      --  are banned since the sec stack is not functional anymore
+
+      System.Standard_Library.Adafinal;
+
+      --  Check for special case of raising _ABORT_SIGNAL, which is not
+      --  really an exception at all. We recognize this by the fact that
+      --  it is the only exception whose name starts with underscore.
+
+      if Excep.Id.Full_Name.all (1) = '_' then
+         To_Stderr (Nline);
+         To_Stderr ("Execution terminated by abort of environment task");
+         To_Stderr (Nline);
+
+      --  If no tracebacks, we print the unhandled exception in the old style
+      --  (i.e. the style used before ZCX was implemented). We do this to
+      --  retain compatibility, especially with the nightly scripts, but
+      --  this can be removed at some point ???
+
+      elsif Excep.Num_Tracebacks = 0 then
+         To_Stderr (Nline);
+         To_Stderr ("raised ");
+         To_Stderr (Excep.Id.Full_Name.all (1 .. Excep.Id.Name_Length - 1));
+
+         if Msg'Length /= 0 then
+            To_Stderr (" : ");
+            To_Stderr (Msg);
+         end if;
+
+         To_Stderr (Nline);
+
+      else
+         --  Traceback exists
+
+         --  Note we can have this whole information output twice if
+         --  this occurrence gets reraised up to here.
+
+         To_Stderr (Nline);
+         To_Stderr ("Execution terminated by unhandled exception");
+         To_Stderr (Nline);
+         To_Stderr (Exc_Info (1 .. Exc_Info_Last));
+      end if;
+
+      Unhandled_Terminate;
+   end Unhandled_Exception_Terminate;
+
+   ---------------
+   -- To_Stderr --
+   ---------------
+
+   procedure To_Stderr (S : String) is
+      procedure put_char_stderr (C : int);
+      pragma Import (C, put_char_stderr, "put_char_stderr");
+
+   begin
+      for J in 1 .. S'Length loop
+         if S (J) /= ASCII.CR then
+            put_char_stderr (Character'Pos (S (J)));
+         end if;
+      end loop;
+   end To_Stderr;
+
+
+   ------------------------------------
+   -- Handling GNAT.Exception_Traces --
+   ------------------------------------
+
+   --  The bulk of exception traces output is centralized in Notify_Exception,
+   --  for both the Handled and Unhandled cases. Extra task specific output is
+   --  triggered in the task wrapper for unhandled occurrences in tasks. It is
+   --  not performed in this unit to avoid dragging dependencies against the
+   --  tasking units here.
+
+   --  We used to rely on the output performed by Unhanded_Exception_Terminate
+   --  for the case of an unhandled occurrence in the environment thread, and
+   --  the task wrapper was responsible for the whole output in the tasking
+   --  case.
+
+   --  This initial scheme had a drawback: the output from Terminate only
+   --  occurs after finalization is done, which means possibly never if some
+   --  tasks keep hanging around.
+
+   --  The first "presumably obvious" fix consists in moving the Terminate
+   --  output before the finalization. It has not been retained because it
+   --  introduces annoying changes in output orders when the finalization
+   --  itself issues outputs, this also in "regular" cases not resorting to
+   --  Exception_Traces.
+
+   --  Today's solution has the advantage of simplicity and better isolates
+   --  the Exception_Traces machinery.
+
+   --  It currently outputs the information about unhandled exceptions twice
+   --  in the environment thread, once in the notification routine and once in
+   --  the termination routine. Avoiding the second output is possible but so
+   --  far has been considered undesirable. It would mean changing the order
+   --  of outputs between the two runs with or without exception traces, while
+   --  it seems preferrable to only have additional outputs in the former
+   --  case.
+
+end Exception_Traces;

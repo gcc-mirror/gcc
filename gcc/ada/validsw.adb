@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 2001-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -119,8 +119,6 @@ package body Validsw is
       C : Character;
 
    begin
-      Reset_Validity_Check_Options;
-
       J := Options'First;
       while J <= Options'Last loop
          C := Options (J);
@@ -150,6 +148,9 @@ package body Validsw is
             when 'o' =>
                Validity_Check_Operands       := True;
 
+            when 'p' =>
+               Validity_Check_Parameters     := True;
+
             when 'r' =>
                Validity_Check_Returns        := True;
 
@@ -177,6 +178,9 @@ package body Validsw is
             when 'O' =>
                Validity_Check_Operands       := False;
 
+            when 'P' =>
+               Validity_Check_Parameters     := False;
+
             when 'R' =>
                Validity_Check_Returns        := False;
 
@@ -193,6 +197,7 @@ package body Validsw is
                Validity_Check_In_Out_Params  := True;
                Validity_Check_In_Params      := True;
                Validity_Check_Operands       := True;
+               Validity_Check_Parameters     := True;
                Validity_Check_Returns        := True;
                Validity_Check_Subscripts     := True;
                Validity_Check_Tests          := True;
@@ -204,6 +209,7 @@ package body Validsw is
                Validity_Check_In_Out_Params  := False;
                Validity_Check_In_Params      := False;
                Validity_Check_Operands       := False;
+               Validity_Check_Parameters     := False;
                Validity_Check_Returns        := False;
                Validity_Check_Subscripts     := False;
                Validity_Check_Tests          := False;

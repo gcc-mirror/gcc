@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -170,7 +170,6 @@ package body Sem_Mech is
          Bad_Class;
          return;
       end if;
-
    end Set_Mechanism_Value;
 
    -------------------------------
@@ -416,17 +415,19 @@ package body Sem_Mech is
          Next_Formal (Formal);
       end loop;
 
-      --  Now deal with return type, we always leave the default mechanism
-      --  set except for the case of returning a By_Reference type for an
-      --  Ada convention, where we force return by reference
+      --  Note: there is nothing we need to do for the return type here.
+      --  We deal with returning by reference in the Ada sense, by use of
+      --  the flag By_Ref, rather than by messing with mechanisms.
 
-      if Ekind (E) = E_Function
-        and then Mechanism (E) = Default_Mechanism
-        and then not Has_Foreign_Convention (E)
-        and then Is_By_Reference_Type (Etype (E))
-      then
-         Set_Mechanism (E, By_Reference);
-      end if;
+      --  A mechanism of Reference for the return means that an extra
+      --  parameter must be provided for the return value (that is the
+      --  DEC meaning of the pragma), and is unrelated to the Ada notion
+      --  of return by reference.
+
+      --  Note: there was originally code here to set the mechanism to
+      --  By_Reference for types that are "by reference" in the Ada sense,
+      --  but, in accordance with the discussion above, this is wrong, and
+      --  the code was removed.
 
    end Set_Mechanisms;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,6 +33,8 @@
 
 with Output;  use Output;
 with Tree_IO; use Tree_IO;
+
+with GNAT.HTable; use GNAT.HTable;
 
 package body Uintp is
 
@@ -69,16 +71,37 @@ package body Uintp is
    Uints_Min   : Uint;
    Udigits_Min : Int;
    --  These values are used to make sure that the mark/release mechanism
-   --  does not destroy values saved in the U_Power tables. Whenever an
-   --  entry is made in the U_Power tables, Uints_Min and Udigits_Min are
-   --  updated to protect the entry, and Release never cuts back beyond
-   --  these minimum values.
+   --  does not destroy values saved in the U_Power tables or in the hash
+   --  table used by UI_From_Int. Whenever an entry is made in either of
+   --  these tabls, Uints_Min and Udigits_Min are updated to protect the
+   --  entry, and Release never cuts back beyond these minimum values.
 
    Int_0 : constant Int := 0;
    Int_1 : constant Int := 1;
    Int_2 : constant Int := 2;
    --  These values are used in some cases where the use of numeric literals
    --  would cause ambiguities (integer vs Uint).
+
+   ----------------------------
+   -- UI_From_Int Hash Table --
+   ----------------------------
+
+   --  UI_From_Int uses a hash table to avoid duplicating entries and
+   --  wasting storage. This is particularly important for complex cases
+   --  of back annotation.
+
+   subtype Hnum is Nat range 0 .. 1022;
+
+   function Hash_Num (F : Int) return Hnum;
+   --  Hashing function
+
+   package UI_Ints is new Simple_HTable (
+     Header_Num => Hnum,
+     Element    => Uint,
+     No_Element => No_Uint,
+     Key        => Int,
+     Hash       => Hash_Num,
+     Equal      => "=");
 
    -----------------------
    -- Local Subprograms --
@@ -200,6 +223,15 @@ package body Uintp is
 
       return J;
    end GCD;
+
+   --------------
+   -- Hash_Num --
+   --------------
+
+   function Hash_Num (F : Int) return Hnum is
+   begin
+      return Standard."mod" (F, Hnum'Range_Length);
+   end Hash_Num;
 
    ---------------
    -- Image_Out --
@@ -324,7 +356,8 @@ package body Uintp is
       ----------------
 
       procedure Image_Uint (U : Uint) is
-         H : array (Int range 0 .. 15) of Character := "0123456789ABCDEF";
+         H : constant array (Int range 0 .. 15) of Character :=
+               "0123456789ABCDEF";
 
       begin
          if U >= Base then
@@ -428,6 +461,7 @@ package body Uintp is
       Uints_Min := Uints.Last;
       Udigits_Min := Udigits.Last;
 
+      UI_Ints.Reset;
    end Initialize;
 
    ---------------------
@@ -557,7 +591,7 @@ package body Uintp is
 
    begin
       if UI_Is_In_Int_Range (Input) then
-         Num := UI_To_Int (Input);
+         Num := abs (UI_To_Int (Input));
          Bits := 0;
 
       else
@@ -614,10 +648,10 @@ package body Uintp is
 
       else
          declare
-            UE_Len : Pos := Uints.Table (UI).Length;
-            UE_Loc : Int := Uints.Table (UI).Loc;
+            UE_Len : constant Pos := Uints.Table (UI).Length;
+            UE_Loc : constant Int := Uints.Table (UI).Loc;
 
-            UD : Udigits.Table_Type (1 .. UE_Len) :=
+            UD : constant Udigits.Table_Type (1 .. UE_Len) :=
                    Udigits.Table (UE_Loc .. UE_Loc + UE_Len - 1);
 
          begin
@@ -646,16 +680,16 @@ package body Uintp is
 
       else
          declare
-            UE1_Len : Pos := Uints.Table (UI1).Length;
-            UE1_Loc : Int := Uints.Table (UI1).Loc;
+            UE1_Len : constant Pos := Uints.Table (UI1).Length;
+            UE1_Loc : constant Int := Uints.Table (UI1).Loc;
 
-            UD1 : Udigits.Table_Type (1 .. UE1_Len) :=
+            UD1 : constant Udigits.Table_Type (1 .. UE1_Len) :=
                     Udigits.Table (UE1_Loc .. UE1_Loc + UE1_Len - 1);
 
-            UE2_Len : Pos := Uints.Table (UI2).Length;
-            UE2_Loc : Int := Uints.Table (UI2).Loc;
+            UE2_Len : constant Pos := Uints.Table (UI2).Length;
+            UE2_Loc : constant Int := Uints.Table (UI2).Loc;
 
-            UD2 : Udigits.Table_Type (1 .. UE2_Len) :=
+            UD2 : constant Udigits.Table_Type (1 .. UE2_Len) :=
                     Udigits.Table (UE2_Loc .. UE2_Loc + UE2_Len - 1);
 
          begin
@@ -744,7 +778,7 @@ package body Uintp is
 
       else
          declare
-            L_Length : Int := N_Digits (Left);
+            L_Length : constant Int := N_Digits (Left);
             L_Vec    : UI_Vector (1 .. L_Length);
             Tmp_Int  : Int;
             Carry    : Int;
@@ -818,7 +852,7 @@ package body Uintp is
 
       else
          declare
-            L_Length      : Int := N_Digits (Left);
+            L_Length      : constant Int := N_Digits (Left);
             L_Vec         : UI_Vector (1 .. L_Length);
             Most_Sig_Int  : Int;
             Least_Sig_Int : Int;
@@ -836,7 +870,6 @@ package body Uintp is
             J := L_Length;
 
             while J > Int_1 loop
-
                Least_Sig_Int := Least_Sig_Int + Alt * (L_Vec (J) + Carry);
 
                --  Least is in [-2 Base + 1 .. 2 * Base - 1]
@@ -1011,8 +1044,8 @@ package body Uintp is
       --  Otherwise full circuit is needed
 
       declare
-         L_Length   : Int := N_Digits (Left);
-         R_Length   : Int := N_Digits (Right);
+         L_Length   : constant Int := N_Digits (Left);
+         R_Length   : constant Int := N_Digits (Right);
          L_Vec      : UI_Vector (1 .. L_Length);
          R_Vec      : UI_Vector (1 .. R_Length);
          Sum_Length : Int;
@@ -1571,39 +1604,51 @@ package body Uintp is
    -----------------
 
    function UI_From_Int (Input : Int) return Uint is
-   begin
+      U : Uint;
 
+   begin
       if Min_Direct <= Input and then Input <= Max_Direct then
          return Uint (Int (Uint_Direct_Bias) + Input);
+      end if;
+
+      --  If already in the hash table, return entry
+
+      U := UI_Ints.Get (Input);
+
+      if U /= No_Uint then
+         return U;
+      end if;
 
       --  For values of larger magnitude, compute digits into a vector and
       --  call Vector_To_Uint.
 
-      else
-         declare
-            Max_For_Int : constant := 3;
-            --  Base is defined so that 3 Uint digits is sufficient
-            --  to hold the largest possible Int value.
+      declare
+         Max_For_Int : constant := 3;
+         --  Base is defined so that 3 Uint digits is sufficient
+         --  to hold the largest possible Int value.
 
-            V : UI_Vector (1 .. Max_For_Int);
+         V : UI_Vector (1 .. Max_For_Int);
 
-            Temp_Integer : Int;
+         Temp_Integer : Int;
 
-         begin
-            for J in V'Range loop
-               V (J) := 0;
-            end loop;
+      begin
+         for J in V'Range loop
+            V (J) := 0;
+         end loop;
 
-            Temp_Integer := Input;
+         Temp_Integer := Input;
 
-            for J in reverse V'Range loop
-               V (J) := abs (Temp_Integer rem Base);
-               Temp_Integer := Temp_Integer / Base;
-            end loop;
+         for J in reverse V'Range loop
+            V (J) := abs (Temp_Integer rem Base);
+            Temp_Integer := Temp_Integer / Base;
+         end loop;
 
-            return Vector_To_Uint (V, Input < Int_0);
-         end;
-      end if;
+         U := Vector_To_Uint (V, Input < Int_0);
+         UI_Ints.Set (Input, U);
+         Uints_Min := Uints.Last;
+         Udigits_Min := Udigits.Last;
+         return U;
+      end;
    end UI_From_Int;
 
    ------------
@@ -2183,7 +2228,7 @@ package body Uintp is
 
             if (Right <= Uint_12) and then (Right >= Uint_Minus_12) then
 
-               if (Left < Uint_0) then
+               if Left < Uint_0 then
                   Sign := -1;
                else
                   Sign := 1;

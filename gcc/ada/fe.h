@@ -6,8 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *                                                                          *
- *          Copyright (C) 1992-2002 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2003 Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -34,21 +33,12 @@
 /* This file contains definitions to access front-end functions and
    variables used by gigi.  */
 
-/* atree: */
-
-#define Is_Rewrite_Substitution	atree__is_rewrite_substitution
-#define Original_Node		atree__original_node
-
-extern Boolean Is_Rewrite_Subsitution	PARAMS ((Node_Id));
-extern Node_Id Original_Node		PARAMS ((Node_Id));
-
 /* comperr:  */
 
 #define Compiler_Abort comperr__compiler_abort
-extern int Compiler_Abort PARAMS ((Fat_Pointer, int)) ATTRIBUTE_NORETURN;
+extern int Compiler_Abort (Fat_Pointer, int) ATTRIBUTE_NORETURN;
 
-/* csets: Definitions to access the front-end's character translation
-   tables.  */
+/* csets: */
 
 #define Fold_Lower(C) csets__fold_lower[C]
 #define Fold_Upper(C) csets__fold_upper[C]
@@ -73,37 +63,44 @@ extern Boolean Debug_Flag_NN;
 #define Set_Component_Size		einfo__set_component_size
 #define Set_Present_Expr		sinfo__set_present_expr
 
-extern void Set_Alignment		PARAMS ((Entity_Id, Uint));
-extern void Set_Component_Size		PARAMS ((Entity_Id, Uint));
-extern void Set_Esize			PARAMS ((Entity_Id, Uint));
-extern void Set_RM_Size			PARAMS ((Entity_Id, Uint));
-extern void Set_Component_Bit_Offset	PARAMS ((Entity_Id, Uint));
-extern void Set_Present_Expr		PARAMS ((Node_Id, Uint));
+extern void Set_Alignment		(Entity_Id, Uint);
+extern void Set_Component_Size		(Entity_Id, Uint);
+extern void Set_Esize			(Entity_Id, Uint);
+extern void Set_RM_Size			(Entity_Id, Uint);
+extern void Set_Component_Bit_Offset	(Entity_Id, Uint);
+extern void Set_Present_Expr		(Node_Id, Uint);
 
 /* Test if the node N is the name of an entity (i.e. is an identifier,
    expanded name, or an attribute reference that returns an entity).  */
 #define Is_Entity_Name einfo__is_entity_name
-extern Boolean Is_Entity_Name		PARAMS ((Node_Id));
+extern Boolean Is_Entity_Name		(Node_Id);
 
 #define Get_Attribute_Definition_Clause einfo__get_attribute_definition_clause
-extern Node_Id Get_Attribute_Definition_Clause PARAMS ((Entity_Id, char));
+extern Node_Id Get_Attribute_Definition_Clause (Entity_Id, char);
 
 /* errout: */
 
-#define Error_Msg_N	errout__error_msg_n
-#define Error_Msg_NE	errout__error_msg_ne
-#define Error_Msg_Node_2 errout__error_msg_node_2
-#define Error_Msg_Uint_1 errout__error_msg_uint_1
-#define Error_Msg_Uint_2 errout__error_msg_uint_2
+#define Error_Msg_N               errout__error_msg_n
+#define Error_Msg_NE              errout__error_msg_ne
+#define Set_Identifier_Casing     errout__set_identifier_casing
 
-extern void Error_Msg_N		PARAMS ((Fat_Pointer, Node_Id));
-extern void Error_Msg_NE	PARAMS ((Fat_Pointer, Node_Id, Entity_Id));
+extern void Error_Msg_N	          (Fat_Pointer, Node_Id);
+extern void Error_Msg_NE          (Fat_Pointer, Node_Id, Entity_Id);
+extern void Set_Identifier_Casing (Char, Char);
 
-extern Entity_Id Error_Msg_Node_2;
-extern Uint Error_Msg_Uint_1;
-extern Uint Error_Msg_Uint_2;
+/* err_vars: */
+
+#define Error_Msg_Node_2     err_vars__error_msg_node_2
+#define Error_Msg_Uint_1     err_vars__error_msg_uint_1
+#define Error_Msg_Uint_2     err_vars__error_msg_uint_2
+
+extern Entity_Id             Error_Msg_Node_2;
+extern Uint                  Error_Msg_Uint_1;
+extern Uint                  Error_Msg_Uint_2;
+
 
 /* exp_code:  */
+
 #define Asm_Input_Constraint exp_code__asm_input_constraint
 #define Asm_Input_Value exp_code__asm_input_value
 #define Asm_Output_Constraint exp_code__asm_output_constraint
@@ -117,26 +114,26 @@ extern Uint Error_Msg_Uint_2;
 #define Setup_Asm_Inputs exp_code__setup_asm_inputs
 #define Setup_Asm_Outputs exp_code__setup_asm_outputs
 
-extern Node_Id Asm_Input_Constraint	PARAMS ((void));
-extern Node_Id Asm_Input_Value		PARAMS ((void));
-extern Node_Id Asm_Output_Constraint	PARAMS ((void));
-extern Node_Id Asm_Output_Variable	PARAMS ((void));
-extern Node_Id Asm_Template		PARAMS ((Node_Id));
-extern char *Clobber_Get_Next		PARAMS ((void));
-extern void Clobber_Setup		PARAMS ((Node_Id));
-extern Boolean Is_Asm_Volatile		PARAMS ((Node_Id));
-extern void Next_Asm_Input		PARAMS ((void));
-extern void Next_Asm_Output		PARAMS ((void));
-extern void Setup_Asm_Inputs		PARAMS ((Node_Id));
-extern void Setup_Asm_Outputs		PARAMS ((Node_Id));
+extern Node_Id Asm_Input_Constraint	(void);
+extern Node_Id Asm_Input_Value		(void);
+extern Node_Id Asm_Output_Constraint	(void);
+extern Node_Id Asm_Output_Variable	(void);
+extern Node_Id Asm_Template		(Node_Id);
+extern char *Clobber_Get_Next		(void);
+extern void Clobber_Setup		(Node_Id);
+extern Boolean Is_Asm_Volatile		(Node_Id);
+extern void Next_Asm_Input		(void);
+extern void Next_Asm_Output		(void);
+extern void Setup_Asm_Inputs		(Node_Id);
+extern void Setup_Asm_Outputs		(Node_Id);
 
 /* exp_dbug:  */
 
 #define Get_Encoded_Name exp_dbug__get_encoded_name
 #define Get_External_Name_With_Suffix exp_dbug__get_external_name_with_suffix
 
-extern void Get_Encoded_Name	PARAMS ((Entity_Id));
-extern void Get_External_Name_With_Suffix PARAMS ((Entity_Id, Fat_Pointer));
+extern void Get_Encoded_Name	(Entity_Id);
+extern void Get_External_Name_With_Suffix (Entity_Id, Fat_Pointer);
 
 /* lib: */
 
@@ -144,27 +141,33 @@ extern void Get_External_Name_With_Suffix PARAMS ((Entity_Id, Fat_Pointer));
 #define Ident_String			lib__ident_string
 #define In_Extended_Main_Code_Unit	lib__in_extended_main_code_unit
 
-extern Node_Id Cunit				PARAMS ((Unit_Number_Type));
-extern Node_Id Ident_String			PARAMS ((Unit_Number_Type));
-extern Boolean In_Extended_Main_Code_Unit	PARAMS ((Entity_Id));
+extern Node_Id Cunit				(Unit_Number_Type);
+extern Node_Id Ident_String			(Unit_Number_Type);
+extern Boolean In_Extended_Main_Code_Unit	(Entity_Id);
 
 /* opt: */
 
-#define Global_Discard_Names opt__global_discard_names
-#define Exception_Mechanism  opt__exception_mechanism
+#define Global_Discard_Names   opt__global_discard_names
+#define Exception_Mechanism    opt__exception_mechanism
+#define Back_Annotate_Rep_Info opt__back_annotate_rep_info
 
 typedef enum {Setjmp_Longjmp, Front_End_ZCX, GCC_ZCX} Exception_Mechanism_Type;
 
 extern Boolean Global_Discard_Names;
 extern Exception_Mechanism_Type Exception_Mechanism;
+extern Boolean Back_Annotate_Rep_Info;
 
 /* restrict: */
 
+#define No_Exception_Handlers_Set      restrict__no_exception_handlers_set
+#define Check_No_Implicit_Heap_Alloc   restrict__check_no_implicit_heap_alloc
 #define Check_Elaboration_Code_Allowed restrict__check_elaboration_code_allowed
-#define No_Exception_Handlers_Set restrict__no_exception_handlers_set
+#define Check_No_Implicit_Heap_Alloc   restrict__check_no_implicit_heap_alloc
 
-extern void Check_Elaboration_Code_Allowed	PARAMS ((Node_Id));
-extern Boolean No_Exception_Handlers_Set	PARAMS ((void));
+extern Boolean No_Exception_Handlers_Set   (void);
+extern void Check_No_Implicit_Heap_Alloc   (Node_Id);
+extern void Check_Elaboration_Code_Allowed (Node_Id);
+extern void Check_No_Implicit_Heap_Alloc   (Node_Id);
 
 /* sem_eval: */
 
@@ -172,11 +175,13 @@ extern Boolean No_Exception_Handlers_Set	PARAMS ((void));
 #define Expr_Value			sem_eval__expr_value
 #define Expr_Value_S			sem_eval__expr_value_s
 #define Is_OK_Static_Expression		sem_eval__is_ok_static_expression
+#define Is_OK_Static_Subtype		sem_eval__is_ok_static_subtype
 
-extern Uint Expr_Value			PARAMS ((Node_Id));
-extern Node_Id Expr_Value_S		PARAMS ((Node_Id));
-extern Boolean Compile_Time_Known_Value PARAMS((Node_Id));
-extern Boolean Is_OK_Static_Expression  PARAMS((Node_Id));
+extern Uint Expr_Value			(Node_Id);
+extern Node_Id Expr_Value_S		(Node_Id);
+extern Boolean Compile_Time_Known_Value (Node_Id);
+extern Boolean Is_OK_Static_Expression  (Node_Id);
+extern Boolean Is_OK_Static_Subtype	(Entity_Id);
 
 /* sem_util: */
 
@@ -185,15 +190,16 @@ extern Boolean Is_OK_Static_Expression  PARAMS((Node_Id));
 #define Next_Actual			sem_util__next_actual
 #define Requires_Transient_Scope	sem_util__requires_transient_scope
 
-extern Entity_Id Defining_Entity	PARAMS ((Node_Id));
-extern Node_Id First_Actual		PARAMS ((Node_Id));
-extern Node_Id Next_Actual		PARAMS ((Node_Id));
-extern Boolean Requires_Transient_Scope PARAMS ((Entity_Id));
+extern Entity_Id Defining_Entity	(Node_Id);
+extern Node_Id First_Actual		(Node_Id);
+extern Node_Id Next_Actual		(Node_Id);
+extern Boolean Requires_Transient_Scope (Entity_Id);
 
 /* sinfo: These functions aren't in sinfo.h since we don't make the
    setting functions, just the retrieval functions.  */
+
 #define Set_Has_No_Elaboration_Code sinfo__set_has_no_elaboration_code
-extern void Set_Has_No_Elaboration_Code	PARAMS ((Node_Id, Boolean));
+extern void Set_Has_No_Elaboration_Code	(Node_Id, Boolean);
 
 /* targparm: */
 

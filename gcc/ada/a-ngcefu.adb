@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -305,6 +305,8 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
       Result : Complex;
 
    begin
+      --  For very small argument, sin (x) = x.
+
       if abs Re (X) < Square_Root_Epsilon and then
          abs Im (X) < Square_Root_Epsilon
       then
@@ -321,6 +323,8 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
          elsif Im (Result) < -PI_2 then
             Set_Im (Result, -(PI + Im (X)));
          end if;
+
+         return Result;
       end if;
 
       Result := -Complex_I * Log (Complex_I * X + Sqrt (1.0 - X * X));
@@ -479,16 +483,15 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
    ---------
 
    function Exp (X : Complex) return Complex is
-      EXP_RE_X : Real'Base := Exp (Re (X));
+      EXP_RE_X : constant Real'Base := Exp (Re (X));
 
    begin
       return Compose_From_Cartesian (EXP_RE_X * Cos (Im (X)),
                                      EXP_RE_X * Sin (Im (X)));
    end Exp;
 
-
    function Exp (X : Imaginary) return Complex is
-      ImX : Real'Base := Im (X);
+      ImX : constant Real'Base := Im (X);
 
    begin
       return Compose_From_Cartesian (Cos (ImX), Sin (ImX));

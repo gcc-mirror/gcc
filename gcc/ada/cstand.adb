@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,6 +33,7 @@ with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
+with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
 with Ttypef;   use Ttypef;
@@ -667,13 +668,13 @@ package body CStand is
          Set_Constant_Present (Decl, True);
 
          declare
-            A_Char    : Entity_Id := Standard_Entity (S);
+            A_Char    : constant Entity_Id := Standard_Entity (S);
             Expr_Decl : Node_Id;
 
          begin
             Set_Sloc                   (A_Char, Staloc);
             Set_Ekind                  (A_Char, E_Constant);
-            Set_Not_Source_Assigned    (A_Char, True);
+            Set_Never_Set_In_Source    (A_Char, True);
             Set_Is_True_Constant       (A_Char, True);
             Set_Etype                  (A_Char, Standard_Character);
             Set_Scope                  (A_Char, Standard_Entity (S_ASCII));
@@ -716,7 +717,6 @@ package body CStand is
       Standard_Void_Type := New_Standard_Entity;
       Set_Ekind       (Standard_Void_Type, E_Void);
       Set_Etype       (Standard_Void_Type, Standard_Void_Type);
-      Init_Size_Align (Standard_Void_Type);
       Set_Scope       (Standard_Void_Type, Standard_Standard);
       Make_Name       (Standard_Void_Type, "_void_type");
 
@@ -900,14 +900,12 @@ package body CStand is
 
       declare
          Index   : Node_Id;
-         Indexes : List_Id;
 
       begin
          Index :=
            Make_Range (Stloc,
              Low_Bound  => Make_Integer (Uint_0),
              High_Bound => Make_Integer (Uint_2 ** Standard_Integer_Size));
-         Indexes := New_List (Index);
          Set_Etype (Index, Standard_Integer);
          Set_First_Index (Any_String, Index);
       end;
@@ -952,14 +950,15 @@ package body CStand is
       Set_Prim_Alignment    (Standard_Unsigned);
       Set_Modulus           (Standard_Unsigned,
                               Uint_2 ** Standard_Integer_Size);
-
       Set_Is_Unsigned_Type  (Standard_Unsigned);
+      Set_Size_Known_At_Compile_Time
+                            (Standard_Unsigned);
 
       R_Node := New_Node (N_Range, Stloc);
-      Set_Low_Bound  (R_Node,
-        Make_Integer_Literal (Stloc, 0));
-      Set_High_Bound (R_Node,
-        Make_Integer_Literal (Stloc, Modulus (Standard_Unsigned)));
+      Set_Low_Bound  (R_Node, Make_Integer (Uint_0));
+      Set_High_Bound (R_Node, Make_Integer (Modulus (Standard_Unsigned) - 1));
+      Set_Etype (Low_Bound (R_Node), Standard_Unsigned);
+      Set_Etype (High_Bound (R_Node), Standard_Unsigned);
       Set_Scalar_Range (Standard_Unsigned, R_Node);
 
       --  Note: universal integer and universal real are constructed as fully
@@ -1002,26 +1001,24 @@ package body CStand is
                            (Universal_Fixed);
 
       --  Create type declaration for Duration, using a 64-bit size. The
-      --  delta value depends on the mode we are running in:
-
-      --     Normal mode or No_Run_Time mode when word size is 64 bits:
-      --       10**(-9) seconds, size is 64 bits
-
-      --     No_Run_Time mode when word size is 32 bits:
-      --       10**(-4) seconds, oize is 32 bits
+      --  delta and size values depend on the mode set in system.ads.
 
       Build_Duration : declare
          Dlo         : Uint;
          Dhi         : Uint;
          Delta_Val   : Ureal;
-         Use_32_Bits : constant Boolean :=
-                         No_Run_Time and then System_Word_Size = 32;
 
       begin
-         if Use_32_Bits then
+         --  In 32 bit mode, the size is 32 bits, and the delta and
+         --  small values are set to 20 milliseconds (20.0**(10.0**(-3)).
+
+         if Duration_32_Bits_On_Target then
             Dlo := Intval (Type_Low_Bound (Standard_Integer_32));
             Dhi := Intval (Type_High_Bound (Standard_Integer_32));
-            Delta_Val := UR_From_Components (Uint_1, Uint_4, 10);
+            Delta_Val := UR_From_Components (UI_From_Int (20), Uint_3, 10);
+
+         --  In standard 64-bit mode, the size is 64-bits and the delta and
+         --  amll values are set to nanoseconds (1.0**(10.0**(-9))
 
          else
             Dlo := Intval (Type_Low_Bound (Standard_Integer_64));
@@ -1045,7 +1042,7 @@ package body CStand is
          Set_Ekind (Standard_Duration, E_Ordinary_Fixed_Point_Type);
          Set_Etype (Standard_Duration, Standard_Duration);
 
-         if Use_32_Bits then
+         if Duration_32_Bits_On_Target then
             Init_Size (Standard_Duration, 32);
          else
             Init_Size (Standard_Duration, 64);
@@ -1087,7 +1084,7 @@ package body CStand is
       Set_Ekind       (Standard_Exception_Type, E_Record_Type);
       Set_Etype       (Standard_Exception_Type, Standard_Exception_Type);
       Set_Scope       (Standard_Exception_Type, Standard_Standard);
-      Set_Girder_Constraint
+      Set_Stored_Constraint
                       (Standard_Exception_Type, No_Elist);
       Init_Size_Align (Standard_Exception_Type);
       Set_Size_Known_At_Compile_Time
@@ -1105,7 +1102,8 @@ package body CStand is
                                                             "HTable_Ptr");
       Make_Component  (Standard_Exception_Type, Standard_Integer,
                                                           "Import_Code");
-
+      Make_Component  (Standard_Exception_Type, Standard_A_Char,
+                                                            "Raise_Hook");
       --  Build tree for record declaration, for use by the back-end.
 
       declare
@@ -1137,6 +1135,8 @@ package body CStand is
       end;
 
       Append (Decl, Decl_S);
+
+      Layout_Type (Standard_Exception_Type);
 
       --  Create declarations of standard exceptions
 
@@ -1256,9 +1256,10 @@ package body CStand is
       New_Ent : constant Entity_Id := New_Copy (E);
 
    begin
-      Set_Ekind          (E, K);
-      Set_Is_Constrained (E, True);
-      Set_Etype          (E, New_Ent);
+      Set_Ekind            (E, K);
+      Set_Is_Constrained   (E, True);
+      Set_Is_First_Subtype (E, True);
+      Set_Etype            (E, New_Ent);
 
       Append_Entity (New_Ent, Standard_Standard);
       Set_Is_Constrained (New_Ent, False);
@@ -1294,7 +1295,7 @@ package body CStand is
       Typ : Entity_Id;
       Nam : String)
    is
-      Id : Entity_Id := New_Standard_Entity;
+      Id : constant Entity_Id := New_Standard_Entity;
 
    begin
       Set_Ekind                 (Id, E_Component);

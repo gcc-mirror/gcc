@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -52,6 +52,8 @@ pragma Preelaborate (Stream_Attributes);
    package UST renames System.Unsigned_Types;
 
    subtype RST is Ada.Streams.Root_Stream_Type'Class;
+
+   subtype SEC is Ada.Streams.Stream_Element_Count;
 
    --  Enumeration types are usually transferred using the routine for the
    --  corresponding integer. The exception is that special routines are
@@ -147,6 +149,28 @@ pragma Preelaborate (Stream_Attributes);
    procedure W_SU  (Stream : access RST; Item : in UST.Short_Unsigned);
    procedure W_U   (Stream : access RST; Item : in UST.Unsigned);
    procedure W_WC  (Stream : access RST; Item : in Wide_Character);
+
+   ----------------------------
+   -- Composite Input/Output --
+   ----------------------------
+
+   --  The following Boolean constant is defined and set to True only if the
+   --  stream representation of a series of elementary items of the same
+   --  type (one of the types handled by the above procedures) has the same
+   --  representation as an array of such items in memory. This allows such
+   --  a series of items to be read or written as a block, instead of
+   --  element by element.
+
+   --  If the stream representation does not have this property for all the
+   --  above types, then this constant can be omitted or set to False,
+   --  and the front end will generate element-by-element operations.
+
+   --  This interface assumes that a Stream_Element has the same size as
+   --  a Storage_Unit. If that is not the case, then this flag should
+   --  also be omitted (or set to False).
+
+   Block_Stream_Ops_OK : constant Boolean := True;
+   --  Set to False if block stream operations not permitted
 
 private
    pragma Inline (I_AD);

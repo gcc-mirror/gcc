@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---               Copyright (C) 1996 Free Software Foundation, Inc.          --
+--            Copyright (C) 1996-2003 Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,16 +30,15 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
+
 --  This package contains the definitions and routines used as parameters
 --  to the run-time system at program startup.
 
 package System.Program_Info is
 
-   function Default_Task_Stack  return Integer;
-   --
+   function Default_Task_Stack return Integer;
    --  The default stack size for each created thread.  This default value
    --  can be overriden on a per-task basis by the language-defined
    --  Storage_Size pragma.
-   --
 
 end System.Program_Info;

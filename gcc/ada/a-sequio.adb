@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-1999, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -183,15 +183,21 @@ package body Ada.Sequential_IO is
                RsizS : constant SSE.Storage_Offset :=
                          SSE.Storage_Offset (Rsiz - 1);
 
-               subtype SA is SSE.Storage_Array (0 .. RsizS);
+               type SA is new SSE.Storage_Array (0 .. RsizS);
+
+               for SA'Alignment use Standard'Maximum_Alignment;
+               --  We will perform an unchecked conversion of a pointer-to-SA
+               --  into pointer-to-Element_Type. We need to ensure that the
+               --  source is always at least as strictly aligned as the target.
+
                type SAP   is access all SA;
                type ItemP is access all Element_Type;
 
                pragma Warnings (Off);
-               --  We have to turn warnings off for this function, because
-               --  it gets analyzed for all types, including ones which
-               --  can't possibly come this way, and for which the size
-               --  of the access types differs.
+               --  We have to turn warnings off for function To_ItemP,
+               --  because it gets analyzed for all types, including ones
+               --  which can't possibly come this way, and for which the
+               --  size of the access types differs.
 
                function To_ItemP is new Unchecked_Conversion (SAP, ItemP);
 

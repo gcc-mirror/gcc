@@ -320,7 +320,7 @@ package body Interfaces.CPP is
    -------------------
 
    function Expanded_Name (T : Vtable_Ptr) return String is
-      Result : Cstring_Ptr := T.TSD.Expanded_Name;
+      Result : constant Cstring_Ptr := T.TSD.Expanded_Name;
 
    begin
       return Result (1 .. Length (Result));
@@ -331,7 +331,7 @@ package body Interfaces.CPP is
    ------------------
 
    function External_Tag (T : Vtable_Ptr) return String is
-      Result : Cstring_Ptr := T.TSD.External_Tag;
+      Result : constant Cstring_Ptr := T.TSD.External_Tag;
 
    begin
       return Result (1 .. Length (Result));

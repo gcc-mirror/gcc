@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -409,9 +409,10 @@ package body Ada.Strings.Fixed is
       end if;
 
       declare
-         Result_Length : Natural :=
-           Integer'Max
-             (Source'Length, Position - Source'First + New_Item'Length);
+         Result_Length : constant Natural :=
+                           Integer'Max
+                             (Source'Length,
+                              Position - Source'First + New_Item'Length);
 
          Result : String (1 .. Result_Length);
          Front  : constant Integer := Position - Source'First;

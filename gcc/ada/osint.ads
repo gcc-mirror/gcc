@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,12 +36,20 @@ pragma Elaborate (GNAT.OS_Lib);
 
 package Osint is
 
+   Ada_Include_Path          : constant String := "ADA_INCLUDE_PATH";
+   Ada_Objects_Path          : constant String := "ADA_OBJECTS_PATH";
+   Project_Include_Path_File : constant String := "ADA_PRJ_INCLUDE_FILE";
+   Project_Objects_Path_File : constant String := "ADA_PRJ_OBJECTS_FILE";
+
+   procedure Initialize;
+   --  Initialize internal tables
+
    function Normalize_Directory_Name (Directory : String) return String_Ptr;
    --  Verify and normalize a directory name. If directory name is invalid,
    --  this will return an empty string. Otherwise it will insure a trailing
    --  slash and make other normalizations.
 
-   type File_Type is (Source, Library, Config);
+   type File_Type is (Source, Library, Config, Definition, Preprocessing_Data);
 
    function Find_File
      (N :    File_Name_Type;
@@ -535,10 +543,10 @@ private
    type File_Name_Array_Ptr is access File_Name_Array;
    File_Names : File_Name_Array_Ptr :=
                   new File_Name_Array (1 .. Int (Argument_Count) + 2);
-   --  As arguments are scanned in Initialize, file names are stored
-   --  in this array. The string does not contain a terminating NUL.
-   --  The array is "extensible" because when using project files,
-   --  there may be more file names than argument on the command line.
+   --  As arguments are scanned, file names are stored in this array
+   --  The strings do not have terminating NUL files. The array is
+   --  extensible, because when using project files, there may be
+   --  more files than arguments on the command line.
 
    Current_File_Name_Index : Int := 0;
    --  The index in File_Names of the last file opened by Next_Main_Source

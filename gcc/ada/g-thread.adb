@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1998-2000 Ada Core Technologies, Inc.           --
+--            Copyright (C) 1998-2003 Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,23 +26,33 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
 with Ada.Task_Identification; use Ada.Task_Identification;
 with System.Task_Primitives.Operations;
 with System.Tasking;
-with System.OS_Interface;
+with System.Tasking.Stages;   use System.Tasking.Stages;
+with System.OS_Interface;     use System.OS_Interface;
+with System.Soft_Links;       use System.Soft_Links;
 with Unchecked_Conversion;
 
 package body GNAT.Threads is
 
    use System;
 
+   package STPO renames System.Task_Primitives.Operations;
+
+   type Thread_Id_Ptr is access all Thread_Id;
+
    function To_Addr is new Unchecked_Conversion (Task_Id, Address);
    function To_Id   is new Unchecked_Conversion (Address, Task_Id);
    function To_Id   is new Unchecked_Conversion (Address, Tasking.Task_ID);
+   function To_Tid  is new Unchecked_Conversion
+     (Address, Ada.Task_Identification.Task_Id);
+   function To_Thread is new Unchecked_Conversion (Address, Thread_Id_Ptr);
 
    type Code_Proc is access procedure (Id : Address; Parm : Void_Ptr);
 
@@ -71,7 +81,8 @@ package body GNAT.Threads is
      (Code : Address;
       Parm : Void_Ptr;
       Size : Natural;
-      Prio : Integer) return System.Address
+      Prio : Integer)
+      return System.Address
    is
       TP : Tptr;
 
@@ -82,12 +93,63 @@ package body GNAT.Threads is
       return To_Addr (TP'Identity);
    end Create_Thread;
 
+   ---------------------
+   -- Register_Thread --
+   ---------------------
+
+   function Register_Thread return System.Address is
+   begin
+      return Task_Primitives.Operations.Register_Foreign_Thread.all'Address;
+   end Register_Thread;
+
+   -----------------------
+   -- Unregister_Thread --
+   -----------------------
+
+   procedure Unregister_Thread is
+      Self_Id : constant Tasking.Task_ID := Task_Primitives.Operations.Self;
+
+   begin
+      Self_Id.Common.State := Tasking.Terminated;
+      Destroy_TSD (Self_Id.Common.Compiler_Data);
+      Free_Task (Self_Id);
+   end Unregister_Thread;
+
+   --------------------------
+   -- Unregister_Thread_Id --
+   --------------------------
+
+   procedure Unregister_Thread_Id (Thread : System.Address) is
+      Thr : constant Thread_Id := To_Thread (Thread).all;
+      T   : Tasking.Task_ID;
+
+      use type Tasking.Task_ID;
+
+   begin
+      STPO.Lock_RTS;
+
+      T := Tasking.All_Tasks_List;
+      loop
+         exit when T = null or else STPO.Get_Thread_Id (T) = Thr;
+
+         T := T.Common.All_Tasks_Link;
+      end loop;
+
+      STPO.Unlock_RTS;
+
+      if T /= null then
+         T.Common.State := Tasking.Terminated;
+         Destroy_TSD (T.Common.Compiler_Data);
+         Free_Task (T);
+      end if;
+   end Unregister_Thread_Id;
+
    --------------------
    -- Destroy_Thread --
    --------------------
 
    procedure Destroy_Thread (Id : Address) is
-      Tid : Task_Id := To_Id (Id);
+      Tid : constant Task_Id := To_Id (Id);
 
    begin
       Abort_Task (Tid);
@@ -100,10 +162,22 @@ package body GNAT.Threads is
    procedure Get_Thread (Id : Address; Thread : Address) is
       use System.OS_Interface;
 
-      Thr : Thread_Id;
-      for Thr use at Thread;
+      Thr : Thread_Id_Ptr := To_Thread (Thread);
+
    begin
-      Thr := Task_Primitives.Operations.Get_Thread_Id (To_Id (Id));
+      Thr.all := Task_Primitives.Operations.Get_Thread_Id (To_Id (Id));
    end Get_Thread;
+
+   ----------------
+   -- To_Task_Id --
+   ----------------
+
+   function To_Task_Id
+     (Id   : System.Address)
+      return Ada.Task_Identification.Task_Id
+   is
+   begin
+      return To_Tid (Id);
+   end To_Task_Id;
 
 end GNAT.Threads;

@@ -32,10 +32,12 @@
 ------------------------------------------------------------------------------
 
 with Ada.Exceptions;
-with Unchecked_Conversion;
-with GNAT.HTable;
 
-pragma Elaborate_All (GNAT.HTable);
+with System.HTable;
+
+with Unchecked_Conversion;
+
+pragma Elaborate_All (System.HTable);
 
 package body Ada.Tags is
 
@@ -66,8 +68,9 @@ package body Ada.Tags is
    type Tag_Table is array (Natural range <>) of Tag;
    pragma Suppress_Initialization (Tag_Table);
 
-   type Wide_Boolean is (False, True);
-   for Wide_Boolean'Size use Standard'Address_Size;
+   type Wide_Boolean is new Boolean;
+   --  This name should probably be changed sometime ??? and indeed
+   --  probably this field could simply be of type Standard.Boolean.
 
    type Type_Specific_Data is record
       Idepth             : Natural;
@@ -119,7 +122,7 @@ package body Ada.Tags is
    type HTable_Headers is range 1 .. 64;
 
    --  The following internal package defines the routines used for
-   --  the instantiation of a new GNAT.HTable.Static_HTable (see
+   --  the instantiation of a new System.HTable.Static_HTable (see
    --  below). See spec in g-htable.ads for details of usage.
 
    package HTable_Subprograms is
@@ -129,7 +132,7 @@ package body Ada.Tags is
       function Equal (A, B : S.Address) return Boolean;
    end HTable_Subprograms;
 
-   package External_Tag_HTable is new GNAT.HTable.Static_HTable (
+   package External_Tag_HTable is new System.HTable.Static_HTable (
      Header_Num => HTable_Headers,
      Element    => Dispatch_Table,
      Elmt_Ptr   => Tag,
@@ -154,8 +157,8 @@ package body Ada.Tags is
    -----------
 
       function Equal (A, B : S.Address) return Boolean is
-         Str1 : Cstring_Ptr := To_Cstring_Ptr (A);
-         Str2 : Cstring_Ptr := To_Cstring_Ptr (B);
+         Str1 : constant Cstring_Ptr := To_Cstring_Ptr (A);
+         Str2 : constant Cstring_Ptr := To_Cstring_Ptr (B);
          J    : Integer := 1;
 
       begin
@@ -186,8 +189,8 @@ package body Ada.Tags is
       ----------
 
       function Hash (F : S.Address) return HTable_Headers is
-         function H is new GNAT.HTable.Hash (HTable_Headers);
-         Str : Cstring_Ptr := To_Cstring_Ptr (F);
+         function H is new System.HTable.Hash (HTable_Headers);
+         Str : constant Cstring_Ptr    := To_Cstring_Ptr (F);
          Res : constant HTable_Headers := H (Str (1 .. Length (Str)));
 
       begin
@@ -236,7 +239,7 @@ package body Ada.Tags is
    -------------------
 
    function Expanded_Name (T : Tag) return String is
-      Result : Cstring_Ptr := T.TSD.Expanded_Name;
+      Result : constant Cstring_Ptr := T.TSD.Expanded_Name;
 
    begin
       return Result (1 .. Length (Result));
@@ -247,7 +250,7 @@ package body Ada.Tags is
    ------------------
 
    function External_Tag (T : Tag) return String is
-      Result : Cstring_Ptr := T.TSD.External_Tag;
+      Result : constant Cstring_Ptr := T.TSD.External_Tag;
 
    begin
       return Result (1 .. Length (Result));
@@ -408,42 +411,36 @@ package body Ada.Tags is
    -- Parent_Size --
    -----------------
 
-   --  Fake type with a tag as first component. Should match the
-   --  layout of all tagged types.
-
-   type T is record
-      A : Tag;
-   end record;
-
-   type T_Ptr is access all T;
-
-   function To_T_Ptr is new Unchecked_Conversion (S.Address, T_Ptr);
-
-   --  The profile of the implicitly defined _size primitive
-
    type Acc_Size is access function (A : S.Address) return Long_Long_Integer;
    function To_Acc_Size is new Unchecked_Conversion (S.Address, Acc_Size);
+   --  The profile of the implicitly defined _size primitive
 
-   function Parent_Size (Obj : S.Address) return SSE.Storage_Count is
+   function Parent_Size
+     (Obj : S.Address;
+      T   : Tag)
+      return SSE.Storage_Count is
 
-      --  Get the tag of the object
-
-      Obj_Tag : constant Tag      := To_T_Ptr (Obj).A;
-
-      --  Get the tag of the parent type through the dispatch table
-
-      Parent_Tag : constant Tag      := Obj_Tag.TSD.Ancestor_Tags (1);
-
-      --  Get an access to the _size primitive of the parent. We assume that
-      --  it is always in the first slot of the distatch table
+      Parent_Tag : constant Tag := T.TSD.Ancestor_Tags (1);
+      --  The tag of the parent type through the dispatch table
 
       F : constant Acc_Size := To_Acc_Size (Parent_Tag.Prims_Ptr (1));
+      --  Access to the _size primitive of the parent. We assume that
+      --  it is always in the first slot of the distatch table
 
    begin
       --  Here we compute the size of the _parent field of the object
 
       return SSE.Storage_Count (F.all (Obj));
    end Parent_Size;
+
+   ----------------
+   -- Parent_Tag --
+   ----------------
+
+   function Parent_Tag (T : Tag) return Tag is
+   begin
+      return T.TSD.Ancestor_Tags (1);
+   end Parent_Tag;
 
    ------------------
    -- Register_Tag --

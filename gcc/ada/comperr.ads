@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,24 +54,20 @@ package Comperr is
    --  When comperr generates the "bug box". The first two lines contain
    --  information on the version number, type of abort, and source location.
 
-   --  Normally the remaining text is of the following form:
+   --  Normally the remaining text is one of three possible forms
+   --  depending on Gnatvsn.Gnat_Version_Type (FSF, Public, GNATPRO).
+   --  See body of this package for the exact text used.
 
-   --    Please submit a bug report; see http://gcc.gnu.org/bugs.html.
-   --    Include the entire contents of this bug box in the report.
-   --    Include the exact gcc or gnatmake command that you entered.
-   --    Also include sources listed below in gnatchop format
-   --    concatenated together with no headers between files.
-
-   --  However, an alternative mechanism exists for easily substituting
+   --  In addition, an alternative mechanism exists for easily substituting
    --  different text for this message. Compiler_Abort checks for the
    --  existence of the file "gnat_bug.box" in the current source path.
    --  Most typically this file, if present, will be in the directory
    --  containing the run-time sources.
 
    --  If this file is present, then it is a plain ASCII file, whose
-   --  contents replace the above quoted paragraphs. The lines in this
-   --  file should be 72 characters or less to avoid misformatting the
-   --  right boundary of the box. Note that the file does not contain
-   --  the vertical bar characters or any leading spaces in lines.
+   --  contents replace the remaining text. The lines in this file should be
+   --  72 characters or less to avoid misformatting the right boundary of the
+   --  box. Note that the file does not contain the vertical bar characters or
+   --  any leading spaces in lines.
 
 end Comperr;

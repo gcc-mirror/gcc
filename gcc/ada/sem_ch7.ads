@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---        Copyright (C) 1992,1993,1994 Free Software Foundation, Inc.       --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,13 +49,8 @@ package Sem_Ch7  is
    --  When compiling the body of a package,  both routines are called in
    --  succession. When compiling the body of a child package, the call
    --  to Install_Private_Declaration is immediate for private children,
-   --  but is deffered until the compilation of the  private part of the
+   --  but is deferred until the compilation of the  private part of the
    --  child for public child packages.
-
-   procedure Install_Package_Entity (Id : Entity_Id);
-   --  Basic procedure for the previous two. Places one entity on its
-   --  visibility chain, and recurses on the visible part if the entity
-   --  is an inner package.
 
    function Unit_Requires_Body (P : Entity_Id) return Boolean;
    --  Check if a unit requires a body. A specification requires a body
@@ -65,9 +60,6 @@ package Sem_Ch7  is
    --  If a package declaration contains tasks and does not require a
    --  body, create an implicit body at the end of the current declarative
    --  part to activate those tasks.
-
-   function Is_Fully_Visible (Type_Id : Entity_Id) return Boolean;
-   --  Indicates whether the Full Declaration of a private type is visible.
 
    procedure New_Private_Type (N : Node_Id; Id : Entity_Id; Def : Node_Id);
    --  Common processing for private type declarations and for formal

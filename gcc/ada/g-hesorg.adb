@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1995-1999 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1995-2003 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -58,10 +59,17 @@ package body GNAT.Heap_Sort_G is
       --  entry are irrelevant. This is just a minor optimization to avoid
       --  what would otherwise be two junk moves in phase two of the sort.
 
+      ----------
+      -- Sift --
+      ----------
+
       procedure Sift (S : Positive) is
          C      : Positive := S;
          Son    : Positive;
          Father : Positive;
+         --  Note: by making the above all Positive, we ensure that a test
+         --  against zero for the temporary location can be resolved on the
+         --  basis of types when the routines are inlined.
 
       begin
          --  This is where the optimization is done, normally we would do a
@@ -78,10 +86,13 @@ package body GNAT.Heap_Sort_G is
 
          loop
             Son := 2 * C;
-            exit when Son > Max;
 
-            if Son < Max and then Lt (Son, Son + 1) then
-               Son := Son + 1;
+            if Son < Max then
+               if Lt (Son, Son + 1) then
+                  Son := Son + 1;
+               end if;
+            elsif Son > Max then
+               exit;
             end if;
 
             Move (Son, C);

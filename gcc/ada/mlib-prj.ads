@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---              Copyright (C) 2001, Ada Core Technologies, Inc.             --
+--              Copyright (C) 2001-2003, Ada Core Technologies, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -20,7 +20,7 @@
 -- MA 02111-1307, USA.                                                      --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
--- It is now maintained by Ada Core Technologies Inc (http://www.gnat.com). --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -30,8 +30,24 @@ with Prj; use Prj;
 
 package MLib.Prj is
 
-   procedure Build_Library (For_Project : Project_Id);
-   --  Build the library of library project For_Project
-   --  Fails if For_Project is not a library project file
+   procedure Build_Library
+     (For_Project   : Project_Id;
+      Gnatbind      : String;
+      Gnatbind_Path : String_Access;
+      Gcc           : String;
+      Gcc_Path      : String_Access;
+      Bind          : Boolean := True;
+      Link          : Boolean := True);
+   --  Build the library of library project For_Project.
+   --  Fails if For_Project is not a library project file.
+   --  Gnatbind, Gnatbind_Path, Gcc, Gcc_Path are used for standalone
+   --  libraries, to call the binder and to compile the binder generated
+   --  files. If Bind is False the binding of a stand-alone library is skipped.
+   --  If Link is False, the library is not linked/built.
+
+   procedure Check_Library (For_Project : Project_Id);
+   --  Check if the library of a library project needs to be rebuilt,
+   --  because its time-stamp is earlier than the time stamp of one of its
+   --  object files.
 
 end MLib.Prj;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-1999 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -53,6 +53,10 @@ package body Ada.Numerics.Discrete_Random is
    type Pointer is access all State;
 
    Need_64 : constant Boolean := Rst'Pos (Rst'Last) > Int'Last;
+   --  Set if we need more than 32 bits in the result. In practice we will
+   --  only use the meaningful 48 bits of any 64 bit number generated, since
+   --  if more than 48 bits are required, we split the computation into two
+   --  separate parts, since the algorithm does not behave above 48 bits.
 
    -----------------------
    -- Local Subprograms --
@@ -109,7 +113,7 @@ package body Ada.Numerics.Discrete_Random is
          Temp := Temp + Genp.Q;
       end if;
 
-      TF :=  Offs + (Flt (Temp) * Flt (Genp.P) + Flt (Genp.X1)) * Genp.Scl;
+      TF := Offs + (Flt (Temp) * Flt (Genp.P) + Flt (Genp.X1)) * Genp.Scl;
 
       --  Pathological, but there do exist cases where the rounding implicit
       --  in calculating the scale factor will cause rounding to 'Last + 1.
@@ -124,7 +128,6 @@ package body Ada.Numerics.Discrete_Random is
       else
          return Rst'Val (Int (TF));
       end if;
-
    end Random;
 
    -----------
@@ -144,7 +147,7 @@ package body Ada.Numerics.Discrete_Random is
          X2 := Square_Mod_N (X2, K2);
       end loop;
 
-      --  eliminate effects of small Initiators.
+      --  Eliminate effects of small Initiators
 
       Genp.all :=
         (X1  => X1,

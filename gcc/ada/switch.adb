@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -92,12 +92,16 @@ package body Switch is
       Ptr          : in out Integer;
       Result       : out Pos) is
 
-   begin
-      Scan_Nat (Switch_Chars, Max, Ptr, Result);
+      Temp : Nat;
 
-      if Result = 0 then
+   begin
+      Scan_Nat (Switch_Chars, Max, Ptr, Temp);
+
+      if Temp = 0 then
          raise Bad_Switch_Value;
       end if;
+
+      Result := Temp;
    end Scan_Pos;
 
 end Switch;

@@ -6,8 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                                                                          *
- *          Copyright (C) 1992-2002 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2003 Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -204,7 +203,7 @@ __gnat_ttyname (filedes)
    This problem occurs when using Text_IO.Get_Line after Text_IO.Get_Immediate
    for example.
 
-   Calling FlushConsoleInputBuffer just after getch() fix the bug under 
+   Calling FlushConsoleInputBuffer just after getch() fix the bug under
    95/98. */
 
 static void winflush_init PARAMS ((void));
@@ -219,11 +218,11 @@ static void winflush_nt PARAMS ((void));
 static void (*winflush_function) PARAMS ((void)) = winflush_init;
 
 /* This function does the runtime check of the OS version and then sets
-   winflush_function to the appropriate function and then call it. */ 
+   winflush_function to the appropriate function and then call it. */
 
 static void
 winflush_init ()
-{ 
+{
   DWORD dwVersion = GetVersion();
 
   if (dwVersion < 0x80000000)                /* Windows NT/2000 */
@@ -236,7 +235,7 @@ winflush_init ()
 }
 
 static void winflush_95 ()
-{ 
+{
   FlushConsoleInputBuffer (GetStdHandle (STD_INPUT_HANDLE));
 }
 
@@ -294,9 +293,15 @@ __gnat_ttyname (filedes)
 #if defined (linux) || defined (sun) || defined (sgi) || defined (__EMX__) \
   || (defined (__osf__) && ! defined (__alpha_vxworks)) || defined (WINNT) \
   || defined (__MACHTEN__) || defined (hpux) || defined (_AIX) \
-  || (defined (__svr4__) && defined (i386)) || defined (__Lynx__) \
-  || defined (__CYGWIN__)
+  || (defined (__svr4__) && defined (i386)) || defined (__Lynx__)
+
+#ifdef __MINGW32__
+#if OLD_MINGW
 #include <termios.h>
+#endif
+#else
+#include <termios.h>
+#endif
 
 #else
 #if defined (VMS)
@@ -350,7 +355,7 @@ getc_immediate_common (stream, ch, end_of_file, avail, waiting)
 {
 #if defined (linux) || defined (sun) || defined (sgi) || defined (__EMX__) \
     || (defined (__osf__) && ! defined (__alpha_vxworks)) \
-    || defined (__CYGWIN__) || defined (__MACHTEN__) || defined (hpux) \
+    || defined (__CYGWIN32__) || defined (__MACHTEN__) || defined (hpux) \
     || defined (_AIX) || (defined (__svr4__) && defined (i386)) \
     || defined (__Lynx__)
   char c;
@@ -498,7 +503,7 @@ getc_immediate_common (stream, ch, end_of_file, avail, waiting)
 #elif defined (__vxworks)
   /* Bit masks of file descriptors to read from.  */
   struct fd_set readFds;
-  /* Timeout before select returns if nothing can be read.  */ 
+  /* Timeout before select returns if nothing can be read.  */
   struct timeval timeOut;
   char c;
   int fd = fileno (stream);
@@ -508,14 +513,14 @@ getc_immediate_common (stream, ch, end_of_file, avail, waiting)
   int status;
   int width;
 
-  if (isatty (fd)) 
+  if (isatty (fd))
     {
       /* If we do not want to wait, we have to set up fd in RAW mode. This
 	 should be done outside this function as setting fd in RAW mode under
 	 vxWorks flushes the buffer of fd. If the RAW mode was set here, the
 	 buffer would be empty and we would always return that no character
 	 is available */
-      if (! waiting) 
+      if (! waiting)
 	{
 	  /* Initialization of timeOut for its use with select.  */
 	  timeOut.tv_sec  = 0;
@@ -537,19 +542,19 @@ getc_immediate_common (stream, ch, end_of_file, avail, waiting)
 	  else
 	    {
 	      nread = read (fd, &c, 1);
-	      if (nread > 0) 
+	      if (nread > 0)
 		*avail = 1, *end_of_file = 0;
 	      /* End Of File. */
-	      else if (nread == 0) 
+	      else if (nread == 0)
 		*avail = 0, *end_of_file = 1;
 	      /* Error.  */
-	      else 
+	      else
 		*avail = -1, *end_of_file = -1;
-	    }   
+	    }
 	}
 
       /* We have to wait until we get a character */
-      else 
+      else
 	{
 	  *avail = -1;
 	  *end_of_file = -1;
@@ -559,13 +564,13 @@ getc_immediate_common (stream, ch, end_of_file, avail, waiting)
 
 	  /* Set FD in RAW mode.  */
 	  status = ioctl (fd, FIOSETOPTIONS, OPT_RAW);
-	  if (status != -1) 
+	  if (status != -1)
 	    {
 	      nread = read (fd, &c, 1);
-	      if (nread > 0) 
+	      if (nread > 0)
 		*avail = 1, *end_of_file = 0;
 	      /* End of file.  */
-	      else if (nread == 0) 
+	      else if (nread == 0)
 		*avail = 0, *end_of_file = 1;
 	      /* Else there is an ERROR.  */
 	    }
@@ -613,27 +618,27 @@ char *rts_get_lpCommandLine PARAMS ((void));
 int   rts_get_nShowCmd      PARAMS ((void));
 
 char *
-rts_get_hInstance () 
-{ 
-  return GetModuleHandleA (0); 
+rts_get_hInstance ()
+{
+  return (char *)GetModuleHandleA (0);
 }
 
 char *
-rts_get_hPrevInstance () 
-{ 
-  return 0; 
+rts_get_hPrevInstance ()
+{
+  return 0;
 }
 
 char *
-rts_get_lpCommandLine () 
-{ 
-  return GetCommandLineA (); 
+rts_get_lpCommandLine ()
+{
+  return GetCommandLineA ();
 }
 
-int   
-rts_get_nShowCmd () 
-{ 
-  return 1; 
+int
+rts_get_nShowCmd ()
+{
+  return 1;
 }
 
 #endif /* WINNT */
@@ -670,8 +675,8 @@ extern void (*Unlock_Task) PARAMS ((void));
    provide localtime_r, but in the library libc_r which doesn't get included
    systematically, so we can't use it. */
 
-extern void struct tm *__gnat_localtime_r PARAMS ((const time_t *,
-						   struct tm *));
+extern struct tm *__gnat_localtime_r PARAMS ((const time_t *,
+					      struct tm *));
 
 struct tm *
 __gnat_localtime_r (timer, tp)

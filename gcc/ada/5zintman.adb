@@ -53,8 +53,12 @@ with Interfaces.C;
 with System.OS_Interface;
 --  used for various Constants, Signal and types
 
+with Ada.Exceptions;
+--  used for Raise_Exception
+
 package body System.Interrupt_Management is
 
+   use Ada.Exceptions;
    use System.OS_Interface;
    use type Interfaces.C.int;
 
@@ -87,6 +91,7 @@ package body System.Interrupt_Management is
       --  VxWorks will suspend the task when it gets a hardware
       --  exception.  We take the liberty of resuming the task
       --  for the application.
+
       My_Id := taskIdSelf;
 
       if taskIsSuspended (My_Id) /= 0 then
@@ -95,16 +100,17 @@ package body System.Interrupt_Management is
 
       case signo is
          when SIGFPE =>
-            raise Constraint_Error;
+            Raise_Exception (Constraint_Error'Identity, "SIGFPE");
          when SIGILL =>
-            raise Constraint_Error;
+            Raise_Exception (Constraint_Error'Identity, "SIGILL");
          when SIGSEGV =>
-            raise Program_Error;
+            Raise_Exception
+              (Program_Error'Identity,
+               "stack overflow or erroneous memory access");
          when SIGBUS =>
-            raise Program_Error;
+            Raise_Exception (Program_Error'Identity, "SIGBUS");
          when others =>
-            --  Unexpected signal
-            raise Program_Error;
+            Raise_Exception (Program_Error'Identity, "unhandled signal");
       end case;
    end Notify_Exception;
 
@@ -133,10 +139,28 @@ begin
    declare
       mask   : aliased sigset_t;
       Result : int;
+
+      function State (Int : Interrupt_ID) return Character;
+      pragma Import (C, State, "__gnat_get_interrupt_state");
+      --  Get interrupt state.  Defined in a-init.c
+      --  The input argument is the interrupt number,
+      --  and the result is one of the following:
+
+      Runtime : constant Character := 'r';
+      Default : constant Character := 's';
+      --    'n'   this interrupt not set by any Interrupt_State pragma
+      --    'u'   Interrupt_State pragma set state to User
+      --    'r'   Interrupt_State pragma set state to Runtime
+      --    's'   Interrupt_State pragma set state to System (use "default"
+      --           system handler)
+
    begin
-      Abort_Task_Interrupt := SIGABRT;
+      --  Initialize signal handling
+
       --  Change this if you want to use another signal for task abort.
       --  SIGTERM might be a good one.
+
+      Abort_Task_Interrupt := SIGABRT;
 
       Exception_Action.sa_handler := Notify_Exception'Address;
       Exception_Action.sa_flags := SA_ONSTACK;
@@ -149,5 +173,17 @@ begin
       end loop;
 
       Exception_Action.sa_mask := mask;
+
+      --  Initialize hardware interrupt handling
+
+      pragma Assert (Reserve = (Interrupt_ID'Range => False));
+
+      --  Check all interrupts for state that requires keeping them reserved
+
+      for J in Interrupt_ID'Range loop
+         if State (J) = Default or else State (J) = Runtime then
+            Reserve (J) := True;
+         end if;
+      end loop;
    end;
 end System.Interrupt_Management;

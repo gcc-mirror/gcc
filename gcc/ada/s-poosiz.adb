@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,17 +32,19 @@
 ------------------------------------------------------------------------------
 
 with System.Storage_Elements;
-with System.Address_To_Access_Conversions;
+
+with Unchecked_Conversion;
 
 package body System.Pool_Size is
 
    package SSE renames System.Storage_Elements;
    use type SSE.Storage_Offset;
 
-   package SC is new Address_To_Access_Conversions (SSE.Storage_Count);
+   type Storage_Count_Access is access SSE.Storage_Count;
+   function To_Storage_Count_Access is
+     new Unchecked_Conversion (Address, Storage_Count_Access);
 
-   SC_Size : constant
-     :=  SSE.Storage_Count'Object_Size / System.Storage_Unit;
+   SC_Size : constant :=  SSE.Storage_Count'Object_Size / System.Storage_Unit;
 
    package Variable_Size_Management is
 
@@ -85,7 +87,7 @@ package body System.Pool_Size is
 
       elsif Pool.First_Free /= 0 then
          Address := Pool.The_Pool (Pool.First_Free)'Address;
-         Pool.First_Free := SC.To_Pointer (Address).all;
+         Pool.First_Free := To_Storage_Count_Access (Address).all;
 
       elsif
         Pool.First_Empty <= (Pool.Pool_Size - Pool.Aligned_Elmt_Size + 1)
@@ -113,7 +115,7 @@ package body System.Pool_Size is
          Vsize.Deallocate (Pool, Address, Storage_Size, Alignment);
 
       else
-         SC.To_Pointer (Address).all := Pool.First_Free;
+         To_Storage_Count_Access (Address).all := Pool.First_Free;
          Pool.First_Free := Address - Pool.The_Pool'Address + 1;
       end if;
    end Deallocate;
@@ -274,7 +276,7 @@ package body System.Pool_Size is
          Align_Size : constant SSE.Storage_Count :=
                         ((Storage_Size + Alignment - 1) / Alignment) *
                                                                  Alignment;
-         Chunk : SSE.Storage_Count := Chunk_Of (Pool, Address);
+         Chunk : constant SSE.Storage_Count := Chunk_Of (Pool, Address);
 
       begin
          --  Attach the freed chunk to the chain
@@ -313,7 +315,14 @@ package body System.Pool_Size is
          return  SSE.Storage_Count
       is
       begin
-         return SC.To_Pointer (Pool.The_Pool (Chunk + SC_Size)'Address).all;
+         pragma Warnings (Off);
+         --  Kill alignment warnings, we are careful to make sure
+         --  that the alignment is correct.
+
+         return To_Storage_Count_Access
+                  (Pool.The_Pool (Chunk + SC_Size)'Address).all;
+
+         pragma Warnings (On);
       end Next;
 
       --------------
@@ -325,7 +334,14 @@ package body System.Pool_Size is
          Chunk, Next : SSE.Storage_Count)
       is
       begin
-         SC.To_Pointer (Pool.The_Pool (Chunk + SC_Size)'Address).all := Next;
+         pragma Warnings (Off);
+         --  Kill alignment warnings, we are careful to make sure
+         --  that the alignment is correct.
+
+         To_Storage_Count_Access
+           (Pool.The_Pool (Chunk + SC_Size)'Address).all := Next;
+
+         pragma Warnings (On);
       end Set_Next;
 
       --------------
@@ -337,7 +353,14 @@ package body System.Pool_Size is
          Chunk, Size : SSE.Storage_Count)
       is
       begin
-         SC.To_Pointer (Pool.The_Pool (Chunk)'Address).all := Size;
+         pragma Warnings (Off);
+         --  Kill alignment warnings, we are careful to make sure
+         --  that the alignment is correct.
+
+         To_Storage_Count_Access
+           (Pool.The_Pool (Chunk)'Address).all := Size;
+
+         pragma Warnings (On);
       end Set_Size;
 
       ----------
@@ -350,7 +373,13 @@ package body System.Pool_Size is
          return  SSE.Storage_Count
       is
       begin
-         return  SC.To_Pointer (Pool.The_Pool (Chunk)'Address).all;
+         pragma Warnings (Off);
+         --  Kill alignment warnings, we are careful to make sure
+         --  that the alignment is correct.
+
+         return To_Storage_Count_Access (Pool.The_Pool (Chunk)'Address).all;
+
+         pragma Warnings (On);
       end Size;
 
    end  Variable_Size_Management;

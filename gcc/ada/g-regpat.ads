@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                                                                          --
 --               Copyright (C) 1986 by University of Toronto.               --
---           Copyright (C) 1996-2001 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1996-2002 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,7 +27,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -74,10 +75,13 @@ pragma Preelaborate (Regpat);
    --     regexp ::= expr
    --            ::= ^ expr               -- anchor at the beginning of string
    --            ::= expr $               -- anchor at the end of string
+
    --     expr   ::= term
    --            ::= term | term          -- alternation (term or term ...)
+
    --     term   ::= item
    --            ::= item item ...        -- concatenation (item then item)
+
    --     item   ::= elmt                 -- match elmt
    --            ::= elmt *               -- zero or more elmt's
    --            ::= elmt +               -- one or more elmt's
@@ -93,6 +97,7 @@ pragma Preelaborate (Regpat);
    --                                        non-greedy version
    --            ::= elmt { num , num2 }? -- matches between num and num2 times
    --                                        non-greedy version
+
    --     elmt   ::= nchr                 -- matches given character
    --            ::= [range range ...]    -- matches any character listed
    --            ::= [^ range range ...]  -- matches any character not listed
@@ -100,10 +105,12 @@ pragma Preelaborate (Regpat);
    --                                     -- except newlines
    --            ::= ( expr )             -- parens used for grouping
    --            ::= \ num                -- reference to num-th parenthesis
+
    --     range  ::= char - char          -- matches chars in given range
    --            ::= nchr
    --            ::= [: posix :]          -- any character in the POSIX range
    --            ::= [:^ posix :]         -- not in the POSIX range
+
    --     posix  ::= alnum                -- alphanumeric characters
    --            ::= alpha                -- alphabetic characters
    --            ::= ascii                -- ascii characters (0 .. 127)
@@ -120,6 +127,7 @@ pragma Preelaborate (Regpat);
 
    --     char   ::= any character, including special characters
    --                ASCII.NUL is not supported.
+
    --     nchr   ::= any character except \()[].*+?^ or \char to match char
    --                \n means a newline (ASCII.LF)
    --                \t means a tab (ASCII.HT)
@@ -217,7 +225,7 @@ pragma Preelaborate (Regpat);
    --  the first parenthesis pair.
 
    --     declare
-   --        Matches : Match_Array;
+   --        Matches : Match_Array (0 .. 1);
    --        Regexp  : String := "a(b|c)d";
    --        Str     : String := "gacdg";
 
@@ -225,6 +233,33 @@ pragma Preelaborate (Regpat);
    --        Match (Compile (Regexp), Str, Matches);
    --        return Str (Matches (1).First .. Matches (1).Last);
    --        --  returns 'c'
+   --     end;
+
+   --  Finding all occurrences
+   --  =======================
+
+   --  Finding all the occurrences of a regular expression in a string cannot
+   --  be done by simply passing a slice of the string. This wouldn't work for
+   --  anchored regular expressions (the ones starting with "^" or ending with
+   --  "$").
+   --  Instead, you need to use the last parameter to Match (Data_First), as in
+   --  the following loop:
+
+   --     declare
+   --        Str     : String :=
+   --           "-- first line" & ASCII.LF & "-- second line";
+   --        Matches : Match_array (0 .. 0);
+   --        Regexp  : Pattern_Matcher := Compile ("^--", Multiple_Lines);
+   --        Current : Natural := Str'First;
+   --     begin
+   --        loop
+   --           Match (Regexp, Str, Matches, Current);
+   --           exit when Matches (0) = No_Match;
+   --
+   --           --  Process the match at position Matches (0).First
+   --
+   --           Current := Matches (0).Last + 1;
+   --        end loop;
    --     end;
 
    --  String Substitution
@@ -239,7 +274,7 @@ pragma Preelaborate (Regpat);
    --     declare
    --        Regexp  : String := "([a-z]+) +([a-z]+)";
    --        Str     : String := " first   second third ";
-   --        Matches : Match_Array;
+   --        Matches : Match_Array (0 .. 2);
 
    --     begin
    --        Match (Compile (Regexp), Str, Matches);
@@ -380,9 +415,8 @@ pragma Preelaborate (Regpat);
 
    function Paren_Count (Regexp : Pattern_Matcher) return Match_Count;
    pragma Inline (Paren_Count);
-
    --  Return the number of parenthesis pairs in Regexp.
-
+   --
    --  This is the maximum index that will be filled if a Match_Array is
    --  used as an argument to Match.
    --
@@ -413,8 +447,23 @@ pragma Preelaborate (Regpat);
      (Expression     : String;
       Data           : String;
       Matches        : out Match_Array;
-      Size           : Program_Size := 0);
-   --  Match Expression against Data and store result in Matches.
+      Size           : Program_Size := 0;
+      Data_First     : Integer      := -1;
+      Data_Last      : Positive     := Positive'Last);
+   --  Match Expression against Data (Data_First .. Data_Last) and store
+   --  result in Matches.
+   --
+   --  Data_First defaults to Data'First if unspecified (that is the
+   --  dummy value of -1 is interpreted to mean Data'First).
+   --
+   --  Data_Last defaults to Data'Last if unspecified (that is the
+   --  dummy value of Positive'Last is interpreted to mean Data'Last)
+   --
+   --  It is important that Data contains the whole string (or file) you
+   --  want to matched against, even if you start in the middle, since
+   --  otherwise regular expressions starting with "^" or ending with "$" will
+   --  be improperly processed.
+   --
    --  Function raises Storage_Error if Size is too small for Expression,
    --  or Expression_Error if Expression is not a legal regular expression.
    --  If Size is 0, then the appropriate size is automatically calculated
@@ -425,19 +474,26 @@ pragma Preelaborate (Regpat);
    function  Match
      (Expression : String;
       Data       : String;
-      Size       : Program_Size := 0)
+      Size       : Program_Size := 0;
+      Data_First : Integer := -1;
+      Data_Last  : Positive := Positive'Last)
       return       Natural;
-   --  Return the position where Data matches, or (Data'First - 1) if there is
-   --  no match.
+   --  Return the position where Data matches, or (Data'First - 1) if
+   --  there is no match.
+   --
    --  Function raises Storage_Error if Size is too small for Expression
    --  or Expression_Error if Expression is not a legal regular expression
+   --
    --  If Size is 0, then the appropriate size is automatically calculated
    --  by this package, but this is slightly slower.
+   --  See description of Data_First and Data_Last above.
 
    function Match
      (Expression : String;
       Data       : String;
-      Size       : Program_Size := 0)
+      Size       : Program_Size := 0;
+      Data_First : Integer := -1;
+      Data_Last  : Positive := Positive'Last)
       return       Boolean;
    --  Return True if Data matches Expression. Match raises Storage_Error
    --  if Size is too small for Expression, or Expression_Error if Expression
@@ -445,6 +501,8 @@ pragma Preelaborate (Regpat);
    --
    --  If Size is 0, then the appropriate size is automatically calculated
    --  by this package, but this is slightly slower.
+   --
+   --  See description of Data_First and Data_Last above.
 
    ------------------------------------------------
    -- Matching a pre-compiled regular expression --
@@ -455,25 +513,33 @@ pragma Preelaborate (Regpat);
    --  compile it once.
 
    function  Match
-     (Self : Pattern_Matcher;
-      Data : String)
+     (Self       : Pattern_Matcher;
+      Data       : String;
+      Data_First : Integer  := -1;
+      Data_Last  : Positive := Positive'Last)
       return Natural;
    --  Return the position where Data matches, or (Data'First - 1) if there is
    --  no match. Raises Expression_Error if Expression is not a legal regular
    --  expression.
+   --
+   --  See description of Data_First and Data_Last above.
 
    pragma Inline (Match);
    --  All except the last one below.
 
    procedure Match
-     (Self    : Pattern_Matcher;
-      Data    : String;
-      Matches : out Match_Array);
+     (Self       : Pattern_Matcher;
+      Data       : String;
+      Matches    : out Match_Array;
+      Data_First : Integer  := -1;
+      Data_Last  : Positive := Positive'Last);
    --  Match Data using the given pattern matcher and store result in Matches.
    --  Raises Expression_Error if Expression is not a legal regular expression.
    --  The expression matches if Matches (0) /= No_Match.
    --
    --  At most Matches'Length parenthesis are returned.
+   --
+   --  See description of Data_First and Data_Last above.
 
    -----------
    -- Debug --

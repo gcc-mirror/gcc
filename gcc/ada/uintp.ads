@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -71,6 +71,7 @@ package Uintp is
    Uint_32  : constant Uint;
    Uint_63  : constant Uint;
    Uint_64  : constant Uint;
+   Uint_80  : constant Uint;
    Uint_128 : constant Uint;
 
    Uint_Minus_1   : constant Uint;
@@ -83,6 +84,9 @@ package Uintp is
    Uint_Minus_8   : constant Uint;
    Uint_Minus_9   : constant Uint;
    Uint_Minus_12  : constant Uint;
+   Uint_Minus_36  : constant Uint;
+   Uint_Minus_63  : constant Uint;
+   Uint_Minus_80  : constant Uint;
    Uint_Minus_128 : constant Uint;
 
    -----------------
@@ -425,6 +429,7 @@ private
    Uint_32  : constant Uint := Uint (Uint_Direct_Bias + 32);
    Uint_63  : constant Uint := Uint (Uint_Direct_Bias + 63);
    Uint_64  : constant Uint := Uint (Uint_Direct_Bias + 64);
+   Uint_80  : constant Uint := Uint (Uint_Direct_Bias + 80);
    Uint_128 : constant Uint := Uint (Uint_Direct_Bias + 128);
 
    Uint_Minus_1   : constant Uint := Uint (Uint_Direct_Bias - 1);
@@ -437,6 +442,9 @@ private
    Uint_Minus_8   : constant Uint := Uint (Uint_Direct_Bias - 8);
    Uint_Minus_9   : constant Uint := Uint (Uint_Direct_Bias - 9);
    Uint_Minus_12  : constant Uint := Uint (Uint_Direct_Bias - 12);
+   Uint_Minus_36  : constant Uint := Uint (Uint_Direct_Bias - 36);
+   Uint_Minus_63  : constant Uint := Uint (Uint_Direct_Bias - 63);
+   Uint_Minus_80  : constant Uint := Uint (Uint_Direct_Bias - 80);
    Uint_Minus_128 : constant Uint := Uint (Uint_Direct_Bias - 128);
 
    type Save_Mark is record

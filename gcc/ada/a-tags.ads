@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -59,7 +59,7 @@ private
    ----------------------------------------------------------------
 
    --  GNAT's Dispatch Table format is customizable in order to match the
-   --  format used in another language. GNAT supports programs that use
+   --  format used in another langauge. GNAT supports programs that use
    --  two different dispatch table format at the same time: the native
    --  format that supports Ada 95 tagged types and which is described in
    --  Ada.Tags and a foreign format for types that are imported from some
@@ -133,13 +133,24 @@ private
    --  Entry point used to initialize the TSD of a type knowing the
    --  TSD of the direct ancestor.
 
-   function Parent_Size (Obj : S.Address) return SSE.Storage_Count;
-   --  Computes the size of field _Parent of a tagged extension object
+   function Parent_Size
+     (Obj : S.Address;
+      T   : Tag)
+      return SSE.Storage_Count;
+   --  Computes the size the ancestor part of a tagged extension object
    --  whose address is 'obj' by calling the indirectly _size function of
-   --  the parent.  This function assumes that _size is always in slot 1 of
+   --  the ancestor. The ancestor is the parent of the type represented by
+   --  tag T. This function assumes that _size is always in slot 1 of
    --  the dispatch table.
 
    pragma Export (Ada, Parent_Size, "ada__tags__parent_size");
+   --  This procedure is used in s-finimp and is thus exported manually
+
+   function Parent_Tag (T : Tag) return Tag;
+   --  Obj is the address of a tagged object. Parent_Tag fetch the tag of the
+   --  immediate ancestor (parent) of the type associated with Obj.
+
+   pragma Export (Ada, Parent_Tag, "ada__tags__parent_tag");
    --  This procedure is used in s-finimp and is thus exported manually
 
    procedure Register_Tag (T : Tag);
@@ -225,4 +236,5 @@ private
    pragma Inline_Always (Set_RC_Offset);
    pragma Inline_Always (Set_Remotely_Callable);
    pragma Inline_Always (Set_TSD);
+
 end Ada.Tags;

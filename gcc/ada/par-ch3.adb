@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -97,14 +97,24 @@ package body Ch3 is
 
    function Init_Expr_Opt (P : Boolean := False) return Node_Id is
    begin
-      if Token = Tok_Colon_Equal
+      --  For colon, assume it means := unless it is at the end of
+      --  a line, in which case guess that it means a semicolon.
+
+      if Token = Tok_Colon then
+         if Token_Is_At_End_Of_Line then
+            T_Semicolon;
+            return Empty;
+         end if;
+
+      --  Here if := or something that we will take as equivalent
+
+      elsif Token = Tok_Colon_Equal
         or else Token = Tok_Equal
-        or else Token = Tok_Colon
         or else Token = Tok_Is
       then
          null;
 
-      --  One other possibility. If we have a literal followed by a semicolon,
+      --  Another possibility. If we have a literal followed by a semicolon,
       --  we assume that we have a missing colon-equal.
 
       elsif Token in Token_Class_Literal then
@@ -430,6 +440,19 @@ package body Ch3 is
 
             when Tok_New =>
                Typedef_Node := P_Derived_Type_Def_Or_Private_Ext_Decl;
+
+               if Nkind (Typedef_Node) = N_Derived_Type_Definition
+                 and then Present (Record_Extension_Part (Typedef_Node))
+               then
+                  End_Labl :=
+                    Make_Identifier (Token_Ptr,
+                      Chars => Chars (Ident_Node));
+                  Set_Comes_From_Source (End_Labl, False);
+
+                  Set_End_Label
+                    (Record_Extension_Part (Typedef_Node), End_Labl);
+               end if;
+
                TF_Semicolon;
                exit;
 
@@ -678,7 +701,6 @@ package body Ch3 is
       Set_Defining_Identifier (Decl_Node, Ident_Node);
       Set_Discriminant_Specifications (Decl_Node, Discr_List);
       return Decl_Node;
-
    end P_Type_Declaration;
 
    ----------------------------------
@@ -775,7 +797,6 @@ package body Ch3 is
          Set_Constraint (Indic_Node, Constr_Node);
          return Indic_Node;
       end if;
-
    end P_Subtype_Indication;
 
    -------------------------
@@ -936,7 +957,6 @@ package body Ch3 is
       else
          return Empty;
       end if;
-
    end P_Constraint_Opt;
 
    ------------------------------
@@ -1362,7 +1382,6 @@ package body Ch3 is
       end loop Ident_Loop;
 
       Done := False;
-
    end P_Identifier_Declarations;
 
    -------------------------------
@@ -2095,7 +2114,6 @@ package body Ch3 is
 
    function P_Discrete_Subtype_Definition return Node_Id is
    begin
-
       --  The syntax of a discrete subtype definition is identical to that
       --  of a discrete range, so we simply share the same parsing code.
 
@@ -2474,7 +2492,6 @@ package body Ch3 is
 
       T_Right_Paren;
       return Result_Node;
-
    end P_Index_Or_Discriminant_Constraint;
 
    -------------------------------------
@@ -2690,7 +2707,6 @@ package body Ch3 is
 
       Set_Component_Items (Component_List_Node, Decls_List);
       return Component_List_Node;
-
    end P_Component_List;
 
    -------------------------
@@ -2808,7 +2824,6 @@ package body Ch3 is
       end loop Ident_Loop;
 
       TF_Semicolon;
-
    end P_Component_Items;
 
    --------------------------------
@@ -2835,7 +2850,6 @@ package body Ch3 is
       Variant_Part_Node : Node_Id;
       Variants_List     : List_Id;
       Case_Node         : Node_Id;
-      Case_Sloc         : Source_Ptr;
 
    begin
       Variant_Part_Node := New_Node (N_Variant_Part, Token_Ptr);
@@ -2846,7 +2860,6 @@ package body Ch3 is
 
       Scan; -- past CASE
       Case_Node := P_Expression;
-      Case_Sloc := Token_Ptr;
       Set_Name (Variant_Part_Node, Case_Node);
 
       if Nkind (Case_Node) /= N_Identifier then
@@ -2884,7 +2897,6 @@ package body Ch3 is
 
       Set_Variants (Variant_Part_Node, Variants_List);
       return Variant_Part_Node;
-
    end P_Variant_Part;
 
    --------------------
@@ -3545,7 +3557,6 @@ package body Ch3 is
       when Error_Resync =>
          Resync_Past_Semicolon;
          Done := False;
-
    end P_Declarative_Items;
 
    ----------------------------------
@@ -3568,6 +3579,11 @@ package body Ch3 is
       Done  : Boolean;
 
    begin
+      --  Indicate no bad declarations detected yet in the current context:
+      --  visible or private declarations of a package spec.
+
+      Missing_Begin_Msg := No_Error_Msg;
+
       --  Get rid of active SIS entry from outer scope. This means we will
       --  miss some nested cases, but it doesn't seem worth the effort. See
       --  discussion in Par for further details
@@ -3737,7 +3753,6 @@ package body Ch3 is
       --  hit the missing BEGIN, which will clean up the error message.
 
       Done := False;
-
    end Statement_When_Declaration_Expected;
 
 end Ch3;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1998-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1998-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,7 +32,7 @@
 ------------------------------------------------------------------------------
 
 --  This version uses gettimeofday and select
---  Currently OpenNT, Dec Unix, Solaris and SCO UnixWare use this file.
+--  This file is suitable for OpenNT, Dec Unix and SCO UnixWare.
 
 package body System.OS_Primitives is
 
@@ -41,33 +41,23 @@ package body System.OS_Primitives is
    --  these declarations in System.OS_Interface and move these ones in
    --  the spec.
 
-   type struct_timezone is record
-      tz_minuteswest  : Integer;
-      tz_dsttime   : Integer;
-   end record;
-   pragma Convention (C, struct_timezone);
-   type struct_timezone_ptr is access all struct_timezone;
-
    type struct_timeval is record
-      tv_sec       : Integer;
-      tv_usec      : Integer;
+      tv_sec  : Integer;
+      tv_usec : Integer;
    end record;
    pragma Convention (C, struct_timeval);
 
-   function gettimeofday
+   procedure gettimeofday
      (tv : access struct_timeval;
-      tz : struct_timezone_ptr) return Integer;
+      tz : Address := Null_Address);
    pragma Import (C, gettimeofday, "gettimeofday");
 
-   type fd_set is null record;
-   type fd_set_ptr is access all fd_set;
-
-   function C_select
-     (n         : Integer    := 0;
+   procedure C_select
+     (n         : Integer := 0;
       readfds,
       writefds,
-      exceptfds : fd_set_ptr := null;
-      timeout   : access struct_timeval) return Integer;
+      exceptfds : Address := Null_Address;
+      timeout   : access struct_timeval);
    pragma Import (C, C_select, "select");
 
    -----------
@@ -75,11 +65,10 @@ package body System.OS_Primitives is
    -----------
 
    function Clock return Duration is
-      TV     : aliased struct_timeval;
-      Result : Integer;
+      TV : aliased struct_timeval;
 
    begin
-      Result := gettimeofday (TV'Access, null);
+      gettimeofday (TV'Access);
       return Duration (TV.tv_sec) + Duration (TV.tv_usec) / 10#1#E6;
    end Clock;
 
@@ -97,7 +86,6 @@ package body System.OS_Primitives is
      (Time : Duration;
       Mode : Integer)
    is
-      Result     : Integer;
       Rel_Time   : Duration;
       Abs_Time   : Duration;
       Check_Time : Duration := Clock;
@@ -123,7 +111,7 @@ package body System.OS_Primitives is
             timeval.tv_usec :=
               Integer ((Rel_Time - Duration (timeval.tv_sec)) * 10#1#E6);
 
-            Result := C_select (timeout => timeval'Unchecked_Access);
+            C_select (timeout => timeval'Unchecked_Access);
             Check_Time := Clock;
 
             exit when Abs_Time <= Check_Time;

@@ -26,8 +26,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
+-- GNARL was developed by the GNARL team at Florida State University.       --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -265,6 +265,24 @@ package body System.Task_Primitives.Operations is
    begin
       return new Ada_Task_Control_Block (Entry_Num);
    end New_ATCB;
+
+   -------------------
+   -- Is_Valid_Task --
+   -------------------
+
+   function Is_Valid_Task return Boolean is
+   begin
+      return False;
+   end Is_Valid_Task;
+
+   -----------------------------
+   -- Register_Foreign_Thread --
+   -----------------------------
+
+   function Register_Foreign_Thread return Task_ID is
+   begin
+      return null;
+   end Register_Foreign_Thread;
 
    ----------------------
    --  Initialize_TCB  --

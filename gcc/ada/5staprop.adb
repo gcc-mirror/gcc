@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2002, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2003, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -101,9 +101,9 @@ package body System.Task_Primitives.Operations is
 
    package SSL renames System.Soft_Links;
 
-   ------------------
-   --  Local Data  --
-   ------------------
+   ----------------
+   -- Local Data --
+   ----------------
 
    --  The following are logically constants, but need to be initialized
    --  at run time.
@@ -130,9 +130,9 @@ package body System.Task_Primitives.Operations is
    --  using in error checking.
    --  The following are internal configuration constants needed.
 
-   ------------------------
-   --  Priority Support  --
-   ------------------------
+   ----------------------
+   -- Priority Support --
+   ----------------------
 
    Priority_Ceiling_Emulation : constant Boolean := True;
    --  controls whether we emulate priority ceiling locking
@@ -153,9 +153,9 @@ package body System.Task_Primitives.Operations is
    --  Hold priority info (Real_Time) initialized during the package
    --  elaboration.
 
-   -------------------------------------
-   --  External Configuration Values  --
-   -------------------------------------
+   -----------------------------------
+   -- External Configuration Values --
+   -----------------------------------
 
    Time_Slice_Val : Interfaces.C.long;
    pragma Import (C, Time_Slice_Val, "__gl_time_slice_val");
@@ -166,50 +166,8 @@ package body System.Task_Primitives.Operations is
    Dispatching_Policy : Character;
    pragma Import (C, Dispatching_Policy, "__gl_task_dispatching_policy");
 
-   --------------------------------
-   --  Foreign Threads Detection --
-   --------------------------------
-
-   --  The following are used to allow the Self function to
-   --  automatically generate ATCB's for C threads that happen to call
-   --  Ada procedure, which in turn happen to call the Ada run-time system.
-
-   type Fake_ATCB;
-   type Fake_ATCB_Ptr is access Fake_ATCB;
-   type Fake_ATCB is record
-      Stack_Base : Interfaces.C.unsigned := 0;
-      --  A value of zero indicates the node is not in use.
-      Next       : Fake_ATCB_Ptr;
-      Real_ATCB  : aliased Ada_Task_Control_Block (0);
-   end record;
-
-   Fake_ATCB_List : Fake_ATCB_Ptr;
-   --  A linear linked list.
-   --  The list is protected by Single_RTS_Lock;
-   --  Nodes are added to this list from the front.
-   --  Once a node is added to this list, it is never removed.
-
-   Fake_Task_Elaborated : aliased Boolean := True;
+   Foreign_Task_Elaborated : aliased Boolean := True;
    --  Used to identified fake tasks (i.e., non-Ada Threads).
-
-   Next_Fake_ATCB : Fake_ATCB_Ptr;
-   --  Used to allocate one Fake_ATCB in advance. See comment in New_Fake_ATCB
-
-   ------------
-   -- Checks --
-   ------------
-
-   Check_Count  : Integer := 0;
-   Old_Owner    : Task_ID;
-   Lock_Count   : Integer := 0;
-   Unlock_Count : Integer := 0;
-
-   function To_Lock_Ptr is
-     new Unchecked_Conversion (RTS_Lock_Ptr, Lock_Ptr);
-   function To_Task_ID is
-     new Unchecked_Conversion (Owner_ID, Task_ID);
-   function To_Owner_ID is
-     new Unchecked_Conversion (Task_ID, Owner_ID);
 
    -----------------------
    -- Local Subprograms --
@@ -228,6 +186,9 @@ package body System.Task_Primitives.Operations is
      (Sig     : Signal;
       Code    : access siginfo_t;
       Context : access ucontext_t);
+   --  Target-dependent binding of inter-thread Abort signal to
+   --  the raising of the Abort_Signal exception.
+   --  See also comments in 7staprop.adb
 
    function To_thread_t is new Unchecked_Conversion
      (Integer, System.OS_Interface.thread_t);
@@ -238,14 +199,6 @@ package body System.Task_Primitives.Operations is
 
    function Thread_Body_Access is
      new Unchecked_Conversion (System.Address, Thread_Body);
-
-   function New_Fake_ATCB (Stack_Base : Interfaces.C.unsigned) return Task_ID;
-   --  Allocate and Initialize a new ATCB. This code can safely be called from
-   --  a foreign thread, as it doesn't access implicitly or explicitly
-   --  "self" before having initialized the new ATCB.
-   pragma Warnings (Off, New_Fake_ATCB);
-   --  Disable warning on this function, since the Solaris x86 version does
-   --  not use it.
 
    ------------
    -- Checks --
@@ -280,202 +233,88 @@ package body System.Task_Primitives.Operations is
    function Check_Finalize_Lock (L : Lock_Ptr) return Boolean;
    pragma Inline (Check_Finalize_Lock);
 
-   -------------------
-   -- New_Fake_ATCB --
-   -------------------
+   --------------------
+   -- Local Packages --
+   --------------------
 
-   function New_Fake_ATCB (Stack_Base : Interfaces.C.unsigned)
-     return Task_ID
-   is
-      Self_ID   : Task_ID;
-      P, Q      : Fake_ATCB_Ptr;
-      Succeeded : Boolean;
-      Result    : Interfaces.C.int;
+   package Specific is
 
-   begin
-      --  This section is ticklish.
-      --  We dare not call anything that might require an ATCB, until
-      --  we have the new ATCB in place.
-      --  Note: we don't use Lock_RTS because we don't yet have an ATCB, and
-      --  so can't pass the safety check.
+      procedure Initialize (Environment_Task : Task_ID);
+      pragma Inline (Initialize);
+      --  Initialize various data needed by this package.
 
-      Result := mutex_lock (Single_RTS_Lock.L'Access);
-      Q := null;
-      P := Fake_ATCB_List;
+      function Is_Valid_Task return Boolean;
+      pragma Inline (Is_Valid_Task);
+      --  Does executing thread have a TCB?
 
-      while P /= null loop
-         if P.Stack_Base = 0 then
-            Q := P;
-         elsif thr_kill (P.Real_ATCB.Common.LL.Thread, 0) /= 0 then
-            --  ????
-            --  If a C thread that has dependent Ada tasks terminates
-            --  abruptly, e.g. as a result of cancellation, any dependent
-            --  tasks are likely to hang up in termination.
-            P.Stack_Base := 0;
-            Q := P;
-         end if;
+      procedure Set (Self_Id : Task_ID);
+      pragma Inline (Set);
+      --  Set the self id for the current task.
 
-         P := P.Next;
-      end loop;
+      function Self return Task_ID;
+      pragma Inline (Self);
+      --  Return a pointer to the Ada Task Control Block of the calling task.
 
-      if Q = null then
+   end Specific;
 
-         --  Create a new ATCB with zero entries.
+   package body Specific is separate;
+   --  The body of this package is target specific.
 
-         Self_ID := Next_Fake_ATCB.Real_ATCB'Access;
-         Next_Fake_ATCB.Stack_Base := Stack_Base;
-         Next_Fake_ATCB.Next := Fake_ATCB_List;
-         Fake_ATCB_List := Next_Fake_ATCB;
-         Next_Fake_ATCB := null;
+   ---------------------------------
+   -- Support for foreign threads --
+   ---------------------------------
 
-      else
+   function Register_Foreign_Thread (Thread : Thread_Id) return Task_ID;
+   --  Allocate and Initialize a new ATCB for the current Thread.
 
-         --  Reuse an existing fake ATCB.
+   function Register_Foreign_Thread
+     (Thread : Thread_Id) return Task_ID is separate;
 
-         Self_ID := Q.Real_ATCB'Access;
-         Q.Stack_Base := Stack_Base;
-      end if;
+   ------------
+   -- Checks --
+   ------------
 
-      --  Do the standard initializations
+   Check_Count  : Integer := 0;
+   Old_Owner    : Task_ID;
+   Lock_Count   : Integer := 0;
+   Unlock_Count : Integer := 0;
 
-      System.Tasking.Initialize_ATCB
-        (Self_ID, null, Null_Address, Null_Task, Fake_Task_Elaborated'Access,
-         System.Priority'First, Task_Info.Unspecified_Task_Info, 0, Self_ID,
-         Succeeded);
-      pragma Assert (Succeeded);
-
-      --  Record this as the Task_ID for the current thread.
-
-      Self_ID.Common.LL.Thread := thr_self;
-      Result := thr_setspecific (ATCB_Key, To_Address (Self_ID));
-      pragma Assert (Result = 0);
-
-      --  Finally, it is safe to use an allocator in this thread.
-
-      if Next_Fake_ATCB = null then
-         Next_Fake_ATCB := new Fake_ATCB;
-      end if;
-
-      Self_ID.Master_of_Task := 0;
-      Self_ID.Master_Within := Self_ID.Master_of_Task + 1;
-
-      for L in Self_ID.Entry_Calls'Range loop
-         Self_ID.Entry_Calls (L).Self := Self_ID;
-         Self_ID.Entry_Calls (L).Level := L;
-      end loop;
-
-      Self_ID.Common.State := Runnable;
-      Self_ID.Awake_Count := 1;
-
-      --  Since this is not an ordinary Ada task, we will start out undeferred
-
-      Self_ID.Deferral_Level := 0;
-
-      --  Give the task a unique serial number.
-
-      Self_ID.Serial_Number := Next_Serial_Number;
-      Next_Serial_Number := Next_Serial_Number + 1;
-      pragma Assert (Next_Serial_Number /= 0);
-
-      System.Soft_Links.Create_TSD (Self_ID.Common.Compiler_Data);
-
-      --  ????
-      --  The following call is commented out to avoid dependence on
-      --  the System.Tasking.Initialization package.
-
-      --  It seems that if we want Ada.Task_Attributes to work correctly
-      --  for C threads we will need to raise the visibility of this soft
-      --  link to System.Soft_Links.
-
-      --  We are putting that off until this new functionality is otherwise
-      --  stable.
-
-      --  System.Tasking.Initialization.Initialize_Attributes_Link.all (T);
-
-      --  Must not unlock until Next_ATCB is again allocated.
-
-      for J in Known_Tasks'Range loop
-         if Known_Tasks (J) = null then
-            Known_Tasks (J) := Self_ID;
-            Self_ID.Known_Tasks_Index := J;
-            exit;
-         end if;
-      end loop;
-
-      Result := mutex_unlock (Single_RTS_Lock.L'Access);
-
-      --  We cannot use Unlock_RTS because we did not use Write_Lock, and so
-      --  would not pass the checks.
-
-      return Self_ID;
-   end New_Fake_ATCB;
+   function To_Lock_Ptr is
+     new Unchecked_Conversion (RTS_Lock_Ptr, Lock_Ptr);
+   function To_Task_ID is
+     new Unchecked_Conversion (Owner_ID, Task_ID);
+   function To_Owner_ID is
+     new Unchecked_Conversion (Task_ID, Owner_ID);
 
    -------------------
    -- Abort_Handler --
    -------------------
-
-   --  Target-dependent binding of inter-thread Abort signal to
-   --  the raising of the Abort_Signal exception.
-
-   --  The technical issues and alternatives here are essentially
-   --  the same as for raising exceptions in response to other
-   --  signals (e.g. Storage_Error).  See code and comments in
-   --  the package body System.Interrupt_Management.
-
-   --  Some implementations may not allow an exception to be propagated
-   --  out of a handler, and others might leave the signal or
-   --  interrupt that invoked this handler masked after the exceptional
-   --  return to the application code.
-
-   --  GNAT exceptions are originally implemented using setjmp()/longjmp().
-   --  On most UNIX systems, this will allow transfer out of a signal handler,
-   --  which is usually the only mechanism available for implementing
-   --  asynchronous handlers of this kind.  However, some
-   --  systems do not restore the signal mask on longjmp(), leaving the
-   --  abort signal masked.
-
-   --  Alternative solutions include:
-
-   --       1. Change the PC saved in the system-dependent Context
-   --          parameter to point to code that raises the exception.
-   --          Normal return from this handler will then raise
-   --          the exception after the mask and other system state has
-   --          been restored (see example below).
-   --       2. Use siglongjmp()/sigsetjmp() to implement exceptions.
-   --       3. Unmask the signal in the Abortion_Signal exception handler
-   --          (in the RTS).
-
-   --  The following procedure would be needed if we can't longjmp out of
-   --  a signal handler.  (See below.)
-
-   --  procedure Raise_Abort_Signal is
-   --  begin
-   --     raise Standard'Abort_Signal;
-   --  end if;
-
-   --  ???
-   --  The comments above need revising.  They are partly obsolete.
 
    procedure Abort_Handler
      (Sig     : Signal;
       Code    : access siginfo_t;
       Context : access ucontext_t)
    is
+      pragma Unreferenced (Sig);
+      pragma Unreferenced (Code);
+      pragma Unreferenced (Context);
+
       Self_ID : Task_ID := Self;
       Result  : Interfaces.C.int;
       Old_Set : aliased sigset_t;
 
    begin
-      --  Assuming it is safe to longjmp out of a signal handler, the
-      --  following code can be used:
+      --  It is not safe to raise an exception when using ZCX and the GCC
+      --  exception handling mechanism.
+
+      if ZCX_By_Default and then GCC_ZCX_Support then
+         return;
+      end if;
 
       if Self_ID.Deferral_Level = 0
         and then Self_ID.Pending_ATC_Level < Self_ID.ATC_Nesting_Level
         and then not Self_ID.Aborting
       then
-         --  You can comment the following out,
-         --  to make all aborts synchronous, for debugging.
-
          Self_ID.Aborting := True;
 
          --  Make sure signals used for RTS internal purpose are unmasked
@@ -485,23 +324,7 @@ package body System.Task_Primitives.Operations is
          pragma Assert (Result = 0);
 
          raise Standard'Abort_Signal;
-
-         --  ?????
-         --  Must be certain that the implementation of "raise"
-         --  does not make any OS/thread calls, or at least that
-         --  if it makes any, they are safe for interruption by
-         --  async. signals.
       end if;
-
-      --  Otherwise, something like this is required:
-      --  if not Abort_Is_Deferred.all then
-      --    --  Overwrite the return PC address with the address of the
-      --    --  special raise routine, and "return" to that routine's
-      --    --  starting address.
-      --    Context.PC := Raise_Abort_Signal'Address;
-      --    return;
-      --  end if;
-
    end Abort_Handler;
 
    -------------------
@@ -512,6 +335,9 @@ package body System.Task_Primitives.Operations is
    --  bottom of a thread stack, so nothing is needed.
 
    procedure Stack_Guard (T : ST.Task_ID; On : Boolean) is
+      pragma Unreferenced (T);
+      pragma Unreferenced (On);
+
    begin
       null;
    end Stack_Guard;
@@ -525,11 +351,144 @@ package body System.Task_Primitives.Operations is
       return T.Common.LL.Thread;
    end Get_Thread_Id;
 
-   -----------
-   -- Self  --
-   -----------
+   ----------------
+   -- Initialize --
+   ----------------
 
-   function Self return Task_ID is separate;
+   procedure Initialize (Environment_Task : ST.Task_ID) is
+      act     : aliased struct_sigaction;
+      old_act : aliased struct_sigaction;
+      Tmp_Set : aliased sigset_t;
+      Result  : Interfaces.C.int;
+
+      procedure Configure_Processors;
+      --  Processors configuration
+      --  The user can specify a processor which the program should run
+      --  on to emulate a single-processor system. This can be easily
+      --  done by setting environment variable GNAT_PROCESSOR to one of
+      --  the following :
+      --
+      --    -2 : use the default configuration (run the program on all
+      --         available processors) - this is the same as having
+      --         GNAT_PROCESSOR unset
+      --    -1 : let the RTS choose one processor and run the program on
+      --         that processor
+      --    0 .. Last_Proc : run the program on the specified processor
+      --
+      --  Last_Proc is equal to the value of the system variable
+      --  _SC_NPROCESSORS_CONF, minus one.
+
+      procedure Configure_Processors is
+         Proc_Acc  : constant GNAT.OS_Lib.String_Access :=
+                       GNAT.OS_Lib.Getenv ("GNAT_PROCESSOR");
+         Proc      : aliased processorid_t;  --  User processor #
+         Last_Proc : processorid_t;          --  Last processor #
+
+      begin
+         if Proc_Acc.all'Length /= 0 then
+            --  Environment variable is defined
+
+            Last_Proc := Num_Procs - 1;
+
+            if Last_Proc /= -1 then
+               Proc := processorid_t'Value (Proc_Acc.all);
+
+               if Proc <= -2  or else Proc > Last_Proc then
+                  --  Use the default configuration
+                  null;
+               elsif Proc = -1 then
+                  --  Choose a processor
+
+                  Result := 0;
+
+                  while Proc < Last_Proc loop
+                     Proc := Proc + 1;
+                     Result := p_online (Proc, PR_STATUS);
+                     exit when Result = PR_ONLINE;
+                  end loop;
+
+                  pragma Assert (Result = PR_ONLINE);
+                  Result := processor_bind (P_PID, P_MYID, Proc, null);
+                  pragma Assert (Result = 0);
+
+               else
+                  --  Use user processor
+
+                  Result := processor_bind (P_PID, P_MYID, Proc, null);
+                  pragma Assert (Result = 0);
+               end if;
+            end if;
+         end if;
+
+      exception
+         when Constraint_Error =>
+
+            --  Illegal environment variable GNAT_PROCESSOR - ignored
+
+            null;
+      end Configure_Processors;
+
+      function State (Int : System.Interrupt_Management.Interrupt_ID)
+                     return Character;
+      pragma Import (C, State, "__gnat_get_interrupt_state");
+      --  Get interrupt state.  Defined in a-init.c
+      --  The input argument is the interrupt number,
+      --  and the result is one of the following:
+
+      Default : constant Character := 's';
+      --    'n'   this interrupt not set by any Interrupt_State pragma
+      --    'u'   Interrupt_State pragma set state to User
+      --    'r'   Interrupt_State pragma set state to Runtime
+      --    's'   Interrupt_State pragma set state to System (use "default"
+      --           system handler)
+
+   --  Start of processing for Initialize
+
+   begin
+      Environment_Task_ID := Environment_Task;
+
+      --  This is done in Enter_Task, but this is too late for the
+      --  Environment Task, since we need to call Self in Check_Locks when
+      --  the run time is compiled with assertions on.
+
+      Specific.Initialize (Environment_Task);
+
+      --  Initialize the lock used to synchronize chain of all ATCBs.
+
+      Initialize_Lock (Single_RTS_Lock'Access, RTS_Lock_Level);
+
+      Enter_Task (Environment_Task);
+
+      --  Install the abort-signal handler
+
+      if State (System.Interrupt_Management.Abort_Task_Interrupt)
+        /= Default
+      then
+         --  Set sa_flags to SA_NODEFER so that during the handler execution
+         --  we do not change the Signal_Mask to be masked for the Abort_Signal
+         --  This is a temporary fix to the problem that the Signal_Mask is
+         --  not restored after the exception (longjmp) from the handler.
+         --  The right fix should be made in sigsetjmp so that we save
+         --  the Signal_Set and restore it after a longjmp.
+         --  In that case, this field should be changed back to 0. ???
+
+         act.sa_flags := 16;
+
+         act.sa_handler := Abort_Handler'Address;
+         Result := sigemptyset (Tmp_Set'Access);
+         pragma Assert (Result = 0);
+         act.sa_mask := Tmp_Set;
+
+         Result :=
+           sigaction (
+             Signal (System.Interrupt_Management.Abort_Task_Interrupt),
+             act'Unchecked_Access,
+             old_act'Unchecked_Access);
+         pragma Assert (Result = 0);
+      end if;
+
+      Configure_Processors;
+   end Initialize;
 
    ---------------------
    -- Initialize_Lock --
@@ -646,9 +605,11 @@ package body System.Task_Primitives.Operations is
    end Write_Lock;
 
    procedure Write_Lock
-     (L : access RTS_Lock; Global_Lock : Boolean := False)
+     (L          : access RTS_Lock;
+     Global_Lock : Boolean := False)
    is
       Result : Interfaces.C.int;
+
    begin
       if not Single_Lock or else Global_Lock then
          pragma Assert (Check_Lock (To_Lock_Ptr (RTS_Lock_Ptr (L))));
@@ -660,6 +621,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Write_Lock (T : Task_ID) is
       Result : Interfaces.C.int;
+
    begin
       if not Single_Lock then
          pragma Assert (Check_Lock (To_Lock_Ptr (T.Common.LL.L'Access)));
@@ -684,6 +646,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Unlock (L : access Lock) is
       Result  : Interfaces.C.int;
+
    begin
       pragma Assert (Check_Unlock (Lock_Ptr (L)));
 
@@ -707,6 +670,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Unlock (L : access RTS_Lock; Global_Lock : Boolean := False) is
       Result : Interfaces.C.int;
+
    begin
       if not Single_Lock or else Global_Lock then
          pragma Assert (Check_Unlock (To_Lock_Ptr (RTS_Lock_Ptr (L))));
@@ -717,6 +681,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Unlock (T : Task_ID) is
       Result : Interfaces.C.int;
+
    begin
       if not Single_Lock then
          pragma Assert (Check_Unlock (To_Lock_Ptr (T.Common.LL.L'Access)));
@@ -776,15 +741,23 @@ package body System.Task_Primitives.Operations is
       end if;
    end Yield;
 
+   -----------
+   -- Self ---
+   -----------
+
+   function Self return Task_ID renames Specific.Self;
+
    ------------------
    -- Set_Priority --
    ------------------
 
    procedure Set_Priority
-     (T : Task_ID;
-      Prio : System.Any_Priority;
+     (T                   : Task_ID;
+      Prio                : System.Any_Priority;
       Loss_Of_Inheritance : Boolean := False)
    is
+      pragma Unreferenced (Loss_Of_Inheritance);
+
       Result  : Interfaces.C.int;
       Param   : aliased struct_pcparms;
 
@@ -885,8 +858,7 @@ package body System.Task_Primitives.Operations is
          end if;
       end if;
 
-      Result := thr_setspecific (ATCB_Key, To_Address (Self_ID));
-      pragma Assert (Result = 0);
+      Specific.Set (Self_ID);
 
       --  We need the above code even if we do direct fetch of Task_ID in Self
       --  for the main task on Sun, x86 Solaris and for gcc 2.7.2.
@@ -913,12 +885,33 @@ package body System.Task_Primitives.Operations is
       return new Ada_Task_Control_Block (Entry_Num);
    end New_ATCB;
 
+   -------------------
+   -- Is_Valid_Task --
+   -------------------
+
+   function Is_Valid_Task return Boolean renames Specific.Is_Valid_Task;
+
+   -----------------------------
+   -- Register_Foreign_Thread --
+   -----------------------------
+
+   function Register_Foreign_Thread return Task_ID is
+
+   begin
+      if Is_Valid_Task then
+         return Self;
+      else
+         return Register_Foreign_Thread (thr_self);
+      end if;
+   end Register_Foreign_Thread;
+
    --------------------
    -- Initialize_TCB --
    --------------------
 
    procedure Initialize_TCB (Self_ID : Task_ID; Succeeded : out Boolean) is
       Result : Interfaces.C.int := 0;
+
    begin
       --  Give the task a unique serial number.
 
@@ -964,6 +957,8 @@ package body System.Task_Primitives.Operations is
       Priority   : System.Any_Priority;
       Succeeded  : out Boolean)
    is
+      pragma Unreferenced (Priority);
+
       Result     : Interfaces.C.int;
       Adjusted_Stack_Size : Interfaces.C.size_t;
       Opts       : Interfaces.C.int := THR_DETACHED;
@@ -976,6 +971,7 @@ package body System.Task_Primitives.Operations is
       --  actual use.
 
       use System.Task_Info;
+
    begin
       if Stack_Size = System.Parameters.Unspecified_Size then
          Adjusted_Stack_Size :=
@@ -996,7 +992,6 @@ package body System.Task_Primitives.Operations is
       --  All tasks in RTS will have All_Tasks_Mask initially.
 
       if T.Common.Task_Info /= null then
-
          if T.Common.Task_Info.New_LWP then
             Opts := Opts + THR_NEW_LWP;
          end if;
@@ -1031,6 +1026,7 @@ package body System.Task_Primitives.Operations is
    procedure Finalize_TCB (T : Task_ID) is
       Result : Interfaces.C.int;
       Tmp    : Task_ID := T;
+      Is_Self : constant Boolean := T = Self;
 
       procedure Free is new
         Unchecked_Deallocation (Ada_Task_Control_Block, Task_ID);
@@ -1051,6 +1047,11 @@ package body System.Task_Primitives.Operations is
       end if;
 
       Free (Tmp);
+
+      if Is_Self then
+         Specific.Set (null);
+      end if;
+
    end Finalize_TCB;
 
    ---------------
@@ -1063,7 +1064,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Exit_Task is
    begin
-      thr_exit (System.Null_Address);
+      Specific.Set (null);
    end Exit_Task;
 
    ----------------
@@ -1091,6 +1092,7 @@ package body System.Task_Primitives.Operations is
       Reason  : Task_States)
    is
       Result : Interfaces.C.int;
+
    begin
       pragma Assert (Check_Sleep (Reason));
 
@@ -1236,7 +1238,9 @@ package body System.Task_Primitives.Operations is
             exit when Abs_Time <= Monotonic_Clock;
 
             if Result = 0 or Result = EINTR then
-               --  somebody may have called Wakeup for us
+
+               --  Somebody may have called Wakeup for us
+
                Timedout := False;
                exit;
             end if;
@@ -1344,6 +1348,7 @@ package body System.Task_Primitives.Operations is
       Reason : Task_States)
    is
       Result : Interfaces.C.int;
+
    begin
       pragma Assert (Check_Wakeup (T, Reason));
       Result := cond_signal (T.Common.LL.CV'Access);
@@ -1386,7 +1391,7 @@ package body System.Task_Primitives.Operations is
    ----------------
 
    function Check_Lock (L : Lock_Ptr) return Boolean is
-      Self_ID : Task_ID := Self;
+      Self_ID : constant Task_ID := Self;
       P       : Lock_Ptr;
 
    begin
@@ -1475,6 +1480,8 @@ package body System.Task_Primitives.Operations is
    -----------------
 
    function Check_Sleep (Reason : Task_States) return Boolean is
+      pragma Unreferenced (Reason);
+
       Self_ID : Task_ID := Self;
       P       : Lock_Ptr;
 
@@ -1519,6 +1526,8 @@ package body System.Task_Primitives.Operations is
       Reason : Task_States)
       return   Boolean
    is
+      pragma Unreferenced (Reason);
+
       Self_ID : Task_ID := Self;
       P       : Lock_Ptr;
 
@@ -1553,7 +1562,7 @@ package body System.Task_Primitives.Operations is
       Reason : Task_States)
       return   Boolean
    is
-      Self_ID : Task_ID := Self;
+      Self_ID : constant Task_ID := Self;
 
    begin
       --  Is caller holding T's lock?
@@ -1625,7 +1634,8 @@ package body System.Task_Primitives.Operations is
    --------------------
 
    function Check_Finalize_Lock (L : Lock_Ptr) return Boolean is
-      Self_ID : Task_ID := Self;
+      Self_ID : constant Task_ID := Self;
+
    begin
       --  Check that caller is abort-deferred
 
@@ -1717,7 +1727,9 @@ package body System.Task_Primitives.Operations is
 
    function Suspend_Task
      (T           : ST.Task_ID;
-      Thread_Self : Thread_Id) return Boolean is
+      Thread_Self : Thread_Id)
+      return        Boolean
+   is
    begin
       if T.Common.LL.Thread /= Thread_Self then
          return thr_suspend (T.Common.LL.Thread) = 0;
@@ -1732,7 +1744,9 @@ package body System.Task_Primitives.Operations is
 
    function Resume_Task
      (T           : ST.Task_ID;
-      Thread_Self : Thread_Id) return Boolean is
+      Thread_Self : Thread_Id)
+      return        Boolean
+   is
    begin
       if T.Common.LL.Thread /= Thread_Self then
          return thr_continue (T.Common.LL.Thread) = 0;
@@ -1741,135 +1755,12 @@ package body System.Task_Primitives.Operations is
       end if;
    end Resume_Task;
 
-   ----------------
-   -- Initialize --
-   ----------------
-
-   procedure Initialize (Environment_Task : ST.Task_ID) is
-      act     : aliased struct_sigaction;
-      old_act : aliased struct_sigaction;
-      Tmp_Set : aliased sigset_t;
-      Result  : Interfaces.C.int;
-
-      procedure Configure_Processors;
-      --  Processors configuration
-      --  The user can specify a processor which the program should run
-      --  on to emulate a single-processor system. This can be easily
-      --  done by setting environment variable GNAT_PROCESSOR to one of
-      --  the following :
-      --
-      --    -2 : use the default configuration (run the program on all
-      --         available processors) - this is the same as having
-      --         GNAT_PROCESSOR unset
-      --    -1 : let the RTS choose one processor and run the program on
-      --         that processor
-      --    0 .. Last_Proc : run the program on the specified processor
-      --
-      --  Last_Proc is equal to the value of the system variable
-      --  _SC_NPROCESSORS_CONF, minus one.
-
-      procedure Configure_Processors is
-         Proc_Acc  : constant GNAT.OS_Lib.String_Access :=
-           GNAT.OS_Lib.Getenv ("GNAT_PROCESSOR");
-         Proc      : aliased processorid_t;  --  User processor #
-         Last_Proc : processorid_t;          --  Last processor #
-
-      begin
-         if Proc_Acc.all'Length /= 0 then
-            --  Environment variable is defined
-
-            Last_Proc := Num_Procs - 1;
-
-            if Last_Proc /= -1 then
-               Proc := processorid_t'Value (Proc_Acc.all);
-
-               if Proc <= -2  or else Proc > Last_Proc then
-                  --  Use the default configuration
-                  null;
-               elsif Proc = -1 then
-                  --  Choose a processor
-
-                  Result := 0;
-
-                  while Proc < Last_Proc loop
-                     Proc := Proc + 1;
-                     Result := p_online (Proc, PR_STATUS);
-                     exit when Result = PR_ONLINE;
-                  end loop;
-
-                  pragma Assert (Result = PR_ONLINE);
-                  Result := processor_bind (P_PID, P_MYID, Proc, null);
-                  pragma Assert (Result = 0);
-
-               else
-                  --  Use user processor
-
-                  Result := processor_bind (P_PID, P_MYID, Proc, null);
-                  pragma Assert (Result = 0);
-               end if;
-            end if;
-         end if;
-
-      exception
-         when Constraint_Error =>
-            --  Illegal environment variable GNAT_PROCESSOR - ignored
-            null;
-      end Configure_Processors;
-
-   --  Start of processing for Initialize
-
-   begin
-      Environment_Task_ID := Environment_Task;
-
-      --  This is done in Enter_Task, but this is too late for the
-      --  Environment Task, since we need to call Self in Check_Locks when
-      --  the run time is compiled with assertions on.
-
-      Result := thr_setspecific (ATCB_Key, To_Address (Environment_Task));
-      pragma Assert (Result = 0);
-
-      --  Initialize the lock used to synchronize chain of all ATCBs.
-
-      Initialize_Lock (Single_RTS_Lock'Access, RTS_Lock_Level);
-
-      Enter_Task (Environment_Task);
-
-      --  Install the abort-signal handler
-
-      --  Set sa_flags to SA_NODEFER so that during the handler execution
-      --  we do not change the Signal_Mask to be masked for the Abort_Signal.
-      --  This is a temporary fix to the problem that the Signal_Mask is
-      --  not restored after the exception (longjmp) from the handler.
-      --  The right fix should be made in sigsetjmp so that we save
-      --  the Signal_Set and restore it after a longjmp.
-      --  In that case, this field should be changed back to 0. ???
-
-      act.sa_flags := 16;
-
-      act.sa_handler := Abort_Handler'Address;
-      Result := sigemptyset (Tmp_Set'Access);
-      pragma Assert (Result = 0);
-      act.sa_mask := Tmp_Set;
-
-      Result :=
-        sigaction (
-          Signal (System.Interrupt_Management.Abort_Task_Interrupt),
-          act'Unchecked_Access,
-          old_act'Unchecked_Access);
-      pragma Assert (Result = 0);
-
-      Configure_Processors;
-
-      --  Create a free ATCB for use on the Fake_ATCB_List.
-
-      Next_Fake_ATCB := new Fake_ATCB;
-   end Initialize;
-
 --  Package elaboration
 
 begin
    declare
       Result : Interfaces.C.int;
+
    begin
       --  Mask Environment task for all signals. The original mask of the
       --  Environment task will be recovered by Interrupt_Server task

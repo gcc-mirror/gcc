@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1999-2001, Free Software Foundation, Inc.          --
+--         Copyright (C) 1999-2002, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,8 +26,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
+-- GNARL was developed by the GNARL team at Florida State University.       --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -51,7 +51,6 @@ with System.Parameters;
 
 with System.Task_Info;
 --  used for Task_Info_Type
---           Task_Image_Type
 
 with System.Task_Primitives.Operations;
 --  used for Enter_Task
@@ -105,6 +104,8 @@ package body System.Tasking.Restricted.Stages is
    --  Releases lock previously set by call to Task_Lock. In the nested case,
    --  all nested locks must be released before other tasks competing for the
    --  tasking lock are released.
+
+   --  See s-tasini.adb for more information on the following functions.
 
    function Get_Jmpbuf_Address return Address;
    procedure Set_Jmpbuf_Address (Addr : Address);
@@ -212,6 +213,10 @@ package body System.Tasking.Restricted.Stages is
    procedure Task_Wrapper (Self_ID : Task_ID) is
       ID : Task_ID := Self_ID;
       pragma Volatile (ID);
+
+      pragma Warnings (Off, ID);
+      --  Turn off warnings (stand alone volatile constant has to be
+      --  imported, so we cannot just make ID constant).
 
       --  Do not delete this variable.
       --  In some targets, we need this variable to implement a fast Self.
@@ -437,7 +442,7 @@ package body System.Tasking.Restricted.Stages is
       Discriminants : System.Address;
       Elaborated    : Access_Boolean;
       Chain         : in out Activation_Chain;
-      Task_Image    : System.Task_Info.Task_Image_Type;
+      Task_Image    : String;
       Created_Task  : out Task_ID)
    is
       T             : Task_ID;
@@ -482,7 +487,11 @@ package body System.Tasking.Restricted.Stages is
       end if;
 
       T.Entry_Calls (1).Self := T;
-      T.Common.Task_Image    := Task_Image;
+
+      T.Common.Task_Image_Len :=
+        Integer'Min (T.Common.Task_Image'Length, Task_Image'Length);
+      T.Common.Task_Image (1 .. T.Common.Task_Image_Len) := Task_Image;
+
       Unlock (Self_ID);
 
       if Single_Lock then
@@ -508,6 +517,7 @@ package body System.Tasking.Restricted.Stages is
 
    procedure Finalize_Global_Tasks is
       Self_ID : constant Task_ID := STPO.Self;
+
    begin
       pragma Assert (Self_ID = STPO.Environment_Task);
 

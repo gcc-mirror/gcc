@@ -186,7 +186,7 @@ package body Sprint is
    --  Write Condition and Reason codes of Raise_xxx_Error node
 
    procedure Write_Discr_Specs (N : Node_Id);
-   --  Output discriminant specification for node, which is any of the type
+   --  Ouput discriminant specification for node, which is any of the type
    --  declarations that can have discriminants.
 
    procedure Write_Ekind (E : Entity_Id);
@@ -1232,9 +1232,14 @@ package body Sprint is
 
             Write_Char (';');
 
+         when N_Expanded_Name =>
+            Sprint_Node (Prefix (Node));
+            Write_Char_Sloc ('.');
+            Sprint_Node (Selector_Name (Node));
+
          when N_Explicit_Dereference =>
             Sprint_Node (Prefix (Node));
-            Write_Char ('.');
+            Write_Char_Sloc ('.');
             Write_Str_Sloc ("all");
 
          when N_Extension_Aggregate =>
@@ -1653,49 +1658,28 @@ package body Sprint is
             end if;
 
          when N_Object_Declaration =>
+            Set_Debug_Sloc;
 
-            --  Put extra blank line before and after if this is a handler
-            --  record or a subprogram descriptor.
+            if Write_Indent_Identifiers (Node) then
+               Write_Str (" : ");
 
-            declare
-               Typ : constant Entity_Id := Etype (Defining_Identifier (Node));
-               Exc : constant Boolean :=
-                       Is_RTE (Typ, RE_Handler_Record)
-                         or else
-                       Is_RTE (Typ, RE_Subprogram_Descriptor);
-
-            begin
-               if Exc then
-                  Write_Indent;
+               if Aliased_Present (Node) then
+                  Write_Str_With_Col_Check ("aliased ");
                end if;
 
-               Set_Debug_Sloc;
-
-               if Write_Indent_Identifiers (Node) then
-                  Write_Str (" : ");
-
-                  if Aliased_Present (Node) then
-                     Write_Str_With_Col_Check ("aliased ");
-                  end if;
-
-                  if Constant_Present (Node) then
-                     Write_Str_With_Col_Check ("constant ");
-                  end if;
-
-                  Sprint_Node (Object_Definition (Node));
-
-                  if Present (Expression (Node)) then
-                     Write_Str (" := ");
-                     Sprint_Node (Expression (Node));
-                  end if;
-
-                  Write_Char (';');
+               if Constant_Present (Node) then
+                  Write_Str_With_Col_Check ("constant ");
                end if;
 
-               if Exc then
-                  Write_Indent;
+               Sprint_Node (Object_Definition (Node));
+
+               if Present (Expression (Node)) then
+                  Write_Str (" := ");
+                  Sprint_Node (Expression (Node));
                end if;
-            end;
+
+               Write_Char (';');
+            end if;
 
          when N_Object_Renaming_Declaration =>
             Write_Indent;
@@ -2243,7 +2227,7 @@ package body Sprint is
 
             Write_Char (';');
 
-         when N_Selected_Component | N_Expanded_Name =>
+         when N_Selected_Component =>
             Sprint_Node (Prefix (Node));
             Write_Char_Sloc ('.');
             Sprint_Node (Selector_Name (Node));

@@ -4,9 +4,9 @@
 --                                                                          --
 --                S Y S T E M . F I N A L I Z A T I O N _ R O O T           --
 --                                                                          --
---                                 S p e c                                  --
+--                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1992-2001 Free Software Foundation, Inc.         --
+--           Copyright (C) 1992-2003 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --

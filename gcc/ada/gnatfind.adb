@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 1998-2002 Free Software Foundation, Inc.           --
+--         Copyright (C) 1998-2003 Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -18,6 +18,9 @@
 -- Public License  distributed with GNAT;  see file COPYING.  If not, write --
 -- to  the Free Software Foundation,  59 Temple Place - Suite 330,  Boston, --
 -- MA 02111-1307, USA.                                                      --
+--                                                                          --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -32,7 +35,7 @@ with Opt;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Ada.Text_IO;       use Ada.Text_IO;
 with GNAT.Command_Line; use GNAT.Command_Line;
-
+with GNAT.Strings;      use GNAT.Strings;
 ---------------
 --  Gnatfind --
 ---------------
@@ -57,6 +60,9 @@ procedure Gnatfind is
 
    Has_File_In_Entity : Boolean := False;
    --  Will be true if a file name was specified in the entity
+
+   RTS_Specified : String_Access := null;
+   --  Used to detect multiple use of --RTS= switch
 
    procedure Parse_Cmd_Line;
    --  Parse every switch on the command line
@@ -137,14 +143,23 @@ procedure Gnatfind is
             --  Only switch starting with -- recognized is --RTS
 
             when '-'    =>
+               --  Check that it is the first time we see this switch
+
+               if RTS_Specified = null then
+                  RTS_Specified := new String'(GNAT.Command_Line.Parameter);
+
+               elsif RTS_Specified.all /= GNAT.Command_Line.Parameter then
+                  Osint.Fail ("--RTS cannot be specified multiple times");
+               end if;
+
                Opt.No_Stdinc := True;
                Opt.RTS_Switch := True;
 
                declare
-                  Src_Path_Name : String_Ptr :=
+                  Src_Path_Name : constant String_Ptr :=
                                     Get_RTS_Search_Dir
                                       (GNAT.Command_Line.Parameter, Include);
-                  Lib_Path_Name : String_Ptr :=
+                  Lib_Path_Name : constant String_Ptr :=
                                     Get_RTS_Search_Dir
                                       (GNAT.Command_Line.Parameter, Objects);
 
@@ -225,7 +240,7 @@ procedure Gnatfind is
    procedure Write_Usage is
    begin
       Put_Line ("GNATFIND " & Gnatvsn.Gnat_Version_String
-                & " Copyright 1998-2002, Ada Core Technologies Inc.");
+                & " Copyright 1998-2003, Ada Core Technologies Inc.");
       Put_Line ("Usage: gnatfind pattern[:sourcefile[:line[:column]]] "
                 & "[file1 file2 ...]");
       New_Line;

@@ -4,10 +4,9 @@
  *                                                                          *
  *                                 M K D I R                                *
  *                                                                          *
- *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *            Copyright (C) 2002, Free Software Foundation, Inc.            *
+ *             Copyright (C) 2002-2003, Free Software Foundation, Inc.      *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -31,14 +30,22 @@
  *                                                                          *
  ****************************************************************************/
 
-/*  This file provides a portable binding to the mkdir() function           */
-
 #ifdef __vxworks
 #include "vxWorks.h"
 #endif /* __vxworks */
 
-#include <sys/types.h>
+#ifdef IN_RTS
+#include "tconfig.h"
+#include "tsystem.h"
 #include <sys/stat.h>
+#else
+#include "config.h"
+#include "system.h"
+#endif
+
+#include "adaint.h"
+
+/*  This function provides a portable binding to the mkdir function.  */
 
 int
 __gnat_mkdir (dir_name)

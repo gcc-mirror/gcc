@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-1998, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -79,7 +79,6 @@ package body System.Stream_Attributes is
 
    function From_AD  is new UC (Fat_Pointer,              S_AD);
    function From_AS  is new UC (Thin_Pointer,             S_AS);
-   function From_C   is new UC (Character,                S_C);
    function From_F   is new UC (Float,                    S_F);
    function From_I   is new UC (Integer,                  S_I);
    function From_LF  is new UC (Long_Float,               S_LF);
@@ -100,7 +99,6 @@ package body System.Stream_Attributes is
 
    function To_AD  is new UC (S_AD,  Fat_Pointer);
    function To_AS  is new UC (S_AS,  Thin_Pointer);
-   function To_C   is new UC (S_C,   Character);
    function To_F   is new UC (S_F,   Float);
    function To_I   is new UC (S_I,   Integer);
    function To_LF  is new UC (S_LF,  Long_Float);
@@ -185,7 +183,7 @@ package body System.Stream_Attributes is
       if L < T'Last then
          raise Err;
       else
-         return To_C (T);
+         return Character'Val (T (1));
       end if;
    end I_C;
 
@@ -498,9 +496,10 @@ package body System.Stream_Attributes is
    ---------
 
    procedure W_C (Stream : access RST; Item : in Character) is
-      T : constant S_C := From_C (Item);
+      T : S_C;
 
    begin
+      T (1) := Character'Pos (Item);
       Ada.Streams.Write (Stream.all, T);
    end W_C;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1998-2001 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1998-2003 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -132,7 +133,7 @@ package body GNAT.Spelling_Checker is
       --  Length is 1 too long. Execute loop to check for single insertion
 
       elsif FN = EN + 1 then
-         for J in 1 .. FN - 1 loop
+         for J in 1 .. EN - 1 loop
             if Found (FF + J) /= Expect (EF + J) then
                return Found (FF + J + 1 .. FL) = Expect (EF + J .. EL);
             end if;

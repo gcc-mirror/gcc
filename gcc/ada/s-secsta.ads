@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-1999 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,18 +41,18 @@ package System.Secondary_Stack is
    --  Default size of a secondary stack
 
    procedure SS_Init
-     (Stk : in out System.Address;
+     (Stk  : in out System.Address;
       Size : Natural := Default_Secondary_Stack_Size);
    --  Initialize the secondary stack with a main stack of the given Size.
    --
    --  If System.Parameters.Sec_Stack_Ratio equals Dynamic, Stk is really an
-   --  "out" parameter that will be allocated on the heap. Then all further
+   --  OUT parameter that will be allocated on the heap. Then all further
    --  allocations which do not overflow the main stack will not generate
    --  dynamic (de)allocation calls. If the main Stack overflows, a new
    --  chuck of at least the same size will be allocated and linked to the
    --  previous chunk.
    --
-   --  Otherwise (Sec_Stack_Ratio between 0 and 100), Stk is an "in" parameter
+   --  Otherwise (Sec_Stack_Ratio between 0 and 100), Stk is an IN parameter
    --  that is already pointing to a Stack_Id. The secondary stack in this case
    --  is fixed, and any attempt to allocated more than the initial size will
    --  result in a Storage_Error being raised.
@@ -87,10 +87,9 @@ package System.Secondary_Stack is
    procedure SS_Info;
    --  Debugging procedure used to print out secondary Stack allocation
    --  information. This procedure is generic in order to avoid a direct
-   --  dependence on a particular IO package.
+   --  dependance on a particular IO package.
 
 private
-
    SS_Pool : Integer;
    --  Unused entity that is just present to ease the sharing of the pool
    --  mechanism for specific allocation/deallocation in the compiler

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -97,9 +97,9 @@ package Exp_Ch7 is
    --  have been previously analyzed) that references the object to be
    --  initialized. Typ is the expected type of Ref, which is a controlled
    --  type (Is_Controlled) or a type with controlled components
-   --  (Has_Controlled). 'Dynamic_Case' controls the way the object is
-   --  attached which is different whether the object is dynamically
-   --  allocated or not.
+   --  (Has_Controlled). With_Attach is an integer expression representing
+   --  the level of attachment, see Attach_To_Final_Lists' NB_Link param
+   --  documentation in s-finimp.ads.
    --
    --  This function will generate the appropriate calls to make
    --  sure that the objects referenced by Ref are initialized. The
@@ -117,45 +117,85 @@ package Exp_Ch7 is
    --  have been previously analyzed) that references the object to be
    --  adjusted. Typ is the expected type of Ref, which is a controlled
    --  type (Is_Controlled) or a type with controlled components
-   --  (Has_Controlled).
+   --  (Has_Controlled).  With_Attach is an integer expression representing
+   --  the level of attachment, see Attach_To_Final_Lists' NB_Link param
+   --  documentation in s-finimp.ads.
    --
    --  This function will generate the appropriate calls to make
    --  sure that the objects referenced by Ref are adjusted. The generated
    --  code is quite different depending on the fact the type IS_Controlled
    --  or HAS_Controlled but this is not the problem of the caller, the
-   --  details are in the body. If the parameter With_Attach is set to
-   --  True, the finalizable objects involved are attached to the proper
-   --  finalization chain. The objects must be attached when the adjust
+   --  details are in the body. The objects must be attached when the adjust
    --  takes place after an initialization expression but not when it takes
    --  place after a regular assignment.
-   --
-   --  The description of With_Attach is completely obsolete ???
 
    function Make_Final_Call
      (Ref         : Node_Id;
       Typ         : Entity_Id;
       With_Detach : Node_Id)
       return        List_Id;
-   --  Ref is an expression (with no-side effect and is not required to
-   --  have been previously analyzed) that references the object
-   --  to be Finalized. Typ is the expected type of Ref, which is a
+   --  Ref is an expression (with no-side effect and is not required
+   --  to have been previously analyzed) that references the object to
+   --  be Finalized. Typ is the expected type of Ref, which is a
    --  controlled type (Is_Controlled) or a type with controlled
-   --  components (Has_Controlled).
+   --  components (Has_Controlled). With_Attach is an integer
+   --  expression representing the level of attachment, see
+   --  Attach_To_Final_Lists' NB_Link param documentation in
+   --  s-finimp.ads.
    --
    --  This function will generate the appropriate calls to make
    --  sure that the objects referenced by Ref are finalized. The generated
    --  code is quite different depending on the fact the type IS_Controlled
    --  or HAS_Controlled but this is not the problem of the caller, the
-   --  details are in the body. If the parameter With_Detach is set to
-   --  True, the finalizable objects involved are detached from the proper
-   --  finalization chain. The objects must be detached when finalizing an
-   --  unchecked deallocated object but not when finalizing the target of
+   --  details are in the body. The objects must be detached when finalizing
+   --  an unchecked deallocated object but not when finalizing the target of
    --  an assignment, it is not necessary either on scope exit.
 
    procedure Expand_Ctrl_Function_Call (N : Node_Id);
    --  Expand a call to a function returning a controlled value. That is to
    --  say attach the result of the call to the current finalization list,
    --  which is the one of the transient scope created for such constructs.
+
+   --------------------------------------------
+   -- Task and Protected Object finalization --
+   --------------------------------------------
+
+   function Cleanup_Array
+     (N    : Node_Id;
+      Obj  : Node_Id;
+      Typ  : Entity_Id)
+      return List_Id;
+   --  Generate loops to finalize any tasks or simple protected objects
+   --  that are subcomponents of an array.
+
+   function Cleanup_Protected_Object
+     (N    : Node_Id;
+      Ref  : Node_Id)
+      return Node_Id;
+   --  Generate code to finalize a protected object without entries.
+
+   function Cleanup_Record
+     (N    : Node_Id;
+      Obj  : Node_Id;
+      Typ  : Entity_Id)
+      return List_Id;
+   --  For each subcomponent of a record that contains tasks or simple
+   --  protected objects, generate the appropriate finalization call.
+
+   function Cleanup_Task
+     (N    : Node_Id;
+      Ref  : Node_Id)
+      return Node_Id;
+   --  Generate code to finalize a task.
+
+   function Has_Simple_Protected_Object (T : Entity_Id) return Boolean;
+   --  Check whether composite type contains a simple protected component.
+
+   function Is_Simple_Protected_Type (T : Entity_Id) return Boolean;
+   --  Check whether argument is a protected type without entries.
+   --  Protected types with entries are controlled, and their cleanup
+   --  is handled by the standard finalization machinery. For simple
+   --  protected types we generate inline code to release their locks.
 
    --------------------------------
    -- Transient Scope Management --

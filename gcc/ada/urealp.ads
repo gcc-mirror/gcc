@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -110,11 +110,23 @@ package Urealp is
    function Ureal_100 return Ureal;
    --  Returns value 100.0
 
+   function Ureal_2_80 return Ureal;
+   --  Returns value 2.0 ** 80
+
+   function Ureal_2_M_80 return Ureal;
+   --  Returns value 2.0 ** (-80)
+
    function Ureal_2_128 return Ureal;
    --  Returns value 2.0 ** 128
 
    function Ureal_2_M_128 return Ureal;
    --  Returns value 2.0 ** (-128)
+
+   function Ureal_10_36 return Ureal;
+   --  Returns value 10.0 ** 36
+
+   function Ureal_M_10_36 return Ureal;
+   --  Returns value -(10.0
 
    -----------------
    -- Subprograms --

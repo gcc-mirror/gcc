@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 1997-1999 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1997-2002 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -85,7 +86,6 @@ pragma Elaborate_Body (Patterns);
    --  replacement string is specified, then the subject string is modified
    --  by replacing the matched substring with the given replacement.
 
-
    --  Concatenation and Alternation
    --  =============================
 
@@ -134,7 +134,6 @@ pragma Elaborate_Body (Patterns);
    --    Here we use the dot simply to separate the pieces of the string
    --    matched by the three separate elements.
 
-
    --  Moving the Start Point
    --  ======================
 
@@ -171,7 +170,6 @@ pragma Elaborate_Body (Patterns);
 
    --    We will also see later how the effect of an anchored match can be
    --    obtained for a single specified anchor point if this is desired.
-
 
    --  Other Pattern Elements
    --  ======================
@@ -215,7 +213,6 @@ pragma Elaborate_Body (Patterns);
    --                the alternation ("" or "" or "" ....). This is a special
    --                pattern element, which is useful in conjunction with some
    --                of the special pattern elements that have side effects.
-
 
    --  Pattern Construction Functions
    --  ==============================
@@ -311,7 +308,6 @@ pragma Elaborate_Body (Patterns);
    --    but the use of recursive patterns in the general case can construct
    --    complex patterns which could not otherwise be built.
 
-
    --  Pattern Assignment Operations
    --  =============================
 
@@ -352,7 +348,6 @@ pragma Elaborate_Body (Patterns);
    --    Text_IO.File_Access. The effect is to do a Put_Line operation of
    --    the matched substring. These are particularly useful in debugging
    --    pattern matches.
-
 
    --  Deferred Matching
    --  =================
@@ -609,7 +604,6 @@ pragma Elaborate_Body (Patterns);
    --    outside this scope is erroneous). Generally it is a good idea to
    --    define patterns and the functions they call at the outer level
    --    where possible, to avoid such problems.
-
 
    --  Correspondence with Pattern Matching in SPITBOL
    --  ===============================================
@@ -1160,14 +1154,12 @@ private
    --  Pattern reference. PE's use PE_Ptr values to reference other PE's
 
    type Pattern is new Controlled with record
-
-      Stk : Natural;
+      Stk : Natural := 0;
       --  Maximum number of stack entries required for matching this
       --  pattern. See description of pattern history stack in body.
 
-      P   : PE_Ptr;
+      P   : PE_Ptr := null;
       --  Pointer to initial pattern element for pattern
-
    end record;
 
    pragma Finalize_Storage_Only (Pattern);
@@ -1184,11 +1176,11 @@ private
       Var   : VString_Ptr;
       --  Pointer to subject string. Set to null if match failed.
 
-      Start : Natural;
+      Start : Natural := 1;
       --  Starting index position (1's origin) of matched section of
       --  subject string. Only valid if Var is non-null.
 
-      Stop  : Natural;
+      Stop  : Natural := 0;
       --  Ending index position (1's origin) of matched section of
       --  subject string. Only valid if Var is non-null.
 

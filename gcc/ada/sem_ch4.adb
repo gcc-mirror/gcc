@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -91,10 +91,6 @@ package body Sem_Ch4 is
    procedure Ambiguous_Operands (N : Node_Id);
    --  for equality, membership, and comparison operators with overloaded
    --  arguments, list possible interpretations.
-
-   procedure Insert_Explicit_Dereference (N : Node_Id);
-   --  In a context that requires a composite or subprogram type and
-   --  where a prefix is an access type, insert an explicit dereference.
 
    procedure Analyze_One_Call
       (N       : Node_Id;
@@ -237,11 +233,9 @@ package body Sem_Ch4 is
    ------------------------
 
    procedure Ambiguous_Operands (N : Node_Id) is
-      procedure List_Interps (Opnd : Node_Id);
+      procedure List_Operand_Interps (Opnd : Node_Id);
 
-      procedure List_Interps (Opnd : Node_Id) is
-         Index : Interp_Index;
-         It    : Interp;
+      procedure List_Operand_Interps (Opnd : Node_Id) is
          Nam   : Node_Id;
          Err   : Node_Id := N;
 
@@ -270,24 +264,8 @@ package body Sem_Ch4 is
             Err := Opnd;
          end if;
 
-         Get_First_Interp (Nam, Index, It);
-
-         while Present (It.Nam) loop
-
-            if Scope (It.Nam) = Standard_Standard
-              and then Scope (It.Typ) /= Standard_Standard
-            then
-               Error_Msg_Sloc := Sloc (Parent (It.Typ));
-               Error_Msg_NE ("   & (inherited) declared#!", Err, It.Nam);
-
-            else
-               Error_Msg_Sloc := Sloc (It.Nam);
-               Error_Msg_NE ("   & declared#!", Err, It.Nam);
-            end if;
-
-            Get_Next_Interp (Index, It);
-         end loop;
-      end List_Interps;
+         List_Interps (Nam, Err);
+      end List_Operand_Interps;
 
    begin
       if Nkind (N) = N_In
@@ -305,8 +283,8 @@ package body Sem_Ch4 is
       end if;
 
       if All_Errors_Mode then
-         List_Interps (Left_Opnd  (N));
-         List_Interps (Right_Opnd (N));
+         List_Operand_Interps (Left_Opnd  (N));
+         List_Operand_Interps (Right_Opnd (N));
       else
 
          if OpenVMS then
@@ -365,6 +343,7 @@ package body Sem_Ch4 is
            and then not In_Instance_Body
          then
             Error_Msg_N ("initialization not allowed for limited types", N);
+            Explain_Limited_Type (Type_Id, N);
          end if;
 
          Analyze_And_Resolve (Expression (E), Type_Id);
@@ -483,6 +462,7 @@ package body Sem_Ch4 is
       end if;
 
       if Has_Task (Designated_Type (Acc_Type)) then
+         Check_Restriction (Max_Tasks, N);
          Check_Restriction (No_Task_Allocators, N);
       end if;
 
@@ -496,7 +476,6 @@ package body Sem_Ch4 is
          Set_Error_Posted (N);
          Set_Etype (N, Any_Type);
       end if;
-
    end Analyze_Allocator;
 
    ---------------------------
@@ -764,7 +743,9 @@ package body Sem_Ch4 is
             if Success then
                Set_Etype (Nam, It.Typ);
 
-            elsif Nkind (Name (N)) = N_Selected_Component then
+            elsif Nkind (Name (N)) = N_Selected_Component
+              or else Nkind (Name (N)) = N_Function_Call
+            then
                Remove_Interp (X);
             end if;
 
@@ -923,7 +904,9 @@ package body Sem_Ch4 is
 
       --  If the entity is present, the  node appears in an instance,
       --  and denotes a predefined concatenation operation. The resulting
-      --  type is obtained from the arguments when possible.
+      --  type is obtained from the arguments when possible. If the arguments
+      --  are aggregates, the array type and the concatenation type must be
+      --  visible.
 
       if Present (Op_Id) then
          if Ekind (Op_Id) = E_Operator then
@@ -941,8 +924,32 @@ package body Sem_Ch4 is
             then
                Add_One_Interp (N, Op_Id, RT);
 
-            else
+            --  If one operand is a string type or a user-defined array type,
+            --  and the other is a literal, result is of the specific type.
+
+            elsif
+              (Root_Type (LT) = Standard_String
+                 or else Scope (LT) /= Standard_Standard)
+              and then Etype (R) = Any_String
+            then
+               Add_One_Interp (N, Op_Id, LT);
+
+            elsif
+              (Root_Type (RT) = Standard_String
+                 or else Scope (RT) /= Standard_Standard)
+              and then Etype (L) = Any_String
+            then
+               Add_One_Interp (N, Op_Id, RT);
+
+            elsif not Is_Generic_Type (Etype (Op_Id)) then
                Add_One_Interp (N, Op_Id, Etype (Op_Id));
+
+            else
+               --  Type and its operations must be visible.
+
+               Set_Entity (N, Empty);
+               Analyze_Concatenation (N);
+
             end if;
 
          else
@@ -1262,12 +1269,12 @@ package body Sem_Ch4 is
    ------------------------------------
 
    procedure Analyze_Indexed_Component_Form (N : Node_Id) is
-      P   : constant Node_Id := Prefix (N);
-      Exprs : List_Id := Expressions (N);
-      Exp : Node_Id;
-      P_T : Entity_Id;
-      E   : Node_Id;
-      U_N : Entity_Id;
+      P     : constant Node_Id := Prefix (N);
+      Exprs : constant List_Id := Expressions (N);
+      Exp   : Node_Id;
+      P_T   : Entity_Id;
+      E     : Node_Id;
+      U_N   : Entity_Id;
 
       procedure Process_Function_Call;
       --  Prefix in indexed component form is an overloadable entity,
@@ -1333,10 +1340,7 @@ package body Sem_Ch4 is
 
             if Is_Access_Type (Array_Type) then
                Array_Type := Designated_Type (Array_Type);
-
-               if Warn_On_Dereference then
-                  Error_Msg_N ("?implicit dereference", N);
-               end if;
+               Error_Msg_NW (Warn_On_Dereference, "?implicit dereference", N);
             end if;
 
             if Is_Array_Type (Array_Type) then
@@ -1500,10 +1504,7 @@ package body Sem_Ch4 is
 
             if Is_Access_Type (Typ) then
                Typ := Designated_Type (Typ);
-
-               if Warn_On_Dereference then
-                  Error_Msg_N ("?implicit dereference", N);
-               end if;
+               Error_Msg_NW (Warn_On_Dereference, "?implicit dereference", N);
             end if;
 
             if Is_Array_Type (Typ) then
@@ -1554,6 +1555,18 @@ package body Sem_Ch4 is
       --  Get name of array, function or type
 
       Analyze (P);
+      if Nkind (N) = N_Function_Call
+        or else Nkind (N) = N_Procedure_Call_Statement
+      then
+         --  If P is an explicit dereference whose prefix is of a
+         --  remote access-to-subprogram type, then N has already
+         --  been rewritten as a subprogram call and analyzed.
+
+         return;
+      end if;
+
+      pragma Assert (Nkind (N) = N_Indexed_Component);
+
       P_T := Base_Type (Etype (P));
 
       if Is_Entity_Name (P)
@@ -1596,9 +1609,8 @@ package body Sem_Ch4 is
 
             Process_Function_Call;
 
-         elsif Ekind (U_N) = E_Generic_Function
-           or else Ekind (U_N) = E_Generic_Procedure
-         then
+         elsif Is_Generic_Subprogram (U_N) then
+
             --  A common beginner's (or C++ templates fan) error.
 
             Error_Msg_N ("generic subprogram cannot be called", N);
@@ -1613,8 +1625,7 @@ package body Sem_Ch4 is
       --  an array or an access-to-subprogram.
 
       else
-
-         if (Ekind (P_T) = E_Subprogram_Type)
+         if Ekind (P_T) = E_Subprogram_Type
            or else (Is_Access_Type (P_T)
                      and then
                     Ekind (Designated_Type (P_T)) = E_Subprogram_Type)
@@ -1629,6 +1640,7 @@ package body Sem_Ch4 is
          else
             --  Indexed component, slice, or a call to a member of a family
             --  entry, which will be converted to an entry call later.
+
             Process_Indexed_Component_Or_Slice;
          end if;
       end if;
@@ -1829,15 +1841,15 @@ package body Sem_Ch4 is
       Subp_Type  : constant Entity_Id := Etype (Nam);
       Norm_OK    : Boolean;
 
-      procedure Set_Name;
+      procedure Indicate_Name_And_Type;
       --  If candidate interpretation matches, indicate name and type of
       --  result on call node.
 
-      --------------
-      -- Set_Name --
-      --------------
+      ----------------------------
+      -- Indicate_Name_And_Type --
+      ----------------------------
 
-      procedure Set_Name is
+      procedure Indicate_Name_And_Type is
       begin
          Add_One_Interp (N, Nam, Etype (Nam));
          Success := True;
@@ -1866,7 +1878,7 @@ package body Sem_Ch4 is
             Write_Int (Int (Nam));
             Write_Eol;
          end if;
-      end Set_Name;
+      end Indicate_Name_And_Type;
 
    --  Start of processing for Analyze_One_Call
 
@@ -1934,10 +1946,9 @@ package body Sem_Ch4 is
          --  If Normalize succeeds, then there are default parameters for
          --  all formals.
 
-         Set_Name;
+         Indicate_Name_And_Type;
 
       elsif Ekind (Nam) = E_Operator then
-
          if Nkind (N) = N_Procedure_Call_Statement then
             return;
          end if;
@@ -2005,8 +2016,8 @@ package body Sem_Ch4 is
 
          while Present (Actual) and then Present (Formal) loop
 
-            if (Nkind (Parent (Actual)) /= N_Parameter_Association
-              or else Chars (Selector_Name (Parent (Actual))) = Chars (Formal))
+            if Nkind (Parent (Actual)) /= N_Parameter_Association
+              or else Chars (Selector_Name (Parent (Actual))) = Chars (Formal)
             then
                if Has_Compatible_Type (Actual, Etype (Formal)) then
                   Next_Actual (Actual);
@@ -2036,7 +2047,7 @@ package body Sem_Ch4 is
 
                            if Chars (Left_Opnd (Actual)) = Chars (Formal) then
                               Error_Msg_N
-                                ("possible misspelling of `=>`!", Actual);
+                                ("possible misspelling of `='>`!", Actual);
                               exit;
                            end if;
 
@@ -2052,9 +2063,9 @@ package body Sem_Ch4 is
                           and then not Comes_From_Source (Nam)
                         then
                            Error_Msg_NE
-                             ("  ==> in call to &#(inherited)!", Actual, Nam);
+                             ("  =='> in call to &#(inherited)!", Actual, Nam);
                         else
-                           Error_Msg_NE ("  ==> in call to &#!", Actual, Nam);
+                           Error_Msg_NE ("  =='> in call to &#!", Actual, Nam);
                         end if;
                      end if;
                   end if;
@@ -2072,7 +2083,7 @@ package body Sem_Ch4 is
 
          --  On exit, all actuals match.
 
-         Set_Name;
+         Indicate_Name_And_Type;
       end if;
    end Analyze_One_Call;
 
@@ -2160,9 +2171,9 @@ package body Sem_Ch4 is
    -------------------------------------------
 
    procedure Analyze_Overloaded_Selected_Component (N : Node_Id) is
+      Nam   : constant Node_Id := Prefix (N);
+      Sel   : constant Node_Id := Selector_Name (N);
       Comp  : Entity_Id;
-      Nam   : Node_Id := Prefix (N);
-      Sel   : Node_Id := Selector_Name (N);
       I     : Interp_Index;
       It    : Interp;
       T     : Entity_Id;
@@ -2175,10 +2186,7 @@ package body Sem_Ch4 is
       while Present (It.Typ) loop
          if Is_Access_Type (It.Typ) then
             T := Designated_Type (It.Typ);
-
-            if Warn_On_Dereference then
-               Error_Msg_N ("?implicit dereference", N);
-            end if;
+            Error_Msg_NW (Warn_On_Dereference, "?implicit dereference", N);
 
          else
             T := It.Typ;
@@ -2230,10 +2238,8 @@ package body Sem_Ch4 is
 
                   if Is_Access_Type (Etype (Nam)) then
                      Insert_Explicit_Dereference (Nam);
-
-                     if Warn_On_Dereference then
-                        Error_Msg_N ("?implicit dereference", N);
-                     end if;
+                     Error_Msg_NW
+                       (Warn_On_Dereference, "?implicit dereference", N);
                   end if;
                end if;
 
@@ -2294,6 +2300,10 @@ package body Sem_Ch4 is
       --  Test one interpretation of the low bound against all those
       --  of the high bound.
 
+      procedure Check_Universal_Expression (N : Node_Id);
+      --  In Ada83, reject bounds of a universal range that are not
+      --  literals or entity names.
+
       -----------------------
       -- Check_Common_Type --
       -----------------------
@@ -2307,7 +2317,7 @@ package body Sem_Ch4 is
             then
                Add_One_Interp (N, Base_Type (T2), Base_Type (T2));
 
-            elsif (T1 = T2) then
+            elsif T1 = T2 then
                Add_One_Interp (N, T1, T1);
 
             else
@@ -2333,6 +2343,21 @@ package body Sem_Ch4 is
             end loop;
          end if;
       end Check_High_Bound;
+
+      -----------------------------
+      -- Is_Universal_Expression --
+      -----------------------------
+
+      procedure Check_Universal_Expression (N : Node_Id) is
+      begin
+         if Etype (N) = Universal_Integer
+           and then Nkind (N) /= N_Integer_Literal
+           and then not Is_Entity_Name (N)
+           and then Nkind (N) /= N_Attribute_Reference
+         then
+            Error_Msg_N ("illegal bound in discrete range", N);
+         end if;
+      end Check_Universal_Expression;
 
    --  Start of processing for Analyze_Range
 
@@ -2361,6 +2386,15 @@ package body Sem_Ch4 is
          if Etype (N) = Any_Type then
             Error_Msg_N ("incompatible types in range ", N);
          end if;
+      end if;
+
+      if Ada_83
+        and then
+          (Nkind (Parent (N)) = N_Loop_Parameter_Specification
+            or else Nkind (Parent (N)) = N_Constrained_Array_Definition)
+      then
+         Check_Universal_Expression (L);
+         Check_Universal_Expression (H);
       end if;
    end Analyze_Range;
 
@@ -2421,7 +2455,7 @@ package body Sem_Ch4 is
          --  (Breaks 2129-008) ???.
 
          if Nkind (Name) = N_Function_Call then
-            Resolve (Name, Etype (Name));
+            Resolve (Name);
          end if;
 
          Prefix_Type := Etype (Name);
@@ -2444,9 +2478,7 @@ package body Sem_Ch4 is
          --  Normal case of selected component applied to access type
 
          else
-            if Warn_On_Dereference then
-               Error_Msg_N ("?implicit dereference", N);
-            end if;
+            Error_Msg_NW (Warn_On_Dereference, "?implicit dereference", N);
          end if;
 
          Prefix_Type := Designated_Type (Prefix_Type);
@@ -2489,10 +2521,7 @@ package body Sem_Ch4 is
 
          if Is_Access_Type (Etype (Name)) then
             Insert_Explicit_Dereference (Name);
-
-            if Warn_On_Dereference then
-               Error_Msg_N ("?implicit dereference", N);
-            end if;
+            Error_Msg_NW (Warn_On_Dereference, "?implicit dereference", N);
          end if;
 
       elsif Is_Record_Type (Prefix_Type) then
@@ -2529,7 +2558,7 @@ package body Sem_Ch4 is
                --  to duplicate this prefix and duplication is only allowed
                --  on fully resolved expressions.
 
-               Resolve (Name, Etype (Name));
+               Resolve (Name);
 
                --  We never need an actual subtype for the case of a selection
                --  for a indexed component of a non-packed array, since in
@@ -2567,7 +2596,7 @@ package body Sem_Ch4 is
                --  In all other cases, we currently build an actual subtype. It
                --  seems likely that many of these cases can be avoided, but
                --  right now, the front end makes direct references to the
-               --  bounds (e.g. in egnerating a length check), and if we do
+               --  bounds (e.g. in generating a length check), and if we do
                --  not make an actual subtype, we end up getting a direct
                --  reference to a discriminant which will not do.
 
@@ -2584,7 +2613,8 @@ package body Sem_Ch4 is
                      --  main attributes of the subtype.
 
                      declare
-                        Subt : Entity_Id := Defining_Identifier (Act_Decl);
+                        Subt : constant Entity_Id :=
+                                 Defining_Identifier (Act_Decl);
 
                      begin
                         Set_Etype (Subt, Base_Type (Etype (Comp)));
@@ -2683,10 +2713,8 @@ package body Sem_Ch4 is
 
                if Is_Access_Type (Etype (Name)) then
                   Insert_Explicit_Dereference (Name);
-
-                  if Warn_On_Dereference then
-                     Error_Msg_N ("?implicit dereference", N);
-                  end if;
+                  Error_Msg_NW
+                    (Warn_On_Dereference, "?implicit dereference", N);
                end if;
             end if;
 
@@ -2734,6 +2762,35 @@ package body Sem_Ch4 is
             Set_Etype (Prefix (N), Etype (Prefix_Type));
             Analyze_Selected_Component (N);
             return;
+
+         elsif Ekind (Prefix_Type) = E_Record_Subtype_With_Private
+           and then Is_Generic_Actual_Type (Prefix_Type)
+           and then Present (Full_View (Prefix_Type))
+         then
+            --  Similarly, if this the actual for a formal derived type,
+            --  the component inherited from the generic parent may not
+            --  be visible in the actual, but the selected component is
+            --  legal.
+
+            declare
+               Comp : Entity_Id;
+            begin
+               Comp :=
+                 First_Component (Generic_Parent_Type (Parent (Prefix_Type)));
+
+               while Present (Comp) loop
+                  if Chars (Comp) = Chars (Sel) then
+                     Set_Entity_With_Style_Check (Sel, Comp);
+                     Set_Etype (Sel, Etype (Comp));
+                     Set_Etype (N,   Etype (Comp));
+                     exit;
+                  end if;
+
+                  Next_Component (Comp);
+               end loop;
+
+               pragma Assert (Etype (N) /= Any_Type);
+            end;
 
          else
             if Ekind (Prefix_Type) = E_Record_Subtype then
@@ -2864,10 +2921,7 @@ package body Sem_Ch4 is
 
             if Is_Access_Type (Typ) then
                Typ := Designated_Type (Typ);
-
-               if Warn_On_Dereference then
-                  Error_Msg_N ("?implicit dereference", N);
-               end if;
+               Error_Msg_NW (Warn_On_Dereference, "?implicit dereference", N);
             end if;
 
             if Is_Array_Type (Typ)
@@ -2905,10 +2959,7 @@ package body Sem_Ch4 is
 
          if Is_Access_Type (Array_Type) then
             Array_Type := Designated_Type (Array_Type);
-
-            if Warn_On_Dereference then
-               Error_Msg_N ("?implicit dereference", N);
-            end if;
+            Error_Msg_NW (Warn_On_Dereference, "?implicit dereference", N);
          end if;
 
          if not Is_Array_Type (Array_Type) then
@@ -3194,7 +3245,8 @@ package body Sem_Ch4 is
             --  from source and Fixed_As_Integer cannot apply.
 
             if Nkind (N) not in N_Op
-              or else not Treat_Fixed_As_Integer (N) then
+              or else not Treat_Fixed_As_Integer (N)
+            then
                Add_One_Interp (N, Op_Id, Universal_Fixed);
             end if;
 
@@ -3371,10 +3423,13 @@ package body Sem_Ch4 is
    -------------------
 
    procedure Diagnose_Call (N : Node_Id; Nam : Node_Id) is
-      Actual  : Node_Id;
-      X       : Interp_Index;
-      It      : Interp;
-      Success : Boolean;
+      Actual           : Node_Id;
+      X                : Interp_Index;
+      It               : Interp;
+      Success          : Boolean;
+      Err_Mode         : Boolean;
+      New_Nam          : Node_Id;
+      Void_Interp_Seen : Boolean := False;
 
    begin
       if Extensions_Allowed then
@@ -3395,33 +3450,38 @@ package body Sem_Ch4 is
          end loop;
       end if;
 
-      if All_Errors_Mode then
+      --   Analyze each candidate call again, with full error reporting
+      --   for each.
 
-         --   Analyze each candidate call again, with full error reporting
-         --   for each.
+      Error_Msg_N
+        ("no candidate interpretations match the actuals:!", Nam);
+      Err_Mode := All_Errors_Mode;
+      All_Errors_Mode := True;
 
-         Error_Msg_N ("\no candidate interpretations "
-           & "match the actuals:!", Nam);
+      --  If this is a call to an operation of a concurrent type,
+      --  the failed interpretations have been removed from the
+      --  name. Recover them to provide full diagnostics.
 
-         Get_First_Interp (Nam, X, It);
-
-         while Present (It.Nam) loop
-            Analyze_One_Call (N, It.Nam, True, Success);
-            Get_Next_Interp (X, It);
-         end loop;
-
+      if Nkind (Parent (Nam)) = N_Selected_Component then
+         Set_Entity (Nam, Empty);
+         New_Nam := New_Copy_Tree (Parent (Nam));
+         Set_Is_Overloaded (New_Nam, False);
+         Set_Is_Overloaded (Selector_Name (New_Nam), False);
+         Set_Parent (New_Nam, Parent (Parent (Nam)));
+         Analyze_Selected_Component (New_Nam);
+         Get_First_Interp (Selector_Name (New_Nam), X, It);
       else
-         if OpenVMS then
-            Error_Msg_N
-              ("invalid parameter list in call " &
-               "('/'R'E'P'O'R'T'_'E'R'R'O'R'S'='F'U'L'L for details)!",
-                Nam);
-         else
-            Error_Msg_N
-              ("invalid parameter list in call (use -gnatf for details)!",
-                Nam);
-         end if;
+         Get_First_Interp (Nam, X, It);
       end if;
+
+      while Present (It.Nam) loop
+         if Etype (It.Nam) = Standard_Void_Type then
+            Void_Interp_Seen := True;
+         end if;
+
+         Analyze_One_Call (N, It.Nam, True, Success);
+         Get_Next_Interp (X, It);
+      end loop;
 
       if Nkind (N) = N_Function_Call then
          Get_First_Interp (Nam, X, It);
@@ -3449,7 +3509,15 @@ package body Sem_Ch4 is
             Error_Msg_N (
               "\period should probably be semicolon", Parent (N));
          end if;
+
+      elsif Nkind (N) = N_Procedure_Call_Statement
+        and then not Void_Interp_Seen
+      then
+         Error_Msg_N (
+         "\function name found in procedure call", Nam);
       end if;
+
+      All_Errors_Mode := Err_Mode;
    end Diagnose_Call;
 
    ---------------------------
@@ -3637,6 +3705,15 @@ package body Sem_Ch4 is
    --  Start processing for Find_Comparison_Types
 
    begin
+      --  If left operand is aggregate, the right operand has to
+      --  provide a usable type for it.
+
+      if Nkind (L) = N_Aggregate
+        and then Nkind (R) /= N_Aggregate
+      then
+         Find_Comparison_Types (R, L, Op_Id, N);
+         return;
+      end if;
 
       if Nkind (N) = N_Function_Call
          and then Nkind (Name (N)) = N_Expanded_Name
@@ -3820,6 +3897,15 @@ package body Sem_Ch4 is
    --  Start of processing for Find_Equality_Types
 
    begin
+      --  If left operand is aggregate, the right operand has to
+      --  provide a usable type for it.
+
+      if Nkind (L) = N_Aggregate
+        and then Nkind (R) /= N_Aggregate
+      then
+         Find_Equality_Types (R, L, Op_Id, N);
+         return;
+      end if;
 
       if Nkind (N) = N_Function_Call
          and then Nkind (Name (N)) = N_Expanded_Name
@@ -3915,46 +4001,6 @@ package body Sem_Ch4 is
          end loop;
       end if;
    end Find_Unary_Types;
-
-   ---------------------------------
-   -- Insert_Explicit_Dereference --
-   ---------------------------------
-
-   procedure Insert_Explicit_Dereference (N : Node_Id) is
-      New_Prefix : Node_Id := Relocate_Node (N);
-      I          : Interp_Index;
-      It         : Interp;
-      T          : Entity_Id;
-
-   begin
-      Save_Interps (N, New_Prefix);
-      Rewrite (N,
-        Make_Explicit_Dereference (Sloc (N), Prefix => New_Prefix));
-
-      Set_Etype (N, Designated_Type (Etype (New_Prefix)));
-
-      if Is_Overloaded (New_Prefix) then
-
-         --  The deference is also overloaded, and its interpretations are the
-         --  designated types of the interpretations of the original node.
-
-         Set_Is_Overloaded (N);
-         Get_First_Interp (New_Prefix, I, It);
-
-         while Present (It.Nam) loop
-            T := It.Typ;
-
-            if Is_Access_Type (T) then
-               Add_One_Interp (N, Designated_Type (T), Designated_Type (T));
-            end if;
-
-            Get_Next_Interp (I, It);
-         end loop;
-
-         End_Interp_List;
-      end if;
-
-   end Insert_Explicit_Dereference;
 
    ------------------
    -- Junk_Operand --
@@ -4213,13 +4259,22 @@ package body Sem_Ch4 is
                return;
 
             else
-               Error_Msg_N ("invalid operand types for operator&", N);
+               if Nkind (N) in N_Binary_Op then
+                  if not Is_Overloaded (L)
+                    and then not Is_Overloaded (R)
+                    and then Base_Type (Etype (L)) = Base_Type (Etype (R))
+                  then
+                     Error_Msg_Node_2 := Etype (R);
+                     Error_Msg_N ("there is no applicable operator& for}", N);
 
-               if Nkind (N) in N_Binary_Op
-                 and then Nkind (N) /= N_Op_Concat
-               then
-                  Error_Msg_NE ("\left operand has}!",  N, Etype (L));
-                  Error_Msg_NE ("\right operand has}!", N, Etype (R));
+                  else
+                     Error_Msg_N ("invalid operand types for operator&", N);
+
+                     if Nkind (N) /= N_Op_Concat then
+                        Error_Msg_NE ("\left operand has}!",  N, Etype (L));
+                        Error_Msg_NE ("\right operand has}!", N, Etype (R));
+                     end if;
+                  end if;
                end if;
             end if;
          end;
@@ -4236,11 +4291,13 @@ package body Sem_Ch4 is
       Typ    : Entity_Id)
       return   Boolean
    is
-      Actuals    : List_Id   := Parameter_Associations (N);
-      Actual     : Node_Id   := First (Actuals);
-      Formal     : Entity_Id := First_Formal (Designated_Type (Typ));
+      Actuals : constant List_Id := Parameter_Associations (N);
+      Actual  : Node_Id;
+      Formal  : Entity_Id;
 
    begin
+      Actual := First (Actuals);
+      Formal := First_Formal (Designated_Type (Typ));
       while Present (Actual)
         and then Present (Formal)
       loop
@@ -4280,11 +4337,13 @@ package body Sem_Ch4 is
       Typ    : Entity_Id)
       return   Boolean
    is
-      Actuals    : List_Id   := Parameter_Associations (N);
-      Actual     : Node_Id   := First (Actuals);
-      Index      : Entity_Id := First_Index (Typ);
+      Actuals : constant List_Id   := Parameter_Associations (N);
+      Actual : Node_Id;
+      Index  : Entity_Id;
 
    begin
+      Actual := First (Actuals);
+      Index := First_Index (Typ);
       while Present (Actual)
         and then Present (Index)
       loop

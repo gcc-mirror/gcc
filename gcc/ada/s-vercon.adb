@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---     Copyright (C) 1992,1993,1994,1995 Free Software Foundation, Inc.     --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,7 +44,8 @@ package body System.Version_Control is
    is
       S : Version_String;
       D : Unsigned := V;
-      H : array (Unsigned range 0 .. 15) of Character := "0123456789abcdef";
+      H : constant array (Unsigned range 0 .. 15) of Character :=
+            "0123456789abcdef";
 
    begin
       for J in reverse 1 .. 8 loop

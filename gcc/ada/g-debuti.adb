@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1997-2002 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1997-2003 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -35,18 +36,18 @@ with System.Storage_Elements; use System.Storage_Elements;
 
 package body GNAT.Debug_Utilities is
 
+      H : constant array (0 .. 15) of Character := "0123456789ABCDEF";
+      --  Table of hex digits
+
    --------------------------
    -- Image (address case) --
    --------------------------
 
-   function Image (A : Address) return String is
-      S : String (1 .. Address_Image_Length);
-      P : Natural := S'Last - 1;
+   function Image (A : Address) return Image_String is
+      S : Image_String;
+      P : Natural := Address_Image_Length - 1;
       N : Integer_Address := To_Integer (A);
       U : Natural := 0;
-
-      H : constant array (Integer range 0 .. 15) of Character :=
-            "0123456789ABCDEF";
 
    begin
       S (S'Last) := '#';
@@ -96,15 +97,89 @@ package body GNAT.Debug_Utilities is
       return W (1 .. P);
    end Image;
 
+   -------------
+   -- Image_C --
+   -------------
+
+   function Image_C (A : Address) return Image_C_String is
+      S : Image_C_String;
+      N : Integer_Address := To_Integer (A);
+
+   begin
+      for P in reverse 3 .. S'Last loop
+         S (P) := H (Integer (N mod 16));
+         N := N / 16;
+      end loop;
+
+      S (1 .. 2) := "0x";
+      return S;
+   end Image_C;
+
    -----------
    -- Value --
    -----------
 
    function Value (S : String) return System.Address is
-      N : constant Integer_Address := Integer_Address'Value (S);
+      Base : Integer_Address := 10;
+      Res  : Integer_Address := 0;
+      Last : Natural := S'Last;
+      C    : Character;
+      N    : Integer_Address;
 
    begin
-      return To_Address (N);
+      --  Skip final Ada 95 base character
+
+      if S (Last) = '#' or else S (Last) = ':' then
+         Last := Last - 1;
+      end if;
+
+      --  Loop through characters
+
+      for J in S'First .. Last loop
+         C := S (J);
+
+         --  C format hex constant
+
+         if C = 'x' then
+            if Res /= 0 then
+               raise Constraint_Error;
+            end if;
+
+            Base := 16;
+
+         --  Ada form based literal
+
+         elsif C = '#' or C = ':' then
+            Base := Res;
+            Res  := 0;
+
+         --  Ignore all underlines
+
+         elsif C = '_' then
+            null;
+
+         --  Otherwise must have digit
+
+         else
+            if C in '0' .. '9' then
+               N := Character'Pos (C) - Character'Pos ('0');
+            elsif C in 'A' .. 'F' then
+               N := Character'Pos (C) - (Character'Pos ('A') - 10);
+            elsif C in 'a' .. 'f' then
+               N := Character'Pos (C) - (Character'Pos ('a') - 10);
+            else
+               raise Constraint_Error;
+            end if;
+
+            if N >= Base then
+               raise Constraint_Error;
+            else
+               Res := Res * Base + N;
+            end if;
+         end if;
+      end loop;
+
+      return To_Address (Res);
    end Value;
 
 end GNAT.Debug_Utilities;

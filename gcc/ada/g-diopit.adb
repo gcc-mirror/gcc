@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2001 Ada Core Technologies, Inc.                --
+--           Copyright (C) 2001-2003 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -190,8 +191,7 @@ package body GNAT.Directory_Operations.Iteration is
             --  Starting with "../"
 
             DS := Strings.Fixed.Index
-              (SP (SP'First + 3 .. SP'Last),
-               Dir_Seps);
+                    (SP (SP'First + 3 .. SP'Last), Dir_Seps);
 
             if DS = 0 then
 
@@ -224,22 +224,27 @@ package body GNAT.Directory_Operations.Iteration is
 
                if DS = 0 then
 
-                  --  Se have "<drive>:\dir"
+                  --  We have "<drive>:\dir"
 
-                  Read (SP (SP'First .. SP'First + 1),
+                  Read (SP (SP'First .. SP'First + 2),
                         SP (SP'First + 3 .. SP'Last),
                         "");
 
                else
                   --  We have "<drive>:\dir\kkk"
 
-                  Read (SP (SP'First .. SP'First + 1),
+                  Read (SP (SP'First .. SP'First + 2),
                         SP (SP'First + 3 .. DS - 1),
                         SP (DS .. SP'Last));
                end if;
 
             else
-               --  Starting with "<drive>:"
+               --  Starting with "<drive>:" and the drive letter not followed
+               --  by a directory separator. The proper semantic on Windows is
+               --  to read the content of the current selected directory on
+               --  this drive. For example, if drive C current selected
+               --  directory is c:\temp the suffix pattern "c:m*" is
+               --  equivalent to c:\temp\m*.
 
                DS :=  Strings.Fixed.Index
                         (SP (SP'First + 2 .. SP'Last), Dir_Seps);
@@ -248,18 +253,13 @@ package body GNAT.Directory_Operations.Iteration is
 
                   --  We have "<drive>:dir"
 
-                  Read (SP (SP'First .. SP'First + 1),
-                        SP (SP'First + 2 .. SP'Last),
-                        "");
+                  Read (SP, "", "");
 
                else
                   --  We have "<drive>:dir/kkk"
 
-                  Read (SP (SP'First .. SP'First + 1),
-                        SP (SP'First + 2 .. DS - 1),
-                        SP (DS .. SP'Last));
+                  Read (SP (SP'First .. DS - 1), "", SP (DS .. SP'Last));
                end if;
-
             end if;
 
          elsif Strings.Maps.Is_In (SP (SP'First), Dir_Seps) then
@@ -267,16 +267,13 @@ package body GNAT.Directory_Operations.Iteration is
             --  Starting with a /
 
             DS := Strings.Fixed.Index
-              (SP (SP'First + 1 .. SP'Last),
-               Dir_Seps);
+                    (SP (SP'First + 1 .. SP'Last), Dir_Seps);
 
             if DS = 0 then
 
                --  We have "/dir"
 
-               Read (Current_Path,
-                     SP (SP'First + 1 .. SP'Last),
-                     "");
+               Read (Current_Path, SP (SP'First + 1 .. SP'Last), "");
             else
                --  We have "/dir/kkk"
 
@@ -294,9 +291,7 @@ package body GNAT.Directory_Operations.Iteration is
 
                --  We have "dir"
 
-               Read (Current_Path & '.',
-                     SP,
-                     "");
+               Read (Current_Path & '.', SP, "");
             else
                --  We have "dir/kkk"
 

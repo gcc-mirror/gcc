@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2001-2002 Free Software Foundation, Inc        --
+--             Copyright (C) 2001-2003 Free Software Foundation, Inc        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,8 +37,11 @@ package Prj.Env is
    procedure Print_Sources;
    --  Output the list of sources, after Project files have been scanned
 
-   procedure Create_Mapping_File (Name : in out Temp_File_Name);
-   --  Create a temporary mapping file. For each unit, put the mapping of
+   procedure Create_Mapping_File
+     (Project : Project_Id;
+      Name    : out Name_Id);
+   --  Create a temporary mapping file for project Project. For each unit
+   --  in the closure of immediate sources of Project, put the mapping of
    --  its spec and or body to its file name and path name in this file.
 
    procedure Set_Mapping_File_Initial_State_To_Empty;
@@ -46,15 +49,16 @@ package Prj.Env is
    --  when run time source files are found in the project files.
 
    procedure Create_Config_Pragmas_File
-     (For_Project  : Project_Id;
-      Main_Project : Project_Id);
+     (For_Project          : Project_Id;
+      Main_Project         : Project_Id;
+      Include_Config_Files : Boolean := True);
    --  If there needs to have SFN pragmas, either for non standard naming
-   --  schemes or for individual units, or if Global_Configuration_Pragmas
-   --  has been specified in package gnatmake of the main project, or if
-   --  Local_Configuration_Pragmas has been specified in package Compiler
-   --  of the main project, build (if needed) a temporary file that contains
-   --  all configuration pragmas, and specify the configuration pragmas file
-   --  in the project data.
+   --  schemes or for individual units, or (when Include_Config_Files is True)
+   --  if Global_Configuration_Pragmas has been specified in package gnatmake
+   --  of the main project, or if Local_Configuration_Pragmas has been
+   --  specified in package Compiler of the main project, build (if needed)
+   --  a temporary file that contains all configuration pragmas, and specify
+   --  the configuration pragmas file in the project data.
 
    function Ada_Include_Path (Project : Project_Id) return String_Access;
    --  Get the ADA_INCLUDE_PATH of a Project file. For the first call, compute
@@ -78,6 +82,16 @@ package Prj.Env is
    --  it and cache it. When Including_Libraries is False, do not include the
    --  object directories of the library projects, and do not cache the result.
 
+   procedure Set_Ada_Paths
+     (Project             : Project_Id;
+      Including_Libraries : Boolean);
+   --  Set the env vars for additional project path files, after
+   --  creating if necessary the path files.
+
+   procedure Delete_All_Path_Files;
+   --  Delete all temporary path files that have been created by
+   --  calls to Set_Ada_Paths.
+
    function Path_Name_Of_Library_Unit_Body
      (Name    : String;
       Project : Project_Id)
@@ -85,20 +99,24 @@ package Prj.Env is
    --  Returns the Path of a library unit.
 
    function File_Name_Of_Library_Unit_Body
-     (Name    : String;
-      Project : Project_Id)
-      return    String;
+     (Name              : String;
+      Project           : Project_Id;
+      Main_Project_Only : Boolean := True)
+      return              String;
    --  Returns the file name of a library unit, in canonical case. Name may or
    --  may not have an extension (corresponding to the naming scheme of the
    --  project). If there is no body with this name, but there is a spec, the
    --  name of the spec is returned. If neither a body or a spec can be found,
    --  return an empty string.
+   --  If Main_Project_Only is True, the unit must be an immediate source of
+   --  Project. If it is False, it may be a source of one of its imported
+   --  projects.
 
    procedure Get_Reference
      (Source_File_Name : String;
       Project          : out Project_Id;
       Path             : out Name_Id);
-   --  Returns the project of a source.
+   --  Returns the project of a source and its path in displayable form
 
    generic
       with procedure Action (Path : String);

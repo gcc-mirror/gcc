@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2001, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2003, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -96,9 +96,9 @@ package body System.Task_Primitives.Operations is
 
    package SSL renames System.Soft_Links;
 
-   ------------------
-   --  Local Data  --
-   ------------------
+   -----------------
+   -- Local Data  --
+   -----------------
 
    --  The followings are logically constants, but need to be initialized
    --  at run time.
@@ -212,6 +212,7 @@ package body System.Task_Primitives.Operations is
    procedure Initialize_Lock (L : access RTS_Lock; Level : Lock_Level) is
       Attributes : aliased pthread_mutexattr_t;
       Result : Interfaces.C.int;
+
    begin
       Result := pthread_mutexattr_init (Attributes'Access);
 
@@ -265,6 +266,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Write_Lock (L : access Lock; Ceiling_Violation : out Boolean) is
       Result : Interfaces.C.int;
+
    begin
       Result := pthread_mutex_lock (L);
 
@@ -276,6 +278,7 @@ package body System.Task_Primitives.Operations is
      (L : access RTS_Lock; Global_Lock : Boolean := False)
    is
       Result : Interfaces.C.int;
+
    begin
       if not Single_Lock or else Global_Lock then
          Result := pthread_mutex_lock (L);
@@ -285,6 +288,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Write_Lock (T : Task_ID) is
       Result : Interfaces.C.int;
+
    begin
       if not Single_Lock then
          Result := pthread_mutex_lock (T.Common.LL.L'Access);
@@ -307,6 +311,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Unlock (L : access Lock) is
       Result : Interfaces.C.int;
+
    begin
       Result := pthread_mutex_unlock (L);
       pragma Assert (Result = 0);
@@ -314,6 +319,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Unlock (L : access RTS_Lock; Global_Lock : Boolean := False) is
       Result : Interfaces.C.int;
+
    begin
       if not Single_Lock or else Global_Lock then
          Result := pthread_mutex_unlock (L);
@@ -323,6 +329,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Unlock (T : Task_ID) is
       Result : Interfaces.C.int;
+
    begin
       if not Single_Lock then
          Result := pthread_mutex_unlock (T.Common.LL.L'Access);
@@ -339,6 +346,7 @@ package body System.Task_Primitives.Operations is
       Reason   : System.Tasking.Task_States)
    is
       Result : Interfaces.C.int;
+
    begin
       if Single_Lock then
          Result := pthread_cond_wait
@@ -349,6 +357,7 @@ package body System.Task_Primitives.Operations is
       end if;
 
       --  EINTR is not considered a failure.
+
       pragma Assert (Result = 0 or else Result = EINTR);
    end Sleep;
 
@@ -368,6 +377,7 @@ package body System.Task_Primitives.Operations is
       Abs_Time   : Duration;
       Request    : aliased struct_timeval;
       Result     : Interfaces.C.int;
+
    begin
       Timedout := True;
       Yielded := False;
@@ -427,7 +437,7 @@ package body System.Task_Primitives.Operations is
    begin
       --  Only the little window between deferring abort and
       --  locking Self_ID is the reason we need to
-      --  check for pending abort and priority change below! :(
+      --  check for pending abort and priority change below!
 
       SSL.Abort_Defer.all;
 
@@ -524,6 +534,7 @@ package body System.Task_Primitives.Operations is
       Reason : System.Tasking.Task_States)
    is
       Result : Interfaces.C.int;
+
    begin
       Result := pthread_cond_signal (T.Common.LL.CV'Access);
       pragma Assert (Result = 0);
@@ -545,11 +556,14 @@ package body System.Task_Primitives.Operations is
    ------------------
 
    procedure Set_Priority
-     (T : Task_ID;
-      Prio : System.Any_Priority;
+     (T                   : Task_ID;
+      Prio                : System.Any_Priority;
       Loss_Of_Inheritance : Boolean := False)
    is
+      pragma Unreferenced (Loss_Of_Inheritance);
+
       Result : Interfaces.C.int;
+
    begin
       T.Common.Current_Priority := Prio;
       Result := pthread_setprio (T.Common.LL.Thread, Interfaces.C.int (Prio));
@@ -572,6 +586,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Enter_Task (Self_ID : Task_ID) is
       Result : Interfaces.C.int;
+
    begin
       Self_ID.Common.LL.Thread := pthread_self;
       Self_ID.Common.LL.LWP := sproc_self;
@@ -602,6 +617,24 @@ package body System.Task_Primitives.Operations is
    begin
       return new Ada_Task_Control_Block (Entry_Num);
    end New_ATCB;
+
+   -------------------
+   -- Is_Valid_Task --
+   -------------------
+
+   function Is_Valid_Task return Boolean is
+   begin
+      return False;
+   end Is_Valid_Task;
+
+   -----------------------------
+   -- Register_Foreign_Thread --
+   -----------------------------
+
+   function Register_Foreign_Thread return Task_ID is
+   begin
+      return null;
+   end Register_Foreign_Thread;
 
    ----------------------
    --  Initialize_TCB  --
@@ -769,8 +802,10 @@ package body System.Task_Primitives.Operations is
    ---------------
 
    procedure Exit_Task is
+      Result : Interfaces.C.int;
+
    begin
-      pthread_exit (System.Null_Address);
+      Result := pthread_set_ada_tcb (pthread_self, System.Null_Address);
    end Exit_Task;
 
    ----------------
@@ -779,9 +814,12 @@ package body System.Task_Primitives.Operations is
 
    procedure Abort_Task (T : Task_ID) is
       Result : Interfaces.C.int;
+
    begin
-      Result := pthread_kill (T.Common.LL.Thread,
-        Interfaces.C.int (System.Interrupt_Management.Abort_Task_Interrupt));
+      Result :=
+        pthread_kill (T.Common.LL.Thread,
+                      Interfaces.C.int
+                        (System.Interrupt_Management.Abort_Task_Interrupt));
       pragma Assert (Result = 0);
    end Abort_Task;
 
@@ -789,10 +827,11 @@ package body System.Task_Primitives.Operations is
    -- Check_Exit --
    ----------------
 
-   --  Dummy versions.  The only currently working versions is for solaris
-   --  (native).
+   --  Dummy version
 
    function Check_Exit (Self_ID : ST.Task_ID) return Boolean is
+      pragma Unreferenced (Self_ID);
+
    begin
       return True;
    end Check_Exit;
@@ -839,7 +878,9 @@ package body System.Task_Primitives.Operations is
 
    function Suspend_Task
      (T           : ST.Task_ID;
-      Thread_Self : Thread_Id) return Boolean is
+      Thread_Self : Thread_Id)
+      return        Boolean
+   is
    begin
       if T.Common.LL.Thread /= Thread_Self then
          return pthread_suspend (T.Common.LL.Thread) = 0;
@@ -854,7 +895,9 @@ package body System.Task_Primitives.Operations is
 
    function Resume_Task
      (T           : ST.Task_ID;
-      Thread_Self : Thread_Id) return Boolean is
+      Thread_Self : Thread_Id)
+      return        Boolean
+   is
    begin
       if T.Common.LL.Thread /= Thread_Self then
          return pthread_resume (T.Common.LL.Thread) = 0;
@@ -879,6 +922,10 @@ package body System.Task_Primitives.Operations is
       Set_Priority (Environment_Task,
         Environment_Task.Common.Current_Priority);
    end Initialize;
+
+   --------------------------------
+   -- Initialize_Athread_Library --
+   --------------------------------
 
    procedure Initialize_Athread_Library is
       Result : Interfaces.C.int;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,7 +30,6 @@ with Krunch;
 with System.IO; use System.IO;
 
 procedure Gnatkr is
-
    Count        : Natural;
    Maxlen       : Integer;
    Exit_Program : exception;
@@ -91,29 +90,19 @@ begin
          --  If extension is present, points to it (init to prevent warning)
 
       begin
-         --  Remove .adb or .ads extension if present (recognized only if the
+         --  Remove extension if present (an extension is defined as the
+         --  section of the file name after the last dot in the name. If
+         --  there is no dot in the name, then
          --  name is all lower case and contains no other instances of dots)
 
-         if Klen > 4
-           and then Fname (Klen - 3 .. Klen - 1) = ".ad"
-           and then (Fname (Klen) = 's' or else Fname (Klen) = 'b')
-         then
-            Extp := True;
-
-            for J in 1 .. Klen - 4 loop
-               if Is_Upper (Fname (J)) or else Fname (J) = '.' then
-                  Extp := False;
-               end if;
-            end loop;
-
-            if Extp then
-               Klen := Klen - 4;
-               Ext := Klen + 1;
+         for J in reverse 1 .. Klen loop
+            if Fname (J) = '.' then
+               Extp := True;
+               Ext := J;
+               Klen := J - 1;
+               exit;
             end if;
-
-         else
-            Extp := False;
-         end if;
+         end loop;
 
          --  Fold to lower case and replace dots by dashes
 

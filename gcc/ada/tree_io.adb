@@ -373,8 +373,11 @@ package body Tree_IO is
 
       declare
          B : Byte;
+         pragma Warnings (Off, B);
+
       begin
          B := Read_Byte;
+
       exception
          when Tree_Format_Error => return;
       end;

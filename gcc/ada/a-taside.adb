@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1992-2001 Free Software Foundation, Inc.         --
+--           Copyright (C) 1992-2002 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,9 +46,6 @@ with System.Tasking.Rendezvous;
 
 with System.Task_Primitives.Operations;
 --  used for Self
-
-with System.Task_Info;
-use type System.Task_Info.Task_Image_Type;
 
 with Unchecked_Conversion;
 
@@ -114,7 +111,6 @@ package body Ada.Task_Identification is
    -----------
 
    function Image (T : Task_Id) return String is
-      use System.Task_Info;
       function To_Address is new
         Unchecked_Conversion (Task_Id, System.Address);
 
@@ -122,11 +118,11 @@ package body Ada.Task_Identification is
       if T = Null_Task_Id then
          return "";
 
-      elsif T.Common.Task_Image = null then
+      elsif T.Common.Task_Image_Len = 0 then
          return System.Address_Image (To_Address (T));
 
       else
-         return T.Common.Task_Image.all
+         return T.Common.Task_Image (1 .. T.Common.Task_Image_Len)
             & "_" &  System.Address_Image (To_Address (T));
       end if;
    end Image;

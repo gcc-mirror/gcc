@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,7 +51,8 @@ package System.Traceback is
       Max_Len     : Natural;
       Len         : out Natural;
       Exclude_Min : System.Address := System.Null_Address;
-      Exclude_Max : System.Address := System.Null_Address);
+      Exclude_Max : System.Address := System.Null_Address;
+      Skip_Frames : Natural := 1);
    --  Store up to Max_Len code locations in Traceback, corresponding to
    --  the current call chain.
    --
@@ -67,6 +68,12 @@ package System.Traceback is
    --
    --    Exclude_Min/Exclude_Max, if non null, provide a range of addresses
    --    to ignore from the computation of the traceback.
+   --
+   --    Skip_Frames says how many of the most recent calls should at least
+   --    be excluded from the result, regardless of the exclusion bounds and
+   --    starting with this procedure itself: 1 means exclude the frame for
+   --    this procedure, 2 means 1 + exclude the frame for this procedure's
+   --    caller, ...
    --
    --  On return, the Traceback array is filled in, and Len indicates
    --  the number of stored entries. The first entry is the most recent

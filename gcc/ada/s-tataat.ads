@@ -6,7 +6,8 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---             Copyright (C) 1995-2002 Florida State University             --
+--             Copyright (C) 1991-1994, Florida State University            --
+--             Copyright (C) 1995-2003, Ada Core Technologies               --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,8 +27,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
+-- GNARL was developed by the GNARL team at Florida State University.       --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -93,6 +94,11 @@ package System.Tasking.Task_Attributes is
       Value : aliased Attribute;
       --  The generic formal type, may be controlled
    end record;
+
+   for Dummy_Wrapper'Alignment use Standard'Maximum_Alignment;
+   --  A number of unchecked conversions involving Dummy_Wrapper_Access
+   --  sources are performed in other units (e.g. Ada.Task_Attributes).
+   --  Ensure that the designated object is always strictly enough aligned.
 
    In_Use : Direct_Index_Vector := 0;
    --  is True for direct indices that are already used.

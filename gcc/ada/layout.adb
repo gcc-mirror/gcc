@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 2001-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,6 +33,7 @@ with Exp_Ch3;  use Exp_Ch3;
 with Exp_Util; use Exp_Util;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
+with Opt;      use Opt;
 with Repinfo;  use Repinfo;
 with Sem;      use Sem;
 with Sem_Ch13; use Sem_Ch13;
@@ -101,6 +102,13 @@ package body Layout is
    --  knowing that associative rearrangement is allowed for constant
    --  folding if one of the operands is a compile time known value
 
+   function Bits_To_SU (N : Node_Id) return Node_Id;
+   --  This is used when we cross the boundary from static sizes in bits to
+   --  dynamic sizes in storage units. If the argument N is anything other
+   --  than an integer literal, it is returned unchanged, but if it is an
+   --  integer literal, then it is taken as a size in bits, and is replaced
+   --  by the corresponding size in bytes.
+
    function Compute_Length (Lo : Node_Id; Hi : Node_Id) return Node_Id;
    --  Given expressions for the low bound (Lo) and the high bound (Hi),
    --  Build an expression for the value hi-lo+1, converted to type
@@ -110,32 +118,41 @@ package body Layout is
 
    function Expr_From_SO_Ref
      (Loc  : Source_Ptr;
-      D    : SO_Ref)
+      D    : SO_Ref;
+      Comp : Entity_Id := Empty)
       return Node_Id;
    --  Given a value D from a size or offset field, return an expression
    --  representing the value stored. If the value is known at compile time,
    --  then an N_Integer_Literal is returned with the appropriate value. If
    --  the value references a constant entity, then an N_Identifier node
-   --  referencing this entity is returned. The Loc value is used for the
-   --  Sloc value of constructed notes.
+   --  referencing this entity is returned. If the value denotes a size
+   --  function, then returns a call node denoting the given function, with
+   --  a single actual parameter that either refers to the parameter V of
+   --  an enclosing size function (if Comp is Empty or its type doesn't match
+   --  the function's formal), or else is a selected component V.c when Comp
+   --  denotes a component c whose type matches that of the function formal.
+   --  The Loc value is used for the Sloc value of constructed notes.
 
    function SO_Ref_From_Expr
      (Expr      : Node_Id;
       Ins_Type  : Entity_Id;
-      Vtype     : Entity_Id := Empty)
+      Vtype     : Entity_Id := Empty;
+      Make_Func : Boolean   := False)
       return      Dynamic_SO_Ref;
    --  This routine is used in the case where a size/offset value is dynamic
    --  and is represented by the expression Expr. SO_Ref_From_Expr checks if
    --  the Expr contains a reference to the identifier V, and if so builds
    --  a function depending on discriminants of the formal parameter V which
-   --  is of type Vtype. If not, then a constant entity with the value Expr
-   --  is built. The result is a Dynamic_SO_Ref to the created entity. Note
-   --  that Vtype can be omitted if Expr does not contain any reference to V.
-   --  the created entity. The declaration created is inserted in the freeze
-   --  actions of Ins_Type, which also supplies the Sloc for created nodes.
-   --  This function also takes care of making sure that the expression is
-   --  properly analyzed and resolved (which may not be the case yet if we
-   --  build the expression in this unit).
+   --  is of type Vtype. Otherwise, if the parameter Make_Func is True, then
+   --  Expr will be encapsulated in a parameterless function; if Make_Func is
+   --  False, then a constant entity with the value Expr is built. The result
+   --  is a Dynamic_SO_Ref to the created entity. Note that Vtype can be
+   --  omitted if Expr does not contain any reference to V, the created entity.
+   --  The declaration created is inserted in the freeze actions of Ins_Type,
+   --  which also supplies the Sloc for created nodes. This function also takes
+   --  care of making sure that the expression is properly analyzed and
+   --  resolved (which may not be the case yet if we build the expression
+   --  in this unit).
 
    function Get_Max_Size (E : Entity_Id) return Node_Id;
    --  E is an array type or subtype that has at least one index bound that
@@ -143,14 +160,13 @@ package body Layout is
    --  computes an expression that yields the maximum possible size of the
    --  array in storage units. The result is not defined for any other type,
    --  or for arrays that do not depend on discriminants, and it is a fatal
-   --  error to call this unless Size_Depends_On_Discrminant (E) is True.
+   --  error to call this unless Size_Depends_On_Discriminant (E) is True.
 
    procedure Layout_Array_Type (E : Entity_Id);
-   --  Front end layout of non-bit-packed array type or subtype
+   --  Front-end layout of non-bit-packed array type or subtype
 
    procedure Layout_Record_Type (E : Entity_Id);
-   --  Front end layout of record type
-   --  Variant records not handled yet ???
+   --  Front-end layout of record type
 
    procedure Rewrite_Integer (N : Node_Id; V : Uint);
    --  Rewrite node N with an integer literal whose value is V. The Sloc
@@ -496,17 +512,67 @@ package body Layout is
       return Make_Op_Subtract (Loc, Left_Opnd, Right_Opnd);
    end Assoc_Subtract;
 
+   ----------------
+   -- Bits_To_SU --
+   ----------------
+
+   function Bits_To_SU (N : Node_Id) return Node_Id is
+   begin
+      if Nkind (N) = N_Integer_Literal then
+         Set_Intval (N, (Intval (N) + (SSU - 1)) / SSU);
+      end if;
+
+      return N;
+   end Bits_To_SU;
+
    --------------------
    -- Compute_Length --
    --------------------
 
    function Compute_Length (Lo : Node_Id; Hi : Node_Id) return Node_Id is
-      Loc   : constant Source_Ptr := Sloc (Lo);
-      Typ   : constant Entity_Id  := Etype (Lo);
-      Lo_Op : Node_Id;
-      Hi_Op : Node_Id;
+      Loc    : constant Source_Ptr := Sloc (Lo);
+      Typ    : constant Entity_Id  := Etype (Lo);
+      Lo_Op  : Node_Id;
+      Hi_Op  : Node_Id;
+      Lo_Dim : Uint;
+      Hi_Dim : Uint;
 
    begin
+      --  If the bounds are First and Last attributes for the same dimension
+      --  and both have prefixes that denotes the same entity, then we create
+      --  and return a Length attribute. This may allow the back end to
+      --  generate better code in cases where it already has the length.
+
+      if Nkind (Lo) = N_Attribute_Reference
+        and then Attribute_Name (Lo) = Name_First
+        and then Nkind (Hi) = N_Attribute_Reference
+        and then Attribute_Name (Hi) = Name_Last
+        and then Is_Entity_Name (Prefix (Lo))
+        and then Is_Entity_Name (Prefix (Hi))
+        and then Entity (Prefix (Lo)) = Entity (Prefix (Hi))
+      then
+         Lo_Dim := Uint_1;
+         Hi_Dim := Uint_1;
+
+         if Present (First (Expressions (Lo))) then
+            Lo_Dim := Expr_Value (First (Expressions (Lo)));
+         end if;
+
+         if Present (First (Expressions (Hi))) then
+            Hi_Dim := Expr_Value (First (Expressions (Hi)));
+         end if;
+
+         if Lo_Dim = Hi_Dim then
+            return
+              Make_Attribute_Reference (Loc,
+                Prefix         => New_Occurrence_Of
+                                    (Entity (Prefix (Lo)), Loc),
+                Attribute_Name => Name_Length,
+                Expressions    => New_List
+                                    (Make_Integer_Literal (Loc, Lo_Dim)));
+         end if;
+      end if;
+
       Lo_Op := New_Copy_Tree (Lo);
       Hi_Op := New_Copy_Tree (Hi);
 
@@ -542,7 +608,8 @@ package body Layout is
 
    function Expr_From_SO_Ref
      (Loc  : Source_Ptr;
-      D    : SO_Ref)
+      D    : SO_Ref;
+      Comp : Entity_Id := Empty)
       return Node_Id
    is
       Ent : Entity_Id;
@@ -552,11 +619,29 @@ package body Layout is
          Ent := Get_Dynamic_SO_Entity (D);
 
          if Is_Discrim_SO_Function (Ent) then
-            return
-              Make_Function_Call (Loc,
-                Name                   => New_Occurrence_Of (Ent, Loc),
-                Parameter_Associations => New_List (
-                  Make_Identifier (Loc, Chars => Vname)));
+            --  If a component is passed in whose type matches the type
+            --  of the function formal, then select that component from
+            --  the "V" parameter rather than passing "V" directly.
+
+            if Present (Comp)
+               and then Base_Type (Etype (Comp))
+                          = Base_Type (Etype (First_Formal (Ent)))
+            then
+               return
+                 Make_Function_Call (Loc,
+                   Name                   => New_Occurrence_Of (Ent, Loc),
+                   Parameter_Associations => New_List (
+                     Make_Selected_Component (Loc,
+                       Prefix        => Make_Identifier (Loc, Chars => Vname),
+                       Selector_Name => New_Occurrence_Of (Comp, Loc))));
+
+            else
+               return
+                 Make_Function_Call (Loc,
+                   Name                   => New_Occurrence_Of (Ent, Loc),
+                   Parameter_Associations => New_List (
+                     Make_Identifier (Loc, Chars => Vname)));
+            end if;
 
          else
             return New_Occurrence_Of (Ent, Loc);
@@ -818,13 +903,13 @@ package body Layout is
       Insert_Typ : Entity_Id;
       --  This is the type with which any generated constants or functions
       --  will be associated (i.e. inserted into the freeze actions). This
-      --  is normally the type being layed out. The exception occurs when
+      --  is normally the type being laid out. The exception occurs when
       --  we are laying out Itype's which are local to a record type, and
       --  whose scope is this record type. Such types do not have freeze
       --  nodes (because we have no place to put them).
 
       ------------------------------------
-      -- How An Array Type is Layed Out --
+      -- How An Array Type is Laid Out --
       ------------------------------------
 
       --  Here is what goes on. We need to multiply the component size of
@@ -874,6 +959,16 @@ package body Layout is
       SU_Convert_Required : Boolean := False;
       --  This is set to True if the final result must be converted from
       --  bits to storage units (rounding up to a storage unit boundary).
+
+      Storage_Divisor : Uint := UI_From_Int (SSU);
+      --  This is the amount that a nonstatic computed size will be divided
+      --  by to convert it from bits to storage units. This is normally
+      --  equal to SSU, but can be reduced in the case of packed components
+      --  that fit evenly into a storage unit.
+
+      Make_Size_Function : Boolean := False;
+      --  Indicates whether to request that SO_Ref_From_Expr should
+      --  encapsulate the array size expresion in a function.
 
       procedure Discrimify (N : in out Node_Id);
       --  If N represents a discriminant, then the Size.Status is set to
@@ -934,6 +1029,13 @@ package body Layout is
          Insert_Typ := E;
       end if;
 
+      --  If the component type is a generic formal type then there's no point
+      --  in determining a size for the array type.
+
+      if Is_Generic_Type (Ctyp) then
+         return;
+      end if;
+
       --  Deal with component size if base type
 
       if Ekind (E) = E_Array_Type then
@@ -973,6 +1075,14 @@ package body Layout is
       Indx := First_Index (E);
       while Present (Indx) loop
          Ityp := Etype (Indx);
+
+         --  If an index of the array is a generic formal type then there's
+         --  no point in determining a size for the array type.
+
+         if Is_Generic_Type (Ityp) then
+            return;
+         end if;
+
          Lo := Type_Low_Bound (Ityp);
          Hi := Type_High_Bound (Ityp);
 
@@ -1041,6 +1151,15 @@ package body Layout is
                     (Dynamic, Make_Integer_Literal (Loc, Size.Val / SSU));
                   SU_Convert_Required := False;
 
+               --  If the current value is a factor of the storage unit,
+               --  then we can use a value of one for the size and reduce
+               --  the strength of the later division.
+
+               elsif SSU mod Size.Val = 0 then
+                  Storage_Divisor := SSU / Size.Val;
+                  Size := (Dynamic, Make_Integer_Literal (Loc, Uint_1));
+                  SU_Convert_Required := True;
+
                --  Otherwise, we go ahead and convert the value in bits,
                --  and set SU_Convert_Required to True to ensure that the
                --  final value is indeed properly converted.
@@ -1058,41 +1177,50 @@ package body Layout is
 
             Len := Compute_Length (Lo, Hi);
 
-            --  Check possible range of Len
+            --  If Len isn't a Length attribute, then its range needs to
+            --  be checked a possible Max with zero needs to be computed.
 
-            declare
-               OK  : Boolean;
-               LLo : Uint;
-               LHi : Uint;
+            if Nkind (Len) /= N_Attribute_Reference
+              or else Attribute_Name (Len) /= Name_Length
+            then
+               declare
+                  OK  : Boolean;
+                  LLo : Uint;
+                  LHi : Uint;
 
-            begin
-               Set_Parent (Len, E);
-               Determine_Range (Len, OK, LLo, LHi);
+               begin
+                  --  Check possible range of Len
 
-               Len := Convert_To (Standard_Unsigned, Len);
+                  Set_Parent (Len, E);
+                  Determine_Range (Len, OK, LLo, LHi);
 
-               --  If range definitely flat or superflat, result size is zero
+                  Len := Convert_To (Standard_Unsigned, Len);
 
-               if OK and then LHi <= 0 then
-                  Set_Esize (E, Uint_0);
-                  Set_RM_Size (E, Uint_0);
-                  return;
-               end if;
+                  --  If range definitely flat or superflat,
+                  --  result size is zero
 
-               --  If we cannot verify that range cannot be super-flat, we
-               --  need a maximum with zero, since length cannot be negative.
+                  if OK and then LHi <= 0 then
+                     Set_Esize (E, Uint_0);
+                     Set_RM_Size (E, Uint_0);
+                     return;
+                  end if;
 
-               if not OK or else LLo < 0 then
-                  Len :=
-                    Make_Attribute_Reference (Loc,
-                      Prefix         =>
-                        New_Occurrence_Of (Standard_Unsigned, Loc),
-                      Attribute_Name => Name_Max,
-                      Expressions    => New_List (
-                        Make_Integer_Literal (Loc, 0),
-                        Len));
-               end if;
-            end;
+                  --  If we cannot verify that range cannot be super-flat,
+                  --  we need a maximum with zero, since length cannot be
+                  --  negative.
+
+                  if not OK or else LLo < 0 then
+                     Len :=
+                       Make_Attribute_Reference (Loc,
+                         Prefix         =>
+                           New_Occurrence_Of (Standard_Unsigned, Loc),
+                         Attribute_Name => Name_Max,
+                         Expressions    => New_List (
+                           Make_Integer_Literal (Loc, 0),
+                           Len));
+                  end if;
+               end;
+            end if;
 
             --  At this stage, Len has the expression for the length
 
@@ -1120,15 +1248,42 @@ package body Layout is
 
          if SU_Convert_Required then
 
-            --  The expression required is (Size.Nod + SU - 1) / SU
+            --  The expression required is:
+            --    (Size.Nod + Storage_Divisor - 1) / Storage_Divisor
 
             Size.Nod :=
               Make_Op_Divide (Loc,
                 Left_Opnd =>
                   Make_Op_Add (Loc,
                     Left_Opnd  => Size.Nod,
-                    Right_Opnd => Make_Integer_Literal (Loc, SSU - 1)),
-                Right_Opnd => Make_Integer_Literal (Loc, SSU));
+                    Right_Opnd => Make_Integer_Literal
+                                    (Loc, Storage_Divisor - 1)),
+                Right_Opnd => Make_Integer_Literal (Loc, Storage_Divisor));
+         end if;
+
+         --  If the array entity is not declared at the library level and its
+         --  not nested within a subprogram that is marked for inlining, then
+         --  we request that the size expression be encapsulated in a function.
+         --  Since this expression is not needed in most cases, we prefer not
+         --  to incur the overhead of the computation on calls to the enclosing
+         --  subprogram except for subprograms that require the size.
+
+         if not Is_Library_Level_Entity (E) then
+            Make_Size_Function := True;
+
+            declare
+               Parent_Subp : Entity_Id := Enclosing_Subprogram (E);
+
+            begin
+               while Present (Parent_Subp) loop
+                  if Is_Inlined (Parent_Subp) then
+                     Make_Size_Function := False;
+                     exit;
+                  end if;
+
+                  Parent_Subp := Enclosing_Subprogram (Parent_Subp);
+               end loop;
+            end;
          end if;
 
          --  Now set the dynamic size (the Value_Size is always the same
@@ -1138,7 +1293,10 @@ package body Layout is
          --  The added initialization sets it to Empty now, but is this
          --  correct?
 
-         Set_Esize (E, SO_Ref_From_Expr (Size.Nod, Insert_Typ, Vtyp));
+         Set_Esize
+           (E,
+            SO_Ref_From_Expr
+              (Size.Nod, Insert_Typ, Vtyp, Make_Func => Make_Size_Function));
          Set_RM_Size (E, Esize (E));
       end if;
    end Layout_Array_Type;
@@ -1199,10 +1357,10 @@ package body Layout is
       Decl : Node_Id;
 
       Comp : Entity_Id;
-      --  Current component being layed out
+      --  Current component being laid out
 
       Prev_Comp : Entity_Id;
-      --  Previous layed out component
+      --  Previous laid out component
 
       procedure Get_Next_Component_Location
         (Prev_Comp  : Entity_Id;
@@ -1229,10 +1387,7 @@ package body Layout is
       --  Lays out component Comp, given Prev_Comp, the previously laid-out
       --  component (Prev_Comp = Empty if no components laid out yet). The
       --  alignment of the record itself is also updated if needed. Both
-      --  Comp and Prev_Comp can be either components or discriminants. A
-      --  special case is when Comp is Empty, this is used at the end
-      --  to determine the size of the entire record. For this special
-      --  call the resulting offset is placed in Final_Offset.
+      --  Comp and Prev_Comp can be either components or discriminants.
 
       procedure Layout_Components
         (From   : Entity_Id;
@@ -1240,25 +1395,25 @@ package body Layout is
          Esiz   : out SO_Ref;
          RM_Siz : out SO_Ref);
       --  This procedure lays out the components of the given component list
-      --  which contains the components starting with From, and ending with To.
-      --  The Next_Entity chain is used to traverse the components. On entry
+      --  which contains the components starting with From and ending with To.
+      --  The Next_Entity chain is used to traverse the components. On entry,
       --  Prev_Comp is set to the component preceding the list, so that the
-      --  list is layed out after this component. Prev_Comp is set to Empty if
-      --  the component list is to be layed out starting at the start of the
-      --  record. On return, the components are all layed out, and Prev_Comp is
-      --  set to the last layed out component. On return, Esiz is set to the
+      --  list is laid out after this component. Prev_Comp is set to Empty if
+      --  the component list is to be laid out starting at the start of the
+      --  record. On return, the components are all laid out, and Prev_Comp is
+      --  set to the last laid out component. On return, Esiz is set to the
       --  resulting Object_Size value, which is the length of the record up
-      --  to and including the last layed out entity. For Esiz, the value is
+      --  to and including the last laid out entity. For Esiz, the value is
       --  adjusted to match the alignment of the record. RM_Siz is similarly
       --  set to the resulting Value_Size value, which is the same length, but
       --  not adjusted to meet the alignment. Note that in the case of variant
       --  records, Esiz represents the maximum size.
 
       procedure Layout_Non_Variant_Record;
-      --  Procedure called to layout a non-variant record type or subtype
+      --  Procedure called to lay out a non-variant record type or subtype
 
       procedure Layout_Variant_Record;
-      --  Procedure called to layout a variant record type. Decl is set to the
+      --  Procedure called to lay out a variant record type. Decl is set to the
       --  full type declaration for the variant record.
 
       ---------------------------------
@@ -1315,8 +1470,10 @@ package body Layout is
                New_Npos :=
                  SO_Ref_From_Expr
                    (Assoc_Add (Loc,
-                      Left_Opnd  => Expr_From_SO_Ref (Loc, Old_Npos),
-                      Right_Opnd => Expr_From_SO_Ref (Loc, Old_Esiz)),
+                      Left_Opnd  =>
+                        Expr_From_SO_Ref (Loc, Old_Npos),
+                      Right_Opnd =>
+                        Expr_From_SO_Ref (Loc, Old_Esiz, Prev_Comp)),
                     Ins_Type => E,
                     Vtype    => E);
 
@@ -1325,7 +1482,7 @@ package body Layout is
                if Size_Depends_On_Discriminant (Etype (Prev_Comp)) then
                   Old_Maxsz := Get_Max_Size (Etype (Prev_Comp));
                else
-                  Old_Maxsz := Expr_From_SO_Ref (Loc, Old_Esiz);
+                  Old_Maxsz := Expr_From_SO_Ref (Loc, Old_Esiz, Prev_Comp);
                end if;
 
                --  Now we can compute the new max position. If the max size
@@ -1373,7 +1530,7 @@ package body Layout is
 
                   --  Bump alignment if stricter than prev
 
-                  if Align > Alignment (Prev_Comp) then
+                  if Align > Alignment (Etype (Prev_Comp)) then
                      New_Npos := (New_Npos + Align - 1) / Align * Align;
                   end if;
 
@@ -1452,7 +1609,7 @@ package body Layout is
 
          --  Check case of type of component has a scope of the record we
          --  are laying out. When this happens, the type in question is an
-         --  Itype that has not yet been layed out (that's because such
+         --  Itype that has not yet been laid out (that's because such
          --  types do not get frozen in the normal manner, because there
          --  is no place for the freeze nodes).
 
@@ -1564,20 +1721,35 @@ package body Layout is
          End_NPMax : SO_Ref;
 
       begin
-         --  Only layout components if there are some to layout!
+         --  Only lay out components if there are some to lay out!
 
          if Present (From) then
 
-            --  Layout components with no component clauses
+            --  Lay out components with no component clauses
 
             Comp := From;
             loop
-               if (Ekind (Comp) = E_Component
-                    or else Ekind (Comp) = E_Discriminant)
-                 and then No (Component_Clause (Comp))
+               if Ekind (Comp) = E_Component
+                 or else Ekind (Comp) = E_Discriminant
                then
-                  Layout_Component (Comp, Prev_Comp);
-                  Prev_Comp := Comp;
+                  --  The compatibility of component clauses with composite
+                  --  types isn't checked in Sem_Ch13, so we check it here.
+
+                  if Present (Component_Clause (Comp)) then
+                     if Is_Composite_Type (Etype (Comp))
+                       and then Esize (Comp) < RM_Size (Etype (Comp))
+                     then
+                        Error_Msg_Uint_1 := RM_Size (Etype (Comp));
+                        Error_Msg_NE
+                          ("size for & too small, minimum allowed is ^",
+                           Component_Clause (Comp),
+                           Comp);
+                     end if;
+
+                  else
+                     Layout_Component (Comp, Prev_Comp);
+                     Prev_Comp := Comp;
+                  end if;
                end if;
 
                exit when Comp = To;
@@ -1630,7 +1802,7 @@ package body Layout is
                      Esiz := End_NPMax;
 
                      if Is_Packed (E)
-                       or else Alignment (Prev_Comp) < Align
+                       or else Alignment (Etype (Prev_Comp)) < Align
                      then
                         --  The expression we build is
                         --  (expr + align - 1) / align * align
@@ -1731,7 +1903,7 @@ package body Layout is
            (Clist       : Node_Id;
             Esiz        : out SO_Ref;
             RM_Siz_Expr : out Node_Id);
-         --  Recursive procedure, called to layout one component list
+         --  Recursive procedure, called to lay out one component list
          --  Esiz and RM_Siz_Expr are set to the Object_Size and Value_Size
          --  values respectively representing the record size up to and
          --  including the last component in the component list (including
@@ -1875,7 +2047,7 @@ package body Layout is
                      --  care of the others case.
 
                      if No (RM_Siz_Expr) then
-                        RM_Siz_Expr := RM_SizV;
+                        RM_Siz_Expr := Bits_To_SU (RM_SizV);
 
                      --  Otherwise construct the appropriate test
 
@@ -1905,19 +2077,28 @@ package body Layout is
                                Left_Opnd  => Discrim,
                                Right_Opnd => New_Copy (Dchoice));
 
+                        --  Generate a call to the discriminant-checking
+                        --  function for the variant. Note that the result
+                        --  has to be complemented since the function returns
+                        --  False when the passed discriminant value matches.
+
                         else
                            Dtest :=
-                             Make_Function_Call (Loc,
-                               Name =>
-                                 New_Occurrence_Of
-                                   (Dcheck_Function (Var), Loc),
-                               Parameter_Associations => New_List (Discrim));
+                             Make_Op_Not (Loc,
+                               Right_Opnd =>
+                                 Make_Function_Call (Loc,
+                                   Name =>
+                                     New_Occurrence_Of
+                                       (Dcheck_Function (Var), Loc),
+                                   Parameter_Associations =>
+                                     New_List (Discrim)));
                         end if;
 
                         RM_Siz_Expr :=
                           Make_Conditional_Expression (Loc,
                             Expressions =>
-                              New_List (Dtest, RM_SizV, RM_Siz_Expr));
+                              New_List
+                                (Dtest, Bits_To_SU (RM_SizV), RM_Siz_Expr));
                      end if;
 
                      Prev (Var);
@@ -1935,7 +2116,7 @@ package body Layout is
 
          Build_Discr_Checking_Funcs (Decl);
 
-         --  Layout the discriminants
+         --  Lay out the discriminants
 
          Layout_Components
            (From   => Defining_Identifier (First (Dlist)),
@@ -1943,8 +2124,8 @@ package body Layout is
             Esiz   => Esiz,
             RM_Siz => RM_Siz);
 
-         --  Layout the main component list (this will make recursive calls
-         --  to layout all component lists nested within variants).
+         --  Lay out the main component list (this will make recursive calls
+         --  to lay out all component lists nested within variants).
 
          Layout_Component_List (Component_List (Tdef), Esiz, RM_Siz_Expr);
          Set_Esize   (E, Esiz);
@@ -1991,7 +2172,7 @@ package body Layout is
       --  All other cases
 
       else
-         --  Initialize aligment conservatively to 1. This value will
+         --  Initialize alignment conservatively to 1. This value will
          --  be increased as necessary during processing of the record.
 
          if Unknown_Alignment (E) then
@@ -2000,8 +2181,8 @@ package body Layout is
 
          --  Initialize previous component. This is Empty unless there
          --  are components which have already been laid out by component
-         --  clauses. If there are such components, we start our layout of
-         --  the remaining components following the last such component
+         --  clauses. If there are such components, we start our lay out of
+         --  the remaining components following the last such component.
 
          Prev_Comp := Empty;
 
@@ -2042,6 +2223,7 @@ package body Layout is
          if Nkind (Decl) = N_Full_Type_Declaration
            and then Has_Discriminants (E)
            and then Nkind (Type_Definition (Decl)) = N_Record_Definition
+           and then Present (Component_List (Type_Definition (Decl)))
            and then
              Present (Variant_Part (Component_List (Type_Definition (Decl))))
          then
@@ -2112,18 +2294,20 @@ package body Layout is
                   Desig := Full_View (Desig);
                end if;
 
-               if (Is_Array_Type (Desig)
+               if Is_Array_Type (Desig)
                  and then not Is_Constrained (Desig)
                  and then not Has_Completion_In_Body (Desig)
-                 and then not Debug_Flag_6)
+                 and then not Debug_Flag_6
                then
                   Init_Size (E, 2 * System_Address_Size);
 
                   --  Check for bad convention set
 
-                  if Convention (E) = Convention_C
-                       or else
-                     Convention (E) = Convention_CPP
+                  if Warn_On_Export_Import
+                    and then
+                      (Convention (E) = Convention_C
+                         or else
+                       Convention (E) = Convention_CPP)
                   then
                      Error_Msg_N
                        ("?this access type does not " &
@@ -2144,7 +2328,7 @@ package body Layout is
 
          --  For discrete types, the RM_Size and Esize must be set
          --  already, since this is part of the earlier processing
-         --  and the front end is always required to layout the
+         --  and the front end is always required to lay out the
          --  sizes of such types (since they are available as static
          --  attributes). All we do is to check that this rule is
          --  indeed obeyed!
@@ -2267,35 +2451,114 @@ package body Layout is
          end if;
       end if;
 
-      --  Layout array and record types if front end layout set
+      --  Lay out array and record types if front end layout set
 
       if Frontend_Layout_On_Target then
          if Is_Array_Type (E) and then not Is_Bit_Packed_Array (E) then
             Layout_Array_Type (E);
-            return;
          elsif Is_Record_Type (E) then
             Layout_Record_Type (E);
-            return;
          end if;
 
-      --  Special remaining processing for record types with a known size
-      --  of 16, 32, or 64 bits whose alignment is not yet set. For these
-      --  types, we set a corresponding alignment matching the size if
-      --  possible, or as large as possible if not.
+      --  Case of backend layout, we still do a little in the front end
 
-      elsif Is_Record_Type (E) and not Debug_Flag_Q then
-         Set_Composite_Alignment (E);
+      else
+         --  Processing for record types
 
-      --  For arrays, we only do this processing for arrays that are
-      --  required to be atomic. Here, we really need to have proper
-      --  alignment, but for the normal case of non-atomic arrays it
-      --  seems better to use the component alignment as the default.
+         if Is_Record_Type (E) then
 
-      elsif Is_Array_Type (E)
-        and then Is_Atomic (E)
-        and then not Debug_Flag_Q
-      then
-         Set_Composite_Alignment (E);
+            --  Special remaining processing for record types with a known
+            --  size of 16, 32, or 64 bits whose alignment is not yet set.
+            --  For these types, we set a corresponding alignment matching
+            --  the size if possible, or as large as possible if not.
+
+            if Convention (E) = Convention_Ada
+               and then not Debug_Flag_Q
+            then
+               Set_Composite_Alignment (E);
+            end if;
+
+         --  Procressing for array types
+
+         elsif Is_Array_Type (E) then
+
+            --  For arrays that are required to be atomic, we do the same
+            --  processing as described above for short records, since we
+            --  really need to have the alignment set for the whole array.
+
+            if Is_Atomic (E) and then not Debug_Flag_Q then
+               Set_Composite_Alignment (E);
+            end if;
+
+            --  For unpacked array types, set an alignment of 1 if we know
+            --  that the component alignment is not greater than 1. The reason
+            --  we do this is to avoid unnecessary copying of slices of such
+            --  arrays when passed to subprogram parameters (see special test
+            --  in Exp_Ch6.Expand_Actuals).
+
+            if not Is_Packed (E)
+              and then Unknown_Alignment (E)
+            then
+               if Known_Static_Component_Size (E)
+                 and then Component_Size (E) = 1
+               then
+                  Set_Alignment (E, Uint_1);
+               end if;
+            end if;
+         end if;
+      end if;
+
+      --  Final step is to check that Esize and RM_Size are compatible
+
+      if Known_Static_Esize (E) and then Known_Static_RM_Size (E) then
+         if Esize (E) < RM_Size (E) then
+
+            --  Esize is less than RM_Size. That's not good. First we test
+            --  whether this was set deliberately with an Object_Size clause
+            --  and if so, object to the clause.
+
+            if Has_Object_Size_Clause (E) then
+               Error_Msg_Uint_1 := RM_Size (E);
+               Error_Msg_F
+                 ("object size is too small, minimum is ^",
+                  Expression (Get_Attribute_Definition_Clause
+                                             (E, Attribute_Object_Size)));
+            end if;
+
+            --  Adjust Esize up to RM_Size value
+
+            declare
+               Size : constant Uint := RM_Size (E);
+
+            begin
+               Set_Esize (E, RM_Size (E));
+
+               --  For scalar types, increase Object_Size to power of 2,
+               --  but not less than a storage unit in any case (i.e.,
+               --  normally this means it will be byte addressable).
+
+               if Is_Scalar_Type (E) then
+                  if Size <= System_Storage_Unit then
+                     Init_Esize (E, System_Storage_Unit);
+                  elsif Size <= 16 then
+                     Init_Esize (E, 16);
+                  elsif Size <= 32 then
+                     Init_Esize (E, 32);
+                  else
+                     Set_Esize  (E, (Size + 63) / 64 * 64);
+                  end if;
+
+                  --  Finally, make sure that alignment is consistent with
+                  --  the newly assigned size.
+
+                  while Alignment (E) * System_Storage_Unit < Esize (E)
+                    and then Alignment (E) < Maximum_Alignment
+                  loop
+                     Set_Alignment (E, 2 * Alignment (E));
+                  end loop;
+               end if;
+            end;
+         end if;
       end if;
    end Layout_Type;
 
@@ -2433,29 +2696,102 @@ package body Layout is
 
          --  Size is known, alignment is not set
 
-         if Siz = System_Storage_Unit then
-            Align := 1;
-         elsif Siz = 2 * System_Storage_Unit then
+         --  Reset alignment to match size if size is exactly 2, 4, or 8 bytes
+
+         if Siz = 2 * System_Storage_Unit then
             Align := 2;
          elsif Siz = 4 * System_Storage_Unit then
             Align := 4;
          elsif Siz = 8 * System_Storage_Unit then
             Align := 8;
+
+         --  On VMS, also reset for odd "in between" sizes, e.g. a 17-bit
+         --  record is given an alignment of 4. This is more consistent with
+         --  what DEC Ada does.
+
+         elsif OpenVMS_On_Target and then Siz > System_Storage_Unit then
+
+            if Siz <= 2 * System_Storage_Unit then
+               Align := 2;
+            elsif Siz <= 4 * System_Storage_Unit then
+               Align := 4;
+            elsif Siz <= 8 * System_Storage_Unit then
+               Align := 8;
+            else
+               return;
+            end if;
+
+         --  No special alignment fiddling needed
+
          else
             return;
          end if;
+
+         --  Here Align is set to the proposed improved alignment
 
          if Align > Maximum_Alignment then
             Align := Maximum_Alignment;
          end if;
 
-         if Align > System_Word_Size / System_Storage_Unit then
-            Align := System_Word_Size / System_Storage_Unit;
+         --  Further processing for record types only to reduce the alignment
+         --  set by the above processing in some specific cases. We do not
+         --  do this for atomic records, since we need max alignment there.
+
+         if Is_Record_Type (E) then
+
+            --  For records, there is generally no point in setting alignment
+            --  higher than word size since we cannot do better than move by
+            --  words in any case
+
+            if Align > System_Word_Size / System_Storage_Unit then
+               Align := System_Word_Size / System_Storage_Unit;
+            end if;
+
+            --  Check components. If any component requires a higher
+            --  alignment, then we set that higher alignment in any case.
+
+            declare
+               Comp : Entity_Id;
+
+            begin
+               Comp := First_Component (E);
+               while Present (Comp) loop
+                  if Known_Alignment (Etype (Comp)) then
+                     declare
+                        Calign : constant Uint := Alignment (Etype (Comp));
+
+                     begin
+                        --  The cases to worry about are when the alignment
+                        --  of the component type is larger than the alignment
+                        --  we have so far, and either there is no component
+                        --  clause for the alignment, or the length set by
+                        --  the component clause matches the alignment set.
+
+                        if Calign > Align
+                          and then
+                            (Unknown_Esize (Comp)
+                               or else (Known_Static_Esize (Comp)
+                                          and then
+                                        Esize (Comp) =
+                                           Calign * System_Storage_Unit))
+                        then
+                           Align := UI_To_Int (Calign);
+                        end if;
+                     end;
+                  end if;
+
+                  Next_Component (Comp);
+               end loop;
+            end;
          end if;
+
+         --  Set chosen alignment
 
          Set_Alignment (E, UI_From_Int (Align));
 
-         if Unknown_Esize (E) then
+         if Known_Static_Esize (E)
+           and then Esize (E) < Align * System_Storage_Unit
+         then
             Set_Esize (E, UI_From_Int (Align * System_Storage_Unit));
          end if;
       end if;
@@ -2519,7 +2855,7 @@ package body Layout is
          return;
 
       --  If the size is not set, then don't attempt to set the alignment. This
-      --  happens in the backend layout case for access to subprogram types.
+      --  happens in the backend layout case for access-to-subprogram types.
 
       elsif not Known_Static_Esize (E) then
          return;
@@ -2576,8 +2912,9 @@ package body Layout is
    function SO_Ref_From_Expr
      (Expr      : Node_Id;
       Ins_Type  : Entity_Id;
-      Vtype     : Entity_Id := Empty)
-      return    Dynamic_SO_Ref
+      Vtype     : Entity_Id := Empty;
+      Make_Func : Boolean   := False)
+      return      Dynamic_SO_Ref
    is
       Loc  : constant Source_Ptr := Sloc (Ins_Type);
 
@@ -2653,7 +2990,27 @@ package body Layout is
                    Make_Return_Statement (Loc,
                      Expression => Expr))));
 
-      --  No reference to V, create constant
+      --  The caller requests that the expression be encapsulated in
+      --  a parameterless function.
+
+      elsif Make_Func then
+         Decl :=
+           Make_Subprogram_Body (Loc,
+
+             Specification =>
+               Make_Function_Specification (Loc,
+                 Defining_Unit_Name => K,
+                   Parameter_Specifications => Empty_List,
+                   Subtype_Mark => New_Occurrence_Of (Standard_Unsigned, Loc)),
+
+             Declarations => Empty_List,
+
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements => New_List (
+                   Make_Return_Statement (Loc, Expression => Expr))));
+
+      --  No reference to V and function not requested, so create a constant
 
       else
          Decl :=

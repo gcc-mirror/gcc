@@ -6,7 +6,8 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---             Copyright (C) 1997-2002, Florida State University            --
+--             Copyright (C) 1991-1994, Florida State University            --
+--             Copyright (C) 1995-2003, Ada Core Technologies               --
 --                                                                          --
 -- GNARL is free software; you can redistribute it  and/or modify it  under --
 -- terms  of  the  GNU  Library General Public License  as published by the --
@@ -26,27 +27,26 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- GNARL was developed by the GNARL team at Florida State University.       --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
 --  This is the Irix version of this package
---
+
 --  The following signals are reserved by the run time (Athread library):
---
+
 --  SIGFPE, SIGILL, SIGSEGV, SIGBUS, SIGTRAP, SIGSTOP, SIGKILL
---
+
 --  The following signals are reserved by the run time (Pthread library):
---
+
 --  SIGTSTP, SIGILL, SIGTRAP, SIGEMT, SIGFPE, SIGBUS, SIGSTOP, SIGKILL,
 --  SIGSEGV, SIGSYS, SIGXCPU, SIGXFSZ, SIGPROF, SIGPTINTR, SIGPTRESCHED,
 --  SIGABRT, SIGINT
---
+
 --  The pragma Unreserve_All_Interrupts affects the following signal
 --  (Pthread library):
---
+
 --  SIGINT: made available for Ada handler
 
 --  This target-dependent package spec contains names of interrupts

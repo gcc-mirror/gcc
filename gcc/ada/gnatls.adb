@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1992-2002 Free Software Foundation, Inc.         --
+--           Copyright (C) 1992-2003 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,6 +28,7 @@ with ALI;         use ALI;
 with ALI.Util;    use ALI.Util;
 with Binderr;     use Binderr;
 with Butil;       use Butil;
+with Csets;       use Csets;
 with Fname;       use Fname;
 with Gnatvsn;     use Gnatvsn;
 with GNAT.OS_Lib; use GNAT.OS_Lib;
@@ -40,7 +41,6 @@ with Targparm;    use Targparm;
 with Types;       use Types;
 
 procedure Gnatls is
-
    Max_Column : constant := 80;
 
    type File_Status is (
@@ -102,6 +102,9 @@ procedure Gnatls is
    --  Various column starts and ends
 
    Spaces : constant String (1 .. Max_Column) := (others => ' ');
+
+   RTS_Specified : String_Access := null;
+   --  Used to detect multiple use of --RTS= switch
 
    -----------------------
    -- Local Subprograms --
@@ -640,26 +643,32 @@ procedure Gnatls is
 
          --  Processing for --RTS=path
 
-         elsif Argv (1 .. 5) = "--RTS" then
-
-            if Argv (6) /= '=' or else
-              (Argv (6) = '='
-               and then Argv'Length = 6)
-            then
+         elsif Argv'Length >= 5 and then Argv (1 .. 5) = "--RTS" then
+            if Argv'Length <= 6 or else Argv (6) /= '='then
                Osint.Fail ("missing path for --RTS");
 
             else
+               --  Check that it is the first time we see this switch or, if
+               --  it is not the first time, the same path is specified.
+
+               if RTS_Specified = null then
+                  RTS_Specified := new String'(Argv (7 .. Argv'Last));
+
+               elsif RTS_Specified.all /= Argv (7 .. Argv'Last) then
+                  Osint.Fail ("--RTS cannot be specified multiple times");
+               end if;
+
                --  Valid --RTS switch
 
                Opt.No_Stdinc := True;
                Opt.RTS_Switch := True;
 
                declare
-                  Src_Path_Name : String_Ptr :=
+                  Src_Path_Name : constant String_Ptr :=
                                     String_Ptr
                                       (Get_RTS_Search_Dir
                                         (Argv (7 .. Argv'Last), Include));
-                  Lib_Path_Name : String_Ptr :=
+                  Lib_Path_Name : constant String_Ptr :=
                                     String_Ptr
                                       (Get_RTS_Search_Dir
                                         (Argv (7 .. Argv'Last), Objects));
@@ -806,6 +815,10 @@ procedure Gnatls is
    --   Start of processing for Gnatls
 
 begin
+   --  Initialize standard packages
+
+   Namet.Initialize;
+   Csets.Initialize;
 
    --  Use low level argument routines to avoid dragging in the secondary stack
 
@@ -841,7 +854,6 @@ begin
    Osint.Add_Default_Search_Dirs;
 
    if Verbose_Mode then
-      Namet.Initialize;
       Targparm.Get_Target_Parameters;
 
       --  WARNING: the output of gnatls -v is used during the compilation
@@ -851,13 +863,8 @@ begin
 
       Write_Eol;
       Write_Str ("GNATLS ");
-
-      if Targparm.High_Integrity_Mode_On_Target then
-         Write_Str ("Pro High Integrity ");
-      end if;
-
       Write_Str (Gnat_Version_String);
-      Write_Str (" Copyright 1997-2002 Free Software Foundation, Inc.");
+      Write_Str (" Copyright 1997-2003 Free Software Foundation, Inc.");
       Write_Eol;
       Write_Eol;
       Write_Str ("Source Search Path:");
@@ -911,7 +918,6 @@ begin
       Exit_Program (E_Fatal);
    end if;
 
-   Namet.Initialize;
    Initialize_ALI;
    Initialize_ALI_Source;
 
@@ -923,7 +929,7 @@ begin
 
       if Ali_File = No_File then
          Write_Str ("Can't find library info for ");
-         Get_Decoded_Name_String (Main_File);
+         Get_Name_String (Main_File);
          Write_Char ('"');
          Write_Str (Name_Buffer (1 .. Name_Len));
          Write_Char ('"');
@@ -973,7 +979,7 @@ begin
                Output_Unit (U);
 
                --  Output source now, unless if it will be done as part of
-               --  outputting dependencies.
+               --  outputing dependencies.
 
                if not (Dependable and then Print_Source) then
                   Output_Source (Corresponding_Sdep_Entry (Id, U));

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-1998, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,7 +30,7 @@
 
 --    To call gnatprep use
 
---      gnatprep infile outfile [deffile] [-c] [-b] [-r] [-s] [-u]
+--      gnatprep infile outfile [deffile] [-v] [-c] [-b] [-r] [-s] [-u]
 --            [-Dsymbol=value]
 
 --    where
@@ -43,7 +43,8 @@
 --      normally have an ads or adb suffix.
 
 --      deffile is the full name of a text file containing definitions of
---      symbols to be referenced by the preprocessor. This argument is optional
+--      symbols to be referenced by the preprocessor. This argument is
+--      optional.
 
 --      The -c switch, causes both preprocessor lines and the lines deleted
 --      by preprocessing to be retained in the output source as comments marked
@@ -65,8 +66,13 @@
 --      The -s switch causes a sorted list of symbol names and values to be
 --      listed on the standard output file.
 
+--      The -v switch causes a Copyright notice to be displayed, and
+--      lines containing errors in the input file or the definition file
+--      to be displayed before the errors.
+
 --      The -D switch causes symbol 'symbol' to be associated with 'value'.
---      This symbols can then be referenced by the preprocessor
+--      This symbols can then be referenced by the preprocessor. Several
+--      -D switches may be specified.
 
 --      Note: if neither -b nor -c is present, then preprocessor lines and
 --      deleted lines are completely removed from the output, unless -r is
@@ -116,6 +122,9 @@
 --        expression ::=  <expression> and then <expression>
 --        expression ::=  <expression> or else <expression>
 --        expression ::=  ( <expression> )
+
+--        "or" and "and" may not be used in the same expression without
+--        using parentheses.
 
 --     For these Boolean tests, the symbol must have either the value True or
 --     False. If the value is True, then the corresponding lines are included,

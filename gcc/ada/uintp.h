@@ -6,8 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *                                                                          *
- *          Copyright (C) 1992-2001, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2002, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -38,21 +37,21 @@ struct Uint_Entry
 
 /* See if a Uint is within the range of an integer.  */
 #define UI_Is_In_Int_Range  uintp__ui_is_in_int_range
-extern Boolean UI_Is_In_Int_Range	PARAMS((Uint));
+extern Boolean UI_Is_In_Int_Range	(Uint);
 
 /* Obtain Int value from Uint input. This will abort if the result is
    out of range.  */
 #define UI_To_Int uintp__ui_to_int
-extern Int UI_To_Int			PARAMS((Uint));
+extern Int UI_To_Int			(Uint);
 
 /* Convert an Int into a Uint.  */
 #define UI_From_Int uintp__ui_from_int
-extern Uint UI_From_Int			PARAMS((int));
+extern Uint UI_From_Int			(int);
 
 /* Similarly, but return a GCC INTEGER_CST.  Overflow is tested by the
    constant-folding used to build the node.  TYPE is the GCC type of the
    resulting node.  */
-extern tree UI_To_gnu			PARAMS((Uint, tree));
+extern tree UI_To_gnu			(Uint, tree);
 
 /* Universal integers are represented by the Uint type which is an index into
    the Uints_Ptr table containing Uint_Entry values.  A Uint_Entry contains an

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,24 +29,35 @@
 --  when the parser is embedded into an editor, it may be appropriate
 --  to replace the implementation of this package.
 
+with Err_Vars;
+with Erroutc;
 with Table;
 with Types; use Types;
 with Uintp; use Uintp;
 
+with System;
+
 package Errout is
 
-   Serious_Errors_Detected : Nat;
+   Serious_Errors_Detected : Nat renames Err_Vars.Serious_Errors_Detected;
    --  This is a count of errors that are serious enough to stop expansion,
    --  and hence to prevent generation of an object file even if the
    --  switch -gnatQ is set.
 
-   Total_Errors_Detected : Nat;
+   Total_Errors_Detected : Nat renames Err_Vars.Total_Errors_Detected;
    --  Number of errors detected so far. Includes count of serious errors
    --  and non-serious errors, so this value is always greater than or
    --  equal to the Serious_Errors_Detected value.
 
-   Warnings_Detected : Nat;
+   Warnings_Detected : Nat renames Err_Vars.Warnings_Detected;
    --  Number of warnings detected
+
+   Configurable_Run_Time_Violations : Nat := 0;
+   --  Count of configurable run time violations so far. This is used to
+   --  suppress certain cascaded error messages when we know that we may not
+   --  have fully expanded some items, due to high integrity violations (i.e.
+   --  the use of constructs not permitted by the library in use, or
+   --  improper constructs in No_Run_Time mode).
 
    type Compiler_State_Type is (Parsing, Analyzing);
    Compiler_State : Compiler_State_Type;
@@ -55,7 +66,8 @@ package Errout is
    --  In particular, an attempt is made by Errout to suppress cascaded
    --  error messages in Parsing mode, but not in the other modes.
 
-   Current_Error_Source_File : Source_File_Index;
+   Current_Error_Source_File : Source_File_Index
+     renames Err_Vars.Current_Error_Source_File;
    --  Id of current messages. Used to post file name when unit changes. This
    --  is initialized to Main_Source_File at the start of a compilation, which
    --  means that no file names will be output unless there are errors in units
@@ -63,7 +75,7 @@ package Errout is
    --  Source_Reference line, then this is initialized to No_Source_File,
    --  to force an initial reference to the real source file name.
 
-   Raise_Exception_On_Error : Nat := 0;
+   Raise_Exception_On_Error : Nat renames Err_Vars.Raise_Exception_On_Error;
    --  If this value is non-zero, then any attempt to generate an error
    --  message raises the exception Error_Msg_Exception, and the error
    --  message is not output. This is used for defending against junk
@@ -71,7 +83,7 @@ package Errout is
    --  appropriate error messages from higher semantic levels. It is
    --  a counter so that the increment/decrement protocol nests neatly.
 
-   Error_Msg_Exception : exception;
+   Error_Msg_Exception : exception renames Err_Vars.Error_Msg_Exception;
    --  Exception raised if Raise_Exception_On_Error is true
 
    -----------------------------------
@@ -205,6 +217,13 @@ package Errout is
    --      A second ^ may occur in the message, in which case it is replaced
    --      by the decimal conversion of the Uint value in Error_Msg_Uint_2.
 
+   --    Insertion character > (Right bracket, run time name)
+   --      The character > is replaced by a string of the form (name) if
+   --      Targparm scanned out a Run_Time_Name (see package Targparm for
+   --      details). The name is enclosed in parentheses and output in mixed
+   --      case mode (upper case after any space in the name). If no run time
+   --      name is defined, this insertion character has no effect.
+
    --    Insertion character ! (Exclamation: unconditional message)
    --      The character ! appearing as the last character of a message makes
    --      the message unconditional which means that it is output even if it
@@ -239,7 +258,9 @@ package Errout is
    --    Insertion character ' (Quote: literal character)
    --      Precedes a character which is placed literally into the message.
    --      Used to insert characters into messages that are one of the
-   --      insertion characters defined here.
+   --      insertion characters defined here. Also useful in inserting
+   --      sequences of upper case letters (e.g. RM) which are not to be
+   --      treated as keywords.
 
    --    Insertion character \ (Backslash: continuation message)
    --      Indicates that the message is a continuation of a message
@@ -265,42 +286,34 @@ package Errout is
    --  mechanism is essentially an untyped one in which the appropriate
    --  variables are set dependingon the specific insertion characters used.
 
-   Error_Msg_Col : Column_Number;
+   Error_Msg_Col : Column_Number renames Err_Vars.Error_Msg_Col;
    --  Column for @ insertion character in message
 
-   Error_Msg_Uint_1 : Uint;
-   Error_Msg_Uint_2 : Uint;
+   Error_Msg_Uint_1 : Uint renames Err_Vars.Error_Msg_Uint_1;
+   Error_Msg_Uint_2 : Uint renames Err_Vars.Error_Msg_Uint_2;
    --  Uint values for ^ insertion characters in message
 
-   Error_Msg_Sloc : Source_Ptr;
+   Error_Msg_Sloc : Source_Ptr renames Err_Vars.Error_Msg_Sloc;
    --  Source location for # insertion character in message
 
-   Error_Msg_Name_1 : Name_Id;
-   Error_Msg_Name_2 : Name_Id;
-   Error_Msg_Name_3 : Name_Id;
+   Error_Msg_Name_1 : Name_Id renames Err_Vars.Error_Msg_Name_1;
+   Error_Msg_Name_2 : Name_Id renames Err_Vars.Error_Msg_Name_2;
+   Error_Msg_Name_3 : Name_Id renames Err_Vars.Error_Msg_Name_3;
    --  Name_Id values for % insertion characters in message
 
-   Error_Msg_Unit_1 : Name_Id;
-   Error_Msg_Unit_2 : Name_Id;
+   Error_Msg_Unit_1 : Name_Id renames Err_Vars.Error_Msg_Unit_1;
+   Error_Msg_Unit_2 : Name_Id renames Err_Vars.Error_Msg_Unit_2;
    --  Name_Id values for $ insertion characters in message
 
-   Error_Msg_Node_1 : Node_Id;
-   Error_Msg_Node_2 : Node_Id;
+   Error_Msg_Node_1 : Node_Id renames Err_Vars.Error_Msg_Node_1;
+   Error_Msg_Node_2 : Node_Id renames Err_Vars.Error_Msg_Node_2;
    --  Node_Id values for & insertion characters in message
 
-   Error_Msg_Qual_Level : Int := 0;
+   Error_Msg_Qual_Level : Int renames Err_Vars.Error_Msg_Qual_Level;
    --  Number of levels of qualification required for type name (see the
    --  description of the } insertion character. Note that this value does
    --  note get reset by any Error_Msg call, so the caller is responsible
    --  for resetting it.
-
-   Warn_On_Instance : Boolean := False;
-   --  Normally if a warning is generated in a generic template from the
-   --  analysis of the template, then the warning really belongs in the
-   --  template, and the default value of False for this Boolean achieves
-   --  that effect. If Warn_On_Instance is set True, then the warnings are
-   --  generated on the instantiation (referring to the template) rather
-   --  than on the template itself.
 
    -----------------------------------------------------
    -- Format of Messages and Manual Quotation Control --
@@ -367,20 +380,23 @@ package Errout is
    -- Message ID Definitions --
    ----------------------------
 
-   type Error_Msg_Id is new Int;
+   subtype Error_Msg_Id is Erroutc.Error_Msg_Id;
+   function "=" (Left, Right : Error_Msg_Id) return Boolean
+     renames Erroutc."=";
    --  A type used to represent specific error messages. Used by the clients
    --  of this package only in the context of the Get_Error_Id and
    --  Change_Error_Text subprograms.
 
-   No_Error_Msg : constant Error_Msg_Id := 0;
+   No_Error_Msg : constant Error_Msg_Id := Erroutc.No_Error_Msg;
    --  A constant which is different from any value returned by Get_Error_Id.
    --  Typically used by a client to indicate absense of a saved Id value.
 
-   function Get_Msg_Id return Error_Msg_Id;
+   function Get_Msg_Id return Error_Msg_Id renames Erroutc.Get_Msg_Id;
    --  Returns the Id of the message most recently posted using one of the
    --  Error_Msg routines.
 
-   function Get_Location (E : Error_Msg_Id) return Source_Ptr;
+   function Get_Location (E : Error_Msg_Id) return Source_Ptr
+     renames Erroutc.Get_Location;
    --  Returns the flag location of the error message with the given id E.
 
    ------------------------
@@ -479,6 +495,10 @@ package Errout is
    --  or if it is a warning and warnings and N is an entity node for which
    --  warnings are suppressed.
 
+   procedure Error_Msg_F (Msg : String; N : Node_Id);
+   --  Similar to Error_Msg_N except that the message is placed on the
+   --  first node of the construct N (First_Node (N)).
+
    procedure Error_Msg_NE
      (Msg : String;
       N   : Node_Or_Entity_Id;
@@ -489,6 +509,13 @@ package Errout is
    --  text will contain a & or } as usual to mark the insertion point.
    --  This routine can be called from the parser or the analyzer.
 
+   procedure Error_Msg_FE
+     (Msg : String;
+      N   : Node_Id;
+      E   : Node_Or_Entity_Id);
+   --  Same as Error_Msg_NE, except that the message is placed on the first
+   --  node of the construct N (First_Node (N)).
+
    procedure Error_Msg_NEL
      (Msg           : String;
       N             : Node_Or_Entity_Id;
@@ -497,12 +524,26 @@ package Errout is
    --  Exactly the same as Error_Msg_NE, except that the flag is placed at
    --  the specified Flag_Location instead of at Sloc (N).
 
+   procedure Error_Msg_NW
+     (Eflag : Boolean;
+      Msg   : String;
+      N     : Node_Or_Entity_Id);
+   --  This routine is used for posting a message conditionally. The message
+   --  is posted (with the same effect as Error_Msg_N (Msg, N) if and only
+   --  if Eflag is True and if the node N is within the main extended source
+   --  unit. Typically this is a warning mode flag.
+
    procedure Change_Error_Text (Error_Id : Error_Msg_Id; New_Msg : String);
    --  The error message text of the message identified by Id is replaced by
    --  the given text. This text may contain insertion characters in the
    --  usual manner, and need not be the same length as the original text.
 
-   procedure Purge_Messages (From : Source_Ptr; To : Source_Ptr);
+   function First_Node (C : Node_Id) return Node_Id;
+   --  Given a construct C, finds the first node in the construct, i.e. the
+   --  one with the lowest Sloc value. This is useful in placing error msgs.
+
+   procedure Purge_Messages (From : Source_Ptr; To : Source_Ptr)
+     renames Erroutc.Purge_Messages;
    --  All error messages whose location is in the range From .. To (not
    --  including the end points) will be deleted from the error listing.
 
@@ -510,19 +551,56 @@ package Errout is
    --  Remove any warning messages corresponding to the Sloc of N or any
    --  of its descendent nodes. No effect if no such warnings.
 
-   procedure Set_Warnings_Mode_Off (Loc : Source_Ptr);
+   procedure Remove_Warning_Messages (L : List_Id);
+   --  Remove warnings on all elements of a list.
+
+   procedure Set_Ignore_Errors (To : Boolean);
+   --  Following a call to this procedure with To=True, all error calls are
+   --  ignored. A call with To=False restores the default treatment in which
+   --  error calls are treated as usual (and as described in this spec).
+
+   procedure Set_Warnings_Mode_Off (Loc : Source_Ptr)
+     renames Erroutc.Set_Warnings_Mode_Off;
    --  Called in response to a pragma Warnings (Off) to record the source
    --  location from which warnings are to be turned off.
 
-   procedure Set_Warnings_Mode_On (Loc : Source_Ptr);
+   procedure Set_Warnings_Mode_On (Loc : Source_Ptr)
+     renames Erroutc.Set_Warnings_Mode_On;
    --  Called in response to a pragma Warnings (On) to record the source
    --  location from which warnings are to be turned back on.
 
-   function Compilation_Errors return Boolean;
+   function Compilation_Errors return Boolean
+     renames Erroutc.Compilation_Errors;
    --  Returns true if errors have been detected, or warnings in -gnatwe
    --  (treat warnings as errors) mode.
 
-   procedure dmsg (Id : Error_Msg_Id);
+   procedure Error_Msg_CRT (Feature : String; N : Node_Id);
+   --  Posts a non-fatal message on node N saying that the feature
+   --  identified by the Feature argument is not supported in either
+   --  configurable run-time mode or no run-time mode (as appropriate).
+   --  In the former case, the name of the library is output if available.
+
+   procedure dmsg (Id : Error_Msg_Id) renames Erroutc.dmsg;
    --  Debugging routine to dump an error message
+
+   ------------------------------------
+   -- Utility Interface for Back End --
+   ------------------------------------
+
+   --  The following subprograms can be used by the back end for the purposes
+   --  of concocting error messages that are not output via Errout, e.g. the
+   --  messages generated by the gcc back end.
+
+   procedure Set_Identifier_Casing
+     (Identifier_Name : System.Address;
+      File_Name       : System.Address);
+   --  The identifier is a null terminated string that represents the name
+   --  of an identifier appearing in the source program. File_Name is a null
+   --  terminated string giving the corresponding file name for the identifier
+   --  as obtained from the front end by the use of Full_Debug_Name to the
+   --  source file referenced by the corresponding source location value.
+   --  On return, the name is in Name_Buffer, null terminated with Name_Len
+   --  set. This name is the identifier name as passed, cased according to
+   --  the default identifier casing for the given file.
 
 end Errout;

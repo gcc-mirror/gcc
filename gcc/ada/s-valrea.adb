@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -81,6 +81,17 @@ package body System.Val_Real is
       After_Point : Natural := 0;
       --  Set to 1 after the point
 
+      Num_Saved_Zeroes : Natural := 0;
+      --  This counts zeroes after the decimal point. A non-zero value means
+      --  that this number of previously scanned digits are zero. if the end
+      --  of the number is reached, these zeroes are simply discarded, which
+      --  ensures that trailing zeroes after the point never affect the value
+      --  (which might otherwise happen as a result of rounding). With this
+      --  processing in place, we can ensure that, for example, we get the
+      --  same exact result from 1.0E+49 and 1.0000000E+49. This is not
+      --  necessarily required in a case like this where the result is not
+      --  a machine number, but it is certainly a desirable behavior.
+
       procedure Scanf;
       --  Scans integer literal value starting at current character position.
       --  For each digit encountered, Uval is multiplied by 10.0, and the new
@@ -96,9 +107,36 @@ package body System.Val_Real is
       begin
          loop
             Digit := Character'Pos (Str (P)) - Character'Pos ('0');
-            Uval := Uval * 10.0 + Long_Long_Float (Digit);
             P := P + 1;
-            Scale := Scale - After_Point;
+
+            --  Save up trailing zeroes after the decimal point
+
+            if Digit = 0 and After_Point = 1 then
+               Num_Saved_Zeroes := Num_Saved_Zeroes + 1;
+
+            --  Here for a non-zero digit
+
+            else
+               --  First deal with any previously saved zeroes
+
+               if Num_Saved_Zeroes /= 0 then
+                  while Num_Saved_Zeroes > Maxpow loop
+                     Uval := Uval * Powten (Maxpow);
+                     Num_Saved_Zeroes := Num_Saved_Zeroes - Maxpow;
+                     Scale := Scale - Maxpow;
+                  end loop;
+
+                  Uval := Uval * Powten (Num_Saved_Zeroes);
+                  Scale := Scale - Num_Saved_Zeroes;
+
+                  Num_Saved_Zeroes := 0;
+               end if;
+
+               --  Accumulate new digit
+
+               Uval := Uval * 10.0 + Long_Long_Float (Digit);
+               Scale := Scale - After_Point;
+            end if;
 
             --  Done if end of input field
 
@@ -197,15 +235,35 @@ package body System.Val_Real is
                   raise Constraint_Error;
                end if;
 
-               P := P + 1;
-               Fdigit := Long_Long_Float (Digit);
+               --  Save up trailing zeroes after the decimal point
 
-               if Fdigit >= Base then
-                  Bad_Base := True;
+               if Digit = 0 and After_Point = 1 then
+                  Num_Saved_Zeroes := Num_Saved_Zeroes + 1;
+
+               --  Here for a non-zero digit
+
                else
-                  Scale := Scale - After_Point;
-                  Uval := Uval * Base + Fdigit;
+                  --  First deal with any previously saved zeroes
+
+                  if Num_Saved_Zeroes /= 0 then
+                     Uval := Uval * Base ** Num_Saved_Zeroes;
+                     Scale := Scale - Num_Saved_Zeroes;
+                     Num_Saved_Zeroes := 0;
+                  end if;
+
+                  --  Now accumulate the new digit
+
+                  Fdigit := Long_Long_Float (Digit);
+
+                  if Fdigit >= Base then
+                     Bad_Base := True;
+                  else
+                     Scale := Scale - After_Point;
+                     Uval := Uval * Base + Fdigit;
+                  end if;
                end if;
+
+               P := P + 1;
 
                if P > Max then
                   raise Constraint_Error;
@@ -276,7 +334,6 @@ package body System.Val_Real is
       --  For base 10, use power of ten table, repeatedly if necessary.
 
       elsif Scale > 0 then
-
          while Scale > Maxpow loop
             Uval := Uval * Powten (Maxpow);
             Scale := Scale - Maxpow;
@@ -287,7 +344,6 @@ package body System.Val_Real is
          end if;
 
       elsif Scale < 0 then
-
          while (-Scale) > Maxpow loop
             Uval := Uval / Powten (Maxpow);
             Scale := Scale + Maxpow;

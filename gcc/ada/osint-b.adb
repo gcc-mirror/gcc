@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001 Free Software Foundation, Inc.               --
+--          Copyright (C) 2001-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,8 +41,15 @@ package body Osint.B is
    -------------------------
 
    procedure Close_Binder_Output is
+      Status : Boolean;
    begin
-      Close (Output_FD);
+      Close (Output_FD, Status);
+
+      if not Status then
+         Fail
+           ("error while closing generated file ",
+            Get_Name_String (Output_File_Name));
+      end if;
 
       if Recording_Time_From_Last_Bind then
          New_Binder_Output_Time_Stamp  := File_Stamp (Output_File_Name);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.
+--          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -493,7 +493,8 @@ package body Util is
       Get_Name_String (Chars (Token_Node));
 
       declare
-         Buf : String (1 .. Name_Len) := Name_Buffer (1 .. Name_Len);
+         Buf : constant String (1 .. Name_Len) :=
+                 Name_Buffer (1 .. Name_Len);
 
       begin
          Get_Name_String (Chars (Prev));
@@ -627,6 +628,28 @@ package body Util is
          end loop;
       end;
    end Signal_Bad_Attribute;
+
+   -----------------------------
+   -- Token_Is_At_End_Of_Line --
+   -----------------------------
+
+   function Token_Is_At_End_Of_Line return Boolean is
+      S : Source_Ptr;
+
+   begin
+      --  Skip past blanks and horizontal tabs
+
+      S := Scan_Ptr;
+      while Source (S) = ' ' or else Source (S) = ASCII.HT loop
+         S := S + 1;
+      end loop;
+
+      --  We are at end of line if at a control character (CR/LF/VT/FF/EOF)
+      --  or if we are at the start of an end of line comment sequence.
+
+      return Source (S) < ' '
+        or else (Source (S) = '-' and then Source (S + 1) = '-');
+   end Token_Is_At_End_Of_Line;
 
    -------------------------------
    -- Token_Is_At_Start_Of_Line --

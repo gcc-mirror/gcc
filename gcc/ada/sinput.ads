@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,6 +46,21 @@ with Table;
 with Types;  use Types;
 
 package Sinput is
+
+   type Type_Of_File is (
+   --  Indicates type of file being read
+
+      Src,
+      --  Normal Ada source file
+
+      Config,
+      --  Configuration pragma file
+
+      Def,
+      --  Preprocessing definition file
+
+      Preproc);
+      --  Source file with preprocessing commands to be preprocessed
 
    ----------------------------
    -- Source License Control --
@@ -106,8 +121,8 @@ package Sinput is
    --  The source file table has an entry for each source file read in for
    --  this run of the compiler. This table is (default) initialized when
    --  the compiler is loaded, and simply accumulates entries as compilation
-   --  proceeds and the Sinput.L.Load_Source_File procedure is called to load
-   --  required source files.
+   --  proceeds and various routines in Sinput and its child packages are
+   --  called to load required source files.
 
    --  Virtual entries are also created for generic templates when they are
    --  instantiated, as described in a separate section later on.
@@ -120,34 +135,44 @@ package Sinput is
    --  The entries in the table are accessed using a Source_File_Index that
    --  ranges from 1 to Last_Source_File. Each entry has the following fields
 
-   --  Note that entry 1 is always for system.ads (see Targparm for details
-   --  of why we always read this source file first), and we have defined a
-   --  constant Types.System_Source_File_Index as 1 to reflect this fact.
+   --  Note: fields marked read-only are set by Sinput or one of its child
+   --  packages when a source file table entry is created, and cannot be
+   --  subsqently modified, or alternatively are set only by very special
+   --  circumstances, documented in the comments.
 
-   --  File_Name : File_Name_Type
-   --    Name of the source file (simple name with no directory information).
-   --    Set by Sinput.L.Load_Source_File and cannot be subequently changed.
+   --  File_Name : File_Name_Type (read-only)
+   --    Name of the source file (simple name with no directory information)
 
-   --  Full_File_Name : File_Name_Type
+   --  Full_File_Name : File_Name_Type (read-only)
    --    Full file name (full name with directory info), used for generation
-   --    of error messages, etc. Set by Sinput.L.Load_Source_File and cannot
-   --    be subsequently changed.
+   --    of error messages, etc.
 
-   --  Reference_Name : File_Name_Type
+   --  File_Type : Type_Of_File (read-only)
+   --    Indicates type of file (source file, configuration pragmas file,
+   --    preprocessor definition file, preprocessor input file).
+
+   --  Reference_Name : File_Name_Type (read-only)
    --    Name to be used for source file references in error messages where
    --    only the simple name of the file is required. Identical to File_Name
    --    unless pragma Source_Reference is used to change it. Only processing
    --    for the Source_Reference pragma circuit may set this field.
 
-   --  Full_Ref_Name : File_Name_Type
+   --  Full_Ref_Name : File_Name_Type (read-only)
    --    Name to be used for source file references in error messages where
    --    the full name of the file is required. Identical to Full_File_Name
    --    unless pragma Source_Reference is used to change it. Only processing
    --    for the Source_Reference pragma may set this field.
 
-   --  Debug_Source_Name : File_Name_Type
+   --  Debug_Source_Name : File_Name_Type (read-only)
    --    Name to be used for source file references in debugging information
    --    where only the simple name of the file is required. Identical to
+   --    Reference_Name unless the -gnatD (debug source file) switch is used.
+   --    Only processing in Sprint that generates this file is permitted to
+   --    set this field.
+
+   --  Full_Debug_Name : File_Name_Type (read-only)
+   --    Name to be used for source file references in debugging information
+   --    where the full name of the file is required. This is identical to
    --    Full_Ref_Name unless the -gnatD (debug source file) switch is used.
    --    Only processing in Sprint that generates this file is permitted to
    --    set this field.
@@ -163,28 +188,23 @@ package Sinput is
    --    file that is not a Source_Reference pragma. If no source reference
    --    pragmas are used, then the value is set to No_Line_Number.
 
-   --  Source_Text : Source_Buffer_Ptr
+   --  Source_Text : Source_Buffer_Ptr (read-only)
    --    Text of source file. Note that every source file has a distinct set
    --    of non-overlapping logical bounds, so it is possible to determine
    --    which file is referenced from a given subscript (Source_Ptr) value.
-   --    Set by Sinput.L.Load_Source_File and cannot be subsequently changed.
 
-   --  Source_First : Source_Ptr;
+   --  Source_First : Source_Ptr; (read-only)
    --    Subscript of first character in Source_Text. Note that this cannot
    --    be obtained as Source_Text'First, because we use virtual origin
-   --    addressing. Set by Sinput.L procedures when the entry is first
-   --    created and never subsequently changed.
+   --    addressing.
 
-   --  Source_Last : Source_Ptr;
+   --  Source_Last : Source_Ptr; (read-only)
    --    Subscript of last character in Source_Text. Note that this cannot
    --    be obtained as Source_Text'Last, because we use virtual origin
-   --    addressing, so this value is always Source_Ptr'Last. Set by
-   --    Sinput.L procedures when the entry is first created and never
-   --    subsequently changed.
+   --    addressing, so this value is always Source_Ptr'Last.
 
-   --  Time_Stamp : Time_Stamp_Type;
-   --    Time stamp of the source file. Set by Sinput.L.Load_Source_File,
-   --    and cannot be subsequently changed.
+   --  Time_Stamp : Time_Stamp_Type; (read-only)
+   --    Time stamp of the source file
 
    --  Source_Checksum : Word;
    --    Computed checksum for contents of source file. See separate section
@@ -214,23 +234,36 @@ package Sinput is
    --    of a normal non-instantiation entry. See section below for details.
    --    This field is read-only for clients.
 
-   --  Template : Source_File_Index;
+   --  Inlined_Body : Boolean;
+   --    This can only be set True if Instantiation has a value other than
+   --    No_Location. If true it indicates that the instantiation is actually
+   --    an instance of an inlined body.
+
+   --  Template : Source_File_Index; (read-only)
    --    Source file index of the source file containing the template if this
    --    is a generic instantiation. Set to No_Source_File for the normal case
-   --    of a non-instantiation entry. See Sinput-L for details. This field is
-   --    read-only for clients.
+   --    of a non-instantiation entry. See Sinput-L for details.
 
    --  The source file table is accessed by clients using the following
    --  subprogram interface:
 
    subtype SFI is Source_File_Index;
 
+   System_Source_File_Index : SFI;
+   --  The file system.ads is always read by the compiler to determine the
+   --  settings of the target parameters in the private part of System. This
+   --  variable records the source file index of system.ads. Typically this
+   --  will be 1 since system.ads is read first.
+
    function Debug_Source_Name (S : SFI) return File_Name_Type;
    function File_Name         (S : SFI) return File_Name_Type;
+   function File_Type         (S : SFI) return Type_Of_File;
    function First_Mapped_Line (S : SFI) return Logical_Line_Number;
+   function Full_Debug_Name   (S : SFI) return File_Name_Type;
    function Full_File_Name    (S : SFI) return File_Name_Type;
    function Full_Ref_Name     (S : SFI) return File_Name_Type;
    function Identifier_Casing (S : SFI) return Casing_Type;
+   function Inlined_Body      (S : SFI) return Boolean;
    function Instantiation     (S : SFI) return Source_Ptr;
    function Keyword_Casing    (S : SFI) return Casing_Type;
    function Last_Source_Line  (S : SFI) return Physical_Line_Number;
@@ -262,6 +295,48 @@ package Sinput is
 
    Main_Source_File : Source_File_Index;
    --  This is set to the source file index of the main unit
+
+   -----------------------------
+   -- Source_File_Index_Table --
+   -----------------------------
+
+   --  The Get_Source_File_Index function is called very frequently. Earlier
+   --  versions cached a single entry, but then reverted to a serial search,
+   --  and this proved to be a significant source of inefficiency. To get
+   --  around this, we use the following directly indexed array. The space
+   --  of possible input values is a value of type Source_Ptr which is simply
+   --  an Int value. The values in this space are allocated sequentially as
+   --  new units are loaded.
+
+   --  The following table has an entry for each 4K range of possible
+   --  Source_Ptr values. The value in the table is the lowest value
+   --  Source_File_Index whose Source_Ptr range contains value in the
+   --  range.
+
+   --  For example, the entry with index 4 in this table represents Source_Ptr
+   --  values in the range 4*4096 .. 5*4096-1. The Source_File_Index value
+   --  stored would be the lowest numbered source file with at least one byte
+   --  in this range.
+
+   --  The algorithm used in Get_Source_File_Index is simply to access this
+   --  table and then do a serial search starting at the given position. This
+   --  will almost always terminate with one or two checks.
+
+   --  Note that this array is pretty large, but in most operating systems
+   --  it will not be allocated in physical memory unless it is actually used.
+
+   Chunk_Power : constant := 12;
+   Chunk_Size  : constant := 2 ** Chunk_Power;
+   --  Change comments above if value changed. Note that Chunk_Size must
+   --  be a power of 2 (to allow for efficient access to the table).
+
+   Source_File_Index_Table :
+     array (Int range 0 .. Int'Last / Chunk_Size) of Source_File_Index;
+
+   procedure Set_Source_File_Index_Table (Xnew : Source_File_Index);
+   --  Sets entries in the Source_File_Index_Table for the newly created
+   --  Source_File table entry whose index is Xnew. The Source_First and
+   --  Source_Last fields of this entry must be set before the call.
 
    -----------------------
    -- Checksum Handling --
@@ -556,10 +631,13 @@ private
    type Source_File_Record is record
 
       File_Name         : File_Name_Type;
+      File_Type         : Type_Of_File;
       Reference_Name    : File_Name_Type;
       Debug_Source_Name : File_Name_Type;
+      Full_Debug_Name   : File_Name_Type;
       Full_File_Name    : File_Name_Type;
       Full_Ref_Name     : File_Name_Type;
+      Inlined_Body      : Boolean;
       License           : License_Type;
       Num_SRef_Pragmas  : Nat;
       First_Mapped_Line : Logical_Line_Number;

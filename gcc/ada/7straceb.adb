@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1999-2000 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1999-2003 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,7 +27,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
--- It is now maintained by Ada Core Technologies Inc (http://www.gnat.com). --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -48,36 +48,51 @@ package body System.Traceback is
      (Traceback : System.Address;
       Max_Len   : Natural;
       Len       : out Natural;
-      Exclude_Min,
-      Exclude_Max : System.Address := System.Null_Address)
+      Exclude_Min : System.Address := System.Null_Address;
+      Exclude_Max : System.Address := System.Null_Address;
+      Skip_Frames : Natural := 1)
    is
       type Tracebacks_Array is array (1 .. Max_Len) of Code_Loc;
       pragma Suppress_Initialization (Tracebacks_Array);
 
       M     : Machine_State;
       Code  : Code_Loc;
-      J     : Natural := 1;
+
       Trace : Tracebacks_Array;
       for Trace'Address use Traceback;
+
+      N_Skips  : Natural := 0;
 
    begin
       M := Allocate_Machine_State;
       Set_Machine_State (M);
 
+      --  Skip the requested number of frames
+
       loop
          Code := Get_Code_Loc (M);
+         exit when Code = Null_Address or else N_Skips = Skip_Frames;
 
-         exit when Code = Null_Address or else J = Max_Len + 1;
+         Pop_Frame (M, System.Null_Address);
+         N_Skips := N_Skips + 1;
+      end loop;
+
+      --  Now, record the frames outside the exclusion bounds, updating
+      --  the Len output value along the way.
+
+      Len := 0;
+      loop
+         Code := Get_Code_Loc (M);
+         exit when Code = Null_Address or else Len = Max_Len;
 
          if Code < Exclude_Min or else Code > Exclude_Max then
-            Trace (J) := Code;
-            J := J + 1;
+            Len := Len + 1;
+            Trace (Len) := Code;
          end if;
 
          Pop_Frame (M, System.Null_Address);
       end loop;
 
-      Len := J - 1;
       Free_Machine_State (M);
    end Call_Chain;
 

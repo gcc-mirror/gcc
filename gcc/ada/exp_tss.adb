@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,9 +29,9 @@ with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Exp_Util; use Exp_Util;
 with Lib;      use Lib;
+with Namet;    use Namet;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
-with Snames;   use Snames;
 
 package body Exp_Tss is
 
@@ -97,6 +97,31 @@ package body Exp_Tss is
       Prepend_Elmt (TSS, TSS_Elist (FN));
    end Copy_TSS;
 
+   -----------------------
+   -- Get_TSS_Name_Type --
+   -----------------------
+
+   function Get_TSS_Name (E : Entity_Id) return TSS_Name_Type is
+      C1 : Character;
+      C2 : Character;
+      Nm : TSS_Name_Type;
+
+   begin
+      Get_Last_Two_Chars (Chars (E), C1, C2);
+
+      if C1 in 'A' .. 'Z' and then C2 in 'A' .. 'Z' then
+         Nm := (C1, C2);
+
+         for J in OK_TSS_Names'Range loop
+            if Nm = OK_TSS_Names (J) then
+               return Nm;
+            end if;
+         end loop;
+      end if;
+
+      return TSS_Null;
+   end Get_TSS_Name;
+
    ---------------------------------
    -- Has_Non_Null_Base_Init_Proc --
    ---------------------------------
@@ -113,9 +138,130 @@ package body Exp_Tss is
    ---------------
 
    function Init_Proc (Typ : Entity_Id) return Entity_Id is
+      FN   : constant Node_Id := Freeze_Node (Typ);
+      Elmt : Elmt_Id;
+
    begin
-      return TSS (Typ, Name_uInit_Proc);
+      if No (FN) then
+         return Empty;
+
+      elsif No (TSS_Elist (FN)) then
+         return Empty;
+
+      else
+         Elmt := First_Elmt (TSS_Elist (FN));
+         while Present (Elmt) loop
+            if Is_Init_Proc (Node (Elmt)) then
+               return Node (Elmt);
+            end if;
+
+            Next_Elmt (Elmt);
+         end loop;
+      end if;
+
+      return Empty;
    end Init_Proc;
+
+   ------------------
+   -- Is_Init_Proc --
+   ------------------
+
+   function Is_Init_Proc (E : Entity_Id) return Boolean is
+      C1 : Character;
+      C2 : Character;
+   begin
+      Get_Last_Two_Chars (Chars (E), C1, C2);
+      return C1 = TSS_Init_Proc (1) and then C2 = TSS_Init_Proc (2);
+   end Is_Init_Proc;
+
+   ------------
+   -- Is_TSS --
+   ------------
+
+   function Is_TSS (E : Entity_Id; Nam : TSS_Name_Type) return Boolean is
+      C1 : Character;
+      C2 : Character;
+   begin
+      Get_Last_Two_Chars (Chars (E), C1, C2);
+      return C1 = Nam (1) and then C2 = Nam (2);
+   end Is_TSS;
+
+   function Is_TSS (N : Name_Id; Nam : TSS_Name_Type) return Boolean is
+      C1 : Character;
+      C2 : Character;
+   begin
+      Get_Last_Two_Chars (N, C1, C2);
+      return C1 = Nam (1) and then C2 = Nam (2);
+   end Is_TSS;
+
+   -------------------------
+   -- Make_Init_Proc_Name --
+   -------------------------
+
+   function Make_Init_Proc_Name (Typ : Entity_Id) return Name_Id is
+   begin
+      Get_Name_String (Chars (Typ));
+      Name_Len := Name_Len + 2;
+      Name_Buffer (Name_Len - 1) := TSS_Init_Proc (1);
+      Name_Buffer (Name_Len)     := TSS_Init_Proc (2);
+      return Name_Find;
+   end Make_Init_Proc_Name;
+
+   -------------------------
+   -- Make_TSS_Name_Local --
+   -------------------------
+
+   function Make_TSS_Name_Local
+     (Typ : Entity_Id;
+      Nam : TSS_Name_Type) return Name_Id
+   is
+   begin
+      Get_Name_String (Chars (Typ));
+      Add_Char_To_Name_Buffer (Nam (1));
+      Add_Char_To_Name_Buffer (Nam (2));
+      Add_Char_To_Name_Buffer ('_');
+      Add_Nat_To_Name_Buffer (Increment_Serial_Number);
+      return Name_Find;
+   end Make_TSS_Name_Local;
+
+   -------------------
+   -- Make_TSS_Name --
+   -------------------
+
+   function Make_TSS_Name
+     (Typ : Entity_Id;
+      Nam : TSS_Name_Type) return Name_Id
+   is
+   begin
+      Get_Name_String (Chars (Typ));
+      Add_Char_To_Name_Buffer (Nam (1));
+      Add_Char_To_Name_Buffer (Nam (2));
+      return Name_Find;
+   end Make_TSS_Name;
+
+   --------------
+   -- Same_TSS --
+   --------------
+
+   function Same_TSS (E1, E2 : Entity_Id) return Boolean is
+      E1C1 : Character;
+      E1C2 : Character;
+      E2C1 : Character;
+      E2C2 : Character;
+
+   begin
+      Get_Last_Two_Chars (Chars (E1), E1C1, E1C2);
+      Get_Last_Two_Chars (Chars (E2), E2C1, E2C2);
+
+      return
+        E1C1 = E2C1
+          and then
+        E1C2 = E2C2
+          and then
+        E1C1 in 'A' .. 'Z'
+          and then
+        E1C2 in 'A' .. 'Z';
+   end Same_TSS;
 
    -------------------
    -- Set_Init_Proc --
@@ -152,6 +298,48 @@ package body Exp_Tss is
    -- TSS --
    ---------
 
+   function TSS (Typ : Entity_Id; Nam : TSS_Name_Type) return Entity_Id is
+      FN   : constant Node_Id := Freeze_Node (Typ);
+      Elmt : Elmt_Id;
+      Subp : Entity_Id;
+
+   begin
+      if No (FN) then
+         return Empty;
+
+      elsif No (TSS_Elist (FN)) then
+         return Empty;
+
+      else
+         Elmt := First_Elmt (TSS_Elist (FN));
+         while Present (Elmt) loop
+            if Is_TSS (Node (Elmt), Nam) then
+               Subp := Node (Elmt);
+
+               --  For stream subprograms, the TSS entity may be a renaming-
+               --  as-body of an already generated entity. Use that one rather
+               --  the one introduced by the renaming, which is an artifact of
+               --  current stream handling.
+
+               if Nkind (Parent (Parent (Subp))) =
+                                           N_Subprogram_Renaming_Declaration
+                 and then
+                   Present (Corresponding_Spec (Parent (Parent (Subp))))
+               then
+                  return Corresponding_Spec (Parent (Parent (Subp)));
+               else
+                  return Subp;
+               end if;
+
+            else
+               Next_Elmt (Elmt);
+            end if;
+         end loop;
+      end if;
+
+      return Empty;
+   end TSS;
+
    function TSS (Typ : Entity_Id; Nam : Name_Id) return Entity_Id is
       FN   : constant Node_Id := Freeze_Node (Typ);
       Elmt : Elmt_Id;
@@ -166,9 +354,8 @@ package body Exp_Tss is
 
       else
          Elmt := First_Elmt (TSS_Elist (FN));
-
          while Present (Elmt) loop
-            if Chars (Node (Elmt)) = Nam then
+            if Chars (Node (Elmt)) =  Nam then
                Subp := Node (Elmt);
 
                --  For stream subprograms, the TSS entity may be a renaming-

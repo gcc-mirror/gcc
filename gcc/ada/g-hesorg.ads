@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 1995-2000 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1995-2002 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,17 +26,29 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
 --  Heapsort generic package using formal procedures
 
 --  This package provides a generic heapsort routine that can be used with
---  different types of data. See also GNAT.Heap_Sort_A, a version that works
---  with subprogram parameters, allowing code sharing. The generic version
---  is slightly more efficient but does not allow code sharing. The generic
---  version is also Pure, while the access version can only be Preelaborate.
+--  different types of data.
+
+--  See also GNAT.Heap_Sort, a version that works with subprogram access
+--  parameters, allowing code sharing. The generic version is slightly more
+--  efficient but does not allow code sharing and has an interface that is
+--  more awkward to use. The generic version is also Pure, while the access
+--  subprogram version can only be Preelaborate.
+
+--  There is also GNAT.Heap_Sort_A, which is now considered obsolete, but
+--  was an older version working with subprogram parameters. This version
+--  is retained for bacwards compatibility with old versions of GNAT.
+
+--  This heapsort algorithm uses approximately N*log(N) compares in the
+--  worst case and is in place with no additional storage required. See
+--  the body for exact details of the algorithm used.
 
 generic
    --  The data to be sorted is assumed to be indexed by integer values from
@@ -44,14 +56,25 @@ generic
    --  index value zero is used for a temporary location used during the sort.
 
    with procedure Move (From : Natural; To : Natural);
-   --  A procedure that moves the data item with index From to the data item
-   --  with Index To. An index value of zero is used for moves from and to a
-   --  single temporary location used by the sort.
+   --  A procedure that moves the data item with index value From to the data
+   --  item with index value To (the old value in To being lost). An index
+   --  value of zero is used for moves from and to a single temporary location
 
    with function Lt (Op1, Op2 : Natural) return Boolean;
    --  A function that compares two items and returns True if the item with
    --  index Op1 is less than the item with Index Op2, and False if the Op1
-   --  item is greater than or equal to the Op2 item.
+   --  item is greater than the Op2 item. If the two items are equal, then
+   --  it does not matter whether True or False is returned (it is slightly
+   --  more efficient to return False).
+
+   --  Note on use of temporary location
+
+   --  There are two ways of providing for the index value zero to represent
+   --  a temporary value. Either an extra location can be allocated at the
+   --  start of the array, or alternatively the Move and Lt subprograms can
+   --  test for the case of zero and treat it specially. In any case it is
+   --  desirable to specify the two subprograms as inlined and the tests for
+   --  zero will in this case be resolved at instantiation time.
 
 package GNAT.Heap_Sort_G is
 pragma Pure (Heap_Sort_G);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1991-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1991-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,7 +27,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University.       --
--- Extensive contributions were provided by Ada Core Technologies Inc.      --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -84,9 +84,8 @@ private
       --  make sure is that they are updated in atomic fashion.
 
       Thread_Id : aliased System.OS_Interface.DWORD;
-      --  The purpose of this field is to provide a better
-      --  tasking support on gdb. The order of the two first fields (Thread
-      --  and LWP) is important.
+      --  The purpose of this field is to provide a better tasking support
+      --  in gdb.
 
       CV : aliased Condition_Variable;
       --  Condition Variable used to implement Sleep/Wakeup

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 1998-2000 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1998-2003 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -36,6 +37,7 @@
 --  e.g. a C program, to create a thread that the Ada run-time knows about.
 
 with System;
+with Ada.Task_Identification;
 
 package GNAT.Threads is
 
@@ -68,6 +70,46 @@ package GNAT.Threads is
    --  extern void *__gnat_create_thread
    --    (void (*code)(void *, void *), void *parm, int size, int prio);
 
+   function Register_Thread return System.Address;
+   pragma Export (C, Register_Thread, "__gnat_register_thread");
+   --  Create an Ada task Id for the current thread if needed.
+   --  If the thread could not be registered, System.Null_Address is returned.
+   --
+   --  This function returns the Ada Id of the current task that can then be
+   --  used as a parameter to the procedures below.
+   --
+   --  C declaration:
+   --
+   --  extern void *__gnat_register_thread ();
+   --
+   --  Here is a typical usage of the Register/Unregister_Thread procedures:
+   --
+   --  void thread_body ()
+   --  {
+   --    void *task_id = __gnat_register_thread ();
+   --    ... thread body ...
+   --    __gnat_unregister_thread ();
+   --  }
+
+   procedure Unregister_Thread;
+   pragma Export (C, Unregister_Thread, "__gnat_unregister_thread");
+   --  Unregister the current task from the GNAT run time and destroy the
+   --  memory allocated for its task id.
+   --
+   --  C declaration:
+   --
+   --  extern void __gnat_unregister_thread ();
+
+   procedure Unregister_Thread_Id (Thread : System.Address);
+   pragma Export (C, Unregister_Thread_Id, "__gnat_unregister_thread_id");
+   --  Unregister the task associated with Thread from the GNAT run time and
+   --  destroy the memory allocated for its task id.
+   --  If no task id is associated with Thread, do nothing.
+   --
+   --  C declaration:
+   --
+   --  extern void __gnat_unregister_thread_id (pthread_t *thread);
+
    procedure Destroy_Thread (Id : System.Address);
    pragma Export (C, Destroy_Thread, "__gnat_destroy_thread");
    --  This procedure may be used to prematurely abort the created thread.
@@ -89,5 +131,12 @@ package GNAT.Threads is
    --  C declaration:
    --
    --  extern void __gnat_get_thread (void *id, pthread_t *thread);
+
+   function To_Task_Id
+     (Id   : System.Address)
+      return Ada.Task_Identification.Task_Id;
+   --  Ada interface only.
+   --  Given a low level Id, as returned by Create_Thread, return a Task_Id,
+   --  so that operations in Ada.Task_Identification can be used.
 
 end GNAT.Threads;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-1999 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,9 +41,6 @@ procedure List (File_Names_Only : Boolean := False) is
 
    Sorted_Units : Unit_Ref_Table (1 .. Num_Units);
    --  Table of unit numbers that we will sort
-
-   Unit_Node : Node_Id;
-   --  Compilation unit node for current unit
 
    Unit_Hed : constant String := "Unit name                        ";
    Unit_Und : constant String := "---------                        ";
@@ -84,8 +81,6 @@ begin
    end if;
 
    for R in Sorted_Units'Range loop
-      Unit_Node := Cunit (Sorted_Units (R));
-
       if File_Names_Only then
          if not Is_Internal_File_Name
                   (File_Name (Source_Index (Sorted_Units (R))))

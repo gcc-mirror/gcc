@@ -1,4 +1,4 @@
------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 --                                                                          --
 --                         GNAT RUNTIME COMPONENTS                          --
 --                                                                          --
@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -168,7 +168,12 @@ private package Ada.Text_IO.Generic_Aux is
       Ptr  : in out Integer);
    --  Store a single character in buffer, checking for overflow and
    --  adjusting the column number in the file to reflect the fact
-   --  that a character has been acquired from the input stream.
+   --  that a character has been acquired from the input stream. If
+   --  the character will not fit in the buffer it is stored in the
+   --  last character position of the buffer and Ptr is unchanged.
+   --  No exception is raised in this case, it is the caller's job
+   --  to raise Data_Error if the buffer fills up, so typically the
+   --  caller will make the buffer one character longer than needed.
 
    procedure String_Skip (Str : String; Ptr : out Integer);
    --  Used in the Get from string procedures to skip leading blanks in the

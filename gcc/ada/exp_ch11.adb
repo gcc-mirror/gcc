@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -107,6 +107,16 @@ package body Exp_Ch11 is
    --  the call to the cleanup routine that is made from an exception
    --  handler for the abort signal is called with aborts deferred.
 
+   --  This expansion is only done if we have front end exception handling.
+   --  If we have back end exception handling, then the AT END handler is
+   --  left alone, and cleanups (including the exceptional case) are handled
+   --  by the back end.
+
+   --  In the front end case, the exception handler described above handles
+   --  the exceptional case. The AT END handler is left in the generated tree
+   --  and the code generator (e.g. gigi) must still handle proper generation
+   --  of cleanup calls for the non-exceptional case.
+
    procedure Expand_At_End_Handler (HSS : Node_Id; Block : Node_Id) is
       Clean   : constant Entity_Id  := Entity (At_End_Proc (HSS));
       Loc     : constant Source_Ptr := Sloc (Clean);
@@ -116,6 +126,20 @@ package body Exp_Ch11 is
    begin
       pragma Assert (Present (Clean));
       pragma Assert (No (Exception_Handlers (HSS)));
+
+      --  Don't expand if back end exception handling active
+
+      if Exception_Mechanism = Back_End_ZCX_Exceptions then
+         return;
+      end if;
+
+      --  Don't expand an At End handler if we have already had configurable
+      --  run-time violations, since likely this will just be a matter of
+      --  generating useless cascaded messages
+
+      if Configurable_Run_Time_Violations > 0 then
+         return;
+      end if;
 
       if Restrictions (No_Exception_Handlers) then
          return;
@@ -690,8 +714,21 @@ package body Exp_Ch11 is
       --  Loop through handlers
 
       Handler := First_Non_Pragma (Handlrs);
-      while Present (Handler) loop
+      Handler_Loop : while Present (Handler) loop
          Loc := Sloc (Handler);
+
+         --  Remove source handler if gnat debug flag N is set
+
+         if Debug_Flag_Dot_X and then Comes_From_Source (Handler) then
+            declare
+               H : Node_Id := Handler;
+            begin
+               Next_Non_Pragma (Handler);
+               Remove (H);
+               goto Continue_Handler_Loop;
+            end;
+         end if;
+
 
          --  If an exception occurrence is present, then we must declare it
          --  and initialize it from the value stored in the TSD
@@ -758,10 +795,10 @@ package body Exp_Ch11 is
 
          if Hostparm.Java_VM then
             declare
-               Arg  : Node_Id
-                 := Make_Function_Call (Loc,
-                      Name => New_Occurrence_Of
-                                (RTE (RE_Current_Target_Exception), Loc));
+               Arg : constant Node_Id :=
+                       Make_Function_Call (Loc,
+                         Name => New_Occurrence_Of
+                                   (RTE (RE_Current_Target_Exception), Loc));
             begin
                Prepend_Call_To_Handler (RE_Update_Exception, New_List (Arg));
             end;
@@ -801,12 +838,23 @@ package body Exp_Ch11 is
          end if;
 
          Next_Non_Pragma (Handler);
-      end loop;
+
+      <<Continue_Handler_Loop>>
+         null;
+      end loop Handler_Loop;
+
+      --  If all handlers got removed by gnatdN, then remove the list
+
+      if Debug_Flag_Dot_X
+        and then Is_Empty_List (Exception_Handlers (HSS))
+      then
+         Set_Exception_Handlers (HSS, No_List);
+      end if;
 
       --  The last step for expanding exception handlers is to expand the
       --  exception tables if zero cost exception handling is active.
 
-      if Exception_Mechanism = Front_End_ZCX then
+      if Exception_Mechanism = Front_End_ZCX_Exceptions then
          Expand_Exception_Handler_Tables (HSS);
       end if;
    end Expand_Exception_Handlers;
@@ -820,9 +868,12 @@ package body Exp_Ch11 is
    --     except : exception_data :=  (
    --                    Handled_By_Other => False,
    --                    Lang             => 'A',
-   --                    Name_Length      => exceptE'Length
-   --                    Full_Name        => exceptE'Address
-   --                    HTable_Ptr       => null);
+   --                    Name_Length      => exceptE'Length,
+   --                    Full_Name        => exceptE'Address,
+   --                    HTable_Ptr       => null,
+   --                    Import_Code      => 0,
+   --                    Raise_Hook       => null,
+   --                    );
 
    --  (protecting test only needed if not at library level)
    --
@@ -893,12 +944,18 @@ package body Exp_Ch11 is
 
       Append_To (L, Make_Integer_Literal (Loc, 0));
 
+      --  Raise_Hook component: null
+
+      Append_To (L, Make_Null (Loc));
+
       Set_Expression (N, Make_Aggregate (Loc, Expressions => L));
       Analyze_And_Resolve (Expression (N), Etype (Id));
 
       --  Register_Exception (except'Unchecked_Access);
 
-      if not Restrictions (No_Exception_Handlers) then
+      if not Restrictions (No_Exception_Handlers)
+        and then not Restrictions (No_Exception_Registration)
+      then
          L := New_List (
                 Make_Procedure_Call_Statement (Loc,
                   Name => New_Occurrence_Of (RTE (RE_Register_Exception), Loc),
@@ -1016,9 +1073,19 @@ package body Exp_Ch11 is
          return;
       end if;
 
+      --  Don't expand a raise statement that does not come from source
+      --  if we have already had configurable run-time violations, since
+      --  most likely it will be junk cascaded nonsense.
+
+      if Configurable_Run_Time_Violations > 0
+        and then not Comes_From_Source (N)
+      then
+         return;
+      end if;
+
       --  Convert explicit raise of Program_Error, Constraint_Error, and
-      --  Storage_Error into the corresponding raise node (in No_Run_Time
-      --  mode all other raises will get normal expansion and be disallowed,
+      --  Storage_Error into the corresponding raise (in High_Integrity_Mode
+      --  all other raises will get normal expansion and be disallowed,
       --  but this is also faster in all modes).
 
       if Present (Name (N)) and then Nkind (Name (N)) = N_Identifier then
@@ -1065,24 +1132,25 @@ package body Exp_Ch11 is
                Id := Renamed_Object (Id);
             end if;
 
-            --  Build a C compatible string in case of no exception handlers,
+            --  Build a C-compatible string in case of no exception handlers,
             --  since this is what the last chance handler is expecting.
 
             if Restrictions (No_Exception_Handlers) then
-               --  Generate a C null message when Global_Discard_Names is True
-               --  or when Debug_Flag_NN is set.
 
-               if Global_Discard_Names or else Debug_Flag_NN then
-                  Name_Buffer (1) := ASCII.NUL;
+               --  Generate an empty message if configuration pragma
+               --  Suppress_Exception_Locations is set for this unit.
+
+               if Opt.Exception_Locations_Suppressed then
                   Name_Len := 1;
                else
                   Name_Len := Name_Len + 1;
                end if;
 
-            --  Do not generate the message when Global_Discard_Names is True
-            --  or when Debug_Flag_NN is set.
+               Name_Buffer (Name_Len) := ASCII.NUL;
+            end if;
 
-            elsif Global_Discard_Names or else Debug_Flag_NN then
+
+            if Opt.Exception_Locations_Suppressed then
                Name_Len := 0;
             end if;
 
@@ -1258,7 +1326,7 @@ package body Exp_Ch11 is
       Hrc   : List_Id;
 
    begin
-      if Exception_Mechanism /= Front_End_ZCX then
+      if Exception_Mechanism /= Front_End_ZCX_Exceptions then
          return;
       end if;
 
@@ -1277,7 +1345,7 @@ package body Exp_Ch11 is
       --  Suppress descriptor if we are in No_Exceptions restrictions mode,
       --  since we can never propagate exceptions in any case in this mode.
       --  The same consideration applies for No_Exception_Handlers (which
-      --   is also set in No_Run_Time mode).
+      --  is also set in High_Integrity_Mode).
 
       if Restrictions (No_Exceptions)
         or Restrictions (No_Exception_Handlers)
@@ -1306,14 +1374,7 @@ package body Exp_Ch11 is
       begin
          Scop := Spec;
          while Scop /= Standard_Standard loop
-            if Ekind (Scop) = E_Generic_Procedure
-                 or else
-               Ekind (Scop) = E_Generic_Function
-                 or else
-               Ekind (Scop) = E_Generic_Package
-                 or else
-               Is_Eliminated (Scop)
-            then
+            if Is_Generic_Unit (Scop) or else Is_Eliminated (Scop) then
                return;
             end if;
 
@@ -1352,7 +1413,7 @@ package body Exp_Ch11 is
 
       --  Suppress all subprogram descriptors for the file System.Exceptions.
       --  We similarly suppress subprogram descriptors for Ada.Exceptions.
-      --  These are all init_proc's for types which cannot raise exceptions.
+      --  These are all init procs for types which cannot raise exceptions.
       --  The reason this is done is that otherwise we get embarassing
       --  elaboration dependencies.
 
@@ -1695,7 +1756,7 @@ package body Exp_Ch11 is
    begin
       --  Nothing to be done if zero length exceptions not active
 
-      if Exception_Mechanism /= Front_End_ZCX then
+      if Exception_Mechanism /= Front_End_ZCX_Exceptions then
          return;
       end if;
 
@@ -1851,6 +1912,7 @@ package body Exp_Ch11 is
       --  This defines the traversal operation
 
       Discard : Traverse_Result;
+      pragma Warnings (Off, Discard);
 
       function Check_Handler_Entry (N : Node_Id) return Traverse_Result is
       begin
@@ -1886,7 +1948,7 @@ package body Exp_Ch11 is
    --  Start of processing for Remove_Handler_Entries
 
    begin
-      if Exception_Mechanism = Front_End_ZCX then
+      if Exception_Mechanism = Front_End_ZCX_Exceptions then
          Discard := Remove_All_Handler_Entries (N);
       end if;
    end Remove_Handler_Entries;

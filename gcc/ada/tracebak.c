@@ -6,8 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                                                                          *
- *           Copyright (C) 2000-2001 Ada Core Technologies, Inc.            *
+ *           Copyright (C) 2000-2003 Ada Core Technologies, Inc.            *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -27,14 +26,13 @@
  * file might be covered by the  GNU Public License.                        *
  *                                                                          *
  * GNAT was originally developed  by the GNAT team at  New York University. *
- * It is now maintained by Ada Core Technologies Inc (http://www.gnat.com). *
+ * Extensive contributions were provided by Ada Core Technologies Inc.      *
  *                                                                          *
  ****************************************************************************/
 
 /* This file contains low level support for stack unwinding using GCC intrinsic
    functions.
    It has been tested on the following configurations:
-   HPPA/HP-UX
    PowerPC/AiX
    PowerPC/VxWorks
    Sparc/Solaris
@@ -44,6 +42,7 @@
    i386/OS2
    i386/LynxOS
    Alpha/VxWorks
+   Alpha/VMS
 */
 
 #ifdef __alpha_vxworks
@@ -59,42 +58,140 @@
 #include "system.h"
 #endif
 
+extern int __gnat_backtrace PARAMS ((void **, int, void *, void *, int));
+
+/* The point is to provide an implementation of the __gnat_bactrace function
+   above, called by the default implementation of the System.Traceback
+   package.
+
+   We first have a series of target specific implementations, each included
+   from a separate C file for readability purposes.
+
+   Then comes a somewhat generic implementation based on a set of macro and
+   structure definitions which may be tailored on a per target basis. The
+   presence of a definition for one of these macros (PC_ADJUST) controls
+   wether or not the generic implementation is included.
+
+   Finally, there is a default dummy implementation, necessary to make the
+   linker happy on platforms where the feature is not supported, but where the
+   function is still referenced by the default System.Traceback.  */
+
 #define Lock_Task system__soft_links__lock_task
 extern void (*Lock_Task) PARAMS ((void));
 
 #define Unlock_Task system__soft_links__unlock_task
 extern void (*Unlock_Task) PARAMS ((void));
 
-#ifndef CURRENT_STACK_FRAME
-# define CURRENT_STACK_FRAME  ({ char __csf; &__csf; })
-#endif
+/*-------------------------------------*
+ *-- Target specific implementations --*
+ *-------------------------------------*/
 
-extern int __gnat_backtrace	PARAMS ((void **, int, void *, void *));
+#if defined (__alpha_vxworks)
 
-#if defined (__hppa)
-struct layout
-{
-  void *return_address;
-  void *pad[4];
-  struct layout *next;
-};
+#include "tb-alvxw.c"
 
-#define FRAME_LEVEL 1
-#define FRAME_OFFSET -20
-#define SKIP_FRAME 1
-#define PC_ADJUST -4
+#elif defined (__ALPHA) && defined (__VMS__)
 
-/* If CURRENT is unaligned, it means that CURRENT is not a valid frame
-   pointer and we should stop popping frames. */
+#include "tb-alvms.c"
 
-#define STOP_FRAME(CURRENT, TOP_STACK) \
-  (((int) (CURRENT) & 0x3) != 0 && (CURRENT)->return_address == 0)
+#else
+/* No target specific implementation.  */
 
-/* Current implementation need to be protected against invalid memory
-   accesses */
-#define PROTECT_SEGV
+/*----------------------------------------------------------------*
+ *-- Target specific definitions for the generic implementation --*
+ *----------------------------------------------------------------*/
 
-#elif defined (_AIX)
+/* The stack layout is specified by the target ABI. The "generic" scheme is
+   based on the following assumption:
+
+     The stack layout from some frame pointer is such that the information
+     required to compute the backtrace is available at static offsets.
+
+   For a given frame, the information we are interested in is the saved return
+   address (somewhere after the call instruction in the caller) and a pointer
+   to the caller's frame. The former is the base of the call chain information
+   we store in the tracebacks array. The latter allows us to loop over the
+   successive frames in the chain.
+
+   To initiate the process, we retrieve an initial frame pointer using the
+   appropriate GCC builtin (__builtin_frame_address).
+
+   This scheme is unfortunately not applicable on every target because the
+   stack layout is not necessarily regular (static) enough. On targets where
+   this scheme applies, the implementation relies on the following items:
+
+   o struct layout, describing the expected stack data layout relevant to the
+     information we are interested in,
+
+   o FRAME_OFFSET, the offset, from a given frame pointer, at which this
+     layout will be found,
+
+   o FRAME_LEVEL, controls how many frames up we get at to start with,
+     from the initial frame pointer we compute by way of the GCC builtin,
+
+     0 is most often the appropriate value. 1 may be necessary on targets
+     where return addresses are saved by a function in it's caller's frame
+     (e.g. PPC).
+
+   o PC_ADJUST, to account for the difference between a call point (address
+     of a call instruction), which is what we want in the output array, and
+     the associated return address, which is what we retrieve from the stack.
+
+   o STOP_FRAME, to decide wether we reached the top of the call chain, and
+     thus if the process shall stop.
+
+	   :
+	   :                   stack
+	   |             +----------------+
+	   |   +-------->|       :        |
+	   |   |         | (FRAME_OFFSET) |
+	   |   |         |       :        |  (PC_ADJUST)
+	   |   |  layout:| return_address ----------------+
+	   |   |         |     ....       |               |
+	   +---------------  next_frame   |               |
+	       |         |     ....       |               |
+	       |         |                |               |
+	       |         +----------------+               |  +-----+
+	       |         |       :        |<- Base fp     |  |  :  |
+	       |         | (FRAME_OFFSET) | (FRAME_LEVEL) |  |  :  |
+	       |         |       :        |               +--->    | [1]
+	       |  layout:| return_address -------------------->    | [0]
+	       |         |       ...      |  (PC_ADJUST)     +-----+
+	       +----------   next_frame   |                 traceback[]
+		         |       ...      |
+		         |                |
+		         +----------------+
+
+   o BASE_SKIP,
+
+   Since we inherently deal with return addresses, there is an implicit shift
+   by at least one for the initial point we are able to observe in the chain.
+
+   On some targets (e.g. sparc-solaris), the first return address we can
+   easily get without special code is even our caller's return address, so
+   there is a initial shift of two.
+
+   BASE_SKIP represents this initial shift, which is the minimal "skip_frames"
+   value we support. We could add special code for the skip_frames < BASE_SKIP
+   cases. This is not done currently because there is virtually no situation
+   in which this would be useful.
+
+   Finally, to account for some ABI specificities, a target may (but does
+   not have to) define:
+
+   o FORCE_CALL, to force a call to a dummy function at the very beginning
+     of the computation. See the PPC AIX target for an example where this
+     is useful.
+
+   o FETCH_UP_FRAME, to force an invocation of __builtin_frame_address with a
+     positive argument right after a possibly forced call even if FRAME_LEVEL
+     is 0. See the Sparc Solaris case for an example where this is useful.
+
+  */
+
+/*------------------------------ PPC AIX -------------------------------*/
+
+#if defined (_AIX)
 struct layout
 {
   struct layout *next;
@@ -102,11 +199,23 @@ struct layout
   void *return_address;
 };
 
-#define FRAME_LEVEL 1
 #define FRAME_OFFSET 0
-#define SKIP_FRAME 2
 #define PC_ADJUST -4
 #define STOP_FRAME(CURRENT, TOP_STACK) ((void *) (CURRENT) < (TOP_STACK))
+
+/* The PPC ABI has an interesting specificity: the return address saved by a
+   function is located in it's caller's frame, and the save operation only
+   takes place if the function performs a call.
+
+   To have __gnat_backtrace retrieve it's own return address, we then
+   define ... */
+
+#define FORCE_CALL
+#define FRAME_LEVEL 1
+
+#define BASE_SKIP 1
+
+/*---------------------------- PPC VxWorks------------------------------*/
 
 #elif defined (_ARCH_PPC) && defined (__vxworks)
 struct layout
@@ -115,26 +224,47 @@ struct layout
   void *return_address;
 };
 
+#define FORCE_CALL
 #define FRAME_LEVEL 1
+/* See the PPC AIX case for an explanation of these values.  */
+
 #define FRAME_OFFSET 0
-#define SKIP_FRAME 2
-#define PC_ADJUST 0
+#define PC_ADJUST -4
 #define STOP_FRAME(CURRENT, TOP_STACK) ((CURRENT)->return_address == 0)
 
+#define BASE_SKIP 1
+
+/*-------------------------- Sparc Solaris -----------------------------*/
+
 #elif defined (sun) && defined (sparc)
+
+/* These definitions are inspired from the Appendix D (Software
+   Considerations) of the SPARC V8 architecture manual.  */
+
 struct layout
 {
   struct layout *next;
   void *return_address;
 };
 
-#define FRAME_LEVEL 1
-#define FRAME_OFFSET (14*4)
-#define SKIP_FRAME 1
+#define FRAME_LEVEL 0
+#define FRAME_OFFSET (14 * (sizeof (void*)))
 #define PC_ADJUST 0
 #define STOP_FRAME(CURRENT, TOP_STACK) \
   ((CURRENT)->return_address == 0|| (CURRENT)->next == 0 \
    || (void *) (CURRENT) < (TOP_STACK))
+
+/* The sparc register windows need to be flushed before we may access them
+   from the stack. This is achieved by way of builtin_frame_address only
+   when the "count" argument is positive, so force at least one such call.  */
+#define FETCH_UP_FRAME_ADDRESS
+
+#define BASE_SKIP 2
+/* From the frame pointer of frame N, we are accessing the flushed register
+   window of frame N-1 (positive offset from fp), in which we retrieve the
+   saved return address. We then end up with our caller's return address.  */
+
+/*------------------------------- x86 ----------------------------------*/
 
 #elif defined (i386)
 struct layout
@@ -154,12 +284,13 @@ extern unsigned int _image_base__;
 
 #define FRAME_LEVEL 0
 #define FRAME_OFFSET 0
-#define SKIP_FRAME 1
 #define PC_ADJUST -2
 #define STOP_FRAME(CURRENT, TOP_STACK) \
   ((unsigned int)(CURRENT)->return_address < LOWEST_ADDR \
    || (CURRENT)->return_address == 0|| (CURRENT)->next == 0  \
    || (void *) (CURRENT) < (TOP_STACK))
+
+#define BASE_SKIP 1
 
 /* On i386 architecture we check that at the call point we really have a call
    insn. Possible call instructions are:
@@ -175,91 +306,75 @@ extern unsigned int _image_base__;
 
 #define VALID_STACK_FRAME(ptr) \
    (((*((ptr) - 3) & 0xff) == 0xe8) \
-    || ((*((ptr) - 4) & 0xff) == 0x9a) \
-    || ((*((ptr) - 2) & 0xff) == 0xff) \
-    || (((*((ptr) - 1) & 0xff00) == 0xff00) \
-        && ((*((ptr) - 1) & 0xf0) == 0xd0)))
+    || ((*((ptr) - 5) & 0xff) == 0x9a) \
+    || ((*((ptr) - 1) & 0xff) == 0xff) \
+    || (((*(ptr) & 0xd0ff) == 0xd0ff)))
 
-#elif defined (__alpha_vxworks)
-
-#define SKIP_FRAME 1
-#define PC_ADJUST -4
-
-extern void kerTaskEntry();
-
-#define STOP_FRAME \
-   (current == NULL \
-    || ((CORE_ADDR) &kerTaskEntry >= PROC_LOW_ADDR (current->proc_desc) \
-        && current->pc >= (CORE_ADDR) &kerTaskEntry))
 #endif
 
-#if !defined (PC_ADJUST)
-int
-__gnat_backtrace (array, size, exclude_min, exclude_max)
-     void **array ATTRIBUTE_UNUSED;
-     int size ATTRIBUTE_UNUSED;
-     void *exclude_min ATTRIBUTE_UNUSED;
-     void *exclude_max ATTRIBUTE_UNUSED;
-{
-  return 0;
-}
+/*---------------------------------------*
+ *-- The generic implementation per se --*
+ *---------------------------------------*/
 
-#elif !defined (__alpha_vxworks)
+#if defined (PC_ADJUST)
 
-#ifdef PROTECT_SEGV
-#include <setjmp.h>
-#include <signal.h>
-
-static jmp_buf sigsegv_excp;
-
-static void
-segv_handler (ignored)
-     int ignored;
-{
-  longjmp (sigsegv_excp, 1);
-}
+#ifndef CURRENT_STACK_FRAME
+# define CURRENT_STACK_FRAME  ({ char __csf; &__csf; })
 #endif
+
 
 #ifndef VALID_STACK_FRAME
 #define VALID_STACK_FRAME(ptr) 1
 #endif
 
+#define MAX(x,y) ((x) > (y) ? (x) : (y))
+
+/* Define a dummy function to call if FORCE_CALL is defined.  Don't
+   define it otherwise, as this could lead to "defined but not used"
+   warnings.  */
+#if defined (FORCE_CALL)
+static void forced_callee () {}
+#endif
+
 int
-__gnat_backtrace (array, size, exclude_min, exclude_max)
+__gnat_backtrace (array, size, exclude_min, exclude_max, skip_frames)
      void **array;
      int size;
      void *exclude_min;
      void *exclude_max;
+     int skip_frames;
 {
   struct layout *current;
   void *top_frame;
   void *top_stack;
   int cnt = 0;
 
-#ifdef PROTECT_SEGV
-  struct sigaction this_act, old_act;
+  /* Honor FORCE_CALL when defined.  */
+#if defined (FORCE_CALL)
+  forced_callee ();
+#endif
 
-  /* This function is not thread safe if PROTECT_SEGV is defined, so
-     protect it */
-  (*Lock_Task) ();
+  /* Force a call to builtin_frame_address with a positive argument
+     if required. This is necessary e.g. on sparc to have the register
+     windows flushed before we attempt to access them on the stack.  */
+#if defined (FETCH_UP_FRAME_ADDRESS) && (FRAME_LEVEL == 0)
+  __builtin_frame_address (1);
 #endif
 
   top_frame = __builtin_frame_address (FRAME_LEVEL);
   top_stack = CURRENT_STACK_FRAME;
   current = (struct layout *) ((size_t) top_frame + FRAME_OFFSET);
 
-#ifdef PROTECT_SEGV
-  this_act.sa_handler = segv_handler;
-  sigemptyset (&this_act.sa_mask);
-  this_act.sa_flags = 0;
-  sigaction (SIGSEGV, &this_act, &old_act);
+  /* Skip the number of calls we have been requested to skip, accounting for
+     the BASE_SKIP parameter.
 
-  if (setjmp (sigsegv_excp))
-    goto Done;
-#endif
+     FRAME_LEVEL is meaningless for the count adjustment. It impacts where we
+     start retrieving data from, but how many frames "up" we start at is in
+     BASE_SKIP by definition.  */
 
-  /* We skip the call to this function, it makes no sense to record it.  */
-  while (cnt < SKIP_FRAME)
+  skip_frames = MAX (0, skip_frames - BASE_SKIP);
+
+  while (cnt < skip_frames)
     {
       current = (struct layout *) ((size_t) current->next + FRAME_OFFSET);
       cnt++;
@@ -268,7 +383,7 @@ __gnat_backtrace (array, size, exclude_min, exclude_max)
   cnt = 0;
   while (cnt < size)
     {
-      if (STOP_FRAME (current, top_stack) || 
+      if (STOP_FRAME (current, top_stack) ||
 	  !VALID_STACK_FRAME((char *)(current->return_address + PC_ADJUST)))
         break;
 
@@ -279,931 +394,27 @@ __gnat_backtrace (array, size, exclude_min, exclude_max)
       current = (struct layout *) ((size_t) current->next + FRAME_OFFSET);
     }
 
-#ifdef PROTECT_SEGV
- Done:
-  sigaction (SIGSEGV, &old_act, NULL);
-  (*Unlock_Task) ();
-#endif
   return cnt;
 }
 
 #else
-/* Alpha vxWorks requires a special, complex treatment that is extracted
-   from GDB */
-
-#include <string.h>
-
-/* Register numbers of various important registers.
-   Note that most of these values are "real" register numbers,
-   and correspond to the general registers of the machine,
-   and FP_REGNUM is a "phony" register number which is too large
-   to be an actual register number as far as the user is concerned
-   but serves to get the desired value when passed to read_register.  */
-
-#define T7_REGNUM 8		/* Return address register for OSF/1 __add* */
-#define GCC_FP_REGNUM 15	/* Used by gcc as frame register */
-#define T9_REGNUM 23		/* Return address register for OSF/1 __div* */
-#define SP_REGNUM 30		/* Contains address of top of stack */
-#define RA_REGNUM 26		/* Contains return address value */
-#define FP0_REGNUM 32		/* Floating point register 0 */
-#define PC_REGNUM 64		/* Contains program counter */
-#define NUM_REGS 66
-
-#define VM_MIN_ADDRESS (CORE_ADDR)0x120000000
-
-#define SIZEOF_FRAME_SAVED_REGS (sizeof (CORE_ADDR) * (NUM_REGS))
-#define INIT_EXTRA_FRAME_INFO(fromleaf, fci) init_extra_frame_info(fci)
-
-#define FRAME_CHAIN(thisframe) (CORE_ADDR) alpha_frame_chain (thisframe)
-
-#define FRAME_CHAIN_VALID(CHAIN, THISFRAME)	\
-  ((CHAIN) != 0					\
-   && !inside_entry_file (FRAME_SAVED_PC (THISFRAME)))
-
-#define FRAME_SAVED_PC(FRAME)	(alpha_frame_saved_pc (FRAME))
-
-#define	FRAME_CHAIN_COMBINE(CHAIN, THISFRAME) (CHAIN)
-
-#define	INIT_FRAME_PC(FROMLEAF, PREV)
-
-#define INIT_FRAME_PC_FIRST(FROMLEAF, PREV) \
-  (PREV)->pc = ((FROMLEAF) ? SAVED_PC_AFTER_CALL ((PREV)->next) \
-		: (PREV)->next ? FRAME_SAVED_PC ((prev)->NEXT) : read_pc ());
-
-#define SAVED_PC_AFTER_CALL(FRAME)	alpha_saved_pc_after_call (FRAME)
-
-typedef unsigned long long int bfd_vma;
-
-typedef bfd_vma CORE_ADDR;
-
-typedef struct pdr
-{
-  bfd_vma adr;		/* memory address of start of procedure */
-  long	isym;		/* start of local symbol entries */
-  long	iline;		/* start of line number entries*/
-  long	regmask;	/* save register mask */
-  long	regoffset;	/* save register offset */
-  long	iopt;		/* start of optimization symbol entries*/
-  long	fregmask;	/* save floating point register mask */
-  long	fregoffset;	/* save floating point register offset */
-  long	frameoffset;	/* frame size */
-  short	framereg;	/* frame pointer register */
-  short	pcreg;		/* offset or reg of return pc */
-  long	lnLow;		/* lowest line in the procedure */
-  long	lnHigh;		/* highest line in the procedure */
-  bfd_vma cbLineOffset;	/* byte offset for this procedure from the fd base */
-  /* These fields are new for 64 bit ECOFF.  */
-  unsigned gp_prologue : 8; /* byte size of GP prologue */
-  unsigned gp_used : 1;	/* true if the procedure uses GP */
-  unsigned reg_frame : 1; /* true if register frame procedure */
-  unsigned prof : 1;	/* true if compiled with -pg */
-  unsigned reserved : 13; /* reserved: must be zero */
-  unsigned localoff : 8; /* offset of local variables from vfp */
-} PDR;
-
-typedef struct alpha_extra_func_info
-{
-  long numargs;		/* number of args to procedure (was iopt) */
-  PDR pdr;			/* Procedure descriptor record */
-}
-*alpha_extra_func_info_t;
-
-struct frame_info
-{
-  /* Nominal address of the frame described.  See comments at FRAME_FP
-     about what this means outside the *FRAME* macros; in the *FRAME*
-     macros, it can mean whatever makes most sense for this machine.  */
-  CORE_ADDR frame;
-
-  /* Address at which execution is occurring in this frame.  For the
-     innermost frame, it's the current pc.  For other frames, it is a
-     pc saved in the next frame.  */
-  CORE_ADDR pc;
-
-  /* For each register, address of where it was saved on entry to the
-     frame, or zero if it was not saved on entry to this frame.  This
-     includes special registers such as pc and fp saved in special
-     ways in the stack frame.  The SP_REGNUM is even more special, the
-     address here is the sp for the next frame, not the address where
-     the sp was saved.  Allocated by frame_saved_regs_zalloc () which
-     is called and initialized by FRAME_INIT_SAVED_REGS. */
-  CORE_ADDR *saved_regs;	/*NUM_REGS */
-
-  int localoff;
-  int pc_reg;
-  alpha_extra_func_info_t proc_desc;
-
-  /* Pointers to the next and previous frame_info's in the frame cache.  */
-  struct frame_info *next, *prev;
-};
-
-struct frame_saved_regs
-{
-  /* For each register R (except the SP), regs[R] is the address at
-     which it was saved on entry to the frame, or zero if it was not
-     saved on entry to this frame.  This includes special registers
-     such as pc and fp saved in special ways in the stack frame.
-
-     regs[SP_REGNUM] is different.  It holds the actual SP, not the
-     address at which it was saved.  */
-
-  CORE_ADDR regs[NUM_REGS];
-};
-
-static CORE_ADDR theRegisters[32];
-
-/* Prototypes for local functions. */
-
-static CORE_ADDR read_next_frame_reg PARAMS ((struct frame_info *, int));
-static CORE_ADDR heuristic_proc_start PARAMS ((CORE_ADDR));
-static int alpha_about_to_return PARAMS ((CORE_ADDR pc));
-static void init_extra_frame_info PARAMS ((struct frame_info *));
-static CORE_ADDR alpha_frame_chain PARAMS ((struct frame_info *));
-static CORE_ADDR alpha_frame_saved_pc PARAMS ((struct frame_info *frame))
-static void *trace_alloc PARAMS ((unsigned int));
-static struct frame_info *create_new_frame PARAMS ((CORE_ADDR, CORE_ADDR));
-
-static alpha_extra_func_info_t
-heuristic_proc_desc PARAMS ((CORE_ADDR, CORE_ADDR, struct frame_info *,
-			     struct frame_saved_regs *));
-
-static alpha_extra_func_info_t
-find_proc_desc PARAMS ((CORE_ADDR, struct frame_info *,
-			struct frame_saved_regs *));
-
-/* Heuristic_proc_start may hunt through the text section for a long
-   time across a 2400 baud serial line.  Allows the user to limit this
-   search.  */
-static unsigned int heuristic_fence_post = 1<<16;
-
-/* Layout of a stack frame on the alpha:
-
-                |				|
- pdr members:	|  7th ... nth arg,		|
-                |  `pushed' by caller.		|
-                |				|
-----------------|-------------------------------|<--  old_sp == vfp
-   ^  ^  ^  ^	|				|
-   |  |  |  |	|				|
-   |  |localoff	|  Copies of 1st .. 6th		|
-   |  |  |  |	|  argument if necessary.	|
-   |  |  |  v	|				|
-   |  |  |  ---	|-------------------------------|<-- FRAME_LOCALS_ADDRESS
-   |  |  |      |				|
-   |  |  |      |  Locals and temporaries.	|
-   |  |  |      |				|
-   |  |  |      |-------------------------------|
-   |  |  |      |				|
-   |-fregoffset	|  Saved float registers.	|
-   |  |  |      |  F9				|
-   |  |  |      |   .				|
-   |  |  |      |   .				|
-   |  |  |      |  F2				|
-   |  |  v      |				|
-   |  |  -------|-------------------------------|
-   |  |         |				|
-   |  |         |  Saved registers.		|
-   |  |         |  S6				|
-   |-regoffset	|   .				|
-   |  |         |   .				|
-   |  |         |  S0				|
-   |  |         |  pdr.pcreg			|
-   |  v         |				|
-   |  ----------|-------------------------------|
-   |            |				|
- frameoffset    |  Argument build area, gets	|
-   |            |  7th ... nth arg for any	|
-   |            |  called procedure.		|
-   v            |  				|
-   -------------|-------------------------------|<-- sp
-                |				|            */
-
-#define PROC_LOW_ADDR(PROC) ((PROC)->pdr.adr)		    /* least address */
-#define PROC_HIGH_ADDR(PROC) ((PROC)->pdr.iline)      /* upper address bound */
-#define PROC_DUMMY_FRAME(PROC) ((PROC)->pdr.cbLineOffset) /*CALL_DUMMY frame */
-#define PROC_FRAME_OFFSET(PROC) ((PROC)->pdr.frameoffset)
-#define PROC_FRAME_REG(PROC) ((PROC)->pdr.framereg)
-#define PROC_REG_MASK(PROC) ((PROC)->pdr.regmask)
-#define PROC_FREG_MASK(PROC) ((PROC)->pdr.fregmask)
-#define PROC_REG_OFFSET(PROC) ((PROC)->pdr.regoffset)
-#define PROC_FREG_OFFSET(PROC) ((PROC)->pdr.fregoffset)
-#define PROC_PC_REG(PROC) ((PROC)->pdr.pcreg)
-#define PROC_LOCALOFF(PROC) ((PROC)->pdr.localoff)
-
-/* Local storage allocation/deallocation functions.  trace_alloc does
-   a malloc, but also chains allocated blocks on trace_alloc_chain, so
-   they may all be freed on exit from __gnat_backtrace. */
-
-struct alloc_chain
-{
-  struct alloc_chain *next;
-  double x[0];
-};
-struct alloc_chain *trace_alloc_chain;
-
-static void * 
-trace_alloc (n)
-     unsigned int n;
-{
-  struct alloc_chain * result = malloc (n + sizeof(struct alloc_chain));
-
-  result->next = trace_alloc_chain;
-  trace_alloc_chain = result;
-  return (void*) result->x;
-}
-
-static void
-free_trace_alloc ()
-{
-  while (trace_alloc_chain != 0)
-    {
-      struct alloc_chain *old = trace_alloc_chain;
-
-      trace_alloc_chain = trace_alloc_chain->next;
-      free (old);
-    }
-}
-
-/* Read value at ADDR into *DEST, returning 0 if this is valid, != 0
-   otherwise. */
-
-static int
-read_memory_safe4 (addr, dest)
-     CORE_ADDR addr;
-     unsigned int *dest;
-{
-  *dest = *((unsigned int*) addr);
-  return 0;
-}
-
-/* Read value at ADDR into *DEST, returning 0 if this is valid, != 0
-   otherwise. */
-
-static int
-read_memory_safe8 (addr, dest)
-     CORE_ADDR addr;
-     CORE_ADDR *dest;
-{
-  *dest = *((CORE_ADDR*) addr);
-  return 0;
-}
-
-static CORE_ADDR
-read_register (regno)
-     int regno;
-{
-  if (regno >= 0 && regno < 31)
-    return theRegisters[regno];
-
-  return (CORE_ADDR) 0;
-}
-
-static void
-frame_saved_regs_zalloc (fi)
-     struct frame_info *fi;
-{
-  fi->saved_regs = (CORE_ADDR *) trace_alloc (SIZEOF_FRAME_SAVED_REGS);
-  memset (fi->saved_regs, 0, SIZEOF_FRAME_SAVED_REGS);
-}
-
-static void *
-frame_obstack_alloc (size)
-     unsigned long size;
-{
-  return (void *) trace_alloc (size);
-}
-
-static int
-inside_entry_file (addr)
-     CORE_ADDR addr;
-{
-  if (addr == 0)
-    return 1;
-  else
-    return 0;
-}
-
-static CORE_ADDR
-alpha_saved_pc_after_call (frame)
-     struct frame_info *frame;
-{
-  CORE_ADDR pc = frame->pc;
-  alpha_extra_func_info_t proc_desc;
-  int pcreg;
-
-  proc_desc = find_proc_desc (pc, frame->next, NULL);
-  pcreg = proc_desc ? PROC_PC_REG (proc_desc) : RA_REGNUM;
-
-  return read_register (pcreg);
-}
-
-/* Guaranteed to set frame->saved_regs to some values (it never leaves it
-   NULL).  */
-
-static void
-alpha_find_saved_regs (frame)
-     struct frame_info *frame;
-{
-  int ireg;
-  CORE_ADDR reg_position;
-  unsigned long mask;
-  alpha_extra_func_info_t proc_desc;
-  int returnreg;
-
-  frame_saved_regs_zalloc (frame);
-
-  /* If it is the frame for __sigtramp, the saved registers are located in a
-     sigcontext structure somewhere on the stack. __sigtramp passes a pointer
-     to the sigcontext structure on the stack.  If the stack layout for
-     __sigtramp changes, or if sigcontext offsets change, we might have to
-     update this code.  */
-
-#ifndef SIGFRAME_PC_OFF
-#define SIGFRAME_PC_OFF		(2 * 8)
-#define SIGFRAME_REGSAVE_OFF	(4 * 8)
-#define SIGFRAME_FPREGSAVE_OFF	(SIGFRAME_REGSAVE_OFF + 32 * 8 + 8)
-#endif
-
-  proc_desc = frame->proc_desc;
-  if (proc_desc == NULL)
-    /* I'm not sure how/whether this can happen.  Normally when we can't
-       find a proc_desc, we "synthesize" one using heuristic_proc_desc
-       and set the saved_regs right away.  */
-    return;
-
-  /* Fill in the offsets for the registers which gen_mask says
-     were saved.  */
-
-  reg_position = frame->frame + PROC_REG_OFFSET (proc_desc);
-  mask = PROC_REG_MASK (proc_desc);
-
-  returnreg = PROC_PC_REG (proc_desc);
-
-  /* Note that RA is always saved first, regardless of its actual
-     register number.  */
-  if (mask & (1 << returnreg))
-    {
-      frame->saved_regs[returnreg] = reg_position;
-      reg_position += 8;
-      mask &= ~(1 << returnreg);	/* Clear bit for RA so we
-					   don't save again later. */
-    }
-
-  for (ireg = 0; ireg <= 31; ireg++)
-    if (mask & (1 << ireg))
-      {
-	frame->saved_regs[ireg] = reg_position;
-	reg_position += 8;
-      }
-
-  /* Fill in the offsets for the registers which float_mask says
-     were saved.  */
-
-  reg_position = frame->frame + PROC_FREG_OFFSET (proc_desc);
-  mask = PROC_FREG_MASK (proc_desc);
-
-  for (ireg = 0; ireg <= 31; ireg++)
-    if (mask & (1 << ireg))
-      {
-	frame->saved_regs[FP0_REGNUM + ireg] = reg_position;
-	reg_position += 8;
-      }
-
-  frame->saved_regs[PC_REGNUM] = frame->saved_regs[returnreg];
-}
-
-static CORE_ADDR
-read_next_frame_reg (fi, regno)
-     struct frame_info *fi;
-     int regno;
-{
-  CORE_ADDR result;
-  for (; fi; fi = fi->next)
-    {
-      /* We have to get the saved sp from the sigcontext
-         if it is a signal handler frame.  */
-      if (regno == SP_REGNUM)
-	return fi->frame;
-      else
-	{
-	  if (fi->saved_regs == 0)
-	    alpha_find_saved_regs (fi);
-
-	  if (fi->saved_regs[regno])
-	    {
-	      if (read_memory_safe8 (fi->saved_regs[regno], &result) == 0)
-		return result;
-	      else
-		return 0;
-	    }
-	}
-    }
-
-  return read_register (regno);
-}
-
-static CORE_ADDR
-alpha_frame_saved_pc (frame)
-     struct frame_info *frame;
-{
-  return read_next_frame_reg (frame, frame->pc_reg);
-}
-
-static struct alpha_extra_func_info temp_proc_desc;
-
-/* Nonzero if instruction at PC is a return instruction.  "ret
-   $zero,($ra),1" on alpha. */
-
-static int
-alpha_about_to_return (pc)
-     CORE_ADDR pc;
-{
-  int inst;
-
-  read_memory_safe4 (pc, &inst);
-  return inst == 0x6bfa8001;
-}
-
-/* A heuristically computed start address for the subprogram
-   containing address PC.   Returns 0 if none detected. */
-
-static CORE_ADDR
-heuristic_proc_start (pc)
-     CORE_ADDR pc;
-{
-  CORE_ADDR start_pc = pc;
-  CORE_ADDR fence = start_pc - heuristic_fence_post;
-
-  if (start_pc == 0)
-    return 0;
-
-  if (heuristic_fence_post == UINT_MAX
-      || fence < VM_MIN_ADDRESS)
-    fence = VM_MIN_ADDRESS;
-
-  /* search back for previous return */
-  for (start_pc -= 4; ; start_pc -= 4)
-    {
-      if (start_pc < fence)
-	return 0;
-      else if (alpha_about_to_return (start_pc))
-	break;
-    }
-
-  start_pc += 4;		/* skip return */
-  return start_pc;
-}
-
-static alpha_extra_func_info_t
-heuristic_proc_desc (start_pc, limit_pc, next_frame, saved_regs_p)
-     CORE_ADDR start_pc;
-     CORE_ADDR limit_pc;
-     struct frame_info *next_frame;
-     struct frame_saved_regs *saved_regs_p;
-{
-  CORE_ADDR sp = read_next_frame_reg (next_frame, SP_REGNUM);
-  CORE_ADDR cur_pc;
-  int frame_size;
-  int has_frame_reg = 0;
-  unsigned long reg_mask = 0;
-  int pcreg = -1;
-
-  if (start_pc == 0)
-    return 0;
-
-  memset (&temp_proc_desc, '\0', sizeof (temp_proc_desc));
-  if (saved_regs_p != 0)
-    memset (saved_regs_p, '\0', sizeof (struct frame_saved_regs));
-
-  PROC_LOW_ADDR (&temp_proc_desc) = start_pc;
-
-  if (start_pc + 200 < limit_pc)
-    limit_pc = start_pc + 200;
-
-  frame_size = 0;
-  for (cur_pc = start_pc; cur_pc < limit_pc; cur_pc += 4)
-    {
-      unsigned int word;
-      int status;
-
-      status = read_memory_safe4 (cur_pc, &word);
-      if (status)
-	return 0;
-
-      if ((word & 0xffff0000) == 0x23de0000)	/* lda $sp,n($sp) */
-	{
-	  if (word & 0x8000)
-	    frame_size += (-word) & 0xffff;
-	  else
-	    /* Exit loop if a positive stack adjustment is found, which
-	       usually means that the stack cleanup code in the function
-	       epilogue is reached.  */
-	    break;
-	}
-      else if ((word & 0xfc1f0000) == 0xb41e0000	/* stq reg,n($sp) */
-	       && (word & 0xffff0000) != 0xb7fe0000)	/* reg != $zero */
-	{
-	  int reg = (word & 0x03e00000) >> 21;
-
-	  reg_mask |= 1 << reg;
-	  if (saved_regs_p != 0)
-	    saved_regs_p->regs[reg] = sp + (short) word;
-
-	  /* Starting with OSF/1-3.2C, the system libraries are shipped
-	     without local symbols, but they still contain procedure
-	     descriptors without a symbol reference. GDB is currently
-	     unable to find these procedure descriptors and uses
-	     heuristic_proc_desc instead.
-	     As some low level compiler support routines (__div*, __add*)
-	     use a non-standard return address register, we have to
-	     add some heuristics to determine the return address register,
-	     or stepping over these routines will fail.
-	     Usually the return address register is the first register
-	     saved on the stack, but assembler optimization might
-	     rearrange the register saves.
-	     So we recognize only a few registers (t7, t9, ra) within
-	     the procedure prologue as valid return address registers.
-	     If we encounter a return instruction, we extract the
-	     the return address register from it.
-
-	     FIXME: Rewriting GDB to access the procedure descriptors,
-	     e.g. via the minimal symbol table, might obviate this hack.  */
-	  if (pcreg == -1
-	      && cur_pc < (start_pc + 80)
-	      && (reg == T7_REGNUM || reg == T9_REGNUM || reg == RA_REGNUM))
-	    pcreg = reg;
-	}
-      else if ((word & 0xffe0ffff) == 0x6be08001)	/* ret zero,reg,1 */
-	pcreg = (word >> 16) & 0x1f;
-      else if (word == 0x47de040f)	/* bis sp,sp fp */
-	has_frame_reg = 1;
-    }
-
-  if (pcreg == -1)
-    {
-      /* If we haven't found a valid return address register yet,
-         keep searching in the procedure prologue.  */
-      while (cur_pc < (limit_pc + 80) && cur_pc < (start_pc + 80))
-	{
-	  unsigned int word;
-
-	  if (read_memory_safe4 (cur_pc, &word))
-	    break;
-	  cur_pc += 4;
-
-	  if ((word & 0xfc1f0000) == 0xb41e0000		/* stq reg,n($sp) */
-	      && (word & 0xffff0000) != 0xb7fe0000)	/* reg != $zero */
-	    {
-	      int reg = (word & 0x03e00000) >> 21;
-
-	      if (reg == T7_REGNUM || reg == T9_REGNUM || reg == RA_REGNUM)
-		{
-		  pcreg = reg;
-		  break;
-		}
-	    }
-	  else if ((word & 0xffe0ffff) == 0x6be08001)	/* ret zero,reg,1 */
-	    {
-	      pcreg = (word >> 16) & 0x1f;
-	      break;
-	    }
-	}
-    }
-
-  if (has_frame_reg)
-    PROC_FRAME_REG (&temp_proc_desc) = GCC_FP_REGNUM;
-  else
-    PROC_FRAME_REG (&temp_proc_desc) = SP_REGNUM;
-
-  PROC_FRAME_OFFSET (&temp_proc_desc) = frame_size;
-  PROC_REG_MASK (&temp_proc_desc) = reg_mask;
-  PROC_PC_REG (&temp_proc_desc) = (pcreg == -1) ? RA_REGNUM : pcreg;
-  PROC_LOCALOFF (&temp_proc_desc) = 0;	/* XXX - bogus */
-
-  return &temp_proc_desc;
-}
-
-static alpha_extra_func_info_t
-find_proc_desc (pc, next_frame, saved_regs)
-     CORE_ADDR pc;
-     struct frame_info *next_frame;
-     struct frame_saved_regs *saved_regs;
-{
-  CORE_ADDR startaddr;
-
-  /* If heuristic_fence_post is non-zero, determine the procedure
-     start address by examining the instructions.
-     This allows us to find the start address of static functions which
-     have no symbolic information, as startaddr would have been set to
-     the preceding global function start address by the
-     find_pc_partial_function call above.  */
-  startaddr = heuristic_proc_start (pc);
-
-  return heuristic_proc_desc (startaddr, pc, next_frame, saved_regs);
-}
-
-static CORE_ADDR
-alpha_frame_chain (frame)
-     struct frame_info *frame;
-{
-  alpha_extra_func_info_t proc_desc;
-  CORE_ADDR saved_pc = FRAME_SAVED_PC (frame);
-
-  if (saved_pc == 0 || inside_entry_file (saved_pc))
-    return 0;
-
-  proc_desc = find_proc_desc (saved_pc, frame, NULL);
-  if (!proc_desc)
-    return 0;
-
-  /* If no frame pointer and frame size is zero, we must be at end
-     of stack (or otherwise hosed).  If we don't check frame size,
-     we loop forever if we see a zero size frame.  */
-  if (PROC_FRAME_REG (proc_desc) == SP_REGNUM
-      && PROC_FRAME_OFFSET (proc_desc) == 0)
-    return 0;
-  else
-    return read_next_frame_reg (frame, PROC_FRAME_REG (proc_desc))
-      + PROC_FRAME_OFFSET (proc_desc);
-}
-
-static void
-init_extra_frame_info (frame)
-     struct frame_info *frame;
-{
-  struct frame_saved_regs temp_saved_regs;
-  alpha_extra_func_info_t proc_desc = 
-    find_proc_desc (frame->pc, frame->next, &temp_saved_regs);
-
-  frame->saved_regs = NULL;
-  frame->localoff = 0;
-  frame->pc_reg = RA_REGNUM;
-  frame->proc_desc = proc_desc;
-
-  if (proc_desc)
-    {
-      /* Get the locals offset and the saved pc register from the
-         procedure descriptor, they are valid even if we are in the
-         middle of the prologue.  */
-      frame->localoff = PROC_LOCALOFF (proc_desc);
-      frame->pc_reg = PROC_PC_REG (proc_desc);
-
-      /* Fixup frame-pointer - only needed for top frame */
-
-      /* This may not be quite right, if proc has a real frame register.
-         Get the value of the frame relative sp, procedure might have been
-         interrupted by a signal at it's very start.  */
-      if (frame->pc == PROC_LOW_ADDR (proc_desc))
-	frame->frame = read_next_frame_reg (frame->next, SP_REGNUM);
-      else
-	frame->frame
-	  = (read_next_frame_reg (frame->next, PROC_FRAME_REG (proc_desc))
-	     + PROC_FRAME_OFFSET (proc_desc));
-
-      frame->saved_regs
-	= (CORE_ADDR *) frame_obstack_alloc (SIZEOF_FRAME_SAVED_REGS);
-      memcpy
-        (frame->saved_regs, temp_saved_regs.regs, SIZEOF_FRAME_SAVED_REGS);
-      frame->saved_regs[PC_REGNUM] = frame->saved_regs[RA_REGNUM];
-    }
-}
-
-/* Create an arbitrary (i.e. address specified by user) or innermost frame.
-   Always returns a non-NULL value.  */
-
-static struct frame_info *
-create_new_frame (addr, pc)
-     CORE_ADDR addr;
-     CORE_ADDR pc;
-{
-  struct frame_info *fi;
-
-  fi = (struct frame_info *)
-    trace_alloc (sizeof (struct frame_info));
-
-  /* Arbitrary frame */
-  fi->next = NULL;
-  fi->prev = NULL;
-  fi->frame = addr;
-  fi->pc = pc;
-
-#ifdef INIT_EXTRA_FRAME_INFO
-  INIT_EXTRA_FRAME_INFO (0, fi);
-#endif
-
-  return fi;
-}
-
-static CORE_ADDR current_pc;
-
-static void
-set_current_pc ()
-{
-  current_pc = (CORE_ADDR) __builtin_return_address (0);
-}
-
-static CORE_ADDR
-read_pc ()
-{
-  return current_pc;
-}
-
-static struct frame_info *
-get_current_frame ()
-{
-  return create_new_frame (0, read_pc ());
-}
-
-/* Return the frame that called FI.
-   If FI is the original frame (it has no caller), return 0.  */
-
-static struct frame_info *
-get_prev_frame (next_frame)
-     struct frame_info *next_frame;
-{
-  CORE_ADDR address = 0;
-  struct frame_info *prev;
-  int fromleaf = 0;
-
-  /* If we have the prev one, return it */
-  if (next_frame->prev)
-    return next_frame->prev;
-
-  /* On some machines it is possible to call a function without
-     setting up a stack frame for it.  On these machines, we
-     define this macro to take two args; a frameinfo pointer
-     identifying a frame and a variable to set or clear if it is
-     or isn't leafless.  */
-
-  /* Two macros defined in tm.h specify the machine-dependent
-     actions to be performed here.
-
-     First, get the frame's chain-pointer.  If that is zero, the frame
-     is the outermost frame or a leaf called by the outermost frame.
-     This means that if start calls main without a frame, we'll return
-     0 (which is fine anyway).
-
-     Nope; there's a problem.  This also returns when the current
-     routine is a leaf of main.  This is unacceptable.  We move
-     this to after the ffi test; I'd rather have backtraces from
-     start go curfluy than have an abort called from main not show
-     main.  */
-
-  address = FRAME_CHAIN (next_frame);
-  if (!FRAME_CHAIN_VALID (address, next_frame))
-    return 0;
-  address = FRAME_CHAIN_COMBINE (address, next_frame);
-
-  if (address == 0)
-    return 0;
-
-  prev = (struct frame_info *) trace_alloc (sizeof (struct frame_info));
-
-  prev->saved_regs = NULL;
-  if (next_frame)
-    next_frame->prev = prev;
-
-  prev->next = next_frame;
-  prev->prev = (struct frame_info *) 0;
-  prev->frame = address;
-
-  /* This change should not be needed, FIXME!  We should
-     determine whether any targets *need* INIT_FRAME_PC to happen
-     after INIT_EXTRA_FRAME_INFO and come up with a simple way to
-     express what goes on here.
-
-     INIT_EXTRA_FRAME_INFO is called from two places: create_new_frame
-     (where the PC is already set up) and here (where it isn't).
-     INIT_FRAME_PC is only called from here, always after
-     INIT_EXTRA_FRAME_INFO.
-
-     The catch is the MIPS, where INIT_EXTRA_FRAME_INFO requires the PC
-     value (which hasn't been set yet).  Some other machines appear to
-     require INIT_EXTRA_FRAME_INFO before they can do INIT_FRAME_PC.  Phoo.
-
-     We shouldn't need INIT_FRAME_PC_FIRST to add more complication to
-     an already overcomplicated part of GDB.   gnu@cygnus.com, 15Sep92.
-
-     Assuming that some machines need INIT_FRAME_PC after
-     INIT_EXTRA_FRAME_INFO, one possible scheme:
-
-     SETUP_INNERMOST_FRAME()
-     Default version is just create_new_frame (read_fp ()),
-     read_pc ()).  Machines with extra frame info would do that (or the
-     local equivalent) and then set the extra fields.
-     INIT_PREV_FRAME(fromleaf, prev)
-     Replace INIT_EXTRA_FRAME_INFO and INIT_FRAME_PC.  This should
-     also return a flag saying whether to keep the new frame, or
-     whether to discard it, because on some machines (e.g.  mips) it
-     is really awkward to have FRAME_CHAIN_VALID called *before*
-     INIT_EXTRA_FRAME_INFO (there is no good way to get information
-     deduced in FRAME_CHAIN_VALID into the extra fields of the new frame).
-     std_frame_pc(fromleaf, prev)
-     This is the default setting for INIT_PREV_FRAME.  It just does what
-     the default INIT_FRAME_PC does.  Some machines will call it from
-     INIT_PREV_FRAME (either at the beginning, the end, or in the middle).
-     Some machines won't use it.
-     kingdon@cygnus.com, 13Apr93, 31Jan94, 14Dec94.  */
-
-#ifdef INIT_FRAME_PC_FIRST
-  INIT_FRAME_PC_FIRST (fromleaf, prev);
-#endif
-
-#ifdef INIT_EXTRA_FRAME_INFO
-  INIT_EXTRA_FRAME_INFO (fromleaf, prev);
-#endif
-
-  /* This entry is in the frame queue now, which is good since
-     FRAME_SAVED_PC may use that queue to figure out its value
-     (see tm-sparc.h).  We want the pc saved in the inferior frame. */
-  INIT_FRAME_PC (fromleaf, prev);
-
-  /* If ->frame and ->pc are unchanged, we are in the process of getting
-     ourselves into an infinite backtrace.  Some architectures check this
-     in FRAME_CHAIN or thereabouts, but it seems like there is no reason
-     this can't be an architecture-independent check.  */
-  if (next_frame != NULL)
-    {
-      if (prev->frame == next_frame->frame
-	  && prev->pc == next_frame->pc)
-	{
-	  next_frame->prev = NULL;
-	  free (prev);
-	  return NULL;
-	}
-    }
-
-  return prev;
-}
-
-#define SAVE(regno,disp) \
-    "stq $" #regno ", " #disp "(%0)\n" 
+/* No target specific implementation and PC_ADJUST not defined.  */
+
+/*------------------------------*
+ *-- The dummy implementation --*
+ *------------------------------*/
 
 int
-__gnat_backtrace (array, size, exclude_min, exclude_max)
-     void **array;
-     int size;
-     void *exclude_min;
-     void *exclude_max;
+__gnat_backtrace (array, size, exclude_min, exclude_max, skip_frames)
+     void **array ATTRIBUTE_UNUSED;
+     int size ATTRIBUTE_UNUSED;
+     void *exclude_min ATTRIBUTE_UNUSED;
+     void *exclude_max ATTRIBUTE_UNUSED;
+     int skip_frames ATTRIBUTE_UNUSED;
 {
-  struct frame_info* top;
-  struct frame_info* current;
-  int cnt;
-
-  /* This function is not thread safe, protect it */
-  (*Lock_Task) ();
-  asm volatile (
-      SAVE (9,72)
-      SAVE (10,80)
-      SAVE (11,88)
-      SAVE (12,96)
-      SAVE (13,104)
-      SAVE (14,112)
-      SAVE (15,120)
-      SAVE (16,128)
-      SAVE (17,136)
-      SAVE (18,144)
-      SAVE (19,152)
-      SAVE (20,160)
-      SAVE (21,168)
-      SAVE (22,176)
-      SAVE (23,184)
-      SAVE (24,192)
-      SAVE (25,200)
-      SAVE (26,208)
-      SAVE (27,216)
-      SAVE (28,224)
-      SAVE (29,232)
-      SAVE (30,240)
-      : : "r" (&theRegisters));
-
-  trace_alloc_chain = NULL;
-  set_current_pc ();
-
-  top = current = get_current_frame ();
-  cnt = 0;
-
-  /* We skip the call to this function, it makes no sense to record it.  */
-  for (cnt = 0; cnt < SKIP_FRAME; cnt += 1) {
-    current = get_prev_frame (current);
-  }
-
-  cnt = 0;
-  while (cnt < size)
-    {
-      if (STOP_FRAME)
-        break;
-
-      if (current->pc < (CORE_ADDR) exclude_min
-	  || current->pc > (CORE_ADDR) exclude_max)
-        array[cnt++] = (void*) (current->pc + PC_ADJUST);
-
-      current = get_prev_frame (current);
-    }
-
-  free_trace_alloc ();
-  (*Unlock_Task) ();
-
-  return cnt;
+  return 0;
 }
+
+#endif
+
 #endif

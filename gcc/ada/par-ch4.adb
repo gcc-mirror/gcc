@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -79,7 +79,7 @@ package body Ch4 is
 
    procedure Set_Op_Name (Node : Node_Id) is
       type Name_Of_Type is array (N_Op) of Name_Id;
-      Name_Of : Name_Of_Type := Name_Of_Type'(
+      Name_Of : constant Name_Of_Type := Name_Of_Type'(
          N_Op_And                    => Name_Op_And,
          N_Op_Or                     => Name_Op_Or,
          N_Op_Xor                    => Name_Op_Xor,
@@ -718,7 +718,7 @@ package body Ch4 is
          --  a possible fix.
 
          if Nkind (Expr_Node) = N_Op_Eq then
-            Error_Msg_N ("\maybe `=>` was intended", Expr_Node);
+            Error_Msg_N ("\maybe `='>` was intended", Expr_Node);
          end if;
 
          --  We go back to scanning out expressions, so that we do not get
@@ -1271,6 +1271,17 @@ package body Ch4 is
                              "extension aggregate");
             raise Error_Resync;
 
+         --  A range attribute can only appear as part of a discrete choice
+         --  list.
+
+         elsif Nkind (Expr_Node) = N_Attribute_Reference
+           and then Attribute_Name (Expr_Node) = Name_Range
+           and then Token /= Tok_Arrow
+           and then Token /= Tok_Vertical_Bar
+         then
+            Bad_Range_Attribute (Sloc (Expr_Node));
+            return Error;
+
          --  Assume positional case if comma, right paren, or literal or
          --  identifier or OTHERS follows (the latter cases are missing
          --  comma cases). Also assume positional if a semicolon follows,
@@ -1284,7 +1295,7 @@ package body Ch4 is
          then
             if Present (Assoc_List) then
                Error_Msg_BC
-                  ("""=>"" expected (positional association cannot follow " &
+                  ("""='>"" expected (positional association cannot follow " &
                    "named association)");
             end if;
 
@@ -1324,7 +1335,8 @@ package body Ch4 is
             Expr_Node := Empty;
          else
             Save_Scan_State (Scan_State); -- at start of expression
-            Expr_Node := P_Expression;
+            Expr_Node := P_Expression_Or_Range_Attribute;
+
          end if;
       end loop;
 
@@ -2142,7 +2154,7 @@ package body Ch4 is
 
    begin
       if Token = Tok_Box then
-         Error_Msg_SC ("""<>"" should be ""/=""");
+         Error_Msg_SC ("""'<'>"" should be ""/=""");
       end if;
 
       Op_Kind := Relop_Node (Token);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2001-2002 Free Software Foundation, Inc.       --
+--             Copyright (C) 2001-2003 Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,6 +39,8 @@ package Prj.Makr is
       Directories       : Argument_List;
       Name_Patterns     : Argument_List;
       Excluded_Patterns : Argument_List;
+      Foreign_Patterns  : Argument_List;
+      Preproc_Switches  : Argument_List;
       Very_Verbose      : Boolean);
    --  Create a project file or a configuration pragmas file
    --
@@ -59,5 +61,11 @@ package Prj.Makr is
    --  all the specs and bodies for the project.
    --  A file containing the source file names is automatically
    --  generated and used as the Source_File_List for the project file.
+   --  It includes all sources that follow the Foreign_Patterns (except those
+   --  that follow Excluded_Patterns).
+
+   --  Preproc_switches is a list of optional preprocessor switches -gnatep=
+   --  and -gnateD that are used when invoking the compiler to find the
+   --  unit name and kind.
 
 end Prj.Makr;

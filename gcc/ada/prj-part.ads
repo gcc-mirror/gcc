@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 2000-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,7 +23,7 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
---
+
 --  Implements the parsing of project files into a tree.
 
 with Prj.Tree;  use Prj.Tree;
@@ -33,12 +33,14 @@ package Prj.Part is
    procedure Parse
      (Project                : out Project_Node_Id;
       Project_File_Name      : String;
-      Always_Errout_Finalize : Boolean);
-   --  Parse a project file and all its imported project files
-   --  and create a tree.
-   --  Return the node for the project (or Empty_Node if parsing failed).
-   --  If Always_Errout_Finalize is True, Errout.Finalize is called
-   --  in all cases; otherwise, Errout.Finalize is only called if there are
-   --  errors (but not if there are only warnings).
+      Always_Errout_Finalize : Boolean;
+      Packages_To_Check      : String_List_Access := All_Packages);
+   --  Parse project file and all its imported project files and create a tree.
+   --  Return the node for the project (or Empty_Node if parsing failed). If
+   --  Always_Errout_Finalize is True, Errout.Finalize is called in all cases,
+   --  Otherwise, Errout.Finalize is only called if there are errors (but not
+   --  if there are only warnings). Packages_To_Check indicates the packages
+   --  where any unknown attribute produces an error. For other packages, an
+   --  unknown attribute produces a warning.
 
 end Prj.Part;

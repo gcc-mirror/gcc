@@ -27,7 +27,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University.       --
--- Extensive contributions were provided by Ada Core Technologies Inc.      --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -77,10 +77,17 @@ package body System.Interrupt_Management is
       info    : access siginfo_t;
       context : access ucontext_t);
 
+   ----------------------
+   -- Notify_Exception --
+   ----------------------
+
    procedure Notify_Exception
      (signo   : Signal;
       info    : access siginfo_t;
-      context : access ucontext_t) is
+      context : access ucontext_t)
+   is
+      pragma Warnings (Off, context);
+
    begin
       --  Check that treatment of exception propagation here
       --  is consistent with treatment of the abort signal in
@@ -136,6 +143,21 @@ begin
       mask    : aliased sigset_t;
       Result  : Interfaces.C.int;
 
+      function State (Int : Interrupt_ID) return Character;
+      pragma Import (C, State, "__gnat_get_interrupt_state");
+      --  Get interrupt state.  Defined in a-init.c
+      --  The input argument is the interrupt number,
+      --  and the result is one of the following:
+      --
+      User    : constant Character := 'u';
+      Runtime : constant Character := 'r';
+      Default : constant Character := 's';
+      --    'n'   this interrupt not set by any Interrupt_State pragma
+      --    'u'   Interrupt_State pragma set state to User
+      --    'r'   Interrupt_State pragma set state to Runtime
+      --    's'   Interrupt_State pragma set state to System (use "default"
+      --           system handler)
+
    begin
       --  Need to call pthread_init very early because it is doing signal
       --  initializations.
@@ -169,36 +191,67 @@ begin
 
       act.sa_mask := mask;
 
-      Keep_Unmasked (Abort_Task_Interrupt) := True;
-
-      --  By keeping SIGINT unmasked, allow the user to do a Ctrl-C, but in the
-      --  same time, disable the ability of handling this signal
-      --  via Ada.Interrupts.
-      --  The pragma Unreserve_All_Interrupts let the user the ability to
-      --  change this behavior.
-
-      if Unreserve_All_Interrupts = 0 then
-         Keep_Unmasked (SIGINT) := True;
-      end if;
+      pragma Assert (Keep_Unmasked = (Interrupt_ID'Range => False));
+      pragma Assert (Reserve = (Interrupt_ID'Range => False));
 
       for J in Exception_Interrupts'Range loop
-         Keep_Unmasked (Exception_Interrupts (J)) := True;
-         Result :=
-           sigaction
-           (Signal (Exception_Interrupts (J)), act'Unchecked_Access,
-            old_act'Unchecked_Access);
-         pragma Assert (Result = 0);
+         if State (Exception_Interrupts (J)) /= User then
+            Keep_Unmasked (Exception_Interrupts (J)) := True;
+            Reserve (Exception_Interrupts (J)) := True;
+
+            if State (Exception_Interrupts (J)) /= Default then
+               Result :=
+                 sigaction
+                 (Signal (Exception_Interrupts (J)), act'Unchecked_Access,
+                  old_act'Unchecked_Access);
+               pragma Assert (Result = 0);
+            end if;
+         end if;
       end loop;
+
+      if State (Abort_Task_Interrupt) /= User then
+         Keep_Unmasked (Abort_Task_Interrupt) := True;
+         Reserve (Abort_Task_Interrupt) := True;
+      end if;
+
+      --  Set SIGINT to unmasked state as long as it's
+      --  not in "User" state.  Check for Unreserve_All_Interrupts last
+
+      if State (SIGINT) /= User then
+         Keep_Unmasked (SIGINT) := True;
+         Reserve (SIGINT) := True;
+      end if;
+
+      --  Check all signals for state that requires keeping them
+      --  unmasked and reserved
+
+      for J in Interrupt_ID'Range loop
+         if State (J) = Default or else State (J) = Runtime then
+            Keep_Unmasked (J) := True;
+            Reserve (J) := True;
+         end if;
+      end loop;
+
+      --  Add the set of signals that must always be unmasked for this target
 
       for J in Unmasked'Range loop
          Keep_Unmasked (Interrupt_ID (Unmasked (J))) := True;
+         Reserve (Interrupt_ID (Unmasked (J))) := True;
       end loop;
 
-      Reserve := Keep_Unmasked or Keep_Masked;
+      --  Add target-specific reserved signals
 
       for J in Reserved'Range loop
          Reserve (Interrupt_ID (Reserved (J))) := True;
       end loop;
+
+      --  Process pragma Unreserve_All_Interrupts. This overrides any
+      --  settings due to pragma Interrupt_State:
+
+      if Unreserve_All_Interrupts /= 0 then
+         Keep_Unmasked (SIGINT) := False;
+         Reserve (SIGINT) := False;
+      end if;
 
       --  We do not have Signal 0 in reality. We just use this value
       --  to identify not existing signals (see s-intnam.ads). Therefore,

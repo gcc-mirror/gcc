@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -124,9 +124,7 @@ package body Ada.Wide_Text_IO.Integer_Aux is
 
    exception
       when Constraint_Error =>
-         Last := Pos - 1;
          raise Data_Error;
-
    end Gets_Int;
 
    --------------
@@ -147,9 +145,7 @@ package body Ada.Wide_Text_IO.Integer_Aux is
 
    exception
       when Constraint_Error =>
-         Last := Pos - 1;
          raise Data_Error;
-
    end Gets_LLI;
 
    ------------------

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -230,7 +230,7 @@ package body Ada.Strings.Maps is
 
          loop
             exit when not Set (C) or else C = Character'Last;
-            C := Character' Succ (C);
+            C := Character'Succ (C);
          end loop;
 
          if Set (C) then

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,8 +45,7 @@ package Fname.UF is
 
    function Get_File_Name
      (Uname   : Unit_Name_Type;
-      Subunit : Boolean)
-      return    File_Name_Type;
+      Subunit : Boolean) return File_Name_Type;
    --  This function returns the file name that corresponds to a given unit
    --  name, Uname. The Subunit parameter is set True for subunits, and
    --  false for all other kinds of units. The caller is responsible for

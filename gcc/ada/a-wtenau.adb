@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -135,8 +135,9 @@ package body Ada.Wide_Text_IO.Enumeration_Aux is
                null;
 
             else
-               exit when Is_Letter (Character'Val (ch))
-                 and then not Is_Digit (Character'Val (ch));
+               exit when not Is_Letter (Character'Val (ch))
+                           and then
+                         not Is_Digit (Character'Val (ch));
             end if;
          end loop;
       end if;
@@ -279,7 +280,6 @@ package body Ada.Wide_Text_IO.Enumeration_Aux is
             end if;
          end if;
 
-         Stop := Stop - 1;
          raise Data_Error;
 
       --  Similarly for identifiers, read as far as we can, in particular,

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-1998, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -213,7 +213,6 @@ package body Ada.Numerics.Float_Random is
          X2 := Square_Mod_N (X2, K2);
       end loop;
 
-
       Genp.all :=
         (X1  => X1,
          X2  => X2,
@@ -238,10 +237,11 @@ package body Ada.Numerics.Float_Random is
    ------------------
 
    function Square_Mod_N (X, N : Int) return Int is
-      Temp : Flt := Flt (X) * Flt (X);
-      Div  : Int := Int (Temp / Flt (N));
+      Temp : constant Flt := Flt (X) * Flt (X);
+      Div  : Int;
 
    begin
+      Div := Int (Temp / Flt (N));
       Div := Int (Temp - Flt (Div) * Flt (N));
 
       if Div < 0 then

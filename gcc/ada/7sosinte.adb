@@ -6,7 +6,8 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---            Copyright (C) 1997-2001 Florida State University              --
+--             Copyright (C) 1991-1994, Florida State University            --
+--             Copyright (C) 1995-2003, Ada Core Technologies               --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,9 +27,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- GNARL was developed by the GNARL team at Florida State University.       --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -78,8 +78,8 @@ package body System.OS_Interface is
          F := F + 1.0;
       end if;
 
-      return timespec' (tv_sec => S,
-        tv_nsec => long (Long_Long_Integer (F * 10#1#E9)));
+      return timespec'(tv_sec  => S,
+                       tv_nsec => long (Long_Long_Integer (F * 10#1#E9)));
    end To_Timespec;
 
    ----------------
@@ -102,8 +102,10 @@ package body System.OS_Interface is
          F := F + 1.0;
       end if;
 
-      return struct_timeval' (tv_sec => S,
-        tv_usec => long (Long_Long_Integer (F * 10#1#E6)));
+      return
+        struct_timeval'
+          (tv_sec  => S,
+           tv_usec => long (Long_Long_Integer (F * 10#1#E6)));
    end To_Timeval;
 
    -------------

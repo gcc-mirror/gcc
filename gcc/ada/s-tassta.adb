@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2002, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2003, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,8 +26,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
+-- GNARL was developed by the GNARL team at Florida State University.       --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -39,7 +39,6 @@ with Ada.Exceptions;
 --  used for Raise_Exception
 
 with System.Tasking.Debug;
-pragma Warnings (Off, System.Tasking.Debug);
 --  used for enabling tasking facilities with gdb
 
 with System.Address_Image;
@@ -52,7 +51,6 @@ with System.Parameters;
 
 with System.Task_Info;
 --  used for Task_Info_Type
---           Task_Image_Type
 
 with System.Task_Primitives.Operations;
 --  used for Finalize_Lock
@@ -99,9 +97,6 @@ with System.OS_Primitives;
 with System.Finalization_Implementation;
 --  Used for System.Finalization_Implementation.Finalize_Global_List
 
-with Interfaces.C;
---  Used for type Unsigned.
-
 with System.Secondary_Stack;
 --  used for SS_Init;
 
@@ -135,11 +130,9 @@ package body System.Tasking.Stages is
    -- Local Subprograms --
    -----------------------
 
-   procedure Notify_Exception
-     (Self_Id : Task_ID;
-      Excep   : Exception_Occurrence);
-   --  This procedure will output the task ID and the exception information,
-   --  including traceback if available.
+   procedure Trace_Unhandled_Exception_In_Task (Self_Id : Task_ID);
+   --  This procedure outputs the task specific message for exception
+   --  tracing purposes.
 
    procedure Task_Wrapper (Self_ID : Task_ID);
    --  This is the procedure that is called by the GNULL from the
@@ -183,10 +176,6 @@ package body System.Tasking.Stages is
    --
    --  Different code is used at master completion, in Terminate_Dependents,
    --  due to a need for tighter synchronization with the master.
-
-   procedure Terminate_Task (Self_ID : Task_ID);
-   --  Terminate the calling task.
-   --  This should only be called by the Task_Wrapper procedure.
 
    ----------------------
    -- Abort_Dependents --
@@ -339,10 +328,10 @@ package body System.Tasking.Stages is
                  (C.Common.Compiler_Data.Pri_Stack_Info.Size),
                Activate_Prio, Success);
 
-            --  There would be a race between the created task and
-            --  the creator to do the following initialization,
-            --  if we did not have a Lock/Unlock_RTS pair
-            --  in the task wrapper, to prevent it from racing ahead.
+            --  There would be a race between the created task and the
+            --  creator to do the following initialization, if we did not
+            --  have a Lock/Unlock_RTS pair in the task wrapper to prevent
+            --  it from racing ahead.
 
             if Success then
                C.Common.State := Runnable;
@@ -404,9 +393,8 @@ package body System.Tasking.Stages is
          C := P;
       end loop;
 
-      --  Wait for the activated tasks to complete activation.
-      --  It is unsafe to abort any of these tasks until the count goes to
-      --  zero.
+      --  Wait for the activated tasks to complete activation. It is
+      --  unsafe to abort any of these tasks until the count goes to zero.
 
       loop
          Initialization.Poll_Base_Priority_Change (Self_ID);
@@ -421,7 +409,7 @@ package body System.Tasking.Stages is
          Unlock_RTS;
       end if;
 
-      --  Remove the tasks from the chain.
+      --  Remove the tasks from the chain
 
       Chain_Access.T_ID := null;
       Initialization.Undefer_Abort_Nestable (Self_ID);
@@ -467,7 +455,7 @@ package body System.Tasking.Stages is
    ---------------------
 
    procedure Complete_Master is
-      Self_ID : Task_ID := STPO.Self;
+      Self_ID : constant Task_ID := STPO.Self;
 
    begin
       pragma Assert (Self_ID.Deferral_Level > 0);
@@ -479,7 +467,7 @@ package body System.Tasking.Stages is
    -- Complete_Task --
    -------------------
 
-   --  See comments on Vulnerable_Complete_Task for details.
+   --  See comments on Vulnerable_Complete_Task for details
 
    procedure Complete_Task is
       Self_ID  : constant Task_ID := STPO.Self;
@@ -488,8 +476,8 @@ package body System.Tasking.Stages is
 
       Vulnerable_Complete_Task (Self_ID);
 
-      --  All of our dependents have terminated.
-      --  Never undefer abort again!
+      --  All of our dependents have terminated. Never undefer abort again!
+
    end Complete_Task;
 
    -----------------
@@ -509,13 +497,14 @@ package body System.Tasking.Stages is
       Discriminants : System.Address;
       Elaborated    : Access_Boolean;
       Chain         : in out Activation_Chain;
-      Task_Image    : System.Task_Info.Task_Image_Type;
+      Task_Image    : String;
       Created_Task  : out Task_ID)
    is
       T, P          : Task_ID;
       Self_ID       : constant Task_ID := STPO.Self;
       Success       : Boolean;
       Base_Priority : System.Any_Priority;
+      Len           : Natural;
 
    begin
       pragma Debug
@@ -527,7 +516,7 @@ package body System.Tasking.Stages is
          Base_Priority := System.Any_Priority (Priority);
       end if;
 
-      --  Find parent P of new Task, via master level number.
+      --  Find parent P of new Task, via master level number
 
       P := Self_ID;
 
@@ -595,7 +584,29 @@ package body System.Tasking.Stages is
          T.Entry_Calls (L).Level := L;
       end loop;
 
-      T.Common.Task_Image := Task_Image;
+      if Task_Image'Length = 0 then
+         T.Common.Task_Image_Len := 0;
+      else
+         Len := 1;
+         T.Common.Task_Image (1) := Task_Image (Task_Image'First);
+
+         for J in Task_Image'First + 1 .. Task_Image'Last loop
+
+            --  Remove unwanted blank space generated by 'Image
+
+            if Task_Image (J) /= ' '
+              or else Task_Image (J - 1) /= '('
+            then
+               Len := Len + 1;
+               T.Common.Task_Image (Len) := Task_Image (J);
+
+               exit when Len = T.Common.Task_Image'Last;
+            end if;
+         end loop;
+
+         T.Common.Task_Image_Len := Len;
+      end if;
+
       Unlock (Self_ID);
       Unlock_RTS;
 
@@ -655,6 +666,7 @@ package body System.Tasking.Stages is
       --  ???
       --  Experimentation has shown that abort is sometimes (but not
       --  always) already deferred when this is called.
+
       --  That may indicate an error. Find out what is going on.
 
       C := Chain.T_ID;
@@ -742,10 +754,9 @@ package body System.Tasking.Stages is
          Unlock_RTS;
       end if;
 
-      --  We need to explicitly wait for the task to be
-      --  terminated here because on true concurrent system, we
-      --  may end this procedure before the tasks are really
-      --  terminated.
+      --  We need to explicitely wait for the task to be terminated here
+      --  because on true concurrent system, we may end this procedure
+      --  before the tasks are really terminated.
 
       Write_Lock (Self_ID);
 
@@ -774,7 +785,7 @@ package body System.Tasking.Stages is
          Unlock_RTS;
       end if;
 
-      --  Complete the environment task.
+      --  Complete the environment task
 
       Vulnerable_Complete_Task (Self_ID);
 
@@ -807,13 +818,10 @@ package body System.Tasking.Stages is
 
    begin
       if T.Common.State = Terminated then
+
          --  It is not safe to call Abort_Defer or Write_Lock at this stage
 
          Initialization.Task_Lock (Self_Id);
-
-         if T.Common.Task_Image /= null then
-            Free_Task_Image (T.Common.Task_Image);
-         end if;
 
          Lock_RTS;
          Initialization.Remove_From_All_Tasks_List (T);
@@ -832,43 +840,6 @@ package body System.Tasking.Stages is
       end if;
    end Free_Task;
 
-   ----------------------
-   -- Notify_Exception --
-   ----------------------
-
-   procedure Notify_Exception
-     (Self_Id : Task_ID;
-      Excep   : Exception_Occurrence)
-   is
-      procedure To_Stderr (S : String);
-      pragma Import (Ada, To_Stderr, "__gnat_to_stderr");
-
-      use System.Task_Info;
-      use System.Soft_Links;
-
-      function To_Address is new
-        Unchecked_Conversion (Task_ID, System.Address);
-
-      function Tailored_Exception_Information
-        (E : Exception_Occurrence) return String;
-      pragma Import
-        (Ada, Tailored_Exception_Information,
-         "__gnat_tailored_exception_information");
-
-   begin
-      To_Stderr ("task ");
-
-      if Self_Id.Common.Task_Image /= null then
-         To_Stderr (Self_Id.Common.Task_Image.all);
-         To_Stderr ("_");
-      end if;
-
-      To_Stderr (System.Address_Image (To_Address (Self_Id)));
-      To_Stderr (" terminated by unhandled exception");
-      To_Stderr ((1 => ASCII.LF));
-      To_Stderr (Tailored_Exception_Information (Excep));
-   end Notify_Exception;
-
    ------------------
    -- Task_Wrapper --
    ------------------
@@ -880,36 +851,13 @@ package body System.Tasking.Stages is
    --  data. Task finalization is done by Complete_Task, which is called from
    --  an at-end handler that the compiler generates.
 
-   --  The variable ID in the task wrapper is used to implement the Self
-   --  function on targets where there is a fast way to find the stack base
-   --  of the current thread, since it should be at a fixed offset from the
-   --  stack base.
-
-   --  The variable Magic_Number is also used in such implementations
-   --  of Self, to check whether the current task is an Ada task, as
-   --  compared to other-language threads.
-
-   --  Both act as constants, once initialized, but need to be marked as
-   --  volatile or aliased to prevent the compiler from optimizing away the
-   --  storage. See System.Task_Primitives.Operations.Self for more info.
-
    procedure Task_Wrapper (Self_ID : Task_ID) is
-      ID : Task_ID := Self_ID;
-      pragma Volatile (ID);
-      --  Do not delete this variable.
-      --  In some targets, we need this variable to implement a fast Self.
-
-      Magic_Number : Interfaces.C.unsigned := 16#ADAADAAD#;
-      pragma Volatile (Magic_Number);
-      --  We use this to verify that we are looking at an Ada task,
-      --  inside of System.Task_Primitives.Operations.Self.
-
       use type System.Parameters.Size_Type;
       use type SSE.Storage_Offset;
       use System.Standard_Library;
 
       Secondary_Stack : aliased SSE.Storage_Array
-        (1 .. ID.Common.Compiler_Data.Pri_Stack_Info.Size *
+        (1 .. Self_ID.Common.Compiler_Data.Pri_Stack_Info.Size *
            SSE.Storage_Offset (Parameters.Sec_Stack_Ratio) / 100);
       Secondary_Stack_Address : System.Address := Secondary_Stack'Address;
 
@@ -917,63 +865,83 @@ package body System.Tasking.Stages is
       pragma Assert (Self_ID.Deferral_Level = 1);
 
       if not Parameters.Sec_Stack_Dynamic then
-         ID.Common.Compiler_Data.Sec_Stack_Addr := Secondary_Stack'Address;
+         Self_ID.Common.Compiler_Data.Sec_Stack_Addr :=
+           Secondary_Stack'Address;
          SST.SS_Init (Secondary_Stack_Address, Integer (Secondary_Stack'Last));
       end if;
 
-      --  Set the guard page at the bottom of the stack.
-      --  The call to unprotect the page is done in Terminate_Task
+      --  Set the guard page at the bottom of the stack. The call to
+      --  unprotect the page is done in Terminate_Task
 
       Stack_Guard (Self_ID, True);
 
-      --  Initialize low-level TCB components, that
-      --  cannot be initialized by the creator.
-      --  Enter_Task sets Self_ID.Known_Tasks_Index
-      --  and Self_ID.LL.Thread
+      --  Initialize low-level TCB components, that cannot be initialized
+      --  by the creator. Enter_Task sets Self_ID.Known_Tasks_Index and
+      --  also Self_ID.LL.Thread
 
       Enter_Task (Self_ID);
 
       --  We lock RTS_Lock to wait for activator to finish activating
       --  the rest of the chain, so that everyone in the chain comes out
       --  in priority order.
+
       --  This also protects the value of
-      --   Self_ID.Common.Activator.Common.Wait_Count.
+      --    Self_ID.Common.Activator.Common.Wait_Count.
 
       Lock_RTS;
       Unlock_RTS;
 
       begin
          --  We are separating the following portion of the code in order to
-         --  place the exception handlers in a different block.
-         --  In this way we do not call Set_Jmpbuf_Address (which needs
-         --  Self) before we set Self in Enter_Task
+         --  place the exception handlers in a different block. In this way,
+         --  we do not call Set_Jmpbuf_Address (which needs Self) before we
+         --  set Self in Enter_Task
 
-         --  Call the task body procedure.
+         --  Call the task body procedure
 
          --  The task body is called with abort still deferred. That
          --  eliminates a dangerous window, for which we had to patch-up in
          --  Terminate_Task.
+
          --  During the expansion of the task body, we insert an RTS-call
          --  to Abort_Undefer, at the first point where abort should be
          --  allowed.
 
          Self_ID.Common.Task_Entry_Point (Self_ID.Common.Task_Arg);
-         Terminate_Task (Self_ID);
+         Initialization.Defer_Abort_Nestable (Self_ID);
 
       exception
+         --  We can't call Terminate_Task in the exception handlers below,
+         --  since there may be (e.g. in the case of GCC exception handling)
+         --  clean ups associated with the exception handler that need to
+         --  access task specific data.
+
+         --  Defer abortion so that this task can't be aborted while exiting
+
          when Standard'Abort_Signal =>
-            Terminate_Task (Self_ID);
+            Initialization.Defer_Abort_Nestable (Self_ID);
 
          when others =>
             --  ??? Using an E : others here causes CD2C11A  to fail on
             --      DEC Unix, see 7925-005.
 
-            if Exception_Trace = Unhandled_Raise then
-               Notify_Exception (Self_ID, SSL.Get_Current_Excep.all.all);
-            end if;
+            Initialization.Defer_Abort_Nestable (Self_ID);
 
-            Terminate_Task (Self_ID);
+            --  Perform the task specific exception tracing duty.  We handle
+            --  these outputs here and not in the common notification routine
+            --  because we need access to tasking related data and we don't
+            --  want to drag dependencies against tasking related units in the
+            --  the common notification units. Additionally, no trace is ever
+            --  triggered from the common routine for the Unhandled_Raise case
+            --  in tasks, since an exception never appears unhandled in this
+            --  context because of this handler.
+
+            if Exception_Trace = Unhandled_Raise then
+               Trace_Unhandled_Exception_In_Task (Self_ID);
+            end if;
       end;
+
+      Terminate_Task (Self_ID);
    end Task_Wrapper;
 
    --------------------
@@ -985,12 +953,11 @@ package body System.Tasking.Stages is
    --  try to deallocate the ATCB out from under the current task WHILE IT IS
    --  STILL EXECUTING.
 
-   --  To avoid this, the parent task must be blocked up to the last thing
-   --  done before the call to Exit_Task. The trouble is that we have another
-   --  step that we also want to postpone to the very end, i.e., calling
-   --  SSL.Destroy_TSD. We have to postpone that until the end because
-   --  compiler-generated code is likely to try to access that data at just
-   --  about any point.
+   --  To avoid this, the parent task must be blocked up to the latest
+   --  statement executed. The trouble is that we have another step that we
+   --  also want to postpone to the very end, i.e., calling SSL.Destroy_TSD.
+   --  We have to postpone that until the end because compiler-generated code
+   --  is likely to try to access that data at just about any point.
 
    --  We can't call Destroy_TSD while we are holding any other locks, because
    --  it locks Global_Task_Lock, and our deadlock prevention rules require
@@ -1008,8 +975,11 @@ package body System.Tasking.Stages is
 
    procedure Terminate_Task (Self_ID : Task_ID) is
       Environment_Task : constant Task_ID := STPO.Environment_Task;
+      Master_of_Task   : Integer;
 
    begin
+      Debug.Task_Termination_Hook;
+
       if Runtime_Traces then
          Send_Trace_Info (T_Terminate);
       end if;
@@ -1029,10 +999,12 @@ package body System.Tasking.Stages is
          Lock_RTS;
       end if;
 
+      Master_of_Task := Self_ID.Master_of_Task;
+
       --  Check if the current task is an independent task
       --  If so, decrement the Independent_Task_Count value.
 
-      if Self_ID.Master_of_Task = 2 then
+      if Master_of_Task = 2 then
          if Single_Lock then
             Utilities.Independent_Task_Count :=
               Utilities.Independent_Task_Count - 1;
@@ -1045,7 +1017,7 @@ package body System.Tasking.Stages is
          end if;
       end if;
 
-      --  Unprotect the guard page if needed.
+      --  Unprotect the guard page if needed
 
       Stack_Guard (Self_ID, False);
 
@@ -1064,7 +1036,9 @@ package body System.Tasking.Stages is
       --  past this point, this thread must assume that the ATCB
       --  has been deallocated. It should not be accessed again.
 
-      STPO.Exit_Task;
+      if Master_of_Task > 0 then
+         STPO.Exit_Task;
+      end if;
    end Terminate_Task;
 
    ----------------
@@ -1072,8 +1046,8 @@ package body System.Tasking.Stages is
    ----------------
 
    function Terminated (T : Task_ID) return Boolean is
+      Self_ID : constant Task_ID := STPO.Self;
       Result  : Boolean;
-      Self_ID : Task_ID := STPO.Self;
 
    begin
       Initialization.Defer_Abort_Nestable (Self_ID);
@@ -1093,6 +1067,49 @@ package body System.Tasking.Stages is
       Initialization.Undefer_Abort_Nestable (Self_ID);
       return Result;
    end Terminated;
+
+   ----------------------------------------
+   -- Trace_Unhandled_Exception_In_Task --
+   ----------------------------------------
+
+   procedure Trace_Unhandled_Exception_In_Task (Self_Id : Task_ID) is
+      procedure To_Stderr (S : String);
+      pragma Import (Ada, To_Stderr, "__gnat_to_stderr");
+
+      use System.Task_Info;
+      use System.Soft_Links;
+      use System.Standard_Library;
+
+      function To_Address is new
+        Unchecked_Conversion (Task_ID, System.Address);
+
+      function Tailored_Exception_Information
+        (E : Exception_Occurrence) return String;
+      pragma Import
+        (Ada, Tailored_Exception_Information,
+         "__gnat_tailored_exception_information");
+
+      Excep : Exception_Occurrence_Access := SSL.Get_Current_Excep.all;
+
+   begin
+      --  This procedure is called by the task outermost handler in
+      --  Task_Wrapper below, so only once the task stack has been fully
+      --  unwound. The common notification routine has been called at the
+      --  raise point already.
+
+      To_Stderr ("task ");
+
+      if Self_Id.Common.Task_Image_Len /= 0 then
+         To_Stderr
+           (Self_Id.Common.Task_Image (1 .. Self_Id.Common.Task_Image_Len));
+         To_Stderr ("_");
+      end if;
+
+      To_Stderr (System.Address_Image (To_Address (Self_Id)));
+      To_Stderr (" terminated by unhandled exception");
+      To_Stderr ((1 => ASCII.LF));
+      To_Stderr (Tailored_Exception_Information (Excep.all));
+   end Trace_Unhandled_Exception_In_Task;
 
    ------------------------------------
    -- Vulnerable_Complete_Activation --
@@ -1114,14 +1131,13 @@ package body System.Tasking.Stages is
 
       pragma Assert (Self_ID.Common.Activator /= null);
 
-      --  Remove dangling reference to Activator,
-      --  since a task may outlive its activator.
+      --  Remove dangling reference to Activator, since a task may
+      --  outlive its activator.
 
       Self_ID.Common.Activator := null;
 
-      --  Wake up the activator, if it is waiting for a chain
-      --  of tasks to activate, and we are the last in the chain
-      --  to complete activation
+      --  Wake up the activator, if it is waiting for a chain of tasks to
+      --  activate, and we are the last in the chain to complete activation.
 
       if Activator.Common.State = Activator_Sleep then
          Activator.Common.Wait_Count := Activator.Common.Wait_Count - 1;
@@ -1131,10 +1147,10 @@ package body System.Tasking.Stages is
          end if;
       end if;
 
-      --  The activator raises a Tasking_Error if any task
-      --  it is activating is completed before the activation is
-      --  done. However, if the reason for the task completion is
-      --  an abortion, we do not raise an exception. ARM 9.2(5).
+      --  The activator raises a Tasking_Error if any task it is activating
+      --  is completed before the activation is done. However, if the reason
+      --  for the task completion is an abortion, we do not raise an exception.
+      --  See RM 9.2(5).
 
       if not Self_ID.Callable and then Self_ID.Pending_ATC_Level /= 0 then
          Activator.Common.Activation_Failed := True;
@@ -1161,7 +1177,7 @@ package body System.Tasking.Stages is
    procedure Vulnerable_Complete_Master (Self_ID : Task_ID) is
       C      : Task_ID;
       P      : Task_ID;
-      CM     : Master_Level := Self_ID.Master_Within;
+      CM     : constant Master_Level := Self_ID.Master_Within;
       T      : aliased Task_ID;
 
       To_Be_Freed : Task_ID;
@@ -1455,7 +1471,7 @@ package body System.Tasking.Stages is
 
          if T.Interrupt_Entry and Interrupt_Manager_ID /= null then
             declare
-               Detach_Interrupt_Entries_Index : Task_Entry_Index := 1;
+               Detach_Interrupt_Entries_Index : constant Task_Entry_Index := 1;
                --  Corresponds to the entry index of System.Interrupts.
                --  Interrupt_Manager.Detach_Interrupt_Entries.
                --  Be sure to update this value when changing
@@ -1592,8 +1608,7 @@ package body System.Tasking.Stages is
 
    procedure Vulnerable_Free_Task (T : Task_ID) is
    begin
-      pragma Debug
-        (Debug.Trace ("Vulnerable_Free_Task", T, 'C'));
+      pragma Debug (Debug.Trace (Self, "Vulnerable_Free_Task", 'C', T));
 
       if Single_Lock then
          Lock_RTS;
@@ -1607,15 +1622,12 @@ package body System.Tasking.Stages is
          Unlock_RTS;
       end if;
 
-      if T.Common.Task_Image /= null then
-         Free_Task_Image (T.Common.Task_Image);
-      end if;
-
       System.Task_Primitives.Operations.Finalize_TCB (T);
    end Vulnerable_Free_Task;
 
 begin
    --  Establish the Adafinal softlink.
+
    --  This is not done inside the central RTS initialization routine
    --  to avoid with-ing this package from System.Tasking.Initialization.
 

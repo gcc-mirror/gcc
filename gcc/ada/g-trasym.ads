@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 1999-2002 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1999-2003 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -38,17 +39,17 @@
 --  The routines provided in this package assume that your application has
 --  been compiled with debugging information turned on, since this information
 --  is used to build a symbolic traceback.
---
+
 --  In order to retrieve symbolic information, functions in this package will
 --  read on disk all the debug information of the executable file (found via
 --  Argument (0), so any path information needed to read the executable file
 --  need to be provided when launching the executable), and load then in
 --  memory, causing a significant cpu and memory overhead.
---
+
 --  This package is not intended to be used within a shared library,
 --  symbolic tracebacks are only supported for the main executable
 --  and not for shared libraries.
---
+
 --  You should consider using off-line symbolic traceback instead, using
 --  addr2line or gdb.
 
@@ -62,10 +63,9 @@ pragma Elaborate_Body (Traceback.Symbolic);
    ------------------------
 
    function Symbolic_Traceback (Traceback : Tracebacks_Array) return String;
-   --  Build a string containing a symbolic traceback of the given call chain.
+   --  Build a string containing a symbolic traceback of the given call chain
 
    function Symbolic_Traceback (E : Exception_Occurrence) return String;
-   --  Build a string containing a symbolic traceback of the given exception
-   --  occurrence.
+   --  Build string containing symbolic traceback of given exception occurrence
 
 end GNAT.Traceback.Symbolic;
