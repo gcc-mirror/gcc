@@ -5947,13 +5947,10 @@ static void
 push_overloaded_decl_1 (x)
      tree x;
 {
-  push_overloaded_decl (x, PUSH_GLOBAL);
+  pushdecl (x);
 }
 
-#ifdef __GNUC__
-__inline
-#endif
-tree
+inline tree
 auto_function (name, type)
      tree name, type;
 {

@@ -21,10 +21,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-#ifndef __GNUC__
-#define __inline
-#endif
-
 /* Handle method declarations.  */
 #include "config.h"
 #include "system.h"
@@ -216,7 +212,7 @@ static int nofold;
    mangled name currently being built.  */
 static int numeric_output_need_bar;
 
-static __inline void
+static inline void
 start_squangling ()
 {
   if (flag_do_squangling)
@@ -229,7 +225,7 @@ start_squangling ()
     }
 }
 
-static __inline void
+static inline void
 end_squangling ()
 {
   if (flag_do_squangling)
@@ -243,7 +239,7 @@ end_squangling ()
 
 /* Code to concatenate an asciified integer to a string.  */
 
-static __inline void
+static inline void
 icat (i)
      HOST_WIDE_INT i;
 {
@@ -310,7 +306,7 @@ dicat (lo, hi)
 
 /* Returns the index of TYPE in the typevec, or -1 if it's not there.  */
 
-static __inline int
+static inline int
 old_backref_index (type)
      tree type;
 {
@@ -338,7 +334,7 @@ old_backref_index (type)
    this is the first time we've seen it and we're just looking to see if
    it had been used before.  */
 
-static __inline int
+static inline int
 flush_repeats (nrepeats, type)
      int nrepeats;
      tree type;
@@ -463,7 +459,7 @@ check_ktype (node, add)
 }
 
 
-static __inline int
+static inline int
 issue_ktype (decl)
      tree decl;
 {

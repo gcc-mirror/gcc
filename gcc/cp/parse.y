@@ -70,10 +70,7 @@ int have_extern_spec;
 int used_extern_spec;
 
 /* Cons up an empty parameter list.  */
-#ifdef __GNUC__
-__inline
-#endif
-static tree
+static inline tree
 empty_parms ()
 {
   tree parms;
