@@ -58,19 +58,21 @@ main (argc, argv)
   while (p != argv[0] && p[-1] != '/') --p;
   progname = p;
 
-  init_parse_file (&parse_in);
+  cpp_reader_init (&parse_in);
   parse_in.data = opts;
 
-  init_parse_options (opts);
+  cpp_options_init (opts);
   
   argi += cpp_handle_options (&parse_in, argc - argi , argv + argi);
+  if (CPP_FATAL_ERRORS (&parse_in))
+    exit (FATAL_EXIT_CODE);
   if (argi < argc)
-    fatal ("Invalid option `%s'", argv[argi]);
+    cpp_fatal (&parse_in, "Invalid option `%s'", argv[argi]);
+      
   parse_in.show_column = 1;
 
-  i = push_parse_file (&parse_in, opts->in_fname);
-  if (i != SUCCESS_EXIT_CODE)
-    return i;
+  if (! cpp_start_read (&parse_in, opts->in_fname))
+    exit (FATAL_EXIT_CODE);
 
   /* Now that we know the input file is valid, open the output.  */
 
@@ -86,7 +88,7 @@ main (argc, argv)
 	{
 	  fwrite (parse_in.token_buffer, 1, CPP_WRITTEN (&parse_in), stdout);
 	}
-      parse_in.limit = parse_in.token_buffer;
+      CPP_SET_WRITTEN (&parse_in, 0);
       kind = cpp_get_token (&parse_in);
       if (kind == CPP_EOF)
 	break;
