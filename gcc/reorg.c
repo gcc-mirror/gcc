@@ -2327,7 +2327,13 @@ fill_simple_delay_slots (first, non_jumps_p)
 	      next_trial = prev_nonnote_insn (trial);
 	      if (eligible_for_delay (insn, slots_filled, trial))
 		{
-		  delay_list = add_to_delay_list (trial, delay_list);
+		  /* In this case, we are searching backward, so if we
+		     find insns to put on the delay list, we want
+		     to put them at the head, rather than the
+		     tail, of the list.  */
+
+		  delay_list = gen_rtx (INSN_LIST, VOIDmode,
+					trial, delay_list);
 		  update_block (trial, trial);
 		  delete_insn (trial);
 		  if (slots_to_fill == ++slots_filled)
@@ -2595,9 +2601,12 @@ fill_simple_delay_slots (first, non_jumps_p)
 	  trial = try_split (pat, trial, 1);
 	  if (ELIGIBLE_FOR_EPILOGUE_DELAY (trial, slots_filled))
 	    {
+	      /* Here as well we are searching backward, so put the
+		 insns we find on the head of the list.  */
+
 	      current_function_epilogue_delay_list
-		= add_to_delay_list (trial,
-				     current_function_epilogue_delay_list);
+		= gen_rtx (INSN_LIST, VOIDmode, trial,
+			   current_function_epilogue_delay_list);
 	      mark_referenced_resources (trial, &end_of_function_needs, 1);
 	      update_block (trial, trial);
 	      delete_insn (trial);
