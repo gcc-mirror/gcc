@@ -33,9 +33,12 @@ Boston, MA 02111-1307, USA.  */
 
 /* Define this macro to be the value 1 if instructions will fail to
    work if given data not on the nominal alignment.  If instructions
-   will merely go slower in that case, define this macro as 0. */
+   will merely go slower in that case, define this macro as 0.
+
+   Note, little endian systems trap on unaligned addresses, so never
+   turn off strict alignment in that case. */
 #undef	STRICT_ALIGNMENT
-#define	STRICT_ALIGNMENT (TARGET_STRICT_ALIGN)
+#define	STRICT_ALIGNMENT (TARGET_STRICT_ALIGN || TARGET_LITTLE_ENDIAN)
 
 /* Align stack to 8 byte boundaries, rather than 16 bytes Sys V.4 uses */
 #undef	STACK_BOUNDARY
