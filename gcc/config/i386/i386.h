@@ -644,6 +644,13 @@ extern int x86_prefetch_sse;
    packaged in a 128-bit or 96bit entity.  */
 #define INTEL_EXTENDED_IEEE_FORMAT 1
 
+/* Set the value of FLT_EVAL_METHOD in float.h.  When using only the
+   FPU, assume that the fpcw is set to extended precision; when using
+   only SSE, rounding is correct; when using both SSE and the FPU,
+   the rounding precision is indeterminate, since either may be chosen
+   apparently at random.  */
+#define TARGET_FLT_EVAL_METHOD \
+  (TARGET_MIX_SSE_I387 ? -1 : TARGET_SSE_MATH ? 1 : 2)
 
 #define SHORT_TYPE_SIZE 16
 #define INT_TYPE_SIZE 32

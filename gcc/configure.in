@@ -798,15 +798,6 @@ if test x"$dwarf2" = xyes
 then tm_file="$tm_file tm-dwarf2.h"
 fi
 
-if test x$float_format = x
-then float_format=i64
-fi
-
-if test $float_format = none
-then float_h_file=Makefile.in
-else float_h_file=float-$float_format.h
-fi
-
 # Say what files are being used for the output code and MD file.
 echo "Using \`$srcdir/config/$out_file' for machine-specific logic."
 echo "Using \`$srcdir/config/$md_file' as machine description file."
@@ -2649,7 +2640,6 @@ else
 fi)
 AC_SUBST(slibdir)
 
-# Nothing to do for FLOAT_H, float_format already handled.
 objdir=`${PWDCMD-pwd}`
 AC_SUBST(objdir)
 

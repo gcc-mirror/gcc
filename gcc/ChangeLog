@@ -1,3 +1,30 @@
+2002-09-03  Richard Henderson  <rth@redhat.com>
+
+	* Makefile.in (USER_H): Add ginclude/float.h.
+	(FLOAT_H): Remove.
+	(stmp-int-hdrs, install-mkheaders): Don't handle FLOAT_H.
+	(mostlyclean): Don't remove float.h intermediate files.
+	(distclean): Don't remove float.h.
+	* config.gcc: Remove all float_format references.
+	* configure.in (float_format, float_h_file): Remove.
+
+	* c-common.c: Include tree-inline.h.
+	(builtin_define_with_int_value): New.
+	(builtin_define_type_precision): Use it.
+	(builtin_define_float_constants): New.
+	(cb_register_builtins): Use it.  Define __FLT_RADIX__ and
+	__FLT_EVAL_METHOD__.
+	* defaults.h (TARGET_FLT_EVAL_METHOD): New.
+	* config/i386/i386.h (TARGET_FLT_EVAL_METHOD): New.
+	* config/m68k/m68k.h (TARGET_FLT_EVAL_METHOD): New.
+	* doc/tm.texi (INTEL_EXTENDED_IEEE_FORMAT): Mention moto 96-bit format.
+	(TARGET_FLT_EVAL_METHOD): New.
+
+	* config/float-c4x.h, config/float-i128.h, config/float-i32.h,
+	config/float-i386.h, config/float-i64.h, config/float-m68k.h,
+	config/float-sh.h, config/float-sparc.h, config/float-vax.h: Remove.
+	* ginclude/float.h: New.
+
 2002-09-03  Stan Shebs  <shebs@apple.com>
 
 	* config/darwin.h (WARN_FOUR_CHAR_CONSTANTS): Remove, never used.

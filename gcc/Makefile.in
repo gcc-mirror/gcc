@@ -171,10 +171,13 @@ INSTALL_HEADERS_DIR = @build_install_headers_dir@
 
 # Header files that are made available under the same name
 # to programs compiled with GCC.
-USER_H = $(srcdir)/ginclude/stdarg.h $(srcdir)/ginclude/stddef.h \
-    $(srcdir)/ginclude/varargs.h \
-    $(srcdir)/ginclude/stdbool.h $(srcdir)/ginclude/iso646.h \
-    $(EXTRA_HEADERS)
+USER_H = $(srcdir)/ginclude/float.h \
+	 $(srcdir)/ginclude/iso646.h \
+	 $(srcdir)/ginclude/stdarg.h \
+	 $(srcdir)/ginclude/stdbool.h \
+	 $(srcdir)/ginclude/stddef.h \
+	 $(srcdir)/ginclude/varargs.h \
+	 $(EXTRA_HEADERS)
 
 # The GCC to use for compiling libgcc.a and crt*.o.
 # Usually the one we just built.
@@ -433,10 +436,6 @@ LIB2FUNCS_EXTRA =
 # List of extra C and assembler files to add to static libgcc2.
 # Assembler files should have names ending in `.asm'.
 LIB2FUNCS_STATIC_EXTRA =
-
-# We do not try to build float.h anymore.  Let configure select the
-# appropriate pre-built float.h file for the target.
-FLOAT_H=@float_h_file@
 
 # Program to convert libraries.
 LIBCONVERT =
@@ -2305,7 +2304,7 @@ gcov$(exeext): $(GCOV_OBJS) $(LIBDEPS)
 # s-* so that mostlyclean does not force the include directory to
 # be rebuilt.
 
-# Build the include directory including float.h
+# Build the include directory
 stmp-int-hdrs: $(STMP_FIXINC) $(USER_H) xlimits.h
 # Copy in the headers provided with gcc.
 # The sed command gets just the last file name component;
@@ -2325,11 +2324,6 @@ stmp-int-hdrs: $(STMP_FIXINC) $(USER_H) xlimits.h
 	rm -f include/limits.h
 	cp xlimits.h include/limits.h
 	chmod a+r include/limits.h
-	rm -f include/float.h
-	if [ x$(FLOAT_H) != xMakefile.in ]; then \
-	  cp $(srcdir)/config/$(FLOAT_H) include/float.h && \
-	  chmod a+r include/float.h; \
-	else :; fi
 # Install the README
 	rm -f include/README
 	cp $(srcdir)/README-fixinc include/README
@@ -2623,7 +2617,7 @@ mostlyclean: $(INTL_MOSTLYCLEAN) lang.mostlyclean
 # Delete the temp files made in the course of building libgcc.a.
 	-rm -f xlimits.h
 # Delete other built files.
-	-rm -f t-float.h-cross xsys-protos.hT
+	-rm -f xsys-protos.hT
 	-rm -f specs.h options.h gencheck.h
 # Delete the stamp and temporary files.
 	-rm -f s-* tmp-* stamp-* stmp-*
@@ -2631,7 +2625,7 @@ mostlyclean: $(INTL_MOSTLYCLEAN) lang.mostlyclean
 # Delete debugging dump files.
 	-rm -f *.[0-9][0-9].* */*.[0-9][0-9].*
 # Delete some files made during installation.
-	-rm -f specs float.h-* SYSCALLS.c.X SYSCALLS.c
+	-rm -f specs SYSCALLS.c.X SYSCALLS.c
 	-rm -f collect collect2 mips-tfile mips-tdump
 # Delete files generated for fixproto
 	-rm -rf fix-header$(build_exeext) xsys-protos.h deduced.h tmp-deduced.h \
@@ -2690,7 +2684,6 @@ distclean: clean $(INTL_DISTCLEAN) lang.distclean
 	-rm -f */stage1 */stage2 */stage3 */stage4 */include
 	-rm -f c-parse.output
 	-rm -f *.asm
-	-rm -f float.h
 	-rm -f site.exp site.bak testsuite/site.exp testsuite/site.bak
 	-rm -f testsuite/*.log testsuite/*.sum
 	-cd testsuite && rm -f x *.x *.x? *.exe *.rpo *.o *.s *.S *.c
@@ -3029,10 +3022,6 @@ install-mkheaders: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir \
 	  $(INSTALL_DATA) $$file \
 	    $(itoolsdir)/include/$$realfile ; \
 	done
-	if [ x$(FLOAT_H) != xMakefile.in ]; then \
-	  $(INSTALL_DATA) $(srcdir)/config/$(FLOAT_H) \
-	     $(itoolsdir)/include/float.h ; \
-	else :; fi
 	$(INSTALL_DATA) xlimits.h $(itoolsdir)/include/limits.h
 	if [ x$(STMP_FIXINC) != x ] ; then \
 	  $(INSTALL_DATA) $(srcdir)/README-fixinc \
