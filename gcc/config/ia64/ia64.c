@@ -542,7 +542,7 @@ predicate_operator (op, mode)
   return ((GET_MODE (op) == mode || mode == VOIDmode)
 	  && (code == EQ || code == NE));
 }
-
+
 /* Return 1 if the operands of a move are ok.  */
 
 int
@@ -565,6 +565,53 @@ ia64_move_ok (dst, src)
     return src == const0_rtx;
   else
     return GET_CODE (src) == CONST_DOUBLE && CONST_DOUBLE_OK_FOR_G (src);
+}
+
+/* Expand a symbolic constant load.  */
+/* ??? Should generalize this, so that we can also support 32 bit pointers.  */
+
+void
+ia64_expand_load_address (dest, src)
+      rtx dest, src;
+{
+  rtx temp;
+
+  /* The destination could be a MEM during initial rtl generation,
+     which isn't a valid destination for the PIC load address patterns.  */
+  if (! register_operand (dest, DImode))
+    temp = gen_reg_rtx (DImode);
+  else
+    temp = dest;
+
+  if (TARGET_AUTO_PIC)
+    emit_insn (gen_load_gprel64 (temp, src));
+  else if (GET_CODE (src) == SYMBOL_REF && SYMBOL_REF_FLAG (src))
+    emit_insn (gen_load_fptr (temp, src));
+  else if (sdata_symbolic_operand (src, DImode))
+    emit_insn (gen_load_gprel (temp, src));
+  else if (GET_CODE (src) == CONST
+	   && GET_CODE (XEXP (src, 0)) == PLUS
+	   && GET_CODE (XEXP (XEXP (src, 0), 1)) == CONST_INT
+	   && (INTVAL (XEXP (XEXP (src, 0), 1)) & 0x1fff) != 0)
+    {
+      rtx subtarget = no_new_pseudos ? temp : gen_reg_rtx (DImode);
+      rtx sym = XEXP (XEXP (src, 0), 0);
+      HOST_WIDE_INT ofs, hi, lo;
+
+      /* Split the offset into a sign extended 14-bit low part
+	 and a complementary high part.  */
+      ofs = INTVAL (XEXP (XEXP (src, 0), 1));
+      lo = ((ofs & 0x3fff) ^ 0x2000) - 0x2000;
+      hi = ofs - lo;
+
+      emit_insn (gen_load_symptr (subtarget, plus_constant (sym, hi)));
+      emit_insn (gen_adddi3 (temp, subtarget, GEN_INT (lo)));
+    }
+  else
+    emit_insn (gen_load_symptr (temp, src));
+
+  if (temp != dest)
+    emit_move_insn (dest, temp);
 }
 
 /* Begin the assembly file.  */
@@ -3016,6 +3063,10 @@ void
 ia64_reorg (insns)
      rtx insns;
 {
+  /* If optimizing, we'll have split before scheduling.  */
+  if (optimize == 0)
+    split_all_insns (0);
+
   emit_predicate_relation_info (insns);
   emit_insn_group_barriers (insns);
 }

@@ -1,3 +1,13 @@
+2000-07-17  Richard Henderson  <rth@cygnus.com>
+
+	* config/ia64/ia64.md (movdi): Split out load address code.
+	New post-reload splitter for symbolic operands.
+	(movdi_internal): Abort if we didn't split symbolic operands
+	when we should have.
+	* config/ia64/ia64.c (ia64_expand_load_address): New, from movdi bits.
+	(ia64_reorg): Split insns when not optimizing.
+	* config/ia64/ia64-protos.h (ia64_expand_load_address): Declare.
+
 Mon Jul 17 23:43:26 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* real.h (REAL_VALUE_TO_TARGET_LONG_DOUBLE): Use LONG_DOUBLE_TYPE_SIZE
@@ -39,7 +49,7 @@ Mon Jul 17 08:26:35 2000  Clinton Popetz  <cpopetz@cygnus.com>
 
 2000-07-17  Mark Klein <mklein@dis.com>
 
-         * pa.c (emit_hpdiv_const): Update to match new pattern for udivsi3.
+	 * pa.c (emit_hpdiv_const): Update to match new pattern for udivsi3.
 
 2000-07-17  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
 
