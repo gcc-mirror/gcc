@@ -1,3 +1,9 @@
+2004-11-13  Zak Kipling  <zak@transversal.com>
+
+	PR target/18300
+	* config/i386/i386.c (classify_argument): Fix infinite loop when
+	passing object with 3 or more base classes by value.
+
 2004-11-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/md.texi (constraints) <% modifier>: Mention that it is
@@ -79,7 +85,7 @@
 	* doc/rtl.texi (INSN_DEAD_CODE_P, REG_LOOP_TEST_P): Remove.
 
 2004-11-13  James A. Morrison  <phython@gcc.gnu.org>
-            Eric Botcazou  <ebotcazou@libertysurf.fr>
+	    Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/18230
 	* config/sparc/sparc.c (sparc_rtx_costs): Handle the NAND vector
