@@ -1443,6 +1443,7 @@ expand_end_stmt_expr (t)
 	}
 
     }
+*/
 
 /* Return nonzero iff in a try block at level LEVEL.  */
 
