@@ -1,14 +1,19 @@
+2002-06-16  Richard Henderson  <rth@redhat.com>
+
+	PR opt/6722
+	* regclass.c (globalize_reg): Update regs_invalidated_by_call.
+
 2002-06-16  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-	* config.gcc: Add an i386/sysv4-cpp.h.  Remove i386-aout.h from
-	vxworks.
-config/i386:
-	* i386-aout.h, i386elf.h, sysv4.h: Remove CPP_PREDEFINES.
-	* linux64.h: Use TARGET_OS_CPP_BUILTINS rather than
+	* config.gcc: Add i386/sysv4-cpp.h; remove i386-aout.h from vxworks.
+	* config/i386/i386-aout.h, config/i386/i386elf.h,
+	config/i386/sysv4.h: Remove CPP_PREDEFINES.
+	* config/i386/linux64.h, config/i386/i386elf.h, config/i386/mach.h,
+	config/i386/netware.h, config/i386/rtemself.h, config/i386/sco5.h,
+	config/i386/sol2.h, config/i386/vsta.h, config/i386/vxi386.h,
+	config/i386/win32.h: Use TARGET_OS_CPP_BUILTINS rather than
 	CPP_PREDEFINES and part of CPP_SPEC.
-	i386elf.h, mach.h, netware.h, rtemself.h, sco5.h, sol2.h,
-	vsta.h, vxi386.h, win32.h: Similarly.
-	* sysv4-cpp.h: New.
+	* config/i386/sysv4-cpp.h: New.
 
 2002-06-16  Richard Henderson  <rth@redhat.com>
 
