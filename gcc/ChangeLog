@@ -1,3 +1,7 @@
+Wed Mar 11 14:26:52 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* rtlanal.c (optimize): Declare.
+
 Sun Mar  8 11:16:23 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* emit-rtl.c (gen_lowpart_common): Handle more case where converting

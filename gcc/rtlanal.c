@@ -1,5 +1,5 @@
 /* Analyze RTL for C-Compiler
-   Copyright (C) 1987, 88, 9-5, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 9-6, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -21,6 +21,8 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "rtl.h"
+
+extern int optimize;
 
 void note_stores ();
 int reg_set_p ();
