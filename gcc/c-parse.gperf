@@ -14,6 +14,7 @@ __const__, TYPE_QUAL, RID_CONST
 __extension__, EXTENSION, NORID
 __inline, SCSPEC, RID_INLINE
 __inline__, SCSPEC, RID_INLINE
+__iterator__, SCSPEC, RID_ITERATOR
 __label__, LABEL, NORID
 __signed, TYPESPEC, RID_SIGNED
 __signed__, TYPESPEC, RID_SIGNED
@@ -40,6 +41,7 @@ goto, GOTO, NORID
 if, IF, NORID
 inline, SCSPEC, RID_INLINE
 int, TYPESPEC, RID_INT
+iterator, SCSPEC, RID_ITERATOR
 long, TYPESPEC, RID_LONG
 register, SCSPEC, RID_REGISTER
 return, RETURN, NORID
