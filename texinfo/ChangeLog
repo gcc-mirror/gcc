@@ -1,3 +1,9 @@
+1999-01-21  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* Makefile.am (SUBDIRS): Include util again in order to generate
+	install-info.
+	* Makefile.in: Rebuild.
+
 1998-11-20  Manfred Hollstein  <manfred@s-direktnet.de>
  
  	* makeinfo/Makefile.am (noinst_PROGRAMS): Renamed from bin_PROGRAMS
