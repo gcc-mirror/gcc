@@ -1,3 +1,27 @@
+Sat 23-Sep-2000 22:39:18 BST  Neil Booth  <NeilB@earthling.net>
+
+	* cpphash.h (CPP_RESERVE, CPP_PUTS_Q, CPP_PUTS, CPP_PUTC_Q,
+	CPP_PUTC, DUMMY_TOKEN, NO_DUMMY_TOKEN): Delete.
+	* cpplex.c (_cpp_expand_token_space, _cpp_init_toklist,
+	_cpp_free_toklist): No need to worry about extra dummy token
+	at the start of token lists any more.
+	(trigraph_ok): Only warn outside comments.
+	(skip_block_comment): Set and clear lexing_comment.
+	(skip_line_comment): Take a cpp_reader not cpp_buffer.
+	Set and clear lexing_comment.
+	(parse_number): Handle leading '.' indicated by pfile->seen_dot.
+	(check_long_token): Delete.
+	(lex_percent, lex_dot): New subroutines of lex_token to
+	handle lexing of '.' and '%' without lookback.
+	(lex_token): Use lex_dot and lex_percent.
+	(lex_line): Don't check for LIST_OFFSET.
+	(_cpp_init_input_buffer): Update for new _cpp_init_toklist.
+	* cpplib.c (_cpp_parse_assertion): Similarly.
+	(cpp_push_buffer): Initialize extra_char.
+	* cpplib.h (LIST_OFFSET): Delete.
+	(struct cpp_buffer): New member extra_char.
+	(struct lexer_state): New members lexing_comment and seen_dot.
+
 2000-09-23  Jason Merrill  <jason@redhat.com>
 
 	* config/rs6000/x-aix41 (CLIB): Define here.

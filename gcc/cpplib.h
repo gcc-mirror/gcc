@@ -182,9 +182,8 @@ struct cpp_token
 };
 
 /* cpp_toklist flags.  */
-#define LIST_OFFSET     (1 << 0)
-#define VAR_ARGS	(1 << 1)
-#define BEG_OF_FILE	(1 << 2)
+#define VAR_ARGS	(1 << 0)
+#define BEG_OF_FILE	(1 << 1)
 
 struct directive;		/* These are deliberately incomplete.  */
 struct answer;
@@ -225,6 +224,7 @@ struct cpp_buffer
   const unsigned char *rlimit; /* end of valid data */
   const unsigned char *line_base; /* start of current line */
   cppchar_t read_ahead;		/* read ahead character */
+  cppchar_t extra_char;		/* extra read-ahead for long tokens.  */
 
   struct cpp_reader *pfile;	/* Owns this buffer.  */
   struct cpp_buffer *prev;
@@ -460,8 +460,14 @@ struct lexer_state
   /* Nonzero to get force the lexer to skip newlines.  */
   unsigned char skip_newlines;
 
-  /* If we're in the subroutine lex_line.  */
+  /* Nonzero if we're in the subroutine lex_line.  */
   unsigned char in_lex_line;
+
+  /* Nonzero if we're mid-comment.  */
+  unsigned char lexing_comment;
+
+  /* Tells parse_number we saw a leading period.  */
+  unsigned char seen_dot;
 };
 #define IN_DIRECTIVE(pfile) (pfile->state.in_directive)
 #define KNOWN_DIRECTIVE(list) (list->directive != 0)
