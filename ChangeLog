@@ -1,3 +1,8 @@
+2001-06-09  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config.guess: Import CVS version 1.195.
+	* config.sub: Import CVS version 1.212.
+
 2001-06-08  Loren J. Rittle  <ljrittle@acm.org>
 
 	* MAINTAINERS: Update e-mail address changes from mainline.
