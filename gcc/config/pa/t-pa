@@ -1,0 +1,2 @@
+LIBGCC1=libgcc1.null
+INSTALLED_H = float.h stdarg.h varargs.h $(USER_H) limits.h
