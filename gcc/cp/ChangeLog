@@ -1,3 +1,9 @@
+2001-06-14  Jason Merrill  <jason_merrill@redhat.com>
+
+	* class.c (update_vtable_entry_for_fn): Uncomment optimization to use
+	virtual thunk instead of non-virtual.
+	(get_matching_virtual): Uncomment.
+
 2001-06-14  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* class.c (dfs_accumulate_vtbl_inits): For case 2 & 3, make sure

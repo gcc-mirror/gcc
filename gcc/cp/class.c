@@ -2707,7 +2707,6 @@ find_final_overrider (t, binfo, fn)
   return build_tree_list (ffod.overriding_fn, ffod.overriding_base);
 }
 
-#if 0
 /* Returns the function from the BINFO_VIRTUALS entry in T which matches
    the signature of FUNCTION_DECL FN, or NULL_TREE if none.  In other words,
    the function that the slot in T's primary vtable points to.  */
@@ -2724,7 +2723,6 @@ get_matching_virtual (t, fn)
       return BV_FN (f);
   return NULL_TREE;
 }
-#endif
 
 /* Update an entry in the vtable for BINFO, which is in the hierarchy
    dominated by T.  FN has been overriden in BINFO; VIRTUALS points to the
@@ -2799,10 +2797,6 @@ update_vtable_entry_for_fn (t, binfo, fn, virtuals)
       delta = size_diffop (BINFO_OFFSET (TREE_VALUE (overrider)),
 			   BINFO_OFFSET (binfo));
 
-#if 0
-      /* Disable this optimization pending an ABI change, or until
-	 we can force emission of the non-virtual thunk even if we don't
-	 use it.  */
       if (! integer_zerop (delta))
 	{
 	  /* We'll need a thunk.  But if we have a (perhaps formerly)
@@ -2825,7 +2819,6 @@ update_vtable_entry_for_fn (t, binfo, fn, virtuals)
 		}
 	    }
 	}
-#endif
     }
 
   modify_vtable_entry (t, 
