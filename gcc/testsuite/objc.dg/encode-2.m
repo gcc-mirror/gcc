@@ -6,7 +6,7 @@
     - The k-th parameter (k > 1) has offset equal to the
       sum of:
         - the offset of the k-1-st paramter
-        - the int-promoted size of the k-1-st parameter.
+        - the (void *)-promoted size of the k-1-st parameter.
 
    Note that the encoded offsets need not correspond
    to the actual placement of parameters (relative to 'self')
@@ -78,6 +78,7 @@ int main(void) {
   Foo *foo = [[Foo alloc] init];
   Class fooClass = OBJC_GETCLASS("Foo");
   METHOD meth;
+  const char *string;
 
   meth = CLASS_GETINSTANCEMETHOD(fooClass, @selector(setRect:withInt:));
   offs2 = 9999;
@@ -88,8 +89,12 @@ int main(void) {
 
   meth = CLASS_GETINSTANCEMETHOD(fooClass, @selector(char:float:double:long:));
   offs2 = 9999;
-  sscanf(meth->method_types, "v%u@%u:%uc%uf%ud%ul%u", &offs1, &offs2, &offs3,  
-      &offs4, &offs5, &offs6, &offs7);
+  if (sizeof (long) == 8)
+    string = "v%u@%u:%uc%uf%ud%uq%u";
+  else
+    string = "v%u@%u:%uc%uf%ud%ul%u";
+  sscanf(meth->method_types, string, &offs1, &offs2, &offs3,  
+	 &offs4, &offs5, &offs6, &offs7);
   CHECK_IF(!offs2);
   [foo char:'c' float:2.3 double:3.5 long:2345L];
 
