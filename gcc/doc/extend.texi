@@ -3264,7 +3264,7 @@ If possible, the warning also includes the location of the declaration
 of the deprecated type, to enable users to easily find further
 information about why the type is deprecated, or what they should do
 instead.  Note that the warnings only occur for uses and then only
-if the type is being applied to a identifier that itself is not being
+if the type is being applied to an identifier that itself is not being
 declared as deprecated.
 
 @smallexample
