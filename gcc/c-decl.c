@@ -2051,6 +2051,9 @@ lookup_label (id)
 
   decl = build_decl (LABEL_DECL, id, void_type_node);
 
+  /* Make sure every label has an rtx.  */
+  label_rtx (decl);
+
   /* A label not explicitly declared must be local to where it's ref'd.  */
   DECL_CONTEXT (decl) = current_function_decl;
 
