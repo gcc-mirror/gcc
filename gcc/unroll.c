@@ -3820,6 +3820,12 @@ loop_iterations (loop_start, loop_end, loop_info)
   loop_info->initial_equiv_value = initial_value;
   loop_info->final_equiv_value = final_value;
 
+  /* For EQ comparison loops, we don't have a valid final value.
+     Check this now so that we won't leave an invalid value if we
+     return early for any other reason.  */
+  if (comparison_code == EQ)
+      loop_info->final_equiv_value = loop_info->final_value = 0;
+
   if (increment == 0)
     {
       if (loop_dump_stream)
