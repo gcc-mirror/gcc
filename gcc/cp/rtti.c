@@ -602,7 +602,7 @@ build_dynamic_cast_1 (tree type, tree expr)
 	  td3 = build_unary_op (ADDR_EXPR, td3, 0);
 
           /* Determine how T and V are related.  */
-          boff = get_dynamic_cast_base_type (static_type, target_type);
+          boff = dcast_base_hint (static_type, target_type);
           
 	  /* Since expr is used twice below, save it.  */
 	  expr = save_expr (expr);
