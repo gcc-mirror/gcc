@@ -1,3 +1,8 @@
+2001-10-22  Richard Henderson  <rth@redhat.com>
+
+	* flow.c (clear_log_links): Use free_INSN_LIST_list, not
+	free_EXPR_LIST_list for LOG_LINKS.
+
 2001-10-21  Robert Lipe  <robertlipe@usa.net>
 
 	* config/i386/i386.c (sco_asm_named_section): Delete.

@@ -4113,7 +4113,7 @@ clear_log_links (blocks)
       rtx insn;
       for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
 	if (INSN_P (insn))
-	  free_EXPR_LIST_list (&LOG_LINKS (insn));
+	  free_INSN_LIST_list (&LOG_LINKS (insn));
     }
   else
     EXECUTE_IF_SET_IN_SBITMAP (blocks, 0, i,
@@ -4123,7 +4123,7 @@ clear_log_links (blocks)
 	for (insn = bb->head; insn != NEXT_INSN (bb->end);
 	     insn = NEXT_INSN (insn))
 	  if (INSN_P (insn))
-	    free_EXPR_LIST_list (&LOG_LINKS (insn));
+	    free_INSN_LIST_list (&LOG_LINKS (insn));
       });
 }
 
