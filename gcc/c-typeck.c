@@ -6460,7 +6460,8 @@ process_init_element (value)
 	    }
 
 	  if (constructor_max_index != 0
-	      && tree_int_cst_lt (constructor_max_index, constructor_index))
+	      && (tree_int_cst_lt (constructor_max_index, constructor_index)
+		  || integer_all_onesp (constructor_max_index)))
 	    {
 	      pedwarn_init ("excess elements in array initializer");
 	      break;
