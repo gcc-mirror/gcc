@@ -38,8 +38,6 @@
 # Variables that exist for you to override.
 # See below for how to change them for certain systems.
 
-ALLOCA =
-
 # Various ways of specifying flags for compilations:  
 # CFLAGS is for the user to override to, e.g., do a bootstrap with -O2.
 # BOOT_CFLAGS is the value of CFLAGS to pass
@@ -66,10 +64,6 @@ TEXI2DVI = texi2dvi
 # Note that this has some bugs, and it seems currently necessary 
 # to compile all the gen* files first by hand to avoid erroneous results.
 P =
-
-# This is used in the definition of SUBDIR_USE_ALLOCA.
-# ??? Perhaps it would be better if it just looked for *gcc*.
-OLDCC = cc
 
 # This is used instead of ALL_CFLAGS when compiling with GCC_FOR_TARGET.
 # It omits XCFLAGS, and specifies -B./.
@@ -101,10 +95,6 @@ texidir = $(srcdir)/../../texinfo
 
 # Additional system libraries to link with.
 CLIB=
-
-# Change this to a null string if obstacks are installed in the
-# system library.
-OBSTACK=obstack.o
 
 # Choose the real default target.
 ALL=all
@@ -138,17 +128,13 @@ ALL_CFLAGS = $(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) $(XCFLAGS)
 # Likewise.
 ALL_CPPFLAGS = $(CPPFLAGS) $(X_CPPFLAGS) $(T_CPPFLAGS)
 
-# CYGNUS LOCAL: SUBDIR_USE_ALLOCA is different from FSF.
-# Even if ALLOCA is set, don't use it if compiling with GCC.
-
-SUBDIR_OBSTACK = `if [ x$(OBSTACK) != x ]; then echo ../$(OBSTACK); else true; fi`
-#SUBDIR_USE_ALLOCA = `case "${CC}" in "${OLDCC}") if [ x$(ALLOCA) != x ]; then echo ../$(ALLOCA); else true; fi ;; esac`
-SUBDIR_USE_ALLOCA = `if [ x$(ALLOCA) != x ]; then echo ../$(ALLOCA); else true; fi`
-SUBDIR_MALLOC = `if [ x$(MALLOC) != x ]; then echo ../$(MALLOC); else true; fi`
+# This is where we get libiberty.a from.
+LIBIBERTY = ../../libiberty/libiberty.a
 
 # How to link with both our special library facilities
 # and the system's installed libraries.
-LIBS = $(SUBDIR_OBSTACK) $(SUBDIR_USE_ALLOCA) $(SUBDIR_MALLOC) $(CLIB)
+LIBS = $(LIBIBERTY) $(CLIB)
+LIBDEPS = $(LIBIBERTY)
 
 # Specify the directories to be searched for header files.
 # Both . and srcdir are used, in that order,
@@ -270,10 +256,10 @@ $(srcdir)/hash.h:
 	  gperf.tmp > $(srcdir)/hash.h
 	$(RM) gperf.tmp gperf.tmp2 sed.tmp
 
-actions.o : actions.c $(CONFIG_H) $(CHILL_TREE_H) actions.h $(RTL_H) \
-	lex.h $(srcdir)/../flags.h $(srcdir)/../../include/obstack.h \
-	$(srcdir)/../input.h $(srcdir)/../expr.h ../insn-codes.h \
-	$(srcdir)/../system.h $(srcdir)/../toplev.h
+actions.o : actions.c $(CONFIG_H) $(CHILL_TREE_H) actions.h $(RTL_H)	\
+	lex.h $(srcdir)/../flags.h $(srcdir)/../input.h			\
+	$(srcdir)/../expr.h ../insn-codes.h $(srcdir)/../system.h	\
+	$(srcdir)/../toplev.h
 convert.o : convert.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../flags.h \
 	$(srcdir)/../tree.h $(srcdir)/../system.h $(srcdir)/../toplev.h
 decl.o : decl.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../flags.h lex.h \
@@ -291,24 +277,20 @@ inout.o : inout.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../flags.h \
 lang.o : lang.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../input.h lex.h \
 	$(srcdir)/../system.h $(srcdir)/../toplev.h
 lex.o : lex.c $(CONFIG_H) $(CHILL_TREE_H) $(RTL_H) $(srcdir)/../flags.h \
-	$(srcdir)/../input.h $(srcdir)/parse.h $(srcdir)/../system.h \
-	$(srcdir)/../toplev.h $(srcdir)/../../include/obstack.h lex.h \
-	$(srcdir)/../dwarfout.h hash.h
+	$(srcdir)/../input.h $(srcdir)/parse.h $(srcdir)/../system.h	\
+	$(srcdir)/../toplev.h lex.h $(srcdir)/../dwarfout.h hash.h
 loop.o : loop.c $(CONFIG_H) $(RTL_H) $(CHILL_TREE_H) lex.h \
 	$(srcdir)/../flags.h $(srcdir)/../input.h \
-	$(srcdir)/../../include/obstack.h $(srcdir)/../tree.h \
-	$(srcdir)/../system.h $(srcdir)/../toplev.h
+	$(srcdir)/../tree.h $(srcdir)/../system.h $(srcdir)/../toplev.h
 parse.o : parse.c $(CONFIG_H) $(CHILL_TREE_H) parse.h \
 	lex.h actions.h tasking.h $(srcdir)/../system.h $(srcdir)/../toplev.h
 satisfy.o : satisfy.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../tree.h \
 	$(srcdir)/../flags.h lex.h $(srcdir)/../system.h $(srcdir)/../toplev.h
 timing.o : timing.c $(CONFIG_H) $(CHILL_TREE_H) $(RTL_H) $(srcdir)/../flags.h \
-	$(srcdir)/../input.h $(srcdir)/../../include/obstack.h lex.h \
-	$(srcdir)/../system.h $(srcdir)/../toplev.h
+	$(srcdir)/../input.h lex.h $(srcdir)/../system.h $(srcdir)/../toplev.h
 tasking.o : tasking.c $(CONFIG_H) $(CHILL_TREE_H) $(RTL_H) \
 	$(srcdir)/../flags.h $(srcdir)/../input.h \
-	$(srcdir)/../../include/obstack.h lex.h $(srcdir)/../system.h \
-	$(srcdir)/../toplev.h
+	lex.h $(srcdir)/../system.h $(srcdir)/../toplev.h
 tree.o : tree.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../system.h \
 	$(srcdir)/../toplev.h
 typeck.o : typeck.c $(CONFIG_H) $(CHILL_TREE_H) ../insn-codes.h \
