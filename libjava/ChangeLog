@@ -1,5 +1,14 @@
 1999-05-10  Tom Tromey  <tromey@cygnus.com>
 
+	* java/awt/natToolkit.cc: Added copyright header.
+	* java/util/zip/InflaterInputStream.java: Added copyright header.
+
+	* java/io/FilterWriter.java (FilterWriter): Removed `FIXME'
+	comment.
+	* java/io/SequenceInputStream.java (SequenceInputStream): Removed
+	`FIXME' comment.
+	(getNextStream): Likewise.
+
 	* java/util/ResourceBundle.java (partialGetBundle): Explicitly use
 	locale.toString().
 	(getBundle): Don't explicitly throw null pointer exception.

@@ -29,7 +29,6 @@ public abstract class FilterWriter extends Writer
 
   protected FilterWriter (Writer ox)
   {
-    // FIXME: should we really share locks like this?
     super (ox);
     out = ox;
   }

@@ -33,7 +33,6 @@ public class SequenceInputStream extends InputStream
 
   public SequenceInputStream(Enumeration e)
   {
-    // FIXME: Assumes that enum contains only InputStreams.
     enum = e;
     in = (InputStream) enum.nextElement();
     in2 = null;
@@ -94,7 +93,6 @@ public class SequenceInputStream extends InputStream
   {
     InputStream nextIn = null;
 
-    // FIXME: Assumes that enum contains only InputStreams.
     if (enum != null)
       {
         if (enum.hasMoreElements())
