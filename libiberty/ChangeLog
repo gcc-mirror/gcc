@@ -1,3 +1,9 @@
+1999-07-14  Richard Henderson  <rth@cygnus.com>
+
+	* argv.c: Include stdlib.h and string.h instead of 
+	prototyping directly.
+	* choose-temp.c: Conditionally include string.h.
+
 1999-07-12  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* Makefile.in (NEEDED): Add bcmp, bcopy, bzero.
