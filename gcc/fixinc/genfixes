@@ -66,25 +66,17 @@ fi
 AG="autogen $AG"
 set -e
 
-if [ -z "`${AG} -v | fgrep 'Ver. 5.'`" ]
-then
-  echo "Your AutoGen is either out of date or not available" >&2
-  echo "Please get AutoGen5 from ftp.gnu.org/gnu/autogen" >&2
-  touch $@
-  exit 0
-fi
-
 case "$1" in
 fixincl.x | */fixincl.x )
-  if (${AG} --help > /dev/null 2>&1)
+  if [ -z "`${AG} -v | fgrep 'Ver. 5.'`" ]
   then
-    echo AutoGen-ing fixincl.x
-    $AG inclhack.def
-  else
-    echo "AutoGen does not appear to be correctly installed."
+    echo "AutoGen appears to be out of date or not correctly installed."
     echo "Please download and install:"
     echo "   ftp://gcc.gnu.org/pub/gcc/infrastructure/autogen.tar.gz"
     touch fixincl.x
+  else
+    echo AutoGen-ing fixincl.x
+    $AG inclhack.def
   fi
   ;;
 
