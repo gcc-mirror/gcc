@@ -1699,6 +1699,11 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 		  SET_DEST (new_set)
 		    = gen_reg_rtx (GET_MODE (SET_DEST (new_set)));
 		}
+	      /* If the source and destination are the same and it
+		 has a note on it, keep the insn.  */
+	      else if (rtx_equal_p (SET_DEST (set), SET_SRC (set))
+		       && REG_NOTES (insn) != 0)
+		copy = emit_insn (copy_rtx_and_substitute (pattern, map));
 	      else
 		break;
 	    }
