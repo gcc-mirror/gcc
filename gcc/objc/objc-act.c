@@ -5447,21 +5447,11 @@ build_ivar_reference (id)
 static void
 hash_init ()
 {
-  nst_method_hash_list = (hash *)xmalloc (SIZEHASHTABLE * sizeof (hash));
-  cls_method_hash_list = (hash *)xmalloc (SIZEHASHTABLE * sizeof (hash));
+  nst_method_hash_list = (hash *) xmalloc (SIZEHASHTABLE * sizeof (hash));
+  cls_method_hash_list = (hash *) xmalloc (SIZEHASHTABLE * sizeof (hash));
 
-  if (!nst_method_hash_list || !cls_method_hash_list)
-    perror ("unable to allocate space in objc-act.c");
-  else
-    {
-      int i;
-
-      for (i = 0; i < SIZEHASHTABLE; i++)
-	{
-	  nst_method_hash_list[i] = 0;
-	  cls_method_hash_list[i] = 0;
-	}
-    }
+  memset (nst_method_hash_list, 0, SIZEHASHTABLE * sizeof (hash));
+  memset (cls_method_hash_list, 0, SIZEHASHTABLE * sizeof (hash));
 }
 
 /* WARNING!!!!  hash_enter is called with a method, and will peek
@@ -5484,8 +5474,6 @@ hash_enter (hashlist, method)
       hash_alloc_index = 0;
       hash_alloc_list = (hash) xmalloc (sizeof (struct hashed_entry)
 					* HASH_ALLOC_LIST_SIZE);
-      if (! hash_alloc_list)
-	perror ("unable to allocate in objc-act.c");
     }
   obj = &hash_alloc_list[hash_alloc_index++];
   obj->list = 0;
@@ -5528,8 +5516,6 @@ hash_add_attr (entry, value)
       attr_alloc_index = 0;
       attr_alloc_list = (attr) xmalloc (sizeof (struct hashed_attribute)
 					* ATTR_ALLOC_LIST_SIZE);
-      if (! attr_alloc_list)
-	perror ("unable to allocate in objc-act.c");
     }
   obj = &attr_alloc_list[attr_alloc_index++];
   obj->next = entry->list;
@@ -6309,9 +6295,7 @@ continue_class (class)
       if (!objc_class_template)
 	build_class_template ();
 
-      if (!(imp_entry
-	    = (struct imp_entry *) xmalloc (sizeof (struct imp_entry))))
-	perror ("unable to allocate in objc-act.c");
+      imp_entry = (struct imp_entry *) xmalloc (sizeof (struct imp_entry));
 
       imp_entry->next = imp_list;
       imp_entry->imp_context = class;

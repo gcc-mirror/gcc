@@ -1,3 +1,11 @@
+2001-06-20  Stan Shebs  <shebs@apple.com>
+
+	* objc/objc-act.c (hash_init): Assume xmalloc always succeeds,
+	also use memset to clear the hash tables.
+	(hash_enter): Assume xmalloc always succeeds.
+	(hash_add_attr): Ditto.
+	(continue_class): Ditto.
+
 2001-06-20  Michael Meissner  <meissner@redhat.com>
 
 	* builtins.c (predict.h): Include.
