@@ -470,7 +470,7 @@ int flag_traditional;
 
 /* Nonzero means use the ISO C9x dialect of C.  */
 
-int flag_isoc9x = 1;
+int flag_isoc9x = 0;
 
 /* Nonzero means that we have builtin functions, and main is an int */
 
@@ -657,11 +657,12 @@ c_decode_option (argc, argv)
       /* Select the appropriate language standard.  We currently
 	 recognize:
 	 -std=iso9899:1990	same as -ansi
-	 -std=gnu		default
 	 -std=iso9899:199409	ISO C as modified in amend. 1
 	 -std=iso9899:199x	ISO C 9x
 	 -std=c89		same as -std=iso9899:1990
 	 -std=c9x		same as -std=iso9899:199x
+	 -std=gnu89		default, iso9899:1990 + gnu extensions
+	 -std=gnu9x		iso9899:199x + gnu extensions
       */
       const char *argstart = &p[5];
 
@@ -689,7 +690,15 @@ c_decode_option (argc, argv)
 	  flag_no_nonansi_builtin = 1;
 	  flag_isoc9x = 1;
 	}
-      else if (!strcmp (argstart, "gnu"))
+      else if (!strcmp (argstart, "gnu89"))
+	{
+	  flag_traditional = 0;
+	  flag_writable_strings = 0;
+	  flag_no_asm = 0;
+	  flag_no_nonansi_builtin = 0;
+	  flag_isoc9x = 0;
+	}
+      else if (!strcmp (argstart, "gnu9x"))
 	{
 	  flag_traditional = 0;
 	  flag_writable_strings = 0;

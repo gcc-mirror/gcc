@@ -1,3 +1,10 @@
+Tue Dec  8 10:23:52 1998  Richard Henderson  <rth@cygnus.com>
+
+	* c-decl.c (flag_isoc9x): Default off.
+	(c_decode_option): Kill -std=gnu, add -std=gnu89 and -std=gnu9x.
+	* cccp.c (print_help, main): Likewise.
+	* gcc.c (default_compilers): Update for -std=gnu*.
+
 Tue Dec  8 01:14:46 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (DEMANGLE_H): Change location to shared demangle.h.
