@@ -1,6 +1,9 @@
 /* 
  * Copyright 1988, 1989 Hans-J. Boehm, Alan J. Demers
  * Copyright (c) 1991-1994 by Xerox Corporation.  All rights reserved.
+ * Copyright (c) 1996-1999 by Silicon Graphics.  All rights reserved.
+ * Copyright (c) 1999 by Hewlett-Packard Company. All rights reserved.
+ *
  *
  * THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY EXPRESSED
  * OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.
@@ -64,16 +67,16 @@ typedef char * ptr_t;	/* A generic pointer to which we can add	*/
 #       include <stddef.h>
 #   endif
 #   define VOLATILE volatile
-#   define CONST const
 #else
 #   ifdef MSWIN32
 #   	include <stdlib.h>
 #   endif
 #   define VOLATILE
-#   define CONST
 #endif
 
-#ifdef AMIGA
+#define CONST GC_CONST
+
+#if 0 /* was once defined for AMIGA */
 #   define GC_FAR __far
 #else
 #   define GC_FAR
@@ -350,7 +353,7 @@ void GC_print_callers (/* struct callinfo info[NFRAMES] */);
 				    + GC_page_size) \
                                     + GC_page_size-1)
 #   else
-#     if defined(AMIGA) || defined(NEXT) || defined(DOS4GW)
+#     if defined(AMIGA) || defined(NEXT) || defined(MACOSX) || defined(DOS4GW)
 #       define GET_MEM(bytes) HBLKPTR((size_t) \
 				      calloc(1, (size_t)bytes + GC_page_size) \
                                       + GC_page_size-1)
@@ -436,7 +439,7 @@ void GC_print_callers (/* struct callinfo info[NFRAMES] */);
 #  endif
 #  ifdef LINUX_THREADS
 #    include <pthread.h>
-#    ifdef __i386__
+#    if defined(I386)
        inline static int GC_test_and_set(volatile unsigned int *addr) {
 	  int oldval;
 	  /* Note: the "xchg" instruction does not need a "lock" prefix */
@@ -446,9 +449,57 @@ void GC_print_callers (/* struct callinfo info[NFRAMES] */);
 	  return oldval;
        }
 #    else
-       -- > Need implementation of GC_test_and_set()
+#     if defined(POWERPC)
+       inline static int GC_test_and_set(volatile unsigned int *addr) {
+        int oldval;
+        int temp = 1; // locked value
+
+        __asm__ __volatile__(
+               "1:\tlwarx %0,0,%3\n"   // load and reserve
+               "\tcmpwi %0, 0\n"       // if load is
+               "\tbne 2f\n"            //   non-zero, return already set
+               "\tstwcx. %2,0,%1\n"    // else store conditional
+               "\tbne- 1b\n"           // retry if lost reservation
+               "2:\t\n"                // oldval is zero if we set
+              : "=&r"(oldval), "=p"(addr)
+              : "r"(temp), "1"(addr)
+              : "memory");
+        return (int)oldval;
+       }
+#     else
+#      ifdef ALPHA
+         inline static int GC_test_and_set(volatile unsigned int *
+addr)
+         {
+           unsigned long oldvalue;
+           unsigned long temp;
+
+           __asm__ __volatile__(
+                                "1:     ldl_l %0,%1\n"
+                                "       and %0,%3,%2\n"
+                                "       bne %2,2f\n"
+                                "       xor %0,%3,%0\n"
+                                "       stl_c %0,%1\n"
+                                "       beq %0,3f\n"
+                                "       mb\n"
+                                "2:\n"
+                                ".section .text2,\"ax\"\n"
+                                "3:     br 1b\n"
+                                ".previous"
+                                :"=&r" (temp), "=m" (*addr), "=&r"
+(oldvalue)
+                                :"Ir" (1), "m" (*addr));
+
+           return oldvalue;
+         }
+#      else
+         -- > Need implementation of GC_test_and_set()
+#      endif
+#     endif
 #    endif
-#    define GC_clear(addr) (*(addr) = 0)
+     inline static void GC_clear(volatile unsigned int *addr) {
+          *(addr) = 0;
+     }
 
      extern volatile unsigned int GC_allocate_lock;
 	/* This is not a mutex because mutexes that obey the (optional)     */
@@ -462,15 +513,10 @@ void GC_print_callers (/* struct callinfo info[NFRAMES] */);
 #    define NO_THREAD (pthread_t)(-1)
 #    define UNSET_LOCK_HOLDER() GC_lock_holder = NO_THREAD
 #    define I_HOLD_LOCK() (pthread_equal(GC_lock_holder, pthread_self()))
-#    ifdef UNDEFINED
-#    	define LOCK() pthread_mutex_lock(&GC_allocate_ml)
-#    	define UNLOCK() pthread_mutex_unlock(&GC_allocate_ml)
-#    else
-#	define LOCK() \
+#    define LOCK() \
 		{ if (GC_test_and_set(&GC_allocate_lock)) GC_lock(); }
-#	define UNLOCK() \
+#    define UNLOCK() \
 		GC_clear(&GC_allocate_lock)
-#    endif
      extern GC_bool GC_collecting;
 #    define ENTER_GC() \
 		{ \
@@ -478,15 +524,30 @@ void GC_print_callers (/* struct callinfo info[NFRAMES] */);
 		}
 #    define EXIT_GC() GC_collecting = 0;
 #  endif /* LINUX_THREADS */
-#  if defined(IRIX_THREADS) || defined(IRIX_JDK_THREADS)
+#  if defined(HPUX_THREADS)
 #    include <pthread.h>
-#    include <mutex.h>
+     extern pthread_mutex_t GC_allocate_ml;
+#    define LOCK() pthread_mutex_lock(&GC_allocate_ml)
+#    define UNLOCK() pthread_mutex_unlock(&GC_allocate_ml)
+#  endif
+#  if defined(IRIX_THREADS) || defined(IRIX_JDK_THREADS) 
+     /* This may also eventually be appropriate for HPUX_THREADS */
+#    include <pthread.h>
+#    ifndef HPUX_THREADS
+	/* This probably should never be included, but I can't test	*/
+	/* on Irix anymore.						*/
+#       include <mutex.h>
+#    endif
 
-#    if __mips < 3 || !(defined (_ABIN32) || defined(_ABI64)) \
+#    ifndef HPUX_THREADS
+#      if __mips < 3 || !(defined (_ABIN32) || defined(_ABI64)) \
 	|| !defined(_COMPILER_VERSION) || _COMPILER_VERSION < 700
 #        define GC_test_and_set(addr, v) test_and_set(addr,v)
-#    else
+#      else
 #	 define GC_test_and_set(addr, v) __test_and_set(addr,v)
+#      endif
+#    else
+       /* I couldn't find a way to do this inline on HP/UX	*/
 #    endif
      extern unsigned long GC_allocate_lock;
 	/* This is not a mutex because mutexes that obey the (optional) 	*/
@@ -500,15 +561,17 @@ void GC_print_callers (/* struct callinfo info[NFRAMES] */);
 #    define NO_THREAD (pthread_t)(-1)
 #    define UNSET_LOCK_HOLDER() GC_lock_holder = NO_THREAD
 #    define I_HOLD_LOCK() (pthread_equal(GC_lock_holder, pthread_self()))
-#    ifdef UNDEFINED
-#    	define LOCK() pthread_mutex_lock(&GC_allocate_ml)
-#    	define UNLOCK() pthread_mutex_unlock(&GC_allocate_ml)
+#    ifdef HPUX_THREADS
+#      define LOCK() { if (!GC_test_and_clear(&GC_allocate_lock)) GC_lock(); }
+       /* The following is INCORRECT, since the memory model is too weak. */
+#      define UNLOCK() { GC_noop1(&GC_allocate_lock); \
+			*(volatile unsigned long *)(&GC_allocate_lock) = 1; }
 #    else
-#	define LOCK() { if (GC_test_and_set(&GC_allocate_lock, 1)) GC_lock(); }
-#       if __mips >= 3 && (defined (_ABIN32) || defined(_ABI64)) \
+#      define LOCK() { if (GC_test_and_set(&GC_allocate_lock, 1)) GC_lock(); }
+#      if __mips >= 3 && (defined (_ABIN32) || defined(_ABI64)) \
 	   && defined(_COMPILER_VERSION) && _COMPILER_VERSION >= 700
 #	    define UNLOCK() __lock_release(&GC_allocate_lock)
-#	else
+#      else
 	    /* The function call in the following should prevent the	*/
 	    /* compiler from moving assignments to below the UNLOCK.	*/
 	    /* This is probably not necessary for ucode or gcc 2.8.	*/
@@ -516,7 +579,7 @@ void GC_print_callers (/* struct callinfo info[NFRAMES] */);
 	    /* versions.						*/
 #           define UNLOCK() { GC_noop1(&GC_allocate_lock); \
 			*(volatile unsigned long *)(&GC_allocate_lock) = 0; }
-#	endif
+#      endif
 #    endif
      extern GC_bool GC_collecting;
 #    define ENTER_GC() \
@@ -607,7 +670,7 @@ void GC_print_callers (/* struct callinfo info[NFRAMES] */);
 # else
 #   if defined(SOLARIS_THREADS) || defined(WIN32_THREADS) \
 	|| defined(IRIX_THREADS) || defined(LINUX_THREADS) \
-	|| defined(IRIX_JDK_THREADS)
+	|| defined(IRIX_JDK_THREADS) || defined(HPUX_THREADS)
       void GC_stop_world();
       void GC_start_world();
 #     define STOP_WORLD() GC_stop_world()
@@ -823,6 +886,7 @@ struct hblkhdr {
     struct hblk * hb_next; 	/* Link field for hblk free list	 */
     				/* and for lists of chunks waiting to be */
     				/* reclaimed.				 */
+    struct hblk * hb_prev;	/* Backwards link for free list.	*/
     word hb_descr;   		/* object descriptor for marking.  See	*/
     				/* mark.h.				*/
     char* hb_map;	/* A pointer to a pointer validity map of the block. */
@@ -837,14 +901,28 @@ struct hblkhdr {
 #	define IGNORE_OFF_PAGE	1	/* Ignore pointers that do not	*/
 					/* point to the first page of 	*/
 					/* this object.			*/
+#	define WAS_UNMAPPED 2	/* This is a free block, which has	*/
+				/* been unmapped from the address 	*/
+				/* space.				*/
+				/* GC_remap must be invoked on it	*/
+				/* before it can be reallocated.	*/
+				/* Only set with USE_MUNMAP.		*/
     unsigned short hb_last_reclaimed;
     				/* Value of GC_gc_no when block was	*/
     				/* last allocated or swept. May wrap.   */
+				/* For a free block, this is maintained */
+				/* unly for USE_MUNMAP, and indicates	*/
+				/* when the header was allocated, or	*/
+				/* when the size of the block last	*/
+				/* changed.				*/
     word hb_marks[MARK_BITS_SZ];
 			    /* Bit i in the array refers to the             */
 			    /* object starting at the ith word (header      */
 			    /* INCLUDED) in the heap block.                 */
 			    /* The lsb of word 0 is numbered 0.		    */
+			    /* Unused bits are invalid, and are 	    */
+			    /* occasionally set, e.g for uncollectable	    */
+			    /* objects.					    */
 };
 
 /*  heap block body */
@@ -959,6 +1037,9 @@ struct _GC_arrays {
   word _max_heapsize;
   ptr_t _last_heap_addr;
   ptr_t _prev_heap_addr;
+  word _large_free_bytes;
+	/* Total bytes contained in blocks on large object free */
+	/* list.						*/
   word _words_allocd_before_gc;
 		/* Number of words allocated before this	*/
 		/* collection cycle.				*/
@@ -1005,6 +1086,9 @@ struct _GC_arrays {
    		/* Number of words in accessible atomic		*/
 		/* objects.					*/
 # endif
+# ifdef USE_MUNMAP
+    word _unmapped_bytes;
+# endif
 # ifdef MERGE_SIZES
     unsigned _size_map[WORDS_TO_BYTES(MAXOBJSZ+1)];
     	/* Number of words to allocate for a given allocation request in */
@@ -1022,7 +1106,7 @@ struct _GC_arrays {
     		       /* to an object at				*/
     		       /* block_start+i&~3 - WORDS_TO_BYTES(j).		*/
     		       /* (If ALL_INTERIOR_POINTERS is defined, then	*/
-    		       /* instead ((short *)(hbh_map[sz])[i] is j if	*/
+    		       /* instead ((short *)(hb_map[sz])[i] is j if	*/
     		       /* block_start+WORDS_TO_BYTES(i) is in the	*/
     		       /* interior of an object starting at		*/
     		       /* block_start+WORDS_TO_BYTES(i-j)).		*/
@@ -1135,6 +1219,7 @@ GC_API GC_FAR struct _GC_arrays GC_arrays;
 # define GC_prev_heap_addr GC_arrays._prev_heap_addr
 # define GC_words_allocd GC_arrays._words_allocd
 # define GC_words_wasted GC_arrays._words_wasted
+# define GC_large_free_bytes GC_arrays._large_free_bytes
 # define GC_words_finalized GC_arrays._words_finalized
 # define GC_non_gc_bytes_at_gc GC_arrays._non_gc_bytes_at_gc
 # define GC_mem_freed GC_arrays._mem_freed
@@ -1144,6 +1229,9 @@ GC_API GC_FAR struct _GC_arrays GC_arrays;
 # define GC_words_allocd_before_gc GC_arrays._words_allocd_before_gc
 # define GC_heap_sects GC_arrays._heap_sects
 # define GC_last_stack GC_arrays._last_stack
+# ifdef USE_MUNMAP
+#   define GC_unmapped_bytes GC_arrays._unmapped_bytes
+# endif
 # ifdef MSWIN32
 #   define GC_heap_bases GC_arrays._heap_bases
 # endif
@@ -1236,7 +1324,7 @@ extern char * GC_invalid_map;
 			/* Pointer to the nowhere valid hblk map */
 			/* Blocks pointing to this map are free. */
 
-extern struct hblk * GC_hblkfreelist;
+extern struct hblk * GC_hblkfreelist[];
 				/* List of completely empty heap blocks	*/
 				/* Linked through hb_next field of 	*/
 				/* header structure associated with	*/
@@ -1311,7 +1399,12 @@ GC_bool GC_should_collect();
 void GC_apply_to_all_blocks(/*fn, client_data*/);
 			/* Invoke fn(hbp, client_data) for each 	*/
 			/* allocated heap block.			*/
-struct hblk * GC_next_block(/* struct hblk * h */);
+struct hblk * GC_next_used_block(/* struct hblk * h */);
+			/* Return first in-use block >= h	*/
+struct hblk * GC_prev_block(/* struct hblk * h */);
+			/* Return last block <= h.  Returned block	*/
+			/* is managed by GC, but may or may not be in	*/
+			/* use.						*/
 void GC_mark_init();
 void GC_clear_marks();	/* Clear mark bits for all heap objects. */
 void GC_invalidate_mark_state();	/* Tell the marker that	marked 	   */
@@ -1384,8 +1477,14 @@ extern void (*GC_start_call_back)(/* void */);
 			/* lock held.					*/
 			/* 0 by default.				*/
 void GC_push_regs();	/* Push register contents onto mark stack.	*/
+			/* If NURSERY is defined, the default push	*/
+			/* action can be overridden with GC_push_proc	*/
 void GC_remark();	/* Mark from all marked objects.  Used	*/
 		 	/* only if we had to drop something.	*/
+
+# ifdef NURSERY
+    extern void (*GC_push_proc)(ptr_t);
+# endif
 # if defined(MSWIN32)
   void __cdecl GC_push_one();
 # else
@@ -1608,6 +1707,15 @@ extern void (*GC_print_heap_obj)(/* ptr_t p */);
 			/* detailed description of the object 		*/
 			/* referred to by p.				*/
 			
+/* Memory unmapping: */
+#ifdef USE_MUNMAP
+  void GC_unmap_old(void);
+  void GC_merge_unmapped(void);
+  void GC_unmap(ptr_t start, word bytes);
+  void GC_remap(ptr_t start, word bytes);
+  void GC_unmap_gap(ptr_t start1, word bytes1, ptr_t start2, word bytes2);
+#endif
+
 /* Virtual dirty bit implementation:		*/
 /* Each implementation exports the following:	*/
 void GC_read_dirty();	/* Retrieve dirty bits.	*/
@@ -1639,6 +1747,16 @@ void GC_print_hblkfreelist();
 void GC_print_heap_sects();
 void GC_print_static_roots();
 void GC_dump();
+
+#ifdef KEEP_BACK_PTRS
+   void GC_store_back_pointer(ptr_t source, ptr_t dest);
+   void GC_marked_for_finalization(ptr_t dest);
+#  define GC_STORE_BACK_PTR(source, dest) GC_store_back_pointer(source, dest)
+#  define GC_MARKED_FOR_FINALIZATION(dest) GC_marked_for_finalization(dest)
+#else
+#  define GC_STORE_BACK_PTR(source, dest) 
+#  define GC_MARKED_FOR_FINALIZATION(dest)
+#endif
 
 /* Make arguments appear live to compiler */
 # ifdef __WATCOMC__
@@ -1689,5 +1807,14 @@ void GC_err_puts(/* char *s */);
 			/* Write s to stderr, don't buffer, don't add	*/
 			/* newlines, don't ...				*/
 
+
+#   ifdef GC_ASSERTIONS
+#	define GC_ASSERT(expr) if(!(expr)) {\
+		GC_err_printf2("Assertion failure: %s:%ld\n", \
+				__FILE__, (unsigned long)__LINE__); \
+		ABORT("assertion failure"); }
+#   else 
+#	define GC_ASSERT(expr)
+#   endif
 
 # endif /* GC_PRIVATE_H */

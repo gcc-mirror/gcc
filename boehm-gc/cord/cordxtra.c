@@ -582,7 +582,7 @@ CORD CORD_from_file_lazy_inner(FILE * f, size_t len)
         state -> lf_cache[i] = 0;
     }
     state -> lf_current = 0;
-    GC_register_finalizer(state, CORD_lf_close_proc, 0, 0, 0);
+    GC_REGISTER_FINALIZER(state, CORD_lf_close_proc, 0, 0, 0);
     return(CORD_from_fn(CORD_lf_func, state, len));
 }
 

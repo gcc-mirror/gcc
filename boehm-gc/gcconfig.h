@@ -43,8 +43,18 @@
 #    define OPENBSD
 #    define mach_type_known
 # endif
+# if defined(__OpenBSD__) && defined(__sparc__)
+#    define SPARC
+#    define OPENBSD
+#    define mach_type_known
+# endif
 # if defined(__NetBSD__) && defined(m68k)
 #    define M68K
+#    define NETBSD
+#    define mach_type_known
+# endif
+# if defined(__NetBSD__) && defined(arm32)
+#    define ARM32
 #    define NETBSD
 #    define mach_type_known
 # endif
@@ -100,7 +110,8 @@
 #     endif
 #   define mach_type_known
 # endif
-# if defined(sparc) && defined(unix) && !defined(sun) && !defined(linux)
+# if defined(sparc) && defined(unix) && !defined(sun) && !defined(linux) \
+     && !defined(__OpenBSD__)
 #   define SPARC
 #   define DRSNX
 #   define mach_type_known
@@ -124,13 +135,20 @@
 #   define SYSV
 #   define mach_type_known
 # endif
-# if defined(_PA_RISC1_0) || defined(_PA_RISC1_1) \
+# if defined(_PA_RISC1_0) || defined(_PA_RISC1_1) || defined(_PA_RISC2_0) \
      || defined(hppa) || defined(__hppa__)
 #   define HP_PA
+#   ifndef LINUX
+#     define HPUX
+#   endif
 #   define mach_type_known
 # endif
-# if defined(LINUX) && defined(i386)
+# if defined(LINUX) && (defined(i386) || defined(__i386__))
 #    define I386
+#    define mach_type_known
+# endif
+# if defined(LINUX) && (defined(__ia64__) || defined(__ia64))
+#    define IA64
 #    define mach_type_known
 # endif
 # if defined(LINUX) && defined(powerpc)
@@ -141,9 +159,8 @@
 #    define M68K
 #    define mach_type_known
 # endif
-# if defined(linux) && defined(sparc)
+# if defined(LINUX) && defined(sparc)
 #    define SPARC
-#    define LINUX
 #    define mach_type_known
 # endif
 # if defined(__alpha) || defined(__alpha__)
@@ -153,9 +170,11 @@
 #   endif
 #   define mach_type_known
 # endif
-# if defined(_AMIGA)
-#   define M68K
+# if defined(_AMIGA) && !defined(AMIGA)
 #   define AMIGA
+# endif
+# ifdef AMIGA 
+#   define M68K
 #   define mach_type_known
 # endif
 # if defined(THINK_C) || defined(__MWERKS__) && !defined(__powerc)
@@ -167,6 +186,11 @@
 #   define POWERPC
 #   define MACOS
 #   define mach_type_known
+# endif
+# if defined(macosx)
+#    define MACOSX
+#    define POWERPC
+#    define mach_type_known
 # endif
 # if defined(NeXT) && defined(mc68000)
 #   define M68K
@@ -239,6 +263,10 @@
 # if defined(_UTS) && !defined(mach_type_known)
 #   define S370
 #   define UTS4
+#   define mach_type_known
+# endif
+# if defined(__pj__)
+#   define PJ
 #   define mach_type_known
 # endif
 /* Ivan Demakov */
@@ -486,8 +514,8 @@
 
 # ifdef POWERPC
 #   define MACH_TYPE "POWERPC"
-#   define ALIGNMENT 2
 #   ifdef MACOS
+#     define ALIGNMENT 2  /* Still necessary?  Could it be 4?	*/
 #     ifndef __LOWMEM__
 #     include <LowMem.h>
 #     endif
@@ -497,13 +525,28 @@
 #     define DATAEND  /* not needed */
 #   endif
 #   ifdef LINUX
+#     define ALIGNMENT 4	/* Guess.  Can someone verify?	*/
+				/* This was 2, but that didn't sound right. */
 #     define OS_TYPE "LINUX"
 #     define HEURISTIC1
 #     undef STACK_GRAN
 #     define STACK_GRAN 0x10000000
+	/* Stack usually starts at 0x80000000 */
 #     define DATASTART GC_data_start
+	/* Others have reported better success with */
+        /*  	extern int __data_start;	    */
+	/*#     define DATASTART (&__data_start)    */
+	/* and disabling the GC_data_start	    */
+	/* initialization code.			    */
       extern int _end;
 #     define DATAEND (&_end)
+#   endif
+#   ifdef MACOSX
+#     define ALIGNMENT 4
+#     define OS_TYPE "MACOSX"
+#     define DATASTART ((ptr_t) get_etext())
+#     define STACKBOTTOM ((ptr_t) 0xc0000000)
+#     define DATAEND	/* not needed */
 #   endif
 # endif
 
@@ -603,6 +646,11 @@
 #     define SVR4
 #     define STACKBOTTOM ((ptr_t) 0xf0000000)
 #   endif
+#   ifdef OPENBSD
+#     define OS_TYPE "OPENBSD"
+#     define STACKBOTTOM ((ptr_t) 0xf8000000)
+#     define DATASTART ((ptr_t)(&etext))
+#   endif
 # endif
 
 # ifdef I386
@@ -657,10 +705,13 @@
 #   endif
 #   ifdef LINUX
 #	define OS_TYPE "LINUX"
-#	define STACKBOTTOM ((ptr_t)0xc0000000)
-	/* Appears to be 0xe0000000 for at least one 2.1.91 kernel.	*/
-	/* Probably needs to be more flexible, but I don't yet 		*/
-	/* fully understand how flexible.				*/
+#       define HEURISTIC1
+#       undef STACK_GRAN
+#       define STACK_GRAN 0x10000000
+	/* STACKBOTTOM is usually 0xc0000000, but this changes with	*/
+	/* different kernel configurations.  In particular, systems	*/
+	/* with 2GB physical memory will usually move the user		*/
+	/* address space limit, and hence initial SP to 0x80000000.	*/
 #       if !defined(LINUX_THREADS) || !defined(REDIRECT_MALLOC)
 #	    define MPROTECT_VDB
 #	else
@@ -862,9 +913,17 @@
 # endif
 
 # ifdef HP_PA
+    /* OS is assumed to be HP/UX	*/
 #   define MACH_TYPE "HP_PA"
-#   define ALIGNMENT 4
-#   define ALIGN_DOUBLE
+#   define OS_TYPE "HPUX"
+#   ifdef __LP64__
+#     define CPP_WORDSZ 64
+#     define ALIGNMENT 8
+#   else
+#     define CPP_WORDSZ 32
+#     define ALIGNMENT 4
+#     define ALIGN_DOUBLE
+#   endif
     extern int __data_start;
 #   define DATASTART ((ptr_t)(&__data_start))
 #   if 0
@@ -881,6 +940,9 @@
 #   endif
 #   define STACK_GROWS_UP
 #   define DYNAMIC_LOADING
+#   ifndef HPUX_THREADS
+#     define MPROTECT_VDB
+#   endif
 #   include <unistd.h>
 #   define GETPAGESIZE() sysconf(_SC_PAGE_SIZE)
 	/* They misspelled the Posix macro?	*/
@@ -909,9 +971,13 @@
 #       define CPP_WORDSZ 64
 #       define STACKBOTTOM ((ptr_t) 0x120000000)
 #       ifdef __ELF__
+#   	  if 0
+	    /* __data_start apparently disappeared in some recent releases. */
             extern int __data_start;
 #           define DATASTART &__data_start
-#           define DYNAMIC_LOADING
+#	  endif
+#         define DATASTART GC_data_start
+#         define DYNAMIC_LOADING
 #       else
 #           define DATASTART ((ptr_t) 0x140000000)
 #       endif
@@ -920,6 +986,31 @@
 #	define MPROTECT_VDB
 		/* Has only been superficially tested.  May not	*/
 		/* work on all versions.			*/
+#   endif
+# endif
+
+# ifdef IA64
+#   define MACH_TYPE "IA64"
+#   define ALIGN_DOUBLE
+	/* Requires 16 byte alignment for malloc */
+#   define ALIGNMENT 8
+#   ifdef HPUX
+	--> needs work
+#   endif
+#   ifdef LINUX
+#       define OS_TYPE "LINUX"
+#       define CPP_WORDSZ 64
+	/* This should really be done through /proc, but that	*/
+	/* requires we run on an IA64 kernel.			*/
+#       define STACKBOTTOM ((ptr_t) 0xa000000000000000l)
+	/* We also need the base address of the register stack	*/
+	/* backing store.  There is probably a better way to	*/
+	/* get that, too ...					*/
+#	define BACKING_STORE_BASE ((ptr_t) 0x9fffffff80000000l)
+#       define DATASTART GC_data_start
+#       define DYNAMIC_LOADING
+	extern int _end;
+#	define DATAEND (&_end)
 #   endif
 # endif
 
@@ -952,6 +1043,26 @@
 #	define DATAEND (&_end)
 #	define HEURISTIC2
 # endif
+
+# if defined(PJ)
+#   define ALIGNMENT 4
+    extern int _etext;
+#   define DATASTART ((ptr_t)(&_etext))
+#   define HEURISTIC1
+# endif
+
+# ifdef ARM32
+#   define CPP_WORDSZ 32
+#   define MACH_TYPE "ARM32"
+#   define ALIGNMENT 4
+#   ifdef NETBSD
+#       define OS_TYPE "NETBSD"
+#       define HEURISTIC2
+        extern char etext;
+#       define DATASTART ((ptr_t)(&etext))
+#       define USE_GENERIC_PUSH_REGS
+#   endif
+#endif
 
 # ifndef STACK_GROWS_UP
 #   define STACK_GROWS_DOWN
@@ -995,6 +1106,10 @@
 #   define SUNOS5SIGS
 # endif
 
+# if defined(HPUX)
+#   define SUNOS5SIGS
+# endif
+
 # if CPP_WORDSZ != 32 && CPP_WORDSZ != 64
    -> bad word size
 # endif
@@ -1021,6 +1136,10 @@
 #   undef MPROTECT_VDB
 # endif
 
+# ifdef USE_MUNMAP
+#   undef MPROTECT_VDB  /* Can't deal with address space holes. */
+# endif
+
 # if !defined(PCR_VDB) && !defined(PROC_VDB) && !defined(MPROTECT_VDB)
 #   define DEFAULT_VDB
 # endif
@@ -1040,10 +1159,13 @@
 # if defined(SOLARIS_THREADS) && !defined(SUNOS5)
 --> inconsistent configuration
 # endif
+# if defined(HPUX_THREADS) && !defined(HPUX)
+--> inconsistent configuration
+# endif
 # if defined(PCR) || defined(SRC_M3) || \
 	defined(SOLARIS_THREADS) || defined(WIN32_THREADS) || \
 	defined(IRIX_THREADS) || defined(LINUX_THREADS) || \
-	defined(IRIX_JDK_THREADS)
+	defined(IRIX_JDK_THREADS) || defined(HPUX_THREADS)
 #   define THREADS
 # endif
 

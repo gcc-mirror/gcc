@@ -318,12 +318,10 @@ class traceable_alloc_template {
 
 typedef traceable_alloc_template < 0 > traceable_alloc;
 
-#ifdef _SGI_SOURCE
-
 // We want to specialize simple_alloc so that it does the right thing
 // for all pointerfree types.  At the moment there is no portable way to
 // even approximate that.  The following approximation should work for
-// SGI compilers, and perhaps some others.
+// SGI compilers, and recent versions of g++.
 
 # define __GC_SPECIALIZE(T,alloc) \
 class simple_alloc<T, alloc> { \
@@ -450,7 +448,5 @@ inline bool operator!=(const single_client_traceable_alloc&,
 __STL_END_NAMESPACE
 
 #endif /* __STL_USE_STD_ALLOCATORS */
-
-#endif /* _SGI_SOURCE */
 
 #endif /* GC_ALLOC_H */

@@ -41,7 +41,7 @@
  * This interface is fairly big, largely for performance reasons.
  * The most basic constants and functions:
  *
- * CORD - the type fo a cord;
+ * CORD - the type of a cord;
  * CORD_EMPTY - empty cord;
  * CORD_len(cord) - length of a cord;
  * CORD_cat(cord1,cord2) - concatenation of two cords;
