@@ -1,3 +1,15 @@
+Fri Dec 19 00:19:42 1997  Richard Henderson  <rth@cygnus.com>
+
+	* tree.c (build_range_type): Allow creation of ranges with no maximum.
+	* dbxout.c (dbxout_range_type): Handle missing TYPE_MAX_VALUE.
+	* dwarf2out.c (add_subscript_info): Likewise.
+	* dwarfout.c (subscript_data_attribute, byte_size_attribute): Likewise.
+	* sdbout.c (plain_type_1): Likewise.
+	* stmt.c (pushcase_range, all_cases_count, node_has_high_bound):
+	Likewise.
+	* fold-const.c (int_const_binop, fold_convert, make_range, fold):
+	Likewise.
+
 Thu Dec 18 17:05:10 1997  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
  
         * mips.c (fatal): Remove declaration.

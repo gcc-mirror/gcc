@@ -7195,8 +7195,16 @@ add_subscript_info (type_die, type)
 				    type_die);
 	    }
 
+	  /* ??? If upper is NULL, the array has unspecified length,
+	     but it does have a lower bound.  This happens with Fortran
+	       dimension arr(N:*)
+       	     Since the debugger is definitely going to need to know N
+	     to produce useful results, go ahead and output the lower
+	     bound solo, and hope the debugger can cope.  */
+
 	  add_bound_info (subrange_die, DW_AT_lower_bound, lower);
-	  add_bound_info (subrange_die, DW_AT_upper_bound, upper);
+	  if (upper)
+	    add_bound_info (subrange_die, DW_AT_upper_bound, upper);
 	}
       else
 	/* We have an array type with an unspecified length.  The DWARF-2
