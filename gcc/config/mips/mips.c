@@ -202,9 +202,6 @@ enum processor_type mips_arch;
 /* The target cpu for optimization and scheduling.  */
 enum processor_type mips_tune;
 
-/* Historical option for code generation and scheduling.  */
-enum processor_type mips_cpu;
-
 /* which instruction set architecture to use.  */
 int mips_isa;
 
@@ -4706,6 +4703,7 @@ override_options ()
   register int i, start;
   register int regno;
   register enum machine_mode mode;
+  register enum processor_type mips_cpu;
 
   mips_section_threshold = g_switch_set ? g_switch_value : MIPS_DEFAULT_GVALUE;
 
