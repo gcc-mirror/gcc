@@ -1,3 +1,8 @@
+2003-09-19  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/495
+	* g++.dg/template/friend24.C: New test.
+
 2003-09-19  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/12332

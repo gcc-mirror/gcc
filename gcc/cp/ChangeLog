@@ -1,3 +1,9 @@
+2003-09-19  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/495
+	* pt.c (tsubst_friend_class): Only use innermost template
+	arguments for the injected friend class template.
+
 2003-09-19  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/12332
