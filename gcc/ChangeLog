@@ -1,5 +1,62 @@
 2004-09-03  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR target/14925:
+	Makefile.in (LIB2ADDEHSTATIC): New.
+	(LIB2ADDEHSHARED): New.
+	(LIBUNWIND): New.
+	(LIBUNWINDDEP): New.
+	(SHLIBUNWIND_LINK): New.
+	(SHLIBUNWIND_INSTALL): New.
+	(libgcc.mk): Pass LIB2ADDEHSTATIC, LIB2ADDEHSHARED, LIBUNWIND,
+	LIBUNWINDDEP, SHLIBUNWIND_LINK and SHLIBUNWIND_INSTALL.
+	(clean): Remove libunwind*
+	(stage1-start): Remove and copy stage1/libunwind*.
+	(stage2-start): Remove and copy stage2/libunwind*.
+	(stage3-start): Remove and copy stage3/libunwind*.
+	(stage4-start): Remove and copy stage4/libunwind*.
+	(stageprofile-start): Remove and copy stageprofile/libunwind*.
+	(stagefeedback-start): Remove and copy stagefeedback/libunwind*.
+
+	* config.gcc (ia64*-*-linux*): Always add t-libunwind to
+	tmake_file. Add t-libunwind-elf and ia64/t-glibc-libunwind to
+	tmake_file if --with-system-libunwind isn't used.
+
+	* config/ia64/t-glibc-libunwind: New file.
+	* config/t-libunwind-elf: Likewise.
+	* unwind-compat.c: Likewise.
+	* unwind-compat.h: Likewise.
+	* unwind-dw2-fde-compat.c: Likewise.
+
+	* config/ia64/t-glibc (LIB2ADDEH): Updated.
+	* config/ia64/t-hpux (T_CFLAGS): Add -DUSE_LIBUNWIND_EXCEPTIONS.
+
+	* config/ia64/unwind-ia64.c: Include "unwind-compat.h". Define
+	aliases if needed.
+	* unwind-dw2-fde-glibc.c: Likewise.
+	* unwind-dw2.c: Likewise.
+
+	* config/t-libunwind (LIB2ADDEH): Updated.
+	(LIB2ADDEHSTATIC): New.
+	(T_CFLAGS): Add -DUSE_LIBUNWIND_EXCEPTIONS.
+	(TARGET_LIBGCC2_CFLAGS): Set to -DUSE_GAS_SYMVER.
+
+	* configure.ac: Change --enable-libunwind-exceptions to
+	--with-system-libunwind. Don't define USE_LIBUNWIND_EXCEPTIONS.
+	* configure: Regenerated.
+	* config.in: Updated.
+
+	* doc/install.texi (ia64-*-linux): Require libunwind 0.98 or
+	above and mention --with-system-libunwind.
+	(ia64-*-hpux*): Mention --enable-libunwind-exceptions is
+	removed in gcc 3.4.3 and later.
+
+	* gcc.c (init_spec): Add -lunwind to -lgcc_s if
+	USE_LIBUNWIND_EXCEPTIONS is defined.
+
+	* mklibgcc.in: Support libunwind.
+
+2004-09-03  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config/i386/i386.c (x86_branch_hints): Remove m_PENT4 and
 	m_NOCONA.
 

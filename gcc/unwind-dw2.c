@@ -1317,4 +1317,24 @@ uw_identify_context (struct _Unwind_Context *context)
 
 #include "unwind.inc"
 
+#if defined (USE_GAS_SYMVER) && defined (SHARED) && defined (USE_LIBUNWIND_EXCEPTIONS)
+alias (_Unwind_Backtrace);
+alias (_Unwind_DeleteException);
+alias (_Unwind_FindEnclosingFunction);
+alias (_Unwind_FindTableEntry);
+alias (_Unwind_ForcedUnwind);
+alias (_Unwind_GetDataRelBase);
+alias (_Unwind_GetTextRelBase);
+alias (_Unwind_GetCFA);
+alias (_Unwind_GetGR);
+alias (_Unwind_GetIP);
+alias (_Unwind_GetLanguageSpecificData);
+alias (_Unwind_GetRegionStart);
+alias (_Unwind_RaiseException);
+alias (_Unwind_Resume);
+alias (_Unwind_Resume_or_Rethrow);
+alias (_Unwind_SetGR);
+alias (_Unwind_SetIP);
+#endif
+
 #endif /* !USING_SJLJ_EXCEPTIONS */

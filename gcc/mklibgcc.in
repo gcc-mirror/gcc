@@ -14,7 +14,13 @@
 # LIB2ADD
 # LIB2ADD_ST 
 # LIB2ADDEH
+# LIB2ADDEHSTATIC
+# LIB2ADDEHSHARED
 # LIB2ADDEHDEP
+# LIBUNWIND
+# LIBUNWINDDEP
+# SHLIBUNWIND_LINK
+# SHLIBUNWIND_INSTALL
 # FPBIT
 # FPBIT_FUNCS
 # LIB2_DIVMOD_FUNCS
@@ -117,7 +123,8 @@ done
 
 libgcc2_objs=""
 libgcc2_st_objs=""
-libgcc2_eh_objs=""
+libgcc2_eh_static_objs=""
+libgcc2_eh_shared_objs=""
 
 for name in $lib2funcs; do
   for ml in $MULTILIBS; do
@@ -236,12 +243,26 @@ for file in $LIB2ADDEH; do
     echo $out: stmp-dirs $file $LIB2ADDEHDEP $libgcc_dep
     echo "	$gcc_compile" $flags -fexceptions -c $file -o $out
   done
-  if [ "$SHLIB_LINK" ]; then
-    libgcc2_eh_objs="$libgcc2_eh_objs ${oname}${objext}"
-  else
+  if [ -z "$SHLIB_LINK" ]; then
     libgcc2_objs="$libgcc2_objs ${oname}${objext}"
   fi
 done
+
+if [ "$SHLIB_LINK" ]; then
+  # Those should be in libgcc_eh.a.
+  for file in $LIB2ADDEHSTATIC; do
+    name=`echo $file | sed -e 's/[.][cSo]$//' -e 's/[.]asm$//' -e 's/[.]txt$//'`
+    oname=`echo $name | sed -e 's,.*/,,'`
+    libgcc2_eh_static_objs="$libgcc2_eh_static_objs ${oname}${objext}"
+  done
+
+  # Those should be in libgcc.so.
+  for file in $LIB2ADDEHSHARED; do
+    name=`echo $file | sed -e 's/[.][cSo]$//' -e 's/[.]asm$//' -e 's/[.]txt$//'`
+    oname=`echo $name | sed -e 's,.*/,,'`
+    libgcc2_eh_shared_objs="$libgcc2_eh_shared_objs ${oname}${objext}"
+  done
+fi
 
 for file in $LIB2ADD_ST; do
   name=`echo $file | sed -e 's/[.][cSo]$//' -e 's/[.]asm$//' -e 's/[.]txt$//'`
@@ -260,6 +281,31 @@ for file in $LIB2ADD_ST; do
   done
   libgcc2_st_objs="$libgcc2_st_objs ${oname}${objext}"
 done
+
+if [ "$LIBUNWIND" ]; then
+  libunwind_static_objs=""
+  libunwind_shared_objs=""
+  for file in $LIBUNWIND; do
+    name=`echo $file | sed -e 's/[.][cSo]$//' -e 's/[.]asm$//' -e 's/[.]txt$//'`
+    oname=`echo $name | sed -e 's,.*/,,'`
+
+    for ml in $MULTILIBS; do
+      dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
+      flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
+      out="libgcc/${dir}/${oname}${objext}"
+      if [ ${name}.asm = ${file} ]; then
+	flags="$flags -xassembler-with-cpp"
+      fi
+
+      echo $out: stmp-dirs $file $LIBUNWINDDEP
+      echo "	$gcc_compile" $flags -fexceptions -c $file -o $out
+      echo ${out}s: stmp-dirs $file $LIBUNWINDDEP
+      echo "	$gcc_compile" $flags -fexceptions -DSHARED -c $file -o ${out}s
+    done
+    libunwind_static_objs="$libunwind_static_objs ${oname}${objext}"
+    libunwind_shared_objs="$libunwind_shared_objs ${oname}${objext}s"
+  done
+fi
 
 #
 # build libgcov components
@@ -288,17 +334,21 @@ for ml in $MULTILIBS; do
   flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
 
   libgcc_objs=""
-  libgcc_eh_objs=""
+  libgcc_eh_static_objs=""
+  libgcc_eh_shared_objs=""
   for o in $libgcc1_objs; do
     libgcc_objs="$libgcc_objs libgcc/${dir}/$o"
   done
   for o in $libgcc2_objs; do
     libgcc_objs="$libgcc_objs libgcc/${dir}/$o"
   done
-  for o in $libgcc2_eh_objs; do
-    libgcc_eh_objs="$libgcc_eh_objs libgcc/${dir}/$o"
+  for o in $libgcc2_eh_static_objs; do
+    libgcc_eh_static_objs="$libgcc_eh_static_objs libgcc/${dir}/$o"
   done
-  libgcc_sh_objs="$libgcc_objs $libgcc_eh_objs"
+  for o in $libgcc2_eh_shared_objs; do
+    libgcc_eh_shared_objs="$libgcc_eh_shared_objs libgcc/${dir}/$o"
+  done
+  libgcc_sh_objs="$libgcc_objs $libgcc_eh_shared_objs"
   shlib_deps="$libgcc_sh_objs"
 
   libgcc_st_objs=""
@@ -310,6 +360,18 @@ for ml in $MULTILIBS; do
   for o in $libgcov_objs; do
     libgcov_a_objs="$libgcov_a_objs libgcc/${dir}/$o"
   done
+
+  if [ "$LIBUNWIND" ]; then
+    libunwind_a_objs=""
+    for o in $libunwind_static_objs; do
+      libunwind_a_objs="$libunwind_a_objs libgcc/${dir}/$o"
+    done
+    libunwind_sh_objs=""
+    for o in $libunwind_shared_objs; do
+      libunwind_sh_objs="$libunwind_sh_objs libgcc/${dir}/$o"
+    done
+    shlibunwind_deps="$libunwind_sh_objs"
+  fi
   
   if [ "$SHLIB_LINK" -a "$SHLIB_MKMAP" ]; then
     mapfile="libgcc/${dir}/libgcc.map"
@@ -375,21 +437,37 @@ EOF
   echo '	$(AR_CREATE_FOR_TARGET)' ${dir}/libgcov.a $libgcov_a_objs
   echo '	$(RANLIB_FOR_TARGET)' ${dir}/libgcov.a
 
+  if [ "$LIBUNWIND" ]; then
+    echo ""
+    echo "${dir}/libunwind.a: stmp-dirs $libunwind_a_objs"
+    echo "	-rm -rf ${dir}/libunwind.a"
+    echo '	$(AR_CREATE_FOR_TARGET)' ${dir}/libunwind.a $libunwind_a_objs
+    echo '	$(RANLIB_FOR_TARGET)' ${dir}/libunwind.a
+    echo ""
+    echo "${dir}/libgcc.a: ${dir}/libunwind.a"
+  fi
+
   if [ "$SHLIB_LINK" ]; then
 
     echo ""
-    echo "${dir}/libgcc_eh.a: stmp-dirs $libgcc_eh_objs"
+    echo "${dir}/libgcc_eh.a: stmp-dirs $libgcc_eh_static_objs"
     echo "	-rm -rf ${dir}/libgcc_eh.a"
-    echo '	$(AR_CREATE_FOR_TARGET)' ${dir}/libgcc_eh.a $libgcc_eh_objs
+    echo '	$(AR_CREATE_FOR_TARGET)' ${dir}/libgcc_eh.a $libgcc_eh_static_objs
     echo '	$(RANLIB_FOR_TARGET)' ${dir}/libgcc_eh.a
 
     if [ -z "$SHLIB_MULTILIB" ]; then
       if [ "$dir" = . ]; then
 	shlib_base_name=libgcc_s
+	shlibunwind_base_name=libunwind
       else
 	shlib_base_name=libgcc_s_`echo $dir | sed s,/,_,g`
+	shlibunwind_base_name=libunwind_`echo $dir | sed s,/,_,g`
       fi
       shlib_so_name="$shlib_base_name"
+      shlibunwind_so_name="$shlibunwind_base_name"
+      if [ "$LIBUNWIND" ]; then
+	shlib_deps="$shlib_deps ${dir}/${shlibunwind_base_name}${SHLIB_EXT}"
+      fi
       shlib_dir=
       shlib_slibdir_qual=
       if [ -n "$MULTILIB_OSDIRNAMES" ]; then
@@ -401,11 +479,13 @@ EOF
 	  os_multilib_base=`echo $os_multilib_dir | sed -n "s~/${gcc_multilib_sup}\$~~p"`
 	  if [ -z "$os_multilib_base" ]; then
 	    shlib_so_name=libgcc_s
+	    shlibunwind_so_name=libunwind
 	    if [ "$os_multilib_dir" != "." ]; then
 		shlib_slibdir_qual="/$os_multilib_dir"
 	    fi
 	  else
 	    shlib_so_name=libgcc_s_`echo $gcc_multilib_sup | sed s,/,_,g`
+	    shlibunwind_so_name=libunwind_`echo $gcc_multilib_sup | sed s,/,_,g`
 	    shlib_slibdir_qual="/$os_multilib_base"
 	  fi
 	fi
@@ -421,8 +501,21 @@ EOF
 	       -e "s%@shlib_so_name@%$shlib_so_name%g" \
 	       -e "s%@shlib_dir@%$shlib_dir%g" \
 	       -e "s%@shlib_slibdir_qual@%%g"
+      if [ "$LIBUNWIND" ]; then
+	echo ""
+	echo "${dir}/${shlibunwind_base_name}${SHLIB_EXT}: $shlibunwind_deps"
+	echo "	$SHLIBUNWIND_LINK" \
+	   | sed -e "s%@multilib_flags@%$flags%g" \
+		 -e "s%@multilib_dir@%$dir%g" \
+		 -e "s%@shlib_objs@%$libunwind_sh_objs%g" \
+		 -e "s%@shlib_base_name@%$shlibunwind_base_name%g" \
+		 -e "s%@shlib_so_name@%$shlibunwind_so_name%g" \
+		 -e "s%@shlib_dir@%$shlib_dir%g" \
+		 -e "s%@shlib_slibdir_qual@%%g"
+      fi
     elif [ "$SHLIB_MULTILIB" = "$dir" ]; then
       shlib_base_name="libgcc_s";
+      shlibunwind_base_name="libunwind";
       echo ""
       echo "${shlib_base_name}${SHLIB_EXT}: $shlib_deps"
       echo "	$SHLIB_LINK" \
@@ -434,6 +527,18 @@ EOF
 	       -e "s%@shlib_so_name@%$shlib_base_name%g" \
 	       -e "s%@shlib_dir@%%g" \
 	       -e "s%@shlib_slibdir_qual@%%g"
+      if [ "$LIBUNWIND" ]; then
+	echo ""
+	echo "${shlibunwind_base_name}${SHLIB_EXT}: $shlibunwind_deps"
+	echo "	$SHLIBUNWIND_LINK" \
+	   | sed -e "s%@multilib_flags@%$flags%g" \
+		 -e "s%@multilib_dir@%$dir%g" \
+		 -e "s%@shlib_objs@%$libgcc_sh_objs%g" \
+		 -e "s%@shlib_base_name@%$shlibunwind_base_name%g" \
+		 -e "s%@shlib_so_name@%$shlibunwind_base_name%g" \
+		 -e "s%@shlib_dir@%%g" \
+		 -e "s%@shlib_slibdir_qual@%%g"
+      fi
     fi
   fi
 done
@@ -466,6 +571,9 @@ for ml in $MULTILIBS; do
     dirs="$dirs ${dir} libgcc/${dir}"
   fi
   all="$all ${dir}/libgcc.a ${dir}/libgcov.a"
+  if [ "$LIBUNWIND" ]; then
+    all="$all ${dir}/libunwind.a"
+  fi
   if [ "$SHLIB_LINK" ]; then
     all="$all ${dir}/libgcc_eh.a"
     if [ -z "$SHLIB_MULTILIB" ]; then
@@ -475,8 +583,14 @@ for ml in $MULTILIBS; do
 	suff=_`echo $dir | sed s,/,_,g`
       fi
       all="$all ${dir}/libgcc_s${suff}${SHLIB_EXT}"
+      if [ "$LIBUNWIND" ]; then
+	all="$all ${dir}/${dir}/libunwind${suff}${SHLIB_EXT}"
+      fi
     elif [ "$SHLIB_MULTILIB" = "$dir" ]; then
       all="$all libgcc_s${SHLIB_EXT}"
+      if [ "$LIBUNWIND" ]; then
+	all="$all ${dir}/${dir}/libunwind${SHLIB_EXT}"
+      fi
     fi
   fi
 done
@@ -536,10 +650,13 @@ for ml in $MULTILIBS; do
     if [ -z "$SHLIB_MULTILIB" ]; then
       if [ "$dir" = . ]; then
 	shlib_base_name=libgcc_s
+	shlibunwind_base_name=libunwind
       else
 	shlib_base_name=libgcc_s_`echo $dir | sed s,/,_,g`
+	shlibunwind_base_name=libunwind_`echo $dir | sed s,/,_,g`
       fi
       shlib_so_name="$shlib_base_name"
+      shlibunwind_so_name="$shlibunwind_base_name"
       shlib_dir=
       shlib_slibdir_qual=
       if [ -n "$MULTILIB_OSDIRNAMES" ]; then
@@ -552,11 +669,13 @@ for ml in $MULTILIBS; do
 	os_multilib_base=`echo $os_multilib_dir | sed -n "s~/${gcc_multilib_sup}\$~~p"`
 	if [ -z "$os_multilib_base" ]; then
 	  shlib_so_name=libgcc_s
+	  shlibunwind_so_name=libunwind
 	  if [ "$os_multilib_dir" != "." ]; then
 	    shlib_slibdir_qual="/$os_multilib_dir"
 	  fi
 	else
 	  shlib_so_name=libgcc_s_`echo $gcc_multilib_sup | sed s,/,_,g`
+	  shlibunwind_so_name=libunwind_`echo $gcc_multilib_sup | sed s,/,_,g`
 	  shlib_slibdir_qual="/$os_multilib_base"
 	fi
       fi
@@ -565,6 +684,16 @@ for ml in $MULTILIBS; do
 	      -e "s%@shlib_so_name@%$shlib_so_name%g" \
 	      -e "s%@shlib_dir@%$shlib_dir%g" \
 	      -e "s%@shlib_slibdir_qual@%$shlib_slibdir_qual%g"
+      if [ "$LIBUNWIND" ]; then
+	echo "	$SHLIBUNWIND_INSTALL" \
+	   | sed -e "s%@shlib_base_name@%$shlibunwind_base_name%g" \
+		 -e "s%@shlib_so_name@%$shlibunwind_so_name%g" \
+		 -e "s%@shlib_dir@%$shlib_dir%g" \
+		 -e "s%@shlib_slibdir_qual@%$shlib_slibdir_qual%g"
+	libunwinddir='$(DESTDIR)$(slibdir)$(shlib_slibdir_qual)/$(shlib_dir)'
+	echo '	$(INSTALL_DATA)' ${dir}/libunwind.a ${libunwinddir}/
+	echo '	$(RANLIB_FOR_TARGET)' ${libunwinddir}/libunwind.a
+      fi
     elif [ "$SHLIB_MULTILIB" = "$dir" ]; then
       shlib_base_name="libgcc_s";
       echo "	$SHLIB_INSTALL" \
@@ -572,6 +701,16 @@ for ml in $MULTILIBS; do
 	      -e "s%@shlib_so_name@%$shlib_base_name%g" \
 	      -e "s%@shlib_dir@%%g" \
 	      -e "s%@shlib_slibdir_qual@%%g"
+      if [ "$LIBUNWIND" ]; then
+	echo "	$SHLIBUNWIND_INSTALL" \
+	   | sed -e "s%@shlib_base_name@%$shlibunwind_base_name%g" \
+		 -e "s%@shlib_so_name@%$shlibunwind_base_name%g" \
+		 -e "s%@shlib_dir@%%g" \
+		 -e "s%@shlib_slibdir_qual@%%g"
+	libunwinddir='$(DESTDIR)$(slibdir)'
+	echo '	$(INSTALL_DATA)' ${dir}/libunwind.a ${libunwinddir}/
+	echo '	$(RANLIB_FOR_TARGET)' ${libunwinddir}/libunwind.a
+      fi
     fi
   fi
 done
