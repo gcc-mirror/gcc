@@ -347,34 +347,37 @@ print_node (file, prefix, node, indent)
 	fputs (" external", file);
       if (DECL_REGISTER (node))
 	fputs (" regdecl", file);
-      if (DECL_PACKED (node))
-	fputs (" packed", file);
       if (DECL_NONLOCAL (node))
 	fputs (" nonlocal", file);
-      if (DECL_INLINE (node))
-	fputs (" inline", file);
 
       if (TREE_CODE (node) == TYPE_DECL && TYPE_DECL_SUPPRESS_DEBUG (node))
 	fputs (" suppress-debug", file);
 
+      if (TREE_CODE (node) == FUNCTION_DECL && DECL_INLINE (node))
+	fputs (" inline", file);
       if (TREE_CODE (node) == FUNCTION_DECL && DECL_BUILT_IN (node))
 	fputs (" built-in", file);
       if (TREE_CODE (node) == FUNCTION_DECL && DECL_BUILT_IN_NONANSI (node))
 	fputs (" built-in-nonansi", file);
 
+      if (TREE_CODE (node) == FIELD_DECL && DECL_PACKED (node))
+	fputs (" packed", file);
       if (TREE_CODE (node) == FIELD_DECL && DECL_BIT_FIELD (node))
 	fputs (" bit-field", file);
+
       if (TREE_CODE (node) == LABEL_DECL && DECL_TOO_LATE (node))
 	fputs (" too-late", file);
+
       if (TREE_CODE (node) == VAR_DECL && DECL_IN_TEXT_SECTION (node))
 	fputs (" in-text-section", file);
+
+      if (TREE_CODE (node) == PARM_DECL && DECL_TRANSPARENT_UNION (node))
+	fputs (" transparent-union", file);
 
       if (DECL_VIRTUAL_P (node))
 	fputs (" virtual", file);
       if (DECL_DEFER_OUTPUT (node))
 	fputs (" defer-output", file);
-      if (DECL_TRANSPARENT_UNION (node))
-	fputs (" transparent-union", file);
 
       if (DECL_LANG_FLAG_0 (node))
 	fputs (" decl_0", file);
@@ -434,7 +437,7 @@ print_node (file, prefix, node, indent)
 			DECL_ABSTRACT_ORIGIN (node), indent + 4);
 
       print_node (file, "arguments", DECL_ARGUMENTS (node), indent + 4);
-      print_node (file, "result", DECL_RESULT (node), indent + 4);
+      print_node (file, "result", DECL_RESULT_FLD (node), indent + 4);
       print_node_brief (file, "initial", DECL_INITIAL (node), indent + 4);
 
       print_lang_decl (file, node, indent);
@@ -445,20 +448,18 @@ print_node (file, prefix, node, indent)
 	  print_rtl (file, DECL_RTL (node));
 	}
 
-      if (DECL_SAVED_INSNS (node) != 0)
+      if (TREE_CODE (node) == PARM_DECL && DECL_INCOMING_RTL (node) != 0)
 	{
 	  indent_to (file, indent + 4);
-	  if (TREE_CODE (node) == PARM_DECL)
-	    {
-	      fprintf (file, "incoming-rtl ");
-	      print_rtl (file, DECL_INCOMING_RTL (node));
-	    }
-	  else if (TREE_CODE (node) == FUNCTION_DECL)
-	    {
-	      fprintf (file, "saved-insns ");
-	      fprintf (file, HOST_PTR_PRINTF,
- 		       (char *) DECL_SAVED_INSNS (node));
-	    }
+	  fprintf (file, "incoming-rtl ");
+	  print_rtl (file, DECL_INCOMING_RTL (node));
+	}
+      else if (TREE_CODE (node) == FUNCTION_DECL
+	       && DECL_SAVED_INSNS (node) != 0)
+	{
+	  indent_to (file, indent + 4);
+	  fprintf (file, "saved-insns ");
+	  fprintf (file, HOST_PTR_PRINTF, (char *) DECL_SAVED_INSNS (node));
 	}
 
       /* Print the decl chain only if decl is at second level.  */

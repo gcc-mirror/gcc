@@ -1,3 +1,21 @@
+Sun Mar 26 20:15:26 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* c-convert.c (convert): Return if output or input type is ERROR_MARK.
+	* c-decl.c (duplicate_decls): Only look at DECL_BUILT_IN_NONANSI
+	and DECL_INLINE if FUNCTION_DECL.
+	(pushdecl, redeclaration_error_message): Likewise, for DECL_INLINE.
+	(store_parm_decls): Check for type of PARM_DECL being ERROR_MARK.
+	Use DECL_WEAK, not DECL_RESULT, to flag for already seen.
+	(combine_parm_decls): Likewise.
+	* ggc-common.c (gcc_mark_tree_children, case 'd'): Use DECL_RESULT_FLD.
+	* print-tree.c (print_node): Likewise.
+	Only test DECL_PACKED, DECL_INLINE, DECL_BIT_FIELD, and
+	DECL_TRANSPARENT_UNION on proper decl types.
+	Properly handly DECL_INCOMING_RTL and DECL_SAVED_INSNS.
+	* stor-layout.c (layout_decl): Only check DECL_PACKED and
+	DECL_BIT_FIELD of FIELD_DECL.
+	* tree.h (DECL_RESULT_FLD): New macro.
+	
 2000-03-26  Richard Henderson  <rth@cygnus.com>
 
 	* calls.c (expand_call): Pass parms not original exp to

@@ -3344,9 +3344,10 @@ identifier_type (decl)
      tree decl;
 {
   tree t;
+
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     {
-      if (TREE_CODE (DECL_RESULT (decl)) == TYPE_DECL)
+      if (TREE_CODE (DECL_TEMPLATE_RESULT (decl)) == TYPE_DECL)
 	return PTYPENAME;
       else if (looking_for_template) 
 	return PFUNCNAME;

@@ -1990,8 +1990,8 @@ finish_member_declaration (decl)
     = (current_access_specifier == access_protected_node);
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     {
-      TREE_PRIVATE (DECL_RESULT (decl)) = TREE_PRIVATE (decl);
-      TREE_PROTECTED (DECL_RESULT (decl)) = TREE_PROTECTED (decl);
+      TREE_PRIVATE (DECL_TEMPLATE_RESULT (decl)) = TREE_PRIVATE (decl);
+      TREE_PROTECTED (DECL_TEMPLATE_RESULT (decl)) = TREE_PROTECTED (decl);
     }
 
   /* Mark the DECL as a member of the current class.  */

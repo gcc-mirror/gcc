@@ -386,7 +386,7 @@ ggc_mark_tree_children (t)
       ggc_mark_tree (DECL_NAME (t));
       ggc_mark_tree (DECL_CONTEXT (t));
       ggc_mark_tree (DECL_ARGUMENTS (t));
-      ggc_mark_tree (DECL_RESULT (t));
+      ggc_mark_tree (DECL_RESULT_FLD (t));
       ggc_mark_tree (DECL_INITIAL (t));
       ggc_mark_tree (DECL_ABSTRACT_ORIGIN (t));
       ggc_mark_tree (DECL_ASSEMBLER_NAME (t));

@@ -2091,7 +2091,7 @@ struct lang_decl
 
 /* In a VAR_DECL for a variable declared in a for statement,
    this is the shadowed (local) variable.  */
-#define DECL_SHADOWED_FOR_VAR(NODE) DECL_RESULT(VAR_DECL_CHECK (NODE))
+#define DECL_SHADOWED_FOR_VAR(NODE) DECL_RESULT_FLD(VAR_DECL_CHECK (NODE))
 
 /* Points back to the decl which caused this lang_decl to be allocated.  */
 #define DECL_MAIN_VARIANT(NODE) (DECL_LANG_SPECIFIC(NODE)->main_decl_variant)
@@ -2709,7 +2709,7 @@ extern int flag_new_for_scope;
 #define DECL_NTPARMS(NODE) \
    TREE_VEC_LENGTH (DECL_INNERMOST_TEMPLATE_PARMS (NODE))
 /* For function, method, class-data templates.  */
-#define DECL_TEMPLATE_RESULT(NODE)      DECL_RESULT(NODE)
+#define DECL_TEMPLATE_RESULT(NODE)      DECL_RESULT_FLD(NODE)
 /* For a static member variable template, the
    DECL_TEMPLATE_INSTANTIATIONS list contains the explicitly and
    implicitly generated instantiations of the variable.  There are no
