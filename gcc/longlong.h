@@ -128,30 +128,28 @@ extern UDItype __udiv_qrnnd (UDItype *, UDItype, UDItype, UDItype);
 #define UDIV_TIME 220
 #endif /* LONGLONG_STANDALONE */
 #ifdef __alpha_cix__
-#define count_leading_zeros(COUNT,X) \
-  __asm__("ctlz %1,%0" : "=r"(COUNT) : "r"(X))
-#define count_trailing_zeros(COUNT,X) \
-  __asm__("cttz %1,%0" : "=r"(COUNT) : "r"(X))
+#define count_leading_zeros(COUNT,X)	((COUNT) = __builtin_clzl (X))
+#define count_trailing_zeros(COUNT,X)	((COUNT) = __builtin_ctzl (X))
 #define COUNT_LEADING_ZEROS_0 64
 #else
 extern const UQItype __clz_tab[] ATTRIBUTE_HIDDEN;
 #define count_leading_zeros(COUNT,X) \
   do {									\
     UDItype __xr = (X), __t, __a;					\
-    __asm__("cmpbge $31,%1,%0" : "=r"(__t) : "r"(__xr));		\
+    __t = __builtin_alpha_cmpbge (0, __xr);				\
     __a = __clz_tab[__t ^ 0xff] - 1;					\
-    __asm__("extbl %1,%2,%0" : "=r"(__t) : "r"(__xr), "r"(__a));	\
+    __t = __builtin_alpha_extbl (__xr, __a);				\
     (COUNT) = 64 - (__clz_tab[__t] + __a*8);				\
   } while (0)
 #define count_trailing_zeros(COUNT,X) \
   do {									\
     UDItype __xr = (X), __t, __a;					\
-    __asm__("cmpbge $31,%1,%0" : "=r"(__t) : "r"(__xr));		\
+    __t = __builtin_alpha_cmpbge (0, __xr);				\
     __t = ~__t & -~__t;							\
     __a = ((__t & 0xCC) != 0) * 2;					\
     __a += ((__t & 0xF0) != 0) * 4;					\
     __a += ((__t & 0xAA) != 0);						\
-    __asm__("extbl %1,%2,%0" : "=r"(__t) : "r"(__xr), "r"(__a));	\
+    __t = __builtin_alpha_extbl (__xr, __a);				\
     __a <<= 3;								\
     __t &= -__t;							\
     __a += ((__t & 0xCC) != 0) * 2;					\
