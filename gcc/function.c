@@ -152,9 +152,8 @@ int current_function_args_size;
 
 int current_function_pretend_args_size;
 
-/* # of bytes of outgoing arguments required to be pushed by the prologue.
-   If this is non-zero, it means that ACCUMULATE_OUTGOING_ARGS was defined
-   and no stack adjusts will be done on function calls.  */
+/* # of bytes of outgoing arguments.  If ACCUMULATE_OUTGOING_ARGS is
+   defined, the needed space is pushed by the prologue. */
 
 int current_function_outgoing_args_size;
 
