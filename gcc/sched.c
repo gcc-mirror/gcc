@@ -2128,10 +2128,11 @@ sched_analyze_insn (x, insn, loop_notes)
 	  sched_analyze_2 (XEXP (note, 0), insn);
     }
 
-  EXECUTE_IF_SET_AND_RESET_IN_REG_SET (reg_pending_sets, 0, i,
-				       {
-					 reg_last_sets[i] = insn;
-				       });
+  EXECUTE_IF_SET_IN_REG_SET (reg_pending_sets, 0, i,
+			     {
+			       reg_last_sets[i] = insn;
+			     });
+  CLEAR_REG_SET (reg_pending_sets);
 
   if (reg_pending_sets_all)
     {
@@ -3254,7 +3255,7 @@ schedule_block (b, file)
      to schedule this block.  */
   if (head == tail
       && (GET_CODE (head) == NOTE || GET_CODE (head) == CODE_LABEL))
-    return;
+    goto ret;
 
 #if 0
   /* This short-cut doesn't work.  It does not count call insns crossed by
@@ -3267,7 +3268,7 @@ schedule_block (b, file)
      has one insn, so this won't slow down this pass by much.  */
 
   if (head == tail)
-    return;
+    goto ret;
 #endif
 
   /* Now HEAD through TAIL are the insns actually to be rearranged;
@@ -3292,7 +3293,7 @@ schedule_block (b, file)
   if (n_insns == 0)
     {
       free_pending_lists ();
-      return;
+      goto ret;
     }
 
   /* Allocate vector to hold insns to be rearranged (except those
@@ -3422,7 +3423,7 @@ schedule_block (b, file)
 	  finish_sometimes_live (regs_sometimes_live, sometimes_max);
 	}
       free_pending_lists ();
-      return;
+      goto ret;
     }
 #endif
 
@@ -4080,6 +4081,10 @@ schedule_block (b, file)
 
   /* Yow! We're done!  */
   free_pending_lists ();
+
+ret:
+  FREE_REG_SET (reg_pending_sets);
+  FREE_REG_SET (old_live_regs);
 
   return;
 }
@@ -5066,5 +5071,12 @@ schedule_insns (dump_file)
 	      REG_N_CALLS_CROSSED (regno) = sched_reg_n_calls_crossed[regno];
 	  }
     }
+
+  if (reload_completed == 0)
+    {
+      FREE_REG_SET (bb_dead_regs);
+      FREE_REG_SET (bb_live_regs);
+    }
+
 }
 #endif /* INSN_SCHEDULING */
