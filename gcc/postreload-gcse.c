@@ -135,7 +135,13 @@ static struct obstack unoccr_obstack;
 
 /* Array where each element is the CUID if the insn that last set the hard
    register with the number of the element, since the start of the current
-   basic block.  */
+   basic block.
+
+   This array is used during the building of the hash table (step 1) to
+   determine if a reg is killed before the end of a basic block.
+
+   It is also used when eliminating partial redundancies (step 2) to see
+   if a reg was modified since the start of a basic block.  */
 static int *reg_avail_info;
 
 /* A list of insns that may modify memory within the current basic block.  */
@@ -169,10 +175,7 @@ static bool oprs_unchanged_p (rtx, rtx, bool);
 static void record_last_reg_set_info (rtx, int);
 static void record_last_mem_set_info (rtx);
 static void record_last_set_info (rtx, rtx, void *);
-static void mark_call (rtx);
-static void mark_set (rtx, rtx);
-static void mark_clobber (rtx, rtx);
-static void mark_oprs_set (rtx);
+static void record_opr_changes (rtx);
 
 static void find_mem_conflicts (rtx, rtx, void *);
 static int load_killed_in_block_p (int, rtx, bool);
@@ -466,10 +469,10 @@ dump_hash_table (FILE *file)
 }
 
 
-/* Return nonzero if the operands of expression X are unchanged from the
-   start of INSN's basic block up to but not including INSN if AFTER_INSN
-   is false, or from INSN to the end of INSN's basic block if AFTER_INSN
-   is true.  */
+/* Return nonzero if the operands of expression X are unchanged
+   1) from the start of INSN's basic block up to but not including INSN
+      if AFTER_INSN is false, or
+   2) from INSN to the end of INSN's basic block if AFTER_INSN is true.  */
 
 static bool
 oprs_unchanged_p (rtx x, rtx insn, bool after_insn)
@@ -584,8 +587,12 @@ find_mem_conflicts (rtx dest, rtx setter ATTRIBUTE_UNUSED,
 
 
 /* Return nonzero if the expression in X (a memory reference) is killed
-   in block BB before if (AFTER_INSN is false) or after (if AFTER_INSN
-   is true) the insn with the CUID in UID_LIMIT.  */
+   in the current basic block before (if AFTER_INSN is false) or after
+   (if AFTER_INSN is true) the insn with the CUID in UID_LIMIT.
+
+   This function assumes that the modifies_mem table is flushed when
+   the hash table construction or redundancy elimination phases start
+   processing a new basic block.  */
 
 static int
 load_killed_in_block_p (int uid_limit, rtx x, bool after_insn)
@@ -629,7 +636,7 @@ load_killed_in_block_p (int uid_limit, rtx x, bool after_insn)
 
 /* Record register first/last/block set information for REGNO in INSN.  */
 
-static void
+static inline void
 record_last_reg_set_info (rtx insn, int regno)
 {
   reg_avail_info[regno] = INSN_CUID (insn);
@@ -671,7 +678,7 @@ record_last_set_info (rtx dest, rtx setter ATTRIBUTE_UNUSED, void *data)
 	   && ! push_operand (dest, GET_MODE (dest)))
     record_last_mem_set_info (last_set_insn);
 }
-
+
 
 /* Reset tables used to keep track of what's still available since the
    start of the block.  */
@@ -683,85 +690,44 @@ reset_opr_set_tables (void)
   obstack_free (&modifies_mem_obstack, modifies_mem_obstack_bottom);
   modifies_mem_list = NULL;
 }
-
-/* Mark things set by a CALL.  */
-
-static void
-mark_call (rtx insn)
-{
-  if (! CONST_OR_PURE_CALL_P (insn))
-    record_last_mem_set_info (insn);
-}
-
-/* Mark things set by a SET.  */
-
-static void
-mark_set (rtx pat, rtx insn)
-{
-  rtx dest = SET_DEST (pat);
-
-  while (GET_CODE (dest) == SUBREG
-	 || GET_CODE (dest) == ZERO_EXTRACT
-	 || GET_CODE (dest) == SIGN_EXTRACT
-	 || GET_CODE (dest) == STRICT_LOW_PART)
-    dest = XEXP (dest, 0);
-
-  if (REG_P (dest))
-    record_last_reg_set_info (insn, REGNO (dest));
-  else if (MEM_P (dest))
-    record_last_mem_set_info (insn);
-
-  if (GET_CODE (SET_SRC (pat)) == CALL)
-    mark_call (insn);
-}
-
-/* Record things set by a CLOBBER.  */
-
-static void
-mark_clobber (rtx pat, rtx insn)
-{
-  rtx clob = XEXP (pat, 0);
-
-  while (GET_CODE (clob) == SUBREG
-	 || GET_CODE (clob) == STRICT_LOW_PART)
-    clob = XEXP (clob, 0);
-
-  if (REG_P (clob))
-    record_last_reg_set_info (insn, REGNO (clob));
-  else
-    record_last_mem_set_info (insn);
-}
+
 
 /* Record things set by INSN.
    This data is used by oprs_unchanged_p.  */
 
 static void
-mark_oprs_set (rtx insn)
+record_opr_changes (rtx insn)
 {
-  rtx pat = PATTERN (insn);
-  int i;
+  rtx note;
 
-  if (GET_CODE (pat) == SET)
-    mark_set (pat, insn);
+  /* Find all stores and record them.  */
+  note_stores (PATTERN (insn), record_last_set_info, insn);
 
-  else if (GET_CODE (pat) == PARALLEL)
-    for (i = 0; i < XVECLEN (pat, 0); i++)
-      {
-	rtx x = XVECEXP (pat, 0, i);
+  /* Also record autoincremented REGs for this insn as changed.  */
+  for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
+    if (REG_NOTE_KIND (note) == REG_INC)
+      record_last_reg_set_info (insn, REGNO (XEXP (note, 0)));
 
-	if (GET_CODE (x) == SET)
-	  mark_set (x, insn);
-	else if (GET_CODE (x) == CLOBBER)
-	  mark_clobber (x, insn);
-	else if (GET_CODE (x) == CALL)
-	  mark_call (insn);
-      }
+  /* Finally, if this is a call, record all call clobbers.  */
+  if (CALL_P (insn))
+    {
+      unsigned int regno;
+      bool clobbers_all = false;
 
-  else if (GET_CODE (pat) == CLOBBER)
-    mark_clobber (pat, insn);
+#ifdef NON_SAVING_SETJMP
+      if (NON_SAVING_SETJMP
+	  && find_reg_note (insn, REG_SETJMP, NULL_RTX))
+	clobbers_all = true;
+#endif
 
-  else if (GET_CODE (pat) == CALL)
-    mark_call (insn);
+      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+	if (clobbers_all
+	    || TEST_HARD_REG_BIT (regs_invalidated_by_call, regno))
+	  record_last_reg_set_info (insn, regno);
+
+      if (! CONST_OR_PURE_CALL_P (insn))
+	record_last_mem_set_info (insn);
+    }
 }
 
 
@@ -791,7 +757,7 @@ hash_scan_set (rtx insn)
 
   if (REG_P (dest))
     {
-      if (/* Don't GCSE something if we can't do a reg/reg copy.  */
+      if (/* Don't CSE something if we can't do a reg/reg copy.  */
 	  can_copy_p (GET_MODE (dest))
 	  /* Is SET_SRC something we want to gcse?  */
 	  && general_operand (src, GET_MODE (src))
@@ -805,7 +771,7 @@ hash_scan_set (rtx insn)
   else if (REG_P (src))
     {
       /* Only record sets of pseudo-regs in the hash table.  */
-      if (/* Don't GCSE something if we can't do a reg/reg copy.  */
+      if (/* Don't CSE something if we can't do a reg/reg copy.  */
 	  can_copy_p (GET_MODE (src))
 	  /* Is SET_DEST something we want to gcse?  */
 	  && general_operand (dest, GET_MODE (dest))
@@ -819,8 +785,12 @@ hash_scan_set (rtx insn)
     }
 }
 
+
 /* Create hash table of memory expressions available at end of basic
-   blocks.  */
+   blocks.  Basically you should think of this hash table as the
+   representation of AVAIL_OUT.  This is the set of expressions that
+   is generated in a basic block and not killed before the end of the
+   same basic block.  Notice that this is really a local computation.  */
 
 static void
 compute_hash_table (void)
@@ -830,59 +800,20 @@ compute_hash_table (void)
   FOR_EACH_BB (bb)
     {
       rtx insn;
-      unsigned int regno;
-
-      reset_opr_set_tables ();
 
       /* First pass over the instructions records information used to
-	 determine when registers and memory are first and last set.  */
+	 determine when registers and memory are last set.
+	 Since we compute a "local" AVAIL_OUT, reset the tables that
+	 help us keep track of what has been modified since the start
+	 of the block.  */
+      reset_opr_set_tables ();
       FOR_BB_INSNS (bb, insn)
 	{
-	  if (! INSN_P (insn))
-	    continue;
+	  if (INSN_P (insn))
+            record_opr_changes (insn);
+	}
 
-	  if (CALL_P (insn))
-	    {
-	      bool clobbers_all = false;
-
-#ifdef NON_SAVING_SETJMP
-	      if (NON_SAVING_SETJMP
-		  && find_reg_note (insn, REG_SETJMP, NULL_RTX))
-		clobbers_all = true;
-#endif
-
-	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-		if (clobbers_all
-		    || TEST_HARD_REG_BIT (regs_invalidated_by_call,
-					  regno))
-		  record_last_reg_set_info (insn, regno);
-
-	      if (! CONST_OR_PURE_CALL_P (insn))
-		record_last_mem_set_info (insn);
-	    }
-
-	  note_stores (PATTERN (insn), record_last_set_info, insn);
-
-	  if (GET_CODE (PATTERN (insn)) == SET)
-	    {
-	      rtx src, dest;
-
-	      src = SET_SRC (PATTERN (insn));
-	      dest = SET_DEST (PATTERN (insn));
-	      if (MEM_P (src) && auto_inc_p (XEXP (src, 0)))
-		{
-		  regno = REGNO (XEXP (XEXP (src, 0), 0));
-		  record_last_reg_set_info (insn, regno);
-		}
-	      if (MEM_P (dest) && auto_inc_p (XEXP (dest, 0)))
-		{
-		  regno = REGNO (XEXP (XEXP (dest, 0), 0));
-		  record_last_reg_set_info (insn, regno);
-		}
-	     }
-	  }
-
-      /* The next pass builds the hash table.  */
+      /* The next pass actually builds the hash table.  */
       FOR_BB_INSNS (bb, insn)
 	if (INSN_P (insn) && GET_CODE (PATTERN (insn)) == SET)
 	  hash_scan_set (insn);
@@ -932,7 +863,6 @@ static rtx
 reg_set_between_after_reload_p (rtx reg, rtx from_insn, rtx to_insn)
 {
   rtx insn;
-  int regno;
 
 #ifdef ENABLE_CHECKING
   /* We are called after register allocation.  */
@@ -943,22 +873,21 @@ reg_set_between_after_reload_p (rtx reg, rtx from_insn, rtx to_insn)
   if (from_insn == to_insn)
     return NULL_RTX;
 
-  regno = REGNO (reg);
   for (insn = NEXT_INSN (from_insn);
        insn != to_insn;
        insn = NEXT_INSN (insn))
-    {
-      if (INSN_P (insn))
-	{
-	  if (FIND_REG_INC_NOTE (insn, reg)
-	      || (CALL_P (insn)
-		  && call_used_regs[regno])
-	      || find_reg_fusage (insn, CLOBBER, reg))
-	    return insn;
-	}
-      if (set_of (reg, insn) != NULL_RTX)
-	return insn;
-    }
+    if (INSN_P (insn))
+      {
+	if (set_of (reg, insn) != NULL_RTX)
+	  return insn;
+	if ((CALL_P (insn)
+	      && call_used_regs[REGNO (reg)])
+	    || find_reg_fusage (insn, CLOBBER, reg))
+	  return insn;
+
+	if (FIND_REG_INC_NOTE (insn, reg))
+	  return insn;
+      }
 
   return NULL_RTX;
 }
@@ -971,7 +900,6 @@ static rtx
 reg_used_between_after_reload_p (rtx reg, rtx from_insn, rtx to_insn)
 {
   rtx insn;
-  int regno;
 
 #ifdef ENABLE_CHECKING
   /* We are called after register allocation.  */
@@ -982,17 +910,21 @@ reg_used_between_after_reload_p (rtx reg, rtx from_insn, rtx to_insn)
   if (from_insn == to_insn)
     return NULL_RTX;
 
-  regno = REGNO (reg);
   for (insn = NEXT_INSN (from_insn);
        insn != to_insn;
        insn = NEXT_INSN (insn))
-    if (INSN_P (insn)
-	&& (reg_overlap_mentioned_p (reg, PATTERN (insn))
+    if (INSN_P (insn))
+      {
+	if (reg_overlap_mentioned_p (reg, PATTERN (insn))
 	    || (CALL_P (insn)
-		&& call_used_regs[regno])
+		&& call_used_regs[REGNO (reg)])
 	    || find_reg_fusage (insn, USE, reg)
-	    || find_reg_fusage (insn, CLOBBER, reg)))
-      return insn;
+	    || find_reg_fusage (insn, CLOBBER, reg))
+	  return insn;
+
+	if (FIND_REG_INC_NOTE (insn, reg))
+	  return insn;
+      }
 
   return NULL_RTX;
 }
@@ -1066,7 +998,16 @@ get_bb_avail_insn (basic_block bb, struct occr *occr)
 
 /* This handles the case where several stores feed a partially redundant
    load. It checks if the redundancy elimination is possible and if it's
-   worth it.  */
+   worth it.
+
+   Redundancy elimination is possible if,
+   1) None of the operands of an insn have been modified since the start
+      of the current basic block.
+   2) In any predecessor of the current basic block, the same expression
+      is generated.
+
+   See the function body for the heuristics that determine if eliminating
+   a redundancy is also worth doing, assuming it is possible.  */
 
 static void
 eliminate_partially_redundant_load (basic_block bb, rtx insn,
@@ -1251,15 +1192,20 @@ eliminate_partially_redundant_loads (void)
 		  EXIT_BLOCK_PTR,
 		  next_bb)
     {
+      /* Don't try anything on basic blocks with strange predecessors.  */
       if (! bb_has_well_behaved_predecessors (bb))
 	continue;
 
-      /* Do not try this optimization on cold basic blocks.  */
+      /* Do not try anything on cold basic blocks.  */
       if (probably_cold_bb_p (bb))
 	continue;
 
+      /* Reset the table of things changed since the start of the current
+	 basic block.  */
       reset_opr_set_tables ();
 
+      /* Look at all insns in the current basic block and see if there are
+	 any loads in it that we can record.  */
       FOR_BB_INSNS (bb, insn)
 	{
 	  /* Is it a load - of the form (set (reg) (mem))?  */
@@ -1290,9 +1236,11 @@ eliminate_partially_redundant_loads (void)
 		}
 	    }
 
-	  /* Keep track of everything modified by this insn.  */
+	  /* Keep track of everything modified by this insn, so that we
+	     know what has been modified since the start of the current
+	     basic block.  */
 	  if (INSN_P (insn))
-	    mark_oprs_set (insn);
+	    record_opr_changes (insn);
 	}
     }
 
