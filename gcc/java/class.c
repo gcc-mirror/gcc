@@ -1216,6 +1216,7 @@ make_class_data (type)
     {
       tree init;
       if (METHOD_PRIVATE (method)
+	  && ! flag_keep_inline_functions
 	  && (flag_inline_functions || optimize))
 	continue;
       init = make_method_value (method);
