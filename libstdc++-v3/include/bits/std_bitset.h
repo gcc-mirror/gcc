@@ -551,14 +551,7 @@ public:
     return *this;
   }
 
-  bitset<_Nb>& set(size_t __pos) {
-    if (__pos >= _Nb)
-      __STL_THROW(out_of_range("bitset"));
-
-    return _Unchecked_set(__pos);
-  }
-
-  bitset<_Nb>& set(size_t __pos, int __val) {
+  bitset<_Nb>& set(size_t __pos, bool __val = true) {
     if (__pos >= _Nb)
       __STL_THROW(out_of_range("bitset"));
 
