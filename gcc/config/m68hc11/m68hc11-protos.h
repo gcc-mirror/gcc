@@ -24,6 +24,7 @@ extern int m68hc11_override_options PARAMS((void));
 extern int m68hc11_optimization_options PARAMS((int,int));
 extern void m68hc11_conditional_register_usage PARAMS((void));
 extern int hard_regno_mode_ok PARAMS((int, enum machine_mode));
+extern int m68hc11_hard_regno_rename_ok PARAMS((int, int));
 
 extern int m68hc11_total_frame_size PARAMS((void));
 extern int m68hc11_initial_frame_pointer_offset PARAMS((void));
