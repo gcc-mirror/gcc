@@ -1,3 +1,10 @@
+2004-10-26  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR bootstrap/15747
+	* doc/install.texi (mips-sgi-irix5): Document that /bin/sh has been
+	reported to hang during bootstrap and that CONFIG_SHELL=/bin/ksh
+	can be used to work around this.
+
 2004-10-26  Roger Sayle  <roger@eyesopen.com>
 	    John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 

@@ -3214,6 +3214,16 @@ later, and use the @option{--with-gnu-as} and @option{--with-gnu-ld}
 @command{configure} options when configuring GCC@.  You need to use GNU
 @command{ar} and @command{nm}, also distributed with GNU binutils.
 
+Some users have reported that @command{/bin/sh} will hang during bootstrap.
+This problem can be avoided by running the commands:
+
+@smallexample
+   % CONFIG_SHELL=/bin/ksh
+   % export CONFIG_SHELL
+@end smallexample
+
+before starting the build.
+
 @html
 <hr />
 @end html
