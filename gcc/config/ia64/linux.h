@@ -21,7 +21,7 @@
   %{!shared: \
     %{!static: \
       %{rdynamic:-export-dynamic} \
-      %{!dynamic-linker:-dynamic-linker /lib/ld-linux-ia64.so.1}} \
+      %{!dynamic-linker:-dynamic-linker /lib/ld-linux-ia64.so.2}} \
       %{static:-static}}"
 
 

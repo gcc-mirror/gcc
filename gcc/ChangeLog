@@ -1,5 +1,7 @@
 2000-06-29  James E. Wilson  <wilson@cygnus.com>
 
+	* config/ia64/linux.h (LINK_SPEC): Change so.1 to so.2.
+	
 	* config/ia64/ia64.h (MODES_TIEABLE_P): Only tie if mode class is the
 	same.  Only tie XFmode with XFmode.
 
