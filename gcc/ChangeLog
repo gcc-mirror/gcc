@@ -1,3 +1,7 @@
+Sat Feb 20 16:16:07 1998  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* rs6000.md (scc plus ltu): Fix typo in last change.
+
 Sat Feb 20 09:08:44 1999  Richard Earnshaw  (rearnsha@arm.com)
 
 	* xm-arm.h (HOST_BITS_PER_LONGLONG): Define.
