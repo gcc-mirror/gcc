@@ -1,3 +1,7 @@
+2004-01-26  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* objc.dg/stret-1.m (glob): Renamed to globa.
+
 2004-01-26  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13363

@@ -9,7 +9,7 @@ extern void abort(void);
 
 struct astruct {
   float a, b;
-} glob = { 1.0, 2.0 };
+} globa = { 1.0, 2.0 };
 
 struct bstruct {
   float a, b, c, d, e, f;
@@ -21,7 +21,7 @@ struct bstruct {
 @end
 
 @implementation foo : Object
-- (struct astruct) stret { return glob; }
+- (struct astruct) stret { return globa; }
 - (struct bstruct) stretb { return globb; }
 @end
 
