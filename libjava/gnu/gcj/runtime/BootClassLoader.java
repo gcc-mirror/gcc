@@ -8,14 +8,9 @@ details.  */
 
 package gnu.gcj.runtime;
 
-import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.StringTokenizer;
 
 /**
  * This is a helper for the bootstrap class loader.  It is a
@@ -24,37 +19,18 @@ import java.util.StringTokenizer;
  * However, it is never called the way that an ordinary ClassLoader is
  * called.  For instance, loadClass() is never used.
  */
-public final class BootClassLoader extends URLClassLoader
+public final class BootClassLoader extends HelperClassLoader
 {
   BootClassLoader(String libdir)
   {
-    super(new URL[0]);
+    addDirectoriesFromProperty("java.endorsed.dirs");
+    addDirectoriesFromProperty("gnu.gcj.runtime.endorsed.dirs");
 
-    // Add the contents of the endorsed directories.
-    StringTokenizer st
-      = new StringTokenizer (System.getProperty ("java.endorsed.dirs", ""),
-			     File.pathSeparator);
     try
       {
-	while (st.hasMoreElements ())
-	  {
-	    String dirname = st.nextToken ();
-	    File dir = new File (dirname);
-            if (dir.exists ())
-	      {
-		if (! dirname.endsWith (File.separator))
-		  dirname = dirname + File.separator;
-		String files[] = dir.list (new FilenameFilter ()
-		  {
-		    public boolean accept (File dir, String name)
-		    {
-		      return name.endsWith (".jar") || name.endsWith (".zip");
-		    }
-		  });
-		for (int i = files.length - 1; i >= 0; i--)
-		  addURL(new URL("file", "", -1, dirname + files[i]));
-	      }
-	  }
+	// Add core:/ to the end so any resources compiled into this
+	// executable may be found.
+	addURL(new URL("core", "", -1, "/"));
       }
     catch (java.net.MalformedURLException x)
       {

@@ -10,20 +10,16 @@ details.  */
 
 package gnu.gcj.runtime;
 
-import java.io.*;
-import java.util.StringTokenizer;
-import java.util.HashSet;
 import java.net.URL;
-import java.net.URLClassLoader;
+import java.util.HashSet;
 
 // Despite its name, this class is really the extension loader for
 // libgcj.  Class loader bootstrap is a bit tricky, see prims.cc and
 // SystemClassLoader for some details.
-public final class VMClassLoader extends URLClassLoader
+public final class VMClassLoader extends HelperClassLoader
 {
   private VMClassLoader ()
   {	
-    super (new URL[0]);
     String p
       = System.getProperty ("gnu.gcj.runtime.VMClassLoader.library_control",
 			    "");
@@ -39,44 +35,7 @@ public final class VMClassLoader extends URLClassLoader
 
   private void init() 
   {
-    // Add the contents of the extensions directories.  
-    StringTokenizer st
-      = new StringTokenizer (System.getProperty ("java.ext.dirs"),
-			     File.pathSeparator);
-
-    try
-      {
-	while (st.hasMoreElements ())
-	  {
-	    String dirname = st.nextToken ();
-	    File dir = new File (dirname);
-            if (dir.exists ())
-            {
-              if (! dirname.endsWith (File.separator))
-        	  dirname = dirname + File.separator;
-              String files[] 
-        	= dir.list (new FilenameFilter ()
-                            { 
-                              public boolean accept (File dir, String name)
-                              {
-                        	return (name.endsWith (".jar") 
-                                	|| name.endsWith (".zip"));
-                              }
-                            });
-              for (int i = files.length - 1; i >= 0; i--)
-        	addURL(new URL("file", "", -1, dirname + files[i]));
-            }
-	  }
-
-	// Add core:/ to the end so any resources compiled into this
-	// executable may be found.
-	addURL(new URL("core", "", -1, "/"));
-      }
-    catch (java.net.MalformedURLException x)
-      {
-	// This should never happen.
-	throw new RuntimeException(x);
-      }
+    addDirectoriesFromProperty("java.ext.dirs");
   }
 
   /** This is overridden to search the internal hash table, which 
