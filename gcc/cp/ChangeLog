@@ -1,3 +1,4 @@
+
 1999-09-16  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (saved_scope_p): New fn.
