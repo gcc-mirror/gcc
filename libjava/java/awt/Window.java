@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package java.awt;
 
+import gnu.java.awt.EmbeddedWindowSupport;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.awt.event.WindowListener;
@@ -93,6 +94,19 @@ public class Window extends Container implements Accessible
     graphicsConfiguration = gc;
   }
 
+  Window(int window_id, int width, int height)
+  {
+    this();
+
+    Toolkit tk = getToolkit();
+    if (!(tk instanceof EmbeddedWindowSupport))
+      throw new UnsupportedOperationException
+	("Embedded windows not supported by the current peers: " + tk.getClass());
+    
+    peer = ((EmbeddedWindowSupport) getToolkit())
+	    .createEmbeddedWindow (window_id, width, height);
+  }
+    
   /**
    * Initializes a new instance of <code>Window</code> with the specified
    * parent.  The window will initially be invisible.

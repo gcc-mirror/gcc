@@ -522,6 +522,8 @@ gnu/awt/j2d/MappedRaster.java \
 gnu/java/awt/BitMaskExtent.java \
 gnu/java/awt/Buffers.java \
 gnu/java/awt/ComponentDataBlitOp.java \
+gnu/java/awt/EmbeddedWindow.java \
+gnu/java/awt/EmbeddedWindowSupport.java \
 gnu/java/awt/EventModifier.java \
 gnu/java/awt/GLightweightPeer.java \
 gnu/java/awt/image/ImageDecoder.java \
@@ -2336,6 +2338,7 @@ gnu/gcj/runtime/natSharedLibLoader.cc \
 gnu/gcj/runtime/natStackTrace.cc \
 gnu/gcj/runtime/natStringBuffer.cc \
 gnu/gcj/runtime/natVMClassLoader.cc \
+gnu/java/awt/natEmbeddedWindow.cc \
 gnu/java/nio/natFileChannelImpl.cc \
 gnu/java/nio/natFileLockImpl.cc \
 gnu/java/nio/natSelectorImpl.cc \
@@ -2511,14 +2514,15 @@ gnu/gcj/io/shs.lo gnu/gcj/protocol/core/natCoreInputStream.lo \
 gnu/gcj/runtime/natFinalizerThread.lo gnu/gcj/runtime/natFirstThread.lo \
 gnu/gcj/runtime/natNameFinder.lo gnu/gcj/runtime/natSharedLibLoader.lo \
 gnu/gcj/runtime/natStackTrace.lo gnu/gcj/runtime/natStringBuffer.lo \
-gnu/gcj/runtime/natVMClassLoader.lo gnu/java/nio/natFileChannelImpl.lo \
-gnu/java/nio/natFileLockImpl.lo gnu/java/nio/natSelectorImpl.lo \
-java/io/natFile.lo java/io/natFileDescriptor.lo \
-java/io/natObjectInputStream.lo java/io/natVMObjectStreamClass.lo \
-java/lang/natCharacter.lo java/lang/natClass.lo \
-java/lang/natClassLoader.lo java/lang/natConcreteProcess.lo \
-java/lang/natDouble.lo java/lang/natFloat.lo java/lang/natMath.lo \
-java/lang/natObject.lo java/lang/natRuntime.lo java/lang/natString.lo \
+gnu/gcj/runtime/natVMClassLoader.lo gnu/java/awt/natEmbeddedWindow.lo \
+gnu/java/nio/natFileChannelImpl.lo gnu/java/nio/natFileLockImpl.lo \
+gnu/java/nio/natSelectorImpl.lo java/io/natFile.lo \
+java/io/natFileDescriptor.lo java/io/natObjectInputStream.lo \
+java/io/natVMObjectStreamClass.lo java/lang/natCharacter.lo \
+java/lang/natClass.lo java/lang/natClassLoader.lo \
+java/lang/natConcreteProcess.lo java/lang/natDouble.lo \
+java/lang/natFloat.lo java/lang/natMath.lo java/lang/natObject.lo \
+java/lang/natRuntime.lo java/lang/natString.lo \
 java/lang/natStringBuffer.lo java/lang/natSystem.lo \
 java/lang/natThread.lo java/lang/natVMSecurityManager.lo \
 java/lang/ref/natReference.lo java/lang/reflect/natArray.lo \
@@ -2772,10 +2776,13 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/gcj/xlib/natXImage.P .deps/gnu/gcj/xlib/natXUnmapEvent.P \
 .deps/gnu/java/awt/BitMaskExtent.P .deps/gnu/java/awt/Buffers.P \
 .deps/gnu/java/awt/ComponentDataBlitOp.P \
+.deps/gnu/java/awt/EmbeddedWindow.P \
+.deps/gnu/java/awt/EmbeddedWindowSupport.P \
 .deps/gnu/java/awt/EventModifier.P \
 .deps/gnu/java/awt/GLightweightPeer.P \
 .deps/gnu/java/awt/image/ImageDecoder.P \
 .deps/gnu/java/awt/image/XBMDecoder.P \
+.deps/gnu/java/awt/natEmbeddedWindow.P \
 .deps/gnu/java/awt/peer/gtk/GdkFontMetrics.P \
 .deps/gnu/java/awt/peer/gtk/GdkGraphics.P \
 .deps/gnu/java/awt/peer/gtk/GtkArg.P \
