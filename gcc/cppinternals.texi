@@ -91,11 +91,15 @@ Identifiers, macro expansion, hash nodes, lexing.
 * Conventions::	    Conventions used in the code.
 * Lexer::	    The combined C, C++ and Objective C Lexer.
 * Whitespace::      Input and output newlines and whitespace.
+* Hash Nodes::      All identifiers are hashed.
+* Macro Expansion:: Macro expansion algorithm.
+* Files::	    File handling.
 * Concept Index::   Index of concepts and terms.
 * Index::           Index.
 @end menu
 
 @node Conventions, Lexer, Top, Top
+@unnumbered Conventions
 
 cpplib has two interfaces - one is exposed internally only, and the
 other is for both internal and external use.
@@ -113,6 +117,7 @@ are perhaps relying on some kind of undocumented implementation-specific
 behaviour.
 
 @node Lexer, Whitespace, Conventions, Top
+@unnumbered The Lexer
 
 The lexer is contained in the file @samp{cpplex.c}.  We want to have a
 lexer that is single-pass, for efficiency reasons.  We would also like
@@ -194,7 +199,8 @@ a trigraph, but the command line option @samp{-trigraphs} is not in
 force but @samp{-Wtrigraphs} is, we need to warn about it but then
 buffer it and continue to treat it as 3 separate characters.
 
-@node Whitespace, Concept Index, Lexer, Top
+@node Whitespace, Hash Nodes, Lexer, Top
+@unnumbered Whitespace
 
 The lexer has been written to treat each of @samp{\r}, @samp{\n},
 @samp{\r\n} and @samp{\n\r} as a single new line indicator.  This allows
@@ -202,18 +208,89 @@ it to transparently preprocess MS-DOS, Macintosh and Unix files without
 their needing to pass through a special filter beforehand.
 
 We also decided to treat a backslash, either @samp{\} or the trigraph
-@samp{??/}, separated from one of the above newline forms by whitespace
-only (one or more space, tab, form-feed, vertical tab or NUL characters),
-as an intended escaped newline.  The library issues a diagnostic in this
-case.
+@samp{??/}, separated from one of the above newline indicators by
+non-comment whitespace only, as intending to escape the newline.  It
+tends to be a typing mistake, and cannot reasonably be mistaken for
+anything else in any of the C-family grammars.  Since handling it this
+way is not strictly conforming to the ISO standard, the library issues a
+warning wherever it encounters it.
 
-Handling newlines in this way is made simpler by doing it in one place
+Handling newlines like this is made simpler by doing it in one place
 only.  The function @samp{handle_newline} takes care of all newline
-characters, and @samp{skip_escaped_newlines} takes care of all escaping
-of newlines, deferring to @samp{handle_newline} to handle the newlines
-themselves.
+characters, and @samp{skip_escaped_newlines} takes care of arbitrarily
+long sequences of escaped newlines, deferring to @samp{handle_newline}
+to handle the newlines themselves.
 
-@node Concept Index, Index, Whitespace, Top
+@node Hash Nodes, Macro Expansion, Whitespace, Top
+@unnumbered Hash Nodes
+
+When cpplib encounters an "identifier", it generates a hash code for it
+and stores it in the hash table.  By "identifier" we mean tokens with
+type @samp{CPP_NAME}; this includes identifiers in the usual C sense, as
+well as keywords, directive names, macro names and so on.  For example,
+all of "pragma", "int", "foo" and "__GNUC__" are identifiers and hashed
+when lexed.
+
+Each node in the hash table contain various information about the
+identifier it represents.  For example, its length and type.  At any one
+time, each identifier falls into exactly one of three categories:
+
+@itemize @bullet
+@item Macros
+
+These have been declared to be macros, either on the command line or
+with @samp{#define}.  A few, such as @samp{__TIME__} are builtins
+entered in the hash table during initialisation.  The hash node for a
+normal macro points to a structure with more information about the
+macro, such as whether it is function-like, how many arguments it takes,
+and its expansion.  Builtin macros are flagged as special, and instead
+contain an enum indicating which of the various builtin macros it is.
+
+@item Assertions
+
+Assertions are in a separate namespace to macros.  To enforce this, cpp
+actually prepends a @samp{#} character before hashing and entering it in
+the hash table.  An assertion's node points to a chain of answers to
+that assertion.
+
+@item Void
+
+Everything else falls into this category - an identifier that is not
+currently a macro, or a macro that has since been undefined with
+@samp{#undef}.
+
+When preprocessing C++, this category also includes the named operators,
+such as @samp{xor}.  In expressions these behave like the operators they
+represent, but in contexts where the spelling of a token matters they
+are spelt differently.  This spelling distinction is relevant when they
+are operands of the stringizing and pasting macro operators @samp{#} and
+@samp{##}.  Named operator hash nodes are flagged, both to catch the
+spelling distinction and to prevent them from being defined as macros.
+@end itemize
+
+The same identifiers share the same hash node.  Since each identifier
+token, after lexing, contains a pointer to its hash node, this is used
+to provide rapid lookup of various information.  For example, when
+parsing a @samp{#define} statement, CPP flags each argument's identifier
+hash node with the index of that argument.  This makes duplicated
+argument checking an O(1) operation for each argument.  Similarly, for
+each identifier in the macro's expansion, lookup to see if it is an
+argument, and which argument it is, is also an O(1) operation.  Further,
+each directive name, such as @samp{endif}, has an associated directive
+enum stored in its hash node, so that directive lookup is also O(1).
+
+Later, CPP may also store C front-end information in its identifier hash
+table, such as a @samp{tree} pointer.
+
+@node Macro Expansion, Files, Hash Nodes, Top
+@unnumbered Macro Expansion Algorithm
+@printindex cp
+
+@node Files, Concept Index, Macro Expansion, Top
+@unnumbered File Handling
+@printindex cp
+
+@node Concept Index, Index, Files, Top
 @unnumbered Concept Index
 @printindex cp
 
