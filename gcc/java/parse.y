@@ -6725,6 +6725,12 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 		(wfl, "Keyword `this' used outside allowed context");
 	      return 1;
 	    }
+	  if (ctxp->explicit_constructor_p)
+	    {
+	      parse_error_context (wfl, "Can't reference `this' before the "
+				   "superclass constructor has been called");
+	      return 1;
+	    }
 	  /* We have to generate code for intermediate acess */
 	  *where_found = decl = current_this;
 	  *type_found = type = QUAL_DECL_TYPE (decl);
@@ -8732,7 +8738,7 @@ complete_function_arguments (node)
   int flag = 0;
   tree cn;
 
-  ctxp->explicit_constructor_p += (CALL_THIS_CONSTRUCTOR_P (node) ? 1 : 0);
+  ctxp->explicit_constructor_p += (CALL_EXPLICIT_CONSTRUCTOR_P (node) ? 1 : 0);
   for (cn = TREE_OPERAND (node, 1); cn; cn = TREE_CHAIN (cn))
     {
       tree wfl = TREE_VALUE (cn), parm, temp;
@@ -8752,7 +8758,7 @@ complete_function_arguments (node)
 
       TREE_VALUE (cn) = parm;
     }
-  ctxp->explicit_constructor_p -= (CALL_THIS_CONSTRUCTOR_P (node) ? 1 : 0);
+  ctxp->explicit_constructor_p -= (CALL_EXPLICIT_CONSTRUCTOR_P (node) ? 1 : 0);
   return flag;
 }
 

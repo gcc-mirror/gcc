@@ -1,3 +1,8 @@
+Mon Nov  1 01:32:48 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (resolve_qualified_expression_name): Prevent `this'
+ 	from being before the superclass constructor has been called.
+
 Sat Oct 30 21:35:13 1999  Todd T. Fries <todd@lighthouse.fries.net>
 
 	* check-init.c: Fix typo in comment.
