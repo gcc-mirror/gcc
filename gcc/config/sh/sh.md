@@ -1256,7 +1256,7 @@
   [(const_int 0)]
   "
 {
-  emit_insn (gen_ashlsi_c (operands[0], operands[1], operands[1]));
+  emit_insn (gen_ashlsi_c (operands[0], operands[1]));
   emit_insn (gen_subc1 (operands[0], operands[0], operands[0]));
   DONE;
 }")
@@ -1264,7 +1264,7 @@
 (define_insn "ashlsi_c"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
 	(ashift:SI (match_operand:SI 1 "arith_reg_operand" "0") (const_int 1)))
-   (set (reg:SI 18) (lt:SI (match_operand:SI 2 "arith_reg_operand" "0")
+   (set (reg:SI 18) (lt:SI (match_dup 1)
 			   (const_int 0)))]
   ""
   "shll	%0"
