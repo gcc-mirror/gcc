@@ -718,7 +718,11 @@ reg_class_record (op, opno, constraints)
 	case '4':
 	  /* If constraint says "match another operand",
 	     use that operand's constraint to choose preferences.  */
-	  next = constraints[*p - '0'];
+	  if (*p - '0' < opno)
+	    {
+	      opno = *p - '0';
+	      next = constraints[opno];
+	    }
 	  break;
 
 	default:
