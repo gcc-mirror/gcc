@@ -1,3 +1,10 @@
+2002-03-20  Jason Merrill  <jason@redhat.com>
+
+	* lib/prune.exp (prune_gcc_output): Ignore Cygwin warning about
+	ignoring -fpic.
+	* lib/old-dejagnu.exp (old-dejagnu): Also pass compiler output
+	through prune_gcc_output.
+
 2002-03-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/compile/20020320-1.c: New test.

@@ -443,7 +443,7 @@ proc old-dejagnu { compiler prog name cflagsx default_cflags libs } {
     }
 
     # Delete things like "ld.so: warning" messages.
-    set comp_output [prune_warnings $comp_output]
+    set comp_output [prune_gcc_output [prune_warnings $comp_output]]
 
     if [regexp "Internal (compiler )?error" $comp_output] then {
         if $expect_crash then {
