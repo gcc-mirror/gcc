@@ -1,5 +1,10 @@
 2000-10-27  Warren Levy  <warrenl@cygnus.com>
 
+	* java/util/natGregorianCalendar.cc (computeFields): Set the isSet__
+	array elements to true.
+
+2000-10-27  Warren Levy  <warrenl@cygnus.com>
+
 	* Makefile.am: Added locale files from Classpath.
 	* Makefile.in: Rebuilt.
 	* gnu/java/locale/Calendar.java: New file.
