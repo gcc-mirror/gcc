@@ -182,14 +182,6 @@ extern int flag_extraneous_semicolon;
 
 extern int flag_force_classes_archive_check;
 
-/* When nonzero, we emit xref strings. Values of the flag for xref
-   backends are defined in xref.h.  */
-
-extern int flag_emit_xref;
-
-/* When doing xrefs, tell when not to fold.   */
-extern int do_not_fold;
-
 /* Resource name.  */
 extern const char *resource_name;
 

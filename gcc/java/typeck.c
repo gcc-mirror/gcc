@@ -119,9 +119,6 @@ convert (tree type, tree expr)
   if (!expr)
    return error_mark_node;
 
-  if (do_not_fold)
-    return build1 (NOP_EXPR, type, expr);
-
   if (type == TREE_TYPE (expr)
       || TREE_CODE (expr) == ERROR_MARK)
     return expr;

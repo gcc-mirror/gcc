@@ -67,7 +67,6 @@ definitions and other extensions.  */
 #include "zipfile.h"
 #include "convert.h"
 #include "buffer.h"
-#include "xref.h"
 #include "function.h"
 #include "except.h"
 #include "ggc.h"
@@ -354,8 +353,6 @@ static char *string_convert_int_cst (tree);
 int java_error_count;
 /* Number of warning found so far. */
 int java_warning_count;
-/* Tell when not to fold, when doing xrefs */
-int do_not_fold;
 /* Cyclic inheritance report, as it can be set by layout_class */
 const char *cyclic_inheritance_report;
 
@@ -908,16 +905,10 @@ interface_type_list:
 class_body:
 	OCB_TK CCB_TK
 		{
-		  /* Store the location of the `}' when doing xrefs */
-		  if (flag_emit_xref)
-		    DECL_END_SOURCE_LINE (GET_CPC ()) = $2.location;
 		  $$ = GET_CPC ();
 		}
 |	OCB_TK class_body_declarations CCB_TK
 		{
-		  /* Store the location of the `}' when doing xrefs */
-		  if (flag_emit_xref)
-		    DECL_END_SOURCE_LINE (GET_CPC ()) = $3.location;
 		  $$ = GET_CPC ();
 		}
 ;
@@ -1393,9 +1384,6 @@ block_end:
 	CCB_TK
 		{
 		  maybe_absorb_scoping_blocks ();
-		  /* Store the location of the `}' when doing xrefs */
-		  if (current_function_decl && flag_emit_xref)
-		    DECL_END_SOURCE_LINE (current_function_decl) = $1.location;
 		  $$ = exit_block ();
 		  if (!BLOCK_SUBBLOCKS ($$))
 		    BLOCK_SUBBLOCKS ($$) = build_java_empty_stmt ();
@@ -3886,11 +3874,7 @@ maybe_create_class_interface_decl (tree decl, tree raw_name,
   DECL_SOURCE_LOCATION (decl) = EXPR_LOCATION (cl);
 #else
   DECL_SOURCE_FILE (decl) = EXPR_WFL_FILENAME (cl);
-  /* If we're emitting xrefs, store the line/col number information */
-  if (flag_emit_xref)
-    DECL_SOURCE_LINE (decl) = EXPR_WFL_LINECOL (cl);
-  else
-    DECL_SOURCE_LINE (decl) = EXPR_WFL_LINENO (cl);
+  DECL_SOURCE_LINE (decl) = EXPR_WFL_LINENO (cl);
 #endif
   CLASS_FROM_SOURCE_P (TREE_TYPE (decl)) = 1;
   CLASS_PARSED_P (TREE_TYPE (decl)) = 1;
@@ -4199,11 +4183,6 @@ create_class (int flags, tree id, tree super, tree interfaces)
   if (PURE_INNER_CLASS_DECL_P (decl))
     add_inner_class_fields (decl, current_function_decl);
 
-  /* If doing xref, store the location at which the inherited class
-     (if any) was seen. */
-  if (flag_emit_xref && super)
-    DECL_INHERITED_SOURCE_LINE (decl) = EXPR_WFL_LINECOL (super);
-
   /* Eventually sets the @deprecated tag flag */
   CHECK_DEPRECATED (decl);
 
@@ -4495,10 +4474,7 @@ register_fields (int flags, tree type, tree variable_list)
 #ifdef USE_MAPPED_LOCATION
       input_location = EXPR_LOCATION (cl);
 #else
-      if (flag_emit_xref)
-	input_line = EXPR_WFL_LINECOL (cl);
-      else
-	input_line = EXPR_WFL_LINENO (cl);
+      input_line = EXPR_WFL_LINENO (cl);
 #endif
       field_decl = add_field (class_type, current_name, real_type, flags);
       CHECK_DEPRECATED_NO_RESET (field_decl);
@@ -4895,17 +4871,6 @@ method_header (int flags, tree type, tree mdecl, tree throws)
   /* Eventually set the @deprecated tag flag */
   CHECK_DEPRECATED (meth);
 
-  /* If doing xref, store column and line number information instead
-     of the line number only. */
-  if (flag_emit_xref)
-    {
-#ifdef USE_MAPPED_LOCATION
-      DECL_SOURCE_LOCATION (meth) = EXPR_LOCATION (id);
-#else
-      DECL_SOURCE_LINE (meth) = EXPR_WFL_LINECOL (id);
-#endif
-    }
-
   return meth;
 }
 
@@ -4971,8 +4936,7 @@ finish_method_declaration (tree method_body)
   exit_block ();
   /* Merge last line of the function with first line, directly in the
      function decl. It will be used to emit correct debug info. */
-  if (!flag_emit_xref)
-    DECL_FUNCTION_LAST_LINE (current_function_decl) = ctxp->last_ccb_indent1;
+  DECL_FUNCTION_LAST_LINE (current_function_decl) = ctxp->last_ccb_indent1;
 
   /* Since function's argument's list are shared, reset the
      ARG_FINAL_P parameter that might have been set on some of this
@@ -7517,16 +7481,6 @@ declare_local_variables (int modifier, tree type, tree vlist)
       DECL_FINAL (decl) = final_p;
       BLOCK_CHAIN_DECL (decl);
 
-      /* If doing xreferencing, replace the line number with the WFL
-         compound value */
-#ifdef USE_MAPPED_LOCATION
-      if (flag_emit_xref)
-	DECL_SOURCE_LOCATION (decl) = EXPR_LOCATION (wfl);
-#else
-      if (flag_emit_xref)
-	DECL_SOURCE_LINE (decl) = EXPR_WFL_LINECOL (wfl);
-#endif
-
       /* Don't try to use an INIT statement when an error was found */
       if (init && java_error_count)
 	init = NULL_TREE;
@@ -7707,8 +7661,7 @@ source_end_java_method (void)
     BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (fndecl)) = NULL_TREE;
 
   if (BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (fndecl))
-      && ! flag_emit_class_files
-      && ! flag_emit_xref)
+      && ! flag_emit_class_files)
     finish_method (fndecl);
 
   current_function_decl = NULL_TREE;
@@ -7868,8 +7821,6 @@ static void
 java_complete_expand_classes (void)
 {
   tree current;
-
-  do_not_fold = flag_emit_xref;
 
   for (current = ctxp->class_list; current; current = TREE_CHAIN (current))
     if (!INNER_CLASS_DECL_P (current))
@@ -8249,7 +8200,7 @@ java_complete_expand_method (tree mdecl)
       htab_traverse (DECL_FUNCTION_INIT_TEST_TABLE (mdecl),
 		     attach_init_test_initialization_flags, block_body);
 
-      if (! flag_emit_xref && ! METHOD_NATIVE (mdecl))
+      if (! METHOD_NATIVE (mdecl))
 	{
 	  check_for_initialization (block_body, mdecl);
 
@@ -8279,8 +8230,7 @@ java_complete_expand_method (tree mdecl)
      an error_mark_node here. */
   if (block_body != error_mark_node
       && (block_body == NULL_TREE || CAN_COMPLETE_NORMALLY (block_body))
-      && TREE_CODE (TREE_TYPE (TREE_TYPE (mdecl))) != VOID_TYPE
-      && !flag_emit_xref)
+      && TREE_CODE (TREE_TYPE (TREE_TYPE (mdecl))) != VOID_TYPE)
     missing_return_error (current_function_decl);
 
   /* See if we can get rid of <clinit> if MDECL happens to be <clinit> */
@@ -8296,7 +8246,7 @@ java_complete_expand_method (tree mdecl)
   if (currently_caught_type_list)
     abort ();
 
-  /* Restore the copy of the list of exceptions if emitting xrefs. */
+  /* Restore the copy of the list of exceptions. */
   DECL_FUNCTION_THROWS (mdecl) = exception_copy;
 }
 
@@ -9282,10 +9232,10 @@ java_expand_classes (void)
 #endif
 
   /* If we've found error at that stage, don't try to generate
-     anything, unless we're emitting xrefs or checking the syntax only
+     anything, unless we're checking the syntax only
      (but not using -fsyntax-only for the purpose of generating
-     bytecode. */
-  if (java_error_count && !flag_emit_xref
+     bytecode).  */
+  if (java_error_count
       && (!flag_syntax_only && !flag_emit_class_files))
     return;
 
@@ -9331,8 +9281,6 @@ java_expand_classes (void)
 	  output_class = current_class = TREE_TYPE (TREE_VALUE (current));
 	  if (flag_emit_class_files)
 	    write_classfile (current_class);
-	  if (flag_emit_xref)
-	    expand_xref (current_class);
 	  else if (! flag_syntax_only)
 	    java_expand_method_bodies (current_class);
 	}
@@ -9619,7 +9567,7 @@ resolve_field_access (tree qual_wfl, tree *field_decl, tree *field_type)
   /* Resolve the LENGTH field of an array here */
   if (DECL_P (decl) && DECL_NAME (decl) == length_identifier_node
       && type_found && TYPE_ARRAY_P (type_found)
-      && ! flag_emit_class_files && ! flag_emit_xref)
+      && ! flag_emit_class_files)
     {
       tree length = build_java_array_length_access (where_found);
       field_ref = length;
@@ -9645,7 +9593,7 @@ resolve_field_access (tree qual_wfl, tree *field_decl, tree *field_type)
       if (!type_found)
 	type_found = DECL_CONTEXT (decl);
       is_static = FIELD_STATIC (decl);
-      field_ref = build_field_ref ((is_static && !flag_emit_xref?
+      field_ref = build_field_ref ((is_static ?
 				    NULL_TREE : where_found),
 				   type_found, DECL_NAME (decl));
       if (field_ref == error_mark_node)
@@ -9658,7 +9606,6 @@ resolve_field_access (tree qual_wfl, tree *field_decl, tree *field_type)
 	 looks like `field.ref', where `field' is a static field in an
 	 interface we implement.  */
       if (!flag_emit_class_files
-	  && !flag_emit_xref
 	  && TREE_CODE (where_found) == VAR_DECL
 	  && FIELD_STATIC (where_found))
 	{
@@ -10485,7 +10432,7 @@ patch_method_invocation (tree patch, tree primary, tree where, int from_super,
       if (TREE_CODE (resolved) == VAR_DECL && FIELD_STATIC (resolved)
          && FIELD_FINAL (resolved)
          && !inherits_from_p (DECL_CONTEXT (resolved), current_class)
-         && !flag_emit_class_files && !flag_emit_xref)
+         && !flag_emit_class_files)
        resolved = build_class_init (DECL_CONTEXT (resolved), resolved);
 
       if (resolved == error_mark_node)
@@ -10964,7 +10911,7 @@ patch_invoke (tree patch, tree method, tree args)
   if (TREE_CODE (t) == POINTER_TYPE && !CLASS_LOADED_P (TREE_TYPE (t)))
     resolve_and_layout (TREE_TYPE (t), NULL);
 
-  if (flag_emit_class_files || flag_emit_xref)
+  if (flag_emit_class_files)
     func = method;
   else
     {
@@ -11030,7 +10977,7 @@ patch_invoke (tree patch, tree method, tree args)
       tree c1, saved_new, new;
       tree alloc_node;
 
-      if (flag_emit_class_files || flag_emit_xref)
+      if (flag_emit_class_files)
 	{
 	  TREE_TYPE (patch) = build_pointer_type (class);
 	  return patch;
@@ -11577,8 +11524,7 @@ java_complete_tree (tree node)
 {
   node = java_complete_lhs (node);
   if (JDECL_P (node) && CLASS_FINAL_VARIABLE_P (node)
-      && DECL_INITIAL (node) != NULL_TREE
-      && !flag_emit_xref)
+      && DECL_INITIAL (node) != NULL_TREE)
     {
       tree value = fold_constant_for_init (node, node);
       if (value != NULL_TREE)
@@ -11780,7 +11726,7 @@ java_complete_lhs (tree node)
 	       && DECL_INITIAL (cn))
 	cn = fold_constant_for_init (DECL_INITIAL (cn), cn);
 
-      if (!TREE_CONSTANT (cn) && !flag_emit_xref)
+      if (!TREE_CONSTANT (cn))
 	{
 	  EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (node);
 	  parse_error_context (node, "Constant expression required");
@@ -11969,13 +11915,6 @@ java_complete_lhs (tree node)
 	  node = resolve_expression_name (node, NULL);
 	  if (node == error_mark_node)
 	    return node;
-	  /* Keep line number information somewhere were it doesn't
-	     disrupt the completion process. */
-	  if (flag_emit_xref && TREE_CODE (node) != CALL_EXPR)
-	    {
-	      EXPR_WFL_NODE (wfl) = TREE_OPERAND (node, 1);
-	      TREE_OPERAND (node, 1) = wfl;
-	    }
 	  CAN_COMPLETE_NORMALLY (node) = 1;
 	}
       else
@@ -12291,11 +12230,6 @@ java_complete_lhs (tree node)
     case INSTANCEOF_EXPR:
       wfl_op1 = TREE_OPERAND (node, 0);
       COMPLETE_CHECK_OP_0 (node);
-      if (flag_emit_xref)
-	{
-	  TREE_TYPE (node) = boolean_type_node;
-	  return node;
-	}
       return patch_binop (node, wfl_op1, TREE_OPERAND (node, 1));
 
     case UNARY_PLUS_EXPR:
@@ -12325,14 +12259,14 @@ java_complete_lhs (tree node)
       TREE_OPERAND (node, 0) = java_complete_tree (wfl_op1);
       if (TREE_OPERAND (node, 0) == error_mark_node)
 	return error_mark_node;
-      if (!flag_emit_class_files && !flag_emit_xref)
+      if (!flag_emit_class_files)
 	TREE_OPERAND (node, 0) = save_expr (TREE_OPERAND (node, 0));
       /* The same applies to wfl_op2 */
       wfl_op2 = TREE_OPERAND (node, 1);
       TREE_OPERAND (node, 1) = java_complete_tree (wfl_op2);
       if (TREE_OPERAND (node, 1) == error_mark_node)
 	return error_mark_node;
-      if (!flag_emit_class_files && !flag_emit_xref)
+      if (!flag_emit_class_files)
 	TREE_OPERAND (node, 1) = save_expr (TREE_OPERAND (node, 1));
       return patch_array_ref (node);
 
@@ -12897,7 +12831,6 @@ patch_assignment (tree node, tree wfl_op1)
 
   /* 10.10: Array Store Exception runtime check */
   if (!flag_emit_class_files
-      && !flag_emit_xref
       && lvalue_from_array
       && JREFERENCE_TYPE_P (TYPE_ARRAY_ELEMENT (lhs_type)))
     {
@@ -13837,9 +13770,6 @@ patch_binop (tree node, tree wfl_op1, tree wfl_op2)
   TREE_TYPE (node) = prom_type;
   TREE_SIDE_EFFECTS (node) = TREE_SIDE_EFFECTS (op1) | TREE_SIDE_EFFECTS (op2);
 
-  if (flag_emit_xref)
-    return node;
-
   /* fold does not respect side-effect order as required for Java but not C.
    * Also, it sometimes create SAVE_EXPRs which are bad when emitting
    * bytecode.
@@ -13983,9 +13913,6 @@ build_string_concatenation (tree op1, tree op2)
 {
   tree result;
   int side_effects = TREE_SIDE_EFFECTS (op1) | TREE_SIDE_EFFECTS (op2);
-
-  if (flag_emit_xref)
-    return build2 (PLUS_EXPR, string_type_node, op1, op2);
 
   /* Try to do some static optimization */
   if ((result = string_constant_concatenation (op1, op2)))
@@ -14600,7 +14527,7 @@ patch_array_ref (tree node)
 
   array_type = TYPE_ARRAY_ELEMENT (array_type);
 
-  if (flag_emit_class_files || flag_emit_xref)
+  if (flag_emit_class_files)
     {
       TREE_OPERAND (node, 0) = array;
       TREE_OPERAND (node, 1) = index;
@@ -15763,14 +15690,6 @@ patch_synchronized_statement (tree node, tree wfl_op1)
       return error_mark_node;
     }
 
-  if (flag_emit_xref)
-    {
-      TREE_OPERAND (node, 0) = expr;
-      TREE_OPERAND (node, 1) = java_complete_tree (block);
-      CAN_COMPLETE_NORMALLY (node) = 1;
-      return node;
-    }
-
   /* Generate a try-finally for the synchronized statement, except
      that the handler that catches all throw exception calls
      _Jv_MonitorExit and then rethrow the exception.
@@ -15895,12 +15814,9 @@ patch_throw_statement (tree node, tree wfl_op1)
       return error_mark_node;
     }
 
-  if (! flag_emit_class_files && ! flag_emit_xref)
+  if (! flag_emit_class_files)
     BUILD_THROW (node, expr);
 
-  /* If doing xrefs, keep the location where the `throw' was seen. */
-  if (flag_emit_xref)
-    EXPR_WFL_LINECOL (node) = EXPR_WFL_LINECOL (wfl_op1);
   return node;
 }
 
@@ -16155,7 +16071,7 @@ static tree
 maybe_build_class_init_for_field (tree decl, tree expr)
 {
   tree clas = DECL_CONTEXT (decl);
-  if (flag_emit_class_files || flag_emit_xref)
+  if (flag_emit_class_files)
     return expr;
 
   if (TREE_CODE (decl) == VAR_DECL && FIELD_STATIC (decl)
