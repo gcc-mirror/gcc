@@ -95,39 +95,6 @@ struct redirection_data
 /* Main data structure to hold information for duplicates of BB.  */
 static varray_type redirection_data;
 
-/* Add to the destination of edge E those PHI arguments queued on
-   E.  */
-
-static void
-copy_phis_to_block (edge e)
-{
-  basic_block dest = e->dest;
-  tree var;
-
-  for (var = PENDING_STMT (e); var; var = TREE_CHAIN (var))
-    {
-      tree result = TREE_PURPOSE (var);
-      tree arg = TREE_VALUE (var);
-      tree new_phi;
-
-      /* First try to find a PHI node in NEW_BB which has the same
-         PHI_RESULT as the PHI from BB we are currently processing.  */
-      for (new_phi = phi_nodes (dest); new_phi;
-	   new_phi = PHI_CHAIN (new_phi))
-	if (PHI_RESULT (new_phi) == result)
-	  break;
-
-      /* If we did not find a suitable PHI in NEW_BB, create one.  */
-      if (!new_phi)
-	new_phi = create_phi_node (result, dest);
-
-      /* Now add that same argument to the new PHI node in block NEW_BB.  */
-      add_phi_arg (&new_phi, arg, e);
-    }
-
-  PENDING_STMT (e) = NULL;
-}
-
 /* Remove the last statement in block BB if it is a control statement
    Also remove all outgoing edges except the edge which reaches DEST_BB.
    If DEST_BB is NULL, then remove all outgoing edges.  */
@@ -368,7 +335,7 @@ thread_block (basic_block bb)
 			 e->src->index, e->dest->index, rd->dup_block->index);
 
 	      e2 = redirect_edge_and_branch (e, rd->dup_block);
-	      copy_phis_to_block (e2);
+	      flush_pending_stmts (e2);
 
 	      if ((dump_file && (dump_flags & TDF_DETAILS))
 		  && e->src != e2->src)
