@@ -1,3 +1,7 @@
+Mon Aug 31 14:55:02 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* NEWS: Fix typos.
+
 Mon Aug 31 15:42:18 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* varasm.c (compare_constant_1): Handle RANGE_EXPR.
