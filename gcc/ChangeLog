@@ -1,3 +1,7 @@
+Wed Jun 24 15:13:01 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* README.gnat: Add patch for new lang_decode_options interface.
+
 Wed Jun 24 09:14:04 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* except.c (start_catch_handler): Do nothing if EH is not on.
