@@ -1,3 +1,10 @@
+2003-10-14  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md ("muldf3", "*muldf3", "*muldf3_ibm",
+	"mulsf3", "*mulsf3", "*mulsf3_ibm"): Do not clobber CC.
+	("divdf3", "*divdf3", "*divdf3_ibm", "divsf3", "*divsf3", 
+	"*divsf3_ibm"): Likewise.
+
 2003-10-14  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config.gcc, config/m68hc11/t-m68hc11-gas: Replace uses of
