@@ -1210,10 +1210,11 @@ convert_modes (mode, oldmode, x, unsignedp)
 
   /* We can do this with a gen_lowpart if both desired and current modes
      are integer, and this is either a constant integer, a register, or a
-     non-volatile MEM.  Except for the constant case, we must be narrowing
-     the operand.  */
+     non-volatile MEM.  Except for the constant case where MODE is no
+     wider than HOST_BITS_PER_WIDE_INT, we must be narrowing the operand.  */
 
-  if (GET_CODE (x) == CONST_INT
+  if ((GET_CODE (x) == CONST_INT
+       && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
       || (GET_MODE_CLASS (mode) == MODE_INT
 	  && GET_MODE_CLASS (oldmode) == MODE_INT
 	  && (GET_CODE (x) == CONST_DOUBLE
@@ -1221,7 +1222,28 @@ convert_modes (mode, oldmode, x, unsignedp)
 		  && ((GET_CODE (x) == MEM && ! MEM_VOLATILE_P (x)
 		       && direct_load[(int) mode])
 		      || GET_CODE (x) == REG)))))
-    return gen_lowpart (mode, x);
+    {
+      /* ?? If we don't know OLDMODE, we have to assume here that
+	 X does not need sign- or zero-extension.   This may not be
+	 the case, but it's the best we can do.  */
+      if (GET_CODE (x) == CONST_INT && oldmode != VOIDmode
+	  && GET_MODE_SIZE (mode) > GET_MODE_SIZE (oldmode))
+	{
+	  HOST_WIDE_INT val = INTVAL (x);
+	  int width = GET_MODE_BITSIZE (oldmode);
+
+	  /* We must sign or zero-extend in this case.  Start by
+	     zero-extending, then sign extend if we need to.  */
+	  val &= ((HOST_WIDE_INT) 1 << width) - 1;
+	  if (! unsignedp
+	      && (val & ((HOST_WIDE_INT) 1 << (width - 1))))
+	    val |= (HOST_WIDE_INT) (-1) << width;
+
+	  return GEN_INT (val);
+	}
+
+      return gen_lowpart (mode, x);
+    }
 
   temp = gen_reg_rtx (mode);
   convert_move (temp, x, unsignedp);
