@@ -1,3 +1,7 @@
+2004-06-13  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-sra.c (tree_sra): Update documentation.
+
 2004-06-13  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-typeck.c (comptypes, tagged_types_tu_compatible_p,
