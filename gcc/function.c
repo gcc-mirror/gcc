@@ -2536,10 +2536,14 @@ assign_parm_setup_block_p (struct assign_parm_data_one *data)
    present and valid in DATA->STACK_RTL.  */
 
 static void
-assign_parm_setup_block (tree parm, struct assign_parm_data_one *data)
+assign_parm_setup_block (struct assign_parm_data_all *all,
+			 tree parm, struct assign_parm_data_one *data)
 {
   rtx entry_parm = data->entry_parm;
   rtx stack_parm = data->stack_parm;
+
+  if (GET_CODE (entry_parm) == PARALLEL)
+    entry_parm = emit_group_move_into_temps (entry_parm);
 
   /* If we've a non-block object that's nevertheless passed in parts,
      reconstitute it in register operations rather than on the stack.  */
@@ -2549,6 +2553,8 @@ assign_parm_setup_block (tree parm, struct assign_parm_data_one *data)
       && use_register_for_decl (parm))
     {
       rtx parmreg = gen_reg_rtx (data->nominal_mode);
+
+      push_to_sequence (all->conversion_insns);
 
       /* For values returned in multiple registers, handle possible
 	 incompatible calls to emit_group_store.
@@ -2572,6 +2578,10 @@ assign_parm_setup_block (tree parm, struct assign_parm_data_one *data)
       else
 	emit_group_store (parmreg, entry_parm, data->nominal_type,
 			  int_size_in_bytes (data->nominal_type));
+
+      all->conversion_insns = get_insns ();
+      end_sequence ();
+
       SET_DECL_RTL (parm, parmreg);
       return;
     }
@@ -2609,7 +2619,12 @@ assign_parm_setup_block (tree parm, struct assign_parm_data_one *data)
 
       /* Handle values in multiple non-contiguous locations.  */
       if (GET_CODE (entry_parm) == PARALLEL)
-	emit_group_store (mem, entry_parm, data->passed_type, size);
+	{
+	  push_to_sequence (all->conversion_insns);
+	  emit_group_store (mem, entry_parm, data->passed_type, size);
+	  all->conversion_insns = get_insns ();
+	  end_sequence ();
+	}
 
       else if (size == 0)
 	;
@@ -2648,7 +2663,7 @@ assign_parm_setup_block (tree parm, struct assign_parm_data_one *data)
 	    {
 	      rtx tem, x;
 	      int by = (UNITS_PER_WORD - size) * BITS_PER_UNIT;
-	      rtx reg = gen_rtx_REG (word_mode, REGNO (data->entry_parm));
+	      rtx reg = gen_lowpart (word_mode, entry_parm);
 
 	      x = expand_shift (LSHIFT_EXPR, word_mode, reg,
 				build_int_cst (NULL_TREE, by),
@@ -2657,11 +2672,11 @@ assign_parm_setup_block (tree parm, struct assign_parm_data_one *data)
 	      emit_move_insn (tem, x);
 	    }
 	  else
-	    move_block_from_reg (REGNO (data->entry_parm), mem,
+	    move_block_from_reg (REGNO (entry_parm), mem,
 				 size_stored / UNITS_PER_WORD);
 	}
       else
-	move_block_from_reg (REGNO (data->entry_parm), mem,
+	move_block_from_reg (REGNO (entry_parm), mem,
 			     size_stored / UNITS_PER_WORD);
     }
 
@@ -2782,7 +2797,7 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
 	  emit_move_insn (tempreg, DECL_RTL (parm));
 	  tempreg = convert_to_mode (GET_MODE (parmreg), tempreg, unsigned_p);
 	  emit_move_insn (parmreg, tempreg);
-	  all->conversion_insns = get_insns();
+	  all->conversion_insns = get_insns ();
 	  end_sequence ();
 
 	  did_conversion = true;
@@ -3083,7 +3098,7 @@ assign_parms (tree fndecl)
       assign_parm_adjust_stack_rtl (&data);
 
       if (assign_parm_setup_block_p (&data))
-	assign_parm_setup_block (parm, &data);
+	assign_parm_setup_block (&all, parm, &data);
       else if (data.passed_pointer || use_register_for_decl (parm))
 	assign_parm_setup_reg (&all, parm, &data);
       else

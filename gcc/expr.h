@@ -387,9 +387,15 @@ extern rtx gen_group_rtx (rtx);
    PARALLEL.  */
 extern void emit_group_load (rtx, rtx, tree, int);
 
+/* Similarly, but load into new temporaries.  */
+extern rtx emit_group_load_into_temps (rtx, rtx, tree, int);
+
 /* Move a non-consecutive group of registers represented by a PARALLEL into
    a non-consecutive group of registers represented by a PARALLEL.  */
 extern void emit_group_move (rtx, rtx);
+
+/* Move a group of registers represented by a PARALLEL into pseudos.  */
+extern rtx emit_group_move_into_temps (rtx);
 
 /* Store a BLKmode value from non-consecutive registers represented by a
    PARALLEL.  */

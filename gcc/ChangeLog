@@ -1,3 +1,16 @@
+2004-11-13  Richard Henderson  <rth@redhat.com>
+
+	* calls.c (precompute_register_parameters): Force all PARALLELs
+	into pseudo registers.
+	(load_register_parameters): Copy PARALLELs into hard registers.
+	* function.c (assign_parm_setup_block): Copy PARALLELS into
+	pseudo registers.  Do emit_group_store in conversion_insns.
+	* expr.c (emit_group_load_1): Rename from emit_group_load, take
+	tmps as an argument.  Move final copy loop ...
+	(emit_group_load): ... here.  New function.
+	(emit_group_load_into_temps, emit_group_move_into_temps): New.
+	* expr.h: Declare them.
+
 2004-11-14  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-cfg.c, tree-if-conv.c, tree-ssa-loop-ivopts.c,
