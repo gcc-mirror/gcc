@@ -1,3 +1,7 @@
+2004-01-15  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcc.dg/sibcall-3.c: Replace mn10?00 with mn10300.
+
 2004-01-15  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/13659
