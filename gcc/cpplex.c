@@ -162,10 +162,6 @@ TOKEN_LEN (token)
 
 #define IS_ARG_CONTEXT(c) ((c)->flags & CONTEXT_ARG)
 #define CURRENT_CONTEXT(pfile) ((pfile)->contexts + (pfile)->cur_context)
-#define ON_REST_ARG(c) \
- (((c)->u.list->flags & VAR_ARGS) \
-  && (c)->u.list->tokens[(c)->posn - 1].val.aux \
-      == (unsigned int) ((c)->u.list->paramc - 1))
 
 #define ASSIGN_FLAGS_AND_POS(d, s) \
   do {(d)->flags = (s)->flags & (PREV_WHITE | BOL | PASTE_LEFT); \
@@ -573,7 +569,7 @@ skip_block_comment (pfile)
      cpp_reader *pfile;
 {
   cpp_buffer *buffer = pfile->buffer;
-  cppchar_t c = EOF, prevc;
+  cppchar_t c = EOF, prevc = EOF;
 
   pfile->state.lexing_comment = 1;
   while (buffer->cur != buffer->rlimit)
@@ -1837,6 +1833,7 @@ is_macro_disabled (pfile, expansion, token)
       pfile->no_expand_level = context - pfile->contexts;
       next = _cpp_get_token (pfile);
       restore_macro_expansion (pfile, prev_nme);
+
       if (next->type != CPP_OPEN_PAREN)
 	{
 	  _cpp_push_token (pfile, next);
@@ -2001,7 +1998,8 @@ parse_args (pfile, hp, args)
 	}
       else
 	{
-	  cpp_error (pfile, "not enough arguments for macro \"%s\"", hp->name);
+	  cpp_error (pfile, "%u arguments is not enough for macro \"%s\"",
+		     argc, hp->name);
 	  return 1;
 	}
     }
@@ -2009,7 +2007,8 @@ parse_args (pfile, hp, args)
   else if (argc > macro->paramc
 	   && !(macro->paramc == 0 && argc == 1 && empty_argument (args, 0)))
     {
-      cpp_error (pfile, "too many arguments for macro \"%s\"", hp->name);
+      cpp_error (pfile, "%u arguments is too many for macro \"%s\"",
+		 argc, hp->name);
       return 1;
     }
 
@@ -2331,8 +2330,8 @@ maybe_paste_with_next (pfile, token)
 		     <whatever> came from a variable argument, because
 		     the author probably intended the ## to trigger
 		     the special extended semantics (see above).  */
-		  if (token->type == CPP_COMMA && IS_ARG_CONTEXT (context)
-		      && ON_REST_ARG (context - 1))
+		  if (token->type == CPP_COMMA
+		      && (context->flags & CONTEXT_VARARGS))
 		    /* no warning */;
 		  else
 		    cpp_warning (pfile,

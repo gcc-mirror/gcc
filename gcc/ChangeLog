@@ -1,3 +1,20 @@
+2000-09-28  Neil Booth  <neilb@earthling.net>
+
+	* cpperror.c (_cpp_begin_message):  Do the test for suppression
+        of warnings and pedantic warnings before the "is a warning an
+        error" tests.
+	* cppinit.c (cpp_handle_option): Remove surplus \n.
+	* cpplex.c (ON_REST_ARG): Delete.
+	(skip_block_comment): Initialise prevc.
+	(parse_args): Improve error messages.
+	(maybe_paste_with_next): Use CONTEXT_VARARGS rather
+	than ON_REST_ARG.
+	* cpplib.c (cpp_push_buffer): Fix grammar in message.
+	* cppmain.c (main): Set callbacks for #ident and #pragma
+	only if no_output option is false.
+	(do_pragma_implementation): Only call the #pragma handler
+	if it is set in the cpp_reader structure.
+
 Wed Sep 27 14:00:07 2000  Donald Lindsay  <dlindsay@cygnus.com>
 
 	* integrate.c (copy_insn_list): if an ignored return value

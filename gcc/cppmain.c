@@ -88,15 +88,21 @@ main (argc, argv)
     return (FATAL_EXIT_CODE);
 
   /* Set callbacks.  */
-  if (! CPP_OPTION (pfile, no_line_commands)
-      && ! CPP_OPTION (pfile, no_output))
+  if (! CPP_OPTION (pfile, no_output))
     {
-      pfile->cb.enter_file = cb_enter_file;
-      pfile->cb.leave_file = cb_leave_file;
-      pfile->cb.rename_file = cb_rename_file;
+      pfile->cb.ident      = cb_ident;
+      pfile->cb.def_pragma = cb_def_pragma;
+      if (! CPP_OPTION (pfile, no_line_commands))
+	{
+	  pfile->cb.enter_file = cb_enter_file;
+	  pfile->cb.leave_file = cb_leave_file;
+	  pfile->cb.rename_file = cb_rename_file;
+	}
     }
+
   if (CPP_OPTION (pfile, dump_includes))
     pfile->cb.include  = cb_include;
+
   if (CPP_OPTION (pfile, debug_output)
       || CPP_OPTION (pfile, dump_macros) == dump_names
       || CPP_OPTION (pfile, dump_macros) == dump_definitions)
@@ -105,8 +111,6 @@ main (argc, argv)
       pfile->cb.undef  = cb_undef;
       pfile->cb.poison = cb_def_pragma;
     }
-  pfile->cb.ident      = cb_ident;
-  pfile->cb.def_pragma = cb_def_pragma;
 
   /* Register one #pragma which needs special handling.  */
   cpp_register_pragma(pfile, 0, "implementation", do_pragma_implementation);
@@ -271,7 +275,8 @@ do_pragma_implementation (pfile)
     }
 
   /* forward to default-pragma handler.  */
-  cb_def_pragma (pfile);
+  if (pfile->cb.def_pragma)
+    (*pfile->cb.def_pragma) (pfile);
 }
 
 /* Dump out the hash table.  */

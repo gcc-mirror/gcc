@@ -1495,7 +1495,7 @@ cpp_push_buffer (pfile, buffer, length)
   cpp_buffer *new;
   if (++pfile->buffer_stack_depth == CPP_STACK_MAX)
     {
-      cpp_fatal (pfile, "#include nested too deep");
+      cpp_fatal (pfile, "#include nested too deeply");
       return NULL;
     }
   if (pfile->cur_context > 0)
