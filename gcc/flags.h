@@ -141,6 +141,14 @@ extern unsigned larger_than_size;
 
 extern int warn_aggregate_return;
 
+/* Warn if packed attribute on struct is unnecessary and inefficient.  */
+
+extern int warn_packed;
+
+/* Warn when gcc pads a structure to an alignment boundary.  */
+
+extern int warn_padded;
+
 /* Nonzero if generating code to do profiling.  */
 
 extern int profile_flag;
