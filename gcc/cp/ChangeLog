@@ -1,3 +1,7 @@
+2000-09-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* call.c (build_scoped_method_call): Check it is not a namespace.	
+
 2000-08-30  Jason Merrill  <jason@redhat.com>
 
 	* cp-tree.h (LOCAL_CLASS_P): Use decl_function_context.
