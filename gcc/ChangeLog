@@ -1,3 +1,11 @@
+2003-03-21  Glen Nakamura  <glen@imodulo.com>
+
+	PR opt/10087
+	* loop.c (loop_givs_reduce): Skip bivs with duplicate locations
+	while incrementing giv.
+	(record_biv): Check for duplicate biv locations and
+	set (struct induction *) v->same if found.
+
 2003-03-24  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/install.texi (Testing): Mention test result links from build
