@@ -5,6 +5,7 @@ CRTSTUFF_T_CFLAGS_S = -fPIC
 TARGET_LIBGCC2_CFLAGS = -fPIC
 
 # Build a shared libgcc library.
+SHLIB_EXT = .so
 SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared -nodefaultlibs \
-	-Wl,-msym -Wl,-set_version,gcc.3 -Wl,-soname,@shlib_base_name@.so.0
-SHLIB_LIBS = -lc
+	-Wl,-msym -Wl,-set_version,gcc.0 -Wl,-soname,@shlib_base_name@.so.0 \
+	-o @shlib_base_name@.so @multilib_flags@ @shlib_objs@ -lc

@@ -23,8 +23,8 @@
 # LIBGCC
 # MULTILIBS
 # EXTRA_MULTILIB_PARTS
+# SHLIB_EXT
 # SHLIB_LINK
-# SHLIB_LIBS
 # SHLIB_MULTILIB
 # SHLIB_MKMAP
 # SHLIB_MAPFILES
@@ -286,12 +286,12 @@ for ml in $MULTILIBS; do
 
   if [ "$SHLIB_LINK" -a "$SHLIB_MKMAP" -a -z "$mapfile" ]; then
     mapfile="libgcc.map"
-    shlib_deps="$shlib_deps $mapfile"
     echo ""
     echo "${mapfile}: $SHLIB_MKMAP $SHLIB_MAPFILES $libgcc_objs"
     echo '	{ $(NM_FOR_TARGET) -pg'" $libgcc_objs; echo %%; cat $SHLIB_MAPFILES; } | "'$(AWK)'" -f $SHLIB_MKMAP > "'tmp-$@'
     echo '	mv tmp-$@ $@'
   fi
+  shlib_deps="$shlib_deps $mapfile"
 
   # Depend on EXTRA_MULTILIB_PARTS, since that's where crtbegin/end
   # usually are put in a true multilib situation.
@@ -315,13 +315,23 @@ for ml in $MULTILIBS; do
 	shlib_base_name=libgcc_s_`echo $dir | sed s,/,_,g`
       fi
       echo ""
-      echo "${dir}/${shlib_base_name}.so: $shlib_deps"
-      echo "	$SHLIB_LINK $flags -o ${shlib_base_name}.so $libgcc_objs $SHLIB_LIBS" | sed "s/@shlib_base_name@/$shlib_base_name/g"
+      echo "${dir}/${shlib_base_name}${SHLIB_EXT}: $shlib_deps"
+      echo "	$SHLIB_LINK" \
+	 | sed -e "s%@multilib_flags@%$flags%g" \
+	       -e "s%@multilib_dir@%$dir%g" \
+	       -e "s%@shlib_objs@%$libgcc_objs%g" \
+	       -e "s%@shlib_base_name@%$shlib_base_name%g" \
+	       -e "s%@shlib_map_file@%$mapfile%g"
     elif [ "$SHLIB_MULTILIB" = "$dir" ]; then
       shlib_base_name="libgcc_s";
       echo ""
-      echo "${shlib_base_name}.so: $shlib_deps"
-      echo "	$SHLIB_LINK $flags -o ${shlib_base_name}.so $libgcc_objs $SHLIB_LIBS" | sed "s/@shlib_base_name@/$shlib_base_name/g"
+      echo "${shlib_base_name}${SHLIB_EXT}: $shlib_deps"
+      echo "	$SHLIB_LINK" \
+	 | sed -e "s%@multilib_flags@%$flags%g" \
+	       -e "s%@multilib_dir@%$dir%g" \
+	       -e "s%@shlib_objs@%$libgcc_objs%g" \
+	       -e "s%@shlib_base_name@%$shlib_base_name%g" \
+	       -e "s%@shlib_map_file@%$mapfile%g"
     fi
   fi
 done
@@ -359,15 +369,10 @@ for ml in $MULTILIBS; do
       else
 	suff=_`echo $dir | sed s,/,_,g`
       fi
-      all="$all ${dir}/libgcc_s${suff}.so"
+      all="$all ${dir}/libgcc_s${suff}${SHLIB_EXT}"
     elif [ "$SHLIB_MULTILIB" = "$dir" ]; then
-      all="$all libgcc_s.so"
+      all="$all libgcc_s${SHLIB_EXT}"
     fi
-      if [ "$dir" = "." ]; then
-	suff="";
-      else
-	suff=_`echo $dir | sed s,/,_,g`
-      fi
   fi
 done
 

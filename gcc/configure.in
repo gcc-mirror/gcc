@@ -3486,6 +3486,11 @@ changequote([,])dnl
 		xm_file="sparc/xm-sysv4-64.h sparc/xm-sol2.h"
 		xm_defines="USG POSIX"
 		tmake_file="sparc/t-sol2 sparc/t-sol2-64"
+		if test x$gnu_ld = xyes; then
+			tmake_file="$tmake_file sparc/t-slibgcc"
+		else
+			tmake_file="$tmake_file sparc/t-slibgcc-sld"
+		fi
 		xmake_file=sparc/x-sysv4
 		extra_parts="crt1.o crti.o crtn.o gcrt1.o crtbegin.o crtend.o"
 		float_format=none
@@ -3508,6 +3513,11 @@ changequote([,])dnl
                 xm_defines="USG POSIX"
                 tm_file="sparc/sol2.h sparc/hal.h"
                 tmake_file="sparc/t-halos sparc/t-sol2"
+		if test x$gnu_ld = xyes; then
+			tmake_file="$tmake_file sparc/t-slibgcc"
+		else
+			tmake_file="$tmake_file sparc/t-slibgcc-sld"
+		fi
                 xmake_file=sparc/x-sysv4
                 extra_parts="crt1.o crti.o crtn.o gmon.o crtbegin.o crtend.o"
                 case $machine in
@@ -3532,6 +3542,11 @@ changequote([,])dnl
 		xm_file="sparc/xm-sysv4.h sparc/xm-sol2.h"
 		xm_defines="USG POSIX"
 		tmake_file=sparc/t-sol2
+		if test x$gnu_ld = xyes; then
+			tmake_file="$tmake_file sparc/t-slibgcc"
+		else
+			tmake_file="$tmake_file sparc/t-slibgcc-sld"
+		fi
 		xmake_file=sparc/x-sysv4
 		extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
 # At the moment, 32-to-64 cross compilation doesn't work.
