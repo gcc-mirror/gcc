@@ -456,13 +456,12 @@ struct binding_level
     tree dead_vars_from_for;
 
     /* 1 for the level that holds the parameters of a function.
-       2 for the level that holds a class declaration.
-       3 for levels that hold parameter declarations.  */
-    unsigned parm_flag : 4;
+       2 for the level that holds a class declaration.  */
+    unsigned parm_flag : 2;
 
     /* 1 means make a BLOCK for this level regardless of all else.
        2 for temporary binding contours created by the compiler.  */
-    unsigned keep : 3;
+    unsigned keep : 2;
 
     /* Nonzero if this level "doesn't exist" for tags.  */
     unsigned tag_transparent : 1;
@@ -472,10 +471,15 @@ struct binding_level
     unsigned more_cleanups_ok : 1;
     unsigned have_cleanups : 1;
 
-    /* Nonzero if this level is for storing the decls for template
+    /* Nonzero if this scope is for storing the decls for template
        parameters and generic decls; these decls will be discarded and
        replaced with a TEMPLATE_DECL.  */
-    unsigned pseudo_global : 1;
+    unsigned template_parms_p : 1;
+
+    /* Nonzero if this scope corresponds to the `<>' in a 
+       `template <>' clause.  Whenever this flag is set,
+       TEMPLATE_PARMS_P will be set as well.  */
+    unsigned template_spec_p : 1;
 
     /* This is set for a namespace binding level.  */
     unsigned namespace_p : 1;
@@ -487,7 +491,7 @@ struct binding_level
     /* True if this level corresponds to an EH region, as for a try block.  */
     unsigned eh_region : 1;
 
-    /* One bit left for this word.  */
+    /* Four bits left for this word.  */
 
 #if defined(DEBUG_CP_BINDING_LEVELS)
     /* Binding depth at which this level began.  */
@@ -704,15 +708,15 @@ innermost_nonclass_level ()
 /* Nonzero if we are currently in a toplevel binding level.  This
    means either the global binding level or a namespace in a toplevel
    binding level.  Since there are no non-toplevel namespace levels,
-   this really means any namespace or pseudo-global level.  We also
-   include a class whose context is toplevel.  */
+   this really means any namespace or template parameter level.  We
+   also include a class whose context is toplevel.  */
 
 int
 toplevel_bindings_p ()
 {
   struct binding_level *b = innermost_nonclass_level ();
 
-  return b->namespace_p || b->pseudo_global;
+  return b->namespace_p || b->template_parms_p;
 }
 
 /* Nonzero if this is a namespace scope, or if we are defining a class
@@ -750,22 +754,108 @@ kept_level_p ()
 	      && !current_binding_level->tag_transparent));
 }
 
-void
-declare_pseudo_global_level ()
-{
-  current_binding_level->pseudo_global = 1;
-}
-
 static void
 declare_namespace_level ()
 {
   current_binding_level->namespace_p = 1;
 }
 
+/* Returns non-zero if this scope was created to store template
+   parameters.  */
+
 int
-pseudo_global_level_p ()
+template_parm_scope_p ()
 {
-  return current_binding_level->pseudo_global;
+  return current_binding_level->template_parms_p;
+}
+
+/* Returns the kind of template specialization we are currently
+   processing, given that it's declaration contained N_CLASS_SCOPES
+   explicit scope qualifications.  */
+
+tmpl_spec_kind
+current_tmpl_spec_kind (n_class_scopes)
+     int n_class_scopes;
+{
+  int n_template_parm_scopes = 0;
+  int seen_specialization_p = 0;
+  int innermost_specialization_p = 0;
+  struct binding_level *b;
+
+  /* Scan through the template parameter scopes.  */
+  for (b = current_binding_level; b->template_parms_p; b = b->level_chain)
+    {
+      /* If we see a specialization scope inside a parameter scope,
+	 then something is wrong.  That corresponds to a declaration
+	 like:
+
+	    template <class T> template <> ...
+
+	 which is always illegal since [temp.expl.spec] forbids the
+	 specialization of a class member template if the enclosing
+	 class templates are not explicitly specialized as well.  */
+      if (b->template_spec_p)
+	{
+	  if (n_template_parm_scopes == 0)
+	    innermost_specialization_p = 1;
+	  else
+	    seen_specialization_p = 1;
+	}
+      else if (seen_specialization_p == 1)
+	return tsk_invalid_member_spec;
+
+      ++n_template_parm_scopes;
+    }
+
+  /* Handle explicit instantiations.  */
+  if (processing_explicit_instantiation)
+    {
+      if (n_template_parm_scopes != 0)
+	/* We've seen a template parameter list during an explicit
+	   instantiation.  For example:
+
+	     template <class T> template void f(int);
+
+	   This is erroneous.  */
+	return tsk_invalid_expl_inst;
+      else
+	return tsk_expl_inst;
+    }
+
+  if (n_template_parm_scopes < n_class_scopes)
+    /* We've not seen enough template headers to match all the
+       specialized classes present.  For example:
+
+         template <class T> void R<T>::S<T>::f(int);
+
+       This is illegal; there needs to be one set of template
+       parameters for each class.  */
+    return tsk_insufficient_parms;
+  else if (n_template_parm_scopes == n_class_scopes)
+    /* We're processing a non-template declaration (even though it may
+       be a member of a template class.)  For example:
+
+         template <class T> void S<T>::f(int);
+
+       The `class T' maches the `S<T>', leaving no template headers
+       corresponding to the `f'.  */
+    return tsk_none;
+  else if (n_template_parm_scopes > n_class_scopes + 1)
+    /* We've got too many template headers.  For example:
+
+         template <> template <class T> void f (T);
+
+       There need to be more enclosing classes.  */
+    return tsk_excessive_parms;
+  else
+    /* This must be a template.  It's of the form:
+
+         template <class T> template <class U> void S<T>::f(U);
+
+       This is a specialization if the innermost level was a
+       specialization; otherwise it's just a definition of the
+       template.  */
+    return innermost_specialization_p ? tsk_expl_spec : tsk_template;
 }
 
 void
@@ -804,6 +894,38 @@ pushlevel (tag_transparent)
   push_binding_level (newlevel, tag_transparent, keep_next_level_flag);
   GNU_xref_start_scope ((HOST_WIDE_INT) newlevel);
   keep_next_level_flag = 0;
+}
+
+/* Enter a new scope.  The KIND indicates what kind of scope is being
+   created.  */
+
+void
+begin_scope (sk)
+     scope_kind sk;
+{
+  pushlevel (0);
+
+  switch (sk)
+    {
+    case sk_template_spec:
+      current_binding_level->template_spec_p = 1;
+      /* Fall through.  */
+
+    case sk_template_parms:
+      current_binding_level->template_parms_p = 1;
+      break;
+
+    default:
+      my_friendly_abort (20000309);
+    }
+}
+
+/* Exit the current scope.  */
+
+void
+finish_scope ()
+{
+  poplevel (0, 0, 0);
 }
 
 void
@@ -2381,7 +2503,7 @@ maybe_push_to_top_level (pseudo)
 	 inserted into namespace level, finish_file wouldn't find them
 	 when doing pending instantiations. Therefore, don't stop at
 	 namespace level, but continue until :: .  */
-      if (b == global_binding_level || (pseudo && b->pseudo_global))
+      if (b == global_binding_level || (pseudo && b->template_parms_p))
 	break;
 
       old_bindings = store_bindings (b->names, old_bindings);
@@ -2590,7 +2712,7 @@ maybe_process_template_type_declaration (type, globalize, b)
 	     friend case, push_template_decl will already have put the
 	     friend into global scope, if appropriate.  */
 	  if (TREE_CODE (type) != ENUMERAL_TYPE
-	      && !globalize && b->pseudo_global
+	      && !globalize && b->template_parms_p
 	      && b->level_chain->parm_flag == 2)
 	    {
 	      finish_member_declaration (CLASSTYPE_TI_TEMPLATE (type));
@@ -2675,7 +2797,7 @@ pushtag (name, type, globalize)
 	  if (!context)
 	    context = current_namespace;
 
-	  if ((b->pseudo_global && b->level_chain->parm_flag == 2)
+	  if ((b->template_parms_p && b->level_chain->parm_flag == 2)
 	      || b->parm_flag == 2)
 	    in_class = 1;
 
@@ -4195,29 +4317,6 @@ maybe_push_decl (decl)
     return pushdecl (decl);
 }
 
-#if 0
-/* This function is used to push the mangled decls for nested types into
-   the appropriate scope.  Previously pushdecl_top_level was used, but that
-   is incorrect for members of local classes.  */
-
-void
-pushdecl_nonclass_level (x)
-     tree x;
-{
-  struct binding_level *b = current_binding_level;
-
-  my_friendly_assert (b->parm_flag != 2, 180);
-
-#if 0
-  /* Get out of template binding levels */
-  while (b->pseudo_global)
-    b = b->level_chain;
-#endif
-
-  pushdecl_with_scope (x, b);
-}
-#endif
-
 /* Make the declaration(s) of X appear in CLASS scope
    under the name NAME.  */
 
@@ -4969,9 +5068,9 @@ lookup_tag (form, name, binding_level, thislevel_only)
      int thislevel_only;
 {
   register struct binding_level *level;
-  /* Non-zero if, we should look past a pseudo-global level, even if
-     THISLEVEL_ONLY.  */
-  int allow_pseudo_global = 1;
+  /* Non-zero if, we should look past a template parameter level, even
+     if THISLEVEL_ONLY.  */
+  int allow_template_parms_p = 1;
 
   for (level = binding_level; level; level = level->level_chain)
     {
@@ -4990,11 +5089,11 @@ lookup_tag (form, name, binding_level, thislevel_only)
 	  {
 	    tree old = binding_for_name (name, tail);
 
-	    /* If we just skipped past a pseudo global level, even
-	       though THISLEVEL_ONLY, and we find a template class
-	       declaration, then we use the _TYPE node for the
+	    /* If we just skipped past a template parameter level,
+	       even though THISLEVEL_ONLY, and we find a template
+	       class declaration, then we use the _TYPE node for the
 	       template.  See the example below.  */
-	    if (thislevel_only && !allow_pseudo_global
+	    if (thislevel_only && !allow_template_parms_p
 		&& old && BINDING_VALUE (old)
 		&& DECL_CLASS_TEMPLATE_P (BINDING_VALUE (old)))
 	      old = TREE_TYPE (BINDING_VALUE (old));
@@ -5037,7 +5136,7 @@ lookup_tag (form, name, binding_level, thislevel_only)
 	  }
       if (thislevel_only && ! level->tag_transparent)
 	{
-	  if (level->pseudo_global && allow_pseudo_global)
+	  if (level->template_parms_p && allow_template_parms_p)
 	    {
 	      /* We must deal with cases like this:
 
@@ -5050,7 +5149,7 @@ lookup_tag (form, name, binding_level, thislevel_only)
 		 template parameters, rather than the (surrounding)
 		 namespace level.  Thus, we keep going one more level,
 		 even though THISLEVEL_ONLY is non-zero.  */
-	      allow_pseudo_global = 0;
+	      allow_template_parms_p = 0;
 	      continue;
 	    }
 	  else
@@ -8680,98 +8779,77 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
     return decl;
 
   if (flags == NO_SPECIAL && ctype && constructor_name (cname) == declarator)
+    DECL_CONSTRUCTOR_P (decl) = 1;
+
+  /* Function gets the ugly name, field gets the nice one.  This call
+     may change the type of the function (because of default
+     parameters)!  */
+  if (ctype != NULL_TREE)
+    grokclassfn (ctype, decl, flags, quals);
+
+  decl = check_explicit_specialization (orig_declarator, decl,
+					template_count,
+					2 * (funcdef_flag != 0) +
+					4 * (friendp != 0));
+  if (decl == error_mark_node)
+    return NULL_TREE;
+
+  if (ctype != NULL_TREE
+      && (! TYPE_FOR_JAVA (ctype) || check_java_method (decl))
+      && check)
     {
-      tree tmp;
-      /* Just handle constructors here.  We could do this
-	 inside the following if stmt, but I think
-	 that the code is more legible by breaking this
-	 case out.  See comments below for what each of
-	 the following calls is supposed to do.  */
-      DECL_CONSTRUCTOR_P (decl) = 1;
+      tree old_decl;
 
-      grokclassfn (ctype, decl, flags, quals);
+      old_decl = check_classfn (ctype, decl);
 
-      decl = check_explicit_specialization (orig_declarator, decl,
-					    template_count,
-					    2 * (funcdef_flag != 0) +
-					    4 * (friendp != 0));
-      if (decl == error_mark_node)
-	return NULL_TREE;
+      if (old_decl && TREE_CODE (old_decl) == TEMPLATE_DECL)
+	/* Because grokfndecl is always supposed to return a
+	   FUNCTION_DECL, we pull out the DECL_TEMPLATE_RESULT
+	   here.  We depend on our callers to figure out that its
+	   really a template that's being returned.  */
+	old_decl = DECL_TEMPLATE_RESULT (old_decl);
 
-      if ((! TYPE_FOR_JAVA (ctype) || check_java_method (decl))
-	  && check)
+      if (old_decl && DECL_STATIC_FUNCTION_P (old_decl)
+	  && TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE)
 	{
-	  tmp = check_classfn (ctype, decl);
-
-	  if (tmp && TREE_CODE (tmp) == TEMPLATE_DECL)
-	    tmp = DECL_TEMPLATE_RESULT(tmp);
-
-	  if (tmp && DECL_ARTIFICIAL (tmp))
-	    cp_error ("definition of implicitly-declared `%D'", tmp);
-	  if (tmp && duplicate_decls (decl, tmp))
-	    return tmp;
+	  /* Remove the `this' parm added by grokclassfn.
+	     XXX Isn't this done in start_function, too?  */
+	  revert_static_member_fn (&decl, NULL, NULL);
+	  last_function_parms = TREE_CHAIN (last_function_parms);
 	}
-      if (! grok_ctor_properties (ctype, decl))
-	return NULL_TREE;
-    }
-  else
-    {
-      tree tmp;
+      if (old_decl && DECL_ARTIFICIAL (old_decl))
+	cp_error ("definition of implicitly-declared `%D'", old_decl);
 
-      /* Function gets the ugly name, field gets the nice one.
-	 This call may change the type of the function (because
-	 of default parameters)!  */
-      if (ctype != NULL_TREE)
-	grokclassfn (ctype, decl, flags, quals);
-
-      decl = check_explicit_specialization (orig_declarator, decl,
-					    template_count,
-					    2 * (funcdef_flag != 0) +
-					    4 * (friendp != 0));
-      if (decl == error_mark_node)
-	return NULL_TREE;
-
-      if (ctype != NULL_TREE
-	  && (! TYPE_FOR_JAVA (ctype) || check_java_method (decl))
-	  && check)
+      if (old_decl)
 	{
-	  tmp = check_classfn (ctype, decl);
+	  /* Since we've smashed OLD_DECL to its
+	     DECL_TEMPLATE_RESULT, we must do the same to DECL.  */
+	  if (TREE_CODE (decl) == TEMPLATE_DECL)
+	    decl = DECL_TEMPLATE_RESULT (decl);
 
-	  if (tmp && TREE_CODE (tmp) == TEMPLATE_DECL)
-	    tmp = DECL_TEMPLATE_RESULT (tmp);
-
-	  if (tmp && DECL_STATIC_FUNCTION_P (tmp)
-	      && TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE)
-	    {
-	      /* Remove the `this' parm added by grokclassfn.
-	         XXX Isn't this done in start_function, too?  */
-	      revert_static_member_fn (&decl, NULL, NULL);
-	      last_function_parms = TREE_CHAIN (last_function_parms);
-	    }
-	  if (tmp && DECL_ARTIFICIAL (tmp))
-	    cp_error ("definition of implicitly-declared `%D'", tmp);
-	  if (tmp)
-	    {
-	      /* Attempt to merge the declarations.  This can fail, in
-		 the case of some illegal specialization declarations.  */
-	      if (!duplicate_decls (decl, tmp))
-		cp_error ("no `%#D' member function declared in class `%T'",
-			  decl, ctype);
-	      return tmp;
-	    }
-	}
-
-      if (ctype == NULL_TREE || check)
-	return decl;
-
-      if (virtualp)
-	{
-	  DECL_VIRTUAL_P (decl) = 1;
-	  if (DECL_VINDEX (decl) == NULL_TREE)
-	    DECL_VINDEX (decl) = error_mark_node;
-	  IDENTIFIER_VIRTUAL_P (DECL_NAME (decl)) = 1;
+	  /* Attempt to merge the declarations.  This can fail, in
+	     the case of some illegal specialization declarations.  */
+	  if (!duplicate_decls (decl, old_decl))
+	    cp_error ("no `%#D' member function declared in class `%T'",
+		      decl, ctype);
+	  return old_decl;
 	}
     }
+
+  if (DECL_CONSTRUCTOR_P (decl) && !grok_ctor_properties (ctype, decl))
+    return NULL_TREE;
+
+  if (ctype == NULL_TREE || check)
+    return decl;
+
+  if (virtualp)
+    {
+      DECL_VIRTUAL_P (decl) = 1;
+      if (DECL_VINDEX (decl) == NULL_TREE)
+	DECL_VINDEX (decl) = error_mark_node;
+      IDENTIFIER_VIRTUAL_P (DECL_NAME (decl)) = 1;
+    }
+
   return decl;
 }
 

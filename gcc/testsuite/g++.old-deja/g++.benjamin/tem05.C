@@ -49,7 +49,7 @@ unsigned short X_one<T>::ret_id() {
   return id;
 }
 
-export template <class T> template <class T2> // WARNING - 
+export template <class T2> // WARNING - 
 bool compare_ge(T2 test) {
   if (test > type)
     return true;

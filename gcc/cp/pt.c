@@ -551,8 +551,7 @@ begin_template_parm_list ()
 
      pushtag contains special code to call pushdecl_with_scope on the
      TEMPLATE_DECL for S2.  */
-  pushlevel (0);
-  declare_pseudo_global_level ();
+  begin_scope (sk_template_parms);
   ++processing_template_decl;
   ++processing_template_parmlist;
   note_template_header (0);
@@ -596,6 +595,7 @@ check_specialization_scope ()
 void
 begin_specialization ()
 {
+  begin_scope (sk_template_spec);
   note_template_header (1);
   check_specialization_scope ();
 }
@@ -606,6 +606,7 @@ begin_specialization ()
 void 
 end_specialization ()
 {
+  finish_scope ();
   reset_specialization ();
 }
 
@@ -1166,109 +1167,99 @@ check_explicit_specialization (declarator, decl, template_count, flags)
   int specialization = 0;
   int explicit_instantiation = 0;
   int member_specialization = 0;
-
   tree ctype = DECL_CLASS_CONTEXT (decl);
   tree dname = DECL_NAME (decl);
+  tmpl_spec_kind tsk;
 
-  if (processing_specialization) 
+  tsk = current_tmpl_spec_kind (template_count);
+
+  switch (tsk)
     {
-      /* The last template header was of the form template <>.  */
-	  
-      if (template_header_count > template_count) 
+    case tsk_none:
+      if (processing_specialization) 
 	{
-	  /* There were more template headers than qualifying template
-	     classes.  */
-	  if (template_header_count - template_count > 1)
-	    /* There shouldn't be that many template parameter lists.
-	       There can be at most one parameter list for every
-	       qualifying class, plus one for the function itself.  */
-	    cp_error ("too many template parameter lists in declaration of `%D'", decl);
-
-	  SET_DECL_TEMPLATE_SPECIALIZATION (decl);
-	  if (ctype)
-	    member_specialization = 1;
-	  else
-	    specialization = 1;
-	}
-      else if (template_header_count == template_count)
-	{
-	  /* The counts are equal.  So, this might be a
-	     specialization, but it is not a specialization of a
-	     member template.  It might be something like
-		 
-	     template <class T> struct S { 
-	     void f(int i); 
-	     };
-	     template <>
-	     void S<int>::f(int i) {}  */
 	  specialization = 1;
 	  SET_DECL_TEMPLATE_SPECIALIZATION (decl);
 	}
-      else 
+      else if (TREE_CODE (declarator) == TEMPLATE_ID_EXPR)
 	{
-	  /* This cannot be an explicit specialization.  There are not
-	     enough headers for all of the qualifying classes.  For
-	     example, we might have:
-	     
-	     template <>
-	     void S<int>::T<char>::f();
+	  if (is_friend)
+	    /* This could be something like:
 
-	     But, we're missing another template <>.  */
-	  cp_error("too few template parameter lists in declaration of `%D'", decl);
-	  return decl;
-	} 
-    }
-  else if (processing_explicit_instantiation)
-    {
-      if (template_header_count)
-	cp_error ("template parameter list used in explicit instantiation");
-	  
+	       template <class T> void f(T);
+	       class S { friend void f<>(int); }  */
+	    specialization = 1;
+	  else
+	    {
+	      /* This case handles bogus declarations like template <>
+		 template <class T> void f<int>(); */
+
+	      cp_error ("template-id `%D' in declaration of primary template",
+			declarator);
+	      return decl;
+	    }
+	}
+      break;
+
+    case tsk_invalid_member_spec:
+      /* The error has already been reported in
+	 check_specialization_scope.  */
+      return error_mark_node;
+
+    case tsk_invalid_expl_inst:
+      cp_error ("template parameter list used in explicit instantiation");
+
+      /* Fall through.  */
+
+    case tsk_expl_inst:
       if (have_def)
 	cp_error ("definition provided for explicit instantiation");
-
+      
       explicit_instantiation = 1;
-    }
-  else if (ctype != NULL_TREE
-	   && !TYPE_BEING_DEFINED (ctype)
-	   && CLASSTYPE_TEMPLATE_INSTANTIATION (ctype)
-	   && !is_friend)
-    {
-      /* This case catches outdated code that looks like this:
+      break;
 
-	 template <class T> struct S { void f(); };
-	 void S<int>::f() {} // Missing template <>
+    case tsk_excessive_parms:
+      cp_error ("too many template parameter lists in declaration of `%D'", 
+		decl);
+      return error_mark_node;
 
-	 We disable this check when the type is being defined to
-	 avoid complaining about default compiler-generated
-	 constructors, destructors, and assignment operators.
-	 Since the type is an instantiation, not a specialization,
-	 these are the only functions that can be defined before
-	 the class is complete.  */
-
-	  /* If they said
-	       template <class T> void S<int>::f() {}
-	     that's bogus.  */
+      /* Fall through.  */
+    case tsk_expl_spec:
+      SET_DECL_TEMPLATE_SPECIALIZATION (decl);
+      if (ctype)
+	member_specialization = 1;
+      else
+	specialization = 1;
+      break;
+     
+    case tsk_insufficient_parms:
       if (template_header_count)
 	{
-	  cp_error ("template parameters specified in specialization");
+	  cp_error("too few template parameter lists in declaration of `%D'", 
+		   decl);
 	  return decl;
 	}
+      else if (ctype != NULL_TREE
+	       && !TYPE_BEING_DEFINED (ctype)
+	       && CLASSTYPE_TEMPLATE_INSTANTIATION (ctype)
+	       && !is_friend)
+	{
+	  /* For backwards compatibility, we accept:
 
-      if (pedantic)
-	cp_pedwarn
-	  ("explicit specialization not preceded by `template <>'");
-      specialization = 1;
-      SET_DECL_TEMPLATE_SPECIALIZATION (decl);
-    }
-  else if (TREE_CODE (declarator) == TEMPLATE_ID_EXPR)
-    {
-      if (is_friend)
-	/* This could be something like:
+	       template <class T> struct S { void f(); };
+	       void S<int>::f() {} // Missing template <>
 
-	   template <class T> void f(T);
-	   class S { friend void f<>(int); }  */
-	specialization = 1;
-      else
+	     That used to be legal C++.  */
+	  if (pedantic)
+	    cp_pedwarn
+	      ("explicit specialization not preceded by `template <>'");
+	  specialization = 1;
+	  SET_DECL_TEMPLATE_SPECIALIZATION (decl);
+	}
+      break;
+
+    case tsk_template:
+      if (TREE_CODE (declarator) == TEMPLATE_ID_EXPR)
 	{
 	  /* This case handles bogus declarations like template <>
 	     template <class T> void f<int>(); */
@@ -1277,6 +1268,22 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 		    declarator);
 	  return decl;
 	}
+
+      if (ctype && CLASSTYPE_TEMPLATE_INSTANTIATION (ctype))
+	/* This is a specialization of a member template, without
+	   specialization the containing class.  Something like:
+
+	     template <class T> struct S {
+	       template <class U> void f (U); 
+             };
+	     template <> template <class U> void S<int>::f(U) {}
+	     
+	   That's a specialization -- but of the entire template.  */
+	specialization = 1;
+      break;
+
+    default:
+      my_friendly_abort (20000309);
     }
 
   if (specialization || member_specialization)
@@ -1474,10 +1481,19 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 		  targs = new_targs;
 		}
 		  
-	      decl = instantiate_template (tmpl, targs);
-	      return decl;
+	      return instantiate_template (tmpl, targs);
 	    }
-	  
+
+	  /* If this is both a template specialization, then it's a
+	     specialization of a member template of a template class.
+	     In that case we want to return the TEMPLATE_DECL, not the
+	     specialization of it.  */
+	  if (tsk == tsk_template)
+	    {
+	      SET_DECL_TEMPLATE_SPECIALIZATION (tmpl);
+	      return tmpl;
+	    }
+
 	  /* If we though that the DECL was a member function, but it
 	     turns out to be specializing a static member function,
 	     make DECL a static member function as well.  */
@@ -1504,7 +1520,7 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	     we do not mangle S<int>::f() here.  That's because it's
 	     just an ordinary member function and doesn't need special
 	     treatment.  We do this here so that the ordinary,
-	     non-template, name-mangling algorith will not be used
+	     non-template, name-mangling algorithm will not be used
 	     later.  */
 	  if ((is_member_template (tmpl) || ctype == NULL_TREE)
 	      && name_mangling_version >= 1)
@@ -1863,11 +1879,10 @@ end_template_decl ()
     return;
 
   /* This matches the pushlevel in begin_template_parm_list.  */
-  poplevel (0, 0, 0);
+  finish_scope ();
 
   --processing_template_decl;
   current_template_parms = TREE_CHAIN (current_template_parms);
-  (void) get_pending_sizes ();	/* Why? */
 }
 
 /* Given a template argument vector containing the template PARMS.
@@ -2370,7 +2385,7 @@ push_template_decl_real (decl, is_friend)
     DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
 
   /* See if this is a primary template.  */
-  primary = pseudo_global_level_p ();
+  primary = template_parm_scope_p ();
 
   if (primary)
     {
@@ -2444,9 +2459,6 @@ push_template_decl_real (decl, is_friend)
       tree a, t, current, parms;
       int i;
 
-      if (CLASSTYPE_TEMPLATE_INSTANTIATION (ctx))
-	cp_error ("must specialize `%#T' before defining member `%#D'",
-		  ctx, decl);
       if (TREE_CODE (decl) == TYPE_DECL)
 	{
 	  if ((IS_AGGR_TYPE_CODE (TREE_CODE (TREE_TYPE (decl)))
@@ -5597,7 +5609,7 @@ tsubst_decl (t, args, type, in_decl)
 		 template <class T> struct S { 
 		   template <class U> friend void f();
 		 };
-		 template <class U> friend void f() {}
+		 template <class U> void f() {}
 		 template S<int>;
 		 template void f<double>();
 
@@ -7395,7 +7407,7 @@ instantiate_template (tmpl, targ_ptr)
   if (spec != NULL_TREE)
     return spec;
 
-  if (DECL_TEMPLATE_INFO (tmpl))
+  if (DECL_TEMPLATE_INFO (tmpl) && !DECL_TEMPLATE_SPECIALIZATION (tmpl))
     {
       /* The TMPL is a partial instantiation.  To get a full set of
 	 arguments we must add the arguments used to perform the
@@ -8944,6 +8956,8 @@ most_general_template (decl)
      tree decl;
 {
   while (DECL_TEMPLATE_INFO (decl)
+	 && !(TREE_CODE (decl) == TEMPLATE_DECL
+	      && DECL_TEMPLATE_SPECIALIZATION (decl))
 	 /* The DECL_TI_TEMPLATE can be a LOOKUP_EXPR or
 	    IDENTIFIER_NODE in some cases.  (See cp-tree.h for
 	    details.)  */
