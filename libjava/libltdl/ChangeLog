@@ -1,3 +1,9 @@
+2001-07-02  Tom Tromey  <tromey@redhat.com>
+
+	* configure: Rebuilt.
+	* configure.in: Added aux-dir hacks to satisfy automake and
+	in-tree builds.
+
 20010617 Release Manager
 
         * GCC 3.0 Released.
