@@ -1,3 +1,18 @@
+2005-02-22  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/tr1/2_general_utilities/memory/shared_ptr/assign/
+	auto_ptr_neg.cc: Add missing dg-do compile directive.
+	* testsuite/tr1/2_general_utilities/memory/shared_ptr/assign/
+	auto_ptr_rvalue_neg.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/memory/shared_ptr/assign/
+	shared_ptr_neg.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/memory/shared_ptr/cons/
+	auto_ptr_neg.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/memory/shared_ptr/modifiers/
+	reset_neg.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/memory/shared_ptr/modifiers/
+	swap_neg.cc: Likewise.
+
 2005-02-22  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* include/Makefile.am, include/Makefile.in: Fix accidental extra

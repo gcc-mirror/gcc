@@ -1,3 +1,5 @@
+// { dg-do compile }
+
 // Copyright (C) 2005 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
