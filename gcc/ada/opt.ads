@@ -143,6 +143,11 @@ package Opt is
    --  Set to True if the binder needs to generate a file designed for
    --  building a library. May be set to True by Gnatbind.Scan_Bind_Arg.
 
+   Bind_Only : Boolean := False;
+   --  GNATMAKE
+   --  Set to True to skip compile and link steps
+   --  (except when Compile_Only and/or Link_Only are True).
+
    Brief_Output : Boolean := False;
    --  GNAT, GNATBIND
    --  Force brief error messages to standard error, even if verbose mode is
@@ -188,7 +193,7 @@ package Opt is
 
    Compile_Only : Boolean := False;
    --  GNATMAKE
-   --  Set to True to skip bind and link step.
+   --  Set to True to skip bind and link steps (except when Bind_Only is True)
 
    Compress_Debug_Names : Boolean := False;
    --  GNATMAKE
@@ -427,6 +432,11 @@ package Opt is
    --  GNATMAKE
    --  When True signals gnatmake to ignore compilation errors and keep
    --  processing sources until there is no more work.
+
+   Link_Only : Boolean := False;
+   --  GNATMAKE
+   --  Set to True to skip compile and bind steps
+   --  (except when Bind_Only is set to True).
 
    List_Units : Boolean := False;
    --  GNAT

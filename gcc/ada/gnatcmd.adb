@@ -1014,8 +1014,14 @@ procedure GNATCmd is
    S_Make_All     : aliased constant S := "/ALL_FILES "                    &
                                             "-a";
 
+   S_Make_Bind_Only : aliased constant S := "/BIND_ONLY "                  &
+                                            "-b";
+
    S_Make_Bind    : aliased constant S := "/BINDER_QUALIFIERS=?"           &
                                             "-bargs BIND";
+
+   S_Make_Compile_Only : aliased constant S := "/COMPILE_ONLY "            &
+                                            "-c";
 
    S_Make_Comp    : aliased constant S := "/COMPILER_QUALIFIERS=?"         &
                                             "-cargs COMPILE";
@@ -1049,6 +1055,9 @@ procedure GNATCmd is
 
    S_Make_Link    : aliased constant S := "/LINKER_QUALIFIERS=?"           &
                                             "-largs LINK";
+
+   S_Make_Link_Only : aliased constant S := "/LINK_ONLY "                  &
+                                            "-l";
 
    S_Make_Minimal : aliased constant S := "/MINIMAL_RECOMPILATION "        &
                                            "-m";
@@ -1092,7 +1101,9 @@ procedure GNATCmd is
    Make_Switches : aliased constant Switches := (
      S_Make_All     'Access,
      S_Make_Bind    'Access,
+     S_Make_Bind_Only'Access,
      S_Make_Comp    'Access,
+     S_Make_Compile_Only'Access,
      S_Make_Cond    'Access,
      S_Make_Cont    'Access,
      S_Make_Current 'Access,
@@ -1104,6 +1115,7 @@ procedure GNATCmd is
      S_Make_Inplace 'Access,
      S_Make_Library 'Access,
      S_Make_Link    'Access,
+     S_Make_Link_Only'Access,
      S_Make_Minimal 'Access,
      S_Make_Nolink  'Access,
      S_Make_Nostinc 'Access,
