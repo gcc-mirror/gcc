@@ -13667,7 +13667,7 @@ is_microcoded_insn (rtx insn)
   return false;
 }
 
-/* The function returns a non-zero value if INSN can be scheduled only
+/* The function returns a nonzero value if INSN can be scheduled only
    as the first insn in a dispatch group ("dispatch-slot restricted").
    In this case, the returned value indicates how many dispatch slots
    the insn occupies (at the beginning of the group).

@@ -5654,7 +5654,7 @@ build_message_expr (tree mess)
 
 /* Look up method SEL_NAME that would be suitable for receiver
    of type 'id' (if IS_CLASS is zero) or 'Class' (if IS_CLASS is
-   non-zero), and report on any duplicates.  */
+   nonzero), and report on any duplicates.  */
 
 static tree
 lookup_method_in_hash_lists (tree sel_name, int is_class)
