@@ -277,19 +277,6 @@ struct lang_hooks
      1 if handled, 0 otherwise.  */
   int (*expand_decl) (tree);
 
-  /* Prepare expr to be an argument of a TRUTH_NOT_EXPR or other logical
-     operation.
-
-     This preparation consists of taking the ordinary representation
-     of an expression expr and producing a valid tree boolean
-     expression describing whether expr is nonzero.  We could simply
-     always do build_binary_op (NE_EXPR, expr, integer_zero_node, 1),
-     but we optimize comparisons, &&, ||, and !.
-
-     The result should be an expression of boolean type (if not an
-     error_mark_node).  */
-  tree (*truthvalue_conversion) (tree);
-
   /* Hook called by safe_from_p for language-specific tree codes.  It is
      up to the language front-end to install a hook if it has any such
      codes that safe_from_p needs to know about.  Since same_from_p will

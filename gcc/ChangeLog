@@ -1,3 +1,12 @@
+2005-03-23  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* langhooks.h (truthvalue_conversion): Remove.
+	* langhooks-def.h (LANG_HOOKS_INITIALIZER): Remove
+	LANG_HOOKS_TRUTHVALUE_CONVERSION.
+	* system.h (LANG_HOOKS_TRUTHVALUE_CONVERSION): Poison.
+	* gimplify.c (gimple_boolify): Don't use truthvalue_conversion.
+	* c-objc-common.h (LANG_HOOKS_TRUTHVALUE_CONVERSION): Remove.
+
 2005-03-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* params.def: Fix a typo.
