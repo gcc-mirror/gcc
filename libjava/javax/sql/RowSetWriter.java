@@ -45,8 +45,5 @@ import java.sql.SQLException;
  */
 public interface RowSetWriter 
 {
-  /**
-   * @since 1.4
-   */
-  public boolean writeData(RowSetInternal caller) throws SQLException;
+  boolean writeData(RowSetInternal caller) throws SQLException;
 }

@@ -46,102 +46,50 @@ import java.sql.SQLException;
  */
 public interface RowSetMetaData extends ResultSetMetaData 
 {
+  void setColumnCount(int columnCount) throws SQLException;
 
-  /**
-   * @since 1.4
-   */
-  public void setColumnCount(int columnCount) throws SQLException;
-
-  /**
-   * @since 1.4
-   */
-  public void setAutoIncrement(int columnIndex, boolean property)
+  void setAutoIncrement(int columnIndex, boolean property)
     throws SQLException;
 
-  /**
-   * @since 1.4
-   */
-  public void setCaseSensitive(int columnIndex, boolean property)
+  void setCaseSensitive(int columnIndex, boolean property)
     throws SQLException;
 
-  /**
-   * @since 1.4
-   */
-  public void setSearchable(int columnIndex, boolean property)
+  void setSearchable(int columnIndex, boolean property)
     throws SQLException;
 
-  /**
-   * @since 1.4
-   */
-  public void setCurrency(int columnIndex, boolean property)
+  void setCurrency(int columnIndex, boolean property)
     throws SQLException;
 
-  /**
-   * @since 1.4
-   */
-  public void setNullable(int columnIndex, int property) throws SQLException;
+  void setNullable(int columnIndex, int property) throws SQLException;
 
-  /**
-   * @since 1.4
-   */
-  public void setSigned(int columnIndex, boolean property)
+  void setSigned(int columnIndex, boolean property)
     throws SQLException;
 
-  /**
-   * @since 1.4
-   */
-  public void setColumnDisplaySize(int columnIndex, int size)
+  void setColumnDisplaySize(int columnIndex, int size)
     throws SQLException;
 
-  /**
-   * @since 1.4
-   */
-  public void setColumnLabel(int columnIndex, String label)
+  void setColumnLabel(int columnIndex, String label)
     throws SQLException;
 
-  /**
-   * @since 1.4
-   */
-  public void setColumnName(int columnIndex, String columnName)
+  void setColumnName(int columnIndex, String columnName)
     throws SQLException;
 
-  /**
-   * @since 1.4
-   */
-  public void setSchemaName(int columnIndex, String schemaName)
+  void setSchemaName(int columnIndex, String schemaName)
     throws SQLException;
 
-  /**
-   * @since 1.4
-   */
-  public void setPrecision(int columnIndex, int precision)
+  void setPrecision(int columnIndex, int precision)
     throws SQLException;
 
-  /**
-   * @since 1.4
-   */
-  public void setScale(int columnIndex, int scale) throws SQLException;
+  void setScale(int columnIndex, int scale) throws SQLException;
 
-  /**
-   * @since 1.4
-   */
-  public void setTableName(int columnIndex, String tableName)
+  void setTableName(int columnIndex, String tableName)
     throws SQLException;
 
-  /**
-   * @since 1.4
-   */
-  public void setCatalogName(int columnIndex, String catalogName)
+  void setCatalogName(int columnIndex, String catalogName)
     throws SQLException;
 
-  /**
-   * @since 1.4
-   */
-  public void setColumnType(int columnIndex, int SQLType) throws SQLException;
+  void setColumnType(int columnIndex, int SQLType) throws SQLException;
 
-  /**
-   * @since 1.4
-   */
-  public void setColumnTypeName(int columnIndex, String typeName)
+  void setColumnTypeName(int columnIndex, String typeName)
     throws SQLException;
 }

@@ -45,8 +45,5 @@ import java.sql.SQLException;
  */
 public interface RowSetReader 
 {
-  /**
-   * @since 1.4
-   */
-  public void readData(RowSetInternal caller) throws SQLException;
+  void readData(RowSetInternal caller) throws SQLException;
 }
