@@ -1143,8 +1143,8 @@ const_binop (code, arg1, arg2)
 	}
 #endif /* no REAL_ARITHMETIC */
       set_float_handler (0);
-      value = REAL_VALUE_TRUNCATE (TYPE_MODE (TREE_TYPE (arg1)), value);
-      return build_real (TREE_TYPE (arg1), value);
+      return build_real (TREE_TYPE (arg1),
+			 REAL_VALUE_TRUNCATE (TYPE_MODE (TREE_TYPE (arg1)), value));
     }
 #endif /* not REAL_IS_NOT_DOUBLE, or REAL_ARITHMETIC */
   if (TREE_CODE (arg1) == COMPLEX_CST)
