@@ -312,13 +312,14 @@ get_mem_attrs (alias, expr, offset, size, align, mode)
   mem_attrs attrs;
   void **slot;
 
-  /* If everything is the default, we can just return zero.  */
+  /* If everything is the default, we can just return zero.
+     This must match what the corresponding MEM_* macros return when the
+     field is not present.  */
   if (alias == 0 && expr == 0 && offset == 0
       && (size == 0
 	  || (mode != BLKmode && GET_MODE_SIZE (mode) == INTVAL (size)))
-      && (align == BITS_PER_UNIT
-	  || (STRICT_ALIGNMENT
-	      && mode != BLKmode && align == GET_MODE_ALIGNMENT (mode))))
+      && (STRICT_ALIGNMENT && mode != BLKmode
+	  ? align == GET_MODE_ALIGNMENT (mode) : align == BITS_PER_UNIT))
     return 0;
 
   attrs.alias = alias;
