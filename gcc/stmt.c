@@ -430,7 +430,6 @@ expand_computed_goto (tree exp)
 
   x = convert_memory_address (Pmode, x);
 
-  emit_queue ();
   do_pending_stack_adjust ();
   emit_indirect_jump (x);
 }
@@ -1060,7 +1059,7 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 	  if ((! allows_mem && MEM_P (op))
 	      || GET_CODE (op) == CONCAT)
 	    {
-	      real_output_rtx[i] = protect_from_queue (op, 1);
+	      real_output_rtx[i] = op;
 	      op = gen_reg_rtx (GET_MODE (op));
 	      if (is_inout)
 		emit_move_insn (op, real_output_rtx[i]);
@@ -1184,13 +1183,6 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
      evaluated.  */
 
   generating_concat_p = 0;
-
-  for (i = 0; i < ninputs - ninout; i++)
-    ASM_OPERANDS_INPUT (body, i)
-      = protect_from_queue (ASM_OPERANDS_INPUT (body, i), 0);
-
-  for (i = 0; i < noutputs; i++)
-    output_rtx[i] = protect_from_queue (output_rtx[i], 1);
 
   /* For in-out operands, copy output rtx to input rtx.  */
   for (i = 0; i < ninout; i++)
@@ -1362,9 +1354,6 @@ expand_asm_expr (tree exp)
 	  TREE_VALUE (tail) = o[i];
 	}
     }
-
-  /* Those MODIFY_EXPRs could do autoincrements.  */
-  emit_queue ();
 }
 
 /* A subroutine of expand_asm_operands.  Check that all operands have
@@ -1626,8 +1615,6 @@ expand_expr_stmt (tree exp)
 
   /* Free any temporaries used to evaluate this expression.  */
   free_temp_slots ();
-
-  emit_queue ();
 }
 
 /* Warn if EXP contains any computations whose results are not used.
@@ -2014,7 +2001,6 @@ expand_return (tree retval)
   if (TREE_CODE (TREE_TYPE (TREE_TYPE (current_function_decl))) == VOID_TYPE)
     {
       expand_expr (retval, NULL_RTX, VOIDmode, 0);
-      emit_queue ();
       expand_null_return ();
       return;
     }
@@ -2144,7 +2130,6 @@ expand_return (tree retval)
 	result_reg_mode = tmpmode;
       result_reg = gen_reg_rtx (result_reg_mode);
 
-      emit_queue ();
       for (i = 0; i < n_regs; i++)
 	emit_move_insn (operand_subword (result_reg, i, 0, result_reg_mode),
 			result_pseudos[i]);
@@ -2167,7 +2152,6 @@ expand_return (tree retval)
       val = assign_temp (nt, 0, 0, 1);
       val = expand_expr (retval_rhs, val, GET_MODE (val), 0);
       val = force_not_mem (val);
-      emit_queue ();
       /* Return the calculated value.  */
       expand_value_return (shift_return_value (val));
     }
@@ -2175,7 +2159,6 @@ expand_return (tree retval)
     {
       /* No hard reg used; calculate value into hard return reg.  */
       expand_expr (retval, const0_rtx, VOIDmode, 0);
-      emit_queue ();
       expand_value_return (result_rtl);
     }
 }
@@ -2682,13 +2665,11 @@ expand_decl_init (tree decl)
 	  || code == POINTER_TYPE || code == REFERENCE_TYPE)
 	expand_assignment (decl, convert (TREE_TYPE (decl), integer_zero_node),
 			   0);
-      emit_queue ();
     }
   else if (DECL_INITIAL (decl) && TREE_CODE (DECL_INITIAL (decl)) != TREE_LIST)
     {
       emit_line_note (DECL_SOURCE_LOCATION (decl));
       expand_assignment (decl, DECL_INITIAL (decl), 0);
-      emit_queue ();
     }
 
   /* Don't let the initialization count as "using" the variable.  */
@@ -2801,7 +2782,6 @@ expand_start_case (int exit_flag, tree expr, tree type,
   nesting_stack = thiscase;
 
   do_pending_stack_adjust ();
-  emit_queue ();
 
   /* Make sure case_stmt.start points to something that won't
      need any transformation before expand_end_case.  */
@@ -3281,8 +3261,6 @@ emit_case_bit_tests (tree index_type, tree index_expr, tree minval,
 			    convert (index_type, index_expr),
 			    convert (index_type, minval)));
   index = expand_expr (index_expr, NULL_RTX, VOIDmode, 0);
-  emit_queue ();
-  index = protect_from_queue (index, 0);
   do_pending_stack_adjust ();
 
   mode = TYPE_MODE (index_type);
@@ -3434,7 +3412,6 @@ expand_end_case_type (tree orig_index, tree orig_type)
       if (count == 0)
 	{
 	  expand_expr (index_expr, const0_rtx, VOIDmode, 0);
-	  emit_queue ();
 	  emit_jump (default_label);
 	}
 
@@ -3503,10 +3480,8 @@ expand_end_case_type (tree orig_index, tree orig_type)
 		  }
 	    }
 
-	  emit_queue ();
 	  do_pending_stack_adjust ();
 
-	  index = protect_from_queue (index, 0);
 	  if (MEM_P (index))
 	    index = copy_to_reg (index);
 	  if (GET_CODE (index) == CONST_INT

@@ -147,9 +147,6 @@ struct expr_status GTY(())
 
   /* List of labels that must never be deleted.  */
   rtx x_forced_labels;
-
-  /* Postincrements that still need to be expanded.  */
-  rtx x_pending_chain;
 };
 
 #define pending_stack_adjust (cfun->expr->x_pending_stack_adjust)
@@ -157,7 +154,6 @@ struct expr_status GTY(())
 #define saveregs_value (cfun->expr->x_saveregs_value)
 #define apply_args_value (cfun->expr->x_apply_args_value)
 #define forced_labels (cfun->expr->x_forced_labels)
-#define pending_chain (cfun->expr->x_pending_chain)
 #define stack_pointer_delta (cfun->expr->x_stack_pointer_delta)
 
 /* This structure can save all the important global and static variables

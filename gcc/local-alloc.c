@@ -520,9 +520,6 @@ equiv_init_varies_p (rtx x)
     case MEM:
       return ! RTX_UNCHANGING_P (x) || equiv_init_varies_p (XEXP (x, 0));
 
-    case QUEUED:
-      return 1;
-
     case CONST:
     case CONST_INT:
     case CONST_DOUBLE:

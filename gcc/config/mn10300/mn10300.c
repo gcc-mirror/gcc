@@ -1826,9 +1826,6 @@ legitimate_pic_operand_p (rtx x)
 	  || XINT (x, 1) == UNSPEC_PLT))
       return 1;
 
-  if (GET_CODE (x) == QUEUED)
-    return legitimate_pic_operand_p (QUEUED_VAR (x));
-
   fmt = GET_RTX_FORMAT (GET_CODE (x));
   for (i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; i--)
     {

@@ -1,3 +1,57 @@
+2004-07-14  Paolo Bonzini  <bonzini@gnu.org>
+
+	* expr.c (enqueue_insn, finish_expr_for_function,
+	protect_from_queue, queued_subexp_p, mark_queue,
+	emit_insns_enqueued_after_mark, emit_queue,
+	expand_increment): Remove.
+	(store_constructor): Expand increment as an assignment.
+	(expand_expr_real_1 <case PREINCREMENT_EXPR,
+	case PREDECREMENT_EXPR, case POSTINCREMENT_EXPR,
+	case POSTDECREMENT_EXPR>): Abort.
+	* expr.h (QUEUED_VAR, QUEUED_INSN, QUEUED_COPY,
+	QUEUED_BODY, QUEUED_NEXT, finish_expr_for_function,
+	protect_from_queue, emit_queue, queued_subexp_p): Remove.
+	* function.h (pending_chain, x_pending_chain): Remove.
+	* rtl.def (QUEUED): Remove.
+
+	* emit-rtl.c (copy_insn_1, copy_most_rtx,
+	set_used_flags, verify_rtx_sharing): Remove references to QUEUED.
+	* genattrtab.c (attr_copy_rtx, clear_struct_flag,
+	encode_units_mask): Likewise.
+	* local-alloc.c (equiv_init_varies_p): Likewise.
+	* rtl.c (copy_rtx): Likewise.
+	* rtlanal.c (rtx_unstable_p, rtx_varies_p): Likewise.
+	* simplify-rtx.c (simplify_gen_subreg): Likewise.
+	* config/mn10300/mn10300.c (legitimate_pic_operand_p): Likewise.
+
+	* builtins.c (expand_builtin, expand_builtin_apply,
+	expand_builtin_mathfn, expand_builtin_mathfn_2,
+	expand_builtin_mathfn_3, expand_builtin_setjmp_setup):
+	Remove calls to emit_queue and protect_from_queue.
+	* calls.c (expand_call, precompute_arguments,
+	precompute_register_parameters, rtx_for_function_call,
+	store_one_arg): Likewise.
+	* dojump.c (do_compare_and_jump, do_jump): Likewise.
+	* explow.c (memory_address): Likewise.
+	* expmed.c (clear_by_pieces_1, clear_storage,
+	clear_storage_via_libcall, emit_group_load,
+	emit_group_store, emit_store_flag,
+	expand_expr_real_1, store_by_pieces,
+	store_constructor, store_expr, try_casesi,
+	try_tablejump): Likewise.
+	* function.c (expand_pending_sizes): Likewise.
+	* optabs.c (emit_cmp_and_jump_insns,
+	emit_conditional_add, emit_conditional_move,
+	expand_fix, expand_float, prepare_cmp_insn): Likewise.
+	* stmt.c (emit_case_bit_tests,
+	expand_asm_expr, expand_computed_goto,
+	expand_decl_init, expand_end_case_type,
+	expand_end_stmt_expr, expand_expr_stmt_value,
+	expand_return, expand_start_case,
+	optimize_tail_recursion): Likewise.
+	* config/c4x/c4x.c (c4x_expand_builtin): Likewise.
+	* config/s390/s390.c (s390_expand_cmpmem): Likewise.
+
 2004-07-14  Ben Elliston  <bje@au.ibm.com>
 
 	* vec.h: Comment fix.

@@ -83,9 +83,6 @@ rtx_unstable_p (rtx x)
     case MEM:
       return ! RTX_UNCHANGING_P (x) || rtx_unstable_p (XEXP (x, 0));
 
-    case QUEUED:
-      return 1;
-
     case CONST:
     case CONST_INT:
     case CONST_DOUBLE:
@@ -160,9 +157,6 @@ rtx_varies_p (rtx x, int for_alias)
     {
     case MEM:
       return ! RTX_UNCHANGING_P (x) || rtx_varies_p (XEXP (x, 0), for_alias);
-
-    case QUEUED:
-      return 1;
 
     case CONST:
     case CONST_INT:

@@ -3200,10 +3200,6 @@ s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
   rtx (*gen_result) (rtx) =
     GET_MODE (target) == DImode ? gen_cmpint_di : gen_cmpint_si;
 
-  op0 = protect_from_queue (op0, 0);
-  op1 = protect_from_queue (op1, 0);
-  len = protect_from_queue (len, 0);
-
   if (GET_CODE (len) == CONST_INT && INTVAL (len) >= 0 && INTVAL (len) <= 256)
     {
       if (INTVAL (len) > 0)
