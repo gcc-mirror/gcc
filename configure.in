@@ -51,7 +51,7 @@ fi
 if [ "${enable_libstdcxx_v3}" = "yes" ] && test -d $srcdir/libstdc++-v3; then
         libstdcxx_version="target-libstdc++-v3"
 	# Don't use libstdc++-v3's flags to configure/build itself.
-	libstdcxx_flags='`test "x$$dir" != xlibstdc++-v3 && test -f $$r/$(TARGET_SUBDIR)/libstdc++-v3/mkcheck && $(SHELL) $$r/$(TARGET_SUBDIR)/libstdc++-v3/mkcheck 2 $$r/$(TARGET_SUBDIR)/libstdc++-v3 $$s/libstdc++-v3 | sed -e "s/-I/-isystem /g"` -L$$r/$(TARGET_SUBDIR)/libstd++-v3/src -L$$r/$(TARGET_SUBDIR)/libstd++-v3/src/.libs'
+	libstdcxx_flags='`case $$dir in libstdc++-v3) ;; *) test -f $$r/$(TARGET_SUBDIR)/libstdc++-v3/mkcheck && $(SHELL) $$r/$(TARGET_SUBDIR)/libstdc++-v3/mkcheck 2 $$r/$(TARGET_SUBDIR)/libstdc++-v3 $$s/libstdc++-v3 | sed -e '"'s/-I/-isystem /g'"' ;; esac` -L$$r/$(TARGET_SUBDIR)/libstd++-v3/src -L$$r/$(TARGET_SUBDIR)/libstd++-v3/src/.libs'
 else
         libstdcxx_version="target-libio target-libstdc++"
         libstdcxx_flags='-isystem $$s/libstdc++ -isystem $$s/libstdc++/std -isystem $$s/libstdc++/stl -isystem $$s/libio/ -isystem $$s/libio/stdio -L$$r/$(TARGET_SUBDIR)/libstdc++'
