@@ -1,3 +1,7 @@
+2002-08-14  Mark Mitchell  <mark@codesourcery.com>
+
+	* gennews (files): Add GCC 3.2 files.
+
 2002-07-22  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* gennews (files): Add proper files for the GCC 3.1 release series.
