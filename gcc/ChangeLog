@@ -1,5 +1,12 @@
 2001-08-05  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	PR preprocessor/3824
+	* line-map.c: Update comments.
+	* line-map.h: Update comments.
+	* tradcif.y: Don't consider large numbers unsigned.
+
+2001-08-05  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	PR preprocessor/3081
 	* c-lex.c (map): New.
 	(cb_file_change): Update map and use it.

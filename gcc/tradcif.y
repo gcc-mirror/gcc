@@ -231,6 +231,8 @@ parse_number (olen)
       return ERROR;
     }
 
+  /* Traditionally, all numbers are signed.  However, we make it
+     unsigned if requested with a suffix.  */
   yylval.integer.unsignedp = 0;
 
   if (len >= 3 && (!strncmp (p, "0x", 2) || !strncmp (p, "0X", 2))) {
@@ -276,10 +278,6 @@ parse_number (olen)
     yyerror ("Invalid number in #if expression");
     return ERROR;
   }
-
-  /* If too big to be signed, consider it unsigned.  */
-  if (n < 0)
-    yylval.integer.unsignedp = 1;
 
   lexptr = p;
   yylval.integer.value = n;

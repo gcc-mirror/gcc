@@ -1,5 +1,9 @@
 2001-08-05  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	* gcc.dg/cpp/tr-sign.c: New testcase.
+
+2001-08-05  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* gcc.dg/cpp/19951025-1.c: Revert.
 	* gcc.dg/cpp/directiv.c: We no longer process directives that
 	interrupt macro arguments.
