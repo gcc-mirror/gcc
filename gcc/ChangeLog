@@ -1,3 +1,27 @@
+2003-10-22  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md ("movstr_short_64", "movstr_short_31"): Merge ...
+	("*movstr_short"): ... into this insn pattern.
+	("movstr_short"): New expander.
+	("*movstr_long_64"): Rename from "movstr_long_64", simplify.
+	("*movstr_long_31"): Rename from "movstr_long_31", simplify.
+	("movstr_long"): New expander.
+	("clrstr_short_64", "clrstr_short_31"): Merge ...
+	("*clrstr_short"): ... into this insn pattern.
+	("clrstr_short"): New expander.
+	("*clrstr_long_64"): Rename from "clrstr_long_64", simplify.
+	("*clrstr_long_31"): Rename from "clrstr_long_31", simplify.
+	("clrstr_long"): New expander.
+	("cmpmem_short_64", "cmpmem_short_31"): Merge ...
+	("*cmpmem_short"): ... into this insn pattern.
+	("cmpmem_short"): New expander.
+	("*cmpmem_long_64"): Rename from "cmpmem_long_64".
+	("*cmpmem_long_31"): Rename from "cmpmem_long_31".
+	("cmpmem_long"): New expander.
+	* config/s390/s390.c (s390_expand_movstr): Use new expanders.
+	(s390_expand_clrstr): Likewise.
+	(s390_expand_cmpmem): Likewise.
+
 2003-10-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-pch.c (struct c_pch_validity): Add pch_init field.
