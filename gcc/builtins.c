@@ -111,6 +111,14 @@ static rtx expand_builtin_strncmp	PARAMS ((tree, rtx,
 						 enum machine_mode));
 static rtx builtin_memcpy_read_str	PARAMS ((PTR, HOST_WIDE_INT,
 						 enum machine_mode));
+static rtx expand_builtin_strcat	PARAMS ((tree, rtx,
+						 enum machine_mode));
+static rtx expand_builtin_strncat	PARAMS ((tree, rtx,
+						 enum machine_mode));
+static rtx expand_builtin_strspn	PARAMS ((tree, rtx,
+						 enum machine_mode));
+static rtx expand_builtin_strcspn	PARAMS ((tree, rtx,
+						 enum machine_mode));
 static rtx expand_builtin_memcpy	PARAMS ((tree));
 static rtx expand_builtin_strcpy	PARAMS ((tree));
 static rtx builtin_strncpy_read_str	PARAMS ((PTR, HOST_WIDE_INT,
@@ -2423,6 +2431,206 @@ expand_builtin_strncmp (exp, target, mode)
   return 0;
 }
 
+/* Expand expression EXP, which is a call to the strcat builtin.
+   Return 0 if we failed the caller should emit a normal call,
+   otherwise try to get the result in TARGET, if convenient.  */
+static rtx
+expand_builtin_strcat (arglist, target, mode)
+     tree arglist;
+     rtx target;
+     enum machine_mode mode;
+{
+  /* If we need to check memory accesses, call the library function.  */
+  if (current_function_check_memory_usage)
+    return 0;
+
+  if (arglist == 0
+      /* Arg could be non-pointer if user redeclared this fcn wrong.  */
+      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
+      || TREE_CHAIN (arglist) == 0
+      || (TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist))))
+	  != POINTER_TYPE))
+    return 0;
+  else
+    {
+      tree dst = TREE_VALUE (arglist),
+	src = TREE_VALUE (TREE_CHAIN (arglist));
+      const char *p = c_getstr (src);
+
+      /* If the string length is zero, return the dst parameter.  */
+      if (p && *p == '\0')
+	return expand_expr (dst, target, mode, EXPAND_NORMAL);
+
+      return 0;
+    }
+}
+
+/* Expand expression EXP, which is a call to the strncat builtin.
+   Return 0 if we failed the caller should emit a normal call,
+   otherwise try to get the result in TARGET, if convenient.  */
+static rtx
+expand_builtin_strncat (arglist, target, mode)
+     tree arglist;
+     rtx target;
+     enum machine_mode mode;
+{
+  /* If we need to check memory accesses, call the library function.  */
+  if (current_function_check_memory_usage)
+    return 0;
+
+  if (arglist == 0
+      /* Arg could be non-pointer if user redeclared this fcn wrong.  */
+      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
+      || TREE_CHAIN (arglist) == 0
+      || (TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist))))
+	  != POINTER_TYPE)
+      || TREE_CHAIN (TREE_CHAIN (arglist)) == 0
+      || (TREE_CODE (TREE_TYPE (TREE_VALUE
+				(TREE_CHAIN (TREE_CHAIN (arglist)))))
+	  != INTEGER_TYPE))
+    return 0;
+  else
+    {
+      tree dst = TREE_VALUE (arglist),
+	src = TREE_VALUE (TREE_CHAIN (arglist)),
+	len = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+      const char *p = c_getstr (src);
+
+      /* If the requested length is zero, or the src parameter string
+          length is zero, return the dst parameter.  */
+      if ((TREE_CODE (len) == INTEGER_CST && compare_tree_int (len, 0) == 0)
+	  || (p && *p == '\0'))
+        {
+	  /* Evaluate and ignore the src and len parameters in case
+	     they have side-effects.  */
+	  expand_expr (src, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	  expand_expr (len, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	  return expand_expr (dst, target, mode, EXPAND_NORMAL);
+	}
+
+      /* If the requested len is greater than or equal to the string
+         length, call strcat.  */
+      if (TREE_CODE (len) == INTEGER_CST && p
+	  && compare_tree_int (len, strlen (p)) >= 0)
+        {
+	  tree call_expr, newarglist = 
+	    tree_cons (NULL_TREE, dst, build_tree_list (NULL_TREE, src)),
+	    fn = built_in_decls[BUILT_IN_STRCAT];
+	  
+	  /* If the replacement _DECL isn't initialized, don't do the
+	     transformation. */
+	  if (!fn)
+	    return 0;
+
+	  call_expr = build1 (ADDR_EXPR,
+			      build_pointer_type (TREE_TYPE (fn)), fn);
+	  call_expr = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
+			     call_expr, newarglist, NULL_TREE);
+	  TREE_SIDE_EFFECTS (call_expr) = 1;
+	  return expand_expr (call_expr, target, mode, EXPAND_NORMAL);
+	}
+      return 0;
+    }
+}
+
+/* Expand expression EXP, which is a call to the strspn builtin.
+   Return 0 if we failed the caller should emit a normal call,
+   otherwise try to get the result in TARGET, if convenient.  */
+static rtx
+expand_builtin_strspn (arglist, target, mode)
+     tree arglist;
+     rtx target;
+     enum machine_mode mode;
+{
+  /* If we need to check memory accesses, call the library function.  */
+  if (current_function_check_memory_usage)
+    return 0;
+
+  if (arglist == 0
+      /* Arg could be non-pointer if user redeclared this fcn wrong.  */
+      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
+      || TREE_CHAIN (arglist) == 0
+      || (TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist))))
+	  != POINTER_TYPE))
+    return 0;
+  else
+    {
+      tree s1 = TREE_VALUE (arglist), s2 = TREE_VALUE (TREE_CHAIN (arglist));
+      const char *p1 = c_getstr (s1), *p2 = c_getstr (s2);
+      
+      /* If both arguments are constants, evaluate at compile-time.  */
+      if (p1 && p2)
+        {
+	  const size_t r = strspn (p1, p2);
+	  return expand_expr (size_int (r), target, mode, EXPAND_NORMAL);
+	}
+      
+      /* If the second argument is "", return 0.  */
+      if (p2 && *p2 == '\0')
+        {
+	  /* Evaluate and ignore argument s1 in case it has
+	     side-effects.  */
+	  expand_expr (s1, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	  return const0_rtx;
+	}
+      return 0;
+    }
+}
+
+/* Expand expression EXP, which is a call to the strcspn builtin.
+   Return 0 if we failed the caller should emit a normal call,
+   otherwise try to get the result in TARGET, if convenient.  */
+static rtx
+expand_builtin_strcspn (arglist, target, mode)
+     tree arglist;
+     rtx target;
+     enum machine_mode mode;
+{
+  /* If we need to check memory accesses, call the library function.  */
+  if (current_function_check_memory_usage)
+    return 0;
+
+  if (arglist == 0
+      /* Arg could be non-pointer if user redeclared this fcn wrong.  */
+      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
+      || TREE_CHAIN (arglist) == 0
+      || (TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist))))
+	  != POINTER_TYPE))
+    return 0;
+  else
+    {
+      tree s1 = TREE_VALUE (arglist), s2 = TREE_VALUE (TREE_CHAIN (arglist));
+      const char *p1 = c_getstr (s1), *p2 = c_getstr (s2);
+      
+      /* If both arguments are constants, evaluate at compile-time.  */
+      if (p1 && p2)
+        {
+	  const size_t r = strcspn (p1, p2);
+	  return expand_expr (size_int (r), target, mode, EXPAND_NORMAL);
+	}
+      
+      /* If the second argument is "", return __builtin_strlen(s1).  */
+      if (p2 && *p2 == '\0')
+        {
+	  tree call_expr, newarglist = build_tree_list (NULL_TREE, s1),
+	    fn = built_in_decls[BUILT_IN_STRLEN];
+	  
+	  /* If the replacement _DECL isn't initialized, don't do the
+	     transformation. */
+	  if (!fn)
+	    return 0;
+
+	  call_expr = build1 (ADDR_EXPR,
+			      build_pointer_type (TREE_TYPE (fn)), fn);
+	  call_expr = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
+			     call_expr, newarglist, NULL_TREE);
+	  TREE_SIDE_EFFECTS (call_expr) = 1;
+	  return expand_expr (call_expr, target, mode, EXPAND_NORMAL);
+	}
+      return 0;
+    }
+}
+
 /* Expand a call to __builtin_saveregs, generating the result in TARGET,
    if that's convenient.  */
 
@@ -3127,6 +3335,8 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  || fcode == BUILT_IN_STRLEN || fcode == BUILT_IN_STRCPY
 	  || fcode == BUILT_IN_STRNCPY || fcode == BUILT_IN_STRNCMP
 	  || fcode == BUILT_IN_STRSTR || fcode == BUILT_IN_STRPBRK
+	  || fcode == BUILT_IN_STRCAT || fcode == BUILT_IN_STRNCAT
+	  || fcode == BUILT_IN_STRSPN || fcode == BUILT_IN_STRCSPN
 	  || fcode == BUILT_IN_STRCMP || fcode == BUILT_IN_FFS
 	  || fcode == BUILT_IN_PUTCHAR || fcode == BUILT_IN_PUTS
 	  || fcode == BUILT_IN_PRINTF || fcode == BUILT_IN_FPUTC
@@ -3258,6 +3468,30 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       
     case BUILT_IN_STRNCPY:
       target = expand_builtin_strncpy (arglist, target, mode);
+      if (target)
+	return target;
+      break;
+      
+    case BUILT_IN_STRCAT:
+      target = expand_builtin_strcat (arglist, target, mode);
+      if (target)
+	return target;
+      break;
+      
+    case BUILT_IN_STRNCAT:
+      target = expand_builtin_strncat (arglist, target, mode);
+      if (target)
+	return target;
+      break;
+      
+    case BUILT_IN_STRSPN:
+      target = expand_builtin_strspn (arglist, target, mode);
+      if (target)
+	return target;
+      break;
+      
+    case BUILT_IN_STRCSPN:
+      target = expand_builtin_strcspn (arglist, target, mode);
       if (target)
 	return target;
       break;

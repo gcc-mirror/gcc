@@ -1,5 +1,22 @@
 2000-12-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* builtins.c (expand_builtin_strcat, expand_builtin_strncat,
+	expand_builtin_strspn, expand_builtin_strcspn): New functions.
+	(expand_builtin): Handle BUILT_IN_STRCAT, BUILT_IN_STRNCAT,
+	BUILT_IN_STRSPN and BUILT_IN_STRCSPN.
+
+	* builtins.def (BUILT_IN_STRCAT, BUILT_IN_STRNCAT,
+	BUILT_IN_STRSPN, BUILT_IN_STRCSPN): New entries.
+
+	* c-common.c (c_common_nodes_and_builtins): Declare builtin
+	strcat, strncat, strspn and strcspn.
+	(string_ftype_string_cstring): Renamed from `string_ftype_ptr_ptr'. 
+
+	* extend.texi (strcat, strcspn, strncat, strspn): Document new
+	builtins.
+
+2000-12-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* builtins.c (expand_builtin_strcmp): Use const*_rtx when
 	expanding strcmp at compile-time.  Add another transformation.
 	(expand_builtin_strncmp): Add more transformations.  Call

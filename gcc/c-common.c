@@ -4939,8 +4939,8 @@ c_common_nodes_and_builtins ()
   tree void_ftype_any, void_ftype_int, int_ftype_any, sizet_ftype_any;
   tree double_ftype_double, double_ftype_double_double;
   tree float_ftype_float, ldouble_ftype_ldouble;
-  tree int_ftype_cptr_cptr_sizet;
-  tree int_ftype_string_string, string_ftype_ptr_ptr;
+  tree int_ftype_cptr_cptr_sizet, sizet_ftype_cstring_cstring;
+  tree int_ftype_string_string, string_ftype_string_cstring;
   tree string_ftype_string_int, string_ftype_string_string;
   tree string_ftype_string_cstring_sizet, int_ftype_cstring_cstring_sizet;
   tree long_ftype_long;
@@ -5058,15 +5058,15 @@ c_common_nodes_and_builtins ()
   void_zero_node = build_int_2 (0, 0);
   TREE_TYPE (void_zero_node) = void_type_node;
 
-  /* Prototype for strcpy.  */
-  string_ftype_ptr_ptr
+  /* Prototype for strcpy/strcat.  */
+  string_ftype_string_cstring
     = build_function_type (string_type_node,
 			   tree_cons (NULL_TREE, string_type_node,
 				      tree_cons (NULL_TREE,
 						 const_string_type_node,
 						 endlink)));
 
-  /* Prototype for strncpy.  */
+  /* Prototype for strncpy/strncat.  */
   string_ftype_string_cstring_sizet
     = build_function_type (string_type_node,
 			   tree_cons (NULL_TREE, string_type_node,
@@ -5083,6 +5083,14 @@ c_common_nodes_and_builtins ()
   /* Prototype for strcmp.  */
   int_ftype_string_string
     = build_function_type (integer_type_node,
+			   tree_cons (NULL_TREE, const_string_type_node,
+				      tree_cons (NULL_TREE,
+						 const_string_type_node,
+						 endlink)));
+
+  /* Prototype for strspn/strcspn.  */
+  sizet_ftype_cstring_cstring
+    = build_function_type (c_size_type_node,
 			   tree_cons (NULL_TREE, const_string_type_node,
 				      tree_cons (NULL_TREE,
 						 const_string_type_node,
@@ -5357,12 +5365,22 @@ c_common_nodes_and_builtins ()
 		    BUILT_IN_STRCHR, BUILT_IN_NORMAL, "strchr");
   builtin_function ("__builtin_strrchr", string_ftype_string_int,
 		    BUILT_IN_STRRCHR, BUILT_IN_NORMAL, "strrchr");
-  builtin_function ("__builtin_strcpy", string_ftype_ptr_ptr,
+  builtin_function ("__builtin_strcpy", string_ftype_string_cstring,
 		    BUILT_IN_STRCPY, BUILT_IN_NORMAL, "strcpy");
   builtin_function ("__builtin_strncpy", string_ftype_string_cstring_sizet,
 		    BUILT_IN_STRNCPY, BUILT_IN_NORMAL, "strncpy");
-  builtin_function ("__builtin_strlen", strlen_ftype,
-		    BUILT_IN_STRLEN, BUILT_IN_NORMAL, "strlen");
+  built_in_decls[BUILT_IN_STRCAT] =
+    builtin_function ("__builtin_strcat", string_ftype_string_cstring,
+		      BUILT_IN_STRCAT, BUILT_IN_NORMAL, "strcat");
+  builtin_function ("__builtin_strncat", string_ftype_string_cstring_sizet,
+		    BUILT_IN_STRNCAT, BUILT_IN_NORMAL, "strncat");
+  builtin_function ("__builtin_strspn", string_ftype_string_cstring,
+		    BUILT_IN_STRSPN, BUILT_IN_NORMAL, "strspn");
+  builtin_function ("__builtin_strcspn", string_ftype_string_cstring_sizet,
+		    BUILT_IN_STRCSPN, BUILT_IN_NORMAL, "strcspn");
+  built_in_decls[BUILT_IN_STRLEN] =
+    builtin_function ("__builtin_strlen", strlen_ftype,
+		      BUILT_IN_STRLEN, BUILT_IN_NORMAL, "strlen");
   builtin_function ("__builtin_sqrtf", float_ftype_float,
 		    BUILT_IN_FSQRT, BUILT_IN_NORMAL, "sqrtf");
   builtin_function ("__builtin_fsqrt", double_ftype_double,
@@ -5441,10 +5459,18 @@ c_common_nodes_and_builtins ()
 			BUILT_IN_NORMAL, NULL_PTR);
       builtin_function ("strpbrk", string_ftype_string_string, BUILT_IN_STRPBRK,
 			BUILT_IN_NORMAL, NULL_PTR);
-      builtin_function ("strcpy", string_ftype_ptr_ptr, BUILT_IN_STRCPY,
+      builtin_function ("strcpy", string_ftype_string_cstring, BUILT_IN_STRCPY,
 			BUILT_IN_NORMAL, NULL_PTR);
       builtin_function ("strncpy", string_ftype_string_cstring_sizet,
 			BUILT_IN_STRNCPY, BUILT_IN_NORMAL, NULL_PTR);
+      builtin_function ("strcat", string_ftype_string_cstring, BUILT_IN_STRCAT,
+			BUILT_IN_NORMAL, NULL_PTR);
+      builtin_function ("strncat", string_ftype_string_cstring_sizet,
+			BUILT_IN_STRNCAT, BUILT_IN_NORMAL, NULL_PTR);
+      builtin_function ("strspn", sizet_ftype_cstring_cstring, BUILT_IN_STRSPN,
+			BUILT_IN_NORMAL, NULL_PTR);
+      builtin_function ("strcspn", sizet_ftype_cstring_cstring,
+			BUILT_IN_STRCSPN, BUILT_IN_NORMAL, NULL_PTR);
       builtin_function ("strlen", strlen_ftype, BUILT_IN_STRLEN,
 			BUILT_IN_NORMAL, NULL_PTR);
       builtin_function ("sqrtf", float_ftype_float, BUILT_IN_FSQRT,
