@@ -1,3 +1,8 @@
+2004-01-04  Matthias Klose  <doko@debian.org>
+
+	* aclocal.m4: Rebuilt using "aclocal -I .".
+	* configure: Rebuilt.
+
 2004-01-03  Per Bothner  <per@bothner.com>
 
 	* java/util/Date.java (parse):  Fix a number of problems.
