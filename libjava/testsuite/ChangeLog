@@ -1,3 +1,22 @@
+2000-03-23  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* libjava.lang/Thread_Wait.java: New file.
+	* libjava.lang/Thread_Sleep.java: New file.
+	* libjava.lang/Thread_Monitor.java: New file.
+	* libjava.lang/Thread_Wait.out: New file.
+	* libjava.lang/Thread_Sleep.out: New file.
+	* libjava.lang/Thread_Monitor.out: New file.
+	* libjava.lang/Thread_Interrupt.java: New file.
+	* libjava.lang/Thread_Wait_2.java: New file.
+	* libjava.lang/Thread_Wait_2.out: New file.
+	* libjava.lang/Thread_Wait_Interrupt.java: New file.
+	* libjava.lang/Thread_Wait_Interrupt.out: New file.
+	* libjava.lang/Thread_Interrupt.out: New file.
+	* libjava.lang/Thread_Join.java: New file.
+	* libjava.lang/Thread_Join.out: New file.
+	* libjava.lang/Thread_Alive.java: New file.
+	* libjava.lang/Thread_Alive.out: New file.
+
 2000-03-22  Tom Tromey  <tromey@cygnus.com>
 
 	* libjava.compile/iface.java: New file.

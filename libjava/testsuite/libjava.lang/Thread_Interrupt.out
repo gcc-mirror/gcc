@@ -1,0 +1,8 @@
+wait()
+interrupted - ok
+sleep()
+interrupted - ok
+Busy waiting
+interrupted - ok
+join()
+interrupted - ok
