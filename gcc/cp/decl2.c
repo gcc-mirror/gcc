@@ -2773,7 +2773,8 @@ import_export_decl (decl)
 	{
 	  DECL_NOT_REALLY_EXTERN (decl)
 	    = ! (CLASSTYPE_INTERFACE_ONLY (ctype)
-		 || (DECL_THIS_INLINE (decl) && ! flag_implement_inlines));
+		 || (DECL_THIS_INLINE (decl) && ! flag_implement_inlines
+		     && !DECL_VINDEX (decl)));
 
 	  /* Always make artificials weak.  */
 	  if (DECL_ARTIFICIAL (decl) && flag_weak)
@@ -2803,7 +2804,8 @@ import_export_decl (decl)
 	{
 	  DECL_NOT_REALLY_EXTERN (decl)
 	    = ! (CLASSTYPE_INTERFACE_ONLY (ctype)
-		 || (DECL_THIS_INLINE (decl) && ! flag_implement_inlines));
+		 || (DECL_THIS_INLINE (decl) && ! flag_implement_inlines
+		     && !DECL_VINDEX (decl)));
 
 	  /* Always make artificials weak.  */
 	  if (flag_weak)

@@ -13260,7 +13260,8 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
 	{
 	  DECL_EXTERNAL (decl1)
 	    = (interface_only
-	       || (DECL_THIS_INLINE (decl1) && ! flag_implement_inlines));
+	       || (DECL_THIS_INLINE (decl1) && ! flag_implement_inlines
+		   && !DECL_VINDEX (decl1)));
 
 	  /* For WIN32 we also want to put these in linkonce sections.  */
 	  maybe_make_one_only (decl1);

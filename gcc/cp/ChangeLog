@@ -1,3 +1,11 @@
+1999-04-13  Mike Stump  <mrs@wrs.com>
+
+	* decl2.c (import_export_decl): Because vtables always reference
+	virtual functions, even if they are inlined, don't allow
+	-fno-implement-inlines to not emit them, instead, emit them with
+	the vtable.
+	* decl.c (start_function): Likewise.
+
 1999-04-12  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cp-tree.h (struct lang_type): Add com_interface.
