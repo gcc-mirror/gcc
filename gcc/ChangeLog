@@ -1,3 +1,8 @@
+2004-02-12  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_sched_reorder2): Remove.
+	(TARGET_SCHED_REORDER2): Do not redefine.
+
 2004-02-12  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-parse.in (maybe_type_qual): Delete.
