@@ -1,3 +1,9 @@
+2000-05-25  Richard Henderson  <rth@cygnus.com>
+
+	* ifcvt.c (seq_contains_jump): New.
+	(noce_try_store_flag_constants): Use it to fail conversion.
+	(noce_try_store_flag_inc, noce_try_store_flag_mask): Likewise.
+
 2000-05-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* except.h (can_throw): Declare it.
