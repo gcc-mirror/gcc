@@ -1,3 +1,11 @@
+2000-12-17  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	Fix for PRs gcj/312 and gcj/253:
+	* parse.y (valid_ref_assignconv_cast_p): Load classes for source and
+	dest if they arn't already.
+	* class.c (layout_class): Call maybe_layout_super_class on 
+	superinterfaces also, but only if compiling from bytecode.
+
 2000-12-15  Tom Tromey  <tromey@redhat.com>
 
 	* jcf-parse.c (jcf_parse_source): Set wfl_operator if not already

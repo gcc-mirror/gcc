@@ -1841,6 +1841,35 @@ layout_class (this_class)
 
   layout_type (this_class);
 
+  /* Also recursively load/layout any superinterfaces, but only if class was
+  loaded from bytecode. The source parser will take care of this itself. */
+  if (!CLASS_FROM_SOURCE_P (this_class))
+    {
+      tree basetype_vec = TYPE_BINFO_BASETYPES (this_class);
+
+      if (basetype_vec)
+	{
+	  int n = TREE_VEC_LENGTH (basetype_vec) - 1;
+	  int i;
+	  for (i = n; i > 0; i--)
+	    {
+	      tree vec_elt = TREE_VEC_ELT (basetype_vec, i);
+	      tree super_interface = BINFO_TYPE (vec_elt);
+
+	      tree maybe_super_interface 
+		= maybe_layout_super_class (super_interface, NULL_TREE);
+	      if (maybe_super_interface == NULL
+		  || TREE_CODE (TYPE_SIZE (maybe_super_interface)) == ERROR_MARK)
+		{
+		  TYPE_SIZE (this_class) = error_mark_node;
+		  CLASS_BEING_LAIDOUT (this_class) = 0;
+		  list = TREE_CHAIN (list);
+		  return;
+		}
+	    }
+	}
+    }
+
   /* Convert the size back to an SI integer value */
   TYPE_SIZE_UNIT (this_class) = 
     fold (convert (int_type_node, TYPE_SIZE_UNIT (this_class)));
