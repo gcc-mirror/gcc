@@ -1,5 +1,5 @@
 /* Check that -mrelax works.  */
-/* { dg-do run { target sh-*-* sh?-*-* sh64-*-* } } */
+/* { dg-do run { target sh-*-* sh?-*-* } } */
 /* { dg-options "-O1 -mrelax" } */
 
 extern int qwerty (int);
