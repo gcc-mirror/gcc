@@ -166,7 +166,7 @@ static void write_special_name_destructor PARAMS ((tree));
 static void write_type PARAMS ((tree));
 static int write_CV_qualifiers_for_type PARAMS ((tree));
 static void write_builtin_type PARAMS ((tree));
-static void write_function_type PARAMS ((tree, int));
+static void write_function_type PARAMS ((tree));
 static void write_bare_function_type PARAMS ((tree, int));
 static void write_method_parms PARAMS ((tree, int));
 static void write_class_enum_type PARAMS ((tree));
@@ -640,7 +640,10 @@ write_encoding (decl)
       else
 	fn_type = TREE_TYPE (decl);
 
-      write_bare_function_type (fn_type, decl_is_template_id (decl, NULL));
+      write_bare_function_type (fn_type, 
+				(!DECL_CONSTRUCTOR_P (decl)
+				 && !DECL_DESTRUCTOR_P (decl)
+				 && decl_is_template_id (decl, NULL)));
     }
 }
 
@@ -1247,7 +1250,7 @@ write_type (type)
 
 	case FUNCTION_TYPE:
 	case METHOD_TYPE:
-	  write_function_type (type, 1);
+	  write_function_type (type);
 	  break;
 
 	case UNION_TYPE:
@@ -1431,15 +1434,14 @@ write_builtin_type (type)
 }
 
 /* Non-terminal <function-type>.  NODE is a FUNCTION_TYPE or
-   METHOD_TYPE.  If INCLUDE_RETURN_TYPE is non-zero, the return type
-   is mangled before the parameter types.
+   METHOD_TYPE.  The return type is mangled before the parameter
+   types.
 
      <function-type> ::= F [Y] <bare-function-type> E   */
 
 static void
-write_function_type (type, include_return_type)
+write_function_type (type)
      tree type;
-     int include_return_type;
 {
   MANGLE_TRACE_TREE ("function-type", type);
 
@@ -1456,7 +1458,7 @@ write_function_type (type, include_return_type)
        extern "C" function_t f; // Vice versa.
 
      See [dcl.link].  */
-  write_bare_function_type (type, include_return_type);
+  write_bare_function_type (type, /*include_return_type_p=*/1);
   write_char ('E');
 }
 

@@ -7420,6 +7420,7 @@ tree
 instantiate_template (tmpl, targ_ptr)
      tree tmpl, targ_ptr;
 {
+  tree clone;
   tree fndecl;
   tree gen_tmpl;
   tree spec;
@@ -7482,6 +7483,13 @@ instantiate_template (tmpl, targ_ptr)
 
   if (flag_external_templates)
     add_pending_template (fndecl);
+
+  /* If we've just instantiated the main entry point for a function,
+     instantiate all the alternate entry points as well.  */
+  for (clone = TREE_CHAIN (gen_tmpl);
+       clone && DECL_CLONED_FUNCTION_P (clone);
+       clone = TREE_CHAIN (clone))
+    instantiate_template (clone, targ_ptr);
 
   return fndecl;
 }
