@@ -637,6 +637,23 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
       copy_end = last_loop_insn;
     }
 
+  if (unroll_type == UNROLL_NAIVE
+      && GET_CODE (last_loop_insn) == JUMP_INSN
+      && start_label != JUMP_LABEL (last_loop_insn))
+    {
+      /* ??? The loop ends with a conditional branch that does not branch back
+	 to the loop start label.  In this case, we must emit an unconditional
+	 branch to the loop exit after emitting the final branch.
+	 copy_loop_body does not have support for this currently, so we
+	 give up.  It doesn't seem worthwhile to unroll anyways since
+	 unrolling would increase the number of branch instructions
+	 executed.  */
+      if (loop_dump_stream)
+	fprintf (loop_dump_stream,
+		 "Unrolling failure: final conditional branch not to loop start\n");
+      return;
+    }
+
   /* Allocate a translation table for the labels and insn numbers.
      They will be filled in as we copy the insns in the loop.  */
 
