@@ -97,30 +97,30 @@ proc check_weak_available { } {
 ###############################
 
 # The visibility attribute is only support in some object formats
-# This proc returns 1 if it is supported, 0 if not, -1 if unsure.
+# This proc returns 1 if it is supported, 0 if not.
 
 proc check_visibility_available { } {
+    global visibility_available_saved
+    global tool
     global target_triplet
-    global target_cpu
 
     # On NetWare, support makes no sense.
-    
     if { [string match "*-*-netware*" $target_triplet] } {
         return 0
     }
 
-    # ELF supports it if the system has recent GNU ld and gas.
-    # As a start we return 1 for all ELF systems; we'll let people
-    # add exceptions as necessary.
-
-    set objformat [gcc_target_object_format]
-
-    switch $objformat {
-        elf      { return 1 }
-        mach-o   { return 1 }
-        unknown  { return -1 }
-        default  { return 0 }
+    if {![info exists visibility_available_saved] } {
+	set lines [get_compiler_messages visibility object {
+	    void f() __attribute__((visibility("hidden")));
+	    void f() {}
+	}]
+	if [string match "" $lines] then {
+	    set visibility_available_saved 1
+	} else {
+	    set visibility_available_saved 0
+	}
     }
+    return $visibility_available_saved
 }
 
 ###############################
