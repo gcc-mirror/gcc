@@ -1,3 +1,8 @@
+2003-05-18  Roger Sayle  <roger@eyesopen.com>
+	    Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.c-torture/compile/20030518-1.c: New test case.
+
 2003-05-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* lib/gcc-dg.exp (gcc-dg-debug-runtest): Add opt_opts parameter.
