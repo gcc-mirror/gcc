@@ -1170,8 +1170,6 @@ static int unit_n_insns[FUNCTION_UNITS_SIZE];
 static void
 clear_units ()
 {
-  int unit;
-
   bzero (unit_last_insn, sizeof (unit_last_insn));
   bzero (unit_tick, sizeof (unit_tick));
   bzero (unit_n_insns, sizeof (unit_n_insns));
@@ -1202,7 +1200,6 @@ actual_hazard_this_instance (unit, instance, insn, clock, cost)
      int unit, instance, clock, cost;
      rtx insn;
 {
-  int i;
   int tick = unit_tick[instance];
 
   if (tick - clock > cost)
@@ -1278,7 +1275,6 @@ actual_hazard (unit, insn, clock, cost)
     {
       /* Find the instance of the function unit with the minimum hazard.  */
       int instance = unit;
-      int best = instance;
       int best_cost = actual_hazard_this_instance (unit, instance, insn,
 						   clock, cost);
       int this_cost;
@@ -1293,7 +1289,6 @@ actual_hazard (unit, insn, clock, cost)
 						       clock, cost);
 	      if (this_cost < best_cost)
 		{
-		  best = instance;
 		  best_cost = this_cost;
 		  if (this_cost <= cost)
 		    break;
@@ -1684,7 +1679,7 @@ sched_analyze_1 (x, insn)
 
   if (GET_CODE (dest) == REG)
     {
-      register int offset, bit, i;
+      register int i;
 
       regno = REGNO (dest);
 
@@ -2142,7 +2137,6 @@ sched_analyze (head, tail)
 	}
       else if (GET_CODE (insn) == CALL_INSN)
 	{
-	  rtx dest = 0;
 	  rtx x;
 	  register int i;
 
@@ -2237,7 +2231,7 @@ sched_note_set (b, x, death)
      rtx x;
      int death;
 {
-  register int regno, j;
+  register int regno;
   register rtx reg = SET_DEST (x);
   int subreg_p = 0;
 
@@ -2664,7 +2658,7 @@ static void
 create_reg_dead_note (reg, insn)
      rtx reg, insn;
 {
-  rtx link, backlink;
+  rtx link;
 		
   /* The number of registers killed after scheduling must be the same as the
      number of registers killed before scheduling.  The number of REG_DEAD
@@ -2998,7 +2992,6 @@ new_sometimes_live (regs_sometimes_live, offset, bit, sometimes_max)
 {
   register struct sometimes *p;
   register int regno = offset * REGSET_ELT_BITS + bit;
-  int i;
 
   /* There should never be a register greater than max_regno here.  If there
      is, it means that a define_split has created a new pseudo reg.  This
@@ -3048,7 +3041,6 @@ schedule_block (b, file)
      FILE *file;
 {
   rtx insn, last;
-  rtx last_note = 0;
   rtx *ready, link;
   int i, j, n_ready = 0, new_ready, n_insns = 0;
   int sched_n_insns = 0;
@@ -3461,8 +3453,6 @@ schedule_block (b, file)
 	  /* Need to know what registers this insn kills.  */
 	  for (prev = 0, link = REG_NOTES (insn); link; link = next)
 	    {
-	      int regno;
-
 	      next = XEXP (link, 1);
 	      if ((REG_NOTE_KIND (link) == REG_DEAD
 		   || REG_NOTE_KIND (link) == REG_UNUSED)
@@ -4574,7 +4564,7 @@ schedule_insns (dump_file)
      FILE *dump_file;
 {
   int max_uid = MAX_INSNS_PER_SPLIT * (get_max_uid () + 1);
-  int i, b;
+  int b;
   rtx insn;
 
   /* Taking care of this degenerate case makes the rest of
@@ -4684,7 +4674,6 @@ schedule_insns (dump_file)
   for (b = 0; b < n_basic_blocks; b++)
     {
       rtx insn, next;
-      rtx insns;
 
       note_list = 0;
 
