@@ -1610,7 +1610,7 @@ do_movsi (operands)
    the other its replacement, at the start of a routine.  */
 
 int
-initial_offset (from, to)
+h8300_initial_elimination_offset (from, to)
      int from, to;
 {
   int offset = 0;
