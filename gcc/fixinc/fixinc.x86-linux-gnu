@@ -46,9 +46,9 @@ cat <<'__EOF__' >$LIB/$file
     int __d0, __d1; \
   __asm__ __volatile__ ("cld; rep; stosl" \
                         : "=&c" (__d0), "=&D" (__d1) \
-                        : "a" (0), "1" (sizeof (__fd_set) \
+                        : "a" (0), "0" (sizeof (__fd_set) \
                                         / sizeof (__fd_mask)), \
-                          "2" ((__fd_mask *) (fdsetp)) \
+                          "1" ((__fd_mask *) (fdsetp)) \
                         : "memory"); \
   } while (0)
 #endif
@@ -83,8 +83,8 @@ cat <<'__EOF__' >$LIB/$file
     int __d0, __d1; \
 		__asm__ __volatile__("cld ; rep ; stosl" \
 			: "=&c" (__d0), "=&D" (__d1) \
-			: "a" (0), "1" (__FDSET_LONGS), \
-			  "2" ((__kernel_fd_set *) (fdsetp)) :"memory"); \
+			: "a" (0), "0" (__FDSET_LONGS), \
+			  "1" ((__kernel_fd_set *) (fdsetp)) :"memory"); \
   } while (0)
 #endif
 
@@ -118,8 +118,8 @@ cat <<'__EOF__' >$LIB/$file
     int __d0, __d1; \
 	__asm__ __volatile__("cld ; rep ; stosl" \
         	: "=&c" (__d0), "=&D" (__d1) \
-        	: "a" (0), "1" (__FDSET_LONGS), \
-		  "2" ((__fd_set *) (fdsetp)) :"memory"); \
+        	: "a" (0), "0" (__FDSET_LONGS), \
+		  "1" ((__fd_set *) (fdsetp)) :"memory"); \
   } while (0)
 #endif
 
