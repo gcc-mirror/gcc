@@ -1,3 +1,9 @@
+2004-09-29  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (ordinary_java_source_files): Re-sorted.
+	(libgcj.la): Moved to old location near lib-gnu-awt-xlib.la.
+
 2004-09-28  Tom Tromey  <tromey@redhat.com>
 
 	* jni.cc (_Jv_JNI_RegisterNatives): Formatting fixlets.

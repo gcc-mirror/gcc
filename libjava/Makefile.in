@@ -755,24 +755,25 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc resolve.cc \
 	gnu/java/net/PlainSocketImpl.java \
 	gnu/java/net/URLParseError.java \
 	gnu/java/net/protocol/core/Connection.java \
-	gnu/java/net/protocol/core/Handler.java \
 	gnu/java/net/protocol/core/CoreInputStream.java \
+	gnu/java/net/protocol/core/Handler.java \
 	gnu/java/net/protocol/file/Connection.java \
 	gnu/java/net/protocol/file/Handler.java \
+	gnu/java/net/protocol/gcjlib/Connection.java \
+	gnu/java/net/protocol/gcjlib/Handler.java \
 	gnu/java/net/protocol/http/Connection.java \
 	gnu/java/net/protocol/http/Handler.java \
 	gnu/java/net/protocol/jar/Connection.java \
 	gnu/java/net/protocol/jar/Handler.java \
-	gnu/java/net/protocol/gcjlib/Connection.java \
-	gnu/java/net/protocol/gcjlib/Handler.java \
-	gnu/java/nio/DatagramChannelImpl.java \
-	gnu/java/nio/DatagramChannelSelectionKey.java \
-	gnu/java/nio/FileLockImpl.java gnu/java/nio/NIOConstants.java \
-	gnu/java/nio/NIODatagramSocket.java \
-	gnu/java/nio/NIOServerSocket.java gnu/java/nio/NIOSocket.java \
 	gnu/java/nio/ChannelInputStream.java \
 	gnu/java/nio/ChannelOutputStream.java \
+	gnu/java/nio/DatagramChannelImpl.java \
+	gnu/java/nio/DatagramChannelSelectionKey.java \
+	gnu/java/nio/FileLockImpl.java \
 	gnu/java/nio/InputStreamChannel.java \
+	gnu/java/nio/NIOConstants.java \
+	gnu/java/nio/NIODatagramSocket.java \
+	gnu/java/nio/NIOServerSocket.java gnu/java/nio/NIOSocket.java \
 	gnu/java/nio/OutputStreamChannel.java \
 	gnu/java/nio/PipeImpl.java gnu/java/nio/SelectionKeyImpl.java \
 	gnu/java/nio/SelectorImpl.java \
@@ -791,7 +792,51 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc resolve.cc \
 	gnu/java/nio/charset/UTF_16Decoder.java \
 	gnu/java/nio/charset/UTF_16Encoder.java \
 	gnu/java/nio/charset/UTF_16LE.java \
-	gnu/java/nio/charset/UTF_8.java gnu/regexp/CharIndexed.java \
+	gnu/java/nio/charset/UTF_8.java gnu/java/security/Engine.java \
+	gnu/java/security/OID.java \
+	gnu/java/security/action/GetPropertyAction.java \
+	gnu/java/security/action/SetAccessibleAction.java \
+	gnu/java/security/der/BitString.java \
+	gnu/java/security/der/DER.java \
+	gnu/java/security/der/DEREncodingException.java \
+	gnu/java/security/der/DERReader.java \
+	gnu/java/security/der/DERValue.java \
+	gnu/java/security/der/DERWriter.java \
+	gnu/java/security/provider/DSAKeyFactory.java \
+	gnu/java/security/provider/DSAKeyPairGenerator.java \
+	gnu/java/security/provider/DSAParameterGenerator.java \
+	gnu/java/security/provider/DSAParameters.java \
+	gnu/java/security/provider/DSASignature.java \
+	gnu/java/security/provider/DefaultPolicy.java \
+	gnu/java/security/provider/Gnu.java \
+	gnu/java/security/provider/GnuDSAPrivateKey.java \
+	gnu/java/security/provider/GnuDSAPublicKey.java \
+	gnu/java/security/provider/MD5.java \
+	gnu/java/security/provider/SHA.java \
+	gnu/java/security/provider/SHA1PRNG.java \
+	gnu/java/security/provider/X509CertificateFactory.java \
+	gnu/java/security/util/Prime.java \
+	gnu/java/security/x509/X500DistinguishedName.java \
+	gnu/java/security/x509/X509CRL.java \
+	gnu/java/security/x509/X509CRLEntry.java \
+	gnu/java/security/x509/X509Certificate.java \
+	gnu/java/text/AttributedFormatBuffer.java \
+	gnu/java/text/BaseBreakIterator.java \
+	gnu/java/text/CharacterBreakIterator.java \
+	gnu/java/text/FormatBuffer.java \
+	gnu/java/text/FormatCharacterIterator.java \
+	gnu/java/text/LineBreakIterator.java \
+	gnu/java/text/SentenceBreakIterator.java \
+	gnu/java/text/StringFormatBuffer.java \
+	gnu/java/text/WordBreakIterator.java \
+	gnu/java/util/DoubleEnumeration.java \
+	gnu/java/util/EmptyEnumeration.java \
+	gnu/java/util/prefs/FileBasedFactory.java \
+	gnu/java/util/prefs/MemoryBasedFactory.java \
+	gnu/java/util/prefs/MemoryBasedPreferences.java \
+	gnu/java/util/prefs/NodeReader.java \
+	gnu/java/util/prefs/NodeWriter.java \
+	gnu/regexp/CharIndexed.java \
 	gnu/regexp/CharIndexedCharArray.java \
 	gnu/regexp/CharIndexedInputStream.java \
 	gnu/regexp/CharIndexedString.java \
@@ -806,50 +851,7 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc resolve.cc \
 	gnu/regexp/RETokenPOSIX.java gnu/regexp/RETokenRange.java \
 	gnu/regexp/RETokenRepeated.java gnu/regexp/RETokenStart.java \
 	gnu/regexp/RETokenWordBoundary.java \
-	gnu/regexp/UncheckedRE.java gnu/java/security/Engine.java \
-	gnu/java/security/OID.java \
-	gnu/java/security/der/BitString.java \
-	gnu/java/security/der/DER.java \
-	gnu/java/security/der/DEREncodingException.java \
-	gnu/java/security/der/DERReader.java \
-	gnu/java/security/der/DERValue.java \
-	gnu/java/security/der/DERWriter.java \
-	gnu/java/security/action/GetPropertyAction.java \
-	gnu/java/security/action/SetAccessibleAction.java \
-	gnu/java/security/provider/DefaultPolicy.java \
-	gnu/java/security/provider/DSAKeyFactory.java \
-	gnu/java/security/provider/DSAKeyPairGenerator.java \
-	gnu/java/security/provider/DSAParameterGenerator.java \
-	gnu/java/security/provider/DSAParameters.java \
-	gnu/java/security/provider/DSASignature.java \
-	gnu/java/security/provider/Gnu.java \
-	gnu/java/security/provider/GnuDSAPrivateKey.java \
-	gnu/java/security/provider/GnuDSAPublicKey.java \
-	gnu/java/security/provider/MD5.java \
-	gnu/java/security/provider/SHA.java \
-	gnu/java/security/provider/SHA1PRNG.java \
-	gnu/java/security/provider/X509CertificateFactory.java \
-	gnu/java/security/util/Prime.java \
-	gnu/java/security/x509/X500DistinguishedName.java \
-	gnu/java/security/x509/X509Certificate.java \
-	gnu/java/security/x509/X509CRLEntry.java \
-	gnu/java/security/x509/X509CRL.java \
-	gnu/java/text/AttributedFormatBuffer.java \
-	gnu/java/text/BaseBreakIterator.java \
-	gnu/java/text/CharacterBreakIterator.java \
-	gnu/java/text/FormatBuffer.java \
-	gnu/java/text/FormatCharacterIterator.java \
-	gnu/java/text/LineBreakIterator.java \
-	gnu/java/text/SentenceBreakIterator.java \
-	gnu/java/text/StringFormatBuffer.java \
-	gnu/java/text/WordBreakIterator.java \
-	gnu/java/util/DoubleEnumeration.java \
-	gnu/java/util/EmptyEnumeration.java \
-	gnu/java/util/prefs/MemoryBasedFactory.java \
-	gnu/java/util/prefs/NodeReader.java \
-	gnu/java/util/prefs/MemoryBasedPreferences.java \
-	gnu/java/util/prefs/FileBasedFactory.java \
-	gnu/java/util/prefs/NodeWriter.java \
+	gnu/regexp/UncheckedRE.java \
 	java/lang/ref/PhantomReference.java \
 	java/lang/ref/Reference.java java/lang/ref/ReferenceQueue.java \
 	java/lang/ref/SoftReference.java \
@@ -872,8 +874,8 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc resolve.cc \
 	java/net/DatagramSocketImpl.java \
 	java/net/DatagramSocketImplFactory.java \
 	java/net/FileNameMap.java java/net/HttpURLConnection.java \
-	java/net/InetAddress.java java/net/Inet4Address.java \
-	java/net/Inet6Address.java java/net/InetSocketAddress.java \
+	java/net/Inet4Address.java java/net/Inet6Address.java \
+	java/net/InetAddress.java java/net/InetSocketAddress.java \
 	java/net/JarURLConnection.java \
 	java/net/MalformedURLException.java \
 	java/net/MulticastSocket.java java/net/NetPermission.java \
@@ -947,13 +949,13 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc resolve.cc \
 	java/nio/channels/UnresolvedAddressException.java \
 	java/nio/channels/UnsupportedAddressTypeException.java \
 	java/nio/channels/WritableByteChannel.java \
-	java/nio/channels/spi/AbstractSelectableChannel.java \
 	java/nio/channels/spi/AbstractInterruptibleChannel.java \
+	java/nio/channels/spi/AbstractSelectableChannel.java \
 	java/nio/channels/spi/AbstractSelectionKey.java \
 	java/nio/channels/spi/AbstractSelector.java \
 	java/nio/channels/spi/SelectorProvider.java \
-	java/nio/charset/Charset.java \
 	java/nio/charset/CharacterCodingException.java \
+	java/nio/charset/Charset.java \
 	java/nio/charset/CharsetDecoder.java \
 	java/nio/charset/CharsetEncoder.java \
 	java/nio/charset/CoderMalfunctionError.java \
@@ -968,75 +970,67 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc resolve.cc \
 	java/security/AccessControlException.java \
 	java/security/AccessController.java \
 	java/security/AlgorithmParameterGenerator.java \
-	java/security/AlgorithmParameters.java \
 	java/security/AlgorithmParameterGeneratorSpi.java \
+	java/security/AlgorithmParameters.java \
 	java/security/AlgorithmParametersSpi.java \
 	java/security/AllPermission.java \
 	java/security/BasicPermission.java \
 	java/security/Certificate.java java/security/CodeSource.java \
 	java/security/DigestException.java \
-	java/security/DigestOutputStream.java \
-	java/security/DummyKeyPairGenerator.java \
-	java/security/DummySignature.java \
 	java/security/DigestInputStream.java \
+	java/security/DigestOutputStream.java \
 	java/security/DomainCombiner.java \
+	java/security/DummyKeyPairGenerator.java \
 	java/security/DummyMessageDigest.java \
+	java/security/DummySignature.java \
 	java/security/GeneralSecurityException.java \
 	java/security/Guard.java java/security/GuardedObject.java \
 	java/security/Identity.java java/security/IdentityScope.java \
 	java/security/InvalidAlgorithmParameterException.java \
 	java/security/InvalidKeyException.java \
 	java/security/InvalidParameterException.java \
-	java/security/Key.java java/security/KeyFactorySpi.java \
-	java/security/KeyPairGenerator.java \
-	java/security/KeyStoreException.java \
-	java/security/KeyException.java \
+	java/security/Key.java java/security/KeyException.java \
+	java/security/KeyFactory.java java/security/KeyFactorySpi.java \
 	java/security/KeyManagementException.java \
+	java/security/KeyPair.java java/security/KeyPairGenerator.java \
 	java/security/KeyPairGeneratorSpi.java \
-	java/security/KeyStoreSpi.java java/security/KeyFactory.java \
-	java/security/KeyPair.java java/security/KeyStore.java \
+	java/security/KeyStore.java \
+	java/security/KeyStoreException.java \
+	java/security/KeyStoreSpi.java \
 	java/security/MessageDigest.java \
 	java/security/MessageDigestSpi.java \
 	java/security/NoSuchAlgorithmException.java \
 	java/security/NoSuchProviderException.java \
-	java/security/Permission.java java/security/Principal.java \
-	java/security/PrivilegedExceptionAction.java \
-	java/security/PublicKey.java \
+	java/security/Permission.java \
 	java/security/PermissionCollection.java \
-	java/security/PrivateKey.java \
-	java/security/ProtectionDomain.java \
-	java/security/Permissions.java \
+	java/security/Permissions.java java/security/Policy.java \
+	java/security/Principal.java java/security/PrivateKey.java \
 	java/security/PrivilegedAction.java \
-	java/security/Provider.java java/security/Policy.java \
 	java/security/PrivilegedActionException.java \
+	java/security/PrivilegedExceptionAction.java \
+	java/security/ProtectionDomain.java \
+	java/security/Provider.java \
 	java/security/ProviderException.java \
+	java/security/PublicKey.java \
 	java/security/SecureClassLoader.java \
-	java/security/SecureRandomSpi.java \
+	java/security/SecureRandom.java \
+	java/security/SecureRandomSpi.java java/security/Security.java \
 	java/security/SecurityPermission.java \
+	java/security/Signature.java \
 	java/security/SignatureException.java \
-	java/security/SignedObject.java \
-	java/security/SecureRandom.java java/security/Security.java \
-	java/security/Signature.java java/security/SignatureSpi.java \
-	java/security/Signer.java \
+	java/security/SignatureSpi.java \
+	java/security/SignedObject.java java/security/Signer.java \
 	java/security/UnrecoverableKeyException.java \
 	java/security/UnresolvedPermission.java \
-	java/security/acl/Acl.java \
+	java/security/acl/Acl.java java/security/acl/AclEntry.java \
 	java/security/acl/AclNotFoundException.java \
-	java/security/acl/LastOwnerException.java \
-	java/security/acl/Owner.java java/security/acl/AclEntry.java \
 	java/security/acl/Group.java \
+	java/security/acl/LastOwnerException.java \
 	java/security/acl/NotOwnerException.java \
-	java/security/acl/Permission.java java/security/cert/CRL.java \
+	java/security/acl/Owner.java java/security/acl/Permission.java \
+	java/security/cert/CRL.java \
 	java/security/cert/CRLException.java \
 	java/security/cert/CRLSelector.java \
-	java/security/cert/Certificate.java \
-	java/security/cert/CertificateEncodingException.java \
-	java/security/cert/CertificateException.java \
-	java/security/cert/CertificateExpiredException.java \
-	java/security/cert/CertificateFactory.java \
-	java/security/cert/CertificateFactorySpi.java \
-	java/security/cert/CertificateNotYetValidException.java \
-	java/security/cert/CertificateParsingException.java \
 	java/security/cert/CertPath.java \
 	java/security/cert/CertPathBuilder.java \
 	java/security/cert/CertPathBuilderException.java \
@@ -1052,6 +1046,14 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc resolve.cc \
 	java/security/cert/CertStoreException.java \
 	java/security/cert/CertStoreParameters.java \
 	java/security/cert/CertStoreSpi.java \
+	java/security/cert/Certificate.java \
+	java/security/cert/CertificateEncodingException.java \
+	java/security/cert/CertificateException.java \
+	java/security/cert/CertificateExpiredException.java \
+	java/security/cert/CertificateFactory.java \
+	java/security/cert/CertificateFactorySpi.java \
+	java/security/cert/CertificateNotYetValidException.java \
+	java/security/cert/CertificateParsingException.java \
 	java/security/cert/CollectionCertStoreParameters.java \
 	java/security/cert/LDAPCertStoreParameters.java \
 	java/security/cert/PKIXBuilderParameters.java \
@@ -1065,8 +1067,8 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc resolve.cc \
 	java/security/cert/X509CRL.java \
 	java/security/cert/X509CRLEntry.java \
 	java/security/cert/X509CRLSelector.java \
-	java/security/cert/X509Certificate.java \
 	java/security/cert/X509CertSelector.java \
+	java/security/cert/X509Certificate.java \
 	java/security/cert/X509Extension.java \
 	java/security/interfaces/DSAKey.java \
 	java/security/interfaces/DSAKeyPairGenerator.java \
@@ -1104,10 +1106,10 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc resolve.cc \
 	java/sql/ParameterMetaData.java \
 	java/sql/PreparedStatement.java java/sql/Ref.java \
 	java/sql/ResultSet.java java/sql/ResultSetMetaData.java \
-	java/sql/Savepoint.java java/sql/SQLData.java \
-	java/sql/SQLException.java java/sql/SQLInput.java \
-	java/sql/SQLOutput.java java/sql/SQLPermission.java \
-	java/sql/SQLWarning.java java/sql/Statement.java \
+	java/sql/SQLData.java java/sql/SQLException.java \
+	java/sql/SQLInput.java java/sql/SQLOutput.java \
+	java/sql/SQLPermission.java java/sql/SQLWarning.java \
+	java/sql/Savepoint.java java/sql/Statement.java \
 	java/sql/Struct.java java/sql/Time.java \
 	java/sql/Timestamp.java java/sql/Types.java \
 	java/text/Annotation.java \
@@ -3655,24 +3657,24 @@ am__objects_14 = $(am__objects_9) gnu/classpath/ServiceFactory.lo \
 	gnu/java/net/PlainDatagramSocketImpl.lo \
 	gnu/java/net/PlainSocketImpl.lo gnu/java/net/URLParseError.lo \
 	gnu/java/net/protocol/core/Connection.lo \
-	gnu/java/net/protocol/core/Handler.lo \
 	gnu/java/net/protocol/core/CoreInputStream.lo \
+	gnu/java/net/protocol/core/Handler.lo \
 	gnu/java/net/protocol/file/Connection.lo \
 	gnu/java/net/protocol/file/Handler.lo \
+	gnu/java/net/protocol/gcjlib/Connection.lo \
+	gnu/java/net/protocol/gcjlib/Handler.lo \
 	gnu/java/net/protocol/http/Connection.lo \
 	gnu/java/net/protocol/http/Handler.lo \
 	gnu/java/net/protocol/jar/Connection.lo \
 	gnu/java/net/protocol/jar/Handler.lo \
-	gnu/java/net/protocol/gcjlib/Connection.lo \
-	gnu/java/net/protocol/gcjlib/Handler.lo \
-	gnu/java/nio/DatagramChannelImpl.lo \
-	gnu/java/nio/DatagramChannelSelectionKey.lo \
-	gnu/java/nio/FileLockImpl.lo gnu/java/nio/NIOConstants.lo \
-	gnu/java/nio/NIODatagramSocket.lo \
-	gnu/java/nio/NIOServerSocket.lo gnu/java/nio/NIOSocket.lo \
 	gnu/java/nio/ChannelInputStream.lo \
 	gnu/java/nio/ChannelOutputStream.lo \
+	gnu/java/nio/DatagramChannelImpl.lo \
+	gnu/java/nio/DatagramChannelSelectionKey.lo \
+	gnu/java/nio/FileLockImpl.lo \
 	gnu/java/nio/InputStreamChannel.lo \
+	gnu/java/nio/NIOConstants.lo gnu/java/nio/NIODatagramSocket.lo \
+	gnu/java/nio/NIOServerSocket.lo gnu/java/nio/NIOSocket.lo \
 	gnu/java/nio/OutputStreamChannel.lo gnu/java/nio/PipeImpl.lo \
 	gnu/java/nio/SelectionKeyImpl.lo gnu/java/nio/SelectorImpl.lo \
 	gnu/java/nio/SelectorProviderImpl.lo \
@@ -3690,7 +3692,50 @@ am__objects_14 = $(am__objects_9) gnu/classpath/ServiceFactory.lo \
 	gnu/java/nio/charset/UTF_16Decoder.lo \
 	gnu/java/nio/charset/UTF_16Encoder.lo \
 	gnu/java/nio/charset/UTF_16LE.lo gnu/java/nio/charset/UTF_8.lo \
-	gnu/regexp/CharIndexed.lo gnu/regexp/CharIndexedCharArray.lo \
+	gnu/java/security/Engine.lo gnu/java/security/OID.lo \
+	gnu/java/security/action/GetPropertyAction.lo \
+	gnu/java/security/action/SetAccessibleAction.lo \
+	gnu/java/security/der/BitString.lo \
+	gnu/java/security/der/DER.lo \
+	gnu/java/security/der/DEREncodingException.lo \
+	gnu/java/security/der/DERReader.lo \
+	gnu/java/security/der/DERValue.lo \
+	gnu/java/security/der/DERWriter.lo \
+	gnu/java/security/provider/DSAKeyFactory.lo \
+	gnu/java/security/provider/DSAKeyPairGenerator.lo \
+	gnu/java/security/provider/DSAParameterGenerator.lo \
+	gnu/java/security/provider/DSAParameters.lo \
+	gnu/java/security/provider/DSASignature.lo \
+	gnu/java/security/provider/DefaultPolicy.lo \
+	gnu/java/security/provider/Gnu.lo \
+	gnu/java/security/provider/GnuDSAPrivateKey.lo \
+	gnu/java/security/provider/GnuDSAPublicKey.lo \
+	gnu/java/security/provider/MD5.lo \
+	gnu/java/security/provider/SHA.lo \
+	gnu/java/security/provider/SHA1PRNG.lo \
+	gnu/java/security/provider/X509CertificateFactory.lo \
+	gnu/java/security/util/Prime.lo \
+	gnu/java/security/x509/X500DistinguishedName.lo \
+	gnu/java/security/x509/X509CRL.lo \
+	gnu/java/security/x509/X509CRLEntry.lo \
+	gnu/java/security/x509/X509Certificate.lo \
+	gnu/java/text/AttributedFormatBuffer.lo \
+	gnu/java/text/BaseBreakIterator.lo \
+	gnu/java/text/CharacterBreakIterator.lo \
+	gnu/java/text/FormatBuffer.lo \
+	gnu/java/text/FormatCharacterIterator.lo \
+	gnu/java/text/LineBreakIterator.lo \
+	gnu/java/text/SentenceBreakIterator.lo \
+	gnu/java/text/StringFormatBuffer.lo \
+	gnu/java/text/WordBreakIterator.lo \
+	gnu/java/util/DoubleEnumeration.lo \
+	gnu/java/util/EmptyEnumeration.lo \
+	gnu/java/util/prefs/FileBasedFactory.lo \
+	gnu/java/util/prefs/MemoryBasedFactory.lo \
+	gnu/java/util/prefs/MemoryBasedPreferences.lo \
+	gnu/java/util/prefs/NodeReader.lo \
+	gnu/java/util/prefs/NodeWriter.lo gnu/regexp/CharIndexed.lo \
+	gnu/regexp/CharIndexedCharArray.lo \
 	gnu/regexp/CharIndexedInputStream.lo \
 	gnu/regexp/CharIndexedString.lo \
 	gnu/regexp/CharIndexedStringBuffer.lo gnu/regexp/RE.lo \
@@ -3703,52 +3748,9 @@ am__objects_14 = $(am__objects_9) gnu/classpath/ServiceFactory.lo \
 	gnu/regexp/RETokenOneOf.lo gnu/regexp/RETokenPOSIX.lo \
 	gnu/regexp/RETokenRange.lo gnu/regexp/RETokenRepeated.lo \
 	gnu/regexp/RETokenStart.lo gnu/regexp/RETokenWordBoundary.lo \
-	gnu/regexp/UncheckedRE.lo gnu/java/security/Engine.lo \
-	gnu/java/security/OID.lo gnu/java/security/der/BitString.lo \
-	gnu/java/security/der/DER.lo \
-	gnu/java/security/der/DEREncodingException.lo \
-	gnu/java/security/der/DERReader.lo \
-	gnu/java/security/der/DERValue.lo \
-	gnu/java/security/der/DERWriter.lo \
-	gnu/java/security/action/GetPropertyAction.lo \
-	gnu/java/security/action/SetAccessibleAction.lo \
-	gnu/java/security/provider/DefaultPolicy.lo \
-	gnu/java/security/provider/DSAKeyFactory.lo \
-	gnu/java/security/provider/DSAKeyPairGenerator.lo \
-	gnu/java/security/provider/DSAParameterGenerator.lo \
-	gnu/java/security/provider/DSAParameters.lo \
-	gnu/java/security/provider/DSASignature.lo \
-	gnu/java/security/provider/Gnu.lo \
-	gnu/java/security/provider/GnuDSAPrivateKey.lo \
-	gnu/java/security/provider/GnuDSAPublicKey.lo \
-	gnu/java/security/provider/MD5.lo \
-	gnu/java/security/provider/SHA.lo \
-	gnu/java/security/provider/SHA1PRNG.lo \
-	gnu/java/security/provider/X509CertificateFactory.lo \
-	gnu/java/security/util/Prime.lo \
-	gnu/java/security/x509/X500DistinguishedName.lo \
-	gnu/java/security/x509/X509Certificate.lo \
-	gnu/java/security/x509/X509CRLEntry.lo \
-	gnu/java/security/x509/X509CRL.lo \
-	gnu/java/text/AttributedFormatBuffer.lo \
-	gnu/java/text/BaseBreakIterator.lo \
-	gnu/java/text/CharacterBreakIterator.lo \
-	gnu/java/text/FormatBuffer.lo \
-	gnu/java/text/FormatCharacterIterator.lo \
-	gnu/java/text/LineBreakIterator.lo \
-	gnu/java/text/SentenceBreakIterator.lo \
-	gnu/java/text/StringFormatBuffer.lo \
-	gnu/java/text/WordBreakIterator.lo \
-	gnu/java/util/DoubleEnumeration.lo \
-	gnu/java/util/EmptyEnumeration.lo \
-	gnu/java/util/prefs/MemoryBasedFactory.lo \
-	gnu/java/util/prefs/NodeReader.lo \
-	gnu/java/util/prefs/MemoryBasedPreferences.lo \
-	gnu/java/util/prefs/FileBasedFactory.lo \
-	gnu/java/util/prefs/NodeWriter.lo \
-	java/lang/ref/PhantomReference.lo java/lang/ref/Reference.lo \
-	java/lang/ref/ReferenceQueue.lo java/lang/ref/SoftReference.lo \
-	java/lang/ref/WeakReference.lo \
+	gnu/regexp/UncheckedRE.lo java/lang/ref/PhantomReference.lo \
+	java/lang/ref/Reference.lo java/lang/ref/ReferenceQueue.lo \
+	java/lang/ref/SoftReference.lo java/lang/ref/WeakReference.lo \
 	java/lang/reflect/AccessibleObject.lo \
 	java/lang/reflect/Array.lo java/lang/reflect/Constructor.lo \
 	java/lang/reflect/Field.lo \
@@ -3764,8 +3766,8 @@ am__objects_14 = $(am__objects_9) gnu/classpath/ServiceFactory.lo \
 	java/net/ContentHandlerFactory.lo java/net/DatagramPacket.lo \
 	java/net/DatagramSocket.lo java/net/DatagramSocketImpl.lo \
 	java/net/DatagramSocketImplFactory.lo java/net/FileNameMap.lo \
-	java/net/HttpURLConnection.lo java/net/InetAddress.lo \
-	java/net/Inet4Address.lo java/net/Inet6Address.lo \
+	java/net/HttpURLConnection.lo java/net/Inet4Address.lo \
+	java/net/Inet6Address.lo java/net/InetAddress.lo \
 	java/net/InetSocketAddress.lo java/net/JarURLConnection.lo \
 	java/net/MalformedURLException.lo java/net/MulticastSocket.lo \
 	java/net/NetPermission.lo java/net/NetworkInterface.lo \
@@ -3833,14 +3835,13 @@ am__objects_14 = $(am__objects_9) gnu/classpath/ServiceFactory.lo \
 	java/nio/channels/UnresolvedAddressException.lo \
 	java/nio/channels/UnsupportedAddressTypeException.lo \
 	java/nio/channels/WritableByteChannel.lo \
-	java/nio/channels/spi/AbstractSelectableChannel.lo \
 	java/nio/channels/spi/AbstractInterruptibleChannel.lo \
+	java/nio/channels/spi/AbstractSelectableChannel.lo \
 	java/nio/channels/spi/AbstractSelectionKey.lo \
 	java/nio/channels/spi/AbstractSelector.lo \
 	java/nio/channels/spi/SelectorProvider.lo \
-	java/nio/charset/Charset.lo \
 	java/nio/charset/CharacterCodingException.lo \
-	java/nio/charset/CharsetDecoder.lo \
+	java/nio/charset/Charset.lo java/nio/charset/CharsetDecoder.lo \
 	java/nio/charset/CharsetEncoder.lo \
 	java/nio/charset/CoderMalfunctionError.lo \
 	java/nio/charset/CoderResult.lo \
@@ -3854,70 +3855,59 @@ am__objects_14 = $(am__objects_9) gnu/classpath/ServiceFactory.lo \
 	java/security/AccessControlException.lo \
 	java/security/AccessController.lo \
 	java/security/AlgorithmParameterGenerator.lo \
-	java/security/AlgorithmParameters.lo \
 	java/security/AlgorithmParameterGeneratorSpi.lo \
+	java/security/AlgorithmParameters.lo \
 	java/security/AlgorithmParametersSpi.lo \
 	java/security/AllPermission.lo \
 	java/security/BasicPermission.lo java/security/Certificate.lo \
 	java/security/CodeSource.lo java/security/DigestException.lo \
-	java/security/DigestOutputStream.lo \
-	java/security/DummyKeyPairGenerator.lo \
-	java/security/DummySignature.lo \
 	java/security/DigestInputStream.lo \
+	java/security/DigestOutputStream.lo \
 	java/security/DomainCombiner.lo \
+	java/security/DummyKeyPairGenerator.lo \
 	java/security/DummyMessageDigest.lo \
+	java/security/DummySignature.lo \
 	java/security/GeneralSecurityException.lo \
 	java/security/Guard.lo java/security/GuardedObject.lo \
 	java/security/Identity.lo java/security/IdentityScope.lo \
 	java/security/InvalidAlgorithmParameterException.lo \
 	java/security/InvalidKeyException.lo \
 	java/security/InvalidParameterException.lo \
-	java/security/Key.lo java/security/KeyFactorySpi.lo \
-	java/security/KeyPairGenerator.lo \
-	java/security/KeyStoreException.lo \
-	java/security/KeyException.lo \
+	java/security/Key.lo java/security/KeyException.lo \
+	java/security/KeyFactory.lo java/security/KeyFactorySpi.lo \
 	java/security/KeyManagementException.lo \
-	java/security/KeyPairGeneratorSpi.lo \
-	java/security/KeyStoreSpi.lo java/security/KeyFactory.lo \
-	java/security/KeyPair.lo java/security/KeyStore.lo \
-	java/security/MessageDigest.lo \
+	java/security/KeyPair.lo java/security/KeyPairGenerator.lo \
+	java/security/KeyPairGeneratorSpi.lo java/security/KeyStore.lo \
+	java/security/KeyStoreException.lo \
+	java/security/KeyStoreSpi.lo java/security/MessageDigest.lo \
 	java/security/MessageDigestSpi.lo \
 	java/security/NoSuchAlgorithmException.lo \
 	java/security/NoSuchProviderException.lo \
-	java/security/Permission.lo java/security/Principal.lo \
-	java/security/PrivilegedExceptionAction.lo \
-	java/security/PublicKey.lo \
+	java/security/Permission.lo \
 	java/security/PermissionCollection.lo \
-	java/security/PrivateKey.lo java/security/ProtectionDomain.lo \
-	java/security/Permissions.lo java/security/PrivilegedAction.lo \
-	java/security/Provider.lo java/security/Policy.lo \
+	java/security/Permissions.lo java/security/Policy.lo \
+	java/security/Principal.lo java/security/PrivateKey.lo \
+	java/security/PrivilegedAction.lo \
 	java/security/PrivilegedActionException.lo \
-	java/security/ProviderException.lo \
+	java/security/PrivilegedExceptionAction.lo \
+	java/security/ProtectionDomain.lo java/security/Provider.lo \
+	java/security/ProviderException.lo java/security/PublicKey.lo \
 	java/security/SecureClassLoader.lo \
-	java/security/SecureRandomSpi.lo \
-	java/security/SecurityPermission.lo \
-	java/security/SignatureException.lo \
-	java/security/SignedObject.lo java/security/SecureRandom.lo \
-	java/security/Security.lo java/security/Signature.lo \
-	java/security/SignatureSpi.lo java/security/Signer.lo \
+	java/security/SecureRandom.lo java/security/SecureRandomSpi.lo \
+	java/security/Security.lo java/security/SecurityPermission.lo \
+	java/security/Signature.lo java/security/SignatureException.lo \
+	java/security/SignatureSpi.lo java/security/SignedObject.lo \
+	java/security/Signer.lo \
 	java/security/UnrecoverableKeyException.lo \
 	java/security/UnresolvedPermission.lo java/security/acl/Acl.lo \
+	java/security/acl/AclEntry.lo \
 	java/security/acl/AclNotFoundException.lo \
-	java/security/acl/LastOwnerException.lo \
-	java/security/acl/Owner.lo java/security/acl/AclEntry.lo \
 	java/security/acl/Group.lo \
+	java/security/acl/LastOwnerException.lo \
 	java/security/acl/NotOwnerException.lo \
-	java/security/acl/Permission.lo java/security/cert/CRL.lo \
-	java/security/cert/CRLException.lo \
+	java/security/acl/Owner.lo java/security/acl/Permission.lo \
+	java/security/cert/CRL.lo java/security/cert/CRLException.lo \
 	java/security/cert/CRLSelector.lo \
-	java/security/cert/Certificate.lo \
-	java/security/cert/CertificateEncodingException.lo \
-	java/security/cert/CertificateException.lo \
-	java/security/cert/CertificateExpiredException.lo \
-	java/security/cert/CertificateFactory.lo \
-	java/security/cert/CertificateFactorySpi.lo \
-	java/security/cert/CertificateNotYetValidException.lo \
-	java/security/cert/CertificateParsingException.lo \
 	java/security/cert/CertPath.lo \
 	java/security/cert/CertPathBuilder.lo \
 	java/security/cert/CertPathBuilderException.lo \
@@ -3933,6 +3923,14 @@ am__objects_14 = $(am__objects_9) gnu/classpath/ServiceFactory.lo \
 	java/security/cert/CertStoreException.lo \
 	java/security/cert/CertStoreParameters.lo \
 	java/security/cert/CertStoreSpi.lo \
+	java/security/cert/Certificate.lo \
+	java/security/cert/CertificateEncodingException.lo \
+	java/security/cert/CertificateException.lo \
+	java/security/cert/CertificateExpiredException.lo \
+	java/security/cert/CertificateFactory.lo \
+	java/security/cert/CertificateFactorySpi.lo \
+	java/security/cert/CertificateNotYetValidException.lo \
+	java/security/cert/CertificateParsingException.lo \
 	java/security/cert/CollectionCertStoreParameters.lo \
 	java/security/cert/LDAPCertStoreParameters.lo \
 	java/security/cert/PKIXBuilderParameters.lo \
@@ -3946,8 +3944,8 @@ am__objects_14 = $(am__objects_9) gnu/classpath/ServiceFactory.lo \
 	java/security/cert/X509CRL.lo \
 	java/security/cert/X509CRLEntry.lo \
 	java/security/cert/X509CRLSelector.lo \
-	java/security/cert/X509Certificate.lo \
 	java/security/cert/X509CertSelector.lo \
+	java/security/cert/X509Certificate.lo \
 	java/security/cert/X509Extension.lo \
 	java/security/interfaces/DSAKey.lo \
 	java/security/interfaces/DSAKeyPairGenerator.lo \
@@ -3984,12 +3982,12 @@ am__objects_14 = $(am__objects_9) gnu/classpath/ServiceFactory.lo \
 	java/sql/DriverPropertyInfo.lo java/sql/ParameterMetaData.lo \
 	java/sql/PreparedStatement.lo java/sql/Ref.lo \
 	java/sql/ResultSet.lo java/sql/ResultSetMetaData.lo \
-	java/sql/Savepoint.lo java/sql/SQLData.lo \
-	java/sql/SQLException.lo java/sql/SQLInput.lo \
-	java/sql/SQLOutput.lo java/sql/SQLPermission.lo \
-	java/sql/SQLWarning.lo java/sql/Statement.lo \
-	java/sql/Struct.lo java/sql/Time.lo java/sql/Timestamp.lo \
-	java/sql/Types.lo java/text/Annotation.lo \
+	java/sql/SQLData.lo java/sql/SQLException.lo \
+	java/sql/SQLInput.lo java/sql/SQLOutput.lo \
+	java/sql/SQLPermission.lo java/sql/SQLWarning.lo \
+	java/sql/Savepoint.lo java/sql/Statement.lo java/sql/Struct.lo \
+	java/sql/Time.lo java/sql/Timestamp.lo java/sql/Types.lo \
+	java/text/Annotation.lo \
 	java/text/AttributedCharacterIterator.lo \
 	java/text/AttributedString.lo \
 	java/text/AttributedStringIterator.lo \
@@ -6440,26 +6438,26 @@ gnu/java/net/PlainDatagramSocketImpl.java \
 gnu/java/net/PlainSocketImpl.java \
 gnu/java/net/URLParseError.java \
 gnu/java/net/protocol/core/Connection.java \
-gnu/java/net/protocol/core/Handler.java \
 gnu/java/net/protocol/core/CoreInputStream.java \
+gnu/java/net/protocol/core/Handler.java \
 gnu/java/net/protocol/file/Connection.java \
 gnu/java/net/protocol/file/Handler.java \
+gnu/java/net/protocol/gcjlib/Connection.java \
+gnu/java/net/protocol/gcjlib/Handler.java \
 gnu/java/net/protocol/http/Connection.java \
 gnu/java/net/protocol/http/Handler.java \
 gnu/java/net/protocol/jar/Connection.java \
 gnu/java/net/protocol/jar/Handler.java \
-gnu/java/net/protocol/gcjlib/Connection.java \
-gnu/java/net/protocol/gcjlib/Handler.java \
+gnu/java/nio/ChannelInputStream.java \
+gnu/java/nio/ChannelOutputStream.java \
 gnu/java/nio/DatagramChannelImpl.java \
 gnu/java/nio/DatagramChannelSelectionKey.java \
 gnu/java/nio/FileLockImpl.java \
+gnu/java/nio/InputStreamChannel.java \
 gnu/java/nio/NIOConstants.java \
 gnu/java/nio/NIODatagramSocket.java \
 gnu/java/nio/NIOServerSocket.java \
 gnu/java/nio/NIOSocket.java \
-gnu/java/nio/ChannelInputStream.java \
-gnu/java/nio/ChannelOutputStream.java \
-gnu/java/nio/InputStreamChannel.java \
 gnu/java/nio/OutputStreamChannel.java \
 gnu/java/nio/PipeImpl.java \
 gnu/java/nio/SelectionKeyImpl.java \
@@ -6481,6 +6479,50 @@ gnu/java/nio/charset/UTF_16Decoder.java \
 gnu/java/nio/charset/UTF_16Encoder.java \
 gnu/java/nio/charset/UTF_16LE.java \
 gnu/java/nio/charset/UTF_8.java \
+gnu/java/security/Engine.java \
+gnu/java/security/OID.java \
+gnu/java/security/action/GetPropertyAction.java \
+gnu/java/security/action/SetAccessibleAction.java \
+gnu/java/security/der/BitString.java \
+gnu/java/security/der/DER.java \
+gnu/java/security/der/DEREncodingException.java \
+gnu/java/security/der/DERReader.java \
+gnu/java/security/der/DERValue.java \
+gnu/java/security/der/DERWriter.java \
+gnu/java/security/provider/DSAKeyFactory.java \
+gnu/java/security/provider/DSAKeyPairGenerator.java \
+gnu/java/security/provider/DSAParameterGenerator.java \
+gnu/java/security/provider/DSAParameters.java \
+gnu/java/security/provider/DSASignature.java \
+gnu/java/security/provider/DefaultPolicy.java \
+gnu/java/security/provider/Gnu.java \
+gnu/java/security/provider/GnuDSAPrivateKey.java \
+gnu/java/security/provider/GnuDSAPublicKey.java \
+gnu/java/security/provider/MD5.java \
+gnu/java/security/provider/SHA.java \
+gnu/java/security/provider/SHA1PRNG.java \
+gnu/java/security/provider/X509CertificateFactory.java \
+gnu/java/security/util/Prime.java \
+gnu/java/security/x509/X500DistinguishedName.java \
+gnu/java/security/x509/X509CRL.java \
+gnu/java/security/x509/X509CRLEntry.java \
+gnu/java/security/x509/X509Certificate.java \
+gnu/java/text/AttributedFormatBuffer.java \
+gnu/java/text/BaseBreakIterator.java \
+gnu/java/text/CharacterBreakIterator.java \
+gnu/java/text/FormatBuffer.java \
+gnu/java/text/FormatCharacterIterator.java \
+gnu/java/text/LineBreakIterator.java \
+gnu/java/text/SentenceBreakIterator.java \
+gnu/java/text/StringFormatBuffer.java \
+gnu/java/text/WordBreakIterator.java \
+gnu/java/util/DoubleEnumeration.java \
+gnu/java/util/EmptyEnumeration.java \
+gnu/java/util/prefs/FileBasedFactory.java \
+gnu/java/util/prefs/MemoryBasedFactory.java \
+gnu/java/util/prefs/MemoryBasedPreferences.java \
+gnu/java/util/prefs/NodeReader.java \
+gnu/java/util/prefs/NodeWriter.java \
 gnu/regexp/CharIndexed.java \
 gnu/regexp/CharIndexedCharArray.java \
 gnu/regexp/CharIndexedInputStream.java \
@@ -6506,50 +6548,6 @@ gnu/regexp/RETokenRepeated.java \
 gnu/regexp/RETokenStart.java \
 gnu/regexp/RETokenWordBoundary.java \
 gnu/regexp/UncheckedRE.java \
-gnu/java/security/Engine.java \
-gnu/java/security/OID.java \
-gnu/java/security/der/BitString.java \
-gnu/java/security/der/DER.java \
-gnu/java/security/der/DEREncodingException.java \
-gnu/java/security/der/DERReader.java \
-gnu/java/security/der/DERValue.java \
-gnu/java/security/der/DERWriter.java \
-gnu/java/security/action/GetPropertyAction.java \
-gnu/java/security/action/SetAccessibleAction.java \
-gnu/java/security/provider/DefaultPolicy.java \
-gnu/java/security/provider/DSAKeyFactory.java \
-gnu/java/security/provider/DSAKeyPairGenerator.java \
-gnu/java/security/provider/DSAParameterGenerator.java \
-gnu/java/security/provider/DSAParameters.java \
-gnu/java/security/provider/DSASignature.java \
-gnu/java/security/provider/Gnu.java \
-gnu/java/security/provider/GnuDSAPrivateKey.java \
-gnu/java/security/provider/GnuDSAPublicKey.java \
-gnu/java/security/provider/MD5.java \
-gnu/java/security/provider/SHA.java \
-gnu/java/security/provider/SHA1PRNG.java \
-gnu/java/security/provider/X509CertificateFactory.java \
-gnu/java/security/util/Prime.java \
-gnu/java/security/x509/X500DistinguishedName.java \
-gnu/java/security/x509/X509Certificate.java \
-gnu/java/security/x509/X509CRLEntry.java \
-gnu/java/security/x509/X509CRL.java \
-gnu/java/text/AttributedFormatBuffer.java \
-gnu/java/text/BaseBreakIterator.java \
-gnu/java/text/CharacterBreakIterator.java \
-gnu/java/text/FormatBuffer.java \
-gnu/java/text/FormatCharacterIterator.java \
-gnu/java/text/LineBreakIterator.java \
-gnu/java/text/SentenceBreakIterator.java \
-gnu/java/text/StringFormatBuffer.java \
-gnu/java/text/WordBreakIterator.java \
-gnu/java/util/DoubleEnumeration.java \
-gnu/java/util/EmptyEnumeration.java \
-gnu/java/util/prefs/MemoryBasedFactory.java \
-gnu/java/util/prefs/NodeReader.java \
-gnu/java/util/prefs/MemoryBasedPreferences.java \
-gnu/java/util/prefs/FileBasedFactory.java \
-gnu/java/util/prefs/NodeWriter.java \
 java/lang/ref/PhantomReference.java \
 java/lang/ref/Reference.java \
 java/lang/ref/ReferenceQueue.java \
@@ -6580,9 +6578,9 @@ java/net/DatagramSocketImpl.java \
 java/net/DatagramSocketImplFactory.java \
 java/net/FileNameMap.java \
 java/net/HttpURLConnection.java	\
-java/net/InetAddress.java \
 java/net/Inet4Address.java \
 java/net/Inet6Address.java \
+java/net/InetAddress.java \
 java/net/InetSocketAddress.java \
 java/net/JarURLConnection.java \
 java/net/MalformedURLException.java \
@@ -6678,13 +6676,13 @@ java/nio/channels/SocketChannel.java \
 java/nio/channels/UnresolvedAddressException.java \
 java/nio/channels/UnsupportedAddressTypeException.java \
 java/nio/channels/WritableByteChannel.java \
-java/nio/channels/spi/AbstractSelectableChannel.java \
 java/nio/channels/spi/AbstractInterruptibleChannel.java \
+java/nio/channels/spi/AbstractSelectableChannel.java \
 java/nio/channels/spi/AbstractSelectionKey.java \
 java/nio/channels/spi/AbstractSelector.java \
 java/nio/channels/spi/SelectorProvider.java \
-java/nio/charset/Charset.java \
 java/nio/charset/CharacterCodingException.java \
+java/nio/charset/Charset.java \
 java/nio/charset/CharsetDecoder.java \
 java/nio/charset/CharsetEncoder.java \
 java/nio/charset/CoderMalfunctionError.java \
@@ -6699,20 +6697,20 @@ java/security/AccessControlContext.java \
 java/security/AccessControlException.java \
 java/security/AccessController.java \
 java/security/AlgorithmParameterGenerator.java \
-java/security/AlgorithmParameters.java \
 java/security/AlgorithmParameterGeneratorSpi.java \
+java/security/AlgorithmParameters.java \
 java/security/AlgorithmParametersSpi.java \
 java/security/AllPermission.java \
 java/security/BasicPermission.java \
 java/security/Certificate.java \
 java/security/CodeSource.java \
 java/security/DigestException.java \
-java/security/DigestOutputStream.java \
-java/security/DummyKeyPairGenerator.java \
-java/security/DummySignature.java \
 java/security/DigestInputStream.java \
+java/security/DigestOutputStream.java \
 java/security/DomainCombiner.java \
+java/security/DummyKeyPairGenerator.java \
 java/security/DummyMessageDigest.java \
+java/security/DummySignature.java \
 java/security/GeneralSecurityException.java \
 java/security/Guard.java \
 java/security/GuardedObject.java \
@@ -6722,64 +6720,56 @@ java/security/InvalidAlgorithmParameterException.java \
 java/security/InvalidKeyException.java \
 java/security/InvalidParameterException.java \
 java/security/Key.java \
-java/security/KeyFactorySpi.java \
-java/security/KeyPairGenerator.java \
-java/security/KeyStoreException.java \
 java/security/KeyException.java \
-java/security/KeyManagementException.java \
-java/security/KeyPairGeneratorSpi.java \
-java/security/KeyStoreSpi.java \
 java/security/KeyFactory.java \
+java/security/KeyFactorySpi.java \
+java/security/KeyManagementException.java \
 java/security/KeyPair.java \
+java/security/KeyPairGenerator.java \
+java/security/KeyPairGeneratorSpi.java \
 java/security/KeyStore.java \
+java/security/KeyStoreException.java \
+java/security/KeyStoreSpi.java \
 java/security/MessageDigest.java \
 java/security/MessageDigestSpi.java \
 java/security/NoSuchAlgorithmException.java \
 java/security/NoSuchProviderException.java \
 java/security/Permission.java \
-java/security/Principal.java \
-java/security/PrivilegedExceptionAction.java \
-java/security/PublicKey.java \
 java/security/PermissionCollection.java \
-java/security/PrivateKey.java \
-java/security/ProtectionDomain.java \
 java/security/Permissions.java \
-java/security/PrivilegedAction.java \
-java/security/Provider.java \
 java/security/Policy.java \
+java/security/Principal.java \
+java/security/PrivateKey.java \
+java/security/PrivilegedAction.java \
 java/security/PrivilegedActionException.java \
+java/security/PrivilegedExceptionAction.java \
+java/security/ProtectionDomain.java \
+java/security/Provider.java \
 java/security/ProviderException.java \
+java/security/PublicKey.java \
 java/security/SecureClassLoader.java \
-java/security/SecureRandomSpi.java \
-java/security/SecurityPermission.java \
-java/security/SignatureException.java \
-java/security/SignedObject.java \
 java/security/SecureRandom.java \
+java/security/SecureRandomSpi.java \
 java/security/Security.java \
+java/security/SecurityPermission.java \
 java/security/Signature.java \
+java/security/SignatureException.java \
 java/security/SignatureSpi.java \
+java/security/SignedObject.java \
 java/security/Signer.java \
 java/security/UnrecoverableKeyException.java \
 java/security/UnresolvedPermission.java \
 java/security/acl/Acl.java \
-java/security/acl/AclNotFoundException.java \
-java/security/acl/LastOwnerException.java \
-java/security/acl/Owner.java \
 java/security/acl/AclEntry.java \
+java/security/acl/AclNotFoundException.java \
 java/security/acl/Group.java \
+java/security/acl/LastOwnerException.java \
 java/security/acl/NotOwnerException.java \
+java/security/acl/Owner.java \
 java/security/acl/Permission.java \
 java/security/cert/CRL.java \
 java/security/cert/CRLException.java \
 java/security/cert/CRLSelector.java \
-java/security/cert/Certificate.java \
-java/security/cert/CertificateEncodingException.java \
-java/security/cert/CertificateException.java \
-java/security/cert/CertificateExpiredException.java \
-java/security/cert/CertificateFactory.java \
-java/security/cert/CertificateFactorySpi.java \
-java/security/cert/CertificateNotYetValidException.java \
-java/security/cert/CertificateParsingException.java \
 java/security/cert/CertPath.java \
 java/security/cert/CertPathBuilder.java \
 java/security/cert/CertPathBuilderException.java \
@@ -6795,6 +6785,14 @@ java/security/cert/CertStore.java \
 java/security/cert/CertStoreException.java \
 java/security/cert/CertStoreParameters.java \
 java/security/cert/CertStoreSpi.java \
+java/security/cert/Certificate.java \
+java/security/cert/CertificateEncodingException.java \
+java/security/cert/CertificateException.java \
+java/security/cert/CertificateExpiredException.java \
+java/security/cert/CertificateFactory.java \
+java/security/cert/CertificateFactorySpi.java \
+java/security/cert/CertificateNotYetValidException.java \
+java/security/cert/CertificateParsingException.java \
 java/security/cert/CollectionCertStoreParameters.java \
 java/security/cert/LDAPCertStoreParameters.java \
 java/security/cert/PKIXBuilderParameters.java \
@@ -6808,8 +6806,8 @@ java/security/cert/TrustAnchor.java \
 java/security/cert/X509CRL.java \
 java/security/cert/X509CRLEntry.java \
 java/security/cert/X509CRLSelector.java \
-java/security/cert/X509Certificate.java \
 java/security/cert/X509CertSelector.java \
+java/security/cert/X509Certificate.java \
 java/security/cert/X509Extension.java \
 java/security/interfaces/DSAKey.java \
 java/security/interfaces/DSAKeyPairGenerator.java \
@@ -6855,13 +6853,13 @@ java/sql/PreparedStatement.java	\
 java/sql/Ref.java \
 java/sql/ResultSet.java	\
 java/sql/ResultSetMetaData.java	\
-java/sql/Savepoint.java \
 java/sql/SQLData.java \
 java/sql/SQLException.java \
 java/sql/SQLInput.java \
 java/sql/SQLOutput.java \
 java/sql/SQLPermission.java \
 java/sql/SQLWarning.java \
+java/sql/Savepoint.java \
 java/sql/Statement.java	\
 java/sql/Struct.java	\
 java/sql/Time.java \
@@ -9141,10 +9139,10 @@ gnu/java/net/URLParseError.lo: gnu/java/net/$(am__dirstamp) \
 gnu/java/net/protocol/core/Connection.lo:  \
 	gnu/java/net/protocol/core/$(am__dirstamp) \
 	gnu/java/net/protocol/core/$(DEPDIR)/$(am__dirstamp)
-gnu/java/net/protocol/core/Handler.lo:  \
+gnu/java/net/protocol/core/CoreInputStream.lo:  \
 	gnu/java/net/protocol/core/$(am__dirstamp) \
 	gnu/java/net/protocol/core/$(DEPDIR)/$(am__dirstamp)
-gnu/java/net/protocol/core/CoreInputStream.lo:  \
+gnu/java/net/protocol/core/Handler.lo:  \
 	gnu/java/net/protocol/core/$(am__dirstamp) \
 	gnu/java/net/protocol/core/$(DEPDIR)/$(am__dirstamp)
 gnu/java/net/protocol/file/$(am__dirstamp):
@@ -9159,6 +9157,18 @@ gnu/java/net/protocol/file/Connection.lo:  \
 gnu/java/net/protocol/file/Handler.lo:  \
 	gnu/java/net/protocol/file/$(am__dirstamp) \
 	gnu/java/net/protocol/file/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/gcjlib/$(am__dirstamp):
+	@$(mkdir_p) gnu/java/net/protocol/gcjlib
+	@: > gnu/java/net/protocol/gcjlib/$(am__dirstamp)
+gnu/java/net/protocol/gcjlib/$(DEPDIR)/$(am__dirstamp):
+	@$(mkdir_p) gnu/java/net/protocol/gcjlib/$(DEPDIR)
+	@: > gnu/java/net/protocol/gcjlib/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/gcjlib/Connection.lo:  \
+	gnu/java/net/protocol/gcjlib/$(am__dirstamp) \
+	gnu/java/net/protocol/gcjlib/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/gcjlib/Handler.lo:  \
+	gnu/java/net/protocol/gcjlib/$(am__dirstamp) \
+	gnu/java/net/protocol/gcjlib/$(DEPDIR)/$(am__dirstamp)
 gnu/java/net/protocol/http/$(am__dirstamp):
 	@$(mkdir_p) gnu/java/net/protocol/http
 	@: > gnu/java/net/protocol/http/$(am__dirstamp)
@@ -9183,24 +9193,18 @@ gnu/java/net/protocol/jar/Connection.lo:  \
 gnu/java/net/protocol/jar/Handler.lo:  \
 	gnu/java/net/protocol/jar/$(am__dirstamp) \
 	gnu/java/net/protocol/jar/$(DEPDIR)/$(am__dirstamp)
-gnu/java/net/protocol/gcjlib/$(am__dirstamp):
-	@$(mkdir_p) gnu/java/net/protocol/gcjlib
-	@: > gnu/java/net/protocol/gcjlib/$(am__dirstamp)
-gnu/java/net/protocol/gcjlib/$(DEPDIR)/$(am__dirstamp):
-	@$(mkdir_p) gnu/java/net/protocol/gcjlib/$(DEPDIR)
-	@: > gnu/java/net/protocol/gcjlib/$(DEPDIR)/$(am__dirstamp)
-gnu/java/net/protocol/gcjlib/Connection.lo:  \
-	gnu/java/net/protocol/gcjlib/$(am__dirstamp) \
-	gnu/java/net/protocol/gcjlib/$(DEPDIR)/$(am__dirstamp)
-gnu/java/net/protocol/gcjlib/Handler.lo:  \
-	gnu/java/net/protocol/gcjlib/$(am__dirstamp) \
-	gnu/java/net/protocol/gcjlib/$(DEPDIR)/$(am__dirstamp)
+gnu/java/nio/ChannelInputStream.lo: gnu/java/nio/$(am__dirstamp) \
+	gnu/java/nio/$(DEPDIR)/$(am__dirstamp)
+gnu/java/nio/ChannelOutputStream.lo: gnu/java/nio/$(am__dirstamp) \
+	gnu/java/nio/$(DEPDIR)/$(am__dirstamp)
 gnu/java/nio/DatagramChannelImpl.lo: gnu/java/nio/$(am__dirstamp) \
 	gnu/java/nio/$(DEPDIR)/$(am__dirstamp)
 gnu/java/nio/DatagramChannelSelectionKey.lo:  \
 	gnu/java/nio/$(am__dirstamp) \
 	gnu/java/nio/$(DEPDIR)/$(am__dirstamp)
 gnu/java/nio/FileLockImpl.lo: gnu/java/nio/$(am__dirstamp) \
+	gnu/java/nio/$(DEPDIR)/$(am__dirstamp)
+gnu/java/nio/InputStreamChannel.lo: gnu/java/nio/$(am__dirstamp) \
 	gnu/java/nio/$(DEPDIR)/$(am__dirstamp)
 gnu/java/nio/NIOConstants.lo: gnu/java/nio/$(am__dirstamp) \
 	gnu/java/nio/$(DEPDIR)/$(am__dirstamp)
@@ -9209,12 +9213,6 @@ gnu/java/nio/NIODatagramSocket.lo: gnu/java/nio/$(am__dirstamp) \
 gnu/java/nio/NIOServerSocket.lo: gnu/java/nio/$(am__dirstamp) \
 	gnu/java/nio/$(DEPDIR)/$(am__dirstamp)
 gnu/java/nio/NIOSocket.lo: gnu/java/nio/$(am__dirstamp) \
-	gnu/java/nio/$(DEPDIR)/$(am__dirstamp)
-gnu/java/nio/ChannelInputStream.lo: gnu/java/nio/$(am__dirstamp) \
-	gnu/java/nio/$(DEPDIR)/$(am__dirstamp)
-gnu/java/nio/ChannelOutputStream.lo: gnu/java/nio/$(am__dirstamp) \
-	gnu/java/nio/$(DEPDIR)/$(am__dirstamp)
-gnu/java/nio/InputStreamChannel.lo: gnu/java/nio/$(am__dirstamp) \
 	gnu/java/nio/$(DEPDIR)/$(am__dirstamp)
 gnu/java/nio/OutputStreamChannel.lo: gnu/java/nio/$(am__dirstamp) \
 	gnu/java/nio/$(DEPDIR)/$(am__dirstamp)
@@ -9274,6 +9272,181 @@ gnu/java/nio/charset/UTF_16LE.lo:  \
 	gnu/java/nio/charset/$(DEPDIR)/$(am__dirstamp)
 gnu/java/nio/charset/UTF_8.lo: gnu/java/nio/charset/$(am__dirstamp) \
 	gnu/java/nio/charset/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/$(am__dirstamp):
+	@$(mkdir_p) gnu/java/security
+	@: > gnu/java/security/$(am__dirstamp)
+gnu/java/security/$(DEPDIR)/$(am__dirstamp):
+	@$(mkdir_p) gnu/java/security/$(DEPDIR)
+	@: > gnu/java/security/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/Engine.lo: gnu/java/security/$(am__dirstamp) \
+	gnu/java/security/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/OID.lo: gnu/java/security/$(am__dirstamp) \
+	gnu/java/security/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/action/$(am__dirstamp):
+	@$(mkdir_p) gnu/java/security/action
+	@: > gnu/java/security/action/$(am__dirstamp)
+gnu/java/security/action/$(DEPDIR)/$(am__dirstamp):
+	@$(mkdir_p) gnu/java/security/action/$(DEPDIR)
+	@: > gnu/java/security/action/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/action/GetPropertyAction.lo:  \
+	gnu/java/security/action/$(am__dirstamp) \
+	gnu/java/security/action/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/action/SetAccessibleAction.lo:  \
+	gnu/java/security/action/$(am__dirstamp) \
+	gnu/java/security/action/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/der/$(am__dirstamp):
+	@$(mkdir_p) gnu/java/security/der
+	@: > gnu/java/security/der/$(am__dirstamp)
+gnu/java/security/der/$(DEPDIR)/$(am__dirstamp):
+	@$(mkdir_p) gnu/java/security/der/$(DEPDIR)
+	@: > gnu/java/security/der/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/der/BitString.lo:  \
+	gnu/java/security/der/$(am__dirstamp) \
+	gnu/java/security/der/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/der/DER.lo: gnu/java/security/der/$(am__dirstamp) \
+	gnu/java/security/der/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/der/DEREncodingException.lo:  \
+	gnu/java/security/der/$(am__dirstamp) \
+	gnu/java/security/der/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/der/DERReader.lo:  \
+	gnu/java/security/der/$(am__dirstamp) \
+	gnu/java/security/der/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/der/DERValue.lo:  \
+	gnu/java/security/der/$(am__dirstamp) \
+	gnu/java/security/der/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/der/DERWriter.lo:  \
+	gnu/java/security/der/$(am__dirstamp) \
+	gnu/java/security/der/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/provider/$(am__dirstamp):
+	@$(mkdir_p) gnu/java/security/provider
+	@: > gnu/java/security/provider/$(am__dirstamp)
+gnu/java/security/provider/$(DEPDIR)/$(am__dirstamp):
+	@$(mkdir_p) gnu/java/security/provider/$(DEPDIR)
+	@: > gnu/java/security/provider/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/provider/DSAKeyFactory.lo:  \
+	gnu/java/security/provider/$(am__dirstamp) \
+	gnu/java/security/provider/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/provider/DSAKeyPairGenerator.lo:  \
+	gnu/java/security/provider/$(am__dirstamp) \
+	gnu/java/security/provider/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/provider/DSAParameterGenerator.lo:  \
+	gnu/java/security/provider/$(am__dirstamp) \
+	gnu/java/security/provider/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/provider/DSAParameters.lo:  \
+	gnu/java/security/provider/$(am__dirstamp) \
+	gnu/java/security/provider/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/provider/DSASignature.lo:  \
+	gnu/java/security/provider/$(am__dirstamp) \
+	gnu/java/security/provider/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/provider/DefaultPolicy.lo:  \
+	gnu/java/security/provider/$(am__dirstamp) \
+	gnu/java/security/provider/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/provider/Gnu.lo:  \
+	gnu/java/security/provider/$(am__dirstamp) \
+	gnu/java/security/provider/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/provider/GnuDSAPrivateKey.lo:  \
+	gnu/java/security/provider/$(am__dirstamp) \
+	gnu/java/security/provider/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/provider/GnuDSAPublicKey.lo:  \
+	gnu/java/security/provider/$(am__dirstamp) \
+	gnu/java/security/provider/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/provider/MD5.lo:  \
+	gnu/java/security/provider/$(am__dirstamp) \
+	gnu/java/security/provider/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/provider/SHA.lo:  \
+	gnu/java/security/provider/$(am__dirstamp) \
+	gnu/java/security/provider/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/provider/SHA1PRNG.lo:  \
+	gnu/java/security/provider/$(am__dirstamp) \
+	gnu/java/security/provider/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/provider/X509CertificateFactory.lo:  \
+	gnu/java/security/provider/$(am__dirstamp) \
+	gnu/java/security/provider/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/util/$(am__dirstamp):
+	@$(mkdir_p) gnu/java/security/util
+	@: > gnu/java/security/util/$(am__dirstamp)
+gnu/java/security/util/$(DEPDIR)/$(am__dirstamp):
+	@$(mkdir_p) gnu/java/security/util/$(DEPDIR)
+	@: > gnu/java/security/util/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/util/Prime.lo:  \
+	gnu/java/security/util/$(am__dirstamp) \
+	gnu/java/security/util/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/x509/$(am__dirstamp):
+	@$(mkdir_p) gnu/java/security/x509
+	@: > gnu/java/security/x509/$(am__dirstamp)
+gnu/java/security/x509/$(DEPDIR)/$(am__dirstamp):
+	@$(mkdir_p) gnu/java/security/x509/$(DEPDIR)
+	@: > gnu/java/security/x509/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/x509/X500DistinguishedName.lo:  \
+	gnu/java/security/x509/$(am__dirstamp) \
+	gnu/java/security/x509/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/x509/X509CRL.lo:  \
+	gnu/java/security/x509/$(am__dirstamp) \
+	gnu/java/security/x509/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/x509/X509CRLEntry.lo:  \
+	gnu/java/security/x509/$(am__dirstamp) \
+	gnu/java/security/x509/$(DEPDIR)/$(am__dirstamp)
+gnu/java/security/x509/X509Certificate.lo:  \
+	gnu/java/security/x509/$(am__dirstamp) \
+	gnu/java/security/x509/$(DEPDIR)/$(am__dirstamp)
+gnu/java/text/$(am__dirstamp):
+	@$(mkdir_p) gnu/java/text
+	@: > gnu/java/text/$(am__dirstamp)
+gnu/java/text/$(DEPDIR)/$(am__dirstamp):
+	@$(mkdir_p) gnu/java/text/$(DEPDIR)
+	@: > gnu/java/text/$(DEPDIR)/$(am__dirstamp)
+gnu/java/text/AttributedFormatBuffer.lo:  \
+	gnu/java/text/$(am__dirstamp) \
+	gnu/java/text/$(DEPDIR)/$(am__dirstamp)
+gnu/java/text/BaseBreakIterator.lo: gnu/java/text/$(am__dirstamp) \
+	gnu/java/text/$(DEPDIR)/$(am__dirstamp)
+gnu/java/text/CharacterBreakIterator.lo:  \
+	gnu/java/text/$(am__dirstamp) \
+	gnu/java/text/$(DEPDIR)/$(am__dirstamp)
+gnu/java/text/FormatBuffer.lo: gnu/java/text/$(am__dirstamp) \
+	gnu/java/text/$(DEPDIR)/$(am__dirstamp)
+gnu/java/text/FormatCharacterIterator.lo:  \
+	gnu/java/text/$(am__dirstamp) \
+	gnu/java/text/$(DEPDIR)/$(am__dirstamp)
+gnu/java/text/LineBreakIterator.lo: gnu/java/text/$(am__dirstamp) \
+	gnu/java/text/$(DEPDIR)/$(am__dirstamp)
+gnu/java/text/SentenceBreakIterator.lo: gnu/java/text/$(am__dirstamp) \
+	gnu/java/text/$(DEPDIR)/$(am__dirstamp)
+gnu/java/text/StringFormatBuffer.lo: gnu/java/text/$(am__dirstamp) \
+	gnu/java/text/$(DEPDIR)/$(am__dirstamp)
+gnu/java/text/WordBreakIterator.lo: gnu/java/text/$(am__dirstamp) \
+	gnu/java/text/$(DEPDIR)/$(am__dirstamp)
+gnu/java/util/$(am__dirstamp):
+	@$(mkdir_p) gnu/java/util
+	@: > gnu/java/util/$(am__dirstamp)
+gnu/java/util/$(DEPDIR)/$(am__dirstamp):
+	@$(mkdir_p) gnu/java/util/$(DEPDIR)
+	@: > gnu/java/util/$(DEPDIR)/$(am__dirstamp)
+gnu/java/util/DoubleEnumeration.lo: gnu/java/util/$(am__dirstamp) \
+	gnu/java/util/$(DEPDIR)/$(am__dirstamp)
+gnu/java/util/EmptyEnumeration.lo: gnu/java/util/$(am__dirstamp) \
+	gnu/java/util/$(DEPDIR)/$(am__dirstamp)
+gnu/java/util/prefs/$(am__dirstamp):
+	@$(mkdir_p) gnu/java/util/prefs
+	@: > gnu/java/util/prefs/$(am__dirstamp)
+gnu/java/util/prefs/$(DEPDIR)/$(am__dirstamp):
+	@$(mkdir_p) gnu/java/util/prefs/$(DEPDIR)
+	@: > gnu/java/util/prefs/$(DEPDIR)/$(am__dirstamp)
+gnu/java/util/prefs/FileBasedFactory.lo:  \
+	gnu/java/util/prefs/$(am__dirstamp) \
+	gnu/java/util/prefs/$(DEPDIR)/$(am__dirstamp)
+gnu/java/util/prefs/MemoryBasedFactory.lo:  \
+	gnu/java/util/prefs/$(am__dirstamp) \
+	gnu/java/util/prefs/$(DEPDIR)/$(am__dirstamp)
+gnu/java/util/prefs/MemoryBasedPreferences.lo:  \
+	gnu/java/util/prefs/$(am__dirstamp) \
+	gnu/java/util/prefs/$(DEPDIR)/$(am__dirstamp)
+gnu/java/util/prefs/NodeReader.lo:  \
+	gnu/java/util/prefs/$(am__dirstamp) \
+	gnu/java/util/prefs/$(DEPDIR)/$(am__dirstamp)
+gnu/java/util/prefs/NodeWriter.lo:  \
+	gnu/java/util/prefs/$(am__dirstamp) \
+	gnu/java/util/prefs/$(DEPDIR)/$(am__dirstamp)
 gnu/regexp/$(am__dirstamp):
 	@$(mkdir_p) gnu/regexp
 	@: > gnu/regexp/$(am__dirstamp)
@@ -9330,181 +9503,6 @@ gnu/regexp/RETokenWordBoundary.lo: gnu/regexp/$(am__dirstamp) \
 	gnu/regexp/$(DEPDIR)/$(am__dirstamp)
 gnu/regexp/UncheckedRE.lo: gnu/regexp/$(am__dirstamp) \
 	gnu/regexp/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/$(am__dirstamp):
-	@$(mkdir_p) gnu/java/security
-	@: > gnu/java/security/$(am__dirstamp)
-gnu/java/security/$(DEPDIR)/$(am__dirstamp):
-	@$(mkdir_p) gnu/java/security/$(DEPDIR)
-	@: > gnu/java/security/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/Engine.lo: gnu/java/security/$(am__dirstamp) \
-	gnu/java/security/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/OID.lo: gnu/java/security/$(am__dirstamp) \
-	gnu/java/security/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/der/$(am__dirstamp):
-	@$(mkdir_p) gnu/java/security/der
-	@: > gnu/java/security/der/$(am__dirstamp)
-gnu/java/security/der/$(DEPDIR)/$(am__dirstamp):
-	@$(mkdir_p) gnu/java/security/der/$(DEPDIR)
-	@: > gnu/java/security/der/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/der/BitString.lo:  \
-	gnu/java/security/der/$(am__dirstamp) \
-	gnu/java/security/der/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/der/DER.lo: gnu/java/security/der/$(am__dirstamp) \
-	gnu/java/security/der/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/der/DEREncodingException.lo:  \
-	gnu/java/security/der/$(am__dirstamp) \
-	gnu/java/security/der/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/der/DERReader.lo:  \
-	gnu/java/security/der/$(am__dirstamp) \
-	gnu/java/security/der/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/der/DERValue.lo:  \
-	gnu/java/security/der/$(am__dirstamp) \
-	gnu/java/security/der/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/der/DERWriter.lo:  \
-	gnu/java/security/der/$(am__dirstamp) \
-	gnu/java/security/der/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/action/$(am__dirstamp):
-	@$(mkdir_p) gnu/java/security/action
-	@: > gnu/java/security/action/$(am__dirstamp)
-gnu/java/security/action/$(DEPDIR)/$(am__dirstamp):
-	@$(mkdir_p) gnu/java/security/action/$(DEPDIR)
-	@: > gnu/java/security/action/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/action/GetPropertyAction.lo:  \
-	gnu/java/security/action/$(am__dirstamp) \
-	gnu/java/security/action/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/action/SetAccessibleAction.lo:  \
-	gnu/java/security/action/$(am__dirstamp) \
-	gnu/java/security/action/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/provider/$(am__dirstamp):
-	@$(mkdir_p) gnu/java/security/provider
-	@: > gnu/java/security/provider/$(am__dirstamp)
-gnu/java/security/provider/$(DEPDIR)/$(am__dirstamp):
-	@$(mkdir_p) gnu/java/security/provider/$(DEPDIR)
-	@: > gnu/java/security/provider/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/provider/DefaultPolicy.lo:  \
-	gnu/java/security/provider/$(am__dirstamp) \
-	gnu/java/security/provider/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/provider/DSAKeyFactory.lo:  \
-	gnu/java/security/provider/$(am__dirstamp) \
-	gnu/java/security/provider/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/provider/DSAKeyPairGenerator.lo:  \
-	gnu/java/security/provider/$(am__dirstamp) \
-	gnu/java/security/provider/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/provider/DSAParameterGenerator.lo:  \
-	gnu/java/security/provider/$(am__dirstamp) \
-	gnu/java/security/provider/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/provider/DSAParameters.lo:  \
-	gnu/java/security/provider/$(am__dirstamp) \
-	gnu/java/security/provider/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/provider/DSASignature.lo:  \
-	gnu/java/security/provider/$(am__dirstamp) \
-	gnu/java/security/provider/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/provider/Gnu.lo:  \
-	gnu/java/security/provider/$(am__dirstamp) \
-	gnu/java/security/provider/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/provider/GnuDSAPrivateKey.lo:  \
-	gnu/java/security/provider/$(am__dirstamp) \
-	gnu/java/security/provider/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/provider/GnuDSAPublicKey.lo:  \
-	gnu/java/security/provider/$(am__dirstamp) \
-	gnu/java/security/provider/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/provider/MD5.lo:  \
-	gnu/java/security/provider/$(am__dirstamp) \
-	gnu/java/security/provider/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/provider/SHA.lo:  \
-	gnu/java/security/provider/$(am__dirstamp) \
-	gnu/java/security/provider/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/provider/SHA1PRNG.lo:  \
-	gnu/java/security/provider/$(am__dirstamp) \
-	gnu/java/security/provider/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/provider/X509CertificateFactory.lo:  \
-	gnu/java/security/provider/$(am__dirstamp) \
-	gnu/java/security/provider/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/util/$(am__dirstamp):
-	@$(mkdir_p) gnu/java/security/util
-	@: > gnu/java/security/util/$(am__dirstamp)
-gnu/java/security/util/$(DEPDIR)/$(am__dirstamp):
-	@$(mkdir_p) gnu/java/security/util/$(DEPDIR)
-	@: > gnu/java/security/util/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/util/Prime.lo:  \
-	gnu/java/security/util/$(am__dirstamp) \
-	gnu/java/security/util/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/x509/$(am__dirstamp):
-	@$(mkdir_p) gnu/java/security/x509
-	@: > gnu/java/security/x509/$(am__dirstamp)
-gnu/java/security/x509/$(DEPDIR)/$(am__dirstamp):
-	@$(mkdir_p) gnu/java/security/x509/$(DEPDIR)
-	@: > gnu/java/security/x509/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/x509/X500DistinguishedName.lo:  \
-	gnu/java/security/x509/$(am__dirstamp) \
-	gnu/java/security/x509/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/x509/X509Certificate.lo:  \
-	gnu/java/security/x509/$(am__dirstamp) \
-	gnu/java/security/x509/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/x509/X509CRLEntry.lo:  \
-	gnu/java/security/x509/$(am__dirstamp) \
-	gnu/java/security/x509/$(DEPDIR)/$(am__dirstamp)
-gnu/java/security/x509/X509CRL.lo:  \
-	gnu/java/security/x509/$(am__dirstamp) \
-	gnu/java/security/x509/$(DEPDIR)/$(am__dirstamp)
-gnu/java/text/$(am__dirstamp):
-	@$(mkdir_p) gnu/java/text
-	@: > gnu/java/text/$(am__dirstamp)
-gnu/java/text/$(DEPDIR)/$(am__dirstamp):
-	@$(mkdir_p) gnu/java/text/$(DEPDIR)
-	@: > gnu/java/text/$(DEPDIR)/$(am__dirstamp)
-gnu/java/text/AttributedFormatBuffer.lo:  \
-	gnu/java/text/$(am__dirstamp) \
-	gnu/java/text/$(DEPDIR)/$(am__dirstamp)
-gnu/java/text/BaseBreakIterator.lo: gnu/java/text/$(am__dirstamp) \
-	gnu/java/text/$(DEPDIR)/$(am__dirstamp)
-gnu/java/text/CharacterBreakIterator.lo:  \
-	gnu/java/text/$(am__dirstamp) \
-	gnu/java/text/$(DEPDIR)/$(am__dirstamp)
-gnu/java/text/FormatBuffer.lo: gnu/java/text/$(am__dirstamp) \
-	gnu/java/text/$(DEPDIR)/$(am__dirstamp)
-gnu/java/text/FormatCharacterIterator.lo:  \
-	gnu/java/text/$(am__dirstamp) \
-	gnu/java/text/$(DEPDIR)/$(am__dirstamp)
-gnu/java/text/LineBreakIterator.lo: gnu/java/text/$(am__dirstamp) \
-	gnu/java/text/$(DEPDIR)/$(am__dirstamp)
-gnu/java/text/SentenceBreakIterator.lo: gnu/java/text/$(am__dirstamp) \
-	gnu/java/text/$(DEPDIR)/$(am__dirstamp)
-gnu/java/text/StringFormatBuffer.lo: gnu/java/text/$(am__dirstamp) \
-	gnu/java/text/$(DEPDIR)/$(am__dirstamp)
-gnu/java/text/WordBreakIterator.lo: gnu/java/text/$(am__dirstamp) \
-	gnu/java/text/$(DEPDIR)/$(am__dirstamp)
-gnu/java/util/$(am__dirstamp):
-	@$(mkdir_p) gnu/java/util
-	@: > gnu/java/util/$(am__dirstamp)
-gnu/java/util/$(DEPDIR)/$(am__dirstamp):
-	@$(mkdir_p) gnu/java/util/$(DEPDIR)
-	@: > gnu/java/util/$(DEPDIR)/$(am__dirstamp)
-gnu/java/util/DoubleEnumeration.lo: gnu/java/util/$(am__dirstamp) \
-	gnu/java/util/$(DEPDIR)/$(am__dirstamp)
-gnu/java/util/EmptyEnumeration.lo: gnu/java/util/$(am__dirstamp) \
-	gnu/java/util/$(DEPDIR)/$(am__dirstamp)
-gnu/java/util/prefs/$(am__dirstamp):
-	@$(mkdir_p) gnu/java/util/prefs
-	@: > gnu/java/util/prefs/$(am__dirstamp)
-gnu/java/util/prefs/$(DEPDIR)/$(am__dirstamp):
-	@$(mkdir_p) gnu/java/util/prefs/$(DEPDIR)
-	@: > gnu/java/util/prefs/$(DEPDIR)/$(am__dirstamp)
-gnu/java/util/prefs/MemoryBasedFactory.lo:  \
-	gnu/java/util/prefs/$(am__dirstamp) \
-	gnu/java/util/prefs/$(DEPDIR)/$(am__dirstamp)
-gnu/java/util/prefs/NodeReader.lo:  \
-	gnu/java/util/prefs/$(am__dirstamp) \
-	gnu/java/util/prefs/$(DEPDIR)/$(am__dirstamp)
-gnu/java/util/prefs/MemoryBasedPreferences.lo:  \
-	gnu/java/util/prefs/$(am__dirstamp) \
-	gnu/java/util/prefs/$(DEPDIR)/$(am__dirstamp)
-gnu/java/util/prefs/FileBasedFactory.lo:  \
-	gnu/java/util/prefs/$(am__dirstamp) \
-	gnu/java/util/prefs/$(DEPDIR)/$(am__dirstamp)
-gnu/java/util/prefs/NodeWriter.lo:  \
-	gnu/java/util/prefs/$(am__dirstamp) \
-	gnu/java/util/prefs/$(DEPDIR)/$(am__dirstamp)
 java/lang/ref/PhantomReference.lo: java/lang/ref/$(am__dirstamp) \
 	java/lang/ref/$(DEPDIR)/$(am__dirstamp)
 java/lang/ref/Reference.lo: java/lang/ref/$(am__dirstamp) \
@@ -9576,11 +9574,11 @@ java/net/FileNameMap.lo: java/net/$(am__dirstamp) \
 	java/net/$(DEPDIR)/$(am__dirstamp)
 java/net/HttpURLConnection.lo: java/net/$(am__dirstamp) \
 	java/net/$(DEPDIR)/$(am__dirstamp)
-java/net/InetAddress.lo: java/net/$(am__dirstamp) \
-	java/net/$(DEPDIR)/$(am__dirstamp)
 java/net/Inet4Address.lo: java/net/$(am__dirstamp) \
 	java/net/$(DEPDIR)/$(am__dirstamp)
 java/net/Inet6Address.lo: java/net/$(am__dirstamp) \
+	java/net/$(DEPDIR)/$(am__dirstamp)
+java/net/InetAddress.lo: java/net/$(am__dirstamp) \
 	java/net/$(DEPDIR)/$(am__dirstamp)
 java/net/InetSocketAddress.lo: java/net/$(am__dirstamp) \
 	java/net/$(DEPDIR)/$(am__dirstamp)
@@ -9804,10 +9802,10 @@ java/nio/channels/spi/$(am__dirstamp):
 java/nio/channels/spi/$(DEPDIR)/$(am__dirstamp):
 	@$(mkdir_p) java/nio/channels/spi/$(DEPDIR)
 	@: > java/nio/channels/spi/$(DEPDIR)/$(am__dirstamp)
-java/nio/channels/spi/AbstractSelectableChannel.lo:  \
+java/nio/channels/spi/AbstractInterruptibleChannel.lo:  \
 	java/nio/channels/spi/$(am__dirstamp) \
 	java/nio/channels/spi/$(DEPDIR)/$(am__dirstamp)
-java/nio/channels/spi/AbstractInterruptibleChannel.lo:  \
+java/nio/channels/spi/AbstractSelectableChannel.lo:  \
 	java/nio/channels/spi/$(am__dirstamp) \
 	java/nio/channels/spi/$(DEPDIR)/$(am__dirstamp)
 java/nio/channels/spi/AbstractSelectionKey.lo:  \
@@ -9825,10 +9823,10 @@ java/nio/charset/$(am__dirstamp):
 java/nio/charset/$(DEPDIR)/$(am__dirstamp):
 	@$(mkdir_p) java/nio/charset/$(DEPDIR)
 	@: > java/nio/charset/$(DEPDIR)/$(am__dirstamp)
-java/nio/charset/Charset.lo: java/nio/charset/$(am__dirstamp) \
-	java/nio/charset/$(DEPDIR)/$(am__dirstamp)
 java/nio/charset/CharacterCodingException.lo:  \
 	java/nio/charset/$(am__dirstamp) \
+	java/nio/charset/$(DEPDIR)/$(am__dirstamp)
+java/nio/charset/Charset.lo: java/nio/charset/$(am__dirstamp) \
 	java/nio/charset/$(DEPDIR)/$(am__dirstamp)
 java/nio/charset/CharsetDecoder.lo: java/nio/charset/$(am__dirstamp) \
 	java/nio/charset/$(DEPDIR)/$(am__dirstamp)
@@ -9879,10 +9877,10 @@ java/security/AccessController.lo: java/security/$(am__dirstamp) \
 java/security/AlgorithmParameterGenerator.lo:  \
 	java/security/$(am__dirstamp) \
 	java/security/$(DEPDIR)/$(am__dirstamp)
-java/security/AlgorithmParameters.lo: java/security/$(am__dirstamp) \
-	java/security/$(DEPDIR)/$(am__dirstamp)
 java/security/AlgorithmParameterGeneratorSpi.lo:  \
 	java/security/$(am__dirstamp) \
+	java/security/$(DEPDIR)/$(am__dirstamp)
+java/security/AlgorithmParameters.lo: java/security/$(am__dirstamp) \
 	java/security/$(DEPDIR)/$(am__dirstamp)
 java/security/AlgorithmParametersSpi.lo:  \
 	java/security/$(am__dirstamp) \
@@ -9897,17 +9895,17 @@ java/security/CodeSource.lo: java/security/$(am__dirstamp) \
 	java/security/$(DEPDIR)/$(am__dirstamp)
 java/security/DigestException.lo: java/security/$(am__dirstamp) \
 	java/security/$(DEPDIR)/$(am__dirstamp)
-java/security/DigestOutputStream.lo: java/security/$(am__dirstamp) \
-	java/security/$(DEPDIR)/$(am__dirstamp)
-java/security/DummyKeyPairGenerator.lo: java/security/$(am__dirstamp) \
-	java/security/$(DEPDIR)/$(am__dirstamp)
-java/security/DummySignature.lo: java/security/$(am__dirstamp) \
-	java/security/$(DEPDIR)/$(am__dirstamp)
 java/security/DigestInputStream.lo: java/security/$(am__dirstamp) \
+	java/security/$(DEPDIR)/$(am__dirstamp)
+java/security/DigestOutputStream.lo: java/security/$(am__dirstamp) \
 	java/security/$(DEPDIR)/$(am__dirstamp)
 java/security/DomainCombiner.lo: java/security/$(am__dirstamp) \
 	java/security/$(DEPDIR)/$(am__dirstamp)
+java/security/DummyKeyPairGenerator.lo: java/security/$(am__dirstamp) \
+	java/security/$(DEPDIR)/$(am__dirstamp)
 java/security/DummyMessageDigest.lo: java/security/$(am__dirstamp) \
+	java/security/$(DEPDIR)/$(am__dirstamp)
+java/security/DummySignature.lo: java/security/$(am__dirstamp) \
 	java/security/$(DEPDIR)/$(am__dirstamp)
 java/security/GeneralSecurityException.lo:  \
 	java/security/$(am__dirstamp) \
@@ -9930,26 +9928,26 @@ java/security/InvalidParameterException.lo:  \
 	java/security/$(DEPDIR)/$(am__dirstamp)
 java/security/Key.lo: java/security/$(am__dirstamp) \
 	java/security/$(DEPDIR)/$(am__dirstamp)
-java/security/KeyFactorySpi.lo: java/security/$(am__dirstamp) \
-	java/security/$(DEPDIR)/$(am__dirstamp)
-java/security/KeyPairGenerator.lo: java/security/$(am__dirstamp) \
-	java/security/$(DEPDIR)/$(am__dirstamp)
-java/security/KeyStoreException.lo: java/security/$(am__dirstamp) \
-	java/security/$(DEPDIR)/$(am__dirstamp)
 java/security/KeyException.lo: java/security/$(am__dirstamp) \
+	java/security/$(DEPDIR)/$(am__dirstamp)
+java/security/KeyFactory.lo: java/security/$(am__dirstamp) \
+	java/security/$(DEPDIR)/$(am__dirstamp)
+java/security/KeyFactorySpi.lo: java/security/$(am__dirstamp) \
 	java/security/$(DEPDIR)/$(am__dirstamp)
 java/security/KeyManagementException.lo:  \
 	java/security/$(am__dirstamp) \
 	java/security/$(DEPDIR)/$(am__dirstamp)
-java/security/KeyPairGeneratorSpi.lo: java/security/$(am__dirstamp) \
-	java/security/$(DEPDIR)/$(am__dirstamp)
-java/security/KeyStoreSpi.lo: java/security/$(am__dirstamp) \
-	java/security/$(DEPDIR)/$(am__dirstamp)
-java/security/KeyFactory.lo: java/security/$(am__dirstamp) \
-	java/security/$(DEPDIR)/$(am__dirstamp)
 java/security/KeyPair.lo: java/security/$(am__dirstamp) \
 	java/security/$(DEPDIR)/$(am__dirstamp)
+java/security/KeyPairGenerator.lo: java/security/$(am__dirstamp) \
+	java/security/$(DEPDIR)/$(am__dirstamp)
+java/security/KeyPairGeneratorSpi.lo: java/security/$(am__dirstamp) \
+	java/security/$(DEPDIR)/$(am__dirstamp)
 java/security/KeyStore.lo: java/security/$(am__dirstamp) \
+	java/security/$(DEPDIR)/$(am__dirstamp)
+java/security/KeyStoreException.lo: java/security/$(am__dirstamp) \
+	java/security/$(DEPDIR)/$(am__dirstamp)
+java/security/KeyStoreSpi.lo: java/security/$(am__dirstamp) \
 	java/security/$(DEPDIR)/$(am__dirstamp)
 java/security/MessageDigest.lo: java/security/$(am__dirstamp) \
 	java/security/$(DEPDIR)/$(am__dirstamp)
@@ -9963,49 +9961,49 @@ java/security/NoSuchProviderException.lo:  \
 	java/security/$(DEPDIR)/$(am__dirstamp)
 java/security/Permission.lo: java/security/$(am__dirstamp) \
 	java/security/$(DEPDIR)/$(am__dirstamp)
-java/security/Principal.lo: java/security/$(am__dirstamp) \
-	java/security/$(DEPDIR)/$(am__dirstamp)
-java/security/PrivilegedExceptionAction.lo:  \
-	java/security/$(am__dirstamp) \
-	java/security/$(DEPDIR)/$(am__dirstamp)
-java/security/PublicKey.lo: java/security/$(am__dirstamp) \
-	java/security/$(DEPDIR)/$(am__dirstamp)
 java/security/PermissionCollection.lo: java/security/$(am__dirstamp) \
-	java/security/$(DEPDIR)/$(am__dirstamp)
-java/security/PrivateKey.lo: java/security/$(am__dirstamp) \
-	java/security/$(DEPDIR)/$(am__dirstamp)
-java/security/ProtectionDomain.lo: java/security/$(am__dirstamp) \
 	java/security/$(DEPDIR)/$(am__dirstamp)
 java/security/Permissions.lo: java/security/$(am__dirstamp) \
 	java/security/$(DEPDIR)/$(am__dirstamp)
-java/security/PrivilegedAction.lo: java/security/$(am__dirstamp) \
-	java/security/$(DEPDIR)/$(am__dirstamp)
-java/security/Provider.lo: java/security/$(am__dirstamp) \
-	java/security/$(DEPDIR)/$(am__dirstamp)
 java/security/Policy.lo: java/security/$(am__dirstamp) \
+	java/security/$(DEPDIR)/$(am__dirstamp)
+java/security/Principal.lo: java/security/$(am__dirstamp) \
+	java/security/$(DEPDIR)/$(am__dirstamp)
+java/security/PrivateKey.lo: java/security/$(am__dirstamp) \
+	java/security/$(DEPDIR)/$(am__dirstamp)
+java/security/PrivilegedAction.lo: java/security/$(am__dirstamp) \
 	java/security/$(DEPDIR)/$(am__dirstamp)
 java/security/PrivilegedActionException.lo:  \
 	java/security/$(am__dirstamp) \
 	java/security/$(DEPDIR)/$(am__dirstamp)
+java/security/PrivilegedExceptionAction.lo:  \
+	java/security/$(am__dirstamp) \
+	java/security/$(DEPDIR)/$(am__dirstamp)
+java/security/ProtectionDomain.lo: java/security/$(am__dirstamp) \
+	java/security/$(DEPDIR)/$(am__dirstamp)
+java/security/Provider.lo: java/security/$(am__dirstamp) \
+	java/security/$(DEPDIR)/$(am__dirstamp)
 java/security/ProviderException.lo: java/security/$(am__dirstamp) \
+	java/security/$(DEPDIR)/$(am__dirstamp)
+java/security/PublicKey.lo: java/security/$(am__dirstamp) \
 	java/security/$(DEPDIR)/$(am__dirstamp)
 java/security/SecureClassLoader.lo: java/security/$(am__dirstamp) \
 	java/security/$(DEPDIR)/$(am__dirstamp)
-java/security/SecureRandomSpi.lo: java/security/$(am__dirstamp) \
-	java/security/$(DEPDIR)/$(am__dirstamp)
-java/security/SecurityPermission.lo: java/security/$(am__dirstamp) \
-	java/security/$(DEPDIR)/$(am__dirstamp)
-java/security/SignatureException.lo: java/security/$(am__dirstamp) \
-	java/security/$(DEPDIR)/$(am__dirstamp)
-java/security/SignedObject.lo: java/security/$(am__dirstamp) \
-	java/security/$(DEPDIR)/$(am__dirstamp)
 java/security/SecureRandom.lo: java/security/$(am__dirstamp) \
+	java/security/$(DEPDIR)/$(am__dirstamp)
+java/security/SecureRandomSpi.lo: java/security/$(am__dirstamp) \
 	java/security/$(DEPDIR)/$(am__dirstamp)
 java/security/Security.lo: java/security/$(am__dirstamp) \
 	java/security/$(DEPDIR)/$(am__dirstamp)
+java/security/SecurityPermission.lo: java/security/$(am__dirstamp) \
+	java/security/$(DEPDIR)/$(am__dirstamp)
 java/security/Signature.lo: java/security/$(am__dirstamp) \
 	java/security/$(DEPDIR)/$(am__dirstamp)
+java/security/SignatureException.lo: java/security/$(am__dirstamp) \
+	java/security/$(DEPDIR)/$(am__dirstamp)
 java/security/SignatureSpi.lo: java/security/$(am__dirstamp) \
+	java/security/$(DEPDIR)/$(am__dirstamp)
+java/security/SignedObject.lo: java/security/$(am__dirstamp) \
 	java/security/$(DEPDIR)/$(am__dirstamp)
 java/security/Signer.lo: java/security/$(am__dirstamp) \
 	java/security/$(DEPDIR)/$(am__dirstamp)
@@ -10022,20 +10020,20 @@ java/security/acl/$(DEPDIR)/$(am__dirstamp):
 	@: > java/security/acl/$(DEPDIR)/$(am__dirstamp)
 java/security/acl/Acl.lo: java/security/acl/$(am__dirstamp) \
 	java/security/acl/$(DEPDIR)/$(am__dirstamp)
+java/security/acl/AclEntry.lo: java/security/acl/$(am__dirstamp) \
+	java/security/acl/$(DEPDIR)/$(am__dirstamp)
 java/security/acl/AclNotFoundException.lo:  \
 	java/security/acl/$(am__dirstamp) \
+	java/security/acl/$(DEPDIR)/$(am__dirstamp)
+java/security/acl/Group.lo: java/security/acl/$(am__dirstamp) \
 	java/security/acl/$(DEPDIR)/$(am__dirstamp)
 java/security/acl/LastOwnerException.lo:  \
 	java/security/acl/$(am__dirstamp) \
 	java/security/acl/$(DEPDIR)/$(am__dirstamp)
-java/security/acl/Owner.lo: java/security/acl/$(am__dirstamp) \
-	java/security/acl/$(DEPDIR)/$(am__dirstamp)
-java/security/acl/AclEntry.lo: java/security/acl/$(am__dirstamp) \
-	java/security/acl/$(DEPDIR)/$(am__dirstamp)
-java/security/acl/Group.lo: java/security/acl/$(am__dirstamp) \
-	java/security/acl/$(DEPDIR)/$(am__dirstamp)
 java/security/acl/NotOwnerException.lo:  \
 	java/security/acl/$(am__dirstamp) \
+	java/security/acl/$(DEPDIR)/$(am__dirstamp)
+java/security/acl/Owner.lo: java/security/acl/$(am__dirstamp) \
 	java/security/acl/$(DEPDIR)/$(am__dirstamp)
 java/security/acl/Permission.lo: java/security/acl/$(am__dirstamp) \
 	java/security/acl/$(DEPDIR)/$(am__dirstamp)
@@ -10051,29 +10049,6 @@ java/security/cert/CRLException.lo:  \
 	java/security/cert/$(am__dirstamp) \
 	java/security/cert/$(DEPDIR)/$(am__dirstamp)
 java/security/cert/CRLSelector.lo: java/security/cert/$(am__dirstamp) \
-	java/security/cert/$(DEPDIR)/$(am__dirstamp)
-java/security/cert/Certificate.lo: java/security/cert/$(am__dirstamp) \
-	java/security/cert/$(DEPDIR)/$(am__dirstamp)
-java/security/cert/CertificateEncodingException.lo:  \
-	java/security/cert/$(am__dirstamp) \
-	java/security/cert/$(DEPDIR)/$(am__dirstamp)
-java/security/cert/CertificateException.lo:  \
-	java/security/cert/$(am__dirstamp) \
-	java/security/cert/$(DEPDIR)/$(am__dirstamp)
-java/security/cert/CertificateExpiredException.lo:  \
-	java/security/cert/$(am__dirstamp) \
-	java/security/cert/$(DEPDIR)/$(am__dirstamp)
-java/security/cert/CertificateFactory.lo:  \
-	java/security/cert/$(am__dirstamp) \
-	java/security/cert/$(DEPDIR)/$(am__dirstamp)
-java/security/cert/CertificateFactorySpi.lo:  \
-	java/security/cert/$(am__dirstamp) \
-	java/security/cert/$(DEPDIR)/$(am__dirstamp)
-java/security/cert/CertificateNotYetValidException.lo:  \
-	java/security/cert/$(am__dirstamp) \
-	java/security/cert/$(DEPDIR)/$(am__dirstamp)
-java/security/cert/CertificateParsingException.lo:  \
-	java/security/cert/$(am__dirstamp) \
 	java/security/cert/$(DEPDIR)/$(am__dirstamp)
 java/security/cert/CertPath.lo: java/security/cert/$(am__dirstamp) \
 	java/security/cert/$(DEPDIR)/$(am__dirstamp)
@@ -10118,6 +10093,29 @@ java/security/cert/CertStoreParameters.lo:  \
 java/security/cert/CertStoreSpi.lo:  \
 	java/security/cert/$(am__dirstamp) \
 	java/security/cert/$(DEPDIR)/$(am__dirstamp)
+java/security/cert/Certificate.lo: java/security/cert/$(am__dirstamp) \
+	java/security/cert/$(DEPDIR)/$(am__dirstamp)
+java/security/cert/CertificateEncodingException.lo:  \
+	java/security/cert/$(am__dirstamp) \
+	java/security/cert/$(DEPDIR)/$(am__dirstamp)
+java/security/cert/CertificateException.lo:  \
+	java/security/cert/$(am__dirstamp) \
+	java/security/cert/$(DEPDIR)/$(am__dirstamp)
+java/security/cert/CertificateExpiredException.lo:  \
+	java/security/cert/$(am__dirstamp) \
+	java/security/cert/$(DEPDIR)/$(am__dirstamp)
+java/security/cert/CertificateFactory.lo:  \
+	java/security/cert/$(am__dirstamp) \
+	java/security/cert/$(DEPDIR)/$(am__dirstamp)
+java/security/cert/CertificateFactorySpi.lo:  \
+	java/security/cert/$(am__dirstamp) \
+	java/security/cert/$(DEPDIR)/$(am__dirstamp)
+java/security/cert/CertificateNotYetValidException.lo:  \
+	java/security/cert/$(am__dirstamp) \
+	java/security/cert/$(DEPDIR)/$(am__dirstamp)
+java/security/cert/CertificateParsingException.lo:  \
+	java/security/cert/$(am__dirstamp) \
+	java/security/cert/$(DEPDIR)/$(am__dirstamp)
 java/security/cert/CollectionCertStoreParameters.lo:  \
 	java/security/cert/$(am__dirstamp) \
 	java/security/cert/$(DEPDIR)/$(am__dirstamp)
@@ -10154,10 +10152,10 @@ java/security/cert/X509CRLEntry.lo:  \
 java/security/cert/X509CRLSelector.lo:  \
 	java/security/cert/$(am__dirstamp) \
 	java/security/cert/$(DEPDIR)/$(am__dirstamp)
-java/security/cert/X509Certificate.lo:  \
+java/security/cert/X509CertSelector.lo:  \
 	java/security/cert/$(am__dirstamp) \
 	java/security/cert/$(DEPDIR)/$(am__dirstamp)
-java/security/cert/X509CertSelector.lo:  \
+java/security/cert/X509Certificate.lo:  \
 	java/security/cert/$(am__dirstamp) \
 	java/security/cert/$(DEPDIR)/$(am__dirstamp)
 java/security/cert/X509Extension.lo:  \
@@ -10295,8 +10293,6 @@ java/sql/ResultSet.lo: java/sql/$(am__dirstamp) \
 	java/sql/$(DEPDIR)/$(am__dirstamp)
 java/sql/ResultSetMetaData.lo: java/sql/$(am__dirstamp) \
 	java/sql/$(DEPDIR)/$(am__dirstamp)
-java/sql/Savepoint.lo: java/sql/$(am__dirstamp) \
-	java/sql/$(DEPDIR)/$(am__dirstamp)
 java/sql/SQLData.lo: java/sql/$(am__dirstamp) \
 	java/sql/$(DEPDIR)/$(am__dirstamp)
 java/sql/SQLException.lo: java/sql/$(am__dirstamp) \
@@ -10308,6 +10304,8 @@ java/sql/SQLOutput.lo: java/sql/$(am__dirstamp) \
 java/sql/SQLPermission.lo: java/sql/$(am__dirstamp) \
 	java/sql/$(DEPDIR)/$(am__dirstamp)
 java/sql/SQLWarning.lo: java/sql/$(am__dirstamp) \
+	java/sql/$(DEPDIR)/$(am__dirstamp)
+java/sql/Savepoint.lo: java/sql/$(am__dirstamp) \
 	java/sql/$(DEPDIR)/$(am__dirstamp)
 java/sql/Statement.lo: java/sql/$(am__dirstamp) \
 	java/sql/$(DEPDIR)/$(am__dirstamp)
@@ -23141,13 +23139,6 @@ uninstall-info: uninstall-info-recursive
 	uninstall-toolexecmainlibDATA
 
 
-libgcj.la: $(libgcj_la_OBJECTS) $(libgcj_la_DEPENDENCIES)
-	@echo Creating list of files to link...
-	@: $(call write_entries_to_file,$(libgcj_la_OBJECTS),libgcj.objectlist)
-	$(libgcj_la_LINK) -objectlist libgcj.objectlist \
-	$(libgcj_la_LIBADD) \
-	-rpath $(toolexeclibdir) $(libgcj_la_LDFLAGS) $(LIBS)
-
 $(gtk_jni_headers): $(gtk_awt_peer_sources)
 	@input=`echo $@ | sed -e 's,jniinclude/,,' -e 's,_,.,g' -e 's,.h$$,,'`; \
 	echo "$(GCJH) -jni -d jniinclude -classpath '' -bootclasspath $(top_builddir) $$input"; \
@@ -23212,6 +23203,13 @@ $(gtk_awt_peer_sources:.java=.lo): %.lo: %.java
 
 gnu/gcj/runtime/StackTrace.lo: gnu/gcj/runtime/StackTrace.java
 	$(LTGCJCOMPILE) -fno-optimize-sibling-calls -o $@ -c $<
+
+libgcj.la: $(libgcj_la_OBJECTS) $(libgcj_la_DEPENDENCIES)
+	@echo Creating list of files to link...
+	@: $(call write_entries_to_file,$(libgcj_la_OBJECTS),libgcj.objectlist)
+	$(libgcj_la_LINK) -objectlist libgcj.objectlist \
+	$(libgcj_la_LIBADD) \
+	-rpath $(toolexeclibdir) $(libgcj_la_LDFLAGS) $(LIBS)
 
 lib-gnu-awt-xlib.la: $(lib_gnu_awt_xlib_la_OBJECTS) $(lib_gnu_awt_xlib_la_DEPENDENCIES)
 	@echo Creating list of files to link...

@@ -211,15 +211,6 @@ libgcj_la_DEPENDENCIES = libgcj-@gcc_version@.jar \
 	java/lang/fdlibm.h java/lang/ieeefp.h java/lang/mprec.h \
 	$(LIBLTDL) $(LIBFFI) $(ZLIBS) $(GCLIBS) $(propertyo_files)
 
-## Pass the list of object files to libtool in a temporary file to
-## avoid tripping platform command line length limits.
-libgcj.la: $(libgcj_la_OBJECTS) $(libgcj_la_DEPENDENCIES)
-	@echo Creating list of files to link...
-	@: $(call write_entries_to_file,$(libgcj_la_OBJECTS),libgcj.objectlist)
-	$(libgcj_la_LINK) -objectlist libgcj.objectlist \
-	$(libgcj_la_LIBADD) \
-	-rpath $(toolexeclibdir) $(libgcj_la_LDFLAGS) $(LIBS)
-
 # Include THREADLIBS here to ensure that the correct version of
 # certain linuxthread functions get linked:
 ## The mysterious backslash in the grep pattern is consumed by make.
@@ -570,6 +561,15 @@ $(gtk_awt_peer_sources:.java=.lo): %.lo: %.java
 ## number.
 gnu/gcj/runtime/StackTrace.lo: gnu/gcj/runtime/StackTrace.java
 	$(LTGCJCOMPILE) -fno-optimize-sibling-calls -o $@ -c $<
+
+## Pass the list of object files to libtool in a temporary file to
+## avoid tripping platform command line length limits.
+libgcj.la: $(libgcj_la_OBJECTS) $(libgcj_la_DEPENDENCIES)
+	@echo Creating list of files to link...
+	@: $(call write_entries_to_file,$(libgcj_la_OBJECTS),libgcj.objectlist)
+	$(libgcj_la_LINK) -objectlist libgcj.objectlist \
+	$(libgcj_la_LIBADD) \
+	-rpath $(toolexeclibdir) $(libgcj_la_LDFLAGS) $(LIBS)
 
 lib-gnu-awt-xlib.la: $(lib_gnu_awt_xlib_la_OBJECTS) $(lib_gnu_awt_xlib_la_DEPENDENCIES)
 	@echo Creating list of files to link...
@@ -2466,7 +2466,7 @@ java/util/regex/PatternSyntaxException.java
 
 ## List of all .java files to be compiled.  Please keep this list
 ## alphabetical.  Please put files from java/lang, java/io, and java/util
-## into core_java_source_files. Please put files from gnu/gcj/convert 
+## into core_java_source_files.  Please put files from gnu/gcj/convert 
 ## into convert_source_files and files from java/awt into
 ## awt_java_source_files.  If the .java file has a hand-maintained
 ## header, please list it in special_java_source_files.
@@ -2644,26 +2644,26 @@ gnu/java/net/PlainDatagramSocketImpl.java \
 gnu/java/net/PlainSocketImpl.java \
 gnu/java/net/URLParseError.java \
 gnu/java/net/protocol/core/Connection.java \
-gnu/java/net/protocol/core/Handler.java \
 gnu/java/net/protocol/core/CoreInputStream.java \
+gnu/java/net/protocol/core/Handler.java \
 gnu/java/net/protocol/file/Connection.java \
 gnu/java/net/protocol/file/Handler.java \
+gnu/java/net/protocol/gcjlib/Connection.java \
+gnu/java/net/protocol/gcjlib/Handler.java \
 gnu/java/net/protocol/http/Connection.java \
 gnu/java/net/protocol/http/Handler.java \
 gnu/java/net/protocol/jar/Connection.java \
 gnu/java/net/protocol/jar/Handler.java \
-gnu/java/net/protocol/gcjlib/Connection.java \
-gnu/java/net/protocol/gcjlib/Handler.java \
+gnu/java/nio/ChannelInputStream.java \
+gnu/java/nio/ChannelOutputStream.java \
 gnu/java/nio/DatagramChannelImpl.java \
 gnu/java/nio/DatagramChannelSelectionKey.java \
 gnu/java/nio/FileLockImpl.java \
+gnu/java/nio/InputStreamChannel.java \
 gnu/java/nio/NIOConstants.java \
 gnu/java/nio/NIODatagramSocket.java \
 gnu/java/nio/NIOServerSocket.java \
 gnu/java/nio/NIOSocket.java \
-gnu/java/nio/ChannelInputStream.java \
-gnu/java/nio/ChannelOutputStream.java \
-gnu/java/nio/InputStreamChannel.java \
 gnu/java/nio/OutputStreamChannel.java \
 gnu/java/nio/PipeImpl.java \
 gnu/java/nio/SelectionKeyImpl.java \
@@ -2685,6 +2685,50 @@ gnu/java/nio/charset/UTF_16Decoder.java \
 gnu/java/nio/charset/UTF_16Encoder.java \
 gnu/java/nio/charset/UTF_16LE.java \
 gnu/java/nio/charset/UTF_8.java \
+gnu/java/security/Engine.java \
+gnu/java/security/OID.java \
+gnu/java/security/action/GetPropertyAction.java \
+gnu/java/security/action/SetAccessibleAction.java \
+gnu/java/security/der/BitString.java \
+gnu/java/security/der/DER.java \
+gnu/java/security/der/DEREncodingException.java \
+gnu/java/security/der/DERReader.java \
+gnu/java/security/der/DERValue.java \
+gnu/java/security/der/DERWriter.java \
+gnu/java/security/provider/DSAKeyFactory.java \
+gnu/java/security/provider/DSAKeyPairGenerator.java \
+gnu/java/security/provider/DSAParameterGenerator.java \
+gnu/java/security/provider/DSAParameters.java \
+gnu/java/security/provider/DSASignature.java \
+gnu/java/security/provider/DefaultPolicy.java \
+gnu/java/security/provider/Gnu.java \
+gnu/java/security/provider/GnuDSAPrivateKey.java \
+gnu/java/security/provider/GnuDSAPublicKey.java \
+gnu/java/security/provider/MD5.java \
+gnu/java/security/provider/SHA.java \
+gnu/java/security/provider/SHA1PRNG.java \
+gnu/java/security/provider/X509CertificateFactory.java \
+gnu/java/security/util/Prime.java \
+gnu/java/security/x509/X500DistinguishedName.java \
+gnu/java/security/x509/X509CRL.java \
+gnu/java/security/x509/X509CRLEntry.java \
+gnu/java/security/x509/X509Certificate.java \
+gnu/java/text/AttributedFormatBuffer.java \
+gnu/java/text/BaseBreakIterator.java \
+gnu/java/text/CharacterBreakIterator.java \
+gnu/java/text/FormatBuffer.java \
+gnu/java/text/FormatCharacterIterator.java \
+gnu/java/text/LineBreakIterator.java \
+gnu/java/text/SentenceBreakIterator.java \
+gnu/java/text/StringFormatBuffer.java \
+gnu/java/text/WordBreakIterator.java \
+gnu/java/util/DoubleEnumeration.java \
+gnu/java/util/EmptyEnumeration.java \
+gnu/java/util/prefs/FileBasedFactory.java \
+gnu/java/util/prefs/MemoryBasedFactory.java \
+gnu/java/util/prefs/MemoryBasedPreferences.java \
+gnu/java/util/prefs/NodeReader.java \
+gnu/java/util/prefs/NodeWriter.java \
 gnu/regexp/CharIndexed.java \
 gnu/regexp/CharIndexedCharArray.java \
 gnu/regexp/CharIndexedInputStream.java \
@@ -2710,50 +2754,6 @@ gnu/regexp/RETokenRepeated.java \
 gnu/regexp/RETokenStart.java \
 gnu/regexp/RETokenWordBoundary.java \
 gnu/regexp/UncheckedRE.java \
-gnu/java/security/Engine.java \
-gnu/java/security/OID.java \
-gnu/java/security/der/BitString.java \
-gnu/java/security/der/DER.java \
-gnu/java/security/der/DEREncodingException.java \
-gnu/java/security/der/DERReader.java \
-gnu/java/security/der/DERValue.java \
-gnu/java/security/der/DERWriter.java \
-gnu/java/security/action/GetPropertyAction.java \
-gnu/java/security/action/SetAccessibleAction.java \
-gnu/java/security/provider/DefaultPolicy.java \
-gnu/java/security/provider/DSAKeyFactory.java \
-gnu/java/security/provider/DSAKeyPairGenerator.java \
-gnu/java/security/provider/DSAParameterGenerator.java \
-gnu/java/security/provider/DSAParameters.java \
-gnu/java/security/provider/DSASignature.java \
-gnu/java/security/provider/Gnu.java \
-gnu/java/security/provider/GnuDSAPrivateKey.java \
-gnu/java/security/provider/GnuDSAPublicKey.java \
-gnu/java/security/provider/MD5.java \
-gnu/java/security/provider/SHA.java \
-gnu/java/security/provider/SHA1PRNG.java \
-gnu/java/security/provider/X509CertificateFactory.java \
-gnu/java/security/util/Prime.java \
-gnu/java/security/x509/X500DistinguishedName.java \
-gnu/java/security/x509/X509Certificate.java \
-gnu/java/security/x509/X509CRLEntry.java \
-gnu/java/security/x509/X509CRL.java \
-gnu/java/text/AttributedFormatBuffer.java \
-gnu/java/text/BaseBreakIterator.java \
-gnu/java/text/CharacterBreakIterator.java \
-gnu/java/text/FormatBuffer.java \
-gnu/java/text/FormatCharacterIterator.java \
-gnu/java/text/LineBreakIterator.java \
-gnu/java/text/SentenceBreakIterator.java \
-gnu/java/text/StringFormatBuffer.java \
-gnu/java/text/WordBreakIterator.java \
-gnu/java/util/DoubleEnumeration.java \
-gnu/java/util/EmptyEnumeration.java \
-gnu/java/util/prefs/MemoryBasedFactory.java \
-gnu/java/util/prefs/NodeReader.java \
-gnu/java/util/prefs/MemoryBasedPreferences.java \
-gnu/java/util/prefs/FileBasedFactory.java \
-gnu/java/util/prefs/NodeWriter.java \
 java/lang/ref/PhantomReference.java \
 java/lang/ref/Reference.java \
 java/lang/ref/ReferenceQueue.java \
@@ -2784,9 +2784,9 @@ java/net/DatagramSocketImpl.java \
 java/net/DatagramSocketImplFactory.java \
 java/net/FileNameMap.java \
 java/net/HttpURLConnection.java	\
-java/net/InetAddress.java \
 java/net/Inet4Address.java \
 java/net/Inet6Address.java \
+java/net/InetAddress.java \
 java/net/InetSocketAddress.java \
 java/net/JarURLConnection.java \
 java/net/MalformedURLException.java \
@@ -2882,13 +2882,13 @@ java/nio/channels/SocketChannel.java \
 java/nio/channels/UnresolvedAddressException.java \
 java/nio/channels/UnsupportedAddressTypeException.java \
 java/nio/channels/WritableByteChannel.java \
-java/nio/channels/spi/AbstractSelectableChannel.java \
 java/nio/channels/spi/AbstractInterruptibleChannel.java \
+java/nio/channels/spi/AbstractSelectableChannel.java \
 java/nio/channels/spi/AbstractSelectionKey.java \
 java/nio/channels/spi/AbstractSelector.java \
 java/nio/channels/spi/SelectorProvider.java \
-java/nio/charset/Charset.java \
 java/nio/charset/CharacterCodingException.java \
+java/nio/charset/Charset.java \
 java/nio/charset/CharsetDecoder.java \
 java/nio/charset/CharsetEncoder.java \
 java/nio/charset/CoderMalfunctionError.java \
@@ -2903,20 +2903,20 @@ java/security/AccessControlContext.java \
 java/security/AccessControlException.java \
 java/security/AccessController.java \
 java/security/AlgorithmParameterGenerator.java \
-java/security/AlgorithmParameters.java \
 java/security/AlgorithmParameterGeneratorSpi.java \
+java/security/AlgorithmParameters.java \
 java/security/AlgorithmParametersSpi.java \
 java/security/AllPermission.java \
 java/security/BasicPermission.java \
 java/security/Certificate.java \
 java/security/CodeSource.java \
 java/security/DigestException.java \
-java/security/DigestOutputStream.java \
-java/security/DummyKeyPairGenerator.java \
-java/security/DummySignature.java \
 java/security/DigestInputStream.java \
+java/security/DigestOutputStream.java \
 java/security/DomainCombiner.java \
+java/security/DummyKeyPairGenerator.java \
 java/security/DummyMessageDigest.java \
+java/security/DummySignature.java \
 java/security/GeneralSecurityException.java \
 java/security/Guard.java \
 java/security/GuardedObject.java \
@@ -2926,64 +2926,56 @@ java/security/InvalidAlgorithmParameterException.java \
 java/security/InvalidKeyException.java \
 java/security/InvalidParameterException.java \
 java/security/Key.java \
-java/security/KeyFactorySpi.java \
-java/security/KeyPairGenerator.java \
-java/security/KeyStoreException.java \
 java/security/KeyException.java \
-java/security/KeyManagementException.java \
-java/security/KeyPairGeneratorSpi.java \
-java/security/KeyStoreSpi.java \
 java/security/KeyFactory.java \
+java/security/KeyFactorySpi.java \
+java/security/KeyManagementException.java \
 java/security/KeyPair.java \
+java/security/KeyPairGenerator.java \
+java/security/KeyPairGeneratorSpi.java \
 java/security/KeyStore.java \
+java/security/KeyStoreException.java \
+java/security/KeyStoreSpi.java \
 java/security/MessageDigest.java \
 java/security/MessageDigestSpi.java \
 java/security/NoSuchAlgorithmException.java \
 java/security/NoSuchProviderException.java \
 java/security/Permission.java \
-java/security/Principal.java \
-java/security/PrivilegedExceptionAction.java \
-java/security/PublicKey.java \
 java/security/PermissionCollection.java \
-java/security/PrivateKey.java \
-java/security/ProtectionDomain.java \
 java/security/Permissions.java \
-java/security/PrivilegedAction.java \
-java/security/Provider.java \
 java/security/Policy.java \
+java/security/Principal.java \
+java/security/PrivateKey.java \
+java/security/PrivilegedAction.java \
 java/security/PrivilegedActionException.java \
+java/security/PrivilegedExceptionAction.java \
+java/security/ProtectionDomain.java \
+java/security/Provider.java \
 java/security/ProviderException.java \
+java/security/PublicKey.java \
 java/security/SecureClassLoader.java \
-java/security/SecureRandomSpi.java \
-java/security/SecurityPermission.java \
-java/security/SignatureException.java \
-java/security/SignedObject.java \
 java/security/SecureRandom.java \
+java/security/SecureRandomSpi.java \
 java/security/Security.java \
+java/security/SecurityPermission.java \
 java/security/Signature.java \
+java/security/SignatureException.java \
 java/security/SignatureSpi.java \
+java/security/SignedObject.java \
 java/security/Signer.java \
 java/security/UnrecoverableKeyException.java \
 java/security/UnresolvedPermission.java \
 java/security/acl/Acl.java \
-java/security/acl/AclNotFoundException.java \
-java/security/acl/LastOwnerException.java \
-java/security/acl/Owner.java \
 java/security/acl/AclEntry.java \
+java/security/acl/AclNotFoundException.java \
 java/security/acl/Group.java \
+java/security/acl/LastOwnerException.java \
 java/security/acl/NotOwnerException.java \
+java/security/acl/Owner.java \
 java/security/acl/Permission.java \
 java/security/cert/CRL.java \
 java/security/cert/CRLException.java \
 java/security/cert/CRLSelector.java \
-java/security/cert/Certificate.java \
-java/security/cert/CertificateEncodingException.java \
-java/security/cert/CertificateException.java \
-java/security/cert/CertificateExpiredException.java \
-java/security/cert/CertificateFactory.java \
-java/security/cert/CertificateFactorySpi.java \
-java/security/cert/CertificateNotYetValidException.java \
-java/security/cert/CertificateParsingException.java \
 java/security/cert/CertPath.java \
 java/security/cert/CertPathBuilder.java \
 java/security/cert/CertPathBuilderException.java \
@@ -2999,6 +2991,14 @@ java/security/cert/CertStore.java \
 java/security/cert/CertStoreException.java \
 java/security/cert/CertStoreParameters.java \
 java/security/cert/CertStoreSpi.java \
+java/security/cert/Certificate.java \
+java/security/cert/CertificateEncodingException.java \
+java/security/cert/CertificateException.java \
+java/security/cert/CertificateExpiredException.java \
+java/security/cert/CertificateFactory.java \
+java/security/cert/CertificateFactorySpi.java \
+java/security/cert/CertificateNotYetValidException.java \
+java/security/cert/CertificateParsingException.java \
 java/security/cert/CollectionCertStoreParameters.java \
 java/security/cert/LDAPCertStoreParameters.java \
 java/security/cert/PKIXBuilderParameters.java \
@@ -3012,8 +3012,8 @@ java/security/cert/TrustAnchor.java \
 java/security/cert/X509CRL.java \
 java/security/cert/X509CRLEntry.java \
 java/security/cert/X509CRLSelector.java \
-java/security/cert/X509Certificate.java \
 java/security/cert/X509CertSelector.java \
+java/security/cert/X509Certificate.java \
 java/security/cert/X509Extension.java \
 java/security/interfaces/DSAKey.java \
 java/security/interfaces/DSAKeyPairGenerator.java \
@@ -3059,13 +3059,13 @@ java/sql/PreparedStatement.java	\
 java/sql/Ref.java \
 java/sql/ResultSet.java	\
 java/sql/ResultSetMetaData.java	\
-java/sql/Savepoint.java \
 java/sql/SQLData.java \
 java/sql/SQLException.java \
 java/sql/SQLInput.java \
 java/sql/SQLOutput.java \
 java/sql/SQLPermission.java \
 java/sql/SQLWarning.java \
+java/sql/Savepoint.java \
 java/sql/Statement.java	\
 java/sql/Struct.java	\
 java/sql/Time.java \
