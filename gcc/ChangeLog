@@ -1,3 +1,7 @@
+2002-12-30  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* doc/service.texi: Uncomment and update FAQ link.
+
 2002-12-28  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/cpp.texi, doc/gcc.texi, doc/gccint.texi, doc/install.texi:

@@ -1,5 +1,5 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-@c 1999, 2000, 2001 Free Software Foundation, Inc.
+@c 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -24,7 +24,5 @@ The service directory is found at
 @uref{http://www.gnu.org/prep/service.html}.
 @end itemize
 
-@c For further information, see
-@c @uref{http://gcc.gnu.org/cgi-bin/fom.cgi?file=12}.
-@c FIXME: this URL may be too volatile, this FAQ entry needs to move to
-@c the regular web pages before we can uncomment the reference.
+For further information, see
+@uref{http://gcc.gnu.org/faq.html#support}.
