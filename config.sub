@@ -3,7 +3,7 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
 #   2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
-timestamp='2003-05-09'
+timestamp='2003-06-06'
 
 # This file is (in principle) common to ALL GNU software.
 # The presence of a machine in this file suggests that SOME GNU software
@@ -771,8 +771,11 @@ case $basic_machine in
 	pentiumpro | p6 | 6x86 | athlon | athlon_*)
 		basic_machine=i686-pc
 		;;
-	pentiumii | pentium2)
+	pentiumii | pentium2 | pentiumiii | pentium3)
 		basic_machine=i686-pc
+		;;
+	pentium4)
+		basic_machine=i786-pc
 		;;
 	pentium-* | p5-* | k5-* | k6-* | nexgen-* | viac3-*)
 		basic_machine=i586-`echo $basic_machine | sed 's/^[^-]*-//'`
@@ -780,8 +783,11 @@ case $basic_machine in
 	pentiumpro-* | p6-* | 6x86-* | athlon-*)
 		basic_machine=i686-`echo $basic_machine | sed 's/^[^-]*-//'`
 		;;
-	pentiumii-* | pentium2-*)
+	pentiumii-* | pentium2-* | pentiumiii-* | pentium3-*)
 		basic_machine=i686-`echo $basic_machine | sed 's/^[^-]*-//'`
+		;;
+	pentium4-*)
+		basic_machine=i786-`echo $basic_machine | sed 's/^[^-]*-//'`
 		;;
 	pn)
 		basic_machine=pn-gould
@@ -1131,7 +1137,7 @@ case $os in
 	      | -storm-chaos* | -tops10* | -tenex* | -tops20* | -its* \
 	      | -os2* | -vos* | -palmos* | -uclinux* | -nucleus* \
 	      | -morphos* | -superux* | -rtmk* | -rtmk-nova* | -windiss* \
-	      | -powermax* | -dnix*)
+	      | -powermax* | -dnix* | -nx6 | -nx7)
 	# Remember, each alternative MUST END IN *, to match a version number.
 		;;
 	-qnx*)
