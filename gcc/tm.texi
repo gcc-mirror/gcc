@@ -2022,17 +2022,15 @@ is @code{BITS_PER_WORD} bits wide is correct for your machine.
 
 @findex SMALL_REGISTER_CLASSES
 @item SMALL_REGISTER_CLASSES
-Normally the compiler avoids choosing registers that have been
-explicitly mentioned in the rtl as spill registers (these registers are
-normally those used to pass parameters and return values).  However,
-some machines have so few registers of certain classes that there
-would not be enough registers to use as spill registers if this were
-done.
+On some machines, it is risky to let hard registers live across arbitrary
+insns.  Typically, these machines have instructions that require values
+to be in specific registers (like an accumulator), and reload will fail
+if the required hard register is used for another purpose across such an
+insn.
 
 Define @code{SMALL_REGISTER_CLASSES} to be an expression with a non-zero
 value on these machines.  When this macro has a non-zero value, the
-compiler allows registers explicitly used in the rtl to be used as spill
-registers but avoids extending the lifetime of these registers.
+compiler will try to minimize the lifetime of hard registers.
 
 It is always safe to define this macro with a non-zero value, but if you
 unnecessarily define it, you will reduce the amount of optimizations

@@ -1,5 +1,7 @@
 Fri Dec  4 20:15:57 1998  Bernd Schmidt  <crux@pool.informatik.rwth-aachen.de>
 
+	* tm.texi (SMALL_REGISTER_CLASSES): Make description match reality.
+
 	* final.c (cleanup_subreg_operands): Delete some unused code.
 
 	* recog.h (MAX_RECOG_ALTERNATIVES): New macro.
