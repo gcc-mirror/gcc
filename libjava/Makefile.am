@@ -64,10 +64,11 @@ if NULL_TARGET
 ## In this case, gcj is found outside the build tree.  However, zip is
 ## found in the build tree.
 ZIP = $(MULTIBUILDTOP)../$(COMPPATH)/fastjar/jar
+GCJH = gcjh
 else
 ZIP = jar
+GCJH = $(target_alias)-gcjh
 endif
-GCJH = gcjh
 else # CANADIAN
 GCJH = $(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh
 ZIP = $(MULTIBUILDTOP)../$(COMPPATH)/fastjar/jar

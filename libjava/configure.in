@@ -23,8 +23,8 @@ LIBGCJ_CONFIGURE(.)
 
 AM_CONFIG_HEADER(include/config.h gcj/libgcj-config.h)
 
-# Only use libltdl for native builds.
-if test -z "${with_cross_host}"; then
+# Only use libltdl for non-newlib builds.
+if test "x${with_newlib}" = "xno"; then
    AC_LIBLTDL_CONVENIENCE
    AC_LIBTOOL_DLOPEN
    DIRLTDL=libltdl
@@ -555,16 +555,6 @@ if test "x${with_newlib}" = "xyes"; then
 
    dnl Assume we do not have getuid and friends.
    AC_DEFINE(NO_GETUID)
-
-   # If Canadian cross, then don't pick up tools from the build
-   # directory.
-   if test x"$build" != x"$with_cross_host" \
-        && test x"$build" != x"$target"; then
-      CANADIAN=yes
-      GCC_UNWIND_INCLUDE=
-      GCJ="${target_alias}-gcj"
-   fi
-   NATIVE=no
    PLATFORMNET=NoNet
 else
    AC_CHECK_FUNCS(strerror ioctl select fstat open fsync sleep opendir)
@@ -809,15 +799,69 @@ changequote(<<,>>)
       builddotdot=`echo ${with_multisubdir} | sed -e 's:[^/][^/]*:..:g'`
 changequote([,])
    fi
-   if test -x "${builddotdot}/../../gcc/gcj"; then
-      dir="`cd ${builddotdot}/../../gcc && ${PWDCMD-pwd}`"
-      GCJ="$dir/gcj -B`${PWDCMD-pwd}`/ -B$dir/"
-   else
+fi
+
+# Which gcj do we use?
+which_gcj=default
+built_gcc_dir="`cd ${builddotdot}/../../gcc && ${PWDCMD-pwd}`"
+if test -n "${with_cross_host}"; then
+  # We are being configured with a cross compiler. We can't
+  # use ac_exeext, because that is for the target platform.
+  NATIVE=no
+  cross_host_exeext=
+  case "${with_cross_host}" in
+     *mingw* | *cygwin*)
+         cross_host_exeext=.exe
+     ;;
+  esac
+  if test -x "${built_gcc_dir}/gcj${cross_host_exeext}"; then
+     if test x"$build" = x"$with_cross_host"; then
+        # Ordinary cross (host!=target and host=build)
+        which_gcj=built
+     else
+        # Canadian cross (host!=target and host!=build)
+        which_gcj=cross
+     fi
+  else
+     which_gcj=cross
+  fi
+else
+  # We are being configured with a native or crossed-native compiler
+  if test -x "${built_gcc_dir}/gcj${ac_exeext}"; then
+     if test x"$build" = x"$host"; then
+        # True native build (host=target and host=build)
+        which_gcj=built
+     else
+        # Crossed-native build (host=target and host!=build)
+        which_gcj=cross
+     fi
+  else
+     which_gcj=path
+  fi
+fi
+case "${which_gcj}" in
+   built)
+      GCJ="$built_gcc_dir/gcj -B`${PWDCMD-pwd}`/ -B$built_gcc_dir/"
+   ;;
+   cross)
+      # See the comment in Makefile.am about CANADIAN being a misnomer
+      CANADIAN=yes
+      NULL_TARGET=no
+      if test "x${with_newlib}" = "xyes"; then
+         # FIXME (comment): Why is this needed?
+         GCC_UNWIND_INCLUDE=
+         GCJ="${target_alias}-gcj"
+      else
+         GCJ="${target_alias}-gcj -B`${PWDCMD-pwd}`/"
+      fi
+   ;;
+   path)
+      # See the comment in Makefile.am about CANADIAN being a misnomer
       CANADIAN=yes
       NULL_TARGET=yes
       GCJ="gcj -B`${PWDCMD-pwd}`/"
-   fi
-fi
+   ;;
+esac
 
 # Create it, so that compile/link tests don't fail
 test -f libgcj.spec || touch libgcj.spec

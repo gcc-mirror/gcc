@@ -1,3 +1,15 @@
+2003-07-26  Mohan Embar  <gnustuff@thisiscool.com>
+	    Ranjit Mathew  <rmathew@hotmail.com>
+
+	* Makefile.am: Use cross-compiling gcjh from the path for
+	a crossed-native build.
+	* Makefile.in: Rebuilt.
+	* configure.in: Include libltdl in non-newlib builds.
+	Moved determination of gcj used to build libraries to
+	its own section. Fixed cross-compilation issues for
+	non-newlib builds.
+	* configure: Rebuilt.
+
 2003-07-25  Tom Tromey  <tromey@redhat.com>
 
 	* java/io/natFileDescriptorPosix.cc (write): Try again on EINTR.
