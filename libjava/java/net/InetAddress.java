@@ -68,19 +68,21 @@ import java.io.ObjectStreamException;
  */
 public class InetAddress implements Serializable
 {
+  private static final long serialVersionUID = 3286316764910316507L;
+  
   // The Serialized Form specifies that an int 'address' is saved/restored.
   // This class uses a byte array internally so we'll just do the conversion
   // at serialization time and leave the rest of the algorithm as is.
   private int address;
   transient byte[] addr;
   String hostName;
+  
   // The field 'family' seems to be the AF_ value.
   // FIXME: Much of the code in the other java.net classes does not make
   // use of this family field.  A better implementation would be to make
   // use of getaddrinfo() and have other methods just check the family
   // field rather than examining the length of the address each time.
   int family;
-  private static final long serialVersionUID = 3286316764910316507L;
 
   /**
    * Needed for serialization
@@ -96,8 +98,10 @@ public class InetAddress implements Serializable
     ois.defaultReadObject();
     addr = new byte[4];
     addr[3] = (byte) address;
+    
     for (int i = 2; i >= 0; --i)
       addr[i] = (byte) (address >>= 8);
+    
     // Ignore family from serialized data.  Since the saved address is 32 bits
     // the deserialized object will have an IPv4 address i.e. AF_INET family.
     // FIXME: An alternative is to call the aton method on the deserialized
@@ -112,8 +116,10 @@ public class InetAddress implements Serializable
     // or a 16 byte IPv6 address.
     int len = addr.length;
     int i = len - 4;
+    
     for (; i < len; i++)
       address = address << 8 | (((int) addr[i]) & 0xFF);
+    
     oos.defaultWriteObject();
   }
 
@@ -123,6 +129,7 @@ public class InetAddress implements Serializable
   {
     addr = address;
     hostName = hostname;
+    
     if (address != null)
       family = getFamily (address);
   }
@@ -135,10 +142,13 @@ public class InetAddress implements Serializable
   public boolean isMulticastAddress ()
   {
     int len = addr.length;
+    
     if (len == 4)
       return (addr[0] & 0xF0) == 0xE0;
+    
     if (len == 16)
       return addr[0] == (byte) 0xFF;
+    
     return false;
   }
 
@@ -199,11 +209,13 @@ public class InetAddress implements Serializable
     // it says 172.16.0.0 - 172.255.255.255 are site local addresses
 
     // 172.16.0.0/12
-    if (addr[0] == 0xAC && (addr[1] & 0xF0) == 0x01)
+    if (addr [0] == 0xAC
+        && (addr [1] & 0xF0) == 0x01)
       return true;
 
     // 192.168.0.0/16
-    if (addr[0] == 0xC0 && addr[1] == 0xA8)
+    if (addr [0] == 0xC0
+        && addr [1] == 0xA8)
       return true;
 
     // XXX: Do we need to check more addresses here ?
@@ -257,7 +269,7 @@ public class InetAddress implements Serializable
   }
 
   /**
-   * Utility reoutine to check if InetAddress is a site local multicast address
+   * Utility routine to check if InetAddress is a site local multicast address
    *
    * @since 1.4
    */
@@ -341,8 +353,10 @@ public class InetAddress implements Serializable
   private static SecurityException checkConnect (String hostname)
   {
     SecurityManager s = System.getSecurityManager();
+    
     if (s == null)
       return null;
+    
     try
       {
 	s.checkConnect(hostname, -1);
@@ -415,8 +429,10 @@ public class InetAddress implements Serializable
     int hash = 0;
     int len = addr.length;
     int i = len > 4 ? len - 4 : 0;
+    
     for ( ; i < len;  i++)
       hash = (hash << 8) | (addr[i] & 0xFF);
+    
     return hash;
   }
 
@@ -425,7 +441,8 @@ public class InetAddress implements Serializable
    */
   public boolean equals (Object obj)
   {
-    if (obj == null || ! (obj instanceof InetAddress))
+    if (obj == null
+        || ! (obj instanceof InetAddress))
       return false;
     
     // "The Java Class Libraries" 2nd edition says "If a machine has
@@ -436,11 +453,14 @@ public class InetAddress implements Serializable
     // shows that the latter is correct.
     byte[] addr1 = addr;
     byte[] addr2 = ((InetAddress) obj).addr;
+    
     if (addr1.length != addr2.length)
       return false;
+    
     for (int i = addr1.length;  --i >= 0;  )
       if (addr1[i] != addr2[i])
 	return false;
+    
     return true;
   }
 
@@ -451,10 +471,12 @@ public class InetAddress implements Serializable
   {
     String result;
     String address = getHostAddress();
+    
     if (hostName != null)
       result = hostName + "/" + address;
     else
       result = address;
+    
     return result;
   }
 
@@ -505,8 +527,10 @@ public class InetAddress implements Serializable
     throw new UnknownHostException ("IP address has illegal length");
   }
   
-  /** If host is a valid numeric IP address, return the numeric address.
-   * Otherwise, return null. */
+  /**
+   * If host is a valid numeric IP address, return the numeric address.
+   * Otherwise, return null.
+   */
   private static native byte[] aton (String host);
 
   private static native InetAddress[] lookup (String hostname,
@@ -523,9 +547,9 @@ public class InetAddress implements Serializable
   public static InetAddress getByName (String hostname)
     throws UnknownHostException
   {
-    SecurityManager sm = System.getSecurityManager();
-    if (sm != null)
-      sm.checkConnect (hostname, -1);
+    SecurityManager s = System.getSecurityManager ();
+    if (s != null)
+      s.checkConnect (hostname, -1);
    
     // Default to current host if necessary
     if (hostname == null)
@@ -571,9 +595,9 @@ public class InetAddress implements Serializable
   public static InetAddress[] getAllByName (String hostname)
     throws UnknownHostException
   {
-    SecurityManager sm = System.getSecurityManager();
-    if (sm != null)
-      sm.checkConnect(hostname, -1);
+    SecurityManager s = System.getSecurityManager ();
+    if (s != null)
+      s.checkConnect (hostname, -1);
 
     // Check if hostname is an IP address
     byte[] address = aton (hostname);
@@ -608,12 +632,14 @@ public class InetAddress implements Serializable
   public static InetAddress getLocalHost() throws UnknownHostException
   {
     SecurityManager s = System.getSecurityManager();
+    
     // Experimentation shows that JDK1.2 does cache the result.
     // However, if there is a security manager, and the cached result
     // is other than "localhost", we need to check again.
     if (localhost == null
 	|| (s != null && localhost.addr != localhostAddress))
       getLocalHost(s);
+    
     return localhost;
   }
 
@@ -623,7 +649,9 @@ public class InetAddress implements Serializable
     // Check the localhost cache again, now that we've synchronized.
     if (s == null && localhost != null)
       return;
+    
     String hostname = getLocalHostname();
+    
     if (s != null)
       {
 	// "The Java Class Libraries" suggests that if the security
@@ -643,6 +671,7 @@ public class InetAddress implements Serializable
 	    hostname = null;
 	  }
       }
+    
     if (hostname != null)
       {
 	try
@@ -654,6 +683,7 @@ public class InetAddress implements Serializable
 	  {
 	  }
       }
+    
     if (localhost == null)
       localhost = new InetAddress (localhostAddress, "localhost");
   }

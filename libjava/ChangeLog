@@ -1,3 +1,14 @@
+2003-06-18  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/InetAddress.java:
+	Reformatted to better match classpath's version.
+	* java/net/URL.java
+	(equals): Simplified.
+	* java/net/URLConnection.java
+	(setDoInput): Revised documentation.
+	(getDefaultUseCaches): Likewise.
+	(setRequestProperty): Added @since tag.
+
 2003-06-17  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/InetSocketAddress.java
