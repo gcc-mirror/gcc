@@ -959,6 +959,62 @@ get_loop_body (const struct loop *loop)
   return tovisit;
 }
 
+/* Fills dominance descendants inside LOOP of the basic block BB into
+   array TOVISIT from index *TV.  */
+
+static void
+fill_sons_in_loop (const struct loop *loop, basic_block bb,
+		   basic_block *tovisit, int *tv)
+{
+  basic_block son, postpone = NULL;
+
+  tovisit[(*tv)++] = bb;
+  for (son = first_dom_son (CDI_DOMINATORS, bb);
+       son;
+       son = next_dom_son (CDI_DOMINATORS, son))
+    {
+      if (!flow_bb_inside_loop_p (loop, son))
+	continue;
+
+      if (dominated_by_p (CDI_DOMINATORS, loop->latch, son))
+	{
+	  postpone = son;
+	  continue;
+	}
+      fill_sons_in_loop (loop, son, tovisit, tv);
+    }
+
+  if (postpone)
+    fill_sons_in_loop (loop, postpone, tovisit, tv);
+}
+
+/* Gets body of a LOOP (that must be different from the outermost loop)
+   sorted by dominance relation.  Additionally, if a basic block s dominates
+   the latch, then only blocks dominated by s are be after it.  */
+
+basic_block *
+get_loop_body_in_dom_order (const struct loop *loop)
+{
+  basic_block *tovisit;
+  int tv;
+
+  if (!loop->num_nodes)
+    abort ();
+
+  tovisit = xcalloc (loop->num_nodes, sizeof (basic_block));
+
+  if (loop->latch == EXIT_BLOCK_PTR)
+    abort ();
+
+  tv = 0;
+  fill_sons_in_loop (loop, loop->header, tovisit, &tv);
+
+  if (tv != (int) loop->num_nodes)
+    abort ();
+
+  return tovisit;
+}
+
 /* Gets exit edges of a LOOP, returning their number in N_EDGES.  */
 edge *
 get_loop_exit_edges (const struct loop *loop, unsigned int *n_edges)
@@ -986,6 +1042,27 @@ get_loop_exit_edges (const struct loop *loop, unsigned int *n_edges)
   free (body);
 
   return edges;
+}
+
+/* Counts the number of conditional branches inside LOOP.  */
+
+unsigned
+num_loop_branches (const struct loop *loop)
+{
+  unsigned i, n;
+  basic_block * body;
+
+  if (loop->latch == EXIT_BLOCK_PTR)
+    abort ();
+
+  body = get_loop_body (loop);
+  n = 0;
+  for (i = 0; i < loop->num_nodes; i++)
+    if (body[i]->succ && body[i]->succ->succ_next)
+      n++;
+  free (body);
+
+  return n;
 }
 
 /* Adds basic block BB to LOOP.  */

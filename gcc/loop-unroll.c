@@ -85,7 +85,7 @@ void
 unroll_and_peel_loops (struct loops *loops, int flags)
 {
   struct loop *loop, *next;
-  int check;
+  bool check;
 
   /* First perform complete loop peeling (it is almost surely a win,
      and affects parameters for further decision a lot).  */
@@ -110,7 +110,7 @@ unroll_and_peel_loops (struct loops *loops, int flags)
       else
 	next = loop->outer;
 
-      check = 1;
+      check = true;
       /* And perform the appropriate transformations.  */
       switch (loop->lpt_decision.decision)
 	{
@@ -130,7 +130,7 @@ unroll_and_peel_loops (struct loops *loops, int flags)
 	  unroll_loop_stupid (loops, loop);
 	  break;
 	case LPT_NONE:
-	  check = 0;
+	  check = false;
 	  break;
 	default:
 	  abort ();
@@ -144,6 +144,29 @@ unroll_and_peel_loops (struct loops *loops, int flags)
 	}
       loop = next;
     }
+
+  iv_analysis_done ();
+}
+
+/* Check whether exit of the LOOP is at the end of loop body.  */
+
+static bool
+loop_exit_at_end_p (struct loop *loop)
+{
+  struct niter_desc *desc = get_simple_loop_desc (loop);
+  rtx insn;
+
+  if (desc->in_edge->dest != loop->latch)
+    return false;
+
+  /* Check that the latch is empty.  */
+  FOR_BB_INSNS (loop->latch, insn)
+    {
+      if (INSN_P (insn))
+	return false;
+    }
+
+  return true;
 }
 
 /* Check whether to peel LOOPS (depending on FLAGS) completely and do so.  */
@@ -168,10 +191,9 @@ peel_loops_completely (struct loops *loops, int flags)
 	next = loop->outer;
 
       loop->lpt_decision.decision = LPT_NONE;
-      loop->has_desc = 0;
 
       if (rtl_dump_file)
-	fprintf (rtl_dump_file, ";; Considering loop %d for complete peeling\n",
+	fprintf (rtl_dump_file, "\n;; *** Considering loop %d for complete peeling ***\n",
 		 loop->num);
 
       loop->ninsns = num_loop_insns (loop);
@@ -216,7 +238,7 @@ decide_unrolling_and_peeling (struct loops *loops, int flags)
       loop->lpt_decision.decision = LPT_NONE;
 
       if (rtl_dump_file)
-	fprintf (rtl_dump_file, ";; Considering loop %d\n", loop->num);
+	fprintf (rtl_dump_file, "\n;; *** Considering loop %d ***\n", loop->num);
 
       /* Do not peel cold areas.  */
       if (!maybe_hot_bb_p (loop->header))
@@ -269,8 +291,10 @@ decide_unrolling_and_peeling (struct loops *loops, int flags)
 static void
 decide_peel_once_rolling (struct loop *loop, int flags ATTRIBUTE_UNUSED)
 {
+  struct niter_desc *desc;
+
   if (rtl_dump_file)
-    fprintf (rtl_dump_file, ";; Considering peeling once rolling loop\n");
+    fprintf (rtl_dump_file, "\n;; Considering peeling once rolling loop\n");
 
   /* Is the loop small enough?  */
   if ((unsigned) PARAM_VALUE (PARAM_MAX_ONCE_PEELED_INSNS) < loop->ninsns)
@@ -281,11 +305,13 @@ decide_peel_once_rolling (struct loop *loop, int flags ATTRIBUTE_UNUSED)
     }
 
   /* Check for simple loops.  */
-  loop->simple = simple_loop_p (loop, &loop->desc);
-  loop->has_desc = 1;
+  desc = get_simple_loop_desc (loop);
 
   /* Check number of iterations.  */
-  if (!loop->simple || !loop->desc.const_iter || loop->desc.niter != 0)
+  if (!desc->simple_p
+      || desc->assumptions
+      || !desc->const_iter
+      || desc->niter != 0)
     {
       if (rtl_dump_file)
 	fprintf (rtl_dump_file, ";; Unable to prove that the loop rolls exactly once\n");
@@ -303,9 +329,10 @@ static void
 decide_peel_completely (struct loop *loop, int flags ATTRIBUTE_UNUSED)
 {
   unsigned npeel;
+  struct niter_desc *desc;
 
   if (rtl_dump_file)
-    fprintf (rtl_dump_file, ";; Considering peeling completely\n");
+    fprintf (rtl_dump_file, "\n;; Considering peeling completely\n");
 
   /* Skip non-innermost loops.  */
   if (loop->inner)
@@ -346,26 +373,24 @@ decide_peel_completely (struct loop *loop, int flags ATTRIBUTE_UNUSED)
     }
 
   /* Check for simple loops.  */
-  if (!loop->has_desc)
-    {
-      loop->simple = simple_loop_p (loop, &loop->desc);
-      loop->has_desc = 1;
-    }
+  desc = get_simple_loop_desc (loop);
 
   /* Check number of iterations.  */
-  if (!loop->simple || !loop->desc.const_iter)
+  if (!desc->simple_p
+      || desc->assumptions
+      || !desc->const_iter)
     {
       if (rtl_dump_file)
 	fprintf (rtl_dump_file, ";; Unable to prove that the loop iterates constant times\n");
       return;
     }
 
-  if (loop->desc.niter > npeel - 1)
+  if (desc->niter > npeel - 1)
     {
       if (rtl_dump_file)
 	{
 	  fprintf (rtl_dump_file, ";; Not peeling loop completely, rolls too much (");
-	  fprintf (rtl_dump_file, HOST_WIDEST_INT_PRINT_DEC,(HOST_WIDEST_INT) loop->desc.niter);
+	  fprintf (rtl_dump_file, HOST_WIDEST_INT_PRINT_DEC, desc->niter);
 	  fprintf (rtl_dump_file, " iterations > %d [maximum peelings])\n", npeel);
 	}
       return;
@@ -397,8 +422,8 @@ peel_loop_completely (struct loops *loops, struct loop *loop)
   sbitmap wont_exit;
   unsigned HOST_WIDE_INT npeel;
   unsigned n_remove_edges, i;
-  edge *remove_edges;
-  struct loop_desc *desc = &loop->desc;
+  edge *remove_edges, ei;
+  struct niter_desc *desc = get_simple_loop_desc (loop);
 
   npeel = desc->niter;
 
@@ -407,7 +432,7 @@ peel_loop_completely (struct loops *loops, struct loop *loop)
       wont_exit = sbitmap_alloc (npeel + 1);
       sbitmap_ones (wont_exit);
       RESET_BIT (wont_exit, 0);
-      if (desc->may_be_zero)
+      if (desc->noloop_assumptions)
 	RESET_BIT (wont_exit, 1);
 
       remove_edges = xcalloc (npeel, sizeof (edge));
@@ -427,19 +452,24 @@ peel_loop_completely (struct loops *loops, struct loop *loop)
       free (remove_edges);
     }
 
+  ei = desc->in_edge;
+  free_simple_loop_desc (loop);
+
   /* Now remove the unreachable part of the last iteration and cancel
      the loop.  */
-  remove_path (loops, desc->in_edge);
+  remove_path (loops, ei);
 
   if (rtl_dump_file)
     fprintf (rtl_dump_file, ";; Peeled loop completely, %d times\n", (int) npeel);
 }
 
 /* Decide whether to unroll LOOP iterating constant number of times and how much.  */
+
 static void
 decide_unroll_constant_iterations (struct loop *loop, int flags)
 {
-  unsigned nunroll, nunroll_by_av, best_copies, best_unroll = -1, n_copies, i;
+  unsigned nunroll, nunroll_by_av, best_copies, best_unroll = 0, n_copies, i;
+  struct niter_desc *desc;
 
   if (!(flags & UAP_UNROLL))
     {
@@ -448,7 +478,8 @@ decide_unroll_constant_iterations (struct loop *loop, int flags)
     }
 
   if (rtl_dump_file)
-    fprintf (rtl_dump_file, ";; Considering unrolling loop with constant number of iterations\n");
+    fprintf (rtl_dump_file,
+	     "\n;; Considering unrolling loop with constant number of iterations\n");
 
   /* nunroll = total number of copies of the original loop body in
      unrolled loop (i.e. if it is 2, we have to duplicate loop body once.  */
@@ -468,14 +499,10 @@ decide_unroll_constant_iterations (struct loop *loop, int flags)
     }
 
   /* Check for simple loops.  */
-  if (!loop->has_desc)
-    {
-      loop->simple = simple_loop_p (loop, &loop->desc);
-      loop->has_desc = 1;
-    }
+  desc = get_simple_loop_desc (loop);
 
   /* Check number of iterations.  */
-  if (!loop->simple || !loop->desc.const_iter)
+  if (!desc->simple_p || !desc->const_iter || desc->assumptions)
     {
       if (rtl_dump_file)
 	fprintf (rtl_dump_file, ";; Unable to prove that the loop iterates constant times\n");
@@ -483,7 +510,7 @@ decide_unroll_constant_iterations (struct loop *loop, int flags)
     }
 
   /* Check whether the loop rolls enough to consider.  */
-  if (loop->desc.niter < 2 * nunroll)
+  if (desc->niter < 2 * nunroll)
     {
       if (rtl_dump_file)
 	fprintf (rtl_dump_file, ";; Not unrolling loop, doesn't roll\n");
@@ -497,16 +524,17 @@ decide_unroll_constant_iterations (struct loop *loop, int flags)
   best_copies = 2 * nunroll + 10;
 
   i = 2 * nunroll + 2;
-  if ((unsigned) i - 1 >= loop->desc.niter)
-    i = loop->desc.niter - 2;
+  if (i - 1 >= desc->niter)
+    i = desc->niter - 2;
 
   for (; i >= nunroll - 1; i--)
     {
-      unsigned exit_mod = loop->desc.niter % (i + 1);
+      unsigned exit_mod = desc->niter % (i + 1);
 
-      if (loop->desc.postincr)
+      if (!loop_exit_at_end_p (loop))
 	n_copies = exit_mod + i + 1;
-      else if (exit_mod != (unsigned) i || loop->desc.may_be_zero)
+      else if (exit_mod != (unsigned) i
+	       || desc->noloop_assumptions != NULL_RTX)
 	n_copies = exit_mod + i + 2;
       else
 	n_copies = i + 1;
@@ -524,6 +552,11 @@ decide_unroll_constant_iterations (struct loop *loop, int flags)
 
   loop->lpt_decision.decision = LPT_UNROLL_CONSTANT;
   loop->lpt_decision.times = best_unroll;
+  
+  if (rtl_dump_file)
+    fprintf (rtl_dump_file,
+	     ";; Decided to unroll the constant times rolling loop, %d times.\n",
+	     loop->lpt_decision.times);
 }
 
 /* Unroll LOOP with constant number of iterations LOOP->LPT_DECISION.TIMES + 1
@@ -554,11 +587,12 @@ unroll_loop_constant_iterations (struct loops *loops, struct loop *loop)
   unsigned n_remove_edges, i;
   edge *remove_edges;
   unsigned max_unroll = loop->lpt_decision.times;
-  struct loop_desc *desc = &loop->desc;
+  struct niter_desc *desc = get_simple_loop_desc (loop);
+  bool exit_at_end = loop_exit_at_end_p (loop);
 
   niter = desc->niter;
 
-  if (niter <= (unsigned) max_unroll + 1)
+  if (niter <= max_unroll + 1)
     abort ();  /* Should not get here (such loop should be peeled instead).  */
 
   exit_mod = niter % (max_unroll + 1);
@@ -569,9 +603,9 @@ unroll_loop_constant_iterations (struct loops *loops, struct loop *loop)
   remove_edges = xcalloc (max_unroll + exit_mod + 1, sizeof (edge));
   n_remove_edges = 0;
 
-  if (desc->postincr)
+  if (!exit_at_end)
     {
-      /* Counter is incremented after the exit test; leave exit test
+      /* The exit is not at the end of the loop; leave exit test
 	 in the first copy, so that the loops that start with test
 	 of exit condition have continuous body after unrolling.  */
 
@@ -580,15 +614,22 @@ unroll_loop_constant_iterations (struct loops *loops, struct loop *loop)
 
       /* Peel exit_mod iterations.  */
       RESET_BIT (wont_exit, 0);
-      if (desc->may_be_zero)
+      if (desc->noloop_assumptions)
 	RESET_BIT (wont_exit, 1);
 
-      if (exit_mod
-	  && !duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
-		loops, exit_mod,
-		wont_exit, desc->out_edge, remove_edges, &n_remove_edges,
-		DLTHE_FLAG_UPDATE_FREQ))
-	abort ();
+      if (exit_mod)
+	{
+	  if (!duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
+					      loops, exit_mod,
+					      wont_exit, desc->out_edge,
+					      remove_edges, &n_remove_edges,
+					      DLTHE_FLAG_UPDATE_FREQ))
+	    abort ();
+
+	  desc->noloop_assumptions = NULL_RTX;
+	  desc->niter -= exit_mod;
+	  desc->niter_max -= exit_mod;
+	}
 
       SET_BIT (wont_exit, 1);
     }
@@ -602,12 +643,12 @@ unroll_loop_constant_iterations (struct loops *loops, struct loop *loop)
 
       /* We know that niter >= max_unroll + 2; so we do not need to care of
 	 case when we would exit before reaching the loop.  So just peel
-	 exit_mod + 1 iterations.
-	 */
-      if (exit_mod != (unsigned) max_unroll || desc->may_be_zero)
+	 exit_mod + 1 iterations.  */
+      if (exit_mod != max_unroll
+	  || desc->noloop_assumptions)
 	{
 	  RESET_BIT (wont_exit, 0);
-	  if (desc->may_be_zero)
+	  if (desc->noloop_assumptions)
 	    RESET_BIT (wont_exit, 1);
 
 	  if (!duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
@@ -615,6 +656,10 @@ unroll_loop_constant_iterations (struct loops *loops, struct loop *loop)
 		wont_exit, desc->out_edge, remove_edges, &n_remove_edges,
 		DLTHE_FLAG_UPDATE_FREQ))
 	    abort ();
+
+	  desc->niter -= exit_mod + 1;
+	  desc->niter_max -= exit_mod + 1;
+	  desc->noloop_assumptions = NULL_RTX;
 
 	  SET_BIT (wont_exit, 0);
 	  SET_BIT (wont_exit, 1);
@@ -632,6 +677,27 @@ unroll_loop_constant_iterations (struct loops *loops, struct loop *loop)
 
   free (wont_exit);
 
+  if (exit_at_end)
+    {
+      basic_block exit_block = desc->in_edge->src->rbi->copy;
+      /* Find a new in and out edge; they are in the last copy we have made.  */
+      
+      if (exit_block->succ->dest == desc->out_edge->dest)
+	{
+	  desc->out_edge = exit_block->succ;
+	  desc->in_edge = exit_block->succ->succ_next;
+	}
+      else
+	{
+	  desc->out_edge = exit_block->succ->succ_next;
+	  desc->in_edge = exit_block->succ;
+	}
+    }
+
+  desc->niter /= max_unroll + 1;
+  desc->niter_max /= max_unroll + 1;
+  desc->niter_expr = GEN_INT (desc->niter);
+
   /* Remove the edges.  */
   for (i = 0; i < n_remove_edges; i++)
     remove_path (loops, remove_edges[i]);
@@ -647,6 +713,7 @@ static void
 decide_unroll_runtime_iterations (struct loop *loop, int flags)
 {
   unsigned nunroll, nunroll_by_av, i;
+  struct niter_desc *desc;
 
   if (!(flags & UAP_UNROLL))
     {
@@ -655,7 +722,8 @@ decide_unroll_runtime_iterations (struct loop *loop, int flags)
     }
 
   if (rtl_dump_file)
-    fprintf (rtl_dump_file, ";; Considering unrolling loop with runtime computable number of iterations\n");
+    fprintf (rtl_dump_file,
+	     "\n;; Considering unrolling loop with runtime computable number of iterations\n");
 
   /* nunroll = total number of copies of the original loop body in
      unrolled loop (i.e. if it is 2, we have to duplicate loop body once.  */
@@ -675,21 +743,18 @@ decide_unroll_runtime_iterations (struct loop *loop, int flags)
     }
 
   /* Check for simple loops.  */
-  if (!loop->has_desc)
-    {
-      loop->simple = simple_loop_p (loop, &loop->desc);
-      loop->has_desc = 1;
-    }
+  desc = get_simple_loop_desc (loop);
 
   /* Check simpleness.  */
-  if (!loop->simple)
+  if (!desc->simple_p || desc->assumptions)
     {
       if (rtl_dump_file)
-	fprintf (rtl_dump_file, ";; Unable to prove that the number of iterations can be counted in runtime\n");
+	fprintf (rtl_dump_file,
+		 ";; Unable to prove that the number of iterations can be counted in runtime\n");
       return;
     }
 
-  if (loop->desc.const_iter)
+  if (desc->const_iter)
     {
       if (rtl_dump_file)
 	fprintf (rtl_dump_file, ";; Loop iterates constant times\n");
@@ -706,10 +771,16 @@ decide_unroll_runtime_iterations (struct loop *loop, int flags)
 
   /* Success; now force nunroll to be power of 2, as we are unable to
      cope with overflows in computation of number of iterations.  */
-  for (i = 1; 2 * i <= nunroll; i *= 2);
+  for (i = 1; 2 * i <= nunroll; i *= 2)
+    continue;
 
   loop->lpt_decision.decision = LPT_UNROLL_RUNTIME;
   loop->lpt_decision.times = i - 1;
+  
+  if (rtl_dump_file)
+    fprintf (rtl_dump_file,
+	     ";; Decided to unroll the runtime computable times rolling loop, %d times.\n",
+	     loop->lpt_decision.times);
 }
 
 /* Unroll LOOP for that we are able to count number of iterations in runtime
@@ -746,7 +817,7 @@ decide_unroll_runtime_iterations (struct loop *loop, int flags)
 static void
 unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
 {
-  rtx niter, init_code, branch_code, jump, label;
+  rtx old_niter, niter, init_code, branch_code, tmp;
   unsigned i, j, p;
   basic_block preheader, *body, *dom_bbs, swtch, ezc_swtch;
   unsigned n_dom_bbs;
@@ -756,7 +827,8 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
   edge *remove_edges, e;
   bool extra_zero_check, last_may_exit;
   unsigned max_unroll = loop->lpt_decision.times;
-  struct loop_desc *desc = &loop->desc;
+  struct niter_desc *desc = get_simple_loop_desc (loop);
+  bool exit_at_end = loop_exit_at_end_p (loop);
 
   /* Remember blocks whose dominators will have to be updated.  */
   dom_bbs = xcalloc (n_basic_blocks, sizeof (basic_block));
@@ -777,7 +849,7 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
     }
   free (body);
 
-  if (desc->postincr)
+  if (!exit_at_end)
     {
       /* Leave exit in first copy (for explanation why see comment in
 	 unroll_loop_constant_iterations).  */
@@ -798,15 +870,15 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
 
   /* Get expression for number of iterations.  */
   start_sequence ();
-  niter = count_loop_iterations (desc, NULL, NULL);
-  if (!niter)
-    abort ();
-  niter = force_operand (niter, NULL);
+  old_niter = niter = gen_reg_rtx (desc->mode);
+  tmp = force_operand (copy_rtx (desc->niter_expr), niter);
+  if (tmp != niter)
+    emit_move_insn (niter, tmp);
 
   /* Count modulo by ANDing it with max_unroll; we use the fact that
      the number of unrollings is a power of two, and thus this is correct
      even if there is overflow in the computation.  */
-  niter = expand_simple_binop (GET_MODE (desc->var), AND,
+  niter = expand_simple_binop (desc->mode, AND,
 			       niter,
 			       GEN_INT (max_unroll),
 			       NULL_RTX, 0, OPTAB_LIB_WIDEN);
@@ -824,10 +896,11 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
 
   /* Peel the first copy of loop body (almost always we must leave exit test
      here; the only exception is when we have extra zero check and the number
-     of iterations is reliable (i.e. comes out of NE condition).  Also record
-     the place of (possible) extra zero check.  */
+     of iterations is reliable.  Also record the place of (possible) extra
+     zero check.  */
   sbitmap_zero (wont_exit);
-  if (extra_zero_check && desc->cond == NE)
+  if (extra_zero_check
+      && !desc->noloop_assumptions)
     SET_BIT (wont_exit, 1);
   ezc_swtch = loop_preheader_edge (loop)->src;
   if (!duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
@@ -857,20 +930,8 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
       p = REG_BR_PROB_BASE / (i + 2);
 
       preheader = loop_split_edge_with (loop_preheader_edge (loop), NULL_RTX);
-      label = block_label (preheader);
-      start_sequence ();
-      do_compare_rtx_and_jump (copy_rtx (niter), GEN_INT (j), EQ, 0,
-			       GET_MODE (desc->var), NULL_RTX, NULL_RTX,
-			       label);
-      jump = get_last_insn ();
-      JUMP_LABEL (jump) = label;
-      REG_NOTES (jump)
-	      = gen_rtx_EXPR_LIST (REG_BR_PROB,
-				   GEN_INT (p), REG_NOTES (jump));
-
-      LABEL_NUSES (label)++;
-      branch_code = get_insns ();
-      end_sequence ();
+      branch_code = compare_and_jump_seq (copy_rtx (niter), GEN_INT (j), EQ,
+					  block_label (preheader), p, NULL_RTX);
 
       swtch = loop_split_edge_with (swtch->pred, branch_code);
       set_immediate_dominator (CDI_DOMINATORS, preheader, swtch);
@@ -886,20 +947,8 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
       p = REG_BR_PROB_BASE / (max_unroll + 1);
       swtch = ezc_swtch;
       preheader = loop_split_edge_with (loop_preheader_edge (loop), NULL_RTX);
-      label = block_label (preheader);
-      start_sequence ();
-      do_compare_rtx_and_jump (copy_rtx (niter), const0_rtx, EQ, 0,
-			       GET_MODE (desc->var), NULL_RTX, NULL_RTX,
-			       label);
-      jump = get_last_insn ();
-      JUMP_LABEL (jump) = label;
-      REG_NOTES (jump)
-	      = gen_rtx_EXPR_LIST (REG_BR_PROB,
-				   GEN_INT (p), REG_NOTES (jump));
-
-      LABEL_NUSES (label)++;
-      branch_code = get_insns ();
-      end_sequence ();
+      branch_code = compare_and_jump_seq (copy_rtx (niter), const0_rtx, EQ,
+					  block_label (preheader), p, NULL_RTX);
 
       swtch = loop_split_edge_with (swtch->succ, branch_code);
       set_immediate_dominator (CDI_DOMINATORS, preheader, swtch);
@@ -925,10 +974,44 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
 
   free (wont_exit);
 
+  if (exit_at_end)
+    {
+      basic_block exit_block = desc->in_edge->src->rbi->copy;
+      /* Find a new in and out edge; they are in the last copy we have made.  */
+      
+      if (exit_block->succ->dest == desc->out_edge->dest)
+	{
+	  desc->out_edge = exit_block->succ;
+	  desc->in_edge = exit_block->succ->succ_next;
+	}
+      else
+	{
+	  desc->out_edge = exit_block->succ->succ_next;
+	  desc->in_edge = exit_block->succ;
+	}
+    }
+
   /* Remove the edges.  */
   for (i = 0; i < n_remove_edges; i++)
     remove_path (loops, remove_edges[i]);
   free (remove_edges);
+
+  /* We must be careful when updating the number of iterations due to
+     preconditioning and the fact that the value must be valid at entry
+     of the loop.  After passing through the above code, we see that
+     the correct new number of iterations is this:  */
+  if (desc->const_iter)
+    abort ();
+  desc->niter_expr =
+    simplify_gen_binary (UDIV, desc->mode, old_niter, GEN_INT (max_unroll + 1));
+  desc->niter_max /= max_unroll + 1;
+  if (exit_at_end)
+    {
+      desc->niter_expr =
+	simplify_gen_binary (MINUS, desc->mode, desc->niter_expr, const1_rtx);
+      desc->noloop_assumptions = NULL_RTX;
+      desc->niter_max--;
+    }
 
   if (rtl_dump_file)
     fprintf (rtl_dump_file,
@@ -941,6 +1024,7 @@ static void
 decide_peel_simple (struct loop *loop, int flags)
 {
   unsigned npeel;
+  struct niter_desc *desc;
 
   if (!(flags & UAP_PEEL))
     {
@@ -949,7 +1033,7 @@ decide_peel_simple (struct loop *loop, int flags)
     }
 
   if (rtl_dump_file)
-    fprintf (rtl_dump_file, ";; Considering simply peeling loop\n");
+    fprintf (rtl_dump_file, "\n;; Considering simply peeling loop\n");
 
   /* npeel = number of iterations to peel.  */
   npeel = PARAM_VALUE (PARAM_MAX_PEELED_INSNS) / loop->ninsns;
@@ -965,14 +1049,10 @@ decide_peel_simple (struct loop *loop, int flags)
     }
 
   /* Check for simple loops.  */
-  if (!loop->has_desc)
-    {
-      loop->simple = simple_loop_p (loop, &loop->desc);
-      loop->has_desc = 1;
-    }
+  desc = get_simple_loop_desc (loop);
 
   /* Check number of iterations.  */
-  if (loop->simple && loop->desc.const_iter)
+  if (desc->simple_p && !desc->assumptions && desc->const_iter)
     {
       if (rtl_dump_file)
 	fprintf (rtl_dump_file, ";; Loop iterates constant times\n");
@@ -981,7 +1061,7 @@ decide_peel_simple (struct loop *loop, int flags)
 
   /* Do not simply peel loops with branches inside -- it increases number
      of mispredicts.  */
-  if (loop->desc.n_branches > 1)
+  if (num_loop_branches (loop) > 1)
     {
       if (rtl_dump_file)
 	fprintf (rtl_dump_file, ";; Not peeling, contains branches\n");
@@ -1016,6 +1096,10 @@ decide_peel_simple (struct loop *loop, int flags)
   /* Success.  */
   loop->lpt_decision.decision = LPT_PEEL_SIMPLE;
   loop->lpt_decision.times = npeel;
+      
+  if (rtl_dump_file)
+    fprintf (rtl_dump_file, ";; Decided to simply peel the loop, %d times.\n",
+	     loop->lpt_decision.times);
 }
 
 /* Peel a LOOP LOOP->LPT_DECISION.TIMES times.  The transformation:
@@ -1037,6 +1121,7 @@ peel_loop_simple (struct loops *loops, struct loop *loop)
 {
   sbitmap wont_exit;
   unsigned npeel = loop->lpt_decision.times;
+  struct niter_desc *desc = get_simple_loop_desc (loop);
 
   wont_exit = sbitmap_alloc (npeel + 1);
   sbitmap_zero (wont_exit);
@@ -1048,6 +1133,23 @@ peel_loop_simple (struct loops *loops, struct loop *loop)
 
   free (wont_exit);
 
+  if (desc->simple_p)
+    {
+      if (desc->const_iter)
+	{
+	  desc->niter -= npeel;
+	  desc->niter_expr = GEN_INT (desc->niter);
+	  desc->noloop_assumptions = NULL_RTX;
+	}
+      else
+	{
+	  /* We cannot just update niter_expr, as its value might be clobbered
+	     inside loop.  We could handle this by counting the number into
+	     temporary just like we do in runtime unrolling, but it does not
+	     seem worthwhile.  */
+	  free_simple_loop_desc (loop);
+	}
+    }
   if (rtl_dump_file)
     fprintf (rtl_dump_file, ";; Peeling loop %d times\n", npeel);
 }
@@ -1057,6 +1159,7 @@ static void
 decide_unroll_stupid (struct loop *loop, int flags)
 {
   unsigned nunroll, nunroll_by_av, i;
+  struct niter_desc *desc;
 
   if (!(flags & UAP_UNROLL_ALL))
     {
@@ -1065,7 +1168,7 @@ decide_unroll_stupid (struct loop *loop, int flags)
     }
 
   if (rtl_dump_file)
-    fprintf (rtl_dump_file, ";; Considering unrolling loop stupidly\n");
+    fprintf (rtl_dump_file, "\n;; Considering unrolling loop stupidly\n");
 
   /* nunroll = total number of copies of the original loop body in
      unrolled loop (i.e. if it is 2, we have to duplicate loop body once.  */
@@ -1085,14 +1188,10 @@ decide_unroll_stupid (struct loop *loop, int flags)
     }
 
   /* Check for simple loops.  */
-  if (!loop->has_desc)
-    {
-      loop->simple = simple_loop_p (loop, &loop->desc);
-      loop->has_desc = 1;
-    }
+  desc = get_simple_loop_desc (loop);
 
   /* Check simpleness.  */
-  if (loop->simple)
+  if (desc->simple_p && !desc->assumptions)
     {
       if (rtl_dump_file)
 	fprintf (rtl_dump_file, ";; The loop is simple\n");
@@ -1101,7 +1200,7 @@ decide_unroll_stupid (struct loop *loop, int flags)
 
   /* Do not unroll loops with branches inside -- it increases number
      of mispredicts.  */
-  if (loop->desc.n_branches > 1)
+  if (num_loop_branches (loop) > 1)
     {
       if (rtl_dump_file)
 	fprintf (rtl_dump_file, ";; Not unrolling, contains branches\n");
@@ -1109,7 +1208,8 @@ decide_unroll_stupid (struct loop *loop, int flags)
     }
 
   /* If we have profile feedback, check whether the loop rolls.  */
-  if (loop->header->count && expected_loop_iterations (loop) < 2 * nunroll)
+  if (loop->header->count
+      && expected_loop_iterations (loop) < 2 * nunroll)
     {
       if (rtl_dump_file)
 	fprintf (rtl_dump_file, ";; Not unrolling loop, doesn't roll\n");
@@ -1119,10 +1219,16 @@ decide_unroll_stupid (struct loop *loop, int flags)
   /* Success.  Now force nunroll to be power of 2, as it seems that this
      improves results (partially because of better alignments, partially
      because of some dark magic).  */
-  for (i = 1; 2 * i <= nunroll; i *= 2);
+  for (i = 1; 2 * i <= nunroll; i *= 2)
+    continue;
 
   loop->lpt_decision.decision = LPT_UNROLL_STUPID;
   loop->lpt_decision.times = i - 1;
+      
+  if (rtl_dump_file)
+    fprintf (rtl_dump_file,
+	     ";; Decided to unroll the loop stupidly, %d times.\n",
+	     loop->lpt_decision.times);
 }
 
 /* Unroll a LOOP LOOP->LPT_DECISION.TIMES times.  The transformation:
@@ -1147,6 +1253,7 @@ unroll_loop_stupid (struct loops *loops, struct loop *loop)
 {
   sbitmap wont_exit;
   unsigned nunroll = loop->lpt_decision.times;
+  struct niter_desc *desc = get_simple_loop_desc (loop);
 
   wont_exit = sbitmap_alloc (nunroll + 1);
   sbitmap_zero (wont_exit);
@@ -1157,6 +1264,17 @@ unroll_loop_stupid (struct loops *loops, struct loop *loop)
     abort ();
 
   free (wont_exit);
+
+  if (desc->simple_p)
+    {
+      /* We indeed may get here provided that there are nontrivial assumptions
+	 for a loop to be really simple.  We could update the counts, but the
+	 problem is that we are unable to decide which exit will be taken
+	 (not really true in case the number of iterations is constant,
+	 but noone will do anything with this information, so we do not
+	 worry about it).  */
+      desc->simple_p = false;
+    }
 
   if (rtl_dump_file)
     fprintf (rtl_dump_file, ";; Unrolled loop %d times, %i insns\n",

@@ -288,6 +288,17 @@ extern varray_type basic_block_info;
 #define FOR_EACH_BB_REVERSE(BB) \
   FOR_BB_BETWEEN (BB, EXIT_BLOCK_PTR->prev_bb, ENTRY_BLOCK_PTR, prev_bb)
 
+/* For iterating over insns in basic block.  */
+#define FOR_BB_INSNS(BB, INSN)			\
+  for ((INSN) = BB_HEAD (BB);			\
+       (INSN) != NEXT_INSN (BB_END (BB));	\
+       (INSN) = NEXT_INSN (INSN))
+
+#define FOR_BB_INSNS_REVERSE(BB, INSN)		\
+  for ((INSN) = BB_END (BB);			\
+       (INSN) != PREV_INSN (BB_HEAD (BB));	\
+       (INSN) = PREV_INSN (INSN))
+
 /* Cycles through _all_ basic blocks, even the fake ones (entry and
    exit block).  */
 

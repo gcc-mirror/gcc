@@ -406,13 +406,16 @@ estimate_probability (struct loops *loops_info)
       unsigned j;
       int exits;
       struct loop *loop = loops_info->parray[i];
-      struct loop_desc desc;
+      struct niter_desc desc;
       unsigned HOST_WIDE_INT niter;
 
       flow_loop_scan (loop, LOOP_EXIT_EDGES);
       exits = loop->num_exits;
 
-      if (simple_loop_p (loop, &desc) && desc.const_iter)
+      iv_analysis_loop_init (loop);
+      find_simple_exit (loop, &desc);
+
+      if (desc.simple_p && desc.const_iter)
 	{
 	  int prob;
 	  niter = desc.niter + 1;
@@ -471,6 +474,8 @@ estimate_probability (struct loops *loops_info)
       /* Free basic blocks from get_loop_body.  */
       free (bbs);
     }
+
+  iv_analysis_done ();
 
   /* Attempt to predict conditional jumps using a number of heuristics.  */
   FOR_EACH_BB (bb)

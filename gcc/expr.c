@@ -5588,6 +5588,20 @@ force_operand (rtx value, rtx target)
   rtx subtarget = get_subtarget (target);
   enum rtx_code code = GET_CODE (value);
 
+  /* Check for subreg applied to an expression produced by loop optimizer.  */
+  if (code == SUBREG
+      && GET_CODE (SUBREG_REG (value)) != REG
+      && GET_CODE (SUBREG_REG (value)) != MEM)
+    {
+      value = simplify_gen_subreg (GET_MODE (value),
+				   force_reg (GET_MODE (SUBREG_REG (value)),
+					      force_operand (SUBREG_REG (value),
+							     NULL_RTX)),
+				   GET_MODE (SUBREG_REG (value)),
+				   SUBREG_BYTE (value));
+      code = GET_CODE (value);
+    }
+
   /* Check for a PIC address load.  */
   if ((code == PLUS || code == MINUS)
       && XEXP (value, 0) == pic_offset_table_rtx
