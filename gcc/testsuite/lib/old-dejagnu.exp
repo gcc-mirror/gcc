@@ -1,4 +1,4 @@
-# Copyright (C) 1988, 90, 91, 92, 1994, 1996, 1997, 2000 Free Software Foundation, Inc.
+# Copyright (C) 1988, 90, 91, 92, 1994, 1996, 1997, 2000, 2001 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -233,7 +233,7 @@ proc old-dejagnu { compiler prog name cflagsx default_cflags libs } {
     lappend cflags "compiler=$compiler"
 
     regsub -all "\[./\]" "$name" "-" output;
-    set output "$tmpdir/$output";
+    set output "$tmpdir/$output.exe";
     set compile_type "executable"
 
     set tmp [lindex [grep $prog "Build don.t link:"] 0]
@@ -574,9 +574,10 @@ proc old-dejagnu { compiler prog name cflagsx default_cflags libs } {
 	    }
 	    $status "$name $pattern Execution test"
 	}
+    } else {
+      verbose "deleting $output"
+      remote_file build delete $output
     }
 
-    verbose "deleting $output"
-    remote_file build delete $output
     return 0
 }
