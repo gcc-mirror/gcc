@@ -1,3 +1,16 @@
+2004-03-09  Michael Koch  <konqueror@gmx.de>
+
+	* java/lang/Thread.java
+	(runnable): Moved around.
+	(daemon): Renamed from daemon_flag.
+	(contextClassLoader): Renamed from context_class_loader.
+	(Thread): Reordered constructors.
+	(activeCount): Use group directly.
+	(destroy): Make it a java method. Throw NoSuchMethodError like Sun does.
+	(holdsLock): Reworked javadoc.
+	(setDaemon): Reworked.
+	* java/lang/natThread.cc
+	(destroy): Removed.
 2004-03-08  Anthony Green  <green@redhat.com>
 
 	* Makefile.am: Build property resource files into libgcj.
