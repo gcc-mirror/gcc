@@ -1,5 +1,8 @@
 /* -----------------------------------------------------------------------
-   ffi.c - Copyright (c) 1996, 1998, 1999  Cygnus Solutions
+   ffi.c - Copyright (c) 1996, 1998, 1999, 2001  Red Hat, Inc.
+           Copyright (c) 2002  Ranjit Mathew
+           Copyright (c) 2002  Bo Thorsen
+           Copyright (c) 2002  Roger Sayle
    
    x86 Foreign Function Interface 
 
@@ -148,6 +151,18 @@ extern void ffi_call_SYSV(void (*)(char *, extended_cif *),
 /*@=declundef@*/
 /*@=exportheader@*/
 
+#ifdef X86_WIN32
+/*@-declundef@*/
+/*@-exportheader@*/
+extern void ffi_call_STDCALL(void (*)(char *, extended_cif *),
+			  /*@out@*/ extended_cif *,
+			  unsigned, unsigned,
+			  /*@out@*/ unsigned *,
+			  void (*fn)());
+/*@=declundef@*/
+/*@=exportheader@*/
+#endif /* X86_WIN32 */
+
 void ffi_call(/*@dependent@*/ ffi_cif *cif, 
 	      void (*fn)(), 
 	      /*@out@*/ void *rvalue, 
@@ -180,6 +195,14 @@ void ffi_call(/*@dependent@*/ ffi_cif *cif,
 		    cif->flags, ecif.rvalue, fn);
       /*@=usedef@*/
       break;
+#ifdef X86_WIN32
+    case FFI_STDCALL:
+      /*@-usedef@*/
+      ffi_call_STDCALL(ffi_prep_args, &ecif, cif->bytes,
+		    cif->flags, ecif.rvalue, fn);
+      /*@=usedef@*/
+      break;
+#endif /* X86_WIN32 */
     default:
       FFI_ASSERT(0);
       break;
@@ -448,6 +471,15 @@ ffi_call_SYSV(void (*)(char *, extended_cif *),
 	      /*@out@*/ unsigned *, 
 	      void (*fn)());
 
+#ifdef X86_WIN32
+extern void
+ffi_call_STDCALL(void (*)(char *, extended_cif *),
+	      /*@out@*/ extended_cif *,
+	      unsigned, unsigned,
+	      /*@out@*/ unsigned *,
+	      void (*fn)());
+#endif /* X86_WIN32 */
+
 void
 ffi_raw_call(/*@dependent@*/ ffi_cif *cif, 
 	     void (*fn)(), 
@@ -482,6 +514,14 @@ ffi_raw_call(/*@dependent@*/ ffi_cif *cif,
 		    cif->flags, ecif.rvalue, fn);
       /*@=usedef@*/
       break;
+#ifdef X86_WIN32
+    case FFI_STDCALL:
+      /*@-usedef@*/
+      ffi_call_STDCALL(ffi_prep_args_raw, &ecif, cif->bytes,
+		    cif->flags, ecif.rvalue, fn);
+      /*@=usedef@*/
+      break;
+#endif /* X86_WIN32 */
     default:
       FFI_ASSERT(0);
       break;

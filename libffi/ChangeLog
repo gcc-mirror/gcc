@@ -1,3 +1,18 @@
+2002-11-10  Ranjit Mathew <rmathew@hotmail.com>
+
+	* include/ffi.h.in: Added FFI_STDCALL ffi_type
+	  enumeration for X86_WIN32.
+	* src/x86/win32.S: Added ffi_call_STDCALL function
+	  definition.
+	* src/x86/ffi.c (ffi_call/ffi_raw_call): Added
+	  switch cases for recognising FFI_STDCALL and
+	  calling ffi_call_STDCALL if target is X86_WIN32.
+	* src/ffitest.c (my_stdcall_strlen/stdcall_many):
+	  stdcall versions of the "my_strlen" and "many"
+	  test functions (for X86_WIN32).
+	  Added test cases to test stdcall invocation using
+	  these functions.
+
 2002-11-27  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* src/s390/sysv.S (.eh_frame section): Make section read-only.

@@ -198,6 +198,8 @@ typedef enum ffi_abi {
   /* ---- Intel x86 Win32 ---------- */
 #ifdef X86_WIN32
   FFI_SYSV,
+  FFI_STDCALL,
+  /* TODO: Add fastcall support for the sake of completeness */
   FFI_DEFAULT_ABI = FFI_SYSV,
 #endif
 
@@ -287,7 +289,7 @@ typedef struct _ffi_type
   /*@null@*/ struct _ffi_type **elements;
 } ffi_type;
 
-/* These are defined in ffi.c */
+/* These are defined in types.c */
 extern ffi_type ffi_type_void;
 extern ffi_type ffi_type_uint8;
 extern ffi_type ffi_type_sint8;

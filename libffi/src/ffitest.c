@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   ffitest.c - Copyright (c) 1996, 1997, 1998  Cygnus Solutions
+   ffitest.c - Copyright (c) 1996, 1997, 1998, 2002  Red Hat, Inc.
 
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
@@ -48,6 +48,13 @@ static size_t my_strlen(char *s)
 {
   return (strlen(s));
 }
+
+#ifdef X86_WIN32
+static size_t __attribute__((stdcall)) my_stdcall_strlen(char *s)
+{
+  return (strlen(s));
+}
+#endif /* X86_WIN32 */
 
 static int promotion(signed char sc, signed short ss, 
 		     unsigned char uc, unsigned short us)
@@ -111,6 +118,25 @@ static float many(float f1,
 
   return ((f1/f2+f3/f4+f5/f6+f7/f8+f9/f10+f11/f12) * f13);
 }
+
+#ifdef X86_WIN32
+static float __attribute__((stdcall)) stdcall_many(float f1,
+						   float f2,
+						   float f3,
+						   float f4,
+						   float f5,
+						   float f6,
+						   float f7,
+						   float f8,
+						   float f9,
+						   float f10,
+						   float f11,
+						   float f12,
+						   float f13)
+{
+  return ((f1/f2+f3/f4+f5/f6+f7/f8+f9/f10+f11/f12) * f13);
+}
+#endif /* X86_WIN32 */
 
 static double dblit(float f)
 {
@@ -952,6 +978,67 @@ int main(/*@unused@*/ int argc, /*@unused@*/ char *argv[])
 
 #else
   printf("Structure passing doesn't work on Win32.\n");
+#endif /* X86_WIN32 */
+
+#ifdef X86_WIN32
+  /* stdcall strlen tests */
+  {
+    args[0] = &ffi_type_pointer;
+    values[0] = (void*) &s;
+
+    /* Initialize the cif */
+    CHECK(ffi_prep_cif(&cif, FFI_STDCALL, 1,
+		       &ffi_type_sint, args) == FFI_OK);
+
+    s = "a";
+    ffi_call(&cif, FFI_FN(my_stdcall_strlen), &rint, values);
+    CHECK(rint == 1);
+
+    s = "1234567";
+    ffi_call(&cif, FFI_FN(my_stdcall_strlen), &rint, values);
+    CHECK(rint == 7);
+
+    s = "1234567890123456789012345";
+    ffi_call(&cif, FFI_FN(my_stdcall_strlen), &rint, values);
+    CHECK(rint == 25);
+
+    printf("stdcall strlen tests passed\n");
+  }
+
+  /* stdcall many arg tests */
+  {
+    float ff;
+    float fa[13];
+
+    for (ul = 0; ul < 13; ul++)
+      {
+	args[ul] = &ffi_type_float;
+	values[ul] = &fa[ul];
+	fa[ul] = (float) ul;
+      }
+
+    /* Initialize the cif */
+    CHECK(ffi_prep_cif(&cif, FFI_STDCALL, 13,
+		       &ffi_type_float, args) == FFI_OK);
+
+    /*@-usedef@*/
+    ff =  stdcall_many(fa[0], fa[1],
+	       fa[2], fa[3],
+	       fa[4], fa[5],
+	       fa[6], fa[7],
+	       fa[8], fa[9],
+	       fa[10],fa[11],fa[12]);
+    /*@=usedef@*/
+
+    ffi_call(&cif, FFI_FN(stdcall_many), &f, values);
+
+    /*@-realcompare@*/
+    if (f - ff < FLT_EPSILON)
+    /*@=realcompare@*/
+	printf("stdcall many arg tests ok!\n");
+    else
+        CHECK(0);
+  }
 #endif /* X86_WIN32 */
 
 # if FFI_CLOSURES
