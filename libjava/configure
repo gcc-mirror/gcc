@@ -2864,7 +2864,7 @@ fi
 PLATFORMOBJS=
 case "$TARGET_ECOS" in
    no) case "$host" in
-      mingw)
+      *mingw*)
             PLATFORM=Win32
             PLATFORMOBJS=win32.lo
 	    PLATFORMH=win32.h
@@ -3072,7 +3072,7 @@ test -d java/lang || mkdir java/lang
 
 
 case "${host}" in
-    mingw)
+    *mingw*)
       SYSTEMSPEC="-lgdi32 -lwsock32 -lws2_32"
     ;;
     *)
@@ -6388,7 +6388,7 @@ case "${host}" in
  alpha*-*-linux*)
     SIGNAL_HANDLER=include/dwarf2-signal.h
     ;;
- mingw)
+ *mingw*)
     SIGNAL_HANDLER=include/win32-signal.h
     ;;
  *)

@@ -1,5 +1,16 @@
 2002-02-06  Adam Megacz <adam@xwt.org>
 
+       * configure.in: Changed mingw) to *mingw*).
+       * win32.cc: Created this file.
+       * win32.h: Created this file.
+       * win32.cc, prims.cc, win32.h (win32_exception_handler): Moved
+       win32_exception_handler from prims.cc to win32.cc, added
+       header in win32.h.
+       * prims.cc: removed some #ifdef-WIN32'd headers which are no
+       longer needed now that we have platform.h
+
+2002-02-06  Adam Megacz <adam@xwt.org>
+
 	* shs.h, shs.cc, natSimpleSHSStream.cc: use uint<n>_t instead
 	of LONG and BYTE
 	
