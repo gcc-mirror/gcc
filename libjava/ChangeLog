@@ -1,3 +1,7 @@
+2004-08-30  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* gnu/java/security/der/DEREncodingException.java: Remove whitespaces.
+
 2004-08-30  Jeroen Frijters  <jeroen@frijters.net>
 
 	* java/io/File.java File(String,String): Fixed handling of empty
