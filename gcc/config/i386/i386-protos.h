@@ -140,6 +140,11 @@ extern bool ix86_function_value_regno_p PARAMS ((int));
 extern bool ix86_function_arg_regno_p PARAMS ((int));
 extern int ix86_function_arg_boundary PARAMS ((enum machine_mode, tree));
 extern int ix86_return_in_memory PARAMS ((tree));
+extern void ix86_va_start PARAMS ((int, tree, rtx));
+extern rtx ix86_va_arg PARAMS ((tree, tree));
+extern void ix86_setup_incoming_varargs PARAMS ((CUMULATIVE_ARGS *,
+						 enum machine_mode,
+						 tree, int *, int));
 
 extern rtx ix86_force_to_memory PARAMS ((enum machine_mode, rtx));
 extern void ix86_free_from_memory PARAMS ((enum machine_mode));
@@ -175,6 +180,7 @@ extern rtx ix86_expand_builtin PARAMS ((tree, rtx, rtx, enum machine_mode, int))
 
 #ifdef TREE_CODE
 extern int ix86_return_pops_args PARAMS ((tree, tree, int));
+extern tree ix86_build_va_list PARAMS ((void));
 
 extern int ix86_data_alignment PARAMS ((tree, int));
 extern int ix86_local_alignment PARAMS ((tree, int));

@@ -1,3 +1,14 @@
+Fri Sep 28 19:18:40 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386-protos.h (ix86_setup_incoming_varargs, ix86_va_arg,
+	ix86_va_start, ix86_build_va_list): Declare.
+	* i386.c (ix86_setup_incoming_varargs, ix86_va_arg,
+	ix86_va_start, ix86_build_va_list): New global functions.
+	* i386.md (sse_prologue_save_insn): New insn.
+	(sse_prologue_save): New expander.
+	* i386.h (EXPAND_BUILTIN_VA_ARG, EXPAND_BUILTIN_VA_START,
+	BUILD_VA_LIST_TYPE, SETUP_INCOMING_VARARGS): New macros.
+
 2001-09-28  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpplex.c (new_buff, _cpp_get_buff, _cpp_extend_buff):

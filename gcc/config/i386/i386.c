@@ -2061,10 +2061,455 @@ ix86_libcall_value (mode)
   else
    return gen_rtx_REG (mode, VALUE_REGNO (mode));
 }
-
-
 
+/* Create the va_list data type.  */
 
+tree
+ix86_build_va_list ()
+{
+  tree f_gpr, f_fpr, f_ovf, f_sav, record, type_decl;
+
+  /* For i386 we use plain pointer to argument area.  */
+  if (!TARGET_64BIT)
+    return build_pointer_type (char_type_node);
+
+  record = make_lang_type (RECORD_TYPE);
+  type_decl = build_decl (TYPE_DECL, get_identifier ("__va_list_tag"), record);
+
+  f_gpr = build_decl (FIELD_DECL, get_identifier ("gp_offset"), 
+		      unsigned_type_node);
+  f_fpr = build_decl (FIELD_DECL, get_identifier ("fp_offset"), 
+		      unsigned_type_node);
+  f_ovf = build_decl (FIELD_DECL, get_identifier ("overflow_arg_area"),
+		      ptr_type_node);
+  f_sav = build_decl (FIELD_DECL, get_identifier ("reg_save_area"),
+		      ptr_type_node);
+
+  DECL_FIELD_CONTEXT (f_gpr) = record;
+  DECL_FIELD_CONTEXT (f_fpr) = record;
+  DECL_FIELD_CONTEXT (f_ovf) = record;
+  DECL_FIELD_CONTEXT (f_sav) = record;
+
+  TREE_CHAIN (record) = type_decl;
+  TYPE_NAME (record) = type_decl;
+  TYPE_FIELDS (record) = f_gpr;
+  TREE_CHAIN (f_gpr) = f_fpr;
+  TREE_CHAIN (f_fpr) = f_ovf;
+  TREE_CHAIN (f_ovf) = f_sav;
+
+  layout_type (record);
+
+  /* The correct type is an array type of one element.  */
+  return build_array_type (record, build_index_type (size_zero_node));
+}
+
+/* Perform any needed actions needed for a function that is receiving a
+   variable number of arguments. 
+
+   CUM is as above.
+
+   MODE and TYPE are the mode and type of the current parameter.
+
+   PRETEND_SIZE is a variable that should be set to the amount of stack
+   that must be pushed by the prolog to pretend that our caller pushed
+   it.
+
+   Normally, this macro will push all remaining incoming registers on the
+   stack and set PRETEND_SIZE to the length of the registers pushed.  */
+
+void
+ix86_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
+     CUMULATIVE_ARGS *cum;
+     enum machine_mode mode;
+     tree type;
+     int *pretend_size ATTRIBUTE_UNUSED;
+     int no_rtl;
+
+{
+  CUMULATIVE_ARGS next_cum;
+  rtx save_area = NULL_RTX, mem;
+  rtx label;
+  rtx label_ref;
+  rtx tmp_reg;
+  rtx nsse_reg;
+  int set;
+  tree fntype;
+  int stdarg_p;
+  int i;
+
+  if (!TARGET_64BIT)
+    return;
+
+  /* Indicate to allocate space on the stack for varargs save area.  */
+  ix86_save_varrargs_registers = 1;
+
+  fntype = TREE_TYPE (current_function_decl);
+  stdarg_p = (TYPE_ARG_TYPES (fntype) != 0
+	      && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
+		  != void_type_node));
+
+  /* For varargs, we do not want to skip the dummy va_dcl argument.
+     For stdargs, we do want to skip the last named argument.  */
+  next_cum = *cum;
+  if (stdarg_p)
+    function_arg_advance (&next_cum, mode, type, 1);
+
+  if (!no_rtl)
+    save_area = frame_pointer_rtx;
+
+  set = get_varargs_alias_set ();
+
+  for (i = next_cum.regno; i < ix86_regparm; i++)
+    {
+      mem = gen_rtx_MEM (Pmode,
+			 plus_constant (save_area, i * UNITS_PER_WORD));
+      MEM_ALIAS_SET (mem) = set;
+      emit_move_insn (mem, gen_rtx_REG (Pmode,
+					x86_64_int_parameter_registers[i]));
+    }
+
+  if (next_cum.sse_nregs)
+    {
+      /* Now emit code to save SSE registers.  The AX parameter contains number
+	 of SSE parameter regsiters used to call this function.  We use
+	 sse_prologue_save insn template that produces computed jump across
+	 SSE saves.  We need some preparation work to get this working.  */
+
+      label = gen_label_rtx ();
+      label_ref = gen_rtx_LABEL_REF (Pmode, label);
+
+      /* Compute address to jump to :
+         label - 5*eax + nnamed_sse_arguments*5  */
+      tmp_reg = gen_reg_rtx (Pmode);
+      nsse_reg = gen_reg_rtx (Pmode);
+      emit_insn (gen_zero_extendqidi2 (nsse_reg, gen_rtx_REG (QImode, 0)));
+      emit_insn (gen_rtx_SET (VOIDmode, tmp_reg,
+			      gen_rtx_MULT (VOIDmode, nsse_reg,
+					    GEN_INT (4))));
+      if (next_cum.sse_regno)
+	emit_move_insn
+	  (nsse_reg,
+	   gen_rtx_CONST (DImode,
+			  gen_rtx_PLUS (DImode,
+					label_ref,
+					GEN_INT (next_cum.sse_regno * 4))));
+      else
+	emit_move_insn (nsse_reg, label_ref);
+      emit_insn (gen_subdi3 (nsse_reg, nsse_reg, tmp_reg));
+
+      /* Compute address of memory block we save into.  We always use pointer
+	 pointing 127 bytes after first byte to store - this is needed to keep
+	 instruction size limited by 4 bytes.  */
+      tmp_reg = gen_reg_rtx (Pmode);
+      emit_insn (gen_rtx_SET(VOIDmode, tmp_reg,
+			     plus_constant (save_area, 8 * REGPARM_MAX + 127)));
+      mem = gen_rtx_MEM (BLKmode, plus_constant (tmp_reg, -127));
+      MEM_ALIAS_SET (mem) = set;
+
+      /* And finally do the dirty job!  */
+      emit_insn (gen_sse_prologue_save (mem, nsse_reg, GEN_INT (next_cum.sse_regno),
+		 label));
+    }
+
+}
+
+/* Implement va_start.  */
+
+void
+ix86_va_start (stdarg_p, valist, nextarg)
+     int stdarg_p;
+     tree valist;
+     rtx nextarg;
+{
+  HOST_WIDE_INT words, n_gpr, n_fpr;
+  tree f_gpr, f_fpr, f_ovf, f_sav;
+  tree gpr, fpr, ovf, sav, t;
+
+  /* Only 64bit target needs something special.  */
+  if (!TARGET_64BIT)
+    {
+      std_expand_builtin_va_start (stdarg_p, valist, nextarg);
+      return;
+    }
+
+  f_gpr = TYPE_FIELDS (TREE_TYPE (va_list_type_node));
+  f_fpr = TREE_CHAIN (f_gpr);
+  f_ovf = TREE_CHAIN (f_fpr);
+  f_sav = TREE_CHAIN (f_ovf);
+
+  valist = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (valist)), valist);
+  gpr = build (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr);
+  fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr);
+  ovf = build (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf);
+  sav = build (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav);
+
+  /* Count number of gp and fp argument registers used.  */
+  words = current_function_args_info.words;
+  n_gpr = current_function_args_info.regno;
+  n_fpr = current_function_args_info.sse_regno;
+
+  if (TARGET_DEBUG_ARG)
+    fprintf (stderr, "va_start: words = %d, n_gpr = %d, n_fpr = %d\n",
+	     words, n_gpr, n_fpr);
+
+  t = build (MODIFY_EXPR, TREE_TYPE (gpr), gpr,
+	     build_int_2 (n_gpr * 8, 0));
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  t = build (MODIFY_EXPR, TREE_TYPE (fpr), fpr,
+	     build_int_2 (n_fpr * 16 + 8*REGPARM_MAX, 0));
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  /* Find the overflow area.  */
+  t = make_tree (TREE_TYPE (ovf), virtual_incoming_args_rtx);
+  if (words != 0)
+    t = build (PLUS_EXPR, TREE_TYPE (ovf), t,
+	       build_int_2 (words * UNITS_PER_WORD, 0));
+  t = build (MODIFY_EXPR, TREE_TYPE (ovf), ovf, t);
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  /* Find the register save area.
+     Prologue of the function save it right above stack frame.  */
+  t = make_tree (TREE_TYPE (sav), frame_pointer_rtx);
+  t = build (MODIFY_EXPR, TREE_TYPE (sav), sav, t);
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+}
+
+/* Implement va_arg.  */
+rtx
+ix86_va_arg (valist, type)
+     tree valist, type;
+{
+  static int intreg[6] = { 0, 1, 2, 3, 4, 5 };
+  tree f_gpr, f_fpr, f_ovf, f_sav;
+  tree gpr, fpr, ovf, sav, t;
+  int indirect_p = 0, size, rsize;
+  rtx lab_false, lab_over = NULL_RTX;
+  rtx addr_rtx, r;
+  rtx container;
+
+  /* Only 64bit target needs something special.  */
+  if (!TARGET_64BIT)
+    {
+      return std_expand_builtin_va_arg (valist, type);
+    }
+
+  f_gpr = TYPE_FIELDS (TREE_TYPE (va_list_type_node));
+  f_fpr = TREE_CHAIN (f_gpr);
+  f_ovf = TREE_CHAIN (f_fpr);
+  f_sav = TREE_CHAIN (f_ovf);
+
+  valist = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (valist)), valist);
+  gpr = build (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr);
+  fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr);
+  ovf = build (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf);
+  sav = build (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav);
+
+  size = int_size_in_bytes (type);
+  rsize = (size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+
+  container = construct_container (TYPE_MODE (type), type, 0,
+				   REGPARM_MAX, SSE_REGPARM_MAX, intreg, 0);
+  /*
+   * Pull the value out of the saved registers ...
+   */
+
+  addr_rtx = gen_reg_rtx (Pmode);
+
+  if (container)
+    {
+      rtx int_addr_rtx, sse_addr_rtx;
+      int needed_intregs, needed_sseregs;
+      int need_temp;
+
+      lab_over = gen_label_rtx ();
+      lab_false = gen_label_rtx ();
+
+      examine_argument (TYPE_MODE (type), type, 0,
+		        &needed_intregs, &needed_sseregs);
+
+
+      need_temp = ((needed_intregs && TYPE_ALIGN (type) > 64)
+		   || TYPE_ALIGN (type) > 128);
+
+      /* In case we are passing structure, verify that it is consetuctive block
+         on the register save area.  If not we need to do moves.  */
+      if (!need_temp && !REG_P (container))
+	{
+	  /* Verify that all registers are strictly consetuctive  */
+	  if (SSE_REGNO_P (REGNO (XEXP (XVECEXP (container, 0, 0), 0))))
+	    {
+	      int i;
+
+	      for (i = 0; i < XVECLEN (container, 0) && !need_temp; i++)
+		{
+		  rtx slot = XVECEXP (container, 0, i);
+		  if (REGNO (XEXP (slot, 0)) != FIRST_SSE_REG + (unsigned int)i
+		      || INTVAL (XEXP (slot, 1)) != i * 16)
+		    need_temp = 1;
+		}
+	    }
+	  else
+	    {
+	      int i;
+
+	      for (i = 0; i < XVECLEN (container, 0) && !need_temp; i++)
+		{
+		  rtx slot = XVECEXP (container, 0, i);
+		  if (REGNO (XEXP (slot, 0)) != (unsigned int)i
+		      || INTVAL (XEXP (slot, 1)) != i * 8)
+		    need_temp = 1;
+		}
+	    }
+	}
+      if (!need_temp)
+	{
+	  int_addr_rtx = addr_rtx;
+	  sse_addr_rtx = addr_rtx;
+	}
+      else
+	{
+	  int_addr_rtx = gen_reg_rtx (Pmode);
+	  sse_addr_rtx = gen_reg_rtx (Pmode);
+	}
+      /* First ensure that we fit completely in registers.  */
+      if (needed_intregs)
+	{
+	  emit_cmp_and_jump_insns (expand_expr
+				   (gpr, NULL_RTX, SImode, EXPAND_NORMAL),
+				   GEN_INT ((REGPARM_MAX - needed_intregs +
+					     1) * 8), GE, const1_rtx, SImode,
+				   1, 1, lab_false);
+	}
+      if (needed_sseregs)
+	{
+	  emit_cmp_and_jump_insns (expand_expr
+				   (fpr, NULL_RTX, SImode, EXPAND_NORMAL),
+				   GEN_INT ((SSE_REGPARM_MAX -
+					     needed_sseregs + 1) * 16 +
+					    REGPARM_MAX * 8), GE, const1_rtx,
+				   SImode, 1, 1, lab_false);
+	}
+
+      /* Compute index to start of area used for integer regs.  */
+      if (needed_intregs)
+	{
+	  t = build (PLUS_EXPR, ptr_type_node, sav, gpr);
+	  r = expand_expr (t, int_addr_rtx, Pmode, EXPAND_NORMAL);
+	  if (r != int_addr_rtx)
+	    emit_move_insn (int_addr_rtx, r);
+	}
+      if (needed_sseregs)
+	{
+	  t = build (PLUS_EXPR, ptr_type_node, sav, fpr);
+	  r = expand_expr (t, sse_addr_rtx, Pmode, EXPAND_NORMAL);
+	  if (r != sse_addr_rtx)
+	    emit_move_insn (sse_addr_rtx, r);
+	}
+      if (need_temp)
+	{
+	  int i;
+	  rtx mem;
+
+	  mem = assign_temp (type, 0, 1, 0);
+	  MEM_ALIAS_SET (mem) = get_varargs_alias_set ();
+	  addr_rtx = XEXP (mem, 0);
+	  for (i = 0; i < XVECLEN (container, 0); i++)
+	    {
+	      rtx slot = XVECEXP (container, 0, i);
+	      rtx reg = XEXP (slot, 0);
+	      enum machine_mode mode = GET_MODE (reg);
+	      rtx src_addr;
+	      rtx src_mem;
+	      int src_offset;
+	      rtx dest_mem;
+
+	      if (SSE_REGNO_P (REGNO (reg)))
+		{
+		  src_addr = sse_addr_rtx;
+		  src_offset = (REGNO (reg) - FIRST_SSE_REG) * 16;
+		}
+	      else
+		{
+		  src_addr = int_addr_rtx;
+		  src_offset = REGNO (reg) * 8;
+		}
+	      src_mem = gen_rtx_MEM (mode, src_addr);
+	      MEM_ALIAS_SET (src_mem) = get_varargs_alias_set ();
+	      src_mem = adjust_address (src_mem, mode, src_offset);
+	      dest_mem = adjust_address (mem, mode, INTVAL (XEXP (slot, 1)));
+	      PUT_MODE (dest_mem, mode);
+	      /* ??? Break out TImode moves from integer registers?  */
+	      emit_move_insn (dest_mem, src_mem);
+	    }
+	}
+
+      if (needed_intregs)
+	{
+	  t =
+	    build (PLUS_EXPR, TREE_TYPE (gpr), gpr,
+		   build_int_2 (needed_intregs * 8, 0));
+	  t = build (MODIFY_EXPR, TREE_TYPE (gpr), gpr, t);
+	  TREE_SIDE_EFFECTS (t) = 1;
+	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	}
+      if (needed_sseregs)
+	{
+	  t =
+	    build (PLUS_EXPR, TREE_TYPE (fpr), fpr,
+		   build_int_2 (needed_sseregs * 16, 0));
+	  t = build (MODIFY_EXPR, TREE_TYPE (fpr), fpr, t);
+	  TREE_SIDE_EFFECTS (t) = 1;
+	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	}
+
+      emit_jump_insn (gen_jump (lab_over));
+      emit_barrier ();
+      emit_label (lab_false);
+    }
+
+  /* ... otherwise out of the overflow area.  */
+
+  /* Care for on-stack alignment if needed.  */
+  if (FUNCTION_ARG_BOUNDARY (VOIDmode, type) <= 64)
+    t = ovf;
+  else
+    {
+      HOST_WIDE_INT align = FUNCTION_ARG_BOUNDARY (VOIDmode, type) / 8;
+      t = build (PLUS_EXPR, TREE_TYPE (ovf), ovf, build_int_2 (align - 1, 0));
+      t = build (BIT_AND_EXPR, TREE_TYPE (t), t, build_int_2 (-align, -1));
+    }
+  t = save_expr (t);
+
+  r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
+  if (r != addr_rtx)
+    emit_move_insn (addr_rtx, r);
+
+  t =
+    build (PLUS_EXPR, TREE_TYPE (t), t,
+	   build_int_2 (rsize * UNITS_PER_WORD, 0));
+  t = build (MODIFY_EXPR, TREE_TYPE (ovf), ovf, t);
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  if (container)
+    emit_label (lab_over);
+
+  if (indirect_p)
+    {
+      abort ();
+      r = gen_rtx_MEM (Pmode, addr_rtx);
+      MEM_ALIAS_SET (r) = get_varargs_alias_set ();
+      emit_move_insn (addr_rtx, r);
+    }
+
+  return addr_rtx;
+}
+
 /* Return nonzero if OP is general operand representable on x86_64.  */
 
 int
