@@ -289,6 +289,7 @@ static tree lookup_method_in_protocol_list	PARAMS ((tree, tree, int));
 static tree lookup_protocol_in_reflist		PARAMS ((tree, tree));
 static tree create_builtin_decl			PARAMS ((enum tree_code,
 						       tree, const char *));
+static void setup_string_decl			PARAMS ((void));
 static tree my_build_string			PARAMS ((int, const char *));
 static void build_objc_symtab_template		PARAMS ((void));
 static tree init_def_list			PARAMS ((tree));
@@ -375,7 +376,15 @@ static void ggc_mark_hash_table			PARAMS ((void *));
 #define UTAG_METHOD_PROTOTYPE	"_objc_method_prototype"
 #define UTAG_METHOD_PROTOTYPE_LIST "_objc__method_prototype_list"
 
+#ifdef NEXT_OBJC_RUNTIME
+#define STRING_OBJECT_CLASS_NAME "NSConstantString"
+#else
 #define STRING_OBJECT_CLASS_NAME "NXConstantString"
+#endif
+/* Note that the string object global name is only needed for the
+   NeXT runtime.  */
+#define STRING_OBJECT_GLOBAL_NAME "_NSConstantStringClassReference"
+
 #define PROTOCOL_OBJECT_CLASS_NAME "Protocol"
 
 static const char *constant_string_class_name = NULL;
@@ -455,6 +464,8 @@ enum objc_tree_index
     OCTI_ID_ID,
     OCTI_CNST_STR_ID,
     OCTI_CNST_STR_TYPE,
+    OCTI_CNST_STR_GLOB_ID,
+    OCTI_STRING_CLASS_DECL,
     OCTI_SUPER_DECL,
     OCTI_METH_CTX,
 
@@ -576,6 +587,8 @@ static int cat_count = 0;	/* `@category' */
 #define objc_id_id		objc_global_trees[OCTI_ID_ID]
 #define constant_string_id	objc_global_trees[OCTI_CNST_STR_ID]
 #define constant_string_type	objc_global_trees[OCTI_CNST_STR_TYPE]
+#define constant_string_global_id  objc_global_trees[OCTI_CNST_STR_GLOB_ID]
+#define string_class_decl	objc_global_trees[OCTI_STRING_CLASS_DECL]
 #define UOBJC_SUPER_decl	objc_global_trees[OCTI_SUPER_DECL]
 
 #define method_context		objc_global_trees[OCTI_METH_CTX]
@@ -1243,6 +1256,24 @@ create_builtin_decl (code, type, name)
   return decl;
 }
 
+/* Find the decl for the constant string class.  */
+
+static void
+setup_string_decl ()
+{
+  if (!string_class_decl)
+    {
+      if (!constant_string_global_id)
+	{
+	  constant_string_global_id =
+	    get_identifier (STRING_OBJECT_GLOBAL_NAME);
+	  if (constant_string_global_id == NULL_TREE)
+	    return;
+        }
+      string_class_decl = lookup_name (constant_string_global_id);
+    }
+}
+
 /* Purpose: "play" parser, creating/installing representations
    of the declarations that are required by Objective-C.
 
@@ -1432,7 +1463,26 @@ build_objc_string_object (strings)
 
   /* & ((NXConstantString) {0, string, length})  */
 
-  initlist = build_tree_list (NULL_TREE, build_int_2 (0, 0));
+  if (flag_next_runtime)
+    {
+      /* For the NeXT runtime, we can generate a literal reference
+	 to the string class, don't need to run a constructor.  */
+      setup_string_decl ();
+      if (string_class_decl == NULL_TREE)
+	{
+	  error ("Cannot find reference tag for class `%s'",
+		 IDENTIFIER_POINTER (constant_string_id));
+	  return error_mark_node;
+	}
+      initlist = build_tree_list
+	(NULL_TREE,
+	 copy_node (build_unary_op (ADDR_EXPR, string_class_decl, 0)));
+    }
+  else
+    {
+      initlist = build_tree_list (NULL_TREE, build_int_2 (0, 0));
+    }
+
   initlist
     = tree_cons (NULL_TREE, copy_node (build_unary_op (ADDR_EXPR, string, 1)),
 		 initlist);
