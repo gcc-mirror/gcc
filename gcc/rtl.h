@@ -1518,7 +1518,6 @@ extern void start_sequence (void);
 extern void push_to_sequence (rtx);
 extern void end_sequence (void);
 extern void push_to_full_sequence (rtx, rtx);
-extern void end_full_sequence (rtx*, rtx*);
 extern rtx immed_double_const (HOST_WIDE_INT, HOST_WIDE_INT,
 			       enum machine_mode);
 
@@ -2071,7 +2070,6 @@ extern void init_emit (void);
 extern void init_emit_once (int);
 extern void push_topmost_sequence (void);
 extern void pop_topmost_sequence (void);
-extern int subreg_realpart_p (rtx);
 extern void reverse_comparison (rtx);
 extern void set_new_first_and_last_insn (rtx, rtx);
 extern void set_new_last_label_num (int);
@@ -2085,7 +2083,6 @@ extern void add_insn (rtx);
 extern void add_insn_before (rtx, rtx);
 extern void add_insn_after (rtx, rtx);
 extern void remove_insn (rtx);
-extern void reorder_insns_with_line_notes (rtx, rtx, rtx);
 extern void emit_insn_after_with_line_notes (rtx, rtx, rtx);
 extern enum rtx_code classify_insn (rtx);
 extern rtx emit (rtx);

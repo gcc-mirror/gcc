@@ -1,5 +1,12 @@
 2004-02-19  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* emit-rtl.c (subreg_realpart_p): Remove.
+	(reorder_insns_with_line_notes): Likewise.
+	(end_full_sequence): Likewise.
+	* rtl.h: Remove the prototype for the above functions.
+
+2004-02-19  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/arc/arc.h, config/arm/arm.h, config/frv/frv.h,
 	config/h8300/h8300.h, config/i386/i386.h, config/i860/i860.h,
 	config/iq2000/iq2000.h, config/m32r/m32r.h,

@@ -1112,21 +1112,6 @@ gen_imagpart (enum machine_mode mode, rtx x)
   else
     return gen_highpart (mode, x);
 }
-
-/* Return 1 iff X, assumed to be a SUBREG,
-   refers to the real part of the complex value in its containing reg.
-   Complex values are always stored with the real part in the first word,
-   regardless of WORDS_BIG_ENDIAN.  */
-
-int
-subreg_realpart_p (rtx x)
-{
-  if (GET_CODE (x) != SUBREG)
-    abort ();
-
-  return ((unsigned int) SUBREG_BYTE (x)
-	  < (unsigned int) GET_MODE_UNIT_SIZE (GET_MODE (SUBREG_REG (x))));
-}
 
 /* Assuming that X is an rtx (e.g., MEM, REG or SUBREG) for a value,
    return an rtx (MEM, SUBREG, or CONST_INT) that refers to the
@@ -3755,27 +3740,6 @@ find_line_note (rtx insn)
   return insn;
 }
 
-/* Like reorder_insns, but inserts line notes to preserve the line numbers
-   of the moved insns when debugging.  This may insert a note between AFTER
-   and FROM, and another one after TO.  */
-
-void
-reorder_insns_with_line_notes (rtx from, rtx to, rtx after)
-{
-  rtx from_line = find_line_note (from);
-  rtx after_line = find_line_note (after);
-
-  reorder_insns (from, to, after);
-
-  if (from_line == after_line)
-    return;
-
-  if (from_line)
-    emit_note_copy_after (from_line, after);
-  if (after_line)
-    emit_note_copy_after (after_line, to);
-}
-
 /* Remove unnecessary notes from the instruction stream.  */
 
 void
@@ -4902,17 +4866,6 @@ end_sequence (void)
   memset (tem, 0, sizeof (*tem));
   tem->next = free_sequence_stack;
   free_sequence_stack = tem;
-}
-
-/* This works like end_sequence, but records the old sequence in FIRST
-   and LAST.  */
-
-void
-end_full_sequence (rtx *first, rtx *last)
-{
-  *first = first_insn;
-  *last = last_insn;
-  end_sequence ();
 }
 
 /* Return 1 if currently emitting into a sequence.  */
