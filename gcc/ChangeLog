@@ -1,3 +1,20 @@
+2004-09-01  Roger Sayle  <roger@eyesopen.com>
+
+	* expmed.c (enum alg_code): Remove long unused enumeration values.
+        (struct mult_cost): New structure to hold the "score" of a synthetic
+	multiply sequence, including both a rtx_cost and a latency field.
+	(MULT_COST_LESS): New macro to compare mult_cost to a constant.
+	(CHEAPER_MULT_COST): New macro to compare two mult_costs.
+	(struct algorithm): Change type of cost field to be mult_cost.
+	(synth_mult): Change type of cost_limit argument to be a
+	pointer to a mult_cost.  Update all cost comparisons to use the
+	new mult_cost infrastructure.  For alg_add_factor and 
+	alg_sub_factor operations, latency is lower than the rtx_cost.
+	(choose_mult_variant):  Update calls to synth_mult.  Perform
+	cost comparisons using the new mult_cost infrastructure.
+	(expand_mult_highpart): Use alg.cost.cost instead of alg.cost
+	to optain the total rtx_cost of a synth_mult "algorithm".
+
 2004-09-01  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/power4.md: Increase store latency to 12.
