@@ -155,19 +155,19 @@ atan2 (double y, double x)
     }
   else
     {
-      if (y > 0)
-	{
-	  if (-x > y)
-	    return pi + atan (y / x);
-	  else
-	    return pi_over_2 - atan (x / y);
-	}
-      else
+      if (y < 0)
 	{
 	  if (-x > -y)
 	    return - pi + atan (y / x);
-	  else if (y < 0)
+	  else
 	    return - pi_over_2 - atan (x / y);
+	}
+      else
+	{
+	  if (-x > y)
+	    return pi + atan (y / x);
+	  else if (y > 0)
+	    return pi_over_2 - atan (x / y);
 	  else
 	    {
 	      double value;
