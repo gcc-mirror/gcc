@@ -25,6 +25,15 @@ Boston, MA 02111-1307, USA.  */
 /* No SDB debugging info.  */
 #undef SDB_DEBUGGING_INFO
 
+/* Generate DWARF2 debugging information and make it the default */
+#define DWARF2_DEBUGGING_INFO
+
+#undef PREFERRED_DEBUGGING_TYPE
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
+
+/* use a more compact format for line information */
+#define DWARF2_ASM_LINE_DEBUG_INFO 1
+
 /* Undefine some macros defined in both sh.h and svr4.h.  */
 #undef IDENT_ASM_OP
 #undef ASM_FILE_END
@@ -36,7 +45,6 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_OUTPUT_CONSTRUCTOR
 #undef ASM_OUTPUT_DESTRUCTOR
 #undef ASM_DECLARE_FUNCTION_NAME
-#undef PREFERRED_DEBUGGING_TYPE
 #undef MAX_OFILE_ALIGNMENT
 
 /* Be ELF-like.  */
