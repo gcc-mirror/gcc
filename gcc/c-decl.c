@@ -5894,8 +5894,16 @@ finish_enum (enumtype, values, attributes)
 
   if (flag_short_enums || TYPE_PACKED (enumtype)
       || precision > TYPE_PRECISION (integer_type_node))
-    /* Use the width of the narrowest normal C type which is wide enough.  */
-    TYPE_PRECISION (enumtype) = TYPE_PRECISION (type_for_size (precision, 1));
+    {
+      tree narrowest = type_for_size (precision, 1);
+      if (narrowest == 0)
+	{
+	  warning ("enumeration values exceed range of largest integer");
+	  narrowest = long_long_integer_type_node;
+	}
+
+      TYPE_PRECISION (enumtype) = TYPE_PRECISION (narrowest);
+    }
   else
     TYPE_PRECISION (enumtype) = TYPE_PRECISION (integer_type_node);
 
