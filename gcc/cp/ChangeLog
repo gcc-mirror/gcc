@@ -1,3 +1,10 @@
+2004-01-12  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* parser.c (cp_parser_decl_specifier_seq): Add parenthetical
+	clauses to comments describing declares_class_or_enum.
+	(cp_parser_type_specifier): Set *declares_class_or_enum to 0, not
+	false.
+
 2004-01-12  Jan Hubicka  <jh@suse.cz>
 
 	* pt.c (for_each_template_parm): Do not check for duplicates.
