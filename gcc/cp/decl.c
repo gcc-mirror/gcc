@@ -4880,12 +4880,14 @@ qualify_lookup (val, flags)
 {
   if (val == NULL_TREE)
     return val;
-  if (LOOKUP_NAMESPACES_ONLY (flags) && TREE_CODE (val) != NAMESPACE_DECL)
-    return NULL_TREE;
-  if (LOOKUP_TYPES_ONLY (flags) && TREE_CODE (val) != TYPE_DECL
-      && ! ((flags & LOOKUP_TEMPLATES_EXPECTED)
-	    && TREE_CODE (val) == TEMPLATE_DECL
-	    && DECL_CLASS_TEMPLATE_P (val)))
+  if ((flags & LOOKUP_PREFER_NAMESPACES) && TREE_CODE (val) == NAMESPACE_DECL)
+    return val;
+  if ((flags & LOOKUP_PREFER_TYPES)
+      && (TREE_CODE (val) == TYPE_DECL
+	  || ((flags & LOOKUP_TEMPLATES_EXPECTED)
+	      && DECL_CLASS_TEMPLATE_P (val))))
+    return val;
+  if (flags & (LOOKUP_PREFER_NAMESPACES | LOOKUP_PREFER_TYPES))
     return NULL_TREE;
   return val;
 }
