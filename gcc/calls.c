@@ -4628,7 +4628,7 @@ default_must_pass_in_stack (mode, type)
      tree type;
 {
   if (!type)
-    return true;
+    return false;
 
   /* If the type has variable size...  */
   if (TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)

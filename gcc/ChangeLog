@@ -1,3 +1,7 @@
+2003-01-28  Richard Henderson  <rth@redhat.com>
+
+	* calls.c (default_must_pass_in_stack): Fix typo in !type case.
+
 2003-01-28  Roger Sayle  <roger@eyesopen.com>
 
 	* cse.c (cse_insn): Avoid redundant REG_EQUAL notes.
