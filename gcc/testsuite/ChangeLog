@@ -1,5 +1,13 @@
 2002-10-15  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	PR target/7370
+	* gcc.c-torture/compile/20021015-1.c: New test.
+
+	PR target/8232
+	* gcc.c-torture/compile/20021015-2.c: New test.
+
+2002-10-15  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* gcc.c-torture/execute/20021015-1.c: New test.
 
 2002-10-14  Jakub Jelinek  <jakub@redhat.com>
