@@ -1,3 +1,8 @@
+2002-05-01  Joel Brobecker  <brobecker@gnat.com>
+
+	* dbxout.c (dbxout_type): Emit size information for range types,
+	as well, but only when using GDB extensions.
+
 2002-05-01  Richard Henderson  <rth@redhat.com>
 
 	* configure.in (HAVE_GAS_HIDDEN): Replace SPARC feature test with
