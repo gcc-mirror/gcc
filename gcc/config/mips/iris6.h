@@ -226,12 +226,6 @@ Boston, MA 02111-1307, USA.  */
 #define CTORS_SECTION_ASM_OP	".section\t.ctors,1,2,0,4"
 #define DTORS_SECTION_ASM_OP	".section\t.dtors,1,2,0,4"
 
-/* This is the pseudo-op used to generate a 32-bit word of data with a
-   specific value in some section.  This is the same for all known svr4
-   assemblers.  */
-
-#define INT_ASM_OP		".word"
-
 /* A default list of other sections which we might be "in" at any given
    time.  For targets that use additional sections (e.g. .tdesc) you
    should override this definition in the target-specific file which
@@ -300,7 +294,8 @@ dtors_section ()							\
 #define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)				\
   do {									\
     ctors_section ();							\
-    fprintf (FILE, "\t%s\t ", INT_ASM_OP);				\
+    fprintf (FILE, "\t%s\t ",						\
+	     TARGET_LONG64 ? ".dword" : ".word");			\
     assemble_name (FILE, NAME);						\
     fprintf (FILE, "\n");						\
   } while (0)
@@ -310,7 +305,8 @@ dtors_section ()							\
 #define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)       				\
   do {									\
     dtors_section ();                   				\
-    fprintf (FILE, "\t%s\t ", INT_ASM_OP);				\
+    fprintf (FILE, "\t%s\t ",						\
+	     TARGET_LONG64 ? ".dword" : ".word");			\
     assemble_name (FILE, NAME);              				\
     fprintf (FILE, "\n");						\
   } while (0)
