@@ -24,12 +24,22 @@
 #include <stdexcept>
 #include <debug_assert.h>
 
-typedef std::codecvt<char, char, mbstate_t> ccodecvt;
-class gnu_codecvt: public ccodecvt { }; 
+typedef std::codecvt<char, char, mbstate_t> 		c_codecvt;
+typedef std::codecvt_byname<char, char, mbstate_t> 	c_codecvt_byname;
+typedef std::codecvt<wchar_t, char, mbstate_t>		w_codecvt;
+typedef std::codecvt_byname<wchar_t, char, mbstate_t>	w_codecvt_byname;
+
+class gnu_codecvt: public c_codecvt { }; 
 
 void test01()
 {
   using namespace std;
+
+  typedef unsigned short			unicode_t;
+  typedef unicode_t				int_type;
+  typedef char					ext_type;
+  typedef __enc_traits				enc_type;
+  typedef codecvt<int_type, ext_type, enc_type>	unicode_codecvt;
 
   bool test = true;
   string str1, str2;
@@ -43,6 +53,55 @@ void test01()
   locale loc02(locale::classic(), new gnu_codecvt);
   VERIFY (loc01 != loc02);
   VERIFY (loc02.name() == "*");
+  try
+    {
+      VERIFY (has_facet<gnu_codecvt>(loc02));
+      VERIFY (has_facet<c_codecvt>(loc02));
+      VERIFY (has_facet<w_codecvt>(loc02));
+    }
+  catch(...)
+    { VERIFY( false ); }
+
+  try 
+    {  VERIFY (has_facet<c_codecvt_byname>(loc02)); }
+  catch(bad_cast& obj)
+    { VERIFY( true ); }
+  catch(...)
+    { VERIFY( false ); }
+
+  try 
+    {  VERIFY (has_facet<w_codecvt_byname>(loc02)); }
+  catch(bad_cast& obj)
+    { VERIFY( true ); }
+  catch(...)
+    { VERIFY( false ); }
+
+  // unicode_codecvt
+  locale loc13(locale::classic(), new unicode_codecvt);  
+  VERIFY (loc01 != loc13);
+  VERIFY (loc13.name() == "*");
+  try 
+    {
+      VERIFY (has_facet<c_codecvt>(loc13));
+      VERIFY (has_facet<w_codecvt>(loc13));
+      VERIFY (has_facet<unicode_codecvt>(loc13));
+    }
+  catch(...)
+    { VERIFY( false ); }
+
+  try 
+    {  VERIFY (has_facet<c_codecvt_byname>(loc13)); }
+  catch(bad_cast& obj)
+    { VERIFY( true ); }
+  catch(...)
+    { VERIFY( false ); }
+
+  try 
+    {  VERIFY (has_facet<w_codecvt_byname>(loc13)); }
+  catch(bad_cast& obj)
+    { VERIFY( true ); }
+  catch(...)
+    { VERIFY( false ); }
 
   // 2
   // locale() throw()
@@ -74,7 +133,8 @@ void test01()
   // 4
   // locale(const locale& other, const char* std_name, category)
   locale loc09(loc06, "C", locale::ctype);
-  VERIFY (loc09.name() == "fr_FR");
+  VERIFY (loc09.name() != "fr_FR");
+  VERIFY (loc09.name() != "C");
   VERIFY (loc09 != loc01);  
   VERIFY (loc09 != loc06);  
   // XXX somehow check that the ctype, codecvt facets have "C" locale bits...
@@ -97,7 +157,6 @@ void test01()
   catch(...)
     { VERIFY (false); }
   
-
 
 }
 

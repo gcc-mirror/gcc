@@ -57,7 +57,7 @@ void test01()
     { const ccodecvt& cvt03 = use_facet<gnu_codecvt>(cloc); }
   catch(bad_cast& obj)
     { VERIFY( true ); }
-    catch(...)
+  catch(...)
     { VERIFY( false ); }
 }
 

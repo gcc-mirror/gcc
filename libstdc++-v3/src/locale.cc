@@ -574,8 +574,7 @@ namespace std {
 	  (_M_impl = __other._M_impl)->_M_add_reference();
 	// Might throw:
 	else
-	  _M_impl = new _Impl(*__other._M_impl, __name,
-			      _S_normalize_category(__cat), 1);
+	  _M_impl = new _Impl(*__other._M_impl, __name, __cat, 1);
       }
     else
       throw runtime_error("attempt to create locale from NULL named locale");
@@ -651,29 +650,18 @@ namespace std {
 	  _S_classic = new _Impl(26, 2, true, "C");
 	  _S_global = _S_classic; 
 
-	  // collate category
 	  _S_classic->_M_facet_init(new std::collate<char>);
-	  
-	  // ctype category
 	  _S_classic->_M_facet_init(new std::ctype<char>);
 	  _S_classic->_M_facet_init(new codecvt<char, char, mbstate_t>);
-
-	  // monetary category
 	  _S_classic->_M_facet_init(new moneypunct<char, false>);
 	  _S_classic->_M_facet_init(new moneypunct<char,true >);
 	  _S_classic->_M_facet_init(new money_get<char>);
 	  _S_classic->_M_facet_init(new money_put<char>);
-	  
-	  // numeric category
 	  _S_classic->_M_facet_init(new numpunct<char>);
 	  _S_classic->_M_facet_init(new num_get<char>);
 	  _S_classic->_M_facet_init(new num_put<char>);
-	  
-	  // time category
 	  _S_classic->_M_facet_init(new time_get<char>);
 	  _S_classic->_M_facet_init(new time_put<char>);
-	  
-	  // messages category
 	  _S_classic->_M_facet_init(new std::messages<char>);
 
 #ifdef  _GLIBCPP_USE_WCHAR_T

@@ -95,15 +95,16 @@ namespace std {
 #endif
   
   // time_get and time_put
-  //template class time_get<char, obuf_iterator>;
   template class time_put<char, obuf_iterator>;
+  template class time_put_byname<char, obuf_iterator>;
   template class time_get<char, ibuf_iterator>;
-  template class time_put<char, ibuf_iterator>;
+  template class time_get_byname<char, ibuf_iterator>;
+
 #ifdef _GLIBCPP_USE_WCHAR_T
-  //template class time_get<wchar_t, wobuf_iterator>;
   template class time_put<wchar_t, wobuf_iterator>;
+  template class time_put_byname<wchar_t, wobuf_iterator>;
   template class time_get<wchar_t, wibuf_iterator>;
-  template class time_put<wchar_t, wibuf_iterator>;
+  template class time_get_byname<wchar_t, wibuf_iterator>;
 #endif
 
   // messages

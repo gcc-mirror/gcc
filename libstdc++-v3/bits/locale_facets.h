@@ -682,6 +682,8 @@ namespace std
       typedef _InIter  			iter_type;
       typedef char_traits<_CharT> 	__traits_type;
 
+      static locale::id id;
+
       explicit 
       num_get(size_t __refs = 0) : locale::facet(__refs) { }
 
@@ -755,8 +757,6 @@ namespace std
       get(iter_type __in, iter_type __end, ios_base& __io,
 	  ios_base::iostate& __err, void*& __v) const
       { return do_get(__in, __end, __io, __err, __v); }      
-
-      static locale::id id;
 
     protected:
       virtual ~num_get() { }
@@ -850,6 +850,8 @@ namespace std
       typedef _CharT       char_type;
       typedef _OutIter     iter_type;
 
+      static locale::id id;
+
       explicit 
       num_put(size_t __refs = 0) : locale::facet(__refs) { }
 
@@ -890,8 +892,6 @@ namespace std
       put(iter_type __s, ios_base& __f, char_type __fill, 
 	  const void* __v) const
       { return do_put(__s, __f, __fill, __v); }
-
-      static locale::id id;
 
     protected:
       virtual 
@@ -1234,6 +1234,8 @@ namespace std
       typedef _CharT     char_type;
       typedef _InIter    iter_type;
 
+      static locale::id id;
+
       explicit 
       time_get(size_t __refs = 0) 
       : locale::facet (__refs), _M_daynames(0), _M_monthnames(0) { }
@@ -1266,8 +1268,6 @@ namespace std
       get_year(iter_type __s, iter_type __end, ios_base& __f,
 	       ios_base::iostate& __err, tm* __t) const
       { return do_get_year(__s,__end,__f,__err,__t); }
-
-      static locale::id id;
 
     protected:
       virtual 
@@ -1330,6 +1330,8 @@ namespace std
       typedef _CharT     char_type;
       typedef _OutIter   iter_type;
 
+      static locale::id id;
+
       explicit 
       time_put(size_t __refs = 0) : locale::facet (__refs) { }
 
@@ -1345,8 +1347,6 @@ namespace std
 	  const tm* __tmb, char __format, char __modifier = 0) const
       { return do_put(__s, __f, __fill, __tmb, __format, __modifier); }
 
-      static locale::id id;
-
     protected:
       virtual 
       ~time_put() { }
@@ -1358,7 +1358,7 @@ namespace std
     };
 
   template<typename _CharT, typename _OutIter>
-    class time_put_byname : time_put<_CharT, _OutIter>
+    class time_put_byname : public time_put<_CharT, _OutIter>
     {
     public:
       typedef _CharT     char_type;
@@ -1367,6 +1367,7 @@ namespace std
       explicit 
       time_put_byname(const char*, size_t __refs = 0) 
       : time_put<_CharT, _OutIter> (__refs) { }
+
     protected:
       virtual 
       ~time_put_byname() { }
@@ -1381,6 +1382,8 @@ namespace std
       typedef _InIter       iter_type;
       typedef basic_string<_CharT> string_type;
 
+      static locale::id id;
+
       explicit 
       money_get(size_t __refs = 0) : locale::facet(__refs) { }
 
@@ -1393,8 +1396,6 @@ namespace std
       get(iter_type __s, iter_type __end, bool __intl, ios_base& __f, 
 	   ios_base::iostate& __err, string_type& __digits) const
       { return do_get(__s, __end, __intl, __f, __err, __digits); }
-
-      static locale::id id;
 
     protected:
       virtual 
@@ -1421,6 +1422,8 @@ namespace std
       typedef _OutIter            iter_type;
       typedef basic_string<_CharT> string_type;
 
+      static locale::id id;
+
       explicit 
       money_put(size_t __refs = 0) : locale::facet(__refs) { }
 
@@ -1433,8 +1436,6 @@ namespace std
       put(iter_type __s, bool __intl, ios_base& __f,
 	  char_type __fill, const string_type& __digits) const
       { return do_put(__s, __intl, __f, __fill, __digits); }
-
-      static locale::id id;
 
     protected:
       virtual 
@@ -1535,6 +1536,7 @@ namespace std
 
       explicit 
       moneypunct(size_t __refs = 0) : _Moneypunct<_CharT> (__refs) { }
+
     protected:
       virtual 
       ~moneypunct() { }

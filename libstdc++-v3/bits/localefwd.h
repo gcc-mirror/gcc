@@ -443,7 +443,7 @@ namespace std
     facet(size_t __refs = 0) throw();
 
     virtual 
-    ~facet() {};
+    ~facet() { };
 
   private:
     size_t _M_references;
