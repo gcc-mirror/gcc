@@ -430,8 +430,7 @@ alpha*-*-linux*ecoff*)
 alpha*-*-linux*libc1*)
 	tm_file="${tm_file} alpha/elf.h alpha/linux.h alpha/linux-elf.h"
 	target_cpu_default="MASK_GAS"
-	tmake_file="t-slibgcc-elf-ver t-linux t-linux-gnulibc1 alpha/t-alpha alpha/t-crtbe alpha/t-ieee"
-	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
+	tmake_file="t-slibgcc-elf-ver t-linux t-linux-gnulibc1 alpha/t-alpha alpha/t-crtbe alpha/t-crtfm alpha/t-ieee"
 	gas=yes gnu_ld=yes
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
@@ -440,8 +439,7 @@ alpha*-*-linux*libc1*)
 alpha*-*-linux*)
 	tm_file="${tm_file} alpha/elf.h alpha/linux.h alpha/linux-elf.h"
 	target_cpu_default="MASK_GAS"
-	tmake_file="t-slibgcc-elf-ver t-linux alpha/t-crtbe alpha/t-alpha alpha/t-ieee"
-	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
+	tmake_file="t-slibgcc-elf-ver t-linux alpha/t-crtbe alpha/t-crtfm alpha/t-alpha alpha/t-ieee"
 	gas=yes gnu_ld=yes
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
@@ -450,14 +448,13 @@ alpha*-*-linux*)
 alpha*-*-freebsd*)
 	tm_file="${tm_file} ${fbsd_tm_file} alpha/elf.h alpha/freebsd.h"
 	target_cpu_default="MASK_GAS"
-	tmake_file="${tmake_file} alpha/t-crtbe alpha/t-alpha alpha/t-ieee"
+	tmake_file="${tmake_file} alpha/t-crtbe alpha/t-crtfm alpha/t-alpha alpha/t-ieee"
 	;;
 alpha*-*-netbsd*)
 	xm_defines=POSIX
 	tm_file="${tm_file} alpha/elf.h alpha/netbsd.h alpha/netbsd-elf.h"
 	target_cpu_default="MASK_GAS"
-	tmake_file="alpha/t-crtbe alpha/t-alpha alpha/t-ieee"
-	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
+	tmake_file="alpha/t-crtbe alpha/t-crtfm alpha/t-alpha alpha/t-ieee"
 	gas=yes gnu_ld=yes
 	;;
 
@@ -478,7 +475,7 @@ alpha*-dec-osf*)
 		extra_passes="mips-tfile mips-tdump"
 	fi
 	use_collect2=yes
-	tmake_file="alpha/t-alpha alpha/t-ieee alpha/t-osf"
+	tmake_file="alpha/t-alpha alpha/t-ieee alpha/t-osf alpha/t-crtfm"
 	case $machine in
 	  *-*-osf1*)
 	    tm_file="${tm_file} alpha/osf.h alpha/osf12.h alpha/osf2or3.h"

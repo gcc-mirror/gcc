@@ -1,3 +1,13 @@
+2001-06-23  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/crtfastmath.c: New file.
+	* config/alpha/t-crtfm: New file.
+	* config/alpha/elf.h (ENDFILE_SPEC): Use crtfastmath.o.
+	* config/alpha/osf.h (ENDFILE_SPEC): Likewise.
+	* config/alpha/t-crtbe (EXTRA_PARTS): Add pieces defined here.
+	* config.gcc (alpha-{linux,freebsd,netbsd,osf}): Use alpha/t-crtfm;
+	do not set extra_parts here.
+
 2001-06-24  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/install-old.texi: Remove more documentation of configure
