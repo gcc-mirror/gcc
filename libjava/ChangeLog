@@ -1,3 +1,8 @@
+2000-01-28  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (LIBFFIINCS): Added MULTIBUILDTOP.
+
 2000-01-26  Tom Tromey  <tromey@cygnus.com>
 
 	* gcj/method.h (JvNumMethods): Moved from Class.h.
