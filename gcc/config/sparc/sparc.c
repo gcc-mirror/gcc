@@ -3095,16 +3095,28 @@ output_function_prologue (file, size, leaf_function)
 	  fprintf (file, "\tsave %%sp,%%g1,%%sp\n");
 	}
     }
-  else
+  else if (! leaf_function && TARGET_BROKEN_SAVERESTORE)
     {
-      /* If the target has a broken save insn (only handles save %g0,%g0,%g0),
-	 do the save and then handle like a leaf function.
-	 We assume the environment will properly handle or otherwise avoid
+      /* We assume the environment will properly handle or otherwise avoid
 	 trouble associated with an interrupt occuring after the `save' or
 	 trap occuring during it.  */
-      if (TARGET_BROKEN_SAVERESTORE)
-	fprintf (file, "\tsave\n");
+      fprintf (file, "\tsave\n");
 
+      if (actual_fsize <= 4096)
+	fprintf (file, "\tadd %%fp,-%d,%%sp\n", actual_fsize);
+      else if (actual_fsize <= 8192)
+	{
+	  fprintf (file, "\tadd %%fp,-4096,%%sp\n");
+	  fprintf (file, "\tadd %%fp,-%d,%%sp\n", actual_fsize - 4096);
+	}
+      else
+	{
+	  build_big_number (file, -actual_fsize, "%g1");
+	  fprintf (file, "\tadd %%fp,%%g1,%%sp\n");
+	}
+    }
+  else /* leaf function */
+    {
       if (actual_fsize <= 4096)
 	fprintf (file, "\tadd %%sp,-%d,%%sp\n", actual_fsize);
       else if (actual_fsize <= 8192)
