@@ -264,7 +264,7 @@ fixup_result_decl (decl, result)
 	  REG_FUNCTION_VALUE_P (real_decl_result) = 1;
 	  result = real_decl_result;
 	}
-      emit_move_insn (result, DECL_RTL (decl));
+      store_expr (decl, result, 0);
       emit_insn (gen_rtx (USE, VOIDmode, result));
     }
 }
@@ -274,9 +274,90 @@ fixup_result_decl (decl, result)
    in some cases.  We cannot use `memory_operand' as a test
    here because on most RISC machines, a variable's address
    is not, by itself, a legitimate address.  */
+
 int
 decl_in_memory_p (decl)
      tree decl;
 {
   return DECL_RTL (decl) != 0 && GET_CODE (DECL_RTL (decl)) == MEM;
+}
+
+/* Expand this initialization inline and see if it's simple enough that
+   it can be done at compile-time.  */
+
+static tree
+extract_aggr_init (decl, init)
+     tree decl, init;
+{
+  return 0;
+}
+
+static tree
+extract_scalar_init (decl, init)
+     tree decl, init;
+{
+  rtx value, insns, insn;
+  extern struct obstack temporary_obstack;
+  tree t = NULL_TREE;
+
+  push_obstacks (&temporary_obstack, &temporary_obstack);
+  start_sequence ();
+  value = expand_expr (init, NULL_RTX, VOIDmode, 0);
+  insns = get_insns ();
+  end_sequence ();
+  reg_scan (insns, max_reg_num (), 0);
+  jump_optimize (insns, 0, 0, 1);
+  pop_obstacks ();
+
+  for (insn = insns; insn; insn = NEXT_INSN (insn))
+    {
+      rtx r, to;
+
+      if (GET_CODE (insn) == NOTE)
+	continue;
+      else if (GET_CODE (insn) != INSN)
+	return 0;
+
+      r = PATTERN (insn);
+      if (GET_CODE (r) != SET)
+	return 0;
+
+      to = XEXP (r, 0);
+
+      if (! (to == value ||
+	     (GET_CODE (to) == SUBREG && XEXP (to, 0) == value)))
+	return 0;
+
+      r = XEXP (r, 1);
+
+      switch (GET_CODE (r))
+	{
+	case CONST_INT:
+	  t = build_int_2 (XEXP (r, 0), 0);
+	  break;
+	default:
+	  return 0;
+	}
+    }
+
+  return t; 
+}
+
+int
+extract_init (decl, init)
+     tree decl, init;
+{
+  return 0;
+
+  if (IS_AGGR_TYPE (TREE_TYPE (decl))
+      || TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
+    init = extract_aggr_init (decl, init);
+  else
+    init = extract_scalar_init (decl, init);
+
+  if (init == NULL_TREE)
+    return 0;
+
+  DECL_INITIAL (decl) = init;
+  return 1;
 }

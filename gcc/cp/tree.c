@@ -24,6 +24,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "tree.h"
 #include "cp-tree.h"
 #include "flags.h"
+#include "rtl.h"
 
 #define CEIL(x,y) (((x) + (y) - 1) / (y))
 
@@ -826,6 +827,7 @@ layout_basetypes (rec, binfos)
 	  DECL_FIELD_CONTEXT (decl) = rec;
 	  DECL_CLASS_CONTEXT (decl) = rec;
 	  DECL_FCONTEXT (decl) = basetype;
+	  DECL_SAVED_INSNS (decl) = NULL_RTX;
 	  DECL_FIELD_SIZE (decl) = 0;
 	  DECL_ALIGN (decl) = TYPE_ALIGN (ptr_type_node);
 	  TREE_CHAIN (decl) = vbase_decls;

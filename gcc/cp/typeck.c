@@ -369,12 +369,24 @@ common_type (t1, t2)
  	 But ANSI C++ specifies doing this with the qualifiers.
  	 So I turned it on again.  */
       {
-	tree target = common_type (TYPE_MAIN_VARIANT (TREE_TYPE (t1)),
-				   TYPE_MAIN_VARIANT (TREE_TYPE (t2)));
+	tree tt1 = TYPE_MAIN_VARIANT (TREE_TYPE (t1));
+	tree tt2 = TYPE_MAIN_VARIANT (TREE_TYPE (t2));
 	int constp
 	  = TYPE_READONLY (TREE_TYPE (t1)) || TYPE_READONLY (TREE_TYPE (t2));
 	int volatilep
 	  = TYPE_VOLATILE (TREE_TYPE (t1)) || TYPE_VOLATILE (TREE_TYPE (t2));
+	tree target;
+
+	if (tt1 == tt2)
+	  target = tt1;
+	else if ((IS_AGGR_TYPE_CODE (TREE_CODE (tt1))
+		  || TREE_CODE (tt1) == OFFSET_TYPE
+		  || TREE_CODE (tt1) == METHOD_TYPE)
+		 && TREE_CODE (tt2) == TREE_CODE (tt1))
+	  target = common_type (tt1, tt2);
+	else
+	  target = void_type_node;
+
 	target = cp_build_type_variant (target, constp, volatilep);
 	if (code1 == POINTER_TYPE)
 	  t1 = build_pointer_type (target);
@@ -480,17 +492,18 @@ common_type (t1, t2)
       return build_type_attribute_variant (t1, attributes);
 
     case OFFSET_TYPE:
-      if (TYPE_OFFSET_BASETYPE (t1) == TYPE_OFFSET_BASETYPE (t2)
-	  && TREE_CODE (TREE_TYPE (t1)) == TREE_CODE (TREE_TYPE (t2)))
+      if (TREE_CODE (TREE_TYPE (t1)) == TREE_CODE (TREE_TYPE (t2)))
 	{
-	  tree basetype = TYPE_OFFSET_BASETYPE (t1);
-	  t1 = build_offset_type (basetype,
-				    common_type (TREE_TYPE (t1), TREE_TYPE (t2)));
-	}
-      else
-        compiler_error ("common_type called with uncommon member types");
+	  tree b1 = TYPE_OFFSET_BASETYPE (t1);
+	  tree b2 = TYPE_OFFSET_BASETYPE (t2);
+	  tree base;
 
-      /* ... falls through ... */
+	  if (DERIVED_FROM_P (b1, b2) && binfo_or_else (b1, b2))
+	    return build_type_attribute_variant (t1, attributes);
+	  else if (binfo_or_else (b2, b1))
+	    return build_type_attribute_variant (t2, attributes);
+	}
+      compiler_error ("common_type called with uncommon member types");
 
     default:
       return build_type_attribute_variant (t1, attributes);
@@ -762,6 +775,17 @@ comp_target_types (ttl, ttr, nptrs)
   if (ttl == ttr)
     return 1;
 
+  if (TREE_CODE (ttl) == VOID_TYPE
+      && TREE_CODE (ttr) != FUNCTION_TYPE
+      && TREE_CODE (ttr) != METHOD_TYPE
+      && TREE_CODE (ttr) != OFFSET_TYPE)
+    return 1;
+  if (TREE_CODE (ttr) == VOID_TYPE
+      && TREE_CODE (ttl) != FUNCTION_TYPE
+      && TREE_CODE (ttl) != METHOD_TYPE
+      && TREE_CODE (ttl) != OFFSET_TYPE)
+    return -1;
+  
   if (TREE_CODE (ttr) != TREE_CODE (ttl))
     return 0;
 
@@ -1680,6 +1704,7 @@ build_component_ref (datum, component, basetype_path, protect)
 			  my_friendly_assert (datum != error_mark_node, 310);
 			  fndecl = build_vfn_ref (&addr, datum, DECL_VINDEX (fndecl));
 			}
+		      assemble_external (fndecl);
 		      return fndecl;
 		    }
 		  if (access == access_protected)
@@ -1692,7 +1717,12 @@ build_component_ref (datum, component, basetype_path, protect)
 		{
 		  /* Just act like build_offset_ref, since the object does
                      not matter unless we're actually calling the function.  */
-		  tree t = build_tree_list (error_mark_node, fndecls);
+		  tree t;
+
+		  for (t = TREE_VALUE (fndecls); t; t = DECL_CHAIN (t))
+		    assemble_external (t);
+
+		  t = build_tree_list (error_mark_node, fndecls);
 		  TREE_TYPE (t) = build_offset_type (basetype,
 						     unknown_type_node);
 		  return t;
@@ -1778,6 +1808,13 @@ build_indirect_ref (ptr, errorstring)
 
   if (ptr == current_class_decl)
     return C_C_D;
+
+  ptr = build_expr_type_conversion (WANT_POINTER, pointer, 1);
+  if (ptr)
+    {
+      pointer = ptr;
+      type = TREE_TYPE (pointer);
+    }
 
   if (TREE_CODE (type) == POINTER_TYPE || TREE_CODE (type) == REFERENCE_TYPE)
     {
@@ -2821,6 +2858,10 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
      Zero means they need to be converted to RESULT_TYPE.  */
   int converted = 0;
 
+  /* Nonzero means create the expression with this type, rather than
+     RESULT_TYPE.  */
+  tree build_type = 0;
+
   /* Nonzero means after finally constructing the expression
      give it this type.  Otherwise, give it type RESULT_TYPE.  */
   tree final_type = 0;
@@ -3064,8 +3105,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 
     case EQ_EXPR:
     case NE_EXPR:
-      result_type = boolean_type_node;
-      converted = 1;
+      build_type = boolean_type_node; 
       if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE)
 	  && (code1 == INTEGER_TYPE || code1 == REAL_TYPE))
 	short_compare = 1;
@@ -3073,33 +3113,9 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	{
 	  register tree tt0 = TYPE_MAIN_VARIANT (TREE_TYPE (type0));
 	  register tree tt1 = TYPE_MAIN_VARIANT (TREE_TYPE (type1));
-	  /* Anything compares with void *.  void * compares with anything.
-	     Otherwise, the targets must be the same.  */
-	  if (tt0 != tt1 && TREE_CODE (tt0) == RECORD_TYPE
-	      && TREE_CODE (tt1) == RECORD_TYPE)
-	    {
-	      tree base = common_base_type (tt0, tt1);
-	      if (base == NULL_TREE)
-		cp_pedwarn ("comparison of distinct object pointer types `%T' and `%T'", type0, type1);
-	      else if (base == error_mark_node)
-		{
-		  cp_error ("comparison of pointer types `%T' and `%T' requires conversion to ambiguous supertype", type0, type1);
-		  return error_mark_node;
-		}
-	      else
-		{
-		  if (integer_zerop (op0))
-		    op0 = null_pointer_node;
-		  else
-		    op0 = convert_pointer_to (base, op0);
-		  if (integer_zerop (op1))
-		    op1 = null_pointer_node;
-		  else
-		    op1 = convert_pointer_to (base, op1);
-		}
-	    }
-	  else if (comp_target_types (type0, type1, 1))
-	    ;
+
+	  if (comp_target_types (type0, type1, 1))
+	    result_type = common_type (type0, type1);
 	  else if (tt0 == void_type_node)
 	    {
 	      if (pedantic && TREE_CODE (tt1) == FUNCTION_TYPE
@@ -3225,10 +3241,11 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	{
 	  return build_binary_op (code, op1, op0, 1);
 	}
-      else
-	/* If args are not valid, clear out RESULT_TYPE
-	   to cause an error message later.  */
-	result_type = 0;
+
+      type0 = TREE_TYPE (op0);
+      type1 = TREE_TYPE (op1);
+      if (result_type == NULL_TREE)
+	result_type = type0;
       break;
 
     case MAX_EXPR:
@@ -3239,8 +3256,12 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
       else if (code0 == POINTER_TYPE && code1 == POINTER_TYPE)
 	{
 	  if (! comp_target_types (type0, type1, 1))
-	    cp_pedwarn ("comparison of distinct pointer types `%T' and `%T' lacks a cast",
-			type0, type1);
+	    {
+	      cp_pedwarn ("comparison of distinct pointer types `%T' and `%T' lacks a cast",
+			  type0, type1);
+	      result_type = ptr_type_node;
+	    }
+#if 0
 	  else if ((TYPE_SIZE (TREE_TYPE (type0)) != 0)
 		   != (TYPE_SIZE (TREE_TYPE (type1)) != 0))
 	    cp_pedwarn ("comparison of %scomplete and %scomplete pointers",
@@ -3250,15 +3271,20 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	  else if (pedantic
 		   && TREE_CODE (TREE_TYPE (type0)) == FUNCTION_TYPE)
 	    pedwarn ("ANSI C++ forbids ordered comparisons of pointers to functions");
-	  result_type = common_type (type0, type1);
+#endif
+	  else
+	    result_type = common_type (type0, type1);
 	}
+
+      if (result_type == NULL_TREE)
+	result_type = type0;
       break;
 
     case LE_EXPR:
     case GE_EXPR:
     case LT_EXPR:
     case GT_EXPR:
-      result_type = boolean_type_node;
+      build_type = boolean_type_node;
       if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE)
 	   && (code1 == INTEGER_TYPE || code1 == REAL_TYPE))
 	short_compare = 1;
@@ -3267,6 +3293,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	  if (! comp_target_types (type0, type1, 1))
 	    cp_pedwarn ("comparison of distinct pointer types `%T' and `%T' lacks a cast",
 			type0, type1);
+#if 0
 	  else if ((TYPE_SIZE (TREE_TYPE (type0)) != 0)
 		   != (TYPE_SIZE (TREE_TYPE (type1)) != 0))
 	    cp_pedwarn ("comparison of %scomplete and %scomplete pointers",
@@ -3276,6 +3303,9 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	  else if (pedantic 
 		   && TREE_CODE (TREE_TYPE (type0)) == FUNCTION_TYPE)
 	    pedwarn ("ANSI C++ forbids ordered comparisons of pointers to functions");
+#endif
+	  else
+	    result_type = common_type (type0, type1);
 	}
       else if (code0 == POINTER_TYPE && TREE_CODE (op1) == INTEGER_CST
 	       && integer_zerop (op1))
@@ -3299,9 +3329,11 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	    warning ("comparison between pointer and integer");
 	  op0 = convert (TREE_TYPE (op1), op0);
 	}
-      else
-	result_type = 0;
-      converted = 1;
+
+      type0 = TREE_TYPE (op0);
+      type1 = TREE_TYPE (op1);
+      if (result_type == NULL_TREE)
+	result_type = type0;
       break;
     }
 
@@ -3437,7 +3469,8 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	    = shorten_compare (&xop0, &xop1, &xresult_type, &xresultcode);
 	  if (val != 0)
 	    return convert (boolean_type_node, val);
-	  op0 = xop0, op1 = xop1, result_type = boolean_type_node;
+	  op0 = xop0, op1 = xop1;
+	  converted = 1;
 	  resultcode = xresultcode;
 	}
 
@@ -3544,8 +3577,11 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	op1 = convert (result_type, op1); 
     }
 
+  if (build_type == NULL_TREE)
+    build_type = result_type;
+
   {
-    register tree result = build (resultcode, result_type, op0, op1);
+    register tree result = build (resultcode, build_type, op0, op1);
     register tree folded;
 
     folded = fold (result);
@@ -6731,11 +6767,22 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 	     && TREE_CODE (rhstype) == POINTER_TYPE
 	     && TREE_CODE (TREE_TYPE (rhstype)) == METHOD_TYPE)
 	    || integer_zerop (rhs)
-	    || TYPE_PTRMEMFUNC_P (TREE_TYPE (rhs)))
+	    || TYPE_PTRMEMFUNC_P (rhstype))
 	   && TYPE_PTRMEMFUNC_P (type))
     {
+      tree ttl = TYPE_PTRMEMFUNC_FN_TYPE (type);
+      tree ttr = (TREE_CODE (rhstype) == POINTER_TYPE ? rhstype
+		    : TYPE_PTRMEMFUNC_FN_TYPE (type));
+      int ctt = comp_target_types (ttl, ttr, 1);
+
+      if (ctt < 0)
+	cp_pedwarn ("converting `%T' to `%T' is a contravariance violation",
+		    ttr, ttl);
+      else if (ctt == 0)
+	cp_error ("%s to `%T' from `%T'", errtype, ttl, ttr);
+
       /* compatible pointer to member functions. */
-      return build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), rhs, 0);
+      return build_ptrmemfunc (ttl, rhs, 0);
     }
   else if (codel == ERROR_MARK || coder == ERROR_MARK)
     return error_mark_node;

@@ -1142,6 +1142,13 @@ dump_expr (t, nop)
       }
       break;
 
+    case ARRAY_REF:
+      dump_expr (TREE_OPERAND (t, 0), 0);
+      OB_PUTC ('[');
+      dump_expr (TREE_OPERAND (t, 1), 0);
+      OB_PUTC (']');
+      break;
+
     case CONVERT_EXPR:
       dump_unary_op ("+", t, nop);
       break;

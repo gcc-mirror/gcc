@@ -1,3 +1,188 @@
+Wed Mar 22 15:10:34 1995  Mike Stump  <mrs@cygnus.com>
+
+	* decl2.c (finish_prevtable_vardecl, finish_vtable_vardecl): Revert
+	Brendan's last change and fix latent problem that causes TD entries
+	to not come out when the things that need them has yet to be
+	expanded.
+
+Wed Mar 22 15:12:00 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* typeck.c (build_binary_op_nodefault, comparison ops): Update type0
+	and type1, since we might have changed op0 or op1.
+
+Wed Mar 22 13:33:45 1995  Jason Merrill  <jason@python.cygnus.com>
+
+	* typeck.c (common_type): Don't mess up templates.
+
+Wed Mar 22 04:56:00 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* typeck.c (common_type): Handle ptms properly.  Also handle 
+	T* -> void*.
+	(build_binary_op_nodefault): New variable build_type controls what
+	type is given to the expression when it is created.  Set this to
+	boolean_type_node for comparison ops instead of using result_type.
+	(comp_target_types): Allow T * -> void *.
+
+	* cvt.c (cp_convert_to_pointer): Do access control when converting
+	ptms, too.
+
+Tue Mar 21 17:25:06 1995  Brendan Kehoe  (brendan@lisa.cygnus.com)
+
+	* parse.y (extern_lang_string): Catch use of linkage specs that
+	aren't all naming the same language.
+
+	* class.c (finish_struct): Delete accidental duplicate code.
+
+Tue Mar 21 14:00:57 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* typeck.c (build_binary_op_nodefault): Disable pedwarns about
+	comparing functions and incomplete types.
+
+	* decl.c (finish_function): Only unset current_function_decl if
+	!nested.
+	(duplicate_decls): Last change went too far; we only want to stop
+	checking for value/reference ambiguity.
+
+Tue Mar 21 01:26:39 1995  Mike Stump  <mrs@cygnus.com>
+
+	* gc.c (build_generic_desc): Zap the DECL_SIZE so that we can lay it
+	out fresh, as the new type may be larger.
+
+Mon Mar 20 19:01:10 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* expr.c (extract_init): Try to expand the RTL for the
+	initialization and figure out what it will look like so we can avoid
+	run-time initialization.  Disabled for now.
+	(extract_scalar_init): Helper for scalar initialization.
+	(extract_aggr_init): Helper for aggregate initialization.
+
+	* decl.c (duplicate_decls): Don't complain about ambiguous
+	declarations.
+	(obscure_complex_init): Now returns a tree.  Call extract_init if
+	we're optimizing and this is a toplevel decl.
+	(finish_decl): Update accordingly.
+
+	* lex.c (check_newline): If we're just changing files (not pushing
+	or popping), update input_file_stack->name.
+
+Mon Mar 20 17:55:04 1995  Mike Stump  <mrs@cygnus.com>
+
+	* pt.c (type_unification): Only TEMPLATE_DECLs are handled right now
+	in the transitive unification code.
+
+Mon Mar 20 16:07:50 1995  Brendan Kehoe  (brendan@lisa.cygnus.com)
+
+	* decl.c (shadow_tag): Don't allow inline, virtual, or explicit on
+	non-functions.
+	(grokdeclarator): Don't allow friends to be defined in local classes.
+
+Sat Mar 18 04:03:33 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl2.c (finish_prevtable_vardecl): Use DECL_DECLARED_STATIC
+	rather than DECL_SAVED_INSNS to decide whether or not this method
+	was declared inline.
+
+	* method.c (synthesize_method): Turn off DECL_INLINE if
+	function_cannot_inline_p thinks we're too large.
+
+	* typeck.c (build_indirect_ref): Use build_expr_type_conversion.
+
+Fri Mar 17 17:47:36 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* class.c (instantiate_type): Handle pmfs.
+
+	* typeck.c (convert_for_assignment): Check types when assigning one
+	pmf to another.
+
+	* decl.c (define_label): Fix logic for printing out the name of the
+	label in an error message.
+
+	* error.c (dump_expr): Support ARRAY_REF.
+
+Fri Mar 17 17:43:02 1995  Brendan Kehoe  (brendan@lisa.cygnus.com)
+
+	* decl2.c (finish_vtable_vardecl): Call build_t_desc here.
+	(finish_prevtable_vardecl): Instead of here.
+
+Fri Mar 17 14:40:45 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl.c (expand_static_init): Also use expand_aggr_init if the
+	initializer is a TREE_LIST.	
+	(grokdeclarator): Only pedwarn about extra qualification if -pedantic.
+
+	* pt.c (unify): Fix unification of return type.
+
+	* expr.c (fixup_result_decl): Use store_expr, rather than
+	emit_move_insn, to move the return value into the place where
+	callers will expect it.
+
+Thu Mar 16 22:05:25 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* init.c (build_offset_ref): Call assmble_external on functions.
+	* typeck.c (build_component_ref): Ditto.
+
+Thu Mar 16 20:28:16 1995  Brendan Kehoe  (brendan@lisa.cygnus.com)
+
+	* decl.c (struct saved_scope): Add members base_init_list and
+	member_init_list.
+	(push_to_top_level): Save current_base_init_list and
+	current_member_init_list to them.
+	(pop_from_top_level): Put it back.
+
+Thu Mar 16 19:21:14 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* pt.c (instantiate_template): Call assemble_external.	
+
+Thu Mar 16 18:07:54 1995  Brendan Kehoe  (brendan@phydeaux.cygnus.com)
+
+	* class.c: Include rtl.h, to get NULL_RTX.
+	(finish_struct): Also zero out DECL_SAVED_INSNS, to avoid problems
+	on hosts with different sizes for each part of the union.
+	* tree.c: Also include rtl.h.
+	(layout_basetypes): Same change for DECL_SAVED_INSNS.
+
+Thu Mar 16 13:57:36 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* pt.c (unify): Fix array domain unification for 64-bit targets.
+
+	* decl2.c (finish_file): Push bizarre type decl before walking the
+	vtables the first time.
+	(walk_vtables): OK, don't set prev to vars if the vardecl_fn messed
+	with TREE_CHAIN (prev).
+
+	* init.c (emit_base_init): Use convert_pointer_to_real instead of
+	convert_pointer_to when converting to a direct base.
+
+Wed Mar 15 20:26:29 1995  Mike Stump  <mrs@cygnus.com>
+
+	* pt.c (type_unification): Handle transitive unification better.
+
+Wed Mar 15 13:56:16 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl2.c (walk_vtables): Always set prev to vars.
+	(mark_vtable_entries): Call assemble_external on the vtable entries.
+
+	* class.c (finish_struct): Set the vtable's size to NULL_TREE before
+        calling layout_decl, so that it gets updated properly.
+
+	Finally re-enable dynamic synthesis.  This time it works.
+	* method.c (synthesize_method): Pass decl_function_context (fndecl)
+	to {push,pop}_cp_function_context.
+	* decl.c (push_cp_function_context): Now takes a tree argument.
+	(pop_cp_function_context): Ditto.
+	* call.c (build_method_call): Enable synthesis.
+	* lex.c (cons_up_default_function): Ditto.
+
+Tue Mar 14 19:14:19 1995  Doug Evans  <dje@chestnut.cygnus.com>
+
+	* parse.y (setattrs): Chain onto prefix_attributes rather than
+	setting it.
+
+Wed Mar 15 13:00:00 1995  Brendan Kehoe  (brendan@lisa.cygnus.com)
+
+	* decl.c (pushdecl): Check if the type of the VAR_DECL is an
+	error_mark_node before trying to read TYPE_LANG_SPECIFIC. 
+
 Mon Mar 13 21:00:28 1995  Brendan Kehoe  (brendan@lisa.cygnus.com)
 
 	* decl.c (grokdeclarator, case ARRAY_REF): Wrap the exp with fold,

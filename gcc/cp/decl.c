@@ -1443,6 +1443,7 @@ struct saved_scope {
   tree old_bindings;
   struct saved_scope *prev;
   tree class_name, class_type, class_decl, function_decl;
+  tree base_init_list, member_init_list;
   struct binding_level *class_bindings;
   tree previous_class_type;
   tree *lang_base, *lang_stack, lang_name;
@@ -1519,6 +1520,8 @@ push_to_top_level ()
   s->class_type = current_class_type;
   s->class_decl = current_class_decl;
   s->function_decl = current_function_decl;
+  s->base_init_list = current_base_init_list;
+  s->member_init_list = current_member_init_list;
   s->class_bindings = class_binding_level;
   s->previous_class_type = previous_class_type;
   s->lang_stack = current_lang_stack;
@@ -1571,6 +1574,8 @@ pop_from_top_level ()
     C_C_D = CLASSTYPE_INST_VAR (current_class_type);
   else
     C_C_D = NULL_TREE;
+  current_base_init_list = s->base_init_list;
+  current_member_init_list = s->member_init_list;
   current_function_decl = s->function_decl;
   class_binding_level = s->class_bindings;
   previous_class_type = s->previous_class_type;
@@ -2230,7 +2235,7 @@ duplicate_decls (newdecl, olddecl)
 	      cp_error_at ("previous declaration `%#D' here", olddecl);
 	    }
 	  else if (compparms (TYPE_ARG_TYPES (TREE_TYPE (newdecl)),
-			      TYPE_ARG_TYPES (TREE_TYPE (olddecl)), 2))
+			      TYPE_ARG_TYPES (TREE_TYPE (olddecl)), 3))
 	    {
 	      cp_error ("new declaration `%#D'", newdecl);
 	      cp_error_at ("ambiguates old declaration `%#D'", olddecl);
@@ -3061,6 +3066,7 @@ pushdecl (x)
       /* Keep count of variables in this level with incomplete type.  */
       /* RTTI TD entries are created while defining the type_info.  */
       if (TREE_CODE (x) == VAR_DECL
+	  && TREE_TYPE (x) != error_mark_node
 	  && TYPE_LANG_SPECIFIC (TREE_TYPE (x))
 	  && TYPE_BEING_DEFINED (TREE_TYPE (x)))
 	{
@@ -3606,6 +3612,7 @@ define_label (filename, line, name)
   else
     {
       tree uses, prev;
+      int identified = 0;
 
       /* Mark label as having been defined.  */
       DECL_INITIAL (decl) = error_mark_node;
@@ -3636,10 +3643,11 @@ define_label (filename, line, name)
 			     && DECL_INITIAL (new_decls) != error_mark_node)
 			    || TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (new_decls))))
 		      {
-			if (IDENTIFIER_ERROR_LOCUS (decl) == NULL_TREE)
-			  cp_error ("invalid jump to label `%D'", decl);
-			SET_IDENTIFIER_ERROR_LOCUS (decl, current_function_decl);
-			cp_error ("crosses initialization of `%D'", new_decls);
+			if (! identified)
+			  cp_error ("jump to label `%D'", decl);
+			identified = 1;
+			cp_error_at ("  crosses initialization of `%#D'",
+				     new_decls);
 		      }
 		    new_decls = TREE_CHAIN (new_decls);
 		  }
@@ -5259,7 +5267,10 @@ shadow_tag (declspecs)
       else if (value == ridpointers[(int) RID_STATIC]
 	       || value == ridpointers[(int) RID_EXTERN]
 	       || value == ridpointers[(int) RID_AUTO]
-	       || value == ridpointers[(int) RID_REGISTER])
+	       || value == ridpointers[(int) RID_REGISTER]
+	       || value == ridpointers[(int) RID_INLINE]
+	       || value == ridpointers[(int) RID_VIRTUAL]
+	       || value == ridpointers[(int) RID_EXPLICIT])
 	ob_modifier = value;
     }
 
@@ -5290,9 +5301,19 @@ shadow_tag (declspecs)
     {
       /* Anonymous unions are objects, that's why we only check for
 	 inappropriate specifiers in this branch.  */
+
       if (ob_modifier)
-	cp_error ("`%D' can only be specified for objects and functions",
-		  ob_modifier);
+	{
+	  if (ob_modifier == ridpointers[(int) RID_INLINE]
+	      || ob_modifier == ridpointers[(int) RID_VIRTUAL])
+	    cp_error ("`%D' can only be specified for functions", ob_modifier);
+	  else if (ob_modifier == ridpointers[(int) RID_EXPLICIT])
+	    cp_error ("`%D' can only be specified for constructors",
+		      ob_modifier);
+	  else
+	    cp_error ("`%D' can only be specified for objects and functions",
+		      ob_modifier);
+	}
 
       if (found_tag == 0)
 	pedwarn ("abstract declarator used as declaration");
@@ -5837,16 +5858,24 @@ grok_reference_init (decl, type, init, cleanupp)
    it in with a dummy CONSTRUCTOR to force the variable into .data;
    otherwise we can use error_mark_node.  */
 
-static void
-obscure_complex_init (decl)
-     tree decl;
+static tree
+obscure_complex_init (decl, init)
+     tree decl, init;
 {
+  if (! flag_no_inline && TREE_STATIC (decl))
+    {
+      if (extract_init (decl, init))
+	return NULL_TREE;
+    }
+
   if (current_binding_level == global_binding_level
       && ! DECL_COMMON (decl))
     DECL_INITIAL (decl) = build (CONSTRUCTOR, TREE_TYPE (decl), NULL_TREE,
 				 NULL_TREE);
   else
     DECL_INITIAL (decl) = error_mark_node;
+
+  return init;
 }
 
 /* Finish processing of a declaration;
@@ -6078,22 +6107,18 @@ finish_decl (decl, init, asmspec_tree, need_pop, flags)
 		}
 	    }
 #endif
-
-	  /* We must hide the initializer so that expand_decl
-	     won't try to do something it does not understand.  */
-	  obscure_complex_init (decl);
 	}
       else
 	{
 	dont_use_constructor:
 	  if (TREE_CODE (init) != TREE_VEC)
 	    init = store_init_value (decl, init);
-
-	  /* Don't let anyone try to initialize this variable
-	     until we are ready to do so.  */
-	  if (init)
-	    obscure_complex_init (decl);
 	}
+
+      if (init)
+	/* We must hide the initializer so that expand_decl
+	   won't try to do something it does not understand.  */
+	init = obscure_complex_init (decl, init);
     }
   else if (DECL_EXTERNAL (decl))
     ;
@@ -6120,7 +6145,7 @@ finish_decl (decl, init, asmspec_tree, need_pop, flags)
 
       if (TYPE_SIZE (type) != NULL_TREE
 	  && TYPE_NEEDS_CONSTRUCTING (type))
-	obscure_complex_init (decl);
+	init = obscure_complex_init (decl, NULL_TREE);
     }
   else if (TREE_CODE (decl) == VAR_DECL
 	   && TREE_CODE (type) != REFERENCE_TYPE
@@ -6589,7 +6614,8 @@ expand_static_init (decl, init)
 					  integer_zero_node, 1), 0);
       old_cleanups = cleanups_this_call;
       expand_assignment (temp, integer_one_node, 0, 0);
-      if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl)))
+      if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl))
+	  || TREE_CODE (init) == TREE_LIST)
 	{
 	  expand_aggr_init (decl, init, 0, 0);
 	  do_pending_stack_adjust ();
@@ -8372,10 +8398,12 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 		    RIDBIT_RESET (RID_FRIEND, specbits);
 		    friendp = 0;
 		  }
+		if (decl_context == NORMAL)
+		  error ("friend declaration not in class definition");
+		if (current_function_decl && funcdef_flag)
+		  cp_error ("can't define friend function `%s' in a local class definition",
+			    name);
 	      }
-
-	    if (decl_context == NORMAL && friendp)
-	      error ("friend declaration not in class definition");
 
 	    /* Traditionally, declaring return type float means double.  */
 
@@ -8598,8 +8626,17 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 		   basetype :: member .  */
 
 		if (ctype == current_class_type)
-		  cp_pedwarn ("extra qualification `%T::' on member `%s' ignored",
-			      ctype, name);
+		  {
+		    /* class A {
+		         void A::f ();
+		       };
+
+		       Is this ill-formed?  */
+
+		    if (pedantic)
+		      cp_pedwarn ("extra qualification `%T::' on member `%s' ignored",
+				  ctype, name);
+		  }
 		else if (TREE_CODE (type) == FUNCTION_TYPE)
 		  {
 		    if (current_class_type == NULL_TREE
@@ -11307,7 +11344,7 @@ finish_function (lineno, call_poplevel, nested)
       int ok_to_optimize_dtor = 0;
 
       if (current_function_assigns_this)
-	cond = build (NE_EXPR, integer_type_node,
+	cond = build (NE_EXPR, boolean_type_node,
 		      current_class_decl, integer_zero_node);
       else
 	{
@@ -11756,8 +11793,14 @@ finish_function (lineno, call_poplevel, nested)
   if (DECL_STATIC_DESTRUCTOR (fndecl))
     static_dtors = perm_tree_cons (NULL_TREE, fndecl, static_dtors);
 
-  /* Let the error reporting routines know that we're outside a function.  */
-  current_function_decl = NULL_TREE;
+  if (! nested)
+    {
+      /* Let the error reporting routines know that we're outside a
+         function.  For a nested function, this value is used in
+         pop_cp_function_context and then reset via pop_function_context.  */
+      current_function_decl = NULL_TREE;
+    }
+
   named_label_uses = NULL_TREE;
 }
 
@@ -12190,13 +12233,13 @@ struct cp_function *cp_function_chain;
    used during compilation of a C++ function.  */
 
 void
-push_cp_function_context (toplev)
-     int toplev;
+push_cp_function_context (context)
+     tree context;
 {
   struct cp_function *p
     = (struct cp_function *) xmalloc (sizeof (struct cp_function));
 
-  push_function_context_to (toplev);
+  push_function_context_to (context);
 
   p->next = cp_function_chain;
   cp_function_chain = p;
@@ -12221,8 +12264,8 @@ push_cp_function_context (toplev)
 /* Restore the variables used during compilation of a C++ function.  */
 
 void
-pop_cp_function_context (toplev)
-     int toplev;
+pop_cp_function_context (context)
+     tree context;
 {
   struct cp_function *p = cp_function_chain;
   tree link;
@@ -12244,7 +12287,7 @@ pop_cp_function_context (toplev)
     }
 #endif
 
-  pop_function_context_from (toplev);
+  pop_function_context_from (context);
 
   cp_function_chain = p->next;
 
