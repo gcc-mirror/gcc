@@ -560,6 +560,7 @@ expand_end_catch_block ()
   TREE_TYPE (t) = void_type_node;
   RTL_EXPR_RTL (t) = const0_rtx;
   TREE_SIDE_EFFECTS (t) = 1;
+  do_pending_stack_adjust ();
   start_sequence_for_rtl_expr (t);
 
   if (exceptions_via_longjmp)
@@ -581,6 +582,7 @@ expand_end_catch_block ()
       expand_internal_throw (DECL_RTL (top_label_entry (&caught_return_label_stack)));
     }
 
+  do_pending_stack_adjust ();
   RTL_EXPR_SEQUENCE (t) = get_insns ();
   end_sequence ();
 
@@ -925,6 +927,7 @@ expand_end_eh_spec (raises)
   TREE_TYPE (expr) = void_type_node;
   RTL_EXPR_RTL (expr) = const0_rtx;
   TREE_SIDE_EFFECTS (expr) = 1;
+  do_pending_stack_adjust ();
   start_sequence_for_rtl_expr (expr);
   cont = gen_label_rtx ();
   emit_move_insn (ret, gen_rtx (LABEL_REF, Pmode, cont));
@@ -934,6 +937,7 @@ expand_end_eh_spec (raises)
   do_function_call (Terminate, NULL_TREE, NULL_TREE);
   assemble_external (TREE_OPERAND (Terminate, 0));
   emit_barrier ();
+  do_pending_stack_adjust ();
   RTL_EXPR_SEQUENCE (expr) = get_insns ();
   end_sequence ();
   
@@ -943,6 +947,7 @@ expand_end_eh_spec (raises)
   TREE_TYPE (expr) = void_type_node;
   RTL_EXPR_RTL (expr) = const0_rtx;
   TREE_SIDE_EFFECTS (expr) = 1;
+  do_pending_stack_adjust ();
   start_sequence_for_rtl_expr (expr);
 
   cont = gen_label_rtx ();
@@ -987,6 +992,7 @@ expand_end_eh_spec (raises)
   emit_indirect_jump (ret);
   emit_label (end);
   
+  do_pending_stack_adjust ();
   RTL_EXPR_SEQUENCE (expr) = get_insns ();
   end_sequence ();
   
@@ -1000,8 +1006,10 @@ expand_end_eh_spec (raises)
 void
 expand_exception_blocks ()
 {
+  do_pending_stack_adjust ();
   push_to_sequence (catch_clauses);
   expand_leftover_cleanups ();
+  do_pending_stack_adjust ();
   catch_clauses = get_insns ();
   end_sequence ();
 
@@ -1012,8 +1020,10 @@ expand_exception_blocks ()
   if (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (current_function_decl)))
     {
      expand_end_eh_spec (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (current_function_decl)));
+     do_pending_stack_adjust ();
      push_to_sequence (catch_clauses);
      expand_leftover_cleanups ();
+     do_pending_stack_adjust ();
      catch_clauses = get_insns ();
      end_sequence ();
     }
