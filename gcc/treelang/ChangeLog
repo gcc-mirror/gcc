@@ -1,5 +1,17 @@
 2005-02-26  James A. Morrison  <phython@gcc.gnu.org>
 
+	* treelang.texi: Treelang does have warnings.
+	* treetree.c (tree_code_create_function_prototype): Don't set
+	TREE_USED and set TREE_PUBLIC, DECL_EXTERNAL, and TREE_STATIC
+	as few times as needed on the function declaration.
+	(tree_code_create_function_initial): Don't set TREE_USED,
+	TREE_ADDRESSABLE, but set TREE_STATIC on the function declaration.
+	(tree_code_create_variable): Don't set TREE_USED on VAR_DECL.
+	(tree_code_get_expression): Set TREE_USED for variable references
+	and function calls.
+
+2005-02-26  James A. Morrison  <phython@gcc.gnu.org>
+
 	* parse.y: Do comparisons as the type of the first expression.
 	* treetree.c (tree_code_get_integer_value): Build integer constants
 	with the proper type.
