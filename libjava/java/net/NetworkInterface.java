@@ -220,15 +220,16 @@ public final class NetworkInterface
   {
     // FIXME: check if this is correct
     String result;
+    String separator = System.getProperty ("line.separator");
 
     result = "name: " + getDisplayName () + " (" + getName () +
-	     ") addresses:\n";
+	     ") addresses:" + separator;
 
     for (Enumeration e = inetAddresses.elements ();
          e.hasMoreElements (); )
       {
         InetAddress address = (InetAddress) e.nextElement ();
-        result += address.toString () + "\n";
+        result += address.toString () + separator;
       }
 
     return result;

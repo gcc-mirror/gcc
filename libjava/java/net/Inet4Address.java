@@ -113,7 +113,7 @@ public final class Inet4Address extends InetAddress
    */
   public boolean isLinkLocalAddress ()
   {
-    // XXX: This seems to net exist with IPv4 addresses
+    // XXX: This seems to not exist with IPv4 addresses
     return false;
   }
 

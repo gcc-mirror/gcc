@@ -251,6 +251,19 @@ public abstract class URLConnection
   }
 
   /**
+   * Retrieves the content of this URLConnection
+   *
+   * @exception IOException If an error occurs
+   * @exception UnknownServiceException If the protocol does not support the
+   * content type
+   */
+  public Object getContent(Class[] classes) throws IOException
+  {
+    // FIXME: implement this
+    return getContent ();
+  }
+
+  /**
    * Returns a permission object representing the permission necessary to make
    * the connection represented by this object. This method returns null if no
    * permission is required to make the connection.

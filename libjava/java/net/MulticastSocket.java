@@ -38,6 +38,7 @@ exception statement from your version. */
 package java.net;
 
 import java.io.IOException;
+import java.util.Enumeration;
 
 /**
  * Written using on-line Java Platform 1.2 API Specification, as well
@@ -120,7 +121,6 @@ public class MulticastSocket extends DatagramSocket
    */
   public InetAddress getInterface() throws SocketException
   {
-    // FIXME: Is it possible that an InetAddress wasn't returned from getOption?
     return (InetAddress) impl.getOption(SocketOptions.IP_MULTICAST_IF);
   }
 
@@ -173,6 +173,58 @@ public class MulticastSocket extends DatagramSocket
   }
 
   /**
+   * Sets the local network interface used to send multicast messages
+   *
+   * @param netIF The local network interface used to send multicast messages
+   * 
+   * @exception SocketException If an error occurs
+   * 
+   * @see MulticastSocket:getNetworkInterface
+   * 
+   * @since 1.4
+   */
+  public void setNetworkInterface(NetworkInterface netIf)
+    throws SocketException
+  {
+    if (impl == null)
+      throw new SocketException (
+		      "MulticastSocket: Cant access socket implementation");
+
+    Enumeration e = netIf.getInetAddresses ();
+
+    if (!e.hasMoreElements ())
+      throw new SocketException ("MulticastSocket: Error");
+
+    InetAddress address = (InetAddress) e.nextElement ();
+    impl.setOption (SocketOptions.IP_MULTICAST_IF, address);
+  }
+
+  /**
+   * Gets the local network interface which is used to send multicast messages
+   *
+   * @return The local network interface to send multicast messages
+   *
+   * @exception SocketException If an error occurs
+   *
+   * @see MulticastSocket:setNetworkInterface
+   * 
+   * @since 1.4
+   */
+  public NetworkInterface getNetworkInterface()
+    throws SocketException
+  {
+    if (impl == null)
+      throw new SocketException (
+		      "MulticastSocket: Cant access socket implementation");
+
+    InetAddress address =
+	    (InetAddress) impl.getOption (SocketOptions.IP_MULTICAST_IF);
+    NetworkInterface netIf = NetworkInterface.getByInetAddress (address);
+
+    return netIf;
+  }
+
+  /**
    * Disable/Enable local loopback of multicast packets.  The option is used by
    * the platform's networking code as a hint for setting whether multicast
    * data will be looped back to the local socket. 
@@ -188,6 +240,10 @@ public class MulticastSocket extends DatagramSocket
    */
   public void setLoopbackMode(boolean disable) throws SocketException
   {
+    if (impl == null)
+      throw new SocketException (
+		      "MulticastSocket: Cant access socket implementation");
+
     impl.setOption (SocketOptions.IP_MULTICAST_LOOP, new Boolean (disable));
   }
 

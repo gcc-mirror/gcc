@@ -217,11 +217,35 @@ public abstract class HttpURLConnection extends URLConnection
       }
   }
 
-  // TODO12: public Permission getPermission() throws IOException
-  // {
-  // }
+  /**
+   * Returns a permission object representing the permission necessary to make
+   * the connection represented by this object
+   *
+   * @exception IOException If an error occurs
+   */
+  public Permission getPermission() throws IOException
+  {
+    return new SocketPermission (url.getHost (), "connect");
+  }
 
-  // TODO12: public InputStream getErrorStream()
-  // {
-  // }
+  /**
+   * Returns the error stream if the connection failed but the server sent
+   * useful data nonetheless
+   */
+  public InputStream getErrorStream ()
+  {
+    // FIXME: implement this
+    return null;
+  }
+
+  /**
+   * Returns the value of the named field parsed as date
+   */
+  public long getHeaderFieldDate (String key, long value)
+  {
+    // FIXME: implement this correctly
+    // http://www.w3.org/Protocols/HTTP-NG/ng-notes.txt
+    
+    return super.getHeaderFieldDate (key, value);
+  }
 }

@@ -9,10 +9,12 @@ Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
 package java.net;
+
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.ObjectStreamException;
 
 /**
  * @author Per Bothner
@@ -44,6 +46,14 @@ public class InetAddress implements Serializable
   int family;
   private static final long serialVersionUID = 3286316764910316507L;
 
+  /**
+   * Needed for serialization
+   */
+  private void readResolve () throws ObjectStreamException
+  {
+    // FIXME: implement this
+  }
+	  
   private void readObject(ObjectInputStream ois)
     throws IOException, ClassNotFoundException
   {
@@ -96,11 +106,105 @@ public class InetAddress implements Serializable
     return false;
   }
 
+  /**
+   * Utility routine to check if the InetAddress in a wildcard address
+   * 
+   * @since 1.4
+   */
+  public boolean isAnyLocalAddress ()
+  {
+    // FIXME: implement this
+    return false;
+  }
+
+  /**
+   * Utility routine to check if the InetAddress is a loopback address
+   * 
+   * @since 1.4
+   */
+  public boolean isLoopbackAddress ()
+  {
+    // FIXME: implement this
+    return addr [0] == 0x7F;
+  }
+
+  /**
+   * @since 1.4
+   */
+  public boolean isLinkLocalAddress ()
+  {
+    // FIXME: implement this
+    return false;
+  }
+
+  /**
+   * @since 1.4
+   */
+  public boolean isSiteLocalAddress ()
+  {
+    // FIXME: implement this
+    return false;
+  }
+
+  /**
+   * @since 1.4
+   */
+  public boolean isMCGlobal ()
+  {
+    // FIXME: implement this
+    return false;
+  }
+
+  /**
+   * @since 1.4
+   */
+  public boolean isMCNodeLocal ()
+  {
+    // FIXME: implement this
+    return false;
+  }
+
+  /**
+   * @since 1.4
+   */
+  public boolean isMCLinkLocal ()
+  {
+    // FIXME: implement this
+    return false;
+  }
+
+  /**
+   * @since 1.4
+   */
+  public boolean isMCSiteLocal ()
+  {
+    // FIXME: implement this
+    return false;
+  }
+
+  /**
+   * @since 1.4
+   */
+  public boolean isMCOrgLocal ()
+  {
+    // FIXME: implement this
+    return false;
+  }
+
   public String getHostName ()
   {
     if (hostName == null)
       lookup (null, this, false);
     return hostName;
+  }
+
+  /**
+   * @since 1.4
+   */
+  public String getCanonicalHostName ()
+  {
+    // FIXME: implement this
+    return "";
   }
 
   public byte[] getAddress ()
@@ -199,6 +303,7 @@ public class InetAddress implements Serializable
   {
     if (obj == null || ! (obj instanceof InetAddress))
       return false;
+    
     // "The Java Class Libraries" 2nd edition says "If a machine has
     // multiple names instances of InetAddress for different name of
     // that same machine are not equal.  This is because they have
@@ -222,12 +327,14 @@ public class InetAddress implements Serializable
   {
     return getHostName()+'/'+getHostAddress();
   }
-  
+
   /**
    * Returns an InetAddress object given the raw IP address.
    *
    * The argument is in network byte order: the highest order byte of the
    * address is in getAddress()[0].
+   *
+   * @param addr The IP address to create the InetAddress object from
    *
    * @exception UnknownHostException If IP address has illegal length
    *
@@ -241,10 +348,13 @@ public class InetAddress implements Serializable
 
     return new InetAddress (addr, "");
   }
-  
+
   /**
-   * Create an InetAddress based on the provided host name and IP address.
+   * Creates an InetAddress based on the provided host name and IP address.
    * No name service is checked for the validity of the address.
+   *
+   * @param host The hostname of the InetAddress object to create
+   * @param addr The IP address to create the InetAddress object from
    *
    * @exception UnknownHostException If IP address is of illegal length
    *
@@ -253,8 +363,11 @@ public class InetAddress implements Serializable
   public static InetAddress getByAddress (String host, byte[] addr)
     throws UnknownHostException
   {
-    if (addr.length == 4 || addr.length == 16)
-      return new InetAddress (addr, host);
+    if (addr.length == 4)
+      return new Inet4Address (addr, host);
+
+    if (addr.length == 16)
+      return new Inet6Address (addr, host);
     
     throw new UnknownHostException ("IP address has illegal length");
   }
