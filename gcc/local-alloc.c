@@ -279,6 +279,7 @@ alloc_qty_for_scratch (scratch, n, insn, insn_code_num, insn_number)
   char *p, c;
   int i;
 
+#ifdef REGISTER_CONSTRAINTS
   /* If we haven't yet computed which alternative will be used, do so now.
      Then set P to the constraints for that alternative.  */
   if (which_alternative == -1)
@@ -334,6 +335,12 @@ alloc_qty_for_scratch (scratch, n, insn, insn_code_num, insn_number)
 
   if (class == NO_REGS || reg_class_size[(int) class] == 1)
     return;
+
+#else /* REGISTER_CONSTRAINTS */
+
+  class = GENERAL_REGS;
+#endif
+  
 
   qty = next_qty++;
 
@@ -1099,9 +1106,15 @@ block_alloc (b)
 	     If tying is done, WIN is set nonzero.  */
 
 	  if (insn_code_number >= 0
+#ifdef REGISTER_CONSTRAINTS
 	      && insn_n_operands[insn_code_number] > 1
 	      && insn_operand_constraint[insn_code_number][0][0] == '='
-	      && insn_operand_constraint[insn_code_number][0][1] != '&')
+	      && insn_operand_constraint[insn_code_number][0][1] != '&'
+#else
+	      && GET_CODE (PATTERN (insn)) == SET
+	      && rtx_equal_p (SET_DEST (PATTERN (insn)), recog_operand[0])
+#endif
+	      )
 	    {
 	      r0 = recog_operand[0];
 	      r1 = recog_operand[1];
@@ -1109,7 +1122,13 @@ block_alloc (b)
 	      /* If the first operand is an address, find a register in it.
 		 There may be more than one register, but we only try one of
 		 them.  */
-	      if (insn_operand_constraint[insn_code_number][1][0] == 'p')
+	      if (
+#ifdef REGISTER_CONSTRAINTS
+		  insn_operand_constraint[insn_code_number][1][0] == 'p'
+#else
+		  insn_operand_address_p[insn_code_number][1]
+#endif
+		  )
 		while (GET_CODE (r1) == PLUS || GET_CODE (r1) == MULT)
 		  r1 = XEXP (r1, 0);
 
@@ -1119,10 +1138,14 @@ block_alloc (b)
 		     If we have a move insn or an insn whose first input can
 		     only be in the same register as the output, give
 		     priority to an equivalence found from that insn.  */
+#ifdef REGISTER_CONSTRAINTS
 		  int may_save_copy
 		    = ((SET_DEST (body) == r0 && SET_SRC (body) == r1)
 		       || (r1 == recog_operand[1]
 			   && (requires_inout_p (insn_operand_constraint[insn_code_number][1]))));
+#else
+		  int may_save_copy = 0;
+#endif
 
 		  if (GET_CODE (r1) == REG || GET_CODE (r1) == SUBREG)
 		    win = combine_regs (r1, r0, may_save_copy,
@@ -1130,7 +1153,15 @@ block_alloc (b)
 
 		  if (win == 0
 		      && insn_n_operands[insn_code_number] > 2
+#ifdef REGISTER_CONSTRAINTS
 		      && insn_operand_constraint[insn_code_number][1][0] == '%'
+#else
+		      && GET_CODE (PATTERN (insn)) == SET
+		      && (GET_RTX_CLASS (GET_CODE (SET_SRC (PATTERN (insn))))
+			  == 'c')
+		      && rtx_equal_p (recog_operand[2],
+				      XEXP (SET_SRC (PATTERN (insn)), 0))
+#endif
 		      && (r1 = recog_operand[2],
 			  GET_CODE (r1) == REG || GET_CODE (r1) == SUBREG))
 		    win = combine_regs (r1, r0, may_save_copy,
@@ -2017,6 +2048,8 @@ no_conflict_p (insn, r0, r1)
   return ok;
 }
 
+#ifdef REGISTER_CONSTRAINTS
+
 /* Return 1 if the constraint string P indicates that the a the operand
    must be equal to operand 0 and that no register is acceptable.  */
 
@@ -2059,6 +2092,7 @@ requires_inout_p (p)
 
   return found_zero;
 }
+#endif /* REGISTER_CONSTRAINTS */
 
 void
 dump_local_alloc (file)
