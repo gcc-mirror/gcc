@@ -523,6 +523,22 @@ fix = {
 
 
 /*
+ *  Obey __PRAGMA_EXTERN_PREFIX for Tru64 UNIX V5 <sys/stat.h>.
+ */
+fix = {
+    hackname  = alpha___extern_prefix;
+    files     = sys/stat.h;
+    select    = "#[ \t]*if[ \t]*defined\\(__DECC\\)";
+
+    mach      = "alpha*-dec-osf5*";
+    c_fix     = format;
+    c_fix_arg = "%0 || defined(__PRAGMA_EXTERN_PREFIX)";
+
+    test_text = "#   if defined(__DECC)";
+};
+
+
+/*
  *  Fix assert macro in assert.h on Alpha OSF/1.
  *  The superfluous int cast breaks C++.
  */

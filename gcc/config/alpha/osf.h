@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for DEC Alpha on OSF/1.
-   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 2001
+   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 2001, 2002, 2003
    Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
@@ -32,21 +32,21 @@ Boston, MA 02111-1307, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define TARGET_OS_CPP_BUILTINS()		\
-    do {					\
-	builtin_define_std ("unix");		\
-	builtin_define_std ("SYSTYPE_BSD");	\
-	builtin_define ("_SYSTYPE_BSD");	\
-	builtin_define ("__osf__");		\
-	builtin_define ("_LONGLONG");		\
-	builtin_define ("__EXTERN_PREFIX");	\
-	builtin_assert ("system=unix");		\
-	builtin_assert ("system=xpg4");		\
-	/* Tru64 UNIX V5 has a 16 byte long	\
-	   double type and requires __X_FLOAT	\
-	   to be defined for <math.h>.  */	\
-        if (LONG_DOUBLE_TYPE_SIZE == 128)	\
-          builtin_define ("__X_FLOAT");		\
+#define TARGET_OS_CPP_BUILTINS()			\
+    do {						\
+	builtin_define_std ("unix");			\
+	builtin_define_std ("SYSTYPE_BSD");		\
+	builtin_define ("_SYSTYPE_BSD");		\
+	builtin_define ("__osf__");			\
+	builtin_define ("_LONGLONG");			\
+	builtin_define ("__PRAGMA_EXTERN_PREFIX");	\
+	builtin_assert ("system=unix");			\
+	builtin_assert ("system=xpg4");			\
+	/* Tru64 UNIX V5 has a 16 byte long		\
+	   double type and requires __X_FLOAT		\
+	   to be defined for <math.h>.  */		\
+        if (LONG_DOUBLE_TYPE_SIZE == 128)		\
+          builtin_define ("__X_FLOAT");			\
     } while (0)
 
 /* Accept DEC C flags for multithreaded programs.  We use _PTHREAD_USE_D4
