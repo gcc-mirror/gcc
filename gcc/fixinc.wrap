@@ -33,7 +33,6 @@ if [ -r $INPUT/$file ]; then
     rm -f $LIB/$file
     cat <<'__EOF__' >$LIB/$file
 #ifndef _MATH_H_WRAPPER
-#define _MATH_H_WRAPPER 1
 #ifdef __cplusplus
 # define exception __math_exception
 #endif
@@ -41,8 +40,13 @@ if [ -r $INPUT/$file ]; then
 #ifdef __cplusplus
 # undef exception
 #endif
+#define _MATH_H_WRAPPER
 #endif /* _MATH_H_WRAPPER */
 __EOF__
+    # Define _MATH_H_WRAPPER at the end of the wrapper, not the start,
+    # so that if #include_next gets another instance of the wrapper,
+    # this will follow the #include_next chain until we arrive at
+    # the real <math.h>.
     chmod a+r $LIB/$file
   fi
 fi
