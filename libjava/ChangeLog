@@ -1,5 +1,9 @@
 2004-09-03  David Daney  <ddaney@avtrex.com>
 
+	* include/mips-signal.h: Update copyright.
+
+2004-09-03  David Daney  <ddaney@avtrex.com>
+
 	* configure.host: Use -fno-use-divide-subroutine for mips*-*-linux*.
 	* include/mips-signal.h: Added HANDLE_FPE support.
 	
