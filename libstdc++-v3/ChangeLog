@@ -1,3 +1,18 @@
+2000-07-26  Phil Edwards  <pme@sourceware.cygnus.com>
+
+	* acinclude.m4 (GLIBCPP_CHECK_LINKER_FEATURES):  Test for GNU ld
+	  before trying to use any of its options.
+	  (CHECK_MATH_DECL*,CHECK_BUILTIN_MATH_DECL*):  Cache tests.
+	* aclocal.m4:  Regenerate.
+	* configure.in:  Having found GNU make, name it.
+	* configure:  Regenerate.
+	* docs/install.html:  Mention possible problems with caching.
+	* src/Makefile.am (CXXLINK):  Use new OPT_LDFLAGS.
+	* src/Makefile.in:  Regenerate.
+	* libio/Makefile.in:  Regenerate.
+	* math/Makefile.in:  Regenerate.
+	* Makefile.in:  Regenerate.
+
 2000-07-26  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* src/misc-inst.cc (std): Remove instantiations.
