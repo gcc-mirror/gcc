@@ -1,3 +1,10 @@
+2002-08-12  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.md (define_constants): Add MMIX_rR_REGNUM.
+	("divdi3", "*divdi3_nonknuth", "moddi3", "*moddi3_nonknuth"): Mark
+	MMIX_rR_REGNUM as clobbered.
+	* config/mmix/mmix.h (MMIX_REMAINDER_REGNUM): Use MMIX_rR_REGNUM.
+
 2002-08-12  Gabriel Dos Reis  <gdr@nerim.net>
 
 	* diagnostic.h (output_formatted_scalar): Rename from

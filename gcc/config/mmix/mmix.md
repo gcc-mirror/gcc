@@ -36,6 +36,7 @@
 
 (define_constants
   [(MMIX_rJ_REGNUM 259)
+   (MMIX_rR_REGNUM 260)
    (MMIX_fp_rO_OFFSET -24)]
 )
 
@@ -271,7 +272,8 @@
 	  (div:DI (match_operand:DI 1 "register_operand" "r")
 		  (match_operand:DI 2 "register_operand" "r")))
      (clobber (scratch:DI))
-     (clobber (scratch:DI))])]
+     (clobber (scratch:DI))
+     (clobber (reg:DI MMIX_rR_REGNUM))])]
   "! TARGET_KNUTH_DIVISION"
   "")
 
@@ -282,7 +284,8 @@
 	(div:DI (match_operand:DI 1 "register_operand" "r,r")
 		(match_operand:DI 2 "register_operand" "1,r")))
    (clobber (match_scratch:DI 3 "=1,1"))
-   (clobber (match_scratch:DI 4 "=2,2"))]
+   (clobber (match_scratch:DI 4 "=2,2"))
+   (clobber (reg:DI MMIX_rR_REGNUM))]
   "! TARGET_KNUTH_DIVISION"
   "@
    SETL %0,1
@@ -295,7 +298,8 @@ DIVU %0,%1,%2\;NEGU %1,0,%0\;CSN %0,$255,%1")
 	  (mod:DI (match_operand:DI 1 "register_operand" "r")
 		  (match_operand:DI 2 "register_operand" "r")))
      (clobber (scratch:DI))
-     (clobber (scratch:DI))])]
+     (clobber (scratch:DI))
+     (clobber (reg:DI MMIX_rR_REGNUM))])]
   "! TARGET_KNUTH_DIVISION"
   "")
 
@@ -306,7 +310,8 @@ DIVU %0,%1,%2\;NEGU %1,0,%0\;CSN %0,$255,%1")
 	(mod:DI (match_operand:DI 1 "register_operand" "r,r")
 		(match_operand:DI 2 "register_operand" "1,r")))
    (clobber (match_scratch:DI 3 "=1,1"))
-   (clobber (match_scratch:DI 4 "=2,2"))]
+   (clobber (match_scratch:DI 4 "=2,2"))
+   (clobber (reg:DI MMIX_rR_REGNUM))]
   "! TARGET_KNUTH_DIVISION"
   "@
    SETL %0,0
