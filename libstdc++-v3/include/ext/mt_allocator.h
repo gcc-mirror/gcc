@@ -172,6 +172,9 @@ namespace __gnu_cxx
     explicit __pool_base() 
     : _M_options(_Tune()), _M_binmap(NULL), _M_init(false) { }
 
+    explicit __pool_base(const _Tune& __tune) 
+    : _M_options(__tune), _M_binmap(NULL), _M_init(false) { }
+
   protected:
     // Configuration options.
     _Tune 	       		_M_options;
@@ -307,6 +310,15 @@ namespace __gnu_cxx
 	_M_once = __tmp;
       }
 
+      explicit __pool(const __pool_base::_Tune& __tune) 
+      : __pool_base(__tune), _M_bin(NULL), _M_bin_size(1), 
+      _M_thread_freelist(NULL) 
+      {
+	// On some platforms, __gthread_once_t is an aggregate.
+	__gthread_once_t __tmp = __GTHREAD_ONCE_INIT;
+	_M_once = __tmp;
+      }
+
       ~__pool();
 
     private:
@@ -371,6 +383,9 @@ namespace __gnu_cxx
 
       explicit __pool() 
       : _M_bin(NULL), _M_bin_size(1) { }
+
+      explicit __pool(const __pool_base::_Tune& __tune) 
+      : __pool_base(__tune), _M_bin(NULL), _M_bin_size(1) { }
 
       ~__pool();
 
@@ -491,7 +506,10 @@ namespace __gnu_cxx
       static __pool_type&
       _S_get_pool() 
       { 
-	static __pool_type _S_pool;
+	// Sane defaults for the __pool_type.
+	const static size_t __align = __alignof__(_Tp) >= sizeof(typename __pool_type::_Block_record) ? __alignof__(_Tp) : sizeof(typename __pool_type::_Block_record);
+	static __pool_base::_Tune _S_tune(__align, sizeof(_Tp) * 128, (sizeof(_Tp) * 2) >= __align ? sizeof(_Tp) * 2 : __align, __pool_type::_Tune::_S_chunk_size, __pool_type::_Tune::_S_max_threads, __pool_type::_Tune::_S_freelist_headroom, getenv("GLIBCXX_FORCE_NEW") ? true : false);
+	static __pool_type _S_pool(_S_tune);
 	return _S_pool;
       }
 
@@ -531,7 +549,10 @@ namespace __gnu_cxx
       static __pool_type&
       _S_get_pool( ) 
       { 
-	static __pool_type _S_pool;
+	// Sane defaults for the __pool_type.
+	const static size_t __align = __alignof__(_Tp) >= sizeof(typename __pool_type::_Block_record) ? __alignof__(_Tp) : sizeof(typename __pool_type::_Block_record);
+	static __pool_base::_Tune _S_tune(__align, sizeof(_Tp) * 128, (sizeof(_Tp) * 2) >= __align ? sizeof(_Tp) * 2 : __align, __pool_type::_Tune::_S_chunk_size, __pool_type::_Tune::_S_max_threads, __pool_type::_Tune::_S_freelist_headroom, getenv("GLIBCXX_FORCE_NEW") ? true : false);
+	static __pool_type _S_pool(_S_tune);
 	return _S_pool;
       }
 
@@ -600,15 +621,15 @@ namespace __gnu_cxx
     class __mt_alloc : public __mt_alloc_base<_Tp>, _Poolp
     {
     public:
-      typedef size_t                    size_type;
-      typedef ptrdiff_t                 difference_type;
-      typedef _Tp*                      pointer;
-      typedef const _Tp*                const_pointer;
-      typedef _Tp&                      reference;
-      typedef const _Tp&                const_reference;
-      typedef _Tp                       value_type;
-      typedef _Poolp                  	__policy_type;
-      typedef typename _Poolp::__pool_type       __pool_type;
+      typedef size_t                    	size_type;
+      typedef ptrdiff_t                 	difference_type;
+      typedef _Tp*                      	pointer;
+      typedef const _Tp*                	const_pointer;
+      typedef _Tp&                      	reference;
+      typedef const _Tp&                	const_reference;
+      typedef _Tp                       	value_type;
+      typedef _Poolp                  		__policy_type;
+      typedef typename _Poolp::__pool_type  	__pool_type;
 
       template<typename _Tp1, typename _Poolp1 = _Poolp>
         struct rebind
@@ -657,8 +678,8 @@ namespace __gnu_cxx
     {
       this->_S_initialize_once();
 
-      // Requests larger than _M_max_bytes are handled by new/delete
-      // directly.
+      // Requests larger than _M_max_bytes are handled by operator
+      // new/delete directly.
       __pool_type& __pool = this->_S_get_pool();
       const size_t __bytes = __n * sizeof(_Tp);
       if (__pool._M_check_threshold(__bytes))

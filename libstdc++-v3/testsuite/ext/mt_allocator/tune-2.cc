@@ -37,13 +37,12 @@ void test02()
   typedef __gnu_cxx::__mt_alloc<value_type, policy_type> allocator_type;
   typedef __gnu_cxx::__pool_base::_Tune tune_type;
 
-  tune_type t_default;
   tune_type t_opt(16, 5120, 32, 5120, 20, 10, false);
   tune_type t_single(16, 5120, 32, 5120, 1, 10, false);
 
   allocator_type a;
-  tune_type t1 = a._M_get_options();  
-  VERIFY( t1._M_align == t_default._M_align );
+  tune_type t_default = a._M_get_options();
+  tune_type t1 = t_default; 
   a._M_set_options(t_opt);
   tune_type t2 = a._M_get_options();
   VERIFY( t1._M_align != t2._M_align );
