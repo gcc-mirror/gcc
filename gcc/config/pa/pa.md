@@ -4640,10 +4640,29 @@
   [(set_attr "type" "fpdivsgl")
    (set_attr "length" "4")])
 
-(define_insn "negdf2"
+;; Processors prior to PA 2.0 don't have a fneg instruction.  Fast
+;; negation can be done by subtracting from plus zero.  However, this
+;; violates the IEEE standard when negating plus and minus zero.
+(define_expand "negdf2"
+  [(parallel [(set (match_operand:DF 0 "register_operand" "")
+		   (neg:DF (match_operand:DF 1 "register_operand" "")))
+	      (use (match_dup 2))])]
+  "! TARGET_SOFT_FLOAT"
+{
+  if (TARGET_PA_20 || flag_unsafe_math_optimizations)
+    emit_insn (gen_negdf2_fast (operands[0], operands[1]));
+  else
+    {
+      operands[2] = force_reg (DFmode, immed_real_const_1 (dconstm1, DFmode));
+      emit_insn (gen_muldf3 (operands[0], operands[1], operands[2]));
+    }
+  DONE;
+})
+
+(define_insn "negdf2_fast"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(neg:DF (match_operand:DF 1 "register_operand" "f")))]
-  "! TARGET_SOFT_FLOAT"
+  "! TARGET_SOFT_FLOAT && (TARGET_PA_20 || flag_unsafe_math_optimizations)"
   "*
 {
   if (TARGET_PA_20)
@@ -4654,10 +4673,26 @@
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
 
-(define_insn "negsf2"
+(define_expand "negsf2"
+  [(parallel [(set (match_operand:SF 0 "register_operand" "")
+		   (neg:SF (match_operand:SF 1 "register_operand" "")))
+	      (use (match_dup 2))])]
+  "! TARGET_SOFT_FLOAT"
+{
+  if (TARGET_PA_20 || flag_unsafe_math_optimizations)
+    emit_insn (gen_negsf2_fast (operands[0], operands[1]));
+  else
+    {
+      operands[2] = force_reg (SFmode, immed_real_const_1 (dconstm1, SFmode));
+      emit_insn (gen_mulsf3 (operands[0], operands[1], operands[2]));
+    }
+  DONE;
+})
+
+(define_insn "negsf2_fast"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(neg:SF (match_operand:SF 1 "register_operand" "f")))]
-  "! TARGET_SOFT_FLOAT"
+  "! TARGET_SOFT_FLOAT && (TARGET_PA_20 || flag_unsafe_math_optimizations)"
   "*
 {
   if (TARGET_PA_20)
