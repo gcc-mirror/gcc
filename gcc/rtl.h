@@ -651,6 +651,7 @@ extern rtx gen_inline_header_rtx	PROTO((rtx, rtx, int, int, int, int, int, int, 
 extern rtx gen_lowpart_common		PROTO((enum machine_mode, rtx));
 extern rtx gen_lowpart			PROTO((enum machine_mode, rtx));
 extern rtx gen_lowpart_if_possible	PROTO((enum machine_mode, rtx));
+extern rtx gen_highpart			PROTO((enum machine_mode, rtx));
 extern rtx operand_subword		PROTO((rtx, int, int, enum machine_mode));
 extern rtx operand_subword_force	PROTO((rtx, int, enum machine_mode));
 extern int subreg_lowpart_p		PROTO((rtx));
