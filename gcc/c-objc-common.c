@@ -324,7 +324,7 @@ finish_cdtor (body)
 
   RECHAIN_STMTS (body, COMPOUND_BODY (body));
 
-  finish_function (0);
+  finish_function (0, 0);
 }
 
 /* Called at end of parsing, but before end-of-file processing.  */

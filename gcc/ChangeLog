@@ -1,3 +1,10 @@
+2002-03-28  Richard Henderson  <rth@redhat.com>
+
+	* c-decl.c (finish_function): New arg can_defer_p.  Pass it
+	on to c_expand_body.
+	* c-tree.h (finish_function): Update decl.
+	* c-objc-common.c, c-parse.in, objc/objc-act.c: Update calls.
+
 2002-03-27  Andreas Schwab  <schwab@suse.de>
 
 	* config/i386/i386.c (classify_argument): Also check for

@@ -6895,11 +6895,13 @@ store_parm_decls ()
 
    This is called after parsing the body of the function definition.
 
-   NESTED is nonzero if the function being finished is nested in another.  */
+   NESTED is nonzero if the function being finished is nested in another.
+   CAN_DEFER_P is nonzero if the function may be deferred.  */
 
 void
-finish_function (nested)
+finish_function (nested, can_defer_p)
      int nested;
+     int can_defer_p;
 {
   tree fndecl = current_function_decl;
 
@@ -6975,7 +6977,7 @@ finish_function (nested)
   if (! nested)
     {
       /* Generate RTL for the body of this function.  */
-      c_expand_body (fndecl, nested, 1);
+      c_expand_body (fndecl, nested, can_defer_p);
 
       /* Let the error reporting routines know that we're outside a
 	 function.  For a nested function, this value is used in
