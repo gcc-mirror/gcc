@@ -362,7 +362,6 @@ Sat Oct 19 10:46:52 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* doc/c-tree.texi: Update description of COND_EXPR tree nodes.
 
->>>>>>> 1.15743
 2002-10-17  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/rs6000/rs6000.h (HARD_REGNO_MODE_OK): Allow arbitrary modes
