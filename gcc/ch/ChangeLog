@@ -1,3 +1,10 @@
+2001-05-20  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* Make-lang.in (chill.dvi): Remove bogus dependencies.  Don't cd
+	to ch; include both $(srcdir)/ch and $(srcdir) in TEXINPUTS.
+	Don't move chill.dvi after creating it.  Fixes PR other/567 and
+	PR other/1018.
+
 Fri Feb 23 15:28:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* decl.c (set_block): Set NAMES and BLOCKS from BLOCK.

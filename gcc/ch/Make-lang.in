@@ -113,13 +113,10 @@ CHILL.info: $(srcdir)/ch/chill.info
 $(srcdir)/ch/chill.info: $(srcdir)/ch/chill.texi
 	cd $(srcdir)/ch && $(MAKEINFO) -o chill.info chill.texi
 
-chill.dvi: $(srcdir)/ch/chill.texi $(srcdir)/extend.texi $(srcdir)/invoke.texi $(srcdir)/md.texi $(srcdir)/rtl.texi $(srcdir)/tm.texi
-	cd ch ; \
-	TEXINPUTS=${texidir}:$(srcdir):$$TEXINPUTS tex chill.texi ; \
+chill.dvi: $(srcdir)/ch/chill.texi
+	TEXINPUTS=${texidir}:$(srcdir)/ch:$(srcdir):$$TEXINPUTS tex $(srcdir)/ch/chill.texi ; \
 	texindex chill.?? ; \
-	TEXINPUTS=${texidir}:$(srcdir):$$TEXINPUTS tex chill.texi
-# FIXME: Not sure languages should do this.
-	cp ch/chill.dvi chill.dvi
+	TEXINPUTS=${texidir}:$(srcdir)/ch:$(srcdir)$$TEXINPUTS tex $(srcdir)/ch/chill.texi
 #
 # Install hooks:
 # cc1chill is installed elsewhere as part of $(COMPILERS).
