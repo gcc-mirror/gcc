@@ -5,6 +5,8 @@
 	* Makefile.am: Move grepjar to bin_PROGRAMS.
 	* config.h.in: Regenerated.
 	* Makefile.in: Regenerated.
+	* aclocal.m4: Regenerated.
+	* stamp-h.in: Regenerated.
 	* jargrep.c: Eliminate some signed/unsigned and default
 	uninitialized warnings. Use HAVE_STDLIB_H instead of 
 	STDC_HEADERS macro.
