@@ -1,5 +1,14 @@
 2001-12-20  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
+	* mangle.c (mangle_member_name): Don't special-case for 
+	NO_DOLLAR_IN_LABEL.
+	* mangle_name.c (unicode_mangling_length): Likewise.
+	(append_unicode_mangled_name): Likewise.
+	* parse.y (make_nested_class_name): Remove dead NO_DOLLAR_IN_LABEL
+	code.
+
+2001-12-20  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
 	* expr.c (build_java_array_length_access): Don't force null pointer
 	check unless flag_check_references is set.
 

@@ -3511,12 +3511,6 @@ make_nested_class_name (cpc_list)
 	  TREE_PURPOSE (cpc_list) : DECL_NAME (TREE_VALUE (cpc_list)));
   obstack_grow (&temporary_obstack,
 		IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name));
-  /* Why is NO_DOLLAR_IN_LABEL defined? */
-#if 0
-#ifdef NO_DOLLAR_IN_LABEL
-  internal_error ("Can't use '$' as a separator for inner classes");
-#endif
-#endif
   obstack_1grow (&temporary_obstack, '$');
 }
 

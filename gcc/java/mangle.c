@@ -180,19 +180,9 @@ mangle_member_name (name)
   append_gpp_mangled_name (IDENTIFIER_POINTER (name),
 			   IDENTIFIER_LENGTH (name));
 
-  /* If NAME happens to be a C++ keyword, add `$' or `.' or `_'. */
+  /* If NAME happens to be a C++ keyword, add `$'. */
   if (cxx_keyword_p (IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name)))
-    {
-#ifndef NO_DOLLAR_IN_LABEL
-      obstack_1grow (mangle_obstack, '$');
-#else  /* NO_DOLLAR_IN_LABEL */
-#ifndef NO_DOT_IN_LABEL
-      obstack_1grow (mangle_obstack, '.');
-#else  /* NO_DOT_IN_LABEL */
-      obstack_1grow (mangle_obstack, '_');
-#endif /* NO_DOT_IN_LABEL */
-#endif /* NO_DOLLAR_IN_LABEL */
-    }
+    obstack_1grow (mangle_obstack, '$');
 }
 
 /* Append the mangled name of TYPE onto OBSTACK.  */
