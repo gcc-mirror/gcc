@@ -1,3 +1,8 @@
+Wed Aug 18 23:31:57 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.c (recombine_givs): Set ix field after sorting.
+	(recombine_givs): Remove bogus index / giv lockstep looping.
+
 Wed Aug 18 18:20:40 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* expmed.c (emit_store_flag): If UNSIGNEDP, call unsigned_condition
