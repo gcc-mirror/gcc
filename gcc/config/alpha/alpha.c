@@ -369,7 +369,8 @@ call_operand (op, mode)
     return 0;
 
   return (GET_CODE (op) == SYMBOL_REF
-	  || (GET_CODE (op) == REG && REGNO (op) == 27));
+	  || (GET_CODE (op) == REG
+	      && (REGNO (op) == 27 || WINDOWS_NT)));
 }
 
 /* Return 1 if OP is a valid Alpha comparison operator.  Here we know which
@@ -1341,7 +1342,9 @@ output_prolog (file, size)
 
   /* If we need a GP (we have a LDSYM insn or a CALL_INSN), load it first. 
      Even if we are a static function, we still need to do this in case
-     our address is taken and passed to something like qsort.  */
+     our address is taken and passed to something like qsort.
+
+     We never need a GP for Windows/NT.  */
 
   alpha_function_needs_gp = 0;
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
@@ -1356,12 +1359,15 @@ output_prolog (file, size)
 	break;
       }
 
-  if (alpha_function_needs_gp)
-    fprintf (file, "\tldgp $29,0($27)\n");
+  if (WINDOWS_NT == 0)
+    {
+      if (alpha_function_needs_gp)
+	fprintf (file, "\tldgp $29,0($27)\n");
 
-  /* Put a label after the GP load so we can enter the function at it.  */
-  assemble_name (file, alpha_function_name);
-  fprintf (file, "..ng:\n");
+      /* Put a label after the GP load so we can enter the function at it.  */
+      assemble_name (file, alpha_function_name);
+      fprintf (file, "..ng:\n");
+    }
 
   /* Adjust the stack by the frame size.  If the frame size is > 4096
      bytes, we need to be sure we probe somewhere in the first and last
@@ -1578,6 +1584,9 @@ output_epilog (file, size)
   assemble_name (file, alpha_function_name);
   fprintf (file, "\n");
   inside_function = FALSE;
+
+  /* Show that we know this function if it is called again.  */
+  SYMBOL_REF_FLAG (XEXP (DECL_RTL (current_function_decl), 0)) = 1;
 }
 
 /* Debugging support.  */
