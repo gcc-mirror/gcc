@@ -34,14 +34,17 @@ static void fatal_with_file_and_line (FILE *, const char *, ...)
   ATTRIBUTE_PRINTF_2 ATTRIBUTE_NORETURN;
 static void fatal_expected_char (FILE *, int, int) ATTRIBUTE_NORETURN;
 static void read_name (char *, FILE *);
-static char *read_string (struct obstack *, FILE *, int);
-static char *read_quoted_string (struct obstack *, FILE *);
-static char *read_braced_string (struct obstack *, FILE *);
-static void read_escape (struct obstack *, FILE *);
+static char *read_string (FILE *, int);
+static char *read_quoted_string (FILE *);
+static char *read_braced_string (FILE *);
+static void read_escape (FILE *);
 static hashval_t def_hash (const void *);
 static int def_name_eq_p (const void *, const void *);
 static void read_constants (FILE *infile, char *tmp_char);
 static void validate_const_int (FILE *, const char *);
+
+/* Obstack used for allocating RTL strings.  */
+static struct obstack string_obstack;
 
 /* Subroutines of read_rtx.  */
 
@@ -203,7 +206,7 @@ read_name (char *str, FILE *infile)
 /* Subroutine of the string readers.  Handles backslash escapes.
    Caller has read the backslash, but not placed it into the obstack.  */
 static void
-read_escape (struct obstack *ob, FILE *infile)
+read_escape (FILE *infile)
 {
   int c = getc (infile);
 
@@ -232,31 +235,31 @@ read_escape (struct obstack *ob, FILE *infile)
     case 'a': case 'b': case 'f': case 'n': case 'r': case 't': case 'v':
     case '0': case '1': case '2': case '3': case '4': case '5': case '6':
     case '7': case 'x':
-      obstack_1grow (ob, '\\');
+      obstack_1grow (&string_obstack, '\\');
       break;
 
       /* \; makes stuff for a C string constant containing
 	 newline and tab.  */
     case ';':
-      obstack_grow (ob, "\\n\\t", 4);
+      obstack_grow (&string_obstack, "\\n\\t", 4);
       return;
 
       /* pass anything else through, but issue a warning.  */
     default:
       fprintf (stderr, "%s:%d: warning: unrecognized escape \\%c\n",
 	       read_rtx_filename, read_rtx_lineno, c);
-      obstack_1grow (ob, '\\');
+      obstack_1grow (&string_obstack, '\\');
       break;
     }
 
-  obstack_1grow (ob, c);
+  obstack_1grow (&string_obstack, c);
 }
 
 
 /* Read a double-quoted string onto the obstack.  Caller has scanned
    the leading quote.  */
 static char *
-read_quoted_string (struct obstack *ob, FILE *infile)
+read_quoted_string (FILE *infile)
 {
   int c;
 
@@ -267,30 +270,30 @@ read_quoted_string (struct obstack *ob, FILE *infile)
 	read_rtx_lineno++;
       else if (c == '\\')
 	{
-	  read_escape (ob, infile);
+	  read_escape (infile);
 	  continue;
 	}
       else if (c == '"')
 	break;
 
-      obstack_1grow (ob, c);
+      obstack_1grow (&string_obstack, c);
     }
 
-  obstack_1grow (ob, 0);
-  return (char *) obstack_finish (ob);
+  obstack_1grow (&string_obstack, 0);
+  return (char *) obstack_finish (&string_obstack);
 }
 
-/* Read a braced string (a la Tcl) onto the obstack.  Caller has
-   scanned the leading brace.  Note that unlike quoted strings,
+/* Read a braced string (a la Tcl) onto the string obstack.  Caller
+   has scanned the leading brace.  Note that unlike quoted strings,
    the outermost braces _are_ included in the string constant.  */
 static char *
-read_braced_string (struct obstack *ob, FILE *infile)
+read_braced_string (FILE *infile)
 {
   int c;
   int brace_depth = 1;  /* caller-processed */
   unsigned long starting_read_rtx_lineno = read_rtx_lineno;
 
-  obstack_1grow (ob, '{');
+  obstack_1grow (&string_obstack, '{');
   while (brace_depth)
     {
       c = getc (infile); /* Read the string  */
@@ -303,7 +306,7 @@ read_braced_string (struct obstack *ob, FILE *infile)
 	brace_depth--;
       else if (c == '\\')
 	{
-	  read_escape (ob, infile);
+	  read_escape (infile);
 	  continue;
 	}
       else if (c == EOF)
@@ -311,11 +314,11 @@ read_braced_string (struct obstack *ob, FILE *infile)
 	  (infile, "missing closing } for opening brace on line %lu",
 	   starting_read_rtx_lineno);
 
-      obstack_1grow (ob, c);
+      obstack_1grow (&string_obstack, c);
     }
 
-  obstack_1grow (ob, 0);
-  return (char *) obstack_finish (ob);
+  obstack_1grow (&string_obstack, 0);
+  return (char *) obstack_finish (&string_obstack);
 }
 
 /* Read some kind of string constant.  This is the high-level routine
@@ -323,7 +326,7 @@ read_braced_string (struct obstack *ob, FILE *infile)
    and dispatch to the appropriate string constant reader.  */
 
 static char *
-read_string (struct obstack *ob, FILE *infile, int star_if_braced)
+read_string (FILE *infile, int star_if_braced)
 {
   char *stringbuf;
   int saw_paren = 0;
@@ -337,12 +340,12 @@ read_string (struct obstack *ob, FILE *infile, int star_if_braced)
     }
 
   if (c == '"')
-    stringbuf = read_quoted_string (ob, infile);
+    stringbuf = read_quoted_string (infile);
   else if (c == '{')
     {
       if (star_if_braced)
-	obstack_1grow (ob, '*');
-      stringbuf = read_braced_string (ob, infile);
+	obstack_1grow (&string_obstack, '*');
+      stringbuf = read_braced_string (infile);
     }
   else
     fatal_with_file_and_line (infile, "expected `\"' or `{', found `%c'", c);
@@ -521,8 +524,6 @@ read_rtx (FILE *infile)
   int tmp_int;
   HOST_WIDE_INT tmp_wide;
 
-  /* Obstack used for allocating RTL objects.  */
-  static struct obstack rtl_obstack;
   static int initialized;
 
   /* Linked list structure for making RTXs: */
@@ -532,10 +533,11 @@ read_rtx (FILE *infile)
       rtx value;		/* Value of this node.  */
     };
 
-  if (!initialized) {
-    obstack_init (&rtl_obstack);
-    initialized = 1;
-  }
+  if (!initialized)
+    {
+      obstack_init (&string_obstack);
+      initialized = 1;
+    }
 
 again:
   c = read_skip_spaces (infile); /* Should be open paren.  */
@@ -676,7 +678,7 @@ again:
 	     written with a brace block instead of a string constant.  */
 	  star_if_braced = (format_ptr[-1] == 'T');
 
-	  stringbuf = read_string (&rtl_obstack, infile, star_if_braced);
+	  stringbuf = read_string (infile, star_if_braced);
 
 	  /* For insn patterns, we want to provide a default name
 	     based on the file and line, like "*foo.md:12", if the
@@ -693,11 +695,11 @@ again:
 	      for (slash = fn; *slash; slash ++)
 		if (*slash == '/' || *slash == '\\' || *slash == ':')
 		  fn = slash + 1;
-	      obstack_1grow (&rtl_obstack, '*');
-	      obstack_grow (&rtl_obstack, fn, strlen (fn));
+	      obstack_1grow (&string_obstack, '*');
+	      obstack_grow (&string_obstack, fn, strlen (fn));
 	      sprintf (line_name, ":%d", read_rtx_lineno);
-	      obstack_grow (&rtl_obstack, line_name, strlen (line_name)+1);
-	      stringbuf = (char *) obstack_finish (&rtl_obstack);
+	      obstack_grow (&string_obstack, line_name, strlen (line_name)+1);
+	      stringbuf = (char *) obstack_finish (&string_obstack);
 	    }
 
 	  if (star_if_braced)
