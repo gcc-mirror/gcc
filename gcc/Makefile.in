@@ -1563,7 +1563,8 @@ convert.o: convert.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(FLA
 langhooks.o : langhooks.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) toplev.h \
    tree-inline.h $(RTL_H) insn-config.h $(INTEGRATE_H) langhooks.h \
    $(LANGHOOKS_DEF_H) $(FLAGS_H) $(GGC_H) diagnostic.h
-tree.o : tree.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(FLAGS_H) function.h \
+tree.o : tree.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
+   $(FLAGS_H) function.h $(PARAMS_H) \
    toplev.h $(GGC_H) $(HASHTAB_H) $(TARGET_H) output.h $(TM_P_H) langhooks.h \
    real.h gt-tree.h tree-iterator.h $(BASIC_BLOCK_H) $(TREE_FLOW_H)
 tree-dump.o: tree-dump.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
@@ -1576,8 +1577,9 @@ tree-inline.o : tree-inline.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_GIMPLE_H)
 print-tree.o : print-tree.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(GGC_H) langhooks.h real.h
-stor-layout.o : stor-layout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
-   $(FLAGS_H) function.h $(EXPR_H) $(RTL_H) toplev.h $(GGC_H) $(TM_P_H) $(TARGET_H) \
+stor-layout.o : stor-layout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+   $(TREE_H) $(PARAMS_H) $(FLAGS_H) function.h $(EXPR_H) $(RTL_H) toplev.h \
+   $(GGC_H) $(TM_P_H) $(TARGET_H) \
    langhooks.h $(REGS_H)
 tree-alias-type.o: tree-alias-type.c tree-alias-type.h $(SYSTEM_H) $(CONFIG_H) \
    $(GGC_H) $(TM_H) coretypes.h $(VARRAY_H)

@@ -9311,16 +9311,6 @@ finish_enum (tree enumtype)
 	    maxnode = value;
 	  else if (tree_int_cst_lt (value, minnode))
 	    minnode = value;
-
-	  /* Set the TREE_TYPE for the values as well.  That's so that when
-	     we call decl_constant_value we get an entity of the right type
-	     (but with the constant value).  But first make a copy so we
-	     don't clobber shared INTEGER_CSTs.  */
-	  if (TREE_TYPE (value) != enumtype)
-	    {
-	      value = DECL_INITIAL (decl) = copy_node (value);
-	      TREE_TYPE (value) = enumtype;
-	    }
 	}
     }
   else
@@ -9405,6 +9395,10 @@ finish_enum (tree enumtype)
       decl = TREE_VALUE (values);
       value = perform_implicit_conversion (underlying_type,
 					   DECL_INITIAL (decl));
+
+      /* Do not clobber shared ints.  */
+      value = copy_node (value);
+      
       TREE_TYPE (value) = enumtype;
       DECL_INITIAL (decl) = value;
       TREE_VALUE (values) = value;

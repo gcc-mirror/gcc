@@ -910,9 +910,9 @@ struct parser_ctxt GTY(()) {
     TREE_PURPOSE (CPC_INSTANCE_INITIALIZER_LIST (C)) = (S);
 
 /* This is used by the lexer to communicate with the parser.  It is
-   set on an integer constant if the radix is 10, so that the parser
+   set on an integer constant if the radix is NOT 10, so that the parser
    can correctly diagnose a numeric overflow.  */
-#define JAVA_RADIX10_FLAG(NODE) TREE_LANG_FLAG_0(NODE)
+#define JAVA_NOT_RADIX10_FLAG(NODE) TREE_LANG_FLAG_0(NODE)
 
 #ifndef JC1_LITE
 void java_complete_class (void);

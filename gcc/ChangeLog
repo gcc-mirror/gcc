@@ -1,3 +1,27 @@
+2004-08-19  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* tree.h (TYPE_CACHED_VALUES_P): New.
+	(TYPE_CACHED_VALUES): New.
+	(TYPE_ORIG_SIZE_TYPE): Adjust.
+	* tree.def (INTEGER_CST): Update documentation.
+	* tree.c: Inlcude params.h.
+	(build_int_cst): Cache small values.
+	(build_type_copy): Do not copy the value cache.
+	* c-common.c (c_common_nodes_and_builtins): Add comment, remove
+	unneeded zeroing.
+	* c-typeck.c (build_c_cast): Add comment about OVERFLOW setting.
+	* expmed.c (const_mult_add_overflow_p): Clear type copy's value
+	cache.
+	* fold-const.c (force_fit_type): Copy value when setting
+	overflows.
+	(int_const_binop): Likewise.
+	* stor-layout.c: Include params.h
+	(set_sizetype): Create values cache.
+	(fixup_unsigned_type): Set UNSIGNED_P before caching any values.
+	* params.def (PARAM_INTEGER_SHARE_LIMIT): New.
+	* params.h (INTEGER_SHARE_LIMIT): New.
+	* Makefile.in (tree.o, stor-layout.o): Depend on PARAMS_H.
+	
 2004-08-19  Paolo Bonzini  <bonzini@gnu.org>
 
 	* gimplify.c (gimplify_minimax_expr): Remove.
@@ -404,19 +428,20 @@
 	* reg-stack.c (emit_swap_insn): Add condition to step over
 	NOTE_INSN_UNLIKELY_EXECUTED_CODE notes.
 	* toplev.c (user_defined_section_attribute): New global variable.
-	* toplev.h (user_defined_section_attribute): Extern declaration for new
-	global variable.
+	* toplev.h (user_defined_section_attribute): Extern declaration
+	for new global variable.
 	* varasm.c (unlikely_section_label): New global variable.
 	(unlikely_text_section_name): New global variable.
-	(unlikely_text_section): Add code to initialize unlikely_text_section_name
-	if necessary; modify to use unlikely_text_section_name and
-	unlikely_section_label; also to use named_section properly.
-	(in_unlikely_text_section):  Modify to work correctly with named_section
-	and to use unlikely_text_section_name.
+	(unlikely_text_section): Add code to initialize
+	unlikely_text_section_name if necessary; modify to use
+	unlikely_text_section_name and unlikely_section_label; also to use
+	named_section properly.
+	(in_unlikely_text_section):  Modify to work correctly with
+	named_section and to use unlikely_text_section_name.
 	(named_section):  Add code to work properly with cold section.
 	(function_section): Clean up if-statement.
-	* config/darwin.c (darwin_asm_named_section): Return to original code,
-	removing use of SECTION_FORMAT_STRING.
+	* config/darwin.c (darwin_asm_named_section): Return to original
+	code, removing use of SECTION_FORMAT_STRING.
 	* config/arm/pe.h (switch_to_section):  Add case for
 	in_unlikely_executed_text to switch statement.
 	* config/i386/cygming.h (switch_to_section): Likewise.
@@ -677,12 +702,13 @@
 
 2004-08-17  Dorit Naishlos  <dorit@il.ibm.com>
 
-	* tree-vectorizer.c: New File: loop vectorization on SSAed GIMPLE trees.
+	* tree-vectorizer.c: New File: loop vectorization on SSAed GIMPLE
+	trees.
 	* tree-vectorizer.h: New File: Same.
 	* Makefile.in (tree-vectorizer.c, tree-vectorizer.h): Add new files.
 	* common.opt (ftree-vectorize): New flag to enable vectorization.
-	* timevar.def (TV_TREE_VECTORIZATION): New dump file for vectorization
-	pass.
+	* timevar.def (TV_TREE_VECTORIZATION): New dump file for
+	vectorization pass.
 	* tree-data-ref.h (init_data_ref): Additional argument.
 	(array_base_name_differ_p): Moved to tree-data-ref.c.
 	* tree-data-ref.c (array_base_name_differ_p): Revised.
@@ -690,7 +716,8 @@
 	with an extra argument.
 	(analyze_all_data_dependences): Same.
 	(init_data_ref): Additional argument is_read to set DR_IS_READ.
-	* tree-ssa-phiopt.c (empty_block_p): Expose for usage out of this file.
+	* tree-ssa-phiopt.c (empty_block_p): Expose for usage out of this
+	file.
 	* tree-flow.h (vectorize_loops, empty_block_p): Add declaration.
 	* tree-optimize.c (pass_vectorize): Schedule the vectorization pass.
 	* tree-pass.h (tree_opt_pass pass_vectorize): Declare the new
@@ -698,9 +725,9 @@
 	* tree-ssa-loop.c (tree_ssa_loop_init): Call scev_initialize.
 	(tree_ssa_loop_done): Call scev_finalize.
 	(tree_vectorize): Define the new vectorization pass.
-	* defaults.h (UNITS_PER_SIMD_WORD): Allow targets to specify the size of
-	the vector they support (until support for multiple vector sizes is
-	added to the vectorizer).
+	* defaults.h (UNITS_PER_SIMD_WORD): Allow targets to specify the
+	size of the vector they support (until support for multiple vector
+	sizes is added to the vectorizer).
 	* config/i386/i386.h (UNITS_PER_SIMD_WORD): Define.
 	* config/rs6000/rs6000.h (UNITS_PER_SIMD_WORD): Define.
 	* invoke.texi (fdump-tree-vect, ftree-vectorize): Add
@@ -2543,7 +2570,7 @@
 	* config/i386/xmmintrin.h: Include <mm_malloc.h>.
 
 2004-08-03  H.J. Lu  <hongjiu.lu@intel.com>
-	    Tanguy Fautr√  <tfautre@pandora.be>
+	    Tanguy Fautr√É  <tfautre@pandora.be>
 
 	* config/i386/pmm_malloc.h: New file.
 

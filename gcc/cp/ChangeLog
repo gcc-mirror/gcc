@@ -1,3 +1,9 @@
+2004-08-19  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* decl.c (finish_enum): Do not copy value node early, copy
+	later.
+	* lex.c (cxx_init): Force null_node to be unique.
+	
 2004-08-19  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c++/17041

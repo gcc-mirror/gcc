@@ -3001,9 +3001,8 @@ c_common_nodes_and_builtins (void)
 
   record_builtin_type (RID_VOID, NULL, void_type_node);
 
+  /* This node must not be shared. */
   void_zero_node = make_node (INTEGER_CST);
-  TREE_INT_CST_LOW (void_zero_node) = 0;
-  TREE_INT_CST_HIGH (void_zero_node) = 0;
   TREE_TYPE (void_zero_node) = void_type_node;
 
   void_list_node = build_void_list_node ();

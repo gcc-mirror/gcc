@@ -379,6 +379,14 @@ DEFPARAM(PARAM_MAX_SCHED_REGION_INSNS,
 	 "The maximum number of insns in a region to be considered for interblock scheduling",
 	 100)
 
+/* INTEGER_CST nodes are shared for values [{-1,0} .. N) for
+   {signed,unsigned} integral types.  This determines N.
+   Experimentation shows 256 to be a good value.  */
+DEFPARAM (PARAM_INTEGER_SHARE_LIMIT,
+	  "integer-share-limit",
+	  "The upper bound for sharing integer constants",
+	  256)
+
 /*
 Local variables:
 mode:c
