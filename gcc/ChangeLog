@@ -1,3 +1,7 @@
+2004-01-02  Andreas Jaeger  <aj@suse.de>, Gerald Pfeifer  <gp@suse.de>
+
+	* doc/install.texi (Specific): Mention x86_64.
+
 2004-01-01  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* builtins.c (expand_builtin_apply_args_1) [STACK_GROWS_DOWNWARD]:
