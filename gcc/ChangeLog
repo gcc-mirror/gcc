@@ -1,3 +1,7 @@
+Sun Sep 28 18:59:58 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* libgcc2.c (__throw): Fix thinko.
+
 Sun Sep 28 12:00:52 1997  Mark Mitchell  <mmitchell@usa.net>
 
         * cplus-dem.c (demangle_template): Add new parameter.  Handle new
