@@ -1,3 +1,13 @@
+2001-09-21  Richard Henderson  <rth@redhat.com>
+
+	* tree.def (FDESC_EXPR): New.
+	* expr.c (expand_expr): Handle it.
+	* varasm.c (initializer_constant_valid_p): Likewise.
+	(output_constant): Likewise.
+	* defaults.h (TARGET_VTABLE_USES_DESCRIPTORS): New.
+	* config/ia64/ia64.h (TARGET_VTABLE_USES_DESCRIPTORS): New.
+	(ASM_OUTPUT_FDESC): New.
+
 2001-09-20  Andrew MacLeod  <amacleod@redhat.com>
 
 	* testsuite/gcc.c-torture/execute/990208-1.x: New. XFAIL at -O3
@@ -72,7 +82,7 @@ Thu Sep 20 12:18:41 2001  J"orn Rennecke <amylaar@redhat.com>
 	correctly.
 
 2001-09-13  Markus Werle <numerical.simulation@web.de>
-            Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+	    Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi (Binaries): Add "Binaries for HP-UX 11.00 at
 	Aachen University of Technology".
@@ -361,8 +371,8 @@ Thu Aug 30 16:00:31 2001  J"orn Rennecke <amylaar@redhat.com>
 
 2001-08-07  Daniel Jacobowitz  <drow@mvista.com>
 
-        * config.gcc: Quote target_cpu_default2 correctly for
-        powerpc*-*-* targets.
+	* config.gcc: Quote target_cpu_default2 correctly for
+	powerpc*-*-* targets.
 
 2001-08-07  David Edelsohn  <edelsohn@gnu.org>
 

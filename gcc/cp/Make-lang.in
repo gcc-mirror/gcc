@@ -241,7 +241,8 @@ cp/lex.o: cp/lex.c $(CXX_TREE_H) cp/parse.h flags.h cp/lex.h c-pragma.h \
   toplev.h output.h mbchar.h $(GGC_H) input.h diagnostic.h cp/operators.def \
   $(TM_P_H)
 cp/decl.o: cp/decl.c $(CXX_TREE_H) flags.h cp/lex.h cp/decl.h stack.h \
-  output.h $(EXPR_H) except.h toplev.h hash.h $(GGC_H) $(RTL_H) cp/operators.def
+  output.h $(EXPR_H) except.h toplev.h hash.h $(GGC_H) $(RTL_H) \
+  $(TM_P_H) cp/operators.def
 cp/decl2.o: cp/decl2.c $(CXX_TREE_H) flags.h cp/lex.h cp/decl.h $(EXPR_H) \
   output.h except.h toplev.h dwarf2out.h dwarfout.h $(GGC_H) $(RTL_H)
 cp/typeck2.o: cp/typeck2.c $(CXX_TREE_H) flags.h toplev.h output.h $(TM_P_H)

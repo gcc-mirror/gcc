@@ -2268,7 +2268,8 @@ mark_vtable_entries (decl)
       fnaddr = (flag_vtable_thunks ? TREE_VALUE (entries) 
 		: FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (entries)));
 
-      if (TREE_CODE (fnaddr) != ADDR_EXPR)
+      if (TREE_CODE (fnaddr) != ADDR_EXPR
+	  && TREE_CODE (fnaddr) != FDESC_EXPR)
 	/* This entry is an offset: a virtual base class offset, a
 	   virtual call offset, and RTTI offset, etc.  */
 	continue;

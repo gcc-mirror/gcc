@@ -14,6 +14,16 @@
 #define ADJUST_DELTA(delta, virt) (delta)
 #endif
 
+/* IA64 uses function descriptors instead of function pointers in its
+   vtables, which means that we can't meaningfully compare them directly.  */
+#if defined __ia64__
+#define CMP_PTRFN(A, B)	(*(void **)(A) == *(void **)(B))
+#define VPTE_SIZE	(16)
+#else
+#define CMP_PTRFN(A, B) ((A) == (B))
+#define VPTE_SIZE	sizeof(void *)
+#endif
+
 #if defined (__GXX_ABI_VERSION) && __GXX_ABI_VERSION >= 100
 
 // Check that pointers-to-member functions are represented correctly.
@@ -85,12 +95,12 @@ main ()
   // There should be no adjustment for the `T' version, and an
   // appropriate adjustment for the `S' version.
   y = &T::f;
-  if (yp->ptr != ADJUST_PTRFN (&_ZN1T1fEv, 0))
+  if (! CMP_PTRFN (yp->ptr, ADJUST_PTRFN (&_ZN1T1fEv, 0)))
     return 5;
   if (yp->adj != ADJUST_DELTA (0, 0))
     return 6;
   x = (sp) y;
-  if (xp->ptr != ADJUST_PTRFN (&_ZN1T1fEv, 0))
+  if (! CMP_PTRFN (xp->ptr, ADJUST_PTRFN (&_ZN1T1fEv, 0)))
     return 7;
   if (xp->adj != ADJUST_DELTA (delta, 0))
     return 8;
@@ -99,12 +109,12 @@ main ()
   // one.  `T::h' is in the second slot: the vtable pointer points to
   // the first virtual function.
   y = &T::h;
-  if (yp->ptr != ADJUST_PTRFN (sizeof (void *), 1))
+  if (yp->ptr != ADJUST_PTRFN (VPTE_SIZE, 1))
     return 9;
   if (yp->adj != ADJUST_DELTA (0, 1))
     return 10;
   x = (sp) y;
-  if (xp->ptr != ADJUST_PTRFN (sizeof (void *), 1))
+  if (xp->ptr != ADJUST_PTRFN (VPTE_SIZE, 1))
     return 11;
   if (xp->adj != ADJUST_DELTA (delta, 1))
     return 12;

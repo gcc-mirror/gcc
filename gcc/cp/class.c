@@ -548,9 +548,9 @@ build_vtable_entry_ref (basetype, vtbl, idx)
 }
 
 /* Given an object INSTANCE, return an expression which yields the
-   virtual function vtable element corresponding to INDEX.  There are
-   many special cases for INSTANCE which we take care of here, mainly
-   to avoid creating extra tree nodes when we don't have to.  */
+   vtable element corresponding to INDEX.  There are many special
+   cases for INSTANCE which we take care of here, mainly to avoid
+   creating extra tree nodes when we don't have to.  */
 
 tree
 build_vtbl_ref (instance, idx)
@@ -647,7 +647,15 @@ build_vfn_ref (ptr_to_instptr, instance, idx)
   /* When using thunks, there is no extra delta, and we get the pfn
      directly.  */
   if (flag_vtable_thunks)
-    return aref;
+    {
+      /* When using function descriptors, the address of the
+	 vtable entry is treated as a function pointer.  */
+      if (TARGET_VTABLE_USES_DESCRIPTORS)
+	return build1 (NOP_EXPR, TREE_TYPE (aref),
+		       build_unary_op (ADDR_EXPR, aref, /*noconvert=*/1));
+
+      return aref;
+    }
 
   if (ptr_to_instptr)
     {
@@ -1061,7 +1069,9 @@ set_vindex (decl, vfuns_p)
 {
   int vindex;
 
-  vindex = (*vfuns_p)++;
+  vindex = *vfuns_p;
+  *vfuns_p += (TARGET_VTABLE_USES_DESCRIPTORS
+	       ? TARGET_VTABLE_USES_DESCRIPTORS : 1);
   DECL_VINDEX (decl) = build_shared_int_cst (vindex);
 }
 
@@ -7893,7 +7903,25 @@ build_vtbl_initializer (binfo, orig_binfo, t, rtti_binfo, non_fn_entries_p)
 	  }
 
       /* And add it to the chain of initializers.  */
-      vfun_inits = tree_cons (NULL_TREE, init, vfun_inits);
+      if (TARGET_VTABLE_USES_DESCRIPTORS)
+	{
+	  int i;
+	  if (init == size_zero_node)
+	    for (i = 0; i < TARGET_VTABLE_USES_DESCRIPTORS; ++i)
+	      vfun_inits = tree_cons (NULL_TREE, init, vfun_inits);
+	  else
+	    for (i = 0; i < TARGET_VTABLE_USES_DESCRIPTORS; ++i)
+	      {
+		tree fdesc = build (FDESC_EXPR, vfunc_ptr_type_node,
+				    TREE_OPERAND (init, 0),
+				    build_int_2 (i, 0));
+		TREE_CONSTANT (fdesc) = 1;
+
+		vfun_inits = tree_cons (NULL_TREE, fdesc, vfun_inits);
+	      }
+	}
+      else
+        vfun_inits = tree_cons (NULL_TREE, init, vfun_inits);
     }
 
   /* The initializers for virtual functions were built up in reverse

@@ -717,8 +717,12 @@ DEFTREECODE (ADDR_EXPR, "addr_expr", 'e', 1)
 DEFTREECODE (REFERENCE_EXPR, "reference_expr", 'e', 1)
 
 /* Operand is a function constant; result is a function variable value
-   of typeEPmode.  Used only for languages that need static chains.  */
+   of type EPmode.  Used only for languages that need static chains.  */
 DEFTREECODE (ENTRY_VALUE_EXPR, "entry_value_expr", 'e', 1)
+
+/* Operand0 is a function constant; result is part N of a function 
+   descriptor of type ptr_mode.  */
+DEFTREECODE (FDESC_EXPR, "fdesc_expr", 'e', 2)
 
 /* Given two real or integer operands of the same type,
    returns a complex value of the corresponding complex type.  */

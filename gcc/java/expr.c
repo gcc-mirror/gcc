@@ -1801,9 +1801,18 @@ build_invokevirtual (dtable, method)
   method_index = size_binop (PLUS_EXPR, method_index, size_int (2));
   method_index = size_binop (MULT_EXPR, method_index,
 			     TYPE_SIZE_UNIT (nativecode_ptr_ptr_type_node));
+
+  if (TARGET_VTABLE_USES_DESCRIPTORS)
+    method_index = size_binop (MULT_EXPR, method_index,
+			       size_int (TARGET_VTABLE_USES_DESCRIPTORS));
+
   func = fold (build (PLUS_EXPR, nativecode_ptr_ptr_type_node, dtable,
 		      convert (nativecode_ptr_ptr_type_node, method_index)));
-  func = build1 (INDIRECT_REF, nativecode_ptr_type_node, func);
+
+  if (TARGET_VTABLE_USES_DESCRIPTORS)
+    func = build1 (NOP_EXPR, nativecode_ptr_type_node, func);
+  else
+    func = build1 (INDIRECT_REF, nativecode_ptr_type_node, func);
 
   return func;
 }

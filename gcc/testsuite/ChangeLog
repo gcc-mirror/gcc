@@ -1,3 +1,8 @@
+2001-09-21  Richard Henderson  <rth@redhat.com>
+
+	* g++.old-deja/g++.abi/ptrmem.C: Update for ia64 c++ abi.
+	* g++.old-deja/g++.abi/vtable2.C: Likewise.
+
 2001-09-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/20010403-1.c: New test.
@@ -148,7 +153,7 @@ Mon Jul 16 12:21:56 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 
 2000-09-10  Michael Chamberlain <michael@chamberlain.net.au>
 
-        * gcc.misc-tests/mg.exp (compiler_output): Support tcl 8.3.1.
+	* gcc.misc-tests/mg.exp (compiler_output): Support tcl 8.3.1.
 
 2001-06-29  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
@@ -166,7 +171,7 @@ Mon Jul 16 12:21:56 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 
 20010617 Release Manager
 
-        * GCC 3.0 Released.
+	* GCC 3.0 Released.
 
 2001-06-14  Nathan Sidwell  <nathan@codesourcery.com>
 
@@ -797,9 +802,9 @@ Thu Apr 26 11:13:27 2001  Jeffrey A Law  (law@cygnus.com)
 
 2001-03-06  Zack Weinberg  <zackw@stanford.edu>
 
-        * objc/execute/string1.m, objc/execute/string2.m: Compare the
-        result of -cString against what we expect it to be; don't just
-        print it out for no one to read.
+	* objc/execute/string1.m, objc/execute/string2.m: Compare the
+	result of -cString against what we expect it to be; don't just
+	print it out for no one to read.
 
 	* objc/execute/string3.m, objc/execute/string4.m: New tests.
 	Based on testcases provided by Nicola Pero.
@@ -846,7 +851,7 @@ Thu Apr 26 11:13:27 2001  Jeffrey A Law  (law@cygnus.com)
 
 2001-02-28  Geoffrey Keating  <geoffk@redhat.com>
 
-        * g++.dg/vtgc1.C: Update for new ABI.
+	* g++.dg/vtgc1.C: Update for new ABI.
 
 2001-02-27  Nathan Sidwell  <nathan@codesourcery.com>
 
@@ -963,7 +968,7 @@ Wed Feb  7 09:54:47 2001  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 2001-02-06  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * gcc.dg/cpp/avoidpaste1.c: Update.
+	* gcc.dg/cpp/avoidpaste1.c: Update.
 
 Tue Feb  5 8:53:33 2001  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
@@ -1005,7 +1010,7 @@ Tue Feb  5 8:53:33 2001  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 2001-02-01  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * gcc.dg/cpp/avoidpaste2.c: New tests.
+	* gcc.dg/cpp/avoidpaste2.c: New tests.
 
 2001-01-31  Jakub Jelinek  <jakub@redhat.com>
 
@@ -1026,12 +1031,12 @@ Wed Jan 31 12:23:32 2001  J"orn Rennecke <amylaar@redhat.com>
 
 2001-01-31  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * gcc.dg/cpp/tr-warn1.c: Add tests.
+	* gcc.dg/cpp/tr-warn1.c: Add tests.
 
 2001-01-31  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * gcc.dg/cpp/avoidpaste1.c: Update.
-        * gcc.dg/cpp/paste4.c: Update.
+	* gcc.dg/cpp/avoidpaste1.c: Update.
+	* gcc.dg/cpp/paste4.c: Update.
 
 2001-01-30  Jeffrey Oldham  <oldham@codesourcery.com>
 
@@ -1057,7 +1062,7 @@ Wed Jan 31 12:23:32 2001  J"orn Rennecke <amylaar@redhat.com>
 
 2001-01-28  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * gcc.dg/cpp/avoidpaste1.c: Test case.
+	* gcc.dg/cpp/avoidpaste1.c: Test case.
 
 2001-01-28  Jakub Jelinek  <jakub@redhat.com>
 
@@ -1173,7 +1178,7 @@ Wed Jan 31 12:23:32 2001  J"orn Rennecke <amylaar@redhat.com>
 
 2001-01-18  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * gcc.dg/cpp/assembl2.S: New test case.
+	* gcc.dg/cpp/assembl2.S: New test case.
 
 2001-01-17  Jeffrey Oldham  <oldham@codesourcery.com>
 
@@ -1213,8 +1218,8 @@ Wed Jan 31 12:23:32 2001  J"orn Rennecke <amylaar@redhat.com>
 
 2001-01-15  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * gcc.dg/cpp/if-2.c: Comment out occasionally bogus test; we
-        have an equivalent working one below it.
+	* gcc.dg/cpp/if-2.c: Comment out occasionally bogus test; we
+	have an equivalent working one below it.
 
 2001-01-14  Jeffrey Oldham  <oldham@codesourcery.com>
 
@@ -1257,8 +1262,8 @@ Wed Jan 31 12:23:32 2001  J"orn Rennecke <amylaar@redhat.com>
 
 2001-01-13  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * gcc.dg/cpp/widestr1.c: Update.
-        * gcc.dg/cpp/prag-imp.c: Remove.
+	* gcc.dg/cpp/widestr1.c: Update.
+	* gcc.dg/cpp/prag-imp.c: Remove.
 
 2001-01-12  Jakub Jelinek  <jakub@redhat.com>
 
@@ -1321,9 +1326,9 @@ Wed Jan 31 12:23:32 2001  J"orn Rennecke <amylaar@redhat.com>
 2001-01-08  Jonathan Larmour  <jlarmour@redhat.com>
 
 	* gcc.dg/20000419-2.c: Move to "special" subdirectory.
-        * gcc.dg/special/20000419-2.c: New file. Identical to above.
-        * gcc.dg/special/special.exp: New test driver which will check
-        for alias support for the above test.
+	* gcc.dg/special/20000419-2.c: New file. Identical to above.
+	* gcc.dg/special/special.exp: New test driver which will check
+	for alias support for the above test.
 
 2001-01-09  Alan Lehotsky  <lehotsky@tiac.net>
 
@@ -1649,12 +1654,12 @@ Thu Dec 21 22:43:03 2000  J"orn Rennecke <amylaar@redhat.com>
 
 2000-12-17  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * gcc.dg/cpp/multiline.c: New test.
+	* gcc.dg/cpp/multiline.c: New test.
 
 2000-12-17  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * g++.old-deja/g++.other/syshdr1.C: Update.
-        * gcc.dg/cpp/lineflags.c: Remove temporarily.
+	* g++.old-deja/g++.other/syshdr1.C: Update.
+	* gcc.dg/cpp/lineflags.c: Remove temporarily.
 
 2000-12-15  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
@@ -1702,7 +1707,7 @@ Thu Dec 21 22:43:03 2000  J"orn Rennecke <amylaar@redhat.com>
 
 2000-12-11  Neil Booth  <neilb@earthling.net>
 
-        * gcc.dg/cpp/if-2.c: Separate tests so that which failed is obvious.
+	* gcc.dg/cpp/if-2.c: Separate tests so that which failed is obvious.
 
 2000-12-09  Joseph S. Myers  <jsm28@cam.ac.uk>
 
@@ -1710,10 +1715,10 @@ Thu Dec 21 22:43:03 2000  J"orn Rennecke <amylaar@redhat.com>
 
 2000-12-09  Neil Booth  <neilb@earthling.net>
 
-        * gcc.dg/cpp/lineflags.c: New tests.
-        * gcc.dg/cpp/poison.c: Update.
-        * gcc.dg/cpp/redef2.c: Update.
-        * gcc.dg/cpp/skipping.c: New test.
+	* gcc.dg/cpp/lineflags.c: New tests.
+	* gcc.dg/cpp/poison.c: Update.
+	* gcc.dg/cpp/redef2.c: Update.
+	* gcc.dg/cpp/skipping.c: New test.
 
 2000-12-07  Geoffrey Keating  <geoffk@redhat.com>
 
@@ -1721,12 +1726,12 @@ Thu Dec 21 22:43:03 2000  J"orn Rennecke <amylaar@redhat.com>
 
 2000-12-07  Neil Booth  <neilb@earthling.net>
 
-        * gcc.dg/wtr-aggr-init-1.c, wtr-escape-1.c, wtr-int-type-1.c,
-        wtr-label-1.c, wtr-static-1.c, wtr-strcat-1.c, wtr-suffix-1.c,
-        wtr-switch-1.c, wtr-unary-plus-1.c, wtr-union-init-1.c
-        wtr-union-init-2.c, wtr-union-init-3.c: Update.
-        * gcc.dg/cpp/extratokens.c, tr-warn4.c, tr-warn5.c, tr-warn6.c:
-        Update.
+	* gcc.dg/wtr-aggr-init-1.c, wtr-escape-1.c, wtr-int-type-1.c,
+	wtr-label-1.c, wtr-static-1.c, wtr-strcat-1.c, wtr-suffix-1.c,
+	wtr-switch-1.c, wtr-unary-plus-1.c, wtr-union-init-1.c
+	wtr-union-init-2.c, wtr-union-init-3.c: Update.
+	* gcc.dg/cpp/extratokens.c, tr-warn4.c, tr-warn5.c, tr-warn6.c:
+	Update.
 
 2000-12-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
@@ -1801,8 +1806,8 @@ Thu Dec 21 22:43:03 2000  J"orn Rennecke <amylaar@redhat.com>
 
 2000-12-04  Neil Booth  <neilb@earthling.net>
 
-        * gcc.dg/cpp/assert_trad1.c, assert_trad2.c, assert_trad3.c:
-        New tests.
+	* gcc.dg/cpp/assert_trad1.c, assert_trad2.c, assert_trad3.c:
+	New tests.
 
 2000-12-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -1815,7 +1820,7 @@ Thu Dec 21 22:43:03 2000  J"orn Rennecke <amylaar@redhat.com>
 
 2000-12-03  Neil Booth  <neilb@earthling.net>
 
-        * gcc.dg/cpp/macro6.c: New test cases.
+	* gcc.dg/cpp/macro6.c: New test cases.
 
 2000-12-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -1835,19 +1840,19 @@ Thu Dec 21 22:43:03 2000  J"orn Rennecke <amylaar@redhat.com>
 
 2000-12-02  Neil Booth  <neilb@earthling.net>
 
-        * g++.old-deja/g++.other/externC4.C,
-        g++.old-deja/g++.other/friend10.C: New tests.
+	* g++.old-deja/g++.other/externC4.C,
+	g++.old-deja/g++.other/friend10.C: New tests.
 
 2000-12-02  Neil Booth  <neilb@earthling.net>
 
-        * g++.old-deja/g++.other/instan2.C
-        * g++.old-deja/g++.other/instan3.C: New test.
+	* g++.old-deja/g++.other/instan2.C
+	* g++.old-deja/g++.other/instan3.C: New test.
 
 2000-12-02  Neil Booth  <neilb@earthling.net>
 
-        * gcc.dg/cpp/c++98.c,c++98-pedantic.c,c89.c,c89-pedantic.c,
-        c94.c,c94-pedantic.c,c99.c,c99-pedantic.c,gnuc89.c,gnuc89-pedantic.c,
-        gnuc99.c,gnuc99-pedantic.c: New tests.
+	* gcc.dg/cpp/c++98.c,c++98-pedantic.c,c89.c,c89-pedantic.c,
+	c94.c,c94-pedantic.c,c99.c,c99-pedantic.c,gnuc89.c,gnuc89-pedantic.c,
+	gnuc99.c,gnuc99-pedantic.c: New tests.
 
 2000-12-01  Joseph S. Myers  <jsm28@cam.ac.uk>
 
@@ -1856,9 +1861,9 @@ Thu Dec 21 22:43:03 2000  J"orn Rennecke <amylaar@redhat.com>
 
 2000-12-01  Neil Booth  <neilb@earthling.net>
 
-        * gcc.dg/cpp/20000720-1.S: Remove duplicate testcase.
-        * gcc.dg/cpp/poison.c: Update.
-        * gcc.dg/cpp/spacing1.c: New testcase for all spacing issues.
+	* gcc.dg/cpp/20000720-1.S: Remove duplicate testcase.
+	* gcc.dg/cpp/poison.c: Update.
+	* gcc.dg/cpp/spacing1.c: New testcase for all spacing issues.
 
 2000-12-01  Toon Moene  <toon@moene.indiv.nluug.nl>
 
@@ -2014,7 +2019,7 @@ Thu Dec 21 22:43:03 2000  J"orn Rennecke <amylaar@redhat.com>
 
 2000-11-22  Loren J. Rittle  <ljrittle@acm.org>
 
-        * g++.old-deja/g++.robertl/eb39.C: Don't include libio.h.
+	* g++.old-deja/g++.robertl/eb39.C: Don't include libio.h.
 
 2000-11-22  Jakub Jelinek  <jakub@redhat.com>
 
@@ -2034,7 +2039,7 @@ Thu Dec 21 22:43:03 2000  J"orn Rennecke <amylaar@redhat.com>
 
 2000-11-21  Neil Booth  <neilb@earthling.net>
 
-        * gcc.dg/cpp/integrated1.c: Remove.
+	* gcc.dg/cpp/integrated1.c: Remove.
 
 2000-11-21  Jakub Jelinek  <jakub@redhat.com>
 
@@ -2060,8 +2065,8 @@ Thu Dec 21 22:43:03 2000  J"orn Rennecke <amylaar@redhat.com>
 
 2000-11-20  Neil Booth  <neilb@earthling.net>
 
-        * gcc.dg/cpp/paste2.c: Update test.
-        * objc/execute/paste.m: New test.
+	* gcc.dg/cpp/paste2.c: Update test.
+	* objc/execute/paste.m: New test.
 
 2000-11-20  Joseph S. Myers  <jsm28@cam.ac.uk>
 
@@ -2140,8 +2145,8 @@ Thu Dec 21 22:43:03 2000  J"orn Rennecke <amylaar@redhat.com>
 
 2000-11-15  Neil Booth  <neilb@earthling.net>
 
-        gcc.dg/cpp/_Pragma1.c: Update.
-        gcc.dg/cpp/_Pragma2.c: New test.
+	gcc.dg/cpp/_Pragma1.c: Update.
+	gcc.dg/cpp/_Pragma2.c: New test.
 
 2000-11-15  Nathan Sidwell  <nathan@codesourcery.com>
 
@@ -2325,7 +2330,7 @@ Thu Dec 21 22:43:03 2000  J"orn Rennecke <amylaar@redhat.com>
 
 2000-11-04  Neil Booth  <neilb@earthling.net>
 
-        * gcc.dg/cpp/include2.c: New tests.
+	* gcc.dg/cpp/include2.c: New tests.
 
 Fri Nov  3 13:32:14 2000  Mark P Mitchell  <mark@codesourcery.com>
 
@@ -2379,7 +2384,7 @@ Fri Nov  3 13:32:14 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 2000-10-29  Neil Booth  <neilb@earthling.net>
 
-        * gcc.dg/cpp/macro4.c, macro5.c: New tests.
+	* gcc.dg/cpp/macro4.c, macro5.c: New tests.
 	* mi1.c, mi1c.h: Add null directives to multiple-include test.
 	* mi5.c: Test multiple includes work with -C.
 	* trigraphs.c: Test ^= version.
@@ -2628,7 +2633,7 @@ Mon Oct  9 23:32:06 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 2000-09-26  Jakub Jelinek  <jakub@redhat.com>
 
-        * gcc.c-torture/compile/20000923-1.c: New test.
+	* gcc.c-torture/compile/20000923-1.c: New test.
 
 2000-09-25 Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
 
@@ -2760,7 +2765,7 @@ Tue Sep 12 18:32:07 2000  J"orn Rennecke <amylaar@redhat.co.uk>
 
 2000-09-07  Catherine Moore  <clm@redhat.com>
 
-        * gcc.c-torture/execute/unroll-1.c: New test.
+	* gcc.c-torture/execute/unroll-1.c: New test.
 
 2000-09-06  Zack Weinberg  <zack@wolery.cumb.org>
 

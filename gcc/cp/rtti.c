@@ -238,7 +238,7 @@ get_tinfo_decl_dynamic (exp)
 
       /* The RTTI information is at index -1.  */
       index = integer_minus_one_node;
-      t = build_vfn_ref ((tree *) 0, exp, index);
+      t = build_vtbl_ref (exp, index);
       TREE_TYPE (t) = build_pointer_type (tinfo_decl_type);
       return t;
     }

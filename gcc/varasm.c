@@ -4119,6 +4119,7 @@ initializer_constant_valid_p (value, endtype)
       return null_pointer_node;
 
     case ADDR_EXPR:
+    case FDESC_EXPR:
       return staticp (TREE_OPERAND (value, 0)) ? TREE_OPERAND (value, 0) : 0;
 
     case NON_LVALUE_EXPR:
@@ -4305,6 +4306,18 @@ output_constant (exp, size)
   if (TREE_CODE (exp) == CONSTRUCTOR && CONSTRUCTOR_ELTS (exp) == 0)
     {
       assemble_zeros (size);
+      return;
+    }
+
+  if (TREE_CODE (exp) == FDESC_EXPR)
+    {
+      HOST_WIDE_INT part = tree_low_cst (TREE_OPERAND (exp, 1), 0);
+      tree decl = TREE_OPERAND (exp, 0);
+#ifdef ASM_OUTPUT_FDESC
+      ASM_OUTPUT_FDESC (asm_out_file, decl, part);
+#else
+      abort ();
+#endif
       return;
     }
 

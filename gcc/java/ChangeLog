@@ -1,3 +1,9 @@
+2001-09-21  Richard Henderson  <rth@redhat.com>
+
+	* class.c (get_dispatch_table): Handle function descriptors.
+	(build_dtable_decl): Likewise.
+	* expr.c (build_invokevirtual): Likewise.
+
 2001-08-19  Release Manager
 
 	* GCC 3.0.1 Released.
@@ -47,7 +53,7 @@
 
 20010617 Release Manager
 
-        * GCC 3.0 Released.
+	* GCC 3.0 Released.
 
 2001-06-07  Theodore Papadopoulo  <Theodore.Papadopoulo@sophia.inria.fr>
 
@@ -92,8 +98,8 @@
 
 2001-05-17  Per Bothner  <per@bothner.com>
 
-        * jvspec.c (lang_specific_pre_link):  Re-arrange the linker
-        command line so the jvgenmain-generated main program comes first.
+	* jvspec.c (lang_specific_pre_link):  Re-arrange the linker
+	command line so the jvgenmain-generated main program comes first.
 
 2001-05-15  Tom Tromey  <tromey@redhat.com>
 
