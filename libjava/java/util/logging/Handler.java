@@ -1,7 +1,7 @@
 /* Handler.java
    -- a class for publishing log messages
 
-Copyright (C) 2002 Free Software Foundation, Inc.
+Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,7 +43,6 @@ exception statement from your version.
 package java.util.logging;
 
 import java.io.UnsupportedEncodingException;
-import java.security.AccessController;
 
 /**
  * A <code>Handler</code> publishes <code>LogRecords</code> to

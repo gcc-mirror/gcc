@@ -1,5 +1,5 @@
 /* Currency.java -- Representation of a currency
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,8 +37,6 @@ exception statement from your version. */
 package java.util;
 
 import java.io.Serializable;
-import java.util.ResourceBundle;
-import java.util.Locale;
 import java.text.NumberFormat;
 
 public final class Currency implements Serializable

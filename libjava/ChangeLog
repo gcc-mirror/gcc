@@ -1,3 +1,39 @@
+2004-04-23 Dalibor Topic <robilad@kaffe.org>
+
+	* java/util/jar/JarFile.java,
+	java/util/jar/JarInputStream.java,
+	java/util/jar/JarOutputStream.java,
+	java/util/jar/Manifest.java:
+	Cleaned up imports.
+
+2004-04-23 Dalibor Topic <robilad@kaffe.org>
+
+	* java/util/ArrayList.java,
+	java/util/Calendar.java,
+	java/util/Currency.java,
+	java/util/HashMap.java,
+	java/util/HashSet.java,
+	java/util/Hashtable.java,
+	java/util/LinkedList.java,
+	java/util/Properties.java,
+	java/util/PropertyPermission.java,
+	java/util/TimeZone.java,
+	java/util/TreeMap.java,
+	java/util/TreeSet.java,
+	java/util/Vector.java,
+	java/util/WeakHashMap.java:
+	Cleaned up imports.
+
+2004-04-23  Dalibor Topic  <robilad@kaffe.org>
+
+	* java/util/logging/FileHandler.java,
+	java/util/logging/Formatter.java,
+	java/util/logging/Handler.java,
+	java/util/logging/Logger.java,
+	java/util/logging/SimpleFormatter.java,
+	java/util/logging/XMLFormatter.java:
+	Cleaned up imports.
+
 2004-04-22  Mark Wielaard  <mark@klomp.org>
 
 	* Makefile.am (PEDANTIC_CFLAGS): New -ansi -pedantic -Wall

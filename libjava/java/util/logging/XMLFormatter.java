@@ -1,7 +1,7 @@
 /* XMLFormatter.java
    -- a class for formatting log messages into a standard XML format
 
-Copyright (C) 2002 Free Software Foundation, Inc.
+Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,10 +42,9 @@ exception statement from your version.
 
 package java.util.logging;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.ResourceBundle;
-import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
 
 /**
  * An <code>XMLFormatter</code> formats LogRecords into
