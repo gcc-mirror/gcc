@@ -855,6 +855,24 @@ DEF_RTL_EXPR(RANGE_LIVE, "range_live", "bi", 'x')
    eliminated by the first CSE pass. */
 DEF_RTL_EXPR(CONSTANT_P_RTX, "constant_p_rtx", "e", 'x')
 
+/* A placeholder for a CALL_INSN which may be turned into a normal call,
+   a sibling (tail) call or tail recursion.
+
+   Immediately after RTL generation, this placeholder will be replaced
+   by the insns to perform the call, sibcall or tail recursion.
+
+   This RTX has 4 operands.  The first three are lists of instructions to
+   perform the call as a normal call, sibling call and tail recursion
+   respectively.  The latter two lists may be NULL, the first may never
+   be NULL.
+
+   The last operand is the tail recursion CODE_LABEL, which may be NULL if no 
+   potential tail recursive calls were found.
+
+   The tail recursion label is needed so that we can clear LABEL_PRESERVE_P
+   after we select a call method.  */
+DEF_RTL_EXPR(CALL_PLACEHOLDER, "call_placeholder", "uuuu", 'x')
+
 /*
 Local variables:
 mode:c
