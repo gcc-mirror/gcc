@@ -1,9 +1,6 @@
 // Special g++ Options: -fcheck-memory-usage
 // Build don't link: 
 
-# 0 "/udd/bonnaud/prg/src/LS.cc"
-# 1 "/udd/bonnaud/prg/src/LS.cc"
-# 1 "/udd/bonnaud/poubelle/sparc-egcs/include/g++/iostream.h" 1 3
  
 
 
@@ -34,7 +31,6 @@
 
 #define _IOSTREAM_H
 
-# 1 "/udd/bonnaud/poubelle/sparc-egcs/include/g++/streambuf.h" 1 3
  
 
 
@@ -70,7 +66,6 @@
 #define _IO_NEW_STREAMS 
 
 extern "C" {
-# 1 "/udd/bonnaud/poubelle/sparc-egcs/include/g++/libio.h" 1 3
  
 
 
@@ -100,7 +95,6 @@ extern "C" {
 
 #define _IO_STDIO_H
 
-# 1 "/udd/bonnaud/prg/lib_src/libg++-include/_G_config.h" 1
   
 
 #define _G_config_h
@@ -176,7 +170,6 @@ typedef unsigned long long _G_uint64_t;
 #define _G_MATH_H_INLINES 0
 #define _G_HAVE_BOOL 1
 
-# 30 "/udd/bonnaud/poubelle/sparc-egcs/include/g++/libio.h" 2 3
 
 #define _IO_pos_t _G_fpos_t 
 #define _IO_fpos_t _G_fpos_t
@@ -190,7 +183,6 @@ typedef unsigned long long _G_uint64_t;
 #define _IO_BUFSIZ _G_BUFSIZ
 #define _IO_va_list _G_va_list
 
-# 51 "/udd/bonnaud/poubelle/sparc-egcs/include/g++/libio.h" 3
 
 
 
@@ -291,7 +283,6 @@ typedef unsigned long long _G_uint64_t;
 struct _IO_jump_t;  struct _IO_FILE;
 
  
-# 162 "/udd/bonnaud/poubelle/sparc-egcs/include/g++/libio.h" 3
 
 
 
@@ -316,7 +307,6 @@ struct _IO_marker {
 
    
   int _pos;
-# 195 "/udd/bonnaud/poubelle/sparc-egcs/include/g++/libio.h" 3
 
 };
 
@@ -456,7 +446,6 @@ extern void _IO_free_backup_area  (_IO_FILE *)  ;
 
 
 
-# 36 "/udd/bonnaud/poubelle/sparc-egcs/include/g++/streambuf.h" 2 3
 
 }
  
@@ -525,7 +514,6 @@ struct _ios_fields
 #define _IO_NOREPLACE	64
 #define _IO_BIN		128
 
-# 115 "/udd/bonnaud/poubelle/sparc-egcs/include/g++/streambuf.h" 3
 
 
 class ios : public _ios_fields {
@@ -571,7 +559,6 @@ class ios : public _ios_fields {
 	adjustfield = left+right+internal
     };
 
-# 168 "/udd/bonnaud/poubelle/sparc-egcs/include/g++/streambuf.h" 3
 
 
     ostream* tie() const { return _tie; }
@@ -880,7 +867,6 @@ inline ios::~ios() {
 }
 }  
 
-# 31 "/udd/bonnaud/poubelle/sparc-egcs/include/g++/iostream.h" 2 3
 
 
 extern "C++" {
@@ -1123,9 +1109,7 @@ inline ios& oct(ios& i)
 }  
 
 
-# 1 "/udd/bonnaud/prg/src/LS.cc" 2
 
-# 1 "/udd/bonnaud/poubelle/sparc-egcs/include/g++/iomanip.h" 1 3
  
 
 
@@ -1302,22 +1286,17 @@ extern ios& __iomanip_setiosflags  (ios&,   ios::fmtflags ); inline   smanip <  
 }  
 
 
-# 2 "/udd/bonnaud/prg/src/LS.cc" 2
 
-# 1 "/udd/bonnaud/prg/src/LS.hh" 1
 
 #define LS_hh
 
-# 1 "/udd/bonnaud/prg/src/Mouvement.hh" 1
 
 #define Mouvement_hh
 
 
-# 1 "/udd/bonnaud/prg/src/usuel.hh" 1
 
 #define usuel_hh
 
-# 1 "/udd/bonnaud/poubelle/sparc-egcs/lib/gcc-lib/sparc-sun-solaris2.5.1/egcs-2.91.02/include/math.h" 1 3 4
  
 
 
@@ -1547,7 +1526,6 @@ extern double scalbn  (double, int)  ;
 
 extern float modff  (float, float *)  ;
 
-# 1 "/udd/bonnaud/poubelle/sparc-egcs/lib/gcc-lib/sparc-sun-solaris2.5.1/egcs-2.91.02/include/floatingpoint.h" 1 3 4
  
  
 
@@ -1580,7 +1558,6 @@ extern "C" {
 
 
 
-# 1 "/udd/bonnaud/poubelle/sparc-egcs/lib/gcc-lib/sparc-sun-solaris2.5.1/egcs-2.91.02/include/stdio.h" 1 3 4
  
  
 
@@ -1597,7 +1574,6 @@ extern "C" {
 
 #pragma ident	"@(#)stdio.h	1.39	95/12/04 SMI"	
 
-# 1 "/usr/include/sys/feature_tests.h" 1 3 4
  
  
 
@@ -1631,9 +1607,7 @@ extern "C" {
 
 
 
-# 17 "/udd/bonnaud/poubelle/sparc-egcs/lib/gcc-lib/sparc-sun-solaris2.5.1/egcs-2.91.02/include/stdio.h" 2 3 4
 
-# 1 "/usr/include/sys/va_list.h" 1 3 4
  
 
 
@@ -1658,7 +1632,6 @@ extern "C" {
 extern "C" {
 
 
-# 41 "/usr/include/sys/va_list.h" 3 4
 
 
 
@@ -1674,7 +1647,6 @@ typedef void *__va_list;
 
 
 
-# 18 "/udd/bonnaud/poubelle/sparc-egcs/lib/gcc-lib/sparc-sun-solaris2.5.1/egcs-2.91.02/include/stdio.h" 2 3 4
 
 
 
@@ -1730,7 +1702,6 @@ typedef long	fpos_t;
 
 #define 	_NFILE	20	
 
-# 81 "/udd/bonnaud/poubelle/sparc-egcs/lib/gcc-lib/sparc-sun-solaris2.5.1/egcs-2.91.02/include/stdio.h" 3 4
 
 
 #define 	_SBFSIZ	8	
@@ -1879,7 +1850,6 @@ extern int	fileno(FILE *);
  
 
 
-# 239 "/udd/bonnaud/poubelle/sparc-egcs/lib/gcc-lib/sparc-sun-solaris2.5.1/egcs-2.91.02/include/stdio.h" 3 4
 
 
  
@@ -1902,7 +1872,6 @@ extern int	pclose(FILE *);
 
 
 
-# 343 "/udd/bonnaud/poubelle/sparc-egcs/lib/gcc-lib/sparc-sun-solaris2.5.1/egcs-2.91.02/include/stdio.h" 3 4
 
 
  
@@ -1938,7 +1907,6 @@ extern int	pclose(FILE *);
 #define 	fileno(p)	((p)->_file)
 
 
-# 397 "/udd/bonnaud/poubelle/sparc-egcs/lib/gcc-lib/sparc-sun-solaris2.5.1/egcs-2.91.02/include/stdio.h" 3 4
 
 
 
@@ -1948,10 +1916,8 @@ extern int	pclose(FILE *);
 
 
 
-# 33 "/udd/bonnaud/poubelle/sparc-egcs/lib/gcc-lib/sparc-sun-solaris2.5.1/egcs-2.91.02/include/floatingpoint.h" 2 3 4
 
 
-# 1 "/udd/bonnaud/poubelle/sparc-egcs/lib/gcc-lib/sparc-sun-solaris2.5.1/egcs-2.91.02/include/sys/ieeefp.h" 1 3 4
  
 
 
@@ -2000,10 +1966,8 @@ enum fp_trap_enable_type {
 };
 
 
-# 81 "/udd/bonnaud/poubelle/sparc-egcs/lib/gcc-lib/sparc-sun-solaris2.5.1/egcs-2.91.02/include/sys/ieeefp.h" 3 4
 
 
-# 122 "/udd/bonnaud/poubelle/sparc-egcs/lib/gcc-lib/sparc-sun-solaris2.5.1/egcs-2.91.02/include/sys/ieeefp.h" 3 4
 
 
 enum fp_class_type {		 
@@ -2020,7 +1984,6 @@ enum fp_class_type {
 
 
 
-# 35 "/udd/bonnaud/poubelle/sparc-egcs/lib/gcc-lib/sparc-sun-solaris2.5.1/egcs-2.91.02/include/floatingpoint.h" 2 3 4
 
 
 
@@ -2171,7 +2134,6 @@ extern double strtod  (const char *, char **)  ;
 
 
 
-# 230 "/udd/bonnaud/poubelle/sparc-egcs/lib/gcc-lib/sparc-sun-solaris2.5.1/egcs-2.91.02/include/math.h" 2 3 4
 
 
 
@@ -2181,9 +2143,7 @@ extern double strtod  (const char *, char **)  ;
 
 
 
-# 4 "/udd/bonnaud/prg/src/usuel.hh" 2
 
-# 1 "/udd/bonnaud/prg/lib_src/libg++-include/String.h" 1
  
  
 
@@ -2210,7 +2170,6 @@ extern double strtod  (const char *, char **)  ;
 #define _String_h 1
 
 
-# 1 "/udd/bonnaud/prg/lib_src/libg++-include/Regex.h" 1
  
  
 
@@ -2287,7 +2246,6 @@ public:
 
 
 
-# 27 "/udd/bonnaud/prg/lib_src/libg++-include/String.h" 2
 
 
 struct StrRep                      
@@ -3030,7 +2988,6 @@ inline String capitalize(const String& x) return r;
   r.rep = Scapitalize(x.rep, r.rep);
 }
 
-# 841 "/udd/bonnaud/prg/lib_src/libg++-include/String.h"
 
 
  
@@ -3473,10 +3430,8 @@ inline SubString String::_substr(int first, int l)
 }
 
 
-# 5 "/udd/bonnaud/prg/src/usuel.hh" 2
 
 
-# 1 "/udd/bonnaud/prg/src/booleen.hh" 1
 
 #define booleen_hh
 
@@ -3487,7 +3442,6 @@ const booleen VRAI=1;
 const booleen FAUX=0;
 
 
-# 7 "/udd/bonnaud/prg/src/usuel.hh" 2
 
 
 #define valeur_bidon 12345678
@@ -3668,7 +3622,6 @@ void convert(Type_dest& dest, const Type_source& source)
 }
 
 
-# 5 "/udd/bonnaud/prg/src/Mouvement.hh" 2
 
 
 struct Vect2Dent
@@ -3746,7 +3699,6 @@ ostream& operator<<(ostream& s, const Mouvement& m);
 Mouvement* read_mv(istream& s);
 
 
-# 4 "/udd/bonnaud/prg/src/LS.hh" 2
 
 
 class AFF;
@@ -3774,9 +3726,7 @@ public:
 ostream& operator<<(ostream& s, const LS& m);
 
 
-# 3 "/udd/bonnaud/prg/src/LS.cc" 2
 
-# 1 "/udd/bonnaud/prg/src/AFF.hh" 1
 
 #define AFF_hh
 
@@ -3811,7 +3761,6 @@ public:
 ostream& operator<<(ostream& s, const AFF& m);
 
 
-# 4 "/udd/bonnaud/prg/src/LS.cc" 2
 
 
 
