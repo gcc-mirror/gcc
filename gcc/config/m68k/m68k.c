@@ -1675,8 +1675,10 @@ notice_update_cc (exp, insn)
       {
       case PLUS: case MINUS: case MULT:
       case DIV: case UDIV: case MOD: case UMOD: case NEG:
+#if 0 /* These instructions always clear the overflow bit */
       case ASHIFT: case ASHIFTRT: case LSHIFTRT:
       case ROTATE: case ROTATERT:
+#endif
 	if (GET_MODE (cc_status.value2) != VOIDmode)
 	  cc_status.flags |= CC_NO_OVERFLOW;
 	break;
