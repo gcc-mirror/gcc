@@ -1890,12 +1890,11 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
       rtx pat = PATTERN (insn);
       if (src_note)
 	remove_note (overlap, src_note);
-#if defined (HAVE_POST_INCREMENT) || defined (HAVE_POST_DECREMENT)
-      if (code == PLUS
+      if ((HAVE_POST_INCREMENT || HAVE_POST_DECREMENT)
+	  && code == PLUS
 	  && try_auto_increment (overlap, insn, 0, src, insn_const, 0))
 	insn = overlap;
       else
-#endif
 	{
 	  rtx notes = REG_NOTES (insn);
 
