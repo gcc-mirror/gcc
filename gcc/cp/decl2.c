@@ -2750,9 +2750,6 @@ cp_finish_file (void)
   input_line -= 1;
 #endif
 
-  interface_unknown = 1;
-  interface_only = 0;
-
   /* We now have to write out all the stuff we put off writing out.
      These include:
 

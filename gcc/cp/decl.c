@@ -4599,10 +4599,11 @@ make_rtl_for_nonlocal_decl (tree decl, tree init, const char* asmspec)
     {
       /* Fool with the linkage of static consts according to #pragma
 	 interface.  */
-      if (!interface_unknown && !TREE_PUBLIC (decl))
+      struct c_fileinfo *finfo = get_fileinfo (input_filename);
+      if (!finfo->interface_unknown && !TREE_PUBLIC (decl))
 	{
 	  TREE_PUBLIC (decl) = 1;
-	  DECL_EXTERNAL (decl) = interface_only;
+	  DECL_EXTERNAL (decl) = finfo->interface_only;
 	}
 
       defer_p = 1;
@@ -5060,8 +5061,6 @@ static GTY(()) int start_cleanup_cnt;
 static tree
 start_cleanup_fn (void)
 {
-  int old_interface_only = interface_only;
-  int old_interface_unknown = interface_unknown;
   char name[32];
   tree parmtypes;
   tree fntype;
@@ -5071,9 +5070,6 @@ start_cleanup_fn (void)
 
   /* No need to mangle this.  */
   push_lang_context (lang_name_c);
-
-  interface_only = 0;
-  interface_unknown = 1;
 
   /* Build the parameter-types.  */
   parmtypes = void_list_node;
@@ -5113,9 +5109,6 @@ start_cleanup_fn (void)
 
   pushdecl (fndecl);
   start_preparsed_function (fndecl, NULL_TREE, SF_PRE_PARSED);
-
-  interface_unknown = old_interface_unknown;
-  interface_only = old_interface_only;
 
   pop_lang_context ();
 
@@ -9698,6 +9691,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
   int doing_friend = 0;
   struct cp_binding_level *bl;
   tree current_function_parms;
+  struct c_fileinfo *finfo = get_fileinfo (input_filename);
 
   /* Sanity check.  */
   gcc_assert (TREE_CODE (TREE_VALUE (void_list_node)) == VOID_TYPE);
@@ -9924,7 +9918,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
   /* If this function belongs to an interface, it is public.
      If it belongs to someone else's interface, it is also external.
      This only affects inlines and template instantiations.  */
-  else if (interface_unknown == 0
+  else if (finfo->interface_unknown == 0
 	   && ! DECL_TEMPLATE_INSTANTIATION (decl1))
     {
       if (DECL_DECLARED_INLINE_P (decl1)
@@ -9932,7 +9926,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 	  || processing_template_decl)
 	{
 	  DECL_EXTERNAL (decl1)
-	    = (interface_only
+	    = (finfo->interface_only
 	       || (DECL_DECLARED_INLINE_P (decl1)
 		   && ! flag_implement_inlines
 		   && !DECL_VINDEX (decl1)));
@@ -9950,14 +9944,15 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
       if (!DECL_EXTERNAL (decl1))
 	mark_needed (decl1);
     }
-  else if (interface_unknown && interface_only
+  else if (finfo->interface_unknown && finfo->interface_only
 	   && ! DECL_TEMPLATE_INSTANTIATION (decl1))
     {
       /* If MULTIPLE_SYMBOL_SPACES is defined and we saw a #pragma
-	 interface, we will have interface_only set but not
-	 interface_known.  In that case, we don't want to use the normal
-	 heuristics because someone will supply a #pragma implementation
-	 elsewhere, and deducing it here would produce a conflict.  */
+	 interface, we will have both finfo->interface_unknown and
+	 finfo->interface_only set.  In that case, we don't want to
+	 use the normal heuristics because someone will supply a
+	 #pragma implementation elsewhere, and deducing it here would
+	 produce a conflict.  */
       comdat_linkage (decl1);
       DECL_EXTERNAL (decl1) = 0;
       DECL_INTERFACE_KNOWN (decl1) = 1;

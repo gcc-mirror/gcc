@@ -1,6 +1,31 @@
+2004-09-10  Zack Weinberg  <zack@codesourcery.com>
+
+	* cp-tree.h (interface_only, interface_unknown): Delete declarations;
+	comment explaining them moved to c-common.h.
+	* lex.c (interface_only, interface_unknown, extract_interface_info):
+	Delete definitions.
+	(cxx_finish): Don't reset interface_unknown.
+	(handle_pragma_interface): Don't set interface_only and
+	interface_unknown; just the like-named fields in finfo.
+	(handle_pragma_implementation): Adjust comment.
+	* decl2.c (cp_finish_file): Don't reset interface_only and
+	interface_unknown.
+	* method.c (synthesize_method): Don't reset interface_unknown or
+	call extract_interface_info.
+	* pt.c (pop_tinst_level): Don't call extract_interface_info.
+	* decl.c (start_cleanup_fn): Don't save or restore interface_only
+	and interface_unknown.
+	(make_rtl_for_nonlocal_decl): Call get_fileinfo on input_filename
+	and use the result instead of the interface_only/interface_unknown
+	globals.
+	(start_preparsed_function): Likewise.
+	* lex.c (cxx_make_type): Likewise.
+	* semantics.c (begin_class_definition): Likewise.
+	(expand_body): Don't call extract_interface_info.
+
 2004-09-10  Ziemowit Laski  <zlaski@apple.com>
 
-        * decl.c (objc_mark_locals_volatile): Make description of 
+	* decl.c (objc_mark_locals_volatile): Make description of
 	routine more descriptive; only mark VAR_DECLs at each
 	binding level.
 

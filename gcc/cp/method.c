@@ -725,7 +725,6 @@ synthesize_method (tree fndecl)
      function.  */
   DECL_SOURCE_LOCATION (fndecl) = input_location;
 
-  interface_unknown = 1;
   start_preparsed_function (fndecl, NULL_TREE, SF_DEFAULT | SF_PRE_PARSED);
   stmt = begin_function_body ();
 
@@ -755,7 +754,6 @@ synthesize_method (tree fndecl)
   finish_function_body (stmt);
   expand_or_defer_fn (finish_function (0));
 
-  extract_interface_info ();
   if (! context)
     pop_from_top_level ();
   else if (nested)
