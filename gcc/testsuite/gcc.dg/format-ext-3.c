@@ -121,12 +121,10 @@ foo (char *s, size_t m, const struct tm *tp)
   strftime (s, m, "%0P", tp); /* { dg-warning "flag" "bad %P" } */
   /* The "^" and "#" flags control the case of the output.
      ^ (uppercase) makes sense on aAbBhZ; # (change case) makes sense
-     on the same (though glibc ignores it on bh for some reason; for now our
-     implementation in GCC follows glibc) and on p.
+     on the same and on p.
   */
-  strftime (s, m, "%^a%#a%^A%#A%^b%^B%#B%^h%^Z%#Z%#p", tp);
+  strftime (s, m, "%^a%#a%^A%#A%^b%#b%^B%#B%^h%#h%^Z%#Z%#p", tp);
   /* Bad usages.  */
-  strftime (s, m, "%#b", tp); /* { dg-warning "flag" "bad %b" } */
   strftime (s, m, "%^C", tp); /* { dg-warning "flag" "bad %C" } */
   strftime (s, m, "%#C", tp); /* { dg-warning "flag" "bad %C" } */
   strftime (s, m, "%^d", tp); /* { dg-warning "flag" "bad %d" } */
@@ -137,7 +135,6 @@ foo (char *s, size_t m, const struct tm *tp)
   strftime (s, m, "%#F", tp); /* { dg-warning "flag" "bad %F" } */
   strftime (s, m, "%^G", tp); /* { dg-warning "flag" "bad %G" } */
   strftime (s, m, "%#G", tp); /* { dg-warning "flag" "bad %G" } */
-  strftime (s, m, "%#h", tp); /* { dg-warning "flag" "bad %h" } */
   strftime (s, m, "%^H", tp); /* { dg-warning "flag" "bad %H" } */
   strftime (s, m, "%#H", tp); /* { dg-warning "flag" "bad %H" } */
   strftime (s, m, "%^I", tp); /* { dg-warning "flag" "bad %I" } */
@@ -196,6 +193,9 @@ foo (char *s, size_t m, const struct tm *tp)
   strftime (s, m, "%#x", tp); /* { dg-warning "flag" "bad %x" } */
   strftime (s, m, "%^y", tp); /* { dg-warning "flag" "bad %y" } */
   strftime (s, m, "%#y", tp); /* { dg-warning "flag" "bad %y" } */
+  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 186 } */
+  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 187 } */
+  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 188 } */
   /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 189 } */
   /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 190 } */
   /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 191 } */
@@ -203,9 +203,6 @@ foo (char *s, size_t m, const struct tm *tp)
   /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 193 } */
   /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 194 } */
   /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 195 } */
-  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 196 } */
-  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 197 } */
-  /* { dg-warning "only last 2" "2-digit year" { target *-*-* } 198 } */
   /* GCC also accepts the glibc format extensions %P, %k, %l, %s.  */
   strftime (s, m, "%P%k%l%s", tp);
   /* GCC also accepts the glibc extension of the "O" modifier on some
