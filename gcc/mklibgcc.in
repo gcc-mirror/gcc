@@ -92,7 +92,12 @@ case X"$LIBGCC1" in
         flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
         out="libgcc/${dir}/${name}${objext}"
 
-        echo ${out}: '$(srcdir)/config/$(LIB1ASMSRC)'
+	if [ $dir = . ]; then
+	  libgccdir="libgcc"
+	else
+	  libgccdir="libgcc/${dir}"
+	fi
+        echo ${out}: ${libgccdir} '$(srcdir)/config/$(LIB1ASMSRC)'
 	echo "	$gcc_compile" $flags -DL$name -xassembler-with-cpp \
 	  -c '$(srcdir)/config/$(LIB1ASMSRC)' -o $out
       done
@@ -154,7 +159,12 @@ for name in $LIB2FUNCS; do
     flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
     out="libgcc/${dir}/${name}${objext}"
 
-    echo $out: $libgcc2_c_dep
+    if [ $dir = . ]; then
+      libgccdir="libgcc"
+    else
+      libgccdir="libgcc/${dir}"
+    fi
+    echo $out: $libgccdir $libgcc2_c_dep
     echo "	$gcc_compile" '$(MAYBE_USE_COLLECT2)' $flags -DL$name \
       -c '$(srcdir)/libgcc2.c' -o $out
   done
@@ -167,7 +177,12 @@ for name in $LIB2FUNCS_EH; do
     flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
     out="libgcc/${dir}/${name}${objext}"
 
-    echo $out: $libgcc2_c_dep
+    if [ $dir = . ]; then
+      libgccdir="libgcc"
+    else
+      libgccdir="libgcc/${dir}"
+    fi
+    echo $out: $libgccdir $libgcc2_c_dep
     echo "	$gcc_compile" '$(MAYBE_USE_COLLECT2)' -fexceptions \
       $flags -DL$name -c '$(srcdir)/libgcc2.c' -o $out
   done
@@ -181,7 +196,12 @@ if [ "$FPBIT" ]; then
       flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
       out="libgcc/${dir}/${name}${objext}"
 
-      echo $out: $FPBIT $fpbit_c_dep
+      if [ $dir = . ]; then
+	libgccdir="libgcc"
+      else
+	libgccdir="libgcc/${dir}"
+      fi
+      echo $out: $libgccdir $FPBIT $fpbit_c_dep
       echo "	$gcc_compile" -DFINE_GRAINED_LIBRARIES $flags -DL$name \
 	-c $FPBIT -o $out
     done
@@ -196,7 +216,12 @@ if [ "$DPBIT" ]; then
       flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
       out="libgcc/${dir}/${name}${objext}"
 
-      echo $out: $DPBIT $fpbit_c_dep
+      if [ $dir = . ]; then
+	libgccdir="libgcc"
+      else
+	libgccdir="libgcc/${dir}"
+      fi
+      echo $out: $libgccdir $DPBIT $fpbit_c_dep
       echo "	$gcc_compile" -DFINE_GRAINED_LIBRARIES $flags -DL$name \
 	-c $DPBIT -o $out
     done
@@ -241,7 +266,12 @@ for file in $LIB2ADD; do
 	flags="$flags -xassembler-with-cpp"
       fi
 
-      echo $out: $file
+      if [ $dir = . ]; then
+	libgccdir="libgcc"
+      else
+	libgccdir="libgcc/${dir}"
+      fi
+      echo $out: $libgccdir $file
       echo "	$gcc_compile" $flags -c $file -o $out
     done
     libgcc2_objs="$libgcc2_objs ${oname}${objext}"
@@ -275,15 +305,11 @@ done
 echo ""
 all=""
 
+echo "libgcc:; -mkdir libgcc"
 for ml in $MULTILIBS; do
   dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
-  if [ $dir = . ]; then
-    echo "libgcc:; mkdir libgcc"
-    all="$all libgcc"
-  else
-    echo "${dir}:; mkdir ${dir}"
-    echo "libgcc/${dir}:; mkdir libgcc/${dir}"
-    all="$all libgcc/${dir} ${dir}"
+  if [ $dir != . ]; then
+    echo "libgcc/${dir}: libgcc; -mkdir libgcc/${dir}"
   fi
   all="$all ${dir}/libgcc.a"
 done
