@@ -267,7 +267,6 @@ static int first_altivec_reg_to_save PARAMS ((void));
 static unsigned int compute_vrsave_mask PARAMS ((void));
 static void is_altivec_return_reg PARAMS ((rtx, void *));
 static rtx generate_set_vrsave PARAMS ((rtx, rs6000_stack_t *, int));
-static void altivec_frame_fixup PARAMS ((rtx, rtx, HOST_WIDE_INT));
 static int easy_vector_constant PARAMS ((rtx));
 static bool is_ev64_opaque_type PARAMS ((tree));
 static rtx rs6000_dwarf_register_span PARAMS ((rtx));
@@ -10102,32 +10101,6 @@ rs6000_emit_allocate_stack (size, copy_r12)
 		       REG_NOTES (insn));
 }
 
-/* Add a RTX_FRAME_RELATED note so that dwarf2out_frame_debug_expr
-   knows that:
-
-     (mem (plus (blah) (regXX)))
-
-   is really:
-
-     (mem (plus (blah) (const VALUE_OF_REGXX))).  */
-
-static void
-altivec_frame_fixup (insn, reg, val)
-     rtx insn, reg;
-     HOST_WIDE_INT val;
-{
-  rtx real;
-
-  real = copy_rtx (PATTERN (insn));
-
-  real = replace_rtx (real, reg, GEN_INT (val));
-
-  RTX_FRAME_RELATED_P (insn) = 1;
-  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-					real,
-					REG_NOTES (insn));
-}
-
 /* Add to 'insn' a note which is PATTERN (INSN) but with REG replaced
    with (plus:P (reg 1) VAL), and with REG2 replaced with RREG if REG2
    is not NULL.  It would be nice if dwarf2out_frame_debug_expr could
@@ -10494,7 +10467,8 @@ rs6000_emit_prologue ()
 
 	    insn = emit_move_insn (mem, savereg);
 
-	    altivec_frame_fixup (insn, areg, offset);
+	    rs6000_frame_related (insn, frame_ptr_rtx, info->total_size,
+				  areg, GEN_INT (offset));
 	  }
     }
 
