@@ -1,3 +1,12 @@
+2000-10-17  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-common.c (back_end_hook): New variable.
+	* c-common.h (back_end_hook): Declare it.
+	* c-lang.c (finish_file): Use it.
+
+	* emit-rtl.c (init_emit_once): Initialize the const_int_htab
+	earlier.
+	
 2000-10-18  Jan Hubikca  <jh@suse.cz>
 
         * i386.c (ix86_comparison_operator, put_condition_code,

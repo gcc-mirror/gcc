@@ -555,6 +555,9 @@ dequeue_and_dump (di)
 	  if (DECL_FIELD_OFFSET (t))
 	    dump_child ("bpos", bit_position (t));
 	}
+      else if (TREE_CODE (t) == VAR_DECL 
+	       || TREE_CODE (t) == PARM_DECL)
+	dump_int (di, "used", TREE_USED (t));
       break;
 
     case FUNCTION_DECL:

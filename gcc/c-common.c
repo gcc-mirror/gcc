@@ -158,6 +158,10 @@ int (*lang_statement_code_p)           PARAMS ((enum tree_code));
    any action required right before expand_function_end is called.  */
 void (*lang_expand_function_end)       PARAMS ((void));
 
+/* If this variable is defined to a non-NULL value, it will be called
+   after the file has been completely parsed.  */
+void (*back_end_hook) PARAMS ((tree));
+
 /* Nonzero means the expression being parsed will never be evaluated.
    This is a count, since unevaluated expressions can nest.  */
 int skip_evaluation;

@@ -490,11 +490,6 @@ int flag_permissive;
 
 int flag_enforce_eh_specs = 1;
 
-/* If this variable is defined to a non-NULL value, it will be called
-   after the file has been completely parsed.  */
-
-void (*back_end_hook) PARAMS ((tree));
-
 /* The variant of the C language being processed.  */
 
 c_language_kind c_language = clk_cplusplus;

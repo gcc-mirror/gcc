@@ -242,6 +242,9 @@ finish_file ()
       assemble_destructor (IDENTIFIER_POINTER (fnname));
     }
 #endif
+  
+  if (back_end_hook)
+    (*back_end_hook) (getdecls ());
 }
 
 /* Called during diagnostic message formatting process to print a
