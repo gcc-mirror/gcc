@@ -35,7 +35,7 @@ DEFUN(get_attribute, (jcf),
   uint32 start_pos = JCF_TELL(jcf);
   int name_length;
   unsigned char *name_data;
-  JCF_FILL (jcf, attribute_length);
+  JCF_FILL (jcf, (long) attribute_length);
   if (attribute_name <= 0 || attribute_name >= JPOOL_SIZE(jcf))
     return -2;
   if (JPOOL_TAG (jcf, attribute_name) != CONSTANT_Utf8)
@@ -128,7 +128,7 @@ DEFUN(get_attribute, (jcf),
       JCF_SKIP (jcf, attribute_length);
 #endif
     }
-  if (start_pos + attribute_length != JCF_TELL(jcf))
+  if ((long) (start_pos + attribute_length) != JCF_TELL(jcf))
     return -1;
   return 0;
 }

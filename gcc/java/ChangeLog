@@ -1,5 +1,15 @@
 1999-05-12  Kaveh R. Ghazi  <ghazi@snafu.rutgers.edu>
 
+	* expr.c (expand_invoke): Mark parameter `nargs' with
+	ATTRIBUTE_UNUSED.
+	(PRE_LOOKUP_SWITCH): Likewise for variable `match'.
+
+	* jcf-io.c (jcf_unexpected_eof): Mark parameter `count' with
+	ATTRIBUTE_UNUSED.
+
+	* jcf-reader.c (get_attribute): Cast a value to long
+	when comparing against a signed expression.  Likewise.
+
 	* lex.h: Never define HOST_WIDE_INT, HOST_BITS_PER_WIDE_INT or
 	HOST_BITS_PER_CHAR.
 

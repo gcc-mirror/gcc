@@ -1565,7 +1565,7 @@ static void
 expand_invoke (opcode, method_ref_index, nargs)
      int opcode;
      int method_ref_index;
-     int nargs;
+     int nargs ATTRIBUTE_UNUSED;
 {
   tree method_signature = COMPONENT_REF_SIGNATURE(&current_jcf->cpool, method_ref_index);
   tree method_name = COMPONENT_REF_NAME (&current_jcf->cpool, method_ref_index);
@@ -2118,7 +2118,8 @@ expand_byte_code (jcf, method)
     NOTE_LABEL (default_offset+oldpc);					\
     if (npairs >= 0)							\
       while (--npairs >= 0) {						\
-       jint match = IMMEDIATE_s4; jint offset = IMMEDIATE_s4;		\
+       jint match ATTRIBUTE_UNUSED = IMMEDIATE_s4;			\
+       jint offset = IMMEDIATE_s4;					\
        NOTE_LABEL (offset+oldpc); }					\
   }
 
