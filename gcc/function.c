@@ -6746,13 +6746,25 @@ thread_prologue_and_epilogue_insns (f)
 	      remove_edge (e);
 	      make_edge (NULL, bb, EXIT_BLOCK_PTR, 0);
 	    }
+
+	  /* Emit a return insn for the exit fallthru block.  Whether
+	     this is still reachable will be determined later.  */
+
+	  emit_barrier_after (last->end);
+	  emit_return_into_block (last);
 	}
-
-      /* Emit a return insn for the exit fallthru block.  Whether
-	 this is still reachable will be determined later.  */
-
-      emit_barrier_after (last->end);
-      emit_return_into_block (last);
+      else 
+	{
+	  /* The exit block wasn't empty.  We have to use insert_insn_on_edge,
+	     as it may be the exit block can go elsewhere as well
+	     as exiting.  */
+	  start_sequence ();
+	  emit_jump_insn (gen_return ());
+	  seq = gen_sequence ();
+	  end_sequence ();
+	  insert_insn_on_edge (seq, e);
+	  insertted = 1;
+	}
       goto epilogue_done;
     }
 #endif
