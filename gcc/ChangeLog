@@ -1,5 +1,12 @@
 2003-11-16  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300-protos.h: Add the prototype for
+	same_cmp_following_p.
+	* config/h8300/h8300.c (same_cmp_following_p): New.
+	* config/h8300/h8300.md (peephole2): Use it.
+
+2003-11-16  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.md: Don't use REGNO when its operand is
 	not guaranteed to be a REG.
 

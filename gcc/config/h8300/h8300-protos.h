@@ -79,6 +79,7 @@ extern int h8300_eightbit_constant_address_p (rtx);
 extern int h8300_tiny_constant_address_p (rtx);
 extern int byte_accesses_mergeable_p (rtx, rtx);
 extern int same_cmp_preceding_p (rtx);
+extern int same_cmp_following_p (rtx);
 
 /* Used in builtins.c */
 extern rtx h8300_return_addr_rtx (int, rtx);
