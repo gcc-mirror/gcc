@@ -5712,7 +5712,7 @@ case 408:
 case 409:
 #line 1885 "parse.y"
 { /* Set things up as initdcl0_innards expects.  */
-	      yyval.ttype = yyvsp[-1].ttype; 
+	      yyvsp[0].ttype = yyvsp[-1].ttype; 
               yyvsp[-1].ttype = NULL_TREE; ;
     break;}
 case 410:

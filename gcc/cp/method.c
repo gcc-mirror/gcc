@@ -1862,6 +1862,10 @@ hack_identifier (value, name)
       TREE_USED (value) = 1;
       value = build_component_ref (current_class_ref, name, NULL_TREE, 1);
     }
+  else if (TREE_CODE (value) == FUNCTION_DECL
+	   && DECL_FUNCTION_MEMBER_P (value))
+    /* This is a placeholder; don't mark it used.  */
+    return value;
   else if (really_overloaded_fn (value))
     {
 #if 0

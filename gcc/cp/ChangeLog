@@ -1,3 +1,7 @@
+1998-10-18  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* method.c (hack_identifier): Just return a member function.
+
 1998-10-14  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* spew.c (yylex): Clear looking_for_typename if we got
