@@ -1,5 +1,8 @@
 Wed Mar 21 14:27:11 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* recog.c (push_operand): Fix error in last change that caused
+	undefined symbol on many targets.
+
 	* sdbout.c: #include ggc.h.
  	(sdbout_init): Move to end of file.
 	Call ggc_add_tree_root for anonymous_types.
