@@ -28,10 +28,9 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 extern char *xmalloc PARAMS ((unsigned));
 
-/*
- * return hash function on name.  must be compatible with the one
- * computed a step at a time, elsewhere
- */
+/* Return hash function on name.  must be compatible with the one
+   computed a step at a time, elsewhere  */
+
 int
 hashf (name, len, hashsize)
      register const U_CHAR *name;
@@ -46,16 +45,15 @@ hashf (name, len, hashsize)
   return MAKE_POS (r) % hashsize;
 }
 
-/*
- * find the most recent hash node for name name (ending with first
- * non-identifier char) installed by install
- *
- * If LEN is >= 0, it is the length of the name.
- * Otherwise, compute the length by scanning the entire name.
- *
- * If HASH is >= 0, it is the precomputed hash code.
- * Otherwise, compute the hash code.
- */
+/* Find the most recent hash node for name name (ending with first
+   non-identifier char) installed by install
+
+   If LEN is >= 0, it is the length of the name.
+   Otherwise, compute the length by scanning the entire name.
+
+   If HASH is >= 0, it is the precomputed hash code.
+   Otherwise, compute the hash code.  */
+
 HASHNODE *
 cpp_lookup (pfile, name, len, hash)
      cpp_reader *pfile;
@@ -81,7 +79,7 @@ cpp_lookup (pfile, name, len, hash)
       return bucket;
     bucket = bucket->next;
   }
-  return (HASHNODE*) 0;
+  return (HASHNODE *) 0;
 }
 
 /*
@@ -109,7 +107,7 @@ delete_macro (hp)
     hp->next->prev = hp->prev;
 
   /* make sure that the bucket chain header that
-     the deleted guy was on points to the right thing afterwards. */
+     the deleted guy was on points to the right thing afterwards.  */
   if (hp == *hp->bucket_hdr)
     *hp->bucket_hdr = hp->next;
 
@@ -130,20 +128,20 @@ delete_macro (hp)
 
   free (hp);
 }
-/*
- * install a name in the main hash table, even if it is already there.
- *   name stops with first non alphanumeric, except leading '#'.
- * caller must check against redefinition if that is desired.
- * delete_macro () removes things installed by install () in fifo order.
- * this is important because of the `defined' special symbol used
- * in #if, and also if pushdef/popdef directives are ever implemented.
- *
- * If LEN is >= 0, it is the length of the name.
- * Otherwise, compute the length by scanning the entire name.
- *
- * If HASH is >= 0, it is the precomputed hash code.
- * Otherwise, compute the hash code.
- */
+
+/* Install a name in the main hash table, even if it is already there.
+     name stops with first non alphanumeric, except leading '#'.
+   caller must check against redefinition if that is desired.
+   delete_macro () removes things installed by install () in fifo order.
+   this is important because of the `defined' special symbol used
+   in #if, and also if pushdef/popdef directives are ever implemented.
+
+   If LEN is >= 0, it is the length of the name.
+   Otherwise, compute the length by scanning the entire name.
+
+   If HASH is >= 0, it is the precomputed hash code.
+   Otherwise, compute the hash code.  */
+
 HASHNODE *
 install (name, len, type, ivalue, value, hash)
      U_CHAR *name;

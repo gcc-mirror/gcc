@@ -89,7 +89,9 @@ cpp_file_line_for_message (pfile, filename, line, column)
 }
 
 /* IS_ERROR is 2 for "fatal" error, 1 for error, 0 for warning */
-void cpp_message (pfile, is_error, msg, arg1, arg2, arg3)
+
+void
+cpp_message (pfile, is_error, msg, arg1, arg2, arg3)
      int is_error;
      cpp_reader *pfile;
      char *msg;

@@ -55,8 +55,8 @@ static enum typecode unsigned_mode_to_code_map[MAX_MACHINE_MODE+1];
 static struct conversion_recipe
 {
   unsigned char *opcodes;	/* Bytecodes to emit in order.  */
-  int nopcodes;			/* Count of bytecodes. */
-  int cost;			/* A rather arbitrary cost function. */
+  int nopcodes;			/* Count of bytecodes.  */
+  int cost;			/* A rather arbitrary cost function.  */
 } conversion_recipe[NUM_TYPECODES][NUM_TYPECODES];
 
 /* Binary operator tables.  */
@@ -405,6 +405,7 @@ struct conversion_list
    * Either sign extensions or zero extensions may be present, but not both.
    * No widening conversions occur after a signed/unsigned conversion.
    * The sequence of sizes must be strict nonincreasing or nondecreasing.  */
+
 static int
 conversion_reasonable_p (conversion, list)
      struct conversion_info *conversion;
@@ -517,6 +518,7 @@ conversion_reasonable_p (conversion, list)
 
 /* Exhaustively search all reasonable conversions to find one to
    convert the given types.  */
+
 static struct conversion_recipe
 deduce_conversion (from, to)
      enum typecode from, to;
@@ -614,6 +616,7 @@ deduce_conversion (from, to)
 
 
 /* Emit a conversion between the given scalar types.  */
+
 void
 emit_typecode_conversion (from, to)
      enum typecode from, to;
@@ -627,6 +630,7 @@ emit_typecode_conversion (from, to)
 
 
 /* Initialize mode_to_code_map[] */
+
 void
 bc_init_mode_to_code_map ()
 {
@@ -650,6 +654,7 @@ bc_init_mode_to_code_map ()
 }
 
 /* Given a machine mode return the preferred typecode.  */
+
 enum typecode
 preferred_typecode (mode, unsignedp)
      enum machine_mode mode;
@@ -668,6 +673,7 @@ preferred_typecode (mode, unsignedp)
 
 
 /* Expand a conversion between the given types.  */
+
 void
 bc_expand_conversion (from, to)
      tree from, to;
@@ -681,6 +687,7 @@ bc_expand_conversion (from, to)
 }
 
 /* Expand a conversion of the given type to a truth value.  */
+
 void
 bc_expand_truth_conversion (from)
      tree from;
@@ -692,6 +699,7 @@ bc_expand_truth_conversion (from)
 }
 
 /* Emit an appropriate binary operation.  */
+
 void
 bc_expand_binary_operation (optab, resulttype, arg0, arg1)
      struct binary_operator optab[];
@@ -733,6 +741,7 @@ bc_expand_binary_operation (optab, resulttype, arg0, arg1)
 }
 
 /* Emit an appropriate unary operation.  */
+
 void
 bc_expand_unary_operation (optab, resulttype, arg0)
      struct unary_operator optab[];
@@ -769,6 +778,7 @@ bc_expand_unary_operation (optab, resulttype, arg0)
 
 
 /* Emit an appropriate increment.  */
+
 void
 bc_expand_increment (optab, type)
      struct increment_operator optab[];

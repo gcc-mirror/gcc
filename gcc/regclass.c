@@ -834,7 +834,7 @@ regclass (f, nregs)
 			      basic_block_head[b] = newinsn;
 			}
 
-		      /* This makes one more setting of new insns's dest. */
+		      /* This makes one more setting of new insns's dest.  */
 		      reg_n_sets[REGNO (recog_operand[0])]++;
 
 		      *recog_operand_loc[1] = recog_operand[0];
@@ -1841,7 +1841,7 @@ reg_scan_mark_refs (x, insn, note_flag)
 		      || GET_CODE (XEXP (note, 0)) == LABEL_REF))))
 	REGNO_POINTER_FLAG (REGNO (SET_DEST (x))) = 1;
 
-      /* ... fall through ... */
+      /* ... fall through ...  */
 
     default:
       {

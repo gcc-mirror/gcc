@@ -40,27 +40,27 @@ struct lang_identifier
 /* This represents the value which the identifier has in the
    file-scope namespace.  */
 #define IDENTIFIER_GLOBAL_VALUE(NODE)	\
-  (((struct lang_identifier *)(NODE))->global_value)
+  (((struct lang_identifier *) (NODE))->global_value)
 /* This represents the value which the identifier has in the current
    scope.  */
 #define IDENTIFIER_LOCAL_VALUE(NODE)	\
-  (((struct lang_identifier *)(NODE))->local_value)
+  (((struct lang_identifier *) (NODE))->local_value)
 /* This represents the value which the identifier has as a label in
    the current label scope.  */
 #define IDENTIFIER_LABEL_VALUE(NODE)	\
-  (((struct lang_identifier *)(NODE))->label_value)
+  (((struct lang_identifier *) (NODE))->label_value)
 /* This records the extern decl of this identifier, if it has had one
    at any point in this compilation.  */
 #define IDENTIFIER_LIMBO_VALUE(NODE)	\
-  (((struct lang_identifier *)(NODE))->limbo_value)
+  (((struct lang_identifier *) (NODE))->limbo_value)
 /* This records the implicit function decl of this identifier, if it
    has had one at any point in this compilation.  */
 #define IDENTIFIER_IMPLICIT_DECL(NODE)	\
-  (((struct lang_identifier *)(NODE))->implicit_decl)
+  (((struct lang_identifier *) (NODE))->implicit_decl)
 /* This is the last function in which we printed an "undefined variable"
    message for this identifier.  Value is a FUNCTION_DECL or null.  */
 #define IDENTIFIER_ERROR_LOCUS(NODE)	\
-  (((struct lang_identifier *)(NODE))->error_locus)
+  (((struct lang_identifier *) (NODE))->error_locus)
 
 /* In identifiers, C uses the following fields in a special way:
    TREE_PUBLIC        to record that there was a previous local extern decl.
@@ -109,7 +109,7 @@ struct lang_type
 
 /* Store a value in that field.  */
 #define C_SET_EXP_ORIGINAL_CODE(exp, code) \
-  (TREE_COMPLEXITY (exp) = (int)(code))
+  (TREE_COMPLEXITY (exp) = (int) (code))
 
 /* Record whether a typedef for type `int' was actually `signed int'.  */
 #define C_TYPEDEF_EXPLICITLY_SIGNED(exp) DECL_LANG_FLAG_1 ((exp))

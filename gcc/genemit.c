@@ -272,7 +272,7 @@ gen_insn (insn)
 
   /* See if the pattern for this insn ends with a group of CLOBBERs of (hard)
      registers or MATCH_SCRATCHes.  If so, store away the information for
-     later. */
+     later.  */
 
   if (XVEC (insn, 1))
     {
@@ -506,6 +506,7 @@ gen_expand (expand)
 }
 
 /* Like gen_expand, but generates a SEQUENCE.  */
+
 static void
 gen_split (split)
      rtx split;

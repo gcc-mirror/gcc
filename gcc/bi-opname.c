@@ -42,7 +42,8 @@ main()
 }
 
 /* Safely allocate NBYTES bytes of memory. Returns pointer to block of
-   memory. */
+   memory.  */
+
 char *
 xmalloc (nbytes)
      int nbytes;

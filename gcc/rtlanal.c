@@ -393,7 +393,7 @@ reg_referenced_p (x, body)
 
 /* Nonzero if register REG is referenced in an insn between
    FROM_INSN and TO_INSN (exclusive of those two).  Sets of REG do
-   not count. */
+   not count.  */
 
 int
 reg_referenced_between_p (reg, from_insn, to_insn)

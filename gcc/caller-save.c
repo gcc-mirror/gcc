@@ -182,7 +182,8 @@ init_caller_save ()
 	  reg_save_code[i][j] = recog_memoized (saveinsn);
 	  reg_restore_code[i][j] = recog_memoized (restinsn);
 
-	  /* Now extract both insns and see if we can meet their constraints. */
+	  /* Now extract both insns and see if we can meet their
+             constraints.  */
 	  ok = (reg_save_code[i][j] != -1 && reg_restore_code[i][j] != -1);
 	  if (ok)
 	    {
@@ -307,7 +308,7 @@ setup_save_areas (pchanged)
 	      ok &= (TEST_HARD_REG_BIT (hard_regs_used, regno) != 0);
 	    }
 
-	/* We have found an acceptable mode to store in. */
+	/* We have found an acceptable mode to store in.  */
 	if (ok)
 	  {
 
@@ -315,7 +316,7 @@ setup_save_areas (pchanged)
 	      = assign_stack_local (regno_save_mode[i][j],
 				    GET_MODE_SIZE (regno_save_mode[i][j]), 0);
 
-	    /* Setup single word save area just in case... */
+	    /* Setup single word save area just in case...  */
 	    for (k = 0; k < j; k++)
 	      {
 		/* This should not depend on WORDS_BIG_ENDIAN.

@@ -23,7 +23,7 @@ Boston, MA 02111-1307, USA.  */
 
    This file imports xmalloc and xrealloc, which are like malloc and
    realloc except that they generate a fatal error if there is no
-   available memory. */
+   available memory.  */
 
 #include <ctype.h>
 #include <string.h>
@@ -67,7 +67,7 @@ mystrstr (s1, s2)
    We could avoid this if we could just get g++ to tell us what the actual
    cplus marker character is as part of the debug information, perhaps by
    ensuring that it is the character that terminates the gcc<n>_compiled
-   marker symbol (FIXME). */
+   marker symbol (FIXME).  */
 
 #if !defined (CPLUS_MARKER)
 #define CPLUS_MARKER '$'
@@ -85,7 +85,7 @@ set_cplus_marker_for_demangling (ch)
 }
 
 /* Stuff that is shared between sub-routines.
- * Using a shared structure allows cplus_demangle to be reentrant. */
+   Using a shared structure allows cplus_demangle to be reentrant.  */
 
 struct work_stuff
 {
@@ -190,7 +190,7 @@ static const struct optable
 
 
 typedef struct string		/* Beware: these aren't required to be */
-{				/*  '\0' terminated. */
+{				/*  '\0' terminated.  */
   char *b;			/* pointer to start of string */
   char *p;			/* pointer after last character */
   char *e;			/* pointer after end of allocated space */
@@ -304,7 +304,7 @@ string_prepends PARAMS ((string *, string *));
 /*  Translate count to integer, consuming tokens in the process.
     Conversion terminates on the first non-digit character.
     Trying to consume something that isn't a count results in
-    no consumption of input and a return of 0. */
+    no consumption of input and a return of 0.  */
 
 static int
 consume_count (type)
@@ -374,7 +374,7 @@ cplus_demangle_opname (opname, result, options)
 	{
 	  if (opname[2] == 'a' && opname[5] == '\0')
 	    {
-	      /* Assignment. */
+	      /* Assignment.  */
 	      for (i = 0; i < sizeof (optable) / sizeof (optable[0]); i++)
 		{
 		  if (strlen (optable[i].in) == 3
@@ -469,8 +469,8 @@ cplus_mangle_opname (opname, options)
   return (0);
 }
 
-/* check to see whether MANGLED can match TEXT in the first TEXT_LEN
-   characters. */
+/* Check to see whether MANGLED can match TEXT in the first TEXT_LEN
+   characters.  */
 
 int cplus_match (mangled, text, text_len)
      const char *mangled;
@@ -536,7 +536,7 @@ cplus_demangle (mangled, options)
 	 recognize one of the gnu special forms rather than looking for a
 	 standard prefix.  In particular, don't worry about whether there
 	 is a "__" string in the mangled string.  Consider "_$_5__foo" for
-	 example. */
+	 example.  */
 
       if ((AUTO_DEMANGLING || GNU_DEMANGLING))
 	{
@@ -573,7 +573,7 @@ mop_up (work, declp, success)
 {
   char *demangled = NULL;
 
-  /* Discard the remembered types, if any. */
+  /* Discard the remembered types, if any.  */
   
   forget_types (work);
   if (work -> typevec != NULL)
@@ -582,7 +582,7 @@ mop_up (work, declp, success)
     }
   
   /* If demangling was successful, ensure that the demangled string is null
-     terminated and return it.  Otherwise, free the demangling decl. */
+     terminated and return it.  Otherwise, free the demangling decl.  */
   
   if (!success)
     {
@@ -624,8 +624,7 @@ DESCRIPTION
 
 	Demangling GNU style mangled names is nasty because there is no
 	explicit token that marks the start of the outermost function
-	argument list.
-*/
+	argument list.  */
 
 static int
 demangle_signature (work, mangled, declp)
@@ -701,7 +700,7 @@ demangle_signature (work, mangled, declp)
 	    /* ARM style demangling includes a specific 'F' character after
 	     the class name.  For GNU style, it is just implied.  So we can
 	     safely just consume any 'F' at this point and be compatible
-	     with either style. */
+	     with either style.  */
 
 	    oldmangled = NULL;
 	    func_done = 1;
@@ -756,7 +755,7 @@ demangle_signature (work, mangled, declp)
 	       so if we run into another '_' at this point we are dealing with
 	       a mangled name that is either bogus, or has been mangled by
 	       some algorithm we don't know how to deal with.  So just
-	       reject the entire demangling. */
+	       reject the entire demangling.  */
 	    success = 0;
 	    break;
 
@@ -764,7 +763,7 @@ demangle_signature (work, mangled, declp)
 	    if (AUTO_DEMANGLING || GNU_DEMANGLING)
 	      {
 		/* Assume we have stumbled onto the first outermost function
-		   argument token, and start processing args. */
+		   argument token, and start processing args.  */
 		func_done = 1;
 		success = demangle_args (work, mangled, declp);
 	      }
@@ -773,7 +772,7 @@ demangle_signature (work, mangled, declp)
 		/* Non-GNU demanglers use a specific token to mark the start
 		   of the outermost function argument tokens.  Typically 'F',
 		   for ARM-demangling, for example.  So if we find something
-		   we are not prepared for, it must be an error. */
+		   we are not prepared for, it must be an error.  */
 		success = 0;
 	      }
 	    break;
@@ -798,7 +797,7 @@ demangle_signature (work, mangled, declp)
 	     first case, and need to ensure that the '(void)' gets added to
 	     the current declp.  Note that with ARM, the first case
 	     represents the name of a static data member 'foo::bar',
-	     which is in the current declp, so we leave it alone. */
+	     which is in the current declp, so we leave it alone.  */
 	  success = demangle_args (work, mangled, declp);
 	}
     }
@@ -1343,7 +1342,7 @@ demangle_prefix (work, mangled, declp)
   if (scan != NULL)
     {
       /* We found a sequence of two or more '_', ensure that we start at
-	 the last pair in the sequence. */
+	 the last pair in the sequence.  */
       i = strspn (scan, "_");
       if (i > 2)
 	{
@@ -1412,7 +1411,7 @@ demangle_prefix (work, mangled, declp)
     }
   else if (ARM_DEMANGLING && scan[2] == 'p' && scan[3] == 't')
     {
-      /* Cfront-style parameterized type.  Handled later as a signature. */
+      /* Cfront-style parameterized type.  Handled later as a signature.  */
       success = 1;
 
       /* ARM template? */
@@ -1422,7 +1421,7 @@ demangle_prefix (work, mangled, declp)
     {
       /* Mangled name does not start with "__" but does have one somewhere
 	 in there with non empty stuff after it.  Looks like a global
-	 function name. */
+	 function name.  */
       demangle_function_name (work, mangled, declp, scan);
     }
   else
@@ -1498,7 +1497,7 @@ gnu_special (work, mangled, declp)
       /* Found a GNU style virtual table, get past "_vt<CPLUS_MARKER>"
          and create the decl.  Note that we consume the entire mangled
 	 input string, which means that demangle_signature has no work
-	 to do. */
+	 to do.  */
       if ((*mangled)[2] == 'v')
 	(*mangled) += 5; /* New style, with thunks: "__vt_" */
       else
@@ -1566,7 +1565,7 @@ gnu_special (work, mangled, declp)
       if (success && (p == *mangled))
 	{
 	  /* Consumed everything up to the cplus_marker, append the
-	     variable name. */
+	     variable name.  */
 	  (*mangled)++;
 	  string_append (declp, "::");
 	  n = strlen (*mangled);
@@ -1642,7 +1641,7 @@ arm_special (work, mangled, declp)
       /* Found a ARM style virtual table, get past ARM_VTABLE_STRING
          and create the decl.  Note that we consume the entire mangled
 	 input string, which means that demangle_signature has no work
-	 to do. */
+	 to do.  */
       scan = *mangled + ARM_VTABLE_STRLEN;
       while (*scan != '\0')        /* first check it can be demangled */
         {
@@ -1780,7 +1779,7 @@ demangle_qualified (work, mangled, result, isfuncname, append)
     return success;
 
   /* Pick off the names and collect them in the temp buffer in the order
-     in which they are found, separated by '::'. */
+     in which they are found, separated by '::'.  */
 
   while (qualifiers-- > 0)
     {
@@ -1812,7 +1811,7 @@ demangle_qualified (work, mangled, result, isfuncname, append)
   /* If we are using the result as a function name, we need to append
      the appropriate '::' separated constructor or destructor name.
      We do this here because this is the most convenient place, where
-     we already have a pointer to the name and the length of the name. */
+     we already have a pointer to the name and the length of the name.  */
 
   if (isfuncname && (work->constructor & 1 || work->destructor & 1))
     {
@@ -1825,7 +1824,7 @@ demangle_qualified (work, mangled, result, isfuncname, append)
     }
 
   /* Now either prepend the temp buffer to the result, or append it, 
-     depending upon the state of the append flag. */
+     depending upon the state of the append flag.  */
 
   if (append)
     {
@@ -1983,7 +1982,7 @@ do_type (work, mangled, result)
 	    }
 	  /* After picking off the function args, we expect to either find the
 	     function return type (preceded by an '_') or the end of the
-	     string. */
+	     string.  */
 	  if (!demangle_args (work, mangled, &decl)
 	      || (**mangled != '_' && **mangled != '\0'))
 	    {
@@ -2092,7 +2091,7 @@ do_type (work, mangled, result)
 
   switch (**mangled)
     {
-      /* A qualified name, such as "Outer::Inner". */
+      /* A qualified name, such as "Outer::Inner".  */
       case 'Q':
         success = demangle_qualified (work, mangled, result, 0, 1);
 	break;
@@ -2140,7 +2139,7 @@ demangle_fund_type (work, mangled, result)
   int done = 0;
   int success = 1;
 
-  /* First pick off any type qualifiers.  There can be more than one. */
+  /* First pick off any type qualifiers.  There can be more than one.  */
 
   while (!done)
     {
@@ -2178,7 +2177,7 @@ demangle_fund_type (work, mangled, result)
 	}
     }
 
-  /* Now pick off the fundamental type.  There can be only one. */
+  /* Now pick off the fundamental type.  There can be only one.  */
 
   switch (**mangled)
     {
@@ -2327,7 +2326,7 @@ remember_type (work, start, len)
   work -> typevec[work -> ntypes++] = tem;
 }
 
-/* Forget the remembered types, but not the type vector itself. */
+/* Forget the remembered types, but not the type vector itself.  */
 
 static void
 forget_types (work)
@@ -2452,7 +2451,7 @@ demangle_args (work, mangled, declp)
 	      t--;
 	    }
 	  /* Validate the type index.  Protect against illegal indices from
-	     malformed type strings. */
+	     malformed type strings.  */
 	  if ((t < 0) || (t >= work -> ntypes))
 	    {
 	      return (0);
@@ -2533,7 +2532,7 @@ demangle_function_name (work, mangled, declp, scan)
 
   /* Consume the function name, including the "__" separating the name
      from the signature.  We are guaranteed that SCAN points to the
-     separator. */
+     separator.  */
 
   (*mangled) = scan + 2;
 
@@ -2543,7 +2542,7 @@ demangle_function_name (work, mangled, declp, scan)
       /* See if we have an ARM style constructor or destructor operator.
 	 If so, then just record it, clear the decl, and return.
 	 We can't build the actual constructor/destructor decl until later,
-	 when we recover the class name from the signature. */
+	 when we recover the class name from the signature.  */
 
       if (strcmp (declp -> b, "__ct") == 0)
 	{
@@ -2648,7 +2647,7 @@ demangle_function_name (work, mangled, declp, scan)
 	{
 	  if (declp->b[2] == 'a' && declp->b[5] == '\0')
 	    {
-	      /* Assignment. */
+	      /* Assignment.  */
 	      for (i = 0; i < sizeof (optable) / sizeof (optable[0]); i++)
 		{
 		  if (strlen (optable[i].in) == 3
@@ -2817,7 +2816,7 @@ string_prependn (p, s, n)
 /* To generate a standalone demangler program for testing purposes,
    just compile and link this file with -DMAIN and libiberty.a.  When
    run, it demangles each command line arg, or each stdin string, and
-   prints the result on stdout. */
+   prints the result on stdout.  */
 
 #ifdef MAIN
 
@@ -2860,7 +2859,7 @@ Usage: %s [-_] [-n] [-s {gnu,lucid,arm}] [--strip-underscores]\n\
 #define MBUF_SIZE 512
 char mbuffer[MBUF_SIZE];
 
-/* Defined in the automatically-generated underscore.c. */
+/* Defined in the automatically-generated underscore.c.  */
 extern int prepends_underscore;
 
 int strip_underscore = 0;
@@ -2940,7 +2939,7 @@ main (argc, argv)
 	{
 	  int i = 0;
 	  c = getchar ();
-	  /* Try to read a label. */
+	  /* Try to read a label.  */
 	  while (c != EOF && (isalnum(c) || c == '_' || c == '$' || c == '.'))
 	    {
 	      if (i >= MBUF_SIZE-1)

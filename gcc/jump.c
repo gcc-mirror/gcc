@@ -100,7 +100,7 @@ int can_reach_end;
    Normally they are not significant, because of A and B jump to C,
    and R dies in A, it must die in B.  But this might not be true after
    stack register conversion, and we must compare death notes in that
-   case. */
+   case.  */
 
 static int cross_jump_death_matters = 0;
 
@@ -499,7 +499,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	    else if (GET_CODE (body) == PARALLEL)
 	      {
 		/* If each part is a set between two identical registers or
-		   a USE or CLOBBER, delete the insn. */
+		   a USE or CLOBBER, delete the insn.  */
 		int i, sreg, dreg;
 		rtx tem;
 
@@ -943,7 +943,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 
 	  /* Finally, handle the case where two insns are used to 
 	     compute EXP but a temporary register is used.  Here we must
-	     ensure that the temporary register is not used anywhere else. */
+	     ensure that the temporary register is not used anywhere else.  */
 
 	  if (! reload_completed
 	      && after_regscan
@@ -1924,7 +1924,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 
 	      /* Now that the jump has been tensioned,
 		 try cross jumping: check for identical code
-		 before the jump and before its target label. */
+		 before the jump and before its target label.  */
 
 	      /* First, cross jumping of conditional jumps:  */
 
@@ -1959,7 +1959,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		      INSN_CODE (insn) = -1;
 		      emit_barrier_after (insn);
 		      /* Add to jump_chain unless this is a new label
-			 whose UID is too large. */
+			 whose UID is too large.  */
 		      if (INSN_UID (JUMP_LABEL (insn)) < max_jump_chain)
 			{
 			  jump_chain[INSN_UID (insn)]
@@ -2441,13 +2441,13 @@ find_cross_jump (e1, e2, minimum, f1, f2)
 #ifdef STACK_REGS
       /* If cross_jump_death_matters is not 0, the insn's mode
 	 indicates whether or not the insn contains any stack-like
-	 regs. */
+	 regs.  */
 
       if (!lose && cross_jump_death_matters && GET_MODE (i1) == QImode)
 	{
 	  /* If register stack conversion has already been done, then
 	     death notes must also be compared before it is certain that
-	     the two instruction streams match. */
+	     the two instruction streams match.  */
 
 	  rtx note;
 	  HARD_REG_SET i1_regset, i2_regset;
@@ -4422,7 +4422,7 @@ rtx_equal_for_thread_p (x, y, yinsn)
 
     case MEM:
       /* If memory modified or either volatile, not equivalent.
-	 Else, check address. */
+	 Else, check address.  */
       if (modified_mem || MEM_VOLATILE_P (x) || MEM_VOLATILE_P (y))
 	return 0;
 

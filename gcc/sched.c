@@ -355,7 +355,7 @@ static rtx *reg_known_value;
 /* Vector recording for each reg_known_value whether it is due to a
    REG_EQUIV note.  Future passes (viz., reload) may replace the
    pseudo with the equivalent expression and so we account for the
-   dependences that would be introduced if that happens. */
+   dependences that would be introduced if that happens.  */
 /* ??? This is a problem only on the Convex.  The REG_EQUIV notes created in
    assign_parms mention the arg pointer, and there are explicit insns in the
    RTL that modify the arg pointer.  Thus we must ensure that such insns don't
@@ -4058,7 +4058,7 @@ schedule_block (b, file)
 	    prev = PREV_INSN (insn);
 	    if (LINE_NOTE (note))
 	      {
-		/* Re-use the original line-number note. */
+		/* Re-use the original line-number note.  */
 		LINE_NOTE (note) = 0;
 		PREV_INSN (note) = prev;
 		NEXT_INSN (prev) = note;

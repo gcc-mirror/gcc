@@ -163,7 +163,7 @@ struct filename_entry {
 
 typedef struct filename_entry filename_entry;
 
-/* Pointer to an array of elements, each one having the structure above. */
+/* Pointer to an array of elements, each one having the structure above.  */
 
 static filename_entry *filename_table;
 
@@ -202,7 +202,7 @@ static char *last_filename;
 
 static unsigned next_block_number = 2;
 
-/* Counter to generate unique names for DIEs. */
+/* Counter to generate unique names for DIEs.  */
 
 static unsigned next_unused_dienum = 1;
 
@@ -1736,7 +1736,7 @@ output_bound_representation (bound, dim_num, u_or_l)
 
       case NOP_EXPR:
 	bound = TREE_OPERAND (bound, 0);
-	/* ... fall thru... */
+	/* ... fall thru...  */
 
       case SAVE_EXPR:
 	{
@@ -2081,8 +2081,7 @@ location_attribute (rtl)
    object" which will be given in the AT_byte_size attribute for this
    bit-field.  (See the `byte_size_attribute' function below.)  It is
    also used when calculating the value of the AT_bit_offset attribute.
-   (See the `bit_offset_attribute' function below.)
-*/
+   (See the `bit_offset_attribute' function below.)  */
 
 static void
 data_member_location_attribute (decl)
@@ -2462,7 +2461,7 @@ subscript_data_attribute (type)
 	  if (! type_is_fundamental (domain))
 	    abort ();
 
-	  /* Output the representation format byte for this dimension. */
+	  /* Output the representation format byte for this dimension.  */
 
 	  ASM_OUTPUT_DWARF_FMT_BYTE (asm_out_file,
 				  FMT_CODE (1,
@@ -3133,6 +3132,7 @@ output_set_type_die (arg)
 
 #if 0
 /* Implement this when there is a GNU FORTRAN or GNU Ada front end.  */
+
 static void
 output_entry_point_die (arg)
      register void *arg;
@@ -3475,7 +3475,7 @@ output_member_die (arg)
   member_attribute (DECL_CONTEXT (decl));
   type_attribute (member_declared_type (decl),
 		  TREE_READONLY (decl), TREE_THIS_VOLATILE (decl));
-  if (DECL_BIT_FIELD_TYPE (decl))	/* If this is a bit field... */
+  if (DECL_BIT_FIELD_TYPE (decl))	/* If this is a bit field...  */
     {
       byte_size_attribute (decl);
       bit_size_attribute (decl);
@@ -3488,9 +3488,9 @@ output_member_die (arg)
 /* Don't generate either pointer_type DIEs or reference_type DIEs.  Use
    modified types instead.
 
-   We keep this code here just in case these types of DIEs may be needed
-   to represent certain things in other languages (e.g. Pascal) someday.
-*/
+   We keep this code here just in case these types of DIEs may be
+   needed to represent certain things in other languages (e.g. Pascal)
+   someday.  */
 
 static void
 output_pointer_type_die (arg)
@@ -3834,11 +3834,11 @@ end_sibling_chain ()
    parameters as specified in some function type specification (except
    for those which appear as part of a function *definition*).
 
-   Note that we must be careful here to output all of the parameter DIEs
-   *before* we output any DIEs needed to represent the types of the formal
-   parameters.  This keeps svr4 SDB happy because it (incorrectly) thinks
-   that the first non-parameter DIE it sees ends the formal parameter list.
-*/
+   Note that we must be careful here to output all of the parameter
+   DIEs *before* we output any DIEs needed to represent the types of
+   the formal parameters.  This keeps svr4 SDB happy because it
+   (incorrectly) thinks that the first non-parameter DIE it sees ends
+   the formal parameter list.  */
 
 static void
 output_formal_types (function_or_method_type)
@@ -3983,7 +3983,7 @@ type_ok_for_scope (type, scope)
    Note that we have to process the list in beginning-to-end order,
    because the call made here to output_type may cause yet more types
    to be added to the end of the list, and we may have to output some
-   of them too. */
+   of them too.  */
 
 static void
 output_pending_types_for_scope (containing_scope)
@@ -4611,7 +4611,7 @@ output_decl (decl, containing_scope)
 
 	    if (fn_arg_types)
 	      {
-	      /* this is the prototyped case, check for ... */
+	      /* this is the prototyped case, check for ...  */
 	      if (TREE_VALUE (tree_last (fn_arg_types)) != void_type_node)
 	        output_die (output_unspecified_parameters_die, decl);
               }
@@ -5592,7 +5592,7 @@ dwarfout_finish ()
      (or blame).  I didn't think of this scheme.  I just conformed to it.
   */
 
-  output_die (output_padded_null_die, (void *)0);
+  output_die (output_padded_null_die, (void *) 0);
   dienum_pop ();
 
   sprintf (label, DIE_BEGIN_LABEL_FMT, NEXT_DIE_NUM);

@@ -83,7 +83,7 @@ struct arglist {
 #endif
 
 #ifndef NULL_PTR
-#define NULL_PTR ((GENERIC_PTR)0)
+#define NULL_PTR ((GENERIC_PTR) 0)
 #endif
 
 /* Find the largest host integer type and set its size and type.

@@ -53,7 +53,7 @@ main (argc, argv)
 {
   char *p;
   int i;
-  int argi = 1;  /* Next argument to handle. */
+  int argi = 1;  /* Next argument to handle.  */
   struct cpp_options *opts = &options;
 
   p = argv[0] + strlen (argv[0]);

@@ -57,7 +57,7 @@ fancy_abort ()
 int
 main (argc, argv)
      int argc;
-     char** argv;
+     char **argv;
 {
   FILE *inf = stdin;
   FILE *outf = stdout;

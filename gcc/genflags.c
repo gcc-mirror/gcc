@@ -50,6 +50,7 @@ static struct obstack call_obstack, normal_obstack;
 static int max_id_len;
 
 /* Count the number of match_operand's found.  */
+
 static int
 num_operands (x)
      rtx x;
@@ -87,6 +88,7 @@ num_operands (x)
 }
 
 /* Print out prototype information for a function.  */
+
 static void
 gen_proto (insn)
      rtx insn;
@@ -108,6 +110,7 @@ gen_proto (insn)
 }
 
 /* Print out a function declaration without a prototype.  */
+
 static void
 gen_nonproto (insn)
      rtx insn;
@@ -258,7 +261,7 @@ from the machine description file `md'.  */\n\n");
     }
 
   /* Print out the prototypes now.  */
-  dummy = (rtx)0;
+  dummy = (rtx) 0;
   obstack_grow (&call_obstack, &dummy, sizeof (rtx));
   call_insns = (rtx *) obstack_finish (&call_obstack);
 

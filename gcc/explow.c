@@ -815,7 +815,8 @@ round_push (size)
   else
     {
       /* CEIL_DIV_EXPR needs to worry about the addition overflowing,
-	 but we know it can't.  So add ourselves and then do TRUNC_DIV_EXPR. */
+	 but we know it can't.  So add ourselves and then do
+	 TRUNC_DIV_EXPR.  */
       size = expand_binop (Pmode, add_optab, size, GEN_INT (align - 1),
 			   NULL_RTX, 1, OPTAB_LIB_WIDEN);
       size = expand_divmod (0, TRUNC_DIV_EXPR, Pmode, size, GEN_INT (align),
@@ -1117,7 +1118,8 @@ allocate_dynamic_stack_space (size, target, known_align)
   if (MUST_ALIGN)
     {
       /* CEIL_DIV_EXPR needs to worry about the addition overflowing,
-	 but we know it can't.  So add ourselves and then do TRUNC_DIV_EXPR. */
+	 but we know it can't.  So add ourselves and then do
+	 TRUNC_DIV_EXPR.  */
       target = expand_binop (Pmode, add_optab, target,
 			     GEN_INT (BIGGEST_ALIGNMENT / BITS_PER_UNIT - 1),
 			     NULL_RTX, 1, OPTAB_LIB_WIDEN);

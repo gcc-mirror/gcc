@@ -79,7 +79,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 /* During reload_as_needed, element N contains a REG rtx for the hard reg
-   into which reg N has been reloaded (perhaps for a previous insn). */
+   into which reg N has been reloaded (perhaps for a previous insn).  */
 static rtx *reg_last_reload_reg;
 
 /* Elt N nonzero if reg_last_reload_reg[N] has been set in this insn
@@ -288,22 +288,22 @@ extern int *reg_allocno;
 
 static struct elim_table
 {
-  int from;			/* Register number to be eliminated. */
-  int to;			/* Register number used as replacement. */
-  int initial_offset;		/* Initial difference between values. */
-  int can_eliminate;		/* Non-zero if this elimination can be done. */
+  int from;			/* Register number to be eliminated.  */
+  int to;			/* Register number used as replacement.  */
+  int initial_offset;		/* Initial difference between values.  */
+  int can_eliminate;		/* Non-zero if this elimination can be done.  */
   int can_eliminate_previous;	/* Value of CAN_ELIMINATE in previous scan over
-				   insns made by reload. */
-  int offset;			/* Current offset between the two regs. */
-  int max_offset;		/* Maximum offset between the two regs. */
-  int previous_offset;		/* Offset at end of previous insn. */
-  int ref_outside_mem;		/* "to" has been referenced outside a MEM. */
+				   insns made by reload.  */
+  int offset;			/* Current offset between the two regs.  */
+  int max_offset;		/* Maximum offset between the two regs.  */
+  int previous_offset;		/* Offset at end of previous insn.  */
+  int ref_outside_mem;		/* "to" has been referenced outside a MEM.  */
   rtx from_rtx;			/* REG rtx for the register to be eliminated.
 				   We cannot simply compare the number since
 				   we might then spuriously replace a hard
 				   register corresponding to a pseudo
-				   assigned to the reg to be eliminated. */
-  rtx to_rtx;			/* REG rtx for the replacement. */
+				   assigned to the reg to be eliminated.  */
+  rtx to_rtx;			/* REG rtx for the replacement.  */
 } reg_eliminate[] =
 
 /* If a set of eliminable registers was specified, define the table from it.
@@ -429,7 +429,7 @@ init_reload ()
 	}
     }
 
-  /* Initialize obstack for our rtl allocation. */
+  /* Initialize obstack for our rtl allocation.  */
   gcc_obstack_init (&reload_obstack);
   reload_firstobj = (char *) obstack_alloc (&reload_obstack, 0);
 }
@@ -1220,7 +1220,7 @@ reload (first, global, dumpfile)
 			 and operand addresses but not things used to reload
 			 them.  Similarly, RELOAD_FOR_OPERAND_ADDRESS reloads
 			 don't conflict with things needed to reload inputs or
-			 outputs. */
+			 outputs.  */
 
 		      in_max = MAX (MAX (insn_needs.op_addr.regs[j][i],
 					 insn_needs.op_addr_reload.regs[j][i]),
@@ -1378,7 +1378,7 @@ reload (first, global, dumpfile)
 		    }
 
 		  /* Now count extra regs if there might be a conflict with
-		     the return value register. */
+		     the return value register.  */
 
 		  for (r = regno; r < regno + nregs; r++)
 		    if (spill_reg_order[r] >= 0)
@@ -2495,7 +2495,7 @@ set_label_offsets (x, insn, initial_p)
 
       x = XEXP (x, 0);
 
-      /* ... fall through ... */
+      /* ... fall through ...  */
 
     case CODE_LABEL:
       /* If we know nothing about this label, set the desired offsets.  Note
@@ -2550,7 +2550,7 @@ set_label_offsets (x, insn, initial_p)
     case JUMP_INSN:
       set_label_offsets (PATTERN (insn), insn, initial_p);
 
-      /* ... fall through ... */
+      /* ... fall through ...  */
 
     case INSN:
     case CALL_INSN:
@@ -2835,7 +2835,7 @@ eliminate_regs (x, mem_mode, insn)
 			       ep->previous_offset * INTVAL (XEXP (x, 1)));
 	    }
 
-      /* ... fall through ... */
+      /* ... fall through ...  */
 
     case CALL:
     case COMPARE:
@@ -2867,7 +2867,7 @@ eliminate_regs (x, mem_mode, insn)
 	    x = gen_rtx (EXPR_LIST, REG_NOTE_KIND (x), new, XEXP (x, 1));
 	}
 
-      /* ... fall through ... */
+      /* ... fall through ...  */
 
     case INSN_LIST:
       /* Now do eliminations in the rest of the chain.  If this was
@@ -3316,7 +3316,7 @@ eliminate_regs_in_insn (insn, replace)
      If we are replacing a body that was a (set X (plus Y Z)), try to
      re-recognize the insn.  We do this in case we had a simple addition
      but now can do this as a load-address.  This saves an insn in this
-     common case. */
+     common case.  */
 
   new_body = eliminate_regs (old_body, 0, replace ? insn : NULL_RTX);
   if (new_body != old_body)
@@ -3324,7 +3324,7 @@ eliminate_regs_in_insn (insn, replace)
       /* If we aren't replacing things permanently and we changed something,
 	 make another copy to ensure that all the RTL is new.  Otherwise
 	 things can go wrong if find_reload swaps commutative operands
-	 and one is inside RTL that has been copied while the other is not. */
+	 and one is inside RTL that has been copied while the other is not.  */
 
       /* Don't copy an asm_operands because (1) there's no need and (2)
 	 copy_rtx can't do it properly when there are multiple outputs.  */
@@ -4601,7 +4601,7 @@ reload_reg_reaches_end_p (regno, opnum, type)
 	    || TEST_HARD_REG_BIT (reload_reg_used_in_input[i], regno))
 	  return 0;
 
-      /* ... fall through ... */
+      /* ... fall through ...  */
 
     case RELOAD_FOR_OPERAND_ADDRESS:
       /* Check outputs and their addresses.  */
@@ -4628,7 +4628,7 @@ reload_reg_reaches_end_p (regno, opnum, type)
 
       opnum = -1;
 
-      /* ... fall through ... */
+      /* ... fall through ...  */
 
     case RELOAD_FOR_OUTPUT:
     case RELOAD_FOR_OUTPUT_ADDRESS:
@@ -4658,7 +4658,8 @@ reloads_conflict (r1, r2)
   int r1_opnum = reload_opnum[r1];
   int r2_opnum = reload_opnum[r2];
 
-  /* RELOAD_OTHER conflicts with everything except RELOAD_FOR_OTHER_ADDRESS. */
+  /* RELOAD_OTHER conflicts with everything except
+     RELOAD_FOR_OTHER_ADDRESS.  */
   
   if (r2_type == RELOAD_OTHER && r1_type != RELOAD_FOR_OTHER_ADDRESS)
     return 1;
@@ -5241,7 +5242,7 @@ choose_reload_regs (insn, avoid_return_reg)
 						   reload_when_needed[r]))
 		    {
 		      /* If a group is needed, verify that all the subsequent
-			 registers still have their values intact. */
+			 registers still have their values intact.  */
 		      int nr
 			= HARD_REGNO_NREGS (spill_regs[i], reload_mode[r]);
 		      int k;
@@ -5363,8 +5364,9 @@ choose_reload_regs (insn, avoid_return_reg)
 		      break;
 		    }
 
-	      /* JRV: If the equiv register we have found is explicitly
-		 clobbered in the current insn, mark but don't use, as above. */
+	      /* JRV: If the equiv register we have found is
+		 explicitly clobbered in the current insn, mark but
+		 don't use, as above.  */
 
 	      if (equiv != 0 && regno_clobbered_p (regno, insn))
 		{
@@ -5449,7 +5451,7 @@ choose_reload_regs (insn, avoid_return_reg)
 	    continue;
 
 	  /* Skip reloads that already have a register allocated or are
-	     optional. */
+	     optional.  */
 	  if (reload_reg_rtx[r] != 0 || reload_optional[r])
 	    continue;
 
@@ -6838,7 +6840,7 @@ gen_reload (out, in, opnum, type)
 	 if the add instruction is two-address and the second operand
 	 of the add is the same as the reload reg, which is frequently
 	 the case.  If the insn would be A = B + A, rearrange it so
-	 it will be A = A + B as constrain_operands expects. */
+	 it will be A = A + B as constrain_operands expects.  */
 
       if (GET_CODE (XEXP (in, 1)) == REG
 	  && REGNO (out) == REGNO (XEXP (in, 1)))
@@ -6888,7 +6890,7 @@ gen_reload (out, in, opnum, type)
       insn = emit_insn (gen_add2_insn (out, op1));
 
       /* If that failed, copy the address register to the reload register.
-	 Then add the constant to the reload register. */
+	 Then add the constant to the reload register.  */
 
       code = recog_memoized (insn);
 

@@ -60,7 +60,7 @@ Boston, MA 02111-1307, USA.  */
 /* Some systems use __main in a way incompatible with its use in gcc, in these
    cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to
    give the same symbol without quotes for an alternative entry point.  You
-   must define both, or neither. */
+   must define both, or neither.  */
 #ifndef NAME__MAIN
 #define NAME__MAIN "__main"
 #define SYMBOL__MAIN __main
@@ -153,7 +153,7 @@ int current_function_args_size;
 int current_function_pretend_args_size;
 
 /* # of bytes of outgoing arguments.  If ACCUMULATE_OUTGOING_ARGS is
-   defined, the needed space is pushed by the prologue. */
+   defined, the needed space is pushed by the prologue.  */
 
 int current_function_outgoing_args_size;
 
@@ -299,13 +299,6 @@ static int max_parm_reg;
    if we discover that that parm must go in the stack.  */
 static rtx *parm_reg_stack_loc;
 
-#if 0  /* Turned off because 0 seems to work just as well.  */
-/* Cleanup lists are required for binding levels regardless of whether
-   that binding level has cleanups or not.  This node serves as the
-   cleanup list whenever an empty list is required.  */
-static tree empty_cleanup_list;
-#endif
-
 /* Nonzero once virtual register instantiation has been done.
    assign_stack_local uses frame_pointer_rtx when this is nonzero.  */
 static int virtuals_instantiated;
@@ -345,7 +338,7 @@ struct temp_slot
 {
   /* Points to next temporary slot.  */
   struct temp_slot *next;
-  /* The rtx to used to reference the slot. */
+  /* The rtx to used to reference the slot.  */
   rtx slot;
   /* The rtx used to represent the address if not the address of the
      slot above.  May be an EXPR_LIST if multiple addresses exist.  */
@@ -941,7 +934,7 @@ assign_temp (type, keep, memory_required, dont_promote)
       /* Unfortunately, we don't yet know how to allocate variable-sized
 	 temporaries.  However, sometimes we have a fixed upper limit on
 	 the size (which is stored in TYPE_ARRAY_MAX_SIZE) and can use that
-	 instead.  This is the case for Chill variable-sized strings. */
+	 instead.  This is the case for Chill variable-sized strings.  */
       if (size == -1 && TREE_CODE (type) == ARRAY_TYPE
 	  && TYPE_ARRAY_MAX_SIZE (type) != NULL_TREE
 	  && TREE_CODE (TYPE_ARRAY_MAX_SIZE (type)) == INTEGER_CST)
@@ -1465,7 +1458,7 @@ fixup_var_refs (var, promoted_mode, unsignedp)
 
 /* REPLACEMENTS is a pointer to a list of the struct fixup_replacement and X is
    some part of an insn.  Return a struct fixup_replacement whose OLD
-   value is equal to X.  Allocate a new structure if no such entry exists. */
+   value is equal to X.  Allocate a new structure if no such entry exists.  */
 
 static struct fixup_replacement *
 find_fixup_replacement (replacements, x)
@@ -1919,7 +1912,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	}
 
       /* If SET_DEST is now a paradoxical SUBREG, put the result of this
-	 insn into a pseudo and store the low part of the pseudo into VAR. */
+	 insn into a pseudo and store the low part of the pseudo into VAR.  */
       if (GET_CODE (SET_DEST (x)) == SUBREG
 	  && SUBREG_REG (SET_DEST (x)) == var
 	  && (GET_MODE_SIZE (GET_MODE (SET_DEST (x)))
@@ -2191,7 +2184,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
    If any insns must be emitted to compute NEWADDR, put them before INSN.
 
    UNCRITICAL nonzero means accept paradoxical subregs.
-   This is used for subregs found inside REG_NOTES. */
+   This is used for subregs found inside REG_NOTES.  */
 
 static rtx
 fixup_memory_subreg (x, insn, uncritical)
@@ -2605,7 +2598,7 @@ instantiate_decls (fndecl, valid_only)
 			int_size_in_bytes (TREE_TYPE (decl)), valid_only);
     }
 
-  /* Now process all variables defined in the function or its subblocks. */
+  /* Now process all variables defined in the function or its subblocks.  */
   instantiate_decls_1 (DECL_INITIAL (fndecl), valid_only);
 
   if (DECL_INLINE (fndecl) || DECL_DEFER_OUTPUT (fndecl))
@@ -2864,7 +2857,7 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 	     in the case of old offset equals new just changing the register
 	     will yield a valid insn.  In the interests of a little efficiency,
 	     however, we only call validate change once (we don't queue up the
-	     changes and then call apply_change_group). */
+	     changes and then call apply_change_group).  */
 
 	  old = XEXP (x, 0);
 	  if (offset == 0
@@ -3287,7 +3280,7 @@ assign_parms (fndecl, second_time)
 
   /* Nonzero if function takes extra anonymous args.
      This means the last named arg must be on the stack
-     right before the anonymous ones. */
+     right before the anonymous ones.  */
   int stdarg
     = (TYPE_ARG_TYPES (fntype) != 0
        && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
@@ -3585,7 +3578,7 @@ assign_parms (fndecl, second_time)
       FUNCTION_ARG_ADVANCE (args_so_far, promoted_mode,
 			    passed_type, ! last_named);
 
-      /* If this is our second time through, we are done with this parm. */
+      /* If this is our second time through, we are done with this parm.  */
       if (second_time)
 	continue;
 
@@ -4802,7 +4795,7 @@ all_blocks (block, vector)
   return n_blocks;
 }
 
-/* Build bytecode call descriptor for function SUBR. */
+/* Build bytecode call descriptor for function SUBR.  */
 
 rtx
 bc_build_calldesc (subr)
@@ -5035,7 +5028,7 @@ expand_main_function ()
 extern struct obstack permanent_obstack;
 
 /* Expand start of bytecode function. See comment at
-   expand_function_start below for details. */
+   expand_function_start below for details.  */
 
 void
 bc_expand_function_start (subr, parms_have_cleanups)
@@ -5065,7 +5058,7 @@ bc_expand_function_start (subr, parms_have_cleanups)
 	}
       else
 	{
-	  /* Variable-sized objects are pointers to their storage. */
+	  /* Variable-sized objects are pointers to their storage.  */
 	  DECL_RTL (thisarg) = bc_gen_rtx ((char *) 0, argsz, (struct bc_label *) 0);
 	  argsz += POINTER_SIZE;
 	}
@@ -5084,7 +5077,7 @@ bc_expand_function_start (subr, parms_have_cleanups)
 
 
 /* Expand end of bytecode function. See details the comment of
-   expand_function_end(), below. */
+   expand_function_end(), below.  */
 
 void
 bc_expand_function_end ()
@@ -5095,7 +5088,7 @@ bc_expand_function_end ()
 
   /* Emit any fixup code. This must be done before the call to
      to BC_END_FUNCTION (), since that will cause the bytecode
-     segment to be finished off and closed. */
+     segment to be finished off and closed.  */
 
   expand_fixups (NULL_RTX);
 

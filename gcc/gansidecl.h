@@ -69,7 +69,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #ifndef NULL_PTR
-#define NULL_PTR ((GENERIC_PTR)0)
+#define NULL_PTR ((GENERIC_PTR) 0)
 #endif
 
 #ifdef __STDC__

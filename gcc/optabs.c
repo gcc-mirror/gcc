@@ -88,7 +88,7 @@ optab strlen_optab;
 /* Tables of patterns for extending one integer mode to another.  */
 enum insn_code extendtab[MAX_MACHINE_MODE][MAX_MACHINE_MODE][2];
 
-/* Tables of patterns for converting between fixed and floating point. */
+/* Tables of patterns for converting between fixed and floating point.  */
 enum insn_code fixtab[NUM_MACHINE_MODES][NUM_MACHINE_MODES][2];
 enum insn_code fixtrunctab[NUM_MACHINE_MODES][NUM_MACHINE_MODES][2];
 enum insn_code floattab[NUM_MACHINE_MODES][NUM_MACHINE_MODES][2];
@@ -438,7 +438,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	temp = gen_reg_rtx (mode);
 
       /* If it is a commutative operator and the modes would match
-	 if we would swap the operands, we can save the conversions. */
+	 if we would swap the operands, we can save the conversions.  */
       if (commutative_op)
 	{
 	  if (GET_MODE (op0) != mode0 && GET_MODE (op1) != mode1
@@ -3517,7 +3517,7 @@ expand_float (to, from, unsignedp)
 	  /* There is no such mode.  Pretend the target is wide enough.  */
 	  fmode = GET_MODE (to);
 
-	  /* Avoid double-rounding when TO is narrower than FROM. */
+	  /* Avoid double-rounding when TO is narrower than FROM.  */
 	  if ((significand_size (fmode) + 1)
 	      < GET_MODE_BITSIZE (GET_MODE (from)))
 	    {
@@ -4338,7 +4338,7 @@ init_optabs ()
 
 #ifdef BROKEN_LDEXP
 
-/* SCO 3.2 apparently has a broken ldexp. */
+/* SCO 3.2 apparently has a broken ldexp.  */
 
 double
 ldexp(x,n)

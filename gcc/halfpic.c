@@ -135,7 +135,7 @@ half_pic_hash (name, len, create_p)
 
   /* name not in hash table.  */
   if (!create_p)
-    return (struct all_refs *)0;
+    return (struct all_refs *) 0;
 
   ptr = (struct all_refs *) obstack_alloc (&half_pic_obstack, sizeof (struct all_refs));
   *ptr = zero_all_refs;
@@ -144,7 +144,7 @@ half_pic_hash (name, len, create_p)
   ptr->real_len  = len;
 
   /* Update circular links.  */
-  if (first == (struct all_refs *)0)
+  if (first == (struct all_refs *) 0)
     ptr->hash_next = ptr;
 
   else
@@ -342,7 +342,7 @@ half_pic_address_p (addr)
 	return FALSE;
 
       ptr = half_pic_hash (name, len, FALSE);
-      if (ptr == (struct all_refs *)0)
+      if (ptr == (struct all_refs *) 0)
 	return FALSE;
 
       if (ptr->external_p)
@@ -376,7 +376,7 @@ half_pic_ptr (operand)
   name = XSTR (operand, 0);
   len = strlen (name);
   p = half_pic_hash (name, len, FALSE);
-  if (p == (struct all_refs *)0 || !p->external_p)
+  if (p == (struct all_refs *) 0 || !p->external_p)
     return operand;
 
   if (!p->pointer_p)

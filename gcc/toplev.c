@@ -424,7 +424,7 @@ int flag_no_peephole = 0;
 /* Nonzero allows GCC to violate some IEEE or ANSI rules regarding math
    operations in the interest of optimization.  For example it allows
    GCC to assume arguments to sqrt are nonnegative numbers, allowing
-   faster code for sqrt to be generated. */
+   faster code for sqrt to be generated.  */
 
 int flag_fast_math = 0;
 
@@ -1067,9 +1067,9 @@ default_print_error_function (file)
 }
 
 /* Called by report_error_function to print out function name.
- * Default may be overridden by language front-ends. */
+ * Default may be overridden by language front-ends.  */
 
-void (*print_error_function) PROTO((char*)) = default_print_error_function;
+void (*print_error_function) PROTO((char *)) = default_print_error_function;
 
 /* Prints out, if necessary, the name of the current function
   that caused an error.  Called from all error and warning functions.  */
@@ -1932,6 +1932,7 @@ strip_off_ending (name, len)
 }
 
 /* Output a quoted string.  */
+
 void
 output_quoted_string (asm_file, string)
      FILE *asm_file;
@@ -1980,7 +1981,8 @@ output_file_directive (asm_file, input_name)
 #endif
 }
 
-/* Routine to build language identifier for object file. */
+/* Routine to build language identifier for object file.  */
+
 static void
 output_lang_identify (asm_out_file)
      FILE *asm_out_file;
@@ -1992,6 +1994,7 @@ output_lang_identify (asm_out_file)
 }
 
 /* Routine to open a dump file.  */
+
 static FILE *
 open_dump_file (base_name, suffix)
      char *base_name;
@@ -2216,7 +2219,7 @@ compile_file (name)
     }
 
   /* Output something to inform GDB that this compilation was by GCC.  Also
-     serves to tell GDB file consists of bytecodes. */
+     serves to tell GDB file consists of bytecodes.  */
   if (output_bytecode)
     fprintf (asm_out_file, "bc_gcc2_compiled.:\n");
   else
@@ -2228,7 +2231,7 @@ compile_file (name)
 #endif
     }
 
-  /* Output something to identify which front-end produced this file. */
+  /* Output something to identify which front-end produced this file.  */
 #ifdef ASM_IDENTIFY_LANGUAGE
   ASM_IDENTIFY_LANGUAGE (asm_out_file);
 #endif
@@ -2387,7 +2390,7 @@ compile_file (name)
 
 	       ??? A tempting alternative (for both C and C++) would be
 	       to force a constant to be written if and only if it is
-	       defined in a main file, as opposed to an include file. */
+	       defined in a main file, as opposed to an include file.  */
 
 	    if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl)
 		&& (! TREE_READONLY (decl)
@@ -2473,7 +2476,7 @@ compile_file (name)
 	  TIMEVAR (symout_time, sdbout_symbol (decl, 0));
 
 	/* Output COFF information for non-global
-	   file-scope initialized variables. */
+	   file-scope initialized variables.  */
 	if (write_symbols == SDB_DEBUG
 	    && TREE_CODE (decl) == VAR_DECL
 	    && DECL_INITIAL (decl)
@@ -3248,7 +3251,7 @@ rest_of_compilation (decl)
 #endif
 
   /* If a scheduling pass for delayed branches is to be done,
-     call the scheduling code. */
+     call the scheduling code.  */
 
 #ifdef DELAY_SLOTS
   if (optimize > 0 && flag_delayed_branch)
@@ -3412,7 +3415,7 @@ main (argc, argv, envp)
   {
     struct rlimit rlim;
 
-    /* Set the stack limit huge so that alloca does not fail. */
+    /* Set the stack limit huge so that alloca does not fail.  */
     getrlimit (RLIMIT_STACK, &rlim);
     rlim.rlim_cur = rlim.rlim_max;
     setrlimit (RLIMIT_STACK, &rlim);
@@ -3927,7 +3930,7 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
     }
 
   /* Initialize for bytecode output.  A good idea to do this as soon as
-     possible after the "-f" options have been parsed. */
+     possible after the "-f" options have been parsed.  */
   if (output_bytecode)
     {
 #ifndef TARGET_SUPPORTS_BYTECODE

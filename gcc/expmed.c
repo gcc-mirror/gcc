@@ -1470,7 +1470,7 @@ extract_fixed_bit_field (tmode, op0, offset, bitsize, bitpos,
 #ifdef SLOW_ZERO_EXTEND
 	  /* Always generate an `and' if
 	     we just zero-extended op0 and SLOW_ZERO_EXTEND, since it
-	     will combine fruitfully with the zero-extend. */
+	     will combine fruitfully with the zero-extend.  */
 	  || tmode != mode
 #endif
 #endif
@@ -2474,7 +2474,7 @@ invert_mod2n (x, n)
      unsigned HOST_WIDE_INT x;
      int n;
 {
-  /* Solve x*y == 1 (mod 2^n), where x is odd.  Return y. */
+  /* Solve x*y == 1 (mod 2^n), where x is odd.  Return y.  */
 
   /* The algorithm notes that the choice y = x satisfies
      x*y == 1 mod 2^3, since x is assumed odd.
@@ -3909,7 +3909,7 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
 
   /* For some comparisons with 1 and -1, we can convert this to 
      comparisons with zero.  This will often produce more opportunities for
-     store-flag insns. */
+     store-flag insns.  */
 
   switch (code)
     {

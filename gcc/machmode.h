@@ -77,7 +77,7 @@ MAX_MACHINE_MODE };
 /* Get the name of mode MODE as a string.  */
 
 extern char *mode_name[];
-#define GET_MODE_NAME(MODE)		(mode_name[(int)(MODE)])
+#define GET_MODE_NAME(MODE)		(mode_name[(int) (MODE)])
 
 enum mode_class { MODE_RANDOM, MODE_INT, MODE_FLOAT, MODE_PARTIAL_INT, MODE_CC,
 		  MODE_COMPLEX_INT, MODE_COMPLEX_FLOAT, MAX_MODE_CLASS};
@@ -86,7 +86,7 @@ enum mode_class { MODE_RANDOM, MODE_INT, MODE_FLOAT, MODE_PARTIAL_INT, MODE_CC,
    (integer, floating, complex, etc.)  */
 
 extern enum mode_class mode_class[];
-#define GET_MODE_CLASS(MODE)		(mode_class[(int)(MODE)])
+#define GET_MODE_CLASS(MODE)		(mode_class[(int) (MODE)])
 
 /* Nonzero if MODE is an integral mode.  */
 #define INTEGRAL_MODE_P(MODE)			\
@@ -102,12 +102,12 @@ extern enum mode_class mode_class[];
 /* Get the size in bytes of an object of mode MODE.  */
 
 extern int mode_size[];
-#define GET_MODE_SIZE(MODE)		(mode_size[(int)(MODE)])
+#define GET_MODE_SIZE(MODE)		(mode_size[(int) (MODE)])
 
 /* Get the size in bytes of the basic parts of an object of mode MODE.  */
 
 extern int mode_unit_size[];
-#define GET_MODE_UNIT_SIZE(MODE)	(mode_unit_size[(int)(MODE)])
+#define GET_MODE_UNIT_SIZE(MODE)	(mode_unit_size[(int) (MODE)])
 
 /* Get the number of units in the object.  */
 
@@ -117,7 +117,7 @@ extern int mode_unit_size[];
 
 /* Get the size in bits of an object of mode MODE.  */
 
-#define GET_MODE_BITSIZE(MODE)  (BITS_PER_UNIT * mode_size[(int)(MODE)])
+#define GET_MODE_BITSIZE(MODE)  (BITS_PER_UNIT * mode_size[(int) (MODE)])
 
 /* Get a bitmask containing 1 for all bits in a word
    that fit within mode MODE.  */
@@ -129,7 +129,7 @@ extern int mode_unit_size[];
 /* Get the next wider natural mode (eg, QI -> HI -> SI -> DI -> TI).  */
 
 extern enum machine_mode mode_wider_mode[];
-#define GET_MODE_WIDER_MODE(MODE)	(mode_wider_mode[(int)(MODE)])
+#define GET_MODE_WIDER_MODE(MODE)	(mode_wider_mode[(int) (MODE)])
 
 /* Return the mode for data of a given size SIZE and mode class CLASS.
    If LIMIT is nonzero, then don't use modes bigger than MAX_FIXED_MODE_SIZE.
@@ -150,7 +150,7 @@ extern enum machine_mode get_best_mode PROTO((int, int, int, enum machine_mode, 
 /* For each class, get the narrowest mode in that class.  */
 
 extern enum machine_mode class_narrowest_mode[];
-#define GET_CLASS_NARROWEST_MODE(CLASS) class_narrowest_mode[(int)(CLASS)]
+#define GET_CLASS_NARROWEST_MODE(CLASS) class_narrowest_mode[(int) (CLASS)]
 
 /* Define the integer modes whose sizes are BITS_PER_UNIT and BITS_PER_WORD
    and the mode whose class is Pmode and whose size is POINTER_SIZE.  */

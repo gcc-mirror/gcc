@@ -25,7 +25,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-/* Build tables of static constructors and destructors and run ld. */
+/* Build tables of static constructors and destructors and run ld.  */
 
 #include "config.h"
 #include <sys/types.h>
@@ -189,7 +189,7 @@ int do_collecting = 1;
 int do_collecting = 0;
 #endif
 
-/* Linked lists of constructor and destructor names. */
+/* Linked lists of constructor and destructor names.  */
 
 struct id 
 {
@@ -231,9 +231,9 @@ static int shared_obj;		        /* true if -shared */
 
 static int   temp_filename_length;	/* Length of temp_filename */
 static char *temp_filename;		/* Base of temp filenames */
-static char *c_file;			/* <xxx>.c for constructor/destructor list. */
-static char *o_file;			/* <xxx>.o for constructor/destructor list. */
-static char *export_file;	        /* <xxx>.x for AIX export list. */
+static char *c_file;			/* <xxx>.c for constructor/destructor list.  */
+static char *o_file;			/* <xxx>.o for constructor/destructor list.  */
+static char *export_file;	        /* <xxx>.x for AIX export list.  */
 char *ldout;				/* File for ld errors.  */
 static char *output_file;		/* Output file for ld.  */
 static char *nm_file_name;		/* pathname of nm */
@@ -262,8 +262,8 @@ extern FILE *fdopen ();
 
 struct prefix_list
 {
-  char *prefix;               /* String to prepend to the path. */
-  struct prefix_list *next;   /* Next in linked list. */
+  char *prefix;               /* String to prepend to the path.  */
+  struct prefix_list *next;   /* Next in linked list.  */
 };
 
 struct path_prefix
@@ -373,7 +373,7 @@ collect_exit (status)
 }
 
 
-/* Die when sys call fails. */
+/* Die when sys call fails.  */
 
 void
 fatal_perror (string, arg1, arg2, arg3)
@@ -387,7 +387,7 @@ fatal_perror (string, arg1, arg2, arg3)
   collect_exit (1);
 }
 
-/* Just die. */
+/* Just die.  */
 
 void
 fatal (string, arg1, arg2, arg3)
@@ -450,7 +450,7 @@ xcalloc (size1, size2)
     return ptr;
 
   fatal ("out of memory");
-  return (char *)0;
+  return (char *) 0;
 }
 
 char *
@@ -462,7 +462,7 @@ xmalloc (size)
     return ptr;
 
   fatal ("out of memory");
-  return (char *)0;
+  return (char *) 0;
 }
 
 char *
@@ -720,7 +720,7 @@ is_in_prefix_list (pprefix, string, filep)
 /* Search for NAME using prefix list PPREFIX.  We only look for executable
    files. 
 
-   Return 0 if not found, otherwise return its name, allocated with malloc. */
+   Return 0 if not found, otherwise return its name, allocated with malloc.  */
 
 static char *
 find_a_file (pprefix, name)
@@ -857,7 +857,7 @@ prefix_from_string (p, pprefix)
     }
 }
 
-/* Main program. */
+/* Main program.  */
 
 int
 main (argc, argv)
@@ -1147,7 +1147,7 @@ main (argc, argv)
 
   *ld1++ = *ld2++ = ld_file_name;
 
-  /* Make temp file names. */
+  /* Make temp file names.  */
   temp_filename = choose_temp_base ();
   temp_filename_length = strlen (temp_filename);
   c_file = xcalloc (temp_filename_length + sizeof (".c"), 1);
@@ -1170,11 +1170,11 @@ main (argc, argv)
      If you propose to make GCC pass some other option,
      just imagine what will happen if ld is really ld!!!  */
 
-  /* Parse arguments.  Remember output file spec, pass the rest to ld. */
+  /* Parse arguments.  Remember output file spec, pass the rest to ld.  */
   /* After the first file, put in the c++ rt0.  */
 
   first_file = 1;
-  while ((arg = *++argv) != (char *)0)
+  while ((arg = *++argv) != (char *) 0)
     {
       *ld1++ = *ld2++ = arg;
 
@@ -1232,7 +1232,7 @@ main (argc, argv)
 	      break;
 	    }
 	}
-      else if ((p = rindex (arg, '.')) != (char *)0
+      else if ((p = rindex (arg, '.')) != (char *) 0
 	       && (strcmp (p, ".o") == 0 || strcmp (p, ".a") == 0))
 	{
 	  if (first_file)
@@ -1281,7 +1281,7 @@ main (argc, argv)
     *ld1++ = buf;
     *ld2++ = buf;
     exportf = fopen (export_file, "w");
-    if (exportf == (FILE *)0)
+    if (exportf == (FILE *) 0)
       fatal_perror ("%s", export_file);
     write_export_file (exportf);
     if (fclose (exportf))
@@ -1290,7 +1290,7 @@ main (argc, argv)
 #endif
 
   *c_ptr++ = c_file;
-  *object = *c_ptr = *ld1 = (char *)0;
+  *object = *c_ptr = *ld1 = (char *) 0;
 
   if (vflag)
     {
@@ -1399,7 +1399,7 @@ main (argc, argv)
 
   maybe_unlink(output_file);
   outf = fopen (c_file, "w");
-  if (outf == (FILE *)0)
+  if (outf == (FILE *) 0)
     fatal_perror ("%s", c_file);
 
   write_c_file (outf, c_file);
@@ -1414,7 +1414,7 @@ main (argc, argv)
   *ld2++ = LD_FINI_SWITCH;
   *ld2++ = fininame;
 #endif
-  *ld2 = (char*)0;
+  *ld2 = (char*) 0;
 
 #ifdef COLLECT_EXPORT_LIST
   if (shared_obj)
@@ -1424,7 +1424,7 @@ main (argc, argv)
       add_to_list (&exports, "_GLOBAL__DI");
       add_to_list (&exports, "_GLOBAL__DD");
       exportf = fopen (export_file, "w");
-      if (exportf == (FILE *)0)
+      if (exportf == (FILE *) 0)
 	fatal_perror ("%s", export_file);
       write_export_file (exportf);
       if (fclose (exportf))
@@ -1446,7 +1446,7 @@ main (argc, argv)
     }
 
   /* Assemble the constructor and destructor tables.
-     Link the tables in with the rest of the program. */
+     Link the tables in with the rest of the program.  */
 
   fork_execute ("gcc",  c_argv);
   fork_execute ("ld", ld2_argv);
@@ -1462,7 +1462,7 @@ main (argc, argv)
 }
 
 
-/* Wait for a process to finish, and exit if a non-zero status is found. */
+/* Wait for a process to finish, and exit if a non-zero status is found.  */
 
 int
 collect_wait (prog)
@@ -1531,7 +1531,7 @@ collect_execute (prog, argv, redir)
       else
 	fprintf (stderr, "[cannot find %s]", prog);
 
-      for (p_argv = &argv[1]; (str = *p_argv) != (char *)0; p_argv++)
+      for (p_argv = &argv[1]; (str = *p_argv) != (char *) 0; p_argv++)
 	fprintf (stderr, " %s", str);
 
       fprintf (stderr, "\n");
@@ -1756,7 +1756,7 @@ write_c_file_stat (stream, name)
     }
 }
 
-/* Write the constructor/destructor tables. */
+/* Write the constructor/destructor tables.  */
 
 static void
 write_c_file_glob (stream, name)
@@ -1844,13 +1844,13 @@ scan_prog_file (prog_name, which_pass)
     nm_argv[argc++] = NM_FLAGS;
 
   nm_argv[argc++] = prog_name;
-  nm_argv[argc++] = (char *)0;
+  nm_argv[argc++] = (char *) 0;
 
   if (pipe (pipe_fd) < 0)
     fatal_perror ("pipe");
 
   inf = fdopen (pipe_fd[0], "r");
-  if (inf == (FILE *)0)
+  if (inf == (FILE *) 0)
     fatal_perror ("fdopen");
 
   /* Trace if needed.  */
@@ -1859,7 +1859,7 @@ scan_prog_file (prog_name, which_pass)
       char **p_argv;
       char *str;
 
-      for (p_argv = &nm_argv[0]; (str = *p_argv) != (char *)0; p_argv++)
+      for (p_argv = &nm_argv[0]; (str = *p_argv) != (char *) 0; p_argv++)
 	fprintf (stderr, " %s", str);
 
       fprintf (stderr, "\n");
@@ -1908,13 +1908,13 @@ scan_prog_file (prog_name, which_pass)
     fprintf (stderr, "\nnm output with constructors/destructors.\n");
 
   /* Read each line of nm output.  */
-  while (fgets (buf, sizeof buf, inf) != (char *)0)
+  while (fgets (buf, sizeof buf, inf) != (char *) 0)
     {
       int ch, ch2;
       char *name, *end;
 
       /* If it contains a constructor or destructor name, add the name
-	 to the appropriate list. */
+	 to the appropriate list.  */
 
       for (p = buf; (ch = *p) != '\0' && ch != '\n' && ch != '_'; p++)
 	if (ch == ' ' && p[1] == 'U' && p[2] == ' ')
@@ -2351,7 +2351,7 @@ scan_libraries (prog_name)
       int ch, ch2;
       char *name, *end, *p = buf;
 
-      /* Extract names of libraries and add to list. */
+      /* Extract names of libraries and add to list.  */
       PARSE_LDD_OUTPUT (p);
       if (p == 0)
 	continue;
@@ -2360,7 +2360,7 @@ scan_libraries (prog_name)
       if (strncmp (name, "not found", sizeof ("not found") - 1) == 0)
 	fatal ("dynamic dependency %s not found", buf);
 
-      /* Find the end of the symbol name. */
+      /* Find the end of the symbol name.  */
       for (end = p; 
 	   (ch2 = *end) != '\0' && ch2 != '\n' && !isspace (ch2) && ch2 != '|';
 	   end++)
@@ -2474,7 +2474,7 @@ scan_prog_file (prog_name, which_pass)
 
 #ifdef XCOFF_DEBUGGING_INFO
 	      /* All AIX function names have a duplicate entry beginning
-		 with a dot. */
+		 with a dot.  */
 	      if (*name == '.')
 		++name;
 #endif
@@ -2640,7 +2640,7 @@ scan_libraries (prog_name)
 		    fatal ("%s: can't read loader section", soname);
 		  /*fprintf (stderr, "\tscanning %s\n", soname);*/
 		  symcnt = soldh.l_nsyms;
-		  lsyms = (LDSYM*) alloca (symcnt * sizeof (*lsyms));
+		  lsyms = (LDSYM *) alloca (symcnt * sizeof (*lsyms));
 		  symcnt = FREAD (lsyms, sizeof (*lsyms), symcnt, libptr);
 		  ldstrings = alloca (soldh.l_stlen);
 		  FSEEK (libptr, soldsh.s_scnptr+soldh.l_stoff, BEGINNING);
@@ -2737,7 +2737,7 @@ extern int encode_mach_o_hdr ();
 static void add_func_table	PROTO((mo_header_t *, load_all_t *,
 				       symbol_info_t *, int));
 static void print_header	PROTO((mo_header_t *));
-static void print_load_command	PROTO((load_union_t*, size_t, int));
+static void print_load_command	PROTO((load_union_t *, size_t, int));
 static void bad_header		PROTO((int));
 static struct file_info	*read_file  PROTO((char *, int, int));
 static void end_file		PROTO((struct file_info *));
@@ -2880,10 +2880,10 @@ scan_prog_file (prog_name, which_pass)
 	    continue;
 
 	  str_sect = load_array[load_hdr->sym.symc_strings_section].section;
-	  if (str_sect == (char *)0)
+	  if (str_sect == (char *) 0)
 	    fatal ("string section missing");
 
-	  if (load_cmd->section == (char *)0)
+	  if (load_cmd->section == (char *) 0)
 	    fatal ("section pointer missing");
 
 	  num_syms = load_hdr->sym.symc_nentries;
@@ -2952,7 +2952,7 @@ scan_prog_file (prog_name, which_pass)
 	 do anything, since in the current version, you cannot do mallocs
 	 and such in the constructors.  */
 
-      if (main_sym != (symbol_info_t *)0
+      if (main_sym != (symbol_info_t *) 0
 	  && ((hdr.moh_flags & MOH_EXECABLE_F) == 0))
 	add_func_table (&hdr, load_array, main_sym, FNTC_INITIALIZATION);
 
@@ -3007,7 +3007,7 @@ scan_prog_file (prog_name, which_pass)
 	  if (debug)
 	    print_load_command (load_hdr, offset, i);
 
-	  bcopy ((char *)load_hdr, (char *)(obj + offset), size);
+	  bcopy ((char *) load_hdr, (char *) (obj + offset), size);
 	  offset += size;
 	}
     }
@@ -3046,7 +3046,7 @@ add_func_table (hdr_p, load_array, sym, type)
 
   load_cmd = &load_array[load_index];
   load_cmd->load = ptr;
-  load_cmd->section = (char *)0;
+  load_cmd->section = (char *) 0;
 
   /* Fill in func table load command.  */
   ptr->func.ldc_header.ldci_cmd_type = LDC_FUNC_TABLE;
@@ -3155,7 +3155,7 @@ print_load_command (load_hdr, offset, number)
      int number;
 {
   mo_long_t type = load_hdr->hdr.ldci_cmd_type;
-  char *type_str = (char *)0;
+  char *type_str = (char *) 0;
 
   switch (type)
     {
@@ -3180,7 +3180,7 @@ print_load_command (load_hdr, offset, number)
 	   (long) load_hdr->hdr.ldci_section_off,
 	   (long) load_hdr->hdr.ldci_section_len);
 
-  if (type_str == (char *)0)
+  if (type_str == (char *) 0)
     fprintf (stderr, ", ty: unknown (%ld)\n", (long) type);
 
   else if (type != LDC_REGION)
@@ -3219,7 +3219,7 @@ static void
 bad_header (status)
      int status;
 {
-  char *msg = (char *)0;
+  char *msg = (char *) 0;
 
   switch (status)
     {
@@ -3231,7 +3231,7 @@ bad_header (status)
     case MO_ERROR_UNSUPPORTED_VERS:	msg = "unsupported version";		break;
     }
 
-  if (msg == (char *)0)
+  if (msg == (char *) 0)
     fatal ("unknown {de,en}code_mach_o_hdr return value %d", status);
   else
     fatal ("%s", msg);
@@ -3269,14 +3269,14 @@ read_file (name, fd, rw)
     page_size = sysconf (_SC_PAGE_SIZE);
 
   p->rounded_size = ((p->size + page_size - 1) / page_size) * page_size;
-  p->start = mmap ((caddr_t)0,
+  p->start = mmap ((caddr_t) 0,
 		   (rw) ? p->rounded_size : p->size,
 		   (rw) ? (PROT_READ | PROT_WRITE) : PROT_READ,
 		   MAP_FILE | MAP_VARIABLE | MAP_SHARED,
 		   fd,
 		   0L);
 
-  if (p->start != (char *)0 && p->start != (char *)-1)
+  if (p->start != (char *) 0 && p->start != (char *) -1)
     p->use_mmap = 1;
 
   else

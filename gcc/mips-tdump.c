@@ -44,7 +44,7 @@ Boston, MA 02111-1307, USA.  */
    which does not include mips.h.
 
    These must match the corresponding definitions in gdb/mipsread.c.
-   Unfortunately, gcc and gdb do not currently share any directories. */
+   Unfortunately, gcc and gdb do not currently share any directories.  */
 
 #define CODE_MASK 0x8F300
 #define MIPS_IS_STAB(sym) (((sym)->index & 0xFFF00) == CODE_MASK)
@@ -308,7 +308,7 @@ read_seek (ptr, size, offset, context)
   if (size == 0)		/* nothing to read */
     return ptr;
 
-  if ((ptr == (PTR_T)0 && (ptr = malloc (size)) == (PTR_T)0)
+  if ((ptr == (PTR_T) 0 && (ptr = malloc (size)) == (PTR_T) 0)
       || (tfile_offset != offset && lseek (tfile_fd, offset, 0) == -1)
       || (read_size = read (tfile_fd, ptr, size)) < 0)
     {
@@ -721,7 +721,7 @@ type_to_string (aux_ptr, index, fdp)
 		int j;
 
 		/* Print array bounds reversed (ie, in the order the C
-		   programmer writes them).  C is such a fun language.... */
+		   programmer writes them).  C is such a fun language....  */
 
 		while (i < 5 && qualifiers[i+1].type == tq_Array)
 		  i++;
@@ -833,60 +833,60 @@ print_sym_hdr (sym_ptr)
   printf("    %-*s %11s %11s %11s\n", width, "====", "======", "======", "=====\n");
 
   printf("    %-*s %11ld %11ld %11ld [%d]\n", width, "Line numbers",
-	 (long)sym_ptr->cbLineOffset,
-	 (long)sym_ptr->cbLine,
-	 (long)sym_ptr->cbLine,
-	 (int)sym_ptr->ilineMax);
+	 (long) sym_ptr->cbLineOffset,
+	 (long) sym_ptr->cbLine,
+	 (long) sym_ptr->cbLine,
+	 (int) sym_ptr->ilineMax);
 
   printf("    %-*s %11ld %11ld %11ld\n", width, "Dense numbers",
-	 (long)sym_ptr->cbDnOffset,
-	 (long)sym_ptr->idnMax,
-	 (long)(sym_ptr->idnMax * sizeof (DNR)));
+	 (long) sym_ptr->cbDnOffset,
+	 (long) sym_ptr->idnMax,
+	 (long) (sym_ptr->idnMax * sizeof (DNR)));
 
   printf("    %-*s %11ld %11ld %11ld\n", width, "Procedures Tables",
-	 (long)sym_ptr->cbPdOffset,
-	 (long)sym_ptr->ipdMax,
-	 (long)(sym_ptr->ipdMax * sizeof (PDR)));
+	 (long) sym_ptr->cbPdOffset,
+	 (long) sym_ptr->ipdMax,
+	 (long) (sym_ptr->ipdMax * sizeof (PDR)));
 
   printf("    %-*s %11ld %11ld %11ld\n", width, "Local Symbols",
-	 (long)sym_ptr->cbSymOffset,
-	 (long)sym_ptr->isymMax,
-	 (long)(sym_ptr->isymMax * sizeof (SYMR)));
+	 (long) sym_ptr->cbSymOffset,
+	 (long) sym_ptr->isymMax,
+	 (long) (sym_ptr->isymMax * sizeof (SYMR)));
 
   printf("    %-*s %11ld %11ld %11ld\n", width, "Optimization Symbols",
-	 (long)sym_ptr->cbOptOffset,
-	 (long)sym_ptr->ioptMax,
-	 (long)(sym_ptr->ioptMax * sizeof (OPTR)));
+	 (long) sym_ptr->cbOptOffset,
+	 (long) sym_ptr->ioptMax,
+	 (long) (sym_ptr->ioptMax * sizeof (OPTR)));
 
   printf("    %-*s %11ld %11ld %11ld\n", width, "Auxiliary Symbols",
-	 (long)sym_ptr->cbAuxOffset,
-	 (long)sym_ptr->iauxMax,
-	 (long)(sym_ptr->iauxMax * sizeof (AUXU)));
+	 (long) sym_ptr->cbAuxOffset,
+	 (long) sym_ptr->iauxMax,
+	 (long) (sym_ptr->iauxMax * sizeof (AUXU)));
 
   printf("    %-*s %11ld %11ld %11ld\n", width, "Local Strings",
-	 (long)sym_ptr->cbSsOffset,
-	 (long)sym_ptr->issMax,
-	 (long)sym_ptr->issMax);
+	 (long) sym_ptr->cbSsOffset,
+	 (long) sym_ptr->issMax,
+	 (long) sym_ptr->issMax);
 
   printf("    %-*s %11ld %11ld %11ld\n", width, "External Strings",
-	 (long)sym_ptr->cbSsExtOffset,
-	 (long)sym_ptr->issExtMax,
-	 (long)sym_ptr->issExtMax);
+	 (long) sym_ptr->cbSsExtOffset,
+	 (long) sym_ptr->issExtMax,
+	 (long) sym_ptr->issExtMax);
 
   printf("    %-*s %11ld %11ld %11ld\n", width, "File Tables",
-	 (long)sym_ptr->cbFdOffset,
-	 (long)sym_ptr->ifdMax,
-	 (long)(sym_ptr->ifdMax * sizeof (FDR)));
+	 (long) sym_ptr->cbFdOffset,
+	 (long) sym_ptr->ifdMax,
+	 (long) (sym_ptr->ifdMax * sizeof (FDR)));
 
   printf("    %-*s %11ld %11ld %11ld\n", width, "Relative Files",
-	 (long)sym_ptr->cbRfdOffset,
-	 (long)sym_ptr->crfd,
-	 (long)(sym_ptr->crfd * sizeof (ulong)));
+	 (long) sym_ptr->cbRfdOffset,
+	 (long) sym_ptr->crfd,
+	 (long) (sym_ptr->crfd * sizeof (ulong)));
 
   printf("    %-*s %11ld %11ld %11ld\n", width, "External Symbols",
-	 (long)sym_ptr->cbExtOffset,
-	 (long)sym_ptr->iextMax,
-	 (long)(sym_ptr->iextMax * sizeof (EXTR)));
+	 (long) sym_ptr->cbExtOffset,
+	 (long) sym_ptr->iextMax,
+	 (long) (sym_ptr->iextMax * sizeof (EXTR)));
 }
 
 
@@ -909,7 +909,7 @@ print_symbol (sym_ptr, number, strbase, aux_base, ifd, fdp)
 
   printf ("\n    Symbol# %d: \"%s\"\n", number, sym_ptr->iss + strbase);
 
-  if (aux_base != (AUXU *)0 && index != indexNil)
+  if (aux_base != (AUXU *) 0 && index != indexNil)
     switch (symbol_type)
       {
       case st_Nil:
@@ -921,7 +921,7 @@ print_symbol (sym_ptr, number, strbase, aux_base, ifd, fdp)
 	printf ("      End+1 symbol: %ld\n", index);
 	if (want_scope)
 	  {
-	    if (free_scope == (scope_t *)0)
+	    if (free_scope == (scope_t *) 0)
 	      scope_ptr = (scope_t *) malloc (sizeof (scope_t));
 	    else
 	      {
@@ -947,7 +947,7 @@ print_symbol (sym_ptr, number, strbase, aux_base, ifd, fdp)
 
 	if (want_scope)
 	  {
-	    if (cur_scope == (scope_t *)0)
+	    if (cur_scope == (scope_t *) 0)
 	      printf ("      Can't pop end scope\n");
 	    else
 	      {
@@ -975,7 +975,7 @@ print_symbol (sym_ptr, number, strbase, aux_base, ifd, fdp)
 
 	if (want_scope)
 	  {
-	    if (free_scope == (scope_t *)0)
+	    if (free_scope == (scope_t *) 0)
 	      scope_ptr = (scope_t *) malloc (sizeof (scope_t));
 	    else
 	      {
@@ -1011,12 +1011,12 @@ print_symbol (sym_ptr, number, strbase, aux_base, ifd, fdp)
   if (want_scope)
     {
       printf ("      Scopes:  ");
-      if (cur_scope == (scope_t *)0)
+      if (cur_scope == (scope_t *) 0)
 	printf (" none\n");
       else
 	{
 	  for (scope_ptr = cur_scope;
-	       scope_ptr != (scope_t *)0;
+	       scope_ptr != (scope_t *) 0;
 	       scope_ptr = scope_ptr->prev)
 	    {
 	      char *class;
@@ -1220,7 +1220,7 @@ print_file_desc (fdp, number)
 	 (ulong) (fdp->rfdBase * sizeof(ulong) + sym_hdr.cbRfdOffset));
 
 
-  if (want_scope && cur_scope != (scope_t *)0)
+  if (want_scope && cur_scope != (scope_t *) 0)
     printf ("\n    Warning scope does not start at 0!\n");
 
   /* 
@@ -1238,7 +1238,7 @@ print_file_desc (fdp, number)
 		  -1,
 		  fdp);
 
-  if (want_scope && cur_scope != (scope_t *)0)
+  if (want_scope && cur_scope != (scope_t *) 0)
     printf ("\n    Warning scope does not end at 0!\n");
 
   /*
@@ -1328,7 +1328,7 @@ print_file_desc (fdp, number)
 
 	  if (pdi == fdp->cpd + fdp->ipdFirst - 1)	/* last procedure */
 	    line_end = ((uchar *)lines) + fdp->cbLine + fdp->cbLineOffset;
-	  else						/* not last proc. */
+	  else						/* not last proc.  */
 	    line_end = (((uchar *)lines) + proc_desc[pdi+1].cbLineOffset
 			+ fdp->cbLineOffset);
 
@@ -1368,12 +1368,12 @@ read_tfile __proto((void))
   short magic;
   off_t sym_hdr_offset = 0;
 
-  (void) read_seek ((PTR_T) &magic, sizeof (magic), (off_t)0, "Magic number");
+  (void) read_seek ((PTR_T) &magic, sizeof (magic), (off_t) 0, "Magic number");
   if (!tfile)
     {
       /* Print out the global header, since this is not a T-file.  */
 
-      (void) read_seek ((PTR_T) &global_hdr, sizeof (global_hdr), (off_t)0,
+      (void) read_seek ((PTR_T) &global_hdr, sizeof (global_hdr), (off_t) 0,
 			"Global file header");
 
       print_global_hdr (&global_hdr);
@@ -1394,32 +1394,32 @@ read_tfile __proto((void))
 
   print_sym_hdr (&sym_hdr);
 
-  lines = (LINER *) read_seek ((PTR_T)0,
+  lines = (LINER *) read_seek ((PTR_T) 0,
 			       sym_hdr.cbLine,
 			       sym_hdr.cbLineOffset,
 			       "Line numbers");
 
-  dense_nums = (DNR *) read_seek ((PTR_T)0,
+  dense_nums = (DNR *) read_seek ((PTR_T) 0,
 				  sym_hdr.idnMax * sizeof (DNR),
 				  sym_hdr.cbDnOffset,
 				  "Dense numbers");
 
-  proc_desc = (PDR *) read_seek ((PTR_T)0,
+  proc_desc = (PDR *) read_seek ((PTR_T) 0,
 				 sym_hdr.ipdMax * sizeof (PDR),
 				 sym_hdr.cbPdOffset,
 				 "Procedure tables");
 
-  l_symbols = (SYMR *) read_seek ((PTR_T)0,
+  l_symbols = (SYMR *) read_seek ((PTR_T) 0,
 				  sym_hdr.isymMax * sizeof (SYMR),
 				  sym_hdr.cbSymOffset,
 				  "Local symbols");
 
-  opt_symbols = (OPTR *) read_seek ((PTR_T)0,
+  opt_symbols = (OPTR *) read_seek ((PTR_T) 0,
 				    sym_hdr.ioptMax * sizeof (OPTR),
 				    sym_hdr.cbOptOffset,
 				    "Optimization symbols");
 
-  aux_symbols = (AUXU *) read_seek ((PTR_T)0,
+  aux_symbols = (AUXU *) read_seek ((PTR_T) 0,
 				    sym_hdr.iauxMax * sizeof (AUXU),
 				    sym_hdr.cbAuxOffset,
 				    "Auxiliary symbols");
@@ -1427,34 +1427,34 @@ read_tfile __proto((void))
   if (sym_hdr.iauxMax > 0)
     {
       aux_used = calloc (sym_hdr.iauxMax, 1);
-      if (aux_used == (char *)0)
+      if (aux_used == (char *) 0)
 	{
 	  perror ("calloc");
 	  exit (1);
 	}
     }
 
-  l_strings = (char *) read_seek ((PTR_T)0,
+  l_strings = (char *) read_seek ((PTR_T) 0,
 				  sym_hdr.issMax,
 				  sym_hdr.cbSsOffset,
 				  "Local string table");
 
-  e_strings = (char *) read_seek ((PTR_T)0,
+  e_strings = (char *) read_seek ((PTR_T) 0,
 				  sym_hdr.issExtMax,
 				  sym_hdr.cbSsExtOffset,
 				  "External string table");
 
-  file_desc = (FDR *) read_seek ((PTR_T)0,
+  file_desc = (FDR *) read_seek ((PTR_T) 0,
 				 sym_hdr.ifdMax * sizeof (FDR),
 				 sym_hdr.cbFdOffset,
 				 "File tables");
 
-  rfile_desc = (ulong *) read_seek ((PTR_T)0,
+  rfile_desc = (ulong *) read_seek ((PTR_T) 0,
 				    sym_hdr.crfd * sizeof (ulong),
 				    sym_hdr.cbRfdOffset,
 				    "Relative file tables");
 
-  e_symbols = (EXTR *) read_seek ((PTR_T)0,
+  e_symbols = (EXTR *) read_seek ((PTR_T) 0,
 				  sym_hdr.iextMax * sizeof (EXTR),
 				  sym_hdr.cbExtOffset,
 				  "External symbols");

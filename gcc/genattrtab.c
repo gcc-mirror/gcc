@@ -146,12 +146,12 @@ void fancy_abort ();
 
 struct insn_def
 {
-  int insn_code;		/* Instruction number. */
-  int insn_index;		/* Expression numer in file, for errors. */
-  struct insn_def *next;	/* Next insn in chain. */
-  rtx def;			/* The DEFINE_... */
+  int insn_code;		/* Instruction number.  */
+  int insn_index;		/* Expression numer in file, for errors.  */
+  struct insn_def *next;	/* Next insn in chain.  */
+  rtx def;			/* The DEFINE_...  */
   int num_alternatives;		/* Number of alternatives.  */
-  int vec_idx;			/* Index of attribute vector in `def'. */
+  int vec_idx;			/* Index of attribute vector in `def'.  */
 };
 
 /* Once everything has been read in, we store in each attribute value a list
@@ -182,15 +182,15 @@ struct attr_value
 
 struct attr_desc
 {
-  char *name;			/* Name of attribute. */
-  struct attr_desc *next;	/* Next attribute. */
-  int is_numeric;		/* Values of this attribute are numeric. */
+  char *name;			/* Name of attribute.  */
+  struct attr_desc *next;	/* Next attribute.  */
+  int is_numeric;		/* Values of this attribute are numeric.  */
   int negative_ok;		/* Allow negative numeric values.  */
   int unsigned_p;		/* Make the output function unsigned int.  */
   int is_const;			/* Attribute value constant for each run.  */
-  int is_special;		/* Don't call `write_attr_set'. */
-  struct attr_value *first_value; /* First value of this attribute. */
-  struct attr_value *default_val; /* Default value for this attribute. */
+  int is_special;		/* Don't call `write_attr_set'.  */
+  struct attr_value *first_value; /* First value of this attribute.  */
+  struct attr_value *default_val; /* Default value for this attribute.  */
 };
 
 #define NULL_ATTR (struct attr_desc *) NULL
@@ -208,7 +208,7 @@ struct range
 struct delay_desc
 {
   rtx def;			/* DEFINE_DELAY expression.  */
-  struct delay_desc *next;	/* Next DEFINE_DELAY. */
+  struct delay_desc *next;	/* Next DEFINE_DELAY.  */
   int num;			/* Number of DEFINE_DELAY, starting at 1.  */
 };
 
@@ -236,7 +236,7 @@ struct function_unit
   int multiplicity;		/* Number of units of this type.  */
   int simultaneity;		/* Maximum number of simultaneous insns
 				   on this function unit or 0 if unlimited.  */
-  rtx condexp;			/* Expression TRUE for insn needing unit. */
+  rtx condexp;			/* Expression TRUE for insn needing unit.  */
   int num_opclasses;		/* Number of different operation types.  */
   struct function_unit_op *ops;	/* Pointer to first operation type.  */
   int needs_conflict_function;	/* Nonzero if a conflict function required.  */
@@ -299,7 +299,7 @@ struct dimension
   int num_values;		/* Length of the values list.  */
 };
 
-/* Other variables. */
+/* Other variables.  */
 
 static int insn_code_number;
 static int insn_index_number;
@@ -741,7 +741,7 @@ attr_printf VPROTO((register int len, char *fmt, ...))
 
 #ifndef __STDC__
   len = va_arg (p, int);
-  fmt = va_arg (p, char*);
+  fmt = va_arg (p, char *);
 #endif
 
   /* Print the string into a temporary location.  */
@@ -1152,7 +1152,7 @@ check_attr_value (exp, attr)
 	/* A constant SYMBOL_REF is valid as a constant attribute test and
 	   is expanded later by make_canonical into a COND.  */
 	return attr_rtx (SYMBOL_REF, XSTR (exp, 0));
-      /* Otherwise, fall through... */
+      /* Otherwise, fall through...  */
 
     default:
       fatal ("Invalid operation `%s' for attribute value",
@@ -1239,7 +1239,7 @@ convert_set_attr (exp, num_alt, insn_code, insn_index)
 
 /* Scan all definitions, checking for validity.  Also, convert any SET_ATTR
    and SET_ATTR_ALTERNATIVE expressions to the corresponding SET
-   expressions. */
+   expressions.  */
 
 static void
 check_defs ()
@@ -1403,7 +1403,7 @@ make_canonical (attr, exp)
 	int allsame = 1;
 	rtx defval;
 
-	/* First, check for degenerate COND. */
+	/* First, check for degenerate COND.  */
 	if (XVECLEN (exp, 0) == 0)
 	  return make_canonical (attr, XEXP (exp, 1));
 	defval = XEXP (exp, 1) = make_canonical (attr, XEXP (exp, 1));
@@ -2728,7 +2728,7 @@ evaluate_eq_attr (exp, value, insn_code, insn_index)
 	 For each possible COND value, call ourselves recursively.
 
 	 The extra TRUE and FALSE expressions will be eliminated by another
-	 call to the simplification routine. */
+	 call to the simplification routine.  */
 
       orexp = false_rtx;
       andexp = true_rtx;
@@ -3089,7 +3089,7 @@ simplify_test_exp (exp, insn_code, insn_index)
 	    fatal ("Invalid alternative specified for pattern number %d",
 		   insn_index);
 
-	  /* If all alternatives are excluded, this is false. */
+	  /* If all alternatives are excluded, this is false.  */
 	  i ^= insn_alternatives[insn_code];
 	  if (i == 0)
 	    return false_rtx;
@@ -3182,7 +3182,7 @@ simplify_test_exp (exp, insn_code, insn_index)
 	    fatal ("Invalid alternative specified for pattern number %d",
 		   insn_index);
 
-	  /* If all alternatives are included, this is true. */
+	  /* If all alternatives are included, this is true.  */
 	  i ^= insn_alternatives[insn_code];
 	  if (i == 0)
 	    return true_rtx;
@@ -4019,7 +4019,7 @@ gen_attr (exp)
   if (! strcmp (attr->name, "length") && ! attr->is_numeric)
     fatal ("`length' attribute must take numeric values");
 
-  /* Set up the default value. */
+  /* Set up the default value.  */
   XEXP (exp, 2) = check_attr_value (XEXP (exp, 2), attr);
   attr->default_val = get_attr_value (XEXP (exp, 2), attr, -2);
 }
@@ -4472,7 +4472,7 @@ write_test_expr (exp, in_comparison)
 		XSTR (exp, 1), XINT (exp, 0), GET_MODE_NAME (GET_MODE (exp)));
       break;
 
-    /* Constant integer. */
+    /* Constant integer.  */
     case CONST_INT:
 #if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
       printf ("%d", XWINT (exp, 0));
@@ -4481,7 +4481,7 @@ write_test_expr (exp, in_comparison)
 #endif
       break;
 
-    /* A random C expression. */
+    /* A random C expression.  */
     case SYMBOL_REF:
       printf ("%s", XSTR (exp, 0));
       break;
@@ -4630,7 +4630,7 @@ write_attr_get (attr)
   struct attr_value *av, *common_av;
 
   /* Find the most used attribute value.  Handle that as the `default' of the
-     switch we will generate. */
+     switch we will generate.  */
   common_av = find_most_used (attr);
 
   /* Write out start of function, then all values with explicit `case' lines,
@@ -5546,7 +5546,7 @@ main (argc, argv)
   {
     struct rlimit rlim;
 
-    /* Set the stack limit huge so that alloca does not fail. */
+    /* Set the stack limit huge so that alloca does not fail.  */
     getrlimit (RLIMIT_STACK, &rlim);
     rlim.rlim_cur = rlim.rlim_max;
     setrlimit (RLIMIT_STACK, &rlim);
@@ -5676,7 +5676,7 @@ from the machine description file `md'.  */\n\n");
   /* Construct extra attributes for `length'.  */
   make_length_attrs ();
 
-  /* Perform any possible optimizations to speed up compilation. */
+  /* Perform any possible optimizations to speed up compilation.  */
   optimize_attrs ();
 
   /* Now write out all the `gen_attr_...' routines.  Do these before the

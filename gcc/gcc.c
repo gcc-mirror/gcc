@@ -81,7 +81,7 @@ extern int pwait PROTO ((int, int *, int));
 #define WEXITSTATUS(S) (((S) & 0xff00) >> 8)
 #endif
 
-/* Define O_RDONLY if the system hasn't defined it for us. */
+/* Define O_RDONLY if the system hasn't defined it for us.  */
 #ifndef O_RDONLY
 #define O_RDONLY 0
 #endif
@@ -105,7 +105,7 @@ extern int pwait PROTO ((int, int *, int));
 #define EXECUTABLE_SUFFIX ""
 #endif
 
-/* By default, the suffix for object files is ".o". */
+/* By default, the suffix for object files is ".o".  */
 #ifdef OBJECT_SUFFIX
 #define HAVE_OBJECT_SUFFIX
 #else
@@ -161,7 +161,7 @@ static int print_search_dirs;
 
 static char *print_file_name = NULL;
 
-/* As print_file_name, but search for executable file. */
+/* As print_file_name, but search for executable file.  */
 
 static char *print_prog_name = NULL;
 
@@ -1144,23 +1144,24 @@ skip_whitespace (p)
   return p;
 }
 
-/* Structure to keep track of the specs that have been defined so far.  These
-   are accessed using %(specname) or %[specname] in a compiler or link spec. */
+/* Structure to keep track of the specs that have been defined so far.
+   These are accessed using %(specname) or %[specname] in a compiler
+   or link spec.  */
 
 struct spec_list
 {
-  char *name;                 /* Name of the spec. */
-  char *spec;                 /* The spec itself. */
-  struct spec_list *next;     /* Next spec in linked list. */
+  char *name;                 /* Name of the spec.  */
+  char *spec;                 /* The spec itself.  */
+  struct spec_list *next;     /* Next spec in linked list.  */
 };
 
-/* List of specs that have been defined so far. */
+/* List of specs that have been defined so far.  */
 
 static struct spec_list *specs = (struct spec_list *) 0;
 
 /* Change the value of spec NAME to SPEC.  If SPEC is empty, then the spec is
    removed; If the spec starts with a + then SPEC is added to the end of the
-   current spec. */
+   current spec.  */
 
 static void
 set_spec (name, spec)
@@ -1279,12 +1280,12 @@ static int signal_count;
 
 static char *programname;
 
-/* Structures to keep track of prefixes to try when looking for files. */
+/* Structures to keep track of prefixes to try when looking for files.  */
 
 struct prefix_list
 {
-  char *prefix;               /* String to prepend to the path. */
-  struct prefix_list *next;   /* Next in linked list. */
+  char *prefix;               /* String to prepend to the path.  */
+  struct prefix_list *next;   /* Next in linked list.  */
   int require_machine_suffix; /* Don't use without machine_suffix.  */
   /* 2 means try both machine_suffix and just_machine_suffix.  */
   int *used_flag_ptr;	      /* 1 if a file was found with this prefix.  */
@@ -1297,11 +1298,11 @@ struct path_prefix
   char *name;                 /* Name of this list (used in config stuff) */
 };
 
-/* List of prefixes to try when looking for executables. */
+/* List of prefixes to try when looking for executables.  */
 
 static struct path_prefix exec_prefixes = { 0, 0, "exec" };
 
-/* List of prefixes to try when looking for startup (crt0) files. */
+/* List of prefixes to try when looking for startup (crt0) files.  */
 
 static struct path_prefix startfile_prefixes = { 0, 0, "startfile" };
 
@@ -1642,7 +1643,8 @@ build_search_list (paths, prefix, check_dir_p)
   return obstack_finish (&collect_obstack);
 }
 
-/* Rebuild the COMPILER_PATH and LIBRARY_PATH environment variables for collect.  */
+/* Rebuild the COMPILER_PATH and LIBRARY_PATH environment variables
+   for collect.  */
 
 static void
 putenv_from_prefixes (paths, env_var)
@@ -1654,7 +1656,7 @@ putenv_from_prefixes (paths, env_var)
 
 /* Search for NAME using the prefix list PREFIXES.  MODE is passed to
    access to check permissions.
-   Return 0 if not found, otherwise return its name, allocated with malloc. */
+   Return 0 if not found, otherwise return its name, allocated with malloc.  */
 
 static char *
 find_a_file (pprefix, name, mode)
@@ -1856,7 +1858,7 @@ unused_prefix_warnings (pprefix)
     }
 }
 
-/* Get rid of all prefixes built up so far in *PLISTP. */
+/* Get rid of all prefixes built up so far in *PLISTP.  */
 
 static void
 free_path_prefix (pprefix)
@@ -3484,7 +3486,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	      int len;
 
 	      /* The string after the S/P is the name of a spec that is to be
-		 processed. */
+		 processed.  */
 	      while (*p && *p != ')' && *p != ']')
 		p++;
 
@@ -3832,7 +3834,7 @@ check_live_switch (switchnum, prefix_length)
     case 'W':  case 'f':  case 'm':
       if (! strncmp (name + 1, "no-", 3))
 	{
-	  /* We have Xno-YYY, search for XYYY. */
+	  /* We have Xno-YYY, search for XYYY.  */
 	  for (i = switchnum + 1; i < n_switches; i++)
 	    if (switches[i].part1[0] == name[0]
 		&& ! strcmp (&switches[i].part1[1], &name[4]))
@@ -4030,7 +4032,7 @@ main (argc, argv)
     char **q = multilib_raw;
 
     obstack_init (&multilib_obstack);
-    while ((p = *q++) != (char *)0)
+    while ((p = *q++) != (char *) 0)
       obstack_grow (&multilib_obstack, p, strlen (p));
 
     obstack_1grow (&multilib_obstack, 0);
@@ -4500,7 +4502,7 @@ concat VPROTO((char *first, ...))
   char *first;
 #endif
 
-  /* First compute the size of the result and get sufficient memory. */
+  /* First compute the size of the result and get sufficient memory.  */
 
   VA_START (args, first);
 #ifndef __STDC__
@@ -4519,7 +4521,7 @@ concat VPROTO((char *first, ...))
   newstr = (char *) xmalloc (length + 1);
   va_end (args);
 
-  /* Now copy the individual pieces to the result string. */
+  /* Now copy the individual pieces to the result string.  */
 
   VA_START (args, first);
 #ifndef __STDC__
@@ -4606,7 +4608,7 @@ fatal VPROTO((char *format, ...))
   VA_START (ap, format);
 
 #ifndef __STDC__
-  format = va_arg (ap, char*);
+  format = va_arg (ap, char *);
 #endif
 
   fprintf (stderr, "%s: ", programname);
@@ -4628,7 +4630,7 @@ error VPROTO((char *format, ...))
   VA_START (ap, format);
 
 #ifndef __STDC__
-  format = va_arg (ap, char*);
+  format = va_arg (ap, char *);
 #endif
 
   fprintf (stderr, "%s: ", programname);

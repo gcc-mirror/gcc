@@ -315,6 +315,11 @@ extern int flag_pedantic_errors;
 
 extern int flag_pic;
 
+/* Nonzero means generate extra code for exception handling and enable
+   exception handling.  */
+
+extern int flag_exceptions;
+
 /* Nonzero means don't place uninitialized global data in common storage
    by default.  */
 

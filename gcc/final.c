@@ -338,7 +338,7 @@ end_final (filename)
 	 7:  address of table of function names (LPBX4).
 	 8:  address of table of line numbers (LPBX5) or 0.
 	 9:  address of table of file names (LPBX6) or 0.
-	10:  space reserved for basic block profiling. */
+	10:  space reserved for basic block profiling.  */
 
       ASM_OUTPUT_ALIGN (asm_out_file, align);
 
@@ -709,7 +709,7 @@ shorten_branches (first)
 #endif
 	  /* Inside a delay slot sequence, we do not do any branch shortening
 	     if the shortening could change the number of delay slots
-	     of the branch. */
+	     of the branch.  */
 	  for (i = 0; i < XVECLEN (body, 0); i++)
 	    {
 	      rtx inner_insn = XVECEXP (body, 0, i);
@@ -897,7 +897,7 @@ final_start_function (first, file, optimize)
   /* For SDB and XCOFF, the function beginning must be marked between
      the function label and the prologue.  We always need this, even when
      -g1 was used.  Defer on MIPS systems so that parameter descriptions
-     follow function entry. */
+     follow function entry.  */
 #if defined(SDB_DEBUGGING_INFO) && !defined(MIPS_DEBUGGING_INFO)
   if (write_symbols == SDB_DEBUG)
     sdbout_begin_function (last_linenum);
@@ -1152,7 +1152,7 @@ add_bb_string (string, perm_p)
       string = p;
     }
   else
-    for (ptr = sbb_head; ptr != (struct bb_str *)0; ptr = ptr->next)
+    for (ptr = sbb_head; ptr != (struct bb_str *) 0; ptr = ptr->next)
       if (ptr->string == string)
 	break;
 
@@ -1321,7 +1321,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	{
 #if defined(SDB_DEBUGGING_INFO) && defined(MIPS_DEBUGGING_INFO)
 	  /* MIPS stabs require the parameter descriptions to be after the
-	     function entry point rather than before. */
+	     function entry point rather than before.  */
 	  if (write_symbols == SDB_DEBUG)
 	    sdbout_begin_function (last_linenum);
 	  else
@@ -2768,8 +2768,8 @@ asm_fprintf VPROTO((FILE *file, char *p, ...))
   VA_START (argptr, p);
 
 #ifndef __STDC__
-  file = va_arg (argptr, FILE*);
-  p = va_arg (argptr, char*);
+  file = va_arg (argptr, FILE *);
+  p = va_arg (argptr, char *);
 #endif
 
   buf[0] = '%';
@@ -2991,7 +2991,7 @@ split_double (value, first, second)
       /* Note, this converts the REAL_VALUE_TYPE to the target's
 	 format, splits up the floating point double and outputs
 	 exactly 32 bits of it into each of l[0] and l[1] --
-	 not necessarily BITS_PER_WORD bits. */
+	 not necessarily BITS_PER_WORD bits.  */
       REAL_VALUE_TO_TARGET_DOUBLE (r, l);
 
       *first = GEN_INT ((HOST_WIDE_INT) l[0]);

@@ -20,7 +20,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Any reasonable C++ compiler should have all of the same features
    as __STDC__ plus more, so make sure that __STDC__ is defined if
-   __cplusplus is defined. */
+   __cplusplus is defined.  */
 
 #if defined(__cplusplus) && !defined(__STDC__)
 #define __STDC__ 1
@@ -264,7 +264,7 @@ static char * syscalls_absolute_filename;
 
 #endif /* !defined (UNPROTOIZE) */
 
-/* Type of the structure that holds information about macro unexpansions. */
+/* Type of the structure that holds information about macro unexpansions.  */
 
 struct unexpansion_struct {
   const char *expanded;
@@ -511,7 +511,7 @@ static const char *indent_string = "     ";	/* Indentation for newly
 static int local_flag = 0;		/* Insert new local decls (when?).  */
 static int global_flag = 0;		/* set by -g option */
 static int cplusplus_flag = 0;		/* Rename converted files to *.C.  */
-static const char* nondefault_syscalls_dir = 0; /* Dir to look for
+static const char *nondefault_syscalls_dir = 0; /* Dir to look for
 						   SYSCALLS.c.X in.  */
 #endif /* !defined (UNPROTOIZE) */
 
@@ -546,7 +546,7 @@ static const char *convert_filename;
 
 /* Pointer to relative root string (taken from aux_info file) which indicates
    where directory the user was in when he did the compilation step that
-   produced the containing aux_info file. */
+   produced the containing aux_info file.  */
 
 static const char *invocation_filename;
 
@@ -1033,14 +1033,14 @@ needs_to_be_converted (file_p)
 
 #ifndef UNPROTOIZE
 
-      /* ... and if we a protoizing and this function is in old style ... */
+      /* ... and if we a protoizing and this function is in old style ...  */
       !ddp->prototyped
-      /* ... and if this a definition or is a decl with an associated def ... */
+      /* ... and if this a definition or is a decl with an associated def ...  */
       && (ddp->is_func_def || (!ddp->is_func_def && ddp->definition))
 
 #else /* defined (UNPROTOIZE) */
 
-      /* ... and if we are unprotoizing and this function is in new style ... */
+      /* ... and if we are unprotoizing and this function is in new style ...  */
       ddp->prototyped
 
 #endif /* defined (UNPROTOIZE) */
@@ -1226,7 +1226,7 @@ unexpand_if_needed (aux_info_line)
 {
   static char *line_buf = 0;
   static int line_buf_size = 0;
-  const unexpansion* unexp_p;
+  const unexpansion *unexp_p;
   int got_unexpanded = 0;
   const char *s;
   char *copy_p = line_buf;
@@ -1700,7 +1700,7 @@ save_def_or_dec (l, is_syscalls)
   /* Check that this record describes a new-style, old-style, or implicit
      definition or declaration.  */
 
-  p++;	/* Skip over the `:'. */
+  p++;	/* Skip over the `:'.  */
   check_aux_info ((*p == 'N') || (*p == 'O') || (*p == 'I'));
 
   /* Is this a new style (ANSI prototyped) definition or declaration? */
@@ -1906,7 +1906,7 @@ save_def_or_dec (l, is_syscalls)
       check_aux_info (*++p == '(');
 
       {
-        const char *kr_names_start = ++p;   /* Point just inside '('. */
+        const char *kr_names_start = ++p;   /* Point just inside '('.  */
 
         while (*p++ != ')')
           continue;
@@ -2597,7 +2597,7 @@ find_extern_def (head, user)
     if (dd_p->is_func_def && !dd_p->is_static)
       {
         if (!extern_def_p)	/* Previous definition? */
-          extern_def_p = dd_p;	/* Remember the first definition found. */
+          extern_def_p = dd_p;	/* Remember the first definition found.  */
         else
           {
             /* Ignore definition just found if it came from SYSCALLS.c.X.  */
@@ -2717,7 +2717,7 @@ find_extern_def (head, user)
 
 /* Find the (only?) static definition for a particular function name in a
    given file.  Here we get the function-name and the file info indirectly
-   from the def_dec_info record pointer which is passed in. */
+   from the def_dec_info record pointer which is passed in.  */
 
 static const def_dec_info *
 find_static_definition (user)
@@ -3413,11 +3413,11 @@ edit_formals_lists (end_formals, f_list_count, def_dec_p)
   return 0;
 }
 
-/* Given a pointer to a byte in the clean text buffer which points to the
-   beginning of a line that contains a "follower" token for a function
-   definition header, do whatever is necessary to find the right closing
-   paren for the rightmost formals list of the function definition header.
-*/
+/* Given a pointer to a byte in the clean text buffer which points to
+   the beginning of a line that contains a "follower" token for a
+   function definition header, do whatever is necessary to find the
+   right closing paren for the rightmost formals list of the function
+   definition header.  */
 
 static const char *
 find_rightmost_formals_list (clean_text_p)
@@ -3685,7 +3685,7 @@ add_global_decls (file_p, clean_text_p)
 
   /* Now scan forward for the first non-whitespace character.  In theory,
      this should be the first character of the following function definition
-     header.  We will put in the added declarations just prior to that. */
+     header.  We will put in the added declarations just prior to that.  */
 
   scan_p++;
   while (isspace (*scan_p))
@@ -4592,7 +4592,7 @@ main (argc, argv)
 #endif
 			   longopts, &longind)) != EOF)
     {
-      if (c == 0)		/* Long option. */
+      if (c == 0)		/* Long option.  */
 	c = longopts[longind].val;
       switch (c)
 	{
