@@ -3456,6 +3456,7 @@ expand_decl (decl)
 			  (TYPE_ALIGN (TREE_TYPE (TREE_TYPE (decl)))
 			   / BITS_PER_UNIT));
     }
+
   else if (TREE_CODE (DECL_SIZE (decl)) == INTEGER_CST)
     {
       /* Variable of fixed size that goes on the stack.  */
