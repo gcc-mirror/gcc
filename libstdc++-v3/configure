@@ -19819,6 +19819,7 @@ fi
 # specified as build_headers in src/Makefile.am in a target-dependent
 # place, or else multiple installs for different compilers will
 # overwrite these files.
+# NB: Keep this and gcc/Makefile.in's -DGPLUSPLUS_TOOL_INCLUDE_DIR in sync.
 gxx_target_include_dir='$(exec_prefix)/$(target_alias)/include/g++-$(libstdcxx_interface)'
 
 

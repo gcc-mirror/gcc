@@ -1,6 +1,12 @@
+2000-12-19  Curtis Janssen  <cljanss@ca.sandia.gov>
+
+	* src/ios.cc (ios_base::_M_grow_words(int ix)): Fix libstdc++/1089.
+	* testsuite/27_io/ios_base_storage.cc (test01): New file.
+
 2000-12-19  Benjamin Kosnik  <bkoz@fillmore.constant.com>
 
 	* configure.in: Don't turn on long long by default.
+	(gxx_target_include_dir): Adjuse comment.
 	* configure: Regenerate.
 	* include/c/bits/std_cstdio.h: Remove c++config.h include.
 	* src/locale.cc: Formatting tweaks.
