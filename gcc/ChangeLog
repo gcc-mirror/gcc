@@ -1,3 +1,17 @@
+Tue Aug 25 12:23:20 PDT 1998  Richard Henderson  <rth@cygnus.com>
+
+        * reload.c (operands_match_p): Handle rtvecs.
+
+        * i386.c (legitimate_pic_address_disp_p): New.
+        (legitimate_address_p): Use it.
+        (legitimize_pic_address): Use unspecs to represent @GOT and @GOTOFF.
+        Handle constant pool symbols just like statics.
+        (emit_pic_move): Use Pmode not SImode for clarity.
+        (output_pic_addr_const) [SYMBOL_REF]: Remove @GOT and @GOTOFF hacks.
+        [UNSPEC]: New, handling what we killed above.
+        [PLUS]: Detect and abort on invalid symbol arithmetic.
+        * i386.h (CONSTANT_ADDRESS_P): Remove HIGH.
+
 Tue Aug 25 12:02:23 1998  Mark Mitchell  <mark@markmitchell.com>
 
 	* alias.c: Include output.h.
