@@ -1,5 +1,9 @@
 2000-01-30  Richard Henderson  <rth@cygnus.com>
 
+	* alpha.md (return_internal): Allow after reload only.
+
+2000-01-30  Richard Henderson  <rth@cygnus.com>
+
 	* i386.c (ix86_compute_frame_size): Omit padding1 if the
 	local frame size is zero.
 
