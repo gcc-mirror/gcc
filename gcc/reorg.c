@@ -1413,6 +1413,42 @@ condition_dominates_p (condition, insn)
 
   return comparison_dominates_p (code, other_code);
 }
+
+/* Return non-zero if redirecting JUMP to NEWLABEL does not invalidate
+   any insns already in the delay slot of JUMP.  */
+
+static int
+redirect_with_delay_slots_safe_p (jump, newlabel, seq)
+     rtx jump, newlabel, seq;
+{
+  int flags, slots, i;
+  rtx pat = PATTERN (seq);
+
+  /* Make sure all the delay slots of this jump would still
+     be valid after threading the jump.  If they are still
+     valid, then return non-zero.  */
+
+  flags = get_jump_flags (jump, newlabel);
+  for (i = 1; i < XVECLEN (pat, 0); i++)
+    if (! (
+#ifdef ANNUL_IFFALSE_SLOTS
+	   (INSN_ANNULLED_BRANCH_P (jump)
+	    && INSN_FROM_TARGET_P (XVECEXP (pat, 0, i)))
+	   ? eligible_for_annul_false (jump, i - 1,
+				       XVECEXP (pat, 0, i), flags) :
+#endif
+#ifdef ANNUL_IFTRUE_SLOTS
+	   (INSN_ANNULLED_BRANCH_P (jump)
+	    && ! INSN_FROM_TARGET_P (XVECEXP (pat, 0, i)))
+	   ? eligible_for_annul_true (jump, i - 1,
+				      XVECEXP (pat, 0, i), flags) :
+#endif
+	   eligible_for_delay (jump, i -1, XVECEXP (pat, 0, i), flags)))
+      break;
+
+  return (i == XVECLEN (pat, 0));
+}
+
 
 /* INSN branches to an insn whose pattern SEQ is a SEQUENCE.  Given that
    the condition tested by INSN is CONDITION and the resources shown in
@@ -3647,7 +3683,8 @@ relax_delay_slots (first)
 	  if (trial == 0 && target_label != 0)
 	    trial = find_end_label ();
 
-	  if (trial != target_label)
+	  if (trial != target_label 
+	      && redirect_with_delay_slots_safe_p (delay_insn, trial, insn))
 	    {
 	      reorg_redirect_jump (delay_insn, trial);
 	      target_label = trial;
@@ -3681,9 +3718,14 @@ relax_delay_slots (first)
 	      target_label = JUMP_LABEL (XVECEXP (PATTERN (trial), 0, 0));
 	      if (target_label == 0)
 		target_label = find_end_label ();
-	      reorg_redirect_jump (delay_insn, target_label);
-	      next = insn;
-	      continue;
+
+	      if (redirect_with_delay_slots_safe_p (delay_insn, target_label, 
+						    insn))
+		{
+		  reorg_redirect_jump (delay_insn, target_label);
+		  next = insn;
+		  continue;
+		}
 	    }
 	}
 
@@ -3752,20 +3794,24 @@ relax_delay_slots (first)
 	  if (label == 0)
 	    label = find_end_label ();
 
-	  /* Be careful how we do this to avoid deleting code or labels
-	     that are momentarily dead.  See similar optimization in jump.c  */
-	  if (old_label)
-	    ++LABEL_NUSES (old_label);
-
-	  if (invert_jump (delay_insn, label))
+	  if (redirect_with_delay_slots_safe_p (delay_insn, label, insn))
 	    {
-	      delete_insn (next);
-	      next = insn;
-	    }
+	      /* Be careful how we do this to avoid deleting code or labels
+		 that are momentarily dead.  See similar optimization in
+		 jump.c  */
+	      if (old_label)
+		++LABEL_NUSES (old_label);
 
-	  if (old_label && --LABEL_NUSES (old_label) == 0)
-	    delete_insn (old_label);
-	  continue;
+	      if (invert_jump (delay_insn, label))
+		{
+		  delete_insn (next);
+		  next = insn;
+		}
+
+	      if (old_label && --LABEL_NUSES (old_label) == 0)
+		delete_insn (old_label);
+	      continue;
+	    }
 	}
 
       /* If we own the thread opposite the way this insn branches, see if we
