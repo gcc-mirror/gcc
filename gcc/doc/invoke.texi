@@ -4332,6 +4332,8 @@ will most benefit processors with lots of registers.  It can, however,
 make debugging impossible, since variables will no longer stay in
 a ``home register''.
 
+Enabled at levels @option{-O3}.
+
 @item -fweb
 @opindex fweb
 Constructs webs as commonly used for register allocation purposes and assign
@@ -4533,6 +4535,8 @@ With @option{-fbranch-probabilities}, it reads back the data gathered
 from profiling values of expressions and adds @samp{REG_VALUE_PROFILE}
 notes to instructions for their later usage in optimizations.
 
+Enabled with @option{-profile-generate} and @option{-profile-use}.
+
 @item -fvpt
 @opindex fvpt
 If combined with @option{-fprofile-arcs}, it instructs the compiler to add
@@ -4542,6 +4546,8 @@ With @option{-fbranch-probabilities}, it reads back the data gathered
 and actually performs the optimizations based on them.
 Currently the optimizations include specialization of division operation
 using the knowledge about the value of the denominator.
+
+Enabled with @option{-profile-generate} and @option{-profile-use}.
 
 @item -fnew-ra
 @opindex fnew-ra
@@ -4555,11 +4561,15 @@ Perform tail duplication to enlarge superblock size. This transformation
 simplifies the control flow of the function allowing other optimizations to do
 better job.
 
+Enabled with @option{-profile-use}.
+
 @item -funit-at-a-time
 @opindex funit-at-a-time
 Parse the whole compilation unit before starting to produce code.
 This allows some extra optimizations to take place but consumes more
 memory.
+
+Enabled at levels @option{-O2}, @option{-O3}.
 
 @item -funroll-loops
 @opindex funroll-loops
@@ -4568,6 +4578,8 @@ upon entry to the loop.  @option{-funroll-loops} implies
 @option{-frerun-cse-after-loop}.  It also turns on complete loop peeling
 (i.e. complete removal of loops with small constant number of iterations).
 This option makes code larger, and may or may not make it run faster.
+
+Enabled with @option{-profile-use}.
 
 @item -funroll-all-loops
 @opindex funroll-all-loops
@@ -4581,6 +4593,8 @@ the loop is entered.  This usually makes programs run more slowly.
 Peels the loops for that there is enough information that they do not
 roll much (from profile feedback).  It also turns on complete loop peeling
 (i.e. complete removal of loops with small constant number of iterations).
+
+Enabled with @option{-profile-use}.
 
 @item -funswitch-loops
 @opindex funswitch-loops
@@ -4602,16 +4616,6 @@ the loop is entered. This is done using the old loop unroller whose loop
 recognition is based on notes from frontend.  This usually makes programs run more slowly.
 @option{-fold-unroll-all-loops} implies the same options as
 @option{-fold-unroll-loops}.
-
-@item -funswitch-loops
-@opindex funswitch-loops
-Move branches with loop invariant conditions out of the loop, with duplicates
-of the loop on both branches (modified according to result of the condition).
-
-@item -funswitch-loops
-@opindex funswitch-loops
-Move branches with loop invariant conditions out of the loop, with duplicates
-of the loop on both branches (modified according to result of the condition).
 
 @item -fprefetch-loop-arrays
 @opindex fprefetch-loop-arrays
@@ -4657,7 +4661,7 @@ threading.
 
 @item -fbtr-bb-exclusive
 @opindex fbtr-bb-exclusive
-WHen performing branch target register load optimization, don't reuse
+When performing branch target register load optimization, don't reuse
 branch target registers in within any basic block.
 
 @item --param @var{name}=@var{value}
@@ -4706,7 +4710,7 @@ optimization.  If more memory than specified is required, the
 optimization will not be done.
 
 @item max-gcse-passes
-The maximum number of passes of GCSE to run.
+The maximum number of passes of GCSE to run.  The default is 1.
 
 @item max-pending-list-length
 The maximum number of pending dependencies scheduling will allow
@@ -4830,7 +4834,7 @@ order to make tracer effective.
 
 @item max-cse-path-length
 
-Maximum number of basic blocks on path that cse considers.
+Maximum number of basic blocks on path that cse considers.  The default is 10.
 
 @item ggc-min-expand
 

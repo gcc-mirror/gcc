@@ -1,3 +1,15 @@
+2004-03-24  David Edelsohn  <edelsohn@gnu.org>
+
+	* doc/invoke.texi (-frename-registers: Add enabled at -O3.
+	(-fprofile-values): Add enabled with profile-{generate,use}.
+	(-fvpt): Same.
+	(-ftracer): Add enabled with profile-use.
+	(-funit-at-a-time): Add enabled at -O2,-O3.
+	(-funroll-loops): Add enabled with profile-use.
+	(-funswitch-loops): Add enabled with profile-use.  Remove duplicates.
+	(max-gcse-passes): Mention default.
+	(max-cse-path-length): Mention default.
+
 2004-03-24  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Makefile.in (STRICT2_WARN): Reorder.
