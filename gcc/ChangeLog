@@ -1,5 +1,7 @@
 2000-09-03  Geoff Keating  <geoffk@cygnus.com>
 
+	* invoke.texi: Document the -mvxworks option for rs6000 ELF.
+
 	* config/rs6000/rs6000.h: Update various comments about XER_REGNO.
 	(REGNO_REG_CLASS): Use symbolic register
 	names.
