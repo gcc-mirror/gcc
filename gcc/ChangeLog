@@ -1,3 +1,8 @@
+2000-04-24  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* invoke.texi: Correct grammatical errors, document
+	-fno-gnu-keywords as identical to -fno-asm for C++.
+
 2000-04-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* aclocal.m4: (GCC_HEADER_STRING, GCC_NEED_DECLARATION,
