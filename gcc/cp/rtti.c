@@ -39,7 +39,6 @@ static tree call_void_fn PROTO((char *));
 static tree build_headof_sub PROTO((tree));
 static tree build_headof PROTO((tree));
 static tree get_tinfo_var PROTO((tree));
-static tree get_typeid_1 PROTO((tree));
 static tree ifnonnull PROTO((tree, tree));
 static tree build_dynamic_cast_1 PROTO((tree, tree));
 static void expand_si_desc PROTO((tree, tree));
@@ -204,6 +203,12 @@ get_tinfo_fn_dynamic (exp)
   /* Peel off cv qualifiers.  */
   type = TYPE_MAIN_VARIANT (type);
 
+  if (TYPE_SIZE (complete_type (type)) == NULL_TREE)
+    {
+      cp_error ("taking typeid of incomplete type `%T'", type);
+      return error_mark_node;
+    }
+
   /* If exp is a reference to polymorphic type, get the real type_info.  */
   if (TYPE_VIRTUAL_P (type) && ! resolves_to_fixed_type_p (exp, 0))
     {
@@ -211,13 +216,7 @@ get_tinfo_fn_dynamic (exp)
       tree t;
 
       if (! flag_rtti)
-	{
-	  warning ("taking dynamic typeid of object without -frtti");
-	  push_obstacks (&permanent_obstack, &permanent_obstack);
-	  init_rtti_processing ();
-	  pop_obstacks ();
-	  flag_rtti = 1;
-	}
+	error ("taking dynamic typeid of object with -fno-rtti");
 
       /* If we don't have rtti stuff, get to a sub-object that does.  */
       if (! CLASSTYPE_VFIELDS (type))
@@ -256,6 +255,12 @@ build_x_typeid (exp)
   tree type = TREE_TYPE (tinfo_fn_type);
   int nonnull;
 
+  if (TYPE_SIZE (type_info_type_node) == NULL_TREE)
+    {
+      error ("must #include <typeinfo> before using typeid");
+      return error_mark_node;
+    }
+  
   if (processing_template_decl)
     return build_min_nt (TYPEID_EXPR, exp);
 
@@ -379,11 +384,13 @@ get_tinfo_fn (type)
   return d;
 }
 
-static tree
+tree
 get_typeid_1 (type)
      tree type;
 {
-  tree t = build_call
+  tree t;
+
+  t = build_call
     (get_tinfo_fn (type), TREE_TYPE (tinfo_fn_type), NULL_TREE);
   return convert_from_reference (t);
 }
@@ -396,15 +403,15 @@ get_typeid (type)
 {
   if (type == error_mark_node)
     return error_mark_node;
+
+  if (TYPE_SIZE (type_info_type_node) == NULL_TREE)
+    {
+      error ("must #include <typeinfo> before using typeid");
+      return error_mark_node;
+    }
   
   if (! flag_rtti)
-    {
-      warning ("requesting typeid of object without -frtti");
-      push_obstacks (&permanent_obstack, &permanent_obstack);
-      init_rtti_processing ();
-      pop_obstacks ();
-      flag_rtti = 1;
-    }
+    error ("requesting typeid with -fno-rtti");
 
   if (processing_template_decl)
     return build_min_nt (TYPEID_EXPR, type);
@@ -418,6 +425,12 @@ get_typeid (type)
   /* The top-level cv-qualifiers of the lvalue expression or the type-id
      that is the operand of typeid are always ignored.  */
   type = TYPE_MAIN_VARIANT (type);
+
+  if (TYPE_SIZE (complete_type (type)) == NULL_TREE)
+    {
+      cp_error ("taking typeid of incomplete type `%T'", type);
+      return error_mark_node;
+    }
 
   return get_typeid_1 (type);
 }
@@ -446,6 +459,7 @@ build_dynamic_cast_1 (type, expr)
   tree exprtype = TREE_TYPE (expr);
   enum tree_code ec;
   tree dcast_fn;
+  tree old_expr = expr;
 
   assert (exprtype != NULL_TREE);
   ec = TREE_CODE (exprtype);
@@ -512,6 +526,20 @@ build_dynamic_cast_1 (type, expr)
 
     distance = get_base_distance (TREE_TYPE (type), TREE_TYPE (exprtype), 1,
 				  &path);
+
+    if (distance == -2)
+      {
+	cp_error ("dynamic_cast from `%T' to ambiguous base class `%T'",
+		  TREE_TYPE (exprtype), TREE_TYPE (type));
+	return error_mark_node;
+      }
+    if (distance == -3)
+      {
+	cp_error ("dynamic_cast from `%T' to private base class `%T'",
+		  TREE_TYPE (exprtype), TREE_TYPE (type));
+	return error_mark_node;
+      }
+
     if (distance >= 0)
       return build_vbase_path (PLUS_EXPR, type, expr, path, 0);
   }
@@ -547,11 +575,11 @@ build_dynamic_cast_1 (type, expr)
 	     dynamic_cast<D&>(b) (b an object) cannot succeed.  */
 	  if (ec == REFERENCE_TYPE)
 	    {
-	      if (TREE_CODE (expr) == VAR_DECL
-		  && TREE_CODE (TREE_TYPE (expr)) == RECORD_TYPE)
+	      if (TREE_CODE (old_expr) == VAR_DECL
+		  && TREE_CODE (TREE_TYPE (old_expr)) == RECORD_TYPE)
 		{
 		  cp_warning ("dynamic_cast of `%#D' to `%#T' can never succeed",
-			      expr, type);
+			      old_expr, type);
 		  return throw_bad_cast ();
 		}
 	    }

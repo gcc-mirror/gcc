@@ -1096,7 +1096,8 @@ unary_expr:
 	| SIZEOF unary_expr  %prec UNARY
 		{ $$ = expr_sizeof ($2); }
 	| SIZEOF '(' type_id ')'  %prec HYPERUNARY
-		{ $$ = c_sizeof (groktypename ($3.t)); }
+		{ $$ = c_sizeof (groktypename ($3.t));
+		  check_for_new_type ("sizeof", $3); }
 	| ALIGNOF unary_expr  %prec UNARY
 		{ $$ = grok_alignof ($2); }
 	| ALIGNOF '(' type_id ')'  %prec HYPERUNARY
@@ -2092,7 +2093,7 @@ structsp:
                 { TYPE_VALUES (current_enum_type) = $4;
 		  $$.t = finish_enum (current_enum_type);
 		  $$.new_type_flag = 1;
-		  current_enum_type = $<ttype>4;
+		  current_enum_type = $<ttype>3;
 		  resume_momentary ((int) $<itype>1);
 		  check_for_missing_semicolon ($$.t); }
 	| ENUM '{' '}'

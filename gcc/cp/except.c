@@ -411,9 +411,7 @@ build_eh_type_type (type)
   type = TYPE_MAIN_VARIANT (type);
 
   if (flag_rtti)
-    {
-      return build1 (ADDR_EXPR, ptr_type_node, get_typeid (type));
-    }
+    return build1 (ADDR_EXPR, ptr_type_node, get_typeid_1 (type));
 
   typestring = build_overload_name (type, 1, 1);
   exp = combine_strings (build_string (strlen (typestring)+1, typestring));
