@@ -169,10 +169,6 @@ OTHERS =
 
 # This is set by the configure script to the list of directories which
 # should be built using the target tools.
-# Temporary note: Java hackers: add `libjava' at the end of this list
-# for a merged tree build. This limitation and this comment will go
-# away when libjava will safely build without `--disable-new-gxx-abi'
-# (Soon.)
 TARGET_CONFIGDIRS = libiberty libgloss $(SPECIAL_LIBS) newlib libio librx libstdc++ libg++ winsup opcodes bsp libstub cygmon libf2c libchill libobjc
 
 # Target libraries are put under this directory:
