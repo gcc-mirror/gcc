@@ -2249,7 +2249,6 @@ static int magic_milli[]= {0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0,
    whether or not we've used them already. [n][0] is signed, [n][1] is
    unsigned. */
 
-
 static int div_milli[16][2];
 
 int
@@ -2530,6 +2529,99 @@ function_label_operand  (op, mode)
      enum machine_mode mode;
 {
   return GET_CODE (op) == SYMBOL_REF && FUNCTION_NAME_P (XSTR (op, 0));
+}
+
+/* Returns 1 if the 5 operands specified in OPERANDS are suitable for
+   use in fmpyadd instructions.  Because of the inout operand in the
+   add part this function may swap operands[3] and operands[4] to make them
+   suitable for fmpyadd instructions.  */
+int
+fmpyaddoperands(operands)
+     rtx *operands;
+{
+
+  /* All modes must be the same.  */
+  if (! (GET_MODE (operands[0]) == GET_MODE (operands[1])
+	 && GET_MODE (operands[0]) == GET_MODE (operands[2])
+	 && GET_MODE (operands[0]) == GET_MODE (operands[3])
+	 && GET_MODE (operands[0]) == GET_MODE (operands[4])
+	 && GET_MODE (operands[0]) == GET_MODE (operands[5])))
+    return 0;
+
+  /* Both DFmode and SFmode should work.  But using SFmode makes the
+     assembler complain.  Just turn it off for now.  */
+  if (GET_MODE (operands[0]) != DFmode)
+    return 0;
+
+  /* Only 2 real operands to the addition.  One input must be the output.  */
+  if (! rtx_equal_p (operands[3], operands[4])
+      && ! rtx_equal_p (operands[3], operands[5]))
+    return 0;
+
+  /* Inout operand of add can not conflict with any operands from multiply.  */
+  if (rtx_equal_p (operands[3], operands[0])
+     || rtx_equal_p (operands[3], operands[1])
+     || rtx_equal_p (operands[3], operands[2]))
+    return 0;
+
+  /* multiply can not feed into addition operands.  */
+  if (rtx_equal_p (operands[4], operands[0])
+      || rtx_equal_p (operands[5], operands[0]))
+    return 0;
+
+  /* Make the inout operand be operands[5] and operands[3].  Output template
+     assumes operands[4] is the read-only add operand.  */
+  if (rtx_equal_p (operands[3], operands[4]))
+    {
+      rtx tmp;
+      tmp = operands[4];
+      operands[4] = operands[5];
+      operands[5] = tmp;
+    }
+
+  /* Passed.  Operands are suitable for fmpyadd.  */
+  return 1;
+}
+
+/* Returns 1 if the 5 operands specified in OPERANDS are suitable for
+   use in fmpysub instructions.  It is very similar to fmpyaddoperands
+   above except operands[3] and operands[4] must be the same without
+   swapping.  */
+int
+fmpysuboperands(operands)
+     rtx *operands;
+{
+
+  /* All modes must be the same.  */
+  if (! (GET_MODE (operands[0]) == GET_MODE (operands[1])
+	 && GET_MODE (operands[0]) == GET_MODE (operands[2])
+	 && GET_MODE (operands[0]) == GET_MODE (operands[3])
+	 && GET_MODE (operands[0]) == GET_MODE (operands[4])
+	 && GET_MODE (operands[0]) == GET_MODE (operands[5])))
+    return 0;
+
+  /* Both DFmode and SFmode should work.  But using SFmode makes the
+     assembler complain.  Just turn it off for now.  */
+  if (GET_MODE (operands[0]) != DFmode)
+    return 0;
+
+  /* Only 2 real operands to the subtraction.  One input must be the output.  */
+  if (! rtx_equal_p (operands[3], operands[4]))
+    return 0;
+
+  /* multiply can not feed into subtraction.  */
+  if (rtx_equal_p (operands[4], operands[0])
+      || rtx_equal_p (operands[5], operands[0]))
+    return 0;
+
+  /* Inout operand of add can not conflict with any operands from multiply.  */
+  if (rtx_equal_p (operands[3], operands[0])
+     || rtx_equal_p (operands[3], operands[1])
+     || rtx_equal_p (operands[3], operands[2]))
+    return 0;
+
+  /* Passed.  Operands are suitable for fmpysub.  */
+  return 1;
 }
 
 /* Return 1 if OP is suitable for the second add operand (the unshifed 
