@@ -1,3 +1,8 @@
+2003-10-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* genopinit.c (main): Output code to declare undefined
+	variables.
+
 2003-10-07  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* gengtype-lex.l: Remove -Wtraditional cruft.
