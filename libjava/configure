@@ -8525,6 +8525,9 @@ case "${host}" in
 #    SYSDEP_SOURCES=sysdep/ia64.c
 #    test -d sysdep || mkdir sysdep
 #    ;;
+ hppa*-*-linux*)
+    SIGNAL_HANDLER=include/pa-signal.h
+    ;;
  ia64-*-linux*)
     SIGNAL_HANDLER=include/dwarf2-signal.h
     ;;
