@@ -334,20 +334,21 @@ cb_def_pragma (pfile, line)
      -Wunknown-pragmas has been given.  */
   if (warn_unknown_pragmas > in_system_header)
     {
-      const unsigned char *space, *name = 0;
+      const unsigned char *space, *name;
       const cpp_token *s;
 
+      space = name = (const unsigned char *) "";
       s = cpp_get_token (pfile);
-      space = cpp_token_as_text (pfile, s);
-      s = cpp_get_token (pfile);
-      if (s->type == CPP_NAME)
-	name = cpp_token_as_text (pfile, s);
+      if (s->type != CPP_EOF)
+	{
+	  space = cpp_token_as_text (pfile, s);
+	  s = cpp_get_token (pfile);
+	  if (s->type == CPP_NAME)
+	    name = cpp_token_as_text (pfile, s);
+	}
 
       lineno = SOURCE_LINE (map, line);
-      if (name)
-	warning ("ignoring #pragma %s %s", space, name);
-      else
-	warning ("ignoring #pragma %s", space);
+      warning ("ignoring #pragma %s %s", space, name);
     }
 }
 
