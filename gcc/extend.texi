@@ -1669,7 +1669,7 @@ old-style non-prototype definition.  Consider the following example:
 
 @example
 /* @r{Use prototypes unless the compiler is old-fashioned.}  */
-#if __STDC__
+#ifdef __STDC__
 #define P(x) x
 #else
 #define P(x) ()
@@ -2026,7 +2026,7 @@ typedef int more_aligned_int __attribute__ ((aligned (8));
 @end smallexample
 
 @noindent
-force the compiler to insure (as fas as it can) that each variable whose
+force the compiler to insure (as far as it can) that each variable whose
 type is @code{struct S} or @code{more_aligned_int} will be allocated and
 aligned @emph{at least} on a 8-byte boundary.  On a Sparc, having all
 variables of type @code{struct S} aligned to 8-byte boundaries allows
@@ -2166,6 +2166,16 @@ pid_t wait (wait_status_ptr_t p)
   return waitpid (-1, p.__ip, 0);
 @}
 @end example
+
+@item unused
+When attached to a type (including a @code{union} or a @code{struct}),
+this attribute means that variables of that type are meant to appear
+possibly unused.  GNU CC will not produce a warning for any variables of
+that type, even if the variable appears to do nothing.  This is often
+the case with lock or thread classes, which are usually defined and then
+not referenced, but contain constructors and destructors that have
+non-trivial bookeeping functions.
+
 @end table
 
 To specify multiple attributes, separate them by commas within the
@@ -3230,6 +3240,30 @@ In the mean time, you have the following options for dealing with
 template instantiations:
 
 @enumerate
+@item
+Compile your template-using code with @samp{-frepo}.  The compiler will
+generate files with the extension @samp{.rpo} listing all of the
+template instantiations used in the corresponding object files which
+could be instantiated there; the link wrapper, @samp{collect2}, will
+then update the @samp{.rpo} files to tell the compiler where to place
+those instantiations and rebuild any affected object files.  The
+link-time overhead is negligible after the first pass, as the compiler
+will continue to place the instantiations in the same files.
+
+This is your best option for application code written for the Borland
+model, as it will just work.  Code written for the Cfront model will
+need to be modified so that the template definitions are available at
+one or more points of instantiation; usually this is as simple as adding
+@code{#include <tmethods.cc>} to the end of each template header.
+
+For library code, if you want the library to provide all of the template
+instantiations it needs, just try to link all of its object files
+together; the link will fail, but cause the instantiations to be
+generated as a side effect.  Be warned, however, that this may cause
+conflicts if multiple libraries try to provide the same instantiations.
+For greater control, use explicit instantiation as described in the next
+option.
+
 @item
 Compile your code with @samp{-fno-implicit-templates} to disable the
 implicit generation of template instances, and explicitly instantiate
