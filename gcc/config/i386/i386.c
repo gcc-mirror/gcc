@@ -572,7 +572,6 @@ static void ix86_sched_reorder_pentium PARAMS((rtx *, rtx *));
 static void ix86_sched_reorder_ppro PARAMS((rtx *, rtx *));
 static HOST_WIDE_INT ix86_GOT_alias_set PARAMS ((void));
 static void ix86_adjust_counter PARAMS ((rtx, HOST_WIDE_INT));
-static rtx ix86_zero_extend_to_Pmode PARAMS ((rtx));
 static rtx ix86_expand_aligntest PARAMS ((rtx, int));
 static void ix86_expand_strlensi_unroll_1 PARAMS ((rtx, rtx));
 
