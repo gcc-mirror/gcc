@@ -1,3 +1,7 @@
+Tue Oct 12 23:28:28 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.h (BOOL_TYPE_SIZE): Don't use INT_TYPE_SIZE / CHAR_TYPE_SIZE.
+
 Tue Oct 12 23:19:32 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.h (REGISTER_MOVE_COST): Change PR_REG to PR_REGS.
