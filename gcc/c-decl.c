@@ -30,6 +30,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "system.h"
 #include "intl.h"
 #include "tree.h"
+#include "tree-inline.h"
 #include "rtl.h"
 #include "flags.h"
 #include "function.h"
@@ -6707,10 +6708,23 @@ c_expand_body (fndecl, nested_p)
      tree fndecl;
      int nested_p;
 {
+  int uninlinable = 1;
+
   /* There's no reason to do any of the work here if we're only doing
      semantic analysis; this code just generates RTL.  */
   if (flag_syntax_only)
     return;
+
+  if (flag_inline_trees)
+    {
+      /* First, cache whether the current function is inlinable.  Some
+         predicates depend on cfun and current_function_decl to
+         function completely.  */
+      uninlinable = ! tree_inlinable_function_p (fndecl);
+      
+      /* Then, inline any functions called in it.  */
+      optimize_inline_calls (fndecl);
+    }
 
   if (nested_p)
     {
@@ -6751,8 +6765,11 @@ c_expand_body (fndecl, nested_p)
 
   /* Generate the RTL for this function.  */
   expand_stmt (DECL_SAVED_TREE (fndecl));
-  /* Allow the body of the function to be garbage collected.  */
-  DECL_SAVED_TREE (fndecl) = NULL_TREE;
+  if (uninlinable)
+    {
+      /* Allow the body of the function to be garbage collected.  */
+      DECL_SAVED_TREE (fndecl) = NULL_TREE;
+    }
 
   /* We hard-wired immediate_size_expand to zero above.
      expand_function_end will decrement this variable.  So, we set the
@@ -6813,7 +6830,8 @@ c_expand_body (fndecl, nested_p)
 	}
     }
 
-  if (DECL_SAVED_INSNS (fndecl) == 0 && ! nested_p)
+  if (DECL_SAVED_INSNS (fndecl) == 0 && ! nested_p
+      && ! flag_inline_trees)
     {
       /* Stop pointing to the local nodes about to be freed.
 	 But DECL_INITIAL must remain nonzero so we know this

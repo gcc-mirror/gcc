@@ -1,5 +1,37 @@
 2001-10-05  Alexandre Oliva  <aoliva@redhat.com>
 
+	* Makefile.in (c-decl.o): Depend on tree-inline.h.
+	(c-lang.o): Likewise, as well as insn-config.h and integrate.h.
+	* c-decl.c: Include tree-inline.h.
+	(c_expand_body): Call optimize_inline_calls. Determine whether
+	a function is inlinable upfront, and only clear
+	DECL_SAVED_TREE, DECL_INITIAL and DECL_ARGUMENTS if it isn't.
+	* c-lang.c: Include tree-inline.h, insn-config.h and integrate.h.
+	(c_disregard_inline_limits): New function.
+	(inline_forbidden_p, c_cannot_inline_tree_fn): Likewise.
+	(c_post_options): Enable tree inlining if inlining is enabled.
+	Don't inline trees when instrumenting functions.
+	(c_init): Initialize lang_disregard_inline_limits and
+	lang_cannot_inline_tree_fn.
+	* tree-inline.c (initialize_inlined_parameters): Handle calls
+	with fewer arguments than declared parameters, and fewer
+	parameters than passed arguments.  Don't assume value is a
+	DECL.
+	(declare_return_variable): Convert return value back to the
+	original type, if it was promoted.
+	(tree_inlinable_function_p): New function.
+	(inlinable_function_p): Don't look at DECL_INLINE if we're
+	inlining all functions.  Make it work with a NULL id.
+	Re-check DECL_UNINLINABLE after language-specific checks.
+	(varargs_function_p): Move back to cp/tree.c.
+	* tree-inline.h (tree_inlinable_function_p): Declare it.
+	(varargs_function_p): Removed declaration.
+	* integrate.h (function_attribute_inlinable_p): Declare it.
+	* integrate.c (function_attribute_inlinable_p): Export it.
+	(save_for_inline): Don't bother to prepare argvec when not
+	inlining.
+	* cse.c (check_for_label_ref): Don't check deleted labels.
+
 	* Makefile.in (tree-inline.o): Depend on newly-included headers.
 	* tree-inline.c: Include headers needed for the functions moved in.
 	(struct inline_data, INSNS_PER_STMT): Moved from cp/optimize.c.

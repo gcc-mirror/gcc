@@ -483,23 +483,25 @@ initialize_inlined_parameters (id, args, fn)
 
   /* Loop through the parameter declarations, replacing each with an
      equivalent VAR_DECL, appropriately initialized.  */
-  for (p = parms, a = args; p; a = TREE_CHAIN (a), p = TREE_CHAIN (p))
+  for (p = parms, a = args; p;
+       a = a ? TREE_CHAIN (a) : a, p = TREE_CHAIN (p))
     {
       tree init_stmt;
       tree var;
       tree value;
 
       /* Find the initializer.  */
-      value = TREE_VALUE (a);
+      value = a ? TREE_VALUE (a) : NULL_TREE;
+
       /* If the parameter is never assigned to, we may not need to
 	 create a new variable here at all.  Instead, we may be able
 	 to just use the argument value.  */
       if (TREE_READONLY (p)
 	  && !TREE_ADDRESSABLE (p)
-	  && !TREE_SIDE_EFFECTS (value))
+	  && value && !TREE_SIDE_EFFECTS (value))
 	{
 	  /* Simplify the value, if possible.  */
-	  value = fold (decl_constant_value (value));
+	  value = fold (DECL_P (value) ? decl_constant_value (value) : value);
 
 	  /* We can't risk substituting complex expressions.  They
 	     might contain variables that will be assigned to later.
@@ -567,6 +569,23 @@ initialize_inlined_parameters (id, args, fn)
 	}
     }
 
+  /* Evaluate trailing arguments.  */
+  for (; a; a = TREE_CHAIN (a))
+    {
+      tree init_stmt;
+      tree value;
+
+      /* Find the initializer.  */
+      value = a ? TREE_VALUE (a) : NULL_TREE;
+
+      if (! value || ! TREE_SIDE_EFFECTS (value))
+	continue;
+
+      init_stmt = build_stmt (EXPR_STMT, value);
+      TREE_CHAIN (init_stmt) = init_stmts;
+      init_stmts = init_stmt;
+    }
+
   /* The initialization statements have been built up in reverse
      order.  Straighten them out now.  */
   return nreverse (init_stmts);
@@ -606,9 +625,15 @@ declare_return_variable (id, use_stmt)
 		     (splay_tree_key) result,
 		     (splay_tree_value) var);
 
-  /* Build the USE_STMT.  */
-  *use_stmt = build_stmt (EXPR_STMT, var);
-
+  /* Build the USE_STMT.  If the return type of the function was
+     promoted, convert it back to the expected type.  */
+  if (TREE_TYPE (var) == TREE_TYPE (TREE_TYPE (fn)))
+    *use_stmt = build_stmt (EXPR_STMT, var);
+  else
+    *use_stmt = build_stmt (EXPR_STMT,
+			    build1 (NOP_EXPR, TREE_TYPE (TREE_TYPE (fn)),
+				    var));
+      
   /* Build the declaration statement if FN does not return an
      aggregate.  */
   if (need_return_decl)
@@ -619,7 +644,18 @@ declare_return_variable (id, use_stmt)
     return NULL_TREE;
 }
 
-/* Returns non-zero if FN is a function that can be inlined.  */
+/* Returns non-zero if a function can be inlined as a tree.  */
+
+int
+tree_inlinable_function_p (fn)
+     tree fn;
+{
+  return inlinable_function_p (fn, NULL);
+}
+
+/* Returns non-zero if FN is a function that can be inlined into the
+   inlining context ID_.  If ID_ is NULL, check whether the function
+   can be inlined at all.  */
 
 static int
 inlinable_function_p (fn, id)
@@ -637,11 +673,11 @@ inlinable_function_p (fn, id)
   inlinable = 0;
 
   /* If we're not inlining things, then nothing is inlinable.  */
-  if (!flag_inline_trees)
+  if (! flag_inline_trees)
     ;
-  /* If the function was not declared `inline', then we don't inline
-     it.  */
-  else if (!DECL_INLINE (fn))
+  /* If we're not inlining all functions and the function was not
+     declared `inline', we don't inline it.  */
+  else if (flag_inline_trees < 2 && ! DECL_INLINE (fn))
     ;
   /* We can't inline functions that are too big.  Only allow a single
      function to eat up half of our budget.  Make special allowance
@@ -657,14 +693,14 @@ inlinable_function_p (fn, id)
     inlinable = 1;
 
   /* Squirrel away the result so that we don't have to check again.  */
-  DECL_UNINLINABLE (fn) = !inlinable;
+  DECL_UNINLINABLE (fn) = ! inlinable;
 
   /* Even if this function is not itself too big to inline, it might
      be that we've done so much inlining already that we don't want to
      risk too much inlining any more and thus halve the acceptable
      size.  */
   if (! LANG_DISREGARD_INLINE_LIMITS (fn)
-      && ((DECL_NUM_STMTS (fn) + id->inlined_stmts) * INSNS_PER_STMT
+      && ((DECL_NUM_STMTS (fn) + (id ? id->inlined_stmts : 0)) * INSNS_PER_STMT
 	  > MAX_INLINE_INSNS)
       && DECL_NUM_STMTS (fn) * INSNS_PER_STMT > MAX_INLINE_INSNS / 4)
     inlinable = 0;
@@ -674,7 +710,7 @@ inlinable_function_p (fn, id)
   
   /* If we don't have the function body available, we can't inline
      it.  */
-  if (!DECL_SAVED_TREE (fn))
+  if (! DECL_SAVED_TREE (fn))
     inlinable = 0;
 
   /* Check again, language hooks may have modified it.  */
@@ -683,7 +719,7 @@ inlinable_function_p (fn, id)
 
   /* Don't do recursive inlining, either.  We don't record this in
      DECL_UNINLINABLE; we may be able to inline this function later.  */
-  if (inlinable)
+  if (id)
     {
       size_t i;
 
@@ -691,7 +727,7 @@ inlinable_function_p (fn, id)
 	if (VARRAY_TREE (id->fns, i) == fn)
 	  return 0;
 
-      if (inlinable && DECL_INLINED_FNS (fn))
+      if (DECL_INLINED_FNS (fn))
 	{
 	  int j;
 	  tree inlined_fns = DECL_INLINED_FNS (fn);
