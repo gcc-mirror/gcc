@@ -1,3 +1,14 @@
+2002-07-02  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/6410
+	* include/bits/locale_facets.h (moneypunct::moneypunct): Add const
+	char* name parameter.
+	* config/locale/gnu/monetary_members.cc: Use it.
+	* config/locale/generic/monetary_members.cc: Same.
+	* src/localename.cc (_Impl::_Impl(const char*, size_t)): Use it.
+
+	* include/backward/strstream.h: Update date.
+
 2002-07-02  Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/6642
