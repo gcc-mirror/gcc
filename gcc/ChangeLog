@@ -1,3 +1,8 @@
+2001-08-20  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* crtstuff.c (__do_global_ctors): Fix typo in preprocessing
+	command.
+
 2001-08-20  Matt Kraai  <kraai@alumni.carnegiemellon.edu>
 
 	* gcc.c (make_relative_prefix): Allocate a sufficiently large

@@ -503,7 +503,7 @@ void
 __do_global_ctors (void)
 {
   func_ptr *p;
-#if defind(EH_FRAME_SECTION_NAME) || defined(JCR_SECTION_NAME)
+#if defined(EH_FRAME_SECTION_NAME) || defined(JCR_SECTION_NAME)
   __frame_dummy ();
 #endif
   for (p = __CTOR_END__ - 1; *p != (func_ptr) -1; p--)
