@@ -7008,12 +7008,13 @@ sh_hard_regno_rename_ok (old_reg, new_reg)
    return 1;
 }
 
-/* A C statement (sans semicolon) to update the integer variable COST
+/* Function to update the integer COST
    based on the relationship between INSN that is dependent on
    DEP_INSN through the dependence LINK.  The default is to make no
    adjustment to COST.  This can be used for example to specify to
    the scheduler that an output- or anti-dependence does not incur
-   the same cost as a data-dependence.  */
+   the same cost as a data-dependence.  The return value should be
+   the new value for COST.  */
 static int
 sh_adjust_cost (insn, link, dep_insn, cost)
      rtx insn;
@@ -7040,7 +7041,7 @@ sh_adjust_cost (insn, link, dep_insn, cost)
 
       if (recog_memoized (insn) < 0
 	  || recog_memoized (dep_insn) < 0)
-	return;
+	return cost;
 
       dep_type = get_attr_type (dep_insn);
       if (dep_type == TYPE_FLOAD || dep_type == TYPE_PCFLOAD)
@@ -7699,6 +7700,8 @@ sh_expand_builtin (exp, target, subtarget, mode, ignore)
     case 4:
       pat = (*insn_data[d->icode].genfun) (op[0], op[1], op[2], op[3]);
       break;
+    default:
+      abort ();
     }
   if (! pat)
     return 0;
@@ -7776,6 +7779,52 @@ sh_mark_label (address, nuses)
   if (GET_CODE (address) == LABEL_REF
       && GET_CODE (XEXP (address, 0)) == CODE_LABEL)
     LABEL_NUSES (XEXP (address, 0)) += nuses;
+}
+
+/* Compute extra cost of moving data between one register class
+   and another.  */
+
+/* Regclass always uses 2 for moves in the same register class;
+   If SECONDARY*_RELOAD_CLASS says something about the src/dst pair,
+   it uses this information.  Hence, the general register <-> floating point
+   register information here is not used for SFmode.  */
+
+int
+sh_register_move_cost (mode, srcclass, dstclass)
+     enum machine_mode mode;
+     enum reg_class srcclass, dstclass;
+{
+  if (dstclass == T_REGS || dstclass == PR_REGS)
+    return 10;
+
+  if ((REGCLASS_HAS_FP_REG (dstclass)
+       && REGCLASS_HAS_GENERAL_REG (srcclass))
+      || (REGCLASS_HAS_GENERAL_REG (dstclass)
+	  && REGCLASS_HAS_FP_REG (srcclass)))
+   return ((TARGET_SHMEDIA ? 4 : TARGET_FMOVD ? 8 : 12)
+	   * ((GET_MODE_SIZE (mode) + 7) / 8U));
+
+  if ((dstclass == FPUL_REGS
+       && REGCLASS_HAS_GENERAL_REG (srcclass))
+      || (srcclass == FPUL_REGS
+	  && REGCLASS_HAS_GENERAL_REG (dstclass)))
+    return 5;
+
+  if ((dstclass == FPUL_REGS
+       && (srcclass == PR_REGS || srcclass == MAC_REGS || srcclass == T_REGS))
+      || (srcclass == FPUL_REGS		
+	  && (dstclass == PR_REGS || dstclass == MAC_REGS)))
+    return 7;
+
+  if ((srcclass == TARGET_REGS && ! REGCLASS_HAS_GENERAL_REG (dstclass))
+      || ((dstclass) == TARGET_REGS && ! REGCLASS_HAS_GENERAL_REG (srcclass)))
+    return 20;
+
+  if ((srcclass == FPSCR_REGS && ! REGCLASS_HAS_GENERAL_REG (dstclass))
+      || (dstclass == FPSCR_REGS && ! REGCLASS_HAS_GENERAL_REG (srcclass)))
+  return 4;
+
+  return 2 * ((GET_MODE_SIZE (mode) + 7) / 8U);
 }
 
 #include "gt-sh.h"
