@@ -86,13 +86,10 @@
 	* tree.c (make_node): Don't set TREE_TYPE on 's' class nodes.
 	(build1): Always set TREE_SIDE_EFFECTS on 's' class nodes.
 
-        * gcc.c (do_spec_1) ['W']: End any pending argument from the braces.
+	* gcc.c (do_spec_1) ['W']: End any pending argument from the braces.
 
 	* calls.c (expand_call): Don't try to be clever about expanding
 	the return slot address.
-
-	* calls.c (expand_call): Handle CALL_EXPR_HAS_RETURN_SLOT_ADDR
-	with special struct-return ABIs.
 
 2002-12-18  Kaz kojima  <kkojima@gcc.gnu.org>
 
