@@ -1,5 +1,28 @@
 2001-01-11  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* call.c (convert_default_arg): Check for unprocessed
+	DEFAULT_ARG.
+	* cp-tree.h (replace_defarg): Move to spew.c.
+	(maybe_snarf_defarg, add_defarg_fn, do_pending_defargs): Move to
+	spew.c, which is where they really are.
+	(done_pending_defargs): Declare.
+	(unprocessed_defarg_fn): Declare.
+	* decl.c (replace_defarg): Move to spew.c
+	* parse.y (structsp): Call done_pending_defargs.
+	* spew.c (defarg_fns): Rearrange list structure.
+	(defarg_fnsdone): New static variable.
+	(defarg_depfns): New static variable.
+	(init_spew): Adjust.
+	(add_defarg_fn): Store the type in TREE_TYPE.
+	(do_pending_defargs): Detect and deal with ordering constraints
+	and circularity.
+	(done_pending_defargs): New function.
+	(unprocessed_defarg_fn): New function.
+	(replace_defarg): Moved from decl.c. Robustify. Don't save
+	if circularity detected.
+
+2001-01-11  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* pt.c (unify): Check array has a domain, before checking
 	whether it is variable sized.
 

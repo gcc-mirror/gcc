@@ -3874,7 +3874,6 @@ extern tree finish_method			PARAMS ((tree));
 extern void hack_incomplete_structures		PARAMS ((tree));
 extern tree maybe_build_cleanup			PARAMS ((tree));
 extern void finish_stmt				PARAMS ((void));
-extern void replace_defarg			PARAMS ((tree, tree));
 extern void print_other_binding_stack		PARAMS ((struct binding_level *));
 extern void revert_static_member_fn             PARAMS ((tree));
 extern void fixup_anonymous_aggr                PARAMS ((tree));
@@ -4085,9 +4084,6 @@ extern void compiler_error			PARAMS ((const char *, ...))
   ATTRIBUTE_PRINTF_1;
 extern void yyerror				PARAMS ((const char *));
 extern void clear_inline_text_obstack		PARAMS ((void));
-extern void maybe_snarf_defarg			PARAMS ((void));
-extern void add_defarg_fn			PARAMS ((tree));
-extern void do_pending_defargs			PARAMS ((void));
 extern void yyhook				PARAMS ((int));
 extern int cp_type_qual_from_rid                PARAMS ((tree));
 
@@ -4345,6 +4341,12 @@ extern int peekyylex				PARAMS ((void));
 extern int yylex				PARAMS ((void));
 extern tree arbitrate_lookup			PARAMS ((tree, tree, tree));
 extern tree frob_opname                         PARAMS ((tree));
+extern void maybe_snarf_defarg			PARAMS ((void));
+extern void add_defarg_fn			PARAMS ((tree));
+extern void do_pending_defargs			PARAMS ((void));
+extern void done_pending_defargs		PARAMS ((void));
+extern void unprocessed_defarg_fn               PARAMS ((tree));
+extern void replace_defarg			PARAMS ((tree, tree));
 
 /* in tree.c */
 extern void init_tree			        PARAMS ((void));

@@ -2271,6 +2271,7 @@ structsp:
 		}
 	  pending_defargs
                 {
+		  done_pending_defargs ();
 		  begin_inline_definitions ();
 		}
 	  pending_inlines

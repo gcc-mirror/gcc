@@ -11950,20 +11950,6 @@ grokparms (first_parm)
   return result;
 }
 
-/* Called from the parser to update an element of TYPE_ARG_TYPES for some
-   FUNCTION_TYPE with the newly parsed version of its default argument, which
-   was previously digested as text.  See snarf_defarg et al in lex.c.  */
-
-void
-replace_defarg (arg, init)
-     tree arg, init;
-{
-  if (! processing_template_decl
-      && ! can_convert_arg (TREE_VALUE (arg), TREE_TYPE (init), init))
-    cp_pedwarn ("invalid type `%T' for default argument to `%T'",
-		TREE_TYPE (init), TREE_VALUE (arg));
-  TREE_PURPOSE (arg) = init;
-}
 
 /* D is a constructor or overloaded `operator='.  Returns non-zero if
    D's arguments allow it to be a copy constructor, or copy assignment

@@ -3953,6 +3953,26 @@ convert_default_arg (type, arg, fn, parmnum)
      tree fn;
      int parmnum;
 {
+  if (TREE_CODE (arg) == DEFAULT_ARG)
+    {
+      /* When processing the default args for a class, we can find that
+         there is an ordering constraint, and we call a function who's
+         default args have not yet been converted. For instance,
+          class A {
+              A (int = 0);
+              void Foo (A const & = A ());
+          };
+         We must process A::A before A::Foo's default arg can be converted.
+         Remember the dependent function, so do_pending_defargs can retry,
+         and check loops.  */
+      unprocessed_defarg_fn (fn);
+      
+      /* Don't return error_mark node, as we won't be able to distinguish
+         genuine errors from this case, and that would lead to repeated
+         diagnostics.  Just make something of the right type.  */
+      return build1 (NOP_EXPR, type, integer_zero_node);
+    }
+
   if (fn && DECL_TEMPLATE_INFO (fn))
     arg = tsubst_default_argument (fn, type, arg);
 

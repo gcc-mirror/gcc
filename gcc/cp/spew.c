@@ -164,10 +164,14 @@ char *inline_text_firstobj;
    through and parse all of them using do_pending_defargs.  Since yacc
    parsers are not reentrant, we retain defargs state in these two
    variables so that subsequent calls to do_pending_defargs can resume
-   where the previous call left off.  */
+   where the previous call left off. DEFARG_FNS is a tree_list where 
+   the TREE_TYPE is the current_class_type, TREE_VALUE is the FUNCTION_DECL,
+   and TREE_PURPOSE is the list unprocessed dependent functions.  */
 
-static tree defarg_fns;
-static tree defarg_parm;
+static tree defarg_fns;     /* list of functions with unprocessed defargs */
+static tree defarg_parm;    /* current default parameter */
+static tree defarg_depfns;  /* list of unprocessed fns met during current fn. */
+static tree defarg_fnsdone; /* list of fns with circular defargs */
 
 /* Initialize obstacks. Called once, from init_parse.  */
 
@@ -180,6 +184,8 @@ init_spew ()
   gcc_obstack_init (&feed_obstack);
   ggc_add_tree_root (&defarg_fns, 1);
   ggc_add_tree_root (&defarg_parm, 1);
+  ggc_add_tree_root (&defarg_depfns, 1);
+  ggc_add_tree_root (&defarg_fnsdone, 1);
 
   ggc_add_root (&pending_inlines, 1, sizeof (struct unparsed_text *),
 		mark_pending_inlines);
@@ -1267,7 +1273,10 @@ add_defarg_fn (decl)
   if (TREE_CODE (decl) == FUNCTION_DECL)
     TREE_VALUE (defarg_fns) = decl;
   else
-    defarg_fns = tree_cons (current_class_type, decl, defarg_fns);  
+    {
+      defarg_fns = tree_cons (NULL_TREE, decl, defarg_fns);  
+      TREE_TYPE (defarg_fns) = current_class_type;
+    }
 }
 
 /* Helper for do_pending_defargs.  Starts the parsing of a default arg.  */
@@ -1305,12 +1314,14 @@ do_pending_defargs ()
   if (defarg_parm)
     finish_defarg ();
 
-  for (; defarg_fns; defarg_fns = TREE_CHAIN (defarg_fns))
+  for (; defarg_fns;)
     {
+      tree current = defarg_fns;
+      
       tree defarg_fn = TREE_VALUE (defarg_fns);
       if (defarg_parm == NULL_TREE)
 	{
-	  push_nested_class (TREE_PURPOSE (defarg_fns), 1);
+	  push_nested_class (TREE_TYPE (defarg_fns), 1);
 	  pushlevel (0);
 	  if (TREE_CODE (defarg_fn) == FUNCTION_DECL)
 	    maybe_begin_member_template_processing (defarg_fn);
@@ -1324,8 +1335,12 @@ do_pending_defargs ()
 	defarg_parm = TREE_CHAIN (defarg_parm);
 
       for (; defarg_parm; defarg_parm = TREE_CHAIN (defarg_parm))
-	if (TREE_PURPOSE (defarg_parm)
-	    && TREE_CODE (TREE_PURPOSE (defarg_parm)) == DEFAULT_ARG)
+	if (!TREE_PURPOSE (defarg_parm)
+	    || TREE_CODE (TREE_PURPOSE (defarg_parm)) != DEFAULT_ARG)
+	  ;/* OK */
+	else if (TREE_PURPOSE (current) == error_mark_node)
+	  DEFARG_POINTER (TREE_PURPOSE (defarg_parm)) = NULL;
+	else
 	  {
 	    feed_defarg (defarg_parm);
 
@@ -1342,6 +1357,96 @@ do_pending_defargs ()
 
       poplevel (0, 0, 0);
       pop_nested_class ();
+      
+      defarg_fns = TREE_CHAIN (defarg_fns);
+      if (defarg_depfns)
+        {
+          /* This function's default args depend on unprocessed default args
+             of defarg_fns. We will need to reprocess this function, and
+             check for circular dependancies.  */
+          tree a, b;
+          
+          for (a = defarg_depfns, b = TREE_PURPOSE (current); a && b; 
+               a = TREE_CHAIN (a), b = TREE_CHAIN (b))
+            if (TREE_VALUE (a) != TREE_VALUE (b))
+              goto different;
+          if (a || b)
+            {
+            different:;
+              TREE_CHAIN (current) = NULL_TREE;
+              defarg_fns = chainon (defarg_fns, current);
+              TREE_PURPOSE (current) = defarg_depfns;
+            }
+          else
+            {
+              cp_warning_at ("circular dependency in default args of `%#D'", defarg_fn);
+              /* No need to say what else is dependent, as they will be
+                 picked up in another pass.  */
+              
+              /* Immediately repeat, but marked so that we break the loop. */
+              defarg_fns = current;
+              TREE_PURPOSE (current) = error_mark_node;
+            }
+          defarg_depfns = NULL_TREE;
+        }
+      else if (TREE_PURPOSE (current) == error_mark_node)
+        defarg_fnsdone = tree_cons (NULL_TREE, defarg_fn, defarg_fnsdone);
+    }
+}
+
+/* After parsing all the default arguments, we must clear any that remain,
+   which will be part of a circular dependency. */
+void
+done_pending_defargs ()
+{
+  for (; defarg_fnsdone; defarg_fnsdone = TREE_CHAIN (defarg_fnsdone))
+    {
+      tree fn = TREE_VALUE (defarg_fnsdone);
+      tree parms;
+      
+      if (TREE_CODE (fn) == FUNCTION_DECL)
+        parms = TYPE_ARG_TYPES (TREE_TYPE (fn));
+      else
+        parms = TYPE_ARG_TYPES (fn);
+      for (; parms; parms = TREE_CHAIN (parms))
+	if (TREE_PURPOSE (parms)
+	    && TREE_CODE (TREE_PURPOSE (parms)) == DEFAULT_ARG)
+	  {
+            my_friendly_assert (!DEFARG_POINTER (TREE_PURPOSE (parms)), 20010107);
+	    TREE_PURPOSE (parms) = NULL_TREE;
+	  }
+    }
+}
+
+/* In processing the current default arg, we called FN, but that call
+   required a default argument of FN, and that had not yet been processed.
+   Remember FN.  */
+
+void
+unprocessed_defarg_fn (fn)
+     tree fn;
+{
+  defarg_depfns = tree_cons (NULL_TREE, fn, defarg_depfns);
+}
+
+/* Called from the parser to update an element of TYPE_ARG_TYPES for some
+   FUNCTION_TYPE with the newly parsed version of its default argument, which
+   was previously digested as text.  */
+
+void
+replace_defarg (arg, init)
+     tree arg, init;
+{
+  if (init == error_mark_node)
+    TREE_PURPOSE (arg) = error_mark_node;
+  else
+    {
+      if (! processing_template_decl
+          && ! can_convert_arg (TREE_VALUE (arg), TREE_TYPE (init), init))
+        cp_pedwarn ("invalid type `%T' for default argument to `%T'",
+  	    	    TREE_TYPE (init), TREE_VALUE (arg));
+      if (!defarg_depfns)
+        TREE_PURPOSE (arg) = init;
     }
 }
 
