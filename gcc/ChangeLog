@@ -1,3 +1,9 @@
+2004-11-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-cfg.c (reinstall_phi_args): New.
+	(tree_split_edge): Use it after redirecting an edge.  Don't
+	modify PHI_ARG_EDGE.
+
 2004-11-19  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* tree-vectorizer.c (slpeel_verify_cfg_after_peeling): Define only
