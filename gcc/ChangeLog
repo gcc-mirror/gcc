@@ -1,5 +1,10 @@
 2001-10-11  Richard Henderson  <rth@redhat.com>
 
+	* dwarf2out.c (add_const_value_attribute): If long < HOST_WIDE_INT,
+	fall back to add_AT_long_long for large CONST_INT.
+
+2001-10-11  Richard Henderson  <rth@redhat.com>
+
 	* config/i386/i386.md (setcc splitters): Add four splitters to
 	simplify compound compares that simplify_comparison can't handle.
 
