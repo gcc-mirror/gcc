@@ -190,8 +190,7 @@ conflict_graph_add (conflict_graph graph, int reg1, int reg2)
   void **slot;
 
   /* A reg cannot conflict with itself.  */
-  if (reg1 == reg2)
-    abort ();
+  gcc_assert (reg1 != reg2);
 
   dummy.smaller = smaller;
   dummy.larger = larger;
@@ -324,10 +323,11 @@ print_conflict (int reg1, int reg2, void *contextp)
      is the interesting one.  */
   if (reg1 == context->reg)
     reg = reg2;
-  else if (reg2 == context->reg)
-    reg = reg1;
   else
-    abort ();
+    {
+      gcc_assert (reg2 == context->reg);
+      reg = reg1;
+    }
 
   /* Print the conflict.  */
   fprintf (context->fp, " %d", reg);

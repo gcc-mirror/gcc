@@ -173,8 +173,7 @@ clear_edges (void)
   EXIT_BLOCK_PTR->pred = NULL;
   ENTRY_BLOCK_PTR->succ = NULL;
 
-  if (n_edges)
-    abort ();
+  gcc_assert (!n_edges);
 }
 
 /* Allocate memory for basic_block.  */
@@ -211,8 +210,7 @@ free_rbi_pool (void)
 void
 initialize_bb_rbi (basic_block bb)
 {
-  if (bb->rbi)
-    abort ();
+  gcc_assert (!bb->rbi);
   bb->rbi = pool_alloc (rbi_pool);
   memset (bb->rbi, 0, sizeof (struct reorder_block_def));
 }
@@ -252,8 +250,7 @@ compact_blocks (void)
       i++;
     }
 
-  if (i != n_basic_blocks)
-    abort ();
+  gcc_assert (i == n_basic_blocks);
 
   for (; i < last_basic_block; i++)
     BASIC_BLOCK (i) = NULL;
@@ -377,8 +374,7 @@ remove_edge (edge e)
   for (tmp = src->succ; tmp && tmp != e; tmp = tmp->succ_next)
     last_succ = tmp;
 
-  if (!tmp)
-    abort ();
+  gcc_assert (tmp);
   if (last_succ)
     last_succ->succ_next = e->succ_next;
   else
@@ -387,8 +383,7 @@ remove_edge (edge e)
   for (tmp = dest->pred; tmp && tmp != e; tmp = tmp->pred_next)
     last_pred = tmp;
 
-  if (!tmp)
-    abort ();
+  gcc_assert (tmp);
   if (last_pred)
     last_pred->pred_next = e->pred_next;
   else
@@ -696,8 +691,7 @@ inline void
 alloc_aux_for_block (basic_block bb, int size)
 {
   /* Verify that aux field is clear.  */
-  if (bb->aux || !first_block_aux_obj)
-    abort ();
+  gcc_assert (!bb->aux && first_block_aux_obj);
   bb->aux = obstack_alloc (&block_aux_obstack, size);
   memset (bb->aux, 0, size);
 }
@@ -715,10 +709,10 @@ alloc_aux_for_blocks (int size)
       gcc_obstack_init (&block_aux_obstack);
       initialized = 1;
     }
-
-  /* Check whether AUX data are still allocated.  */
-  else if (first_block_aux_obj)
-    abort ();
+  else
+    /* Check whether AUX data are still allocated.  */
+    gcc_assert (!first_block_aux_obj);
+  
   first_block_aux_obj = obstack_alloc (&block_aux_obstack, 0);
   if (size)
     {
@@ -746,8 +740,7 @@ clear_aux_for_blocks (void)
 void
 free_aux_for_blocks (void)
 {
-  if (!first_block_aux_obj)
-    abort ();
+  gcc_assert (first_block_aux_obj);
   obstack_free (&block_aux_obstack, first_block_aux_obj);
   first_block_aux_obj = NULL;
 
@@ -761,8 +754,7 @@ inline void
 alloc_aux_for_edge (edge e, int size)
 {
   /* Verify that aux field is clear.  */
-  if (e->aux || !first_edge_aux_obj)
-    abort ();
+  gcc_assert (!e->aux && first_edge_aux_obj);
   e->aux = obstack_alloc (&edge_aux_obstack, size);
   memset (e->aux, 0, size);
 }
@@ -780,10 +772,9 @@ alloc_aux_for_edges (int size)
       gcc_obstack_init (&edge_aux_obstack);
       initialized = 1;
     }
-
-  /* Check whether AUX data are still allocated.  */
-  else if (first_edge_aux_obj)
-    abort ();
+  else
+    /* Check whether AUX data are still allocated.  */
+    gcc_assert (!first_edge_aux_obj);
 
   first_edge_aux_obj = obstack_alloc (&edge_aux_obstack, 0);
   if (size)
@@ -821,8 +812,7 @@ clear_aux_for_edges (void)
 void
 free_aux_for_edges (void)
 {
-  if (!first_edge_aux_obj)
-    abort ();
+  gcc_assert (first_edge_aux_obj);
   obstack_free (&edge_aux_obstack, first_edge_aux_obj);
   first_edge_aux_obj = NULL;
 

@@ -403,8 +403,7 @@ rtl_coverage_counter_ref (unsigned counter, unsigned no)
   enum machine_mode mode = mode_for_size (gcov_size, MODE_INT, 0);
   rtx ref;
 
-  if (no >= fn_n_ctrs[counter] - fn_b_ctrs[counter])
-    abort ();
+  gcc_assert (no < fn_n_ctrs[counter] - fn_b_ctrs[counter]);
   no += prg_n_ctrs[counter] + fn_b_ctrs[counter];
   if (!ctr_labels[counter])
       {
@@ -428,8 +427,7 @@ tree_coverage_counter_ref (unsigned counter, unsigned no)
 {
   tree domain_type = TYPE_DOMAIN (TREE_TYPE (tree_ctr_tables[counter]));
 
-  if (no >= fn_n_ctrs[counter] - fn_b_ctrs[counter])
-    abort ();
+  gcc_assert (no < fn_n_ctrs[counter] - fn_b_ctrs[counter]);
   no += prg_n_ctrs[counter] + fn_b_ctrs[counter];
 
   /* "no" here is an array index, scaled to bytes later.  */
@@ -462,6 +460,7 @@ coverage_checksum_string (unsigned chksum, const char *string)
 	    {
 	      int y;
 	      unsigned seed;
+	      int scan;
 
 	      for (y = 1; y < 9; y++)
 		if (!(string[i + y] >= '0' && string[i + y] <= '9')
@@ -475,8 +474,8 @@ coverage_checksum_string (unsigned chksum, const char *string)
 		  break;
 	      if (y != 18)
 		continue;
-	      if (!sscanf (string + i + 10, "%X", &seed))
-		abort ();
+	      scan = sscanf (string + i + 10, "%X", &seed);
+	      gcc_assert (scan);
 	      if (seed != crc32_string (0, flag_random_seed))
 		continue;
 	      string = dup = xstrdup (string);

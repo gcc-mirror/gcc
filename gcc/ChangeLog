@@ -1,3 +1,61 @@
+2004-09-07  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cfganal.c (flow_depth_first_order_compute, dfs_enumerate_from,
+	cfgbuild.c, inside_basic_block_p, control_flow_insn_p,
+	make_label_edge, make_edges, find_basic_blocks_1): Use gcc_assert
+	or gcc_unreachable.
+	* cfg.c (clear_edges, initialize_bb_rbi, compact_blocks,
+	remove_edge, alloc_aux_for_blocks, free_aux_for_blocks,
+	alloc_aux_for_edges, free_aux_for_edges): Likewise.
+	* cfgcleanup.c (try_forward_edges,
+	merge_blocks_move_predecessor_nojumps,
+	merge_blocks_move_successor_nojumps): Likewise.
+	* cfgexpand.c (expand_gimple_cond_expr,
+	expand_gimple_tailcall): Likewise.
+	* cfghooks.c (duplicate_block): Likewise.
+	* cfglayout.c (record_effective_endpoints,
+	insn_locators_initialize, change_scope, fixup_reorder_chain,
+	verify_insn_chain, fixup_fallthru_exit_predecessor,
+	duplicate_insn_chain, cfg_layout_finalize): Likewise.
+	* cfgloopanal.c (check_irred): Likewise.
+	* cfgloop.c (superloop_at_depth, flow_loops_free,
+	flow_loop_entry_edges_find, flow_loops_find,
+	flow_loop_outside_edge_p, get_loop_body,
+	get_loop_body_in_dom_order, get_loop_body_in_bfs_order,
+	get_loop_exit_edges, num_loop_branches, cancel_loop,
+	verify_loop_structure): Likewise.
+	cfgloopmanip.c (find_path, remove_path, loop_delete_branch_edge,
+	duplicate_loop_to_header_edge, create_preheader,
+	create_loop_notes): Likewise.
+	* cfgrtl.c (delete_insn, try_redirect_by_replacing_jump,
+	edirect_branch_edge, force_nonfallthru_and_redirect,
+	rtl_split_edge, insert_insn_on_edge, commit_one_edge_insertion,
+	commit_edge_insertions, commit_edge_insertions_watch_calls,
+	purge_dead_edges, cfg_layout_redirect_edge_and_branch,
+	cfg_layout_redirect_edge_and_branch_force,
+	cfg_layout_merge_blocks, rtl_flow_call_edges_add): Likewise.
+	* cgraph.c (cgraph_node, cgraph_create_edge, cgraph_remove_edge,
+	cgraph_redirect_edge_callee, cgraph_global_info, cgraph_rtl_info,
+	cgraph_varpool_node): Likewise.
+	* cgraphunit.c (cgraph_finalize_function,
+	cgraph_finalize_compilation_unit, cgraph_mark_functions_to_output,
+	cgraph_expand_function, cgraph_remove_unreachable_nodes,
+	cgraph_clone_inlined_nodes, cgraph_mark_inline_edge,
+	cgraph_mark_inline, cgraph_expand_all_functions,
+	cgraph_build_static_cdtor): Likewise.
+	* combine.c  (do_SUBST, try_combine, subst, combine_simplify_rtx,
+	simplify_logical, distribute_notes, insn_cuid): Likewise.
+	* conflict.c (conflict_graph_add, print_conflict): Likewise.
+	* coverage.c (rtl_coverage_counter_ref, tree_coverage_counter_ref,
+	coverage_checksum_string): Likewise.
+	* cse.c (make_new_qty, make_regs_eqv, insert, invalidate,
+	hash_rtx, exp_equiv_p, cse_basic_block, count_reg_usage,
+	cse_cc_succs, cse_condition_code_reg): Likewise.
+	* cselib.c (entry_and_rtx_equal_p, remove_useless_values,
+	rtx_equal_for_cselib_p, wrap_constant, cselib_hash_rtx,
+	new_cselib_val, cselib_subst_to_values, cselib_invalidate_regno,
+	cselib_record_set): Likewise.
+
 2004-09-07  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-loop-ivopts.c (iv_value): Avoid invalid sharing on niter.
