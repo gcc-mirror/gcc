@@ -40,13 +40,13 @@
 		     size_t __refs) 
   : __ctype_abstract_base<char>(__refs), _M_del(__table != 0 && __del), 
   _M_toupper(__trans_upper), _M_tolower(__trans_lower), 
-  _M_ctable(__ctype_mask), _M_table(__table ? __table : _M_ctable) 
+  _M_table(__table ? __table : _S_ctable) 
   { }
 
   ctype<char>::ctype(const mask* __table, bool __del, size_t __refs) 
   : __ctype_abstract_base<char>(__refs), _M_del(__table != 0 && __del), 
   _M_toupper(__trans_upper), _M_tolower(__trans_lower), 
-  _M_ctable(__ctype_mask), _M_table(__table ? __table : _M_ctable) 
+  _M_table(__table ? __table : _S_ctable) 
   { }
 
   char
