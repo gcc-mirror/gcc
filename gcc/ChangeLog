@@ -1,5 +1,9 @@
 2004-09-11  Jan Hubicka  <jh@suse.cz>
 
+	* i386.h (MODE_NEEDED): Calls need UNINITIALIZED mode; add comment.
+	(EMIT_MODE_SET): UNINITIALIZED mode needs no set.
+	* i386.md (i387_cw): Add 'uninitialized' mode.
+
 	* profile.c (BB_TO_GCOV_INDEX): move more to the front.
 	(output_location): Break out from ....
 	(branch_prob): ... here; handle gcov output on trees.

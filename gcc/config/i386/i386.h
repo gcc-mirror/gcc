@@ -2960,13 +2960,18 @@ extern rtx ix86_compare_op1;	/* operand 1 for comparisons */
    `OPTIMIZE_MODE_SWITCHING' is defined, you must define this macro to
    return an integer value not larger than the corresponding element
    in `NUM_MODES_FOR_MODE_SWITCHING', to denote the mode that ENTITY
-   must be switched into prior to the execution of INSN.  */
+   must be switched into prior to the execution of INSN. 
+   
+   The mode UNINITIALIZED is used to force re-load of possibly previously
+   stored control word after function call.  The mode ANY specify that
+   function has no requirements on the control word and make no changes
+   in the bits we are interested in.  */
 
 #define MODE_NEEDED(ENTITY, I)						\
   (GET_CODE (I) == CALL_INSN						\
    || (GET_CODE (I) == INSN && (asm_noperands (PATTERN (I)) >= 0 	\
 				|| GET_CODE (PATTERN (I)) == ASM_INPUT))\
-   ? I387_CW_ANY 							\
+   ? I387_CW_UNINITIALIZED						\
    : recog_memoized (I) < 0						\
    ? I387_CW_ANY 							\
    : get_attr_i387_cw (I))
@@ -2981,7 +2986,7 @@ extern rtx ix86_compare_op1;	/* operand 1 for comparisons */
    are to be inserted.  */
 
 #define EMIT_MODE_SET(ENTITY, MODE, HARD_REGS_LIVE) 			\
-  ((MODE) != I387_CW_ANY						\
+  ((MODE) != I387_CW_ANY && (MODE) != I387_CW_UNINITIALIZED		\
    ? emit_i387_cw_initialization (assign_386_stack_local (HImode, 1),	\
 				  assign_386_stack_local (HImode, 2),   \
 				  MODE), 0				\
