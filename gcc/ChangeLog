@@ -1,3 +1,7 @@
+Wed Feb  3 15:26:58 1999  Gavin Romig-Koch  <gavin@cygnus.com>
+
+	* config/mips/mips.md (div_trap_mips16): Remove nop's after branches.
+
 Wed Feb  3 11:56:23 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.c (insn_sets_and_refs_are_delayed): New function.
