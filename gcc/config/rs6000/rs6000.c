@@ -1443,13 +1443,12 @@ output_prolog (file, size)
   /* Write .extern for AIX common mode routines, if needed.  */
   if (! TARGET_POWER && ! TARGET_POWERPC && ! common_mode_defined)
     {
-      fputs ("\t.extern __mulh\n"
-	     "\t.extern __mull\n"
-	     "\t.extern __divss\n"
-	     "\t.extern __divus\n"
-	     "\t.extern __quoss\n"
-	     "\t.extern __quous\n",
-	     file);
+      fputs ("\t.extern __mulh\n", file);
+      fputs ("\t.extern __mull\n", file);
+      fputs ("\t.extern __divss\n", file);
+      fputs ("\t.extern __divus\n", file);
+      fputs ("\t.extern __quoss\n", file);
+      fputs ("\t.extern __quous\n", file);
       common_mode_defined = 1;
     }
 
