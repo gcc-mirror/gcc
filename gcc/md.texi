@@ -1377,6 +1377,9 @@ Floating point register
 @item y
 @samp{CR} register (condition register)
 
+@item z
+@samp{FPMEM} stack memory for FPR-GPR transfers
+
 @item I
 Signed 16 bit constant
 
@@ -1413,10 +1416,7 @@ for @code{asm} statements)
 AIX TOC entry
 
 @item S
-Windows NT SYMBOL_REF
-
-@item T
-Windows NT LABEL_REF
+Constant suitable as a 64-bit mask operand
 
 @item U
 System V Release 4 small data area reference
