@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.82 2001/04/06 06:08:17 bkoz Exp $
+## $Id: Makefile.am,v 1.83 2001/04/11 18:52:31 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -306,7 +306,7 @@ tmp-libstdc++.INC: Makefile
 # the concept-checking symbols.  So we must disable the checks while
 # actually building the library.
 AM_CXXFLAGS = \
-	-fno-implicit-templates -D_GLIBCPP_NO_CONCEPT_CHECKS \
+	-fno-implicit-templates \
 	$(LIBSUPCXX_CXXFLAGS) \
 	$(WARN_CXXFLAGS) \
 	$(OPTIMIZE_CXXFLAGS) \

@@ -34,7 +34,7 @@
 #include <bits/os_defines.h>
 
 // The current version of the C++ library in compressed ISO date format.
-#define __GLIBCPP__ 20010406
+#define __GLIBCPP__ 20010417
 
 // This is necessary until GCC supports separate template
 // compilation.  
@@ -55,6 +55,9 @@
 // Use corrected code from the committee library group's issues list.
 #define _GLIBCPP_RESOLVE_LIB_DEFECTS 1
 
+// Enable concept checking code from the boost libraries.
+//#define _GLIBCPP_CONCEPT_CHECKS 1
+
 // From SGI's stl_config.h; generic settings and user hooks (_NOTHREADS).
 #if defined(_PTHREADS) && !defined(_NOTHREADS)
 #    define __STL_PTHREADS
@@ -62,9 +65,6 @@
 #if defined(_UITHREADS) && !defined(_PTHREADS) && !defined(_NOTHREADS)
 #    define __STL_UITHREADS
 #endif
-
-// Concept-checking hooks and related config are now in bits/concept_check.h.
-
 
 // This is also a user hook, but via -f[no-]exceptions, not direct #defines.
 #ifdef __EXCEPTIONS
@@ -142,5 +142,3 @@
 
 
 // End of prewritten config; the discovered settings follow.
-
-

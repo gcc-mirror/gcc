@@ -22,12 +22,11 @@
 
 #include <set>
 #include <string>
-
-// map and set
-// libstdc++/86: map & set iterator comparisons are not type-safe
-
+make 
 // { dg-do compile }
+// { dg-excess-errors "" }
 
+// libstdc++/86: map & set iterator comparisons are not type-safe
 int main(void)
 {
   bool test = true;
@@ -37,9 +36,11 @@ int main(void)
   
   std::set<unsigned int>::iterator itr(setByIndex.begin());
   
-  // NB: it's not setByIndex!!
-  test &= itr != setByName.end();  // { dg-error ".*" "" { xfail *-*-* } }
-  test &= itr == setByName.end();  // { dg-error ".*" "" { xfail *-*-* } }
 
+  // NB: it's not setByIndex!!
+  test &= itr != setByName.end(); 
+  // { dg-error "no match for" "" { xfail *-*-* } 41 }
+  test &= itr == setByName.end(); 
+  // { dg-error "no match for" "" { xfail *-*-* } 43 }
   return 0;
 }

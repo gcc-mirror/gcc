@@ -31,29 +31,18 @@
 #define _GLIBCPP_CONCEPT_CHECK 1
 
 #pragma GCC system_header
+
 #include <bits/c++config.h>
-
-
-// Concept-checking code is on by default unless users turn it off via any
-// of these methods:
-//  -  _GLIBCPP_NO_CONCEPT_CHECKS is a user hook; defining it disables the
-//     checks.
-//  -  _STL_NO_CONCEPT_CHECKS is a user hook from the old STL implementation
-//     specifically for this purpose; defining it disables the checks, in
-//     case the user is expecting the old version.
-//  -  NDEBUG is the usual macro that kills assert().  Defining it will also
-//     disable the checks, by the reasoning that if the user doesn't want
-//     any runtime assertion code, then no space penalty for the checks
-//     is desired either.
 
 // All places in libstdc++-v3 where these are used, or /might/ be used, or
 // don't need to be used, or perhaps /should/ be used, are commented with
 // "concept requirements" (and maybe some more text).  So grep like crazy
 // if you're looking for additional places to use these.
 
+// Concept-checking code is off by default unless users turn it on via
+// configure options or editing c++config.h.
 
-#if defined(_GLIBCPP_NO_CONCEPT_CHECKS) || defined(_STL_NO_CONCEPT_CHECKS) \
-    || defined(NDEBUG)
+#ifndef _GLIBCPP_CONCEPT_CHECKS
 
 #define __glibcpp_function_requires(...)
 #define __glibcpp_class_requires(_a,_b)
@@ -90,4 +79,3 @@
 #endif // enable/disable
 
 #endif // _GLIBCPP_CONCEPT_CHECK
-
