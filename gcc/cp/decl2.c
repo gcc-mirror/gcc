@@ -916,7 +916,7 @@ grok_x_components (specs, components)
 		  break;
 	    }
 	  else if (TREE_CODE (t) == ENUMERAL_TYPE)
-	    x = grok_enum_decls (t, NULL_TREE);
+	    x = grok_enum_decls (NULL_TREE);
 	  else
 	    x = NULL_TREE;
 	  return x;
@@ -929,13 +929,12 @@ grok_x_components (specs, components)
 	}
     }
   else
-    {
-      t = TREE_TYPE (components);
-      if (TREE_CODE (t) == ENUMERAL_TYPE && TREE_NONLOCAL_FLAG (t))
-	return grok_enum_decls (t, components);
-      else
-	return components;
-    }
+    /* There may or may not be any enum decls to grok, but
+       grok_enum_decls will just return components, if there aren't
+       any.  We used to try to figure out whether or not there were
+       any enum decls based on the type of components, but that's too
+       hard; it might be something like `enum { a } *p;'.  */
+    return grok_enum_decls (components);
 }
 
 /* Classes overload their constituent function names automatically.

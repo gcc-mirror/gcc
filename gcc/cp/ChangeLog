@@ -1,3 +1,21 @@
+Wed Jan 28 11:04:07 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* cp-tree.h (grok_enum_decls): Remove type parameter.
+	* decl.c (grok_enum_decls): Likewise.
+	* decl2.c (grok_x_components): Call grok_enum_decls
+	unconditionally, since it will do nothing if there is no
+	current_local_enum.  Use the new calling sequence.
+	* pt.c (tsubst_enum): Use the new calling sequence for
+	grok_enum_decls.
+
+	* decl.c (start_function): Make member functions of local classes
+	in extern inline functions have comdat linkage here...
+	(grokdeclarator): Rather than here.
+	
+Wed Jan 28 10:55:47 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (convert_nontype_argument): Use decl_constant_value.
+
 Tue Jan 27 16:42:21 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* call.c (add_template_candidate_real): New function.
@@ -13,6 +31,7 @@ Tue Jan 27 16:42:21 1998  Mark Mitchell  <mmitchell@usa.net>
 	(check_explicit_specialization): Return a tree, not an int.
 	(more_specialized): Take additional argument.
 	(get_bindings): Likewise.
+	(TI_PENDING_SPECIALIZATION_FLAG): New macro.
 	* cvt.c (perform_qualification_conversions): Use comp_ptr_ttypes.
 	(perform_array_to_pointer_conversion): Remove.
 	* decl.c (saved_scope): Add processing_specialization,

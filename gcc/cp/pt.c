@@ -1401,7 +1401,7 @@ convert_nontype_argument (type, expr)
      
      --the name of an object or function with external linkage,
      including function templates and function template-ids but
-     excluding non- tatic class members, expressed as id-expression;
+     excluding non-static class members, expressed as id-expression;
      or
      
      --the address of an object or function with external linkage,
@@ -1412,13 +1412,16 @@ convert_nontype_argument (type, expr)
      
      --a pointer to member expressed as described in _expr.unary.op_.  */
 
+  /* An integral constant-expression can include const variables
+     or enumerators.  */
+  if (INTEGRAL_TYPE_P (expr_type) && TREE_READONLY_DECL_P (expr))
+    expr = decl_constant_value (expr);
+
   if (INTEGRAL_TYPE_P (expr_type) 
       || TYPE_PTRMEM_P (expr_type) 
       || TYPE_PTRMEMFUNC_P (expr_type))
     {
-      if (!TREE_CONSTANT (expr) 
-	  /* FIXME: Should this case be handled by fold()?  Why not?  */
-	  && !(TREE_CODE (expr) == VAR_DECL && TREE_READONLY (expr)))
+      if (! TREE_CONSTANT (expr))
 	{
 	  cp_error ("non-constant `%E' cannot be used as template argument",
 		    expr);
@@ -5874,7 +5877,7 @@ tsubst_enum (tag, args, nargs, field_chain)
   finish_enum (newtag, values);
 
   if (NULL != field_chain)
-    *field_chain = grok_enum_decls (newtag, NULL_TREE);
+    *field_chain = grok_enum_decls (NULL_TREE);
 
   current_local_enum = prev_local_enum;
 

@@ -9734,16 +9734,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 			       funcdef_flag, template_count);
 	    if (decl == NULL_TREE)
 	      return NULL_TREE;
-	    if (function_context != NULL_TREE
-		&& DECL_THIS_INLINE (function_context)
-		&& TREE_PUBLIC (function_context))
-	      /* We just declared a member of a local class in an
-		 extern inline function.  Give such an entity comdat
-		 linkage.  */
-	      {
-		comdat_linkage (decl);
-		DECL_INTERFACE_KNOWN (decl) = 1;
-	      }
 #if 0
 	    /* This clobbers the attrs stored in `decl' from `attrlist'.  */
 	    /* The decl and setting of decl_machine_attr is also turned off.  */
@@ -11395,8 +11385,8 @@ build_enumerator (name, value)
 }
 
 tree
-grok_enum_decls (type, decl)
-     tree type, decl;
+grok_enum_decls (decl)
+     tree decl;
 {
   tree d = current_local_enum;
   
@@ -11405,7 +11395,6 @@ grok_enum_decls (type, decl)
   
   while (1)
     {
-      TREE_TYPE (d) = type;
       if (TREE_CHAIN (d) == NULL_TREE)
 	{
 	  TREE_CHAIN (d) = decl;
@@ -11661,8 +11650,16 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
 
   if (DECL_INTERFACE_KNOWN (decl1))
     {
+      tree ctx = hack_decl_function_context (decl1);
+
       if (DECL_NOT_REALLY_EXTERN (decl1))
 	DECL_EXTERNAL (decl1) = 0;
+
+      if (ctx != NULL_TREE && DECL_THIS_INLINE (ctx) 
+	  && TREE_PUBLIC (ctx))
+	/* This is a function in a local class in an extern inline
+	   function.  */
+	comdat_linkage (decl1);
     }
   /* If this function belongs to an interface, it is public.
      If it belongs to someone else's interface, it is also external.
