@@ -224,17 +224,19 @@ NM_FOR_TARGET = ` \
     fi; \
   fi`
 
-# Dir to search for system headers.  Overridden by cross-make.
-SYSTEM_HEADER_DIR = /usr/include
-
 # Where to find some libiberty headers.
 HASHTAB_H   = $(srcdir)/../include/hashtab.h
 OBSTACK_H   = $(srcdir)/../include/obstack.h
 SPLAY_TREE_H= $(srcdir)/../include/splay-tree.h
 FIBHEAP_H   = $(srcdir)/../include/fibheap.h
 
+# Default native SYSTEM_HEADER_DIR, to be overridden by targets.
+NATIVE_SYSTEM_HEADER_DIR = /usr/include
 # Default cross SYSTEM_HEADER_DIR, to be overridden by targets.
 CROSS_SYSTEM_HEADER_DIR = $(build_tooldir)/sys-include
+
+# autoconf sets SYSTEM_HEADER_DIR to one of the above.
+SYSTEM_HEADER_DIR = @SYSTEM_HEADER_DIR@
 
 # Control whether to run fixproto and fixincludes.
 STMP_FIXPROTO = stmp-fixproto
@@ -457,16 +459,17 @@ DIR = ../gcc
 # Flags to use when cross-building GCC.
 # Prefix to apply to names of object files when using them
 # to run on the machine we are compiling on.
-HOST_PREFIX=
+HOST_PREFIX = @HOST_PREFIX@
 # Prefix to apply to names of object files when compiling them
 # to run on the machine we are compiling on.
 # The default for this variable is chosen to keep these rules
 # out of the way of the other rules for compiling the same source files.
-HOST_PREFIX_1=loser-
-HOST_CC=$(CC)
-# If you change any of the following variables, check whether a
-# similar change is needed in build-make.
-HOST_CFLAGS=$(ALL_CFLAGS) -DGENERATOR_FILE
+HOST_PREFIX_1 = @HOST_PREFIX_1@
+# Native compiler for the build machine and its switches.
+HOST_CC = @HOST_CC@
+HOST_CFLAGS= @HOST_CFLAGS@ -DGENERATOR_FILE
+
+# Native linker and preprocessor flags.  For x-fragment overrides.
 HOST_LDFLAGS=$(LDFLAGS)
 HOST_CPPFLAGS=$(ALL_CPPFLAGS)
 
@@ -485,11 +488,9 @@ CPP_CROSS_NAME = `echo cpp|sed '$(program_transform_cross_name)'`
 PROTOIZE_CROSS_NAME = `echo protoize|sed '$(program_transform_cross_name)'`
 UNPROTOIZE_CROSS_NAME = `echo unprotoize|sed '$(program_transform_cross_name)'`
 
-# Choose the real default target.
-ALL=all.internal
-
-# Choose the real install target.
-INSTALL_TARGET=install-normal
+# Set by autoconf to "all.internal" for a native build, or
+# "all.cross" to build a cross compiler.
+ALL = @ALL@
 
 # Setup the testing framework, if you have one
 EXPECT = `if [ -f $${rootme}/../expect/expect ] ; then \
@@ -569,20 +570,15 @@ CPPLIB_H = cpplib.h line-map.h
 
 ####host overrides
 @host_overrides@
-
-####cross overrides
-@cross_defines@
-@cross_overrides@
-
-####build overrides
-@build_overrides@
 #
 # Now figure out from those variables how to compile and link.
 
 all.indirect: $(ALL)
 
-# IN_GCC tells various files that system.h, toplev.c, etc are available.
-INTERNAL_CFLAGS = $(CROSS) -DIN_GCC @extra_c_flags@
+# IN_GCC distinguishes between code compiled into GCC itself and other
+# programs built during a bootstrap.
+# autoconf inserts -DCROSS_COMPILE if we are building a cross compiler.
+INTERNAL_CFLAGS = -DIN_GCC @CROSS@
 
 # This is the variable actually used when we compile.
 # If you change this line, you probably also need to change the definition
@@ -794,7 +790,7 @@ LIB2_DIVMOD_FUNCS = _divdi3 _moddi3 _udivdi3 _umoddi3 _udiv_w_sdiv _udivmoddi4
 
 # The following targets define the interface between us and the languages.
 #
-# all.build, all.cross, start.encap, rest.encap,
+# all.cross, start.encap, rest.encap,
 # info, dvi,
 # install-normal, install-common, install-info, install-man,
 # uninstall,
@@ -913,8 +909,6 @@ all.internal: start.encap rest.encap doc
 # although we can't run it on this machine.
 all.cross: native gcc-cross cpp$(exeext) specs \
 	$(LIBGCC) $(EXTRA_PARTS) lang.all.cross doc
-# This is what to compile if making gcc with a cross-compiler.
-all.build: native xgcc$(exeext) cpp$(exeext) $(EXTRA_PARTS) lang.all.build
 # This is what must be made before installing GCC and converting libraries.
 start.encap: native xgcc$(exeext) cpp$(exeext) specs \
 	xlimits.h lang.start.encap
@@ -2464,28 +2458,12 @@ maintainer-clean:
 # Entry points `install' and `uninstall'.
 # Also use `install-collect2' to install collect2 when the config files don't.
 
-# The semicolon is to prevent the install.sh -> install default rule
-# from doing anything.  Having it run true helps avoid problems and
-# noise from versions of make which don't like to have null commands.
-install: $(INSTALL_TARGET) ; @true
-
 # Copy the compiler files into directories where they will be run.
 # Install the driver last so that the window when things are
 # broken is small.
-install-normal: install-common $(INSTALL_HEADERS) $(INSTALL_LIBGCC) \
+install: install-common $(INSTALL_HEADERS) $(INSTALL_LIBGCC) \
     $(INSTALL_CPP) install-man install-info intl.install install-@POSUB@ \
     lang.install-normal install-driver
-
-# Do nothing while making gcc with a cross-compiler. The person who
-# makes gcc for the target machine has to know how to put a complete
-# gcc together by hand.
-install-build: force
-	@echo You have to install gcc on your target machine by hand.
-
-# Run this on the target machine
-# to finish installation of cross compiler.
-# This is not used anymore now that float.h does not depend on enquire.
-install-cross-rest: install-float-h-cross
 
 # Handle cpp installation.
 install-cpp: cpp$(exeext)
@@ -2512,18 +2490,6 @@ uninstall-cpp:
 	  rm -f $(prefix)/$(cpp_install_dir)/$(CPP_INSTALL_NAME)$(exeext); \
 	  rm -f $(prefix)/$(cpp_install_dir)/$(CPP_CROSS_NAME)$(exeext); \
 	else true; fi
-
-# Install float.h for cross compiler.
-# Run this on the target machine!
-# This is not used anymore now that float.h does not depend on enquire.
-install-float-h-cross: installdirs
-#	if [ -f enquire ] ; then true; else false; fi
-# Note: don't use -.  We should fail right away if enquire was not made.
-	./enquire -f > $(tmpdir)/float.h
-	-rm -f $(libsubdir)/include/float.h
-	$(INSTALL_DATA) $(tmpdir)/float.h $(libsubdir)/include/float.h
-	-rm -f $(tmpdir)/float.h
-	chmod a-x $(libsubdir)/include/float.h
 
 # Create the installation directories.
 installdirs:

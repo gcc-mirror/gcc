@@ -1,6 +1,0 @@
-# Dir to search for system headers.  Normally /usr/include.
-# Use CROSS_INCLUDE_DIR not TOOL_INCLUDE_DIR for other vendor's headers.
-SYSTEM_HEADER_DIR = $(CROSS_SYSTEM_HEADER_DIR)
-
-# Don't try to compile the things we can't compile.
-ALL = all.cross

@@ -103,9 +103,6 @@ INTLLIBS = @INTLLIBS@
 # Additional system libraries to link with.
 CLIB=
 
-# Choose the real default target.
-ALL=all
-
 # End of variables for you to override.
 
 # Definition of `all' is here so that new rules inserted by sed
@@ -118,22 +115,18 @@ all: all.indirect
 # sed inserts variable overrides after the following line.
 ####target overrides
 @target_overrides@
+
 ####host overrides
 @host_overrides@
-####cross overrides
-@cross_defines@
-@cross_overrides@
-####build overrides
-@build_overrides@
-####site overrides
-# @site_overrides@
 #
 # Now figure out from those variables how to compile and link.
 
 all.indirect: Makefile ../chill ../cc1chill$(exeext)
 
-# IN_GCC tells obstack.h that we are using gcc's <stddef.h> file.
-INTERNAL_CFLAGS = $(CROSS) -DIN_GCC @extra_c_flags@
+# IN_GCC distinguishes between code compiled into GCC itself and other
+# programs built during a bootstrap.
+# autoconf inserts -DCROSS_COMPILE if we are building a cross compiler.
+INTERNAL_CFLAGS = -DIN_GCC @CROSS@
 
 # This is the variable actually used when we compile.
 ALL_CFLAGS = $(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) $(XCFLAGS)

@@ -1,3 +1,23 @@
+2001-12-04  Zack Weinberg  <zack@codesourcery.com>
+
+	* build-make, cross-make: Delete file.
+	* configure.in: Set and substitute CROSS, ALL,
+	SYSTEM_HEADER_DIR, HOST_PREFIX, HOST_PREFIX_1, HOST_CC,
+	HOST_CFLAGS, STMP_FIXINC, and STMP_FIXPROTO depending on
+	whether build == host and host == target.  Do not
+	AC_SUBST_FILE build_overrides or cross_overrides.  Do not
+	AC_SUBST cross_defines or extra_c_flags.
+	* Makefile.in (NATIVE_SYSTEM_HEADER_DIR): New.
+	(SYSTEM_HEADER_DIR, HOST_PREFIX, HOST_CC, HOST_PREFIX,
+	HOST_PREFIX_1, HOST_CFLAGS, ALL, INTERNAL_CFLAGS): Set
+	partially or completely with autoconf-substituted @variable@
+	notation.
+	(INSTALL_TARGET, @cross_defines@, @cross_overrides@,
+	@build_overrides@, @extra_c_flags@, all.build, install-build,
+	install-cross-rest, install-float-h-cross): Deleted.
+	(install-normal): Rename to install.  Delete old "install"
+	indirection rule.
+
 2001-12-04  Andrew MacLeod  <amacleod@redhat.com>
 
 	* stmt.c (expand_return): Clear destination instead of clobbering it 

@@ -192,9 +192,6 @@ INTLLIBS = @INTLLIBS@
 # Any system libraries needed just for GNAT.
 SYSLIBS = @GNAT_LIBEXC@
 
-# Choose the real default target.
-ALL=all
-
 # List of extra object files linked in with various programs.
 EXTRA_GNAT1_OBJS = ../prefix.o
 EXTRA_GNATBIND_OBJS = ../prefix.o
@@ -221,23 +218,15 @@ all: all.indirect
 
 ####host overrides
 @host_overrides@
-
-####cross overrides
-@cross_defines@
-@cross_overrides@
-
-####build overrides
-@build_overrides@
-
-# Now figure out from those variables how to compile and link.
-
 
 # Now figure out from those variables how to compile and link.
 
 all.indirect: Makefile ../gnat1$(exeext)
 
-# IN_GCC tells obstack.h that we are using gcc's <stddef.h> file.
-INTERNAL_CFLAGS = $(CROSS) -DIN_GCC @extra_c_flags@
+# IN_GCC distinguishes between code compiled into GCC itself and other
+# programs built during a bootstrap.
+# autoconf inserts -DCROSS_COMPILE if we are building a cross compiler.
+INTERNAL_CFLAGS = @CROSS@ -DIN_GCC
 
 # This is the variable actually used when we compile.
 LOOSE_CFLAGS = `echo $(CFLAGS) $(WARN2_CFLAGS)|sed -e 's/-pedantic//g' -e 's/-Wtraditional//g'`
