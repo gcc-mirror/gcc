@@ -619,6 +619,23 @@ do {									\
     && (ALIGN) < FASTEST_ALIGNMENT)	\
     ? FASTEST_ALIGNMENT : (ALIGN))
 
+/* get_mode_alignment assumes complex values are always held in multiple
+   registers, but that is not the case on the SH; CQImode and CHImode are
+   held in a single integer register.  SH5 also holds CSImode and SCmode
+   values in integer regsters.  Thus the alignment needs to be bumped up
+   to match the size of the mode.  */
+#define ROUND_TYPE_ALIGN(STRUCT, COMPUTED, SPECIFIED) \
+  (MAX ((GET_MODE_CLASS (TYPE_MODE (STRUCT)) == MODE_COMPLEX_INT \
+	 || GET_MODE_CLASS (TYPE_MODE (STRUCT)) == MODE_COMPLEX_FLOAT) \
+	? MIN (BIGGEST_ALIGNMENT, GET_MODE_BITSIZE (TYPE_MODE (STRUCT))) \
+	: (COMPUTED), \
+	(SPECIFIED)))
+#define LOCAL_ALIGNMENT(TYPE, ALIGN) \
+  ((GET_MODE_CLASS (TYPE_MODE (TYPE)) == MODE_COMPLEX_INT \
+    || GET_MODE_CLASS (TYPE_MODE (TYPE)) == MODE_COMPLEX_FLOAT) \
+   ? MIN (BIGGEST_ALIGNMENT, GET_MODE_BITSIZE (TYPE_MODE (TYPE))) \
+   : ALIGN)
+
 /* Make arrays of chars word-aligned for the same reasons.  */
 #define DATA_ALIGNMENT(TYPE, ALIGN)		\
   (TREE_CODE (TYPE) == ARRAY_TYPE		\
@@ -1264,26 +1281,35 @@ extern int regno_reg_class[FIRST_PSEUDO_REGISTER];
    and GENERAL_FP_REGS the alternate class.  Since FP0 is likely to be
    spilled or used otherwise, we better have the FP_REGS allocated first.  */
 #define REG_ALLOC_ORDER \
-  { 65, 66, 67, 68, 69, 70, 71, 64, \
-    72, 73, 74, 75, 76, 77, 78, 79, \
-   136,137,138,139,140,141,142,143, \
-    80, 81, 82, 83, 84, 85, 86, 87, \
-    88, 89, 90, 91, 92, 93, 94, 95, \
-    96, 97, 98, 99,100,101,102,103, \
+  {/* Caller-saved FPRs */ \
+    65, 66, 67, 68, 69, 70, 71, 64, \
+    72, 73, 74, 75, 80, 81, 82, 83, \
+    84, 85, 86, 87, 88, 89, 90, 91, \
+    92, 93, 94, 95, 96, 97, 98, 99, \
+   /* Callee-saved FPRs */ \
+    76, 77, 78, 79,100,101,102,103, \
    104,105,106,107,108,109,110,111, \
    112,113,114,115,116,117,118,119, \
    120,121,122,123,124,125,126,127, \
-   151,  1,  2,  3,  7,  6,  5,  4, \
-     0,  8,  9, 10, 11, 12, 13, 14, \
-    16, 17, 18, 19, 20, 21, 22, 23, \
-    24, 25, 26, 27, 28, 29, 30, 31, \
-    32, 33, 34, 35, 36, 37, 38, 39, \
-    40, 41, 42, 43, 44, 45, 46, 47, \
-    48, 49, 50, 51, 52, 53, 54, 55, \
-    56, 57, 58, 59, 60, 61, 62, 63, \
-   150, 15,145,146,147,144,148,149, \
+   136,137,138,139,140,141,142,143, \
+   /* FPSCR */ 151, \
+   /* Caller-saved GPRs (except 8/9 on SH1-4) */ \
+     1,  2,  3,  7,  6,  5,  4,  0, \
+     8,  9, 17, 19, 20, 21, 22, 23, \
+    36, 37, 38, 39, 40, 41, 42, 43, \
+    60, 61, 62, \
+   /* SH1-4 callee-saved saved GPRs / SH5 partially-saved GPRs */ \
+    10, 11, 12, 13, 14, 18, \
+    /* SH5 callee-saved GPRs */ \
+    28, 29, 30, 31, 32, 33, 34, 35, \
+    44, 45, 46, 47, 48, 49, 50, 51, \
+    52, 53, 54, 55, 56, 57, 58, 59, \
+   /* FPUL */ 150, \
+   /* SH5 branch target registers */ \
    128,129,130,131,132,133,134,135, \
-   152 }
+   /* Fixed registers */ \
+    15, 16, 24, 25, 26, 27, 63,144, \
+   145,146,147,148,149,152 }
 
 /* The class value for index registers, and the one for base regs.  */
 #define INDEX_REG_CLASS  (TARGET_SHMEDIA ? GENERAL_REGS : R0_REGS)
@@ -2158,7 +2184,9 @@ do {							\
    : 0)
 
 #define SH5_WOULD_BE_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) \
-  (TARGET_SH5 && ((MODE) == BLKmode || (MODE) == TImode)	\
+  (TARGET_SH5							\
+   && ((MODE) == BLKmode || (MODE) == TImode || (MODE) == CDImode \
+       || (MODE) == DCmode) \
    && ((CUM).arg_count[(int) SH_ARG_INT]			\
        + (int_size_in_bytes (TYPE) + 7) / 8) > NPARM_REGS (SImode))
 
@@ -2462,7 +2490,7 @@ while (0)
 
 /* The `Csy' constraint is a label or a symbol.  */
 #define EXTRA_CONSTRAINT_Csy(OP) \
-  (NON_PIC_REFERENCE_P (OP))
+  (NON_PIC_REFERENCE_P (OP) || PIC_DIRECT_ADDR_P (OP))
 
 /* A zero in any shape or form.  */
 #define EXTRA_CONSTRAINT_Z(OP) \
@@ -2889,10 +2917,11 @@ while (0)
 /* We can't directly access anything that contains a symbol,
    nor can we indirect via the constant pool.  */
 #define LEGITIMATE_PIC_OPERAND_P(X)				\
-	(! nonpic_symbol_mentioned_p (X)			\
-	 && (GET_CODE (X) != SYMBOL_REF				\
-	     || ! CONSTANT_POOL_ADDRESS_P (X)			\
-	     || ! nonpic_symbol_mentioned_p (get_pool_constant (X))))
+	((! nonpic_symbol_mentioned_p (X)			\
+	  && (GET_CODE (X) != SYMBOL_REF			\
+	      || ! CONSTANT_POOL_ADDRESS_P (X)			\
+	      || ! nonpic_symbol_mentioned_p (get_pool_constant (X)))) \
+	 || (TARGET_SHMEDIA && GET_CODE (X) == LABEL_REF))
 
 #define SYMBOLIC_CONST_P(X)	\
 ((GET_CODE (X) == SYMBOL_REF || GET_CODE (X) == LABEL_REF)	\

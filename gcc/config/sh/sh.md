@@ -6637,19 +6637,6 @@
 }
 ")
 
-;; When generating PIC, we must match label_refs especially, because
-;; they do not satisfy LEGITIMATE_PIC_OPERAND_P(), and we don't want
-;; them to do, because they can't be loaded directly into
-;; non-branch-target registers.
-(define_insn "*pt"
-  [(set (match_operand:DI 0 "target_reg_operand" "=b")
-	(match_operand:DI 1 "" "Csy"))]
-  "TARGET_SHMEDIA && flag_pic
-   && EXTRA_CONSTRAINT_Csy (operands[1])"
-  "pt	%1, %0"
-  [(set_attr "type" "pt_media")
-   (set_attr "length" "*")])
-
 (define_insn "*ptb"
   [(set (match_operand:DI 0 "target_reg_operand" "=b")
 	(const:DI (unspec:DI [(match_operand:DI 1 "" "Csy")]
@@ -7237,6 +7224,12 @@ mov.l\\t1f,r0\\n\\
   "blink	%0, r63"
   [(set_attr "type" "jump_media")])
 
+(define_insn "return_media_rte"
+  [(return)]
+  "TARGET_SHMEDIA && reload_completed && current_function_interrupt"
+  "rte"
+  [(set_attr "type" "jump_media")])
+
 (define_expand "return_media"
   [(return)]
   "TARGET_SHMEDIA && reload_completed"
@@ -7245,6 +7238,11 @@ mov.l\\t1f,r0\\n\\
   int tr_regno = sh_media_register_for_return ();
   rtx tr;
 
+  if (current_function_interrupt)
+    {
+      emit_jump_insn (gen_return_media_rte ());
+      DONE;
+    }
   if (tr_regno < 0)
     {
       rtx r18 = gen_rtx_REG (DImode, PR_MEDIA_REG);

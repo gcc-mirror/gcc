@@ -1,3 +1,18 @@
+2003-06-17  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.h (ROUND_TYPE_ALIGN, LOCAL_ALIGNMENT): Complex modes
+	are aligned like integral modes.
+	(SH5_WOULD_BE_PARTIAL_NREGS): Also test for CDImode and DCmode.
+
+	* sh.h (EXTRA_CONSTRAINT_Csy): Allow PIC_DIRECT_ADDR_P.
+	(LEGITIMATE_PIC_OPERAND_P): Allow LABEL_REF.
+	* sh.md (*pt): Remove.
+
+	* sh.h (REG_ALLOC_ORDER): Avoid squandering call-saved registers.
+
+	* sh.md (return_media_rte): New pattern.
+	(return_media): Use it.
+
 2003-06-17  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* doc/contrib.texi: Replace Hitachi with Renesas.
