@@ -9024,28 +9024,30 @@ xref_tag_from_type (tree old, tree id, int globalize)
   return xref_tag (tag_kind, id, globalize, false);
 }
 
-/* REF is a type (named NAME), for which we have just seen some
-   baseclasses.  BASE_LIST is a list of those baseclasses; the
-   TREE_PURPOSE is an access_* node, and the TREE_VALUE is the type of
-   the base-class.  Non-NULL TREE_TYPE indicates virtual inheritance.
-   CODE_TYPE_NODE indicates whether REF is a class, struct, or
-   union.  */
+/* Create the binfo hierarchy for REF with (possibly NULL) base list
+   BASE_LIST.  For each element on BASE_LIST the TREE_PURPOSE is an
+   access_* node, and the TREE_VALUE is the type of the base-class.
+   Non-NULL TREE_TYPE indicates virtual inheritance.  */
 
 void
 xref_basetypes (tree ref, tree base_list)
 {
-  /* In the declaration `A : X, Y, ... Z' we mark all the types
-     (A, X, Y, ..., Z) so we can check for duplicates.  */
   tree *basep;
-  unsigned max_vbases = 0;
+  tree binfo;
+  unsigned max_vbases = 0; /* Maxium direct & indirect virtual bases. */
+  unsigned max_bases = 0;  /* Maxium direct bases.  */
   int i;
-  enum tag_types tag_code;
+  tree default_access;
+  tree igo_prev; /* Track Inheritance Graph Order.  */
 
   if (ref == error_mark_node)
     return;
 
-  tag_code = TREE_CODE (ref) == UNION_TYPE ? union_type
-    : (CLASSTYPE_DECLARED_CLASS (ref) ? class_type : record_type);
+  /* The base of a derived class is private by default, all others are
+     public.  */
+  default_access = (TREE_CODE (ref) == RECORD_TYPE
+		    && CLASSTYPE_DECLARED_CLASS (ref)
+		    ? access_private_node : access_public_node);
 
   /* First, make sure that any templates in base-classes are
      instantiated.  This ensures that if we call ourselves recursively
@@ -9061,169 +9063,138 @@ xref_basetypes (tree ref, tree base_list)
 	/* An incomplete type.  Remove it from the list.  */
 	*basep = TREE_CHAIN (*basep);
       else
-	basep = &TREE_CHAIN (*basep);
+	{
+	  max_bases++;
+	  if (TREE_TYPE (*basep))
+	    max_vbases++;
+	  if (CLASS_TYPE_P (basetype))
+	    max_vbases += VEC_length (tree, CLASSTYPE_VBASECLASSES (basetype));
+	  basep = &TREE_CHAIN (*basep);
+	}
     }
 
   SET_CLASSTYPE_MARKED (ref);
-  i = list_length (base_list);
+
   /* The binfo slot should be empty, unless this is an (ill-formed)
      redefinition.  */
   my_friendly_assert (!TYPE_BINFO (ref) || TYPE_SIZE (ref), 20040706);
   my_friendly_assert (TYPE_MAIN_VARIANT (ref) == ref, 20040712);
-  TYPE_BINFO (ref) = make_tree_binfo (BINFO_LANG_SLOTS);
-  BINFO_OFFSET (TYPE_BINFO (ref)) = size_zero_node;
-  BINFO_TYPE (TYPE_BINFO (ref)) = ref;
   
-  if (i)
+  binfo = make_tree_binfo (BINFO_LANG_SLOTS);
+  TYPE_BINFO (ref) = binfo;
+  BINFO_OFFSET (binfo) = size_zero_node;
+  BINFO_TYPE (binfo) = ref;
+  
+  if (max_bases)
     {
-      tree binfo = TYPE_BINFO (ref);
-      tree binfos = make_tree_vec (i);
-      tree accesses = make_tree_vec (i);
+      BINFO_BASE_BINFOS (binfo) = make_tree_vec (max_bases);
+      BINFO_BASE_ACCESSES (binfo) = make_tree_vec (max_bases);
+      /* An aggregate cannot have baseclasses.  */
+      CLASSTYPE_NON_AGGREGATE (ref) = 1;
       
-      BINFO_BASE_BINFOS (binfo) = binfos;
-      BINFO_BASE_ACCESSES (binfo) = accesses;
-  
-      for (i = 0; base_list; base_list = TREE_CHAIN (base_list))
-	{
-	  tree access = TREE_PURPOSE (base_list);
-	  int via_virtual = TREE_TYPE (base_list) != NULL_TREE;
-	  tree basetype = TREE_VALUE (base_list);
-	  tree base_binfo;
-	  
-	  if (via_virtual)
-	    max_vbases++;
-	  if (access == access_default_node)
-	    /* The base of a derived struct is public by default.  */
-	    access = (tag_code == class_type
-		      ? access_private_node : access_public_node);
-	  
-	  if (basetype && TREE_CODE (basetype) == TYPE_DECL)
-	    basetype = TREE_TYPE (basetype);
-	  if (!basetype
-	      || (TREE_CODE (basetype) != RECORD_TYPE
-		  && TREE_CODE (basetype) != TYPENAME_TYPE
-		  && TREE_CODE (basetype) != TEMPLATE_TYPE_PARM
-		  && TREE_CODE (basetype) != BOUND_TEMPLATE_TEMPLATE_PARM))
-	    {
-	      error ("base type `%T' fails to be a struct or class type",
-		     basetype);
-	      continue;
-	    }
-	  
-	  if (CLASSTYPE_MARKED (basetype))
-	    {
-	      if (basetype == ref)
-		error ("recursive type `%T' undefined", basetype);
-	      else
-		error ("duplicate base type `%T' invalid", basetype);
-	      continue;
-	    }
-	  
-	  if (TYPE_FOR_JAVA (basetype)
-	      && (current_lang_depth () == 0))
-	    TYPE_FOR_JAVA (ref) = 1;
-	  
-	  if (CLASS_TYPE_P (basetype) && !dependent_type_p (basetype))
-	    {
-	      base_binfo = TYPE_BINFO (basetype);
-
-	      my_friendly_assert (base_binfo, 20040706);
-	    }
-	  else
-	    {
-	      base_binfo = make_tree_binfo (BINFO_LANG_SLOTS);
-	      
-	      BINFO_TYPE (base_binfo) = basetype;
-	      BINFO_DEPENDENT_BASE_P (base_binfo) = 1;
-	    }
-	  
-	  TREE_VEC_ELT (binfos, i) = base_binfo;
-	  TREE_VEC_ELT (accesses, i) = access;
-	  /* This flag will be in the binfo of the base type, we must
-	     clear it after copying the base binfos.  */
-	  BINFO_VIRTUAL_P (base_binfo) = via_virtual;
-	  
-	  SET_CLASSTYPE_MARKED (basetype);
-	  
-	  /* We are free to modify these bits because they are meaningless
-	     at top level, and BASETYPE is a top-level type.  */
-	  if (via_virtual || TYPE_USES_VIRTUAL_BASECLASSES (basetype))
-	    {
-	      TYPE_USES_VIRTUAL_BASECLASSES (ref) = 1;
-	      /* Converting to a virtual base class requires looking
-	     	 up the offset of the virtual base.  */
-	      TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (ref) = 1;
-	    }
-	  
-	  if (CLASS_TYPE_P (basetype))
-	    {
-	      TYPE_HAS_NEW_OPERATOR (ref)
-		|= TYPE_HAS_NEW_OPERATOR (basetype);
-	      TYPE_HAS_ARRAY_NEW_OPERATOR (ref)
-		|= TYPE_HAS_ARRAY_NEW_OPERATOR (basetype);
-	      TYPE_GETS_DELETE (ref) |= TYPE_GETS_DELETE (basetype);
-	      /* If the base-class uses multiple inheritance, so do we.  */
-	      TYPE_USES_MULTIPLE_INHERITANCE (ref)
-		|= TYPE_USES_MULTIPLE_INHERITANCE (basetype);
-	      /* Likewise, if converting to a base of the base may require
-	     	 code, then we may need to generate code to convert to a
-	     	 base as well.  */
-	      TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (ref)
-		|= TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (basetype);
-	      TYPE_HAS_CONVERSION (ref) |= TYPE_HAS_CONVERSION (basetype);
-	      max_vbases += VEC_length
-		(tree, CLASSTYPE_VBASECLASSES (basetype));
-	    }
-	  i++;
-	}
-      if (i)
-	{
-	  TREE_VEC_LENGTH (accesses) = TREE_VEC_LENGTH (binfos) = i;
-	  /* An aggregate cannot have baseclasses.  */
-	  CLASSTYPE_NON_AGGREGATE (ref) = 1;
-	}
-      else
-	BINFO_BASE_ACCESSES (binfo) = BINFO_BASE_BINFOS (binfo) = NULL_TREE;
-      if (max_vbases)
-	CLASSTYPE_VBASECLASSES (ref) = VEC_alloc (tree, max_vbases);
-      
-      if (i > 1)
-	{
-	  TYPE_USES_MULTIPLE_INHERITANCE (ref) = 1;
-	  /* If there is more than one non-empty they cannot be at the same
-	     address.  */
-	  TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (ref) = 1;
-	}
-    }
-  
-  /* Copy the base binfos, collect the virtual bases and set the
-     inheritance order chain.  */
-  copy_base_binfos (TYPE_BINFO (ref), ref, NULL_TREE);
-
-  if (TREE_CODE (ref) == UNION_TYPE)
-    {
-      if (i)
+      if (TREE_CODE (ref) == UNION_TYPE)
 	error ("derived union `%T' invalid", ref);
     }
-
-  if (TYPE_FOR_JAVA (ref))
+      
+  if (max_bases > 1)
     {
-      if (TYPE_USES_MULTIPLE_INHERITANCE (ref))
+      TYPE_USES_MULTIPLE_INHERITANCE (ref) = 1;
+      /* If there is more than one non-empty they cannot be at the
+	 same address.  */
+      TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (ref) = 1;
+      
+      if (TYPE_FOR_JAVA (ref))
 	error ("Java class '%T' cannot have multiple bases", ref);
-      if (CLASSTYPE_VBASECLASSES (ref))
+    }
+  
+  if (max_vbases)
+    {
+      CLASSTYPE_VBASECLASSES (ref) = VEC_alloc (tree, max_vbases);
+      TYPE_USES_VIRTUAL_BASECLASSES (ref) = 1;
+      /* Converting to a virtual base class requires looking up the
+	 offset of the virtual base.  */
+      TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (ref) = 1;
+      
+      if (TYPE_FOR_JAVA (ref))
 	error ("Java class '%T' cannot have virtual bases", ref);
     }
 
-  /* Unmark all the types.  */
-  while (i--)
+  i = 0;
+  for (igo_prev = binfo; base_list; base_list = TREE_CHAIN (base_list))
     {
-      tree binfo = BINFO_BASE_BINFO (TYPE_BINFO (ref), i);
-      tree basetype = BINFO_TYPE (binfo);
+      tree access = TREE_PURPOSE (base_list);
+      int via_virtual = TREE_TYPE (base_list) != NULL_TREE;
+      tree basetype = TREE_VALUE (base_list);
+      tree base_binfo = NULL_TREE;
       
-      CLEAR_CLASSTYPE_MARKED (basetype);
-      if (!BINFO_DEPENDENT_BASE_P (binfo))
-	BINFO_VIRTUAL_P (TYPE_BINFO (basetype)) = 0;
+      if (access == access_default_node)
+	access = default_access;
+	  
+      if (TREE_CODE (basetype) == TYPE_DECL)
+	basetype = TREE_TYPE (basetype);
+      if (TREE_CODE (basetype) != RECORD_TYPE
+	  && TREE_CODE (basetype) != TYPENAME_TYPE
+	  && TREE_CODE (basetype) != TEMPLATE_TYPE_PARM
+	  && TREE_CODE (basetype) != BOUND_TEMPLATE_TEMPLATE_PARM)
+	{
+	  error ("base type `%T' fails to be a struct or class type",
+		 basetype);
+	  continue;
+	}
+      
+      if (CLASSTYPE_MARKED (basetype))
+	{
+	  if (basetype == ref)
+	    error ("recursive type `%T' undefined", basetype);
+	  else
+	    error ("duplicate base type `%T' invalid", basetype);
+	  continue;
+	}
+      SET_CLASSTYPE_MARKED (basetype);
+      
+      if (TYPE_FOR_JAVA (basetype) && (current_lang_depth () == 0))
+	TYPE_FOR_JAVA (ref) = 1;
+
+      if (CLASS_TYPE_P (basetype) && !dependent_type_p (basetype))
+	{
+	  base_binfo = TYPE_BINFO (basetype);
+	  /* The orignal basetype could have been a typedef'd type.  */
+	  basetype = BINFO_TYPE (base_binfo);
+	  
+	  /* Inherit flags from the base.  */
+	  TYPE_HAS_NEW_OPERATOR (ref)
+	    |= TYPE_HAS_NEW_OPERATOR (basetype);
+	  TYPE_HAS_ARRAY_NEW_OPERATOR (ref)
+	    |= TYPE_HAS_ARRAY_NEW_OPERATOR (basetype);
+	  TYPE_GETS_DELETE (ref) |= TYPE_GETS_DELETE (basetype);
+	  TYPE_USES_MULTIPLE_INHERITANCE (ref)
+	    |= TYPE_USES_MULTIPLE_INHERITANCE (basetype);
+	  TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (ref)
+	    |= TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (basetype);
+	  TYPE_HAS_CONVERSION (ref) |= TYPE_HAS_CONVERSION (basetype);
+	}
+      
+      base_binfo = copy_binfo (base_binfo, basetype, ref,
+			       &igo_prev, via_virtual);
+      if (!BINFO_INHERITANCE_CHAIN (base_binfo))
+	BINFO_INHERITANCE_CHAIN (base_binfo) = binfo;
+
+      TREE_VEC_ELT (BINFO_BASE_ACCESSES (binfo), i) = access;
+      BINFO_BASE_BINFO (binfo, i) = base_binfo;
+      i++;
     }
+
+  if (max_bases)
+    {
+      /* If any bases were invalid, we will have allocated too many
+	 slots.  */
+      TREE_VEC_LENGTH (BINFO_BASE_ACCESSES (binfo)) = i;
+      TREE_VEC_LENGTH (BINFO_BASE_BINFOS (binfo)) = i;
+    }
+  
+  /* Unmark all the types.  */
+  for (i = 0; i != BINFO_N_BASE_BINFOS (binfo); i++)
+    CLEAR_CLASSTYPE_MARKED (BINFO_TYPE (BINFO_BASE_BINFO (binfo, i)));
   CLEAR_CLASSTYPE_MARKED (ref);
 }
 

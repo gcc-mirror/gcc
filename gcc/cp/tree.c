@@ -567,85 +567,92 @@ canonical_type_variant (tree t)
   return cp_build_qualified_type (TYPE_MAIN_VARIANT (t), cp_type_quals (t));
 }
 
-/* Makes new binfos for the indirect bases under BINFO. T is the most
-   derived TYPE. PREV is the previous binfo, whose TREE_CHAIN we make
-   point to this binfo. We return the last BINFO created.
+/* Makes a copy of BINFO and TYPE, which is to be inherited into a
+   graph dominated by T.  If BINFO is NULL, TYPE is a dependent base,
+   and we do a shallow copy.  If BINFO is non-NULL, we do a deep copy.
+   VIRT indicates whether TYPE is inherited virtually or not.
+   IGO_PREV points at the previous binfo of the inheritance graph
+   order chain.  The newly copied binfo's TREE_CHAIN forms this
+   ordering.
 
-   The CLASSTYPE_VBASECLASSES vector of T is constructed in the correct
-   order.
+   The CLASSTYPE_VBASECLASSES vector of T is constructed in the
+   correct order. That is in the order the bases themselves should be
+   constructed in.
 
    The BINFO_INHERITANCE of a virtual base class points to the binfo
-   og the most derived type.
-
-   The binfo's TREE_CHAIN is set to inheritance graph order, but bases
-   for non-class types are not included (i.e. those which are
-   dependent bases in non-instantiated templates).  */
+   of the most derived type. ??? We could probably change this so that
+   BINFO_INHERITANCE becomes synonymous with BINFO_PRIMARY, and hence
+   remove a field.  They currently can only differ for primary virtual
+   virtual bases.  */
 
 tree
-copy_base_binfos (tree binfo, tree t, tree prev)
+copy_binfo (tree binfo, tree type, tree t, tree *igo_prev, int virt)
 {
-  tree binfos = BINFO_BASE_BINFOS (binfo);
-  int n, ix;
+  tree new_binfo;
 
-  if (prev)
-    TREE_CHAIN (prev) = binfo;
-  prev = binfo;
-  
-  if (binfos == NULL_TREE)
-    return prev;
-
-  n = TREE_VEC_LENGTH (binfos);
-  
-  /* Now copy the structure beneath BINFO.  */
-  for (ix = 0; ix != n; ix++)
+  if (virt)
     {
-      tree base_binfo = TREE_VEC_ELT (binfos, ix);
-      tree new_binfo = NULL_TREE;
-
-      if (BINFO_DEPENDENT_BASE_P (base_binfo))
-	{
-	  my_friendly_assert (binfo == TYPE_BINFO (t), 20030204);
-	  
-	  new_binfo = base_binfo;
-	  TREE_CHAIN (prev) = new_binfo;
-	  prev = new_binfo;
-	  BINFO_INHERITANCE_CHAIN (new_binfo) = binfo;
-	  BINFO_DEPENDENT_BASE_P (new_binfo) = 1;
-	}
-      else if (BINFO_VIRTUAL_P (base_binfo))
-	new_binfo = binfo_for_vbase (BINFO_TYPE (base_binfo), t);
-      
-      if (!new_binfo)
-	{
-	  new_binfo = make_tree_binfo (BINFO_LANG_SLOTS);
-
-	  BINFO_TYPE (new_binfo) = BINFO_TYPE (base_binfo);
-	  BINFO_OFFSET (new_binfo) = BINFO_OFFSET (base_binfo);
-	  BINFO_VIRTUALS (new_binfo) = BINFO_VIRTUALS (base_binfo);
-
-	  if (BINFO_BASE_BINFOS (base_binfo))
-	    /* Duplicate the binfo's base vector, so we can recurse.  */
-	    BINFO_BASE_BINFOS (new_binfo)
-	      = copy_node (BINFO_BASE_BINFOS (base_binfo));
-	  /* We do not need to copy the accesses, as they are read only.  */
-	  BINFO_BASE_ACCESSES (new_binfo) = BINFO_BASE_ACCESSES (base_binfo);
-	  
-	  prev = copy_base_binfos (new_binfo, t, prev);
-	  if (BINFO_VIRTUAL_P (base_binfo))
-	    {
-	      VEC_quick_push (tree, CLASSTYPE_VBASECLASSES (t), new_binfo);
-	      BINFO_VIRTUAL_P (new_binfo) = 1;
-	      BINFO_INHERITANCE_CHAIN (new_binfo) = TYPE_BINFO (t);
-	    }
-	  else
-	    BINFO_INHERITANCE_CHAIN (new_binfo) = binfo;
-	}
-      TREE_VEC_ELT (binfos, ix) = new_binfo;
+      /* See if we've already made this virtual base.  */
+      new_binfo = binfo_for_vbase (type, t);
+      if (new_binfo)
+	return new_binfo;
     }
+  
+  new_binfo = make_tree_binfo (BINFO_LANG_SLOTS);
+  BINFO_TYPE (new_binfo) = type;
 
-  return prev;
+  /* Chain it into the inheritance graph.  */
+  TREE_CHAIN (*igo_prev) = new_binfo;
+  *igo_prev = new_binfo;
+  
+  if (binfo)
+    {
+      int ix, n = BINFO_N_BASE_BINFOS (binfo);
+      
+      my_friendly_assert (!BINFO_DEPENDENT_BASE_P (binfo), 20040712);
+      my_friendly_assert (type == BINFO_TYPE (binfo), 20040714);
+  
+      BINFO_OFFSET (new_binfo) = BINFO_OFFSET (binfo);
+      BINFO_VIRTUALS (new_binfo) = BINFO_VIRTUALS (binfo);
+      
+      /* Create a new base binfo vector.  */
+      if (n)
+	{
+	  BINFO_BASE_BINFOS (new_binfo) = make_tree_vec (n);
+          /* We do not need to copy the accesses, as they are read only.  */
+	  BINFO_BASE_ACCESSES (new_binfo) = BINFO_BASE_ACCESSES (binfo);
+	}
+      
+      /* Recursively copy base binfos of BINFO.  */
+      for (ix = 0; ix != n; ix++)
+	{
+	  tree base_binfo = BINFO_BASE_BINFO (binfo, ix);
+	  tree new_base_binfo;
+	  
+	  my_friendly_assert (!BINFO_DEPENDENT_BASE_P (base_binfo), 20040713);
+	  new_base_binfo = copy_binfo (base_binfo, BINFO_TYPE (base_binfo),
+				       t, igo_prev,
+				       BINFO_VIRTUAL_P (base_binfo));
+	  
+	  if (!BINFO_INHERITANCE_CHAIN (new_base_binfo))
+	    BINFO_INHERITANCE_CHAIN (new_base_binfo) = new_binfo;
+	  BINFO_BASE_BINFO (new_binfo, ix) = new_base_binfo;
+	}
+    }
+  else
+    BINFO_DEPENDENT_BASE_P (new_binfo) = 1;
+  
+  if (virt)
+    {
+      /* Push it onto the list after any virtual bases it contains
+	 will have been pushed.  */
+      VEC_quick_push (tree, CLASSTYPE_VBASECLASSES (t), new_binfo);
+      BINFO_VIRTUAL_P (new_binfo) = 1;
+      BINFO_INHERITANCE_CHAIN (new_binfo) = TYPE_BINFO (t);
+    }
+  
+  return new_binfo;
 }
-
 
 /* Hashing of lists so that we don't make duplicates.
    The entry point is `list_hash_canon'.  */

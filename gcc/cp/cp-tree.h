@@ -4145,7 +4145,8 @@ extern void init_tree			        (void);
 extern int pod_type_p				(tree);
 extern int zero_init_p				(tree);
 extern tree canonical_type_variant              (tree);
-extern tree copy_base_binfos			(tree, tree, tree);
+extern tree copy_binfo				(tree, tree, tree,
+						 tree *, int);
 extern int member_p				(tree);
 extern cp_lvalue_kind real_lvalue_p             (tree);
 extern int lvalue_or_else			(tree, const char *);
