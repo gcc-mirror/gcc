@@ -1,3 +1,10 @@
+2003-06-02  Richard Kreckel  <Richard.Kreckel@GiNaC.DE>
+
+	PR libstdc++/11062
+	* config/cpu/mips/atomicity.h:  Change __attribute__ ((unused)) to
+	__attribute__ ((__unused__)).
+	* config/os/aix/atomicity.h:  Likewise.
+
 2003-06-02  Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/9761
