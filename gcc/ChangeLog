@@ -1,3 +1,8 @@
+2004-06-21  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* tree-alias-common.h (struct tree_alias_ops): Change ip and
+	ip_partial to unsigned int.
+
 2004-06-21  Richard Henderson  <rth@redhat.com>
 
 	* c-common.c (verify_sequence_points): Export.

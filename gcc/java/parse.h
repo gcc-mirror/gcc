@@ -479,7 +479,7 @@ enum jdep_code {
 typedef struct _jdep {
   ENUM_BITFIELD(jdep_code) kind : 8; /* Type of patch */
 
-  int  flag0 : 1;		/* Some flags */
+  unsigned int  flag0 : 1;	/* Some flags */
   tree decl;			/* Tied decl/or WFL */
   tree solv;			/* What to solve */
   tree wfl;			/* Where thing to resolve where found */

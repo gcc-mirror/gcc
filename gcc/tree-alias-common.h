@@ -105,11 +105,11 @@ struct tree_alias_ops
   void *data;
 
   /* Interprocedural.  */
-  int ip:1; 
+  unsigned int ip:1; 
 
   /* Can do conservative interprocedural analysis if we save the 
    * info.  */
-  int ip_partial:1; 
+  unsigned int ip_partial:1; 
 
 };
 
