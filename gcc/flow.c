@@ -344,6 +344,11 @@ struct depth_first_search_dsS {
 };
 typedef struct depth_first_search_dsS *depth_first_search_ds;
 
+/* Have print_rtl_and_abort give the same information that fancy_abort
+   does.  */
+#define print_rtl_and_abort() \
+  print_rtl_and_abort_fcn (__FILE__, __LINE__, __FUNCTION__)
+
 /* Forward declarations */
 static int count_basic_blocks		PARAMS ((rtx));
 static void find_basic_blocks_1		PARAMS ((rtx));
@@ -424,7 +429,9 @@ static void mark_used_regs		PARAMS ((struct propagate_block_info *,
 void dump_flow_info			PARAMS ((FILE *));
 void debug_flow_info			PARAMS ((void));
 static void dump_edge_info		PARAMS ((FILE *, edge, int));
-static void print_rtl_and_abort		PARAMS ((void));
+static void print_rtl_and_abort_fcn	PARAMS ((const char *, int,
+						 const char *))
+					ATTRIBUTE_NORETURN;
 
 static void invalidate_mems_from_autoinc PARAMS ((struct propagate_block_info *,
 						  rtx));
@@ -6586,15 +6593,20 @@ print_rtl_with_bb (outf, rtx_first)
 }
 
 /* Dump the rtl into the current debugging dump file, then abort.  */
+
 static void
-print_rtl_and_abort ()
+print_rtl_and_abort_fcn (file, line, function)
+     const char *file;
+     int line;
+     const char *function;
 {
   if (rtl_dump_file)
     {
       print_rtl_with_bb (rtl_dump_file, get_insns ());
       fclose (rtl_dump_file);
     }
-  abort ();
+
+  fancy_abort (file, line, function);
 }
 
 /* Recompute register set/reference counts immediately prior to register
