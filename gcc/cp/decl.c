@@ -5638,7 +5638,7 @@ groktypename (typename)
    The ..._DECL node is returned as the value.
 
    Exception: for arrays where the length is not specified,
-   the type is left null, to be filled in by `finish_decl'.
+   the type is left null, to be filled in by `cp_finish_decl'.
 
    Function definitions do not come here; they go to start_function
    instead.  However, external and forward declarations of functions
@@ -5697,7 +5697,7 @@ start_decl (declarator, declspecs, initialized, raises)
       pop_obstacks ();
     }
 
-  /* Corresponding pop_obstacks is done in `finish_decl'.  */
+  /* Corresponding pop_obstacks is done in `cp_finish_decl'.  */
   push_obstacks_nochange ();
 
   context
@@ -5755,12 +5755,12 @@ start_decl (declarator, declspecs, initialized, raises)
   if (initialized)
     /* Is it valid for this decl to have an initializer at all?
        If not, set INITIALIZED to zero, which will indirectly
-       tell `finish_decl' to ignore the initializer once it is parsed.  */
+       tell `cp_finish_decl' to ignore the initializer once it is parsed.  */
     switch (TREE_CODE (decl))
       {
       case TYPE_DECL:
 	/* typedef foo = bar  means give foo the same type as bar.
-	   We haven't parsed bar yet, so `finish_decl' will fix that up.
+	   We haven't parsed bar yet, so `cp_finish_decl' will fix that up.
 	   Any other case of an initialization in a TYPE_DECL is an error.  */
 	if (pedantic || list_length (declspecs) > 1)
 	  {
@@ -5832,7 +5832,7 @@ start_decl (declarator, declspecs, initialized, raises)
 
       /* Tell `pushdecl' this is an initialized decl
 	 even though we don't yet have the initializer expression.
-	 Also tell `finish_decl' it may store the real initializer.  */
+	 Also tell `cp_finish_decl' it may store the real initializer.  */
       DECL_INITIAL (decl) = error_mark_node;
     }
 
@@ -6027,7 +6027,7 @@ make_temporary_for_reference (decl, ctor_call, init, cleanupp)
     {
       DECL_INITIAL (tmp) = init;
       TREE_STATIC (tmp) = toplevel_bindings_p ();
-      finish_decl (tmp, init, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
+      cp_finish_decl (tmp, init, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
     }
   if (TREE_STATIC (tmp))
     preserve_initializer ();
@@ -6035,7 +6035,7 @@ make_temporary_for_reference (decl, ctor_call, init, cleanupp)
 #endif
 
 /* Handle initialization of references.
-   These three arguments from from `finish_decl', and have the
+   These three arguments from from `cp_finish_decl', and have the
    same meaning here that they do there.  */
 /* quotes on semantics can be found in ARM 8.4.3. */
 static void
@@ -6178,7 +6178,7 @@ obscure_complex_init (decl, init)
 
    Call `pop_obstacks' iff NEED_POP is nonzero.
 
-   For C++, `finish_decl' must be fairly evasive:  it must keep initializers
+   For C++, `cp_finish_decl' must be fairly evasive:  it must keep initializers
    for aggregates that have constructors alive on the permanent obstack,
    so that the global initializing functions can be written at the end.
 
@@ -6189,12 +6189,12 @@ obscure_complex_init (decl, init)
    if the (init) syntax was used.
 
    For functions that take default parameters, DECL points to its
-   "maximal" instantiation.  `finish_decl' must then also declared its
+   "maximal" instantiation.  `cp_finish_decl' must then also declared its
    subsequently lower and lower forms of instantiation, checking for
    ambiguity as it goes.  This can be sped up later.  */
 
 void
-finish_decl (decl, init, asmspec_tree, need_pop, flags)
+cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
      tree decl, init;
      tree asmspec_tree;
      int need_pop;
@@ -6831,6 +6831,15 @@ finish_decl (decl, init, asmspec_tree, need_pop, flags)
 
   if (flag_cadillac)
     cadillac_finish_decl (decl);
+}
+
+/* This is here for a midend callback from c-common.c */
+void
+finish_decl (decl, init, asmspec_tree)
+     tree decl, init;
+     tree asmspec_tree;
+{
+  cp_finish_decl (decl, init, asmspec_tree, 1, 0);
 }
 
 void
@@ -7535,7 +7544,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	  if (parmlist_is_exprlist (TREE_OPERAND (decl, 1)))
 	    {
 	      /* This is actually a variable declaration using constructor
-		 syntax.  We need to call start_decl and finish_decl so we
+		 syntax.  We need to call start_decl and cp_finish_decl so we
 		 can get the variable initialized...  */
 
 	      if (last)
@@ -7548,7 +7557,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	      init = TREE_OPERAND (decl, 1);
 
 	      decl = start_decl (declarator, declspecs, 1, NULL_TREE);
-	      finish_decl (decl, init, NULL_TREE, 1, 0);
+	      finish_decl (decl, init, NULL_TREE);
 	      return 0;
 	    }
 	  innermost_code = TREE_CODE (decl);
@@ -11497,10 +11506,10 @@ store_return_init (return_id, init)
 	  DECL_RTL (decl) = gen_reg_rtx (DECL_MODE (decl));
 	}
 
-      /* Let `finish_decl' know that this initializer is ok.  */
+      /* Let `cp_finish_decl' know that this initializer is ok.  */
       DECL_INITIAL (decl) = init;
       pushdecl (decl);
-      finish_decl (decl, init, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
+      cp_finish_decl (decl, init, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
     }
 }
 
@@ -12143,7 +12152,7 @@ start_method (declspecs, declarator, raises)
 	grok_op_properties (fndecl, DECL_VIRTUAL_P (fndecl), 0);
     }
 
-  finish_decl (fndecl, NULL_TREE, NULL_TREE, 0, 0);
+  cp_finish_decl (fndecl, NULL_TREE, NULL_TREE, 0, 0);
 
   /* Make a place for the parms */
   pushlevel (0);
