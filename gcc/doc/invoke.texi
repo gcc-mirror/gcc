@@ -680,7 +680,7 @@ in the following sections.
 -fargument-alias  -fargument-noalias @gol
 -fargument-noalias-global  -fleading-underscore @gol
 -ftls-model=@var{model} @gol
--ftrapv  -fbounds-check}
+-ftrapv  -fwrapv  -fbounds-check}
 @end table
 
 @menu
@@ -10849,6 +10849,14 @@ this option defaults to true and false respectively.
 @opindex ftrapv
 This option generates traps for signed overflow on addition, subtraction,
 multiplication operations.
+
+@item -fwrapv
+@opindex fwrapv
+This option instructs the compiler to assume that signed arithmetic
+overflow of addition, subtraction and multiplication wraps around
+using twos-complement representation.  This flag enables some optimzations
+and disables other.  This option is enabled by default for the Java
+front-end, as required by the Java language specification.
 
 @item -fexceptions
 @opindex fexceptions

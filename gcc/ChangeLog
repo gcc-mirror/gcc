@@ -1,3 +1,20 @@
+2003-05-31  Roger Sayle  <roger@eyesopen.com>
+
+	* flags.h (flag_wrapv): New flag controlling overflow semantics.
+	* toplev.c (flag_wrapv): Declare the variable with default false.
+	(lang_independent_options): New option "-fwrapv" to set the above.
+
+	* fold-const.c (extract_muldiv_1): Disable optimization of (2*x)/2 
+	as x, when signed arithmetic overflow wraps around.
+	(fold): Optimize "-A - B" as "-B - A" if overflow wraps around.
+	* loop.c (basic_induction_var): Ignore BIVs that rely on undefined
+	overflow when flag_wrapv is true.
+
+	* doc/invoke.texi: Document new -fwrapv command line option.
+	* doc/c-tree.texi: Mention that the overflow semantics of
+	NEGATE_EXPR, PLUS_EXPR, MINUS_EXPR and MULT_EXPR is dependent
+	upon both flag_wrapv and flag_trapv.
+
 2003-05-31  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/install.texi (mips-sgi-irix5): Add missing

@@ -977,7 +977,11 @@ typedef struct
 }
 lang_independent_options;
 
+/* Nonzero if signed arithmetic overflow should trap.  */
 int flag_trapv = 0;
+
+/* Nonzero if signed arithmetic overflow should wrap around.  */
+int flag_wrapv = 0;
 
 /* Add or remove a leading underscore from user symbols.  */
 int flag_leading_underscore = -1;
@@ -1220,6 +1224,8 @@ static const lang_independent_options f_options[] =
    N_("Report on permanent memory allocation at end of run") },
   { "trapv", &flag_trapv, 1,
    N_("Trap for signed overflow in addition / subtraction / multiplication") },
+  { "wrapv", &flag_wrapv, 1,
+   N_("Assume signed arithmetic overflow wraps around") },
   { "new-ra", &flag_new_regalloc, 1,
    N_("Use graph coloring register allocation.") },
 };

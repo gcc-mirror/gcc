@@ -4381,6 +4381,7 @@ extract_muldiv_1 (t, c, code, wide_type)
 	 overflowed.  */
       if ((! TREE_UNSIGNED (ctype)
 	   || (TREE_CODE (ctype) == INTEGER_TYPE && TYPE_IS_SIZETYPE (ctype)))
+	  && ! flag_wrapv
 	  && ((code == MULT_EXPR && tcode == EXACT_DIV_EXPR)
 	      || (tcode == MULT_EXPR
 		  && code != TRUNC_MOD_EXPR && code != CEIL_MOD_EXPR
@@ -5765,7 +5766,8 @@ fold (expr)
 	return fold (build (PLUS_EXPR, type, arg0, TREE_OPERAND (arg1, 0)));
       /* (-A) - B -> (-B) - A  where B is easily negated and we can swap.  */
       if (TREE_CODE (arg0) == NEGATE_EXPR
-	  && FLOAT_TYPE_P (type)
+	  && (FLOAT_TYPE_P (type)
+	      || (INTEGRAL_TYPE_P (type) && flag_wrapv && !flag_trapv))
 	  && negate_expr_p (arg1)
 	  && (! TREE_SIDE_EFFECTS (arg0) || TREE_CONSTANT (arg1))
 	  && (! TREE_SIDE_EFFECTS (arg1) || TREE_CONSTANT (arg0)))

@@ -1914,6 +1914,9 @@ These nodes represent unary negation of the single operand, for both
 integer and floating-point types.  The type of negation can be
 determined by looking at the type of the expression.
 
+The behavior of this operation on signed arithmetic overflow is
+controlled by the @code{flag_wrapv} and @code{flag_trapv} variables.
+
 @item BIT_NOT_EXPR
 These nodes represent bitwise complement, and will always have integral
 type.  The only operand is the value to be complemented.
@@ -2066,6 +2069,9 @@ The result of a @code{TRUNC_DIV_EXPR} is always rounded towards zero.
 The @code{TRUNC_MOD_EXPR} of two operands @code{a} and @code{b} is
 always @code{a - (a/b)*b} where the division is as if computed by a
 @code{TRUNC_DIV_EXPR}.
+
+The behavior of these operations on signed arithmetic overflow is
+controlled by the @code{flag_wrapv} and @code{flag_trapv} variables.
 
 @item ARRAY_REF
 These nodes represent array accesses.  The first operand is the array;

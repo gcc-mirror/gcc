@@ -1,3 +1,8 @@
+2003-05-31  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/fwrapv-1.c: New test case.
+	* gcc.dg/fwrapv-2.c: New test case.
+
 2003-05-31  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/10956

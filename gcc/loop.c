@@ -6462,6 +6462,9 @@ basic_induction_var (loop, x, mode, dest_reg, p, inc_val, mult_val, location)
 	return 0;
 
     case SIGN_EXTEND:
+      /* Ignore this BIV if signed arithmetic overflow is defined.  */
+      if (flag_wrapv)
+	return 0;
       return basic_induction_var (loop, XEXP (x, 0), GET_MODE (XEXP (x, 0)),
 				  dest_reg, p, inc_val, mult_val, location);
 
