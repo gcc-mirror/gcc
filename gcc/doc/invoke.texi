@@ -602,7 +602,7 @@ in the following sections.
 @gccoptlist{
 -fcall-saved-@var{reg}  -fcall-used-@var{reg} @gol
 -ffixed-@var{reg} -fexceptions @gol
--fnon-call-exceptions  -funwind-tables @gol
+-fnon-call-exceptions  -funwind-tables -fasynchronous-unwind-tables @gol
 -finhibit-size-directive  -finstrument-functions @gol
 -fcheck-memory-usage  -fprefix-function-name @gol
 -fno-common  -fno-ident  -fno-gnu-linker @gol
@@ -9657,6 +9657,12 @@ Similar to @option{-fexceptions}, except that it will just generate any needed
 static data, but will not affect the generated code in any other way.
 You will normally not enable this option; instead, a language processor
 that needs this handling would enable it on your behalf.
+
+@item -fasynchronous-unwind-tables
+@opindex funwind-tables
+Generate unwind table in dwarf2 format, if supported by target machine.  The
+table is exact at each instruction boundary, so it can be used for stack
+unwinding from asynchronous events (such as debugger or garbage collector).
 
 @item -fpcc-struct-return
 @opindex fpcc-struct-return

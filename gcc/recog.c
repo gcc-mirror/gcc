@@ -2778,8 +2778,7 @@ split_all_insns (upd_life)
 
   if (changed)
     {
-      for (i = 0; i < n_basic_blocks; i++)
-	find_sub_basic_blocks (BASIC_BLOCK (i));
+      find_many_sub_basic_blocks (blocks);
     }
 
   if (changed && upd_life)

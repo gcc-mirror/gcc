@@ -43,6 +43,9 @@ DEFTIMEVAR (TV_DUMP                  , "dump files")
 DEFTIMEVAR (TV_CFG                   , "cfg construction")
 /* Time spent by cleaning up CFG.  */
 DEFTIMEVAR (TV_CLEANUP_CFG           , "cfg cleanup")
+/* Time spent by life analysis.  */
+DEFTIMEVAR (TV_LIFE		     , "life analysis")
+DEFTIMEVAR (TV_LIFE_UPDATE	     , "life info update")
 /* Timing in various stages of the compiler.  */
 DEFTIMEVAR (TV_CPP		     , "preprocessing")
 DEFTIMEVAR (TV_LEX		     , "lexical analysis")
@@ -60,6 +63,7 @@ DEFTIMEVAR (TV_FLOW                  , "flow analysis")
 DEFTIMEVAR (TV_COMBINE               , "combiner")
 DEFTIMEVAR (TV_IFCVT		     , "if-conversion")
 DEFTIMEVAR (TV_REGMOVE               , "regmove")
+DEFTIMEVAR (TV_MODE_SWITCH           , "mode switching")
 DEFTIMEVAR (TV_SCHED                 , "scheduling")
 DEFTIMEVAR (TV_LOCAL_ALLOC           , "local alloc")
 DEFTIMEVAR (TV_GLOBAL_ALLOC          , "global alloc")

@@ -1061,7 +1061,10 @@ optimization_options (level, size)
   if (TARGET_64BIT && optimize >= 1)
     flag_omit_frame_pointer = 1;
   if (TARGET_64BIT)
-    flag_pcc_struct_return = 0;
+    {
+      flag_pcc_struct_return = 0;
+      flag_asynchronous_unwind_tables = 1;
+    }
 }
 
 /* Table of valid machine attributes.  */
@@ -2331,7 +2334,7 @@ ix86_va_arg (valist, type)
   static int intreg[6] = { 0, 1, 2, 3, 4, 5 };
   tree f_gpr, f_fpr, f_ovf, f_sav;
   tree gpr, fpr, ovf, sav, t;
-  int indirect_p = 0, size, rsize;
+  int size, rsize;
   rtx lab_false, lab_over = NULL_RTX;
   rtx addr_rtx, r;
   rtx container;
@@ -2459,9 +2462,11 @@ ix86_va_arg (valist, type)
 	  int i;
 	  rtx mem;
 
-	  mem = assign_temp (type, 0, 1, 0);
+	  /* Never use the memory itself, as it has the alias set.  */
+	  addr_rtx = XEXP (assign_temp (type, 0, 1, 0), 0);
+	  mem = gen_rtx_MEM (BLKmode, addr_rtx);
 	  set_mem_alias_set (mem, get_varargs_alias_set ());
-	  addr_rtx = XEXP (mem, 0);
+
 	  for (i = 0; i < XVECLEN (container, 0); i++)
 	    {
 	      rtx slot = XVECEXP (container, 0, i);
@@ -2487,7 +2492,6 @@ ix86_va_arg (valist, type)
 	      src_mem = adjust_address (src_mem, mode, src_offset);
 	      dest_mem = adjust_address (mem, mode, INTVAL (XEXP (slot, 1)));
 	      PUT_MODE (dest_mem, mode);
-	      /* ??? Break out TImode moves from integer registers?  */
 	      emit_move_insn (dest_mem, src_mem);
 	    }
 	}
@@ -2542,14 +2546,6 @@ ix86_va_arg (valist, type)
 
   if (container)
     emit_label (lab_over);
-
-  if (indirect_p)
-    {
-      abort ();
-      r = gen_rtx_MEM (Pmode, addr_rtx);
-      set_mem_alias_set (r, get_varargs_alias_set ());
-      emit_move_insn (addr_rtx, r);
-    }
 
   return addr_rtx;
 }
@@ -5931,27 +5927,19 @@ split_di (operands, num, lo_half, hi_half)
   while (num--)
     {
       rtx op = operands[num];
-      if (CONSTANT_P (op))
-	split_double (op, &lo_half[num], &hi_half[num]);
-      else if (! reload_completed)
-	{
-	  lo_half[num] = gen_lowpart (SImode, op);
-	  hi_half[num] = gen_highpart (SImode, op);
-	}
-      else if (GET_CODE (op) == REG)
-	{
-	  if (TARGET_64BIT)
-	    abort();
-	  lo_half[num] = gen_rtx_REG (SImode, REGNO (op));
-	  hi_half[num] = gen_rtx_REG (SImode, REGNO (op) + 1);
-	}
-      else if (offsettable_memref_p (op))
+
+      /* simplify_subreg refuse to split volatile memory addresses,
+         but we still have to handle it.  */
+      if (GET_CODE (op) == MEM)
 	{
 	  lo_half[num] = adjust_address (op, SImode, 0);
 	  hi_half[num] = adjust_address (op, SImode, 4);
 	}
       else
-	abort ();
+	{
+	  lo_half[num] = simplify_gen_subreg (SImode, op, DImode, 0);
+	  hi_half[num] = simplify_gen_subreg (SImode, op, DImode, 4);
+	}
     }
 }
 /* Split one or more TImode RTL references into pairs of SImode
@@ -5969,40 +5957,19 @@ split_ti (operands, num, lo_half, hi_half)
   while (num--)
     {
       rtx op = operands[num];
-      if (CONSTANT_P (op))
-	{
-	  if (GET_CODE (op) == CONST_INT)
-	    {
-	      lo_half[num] = GEN_INT (trunc_int_for_mode (INTVAL (op), SImode));
-	      hi_half[num] = (1 << (HOST_BITS_PER_WIDE_INT -1)) != 0 ? constm1_rtx : const0_rtx;
-	    }
-	  else if (GET_CODE (op) == CONST_DOUBLE && HOST_BITS_PER_WIDE_INT == 64)
-	    {
-	      lo_half[num] = GEN_INT (trunc_int_for_mode (CONST_DOUBLE_LOW (op), SImode));
-	      hi_half[num] = GEN_INT (trunc_int_for_mode (CONST_DOUBLE_HIGH (op), SImode));
-	    }
-	  else
-	    abort ();
-	}
-      else if (! reload_completed)
-	{
-	  lo_half[num] = gen_lowpart (DImode, op);
-	  hi_half[num] = gen_highpart (DImode, op);
-	}
-      else if (GET_CODE (op) == REG)
-	{
-	  if (TARGET_64BIT)
-	    abort();
-	  lo_half[num] = gen_rtx_REG (DImode, REGNO (op));
-	  hi_half[num] = gen_rtx_REG (DImode, REGNO (op) + 1);
-	}
-      else if (offsettable_memref_p (op))
+
+      /* simplify_subreg refuse to split volatile memory addresses, but we
+         still have to handle it.  */
+      if (GET_CODE (op) == MEM)
 	{
 	  lo_half[num] = adjust_address (op, DImode, 0);
 	  hi_half[num] = adjust_address (op, DImode, 8);
 	}
       else
-	abort ();
+	{
+	  lo_half[num] = simplify_gen_subreg (DImode, op, TImode, 0);
+	  hi_half[num] = simplify_gen_subreg (DImode, op, TImode, 8);
+	}
     }
 }
 
@@ -7860,54 +7827,19 @@ ix86_expand_setcc (code, dest)
 {
   rtx ret, tmp, tmpreg;
   rtx second_test, bypass_test;
-  int type;
 
   if (GET_MODE (ix86_compare_op0) == DImode
       && !TARGET_64BIT)
     return 0; /* FAIL */
 
-  /* Three modes of generation:
-     0 -- destination does not overlap compare sources:
-          clear dest first, emit strict_low_part setcc.
-     1 -- destination does overlap compare sources:
-          emit subreg setcc, zero extend.
-     2 -- destination is in QImode:
-          emit setcc only.
-
-     We don't use mode 0 early in compilation because it confuses CSE.
-     There are peepholes to turn mode 1 into mode 0 if things work out
-     nicely after reload.  */
-
-  type = cse_not_expected ? 0 : 1;
-
-  if (GET_MODE (dest) == QImode)
-    type = 2;
-  else if (reg_overlap_mentioned_p (dest, ix86_compare_op0)
-	   || reg_overlap_mentioned_p (dest, ix86_compare_op1))
-    type = 1;
-
-  if (type == 0)
-    emit_move_insn (dest, const0_rtx);
+  if (GET_MODE (dest) != QImode)
+    abort ();
 
   ret = ix86_expand_compare (code, &second_test, &bypass_test);
   PUT_MODE (ret, QImode);
 
   tmp = dest;
   tmpreg = dest;
-  if (type == 0)
-    {
-      tmp = gen_lowpart (QImode, dest);
-      tmpreg = tmp;
-      tmp = gen_rtx_STRICT_LOW_PART (VOIDmode, tmp);
-    }
-  else if (type == 1)
-    {
-      if (!cse_not_expected)
-	tmp = gen_reg_rtx (QImode);
-      else
-        tmp = gen_lowpart (QImode, dest);
-      tmpreg = tmp;
-    }
 
   emit_insn (gen_rtx_SET (VOIDmode, tmp, ret));
   if (bypass_test || second_test)
@@ -7930,17 +7862,6 @@ ix86_expand_setcc (code, dest)
 	emit_insn (gen_andqi3 (tmp, tmpreg, tmp2));
       else
 	emit_insn (gen_iorqi3 (tmp, tmpreg, tmp2));
-    }
-
-  if (type == 1)
-    {
-      rtx clob;
-
-      tmp = gen_rtx_ZERO_EXTEND (GET_MODE (dest), tmp);
-      tmp = gen_rtx_SET (VOIDmode, dest, tmp);
-      clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
-      tmp = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, tmp, clob));
-      emit_insn (tmp);
     }
 
   return 1; /* DONE */

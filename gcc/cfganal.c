@@ -67,12 +67,13 @@ forwarder_block_p (bb)
 
   while (insn != bb->end)
     {
-      if (active_insn_p (insn))
+      if (INSN_P (insn) && active_insn_p (insn))
 	return false;
       insn = NEXT_INSN (insn);
     }
-  return (!active_insn_p (insn)
-	  || (GET_CODE (insn) == JUMP_INSN && onlyjump_p (insn)));
+  return (!INSN_P (insn)
+	  || (GET_CODE (insn) == JUMP_INSN && simplejump_p (insn))
+	  || !active_insn_p (insn));
 }
 
 /* Return nonzero if we can reach target from src by falling trought.  */

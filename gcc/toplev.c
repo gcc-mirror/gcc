@@ -737,6 +737,10 @@ int flag_exceptions;
 
 int flag_unwind_tables = 0;
 
+/* Nonzero means generate frame unwind info table exact at each insn boundary */
+
+int flag_asynchronous_unwind_tables = 0;
+
 /* Nonzero means don't place uninitialized global data in common storage
    by default.  */
 
@@ -1096,6 +1100,8 @@ lang_independent_options f_options[] =
    N_("Enable exception handling") },
   {"unwind-tables", &flag_unwind_tables, 1,
    N_("Just generate unwind tables for exception handling") },
+  {"asynchronous-unwind-tables", &flag_asynchronous_unwind_tables, 1,
+   N_("Generate unwind tables exact at each instruction boundary") },
   {"non-call-exceptions", &flag_non_call_exceptions, 1,
    N_("Support synchronous non-call exceptions") },
   {"profile-arcs", &profile_arc_flag, 1,
@@ -2933,10 +2939,6 @@ rest_of_compilation (decl)
       convert_from_ssa ();
       /* New registers have been created.  Rescan their usage.  */
       reg_scan (insns, max_reg_num (), 1);
-      /* Life analysis used in SSA adds log_links but these
-	 shouldn't be there until the flow stage, so clear
-	 them away.  */
-      clear_log_links (insns);
 
       close_dump_file (DFI_ussa, print_rtl_with_bb, insns);
       timevar_pop (TV_FROM_SSA);
@@ -3370,7 +3372,7 @@ rest_of_compilation (decl)
   register_life_up_to_date = 0;
 
 #ifdef OPTIMIZE_MODE_SWITCHING
-  timevar_push (TV_GCSE);
+  timevar_push (TV_MODE_SWITCH);
 
   no_new_pseudos = 0;
   if (optimize_mode_switching (NULL))
@@ -3382,7 +3384,7 @@ rest_of_compilation (decl)
     }
   no_new_pseudos = 1;
 
-  timevar_pop (TV_GCSE);
+  timevar_pop (TV_MODE_SWITCH);
 #endif
 
   timevar_push (TV_SCHED);
@@ -4910,6 +4912,11 @@ toplev_main (argc, argv)
       flag_strength_reduce = 1;
       flag_rerun_cse_after_loop = 1;
     }
+
+  if (flag_non_call_exceptions)
+    flag_asynchronous_unwind_tables = 1;
+  if (flag_asynchronous_unwind_tables)
+    flag_unwind_tables = 1;
 
   /* Warn about options that are not supported on this machine.  */
 #ifndef INSN_SCHEDULING
