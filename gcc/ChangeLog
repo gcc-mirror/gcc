@@ -1,3 +1,12 @@
+Mon Jan  3 15:33:37 MET 2000  Jan Hubicka  <hubicka@freesoft.cz>
+
+	* regclass.c (op_costs): Remove global variable.
+	(record_reg_classes): New parameter "op_costs" and "reg_pref".
+	(record_operand_costs): Break out from ...
+	(scan_one_insn): ... here.
+	(dump_regclass): Make dumps nicer.
+	(regclass): Dump preferrences choosed and changes done during passes.
+
 2000-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.c (gen_df_reg): Fix for 32bit SPARC.

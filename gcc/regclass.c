@@ -1,5 +1,5 @@
 /* Compute register class preferences for pseudo-registers.
-   Copyright (C) 1987, 88, 91-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91-98, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -703,12 +703,6 @@ static struct costs *costs;
 
 static struct costs init_cost;
 
-/* Record the same data by operand number, accumulated for each alternative
-   in an insn.  The contribution to a pseudo is that of the minimum-cost
-   alternative.  */
-
-static struct costs op_costs[MAX_RECOG_OPERANDS];
-
 /* Record preferrences of each pseudo.
    This is available after `regclass' is run.  */
 
@@ -724,9 +718,11 @@ static struct reg_pref *reg_pref_buffer;
 static int loop_cost;
 
 static rtx scan_one_insn	PROTO((rtx, int));
+static void record_operand_costs PROTO((rtx, struct costs *, struct reg_pref *));
 static void dump_regclass	PROTO((FILE *));
 static void record_reg_classes	PROTO((int, int, rtx *, enum machine_mode *,
-				       char *, const char **, rtx));
+				       char *, const char **, rtx,
+				       struct costs *, struct reg_pref *));
 static int copy_cost		PROTO((rtx, enum machine_mode, 
 				       enum reg_class, int));
 static void record_address_regs	PROTO((rtx, enum reg_class, int));
@@ -789,15 +785,89 @@ dump_regclass (dump)
       enum reg_class class;
       if (REG_N_REFS (i))
 	{
-	  fprintf (dump, ";; Register %i costs:", i);
+	  fprintf (dump, "  Register %i costs:", i);
 	  for (class = 0; class < N_REG_CLASSES; class++)
 	    fprintf (dump, " %s:%i", reg_class_names[(int) class],
 		     costs[i].cost[class]);
-	  fprintf (dump, " MEM:%i\n\n", costs[i].mem_cost);
+	  fprintf (dump, " MEM:%i\n", costs[i].mem_cost);
 	}
     }
 }
+
 
+/* Calculate the costs of insn operands.  */
+
+static void
+record_operand_costs (insn, op_costs, reg_pref)
+     rtx insn;
+     struct costs *op_costs;
+     struct reg_pref *reg_pref;
+{
+  const char *constraints[MAX_RECOG_OPERANDS];
+  enum machine_mode modes[MAX_RECOG_OPERANDS];
+  char subreg_changes_size[MAX_RECOG_OPERANDS];
+  int i;
+
+  for (i = 0; i < recog_data.n_operands; i++)
+    {
+      constraints[i] = recog_data.constraints[i];
+      modes[i] = recog_data.operand_mode[i];
+    }
+  memset (subreg_changes_size, 0, sizeof (subreg_changes_size));
+
+  /* If we get here, we are set up to record the costs of all the
+     operands for this insn.  Start by initializing the costs.
+     Then handle any address registers.  Finally record the desired
+     classes for any pseudos, doing it twice if some pair of
+     operands are commutative.  */
+	     
+  for (i = 0; i < recog_data.n_operands; i++)
+    {
+      op_costs[i] = init_cost;
+
+      if (GET_CODE (recog_data.operand[i]) == SUBREG)
+	{
+	  rtx inner = SUBREG_REG (recog_data.operand[i]);
+	  if (GET_MODE_SIZE (modes[i]) != GET_MODE_SIZE (GET_MODE (inner)))
+	    subreg_changes_size[i] = 1;
+	  recog_data.operand[i] = inner;
+	}
+
+      if (GET_CODE (recog_data.operand[i]) == MEM)
+	record_address_regs (XEXP (recog_data.operand[i], 0),
+			     BASE_REG_CLASS, loop_cost * 2);
+      else if (constraints[i][0] == 'p')
+	record_address_regs (recog_data.operand[i],
+			     BASE_REG_CLASS, loop_cost * 2);
+    }
+
+  /* Check for commutative in a separate loop so everything will
+     have been initialized.  We must do this even if one operand
+     is a constant--see addsi3 in m68k.md.  */
+
+  for (i = 0; i < (int) recog_data.n_operands - 1; i++)
+    if (constraints[i][0] == '%')
+      {
+	const char *xconstraints[MAX_RECOG_OPERANDS];
+	int j;
+
+	/* Handle commutative operands by swapping the constraints.
+	   We assume the modes are the same.  */
+
+	for (j = 0; j < recog_data.n_operands; j++)
+	  xconstraints[j] = constraints[j];
+
+	xconstraints[i] = constraints[i+1];
+	xconstraints[i+1] = constraints[i];
+	record_reg_classes (recog_data.n_alternatives, recog_data.n_operands,
+			    recog_data.operand, modes, subreg_changes_size,
+			    xconstraints, insn, op_costs, reg_pref);
+      }
+
+  record_reg_classes (recog_data.n_alternatives, recog_data.n_operands,
+		      recog_data.operand, modes, subreg_changes_size,
+		      constraints, insn, op_costs, reg_pref);
+}
 
 /* Subroutine of regclass, processes one insn INSN.  Scan it and record each
    time it would save code to put a certain register in a certain class.
@@ -813,11 +883,9 @@ scan_one_insn (insn, pass)
 {
   enum rtx_code code = GET_CODE (insn);
   enum rtx_code pat_code;
-  const char *constraints[MAX_RECOG_OPERANDS];
-  enum machine_mode modes[MAX_RECOG_OPERANDS];
-  char subreg_changes_size[MAX_RECOG_OPERANDS];
   rtx set, note;
   int i, j;
+  struct costs op_costs[MAX_RECOG_OPERANDS];
 
   if (GET_RTX_CLASS (code) != 'i')
     return insn;
@@ -832,13 +900,6 @@ scan_one_insn (insn, pass)
 
   set = single_set (insn);
   extract_insn (insn);
-
-  for (i = 0; i < recog_data.n_operands; i++)
-    {
-      constraints[i] = recog_data.constraints[i];
-      modes[i] = recog_data.operand_mode[i];
-    }
-  memset (subreg_changes_size, 0, sizeof (subreg_changes_size));
 
   /* If this insn loads a parameter from its stack slot, then
      it represents a savings, rather than a cost, if the
@@ -913,58 +974,7 @@ scan_one_insn (insn, pass)
       return PREV_INSN (newinsn);
     }
 
-  /* If we get here, we are set up to record the costs of all the
-     operands for this insn.  Start by initializing the costs.
-     Then handle any address registers.  Finally record the desired
-     classes for any pseudos, doing it twice if some pair of
-     operands are commutative.  */
-	     
-  for (i = 0; i < recog_data.n_operands; i++)
-    {
-      op_costs[i] = init_cost;
-
-      if (GET_CODE (recog_data.operand[i]) == SUBREG)
-	{
-	  rtx inner = SUBREG_REG (recog_data.operand[i]);
-	  if (GET_MODE_SIZE (modes[i]) != GET_MODE_SIZE (GET_MODE (inner)))
-	    subreg_changes_size[i] = 1;
-	  recog_data.operand[i] = inner;
-	}
-
-      if (GET_CODE (recog_data.operand[i]) == MEM)
-	record_address_regs (XEXP (recog_data.operand[i], 0),
-			     BASE_REG_CLASS, loop_cost * 2);
-      else if (constraints[i][0] == 'p')
-	record_address_regs (recog_data.operand[i],
-			     BASE_REG_CLASS, loop_cost * 2);
-    }
-
-  /* Check for commutative in a separate loop so everything will
-     have been initialized.  We must do this even if one operand
-     is a constant--see addsi3 in m68k.md.  */
-
-  for (i = 0; i < (int) recog_data.n_operands - 1; i++)
-    if (constraints[i][0] == '%')
-      {
-	const char *xconstraints[MAX_RECOG_OPERANDS];
-	int j;
-
-	/* Handle commutative operands by swapping the constraints.
-	   We assume the modes are the same.  */
-
-	for (j = 0; j < recog_data.n_operands; j++)
-	  xconstraints[j] = constraints[j];
-
-	xconstraints[i] = constraints[i+1];
-	xconstraints[i+1] = constraints[i];
-	record_reg_classes (recog_data.n_alternatives, recog_data.n_operands,
-			    recog_data.operand, modes, subreg_changes_size,
-			    xconstraints, insn);
-      }
-
-  record_reg_classes (recog_data.n_alternatives, recog_data.n_operands,
-		      recog_data.operand, modes, subreg_changes_size,
-		      constraints, insn);
+  record_operand_costs(insn, op_costs, reg_pref);
 
   /* Now add the cost for each operand to the total costs for
      its register.  */
@@ -1064,6 +1074,9 @@ regclass (f, nregs, dump)
   for (pass = 0; pass <= flag_expensive_optimizations; pass++)
     {
       int index;
+
+      if (dump)
+        fprintf (dump, "\n\nPass %i\n\n",pass);
       /* Zero out our accumulation of the cost of each class for each reg.  */
 
       bzero ((char *) costs, nregs * sizeof (struct costs));
@@ -1110,6 +1123,11 @@ regclass (f, nregs, dump)
       if (pass == 0)
 	reg_pref = reg_pref_buffer;
 
+      if (dump)
+        {
+	  dump_regclass (dump);
+	  fprintf(dump,"\n");
+	}
       for (i = FIRST_PSEUDO_REGISTER; i < nregs; i++)
 	{
 	  register int best_cost = (1 << (HOST_BITS_PER_INT - 2)) - 1;
@@ -1118,6 +1136,9 @@ regclass (f, nregs, dump)
 	     to save lots of casts.  */
 	  register int class;
 	  register struct costs *p = &costs[i];
+
+	  if (!REG_N_REFS (i))
+	    continue;
 
 	  for (class = (int) ALL_REGS - 1; class > 0; class--)
 	    {
@@ -1146,7 +1167,7 @@ regclass (f, nregs, dump)
 	     should be provided as a register class.  Don't do this if we
 	     will be doing it again later.  */
 
-	  if (pass == 1 || ! flag_expensive_optimizations)
+	  if ((pass == 1  || dump) || ! flag_expensive_optimizations)
 	    for (class = 0; class < N_REG_CLASSES; class++)
 	      if (p->cost[class] < p->mem_cost
 		  && (reg_class_size[(int) reg_class_subunion[(int) alt][class]]
@@ -1161,14 +1182,28 @@ regclass (f, nregs, dump)
 	  if (alt == best)
 	    alt = NO_REGS;
 
+	  if (dump 
+	      && (reg_pref[i].prefclass != (int) best
+		  || reg_pref[i].altclass != (int) alt))
+	    {
+	      static const char *const reg_class_names[] = REG_CLASS_NAMES;
+	      fprintf(dump, "  Register %i", i);
+	      if (alt == ALL_REGS || best == ALL_REGS)
+		fprintf (dump, " pref %s\n", reg_class_names[(int) best]);
+	      else if (alt == NO_REGS)
+		fprintf (dump, " pref %s or none\n", reg_class_names[(int) best]);
+	      else
+		fprintf (dump, " pref %s, else %s\n",
+			 reg_class_names[(int) best],
+			 reg_class_names[(int) alt]);
+	    }
+
 	  /* We cast to (int) because (char) hits bugs in some compilers.  */
 	  reg_pref[i].prefclass = (int) best;
 	  reg_pref[i].altclass = (int) alt;
 	}
     }
 
-  if (dump)
-    dump_regclass (dump);
 #ifdef FORBIDDEN_INC_DEC_CLASSES
   free (in_inc_dec);
 #endif
@@ -1201,7 +1236,7 @@ regclass (f, nregs, dump)
 
 static void
 record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
-		    constraints, insn)
+		    constraints, insn, op_costs, reg_pref)
      int n_alts;
      int n_ops;
      rtx *ops;
@@ -1209,6 +1244,8 @@ record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
      char *subreg_changes_size ATTRIBUTE_UNUSED;
      const char **constraints;
      rtx insn;
+     struct costs *op_costs;
+     struct reg_pref *reg_pref;
 {
   int alt;
   int i, j;
