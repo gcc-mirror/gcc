@@ -1216,10 +1216,7 @@ extern union tree_node *current_function_decl;
    adressing modes to be used).
 
    Put X and Z into registers.  Then put the entire expression into
-   a register.
-
-   Other REG+(X*Y) addresses are placed into a register with the
-   X*Y subexpression placed in a register of its own.  */
+   a register.  */
 
 #define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)	\
 { if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == REG	\
@@ -1250,20 +1247,9 @@ extern union tree_node *current_function_decl;
 				gen_rtx (MULT, SImode, reg2, 	\
 					 GEN_INT (val)),	\
 				reg1));				\
+      goto WIN;							\
     }								\
-  if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == MULT)	\
-    (X) = force_operand (gen_rtx (PLUS, SImode, XEXP (X, 1),	\
-		                  force_operand (XEXP (X, 0), 0)), 0);\
-  if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 1)) == MULT)	\
-    (X) = force_operand (gen_rtx (PLUS, SImode, XEXP (X, 0),	\
-				  force_operand (XEXP (X, 1), 0)), 0);\
-  if (memory_address_p (MODE, X))				\
-    goto WIN;							\
   if (flag_pic) (X) = legitimize_pic_address (X, MODE, gen_reg_rtx (Pmode));\
-  else if (GET_CODE (X) == SYMBOL_REF 				\
-	    || GET_CODE (X) == LABEL_REF)			\
-    (X) = gen_rtx (LO_SUM, Pmode,				\
-		   copy_to_mode_reg (Pmode, gen_rtx (HIGH, Pmode, X)), X); \
   if (memory_address_p (MODE, X))				\
     goto WIN;}
 
