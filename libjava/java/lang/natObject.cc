@@ -286,6 +286,9 @@ _Jv_ObjectCheckMonitor (jobject obj)
 // operations is already ridiculous, and would become worse if we
 // went through the proper intermediaries.
 #else
+# ifdef LIBGCJ_GC_DEBUG
+#   define GC_DEBUG
+# endif
 # include "gc.h"
 #endif
 

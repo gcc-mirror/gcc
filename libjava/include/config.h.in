@@ -366,6 +366,9 @@
 /* Indicate that linker is not able to 8-byte align static data */
 #undef JV_LINKER_CANNOT_8BYTE_ALIGN_STATICS
 
+/* Define if we want to use debug calls into the garbage collector. */
+#undef LIBGCJ_GC_DEBUG
+
 /* Define if using POSIX threads on Linux. */
 #undef LINUX_THREADS
 

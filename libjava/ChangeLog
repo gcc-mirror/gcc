@@ -1,3 +1,27 @@
+2004-08-27  Hans Boehm  <Hans.Boehm@hp.com>
+
+	* configure.ac: Handle --enable-gc-debug.
+	* configure: Regenerate.
+	* include/config.h.in (LIBGCJ_GC_DEBUG): Add.
+	* boehm.cc: Include gc_mark.h, javaxfc.h, but no GC private files.
+	Rearrange include file order.
+	(GC_DEBUG): Set if LIBGCJ_GC_DEBUG is set.
+	(GC_finalize_all, GC_debug_generic_malloc): Don't declare.
+	(disable_gc_mutex): Delete along with all references.
+	(_Jv_MarkObj, _Jv_MarkArray): Use public types,
+	adjust for debug header size.
+	(_Jv_AllocObj, _Jv_allocPtrFreeObj): Define out of line for
+	debug case.
+	(_Jv_AllocArray): Declare min_heap_addr only if needed.
+	(gcj_describe_type_fn): New.
+	(_Jv_InitGC): Use GC_new_free_list, GC_new_proc, and GC_new_kind.
+	Register gcj_describe_type_fn.
+	* include/boehm-gc.h:
+	(_Jv_AllocObj, _Jv_allocPtrFreeObj):
+	Don't define, but declare, for debug case.
+	* java/lang/natObject.cc:
+	(GC_DEBUG): Define if LIBGCJ_GC_DEBUG is set.
+
 2004-08-26  Mark Wielaard  <mark@klomp.org>
 
 	Fixes PR libgcj/17002:
