@@ -1,3 +1,7 @@
+2005-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/i386-asm-4.c: New test.
+
 2005-01-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/nested-func-2.c: New test.
