@@ -4,6 +4,9 @@
 	* config.gcc (powerpc64-*-linux* <tmake_file>): Drop t-ppcos and
 	t-ppccomm.  Use t-rs6000 and t-linux64.
 	(powerpc64-*-gnu* <tmake_file>): Likewise.
+	* mklibgcc.in (SHLIB_MKMAP_OPTS): New variable.
+	* mkmap-symver.awk (dotsyms): If set, output .foo as well as foo.
+	* Makefile.in (SHLIB_MKMAP_OPTS): Pass to mklibgcc.
 
 2002-03-21  Aldy Hernandez  <aldyh@redhat.com>
 
