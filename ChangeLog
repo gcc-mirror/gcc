@@ -1,3 +1,8 @@
+2003-04-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* configure.in (arm-*-netbsdelf*): Enable building java libraries.
+	* configure: Regenerated.
+
 2003-04-15  DJ Delorie  <dj@redhat.com>
 
 	* MAINTAINERS: Remove myself as windows/cygwin/mingw maintainer.

@@ -349,6 +349,7 @@ case "${target}" in
     # Skip some stuff that's unsupported on some NetBSD configurations.
     case "${target}" in
       i*86-*-netbsdelf*) ;;
+      arm*-*-netbsdelf*) ;;
       *)
 	noconfigdirs="$noconfigdirs ${libgcj}"
 	;;
