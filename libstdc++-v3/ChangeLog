@@ -1,3 +1,44 @@
+2004-10-05  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/17780
+	* include/ext/mt_allocator.h (__pool_base::_Tune): Add default
+	options as compile-time constant enums.
+	(__pool_base::_Tune::is_default): New.
+	(__pool_base::_Block_address): New.
+	(__pool_base): Rearrange data members.
+	(__pool::_M_reserve_memory): To _M_reserve_block.
+	(__pool::_M_reclaim_memory): To _M_reclaim_block.	
+	(__pool::_Bin_record): Add _Block_address data member.
+	(__pool<false>): Add _M_thread_freelist_initial.
+	(__pool::~__pool): Declare.	
+	(__common_pool_policy): Move static data member to...
+	(__common_pool_policy::_S_get_pool): ...here, make static local.
+	(__per_type_pool_policy): Move static data member to...
+	(__per_type_pool_policy::_S_get_pool): ...here, make static local.
+	(__mt_alloc::__mt_alloc): Call __policy_type::_S_get_pool.
+	Remove static member definitions. Use define for __default_policy.
+	* src/mt_allocator.cc: Same.
+	* config/linker-map.gnu: Don't export _S_get_pool. Renames.
+	* testsuite/ext/new_allocator: New.
+	* testsuite/ext/new_allocator/instantiate.cc: New.
+	* testsuite/ext/new_allocator/check_new.cc: New.
+	* testsuite/ext/new_allocator/deallocate_global.cc: New.
+	* testsuite/ext/new_allocator/deallocate_local.cc: New.
+	* testsuite/ext/mt_allocator/instantiate.cc: Instantiate all
+	template arguments.
+	* testsuite/ext/mt_allocator/deallocate_global-1.cc: New.
+	* testsuite/ext/mt_allocator/deallocate_global-2.cc: New.
+	* testsuite/ext/mt_allocator/deallocate_global-3.cc: New.
+	* testsuite/ext/mt_allocator/deallocate_global-4.cc: New.
+	* testsuite/ext/mt_allocator/deallocate_local-1.cc: New.
+	* testsuite/ext/mt_allocator/deallocate_local-2.cc: New.
+	* testsuite/ext/mt_allocator/deallocate_local-3.cc: New.
+	* testsuite/ext/mt_allocator/deallocate_local-4.cc: New.
+	* testsuite/ext/mt_allocator/deallocate.cc: New.
+	* testsuite/ext/malloc_allocator/deallocate.cc: New.	
+	* testsuite/ext/malloc_allocator/deallocate_global.cc: New.
+	* testsuite/ext/malloc_allocator/deallocate_local.cc: New.
+	
 2004-10-05  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* configure.host (abi_baseline_pair): Define for s390-*-linux* and

@@ -23,11 +23,6 @@
 // 20.4.1.1 allocator members
 
 #include <cstdlib>
-#include <ext/mt_allocator.h>
+#include <ext/new_allocator.h>
 
-using namespace __gnu_cxx;
-template class __mt_alloc<int>;
-template class __mt_alloc<short, __common_pool_policy<true> >;
-template class __mt_alloc<short, __common_pool_policy<false> >;
-template class __mt_alloc<short, __per_type_pool_policy<short, true> >;
-template class __mt_alloc<short, __per_type_pool_policy<short, false> >;
+template class __gnu_cxx::new_allocator<int>;

@@ -32,8 +32,8 @@
 //
 
 #include <bits/c++config.h>
-#include <ext/mt_allocator.h>
 #include <bits/concurrence.h>
+#include <ext/mt_allocator.h>
 
 namespace __gnu_internal
 {
@@ -46,18 +46,185 @@ namespace __gnu_internal
 
 namespace __gnu_cxx
 {
-#ifdef __GTHREADS
+  __pool<false>::~__pool()
+  {
+    if (_M_init && !_M_options._M_force_new)
+      {
+	for (size_t __n = 0; __n < _M_bin_size; ++__n)
+	  {
+	    _Bin_record& __bin = _M_bin[__n];
+	    while (__bin._M_address)
+	      {
+		_Block_address* __tmp = __bin._M_address->_M_next;
+		::operator delete(__bin._M_address->_M_initial);
+		delete __bin._M_address;
+		__bin._M_address = __tmp;
+	      }
+	    delete __bin._M_first;
+	  }
+	delete _M_bin;
+	delete _M_binmap;
+      }
+  }
+
   void
-  __pool<true>::_M_reclaim_memory(char* __p, size_t __bytes)
+  __pool<false>::_M_reclaim_block(char* __p, size_t __bytes)
+  {
+    // Round up to power of 2 and figure out which bin to use.
+    const size_t __which = _M_binmap[__bytes];
+    _Bin_record& __bin = _M_bin[__which];
+
+    const _Tune& __options = _M_get_options();
+    char* __c = __p - __options._M_align;
+    _Block_record* __block = reinterpret_cast<_Block_record*>(__c);
+      
+    // Single threaded application - return to global pool.
+    __block->_M_next = __bin._M_first[0];
+    __bin._M_first[0] = __block;
+  }
+
+  char* 
+  __pool<false>::_M_reserve_block(size_t __bytes, const size_t __thread_id)
+  {
+    // Round up to power of 2 and figure out which bin to use.
+    const size_t __which = _M_binmap[__bytes];
+    const _Tune& __options = _M_get_options();
+    const size_t __bin_size = ((__options._M_min_bin << __which) 
+			       + __options._M_align);
+    size_t __block_count = __options._M_chunk_size / __bin_size;	  
+
+    // Get a new block dynamically, set it up for use.
+    void* __v = ::operator new(__options._M_chunk_size);
+    _Block_record* __block = static_cast<_Block_record*>(__v);
+    --__block_count;
+    _Block_record* __tmp = __block;
+    while (__block_count-- > 0)
+      {
+	char* __c = reinterpret_cast<char*>(__tmp) + __bin_size;
+	__tmp->_M_next = reinterpret_cast<_Block_record*>(__c);
+	__tmp = __tmp->_M_next;
+      }
+    __tmp->_M_next = NULL;
+
+    // Update _Bin_record fields.
+    _Bin_record& __bin = _M_bin[__which];
+    __bin._M_first[__thread_id] = __block->_M_next;
+    _Block_address* __address = new _Block_address;
+    __address->_M_initial = __v;
+    __address->_M_next = __bin._M_address;
+    __bin._M_address = __address;
+
+    // NB: For alignment reasons, we can't use the first _M_align
+    // bytes, even when sizeof(_Block_record) < _M_align.
+    return reinterpret_cast<char*>(__block) + __options._M_align;
+  }
+
+  void
+  __pool<false>::_M_initialize()
+  {
+    // _M_force_new must not change after the first allocate(), which
+    // in turn calls this method, so if it's false, it's false forever
+    // and we don't need to return here ever again.
+    if (_M_options._M_force_new) 
+      {
+	_M_init = true;
+	return;
+      }
+      
+    // Create the bins.
+    // Calculate the number of bins required based on _M_max_bytes.
+    // _M_bin_size is statically-initialized to one.
+    size_t __bin_size = _M_options._M_min_bin;
+    while (_M_options._M_max_bytes > __bin_size)
+      {
+	__bin_size <<= 1;
+	++_M_bin_size;
+      }
+      
+    // Setup the bin map for quick lookup of the relevant bin.
+    const size_t __j = (_M_options._M_max_bytes + 1) * sizeof(_Binmap_type);
+    _M_binmap = static_cast<_Binmap_type*>(::operator new(__j));
+    _Binmap_type* __bp = _M_binmap;
+    _Binmap_type __bin_max = _M_options._M_min_bin;
+    _Binmap_type __bint = 0;
+    for (_Binmap_type __ct = 0; __ct <= _M_options._M_max_bytes; ++__ct)
+      {
+	if (__ct > __bin_max)
+	  {
+	    __bin_max <<= 1;
+	    ++__bint;
+	  }
+	*__bp++ = __bint;
+      }
+      
+    // Initialize _M_bin and its members.
+    void* __v = ::operator new(sizeof(_Bin_record) * _M_bin_size);
+    _M_bin = static_cast<_Bin_record*>(__v);
+    for (size_t __n = 0; __n < _M_bin_size; ++__n)
+      {
+	_Bin_record& __bin = _M_bin[__n];
+	__v = ::operator new(sizeof(_Block_record*));
+	__bin._M_first = static_cast<_Block_record**>(__v);
+	__bin._M_first[0] = NULL;
+	__bin._M_address = NULL;
+      }
+    _M_init = true;
+  }
+  
+#ifdef __GTHREADS
+  __pool<true>::~__pool()
+  {
+    if (_M_init && !_M_options._M_force_new)
+      {
+	if (__gthread_active_p())
+	  {
+	    for (size_t __n = 0; __n < _M_bin_size; ++__n)
+	      {
+		_Bin_record& __bin = _M_bin[__n];
+		while (__bin._M_address)
+		  {
+		    _Block_address* __tmp = __bin._M_address->_M_next;
+		    ::operator delete(__bin._M_address->_M_initial);
+		    delete __bin._M_address;
+		    __bin._M_address = __tmp;
+		  }
+		delete __bin._M_first;
+		delete __bin._M_free;
+		delete __bin._M_used;
+		delete __bin._M_mutex;
+	      }
+	    ::operator delete(_M_thread_freelist_initial);
+	  }
+	else
+	  {
+	    for (size_t __n = 0; __n < _M_bin_size; ++__n)
+	      {
+		_Bin_record& __bin = _M_bin[__n];
+		while (__bin._M_address)
+		  {
+		    _Block_address* __tmp = __bin._M_address->_M_next;
+		    ::operator delete(__bin._M_address->_M_initial);
+		    delete __bin._M_address;
+		    __bin._M_address = __tmp;
+		  }
+		delete __bin._M_first;
+	      }
+	  }
+	delete _M_bin;
+	delete _M_binmap;
+      }
+  }
+
+  void
+  __pool<true>::_M_reclaim_block(char* __p, size_t __bytes)
   {
     // Round up to power of 2 and figure out which bin to use.
     const size_t __which = _M_binmap[__bytes];
     const _Bin_record& __bin = _M_bin[__which];
+
     const _Tune& __options = _M_get_options();
-    
     char* __c = __p - __options._M_align;
     _Block_record* __block = reinterpret_cast<_Block_record*>(__c);
-    
     if (__gthread_active_p())
       {
 	// Calculate the number of records to remove from our freelist:
@@ -106,38 +273,13 @@ namespace __gnu_cxx
 	__bin._M_first[0] = __block;
       }
   }
-#endif
 
-  void
-  __pool<false>::_M_reclaim_memory(char* __p, size_t __bytes)
-  {
-    // Round up to power of 2 and figure out which bin to use.
-    const size_t __which = _M_binmap[__bytes];
-    const _Bin_record& __bin = _M_bin[__which];
-    const _Tune& __options = _M_get_options();
-      
-    char* __c = __p - __options._M_align;
-    _Block_record* __block = reinterpret_cast<_Block_record*>(__c);
-      
-    // Single threaded application - return to global pool.
-    __block->_M_next = __bin._M_first[0];
-    __bin._M_first[0] = __block;
-  }
-
-#ifdef __GTHREADS
   char* 
-  __pool<true>::_M_reserve_memory(size_t __bytes, const size_t __thread_id)
+  __pool<true>::_M_reserve_block(size_t __bytes, const size_t __thread_id)
   {
     // Round up to power of 2 and figure out which bin to use.
     const size_t __which = _M_binmap[__bytes];
-      
-    // If here, there are no blocks on our freelist.
     const _Tune& __options = _M_get_options();
-    _Block_record* __block = NULL;
-    const _Bin_record& __bin = _M_bin[__which];
-
-    // NB: For alignment reasons, we can't use the first _M_align
-    // bytes, even when sizeof(_Block_record) < _M_align.
     const size_t __bin_size = ((__options._M_min_bin << __which)
 			       + __options._M_align);
     size_t __block_count = __options._M_chunk_size / __bin_size;	  
@@ -152,19 +294,17 @@ namespace __gnu_cxx
     //   no need to lock or change ownership but check for free
     //   blocks on global list (and if not add new ones) and
     //   get the first one.
+    _Bin_record& __bin = _M_bin[__which];
+    _Block_record* __block = NULL;
     if (__gthread_active_p())
       {
-	__gthread_mutex_lock(__bin._M_mutex);
 	if (__bin._M_first[0] == NULL)
 	  {
-	    // No need to hold the lock when we are adding a
-	    // whole chunk to our own list.
-	    __gthread_mutex_unlock(__bin._M_mutex);
-	    
+	    // No need to hold the lock when we are adding a whole
+	    // chunk to our own list.
 	    void* __v = ::operator new(__options._M_chunk_size);
 	    __bin._M_first[__thread_id] = static_cast<_Block_record*>(__v);
 	    __bin._M_free[__thread_id] = __block_count;
-	    
 	    --__block_count;
 	    __block = __bin._M_first[__thread_id];
 	    while (__block_count-- > 0)
@@ -174,12 +314,20 @@ namespace __gnu_cxx
 		__block = __block->_M_next;
 	      }
 	    __block->_M_next = NULL;
+
+	    __gthread_mutex_lock(__bin._M_mutex);
+	    _Block_address* __address = new _Block_address;
+	    __address->_M_initial = __v;
+	    __address->_M_next = __bin._M_address;
+	    __bin._M_address = __address;
+	    __gthread_mutex_unlock(__bin._M_mutex);
 	  }
 	else
 	  {
-	    // Is the number of required blocks greater than or
-	    // equal to the number that can be provided by the
-	    // global free list?
+	    // Is the number of required blocks greater than or equal
+	    // to the number that can be provided by the global free
+	    // list?
+	    __gthread_mutex_lock(__bin._M_mutex);
 	    __bin._M_first[__thread_id] = __bin._M_first[0];
 	    if (__block_count >= __bin._M_free[0])
 	      {
@@ -204,10 +352,9 @@ namespace __gnu_cxx
     else
       {
 	void* __v = ::operator new(__options._M_chunk_size);
-	__bin._M_first[0] = static_cast<_Block_record*>(__v);
-	
+	__block = static_cast<_Block_record*>(__v);
+	__bin._M_first[0] = __block;
 	--__block_count;
-	__block = __bin._M_first[0];
 	while (__block_count-- > 0)
 	  {
 	    char* __c = reinterpret_cast<char*>(__block) + __bin_size;
@@ -215,6 +362,11 @@ namespace __gnu_cxx
 	    __block = __block->_M_next;
 	  }
 	__block->_M_next = NULL;
+
+	_Block_address* __address = new _Block_address;
+	__address->_M_initial = __v;
+	__address->_M_next = __bin._M_address;
+	__bin._M_address = __address;
       }
       
     __block = __bin._M_first[__thread_id];
@@ -226,53 +378,15 @@ namespace __gnu_cxx
 	--__bin._M_free[__thread_id];
 	++__bin._M_used[__thread_id];
       }
-    return reinterpret_cast<char*>(__block) + __options._M_align;
-  }
-#endif
 
-  char* 
-  __pool<false>::_M_reserve_memory(size_t __bytes, const size_t __thread_id)
-  {
-    // Round up to power of 2 and figure out which bin to use.
-    const size_t __which = _M_binmap[__bytes];
-      
-    // If here, there are no blocks on our freelist.
-    const _Tune& __options = _M_get_options();
-    _Block_record* __block = NULL;
-    const _Bin_record& __bin = _M_bin[__which];
-    
     // NB: For alignment reasons, we can't use the first _M_align
     // bytes, even when sizeof(_Block_record) < _M_align.
-    const size_t __bin_size = ((__options._M_min_bin << __which) 
-			       + __options._M_align);
-    size_t __block_count = __options._M_chunk_size / __bin_size;	  
-	  
-    // Not using threads.
-    void* __v = ::operator new(__options._M_chunk_size);
-    __bin._M_first[0] = static_cast<_Block_record*>(__v);
-    
-    --__block_count;
-    __block = __bin._M_first[0];
-    while (__block_count-- > 0)
-      {
-	char* __c = reinterpret_cast<char*>(__block) + __bin_size;
-	__block->_M_next = reinterpret_cast<_Block_record*>(__c);
-	__block = __block->_M_next;
-      }
-    __block->_M_next = NULL;
-      
-    __block = __bin._M_first[__thread_id];
-    __bin._M_first[__thread_id] = __bin._M_first[__thread_id]->_M_next;
     return reinterpret_cast<char*>(__block) + __options._M_align;
   }
 
-#ifdef __GTHREADS
  void
   __pool<true>::_M_initialize(__destroy_handler __d)
   {
-    // This method is called on the first allocation (when _M_init
-    // is still false) to create the bins.
-    
     // _M_force_new must not change after the first allocate(),
     // which in turn calls this method, so if it's false, it's false
     // forever and we don't need to return here ever again.
@@ -282,6 +396,7 @@ namespace __gnu_cxx
 	return;
       }
       
+    // Create the bins.
     // Calculate the number of bins required based on _M_max_bytes.
     // _M_bin_size is statically-initialized to one.
     size_t __bin_size = _M_options._M_min_bin;
@@ -294,7 +409,6 @@ namespace __gnu_cxx
     // Setup the bin map for quick lookup of the relevant bin.
     const size_t __j = (_M_options._M_max_bytes + 1) * sizeof(_Binmap_type);
     _M_binmap = static_cast<_Binmap_type*>(::operator new(__j));
-      
     _Binmap_type* __bp = _M_binmap;
     _Binmap_type __bin_max = _M_options._M_min_bin;
     _Binmap_type __bint = 0;
@@ -320,6 +434,7 @@ namespace __gnu_cxx
 	const size_t __k = sizeof(_Thread_record) * _M_options._M_max_threads;
 	__v = ::operator new(__k);
 	_M_thread_freelist = static_cast<_Thread_record*>(__v);
+	_M_thread_freelist_initial = __v;
 	  
 	// NOTE! The first assignable thread id is 1 since the
 	// global pool uses id 0
@@ -345,7 +460,9 @@ namespace __gnu_cxx
 	    _Bin_record& __bin = _M_bin[__n];
 	    __v = ::operator new(sizeof(_Block_record*) * __max_threads);
 	    __bin._M_first = static_cast<_Block_record**>(__v);
-	      
+
+	    __bin._M_address = NULL;
+
 	    __v = ::operator new(sizeof(size_t) * __max_threads);
 	    __bin._M_free = static_cast<size_t*>(__v);
 	      
@@ -364,9 +481,7 @@ namespace __gnu_cxx
 #else
 	    { __GTHREAD_MUTEX_INIT_FUNCTION(__bin._M_mutex); }
 #endif
-	      
-	    for (size_t __threadn = 0; __threadn < __max_threads;
-		 ++__threadn)
+	    for (size_t __threadn = 0; __threadn < __max_threads; ++__threadn)
 	      {
 		__bin._M_first[__threadn] = NULL;
 		__bin._M_free[__threadn] = 0;
@@ -375,73 +490,19 @@ namespace __gnu_cxx
 	  }
       }
     else
-      for (size_t __n = 0; __n < _M_bin_size; ++__n)
-	{
-	  _Bin_record& __bin = _M_bin[__n];
-	  __v = ::operator new(sizeof(_Block_record*));
-	  __bin._M_first = static_cast<_Block_record**>(__v);
-	  __bin._M_first[0] = NULL;
-	}
-    _M_init = true;
-  }
-#endif
-
-  void
-  __pool<false>::_M_initialize()
-  {
-    // This method is called on the first allocation (when _M_init
-    // is still false) to create the bins.
-    
-    // _M_force_new must not change after the first allocate(),
-    // which in turn calls this method, so if it's false, it's false
-    // forever and we don't need to return here ever again.
-    if (_M_options._M_force_new) 
       {
-	_M_init = true;
-	return;
-      }
-      
-    // Calculate the number of bins required based on _M_max_bytes.
-    // _M_bin_size is statically-initialized to one.
-    size_t __bin_size = _M_options._M_min_bin;
-    while (_M_options._M_max_bytes > __bin_size)
-      {
-	__bin_size <<= 1;
-	++_M_bin_size;
-      }
-      
-    // Setup the bin map for quick lookup of the relevant bin.
-    const size_t __j = (_M_options._M_max_bytes + 1) * sizeof(_Binmap_type);
-    _M_binmap = static_cast<_Binmap_type*>(::operator new(__j));
-      
-    _Binmap_type* __bp = _M_binmap;
-    _Binmap_type __bin_max = _M_options._M_min_bin;
-    _Binmap_type __bint = 0;
-    for (_Binmap_type __ct = 0; __ct <= _M_options._M_max_bytes; ++__ct)
-      {
-	if (__ct > __bin_max)
+	for (size_t __n = 0; __n < _M_bin_size; ++__n)
 	  {
-	    __bin_max <<= 1;
-	    ++__bint;
+	    _Bin_record& __bin = _M_bin[__n];
+	    __v = ::operator new(sizeof(_Block_record*));
+	    __bin._M_first = static_cast<_Block_record**>(__v);
+	    __bin._M_first[0] = NULL;
+	    __bin._M_address = NULL;
 	  }
-	*__bp++ = __bint;
-      }
-      
-    // Initialize _M_bin and its members.
-    void* __v = ::operator new(sizeof(_Bin_record) * _M_bin_size);
-    _M_bin = static_cast<_Bin_record*>(__v);
-      
-    for (size_t __n = 0; __n < _M_bin_size; ++__n)
-      {
-	_Bin_record& __bin = _M_bin[__n];
-	__v = ::operator new(sizeof(_Block_record*));
-	__bin._M_first = static_cast<_Block_record**>(__v);
-	__bin._M_first[0] = NULL;
       }
     _M_init = true;
   }
-  
-#ifdef __GTHREADS
+
   size_t
   __pool<true>::_M_get_thread_id()
   {
@@ -485,23 +546,6 @@ namespace __gnu_cxx
     _M_thread_freelist = __tr;
   }
 #endif
-
-  // Definitions for non-exported bits of __common_pool.
-#ifdef __GTHREADS
-  __pool<true>
-  __common_pool_policy<true>::_S_data = __pool<true>();
-
-  __pool<true>&
-  __common_pool_policy<true>::_S_get_pool() { return _S_data; }
-#endif
-
-  template<>
-    __pool<false>
-    __common_pool_policy<false>::_S_data = __pool<false>();
-
-  template<>
-    __pool<false>&
-    __common_pool_policy<false>::_S_get_pool() { return _S_data; }
 
   // Instantiations.
   template class __mt_alloc<char>;
