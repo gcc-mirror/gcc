@@ -92,10 +92,10 @@ namespace __gnu_norm
     {
       // concept requirements
       __glibcxx_class_requires(_Tp, _SGIAssignableConcept)
-	__glibcxx_class_requires4(_Compare, bool, _Key, _Key,
-				  _BinaryFunctionConcept)
+      __glibcxx_class_requires4(_Compare, bool, _Key, _Key,
+				_BinaryFunctionConcept)
   
-	public:
+    public:
       typedef _Key                                          key_type;
       typedef _Tp                                           mapped_type;
       typedef pair<const _Key, _Tp>                         value_type;
@@ -109,7 +109,7 @@ namespace __gnu_norm
 	_Compare comp;
 	
 	value_compare(_Compare __c)
-	  : comp(__c) { }
+	: comp(__c) { }
 	
       public:
 	bool operator()(const value_type& __x, const value_type& __y) const
@@ -613,11 +613,14 @@ namespace __gnu_norm
       { return _M_t.equal_range(__x); }
       
       template <typename _K1, typename _T1, typename _C1, typename _A1>
-      friend bool operator== (const map<_K1,_T1,_C1,_A1>&,
-			      const map<_K1,_T1,_C1,_A1>&);
+        friend bool
+        operator== (const map<_K1,_T1,_C1,_A1>&,
+		    const map<_K1,_T1,_C1,_A1>&);
+
       template <typename _K1, typename _T1, typename _C1, typename _A1>
-      friend bool operator< (const map<_K1,_T1,_C1,_A1>&,
-			     const map<_K1,_T1,_C1,_A1>&);
+        friend bool
+        operator< (const map<_K1,_T1,_C1,_A1>&,
+		   const map<_K1,_T1,_C1,_A1>&);
     };
   
   /**

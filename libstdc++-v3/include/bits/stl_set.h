@@ -68,7 +68,7 @@ namespace __gnu_norm
   // Forward declarations of operators < and ==, needed for friend declaration.
   template<class _Key, class _Compare = less<_Key>, 
 	   class _Alloc = allocator<_Key> >
-  class set;
+    class set;
 
   template<class _Key, class _Compare, class _Alloc>
     inline bool 
@@ -111,7 +111,7 @@ namespace __gnu_norm
       __glibcxx_class_requires4(_Compare, bool, _Key, _Key,
 				_BinaryFunctionConcept)
 	
-	public:
+    public:
       // typedefs:
       //@{
       /// Public typedefs.
