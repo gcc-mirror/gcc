@@ -1,5 +1,6 @@
 ;; libgcc routines for the Hitachi H8/300 CPU.
 ;; Contributed by Steve Chamberlain <sac@cygnus.com>
+;; Optimizations by Toshiyasu Morita <toshiyasu.morita@hsa.hitachi.com>
 
 /* Copyright (C) 1994, 2000, 2001 Free Software Foundation, Inc.
 
@@ -108,24 +109,21 @@ Boston, MA 02111-1307, USA.  */
 	.align 2
 	.global ___cmpsi2
 ___cmpsi2:
-	cmp.w	A2,A0
+	cmp.w	A0,A2
 	bne	.L2
-	cmp.w	A3,A1
-	bne	.L2
+	cmp.w	A1,A3
+	bne	.L4
 	mov.w	#1,A0
 	rts
 .L2:
-	cmp.w	A0,A2
-	bgt	.L4
-	bne	.L3
-	cmp.w	A1,A3
-	bls	.L3
-.L4:
-	sub.w	A0,A0
-	rts
+	bgt	.L5
 .L3:
 	mov.w	#2,A0
+	rts
+.L4:
+	bls	.L3
 .L5:
+	sub.w	A0,A0
 	rts
 	.end
 #endif
@@ -137,24 +135,21 @@ ___cmpsi2:
 	.align 2
 	.global ___ucmpsi2
 ___ucmpsi2:
-	cmp.w	A2,A0
+	cmp.w	A0,A2
 	bne	.L2
-	cmp.w	A3,A1
-	bne	.L2
+	cmp.w	A1,A3
+	bne	.L4
 	mov.w	#1,A0
 	rts
 .L2:
-	cmp.w	A0,A2
-	bhi	.L4
-	bne	.L3
-	cmp.w	A1,A3
-	bls	.L3
-.L4:
-	sub.w	A0,A0
-	rts
+	bhi	.L5
 .L3:
 	mov.w	#2,A0
+	rts
+.L4:
+	bls	.L3
 .L5:
+	sub.w	A0,A0
 	rts
 	.end
 #endif

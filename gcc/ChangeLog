@@ -1,3 +1,8 @@
+2002-04-20  Toshiyasu Morita  <toshiyasu.morita@hsa.hitachi.com>
+
+	* config/h8300/lib1funcs.asm (___cmpsi2, ___ucmpsi2):
+	Bum three instructions from each routine.
+
 2002-04-20  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* Makefile.in: Update.
