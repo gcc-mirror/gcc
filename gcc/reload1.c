@@ -3647,7 +3647,11 @@ reload_as_needed (first, live_known)
   /* Order the spilled regs, so that allocate_reload_regs can guarantee to
      pack registers with group needs.  */
   if (n_spills > 1)
-    qsort (spill_regs, n_spills, sizeof (short), compare_spill_regs);
+    {
+      qsort (spill_regs, n_spills, sizeof (short), compare_spill_regs);
+      for (i = 0; i < n_spills; i++)
+	spill_reg_order[spill_regs[i]] = i;
+    }
 
   for (insn = first; insn;)
     {
