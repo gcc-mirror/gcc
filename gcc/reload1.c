@@ -2133,13 +2133,21 @@ reload (first, global, dumpfile)
   if (flag_stack_check && ! STACK_CHECK_BUILTIN)
     {
       HOST_WIDE_INT size = get_frame_size () + STACK_CHECK_FIXED_FRAME_SIZE;
+      static int verbose_warned = 0;
 
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (regs_ever_live[i] && ! fixed_regs[i] && call_used_regs[i])
 	  size += UNITS_PER_WORD;
 
       if (size > STACK_CHECK_MAX_FRAME_SIZE)
-	warning ("frame size too large for reliable stack checking");
+	{
+	  warning ("frame size too large for reliable stack checking");
+	  if (! verbose_warned)
+	    {
+	      warning ("try reducing the number of local variables");
+	      verbose_warned = 1;
+	    }
+	}
     }
 	
   /* Indicate that we no longer have known memory locations or constants.  */
