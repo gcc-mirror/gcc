@@ -8,6 +8,21 @@ Wed Oct 16 15:01:29 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* toplev.c (rest_of_compilation): Account early branch prediction pass
 	as TV_BRANCH_PROB.
 
+	PR other/8048
+	Found by Ian Ollmann
+	* xmmintrin.h (_mm_shuffle_pd): Fix typo.
+	(_mm_load?_pd): Likewise.
+	(_mm_store?_pd): Likewise.
+
+	PR target/7386
+	* i386.c (builtin_description):Drop cmpg[te]s[sd].
+	* xmmintrin.h (__mm_cmpg[te]_s[sd]): Rewrite using
+	swapped alternative.
+
+	PR opt/7630
+	* reload1.c (reload_inner_reg_of_subreg): New argument output;
+	(push_reload): Update call.
+
 2002-10-17  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config.gcc (mips*-*-*): Add OBJECT_FORMAT_ELF to $tm_defines
