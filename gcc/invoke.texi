@@ -695,36 +695,36 @@ from C, such as C++ and Objective C) that the compiler accepts:
 
 @table @code
 @cindex ANSI support
+@cindex ISO support
 @item -ansi
-In C mode, support all ANSI standard C programs.  In C++ mode,
+In C mode, support all ISO C89 programs.  In C++ mode,
 remove GNU extensions that conflict with ISO C++.
-@c shouldn't we be saying "ISO"?
 
-This turns off certain features of GCC that are incompatible with ANSI
+This turns off certain features of GCC that are incompatible with ISO
 C (when compiling C code), or of standard C++ (when compiling C++ code),
 such as the @code{asm} and @code{typeof} keywords, and
 predefined macros such as @code{unix} and @code{vax} that identify the
 type of system you are using.  It also enables the undesirable and
-rarely used ANSI trigraph feature.  For the C compiler, 
+rarely used ISO trigraph feature.  For the C compiler, 
 it disables recognition of C++ style @samp{//} comments as well as
 the @code{inline} keyword.
 
 The alternate keywords @code{__asm__}, @code{__extension__},
 @code{__inline__} and @code{__typeof__} continue to work despite
-@samp{-ansi}.  You would not want to use them in an ANSI C program, of
+@samp{-ansi}.  You would not want to use them in an ISO C program, of
 course, but it is useful to put them in header files that might be included
 in compilations done with @samp{-ansi}.  Alternate predefined macros
 such as @code{__unix__} and @code{__vax__} are also available, with or
 without @samp{-ansi}.
 
-The @samp{-ansi} option does not cause non-ANSI programs to be
+The @samp{-ansi} option does not cause non-ISO programs to be
 rejected gratuitously.  For that, @samp{-pedantic} is required in
 addition to @samp{-ansi}.  @xref{Warning Options}.
 
 The macro @code{__STRICT_ANSI__} is predefined when the @samp{-ansi}
 option is used.  Some header files may notice this macro and refrain
 from declaring certain functions or defining certain macros that the
-ANSI standard doesn't call for; this is to avoid interfering with any
+ISO standard doesn't call for; this is to avoid interfering with any
 programs that might use these names for other things.
 
 Functions which would normally be builtin but do not have semantics
@@ -776,6 +776,9 @@ features of newer standards in so far as they do not conflict with
 previous C standards.  For example, you may use @code{__restrict__} even
 when -std=c99 is not specified.
 
+@xref{Standards,,Language Standards Supported by GCC}, for details of
+these standard versions.
+
 @item -fno-asm
 Do not recognize @code{asm}, @code{inline} or @code{typeof} as a
 keyword, so that code can use these words as identifiers.  You can use
@@ -820,8 +823,11 @@ is one in which the standard library may not exist, and program startup may
 not necessarily be at @code{main}.  The most obvious example is an OS kernel.
 This is equivalent to @samp{-fno-hosted}.
 
+@xref{Standards,,Language Standards Supported by GCC}, for details of
+freestanding and hosted environments.
+
 @item -trigraphs
-Support ANSI C trigraphs.  You don't want to know about this
+Support ISO C trigraphs.  You don't want to know about this
 brain-damage.  The @samp{-ansi} option implies @samp{-trigraphs}.
 
 @cindex traditional C language
@@ -853,7 +859,7 @@ to @code{unsigned int}.
 Out-of-range floating point literals are not an error.
 
 @item
-Certain constructs which ANSI regards as a single invalid preprocessing
+Certain constructs which ISO regards as a single invalid preprocessing
 number, such as @samp{0xe-0xd}, are treated as expressions instead.
 
 @item
@@ -865,7 +871,7 @@ separately.  (This is the same as the effect of
 @cindex @code{longjmp} and automatic variables
 @item
 All automatic variables not declared @code{register} are preserved by
-@code{longjmp}.  Ordinarily, GNU C follows ANSI C: automatic variables
+@code{longjmp}.  Ordinarily, GNU C follows ISO C: automatic variables
 not declared @code{volatile} may be clobbered.
 
 @item
@@ -883,8 +889,8 @@ if your program uses names that are normally GNU C builtin functions for
 other purposes of its own.
 
 You cannot use @samp{-traditional} if you include any header files that
-rely on ANSI C features.  Some vendors are starting to ship systems with
-ANSI C header files and you cannot use @samp{-traditional} on such
+rely on ISO C features.  Some vendors are starting to ship systems with
+ISO C header files and you cannot use @samp{-traditional} on such
 systems to compile files that include any system headers.
 
 The @samp{-traditional} option also enables @samp{-traditional-cpp},
@@ -917,7 +923,7 @@ which @code{__GNUC__} indicates are not affected by
 @samp{-traditional}).  If you need to write header files that work
 differently depending on whether @samp{-traditional} is in use, by
 testing both of these predefined macros you can distinguish four
-situations: GNU C, traditional GNU C, other ANSI C compilers, and other
+situations: GNU C, traditional GNU C, other ISO C compilers, and other
 old C compilers.  The predefined macro @code{__STDC_VERSION__} is also
 not defined when you use @samp{-traditional}.  @xref{Standard
 Predefined,,Standard Predefined Macros,cpp.info,The C Preprocessor},
@@ -965,8 +971,8 @@ if your program uses names that are normally GNU C builtin functions for
 other purposes of its own.
 
 You cannot use @samp{-traditional} if you include any header files that
-rely on ANSI C features.  Some vendors are starting to ship systems with
-ANSI C header files and you cannot use @samp{-traditional} on such
+rely on ISO C features.  Some vendors are starting to ship systems with
+ISO C header files and you cannot use @samp{-traditional} on such
 systems to compile files that include any system headers.
 
 @item -fsigned-bitfields
@@ -1000,7 +1006,7 @@ architecture for which you are compiling, single precision may be faster
 than double precision.   If you must use @samp{-traditional}, but want
 to use single precision operations when the operands are single
 precision, use this option.   This option has no effect when compiling
-with ANSI or GNU C conventions (the default).
+with ISO or GNU C conventions (the default).
 
 @item -fshort-wchar
 Override the underlying type for @samp{wchar_t} to be @samp{short
@@ -1062,7 +1068,7 @@ Accept @samp{$} in identifiers.  You can also explicitly prohibit use of
 @samp{$} with the option @samp{-fno-dollars-in-identifiers}.  (GNU C allows
 @samp{$} by default on most target systems, but there are a few exceptions.)
 Traditional C allowed the character @samp{$} to form part of
-identifiers.  However, ANSI C and C++ forbid @samp{$} in identifiers.
+identifiers.  However, ISO C and C++ forbid @samp{$} in identifiers.
 
 @item -fno-elide-constructors
 The C++ standard allows an implementation to omit creating a temporary
@@ -1438,7 +1444,7 @@ these escape routes; application programs should avoid them.
 
 Some users try to use @samp{-pedantic} to check programs for strict ISO
 C conformance.  They soon find that it does not do quite what they want:
-it finds some non-ANSI practices, but not all---only those for which
+it finds some non-ISO practices, but not all---only those for which
 ISO C @emph{requires} a diagnostic, and some others for which
 diagnostics have been added.
 
@@ -1841,13 +1847,13 @@ probably mistaken.
 
 @item -Wtraditional (C only)
 Warn about certain constructs that behave differently in traditional and
-ANSI C.
+ISO C.
 
 @itemize @bullet
 @item
 Macro arguments occurring within string constants in the macro body.
 These would substitute the argument in traditional C, but are part of
-the constant in ANSI C.
+the constant in ISO C.
 
 @item
 A function declared external in one block and then used after the end of
@@ -1861,13 +1867,13 @@ A non-@code{static} function declaration follows a @code{static} one.
 This construct is not accepted by some traditional C compilers.
 
 @item
-The ANSI type of an integer constant has a different width or
+The ISO type of an integer constant has a different width or
 signedness from its traditional type.  This warning is only issued if
 the base of the constant is ten.  I.e. hexadecimal or octal values, which
 typically represent bit patterns, are not warned about.
 
 @item
-Usage of ANSI string concatenation is detected.
+Usage of ISO string concatenation is detected.
 
 @item
 A function macro appears without arguments.
@@ -2703,7 +2709,7 @@ that alter the assembler output may be confused by the optimizations
 performed when this option is not used.
 
 @item -ffast-math
-This option allows GCC to violate some ANSI or IEEE rules and/or
+This option allows GCC to violate some ISO or IEEE rules and/or
 specifications in the interest of optimizing code for speed.  For
 example, it allows the compiler to assume arguments to the @code{sqrt}
 function are non-negative numbers and that no floating-point values
@@ -2711,7 +2717,7 @@ are NaNs.
 
 This option should never be turned on by any @samp{-O} option since
 it can result in incorrect output for programs which depend on
-an exact implementation of IEEE or ANSI rules/specifications for
+an exact implementation of IEEE or ISO rules/specifications for
 math functions.
 
 @item -fno-math-errno
@@ -3179,7 +3185,7 @@ Like @samp{-dD} except that the macro arguments and contents are omitted.
 Only @samp{#define @var{name}} is included in the output.
 
 @item -trigraphs
-Support ANSI C trigraphs.  The @samp{-ansi} option also has this effect.
+Support ISO C trigraphs.  The @samp{-ansi} option also has this effect.
 
 @item -Wp,@var{option}
 Pass @var{option} as an option to the preprocessor.  If @var{option}
@@ -3263,7 +3269,7 @@ Do not use the standard system libraries when linking.
 Only the libraries you specify will be passed to the linker.
 The standard startup files are used normally, unless @code{-nostartfiles}
 is used.  The compiler may generate calls to memcmp, memset, and memcpy
-for System V (and ANSI C) environments or to bcopy and bzero for
+for System V (and ISO C) environments or to bcopy and bzero for
 BSD environments.  These entries are usually resolved by entries in
 libc.  These entry points should be supplied through some other
 mechanism when this option is specified.
@@ -3272,7 +3278,7 @@ mechanism when this option is specified.
 Do not use the standard system startup files or libraries when linking.
 No startup files and only the libraries you specify will be passed to
 the linker. The compiler may generate calls to memcmp, memset, and memcpy
-for System V (and ANSI C) environments or to bcopy and bzero for
+for System V (and ISO C) environments or to bcopy and bzero for
 BSD environments.  These entries are usually resolved by entries in
 libc.  These entry points should be supplied through some other
 mechanism when this option is specified.
@@ -3655,7 +3661,7 @@ current target machine.  Use this when running @code{cpp}.
 @item %P
 Like @samp{%p}, but puts @samp{__} before and after the name of each
 predefined macro, except for macros that start with @samp{__} or with
-@samp{_@var{L}}, where @var{L} is an uppercase letter.  This is for ANSI
+@samp{_@var{L}}, where @var{L} is an uppercase letter.  This is for ISO
 C.  
 
 @item %I
@@ -7870,7 +7876,7 @@ recognize and translate multibyte characters.
 @section Running Protoize
 
 The program @code{protoize} is an optional part of GNU C.  You can use
-it to add prototypes to a program, thus converting the program to ANSI
+it to add prototypes to a program, thus converting the program to ISO
 C in one respect.  The companion program @code{unprotoize} does the
 reverse: it removes argument types from any prototypes that are found.
 
@@ -7905,7 +7911,7 @@ are called.
 
 Basic conversion with @code{unprotoize} consists of rewriting most
 function declarations to remove any argument types, and rewriting
-function definitions to the old-style pre-ANSI form.
+function definitions to the old-style pre-ISO form.
 
 Both conversion programs print a warning for any function declaration or
 definition that they can't convert.  You can suppress these warnings
