@@ -899,6 +899,12 @@ DEFTREECODE (EH_FILTER_EXPR, "eh_filter_expr", 's', 2)
    Use the interface in tree-iterator.h to access this node.  */
 DEFTREECODE (STATEMENT_LIST, "statement_list", 'x', 0)
 
+/* Value handles.  Artificial nodes to represent expressions in
+   partial redundancy elimination (tree-ssa-pre.c).  These nodes are
+   used for expression canonicalization.  If two expressions compute
+   the same value, they will be assigned the same value handle.  */
+DEFTREECODE (VALUE_HANDLE, "value_handle", 'x', 0)
+
 /*
 Local variables:
 mode:c

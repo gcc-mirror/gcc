@@ -196,6 +196,7 @@ tree_size (tree node)
 
 	case STATEMENT_LIST:	return sizeof (struct tree_statement_list);
 	case BLOCK:		return sizeof (struct tree_block);
+	case VALUE_HANDLE:	return sizeof (struct tree_value_handle);
 
 	default:
 	  return lang_hooks.tree_size (code);
@@ -1497,6 +1498,7 @@ tree_node_structure (tree t)
     case PLACEHOLDER_EXPR:	return TS_COMMON;
     case STATEMENT_LIST:	return TS_STATEMENT_LIST;
     case BLOCK:			return TS_BLOCK;
+    case VALUE_HANDLE:		return TS_VALUE_HANDLE;
 
     default:
       abort ();
@@ -3851,7 +3853,8 @@ iterative_hash_expr (tree t, hashval_t val)
   code = TREE_CODE (t);
   class = TREE_CODE_CLASS (code);
 
-  if (class == 'd')
+  if (class == 'd'
+      || TREE_CODE (t) == VALUE_HANDLE)
     {
       /* Decls we can just compare by pointer.  */
       val = iterative_hash_object (t, val);

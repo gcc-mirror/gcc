@@ -153,6 +153,33 @@ static struct tree_opt_pass pass_free_datastructures =
   0					/* todo_flags_finish */
 };
 
+
+/* Do the actions required to initialize internal data structures used
+   in tree-ssa optimization passes.  */
+
+static void
+execute_init_datastructures (void)
+{
+  /* Allocate hash tables, arrays and other structures.  */
+  init_tree_ssa ();
+}
+
+static struct tree_opt_pass pass_init_datastructures =
+{
+  NULL,					/* name */
+  NULL,					/* gate */
+  execute_init_datastructures,		/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  0,					/* tv_id */
+  PROP_cfg,				/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  0					/* todo_flags_finish */
+};
+
 /* Iterate over the pass tree allocating dump file numbers.  We want
    to do this depth first, and independent of whether the pass is
    enabled or not.  */
@@ -253,6 +280,7 @@ init_tree_optimization_passes (void)
   NEXT_PASS (pass_lower_eh);
   NEXT_PASS (pass_build_cfg);
   NEXT_PASS (pass_tree_profile);
+  NEXT_PASS (pass_init_datastructures);
   NEXT_PASS (pass_all_optimizations);
   NEXT_PASS (pass_mudflap_2);
   NEXT_PASS (pass_free_datastructures);

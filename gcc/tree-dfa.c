@@ -111,10 +111,6 @@ find_referenced_vars (void)
   struct walk_state walk_state;
   tree block;
 
-  /* This is the very first pass in preparation for building the SSA
-     form of the function, so initialize internal data structures now.  */
-  init_tree_ssa ();
-
   /* Walk the lexical blocks in the function looking for variables that may
      have been used to declare VLAs and for nested functions.  Both
      constructs create hidden uses of variables. 

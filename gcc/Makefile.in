@@ -887,7 +887,7 @@ C_OBJS = c-parse.o c-lang.o stub-objc.o $(C_AND_OBJC_OBJS)
 OBJS-common = \
  tree-cfg.o tree-dfa.o tree-eh.o tree-ssa.o tree-optimize.o tree-gimple.o  \
  tree-alias-type.o gimplify.o tree-pretty-print.o tree-into-ssa.o          \
- tree-outof-ssa.o tree-alias-common.o tree-ssa-ccp.o			   \
+ tree-outof-ssa.o tree-alias-common.o tree-ssa-ccp.o tree-vn.o             \
  @ANDER@ tree-ssa-dce.o  tree-ssa-copy.o tree-nrv.o tree-ssa-copyrename.o  \
  tree-ssa-pre.o tree-ssa-live.o tree-ssa-operands.o tree-ssa-alias.o       \
  tree-ssa-phiopt.o tree-ssa-forwprop.o tree-nested.o tree-ssa-dse.o	   \
@@ -1640,9 +1640,12 @@ tree-ssa-copyrename.o : tree-ssa-copyrename.c $(TREE_FLOW_H) $(CONFIG_H) \
    diagnostic.h errors.h toplev.h function.h $(TIMEVAR_H) tree-pass.h \
    tree-alias-common.h $(TM_H) coretypes.h $(TREE_DUMP_H) $(TREE_SSA_LIVE_H)
 tree-ssa-pre.o : tree-ssa-pre.c $(TREE_FLOW_H) $(CONFIG_H) \
-   $(SYSTEM_H) $(RTL_H) $(TREE_H) $(TM_P_H) $(EXPR_H) \
+   $(SYSTEM_H) $(TREE_H) $(TM_P_H) $(EXPR_H) \
    $(GGC_H) output.h diagnostic.h errors.h toplev.h $(TIMEVAR_H) \
    $(TM_H) coretypes.h $(TREE_DUMP_H) tree-pass.h $(FLAGS_H)
+tree-vn.o : tree-vn.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(GGC_H) \
+   $(TREE_H) $(TREE_FLOW_H) $(HASHTAB_H) langhooks.h tree-pass.h \
+   $(TREE_DUMP_H) diagnostic.h
 tree-cfg.o : tree-cfg.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(RTL_H) $(TREE_H) $(TM_P_H) $(EXPR_H) $(GGC_H) $(FLAGS_H) output.h \
    diagnostic.h errors.h function.h $(TIMEVAR_H) $(TM_H) coretypes.h \
@@ -3068,6 +3071,7 @@ distclean: clean lang.distclean
 	-rm -f fixinc/Makefile
 # Delete po/*.gmo only if we are not building in the source directory.
 	-if [ ! -f po/exgettext ]; then rm -f po/*.gmo; fi
+	-rmdir ada cp f java objc fixinc intl po testsuite 2>/dev/null
 
 # Get rid of every file that's generated from some other file, except for `configure'.
 # Most of these files ARE PRESENT in the GCC distribution.

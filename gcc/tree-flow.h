@@ -167,11 +167,6 @@ struct var_ann_d GTY(())
      live at the same time and this can happen for each call to the
      dominator optimizer.  */
   tree current_def;
-
-  /* The set of expressions represented by this variable if it is a
-     value handle.  This is used by GVN-PRE.  */
-  PTR GTY ((skip)) expr_set;
-  
 };
 
 
@@ -576,11 +571,22 @@ extern bool tree_can_throw_internal (tree);
 extern bool tree_can_throw_external (tree);
 extern void add_stmt_to_eh_region (tree, int);
 
-/* In tree-ssa-pre.c */
-tree get_value_handle (tree);
-void set_value_handle (tree, tree);
+/* In tree-ssa-pre.c  */
+void add_to_value (tree, tree);
 void debug_value_expressions (tree);
 void print_value_expressions (FILE *, tree);
+
+
+/* In tree-vn.c  */
+bool expressions_equal_p (tree e1, tree e2);
+tree get_value_handle (tree);
+hashval_t vn_compute (tree, hashval_t);
+tree vn_lookup_or_add (tree);
+void vn_add (tree, tree);
+tree vn_lookup (tree);
+void vn_init (void);
+void vn_delete (void);
+
 
 /* In tree-sra.c  */
 void insert_edge_copies (tree stmt, basic_block bb);
