@@ -782,7 +782,7 @@ OBJS = alias.o bb-reorder.o bitmap.o builtins.o caller-save.o calls.o	   \
  real.o recog.o reg-stack.o regclass.o regmove.o regrename.o		   \
  reload.o reload1.o reorg.o resource.o rtl.o rtlanal.o rtl-error.o	   \
  sbitmap.o sched-deps.o sched-ebb.o sched-rgn.o sched-vis.o sdbout.o	   \
- sibcall.o simplify-rtx.o ssa.o ssa-ccp.o ssa-dce.o stmt.o		   \
+ sibcall.o simplify-rtx.o sreal.o ssa.o ssa-ccp.o ssa-dce.o stmt.o	   \
  stor-layout.o stringpool.o timevar.o toplev.o tracer.o tree.o tree-dump.o \
  tree-inline.o unroll.o varasm.o varray.o version.o vmsdbgout.o xcoffout.o \
  alloc-pool.o et-forest.o						   \
@@ -1685,9 +1685,10 @@ recog.o : recog.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) function.
 reg-stack.o : reg-stack.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) \
    $(RECOG_H) $(REGS_H) hard-reg-set.h flags.h insn-config.h toplev.h reload.h \
    varray.h function.h $(TM_P_H) $(GGC_H) gt-reg-stack.h
+sreal.o: sreal.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) sreal.h
 predict.o: predict.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) \
    flags.h insn-config.h $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h \
-   $(RECOG_H) function.h except.h $(EXPR_H) $(TM_P_H) $(PREDICT_H) real.h \
+   $(RECOG_H) function.h except.h $(EXPR_H) $(TM_P_H) $(PREDICT_H) sreal.h \
    $(PARAMS_H) $(TARGET_H) cfgloop.h
 lists.o: lists.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) toplev.h $(RTL_H) $(GGC_H)
 bb-reorder.o : bb-reorder.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
