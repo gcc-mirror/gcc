@@ -1,4 +1,4 @@
-# Copyright (C) 1998, 1999 Red Hat, Inc.
+# Copyright (C) 1998, 1999, 2000 Red Hat, Inc.
 
 load_lib "libgloss.exp"
 
@@ -275,6 +275,11 @@ proc libjava_arguments {{mode compile}} {
 #   `xfail-gcj'   compilation from source will fail
 #   `xfail-javac' compilation with javac will fail
 #   `xfail-gcjC'  compilation with gcj -C will fail
+#   `shouldfail'  compilation from source is supposed to fail
+#                 This is different from xfail, which marks a known
+#                 failure that we just havne't fixed.
+#                 A compilation marked this way should fail with any
+#                 front end.
 #   `xfail-byte'  compilation from bytecode will fail
 #   `xfail-exec'  exec will fail
 #   `xfail-output' output will be wrong
@@ -334,6 +339,12 @@ proc test_libjava_from_source { options srcfile compile_args inpfile resultfile 
     }
     if { $x != "" } {
 	verbose "target_compile failed: $x" 2
+
+	if {[info exists opts(shouldfail)]} {
+	    pass "$errname compilation from source"
+	    return
+	}
+
 	fail "$errname compilation from source"
 	if {[info exists opts(xfail-gcj)] || ! [info exists opts(no-exec)]} {
 	    setup_xfail "*-*-*"
@@ -341,7 +352,11 @@ proc test_libjava_from_source { options srcfile compile_args inpfile resultfile 
 	    setup_xfail "*-*-*"
 	    fail "$errname output from source compiled test"
 	}
-	return;
+	return
+    }
+    if {[info exists opts(shouldfail)]} {
+	fail "$errname compilation from source"
+	return
     }
     pass "$errname compilation from source"
 
@@ -409,6 +424,11 @@ proc test_libjava_from_source { options srcfile compile_args inpfile resultfile 
 #   `xfail-gcj'   compilation from source will fail
 #   `xfail-javac' compilation with javac will fail
 #   `xfail-gcjC'  compilation with gcj -C will fail
+#   `shouldfail'  compilation from source is supposed to fail
+#                 This is different from xfail, which marks a known
+#                 failure that we just havne't fixed.
+#                 A compilation marked this way should fail with any
+#                 front end.
 #   `xfail-byte'  compilation from bytecode will fail
 #   `xfail-exec'  exec will fail
 #   `xfail-output' output will be wrong
@@ -443,6 +463,10 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
 	setup_xfail *-*-*
     }
     if {! $bc_ok} then {
+	if {[info exists opts(shouldfail)]} {
+	    pass "$errname byte compilation"
+	    return
+	}
 	fail "$errname byte compilation"
 	setup_xfail "*-*-*"
 	fail "$errname compilation from bytecode"
@@ -452,6 +476,10 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
 	    setup_xfail "*-*-*"
 	    fail "$errname output from bytecode->native test"
 	}
+	return
+    }
+    if {[info exists opts(shouldfail)]} {
+	fail "$errname byte compilation"
 	return
     }
     pass "$errname byte compilation"
@@ -607,10 +635,15 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
 # Run the test specified by srcfile and resultfile. compile_args and
 # exec_args are options telling this proc how to work.
 #   `no-link'     don't try to link the program
-#   `no-exec' don't try to run the test
+#   `no-exec'     don't try to run the test
 #   `xfail-gcj'   compilation from source will fail
 #   `xfail-javac' compilation with javac will fail
 #   `xfail-gcjC'  compilation with gcj -C will fail
+#   `shouldfail'  compilation from source is supposed to fail
+#                 This is different from xfail, which marks a known
+#                 failure that we just havne't fixed.
+#                 A compilation marked this way should fail with any
+#                 front end.
 #   `xfail-byte'  compilation from bytecode will fail
 #   `xfail-exec'  exec will fail
 #   `xfail-output' output will be wrong

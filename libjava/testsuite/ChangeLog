@@ -1,3 +1,13 @@
+2000-03-05  Tom Tromey  <tromey@cygnus.com>
+
+	* lib/libjava.exp (test_libjava): Document `shouldfail' token.
+	(test_libjava_from_source): Handle `shouldfail' case.
+	(test_libjava_from_javac): Likewise.
+
+	Test for PR libgcj/124:
+	* libjava.compile/PR124.java: New file.
+	* libjava.compile/PR124.xfail: New file.
+
 2000-03-05  Anthony Green  <green@redhat.com>
 
 	* libjava.lang/PR141.java: New file.
