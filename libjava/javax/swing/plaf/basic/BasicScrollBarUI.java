@@ -472,7 +472,7 @@ public class BasicScrollBarUI extends ScrollBarUI implements LayoutManager,
    * A helper class that allows us to draw icons for 
    * the JButton.
    */
-  private class arrowIcon implements Icon
+  private static class arrowIcon implements Icon
   {
     /** The polygon that describes the icon. */
     private Polygon arrow;

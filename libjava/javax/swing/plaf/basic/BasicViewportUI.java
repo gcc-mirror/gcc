@@ -64,7 +64,7 @@ public class BasicViewportUI extends ViewportUI
   {
     public void stateChanged(ChangeEvent event)
     {
-      JViewport v = (JViewport)event.source;
+      JViewport v = (JViewport) event.getSource();
       v.repaint();
     }
   }
