@@ -563,7 +563,8 @@ int lhs_lshift_cint_operand ();
    The floating point registers are 64 bits wide. Snake fp regs are 32
    bits wide */
 #define HARD_REGNO_NREGS(REGNO, MODE)					\
-  (!TARGET_PA_11 && FP_REGNO_P (REGNO) ? 1				\
+  (FP_REGNO_P (REGNO)							\
+   ? (!TARGET_PA_11 ? 1 : (GET_MODE_SIZE (MODE) + 4 - 1) / 4)		\
    : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
@@ -783,8 +784,10 @@ int zdepi_cint_p ();
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)					\
-  (!TARGET_PA_11 && ((CLASS) == FP_REGS || (CLASS) == FPUPPER_REGS) ? 1 :				\
-   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
+  ((CLASS) == FP_REGS || (CLASS) == FPUPPER_REGS			\
+   ? (!TARGET_PA_11 ? 1 : (GET_MODE_SIZE (MODE) + 4 - 1) / 4)		\
+   : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
+
 
 /* Stack layout; function entry, exit and calling.  */
 
