@@ -1,5 +1,13 @@
 2003-12-19  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/OutputStreamChannel.java: New file.
+	* java/nio/channels/Channels.java (newChannel): Implemented.
+	* Makefile.am (ordinary_java_source_files):
+	Added gnu/java/nio/OutputStreamChannel.java.
+	* Makefile.in: Regenerated.
+
+2003-12-19  Michael Koch  <konqueror@gmx.de>
+
 	* Makefile.am (ordinary_java_source_files):
 	Added gnu.java.nio.InputStreamChannel. 
 	* Makefile.in: Regenerated.
