@@ -3662,7 +3662,6 @@ loop_iterations (loop)
 	      if (loop_insn_first_p (v->insn, biv_inc->insn))
 		offset -= INTVAL (biv_inc->add_val);
 	    }
-	  offset *= INTVAL (v->mult_val);
 	}
       if (loop_dump_stream)
 	fprintf (loop_dump_stream,
