@@ -2655,6 +2655,8 @@ extern int reg_or_const_operand ();
 
 extern int reg_operand ();
 
+extern int mixed_subreg_operand ();
+
 extern int reg_imm_operand ();
 
 extern int r0r1_reg_operand ();

@@ -1,3 +1,23 @@
+Wed Apr 14 10:04:27 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.md (storeqf_int, storeqf_int_clobber, loadqf_int,
+ 	loadqf_int_clobber): Add new patterns with corresponding splitters
+ 	to handle moves of floating point values into and out of intager
+ 	registers by using memory.
+
+	* config/c4x/c4x.c (c4x_check_legit_addr): Disallow PRE_INC for modes
+	other than QFmode and QImode.
+	(mixed_subreg_operand): New function.
+	(c4x_emit_move_sequence): If moving a floating point value into or
+	out of an integer register, use the new patterns storeqf_int_clobber
+	or loadqf_int_clobber.
+	(reg_imm_operand, *_reg_operand): Call reg_operand instead of 
+	register_operand.
+	(reg_operand, src_operand): Disallow operand if it satisifes
+	mixed_subreg_operand.
+
+	* config/c4x/c4x.h (mixed_subreg_operand): Add prototype.
+
 Tue Apr 13 14:49:13 1999  Jan Hubicka <hubicka@freesoft.cz>
 
 	* i386.c (agi_dependent): Handle push operation more correctly.
