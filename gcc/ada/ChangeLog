@@ -1,3 +1,8 @@
+2001-10-10  Geert Bosch  <bosch@gnat.com>
+
+	* xnmake.adb (XNmake): Fix handling of -s/-b options.  No longer 
+	use '/' as switch character, allowing for absolute file names.
+
 2001-10-09  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* 4gintnam.ads, Make-lang.in, Makefile.in, config-lang.in: Update
