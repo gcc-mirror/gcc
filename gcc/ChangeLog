@@ -1,4 +1,9 @@
-Fri Nov  5 19:38:14 1999  Richard Henderson  <rth@cygnus.com>
+Thu Nov  4 16:36:44 1999  Richard Henderson  <rth@cygnus.com>
+
+	* reg-stack.c (convert_regs_1): Initialize target_stack->top
+	after verifying an EH edge.
+
+Thu Nov  4 16:36:36 1999  Richard Henderson  <rth@cygnus.com>
 
 	* function.c (diddle_return_value): New.
 	(expand_function_end): Use it.

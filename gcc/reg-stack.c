@@ -2546,15 +2546,16 @@ convert_regs_1 (file, block)
 	  HARD_REG_SET tmp;
 
 	  CLEAR_HARD_REG_SET (tmp);
-	  GO_IF_HARD_REG_EQUAL (BLOCK_INFO (e->dest)->stack_in.reg_set,
-				tmp, eh1);
+	  GO_IF_HARD_REG_EQUAL (target_stack->reg_set, tmp, eh1);
 	  abort();
 	eh1:
 
 	  SET_HARD_REG_BIT (tmp, FIRST_STACK_REG);
-	  GO_IF_HARD_REG_EQUAL (BLOCK_INFO (e->src)->out_reg_set, tmp, eh2);
+	  GO_IF_HARD_REG_EQUAL (regstack.reg_set, tmp, eh2);
 	  abort();
-	eh2:;
+	eh2:
+
+	  target_stack->top = -1;
 	}
 
       /* It is better to output directly to the end of the block
