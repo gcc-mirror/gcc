@@ -76,15 +76,13 @@ enum cmp_type				/* comparison type */
 
 /* Print subsidiary information on the compiler version in use.  */
 
-#define TARGET_VERSION fprintf (stderr, " (hp9000s800)");
+#define TARGET_VERSION fprintf (stderr, " (hppa)");
 
-/* Run-time compilation parameters selecting different hardware subsets.
-
-   On the the hp9k800, we don't yet need any. But ... */
+/* Run-time compilation parameters selecting different hardware subsets.  */
 
 extern int target_flags;
 
-/* compile code for PA-RISC 1.1 ("Snake") */
+/* compile code for HP-PA 1.1 ("Snake") */
 
 #define TARGET_SNAKE (target_flags & 1)
 
@@ -112,7 +110,7 @@ extern int target_flags;
 
 /* Define this if most significant word of a multiword number is lowest
    numbered.  */
-/* For the hp9k800 we can decide arbitrarily
+/* For the HP-PA we can decide arbitrarily
    since there are no machine instructions for them.  */
 #define WORDS_BIG_ENDIAN 1
 
@@ -183,13 +181,13 @@ extern int target_flags;
    All registers that the compiler knows about must be given numbers,
    even those that are not normally considered general registers.
 
-   The hp9k800 has 32 fullword registers and 16 floating point
+   HP-PA 1.0 has 32 fullword registers and 16 floating point
    registers. The floating point registers hold either word or double
    word values.
    
    16 additional registers are reserved.
    
-   PA-RISC 1.1 has 32 fullword registers and 32 floating point
+   HP-PA 1.1 has 32 fullword registers and 32 floating point
    registers. However, the floating point registers behave
    differently: the left and right halves of registers are addressable
    as 32 bit registers. So, we will set things up like the 68k which
@@ -202,7 +200,7 @@ extern int target_flags;
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
 
-   On the hp9k800, these are:
+   On the HP-PA, these are:
    Reg 0	= 0 (hardware). However, 0 is used for condition code,
                   so is not fixed.
    Reg 1	= ADDIL target/Temporary (hardware).
@@ -343,7 +341,7 @@ extern int target_flags;
    This is ordinarily the length in words of a value of mode MODE
    but can be less for certain modes in special long registers.
 
-   On the hp9k800, ordinary registers hold 32 bits worth;
+   On the HP-PA, ordinary registers hold 32 bits worth;
    The floating point registers are 64 bits wide. Snake fp regs are 32
    bits wide */
 #define HARD_REGNO_NREGS(REGNO, MODE)   \
@@ -351,7 +349,7 @@ extern int target_flags;
    ? ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD) : 1)
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
-   On the hp9k800, the cpu registers can hold any mode.  We
+   On the HP-PA, the cpu registers can hold any mode.  We
    force this to be an even register is it cannot hold the full mode.  */
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
   ((REGNO) == 0 ? (MODE) == CCmode || (MODE) == CCFPmode		\
@@ -370,7 +368,7 @@ extern int target_flags;
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
 
-/* the hp9k800 pc isn't overloaded on a register that the compiler knows about.  */
+/* The HP-PA pc isn't overloaded on a register that the compiler knows about.  */
 /* #define PC_REGNUM  */
 
 /* Register to use for pushing function arguments.  */
@@ -437,7 +435,7 @@ extern int leaf_function;
    For any two classes, it is very desirable that there be another
    class that represents their union.  */
 
-  /* The hp9k800 has four kinds of registers: general regs, 1.0 fp regs,
+  /* The HP-PA has four kinds of registers: general regs, 1.0 fp regs,
      1.1 fp regs, and the high 1.1 fp regs, to which the operands of
      fmpyadd and fmpysub are restricted. */
 
@@ -505,7 +503,7 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
    C is the letter, and VALUE is a constant value.
    Return 1 if VALUE is in the range specified by C.
 
-HP9000/800 immediate field sizes:
+HP-PA immediate field sizes:
   5 bits: scalar/floating short loads + stores; deposit; conditional branch
   11 bits: arithmetic immediate, compare immediate
   14 bits: loads and stores; load offset
@@ -573,7 +571,7 @@ HP9000/800 immediate field sizes:
 
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.
-   On the hp9k800, don't define this because there are no push insns.  */
+   On the HP-PA, don't define this because there are no push insns.  */
 /*  #define PUSH_ROUNDING(BYTES) */
 
 /* Offset of first parameter from the argument pointer register value.
@@ -630,7 +628,7 @@ HP9000/800 immediate field sizes:
    If the precise function being called is known, FUNC is its FUNCTION_DECL;
    otherwise, FUNC is 0.  */
 
-/* On the hp9k800 the value is found in register(s) 28(-29), unless
+/* On the HP-PA the value is found in register(s) 28(-29), unless
    the mode is SF or DF. Then the value is returned in fr4 (36, ) */
 
 
@@ -666,7 +664,7 @@ HP9000/800 immediate field sizes:
    and about the args processed so far, enough to enable macros
    such as FUNCTION_ARG to determine where the next arg should go.
 
-   On the hp9k800, this is a single integer, which is a number of words
+   On the HP-PA, this is a single integer, which is a number of words
    of arguments scanned so far (including the invisible argument,
    if any, which holds the structure-value-address).
    Thus 4 or more means all following args should go on the stack.  */
@@ -706,7 +704,7 @@ HP9000/800 immediate field sizes:
    NAMED is nonzero if this argument is a named parameter
     (otherwise it is an extra parameter matching an ellipsis).  */
 
-/* On the hp9k800 the first four words of args are normally in registers
+/* On the HP-PA the first four words of args are normally in registers
    and the rest are pushed.  But any arg that won't entirely fit in regs
    is pushed.  */
 
@@ -783,8 +781,13 @@ extern enum cmp_type hppa_branch_type;
 		   fprintf (FILE, ",ARGW%d=FR", i++);			\
 		 else if (TYPE_MODE (DECL_ARG_TYPE (parm)) == DFmode)	\
 		   {							\
-		      if (i == 1) i++;				        \
-		      ASM_DOUBLE_ARG_DESCRIPTORS (FILE, i++, i++);	\
+		     if (i <= 2)					\
+		       {						\
+			 if (i == 1) i++;				\
+			 ASM_DOUBLE_ARG_DESCRIPTORS (FILE, i++, i++);	\
+		       }						\
+		     else						\
+		       break;						\
 		   }							\
 		 else							\
 		   {							\
@@ -957,7 +960,7 @@ extern union tree_node *current_function_decl;
 /* Now macros that check whether X is a register and also,
    strictly, whether it is in a specified class.
 
-   These macros are specific to the the hp9k800, and may be used only
+   These macros are specific to the the HP-PA, and may be used only
    in code for printing assembler insns and in conditions for
    define_optimization.  */
 
@@ -1060,7 +1063,7 @@ extern union tree_node *current_function_decl;
    The MODE argument is the machine mode for the MEM expression
    that wants to use this address.
 
-   On the hp9k800, the actual legitimate addresses must be
+   On the HP-PA, the actual legitimate addresses must be
    REG+REG, REG+(REG*SCALE) or REG+SMALLINT.
    But we can treat a SYMBOL_REF as legitimate if it is part of this
    function's constant-pool, because such addresses can actually
@@ -1149,7 +1152,7 @@ extern union tree_node *current_function_decl;
    It is always safe for this macro to do nothing.  It exists to recognize
    opportunities to optimize the output.  */
 
-/* On the hp9k800, change REG+N into REG+REG, and REG+(X*Y) into REG+REG.  */
+/* On the HP-PA, change REG+N into REG+REG, and REG+(X*Y) into REG+REG.  */
 
 #define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)	\
 { if (GET_CODE (X) == PLUS && CONSTANT_ADDRESS_P (XEXP (X, 1)))	\
@@ -1206,7 +1209,7 @@ extern union tree_node *current_function_decl;
    name string in the `symbol_ref' (if one bit is not enough
    information).
 
-   On the PA-RISC we use this to indicate if a symbol is in text or
+   On the HP-PA we use this to indicate if a symbol is in text or
    data space.  */
 
 #define ENCODE_SECTION_INFO(DECL)\
@@ -1378,7 +1381,7 @@ do { fprintf (FILE, "\t.SPACE $PRIVATE$\n\
 
 #define ASM_APP_OFF ""
 
-/* We don't yet know how to identify GCC to HP series 800.  */
+/* We don't yet know how to identify GCC to HP-PA machines.  */
 #define ASM_IDENTIFY_GCC(FILE) fprintf (FILE, "; gcc_compiled.:\n")
 
 /* Output before code.  */
@@ -1541,7 +1544,7 @@ do { fprintf (FILE, "\t.SPACE $PRIVATE$\n\
   fprintf (FILE, "\tb L$%04d\n\tnop\n", VALUE)
 
 /* This is how to output an element of a case-vector that is relative.
-   (the hp9k800 does not use such vectors,
+   (The HP-PA does not use such vectors,
    but we must define this macro anyway.)  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL)  \
@@ -1605,7 +1608,7 @@ do { fprintf (FILE, "\t.SPACE $PRIVATE$\n\
    CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.
    For `%' followed by punctuation, CODE is the punctuation and X is null.
 
-   On the hp9k800, the CODE can be `r', meaning this is a register-only operand
+   On the HP-PA, the CODE can be `r', meaning this is a register-only operand
    and an immediate zero should be represented as `r0'.
 
    Several % codes are defined:
