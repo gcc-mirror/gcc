@@ -9,7 +9,7 @@
    <TITLE>libstdc++-v3 configure options</TITLE>
 <LINK REL="home" HREF="http://sources.redhat.com/libstdc++/">
 <LINK REL=StyleSheet HREF="lib3styles.css">
-<!-- $Id: configopts.html,v 1.8 2000/08/28 18:41:24 pme Exp $ -->
+<!-- $Id: configopts.html,v 1.9 2000/10/09 08:55:05 bkoz Exp $ -->
 </HEAD>
 <BODY>
 
@@ -128,6 +128,19 @@ options</A></H1>
 	and this option has been removed.
      </P>
 
+ <DT><TT>--enable-version-specific-runtime-libs</TT>
+<DD><P>Uses the compiler file "gcc/version.c" to determine the
+       compiler version.
+     </P>
+
+ <DT><TT>--with-gxx-include-dir=<include-files dir></TT>
+ <DD><P> Adds support for named libstdc++ include directory.
+ For instance, the following puts all the libstdc++ headers into a directory called "2.97-20001008" instead of the usual "g++-v3"
+<TT>
+--with-gxx-include-dir=/mnt/hd/bliss/H-x86-gcc-3-c-gxx-inc/include/2.97-20001008</TT>
+     </P>
+
+
  <DT><TT>--enable-cxx-flags=FLAGS</TT>
  <DD><P>With this option, you can pass a string of -f (functionality)
         flags to the compiler to use when building libstdc++.  FLAGS
@@ -172,7 +185,7 @@ options</A></H1>
 
 <HR>
 <P CLASS="fineprint"><EM>
-$Id: configopts.html,v 1.8 2000/08/28 18:41:24 pme Exp $
+$Id: configopts.html,v 1.9 2000/10/09 08:55:05 bkoz Exp $
 </EM></P>
 
 

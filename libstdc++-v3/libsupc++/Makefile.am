@@ -29,8 +29,14 @@ MAINT_CHARSET = latin1
 if USE_LIBDIR
 toolexeclibdir = $(libdir)$(MULTISUBDIR)
 else
+if VERSION_SPECIFIC_LIBS
+gcc_version = @gcc_version@
+toolexecdir = $(libdir)/gcc-lib/$(target_alias)
+toolexeclibdir = $(toolexecdir)/$(gcc_version)
+else
 toolexecdir = $(exec_prefix)/$(target_alias)
 toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
+endif
 endif
 
 
@@ -92,8 +98,17 @@ sources = \
 libsupc___la_SOURCES = $(sources)
 libsupc__convenience_la_SOURCES = $(sources)
 
-# This insanely simple bit of install magic courtesy of Mr. Tromey.
-glibcppinstalldir= $(prefix)/include/g++-v3
+# Check for various configure bits that change where the headers get installed.
+if GXX_INCLUDE_DIR
+glibcppinstalldir = @gxx_include_dir@
+else
+if VERSION_SPECIFIC_LIBS
+glibcppinstalldir = $(libdir)/gcc-lib/$(target_alias)/@gcc_version@/include/g++
+else
+glibcppinstalldir = $(prefix)/include/g++-@libstdcxx_interface@
+endif
+endif
+
 glibcppinstall_HEADERS = $(headers)
 
 # Flags to force separate libtool library to be static only.

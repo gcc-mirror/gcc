@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.39 2000/10/12 11:45:23 bkoz Exp $
+## $Id: Makefile.am,v 1.40 2000/10/12 12:02:10 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -31,10 +31,15 @@ MAINT_CHARSET = latin1
 if USE_LIBDIR
 toolexeclibdir = $(libdir)$(MULTISUBDIR)
 else
+if VERSION_SPECIFIC_LIBS
+gcc_version = @gcc_version@
+toolexecdir = $(libdir)/gcc-lib/$(target_alias)
+toolexeclibdir = $(toolexecdir)/$(gcc_version)
+else
 toolexecdir = $(exec_prefix)/$(target_alias)
 toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
 endif
-
+endif
 
 toolexeclib_LTLIBRARIES = libstdc++.la
 EXTRA_LTLIBRARIES = libinst-string.la libinst-wstring.la
@@ -218,24 +223,33 @@ $(top_builddir)/stamp-cshadow: $(top_srcdir)/mkinclosure \
 	echo "done" > $(top_builddir)/stamp-cshadow 
 
 
-# We cannot use the default rules to install headers since we cannot
-# statically decide which headers to install.  So we have our own special
-# installation routine here.
-myincludep = $(DESTDIR)$(includedir)/g++-v3/
+# Check for various configure bits that change where the headers get installed.
+if GXX_INCLUDE_DIR
+myincludep = @gxx_include_dir@
+else
+if VERSION_SPECIFIC_LIBS
+myincludep = $(libdir)/gcc-lib/$(target_alias)/@gcc_version@/include/g++
+else
+myincludep = $(prefix)/include/g++-@libstdcxx_interface@
+endif
+endif
 
-install: myinstallheaders
+# We have our own special, needlessly complicated installation routine
+# here, as automake/autoconf is currently brain-damaged when it comes
+# to installing sub-directories of headers.
+install-data-local: myinstallheaders
 
 # NB: As libio_headers may be empty, need this to make sure bash doesn't
 # choke on an empty for... loop by using libio_headers_install
-myinstallheaders: $(headers:%=$(myincludep)%)
+myinstallheaders: $(headers:%=$(myincludep)/%)
 	if test -z "$(MULTISUBDIR)"; then \
 	for i in $(std_headers); do \
 	  echo "$(INSTALL_DATA) $(GLIBCPP_INCLUDE_DIR)/std/$$i $(myincludep)";\
 	        $(INSTALL_DATA) $(GLIBCPP_INCLUDE_DIR)/std/$$i $(myincludep); \
 	done; \
 	for i in $(build_headers); do \
-	  echo "$(INSTALL_DATA) $$i $(myincludep)bits/"; \
-	        $(INSTALL_DATA) $$i $(myincludep)bits/; \
+	  echo "$(INSTALL_DATA) $$i $(myincludep)/bits/"; \
+	        $(INSTALL_DATA) $$i $(myincludep)/bits/; \
 	done; \
 	libio_headers_install='$(libio_headers)'; \
 	for i in $$libio_headers_install; do \
@@ -244,21 +258,12 @@ myinstallheaders: $(headers:%=$(myincludep)%)
 	done; \
 	fi;
 
-$(headers:%=$(myincludep)%): $(myincludep)%: %
+$(headers:%=$(myincludep)/%): $(myincludep)/%: %
 	if test -z "$(MULTISUBDIR)"; then \
 	$(mkinstalldirs) $(@D); \
 	echo " $(INSTALL_DATA) $^ $@"; \
 	$(INSTALL_DATA) $^ $@; \
 	fi;
-
-# All the (now removed) machinations with string instantiations messes up the
-# automake-generated TAGS rule. Make a simple one here.
-TAGS: $(build_headers) $(cpu_headers) 
-	etags -C $(top_srcdir)/bits/*.h $(top_srcdir)/bits/*.tcc \
-	$(build_headers) $(libio_headers) \
-	$(top_srcdir)/src/*.cc \
-	$(top_builddir)/src/limitsMEMBERS.cc $(top_builddir)/src/c++io.cc \
-	-o $(top_builddir)/TAGS
 
 # We have to handle misc-inst.cc and locale-inst.cc in a special way
 # since we cannot instantiate all classes due to missing definitions
