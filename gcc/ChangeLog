@@ -1,5 +1,9 @@
 2000-05-22  Richard Henderson  <rth@cygnus.com>
 
+	* combine.c (simplify_comparison): Use trunc_int_for_mode.
+
+2000-05-22  Richard Henderson  <rth@cygnus.com>
+
 	* stor-layout.c (place_field): Change rli->size to rli->offset.
 
 2000-05-22  Richard Henderson  <rth@cygnus.com>
