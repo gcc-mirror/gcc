@@ -2480,7 +2480,7 @@ specify field index and operand 0 place to store value into.
 
 @cindex @code{vec_init@var{m}} instruction pattern
 @item @samp{vec_init@var{m}}
-Initialize the vector to given values.  Operand 0 ise the vector to initialize
+Initialize the vector to given values.  Operand 0 is the vector to initialize
 and operand 1 is parallel containing values for individual fields.
 
 @cindex @code{push@var{m}} instruction pattern
