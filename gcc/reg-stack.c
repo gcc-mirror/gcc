@@ -418,7 +418,6 @@ reg_to_stack (first, file)
 {
   int i;
   int max_uid;
-  sbitmap blocks;
   block_info bi;
 
   /* See if there is something to do.  Flow analysis is quite
@@ -431,17 +430,9 @@ reg_to_stack (first, file)
 
   /* Ok, floating point instructions exist.  If not optimizing, 
      build the CFG and run life analysis.  */
-  if (! optimize)
-    {
-      find_basic_blocks (first, max_reg_num (), file, 0);
-
-      blocks = sbitmap_alloc (n_basic_blocks);
-      sbitmap_ones (blocks);
-      count_or_remove_death_notes (blocks, 1);
-      sbitmap_free (blocks);
-
-      life_analysis (first, max_reg_num (), file, 0);
-    }
+  find_basic_blocks (first, max_reg_num (), file, 0);
+  count_or_remove_death_notes (NULL, 1);
+  life_analysis (first, max_reg_num (), file, 0);
 
   /* Set up block info for each basic block.  */
   bi = (block_info) alloca ((n_basic_blocks + 1) * sizeof (*bi));
