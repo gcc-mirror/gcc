@@ -10668,7 +10668,7 @@ fi
   
   ac_test_CXXFLAGS="${CXXFLAGS+set}"
   ac_save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS='-fno-builtins -D_GNU_SOURCE'
+  CXXFLAGS='-fno-builtin -D_GNU_SOURCE'
 
     echo $ac_n "checking for sin in -lm""... $ac_c" 1>&6
 echo "configure:10675: checking for sin in -lm" >&5
@@ -22407,7 +22407,7 @@ echo "configure:22405: checking for enabled wchar_t specializations" >&5
   
   ac_test_CXXFLAGS="${CXXFLAGS+set}"
   ac_save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS='-fno-builtins -D_GNU_SOURCE'
+  CXXFLAGS='-fno-builtin -D_GNU_SOURCE'
 
   
   echo $ac_n "checking for strtold declaration""... $ac_c" 1>&6
