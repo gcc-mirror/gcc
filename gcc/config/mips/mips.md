@@ -946,6 +946,62 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"4")])		;; mult + mflo + mfhi + delay
 
+(define_insn "smulsi3_highpart"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(truncate:SI
+	 (lshiftrt:DI (mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "d"))
+			       (sign_extend:DI (match_operand:SI 2 "register_operand" "d")))
+		      (const_int 32))))
+   (clobber (reg:SI 64))
+   (clobber (reg:SI 65))]
+  ""
+  "*
+{
+  rtx xoperands[10];
+
+  xoperands[0] = operands[0];
+  xoperands[1] = gen_rtx (REG, SImode, HI_REGNUM);
+
+  output_asm_insn (\"mult\\t%1,%2\", operands);
+  output_asm_insn (mips_move_1word (xoperands, insn), xoperands);
+  return \"\";
+}"
+  [(set_attr "type"	"imul")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"3")])		;; mult + mfhi + delay
+
+(define_split
+  [(set (match_operand:SI 0 "register_operand" "")
+	(truncate:SI
+	 (lshiftrt:DI (mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "d"))
+			       (sign_extend:DI (match_operand:SI 2 "register_operand" "d")))
+		      (const_int 32))))
+   (clobber (reg:SI 64))
+   (clobber (reg:SI 65))]
+  "!TARGET_DEBUG_D_MODE"
+  [(parallel [(set (reg:SI 64)		;; high register
+		   (truncate:SI
+		    (lshiftrt:DI (mult:DI (sign_extend:DI (match_dup 1))
+					  (sign_extend:DI (match_dup 2)))
+				 (const_int 32))))
+	      (clobber (reg:SI 65))])
+   (set (match_dup 0)
+	(reg:SI 64))]
+  "")
+
+(define_insn "smulsi3_highpart_internal"
+  [(set (reg:SI 64)			;; high register
+	(truncate:SI
+	 (lshiftrt:DI (mult:DI (sign_extend:DI (match_operand:SI 0 "register_operand" "d"))
+			       (sign_extend:DI (match_operand:SI 1 "register_operand" "d")))
+		      (const_int 32))))
+   (clobber (reg:SI 65))]
+  ""
+  "mult\\t%0,%1"
+  [(set_attr "type"	"imul")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"1")])
+
 (define_insn "umulsidi3"
   [(set (match_operand:DI 0 "register_operand" "=d")
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "d"))
@@ -968,6 +1024,61 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"4")])		;; mult + mflo + mfhi + delay
 
+(define_insn "umulsi3_highpart"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(truncate:SI
+	 (lshiftrt:DI (mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "d"))
+			       (zero_extend:DI (match_operand:SI 2 "register_operand" "d")))
+		      (const_int 32))))
+   (clobber (reg:SI 64))
+   (clobber (reg:SI 65))]
+  ""
+  "*
+{
+  rtx xoperands[10];
+
+  xoperands[0] = operands[0];
+  xoperands[1] = gen_rtx (REG, SImode, HI_REGNUM);
+
+  output_asm_insn (\"multu\\t%1,%2\", operands);
+  output_asm_insn (mips_move_1word (xoperands, insn), xoperands);
+  return \"\";
+}"
+  [(set_attr "type"	"imul")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"3")])		;; multu + mfhi + delay
+
+(define_split
+  [(set (match_operand:SI 0 "register_operand" "")
+	(truncate:SI
+	 (lshiftrt:DI (mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "d"))
+			       (zero_extend:DI (match_operand:SI 2 "register_operand" "d")))
+		      (const_int 32))))
+   (clobber (reg:SI 64))
+   (clobber (reg:SI 65))]
+  "!TARGET_DEBUG_D_MODE"
+  [(parallel [(set (reg:SI 64)		;; high register
+		   (truncate:SI
+		    (lshiftrt:DI (mult:DI (zero_extend:DI (match_dup 1))
+					  (zero_extend:DI (match_dup 2)))
+				 (const_int 32))))
+	      (clobber (reg:SI 65))])
+   (set (match_dup 0)
+	(reg:SI 64))]
+  "")
+
+(define_insn "umulsi3_highpart_internal"
+  [(set (reg:SI 64)			;; high register
+	(truncate:SI
+	 (lshiftrt:DI (mult:DI (zero_extend:DI (match_operand:SI 0 "register_operand" "d"))
+			       (zero_extend:DI (match_operand:SI 1 "register_operand" "d")))
+		      (const_int 32))))
+   (clobber (reg:SI 65))]
+  ""
+  "multu\\t%0,%1"
+  [(set_attr "type"	"imul")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"1")])
 
 ;;
 ;;  ....................
