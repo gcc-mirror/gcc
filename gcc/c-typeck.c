@@ -6020,6 +6020,7 @@ process_init_element (value)
 	  /* Otherwise, if we have come to a subaggregate,
 	     and we don't have an element of its type, push into it.  */
 	  else if (value != 0 && !constructor_no_implicit
+		   && value != error_mark_node
 		   && TYPE_MAIN_VARIANT (TREE_TYPE (value)) != fieldtype
 		   && (fieldcode == RECORD_TYPE || fieldcode == ARRAY_TYPE
 		       || fieldcode == UNION_TYPE))
@@ -6083,6 +6084,7 @@ process_init_element (value)
 	  /* Otherwise, if we have come to a subaggregate,
 	     and we don't have an element of its type, push into it.  */
 	  else if (value != 0 && !constructor_no_implicit
+		   && value != error_mark_node
 		   && TYPE_MAIN_VARIANT (TREE_TYPE (value)) != fieldtype
 		   && (fieldcode == RECORD_TYPE || fieldcode == ARRAY_TYPE
 		       || fieldcode == UNION_TYPE))
@@ -6126,6 +6128,7 @@ process_init_element (value)
 	  /* Otherwise, if we have come to a subaggregate,
 	     and we don't have an element of its type, push into it.  */
 	  else if (value != 0 && !constructor_no_implicit
+		   && value != error_mark_node
 		   && TYPE_MAIN_VARIANT (TREE_TYPE (value)) != elttype
 		   && (eltcode == RECORD_TYPE || eltcode == ARRAY_TYPE
 		       || eltcode == UNION_TYPE))
