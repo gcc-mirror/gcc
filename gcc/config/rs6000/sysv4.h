@@ -60,6 +60,7 @@ extern enum rs6000_sdata_type rs6000_sdata;
 #define	MASK_LITTLE_ENDIAN	0x04000000	/* Target is little endian.  */
 #define	MASK_REGNAMES		0x02000000	/* Use alternate register names.  */
 #define	MASK_PROTOTYPE		0x01000000	/* Only prototyped fcns pass variable args.  */
+#define MASK_LONG_DOUBLE_128	0x00800000	/* Use IEEE quad long double.  */
 
 #define	TARGET_NO_BITFIELD_TYPE	(target_flags & MASK_NO_BITFIELD_TYPE)
 #define	TARGET_STRICT_ALIGN	(target_flags & MASK_STRICT_ALIGN)
@@ -68,6 +69,7 @@ extern enum rs6000_sdata_type rs6000_sdata;
 #define	TARGET_LITTLE_ENDIAN	(target_flags & MASK_LITTLE_ENDIAN)
 #define	TARGET_REGNAMES		(target_flags & MASK_REGNAMES)
 #define	TARGET_PROTOTYPE	(target_flags & MASK_PROTOTYPE)
+#define TARGET_LONG_DOUBLE_128	(target_flags & MASK_LONG_DOUBLE_128)
 #define	TARGET_TOC		((target_flags & MASK_64BIT)		\
 				 || ((target_flags & (MASK_RELOCATABLE	\
 						      | MASK_MINIMAL_TOC)) \
@@ -126,6 +128,10 @@ extern int g_switch_set;		/* Whether -G xx was passed.  */
     N_("Produce big endian code.") },					\
   { "big",		-MASK_LITTLE_ENDIAN,				\
     N_("Produce big endian code.") },					\
+  { "long-double-64",	-MASK_LONG_DOUBLE_128,				\
+    N_("Use 64 bit long doubles") },					\
+  { "long-double-128",	 MASK_LONG_DOUBLE_128, 				\
+    N_("Use 128 bit long doubles") },					\
   { "no-toc",		 0, N_("no description yet") },			\
   { "toc",		 MASK_MINIMAL_TOC, N_("no description yet") },	\
   { "full-toc",		 MASK_MINIMAL_TOC, N_("no description yet") },	\
@@ -349,6 +355,22 @@ do {									\
 /* Override svr4.h definition.  */
 #undef	WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
+
+/* Define for support of TFmode long double and REAL_ARITHMETIC.
+   PowerPC SVR4 ABI says that long double is 4 words.  */
+#undef LONG_DOUBLE_TYPE_SIZE
+#define LONG_DOUBLE_TYPE_SIZE (TARGET_LONG_DOUBLE_128 ? 128 : 64)
+
+/* Constant which presents upper bound of the above value.  */
+#define MAX_LONG_DOUBLE_TYPE_SIZE 128
+
+/* Define this to set long double type size to use in libgcc2.c, which can
+   not depend on target_flags.  */
+#ifdef __LONG_DOUBLE_128__
+#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 128
+#else
+#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 64
+#endif
 
 /* Make int foo : 8 not cause structures to be aligned to an int boundary.  */
 /* Override elfos.h definition.  */
@@ -1164,6 +1186,8 @@ do {									\
 "%{mrelocatable*: -D_RELOCATABLE} \
 %{fpic: -D__PIC__=1 -D__pic__=1} \
 %{!fpic: %{fPIC: -D__PIC__=2 -D__pic__=2}} \
+%{mlong-double-128: -D__LONG_DOUBLE_128__=1} \
+%{!mlong-double-64: %(cpp_longdouble_default)} \
 %{mcall-sysv: -D_CALL_SYSV} \
 %{mcall-aix: -D_CALL_AIX} %{mcall-aixdesc: -D_CALL_AIX -D_CALL_AIXDESC} \
 %{!mcall-sysv: %{!mcall-aix: %{!mcall-aixdesc: %(cpp_sysv_default) }}} \
@@ -1180,6 +1204,9 @@ do {									\
 
 /* Whether floating point is disabled by default.  */
 #define	CPP_FLOAT_DEFAULT_SPEC ""
+
+/* Whether 'long double' is 128 bits by default.  */
+#define	CPP_LONGDOUBLE_DEFAULT_SPEC ""
 
 #define	CPP_SYSV_DEFAULT_SPEC "-D_CALL_SYSV"
 
@@ -1494,6 +1521,7 @@ do {									\
   { "cpp_endian_little",	CPP_ENDIAN_LITTLE_SPEC },		\
   { "cpp_endian_solaris",	CPP_ENDIAN_SOLARIS_SPEC },		\
   { "cpp_float_default",	CPP_FLOAT_DEFAULT_SPEC },		\
+  { "cpp_longdouble_default",	CPP_LONGDOUBLE_DEFAULT_SPEC },		\
   { "cpp_os_ads",		CPP_OS_ADS_SPEC },			\
   { "cpp_os_yellowknife",	CPP_OS_YELLOWKNIFE_SPEC },		\
   { "cpp_os_mvme",		CPP_OS_MVME_SPEC },			\
@@ -1521,3 +1549,60 @@ do {									\
 
 /* Function name to call to do profiling.  */
 #define RS6000_MCOUNT "_mcount"
+
+/* Define library calls for quad FP operations.  These are all part of the
+   PowerPC 32bit ABI.  */
+#define ADDTF3_LIBCALL "_q_add"
+#define DIVTF3_LIBCALL "_q_div"
+#define EXTENDDFTF2_LIBCALL "_q_dtoq"
+#define EQTF2_LIBCALL "_q_feq"
+#define GETF2_LIBCALL "_q_fge"
+#define GTTF2_LIBCALL "_q_fgt"
+#define LETF2_LIBCALL "_q_fle"
+#define LTTF2_LIBCALL "_q_flt"
+#define NETF2_LIBCALL "_q_fne"
+#define FLOATSITF2_LIBCALL "_q_itoq"
+#define MULTF3_LIBCALL "_q_mul"
+#define NEGTF2_LIBCALL "_q_neg"
+#define TRUNCTFDF2_LIBCALL "_q_qtod"
+#define FIX_TRUNCTFSI2_LIBCALL "_q_qtoi"
+#define TRUNCTFSF2_LIBCALL "_q_qtos"
+#define FIXUNS_TRUNCTFSI2_LIBCALL "_q_qtou"
+#define SQRTTF_LIBCALL "_q_sqrt"
+#define EXTENDSFTF2_LIBCALL "_q_stoq"
+#define SUBTF3_LIBCALL "_q_sub"
+#define FLOATUNSSITF2_LIBCALL "_q_utoq"
+
+#define INIT_TARGET_OPTABS						\
+  do {									\
+    if (TARGET_HARD_FLOAT)						\
+      {									\
+	add_optab->handlers[(int) TFmode].libfunc			\
+	  = init_one_libfunc (ADDTF3_LIBCALL);				\
+	sub_optab->handlers[(int) TFmode].libfunc			\
+	  = init_one_libfunc (SUBTF3_LIBCALL);				\
+	neg_optab->handlers[(int) TFmode].libfunc			\
+	  = init_one_libfunc (NEGTF2_LIBCALL);				\
+	smul_optab->handlers[(int) TFmode].libfunc			\
+	  = init_one_libfunc (MULTF3_LIBCALL);				\
+	flodiv_optab->handlers[(int) TFmode].libfunc			\
+	  = init_one_libfunc (DIVTF3_LIBCALL);				\
+	eqtf2_libfunc = init_one_libfunc (EQTF2_LIBCALL);		\
+	netf2_libfunc = init_one_libfunc (NETF2_LIBCALL);		\
+	gttf2_libfunc = init_one_libfunc (GTTF2_LIBCALL);		\
+	getf2_libfunc = init_one_libfunc (GETF2_LIBCALL);		\
+	lttf2_libfunc = init_one_libfunc (LTTF2_LIBCALL);		\
+	letf2_libfunc = init_one_libfunc (LETF2_LIBCALL);		\
+	trunctfsf2_libfunc = init_one_libfunc (TRUNCTFSF2_LIBCALL);	\
+	trunctfdf2_libfunc = init_one_libfunc (TRUNCTFDF2_LIBCALL);	\
+	extendsftf2_libfunc = init_one_libfunc (EXTENDSFTF2_LIBCALL);	\
+	extenddftf2_libfunc = init_one_libfunc (EXTENDDFTF2_LIBCALL);	\
+	floatsitf_libfunc = init_one_libfunc (FLOATSITF2_LIBCALL);	\
+	fixtfsi_libfunc = init_one_libfunc (FIX_TRUNCTFSI2_LIBCALL);	\
+	fixunstfsi_libfunc						\
+	  = init_one_libfunc (FIXUNS_TRUNCTFSI2_LIBCALL);		\
+	if (TARGET_PPC_GPOPT || TARGET_POWER2) 				\
+	  sqrt_optab->handlers[(int) TFmode].libfunc			\
+	    = init_one_libfunc (SQRTTF_LIBCALL);			\
+      }									\
+  } while (0)

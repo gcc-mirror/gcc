@@ -1,5 +1,19 @@
 2000-09-10  Geoff Keating  <geoffk@cygnus.com>
 
+	* config/rs6000/sysv4.h (MASK_LONG_DOUBLE_128): Define.
+	(TARGET_LONG_DOUBLE_128): Define.
+	(SUBTARGET_SWITCHES): Add -mlong-double-64 and -mlong-double-128.
+	(LONG_DOUBLE_TYPE_SIZE): Redefine.
+	(MAX_LONG_DOUBLE_TYPE_SIZE): Define.
+	(LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Define depending on definition
+	of __LONG_DOUBLE_128__.
+	(CPP_SYSV_SPEC): Define __LONG_DOUBLE_128__ if -mlong-double-128
+	passed.
+	(CPP_LONGDOUBLE_DEFAULT_SPEC): Define.
+	(CPP_SYSV_DEFAULT_SPEC): Define.
+	(SUBTARGET_EXTRA_SPECS): Add cpp_longdouble_default.
+	(INIT_TARGET_OPTABS): Define.
+
 	* config/rs6000/aix.h (RS6000_ITRUNC): Moved from rs6000.h.
 	(RS6000_UITRUNC): Likewise.
 	(INIT_TARGET_OPTABS): New macro.
