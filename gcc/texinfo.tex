@@ -187,13 +187,16 @@
     \shipout\vbox{%
       \ifcropmarks \vbox to \outervsize\bgroup
         \hsize = \outerhsize
-        \line{\ewtop\hfil\ewtop}%
-        \nointerlineskip
-        \line{%
-          \vbox{\moveleft\cornerthick\nstop}%
-          \hfill
-          \vbox{\moveright\cornerthick\nstop}%
-        }%
+        \vskip-\topandbottommargin
+        \vtop to0pt{%
+          \line{\ewtop\hfil\ewtop}%
+          \nointerlineskip
+          \line{%
+            \vbox{\moveleft\cornerthick\nstop}%
+            \hfill
+            \vbox{\moveright\cornerthick\nstop}%
+          }%
+          \vss}%
         \vskip\topandbottommargin
         \line\bgroup
           \hfil % center the page within the outer (page) hsize.
@@ -216,13 +219,15 @@
         \hfil\egroup % end of (centering) \line\bgroup
         \vskip\topandbottommargin plus1fill minus1fill
         \boxmaxdepth = \cornerthick
-        \line{%
-          \vbox{\moveleft\cornerthick\nsbot}%
-          \hfill
-          \vbox{\moveright\cornerthick\nsbot}%
+        \vbox to0pt{\vss
+          \line{%
+            \vbox{\moveleft\cornerthick\nsbot}%
+            \hfill
+            \vbox{\moveright\cornerthick\nsbot}%
+          }%
+          \nointerlineskip
+          \line{\ewbot\hfil\ewbot}%
         }%
-        \nointerlineskip
-        \line{\ewbot\hfil\ewbot}%
       \egroup % \vbox from first cropmarks clause
       \fi
     }% end of \shipout\vbox
@@ -5214,7 +5219,7 @@ width0pt\relax} \fi
   \vsize = #1\relax
   \advance\vsize by \topskip
   \outervsize = \vsize
-  \advance\outervsize by 0.6in
+  \advance\outervsize by 2\topandbottommargin
   \pageheight = \vsize
   %
   \hsize = #2\relax
