@@ -13,6 +13,7 @@
 
 2005-01-20  Richard Henderson  <rth@redhat.com>
 
+	PR target/16533
 	* config/i386/i386.c (ix86_expand_push): New.
 	* config/i386/mmx.md (push<MMXMODE>1): New.
 	* config/i386/sse.md (push<SSEMODE>1): New.
