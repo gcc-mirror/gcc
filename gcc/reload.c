@@ -4538,7 +4538,7 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
 		     into a reg, we can use that reg.  */
 		  || (goal_const && (tem = find_reg_note (p, REG_EQUIV, 0))
 		      && rtx_equal_p (XEXP (tem, 0), goal)
-		      && (valueno = true_regnum (valtry = SET_DEST (pat))))
+		      && (valueno = true_regnum (valtry = SET_DEST (pat))) >= 0)
 		  || (goal_const && (tem = find_reg_note (p, REG_EQUIV, 0))
 		      && GET_CODE (SET_DEST (pat)) == REG
 		      && GET_CODE (XEXP (tem, 0)) == CONST_DOUBLE
@@ -4547,7 +4547,7 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
 		      && INTVAL (goal) == CONST_DOUBLE_LOW (XEXP (tem, 0))
 		      && (valtry = operand_subword (SET_DEST (pat), 0, 0,
 						    VOIDmode))
-		      && (valueno = true_regnum (valtry)))
+		      && (valueno = true_regnum (valtry)) >= 0)
 		  || (goal_const && (tem = find_reg_note (p, REG_EQUIV, 0))
 		      && GET_CODE (SET_DEST (pat)) == REG
 		      && GET_CODE (XEXP (tem, 0)) == CONST_DOUBLE
@@ -4556,7 +4556,7 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
 		      && INTVAL (goal) == CONST_DOUBLE_HIGH (XEXP (tem, 0))
 		      && (valtry
 			  = operand_subword (SET_DEST (pat), 1, 0, VOIDmode))
-		      && (valueno = true_regnum (valtry)))))
+		      && (valueno = true_regnum (valtry)) >= 0)))
 	    if (other >= 0
 		? valueno == other
 		: ((unsigned) valueno < FIRST_PSEUDO_REGISTER
