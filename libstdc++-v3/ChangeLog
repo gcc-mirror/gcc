@@ -1,3 +1,7 @@
+Fri Dec 21 17:35:21 2001  Jeffrey A Law  (law@redhat.com)
+
+	* configure.target: Fix typo in hpux case.
+
 2001-12-21  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/ext/stl_rope.h (_Rope_iterator):
