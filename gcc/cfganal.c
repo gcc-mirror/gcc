@@ -333,6 +333,7 @@ flow_call_edges_add (sbitmap blocks)
   for (i = 0; i < last_bb; i++)
     {
       basic_block bb = BASIC_BLOCK (i);
+      rtx libcall_end = NULL_RTX;
       rtx insn;
       rtx prev_insn;
 
@@ -350,9 +351,13 @@ flow_call_edges_add (sbitmap blocks)
 	      edge e;
 	      rtx split_at_insn = insn;
 
+	      /* Don't split libcalls.  */
+	      if (libcall_end)
+		split_at_insn = libcall_end;
+
 	      /* Don't split the block between a call and an insn that should
 	         remain in the same block as the call.  */
-	      if (GET_CODE (insn) == CALL_INSN)
+	      else if (GET_CODE (insn) == CALL_INSN)
 		while (split_at_insn != BB_END (bb)
 		       && keep_with_call_p (NEXT_INSN (split_at_insn)))
 		  split_at_insn = NEXT_INSN (split_at_insn);
@@ -380,6 +385,14 @@ flow_call_edges_add (sbitmap blocks)
 
 	      make_edge (bb, EXIT_BLOCK_PTR, EDGE_FAKE);
 	    }
+
+	  /* Watch out for REG_LIBCALL/REG_RETVAL notes so that we know
+	     whether we are currently in a libcall or not.  Remember that
+	     we are scanning backwards!  */
+	  if (find_reg_note (insn, REG_RETVAL, NULL_RTX))
+	    libcall_end = insn;
+	  if (find_reg_note (insn, REG_LIBCALL, NULL_RTX))
+	    libcall_end = NULL_RTX;
 
 	  if (insn == BB_HEAD (bb))
 	    break;
