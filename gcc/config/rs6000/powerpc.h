@@ -24,7 +24,26 @@ Boston, MA 02111-1307, USA.  */
 #include "rs6000/rs6000.h"
 
 #undef ASM_SPEC
-#define ASM_SPEC "-u -mppc"
+#define ASM_SPEC "-u \
+%{!mcpu*: \
+  %{mpower2: -mpwrx} \
+  %{mpowerpc*: %{!mpower: -mppc}} \
+  %{mno-powerpc: %{!mpower: %{!mpower2: -mcom}}} \
+  %{mno-powerpc: %{mpower: %{!mpower2: -mpwr}}} \
+  %{!mno-powerpc: %{mpower: -m601}} \
+  %{!mno-powerpc: %{!mpower: -mppc}}} \
+%{mcpu=common: -mcom} \
+%{mcpu=power: -mpwr} \
+%{mcpu=powerpc: -mppc} \
+%{mcpu=rios: -mpwr} \
+%{mcpu=rios1: -mpwr} \
+%{mcpu=rios2: -mpwrx} \
+%{mcpu=rsc: -mpwr} \
+%{mcpu=rsc1: -mpwr} \
+%{mcpu=403: -mppc} \
+%{mcpu=601: -m601} \
+%{mcpu=603: -mppc} \
+%{mcpu=604: -mppc}"
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-D_IBMR2 -D_POWER -D_AIX -D_AIX32 \
@@ -48,17 +67,9 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=rsc: -D_ARCH_PWR} \
 %{mcpu=rsc1: -D_ARCH_PWR} \
 %{mcpu=403: -D_ARCH_PPC} \
-%{mcpu=mpc403: -D_ARCH_PPC} \
-%{mcpu=ppc403: -D_ARCH_PPC} \
 %{mcpu=601: -D_ARCH_PPC -D_ARCH_PWR} \
-%{mcpu=mpc601: -D_ARCH_PPC -D_ARCH_PWR} \
-%{mcpu=ppc601: -D_ARCH_PPC -D_ARCH_PWR} \
 %{mcpu=603: -D_ARCH_PPC} \
-%{mcpu=mpc603: -D_ARCH_PPC} \
-%{mcpu=ppc603: -D_ARCH_PPC} \
-%{mcpu=604: -D_ARCH_PPC} \
-%{mcpu=mpc604: -D_ARCH_PPC} \
-%{mcpu=ppc604: -D_ARCH_PPC}"
+%{mcpu=604: -D_ARCH_PPC}"
 
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_POWERPC | MASK_NEW_MNEMONICS)
