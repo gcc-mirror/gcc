@@ -1,3 +1,8 @@
+2002-10-11  Jason Molenda  <jmolenda@apple.com>
+
+	* init.c (build_field_list): Provide uses_unions_p with a default
+	value.
+
 2002-10-11  Mark Mitchell  <mark@codesourcery.com>
 
 	* NEWS: Document removal of "new X = ..." extension.
@@ -30,7 +35,7 @@
 	* typeck2.c (store_init_value): Don't try to handle digest_init
 	being called more than once.
 	(digest_init): Tidy handling of brace-enclosed initializers.
-	
+
 2002-10-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* decl.c (typename_hash): Use htab_hash_pointer.
