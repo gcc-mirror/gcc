@@ -1,3 +1,8 @@
+2004-07-12  Roger Sayle  <roger@eyesopen.com>
+
+	* doc/invoke.texi: Correct -fasynchronous-unwind-tables option
+	index entry.
+
 2004-07-12  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_use_dfa_pipeline_interface): Delete.
