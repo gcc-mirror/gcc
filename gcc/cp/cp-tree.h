@@ -4055,8 +4055,6 @@ extern tree copy_decl                           PARAMS ((tree));
 extern tree copy_type                           PARAMS ((tree));
 extern tree cxx_make_type			PARAMS ((enum tree_code));
 extern tree make_aggr_type			PARAMS ((enum tree_code));
-extern void compiler_error			PARAMS ((const char *, ...))
-  ATTRIBUTE_PRINTF_1;
 extern void yyerror				PARAMS ((const char *));
 extern void yyhook				PARAMS ((int));
 extern int cp_type_qual_from_rid                PARAMS ((tree));
