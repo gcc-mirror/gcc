@@ -1,3 +1,9 @@
+Fri Jun 12 00:30:32 1998  John Wehle  (john@feith.com)
+
+	* i386.md (cmpsi_1, cmphi_1, cmpqi_1): Remove code
+	which set CC_REVERSED since reload should ensure that
+	the operands are already the correct type.
+
 Thu Jun 11 17:14:15 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* except.c (expand_builtin_eh_stub): Call emit_move_insn rather than
