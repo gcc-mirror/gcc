@@ -27,6 +27,7 @@
 #ifndef _CPP_BACKWARD_TEMPBUF_H
 #define _CPP_BACKWARD_TEMPBUF_H 1
 
+#include "backward_warning.h"
 #include "pair.h"
 #include "iterator.h"
 #include <limits.h>

@@ -27,6 +27,7 @@
 #ifndef _CPP_BACKWARD_HASH_SET_H
 #define _CPP_BACKWARD_HASH_SET_H 1
 
+#include "backward_warning.h"
 #include "algobase.h"
 #include <ext/hash_set>
 

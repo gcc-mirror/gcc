@@ -28,6 +28,7 @@
 #ifndef _CPP_BACKWARD_QUEUE_H
 #define _CPP_BACKWARD_QUEUE_H 1
 
+#include "backward_warning.h"
 #include <bits/std_queue.h>
 
 using std::queue;

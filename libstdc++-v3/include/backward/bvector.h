@@ -28,6 +28,7 @@
 #define __SGI_STL_BVECTOR_H
 
 
+#include "backward_warning.h"
 #include <bits/std_vector.h>
 
 using std::bit_vector;

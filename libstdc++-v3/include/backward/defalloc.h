@@ -26,6 +26,7 @@
 #ifndef _CPP_BACKWARD_DEFALLOC_H
 #define _CPP_BACKWARD_DEFALLOC_H 1
 
+#include "backward_warning.h"
 #include "new.h"
 #include <stddef.h>
 #include <stdlib.h>

@@ -1,4 +1,4 @@
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,6 +28,7 @@
 #ifndef _CPP_BACKWARD_FSTREAM_H
 #define _CPP_BACKWARD_FSTREAM_H 1
 
+#include "backward_warning.h"
 #include <bits/std_fstream.h>
 
 using std::filebuf;

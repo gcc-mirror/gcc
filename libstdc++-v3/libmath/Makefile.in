@@ -114,24 +114,18 @@ mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
 noinst_LTLIBRARIES = libmath.la
 
-EXTRA_LONG_DOUBLE_yes = \
-	hypotl.c signbitl.c
+EXTRA_LONG_DOUBLE_yes =  	hypotl.c signbitl.c
 
 
-EXTRA_DIST = \
-	hypot.c hypotf.c atan2f.c expf.c \
-	$(EXTRA_LONG_DOUBLE_yes) 
+EXTRA_DIST =  	hypot.c hypotf.c atan2f.c expf.c 	$(EXTRA_LONG_DOUBLE_yes) 
 
 
-libmath_la_LIBADD = \
-	@LIBMATHOBJS@ \
-	$(EXTRA_LONG_DOUBLE_$(USE_COMPLEX_LONG_DOUBLE)) 
+libmath_la_LIBADD =  	@LIBMATHOBJS@ 	$(EXTRA_LONG_DOUBLE_$(USE_COMPLEX_LONG_DOUBLE)) 
 
 
 libmath_la_DEPENDENCIES = $(libmath_la_LIBADD)
 
-libmath_la_SOURCES = \
-	signbit.c signbitf.c
+libmath_la_SOURCES =  	signbit.c signbitf.c
 
 
 LINK = $(LIBTOOL) --mode=link "$(CCLD)" $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
@@ -145,9 +139,7 @@ LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
 LIBIO_INCLUDES = @LIBIO_INCLUDES@
 CSHADOW_INCLUDES = @CSHADOW_INCLUDES@
 
-INCLUDES = \
-	-I$(GLIBCPP_INCLUDE_DIR) -I$(top_builddir)/include  \
-	$(TOPLEVEL_INCLUDES) 
+INCLUDES =  	-I$(GLIBCPP_INCLUDE_DIR) -I$(top_builddir)/include  	$(TOPLEVEL_INCLUDES) 
 
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 

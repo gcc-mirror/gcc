@@ -27,6 +27,7 @@
 #ifndef _CPP_BACKWARD_ITERATOR_H
 #define _CPP_BACKWARD_ITERATOR_H 1
 
+#include "backward_warning.h"
 #include "function.h"
 #include <stddef.h>
 #include "iostream.h"

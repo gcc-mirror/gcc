@@ -1,4 +1,4 @@
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,19 +25,14 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#ifndef _CPP_BACKWARD_ISTREAM_H
-#define _CPP_BACKWARD_ISTREAM_H 1
+#ifndef _CPP_BACKWARD_BACKWARD_WARNING_H
+#define _CPP_BACKWARD_BACKWARD_WARNING_H 1
 
-#include "backward_warning.h"
-#include "iostream.h"
-
+#ifdef __DEPRECATED
+# warning "This file includes at least one deprecated or antiquated header."
+# warning "Please use the <X> file instead of <X.h> file for "C++" includes"
+# warning "and use the <cX> file instead of <X.h> file for "C" includes."
+# warning "To disable this warning use -Wno-deprecated."
 #endif
 
-// Local Variables:
-// mode:C++
-// End:
-
-
-
-
-
+#endif

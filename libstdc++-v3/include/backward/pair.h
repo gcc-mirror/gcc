@@ -27,6 +27,7 @@
 #ifndef _CPP_BACKWARD_PAIR_H
 #define _CPP_BACKWARD_PAIR_H 1
 
+#include "backward_warning.h"
 #include <bits/c++config.h>
 #include <bits/stl_pair.h>
 
