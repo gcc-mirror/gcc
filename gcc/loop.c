@@ -4122,6 +4122,7 @@ record_biv (v, insn, dest_reg, inc_val, mult_val,
       bl->eliminable = 0;
       bl->nonneg = 0;
       bl->reversed = 0;
+      bl->total_benefit = 0;
 
       /* Add this class to loop_iv_list.  */
       bl->next = loop_iv_list;
@@ -6255,7 +6256,8 @@ get_condition (jump, earliest)
 
   /* If this branches to JUMP_LABEL when the condition is false, reverse
      the condition.  */
-  if (XEXP (XEXP (SET_SRC (PATTERN (jump)), 2), 0) == JUMP_LABEL (jump))
+  if (GET_CODE (XEXP (SET_SRC (PATTERN (jump)), 2)) == LABEL_REF
+      && XEXP (XEXP (SET_SRC (PATTERN (jump)), 2), 0) == JUMP_LABEL (jump))
     code = reverse_condition (code), did_reverse_condition ^= 1;
 
   /* If we are comparing a register with zero, see if the register is set
