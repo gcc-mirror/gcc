@@ -1,3 +1,12 @@
+2003-10-07  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (cmpsi2_addneg): New ARM pattern. Add peephole2 to generate
+	it.
+	(cbranchne_decr1): New Thumb pattern.
+	* arm.c (arm_addimm_operand): New insn predicate.
+	* arm-protos.h: Add a prototype for it.
+	* arm.h (PREDICATE_CODES): Add it.
+
 2003-10-07  Dorit Naishlos <dorit@il.ibm.com>
 
 	* sched-int.h (sched_info): New field 

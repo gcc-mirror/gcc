@@ -65,6 +65,7 @@ extern int arm_reload_memory_operand (rtx, enum machine_mode);
 extern int arm_rhs_operand (rtx, enum machine_mode);
 extern int arm_rhsm_operand (rtx, enum machine_mode);
 extern int arm_add_operand (rtx, enum machine_mode);
+extern int arm_addimm_operand (rtx, enum machine_mode);
 extern int arm_not_operand (rtx, enum machine_mode);
 extern int offsettable_memory_operand (rtx, enum machine_mode);
 extern int alignable_memory_operand (rtx, enum machine_mode);

@@ -3750,6 +3750,15 @@ arm_add_operand (rtx op, enum machine_mode mode)
 		  || const_ok_for_arm (-INTVAL (op)))));
 }
 
+/* Return TRUE for valid ARM constants (or when valid if negated).  */
+int
+arm_addimm_operand (rtx op, enum machine_mode mode)
+{
+  return (GET_CODE (op) == CONST_INT
+	  && (const_ok_for_arm (INTVAL (op))
+	      || const_ok_for_arm (-INTVAL (op))));
+}
+
 int
 arm_not_operand (rtx op, enum machine_mode mode)
 {
