@@ -106,7 +106,7 @@ gfc_show_actual_arglist (gfc_actual_arglist * a)
   for (; a; a = a->next)
     {
       gfc_status_char ('(');
-      if (a->name[0] != '\0')
+      if (a->name != NULL)
 	gfc_status ("%s = ", a->name);
       if (a->expr != NULL)
 	gfc_show_expr (a->expr);
