@@ -293,8 +293,7 @@ warn_unhandled (ex)
   /* not yet warned */
   p = (struct already_type *)xmalloc (sizeof (struct already_type));
   p->next = already_warned;
-  p->name = (char *)xmalloc (strlen (ex) + 1);
-  strcpy (p->name, ex);
+  p->name = xstrdup (ex);
   already_warned = p;
   pedwarn ("causing unhandled exception `%s' (this is flaged only once)", ex);
 }

@@ -1,3 +1,7 @@
+1999-09-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* actions.c (warn_unhandled): Use xstrdup, not xmalloc/strcpy.
+
 Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* ch-tree.h: Delete declarations for all tree nodes now moved to
