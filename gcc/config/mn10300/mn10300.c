@@ -54,6 +54,9 @@ int mn10300_unspec_int_label_counter;
    symbol names from register names.  */
 int mn10300_protect_label;
 
+/* The selected processor.  */
+enum processor_type mn10300_processor = PROCESSOR_DEFAULT;
+
 /* The size of the callee register save area.  Right now we save everything
    on entry since it costs us nothing in code size.  It does cost us from a
    speed standpoint, so we want to optimize this sooner or later.  */
@@ -65,6 +68,7 @@ int mn10300_protect_label;
 				|| regs_ever_live[16] || regs_ever_live[17]))
 
 
+static bool mn10300_handle_option (size_t, const char *, int);
 static int mn10300_address_cost_1 (rtx, int *);
 static int mn10300_address_cost (rtx);
 static bool mn10300_rtx_costs (rtx, int, int, int *);
@@ -90,6 +94,11 @@ static int mn10300_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 #undef TARGET_ASM_FILE_START_FILE_DIRECTIVE
 #define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
 
+#undef TARGET_DEFAULT_TARGET_FLAGS
+#define TARGET_DEFAULT_TARGET_FLAGS MASK_MULT_BUG
+#undef TARGET_HANDLE_OPTION
+#define TARGET_HANDLE_OPTION mn10300_handle_option
+
 #undef  TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO mn10300_encode_section_info
 
@@ -110,6 +119,37 @@ static int mn10300_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 static void mn10300_encode_section_info (tree, rtx, int);
 struct gcc_target targetm = TARGET_INITIALIZER;
 
+/* Implement TARGET_HANDLE_OPTION.  */
+
+static bool
+mn10300_handle_option (size_t code,
+		       const char *arg ATTRIBUTE_UNUSED,
+		       int value)
+{
+  switch (code)
+    {
+    case OPT_mam33:
+      mn10300_processor = value ? PROCESSOR_AM33 : PROCESSOR_MN10300;
+      return true;
+    case OPT_mam33_2:
+      mn10300_processor = (value
+			   ? PROCESSOR_AM33_2
+			   : MIN (PROCESSOR_AM33, PROCESSOR_DEFAULT));
+      return true;
+    default:
+      return true;
+    }
+}
+
+/* Implement OVERRIDE_OPTIONS.  */
+
+void
+mn10300_override_options (void)
+{
+  if (TARGET_AM33)
+    target_flags &= ~MASK_MULT_BUG;
+}
+
 static void
 mn10300_file_start (void)
 {

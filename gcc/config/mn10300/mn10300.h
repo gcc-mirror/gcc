@@ -42,45 +42,24 @@ Boston, MA 02111-1307, USA.  */
 
 #define CPP_SPEC "%{mam33:-D__AM33__} %{mam33-2:-D__AM33__=2 -D__AM33_2__}"
 
-/* Run-time compilation parameters selecting different hardware subsets.  */
-
-extern int target_flags;
-
 extern GTY(()) int mn10300_unspec_int_label_counter;
 
-/* Macros used in the machine description to test the flags.  */
+enum processor_type {
+  PROCESSOR_MN10300,
+  PROCESSOR_AM33,
+  PROCESSOR_AM33_2
+};
 
-/* Macro to define tables used to set the flags.
-   This is a list in braces of pairs in braces,
-   each pair being { "NAME", VALUE }
-   where VALUE is the bits to set or minus the bits to clear.
-   An empty string NAME is used to identify the default VALUE.  */
+extern enum processor_type mn10300_processor;
 
-/* Generate code to work around mul/mulq bugs on the mn10300.  */
-#define TARGET_MULT_BUG			(target_flags & 0x1)
+#define TARGET_AM33	(mn10300_processor >= PROCESSOR_AM33)
+#define TARGET_AM33_2	(mn10300_processor == PROCESSOR_AM33_2)
 
-/* Generate code for the AM33 processor.  */
-#define TARGET_AM33			(target_flags & 0x2)
-
-/* Generate code for the AM33/2.0 processor.  */
-#define TARGET_AM33_2			(target_flags & 0x4)
-
-#define TARGET_SWITCHES  \
-  {{ "mult-bug",	0x1,  N_("Work around hardware multiply bug")},	\
-   { "no-mult-bug", 	-0x1, N_("Do not work around hardware multiply bug")},\
-   { "am33", 		0x2,  N_("Target the AM33 processor")},	\
-   { "am33", 		-(0x1), ""},\
-   { "no-am33", 	-0x2, ""},	\
-   { "no-crt0",		0,    N_("No default crt0.o") }, \
-   { "am33-2",		0x6,  N_("Target the AM33/2.0 processor")},   \
-   { "am33-2",		-(0x1), ""},\
-   { "no-am33-2",	-0x4,   ""},  \
-   { "relax",		0,    N_("Enable linker relaxations") }, \
-   { "", TARGET_DEFAULT, NULL}}
-
-#ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT 0x1
+#ifndef PROCESSOR_DEFAULT
+#define PROCESSOR_DEFAULT PROCESSOR_MN10300
 #endif
+
+#define OVERRIDE_OPTIONS mn10300_override_options ()
 
 /* Print subsidiary information on the compiler version in use.  */
 

@@ -1,3 +1,19 @@
+2004-04-05  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mn10300/mn10300-protos.h (mn10300_override_options): Declare.
+	* config/mn10300/mn10300.h (target_flags, TARGET_MULT_BUG)
+	(TARGET_SWITCHES, TARGET_DEFAULT): Delete.
+	(processor_type): New enum.
+	(mn10300_processor): New variable.
+	(TARGET_AM33, TARGET_AM33_2): Redefine in terms of mn10300_processor.
+	(PROCESSOR_DEFAULT, OVERRIDE_OPTIONS): New macros.
+	* config/mn10300/linux.h (TARGET_SWITCHES, TARGET_DEFAULT): Delete.
+	(PROCESSOR_DEFAULT): New macro.
+	* config/mn10300/mn10300.c (mn10300_processor): New variable.
+	(TARGET_DEFAULT_TARGET_FLAGS, TARGET_HANDLE_OPTION): Override defaults.
+	(mn10300_handle_option, mn10300_override_options): New functions.
+	* config/mn10300/mn10300.opt: New file.
+
 2005-04-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
             Sebastian Pop <sebastian.pop@cri.ensmp.fr>
 
