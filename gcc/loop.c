@@ -1,5 +1,5 @@
 /* Perform various loop optimizations, including strength reduction.
-   Copyright (C) 1987, 88, 89, 91-5, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 91-6, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -4989,6 +4989,7 @@ basic_induction_var (x, mode, dest_reg, p, inc_val, mult_val)
       if (SUBREG_PROMOTED_VAR_P (x))
 	return basic_induction_var (SUBREG_REG (x), GET_MODE (SUBREG_REG (x)),
 				    dest_reg, p, inc_val, mult_val);
+      return 0;
 
     case REG:
       /* If this register is assigned in the previous insn, look at its
