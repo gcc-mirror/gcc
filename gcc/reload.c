@@ -4659,9 +4659,11 @@ subst_reloads ()
       if (reloadreg)
 	{
 	  /* Encapsulate RELOADREG so its machine mode matches what
-	     used to be there.  */
+	     used to be there.  Note that gen_lowpart_common will
+	     do the wrong thing if RELOADREG is multi-word.  RELOADREG
+	     will always be a REG here.  */
 	  if (GET_MODE (reloadreg) != r->mode && r->mode != VOIDmode)
-	    reloadreg = gen_lowpart_common (r->mode, reloadreg);
+	    reloadreg = gen_rtx (REG, r->mode, REGNO (reloadreg));
 
 	  /* If we are putting this into a SUBREG and RELOADREG is a
 	     SUBREG, we would be making nested SUBREGs, so we have to fix
