@@ -3086,7 +3086,7 @@ simplify_unary_operation (code, mode, op, op_mode)
 
   /* We can do some operations on integer CONST_DOUBLEs.  Also allow
      for a DImode operation on a CONST_INT. */
-  else if (GET_MODE (op) == VOIDmode && width == HOST_BITS_PER_INT * 2
+  else if (GET_MODE (op) == VOIDmode && width <= HOST_BITS_PER_INT * 2
 	   && (GET_CODE (op) == CONST_DOUBLE || GET_CODE (op) == CONST_INT))
     {
       HOST_WIDE_INT l1, h1, lv, hv;
@@ -3123,10 +3123,7 @@ simplify_unary_operation (code, mode, op, op_mode)
 	  break;
 
 	case TRUNCATE:
-	  if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
-	    return GEN_INT (l1 & GET_MODE_MASK (mode));
-	  else
-	    return 0;
+	  /* This is just a change-of-mode, so do nothing.  */
 	  break;
 
 	case ZERO_EXTEND:
@@ -3220,7 +3217,10 @@ simplify_unary_operation (code, mode, op, op_mode)
       set_float_handler (NULL_PTR);
       return x;
     }
-  else if (GET_CODE (op) == CONST_DOUBLE && GET_MODE_CLASS (mode) == MODE_INT
+
+  else if (GET_CODE (op) == CONST_DOUBLE
+	   && GET_MODE_CLASS (GET_MODE (op)) == MODE_FLOAT
+	   && GET_MODE_CLASS (mode) == MODE_INT
 	   && width <= HOST_BITS_PER_WIDE_INT && width > 0)
     {
       REAL_VALUE_TYPE d;
