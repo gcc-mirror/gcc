@@ -80,6 +80,7 @@ compilation is specified by a string called a "spec".  */
 #include "intl.h"
 #include "prefix.h"
 #include "gcc.h"
+#include "flags.h"
 
 #ifdef HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>
@@ -590,14 +591,23 @@ proper position among the other output files.  */
    to the assembler.  */
 #ifndef ASM_DEBUG_SPEC
 # if defined(HAVE_AS_GDWARF2_DEBUG_FLAG) && defined(HAVE_AS_GSTABS_DEBUG_FLAG)
-#  if PREFERRED_DEBUGGING_TYPE == DBX_DEBUG
-#    define ASM_DEBUG_SPEC "%{gdwarf-2*:--gdwarf2}%{!gdwarf-2*:%{g*:--gstabs}}"
+#  if defined(DBX_DEBUGGING_INFO) && defined(DWARF2_DEBUGGING_INFO)
+#   define ASM_DEBUG_SPEC					\
+      (PREFERRED_DEBUGGING_TYPE == DBX_DEBUG			\
+       ? "%{gdwarf-2*:--gdwarf2}%{!gdwarf-2*:%{g*:--gstabs}}"	\
+       : "%{gstabs*:--gstabs}%{!gstabs*:%{g*:--gdwarf2}}")
 #  else
-#    define ASM_DEBUG_SPEC "%{gstabs*:--gstabs}%{!gstabs*:%{g*:--gdwarf2}}"
+#   ifdef DBX_DEBUGGING_INFO
+#    define ASM_DEBUG_SPEC "%{g*:--gstabs}"
+#   endif
+#   ifdef DWARF2_DEBUGGING_INFO
+#    define ASM_DEBUG_SPEC "%{g*:--gdwarf2}"
+#   endif
 #  endif
-# else
-#  define ASM_DEBUG_SPEC ""
 # endif
+#endif
+#ifndef ASM_DEBUG_SPEC
+# define ASM_DEBUG_SPEC ""
 #endif
 
 /* Here is the spec for running the linker, after compiling all files.  */
