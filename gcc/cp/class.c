@@ -2375,25 +2375,16 @@ duplicate_tag_error (t)
   TYPE_CONTEXT (t) = NULL_TREE;
   TYPE_NONCOPIED_PARTS (t) = NULL_TREE;
   
-  TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t) = 0;
-  TYPE_HAS_CONSTRUCTOR (t) = 0;
-  TYPE_HAS_DESTRUCTOR (t) = 0;
-  TYPE_HAS_CONVERSION (t) = 0;
-  TYPE_HAS_ASSIGN_REF (t) = 0;
-  TYPE_HAS_CONST_ASSIGN_REF (t) = 0;
-  TYPE_HAS_INIT_REF (t) = 0;
-  TYPE_HAS_CONST_INIT_REF (t) = 0;
-  TYPE_HAS_NEW_OPERATOR (t) = 0;
-  TYPE_HAS_ARRAY_NEW_OPERATOR (t) = 0;
-  TYPE_HAS_DEFAULT_CONSTRUCTOR (t) = 0;
-  CLASSTYPE_HAS_MUTABLE (t) = 0;
-  CLASSTYPE_NON_POD_P (t) = 0;
-  CLASSTYPE_NEARLY_EMPTY_P (t) = 0;
-  CLASSTYPE_NON_AGGREGATE (t) = 0;
-  TYPE_HAS_REAL_ASSIGN_REF (t) = 0;
-  TYPE_HAS_COMPLEX_ASSIGN_REF (t) = 0;
-  TYPE_HAS_ABSTRACT_ASSIGN_REF (t) = 0;
-  TYPE_HAS_COMPLEX_INIT_REF (t) = 0;
+  /* Clear TYPE_LANG_FLAGS -- those in TYPE_LANG_SPECIFIC are cleared above.  */
+  TYPE_LANG_FLAG_0 (t) = 0;
+  TYPE_LANG_FLAG_1 (t) = 0;
+  TYPE_LANG_FLAG_2 (t) = 0;
+  TYPE_LANG_FLAG_3 (t) = 0;
+  TYPE_LANG_FLAG_4 (t) = 0;
+  TYPE_LANG_FLAG_5 (t) = 0;
+  TYPE_LANG_FLAG_6 (t) = 0;
+  /* But not this one.  */
+  SET_IS_AGGR_TYPE (t, 1);
 }
 
 /* Make the BINFO's vtablehave N entries, including RTTI entries,

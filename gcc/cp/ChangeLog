@@ -1,5 +1,9 @@
 2001-01-19  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* class.c (duplicate_tag_error): Robustify flag clearing.
+
+2001-01-19  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* cp-tree.h (lookup_template_class): Add complain parm.
 	* decl.c (lookup_namespace_name): Adjust call to
 	lookup_template_class.
