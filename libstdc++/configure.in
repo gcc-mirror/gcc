@@ -77,6 +77,15 @@ case "${target}" in
   powerpc*-*-linux-gnulibc1)	frags="${frags} linux.mt" ;;
   *-*-linux-gnu)		frags="${frags} linux.mt" ;;
   m68k-motorola-sysv)		frags="${frags} delta.mt" ;;
+  *-*-solaris*)
+    case "x${enable_threads}" in
+      xposix)			frags="${frags} sol2pth.mt" ;;
+      xsolaris)			frags="${frags} sol2solth.mt" ;;
+    esac ;;
+  *)
+    case "x${enable_threads}" in
+      xposix)			frags="${frags} posix.mt" ;;
+    esac ;;
 esac
 
 for frag in ${frags}; do
