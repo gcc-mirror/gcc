@@ -1,5 +1,5 @@
 /* Convert RTL to assembler code and output it, for GNU compiler.
-   Copyright (C) 1987, 1988, 1989, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1989, 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -241,6 +241,12 @@ static int app_on;
 
 rtx final_sequence;
 
+#ifdef ASSEMBLER_DIALECT
+
+/* Number of the assembler dialect to use, starting at 0.  */
+static int dialect_number;
+#endif
+
 /* Indexed by line number, nonzero if there is a note for that line.  */
 
 static char *line_note_exists;
@@ -287,6 +293,10 @@ init_final (filename)
   max_block_depth = 20;
   pending_blocks = (int *) xmalloc (20 * sizeof *pending_blocks);
   final_sequence = 0;
+
+#ifdef ASSEMBLER_DIALECT
+  dialect_number = ASSEMBLER_DIALECT;
+#endif
 }
 
 /* Called at end of source file,
@@ -2298,7 +2308,7 @@ output_asm_insn (template, operands)
      rtx *operands;
 {
   register char *p;
-  register int c;
+  register int c, i;
 
   /* An insn may return a null string template
      in a case where no assembler code is needed.  */
@@ -2313,106 +2323,130 @@ output_asm_insn (template, operands)
 #endif
 
   while (c = *p++)
-    {
+    switch (c)
+      {
 #ifdef ASM_OUTPUT_OPCODE
-      if (c == '\n')
-	{
-	  putc (c, asm_out_file);
-	  while ((c = *p) == '\t')
-	    {
-	      putc (c, asm_out_file);
-	      p++;
-	    }
-	  ASM_OUTPUT_OPCODE (asm_out_file, p);
-	}
-      else
-#endif
-      if (c != '%')
+      case '\n':
 	putc (c, asm_out_file);
-      else
-	{
-	  /* %% outputs a single %.  */
-	  if (*p == '%')
-	    {
-	      p++;
-	      putc (c, asm_out_file);
-	    }
-	  /* %= outputs a number which is unique to each insn in the entire
-	     compilation.  This is useful for making local labels that are
-	     referred to more than once in a given insn.  */
-	  else if (*p == '=')
-	    {
-	      p++;
-	      fprintf (asm_out_file, "%d", insn_counter);
-	    }
-	  /* % followed by a letter and some digits
-	     outputs an operand in a special way depending on the letter.
-	     Letters `acln' are implemented directly.
-	     Other letters are passed to `output_operand' so that
-	     the PRINT_OPERAND macro can define them.  */
-	  else if ((*p >= 'a' && *p <= 'z')
-		   || (*p >= 'A' && *p <= 'Z'))
-	    {
-	      int letter = *p++;
-	      c = atoi (p);
+	while ((c = *p) == '\t')
+	  {
+	    putc (c, asm_out_file);
+	    p++;
+	  }
+	ASM_OUTPUT_OPCODE (asm_out_file, p);
+	break;
+#endif
 
-	      if (! (*p >= '0' && *p <= '9'))
-		output_operand_lossage ("operand number missing after %-letter");
-	      else if (this_is_asm_operands && c >= (unsigned) insn_noperands)
-		output_operand_lossage ("operand number out of range");
-	      else if (letter == 'l')
-		output_asm_label (operands[c]);
-	      else if (letter == 'a')
-		output_address (operands[c]);
-	      else if (letter == 'c')
-		{
-		  if (CONSTANT_ADDRESS_P (operands[c]))
-		    output_addr_const (asm_out_file, operands[c]);
-		  else
-		    output_operand (operands[c], 'c');
-		}
-	      else if (letter == 'n')
-		{
-		  if (GET_CODE (operands[c]) == CONST_INT)
-		    fprintf (asm_out_file,
+#ifdef ASSEMBLER_DIALECT
+      case '{':
+	/* If we want the first dialect, do nothing.  Otherwise, skip
+	   DIALECT_NUMBER of strings ending with '|'.  */
+	for (i = 0; i < dialect_number; i++)
+	  {
+	    while (*p && *p++ != '|')
+	      ;
+
+	    if (*p == '|')
+	      p++;
+	  }
+	break;
+
+      case '|':
+	/* Skip to close brace.  */
+	while (*p && *p++ != '}')
+	  ;
+	break;
+
+      case '}':
+	break;
+#endif
+
+      case '%':
+	/* %% outputs a single %.  */
+	if (*p == '%')
+	  {
+	    p++;
+	    putc (c, asm_out_file);
+	  }
+	/* %= outputs a number which is unique to each insn in the entire
+	   compilation.  This is useful for making local labels that are
+	   referred to more than once in a given insn.  */
+	else if (*p == '=')
+	  {
+	    p++;
+	    fprintf (asm_out_file, "%d", insn_counter);
+	  }
+	/* % followed by a letter and some digits
+	   outputs an operand in a special way depending on the letter.
+	   Letters `acln' are implemented directly.
+	   Other letters are passed to `output_operand' so that
+	   the PRINT_OPERAND macro can define them.  */
+	else if ((*p >= 'a' && *p <= 'z')
+		 || (*p >= 'A' && *p <= 'Z'))
+	  {
+	    int letter = *p++;
+	    c = atoi (p);
+
+	    if (! (*p >= '0' && *p <= '9'))
+	      output_operand_lossage ("operand number missing after %-letter");
+	    else if (this_is_asm_operands && c >= (unsigned) insn_noperands)
+	      output_operand_lossage ("operand number out of range");
+	    else if (letter == 'l')
+	      output_asm_label (operands[c]);
+	    else if (letter == 'a')
+	      output_address (operands[c]);
+	    else if (letter == 'c')
+	      {
+		if (CONSTANT_ADDRESS_P (operands[c]))
+		  output_addr_const (asm_out_file, operands[c]);
+		else
+		  output_operand (operands[c], 'c');
+	      }
+	    else if (letter == 'n')
+	      {
+		if (GET_CODE (operands[c]) == CONST_INT)
+		  fprintf (asm_out_file,
 #if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-			     "%d",
+			   "%d",
 #else
-			     "%ld",
+			   "%ld",
 #endif
-			     - INTVAL (operands[c]));
-		  else
-		    {
-		      putc ('-', asm_out_file);
-		      output_addr_const (asm_out_file, operands[c]);
-		    }
-		}
-	      else
-		output_operand (operands[c], letter);
-
-	      while ((c = *p) >= '0' && c <= '9') p++;
-	    }
-	  /* % followed by a digit outputs an operand the default way.  */
-	  else if (*p >= '0' && *p <= '9')
-	    {
-	      c = atoi (p);
-	      if (this_is_asm_operands && c >= (unsigned) insn_noperands)
-		output_operand_lossage ("operand number out of range");
-	      else
-		output_operand (operands[c], 0);
-	      while ((c = *p) >= '0' && c <= '9') p++;
-	    }
-	  /* % followed by punctuation: output something for that
-	     punctuation character alone, with no operand.
-	     The PRINT_OPERAND macro decides what is actually done.  */
+			   - INTVAL (operands[c]));
+		else
+		  {
+		    putc ('-', asm_out_file);
+		    output_addr_const (asm_out_file, operands[c]);
+		  }
+	      }
+	    else
+	      output_operand (operands[c], letter);
+	    
+	    while ((c = *p) >= '0' && c <= '9') p++;
+	  }
+	/* % followed by a digit outputs an operand the default way.  */
+	else if (*p >= '0' && *p <= '9')
+	  {
+	    c = atoi (p);
+	    if (this_is_asm_operands && c >= (unsigned) insn_noperands)
+	      output_operand_lossage ("operand number out of range");
+	    else
+	      output_operand (operands[c], 0);
+	    while ((c = *p) >= '0' && c <= '9') p++;
+	  }
+	/* % followed by punctuation: output something for that
+	   punctuation character alone, with no operand.
+	   The PRINT_OPERAND macro decides what is actually done.  */
 #ifdef PRINT_OPERAND_PUNCT_VALID_P
-	  else if (PRINT_OPERAND_PUNCT_VALID_P (*p))
-	    output_operand (NULL_RTX, *p++);
+	else if (PRINT_OPERAND_PUNCT_VALID_P (*p))
+	  output_operand (NULL_RTX, *p++);
 #endif
-	  else
-	    output_operand_lossage ("invalid %%-code");
-	}
-    }
+	else
+	  output_operand_lossage ("invalid %%-code");
+	break;
+
+      default:
+	putc (c, asm_out_file);
+      }
 
   if (flag_print_asm_name)
     {
@@ -2640,7 +2674,9 @@ output_addr_const (file, x)
    %U prints the value of USER_LABEL_PREFIX.
    %I prints the value of IMMEDIATE_PREFIX.
    %O runs ASM_OUTPUT_OPCODE to transform what follows in the string.
-   Also supported are %d, %x, %s, %e, %f, %g and %%.  */
+   Also supported are %d, %x, %s, %e, %f, %g and %%.
+
+   We handle alternate assembler dialects here, just like output_asm_insn.  */
 
 void
 asm_fprintf (va_alist)
@@ -2650,6 +2686,7 @@ asm_fprintf (va_alist)
   FILE *file;
   char buf[10];
   char *p, *q, c;
+  int i;
 
   va_start (argptr);
 
@@ -2660,6 +2697,30 @@ asm_fprintf (va_alist)
   while (c = *p++)
     switch (c)
       {
+#ifdef ASSEMBLER_DIALECT
+      case '{':
+	/* If we want the first dialect, do nothing.  Otherwise, skip
+	   DIALECT_NUMBER of strings ending with '|'.  */
+	for (i = 0; i < dialect_number; i++)
+	  {
+	    while (*p && *p++ != '|')
+	      ;
+
+	    if (*p == '|')
+	      p++;
+	  }
+	break;
+
+      case '|':
+	/* Skip to close brace.  */
+	while (*p && *p++ != '}')
+	  ;
+	break;
+
+      case '}':
+	break;
+#endif
+
       case '%':
 	c = *p++;
 	q = &buf[1];
