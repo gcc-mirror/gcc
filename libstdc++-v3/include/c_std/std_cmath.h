@@ -1,6 +1,6 @@
 // -*- C++ -*- C forwarding header.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -76,6 +76,91 @@
 #undef tan
 #undef tanh
 
+// ...and in the darkness bind them...
+namespace __gnu_cxx
+{
+  namespace  __c99_binding
+  {
+#if _GLIBCPP_USE_C99_FLOAT_TRANSCENDENTALS_CHECK || \
+    _GLIBCPP_USE_C99_FLOAT_TRANSCENDENTALS_DYNAMIC
+    extern "C" float (acosf)(float);
+    extern "C" float (asinf)(float);
+    extern "C" float (atanf)(float);
+    extern "C" float (atan2f)(float, float);
+    extern "C" float (ceilf)(float);
+    extern "C" float (coshf)(float);
+    extern "C" float (expf)(float);
+    extern "C" float (floorf)(float);
+    extern "C" float (fmodf)(float, float);
+    extern "C" float (frexpf)(float, int*);
+    extern "C" float (ldexpf)(float, int);
+    extern "C" float (logf)(float);
+    extern "C" float (log10f)(float);
+    extern "C" float (modff)(float, float*);
+    extern "C" float (powf)(float, float);
+    extern "C" float (sinhf)(float);
+    extern "C" float (tanf)(float);
+    extern "C" float (tanhf)(float);
+#endif
+#if !_GLIBCPP_USE_C99_FLOAT_TRANSCENDENTALS_DYNAMIC
+#if _GLIBCPP_HAVE_ACOSF
+    using ::acosf;
+#endif
+#if _GLIBCPP_HAVE_ASINF
+    using ::asinf;
+#endif
+#if _GLIBCPP_HAVE_ATANF
+    using ::atanf;
+#endif
+#if _GLIBCPP_HAVE_ATAN2F
+    using ::atan2f;
+#endif
+#if _GLIBCPP_HAVE_CEILF
+    using ::ceilf;
+#endif
+#if _GLIBCPP_HAVE_COSHF
+    using ::coshf;
+#endif
+#if _GLIBCPP_HAVE_EXPF
+    using ::expf;
+#endif
+#if _GLIBCPP_HAVE_FLOORF
+    using ::floorf;
+#endif
+#if _GLIBCPP_HAVE_FMODF
+    using ::fmodf;
+#endif
+#if _GLIBCPP_HAVE_FREXPF
+    using ::frexpf;
+#endif
+#if _GLIBCPP_HAVE_LDEXPF
+    using ::ldexpf;
+#endif
+#if _GLIBCPP_HAVE_LOGF
+    using ::logf;
+#endif
+#if _GLIBCPP_HAVE_LOG10F
+    using ::log10f;
+#endif
+#if _GLIBCPP_HAVE_MODFF
+    using ::modff;
+#endif
+#if _GLIBCPP_HAVE_POWF
+    using ::powf;
+#endif
+#if _GLIBCPP_HAVE_SINHF
+    using ::sinhf;
+#endif
+#if _GLIBCPP_HAVE_TANF
+    using ::tanf;
+#endif
+#if _GLIBCPP_HAVE_TANHF
+    using ::tanhf;
+#endif
+#endif /* _GLIBCPP_USE_C99_FLOAT_TRANSCENDENTALS_DYNAMIC */
+  }
+}
+
 namespace std 
 {
   // Forward declaration of a helper function.  This really should be
@@ -96,7 +181,7 @@ namespace std
 
 #if _GLIBCPP_HAVE_ACOSF
   inline float 
-  acos(float __x) { return ::acosf(__x); }
+  acos(float __x) { return __gnu_cxx::__c99_binding::acosf(__x); }
 #else
   inline float 
   acos(float __x) { return ::acos(static_cast<double>(__x)); }
@@ -116,7 +201,7 @@ namespace std
 
 #if _GLIBCPP_HAVE_ASINF
   inline float 
-  asin(float __x) { return ::asinf(__x); }
+  asin(float __x) { return __gnu_cxx::__c99_binding::asinf(__x); }
 #else
   inline float 
   asin(float __x) { return ::asin(static_cast<double>(__x)); }
@@ -134,7 +219,7 @@ namespace std
 
 #if _GLIBCPP_HAVE_ATANF
   inline float 
-  atan(float __x) { return ::atanf(__x); }
+  atan(float __x) { return __gnu_cxx::__c99_binding::atanf(__x); }
 #else
   inline float 
   atan(float __x) { return ::atan(static_cast<double>(__x)); }
@@ -152,7 +237,7 @@ namespace std
 
 #if _GLIBCPP_HAVE_ATAN2F
   inline float 
-  atan2(float __y, float __x) { return ::atan2f(__y, __x); }
+  atan2(float __y, float __x) { return __gnu_cxx::__c99_binding::atan2f(__y, __x); }
 #else
   inline float 
   atan2(float __y, float __x)
@@ -172,7 +257,7 @@ namespace std
 
 #if _GLIBCPP_HAVE_CEILF
   inline float 
-  ceil(float __x) { return ::ceilf(__x); }
+  ceil(float __x) { return __gnu_cxx::__c99_binding::ceilf(__x); }
 #else
   inline float 
   ceil(float __x) { return ::ceil(static_cast<double>(__x)); }
@@ -200,7 +285,7 @@ namespace std
 
 #if _GLIBCPP_HAVE_COSHF
   inline float 
-  cosh(float __x) { return ::coshf(__x); }
+  cosh(float __x) { return __gnu_cxx::__c99_binding::coshf(__x); }
 #else
   inline float 
   cosh(float __x) { return ::cosh(static_cast<double>(__x)); }
@@ -218,7 +303,7 @@ namespace std
 
 #if _GLIBCPP_HAVE_EXPF
   inline float 
-  exp(float __x) { return ::expf(__x); }
+  exp(float __x) { return __gnu_cxx::__c99_binding::expf(__x); }
 #else
   inline float 
   exp(float __x) { return ::exp(static_cast<double>(__x)); }
@@ -246,7 +331,7 @@ namespace std
 
 #if _GLIBCPP_HAVE_FLOORF
   inline float 
-  floor(float __x) { return ::floorf(__x); }
+  floor(float __x) { return __gnu_cxx::__c99_binding::floorf(__x); }
 #else
   inline float 
   floor(float __x) { return ::floor(static_cast<double>(__x)); }
@@ -264,7 +349,7 @@ namespace std
 
 #if _GLIBCPP_HAVE_FMODF
   inline float 
-  fmod(float __x, float __y) { return ::fmodf(__x, __y); }
+  fmod(float __x, float __y) { return __gnu_cxx::__c99_binding::fmodf(__x, __y); }
 #else
   inline float 
   fmod(float __x, float __y)
@@ -284,7 +369,7 @@ namespace std
 
 #if _GLIBCPP_HAVE_FREXPF
   inline float 
-  frexp(float __x, int* __exp) { return ::frexpf(__x, __exp); }
+  frexp(float __x, int* __exp) { return __gnu_cxx::__c99_binding::frexpf(__x, __exp); }
 #else
   inline float 
   frexp(float __x, int* __exp) { return ::frexp(__x, __exp); }
@@ -303,7 +388,7 @@ namespace std
 
 #if _GLIBCPP_HAVE_LDEXPF
   inline float 
-  ldexp(float __x, int __exp) { return ::ldexpf(__x, __exp); }
+  ldexp(float __x, int __exp) { return __gnu_cxx::__c99_binding::ldexpf(__x, __exp); }
 #else
   inline float 
   ldexp(float __x, int __exp)
@@ -323,7 +408,7 @@ namespace std
 
 #if _GLIBCPP_HAVE_LOGF
   inline float 
-  log(float __x) { return ::logf(__x); }
+  log(float __x) { return __gnu_cxx::__c99_binding::logf(__x); }
 #else
   inline float log(float __x)
   { return ::log(static_cast<double>(__x)); }
@@ -341,7 +426,7 @@ namespace std
 
 #if _GLIBCPP_HAVE_LOG10F
   inline float 
-  log10(float __x) { return ::log10f(__x); }
+  log10(float __x) { return __gnu_cxx::__c99_binding::log10f(__x); }
 #else
   inline float 
   log10(float __x) { return ::log10(static_cast<double>(__x)); }
@@ -359,7 +444,7 @@ namespace std
 
 #if _GLIBCPP_HAVE_MODFF
   inline float 
-  modf(float __x, float* __iptr) { return ::modff(__x, __iptr); }
+  modf(float __x, float* __iptr) { return __gnu_cxx::__c99_binding::modff(__x, __iptr); }
 #else
   inline float 
   modf(float __x, float* __iptr)
@@ -398,7 +483,7 @@ namespace std
 
 #if _GLIBCPP_HAVE_POWF
   inline float 
-  pow(float __x, float __y) { return ::powf(__x, __y); }
+  pow(float __x, float __y) { return __gnu_cxx::__c99_binding::powf(__x, __y); }
 #else
   inline float 
   pow(float __x, float __y)
@@ -440,7 +525,7 @@ namespace std
 
 #if _GLIBCPP_HAVE_SINHF
   inline float 
-  sinh(float __x) { return ::sinhf(__x); }
+  sinh(float __x) { return __gnu_cxx::__c99_binding::sinhf(__x); }
 #else
   inline float 
   sinh(float __x) { return ::sinh(static_cast<double>(__x)); }
@@ -468,7 +553,7 @@ namespace std
 
 #if _GLIBCPP_HAVE_TANF
   inline float 
-  tan(float __x) { return ::tanf(__x); }
+  tan(float __x) { return __gnu_cxx::__c99_binding::tanf(__x); }
 #else
   inline float 
   tan(float __x) { return ::tan(static_cast<double>(__x)); }
@@ -486,7 +571,7 @@ namespace std
 
 #if _GLIBCPP_HAVE_TANHF
   inline float 
-  tanh(float __x) { return ::tanhf(__x); }
+  tanh(float __x) { return __gnu_cxx::__c99_binding::tanhf(__x); }
 #else
   inline float 
   tanh(float __x) { return ::tanh(static_cast<double>(__x)); }
@@ -503,6 +588,7 @@ namespace std
 
 
 #if _GLIBCPP_USE_C99
+#if !_GLIBCPP_USE_C99_FP_MACROS_DYNAMIC
 // These are possible macros imported from C99-land. For strict
 // conformance, remove possible C99-injected names from the global
 // namespace, and sequester them in the __gnu_cxx extension namespace. 
@@ -561,6 +647,7 @@ namespace __gnu_cxx
      __capture_isunordered(_Tp __f1, _Tp __f2) 
      { return isunordered(__f1, __f2); }
 } 
+#endif /* _GLIBCPP_USE_C99_FP_MACROS_DYNAMIC */
 #endif
 
 #undef fpclassify
@@ -577,6 +664,7 @@ namespace __gnu_cxx
 #undef isunordered
 
 #if _GLIBCPP_USE_C99
+#if !_GLIBCPP_USE_C99_FP_MACROS_DYNAMIC
 namespace __gnu_cxx
 {
   template<typename _Tp>
@@ -647,6 +735,7 @@ namespace std
   using __gnu_cxx::islessgreater;
   using __gnu_cxx::isunordered;
 }
+#endif /* _GLIBCPP_USE_C99_FP_MACROS_DYNAMIC */
 #endif
   
 #ifdef _GLIBCPP_NO_TEMPLATE_EXPORT

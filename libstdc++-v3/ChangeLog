@@ -1,3 +1,19 @@
+2003-04-15  Loren J. Rittle  <ljrittle@acm.org>
+
+	libstdc++/7680
+	* include/c_std/std_cmath.h (__gnu_cx::__c99_binding): New namespace.
+	Populate it with multiple legal ways to obtain the C99 float
+	transcendentals.  Use them instead of direct global reference.
+	(C99 FP capture): Guard usage with _GLIBCPP_USE_C99_FP_MACROS_DYNAMIC.
+	* docs/html/17_intro/porting.texi
+	(_GLIBCPP_USE_C99_FLOAT_TRANSCENDENTALS_CHECK): New macro.
+	(_GLIBCPP_USE_C99_FLOAT_TRANSCENDENTALS_DYNAMIC): New macro.
+	(_GLIBCPP_USE_C99_FP_MACROS_DYNAMIC): New macro.
+	* config/os/bsd/freebsd/os_defines.h
+	(_GLIBCPP_USE_C99_FLOAT_TRANSCENDENTALS_CHECK): New macro.
+	(_GLIBCPP_USE_C99_FLOAT_TRANSCENDENTALS_DYNAMIC): New macro.
+	* testsuite/26_numerics/c_math_dynamic.cc: New file.
+
 2003-04-14  Andreas Tobler  <toa@pop.agri.ch>
  	    Benjamin Kosnik  <bkoz@redhat.com>
 
