@@ -4,6 +4,6 @@
 /* { dg-do compile } */
 /* { dg-options "" } */
 
-const char *a = __func__; /* { dg-warning "warning: '__func__' is not defined outside of function scope" "undef" { target *-*-* } 0 } */
+const char *a = __func__; /* { dg-warning "warning: '__func__' is not defined outside of function scope" "undef" } */
 const char *b = __FUNCTION__;
 const char *c = __PRETTY_FUNCTION__;
