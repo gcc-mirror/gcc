@@ -3798,6 +3798,26 @@ build_reference_type (to_type)
   return t;
 }
 
+/* Build a type that is compatible with t but has no cv quals anywhere
+   in its type, thus
+
+   const char *const *const *  ->  char ***.  */
+
+tree
+build_type_no_quals (t)
+  tree t;
+{
+  switch (TREE_CODE (t))
+    {
+    case POINTER_TYPE:
+      return build_pointer_type (build_type_no_quals (TREE_TYPE (t)));
+    case REFERENCE_TYPE:
+      return build_reference_type (build_type_no_quals (TREE_TYPE (t)));
+    default:
+      return TYPE_MAIN_VARIANT (t);
+    }
+}
+
 /* Create a type of integers to be the TYPE_DOMAIN of an ARRAY_TYPE.
    MAXVAL should be the maximum value in the domain
    (one less than the length of the array).

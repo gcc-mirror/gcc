@@ -1,3 +1,11 @@
+2000-11-13  Andrew Haley  <aph@redhat.com>
+
+	* tree.c (build_type_no_quals): New function.
+	* tree.h (build_type_no_quals): Declare.
+	* c-common.c (c_get_alias_set): When considering type
+	compatibility for pointer types, ignore cv-qualifiers anywhere in
+	a pointer chain.
+
 2000-11-15  Graham Stott  <grahams@redhat.com>
 
 	* regrename.c (scan_rtx_rtx): Skip to the next chain on
