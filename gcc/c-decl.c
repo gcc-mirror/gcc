@@ -256,7 +256,7 @@ int current_function_returns_null;
 
 static int warn_about_return_type;
 
-/* Nonzero when starting a function delcared `extern inline'.  */
+/* Nonzero when starting a function declared `extern inline'.  */
 
 static int current_extern_inline;
 
@@ -376,7 +376,7 @@ static struct binding_level *label_level_chain;
 
 static tree grokparms (), grokdeclarator ();
 tree pushdecl ();
-static tree builtin_function ();
+tree builtin_function ();
 
 static tree lookup_tag ();
 static tree lookup_tag_reverse ();
@@ -476,7 +476,7 @@ int warn_conversion;
 
 /* Warn if adding () is suggested.  */
 
-int warn_parentheses = 1;
+int warn_parentheses;
 
 /* Nonzero means `$' can be in an identifier.
    See cccp.c for reasons why this breaks some obscure ANSI C programs.  */
@@ -622,6 +622,7 @@ c_decode_option (p)
       warn_switch = 1;
       warn_format = 1;
       warn_char_subscripts = 1;
+      warn_parentheses = 1;
     }
   else
     return 0;
@@ -1127,7 +1128,7 @@ duplicate_decls (newdecl, olddecl)
 		warning_with_decl (newdecl, "shadowing built-in function `%s'");
 	    }
 	  /* Likewise, if the built-in is not ansi, then programs can
-	     overide it even globally without an error.  */
+	     override it even globally without an error.  */
 	  else if (DECL_BUILT_IN_NONANSI (olddecl))
 	    warning_with_decl (newdecl,
 			       "built-in function `%s' declared as non-function");
@@ -1610,7 +1611,8 @@ pushdecl (x)
 			  TREE_TYPE (IDENTIFIER_IMPLICIT_DECL (name))))
 	{
 	  warning_with_decl (x, "type mismatch with previous implicit declaration");
-	  warning_with_decl (x, "previous implicit declaration of `%s'");
+	  warning_with_decl (IDENTIFIER_IMPLICIT_DECL (name),
+			     "previous implicit declaration of `%s'");
 	}
 
       /* In PCC-compatibility mode, extern decls of vars with no current decl
@@ -1682,7 +1684,14 @@ pushdecl (x)
 	  if (TREE_PUBLIC (name)
 	      && ! TREE_PUBLIC (x) && ! TREE_EXTERNAL (x))
 	    {
-	      if (IDENTIFIER_IMPLICIT_DECL (name))
+	      /* Okay to declare an ANSI built-in as inline static.  */
+	      if (t != 0 && DECL_BUILT_IN (t)
+		  && TREE_INLINE (x))
+		;
+	      /* Okay to declare a non-ANSI built-in as anything.  */
+	      else if (t != 0 && DECL_BUILT_IN_NONANSI (t))
+		;
+	      else if (IDENTIFIER_IMPLICIT_DECL (name))
 		pedwarn ("`%s' was declared implicitly `extern' and later `static'",
 			 IDENTIFIER_POINTER (name));
 	      else
@@ -2439,7 +2448,7 @@ init_decl_processing ()
 							    sizetype,
 							    endlink))));
 
-  /* ``integer_tpe_node'' mispelling corrected: North-Keys 30 Mar 91 */
+  /* ``integer_tpe_node'' misspelling corrected: North-Keys 30 Mar 91 */
   builtin_function ("__builtin_constant_p",
 		    build_function_type (integer_type_node, endlink),
 		    BUILT_IN_CONSTANT_P, 0);
@@ -2537,6 +2546,8 @@ init_decl_processing ()
 		    BUILT_IN_STRCPY, "strcpy");
   builtin_function ("__builtin_strlen", sizet_ftype_string,
 		    BUILT_IN_STRLEN, "strlen");
+  builtin_function ("__builtin_fsqrt", double_ftype_double, 
+		    BUILT_IN_FSQRT, "sqrt");
   /* In an ANSI C program, it is okay to supply built-in meanings
      for these functions, since applications cannot validly use them
      with any other meaning.
@@ -2551,6 +2562,10 @@ init_decl_processing ()
       builtin_function ("strcmp", int_ftype_string_string, BUILT_IN_STRCMP, 0);
       builtin_function ("strcpy", string_ftype_ptr_ptr, BUILT_IN_STRCPY, 0);
       builtin_function ("strlen", sizet_ftype_string, BUILT_IN_STRLEN, 0);
+#if 0 /* No good, since open-coded implementation fails to set errno.
+	 The ANSI committee made a real mistake in specifying math fns.  */
+      builtin_function ("sqrt", double_ftype_double, BUILT_IN_FSQRT, 0);
+#endif
     }
 
 #if 0
@@ -2563,7 +2578,6 @@ init_decl_processing ()
   builtin_function ("__builtin_fmod", double_ftype_double_double, BUILT_IN_FMOD, 0);
   builtin_function ("__builtin_frem", double_ftype_double_double, BUILT_IN_FREM, 0);
   builtin_function ("__builtin_memset", ptr_ftype_ptr_int_int, BUILT_IN_MEMSET, 0);
-  builtin_function ("__builtin_fsqrt", double_ftype_double, BUILT_IN_FSQRT, 0);
   builtin_function ("__builtin_getexp", double_ftype_double, BUILT_IN_GETEXP, 0);
   builtin_function ("__builtin_getman", double_ftype_double, BUILT_IN_GETMAN, 0);
 #endif
@@ -2581,7 +2595,7 @@ init_decl_processing ()
    If LIBRARY_NAME is nonzero, use that for DECL_ASSEMBLER_NAME,
    the name to be called if we can't opencode the function.  */
 
-static tree
+tree
 builtin_function (name, type, function_code, library_name)
      char *name;
      tree type;
@@ -3049,12 +3063,17 @@ push_parm_decl (parm)
      tree parm;
 {
   tree decl;
+  int old_immediate_size_expand = immediate_size_expand;
+  /* Don't try computing parm sizes now -- wait till fn is called.  */
+  immediate_size_expand = 0;
 
   /* The corresponding pop_obstacks is in finish_decl.  */
   push_obstacks_nochange ();
 
   decl = grokdeclarator (TREE_VALUE (parm), TREE_PURPOSE (parm), PARM, 0);
   decl = pushdecl (decl);
+
+  immediate_size_expand = old_immediate_size_expand;
 
   current_binding_level->parm_order
     = tree_cons (NULL_TREE, decl, current_binding_level->parm_order);
@@ -3074,7 +3093,7 @@ clear_parm_order ()
 }
 
 /* Make TYPE a complete type based on INITIAL_VALUE.
-   Return 0 if successful, 1 if INITIAL_VALUE can't be decyphered,
+   Return 0 if successful, 1 if INITIAL_VALUE can't be deciphered,
    2 if there was no information (in which case assume 1 if DO_DEFAULT).  */
 
 int
@@ -3161,7 +3180,7 @@ complete_array_type (type, initial_value, do_default)
    argument type is specified but not the name.
 
    This function is where the complicated C meanings of `static'
-   and `extern' are intrepreted.  */
+   and `extern' are interpreted.  */
 
 static tree
 grokdeclarator (declarator, declspecs, decl_context, initialized)
@@ -3185,7 +3204,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
   int funcdef_flag = 0;
   enum tree_code innermost_code = ERROR_MARK;
   int bitfield = 0;
-  int variable_size = 0;
+  int size_varies = 0;
 
   if (decl_context == BITFIELD)
     bitfield = 1, decl_context = FIELD;
@@ -3318,7 +3337,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 
   typedef_type = type;
   if (type)
-    variable_size = C_TYPE_VARIABLE_SIZE (type);
+    size_varies = C_TYPE_VARIABLE_SIZE (type);
 
   /* No type at all: default to `int', and set EXPLICIT_INT
      because it was not a user-defined typedef.  */
@@ -3592,8 +3611,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 					   1);
 		  /* Make sure the array size remains visibly nonconstant
 		     even if it is (eg) a const variable with known value.  */
-		  variable_size = 1;
-		  itype = build_index_type (save_expr (itype));
+		  size_varies = 1;
+		  itype = variable_size (itype);
+		  itype = build_index_type (itype);
 		}
 	    }
 
@@ -3628,7 +3648,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 #endif
 
 	  type = build_array_type (type, itype);
-	  if (variable_size)
+	  if (size_varies)
 	    C_TYPE_VARIABLE_SIZE (type) = 1;
 	}
       else if (TREE_CODE (declarator) == CALL_EXPR)
@@ -3640,7 +3660,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	  if (type == error_mark_node)
 	    continue;
 
-	  variable_size = 0;
+	  size_varies = 0;
 
 	  /* Warn about some types functions can't return.  */
 
@@ -3708,7 +3728,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	    type = c_build_type_variant (type, constp, volatilep);
 	  constp = 0;
 	  volatilep = 0;
-	  variable_size = 0;
+	  size_varies = 0;
 
 	  type = build_pointer_type (type);
 
@@ -3778,7 +3798,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
       && TREE_CODE (type) == ARRAY_TYPE && TYPE_DOMAIN (type) == 0)
     {
       type = build_array_type (TREE_TYPE (type), 0);
-      if (variable_size)
+      if (size_varies)
 	C_TYPE_VARIABLE_SIZE (type) = 1;
     }
 
@@ -3829,7 +3849,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	    type = build_pointer_type
 		    (c_build_type_variant (TREE_TYPE (type), constp, volatilep));
 	    volatilep = constp = 0;
-	    variable_size = 0;
+	    size_varies = 0;
 	  }
 	else if (TREE_CODE (type) == FUNCTION_TYPE)
 	  {
@@ -3843,7 +3863,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	  error ("parameter `%s' is initialized", name);
 
 	decl = build_decl (PARM_DECL, declarator, type);
-	if (variable_size)
+	if (size_varies)
 	  C_DECL_VARIABLE_SIZE (decl) = 1;
 
 	/* Compute the type actually passed in the parmlist,
@@ -3887,7 +3907,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 #endif
 	  }
 	decl = build_decl (FIELD_DECL, declarator, type);
-	if (variable_size)
+	if (size_varies)
 	  C_DECL_VARIABLE_SIZE (decl) = 1;
       }
     else if (TREE_CODE (type) == FUNCTION_TYPE)
@@ -3956,7 +3976,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	  }
 
 	decl = build_decl (VAR_DECL, declarator, type);
-	if (variable_size)
+	if (size_varies)
 	  C_DECL_VARIABLE_SIZE (decl) = 1;
 
 	if (inlinep)
@@ -4267,7 +4287,7 @@ xref_tag (code, name)
   /* Even if this is the wrong type of tag, return what we found.
      There will be an error message anyway, from pending_xref_error.
      If we create an empty xref just for an invalid use of the type,
-     the main result is to create lots of superflous error messages.  */
+     the main result is to create lots of superfluous error messages.  */
   if (ref)
     return ref;
 
@@ -5325,10 +5345,7 @@ store_parm_decls ()
 	     will be a variant of the main variant of the original function
 	     type.  */
 
-	  TREE_TYPE (fndecl)
-	    = build_type_copy (TYPE_MAIN_VARIANT (TREE_TYPE (fndecl)),
-			       TYPE_READONLY (TREE_TYPE (fndecl)),
-			       TYPE_VOLATILE (TREE_TYPE (fndecl)));
+	  TREE_TYPE (fndecl) = build_type_copy (TREE_TYPE (fndecl));
 
 	  TYPE_ACTUAL_ARG_TYPES (TREE_TYPE (fndecl)) = actual;
 	}
