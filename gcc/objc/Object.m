@@ -255,7 +255,7 @@ extern int errno;
 
 - performv:(SEL)aSel :(arglist_t)argFrame
 {
-  return objc_msg_sendv(self, aSel, method_get_argsize(0), argFrame);
+  return objc_msg_sendv(self, aSel, argFrame);
 }
 
 + poseAs:(Class*)aClassObject
