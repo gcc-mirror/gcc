@@ -277,7 +277,8 @@ make_friend_class (type, friend_type)
     is_template_friend = 0;
 
   if (is_template_friend 
-      && TREE_CODE (friend_type) == TYPENAME_TYPE)
+      && (TREE_CODE (friend_type) == TYPENAME_TYPE
+	  || TREE_CODE (friend_type) == TEMPLATE_TYPE_PARM))
     {
       /* [temp.friend]
 
@@ -290,9 +291,17 @@ make_friend_class (type, friend_type)
 
 	   template <class T> friend typename S<T>::X;
 
+	 or:
+
+	   template <class T> friend class T;
+
 	 which isn't any of these.  */
-      cp_error ("typename type `%T' declared `friend'",
-		friend_type);
+      if (TREE_CODE (friend_type) == TYPENAME_TYPE)
+	cp_error ("typename type `%T' declared `friend'",
+		  friend_type);
+      else
+	cp_error ("template parameter type `%T' declared `friend'",
+		  friend_type);
       return;
     }
 

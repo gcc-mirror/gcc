@@ -1,3 +1,10 @@
+1999-10-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* friend.c (make_friend_class): Robustify.
+
+	* semantics.c (finish_object_call_expr): Reject calls to template
+	types.
+
 1999-10-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* dump.c (dequeue_and_dump): Dump all three operands to a COND_EXPR.
