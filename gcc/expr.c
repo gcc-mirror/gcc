@@ -5927,11 +5927,14 @@ do_jump (exp, if_false_label, if_true_label)
 	 combine can't do this for us because it can't know whether a
 	 ZERO_EXTRACT or a compare in a smaller mode exists, but we do.  */
 
-      if (TREE_CODE (TREE_OPERAND (exp, 1)) == INTEGER_CST
+      if (! SLOW_BYTE_ACCESS
+	  && TREE_CODE (TREE_OPERAND (exp, 1)) == INTEGER_CST
 	  && TYPE_PRECISION (TREE_TYPE (exp)) <= HOST_BITS_PER_INT
 	  && (i = floor_log2 (TREE_INT_CST_LOW (TREE_OPERAND (exp, 1)))) >= 0
 	  && (type = type_for_size (i + 1, 1)) != 0
-	  && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (exp)))
+	  && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (exp))
+	  && (cmp_optab->handlers[(int) TYPE_MODE (type)].insn_code
+	      != CODE_FOR_nothing))
 	{
 	  do_jump (convert (type, exp), if_false_label, if_true_label);
 	  break;
@@ -5980,8 +5983,11 @@ do_jump (exp, if_false_label, if_true_label)
 			     &mode, &unsignedp, &volatilep);
 
 	type = type_for_size (bitsize, unsignedp);
-	if (type != 0 && bitsize >= 0
-	    && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (exp)))
+	if (! SLOW_BYTE_ACCESS
+	    && type != 0 && bitsize >= 0
+	    && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (exp))
+	    && (cmp_optab->handlers[(int) TYPE_MODE (type)].insn_code
+		!= CODE_FOR_nothing))
 	  {
 	    do_jump (convert (type, exp), if_false_label, if_true_label);
 	    break;
