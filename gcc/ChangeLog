@@ -1,5 +1,11 @@
 2004-09-23  Jan Hubicka  <jh@suse.cz>
 
+	PR debug/17389
+	* dwarf2out.c (dwarf2out_finish): Deal with nested functions
+	of fully inlined functions.
+	* tree-inline.c (inline_forbidden_p_1): Nested functions can be
+	inlined.
+
 	* cfgexpand.c (add_reg_br_prob_note): New function.
 	(expand_gimple_cond_expr): Use it.
 	(tree_expand_cfg): No longer kill the profile.

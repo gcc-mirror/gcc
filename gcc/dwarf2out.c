@@ -13554,7 +13554,12 @@ dwarf2out_finish (const char *filename)
 		 nested function can be optimized away, which results
 		 in the nested function die being orphaned.  Likewise
 		 with the return type of that nested function.  Force
-		 this to be a child of the containing function.  */
+		 this to be a child of the containing function.
+
+		 It may happen that even the containing function got fully
+		 inlined and optimized out.  In that case we are lost and
+		 assign the empty child.  This should not be big issue as
+		 the function is likely unreachable too.  */
 	      tree context = NULL_TREE;
 
 	      gcc_assert (node->created_for);
@@ -13567,8 +13572,8 @@ dwarf2out_finish (const char *filename)
 	      gcc_assert (context && TREE_CODE (context) == FUNCTION_DECL);
 	      
 	      origin = lookup_decl_die (context);
-	      gcc_assert (origin);
-	      add_child_die (origin, die);
+	      if (origin)
+	        add_child_die (origin, die);
 	    }
 	}
     }
