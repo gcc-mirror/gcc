@@ -1079,7 +1079,9 @@ input_operand (op, mode)
 	   && ((SPARC_SETHI_P (INTVAL (op))
 		&& (! TARGET_ARCH64
 		    || (INTVAL (op) >= 0)
-		    || mode == SImode))
+		    || mode == SImode
+		    || mode == HImode
+		    || mode == QImode))
 	       || SPARC_SIMM13_P (INTVAL (op))
 	       || (mode == DImode
 		   && ! TARGET_ARCH64)))

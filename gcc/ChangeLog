@@ -5,6 +5,9 @@
 
 	* longlong.h: Fix clobbers in SPARC asm statements.
 
+	* config/sparc/sparc.c (input_operand): Allow HImode and QImode
+	valid sethi operations when TARGET_ARCH64.
+
 Mon Dec  6 12:24:52 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* fold-const.c (optimize_bit_field_compare): Only use one mode
