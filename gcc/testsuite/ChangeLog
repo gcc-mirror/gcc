@@ -1,3 +1,9 @@
+2005-01-01  Roger Sayle  <roger@eyesopen.com>
+	    Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR rtl-optimization/12092
+	* gcc.dg/pr12092-1.c: New test case.
+
 2005-01-01  Geoffrey Keating  <geoffk@geoffk.org>
 
 	* g++.old-deja/g++.abi/cxa_vec.C: Add -flat_namespace on Darwin

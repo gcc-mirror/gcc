@@ -1,4 +1,12 @@
 2005-01-01  Roger Sayle  <roger@eyesopen.com>
+	    Andrew Pinski  <pinskia@physics.uc.edu>
+	    James E. Wilson  <wilson@specifixinc.com>
+
+	PR rtl-optimization/12092
+	* loop.c (emit_prefetch_instructions): Do nothing if PREFETCH_BLOCK
+	is zero.
+
+2005-01-01  Roger Sayle  <roger@eyesopen.com>
 	    Olivier Hainque  <hainque@act-europe.fr>
 
 	* tree.c (int_fits_type_p): A narrower type always fits in a
