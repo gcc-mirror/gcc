@@ -25,7 +25,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #include "config.h"
 #include "system.h"
-#include "intl.h"		/* for _("<command line>") below.  */
 #include "cpplib.h"
 #include "cpphash.h"
 
@@ -70,7 +69,7 @@ static unsigned char *quote_string PARAMS ((unsigned char *,
 					    unsigned int));
 static const cpp_token *new_string_token PARAMS ((cpp_reader *, U_CHAR *,
 						  unsigned int));
-static const cpp_token *new_number_token PARAMS ((cpp_reader *, int));
+static const cpp_token *new_number_token PARAMS ((cpp_reader *, unsigned int));
 static const cpp_token *stringify_arg PARAMS ((cpp_reader *, macro_arg *));
 static void paste_all_tokens PARAMS ((cpp_reader *, const cpp_token *));
 static bool paste_tokens PARAMS ((cpp_reader *, const cpp_token **,
@@ -112,12 +111,13 @@ new_string_token (pfile, text, len)
 static const cpp_token *
 new_number_token (pfile, number)
      cpp_reader *pfile;
-     int number;
+     unsigned int number;
 {
   cpp_token *token = _cpp_temp_token (pfile);
-  unsigned char *buf = _cpp_unaligned_alloc (pfile, 20);
+  /* 21 bytes holds all NUL-terminated unsigned 64-bit numbers.  */
+  unsigned char *buf = _cpp_unaligned_alloc (pfile, 21);
 
-  sprintf ((char *) buf, "%d", number);
+  sprintf ((char *) buf, "%u", number);
   token->type = CPP_NUMBER;
   token->val.str.text = buf;
   token->val.str.len = ustrlen (buf);
@@ -133,8 +133,8 @@ static const char * const monthnames[] =
 
 /* Handle builtin macros like __FILE__, and push the resulting token
    on the context stack.  Also handles _Pragma, for which no new token
-   is created.  Returns 1 on success, 0 to return the token to the
-   caller.  */
+   is created.  Returns 1 if it generates a new token context, 0 to
+   return the token to the caller.  */
 static int
 builtin_macro (pfile, node)
      cpp_reader *pfile;
@@ -241,8 +241,9 @@ builtin_macro (pfile, node)
   return 1;
 }
 
-/* Adds backslashes before all backslashes and double quotes appearing
-   in strings.  Non-printable characters are converted to octal.  */
+/* Copies SRC, of length LEN, to DEST, adding backslashes before all
+   backslashes and double quotes.  Non-printable characters are
+   converted to octal.  DEST must be of sufficient size.  */
 static U_CHAR *
 quote_string (dest, src, len)
      U_CHAR *dest;
@@ -273,8 +274,8 @@ quote_string (dest, src, len)
   return dest;
 }
 
-/* Convert a token sequence to a single string token according to the
-   rules of the ISO C #-operator.  */
+/* Convert a token sequence ARG to a single string token according to
+   the rules of the ISO C #-operator.  */
 static const cpp_token *
 stringify_arg (pfile, arg)
      cpp_reader *pfile;
@@ -399,11 +400,13 @@ paste_tokens (pfile, plhs, rhs)
   return valid;
 }
 
-/* Handles an arbitrarily long sequence of ## operators.  This
-   implementation is left-associative, non-recursive, and finishes a
-   paste before handling succeeding ones.  If the paste fails, we back
-   up a token to just after the ## operator, with the effect that it
-   appears in the output stream normally.  */
+/* Handles an arbitrarily long sequence of ## operators, with initial
+   operand LHS.  This implementation is left-associative,
+   non-recursive, and finishes a paste before handling succeeding
+   ones.  If a paste fails, we back up to the RHS of the failing ##
+   operator before pushing the context containing the result of prior
+   successful pastes, with the effect that the RHS appears in the
+   output stream after the pasted LHS normally.  */
 static void
 paste_all_tokens (pfile, lhs)
      cpp_reader *pfile;
@@ -446,9 +449,11 @@ paste_all_tokens (pfile, lhs)
   push_token_context (pfile, NULL, lhs, 1);
 }
 
-/* Reads and returns the arguments to a function-like macro invocation.
-   Assumes the opening parenthesis has been processed.  If there is an
-   error, emits an appropriate diagnostic and returns NULL.  */
+/* Reads and returns the arguments to a function-like macro
+   invocation.  Assumes the opening parenthesis has been processed.
+   If there is an error, emits an appropriate diagnostic and returns
+   NULL.  Each argument is terminated by a CPP_EOF token, for the
+   future benefit of expand_arg().  */
 static _cpp_buff *
 collect_args (pfile, node)
      cpp_reader *pfile;
@@ -653,19 +658,19 @@ funlike_invocation_p (pfile, node)
   return NULL;
 }
 
-/* Push the context of a macro onto the context stack.  TOKEN is the
-   macro name.  If we can successfully start expanding the macro,
-   TOKEN is replaced with the first token of the expansion, and we
-   return non-zero.  */
+/* Push the context of a macro with hash entry NODE onto the context
+   stack.  If we can successfully expand the macro, we push a context
+   containing its yet-to-be-rescanned replacement list and return one.
+   Otherwise, we don't push a context and return zero.  */
 static int
 enter_macro_context (pfile, node)
      cpp_reader *pfile;
      cpp_hashnode *node;
 {
-  /* Macros invalidate controlling macros.  */
+  /* The presence of a macro invalidates a file's controlling macro.  */
   pfile->mi_valid = false;
 
-  /* Handle macros and the _Pragma operator.  */
+  /* Handle standard macros.  */
   if (! (node->flags & NODE_BUILTIN))
     {
       cpp_macro *macro = node->value.macro;
@@ -706,12 +711,14 @@ enter_macro_context (pfile, node)
       return 1;
     }
 
+  /* Handle built-in macros and the _Pragma operator.  */
   return builtin_macro (pfile, node);
 }
 
-/* Take the expansion of a function-like MACRO, replacing parameters
-   with the actual arguments.  Each argument is macro-expanded before
-   replacement, unless operated upon by the # or ## operators.  */
+/* Replace the parameters in a function-like macro of NODE with the
+   actual ARGS, and place the result in a newly pushed token context.
+   Expand each argument before replacing, unless it is operated upon
+   by the # or ## operators.  */
 static void
 replace_args (pfile, node, args)
      cpp_reader *pfile;
@@ -864,7 +871,8 @@ padding_token (pfile, source)
   return result;
 }
 
-/* Move to the next context.  Create one if there is none.  */
+/* Get a new uninitialized context.  Create a new one if we cannot
+   re-use an old one.  */
 static cpp_context *
 next_context (pfile)
      cpp_reader *pfile;
@@ -918,6 +926,12 @@ push_token_context (pfile, macro, first, count)
   context->last.token = first + count;
 }
 
+/* Expand an argument ARG before replacing parameters in a
+   function-like macro.  This works by pushing a context with the
+   argument's tokens, and then expanding that into a temporary buffer
+   as if it were a normal part of the token stream.  collect_args()
+   has terminated the argument's tokens with a CPP_EOF so that we know
+   when we have fully expanded the argument.  */
 static void
 expand_arg (pfile, arg)
      cpp_reader *pfile;
@@ -956,13 +970,15 @@ expand_arg (pfile, arg)
   _cpp_pop_context (pfile);
 }
 
+/* Pop the current context off the stack, re-enabling the macro if the
+   context represented a macro's replacement list.  The context
+   structure is not freed so that we can re-use it later.  */
 void
 _cpp_pop_context (pfile)
      cpp_reader *pfile;
 {
   cpp_context *context = pfile->context;
 
-  /* Re-enable a macro when leaving its expansion.  */
   if (context->macro)
     context->macro->flags &= ~NODE_DISABLED;
 
@@ -1040,7 +1056,8 @@ cpp_get_token (pfile)
 	}
       else
 	{
-	  /* Flag this token as always unexpandable.  */
+	  /* Flag this token as always unexpandable.  FIXME: move this
+	     to collect_args()?.  */
 	  cpp_token *t = _cpp_temp_token (pfile);
 	  t->type = result->type;
 	  t->flags = result->flags | NO_EXPAND;
@@ -1149,7 +1166,6 @@ warn_of_redefinition (node, macro2)
 }
 
 /* Free the definition of hashnode H.  */
-
 void
 _cpp_free_definition (h)
      cpp_hashnode *h;
@@ -1267,6 +1283,8 @@ alloc_expansion_token (pfile, macro)
   return &((cpp_token *) BUFF_FRONT (pfile->a_buff))[macro->count++];
 }
 
+/* Lex a token from the expansion of MACRO, but mark parameters as we
+   find them and warn of traditional stringification.  */
 static cpp_token *
 lex_expansion_token (pfile, macro)
      cpp_reader *pfile;
@@ -1277,7 +1295,7 @@ lex_expansion_token (pfile, macro)
   pfile->cur_token = alloc_expansion_token (pfile, macro);
   token = _cpp_lex_direct (pfile);
 
-  /* Is this an argument?  */
+  /* Is this a parameter?  */
   if (token->type == CPP_NAME && token->val.node->arg_index)
     {
       token->type = CPP_MACRO_ARG;
@@ -1390,7 +1408,7 @@ _cpp_create_definition (pfile, node)
   /* Don't count the CPP_EOF.  */
   macro->count--;
 
-  /* Clear whitespace on first token for macro equivalence purposes.  */
+  /* Clear whitespace on first token for warn_of_redefinition().  */
   if (macro->count)
     macro->expansion[0].flags &= ~PREV_WHITE;
 
@@ -1444,9 +1462,8 @@ _cpp_create_definition (pfile, node)
   return ok;
 }
 
-/* Warn if a token in `string' matches one of the function macro
-   arguments in `info'.  This function assumes that the macro is a
-   function macro and not an object macro.  */
+/* Warn if a token in STRING matches one of a function-like MACRO's
+   parameters.  */
 static void
 check_trad_stringification (pfile, macro, string)
      cpp_reader *pfile;
@@ -1493,7 +1510,6 @@ check_trad_stringification (pfile, macro, string)
    debugging info.  e.g. "PASTE(X, Y) X ## Y", or "MACNAME EXPANSION".
    Caller is expected to generate the "#define" bit if needed.  The
    returned text is temporary, and automatically freed later.  */
-
 const unsigned char *
 cpp_macro_definition (pfile, node)
      cpp_reader *pfile;

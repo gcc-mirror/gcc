@@ -1,3 +1,10 @@
+2002-01-03  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppmacro.c: Don't include intl.h.  Update comments.
+	(new_number_token): Allocate enough buffer for 64-bit unsigned
+	integers; update prototype.
+	* cppmain.c: Update comments.
+
 2002-01-03  William Cohen  <wcohen@redhat.com>
 
 	* function.h (struct function): Add profile.
