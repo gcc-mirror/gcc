@@ -826,24 +826,6 @@ bc_write_file (file)
   BC_WRITE_FILE (file);
 }
 
-
-/* Allocate a new bytecode rtx. */
-rtx
-bc_gen_rtx (label, offset, bc_label)
-     char *label;
-     int offset;
-     struct bc_label *bc_label;
-{
-  rtx r;
-
-  r = (rtx) obstack_alloc (rtl_obstack, sizeof (struct rtx_def));
-  BYTECODE_LABEL(r) = label;		/* Do we need to copy here?  */
-  BYTECODE_OFFSET(r) = offset;
-  BYTECODE_BC_LABEL(r) = bc_label;
-  return r;
-}
-
-
 /* Print bytecode rtx */
 void
 bc_print_rtl (fp, r)
