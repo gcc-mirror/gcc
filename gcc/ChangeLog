@@ -1,3 +1,7 @@
+2002-01-01  Douglas B Rupp  <rupp@gnat.com>
+
+	* gcc.c (delete_if_ordinary): Delete all versions.
+
 2002-01-01  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/mmix.md: Update FIXME to not mention
