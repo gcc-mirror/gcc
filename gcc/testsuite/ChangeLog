@@ -1,3 +1,8 @@
+2003-09-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/builtins-1.c: Test existing _Complex functions.
+	* gcc.dg/torture/builtin-attr-1.c: Likewise.
+
 2003-09-08  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/11786

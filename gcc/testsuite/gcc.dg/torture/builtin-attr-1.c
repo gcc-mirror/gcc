@@ -124,6 +124,32 @@ void test_builtin_##FN##f(float f1, float f2, float f3) \
 void test_builtin_##FN##l(long double ld1, long double ld2, long double ld3) \
 { if (__builtin_##FN##l(ld1,ld2,ld3) != __builtin_##FN##l(ld1,ld2,ld3)) link_failure_builtin_##FN##l(); }
 
+/* Test the __builtin_ functions taking one complex argument (with the
+   "f" and "l" variants).  */
+#define BUILTIN_CPTEST1(FN) \
+extern void link_failure_builtin_##FN(void); \
+extern void link_failure_builtin_##FN##f(void); \
+extern void link_failure_builtin_##FN##l(void); \
+void test_builtin_##FN(_Complex double d) \
+{ if (__builtin_##FN(d) != __builtin_##FN(d)) link_failure_builtin_##FN(); } \
+void test_builtin_##FN##f(_Complex float f) \
+{ if (__builtin_##FN##f(f) != __builtin_##FN##f(f)) link_failure_builtin_##FN##f(); } \
+void test_builtin_##FN##l(_Complex long double ld) \
+{ if (__builtin_##FN##l(ld) != __builtin_##FN##l(ld)) link_failure_builtin_##FN##l(); }
+
+/* Test the __builtin_ functions taking two complex arguments (with
+   the "f" and "l" variants).  */
+#define BUILTIN_CPTEST2(FN) \
+extern void link_failure_builtin_##FN(void); \
+extern void link_failure_builtin_##FN##f(void); \
+extern void link_failure_builtin_##FN##l(void); \
+void test_builtin_##FN(_Complex double d1, _Complex double d2) \
+{ if (__builtin_##FN(d1,d2) != __builtin_##FN(d1,d2)) link_failure_builtin_##FN(); } \
+void test_builtin_##FN##f(_Complex float f1, _Complex float f2) \
+{ if (__builtin_##FN##f(f1,f2) != __builtin_##FN##f(f1,f2)) link_failure_builtin_##FN##f(); } \
+void test_builtin_##FN##l(_Complex long double ld1, _Complex long double ld2) \
+{ if (__builtin_##FN##l(ld1,ld2) != __builtin_##FN##l(ld1,ld2)) link_failure_builtin_##FN##l(); }
+
 /* These macros additionally test the non-__builtin_ functions.  */
 
 /* Test the functions taking one FP argument (with the "f" and "l"
@@ -198,6 +224,34 @@ void test_##FN##f(float f1, float f2, float f3) \
 void test_##FN##l(long double ld1, long double ld2, long double ld3) \
 { if (FN##l(ld1,ld2,ld3) != FN##l(ld1,ld2,ld3)) link_failure_##FN##l(); }
 
+/* Test the functions taking one complex argument (with the "f" and
+   "l" variants).  */
+#define CPTEST1(FN) \
+BUILTIN_CPTEST1(FN) \
+extern void link_failure_##FN(void); \
+extern void link_failure_##FN##f(void); \
+extern void link_failure_##FN##l(void); \
+void test_##FN(_Complex double d) \
+{ if (FN(d) != FN(d)) link_failure_##FN(); } \
+void test_##FN##f(_Complex float f) \
+{ if (FN##f(f) != FN##f(f)) link_failure_##FN##f(); } \
+void test_##FN##l(_Complex long double ld) \
+{ if (FN##l(ld) != FN##l(ld)) link_failure_##FN##l(); }
+
+/* Test the functions taking two complex arguments (with the "f" and
+   "l" variants).  */
+#define CPTEST2(FN) \
+BUILTIN_CPTEST2(FN) \
+extern void link_failure_##FN(void); \
+extern void link_failure_##FN##f(void); \
+extern void link_failure_##FN##l(void); \
+void test_##FN(_Complex double d1, _Complex double d2) \
+{ if (FN(d1,d2) != FN(d1,d2)) link_failure_##FN(); } \
+void test_##FN##f(_Complex float f1, _Complex float f2) \
+{ if (FN##f(f1,f2) != FN##f(f1,f2)) link_failure_##FN##f(); } \
+void test_##FN##l(_Complex long double ld1, _Complex long double ld2) \
+{ if (FN##l(ld1,ld2) != FN##l(ld1,ld2)) link_failure_##FN##l(); }
+
 
 /* Test the math builtins.  */
 FPTEST1            (acos)
@@ -269,6 +323,12 @@ FPTEST1            (trunc)
 FPTEST1            (y0)
 FPTEST1            (y1)
 FPTEST2ARG1        (yn, int)
+
+/* Test the complex math builtins.  */
+/*CPTEST1 (cabs) See http://gcc.gnu.org/ml/gcc-patches/2003-09/msg00040.html */
+CPTEST1 (cimag)
+CPTEST1 (conj)
+CPTEST1 (creal)
 
 /* Various other const builtins.  */
 TEST1         (abs, int)

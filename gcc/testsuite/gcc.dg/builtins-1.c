@@ -84,6 +84,25 @@ double test_##FN(double x, double *y, double *z) { __builtin_##FN(x, y, z); retu
 float test_##FN##f(float x, float *y, float *z) { __builtin_##FN##f(x, y, z); return *y * *z; } \
 long double test_##FN##l(long double x, long double *y, long double *z) { __builtin_##FN##l(x, y, z); return *y * *z; } 
 
+/* Test Complex functions taking one Complex argument.  */
+#define CPTEST1(FN) \
+_Complex double test_##FN(_Complex double x) { return __builtin_##FN(x); } \
+_Complex float test_##FN##f(_Complex float x) { return __builtin_##FN##f(x); } \
+_Complex long double test_##FN##l(_Complex long double x) { return __builtin_##FN##l(x); } 
+
+/* Test Complex functions taking one Complex argument and returning an FP type.  */
+#define CPTEST1RETFP(FN) \
+double test_##FN(_Complex double x) { return __builtin_##FN(x); } \
+float test_##FN##f(_Complex float x) { return __builtin_##FN##f(x); } \
+long double test_##FN##l(_Complex long double x) { return __builtin_##FN##l(x); } 
+
+/* Test Complex functions taking two Complex arguments.  */
+#define CPTEST2(FN) \
+_Complex double test_##FN(_Complex double x, _Complex double y) { return __builtin_##FN(x,y); } \
+_Complex float test_##FN##f(_Complex float x, _Complex float y) { return __builtin_##FN##f(x,y); } \
+_Complex long double test_##FN##l(_Complex long double x, _Complex long double y) { return __builtin_##FN##l(x,y); } 
+
+
 /* Keep this list sorted alphabetically by function name.  */
 FPTEST1     (acos)
 FPTEST1     (acosh)
@@ -158,3 +177,9 @@ FPTEST1     (trunc)
 FPTEST1     (y0)
 FPTEST1     (y1)
 FPTEST2ARG1 (yn, int)
+
+/* Keep this list sorted alphabetically by function name.  */
+CPTEST1RETFP (cabs)
+CPTEST1RETFP (cimag)
+CPTEST1      (conj)
+CPTEST1RETFP (creal)
