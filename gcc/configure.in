@@ -2937,7 +2937,7 @@ done   # end of current-dir SUBDIRS loop
 srcdir=$savesrcdir
 
 # Process the language fragments
-. $srcdir/configure.frag
+${CONFIG_SHELL-/bin/sh} $srcdir/configure.frag $srcdir "$subdirs"
 
 # Substitute configuration variables
 AC_SUBST(subdirs)
