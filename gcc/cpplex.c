@@ -454,10 +454,13 @@ cpp_scan_buffer (pfile, print)
       if (token->type == CPP_EOF)
 	{
 	  cpp_pop_buffer (pfile);
+
+	  if (CPP_BUFFER (pfile))
+	    cpp_output_tokens (pfile, print, CPP_BUF_LINE (CPP_BUFFER (pfile)));
+
 	  if (CPP_BUFFER (pfile) == stop)
 	    return;
 
-	  cpp_output_tokens (pfile, print, CPP_BUF_LINE (CPP_BUFFER (pfile)));
 	  prev = 0;
 	  continue;
 	}
