@@ -1,6 +1,6 @@
 // natPosixProcess.cc - Native side of POSIX process code.
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -103,6 +103,17 @@ cleanup (char **args, char **env)
     }
 }
 
+// This makes our error handling a bit simpler and it lets us avoid
+// thread bugs where we close a possibly-reopened file descriptor for
+// a second time.
+static void
+myclose (int &fd)
+{
+  if (fd != -1)
+    close (fd);
+  fd = -1;
+}
+
 static void
 fail (int error_value, char **args, char **env,
       int *one = NULL, int *two = NULL,
@@ -112,23 +123,23 @@ fail (int error_value, char **args, char **env,
   cleanup (args, env);
   if (one != NULL)
     {
-      close (one[0]);
-      close (one[1]);
+      myclose (one[0]);
+      myclose (one[1]);
     }
   if (two != NULL)
     {
-      close (two[0]);
-      close (two[1]);
+      myclose (two[0]);
+      myclose (two[1]);
     }
   if (three != NULL)
     {
-      close (three[0]);
-      close (three[1]);
+      myclose (three[0]);
+      myclose (three[1]);
     }
   if (four != NULL)
     {
-      close (four[0]);
-      close (four[1]);
+      myclose (four[0]);
+      myclose (four[1]);
     }
   if (t == NULL)
     t = new java::io::IOException (JvNewStringLatin1 (strerror (error_value)));
@@ -238,6 +249,8 @@ java::lang::ConcreteProcess::startProcess (jstringArray progarray,
       dup2 (inp[1], 1);
       dup2 (errp[1], 2);
 
+      // Use close and not myclose -- we're in the child, and we
+      // aren't worried about the possible race condition.
       close (inp[0]);
       close (inp[1]);
       close (errp[0]);
@@ -256,10 +269,10 @@ java::lang::ConcreteProcess::startProcess (jstringArray progarray,
 
   // Parent.  Close extra file descriptors and mark ours as
   // close-on-exec.
-  close (outp[0]);
-  close (inp[1]);
-  close (errp[1]);
-  close (msgp[1]);
+  myclose (outp[0]);
+  myclose (inp[1]);
+  myclose (errp[1]);
+  myclose (msgp[1]);
 
   char c;
   int r = read (msgp[0], &c, 1);
@@ -268,7 +281,7 @@ java::lang::ConcreteProcess::startProcess (jstringArray progarray,
   else if (r != 0)
     fail (c, args, env, inp, outp, errp, msgp);
 
-  close (msgp[0]);
+  myclose (msgp[0]);
   cleanup (args, env);
 
   fcntl (outp[1], F_SETFD, 1);
