@@ -868,6 +868,7 @@ static void ix86_expand_strlensi_unroll_1 (rtx, rtx, rtx);
 static int ix86_issue_rate (void);
 static int ix86_adjust_cost (rtx, rtx, rtx, int);
 static int ia32_multipass_dfa_lookahead (void);
+static bool ix86_misaligned_mem_ok (enum machine_mode);
 static void ix86_init_mmx_sse_builtins (void);
 static rtx x86_this_parameter (tree);
 static void x86_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
@@ -1013,6 +1014,9 @@ static void init_ext_80387_constants (void);
 #undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
 #define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD \
   ia32_multipass_dfa_lookahead
+
+#undef TARGET_VECTORIZE_MISALIGNED_MEM_OK
+#define TARGET_VECTORIZE_MISALIGNED_MEM_OK ix86_misaligned_mem_ok
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL ix86_function_ok_for_sibcall
@@ -11616,6 +11620,17 @@ ia32_multipass_dfa_lookahead (void)
 }
 
 
+/* Implement the target hook targetm.vectorize.misaligned_mem_ok.  */
+
+static bool
+ix86_misaligned_mem_ok (enum machine_mode mode)
+{
+  if (TARGET_MMX && VALID_MMX_REG_MODE (mode))
+    return true;
+  else
+    return false;
+}
+
 /* Compute the alignment given to a constant that is being placed in memory.
    EXP is the constant and ALIGN is the alignment that the object would
    ordinarily have.

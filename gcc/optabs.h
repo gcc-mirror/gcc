@@ -228,6 +228,10 @@ enum optab_index
   OTI_vec_extract,
   /* Initialize vector operand.  */
   OTI_vec_init,
+  /* Extract specified elements from vectors, for vector store.  */
+  OTI_vec_realign_store,
+  /* Extract specified elements from vectors, for vector load.  */
+  OTI_vec_realign_load,
 
   OTI_MAX
 };
@@ -330,6 +334,8 @@ extern GTY(()) optab optab_table[OTI_MAX];
 #define vec_set_optab (optab_table[OTI_vec_set])
 #define vec_extract_optab (optab_table[OTI_vec_extract])
 #define vec_init_optab (optab_table[OTI_vec_init])
+#define vec_realign_store_optab (optab_table[OTI_vec_realign_store])
+#define vec_realign_load_optab (optab_table[OTI_vec_realign_load])
 
 /* Conversion optabs have their own table and indexes.  */
 enum convert_optab_index
@@ -404,6 +410,10 @@ extern enum insn_code cmpstr_optab[NUM_MACHINE_MODES];
 extern enum insn_code cmpmem_optab[NUM_MACHINE_MODES];
 
 /* Define functions given in optabs.c.  */
+
+extern rtx expand_ternary_op (enum machine_mode mode, optab ternary_optab, 
+			      rtx op0, rtx op1, rtx op2, rtx target, 
+			      int unsignedp);
 
 /* Expand a binary operation given optab and rtx operands.  */
 extern rtx expand_binop (enum machine_mode, optab, rtx, rtx, rtx, int,

@@ -119,6 +119,7 @@ vinfo_for_stmt (tree stmt)
 /* Info on data references alignment.                              */
 /*-----------------------------------------------------------------*/
 
+/* The misalignment of the memory access in bytes.  */
 #define DR_MISALIGNMENT(DR)   (DR)->aux
 
 static inline bool

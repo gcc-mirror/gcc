@@ -179,7 +179,8 @@ static bool vect_compute_data_ref_alignment
 static bool vect_analyze_data_ref_access (struct data_reference *);
 static bool vect_get_first_index (tree, tree *);
 static bool vect_can_force_dr_alignment_p (tree, unsigned int);
-static struct data_reference * vect_analyze_pointer_ref_access (tree, tree, bool);
+static struct data_reference * vect_analyze_pointer_ref_access 
+  (tree, tree, bool);
 static tree vect_get_base_and_bit_offset
   (struct data_reference *, tree, tree, loop_vec_info, tree *, bool*);
 static struct data_reference * vect_analyze_pointer_ref_access
@@ -193,9 +194,11 @@ static tree vect_get_symbl_and_dr
 
 /* Utility functions for the code transformation.  */
 static tree vect_create_destination_var (tree, tree);
-static tree vect_create_data_ref (tree, block_stmt_iterator *);
-static tree vect_create_index_for_vector_ref (struct loop *, block_stmt_iterator *);
-static tree vect_create_addr_base_for_vector_ref (tree, tree *);
+static tree vect_create_data_ref_ptr 
+  (tree, block_stmt_iterator *, tree, tree *, bool); 
+static tree vect_create_index_for_vector_ref 
+  (struct loop *, block_stmt_iterator *);
+static tree vect_create_addr_base_for_vector_ref (tree, tree *, tree);
 static tree get_vectype_for_scalar_type (tree);
 static tree vect_get_new_vect_var (tree, enum vect_var_kind, const char *);
 static tree vect_get_vec_def_for_operand (tree, tree);
@@ -702,8 +705,8 @@ vect_create_index_for_vector_ref (struct loop *loop, block_stmt_iterator *bsi)
 
    Input:
    STMT: The statement containing the data reference.
-   NEW_STMT_LIST: Must be initialized to NULL_TREE or a
-   statement list.
+   NEW_STMT_LIST: Must be initialized to NULL_TREE or a statement list.
+   OFFSET: Optional. If supplied, it is be added to the initial address.
 
    Output:
    1. Return an SSA_NAME whose value is the address of the memory location of the
@@ -715,7 +718,8 @@ vect_create_index_for_vector_ref (struct loop *loop, block_stmt_iterator *bsi)
 
 static tree
 vect_create_addr_base_for_vector_ref (tree stmt,
-                                      tree *new_stmt_list)
+                                      tree *new_stmt_list,
+				      tree offset)
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   struct loop *loop = STMT_VINFO_LOOP (stmt_info);
@@ -776,7 +780,8 @@ vect_create_addr_base_for_vector_ref (tree stmt,
 
       dest = create_tmp_var (TREE_TYPE (data_ref_base), "dataref");
       add_referenced_tmp_var (dest);
-      data_ref_base  = force_gimple_operand (data_ref_base, &new_stmt, false, dest);  
+      data_ref_base = 
+	force_gimple_operand (data_ref_base, &new_stmt, false, dest);  
       append_to_statement_list_force (new_stmt, new_stmt_list);
 
       vec_stmt = fold_convert (scalar_array_ptr_type, data_ref_base);
@@ -794,6 +799,17 @@ vect_create_addr_base_for_vector_ref (tree stmt,
   init_val = force_gimple_operand (init_oval, &new_stmt, false, dest);  
   append_to_statement_list_force (new_stmt, new_stmt_list);
 
+  if (offset)
+    {
+      tree tmp = create_tmp_var (TREE_TYPE (init_val), "offset");
+      add_referenced_tmp_var (tmp);
+      vec_stmt = build2 (PLUS_EXPR, TREE_TYPE (init_val), init_val, offset);
+      vec_stmt = build2 (MODIFY_EXPR, TREE_TYPE (init_val), tmp, vec_stmt);
+      init_val = make_ssa_name (tmp, vec_stmt);
+      TREE_OPERAND (vec_stmt, 0) = init_val;
+      append_to_statement_list_force (vec_stmt, new_stmt_list);
+    }
+
   array_ref = build4 (ARRAY_REF, scalar_type, array_base, init_val, 
 		      NULL_TREE, NULL_TREE);
   addr_base = build_fold_addr_expr (array_ref);
@@ -806,6 +822,7 @@ vect_create_addr_base_for_vector_ref (tree stmt,
   new_temp = make_ssa_name (addr_expr, vec_stmt);
   TREE_OPERAND (vec_stmt, 0) = new_temp;
   append_to_statement_list_force (vec_stmt, new_stmt_list);
+
   return new_temp;
 }
 
@@ -856,31 +873,56 @@ vect_align_data_ref (tree stmt)
 }
 
 
-/* Function vect_create_data_ref.
+/* Function vect_create_data_ref_ptr.
 
    Create a memory reference expression for vector access, to be used in a
-   vector load/store stmt.
+   vector load/store stmt. The reference is based on a new pointer to vector
+   type (vp).
 
    Input:
-   STMT: a stmt that references memory. expected to be of the form
-	 MODIFY_EXPR <name, data-ref> or MODIFY_EXPR <data-ref, name>.
-   BSI: block_stmt_iterator where new stmts can be added.
+   1. STMT: a stmt that references memory. Expected to be of the form
+         MODIFY_EXPR <name, data-ref> or MODIFY_EXPR <data-ref, name>.
+   2. BSI: block_stmt_iterator where new stmts can be added.
+   3. OFFSET (optional): an offset to be added to the initial address accessed
+        by the data-ref in STMT.
+   4. ONLY_INIT: indicate if vp is to be updated in the loop, or remain
+        pointing to the initial address.
 
    Output:
-   1. Declare a new ptr to vector_type, and have it point to the array base.
-      For example, for vector of type V8HI:
-      v8hi *p0;
-      p0 = (v8hi *)&a;
-   2. Create a data-reference based on the new vector pointer p0, and using
-      a new index variable 'idx'. Return the expression '(*p0)[idx]'.
+   1. Declare a new ptr to vector_type, and have it point to the base of the
+      data reference (initial addressed accessed by the data reference).
+      For example, for vector of type V8HI, the following code is generated:
+
+      v8hi *vp;
+      vp = (v8hi *)initial_address;
+
+      if OFFSET is not supplied:
+         initial_address = &a[init];
+      if OFFSET is supplied:
+         initial_address = &a[init + OFFSET];
+
+      Return the initial_address in INITIAL_ADDRESS.
+
+   2. Create a data-reference in the loop based on the new vector pointer vp,
+      and using a new index variable 'idx' as follows:
+
+      vp' = vp + update
+
+      where if ONLY_INIT is true:
+         update = zero
+      and otherwise
+         update = idx + vector_type_size
+
+      Return the pointer vp'.
+
 
    FORNOW: handle only aligned and consecutive accesses.  */
 
 static tree
-vect_create_data_ref (tree stmt, block_stmt_iterator *bsi)
+vect_create_data_ref_ptr (tree stmt, block_stmt_iterator *bsi, tree offset,
+                          tree *initial_address, bool only_init)
 {
-  tree base_name, data_ref_base, data_ref_base_type;
-  tree array_type;
+  tree base_name;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   struct loop *loop = STMT_VINFO_LOOP (stmt_info);
@@ -897,55 +939,44 @@ vect_create_data_ref (tree stmt, block_stmt_iterator *bsi)
   tree vec_stmt;
   tree new_stmt_list = NULL_TREE;
   tree idx;
-  tree new_base;
-  tree data_ref;
-  edge pe;
+  edge pe = loop_preheader_edge (loop);
   basic_block new_bb;
-
-  /* FORNOW: make sure the data reference is aligned.  */
-  vect_align_data_ref (stmt);
+  tree vect_ptr_init;
+  tree vectype_size;
+  tree ptr_update;
+  tree data_ref_ptr;
 
   base_name = unshare_expr (DR_BASE_NAME (dr));
-  data_ref_base = STMT_VINFO_VECT_DR_BASE (stmt_info);
-  data_ref_base_type = TREE_TYPE (data_ref_base);
-
-  array_type = build_array_type (vectype, 0);
-  TYPE_ALIGN (array_type) = TYPE_ALIGN (data_ref_base_type);
-  vect_ptr_type = build_pointer_type (array_type);
-
   if (vect_debug_details (NULL))
     {
+      tree data_ref_base = base_name;
       fprintf (dump_file, "create array_ref of type: ");
       print_generic_expr (dump_file, vectype, TDF_SLIM);
-    }
-
-  /* Create: vectype *p;  */
-  vect_ptr = vect_get_new_vect_var (vect_ptr_type, vect_pointer_var, 
-				    get_name (base_name));
-  add_referenced_tmp_var (vect_ptr);
-
-  if (vect_debug_details (NULL))
-    {
       if (TREE_CODE (data_ref_base) == VAR_DECL)
-	fprintf (dump_file, "vectorizing a one dimensional array ref: ");
+        fprintf (dump_file, "vectorizing a one dimensional array ref: ");
       else if (TREE_CODE (data_ref_base) == ARRAY_REF)
-	fprintf (dump_file, "vectorizing a multidimensional array ref: ");
+        fprintf (dump_file, "vectorizing a multidimensional array ref: ");
       else if (TREE_CODE (data_ref_base) == COMPONENT_REF)
-	fprintf (dump_file, "vectorizing a record based array ref: ");
+        fprintf (dump_file, "vectorizing a record based array ref: ");
       else if (TREE_CODE (data_ref_base) == SSA_NAME)
-	fprintf (dump_file, "vectorizing a pointer ref: ");
-      else if (TREE_CODE (data_ref_base) == ADDR_EXPR
-	       || TREE_CODE (data_ref_base) == PLUS_EXPR
-	       || TREE_CODE (data_ref_base) == MINUS_EXPR)
-	fprintf (dump_file, "vectorizing an address expr: ");
+        fprintf (dump_file, "vectorizing a pointer ref: ");
       print_generic_expr (dump_file, base_name, TDF_SLIM);
     }
 
-  /* Handle aliasing:  */
+  /** (1) Create the new vector-pointer variable:  **/
+
+  vect_ptr_type = build_pointer_type (vectype);
+  vect_ptr = vect_get_new_vect_var (vect_ptr_type, vect_pointer_var,
+                                    get_name (base_name));
+  add_referenced_tmp_var (vect_ptr);
+  
+  
+  /** (2) Handle aliasing information of the new vector-pointer:  **/
+  
   tag = STMT_VINFO_MEMTAG (stmt_info);
   gcc_assert (tag);
   get_var_ann (vect_ptr)->type_mem_tag = tag;
-
+  
   /* Mark for renaming all aliased variables
      (i.e, the may-aliases of the type-mem-tag).  */
   nvuses = NUM_VUSES (vuses);
@@ -969,36 +1000,56 @@ vect_create_data_ref (tree stmt, block_stmt_iterator *bsi)
       if (TREE_CODE (def) == SSA_NAME)
         bitmap_set_bit (vars_to_rename, var_ann (SSA_NAME_VAR (def))->uid);
     }
-  
+
+
+  /** (3) Calculate the initial address the vector-pointer, and set
+          the vector-pointer to point to it before the loop:  **/
+
+  /* Create: (&(base[init_val+offset]) in the loop preheader.  */
+  new_temp = vect_create_addr_base_for_vector_ref (stmt, &new_stmt_list,
+                                                   offset);
   pe = loop_preheader_edge (loop);
+  new_bb = bsi_insert_on_edge_immediate (pe, new_stmt_list);
+  gcc_assert (!new_bb);
+  *initial_address = new_temp;
 
-  /* Create: (&(base[init_val]) */
-  new_temp = vect_create_addr_base_for_vector_ref (stmt, &new_stmt_list);
-
-  pe = loop_preheader_edge (loop); 
-  new_bb = bsi_insert_on_edge_immediate (pe, new_stmt_list); 
-  gcc_assert (!new_bb); 
-
-  /* p = (vectype_array *) addr_base  */
+  /* Create: p = (vectype *) initial_base  */
   vec_stmt = fold_convert (vect_ptr_type, new_temp);
   vec_stmt = build2 (MODIFY_EXPR, void_type_node, vect_ptr, vec_stmt);
   new_temp = make_ssa_name (vect_ptr, vec_stmt);
   TREE_OPERAND (vec_stmt, 0) = new_temp;
-  new_bb = bsi_insert_on_edge_immediate (pe, vec_stmt); 
-  gcc_assert (!new_bb); 
+  new_bb = bsi_insert_on_edge_immediate (pe, vec_stmt);
+  gcc_assert (!new_bb);
+  vect_ptr_init = TREE_OPERAND (vec_stmt, 0);
 
-  /*** create data ref: '(*p)[idx]' ***/
+
+  /** (4) Handle the updating of the vector-pointer inside the loop: **/
+
+  if (only_init) /* No update in loop is required.  */
+    return vect_ptr_init;
+
   idx = vect_create_index_for_vector_ref (loop, bsi);
-  new_base = build_fold_indirect_ref (new_temp);
-  data_ref = build4 (ARRAY_REF, vectype, new_base, idx, NULL_TREE, NULL_TREE);
 
-  if (vect_debug_details (NULL))
-    {
-      fprintf (dump_file, "created new data-ref: ");
-      print_generic_expr (dump_file, data_ref, TDF_SLIM);
-    }
+  /* Create: update = idx * vectype_size  */
+  ptr_update = create_tmp_var (integer_type_node, "update");
+  add_referenced_tmp_var (ptr_update);
+  vectype_size = build_int_cst (integer_type_node,
+                                GET_MODE_SIZE (TYPE_MODE (vectype)));
+  vec_stmt = build2 (MULT_EXPR, integer_type_node, idx, vectype_size);
+  vec_stmt = build2 (MODIFY_EXPR, void_type_node, ptr_update, vec_stmt);
+  new_temp = make_ssa_name (ptr_update, vec_stmt);
+  TREE_OPERAND (vec_stmt, 0) = new_temp;
+  bsi_insert_before (bsi, vec_stmt, BSI_SAME_STMT);
 
-  return data_ref;
+  /* Create: data_ref_ptr = vect_ptr_init + update  */
+  vec_stmt = build2 (PLUS_EXPR, vect_ptr_type, vect_ptr_init, new_temp);
+  vec_stmt = build2 (MODIFY_EXPR, void_type_node, vect_ptr, vec_stmt);
+  new_temp = make_ssa_name (vect_ptr, vec_stmt);
+  TREE_OPERAND (vec_stmt, 0) = new_temp;
+  bsi_insert_before (bsi, vec_stmt, BSI_SAME_STMT);
+  data_ref_ptr = TREE_OPERAND (vec_stmt, 0);
+
+  return data_ref_ptr;
 }
 
 
@@ -1220,8 +1271,8 @@ vect_finish_stmt_generation (tree stmt, tree vec_stmt, block_stmt_iterator *bsi)
 
   /* Make sure bsi points to the stmt that is being vectorized.  */
 
-  /* Assumption: any stmts created for the vectorization of smtmt S are
-     inserted before S. BSI may point to S or some new stmt before it.  */
+  /* Assumption: any stmts created for the vectorization of stmt S were
+     inserted before S. BSI is expected to point to S or some new stmt before S.  */
 
   while (stmt != bsi_stmt (*bsi) && !bsi_end_p (*bsi))
     bsi_next (bsi);
@@ -1424,6 +1475,7 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   struct loop *loop = STMT_VINFO_LOOP (stmt_info);
   enum machine_mode vec_mode;
+  tree dummy;
 
   /* Is vectorizable store? */
 
@@ -1452,6 +1504,9 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   if (!STMT_VINFO_DATA_REF (stmt_info))
     return false;
 
+  if (!aligned_access_p (STMT_VINFO_DATA_REF (stmt_info)))
+    return false;
+
   if (!vec_stmt) /* transformation not required.  */
     {
       STMT_VINFO_TYPE (stmt_info) = store_vec_info_type;
@@ -1467,7 +1522,10 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   vec_oprnd1 = vect_get_vec_def_for_operand (op, stmt);
 
   /* Handle def.  */
-  data_ref = vect_create_data_ref (stmt, bsi);
+  /* FORNOW: make sure the data reference is aligned.  */
+  vect_align_data_ref (stmt);
+  data_ref = vect_create_data_ref_ptr (stmt, bsi, NULL_TREE, &dummy, false);
+  data_ref = build_fold_indirect_ref (data_ref);
 
   /* Arguments are ready. create the new vector stmt.  */
   *vec_stmt = build2 (MODIFY_EXPR, vectype, data_ref, vec_oprnd1);
@@ -1493,9 +1551,17 @@ vectorizable_load (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   tree data_ref = NULL;
   tree op;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   tree new_temp;
-  enum machine_mode vec_mode;
+  int mode;
+  tree init_addr;
+  tree new_stmt;
+  tree dummy;
+  basic_block new_bb;
+  struct loop *loop = STMT_VINFO_LOOP (stmt_info);
+  edge pe = loop_preheader_edge (loop);
+  bool software_pipeline_loads_p = false;
 
   /* Is vectorizable load? */
 
@@ -1513,11 +1579,31 @@ vectorizable_load (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   if (!STMT_VINFO_DATA_REF (stmt_info))
     return false;
 
-  vec_mode = TYPE_MODE (vectype);
+  mode = (int) TYPE_MODE (vectype);
+
   /* FORNOW. In some cases can vectorize even if data-type not supported
-     (e.g. - data copies).  */
-  if (mov_optab->handlers[(int)vec_mode].insn_code == CODE_FOR_nothing)
-    return false;
+    (e.g. - data copies).  */
+  if (mov_optab->handlers[mode].insn_code == CODE_FOR_nothing)
+    {
+      if (vect_debug_details (loop))
+	fprintf (dump_file, "Aligned load, but unsupported type.");
+      return false;
+    }
+
+  if (!aligned_access_p (dr))
+    {
+      if (vec_realign_load_optab->handlers[mode].insn_code != CODE_FOR_nothing
+	  && (!targetm.vectorize.builtin_mask_for_load
+	      || targetm.vectorize.builtin_mask_for_load ()))
+	software_pipeline_loads_p = true;
+      else if (!targetm.vectorize.misaligned_mem_ok (mode))
+	{
+	  /* Possibly unaligned access, and can't sofware pipeline the loads  */
+	  if (vect_debug_details (loop))
+	    fprintf (dump_file, "Arbitrary load not supported.");
+	  return false;
+	}
+    }
 
   if (!vec_stmt) /* transformation not required.  */
     {
@@ -1530,19 +1616,130 @@ vectorizable_load (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   if (vect_debug_details (NULL))
     fprintf (dump_file, "transform load.");
 
-  /* Handle def.  */
-  vec_dest = vect_create_destination_var (scalar_dest, vectype);
+  if (!software_pipeline_loads_p)
+    {
+      /* Create:
+         p = initial_addr;
+         indx = 0;
+         loop {
+           vec_dest = *(p);
+           indx = indx + 1;
+         }
+      */
 
-  /* Handle use.  */
-  op = TREE_OPERAND (stmt, 1);
-  data_ref = vect_create_data_ref (stmt, bsi);
+      vec_dest = vect_create_destination_var (scalar_dest, vectype);
+      data_ref = vect_create_data_ref_ptr (stmt, bsi, NULL_TREE, &dummy, false);
+      if (aligned_access_p (dr))
+        data_ref = build_fold_indirect_ref (data_ref);
+      else
+	{
+	  int mis = DR_MISALIGNMENT (dr);
+	  tree tmis = (mis == -1 ?
+		       integer_zero_node : 
+		       build_int_cst (integer_type_node, mis));
+	  tmis = int_const_binop (MULT_EXPR, tmis, 
+			build_int_cst (integer_type_node, BITS_PER_UNIT), 1);
+	  data_ref = build2 (MISALIGNED_INDIRECT_REF, vectype, data_ref, tmis);
+	}
+      new_stmt = build2 (MODIFY_EXPR, vectype, vec_dest, data_ref);
+      new_temp = make_ssa_name (vec_dest, new_stmt);
+      TREE_OPERAND (new_stmt, 0) = new_temp;
+      vect_finish_stmt_generation (stmt, new_stmt, bsi);
+    }
+  else /* software-pipeline the loads  */
+    {
+      /* Create:
+	 p1 = initial_addr;
+	 msq_init = *(floor(p1))
+	 p2 = initial_addr + VS - 1;
+	 magic = have_builtin ? builtin_result : initial_address;
+	 indx = 0;
+	 loop {
+	   p2' = p2 + indx * vectype_size
+	   lsq = *(floor(p2'))
+	   vec_dest = realign_load (msq, lsq, magic)
+	   indx = indx + 1;
+	   msq = lsq;
+	 }
+      */
 
-  /* Arguments are ready. create the new vector stmt.  */
-  *vec_stmt = build2 (MODIFY_EXPR, vectype, vec_dest, data_ref);
-  new_temp = make_ssa_name (vec_dest, *vec_stmt);
-  TREE_OPERAND (*vec_stmt, 0) = new_temp;
-  vect_finish_stmt_generation (stmt, *vec_stmt, bsi);
+      tree offset;
+      tree magic;
+      tree phi_stmt;
+      tree msq_init;
+      tree msq, lsq;
+      tree dataref_ptr;
+      tree params;
 
+      /* <1> Create msq_init = *(floor(p1)) in the loop preheader  */
+      vec_dest = vect_create_destination_var (scalar_dest, vectype);
+      data_ref = vect_create_data_ref_ptr (stmt, bsi, NULL_TREE, 
+					   &init_addr, true);
+      data_ref = build1 (ALIGN_INDIRECT_REF, vectype, data_ref);
+      new_stmt = build2 (MODIFY_EXPR, vectype, vec_dest, data_ref);
+      new_temp = make_ssa_name (vec_dest, new_stmt);
+      TREE_OPERAND (new_stmt, 0) = new_temp;
+      new_bb = bsi_insert_on_edge_immediate (pe, new_stmt);
+      gcc_assert (!new_bb);
+      msq_init = TREE_OPERAND (new_stmt, 0);
+
+
+      /* <2> Create lsq = *(floor(p2')) in the loop  */ 
+      offset = build_int_cst (integer_type_node, 
+			      GET_MODE_NUNITS (TYPE_MODE (vectype)));
+      offset = int_const_binop (MINUS_EXPR, offset, integer_one_node, 1);
+      vec_dest = vect_create_destination_var (scalar_dest, vectype);
+      dataref_ptr = vect_create_data_ref_ptr (stmt, bsi, offset, &dummy, false);
+      data_ref = build1 (ALIGN_INDIRECT_REF, vectype, dataref_ptr);
+      new_stmt = build2 (MODIFY_EXPR, vectype, vec_dest, data_ref);
+      new_temp = make_ssa_name (vec_dest, new_stmt);
+      TREE_OPERAND (new_stmt, 0) = new_temp;
+      vect_finish_stmt_generation (stmt, new_stmt, bsi);
+      lsq = TREE_OPERAND (new_stmt, 0);
+
+
+      /* <3> */
+      if (targetm.vectorize.builtin_mask_for_load)
+	{
+	  /* Create permutation mask, if required, in loop preheader.  */
+	  tree builtin_decl;
+	  params = build_tree_list (NULL_TREE, init_addr);
+	  vec_dest = vect_create_destination_var (scalar_dest, vectype);
+	  builtin_decl = targetm.vectorize.builtin_mask_for_load ();
+	  new_stmt = build_function_call_expr (builtin_decl, params);
+	  new_stmt = build2 (MODIFY_EXPR, vectype, vec_dest, new_stmt);
+	  new_temp = make_ssa_name (vec_dest, new_stmt);
+	  TREE_OPERAND (new_stmt, 0) = new_temp;
+	  new_bb = bsi_insert_on_edge_immediate (pe, new_stmt);
+	  gcc_assert (!new_bb);
+	  magic = TREE_OPERAND (new_stmt, 0);
+	}
+      else
+	{
+	  /* Use current address instead of init_addr for reduced reg pressure.  */
+	  magic = dataref_ptr;
+	}
+
+
+      /* <4> Create msq = phi <msq_init, lsq> in loop  */ 
+      vec_dest = vect_create_destination_var (scalar_dest, vectype);
+      msq = make_ssa_name (vec_dest, NULL_TREE);
+      phi_stmt = create_phi_node (msq, loop->header); /* CHECKME */
+      SSA_NAME_DEF_STMT (msq) = phi_stmt;
+      add_phi_arg (&phi_stmt, msq_init, loop_preheader_edge (loop));
+      add_phi_arg (&phi_stmt, lsq, loop_latch_edge (loop));
+
+
+      /* <5> Create <vec_dest = realign_load (msq, lsq, magic)> in loop  */
+      vec_dest = vect_create_destination_var (scalar_dest, vectype);
+      new_stmt = build3 (REALIGN_LOAD_EXPR, vectype, msq, lsq, magic);
+      new_stmt = build2 (MODIFY_EXPR, vectype, vec_dest, new_stmt);
+      new_temp = make_ssa_name (vec_dest, new_stmt); 
+      TREE_OPERAND (new_stmt, 0) = new_temp;
+      vect_finish_stmt_generation (stmt, new_stmt, bsi);
+    }
+
+  *vec_stmt = new_stmt;
   return true;
 }
 
@@ -2726,7 +2923,7 @@ vect_compute_data_refs_alignment (loop_vec_info loop_vinfo)
    FOR NOW: No transformation is actually performed. TODO.  */
 
 static void
-vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo ATTRIBUTE_UNUSED)
+vect_enhance_data_refs_alignment (loop_vec_info loop_info ATTRIBUTE_UNUSED)
 {
   /*
      This pass will require a cost model to guide it whether to apply peeling 
@@ -2824,7 +3021,8 @@ static bool
 vect_analyze_data_refs_alignment (loop_vec_info loop_vinfo)
 {
   varray_type loop_write_datarefs = LOOP_VINFO_DATAREF_WRITES (loop_vinfo);
-  varray_type loop_read_datarefs = LOOP_VINFO_DATAREF_READS (loop_vinfo);
+  /*varray_type loop_read_datarefs = LOOP_VINFO_DATAREF_READS (loop_vinfo);*/
+
   unsigned int i;
 
   if (vect_debug_details (NULL))
@@ -2864,6 +3062,11 @@ vect_analyze_data_refs_alignment (loop_vec_info loop_vinfo)
 	}
     }
 
+  /* The vectorizer now supports misaligned loads, so we don't fail anymore
+     in the presence of a misaligned read dataref.  For some targets however
+     it may be preferable not to vectorize in such a case as misaligned
+     accesses are very costly.  This should be considered in the future.  */
+/*
   for (i = 0; i < VARRAY_ACTIVE_SIZE (loop_read_datarefs); i++)
     {
       struct data_reference *dr = VARRAY_GENERIC_PTR (loop_read_datarefs, i);
@@ -2875,6 +3078,7 @@ vect_analyze_data_refs_alignment (loop_vec_info loop_vinfo)
 	  return false;
 	}
     }
+*/
 
   return true;
 }
@@ -3158,7 +3362,6 @@ vect_get_symbl_and_dr (tree memref, tree stmt, bool is_read,
 
     case ARRAY_REF:
       offset = size_zero_node;
-      array_base = TREE_OPERAND (memref, 0);
 
       /* Store the array base in the stmt info. 
 	 For one dimensional array ref a[i], the base is a,

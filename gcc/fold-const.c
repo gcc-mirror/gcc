@@ -1990,6 +1990,8 @@ non_lvalue (tree x)
 
   case COMPONENT_REF:
   case INDIRECT_REF:
+  case ALIGN_INDIRECT_REF:
+  case MISALIGNED_INDIRECT_REF:
   case ARRAY_REF:
   case ARRAY_RANGE_REF:
   case BIT_FIELD_REF:
@@ -2466,6 +2468,8 @@ operand_equal_p (tree arg0, tree arg1, unsigned int flags)
       switch (TREE_CODE (arg0))
 	{
 	case INDIRECT_REF:
+	case ALIGN_INDIRECT_REF:
+	case MISALIGNED_INDIRECT_REF:
 	case REALPART_EXPR:
 	case IMAGPART_EXPR:
 	  return operand_equal_p (TREE_OPERAND (arg0, 0),
@@ -10478,7 +10482,9 @@ build_fold_addr_expr_with_type (tree t, tree ptrtype)
   if (TREE_CODE (t) == WITH_SIZE_EXPR)
     t = TREE_OPERAND (t, 0);
 
-  if (TREE_CODE (t) == INDIRECT_REF)
+  /* Note: doesn't apply to ALIGN_INDIRECT_REF */
+  if (TREE_CODE (t) == INDIRECT_REF
+      || TREE_CODE (t) == MISALIGNED_INDIRECT_REF)
     {
       t = TREE_OPERAND (t, 0);
       if (TREE_TYPE (t) != ptrtype)

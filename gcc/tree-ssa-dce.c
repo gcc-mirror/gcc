@@ -418,7 +418,9 @@ mark_stmt_if_obviously_necessary (tree stmt, bool aggressive)
 	  if (is_global_var (lhs))
 	    mark_stmt_necessary (stmt, true);
 	}
-      else if (TREE_CODE (lhs) == INDIRECT_REF)
+      else if (TREE_CODE (lhs) == INDIRECT_REF
+	       || TREE_CODE (lhs) == ALIGN_INDIRECT_REF
+	       || TREE_CODE (lhs) == MISALIGNED_INDIRECT_REF)
 	{
 	  tree ptr = TREE_OPERAND (lhs, 0);
 	  struct ptr_info_def *pi = SSA_NAME_PTR_INFO (ptr);

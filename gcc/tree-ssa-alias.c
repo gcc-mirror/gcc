@@ -495,14 +495,16 @@ collect_points_to_info_for (struct alias_info *ai, tree ptr)
 
 
 /* Helper for ptr_is_dereferenced_by.  Called by walk_tree to look for
-   INDIRECT_REF nodes for the pointer passed in DATA.  */
+   (ALIGN/MISALIGNED_)INDIRECT_REF nodes for the pointer passed in DATA.  */
 
 static tree
 find_ptr_dereference (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED, void *data)
 {
   tree ptr = (tree) data;
 
-  if (TREE_CODE (*tp) == INDIRECT_REF
+  if ((TREE_CODE (*tp) == INDIRECT_REF
+       || TREE_CODE (*tp) == ALIGN_INDIRECT_REF
+       || TREE_CODE (*tp) == MISALIGNED_INDIRECT_REF)
       && TREE_OPERAND (*tp, 0) == ptr)
     return *tp;
 
@@ -510,8 +512,9 @@ find_ptr_dereference (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED, void *data)
 }
 
 
-/* Return true if STMT contains INDIRECT_REF <PTR>.  *IS_STORE is set
-   to 'true' if the dereference is on the LHS of an assignment.  */
+/* Return true if STMT contains (ALIGN/MISALIGNED_)INDIRECT_REF <PTR>.  
+   *IS_STORE is set to 'true' if the dereference is on the LHS of an 
+   assignment.  */
 
 static bool
 ptr_is_dereferenced_by (tree ptr, tree stmt, bool *is_store)

@@ -1,3 +1,38 @@
+2004-09-23  Dorit Naishlos <dorit@il.ibm.com>
+
+        * gcc.dg/vect/vect-27.c: Now vectorized on altivec.
+        * gcc.dg/vect/vect-29.c: Now vectorized on altivec.
+        * gcc.dg/vect/vect-48.c: Now vectorized on altivec.
+        * gcc.dg/vect/vect-56.c: Now vectorized on altivec.
+        * gcc.dg/vect/vect-72.c: New test for altivec and sse2.
+        * gcc.dg/vect/vect-77.c: Now vectorized on altivec.
+
+        * gcc.dg/vect/vect-27a.c: New test for altivec and mmx.
+        * gcc.dg/vect/vect-29a.c: New test for altivec and mmx.
+        * gcc.dg/vect/vect-48a.c: New test for altivec and mmx.
+        * gcc.dg/vect/vect-56a.c: New test for altivec and mmx.
+        * gcc.dg/vect/vect-72a.c: New test for altivec and mmx.
+        * gcc.dg/vect/vect-77a.c: New test for altivec and mmx.
+
+        * gcc.dg/vect/vect-13.c: Change to run test instead of compile.
+
+        * gcc.dg/vect/vect-44.c: Check additional cases.
+        * gcc.dg/vect/vect-48.c: Check additional cases.
+
+        * gcc.dg/vect/vect-26.c: Use sse2 instead of sse.
+        * gcc.dg/vect/vect-27.c: Use sse2 instead of sse.
+        * gcc.dg/vect/vect-28.c: Use sse2 instead of sse.
+        * gcc.dg/vect/vect-29.c: Use sse2 instead of sse.
+        * gcc.dg/vect/vect-4?.c: Use sse2 instead of sse.
+        * gcc.dg/vect/vect-75.c: Use sse2 instead of sse.
+        * gcc.dg/vect/vect-76.c: Use sse2 instead of sse.
+        * gcc.dg/vect/vect-77.c: Use sse2 instead of sse.
+        * gcc.dg/vect/vect-78.c: Use sse2 instead of sse.
+
+        * gcc.dg/vect/vect-5?.c: Use sse2 instead of sse. Add return 0.
+        * gcc.dg/vect/vect-60.c: Use sse2 instead of sse. Add return 0.
+        * gcc.dg/vect/vect-61.c: Use sse2 instead of sse. Add return 0.
+
 2004-09-23  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* gcc.dg/tree-ssa/loop-6.c: New test.

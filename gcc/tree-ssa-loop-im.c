@@ -137,6 +137,8 @@ for_each_index (tree *addr_p, bool (*cbck) (tree, tree *, void *), void *data)
 	case SSA_NAME:
 	  return cbck (*addr_p, addr_p, data);
 
+	case MISALIGNED_INDIRECT_REF:
+	case ALIGN_INDIRECT_REF:
 	case INDIRECT_REF:
 	  nxt = &TREE_OPERAND (*addr_p, 0);
 	  return cbck (*addr_p, nxt, data);
@@ -1101,7 +1103,9 @@ is_call_clobbered_ref (tree ref)
   if (DECL_P (base))
     return is_call_clobbered (base);
 
-  if (TREE_CODE (base) == INDIRECT_REF)
+  if (TREE_CODE (base) == INDIRECT_REF
+      || TREE_CODE (base) == ALIGN_INDIRECT_REF
+      || TREE_CODE (base) == MISALIGNED_INDIRECT_REF)
     {
       /* Check whether the alias tags associated with the pointer
 	 are call clobbered.  */

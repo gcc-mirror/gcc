@@ -1018,6 +1018,8 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
     case ADDR_EXPR:
     case PREDECREMENT_EXPR:
     case PREINCREMENT_EXPR:
+    case ALIGN_INDIRECT_REF:
+    case MISALIGNED_INDIRECT_REF:
     case INDIRECT_REF:
       if (TREE_CODE (node) == ADDR_EXPR
 	  && (TREE_CODE (TREE_OPERAND (node, 0)) == STRING_CST
@@ -1034,6 +1036,13 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	}
       else
 	dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
+
+      if (TREE_CODE (node) == MISALIGNED_INDIRECT_REF)
+        {
+          pp_string (buffer, "{misalignment: ");
+          dump_generic_node (buffer, TREE_OPERAND (node, 1), spc, flags, false);
+          pp_character (buffer, '}');
+        }
       break;
 
     case POSTDECREMENT_EXPR:
@@ -1451,6 +1460,16 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       is_stmt = false;
       break;
 
+    case REALIGN_LOAD_EXPR:
+      pp_string (buffer, "REALIGN_LOAD <");
+      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
+      pp_string (buffer, ", ");
+      dump_generic_node (buffer, TREE_OPERAND (node, 1), spc, flags, false);
+      pp_string (buffer, ", ");
+      dump_generic_node (buffer, TREE_OPERAND (node, 2), spc, flags, false);
+      pp_string (buffer, ">");
+      break;
+      
     default:
       NIY;
     }
@@ -1710,6 +1729,8 @@ op_prio (tree op)
     case PREINCREMENT_EXPR:
     case PREDECREMENT_EXPR:
     case NEGATE_EXPR:
+    case ALIGN_INDIRECT_REF:
+    case MISALIGNED_INDIRECT_REF:
     case INDIRECT_REF:
     case ADDR_EXPR:
     case FLOAT_EXPR:
@@ -1837,6 +1858,12 @@ op_symbol (tree op)
     case MULT_EXPR:
     case INDIRECT_REF:
       return "*";
+
+    case ALIGN_INDIRECT_REF:
+      return "A*";
+
+    case MISALIGNED_INDIRECT_REF:
+      return "M*";
 
     case TRUNC_DIV_EXPR:
     case RDIV_EXPR:

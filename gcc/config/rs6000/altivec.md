@@ -1902,6 +1902,27 @@
   "lvsr %0,%y1"
   [(set_attr "type" "vecload")])
 
+(define_expand "build_vector_mask_for_load"
+  [(set (match_operand:V16QI 0 "register_operand" "=v")
+	(unspec:V16QI [(match_operand 1 "memory_operand" "m")] 195))]
+  "TARGET_ALTIVEC"
+  "
+{ 
+  rtx addr;
+  rtx temp;
+
+  if (GET_CODE (operands[1]) != MEM)
+    abort ();
+
+  addr = XEXP (operands[1], 0);
+  temp = gen_reg_rtx (GET_MODE (addr));
+  emit_insn (gen_rtx_SET (VOIDmode, temp, 
+			  gen_rtx_NEG (GET_MODE (addr), addr)));
+  emit_insn (gen_altivec_lvsr (operands[0], 
+			       gen_rtx_MEM (GET_MODE (operands[1]), temp)));
+  DONE;
+}")
+
 ;; Parallel some of the LVE* and STV*'s with unspecs because some have
 ;; identical rtl but different instructions-- and gcc gets confused.
 
@@ -2062,3 +2083,40 @@
   "vspltisb %2,0\;vsubsws %3,%2,%1\;vmaxsw %0,%1,%3"
   [(set_attr "type" "vecsimple")
    (set_attr "length" "12")])
+
+(define_insn "vec_realign_load_v4si"
+  [(set (match_operand:V4SI 0 "register_operand" "=v")
+        (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "v")
+                      (match_operand:V4SI 2 "register_operand" "v")
+                      (match_operand:V16QI 3 "register_operand" "v")] 215))]
+  "TARGET_ALTIVEC"
+  "vperm %0,%1,%2,%3"
+  [(set_attr "type" "vecperm")])
+
+(define_insn "vec_realign_load_v4sf"
+  [(set (match_operand:V4SF 0 "register_operand" "=v")
+        (unspec:V4SF [(match_operand:V4SF 1 "register_operand" "v")
+                      (match_operand:V4SF 2 "register_operand" "v")
+                      (match_operand:V16QI 3 "register_operand" "v")] 216))]
+  "TARGET_ALTIVEC"
+  "vperm %0,%1,%2,%3"
+  [(set_attr "type" "vecperm")])
+
+(define_insn "vec_realign_load_v8hi"
+  [(set (match_operand:V8HI 0 "register_operand" "=v")
+        (unspec:V8HI [(match_operand:V8HI 1 "register_operand" "v")
+                      (match_operand:V8HI 2 "register_operand" "v")
+                      (match_operand:V16QI 3 "register_operand" "v")] 217))]
+  "TARGET_ALTIVEC"
+  "vperm %0,%1,%2,%3"
+  [(set_attr "type" "vecperm")])
+
+(define_insn "vec_realign_load_v16qi"
+  [(set (match_operand:V16QI 0 "register_operand" "=v")
+        (unspec:V16QI [(match_operand:V16QI 1 "register_operand" "v")
+                      (match_operand:V16QI 2 "register_operand" "v")
+                      (match_operand:V16QI 3 "register_operand" "v")] 218))]
+  "TARGET_ALTIVEC"
+  "vperm %0,%1,%2,%3"
+  [(set_attr "type" "vecperm")])
+

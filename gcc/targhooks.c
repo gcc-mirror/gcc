@@ -269,6 +269,12 @@ default_scalar_mode_supported_p (enum machine_mode mode)
 }
 
 bool
+default_vect_misaligned_mem_ok (enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return !STRICT_ALIGNMENT;
+}
+
+bool
 hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false (
 	CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
 	enum machine_mode mode ATTRIBUTE_UNUSED,

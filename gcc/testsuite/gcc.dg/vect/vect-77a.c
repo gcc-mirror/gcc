@@ -1,7 +1,7 @@
 /* { dg-do run { target powerpc*-*-* } } */
 /* { dg-do run { target i?86-*-* x86_64-*-* } } */
 /* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-stats -maltivec" { target powerpc*-*-* } } */
-/* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-stats -msse2" { target i?86-*-* x86_64-*-* } } */
+/* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-stats -mmmx" { target i?86-*-* x86_64-*-* } } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
@@ -12,9 +12,8 @@
 typedef int aint __attribute__ ((__aligned__(16)));
 
 aint ib[N+OFF] = {0, 1, 3, 5, 7, 11, 13, 17, 0, 2, 6, 10, 14, 22, 26, 34};
-int off = 8;
 
-int main1 (aint *ib)
+int main1 (aint *ib, int off)
 {
   int i;
   int ia[N];
@@ -39,10 +38,10 @@ int main (void)
 {
   check_vect ();
 
-  main1 (ib);
+  main1 (ib, 8);
   return 0;
 }
 
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
 
