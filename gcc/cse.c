@@ -3598,7 +3598,8 @@ simplify_binary_operation (code, mode, op0, op1)
 	  /* A | (~A) -> -1 */
 	  if (((GET_CODE (op0) == NOT && rtx_equal_p (XEXP (op0, 0), op1))
 	       || (GET_CODE (op1) == NOT && rtx_equal_p (XEXP (op1, 0), op0)))
-	      && ! side_effects_p (op0))
+	      && ! side_effects_p (op0)
+	      && mode == CCmode)
 	    return constm1_rtx;
 	  break;
 
@@ -3608,7 +3609,8 @@ simplify_binary_operation (code, mode, op0, op1)
 	  if (GET_CODE (op1) == CONST_INT
 	      && (INTVAL (op1) & GET_MODE_MASK (mode)) == GET_MODE_MASK (mode))
 	    return gen_rtx (NOT, mode, op0);
-	  if (op0 == op1 && ! side_effects_p (op0))
+	  if (op0 == op1 && ! side_effects_p (op0)
+	      && mode == CCmode)
 	    return const0_rtx;
 	  break;
 
@@ -3618,7 +3620,8 @@ simplify_binary_operation (code, mode, op0, op1)
 	  if (GET_CODE (op1) == CONST_INT
 	      && (INTVAL (op1) & GET_MODE_MASK (mode)) == GET_MODE_MASK (mode))
 	    return op0;
-	  if (op0 == op1 && ! side_effects_p (op0))
+	  if (op0 == op1 && ! side_effects_p (op0)
+	      && mode == CCmode)
 	    return op0;
 	  /* A & (~A) -> 0 */
 	  if (((GET_CODE (op0) == NOT && rtx_equal_p (XEXP (op0, 0), op1))
@@ -4158,6 +4161,11 @@ simplify_relational_operation (code, mode, op0, op1)
   /* If op0 is a compare, extract the comparison arguments from it.  */
   if (GET_CODE (op0) == COMPARE && op1 == const0_rtx)
     op1 = XEXP (op0, 1), op0 = XEXP (op0, 0);
+
+  /* What to do with CCmode isn't clear yet.
+     Let's make sure nothing erroneous is done.  */
+  if (GET_MODE (op0) == CCmode)
+    return 0;
 
   /* Unlike the arithmetic operations, we can do the comparison whether
      or not WIDTH is larger than HOST_BITS_PER_WIDE_INT because the
@@ -6595,6 +6603,13 @@ cse_insn (insn, in_libcall_block)
 	      delete_insn (insn);
 	      insn = new;
 	    }
+	  else
+	    /* Otherwise, force rerecognition, since it probably had
+	       a different pattern before.
+	       This shouldn't really be necessary, since whatever
+	       changed the source value above should have done this.
+	       Until the right place is found, might as well do this here.  */
+	    INSN_CODE (insn) = -1;
 
 	  /* Now that we've converted this jump to an unconditional jump,
 	     there is dead code after it.  Delete the dead code until we
