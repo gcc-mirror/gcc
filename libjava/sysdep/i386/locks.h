@@ -62,4 +62,12 @@ read_barrier()
 {
 }
 
+// Ensure that prior stores to memory are completed with respect to other
+// processors.
+inline static void
+write_barrier()
+{
+  // X86 does not reorder writes. We just need to ensure that gcc also doesn't.
+  __asm__ __volatile__(" " : : : "memory");
+}
 #endif

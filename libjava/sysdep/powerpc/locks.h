@@ -75,4 +75,12 @@ read_barrier()
   __asm__ __volatile__ ("isync" : : : "memory");
 }
 
+// Ensure that prior stores to memory are completed with respect to other
+// processors.
+inline static void
+write_barrier()
+{
+  __asm__ __volatile__ ("sync" : : : "memory");
+}
+
 #endif
