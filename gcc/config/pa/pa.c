@@ -4472,3 +4472,4 @@ pa_reorg (insns)
 	  delete_insn (insn);
 	}
     }
+}
