@@ -970,54 +970,30 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
       if (pass_by_reference (args_so_far, TYPE_MODE (type),
 			     type, argpos < n_named_args))
 	{
-	  /* If we're compiling a thunk, pass through invisible
-             references instead of making a copy.  */
+	  bool callee_copies;
+	  tree base;
+
+	  callee_copies
+	    = FUNCTION_ARG_CALLEE_COPIES (*args_so_far, TYPE_MODE (type),
+					  type, argpos < n_named_args);
+
+	  /* If we're compiling a thunk, pass through invisible references
+	     instead of making a copy.  */
 	  if (call_from_thunk_p
-	      || (FUNCTION_ARG_CALLEE_COPIES (*args_so_far, TYPE_MODE (type),
-					     type, argpos < n_named_args)
-		  /* If it's in a register, we must make a copy of it too.  */
-		  /* ??? Is this a sufficient test?  Is there a better one? */
-		  && !(TREE_CODE (args[i].tree_value) == VAR_DECL
-		       && REG_P (DECL_RTL (args[i].tree_value)))
-		  && ! TREE_ADDRESSABLE (type))
-	      )
+	      || (callee_copies
+		  && !TREE_ADDRESSABLE (type)
+		  && (base = get_base_address (args[i].tree_value))
+		  && (!DECL_P (base) || MEM_P (DECL_RTL (base)))))
 	    {
-	      /* C++ uses a TARGET_EXPR to indicate that we want to make a
-	         new object from the argument.  If we are passing by
-	         invisible reference, the callee will do that for us, so we
-	         can strip off the TARGET_EXPR.  This is not always safe,
-	         but it is safe in the only case where this is a useful
-	         optimization; namely, when the argument is a plain object.
-	         In that case, the frontend is just asking the backend to
-	         make a bitwise copy of the argument.  */
-
-	      if (TREE_CODE (args[i].tree_value) == TARGET_EXPR
-		  && (DECL_P (TREE_OPERAND (args[i].tree_value, 1)))
-		  && ! REG_P (DECL_RTL (TREE_OPERAND (args[i].tree_value, 1))))
-		args[i].tree_value = TREE_OPERAND (args[i].tree_value, 1);
-
-	      /* We can't use sibcalls if a callee-copied argument is stored
-		 in the current function's frame.  */
-	      if (!call_from_thunk_p
-		  && (!DECL_P (args[i].tree_value)
-		      || !TREE_STATIC (args[i].tree_value)))
+	      /* We can't use sibcalls if a callee-copied argument is
+		 stored in the current function's frame.  */
+	      if (!call_from_thunk_p && DECL_P (base) && !TREE_STATIC (base))
 		*may_tailcall = false;
 
-	      args[i].tree_value = build1 (ADDR_EXPR,
-					   build_pointer_type (type),
-					   args[i].tree_value);
-	      type = build_pointer_type (type);
-	    }
-	  else if (TREE_CODE (args[i].tree_value) == TARGET_EXPR)
-	    {
-	      /* In the V3 C++ ABI, parameters are destroyed in the caller.
-		 We implement this by passing the address of the temporary
-	         rather than expanding it into another allocated slot.  */
-	      args[i].tree_value = build1 (ADDR_EXPR,
-					   build_pointer_type (type),
-					   args[i].tree_value);
-	      type = build_pointer_type (type);
-	      *may_tailcall = false;
+	      args[i].tree_value = build_fold_addr_expr (args[i].tree_value);
+	      type = TREE_TYPE (args[i].tree_value);
+
+	      *ecf_flags &= ~(ECF_CONST | ECF_LIBCALL_BLOCK);
 	    }
 	  else
 	    {
@@ -1051,12 +1027,15 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 		copy = assign_temp (type, 0, 1, 0);
 
 	      store_expr (args[i].tree_value, copy, 0);
-	      *ecf_flags &= ~(ECF_CONST | ECF_PURE | ECF_LIBCALL_BLOCK);
 
-	      args[i].tree_value = build1 (ADDR_EXPR,
-					   build_pointer_type (type),
-					   make_tree (type, copy));
-	      type = build_pointer_type (type);
+	      if (callee_copies)
+		*ecf_flags &= ~(ECF_CONST | ECF_LIBCALL_BLOCK);
+	      else
+		*ecf_flags &= ~(ECF_CONST | ECF_PURE | ECF_LIBCALL_BLOCK);
+
+	      args[i].tree_value
+		= build_fold_addr_expr (make_tree (type, copy));
+	      type = TREE_TYPE (args[i].tree_value);
 	      *may_tailcall = false;
 	    }
 	}
@@ -3379,24 +3358,13 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	      flags |= ECF_PURE;
 	    }
 
-	  if (GET_MODE (val) == MEM && ! must_copy)
+	  if (GET_MODE (val) == MEM && !must_copy)
 	    slot = val;
-	  else if (must_copy)
+	  else
 	    {
 	      slot = assign_temp (lang_hooks.types.type_for_mode (mode, 0),
 				  0, 1, 1);
 	      emit_move_insn (slot, val);
-	    }
-	  else
-	    {
-	      tree type = lang_hooks.types.type_for_mode (mode, 0);
-
-	      slot
-		= gen_rtx_MEM (mode,
-			       expand_expr (build1 (ADDR_EXPR,
-						    build_pointer_type (type),
-						    make_tree (type, val)),
-					    NULL_RTX, VOIDmode, 0));
 	    }
 
 	  call_fusage = gen_rtx_EXPR_LIST (VOIDmode,
