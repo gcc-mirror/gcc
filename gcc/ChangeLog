@@ -3,6 +3,8 @@
 	* cfgrtl.c (rtl_verify_flow_info): Don't use INSN_P when
 	checking if an unconditional return is followed by a barrier.
 
+	* jump.c (condjump_p): Remove unreachable code.
+
 2004-11-17  Jeff Law  <law@redhat.com>
 
 	* tree-cfg.c (edge_to_cases): Renamed from edge_to_case_leader.
