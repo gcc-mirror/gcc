@@ -1062,6 +1062,41 @@ then
   ln -s ${INPUT}/multimedia/audio_hdr.h ${LIB}/multimedia 2>/dev/null
 fi
 
+# Determine if we're on Interactive Unix 2.2 or later, in which case we
+# need to fix some additional files.  This is the same test for ISC that
+# Autoconf uses.
+if test -d /etc/conf/kconfig.d \
+    && grep _POSIX_VERSION /usr/include/sys/unistd.h >/dev/null 2>&1; then
+  echo "Fixing ISC __STDC__ goof in several files..."
+  for name in stdio.h math.h ctype.h sys/limits.h sys/fcntl.h sys/dirent.h; do
+    echo $name
+    if test -r ${LIB}/$name; then
+      file=${LIB}/$name
+    else
+      file=${INPUT}/$name
+    fi
+    # On Interactive 2.2, certain traditional Unix definitions
+    # (notably getc and putc in stdio.h) are omitted if __STDC__ is
+    # defined, not just if _POSIX_SOURCE is defined.  This makes it
+    # impossible to compile any nontrivial program except with -posix.
+    sed \
+'s/!defined(__STDC__) && !defined(_POSIX_SOURCE)/!defined(_POSIX_SOURCE)/' \
+	    < $file > ${LIB}/$name.
+    mv ${LIB}/$name. ${LIB}/$name
+  done
+  
+  echo "Fixing ISC fmod declaration"
+  # This one's already been fixed for other things.
+  file=${LIB}/math.h
+  sed 's/fmod(double)/fmod(double, double)/' <$file >$file.
+  mv $file. $file
+  
+  echo "Fixing nested comments in ISC <sys/limits.h>"
+  file=sys/limits.h
+  sed '/CHILD_MAX/s,/\* Max, Max,' < ${INPUT}/$file >${LIB}/$file.
+  sed '/OPEN_MAX/s,/\* Max, Max,' < ${LIB}/$file. >${LIB}/$file
+fi
+
 # These files on Ultrix 4.2 put comments around instances of #endif
 # __mips.  When the sed expression turns that into #endif /* __mips */
 # the comment ends prematurely.
