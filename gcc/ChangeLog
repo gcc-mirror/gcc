@@ -1,3 +1,8 @@
+2000-05-22  Richard Henderson  <rth@cygnus.com>
+
+	* function.c (thread_prologue_and_epilogue_insns): Make sure 
+	existing line number notes appear after the prologue.
+
 Mon May 22 21:49:00 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/alpha/alpha.c (alpha_fnname): New static variable.

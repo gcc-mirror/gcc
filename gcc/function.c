@@ -6812,15 +6812,16 @@ void
 thread_prologue_and_epilogue_insns (f)
      rtx f ATTRIBUTE_UNUSED;
 {
-  int insertted = 0;
+  int inserted = 0;
   edge e;
   rtx seq;
+#ifdef HAVE_prologue
+  rtx prologue_end = NULL_RTX;
+#endif
 
 #ifdef HAVE_prologue
   if (HAVE_prologue)
     {
-      rtx insn;
-
       start_sequence ();
       seq = gen_prologue();
       emit_insn (seq);
@@ -6829,26 +6830,7 @@ thread_prologue_and_epilogue_insns (f)
       if (GET_CODE (seq) != SEQUENCE)
 	seq = get_insns ();
       record_insns (seq, &prologue);
-      emit_note (NULL, NOTE_INSN_PROLOGUE_END);
-
-      /* GDB handles `break f' by setting a breakpoint on the first
-	 line note *after* the prologue.  That means that we should
-	 insert a line note here; otherwise, if the next line note
-	 comes part way into the next block, GDB will skip all the way
-	 to that point.  */
-      insn = next_nonnote_insn (f);
-      while (insn)
-	{
-	  if (GET_CODE (insn) == NOTE 
-	      && NOTE_LINE_NUMBER (insn) >= 0)
-	    {
-	      emit_line_note_force (NOTE_SOURCE_FILE (insn),
-				    NOTE_LINE_NUMBER (insn));
-	      break;
-	    }
-
-	  insn = PREV_INSN (insn);
-	}
+      prologue_end = emit_note (NULL, NOTE_INSN_PROLOGUE_END);
 
       seq = gen_sequence ();
       end_sequence ();
@@ -6862,7 +6844,7 @@ thread_prologue_and_epilogue_insns (f)
 	    abort ();
 
 	  insert_insn_on_edge (seq, ENTRY_BLOCK_PTR->succ);
-	  insertted = 1;
+	  inserted = 1;
 	}
       else
 	emit_insn_after (seq, f);
@@ -6977,7 +6959,7 @@ thread_prologue_and_epilogue_insns (f)
 	  seq = gen_sequence ();
 	  end_sequence ();
 	  insert_insn_on_edge (seq, e);
-	  insertted = 1;
+	  inserted = 1;
 	}
       goto epilogue_done;
     }
@@ -7011,12 +6993,12 @@ thread_prologue_and_epilogue_insns (f)
       end_sequence();
 
       insert_insn_on_edge (seq, e);
-      insertted = 1;
+      inserted = 1;
     }
 #endif
 epilogue_done:
 
-  if (insertted)
+  if (inserted)
     commit_edge_insertions ();
 
 #ifdef HAVE_sibcall_epilogue
@@ -7047,6 +7029,54 @@ epilogue_done:
 	 avoid getting rid of sibcall epilogue insns.  */
       record_insns (GET_CODE (seq) == SEQUENCE
 		    ? seq : newinsn, &sibcall_epilogue);
+    }
+#endif
+
+#ifdef HAVE_prologue
+  if (prologue_end)
+    {
+      rtx insn, prev;
+
+      /* GDB handles `break f' by setting a breakpoint on the first
+	 line note *after* the prologue.  Which means (1) that if
+	 there are line number notes before where we inserted the
+	 prologue we should move them, and (2) if there is no such
+	 note, then we should generate one at the prologue.  */
+
+      for (insn = prologue_end; insn ; insn = prev)
+	{
+	  prev = PREV_INSN (insn);
+	  if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) > 0)
+	    {
+	      /* Note that we cannot reorder the first insn in the
+		 chain, since rest_of_compilation relies on that
+		 remaining constant.  Do the next best thing.  */
+	      if (prev == NULL)
+		{
+		  emit_line_note_after (NOTE_SOURCE_FILE (insn),
+					NOTE_LINE_NUMBER (insn),
+					prologue_end);
+		  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+		}
+	      else
+		reorder_insns (insn, insn, prologue_end);
+	    }
+	}
+
+      insn = NEXT_INSN (prologue_end);
+      if (! insn || GET_CODE (insn) != NOTE || NOTE_LINE_NUMBER (insn) <= 0)
+	{
+	  for (insn = next_active_insn (f); insn ; insn = PREV_INSN (insn))
+	    {
+	      if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) > 0)
+		{
+		  emit_line_note_after (NOTE_SOURCE_FILE (insn),
+					NOTE_LINE_NUMBER (insn),
+					prologue_end);
+		  break;
+		}
+	    }
+	}
     }
 #endif
 }
