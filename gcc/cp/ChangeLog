@@ -1,3 +1,8 @@
+1998-10-17  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (grokfndecl): Set DECL_CONTEXT to namespace if appropriate.
+	(grokvardecl): Likewise.
+
 Sat Oct 17 23:27:20 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* class.c (make_method_vec): Cast 1st argument of `bzero' to (PTR).

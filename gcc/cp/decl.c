@@ -8042,9 +8042,11 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
   if (TYPE_VOLATILE (type))
     TREE_THIS_VOLATILE (decl) = 1;
 
-  /* This decl is not from the current namespace. */
+  /* If this decl has namespace scope, set that up.  */
   if (in_namespace)
     set_decl_namespace (decl, in_namespace);
+  else if (publicp && ! ctype)
+    DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
 
   /* `main' and builtins have implicit 'C' linkage.  */
   if ((MAIN_NAME_P (declarator)
@@ -8053,11 +8055,9 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 	   && IDENTIFIER_POINTER (declarator)[1] == '_'
 	   && strncmp (IDENTIFIER_POINTER (declarator)+2, "builtin_", 8) == 0))
       && current_lang_name == lang_name_cplusplus
-      /* context == 0 could mean global scope or not set yet; either is fine
-	 for us here, as we check current_namespace.  */
-      && DECL_CONTEXT (decl) == NULL_TREE
       && ctype == NULL_TREE
-      && current_namespace == global_namespace)
+      /* NULL_TREE means global namespace.  */
+      && DECL_CONTEXT (decl) == NULL_TREE)
     DECL_LANGUAGE (decl) = lang_c;
 
   /* Should probably propagate const out from type to decl I bet (mrs).  */
@@ -8305,12 +8305,21 @@ grokvardecl (type, declarator, specbits_in, initialized, constp, in_namespace)
     }
   else
     {
-      tree context = in_namespace ? in_namespace : current_namespace;
+      tree context;
+
+      if (in_namespace)
+	context = in_namespace;
+      else if (namespace_bindings_p () || RIDBIT_SETP (RID_EXTERN, specbits))
+	context = current_namespace;
+
       decl = build_decl (VAR_DECL, declarator, complete_type (type));
-      if (declarator && context != global_namespace && namespace_bindings_p ()
-	  && current_lang_name != lang_name_c)
-	DECL_ASSEMBLER_NAME (decl) =  build_static_name (context,
-							 declarator);
+
+      if (context)
+	set_decl_namespace (decl, context);
+
+      context = DECL_CONTEXT (decl);
+      if (declarator && context && current_lang_name != lang_name_c)
+	DECL_ASSEMBLER_NAME (decl) = build_static_name (context, declarator);
     }
 
   if (in_namespace)
