@@ -990,6 +990,9 @@ static enum x86_64_reg_class merge_classes PARAMS ((enum x86_64_reg_class,
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM ix86_cannot_force_const_mem
 
+#undef TARGET_DELEGITIMIZE_ADDRESS
+#define TARGET_DELEGITIMIZE_ADDRESS i386_simplify_dwarf_addr
+
 #undef TARGET_MS_BITFIELD_LAYOUT_P
 #define TARGET_MS_BITFIELD_LAYOUT_P ix86_ms_bitfield_layout_p
 
@@ -5368,21 +5371,7 @@ ix86_find_base_term (x)
       return term;
     }
 
-  if (GET_CODE (x) != PLUS
-      || XEXP (x, 0) != pic_offset_table_rtx
-      || GET_CODE (XEXP (x, 1)) != CONST)
-    return x;
-
-  term = XEXP (XEXP (x, 1), 0);
-
-  if (GET_CODE (term) == PLUS && GET_CODE (XEXP (term, 1)) == CONST_INT)
-    term = XEXP (term, 0);
-
-  if (GET_CODE (term) != UNSPEC
-      || XINT (term, 1) != UNSPEC_GOTOFF)
-    return x;
-
-  term = XVECEXP (term, 0, 0);
+  term = i386_simplify_dwarf_addr (x);
 
   if (GET_CODE (term) != SYMBOL_REF
       && GET_CODE (term) != LABEL_REF)
@@ -8047,24 +8036,7 @@ static rtx
 maybe_get_pool_constant (x)
      rtx x;
 {
-  x = XEXP (x, 0);
-
-  if (flag_pic && ! TARGET_64BIT)
-    {
-      if (GET_CODE (x) != PLUS)
-	return NULL_RTX;
-      if (XEXP (x, 0) != pic_offset_table_rtx)
-	return NULL_RTX;
-      x = XEXP (x, 1);
-      if (GET_CODE (x) != CONST)
-	return NULL_RTX;
-      x = XEXP (x, 0);
-      if (GET_CODE (x) != UNSPEC)
-	return NULL_RTX;
-      if (XINT (x, 1) != UNSPEC_GOTOFF)
-	return NULL_RTX;
-      x = XVECEXP (x, 0, 0);
-    }
+  x = i386_simplify_dwarf_addr (XEXP (x, 0));
 
   if (GET_CODE (x) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (x))
     return get_pool_constant (x);

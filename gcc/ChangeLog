@@ -1,3 +1,24 @@
+2002-02-03  Roger Sayle  <roger@eyesopen.com>
+
+	* hooks.c (hook_rtx_rtx_identity): Generic hook function that
+	takes a single rtx and returns it unmodified.
+	* hooks.h (hook_rtx_rtx_identity): Prototype here.
+	* target.h (struct gcc_target): Add "delegitimize_address" 
+	field to target structure.
+	* target-def.h (TARGET_DELEGITIMIZE_ADDRESS):  Provide default
+	for delegitimize_address target using hook_rtx_rtx_identity.
+	(TARGET_INITIALIZER): Initialize delegitimize_address field
+	using TARGET_DELEGITIMIZE_ADDRESS macro.
+	* simplify-rtx.c (avoid_constant_pool_reference): Handle float
+	extensions of constant pool references.  Use delegitimize_address
+	to undo the obfuscation of "-fpic".
+	* Makefile.in (simplify-rtx.o): Add dependency on target.h.
+
+	* config/i386/i386.c (TARGET_DELEGITIMIZE_ADDRESS): Define as
+	i386_simplify_dwarf_addr.
+	(ix86_find_base_term): Simplify using i386_simplify_dwarf_addr.
+  	(maybe_get_pool_constant): Likewise.
+
 Mon Feb  3 16:01:17 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_expand_int_movcc):  Fix setcc sign bit case.
