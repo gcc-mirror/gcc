@@ -380,24 +380,6 @@ struct temp_slot *temp_slots;
 
 int temp_slot_level;
 
-/* The FUNCTION_DECL node for the current function.  */
-static tree this_function_decl;
-
-/* Callinfo pointer for the current function.  */
-static rtx this_function_callinfo;
-
-/* The call description vector for the current function.  */
-static rtx this_function_calldesc;
-
-/* Size of the local variables allocated for the current function.  */
-int local_vars_size;
-
-/* Maximum depth of the evaluation stack in this function.  */
-int max_stack_depth;
-
-/* Current depth in statement expressions.  */
-static int stmt_expr_depth;
-
 /* This structure is used to record MEMs or pseudos used to replace VAR, any
    SUBREGs of VAR, and any MEMs containing VAR as an address.  We need to
    maintain this list in case two operands of an insn were required to match;

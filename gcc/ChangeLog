@@ -8,7 +8,7 @@ Tue Jan 20 09:29:09 1998  Jeffrey A Law  (law@cygnus.com)
 	* tree.h, varasm.c: Likewise.
 	* config/m68k/m68k.h: Likewise.
 	* bi-*, bc-*, bytecode*: Delete bytecode related files.
-	
+	* modemap.def: Likewise.
 
 Tue Jan 20 09:02:31 1998  Gavin Koch  (gavin@cygnus.com)
 
