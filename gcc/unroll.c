@@ -769,7 +769,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 
   splittable_regs = (rtx *) alloca (maxregnum * sizeof (rtx));
   bzero ((char *) splittable_regs, maxregnum * sizeof (rtx));
-  derived_regs = alloca (maxregnum);
+  derived_regs = (char *) alloca (maxregnum);
   bzero (derived_regs, maxregnum);
   splittable_regs_updates = (int *) alloca (maxregnum * sizeof (int));
   bzero ((char *) splittable_regs_updates, maxregnum * sizeof (int));

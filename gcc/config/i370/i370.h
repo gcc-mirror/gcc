@@ -152,7 +152,8 @@ extern int mvs_function_name_length;
    text can be read.  CH is the first character after the #pragma.  The
    result of the expression is the terminating character found
    (newline or EOF).  */
-#define HANDLE_PRAGMA(FILE, NODE) handle_pragma ((FILE), (NODE))
+#define HANDLE_PRAGMA(FILE, ungetc_unused, NODE) \
+  handle_pragma ((FILE), (NODE))
 #endif /* TARGET_HLASM */
 
 /* Define maximum length of page minus page escape overhead.  */
@@ -1137,10 +1138,7 @@ enum reg_class
   else									\
     ch = '@';								\
   for (bp = temp; *bp; bp++)						\
-    {									\
-      *bp = TOUPPER (*bp);						\
-      else if (*bp == '_') *bp = ch;					\
-    }									\
+    *bp = (*bp == '_' ? ch : TOUPPER (*bp));				\
   fprintf (FILE, "%s", temp);						\
 }
 
