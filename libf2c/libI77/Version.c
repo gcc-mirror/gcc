@@ -1,4 +1,4 @@
-static char junk[] = "\n@(#) LIBI77 VERSION pjw,dmg-mods 19991115\n";
+static char junk[] = "\n@(#) LIBI77 VERSION pjw,dmg-mods 20001205\n";
 
 /*
 */
@@ -314,6 +314,15 @@ wrtfmt.c:
 /*		Compiling libf2c with -DALWAYS_FLUSH should prevent losing */
 /*		any data in buffers should the program fault.  It also */
 /*		makes the program run more slowly. */
+/* 20 April 2000: rsne.c, xwsne.c: tweaks that only matter if ftnint and */
+/*		ftnlen are of different fundamental types (different numbers */
+/*		of bits).  Since these files will not compile when this */
+/*		change matters, the above VERSION string remains unchanged. */
+/* 4 July 2000: adjustments to permit compilation by C++ compilers; */
+/*		VERSION string remains unchanged. NOT APPLIED FOR G77 */
+/* 5 Dec. 2000: lread.c: under namelist input, when reading a logical array, */
+/*		treat Tstuff= and Fstuff= as new assignments rather than as */
+/*		logical constants. */
 
 
 

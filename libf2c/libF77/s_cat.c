@@ -22,9 +22,9 @@
 
  VOID
 #ifdef KR_headers
-s_cat(lp, rpp, rnp, np, ll) char *lp, *rpp[]; ftnlen rnp[], *np, ll;
+s_cat(lp, rpp, rnp, np, ll) char *lp, *rpp[]; ftnint rnp[], *np; ftnlen ll;
 #else
-s_cat(char *lp, char *rpp[], ftnlen rnp[], ftnlen *np, ftnlen ll)
+s_cat(char *lp, char *rpp[], ftnint rnp[], ftnint *np, ftnlen ll)
 #endif
 {
 	ftnlen i, nc;

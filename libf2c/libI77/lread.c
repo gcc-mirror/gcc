@@ -339,11 +339,93 @@ l_C(Void)
 	return(0);
 }
 
+ static char nmLbuf[256], *nmL_next;
+ static int (*nmL_getc_save)(Void);
+#ifdef KR_headers
+ static int (*nmL_ungetc_save)(/* int, FILE* */);
+#else
+ static int (*nmL_ungetc_save)(int, FILE*);
+#endif
+
+ static int
+nmL_getc(Void)
+{
+	int rv;
+	if (rv = *nmL_next++)
+		return rv;
+	l_getc = nmL_getc_save;
+	l_ungetc = nmL_ungetc_save;
+	return (*l_getc)();
+	}
+
+ static int
+#ifdef KR_headers
+nmL_ungetc(x, f) int x; FILE *f;
+#else
+nmL_ungetc(int x, FILE *f)
+#endif
+{
+	f = f;	/* banish non-use warning */
+	return *--nmL_next = x;
+	}
+
+ static int
+#ifdef KR_headers
+Lfinish(ch, dot, rvp) int ch, dot, *rvp;
+#else
+Lfinish(int ch, int dot, int *rvp)
+#endif
+{
+	char *s, *se;
+	static char what[] = "namelist input";
+
+	s = nmLbuf + 2;
+	se = nmLbuf + sizeof(nmLbuf) - 1;
+	*s++ = ch;
+	while(!issep(GETC(ch)) && ch!=EOF) {
+		if (s >= se) {
+ nmLbuf_ovfl:
+			return *rvp = err__fl(f__elist->cierr,131,what);
+			}
+		*s++ = ch;
+		if (ch != '=')
+			continue;
+		if (dot)
+			return *rvp = err__fl(f__elist->cierr,112,what);
+ got_eq:
+		*s = 0;
+		nmL_getc_save = l_getc;
+		l_getc = nmL_getc;
+		nmL_ungetc_save = l_ungetc;
+		l_ungetc = nmL_ungetc;
+		nmLbuf[1] = *(nmL_next = nmLbuf) = ',';
+		*rvp = f__lcount = 0;
+		return 1;
+		}
+	if (dot)
+		goto done;
+	for(;;) {
+		if (s >= se)
+			goto nmLbuf_ovfl;
+		*s++ = ch;
+		if (!isblnk(ch))
+			break;
+		if (GETC(ch) == EOF)
+			goto done;
+		}
+	if (ch == '=')
+		goto got_eq;
+ done:
+	Ungetc(ch, f__cf);
+	return 0;
+	}
+
  static int
 l_L(Void)
 {
-	int ch;
-	if(f__lcount>0) return(0);
+	int ch, rv, sawdot;
+	if(f__lcount>0)
+		return(0);
 	f__lcount = 1;
 	f__ltype=0;
 	GETC(ch);
@@ -357,15 +439,23 @@ l_L(Void)
 				err(f__elist->cierr,(EOF),"lread");
 		GETC(ch);
 	}
-	if(ch == '.') GETC(ch);
+	sawdot = 0;
+	if(ch == '.') {
+		sawdot = 1;
+		GETC(ch);
+		}
 	switch(ch)
 	{
 	case 't':
 	case 'T':
+		if (nml_read && Lfinish(ch, sawdot, &rv))
+			return rv;
 		f__lx=1;
 		break;
 	case 'f':
 	case 'F':
+		if (nml_read && Lfinish(ch, sawdot, &rv))
+			return rv;
 		f__lx=0;
 		break;
 	default:

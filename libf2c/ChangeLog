@@ -1,3 +1,21 @@
+2000-12-09  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	Update to Netlib version 20001205.
+	Thanks go to David M. Gay for these updates.
+
+	* libF77/Version.c: Update version information.
+	* libF77/z_log.c: Improve accuracy of real(log(z)) for
+	z near (+-1,eps) with |eps| small.
+	* libF77/s_cat.c: Adjust call when ftnint and ftnlen are
+	of different size.
+	* libF77/dtime_.c, libF77/etime_.c: Use floating point divide.
+
+	* libI77/Version.c: Update version information.
+	* libI77/rsne.c, libI77/xwsne.c: Adjust code for when ftnint
+	and ftnlen differ in size.
+	* libI77/lread.c: Fix reading of namelist logical values followed
+	by <name>= where <name> starts with T or F.
+
 2000-11-26  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* libI77/Version.c, libF77/Version.c, libU77/Version.c:
