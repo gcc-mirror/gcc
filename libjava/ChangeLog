@@ -1,3 +1,8 @@
+2002-02-26  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natPosixProcess.cc (startProcess): Use FD_CLOEXEC, not
+	`1'.
+
 2002-02-25  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* Makefile.am (GCJCOMPILE): Use -fCLASSPATH not -fclasspath. Fixes
