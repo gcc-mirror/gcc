@@ -1,3 +1,10 @@
+2001-11-19  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/fragments.texi, doc/trouble.texi: Remove links to old
+	installation chapter.
+	* doc/gcc.texi: Don't claim that this manual documents
+	installation.  Mark Installation menu entry as being out of date.
+
 Mon Nov 19 07:21:35 2001  Douglas B. Rupp  <rupp@gnat.com>
 
 	* config/alpha/xm-vms.h: Don't define macros that autoconf handles.
