@@ -135,55 +135,20 @@ extern char *xcoff_bss_section_name;
 extern char *xcoff_private_data_section_name;
 extern char *xcoff_read_only_section_name;
 
+/* Last source file name mentioned in a NOTE insn.  */
+
+extern char *xcoff_lastfile;
+
 /* Don't write out path name for main source file.  */
 #define DBX_OUTPUT_MAIN_SOURCE_DIRECTORY(FILE,FILENAME)
 
-/* Write out main source file name using ".file" rather than ".stabs".  */
-/* This is defined as empty, because the assembler gets confused if there
+/* Write out main source file name using ".file" rather than ".stabs".
+   We don't actually do this here, because the assembler gets confused if there
    is more than one .file directive.  ASM_FILE_START in config/rs6000/rs6000.h
-   is already emitting a .file direcgtory, so don't output one here also.  */
-#if 1
-#define DBX_OUTPUT_MAIN_SOURCE_FILENAME(FILE,FILENAME)
-#else
+   is already emitting a .file direcgtory, so we don't output one here also.
+   Initialize xcoff_lastfile.  */
 #define DBX_OUTPUT_MAIN_SOURCE_FILENAME(FILE,FILENAME) \
-  do {						\
-    fprintf (FILE, "\t.file\t", FILENAME);	\
-    output_quoted_string (FILE, FILENAME);	\
-    fprintf (FILE, "\n");			\
-  } while (0)
-#endif
-
-#define ABS_OR_RELATIVE_LINENO(LINENO)		\
-((xcoff_current_include_file			\
-  && xcoff_current_include_file != xcoff_current_function_file)	\
- ? (LINENO) : (LINENO) - xcoff_begin_function_line)
-
-/* Output source line numbers via ".line" rather than ".stabd".  */
-#define ASM_OUTPUT_SOURCE_LINE(FILE,LINENUM) \
-  do {						\
-    if (xcoff_begin_function_line >= 0)		\
-      fprintf (FILE, "\t.line\t%d\n", ABS_OR_RELATIVE_LINENO (LINENUM)); \
-  } while (0)
-
-/* We don't want to emit source file names in dbx style. */
-#define DBX_OUTPUT_SOURCE_FILENAME(FILE, FILENAME)	\
-{							\
-  if (xcoff_current_include_file)			\
-    {							\
-      fprintf (FILE, "\t.ei\t");			\
-      output_quoted_string (FILE, xcoff_current_include_file);	\
-      fprintf (FILE, "\n");				\
-    }							\
-  if (strcmp (main_input_filename, FILENAME))		\
-    {							\
-      fprintf (FILE, "\t.bi\t");			\
-      output_quoted_string (FILE, FILENAME);		\
-      fprintf (FILE, "\n");				\
-      xcoff_current_include_file = FILENAME;		\
-    }							\
-  else							\
-    xcoff_current_include_file = NULL;			\
-}
+  xcoff_lastfile = input_file_name
 
 /* If we are still in an include file, its end must be marked.  */
 #define DBX_OUTPUT_MAIN_SOURCE_FILE_END(FILE, FILENAME)	\
