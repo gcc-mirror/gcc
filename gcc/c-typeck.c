@@ -1033,6 +1033,87 @@ default_conversion (exp)
   return exp;
 }
 
+/* Look up component name in the structure type definition.  */
+     
+static tree
+lookup_field (type, component)
+     tree type, component;
+{
+  tree field;
+
+  /* If TYPE_LANG_SPECIFIC is set, then it is a sorted array of pointers
+     to the field elements.  Use a binary search on this array to quickly
+     find the element.  Otherwise, do a linear search.  TYPE_LANG_SPECIFIC
+     will always be set for structures which have many elements.  */
+
+  if (TYPE_LANG_SPECIFIC (type))
+    {
+      int bot, top, half;
+      tree *field_array = &TYPE_LANG_SPECIFIC (type)->elts[0];
+
+      field = TYPE_FIELDS (type);
+      bot = 0;
+      top = TYPE_LANG_SPECIFIC (type)->len;
+      while (top - bot > 1)
+	{
+	  int cmp;
+
+	  half = (top - bot + 1) >> 1;
+	  field = field_array[bot+half];
+
+	  if (DECL_NAME (field) == NULL_TREE)
+	    {
+	      /* Step through all anon unions in linear fashion.  */
+	      while (DECL_NAME (field_array[bot]) == NULL_TREE)
+		{
+		  tree anon;
+		  field = field_array[bot++];
+		  anon = lookup_field (TREE_TYPE (field), component);
+		  if (anon != NULL_TREE)
+		    return anon;
+		}
+
+	      /* Entire record is only anon unions.  */
+	      if (bot > top)
+		return NULL_TREE;
+
+	      /* Restart the binary search, with new lower bound.  */
+	      continue;
+	    }
+
+	  cmp = (long)DECL_NAME (field) - (long)component;
+	  if (cmp == 0)
+	    break;
+	  if (cmp < 0)
+	    bot += half;
+	  else
+	    top = bot + half;
+	}
+
+      if (DECL_NAME (field_array[bot]) == component)
+	field = field_array[bot];
+      else if (DECL_NAME (field) != component)
+	field = 0;
+    }
+  else
+    {
+      for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+	{
+	  if (DECL_NAME (field) == NULL_TREE)
+	    {
+	      tree anon = lookup_field (TREE_TYPE (field), component);
+	      if (anon != NULL_TREE)
+		return anon;
+	    }
+
+	  if (DECL_NAME (field) == component)
+	    break;
+	}
+    }
+
+  return field;
+}
+
 /* Make an expression to refer to the COMPONENT field of
    structure or union value DATUM.  COMPONENT is an IDENTIFIER_NODE.  */
 
@@ -1072,49 +1153,7 @@ build_component_ref (datum, component)
 	  return error_mark_node;
 	}
 
-      /* Look up component name in the structure type definition.
-
-	 If TYPE_LANG_SPECIFIC is set, then it is a sorted array of pointers
-	 to the field elements.  Use a binary search on this array to quickly
-	 find the element.  Otherwise, do a linear search.  TYPE_LANG_SPECIFIC
-	 will always be set for structures which have many elements.  */
-
-      if (TYPE_LANG_SPECIFIC (type))
-	{
-	  int bot, top, half;
-	  tree *field_array = &TYPE_LANG_SPECIFIC (type)->elts[0];
-
-	  field = TYPE_FIELDS (type);
-	  bot = 0;
-	  top = TYPE_LANG_SPECIFIC (type)->len;
-	  while (top - bot > 1)
-	    {
-	      int cmp;
-
-	      half = (top - bot + 1) >> 1;
-	      field = field_array[bot+half];
-	      cmp = (long)DECL_NAME (field) - (long)component;
-	      if (cmp == 0)
-		break;
-	      if (cmp < 0)
-		bot += half;
-	      else
-		top = bot + half;
-	    }
-
-	  if (DECL_NAME (field_array[bot]) == component)
-	    field = field_array[bot];
-	  else if (DECL_NAME (field) != component)
-	    field = 0;
-	}
-      else
-	{
-	  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
-	    {
-	      if (DECL_NAME (field) == component)
-		break;
-	    }
-	}
+      field = lookup_field (type, component);
 
       if (!field)
 	{
