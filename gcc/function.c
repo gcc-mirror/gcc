@@ -6319,7 +6319,7 @@ expand_main_function ()
 #endif
 
 #ifndef HAS_INIT_SECTION
-  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, NAME__MAIN), 0,
+  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, NAME__MAIN), LCT_NORMAL,
 		     VOIDmode, 0);
 #endif
 }
@@ -6545,8 +6545,8 @@ expand_function_start (subr, parms_have_cleanups)
 	fun = XEXP (fun, 0);
       else
 	abort ();
-      emit_library_call (profile_function_entry_libfunc, 0, VOIDmode, 2,
-			 fun, Pmode,
+      emit_library_call (profile_function_entry_libfunc, LCT_NORMAL, VOIDmode,
+			 2, fun, Pmode,
 			 expand_builtin_return_addr (BUILT_IN_RETURN_ADDRESS,
 						     0,
 						     hard_frame_pointer_rtx),
@@ -6830,8 +6830,8 @@ expand_function_end (filename, line, end_bindings)
 	fun = XEXP (fun, 0);
       else
 	abort ();
-      emit_library_call (profile_function_exit_libfunc, 0, VOIDmode, 2,
-			 fun, Pmode,
+      emit_library_call (profile_function_exit_libfunc, LCT_NORMAL, VOIDmode,
+			 2, fun, Pmode,
 			 expand_builtin_return_addr (BUILT_IN_RETURN_ADDRESS,
 						     0,
 						     hard_frame_pointer_rtx),

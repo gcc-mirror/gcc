@@ -1145,7 +1145,7 @@ output_func_start_profiler ()
   ASM_GENERATE_INTERNAL_LABEL (buf, "LPBX", 0);
   table_address = force_reg (Pmode,
 			     gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf)));
-  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__bb_init_func"), 0,
+  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__bb_init_func"), LCT_NORMAL,
 		     mode, 1, table_address, Pmode);
 
   expand_function_end (input_filename, lineno, 0);
