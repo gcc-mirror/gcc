@@ -1,3 +1,7 @@
+2004-08-30  Richard Henderson  <rth@redhat.com>
+
+	* lib/f-torture.exp: Remove.
+
 2004-08-29  Mark Mitchell  <mark@codesourcery.com>
 
 	PR rtl-optimization/16590
