@@ -1360,6 +1360,9 @@ ffeglobal_ref_progunit_ (ffesymbol s, ffelexToken t, ffeglobalType type)
       /* We've learned more, so point to where we learned it.  */
       g->t = ffelex_token_use (t);
       g->type = type;
+#ifdef FFECOM_globalHOOK
+      g->hook = FFECOM_globalNULL;	/* Discard previous _DECL. */
+#endif
       g->u.proc.n_args = -1;
     }
 
