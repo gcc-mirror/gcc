@@ -1,3 +1,7 @@
+2004-08-04  Geoffrey Keating  <geoffk@apple.com>
+
+	* g++.dg/ext/altivec_check.h: Declare exit as extern "C".
+
 2004-08-05  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcc.c-torture/execute/builtins/abs-2.c,
