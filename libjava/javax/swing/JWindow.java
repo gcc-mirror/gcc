@@ -80,7 +80,7 @@ public class JWindow extends Window implements Accessible, RootPaneContainer
 
     public JWindow()
     {      
-     	super(); 
+     	super(null); // FIXME: This throws an exception.
     }
 
     // huuu ?
