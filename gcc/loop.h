@@ -158,6 +158,22 @@ struct iv_class {
 
 struct loop_info
 {
+  /* Loop number.  */
+  int num;
+  /* Loops enclosed by this loop including itself.  */
+  int loops_enclosed;
+  /* Nonzero if there is a subroutine call in the current loop.  */
+  int has_call;
+  /* Nonzero if there is a volatile memory reference in the current
+     loop.  */
+  int has_volatile;
+  /* Nonzero if there is a tablejump in the current loop.  */
+  int has_tablejump;
+  /* Nonzero if there are ways to leave the loop other than falling
+     off the end.  */
+  int has_multiple_exit_targets;
+  /* Nonzero if there is an indirect jump in the current function.  */
+  int has_indirect_jump;
   /* Register or constant initial loop value.  */
   rtx initial_value;
   /* Register or constant value used for comparison test.  */
@@ -181,15 +197,13 @@ struct loop_info
      wider iterator, this number will be zero if the number of loop
      iterations is too large for an unsigned integer to hold.  */
   unsigned HOST_WIDE_INT n_iterations;
-  /* The loop unrolling factor.
-     Potential values:
-     0: unrolled
-     1: not unrolled.
-     -1: completely unrolled
-     >0: holds the unroll exact factor.  */
+  /* The number of times the loop body was unrolled.  */
   unsigned int unroll_number;
   /* Non-zero if the loop has a NOTE_INSN_LOOP_VTOP.  */
   rtx vtop;
+  /* Non-zero if the loop has a NOTE_INSN_LOOP_CONT.
+     A continue statement will generate a branch to NEXT_INSN (cont).  */
+  rtx cont;
 };
 
 /* Definitions used by the basic induction variable discovery code.  */
@@ -240,10 +254,10 @@ rtx final_giv_value PROTO((struct induction *, rtx, rtx,
 			   unsigned HOST_WIDE_INT));
 void emit_unrolled_add PROTO((rtx, rtx, rtx));
 int back_branch_in_range_p PROTO((rtx, rtx, rtx));
-int loop_insn_first_p PROTO((rtx, rtx));
 
-extern int *loop_unroll_number;
+int loop_insn_first_p PROTO((rtx, rtx));
 
 /* Forward declarations for non-static functions declared in stmt.c.  */
 void find_loop_tree_blocks PROTO((void));
 void unroll_block_trees PROTO((void));
+

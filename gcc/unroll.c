@@ -1117,11 +1117,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
   /* At this point, we are guaranteed to unroll the loop.  */
 
   /* Keep track of the unroll factor for the loop.  */
-  if (unroll_type == UNROLL_COMPLETELY)
-    loop_info->unroll_number = -1;
-  else
-    loop_info->unroll_number = unroll_number;
-
+  loop_info->unroll_number = unroll_number;
 
   /* For each biv and giv, determine whether it can be safely split into
      a different variable for each unrolled copy of the loop body.
@@ -3500,7 +3496,6 @@ loop_find_equiv_value (loop_start, reg)
   return ret;
 }
 
-
 /* Return a simplified rtx for the expression OP - REG.
 
    REG must appear in OP, and OP must be a register or the sum of a register
@@ -3566,7 +3561,6 @@ find_common_reg_term (op0, op1)
   return NULL_RTX;
 }
 
-
 /* Calculate the number of loop iterations.  Returns the exact number of loop
    iterations if it can be calculated, otherwise returns zero.  */
 
@@ -3584,7 +3578,6 @@ loop_iterations (loop_start, loop_end, loop_info)
   int increment_dir;
   int unsigned_p, compare_dir, final_larger;
   rtx last_loop_insn;
-  rtx vtop;
   rtx reg_term;
 
   loop_info->n_iterations = 0;
@@ -3596,7 +3589,6 @@ loop_iterations (loop_start, loop_end, loop_info)
   loop_info->increment = 0;
   loop_info->iteration_var = 0;
   loop_info->unroll_number = 1;
-  loop_info->vtop = 0;
 
   /* We used to use prev_nonnote_insn here, but that fails because it might
      accidentally get the branch for a contained loop if the branch for this
@@ -3644,25 +3636,6 @@ loop_iterations (loop_start, loop_end, loop_info)
   comparison_code = GET_CODE (comparison);
   iteration_var = XEXP (comparison, 0);
   comparison_value = XEXP (comparison, 1);
-
-  /* Check if there is a NOTE_INSN_LOOP_VTOP note.  If there is,
-     that means that this is a for or while style loop, with
-     a loop exit test at the start.  Thus, we can assume that
-     the loop condition was true when the loop was entered.
-
-     We start at the end and search backwards for the previous
-     NOTE.  If there is no NOTE_INSN_LOOP_VTOP for this loop,
-     the search will stop at the NOTE_INSN_LOOP_CONT.  */
-  vtop = loop_end;
-  do
-    vtop = PREV_INSN (vtop);
-  while (GET_CODE (vtop) != NOTE
-	 || NOTE_LINE_NUMBER (vtop) > 0
-	 || NOTE_LINE_NUMBER (vtop) == NOTE_REPEATED_LINE_NUMBER
-	 || NOTE_LINE_NUMBER (vtop) == NOTE_INSN_DELETED);
-  if (NOTE_LINE_NUMBER (vtop) != NOTE_INSN_LOOP_VTOP)
-    vtop = NULL_RTX;
-  loop_info->vtop = vtop;
 
   if (GET_CODE (iteration_var) != REG)
     {
