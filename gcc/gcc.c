@@ -74,6 +74,14 @@ extern int getrusage PROTO ((int, struct rusage *));
 #define DIR_SEPARATOR '/'
 #endif
 
+#ifndef VMS
+/* FIXME: the location independence code for VMS is hairier than this,
+   and hasn't been written.  */
+#ifndef DIR_UP
+#define DIR_UP ".."
+#endif /* DIR_UP */
+#endif /* VMS */
+
 /* Define IS_DIR_SEPARATOR.  */
 #ifndef DIR_SEPARATOR_2
 # define IS_DIR_SEPARATOR(ch) ((ch) == DIR_SEPARATOR)
@@ -199,6 +207,11 @@ extern char *version_string;
 struct path_prefix;
 
 static void init_spec		PROTO((void));
+#ifndef VMS
+static char **split_directories	PROTO((const char *, int *));
+static void free_split_directories PROTO((char **));
+static char *make_relative_prefix PROTO((const char *, const char *, const char *));
+#endif /* VMS */
 static void read_specs		PROTO((const char *, int));
 static void set_spec		PROTO((const char *, const char *));
 static struct compiler *lookup_compiler PROTO((const char *, size_t, const char *));
@@ -1399,6 +1412,11 @@ static const char *standard_startfile_prefix_2 = "/usr/lib/";
 static const char *tooldir_base_prefix = TOOLDIR_BASE_PREFIX;
 static const char *tooldir_prefix;
 
+#ifndef STANDARD_BINDIR_PREFIX
+#define STANDARD_BINDIR_PREFIX "/usr/local/bin"
+#endif
+static char *standard_bindir_prefix = STANDARD_BINDIR_PREFIX;
+
 /* Subdirectory to use for locating libraries.  Set by
    set_multilib_dir based on the compilation options.  */
 
@@ -1952,6 +1970,242 @@ putenv_from_prefixes (paths, env_var)
   putenv (build_search_list (paths, env_var, 1));
 }
 
+#ifndef VMS
+
+/* FIXME: the location independence code for VMS is hairier than this,
+   and hasn't been written.  */
+
+/* Split a filename into component directories.  */
+
+static char **
+split_directories (name, ptr_num_dirs)
+     const char *name;
+     int *ptr_num_dirs;
+{
+  int num_dirs = 0;
+  char **dirs;
+  const char *p, *q;
+  int ch;
+
+  /* Count the number of directories.  Special case MSDOS disk names as part
+     of the initial directory.  */
+  p = name;
+#ifdef HAVE_DOS_BASED_FILE_SYSTEM
+  if (name[1] == ':' && IS_DIR_SEPARATOR (name[2]))
+    {
+      p += 3;
+      num_dirs++;
+    }
+#endif /* HAVE_DOS_BASED_FILE_SYSTEM */
+
+  while ((ch = *p++) != '\0')
+    {
+      if (IS_DIR_SEPARATOR (ch))
+	{
+	  num_dirs++;
+	  while (IS_DIR_SEPARATOR (*p))
+	    p++;
+	}
+    }
+
+  dirs = (char **) xmalloc (sizeof (char *) * (num_dirs + 2));
+
+  /* Now copy the directory parts.  */
+  num_dirs = 0;
+  p = name;
+#ifdef HAVE_DOS_BASED_FILE_SYSTEM
+  if (name[1] == ':' && IS_DIR_SEPARATOR (name[2]))
+    {
+      dirs[num_dirs++] = save_string (p, 3);
+      p += 3;
+    }
+#endif /* HAVE_DOS_BASED_FILE_SYSTEM */
+
+  q = p;
+  while ((ch = *p++) != '\0')
+    {
+      if (IS_DIR_SEPARATOR (ch))
+	{
+	  while (IS_DIR_SEPARATOR (*p))
+	    p++;
+
+	  dirs[num_dirs++] = save_string (q, p - q);
+	  q = p;
+	}
+    }
+
+  if (p - 1 - q > 0)
+    dirs[num_dirs++] = save_string (q, p - 1 - q);
+
+  dirs[num_dirs] = NULL_PTR;
+  if (ptr_num_dirs)
+    *ptr_num_dirs = num_dirs;
+
+  return dirs;
+}
+
+/* Release storage held by split directories.  */
+
+static void
+free_split_directories (dirs)
+     char **dirs;
+{
+  int i = 0;
+
+  while (dirs[i] != NULL_PTR)
+    free (dirs[i++]);
+
+  free ((char *)dirs);
+}
+
+/* Given three strings PROGNAME, BIN_PREFIX, PREFIX, return a string that gets
+   to PREFIX starting with the directory portion of PROGNAME and a relative
+   pathname of the difference between BIN_PREFIX and PREFIX.
+
+   For example, if BIN_PREFIX is /alpha/beta/gamma/gcc/delta, PREFIX is
+   /alpha/beta/gamma/omega/, and PROGNAME is /red/green/blue/gcc, then this
+   function will return /reg/green/blue/../omega.
+
+   If no relative prefix can be found, return NULL.  */
+
+static char *
+make_relative_prefix (progname, bin_prefix, prefix)
+     const char *progname;
+     const char *bin_prefix;
+     const char *prefix;
+{
+  char **prog_dirs, **bin_dirs, **prefix_dirs;
+  int prog_num, bin_num, prefix_num, std_loc_p;
+  int i, n, common;
+
+  prog_dirs = split_directories (progname, &prog_num);
+  bin_dirs = split_directories (bin_prefix, &bin_num);
+
+  /* If there is no full pathname, try to find the program by checking in each
+     of the directories specified in the PATH environment variable.  */
+  if (prog_num == 1)
+    {
+      char *temp;
+
+      GET_ENV_PATH_LIST (temp, "PATH");
+      if (temp)
+	{
+	  char *startp, *endp;
+	  char *nstore = (char *) alloca (strlen (temp) + strlen (progname) + 1);
+
+	  startp = endp = temp;
+	  while (1)
+	    {
+	      if (*endp == PATH_SEPARATOR || *endp == 0)
+		{
+		  if (endp == startp)
+		    {
+		      nstore[0] = '.';
+		      nstore[1] = DIR_SEPARATOR;
+		      nstore[2] = '\0';
+		    }
+		  else
+		    {
+		      strncpy (nstore, startp, endp-startp);
+		      if (! IS_DIR_SEPARATOR (endp[-1]))
+			{
+			  nstore[endp-startp] = DIR_SEPARATOR;
+			  nstore[endp-startp+1] = 0;
+			}
+		      else
+			nstore[endp-startp] = 0;
+		    }
+		  strcat (nstore, progname);
+		  if (! access (nstore, X_OK)
+#ifdef HAVE_EXECUTABLE_SUFFIX
+                      || ! access (strcat (nstore, EXECUTABLE_SUFFIX), X_OK)
+#endif
+		      )
+		    {
+		      free_split_directories (prog_dirs);
+		      progname = nstore;
+		      prog_dirs = split_directories (progname, &prog_num);
+		      break;
+		    }
+
+		  if (*endp == 0)
+		    break;
+		  endp = startp = endp + 1;
+		}
+	      else
+		endp++;
+	    }
+	}
+    }
+
+  /* Remove the program name from comparison of directory names.  */
+  prog_num--;
+
+  /* Determine if the compiler is installed in the standard location, and if
+     so, we don't need to specify relative directories.  Also, if argv[0]
+     doesn't contain any directory specifiers, there is not much we can do.  */
+  std_loc_p = 0;
+  if (prog_num == bin_num)
+    {
+      for (i = 0; i < bin_num; i++)
+	{
+	  if (strcmp (prog_dirs[i], bin_dirs[i]) != 0)
+	    break;
+	}
+
+      if (prog_num <= 0 || i == bin_num)
+	{
+	  std_loc_p = 1;
+	  free_split_directories (prog_dirs);
+	  free_split_directories (bin_dirs);
+	  prog_dirs = bin_dirs = (char **)0;
+	  return NULL_PTR;
+	}
+    }
+
+  prefix_dirs = split_directories (prefix, &prefix_num);
+
+  /* Find how many directories are in common between bin_prefix & prefix */
+  n = (prefix_num < bin_num) ? prefix_num : bin_num;
+  for (common = 0; common < n; common++)
+    {
+      if (strcmp (bin_dirs[common], prefix_dirs[common]) != 0)
+	break;
+    }
+
+  /* If there are no common directories, there can be no relative prefix.  */
+  if (common == 0)
+    {
+      free_split_directories (prog_dirs);
+      free_split_directories (bin_dirs);
+      free_split_directories (prefix_dirs);
+      return NULL_PTR;
+    }
+
+  /* Build up the pathnames in argv[0].  */
+  for (i = 0; i < prog_num; i++)
+    obstack_grow (&obstack, prog_dirs[i], strlen (prog_dirs[i]));
+
+  /* Now build up the ..'s.  */
+  for (i = common; i < n; i++)
+    {
+      obstack_grow (&obstack, DIR_UP, sizeof (DIR_UP)-1);
+      obstack_1grow (&obstack, DIR_SEPARATOR);
+    }
+
+  /* Put in directories to move over to prefix.  */
+  for (i = common; i < prefix_num; i++)
+    obstack_grow (&obstack, prefix_dirs[i], strlen (prefix_dirs[i]));
+
+  free_split_directories (prog_dirs);
+  free_split_directories (bin_dirs);
+  free_split_directories (prefix_dirs);
+
+  obstack_1grow (&obstack, '\0');
+  return obstack_finish (&obstack);
+}
+#endif /* VMS */
+
 /* Check whether NAME can be accessed in MODE.  This is like access,
    except that it never considers directories to be executable.  */
 
@@ -2005,7 +2259,7 @@ find_a_file (pprefix, name, mode)
   /* Determine the filename to execute (special case for absolute paths).  */
 
   if (IS_DIR_SEPARATOR (*name)
-#ifdef HAVE_DOS_BASED_FILESYSTEM
+#ifdef HAVE_DOS_BASED_FILE_SYSTEM
       /* Check for disk name on MS-DOS-based systems.  */
       || (name[0] && name[1] == ':' && IS_DIR_SEPARATOR (name[2]))
 #endif
@@ -2639,7 +2893,19 @@ process_command (argc, argv)
 	}
     }
 
-  /* Set up the default search paths.  */
+  /* Set up the default search paths.  If there is no GCC_EXEC_PREFIX,
+     see if we can create it from the pathname specified in argv[0].  */
+
+#ifndef VMS
+  /* FIXME: make_relative_prefix doesn't yet work for VMS.  */
+  if (!gcc_exec_prefix)
+    {
+      gcc_exec_prefix = make_relative_prefix (argv[0], standard_bindir_prefix,
+					      standard_exec_prefix);
+      if (gcc_exec_prefix)
+	putenv (concat ("GCC_EXEC_PREFIX=", gcc_exec_prefix, NULL_PTR));
+    }
+#endif
 
   if (gcc_exec_prefix)
     {
@@ -4906,7 +5172,7 @@ main (argc, argv)
 	 standard_startfile_prefix on that as well.  */
       if (IS_DIR_SEPARATOR (*standard_startfile_prefix)
 	    || *standard_startfile_prefix == '$'
-#ifdef HAVE_DOS_BASED_FILESYSTEM
+#ifdef HAVE_DOS_BASED_FILE_SYSTEM
   	    /* Check for disk name on MS-DOS-based systems.  */
           || (standard_startfile_prefix[1] == ':'
 	      && (IS_DIR_SEPARATOR (standard_startfile_prefix[2])))

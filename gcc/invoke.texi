@@ -7084,6 +7084,9 @@ names of the subprograms executed by the compiler.  No slash is added
 when this prefix is combined with the name of a subprogram, but you can
 specify a prefix that ends with a slash if you wish.
 
+If @code{GCC_EXEC_PREFIX} is not set, GNU CC will attempt to figure out
+an appropriate prefix to use based on the pathname it was invoked with.
+
 If GCC cannot find the subprogram using the specified prefix, it
 tries looking in the usual places for the subprogram.
 

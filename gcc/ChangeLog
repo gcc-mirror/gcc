@@ -1,3 +1,47 @@
+Tue Nov  9 10:30:08 1999  Tom Tromey  <tromey@cygnus.com>
+
+	* config/i386/xm-djgpp.h (HAVE_DOS_BASED_FILE_SYSTEM): Renamed
+	from HAVE_DOS_BASED_FILESYSTEM.
+	* gcc.c (find_a_file): Use HAVE_DOS_BASED_FILE_SYSTEM, not
+	HAVE_DOS_BASED_FILESYSTEM.
+	(main): Likewise.
+	(split_directories): Only special-case DOS file names if
+	HAVE_DOS_BASED_FILE_SYSTEM is defined.  Use IS_DIR_SEPARATOR
+	instead of explicit tests.  Conditionalize on !VMS.
+	(make_relative_prefix): Use IS_DIR_SEPARATOR instead of explicit
+	tests.  Conditionalize on !VMS.
+	(process_command): Only use make_relative_prefix if !VMS.
+	(free_split_directories): Conditionalize on !VMS.
+	(DIR_UP): Conditionalize on !VMS.
+
+Wed Jun  9 16:57:11 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* gcc.c (STANDARD_BINDIR_PREFIX): Provide default.
+
+Fri Feb  5 14:22:01 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* gcc.c (make_relative_prefix): Handle the HAVE_EXECUTABLE_SUFFIX
+	case.
+
+Mon Nov  8 14:16:57 1999  Michael Meissner  <meissner@cygnus.com>
+
+	* invoke.texi (Environment Variables): Document relative path
+	lookup.
+	* gcc.c (DIR_UP): If not defined, define as "..".
+	(standard_bindir_prefix): New static, holds target location to
+	install binaries.
+	(split_directories): New function to split a filename into
+	component directories.
+	(free_split_directories): New function, release memory allocated
+	by split_directories.
+	(make_relative_prefix): New function, make a relative pathname if
+	the compiler is not in the expected location.
+	(process_command): If GCC_EXEC_PREFIX was not specified, see if we
+	can figure out an appropriate prefix from argv[0].
+	* Makefile.in (DRIVER_DEFINES): Use unlibsubdir in definition of
+	STANDARD_STARTFILE_PREFIX and TOOLDIR_BASE_PREFIX.  Define
+	STANDARD_BINDIR_PREFIX.
+
 Wed Nov 10 11:47:54 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x-protos.h: New file.  Prototypes for functions defined
