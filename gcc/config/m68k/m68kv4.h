@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for mc680x0 running System V.4
-   Copyright (C) 1991, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 1994 Free Software Foundation, Inc.
 
    Written by Ron Guilmette (rfg@netcom.com) and Fred Fish (fnf@cygnus.com).
 
@@ -24,6 +24,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define SGS_SWITCH_TABLES	/* Different switch table handling */
 
 #include "m68k/sgs.h"		/* The m68k/SVR4 assembler is SGS based */
+
+/* The SGS assembler requires a special definition of
+   ASM_IDENTIFY_GCC.  We combine the m68k/sgs.h and the svr4.h
+   definitions below.  */
+#undef ASM_IDENTIFY_GCC
+
 #include "svr4.h"		/* Pick up the generic SVR4 macros */
 
 /* See m68k.h.  7 means 68020 with 68881.  */
@@ -31,6 +37,19 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #ifndef TARGET_DEFAULT
 #define	TARGET_DEFAULT (5 /*68020*/ + 2 /*68881*/)
 #endif
+
+/* When using an SGS assembler, modify the name of the artificial label which
+   identifies this file as having been compiled with gcc, and the macro that
+   emits such a label in the assembly output, to use '%' rather than '.'  */
+
+#undef ASM_IDENTIFY_GCC
+#define ASM_IDENTIFY_GCC(FILE)						\
+do									\
+  {									\
+    if (write_symbols != DBX_DEBUG)					\
+      fputs ("gcc2_compiled%:\n", FILE);				\
+  }									\
+while (0)
 
 /*  Override the definition of NO_DOLLAR_IN_LABEL in svr4.h, for special
     g++ assembler names.  When this is defined, g++ uses embedded '.'
