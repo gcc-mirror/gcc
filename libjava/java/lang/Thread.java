@@ -125,6 +125,243 @@ public class Thread implements Runnable
   // Our native data - points to an instance of struct natThread.
   private Object data;
 
+  /**
+   * Allocates a new <code>Thread</code> object. This constructor has
+   * the same effect as <code>Thread(null, null,</code>
+   * <i>gname</i><code>)</code>, where <b><i>gname</i></b> is
+   * a newly generated name. Automatically generated names are of the
+   * form <code>"Thread-"+</code><i>n</i>, where <i>n</i> is an integer.
+   * <p>
+   * Threads created this way must have overridden their
+   * <code>run()</code> method to actually do anything.  An example
+   * illustrating this method being used follows:
+   * <p><blockquote><pre>
+   *     import java.lang.*;
+   *
+   *     class plain01 implements Runnable {
+   *         String name;
+   *         plain01() {
+   *             name = null;
+   *         }
+   *         plain01(String s) {
+   *             name = s;
+   *         }
+   *         public void run() {
+   *             if (name == null)
+   *                 System.out.println("A new thread created");
+   *             else
+   *                 System.out.println("A new thread with name " + name +
+   *                                    " created");
+   *         }
+   *     }
+   *     class threadtest01 {
+   *         public static void main(String args[] ) {
+   *             int failed = 0 ;
+   *
+   *             <b>Thread t1 = new Thread();</b>
+   *             if (t1 != null)
+   *                 System.out.println("new Thread() succeed");
+   *             else {
+   *                 System.out.println("new Thread() failed");
+   *                 failed++;
+   *             }
+   *         }
+   *     }
+   * </pre></blockquote>
+   *
+   * @see     java.lang.Thread#Thread(java.lang.ThreadGroup,
+   *          java.lang.Runnable, java.lang.String)
+   */
+  public Thread()
+  {
+    this(null, null, gen_name());
+  }
+
+  /**
+   * Allocates a new <code>Thread</code> object. This constructor has
+   * the same effect as <code>Thread(null, target,</code>
+   * <i>gname</i><code>)</code>, where <i>gname</i> is
+   * a newly generated name. Automatically generated names are of the
+   * form <code>"Thread-"+</code><i>n</i>, where <i>n</i> is an integer.
+   *
+   * @param target the object whose <code>run</code> method is called.
+   * @see java.lang.Thread#Thread(java.lang.ThreadGroup,
+   *                              java.lang.Runnable, java.lang.String)
+   */
+  public Thread(Runnable target)
+  {
+    this(null, target, gen_name());
+  }
+
+  /**
+   * Allocates a new <code>Thread</code> object. This constructor has
+   * the same effect as <code>Thread(null, null, name)</code>.
+   *
+   * @param   name   the name of the new thread.
+   * @see     java.lang.Thread#Thread(java.lang.ThreadGroup,
+   *          java.lang.Runnable, java.lang.String)
+   */
+  public Thread(String name)
+  {
+    this(null, null, name);
+  }
+
+  /**
+   * Allocate a new Thread object, with the specified ThreadGroup and name, and
+   * using the specified Runnable object's <code>run()</code> method to
+   * execute.  If the Runnable object is null, <code>this</code> (which is
+   * a Runnable) is used instead.
+   *
+   * <p>If the ThreadGroup is null, the security manager is checked. If a
+   * manager exists and returns a non-null object for
+   * <code>getThreadGroup</code>, that group is used; otherwise the group
+   * of the creating thread is used. Note that the security manager calls
+   * <code>checkAccess</code> if the ThreadGroup is not null.
+   *
+   * <p>The new Thread will inherit its creator's priority and daemon status.
+   * These can be changed with <code>setPriority</code> and
+   * <code>setDaemon</code>.
+   *
+   * @param group the group to put the Thread into
+   * @param target the Runnable object to execute
+   * @param name the name for the Thread
+   * @throws NullPointerException if name is null
+   * @throws SecurityException if this thread cannot access <code>group</code>
+   * @throws IllegalThreadStateException if group is destroyed
+   * @see Runnable#run()
+   * @see #run()
+   * @see #setDaemon(boolean)
+   * @see #setPriority(int)
+   * @see SecurityManager#checkAccess(ThreadGroup)
+   * @see ThreadGroup#checkAccess()
+   */
+  public Thread(ThreadGroup group, Runnable target, String name)
+  {
+    this(currentThread(), group, target, name);
+  }
+
+  /**
+   * Allocate a new Thread object, as if by
+   * <code>Thread(group, null, name)</code>, and give it the specified stack
+   * size, in bytes. The stack size is <b>highly platform independent</b>,
+   * and the virtual machine is free to round up or down, or ignore it
+   * completely.  A higher value might let you go longer before a
+   * <code>StackOverflowError</code>, while a lower value might let you go
+   * longer before an <code>OutOfMemoryError</code>.  Or, it may do absolutely
+   * nothing! So be careful, and expect to need to tune this value if your
+   * virtual machine even supports it.
+   *
+   * @param group the group to put the Thread into
+   * @param target the Runnable object to execute
+   * @param name the name for the Thread
+   * @param size the stack size, in bytes; 0 to be ignored
+   * @throws NullPointerException if name is null
+   * @throws SecurityException if this thread cannot access <code>group</code>
+   * @throws IllegalThreadStateException if group is destroyed
+   * @since 1.4
+   */
+  public Thread(ThreadGroup group, Runnable target, String name, long size)
+  {
+    // Just ignore stackSize for now.
+    this(currentThread(), group, target, name);
+  }
+
+  /**
+   * Allocates a new <code>Thread</code> object. This constructor has
+   * the same effect as <code>Thread(group, target,</code>
+   * <i>gname</i><code>)</code>, where <i>gname</i> is
+   * a newly generated name. Automatically generated names are of the
+   * form <code>"Thread-"+</code><i>n</i>, where <i>n</i> is an integer.
+   *
+   * @param      group    the thread group.
+   * @param      target   the object whose <code>run</code> method is called.
+   * @exception  SecurityException  if the current thread cannot create a
+   *             thread in the specified thread group.
+   * @see        java.lang.Thread#Thread(java.lang.ThreadGroup,
+   *             java.lang.Runnable, java.lang.String)
+   */
+  public Thread(ThreadGroup group, Runnable target)
+  {
+    this(group, target, gen_name());
+  }
+
+  /**
+   * Allocates a new <code>Thread</code> object. This constructor has
+   * the same effect as <code>Thread(group, null, name)</code>
+   *
+   * @param      group   the thread group.
+   * @param      name    the name of the new thread.
+   * @exception  SecurityException  if the current thread cannot create a
+   *               thread in the specified thread group.
+   * @see        java.lang.Thread#Thread(java.lang.ThreadGroup,
+   *          java.lang.Runnable, java.lang.String)
+   */
+  public Thread(ThreadGroup group, String name)
+  {
+    this(group, null, name);
+  }
+
+  /**
+   * Allocates a new <code>Thread</code> object. This constructor has
+   * the same effect as <code>Thread(null, target, name)</code>.
+   *
+   * @param   target   the object whose <code>run</code> method is called.
+   * @param   name     the name of the new thread.
+   * @see     java.lang.Thread#Thread(java.lang.ThreadGroup,
+   *          java.lang.Runnable, java.lang.String)
+   */
+  public Thread(Runnable target, String name)
+  {
+    this(null, target, name);
+  }
+
+  private Thread (Thread current, ThreadGroup g, Runnable r, String n)
+  {
+    // The Class Libraries book says ``threadName cannot be null''.  I
+    // take this to mean NullPointerException.
+    if (n == null)
+      throw new NullPointerException ();
+      
+    if (g == null)
+      {
+	// If CURRENT is null, then we are bootstrapping the first thread. 
+	// Use ThreadGroup.root, the main threadgroup.
+	if (current == null)
+	  group = ThreadGroup.root;
+	else
+	  group = current.getThreadGroup();
+      }
+    else
+      group = g;
+      
+    data = null;
+    interrupt_flag = false;
+    alive_flag = false;
+    startable_flag = true;
+
+    if (current != null)
+      {
+	group.checkAccess();
+
+	daemon_flag = current.isDaemon();
+        int gmax = group.getMaxPriority();
+	int pri = current.getPriority();
+	priority = (gmax < pri ? gmax : pri);
+	context_class_loader = current.context_class_loader;
+	InheritableThreadLocal.newChildThread(this);
+      }
+    else
+      {
+	daemon_flag = false;
+	priority = NORM_PRIORITY;
+      }
+
+    name = n;
+    group.addThread(this);
+    runnable = r;
+
+    initialize_native ();
+  }
 
   /**
    * Get the number of active threads in the current Thread's ThreadGroup.
@@ -465,13 +702,11 @@ public class Thread implements Runnable
   }
 
   /**
-   * Returns the context classloader of this Thread. The context
-   * classloader can be used by code that want to load classes depending
-   * on the current thread. Normally classes are loaded depending on
-   * the classloader of the current class. There may be a security check
-   * for <code>RuntimePermission("getClassLoader")</code> if the caller's
-   * class loader is not null or an ancestor of this thread's context class
-   * loader.
+   * Sets the context classloader for this Thread. When not explicitly set,
+   * the context classloader for a thread is the same as the context
+   * classloader of the thread that created this thread. The first thread has
+   * as context classloader the system classloader. There may be a security
+   * check for <code>RuntimePermission("setContextClassLoader")</code>.
    *
    * @param classloader the new context class loader
    * @throws SecurityException when permission is denied
@@ -505,21 +740,10 @@ public class Thread implements Runnable
   }
 
   /**
-   * Set this Thread's priority. There may be a security check,
-   * <code>checkAccess</code>, then the priority is set to the smaller of
-   * priority and the ThreadGroup maximum priority.
-   *
-   * @param priority the new priority for this Thread
-   * @throws IllegalArgumentException if priority exceeds MIN_PRIORITY or
-   *         MAX_PRIORITY
-   * @throws SecurityException if you cannot modify this Thread
-   * @see #getPriority()
-   * @see #checkAccess()
-   * @see ThreadGroup#getMaxPriority()
-   * @see #MIN_PRIORITY
-   * @see #MAX_PRIORITY
+   * Causes the currently executing thread object to temporarily pause
+   * and allow other threads to execute.
    */
-  public final native void setPriority (int newPriority);
+  public static native void yield();
 
   /**
    * Suspend the current Thread's execution for the specified amount of
@@ -646,247 +870,22 @@ public class Thread implements Runnable
    */
   public final native void suspend();
 
-  private final native void initialize_native ();
-
-  private final native static String gen_name ();
-
   /**
-   * Allocate a new Thread object, with the specified ThreadGroup and name, and
-   * using the specified Runnable object's <code>run()</code> method to
-   * execute.  If the Runnable object is null, <code>this</code> (which is
-   * a Runnable) is used instead.
+   * Set this Thread's priority. There may be a security check,
+   * <code>checkAccess</code>, then the priority is set to the smaller of
+   * priority and the ThreadGroup maximum priority.
    *
-   * <p>If the ThreadGroup is null, the security manager is checked. If a
-   * manager exists and returns a non-null object for
-   * <code>getThreadGroup</code>, that group is used; otherwise the group
-   * of the creating thread is used. Note that the security manager calls
-   * <code>checkAccess</code> if the ThreadGroup is not null.
-   *
-   * <p>The new Thread will inherit its creator's priority and daemon status.
-   * These can be changed with <code>setPriority</code> and
-   * <code>setDaemon</code>.
-   *
-   * @param group the group to put the Thread into
-   * @param target the Runnable object to execute
-   * @param name the name for the Thread
-   * @throws NullPointerException if name is null
-   * @throws SecurityException if this thread cannot access <code>group</code>
-   * @throws IllegalThreadStateException if group is destroyed
-   * @see Runnable#run()
-   * @see #run()
-   * @see #setDaemon(boolean)
-   * @see #setPriority(int)
-   * @see SecurityManager#checkAccess(ThreadGroup)
-   * @see ThreadGroup#checkAccess()
+   * @param priority the new priority for this Thread
+   * @throws IllegalArgumentException if priority exceeds MIN_PRIORITY or
+   *         MAX_PRIORITY
+   * @throws SecurityException if you cannot modify this Thread
+   * @see #getPriority()
+   * @see #checkAccess()
+   * @see ThreadGroup#getMaxPriority()
+   * @see #MIN_PRIORITY
+   * @see #MAX_PRIORITY
    */
-  public Thread (ThreadGroup g, Runnable r, String n)
-  {
-    this (currentThread (), g, r, n);
-  }
-
-  /**
-   * Allocate a new Thread object, as if by
-   * <code>Thread(group, null, name)</code>, and give it the specified stack
-   * size, in bytes. The stack size is <b>highly platform independent</b>,
-   * and the virtual machine is free to round up or down, or ignore it
-   * completely.  A higher value might let you go longer before a
-   * <code>StackOverflowError</code>, while a lower value might let you go
-   * longer before an <code>OutOfMemoryError</code>.  Or, it may do absolutely
-   * nothing! So be careful, and expect to need to tune this value if your
-   * virtual machine even supports it.
-   *
-   * @param group the group to put the Thread into
-   * @param target the Runnable object to execute
-   * @param name the name for the Thread
-   * @param size the stack size, in bytes; 0 to be ignored
-   * @throws NullPointerException if name is null
-   * @throws SecurityException if this thread cannot access <code>group</code>
-   * @throws IllegalThreadStateException if group is destroyed
-   * @since 1.4
-   */
-  public Thread (ThreadGroup g, Runnable r, String n, long size)
-  {
-    // Just ignore stackSize for now.
-    this (currentThread (), g, r, n);
-  }
-
-  private Thread (Thread current, ThreadGroup g, Runnable r, String n)
-  {
-    // The Class Libraries book says ``threadName cannot be null''.  I
-    // take this to mean NullPointerException.
-    if (n == null)
-      throw new NullPointerException ();
-      
-    if (g == null)
-      {
-	// If CURRENT is null, then we are bootstrapping the first thread. 
-	// Use ThreadGroup.root, the main threadgroup.
-	if (current == null)
-	  group = ThreadGroup.root;
-	else
-	  group = current.getThreadGroup();
-      }
-    else
-      group = g;
-      
-    data = null;
-    interrupt_flag = false;
-    alive_flag = false;
-    startable_flag = true;
-
-    if (current != null)
-      {
-	group.checkAccess();
-
-	daemon_flag = current.isDaemon();
-        int gmax = group.getMaxPriority();
-	int pri = current.getPriority();
-	priority = (gmax < pri ? gmax : pri);
-	context_class_loader = current.context_class_loader;
-	InheritableThreadLocal.newChildThread(this);
-      }
-    else
-      {
-	daemon_flag = false;
-	priority = NORM_PRIORITY;
-      }
-
-    name = n;
-    group.addThread(this);
-    runnable = r;
-
-    initialize_native ();
-  }
-
-  /**
-   * Allocates a new <code>Thread</code> object. This constructor has
-   * the same effect as <code>Thread(null, null,</code>
-   * <i>gname</i><code>)</code>, where <b><i>gname</i></b> is
-   * a newly generated name. Automatically generated names are of the
-   * form <code>"Thread-"+</code><i>n</i>, where <i>n</i> is an integer.
-   * <p>
-   * Threads created this way must have overridden their
-   * <code>run()</code> method to actually do anything.  An example
-   * illustrating this method being used follows:
-   * <p><blockquote><pre>
-   *     import java.lang.*;
-   *
-   *     class plain01 implements Runnable {
-   *         String name;
-   *         plain01() {
-   *             name = null;
-   *         }
-   *         plain01(String s) {
-   *             name = s;
-   *         }
-   *         public void run() {
-   *             if (name == null)
-   *                 System.out.println("A new thread created");
-   *             else
-   *                 System.out.println("A new thread with name " + name +
-   *                                    " created");
-   *         }
-   *     }
-   *     class threadtest01 {
-   *         public static void main(String args[] ) {
-   *             int failed = 0 ;
-   *
-   *             <b>Thread t1 = new Thread();</b>
-   *             if (t1 != null)
-   *                 System.out.println("new Thread() succeed");
-   *             else {
-   *                 System.out.println("new Thread() failed");
-   *                 failed++;
-   *             }
-   *         }
-   *     }
-   * </pre></blockquote>
-   *
-   * @see     java.lang.Thread#Thread(java.lang.ThreadGroup,
-   *          java.lang.Runnable, java.lang.String)
-   */
-  public Thread ()
-  {
-    this (null, null, gen_name ());
-  }
-
-  /**
-   * Allocates a new <code>Thread</code> object. This constructor has
-   * the same effect as <code>Thread(null, target,</code>
-   * <i>gname</i><code>)</code>, where <i>gname</i> is
-   * a newly generated name. Automatically generated names are of the
-   * form <code>"Thread-"+</code><i>n</i>, where <i>n</i> is an integer.
-   *
-   * @param   target   the object whose <code>run</code> method is called.
-   * @see     java.lang.Thread#Thread(java.lang.ThreadGroup,
-   *          java.lang.Runnable, java.lang.String)
-   */
-  public Thread (Runnable r)
-  {
-    this (null, r, gen_name ());
-  }
-
-  /**
-   * Allocates a new <code>Thread</code> object. This constructor has
-   * the same effect as <code>Thread(null, null, name)</code>.
-   *
-   * @param   name   the name of the new thread.
-   * @see     java.lang.Thread#Thread(java.lang.ThreadGroup,
-   *          java.lang.Runnable, java.lang.String)
-   */
-  public Thread (String n)
-  {
-    this (null, null, n);
-  }
-
-  /**
-   * Allocates a new <code>Thread</code> object. This constructor has
-   * the same effect as <code>Thread(group, target,</code>
-   * <i>gname</i><code>)</code>, where <i>gname</i> is
-   * a newly generated name. Automatically generated names are of the
-   * form <code>"Thread-"+</code><i>n</i>, where <i>n</i> is an integer.
-   *
-   * @param      group    the thread group.
-   * @param      target   the object whose <code>run</code> method is called.
-   * @exception  SecurityException  if the current thread cannot create a
-   *             thread in the specified thread group.
-   * @see        java.lang.Thread#Thread(java.lang.ThreadGroup,
-   *             java.lang.Runnable, java.lang.String)
-   */
-  public Thread (ThreadGroup g, Runnable r)
-  {
-    this (g, r, gen_name ());
-  }
-
-  /**
-   * Allocates a new <code>Thread</code> object. This constructor has
-   * the same effect as <code>Thread(group, null, name)</code>
-   *
-   * @param      group   the thread group.
-   * @param      name    the name of the new thread.
-   * @exception  SecurityException  if the current thread cannot create a
-   *               thread in the specified thread group.
-   * @see        java.lang.Thread#Thread(java.lang.ThreadGroup,
-   *          java.lang.Runnable, java.lang.String)
-   */
-  public Thread (ThreadGroup g, String n)
-  {
-    this (g, null, n);
-  }
-
-  /**
-   * Allocates a new <code>Thread</code> object. This constructor has
-   * the same effect as <code>Thread(null, target, name)</code>.
-   *
-   * @param   target   the object whose <code>run</code> method is called.
-   * @param   name     the name of the new thread.
-   * @see     java.lang.Thread#Thread(java.lang.ThreadGroup,
-   *          java.lang.Runnable, java.lang.String)
-   */
-  public Thread (Runnable r, String n)
-  {
-    this (null, r, n);
-  }
+  public final native void setPriority(int newPriority);
 
   /**
    * Returns a string representation of this thread, including the
@@ -900,10 +899,7 @@ public class Thread implements Runnable
 	    + (group == null ? "" : group.getName()) + "]");
   }
 
-  /**
-   * Causes the currently executing thread object to temporarily pause
-   * and allow other threads to execute.
-   */
-  public static native void yield ();
+  private final native void initialize_native();
 
+  private final native static String gen_name();
 }
