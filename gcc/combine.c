@@ -2024,34 +2024,41 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
       && XVECLEN (newpat, 0) == 2
       && GET_CODE (XVECEXP (newpat, 0, 0)) == SET
       && GET_CODE (XVECEXP (newpat, 0, 1)) == SET
-      && GET_CODE (SET_DEST (XVECEXP (newpat, 0, 1))) == REG
-      && find_reg_note (i3, REG_UNUSED, SET_DEST (XVECEXP (newpat, 0, 1)))
-      && ! side_effects_p (SET_SRC (XVECEXP (newpat, 0, 1)))
       && asm_noperands (newpat) < 0)
     {
-      newpat = XVECEXP (newpat, 0, 0);
-      insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
-    }
-
-  else if (insn_code_number < 0 && GET_CODE (newpat) == PARALLEL
-	   && XVECLEN (newpat, 0) == 2
-	   && GET_CODE (XVECEXP (newpat, 0, 0)) == SET
-	   && GET_CODE (XVECEXP (newpat, 0, 1)) == SET
-	   && GET_CODE (SET_DEST (XVECEXP (newpat, 0, 0))) == REG
-	   && find_reg_note (i3, REG_UNUSED, SET_DEST (XVECEXP (newpat, 0, 0)))
-	   && ! side_effects_p (SET_SRC (XVECEXP (newpat, 0, 0)))
-	   && asm_noperands (newpat) < 0)
-    {
-      newpat = XVECEXP (newpat, 0, 1);
-      insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
- 
-      if (insn_code_number >= 0)
-	{
-	  /* If we will be able to accept this, we have made a change to the
-	     destination of I3.  This requires us to do a few adjustments.  */
-	  PATTERN (i3) = newpat;
-	  adjust_for_new_dest (i3);
-	}
+      rtx set0 = XVECEXP (newpat, 0, 0);
+      rtx set1 = XVECEXP (newpat, 0, 1);
+  
+      if (((GET_CODE (SET_DEST (set1)) == REG
+            && find_reg_note (i3, REG_UNUSED, SET_DEST (set1)))
+          || (GET_CODE (SET_DEST (set1)) == SUBREG
+              && find_reg_note (i3, REG_UNUSED, SUBREG_REG (SET_DEST (set1)))))
+          && ! side_effects_p (SET_SRC (set1)))
+        {
+          newpat = set0;
+          insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
+        }
+  
+      else if (((GET_CODE (SET_DEST (set0)) == REG
+                && find_reg_note (i3, REG_UNUSED, SET_DEST (set0)))
+                || (GET_CODE (SET_DEST (set0)) == SUBREG
+                    && find_reg_note (i3, REG_UNUSED,
+                                      SUBREG_REG (SET_DEST (set0)))))
+              && ! side_effects_p (SET_SRC (set0)))
+        {
+          newpat = set1;
+          insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
+    
+          if (insn_code_number >= 0)
+            {
+              /* If we will be able to accept this, we have made a
+                 change to the destination of I3.  This requires us to
+                 do a few adjustments.  */
+            
+              PATTERN (i3) = newpat;
+              adjust_for_new_dest (i3);
+            }
+        }
     }
 
   /* If we were combining three insns and the result is a simple SET
@@ -5114,18 +5121,17 @@ simplify_set (rtx x)
       SUBST (SET_SRC (x), src);
     }
 
-#ifdef WORD_REGISTER_OPERATIONS
   /* If we have (set x (subreg:m1 (op:m2 ...) 0)) with OP being some operation,
      and X being a REG or (subreg (reg)), we may be able to convert this to
      (set (subreg:m2 x) (op)).
 
-     On a machine where WORD_REGISTER_OPERATIONS is defined, this
-     transformation is safe as long as M1 and M2 have the same number
-     of words.
+     We can always do this if M1 is narrower than M2 because that means that
+     we only care about the low bits of the result.
 
-     However, on a machine without WORD_REGISTER_OPERATIONS defined,
-     we cannot apply this transformation because it would create a
-     paradoxical subreg in SET_DEST.  */
+     However, on machines without WORD_REGISTER_OPERATIONS defined, we cannot
+     perform a narrower operation than requested since the high-order bits will
+     be undefined.  On machine where it is defined, this transformation is safe
+     as long as M1 and M2 have the same number of words.  */
 
   if (GET_CODE (src) == SUBREG && subreg_lowpart_p (src)
       && GET_RTX_CLASS (GET_CODE (SUBREG_REG (src))) != 'o'
@@ -5133,6 +5139,10 @@ simplify_set (rtx x)
 	   / UNITS_PER_WORD)
 	  == ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (src)))
 	       + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD))
+#ifndef WORD_REGISTER_OPERATIONS
+      && (GET_MODE_SIZE (GET_MODE (src))
+        < GET_MODE_SIZE (GET_MODE (SUBREG_REG (src))))
+#endif
 #ifdef CANNOT_CHANGE_MODE_CLASS
       && ! (GET_CODE (dest) == REG && REGNO (dest) < FIRST_PSEUDO_REGISTER
 	    && REG_CANNOT_CHANGE_MODE_P (REGNO (dest),
@@ -5150,7 +5160,6 @@ simplify_set (rtx x)
 
       src = SET_SRC (x), dest = SET_DEST (x);
     }
-#endif
 
 #ifdef HAVE_cc0
   /* If we have (set (cc0) (subreg ...)), we try to remove the subreg
