@@ -7761,7 +7761,7 @@ process_set (FILE *asm_out_file, rtx pat)
 	     followed by a new prologue.  If the procedure doesn't
 	     have a memory-stack frame, we'll issue a dummy ".restore
 	     sp" now.  */
-	  if (current_frame_info.total_size == 0)
+	  if (current_frame_info.total_size == 0 && !frame_pointer_needed)
 	    /* if haven't done process_epilogue() yet, do it now */
 	    process_epilogue ();
 	  fprintf (asm_out_file, "\t.prologue\n");

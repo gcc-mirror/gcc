@@ -1,3 +1,9 @@
+2005-01-10  David Mosberger  <davidm@hpl.hp.com>
+
+	PR target/18987
+	* config/ia64/ia64.c (process_set): For alloc insn, only call
+	process_epilogue is !frame_pointer_needed.
+
 2005-01-10  Roger Sayle  <roger@eyesopen.com>
 
 	PR c++/19355
