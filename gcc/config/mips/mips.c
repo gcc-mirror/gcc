@@ -6543,11 +6543,15 @@ mips_frame_set (rtx mem, rtx reg)
 static void
 mips_save_reg (rtx reg, rtx mem)
 {
-  if (GET_MODE (reg) == DFmode && mips_split_64bit_move_p (mem, reg))
+  if (GET_MODE (reg) == DFmode && !TARGET_FLOAT64)
     {
       rtx x1, x2;
 
-      mips_split_64bit_move (mem, reg);
+      if (mips_split_64bit_move_p (mem, reg))
+	mips_split_64bit_move (mem, reg);
+      else
+	emit_move_insn (mem, reg);
+
       x1 = mips_frame_set (mips_subword (mem, 0), mips_subword (reg, 0));
       x2 = mips_frame_set (mips_subword (mem, 1), mips_subword (reg, 1));
       mips_set_frame_expr (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, x1, x2)));
