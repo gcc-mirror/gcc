@@ -267,29 +267,33 @@ AC_DEFUN(GLIBCPP_CHECK_LINKER_FEATURES, [
   # If we're not using GNU ld, then there's no point in even trying these
   # tests.  Check for that first.  We should have already tested for gld
   # by now (in libtool), but require it now just to be safe...
+  SECTION_LDFLAGS=''
+  OPT_LDFLAGS=''
   AC_REQUIRE([AC_PROG_LD])
-  if test "$ac_cv_prog_gnu_ld" = "no"; then
-    SECTION_LDFLAGS=''
-    OPT_LDFLAGS=''
-
-  else   # GNU ld it is!  Joy and bunny rabbits!
+  if test "$ac_cv_prog_gnu_ld" = "yes"; then
+    # GNU ld it is!  Joy and bunny rabbits!
 
     # All these tests are for C++; save the language and the compiler flags.
     # Need to do this so that g++ won't try to link in libstdc++
     ac_test_CFLAGS="${CFLAGS+set}"
     ac_save_CFLAGS="$CFLAGS"
-    CFLAGS='-x c++  -Wl,--gc-sections'
+#    CFLAGS='-x c++  -Wl,--gc-sections'
+#XXX
+    CFLAGS=''
 
     # Check for -Wl,--gc-sections
     # XXX This test is broken at the moment, as symbols required for
     # linking are now in libsupc++ (not built yet.....). In addition, 
-    # this test has cored on solaris in the past.
+    # this test has cored on solaris in the past. In addition,
+    # --gc-sections doesn't really work at the moment (keeps on discarding
+    # used sections, first .eh_frame and now some of the glibc sections for
+    # iconv). Bzzzzt. Thanks for playing, maybe next time.
     AC_MSG_CHECKING([for ld that supports -Wl,--gc-sections])
     AC_TRY_RUN([
      int main(void) 
      {
-       //try { throw 1; }
-       //catch (...) { };
+       try { throw 1; }
+       catch (...) { };
        return 0;
      }
     ], [ac_sectionLDflags=yes],[ac_sectionLFflags=no], [ac_sectionLDflags=yes])
@@ -300,9 +304,12 @@ AC_DEFUN(GLIBCPP_CHECK_LINKER_FEATURES, [
       CFLAGS=''
     fi
     if test "$ac_sectionLDflags" = "yes"; then
-      SECTION_LDFLAGS='-Wl,--gc-sections'
+#      SECTION_LDFLAGS='-Wl,--gc-sections'
+#XXX
+      SECTION_LDFLAGS=''
     fi
     AC_MSG_RESULT($ac_sectionLDflags)
+
     OPT_LDFLAGS='-Wl,-O1'
 
   fi
@@ -1186,48 +1193,6 @@ if test -n "$enable_cxx_flags"; then
 fi
 EXTRA_CXX_FLAGS="$enable_cxx_flags"
 AC_SUBST(EXTRA_CXX_FLAGS)
-])
-
-
-dnl
-dnl Check for instructions to automatically rebuild libgcc.a.  Requires,
-dnl of course, the location of the gcc objdir.  Note that if --disable-
-dnl namespaces is in effect, rebuilding libgcc.a is an expensive no-op.
-dnl
-dnl GLIBCPP_ENABLE_RELIBGCC
-dnl --enable-libgcc-rebuild=/absolute/path/to/gcc/objdir sets GCC_OBJDIR
-dnl     (presumably in the top-level Makefile) to /absol.../objdir
-dnl --disable-libgcc-rebuild will not touch libgcc.a at all (maybe print
-dnl     a warning if this is given along with --enable-namespaces), by
-dnl     setting GCC_OBJDIR to `no'.
-dnl  +  Doing this by default is going to be interesting.  What default
-dnl     "on" value can there be?
-dnl  +  Usage:  GLIBCPP_ENABLE_RELIBGCC[(DEFAULT)]
-dnl       The default path should be ../.. if bundled with GCC source.
-dnl       If ommitted, it defaults to `no'.
-dnl
-AC_DEFUN(GLIBCPP_ENABLE_RELIBGCC, [dnl
-define([GLIBCPP_ENABLE_RELIBGCC_DEFAULT], ifelse($1,, no, $1))dnl
-AC_ARG_ENABLE(libgcc-rebuild,
-changequote(<<, >>)dnl
-<<  --enable-libgcc-rebuild=DIR     also rebuild libgcc.a; DIR is
-                                  the GCC objdir; see install.html>>,
-changequote([, ])dnl
-[case "$enableval" in
- yes) AC_MSG_ERROR([--enable-libgcc-rebuild needs a pathname]) ;;
- no)  enable_libgcc_rebuild=no ;;
- *)   if test -d "$enableval" && test -d "${enableval}/gcc" && \
-         test -d "${enableval}/libiberty"
-      then
-         enable_libgcc_rebuild="$enableval"
-      else
-         AC_MSG_ERROR(["$enableval" does not appear to be the GCC objdir])
-      fi
-      ;;
- esac],
-enable_libgcc_rebuild=GLIBCPP_ENABLE_RELIBGCC_DEFAULT)dnl
-GCC_OBJDIR="$enable_libgcc_rebuild"
-AC_SUBST(GCC_OBJDIR)
 ])
 
 
