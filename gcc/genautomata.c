@@ -7670,7 +7670,7 @@ output_translate_vect (automaton)
 
   VLA_HWINT_CREATE (translate_vect, 250, "translate vector");
   VLA_HWINT_EXPAND (translate_vect, description->insns_num);
-  for (insn_value = 0; insn_value <= description->insns_num; insn_value++)
+  for (insn_value = 0; insn_value < description->insns_num; insn_value++)
     /* Undefined value */
     VLA_HWINT (translate_vect, insn_value) = automaton->insn_equiv_classes_num;
   for (ainsn = automaton->ainsn_list; ainsn != NULL; ainsn = ainsn->next_ainsn)
