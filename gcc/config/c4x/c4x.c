@@ -829,11 +829,11 @@ c4x_expand_prologue ()
 	  /* FIXME: Assume ISR doesn't require more than 32767 words
 	     of local variables.  */
 	  if (size > 32767)
-	    error ("ISR %s requires %d words of local variables, "
-		   "maximum is 32767.", current_function_name, size);
+	    error ("ISR %s requires %d words of local vars, max is 32767.",
+		   current_function_name, size);
 	  insn = emit_insn (gen_addqi3 (gen_rtx_REG (QImode, SP_REGNO),
 				        gen_rtx_REG (QImode, SP_REGNO),
-					GEN_INT(size)));
+					GEN_INT (size)));
           RTX_FRAME_RELATED_P (insn) = 1;
 	}
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
@@ -4867,22 +4867,6 @@ void
 c4x_init_builtins (endlink)
      tree endlink;
 {
-
-  builtin_function ("abs",
-		    build_function_type
-		    (integer_type_node, 
-		     tree_cons (NULL_TREE, integer_type_node, endlink)),
- 		    C4X_BUILTIN_ABS, BUILT_IN_MD, NULL_PTR);
-  builtin_function ("fabs",
- 		    build_function_type
-		    (double_type_node, 
-		     tree_cons (NULL_TREE, double_type_node, endlink)),
- 		    C4X_BUILTIN_FABS, BUILT_IN_MD, NULL_PTR);
-  builtin_function ("labs",
-		    build_function_type 
-		    (long_integer_type_node, 
-		     tree_cons (NULL_TREE, long_integer_type_node, endlink)),
-		    C4X_BUILTIN_LABS, BUILT_IN_MD, NULL_PTR);
   builtin_function ("fast_ftoi",
 		    build_function_type 
 		    (integer_type_node,
@@ -4938,33 +4922,6 @@ c4x_expand_builtin (exp, target, subtarget, mode, ignore)
 
   switch (fcode)
     {
-    case C4X_BUILTIN_ABS:
-      arg0 = TREE_VALUE (arglist);
-      r0 = expand_expr (arg0, NULL_RTX, QImode, 0);
-      r0 = protect_from_queue (r0, 0);
-      if (! target || ! register_operand (target, QImode))
-	target = gen_reg_rtx (QImode);
-      emit_insn (gen_absqi2 (target, r0));
-      return target;
-
-    case C4X_BUILTIN_FABS:
-      arg0 = TREE_VALUE (arglist);
-      r0 = expand_expr (arg0, NULL_RTX, QFmode, 0);
-      r0 = protect_from_queue (r0, 0);
-      if (! target || ! register_operand (target, QFmode))
-	target = gen_reg_rtx (QFmode);
-      emit_insn (gen_absqf2 (target, r0));
-      return target;
-
-    case C4X_BUILTIN_LABS:
-      arg0 = TREE_VALUE (arglist);
-      r0 = expand_expr (arg0, NULL_RTX, QImode, 0);
-      r0 = protect_from_queue (r0, 0);
-      if (! target || ! register_operand (target, QImode))
-	target = gen_reg_rtx (QImode);
-      emit_insn (gen_absqi2 (target, r0));
-      return target;
-
     case C4X_BUILTIN_FIX:
       arg0 = TREE_VALUE (arglist);
       r0 = expand_expr (arg0, NULL_RTX, QFmode, 0);

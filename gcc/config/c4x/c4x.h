@@ -2711,9 +2711,6 @@ if (final_sequence != NULL_RTX)				\
 enum c4x_builtins
 {
 			/*	intrinsic name		*/
-  C4X_BUILTIN_ABS,	/*	abs			*/
-  C4X_BUILTIN_FABS,	/*	fabs			*/
-  C4X_BUILTIN_LABS,	/*	labs			*/
   C4X_BUILTIN_FIX,	/*	fast_ftoi		*/
   C4X_BUILTIN_FIX_ANSI,	/*	ansi_ftoi		*/
   C4X_BUILTIN_MPYI,	/*	fast_imult (only C3x)	*/
