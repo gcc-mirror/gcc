@@ -1140,6 +1140,8 @@ copy_for_inline (orig)
 	}
       break;
 #endif
+    default:
+      break;
     }
 
   /* Replace this rtx with a copy of itself.  */
@@ -2538,6 +2540,9 @@ copy_rtx_and_substitute (orig, map)
 	RTX_UNCHANGING_P (copy) = RTX_UNCHANGING_P (orig);
 
       return copy;
+      
+    default:
+      break;
     }
 
   copy = rtx_alloc (code);
@@ -2831,9 +2836,11 @@ subst_constants (loc, insn, map)
 	    map->equiv_sets[map->num_sets].equiv = copy_rtx (src);
 	    map->equiv_sets[map->num_sets++].dest = dest;
 	  }
-
-	return;
       }
+      return;
+
+    default:
+      break;
     }
 
   format_ptr = GET_RTX_FORMAT (code);
