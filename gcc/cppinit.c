@@ -496,8 +496,6 @@ cpp_cleanup (pfile)
    VALUE (if any).  FLAGS tweaks the behavior a little:
    DUMP		write debug info for this macro
    STDC		define only if not -traditional
-   C89		define only if -lang-c89
-   C9X		define only if -lang-c9x
    ULP		value is the global user_label_prefix (which can't be
 		put directly into the table).
  */
@@ -511,8 +509,6 @@ struct builtin
 };
 #define DUMP 0x01
 #define STDC 0x02
-#define C89  0x04
-#define C9X  0x08
 #define ULP  0x10
 
 static const struct builtin builtin_array[] =
@@ -536,8 +532,6 @@ static const struct builtin builtin_array[] =
   { "__PTRDIFF_TYPE__",		PTRDIFF_TYPE,	 T_CONST, DUMP },
 #endif
   { "__WCHAR_TYPE__",		WCHAR_TYPE,	 T_CONST, DUMP },
-  { "__STDC_VERSION__",		"199409L",	 T_CONST, DUMP|STDC|C89 },
-  { "__STDC_VERSION__",		"199909L",	 T_CONST, DUMP|STDC|C9X },
   { 0, 0, 0, 0 }
 };
 
@@ -555,10 +549,6 @@ initialize_builtins (pfile)
     {
       if ((b->flags & STDC) && CPP_TRADITIONAL (pfile))
 	continue;
-      if ((b->flags & C89) && CPP_OPTIONS (pfile)->c9x)
-	continue;
-      if ((b->flags & C9X) && !CPP_OPTIONS (pfile)->c9x)
-	continue;
 
       val = (b->flags & ULP) ? user_label_prefix : b->value;
       len = strlen (b->name);
@@ -571,8 +561,6 @@ initialize_builtins (pfile)
 }
 #undef DUMP
 #undef STDC
-#undef C89
-#undef C9X
 #undef ULP
 
 /* Another subroutine of cpp_start_read.  This one sets up to do
@@ -1312,6 +1300,8 @@ cpp_handle_option (pfile, argc, argv)
 	  {
 	    opts->traditional = 1;
 	    opts->cplusplus_comments = 0;
+	    opts->trigraphs = 0;
+	    opts->warn_trigraphs = 0;
 	  }
 	else if (!strcmp (argv[i], "-trigraphs"))
 	  opts->trigraphs = 1;
@@ -1339,6 +1329,8 @@ cpp_handle_option (pfile, argc, argv)
 	    opts->c9x = 0, opts->objc = 1;
 	if (! strcmp (argv[i], "-lang-asm"))
 	  opts->lang_asm = 1;
+	if (! strcmp (argv[i], "-lang-fortran"))
+	  opts->lang_fortran = 1, opts->cplusplus_comments = 0;
 	if (! strcmp (argv[i], "-lint"))
 	  opts->for_lint = 1;
 	if (! strcmp (argv[i], "-lang-chill"))
@@ -1722,6 +1714,7 @@ Switches:\n\
   -lang-objc                Assume that the input sources are in ObjectiveC\n\
   -lang-objc++              Assume that the input sources are in ObjectiveC++\n\
   -lang-asm                 Assume that the input sources are in assembler\n\
+  -lang-fortran		    Assume that the input sources are in Fortran\n\
   -lang-chill               Assume that the input sources are in Chill\n\
   -std=<std name>           Specify the conformance standard; one of:\n\
                             gnu89, gnu9x, c89, c9x, iso9899:1990,\n\

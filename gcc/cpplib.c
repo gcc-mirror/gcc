@@ -527,11 +527,18 @@ handle_directive (pfile)
   cpp_skip_hspace (pfile);
 
   c = PEEKC ();
+  /* # followed by a number is equivalent to #line.  Do not recognize
+     this form in assembly language source files.  Complain about this
+     form if we're being pedantic, but not if this is regurgitated
+     input (preprocessed or fed back in by the C++ frontend).  */
   if (c >= '0' && c <= '9')
     {
-      /* Handle # followed by a line number.  Complain about using that
-         form if we're being pedantic, but not if this is regurgitated
-         input (preprocessed or fed back in by the C++ frontend).  */
+      if (CPP_OPTIONS (pfile)->lang_asm)
+	{
+	  skip_rest_of_line (pfile);
+	  return 1;
+	}
+
       if (CPP_PEDANTIC (pfile)
 	  && ! CPP_PREPROCESSED (pfile)
 	  && ! CPP_BUFFER (pfile)->manual_pop)
@@ -539,6 +546,11 @@ handle_directive (pfile)
       do_line (pfile, NULL);
       return 1;
     }
+
+  /* If we are rescanning preprocessed input, don't obey any directives
+     other than # nnn.  */
+  if (CPP_PREPROCESSED (pfile))
+    return 0;
 
   /* Now find the directive name.  */
   CPP_PUTC (pfile, '#');
@@ -2388,6 +2400,12 @@ cpp_get_token (pfile)
 
 	  if (!pfile->only_seen_white)
 	    goto randomchar;
+	  /* -traditional directives are recognized only with the # in
+	     column 1.
+	     XXX Layering violation.  */
+	  if (CPP_TRADITIONAL (pfile)
+	      && CPP_BUFFER (pfile)->cur - CPP_BUFFER (pfile)->line_base != 1)
+	    goto randomchar;
 	  if (handle_directive (pfile))
 	    return CPP_DIRECTIVE;
 	  pfile->only_seen_white = 0;
@@ -2872,9 +2890,17 @@ parse_string (pfile, c)
 	case '\n':
 	  CPP_BUMP_LINE (pfile);
 	  pfile->lineno++;
+
+	  /* In Fortran and assembly language, silently terminate
+	     strings of either variety at end of line.  This is a
+	     kludge around not knowing where comments are in these
+	     languages.  */
+	  if (CPP_OPTIONS (pfile)->lang_fortran
+	      || CPP_OPTIONS (pfile)->lang_asm)
+	    return;
 	  /* Character constants may not extend over multiple lines.
-	     In ANSI, neither may strings.  We accept multiline strings
-	     as an extension.  */
+	     In Standard C, neither may strings.  We accept multiline
+	     strings as an extension.  */
 	  if (c == '\'')
 	    {
 	      cpp_error_with_line (pfile, start_line, start_column,
@@ -2882,10 +2908,8 @@ parse_string (pfile, c)
 	      return;
 	    }
 	  if (CPP_PEDANTIC (pfile) && pfile->multiline_string_line == 0)
-	    {
-	      cpp_pedwarn_with_line (pfile, start_line, start_column,
-				     "string constant runs past end of line");
-	    }
+	    cpp_pedwarn_with_line (pfile, start_line, start_column,
+				   "string constant runs past end of line");
 	  if (pfile->multiline_string_line == 0)
 	    pfile->multiline_string_line = start_line;
 	  break;
