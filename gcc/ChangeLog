@@ -1,3 +1,8 @@
+2003-10-22  Andrew Haley  <aph@redhat.com>
+
+	* varasm.c (output_constructor): Make constructor annotation
+	conditional on ASM_COMMENT_START.
+
 2003-10-21  Jason Merrill  <jason@redhat.com>
 
 	* tree.c (get_unwidened): Check TREE_UNSIGNED on the field's type.
