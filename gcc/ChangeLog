@@ -1,5 +1,13 @@
 2001-11-12  Kazu Hirata  <kazu@hxi.com>
 
+	* config/h8300/h8300.c (shift_alg_qi): Use rotations when
+	doing 6-bit logical shifts on H8/S.
+	(shift_alg_qi): Use special code for 21-bit shifts on H8/S.
+	(get_shift_alg): Generate special code for 21-bit shifts on
+	H8/S.
+
+2001-11-12  Kazu Hirata  <kazu@hxi.com>
+
 	* config/h8300/h8300.c (get_shift_alg): Remove a redundant
 	label.
 
