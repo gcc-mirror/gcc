@@ -1,3 +1,17 @@
+1999-06-02  Warren Levy  <warrenl@cygnus.com>
+
+	* java/net/URL.java (URL(URL,String)): Initialize port to -1.
+	Ignore context if spec is an absolute URL.  Fix braindead
+	string comparison.
+	(hashCode): Use JDK 1.2 style algorithm.
+	* java/net/URLStreamHandler.java (parseURL): Reimplement to handle
+	context URL properly.
+
+1999-05-30  Anthony Green  <green@cygnus.com>
+
+	* java/net/URLStreamHandler.java (parseURL): Parse relative URLs
+	correctly.  Clean up "/../" and "/./" path fragments.
+
 1999-05-28  Warren Levy  <warrenl@cygnus.com>
 
 	* java/net/DatagramSocket.java (laddr): Removed.
