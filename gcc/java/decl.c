@@ -1500,8 +1500,7 @@ force_poplevels (int start_pc)
   while (current_binding_level->start_pc > start_pc)
     {
       if (pedantic && current_binding_level->start_pc > start_pc)
-	warning (current_function_decl, 
-                 "%HIn %D: overlapped variable and exception ranges at %d",
+	warning ("%HIn %D: overlapped variable and exception ranges at %d",
                  &DECL_SOURCE_LOCATION (current_function_decl),
                  current_function_decl, current_binding_level->start_pc);
       expand_end_bindings (getdecls (), 1, 0);
