@@ -1095,7 +1095,11 @@ branch_prob (void)
   if (profile_arc_flag
       && coverage_counter_alloc (GCOV_COUNTER_ARCS, num_instrumented))
     {
-      unsigned n_instrumented = instrument_edges (el);
+      unsigned n_instrumented;
+
+      profile_hooks->init_edge_profiler ();
+
+      n_instrumented = instrument_edges (el);
 
       if (n_instrumented != num_instrumented)
 	abort ();
