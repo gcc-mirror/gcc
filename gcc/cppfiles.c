@@ -859,6 +859,7 @@ read_name_map (pfile, dirname)
   char *name;
   FILE *f;
 
+  /* Check the cache of directories, and mappings in their remap file.  */
   for (map_list_ptr = CPP_OPTION (pfile, map_list); map_list_ptr;
        map_list_ptr = map_list_ptr->map_list_next)
     if (! strcmp (map_list_ptr->map_list_name, dirname))
@@ -867,6 +868,8 @@ read_name_map (pfile, dirname)
   map_list_ptr = ((struct file_name_map_list *)
 		  xmalloc (sizeof (struct file_name_map_list)));
   map_list_ptr->map_list_name = xstrdup (dirname);
+
+  /* The end of the list ends in NULL.  */
   map_list_ptr->map_list_map = NULL;
 
   name = (char *) alloca (strlen (dirname) + strlen (FILE_NAME_MAP_FILE) + 2);
@@ -875,9 +878,9 @@ read_name_map (pfile, dirname)
     strcat (name, "/");
   strcat (name, FILE_NAME_MAP_FILE);
   f = fopen (name, "r");
-  if (!f)
-    map_list_ptr->map_list_map = (struct file_name_map *)-1;
-  else
+
+  /* Silently return NULL if we cannot open.  */
+  if (f)
     {
       int ch;
       int dirlen = strlen (dirname);
@@ -920,6 +923,7 @@ read_name_map (pfile, dirname)
       fclose (f);
     }
   
+  /* Add this information to the cache.  */
   map_list_ptr->map_list_next = CPP_OPTION (pfile, map_list);
   CPP_OPTION (pfile, map_list) = map_list_ptr;
 
@@ -935,15 +939,15 @@ remap_filename (pfile, name, loc)
      struct file_name_list *loc;
 {
   struct file_name_map *map;
-  const char *from, *p, *dir;
+  const char *from, *p;
+  char *dir;
 
   if (! loc->name_map)
-    loc->name_map = read_name_map (pfile,
-				   loc->name
-				   ? loc->name : ".");
-
-  if (loc->name_map == (struct file_name_map *)-1)
-    return name;
+    {
+      loc->name_map = read_name_map (pfile, loc->name ? loc->name : ".");
+      if (! loc->name_map)
+	return name;
+    }
   
   from = name + strlen (loc->name) + 1;
   
@@ -957,29 +961,19 @@ remap_filename (pfile, name, loc)
      /usr/include/sys/header.gcc.  */
   p = strrchr (name, '/');
   if (!p)
-    p = name;
-  if (loc && loc->name
-      && strlen (loc->name) == (size_t) (p - name)
-      && !strncmp (loc->name, name, p - name))
-    /* FILENAME is in SEARCHPTR, which we've already checked.  */
     return name;
 
+  /* We know p != name as absolute paths don't call remap_filename.  */
   if (p == name)
-    {
-      dir = ".";
-      from = name;
-    }
-  else
-    {
-      char * newdir = (char *) alloca (p - name + 1);
-      memcpy (newdir, name, p - name);
-      newdir[p - name] = '\0';
-      dir = newdir;
-      from = p + 1;
-    }
+    cpp_ice (pfile, "absolute file name in remap_filename");
+
+  dir = (char *) alloca (p - name + 1);
+  memcpy (dir, name, p - name);
+  dir[p - name] = '\0';
+  from = p + 1;
   
   for (map = read_name_map (pfile, dir); map; map = map->map_next)
-    if (! strcmp (map->map_from, name))
+    if (! strcmp (map->map_from, from))
       return map->map_to;
 
   return name;

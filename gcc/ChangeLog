@@ -1,3 +1,10 @@
+2000-12-13  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cppfiles.c (read_name_map): Return null if open () fails.
+        (remap_filename): Simplify logic.  Add ICE if it doesn't work
+        as expected. Perform secondary lookup attempt on base filename
+        only.
+
 Wed Dec 13 19:48:04 MET 2000  Jan hubicka  <jh@suse.cz>
 
 	* flow.c (notice_stack_pointer_modification_1): Notice midifications
