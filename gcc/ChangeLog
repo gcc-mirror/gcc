@@ -1,3 +1,11 @@
+2003-06-05  David Miller  <davem@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	* optabs.c (HAVE_conditional_trap): Provide default.
+	(gen_conditional_trap): Likewise.
+	(init_optabs): Merge init_traps.
+	(gen_cond_trap): Use prepare_operand.  Restructure and avoid ifdef.
+
 Thu Jun  5 14:59:44 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* combine.c (simplify_if_then_else): (IF_THEN_ELSE (NE REG 0) (0) (8))
