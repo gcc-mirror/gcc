@@ -2173,7 +2173,7 @@ Enable @option{-Wformat} plus format checks not included in
 
 @item -Wnonnull
 @opindex Wnonnull
-Enable warning about passing a null pointer for arguments marked as
+Warn about passing a null pointer for arguments marked as
 requiring a non-null value by the @code{nonnull} function attribute.
 
 @option{-Wnonnull} is included in @option{-Wall} and @option{-Wformat}.  It
@@ -2181,12 +2181,12 @@ can be disabled with the @option{-Wno-nonnull} option.
 
 @item -Winit-self @r{(C, C++, and Objective-C only)} 
 @opindex Winit-self
-Enable warning about uninitialized variables which are initalized with themselves.
-Note this option can only be used with the @option{-Wuninitialized} option and 
-that only works with @option{-O}.
+Warn about uninitialized variables which are initialized with themselves.
+Note this option can only be used with the @option{-Wuninitialized} option,
+which in turn only works with @option{-O1} and above.
 
-For an example, the following code will not warn about i being uninitialized 
-without this option:
+For example, GCC will warn about @code{i} being uninitialized in the
+following snippet only when @option{-Winit-self} has been specified:
 @smallexample
 @group
 int f()
