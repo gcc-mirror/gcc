@@ -1,3 +1,10 @@
+2005-03-17  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR rtl-optimization/19683
+	* reload1.c (choose_reload_regs): Pass the number of bits, not the
+	number of bytes, to smallest_int_for_mode.  Fix arguments to
+	REG_CANNOT_CHANGE_MODE_P.
+
 2005-03-17  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/linux-unwind.h: New file backported from gcc-4.0.

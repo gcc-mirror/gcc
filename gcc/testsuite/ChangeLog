@@ -1,3 +1,7 @@
+2005-03-17  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.dg/torture/pr19683-1.c: New test.
+
 2005-03-16  Roger Sayle  <roger@eyesopen.com>
 
 	PR rtl-optimization/17825
