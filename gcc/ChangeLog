@@ -1,3 +1,10 @@
+2005-02-03  Alexandre Oliva  <aoliva@redhat.com>
+
+	* combine.c (simplify_comparison, case SIGN_EXTEND, ZERO_EXTEND):
+	Do not drop the extend if we'd have to add a paradoxical subreg
+	later.  Include optabs.h and insn-codes.h.
+	* Makefile.in (combine.o): Depend on $(OPTABS_H).
+
 2005-02-02  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/19405

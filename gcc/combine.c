@@ -90,6 +90,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "real.h"
 #include "toplev.h"
 #include "target.h"
+#include "optabs.h"
+#include "insn-codes.h"
 #include "rtlhooks-def.h"
 /* Include output.h for dump_file.  */
 #include "output.h"
@@ -10054,16 +10056,22 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	  break;
 
 	case SIGN_EXTEND:
-	  /* Can simplify (compare (zero/sign_extend FOO) CONST)
-	     to (compare FOO CONST) if CONST fits in FOO's mode and we
-	     are either testing inequality or have an unsigned comparison
-	     with ZERO_EXTEND or a signed comparison with SIGN_EXTEND.  */
-	  if (! unsigned_comparison_p
-	      && (GET_MODE_BITSIZE (GET_MODE (XEXP (op0, 0)))
-		  <= HOST_BITS_PER_WIDE_INT)
+	  /* Can simplify (compare (zero/sign_extend FOO) CONST) to
+	     (compare FOO CONST) if CONST fits in FOO's mode and we
+	     are either testing inequality or have an unsigned
+	     comparison with ZERO_EXTEND or a signed comparison with
+	     SIGN_EXTEND.  But don't do it if we don't have a compare
+	     insn of the given mode, since we'd have to revert it
+	     later on, and then we wouldn't know whether to sign- or
+	     zero-extend.  */
+	  mode = GET_MODE (XEXP (op0, 0));
+	  if (mode != VOIDmode && GET_MODE_CLASS (mode) == MODE_INT
+	      && ! unsigned_comparison_p
+	      && (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
 	      && ((unsigned HOST_WIDE_INT) const_op
-		  < (((unsigned HOST_WIDE_INT) 1
-		      << (GET_MODE_BITSIZE (GET_MODE (XEXP (op0, 0))) - 1)))))
+		  < (((unsigned HOST_WIDE_INT) 1 
+		      << (GET_MODE_BITSIZE (mode) - 1))))
+	      && cmp_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
 	    {
 	      op0 = XEXP (op0, 0);
 	      continue;
@@ -10139,11 +10147,12 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	  /* ... fall through ...  */
 
 	case ZERO_EXTEND:
-	  if ((unsigned_comparison_p || equality_comparison_p)
-	      && (GET_MODE_BITSIZE (GET_MODE (XEXP (op0, 0)))
-		  <= HOST_BITS_PER_WIDE_INT)
-	      && ((unsigned HOST_WIDE_INT) const_op
-		  < GET_MODE_MASK (GET_MODE (XEXP (op0, 0)))))
+	  mode = GET_MODE (XEXP (op0, 0));
+	  if (mode != VOIDmode && GET_MODE_CLASS (mode) == MODE_INT
+	      && (unsigned_comparison_p || equality_comparison_p)
+	      && (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
+	      && ((unsigned HOST_WIDE_INT) const_op < GET_MODE_MASK (mode))
+	      && cmp_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
 	    {
 	      op0 = XEXP (op0, 0);
 	      continue;
