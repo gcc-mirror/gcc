@@ -1,3 +1,15 @@
+2005-01-18  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/testsuite_performance.h (time_counter::start):
+	Clear. Tweaks.
+	(clear_counters): Inline.
+	(start_counters): Inline.
+	(stop_counters): Inline.
+	* testsuite/performance/20_util/allocator/map_thread.cc: Return.
+	* testsuite/performance/20_util/allocator/insert.cc: Remove bogus
+	return, add return.
+	* testsuite/performance/20_util/allocator/map_thread.cc: Same.
+	
 2005-01-17  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/19433

@@ -96,20 +96,19 @@ template<typename Container>
 
     time_counter time;
     resource_counter resource;
-    clear_counters(time, resource);
-    start_counters(time, resource);
-
-    do_loop<Container>();
-    do_loop<Container>();
-
-    stop_counters(time, resource);
- 
-    std::ostringstream comment;
-    comment << "repeated iterations: " << iterations*2 << '\t';
-    comment << "type: " << abi::__cxa_demangle(typeid(obj).name(),
-					       0, 0, &status);
-    report_header(__FILE__, comment.str());
-    report_performance(__FILE__, string(), time, resource);
+    {
+      start_counters(time, resource);
+      do_loop<Container>();
+      do_loop<Container>();
+      stop_counters(time, resource);
+      
+      std::ostringstream comment;
+      comment << "repeated iterations: " << iterations*2 << '\t';
+      comment << "type: " << abi::__cxa_demangle(typeid(obj).name(),
+						 0, 0, &status);
+      report_header(__FILE__, comment.str());
+      report_performance(__FILE__, string(), time, resource);
+    }
   }
 
 // http://gcc.gnu.org/ml/libstdc++/2001-05/msg00105.html
