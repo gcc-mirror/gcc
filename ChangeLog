@@ -1,3 +1,8 @@
+2001-11-05  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config.sub: Import from master sources, rev 1.226.
+	* config.guess: Import from master sources, rev 1.216.
+
 2001-11-03  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* configure.in (noconfigdirs) [mmix-*-*]: Disable libgcj.
