@@ -1,3 +1,8 @@
+2003-06-10  DJ Delorie  <dj@redhat.com>
+
+	* doc/md.texi (Machine Constraints): Document stormy's Z
+	constraint.
+
 2003-06-10  Geoffrey Keating  <geoffk@apple.com>
 
 	* except.c (call_site_base): Mark with GTY.

@@ -2271,6 +2271,9 @@ The register indicated by Rx (not implemented yet).
 @item U
 A constant that is not between 2 and 15 inclusive.
 
+@item Z
+The constant 0.
+
 @end table
 
 @item Xtensa---@file{xtensa.h}
