@@ -1,5 +1,7 @@
 1998-12-03  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* g++.old-deja/g++.pt/overload7.C: New test.
+
 	* g++.old-deja/g++.pt/spec20.C: ERROR marks were bogus
 
 	* lib/old-dejagnu.exp (old-dejagnu): ignore collect recompiling
