@@ -90,7 +90,7 @@ check_directory 'Source' ${SRC_DIR}
 case ${query} in
     --installed-library)
     PREFIX_DIR=$4
-    check_directory 'Install' ${PREFIX_FIR}
+    check_directory 'Install' ${PREFIX_DIR}
     ;;
     *)
     PREFIX_DIR=
