@@ -1,5 +1,8 @@
 Wed Mar 10 20:28:29 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* gcse.c: Update various comments.
+	(current_function_calls_longjmp): Delete declaration.
+
 	* gcse.c (run_jump_opt_after_gcse): New variable.
 	(gcse_main): Returns an integer.
 	(hash_scan_set): Record initializations from CONST_DOUBLEs too.
