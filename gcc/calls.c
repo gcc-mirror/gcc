@@ -1696,7 +1696,7 @@ expand_call (exp, target, ignore)
   rtx before_call;
 #endif
   rtx insn;
-  int safe_for_reeval;
+  int try_tail_call;
   int pass;
 
   /* Register in which non-BLKmode value will be returned,
@@ -2027,44 +2027,70 @@ expand_call (exp, target, ignore)
 
   currently_expanding_call++;
 
-  /* If we're considering tail recursion optimizations, verify that the
-     arguments are safe for re-evaluation.  If we can unsave them, wrap
-     each argument in an UNSAVE_EXPR.  */
+  /* Tail calls can make things harder to debug, and we're traditionally
+     pushed these optimizations into -O2.  Don't try if we're already
+     expanding a call, as that means we're an argument.  Similarly, if
+     there's pending loops or cleanups we know there's code to follow
+     the call.  */
 
-  safe_for_reeval = 0;
+  try_tail_call = 0;
   if (optimize >= 2
       && currently_expanding_call == 1
       && stmt_loop_nest_empty ()
       && ! any_pending_cleanups (1))
     {
-      /* Verify that each argument is safe for re-evaluation.  */
+      tree new_actparms = NULL_TREE;
+
+      /* Ok, we're going to give the tail call the old college try.
+	 This means we're going to evaluate the function arguments
+	 up to three times.  There are two degrees of badness we can
+	 encounter, those that can be unsaved and those that can't.
+	 (See unsafe_for_reeval commentary for details.)
+
+	 Generate a new argument list.  Pass safe arguments through
+	 unchanged.  For the easy badness wrap them in UNSAVE_EXPRs.  
+	 For hard badness, evaluate them now and put their resulting
+	 rtx in a temporary VAR_DECL.  */
+
       for (p = actparms; p; p = TREE_CHAIN (p))
-	if (! safe_for_unsave (TREE_VALUE (p)))
-	  break;
+	switch (unsafe_for_reeval (TREE_VALUE (p)))
+	  {
+	  case 0: /* Safe.  */
+	    new_actparms = tree_cons (TREE_PURPOSE (p), TREE_VALUE (p),
+				      new_actparms);
+	    break;
 
-      if (p == NULL_TREE)
-        {
-	  tree new_actparms = NULL_TREE, q;
+	  case 1: /* Mildly unsafe.  */
+	    new_actparms = tree_cons (TREE_PURPOSE (p),
+				      unsave_expr (TREE_VALUE (p)),
+				      new_actparms);
+	    break;
 
-	  for (p = actparms; p ; p = TREE_CHAIN (p))
+	  case 2: /* Wildly unsafe.  */
 	    {
-	      tree np = build_tree_list (TREE_PURPOSE (p),
-					 unsave_expr (TREE_VALUE (p)));
-	      if (new_actparms)
-		TREE_CHAIN (q) = np;
-	      else
-		new_actparms = np;
-	      q = np;
+	      tree var = build_decl (VAR_DECL, NULL_TREE,
+				     TREE_TYPE (TREE_VALUE (p)));
+	      DECL_RTL (var) = expand_expr (TREE_VALUE (p), NULL_RTX,
+					    VOIDmode, EXPAND_NORMAL);
+	      new_actparms = tree_cons (TREE_PURPOSE (p), var, new_actparms);
 	    }
+	    break;
 
-	  actparms = new_actparms;
-	  safe_for_reeval = 1;
-	}
+	  default:
+	    abort ();
+	  }
+
+      /* We built the new argument chain backwards.  */
+      actparms = nreverse (new_actparms);
+
+      /* Expanding one of those dangerous arguments could have added
+	 cleanups, but otherwise give it a whirl.  */
+      try_tail_call = ! any_pending_cleanups (1);
     }
 
   /* Generate a tail recursion sequence when calling ourselves.  */
 
-  if (safe_for_reeval
+  if (try_tail_call
       && TREE_CODE (TREE_OPERAND (exp, 0)) == ADDR_EXPR
       && TREE_OPERAND (TREE_OPERAND (exp, 0), 0) == current_function_decl)
     {
@@ -2149,7 +2175,7 @@ expand_call (exp, target, ignore)
       if (pass == 0)
 	{
 	  /* Various reasons we can not use a sibling call.  */
-	  if (! safe_for_reeval
+	  if (! try_tail_call 
 #ifdef HAVE_sibcall_epilogue
 	      || ! HAVE_sibcall_epilogue
 #else
@@ -2163,6 +2189,10 @@ expand_call (exp, target, ignore)
 	      /* If the register holding the address is a callee saved
 		 register, then we lose.  We have no way to prevent that,
 		 so we only allow calls to named functions.  */
+	      /* ??? This could be done by having the insn constraints
+		 use a register class that is all call-clobbered.  Any
+		 reload insns generated to fix things up would appear
+		 before the sibcall_epilogue.  */
 	      || fndecl == NULL_TREE
 	      || ! FUNCTION_OK_FOR_SIBCALL (fndecl))
 	    continue;
@@ -2819,10 +2849,13 @@ expand_call (exp, target, ignore)
 
       /* If there are cleanups to be called, don't use a hard reg as target.
 	 We need to double check this and see if it matters anymore.  */
-      if (any_pending_cleanups (1)
-	  && target && REG_P (target)
-	  && REGNO (target) < FIRST_PSEUDO_REGISTER)
-	target = 0, sibcall_failure = 1;
+      if (any_pending_cleanups (1))
+	{
+	  if (target && REG_P (target)
+	      && REGNO (target) < FIRST_PSEUDO_REGISTER)
+	    target = 0;
+	  sibcall_failure = 1;
+	}
 
       if (TYPE_MODE (TREE_TYPE (exp)) == VOIDmode
 	  || ignore)

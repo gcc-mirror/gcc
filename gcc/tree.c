@@ -290,9 +290,6 @@ static void print_type_hash_statistics PARAMS((void));
 void (*lang_unsave) PARAMS ((tree *));
 void (*lang_unsave_expr_now) PARAMS ((tree));
 
-/* If non-null, a language specific version of safe_for_unsave. */
-int (*lang_safe_for_unsave) PARAMS ((tree));
-
 /* The string used as a placeholder instead of a source file name for
    built-in tree nodes.  The variable, which is dynamically allocated,
    should be used; the macro is only used to initialize it.  */
@@ -2675,15 +2672,28 @@ unsave_expr_now (expr)
   return expr;
 }
 
-/* Return nonzero if it is safe to unsave EXPR, else return zero.
-   It is not safe to unsave EXPR if it contains any embedded RTL_EXPRs.  */
+/* Return 0 if it is safe to evaluate EXPR multiple times,
+   return 1 if it is safe if EXPR is unsaved afterward, or
+   return 2 if it is completely unsafe. 
+
+   This assumes that CALL_EXPRs and TARGET_EXPRs are never replicated in
+   an expression tree, so that it safe to unsave them and the surrounding
+   context will be correct.
+
+   SAVE_EXPRs basically *only* appear replicated in an expression tree,
+   occasionally across the whole of a function.  It is therefore only
+   safe to unsave a SAVE_EXPR if you know that all occurrences appear
+   below the UNSAVE_EXPR.
+
+   RTL_EXPRs consume their rtl during evaluation.  It is therefore 
+   never possible to unsave them.  */
 
 int
-safe_for_unsave (expr)
+unsafe_for_reeval (expr)
      tree expr;
 {
   enum tree_code code;
-  register int i;
+  register int i, tmp, unsafeness;
   int first_rtl;
 
   if (expr == NULL_TREE)
@@ -2691,10 +2701,13 @@ safe_for_unsave (expr)
 
   code = TREE_CODE (expr);
   first_rtl = first_rtl_op (code);
+  unsafeness = 0;
+
   switch (code)
     {
+    case SAVE_EXPR:
     case RTL_EXPR:
-      return 0;
+      return 2;
 
     case CALL_EXPR:
       if (TREE_OPERAND (expr, 1)
@@ -2703,26 +2716,20 @@ safe_for_unsave (expr)
 	  tree exp = TREE_OPERAND (expr, 1);
 	  while (exp)
 	    {
-	      if (! safe_for_unsave (TREE_VALUE (exp)))
-		return 0;
+	      tmp = unsafe_for_reeval (TREE_VALUE (exp));
+	      if (tmp > 1)
+		return tmp;
 	      exp = TREE_CHAIN (exp);
 	    }
 	}
+      return 1;
+
+    case TARGET_EXPR:
+      unsafeness = 1;
       break;
 
     default:
-      if (lang_safe_for_unsave)
-	switch ((*lang_safe_for_unsave) (expr))
-	  {
-	  case -1:
-	    break;
-	  case 0:
-	    return 0;
-	  case 1:
-	    return 1;
-	  default:
-	    abort ();
-	  }
+      /* ??? Add a lang hook if it becomes necessary.  */
       break;
     }
 
@@ -2733,7 +2740,7 @@ safe_for_unsave (expr)
     case 'x':  /* something random, like an identifier or an ERROR_MARK.  */
     case 'd':  /* A decl node */
     case 'b':  /* A block node */
-      return 1;
+      return 0;
 
     case 'e':  /* an expression */
     case 'r':  /* a reference */
@@ -2742,12 +2749,15 @@ safe_for_unsave (expr)
     case '2':  /* a binary arithmetic expression */
     case '1':  /* a unary arithmetic expression */
       for (i = first_rtl - 1; i >= 0; i--)
-	if (! safe_for_unsave (TREE_OPERAND (expr, i)))
-	  return 0;
-      return 1;
+	{
+	  tmp = unsafe_for_reeval (TREE_OPERAND (expr, i));
+	  if (tmp > unsafeness)
+	    unsafeness = tmp;
+	}
+      return unsafeness;
 
     default:
-      return 0;
+      return 2;
     }
 }
 

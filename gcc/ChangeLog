@@ -1,3 +1,13 @@
+2000-03-24  Richard Henderson  <rth@cygnus.com>
+
+	* tree.c (lang_safe_for_unsave): Remove.
+	(unsafe_for_reeval): Transmute and rename from safe_for_unsave,
+	allowing for two levels of unsafeness.  Remove lang hook.
+	* tree.h: Update declarations.
+	* calls.c (expand_call): Rename safe_for_reeval to try_tail_call.
+	Create temporary VAR_DECLs to protect very unsafe_for_reeval trees.
+	Always fail sibcalls when there are pending cleanups.
+
 2000-03-24  Geoff Keating  <geoffk@cygnus.com>
 
 	* flow.c (propagate_block): When we delete an ADDR_VEC,
