@@ -1,5 +1,10 @@
 2004-04-20  Michael Koch  <konqueror@gmx.de>
 
+	* java/nio/channels/Channels.java:
+	Merged coding style with GNU classpath.
+
+2004-04-20  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/ServerSocket.java
 	Merged coding style from GNU classpath.
 
