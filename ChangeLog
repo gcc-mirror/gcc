@@ -1,3 +1,17 @@
+Fri Feb  6 01:33:52 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Makefile.in (BASE_FLAGS_TO_PASS): Don't pass PICFLAG and
+	PICFLAG_FOR_TARGET.
+	(EXTRA_TARGET_FLAGS): Don't pass PICFLAG_FOR_TARGET.
+
+	* configure: Emit a definition for the new macro enable_shared
+	into each Makefile.
+
+	* config/mh-sparcpic (PICFLAG): Define to properly according
+	to current multilib configuration.
+	* config/mt-sparcpic (PICFLAG_FOR_TARGET): Define to properly
+	according to current multilib configuration.
+
 Sun Feb  1 02:40:41 1998  Richard Henderson  <rth@cygnus.com>
 
 	* Makefile.in (TARGET_CONFIGDIRS): Add libf2c.
