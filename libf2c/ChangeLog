@@ -1,5 +1,13 @@
 1999-03-06  Craig Burley  <craig@jcb-sc.com>
 
+	Mon Dec 21 23:03:54 1998 Hans-Peter Nilsson <hp@axis.se>:
+	* libI77/Makefile.in (all *.o except VersionI.o): Added dependence
+	on respective .c file.
+	* libF77/Makefile.in (all .o except VersionF.o): Similarly.
+	* libU77/Makefile.in (date_.o): Added dependence on date_.c
+	
+1999-03-06  Craig Burley  <craig@jcb-sc.com>
+
 	Rename non-Y2K-compliant intrinsics:
 	* Makefile.in (F2CEXT): Now two versions each of
 	`date' and `vxtidt'.
