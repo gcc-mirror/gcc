@@ -428,8 +428,6 @@ namespace std
 	  // Step 2: Use the external array.
 	  this->_M_buf = __s;
 	  this->_M_buf_size = __n;
-	  // Consistently set the end of buffer pointer.
-	  this->_M_out_end = this->_M_buf + this->_M_buf_size;
 	  _M_set_indeterminate();
 	}
       _M_last_overflowed = false;	

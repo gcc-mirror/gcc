@@ -1,3 +1,8 @@
+2003-04-14  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/fstream.tcc (basic_filebuf::setbuf): Don't set
+	_M_out_end, _M_set_indeterminate() does it.
+
 2003-04-12  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* os/hpux/ctype_inline.h: Replace with gnu-linux version.
