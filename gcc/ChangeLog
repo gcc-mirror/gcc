@@ -1,3 +1,7 @@
+2004-08-17  Robert Bowdidge  <bowdidge@apple.com>
+  
+        * config/rs6000/x-darwin: Add -mdynamic-no-pic to gcc build flags.
+
 2004-08-17  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* config/rs6000/darwin.md (*call_nonlocal_darwin64): Add #else clause
