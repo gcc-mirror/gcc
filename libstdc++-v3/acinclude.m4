@@ -238,9 +238,11 @@ AC_DEFUN(GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT, [
 
 
 dnl
+
 dnl Check to see what architecture we are compiling for. If it's
 dnl supported, use special hand-crafted routines to provide thread
-dnl primitives.
+dnl primitives. Also, if architecture-specific flags are required for 
+dnl compilation, add them here.
 dnl 
 dnl Depending on what is found, select configure/cpu/*/bits/atomicity.h 
 dnl If not found, select configure/cpu/generic/bits/atomicity.h
@@ -248,6 +250,7 @@ dnl
 dnl GLIBCPP_CHECK_CPU
 AC_DEFUN(GLIBCPP_CHECK_CPU, [
     AC_MSG_CHECKING([for cpu primitives directory])
+    CPUFLAGS=			
     case "$target_cpu" in
       alpha*)
 	cpu_include_dir="config/cpu/alpha"
@@ -260,6 +263,7 @@ AC_DEFUN(GLIBCPP_CHECK_CPU, [
         ;;
       powerpc | rs6000)
 	cpu_include_dir="config/cpu/powerpc"
+    	CPUFLAGS='-mnew-mnemonics -Wa,-mppc -mpowerpc'
         ;;
       sparc64 | ultrasparc)
 	cpu_include_dir="config/cpu/sparc/sparc64"
@@ -273,6 +277,7 @@ AC_DEFUN(GLIBCPP_CHECK_CPU, [
     esac
     AC_MSG_RESULT($cpu_include_dir)
     AC_SUBST(cpu_include_dir)
+    AC_SUBST(CPUFLAGS)
 ])
 
  
@@ -604,16 +609,9 @@ changequote([, ])dnl
 enable_debug=GLIBCPP_ENABLE_DEBUG_DEFAULT)dnl
 dnl Option parsed, now set things appropriately
 case "$enable_debug" in
-    yes)  
-        case "$target_cpu" in
-		alpha*)
-			DEBUGFLAGS='-O0 -gdwarf-2'
-			;;			
-		*)
-			DEBUGFLAGS='-O0 -g'			
-			;;
-	esac
-        ;;
+    yes) 
+	DEBUGFLAGS='-O0 -ggdb'			
+	;;
     no)   
 	DEBUGFLAGS='-g'
         ;;

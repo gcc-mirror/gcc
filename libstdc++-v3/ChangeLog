@@ -1,3 +1,9 @@
+2000-05-01  Benjamin Kosnik  <bkoz@haight.constant.com>
+
+	* src/Makefile.am (AC_CXXFLAGS): Add CPUFLAGS here.
+	* src/Makefile.in: Regenerate.
+	* acinclude.m4 (GLIBCPP_ENABLE_DEBUG): Revert.
+
 2000-04-30  Benjamin Kosnik  <bkoz@gnu.org>
 
 	* config/cpu/powerpc/bits/atomicity.h (__compare_and_swap): Fix typo.
