@@ -1571,14 +1571,18 @@ tree
 chainon (op1, op2)
      tree op1, op2;
 {
-  tree t;
 
   if (op1)
     {
-      for (t = op1; TREE_CHAIN (t); t = TREE_CHAIN (t))
-	if (t == op2) abort ();	/* Circularity being created */
-      if (t == op2) abort ();	/* Circularity being created */
-      TREE_CHAIN (t) = op2;
+      register tree t1;
+      register tree t2;
+
+      for (t1 = op1; TREE_CHAIN (t1); t1 = TREE_CHAIN (t1))
+	;
+      TREE_CHAIN (t1) = op2;
+      for (t2 = op2; t2; t2 = TREE_CHAIN (t2))
+        if (t2 == t1)
+          abort ();  /* Circularity created.  */
       return op1;
     }
   else return op2;
