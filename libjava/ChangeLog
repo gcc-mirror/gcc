@@ -1,3 +1,16 @@
+2004-08-30  Tom Tromey  <tromey@redhat.com>
+
+	* java/nio/CharBuffer.java (put): Fix typo.
+	* java/nio/DoubleBuffer.java (put): Fix typo.
+	* java/nio/FloatBuffer.java (put): Fix typo.
+	* java/nio/IntBuffer.java (put): Fix typo.
+	* java/nio/LongBuffer.java (put): Fix typo.
+	* java/nio/ShortBuffer.java (put): Fix typo.
+
+2004-08-30  Florian Weimer  <fw@deneb.enyo.de>
+
+	* java/nio/ByteBuffer.java (put): Fix typo.
+
 2004-08-30  Casey Marshall  <csm@gnu.org>
 
 	* java/security/DummyKeyPairGenerator.java (clone): Removed

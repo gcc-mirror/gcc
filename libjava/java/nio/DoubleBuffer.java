@@ -148,7 +148,7 @@ public abstract class DoubleBuffer extends Buffer
       {
         double[] toPut = new double [src.remaining ()];
         src.get (toPut);
-        src.put (toPut);
+        put (toPut);
       }
 
     return this;

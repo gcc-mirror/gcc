@@ -148,7 +148,7 @@ public abstract class FloatBuffer extends Buffer
       {
         float[] toPut = new float [src.remaining ()];
         src.get (toPut);
-        src.put (toPut);
+        put (toPut);
       }
 
     return this;

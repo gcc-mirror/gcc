@@ -148,7 +148,7 @@ public abstract class LongBuffer extends Buffer
       {
         long[] toPut = new long [src.remaining ()];
         src.get (toPut);
-        src.put (toPut);
+        put (toPut);
       }
 
     return this;

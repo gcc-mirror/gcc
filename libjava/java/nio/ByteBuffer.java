@@ -165,7 +165,7 @@ public abstract class ByteBuffer extends Buffer
       {
         byte[] toPut = new byte [src.remaining ()];
         src.get (toPut);
-        src.put (toPut);
+        put (toPut);
       }
 
     return this;

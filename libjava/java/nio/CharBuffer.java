@@ -202,7 +202,7 @@ public abstract class CharBuffer extends Buffer
       {
         char[] toPut = new char [src.remaining ()];
         src.get (toPut);
-        src.put (toPut);
+	put (toPut);
       }
 
     return this;

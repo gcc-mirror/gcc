@@ -148,7 +148,7 @@ public abstract class IntBuffer extends Buffer
       {
         int[] toPut = new int [src.remaining ()];
         src.get (toPut);
-        src.put (toPut);
+        put (toPut);
       }
 
     return this;
