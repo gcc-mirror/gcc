@@ -284,49 +284,39 @@ update_path (path, key)
       p = strchr (p, '.');
       if (p == NULL)
 	break;
-      /* Get rid of a leading `./' and replace `/./' with `/', when
-	 such components are followed with another `.'.  */
-      if (IS_DIR_SEPARATOR (p[1])
-	  && (p == result || IS_DIR_SEPARATOR (p[-1])))
-	{
-	  src = p + 2;
-	  /* Be careful about .//foo  */
-	  while (IS_DIR_SEPARATOR (*src))
-	    ++src;
-	  if (*src == '.')
-	    {
-	      dest = p;
-	      while ((*dest++ = *src++) != 0)
-		;
-	    }
-	  else
-	    ++p;
-	}
       /* Look for `/../'  */
-      else if (p[1] == '.'
-	       && IS_DIR_SEPARATOR (p[2])
-	       && (p != result && IS_DIR_SEPARATOR (p[-1])))
+      if (p[1] == '.'
+	  && IS_DIR_SEPARATOR (p[2])
+	  && (p != result && IS_DIR_SEPARATOR (p[-1])))
 	{
 	  *p = 0;
 	  if (!ALWAYS_STRIP_DOTDOT && access (result, X_OK) == 0)
 	    {
 	      *p = '.';
-	      p += 3;
+	      break;
 	    }
 	  else
 	    {
 	      /* We can't access the dir, so we won't be able to
-		 access dir/.. either.  Strip out dir/..  We know dir
-		 isn't `.' because we've rid ourselves of `.' path
-		 components above.  */
-	      dest = p - 1;
-	      while (dest != result && IS_DIR_SEPARATOR (*dest))
-		--dest;
-	      while (dest != result && !IS_DIR_SEPARATOR (dest[-1]))
-		--dest;
-	      /* Don't strip leading `/'.  */
-	      while (IS_DIR_SEPARATOR (*dest))
-		++dest;
+		 access dir/.. either.  Strip out `dir/../'.  If `dir'
+		 turns out to be `.', strip one more path component.  */
+	      dest = p;
+	      do
+		{
+		  --dest;
+		  while (dest != result && IS_DIR_SEPARATOR (*dest))
+		    --dest;
+		  while (dest != result && !IS_DIR_SEPARATOR (dest[-1]))
+		    --dest;
+		}
+	      while (dest != result && *dest == '.');
+	      /* If we have something like `./..' or `/..', don't
+		 strip anything more.  */
+	      if (*dest == '.' || IS_DIR_SEPARATOR (*dest))
+		{
+		  *p = '.';
+		  break;
+		}
 	      src = p + 3;
 	      while (IS_DIR_SEPARATOR (*src))
 		++src;
