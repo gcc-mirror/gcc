@@ -22,6 +22,7 @@ $! CC	:=	cc	!uncomment for VAXC
 $ BISON	:=	bison
 $ RENAME	:=	rename/new_vers
 $ LINK	:=	link
+$ EDIT :=	edit
 $!
 $!	Compiler options
 $!
@@ -180,6 +181,67 @@ $!'f$verify(0)
 $	endif
 $!
 $compile_cc1:
+$if (DO_CC1 + DO_CC1PLUS) .ne.0
+$	then
+$write sys$output "testing"
+$if (f$search("C-PARSE.Y") .eqs. "") then goto yes_yfiles
+$if (f$cvtime(f$file_attributes("C-PARSE.IN","RDT")).gts. -
+ 	    f$cvtime(f$file_attributes("C-PARSE.Y","RDT")))  -
+		then goto yes_yfiles
+$if (f$search("OBJC-PARSE.Y") .eqs. "") then goto yes_yfiles
+$if (f$cvtime(f$file_attributes("C-PARSE.IN","RDT")).gts. -
+ 	    f$cvtime(f$file_attributes("OBJC-PARSE.Y","RDT")))  -
+		then goto yes_yfiles
+$GOTO no_yfiles
+$echo "Now processing c-parse.in to generate c-parse.y and objc-parse.y."
+$yes_yfiles:
+$ edit/tpu/nojournal/nosection/nodisplay/command=sys$input
+!
+!     Read c-parse.in, write c-parse.y and objc-parse.y, depending on
+!     paired lines of "ifc" & "end ifc" and "ifobjc" & "end ifobjc" to
+!     control what goes into each file.  Most lines will be common to
+!     both (hence not bracketed by either control pair).  Mismatched
+!     pairs aren't detected--garbage in, garbage out...
+!
+
+   PROCEDURE do_output()
+      IF NOT objc_only THEN POSITION(END_OF(c)); COPY_TEXT(input_line); ENDIF;
+      IF NOT c_only THEN POSITION(END_OF(objc)); COPY_TEXT(input_line); ENDIF;
+      POSITION(input_file);                     !reset
+   ENDPROCEDURE;
+
+   input_file := CREATE_BUFFER("input", "c-parse.in");  !load data
+		 SET(NO_WRITE, input_file);
+   c          := CREATE_BUFFER("c_output");     !1st output file
+   objc       := CREATE_BUFFER("objc_output");  !2nd output file
+
+   POSITION(BEGINNING_OF(input_file));
+   c_only     := 0;
+   objc_only  := 0;
+
+   LOOP
+      EXITIF MARK(NONE) = END_OF(input_file);   !are we done yet?
+
+      input_line := CURRENT_LINE;               !access current_line just once
+      CASE EDIT(input_line, TRIM_TRAILING, OFF, NOT_IN_PLACE)
+	 ["ifc"]        : c_only := 1;
+	 ["end ifc"]    : c_only := 0;
+	 ["ifobjc"]     : objc_only := 1;
+	 ["end ifobjc"] : objc_only := 0;
+!         default -- add non-control line to either or both output files
+	 [INRANGE]      : do_output();          !between "end" and "if"
+	 [OUTRANGE]     : do_output();          !before "end" or after "if"
+      ENDCASE;
+
+      MOVE_VERTICAL(1);                         !go to next line
+   ENDLOOP;
+
+   WRITE_FILE(c, "c-parse.y");
+   WRITE_FILE(objc, "objc-parse.y");
+   QUIT
+$	endif	
+$no_yfiles:
+$!
 $open cfile$ compilers.list
 $cloop:read cfile$ compilername/end=cdone
 $! language specific modules
@@ -241,17 +303,12 @@ $set verify
 $	 'BISON' /define /verbose 'flnm'.y
 $	 'RENAME' 'flnm'_tab.c 'flnm'.c
 $	 'RENAME' 'flnm'_tab.h 'flnm'.h
-$	if flnm.eqs."cp-parse"
-$		then
-$		search cp-parse.c "#define YYEMPTY"/output=t.tmp
-$		open jfile$ t.tmp
-$		read jfile$ empty_line
-$		close jfile$
-$		open jfile$ cp-parse.h/append
-$		write jfile$ empty_line
-$		close jfile$
-$		delete/nolog t.tmp;
-$		endif
+$       if flnm.eqs."cp-parse"
+$       then            ! fgrep '#define YYEMPTY' cp-parse.c >>cp-parse.h
+$               open/append jfile$ cp-parse.h
+$               search/exact/output=jfile$ cp-parse.c "#define YYEMPTY"
+$               close jfile$
+$       endif
 $!'f$verify(0)
 $no_bison:
 $	endif
