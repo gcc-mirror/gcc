@@ -286,7 +286,7 @@ namespace std
 
 		  __rlen = 1;
 		}
-	      while (!__got_eof && __ilen == 0);
+	      while (__ilen == 0 && !__got_eof);
 	    }
 
 	  if (__ilen > 0)
@@ -307,7 +307,7 @@ namespace std
 	      if (__r == codecvt_base::partial)
 		__throw_ios_failure("incomplete character in file");
 	    }
-	  else if (__r == codecvt_base::error)
+	  else
 	    __throw_ios_failure("invalid byte sequence in file");
 	}
       return __ret;
