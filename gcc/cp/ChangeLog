@@ -1,3 +1,8 @@
+2005-03-31  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	PR c++/18644
+	* call.c (build_new_op): Remove check for -Wsynth.
+
 2005-03-31  Jan Hubicka  <jh@suse.cz>
 
 	* decl2.c (finish_objects): Mark ctor as needed.
