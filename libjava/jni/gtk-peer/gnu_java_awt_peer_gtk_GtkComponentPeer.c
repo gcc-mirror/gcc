@@ -1119,7 +1119,7 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_addExposeFilt
     }
   else if (GTK_IS_SCROLLED_WINDOW(ptr))
     {
-      // The event will go to the parent GtkLayout.
+      /* The event will go to the parent GtkLayout. */
       filterobj = GTK_OBJECT(GTK_WIDGET(ptr)->parent);
     }
   else
@@ -1174,7 +1174,7 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_removeExposeF
     }
   else if (GTK_IS_SCROLLED_WINDOW(ptr))
     {
-      // The event will go to the parent GtkLayout.
+      /* The event will go to the parent GtkLayout. */
       filterobj = GTK_OBJECT(GTK_WIDGET(ptr)->parent);
     }
   else
