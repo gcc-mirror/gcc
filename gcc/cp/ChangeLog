@@ -1,3 +1,9 @@
+2000-09-04  Mark Elbrecht  <snowball3@bigfoot.com>
+
+	* decl.c (finish_function): Move the code for handling functions
+	marked with the constructor and destructor attributes inside the
+	expand_p block.
+
 2000-09-04  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* init.c (resolve_offset_ref): Deal with TEMPLATE_ID_EXPR.
@@ -15,16 +21,16 @@
 2000-09-03  Mark Mitchell  <mark@codesourcery.com>
 
 	* operators.def (ALIGNOF_EXPR, MAX_EXPR, MIN_EXPR): Change
-	new ABI mangling.	
+	new ABI mangling.
 
 2000-09-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* parse.y (named_class_head): Check for TYPENAME_TYPE. Simplify
-	union tag mismatch error reporting.	
+	union tag mismatch error reporting.
 
 2000-09-01  Nathan Sidwell  <nathan@codesourcery.com>
 
-	* call.c (build_scoped_method_call): Check it is not a namespace.	
+	* call.c (build_scoped_method_call): Check it is not a namespace.
 
 2000-08-30  Jason Merrill  <jason@redhat.com>
 
