@@ -127,7 +127,9 @@ extern int target_flags;
     {"v8", 64},			\
     {"no-v8", -64},		\
     {"sparclite", 128},		\
+    {"sparclite", -1},		\
     {"no-sparclite", -128},	\
+    {"no-sparclite", 1},	\
     { "", TARGET_DEFAULT}}
 
 #define TARGET_DEFAULT 3
