@@ -3406,8 +3406,13 @@ finish_decl (decl, init, asmspec_tree)
   int temporary = allocation_temporary_p ();
   char *asmspec = 0;
 
+  /* If a name was specified, get the string.  Then reset DECL_RTL
+     so that we will remake it with the new name.  */
   if (asmspec_tree)
-    asmspec = TREE_STRING_POINTER (asmspec_tree);
+    {
+      asmspec = TREE_STRING_POINTER (asmspec_tree);
+      DECL_RTL (decl) = 0;
+    }
 
   /* If `start_decl' didn't like having an initialization, ignore it now.  */
 
@@ -3526,6 +3531,11 @@ finish_decl (decl, init, asmspec_tree)
 	    error_with_decl (decl, "storage size of `%s' isn't constant");
 	}
     }
+
+  /* If this is a function and an assembler name is specified, it isn't
+     builtin any more.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL && asmspec)
+    DECL_BUILT_IN (decl) = 0;
 
   /* Output the assembler code and/or RTL code for variables and functions,
      unless the type is an undefined structure or union.
