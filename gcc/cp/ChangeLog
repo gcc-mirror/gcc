@@ -1,3 +1,9 @@
+2001-08-02  Stan Shebs  <shebs@apple.com>
+
+	* cp-tree.h (FNADDR_FROM_VTABLE_ENTRY): Remove, no longer used.
+	(fnaddr_from_vtable_entry): Remove decl.
+	* method.c (use_thunk): Update comment.
+
 2001-08-01  Andrew Cagney  <ac131313@redhat.com>
 
 	* repo.c (get_base_filename): Change return value to const char

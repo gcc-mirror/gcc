@@ -1146,13 +1146,6 @@ enum languages { lang_c, lang_cplusplus, lang_java };
   ((CP_TYPE_QUALS (NODE) & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE))	\
    == TYPE_QUAL_CONST)
 
-/* Virtual function addresses can be gotten from a virtual function
-   table entry using this macro.  */
-#define FNADDR_FROM_VTABLE_ENTRY(ENTRY)					\
-  (DECL_THUNK_P (TREE_OPERAND ((ENTRY), 0))				\
-   : DECL_INITIAL (TREE_OPERAND ((ENTRY), 0))				\
-   ? (ENTRY))
-
 #define FUNCTION_ARG_CHAIN(NODE) \
   (TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (NODE))))
 
@@ -4185,7 +4178,6 @@ extern int bound_pmf_p				PARAMS ((tree));
 extern tree ovl_cons                            PARAMS ((tree, tree));
 extern int ovl_member                           PARAMS ((tree, tree));
 extern tree build_overload                      PARAMS ((tree, tree));
-extern tree fnaddr_from_vtable_entry		PARAMS ((tree));
 extern tree function_arg_chain			PARAMS ((tree));
 extern int promotes_to_aggr_type		PARAMS ((tree, enum tree_code));
 extern int is_aggr_type_2			PARAMS ((tree, tree));
