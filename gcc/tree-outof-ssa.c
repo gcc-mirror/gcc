@@ -2024,6 +2024,25 @@ analyze_edges_for_bb (basic_block bb, FILE *debug_file)
   bool is_label;
 
   count = 0;
+
+  /* Blocks which contain at least one abnormal edge cannot use 
+     make_forwarder_block.  Look for these blocks, and commit any PENDING_STMTs
+     found on edges in these block.  */
+  have_opportunity = true;
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    if (e->flags & EDGE_ABNORMAL)
+      {
+        have_opportunity = false;
+	break;
+      }
+
+  if (!have_opportunity)
+    {
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	if (PENDING_STMT (e))
+	  bsi_commit_one_edge_insert (e, NULL);
+      return false;
+    }
   /* Find out how many edges there are with interesting pending stmts on them.  
      Commit the stmts on edges we are not interested in.  */
   FOR_EACH_EDGE (e, ei, bb->preds)

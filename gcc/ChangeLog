@@ -1,3 +1,9 @@
+2004-11-03  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/18270
+	* tree-outof-ssa.c (analyze_edges_for_bb): If a block has incoming
+	abnormal edges, commit all pending stmts on incoming edges.
+
 2004-11-03  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* tree-ssa-loop-ivopts.c (get_address_cost): Offset zero does not
