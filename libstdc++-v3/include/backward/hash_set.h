@@ -60,10 +60,10 @@
 #include "algobase.h"
 #include <ext/hash_set>
 
-using std::hash;
-using std::hashtable;
-using std::hash_set;
-using std::hash_multiset;
+using __gnu_cxx::hash;
+using __gnu_cxx::hashtable;
+using __gnu_cxx::hash_set;
+using __gnu_cxx::hash_multiset;
 
 #endif /* _CPP_BACKWARD_HASH_SET_H */
 

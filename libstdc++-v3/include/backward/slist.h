@@ -47,7 +47,7 @@
 #include "backward_warning.h"
 #include <ext/slist>
 
-using std::slist;
+using __gnu_cxx::slist;
 
 #endif /* _CPP_BACKWARD_SLIST_H */
 
