@@ -494,9 +494,9 @@ __extension__								\
 # define obstack_free(OBSTACK, OBJ)					\
 __extension__								\
 ({ struct obstack *__o = (OBSTACK);					\
-   void *__obj = (OBJ);							\
+   void *__obj = (void *) (OBJ);					\
    if (__obj > (void *)__o->chunk && __obj < (void *)__o->chunk_limit)  \
-     __o->next_free = __o->object_base = __obj;				\
+     __o->next_free = __o->object_base = (char *) __obj;		\
    else (obstack_free) (__o, __obj); })
 
 #else /* not __GNUC__ or not __STDC__ */
