@@ -3098,6 +3098,7 @@ prepare_cmp_insn (px, py, pcomparison, size, pmode, punsignedp, align,
    to be used for operand OPNUM of the insn, is converted from mode MODE to
    WIDER_MODE (UNSIGNEDP determines whether it is a unsigned conversion), and
    that it is accepted by the operand predicate.  Return the new value.  */
+
 rtx
 prepare_operand (icode, x, opnum, mode, wider_mode, unsignedp)
      int icode;

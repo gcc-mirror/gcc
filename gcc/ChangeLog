@@ -1,3 +1,10 @@
+Tue Apr 18 14:16:47 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* c-decl.c (mark_binding_level): Use 'for' instead of `while'.
+	* conflict.c: Minor cleanups.
+	* optabs.c: Add blank line
+	* simplify-rtx.c: 
+
 2000-04-17  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cppexp.c (lex): Don't assume tokens are NUL terminated.

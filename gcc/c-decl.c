@@ -2860,13 +2860,14 @@ lookup_name_current_level (name)
 }
 
 /* Mark ARG for GC.  */
+
 static void 
 mark_binding_level (arg)
      void *arg;
 {
   struct binding_level *level = *(struct binding_level **) arg;
 
-  while (level)
+  for (; level != 0; level = level->level_chain)
     {
       ggc_mark_tree (level->names);
       ggc_mark_tree (level->tags);
@@ -2874,7 +2875,6 @@ mark_binding_level (arg)
       ggc_mark_tree (level->blocks);
       ggc_mark_tree (level->this_block);
       ggc_mark_tree (level->parm_order);
-      level = level->level_chain;
     }
 }
 
