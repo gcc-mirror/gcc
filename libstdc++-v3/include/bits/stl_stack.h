@@ -53,10 +53,10 @@ template <class _Tp, class _Sequence>
 class stack
 {
   // concept requirements
-  glibcpp_class_requires(_Tp, SGIAssignableConcept);
-  glibcpp_class_requires(_Sequence, BackInsertionSequenceConcept);
+  __glibcpp_class_requires(_Tp, _SGIAssignableConcept);
+  __glibcpp_class_requires(_Sequence, _BackInsertionSequenceConcept);
   typedef typename _Sequence::value_type _Sequence_value_type;
-  glibcpp_class_requires2(_Tp, _Sequence_value_type, SameTypeConcept);
+  __glibcpp_class_requires2(_Tp, _Sequence_value_type, _SameTypeConcept);
 
   template <class _Tp1, class _Seq1>
   friend bool operator== (const stack<_Tp1, _Seq1>&,

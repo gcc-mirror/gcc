@@ -39,7 +39,7 @@ template <class _InputIterator, class _Tp>
 _Tp accumulate(_InputIterator __first, _InputIterator __last, _Tp __init)
 {
   // concept requirements
-  glibcpp_function_requires(InputIteratorConcept<_InputIterator>);
+  __glibcpp_function_requires(_InputIteratorConcept<_InputIterator>);
 
   for ( ; __first != __last; ++__first)
     __init = __init + *__first;
@@ -51,7 +51,7 @@ _Tp accumulate(_InputIterator __first, _InputIterator __last, _Tp __init,
               _BinaryOperation __binary_op)
 {
   // concept requirements
-  glibcpp_function_requires(InputIteratorConcept<_InputIterator>);
+  __glibcpp_function_requires(_InputIteratorConcept<_InputIterator>);
 
   for ( ; __first != __last; ++__first)
     __init = __binary_op(__init, *__first);
@@ -63,8 +63,8 @@ _Tp inner_product(_InputIterator1 __first1, _InputIterator1 __last1,
                  _InputIterator2 __first2, _Tp __init)
 {
   // concept requirements
-  glibcpp_function_requires(InputIteratorConcept<_InputIterator1>);
-  glibcpp_function_requires(InputIteratorConcept<_InputIterator2>);
+  __glibcpp_function_requires(_InputIteratorConcept<_InputIterator1>);
+  __glibcpp_function_requires(_InputIteratorConcept<_InputIterator2>);
 
   for ( ; __first1 != __last1; ++__first1, ++__first2)
     __init = __init + (*__first1 * *__first2);
@@ -79,8 +79,8 @@ _Tp inner_product(_InputIterator1 __first1, _InputIterator1 __last1,
                  _BinaryOperation2 __binary_op2)
 {
   // concept requirements
-  glibcpp_function_requires(InputIteratorConcept<_InputIterator1>);
-  glibcpp_function_requires(InputIteratorConcept<_InputIterator2>);
+  __glibcpp_function_requires(_InputIteratorConcept<_InputIterator1>);
+  __glibcpp_function_requires(_InputIteratorConcept<_InputIterator2>);
 
   for ( ; __first1 != __last1; ++__first1, ++__first2)
     __init = __binary_op1(__init, __binary_op2(*__first1, *__first2));
@@ -106,8 +106,8 @@ partial_sum(_InputIterator __first, _InputIterator __last,
             _OutputIterator __result)
 {
   // concept requirements
-  glibcpp_function_requires(InputIteratorConcept<_InputIterator>);
-  glibcpp_function_requires(OutputIteratorConcept<_OutputIterator,
+  __glibcpp_function_requires(_InputIteratorConcept<_InputIterator>);
+  __glibcpp_function_requires(_OutputIteratorConcept<_OutputIterator,
         typename iterator_traits<_InputIterator>::value_type>);
 
   if (__first == __last) return __result;
@@ -135,8 +135,8 @@ partial_sum(_InputIterator __first, _InputIterator __last,
             _OutputIterator __result, _BinaryOperation __binary_op)
 {
   // concept requirements
-  glibcpp_function_requires(InputIteratorConcept<_InputIterator>);
-  glibcpp_function_requires(OutputIteratorConcept<_OutputIterator,
+  __glibcpp_function_requires(_InputIteratorConcept<_InputIterator>);
+  __glibcpp_function_requires(_OutputIteratorConcept<_OutputIterator,
         typename iterator_traits<_InputIterator>::value_type>);
 
   if (__first == __last) return __result;
@@ -165,8 +165,8 @@ adjacent_difference(_InputIterator __first,
                     _InputIterator __last, _OutputIterator __result)
 {
   // concept requirements
-  glibcpp_function_requires(InputIteratorConcept<_InputIterator>);
-  glibcpp_function_requires(OutputIteratorConcept<_OutputIterator,
+  __glibcpp_function_requires(_InputIteratorConcept<_InputIterator>);
+  __glibcpp_function_requires(_OutputIteratorConcept<_OutputIterator,
         typename iterator_traits<_InputIterator>::value_type>);
 
   if (__first == __last) return __result;
@@ -196,8 +196,8 @@ adjacent_difference(_InputIterator __first, _InputIterator __last,
                     _OutputIterator __result, _BinaryOperation __binary_op)
 {
   // concept requirements
-  glibcpp_function_requires(InputIteratorConcept<_InputIterator>);
-  glibcpp_function_requires(OutputIteratorConcept<_OutputIterator,
+  __glibcpp_function_requires(_InputIteratorConcept<_InputIterator>);
+  __glibcpp_function_requires(_OutputIteratorConcept<_OutputIterator,
         typename iterator_traits<_InputIterator>::value_type>);
 
   if (__first == __last) return __result;
@@ -262,8 +262,8 @@ void
 iota(_ForwardIter __first, _ForwardIter __last, _Tp __value)
 {
   // concept requirements
-  glibcpp_function_requires(Mutable_ForwardIteratorConcept<_ForwardIter>);
-  glibcpp_function_requires(ConvertibleConcept<_Tp,
+  __glibcpp_function_requires(_Mutable_ForwardIteratorConcept<_ForwardIter>);
+  __glibcpp_function_requires(_ConvertibleConcept<_Tp,
         typename iterator_traits<_ForwardIter>::value_type>);
 
   while (__first != __last)

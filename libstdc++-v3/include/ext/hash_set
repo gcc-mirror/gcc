@@ -54,9 +54,9 @@ template <class _Value, class _HashFcn, class _EqualKey, class _Alloc>
 class hash_set
 {
   // concept requirements
-  glibcpp_class_requires(_Value, SGIAssignableConcept);
-  glibcpp_class_requires3(_HashFcn, size_t, _Value, UnaryFunctionConcept);
-  glibcpp_class_requires3(_EqualKey, _Value, _Value, BinaryPredicateConcept);
+  __glibcpp_class_requires(_Value, _SGIAssignableConcept);
+  __glibcpp_class_requires3(_HashFcn, size_t, _Value, _UnaryFunctionConcept);
+  __glibcpp_class_requires3(_EqualKey, _Value, _Value, _BinaryPredicateConcept);
 
 private:
   typedef hashtable<_Value, _Value, _HashFcn, _Identity<_Value>, 
@@ -205,9 +205,9 @@ template <class _Value, class _HashFcn, class _EqualKey, class _Alloc>
 class hash_multiset
 {
   // concept requirements
-  glibcpp_class_requires(_Value, SGIAssignableConcept);
-  glibcpp_class_requires3(_HashFcn, size_t, _Value, UnaryFunctionConcept);
-  glibcpp_class_requires3(_EqualKey, _Value, _Value, BinaryPredicateConcept);
+  __glibcpp_class_requires(_Value, _SGIAssignableConcept);
+  __glibcpp_class_requires3(_HashFcn, size_t, _Value, _UnaryFunctionConcept);
+  __glibcpp_class_requires3(_EqualKey, _Value, _Value, _BinaryPredicateConcept);
 
 private:
   typedef hashtable<_Value, _Value, _HashFcn, _Identity<_Value>, 

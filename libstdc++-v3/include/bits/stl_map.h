@@ -41,8 +41,8 @@ template <class _Key, class _Tp, class _Compare = less<_Key>,
 class map
 {
   // concept requirements
-  glibcpp_class_requires(_Tp, SGIAssignableConcept);
-  glibcpp_class_requires4(_Compare, bool, _Key, _Key, BinaryFunctionConcept);
+  __glibcpp_class_requires(_Tp, _SGIAssignableConcept);
+  __glibcpp_class_requires4(_Compare, bool, _Key, _Key, _BinaryFunctionConcept);
 
 public:
   // typedefs:

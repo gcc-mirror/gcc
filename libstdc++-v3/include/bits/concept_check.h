@@ -55,11 +55,11 @@
 #if defined(_GLIBCPP_NO_CONCEPT_CHECKS) || defined(_STL_NO_CONCEPT_CHECKS) \
     || defined(NDEBUG)
 
-#define glibcpp_function_requires(...)
-#define glibcpp_class_requires(a,b)
-#define glibcpp_class_requires2(a,b,c)
-#define glibcpp_class_requires3(a,b,c,d)
-#define glibcpp_class_requires4(a,b,c,d,e)
+#define __glibcpp_function_requires(...)
+#define __glibcpp_class_requires(_a,_b)
+#define __glibcpp_class_requires2(_a,_b,_c)
+#define __glibcpp_class_requires3(_a,_b,_c,_d)
+#define __glibcpp_class_requires4(_a,_b,_c,_d,_e)
 
 #else // the checks are on
 
@@ -74,18 +74,18 @@
 // BinaryPredicateConcept.  The preprocessor tries to split things up on
 // the commas in the template argument list.  We can't use an inner pair of
 // parenthesis to hide the commas, because "boost::(Temp<Foo,Bar>)" isn't
-// a valid instantiation pattern.
+// a valid instantiation pattern.  Thus, we steal a feature from C99.
 
-#define glibcpp_function_requires(...)                         \
-            boost::function_requires< boost::__VA_ARGS__ >()
-#define glibcpp_class_requires(a,C)                            \
-            BOOST_CLASS_REQUIRES(a, boost, C)
-#define glibcpp_class_requires2(a,b,C)                         \
-            BOOST_CLASS_REQUIRES2(a, b, boost, C)
-#define glibcpp_class_requires3(a,b,c,C)                       \
-            BOOST_CLASS_REQUIRES3(a, b, c, boost, C)
-#define glibcpp_class_requires4(a,b,c,d,C)                     \
-            BOOST_CLASS_REQUIRES4(a, b, c, d, boost, C)
+#define __glibcpp_function_requires(...)                                 \
+            __gnu_cxx::__function_requires< __gnu_cxx::__VA_ARGS__ >()
+#define __glibcpp_class_requires(_a,_C)                                  \
+            _GLIBCPP_CLASS_REQUIRES(_a, __gnu_cxx, _C)
+#define __glibcpp_class_requires2(_a,_b,_C)                              \
+            _GLIBCPP_CLASS_REQUIRES2(_a, _b, __gnu_cxx, _C)
+#define __glibcpp_class_requires3(_a,_b,_c,_C)                           \
+            _GLIBCPP_CLASS_REQUIRES3(_a, _b, _c, __gnu_cxx, _C)
+#define __glibcpp_class_requires4(_a,_b,_c,_d,_C)                        \
+            _GLIBCPP_CLASS_REQUIRES4(_a, _b, _c, _d, __gnu_cxx, _C)
 
 #endif // enable/disable
 

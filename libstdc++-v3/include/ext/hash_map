@@ -204,10 +204,10 @@ template <class _Key, class _Tp, class _HashFcn, class _EqualKey, class _Alloc>
 class hash_multimap
 {
   // concept requirements
-  glibcpp_class_requires(_Key, SGIAssignableConcept);
-  glibcpp_class_requires(_Tp, SGIAssignableConcept);
-  glibcpp_class_requires3(_HashFcn, size_t, _Key, UnaryFunctionConcept);
-  glibcpp_class_requires3(_EqualKey, _Key, _Key, BinaryPredicateConcept);
+  __glibcpp_class_requires(_Key, _SGIAssignableConcept);
+  __glibcpp_class_requires(_Tp, _SGIAssignableConcept);
+  __glibcpp_class_requires3(_HashFcn, size_t, _Key, _UnaryFunctionConcept);
+  __glibcpp_class_requires3(_EqualKey, _Key, _Key, _BinaryPredicateConcept);
 
 private:
   typedef hashtable<pair<const _Key, _Tp>, _Key, _HashFcn,
