@@ -1,3 +1,13 @@
+2004-09-24  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/17188
+	* c-decl.c (diagnose_mismatched_decls): Check for duplicate
+	declarations of enumerators.
+	(start_struct): Check TYPE_SIZE rather than TYPE_FIELDS to check
+	for redefinition.  Check for nested redefinition.
+	(finish_struct): Don't check for nested redefinition.
+	(start_enum): Check for nested redefinition.
+
 2004-09-24  Devang Patel  <dpatel@apple.com>
 
 	* tree-if-conv.c (tree_if_convert_cond_expr0: Create temp. variable

@@ -1,3 +1,9 @@
+2004-09-24  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/17188
+	* gcc.dg/nested-redef-1.c, gcc.dg/pr17188-1.c: New tests.
+	* gcc.dg/decl-3.c: Adjust expected message.
+
 2004-09-24  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/17615
