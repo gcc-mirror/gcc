@@ -1,3 +1,9 @@
+2005-02-20  Dorit Naishlos  <dorit@il.ibm.com>
+
+	PR tree-optimization/19951
+	* tree-vect-analyze.c (vect_analyze_loop_form): Check if loop exit edge
+	is abnormal.
+	
 2005-02-19  Steven Bosscher  <stevenb@suse.de>
 
 	PR middle-end/19698 
