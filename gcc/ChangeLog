@@ -1,3 +1,8 @@
+2002-09-04  Eric Botcazou  <ebotcazou@multimania.com>
+
+	PR c/7102
+	* optabs.c (expand_binop): Convert CONST_INTs in all cases.
+
 2002-09-04  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.md (setccfp0, setccfp1): New patterns.
