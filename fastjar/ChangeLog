@@ -1,3 +1,11 @@
+2004-07-07  Kelley Cook  <kcook@gcc.gnu.org>
+
+	PR other/15194
+	* configure.ac: Add check for long long.
+	* jartool.h: Check for long long before using it.
+	* configure: Regenerate
+	* config.h.in: Regenerate.
+
 2004-07-01  Release Manager
 
 	* GCC 3.4.1 released.
