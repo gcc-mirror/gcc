@@ -142,7 +142,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
         ??? Move this to separate file after tree-ssa merge.
 
 	We separate inlining decisions from the inliner itself and store it
-	inside callgraph as so called inline plan.  Reffer to cgraph.c
+	inside callgraph as so called inline plan.  Refer to cgraph.c
 	documentation about particular representation of inline plans in the
 	callgraph
 

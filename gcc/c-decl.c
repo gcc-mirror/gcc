@@ -6284,7 +6284,7 @@ store_parm_decls (void)
   DECL_SAVED_TREE (fndecl) = push_stmt_list ();
 
   /* ??? Insert the contents of the pending sizes list into the function
-     to be evaluated.  This just changes mis-behaviour until assign_parms
+     to be evaluated.  This just changes mis-behavior until assign_parms
      phase ordering problems are resolved.  */
   {
     tree t;

@@ -650,8 +650,8 @@ verify_ssa (void)
   verify_alias_info ();
 
   free (definition_block);
-  /* Restore the dominance infomation to its prior known state, so
-     that we do not perturb the compiler's subsequent behaviour.  */
+  /* Restore the dominance information to its prior known state, so
+     that we do not perturb the compiler's subsequent behavior.  */
   if (orig_dom_state == DOM_NONE)
     free_dominance_info (CDI_DOMINATORS);
   else

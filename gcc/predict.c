@@ -932,7 +932,7 @@ expr_expected_value (tree expr, bitmap visited)
 
 	      /* If this PHI has itself as an argument, we cannot
 		 determine the string length of this argument.  However,
-		 if we can find a expectd constant value for the other
+		 if we can find a expected constant value for the other
 		 PHI args then we can still be sure that this is
 		 likely a constant.  So be optimistic and just
 		 continue with the next argument.  */

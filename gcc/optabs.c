@@ -407,7 +407,7 @@ expand_subword_shift (enum machine_mode op1_mode, optab binoptab,
     {
       /* We must avoid shifting by BITS_PER_WORD bits since that is either
 	 the same as a zero shift (if shift_mask == BITS_PER_WORD - 1) or
-	 has unknown behaviour.  Do a single shift first, then shift by the
+	 has unknown behavior.  Do a single shift first, then shift by the
 	 remainder.  It's OK to use ~OP1 as the remainder if shift counts
 	 are truncated to the mode size.  */
       carries = expand_binop (word_mode, reverse_unsigned_shift,

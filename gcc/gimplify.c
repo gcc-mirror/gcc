@@ -2363,7 +2363,7 @@ gimplify_init_ctor_preeval (tree *expr_p, tree *pre_p, tree *post_p,
      the gimplifier will consider this a store to memory.  Doing this 
      gimplification now means that we won't have to deal with complicated
      language-specific trees, nor trees like SAVE_EXPR that can induce
-     exponential search behaviour.  */
+     exponential search behavior.  */
   one = gimplify_expr (expr_p, pre_p, post_p, is_gimple_mem_rhs, fb_rvalue);
   if (one == GS_ERROR)
     {

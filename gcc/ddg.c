@@ -894,7 +894,7 @@ free_ddg_all_sccs (ddg_all_sccs_ptr all_sccs)
 
 /* Given FROM - a bitmap of source nodes - and TO - a bitmap of destination
    nodes - find all nodes that lie on paths from FROM to TO (not excluding
-   nodes from FROM and TO).  Return non zero if nodes exist.  */
+   nodes from FROM and TO).  Return nonzero if nodes exist.  */
 int
 find_nodes_on_paths (sbitmap result, ddg_ptr g, sbitmap from, sbitmap to)
 {

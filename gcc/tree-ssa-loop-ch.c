@@ -40,7 +40,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Duplicates headers of loops if they are small enough, so that the statements
    in the loop body are always executed when the loop is entered.  This
-   increases effectivity of code motion optimizations, and reduces the need
+   increases effectiveness of code motion optimizations, and reduces the need
    for loop preconditioning.  */
 
 /* Check whether we should duplicate HEADER of LOOP.  At most *LIMIT
