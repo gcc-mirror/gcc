@@ -1,3 +1,9 @@
+2004-06-23  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/mips.c (mips_use_dfa_pipeline_interface): Add R3000.
+	* config/mips/mips.md: Remove R3000 scheduling description.
+	* config/mips/3000.md: New file.
+
 2004-06-23  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390-protos.h (s390_emit_compare): Add prototype.
@@ -20,7 +26,7 @@
 	("doloop"): Adapt.
 	("jump"): Convert to expander.  Use s390_emit_jump.
 	("*jump_64", "*jump_31"): New insns.  Improve length default.
-	
+
 2004-06-23  Wu Yongwei  <adah@sh163.net>
 
 	* gthr-win32.h (__GTHREAD_MUTEX_INIT_DEFAULT): Adjust.
