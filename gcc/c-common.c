@@ -3135,6 +3135,7 @@ c_get_alias_set (t)
      tree t;
 {
   tree type;
+  tree u;
 
   if (t == error_mark_node)
     return 0;
@@ -3155,22 +3156,18 @@ c_get_alias_set (t)
        the conservative assumption.  */
     return 0;
 
-  if ((TREE_CODE (t) == COMPONENT_REF
-       && TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0))) == UNION_TYPE)
-      /* Also permit punning when accessing an array which is a union
-	 member.  This makes the current sparc va_arg macro work, but may
-	 not be otherwise necessary.  */
-      || (TREE_CODE (t) == ARRAY_REF
-	  && TREE_CODE (TREE_OPERAND (t, 0)) == COMPONENT_REF
-	  && (TREE_CODE (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 0), 0)))
-	      == UNION_TYPE)))
-    /* Permit type-punning when accessing a union, provided the
-       access is directly through the union.  For example, this code does
-       not permit taking the address of a union member and then
-       storing through it.  Even the type-punning allowed here is a
-       GCC extension, albeit a common and useful one; the C standard
-       says that such accesses have implementation-defined behavior.  */ 
-    return 0;
+  /* Permit type-punning when accessing a union, provided the access
+     is directly through the union.  For example, this code does not
+     permit taking the address of a union member and then storing
+     through it.  Even the type-punning allowed here is a GCC
+     extension, albeit a common and useful one; the C standard says
+     that such accesses have implementation-defined behavior.  */
+  for (u = t;
+       TREE_CODE (u) == COMPONENT_REF || TREE_CODE (u) == ARRAY_REF;
+       u = TREE_OPERAND (u, 0))
+    if (TREE_CODE (u) == COMPONENT_REF
+	&& TREE_CODE (TREE_TYPE (TREE_OPERAND (u, 0))) == UNION_TYPE)
+      return 0;
 
   if (TREE_CODE (t) == INDIRECT_REF)
     {
@@ -3183,6 +3180,15 @@ c_get_alias_set (t)
     }
 
   /* From here on, only the type matters.  */
+
+  if (TREE_CODE (t) == COMPONENT_REF
+      && DECL_BIT_FIELD_TYPE (TREE_OPERAND (t, 1)))
+    /* Since build_modify_expr calls get_unwidened for stores to
+       component references, the type of a bit field can be changed
+       from (say) `unsigned int : 16' to `unsigned short' or from 
+       `enum E : 16' to `short'.  We want the real type of the
+       bit-field in this case, not some the integral equivalent.  */
+    type = DECL_BIT_FIELD_TYPE (TREE_OPERAND (t, 1));
 
   if (TYPE_ALIAS_SET_KNOWN_P (type))
     /* If we've already calculated the value, just return it.  */
