@@ -1,5 +1,15 @@
 2003-06-19  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/FileChannelImpl.java
+	(map_address): Made public.
+	(FileChannelImpl): Merged with classpath.
+	* gnu/java/nio/natFileChannelImpl.cc
+	(nio_mmap_file): Commented out unused arguments.
+	(nio_unmmap_file): Likewise.
+	(niu_msync): Likewise.
+
+2003-06-19  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/image/IndexColorModel.java:
 	New version from classpath.
 

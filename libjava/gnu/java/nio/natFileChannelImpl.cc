@@ -73,20 +73,22 @@ gnu::java::nio::FileChannelImpl::implTruncate (jlong size)
 }
 
 gnu::gcj::RawData*
-gnu::java::nio::FileChannelImpl::nio_mmap_file (jlong pos, jlong size,
+gnu::java::nio::FileChannelImpl::nio_mmap_file (jlong /*pos*/, jlong /*size*/,
                                                 jint /*mode*/)
 {
   throw new ::java::io::IOException (JvNewStringUTF ("mmap not implemented"));
 }
 
 void
-gnu::java::nio::FileChannelImpl::nio_unmmap_file (gnu::gcj::RawData* map_address, jint size)
+gnu::java::nio::FileChannelImpl::nio_unmmap_file (gnu::gcj::RawData* /*address*/,
+						  jint /*size*/)
 {
   throw new ::java::io::IOException (JvNewStringUTF ("munmap not implemented"));
 }
 
 void
-gnu::java::nio::FileChannelImpl::nio_msync (gnu::gcj::RawData* map_address, jint length)
+gnu::java::nio::FileChannelImpl::nio_msync (gnu::gcj::RawData* /*map_address*/,
+					    jint /*length*/)
 {
   throw new ::java::io::IOException (JvNewStringUTF ("msync not implemented"));
 }
