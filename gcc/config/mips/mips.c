@@ -2557,7 +2557,18 @@ mips_move_2words (operands, insn)
 	      operands[2] = GEN_INT (INTVAL (operands[1]) >> 16 >> 16);
 	      operands[1]
 		= GEN_INT (INTVAL (operands[1]) << 16 << 16 >> 16 >> 16);
-	      ret = "li\t%M0,%2\n\tli\t%L0,%1";
+	      if (TARGET_MIPS16)
+		{
+		  if (INTVAL (op1) >= 0 && INTVAL (op1) <= 0xffff)
+		    ret = "li\t%M0,%2\n\tli\t%L0,%1";
+		  else if (INTVAL (op1) < 0 && INTVAL (op1) >= -0xffff)
+		    {
+		      operands[2] = GEN_INT (1);
+		      ret = "li\t%M0,%2\n\tneg\t%M0\n\tli\t%L0,%n1\n\tneg\t%L0";
+		    }
+		}
+	      else
+		ret = "li\t%M0,%2\n\tli\t%L0,%1";
 	    }
 	}
 
@@ -6445,7 +6456,7 @@ compute_frame_size (size)
     }
 
   /* This loop must iterate over the same space as its companion in
-     save_restore_regs.  */
+     save_restore_insns.  */
   for (regno = (FP_REG_LAST - fp_inc + 1);
        regno >= FP_REG_FIRST;
        regno -= fp_inc)
@@ -6673,7 +6684,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
   if (! store_p
       && TARGET_ABICALLS
       && (mips_abi == ABI_32 || mips_abi == ABI_O64))
-    mask &= ~(1 << (PIC_OFFSET_TABLE_REGNUM - GP_REG_FIRST));
+    mask &= ~(1L << (PIC_OFFSET_TABLE_REGNUM - GP_REG_FIRST));
 
   if (mask == 0 && fmask == 0)
     return;
@@ -6767,7 +6778,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 
 		/* The mips16 does not have an instruction to load
                    $31, so we load $7 instead, and work things out
-                   in the caller.  */
+                   in mips_expand_epilogue.  */
 		if (TARGET_MIPS16 && ! store_p && regno == GP_REG_FIRST + 31)
 		  reg_rtx = gen_rtx (REG, gpr_mode, GP_REG_FIRST + 7);
 		/* The mips16 sometimes needs to save $18.  */
@@ -7653,7 +7664,7 @@ mips_expand_epilogue ()
 	    {
 	      tsize -= current_function_outgoing_args_size;
 
-	      /* If we have a large frame, it's easier to add to $17
+	      /* If we have a large frame, it's easier to add to $6
                  than to $sp, since the mips16 has no instruction to
                  add a register to $sp.  */
 	      if (orig_tsize > 32767)
@@ -7713,12 +7724,37 @@ mips_expand_epilogue ()
 
       if (tsize != 0 || current_function_calls_eh_return)
 	{
-	  if (Pmode == DImode)
-	    emit_insn (gen_adddi3 (stack_pointer_rtx, stack_pointer_rtx,
-				   tsize_rtx));
+	  if (!TARGET_MIPS16)
+	    {
+	      if (Pmode == DImode)
+		emit_insn (gen_adddi3 (stack_pointer_rtx, stack_pointer_rtx,
+				       tsize_rtx));
+	      else
+		emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
+				       tsize_rtx));
+	    }
 	  else
-	    emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
-				   tsize_rtx));
+	    {
+	      /* We need to work around not being able to add a register
+		 to the stack pointer directly. Use register $6 as an
+		 intermediate step.  */
+
+	      rtx g6_rtx = gen_rtx (REG, Pmode, GP_REG_FIRST + 6);
+
+	      if (Pmode == DImode)
+		{
+		  emit_insn (gen_movdi (g6_rtx, stack_pointer_rtx));
+		  emit_insn (gen_adddi3 (g6_rtx, g6_rtx, tsize_rtx));
+		  emit_insn (gen_movdi (stack_pointer_rtx, g6_rtx));
+		}
+	      else
+		{
+		  emit_insn (gen_movsi (g6_rtx, stack_pointer_rtx));
+		  emit_insn (gen_addsi3 (g6_rtx, g6_rtx, tsize_rtx));
+		  emit_insn (gen_movsi (stack_pointer_rtx, g6_rtx));
+		}
+	    }
+
 	}
     }
 
