@@ -2676,7 +2676,8 @@ rest_of_compilation (decl)
 
   /* CFG is no longer maintained up-to-date.  */
   free_bb_for_insn ();
-  copy_loop_headers (insns);
+  if (!optimize_size)
+    copy_loop_headers (insns);
   purge_line_number_notes (insns);
   find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
 
