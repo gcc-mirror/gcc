@@ -621,6 +621,13 @@ convert_move (to, from, unsignedp)
 	  return;
 	}
 #endif
+#ifdef HAVE_trunctqfqf2
+      if (HAVE_trunctqfqf2 && from_mode == TQFmode && to_mode == QFmode)
+	{
+	  emit_unop_insn (CODE_FOR_trunctqfqf2, to, from, UNKNOWN);
+	  return;
+	}
+#endif
 #ifdef HAVE_truncsfqf2
       if (HAVE_truncsfqf2 && from_mode == SFmode && to_mode == QFmode)
 	{
