@@ -21,7 +21,12 @@ Boston, MA 02111-1307, USA.  */
 
 #define TARGET_VERSION fprintf (stderr, " (80386, BSD syntax)"); 
 
-#ifdef CPP_PREDEFINES
-#undef CPP_PREDEFINES
-#endif
-#define CPP_PREDEFINES "-Dunix -DVSTA -Asystem=unix -Asystem=vsta"
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+	builtin_define_std ("unix");		\
+	builtin_define ("VSTA");		\
+	builtin_assert ("system=unix");		\
+	builtin_assert ("system=vsta");		\
+    }						\
+  while (0)

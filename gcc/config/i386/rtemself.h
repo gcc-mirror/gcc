@@ -21,11 +21,14 @@ Boston, MA 02111-1307, USA.  */
 
 /* Specify predefined symbols in preprocessor.  */
 
-#include <i386/i386elf.h>
-
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES  "-D__rtems__ -Asystem=rtems \
-    -D__ELF__ -D__i386__ -D__USE_INIT_FINI__"
-
-#undef CPP_SPEC
-#define CPP_SPEC "%{msoft-float:-D_SOFT_FLOAT}"
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+	builtin_define ("__rtems__");		\
+	builtin_define ("__ELF__");		\
+	builtin_define ("__USE_INIT_FINI__");	\
+	builtin_assert ("system=rtems");	\
+	if (!TARGET_80387)			\
+	  builtin_define ("_SOFT_FLOAT");	\
+    }						\
+  while (0)

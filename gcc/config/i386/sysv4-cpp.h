@@ -1,8 +1,7 @@
-/* Core target definitions for GNU compiler for Intel 80386 running Netware 4.
-   and using stabs-in-elf for the debugging format.
-   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
+/* Target definitions for GNU compiler for Intel 80386 running System V.4
+   Copyright (C) 1991, 2001, 2002 Free Software Foundation, Inc.
 
-   Written by David V. Henkel-Wallace (gumby@cygnus.com)
+   Written by Ron Guilmette (rfg@netcom.com).
 
 This file is part of GNU CC.
 
@@ -21,20 +20,13 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#undef TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (i386 Netware 4)");
-
-#define TARGET_OS_CPP_BUILTINS()		\
-  do						\
-    {						\
-	builtin_define_std ("APX386");		\
-	builtin_define ("__netware__");		\
-	builtin_assert ("system=netware");	\
-    }						\
+#define TARGET_OS_CPP_BUILTINS()					\
+  do									\
+    {									\
+	builtin_define_std ("unix");					\
+	builtin_define ("__svr4__");					\
+	builtin_assert ("system=unix");					\
+	builtin_assert ("system=svr4");					\
+    }									\
   while (0)
 
-#undef WCHAR_TYPE
-#define WCHAR_TYPE "short unsigned int"
-
-#undef WCHAR_TYPE_SIZE
-#define WCHAR_TYPE_SIZE 16

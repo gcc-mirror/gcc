@@ -62,11 +62,24 @@ Boston, MA 02111-1307, USA.  */
     { "no-nop-fun-dllimport",	MASK_NOP_FUN_DLLIMPORT, "" },
 
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D_WIN32 -DWINNT -D_X86_=1 \
-  -D__stdcall=__attribute__((__stdcall__)) \
-  -D__cdecl=__attribute__((__cdecl__)) \
-  -Asystem=winnt"
+#define TARGET_OS_CPP_BUILTINS()					\
+  do									\
+    {									\
+	builtin_define ("_WIN32");					\
+	builtin_define_std ("WINNT");					\
+	builtin_define ("_X86_");					\
+	builtin_define ("__stdcall=__attribute__((__stdcall__))");	\
+	builtin_define ("__cdecl=__attribute__((__cdecl__))");		\
+	builtin_assert ("system=winnt");				\
+	if (TARGET_CYGWIN)						\
+	  {								\
+	    builtin_define ("__CYGWIN32__");				\
+	    builtin_define ("__CYGWIN__");				\
+	  }								\
+	else								\
+	  builtin_define ("__MINGW32__");				\
+    }									\
+  while (0)
 
 #undef STARTFILE_SPEC
 
@@ -75,8 +88,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_SPEC
 #define CPP_SPEC "%{posix:-D_POSIX_SOURCE} \
-  %{!mcygwin:-iwithprefixbefore include/mingw32 -D__MINGW32__}    \
-  %{mcygwin:-D__CYGWIN32__ -D__CYGWIN__}"
+  %{!mcygwin:-iwithprefixbefore include/mingw32}"
 
 /* We have to dynamic link to get to the system DLLs.  All of libc, libm and
    the Unix stuff is in cygwin.dll.  The import library is called

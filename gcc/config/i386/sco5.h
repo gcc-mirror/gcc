@@ -634,20 +634,32 @@ init_section ()								\
   %{mcoff:crtendS.o%s} \
   %{pg:gcrtn.o%s}%{!pg:crtn.o%s}"
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES \
- "-Asystem=svr3"
-
-/* You are in a maze of GCC specs ... all alike */
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+	builtin_define ("__unix");		\
+	builtin_define ("_SCO_DS");		\
+	builtin_define ("_M_I386");		\
+	builtin_define ("_M_XENIX");		\
+	builtin_define ("_M_UNIX");		\
+	builtin_assert ("system=svr3");		\
+	if (flag_iso)				\
+	  cpp_define (pfile, "_STRICT_ANSI");	\
+	if (flag_pic)							\
+	  {								\
+	    builtin_define ("__PIC__");					\
+	    builtin_define ("__pic__");					\
+	  }								\
+    }						\
+  while (0)
 
 #undef CPP_SPEC
 #define CPP_SPEC "\
   %{fpic:%{mcoff:%e-fpic is not valid with -mcoff}} \
   %{fPIC:%{mcoff:%e-fPIC is not valid with -mcoff}} \
-  -D__i386 -D__unix -D_SCO_DS=1 -D_M_I386 -D_M_XENIX -D_M_UNIX \
   %{!Xods30:-D_STRICT_NAMES} \
   %{!ansi:%{!posix:%{!Xods30:-D_SCO_XPG_VERS=4}}} \
-  %{ansi:-isystem include/ansi%s -isystem /usr/include/ansi -D_STRICT_ANSI} \
+  %{ansi:-isystem include/ansi%s -isystem /usr/include/ansi} \
   %{!ansi: \
    %{posix:-isystem include/posix%s -isystem /usr/include/posix \
            -D_POSIX_C_SOURCE=2 -D_POSIX_SOURCE=1} \
@@ -664,8 +676,6 @@ init_section ()								\
   %{scointl:-DM_INTERNAT -D_M_INTERNAT} \
   %{!mcoff:-D_SCO_ELF} \
   %{mcoff:-D_M_COFF -D_SCO_COFF} \
-  %{!mcoff:%{fpic:-D__PIC__ -D__pic__} \
-         %{fPIC:%{!fpic:-D__PIC__ -D__pic__}}} \
   %{Xa:-D_SCO_C_DIALECT=1} \
   %{!Xa:%{Xc:-D_SCO_C_DIALECT=3} \
    %{!Xc:%{Xk:-D_SCO_C_DIALECT=4} \
