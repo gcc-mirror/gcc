@@ -5630,17 +5630,22 @@ sparc_flat_compute_frame_size (size)
 
   /* This is the size of the 16 word reg save area, 1 word struct addr
      area, and 4 word fp/alu register copy area.  */
-  extra_size	 = -STARTING_FRAME_OFFSET + FIRST_PARM_OFFSET(0);
-  var_size	 = size;
-  /* Also include the size needed for the 6 parameter registers.  */
-  args_size	 = current_function_outgoing_args_size + 24;
-  total_size	 = var_size + args_size + extra_size;
-  gp_reg_size	 = 0;
-  fp_reg_size	 = 0;
-  gmask		 = 0;
-  fmask		 = 0;
-  reg_offset	 = 0;
+  extra_size = -STARTING_FRAME_OFFSET + FIRST_PARM_OFFSET(0);
+  var_size = size;
+  gp_reg_size = 0;
+  fp_reg_size = 0;
+  gmask = 0;
+  fmask = 0;
+  reg_offset = 0;
   need_aligned_p = 0;
+
+  args_size = 0;
+  if (!leaf_function_p ())
+    {
+      /* Also include the size needed for the 6 parameter registers.  */
+      args_size = current_function_outgoing_args_size + 24;
+    }
+  total_size = var_size + args_size;
 
   /* Calculate space needed for gp registers.  */
   for (regno = 1; regno <= 31; regno++)
@@ -5690,9 +5695,13 @@ sparc_flat_compute_frame_size (size)
       total_size += gp_reg_size + fp_reg_size;
     }
 
-  /* ??? This looks a little suspicious.  Clarify.  */
-  if (total_size == extra_size)
-    total_size = extra_size = 0;
+  /* If we must allocate a stack frame at all, we must also allocate 
+     room for register window spillage, so as to be binary compatible
+     with libraries and operating systems that do not use -mflat.  */
+  if (total_size > 0)
+    total_size += extra_size;
+  else
+    extra_size = 0;
 
   total_size = SPARC_STACK_ALIGN (total_size);
 
