@@ -1,5 +1,18 @@
 2003-04-06  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/URLConnection.java:
+	Import classes directly.
+	(URLConnection): Merged class documentation with classpath.
+	(url): Moved, documentation from classpath added.
+	(doInput): Moved, documentation from classpath added.
+	(doOutput): Moved, documentation from classpath added.
+	(allowUserInteraction): Moved.
+	(useCaches): Moved, documentation from classpath added.
+	(ifModifiedSince): Moved, documentation from classpath added.
+	(connected): Moved, documentation from classpath added.
+
+2003-04-06  Michael Koch  <konqueror@gmx.de>
+
 	* java/io/FileInputStream.java
 	(skip): Renamed some variables to match classpath, added
 	checks from classpath.
