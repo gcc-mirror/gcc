@@ -63,7 +63,7 @@ if [ "${shared}" = "yes" ]; then
     *-*-irix[56]*)	frags="${frags} irix5.ml" ;;
     *-*-linux*aout*)	;;
     *-*-linux*)		frags="${frags} linux.ml" ;;
-    *-*-sysv4*)		frags="${frags} elf.ml" ;;
+    *-*-sysv[45]*|*-*-udk*)	frags="${frags} elf.ml" ;;
     *-*-solaris*)	frags="${frags} sol2shm.ml" ;;
     *-*-sunos4*)	frags="${frags} sunos4.ml" ;;
     *-*-aix*)		frags="${frags} aix.ml" ;;
