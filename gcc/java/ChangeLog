@@ -1,3 +1,9 @@
+2004-09-23  Tom Tromey  <tromey@redhat.com>
+
+	PR java/17380:
+	* parse.y (not_accessible_p): Allow access to protected members
+	even when class is not static.
+
 2004-09-22  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Make-lang.in: Revert the gcc-none.o change.
