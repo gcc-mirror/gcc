@@ -1,3 +1,10 @@
+2002-09-27  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (compute_saved_regs): Use a macro
+	instead of a hard register number.
+	(get_shift_alg): Use an enumerated type instead of numbers.
+	(h8300_shift_needs_scratch_p): Likewise.
+
 2002-09-26  David S. Miller  <davem@redhat.com>
 
 	PR optimization/7335
