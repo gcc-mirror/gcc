@@ -927,8 +927,9 @@ scan_loop (loop, unroll_p, bct_p)
 	      m->is_equiv = (find_reg_note (p, REG_EQUIV, NULL_RTX) != 0);
 	      m->savemode = VOIDmode;
 	      m->regno = regno;
-	      /* Set M->cond if either invariant_p or consec_sets_invariant_p
-		 returned 2 (only conditionally invariant).  */
+	      /* Set M->cond if either loop_invariant_p
+		 or consec_sets_invariant_p returned 2
+		 (only conditionally invariant).  */
 	      m->cond = ((tem | tem1 | tem2) > 1);
 	      m->global = (uid_luid[REGNO_LAST_UID (regno)] 
 			   > INSN_LUID (loop_end)
