@@ -3369,7 +3369,7 @@ package body Exp_Ch9 is
          Set_Scope (Func, Scope (Prot));
 
       else
-         Analyze (Cond);
+         Analyze_And_Resolve (Cond, Any_Boolean);
       end if;
 
       --  The Ravenscar profile restricts barriers to simple variables

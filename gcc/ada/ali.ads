@@ -808,13 +808,14 @@ package ALI is
    --  Initialize the ALI tables. Also resets all switch values to defaults.
 
    function Scan_ALI
-     (F            : File_Name_Type;
-      T            : Text_Buffer_Ptr;
-      Ignore_ED    : Boolean;
-      Err          : Boolean;
-      Read_Xref    : Boolean := False;
-      Read_Lines   : String := "";
-      Ignore_Lines : String := "X") return ALI_Id;
+     (F             : File_Name_Type;
+      T             : Text_Buffer_Ptr;
+      Ignore_ED     : Boolean;
+      Err           : Boolean;
+      Read_Xref     : Boolean := False;
+      Read_Lines    : String  := "";
+      Ignore_Lines  : String  := "X";
+      Ignore_Errors : Boolean := False) return ALI_Id;
    --  Given the text, T, of an ALI file, F, scan and store the information
    --  from the file, and return the Id of the resulting entry in the ALI
    --  table. Switch settings may be modified as described above in the
@@ -854,5 +855,12 @@ package ALI is
    --    Ignore_Lines and Read_Lines parameters are ignored (i.e. the
    --    use of True for Read_XREF is equivalent to specifying an
    --    argument of "UWDX" for Read_Lines.
+   --
+   --    Ignore_Errors is normally False. If it is set True, then Scan_ALI
+   --    will do its best to scan through a file and extract all information
+   --    it can, even if there are errors. In this case Err is only set if
+   --    Scan_ALI was completely unable to process the file (e.g. it did not
+   --    look like an ALI file at all). Ignore_Errors is intended to improve
+   --    the downward compatibility of new compilers with old tools.
 
 end ALI;

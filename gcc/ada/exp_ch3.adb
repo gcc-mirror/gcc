@@ -90,8 +90,7 @@ package body Exp_Ch3 is
 
    function Build_Discriminant_Formals
      (Rec_Id : Entity_Id;
-      Use_Dl : Boolean)
-      return   List_Id;
+      Use_Dl : Boolean) return List_Id;
    --  This function uses the discriminants of a type to build a list of
    --  formal parameters, used in the following function. If the flag Use_Dl
    --  is set, the list is built using the already defined discriminals
@@ -246,8 +245,7 @@ package body Exp_Ch3 is
       Name     : Name_Id;
       Profile  : List_Id;
       Ret_Type : Entity_Id := Empty;
-      For_Body : Boolean   := False)
-      return     Node_Id;
+      For_Body : Boolean   := False) return Node_Id;
    --  This function generates the appropriate expansion for a predefined
    --  primitive operation specified by its name, parameter profile and
    --  return type (Empty means this is a procedure). If For_Body is false,
@@ -259,8 +257,7 @@ package body Exp_Ch3 is
      (Loc      : Source_Ptr;
       Tag_Typ  : Entity_Id;
       Name     : TSS_Name_Type;
-      For_Body : Boolean := False)
-      return     Node_Id;
+      For_Body : Boolean := False) return Node_Id;
    --  Specialized version of Predef_Spec_Or_Body that apply to read, write,
    --  input and output attribute whose specs are constructed in Exp_Strm.
 
@@ -268,15 +265,13 @@ package body Exp_Ch3 is
      (Loc      : Source_Ptr;
       Tag_Typ  : Entity_Id;
       Name     : TSS_Name_Type;
-      For_Body : Boolean := False)
-      return     Node_Id;
+      For_Body : Boolean := False) return Node_Id;
    --  Specialized version of Predef_Spec_Or_Body that apply to _deep_adjust
    --  and _deep_finalize
 
    function Predefined_Primitive_Bodies
      (Tag_Typ    : Entity_Id;
-      Renamed_Eq : Node_Id)
-      return       List_Id;
+      Renamed_Eq : Node_Id) return List_Id;
    --  Create the bodies of the predefined primitives that are described in
    --  Predefined_Primitive_Specs. When not empty, Renamed_Eq must denote
    --  the defining unit name of the type's predefined equality as returned
@@ -721,8 +716,7 @@ package body Exp_Ch3 is
 
       function Build_Case_Statement
         (Case_Id : Entity_Id;
-         Variant : Node_Id)
-         return    Node_Id;
+         Variant : Node_Id) return Node_Id;
       --  Build a case statement containing only two alternatives. The
       --  first alternative corresponds exactly to the discrete choices
       --  given on the variant with contains the components that we are
@@ -732,8 +726,7 @@ package body Exp_Ch3 is
 
       function Build_Dcheck_Function
         (Case_Id : Entity_Id;
-         Variant : Node_Id)
-         return    Entity_Id;
+         Variant : Node_Id) return Entity_Id;
       --  Build the discriminant checking function for a given variant
 
       procedure Build_Dcheck_Functions (Variant_Part_Node : Node_Id);
@@ -746,8 +739,7 @@ package body Exp_Ch3 is
 
       function Build_Case_Statement
         (Case_Id : Entity_Id;
-         Variant : Node_Id)
-         return    Node_Id
+         Variant : Node_Id) return Node_Id
       is
          Alt_List       : constant List_Id := New_List;
          Actuals_List   : List_Id;
@@ -834,8 +826,7 @@ package body Exp_Ch3 is
 
       function Build_Dcheck_Function
         (Case_Id : Entity_Id;
-         Variant : Node_Id)
-         return    Entity_Id
+         Variant : Node_Id) return Entity_Id
       is
          Body_Node           : Node_Id;
          Func_Id             : Entity_Id;
@@ -972,8 +963,7 @@ package body Exp_Ch3 is
 
    function Build_Discriminant_Formals
      (Rec_Id : Entity_Id;
-      Use_Dl : Boolean)
-      return   List_Id
+      Use_Dl : Boolean) return List_Id
    is
       Loc             : Source_Ptr       := Sloc (Rec_Id);
       Parameter_List  : constant List_Id := New_List;
@@ -1046,8 +1036,7 @@ package body Exp_Ch3 is
       In_Init_Proc      : Boolean := False;
       Enclos_Type       : Entity_Id := Empty;
       Discr_Map         : Elist_Id := New_Elmt_List;
-      With_Default_Init : Boolean := False)
-      return              List_Id
+      With_Default_Init : Boolean := False) return List_Id
    is
       First_Arg      : Node_Id;
       Args           : List_Id;
@@ -1374,9 +1363,7 @@ package body Exp_Ch3 is
       --  components of the given component list. This may involve building
       --  case statements for the variant parts.
 
-      function Build_Init_Call_Thru
-        (Parameters : List_Id)
-         return       List_Id;
+      function Build_Init_Call_Thru (Parameters : List_Id) return List_Id;
       --  Given a non-tagged type-derivation that declares discriminants,
       --  such as
       --
@@ -1404,8 +1391,7 @@ package body Exp_Ch3 is
       --  to which the check actions are appended.
 
       function Component_Needs_Simple_Initialization
-        (T    : Entity_Id)
-         return Boolean;
+        (T : Entity_Id) return Boolean;
       --  Determines if a component needs simple initialization, given its
       --  type T. This is the same as Needs_Simple_Initialization except
       --  for the following differences. The types Tag and Vtable_Ptr,
@@ -1597,18 +1583,15 @@ package body Exp_Ch3 is
       -- Build_Init_Call_Thru --
       --------------------------
 
-      function Build_Init_Call_Thru
-        (Parameters     : List_Id)
-         return           List_Id
-      is
-         Parent_Proc    : constant Entity_Id :=
-                            Base_Init_Proc (Etype (Rec_Type));
+      function Build_Init_Call_Thru (Parameters : List_Id) return List_Id is
+         Parent_Proc : constant Entity_Id :=
+                         Base_Init_Proc (Etype (Rec_Type));
 
-         Parent_Type    : constant Entity_Id :=
-                            Etype (First_Formal (Parent_Proc));
+         Parent_Type : constant Entity_Id :=
+                         Etype (First_Formal (Parent_Proc));
 
-         Uparent_Type   : constant Entity_Id :=
-                            Underlying_Type (Parent_Type);
+         Uparent_Type : constant Entity_Id :=
+                          Underlying_Type (Parent_Type);
 
          First_Discr_Param : Node_Id;
 
@@ -2184,8 +2167,7 @@ package body Exp_Ch3 is
       -------------------------------------------
 
       function Component_Needs_Simple_Initialization
-        (T    : Entity_Id)
-         return Boolean
+        (T : Entity_Id) return Boolean
       is
       begin
          return
@@ -4755,9 +4737,8 @@ package body Exp_Ch3 is
    -------------------------
 
    function Get_Simple_Init_Val
-     (T    : Entity_Id;
-      Loc  : Source_Ptr)
-      return Node_Id
+     (T   : Entity_Id;
+      Loc : Source_Ptr) return Node_Id
    is
       Val    : Node_Id;
       Typ    : Node_Id;
@@ -5478,8 +5459,7 @@ package body Exp_Ch3 is
      (Loc      : Source_Ptr;
       Tag_Typ  : Entity_Id;
       Name     : TSS_Name_Type;
-      For_Body : Boolean := False)
-      return     Node_Id
+      For_Body : Boolean := False) return Node_Id
    is
       Prof   : List_Id;
       Type_B : Entity_Id;
@@ -5533,8 +5513,7 @@ package body Exp_Ch3 is
       Name     : Name_Id;
       Profile  : List_Id;
       Ret_Type : Entity_Id := Empty;
-      For_Body : Boolean := False)
-      return     Node_Id
+      For_Body : Boolean := False) return Node_Id
    is
       Id   : constant Entity_Id := Make_Defining_Identifier (Loc, Name);
       Spec : Node_Id;
@@ -5604,8 +5583,7 @@ package body Exp_Ch3 is
      (Loc      : Source_Ptr;
       Tag_Typ  : Entity_Id;
       Name     : TSS_Name_Type;
-      For_Body : Boolean := False)
-      return     Node_Id
+      For_Body : Boolean := False) return Node_Id
    is
       Ret_Type : Entity_Id;
 
@@ -5630,8 +5608,7 @@ package body Exp_Ch3 is
 
    function Predefined_Primitive_Bodies
      (Tag_Typ    : Entity_Id;
-      Renamed_Eq : Node_Id)
-      return       List_Id
+      Renamed_Eq : Node_Id) return List_Id
    is
       Loc       : constant Source_Ptr := Sloc (Tag_Typ);
       Res       : constant List_Id    := New_List;

@@ -424,7 +424,7 @@ package body Bcheck is
          if not Restriction_File_Output then
             Restriction_File_Output := True;
 
-            --  Find the ali file specifying the restriction
+            --  Find an ali file specifying the restriction
 
             for A in ALIs.First .. ALIs.Last loop
                if ALIs.Table (A).Restrictions.Set (R)
@@ -463,6 +463,7 @@ package body Bcheck is
                      Consistency_Error_Msg (M2 (1 .. P - 1));
                      Consistency_Error_Msg
                        ("but the following files violate this restriction:");
+                     return;
                   end;
                end if;
             end loop;
@@ -491,38 +492,50 @@ package body Bcheck is
             --  Loop through files looking for violators
 
             for A2 in ALIs.First .. ALIs.Last loop
-               if ALIs.Table (A2).Restrictions.Violated (R) then
+               declare
+                  T : ALIs_Record renames ALIs.Table (A2);
 
-                  --  We exclude predefined files from the list of
-                  --  violators. This should be rethought. It is not
-                  --  clear that this is the right thing to do, that
-                  --  is particularly the case for restricted runtimes.
+               begin
+                  if T.Restrictions.Violated (R) then
 
-                  if not Is_Internal_File_Name (ALIs.Table (A2).Sfile) then
-                     Print_Restriction_File (R);
+                     --  We exclude predefined files from the list of
+                     --  violators. This should be rethought. It is not
+                     --  clear that this is the right thing to do, that
+                     --  is particularly the case for restricted runtimes.
 
-                     Error_Msg_Name_1 := ALIs.Table (A2).Sfile;
+                     if not Is_Internal_File_Name (T.Sfile) then
 
-                     if R in All_Boolean_Restrictions then
-                        Consistency_Error_Msg ("  %");
+                        --  Case of Boolean restriction, just print file name
 
-                     elsif R in Checked_Add_Parameter_Restrictions
-                       or else ALIs.Table (A2).Restrictions.Count (R) >
-                       Cumulative_Restrictions.Value (R)
-                     then
-                        Error_Msg_Nat_1 :=
-                          Int (ALIs.Table (A2).Restrictions.Count (R));
+                        if R in All_Boolean_Restrictions then
+                           Print_Restriction_File (R);
+                           Error_Msg_Name_1 := T.Sfile;
+                           Consistency_Error_Msg ("  %");
 
-                        if ALIs.Table (A2).Restrictions.Unknown (R) then
-                           Consistency_Error_Msg
-                             ("  % (count = at least #)");
-                        else
-                           Consistency_Error_Msg
-                             ("  % (count = #)");
+                        --  Case of Parameter restriction where violation
+                        --  count exceeds restriction value, print file
+                        --  name and count, adding "at least" if the
+                        --  exact count is not known.
+
+                        elsif R in Checked_Add_Parameter_Restrictions
+                          or else T.Restrictions.Count (R) >
+                          Cumulative_Restrictions.Value (R)
+                        then
+                           Print_Restriction_File (R);
+                           Error_Msg_Name_1 := T.Sfile;
+                           Error_Msg_Nat_1 := Int (T.Restrictions.Count (R));
+
+                           if T.Restrictions.Unknown (R) then
+                              Consistency_Error_Msg
+                                ("  % (count = at least #)");
+                           else
+                              Consistency_Error_Msg
+                                ("  % (count = #)");
+                           end if;
                         end if;
                      end if;
                   end if;
-               end if;
+               end;
             end loop;
          end if;
       end loop;

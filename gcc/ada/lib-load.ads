@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -109,8 +109,7 @@ package Lib.Load is
       Error_Node : Node_Id;
       Subunit    : Boolean;
       Corr_Body  : Unit_Number_Type := No_Unit;
-      Renamings  : Boolean          := False)
-      return       Unit_Number_Type;
+      Renamings  : Boolean          := False) return Unit_Number_Type;
    --  This function loads and parses the unit specified by Load_Name (or
    --  returns the unit number for the previously constructed units table
    --  entry if this is not the first call for this unit). Required indicates
@@ -151,8 +150,7 @@ package Lib.Load is
 
    function Create_Dummy_Package_Unit
      (With_Node : Node_Id;
-      Spec_Name : Unit_Name_Type)
-      return      Unit_Number_Type;
+      Spec_Name : Unit_Name_Type) return Unit_Number_Type;
    --  With_Node is the Node_Id of a with statement for which the file could
    --  not be found, and Spec_Name is the corresponding unit name. This call
    --  creates a dummy package unit so that compilation can continue without

@@ -98,8 +98,7 @@ package body Exp_Ch4 is
       A_Typ  : Entity_Id;
       Lhs    : Node_Id;
       Rhs    : Node_Id;
-      Bodies : List_Id)
-      return   Node_Id;
+      Bodies : List_Id) return Node_Id;
    --  Expand an array equality into a call to a function implementing this
    --  equality, and a call to it. Loc is the location for the generated
    --  nodes. Typ is the type of the array, and Lhs, Rhs are the array
@@ -119,8 +118,7 @@ package body Exp_Ch4 is
       Typ    : Entity_Id;
       Lhs    : Node_Id;
       Rhs    : Node_Id;
-      Bodies : List_Id)
-      return   Node_Id;
+      Bodies : List_Id) return Node_Id;
    --  Local recursive function used to expand equality for nested
    --  composite types. Used by Expand_Record/Array_Equality, Bodies
    --  is a list on which to attach bodies of local functions that are
@@ -150,8 +148,7 @@ package body Exp_Ch4 is
    function Get_Allocator_Final_List
      (N    : Node_Id;
       T    : Entity_Id;
-      PtrT : Entity_Id)
-      return Entity_Id;
+      PtrT : Entity_Id) return Entity_Id;
    --  If the designated type is controlled, build final_list expression
    --  for created object. If context is an access parameter, create a
    --  local access type to have a usable finalization list.
@@ -161,9 +158,8 @@ package body Exp_Ch4 is
    --  from Checked_Pool, expands a call to the primitive 'dereference'.
 
    function Make_Array_Comparison_Op
-     (Typ   : Entity_Id;
-      Nod   : Node_Id)
-      return  Node_Id;
+     (Typ : Entity_Id;
+      Nod : Node_Id) return Node_Id;
    --  Comparisons between arrays are expanded in line. This function
    --  produces the body of the implementation of (a > b), where a and b
    --  are one-dimensional arrays of some discrete type. The original
@@ -171,9 +167,8 @@ package body Exp_Ch4 is
    --  Nod provides the Sloc value for the generated code.
 
    function Make_Boolean_Array_Op
-     (Typ  : Entity_Id;
-      N    : Node_Id)
-      return Node_Id;
+     (Typ : Entity_Id;
+      N   : Node_Id) return Node_Id;
    --  Boolean operations on boolean arrays are expanded in line. This
    --  function produce the body for the node N, which is (a and b),
    --  (a or b), or (a xor b). It is used only the normal case and not
@@ -193,10 +188,9 @@ package body Exp_Ch4 is
    --  Deals with a second operand being (or not) a class-wide type.
 
    function Safe_In_Place_Array_Op
-     (Lhs  : Node_Id;
-      Op1  : Node_Id;
-      Op2  : Node_Id)
-      return Boolean;
+     (Lhs : Node_Id;
+      Op1 : Node_Id;
+      Op2 : Node_Id) return Boolean;
    --  In the context of an assignment, where the right-hand side is a
    --  boolean operation on arrays, check whether operation can be performed
    --  in place.
@@ -913,8 +907,7 @@ package body Exp_Ch4 is
       A_Typ  : Entity_Id;
       Lhs    : Node_Id;
       Rhs    : Node_Id;
-      Bodies : List_Id)
-      return   Node_Id
+      Bodies : List_Id) return Node_Id
    is
       Loc         : constant Source_Ptr := Sloc (Nod);
       Decls       : constant List_Id    := New_List;
@@ -932,8 +925,7 @@ package body Exp_Ch4 is
       function Arr_Attr
         (Arr : Entity_Id;
          Nam : Name_Id;
-         Num : Int)
-         return Node_Id;
+         Num : Int) return Node_Id;
       --  This builds the attribute reference Arr'Nam (Expr).
 
       function Component_Equality (Typ : Entity_Id) return Node_Id;
@@ -942,8 +934,7 @@ package body Exp_Ch4 is
 
       function Handle_One_Dimension
         (N     : Int;
-         Index : Node_Id)
-         return  Node_Id;
+         Index : Node_Id) return Node_Id;
       --  This procedure returns a declare block:
       --
       --    declare
@@ -990,8 +981,7 @@ package body Exp_Ch4 is
       function Arr_Attr
         (Arr : Entity_Id;
          Nam : Name_Id;
-         Num : Int)
-         return Node_Id
+         Num : Int) return Node_Id
       is
       begin
          return
@@ -1039,8 +1029,7 @@ package body Exp_Ch4 is
 
       function Handle_One_Dimension
         (N     : Int;
-         Index : Node_Id)
-         return  Node_Id
+         Index : Node_Id) return Node_Id
       is
          An : constant Entity_Id := Make_Defining_Identifier (Loc,
                                       Chars => New_Internal_Name ('A'));
@@ -1337,8 +1326,7 @@ package body Exp_Ch4 is
       Typ    : Entity_Id;
       Lhs    : Node_Id;
       Rhs    : Node_Id;
-      Bodies : List_Id)
-      return   Node_Id
+      Bodies : List_Id) return Node_Id
    is
       Loc       : constant Source_Ptr := Sloc (Nod);
       Full_Type : Entity_Id;
@@ -2841,10 +2829,9 @@ package body Exp_Ch4 is
 
                Check_Subscripts : declare
                   function Construct_Attribute_Reference
-                    (E    : Node_Id;
-                     Nam  : Name_Id;
-                     Dim  : Nat)
-                     return Node_Id;
+                    (E   : Node_Id;
+                     Nam : Name_Id;
+                     Dim : Nat) return Node_Id;
                   --  Build attribute reference E'Nam(Dim)
 
                   -----------------------------------
@@ -2852,10 +2839,9 @@ package body Exp_Ch4 is
                   -----------------------------------
 
                   function Construct_Attribute_Reference
-                    (E    : Node_Id;
-                     Nam  : Name_Id;
-                     Dim  : Nat)
-                     return Node_Id
+                    (E   : Node_Id;
+                     Nam : Name_Id;
+                     Dim : Nat) return Node_Id
                   is
                   begin
                      return
@@ -3710,13 +3696,23 @@ package body Exp_Ch4 is
               and then Is_Derived_Type (A_Typ)
               and then No (Full_View (A_Typ))
             then
+               --  Search for equality operation, checking that the
+               --  operands have the same type. Note that we must find
+               --  a matching entry, or something is very wrong!
+
                Prim := First_Elmt (Collect_Primitive_Operations (A_Typ));
 
-               while Chars (Node (Prim)) /= Name_Op_Eq loop
+               while Present (Prim) loop
+                  exit when Chars (Node (Prim)) = Name_Op_Eq
+                    and then Etype (First_Formal (Node (Prim))) =
+                             Etype (Next_Formal (First_Formal (Node (Prim))))
+                    and then
+                      Base_Type (Etype (Node (Prim))) = Standard_Boolean;
+
                   Next_Elmt (Prim);
-                  pragma Assert (Present (Prim));
                end loop;
 
+               pragma Assert (Present (Prim));
                Op_Name := Node (Prim);
 
             --  Find the type's predefined equality or an overriding
@@ -3741,9 +3737,9 @@ package body Exp_Ch4 is
                       Base_Type (Etype (Node (Prim))) = Standard_Boolean;
 
                   Next_Elmt (Prim);
-                  pragma Assert (Present (Prim));
                end loop;
 
+               pragma Assert (Present (Prim));
                Op_Name := Node (Prim);
             end if;
 
@@ -6340,8 +6336,7 @@ package body Exp_Ch4 is
       Typ    : Entity_Id;
       Lhs    : Node_Id;
       Rhs    : Node_Id;
-      Bodies : List_Id)
-      return   Node_Id
+      Bodies : List_Id) return Node_Id
    is
       Loc : constant Source_Ptr := Sloc (Nod);
 
@@ -6496,8 +6491,7 @@ package body Exp_Ch4 is
    function Get_Allocator_Final_List
      (N    : Node_Id;
       T    : Entity_Id;
-      PtrT : Entity_Id)
-      return Entity_Id
+      PtrT : Entity_Id) return Entity_Id
    is
       Loc : constant Source_Ptr := Sloc (N);
       Acc : Entity_Id;
@@ -6540,7 +6534,11 @@ package body Exp_Ch4 is
       Pool : constant Entity_Id  := Associated_Storage_Pool (Typ);
 
       function Is_Checked_Storage_Pool (P : Entity_Id) return Boolean;
-      --  return true if type of P is derived from Checked_Pool;
+      --  Return true if type of P is derived from Checked_Pool;
+
+      -----------------------------
+      -- Is_Checked_Storage_Pool --
+      -----------------------------
 
       function Is_Checked_Storage_Pool (P : Entity_Id) return Boolean is
          T : Entity_Id;
@@ -6662,9 +6660,8 @@ package body Exp_Ch4 is
    --  instantiated function itself.
 
    function Make_Array_Comparison_Op
-     (Typ   : Entity_Id;
-      Nod   : Node_Id)
-      return  Node_Id
+     (Typ : Entity_Id;
+      Nod : Node_Id) return Node_Id
    is
       Loc : constant Source_Ptr := Sloc (Nod);
 
@@ -6897,9 +6894,8 @@ package body Exp_Ch4 is
    --  Here typ is the boolean array type
 
    function Make_Boolean_Array_Op
-     (Typ  : Entity_Id;
-      N    : Node_Id)
-      return Node_Id
+     (Typ : Entity_Id;
+      N   : Node_Id) return Node_Id
    is
       Loc : constant Source_Ptr := Sloc (N);
 
@@ -7069,10 +7065,9 @@ package body Exp_Ch4 is
    ----------------------------
 
    function Safe_In_Place_Array_Op
-     (Lhs  : Node_Id;
-      Op1  : Node_Id;
-      Op2  : Node_Id)
-      return Boolean
+     (Lhs : Node_Id;
+      Op1 : Node_Id;
+      Op2 : Node_Id) return Boolean
    is
       Target : Entity_Id;
 

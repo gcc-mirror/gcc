@@ -943,7 +943,11 @@ begin
             begin
                Discard :=
                  Scan_ALI
-                   (Ali_File, Text, Ignore_ED => False, Err => False);
+                   (Ali_File,
+                    Text,
+                    Ignore_ED     => False,
+                    Err           => False,
+                    Ignore_Errors => True);
             end;
 
             Free (Text);

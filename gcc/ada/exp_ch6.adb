@@ -596,6 +596,10 @@ package body Exp_Ch6 is
                Init :=
                  Convert_To (Etype (Formal), New_Occurrence_Of (Var, Loc));
             end if;
+
+         elsif Ekind (Formal) = E_In_Parameter then
+            Init := New_Occurrence_Of (Var, Loc);
+
          else
             Init := Empty;
          end if;

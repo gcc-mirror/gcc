@@ -34,6 +34,7 @@ with Bindusg;
 with Butil;    use Butil;
 with Casing;   use Casing;
 with Csets;
+with Debug;    use Debug;
 with Fmap;
 with Gnatvsn;  use Gnatvsn;
 with Namet;    use Namet;
@@ -532,10 +533,11 @@ begin
 
          begin
             Id := Scan_ALI
-                    (F         => Main_Lib_File,
-                     T         => Text,
-                     Ignore_ED => Force_RM_Elaboration_Order,
-                     Err       => False);
+                    (F             => Main_Lib_File,
+                     T             => Text,
+                     Ignore_ED     => Force_RM_Elaboration_Order,
+                     Err           => False,
+                     Ignore_Errors => Debug_Flag_I);
          end;
 
          Free (Text);
@@ -576,10 +578,11 @@ begin
          begin
             Id :=
               Scan_ALI
-                (F         => Std_Lib_File,
-                 T         => Text,
-                 Ignore_ED => Force_RM_Elaboration_Order,
-                 Err       => False);
+                (F             => Std_Lib_File,
+                 T             => Text,
+                 Ignore_ED     => Force_RM_Elaboration_Order,
+                 Err           => False,
+                 Ignore_Errors => Debug_Flag_I);
          end;
 
          Free (Text);

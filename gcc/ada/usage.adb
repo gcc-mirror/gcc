@@ -441,6 +441,11 @@ begin
    Write_Line ("        s    check separate subprogram specs present");
    Write_Line ("        t    check token separation rules");
 
+   --  Lines for -gnatyN switch
+
+   Write_Switch_Char ("yN");
+   Write_Line ("Cancel all previously set style checks");
+
    --  Lines for -gnatz switch
 
    Write_Switch_Char ("z");

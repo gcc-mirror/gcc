@@ -1409,9 +1409,17 @@ begin
 
          T := Read_Library_Info (F, True);
 
-         --  Read it
+         --  Read it. Note that we ignore errors, since we only want very
+         --  limited information from the ali file, and likely a slightly
+         --  wrong version will be just fine, though in normal operation
+         --  we don't expect this to happen!
 
-         A := Scan_ALI (F, T, Ignore_ED => False, Err => False);
+         A := Scan_ALI
+               (F,
+                T,
+                Ignore_ED     => False,
+                Err           => False,
+                Ignore_Errors => True);
 
          if A /= No_ALI_Id then
             for

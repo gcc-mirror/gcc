@@ -7724,9 +7724,9 @@ package body Sem_Prag is
             Set_Is_Preelaborated (Ent);
          end;
 
-         ------------------------
-         --  Persistent_Object --
-         ------------------------
+         -----------------------
+         -- Persistent_Object --
+         -----------------------
 
          when Pragma_Persistent_Object => declare
             Decl : Node_Id;
@@ -7738,6 +7738,7 @@ package body Sem_Prag is
             GNAT_Pragma;
             Check_Arg_Count (1);
             Check_Arg_Is_Library_Level_Local_Name (Arg1);
+
             if not Is_Entity_Name (Expression (Arg1))
               or else
                (Ekind (Entity (Expression (Arg1))) /= E_Variable
@@ -7932,6 +7933,31 @@ package body Sem_Prag is
                end if;
             end if;
          end Priority;
+
+         -------------
+         -- Profile --
+         -------------
+
+         --  pragma Profile (profile_IDENTIFIER);
+
+         --  profile_IDENTIFIER => Ravenscar
+
+         when Pragma_Profile =>
+            GNAT_Pragma;
+            Check_Arg_Count (1);
+            Check_Valid_Configuration_Pragma;
+            Check_No_Identifiers;
+            Set_Ravenscar (N);
+
+            declare
+               Argx : constant Node_Id := Get_Pragma_Arg (Arg1);
+            begin
+               if Chars (Argx) = Name_Ravenscar then
+                  Set_Ravenscar (N);
+               else
+                  Error_Pragma_Arg ("& is not a valid profile", Argx);
+               end if;
+            end;
 
          --------------------------
          -- Propagate_Exceptions --
@@ -9886,6 +9912,7 @@ package body Sem_Prag is
       Pragma_Persistent_Object            => -1,
       Pragma_Preelaborate                 => -1,
       Pragma_Priority                     => -1,
+      Pragma_Profile                      =>  0,
       Pragma_Propagate_Exceptions         => -1,
       Pragma_Psect_Object                 => -1,
       Pragma_Pure                         =>  0,

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -203,6 +203,10 @@ package Namet is
    function Get_Name_Table_Info (Id : Name_Id) return Int;
    pragma Inline (Get_Name_Table_Info);
    --  Fetches the Int value associated with the given name
+
+   function Is_Operator_Name (Id : Name_Id) return Boolean;
+   --  Returns True if name given is of the form of an operator (that
+   --  is, it starts with an upper case O).
 
    procedure Initialize;
    --  Initializes the names table, including initializing the first 26

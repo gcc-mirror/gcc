@@ -756,7 +756,6 @@ package body Sem_Ch8 is
          else
             Error_Msg_N ("expect object name in renaming", Nam);
          end if;
-
       end if;
 
       Set_Etype (Id, T2);
@@ -1179,10 +1178,49 @@ package body Sem_Ch8 is
             Old_S := Entity (Nam);
             New_S := Analyze_Subprogram_Specification (Spec);
 
-            if Ekind (Entity (Nam)) = E_Operator
-              and then Box_Present (Inst_Node)
-            then
-               Old_S := Find_Renamed_Entity (N, Name (N), New_S, Is_Actual);
+            --  Operator case
+
+            if Ekind (Entity (Nam)) = E_Operator then
+
+               --  Box present
+
+               if Box_Present (Inst_Node) then
+                  Old_S := Find_Renamed_Entity (N, Name (N), New_S, Is_Actual);
+
+               --  If there is an immediately visible homonym of the operator
+               --  and the declaration has a default, this is worth a warning
+               --  because the user probably did not intend to get the pre-
+               --  defined operator, visible in the generic declaration.
+               --  To find if there is an intended candidate, analyze the
+               --  renaming again in the current context.
+
+               elsif Scope (Old_S) = Standard_Standard
+                 and then Present (Default_Name (Inst_Node))
+               then
+                  declare
+                     Decl   : constant Node_Id := New_Copy_Tree (N);
+                     Hidden : Entity_Id;
+
+                  begin
+                     Set_Entity (Name (Decl), Empty);
+                     Analyze (Name (Decl));
+                     Hidden :=
+                       Find_Renamed_Entity (Decl, Name (Decl), New_S, True);
+
+                     if Present (Hidden)
+                       and then In_Open_Scopes (Scope (Hidden))
+                       and then Is_Immediately_Visible (Hidden)
+                       and then Comes_From_Source (Hidden)
+                       and then  Hidden /= Old_S
+                     then
+                        Error_Msg_Sloc := Sloc (Hidden);
+                        Error_Msg_N ("?default subprogram is resolved " &
+                                     "in the generic declaration " &
+                                     "('R'M 12.6(17))", N);
+                        Error_Msg_NE ("\?and will not use & #", N, Hidden);
+                     end if;
+                  end;
+               end if;
             end if;
 
          else
@@ -2163,9 +2201,8 @@ package body Sem_Ch8 is
       Elmt      : Elmt_Id;
 
       function Is_Primitive_Operator
-        (Op   : Entity_Id;
-         F    : Entity_Id)
-         return Boolean;
+        (Op : Entity_Id;
+         F  : Entity_Id) return Boolean;
       --  Check whether Op is a primitive operator of a use-visible type
 
       ---------------------------
@@ -2173,9 +2210,8 @@ package body Sem_Ch8 is
       ---------------------------
 
       function Is_Primitive_Operator
-        (Op   : Entity_Id;
-         F    : Entity_Id)
-         return Boolean
+        (Op : Entity_Id;
+         F  : Entity_Id) return Boolean
       is
          T : constant Entity_Id := Etype (F);
 
@@ -4730,10 +4766,8 @@ package body Sem_Ch8 is
    -- Is_Appropriate_For_Record --
    -------------------------------
 
-   function Is_Appropriate_For_Record
-     (T    : Entity_Id)
-      return Boolean
-   is
+   function Is_Appropriate_For_Record (T : Entity_Id) return Boolean is
+
       function Has_Components (T1 : Entity_Id) return Boolean;
       --  Determine if given type has components (i.e. is either a record
       --  type or a type that has discriminants).
@@ -4967,6 +5001,10 @@ package body Sem_Ch8 is
       function Find_System (C_Unit : Node_Id) return Entity_Id;
       --  Scan context clause of compilation unit to find a with_clause
       --  for System.
+
+      -----------------
+      -- Find_System --
+      -----------------
 
       function Find_System (C_Unit : Node_Id) return Entity_Id is
          With_Clause : Node_Id;
