@@ -2202,7 +2202,7 @@ canon_true_dependence (rtx mem, enum machine_mode mem_mode, rtx mem_addr,
 }
 
 /* Returns nonzero if a write to X might alias a previous read from
-   (or, if WRITEP is nonzero, a write to) MEM.  If CONSTP is non-zero,
+   (or, if WRITEP is nonzero, a write to) MEM.  If CONSTP is nonzero,
    honor the RTX_UNCHANGING_P flags on X and MEM.  */
 
 static int

@@ -1,3 +1,8 @@
+2003-09-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* ChangeLog: Follow spelling conventions.
+	* parser.c: Likewise.
+
 2003-09-13  Richard Henderson  <rth@redhat.com>
 
 	* decl2.c (finish_file): Check cgraph_assemble_pending_functions
@@ -785,7 +790,7 @@ Thu Aug 14 12:19:25 CEST 2003  Jan Hubicka  <jh@suse.cz>
 2003-08-10  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.h (TMPL_ARGS_HAVE_MULTIPLE_LEVELS): non-NULL
-	NODE is always a TREE_VEC of non-zero size.
+	NODE is always a TREE_VEC of nonzero size.
 	(NUM_TMPL_ARGS): NODE is always a TREE_VEC.
 	* decl2.c (arg_assoc): Template args will be a vec.
 	* error.c (dump_decl) <TEMPLATE_ID_EXPR case>: Call

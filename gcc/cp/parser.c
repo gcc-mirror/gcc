@@ -8112,7 +8112,7 @@ cp_parser_explicit_specialization (cp_parser* parser)
 
    If DECLARES_CLASS_OR_ENUM is non-NULL, and the type-specifier is a
    class-specifier, enum-specifier, or elaborated-type-specifier, then
-   *DECLARES_CLASS_OR_ENUM is set to a non-zero value.  The value is 1
+   *DECLARES_CLASS_OR_ENUM is set to a nonzero value.  The value is 1
    if a type is declared; 2 if it is defined.  Otherwise, it is set to
    zero.
 
