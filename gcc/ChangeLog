@@ -1,3 +1,8 @@
+2004-04-20  DJ Delorie  <dj@redhat.com>
+	
+	* dwarf2out.c (rtl_for_decl_location): Adjust rtl for byte
+	variables stored in word registers, then in memory.
+
 2004-04-20  Eric Christopher  <echristo@redhat.com>
 
 	* cp/parser.c (cp_parser_declaration): Move translate
