@@ -651,7 +651,7 @@ T =
 # Avoid a lot of time thinking about remaking Makefile.in and *.def.
 .SUFFIXES: .in .def
 
-Makefile: $(srcdir)/Makefile.in $(srcdir)/configure $(srcdir)/version.c \
+Makefile: $(srcdir)/Makefile.in config.status $(srcdir)/version.c \
    $(xmake_file) $(tmake_file) \
    $(LANG_MAKEFILES)
 	$(SHELL) $(srcdir)/configure.frag $(srcdir) "$(SUBDIRS)"
@@ -663,6 +663,9 @@ $(srcdir)/configure: $(srcdir)/configure.in
 	cd $(srcdir); autoconf
 
 # cstamp-h.in controls rebuilding of config.in.
+# It is named cstamp-h.in and not stamp-h.in so the mostlyclean rule doesn't
+# delete it.  A stamp file is needed as autoheader won't update the file if
+# nothing has changed.
 # It remains in the source directory and is part of the distribution.
 # This follows what is done in shellutils, fileutils, etc.
 # ??? Newer versions have a maintainer mode that may be useful here.
@@ -673,6 +676,17 @@ $(srcdir)/cstamp-h.in: $(srcdir)/configure.in $(srcdir)/acconfig.h
 config.h: cstamp-h ; @true
 cstamp-h: config.in config.status
 	CONFIG_HEADERS=config.h:config.in $(SHELL) config.status
+
+# Really, really stupid make features, such as SUN's KEEP_STATE, may force
+# a target to build even if it is up-to-date.  So we must verify that
+# config.status does not exist before failing.
+config.status: configure
+	@if [ ! -f config.status ] ; then \
+	  echo You must configure gcc.  Look at the INSTALL file for details.; \
+	  false; \
+	else \
+	  $(SHELL) config.status --recheck; \
+	fi
 
 all.internal: start.encap rest.encap
 # This is what to compile if making a cross-compiler.
@@ -696,17 +710,6 @@ PROTO: proto
 
 # Tell GNU make these are phony targets.
 .PHONY: C c PROTO proto
-
-# Really, really stupid make features, such as SUN's KEEP_STATE, may force
-# a target to build even if it is up-to-date.  So we must verify that
-# config.status does not exist before failing.
-config.status:
-	@if [ ! -f config.status ] ; then \
-	  echo You must configure gcc.  Look at the INSTALL file for details.; \
-	  false; \
-	else \
-	  true; \
-	fi
 
 # On the target machine, finish building a cross compiler.
 # This does the things that can't be done on the host machine.
