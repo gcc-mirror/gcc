@@ -1,5 +1,5 @@
 /* Prints out tree in human readable form - GNU C-compiler
-   Copyright (C) 1990, 1991, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1993, 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -416,6 +416,7 @@ print_node (file, prefix, node, indent)
 	       DECL_SOURCE_FILE (node), DECL_SOURCE_LINE (node));
 
       print_node (file, "size", DECL_SIZE (node), indent + 4);
+      print_node (file, "attributes", TYPE_ATTRIBUTES (node), indent + 4);
       indent_to (file, indent + 3);
       if (TREE_CODE (node) != FUNCTION_DECL)
 	fprintf (file, " align %d", DECL_ALIGN (node));
@@ -426,6 +427,7 @@ print_node (file, prefix, node, indent)
       if (TREE_CODE (node) == FIELD_DECL)
 	print_node (file, "bitpos", DECL_FIELD_BITPOS (node), indent + 4);
       print_node_brief (file, "context", DECL_CONTEXT (node), indent + 4);
+      print_node_brief (file, "machine_attributes", DECL_MACHINE_ATTRIBUTES (node), indent + 4);
       print_node_brief (file, "abstract_origin",
 			DECL_ABSTRACT_ORIGIN (node), indent + 4);
 
@@ -635,7 +637,8 @@ print_node (file, prefix, node, indent)
 #endif
 		     -TREE_INT_CST_LOW (node));
 	  else
-	    fprintf (file,
+            fprintf (file, "%c", 'l');
+	  fprintf (file,
 #if HOST_BITS_PER_WIDE_INT == 64
 #if HOST_BITS_PER_WIDE_INT != HOST_BITS_PER_INT
 		     " 0x%lx%016lx",
