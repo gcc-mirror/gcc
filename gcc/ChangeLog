@@ -1,3 +1,8 @@
+2001-09-06  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_prologue): Fix DWARF2 register
+	number used for CR register.
+
 2001-09-06  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (mask_operand): Use signed vars to avoid

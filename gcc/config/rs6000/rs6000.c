@@ -6156,9 +6156,10 @@ rs6000_emit_prologue ()
 	 to understand '(unspec:SI [(reg:CC 68) ...] 19)'.  But that's
 	 OK.  All we have to do is specify that _one_ condition code
 	 register is saved in this stack slot.  The thrower's epilogue
-	 will then restore all the call-saved registers.  */
+	 will then restore all the call-saved registers.
+	 We use CR2_REGNO (70) to be compatible with gcc-2.95 on Linux.  */
       rs6000_frame_related (insn, frame_ptr_rtx, info->total_size, 
-			    cr_save_rtx, gen_rtx_REG (SImode, CR0_REGNO));
+			    cr_save_rtx, gen_rtx_REG (SImode, CR2_REGNO));
     }
 
   /* Update stack and set back pointer unless this is V.4, 
