@@ -1,5 +1,5 @@
 /* Loop optimizer initialization routines.
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,6 +27,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "basic-block.h"
 #include "cfgloop.h"
 #include "cfglayout.h"
+
+static void fixup_loop_exit_succesor (basic_block, basic_block);
 
 /* Initialize loop optimizer.  */
 
@@ -90,11 +92,52 @@ loop_optimizer_init (FILE *dumpfile)
   return loops;
 }
 
+/* The first basic block is moved after the second in the reorder chain.  */
+static void
+fixup_loop_exit_succesor (basic_block exit_succ, basic_block latch)
+{
+  basic_block bb = exit_succ;
+  basic_block bb1 = latch;
+
+  if (!(bb && bb->rbi->next))
+    return;
+
+  if (!bb1)
+    return;
+ 
+
+  if (bb && bb->rbi->next)
+    {
+      basic_block c = ENTRY_BLOCK_PTR->next_bb;
+
+      while (c->rbi->next != bb)
+	c = c->rbi->next;
+
+      c->rbi->next = bb->rbi->next;
+    }
+
+  if(bb1->rbi->next == NULL)
+    {
+      bb1->rbi->next=bb;
+      bb->rbi->next=NULL;
+    }
+  else
+    
+    {
+      basic_block tmp;
+
+      tmp = bb1->rbi->next;
+      bb1->rbi->next = bb;
+      bb->rbi->next = tmp;
+    }
+}
+
 /* Finalize loop optimizer.  */
 void
 loop_optimizer_finalize (struct loops *loops, FILE *dumpfile)
 {
   basic_block bb;
+  unsigned int i;
 
   /* Finalize layout changes.  */
   /* Make chain.  */
@@ -104,6 +147,63 @@ loop_optimizer_finalize (struct loops *loops, FILE *dumpfile)
 
   /* Another dump.  */
   flow_loops_dump (loops, dumpfile, NULL, 1);
+
+  /* For loops ending with a branch and count instruction, move the basic 
+     block found before the unrolling on the fallthru path of this branch,
+     after the unrolled code.  This will allow branch simplification.  */
+  for (i = 1; i < loops->num; i++)
+    {
+      struct loop *loop = loops->parray[i];
+      struct loop_desc *desc;
+      basic_block loop_real_latch, bb, bb_exit;
+      edge e;
+
+      if (loop == NULL)
+	continue;
+      if (!loop->simple)
+        continue;
+      if (!loop->has_desc)
+	continue;
+
+      if (loop->lpt_decision.decision != LPT_UNROLL_RUNTIME)
+	continue;
+
+      desc = &loop->desc;
+      if (desc == NULL)
+        continue;
+      if (loop->latch->pred == NULL)
+        continue;
+
+      loop_real_latch = loop->latch->pred->src;
+ 
+
+      if (desc->postincr)
+	continue; 
+      if (!is_bct_cond (BB_END (loop_real_latch)))
+	 continue;
+
+      for (e = loop_real_latch->succ; e ; e = e->succ_next)
+	if (e->flags & EDGE_FALLTHRU)
+          break;
+
+      if (e == NULL)
+	continue;
+
+      bb_exit = e->dest;
+     
+      bb = NULL;
+
+      /* Leave the case of the bb_exit falling through to exit to 
+         fixed_fallthru_exit_predecessor */
+      for (e = EXIT_BLOCK_PTR->pred; e; e = e->pred_next)
+         if (e->flags & EDGE_FALLTHRU)
+        bb = e->src;
+  
+      if (bb_exit == bb)
+	continue;
+      
+      fixup_loop_exit_succesor (bb_exit, loop->latch);
+    }
 
   /* Clean up.  */
   flow_loops_free (loops);

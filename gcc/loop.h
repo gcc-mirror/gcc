@@ -1,5 +1,5 @@
 /* Loop optimization definitions for GCC
-   Copyright (C) 1991, 1995, 1998, 1999, 2000, 2001, 2002, 2003
+   Copyright (C) 1991, 1995, 1998, 1999, 2000, 2001, 2002, 2003, 2004
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -428,4 +428,5 @@ extern rtx loop_insn_sink (const struct loop *, rtx);
 extern rtx loop_insn_hoist (const struct loop *, rtx);
 
 /* Forward declarations for non-static functions declared in doloop.c.  */
+extern rtx doloop_condition_get (rtx);
 extern int doloop_optimize (const struct loop *);

@@ -1,5 +1,5 @@
 /* Natural loop analysis code for GNU compiler.
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,6 +28,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "cfgloop.h"
 #include "expr.h"
 #include "output.h"
+/* Needed for doloop_condition_get().  */
+#include "loop.h"
 
 struct unmark_altered_insn_data;
 static void unmark_altered (rtx, rtx, regset);
@@ -161,6 +163,10 @@ blocks_single_set_registers (basic_block *bbs, int nbbs, rtx *regs)
 	 insn = NEXT_INSN (insn))
       {
 	rtx set = single_set (insn);
+
+	if (!set && is_bct_cond (insn))
+	  set = get_var_set_from_bct(insn);
+
 	if (!set)
 	  continue;
 	if (!REG_P (SET_DEST (set)))
@@ -312,6 +318,10 @@ simple_increment (struct loop *loop, rtx *simple_increment_regs,
 
   /* mod_insn must be a simple increment/decrement.  */
   set = single_set (mod_insn);
+
+  if (!set && is_bct_cond (mod_insn))
+    set = get_var_set_from_bct(mod_insn);
+
   if (!set)
     abort ();
   if (!rtx_equal_p (SET_DEST (set), desc->var))
@@ -834,9 +844,10 @@ count_loop_iterations (struct loop_desc *desc, rtx init, rtx lim)
     return NULL_RTX;
 
   /* Normalize difference so the value is always first examined
-     and later incremented.  */
-  if (!desc->postincr)
-    exp = simplify_gen_binary (MINUS, mode, exp, stride);
+     and later incremented.  Do not do this for a loop ending with a branch 
+     and count register.  */
+  if (!is_bct_cond (BB_END (desc->out_edge->src)) && (!desc->postincr))
+     exp = simplify_gen_binary (MINUS, mode, exp, stride);
 
   /* Determine delta caused by exit condition.  */
   switch (cond)
@@ -1412,3 +1423,57 @@ expected_loop_iterations (const struct loop *loop)
       return (freq_latch + freq_in - 1) / freq_in;
     }
 }
+
+/* This function checks if an instruction is a branch and count instruction
+   no matter if the flag HAVE_doloop_end is enabled or not.  An alternative 
+   would be the modification of doloop_condition_get function itself.  */ 
+bool
+is_bct_cond (rtx insn) 
+{
+  if (GET_CODE (insn) != JUMP_INSN)
+    return false;
+
+#ifdef HAVE_doloop_end
+  if (!doloop_condition_get (PATTERN(insn)))
+    return false;
+#else
+  return false;
+#endif
+
+  return true;
+}
+
+/* Extract the increment of the count register from the branch and count
+   instruction.  */ 
+rtx
+get_var_set_from_bct (rtx insn)
+{
+  rtx rhs, lhs, cond;
+  rtx pattern;
+  rtx set;
+  pattern = PATTERN (insn);
+
+  if (!is_bct_cond (insn))
+    abort ();
+
+  set = XVECEXP (pattern, 0, 1);
+
+  /* IA64 has the decrement conditional, i.e. done only when the loop does not 
+     end.  We match (set (x (if_then_else (ne x 0) (plus x -1) x))) here.  */
+
+  lhs = XEXP (set, 0);
+  rhs = XEXP (set, 1);
+  if (GET_CODE (set) != IF_THEN_ELSE)
+    return set;
+ 
+  cond = XEXP (rhs, 0);
+  if (GET_CODE (cond) != NE
+      || !rtx_equal_p (XEXP (cond, 0), lhs)
+      || !rtx_equal_p (XEXP (cond, 1), const0_rtx))
+         return set;
+
+  rhs = XEXP (rhs, 1);
+ 
+  return gen_rtx_SET (GET_MODE (lhs), lhs, rhs);
+}
+

@@ -1,5 +1,5 @@
 /* Perform doloop optimizations
-   Copyright (C) 1999, 2000, 2001, 2002, 2003
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004
    Free Software Foundation, Inc.
    Contributed by Michael P. Hayes (m.hayes@elec.canterbury.ac.nz)
 
@@ -60,7 +60,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #ifdef HAVE_doloop_end
 
-static rtx doloop_condition_get (rtx);
 static unsigned HOST_WIDE_INT doloop_iterations_max (const struct loop_info *,
 						     enum machine_mode, int);
 static int doloop_valid_p (const struct loop *, rtx);
@@ -71,7 +70,7 @@ static int doloop_modify_runtime (const struct loop *, rtx, rtx, rtx,
 
 /* Return the loop termination condition for PATTERN or zero
    if it is not a decrement and branch jump insn.  */
-static rtx
+rtx
 doloop_condition_get (rtx pattern)
 {
   rtx cmp;
@@ -475,7 +474,7 @@ doloop_modify (const struct loop *loop, rtx iterations, rtx iterations_max,
 	count = GEN_INT (INTVAL (count) - 1);
       else
 	count = expand_simple_binop (GET_MODE (counter_reg), MINUS,
-				     count, GEN_INT (1),
+				     count, const1_rtx,
 				     0, 0, OPTAB_LIB_WIDEN);
     }
 

@@ -1,5 +1,5 @@
 /* Natural loop functions
-   Copyright (C) 1987, 1997, 1998, 1999, 2000, 2001, 2002, 2003
+   Copyright (C) 1987, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -337,3 +337,5 @@ enum
 };
 
 extern void unroll_and_peel_loops (struct loops *, int);
+extern bool is_bct_cond (rtx);
+extern rtx get_var_set_from_bct (rtx); 

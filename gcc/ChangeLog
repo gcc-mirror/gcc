@@ -1,3 +1,25 @@
+2004-03-01  Mircea Namolaru  <namolaru@il.ibm.com>
+
+	* cfgloop.h (get_var_set_from_bct, is_bct_cond): Declaration of
+	new functions.
+	* cfgloopanal.c: Include loop.h.
+	(get_var_set_from_bct): New function.
+	(is_bct_cond): New function.
+	(blocks_single_set_registers): Handle branch and count jumps.
+	(count_loop_iterations): Likewise.
+	(simple_increment): Likewise
+	* doloop.c (doloop_condition_get): Export.
+	* loop-init.c (fixup_loop_exit_succesor): New function.
+	(loop_optimizer_finalize): Handle loops ending with branch and
+	count jumps.
+	* loop-unroll.c: Include toplev.h
+	(discard_increment): New function.
+	(expand_bct): New function.
+	(peel_loop_completely): Handle the removal of branch and count jumps.
+	(unroll_loop_constant_iterations): Likewise.
+	(unroll_loop_runtime_iterations): Likewise
+	* loop.h (doloop_condition_get): Declare.
+
 2004-02-29  Mark Mitchell  <mark@codesourcery.com>
 
 	PR debug/14328
