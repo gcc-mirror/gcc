@@ -1,3 +1,8 @@
+Mon Jul 13 17:30:29 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* lang-options.h: Format changed to work with --help support added
+	to gcc/toplev.c
+
 Mon Jul 13 11:54:03 1998  Craig Burley  <burley@gnu.org>
 
 	* com.c (ffecom_push_tempvar): Replace kludge that
