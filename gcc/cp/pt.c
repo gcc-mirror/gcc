@@ -11183,7 +11183,9 @@ instantiate_decl (tree d, int defer_ok, int undefined_ok)
       /* Instantiate inline functions so that the inliner can do its
 	 job, even though we'll not be emitting a copy of this
 	 function.  */
-      if (!flag_inline_trees || !DECL_DECLARED_INLINE_P (d))
+      if (!(TREE_CODE (d) == FUNCTION_DECL
+	    && flag_inline_trees 
+	    && DECL_DECLARED_INLINE_P (d)))
 	goto out;
     }
 
