@@ -402,7 +402,18 @@ init_reg_modes ()
   register int i;
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    reg_raw_mode[i] = choose_hard_reg_mode (i, 1);
+    {
+      reg_raw_mode[i] = choose_hard_reg_mode (i, 1);
+
+      /* If we couldn't find a valid mode, fall back to `word_mode'.
+	 ??? We assume `word_mode' has already been initialized.
+         ??? One situation in which we need to do this is on the mips where
+	 HARD_REGNO_NREGS (fpreg, [SD]Fmode) returns 2.  Ideally we'd like
+	 to use DF mode for the even registers and VOIDmode for the odd
+	 (for the cpu models where the odd ones are inaccessable).  */
+      if (reg_raw_mode[i] == VOIDmode)
+	reg_raw_mode[i] = word_mode;
+    }
 }
 
 /* Finish initializing the register sets and

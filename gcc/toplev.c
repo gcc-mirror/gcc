@@ -2026,9 +2026,9 @@ compile_file (name)
   /* Some of these really don't need to be called when generating bytecode,
      but the options would have to be parsed first to know that. -bson */
   init_rtl ();
-  init_regs ();
   init_emit_once (debug_info_level == DINFO_LEVEL_NORMAL
 		  || debug_info_level == DINFO_LEVEL_VERBOSE);
+  init_regs ();
   init_decl_processing ();
   init_optabs ();
   init_stmt ();
