@@ -1,5 +1,10 @@
 2004-06-25  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.c (reg_or_const_float_1_operand): Reimplement
+	in terms of const_float_1_operand.
+
+2004-06-25  Richard Sandiford  <rsandifo@redhat.com>
+
 	PR target/16144
 	* config/mips/mips.md (divsf, divdf): Don't FAIL if the first operand
 	is 1.0; force it into a register instead.

@@ -1428,26 +1428,13 @@ reg_or_0_operand (rtx op, enum machine_mode mode)
     }
 }
 
-/* Accept a register or the floating point constant 1 in the appropriate mode.  */
+/* Accept a register or the floating point constant 1 in the
+   appropriate mode.  */
 
 int
 reg_or_const_float_1_operand (rtx op, enum machine_mode mode)
 {
-  REAL_VALUE_TYPE d;
-
-  switch (GET_CODE (op))
-    {
-    case CONST_DOUBLE:
-      if (mode != GET_MODE (op)
-	  || (mode != DFmode && mode != SFmode))
-	return 0;
-
-      REAL_VALUE_FROM_CONST_DOUBLE (d, op);
-      return REAL_VALUES_EQUAL (d, dconst1);
-
-    default:
-      return register_operand (op, mode);
-    }
+  return const_float_1_operand (op, mode) || register_operand (op, mode);
 }
 
 /* Accept the floating point constant 1 in the appropriate mode.  */
