@@ -2858,6 +2858,9 @@ typedef struct mips_args {
       GO_DEBUG_RTX (xinsn);						\
     }									\
 									\
+  while (GET_CODE (xinsn) == SUBREG)					\
+    xinsn = SUBREG_REG (xinsn);						\
+									\
   /* The mips16 can only use the stack pointer as a base register when	\
      loading SImode or DImode values.  */				\
   if (GET_CODE (xinsn) == REG && REG_MODE_OK_FOR_BASE_P (xinsn, MODE))	\
@@ -2873,6 +2876,8 @@ typedef struct mips_args {
       register rtx xlow0 = XEXP (xinsn, 0);				\
       register rtx xlow1 = XEXP (xinsn, 1);				\
 									\
+      while (GET_CODE (xlow0) == SUBREG)				\
+	xlow0 = SUBREG_REG (xlow0);					\
       if (GET_CODE (xlow0) == REG					\
 	  && REG_MODE_OK_FOR_BASE_P (xlow0, MODE)			\
 	  && mips_check_split (xlow1, MODE))				\
@@ -2883,8 +2888,16 @@ typedef struct mips_args {
     {									\
       register rtx xplus0 = XEXP (xinsn, 0);				\
       register rtx xplus1 = XEXP (xinsn, 1);				\
-      register enum rtx_code code0 = GET_CODE (xplus0);			\
-      register enum rtx_code code1 = GET_CODE (xplus1);			\
+      register enum rtx_code code0;					\
+      register enum rtx_code code1;					\
+									\
+      while (GET_CODE (xplus0) == SUBREG)				\
+	xplus0 = SUBREG_REG (xplus0);					\
+      code0 = GET_CODE (xplus0);					\
+									\
+      while (GET_CODE (xplus1) == SUBREG)				\
+	xplus1 = SUBREG_REG (xplus1);					\
+      code1 = GET_CODE (xplus1);					\
 									\
       /* The mips16 can only use the stack pointer as a base register	\
          when loading SImode or DImode values.  */			\

@@ -2170,7 +2170,14 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 		      /* Schedule the reg loaded by M1
 			 for replacement so that shares the reg of M.
 			 If the modes differ (only possible in restricted
-			 circumstances, make a SUBREG.  */
+			 circumstances, make a SUBREG.
+
+			 Note this assumes that the target dependent files
+			 treat REG and SUBREG equally, including within
+			 GO_IF_LEGITIMATE_ADDRESS and in all the
+			 predicates since we never verify that replacing the
+			 original register with a SUBREG results in a
+			 recognizable insn.  */
 		      if (GET_MODE (m->set_dest) == GET_MODE (m1->set_dest))
 			reg_map[m1->regno] = m->set_dest;
 		      else
