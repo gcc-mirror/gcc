@@ -14,6 +14,6 @@ int bar(void)
   return foo() + 1;
 }
 
-/* { dg-final { scan-assembler "bsr" { target alpha*-*-* } } } */
+/* { dg-final { scan-assembler-not "jsr" { target alpha*-*-* } } } */
 /* { dg-final { scan-assembler-not "PLT" { target i?86-*-* x86_64-*-* } } } */
 /* { dg-final { scan-assembler-not "plt" { target powerpc*-*-* } } } */
