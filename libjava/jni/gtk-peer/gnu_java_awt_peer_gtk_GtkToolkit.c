@@ -62,6 +62,9 @@ jmethodID choicePostItemEventID;
 jmethodID postListItemEventID;
 jmethodID postTextEventID;
 jmethodID postWindowEventID;
+jmethodID postInsetsChangedEventID;
+jmethodID windowGetWidthID;
+jmethodID windowGetHeightID;
 
 jmethodID beginNativeRepaintID;
 jmethodID endNativeRepaintID;
@@ -212,6 +215,14 @@ Java_gnu_java_awt_peer_gtk_GtkToolkit_gtkInit (JNIEnv *env,
   postWindowEventID = (*env)->GetMethodID (env, gtkwindowpeer,
 					   "postWindowEvent",
 					   "(ILjava/awt/Window;I)V");
+  postInsetsChangedEventID = (*env)->GetMethodID (env, gtkwindowpeer,
+						  "postInsetsChangedEvent",
+						  "(IIII)V");
+  windowGetWidthID = (*env)->GetMethodID (env, gtkwindowpeer,
+					  "getWidth", "()I");
+  windowGetHeightID = (*env)->GetMethodID (env, gtkwindowpeer,
+					  "getHeight", "()I");
+
   postExposeEventID = (*env)->GetMethodID (env, gtkcomponentpeer, 
 					  "postExposeEvent", "(IIII)V");
   postKeyEventID = (*env)->GetMethodID (env, gtkcomponentpeer,

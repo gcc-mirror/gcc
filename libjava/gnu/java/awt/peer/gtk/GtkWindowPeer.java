@@ -63,30 +63,27 @@ public class GtkWindowPeer extends GtkContainerPeer
   native void gtkWindowSetResizable (boolean resizable);
   native void gtkWindowSetModal (boolean modal);
 
-  native void create (int type, boolean decorated,
-		      int width, int height,
-		      GtkWindowPeer parent,
-		      int[] insets);
+  int getWidth ()
+  {
+    return awtComponent.getWidth();
+  }
+
+  int getHeight ()
+  {
+    return awtComponent.getHeight();
+  }
+
+  native void create (int type, boolean decorated, GtkWindowPeer parent);
 
   void create (int type, boolean decorated)
   {
     GtkWindowPeer parent_peer = null;
     Component parent = awtComponent.getParent();
-    int[] insets = new int [] { 0, 0, 0, 0 };
 
     if (parent != null)
       parent_peer = (GtkWindowPeer) awtComponent.getParent().getPeer();
 
-    create (type, decorated,
-	    awtComponent.getWidth(),
-	    awtComponent.getHeight(),
-	    parent_peer,
-	    insets);
-
-    this.insets.top = insets [0];
-    this.insets.left = insets [1];
-    this.insets.bottom = insets [2];
-    this.insets.right = insets [3];
+    create (type, decorated, parent_peer);
   }
 
   void create ()

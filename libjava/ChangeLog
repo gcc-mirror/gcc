@@ -1,3 +1,23 @@
+2005-02-22  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	PR libgcj/17952:
+	* gnu/java/awt/peer/gtk/GtkWindowPeer.java,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c
+	(getWidth): New method.
+	(getHeight): Likewise.
+	(create): Remove width, height and insets parameters.  Move size
+	setup ...
+	(realize_cb): ... here.  New function.
+	(connectSignals): Connect realize_cb.
+	(request_frame_extents): Remove FIXME.  Move
+	postInsetsChangedEvent lookup ...
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkToolkit.c (gtkInit):
+	... here.  Look up GtkWindowPeer getWidth and getHeight methods.
+	* jni/gtk-peer/gtkpeer.h (postInsetsChangedEventID): Declare
+	jmethodID.
+	(windowGetWidthID): Likewise.
+	(windowGetHeightID): Likewise.
+
 2005-02-21  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	PR libgcj/19842
