@@ -707,11 +707,7 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  $(CCCP)$(exeext) cc1obj$(exeext) enquire$(exeext) \
  protoize$(exeext) unprotoize$(exeext) \
  specs collect2$(exeext) $(USE_COLLECT2) underscore.c \
- gcov$(exeext) *.bp \
- *.greg *.lreg *.combine *.flow *.cse *.jump *.rtl *.tree *.loop \
- *.dbr *.jump2 *.sched *.cse2 *.sched2 *.stack *.gcse *.flow2 *.peephole2 \
- *.ssa *.ussa \
- *.[si] libcpp.a \
+ gcov$(exeext) *.[0-9][0-9].* *.[si] libcpp.a \
  $(LANG_STAGESTUFF)
 
 # Members of libgcc1.a.
@@ -2381,13 +2377,7 @@ mostlyclean: $(INTL_MOSTLYCLEAN) lang.mostlyclean
 	-rm -f s-* tmp-* stamp-* stmp-*
 	-rm -f */stamp-* */tmp-*
 # Delete debugging dump files.
-	-rm -f *.greg *.lreg *.combine *.flow *.cse *.jump *.rtl *.tree *.loop
-	-rm -f *.dbr *.jump2 *.sched *.cse2 *.sched2 *.stack *.addressof
-	-rm -f *.regmove *.mach *.bp *.gcse *.flow2 *.peephole2 *.ssa *.ussa
-	-rm -f */*.greg */*.lreg */*.combine */*.flow */*.cse */*.jump */*.rtl
-	-rm -f */*.tree */*.loop */*.dbr */*.jump2 */*.sched */*.cse2
-	-rm -f */*.sched2 */*.stack */*.regmove */*.gcse */*.flow2
-	-rm -f */*.peephole2 */*.ssa */*.ussa
+	-rm -f *.[0-9][0-9].* */*.[0-9][0-9].*
 # Delete some files made during installation.
 	-rm -f specs float.h-* enquire SYSCALLS.c.X SYSCALLS.c
 	-rm -f collect collect2 mips-tfile mips-tdump alloca.s
@@ -2401,7 +2391,6 @@ mostlyclean: $(INTL_MOSTLYCLEAN) lang.mostlyclean
 	-rm -f gcc.vrs gcc.kys gcc.tps gcc.pgs gcc.fns
 # Delete core dumps.
 	-rm -f core */core
-	-rm -f *.bp */*.bp
 
 # Delete all files made by compilation
 # that don't exist in the distribution.

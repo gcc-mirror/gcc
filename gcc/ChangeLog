@@ -1,3 +1,25 @@
+2000-04-01  Richard Henderson  <rth@cygnus.com>
+
+	* Makefile.in (STAGESTUFF): Wildcard all debugging dumps at once.
+	(mostlyclean): Likewise.
+
+	* toplev.c (rtl_dump, jump_opt_dump, etc): Remove.
+	(struct dump_file_info, enum dump_file_index, dump_file): New.
+	(open_dump_file): Take a dump_file_index not a suffix, and a decl
+	not a string.  Clean out file if we havn't yet done so.  Do nothing
+	if the dump isn't enabled.
+	(close_dump_file): Do nothing if the dump isn't open.  Dump 
+	graph data if requested.
+	(dump_rtl, clean_dump_file): Remove.
+	(compile_file): Don't clean the dump files.  Only finalize .bp dump
+	if flag_test_coverage or flag_branch_probabilities.  Only finalize
+	.combine dump if optimizing.  Iterate over dump_file to finalize the
+	graph dumps.
+	(rest_of_compilation): Update for open_dump_file/close_dump_file.
+	Convert all uses of dump_rtl.
+	(decode_d_option): Iterate over dump_file to implement 'a' and to
+	locate pass-specific dumps.
+
 2000-04-01  Neil Booth <NeilB@earthling.net>
 
         * cppexp.c: Redefine priority constants.
