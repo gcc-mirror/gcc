@@ -1,3 +1,8 @@
+2005-01-13  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/aix52.h (CPLUSPLUS_CPP_SPEC): Change _XOPEN_SOURCE
+	definition to 600.
+
 2005-01-13  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (IX86_BUILTIN_MOVQ, IX86_BUILTIN_LOADD,
