@@ -24,11 +24,7 @@ It has subdirectories:
 
   include/std
      Files meant to be found by #include <name> directives in
-     standard-conforming user programs.  These headers are not
-     referred to by other headers, because such dependencies
-     confuse Make (leading it to delete them, all too often).
-     Installations may substitute symbolic links in place of
-     these files.
+     standard-conforming user programs.  
 
   include/ext
      Headers that define extensions to the standard library.  No
@@ -38,13 +34,6 @@ It has subdirectories:
      Headers provided for backward compatibility, such as <iostream.h>.
      They are not used in this library.
 
-  include/c_shadow
-     Headers intended to shadow standard C headers provided by an
-     underlying OS or C library, and other headers depended on directly
-     by C++ headers (e.g. unistd.h).  These are meant to wrap the names
-     defined there into the _C_legacy namespace.
-     [NB: this can be enabled via --enable-cheaders=c_shadow]
-
   include/c
      Headers intended to directly include standard C headers. 
      [NB: this can be enabled via --enable-cheaders=c]
@@ -53,6 +42,13 @@ It has subdirectories:
      Headers intended to include standard C headers, and put select
      names into the std:: namespace.
      [NB: this is the default, and is the same as --enable-cheaders=c_std]
+
+  include/c_shadow
+     Headers intended to shadow standard C headers provided by an
+     underlying OS or C library, and other headers depended on directly
+     by C++ headers (e.g. unistd.h).  These are meant to wrap the names
+     defined there into the _C_legacy namespace.
+     [NB: this can be enabled via --enable-cheaders=c_shadow]
 
   src
      Files that are used in constructing the library, but are not
@@ -74,27 +70,17 @@ Currently these are:
 
   config/cpu
   config/os
+  config/io
+  config/locale
 
 Files needed only to construct the library, but not installed,
 are in src/.  Files to be copied as part of an installation are
 all found in the subdirectories mentioned above.  (A configure
 script may link files from another directory into one of these.)
 
-In a normal installation the bits/ directory is copied
-under the std/ directory, and arranged to be searched only
-when an include directive specifies a filename of "bits/..."
-or <bits/...>.  When building the library, we use
-
-  -I. -Iinclude/std -Iinclude -Iconfig/os/* -Iconfig/cpu/*
-
-to get the same effect.
-
 Note that glibc also has a bits/ subdirectory.  We will either
 need to be careful not to collide with names in its bits/
 directory; or rename bits to (e.g.) cppbits/.
-
-To install libstdc++ you need GNU make.  The makefiles do not work with
-any other make.
 
 In files throughout the system, lines marked with an "XXX" indicate
 a bug or incompletely-implemented feature.  Lines marked "XXX MT"
