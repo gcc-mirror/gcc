@@ -93,7 +93,7 @@ extern int fputs_unlocked PARAMS ((const char *, FILE *));
 
 #include <errno.h>
 
-#ifndef errno
+#if !defined (errno) && defined (HAVE_DECL_ERRNO) && !HAVE_DECL_ERRNO
 extern int errno;
 #endif
 

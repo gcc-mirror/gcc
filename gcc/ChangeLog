@@ -1,3 +1,10 @@
+2001-04-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.in (errno): Check for declaration.
+	* configure, config.in: Regenerated.
+
+	* system.h (errno): Only declare if not already done.
+
 2001-04-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	* recog.c (general_operand, immediate_operand,
