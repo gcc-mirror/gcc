@@ -1,3 +1,7 @@
+2004-03-04  Steven Bosscher  <stevenb@suse.de>
+
+	* i386.h (TARGET_CPU_DEFAULT_nocona): Fix value.
+
 2004-03-04  Jan Hubicka  <jh@suse.cz>
 
 	* cfgcleanup.c (thread_jump): Update call of cselib_init.
