@@ -1,3 +1,14 @@
+2004-07-19  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (tree_expr_nonzero_p): Add function prototype.
+	(fold) <EQ_EXPR>: Move tree_expr_nonzero_p optimization from
+	fold_relational_const to here, i.e. "(x | 5) == 0" -> false.
+	(fold) (UNEQ_EXPR>: Add optimizations for unordered comparisons
+	of the form "x op x" where op is UNLE, UNGE, UNEQ or LTGT.
+	(fold_relational_const): Tidy up handling of floating point
+	comparisons by calling real_compare.  Remove tree_expr_nonzero_p
+	transformation; fold_relational_const assumes constant operands.
+
 2004-07-19  Gabriel Dos Reis  <gdr@integrable-solution.net>
 
 	* doc/sourcebuild.texi: Add libcpp, now that CPP has its own
