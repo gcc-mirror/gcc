@@ -1,5 +1,8 @@
 2000-07-17  Geoffrey Keating  <geoffk@cygnus.com>
 
+	* extend.texi (Extended Asm): Mention that a memory clobber
+	does not count as a side-effect.
+
 	* unroll.c (copy_loop_body): Fix one instance of using host
 	arithmetic on the target; fixes loop-4 on a 32-bit -> 64-bit
 	cross-compile.

@@ -2558,7 +2558,10 @@ effect.  But it is valid no matter what the machine.
 If your assembler instruction modifies memory in an unpredictable
 fashion, add @samp{memory} to the list of clobbered registers.  This
 will cause GNU CC to not keep memory values cached in registers across
-the assembler instruction.
+the assembler instruction.  You will also want to add the
+@code{volatile} keyword if the memory affected is not listed in the
+inputs or outputs of the @code{asm}, as the @samp{memory} clobber does
+not count as a side-effect of the @code{asm}.
 
 You can put multiple assembler instructions together in a single
 @code{asm} template, separated either with newlines (written as
