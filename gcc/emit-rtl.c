@@ -1176,7 +1176,7 @@ operand_subword (op, i, validate_address, mode)
 
   if (GET_MODE_CLASS (mode) != MODE_INT
       || (GET_CODE (op) != CONST_INT && GET_CODE (op) != CONST_DOUBLE)
-      || BITS_PER_WORD > HOST_BITS_PER_INT)
+      || BITS_PER_WORD > HOST_BITS_PER_WIDE_INT)
     return 0;
 
   if (WORDS_BIG_ENDIAN)
