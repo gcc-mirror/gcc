@@ -211,7 +211,7 @@ static void rs6000_assemble_visibility PARAMS ((tree, int));
 #endif
 static int rs6000_ra_ever_killed PARAMS ((void));
 static tree rs6000_handle_longcall_attribute PARAMS ((tree *, tree, tree, int, bool *));
-const struct attribute_spec rs6000_attribute_table[];
+extern const struct attribute_spec rs6000_attribute_table[];
 static void rs6000_set_default_type_attributes PARAMS ((tree));
 static void rs6000_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void rs6000_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
