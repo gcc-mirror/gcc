@@ -1,5 +1,22 @@
 2005-02-22  Uros Bizjak  <uros@kss-loka.si>
 
+	* g++.dg/charset/asm1.c: Check for IBM1047 code set, not IBM-1047.
+	* g++.dg/charset/asm2.c: Likewise.
+	* g++.dg/charset/asm3.c: Likewise.
+	* g++.dg/charset/asm4.c: Likewise.
+	* g++.dg/charset/asm5.c: Likewise.
+	* g++.dg/charset/attribute1.c: Likewise.
+	* g++.dg/charset/attribute2.c: Likewise.
+	* g++.dg/charset/extern1.cc: Likewise.
+	* g++.dg/charset/extern2.cc: Likewise.
+	* g++.dg/charset/extern3.cc: Likewise.
+	* g++.dg/charset/function.cc: Likewise.
+	* g++.dg/charset/string.c: Likewise.
+	* g++.dg/charset/charset.exp: Likewise.
+	* lib/target-supports.exp (check_iconv_available): Fix comment.
+
+2005-02-22  Uros Bizjak  <uros@kss-loka.si>
+
 	* gcc.dg/charset/builtin1.c: Use dg-require-iconv "IBM1047".
 	* gcc.dg/charset/asm1.c: Check for IBM1047 code set, not IBM-1047.
 	* gcc.dg/charset/asm2.c: Likewise.
@@ -13,7 +30,7 @@
 	* gcc.dg/charset/extern.c: Likewise.
 	* gcc.dg/charset/function.c: Likewise.
 	* gcc.dg/charset/string.c: Likewise.
-	* gcc.dg/charset/charset.exp:Likewise.
+	* gcc.dg/charset/charset.exp: Likewise.
 
 2005-02-21  Bud Davis  <bdavis9659@comcast.net>
 
