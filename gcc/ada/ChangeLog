@@ -1,3 +1,72 @@
+2002-05-23  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* Make-lang.in (CP, ECHO): Copy from Makefile.in.
+	(X_ADA_CFLAGS, T_ADA_CFLAGS, X_ADAFLAGS, T_ADAFLAGS): Likewise.
+	(ALL_ADAFLAGS, FORCE_DEBUG_ADAFLAGS, ADA_CFLAGS): Likewise.
+	(ALL_ADA_CFLAGS): Likewise.
+	(ADA_INCLUDES): Likewise.
+	Adapt for new working dir.
+	(GNATBIND): Use Makefile.in version.
+	(.SUFFIXES): Copy from Makefile.in.
+	(ada-warn): Define.
+	(.adb.o, .ads.o): Copy from Makefile.in.
+	Added $(OUTPUT_OPTION).
+	(GNAT1_C_OBJS): Moved from Makefile.in.
+	Prefix with ada subdir.
+	(GNAT_ADA_OBJS, GNAT1_ADA_OBJS, GNAT1_OBJS, GNATBIND_OBJS): Likewise.
+	(EXTRA_GNAT1_OBJS): Moved from Makefile.in.
+	Adapt for new working dir.
+	(EXTRA_GNATBIND_OBJS): Likewise.
+	(ADA_BACKEND): Moved from Makefile.in.
+	Renamed to avoid conflict with global BACKEND.
+	Use that one.
+	(TARGET_ADA_SRCS): Moved from Makefile.in.
+	(gnat1$(exeext)): Replaced recursive rule with Makefile.in version.
+	Use ADA_BACKEND.
+	(gnatbind$(exeext)): Replaced recursive rule with Makefile.in version.
+	(ada_extra_files): Moved from Makefile.in.
+	Prefix with ada subdir.
+	(ada/b_gnat1.c, ada/b_gnat1.o, ada/b_gnatb.c, ada/b_gnatb.o): Likewise.
+	(ada/treeprs.ads, ada/einfo.h, ada/sinfo.h, ada/nmake.adb): Likewise.
+	(ada/nmake.ads): Likewise.
+	(update-sources): Moved from Makefile.in.
+	Prefix with ada subdir.
+	(ada/sdefault.adb, ada/stamp-sdefault, ada/sdefault.o): Likewise.
+	(ADA_TREE_H): Likewise.
+	(ada/a-except.o, ada/s-assert.o, ada/s-memory.o): Likewise.
+	(ada/memtrack.o): Likewise.
+	(ada/adadecode.o): Likewise.
+	Update dependencies.
+	(ada/adaint.o): New.
+	(ada/argv.o): Moved from Makefile.in.
+	Prefix with ada subdir.
+	Update dependencies.	
+	(ada/cstreams.o, ada/exit.o, ada/final.o, ada/link.o): Likewise.
+	(ada/cio.o, ada/init.o, ada/raise.o, ada/tracebak.o): Likewise.
+	(ada/cuintp.o, ada/decl.o, ada/misc.o): Moved from Makefile.in.
+	Prefix with ada subdir.
+	(ada/targtyps.o, ada/trans.o, ada/utils.o, ada/utils2.o): Likewise.
+	(GNAT DEPENDENCIES): Regenerate.
+	* Makefile.in (MACHMODE_H, RTL_H, TREE_H): Removed, provided by
+	toplevel Makefile.in.
+	(EXTRA_GNAT1_OBJS, EXTRA_GNATBIND_OBJS): Removed.
+	(TARGET_ADA_SRCS): Removed.
+	(GNAT1_C_OBJS, GNAT_ADA_OBJS, GNAT1_ADA_OBJS, GNAT1_OBJS): Likewise.
+	(GNATBIND_OBJS): Likewise.
+	(ADA_INCLUDE_DIR, ADA_RTL_OBJ_DIR): Moved here.
+	(BACKEND): Removed.
+	(../gnat1$(exeext), ../gnatbind$(exeext)): Likewise.
+	(TREE_H): Likewise.
+	(ada_extra_files): Likewise.
+	(b_gnat1.c, b_gnat1.o, b_gnatb.c, b_gnatb.o): Likewise.
+	(treeprs.ads, einfo.h, sinfo.h, nmake.adb, nmake.ads): Likewise.
+	(update-sources): Likewise.
+	(sdefault.adb, stamp-sdefault, sdefault.o): Likewise
+	(ADA_TREE_H): Likewise.
+	(adadecoce.o): Likewise.
+	(cuintp.o, decl.o, misc.o, trans.o, utils.o, utils2.o): Likewise.
+	(GNAT DEPENDENCIES): Likewise.
+
 2002-05-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* Makefile.adalib: Allow for PWDCMD to override hardcoded pwd.
