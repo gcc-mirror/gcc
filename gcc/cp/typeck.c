@@ -1789,6 +1789,11 @@ decay_conversion (exp)
       return cp_convert (ptrtype, adr);
     }
 
+  /* [basic.lval]: Class rvalues can have cv-qualified types; non-class
+     rvalues always have cv-unqualified types.  */
+  if (! CLASS_TYPE_P (type))
+    exp = cp_convert (TYPE_MAIN_VARIANT (type), exp);
+
   return exp;
 }
 
