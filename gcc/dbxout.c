@@ -688,7 +688,7 @@ dbxout_type_methods (type)
      label names.  For now, disable output of dbx info for them.  */
   {
     char *ptr = IDENTIFIER_POINTER (type_encoding);
-    /* Avoid strchr or index since those names aren't universal.  */
+    /* This should use index.  (mrs) */
     while (*ptr && *ptr != '<') ptr++;
     if (*ptr != 0)
       {
@@ -1501,7 +1501,7 @@ dbxout_symbol (decl, local)
 	  /* else it is something we handle like a normal variable.  */
 	}
 
-      DECL_RTL (decl) = eliminate_regs (DECL_RTL (decl));
+      DECL_RTL (decl) = eliminate_regs (DECL_RTL (decl), 0, 0);
 #ifdef LEAF_REG_REMAP
       if (leaf_function)
 	leaf_renumber_regs_insn (DECL_RTL (decl));
@@ -1517,9 +1517,7 @@ dbxout_symbol (decl, local)
 	{
 	  regno = REGNO (DECL_RTL (decl));
 	  if (regno >= FIRST_PSEUDO_REGISTER)
-	    regno = reg_renumber[REGNO (DECL_RTL (decl))];
-	  if (regno < 0)
-	    break;
+	    return;
 	}
       else if (GET_CODE (DECL_RTL (decl)) == SUBREG)
 	{
@@ -1534,10 +1532,10 @@ dbxout_symbol (decl, local)
 	    {
 	      regno = REGNO (value);
 	      if (regno >= FIRST_PSEUDO_REGISTER)
-		regno = reg_renumber[REGNO (value)];
-	      if (regno >= 0)
-		regno += offset;
+		return;
+	      regno += offset;
 	    }
+	  alter_subreg (DECL_RTL (decl));
 	}
 
       /* The kind-of-variable letter depends on where
@@ -1588,19 +1586,6 @@ dbxout_symbol (decl, local)
 	  letter = 'r';
 	  current_sym_code = N_RSYM;
 	  current_sym_value = DBX_REGISTER_NUMBER (regno);
-	}
-      else if (GET_CODE (DECL_RTL (decl)) == SUBREG)
-	{
-	  rtx value = DECL_RTL (decl);
-	  int offset = 0;
-	  while (GET_CODE (value) == SUBREG)
-	    {
-	      offset += SUBREG_WORD (value);
-	      value = SUBREG_REG (value);
-	    }
-	  letter = 'r';
-	  current_sym_code = N_RSYM;
-	  current_sym_value = DBX_REGISTER_NUMBER (REGNO (value) + offset);
 	}
       else if (GET_CODE (DECL_RTL (decl)) == MEM
 	       && (GET_CODE (XEXP (DECL_RTL (decl), 0)) == MEM
