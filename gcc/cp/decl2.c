@@ -343,10 +343,6 @@ int flag_all_virtual;
 
 int flag_this_is_variable;
 
-/* Nonzero means memoize our member lookups.  */
-
-int flag_memoize_lookups; int flag_save_memoized_contexts;
-
 /* 3 means write out only virtuals function tables `defined'
    in this implementation file.
    2 means write out only specific virtual function tables
@@ -491,7 +487,6 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"this-is-variable", &flag_this_is_variable, 1},
   {"strict-prototype", &flag_strict_prototype, 1},
   {"all-virtual", &flag_all_virtual, 1},
-  {"memoize-lookups", &flag_memoize_lookups, 1},
   {"elide-constructors", &flag_elide_constructors, 1},
   {"handle-exceptions", &flag_exceptions, 1},
   {"handle-signatures", &flag_handle_signatures, 1},
@@ -578,16 +573,12 @@ lang_decode_option (argc, argv)
 	  || !strcmp (p, "no-handle-exceptions"))
 	warning ("-fhandle-exceptions has been renamed to -fexceptions (and is now on by default)");
 
-      if (!strcmp (p, "save-memoized"))
+      if (!strcmp (p, "memoize-lookups")
+	  || !strcmp (p, "no-memoize-lookups")
+	  || !strcmp (p, "save-memoized")
+	  || !strcmp (p, "no-save-memoized"))
 	{
-	  flag_memoize_lookups = 1;
-	  flag_save_memoized_contexts = 1;
-	  found = 1;
-	}
-      else if (!strcmp (p, "no-save-memoized"))
-	{
-	  flag_memoize_lookups = 0;
-	  flag_save_memoized_contexts = 0;
+	  /* ignore */
 	  found = 1;
 	}
       else if (! strcmp (p, "alt-external-templates"))
