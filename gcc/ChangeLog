@@ -1,3 +1,11 @@
+2004-12-02  Andreas Schwab  <schwab@suse.de>
+
+	* Makefile.in (WERROR_FLAGS): Renamed from WERROR.
+	(STRICT2_WARN): Use $(WERROR_FLAGS) instead of $(WERROR).
+	(STAGE2_FLAGS_TO_PASS): Likewise.
+
+	* config/i386/x-mingw32: Set WERROR_FLAGS instead of WERROR.
+
 2004-12-02  Richard Sandiford  <rsandifo@redhat.com>
 
 	* configure.ac: Use TL_AC_GCC_VERSION to set gcc_version.  Remove
