@@ -853,7 +853,13 @@ dbxout_type (type, full, show_arg_types)
     case TYPE_UNSEEN:
       break;
     case TYPE_XREF:
-      if (! full)
+      /* If we have already had a cross reference,
+	 and either that's all we want or that's the best we could do,
+	 don't repeat the cross reference.
+	 Sun dbx crashes if we do.  */
+      if (! full || TYPE_SIZE (type) == 0
+	  /* No way in DBX fmt to describe a variable size.  */
+	  || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
 	return;
       break;
     case TYPE_DEFINED:
@@ -1844,6 +1850,46 @@ dbxout_parms (parms)
 	      }
 
 	    dbxout_type (DECL_ARG_TYPE (parms), 0, 0);
+	    dbxout_finish_symbol (parms);
+	  }
+	else if (GET_CODE (DECL_RTL (parms)) == MEM
+		 && GET_CODE (XEXP (DECL_RTL (parms), 0)) == REG
+		 && rtx_equal_p (XEXP (DECL_RTL (parms), 0),
+				 DECL_INCOMING_RTL (parms)))
+	  {
+	    /* Parm was passed via invisible reference.
+	       That is, its address was passed in a register.
+	       Output it as if it lived in that register.
+	       The debugger will know from the type
+	       that it was actually passed by invisible reference.  */
+
+	    char regparm_letter;
+	    /* Parm passed in registers and lives in registers or nowhere.  */
+
+	    current_sym_code = DBX_REGPARM_STABS_CODE;
+	    regparm_letter = DBX_REGPARM_STABS_LETTER;
+
+	    /* DECL_RTL looks like (MEM (REG...).  Get the register number.  */
+	    current_sym_value = REGNO (XEXP (DECL_RTL (parms), 0));
+	    current_sym_addr = 0;
+
+	    FORCE_TEXT;
+	    if (DECL_NAME (parms))
+	      {
+		current_sym_nchars = 2 + strlen (IDENTIFIER_POINTER (DECL_NAME (parms)));
+
+		fprintf (asmfile, "%s \"%s:%c", ASM_STABS_OP,
+			 IDENTIFIER_POINTER (DECL_NAME (parms)),
+			 DBX_REGPARM_STABS_LETTER);
+	      }
+	    else
+	      {
+		current_sym_nchars = 8;
+		fprintf (asmfile, "%s \"(anon):%c", ASM_STABS_OP,
+			 DBX_REGPARM_STABS_LETTER);
+	      }
+
+	    dbxout_type (TREE_TYPE (parms), 0, 0);
 	    dbxout_finish_symbol (parms);
 	  }
 	else if (GET_CODE (DECL_RTL (parms)) == MEM
