@@ -3749,7 +3749,7 @@ display_help ()
   printf ("  -d[letters]             Enable dumps from specific passes of the compiler\n");
   printf ("  -dumpbase <file>        Base name to be used for dumps from specific passes\n");
 #if defined INSN_SCHEDULING
-  printf ("  -sched-verbose=<number> Set the verbosity level of the scheduler\n");
+  printf ("  -fsched-verbose=<number> Set the verbosity level of the scheduler\n");
 #endif
   printf ("  --help                  Display this information\n");
 

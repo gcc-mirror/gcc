@@ -197,7 +197,7 @@ static int issue_rate;
 #endif
 
 /* sched-verbose controls the amount of debugging output the
-   scheduler prints.  It is controlled by -fsched-verbose-N:
+   scheduler prints.  It is controlled by -fsched-verbose=N:
    N>0 and no -DSR : the output is directed to stderr.
    N>=10 will direct the printouts to stderr (regardless of -dSR).
    N=1: same as -dSR.
@@ -220,7 +220,7 @@ static int nr_inter, nr_spec;
 static FILE *dump = 0;
 
 /* fix_sched_param() is called from toplev.c upon detection
-   of the -fsched-***-N options.  */
+   of the -fsched-verbose=N option.  */
 
 void
 fix_sched_param (param, val)
@@ -6804,8 +6804,8 @@ schedule_insns (dump_file)
     return;
 
   /* Set dump and sched_verbose for the desired debugging output.  If no
-     dump-file was specified, but -fsched-verbose-N (any N), print to stderr.
-     For -fsched-verbose-N, N>=10, print everything to stderr.  */
+     dump-file was specified, but -fsched-verbose=N (any N), print to stderr.
+     For -fsched-verbose=N, N>=10, print everything to stderr.  */
   sched_verbose = sched_verbose_param;
   if (sched_verbose_param == 0 && dump_file)
     sched_verbose = 1;
