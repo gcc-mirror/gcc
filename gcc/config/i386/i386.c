@@ -3716,8 +3716,7 @@ ix86_expand_move (mode, operands)
 
 /* Attempt to expand a binary operator.  Make the expansion closer to the
    actual machine, then just general_operand, which will allow 3 separate
-   memory references (one output, two input) in a single insn.  Return
-   whether the insn fails, or succeeds.  */
+   memory references (one output, two input) in a single insn.  */
 
 void
 ix86_expand_binary_operator (code, mode, operands)
@@ -3837,10 +3836,9 @@ ix86_binary_operator_ok (code, mode, operands)
 
 /* Attempt to expand a unary operator.  Make the expansion closer to the
    actual machine, then just general_operand, which will allow 2 separate
-   memory references (one output, one input) in a single insn.  Return
-   whether the insn fails, or succeeds.  */
+   memory references (one output, one input) in a single insn.  */
 
-int
+void
 ix86_expand_unary_operator (code, mode, operands)
      enum rtx_code code;
      enum machine_mode mode;
