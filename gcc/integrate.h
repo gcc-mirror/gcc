@@ -116,6 +116,12 @@ struct inline_remap
    labels, and frame-pointer offsets as necessary.  */
 extern rtx copy_rtx_and_substitute PROTO((rtx, struct inline_remap *, int));
 
+/* Copy a declaration when one function is substituted inline into
+   another.  */
+extern union tree_node *copy_decl_for_inlining PROTO((union tree_node *,
+						      union tree_node *,
+						      union tree_node *));
+
 extern void try_constants PROTO((rtx, struct inline_remap *));
 
 /* Return the label indicated.  */
