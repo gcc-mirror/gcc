@@ -4743,7 +4743,7 @@ main (int argc, char **argv)
 	else
 	  rename_output = 1;
 
-	/* fall through to 'i' case.  */
+	/* Fall through to 'i' case.  */
 
       case 'i':
 	if (obj_in_name == (char *) 0)

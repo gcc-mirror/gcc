@@ -1570,7 +1570,7 @@ final (rtx first, FILE *file, int optimize, int prescan)
 
   for (insn = first; insn; insn = NEXT_INSN (insn))
     {
-      if (INSN_UID (insn) > max_uid)       /* find largest UID */
+      if (INSN_UID (insn) > max_uid)       /* Find largest UID.  */
 	max_uid = INSN_UID (insn);
       if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) > 0)
 	line_note_exists[NOTE_LINE_NUMBER (insn)] = 1;

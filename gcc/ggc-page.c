@@ -410,7 +410,7 @@ static struct globals
 
     /* Total allocations and overhead for sizes less than 32, 64 and 128.
        These sizes are interesting because they are typical cache line
-       sizes. */
+       sizes.  */
    
     unsigned long long total_allocated_under32;
     unsigned long long total_overhead_under32;
@@ -421,7 +421,7 @@ static struct globals
     unsigned long long total_allocated_under128;
     unsigned long long total_overhead_under128;
   
-    /* The overhead for each of the allocation orders. */
+    /* The overhead for each of the allocation orders.  */
     unsigned long long total_overhead_per_order[NUM_ORDERS];
   } stats;
 #endif

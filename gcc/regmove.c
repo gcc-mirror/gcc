@@ -2064,7 +2064,7 @@ stable_and_no_regs_but_for_p (rtx x, rtx src, rtx dst)
       if (code == MEM
 	  && ! stable_and_no_regs_but_for_p (XEXP (x, 0), src, dst))
 	return 0;
-      /* fall through */
+      /* Fall through.  */
     default:
       return ! rtx_unstable_p (x);
     }
