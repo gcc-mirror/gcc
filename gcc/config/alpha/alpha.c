@@ -8684,7 +8684,7 @@ alpha_file_start (void)
 {
   default_file_start ();
 #ifdef MS_STAMP
-  fprintf (file, "\t.verstamp %d %d\n", MS_STAMP, LS_STAMP);
+  fprintf (asm_out_file, "\t.verstamp %d %d\n", MS_STAMP, LS_STAMP);
 #endif
 
   fputs ("\t.set noreorder\n", asm_out_file);
