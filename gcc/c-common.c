@@ -54,6 +54,7 @@ declare_function_name ()
 		     char_array_type_node);
   TREE_STATIC (decl) = 1;
   TREE_READONLY (decl) = 1;
+  TREE_NO_UNUSED_WARNING (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
   init = build_string (strlen (name) + 1, name);
   TREE_TYPE (init) = char_array_type_node;
@@ -65,6 +66,7 @@ declare_function_name ()
 		     char_array_type_node);
   TREE_STATIC (decl) = 1;
   TREE_READONLY (decl) = 1;
+  TREE_NO_UNUSED_WARNING (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
   init = build_string (strlen (printable_name) + 1, printable_name);
   TREE_TYPE (init) = char_array_type_node;
