@@ -34,8 +34,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define ASM_SPEC " %| %{fpic:-k} %{fPIC:-k}"
 
 /* Define macros to distinguish architectures.  */
-#define CPP_SPEC "%{msparclite:-D__sparclite__} %{mv8:-D__sparc_v8__} \
-  %{mfrw:-D__sparc_frw__}"
+#define CPP_SPEC "%{msparclite:-D__sparclite__} %{mv8:-D__sparc_v8__}"
 
 /* Prevent error on `-sun4' and `-target sun4' options.  */
 /* This used to translate -dalign to -malign, but that is no good
@@ -122,8 +121,20 @@ extern int target_flags;
 #define TARGET_SPARCLITE (target_flags & 128)
 
 /* Nonzero means that we should generate code using a flat register window
-   model, i.e. no save/restore instructions are generated.  */
+   model, i.e. no save/restore instructions are generated, in the most
+   efficient manner.  This code is not compatible with normal sparc code.  */
+/* This is not a user selectable option yet, because it requires changes
+   that are not yet switchable via command line arguments.  */
 #define TARGET_FRW (target_flags & 256)
+
+/* Nonzero means that we should generate code using a flat register window
+   model, i.e. no save/restore instructions are generated, but which is
+   compatible with normal sparc code.   This is the same as above, except
+   that the frame pointer is %l6 instead of %fp.  This code is not as efficient
+   as TARGET_FRW, because it has one less allocatable register.  */
+/* This is not a user selectable option yet, because it requires changes
+   that are not yet switchable via command line arguments.  */
+#define TARGET_FRW_COMPAT (target_flags & 512)
 
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
@@ -146,8 +157,10 @@ extern int target_flags;
     {"sparclite", -1},		\
     {"no-sparclite", -128},	\
     {"no-sparclite", 1},	\
-    {"frw", 256},		\
-    {"no-frw", -256},		\
+/*  {"frw", 256}, */		\
+/*  {"no-frw", -256}, */	\
+/*  {"frw-compat", 256+512}, */	\
+/*  {"no-frw-compat", -(256+512)}, */ \
     { "", TARGET_DEFAULT}}
 
 #define TARGET_DEFAULT 3
@@ -1032,15 +1045,10 @@ extern union tree_node *current_function_decl;
   emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 16)), low_cxt);\
 }
 
-/* Emit code for a call to builtin_saveregs.  We must emit USE insns which
-   reference the 6 input registers.  Ordinarily they are not call used
-   registers, but they are for _builtin_saveregs, so we must make this
-   explicit.  */
-
-#define EXPAND_BUILTIN_SAVEREGS(ARGLIST)				\
-  (emit_insn (gen_rtx (USE, VOIDmode, gen_rtx (REG, TImode, BASE_INCOMING_ARG_REG (VOIDmode)))),	\
-   emit_insn (gen_rtx (USE, VOIDmode, gen_rtx (REG, DImode, BASE_INCOMING_ARG_REG (VOIDmode)+4))),	\
-   expand_call (exp, target, ignore))
+/* Generate necessary RTL for __builtin_saveregs().
+   ARGLIST is the argument list; see expr.c.  */
+extern struct rtx_def *sparc_builtin_saveregs ();
+#define EXPAND_BUILTIN_SAVEREGS(ARGLIST) sparc_builtin_saveregs (ARGLIST)
 
 /* Addressing modes, and classification of registers for them.  */
 
