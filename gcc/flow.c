@@ -1,5 +1,5 @@
 /* Data flow analysis for GNU compiler.
-   Copyright (C) 1987, 88, 92-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -280,92 +280,92 @@ static rtx label_value_list;
 static bitmap uid_volatile;
 
 /* Forward declarations */
-static int count_basic_blocks		PROTO((rtx));
-static rtx find_basic_blocks_1		PROTO((rtx));
-static void create_basic_block		PROTO((int, rtx, rtx, rtx));
-static void clear_edges			PROTO((void));
-static void make_edges			PROTO((rtx));
-static void make_edge			PROTO((sbitmap *, basic_block,
-					       basic_block, int));
-static void make_label_edge		PROTO((sbitmap *, basic_block,
-					       rtx, int));
-static void make_eh_edge		PROTO((sbitmap *, eh_nesting_info *,
-					       basic_block, rtx, int));
-static void mark_critical_edges		PROTO((void));
-static void move_stray_eh_region_notes	PROTO((void));
-static void record_active_eh_regions	PROTO((rtx));
+static int count_basic_blocks		PARAMS ((rtx));
+static rtx find_basic_blocks_1		PARAMS ((rtx));
+static void create_basic_block		PARAMS ((int, rtx, rtx, rtx));
+static void clear_edges			PARAMS ((void));
+static void make_edges			PARAMS ((rtx));
+static void make_edge			PARAMS ((sbitmap *, basic_block,
+						 basic_block, int));
+static void make_label_edge		PARAMS ((sbitmap *, basic_block,
+						 rtx, int));
+static void make_eh_edge		PARAMS ((sbitmap *, eh_nesting_info *,
+						 basic_block, rtx, int));
+static void mark_critical_edges		PARAMS ((void));
+static void move_stray_eh_region_notes	PARAMS ((void));
+static void record_active_eh_regions	PARAMS ((rtx));
 
-static void commit_one_edge_insertion	PROTO((edge));
+static void commit_one_edge_insertion	PARAMS ((edge));
 
-static void delete_unreachable_blocks	PROTO((void));
-static void delete_eh_regions		PROTO((void));
-static int can_delete_note_p		PROTO((rtx));
-static int delete_block			PROTO((basic_block));
-static void expunge_block		PROTO((basic_block));
-static rtx flow_delete_insn		PROTO((rtx));
-static int can_delete_label_p		PROTO((rtx));
-static int merge_blocks_move_predecessor_nojumps PROTO((basic_block,
+static void delete_unreachable_blocks	PARAMS ((void));
+static void delete_eh_regions		PARAMS ((void));
+static int can_delete_note_p		PARAMS ((rtx));
+static int delete_block			PARAMS ((basic_block));
+static void expunge_block		PARAMS ((basic_block));
+static rtx flow_delete_insn		PARAMS ((rtx));
+static int can_delete_label_p		PARAMS ((rtx));
+static int merge_blocks_move_predecessor_nojumps PARAMS ((basic_block,
+							  basic_block));
+static int merge_blocks_move_successor_nojumps PARAMS ((basic_block,
 							basic_block));
-static int merge_blocks_move_successor_nojumps PROTO((basic_block,
-						      basic_block));
-static void merge_blocks_nomove		PROTO((basic_block, basic_block));
-static int merge_blocks			PROTO((edge,basic_block,basic_block));
-static void try_merge_blocks		PROTO((void));
-static void tidy_fallthru_edge		PROTO((edge,basic_block,basic_block));
+static void merge_blocks_nomove		PARAMS ((basic_block, basic_block));
+static int merge_blocks			PARAMS ((edge,basic_block,basic_block));
+static void try_merge_blocks		PARAMS ((void));
+static void tidy_fallthru_edge		PARAMS ((edge,basic_block,basic_block));
 
-static int verify_wide_reg_1		PROTO((rtx *, void *));
-static void verify_wide_reg		PROTO((int, rtx, rtx));
-static void verify_local_live_at_start	PROTO((regset, basic_block));
-static int set_noop_p			PROTO((rtx));
-static int noop_move_p			PROTO((rtx));
-static void notice_stack_pointer_modification PROTO ((rtx, rtx, void *));
-static void record_volatile_insns	PROTO((rtx));
-static void mark_reg			PROTO((regset, rtx));
-static void mark_regs_live_at_end	PROTO((regset));
-static void life_analysis_1		PROTO((rtx, int, int));
-static void calculate_global_regs_live	PROTO((sbitmap, sbitmap, int));
-static void propagate_block		PROTO((regset, rtx, rtx,
-					       regset, int, int));
-static int insn_dead_p			PROTO((rtx, regset, int, rtx));
-static int libcall_dead_p		PROTO((rtx, regset, rtx, rtx));
-static void mark_set_regs		PROTO((regset, regset, rtx,
-					       rtx, regset, int));
-static void mark_set_1			PROTO((regset, regset, rtx,
-					       rtx, regset, int));
+static int verify_wide_reg_1		PARAMS ((rtx *, void *));
+static void verify_wide_reg		PARAMS ((int, rtx, rtx));
+static void verify_local_live_at_start	PARAMS ((regset, basic_block));
+static int set_noop_p			PARAMS ((rtx));
+static int noop_move_p			PARAMS ((rtx));
+static void notice_stack_pointer_modification PARAMS ((rtx, rtx, void *));
+static void record_volatile_insns	PARAMS ((rtx));
+static void mark_reg			PARAMS ((regset, rtx));
+static void mark_regs_live_at_end	PARAMS ((regset));
+static void life_analysis_1		PARAMS ((rtx, int, int));
+static void calculate_global_regs_live	PARAMS ((sbitmap, sbitmap, int));
+static void propagate_block		PARAMS ((regset, rtx, rtx,
+						 regset, int, int));
+static int insn_dead_p			PARAMS ((rtx, regset, int, rtx));
+static int libcall_dead_p		PARAMS ((rtx, regset, rtx, rtx));
+static void mark_set_regs		PARAMS ((regset, regset, rtx,
+						 rtx, regset, int));
+static void mark_set_1			PARAMS ((regset, regset, rtx,
+						 rtx, regset, int));
 #ifdef AUTO_INC_DEC
-static void find_auto_inc		PROTO((regset, rtx, rtx));
-static int try_pre_increment_1		PROTO((rtx));
-static int try_pre_increment		PROTO((rtx, rtx, HOST_WIDE_INT));
+static void find_auto_inc		PARAMS ((regset, rtx, rtx));
+static int try_pre_increment_1		PARAMS ((rtx));
+static int try_pre_increment		PARAMS ((rtx, rtx, HOST_WIDE_INT));
 #endif
-static void mark_used_regs		PROTO((regset, regset, rtx, int, rtx));
-void dump_flow_info			PROTO((FILE *));
-void debug_flow_info			PROTO((void));
-static void dump_edge_info		PROTO((FILE *, edge, int));
+static void mark_used_regs		PARAMS ((regset, regset, rtx, int, rtx));
+void dump_flow_info			PARAMS ((FILE *));
+void debug_flow_info			PARAMS ((void));
+static void dump_edge_info		PARAMS ((FILE *, edge, int));
 
-static void count_reg_sets_1		PROTO ((rtx));
-static void count_reg_sets		PROTO ((rtx));
-static void count_reg_references	PROTO ((rtx));
-static void invalidate_mems_from_autoinc	PROTO ((rtx));
-static void remove_edge			PROTO ((edge));
-static void remove_fake_successors	PROTO ((basic_block));
-static void flow_nodes_print	PROTO ((const char *, const sbitmap, FILE *));
-static void flow_exits_print PROTO ((const char *, const edge *, int, FILE *));
-static void flow_loops_cfg_dump		PROTO ((const struct loops *, FILE *));
-static int flow_loop_nested_p		PROTO ((struct loop *, struct loop *));
-static int flow_loop_exits_find		PROTO ((const sbitmap, edge **));
-static int flow_loop_nodes_find	PROTO ((basic_block, basic_block, sbitmap));
-static int flow_depth_first_order_compute PROTO ((int *));
-static basic_block flow_loop_pre_header_find PROTO ((basic_block, const sbitmap *));
-static void flow_loop_tree_node_add	PROTO ((struct loop *, struct loop *));
-static void flow_loops_tree_build	PROTO ((struct loops *));
-static int flow_loop_level_compute	PROTO ((struct loop *, int));
-static int flow_loops_level_compute	PROTO ((struct loops *));
+static void count_reg_sets_1		PARAMS ((rtx));
+static void count_reg_sets		PARAMS ((rtx));
+static void count_reg_references	PARAMS ((rtx));
+static void invalidate_mems_from_autoinc PARAMS ((rtx));
+static void remove_edge			PARAMS ((edge));
+static void remove_fake_successors	PARAMS ((basic_block));
+static void flow_nodes_print	PARAMS ((const char *, const sbitmap, FILE *));
+static void flow_exits_print PARAMS ((const char *, const edge *, int, FILE *));
+static void flow_loops_cfg_dump		PARAMS ((const struct loops *, FILE *));
+static int flow_loop_nested_p		PARAMS ((struct loop *, struct loop *));
+static int flow_loop_exits_find		PARAMS ((const sbitmap, edge **));
+static int flow_loop_nodes_find	PARAMS ((basic_block, basic_block, sbitmap));
+static int flow_depth_first_order_compute PARAMS ((int *));
+static basic_block flow_loop_pre_header_find PARAMS ((basic_block, const sbitmap *));
+static void flow_loop_tree_node_add	PARAMS ((struct loop *, struct loop *));
+static void flow_loops_tree_build	PARAMS ((struct loops *));
+static int flow_loop_level_compute	PARAMS ((struct loop *, int));
+static int flow_loops_level_compute	PARAMS ((struct loops *));
 
 /* This function is always defined so it can be called from the
    debugger, and it is declared extern so we don't get warnings about
    it being unused. */
-void verify_flow_info			PROTO ((void));
-int flow_loop_outside_edge_p		PROTO ((const struct loop *, edge));
+void verify_flow_info			PARAMS ((void));
+int flow_loop_outside_edge_p		PARAMS ((const struct loop *, edge));
 
 /* Find basic blocks of the current function.
    F is the first insn of the function and NREGS the number of register

@@ -1,5 +1,5 @@
 /* Basic error reporting routines.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -37,7 +37,7 @@ int have_error = 0;
 /* Print a warning message - output produced, but there may be problems.  */
 
 void
-warning VPROTO ((const char *format, ...))
+warning VPARAMS ((const char *format, ...))
 {
 #ifndef ANSI_PROTOTYPES
   const char *format;
@@ -60,7 +60,7 @@ warning VPROTO ((const char *format, ...))
 /* Print an error message - we keep going but the output is unusable.  */
 
 void
-error VPROTO ((const char *format, ...))
+error VPARAMS ((const char *format, ...))
 {
 #ifndef ANSI_PROTOTYPES
   const char *format;
@@ -85,7 +85,7 @@ error VPROTO ((const char *format, ...))
 /* Fatal error - terminate execution immediately.  Does not return.  */
 
 void
-fatal VPROTO ((const char *format, ...))
+fatal VPARAMS ((const char *format, ...))
 {
 #ifndef ANSI_PROTOTYPES
   const char *format;

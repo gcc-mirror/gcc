@@ -34,17 +34,17 @@ Boston, MA 02111-1307, USA.  */
 #include "real.h"
 #include "recog.h"
 
-static void store_fixed_bit_field	PROTO((rtx, int, int, int, rtx, int));
-static void store_split_bit_field	PROTO((rtx, int, int, rtx, int));
-static rtx extract_fixed_bit_field	PROTO((enum machine_mode, rtx, int,
-					       int, int, rtx, int, int));
-static rtx mask_rtx			PROTO((enum machine_mode, int,
-					       int, int));
-static rtx lshift_value			PROTO((enum machine_mode, rtx,
-					       int, int));
-static rtx extract_split_bit_field	PROTO((rtx, int, int, int, int));
-static void do_cmp_and_jump		PROTO((rtx, rtx, enum rtx_code,
-					       enum machine_mode, rtx));
+static void store_fixed_bit_field	PARAMS ((rtx, int, int, int, rtx, int));
+static void store_split_bit_field	PARAMS ((rtx, int, int, rtx, int));
+static rtx extract_fixed_bit_field	PARAMS ((enum machine_mode, rtx, int,
+						 int, int, rtx, int, int));
+static rtx mask_rtx			PARAMS ((enum machine_mode, int,
+						 int, int));
+static rtx lshift_value			PARAMS ((enum machine_mode, rtx,
+						 int, int));
+static rtx extract_split_bit_field	PARAMS ((rtx, int, int, int, int));
+static void do_cmp_and_jump		PARAMS ((rtx, rtx, enum rtx_code,
+						 enum machine_mode, rtx));
 
 /* Non-zero means divides or modulus operations are relatively cheap for
    powers of two, so don't use branches; emit the operation instead. 
@@ -2057,15 +2057,15 @@ struct algorithm
   char log[MAX_BITS_PER_WORD];
 };
 
-static void synth_mult			PROTO((struct algorithm *,
-					       unsigned HOST_WIDE_INT,
-					       int));
-static unsigned HOST_WIDE_INT choose_multiplier PROTO((unsigned HOST_WIDE_INT,
-						       int, int,
-						       unsigned HOST_WIDE_INT *,
-						       int *, int *));
-static unsigned HOST_WIDE_INT invert_mod2n	PROTO((unsigned HOST_WIDE_INT,
-						       int));
+static void synth_mult			PARAMS ((struct algorithm *,
+						 unsigned HOST_WIDE_INT,
+						 int));
+static unsigned HOST_WIDE_INT choose_multiplier PARAMS ((unsigned HOST_WIDE_INT,
+							 int, int,
+							 unsigned HOST_WIDE_INT *,
+							 int *, int *));
+static unsigned HOST_WIDE_INT invert_mod2n	PARAMS ((unsigned HOST_WIDE_INT,
+							 int));
 /* Compute and return the best algorithm for multiplying by T.
    The algorithm must cost less than cost_limit
    If retval.cost >= COST_LIMIT, no algorithm was found and all

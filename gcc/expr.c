@@ -1,5 +1,5 @@
 /* Convert tree expression to rtl instructions, for GNU compiler.
-   Copyright (C) 1988, 92-98, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -129,39 +129,39 @@ struct clear_by_pieces
 
 extern struct obstack permanent_obstack;
 
-static rtx get_push_address	PROTO ((int));
+static rtx get_push_address	PARAMS ((int));
 
-static rtx enqueue_insn		PROTO((rtx, rtx));
-static int move_by_pieces_ninsns PROTO((unsigned int, int));
-static void move_by_pieces_1	PROTO((rtx (*) (rtx, ...), enum machine_mode,
-				       struct move_by_pieces *));
-static void clear_by_pieces	PROTO((rtx, int, int));
-static void clear_by_pieces_1	PROTO((rtx (*) (rtx, ...),
-				       enum machine_mode,
-				       struct clear_by_pieces *));
-static int is_zeros_p		PROTO((tree));
-static int mostly_zeros_p	PROTO((tree));
-static void store_constructor_field PROTO((rtx, int, int, enum machine_mode,
-					   tree, tree, int, int));
-static void store_constructor	PROTO((tree, rtx, int, int, int));
-static rtx store_field		PROTO((rtx, int, int, enum machine_mode, tree,
-				       enum machine_mode, int, int,
-				       int, int));
+static rtx enqueue_insn		PARAMS ((rtx, rtx));
+static int move_by_pieces_ninsns PARAMS ((unsigned int, int));
+static void move_by_pieces_1	PARAMS ((rtx (*) (rtx, ...), enum machine_mode,
+					 struct move_by_pieces *));
+static void clear_by_pieces	PARAMS ((rtx, int, int));
+static void clear_by_pieces_1	PARAMS ((rtx (*) (rtx, ...),
+					 enum machine_mode,
+					 struct clear_by_pieces *));
+static int is_zeros_p		PARAMS ((tree));
+static int mostly_zeros_p	PARAMS ((tree));
+static void store_constructor_field PARAMS ((rtx, int, int, enum machine_mode,
+					     tree, tree, int, int));
+static void store_constructor	PARAMS ((tree, rtx, int, int, int));
+static rtx store_field		PARAMS ((rtx, int, int, enum machine_mode,
+					 tree, enum machine_mode, int, int,
+					 int, int));
 static enum memory_use_mode
-  get_memory_usage_from_modifier PROTO((enum expand_modifier));
-static tree save_noncopied_parts PROTO((tree, tree));
-static tree init_noncopied_parts PROTO((tree, tree));
-static int safe_from_p		PROTO((rtx, tree, int));
-static int fixed_type_p		PROTO((tree));
-static rtx var_rtx		PROTO((tree));
-static int readonly_fields_p	PROTO((tree));
-static rtx expand_expr_unaligned PROTO((tree, int *));
-static rtx expand_increment	PROTO((tree, int, int));
-static void preexpand_calls	PROTO((tree));
-static void do_jump_by_parts_greater PROTO((tree, int, rtx, rtx));
-static void do_jump_by_parts_equality PROTO((tree, rtx, rtx));
-static void do_compare_and_jump	PROTO((tree, enum rtx_code, enum rtx_code, rtx, rtx));
-static rtx do_store_flag	PROTO((tree, rtx, enum machine_mode, int));
+  get_memory_usage_from_modifier PARAMS ((enum expand_modifier));
+static tree save_noncopied_parts PARAMS ((tree, tree));
+static tree init_noncopied_parts PARAMS ((tree, tree));
+static int safe_from_p		PARAMS ((rtx, tree, int));
+static int fixed_type_p		PARAMS ((tree));
+static rtx var_rtx		PARAMS ((tree));
+static int readonly_fields_p	PARAMS ((tree));
+static rtx expand_expr_unaligned PARAMS ((tree, int *));
+static rtx expand_increment	PARAMS ((tree, int, int));
+static void preexpand_calls	PARAMS ((tree));
+static void do_jump_by_parts_greater PARAMS ((tree, int, rtx, rtx));
+static void do_jump_by_parts_equality PARAMS ((tree, rtx, rtx));
+static void do_compare_and_jump	PARAMS ((tree, enum rtx_code, enum rtx_code, rtx, rtx));
+static rtx do_store_flag	PARAMS ((tree, rtx, enum machine_mode, int));
 
 /* Record for each mode whether we can move a register directly to or
    from an object of that mode in memory.  If we can't, we won't try
@@ -1512,7 +1512,7 @@ move_by_pieces_ninsns (l, align)
 
 static void
 move_by_pieces_1 (genfun, mode, data)
-     rtx (*genfun) PROTO ((rtx, ...));
+     rtx (*genfun) PARAMS ((rtx, ...));
      enum machine_mode mode;
      struct move_by_pieces *data;
 {
@@ -2320,7 +2320,7 @@ clear_by_pieces (to, len, align)
 
 static void
 clear_by_pieces_1 (genfun, mode, data)
-     rtx (*genfun) PROTO ((rtx, ...));
+     rtx (*genfun) PARAMS ((rtx, ...));
      enum machine_mode mode;
      struct clear_by_pieces *data;
 {

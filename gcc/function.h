@@ -1,5 +1,5 @@
 /* Structure for saving state for a nested function.
-   Copyright (C) 1989, 92-97, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1989, 92-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -535,7 +535,7 @@ extern tree inline_function_decl;
 
 /* Given a function decl for a containing function,
    return the `struct function' for it.  */
-struct function *find_function_data PROTO((tree));
+struct function *find_function_data PARAMS ((tree));
 
 /* Pointer to chain of `struct function' for containing functions.  */
 extern struct function *outer_function_chain;
@@ -543,55 +543,55 @@ extern struct function *outer_function_chain;
 /* Put all this function's BLOCK nodes into a vector and return it.
    Also store in each NOTE for the beginning or end of a block
    the index of that block in the vector.  */
-extern void identify_blocks PROTO((tree, rtx));
+extern void identify_blocks PARAMS ((tree, rtx));
 
 /* Return size needed for stack frame based on slots so far allocated.
    This size counts from zero.  It is not rounded to STACK_BOUNDARY;
    the caller may have to do that.  */
-extern HOST_WIDE_INT get_frame_size	PROTO((void));
+extern HOST_WIDE_INT get_frame_size	PARAMS ((void));
 /* Likewise, but for a different than the current function.  */
-extern HOST_WIDE_INT get_func_frame_size	PROTO((struct function *));
+extern HOST_WIDE_INT get_func_frame_size	PARAMS ((struct function *));
 
 /* These variables hold pointers to functions to
    save and restore machine-specific data,
    in push_function_context and pop_function_context.  */
-extern void (*init_machine_status)	PROTO((struct function *));
-extern void (*mark_machine_status)	PROTO((struct function *));
-extern void (*save_machine_status)	PROTO((struct function *));
-extern void (*restore_machine_status)	PROTO((struct function *));
-extern void (*free_machine_status)	PROTO((struct function *));
+extern void (*init_machine_status)	PARAMS ((struct function *));
+extern void (*mark_machine_status)	PARAMS ((struct function *));
+extern void (*save_machine_status)	PARAMS ((struct function *));
+extern void (*restore_machine_status)	PARAMS ((struct function *));
+extern void (*free_machine_status)	PARAMS ((struct function *));
 
 /* Likewise, but for language-specific data.  */
-extern void (*init_lang_status)         PROTO((struct function *));
-extern void (*mark_lang_status)		PROTO((struct function *));
-extern void (*save_lang_status)		PROTO((struct function *));
-extern void (*restore_lang_status)	PROTO((struct function *));
-extern void (*free_lang_status)         PROTO((struct function *));
+extern void (*init_lang_status)         PARAMS ((struct function *));
+extern void (*mark_lang_status)		PARAMS ((struct function *));
+extern void (*save_lang_status)		PARAMS ((struct function *));
+extern void (*restore_lang_status)	PARAMS ((struct function *));
+extern void (*free_lang_status)         PARAMS ((struct function *));
 
 /* Save and restore status information for a nested function.  */
-extern void save_tree_status		PROTO((struct function *));
-extern void restore_tree_status		PROTO((struct function *));
-extern void restore_emit_status		PROTO((struct function *));
-extern void free_after_parsing		PROTO((struct function *));
-extern void free_after_compilation	PROTO((struct function *));
+extern void save_tree_status		PARAMS ((struct function *));
+extern void restore_tree_status		PARAMS ((struct function *));
+extern void restore_emit_status		PARAMS ((struct function *));
+extern void free_after_parsing		PARAMS ((struct function *));
+extern void free_after_compilation	PARAMS ((struct function *));
 
-extern void init_varasm_status		PROTO((struct function *));
-extern void free_varasm_status		PROTO((struct function *));
-extern void free_emit_status		PROTO((struct function *));
-extern void free_stmt_status            PROTO((struct function *));
-extern void free_eh_status		PROTO((struct function *));
-extern void free_expr_status		PROTO((struct function *));
+extern void init_varasm_status		PARAMS ((struct function *));
+extern void free_varasm_status		PARAMS ((struct function *));
+extern void free_emit_status		PARAMS ((struct function *));
+extern void free_stmt_status            PARAMS ((struct function *));
+extern void free_eh_status		PARAMS ((struct function *));
+extern void free_expr_status		PARAMS ((struct function *));
 
-extern rtx get_first_block_beg		PROTO((void));
+extern rtx get_first_block_beg		PARAMS ((void));
 
 #ifdef RTX_CODE
-extern void diddle_return_value		PROTO((enum rtx_code));
+extern void diddle_return_value		PARAMS ((enum rtx_code));
 #endif
 
-extern void init_virtual_regs		PROTO((struct emit_status *));
+extern void init_virtual_regs		PARAMS ((struct emit_status *));
 
 /* Called once, at initialization, to initialize function.c.  */
-extern void init_function_once          PROTO((void));
+extern void init_function_once          PARAMS ((void));
 
 #ifdef rtx
 #undef rtx

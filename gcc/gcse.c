@@ -523,123 +523,124 @@ struct null_pointer_info {
   sbitmap *nonnull_killed;
 };
 
-static void compute_can_copy	  PROTO ((void));
+static void compute_can_copy	  PARAMS ((void));
 
-static char *gmalloc		  PROTO ((unsigned int));
-static char *grealloc		 PROTO ((char *, unsigned int));
-static char *gcse_alloc	       PROTO ((unsigned long));
-static void alloc_gcse_mem	    PROTO ((rtx));
-static void free_gcse_mem	     PROTO ((void));
-static void alloc_reg_set_mem	 PROTO ((int));
-static void free_reg_set_mem	  PROTO ((void));
-static int get_bitmap_width           PROTO ((int, int, int));
-static void record_one_set	    PROTO ((int, rtx));
-static void record_set_info	   PROTO ((rtx, rtx, void *));
-static void compute_sets	      PROTO ((rtx));
+static char *gmalloc		  PARAMS ((unsigned int));
+static char *grealloc		 PARAMS ((char *, unsigned int));
+static char *gcse_alloc	       PARAMS ((unsigned long));
+static void alloc_gcse_mem	    PARAMS ((rtx));
+static void free_gcse_mem	     PARAMS ((void));
+static void alloc_reg_set_mem	 PARAMS ((int));
+static void free_reg_set_mem	  PARAMS ((void));
+static int get_bitmap_width           PARAMS ((int, int, int));
+static void record_one_set	    PARAMS ((int, rtx));
+static void record_set_info	   PARAMS ((rtx, rtx, void *));
+static void compute_sets	      PARAMS ((rtx));
 
-static void hash_scan_insn	    PROTO ((rtx, int, int));
-static void hash_scan_set	     PROTO ((rtx, rtx, int));
-static void hash_scan_clobber	 PROTO ((rtx, rtx));
-static void hash_scan_call	    PROTO ((rtx, rtx));
-static int want_to_gcse_p	     PROTO ((rtx));
-static int oprs_unchanged_p	   PROTO ((rtx, rtx, int));
-static int oprs_anticipatable_p       PROTO ((rtx, rtx));
-static int oprs_available_p	   PROTO ((rtx, rtx));
-static void insert_expr_in_table      PROTO ((rtx, enum machine_mode,
+static void hash_scan_insn	    PARAMS ((rtx, int, int));
+static void hash_scan_set	     PARAMS ((rtx, rtx, int));
+static void hash_scan_clobber	 PARAMS ((rtx, rtx));
+static void hash_scan_call	    PARAMS ((rtx, rtx));
+static int want_to_gcse_p	     PARAMS ((rtx));
+static int oprs_unchanged_p	   PARAMS ((rtx, rtx, int));
+static int oprs_anticipatable_p       PARAMS ((rtx, rtx));
+static int oprs_available_p	   PARAMS ((rtx, rtx));
+static void insert_expr_in_table      PARAMS ((rtx, enum machine_mode,
 					      rtx, int, int));
-static void insert_set_in_table       PROTO ((rtx, rtx));
-static unsigned int hash_expr	 PROTO ((rtx, enum machine_mode,
-					 int *, int));
-static unsigned int hash_expr_1       PROTO ((rtx, enum machine_mode, int *));
-static unsigned int hash_set	  PROTO ((int, int));
-static int expr_equiv_p	       PROTO ((rtx, rtx));
-static void record_last_reg_set_info  PROTO ((rtx, int));
-static void record_last_mem_set_info  PROTO ((rtx));
-static void record_last_set_info      PROTO ((rtx, rtx, void *));
-static void compute_hash_table	PROTO ((int));
-static void alloc_set_hash_table      PROTO ((int));
-static void free_set_hash_table       PROTO ((void));
-static void compute_set_hash_table    PROTO ((void));
-static void alloc_expr_hash_table     PROTO ((int));
-static void free_expr_hash_table      PROTO ((void));
-static void compute_expr_hash_table   PROTO ((void));
-static void dump_hash_table	   PROTO ((FILE *, const char *, struct expr **,
-					   int, int));
-static struct expr *lookup_expr       PROTO ((rtx));
-static struct expr *lookup_set	PROTO ((int, rtx));
-static struct expr *next_set	  PROTO ((int, struct expr *));
-static void reset_opr_set_tables      PROTO ((void));
-static int oprs_not_set_p	     PROTO ((rtx, rtx));
-static void mark_call		 PROTO ((rtx));
-static void mark_set		  PROTO ((rtx, rtx));
-static void mark_clobber	      PROTO ((rtx, rtx));
-static void mark_oprs_set	     PROTO ((rtx));
+static void insert_set_in_table       PARAMS ((rtx, rtx));
+static unsigned int hash_expr	 PARAMS ((rtx, enum machine_mode,
+					  int *, int));
+static unsigned int hash_expr_1       PARAMS ((rtx, enum machine_mode, int *));
+static unsigned int hash_set	  PARAMS ((int, int));
+static int expr_equiv_p	       PARAMS ((rtx, rtx));
+static void record_last_reg_set_info  PARAMS ((rtx, int));
+static void record_last_mem_set_info  PARAMS ((rtx));
+static void record_last_set_info      PARAMS ((rtx, rtx, void *));
+static void compute_hash_table	PARAMS ((int));
+static void alloc_set_hash_table      PARAMS ((int));
+static void free_set_hash_table       PARAMS ((void));
+static void compute_set_hash_table    PARAMS ((void));
+static void alloc_expr_hash_table     PARAMS ((int));
+static void free_expr_hash_table      PARAMS ((void));
+static void compute_expr_hash_table   PARAMS ((void));
+static void dump_hash_table	   PARAMS ((FILE *, const char *,
+					    struct expr **, int, int));
+static struct expr *lookup_expr       PARAMS ((rtx));
+static struct expr *lookup_set	PARAMS ((int, rtx));
+static struct expr *next_set	  PARAMS ((int, struct expr *));
+static void reset_opr_set_tables      PARAMS ((void));
+static int oprs_not_set_p	     PARAMS ((rtx, rtx));
+static void mark_call		 PARAMS ((rtx));
+static void mark_set		  PARAMS ((rtx, rtx));
+static void mark_clobber	      PARAMS ((rtx, rtx));
+static void mark_oprs_set	     PARAMS ((rtx));
 
-static void alloc_cprop_mem	   PROTO ((int, int));
-static void free_cprop_mem	    PROTO ((void));
-static void compute_transp	    PROTO ((rtx, int, sbitmap *, int));
-static void compute_transpout	    PROTO ((void));
-static void compute_local_properties  PROTO ((sbitmap *, sbitmap *,
-					      sbitmap *, int));
-static void compute_cprop_data	PROTO ((void));
-static void find_used_regs	    PROTO ((rtx));
-static int try_replace_reg	    PROTO ((rtx, rtx, rtx));
-static struct expr *find_avail_set    PROTO ((int, rtx));
-static int cprop_jump			PROTO((rtx, rtx, struct reg_use *, rtx));
+static void alloc_cprop_mem	   PARAMS ((int, int));
+static void free_cprop_mem	    PARAMS ((void));
+static void compute_transp	    PARAMS ((rtx, int, sbitmap *, int));
+static void compute_transpout	    PARAMS ((void));
+static void compute_local_properties  PARAMS ((sbitmap *, sbitmap *,
+					       sbitmap *, int));
+static void compute_cprop_data	PARAMS ((void));
+static void find_used_regs	    PARAMS ((rtx));
+static int try_replace_reg	    PARAMS ((rtx, rtx, rtx));
+static struct expr *find_avail_set    PARAMS ((int, rtx));
+static int cprop_jump			PARAMS ((rtx, rtx, struct reg_use *, rtx));
 #ifdef HAVE_cc0
-static int cprop_cc0_jump		PROTO((rtx, struct reg_use *, rtx));
+static int cprop_cc0_jump		PARAMS ((rtx, struct reg_use *, rtx));
 #endif
-static int cprop_insn		 PROTO ((rtx, int));
-static int cprop		      PROTO ((int));
-static int one_cprop_pass	     PROTO ((int, int));
+static int cprop_insn		 PARAMS ((rtx, int));
+static int cprop		      PARAMS ((int));
+static int one_cprop_pass	     PARAMS ((int, int));
 
-static void alloc_pre_mem	     PROTO ((int, int));
-static void free_pre_mem	      PROTO ((void));
-static void compute_pre_data	  PROTO ((void));
-static int pre_expr_reaches_here_p    PROTO ((int, struct expr *, int));
-static void insert_insn_end_bb	PROTO ((struct expr *, int, int));
-static void pre_insert_copy_insn      PROTO ((struct expr *, rtx));
-static void pre_insert_copies	 PROTO ((void));
-static int pre_delete		 PROTO ((void));
-static int pre_gcse		   PROTO ((void));
-static int one_pre_gcse_pass	  PROTO ((int));
+static void alloc_pre_mem	     PARAMS ((int, int));
+static void free_pre_mem	      PARAMS ((void));
+static void compute_pre_data	  PARAMS ((void));
+static int pre_expr_reaches_here_p    PARAMS ((int, struct expr *, int));
+static void insert_insn_end_bb	PARAMS ((struct expr *, int, int));
+static void pre_insert_copy_insn      PARAMS ((struct expr *, rtx));
+static void pre_insert_copies	 PARAMS ((void));
+static int pre_delete		 PARAMS ((void));
+static int pre_gcse		   PARAMS ((void));
+static int one_pre_gcse_pass	  PARAMS ((int));
 
-static void add_label_notes	      PROTO ((rtx, rtx));
+static void add_label_notes	      PARAMS ((rtx, rtx));
 
-static void alloc_code_hoist_mem	PROTO ((int, int));
-static void free_code_hoist_mem		PROTO ((void));
-static void compute_code_hoist_vbeinout	PROTO ((void));
-static void compute_code_hoist_data	PROTO ((void));
-static int hoist_expr_reaches_here_p	PROTO ((int, int, int, char *));
-static void hoist_code			PROTO ((void));
-static int one_code_hoisting_pass	PROTO ((void));
+static void alloc_code_hoist_mem	PARAMS ((int, int));
+static void free_code_hoist_mem		PARAMS ((void));
+static void compute_code_hoist_vbeinout	PARAMS ((void));
+static void compute_code_hoist_data	PARAMS ((void));
+static int hoist_expr_reaches_here_p	PARAMS ((int, int, int, char *));
+static void hoist_code			PARAMS ((void));
+static int one_code_hoisting_pass	PARAMS ((void));
 
-static void alloc_rd_mem	      PROTO ((int, int));
-static void free_rd_mem	       PROTO ((void));
-static void handle_rd_kill_set	PROTO ((rtx, int, int));
-static void compute_kill_rd	   PROTO ((void));
-static void compute_rd		PROTO ((void));
-static void alloc_avail_expr_mem      PROTO ((int, int));
-static void free_avail_expr_mem       PROTO ((void));
-static void compute_ae_gen	    PROTO ((void));
-static int expr_killed_p	      PROTO ((rtx, int));
-static void compute_ae_kill	   PROTO ((sbitmap *, sbitmap *));
-static int expr_reaches_here_p	PROTO ((struct occr *, struct expr *,
-					      int, int));
-static rtx computing_insn	     PROTO ((struct expr *, rtx));
-static int def_reaches_here_p	 PROTO ((rtx, rtx));
-static int can_disregard_other_sets   PROTO ((struct reg_set **, rtx, int));
-static int handle_avail_expr	  PROTO ((rtx, struct expr *));
-static int classic_gcse	       PROTO ((void));
-static int one_classic_gcse_pass      PROTO ((int));
-static void invalidate_nonnull_info	PROTO ((rtx, rtx, void *));
-static void delete_null_pointer_checks_1 PROTO ((int *, sbitmap *, sbitmap *,
-						 struct null_pointer_info *));
-static rtx process_insert_insn	PROTO ((struct expr *));
-static int pre_edge_insert	PROTO ((struct edge_list *, struct expr **));
-static int expr_reaches_here_p_work	PROTO ((struct occr *, struct expr *, int, int, char *));
-static int pre_expr_reaches_here_p_work	PROTO ((int, struct expr *,
-						int, char *));
+static void alloc_rd_mem	      PARAMS ((int, int));
+static void free_rd_mem	       PARAMS ((void));
+static void handle_rd_kill_set	PARAMS ((rtx, int, int));
+static void compute_kill_rd	   PARAMS ((void));
+static void compute_rd		PARAMS ((void));
+static void alloc_avail_expr_mem      PARAMS ((int, int));
+static void free_avail_expr_mem       PARAMS ((void));
+static void compute_ae_gen	    PARAMS ((void));
+static int expr_killed_p	      PARAMS ((rtx, int));
+static void compute_ae_kill	   PARAMS ((sbitmap *, sbitmap *));
+static int expr_reaches_here_p	PARAMS ((struct occr *, struct expr *,
+					 int, int));
+static rtx computing_insn	     PARAMS ((struct expr *, rtx));
+static int def_reaches_here_p	 PARAMS ((rtx, rtx));
+static int can_disregard_other_sets   PARAMS ((struct reg_set **, rtx, int));
+static int handle_avail_expr	  PARAMS ((rtx, struct expr *));
+static int classic_gcse	       PARAMS ((void));
+static int one_classic_gcse_pass      PARAMS ((int));
+static void invalidate_nonnull_info	PARAMS ((rtx, rtx, void *));
+static void delete_null_pointer_checks_1 PARAMS ((int *, sbitmap *, sbitmap *,
+						  struct null_pointer_info *));
+static rtx process_insert_insn	PARAMS ((struct expr *));
+static int pre_edge_insert	PARAMS ((struct edge_list *, struct expr **));
+static int expr_reaches_here_p_work	PARAMS ((struct occr *, struct expr *,
+						 int, int, char *));
+static int pre_expr_reaches_here_p_work	PARAMS ((int, struct expr *,
+						 int, char *));
 
 /* Entry point for global common subexpression elimination.
    F is the first instruction in the function.  */

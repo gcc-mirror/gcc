@@ -1,5 +1,5 @@
 /* Emit RTL for the GNU C-Compiler expander.
-   Copyright (C) 1987, 88, 92-97, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -166,10 +166,10 @@ static rtx free_insn;
 /* This is where the pointer to the obstack being used for RTL is stored.  */
 extern struct obstack *rtl_obstack;
 
-static rtx make_jump_insn_raw		PROTO((rtx));
-static rtx make_call_insn_raw		PROTO((rtx));
-static rtx find_line_note		PROTO((rtx));
-static void mark_sequence_stack         PROTO((struct sequence_stack *));
+static rtx make_jump_insn_raw		PARAMS ((rtx));
+static rtx make_call_insn_raw		PARAMS ((rtx));
+static rtx find_line_note		PARAMS ((rtx));
+static void mark_sequence_stack         PARAMS ((struct sequence_stack *));
 
 /* There are some RTL codes that require special attention; the generation
    functions do the raw handling.  If you add to this list, modify
@@ -298,7 +298,7 @@ gen_rtx_MEM (mode, addr)
 
 /*VARARGS2*/
 rtx
-gen_rtx VPROTO((enum rtx_code code, enum machine_mode mode, ...))
+gen_rtx VPARAMS ((enum rtx_code code, enum machine_mode mode, ...))
 {
 #ifndef ANSI_PROTOTYPES
   enum rtx_code code;
@@ -399,7 +399,7 @@ gen_rtx VPROTO((enum rtx_code code, enum machine_mode mode, ...))
 
 /*VARARGS1*/
 rtvec
-gen_rtvec VPROTO((int n, ...))
+gen_rtvec VPARAMS ((int n, ...))
 {
 #ifndef ANSI_PROTOTYPES
   int n;
