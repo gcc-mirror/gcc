@@ -111,39 +111,86 @@ static void sparc_init_modes ();
 
 /* Option handling.  */
 
+/* This is assigned the value of -mcpu=.  */
+char *sparc_cpu_string;
+
+/* CPU type.  This is set from TARGET_CPU_DEFAULT and -mcpu=.  */
+enum attr_cpu sparc_cpu;
+
 /* Validate and override various options, and do some machine dependent
    initialization.  */
 
 void
 sparc_override_options ()
 {
-  /* Check for any conflicts in the choice of options.  */
-  /* ??? This stuff isn't really usable yet.  */
+  /* Map TARGET_CPU_DEFAULT to value for -mcpu=.  */
+  static struct cpu_default {
+    int cpu;
+    char *name;
+  } cpu_default[] = {
+    { TARGET_CPU_sparc, "common" },
+    { TARGET_CPU_sparclet, "sparclet" },
+    { TARGET_CPU_sparclite, "sparclite" },
+    { TARGET_CPU_sparc64, "v9" },
+    { 0, 0 }
+  };
+  struct cpu_default *m;
+  /* Map -mcpu= names to internally usable values.  */
+  static struct cpu_table {
+    char *name;
+    enum attr_cpu cpu;
+    int disable;
+    int enable;
+  } cpu_table[] = {
+    { "common",     CPU_COMMON, MASK_ISA, 0 },
+    { "cypress",    CPU_CYPRESS, MASK_ISA, 0 },
+    /* generic v8 */
+    { "v8",         CPU_V8, MASK_ISA, MASK_V8 },
+    /* TI TMS390Z55 supersparc */
+    { "supersparc", CPU_SUPERSPARC, MASK_ISA, MASK_V8 },
+    { "sparclite",  CPU_SPARCLITE, MASK_ISA, MASK_SPARCLITE },
+    /* The Fujitsu MB86930 is the original sparclite chip, with no fpu.
+       The Fujitsu MB86934 is the recent sparclite chip, with an fpu.  */
+    { "f930",       CPU_SPARCLITE, MASK_ISA+MASK_FPU, MASK_SPARCLITE },
+    { "f934",       CPU_SPARCLITE, MASK_ISA,          MASK_SPARCLITE+MASK_FPU },
+    /* TEMIC sparclet */
+    { "sparclet",   CPU_SPARCLET, MASK_ISA, MASK_SPARCLET },
+    /* generic v9 */
+    { "v9",         CPU_V9, MASK_ISA, MASK_V9 },
+    /* TI ultrasparc */
+    { "ultrasparc", CPU_ULTRASPARC, MASK_ISA, MASK_V9 },
+    { 0 }
+  };
+  struct cpu_table *p;
 
-  if (! TARGET_ARCH64)
+  /* If -mcpu=foo wasn't specified, set the default.  */
+  if (! sparc_cpu_string)
     {
-      if (target_flags & MASK_CODE_MODEL)
-	error ("code model support is only available with -mv9");
-      if (TARGET_INT64)
-	error ("-mint64 is only available with -mv9");
-      if (TARGET_LONG64)
-	error ("-mlong64 is only available with -mv9");
-      if (TARGET_PTR64)
-	error ("-mptr64 is only available with -mv9");
-      if (TARGET_STACK_BIAS)
-	error ("-mstack-bias is only available with -mv9");
+      for (m = &cpu_default[0]; m->name; ++m)
+	if (m->cpu == TARGET_CPU_DEFAULT)
+	  break;
+      if (! m->name)
+	abort ();
+      sparc_cpu_string = m->name;
     }
-  else
+
+  /* Set cpu type and isa flags.  */
+  for (p = &cpu_table[0]; p->name; ++p)
     {
-      /* ??? Are there any options that aren't usable with v9.
-	 -munaligned-doubles?  */
+      if (strcmp (p->name, sparc_cpu_string) == 0)
+	{
+	  sparc_cpu = p->cpu;
+	  target_flags &= ~p->disable;
+	  target_flags |= p->enable;
+	  break;
+	}
     }
+  if (! p->name)
+    error ("bad value (%s) for -mcpu= switch", sparc_cpu_string);
 
-  /* Check for conflicts in cpu specification.
-     If we use -mcpu=xxx, this can be removed.  */
-
-  if ((TARGET_V8 != 0) + (TARGET_SPARCLITE != 0) + (TARGET_V9 != 0) > 1)
-    error ("conflicting architectures defined");
+  if ((sparc_cpu == CPU_V9 || sparc_cpu == CPU_ULTRASPARC)
+      && TARGET_ARCH32)
+    target_flags |= MASK_DEPRECATED_V8_INSNS;
 
   /* Do various machine dependent initializations.  */
   sparc_init_modes ();
