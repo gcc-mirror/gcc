@@ -471,18 +471,6 @@ count_basic_blocks (f)
 		  || (prev_code == CALL_INSN && call_had_abnormal_edge))))
 	{
 	  count++;
-
-	  /* If the previous insn was a call that did not create an
-	     abnormal edge, we want to add a nop so that the CALL_INSN
-	     itself is not at basic_block_end.  This allows us to
-	     easily distinguish between normal calls and those which
-	     create abnormal edges in the flow graph.  */
-
-	  if (count > 0 && prev_call != 0 && !call_had_abnormal_edge)
-	    {
-	      rtx nop = gen_rtx_USE (VOIDmode, const0_rtx);
-	      emit_insn_after (nop, prev_call);
-	    }
 	}
 
       /* Record whether this call created an edge.  */
