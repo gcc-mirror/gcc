@@ -77,6 +77,21 @@ public abstract class BreakIterator implements Cloneable
   }
 
   /**
+   * Create a clone of this object.
+   */
+  public Object clone ()
+  {
+    try
+      {
+        return super.clone();
+      }
+    catch (CloneNotSupportedException e)
+      {
+        return null;
+      }
+  }
+  
+  /**
    * This method returns the index of the current text element boundary.
    *
    * @return The current text boundary.
