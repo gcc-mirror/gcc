@@ -228,11 +228,6 @@ cgraph_finalize_function (tree decl, bool nested)
   /* If we've not yet emitted decl, tell the debug info about it.  */
   if (!TREE_ASM_WRITTEN (decl))
     (*debug_hooks->deferred_inline_function) (decl);
-
-  /* We will never really output the function body, clear the SAVED_INSNS array
-     early then.  */
-  if (DECL_EXTERNAL (decl))
-    DECL_SAVED_INSNS (decl) = NULL;
 }
 
 /* Walk tree and record all calls.  Called via walk_tree.  */
@@ -481,8 +476,6 @@ cgraph_mark_functions_to_output (void)
 	  && !TREE_ASM_WRITTEN (decl) && !node->origin
 	  && !DECL_EXTERNAL (decl))
 	node->output = 1;
-      else
-        DECL_SAVED_INSNS (decl) = NULL;
     }
 }
 
@@ -532,9 +525,9 @@ cgraph_expand_function (struct cgraph_node *node)
   /* Generate RTL for the body of DECL.  Nested functions are expanded
      via lang_expand_decl_stmt.  */
   (*lang_hooks.callgraph.expand_function) (decl);
-  if (DECL_DEFER_OUTPUT (decl))
-    abort ();
 
+  if (!cgraph_function_possibly_inlined_p (decl))
+    DECL_SAVED_TREE (decl) = NULL;
   current_function_decl = NULL;
 }
 

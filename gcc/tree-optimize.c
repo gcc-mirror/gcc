@@ -65,13 +65,13 @@ clear_decl_rtl (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED, void *data)
     {
     case VAR_DECL:
       nonstatic_p = !TREE_STATIC (t) && !DECL_EXTERNAL (t);
-      local_p = decl_function_context (t) == data;
+      local_p = DECL_CONTEXT (t) == data;
       break;
 
     case PARM_DECL:
     case LABEL_DECL:
       nonstatic_p = true;
-      local_p = decl_function_context (t) == data;
+      local_p = DECL_CONTEXT (t) == data;
       break;
 
     case RESULT_DECL:
@@ -205,22 +205,18 @@ tree_rest_of_compilation (tree fndecl, bool nested_p)
   walk_tree_without_duplicates (&DECL_SAVED_TREE (fndecl),
 				clear_decl_rtl,
 				fndecl);
-  if (!cgraph_function_possibly_inlined_p (fndecl))
-    {
-      DECL_SAVED_TREE (fndecl) = NULL;
-      if (DECL_SAVED_INSNS (fndecl) == 0
-	  && !cgraph_node (fndecl)->origin)
-	{
-	  /* Stop pointing to the local nodes about to be freed.
-	     But DECL_INITIAL must remain nonzero so we know this
-	     was an actual function definition.
-	     For a nested function, this is done in c_pop_function_context.
-	     If rest_of_compilation set this to 0, leave it 0.  */
-	  if (DECL_INITIAL (fndecl) != 0)
-	    DECL_INITIAL (fndecl) = error_mark_node;
 
-	  DECL_ARGUMENTS (fndecl) = 0;
-	}
+  if (DECL_SAVED_INSNS (fndecl) == 0 && !nested_p && !flag_inline_trees)
+    {
+      /* Stop pointing to the local nodes about to be freed.
+	 But DECL_INITIAL must remain nonzero so we know this
+	 was an actual function definition.
+	 For a nested function, this is done in c_pop_function_context.
+	 If rest_of_compilation set this to 0, leave it 0.  */
+      if (DECL_INITIAL (fndecl) != 0)
+	DECL_INITIAL (fndecl) = error_mark_node;
+
+      DECL_ARGUMENTS (fndecl) = 0;
     }
 
   input_location = saved_loc;
