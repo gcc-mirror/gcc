@@ -1,3 +1,8 @@
+2000-11-17  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.other/incomplete.C: Add more tests.
+	* g++.old-deja/g++.pt/crash9.C: Mark new expected error.
+
 2000-11-16  Nick Clifton  <nickc@redhat.com>
 
 	* gcc.c-torture/execute/nestfunc-2.c: New test.

@@ -44,6 +44,7 @@ Boston, MA 02111-1307, USA.  */
       CTOR_BEGIN_P (in CTOR_STMT)
       BV_USE_VCALL_INDEX_P (in the BINFO_VIRTUALS TREE_LIST)
       PTRMEM_OK_P (in ADDR_EXPR, OFFSET_REF)
+      PARMLIST_ELLIPSIS_P (in PARMLIST)
    1: IDENTIFIER_VIRTUAL_P.
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -1767,6 +1768,9 @@ struct lang_type
 /* Nonzero for TREE_LIST node means that this list of things
    is a list of parameters, as opposed to a list of expressions.  */
 #define TREE_PARMLIST(NODE) ((NODE)->common.unsigned_flag) /* overloaded! */
+
+/* Nonzero for a parmlist means that this parmlist ended in ...  */
+#define PARMLIST_ELLIPSIS_P(NODE) TREE_LANG_FLAG_0 (NODE)
 
 /* For FUNCTION_TYPE or METHOD_TYPE, a list of the exceptions that
    this type can raise.  Each TREE_VALUE is a _TYPE.  The TREE_VALUE

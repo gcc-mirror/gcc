@@ -1,5 +1,16 @@
 2000-11-17  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* cp-tree.h (PARMLIST_ELLIPSIS_P): New macro.
+	* decl.c (grokdeclarator): Don't reject void parms here.
+	(require_complete_types_for_parms): Simplify, use
+	complete_type_or_else.
+	(grokparms): Remove bitrot. Remove funcdef parm.
+	Deal with ellipsis parm lists here.
+	* semantics.c (finish_parmlist): Don't append void_list_node
+	here. Set PARMLIST_ELLIPSIS_P.
+
+2000-11-17  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* typeck2.c (incomplete_type_error): Reorganise to avoid
 	excessive diagnostics.
 

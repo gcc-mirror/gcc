@@ -1695,13 +1695,15 @@ finish_parmlist (parms, ellipsis)
      tree parms;
      int ellipsis;
 {
-  if (!ellipsis)
-    chainon (parms, void_list_node);
-  /* We mark the PARMS as a parmlist so that declarator processing can
-     disambiguate certain constructs.  */
-  if (parms != NULL_TREE)
-    TREE_PARMLIST (parms) = 1;
-
+  if (parms)
+    {
+      /* We mark the PARMS as a parmlist so that declarator processing can
+         disambiguate certain constructs.  */
+      TREE_PARMLIST (parms) = 1;
+      /* We do not append void_list_node here, but leave it to grokparms
+         to do that.  */
+      PARMLIST_ELLIPSIS_P (parms) = ellipsis;
+    }
   return parms;
 }
 
