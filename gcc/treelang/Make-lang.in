@@ -47,7 +47,7 @@ TREELANGSED = sed
 TREELANGSEDFLAGS = -n
 
 # back end compiler libraries etc
-TREE_BE_LIBS = $(BACKEND) $(LIBIBERTY) $(INTLLIBS) $(LIBS) $(LIBDEPS) 
+TREE_BE_LIBS = $(BACKEND) $(LIBIBERTY) $(INTLLIBS) $(LIBS) $(LIBDEPS)
 GCC_EXTRAS = -B./ -B$(build_tooldir)/bin/ -isystem $(build_tooldir)/include
 
 # ./xgcc is the just built compiler. See GCC_FOR_TARGET in the GCC Makefile.in.
@@ -65,6 +65,8 @@ TREE_EXES = tree1$(exeext)
 
 #no -Wtraditional warnings, allow long long
 treelang-warn = $(LOOSE_WARN) -pedantic -Wno-long-long -Wmissing-prototypes -Wmissing-declarations
+# bison emits some unused static arrays (yytoknum)
+treelang/parse.o-warn = -Wno-error
 
 #
 # Define the names for selecting treelang in LANGUAGES.
@@ -78,7 +80,7 @@ treelang.done: tree1$(exeext)
 
 # no preprocessor
 
-# core compiler 
+# core compiler
 tree1$(exeext): treelang/tree1.o treelang/treetree.o treelang/lex.o treelang/parse.o\
 	$(TREE_BE_LIBS) c-convert.o c-typeck.o c-common.o c-decl.o attribs.o
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
@@ -123,11 +125,11 @@ gt-treelang-tree1.h gtype-treelang.h : s-gtype; @true
 # Build hooks:
 
 treelang.all.build: treelang
-treelang.all.cross: 
+treelang.all.cross:
 	_error_not_here_yet - havent even thought about it - it may even work
 
 treelang.start.encap:
-treelang.rest.encap: 
+treelang.rest.encap:
 
 .phony:treelang.info
 treelang.info: $(srcdir)/treelang/treelang.info
@@ -156,13 +158,13 @@ treelang.generated-manpages:
 # Nothing to do here.
 treelang.install-normal: treelang.install.common
 
-# Install 
+# Install
 .phony:treelang.install.common
 .phony:treelang.install
 
 treelang.install treelang.install.common treelang.install-common: treelang.install.common.done
 
-treelang.install.common.done:  installdirs treelang.done 
+treelang.install.common.done:  installdirs treelang.done
 	for name in $(TREE_EXES); \
 	do \
 	   if [ -f $$name ] ; then \
@@ -194,7 +196,7 @@ treelang.install-info: treelang.$(BUILD_INFO)
 	  else : ; fi; \
 	else : ; fi
 
-treelang.install-man: 
+treelang.install-man:
 
 treelang.uninstall:
 	for name in $(TREE_EXES); \
@@ -212,7 +214,7 @@ treelang.uninstall:
 # A lot of the ancillary files are deleted by the main makefile.
 # We just have to delete files specific to us.
 
-treelang.mostlyclean: 
+treelang.mostlyclean:
 	for name in $(TREE_EXES); \
 	do \
 	  echo deleting $$name; \
@@ -228,7 +230,7 @@ treelang.mostlyclean:
 treelang.clean: treelang.mostlyclean
 
 treelang.distclean: treelang.clean
-	-rm -f treelang/config.status 
+	-rm -f treelang/config.status
 	-rm -f treelang/*.output
 
 treelang.extraclean: treelang.distclean
@@ -265,14 +267,14 @@ treelang.distdir:
 #	not here yet sorry not sure if this is needed or not???
 
 # test hook
-# the other languages are hard coded in the main makefile.in - that seems to be wrong 
+# the other languages are hard coded in the main makefile.in - that seems to be wrong
 
 check-treelang: treelang.check
 
 TESTSUITEDIR = testsuite
 
 treelang.check: $(TESTSUITEDIR)/site.exp
-	-mkdir testsuite/treelang 
+	-mkdir testsuite/treelang
 
 # these three files are empty and it seems diff has trouble generating
 # patch files for new empty files as required for cvs.
@@ -294,7 +296,7 @@ treelang.check: $(TESTSUITEDIR)/site.exp
 
 # copy the output files from the current test to source ie say the new results are OK
 treelang.check.fix: force
-	srcdir=`cd ${srcdir}; ${PWD}` ; export srcdir ; 
+	srcdir=`cd ${srcdir}; ${PWD}` ; export srcdir ;
 	-cp testsuite/treelang/*.out* t
 	-cp testsuite/treelang/*runpgm* t
 	-rm -f t/*nofilename
