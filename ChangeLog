@@ -1,3 +1,9 @@
+2003-04-29  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* Makefile.tpl (MAKEINFOFLAGS): Use --no-split instead of
+	--split-size.
+	* Makefile.in: Regenerate.
+	
 2003-04-25  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* Makefile.tpl (MAKEINFOFLAGS): Default to --split-size=5000000.
