@@ -370,7 +370,7 @@ double_plus_one
 @{
 // aaa is a variable, of type integer and allocated at the start of the function
   automatic int aaa;
-// set aaa to the value returned from aaa, when passed arg7 and arg7 as the two parameters
+// set aaa to the value returned from add, when passed arg7 and arg7 as the two parameters
   aaa=add(arg7, arg7);
   aaa=add(aaa, aaa);
   aaa=subtract(subtract(aaa, arg7), arg7) + 1;
@@ -419,39 +419,59 @@ x=1; // Set X to 1
 @end smallexample
 
 @item
-Keywords consist of any reserved words or symbols as described
-later. The list of keywords follows:
+Keywords consist of any of the following reserved words or symbols:
 
-@smallexample
-@{ - used to start the statements in a function
-@} - used to end the statements in a function
-( - start list of function arguments, or to change the precedence of operators in an expression
-) - end list or prioritized operators in expression
-, - used to separate parameters in a function prototype or in a function call 
-; - used to end a statement
-+ - addition
-- - subtraction
-= - assignment
-== - equality test
-if - begin IF statement
-else - begin 'else' portion of IF statement
-static - indicate variable is permanent, or function has file scope only
-automatic - indicate that variable is allocated for the life of the function
-external_reference - indicate that variable or function is defined in another file
-external_definition - indicate that variable or function is to be accessible from other files
-int - variable is an integer (same as C int) 
-char - variable is a character (same as C char)
-unsigned - variable is unsigned. If this is not present, the variable is signed
-return - start function return statement
-void - used as function type to indicate function returns nothing
-@end smallexample
+@itemize @bullet
+@item @{
+used to start the statements in a function
+@item @}
+used to end the statements in a function
+@item (
+start list of function arguments, or to change the precedence of operators in an expression
+@item )
+end list or prioritized operators in expression
+@item ,
+used to separate parameters in a function prototype or in a function call 
+@item ;
+used to end a statement
+@item +
+addition
+@item - 
+subtraction
+@item = 
+assignment
+@item ==
+equality test
+@item if
+begin IF statement
+@item else
+begin 'else' portion of IF statement
+@item static
+indicate variable is permanent, or function has file scope only
+@item automatic
+indicate that variable is allocated for the life of the function
+@item external_reference
+indicate that variable or function is defined in another file
+@item external_definition
+indicate that variable or function is to be accessible from other files
+@item int
+variable is an integer (same as C int) 
+@item char
+variable is a character (same as C char)
+@item unsigned
+variable is unsigned. If this is not present, the variable is signed
+@item return
+start function return statement
+@item void
+used as function type to indicate function returns nothing
+@end itemize
 
 
 @item
-Names consist of any letter or "_" followed by any number of letters or
-numbers or "_". "$" is not allowed in a name. All names must be globally
-unique - the same name may not be used twice in any context - and must
-not be a keyword. Names and keywords are case sensitive. For example:
+Names consist of any letter or "_" followed by any number of letters,
+numbers, or "_".  "$" is not allowed in a name. All names must be globally
+unique, i.e. may not be used twice in any context, and must
+not be a keyword.  Names and keywords are case sensitive. For example:
 
 @smallexample
 a A _a a_ IF_X
