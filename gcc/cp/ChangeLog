@@ -1,3 +1,7 @@
+2000-11-01  Bernd Schmidt  <bernds@redhat.co.uk>
+
+	* call.c (build_over_call): Call fold on the CALL_EXPR.
+
 2000-11-01  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* error.c (dump_template_decl): Separate template hearders with

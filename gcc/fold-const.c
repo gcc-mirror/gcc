@@ -7168,6 +7168,19 @@ fold (expr)
 	return t;
       }
 
+    case CALL_EXPR:
+      /* Check for a built-in function.  */
+      if (TREE_CODE (TREE_OPERAND (expr, 0)) == ADDR_EXPR
+	  && (TREE_CODE (TREE_OPERAND (TREE_OPERAND (expr, 0), 0))
+	      == FUNCTION_DECL)
+	  && DECL_BUILT_IN (TREE_OPERAND (TREE_OPERAND (expr, 0), 0)))
+	{
+	  tree tmp = fold_builtin (expr);
+	  if (tmp)
+	    return tmp;
+	}
+      return t;
+
     default:
       return t;
     } /* switch (code) */

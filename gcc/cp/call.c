@@ -4188,7 +4188,7 @@ build_over_call (cand, args, flags)
 	return exp;
     }
 
-  fn = build_call (fn, converted_args);
+  fn = fold (build_call (fn, converted_args));
   if (TREE_CODE (TREE_TYPE (fn)) == VOID_TYPE)
     return fn;
   fn = require_complete_type (fn);
