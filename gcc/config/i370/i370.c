@@ -173,6 +173,7 @@ static const char *const mvs_function_table[MVS_FUNCTION_TABLE_LENGTH] =
 #endif /* TARGET_HLASM */
 /* ===================================================== */
 
+#if defined(TARGET_EBCDIC) && !defined(HOST_EBCDIC)
 /* ASCII to EBCDIC conversion table.  */
 static const unsigned char ascebc[256] =
 {
@@ -225,7 +226,10 @@ static const unsigned char ascebc[256] =
      0x3F, 0x3F, 0x3F, 0x3F, 0x3F, 0x3F, 0x3F, 0x3F,
      0x3F, 0x3F, 0x3F, 0x3F, 0x3F, 0x3F, 0x3F, 0xFF
 };
+#endif /* TARGET_EBCDIC && ! HOST_EBCDIC */
 
+
+#if defined(HOST_EBCDIC) && !defined(TARGET_EBCDIC)
 /* EBCDIC to ASCII conversion table.  */
 static const unsigned char ebcasc[256] =
 {
@@ -294,6 +298,7 @@ static const unsigned char ebcasc[256] =
  /*F8   8     9                                     */
      0x38, 0x39, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF
 };
+#endif /* HOST_EBCDIC && ! TARGET_EBCDIC */
 
 /* Initialize the GCC target structure.  */
 #ifdef TARGET_HLASM
@@ -1302,8 +1307,9 @@ i370_output_function_prologue (f, l)
   fprintf (f, "* Function %s prologue\n", mvs_function_name);
   fprintf (f, "FDSE%03d\tDSECT\n", function_label_index);
   fprintf (f, "\tDS\tD\n");
-  fprintf (f, "\tDS\tCL(%d)\n", STACK_POINTER_OFFSET + l
-			+ current_function_outgoing_args_size);
+  fprintf (f, "\tDS\tCL(" HOST_WIDE_INT_PRINT_DEC ")\n",
+	   STACK_POINTER_OFFSET + l
+	   + current_function_outgoing_args_size);
   fprintf (f, "\tORG\tFDSE%03d\n", function_label_index);
   fprintf (f, "\tDS\tCL(120+8)\n");
   fprintf (f, "\tORG\n");
@@ -1491,7 +1497,8 @@ i370_output_function_prologue (f, frame_size)
   aligned_size = (stackframe_size + 7) >> 3;
   aligned_size <<= 3;
   
-  fprintf (f, "# arg_size=0x%x frame_size=0x%x aligned size=0x%x\n", 
+  fprintf (f, "# arg_size=0x%x frame_size=" HOST_WIDE_INT_PRINT_HEX
+	   " aligned size=0x%x\n", 
      current_function_outgoing_args_size, frame_size, aligned_size);
 
   fprintf (f, "\t.using\t.,r15\n");
