@@ -1,3 +1,10 @@
+2003-06-26  Giovanni Bajo  <giovannibajo@libero.it>
+
+        PR c++/8266
+        * pt.c (check_explicit_specialization): When looking up a
+        template function from an identifier outside class-scope, bind
+        it to CP_DECL_CONTEXT.
+
 2003-06-25  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10990

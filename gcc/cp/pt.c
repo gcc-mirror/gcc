@@ -1629,15 +1629,21 @@ check_explicit_specialization (tree declarator,
 	{
 	  tree fns;
 
-	  my_friendly_assert (TREE_CODE (declarator) == IDENTIFIER_NODE, 
-			      0);
-	  if (!ctype)
-	    fns = IDENTIFIER_NAMESPACE_VALUE (dname);
-	  else
+	  my_friendly_assert (TREE_CODE (declarator) == IDENTIFIER_NODE, 0);
+	  if (ctype)
 	    fns = dname;
+	  else
+	    {
+	      /* If there is no class context, the explicit instantiation
+                 must be at namespace scope.  */
+	      my_friendly_assert (DECL_NAMESPACE_SCOPE_P (decl), 20030625);
 
-	  declarator = 
-	    lookup_template_function (fns, NULL_TREE);
+	      /* Find the namespace binding, using the declaration
+                 context.  */
+	      fns = namespace_binding (dname, CP_DECL_CONTEXT (decl));
+	    }
+
+	  declarator = lookup_template_function (fns, NULL_TREE);
 	}
 
       if (declarator == error_mark_node)

@@ -1,3 +1,8 @@
+2003-06-26  Giovanni Bajo  <giovannibajo@libero.it>
+
+        PR c++/8266
+        * g++.dg/template/explicit-instantiation3.C: New test.
+
 2003-06-26  Eric Botcazou <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/20030626-1.c: Use signed char.
