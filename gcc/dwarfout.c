@@ -6183,6 +6183,8 @@ static void
 dwarfout_init (main_input_filename)
      const char *main_input_filename;
 {
+  warning ("support for the DWARF1 debugging format is deprecated");
+
   /* Remember the name of the primary input file.  */
 
   primary_filename = main_input_filename;

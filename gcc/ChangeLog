@@ -1,4 +1,9 @@
+2002-07-09  Mark Mitchell  <mark@codesourcery.com>
+
+	* dwarfout.c (dwarfout_init): Warn that DWARF1 is deprecated.
+
 2002-07-09  Steve Ellcey  <sje@cup.hp.com>
+
 	* gcc/except.c (expand_eh_region_end_cleanup): Change exception pointer
 	from Pmode to ptr_mode.
 	(get_exception_pointer): Ditto.
