@@ -1,3 +1,8 @@
+2000-09-12  Michael Hayes  <mhayes@cygnus.com>
+
+	* basic-block.h (split_block, update_bb_for_insn): New prototypes.
+	* flow.c (split_block, update_bb_for_insn): New functions.
+
 2000-09-11  Richard Henderson  <rth@cygnus.com>
 
 	* cse.c (fold_rtx): Honor NO_FUNCTION_CSE.

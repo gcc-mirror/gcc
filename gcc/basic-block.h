@@ -235,11 +235,13 @@ extern varray_type basic_block_for_insn;
 #define BLOCK_NUM(INSN)	      (BLOCK_FOR_INSN (INSN)->index + 0)
 
 extern void compute_bb_for_insn		PARAMS ((int));
+extern void update_bb_for_insn		PARAMS ((basic_block));
 extern void set_block_for_insn		PARAMS ((rtx, basic_block));
 extern void set_block_num		PARAMS ((rtx, int));
 
 extern void free_basic_block_vars	PARAMS ((int));
 
+extern edge split_block			PARAMS ((basic_block, rtx));
 extern basic_block split_edge		PARAMS ((edge));
 extern void insert_insn_on_edge		PARAMS ((rtx, edge));
 extern void commit_edge_insertions	PARAMS ((void));
