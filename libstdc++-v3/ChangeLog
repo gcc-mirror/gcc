@@ -1,3 +1,7 @@
+2003-11-07  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* libsupc++/vec.cc: Conform to C++STYLE.
+
 2003-11-07  Carlo Wood  <carlo@alinoe.com>
 
 	PR libstdc++/12736
