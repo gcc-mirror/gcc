@@ -1,5 +1,11 @@
 2000-03-09  Warren Levy  <warrenl@cygnus.com>
 
+	* java/security/Key.java(serialVersionUID): Set to 0 for now.
+	* java/security/interfaces/DSAPrivateKey.java(serialVersionUID): Ditto.
+	* java/security/interfaces/DSAPublicKey.java(serialVersionUID): Ditto.
+
+2000-03-09  Warren Levy  <warrenl@cygnus.com>
+
 	* java/security/AlgorithmParameterGeneratorSpi.java: New file.
 	* java/security/DigestException.java: New file.
 	* java/security/GeneralSecurityException.java: New file.
