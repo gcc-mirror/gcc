@@ -6984,7 +6984,7 @@ expand_expr (exp, target, tmode, modifier)
 		= immed_double_const (TREE_INT_CST_LOW (TREE_OPERAND (exp, 0)),
 				      (HOST_WIDE_INT) 0,
 				      GET_MODE (op1));
-	      op1 = plus_constant (op1, INTVAL (constant_part, 0));
+	      op1 = plus_constant (op1, INTVAL (constant_part));
 	      if (modifier != EXPAND_SUM && modifier != EXPAND_INITIALIZER)
 		op1 = force_operand (op1, target);
 	      return op1;
@@ -7016,7 +7016,7 @@ expand_expr (exp, target, tmode, modifier)
 		= immed_double_const (TREE_INT_CST_LOW (TREE_OPERAND (exp, 1)),
 				      (HOST_WIDE_INT) 0,
 				      GET_MODE (op0));
-	      op0 = plus_constant (op0, INTVAL (constant_part, 0));
+	      op0 = plus_constant (op0, INTVAL (constant_part));
 	      if (modifier != EXPAND_SUM && modifier != EXPAND_INITIALIZER)
 		op0 = force_operand (op0, target);
 	      return op0;
