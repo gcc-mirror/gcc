@@ -9396,7 +9396,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	{
 	  /* It's common practice (and completely valid) to have a const
 	     be initialized and declared extern.  */
-	  if (! constp)
+	  if (!(type_quals & TYPE_QUAL_CONST))
 	    warning ("`%s' initialized and declared `extern'", name);
 	}
       else
@@ -10651,8 +10651,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		       the rest of the compiler does not correctly
 		       handle the initialization unless the member is
 		       static so we make it static below.  */
-		    cp_pedwarn ("ANSI C++ forbids initialization of %s `%D'",
-				constp ? "const member" : "member", 
+		    cp_pedwarn ("ANSI C++ forbids initialization of member `%D'",
 				declarator);
 		    cp_pedwarn ("making `%D' static", declarator);
 		    staticp = 1;
@@ -10677,7 +10676,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		       ignore this declaration.  */
 		    return void_type_node;
 		  }
-		else if (!constp)
+		else if (!(type_quals & TYPE_QUAL_CONST))
 		  cp_error ("ANSI C++ forbids in-class initialization of non-const static member `%D'",
 			    declarator);
 		else if (pedantic && ! INTEGRAL_TYPE_P (type) 
@@ -10808,7 +10807,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 	/* An uninitialized decl with `extern' is a reference.  */
 	decl = grokvardecl (type, declarator, &specbits, 
-			    initialized, constp, in_namespace);
+			    initialized, 
+			    (type_quals & TYPE_QUAL_CONST) != 0, 
+			    in_namespace);
 	bad_specifiers (decl, "variable", virtualp, quals != NULL_TREE,
 			inlinep, friendp, raises != NULL_TREE);
 
