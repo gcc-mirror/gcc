@@ -575,6 +575,80 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_set__Ljava_lang_String_2Ljava_lang_O
   (*env)->ReleaseStringUTFChars (env, jname, name);
 }
 
+gboolean
+filter_expose_event_handler (GtkWidget *widget, GdkEvent *event, jobject peer)
+{
+  // Prevent the default event handler from getting this signal if applicable
+  // FIXME: I came up with these filters by looking for patterns in the unwanted
+  //        expose events that are fed back to us from gtk/X. Perhaps there is
+  //        a way to prevent them from occuring in the first place.
+  if (event->type == GDK_EXPOSE && (!GTK_IS_LAYOUT(widget)
+                                    || event->any.window != widget->window))
+    {
+      g_signal_stop_emission_by_name(GTK_OBJECT(widget), "event");
+      return FALSE;
+    }
+  else
+    {
+      // There may be non-expose events that are triggered while we're
+      // painting a heavyweight peer.
+      return pre_event_handler(widget, event, peer);
+    }
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_addExposeFilter
+  (JNIEnv *env, jobject obj)
+{
+  void *ptr = NSA_GET_PTR (env, obj);
+  jobject *gref = NSA_GET_GLOBAL_REF (env, obj);
+  g_assert (gref);
+
+  gdk_threads_enter ();
+
+  g_signal_handlers_block_by_func (GTK_OBJECT(ptr), *pre_event_handler, *gref);
+  g_signal_connect( GTK_OBJECT(ptr), "event",
+                    G_CALLBACK(filter_expose_event_handler), *gref);
+
+  gdk_threads_leave ();
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_removeExposeFilter
+  (JNIEnv *env, jobject obj)
+{
+  void *ptr = NSA_GET_PTR (env, obj);
+  jobject *gref = NSA_GET_GLOBAL_REF (env, obj);
+  g_assert (gref);
+
+  gdk_threads_enter ();
+
+  g_signal_handlers_disconnect_by_func (GTK_OBJECT(ptr),
+                                        *filter_expose_event_handler, *gref);
+  g_signal_handlers_unblock_by_func (GTK_OBJECT(ptr), *pre_event_handler, *gref);
+
+  gdk_threads_leave ();
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetQueueDrawArea
+  (JNIEnv *env, jobject obj, jint x, jint y, jint width, jint height)
+{
+  GdkRectangle rect;
+  void *ptr;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  rect.x = x + GTK_WIDGET(ptr)->allocation.x;
+  rect.y = y + GTK_WIDGET(ptr)->allocation.y;
+  rect.width = width;
+  rect.height = height;
+
+  gdk_threads_enter ();
+
+  gdk_window_invalidate_rect (GTK_WIDGET (ptr)->window, &rect, 0);
+  gdk_window_process_all_updates();
+
+  gdk_threads_leave ();
+}
+
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectJObject
   (JNIEnv *env, jobject obj)
 {

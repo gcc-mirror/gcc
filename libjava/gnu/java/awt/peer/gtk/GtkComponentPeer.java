@@ -91,6 +91,9 @@ public class GtkComponentPeer extends GtkGenericPeer
   native void gtkWidgetSetCursor (int type);
   native void gtkWidgetSetBackground (int red, int green, int blue);
   native void gtkWidgetSetForeground (int red, int green, int blue);
+  native void gtkWidgetQueueDrawArea(int x, int y, int width, int height);
+  native void addExposeFilter();
+  native void removeExposeFilter();
 
   void create ()
   {
@@ -217,6 +220,37 @@ public class GtkComponentPeer extends GtkGenericPeer
   
   public void handleEvent (AWTEvent event)
   {
+    int id = event.getID();
+
+    switch (id)
+      {
+      case PaintEvent.PAINT:
+      case PaintEvent.UPDATE:
+        {
+          try 
+            {
+              Graphics g = getGraphics ();
+          
+              // Some peers like GtkFileDialogPeer are repainted by Gtk itself
+              if (g == null)
+                break;
+
+              g.setClip (((PaintEvent)event).getUpdateRect());
+
+              if (id == PaintEvent.PAINT)
+                awtComponent.paint (g);
+              else
+                awtComponent.update (g);
+
+              g.dispose ();
+            }
+          catch (InternalError e)
+            {
+              System.err.println (e);
+            }
+        }
+        break;
+      }
   }
   
   public boolean isFocusTraversable () 
@@ -235,7 +269,21 @@ public class GtkComponentPeer extends GtkGenericPeer
 
   public void paint (Graphics g)
   {
-    awtComponent.paint (g);
+    Component parent = awtComponent.getParent();
+    GtkComponentPeer parentPeer = null;
+    if ((parent instanceof Container) && !parent.isLightweight())
+      parentPeer = (GtkComponentPeer) parent.getPeer();
+
+    addExposeFilter();
+    if (parentPeer != null)
+      parentPeer.addExposeFilter();
+
+    Rectangle clip = g.getClipBounds();
+    gtkWidgetQueueDrawArea(clip.x, clip.y, clip.width, clip.height);
+
+    removeExposeFilter();
+    if (parentPeer != null)
+      parentPeer.removeExposeFilter();
   }
 
   public Dimension preferredSize ()

@@ -1012,12 +1012,21 @@ pre_event_handler (GtkWidget *widget, GdkEvent *event, jobject peer)
       break;
     case GDK_EXPOSE:
       {
-	(*gdk_env)->CallVoidMethod (gdk_env, peer,
-				    postExposeEventID,
-				    (jint)event->expose.area.x,
-				    (jint)event->expose.area.y,
-				    (jint)event->expose.area.width,
-				    (jint)event->expose.area.height);
+        // This filters out unwanted feedback expose events from gtk/X
+        // when we explictly invalidate and update heavyweight components,
+        // thus avoiding an infinite loop.
+        // FIXME: I'm not quite sure why we're getting these expose events. 
+        //        Maybe there is a way to avoid them?
+        if((event->any.window == widget->window && event->any.send_event)
+           || GTK_IS_LAYOUT(widget))
+          {
+	    (*gdk_env)->CallVoidMethod (gdk_env, peer,
+				        postExposeEventID,
+				        (jint)event->expose.area.x,
+				        (jint)event->expose.area.y,
+				        (jint)event->expose.area.width,
+				        (jint)event->expose.area.height);
+          }
       }
       break;
     case GDK_FOCUS_CHANGE:
