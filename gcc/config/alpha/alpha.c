@@ -459,10 +459,7 @@ aligned_memory_operand (op, mode)
     op = XEXP (op, 0);
 
   return (GET_CODE (op) == REG
-	  && (REGNO (op) == STACK_POINTER_REGNUM
-	      || op == hard_frame_pointer_rtx
-	      || (REGNO (op) >= FIRST_VIRTUAL_REGISTER
-		  && REGNO (op) <= LAST_VIRTUAL_REGISTER)));
+	  && REGNO_POINTER_ALIGN (REGNO (op)) >= 4);
 }
 
 /* Similar, but return 1 if OP is a MEM which is not alignable.  */
@@ -496,10 +493,17 @@ unaligned_memory_operand (op, mode)
     op = XEXP (op, 0);
 
   return (GET_CODE (op) != REG
-	  || (REGNO (op) != STACK_POINTER_REGNUM
-	      && op != hard_frame_pointer_rtx
-	      && (REGNO (op) < FIRST_VIRTUAL_REGISTER
-		  || REGNO (op) > LAST_VIRTUAL_REGISTER)));
+	  || REGNO_POINTER_ALIGN (REGNO (op)) < 4);
+}
+
+/* Return 1 if OP is either a register or an unaligned memory location.  */
+
+int
+reg_or_unaligned_mem_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return register_operand (op, mode) || unaligned_memory_operand (op, mode);
 }
 
 /* Return 1 if OP is any memory location.  During reload a pseudo matches.  */
@@ -560,11 +564,13 @@ get_aligned_mem (ref, paligned_mem, pbitnum)
   *pbitnum = GEN_INT ((offset & 3) * 8);
 }
 
-/* Similar, but just get the address.  Handle the two reload cases.  */
+/* Similar, but just get the address.  Handle the two reload cases.  
+   Add EXTRA_OFFSET to the address we return.  */
 
 rtx
-get_unaligned_address (ref)
+get_unaligned_address (ref, extra_offset)
      rtx ref;
+     int extra_offset;
 {
   rtx base;
   HOST_WIDE_INT offset = 0;
@@ -590,7 +596,7 @@ get_unaligned_address (ref)
   if (GET_CODE (base) == PLUS)
     offset += INTVAL (XEXP (base, 1)), base = XEXP (base, 0);
 
-  return plus_constant (base, offset);
+  return plus_constant (base, offset + extra_offset);
 }
 
 /* Subfunction of the following function.  Update the flags of any MEM
