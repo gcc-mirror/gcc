@@ -1,3 +1,10 @@
+2001-06-13  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* acinclude.m4 (GLIBCPP_CONFIGURE): Bump version to 3.0.0.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* include/bits/c++config (__GLIBCPP__): Update date.
+
 2001-06-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/fpos.h (fpos::operator-): Don't return reference,
