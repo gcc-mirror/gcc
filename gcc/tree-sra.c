@@ -46,6 +46,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "bitmap.h"
 #include "obstack.h"
 #include "target.h"
+/* expr.h is needed for MOVE_RATIO.  */
+#include "expr.h"
 
 
 /* This object of this pass is to replace a non-addressable aggregate with a
