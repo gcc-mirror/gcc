@@ -36,6 +36,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "output.h"
 #include "splay-tree.h"
+#include "ggc.h"
 
 /* The basic idea of common subexpression elimination is to go
    through the code, keeping a record of expressions that would
@@ -8730,6 +8731,9 @@ cse_main (f, nregs, after_loop, file)
 	|| global_regs[i])
       SET_HARD_REG_BIT (regs_invalidated_by_call, i);
 
+  if (ggc_p)
+    ggc_push_context ();
+
   /* Loop over basic blocks.
      Compute the maximum number of qty's needed for each basic block
      (which is 2 for each SET).  */
@@ -8786,10 +8790,16 @@ cse_main (f, nregs, after_loop, file)
 	  cse_jumps_altered |= old_cse_jumps_altered;
 	}
 
+      if (ggc_p)
+	ggc_collect ();
+
 #ifdef USE_C_ALLOCA
       alloca (0);
 #endif
     }
+
+  if (ggc_p)
+    ggc_pop_context ();
 
   /* Tell refers_to_mem_p that qty_const info is not available.  */
   qty_const = 0;
