@@ -2365,8 +2365,8 @@
 	(match_operand:DF 1 "general_movsrc_operand" "r,FQ,m,r"))]
   "(! TARGET_SH4 || reload_completed
     /* ??? We provide some insn so that direct_{load,store}[DFmode] get set */
-    || GET_CODE (operands[0]) == REG && REGNO (operands[0]) == 3
-    || GET_CODE (operands[1]) == REG && REGNO (operands[1]) == 3)
+    || (GET_CODE (operands[0]) == REG && REGNO (operands[0]) == 3)
+    || (GET_CODE (operands[1]) == REG && REGNO (operands[1]) == 3))
    && (arith_reg_operand (operands[0], DFmode)
        || arith_reg_operand (operands[1], DFmode))"
   "* return output_movedouble (insn, operands, DFmode);"
@@ -2821,8 +2821,8 @@
   "
    (! TARGET_SH3E
     /* ??? We provide some insn so that direct_{load,store}[SFmode] get set */
-    || GET_CODE (operands[0]) == REG && REGNO (operands[0]) == 3
-    || GET_CODE (operands[1]) == REG && REGNO (operands[1]) == 3)
+    || (GET_CODE (operands[0]) == REG && REGNO (operands[0]) == 3)
+    || (GET_CODE (operands[1]) == REG && REGNO (operands[1]) == 3))
    && (arith_reg_operand (operands[0], SFmode)
        || arith_reg_operand (operands[1], SFmode))"
   "@
@@ -3467,7 +3467,6 @@
     {
       if (TARGET_IEEE)
 	{
-	  rtx t_reg = gen_rtx_REG (SImode, T_REG);
 	  rtx lab = gen_label_rtx ();
 	  prepare_scc_operands (EQ);
 	  emit_jump_insn (gen_branch_true (lab));
