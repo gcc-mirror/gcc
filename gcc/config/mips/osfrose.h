@@ -55,12 +55,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{.cxx:	-D__LANGUAGE_C_PLUS_PLUS__ -D__LANGUAGE_C_PLUS_PLUS} \
 %{.C:	-D__LANGUAGE_C_PLUS_PLUS__ -D__LANGUAGE_C_PLUS_PLUS} \
 %{.m:	-D__LANGUAGE_OBJECTIVE_C__ -D__LANGUAGE_OBJECTIVE_C} \
-%{!.S:	-D__LANGUAGE_C__  -D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}} \
-%{!fbuiltin: %{!fno-builtin: %{O*: \
-	-Dmemcpy=__builtin_memcpy \
-	-Dmemcmp=__builtin_memcmp \
-	-Dstrcpy=__builtin_strcpy \
-	-Dstrlen=__builtin_strlen }}}"
+%{!.S:	-D__LANGUAGE_C__  -D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}}"
 
 #define LINK_SPEC "\
 %{G*} \
@@ -88,7 +83,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define MD_STARTFILE_PREFIX	"/usr/ccs/lib/"
 #endif
 
-/* Turn on -mpic-extern and -fno-builtin by default.  */
+/* Turn on -mpic-extern by default.  */
 #define CC1_SPEC "\
 %{O*: %{!mno-gpOPT:%{!mno-gpopt: -mgpopt}}} \
 %{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
@@ -97,9 +92,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{pic-lib:    -mhalf-pic} \
 %{pic-extern: -mhalf-pic} \
 %{pic-calls:  -mhalf-pic} \
-%{!pic-*:     -mhalf-pic} \
-%{!fbuiltin: %{!fno-builtin: -fno-builtin}} \
-%{save-temps: }"
+%{!pic-*:     -mhalf-pic}"
 
 /* Specify size_t, ptrdiff_t, and wchar_t types.  */
 #define SIZE_TYPE	"long unsigned int"
