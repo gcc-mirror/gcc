@@ -18,6 +18,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#ifndef _RTL_H
+#define _RTL_H
 
 #include "machmode.h"
 
@@ -662,9 +664,14 @@ extern char *note_insn_name[];
    defined here and in tree.h.  */
 
 #ifndef exact_log2
-#define exact_log2(N) exact_log2_wide ((HOST_WIDE_INT) (N))
-#define floor_log2(N) floor_log2_wide ((HOST_WIDE_INT) (N))
+#define exact_log2(N) exact_log2_wide ((unsigned HOST_WIDE_INT) (N))
+#define floor_log2(N) floor_log2_wide ((unsigned HOST_WIDE_INT) (N))
 #endif
+extern int exact_log2_wide		PROTO((unsigned HOST_WIDE_INT));
+extern int floor_log2_wide		PROTO((unsigned HOST_WIDE_INT));
+
+/* In expmed.c */
+extern int ceil_log2			PROTO((unsigned HOST_WIDE_INT));
 
 #define plus_constant(X,C) plus_constant_wide (X, (HOST_WIDE_INT) (C))
 
@@ -676,7 +683,9 @@ extern rtx plus_constant_for_output_wide PROTO((rtx, HOST_WIDE_INT));
 
 #define GEN_INT(N) gen_rtx (CONST_INT, VOIDmode, (HOST_WIDE_INT) (N))
 
-extern rtx bc_gen_rtx ();
+struct bc_label;
+extern rtx bc_gen_rtx			PROTO ((char *, int,
+						struct bc_label *));
 
 extern rtx gen_rtx			PVPROTO((enum rtx_code,
 						 enum machine_mode, ...));
@@ -818,7 +827,7 @@ extern int side_effects_p	PROTO((rtx));
 extern int volatile_refs_p	PROTO((rtx));
 extern int volatile_insn_p	PROTO((rtx));
 extern void remove_note		PROTO((rtx, rtx));
-extern void note_stores		PROTO((rtx, void (*)()));
+extern void note_stores		PROTO((rtx, void (*) (rtx, rtx)));
 extern int refers_to_regno_p	PROTO((int, int, rtx, rtx *));
 extern int reg_overlap_mentioned_p PROTO((rtx, rtx));
 extern rtx find_use_as_address	PROTO((rtx, rtx, HOST_WIDE_INT));
@@ -860,6 +869,7 @@ extern int may_trap_p			PROTO((rtx));
 extern int inequality_comparison_p	PROTO((rtx));
 extern rtx replace_rtx			PROTO((rtx, rtx, rtx));
 extern rtx replace_regs			PROTO((rtx, rtx *, int, int));
+extern int computed_jump_p		PROTO((rtx));
 
 /* Maximum number of parallel sets and clobbers in any insn in this fn.
    Always at least 3, since the combiner could put that many togetherm
@@ -1016,12 +1026,319 @@ extern char *regno_pointer_align;
 
 extern int rtx_to_tree_code	PROTO((enum rtx_code));
 
-extern int true_dependence	PROTO((rtx, enum machine_mode, rtx, int (*)()));
-extern int read_dependence	PROTO((rtx, rtx));
-extern int anti_dependence	PROTO((rtx, rtx));
-extern int output_dependence	PROTO((rtx, rtx));
-extern void init_alias_analysis	PROTO((void));
-extern void end_alias_analysis	PROTO((void));
-extern void mark_user_reg	PROTO((rtx));
-extern void mark_reg_pointer	PROTO((rtx, int));
-extern int computed_jump_p	PROTO((rtx));
+/* In rtlanal.c */
+extern int reg_set_p			PROTO ((rtx, rtx));
+extern int reg_mentioned_p		PROTO ((rtx, rtx));
+extern int reg_referenced_p		PROTO ((rtx, rtx));
+extern int reg_used_between_p		PROTO ((rtx, rtx, rtx));
+extern int reg_set_p			PROTO ((rtx, rtx));
+extern int reg_referenced_between_p	PROTO ((rtx, rtx, rtx));
+extern int reg_set_between_p		PROTO ((rtx, rtx, rtx));
+extern int rtx_unstable_p		PROTO ((rtx));
+extern int rtx_addr_varies_p		PROTO ((rtx));
+extern int rtx_equal_p			PROTO ((rtx, rtx));
+extern int inequality_comparisons_p	PROTO ((rtx));
+extern int dead_or_set_p		PROTO ((rtx, rtx));
+extern int dead_or_set_regno_p		PROTO ((rtx, int));
+extern int no_labels_between_p		PROTO ((rtx, rtx));
+extern int modified_between_p		PROTO ((rtx, rtx, rtx));
+extern int modified_in_p		PROTO ((rtx, rtx));
+
+/* In tree.c */
+extern void obfree			PROTO ((char *));
+struct obstack;
+extern void gcc_obstack_init		PROTO ((struct obstack *));
+extern void pop_obstacks		PROTO ((void));
+extern void push_obstacks		PROTO ((struct obstack *,
+						struct obstack *));
+#ifdef BUFSIZ
+extern int read_skip_spaces		PROTO ((FILE *));
+#endif
+
+/* In cse.c */
+struct cse_basic_block_data;
+extern int rtx_cost			PROTO ((rtx, enum rtx_code));
+extern void delete_dead_from_cse	PROTO ((rtx, int));
+#ifdef BUFSIZ
+extern int cse_main			PROTO ((rtx, int, int, FILE *));
+#endif
+extern void cse_end_of_basic_block	PROTO ((rtx,
+						struct cse_basic_block_data *,
+						int, int, int));
+
+/* In jump.c */
+extern int comparison_dominates_p	PROTO ((enum rtx_code, enum rtx_code));
+extern int condjump_p			PROTO ((rtx));
+extern int simplejump_p			PROTO ((rtx));
+extern int sets_cc0_p			PROTO ((rtx));
+extern int invert_jump			PROTO ((rtx, rtx));
+extern int rtx_renumbered_equal_p	PROTO ((rtx, rtx));
+extern int true_regnum			PROTO ((rtx));
+extern int redirect_jump		PROTO ((rtx, rtx));
+extern void jump_optimize		PROTO ((rtx, int, int, int));
+extern void thread_jumps		PROTO ((rtx, int, int));
+extern int redirect_exp			PROTO ((rtx *, rtx, rtx, rtx));
+extern int rtx_equal_for_thread_p	PROTO ((rtx, rtx, rtx));
+extern int invert_exp			PROTO ((rtx, rtx));
+extern int can_reverse_comparison_p	PROTO ((rtx, rtx));
+extern void delete_for_peephole		PROTO ((rtx, rtx));
+extern int condjump_in_parallel_p	PROTO ((rtx));
+
+/* In emit-rtl.c. */
+extern int max_reg_num				PROTO ((void));
+extern int max_label_num			PROTO ((void));
+extern int get_first_label_num			PROTO ((void));
+extern void delete_insns_since			PROTO ((rtx));
+extern void mark_reg_pointer			PROTO ((rtx, int));
+extern void mark_user_reg			PROTO ((rtx));
+extern void reset_used_flags			PROTO ((rtx));
+extern void reorder_insns			PROTO ((rtx, rtx, rtx));
+extern int get_max_uid				PROTO ((void));
+extern int in_sequence_p			PROTO ((void));
+extern void force_next_line_note		PROTO ((void));
+extern void init_emit				PROTO ((void));
+extern void init_emit_once			PROTO ((int));
+extern void push_topmost_sequence		PROTO ((void));
+extern void pop_topmost_sequence		PROTO ((void));
+extern int subreg_realpart_p			PROTO ((rtx));
+extern void reverse_comparison			PROTO ((rtx));
+extern void set_new_first_and_last_insn		PROTO ((rtx, rtx));
+extern void set_new_first_and_last_label_num	PROTO ((int, int));
+extern void unshare_all_rtl			PROTO ((rtx));
+extern void set_last_insn			PROTO ((rtx));
+extern void link_cc0_insns			PROTO ((rtx));
+extern void add_insn				PROTO ((rtx));
+extern void add_insn_before			PROTO ((rtx, rtx));
+extern void add_insn_after			PROTO ((rtx, rtx));
+extern void reorder_insns_with_line_notes	PROTO ((rtx, rtx, rtx));
+extern void emit_insn_after_with_line_notes	PROTO ((rtx, rtx, rtx));
+extern enum rtx_code classify_insn		PROTO ((rtx));
+extern rtx emit					PROTO ((rtx));
+
+/* In insn-emit.c */
+extern void add_clobbers		PROTO ((rtx, int));
+
+/* In combine.c */
+extern void combine_instructions	PROTO ((rtx, int));
+extern int extended_count		PROTO ((rtx, enum machine_mode, int));
+extern rtx remove_death			PROTO ((int, rtx));
+#ifdef BUFSIZ
+extern void dump_combine_stats		PROTO ((FILE *));
+extern void dump_combine_total_stats	PROTO ((FILE *));
+#endif
+
+/* In sched.c. */
+#ifdef BUFSIZ
+extern void schedule_insns		PROTO ((FILE *));
+#endif
+
+/* In print-rtl.c */
+extern void debug_rtx			PROTO ((rtx));
+extern void debug_rtx_list		PROTO ((rtx, int));
+extern rtx debug_rtx_find		PROTO ((rtx, int));
+#ifdef BUFSIZ
+extern void print_rtl			PROTO ((FILE *, rtx));
+extern void print_inline_rtx		PROTO ((FILE *, rtx, int));
+#endif
+
+/* In loop.c */
+extern void init_loop			PROTO ((void));
+#ifdef BUFSIZ
+extern void loop_optimize		PROTO ((rtx, FILE *, int));
+#endif
+extern void record_excess_regs		PROTO ((rtx, rtx, rtx *));
+
+/* In function.c */
+extern void reposition_prologue_and_epilogue_notes	PROTO ((rtx));
+extern void thread_prologue_and_epilogue_insns		PROTO ((rtx));
+extern void use_variable				PROTO ((rtx));
+extern HOST_WIDE_INT get_frame_size			PROTO ((void));
+extern void preserve_rtl_expr_result			PROTO ((rtx));
+extern void mark_temp_addr_taken			PROTO ((rtx));
+extern void update_temp_slot_address			PROTO ((rtx, rtx));
+extern void use_variable_after				PROTO ((rtx, rtx));
+
+/* In reload.c */
+extern int operands_match_p		PROTO ((rtx, rtx));
+extern int safe_from_earlyclobber	PROTO ((rtx, rtx));
+extern int strict_memory_address_p	PROTO ((enum machine_mode, rtx));
+
+/* In recog.c */
+extern int memory_address_p		PROTO ((enum machine_mode, rtx));
+extern int constrain_operands		PROTO ((int, int));
+extern int mode_dependent_address_p	PROTO ((rtx));
+extern void init_recog_no_volatile	PROTO ((void));
+extern int offsettable_memref_pq	PROTO ((rtx));
+extern int offsettable_nonstrict_memref_p PROTO ((rtx));
+extern int reg_fits_class_p		PROTO ((rtx, register enum reg_class,
+						int, enum machine_mode));
+extern int check_asm_operands		PROTO ((rtx));
+extern int address_operand		PROTO ((rtx, enum machine_mode));
+extern int const_int_operand		PROTO ((rtx, enum machine_mode));
+extern int const_double_operand		PROTO ((rtx, enum machine_mode));
+extern int general_operand		PROTO ((rtx, enum machine_mode));
+extern int immediate_operand		PROTO ((rtx, enum machine_mode));
+extern int nonimmediate_operand		PROTO ((rtx, enum machine_mode));
+extern int memory_operand		PROTO ((rtx, enum machine_mode));
+extern int nonmemory_operand		PROTO ((rtx, enum machine_mode));
+extern int push_operand			PROTO ((rtx, enum machine_mode));
+extern int register_operand		PROTO ((rtx, enum machine_mode));
+extern int scratch_operand		PROTO ((rtx, enum machine_mode));
+extern int indirect_operand		PROTO ((rtx, enum machine_mode));
+extern int mode_independent_operand	PROTO ((rtx, enum machine_mode));
+extern int comparison_operator		PROTO ((rtx, enum machine_mode));
+extern void init_recog_no_volatile	PROTO ((void));
+extern void init_recog			PROTO ((void));
+extern int validate_replace_rtx		PROTO ((rtx, rtx, rtx));
+extern int offsettable_address_p	PROTO ((int, enum machine_mode, rtx));
+extern int next_insn_tests_no_inequality PROTO ((rtx));
+extern int recog_memoized		PROTO ((rtx));
+extern int validate_change		PROTO ((rtx, rtx *, rtx, int));
+extern int apply_change_group		PROTO ((void));
+extern void cancel_changes		PROTO ((int));
+extern int num_validated_changes	PROTO ((void));
+
+/* In insn-recog.c */
+extern int recog			PROTO ((rtx, rtx, int *));
+
+/* In stmt.c */
+extern void emit_jump			PROTO ((rtx));
+extern int preserve_subexpressions_p	PROTO ((void));
+
+/* In expr.c */
+extern rtx bc_allocate_local		PROTO ((int, int));
+extern void init_expr_once		PROTO ((void));
+
+/* In stupid.c */
+#ifdef BUFSIZ
+extern void stupid_life_analysis	PROTO ((rtx, int, FILE *));
+#endif
+
+/* In flow.c */
+extern void allocate_for_life_analysis	PROTO ((void));
+#ifdef BUFSIZ
+extern void dump_flow_info		PROTO ((FILE *));
+#endif
+
+/* In expmed.c */
+extern void init_expmed			PROTO ((void));
+extern void expand_inc			PROTO ((rtx, rtx));
+extern void expand_dec			PROTO ((rtx, rtx));
+extern rtx expand_mult_highpart		PROTO ((enum machine_mode, rtx,
+						unsigned HOST_WIDE_INT, rtx,
+						int, int));
+
+/* In toplev.c */
+extern void strip_off_ending		PROTO ((char *, int));
+extern void print_time			PROTO ((char *, int));
+extern int get_run_time			PROTO ((void));
+#if 0
+extern void fatal			PVPROTO ((char *, ...));
+extern void warning			PVPROTO ((char *, ...));
+extern void error			PVPROTO ((char *, ...));
+#endif
+extern void pfatal_with_name		PROTO ((char *));
+extern void fancy_abort			PROTO ((void));
+extern int count_error			PROTO ((int));
+extern void pedwarn			PVPROTO ((char *, ...));
+extern void warning_for_asm		PVPROTO ((rtx, char *, ...));
+extern void error_for_asm		PVPROTO ((rtx, char *, ...));
+
+/* In global.c */
+#ifdef BUFSIZ
+extern int global_alloc			PROTO ((FILE *));
+extern void dump_global_regs		PROTO ((FILE *));
+#endif
+
+/* In regclass.c */
+extern void globalize_reg		PROTO ((int));
+extern void init_regs			PROTO ((void));
+extern void init_reg_sets		PROTO ((void));
+extern void regset_release_memory	PROTO ((void));
+extern void regclass_init		PROTO ((void));
+extern void regclass			PROTO ((rtx, int));
+extern void reg_scan			PROTO ((rtx, int, int));
+extern void fix_register		PROTO ((char *, int, int));
+
+/* In optabs.c */
+extern void init_optabs			PROTO ((void));
+
+/* In local-alloc.c */
+#ifdef BUFSIZ
+extern void dump_local_alloc		PROTO ((FILE *));
+#endif
+extern void local_alloc			PROTO ((void));
+
+/* In reload1.c */
+extern void reload_cse_regs		PROTO ((rtx));
+extern void init_reload			PROTO ((void));
+extern void mark_home_live		PROTO ((int));
+#ifdef BUFSIZ
+extern int reload			PROTO ((rtx, int, FILE *));
+#endif
+
+/* In caller-save.c */
+extern void init_caller_save		PROTO ((void));
+
+/* In profile.c */
+extern void init_branch_prob		PROTO ((char *));
+
+/* In reg-stack.c */
+#ifdef BUFSIZ
+extern void reg_to_stack		PROTO ((rtx, FILE *));
+#endif
+extern int stack_regs_mentioned_p	PROTO ((rtx));
+
+/* In fold-const.c */
+extern int add_double		PROTO ((HOST_WIDE_INT, HOST_WIDE_INT,
+					HOST_WIDE_INT, HOST_WIDE_INT,
+					HOST_WIDE_INT *, HOST_WIDE_INT *));
+extern int neg_double		PROTO ((HOST_WIDE_INT, HOST_WIDE_INT,
+					HOST_WIDE_INT *, HOST_WIDE_INT *));
+extern int mul_double		PROTO ((HOST_WIDE_INT, HOST_WIDE_INT,
+					HOST_WIDE_INT, HOST_WIDE_INT,
+					HOST_WIDE_INT *, HOST_WIDE_INT *));
+extern void lshift_double	PROTO ((HOST_WIDE_INT, HOST_WIDE_INT,
+					HOST_WIDE_INT, int, HOST_WIDE_INT *,
+					HOST_WIDE_INT *, int));
+extern void rshift_double	PROTO ((HOST_WIDE_INT, HOST_WIDE_INT,
+					HOST_WIDE_INT, int,
+					HOST_WIDE_INT *, HOST_WIDE_INT *, int));
+extern void lrotate_double	PROTO ((HOST_WIDE_INT, HOST_WIDE_INT,
+					HOST_WIDE_INT, int, HOST_WIDE_INT *,
+					HOST_WIDE_INT *));
+extern void rrotate_double	PROTO ((HOST_WIDE_INT, HOST_WIDE_INT,
+					HOST_WIDE_INT, int, HOST_WIDE_INT *,
+					HOST_WIDE_INT *));
+
+/* In calls.c */
+/* Emit library call.  */                                           
+extern void emit_library_call		PVPROTO ((rtx, int, enum machine_mode,
+						  int, ...));
+extern rtx emit_library_call_value	PVPROTO((rtx, rtx, int,
+						 enum machine_mode,
+						 int, ...));
+
+/* In unroll.c */
+extern int set_dominates_use		PROTO ((int, int, int, rtx, rtx));
+
+/* In varasm.c */
+extern void bss_section			PROTO ((void));
+extern int in_data_section		PROTO ((void));
+extern int supports_one_only		PROTO ((void));
+
+/* In rtl.c */
+extern void init_rtl			PROTO ((void));
+extern void rtx_free			PROTO ((rtx));
+
+/* In alias.c */
+extern int true_dependence		PROTO ((rtx, enum machine_mode, rtx,
+						int (*)(rtx)));
+extern int read_dependence		PROTO ((rtx, rtx));
+extern int anti_dependence		PROTO ((rtx, rtx));
+extern int output_dependence		PROTO ((rtx, rtx));
+extern void init_alias_analysis		PROTO ((void));
+extern void end_alias_analysis		PROTO ((void));
+
+#endif /* _RTL_H */
+

@@ -1446,6 +1446,7 @@ char *ctime ();
 
 #include "gbl-ctors.h"
 #include "gcov-io.h"
+#include <string.h>
 
 static struct bb *bb_head;
 
@@ -1722,8 +1723,6 @@ __bb_init_func (struct bb *blocks)
 #ifndef MACHINE_STATE_RESTORE
 #define MACHINE_STATE_RESTORE(ID)
 #endif
-
-#include <string.h>
 
 /* Number of buckets in hashtable of basic block addresses.  */
 

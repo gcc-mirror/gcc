@@ -1,3 +1,15 @@
+Tue Dec  9 01:16:06 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* Partially cleaned up prototyping code from HJ.
+	* haifa-sched.c (haifa_classify_insn): Renamed from classify_insn.
+	All references changed.
+	* rtl.h: Protect from multiple inclusions.  Add many prototypes.
+	
+Tue Dec  9 01:15:15 199  Fred Fish  <fnf@ninemoons.com>7
+
+	* libgcc2.c (string.h): Hoist inclusion to occur before first use of
+	string functions like strlen.
+
 Tue Dec  9 00:57:38 1997  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* configure.in: Check for functions getrlimit and setrlimit.
