@@ -79,4 +79,4 @@ int main (void)
   return main1 ();
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 3 loops" 1 "vect" } } */

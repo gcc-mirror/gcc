@@ -1,3 +1,47 @@
+2004-10-14  Olga Golovanevsky  <olga@il.ibm.com>
+
+	* tree-vectorizer.c (vect_generate_tmps_on_preheader):
+	(vect_update_ivs_after_vectorizer):
+	(vect_transform_for_unknown_loop_bound):
+	(tree_duplicate_loop_to_edge):
+	(allocate_new_names):
+	(rename_use_op):
+	(rename_def_op):
+	(rename_variables_in_bb):
+	(free_new_names):
+	(rename_variables_in_loop):
+	(copy_phi_nodes):
+	(update_phis_for_duplicate_loop):
+	(update_phi_nodes_for_guard):
+	(make_loop_iterate_ntimes):
+	(tree_duplicate_loop_to_edge_cfg):
+	(add_loop_guard):
+	(vect_analyze_loop_with_symbolic_num_of_iters):
+	(verify_loop_for_duplication): 
+	(vect_gen_niters_for_prolog_loop):
+	(vect_update_niters_after_peeling):
+	(vect_update_inits_of_dr):
+	(vect_update_inits_of_drs):
+	(vect_build_loop_niters):
+	(vect_do_peeling_for_alignment): New functions.
+	(vect_transform_loop): Add unknown and known but indivisible loop
+	bound support; add peeling for unalignment support. 
+	(vect_analyze_loop_form): Support symbolic number of iterations.
+	(vect_transform_loop_bound): New input parameter.
+	(vect_get_loop_niters): Change input parameter type.
+	(new_loop_vec_info): LOOP_VINFO_NITERS is tree now.
+	(vectorizable_store): Allow unaligned access.
+	(vectorize_loops): Add rewrite_into_loop_closed_ssa.
+	(vect_analyze_data_refs_alignment): Allowed one unaligned
+	store.
+	* tree-vectorizer.h (LOOP_VINFO_NITERS_KNOWN_P): Redefined 
+	to use tree.
+	(LOOP_VINFO_INT_NITERS): New macro.
+	(MAX_NUMBER_OF_UNALIGNED_DATA_REFS): New define.
+	(do_peeling_for_alignment):
+	(unaligned_drs): New members of _loop_vec_info.
+	(LOOP_DO_PEELING_FOR_ALIGNMENT): New macro.
+
 2004-10-14  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* tree.h (TREE_STRING_POINTER): Wrap in "const char *".

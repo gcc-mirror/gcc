@@ -1,3 +1,24 @@
+2004-10-14  Olga GOlovanevsky  <olga@il.ibm.com>
+
+	* testsuite/gcc.dg/vect/vect-28.c : Remove xfail.
+	* testsuite/gcc.dg/vect/vect-30.c : Remove xfail.
+	* testsuite/gcc.dg/vect/vect-31.c : Vectorize 4 loops instead of 2.
+	* testsuite/gcc.dg/vect/vect-33.c : Remove xfail.
+	* testsuite/gcc.dg/vect/vect-44.c : Remove xfail.
+	* testsuite/gcc.dg/vect/vect-46.c : Remove xfail.
+	* testsuite/gcc.dg/vect/vect-50.c : Remove xfail.
+	* testsuite/gcc.dg/vect/vect-52.c : Remove xfail.
+	* testsuite/gcc.dg/vect/vect-54.c : Remove xfail.
+	* testsuite/gcc.dg/vect/vect-58.c : Remove xfail.
+	* testsuite/gcc.dg/vect/vect-60.c : Remove xfail.
+	* testsuite/gcc.dg/vect/vect-64.c : Vectorize 3 loops instead of 1.
+	* testsuite/gcc.dg/vect/vect-66.c : Vectorize 3 loops instead of 2.
+	* testsuite/gcc.dg/vect/vect-68.c : Vectorize 4 loops instead of 2.
+	* testsuite/gcc.dg/vect/vect-69.c : Vectorize 4 loops instead of 2.
+	* testsuite/gcc.dg/vect/vect-8.c : Remove xfail.
+	* testsuite/gcc.dg/vect/vect-80.c : Remove xfail.
+	* testsuite/gcc.dg/vect/vect-none.c : Vectorize 1 loops instead of 0.
+
 2004-10-14  Dorit Naishlos  <dorit@il.ibm.com>
 
 	* gcc.dg/vect/vect-82.c: New testcase.	
