@@ -4756,7 +4756,7 @@ pfatal_with_name (name)
   if (errno < sys_nerr)
     s = concat ("%s: ", my_strerror( errno ));
   else
-    s = "cannot open %s";
+    s = "cannot open `%s'";
   fatal (s, name);
 }
 
@@ -4769,7 +4769,7 @@ perror_with_name (name)
   if (errno < sys_nerr)
     s = concat ("%s: ", my_strerror( errno ));
   else
-    s = "cannot open %s";
+    s = "cannot open `%s'";
   error (s, name);
 }
 
@@ -4780,9 +4780,10 @@ perror_exec (name)
   char *s;
 
   if (errno < sys_nerr)
-    s = concat ("installation problem, cannot exec %s: ", my_strerror( errno ));
+    s = concat ("installation problem, cannot exec `%s': ",
+		my_strerror (errno));
   else
-    s = "installation problem, cannot exec %s";
+    s = "installation problem, cannot exec `%s'";
   error (s, name);
 }
 
