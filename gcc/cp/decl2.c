@@ -4057,6 +4057,11 @@ arg_assoc_class (struct arg_lookup *k, tree type)
 static bool
 arg_assoc_type (struct arg_lookup *k, tree type)
 {
+  /* As we do not get the type of non-type dependent expressions
+     right, we can end up with such things without a type.  */
+  if (!type)
+    return false;
+  
   switch (TREE_CODE (type))
     {
     case ERROR_MARK:

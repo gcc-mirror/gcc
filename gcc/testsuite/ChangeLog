@@ -1,3 +1,8 @@
+2003-07-02  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/9779
+	* g++.dg/template/dependent-expr1.C: New.
+
 2003-07-01  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/6949
