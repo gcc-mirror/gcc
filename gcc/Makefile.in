@@ -1507,7 +1507,7 @@ stamp-codes : $(md_file) gencodes $(srcdir)/move-if-change
 	touch stamp-codes
 
 insn-emit.o : insn-emit.c $(CONFIG_H) $(RTL_H) expr.h real.h output.h \
-  insn-config.h insn-flags.h insn-codes.h
+  insn-config.h insn-flags.h insn-codes.h system.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-emit.c
 
 insn-emit.c: stamp-emit ; @true
@@ -1517,7 +1517,7 @@ stamp-emit : $(md_file) genemit $(srcdir)/move-if-change
 	touch stamp-emit
 
 insn-recog.o : insn-recog.c $(CONFIG_H) $(RTL_H) insn-config.h $(RECOG_H) \
-  real.h output.h flags.h
+  real.h output.h flags.h system.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-recog.c
 
 insn-recog.c: stamp-recog ; @true
@@ -1527,7 +1527,7 @@ stamp-recog : $(md_file) genrecog $(srcdir)/move-if-change
 	touch stamp-recog
 
 insn-opinit.o : insn-opinit.c $(CONFIG_H) $(RTL_H) insn-codes.h insn-flags.h \
-  insn-config.h flags.h $(RECOG_H) expr.h reload.h
+  insn-config.h flags.h $(RECOG_H) expr.h reload.h system.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-opinit.c
 
 insn-opinit.c: stamp-opinit ; @true
@@ -1536,7 +1536,7 @@ stamp-opinit : $(md_file) genopinit $(srcdir)/move-if-change
 	$(srcdir)/move-if-change tmp-opinit.c insn-opinit.c
 	touch stamp-opinit
 
-insn-extract.o : insn-extract.c $(CONFIG_H) $(RTL_H)
+insn-extract.o : insn-extract.c $(CONFIG_H) $(RTL_H) system.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-extract.c
 
 insn-extract.c: stamp-extract ; @true
@@ -1545,7 +1545,7 @@ stamp-extract : $(md_file) genextract $(srcdir)/move-if-change
 	$(srcdir)/move-if-change tmp-extract.c insn-extract.c
 	touch stamp-extract
 
-insn-peep.o : insn-peep.c $(CONFIG_H) $(RTL_H) regs.h output.h real.h
+insn-peep.o : insn-peep.c $(CONFIG_H) $(RTL_H) regs.h output.h real.h system.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-peep.c
 
 insn-peep.c: stamp-peep ; @true
@@ -1555,7 +1555,7 @@ stamp-peep : $(md_file) genpeep $(srcdir)/move-if-change
 	touch stamp-peep
 
 insn-attrtab.o : insn-attrtab.c $(CONFIG_H) $(RTL_H) regs.h real.h output.h \
-     insn-attr.h insn-config.h
+     insn-attr.h insn-config.h system.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-attrtab.c
 
 insn-attr.h: stamp-attr ; @true
@@ -1578,7 +1578,7 @@ stamp-attrtab : $(md_file) genattrtab $(srcdir)/move-if-change
 
 insn-output.o : insn-output.c $(CONFIG_H) $(RTL_H) regs.h real.h conditions.h \
     hard-reg-set.h insn-config.h insn-flags.h insn-attr.h output.h $(RECOG_H) \
-    insn-codes.h
+    insn-codes.h system.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-output.c
 
 insn-output.c: stamp-output ; @true
