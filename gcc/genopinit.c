@@ -264,6 +264,7 @@ gen_insn (rtx insn)
                             || mode_class[i] == MODE_PARTIAL_INT
 			    || mode_class[i] == MODE_VECTOR_INT)
 			&& (! force_float || mode_class[i] == MODE_FLOAT 
+			    || mode_class[i] == MODE_COMPLEX_FLOAT
 			    || mode_class[i] == MODE_VECTOR_FLOAT))
 		      break;
 		  }
