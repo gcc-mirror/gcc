@@ -1,3 +1,10 @@
+2002-07-01  Roger Sayle  <roger@eyesopen.com>
+
+	PR opt/4046
+	* fold-const.c (fold) [COND_EXPR]: Simplify A ? 0 : 1 to !A,
+	A ? B : 0 to A && B and A ? B : 1 into !A || B if both A and
+	B are truth values.
+
 2002-07-01  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config/mmix/t-mmix: Eliminate last reference to LIBGCC1_TEST.
