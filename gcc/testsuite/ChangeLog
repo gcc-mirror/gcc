@@ -1,3 +1,8 @@
+2004-12-13  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/18968
+	* g++.dg/opt/pr18968.C: New test.
+
 2004-12-13  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/18925
