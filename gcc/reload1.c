@@ -6755,8 +6755,20 @@ emit_reload_insns (insn)
 
 	  /* Output the last reload insn.  */
 	  if (! special)
-	    gen_reload (old, reloadreg, reload_opnum[j],
-			reload_when_needed[j]);
+	    {
+	      rtx set;
+
+	      /* Don't output the last reload if OLD is not the dest of
+		 INSN and is in the src and is clobbered by INSN. */
+	      if (! flag_expensive_optimizations
+		  || GET_CODE (old) != REG
+		  || !(set = single_set (insn))
+		  || rtx_equal_p (old, SET_DEST (set))
+		  || !reg_mentioned_p (old, SET_SRC (set))
+		  || !regno_clobbered_p (REGNO (old), insn))
+		gen_reload (old, reloadreg, reload_opnum[j],
+			    reload_when_needed[j]);
+	    }
 
 #ifdef PRESERVE_DEATH_INFO_REGNO_P
 	  /* If final will look at death notes for this reg,
