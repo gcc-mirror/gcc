@@ -69,15 +69,6 @@
 ;; # instructions (4 bytes each)
 (define_attr "length" "" (const_int 1))
 
-;; whether or not an instruction has a mandatory delay slot
-(define_attr "dslot" "no,yes"
-  (if_then_else (ior (eq_attr "type" "branch,jump,call,xfer,hilo,fcmp")
-		     (and (eq_attr "type" "load")
-			  (and (eq (symbol_ref "mips_isa") (const_int 1))
-				   (eq (symbol_ref "mips16") (const_int 0)))))
-		(const_string "yes")
-		(const_string "no")))
-
 ;; Attribute describing the processor.  This attribute must match exactly
 ;; with the processor_type enumeration in mips.h.
 
@@ -93,6 +84,18 @@
 (define_attr "cpu"
   "default,r3000,r3900,r6000,r4000,r4100,r4300,r4600,r4650,r5000,r8000"
   (const (symbol_ref "mips_cpu_attr")))
+
+;; Does the instruction have a mandatory delay slot?
+;;   The 3900, is (mostly) mips1, but does not have a manditory load delay
+;;   slot. 
+(define_attr "dslot" "no,yes"
+  (if_then_else (ior (eq_attr "type" "branch,jump,call,xfer,hilo,fcmp")
+		     (and (eq_attr "type" "load")
+			  (and (eq (symbol_ref "mips_isa") (const_int 1))
+			       (and (eq (symbol_ref "mips16") (const_int 0))
+                                    (eq_attr "cpu" "!r3900")))))
+		(const_string "yes")
+		(const_string "no")))
 
 ;; Attribute defining whether or not we can use the branch-likely instructions
 

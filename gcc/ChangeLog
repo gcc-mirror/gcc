@@ -1,3 +1,8 @@
+Tue May 12 11:38:31 1998  Gavin Koch  <gavin@cygnus.com>
+
+	* config/mips/mips.md (dslot): Move after definition of "cpu"
+	attribute.  Handle r3900 case.
+
 Tue May 12 10:21:36 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* system.h: Define the STRINGIFY macro here.
