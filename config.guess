@@ -684,7 +684,7 @@ EOF
        (/bin/uname -X|egrep i80486 >/dev/null) && UNAME_MACHINE=i486
        (/bin/uname -X|egrep '^Machine.*Pentium' >/dev/null) \
                && UNAME_MACHINE=i586
-       (/bin/uname -X|egrep '^Machine.*PentII' >/dev/null) \
+       (/bin/uname -X|egrep '^Machine.*Pent.*II' >/dev/null) \
                && UNAME_MACHINE=i686
        (/bin/uname -X|egrep '^Machine.*Pentium Pro' >/dev/null) \
                && UNAME_MACHINE=i686

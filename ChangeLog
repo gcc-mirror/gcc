@@ -1,3 +1,8 @@
+Sat Feb 13 12:03:28 1999  Jeffrey A Law  (law@cygnus.com)
+
+	Sat Jan 30 06:09:00 1999  Robert Lipe  (robertlipe@usa.net)
+	* config.guess: Improve detection of i686 on UnixWare 7.
+
 Wed Dec  2 01:44:03 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* egcs-1.1.1 Released.
