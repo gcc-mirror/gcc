@@ -1,5 +1,14 @@
 2001-01-07  Michael Hayes  <mhayes@redhat.com>
 
+	* loop.h (loop_insn_hoist): New prototype.
+	* loop.c (loop_insn_hoist, loop_insn_emit_before): New.
+	(move_movables, loop_givs_rescan): Use loop_insn_hoist.
+	(check_dbra_loop, load_mems): Likewise.
+	* unroll.c (unroll_loop, find_splittable_regs): Likewise.
+	(find_splittable_givs): Likewise.
+
+2001-01-07  Michael Hayes  <mhayes@redhat.com>
+
 	* loop.c (emit_iv_add_mult): Use single_set to examine new insn.
 
 2001-01-07  Richard Henderson  <rth@redhat.com>

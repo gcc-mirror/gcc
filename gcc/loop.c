@@ -246,6 +246,9 @@ static rtx check_insn_for_givs PARAMS((struct loop *, rtx, int, int));
 static rtx check_insn_for_bivs PARAMS((struct loop *, rtx, int, int));
 static int iv_add_mult_cost PARAMS ((rtx, rtx, rtx, rtx));
 
+static rtx loop_insn_emit_before PARAMS((const struct loop *, basic_block, 
+					 rtx, rtx));
+
 static void loop_dump_aux PARAMS ((const struct loop *, FILE *, int));
 void debug_biv PARAMS ((const struct induction *));
 void debug_giv PARAMS ((const struct induction *));
@@ -1711,7 +1714,7 @@ move_movables (loop, movables, threshold, insn_count)
 		  for (m1 = m; m1->match; m1 = m1->match);
 		  newpat = gen_move_insn (SET_DEST (PATTERN (m->insn)),
 					  SET_DEST (PATTERN (m1->insn)));
-		  i1 = emit_insn_before (newpat, loop_start);
+		  i1 = loop_insn_hoist (loop, newpat);
 
 		  /* Mark the moved, invariant reg as being allowed to
 		     share a hard reg with the other matching invariant.  */
@@ -1735,7 +1738,7 @@ move_movables (loop, movables, threshold, insn_count)
 		 the move insn before the loop.  */
 	      else if (m->move_insn)
 		{
-		  rtx i1, temp;
+		  rtx i1, temp, seq;
 
 		  for (count = m->consec; count >= 0; count--)
 		    {
@@ -1772,11 +1775,12 @@ move_movables (loop, movables, threshold, insn_count)
 		  start_sequence ();
 		  emit_move_insn (m->set_dest, m->set_src);
 		  temp = get_insns ();
+		  seq = gen_sequence ();
 		  end_sequence ();
 
 		  add_label_notes (m->set_src, temp);
 
-		  i1 = emit_insns_before (temp, loop_start);
+		  i1 = loop_insn_hoist (loop, seq);
 		  if (! find_reg_note (i1, REG_EQUAL, NULL_RTX))
 		    REG_NOTES (i1)
 		      = gen_rtx_EXPR_LIST (m->is_equiv ? REG_EQUIV : REG_EQUAL,
@@ -1877,7 +1881,7 @@ move_movables (loop, movables, threshold, insn_count)
 				      = copy_rtx (CALL_INSN_FUNCTION_USAGE (temp));
 				}
 			      else
-				i1 = emit_insn_before (body, loop_start);
+				i1 = loop_insn_hoist (loop, body);
 			      if (first == 0)
 				first = i1;
 			      if (temp == fn_address_insn)
@@ -1910,7 +1914,7 @@ move_movables (loop, movables, threshold, insn_count)
 			    emit_move_insn (reg, tem);
 			  sequence = gen_sequence ();
 			  end_sequence ();
-			  i1 = emit_insn_before (sequence, loop_start);
+			  i1 = loop_insn_hoist (loop, sequence);
 			}
 		      else if (GET_CODE (p) == CALL_INSN)
 			{
@@ -1924,16 +1928,18 @@ move_movables (loop, movables, threshold, insn_count)
 			}
 		      else if (count == m->consec && m->move_insn_first)
 			{
+			  rtx seq;
 			  /* The SET_SRC might not be invariant, so we must
 			     use the REG_EQUAL note.  */
 			  start_sequence ();
 			  emit_move_insn (m->set_dest, m->set_src);
 			  temp = get_insns ();
+			  seq = gen_sequence ();
 			  end_sequence ();
 
 			  add_label_notes (m->set_src, temp);
 
-			  i1 = emit_insns_before (temp, loop_start);
+			  i1 = loop_insn_hoist (loop, seq);
 			  if (! find_reg_note (i1, REG_EQUAL, NULL_RTX))
 			    REG_NOTES (i1)
 			      = gen_rtx_EXPR_LIST ((m->is_equiv ? REG_EQUIV
@@ -1941,7 +1947,7 @@ move_movables (loop, movables, threshold, insn_count)
 						   m->set_src, REG_NOTES (i1));
 			}
 		      else
-			i1 = emit_insn_before (PATTERN (p), loop_start);
+			i1 = loop_insn_hoist (loop, PATTERN (p));
 
 		      if (REG_NOTES (i1) == 0)
 			{
@@ -4041,18 +4047,16 @@ loop_givs_rescan (loop, bl, reg_map, end_insert_before)
 			  end_insert_before);
       else if (v->final_value)
 	{
-	  rtx insert_before;
-	  
 	  /* If the loop has multiple exits, emit the insn before the
 	     loop to ensure that it will always be executed no matter
 	     how the loop exits.  Otherwise, emit the insn after the loop,
 	     since this is slightly more efficient.  */
 	  if (loop->exit_count)
-	    insert_before = loop->start;
+	    loop_insn_hoist (loop, 
+			     gen_move_insn (v->dest_reg, v->final_value));
 	  else
-	    insert_before = end_insert_before;
-	  emit_insn_before (gen_move_insn (v->dest_reg, v->final_value),
-			    insert_before);
+	    emit_insn_before (gen_move_insn (v->dest_reg, v->final_value),
+			      end_insert_before);
 	}
       
       if (loop_dump_stream)
@@ -7435,8 +7439,7 @@ check_dbra_loop (loop, insn_count)
 		  && GET_CODE (comparison_value) == CONST_INT)
 		{
 		  start_value = GEN_INT (comparison_val - add_adjust);
-		  emit_insn_before (gen_move_insn (reg, start_value),
-				    loop_start);
+		  loop_insn_hoist (loop, gen_move_insn (reg, start_value));
 		}
 	      else if (GET_CODE (initial_value) == CONST_INT)
 		{
@@ -7453,9 +7456,8 @@ check_dbra_loop (loop, insn_count)
 		    return 0;
 		  start_value
 		    = gen_rtx_PLUS (mode, comparison_value, offset);
-		  emit_insn_before ((GEN_FCN (icode)
-				     (reg, comparison_value, offset)),
-				    loop_start);
+		  loop_insn_hoist (loop, (GEN_FCN (icode)
+					     (reg, comparison_value, offset)));
 		  if (GET_CODE (comparison) == LE)
 		    final_value = gen_rtx_PLUS (mode, comparison_value,
 						GEN_INT (add_val));
@@ -7473,9 +7475,9 @@ check_dbra_loop (loop, insn_count)
 		    return 0;
 		  start_value
 		    = gen_rtx_MINUS (mode, comparison_value, initial_value);
-		  emit_insn_before ((GEN_FCN (icode)
-				     (reg, comparison_value, initial_value)),
-				    loop_start);
+		  loop_insn_hoist (loop, (GEN_FCN (icode)
+					     (reg, comparison_value,
+					      initial_value)));
 		}
 	      else
 		/* We could handle the other cases too, but it'll be
@@ -8975,7 +8977,7 @@ load_mems (loop)
 		best = copy_rtx (best_equiv->loc);
 	    }
 	  set = gen_move_insn (reg, best);
-	  set = emit_insn_before (set, loop->start);
+	  set = loop_insn_hoist (loop, set);
 	  if (const_equiv)
 	    REG_NOTES (set) = gen_rtx_EXPR_LIST (REG_EQUAL,
 						 copy_rtx (const_equiv->loc),
@@ -9356,6 +9358,33 @@ replace_label (x, data)
   --LABEL_NUSES (old_label);
 
   return 0;
+}
+
+/* If WHERE_INSN is non-zero emit insn for PATTERN before WHERE_INSN
+   in basic block WHERE_BB (ignored in the interim) within the loop
+   otherwise hoist PATTERN into the loop pre-header.  */
+
+static rtx
+loop_insn_emit_before (loop, where_bb, where_insn, pattern)
+     const struct loop *loop;
+     basic_block where_bb ATTRIBUTE_UNUSED;
+     rtx where_insn;
+     rtx pattern;
+{
+  if (! where_insn)
+    return loop_insn_hoist (loop, pattern);
+  return emit_insn_before (pattern, where_insn);
+}
+
+
+/* Hoist insn for PATTERN into the loop pre-header.  */
+
+rtx
+loop_insn_hoist (loop, pattern)
+     const struct loop *loop;
+     rtx pattern;
+{
+  return loop_insn_emit_before (loop, 0, loop->start, pattern);
 }
 
 static void
