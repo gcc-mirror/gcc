@@ -44,8 +44,17 @@ Boston, MA 02111-1307, USA.  */
 %{static: -non_shared} \
 %{!static: \
   %{!shared: %{!non_shared: %{!call_shared: -call_shared}}}} \
-%{rpath} -init __do_global_ctors -fini __do_global_dtors \
+%{rpath} -init __gcc_init -fini __gcc_fini \
 %{mabi=32: -melf32bsmip}%{mabi=n32: -melf32bmipn32}%{mabi=64: -melf64bmip}%{!mabi*: -melf32bmipn32}"
+
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC "%(irix6_startfile_spec) irix6-crti.o%s crtbegin.o%s"
+
+#undef ENDFILE_SPEC
+#define ENDFILE_SPEC "crtend.o%s irix6-crtn.o%s %(irix6_endfile_spec)"
 
 /* The GNU linker supports one-only sections.  */
 #define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
+
+#define INIT_SECTION_ASM_OP "\t.section\t.init,0x1,0x6,4,4"
+#define FINI_SECTION_ASM_OP "\t.section\t.fini,0x1,0x6,4,4"
