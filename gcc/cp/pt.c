@@ -11332,7 +11332,8 @@ dependent_type_p_r (tree type)
   /* ... or any of the template arguments is a dependent type or
 	an expression that is type-dependent or value-dependent.   */
   else if (CLASS_TYPE_P (type) && CLASSTYPE_TEMPLATE_INFO (type)
-      && any_dependent_template_arguments_p (CLASSTYPE_TI_ARGS (type)))
+	   && (any_dependent_template_arguments_p 
+	       (INNERMOST_TEMPLATE_ARGS (CLASSTYPE_TI_ARGS (type)))))
     return true;
   
   /* All TYPEOF_TYPEs are dependent; if the argument of the `typeof'

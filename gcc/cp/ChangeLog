@@ -1,3 +1,20 @@
+2003-09-01  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/12114
+	* cp-tree.h (initialize_reference): Change prototype.
+	* call.c (initialize_reference): Add cleanup parameter.
+	* decl.c (grok_reference_init): Likewise.
+	(check_initializer): Likewise.
+	(cp_finish_decl): Insert a CLEANUP_STMT if necessary.
+	(duplicate_decls): When replacing an anticipated builtin, do not
+	honor TREE_NOTHROW.
+	* typeck.c (convert_for_initialization): Correct call to
+	initialize_reference.
+
+	PR c++/11972
+	* pt.c (dependent_type_p_r): Pass only the innermost template
+	arguments to any_dependent_template_arguments_p.
+
 2003-09-01  Josef Zlomek  <zlomekj@suse.cz>
 
 	* error.c (dump_expr): Kill BIT_ANDTC_EXPR.
