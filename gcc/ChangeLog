@@ -1,3 +1,8 @@
+Thu Mar 30 06:32:51 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expmed.c (store_bit_field, store_fixed_bit_field): Fix more
+	cases of alignment in bytes.
+
 Thu Mar 30 13:30:40 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* function.c (expand_function_end): Pass alignment argument to
