@@ -641,11 +641,11 @@ namespace std
     protected:
       virtual ~num_get() { }
 
-      void 
+      iter_type 
       _M_extract_float(iter_type, iter_type, ios_base&, ios_base::iostate&, 
 		       string& __xtrc) const;
 
-      void 
+      iter_type 
       _M_extract_int(iter_type, iter_type, ios_base&, ios_base::iostate&, 
 		     char* __xtrc, int __max, int& __base) const;
 

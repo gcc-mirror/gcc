@@ -88,7 +88,7 @@ namespace std
 
 
   template<typename _CharT, typename _InIter>
-    void
+    _InIter
     num_get<_CharT, _InIter>::
     _M_extract_float(_InIter __beg, _InIter __end, ios_base& __io,
 		     ios_base::iostate& __err, string& __xtrc) const
@@ -213,10 +213,11 @@ namespace std
       __xtrc += char();
       if (__beg == __end)
         __err |= ios_base::eofbit;
+      return __beg;
     }
 
   template<typename _CharT, typename _InIter>
-    void
+    _InIter
     num_get<_CharT, _InIter>::
     _M_extract_int(_InIter __beg, _InIter __end, ios_base& __io,
 		   ios_base::iostate& __err, char* __xtrc, int __max, 
@@ -369,6 +370,7 @@ namespace std
       __xtrc[__pos] = char();
       if (__beg == __end)
         __err |= ios_base::eofbit;
+      return __beg;
     }
 
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
@@ -394,8 +396,8 @@ namespace std
 	  // that can be represented without change" so we have to add 1 to it
 	  // in order to obtain the max number of digits. The same for the
 	  // other do_get for integral types below.
-          _M_extract_int(__beg, __end, __io, __err, __xtrc, 
-			 numeric_limits<bool>::digits10 + 1, __base);
+          __beg = _M_extract_int(__beg, __end, __io, __err, __xtrc, 
+				 numeric_limits<bool>::digits10 + 1, __base);
 
           // Stage 2: convert and store results.
           char* __sanity;
@@ -459,8 +461,8 @@ namespace std
       // integral types.
       char __xtrc[32];
       int __base;
-      _M_extract_int(__beg, __end, __io, __err, __xtrc, 
-		     numeric_limits<long>::digits10 + 1, __base);
+      __beg = _M_extract_int(__beg, __end, __io, __err, __xtrc, 
+			     numeric_limits<long>::digits10 + 1, __base);
 
       // Stage 2: convert and store results.
       char* __sanity;
@@ -485,8 +487,9 @@ namespace std
       // integral types.
       char __xtrc[32];
       int __base;
-      _M_extract_int(__beg, __end, __io, __err, __xtrc, 
-		     numeric_limits<unsigned short>::digits10 + 1, __base);
+      __beg = _M_extract_int(__beg, __end, __io, __err, __xtrc, 
+			     numeric_limits<unsigned short>::digits10 + 1,
+			     __base);
 
       // Stage 2: convert and store results.
       char* __sanity;
@@ -512,8 +515,9 @@ namespace std
       // integral types.
       char __xtrc[32];
       int __base;
-      _M_extract_int(__beg, __end, __io, __err, __xtrc, 
-		     numeric_limits<unsigned int>::digits10 + 1, __base);
+      __beg = _M_extract_int(__beg, __end, __io, __err, __xtrc, 
+			     numeric_limits<unsigned int>::digits10 + 1,
+			     __base);
 
       // Stage 2: convert and store results.
       char* __sanity;
@@ -539,8 +543,9 @@ namespace std
       // integral types.
       char __xtrc[32];
       int __base;
-      _M_extract_int(__beg, __end, __io, __err, __xtrc, 
-		     numeric_limits<unsigned long>::digits10 + 1, __base);
+      __beg = _M_extract_int(__beg, __end, __io, __err, __xtrc, 
+			     numeric_limits<unsigned long>::digits10 + 1,
+			     __base);
 
       // Stage 2: convert and store results.
       char* __sanity;
@@ -566,8 +571,8 @@ namespace std
       // integral types.
       char __xtrc[32];
       int __base;
-      _M_extract_int(__beg, __end, __io, __err, __xtrc, 
-		     numeric_limits<long long>::digits10 + 1, __base);
+      __beg = _M_extract_int(__beg, __end, __io, __err, __xtrc, 
+			     numeric_limits<long long>::digits10 + 1, __base);
 
       // Stage 2: convert and store results.
       char* __sanity;
@@ -592,8 +597,9 @@ namespace std
       // integral types.
       char __xtrc[32];
       int __base;
-      _M_extract_int(__beg, __end, __io, __err, __xtrc,
-		     numeric_limits<unsigned long long>::digits10 + 1, __base);
+      __beg = _M_extract_int(__beg, __end, __io, __err, __xtrc,
+			     numeric_limits<unsigned long long>::digits10 + 1,
+			     __base);
 
       // Stage 2: convert and store results.
       char* __sanity;
@@ -617,7 +623,7 @@ namespace std
       // Stage 1: extract and determine the conversion specifier.
       string __xtrc;
       __xtrc.reserve(32);
-      _M_extract_float(__beg, __end, __io, __err, __xtrc);
+      __beg = _M_extract_float(__beg, __end, __io, __err, __xtrc);
 
       // Stage 2: convert and store results.
       char* __sanity;
@@ -644,7 +650,7 @@ namespace std
       // Stage 1: extract and determine the conversion specifier.
       string __xtrc;
       __xtrc.reserve(32);
-      _M_extract_float(__beg, __end, __io, __err, __xtrc);
+      __beg = _M_extract_float(__beg, __end, __io, __err, __xtrc);
 
       // Stage 2: convert and store results.
       char* __sanity;
@@ -667,7 +673,7 @@ namespace std
       // Stage 1: extract and determine the conversion specifier.
       string __xtrc;
       __xtrc.reserve(32);
-      _M_extract_float(__beg, __end, __io, __err, __xtrc);
+      __beg = _M_extract_float(__beg, __end, __io, __err, __xtrc);
 
 #if defined(_GLIBCPP_USE_C99) && !defined(__hpux)
       // Stage 2: convert and store results.
@@ -721,8 +727,9 @@ namespace std
       // integral types.
       char __xtrc[32];
       int __base;
-      _M_extract_int(__beg, __end, __io, __err, __xtrc, 
-		     numeric_limits<unsigned long>::digits10 + 1, __base);
+      __beg = _M_extract_int(__beg, __end, __io, __err, __xtrc, 
+			     numeric_limits<unsigned long>::digits10 + 1,
+			     __base);
 
       // Stage 2: convert and store results.
       char* __sanity;
