@@ -374,10 +374,11 @@ init_loop ()
    (or 0 if none should be output).  */
 
 void
-loop_optimize (f, dumpfile)
+loop_optimize (f, dumpfile, unroll_p)
      /* f is the first instruction of a chain of insns for one function */
      rtx f;
      FILE *dumpfile;
+     int unroll_p;
 {
   register rtx insn;
   register int i;
@@ -502,7 +503,7 @@ loop_optimize (f, dumpfile)
       uid_luid[i] = uid_luid[i - 1];
 
   /* Create a mapping from loops to BLOCK tree nodes.  */
-  if (flag_unroll_loops && write_symbols != NO_DEBUG)
+  if (unroll_p && write_symbols != NO_DEBUG)
     find_loop_tree_blocks ();
 
   /* Determine if the function has indirect jump.  On some systems
@@ -514,12 +515,12 @@ loop_optimize (f, dumpfile)
   for (i = max_loop_num-1; i >= 0; i--)
     if (! loop_invalid[i] && loop_number_loop_ends[i])
       scan_loop (loop_number_loop_starts[i], loop_number_loop_ends[i],
-		 max_reg_num ());
+		 max_reg_num (), unroll_p);
 
   /* If debugging and unrolling loops, we must replicate the tree nodes
      corresponding to the blocks inside the loop, so that the original one
      to one mapping will remain.  */
-  if (flag_unroll_loops && write_symbols != NO_DEBUG)
+  if (unroll_p && write_symbols != NO_DEBUG)
     unroll_block_trees ();
 }
 
@@ -534,9 +535,10 @@ loop_optimize (f, dumpfile)
    write, then we can also mark the memory read as invariant.  */
 
 static void
-scan_loop (loop_start, end, nregs)
+scan_loop (loop_start, end, nregs, unroll_p)
      rtx loop_start, end;
      int nregs;
+     int unroll_p;
 {
   register int i;
   register rtx p;
@@ -1051,7 +1053,7 @@ scan_loop (loop_start, end, nregs)
 
   if (flag_strength_reduce)
     strength_reduce (scan_start, end, loop_top,
-		     insn_count, loop_start, end);
+		     insn_count, loop_start, end, unroll_p);
 }
 
 /* Add elements to *OUTPUT to record all the pseudo-regs
@@ -2847,12 +2849,7 @@ invariant_p (x)
 
 	 We don't know the loop bounds here though, so just fail for all
 	 labels.  */
-      /* ??? This is also necessary if flag_rerun_loop_opt is true, because in
-	 this case we may be doing loop unrolling the second time we run loop,
-	 and hence the first loop run also needs this check.  There is no way
-	 to check here whether the second run will actually do loop unrolling
-	 though, as that info is in a local var in rest_of_compilation.  */
-      if (flag_unroll_loops || flag_rerun_loop_opt)
+      if (flag_unroll_loops)
 	return 0;
       else
 	return 1;
@@ -3339,13 +3336,14 @@ static rtx addr_placeholder;
 
 static void
 strength_reduce (scan_start, end, loop_top, insn_count,
-		 loop_start, loop_end)
+		 loop_start, loop_end, unroll_p)
      rtx scan_start;
      rtx end;
      rtx loop_top;
      int insn_count;
      rtx loop_start;
      rtx loop_end;
+     int unroll_p;
 {
   rtx p;
   rtx set;
@@ -3583,7 +3581,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
     {
       /* Can still unroll the loop anyways, but indicate that there is no
 	 strength reduction info available.  */
-      if (flag_unroll_loops)
+      if (unroll_p)
 	unroll_loop (loop_end, insn_count, loop_start, end_insert_before, 0);
 
       return;
@@ -4362,7 +4360,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
      induction variable information that strength_reduce has already
      collected.  */
   
-  if (flag_unroll_loops)
+  if (unroll_p)
     unroll_loop (loop_end, insn_count, loop_start, end_insert_before, 1);
 
 #ifdef HAIFA

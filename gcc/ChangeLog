@@ -1,3 +1,18 @@
+Fri Dec  5 18:26:25 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.c (invariant_p): Don't test flag_rerun_loop_opt.
+	(loop_optimize, scan_loop, strength_reduce): New argument unroll_p.
+	* toplev.c (rest_of_compilation): Pass it.  Remove code to
+	save / clear / restore flag_unroll_{,all_}loops.
+
+Fri Dec  5 16:26:03 1997  Bernd Schmidt <crux@ohara.Informatik.RWTH-Aachen.DE>
+
+	* i386.c (notice_update_cc): Remove bogus pentium GCC code.
+
+Fri Dec  5 16:25:14 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* stmt.c (warn_if_unused_value): Don't warn for TRY_CATCH_EXPR.
+
 Thu Dec  4 11:51:00 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* except.c (get_dynamic_handler_chain): Only make the call once per
