@@ -1650,8 +1650,11 @@ all-target-libstdc++-v3: configure-target-libstdc++-v3 all-gas all-ld all-gcc al
 configure-target-libstub: $(ALL_GCC)
 all-target-libstub: configure-target-libstub
 all-libtool:
+configure-target-libf2c: $(ALL_GCC)
 all-target-libf2c: configure-target-libf2c all-gas all-ld all-gcc all-target-libiberty all-target-newlib
+configure-target-libchill: $(ALL_GCC)
 all-target-libchill: configure-target-libchill all-gas all-ld all-gcc all-target-libiberty all-target-newlib
+configure-target-libobjc: $(ALL_GCC)
 all-target-libobjc: configure-target-libobjc all-gas all-ld all-gcc all-target-libiberty all-target-newlib
 all-m4: all-libiberty
 all-make: all-libiberty

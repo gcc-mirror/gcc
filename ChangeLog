@@ -1,5 +1,8 @@
 2000-07-24  Alexandre Oliva  <aoliva@redhat.com>
 
+	* Makefile.in (configure-target-libf2c): Depend on $(ALL_GCC).
+	(configure-target-libchill, configure-target-libobjc): Likewise.
+
 	* configure.in: Use the same cache file for all target libs.
 	* config-ml.in: But different cache files per multilib variant.
 
