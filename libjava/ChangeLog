@@ -1,3 +1,8 @@
+2004-02-26  Michael Koch  <konqueror@gmx.de>
+
+	* Makefile.am: Generate and install headers for inner classes in
+	java.nio.channels.Pipe and gnu.java.nio.PipeImpl.
+	* Makefile.in: Regenerated.
 2004-02-24  Anthony Green  <green@redhat.com>
 
 	* java/lang/StringBuffer.java: No need to NULL out remainder of
