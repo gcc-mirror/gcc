@@ -65,6 +65,7 @@ State 434 contains 2 shift/reduce conflicts.  (Four ways to parse this.)  */
 #include "c-lex.h"
 #include "c-tree.h"
 #include "flags.h"
+#include "output.h"
 
 #ifdef MULTIBYTE_CHARS
 #include <stdlib.h>
@@ -79,8 +80,6 @@ char *language_string = "GNU C";
 #ifndef errno
 extern int errno;
 #endif
-
-void yyerror ();
 
 /* Like YYERROR but do call yyerror.  */
 #define YYERROR1 { yyerror ("syntax error"); YYERROR; }
@@ -232,7 +231,7 @@ static int undeclared_variable_notice;
 /* Tell yyparse how to print a token's value, if yydebug is set.  */
 
 #define YYPRINT(FILE,YYCHAR,YYLVAL) yyprint(FILE,YYCHAR,YYLVAL)
-extern void yyprint ();
+extern void yyprint			PROTO ((FILE *, int, YYSTYPE));
 %}
 
 %%
