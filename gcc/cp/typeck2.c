@@ -367,15 +367,8 @@ store_init_value (decl, init)
 
   /* End of special C++ code.  */
 
-  /* We might have already run this bracketed initializer through
-     digest_init.  Don't do so again.  */
-  if (TREE_CODE (init) == CONSTRUCTOR && TREE_HAS_CONSTRUCTOR (init)
-      && TREE_TYPE (init)
-      && TYPE_MAIN_VARIANT (TREE_TYPE (init)) == TYPE_MAIN_VARIANT (type))
-    value = init;
-  else
-    /* Digest the specified initializer into an expression.  */
-    value = digest_init (type, init, (tree *) 0);
+  /* Digest the specified initializer into an expression.  */
+  value = digest_init (type, init, (tree *) 0);
 
   /* Store the expression if valid; else report error.  */
 
@@ -439,8 +432,7 @@ digest_init (type, init, tail)
   enum tree_code code = TREE_CODE (type);
   tree element = NULL_TREE;
   tree old_tail_contents = NULL_TREE;
-  /* Nonzero if INIT is a braced grouping, which comes in as a CONSTRUCTOR
-     tree node which has no TREE_TYPE.  */
+  /* Nonzero if INIT is a braced grouping.  */
   int raw_constructor;
 
   /* By default, assume we use one element from a list.
@@ -471,10 +463,8 @@ digest_init (type, init, tail)
   if (TREE_CODE (init) == NON_LVALUE_EXPR)
     init = TREE_OPERAND (init, 0);
 
-  if (TREE_CODE (init) == CONSTRUCTOR && TREE_TYPE (init) == type)
-    return init;
-
-  raw_constructor = TREE_CODE (init) == CONSTRUCTOR && TREE_TYPE (init) == 0;
+  raw_constructor = (TREE_CODE (init) == CONSTRUCTOR 
+		     && TREE_HAS_CONSTRUCTOR (init));
 
   if (raw_constructor
       && CONSTRUCTOR_ELTS (init) != 0

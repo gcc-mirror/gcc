@@ -1,3 +1,13 @@
+2002-10-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/init/array1.C: Remove invalid braces.
+	* g++.dg/init/brace1.C: New test.
+	* g++.dg/init/copy2.C: Likewise.
+	* g++.dg/init/copy3.C: Likewise.
+	* g++.old-deja/g++.ext/arrnew.C: Change WARNING to ERROR.
+	* g++.old-deja/g++.mike/p9129.C: Add ERROR on invalid use of
+	braces.
+	
 2002-10-11  Neil Booth  <neil@daikokuya.co.uk>
 
 	* gcc.dg/cpp/assembler.S: Don't use -ansi.

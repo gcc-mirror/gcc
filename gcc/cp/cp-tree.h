@@ -2437,8 +2437,18 @@ struct lang_decl GTY(())
    || TYPE_PTRMEM_P (TYPE)			\
    || TYPE_PTRMEMFUNC_P (TYPE))
 
-/* Nonzero for _TYPE means that the _TYPE defines
-   at least one constructor.  */
+/* [dcl.init.aggr]
+
+   An aggregate is an array or a class with no user-declared
+   constructors, no private or protected non-static data members, no
+   base classes, and no virtual functions.  */
+#define CP_AGGREGATE_TYPE_P(TYPE)		\
+  (TREE_CODE (TYPE) == ARRAY_TYPE		\
+   || (CLASS_TYPE_P (TYPE)			\
+       && !CLASSTYPE_NON_AGGREGATE (TYPE)))
+
+/* Nonzero for a class type means that the class type has a
+   user-declared constructor.  */
 #define TYPE_HAS_CONSTRUCTOR(NODE) (TYPE_LANG_FLAG_1 (NODE))
 
 /* When appearing in an INDIRECT_REF, it means that the tree structure
@@ -3667,8 +3677,6 @@ extern void start_decl_1			PARAMS ((tree));
 extern void cp_finish_decl			PARAMS ((tree, tree, tree, int));
 extern void finish_decl				PARAMS ((tree, tree, tree));
 extern void maybe_inject_for_scope_var          PARAMS ((tree));
-extern void initialize_local_var                PARAMS ((tree, tree, int));
-extern void expand_static_init			PARAMS ((tree, tree));
 extern tree start_handler_parms                 PARAMS ((tree, tree));
 extern int complete_array_type			PARAMS ((tree, tree, int));
 extern tree build_ptrmemfunc_type		PARAMS ((tree));

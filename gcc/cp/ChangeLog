@@ -1,3 +1,36 @@
+2002-10-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* NEWS: Document removal of "new X = ..." extension.
+	* class.c (initialize_array): Set TREE_HAS_CONSTRUCTOR on
+	brace-enclosed initializers.
+	* cp-tree.h (CP_AGGREGATE_TYPE_P): New macro.
+	(initialize_local_var): Remove declaration.
+	(expand_static_init): Likewise.
+	* decl.c (next_initializable_field): New function.
+	(reshape_init): Likewise.
+	(check_initializer): Use them.  Build dynamic initializer for
+	aggregates here too.
+	(initialize_local_var): Simplify, and incorporate cleanup
+	insertion code as well.
+	(destroy_local_var): Remove.
+	(cp_finish_decl): Tidy.
+	(expand_static_init): Fold checks for whether or not a variable
+	needs initialization into this function.  Simplify.
+	* decl2.c (do_static_initialization): Simplify.
+	* init.c (build_init): Do not set TREE_SIDE_EFFECTS when it will
+	be done for us automatically.
+	(expand_default_init): Handle brace-enclosed initializers
+	correctly.
+	(expand_aggr_init_1): Remove RTL-generation code.
+	(build_vec_init): Remove "new X = ..." support.
+	* parse.y (new_initializer): Likewise.
+	* rtti.c (get_pseudo_ti_init): Set TREE_HAS_CONSTRUCTOR on
+	brace-enclosed initializer.
+	(create_pseudo_type_info): Likewise.
+	* typeck2.c (store_init_value): Don't try to handle digest_init
+	being called more than once.
+	(digest_init): Tidy handling of brace-enclosed initializers.
+	
 2002-10-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* decl.c (typename_hash): Use htab_hash_pointer.

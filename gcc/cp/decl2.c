@@ -2508,34 +2508,24 @@ finish_static_initialization_or_destruction (guard_if_stmt)
   DECL_STATIC_FUNCTION_P (current_function_decl) = 0;
 }
 
-/* Generate code to do the static initialization of DECL.  The
-   initialization is INIT.  If DECL may be initialized more than once
-   in different object files, GUARD is the guard variable to 
-   check.  PRIORITY is the priority for the initialization.  */
+/* Generate code to do the initialization of DECL, a VAR_DECL with
+   static storage duration.  The initialization is INIT.  */
 
 static void
 do_static_initialization (decl, init)
      tree decl;
      tree init;
 {
-  tree expr;
   tree guard_if_stmt;
 
   /* Set up for the initialization.  */
   guard_if_stmt
     = start_static_initialization_or_destruction (decl,
 						  /*initp=*/1);
-  
-  /* Do the initialization itself.  */
-  if (IS_AGGR_TYPE (TREE_TYPE (decl))
-      || TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
-    expr = build_aggr_init (decl, init, 0);
-  else
-    {
-      expr = build (INIT_EXPR, TREE_TYPE (decl), decl, init);
-      TREE_SIDE_EFFECTS (expr) = 1;
-    }
-  finish_expr_stmt (expr);
+
+  /* Perform the initialization.  */
+  if (init)
+    finish_expr_stmt (init);
 
   /* If we're using __cxa_atexit, register a a function that calls the
      destructor for the object.  */
@@ -2567,7 +2557,7 @@ do_static_destruction (decl)
 
   /* Actually do the destruction.  */
   guard_if_stmt = start_static_initialization_or_destruction (decl,
-							       /*initp=*/0);
+							      /*initp=*/0);
   finish_expr_stmt (build_cleanup (decl));
   finish_static_initialization_or_destruction (guard_if_stmt);
 }

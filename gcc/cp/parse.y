@@ -1351,21 +1351,12 @@ new_initializer:
 		  error ("`%T' is not a valid expression", $2.t);
 		  $$ = error_mark_node;
 		}
-	/* GNU extension so people can use initializer lists.  Note that
-	   this alters the meaning of `new int = 1', which was previously
-	   syntactically valid but semantically invalid.
-           This feature is now deprecated and will be removed in a future
-           release.  */
 	| '=' init
 		{
-		  if (pedantic)
-		    pedwarn ("ISO C++ forbids initialization of new expression with `='");
-		  cp_deprecated ("new initializer lists extension");
-		  if (TREE_CODE ($2) != TREE_LIST
-		      && TREE_CODE ($2) != CONSTRUCTOR)
-		    $$ = build_tree_list (NULL_TREE, $2);
-		  else
-		    $$ = $2;
+		  /* This was previously allowed as an extension, but
+		     was removed in G++ 3.3.  */
+		  error ("initialization of new expression with `='");
+		  $$ = error_mark_node;
 		}
 	;
 

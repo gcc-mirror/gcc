@@ -121,11 +121,10 @@ static void pop_labels PARAMS ((tree));
 static void maybe_deduce_size_from_array_init PARAMS ((tree, tree));
 static void layout_var_decl PARAMS ((tree));
 static void maybe_commonize_var PARAMS ((tree));
-static tree check_initializer PARAMS ((tree, tree));
+static tree check_initializer (tree, tree, int);
 static void make_rtl_for_nonlocal_decl PARAMS ((tree, tree, const char *));
 static void save_function_data PARAMS ((tree));
 static void check_function_type PARAMS ((tree, tree));
-static void destroy_local_var PARAMS ((tree));
 static void begin_constructor_body PARAMS ((void));
 static void finish_constructor_body PARAMS ((void));
 static void begin_destructor_body PARAMS ((void));
@@ -143,6 +142,10 @@ static tree push_cp_library_fn PARAMS ((enum tree_code, tree));
 static tree build_cp_library_fn PARAMS ((tree, enum tree_code, tree));
 static void store_parm_decls PARAMS ((tree));
 static int cp_missing_noreturn_ok_p PARAMS ((tree));
+static void initialize_local_var (tree, tree);
+static void expand_static_init (tree, tree);
+static tree next_initializable_field (tree);
+static tree reshape_init (tree, tree *);
 
 #if defined (DEBUG_BINDING_LEVELS)
 static void indent PARAMS ((void));
@@ -7727,14 +7730,220 @@ check_for_uninitialized_const_var (decl)
     error ("uninitialized const `%D'", decl);
 }
 
-/* Verify INIT (the initializer for DECL), and record the
-   initialization in DECL_INITIAL, if appropriate.  Returns a new
-   value for INIT.  */
+/* FIELD is a FIELD_DECL or NULL.  In the former case, the value
+   returned is the next FIELD_DECL (possibly FIELD itself) that can be
+   initialized.  If there are no more such fields, the return value
+   will be NULL.  */
 
 static tree
-check_initializer (decl, init)
-     tree decl;
-     tree init;
+next_initializable_field (tree field)
+{
+  while (field
+	 && (TREE_CODE (field) != FIELD_DECL
+	     || (DECL_C_BIT_FIELD (field) && !DECL_NAME (field))
+	     || DECL_ARTIFICIAL (field)))
+    field = TREE_CHAIN (field);
+
+  return field;
+}
+
+/* Undo the brace-elision allowed by [dcl.init.aggr] in a
+   brace-enclosed aggregate initializer.
+
+   *INITP is one of a list of initializers describing a brace-enclosed
+   initializer for an entity of the indicated aggregate TYPE.  It may
+   not presently match the shape of the TYPE; for example:
+   
+     struct S { int a; int b; };
+     struct S a[] = { 1, 2, 3, 4 };
+
+   Here *INITP will point to TREE_LIST of four elements, rather than a
+   list of two elements, each itself a list of two elements.  This
+   routine transforms INIT from the former form into the latter.  The
+   revised initializer is returned.  */
+
+static tree
+reshape_init (tree type, tree *initp)
+{
+  tree inits;
+  tree old_init;
+  tree old_init_value;
+  tree new_init;
+  bool brace_enclosed_p;
+
+  old_init = *initp;
+  old_init_value = (TREE_CODE (*initp) == TREE_LIST
+		    ? TREE_VALUE (*initp) : old_init);
+
+  /* If the initializer is brace-enclosed, pull initializers from the
+     enclosed elements.  Advance past the brace-enclosed initializer
+     now.  */
+  if (TREE_CODE (old_init_value) == CONSTRUCTOR 
+      && TREE_HAS_CONSTRUCTOR (old_init_value))
+    {
+      *initp = TREE_CHAIN (old_init);
+      TREE_CHAIN (old_init) = NULL_TREE;
+      inits = CONSTRUCTOR_ELTS (old_init_value);
+      initp = &inits;
+      brace_enclosed_p = true;
+    }
+  else
+    {
+      inits = NULL_TREE;
+      brace_enclosed_p = false;
+    }
+
+  /* A non-aggregate type is always initialized with a single
+     initializer.  */
+  if (!CP_AGGREGATE_TYPE_P (type))
+      {
+	*initp = TREE_CHAIN (old_init);
+	TREE_CHAIN (old_init) = NULL_TREE;
+	/* It is invalid to initialize a non-aggregate type with a
+	   brace-enclosed initializer.  */
+	if (brace_enclosed_p)
+	  {
+	    error ("brace-enclosed initializer used to initialize `%T'",
+		   type);
+	    if (TREE_CODE (old_init) == TREE_LIST)
+	      TREE_VALUE (old_init) = error_mark_node;
+	    else
+	      old_init = error_mark_node;
+	  }
+	
+	return old_init;
+      }
+
+  /* [dcl.init.aggr]
+
+     All implicit type conversions (clause _conv_) are considered when
+     initializing the aggregate member with an initializer from an
+     initializer-list.  If the initializer can initialize a member,
+     the member is initialized.  Otherwise, if the member is itself a
+     non-empty subaggregate, brace elision is assumed and the
+     initializer is considered for the initialization of the first
+     member of the subaggregate.  */
+  if (CLASS_TYPE_P (type) 
+      && !brace_enclosed_p
+      && can_convert_arg (type, TREE_TYPE (old_init_value), old_init_value))
+    {
+      *initp = TREE_CHAIN (old_init);
+      TREE_CHAIN (old_init) = NULL_TREE;
+      return old_init;
+    }
+
+  if (TREE_CODE (old_init) == STRING_CST
+      && TREE_CODE (type) == ARRAY_TYPE
+      && char_type_p (TREE_TYPE (type)))
+    {
+      /* [dcl.init.string]
+
+	 A char array (whether plain char, signed char, or unsigned char)
+	 can be initialized by a string-literal (optionally enclosed in
+	 braces); a wchar_t array can be initialized by a wide
+	 string-literal (optionally enclosed in braces).  */
+      new_init = old_init;
+      /* Move past the initializer.  */
+      *initp = TREE_CHAIN (old_init);
+      TREE_CHAIN (old_init) = NULL_TREE;
+    }
+  else
+    {
+      /* Build a CONSTRUCTOR to hold the contents of the aggregate.  */  
+      new_init = build (CONSTRUCTOR, type, NULL_TREE, NULL_TREE);
+      TREE_HAS_CONSTRUCTOR (new_init) = 1;
+
+      if (CLASS_TYPE_P (type))
+	{
+	  tree field;
+
+	  field = next_initializable_field (TYPE_FIELDS (type));
+
+	  if (!field)
+	    {
+	      /* [dcl.init.aggr]
+	      
+		 An initializer for an aggregate member that is an
+		 empty class shall have the form of an empty
+		 initializer-list {}.  */
+	      if (!brace_enclosed_p)
+		error ("initializer for `%T' must be brace-enclosed",
+		       type);
+	    }
+	  else
+	    {
+	      /* Loop through the initializable fields, gathering
+		 initializers.  */
+	      while (*initp && field)
+		{
+		  tree field_init;
+
+		  field_init = reshape_init (TREE_TYPE (field), initp);
+		  TREE_CHAIN (field_init) = CONSTRUCTOR_ELTS (new_init);
+		  CONSTRUCTOR_ELTS (new_init) = field_init;
+		  /* [dcl.init.aggr] 
+
+		     When a union  is  initialized with a brace-enclosed
+		     initializer, the braces shall only contain an
+		     initializer for the first member of the union.  */
+		  if (TREE_CODE (type) == UNION_TYPE)
+		    break;
+		  if (TREE_PURPOSE (field_init))
+		    field = TREE_PURPOSE (field_init);
+		  field = next_initializable_field (TREE_CHAIN (field));
+		}
+	    }
+	}
+      else if (TREE_CODE (type) == ARRAY_TYPE)
+	{
+	  tree index;
+	  tree max_index;
+
+	  /* If the bound of the array is known, take no more initializers
+	     than are allowed.  */
+	  max_index = (TYPE_DOMAIN (type) 
+		       ? array_type_nelts (type) : NULL_TREE);
+	  /* Loop through the array elements, gathering initializers.  */
+	  for (index = size_zero_node;
+	       *initp && (!max_index || !tree_int_cst_lt (max_index, index));
+	       index = size_binop (PLUS_EXPR, index, size_one_node))
+	    {
+	      tree element_init;
+
+	      element_init = reshape_init (TREE_TYPE (type), initp);
+	      TREE_CHAIN (element_init) = CONSTRUCTOR_ELTS (new_init);
+	      CONSTRUCTOR_ELTS (new_init) = element_init;
+	      if (TREE_PURPOSE (element_init))
+		index = TREE_PURPOSE (element_init);
+	    }
+	}
+      else
+	abort ();
+
+      /* The initializers were placed in reverse order in the
+	 CONSTRUCTOR.  */
+      CONSTRUCTOR_ELTS (new_init) = nreverse (CONSTRUCTOR_ELTS (new_init));
+
+      if (TREE_CODE (old_init) == TREE_LIST)
+	new_init = build_tree_list (TREE_PURPOSE (old_init), new_init);
+    }
+
+  /* If this was a brace-enclosed initializer and all of the
+     initializers were not used up, there is a problem.  */
+  if (brace_enclosed_p && *initp)
+    error ("too many initializers for `%T'", type);
+
+  return new_init;
+}
+
+/* Verify INIT (the initializer for DECL), and record the
+   initialization in DECL_INITIAL, if appropriate.  
+
+   If the return value is non-NULL, it is an expression that must be
+   evaluated dynamically to initialize DECL.  */
+
+static tree
+check_initializer (tree decl, tree init, int flags)
 {
   tree type = TREE_TYPE (decl);
 
@@ -7790,21 +7999,48 @@ check_initializer (decl, init)
     init = grok_reference_init (decl, type, init);
   else if (init)
     {
+      if (TREE_CODE (init) == CONSTRUCTOR && TREE_HAS_CONSTRUCTOR (init))
+	init = reshape_init (type, &init);
+
+      /* If DECL has an array type without a specific bound, deduce the
+	 array size from the initializer.  */
+      maybe_deduce_size_from_array_init (decl, init);
+      type = TREE_TYPE (decl);
+      if (TREE_CODE (init) == CONSTRUCTOR && TREE_HAS_CONSTRUCTOR (init))
+	TREE_TYPE (init) = type;
+
       if (TYPE_HAS_CONSTRUCTOR (type) || TYPE_NEEDS_CONSTRUCTING (type))
 	{
 	  if (TREE_CODE (type) == ARRAY_TYPE)
-	    init = digest_init (type, init, (tree *) 0);
+	    goto initialize_aggr;
 	  else if (TREE_CODE (init) == CONSTRUCTOR
 		   && TREE_HAS_CONSTRUCTOR (init))
 	    {
 	      if (TYPE_NON_AGGREGATE_CLASS (type))
 		{
 		  error ("`%D' must be initialized by constructor, not by `{...}'",
-			    decl);
+			 decl);
 		  init = error_mark_node;
 		}
 	      else
 		goto dont_use_constructor;
+	    }
+	  else
+	    {
+	      int saved_stmts_are_full_exprs_p;
+
+	    initialize_aggr:
+	      saved_stmts_are_full_exprs_p = 0;
+	      if (building_stmt_tree ())
+		{
+		  saved_stmts_are_full_exprs_p = stmts_are_full_exprs_p ();
+		  current_stmt_tree ()->stmts_are_full_exprs_p = 1;
+		}
+	      init = build_aggr_init (decl, init, flags);
+	      if (building_stmt_tree ())
+		current_stmt_tree ()->stmts_are_full_exprs_p =
+		  saved_stmts_are_full_exprs_p;
+	      return init;
 	    }
 	}
       else
@@ -7816,24 +8052,25 @@ check_initializer (decl, init)
     }
   else if (DECL_EXTERNAL (decl))
     ;
-  else if (TYPE_P (type)
-	   && (IS_AGGR_TYPE (type) || TYPE_NEEDS_CONSTRUCTING (type)))
+  else if (TYPE_P (type) && TYPE_NEEDS_CONSTRUCTING (type))
+    goto initialize_aggr;
+  else if (IS_AGGR_TYPE (type))
     {
       tree core_type = strip_array_types (type);
 
-      if (! TYPE_NEEDS_CONSTRUCTING (core_type))
-	{
-	  if (CLASSTYPE_READONLY_FIELDS_NEED_INIT (core_type))
-	    error ("structure `%D' with uninitialized const members", decl);
-	  if (CLASSTYPE_REF_FIELDS_NEED_INIT (core_type))
-	    error ("structure `%D' with uninitialized reference members",
-		      decl);
-	}
+      if (CLASSTYPE_READONLY_FIELDS_NEED_INIT (core_type))
+	error ("structure `%D' with uninitialized const members", decl);
+      if (CLASSTYPE_REF_FIELDS_NEED_INIT (core_type))
+	error ("structure `%D' with uninitialized reference members",
+	       decl);
 
       check_for_uninitialized_const_var (decl);
     }
   else
     check_for_uninitialized_const_var (decl);
+
+  if (init && init != error_mark_node)
+    init = build (INIT_EXPR, type, decl, init);
 
   return init;
 }
@@ -7968,33 +8205,23 @@ maybe_inject_for_scope_var (decl)
 
 /* Generate code to initialize DECL (a local variable).  */
 
-void
-initialize_local_var (decl, init, flags)
+static void
+initialize_local_var (decl, init)
      tree decl;
      tree init;
-     int flags;
 {
   tree type = TREE_TYPE (decl);
 
-  /* If the type is bogus, don't bother initializing the variable.  */
-  if (type == error_mark_node)
-    return;
+  my_friendly_assert (TREE_CODE (decl) == VAR_DECL
+		      || TREE_CODE (decl) == RESULT_DECL, 
+		      20021010);
+  my_friendly_assert (!TREE_STATIC (decl), 20021010);
 
-  if (DECL_SIZE (decl) == NULL_TREE && !TREE_STATIC (decl))
+  if (DECL_SIZE (decl) == NULL_TREE)
     {
       /* If we used it already as memory, it must stay in memory.  */
       DECL_INITIAL (decl) = NULL_TREE;
       TREE_ADDRESSABLE (decl) = TREE_USED (decl);
-    }
-
-  /* Local statics are handled differently from ordinary automatic
-     variables.  */
-  if (TREE_STATIC (decl))
-    {
-      if (TYPE_NEEDS_CONSTRUCTING (type) || init != NULL_TREE
-	  || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
-	expand_static_init (decl, init);
-      return;
     }
 
   if (DECL_SIZE (decl) && type != error_mark_node)
@@ -8004,14 +8231,15 @@ initialize_local_var (decl, init, flags)
       /* Compute and store the initial value.  */
       already_used = TREE_USED (decl) || TREE_USED (type);
 
-      if (init || TYPE_NEEDS_CONSTRUCTING (type))
+      /* Perform the initialization.  */
+      if (init)
 	{
 	  int saved_stmts_are_full_exprs_p;
 
 	  my_friendly_assert (building_stmt_tree (), 20000906);
 	  saved_stmts_are_full_exprs_p = stmts_are_full_exprs_p ();
 	  current_stmt_tree ()->stmts_are_full_exprs_p = 1;
-	  finish_expr_stmt (build_aggr_init (decl, init, flags));
+	  finish_expr_stmt (init);
 	  current_stmt_tree ()->stmts_are_full_exprs_p =
 	    saved_stmts_are_full_exprs_p;
 	}
@@ -8030,39 +8258,19 @@ initialize_local_var (decl, init, flags)
       else if (already_used)
 	TREE_USED (decl) = 1;
     }
-}
 
-/* Generate code to destroy DECL (a local variable).  */
+  /* Generate a cleanup, if necessary.  */
+  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
+    {
+      tree cleanup;
 
-static void
-destroy_local_var (decl)
-     tree decl;
-{
-  tree type = TREE_TYPE (decl);
-  tree cleanup;
-
-  /* Only variables get cleaned up.  */
-  if (TREE_CODE (decl) != VAR_DECL)
-    return;
-
-  /* And only things with destructors need cleaning up.  */
-  if (type == error_mark_node
-      || TYPE_HAS_TRIVIAL_DESTRUCTOR (type))
-    return;
-
-  if (TREE_CODE (decl) == VAR_DECL &&
-      (DECL_EXTERNAL (decl) || TREE_STATIC (decl)))
-    /* We don't clean up things that aren't defined in this
-       translation unit, or that need a static cleanup.  The latter
-       are handled by finish_file.  */
-    return;
-
-  /* Compute the cleanup.  */
-  cleanup = cxx_maybe_build_cleanup (decl);
-
-  /* Record the cleanup required for this declaration.  */
-  if (DECL_SIZE (decl) && cleanup)
-    finish_decl_cleanup (decl, cleanup);
+      /* Compute the cleanup.  */
+      cleanup = cxx_maybe_build_cleanup (decl);
+      
+      /* Record the cleanup required for this declaration.  */
+      if (DECL_SIZE (decl) && cleanup)
+	finish_decl_cleanup (decl, cleanup);
+    }
 }
 
 /* Finish processing of a declaration;
@@ -8193,7 +8401,7 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
       make_decl_rtl (decl, asmspec);
     }
   else if (TREE_CODE (decl) == RESULT_DECL)
-    init = check_initializer (decl, init);
+    init = check_initializer (decl, init, flags);
   else if (TREE_CODE (decl) == VAR_DECL)
     {
       /* Only PODs can have thread-local storage.  Other types may require
@@ -8205,12 +8413,12 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
 	 already initialized DECL.  */
       if (!DECL_INITIALIZED_P (decl)
 	  /* If !DECL_EXTERNAL then DECL is being defined.  In the
-	     case of a static data memberm initialized inside the
+	     case of a static data member initialized inside the
 	     class-specifier, there can be an initializer even if DECL
 	     is *not* defined.  */
 	  && (!DECL_EXTERNAL (decl) || init))
 	{
-	  init = check_initializer (decl, init);
+	  init = check_initializer (decl, init, flags);
 	  /* Thread-local storage cannot be dynamically initialized.  */
 	  if (DECL_THREAD_LOCAL (decl) && init)
 	    {
@@ -8218,15 +8426,6 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
 		     "initialized", decl);
 	      init = NULL_TREE;
 	    }
-	  /* If DECL has an array type without a specific bound, deduce the
-	     array size from the initializer.  Note that this must be done
-	     after check_initializer is called because of cases like this:
-	     
- 	       struct S { int a; int b; };
-	       struct S a[] = { 1, 2 };
-	 
-	     which creates a one-element array, not a two-element array.  */
-	  maybe_deduce_size_from_array_init (decl, init);
 	  /* Handle:
 	     
 	     [dcl.init]
@@ -8283,7 +8482,9 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
       else
 	abstract_virtuals_error (decl, strip_array_types (type));
 
-      if (TREE_CODE (decl) == FUNCTION_DECL)
+      if (TREE_CODE (decl) == FUNCTION_DECL 
+	  || TREE_TYPE (decl) == error_mark_node)
+	/* No initialization required.  */
 	;
       else if (DECL_EXTERNAL (decl)
 	       && ! (DECL_LANG_SPECIFIC (decl)
@@ -8292,35 +8493,25 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
 	  if (init)
 	    DECL_INITIAL (decl) = init;
 	}
-      else if (TREE_CODE (CP_DECL_CONTEXT (decl)) == FUNCTION_DECL)
+      else
 	{
-	  /* This is a local declaration.  */
-	  if (doing_semantic_analysis_p ())
-	    maybe_inject_for_scope_var (decl);
-	  /* Initialize the local variable.  But, if we're building a
-	     statement-tree, we'll do the initialization when we
-	     expand the tree.  */
-	  if (processing_template_decl)
+	  /* A variable definition.  */
+	  if (DECL_FUNCTION_SCOPE_P (decl))
 	    {
-	      if (init || DECL_INITIAL (decl) == error_mark_node)
-		DECL_INITIAL (decl) = init;
+	      /* This is a local declaration.  */
+	      if (doing_semantic_analysis_p ())
+		maybe_inject_for_scope_var (decl);
+	      /* Initialize the local variable.  */
+	      if (processing_template_decl)
+		{
+		  if (init || DECL_INITIAL (decl) == error_mark_node)
+		    DECL_INITIAL (decl) = init;
+		}
+	      else if (!TREE_STATIC (decl))
+		initialize_local_var (decl, init);
 	    }
-	  else
-	    {
-	      /* If we're not building RTL, then we need to do so
-		 now.  */
-	      my_friendly_assert (building_stmt_tree (), 20000906);
-	      /* Initialize the variable.  */
-	      initialize_local_var (decl, init, flags);
-	      /* Clean up the variable.  */
-	      destroy_local_var (decl);
-	    }
-	}
-      else if (TREE_STATIC (decl) && type != error_mark_node)
-	{
-	  /* Cleanups for static variables are handled by `finish_file'.  */
-	  if (TYPE_NEEDS_CONSTRUCTING (type) || init != NULL_TREE
-	      || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
+
+	  if (TREE_STATIC (decl))
 	    expand_static_init (decl, init);
 	}
     finish_end0:
@@ -8600,12 +8791,27 @@ register_dtor_fn (decl)
   finish_expr_stmt (build_function_call (get_atexit_node (), args));
 }
 
-void
+/* DECL is a VAR_DECL with static storage duration.  INIT, if present,
+   is its initializer.  Generate code to handle the construction
+   and destruction of DECL.  */
+
+static void
 expand_static_init (decl, init)
      tree decl;
      tree init;
 {
-  tree oldstatic = value_member (decl, static_aggregates);
+  tree oldstatic;
+
+  my_friendly_assert (TREE_CODE (decl) == VAR_DECL, 20021010);
+  my_friendly_assert (TREE_STATIC (decl), 20021010);
+
+  /* Some variables require no initialization.  */
+  if (!init 
+      && !TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl))
+      && TYPE_HAS_TRIVIAL_DESTRUCTOR (TREE_TYPE (decl)))
+    return;
+
+  oldstatic = value_member (decl, static_aggregates);
 
   if (oldstatic)
     {
@@ -8655,15 +8861,7 @@ expand_static_init (decl, init)
       then_clause = begin_compound_stmt (/*has_no_scope=*/0);
 
       /* Do the initialization itself.  */
-      if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl))
-	  || (init && TREE_CODE (init) == TREE_LIST))
-	assignment = build_aggr_init (decl, init, 0);
-      else if (init)
-	/* The initialization we're doing here is just a bitwise
-	   copy.  */
-	assignment = build (INIT_EXPR, TREE_TYPE (decl), decl, init);
-      else
-	assignment = NULL_TREE;
+      assignment = init ? init : NULL_TREE;
 
       /* Once the assignment is complete, set TEMP to 1.  Since the
 	 construction of the static object is complete at this point,

@@ -1096,10 +1096,12 @@ get_pseudo_ti_init (type, var_desc, non_public_p)
               base_init = tree_cons (NULL_TREE, offset, base_init);
               base_init = tree_cons (NULL_TREE, tinfo, base_init);
               base_init = build (CONSTRUCTOR, NULL_TREE, NULL_TREE, base_init);
+	      TREE_HAS_CONSTRUCTOR (base_init) = 1;
               base_inits = tree_cons (NULL_TREE, base_init, base_inits);
             }
 	  base_inits = build (CONSTRUCTOR,
 			      NULL_TREE, NULL_TREE, base_inits);
+	  TREE_HAS_CONSTRUCTOR (base_inits) = 1;
 	  base_inits = tree_cons (NULL_TREE, base_inits, NULL_TREE);
 	  /* Prepend the number of bases.  */
 	  base_inits = tree_cons (NULL_TREE,
@@ -1163,7 +1165,7 @@ create_pseudo_type_info VPARAMS((const char *real_name, int ident, ...))
   /* Create the pseudo type.  */
   pseudo_type = make_aggr_type (RECORD_TYPE);
   finish_builtin_type (pseudo_type, pseudo_name, fields, ix, ptr_type_node);
-  TYPE_HAS_CONSTRUCTOR (pseudo_type) = 1;
+  CLASSTYPE_AS_BASE (pseudo_type) = pseudo_type;
 
   result = tree_cons (NULL_TREE, NULL_TREE, NULL_TREE);
   TINFO_REAL_NAME (result) = get_identifier (real_name);

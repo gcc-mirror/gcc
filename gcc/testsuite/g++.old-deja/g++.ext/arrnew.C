@@ -3,5 +3,5 @@
 // Special g++ Options:
 
 int *f(){
-  return new int[1] = { 1 };   // WARNING - deprecated
+  return new int[1] = { 1 };   // ERROR - removed
 }

@@ -1,3 +1,7 @@
+*** Changes in GCC 3.3:
+
+* The "new X = 3" extension has been removed; you must now use "new X(3)".
+
 *** Changes in GCC 3.1:
 
 * -fhonor-std and -fno-honor-std have been removed. -fno-honor-std was

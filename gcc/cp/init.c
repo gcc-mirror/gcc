@@ -1041,8 +1041,6 @@ expand_member_init (tree name, tree init)
    The virtual function table pointer cannot be set up here, because
    we do not really know its type.
 
-   Virtual baseclass pointers are also set up here.
-
    This never calls operator=().
 
    When initializing, nothing is CONST.
@@ -1144,10 +1142,8 @@ build_init (decl, init, flags)
       || TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
     expr = build_aggr_init (decl, init, flags);
   else
-    {
-      expr = build (INIT_EXPR, TREE_TYPE (decl), decl, init);
-      TREE_SIDE_EFFECTS (expr) = 1;
-    }
+    expr = build (INIT_EXPR, TREE_TYPE (decl), decl, init);
+
   return expr;
 }
 
@@ -1184,9 +1180,17 @@ expand_default_init (binfo, true_exp, exp, init, flags)
 	   have already built up the constructor call so we could wrap it
 	   in an exception region.  */;
       else if (TREE_CODE (init) == CONSTRUCTOR)
-	/* A brace-enclosed initializer has whatever type is
-	   required.  There's no need to convert it.  */
-	;
+	{
+	  if (!TYPE_HAS_CONSTRUCTOR (type))
+	    /* A brace-enclosed initializer has whatever type is
+	       required.  There's no need to convert it.  */
+	    ;
+	  else
+	    init = ocp_convert (type, 
+				TREE_VALUE (CONSTRUCTOR_ELTS (init)),
+				CONV_IMPLICIT | CONV_FORCE_TEMP, 
+				flags);
+	}
       else
 	init = ocp_convert (type, init, CONV_IMPLICIT|CONV_FORCE_TEMP, flags);
 
@@ -1259,6 +1263,7 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, flags)
   tree type = TREE_TYPE (exp);
 
   my_friendly_assert (init != error_mark_node && type != error_mark_node, 211);
+  my_friendly_assert (building_stmt_tree (), 20021010);
 
   /* Use a function returning the desired type to initialize EXP for us.
      If the function is a constructor, and its first argument is
@@ -1273,12 +1278,7 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, flags)
       /* If store_init_value returns NULL_TREE, the INIT has been
 	 record in the DECL_INITIAL for EXP.  That means there's
 	 nothing more we have to do.  */
-      if (!store_init_value (exp, init))
-	{
-	  if (!building_stmt_tree ())
-	    expand_decl_init (exp);
-	}
-      else
+      if (store_init_value (exp, init))
 	finish_expr_stmt (build (INIT_EXPR, type, exp, init));
       return;
     }
@@ -2725,10 +2725,6 @@ build_vec_init (base, init, from_array)
   if (maxindex == error_mark_node)
     return error_mark_node;
 
-  /* For g++.ext/arrnew.C.  */
-  if (init && TREE_CODE (init) == CONSTRUCTOR && TREE_TYPE (init) == NULL_TREE)
-    init = digest_init (atype, init, 0);
-      
   if (init
       && (from_array == 2
 	  ? (!CLASS_TYPE_P (type) || !TYPE_HAS_COMPLEX_ASSIGN_REF (type))
@@ -2745,7 +2741,6 @@ build_vec_init (base, init, from_array)
 	 store_constructor will handle the semantics for us.  */
 
       stmt_expr = build (INIT_EXPR, atype, base, init);
-      TREE_SIDE_EFFECTS (stmt_expr) = 1;
       return stmt_expr;
     }
 
