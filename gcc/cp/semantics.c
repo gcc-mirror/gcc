@@ -1327,6 +1327,9 @@ begin_class_definition (t)
      that we can get it back later.  */
   begin_tree ();
 
+  /* Make a declaration for this class in its own scope.  */
+  build_self_reference ();
+
   return t;
 }
 
@@ -1365,11 +1368,6 @@ finish_member_declaration (decl)
        finish_struct.  Presumably it is already set as the function is
        parsed.  Perhaps DECL_CLASS_CONTEXT is already set, too?  */
     DECL_CLASS_CONTEXT (decl) = current_class_type;
-  else if (TREE_CODE (decl) == TYPE_DECL)
-    /* Historically, DECL_CONTEXT was not set for a TYPE_DECL in
-       finish_struct, so we do not do it here either.  Perhaps we
-       should, though.  */
-      ;
   else
     DECL_CONTEXT (decl) = current_class_type;
 

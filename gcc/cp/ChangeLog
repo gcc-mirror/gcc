@@ -1,5 +1,8 @@
 1999-03-10  Mark Mitchell  <mark@markmitchell.com>
 
+	* semantics.c (begin_class_definition): Call build_self_reference.
+	(finish_member_declaration): Set DECL_CONTEXT for TYPE_DECLs.
+
 	* search.c (assert_canonical_unmarked): Fix typo in prototype.
 
 	* search.c (dfs_canonical_queue): New function.
