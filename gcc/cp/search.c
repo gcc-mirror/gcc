@@ -1297,14 +1297,19 @@ lookup_field_r (binfo, data)
 	  /* We have a real ambiguity.  We keep a chain of all the
 	     candidates.  */
 	  if (!lfi->ambiguous && lfi->rval)
-	    /* This is the first time we noticed an ambiguity.  Add
-	       what we previously thought was a reasonable candidate
-	       to the list.  */
-	    lfi->ambiguous = scratch_tree_cons (NULL_TREE, lfi->rval,
-						NULL_TREE);
+	    {
+	      /* This is the first time we noticed an ambiguity.  Add
+		 what we previously thought was a reasonable candidate
+		 to the list.  */
+	      lfi->ambiguous = scratch_tree_cons (NULL_TREE, lfi->rval,
+						  NULL_TREE);
+	      TREE_TYPE (lfi->ambiguous) = error_mark_node;
+	    }
+
 	  /* Add the new value.  */
 	  lfi->ambiguous = scratch_tree_cons (NULL_TREE, nval, 
 					      lfi->ambiguous);
+	  TREE_TYPE (lfi->ambiguous) = error_mark_node;
 	  lfi->errstr = "request for member `%D' is ambiguous";
 	}
     }
@@ -1341,8 +1346,8 @@ lookup_field_r (binfo, data)
    XBASETYPE.  PROTECT is 0 or two, we do not check access.  If it is
    1, we enforce accessibility.  If PROTECT is zero, then, for an
    ambiguous lookup, we return NULL.  If PROTECT is 1, we issue an
-   error message.  If PROTECT is two 2, we return a TREE_LIST whose
-   TREE_PURPOSE is error_mark_node and whose TREE_VALUE is the list of
+   error message.  If PROTECT is 2, we return a TREE_LIST whose
+   TREEE_TYPE is error_mark_node and whose TREE_VALUEs are the list of
    ambiguous candidates.
 
    WANT_TYPE is 1 when we should only return TYPE_DECLs, if no
@@ -1372,6 +1377,8 @@ lookup_member (xbasetype, name, protect, want_type)
       tree field = IDENTIFIER_CLASS_VALUE (name);
       if (TREE_CODE (field) != FUNCTION_DECL
 	  && ! (want_type && TREE_CODE (field) != TYPE_DECL))
+	/* We're in the scope of this class, and the value has already
+	   been looked up.  Just return the cached value.  */
 	return field;
     }
 
@@ -1415,14 +1422,7 @@ lookup_member (xbasetype, name, protect, want_type)
   if (protect == 2) 
     {
       if (lfi.ambiguous)
-	{
-	  /* An ERROR_MARK for the TREE_TYPE tells hack_identifier
-	     that the lookup is ambiguous.  */
-	  TREE_TYPE (lfi.ambiguous) = error_mark_node;
-	  return scratch_tree_cons (error_mark_node,
-				    lfi.ambiguous,
-				    NULL_TREE);
-	}
+	return lfi.ambiguous;
       else
 	protect = 0;
     }
@@ -2838,9 +2838,9 @@ setup_class_bindings (name, type_binding_p)
 				    /*protect=*/2,
 				    /*want_type=*/1);
       if (TREE_CODE (type_binding) == TREE_LIST 
-	  && TREE_PURPOSE (type_binding) == error_mark_node)
+	  && TREE_TYPE (type_binding) == error_mark_node)
 	/* NAME is ambiguous.  */
-	push_class_level_binding (name, TREE_VALUE (type_binding));
+	push_class_level_binding (name, type_binding);
       else
 	pushdecl_class_level (type_binding);
     }
@@ -2853,8 +2853,8 @@ setup_class_bindings (name, type_binding_p)
   if (type_binding_p
       && (TREE_CODE (value_binding) == TYPE_DECL
 	  || (TREE_CODE (value_binding) == TREE_LIST
-	      && TREE_PURPOSE (value_binding) == error_mark_node
-	      && (TREE_CODE (TREE_VALUE (TREE_VALUE (value_binding)))
+	      && TREE_TYPE (value_binding) == error_mark_node
+	      && (TREE_CODE (TREE_VALUE (value_binding))
 		  == TYPE_DECL))))
     /* We found a type-binding, even when looking for a non-type
        binding.  This means that we already processed this binding
@@ -2863,12 +2863,12 @@ setup_class_bindings (name, type_binding_p)
   else
     {
       if (TREE_CODE (value_binding) == TREE_LIST 
-	  && TREE_PURPOSE (value_binding) == error_mark_node)
+	  && TREE_TYPE (value_binding) == error_mark_node)
 	/* NAME is ambiguous.  */
-	push_class_level_binding (name, TREE_VALUE (value_binding));
+	push_class_level_binding (name, value_binding);
       else
 	{
-	  if (TREE_CODE (value_binding) == TREE_LIST)
+	  if (BASELINK_P (value_binding))
 	    /* NAME is some overloaded functions.  */
 	    value_binding = TREE_VALUE (value_binding);
 	  pushdecl_class_level (value_binding);
@@ -2970,11 +2970,10 @@ push_class_decls (type)
      cache later.  */
   maybe_push_cache_obstack ();
 
-  /* Push class fields into CLASS_VALUE scope, and mark.  */
+  /* Enter type declarations and mark.  */
   dfs_walk (TYPE_BINFO (type), dfs_push_type_decls, unmarked_pushdecls_p, 0);
 
-  /* Compress fields which have only a single entry
-     by a given name, and unmark.  */
+  /* Enter non-type declarations and unmark.  */
   dfs_walk (TYPE_BINFO (type), dfs_push_decls, marked_pushdecls_p, 0);
 
   /* Undo the call to maybe_push_cache_obstack above.  */
