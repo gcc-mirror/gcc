@@ -46,6 +46,10 @@ SUB_CPP_PREDEFINES
 #undef TARGET_CAN_FAULT_IN_PROLOGUE
 #define TARGET_CAN_FAULT_IN_PROLOGUE 1
 
+/* OS fixes up EV5 data fault on prefetch.  */
+#undef TARGET_FIXUP_EV5_PREFETCH
+#define TARGET_FIXUP_EV5_PREFETCH 1
+
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "int"
 
