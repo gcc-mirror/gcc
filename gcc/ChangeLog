@@ -1,3 +1,11 @@
+
+2002-12-19  Devang Patel <dpatel@apple.com>
+
+	* config/darwin.h (TARGET_OPTION_TRANSLATE_TABLE): Add support for -dynamic.
+	(CPP_SPEC): Define __STATIC__ and __DYNAMIC__ depending on -dynamic.
+	(LINK_SPEC): Pass -dynamic to linker.
+	* config/rs6000/darwin.h: Reject conflicting -static and -dynamic.
+	
 2002-12-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (pushqi_h8300): Don't push the stack

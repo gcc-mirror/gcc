@@ -1,3 +1,7 @@
+2002-12-19  Devang Patel  <dpatel@apple.com>
+
+	* gcc.dg/darwin-ld-5.c: Rewrite test to test -dynamic.
+	
 2002-12-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/execute/20021219-1.c: New test.
