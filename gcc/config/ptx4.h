@@ -1,6 +1,7 @@
 /* Operating system specific defines to be used when targeting GCC for
    Sequent's Dynix/ptx v4 and later.
-   Copyright 1996, 1997, 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+   Copyright 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004
+   Free Software Foundation, Inc.
    Generic SysV4 file Contributed by Ron Guilmette (rfg@monkeys.com).
    Renamed and changed to suit Dynix/ptx v4 and later.
    Modified by Tim Wright (timw@sequent.com).
