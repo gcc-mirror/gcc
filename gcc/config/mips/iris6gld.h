@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  Iris version 6 with
    GNU ld.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>.
 
 This file is part of GNU CC.
