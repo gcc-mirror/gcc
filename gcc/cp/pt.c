@@ -3323,7 +3323,14 @@ convert_nontype_argument (tree type, tree expr)
          conversions (_conv.integral_) are applied.  */
       if (!INTEGRAL_TYPE_P (expr_type))
 	return error_mark_node;
-      
+
+      /* [conv.integral] does not allow conversions between two different
+	 enumeration types.  */
+      if (TREE_CODE (type) == ENUMERAL_TYPE
+	  && TREE_CODE (expr_type) == ENUMERAL_TYPE
+	  && !same_type_ignoring_top_level_qualifiers_p (type, expr_type))
+	  return error_mark_node;
+
       /* It's safe to call digest_init in this case; we know we're
 	 just converting one integral constant expression to another.  */
       expr = digest_init (type, expr, (tree*) 0);
