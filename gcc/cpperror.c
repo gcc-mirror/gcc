@@ -142,22 +142,14 @@ _cpp_begin_message (pfile, code, pos)
 void
 cpp_ice VPARAMS ((cpp_reader *pfile, const char *msgid, ...))
 {  
-#ifndef ANSI_PROTOTYPES
-  cpp_reader *pfile;
-  const char *msgid;
-#endif
-  va_list ap;
-  
-  VA_START (ap, msgid);
-  
-#ifndef ANSI_PROTOTYPES
-  pfile = va_arg (ap, cpp_reader *);
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, cpp_reader *, pfile);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   if (_cpp_begin_message (pfile, ICE, 0))
     v_message (msgid, ap);
-  va_end(ap);
+
+  VA_CLOSE (ap);
 }
 
 /* Same as cpp_error, except we consider the error to be "fatal",
@@ -169,72 +161,47 @@ cpp_ice VPARAMS ((cpp_reader *pfile, const char *msgid, ...))
 void
 cpp_fatal VPARAMS ((cpp_reader *pfile, const char *msgid, ...))
 {  
-#ifndef ANSI_PROTOTYPES
-  cpp_reader *pfile;
-  const char *msgid;
-#endif
-  va_list ap;
-  
-  VA_START (ap, msgid);
-  
-#ifndef ANSI_PROTOTYPES
-  pfile = va_arg (ap, cpp_reader *);
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, cpp_reader *, pfile);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   if (_cpp_begin_message (pfile, FATAL, 0))
     v_message (msgid, ap);
-  va_end(ap);
+
+  VA_CLOSE (ap);
 }
 
 void
 cpp_error VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  cpp_reader *pfile;
-  const char *msgid;
-#endif
-  va_list ap;
-
-  VA_START(ap, msgid);
-  
-#ifndef ANSI_PROTOTYPES
-  pfile = va_arg (ap, cpp_reader *);
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, cpp_reader *, pfile);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   if (_cpp_begin_message (pfile, ERROR, 0))
     v_message (msgid, ap);
-  va_end(ap);
+
+  VA_CLOSE (ap);
 }
 
 void
 cpp_error_with_line VPARAMS ((cpp_reader *pfile, int line, int column,
 			     const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  cpp_reader *pfile;
-  int line;
-  int column;
-  const char *msgid;
-#endif
-  va_list ap;
   cpp_lexer_pos pos;
   
-  VA_START (ap, msgid);
-  
-#ifndef ANSI_PROTOTYPES
-  pfile = va_arg (ap, cpp_reader *);
-  line = va_arg (ap, int);
-  column = va_arg (ap, int);
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, cpp_reader *, pfile);
+  VA_FIXEDARG (ap, int, line);
+  VA_FIXEDARG (ap, int, column);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   pos.line = line;
   pos.col = column;
   if (_cpp_begin_message (pfile, ERROR, &pos))
     v_message (msgid, ap);
-  va_end(ap);
+
+  VA_CLOSE (ap);
 }
 
 /* Error including a message from `errno'.  */
@@ -249,127 +216,83 @@ cpp_error_from_errno (pfile, name)
 void
 cpp_warning VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  cpp_reader *pfile;
-  const char *msgid;
-#endif
-  va_list ap;
-  
-  VA_START (ap, msgid);
-  
-#ifndef ANSI_PROTOTYPES
-  pfile = va_arg (ap, cpp_reader *);
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, cpp_reader *, pfile);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   if (_cpp_begin_message (pfile, WARNING, 0))
     v_message (msgid, ap);
-  va_end(ap);
+
+  VA_CLOSE (ap);
 }
 
 void
 cpp_warning_with_line VPARAMS ((cpp_reader * pfile, int line, int column,
 			       const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  cpp_reader *pfile;
-  int line;
-  int column;
-  const char *msgid;
-#endif
-  va_list ap;
   cpp_lexer_pos pos;
-  
-  VA_START (ap, msgid);
-  
-#ifndef ANSI_PROTOTYPES
-  pfile = va_arg (ap, cpp_reader *);
-  line = va_arg (ap, int);
-  column = va_arg (ap, int);
-  msgid = va_arg (ap, const char *);
-#endif
+
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, cpp_reader *, pfile);
+  VA_FIXEDARG (ap, int, line);
+  VA_FIXEDARG (ap, int, column);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   pos.line = line;
   pos.col = column;
   if (_cpp_begin_message (pfile, WARNING, &pos))
     v_message (msgid, ap);
-  va_end(ap);
+
+  VA_CLOSE (ap);
 }
 
 void
 cpp_pedwarn VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  cpp_reader *pfile;
-  const char *msgid;
-#endif
-  va_list ap;
-  
-  VA_START (ap, msgid);
-  
-#ifndef ANSI_PROTOTYPES
-  pfile = va_arg (ap, cpp_reader *);
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, cpp_reader *, pfile);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   if (_cpp_begin_message (pfile, PEDWARN, 0))
     v_message (msgid, ap);
-  va_end(ap);
+
+  VA_CLOSE (ap);
 }
 
 void
 cpp_pedwarn_with_line VPARAMS ((cpp_reader * pfile, int line, int column,
 			       const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  cpp_reader *pfile;
-  int line;
-  int column;
-  const char *msgid;
-#endif
-  va_list ap;
   cpp_lexer_pos pos;
   
-  VA_START (ap, msgid);
-  
-#ifndef ANSI_PROTOTYPES
-  pfile = va_arg (ap, cpp_reader *);
-  line = va_arg (ap, int);
-  column = va_arg (ap, int);
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, cpp_reader *, pfile);
+  VA_FIXEDARG (ap, int, line);
+  VA_FIXEDARG (ap, int, column);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   pos.line = line;
   pos.col = column;
   if (_cpp_begin_message (pfile, PEDWARN, &pos))
     v_message (msgid, ap);
-  va_end(ap);
+
+  VA_CLOSE (ap);
 }
 
 /* Print an error message not associated with a file.  */
 void
 cpp_notice VPARAMS ((cpp_reader *pfile, const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  cpp_reader *pfile;
-  const char *msgid;
-#endif
-  va_list ap;
-  
-  VA_START (ap, msgid);
-  
-#ifndef ANSI_PROTOTYPES
-  pfile = va_arg (ap, cpp_reader *);
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, cpp_reader *, pfile);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   if (pfile->errors < CPP_FATAL_LIMIT)
     pfile->errors++;
 
-  vfprintf (stderr, _(msgid), ap);
-  putc('\n', stderr);
+  v_message (msgid, ap);
 
-  va_end(ap);
+  VA_CLOSE (ap);
 }
 
 void
