@@ -1,3 +1,8 @@
+Wed Feb 11 11:43:34 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (WARN_CFLAGS): New variable.
+	(bootstrap, bootstrap2, bootstrap3, bootstrap4): Use it.
+
 1998-02-11  Mark Mitchell  <mmitchell@usa.net>
 
 	* config/i386/i386.c (reg_mentioned_in_mem): Don't abort when
