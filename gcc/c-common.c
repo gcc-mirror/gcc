@@ -4372,6 +4372,12 @@ cb_register_builtins (pfile)
   if (flag_no_inline)
     cpp_define (pfile, "__NO_INLINE__");
 
+  if (flag_iso)
+    cpp_define (pfile, "__STRICT_ANSI__");
+
+  if (!flag_signed_char)
+    cpp_define (pfile, "__CHAR_UNSIGNED__");
+
   /* A straightforward target hook doesn't work, because of problems
      linking that hook's body when part of non-C front ends.  */
   #define preprocessing_asm_p() (cpp_get_options (pfile)->lang == CLK_ASM)
@@ -4461,15 +4467,7 @@ c_common_init (filename)
   options->int_precision = TYPE_PRECISION (integer_type_node);
   options->wchar_precision = TYPE_PRECISION (wchar_type_node);
   options->unsigned_wchar = TREE_UNSIGNED (wchar_type_node);
-  /* This can be uncommented when 1) This all happens before
-     cpp_post_options() (needed for __CHAR_UNSIGNED__ builtin), which
-     in turn requires wchat_type_node to be set up properly by then,
-     and 2) tradcpp is integrated, so that the preprocessors don't
-     need to handle the command-line options and the specs in gcc.c
-     can be updated.
-
-     options->unsigned_char = !flag_signed_char; */
-
+  options->unsigned_char = !flag_signed_char;
   options->warn_multichar = warn_multichar;
   options->stdc_0_in_system_headers = STDC_0_IN_SYSTEM_HEADERS;
 
