@@ -1,5 +1,16 @@
 2002-02-01  Adam Megacz <adam@xwt.org>
 
+        * include/win32-threads.h (_Jv_ConditionVariable_t): Now a struct, to
+	enable safer wait() algorithm.
+	(_Jv_CondWait, _Jv_CondInit, _Jv_CondDestroy, _Jv_CondNotify,
+	_Jv_CondNotifyAll): Implementations moved to win32-threads.cc.
+	(_Jv_MutexInit, _Jv_HaveMutexDestroy, _Jv_MutexUnlock,
+	_Jv_MutexLock, _Jv_ThreadYield): Reimplement using CRITICAL_SECTIONs
+	instead of mutex.
+	(_Jv_ThreadYield): Don't call Sleep(), because it crashes win98.
+
+2002-02-01  Adam Megacz <adam@xwt.org>
+
 	* configure.in: Added support for mingw.
 	* java/lang/Win32Process.java: Created as empty file.
 	* java/lang/natWin32Process.cc: Created as empty file.
