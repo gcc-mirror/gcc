@@ -424,6 +424,7 @@ static int insn_cuid		PARAMS ((rtx));
 static void record_promoted_value PARAMS ((rtx, rtx));
 static rtx reversed_comparison  PARAMS ((rtx, enum machine_mode, rtx, rtx));
 static enum rtx_code combine_reversed_comparison_code PARAMS ((rtx));
+static void adjust_for_new_dest PARAMS ((rtx));
 
 /* Substitute NEWVAL, an rtx expression, into INTO, a place in some
    insn.  The substitution can be undone by undo_all.  If INTO is already
@@ -1502,6 +1503,34 @@ cant_combine_insn_p (insn)
   return 0;
 }
 
+/* Adjust INSN after we made a change to its destination.
+
+   Changing the destination can invalidate notes that say something about
+   the results of the insn and a LOG_LINK pointing to the insn.  */
+
+static void
+adjust_for_new_dest (insn)
+     rtx insn;
+{
+  rtx *loc;
+
+  /* For notes, be conservative and simply remove them.  */
+  loc = &REG_NOTES (insn);
+  while (*loc)
+    {
+      enum reg_note kind = REG_NOTE_KIND (*loc);
+      if (kind == REG_EQUAL || kind == REG_EQUIV)
+	*loc = XEXP (*loc, 1);
+      else
+	loc = &XEXP (*loc, 1);
+    }
+
+  /* The new insn will have a destination that was previously the destination
+     of an insn just above it.  Call distribute_links to make a LOG_LINK from
+     the next use of that destination.  */
+  distribute_links (gen_rtx_INSN_LIST (VOIDmode, insn, NULL_RTX));
+}
+
 /* Try to combine the insns I1 and I2 into I3.
    Here I1 and I2 appear earlier than I3.
    I1 can be zero; then we combine just I2 into I3.
@@ -2124,6 +2153,14 @@ try_combine (i3, i2, i1, new_direct_jump_p)
     {
       newpat = XVECEXP (newpat, 0, 1);
       insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
+ 
+      if (insn_code_number >= 0)
+	{
+	  /* If we will be able to accept this, we have made a change to the
+	     destination of I3.  This requires us to do a few adjustments.  */
+	  PATTERN (i3) = newpat;
+	  adjust_for_new_dest (i3);
+	}
     }
 
   /* If we were combining three insns and the result is a simple SET
@@ -2394,16 +2431,9 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 	  rtx link;
 
 	  /* If we will be able to accept this, we have made a change to the
-	     destination of I3.  This can invalidate a LOG_LINKS pointing
-	     to I3.  No other part of combine.c makes such a transformation.
-
-	     The new I3 will have a destination that was previously the
-	     destination of I1 or I2 and which was used in i2 or I3.  Call
-	     distribute_links to make a LOG_LINK from the next use of
-	     that destination.  */
-
+	     destination of I3.  This requires us to do a few adjustments.  */
 	  PATTERN (i3) = newpat;
-	  distribute_links (gen_rtx_INSN_LIST (VOIDmode, i3, NULL_RTX));
+	  adjust_for_new_dest (i3);
 
 	  /* I3 now uses what used to be its destination and which is
 	     now I2's destination.  That means we need a LOG_LINK from
@@ -13077,8 +13107,8 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 }
 
 /* Similarly to above, distribute the LOG_LINKS that used to be present on
-   I3, I2, and I1 to new locations.  This is also called in one case to
-   add a link pointing at I3 when I3's destination is changed.  */
+   I3, I2, and I1 to new locations.  This is also called to add a link
+   pointing at I3 when I3's destination is changed.  */
 
 static void
 distribute_links (links)

@@ -1,3 +1,11 @@
+2003-10-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/11637
+	* combine.c (adjust_for_new_dest): New function to adjust the
+	notes and LOG_LINKS when the dest of an insn has changed.
+	(try_combine): Use it when deleting the first insn of a two-insn
+	parallel or splitting a two-load parallel.
+
 2003-10-04  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/t-m68hc11-gas (MULTILIB_MATCHES): m68hcs12 is
