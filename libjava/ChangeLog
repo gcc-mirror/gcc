@@ -1,3 +1,8 @@
+2001-08-31  Tom Tromey  <tromey@redhat.com>
+
+	* java/io/ByteArrayOutputStream.java: Re-merged with Classpath.
+	* java/io/OptionalDataException.java: Merged with Classpath.
+
 2001-08-31  Jason Merrill  <jason_merrill@redhat.com>
 
 	* exception.cc (PERSONALITY_FUNCTION): Simplify
