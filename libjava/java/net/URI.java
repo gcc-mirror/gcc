@@ -65,7 +65,7 @@ public final class URI implements Comparable, Serializable
     "^(([^:/?#]+):)?((//([^/?#]*))?([^?#]*)(\\?([^#]*))?)?(#(.*))?";
 
   private static final String AUTHORITY_REGEXP =
-    "^(([^?#]*)@([^?#]*):([^?#]*))?";
+    "^((([^?#]*)@)?([^?#:]*)(:([^?#]*)))?";
 
   /**
    * Valid characters (taken from rfc2396)
@@ -115,9 +115,9 @@ public final class URI implements Comparable, Serializable
    */
   private static final int FRAGMENT_GROUP = 10;
   
-  private static final int AUTHORITY_USERINFO_GROUP = 2;
-  private static final int AUTHORITY_HOST_GROUP = 3;
-  private static final int AUTHORITY_PORT_GROUP = 4;
+  private static final int AUTHORITY_USERINFO_GROUP = 3;
+  private static final int AUTHORITY_HOST_GROUP = 4;
+  private static final int AUTHORITY_PORT_GROUP = 6;
   
   private transient String scheme;
   private transient String rawSchemeSpecificPart;
