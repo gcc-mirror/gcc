@@ -447,6 +447,16 @@ extern void __gcov_merge_single (gcov_type *, unsigned);
 /* The merge function to choose the most common difference between
    consecutive values.  */
 extern void __gcov_merge_delta (gcov_type *, unsigned);
+
+/* The wrappers around some library functions..  */
+extern pid_t __gcov_fork (void);
+extern int __gcov_execl (const char *, const char *, ...);
+extern int __gcov_execlp (const char *, const char *, ...);
+extern int __gcov_execle (const char *,  const char *, ...);
+extern int __gcov_execv (const char *, char *const []);
+extern int __gcov_execvp (const char *, char *const []);
+extern int __gcov_execve (const char *, char  *const [], char *const []);
+
 #endif /* IN_LIBGCOV */
 
 #if IN_LIBGCOV >= 0

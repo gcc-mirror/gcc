@@ -580,4 +580,146 @@ __gcov_merge_delta (gcov_type *counters, unsigned n_counters)
 }
 #endif /* L_gcov_merge_delta */
 
+#ifdef L_gcov_fork
+/* A wrapper for the fork function.  Flushes the accumulated profiling data, so
+   that they are not counted twice.  */
+
+pid_t
+__gcov_fork (void)
+{
+  __gcov_flush ();
+  return fork ();
+}
+#endif
+
+#ifdef L_gcov_execl
+/* A wrapper for the execl function.  Flushes the accumulated profiling data, so
+   that they are not lost.  */
+
+int
+__gcov_execl (const char *path, const char *arg, ...)
+{
+  va_list ap, aq;
+  unsigned i, length;
+  char **args;
+
+  __gcov_flush ();
+
+  va_start (ap, arg);
+  va_copy (aq, ap);
+
+  length = 2;
+  while (va_arg (ap, char *))
+    length++;
+  va_end (ap);
+
+  args = alloca (length * sizeof (void *));
+  args[0] = (char *) arg;
+  for (i = 1; i < length; i++)
+    args[i] = va_arg (aq, char *);
+  va_end (aq);
+
+  return execv (path, args);
+}
+#endif
+
+#ifdef L_gcov_execlp
+/* A wrapper for the execlp function.  Flushes the accumulated profiling data, so
+   that they are not lost.  */
+
+int
+__gcov_execlp (const char *path, const char *arg, ...)
+{
+  va_list ap, aq;
+  unsigned i, length;
+  char **args;
+
+  __gcov_flush ();
+
+  va_start (ap, arg);
+  va_copy (aq, ap);
+
+  length = 2;
+  while (va_arg (ap, char *))
+    length++;
+  va_end (ap);
+
+  args = alloca (length * sizeof (void *));
+  args[0] = (char *) arg;
+  for (i = 1; i < length; i++)
+    args[i] = va_arg (aq, char *);
+  va_end (aq);
+
+  return execvp (path, args);
+}
+#endif
+
+#ifdef L_gcov_execle
+/* A wrapper for the execle function.  Flushes the accumulated profiling data, so
+   that they are not lost.  */
+
+int
+__gcov_execle (const char *path, const char *arg, ...)
+{
+  va_list ap, aq;
+  unsigned i, length;
+  char **args;
+  char **envp;
+
+  __gcov_flush ();
+
+  va_start (ap, arg);
+  va_copy (aq, ap);
+
+  length = 2;
+  while (va_arg (ap, char *))
+    length++;
+  va_end (ap);
+
+  args = alloca (length * sizeof (void *));
+  args[0] = (char *) arg;
+  for (i = 1; i < length; i++)
+    args[i] = va_arg (aq, char *);
+  envp = va_arg (aq, char **);
+  va_end (aq);
+
+  return execve (path, args, envp);
+}
+#endif
+
+#ifdef L_gcov_execv
+/* A wrapper for the execv function.  Flushes the accumulated profiling data, so
+   that they are not lost.  */
+
+int
+__gcov_execv (const char *path, char *const argv[])
+{
+  __gcov_flush ();
+  return execv (path, argv);
+}
+#endif
+
+#ifdef L_gcov_execvp
+/* A wrapper for the execvp function.  Flushes the accumulated profiling data, so
+   that they are not lost.  */
+
+int
+__gcov_execvp (const char *path, char *const argv[])
+{
+  __gcov_flush ();
+  return execvp (path, argv);
+}
+#endif
+
+#ifdef L_gcov_execve
+/* A wrapper for the execve function.  Flushes the accumulated profiling data, so
+   that they are not lost.  */
+
+int
+__gcov_execve (const char *path, char *const argv[], char *const envp[])
+{
+  __gcov_flush ();
+  return execve (path, argv, envp);
+}
+#endif
 #endif /* inhibit_libc */

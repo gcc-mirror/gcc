@@ -1992,6 +1992,7 @@ enum tree_index
   TI_PTR_TYPE,
   TI_CONST_PTR_TYPE,
   TI_SIZE_TYPE,
+  TI_PID_TYPE,
   TI_PTRDIFF_TYPE,
   TI_VA_LIST_TYPE,
   TI_BOOLEAN_TYPE,
@@ -2056,6 +2057,7 @@ extern GTY(()) tree global_trees[TI_MAX];
 #define const_ptr_type_node		global_trees[TI_CONST_PTR_TYPE]
 /* The C type `size_t'.  */
 #define size_type_node                  global_trees[TI_SIZE_TYPE]
+#define pid_type_node                   global_trees[TI_PID_TYPE]
 #define ptrdiff_type_node		global_trees[TI_PTRDIFF_TYPE]
 #define va_list_type_node		global_trees[TI_VA_LIST_TYPE]
 
@@ -3090,18 +3092,17 @@ extern rtx emit_line_note (location_t);
 #define ECF_LONGJMP		64
 /* Nonzero if this is a syscall that makes a new process in the image of
    the current one.  */
-#define ECF_FORK_OR_EXEC	128
-#define ECF_SIBCALL		256
+#define ECF_SIBCALL		128
 /* Nonzero if this is a call to "pure" function (like const function,
    but may read memory.  */
-#define ECF_PURE		512
+#define ECF_PURE		256
 /* Nonzero if this is a call to a function that returns with the stack
    pointer depressed.  */
-#define ECF_SP_DEPRESSED	1024
+#define ECF_SP_DEPRESSED	512
 /* Nonzero if this call is known to always return.  */
-#define ECF_ALWAYS_RETURN	2048
+#define ECF_ALWAYS_RETURN	1024
 /* Create libcall block around the call.  */
-#define ECF_LIBCALL_BLOCK	4096
+#define ECF_LIBCALL_BLOCK	2048
 
 extern int flags_from_decl_or_type (tree);
 extern int call_expr_flags (tree);

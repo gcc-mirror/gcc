@@ -55,6 +55,10 @@ cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 #define SIZE_TYPE "long unsigned int"
 #endif
 
+#ifndef PID_TYPE
+#define PID_TYPE "int"
+#endif
+
 #ifndef WCHAR_TYPE
 #define WCHAR_TYPE "int"
 #endif
@@ -3112,6 +3116,9 @@ c_common_nodes_and_builtins (void)
     TREE_TYPE (identifier_global_value (get_identifier (SIZE_TYPE)));
   signed_size_type_node = c_common_signed_type (size_type_node);
   set_sizetype (size_type_node);
+
+  pid_type_node =
+    TREE_TYPE (identifier_global_value (get_identifier (PID_TYPE)));
 
   build_common_tree_nodes_2 (flag_short_double);
 
