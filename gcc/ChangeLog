@@ -1,5 +1,14 @@
 2003-04-16  Richard Henderson  <rth@redhat.com>
 
+	* config/frv/frv.c (frv_asm_out_constructor): New.
+	(frv_asm_out_destructor): New.
+	* config/frv/frv.h (CTORS_SECTION_ASM_OP): New.
+	(DTORS_SECTION_ASM_OP): New.
+	(ASM_OUTPUT_CONSTRUCTOR): Remove.
+	(ASM_OUTPUT_DESTRUCTOR): Remove.
+
+2003-04-16  Richard Henderson  <rth@redhat.com>
+
 	* config/cris/cris.c (cris_gotless_symbol, cris_got_symbol): Use
 	SYMBOL_REF_LOCAL_P; abort if not pic.
 	(cris_encode_section_info): Remove.

@@ -2640,6 +2640,11 @@ __asm__("\n"								\
 #define INIT_SECTION_ASM_OP	"\t.section .init,\"ax\""
 #define FINI_SECTION_ASM_OP	"\t.section .fini,\"ax\""
 
+#undef CTORS_SECTION_ASM_OP
+#undef DTORS_SECTION_ASM_OP
+#define CTORS_SECTION_ASM_OP	"\t.section\t.ctors,\"a\""
+#define DTORS_SECTION_ASM_OP	"\t.section\t.dtors,\"a\""
+
 /* A C expression whose value is a string containing the assembler operation to
    switch to the fixup section that records all initialized pointers in a -fpic
    program so they can be changed program startup time if the program is loaded
@@ -2860,27 +2865,6 @@ do {									\
    init section is not actually run automatically, but is still useful for
    collecting the lists of constructors and destructors.  */
 #define INVOKE__main
-
-/* Output appropriate code tp call a static constructor.  */
-#undef  ASM_OUTPUT_CONSTRUCTOR
-#define ASM_OUTPUT_CONSTRUCTOR(STREAM,NAME)				\
-do {									\
-  ctors_section ();							\
-  fprintf (STREAM, "\t.picptr\t");					\
-  assemble_name (STREAM, NAME);						\
-  fprintf (STREAM, "\n");							\
-} while (0)
-
-/* Output appropriate code tp call a static destructor.  */
-#undef  ASM_OUTPUT_DESTRUCTOR
-#define ASM_OUTPUT_DESTRUCTOR(STREAM,NAME)				\
-do {									\
-  dtors_section ();							\
-  fprintf (STREAM, "\t.picptr\t");					\
-  assemble_name (STREAM, NAME);						\
-  fprintf (STREAM, "\n");							\
-} while (0)
-
 
 /* Output of Assembler Instructions.  */
 

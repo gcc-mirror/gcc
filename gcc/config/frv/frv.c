@@ -284,6 +284,8 @@ static bool frv_in_small_data_p			PARAMS ((tree));
 static void frv_asm_output_mi_thunk
   PARAMS ((FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT, tree));
 static bool frv_rtx_costs			PARAMS ((rtx, int, int, int*));
+static void frv_asm_out_constructor		PARAMS ((rtx, int));
+static void frv_asm_out_destructor		PARAMS ((rtx, int));
 
 /* Initialize the GCC target structure.  */
 #undef  TARGET_ASM_FUNCTION_PROLOGUE
@@ -304,6 +306,10 @@ static bool frv_rtx_costs			PARAMS ((rtx, int, int, int*));
 #define TARGET_IN_SMALL_DATA_P frv_in_small_data_p
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS frv_rtx_costs
+#undef TARGET_ASM_CONSTRUCTOR
+#define TARGET_ASM_CONSTRUCTOR frv_asm_out_constructor
+#undef TARGET_ASM_DESTRUCTOR
+#define TARGET_ASM_DESTRUCTOR frv_asm_out_destructor
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK frv_asm_output_mi_thunk
@@ -9852,4 +9858,24 @@ frv_rtx_costs (x, code, outer_code, total)
     default:
       return false;
     }
+}
+
+static void
+frv_asm_out_constructor (symbol, priority)
+     rtx symbol;
+     int priority ATTRIBUTE_UNUSED;
+{
+  ctors_section ();
+  assemble_align (POINTER_SIZE);
+  assemble_integer_with_op ("\t.picptr\t", symbol);
+}
+
+static void
+frv_asm_out_destructor (symbol, priority)
+     rtx symbol;
+     int priority ATTRIBUTE_UNUSED;
+{
+  dtors_section ();
+  assemble_align (POINTER_SIZE);
+  assemble_integer_with_op ("\t.picptr\t", symbol);
 }
