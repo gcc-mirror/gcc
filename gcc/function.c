@@ -4860,7 +4860,13 @@ expand_function_start (subr, parms_have_cleanups)
   if (current_function_needs_context)
     {
       last_ptr = assign_stack_local (Pmode, GET_MODE_SIZE (Pmode), 0);
-      emit_move_insn (last_ptr, static_chain_incoming_rtx);
+
+#ifdef SMALL_REGISTER_CLASSES
+      /* Delay copying static chain if it is not a register to avoid
+	 conflicts with regs used for parameters.  */
+      if (GET_CODE (static_chain_incoming_rtx) == REG)
+#endif
+        emit_move_insn (last_ptr, static_chain_incoming_rtx);
     }
 
   /* If the parameters of this function need cleaning up, get a label
@@ -4975,6 +4981,15 @@ expand_function_start (subr, parms_have_cleanups)
      In some cases this requires emitting insns.  */
 
   assign_parms (subr, 0);
+
+#ifdef SMALL_REGISTER_CLASSES
+  /* Copy the static chain now if it wasn't a register.  The delay is to
+     avoid conflicts with the parameter passing registers.  */
+
+  if (current_function_needs_context)
+      if (GET_CODE (static_chain_incoming_rtx) != REG)
+        emit_move_insn (last_ptr, static_chain_incoming_rtx);
+#endif
 
   /* The following was moved from init_function_start.
      The move is supposed to make sdb output more accurate.  */
