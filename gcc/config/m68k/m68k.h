@@ -778,6 +778,16 @@ extern enum reg_class regno_reg_class[];
       ? FP_REGS : NO_REGS)			\
    : (CLASS))
 
+/* Force QImode output reloads from subregs to be allocated to data regs,
+   since QImode stores from address regs are not supported.  We make the
+   assumption that if the class is not ADDR_REGS, then it must be a superset
+   of DATA_REGS.  */
+
+#define LIMIT_RELOAD_CLASS(MODE, CLASS) \
+  (((MODE) == QImode && (CLASS) != ADDR_REGS)	\
+   ? DATA_REGS					\
+   : (CLASS))
+
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 /* On the 68000, this is the size of MODE in words,
