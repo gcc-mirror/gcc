@@ -46,14 +46,15 @@ public class FilterOutputStream extends OutputStream
   public void write (byte[] b) throws IOException, NullPointerException
   {
     // Don't do checking here, per Java Lang Spec.
-    out.write (b);
+    write (b, 0, b.length);
   }
 
   public void write (byte[] b, int off, int len)
     throws IOException, NullPointerException, IndexOutOfBoundsException
   {
     // Don't do checking here, per Java Lang Spec.
-    out.write(b, off, len);
+    for (int i=0; i < len; i++) 
+      write (b[off + i]);
   }
 
   // The output stream.

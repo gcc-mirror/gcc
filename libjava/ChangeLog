@@ -1,3 +1,9 @@
+1999-06-15  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/io/FilterOutputStream.java (write(byte[])): Rewrite according
+	to JDK 1.2 docs.
+	(write(byte[],int,int)): ditto.
+
 1999-06-14  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* posix-threads.cc (_Jv_CondWait): Fix currentTimeMillis() overflow.
