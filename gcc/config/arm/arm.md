@@ -4193,7 +4193,7 @@
 			       && GET_CODE (offset = XEXP (base, 1)) == CONST_INT
                                && ((INTVAL(offset) & 1) != 1)
 			       && GET_CODE (base = XEXP (base, 0)) == REG))
-		          && REGNO_POINTER_ALIGN (REGNO (base)) >= 4)
+		          && REGNO_POINTER_ALIGN (REGNO (base)) >= 32)
 		        {
 		          HOST_WIDE_INT new_offset = INTVAL (offset) & ~3;
 		          rtx new;
@@ -4226,7 +4226,7 @@
 		           || (GET_CODE (base) == PLUS
 			      && GET_CODE (offset = XEXP (base, 1)) == CONST_INT
 			      && GET_CODE (base = XEXP (base, 0)) == REG))
-		          && REGNO_POINTER_ALIGN (REGNO (base)) >= 4)
+		          && REGNO_POINTER_ALIGN (REGNO (base)) >= 32)
 		        {
 		          rtx reg = gen_reg_rtx (SImode);
 		          rtx new;

@@ -3,6 +3,8 @@
 	* emit-rtl.c (unshare_all_rtl_again): Unmark everything, then
 	call unshare_all_rtl.
 
+	* arm.md (movhi): REGNO_POINTER_ALIGN is now bits.
+
 Fri Apr 14 16:58:45 2000  Jim Wilson  <wilson@cygnus.com>
 
 	* config/ia64/lib1funcs.asm (__divdi3, __moddi3, __udivdi3, __umoddi3):
