@@ -1,3 +1,9 @@
+1999-05-11  Jim Blandy  <jimb@zwingli.cygnus.com>
+
+	* cplus-dem.c (main): Use table lookup to distinguish identifier
+	characters from non-identifier characters.
+	(standard_symbol_alphabet, hp_symbol_alphabet): New functions.
+
 Thu May  6 20:34:42 1999  Fred Fish  <fnf@be.com>
 
 	* configure.in (sys/resource.h): Add to AC_CHECK_HEADERS list.
