@@ -3363,7 +3363,17 @@ while (0)
 {									\
   extern FILE *asm_out_text_file;					\
   if (TARGET_GP_OPT)							\
-    STREAM = asm_out_text_file;						\
+    {									\
+      STREAM = asm_out_text_file;					\
+      /* ??? text_section gets called too soon.  If the previous	\
+	 function is in a special section and we're not, we have	\
+	 to switch back to the text section.  We can't call		\
+	 text_section again as gcc thinks we're already there.  */	\
+      /* ??? See varasm.c.  There are other things that get output	\
+	 too early, like alignment (before we've switched STREAM).  */	\
+      if (DECL_SECTION_NAME (DECL) == NULL_TREE)			\
+	fprintf (STREAM, "%s\n", TEXT_SECTION_ASM_OP);			\
+    }									\
 									\
   current_function_name = NAME;						\
   HALF_PIC_DECLARE (NAME);						\
