@@ -71,10 +71,12 @@ rm -f $dir/acats.sum $dir/acats.log
 
 display "		=== acats configuration ==="
 
+target=`$GCC -dumpmachine`
+
 display target gcc is $GCC
 display `$GCC -v 2>&1`
 display host=`gcc -dumpmachine`
-display target=`$GCC -dumpmachine`
+display target=$target
 display `type gnatmake`
 gnatls -v >> $dir/acats.log
 display ""
