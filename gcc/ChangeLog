@@ -1,5 +1,8 @@
 2001-03-22  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* invoke.texi (-ffast-math): Remove duplicate line about
+	__FAST_MATH__.
+
 	* gcc.texi: Remove more obsolete documentation of bugs and
 	installation problems.
 
