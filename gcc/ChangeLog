@@ -1,3 +1,7 @@
+2003-05-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcov-io.c (gcov_read_bytes): Fix fread thinko.
+
 2003-05-18  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c-cppbuiltin.c (TARGET_OS_CPP_BUILTINS, TARGET_OBJFMT_CPP_BUILTINS):
