@@ -1,5 +1,20 @@
 2000-06-13  Richard Henderson  <rth@cygnus.com>
 
+	* flow.c (insn_dead_p): Keep sets to PIC_OFFSET_TABLE_REGNUM
+	alive before reload.
+
+	* haifa-sched.c (struct deps): Add in_post_call_group_p.
+	(add_dependence): Handle notes between SCHED_GROUP_P insns.
+	(remove_dependence): Always define.
+	(set_sched_group_p): New.
+	(sched_analyze_2): Use it.
+	(sched_analyze_insn): Don't special-case naked uses.  Look for
+	and extend in_post_call_group_p.
+	(sched_analyze): Clear stale SCHED_GROUP_P.  Set in_post_call_group_p.
+	(init_deps): Clear in_post_call_group_p.
+
+2000-06-13  Richard Henderson  <rth@cygnus.com>
+
 	* combine.c (subst): Use CLASS_CANNOT_CHANGE_MODE and
 	CLASS_CANNOT_CHANGE_MODE_P instead of CLASS_CANNOT_CHANGE_SIZE
 	and hard-coded tests.

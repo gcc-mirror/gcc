@@ -277,10 +277,14 @@ struct deps
      the last function call, must depend on this.  */
   rtx last_function_call;
 
-  /* The LOG_LINKS field of this is a list of insns which use a pseudo register
-     that does not already cross a call.  We create dependencies between each
-     of those insn and the next call insn, to ensure that they won't cross a call
-     after scheduling is done.  */
+  /* Used to keep post-call psuedo/hard reg movements together with
+     the call.  */
+  int in_post_call_group_p;
+
+  /* The LOG_LINKS field of this is a list of insns which use a pseudo
+     register that does not already cross a call.  We create
+     dependencies between each of those insn and the next call insn,
+     to ensure that they won't cross a call after scheduling is done.  */
   rtx sched_before_next_call;
 
   /* Element N is the next insn that sets (hard or pseudo) register
@@ -466,10 +470,9 @@ static int q_size = 0;
 
 /* Forward declarations.  */
 static void add_dependence PARAMS ((rtx, rtx, enum reg_note));
-#ifdef HAVE_cc0
 static void remove_dependence PARAMS ((rtx, rtx));
-#endif
 static rtx find_insn_list PARAMS ((rtx, rtx));
+static void set_sched_group_p PARAMS ((rtx));
 static int insn_unit PARAMS ((rtx));
 static unsigned int blockage_range PARAMS ((int, rtx));
 static void clear_units PARAMS ((void));
@@ -822,26 +825,23 @@ add_dependence (insn, elem, dep_type)
      When HAVE_cc0, it is possible for NOTEs to exist between users and
      setters of the condition codes, so we must skip past notes here.
      Otherwise, NOTEs are impossible here.  */
-
-  next = NEXT_INSN (elem);
-
-#ifdef HAVE_cc0
-  while (next && GET_CODE (next) == NOTE)
-    next = NEXT_INSN (next);
-#endif
-
+  next = next_nonnote_insn (elem);
   if (next && SCHED_GROUP_P (next)
       && GET_CODE (next) != CODE_LABEL)
     {
       /* Notes will never intervene here though, so don't bother checking
          for them.  */
+      /* Hah!  Wrong.  */
       /* We must reject CODE_LABELs, so that we don't get confused by one
          that has LABEL_PRESERVE_P set, which is represented by the same
          bit in the rtl as SCHED_GROUP_P.  A CODE_LABEL can never be
          SCHED_GROUP_P.  */
-      while (NEXT_INSN (next) && SCHED_GROUP_P (NEXT_INSN (next))
-	     && GET_CODE (NEXT_INSN (next)) != CODE_LABEL)
-	next = NEXT_INSN (next);
+
+      rtx nnext;
+      while ((nnext = next_nonnote_insn (next)) != NULL
+	     && SCHED_GROUP_P (nnext)
+	     && GET_CODE (nnext) != CODE_LABEL)
+	next = nnext;
 
       /* Again, don't depend an insn on itself.  */
       if (insn == next)
@@ -860,7 +860,6 @@ add_dependence (insn, elem, dep_type)
   if (GET_CODE (insn) == CALL_INSN
       && (INSN_BB (elem) != INSN_BB (insn)))
     return;
-
 
   /* If we already have a true dependency for ELEM, then we do not
      need to do anything.  Avoiding the list walk below can cut
@@ -903,7 +902,6 @@ add_dependence (insn, elem, dep_type)
 #endif
 }
 
-#ifdef HAVE_cc0
 /* Remove ELEM wrapped in an INSN_LIST from the LOG_LINKS
    of INSN.  Abort if not found.  */
 
@@ -945,7 +943,51 @@ remove_dependence (insn, elem)
     abort ();
   return;
 }
-#endif /* HAVE_cc0 */
+
+/* Return the INSN_LIST containing INSN in LIST, or NULL
+   if LIST does not contain INSN.  */
+
+static inline rtx
+find_insn_list (insn, list)
+     rtx insn;
+     rtx list;
+{
+  while (list)
+    {
+      if (XEXP (list, 0) == insn)
+	return list;
+      list = XEXP (list, 1);
+    }
+  return 0;
+}
+
+/* Set SCHED_GROUP_P and care for the rest of the bookkeeping that
+   goes along with that.  */
+
+static void
+set_sched_group_p (insn)
+     rtx insn;
+{
+  rtx link, prev;
+
+  SCHED_GROUP_P (insn) = 1;
+
+  /* There may be a note before this insn now, but all notes will
+     be removed before we actually try to schedule the insns, so
+     it won't cause a problem later.  We must avoid it here though.  */
+  prev = prev_nonnote_insn (insn);
+
+  /* Make a copy of all dependencies on the immediately previous insn,
+     and add to this insn.  This is so that all the dependencies will
+     apply to the group.  Remove an explicit dependence on this insn
+     as SCHED_GROUP_P now represents it.  */
+
+  if (find_insn_list (prev, LOG_LINKS (insn)))
+    remove_dependence (insn, prev);
+
+  for (link = LOG_LINKS (prev); link; link = XEXP (link, 1))
+    add_dependence (insn, XEXP (link, 0), REG_NOTE_KIND (link));
+}
 
 #ifndef INSN_SCHEDULING
 void
@@ -2711,24 +2753,6 @@ is_exception_free (insn, bb_src, bb_trg)
    We are careful to build only dependencies which actually exist, and
    use transitivity to avoid building too many links.  */
 
-/* Return the INSN_LIST containing INSN in LIST, or NULL
-   if LIST does not contain INSN.  */
-
-HAIFA_INLINE static rtx
-find_insn_list (insn, list)
-     rtx insn;
-     rtx list;
-{
-  while (list)
-    {
-      if (XEXP (list, 0) == insn)
-	return list;
-      list = XEXP (list, 1);
-    }
-  return 0;
-}
-
-
 /* Return 1 if the pair (insn, x) is found in (LIST, LIST1), or 0
    otherwise.  */
 
@@ -3430,30 +3454,9 @@ sched_analyze_2 (deps, x, insn)
 
 #ifdef HAVE_cc0
     case CC0:
-      {
-	rtx link, prev;
-
-	/* User of CC0 depends on immediately preceding insn.  */
-	SCHED_GROUP_P (insn) = 1;
-
-	/* There may be a note before this insn now, but all notes will
-	   be removed before we actually try to schedule the insns, so
-	   it won't cause a problem later.  We must avoid it here though.  */
-	prev = prev_nonnote_insn (insn);
-
-	/* Make a copy of all dependencies on the immediately previous insn,
-	   and add to this insn.  This is so that all the dependencies will
-	   apply to the group.  Remove an explicit dependence on this insn
-	   as SCHED_GROUP_P now represents it.  */
-
-	if (find_insn_list (prev, LOG_LINKS (insn)))
-	  remove_dependence (insn, prev);
-
-	for (link = LOG_LINKS (prev); link; link = XEXP (link, 1))
-	  add_dependence (insn, XEXP (link, 0), REG_NOTE_KIND (link));
-
-	return;
-      }
+      /* User of CC0 depends on immediately preceding insn.  */
+      set_sched_group_p (insn);
+      return;
 #endif
 
     case REG:
@@ -3778,39 +3781,49 @@ sched_analyze_insn (deps, x, insn, loop_notes)
       reg_pending_sets_all = 0;
     }
 
-  /* Handle function calls and function returns created by the epilogue
-     threading code.  */
-  if (GET_CODE (insn) == CALL_INSN || GET_CODE (insn) == JUMP_INSN)
+  /* If a post-call group is still open, see if it should remain so.
+     This insn must be a simple move of a hard reg to a pseudo or
+     vice-versa. 
+
+     We must avoid moving these insns for correctness on
+     SMALL_REGISTER_CLASS machines, and for special registers like
+     PIC_OFFSET_TABLE_REGNUM.  For simplicity, extend this to all 
+     hard regs for all targets.  */
+
+  if (deps->in_post_call_group_p)
     {
-      rtx dep_insn;
-      rtx prev_dep_insn;
+      rtx tmp, set = single_set (insn);
+      int src_regno, dest_regno;
 
-      /* When scheduling instructions, we make sure calls don't lose their
-         accompanying USE insns by depending them one on another in order.
+      if (set == NULL)
+	goto end_call_group;
 
-         Also, we must do the same thing for returns created by the epilogue
-         threading code.  Note this code works only in this special case,
-         because other passes make no guarantee that they will never emit
-         an instruction between a USE and a RETURN.  There is such a guarantee
-         for USE instructions immediately before a call.  */
+      tmp = SET_DEST (set);
+      if (GET_CODE (tmp) == SUBREG)
+	tmp = SUBREG_REG (tmp);
+      if (GET_CODE (tmp) == REG)
+	dest_regno = REGNO (tmp);
+      else
+	goto end_call_group;
 
-      prev_dep_insn = insn;
-      dep_insn = PREV_INSN (insn);
-      while (GET_CODE (dep_insn) == INSN
-	     && GET_CODE (PATTERN (dep_insn)) == USE
-	     && GET_CODE (XEXP (PATTERN (dep_insn), 0)) == REG)
+      tmp = SET_SRC (set);
+      if (GET_CODE (tmp) == SUBREG)
+	tmp = SUBREG_REG (tmp);
+      if (GET_CODE (tmp) == REG)
+	src_regno = REGNO (tmp);
+      else
+	goto end_call_group;
+
+      if (src_regno < FIRST_PSEUDO_REGISTER
+	  || dest_regno < FIRST_PSEUDO_REGISTER)
 	{
-	  SCHED_GROUP_P (prev_dep_insn) = 1;
-
-	  /* Make a copy of all dependencies on dep_insn, and add to insn.
-	     This is so that all of the dependencies will apply to the
-	     group.  */
-
-	  for (link = LOG_LINKS (dep_insn); link; link = XEXP (link, 1))
-	    add_dependence (insn, XEXP (link, 0), REG_NOTE_KIND (link));
-
-	  prev_dep_insn = dep_insn;
-	  dep_insn = PREV_INSN (dep_insn);
+	  set_sched_group_p (insn);
+	  CANT_MOVE (insn) = 1;
+	}
+      else
+	{
+	end_call_group:
+	  deps->in_post_call_group_p = 0;
 	}
     }
 }
@@ -3834,6 +3847,9 @@ sched_analyze (deps, head, tail)
 	  /* Clear out the stale LOG_LINKS from flow.  */
 	  free_INSN_LIST_list (&LOG_LINKS (insn));
 
+	  /* Clear out stale SCHED_GROUP_P.  */
+	  SCHED_GROUP_P (insn) = 0;
+
 	  /* Make each JUMP_INSN a scheduling barrier for memory
              references.  */
 	  if (GET_CODE (insn) == JUMP_INSN)
@@ -3846,6 +3862,9 @@ sched_analyze (deps, head, tail)
 	{
 	  rtx x;
 	  register int i;
+
+	  /* Clear out stale SCHED_GROUP_P.  */
+	  SCHED_GROUP_P (insn) = 0;
 
 	  CANT_MOVE (insn) = 1;
 
@@ -3933,6 +3952,11 @@ sched_analyze (deps, head, tail)
 	  /* last_function_call is now a list of insns.  */
 	  free_INSN_LIST_list (&deps->last_function_call);
 	  deps->last_function_call = alloc_INSN_LIST (insn, NULL_RTX);
+
+	  /* Before reload, begin a post-call group, so as to keep the 
+	     lifetimes of hard registers correct.  */
+	  if (! reload_completed)
+	    deps->in_post_call_group_p = 1;
 	}
 
       /* See comments on reemit_notes as to why we do this.  
@@ -6237,6 +6261,7 @@ init_deps (deps)
   deps->pending_lists_length = 0;
   deps->last_pending_memory_flush = 0;
   deps->last_function_call = 0;
+  deps->in_post_call_group_p = 0;
 
   deps->sched_before_next_call
     = gen_rtx_INSN (VOIDmode, 0, NULL_RTX, NULL_RTX,
