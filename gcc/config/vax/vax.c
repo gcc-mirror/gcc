@@ -30,10 +30,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "insn-attr.h"
 
 
+/* This is like nonimmediate_operand with a restriction on the type of MEM.  */
+
 void
 split_quadword_operands (operands, low, n)
      rtx *operands, *low;
-   This is nonimmediate_operand with a restriction on the type of MEM.  */
 {
   int i;
   /* Split operands.  */

@@ -143,8 +143,8 @@ toplev,tree,print-tree,stor-layout,fold-const,varasm,rtl,rtlanal,expr,stmt
 expmed,explow,optabs,emit-rtl,insn-emit,jump,cse,loop,flow,stupid,combine
 regclass,local-alloc,global-alloc,reload,reload1,insn-peep,final,recog
 insn-recog,insn-extract,insn-output,obstack,integrate,caller-save,calls
-dwarfout,function,insn-attrtab,reorg,sched,sdbout,dbxout,unroll,reg-stack
-aux-output,print-rtl,version
+dwarfout,xcoffout,function,insn-attrtab,reorg,sched,sdbout,dbxout,unroll
+reg-stack,aux-output,print-rtl,version
 $!
 $pur/nolog independent.opt
 $!
@@ -247,6 +247,7 @@ $	'CC 'CFLAGS caller-save.c
 $	'CC 'CFLAGS calls.c
 $	'CC 'CFLAGS dwarfout.c
 $	'CC 'CFLAGS dbxout.c
+$	'CC 'CFLAGS xcoffout.c
 $	'CC 'CFLAGS reg-stack.c
 $	'CC 'CFLAGS function.c
 $	'CC 'CFLAGS reorg.c
