@@ -1,3 +1,10 @@
+2004-09-13  Dale Johannesen  <dalej@apple.com>
+
+	PR 17408
+	PR 17409
+	* c-decl.c (start_decl): Repair TREE_STATIC for initialized
+	objects declared extern.
+
 2004-09-14  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (arm_expand_prologue): Make args_to_push a
