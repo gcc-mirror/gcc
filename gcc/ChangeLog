@@ -1,5 +1,7 @@
 2000-08-25  Jim Wilson  <wilson@cygnus.com>
 
+	* cse.c (cse_insn): Don't pass label subtraction to force_const_mem.
+
 	* function.c (gen_mem_addressof): Clear MEM_ALIAS_SET if no decl.
 
 2000-08-25  Greg McGary  <greg@mcgary.org>

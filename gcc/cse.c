@@ -5328,8 +5328,16 @@ cse_insn (insn, libcall_insn)
 
 	  else if (constant_pool_entries_cost
 		   && CONSTANT_P (trial)
+		   /* Reject cases that will abort in decode_rtx_const.
+		      On the alpha when simplifying a switch, we get
+		      (const (truncate (minus (label_ref) (label_ref)))).  */
 		   && ! (GET_CODE (trial) == CONST
 			 && GET_CODE (XEXP (trial, 0)) == TRUNCATE)
+		   /* Likewise on IA-64, except without the truncate.  */
+		   && ! (GET_CODE (trial) == CONST
+			 && GET_CODE (XEXP (trial, 0)) == MINUS
+			 && GET_CODE (XEXP (XEXP (trial, 0), 0)) == LABEL_REF
+			 && GET_CODE (XEXP (XEXP (trial, 0), 1)) == LABEL_REF)
 		   && (src_folded == 0
 		       || (GET_CODE (src_folded) != MEM
 			   && ! src_folded_force_flag))
