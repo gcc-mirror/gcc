@@ -145,6 +145,14 @@ case $os in
 		os=-vxworks
 		basic_machine=$1
 		;;
+	-chorusos*)
+		os=-chorusos
+		basic_machine=$1
+		;;
+ 	-chorusrdb)
+ 		os=-chorusrdb
+		basic_machine=$1
+ 		;;
 	-hiux*)
 		os=-hiuxwe2
 		;;
@@ -988,6 +996,7 @@ case $os in
 	      | -lynxos* | -bosx* | -nextstep* | -cxux* | -aout* | -elf* | -oabi* \
 	      | -ptx* | -coff* | -ecoff* | -winnt* | -domain* | -vsta* \
 	      | -udi* | -eabi* | -lites* | -ieee* | -go32* | -aux* \
+	      | -chorusos* | -chorusrdb* \
 	      | -cygwin* | -pe* | -psos* | -moss* | -proelf* | -rtems* \
 	      | -mingw32* | -linux-gnu* | -uxpv* | -beos* | -mpeix* | -udk* \
 	      | -interix* | -uwin* | -rhapsody* | -darwin* | -opened* \
