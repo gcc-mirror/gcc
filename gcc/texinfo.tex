@@ -74,6 +74,7 @@
 }
 \let\~ = \tie                  % And make it available as @~.
 
+
 \message{Basics,}
 \chardef\other=12
 
@@ -579,7 +580,7 @@ where each line of input produces a line of output.}
 % @sp n   outputs n lines of vertical space
 
 \def\sp{\parsearg\spxxx}
-\def\spxxx #1{\par \vskip #1\baselineskip}
+\def\spxxx #1{\vskip #1\baselineskip}
 
 % @comment ...line which is ignored...
 % @c is the same as @comment
@@ -684,10 +685,15 @@ where each line of input produces a line of output.}
 \def\menu{\doignore{menu}}
 \def\direntry{\doignore{direntry}}
 
+% Also ignore @macro ... @end macro.  The user must run texi2dvi,
+% which runs makeinfo to do macro expansion.  Ignore @unmacro, too.
+\def\macro{\doignore{macro}}
+\let\unmacro = \comment
+
+
 % @dircategory CATEGORY  -- specify a category of the dir file
 % which this file should belong to.  Ignore this in TeX.
-
-\def\dircategory{\comment}
+\let\dircategory = \comment
 
 % Ignore text until a line `@end #1'.
 %
@@ -941,16 +947,13 @@ where each line of input produces a line of output.}
    \comment % Ignore the actual filename.
 }
 
+% @bye.
 \outer\def\bye{\pagealignmacro\tracingstats=1\ptexend}
 
-\def\inforef #1{\inforefzzz #1,,,,**}
-\def\inforefzzz #1,#2,#3,#4**{\putwordSee{} \putwordInfo{} \putwordfile{} \file{\ignorespaces #3{}},
-  node \samp{\ignorespaces#1{}}}
-
-\def\macro#1{\begingroup\ignoresections\catcode`\#=6\def\macrotemp{#1}\parsearg\macroxxx}
-\def\macroxxx#1#2 \end macro{%
-\expandafter\gdef\macrotemp#1{#2}%
-\endgroup}
+% \def\macro#1{\begingroup\ignoresections\catcode`\#=6\def\macrotemp{#1}\parsearg\macroxxx}
+% \def\macroxxx#1#2 \end macro{%
+% \expandafter\gdef\macrotemp#1{#2}%
+% \endgroup}
 
 %\def\linemacro#1{\begingroup\ignoresections\catcode`\#=6\def\macrotemp{#1}\parsearg\linemacroxxx}
 %\def\linemacroxxx#1#2 \end linemacro{%
@@ -961,6 +964,7 @@ where each line of input produces a line of output.}
 %\endgroup}
 
 %\def\butfirst#1{}
+
 
 \message{fonts,}
 
@@ -1205,8 +1209,8 @@ where each line of input produces a line of output.}
 \def\ctrl #1{{\tt \rawbackslash \hat}#1}
 
 \let\file=\samp
-\let\email=\samp
 \let\url=\samp % perhaps include a hypertex \special eventually
+\def\email#1{$\langle${\tt #1}$\rangle$}
 
 % @code is a modification of @t,
 % which makes spaces the same size as normal in the surrounding text.
@@ -1238,7 +1242,7 @@ where each line of input produces a line of output.}
 % Unfortunately, TeX uses one parameter (\hyphenchar) to control
 % both hyphenation at - and hyphenation within words.
 % We must therefore turn them both off (\tclose does that)
-% and arrange explicitly to hyphenate an a dash.
+% and arrange explicitly to hyphenate at a dash.
 %  -- rms.
 {
 \catcode`\-=\active
@@ -1291,7 +1295,8 @@ where each line of input produces a line of output.}
 \def\ii#1{{\it #1}}		% italic font
 
 % @pounds{} is a sterling sign.
-\def\pounds{{\it \$$}}
+\def\pounds{{\it\$}}
+
 
 \message{page headings,}
 
@@ -1513,6 +1518,7 @@ July\or August\or September\or October\or November\or December\fi
 \def\thistitle{No Title}
 \def\settitle{\parsearg\settitlezzz}
 \def\settitlezzz #1{\gdef\thistitle{#1}}
+
 
 \message{tables,}
 
@@ -1836,6 +1842,7 @@ July\or August\or September\or October\or November\or December\fi
 %   current hsize to be used for each column. You may use as many
 %   columns as desired.
 
+
 % Or use a template:
 %   @multitable {Column 1 template} {Column 2 template} {Column 3 template}
 %   @item ...
@@ -1856,7 +1863,7 @@ July\or August\or September\or October\or November\or December\fi
 % with nothing between them for as many times as empty columns are needed,
 % ie, @tab@tab@tab will produce two empty columns.
 
-% @item, @tab, @multicolumn or @endmulticolumn do not need to be on their
+% @item, @tab, @multitable or @end multitable do not need to be on their
 % own lines, but it will not hurt if they are.
 
 % Sample multitable:
@@ -2017,6 +2024,8 @@ width0pt\relax} \fi
 \global\advance\multitableparskip-7pt %% to keep parskip somewhat smaller
                                       %% than skip between lines in the table.
 \fi}
+
+
 \message{indexing,}
 % Index generation facilities
 
@@ -2515,8 +2524,9 @@ width0pt\relax} \fi
     \fi
   \fi
 }
-
 \catcode `\@=\other
+
+
 \message{sectioning,}
 % Define chapters, sections, etc.
 
@@ -3047,7 +3057,6 @@ width0pt\relax} \fi
 
 
 \message{toc printing,}
-
 % Finish up the main text and prepare to read what we've written
 % to \contentsfile.
 
@@ -3980,12 +3989,18 @@ width0pt\relax} \fi
 
 \def\deftpx #1 {\errmessage{@deftpx in invalid context}}
 
+
 \message{cross reference,}
 % Define cross-reference macros
 \newwrite \auxfile
 
 \newif\ifhavexrefs  % True if xref values are known.
 \newif\ifwarnedxrefs  % True if we warned once that they aren't known.
+
+% @inforef is simple.
+\def\inforef #1{\inforefzzz #1,,,,**}
+\def\inforefzzz #1,#2,#3,#4**{\putwordSee{} \putwordInfo{} \putwordfile{} \file{\ignorespaces #3{}},
+  node \samp{\ignorespaces#1{}}}
 
 % \setref{foo} defines a cross-reference point named foo.
 
