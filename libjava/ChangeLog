@@ -1,3 +1,7 @@
+2004-11-18  Craig Black  <craig.black@aonix.com>
+
+	* gnu/java/beans/BeanInfoEmbryo.java: Use TreeMap for proper sorting.
+
 2004-11-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* Makefile.am: Correct friend function declaration.
