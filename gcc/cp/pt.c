@@ -10407,17 +10407,23 @@ more_specialized_fn (tree pat1, tree pat2, int len)
   int better1 = 0;
   int better2 = 0;
 
+  /* If only one is a member function, they are unordered.  */
+  if (DECL_FUNCTION_MEMBER_P (decl1) != DECL_FUNCTION_MEMBER_P (decl2))
+    return 0;
+  
   /* Don't consider 'this' parameter.  */
   if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl1))
     args1 = TREE_CHAIN (args1);
-  
   if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl2))
     args2 = TREE_CHAIN (args2);
 
+  /* If only one is a conversion operator, they are unordered.  */
+  if (DECL_CONV_FN_P (decl1) != DECL_CONV_FN_P (decl2))
+    return 0;
+  
   /* Consider the return type for a conversion function */
   if (DECL_CONV_FN_P (decl1))
     {
-      gcc_assert (DECL_CONV_FN_P (decl2));
       args1 = tree_cons (NULL_TREE, TREE_TYPE (TREE_TYPE (decl1)), args1);
       args2 = tree_cons (NULL_TREE, TREE_TYPE (TREE_TYPE (decl2)), args2);
       len++;
