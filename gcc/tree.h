@@ -2801,6 +2801,7 @@ extern void init_ssanames (void);
 extern void fini_ssanames (void);
 extern tree make_ssa_name (tree, tree);
 extern tree duplicate_ssa_name (tree, tree);
+extern void duplicate_ssa_name_ptr_info (tree, struct ptr_info_def *);
 extern void release_ssa_name (tree);
 extern void release_defs (tree);
 extern void replace_ssa_name_symbol (tree, tree);

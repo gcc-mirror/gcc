@@ -279,22 +279,38 @@ duplicate_ssa_name (tree name, tree stmt)
 {
   tree new_name = make_ssa_name (SSA_NAME_VAR (name), stmt);
   struct ptr_info_def *old_ptr_info = SSA_NAME_PTR_INFO (name);
+
+  if (old_ptr_info)
+    duplicate_ssa_name_ptr_info (new_name, old_ptr_info);
+
+  return new_name;
+}
+
+
+/* Creates a duplicate of the ptr_info_def at PTR_INFO for use by
+   the ssa name NAME.  */
+
+void
+duplicate_ssa_name_ptr_info (tree name, struct ptr_info_def *ptr_info)
+{
   struct ptr_info_def *new_ptr_info;
 
-  if (!old_ptr_info)
-    return new_name;
+  gcc_assert (POINTER_TYPE_P (TREE_TYPE (name)));
+  gcc_assert (!SSA_NAME_PTR_INFO (name));
+
+  if (!ptr_info)
+    return;
 
   new_ptr_info = ggc_alloc (sizeof (struct ptr_info_def));
-  *new_ptr_info = *old_ptr_info;
+  *new_ptr_info = *ptr_info;
 
-  if (old_ptr_info->pt_vars)
+  if (ptr_info->pt_vars)
     {
       new_ptr_info->pt_vars = BITMAP_GGC_ALLOC ();
-      bitmap_copy (new_ptr_info->pt_vars, old_ptr_info->pt_vars);
+      bitmap_copy (new_ptr_info->pt_vars, ptr_info->pt_vars);
     }
 
-  SSA_NAME_PTR_INFO (new_name) = new_ptr_info;
-  return new_name;
+  SSA_NAME_PTR_INFO (name) = new_ptr_info;
 }
 
 

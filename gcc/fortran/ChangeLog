@@ -1,3 +1,8 @@
+2005-03-29  Keith Besaw  <kbesaw@us.ibm.com>
+
+	* f95-lang.c (builtin_function): Process the attrs parameter
+	and apply the "const" attribute to the builtin if found.
+
 2005-03-27  Steven G. Kargl  <kargls@comcast.net>
 
 	* intrinsic.texi: Document AIMAG, AINT, ALL

@@ -1,0 +1,99 @@
+# Copyright (C) 1997, 2004 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+
+# GCC testsuite that uses the `dg.exp' driver.
+
+# Load support procs.
+load_lib gfortran-dg.exp
+load_lib target-supports.exp
+
+# Set up flags used for tests that don't specify options.
+set DEFAULT_VECTCFLAGS ""
+
+# These flags are used for all targets.
+lappend DEFAULT_VECTCFLAGS "-O2" "-ftree-vectorize" \
+  "-ftree-vectorizer-verbose=3" "-fdump-tree-vect-stats"
+
+# If the target system supports vector instructions, the default action
+# for a test is 'run', otherwise it's 'compile'.  Save current default.
+# Executing vector instructions on a system without hardware vector support
+# is also disabled by a call to check_vect, but disabling execution here is
+# more efficient.
+global dg-do-what-default
+set save-dg-do-what-default ${dg-do-what-default}
+
+# Skip these tests for targets that do not support generating vector
+# code.  Set additional target-dependent vector flags, which can be
+# overridden by using dg-options in individual tests.
+if [istarget "powerpc*-*-*"] {
+    # If there are powerpc targets to skip, do it here.
+
+    lappend DEFAULT_VECTCFLAGS "-maltivec"
+    if [check_vmx_hw_available] {
+	set dg-do-what-default run
+    } else {
+	if [is-effective-target ilp32] {
+	    # Specify a cpu that supports VMX for compile-only tests.
+	    lappend DEFAULT_VECTCFLAGS "-mcpu=7400"
+	}
+	set dg-do-what-default compile
+    }
+} elseif { [istarget "i?86-*-*"] || [istarget "x86_64-*-*"] } {
+    lappend DEFAULT_VECTCFLAGS "-msse2"
+    set dg-do-what-default run
+} elseif [istarget "mipsisa64*-*-*"] {
+    lappend DEFAULT_VECTCFLAGS "-mpaired-single"
+    set dg-do-what-default run
+} elseif [istarget "sparc*-*-*"] {
+    lappend DEFAULT_VECTCFLAGS "-mcpu=ultrasparc" "-mvis"
+    set dg-do-what-default run
+} elseif [istarget "alpha*-*-*"] {
+    lappend DEFAULT_VECTCFLAGS "-mmax"
+    if [check_alpha_max_hw_available] {
+	set dg-do-what-default run
+    } else {
+	set dg-do-what-default compile
+    }
+} elseif [istarget "ia64-*-*"] {
+    set dg-do-what-default run
+} else {
+    return
+}
+
+# Return 1 if the effective target is LP64 or if the effective target
+# does not support a vector alignment mechanism.
+
+proc check_effective_target_lp64_or_vect_no_align { } {
+    if { [is-effective-target lp64]
+          || [is-effective-target vect_no_align] } {
+        set answer 1
+    } else {
+        set answer 0
+    }
+    return $answer
+}
+
+# Initialize `dg'.
+dg-init
+
+# Main loop.
+gfortran-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[fF\]{,90,95} ]] $DEFAULT_VECTCFLAGS
+
+# Clean up.
+set dg-do-what-default ${save-dg-do-what-default}
+
+# All done.
+dg-finish
