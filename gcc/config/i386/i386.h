@@ -1790,8 +1790,7 @@ do {						\
    that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
 
 #define LEGITIMATE_PIC_OPERAND_P(X) \
-  (! SYMBOLIC_CONST (X)							\
-   || (GET_CODE (X) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (X)))
+  (! SYMBOLIC_CONST (X) || legitimate_pic_address_disp_p (X))
 
 #define SYMBOLIC_CONST(X)	\
 (GET_CODE (X) == SYMBOL_REF						\

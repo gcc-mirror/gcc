@@ -2549,7 +2549,7 @@ do {									\
     }									\
 } while (0)
 
-static int
+int
 legitimate_pic_address_disp_p (disp)
      register rtx disp;
 {
