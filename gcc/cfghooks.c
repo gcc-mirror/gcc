@@ -320,7 +320,7 @@ split_block_after_labels (basic_block bb)
   return split_block (bb, NULL);
 }
 
-/* Moves block BB immediatelly after block AFTER.  Returns false if the
+/* Moves block BB immediately after block AFTER.  Returns false if the
    movement was impossible.  */
 
 bool

@@ -1,3 +1,8 @@
+2004-02-17  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* c-common.c, cfghooks.c, rtlanal.c, varasm.c: Fix comment
+	typos.
+
 2004-02-17  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (x86_prologue_using_move, x86_epilogue_using_move): Disable for P4.
