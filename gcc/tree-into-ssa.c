@@ -799,6 +799,42 @@ rewrite_add_phi_arguments (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
     }
 }
 
+/*  Rewrite existing virtual PHI arguments so that they have the correct
+    reaching definitions.  BB is the basic block whose successors contain the
+    phi nodes we want to add arguments for.  */
+
+static void
+rewrite_virtual_phi_arguments (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED, 
+			       basic_block bb)
+{
+  edge e;
+  use_operand_p op;
+  edge_iterator ei;
+
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    {
+      tree phi;
+
+      if (e->dest == EXIT_BLOCK_PTR)
+	continue;
+
+      for (phi = phi_nodes (e->dest); phi; phi = TREE_CHAIN (phi))
+	{
+	  tree result = PHI_RESULT (phi);
+	  op = PHI_ARG_DEF_PTR_FROM_EDGE (phi, e);
+	  
+	  if (is_gimple_reg (result) 
+	      || !bitmap_bit_p (vars_to_rename, 
+				var_ann (SSA_NAME_VAR (result))->uid))
+	    continue;
+
+	  SET_USE (op, get_reaching_def (SSA_NAME_VAR (result)));
+	  if (e->flags & EDGE_ABNORMAL)
+	    SSA_NAME_OCCURS_IN_ABNORMAL_PHI (USE_FROM_PTR (op)) = 1;
+	}
+    }
+}
+
 /* Ditto, for ssa name rewriting.  */
 
 static void
@@ -821,9 +857,9 @@ ssa_rewrite_phi_arguments (struct dom_walk_data *walk_data, basic_block bb)
 	  op = PHI_ARG_DEF_PTR_FROM_EDGE (phi, e);
 	  if (TREE_CODE (USE_FROM_PTR (op)) != SSA_NAME)
 	    continue;
-
+	  
 	  if (!TEST_BIT (names_to_rename, SSA_NAME_VERSION (USE_FROM_PTR (op))))
-	    continue;
+	    continue; 
 
 	  SET_USE (op, get_reaching_def (USE_FROM_PTR (op)));
 	  if (e->flags & EDGE_ABNORMAL)
@@ -1383,14 +1419,16 @@ invalidate_name_tags (bitmap vars_to_rename)
 }
 
 /* Rewrite the actual blocks, statements, and phi arguments, to be in SSA
-   form.  ADD_PHI_ARGS is true if we should be adding arguments to phi nodes,
-   because they may have been just inserted.  */
+   form.  FIX_VIRTUAL_PHIS is true if we should only be fixing up virtual
+   phi arguments, instead of adding new phi arguments for just added phi
+   nodes.  */
+
 
 static void
-rewrite_blocks (bool add_phi_args)
+rewrite_blocks (bool fix_virtual_phis)
 {
   struct dom_walk_data walk_data;
-
+  
   /* Rewrite all the basic blocks in the program.  */
   timevar_push (TV_TREE_SSA_REWRITE_BLOCKS);
 
@@ -1401,8 +1439,11 @@ rewrite_blocks (bool add_phi_args)
   walk_data.before_dom_children_before_stmts = rewrite_initialize_block;
   walk_data.before_dom_children_walk_stmts = rewrite_stmt;
   walk_data.before_dom_children_after_stmts = NULL;
-  if (add_phi_args)
-    walk_data.before_dom_children_after_stmts = rewrite_add_phi_arguments; 
+  if (!fix_virtual_phis)
+    walk_data.before_dom_children_after_stmts = rewrite_add_phi_arguments;
+  else
+    walk_data.before_dom_children_after_stmts = rewrite_virtual_phi_arguments;
+  
   walk_data.after_dom_children_before_stmts =  NULL;
   walk_data.after_dom_children_walk_stmts =  NULL;
   walk_data.after_dom_children_after_stmts =  rewrite_finalize_block;
@@ -1549,7 +1590,7 @@ rewrite_into_ssa (bool all)
   /* Insert PHI nodes at dominance frontiers of definition blocks.  */
   insert_phi_nodes (dfs, NULL);
 
-  rewrite_blocks (true);
+  rewrite_blocks (false);
 
   /* Debugging dumps.  */
   if (dump_file && (dump_flags & TDF_STATS))
@@ -1576,7 +1617,7 @@ rewrite_def_def_chains (void)
   /* Ensure that the dominance information is OK.  */
   calculate_dominance_info (CDI_DOMINATORS);
   mark_def_site_blocks ();
-  rewrite_blocks (false);
+  rewrite_blocks (true);
 
 }
 /* The marked ssa names may have more than one definition;
