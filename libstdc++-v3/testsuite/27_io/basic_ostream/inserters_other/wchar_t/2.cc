@@ -33,8 +33,8 @@ test03(void)
 
   typedef wios::pos_type 	pos_type;
 
-  const char* TEST_IN = "wostream_inserter_other_in";
-  const char* TEST_OUT = "wostream_inserter_other_out";
+  const char* TEST_IN = "wostream_inserter_other_in.txt";
+  const char* TEST_OUT = "wostream_inserter_other_out.txt";
   pos_type i_read, i_wrote, rs, ws;
   double tf_size = BUFSIZ * 2.5;
   ofstream testfile(TEST_IN);

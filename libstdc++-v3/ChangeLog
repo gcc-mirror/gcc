@@ -1,3 +1,10 @@
+2005-02-22  Benjamin Kosnik  <bkoz@redhat.com>
+	
+	* scripts/check_performance: Tweaks.
+
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/2.cc: Name
+	output file with extension that clean rules can find.
+
 2005-02-22  Richard Henderson  <rth@redhat.com>
 
 	PR libstdc++/20091
