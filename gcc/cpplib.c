@@ -1224,6 +1224,9 @@ destringize_and_run (pfile, in)
 {
   const unsigned char *src, *limit;
   char *dest, *result;
+  cpp_context saved_context;
+  cpp_context *saved_cur_context;
+  unsigned int saved_line;
 
   dest = result = alloca (in->len + 1);
   for (src = in->text, limit = src + in->len; src < limit;)
@@ -1235,7 +1238,40 @@ destringize_and_run (pfile, in)
     }
   *dest = '\0';
 
+  /* FIXME.  All this saving is a horrible kludge to handle the case
+     when we're in a macro expansion.
+                                     
+     A better strategy it to not convert _Pragma to #pragma if doing
+     preprocessed output, but to just pass it through as-is, unless it
+     is a CPP pragma in which case is should be processed normally.
+     When compiling the preprocessed output the _Pragma should be  
+     handled.  This will be become necessary when we move to     
+     line-at-a-time lexing since we will be macro-expanding the line                   
+     before outputting / compiling it.  */
+  saved_line = pfile->line;
+  saved_context = pfile->base_context;
+  saved_cur_context = pfile->context;
+  pfile->context = &pfile->base_context;
   run_directive (pfile, T_PRAGMA, result, dest - result);
+  pfile->context = saved_cur_context;
+  pfile->base_context = saved_context;
+  pfile->line = saved_line;
+
+  /* See above comment.  For the moment, we'd like
+
+     token1 _Pragma ("foo") token2
+
+     to be output as
+
+             token1
+             # 7 "file.c"
+             #pragma foo
+             # 7 "file.c"
+                            token2
+
+      Getting the line markers is a little tricky.  */
+  if (pfile->cb.line_change)
+    (*pfile->cb.line_change) (pfile, pfile->cur_token, false);
 }
 
 /* Handle the _Pragma operator.  */
@@ -1245,25 +1281,10 @@ _cpp_do__Pragma (pfile)
 {
   const cpp_token *string = get__Pragma_string (pfile);
 
-  if (!string)
-    cpp_error (pfile, "_Pragma takes a parenthesized string literal");
+  if (string)
+    destringize_and_run (pfile, &string->val.str);
   else
-    {
-      /* Ideally, we'd like
-			token1 _Pragma ("foo") token2
-	 to be output as
-			token1
-			# 7 "file.c"
-			#pragma foo
-			# 7 "file.c"
-					       token2
-	 Getting these correct line markers is a little tricky.  */
-
-      unsigned int orig_line = pfile->line;
-      destringize_and_run (pfile, &string->val.str);
-      pfile->line = orig_line;
-      pfile->buffer->saved_flags = BOL;
-    }
+    cpp_error (pfile, "_Pragma takes a parenthesized string literal");
 }
 
 /* Just ignore #sccs, on systems where we define it at all.  */
