@@ -1,3 +1,8 @@
+2000-03-24  Richard Henderson  <rth@cygnus.com>
+
+	* builtins.c (expand_builtin_bzero): Convert `length' argument
+	to sizetype.
+
 2000-03-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* sibcall.c (skip_copy_to_return_value): Use OUTGOING_REGNO for
