@@ -445,7 +445,8 @@ void GC_init_inner()
 	GC_thr_init();
 #   endif
 #   if !defined(THREADS) || defined(SOLARIS_THREADS) || defined(WIN32_THREADS) \
-       || defined(IRIX_THREADS) || defined(LINUX_THREADS)
+       || defined(IRIX_THREADS) || defined(LINUX_THREADS) \
+       || defined (QUICK_THREADS)
       if (GC_stackbottom == 0) {
 	  GC_stackbottom = GC_get_stack_base();
       }

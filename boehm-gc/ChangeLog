@@ -1,4 +1,35 @@
+1999-04-26  Tom Tromey  <tromey@cygnus.com>
+
+	* dyn_load.c (GC_FirstDLOpenedLinkMap): Declare _DYNAMIC as
+	`weak'.
+
+1999-04-23  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in, configure: Rebuilt.
+	* Makefile.am (EXTRA_LIBRARIES): Mention libgcjgc.la.
+	(libgcjgc_la_SOURCES): Renamed.
+	(libgcjgc_la_LIBADD): Likewise.
+	(libgcjgc_la_DEPENDENCIES): Likewise.
+	(EXTRA_libgcjgc_la_SOURCES): Likewise.
+	(gctest_LDADD): Use libgcjgc.la.
+	(all_objs): Mention libgcj_la_OBJECTS.
+	(EXTRA_LTLIBRARIES): Renamed.
+	(toollib_LTLIBRARIES): Likewise.
+	(libgcjgc_la_LDFLAGS): New macro
+	(toolexecdir): Renamed.
+	(toolexeclibdir): Likewise.
+	(toolexeclib_LTLIBRARIES): Likewise.
+	(LTCOMPILE): Renamed; added libtool invocation.
+	(LINK): Added libtool invocation.
+	(.s.o): use LTCOMPILE.
+	* configure.in: Call AM_PROG_LIBTOOL.  
+	(target_all): Set to libgcjgc.la.
+	Mention `.lo' forms of object files.
+
 1999-04-21  Tom Tromey  <tromey@cygnus.com>
+
+	* misc.c (GC_init_inner): If QUICK_THREADS defined, compute
+	GC_stackbottom.
 
 	* os_dep.c: glibc 2.1 requires asm/sigcontext.h, not
 	sigcontext.h.  From Matthias Klose <doko@itso.de>.

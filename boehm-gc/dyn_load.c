@@ -284,6 +284,11 @@ void GC_register_dynamic_libraries()
 static struct link_map *
 GC_FirstDLOpenedLinkMap()
 {
+#ifdef __GNUC__
+  /* On some Linux systems, `_DYNAMIC' will not be defined when a
+     static link is done.  */
+# pragma weak _DYNAMIC
+#endif
     extern ElfW(Dyn) _DYNAMIC[];
     ElfW(Dyn) *dp;
     struct r_debug *r;
