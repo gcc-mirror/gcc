@@ -1,5 +1,11 @@
 2005-03-25  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
+	PR libfortran/19678
+	PR libfortran/19679
+	* gfortran.dg/dos_eol.f: New test.
+
+2005-03-25  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
 	PR libfortran/15332
 	* gfortran.dg/pr15332.f: New test.
 
