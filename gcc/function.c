@@ -4017,7 +4017,10 @@ locate_and_pad_parm (passed_mode, type, in_regs, fndecl,
 
   /* Pad_below needs the pre-rounded size to know how much to pad below
      so this must be done before rounding up.  */
-  if (where_pad == downward)
+  if (where_pad == downward
+    /* However, BLKmode args passed in regs have their padding done elsewhere.
+       The stack slot must be able to hold the entire register.  */
+      && !(in_regs && passed_mode == BLKmode))
     pad_below (offset_ptr, passed_mode, sizetree);
 
   if (where_pad != none
