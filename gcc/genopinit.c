@@ -66,7 +66,7 @@ void fancy_abort ();
 char *optabs[] =
 { "extendtab[(int) %B][(int) %A][0] = CODE_FOR_%(extend%a%b2%)",
   "extendtab[(int) %B][(int) %A][1] = CODE_FOR_%(zero_extend%a%b2%)",
-  "fixtab[(int) %A][(int) %B][0] = CODE_FOR_%(fix_%F%a%I%b2%)",
+  "fixtab[(int) %A][(int) %B][0] = CODE_FOR_%(fix%F%a%I%b2%)",
   "fixtab[(int) %A][(int) %B][1] = CODE_FOR_%(fixuns%F%a%b2%)",
   "fixtrunctab[(int) %A][(int) %B][0] = CODE_FOR_%(fix_trunc%F%a%I%b2%)",
   "fixtrunctab[(int) %A][(int) %B][1] = CODE_FOR_%(fixuns_trunc%F%a%I%b2%)",
