@@ -20,6 +20,6 @@ void A::main() {
 }
 
 int main() {
-  void (A::*mPtr)(A*) = &A::f1a;
+  void (A::*mPtr)(A*) = (void (A::*)(A*)) &A::f1a;
   (*(void (*)(A*))PMF2PF(mPtr))(&a);	// ERROR - 
 }
