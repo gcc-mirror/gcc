@@ -1,3 +1,16 @@
+2004-02-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.h: Deprecate -mpni/-mno-pni.
+
+2004-02-23  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* config/i386/i386.c: Rename pni to sse3.
+	* config/i386/i386.h: Likewise.
+        * config/i386/i386.md: Likewise.
+	* config/i386/pmmintrin.h: Likewise.
+	* doc/extend.texi: Likewise.
+	* doc/invoke.texi: Likewise.
+
 2004-02-23  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* config/rs6000/linux.h (OS_MISSING_POWERPC64): Define.
