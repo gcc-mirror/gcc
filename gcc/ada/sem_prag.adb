@@ -2856,15 +2856,17 @@ package body Sem_Prag is
          procedure Set_Inline_Flags (Subp : Entity_Id);
          --  Sets Is_Inlined and Has_Pragma_Inline flags for Subp
 
-         function Back_End_Cannot_Inline (Subp : Entity_Id) return Boolean;
+         function Cannot_Inline (Subp : Entity_Id) return Boolean;
          --  Do not set the inline flag if body is available and contains
          --  exception handlers, to prevent undefined symbols at link time.
+         --  Emit warning if front-end inlining is enabled and the pragma
+         --  appears too late.
 
-         ----------------------------
-         -- Back_End_Cannot_Inline --
-         ----------------------------
+         -------------------
+         -- Cannot_Inline --
+         -------------------
 
-         function Back_End_Cannot_Inline (Subp : Entity_Id) return Boolean is
+         function Cannot_Inline (Subp : Entity_Id) return Boolean is
             Decl : constant Node_Id := Unit_Declaration_Node (Subp);
 
          begin
@@ -2876,12 +2878,19 @@ package body Sem_Prag is
             elsif Nkind (Decl) = N_Subprogram_Declaration
               and then Present (Corresponding_Body (Decl))
             then
+               if Front_End_Inlining
+                 and then Analyzed (Corresponding_Body (Decl))
+               then
+                  Error_Msg_N ("pragma appears too late, ignored?", N);
+                  return True;
+
                --  If the subprogram is a renaming as body, the body is
                --  just a call to the renamed subprogram, and inlining is
                --  trivially possible.
 
-               if Nkind (Unit_Declaration_Node (Corresponding_Body (Decl))) =
-                                            N_Subprogram_Renaming_Declaration
+               elsif
+                 Nkind (Unit_Declaration_Node (Corresponding_Body (Decl)))
+                   = N_Subprogram_Renaming_Declaration
                then
                   return False;
 
@@ -2897,7 +2906,7 @@ package body Sem_Prag is
 
                return False;
             end if;
-         end Back_End_Cannot_Inline;
+         end Cannot_Inline;
 
          -----------------
          -- Make_Inline --
@@ -2911,7 +2920,7 @@ package body Sem_Prag is
             if Etype (Subp) = Any_Type then
                return;
 
-            elsif Back_End_Cannot_Inline (Subp) then
+            elsif Cannot_Inline (Subp) then
                Applies := True;    --  Do not treat as an error.
                return;
 

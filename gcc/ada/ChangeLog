@@ -1,3 +1,23 @@
+2004-05-19  Joel Brobecker  <brobecker@gnat.com>
+
+	* exp_dbug.ads: Correct comments concerning handling of overloading,
+	since we no longer use $ anymore.
+
+2004-05-19  Sergey Rybin  <rybin@act-europe.fr>
+
+	* sem_ch10.adb (Optional_Subunit): When loading a subunit, do not
+	ignore errors if ASIS_Mode is set. This prevents creating ASIS trees
+	with illegal subunits.
+
+2004-05-19  Ed Schonberg  <schonberg@gnat.com>
+
+	* sem_ch6.adb (Check_Following_Pragma): When compiling a subprogram
+	body with front-end inlining enabled, check whether an inline pragma
+	appears immediately after the body and applies to it.
+
+	* sem_prag.adb (Cannot_Inline): Emit warning if front-end inlining is
+	enabled and the pragma appears after the body of the subprogram.
+
 2004-05-17  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	Part of function-at-a-time conversion
