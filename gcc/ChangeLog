@@ -1,3 +1,14 @@
+Fri Oct  8 18:46:11 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* jump.c (duplicate_loop_exit_test): Use copy_insn/copy_insn_1
+	instead of copy_rtx.  Accept sequences that contain asm statements.
+	* emit_rtl.c (copy_insn_1, copy_insn): New functions.
+	(copy_insn_scratch_in, copy_insn_scratch_out, copy_insn_n_scratches,
+	orig_asm_operands_vector, copy_asm_operands_vector,
+	orig_asm_constraints_vecotr, copy_asm_constraints_vector): New static
+	variables.
+	* rtl.h (copy_insn, copy_insn_1): Declare.
+
 Fri Oct  8 13:08:12 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (insn-recog.o): Depend on hard-reg-set.h and resource.h.

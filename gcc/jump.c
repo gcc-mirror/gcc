@@ -2805,8 +2805,7 @@ duplicate_loop_exit_test (loop_start)
 	    remove_note (insn, p);
 	  if (++num_insns > 20
 	      || find_reg_note (insn, REG_RETVAL, NULL_RTX)
-	      || find_reg_note (insn, REG_LIBCALL, NULL_RTX)
-	      || asm_noperands (PATTERN (insn)) > 0)
+	      || find_reg_note (insn, REG_LIBCALL, NULL_RTX))
 	    return 0;
 	  break;
 	default:
@@ -2869,7 +2868,7 @@ duplicate_loop_exit_test (loop_start)
 	  break;
 	  
 	case INSN:
-	  copy = emit_insn_before (copy_rtx (PATTERN (insn)), loop_start);
+	  copy = emit_insn_before (copy_insn (PATTERN (insn)), loop_start);
 	  if (reg_map)
 	    replace_regs (PATTERN (copy), reg_map, max_reg, 1);
 	  
@@ -2880,7 +2879,7 @@ duplicate_loop_exit_test (loop_start)
 	  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
 	    if (REG_NOTE_KIND (link) != REG_LABEL)
 	      REG_NOTES (copy)
-		= copy_rtx (gen_rtx_EXPR_LIST (REG_NOTE_KIND (link),
+		= copy_insn_1 (gen_rtx_EXPR_LIST (REG_NOTE_KIND (link),
 					       XEXP (link, 0),
 					       REG_NOTES (copy)));
 	  if (reg_map && REG_NOTES (copy))
@@ -2888,13 +2887,13 @@ duplicate_loop_exit_test (loop_start)
 	  break;
 	  
 	case JUMP_INSN:
-	  copy = emit_jump_insn_before (copy_rtx (PATTERN (insn)), loop_start);
+	  copy = emit_jump_insn_before (copy_insn (PATTERN (insn)), loop_start);
 	  if (reg_map)
 	    replace_regs (PATTERN (copy), reg_map, max_reg, 1);
 	  mark_jump_label (PATTERN (copy), copy, 0);
 	  if (REG_NOTES (insn))
 	    {
-	      REG_NOTES (copy) = copy_rtx (REG_NOTES (insn));
+	      REG_NOTES (copy) = copy_insn_1 (REG_NOTES (insn));
 	      if (reg_map)
 		replace_regs (REG_NOTES (copy), reg_map, max_reg, 1);
 	    }

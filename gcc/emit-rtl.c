@@ -162,6 +162,9 @@ static rtx free_insn;
 #define last_filename (current_function->emit->x_last_filename)
 #define first_label_num (current_function->emit->x_first_label_num)
 
+/* This is where the pointer to the obstack being used for RTL is stored.  */
+extern struct obstack *rtl_obstack;
+
 static rtx make_jump_insn_raw		PROTO((rtx));
 static rtx make_call_insn_raw		PROTO((rtx));
 static rtx find_line_note		PROTO((rtx));
@@ -3369,6 +3372,199 @@ clear_emit_caches ()
   for (i = 0; i < SEQUENCE_RESULT_SIZE; i++)
     sequence_result[i] = 0;
   free_insn = 0;
+}
+
+/* Used by copy_insn_1 to avoid copying SCRATCHes more than once.  */
+static rtx copy_insn_scratch_in[MAX_RECOG_OPERANDS];
+static rtx copy_insn_scratch_out[MAX_RECOG_OPERANDS];
+static int copy_insn_n_scratches;
+
+/* When an insn is being copied by copy_insn_1, this is nonzero if we have
+   copied an ASM_OPERANDS.
+   In that case, it is the original input-operand vector.  */
+static rtvec orig_asm_operands_vector;
+
+/* When an insn is being copied by copy_insn_1, this is nonzero if we have
+   copied an ASM_OPERANDS.
+   In that case, it is the copied input-operand vector.  */
+static rtvec copy_asm_operands_vector;
+
+/* Likewise for the constraints vector.  */
+static rtvec orig_asm_constraints_vector;
+static rtvec copy_asm_constraints_vector;
+
+/* Recursively create a new copy of an rtx for copy_insn.
+   This function differs from copy_rtx in that it handles SCRATCHes and
+   ASM_OPERANDs properly.
+   Normally, this function is not used directly; use copy_insn as front end.
+   However, you could first copy an insn pattern with copy_insn and then use
+   this function afterwards to properly copy any REG_NOTEs containing
+   SCRATCHes.  */
+
+rtx
+copy_insn_1 (orig)
+     register rtx orig;
+{
+  register rtx copy;
+  register int i, j;
+  register RTX_CODE code;
+  register char *format_ptr;
+
+  code = GET_CODE (orig);
+
+  switch (code)
+    {
+    case REG:
+    case QUEUED:
+    case CONST_INT:
+    case CONST_DOUBLE:
+    case SYMBOL_REF:
+    case CODE_LABEL:
+    case PC:
+    case CC0:
+    case ADDRESSOF:
+      return orig;
+
+    case SCRATCH:
+      for (i = 0; i < copy_insn_n_scratches; i++)
+	if (copy_insn_scratch_in[i] == orig)
+	  return copy_insn_scratch_out[i];
+      break;
+
+    case CONST:
+      /* CONST can be shared if it contains a SYMBOL_REF.  If it contains
+	 a LABEL_REF, it isn't sharable.  */
+      if (GET_CODE (XEXP (orig, 0)) == PLUS
+	  && GET_CODE (XEXP (XEXP (orig, 0), 0)) == SYMBOL_REF
+	  && GET_CODE (XEXP (XEXP (orig, 0), 1)) == CONST_INT)
+	return orig;
+      break;
+      
+      /* A MEM with a constant address is not sharable.  The problem is that
+	 the constant address may need to be reloaded.  If the mem is shared,
+	 then reloading one copy of this mem will cause all copies to appear
+	 to have been reloaded.  */
+
+    default:
+      break;
+    }
+
+  copy = rtx_alloc (code);
+
+  /* Copy the various flags, and other information.  We assume that
+     all fields need copying, and then clear the fields that should
+     not be copied.  That is the sensible default behavior, and forces
+     us to explicitly document why we are *not* copying a flag.  */
+  memcpy (copy, orig, sizeof (struct rtx_def) - sizeof (rtunion));
+
+  /* We do not copy the USED flag, which is used as a mark bit during
+     walks over the RTL.  */
+  copy->used = 0;
+
+  /* We do not copy JUMP, CALL, or FRAME_RELATED for INSNs.  */
+  if (GET_RTX_CLASS (code) == 'i')
+    {
+      copy->jump = 0;
+      copy->call = 0;
+      copy->frame_related = 0;
+    }
+  
+  format_ptr = GET_RTX_FORMAT (GET_CODE (copy));
+
+  for (i = 0; i < GET_RTX_LENGTH (GET_CODE (copy)); i++)
+    {
+      switch (*format_ptr++)
+	{
+	case 'e':
+	  XEXP (copy, i) = XEXP (orig, i);
+	  if (XEXP (orig, i) != NULL)
+	    XEXP (copy, i) = copy_insn_1 (XEXP (orig, i));
+	  break;
+
+	case '0':
+	case 'u':
+	  XEXP (copy, i) = XEXP (orig, i);
+	  break;
+
+	case 'E':
+	case 'V':
+	  XVEC (copy, i) = XVEC (orig, i);
+	  if (XVEC (orig, i) == orig_asm_constraints_vector)
+	    XVEC (copy, i) = copy_asm_constraints_vector;
+	  else if (XVEC (orig, i) == orig_asm_operands_vector)
+	    XVEC (copy, i) = copy_asm_operands_vector;
+	  else if (XVEC (orig, i) != NULL)
+	    {
+	      XVEC (copy, i) = rtvec_alloc (XVECLEN (orig, i));
+	      for (j = 0; j < XVECLEN (copy, i); j++)
+		XVECEXP (copy, i, j) = copy_insn_1 (XVECEXP (orig, i, j));
+	    }
+	  break;
+
+	case 'b':
+	  {
+	    bitmap new_bits = BITMAP_OBSTACK_ALLOC (rtl_obstack);
+	    bitmap_copy (new_bits, XBITMAP (orig, i));
+	    XBITMAP (copy, i) = new_bits;
+	    break;
+	  }
+
+	case 't':
+	  XTREE (copy, i) = XTREE (orig, i);
+	  break;
+
+	case 'w':
+	  XWINT (copy, i) = XWINT (orig, i);
+	  break;
+
+	case 'i':
+	  XINT (copy, i) = XINT (orig, i);
+	  break;
+
+	case 's':
+	case 'S':
+	  XSTR (copy, i) = XSTR (orig, i);
+	  break;
+
+	default:
+	  abort ();
+	}
+    }
+
+  if (code == SCRATCH)
+    {
+      i = copy_insn_n_scratches++;
+      if (i >= MAX_RECOG_OPERANDS)
+	abort ();
+      copy_insn_scratch_in[i] = orig;
+      copy_insn_scratch_out[i] = copy;
+    }
+  else if (code == ASM_OPERANDS)
+    {
+      orig_asm_operands_vector = XVEC (orig, 3);
+      copy_asm_operands_vector = XVEC (copy, 3);
+      orig_asm_constraints_vector = XVEC (orig, 4);
+      copy_asm_constraints_vector = XVEC (copy, 4);
+    }
+
+  return copy;
+}
+
+/* Create a new copy of an rtx.
+   This function differs from copy_rtx in that it handles SCRATCHes and
+   ASM_OPERANDs properly.
+   INSN doesn't really have to be a full INSN; it could be just the
+   pattern.  */
+rtx
+copy_insn (insn)
+     rtx insn;
+{
+  copy_insn_n_scratches = 0;
+  orig_asm_operands_vector = 0;
+  orig_asm_constraints_vector = 0;
+  copy_asm_operands_vector = 0;
+  copy_asm_constraints_vector = 0;
+  return copy_insn_1 (insn);
 }
 
 /* Initialize data structures and variables in this file
