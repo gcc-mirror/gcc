@@ -1,3 +1,10 @@
+2001-07-15  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config/rs6000/sysv4.h (CPP_ENDIAN_BIG_SPEC): Assert 'endian'
+	not 'machine'.
+	(CPP_ENDIAN_LITTLE_SPEC): Assert 'endian' not 'machine'.
+	(CPP_ENDIAN_SOLARIS_SPEC): Assert 'endian' not 'machine'.
+
 2001-07-15  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* dbxout.c (dbxout_source_line): Make static, update prototype.
