@@ -1,3 +1,8 @@
+2002-04-22  Zack Weinberg  <zack@codesourcery.com>
+
+	* gcc.c-torture/execute/980707-1.c: Don't use isspace().
+	Include stdlib.h, not stdio.h or ctype.h.
+
 2002-04-22  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.dg/20020415-1.c: Expect warning for unsupported -fpic on
