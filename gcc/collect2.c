@@ -163,6 +163,10 @@ int do_collecting = 1;
 #else
 int do_collecting = 0;
 #endif
+
+/* Nonzero if we should suppress the automatic demangling of identifiers
+   in linker error messages.  Set from COLLECT_NO_DEMANGLE.  */
+int no_demangle;
 
 /* Linked lists of constructor and destructor names.  */
 
@@ -522,7 +526,6 @@ dump_file (name)
      const char *name;
 {
   FILE *stream = fopen (name, "r");
-  int no_demangle = !! getenv ("COLLECT_NO_DEMANGLE");
 
   if (stream == 0)
     return;
@@ -556,7 +559,7 @@ dump_file (name)
 	      fputs (result, stderr);
 
 	      diff = strlen (word) - strlen (result);
-	      while (diff > 0)
+	      while (diff > 0 && c == ' ')
 		--diff, putc (' ', stderr);
 	      while (diff < 0 && c == ' ')
 		++diff, c = getc (stream);
@@ -857,6 +860,11 @@ main (argc, argv)
   const char **object;
   int first_file;
   int num_c_args	= argc+9;
+
+  no_demangle = !! getenv ("COLLECT_NO_DEMANGLE");
+
+  /* Suppress demangling by the real linker, which may be broken.  */
+  putenv (xstrdup ("COLLECT_NO_DEMANGLE="));
 
 #if defined (COLLECT2_HOST_INITIALIZATION)
   /* Perform system dependent initialization, if neccessary.  */
