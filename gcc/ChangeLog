@@ -1,3 +1,8 @@
+2000-12-06  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/Makefile.*: Reduce differences to (ultimately) reduce
+	the number of them.
+
 2000-11-06  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.c: Include expr.h before c-tree.h.

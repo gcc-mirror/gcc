@@ -23,10 +23,9 @@
 # Its purpose is to build the fixincl and applyfix programs for
 # the DJGPP (aka MS-DOS) port of GCC.
 
-FIXINC_DEFS = -DIN_GCC $(CFLAGS) $(CPPFLAGS) $(INCLUDES) \
- -D__MSDOS__ -DSEPARATE_FIX_PROC
+FL_LIST = $(CFLAGS) $(CPPFLAGS) $(WARN_CFLAGS)
+FIXINC_DEFS = -DIN_GCC $(FL_LIST) $(INCLUDES) -DSEPARATE_FIX_PROC
 
-target=i386-pc-msdosdjgpp
 # Directory where sources are, from where we are.
 VPATH = $(srcdir)
 subdir = fixinc
@@ -65,19 +64,19 @@ OBJ = fixincl.o fixtests.o fixfixes.o server.o procopen.o \
 
 HDR = server.h gnu-regex.h fixlib.h machname.h
 
-TARGETS = fixincl.exe applyfix.exe
+TARGETS = fixincl@exeext@ applyfix@exeext@
 
 all : $(TARGETS)
 gen : $(srcdir)/fixincl.x
 
 FIXINCL_OBJ = fixincl.o fixlib.o fixtests.o gnu-regex.o
 
-fixincl.exe: $(FIXINCL_OBJ) $(LIBERTY)
+fixincl@exeext@: $(FIXINCL_OBJ) $(LIBERTY)
 	$(CC) $(FIXINC_DEFS) $(LDFLAGS) -o $@ $(FIXINCL_OBJ) $(LIBERTY)
 
 APPLY_OBJ = fixfixes.o fixlib.o gnu-regex.o
 
-applyfix.exe: $(APPLY_OBJ) $(LIBERTY)
+applyfix@exeext@: $(APPLY_OBJ) $(LIBERTY)
 	$(CC) $(FIXINC_DEFS) $(LDFLAGS) -o $@ $(APPLY_OBJ) $(LIBERTY)
 
 $(OBJ)      : $(HDR)
@@ -108,7 +107,7 @@ maintainer-clean : clean
 #  We still copy the script because we still have alternative scripts.
 #
 install-bin : $(TARGETS)
-	./fixincl.exe -v
+	./fixincl@exeext@ -v
 	@if [ -f ../fixinc.sh ] ; then rm -f ../fixinc.sh || \
 	    mv -f ../fixinc.sh ../fixinc.sh.$$ || exit 1 ; fi
 	@if [ -f ./fixincl.sh ] ; \

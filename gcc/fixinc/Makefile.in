@@ -22,9 +22,9 @@
 # The makefile built from this file lives in the fixinc subdirectory.
 # Its purpose is to build the any-platforms fixinc.sh script.
 
-FIXINC_DEFS = -DIN_GCC $(WARN_CFLAGS) $(CFLAGS) $(CPPFLAGS) $(INCLUDES)
+FL_LIST = $(CFLAGS) $(CPPFLAGS) $(WARN_CFLAGS)
+FIXINC_DEFS = -DIN_GCC $(FL_LIST) $(INCLUDES)
 
-target=@target@
 # Directory where sources are, from where we are.
 srcdir = @srcdir@
 VPATH = $(srcdir)
@@ -64,12 +64,12 @@ OBJ = fixincl.o fixtests.o fixfixes.o server.o procopen.o \
 
 HDR = server.h gnu-regex.h fixlib.h machname.h
 
-TARGETS = fixincl
+TARGETS = fixincl@exeext@
 
 all : $(TARGETS)
 gen : $(srcdir)/fixincl.x
 
-fixincl: $(OBJ) $(LIBERTY)
+fixincl@exeext@: $(OBJ) $(LIBERTY)
 	$(CC) $(FIXINC_DEFS) $(LDFLAGS) -o $@ $(OBJ) $(LIBERTY)
 
 $(OBJ)      : $(HDR)
@@ -100,7 +100,7 @@ maintainer-clean : clean
 #  We still copy the script because we still have alternative scripts.
 #
 install-bin : $(TARGETS)
-	./fixincl -v
+	./fixincl@exeext@ -v
 	@if [ -f ../fixinc.sh ] ; then rm -f ../fixinc.sh || \
 	    mv -f ../fixinc.sh ../fixinc.sh.$$ || exit 1 ; fi
 	@if [ -f ./fixincl.sh ] ; \
@@ -115,7 +115,7 @@ Makefile: Makefile.in ../config.status
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= \
 	  $(SHELL) ./config.status
 
-check : fixincl
+check : $(TARGETS)
 	autogen -T $(srcdir)/check.tpl $(srcdir)/inclhack.def
 	$(SHELL) ./check.sh $(srcdir)/tests/base
 	@rm -f ./check.sh
