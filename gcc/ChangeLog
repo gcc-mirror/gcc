@@ -1,3 +1,10 @@
+Mon Apr 26 01:55:56 1999  Marc Espie  <espie@cvs.openbsd.org>
+
+	* configure.in (openbsd): Factorize xmake_file.
+	(ix86 openbsd): Trim obsolete comment.
+	(vax openbsd): Fix typo.
+	* configure: Rebuilt.
+
 Mon Apr 26 01:30:59 1999 Donn Terry <donn@interix.com>
 
 	* expr.c (expand_assignment): Improve test for pointer type.
