@@ -23,15 +23,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    exception does not however invalidate any other reasons why the
    executable file might be covered by the GNU General Public License. */
 
-#include <objc/Object.h>
-#include <objc/Protocol.h>
-#include <objc/objc-api.h>
-#include <objc/objc-archive.h>
+#include "objc/Object.h"
+#include "objc/Protocol.h"
+#include "objc/objc-api.h"
 
-extern int strlen(const char *);
-extern int strcmp(const char *, const char *);
-extern int read(int, void *, int);
-extern int write(int, const void *, int);
 extern int errno;
 
 #define MAX_CLASS_NAME_LEN 256
