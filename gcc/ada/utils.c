@@ -3224,6 +3224,11 @@ unchecked_convert (tree type, tree expr, int notrunc_p)
   else
     {
       expr = maybe_unconstrained_array (expr);
+
+      /* There's no point in doing two unchecked conversions in a row.  */
+      if (TREE_CODE (expr) == VIEW_CONVERT_EXPR)
+	expr = TREE_OPERAND (expr, 0);
+
       etype = TREE_TYPE (expr);
       expr = build1 (VIEW_CONVERT_EXPR, type, expr);
     }
