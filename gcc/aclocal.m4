@@ -1,5 +1,5 @@
 dnl See whether we can include both string.h and strings.h.
-AC_DEFUN(GCC_HEADER_STRING,
+AC_DEFUN(gcc_AC_HEADER_STRING,
 [AC_CACHE_CHECK([whether string.h and strings.h may both be included],
   gcc_cv_header_string,
 [AC_TRY_COMPILE([#include <string.h>
@@ -10,8 +10,8 @@ fi
 ])
 
 dnl See whether we need a declaration for a function.
-dnl GCC_NEED_DECLARATION(FUNCTION [, EXTRA-HEADER-FILES])
-AC_DEFUN(GCC_NEED_DECLARATION,
+dnl gcc_AC_NEED_DECLARATION(FUNCTION [, EXTRA-HEADER-FILES])
+AC_DEFUN(gcc_AC_NEED_DECLARATION,
 [AC_MSG_CHECKING([whether $1 must be declared])
 AC_CACHE_VAL(gcc_cv_decl_needed_$1,
 [AC_TRY_COMPILE([
@@ -57,17 +57,17 @@ fi
 ])dnl
 
 dnl Check multiple functions to see whether each needs a declaration.
-dnl GCC_NEED_DECLARATIONS(FUNCTION... [, EXTRA-HEADER-FILES])
-AC_DEFUN(GCC_NEED_DECLARATIONS,
+dnl gcc_AC_NEED_DECLARATIONS(FUNCTION... [, EXTRA-HEADER-FILES])
+AC_DEFUN(gcc_AC_NEED_DECLARATIONS,
 [for ac_func in $1
 do
-GCC_NEED_DECLARATION($ac_func, $2)
+gcc_AC_NEED_DECLARATION($ac_func, $2)
 done
 ])
 
 dnl Check if we have vprintf and possibly _doprnt.
 dnl Note autoconf checks for vprintf even though we care about vfprintf.
-AC_DEFUN(GCC_FUNC_VFPRINTF_DOPRNT,
+AC_DEFUN(gcc_AC_FUNC_VFPRINTF_DOPRNT,
 [AC_FUNC_VPRINTF
 vfprintf=
 doprint=
@@ -82,7 +82,7 @@ AC_SUBST(doprint)
 ])    
 
 dnl See if the printf functions in libc support %p in format strings.
-AC_DEFUN(GCC_FUNC_PRINTF_PTR,
+AC_DEFUN(gcc_AC_FUNC_PRINTF_PTR,
 [AC_CACHE_CHECK(whether the printf functions support %p,
   gcc_cv_func_printf_ptr,
 [AC_TRY_RUN([#include <stdio.h>
@@ -103,7 +103,7 @@ fi
 ])
 
 dnl See if symbolic links work and if not, try to substitute either hard links or simple copy.
-AC_DEFUN(GCC_PROG_LN_S,
+AC_DEFUN(gcc_AC_PROG_LN_S,
 [AC_MSG_CHECKING(whether ln -s works)
 AC_CACHE_VAL(gcc_cv_prog_LN_S,
 [rm -f conftestdata_t
@@ -135,7 +135,7 @@ AC_SUBST(LN_S)dnl
 ])
 
 dnl See if hard links work and if not, try to substitute either symbolic links or simple copy.
-AC_DEFUN(GCC_PROG_LN,
+AC_DEFUN(gcc_AC_PROG_LN,
 [AC_MSG_CHECKING(whether ln works)
 AC_CACHE_VAL(gcc_cv_prog_LN,
 [rm -f conftestdata_t
@@ -167,7 +167,7 @@ AC_SUBST(LN)dnl
 ])
 
 dnl See whether the stage1 host compiler accepts the volatile keyword.
-AC_DEFUN(GCC_C_VOLATILE,
+AC_DEFUN(gcc_AC_C_VOLATILE,
 [AC_CACHE_CHECK([for volatile], gcc_cv_c_volatile,
 [AC_TRY_COMPILE(, [volatile int foo;],
         gcc_cv_c_volatile=yes, gcc_cv_c_volatile=no)])
@@ -178,7 +178,7 @@ fi
 
 dnl Check whether long double is supported.  This differs from the
 dnl built-in autoconf test in that it works for cross compiles.
-AC_DEFUN(AC_GCC_C_LONG_DOUBLE,
+AC_DEFUN(gcc_AC_C_LONG_DOUBLE,
 [AC_CACHE_CHECK(for long double, gcc_cv_c_long_double,
 [if test "$GCC" = yes; then
   gcc_cv_c_long_double=yes
@@ -197,7 +197,7 @@ fi
 
 dnl Define MKDIR_TAKES_ONE_ARG if mkdir accepts only one argument instead
 dnl of the usual 2.
-AC_DEFUN(GCC_FUNC_MKDIR_TAKES_ONE_ARG,
+AC_DEFUN(gcc_AC_FUNC_MKDIR_TAKES_ONE_ARG,
 [AC_CACHE_CHECK([if mkdir takes one argument], gcc_cv_mkdir_takes_one_arg,
 [AC_TRY_COMPILE([
 #include <sys/types.h>
@@ -216,7 +216,7 @@ if test $gcc_cv_mkdir_takes_one_arg = yes ; then
 fi
 ])
 
-AC_DEFUN(EGCS_PROG_INSTALL,
+AC_DEFUN(gcc_AC_PROG_INSTALL,
 [AC_REQUIRE([AC_CONFIG_AUX_DIR_DEFAULT])dnl
 # Find a good install program.  We prefer a C program (faster),
 # so one script is as good as another.  But avoid the broken or
