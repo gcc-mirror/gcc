@@ -87,7 +87,7 @@ _Jv_MarkObj (void *addr, void *msp, void *msl, void * /*env*/)
   _Jv_VTable *dt = *(_Jv_VTable **) addr;
   // We check this in case a GC occurs before the vtbl is set.  FIXME:
   // should use allocation lock while initializing object.
-  if (! dt)
+  if (__builtin_expect (! dt, 0))
     return mark_stack_ptr;
   jclass klass = dt->clas;
 
@@ -98,7 +98,7 @@ _Jv_MarkObj (void *addr, void *msp, void *msl, void * /*env*/)
   p = (ptr_t) klass;
   MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, obj, o2label);
 
-  if (klass == &ClassClass)
+  if (__builtin_expect (klass == &ClassClass, 0))
     {
       jclass c = (jclass) addr;
 
@@ -281,7 +281,7 @@ _Jv_MarkArray (void *addr, void *msp, void *msl, void * /*env*/)
   _Jv_VTable *dt = *(_Jv_VTable **) addr;
   // We check this in case a GC occurs before the vtbl is set.  FIXME:
   // should use allocation lock while initializing object.
-  if (! dt)
+  if (__builtin_expect (! dt, 0))
     return mark_stack_ptr;
   jclass klass = dt->clas;
 
@@ -329,7 +329,7 @@ _Jv_AllocBytes (jsize size)
   // guarantee that PTRFREE allocations are zeroed.  Note that we
   // don't have to do this for other allocation types because we set
   // the `ok_init' flag in the type descriptor.
-  if (r != NULL)
+  if (__builtin_expect (r != NULL, !NULL))
     memset (r, 0, size);
   return r;
 }

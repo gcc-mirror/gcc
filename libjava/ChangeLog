@@ -1,3 +1,29 @@
+2000-04-22  Anthony Green  <green@cygnus.com>
+
+	* include/jvm.h (__builtin_expect): Define as unused for now.
+	* java/lang/natObject.cc (_Jv_MonitorEnter): Add __builtin_expect.
+	(notify): Ditto.
+	(notifyAll): Ditto.
+	(wait): Ditto.
+	(_Jv_MonitorExit): Ditto.
+	* boehm.cc (_Jv_MarkObj): Ditto.
+	(_Jv_MarkObj): Ditto.
+	(_Jv_MarkArray): Ditto.
+	(_Jv_AllocBytes): Ditto.
+	* prims.cc (_Jv_AllocObject): Ditto.
+	(_Jv_NewObjectArray): Ditto.
+	(_Jv_NewPrimArray): Ditto.
+	(_Jv_Malloc): Ditto.
+	(_Jv_Realloc): Ditto.
+	(_Jv_MallocUnchecked): Ditto.
+	(_Jv_divI): Ditto.
+	(_Jv_remI): Ditto.
+	(_Jv_divJ): Ditto.
+	(_Jv_remJ): Ditto.
+
+	* include/Makefile.in: Rebuilt.
+	* include/Makefile.am (include_HEADERS): Add jvmpi.h.
+
 2000-04-21  Tom Tromey  <tromey@cygnus.com>
 
 	* java/io/PipedInputStream.java, java/io/PipedOutputStream.java:
