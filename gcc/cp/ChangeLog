@@ -1,3 +1,8 @@
+2001-02-17  Mark Mitchell  <mark@codesourcery.com>
+
+	* pt.c (check_explicit_specialization): Copy TREE_PRIVATE and
+	TREE_PROTECTED from the template being specialized.
+
 2001-02-17  Jason Merrill  <jason@redhat.com>
 
 	* decl2.c (build_artificial_parm): Set TREE_READONLY.

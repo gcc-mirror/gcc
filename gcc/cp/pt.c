@@ -1662,6 +1662,11 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	     DECL is specializing.  */
 	  copy_default_args_to_explicit_spec (decl);
 
+	  /* This specialization has the same protection as the
+	     template it specializes.  */
+	  TREE_PRIVATE (decl) = TREE_PRIVATE (gen_tmpl);
+	  TREE_PROTECTED (decl) = TREE_PROTECTED (gen_tmpl);
+
 	  /* Mangle the function name appropriately.  Note that we do
 	     not mangle specializations of non-template member
 	     functions of template classes, e.g. with
