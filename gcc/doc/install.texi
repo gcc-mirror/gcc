@@ -755,8 +755,9 @@ If a list of packages is given as an argument, build shared libraries
 only for the listed packages.  For other packages, only static libraries
 will be built.  Package names currently recognized in the GCC tree are
 @samp{libgcc} (also known as @samp{gcc}), @samp{libstdc++} (not
-@samp{libstdc++-v3}), @samp{libffi}, @samp{zlib}, @samp{boehm-gc} and
-@samp{libjava}.  Note that @samp{libobjc} does not recognize itself by
+@samp{libstdc++-v3}), @samp{libffi}, @samp{zlib}, @samp{boehm-gc},
+@samp{ada}, @samp{libada} and @samp{libjava}.
+Note that @samp{libobjc} does not recognize itself by
 any name, so, if you list package names in @option{--enable-shared},
 you will only get static Objective-C libraries.  @samp{libf2c} and
 @samp{libiberty} do not support shared libraries at all.

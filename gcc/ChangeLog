@@ -1,3 +1,8 @@
+2004-06-09  Arnaud Charlet  <charlet@act-europe.fr>
+
+	PR ada/6637
+	* doc/install.texi: List ada, libada as options to --enable-shared
+
 2004-06-09  Paolo Bonzini  <bonzini@gnu.org>
 
 	* aclocal.m4 (gcc_AC_PROG_LN): Remove.
