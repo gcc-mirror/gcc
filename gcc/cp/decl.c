@@ -10193,6 +10193,11 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	if (decl == NULL_TREE)
 	  return NULL_TREE;
 
+	/* Among other times, could occur from check_explicit_specialization
+	   returning an error_mark_node.  */
+	if (decl == error_mark_node)
+	  return error_mark_node;
+
 	if (ctype == NULL_TREE && DECL_LANGUAGE (decl) != lang_c
 	    && (! DECL_USE_TEMPLATE (decl) ||
 		name_mangling_version < 1)) 
