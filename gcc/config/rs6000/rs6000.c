@@ -383,6 +383,21 @@ call_operand (op, mode)
 	  || (GET_CODE (op) == REG && REGNO (op) >= FIRST_PSEUDO_REGISTER));
 }
 
+
+/* Return 1 if the operand is a SYMBOL_REF for a function known to be in
+   this file.  */
+
+int
+current_file_function_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  return (GET_CODE (op) == SYMBOL_REF
+	  && (SYMBOL_REF_FLAG (op)
+	      || op == XEXP (DECL_RTL (current_function_decl), 0)));
+}
+
+
 /* Return 1 if this operand is a valid input for a move insn.  */
 
 int
