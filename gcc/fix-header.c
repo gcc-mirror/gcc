@@ -606,7 +606,7 @@ check_macro_names (pfile, names)
   while (*names)
     {
       len = strlen (names);
-      if (cpp_defined (pfile, names, len))
+      if (cpp_defined (pfile, (const unsigned char *)names, len))
 	recognized_macro (names);
       names += len + 1;
     }
@@ -640,7 +640,7 @@ read_scan_file (in_fname, argc, argv)
     exit (FATAL_EXIT_CODE);
 
   /* We are scanning a system header, so mark it as such.  */
-  CPP_BUFFER (&scan_in)->system_header_p = 1;
+  cpp_make_system_header (&scan_in, CPP_BUFFER (&scan_in), 1);
 
   scan_decls (&scan_in, argc, argv);
   for (cur_symbols = &symbol_table[0]; cur_symbols->names; cur_symbols++)
@@ -657,7 +657,7 @@ read_scan_file (in_fname, argc, argv)
   if (special_file_handling == stdio_h
       && (fn = lookup_std_proto ("_filbuf", 7)) != NULL)
     {
-      static char getchar_call[] = "getchar();";
+      static const unsigned char getchar_call[] = "getchar();";
       int old_written = CPP_WRITTEN (&scan_in);
       int seen_filbuf = 0;
       cpp_buffer *buf = CPP_BUFFER (&scan_in);

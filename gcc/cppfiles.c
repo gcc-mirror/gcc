@@ -308,6 +308,23 @@ _cpp_fake_include (pfile, fname)
   return (const char *)name;
 }
 
+/* Not everyone who wants to set system-header-ness on a buffer can
+   see the details of struct include_file.  This is an exported interface
+   because fix-header needs it.  */
+void
+cpp_make_system_header (pfile, pbuf, flag)
+     cpp_reader *pfile;
+     cpp_buffer *pbuf;
+     int flag;
+{
+  if (flag < 0 || flag > 2)
+    cpp_ice (pfile, "cpp_make_system_header: bad flag %d\n", flag);
+  else if (!pbuf->inc)
+    cpp_ice (pfile, "cpp_make_system_header called on non-file buffer");
+  else
+    pbuf->inc->sysp = flag;
+}
+
 #define PRINT_THIS_DEP(p, b) (CPP_PRINT_DEPS(p) > (b||p->system_include_depth))
 void
 _cpp_execute_include (pfile, f, len, no_reinclude, search_start)

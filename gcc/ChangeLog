@@ -1,5 +1,16 @@
 2000-06-21  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* cppfiles.c (cpp_make_system_header): New function.
+	* cpplib.h: Prototype it.
+	* cpplib.c (do_line, do_pragma_system_header): Use it.
+	* fix-header.c (read_scan_file): Use it.
+
+	* fix-header.c (check_macro_names): Cast second arg of
+	cpp_defined to const unsigned char *.
+	(read_scan_file): Make getchar_call const unsigned char.
+
+2000-06-21  Zack Weinberg  <zack@wolery.cumb.org>
+
 	* cppfiles.c: Include splay-tree.h, not hashtab.h.
 	(redundant_include_p, make_IHASH, hash_IHASH, eq_IHASH): Delete.
 	(destroy_include_file_node): New.
