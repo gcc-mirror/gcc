@@ -420,6 +420,28 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
 
 	      if (temp2 == temp)
 		{
+		  /* Ensure that we jump to the later of the two labels.  
+		     Consider:
+
+			if (test) goto L2;
+			goto L1;
+			...
+		      L1:
+			(clobber return-reg)
+		      L2:
+			(use return-reg)
+
+		     If we leave the goto L1, we'll incorrectly leave
+		     return-reg dead for TEST true.  */
+
+		  temp2 = next_active_insn (JUMP_LABEL (insn));
+		  if (!temp2)
+		    temp2 = get_last_insn ();
+		  if (GET_CODE (temp2) != CODE_LABEL)
+		    temp2 = prev_label (temp2);
+		  if (temp2 != JUMP_LABEL (temp))
+		    redirect_jump (temp, temp2, 1);
+
 		  delete_jump (insn);
 		  changed = 1;
 		  continue;
