@@ -311,16 +311,29 @@ test03()
   stringbuf strbuf;
   ostream o(&strbuf);
 
-  o << oct << s << ' ' << hex << s; 
-  VERIFY( strbuf.str() == "177777 ffff" ); // Assuming 2byte-shorts
+  o << oct << s << ' ' << hex << s;
+  if (sizeof(short) == 2)
+    VERIFY( strbuf.str() == "177777 ffff" );
+  else // sizeof(short) == 4
+    VERIFY( strbuf.str() == "37777777777 ffffffff" );
   strbuf.str(str_blank);
 
-  o << oct << i << ' ' << hex << i; 
-  VERIFY( strbuf.str() == "37777777777 ffffffff" );
+  o << oct << i << ' ' << hex << i;
+  if (sizeof(int) == 2)
+    VERIFY( strbuf.str() == "177777 ffff" );
+  else if (sizeof(int) == 4)
+    VERIFY( strbuf.str() == "37777777777 ffffffff" );
+  else // sizeof(int) == 8
+    VERIFY( strbuf.str() == "1777777777777777777777 "
+	    "ffffffffffffffff" );
   strbuf.str(str_blank);
 
-  o << oct << l << ' ' << hex << l; 
-  VERIFY( strbuf.str() == "37777777777 ffffffff" );
+  o << oct << l << ' ' << hex << l;
+  if (sizeof(long) == 4)
+    VERIFY( strbuf.str() == "37777777777 ffffffff" );
+  else // sizeof(long) == 8
+    VERIFY( strbuf.str() == "1777777777777777777777 "
+	    "ffffffffffffffff" );
   strbuf.str(str_blank);
 
   o << showpos << hex << showbase << 11;
