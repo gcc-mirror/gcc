@@ -35,7 +35,9 @@ details.  */
 
 #ifdef INTERPRETER
 
+#if HAVE_ALLOCA_H
 #include <alloca.h>
+#endif
 
 #define ClassError _CL_Q34java4lang5Error
 extern java::lang::Class ClassError;
@@ -51,7 +53,7 @@ static void throw_null_pointer_exception ()
   __attribute__ ((__noreturn__));
 #endif
 
-extern "C" double __ieee754_fmod __P((double,double));
+extern "C" double __ieee754_fmod (double,double);
 
 static inline void dupx (_Jv_word *sp, int n, int x)
 {
@@ -678,7 +680,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	rmeth = (_Jv_ResolvePoolEntry (defining_class, index)).rmethod;
 
 	sp -= rmeth->stack_item_count;
-	NULLCHECK(sp[0]);
+	NULLCHECK (sp[0].o);
 
 	if (rmeth->vtable_index == -1)
 	  {
@@ -2147,7 +2149,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 
 	sp -= rmeth->stack_item_count;
 
-	NULLCHECK(sp[0]);
+	NULLCHECK (sp[0].o);
 
 	fun = (void (*)()) rmeth->method->ncode;
       }
@@ -2178,9 +2180,10 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	rmeth = (_Jv_ResolvePoolEntry (defining_class, index)).rmethod;
 
 	sp -= rmeth->stack_item_count;
-	NULLCHECK(sp[0]);
 
 	jobject rcv = sp[0].o;
+
+	NULLCHECK (rcv);
 
 	fun = (void (*)())
 	  _Jv_LookupInterfaceMethod (rcv->getClass (),
