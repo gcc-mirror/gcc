@@ -185,6 +185,7 @@ enum pass {
 int vflag;				/* true if -v */
 static int rflag;			/* true if -r */
 static int strip_flag;			/* true if -s */
+static const char *demangle_flag;
 #ifdef COLLECT_EXPORT_LIST
 static int export_flag;                 /* true if -bE */
 static int aix64_flag;			/* true if -b64 */
@@ -1070,8 +1071,10 @@ main (int argc, char **argv)
 
   first_file = 1;
 #ifdef HAVE_LD_DEMANGLE
-  if (!no_demangle)
-    *ld1++ = *ld2++ = "--demangle";
+  if (!demangle_flag && !no_demangle)
+    demangle_flag = "--demangle";
+  if (demangle_flag)
+    *ld1++ = *ld2++ = demangle_flag;
 #endif
   while ((arg = *++argv) != (char *) 0)
     {
@@ -1166,6 +1169,34 @@ main (int argc, char **argv)
 	    case 'v':
 	      if (arg[2] == '\0')
 		vflag = 1;
+	      break;
+
+	    case '-':
+	      if (strcmp (arg, "--no-demangle") == 0)
+		{
+		  demangle_flag = arg;
+		  no_demangle = 1;
+		  ld1--;
+		  ld2--;
+		}
+	      else if (strncmp (arg, "--demangle", 10) == 0)
+		{
+		  demangle_flag = arg;
+		  no_demangle = 0;
+#ifndef HAVE_LD_DEMANGLE
+		  if (arg[10] == '=')
+		    {
+		      enum demangling_styles style
+			= cplus_demangle_name_to_style (arg+11);
+		      if (style == unknown_demangling)
+			error ("unknown demangling style '%s'", arg+11);
+		      else
+			current_demangling_style = style;
+		    }
+#endif
+		  ld1--;
+		  ld2--;
+		}
 	      break;
 	    }
 	}
