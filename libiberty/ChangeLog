@@ -1,3 +1,33 @@
+2005-03-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	Convert libiberty to use ISO C prototype style 3/n.
+	* cplus-dem.c (set_cplus_marker_for_demangling, consume_count, 
+	consume_count_with_underscores, code_for_qualifier, 
+	qualifier_string, demangle_qualifier, cplus_demangle_opname, 
+	cplus_mangle_opname, cplus_demangle_set_style, 
+	cplus_demangle_name_to_style, cplus_demangle, grow_vect, 
+	ada_demangle, internal_cplus_demangle, squangle_mop_up,
+	work_stuff_copy_to_from, delete_non_B_K_work_stuff, 
+	delete_work_stuff, mop_up, demangle_signature, 
+	demangle_method_args, demangle_template_template_parm, 
+	demangle_expression, demangle_integral_value, 
+	demangle_real_value, demangle_template_value_parm, 
+	demangle_template, arm_pt, demangle_arm_hp_template, 
+	demangle_class_name, demangle_class, iterate_demangle_function, 
+	demangle_prefix, gnu_special, recursively_demangle, arm_special, 
+	demangle_qualified, get_count, do_type, demangle_fund_type, 
+	do_hpacc_template_const_value, do_hpacc_template_literal, 
+	snarf_numeric_literal, do_arg, remember_type, remember_Ktype, 
+	register_Btype, remember_Btype, forget_B_and_K_types, 
+	forget_types, demangle_args, demangle_nested_args, 
+	demangle_function_name, string_need, string_delete, string_init, 
+	string_clear, string_empty, string_append, string_appends, 
+	string_appendn, string_prepend, string_prepends, string_prependn,
+	string_append_template_idx): Use ISO C prootype style.
+	* cp-demint.c (cplus_demangle_fill_component,
+	cplus_demangle_fill_builtin_type, cplus_demangle_fill_operator, 
+	cplus_demangle_v3_components): Likewise.
+
 2005-03-26  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	Convert libiberty to use ISO C prototype style 2/n.
