@@ -135,8 +135,11 @@ EXTRA_libgcj_la_SOURCES = boehm.cc nogc.cc posix-threads.cc no-threads.cc \
 	$(c_source_files) $(java_source_files) $(built_java_source_files)
 libgcj_la_DEPENDENCIES = libgcj.jar $(javao_files) \
 	$(c_files) $(GCOBJS) $(THREADOBJS) $(LIBLTDL)
+	
+# Include THREADLIBS here to ensure that the correct version of
+# certain linuxthread functions get linked:
 libgcj_la_LIBADD = $(javao_files) $(c_files) $(GCOBJS) \
-	$(THREADOBJS) $(libffi_files) $(LIBLTDL)
+	$(THREADOBJS) $(THREADLIBS) $(libffi_files) $(LIBLTDL)
 libgcj_la_LDFLAGS = -L$(here)/../libstdc++-v3/libsupc++ -lsupc++ \
 	-rpath $(toolexeclibdir) \
 ## The mysterious backslash is consumed by make.
