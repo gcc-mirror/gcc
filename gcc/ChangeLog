@@ -1,5 +1,9 @@
 Sat Aug 29 12:39:56 1998  Jeffrey A Law  (law@cygnus.com)
 
+        * m68k.md (beq0_di): Generate correct (and more efficient) code when
+        the clobbered operand overlaps with an input.
+        (bne0_di): Similarly.
+
 	* Makefile.in (INSTALL): Remove "--no-header" argument.
 
         * NEWS: Various updates.
