@@ -47,6 +47,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
+#include "langhooks.h"
 
 static rtx find_addr_reg (rtx);
 
@@ -1772,6 +1773,7 @@ i860_output_function_epilogue (FILE *asm_file, HOST_WIDE_INT local_bytes)
 
 
 /* Expand a library call to __builtin_saveregs.  */
+
 rtx
 i860_saveregs (void)
 {
@@ -1791,94 +1793,118 @@ i860_saveregs (void)
   return ret;
 }
 
+/* Create the va_list data type.
+   The SVR4 ABI requires the following structure:
+        typedef struct {
+            unsigned long  ireg_used;
+            unsigned long  freg_used;
+            long          *reg_base;
+            long          *mem_ptr;
+        } va_list;
+
+   Otherwise, this structure is used:
+        typedef struct {
+            long          *reg_base;
+            long          *mem_ptr;
+            unsigned long  ireg_used;
+            unsigned long  freg_used;
+        } va_list;
+
+   The tree representing the va_list declaration is returned.  */
+
 tree
 i860_build_va_list (void)
 {
-  tree field_ireg_used, field_freg_used, field_reg_base, field_mem_ptr;
-  tree record;
+  tree f_gpr, f_fpr, f_mem, f_sav, record, type_decl;
 
-  record = make_node (RECORD_TYPE);
+  record = (*lang_hooks.types.make_type) (RECORD_TYPE);
+  type_decl = build_decl (TYPE_DECL, get_identifier ("__va_list_tag"), record);
 
-  field_ireg_used = build_decl (FIELD_DECL, get_identifier ("__ireg_used"),
-				unsigned_type_node);
-  field_freg_used = build_decl (FIELD_DECL, get_identifier ("__freg_used"),
-				unsigned_type_node);
-  field_reg_base = build_decl (FIELD_DECL, get_identifier ("__reg_base"),
-			       ptr_type_node);
-  field_mem_ptr = build_decl (FIELD_DECL, get_identifier ("__mem_ptr"),
-			      ptr_type_node);
+  f_gpr = build_decl (FIELD_DECL, get_identifier ("__ireg_used"),
+		      unsigned_type_node);
+  f_fpr = build_decl (FIELD_DECL, get_identifier ("__freg_used"),
+		      unsigned_type_node);
+  f_sav = build_decl (FIELD_DECL, get_identifier ("__reg_base"),
+		      ptr_type_node);
+  f_mem = build_decl (FIELD_DECL, get_identifier ("__mem_ptr"),
+		      ptr_type_node);
 
-  DECL_FIELD_CONTEXT (field_ireg_used) = record;
-  DECL_FIELD_CONTEXT (field_freg_used) = record;
-  DECL_FIELD_CONTEXT (field_reg_base) = record;
-  DECL_FIELD_CONTEXT (field_mem_ptr) = record;
+  DECL_FIELD_CONTEXT (f_gpr) = record;
+  DECL_FIELD_CONTEXT (f_fpr) = record;
+  DECL_FIELD_CONTEXT (f_sav) = record;
+  DECL_FIELD_CONTEXT (f_mem) = record;
+
+  TREE_CHAIN (record) = type_decl;
+  TYPE_NAME (record) = type_decl;
 
 #ifdef I860_SVR4_VA_LIST
-  TYPE_FIELDS (record) = field_ireg_used;
-  TREE_CHAIN (field_ireg_used) = field_freg_used;
-  TREE_CHAIN (field_freg_used) = field_reg_base;
-  TREE_CHAIN (field_reg_base) = field_mem_ptr;
+  TYPE_FIELDS (record) = f_gpr;
+  TREE_CHAIN (f_gpr) = f_fpr;
+  TREE_CHAIN (f_fpr) = f_sav;
+  TREE_CHAIN (f_sav) = f_mem;
 #else
-  TYPE_FIELDS (record) = field_reg_base;
-  TREE_CHAIN (field_reg_base) = field_mem_ptr;
-  TREE_CHAIN (field_mem_ptr) = field_ireg_used;
-  TREE_CHAIN (field_ireg_used) = field_freg_used;
+  TYPE_FIELDS (record) = f_sav;
+  TREE_CHAIN (f_sav) = f_mem;
+  TREE_CHAIN (f_mem) = f_gpr;
+  TREE_CHAIN (f_gpr) = f_fpr;
 #endif
 
   layout_type (record);
   return record;
 }
 
+/* Initialize the va_list structure.  */
+
 void
-i860_va_start (tree valist, rtx nextarg)
+i860_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
 {
   tree saveregs, t;
-  tree field_ireg_used, field_freg_used, field_reg_base, field_mem_ptr;
-  tree ireg_used, freg_used, reg_base, mem_ptr;
-
-  saveregs = make_tree (build_pointer_type (va_list_type_node),
-			expand_builtin_saveregs ());
-  saveregs = build1 (INDIRECT_REF, va_list_type_node, saveregs);
+  tree f_gpr, f_fpr, f_mem, f_sav;
+  tree gpr, fpr, mem, sav;
+  int off = 0;
+  saveregs = make_tree (ptr_type_node, expand_builtin_saveregs ());
 
 #ifdef I860_SVR4_VA_LIST
-  field_ireg_used = TYPE_FIELDS (va_list_type_node);
-  field_freg_used = TREE_CHAIN (field_ireg_used);
-  field_reg_base = TREE_CHAIN (field_freg_used);
-  field_mem_ptr = TREE_CHAIN (field_reg_base);
+  f_gpr = TYPE_FIELDS (va_list_type_node);
+  f_fpr = TREE_CHAIN (f_gpr);
+  f_sav = TREE_CHAIN (f_fpr);
+  f_mem = TREE_CHAIN (f_sav);
 #else
-  field_reg_base = TYPE_FIELDS (va_list_type_node);
-  field_mem_ptr = TREE_CHAIN (field_reg_base);
-  field_ireg_used = TREE_CHAIN (field_mem_ptr);
-  field_freg_used = TREE_CHAIN (field_ireg_used);
+  f_sav = TYPE_FIELDS (va_list_type_node);
+  f_mem = TREE_CHAIN (f_sav);
+  f_gpr = TREE_CHAIN (f_mem);
+  f_fpr = TREE_CHAIN (f_gpr);
 #endif
 
-  ireg_used = build (COMPONENT_REF, TREE_TYPE (field_ireg_used),
-		     valist, field_ireg_used);
-  freg_used = build (COMPONENT_REF, TREE_TYPE (field_freg_used),
-		     valist, field_freg_used);
-  reg_base = build (COMPONENT_REF, TREE_TYPE (field_reg_base),
-		    valist, field_reg_base);
-  mem_ptr = build (COMPONENT_REF, TREE_TYPE (field_mem_ptr),
-		   valist, field_mem_ptr);
+  gpr = build (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr);
+  fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr);
+  sav = build (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav);
+  mem = build (COMPONENT_REF, TREE_TYPE (f_mem), valist, f_mem);
 
+  /* Initialize the `mem_ptr' field to the address of the first anonymous
+     stack argument.  */
+  t = make_tree (TREE_TYPE (mem), virtual_incoming_args_rtx);
+  off = INTVAL (current_function_arg_offset_rtx);
+  off = off < 0 ? 0 : off;
+  t = build (PLUS_EXPR, TREE_TYPE (mem), t, build_int_2 (off, 0));
+  t = build (MODIFY_EXPR, TREE_TYPE (mem), mem, t);
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  /* Initialize the `ireg_used' field.  */
   t = build_int_2 (current_function_args_info.ints / UNITS_PER_WORD, 0);
-  t = build (MODIFY_EXPR, TREE_TYPE (ireg_used), ireg_used, t);
+  t = build (MODIFY_EXPR, TREE_TYPE (gpr), gpr, t);
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+     
+  /* Initialize the `freg_used' field.  */
+  t = build_int_2 (current_function_args_info.floats / UNITS_PER_WORD, 0);
+  t = build (MODIFY_EXPR, TREE_TYPE (fpr), fpr, t);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
       
-  t = build_int_2 (ROUNDUP ((current_function_args_info.floats / UNITS_PER_WORD), 8), 0);
-  t = build (MODIFY_EXPR, TREE_TYPE (freg_used), freg_used, t);
-  TREE_SIDE_EFFECTS (t) = 1;
-  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
-      
-  t = build (COMPONENT_REF, TREE_TYPE (field_reg_base),
-	     saveregs, field_reg_base);
-  t = build (MODIFY_EXPR, TREE_TYPE (reg_base), reg_base, t);
-  TREE_SIDE_EFFECTS (t) = 1;
-  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
-
-  t = make_tree (ptr_type_node, nextarg);
-  t = build (MODIFY_EXPR, TREE_TYPE (mem_ptr), mem_ptr, t);
+  /* Initialize the `reg_base' field.  */
+  t = build (MODIFY_EXPR, TREE_TYPE (sav), sav, saveregs);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 }
@@ -1893,116 +1919,136 @@ i860_va_start (tree valist, rtx nextarg)
 #define IREG_OFFSET 0
 #endif
 
+/* Update the VALIST structure as necessary for an
+   argument of the given TYPE, and return the argument.  */
+
 rtx
 i860_va_arg (tree valist, tree type)
 {
-  tree field_ireg_used, field_freg_used, field_reg_base, field_mem_ptr;
-  tree type_ptr_node, t;
-  rtx lab_over = NULL_RTX;
-  rtx ret, val;
-  HOST_WIDE_INT align;
+  tree f_gpr, f_fpr, f_mem, f_sav;
+  tree gpr, fpr, mem, sav, reg, t, u;
+  int size, n_reg, sav_ofs, sav_scale, max_reg;
+  rtx lab_false, lab_over, addr_rtx, r;
 
 #ifdef I860_SVR4_VA_LIST
-  field_ireg_used = TYPE_FIELDS (va_list_type_node);
-  field_freg_used = TREE_CHAIN (field_ireg_used);
-  field_reg_base = TREE_CHAIN (field_freg_used);
-  field_mem_ptr = TREE_CHAIN (field_reg_base);
+  f_gpr = TYPE_FIELDS (va_list_type_node);
+  f_fpr = TREE_CHAIN (f_gpr);
+  f_sav = TREE_CHAIN (f_fpr);
+  f_mem = TREE_CHAIN (f_sav);
 #else
-  field_reg_base = TYPE_FIELDS (va_list_type_node);
-  field_mem_ptr = TREE_CHAIN (field_reg_base);
-  field_ireg_used = TREE_CHAIN (field_mem_ptr);
-  field_freg_used = TREE_CHAIN (field_ireg_used);
+  f_sav = TYPE_FIELDS (va_list_type_node);
+  f_mem = TREE_CHAIN (f_sav);
+  f_gpr = TREE_CHAIN (f_mem);
+  f_fpr = TREE_CHAIN (f_gpr);
 #endif
 
-  field_ireg_used = build (COMPONENT_REF, TREE_TYPE (field_ireg_used),
-			   valist, field_ireg_used);
-  field_freg_used = build (COMPONENT_REF, TREE_TYPE (field_freg_used),
-			   valist, field_freg_used);
-  field_reg_base = build (COMPONENT_REF, TREE_TYPE (field_reg_base),
-			  valist, field_reg_base);
-  field_mem_ptr = build (COMPONENT_REF, TREE_TYPE (field_mem_ptr),
-			 valist, field_mem_ptr);
+  gpr = build (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr);
+  fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr);
+  mem = build (COMPONENT_REF, TREE_TYPE (f_mem), valist, f_mem);
+  sav = build (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav);
 
-  ret = gen_reg_rtx (Pmode);
-  type_ptr_node = build_pointer_type (type);
+  size = int_size_in_bytes (type);
 
-  if (! AGGREGATE_TYPE_P (type))
+  if (AGGREGATE_TYPE_P (type))
     {
-      int nparm, incr, ofs;
-      tree field;
-      rtx lab_false;
+      /* Aggregates are passed on the stack.  */
+      HOST_WIDE_INT align;
 
-      if (FLOAT_TYPE_P (type))
-	{
-	  field = field_freg_used;
-	  nparm = NUM_PARM_FREGS;
-	  incr = 2;
-	  ofs = FREG_OFFSET;
-	}
-      else
-	{
-	  field = field_ireg_used;
-	  nparm = NUM_PARM_IREGS;
-	  incr = int_size_in_bytes (type) / UNITS_PER_WORD;
-	  ofs = IREG_OFFSET;
-	}
+      align = TYPE_ALIGN (type);
+      if (align < BITS_PER_WORD)
+        align = BITS_PER_WORD;
+      align /= BITS_PER_UNIT;
 
-      lab_false = gen_label_rtx ();
-      lab_over = gen_label_rtx ();
+      addr_rtx = gen_reg_rtx (Pmode);
+      t = build (PLUS_EXPR, ptr_type_node, mem, build_int_2 (align - 1, 0));
+      t = build (BIT_AND_EXPR, ptr_type_node, t, build_int_2 (-align, -1));
+      r = expand_expr (t, addr_rtx, VOIDmode /* Pmode */, EXPAND_NORMAL);
+      if (r != addr_rtx)
+        emit_move_insn (addr_rtx, r);
 
-      emit_cmp_and_jump_insns (expand_expr (field, NULL_RTX, 0, 0),
-			       GEN_INT (nparm - incr), GT, const0_rtx,
-			       TYPE_MODE (TREE_TYPE (field)),
-			       TREE_UNSIGNED (field), lab_false);
-
-      t = fold (build (POSTINCREMENT_EXPR, TREE_TYPE (field), field,
-		       build_int_2 (incr, 0)));
+      t = fold (build (PLUS_EXPR, ptr_type_node, 
+		make_tree (ptr_type_node, addr_rtx),
+		build_int_2 (size, 0)));
+      t = build (MODIFY_EXPR, ptr_type_node, mem, t);
       TREE_SIDE_EFFECTS (t) = 1;
+      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
-      t = fold (build (MULT_EXPR, TREE_TYPE (field), t /* field */,
-		       build_int_2 (UNITS_PER_WORD, 0)));
-      TREE_SIDE_EFFECTS (t) = 1;
-      
-      t = fold (build (PLUS_EXPR, ptr_type_node, field_reg_base,
-		       fold (build (PLUS_EXPR, TREE_TYPE (field), t,
-				    build_int_2 (ofs, 0)))));
-      TREE_SIDE_EFFECTS (t) = 1;
-      
-      val = expand_expr (t, ret, VOIDmode, EXPAND_NORMAL);
-      if (val != ret)
-	emit_move_insn (ret, val);
-
-      emit_jump_insn (gen_jump (lab_over));
-      emit_barrier ();
-      emit_label (lab_false);
+      return addr_rtx;
+    }
+  else if (FLOAT_TYPE_P (type) || (INTEGRAL_TYPE_P (type) && size == 8))
+    {
+      /* Floats and long longs are passed in the floating-point registers.  */
+      reg = fpr;
+      n_reg = size / UNITS_PER_WORD;
+      sav_ofs = FREG_OFFSET;
+      sav_scale = UNITS_PER_WORD;
+      max_reg = NUM_PARM_FREGS;
+    }
+  else
+    {
+      /* Everything else is passed in general registers.  */
+      reg = gpr;
+      n_reg = (size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+      sav_ofs = IREG_OFFSET;
+      sav_scale = UNITS_PER_WORD;
+      max_reg = NUM_PARM_IREGS;
+      if (n_reg > 1)
+        abort ();
     }
 
-  align = TYPE_ALIGN (type);
-  if (align < BITS_PER_WORD)
-    align = BITS_PER_WORD;
-  align /= BITS_PER_UNIT;
+  /* The value was passed in a register, so read it from the register
+     save area initialized by __builtin_saveregs.  */
 
-  t = build (PLUS_EXPR, ptr_type_node, field_mem_ptr,
-	     build_int_2 (align - 1, 0));
-  t = build (BIT_AND_EXPR, ptr_type_node, t, build_int_2 (-align, -1));
+  lab_false = gen_label_rtx ();
+  lab_over = gen_label_rtx ();
+  addr_rtx = gen_reg_rtx (Pmode);
 
-  val = expand_expr (t, ret, VOIDmode, EXPAND_NORMAL);
-  if (val != ret)
-    emit_move_insn (ret, val);
+  emit_cmp_and_jump_insns (expand_expr (reg, NULL_RTX, Pmode, EXPAND_NORMAL),
+			   GEN_INT (max_reg - n_reg),
+			   GT, const1_rtx, Pmode, 0, lab_false);
 
-  t = fold (build (PLUS_EXPR, ptr_type_node,
-		   make_tree (ptr_type_node, ret),
-		   build_int_2 (int_size_in_bytes (type), 0)));
-  t = build (MODIFY_EXPR, ptr_type_node, field_mem_ptr, t);
+  if (sav_ofs)
+    t = build (PLUS_EXPR, ptr_type_node, sav, build_int_2 (sav_ofs, 0));
+  else
+    t = sav;
+
+  u = build (MULT_EXPR, long_integer_type_node,
+	     reg, build_int_2 (sav_scale, 0));
+  TREE_SIDE_EFFECTS (u) = 1;
+
+  t = build (PLUS_EXPR, ptr_type_node, t, u);
+  TREE_SIDE_EFFECTS (t) = 1;
+
+  r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
+  if (r != addr_rtx)
+    emit_move_insn (addr_rtx, r);
+
+  emit_jump_insn (gen_jump (lab_over));
+  emit_barrier ();
+  emit_label (lab_false);
+
+  /* The value was passed in memory, so read it from the overflow area.  */
+
+  t = save_expr (mem);
+  r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
+  if (r != addr_rtx)
+    emit_move_insn (addr_rtx, r);
+
+  t = build (PLUS_EXPR, TREE_TYPE (t), t, build_int_2 (size, 0));
+  t = build (MODIFY_EXPR, TREE_TYPE (mem), mem, t);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
-  if (lab_over)
-    emit_label (lab_over);
+  emit_label (lab_over);
 
-  return ret;
+  /* Increment either the ireg_used or freg_used field.  */
+
+  u = build (PREINCREMENT_EXPR, TREE_TYPE (reg), reg, build_int_2 (n_reg, 0));
+  TREE_SIDE_EFFECTS (u) = 1;
+  expand_expr (u, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  return addr_rtx;
 }
-
 
 /* Compute a (partial) cost for rtx X.  Return true if the complete
    cost has been computed, and false if subexpressions should be

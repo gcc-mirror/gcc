@@ -1,3 +1,13 @@
+2003-08-22  Jason Eckhardt  <jle@rice.edu>
+
+	* config/i860/i860.c (i860_build_va_list): Create the va_decl
+	declaration.  Document the va_list structure.
+	(i860_va_start): Initialize the va_list structure.
+	(i860_va_arg): Rewrite completely.
+	* config/i860/i860.h (LIBGCC_NEEDS_DOUBLE): Don't define.
+	* config/i860/varargs.asm: Do not allocate or initialize
+	a va_list.  Return the address of the register save area.
+
 2003-08-22  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/iq2000/iq2000.c: Fix comment typos.
