@@ -28,6 +28,7 @@ Boston, MA 02111-1307, USA.  */
 #undef LIB_SPEC
 #undef ENDFILE_SPEC
 #undef LINK_SPEC
+#define LINK_SPEC "%{mrelax:--relax}"
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{!mno-crt0:%{!shared:%{pg:gcrt0%O%s}%{!pg:%{p:mcrt0%O%s}%{!p:crt0%O%s}}}}"
 
@@ -62,6 +63,7 @@ extern int target_flags;
    { "am33", 		-(0x1), ""},\
    { "no-am33", 	-0x2, ""},	\
    { "no-crt0",		0,    N_("No default crt0.o") }, \
+   { "relax",		0,    N_("Enable linker relaxations") }, \
    { "", TARGET_DEFAULT, NULL}}
 
 #ifndef TARGET_DEFAULT
