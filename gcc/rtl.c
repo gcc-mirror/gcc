@@ -652,9 +652,10 @@ read_rtx (infile)
 		  /* \; makes stuff for a C string constant containing
 		     newline and tab.  */
 		  if (c == ';')
-		    obstack_grow (rtl_obstack, "\\n\\t", 4);
-		  else
-		    obstack_1grow (rtl_obstack, c);
+		    {
+		      obstack_grow (rtl_obstack, "\\n\\t", 4);
+		      continue;
+		    }
 		}
 	      else if (c == '"')
 		break;
