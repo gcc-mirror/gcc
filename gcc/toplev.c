@@ -1307,6 +1307,10 @@ target_options [] = TARGET_OPTIONS;
 
 int inhibit_warnings = 0;
 
+/* Don't suppress warnings from system headers.  -Wsystem-headers.  */
+
+int warn_system_headers = 0;
+
 /* Print various extra warnings.  -W.  */
 
 int extra_warnings = 0;
@@ -1410,6 +1414,7 @@ lang_independent_options W_options[] =
   {"unused-parameter", &warn_unused_parameter, 1, "Warn when a function parameter is unused" },
   {"unused-variable", &warn_unused_variable, 1, "Warn when a variable is unused" },
   {"unused-value", &warn_unused_value, 1, "Warn when an expression value is unused" },
+  {"system-headers", &warn_system_headers, 1, "Do not suppress warnings from system headers"},
   {"error", &warnings_are_errors, 1, ""},
   {"shadow", &warn_shadow, 1, "Warn when one local variable shadows another" },
   {"switch", &warn_switch, 1,

@@ -189,9 +189,9 @@ extern unsigned char _cpp_trigraph_map[UCHAR_MAX + 1];
   (CPP_BUFFER (PFILE) && CPP_BUFFER (PFILE)->inc \
    && CPP_BUFFER (PFILE)->inc->sysp)
 #define CPP_PEDANTIC(PF) \
-  (CPP_OPTION (PF, pedantic) && !CPP_IN_SYSTEM_HEADER (PF))
+  CPP_OPTION (PF, pedantic)
 #define CPP_WTRADITIONAL(PF) \
-  (CPP_OPTION (PF, warn_traditional) && !CPP_IN_SYSTEM_HEADER (PF))
+  CPP_OPTION (PF, warn_traditional)
 
 /* Hash step.  The hash calculation is duplicated in cpp_lookup and
    parse_name.  */

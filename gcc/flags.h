@@ -79,6 +79,10 @@ extern int mem_report;
 
 extern int inhibit_warnings;
 
+/* Don't suppress warnings from system headers.  -Wsystem-headers.  */
+
+extern int warn_system_headers;
+
 /* Do print extra warnings (such as for uninitialized variables).  -W.  */
 
 extern int extra_warnings;

@@ -383,8 +383,7 @@ do_import (pfile)
   const U_CHAR *str;
   int ab;
 
-  if (CPP_OPTION (pfile, warn_import)
-      && !CPP_IN_SYSTEM_HEADER (pfile) && !pfile->import_warning)
+  if (!pfile->import_warning && CPP_OPTION (pfile, warn_import))
     {
       pfile->import_warning = 1;
       cpp_warning (pfile,
@@ -801,9 +800,8 @@ do_pragma_once (pfile)
 
   /* Allow #pragma once in system headers, since that's not the user's
      fault.  */
-  if (!CPP_IN_SYSTEM_HEADER (pfile))
-    cpp_warning (pfile, "#pragma once is obsolete");
-      
+  cpp_warning (pfile, "#pragma once is obsolete");
+ 
   if (CPP_PREV_BUFFER (ip) == NULL)
     cpp_warning (pfile, "#pragma once outside include file");
   else

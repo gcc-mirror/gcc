@@ -359,6 +359,9 @@ struct cpp_options
   /* Nonzero means don't print warning messages.  */
   unsigned char inhibit_warnings;
 
+  /* Nonzero means don't suppress warnings from system headers.  */
+  unsigned char warn_system_headers;
+
   /* Nonzero means don't print error messages.  Has no option to
      select it, but can be set by a user of cpplib (e.g. fix-header).  */
   unsigned char inhibit_errors;

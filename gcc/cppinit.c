@@ -1623,6 +1623,8 @@ cpp_handle_option (pfile, argc, argv)
 	    CPP_OPTION (pfile, warn_paste) = 1;
 	  else if (!strcmp (argv[i], "-Werror"))
 	    CPP_OPTION (pfile, warnings_are_errors) = 1;
+	  else if (!strcmp (argv[i], "-Wsystem-headers"))
+	    CPP_OPTION (pfile, warn_system_headers) = 1;
 	  else if (!strcmp (argv[i], "-Wno-traditional"))
 	    CPP_OPTION (pfile, warn_traditional) = 0;
 	  else if (!strcmp (argv[i], "-Wno-trigraphs"))
@@ -1639,6 +1641,8 @@ cpp_handle_option (pfile, argc, argv)
 	    CPP_OPTION (pfile, warn_paste) = 0;
 	  else if (!strcmp (argv[i], "-Wno-error"))
 	    CPP_OPTION (pfile, warnings_are_errors) = 0;
+	  else if (!strcmp (argv[i], "-Wno-system-headers"))
+	    CPP_OPTION (pfile, warn_system_headers) = 0;
 	  break;
  	}
     }
@@ -1735,36 +1739,38 @@ Switches:\n\
   -Wno-import               Do not warn about the use of #import\n\
   -Werror                   Treat all warnings as errors\n\
   -Wno-error                Do not treat warnings as errors\n\
+  -Wsystem-headers          Do not suppress warnings from system headers\n\
+  -Wno-system-headers       Suppress warnings from system headers\n\
   -Wall                     Enable all preprocessor warnings\n\
-  -M                        Generate make dependencies\n\
-  -MM                       As -M, but ignore system header files\n\
 "), stdout);
   fputs (_("\
+  -M                        Generate make dependencies\n\
+  -MM                       As -M, but ignore system header files\n\
   -MD                       As -M, but put output in a .d file\n\
   -MMD                      As -MD, but ignore system header files\n\
   -MG                       Treat missing header file as generated files\n\
   -g3                       Include #define and #undef directives in the output\n\
-  -D<macro>                 Define a <macro> with string '1' as its value\n\
-  -D<macro>=<val>           Define a <macro> with <val> as its value\n\
 "), stdout);
   fputs (_("\
+  -D<macro>                 Define a <macro> with string '1' as its value\n\
+  -D<macro>=<val>           Define a <macro> with <val> as its value\n\
   -A<question> (<answer>)   Assert the <answer> to <question>\n\
   -A-<question> (<answer>)  Disable the <answer> to <question>\n\
   -U<macro>                 Undefine <macro> \n\
   -v                        Display the version number\n\
-  -H                        Print the name of header files as they are used\n\
-  -C                        Do not discard comments\n\
 "), stdout);
   fputs (_("\
+  -H                        Print the name of header files as they are used\n\
+  -C                        Do not discard comments\n\
   -dM                       Display a list of macro definitions active at end\n\
   -dD                       Preserve macro definitions in output\n\
   -dN                       As -dD except that only the names are preserved\n\
   -dI                       Include #include directives in the output\n\
+"), stdout);
+  fputs (_("\
   -ftabstop=<number>        Distance between tab stops for column reporting\n\
   -P                        Do not generate #line directives\n\
   -$                        Do not allow '$' in identifiers\n\
-"), stdout);
-  fputs (_("\
   -remap                    Remap file names when including files.\n\
   --version                 Display version information\n\
   -h or --help              Display this information\n\

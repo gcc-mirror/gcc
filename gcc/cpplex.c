@@ -1209,10 +1209,24 @@ lex_token (pfile, result)
 	     irrespective of conformance mode, because lots of
 	     broken systems do that and trying to clean it up in
 	     fixincludes is a nightmare.  */
-	  if (!CPP_IN_SYSTEM_HEADER (pfile)
-	      && CPP_OPTION (pfile, c89) && CPP_PEDANTIC (pfile)
-	      && !buffer->warned_cplusplus_comments)
+	  if (CPP_OPTION (pfile, cplusplus_comments)
+	      || CPP_IN_SYSTEM_HEADER (pfile))
 	    {
+	      if (CPP_OPTION (pfile, c89) && CPP_PEDANTIC (pfile)
+		  && ! buffer->warned_cplusplus_comments)
+		{
+		  cpp_pedwarn (pfile,
+		       "C++ style comments are not allowed in ISO C89");
+		  cpp_pedwarn (pfile,
+		       "(this will be reported only once per input file)");
+		  buffer->warned_cplusplus_comments = 1;
+		}
+	      comment_start = buffer->cur;
+
+	      /* Skip_line_comment updates buffer->read_ahead.  */
+	      if (skip_line_comment (pfile))
+		cpp_warning_with_line (pfile, result->line, result->col,
+				       "multi-line comment");
 	      cpp_pedwarn (pfile,
 			   "C++ style comments are not allowed in ISO C89");
 	      cpp_pedwarn (pfile,

@@ -139,7 +139,7 @@ in the following sections.
 -Wmain  -Wmissing-declarations  -Wmissing-noreturn
 -Wmultichar  -Wno-import  -Wpacked  -Wpadded
 -Wparentheses -Wpointer-arith  -Wredundant-decls
--Wreturn-type -Wshadow  -Wsign-compare -Wswitch
+-Wreturn-type -Wshadow  -Wsign-compare -Wswitch -Wsystem-headers
 -Wtrigraphs -Wundef  -Wuninitialized  -Wunknown-pragmas -Wunreachable-code 
 -Wunused -Wunused-function -Wunused-label -Wunused-parameter
 -Wunused-variable -Wunused-value -Wwrite-strings
@@ -1705,6 +1705,18 @@ All of the above @samp{-W} options combined.  This enables all the
 warnings about constructions that some users consider questionable, and
 that are easy to avoid (or modify to prevent the warning), even in
 conjunction with macros.
+
+@item -Wsystem-headers
+@cindex warnings from system headers
+@cindex system headers, warnings from
+Print warning messages for constructs found in system header files.
+Warnings from system headers are normally suppressed, on the assumption
+that they usually do not indicate real problems and would only make the
+compiler output harder to read.  Using this command line option tells
+GCC to emit warnings from system headers as if they occurred in user
+code.  However, note that using @samp{-Wall} in conjunction with this
+option will @emph{not} warn about unknown pragmas in system
+headers---for that, @samp{-Wunknown-pragmas} must also be used.
 @end table
 
 The following @samp{-W@dots{}} options are not implied by @samp{-Wall}.
