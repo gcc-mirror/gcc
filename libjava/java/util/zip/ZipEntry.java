@@ -94,7 +94,7 @@ public class ZipEntry implements ZipConstants
 
   public void setCrc (long crc) 
   {
-    if (crc < 0 || crc > 0xffffffff)
+    if (crc < 0 || crc > 0xffffffffL)
       throw new IllegalArgumentException ();
     this.crc = crc;
   }
@@ -115,7 +115,7 @@ public class ZipEntry implements ZipConstants
 
   public void setSize (long size)
   {
-    if (size < 0 || size > 0xffffffff)
+    if (size < 0 || size > 0xffffffffL)
       throw new IllegalArgumentException ();
     this.size = size;
   }

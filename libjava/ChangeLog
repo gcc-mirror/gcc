@@ -1,3 +1,8 @@
+2000-02-19  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/util/zip/ZipEntry.java (setCrc): Fix overflow.
+	(setSize): ditto.
+
 2000-02-18  Tom Tromey  <tromey@cygnus.com>
 
 	* include/jvm.h (_Jv_GetJavaVM): Declare.
