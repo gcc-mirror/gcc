@@ -88,6 +88,10 @@ extern void output_asm_insn	PROTO((char *, rtx *));
    Defined in final.c.  */
 extern int insn_current_reference_address	PROTO((rtx));
 
+/* Find the alignment associated with a CODE_LABEL.
+   Defined in final.c.  */
+extern int label_to_alignment	PROTO((rtx));
+
 /* Output a LABEL_REF, or a bare CODE_LABEL, as an assembler symbol.  */
 extern void output_asm_label	PROTO((rtx));
 

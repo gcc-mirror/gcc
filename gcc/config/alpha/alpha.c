@@ -100,9 +100,13 @@ int alpha_memory_latency = 3;
 
 static int alpha_function_needs_gp;
 
+/* The alias set for prologue/epilogue register save/restore.  */
+
+static int alpha_sr_alias_set;
+
 /* Declarations of static functions.  */
 static void alpha_set_memflags_1
-  PROTO((rtx, int, int, int));
+  PROTO((rtx, int, int, int, int));
 static rtx alpha_emit_set_const_1
   PROTO((rtx, enum machine_mode, HOST_WIDE_INT, int));
 static void alpha_expand_unaligned_load_words
@@ -302,6 +306,9 @@ override_options ()
   /* Default the definition of "small data" to 8 bytes.  */
   if (!g_switch_set)
     g_switch_value = 8;
+
+  /* Acquire a unique set number for our register saves and restores.  */
+  alpha_sr_alias_set = new_alias_set ();
 }
 
 /* Returns 1 if VALUE is a mask that contains full bytes of zero or ones.  */
@@ -487,9 +494,9 @@ mode_mask_operand (op, mode)
   return (GET_CODE (op) == CONST_INT
 	  && (INTVAL (op) == 0xff
 	      || INTVAL (op) == 0xffff
-	      || INTVAL (op) == 0xffffffff
+	      || INTVAL (op) == (HOST_WIDE_INT)0xffffffff
 #if HOST_BITS_PER_WIDE_INT == 64
-	      || INTVAL (op) == 0xffffffffffffffff
+	      || INTVAL (op) == -1
 #endif
 	      ));
 }
@@ -870,11 +877,8 @@ get_aligned_mem (ref, paligned_mem, pbitnum)
   if (GET_CODE (base) == PLUS)
     offset += INTVAL (XEXP (base, 1)), base = XEXP (base, 0);
 
-  *paligned_mem = gen_rtx_MEM (SImode,
-			   plus_constant (base, offset & ~3));
-  MEM_IN_STRUCT_P (*paligned_mem) = MEM_IN_STRUCT_P (ref);
-  MEM_VOLATILE_P (*paligned_mem) = MEM_VOLATILE_P (ref);
-  RTX_UNCHANGING_P (*paligned_mem) = RTX_UNCHANGING_P (ref);
+  *paligned_mem = change_address (ref, SImode, 
+				  plus_constant (base, offset & ~3));
 
   *pbitnum = GEN_INT ((offset & 3) * 8);
 }
@@ -918,9 +922,9 @@ get_unaligned_address (ref, extra_offset)
    found in part of X.  */
 
 static void
-alpha_set_memflags_1 (x, in_struct_p, volatile_p, unchanging_p)
+alpha_set_memflags_1 (x, in_struct_p, volatile_p, unchanging_p, alias_set)
      rtx x;
-     int in_struct_p, volatile_p, unchanging_p;
+     int in_struct_p, volatile_p, unchanging_p, alias_set;
 {
   int i;
 
@@ -930,25 +934,26 @@ alpha_set_memflags_1 (x, in_struct_p, volatile_p, unchanging_p)
     case PARALLEL:
       for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
 	alpha_set_memflags_1 (XVECEXP (x, 0, i), in_struct_p, volatile_p,
-			      unchanging_p);
+			      unchanging_p, alias_set);
       break;
 
     case INSN:
       alpha_set_memflags_1 (PATTERN (x), in_struct_p, volatile_p,
-			    unchanging_p);
+			    unchanging_p, alias_set);
       break;
 
     case SET:
       alpha_set_memflags_1 (SET_DEST (x), in_struct_p, volatile_p,
-			    unchanging_p);
+			    unchanging_p, alias_set);
       alpha_set_memflags_1 (SET_SRC (x), in_struct_p, volatile_p,
-			    unchanging_p);
+			    unchanging_p, alias_set);
       break;
 
     case MEM:
       MEM_IN_STRUCT_P (x) = in_struct_p;
       MEM_VOLATILE_P (x) = volatile_p;
       RTX_UNCHANGING_P (x) = unchanging_p;
+      MEM_ALIAS_SET (x) = alias_set;
       break;
 
     default:
@@ -967,17 +972,24 @@ alpha_set_memflags (insn, ref)
      rtx insn;
      rtx ref;
 {
-  /* Note that it is always safe to get these flags, though they won't
-     be what we think if REF is not a MEM.  */
-  int in_struct_p = MEM_IN_STRUCT_P (ref);
-  int volatile_p = MEM_VOLATILE_P (ref);
-  int unchanging_p = RTX_UNCHANGING_P (ref);
+  int in_struct_p, volatile_p, unchanging_p, alias_set;
 
-  if (GET_CODE (ref) != MEM
-      || (! in_struct_p && ! volatile_p && ! unchanging_p))
+  if (GET_CODE (ref) != MEM)
     return;
 
-  alpha_set_memflags_1 (insn, in_struct_p, volatile_p, unchanging_p);
+  in_struct_p = MEM_IN_STRUCT_P (ref);
+  volatile_p = MEM_VOLATILE_P (ref);
+  unchanging_p = RTX_UNCHANGING_P (ref);
+  alias_set = MEM_ALIAS_SET (ref);
+
+  /* This is only called from alpha.md, after having had something 
+     generated from one of the insn patterns.  So if everything is
+     zero, the pattern is already up-to-date.  */
+  if (! in_struct_p && ! volatile_p && ! unchanging_p && ! alias_set)
+    return;
+
+  alpha_set_memflags_1 (insn, in_struct_p, volatile_p, unchanging_p,
+			alias_set);
 }
 
 /* Try to output insns to set TARGET equal to the constant C if it can be
@@ -1979,7 +1991,7 @@ alpha_expand_block_move (operands)
     }
  src_done:
 
-  if (nregs > sizeof(data_regs)/sizeof(*data_regs))
+  if (nregs > (int)(sizeof(data_regs)/sizeof(*data_regs)))
     abort();
 
   /*
@@ -2730,7 +2742,7 @@ print_operand (file, x, code)
 	       && CONST_DOUBLE_LOW (x) == -1)
 	fprintf (file, "q");
 #else
-      else if (GET_CODE (x) == CONST_INT && INTVAL (x) == 0xffffffffffffffff)
+      else if (GET_CODE (x) == CONST_INT && INTVAL (x) == -1)
 	fprintf (file, "q");
       else if (GET_CODE (x) == CONST_DOUBLE
 	       && CONST_DOUBLE_HIGH (x) == 0
@@ -3253,7 +3265,7 @@ alpha_expand_prologue ()
   HOST_WIDE_INT frame_size;
   /* Offset from base reg to register save area.  */
   HOST_WIDE_INT reg_offset;
-  rtx sa_reg;
+  rtx sa_reg, mem;
   int i;
 
   sa_size = alpha_sa_size ();
@@ -3367,16 +3379,17 @@ alpha_expand_prologue ()
   /* Save regs in stack order.  Beginning with VMS PV.  */
   if (TARGET_OPEN_VMS && vms_is_stack_procedure)
     {
-      FRP (emit_move_insn (gen_rtx_MEM (DImode, stack_pointer_rtx),
-		           gen_rtx_REG (DImode, REG_PV)));
+      mem = gen_rtx_MEM (DImode, stack_pointer_rtx);
+      MEM_ALIAS_SET (mem) = alpha_sr_alias_set;
+      FRP (emit_move_insn (mem, gen_rtx_REG (DImode, REG_PV)));
     }
 
   /* Save register RA next.  */
   if (imask & (1L << REG_RA))
     {
-      FRP (emit_move_insn (gen_rtx_MEM (DImode,
-					plus_constant (sa_reg, reg_offset)),
-		           gen_rtx_REG (DImode, REG_RA)));
+      mem = gen_rtx_MEM (DImode, plus_constant (sa_reg, reg_offset));
+      MEM_ALIAS_SET (mem) = alpha_sr_alias_set;
+      FRP (emit_move_insn (mem, gen_rtx_REG (DImode, REG_RA)));
       imask &= ~(1L << REG_RA);
       reg_offset += 8;
     }
@@ -3385,18 +3398,18 @@ alpha_expand_prologue ()
   for (i = 0; i < 32; i++)
     if (imask & (1L << i))
       {
-	FRP (emit_move_insn (gen_rtx_MEM (DImode,
-				          plus_constant (sa_reg, reg_offset)),
-			     gen_rtx_REG (DImode, i)));
+	mem = gen_rtx_MEM (DImode, plus_constant (sa_reg, reg_offset));
+	MEM_ALIAS_SET (mem) = alpha_sr_alias_set;
+	FRP (emit_move_insn (mem, gen_rtx_REG (DImode, i)));
 	reg_offset += 8;
       }
 
   for (i = 0; i < 32; i++)
     if (fmask & (1L << i))
       {
-	FRP (emit_move_insn (gen_rtx_MEM (DFmode,
-				          plus_constant (sa_reg, reg_offset)),
-			     gen_rtx_REG (DFmode, i+32)));
+	mem = gen_rtx_MEM (DFmode, plus_constant (sa_reg, reg_offset));
+	MEM_ALIAS_SET (mem) = alpha_sr_alias_set;
+	FRP (emit_move_insn (mem, gen_rtx_REG (DFmode, i+32)));
 	reg_offset += 8;
       }
 
@@ -3675,7 +3688,7 @@ alpha_expand_epilogue ()
   HOST_WIDE_INT reg_offset;
   int fp_is_frame_pointer, fp_offset;
   rtx sa_reg, sa_reg_exp = NULL;
-  rtx sp_adj1, sp_adj2;
+  rtx sp_adj1, sp_adj2, mem;
   int i;
 
   sa_size = alpha_sa_size ();
@@ -3734,10 +3747,9 @@ alpha_expand_epilogue ()
 
       if (! alpha_eh_epilogue_sp_ofs)
 	{
-          FRP (emit_move_insn (gen_rtx_REG (DImode, REG_RA),
-		               gen_rtx_MEM (DImode,
-					    plus_constant(sa_reg,
-							  reg_offset))));
+	  mem = gen_rtx_MEM (DImode, plus_constant(sa_reg, reg_offset));
+	  MEM_ALIAS_SET (mem) = alpha_sr_alias_set;
+          FRP (emit_move_insn (gen_rtx_REG (DImode, REG_RA), mem));
 	}
       reg_offset += 8;
       imask &= ~(1L << REG_RA);
@@ -3749,10 +3761,9 @@ alpha_expand_epilogue ()
 	      fp_offset = reg_offset;
 	    else
 	      {
-		FRP (emit_move_insn (gen_rtx_REG (DImode, i),
-				     gen_rtx_MEM (DImode,
-					          plus_constant(sa_reg,
-						                reg_offset))));
+		mem = gen_rtx_MEM (DImode, plus_constant(sa_reg, reg_offset));
+		MEM_ALIAS_SET (mem) = alpha_sr_alias_set;
+		FRP (emit_move_insn (gen_rtx_REG (DImode, i), mem));
 	      }
 	    reg_offset += 8;
 	  }
@@ -3760,10 +3771,9 @@ alpha_expand_epilogue ()
       for (i = 0; i < 32; ++i)
 	if (fmask & (1L << i))
 	  {
-	    FRP (emit_move_insn (gen_rtx_REG (DFmode, i+32),
-			         gen_rtx_MEM (DFmode,
-					      plus_constant(sa_reg,
-							    reg_offset))));
+	    mem = gen_rtx_MEM (DFmode, plus_constant(sa_reg, reg_offset));
+	    MEM_ALIAS_SET (mem) = alpha_sr_alias_set;
+	    FRP (emit_move_insn (gen_rtx_REG (DFmode, i+32), mem));
 	    reg_offset += 8;
 	  }
     }
@@ -3820,9 +3830,9 @@ alpha_expand_epilogue ()
       if (fp_is_frame_pointer)
 	{
 	  emit_insn (gen_blockage ());
-	  FRP (emit_move_insn (hard_frame_pointer_rtx,
-			       gen_rtx_MEM (DImode,
-				            plus_constant(sa_reg, fp_offset))));
+	  mem = gen_rtx_MEM (DImode, plus_constant(sa_reg, fp_offset));
+	  MEM_ALIAS_SET (mem) = alpha_sr_alias_set;
+	  FRP (emit_move_insn (hard_frame_pointer_rtx, mem));
 	}
       else if (TARGET_OPEN_VMS)
 	{
@@ -4281,6 +4291,13 @@ alpha_handle_trap_shadows (insns)
 /* Alpha can only issue instruction groups simultaneously if they are
    suitibly aligned.  This is very processor-specific.  */
 
+enum alphaev4_pipe {
+  EV4_STOP = 0,
+  EV4_IB0 = 1,
+  EV4_IB1 = 2,
+  EV4_IBX = 4
+};
+
 enum alphaev5_pipe {
   EV5_STOP = 0,
   EV5_NONE = 1,
@@ -4291,6 +4308,58 @@ enum alphaev5_pipe {
   EV5_FA = 32,
   EV5_FM = 64
 };
+
+static enum alphaev4_pipe alphaev4_insn_pipe PROTO((rtx));
+static enum alphaev5_pipe alphaev5_insn_pipe PROTO((rtx));
+static rtx alphaev4_next_group PROTO((rtx, int*, int*));
+static rtx alphaev5_next_group PROTO((rtx, int*, int*));
+static rtx alphaev4_next_nop PROTO((int*));
+static rtx alphaev5_next_nop PROTO((int*));
+
+static void alpha_align_insns
+  PROTO((rtx, int, rtx (*)(rtx, int*, int*), rtx (*)(int*), int));
+
+static enum alphaev4_pipe
+alphaev4_insn_pipe (insn)
+     rtx insn;
+{
+  if (recog_memoized (insn) < 0)
+    return EV4_STOP;
+  if (get_attr_length (insn) != 4)
+    return EV4_STOP;
+
+  switch (get_attr_type (insn))
+    {
+    case TYPE_ILD:
+    case TYPE_FLD:
+      return EV4_IBX;
+
+    case TYPE_LDSYM:
+    case TYPE_IADD:
+    case TYPE_ILOG:
+    case TYPE_ICMOV:
+    case TYPE_ICMP:
+    case TYPE_IST:
+    case TYPE_FST:
+    case TYPE_SHIFT:
+    case TYPE_IMUL:
+    case TYPE_FBR:
+      return EV4_IB0;
+
+    case TYPE_MISC:
+    case TYPE_IBR:
+    case TYPE_JSR:
+    case TYPE_FCPYS:
+    case TYPE_FCMOV:
+    case TYPE_FADD:
+    case TYPE_FDIV:
+    case TYPE_FMUL:
+      return EV4_IB1;
+
+    default:
+      abort();
+    }
+}
 
 static enum alphaev5_pipe
 alphaev5_insn_pipe (insn)
@@ -4341,10 +4410,109 @@ alphaev5_insn_pipe (insn)
     }
 }
 
-/* IN_USE is a mask of the slots currently filled within the
-   insn group.  The mask bits come from alphaev5_pipe above.
-   If EV5_E01 is set, then the insn in EV5_E0 can be swapp
-   by the hardware into EV5_E1. 
+/* IN_USE is a mask of the slots currently filled within the insn group. 
+   The mask bits come from alphaev4_pipe above.  If EV4_IBX is set, then
+   the insn in EV4_IB0 can be swapped by the hardware into EV4_IB1. 
+
+   LEN is, of course, the length of the group in bytes.  */
+
+static rtx
+alphaev4_next_group (insn, pin_use, plen)
+     rtx insn;
+     int *pin_use, *plen;
+{
+  int len, in_use;
+
+  len = in_use = 0;
+
+  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i'
+      || GET_CODE (PATTERN (insn)) == CLOBBER
+      || GET_CODE (PATTERN (insn)) == USE)
+    goto next_and_done;
+
+  while (1)
+    {
+      enum alphaev4_pipe pipe;
+
+      pipe = alphaev4_insn_pipe (insn);
+      switch (pipe)
+	{
+	case EV4_STOP:
+	  /* Force complex instructions to start new groups.  */
+	  if (in_use)
+	    goto done;
+
+	  /* If this is a completely unrecognized insn, its an asm.
+	     We don't know how long it is, so record length as -1 to
+	     signal a needed realignment.  */
+	  if (recog_memoized (insn) < 0)
+	    len = -1;
+	  else
+	    len = get_attr_length (insn);
+	  goto next_and_done;
+
+	case EV4_IBX:
+	  if (in_use & EV4_IB0)
+	    {
+	      if (in_use & EV4_IB1)
+		goto done;
+	      in_use |= EV4_IB1;
+	    }
+	  else
+	    in_use |= EV4_IB0 | EV4_IBX;
+	  break;
+
+	case EV4_IB0:
+	  if (in_use & EV4_IB0)
+	    {
+	      if (!(in_use & EV4_IBX) || (in_use & EV4_IB1))
+		goto done;
+	      in_use |= EV4_IB1;
+	    }
+	  in_use |= EV4_IB0;
+	  break;
+
+	case EV4_IB1:
+	  if (in_use & EV4_IB1)
+	    goto done;
+	  in_use |= EV4_IB1;
+	  break;
+
+	default:
+	  abort();
+	}
+      len += 4;
+      
+      /* Haifa doesn't do well scheduling branches.  */
+      if (GET_CODE (insn) == JUMP_INSN)
+	goto next_and_done;
+
+    next:
+      insn = next_nonnote_insn (insn);
+
+      if (!insn || GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+	goto done;
+
+      /* Let Haifa tell us where it thinks insn group boundaries are.  */
+      if (GET_MODE (insn) == TImode)
+	goto done;
+
+      if (GET_CODE (insn) == CLOBBER || GET_CODE (insn) == USE)
+	goto next;
+    }
+
+ next_and_done:
+  insn = next_nonnote_insn (insn);
+
+ done:
+  *plen = len;
+  *pin_use = in_use;
+  return insn;
+}
+
+/* IN_USE is a mask of the slots currently filled within the insn group. 
+   The mask bits come from alphaev5_pipe above.  If EV5_E01 is set, then
+   the insn in EV5_E0 can be swapped by the hardware into EV5_E1. 
 
    LEN is, of course, the length of the group in bytes.  */
 
@@ -4402,7 +4570,7 @@ alphaev5_next_group (insn, pin_use, plen)
 	case EV5_E0:
 	  if (in_use & EV5_E0)
 	    {
-	      if (!(in_use & EV5_E01) || in_use & EV5_E1)
+	      if (!(in_use & EV5_E01) || (in_use & EV5_E1))
 		goto done;
 	      in_use |= EV5_E1;
 	    }
@@ -4475,9 +4643,73 @@ alphaev5_next_group (insn, pin_use, plen)
   return insn;
 }
 
+static rtx
+alphaev4_next_nop (pin_use)
+     int *pin_use;
+{
+  int in_use = *pin_use;
+  rtx nop;
+
+  if (!(in_use & EV4_IB0))
+    {
+      in_use |= EV4_IB0;
+      nop = gen_nop ();
+    }
+  else if ((in_use & (EV4_IBX|EV4_IB1)) == EV4_IBX)
+    {
+      in_use |= EV4_IB1;
+      nop = gen_nop ();
+    }
+  else if (TARGET_FP && !(in_use & EV4_IB1))
+    {
+      in_use |= EV4_IB1;
+      nop = gen_fnop ();
+    }
+  else
+    nop = gen_unop ();
+
+  *pin_use = in_use;
+  return nop;
+}
+
+static rtx
+alphaev5_next_nop (pin_use)
+     int *pin_use;
+{
+  int in_use = *pin_use;
+  rtx nop;
+
+  if (!(in_use & EV5_E1))
+    {
+      in_use |= EV5_E1;
+      nop = gen_nop ();
+    }
+  else if (TARGET_FP && !(in_use & EV5_FA))
+    {
+      in_use |= EV5_FA;
+      nop = gen_fnop ();
+    }
+  else if (TARGET_FP && !(in_use & EV5_FM))
+    {
+      in_use |= EV5_FM;
+      nop = gen_fnop ();
+    }
+  else
+    nop = gen_unop ();
+
+  *pin_use = in_use;
+  return nop;
+}
+
+/* The instruction group alignment main loop.  */
+
 static void
-alphaev5_align_insns (insns)
+alpha_align_insns (insns, max_align, next_group, next_nop, gp_in_use)
      rtx insns;
+     int max_align;
+     rtx (*next_group) PROTO((rtx, int*, int*));
+     rtx (*next_nop) PROTO((int*));
+     int gp_in_use;
 {
   /* ALIGN is the known alignment for the insn group.  */
   int align;
@@ -4489,14 +4721,17 @@ alphaev5_align_insns (insns)
   /* Let shorten branches care for assigning alignments to code labels.  */
   shorten_branches (insns);
 
+  /* Account for the initial GP load, which happens before the scheduled
+     prologue we emitted as RTL.  */
   ofs = prev_in_use = 0;
   if (alpha_does_function_need_gp())
     {
       ofs = 8;
-      prev_in_use = EV5_E01 | EV5_E0;
+      prev_in_use = gp_in_use;
     }
-  align = (FUNCTION_BOUNDARY/BITS_PER_UNIT < 16
-	   ? FUNCTION_BOUNDARY/BITS_PER_UNIT : 16);
+
+  align = (FUNCTION_BOUNDARY/BITS_PER_UNIT < max_align
+	   ? FUNCTION_BOUNDARY/BITS_PER_UNIT : max_align);
 
   i = insns;
   if (GET_CODE (i) == NOTE)
@@ -4504,7 +4739,7 @@ alphaev5_align_insns (insns)
 
   while (i)
     {
-      next = alphaev5_next_group (i, &in_use, &len);
+      next = (*next_group)(i, &in_use, &len);
 
       /* When we see a label, resync alignment etc.  */
       if (GET_CODE (i) == CODE_LABEL)
@@ -4512,7 +4747,7 @@ alphaev5_align_insns (insns)
 	  int new_align = 1 << label_to_alignment (i);
 	  if (new_align >= align)
 	    {
-	      align = new_align < 16 ? new_align : 16;
+	      align = new_align < max_align ? new_align : max_align;
 	      ofs = 0;
 	    }
 	  else if (ofs & (new_align-1))
@@ -4562,30 +4797,25 @@ alphaev5_align_insns (insns)
 	  int nop_count = (align - ofs) / 4;
 	  rtx where;
 
+	  /* Insert nops before labels and branches to truely merge the
+	     execution of the nops with the previous instruction group.  */
 	  where = prev_nonnote_insn (i);
-	  if (!where || GET_CODE (where) != CODE_LABEL)
+	  if (where)
+	    {
+	      if (GET_CODE (where) == CODE_LABEL)
+		{
+		  rtx where2 = prev_nonnote_insn (where);
+		  if (where2 && GET_CODE (where2) == JUMP_INSN)
+		    where = where2;
+		}
+	      else if (GET_CODE (where) != JUMP_INSN)
+		where = i;
+	    }
+	  else
 	    where = i;
 
 	  do 
-	    {
-	      if (!(prev_in_use & EV5_E1))
-		{
-		  prev_in_use |= EV5_E1;
-		  emit_insn_before (gen_nop(), where);
-		}
-	      else if (TARGET_FP && !(prev_in_use & EV5_FA))
-		{
-		  prev_in_use |= EV5_FA;
-		  emit_insn_before (gen_fnop(), where);
-		}
-	      else if (TARGET_FP && !(prev_in_use & EV5_FM))
-		{
-		  prev_in_use |= EV5_FM;
-		  emit_insn_before (gen_fnop(), where);
-		}
-	      else
-		emit_insn_before (gen_unop(), where);
-	    }
+	    emit_insn_before ((*next_nop)(&prev_in_use), where);
 	  while (--nop_count);
 	  ofs = 0;
 	}
@@ -4614,8 +4844,12 @@ alpha_reorg (insns)
       && alpha_tp != ALPHA_TP_INSN
       && flag_schedule_insns_after_reload)
     {
-      if (alpha_cpu == PROCESSOR_EV5)
-	alphaev5_align_insns (insns);
+      if (alpha_cpu == PROCESSOR_EV4)
+	alpha_align_insns (insns, 8, alphaev4_next_group,
+			   alphaev4_next_nop, EV4_IB0);
+      else if (alpha_cpu == PROCESSOR_EV5)
+	alpha_align_insns (insns, 16, alphaev5_next_group,
+			   alphaev5_next_nop, EV5_E01 | EV5_E0);
     }
 #endif
 }
