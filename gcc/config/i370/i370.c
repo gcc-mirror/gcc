@@ -85,7 +85,7 @@ int mvs_page_lit;
 char *mvs_function_name = 0;
 
 /* Current function name length.  */
-int mvs_function_name_length = 0;
+size_t mvs_function_name_length = 0;
 
 /* Page number for multi-page functions.  */
 int mvs_page_num = 0;

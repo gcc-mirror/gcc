@@ -54,7 +54,7 @@ extern char *mvs_function_name;
 
 /* The length of the function name malloc'd area.  */
 
-extern int mvs_function_name_length;
+extern size_t mvs_function_name_length;
 
 /* Compile using char instructions (mvc, nc, oc, xc).  On 4341 use this since
    these are more than twice as fast as load-op-store.

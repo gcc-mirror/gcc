@@ -422,9 +422,9 @@ extern int target_flags;
    library functions.  */
 #define CONSTANT_ALIGNMENT(EXP, ALIGN) \
   (TREE_CODE (EXP) == STRING_CST	\
-   && i960_object_bytes_bitalign (int_size_in_bytes (TREE_TYPE (EXP))) > (ALIGN) \
+   && i960_object_bytes_bitalign (int_size_in_bytes (TREE_TYPE (EXP))) > (int)(ALIGN) \
    ? i960_object_bytes_bitalign (int_size_in_bytes (TREE_TYPE (EXP)))	    \
-   : (ALIGN))
+   : (int)(ALIGN))
 
 /* Macros to determine size of aggregates (structures and unions
    in C).  Normally, these may be defined to simply return the maximum

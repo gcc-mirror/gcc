@@ -258,8 +258,7 @@ toc_section ()						\
    are placeholders which no longer have any use.  */
 
 #define ASM_DECLARE_FUNCTION_NAME(FILE,NAME,DECL)		\
-{ rtx sym_ref = XEXP (DECL_RTL (DECL), 0);			\
-  if (TREE_PUBLIC (DECL))					\
+{ if (TREE_PUBLIC (DECL))					\
     {								\
       if (!RS6000_WEAK || !DECL_WEAK (decl))			\
 	{							\
