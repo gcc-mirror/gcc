@@ -6073,13 +6073,8 @@ s390_va_arg (valist, type)
       reg = gpr;
       n_reg = (size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
       sav_ofs = 2 * UNITS_PER_WORD;
-      if (TARGET_64BIT)
-	sav_ofs += TYPE_MODE (type) == SImode ? 4 : 
-	           TYPE_MODE (type) == HImode ? 6 : 
-	           TYPE_MODE (type) == QImode ? 7 : 0;
-      else
-	sav_ofs += TYPE_MODE (type) == HImode ? 2 : 
-	           TYPE_MODE (type) == QImode ? 3 : 0;
+      if (size < UNITS_PER_WORD)
+	sav_ofs += UNITS_PER_WORD - size;
 
       sav_scale = UNITS_PER_WORD;
       if (n_reg > 1)
