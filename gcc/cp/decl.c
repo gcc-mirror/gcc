@@ -6546,6 +6546,10 @@ init_decl_processing ()
   void_ftype_ptr
     = build_exception_variant (void_ftype_ptr, empty_except_spec);
 
+#ifdef MD_INIT_BUILTINS
+  MD_INIT_BUILTINS;
+#endif
+
   /* C++ extensions */
 
   unknown_type_node = make_node (UNKNOWN_TYPE);

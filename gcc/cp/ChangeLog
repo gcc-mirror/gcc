@@ -1,3 +1,7 @@
+2000-10-21  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* decl.c (init_decl_processing): Call MD_INIT_BUILTINS.
+	
 2000-10-21  Jason Merrill  <jason@redhat.com>
 
 	* parse.y (operator): Set got_object from got_scope.
