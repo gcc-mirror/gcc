@@ -1,3 +1,8 @@
+Thu Jul 30 00:58:34 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* i386.md (movqi): When optimizing a load of (const_int 1) into a
+	NON_QI_REG_P, pretend the register is SImode.
+
 Wed Jul 29 23:49:23 1998  Todd Vierling <tv@netbsd.org>
 
 	* configure.in: Use xm-netbsd.h as the NetBSD xm file (not xm-siglist).
