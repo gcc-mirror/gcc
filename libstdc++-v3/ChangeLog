@@ -1,3 +1,12 @@
+2002-10-03  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR libstdc++/3584
+	* config/cpu/arm/atomicity.h (__exchange_and_add): Don't try to use
+	ASM sequences that don't give us atomic addition operations.  Instead
+	just add a comment explaining why it doesn't work.
+	(__atomic_add): Just use __exchange_and_add.
+	(__test_and_set, __always_swap): Delete.
+
 2002-10-02  Andreas Jaeger  <aj@suse.de>
 
 	* config/abi/x86_64-unknown-linux-gnu/baseline_symbols.txt:
