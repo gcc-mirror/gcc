@@ -1,3 +1,8 @@
+Fri Apr  9 13:41:04 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* Makefile.in (check-g++, check-gcc, check-g77, check-objc): Add
+	cd .. to TCL_LIBRARY command.
+
 Fri Apr  9 13:04:52 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/unknown-elf.h (SUBTARGET_CPU_DEFAULT): Only define if
