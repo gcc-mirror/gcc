@@ -68,7 +68,6 @@ static void avr_file_start (void);
 static void avr_file_end (void);
 static void avr_output_function_prologue (FILE *, HOST_WIDE_INT);
 static void avr_output_function_epilogue (FILE *, HOST_WIDE_INT);
-static void avr_unique_section (tree, int);
 static void avr_insert_attributes (tree, tree *);
 static unsigned int avr_section_type_flags (tree, const char *, int);
 
@@ -231,8 +230,6 @@ int avr_case_values_threshold = 30000;
 #define TARGET_ASM_FUNCTION_EPILOGUE avr_output_function_epilogue
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE avr_attribute_table
-#undef TARGET_ASM_UNIQUE_SECTION
-#define TARGET_ASM_UNIQUE_SECTION avr_unique_section
 #undef TARGET_ASM_FUNCTION_RODATA_SECTION
 #define TARGET_ASM_FUNCTION_RODATA_SECTION default_no_function_rodata_section
 #undef TARGET_INSERT_ATTRIBUTES
@@ -4355,38 +4352,6 @@ avr_assemble_integer (rtx x, unsigned int size, int aligned_p)
     }
   return default_assemble_integer (x, size, aligned_p);
 }
-
-/* Sets section name for declaration DECL.  */
-  
-static void
-avr_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED)
-{
-  int len;
-  const char *name, *prefix;
-  char *string;
-
-  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-  name = (* targetm.strip_name_encoding) (name);
-
-  if (TREE_CODE (decl) == FUNCTION_DECL)
-    {
-      if (flag_function_sections)
-	prefix = ".text.";
-      else
-	prefix = ".text";
-    }
-  else 
-    abort ();
-
-  if (flag_function_sections)
-    {
-      len = strlen (name) + strlen (prefix);
-      string = alloca (len + 1);
-      sprintf (string, "%s%s", prefix, name);
-      DECL_SECTION_NAME (decl) = build_string (len, string);
-    }
-}
-
 
 /* The routine used to output NUL terminated strings.  We use a special
    version of this for most svr4 targets because doing so makes the
