@@ -33,8 +33,12 @@
 /* Non-recursive so we don't waste stack space/time on large
    insertions. */
 
-void *
-ternary_insert (ternary_tree * root, char *s, void *data, int replace)
+PTR
+ternary_insert (root, s, data, replace)
+     ternary_tree *root;
+     const char *s;
+     PTR data;
+     int replace;
 {
   int diff;
   ternary_tree curr, *pcurr;
@@ -54,7 +58,7 @@ ternary_insert (ternary_tree * root, char *s, void *data, int replace)
 	    {
 	      if (replace)
 		curr->eqkid = (ternary_tree) data;
-	      return (void *) curr->eqkid;
+	      return (PTR) curr->eqkid;
 	    }
 	  pcurr = &(curr->eqkid);
 	}
@@ -94,7 +98,8 @@ ternary_insert (ternary_tree * root, char *s, void *data, int replace)
 
 /* Free the ternary search tree rooted at p. */
 void
-ternary_cleanup (ternary_tree p)
+ternary_cleanup (p)
+     ternary_tree p;
 {
   if (p)
     {
@@ -107,10 +112,12 @@ ternary_cleanup (ternary_tree p)
 }
 
 /* Non-recursive find of a string in the ternary tree */
-void *
-ternary_search (ternary_tree p, char *s)
+PTR
+ternary_search (p, s)
+     const ternary_node *p;
+     const char *s;
 {
-  ternary_tree curr;
+  const ternary_node *curr;
   int diff, spchar;
   spchar = *s;
   curr = p;
@@ -123,7 +130,7 @@ ternary_search (ternary_tree p, char *s)
       if (diff == 0)
 	{
 	  if (spchar == 0)
-	    return (void *) curr->eqkid;
+	    return (PTR) curr->eqkid;
 	  spchar = *++s;
 	  curr = curr->eqkid;
 	}
@@ -139,8 +146,10 @@ ternary_search (ternary_tree p, char *s)
 
 /* For those who care, the recursive version of the search. Useful if
    you want a starting point for pmsearch or nearsearch. */
-static void *
-ternary_recursivesearch (ternary_tree p, char *s)
+static PTR
+ternary_recursivesearch (p, s)
+     const ternary_node *p;
+     const char *s;
 {
   if (!p)
     return 0;
@@ -151,7 +160,7 @@ ternary_recursivesearch (ternary_tree p, char *s)
   else
     {
       if (*s == 0)
-	return (void *) p->eqkid;
+	return (PTR) p->eqkid;
       return ternary_recursivesearch (p->eqkid, ++s);
     }
 }

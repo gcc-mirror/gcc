@@ -139,7 +139,8 @@ enum gnu_v3_ctor_kinds {
    in the G++ V3 ABI demangling style.  Specifically, return an `enum
    gnu_v3_ctor_kinds' value indicating what kind of constructor
    it is.  */
-extern enum gnu_v3_ctor_kinds is_gnu_v3_mangled_ctor (const char *name);
+extern enum gnu_v3_ctor_kinds
+	is_gnu_v3_mangled_ctor PARAMS ((const char *name));
 
 
 enum gnu_v3_dtor_kinds {
@@ -152,6 +153,7 @@ enum gnu_v3_dtor_kinds {
    in the G++ V3 ABI demangling style.  Specifically, return an `enum
    gnu_v3_dtor_kinds' value, indicating what kind of destructor
    it is.  */
-extern enum gnu_v3_dtor_kinds is_gnu_v3_mangled_dtor (const char *name);
+extern enum gnu_v3_dtor_kinds
+	is_gnu_v3_mangled_dtor PARAMS ((const char *name));
 
 #endif	/* DEMANGLE_H */

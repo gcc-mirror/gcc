@@ -1,3 +1,9 @@
+2001-05-07  Zack Weinberg  <zackw@stanford.edu>
+
+	* demangle.h: Use PARAMS for all prototypes.
+	* ternary.h: Use PARAMS for all prototypes.  Use PTR, not void *.
+	Make arguments constant where possible.
+
 2001-05-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* splay-tree.h (splay_tree_max): New function.
