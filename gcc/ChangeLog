@@ -1,3 +1,8 @@
+2001-12-03  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-typeck.c (really_start_incremental_init, push_init_level):
+	Avoid constructor_max_index being other than an INTEGER_CST.
+
 2001-12-02  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/xcoff.h (ASM_OUTPUT_INTERNAL_LABEL): Display count

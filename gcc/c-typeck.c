@@ -5259,6 +5259,13 @@ really_start_incremental_init (type)
 	      && TYPE_SIZE (constructor_type))
 	    constructor_max_index = build_int_2 (-1, -1);
 
+	  /* constructor_max_index needs to be an INTEGER_CST.  Attempts
+	     to initialize VLAs will cause an proper error; avoid tree
+	     checking errors as well by setting a safe value.  */
+	  if (constructor_max_index
+	      && TREE_CODE (constructor_max_index) != INTEGER_CST)
+	    constructor_max_index = build_int_2 (-1, -1);
+
 	  constructor_index
 	    = convert (bitsizetype,
 		       TYPE_MIN_VALUE (TYPE_DOMAIN (constructor_type)));
@@ -5424,6 +5431,13 @@ push_init_level (implicit)
 	  /* Detect non-empty initializations of zero-length arrays.  */
 	  if (constructor_max_index == NULL_TREE
 	      && TYPE_SIZE (constructor_type))
+	    constructor_max_index = build_int_2 (-1, -1);
+
+	  /* constructor_max_index needs to be an INTEGER_CST.  Attempts
+	     to initialize VLAs will cause an proper error; avoid tree
+	     checking errors as well by setting a safe value.  */
+	  if (constructor_max_index
+	      && TREE_CODE (constructor_max_index) != INTEGER_CST)
 	    constructor_max_index = build_int_2 (-1, -1);
 
 	  constructor_index
