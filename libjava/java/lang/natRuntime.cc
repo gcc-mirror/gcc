@@ -17,6 +17,7 @@ details.  */
 #include <java/lang/Runtime.h>
 #include <java/lang/UnknownError.h>
 #include <java/lang/UnsatisfiedLinkError.h>
+#include <gnu/gcj/runtime/FileDeleter.h>
 
 #include <jni.h>
 
@@ -84,6 +85,9 @@ java::lang::Runtime::exit (jint status)
 
   if (finalize_on_exit)
     _Jv_RunAllFinalizers ();
+
+  // Delete all files registered with File.deleteOnExit()
+  gnu::gcj::runtime::FileDeleter::deleteOnExitNow ();
 
   ::exit (status);
 }
