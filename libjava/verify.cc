@@ -491,6 +491,23 @@ private:
       return type (k);
     }
 
+    // Return the array type corresponding to an initialized
+    // reference.  We could expand this to work for other kinds of
+    // types, but currently we don't need to.
+    type to_array ()
+    {
+      // Resolving isn't ideal, because it might force us to load
+      // another class, but it's easy.  FIXME?
+      if (key == unresolved_reference_type)
+	resolve ();
+
+      if (key == reference_type)
+	return type (_Jv_GetArrayClass (data.klass,
+					data.klass->getClassLoader ()));
+      else
+	verify_fail ("internal error in type::to_array()");
+    }
+
     bool isreference () const
     {
       return key >= reference_type;
@@ -2426,7 +2443,7 @@ private:
 	    break;
 	  case op_anewarray:
 	    pop_type (int_type);
-	    push_type (check_class_constant (get_ushort ()));
+	    push_type (check_class_constant (get_ushort ()).to_array ());
 	    break;
 	  case op_arraylength:
 	    {
