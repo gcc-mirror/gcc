@@ -1,3 +1,19 @@
+2002-12-26  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/i386/athlon.md: Fix comment typos.
+	* config/i386/crtdll.h: Likewise.
+	* config/i386/djgpp.h: Likewise.
+	* config/i386/i386-interix.h: Likewise.
+	* config/i386/i386.c: Likewise.
+	* config/i386/i386.h: Likewise.
+	* config/i386/i386.md: Likewise.
+	* config/i386/k6.md: Likewise.
+	* config/i386/mingw32.h: Likewise.
+	* config/i386/pentium.md: Likewise.
+	* config/i386/sco5.h: Likewise.
+	* config/i386/winnt.c: Likewise.
+	* config/i386/xmmintrin.h: Likewise.
+
 2002-12-26  Jose Renau <renau@cs.uiuc.edu>
 
 	* ssa-dce.c (EXECUTE_IF_UNNECESSARY): Verify INSN is an

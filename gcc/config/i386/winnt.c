@@ -579,7 +579,7 @@ i386_pe_unique_section (decl, reloc)
    If the section has already been defined, to not allow it to have
    different attributes, as (1) this is ambiguous since we're not seeing
    all the declarations up front and (2) some assemblers (e.g. SVR4)
-   do not recoginize section redefinitions.  */
+   do not recognize section redefinitions.  */
 /* ??? This differs from the "standard" PE implementation in that we
    handle the SHARED variable attribute.  Should this be done for all
    PE targets?  */

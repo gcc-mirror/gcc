@@ -63,7 +63,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Define standard DJGPP installation paths.                             */
 /* We override default /usr or /usr/local part with /dev/env/DJDIR which */
-/* points to actual DJGPP instalation directory.                         */
+/* points to actual DJGPP installation directory.                        */
 
 /* Standard include directory */
 #undef STANDARD_INCLUDE_DIR

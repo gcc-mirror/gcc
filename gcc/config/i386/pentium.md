@@ -34,7 +34,7 @@
 ;; while MMX Pentium can slot it on either U or V.  Model non-MMX Pentium
 ;; rules, because it results in noticeably better code on non-MMX Pentium
 ;; and doesn't hurt much on MMX.  (Prefixed instructions are not very
-;; common, so the scheduler usualy has a non-prefixed insn to pair).
+;; common, so the scheduler usually has a non-prefixed insn to pair).
 
 (define_attr "pent_pair" "uv,pu,pv,np"
   (cond [(eq_attr "imm_disp" "true")
@@ -71,7 +71,7 @@
 (define_automaton "pentium,pentium_fpu")
 
 ;; Pentium do have U and V pipes.  Instruction to both pipes
-;; are alwyas issued together, much like on VLIW.
+;; are always issued together, much like on VLIW.
 ;;
 ;;                    predecode
 ;;                   /         \

@@ -36,7 +36,7 @@ Boston, MA 02111-1307, USA.  */
 /* By default, target has a 80387, uses IEEE compatible arithmetic,
    and returns float values in the 387 and needs stack probes
    We also align doubles to 64-bits for MSVC default compatibility
-   We do bitfields MSVC-compatably by default, too. */
+   We do bitfields MSVC-compatibly by default, too. */
 #undef TARGET_SUBTARGET_DEFAULT
 #define TARGET_SUBTARGET_DEFAULT \
    (MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS | MASK_STACK_PROBE | \
