@@ -1,3 +1,10 @@
+2004-02-06  Roger Sayle  <roger@eyesopen.com>
+	    Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* builtins.c (expand_builtin_signbit): Use extract_bit_field instead
+	of gen_highpart or gen_lowpart when the floating point format is
+	wider than the result mode.
+
 2004-02-06  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* dwarf2out.c (loclabel_num): Move into #ifdef 

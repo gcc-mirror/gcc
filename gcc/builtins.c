@@ -4986,34 +4986,35 @@ expand_builtin_signbit (tree exp, rtx target)
   temp = expand_expr (arg, NULL_RTX, VOIDmode, 0);
   temp = gen_lowpart (imode, temp);
 
-  if (GET_MODE_BITSIZE (imode) < GET_MODE_BITSIZE (rmode))
-    temp = gen_lowpart (rmode, temp);
-  else if (GET_MODE_BITSIZE (imode) > GET_MODE_BITSIZE (rmode))
+  if (GET_MODE_BITSIZE (imode) > GET_MODE_BITSIZE (rmode))
     {
-      if (bitpos > GET_MODE_BITSIZE (rmode))
-	{
-	  temp = gen_highpart (rmode, temp);
-	  bitpos %= GET_MODE_BITSIZE (rmode);
-	}
-      else
-	temp = gen_lowpart (rmode, temp);
-    }
-
-  if (bitpos < HOST_BITS_PER_WIDE_INT)
-    {
-      hi = 0;
-      lo = (HOST_WIDE_INT) 1 << bitpos;
+      if (BITS_BIG_ENDIAN)
+	bitpos = GET_MODE_BITSIZE (imode) - 1 - bitpos;
+      temp = copy_to_mode_reg (imode, temp);
+      temp = extract_bit_field (temp, 1, bitpos, 1,
+				NULL_RTX, rmode, rmode,
+				GET_MODE_SIZE (imode));
     }
   else
     {
-      hi = (HOST_WIDE_INT) 1 << (bitpos - HOST_BITS_PER_WIDE_INT);
-      lo = 0;
-    }
+      if (GET_MODE_BITSIZE (imode) < GET_MODE_BITSIZE (rmode))
+	temp = gen_lowpart (rmode, temp);
+      if (bitpos < HOST_BITS_PER_WIDE_INT)
+	{
+	  hi = 0;
+	  lo = (HOST_WIDE_INT) 1 << bitpos;
+	}
+      else
+	{
+	  hi = (HOST_WIDE_INT) 1 << (bitpos - HOST_BITS_PER_WIDE_INT);
+	  lo = 0;
+	}
 
-  temp = force_reg (rmode, temp);
-  temp = expand_binop (rmode, and_optab, temp,
-		       immed_double_const (lo, hi, rmode),
-		       target, 1, OPTAB_LIB_WIDEN);
+      temp = force_reg (rmode, temp);
+      temp = expand_binop (rmode, and_optab, temp,
+			   immed_double_const (lo, hi, rmode),
+			   target, 1, OPTAB_LIB_WIDEN);
+    }
   return temp;
 }
 
