@@ -81,33 +81,33 @@ namespace std
       { return this->do_toupper(__c); }
 
       const char_type*
-      toupper(char_type *__low, const char_type* __high) const
-      { return this->do_toupper(__low, __high); }
+      toupper(char_type *__lo, const char_type* __hi) const
+      { return this->do_toupper(__lo, __hi); }
 
       char_type 
       tolower(char_type __c) const
       { return this->do_tolower(__c); }
 
       const char_type*
-      tolower(char_type* __low, const char_type* __high) const
-      { return this->do_tolower(__low, __high); }
+      tolower(char_type* __lo, const char_type* __hi) const
+      { return this->do_tolower(__lo, __hi); }
 
       char_type 
       widen(char __c) const
       { return this->do_widen(__c); }
 
       const char*
-      widen(const char* __low, const char* __high, char_type* __to) const
-      { return this->do_widen(__low, __high, __to); }
+      widen(const char* __lo, const char* __hi, char_type* __to) const
+      { return this->do_widen(__lo, __hi, __to); }
 
       char 
       narrow(char_type __c, char __dfault) const
       { return this->do_narrow(__c, __dfault); }
 
       const char_type*
-      narrow(const char_type* __low, const char_type* __high,
+      narrow(const char_type* __lo, const char_type* __hi,
 	      char __dfault, char *__to) const
-      { return this->do_narrow(__low, __high, __dfault, __to); }
+      { return this->do_narrow(__lo, __hi, __dfault, __to); }
 
     protected:
       explicit 
@@ -124,7 +124,7 @@ namespace std
 	    mask* __vec) const = 0;
 
       virtual const char_type*
-      do_scan_is(mask __m, const char_type* __lo, 
+      do_scan_is(mask __m, const char_type* __lo,
 		 const char_type* __hi) const = 0;
 
       virtual const char_type*
@@ -135,26 +135,26 @@ namespace std
       do_toupper(char_type) const = 0;
 
       virtual const char_type*
-      do_toupper(char_type* __low, const char_type* __high) const = 0;
+      do_toupper(char_type* __lo, const char_type* __hi) const = 0;
 
       virtual char_type 
       do_tolower(char_type) const = 0;
 
       virtual const char_type*
-      do_tolower(char_type* __low, const char_type* __high) const = 0;
+      do_tolower(char_type* __lo, const char_type* __hi) const = 0;
       
       virtual char_type 
       do_widen(char) const = 0;
 
       virtual const char*
-      do_widen(const char* __low, const char* __high,
+      do_widen(const char* __lo, const char* __hi, 
 	       char_type* __dest) const = 0;
 
       virtual char 
       do_narrow(char_type, char __dfault) const = 0;
 
       virtual const char_type*
-      do_narrow(const char_type* __low, const char_type* __high,
+      do_narrow(const char_type* __lo, const char_type* __hi,
 		 char __dfault, char* __dest) const = 0;
     };
 
@@ -175,6 +175,56 @@ namespace std
    protected:
       virtual 
       ~ctype() { }
+
+      virtual bool 
+      do_is(mask __m, char_type __c) const
+      { return false; }
+
+      virtual const char_type*
+      do_is(const char_type* __lo, const char_type* __hi, mask* __vec) const
+      { return __hi; }
+
+      virtual const char_type*
+      do_scan_is(mask __m, const char_type* __lo, const char_type* __hi) const
+      { return __hi; }
+
+      virtual const char_type*
+      do_scan_not(mask __m, const char_type* __lo,
+		  const char_type* __hi) const
+      { return __hi; }
+
+      virtual char_type 
+      do_toupper(char_type __c) const
+      { return __c; }
+
+      virtual const char_type*
+      do_toupper(char_type* __lo, const char_type* __hi) const
+      { return __hi; }
+
+      virtual char_type 
+      do_tolower(char_type __c) const
+      { return __c; }
+
+      virtual const char_type*
+      do_tolower(char_type* __lo, const char_type* __hi) const
+      { return __hi; }
+      
+      virtual char_type 
+      do_widen(char __c) const
+      { return char_type(); }
+
+      virtual const char*
+      do_widen(const char* __lo, const char* __hi, char_type* __dest) const
+      { return __hi; }
+
+      virtual char 
+      do_narrow(char_type, char __dfault) const
+      { return __dfault; }
+
+      virtual const char_type*
+      do_narrow(const char_type* __lo, const char_type* __hi,
+		char __dfault, char* __dest) const
+      { return __hi; }
     };
 
   template<typename _CharT>
@@ -207,13 +257,13 @@ namespace std
       is(mask __m, char __c) const;
  
       inline const char*
-      is(const char* __low, const char* __high, mask* __vec) const;
+      is(const char* __lo, const char* __hi, mask* __vec) const;
  
       inline const char*
-      scan_is(mask __m, const char* __low, const char* __high) const;
+      scan_is(mask __m, const char* __lo, const char* __hi) const;
 
       inline const char*
-      scan_not(mask __m, const char* __low, const char* __high) const;
+      scan_not(mask __m, const char* __lo, const char* __hi) const;
      
     protected:
       virtual 
@@ -231,12 +281,10 @@ namespace std
       do_is(mask __m, char_type __c) const;
 
       virtual const char_type*
-      do_is(const char_type* __lo, const char_type* __hi, 
-	    mask* __vec) const;
+      do_is(const char_type* __lo, const char_type* __hi, mask* __vec) const;
 
       virtual const char_type*
-      do_scan_is(mask __m, const char_type* __lo, 
-		 const char_type* __hi) const;
+      do_scan_is(mask __m, const char_type* __lo, const char_type* __hi) const;
 
       virtual const char_type*
       do_scan_not(mask __m, const char_type* __lo, 
@@ -246,26 +294,25 @@ namespace std
       do_toupper(char_type) const;
 
       virtual const char_type*
-      do_toupper(char_type* __low, const char_type* __high) const;
+      do_toupper(char_type* __lo, const char_type* __hi) const;
 
       virtual char_type 
       do_tolower(char_type) const;
 
       virtual const char_type*
-      do_tolower(char_type* __low, const char_type* __high) const;
+      do_tolower(char_type* __lo, const char_type* __hi) const;
       
       virtual char_type 
       do_widen(char) const;
 
       virtual const char*
-      do_widen(const char* __low, const char* __high,
-	       char_type* __dest) const;
+      do_widen(const char* __lo, const char* __hi, char_type* __dest) const;
 
       virtual char 
       do_narrow(char_type, char __dfault) const;
 
       virtual const char_type*
-      do_narrow(const char_type* __low, const char_type* __high,
+      do_narrow(const char_type* __lo, const char_type* __hi,
 		 char __dfault, char* __dest) const;
     };
  
@@ -300,12 +347,10 @@ namespace std
       do_is(mask __m, char_type __c) const;
 
       virtual const char_type*
-      do_is(const char_type* __lo, const char_type* __hi, 
-	    mask* __vec) const;
+      do_is(const char_type* __lo, const char_type* __hi, mask* __vec) const;
 
       virtual const char_type*
-      do_scan_is(mask __m, const char_type* __lo, 
-		 const char_type* __hi) const;
+      do_scan_is(mask __m, const char_type* __lo, const char_type* __hi) const;
 
       virtual const char_type*
       do_scan_not(mask __m, const char_type* __lo, 
@@ -315,26 +360,25 @@ namespace std
       do_toupper(char_type) const;
 
       virtual const char_type*
-      do_toupper(char_type* __low, const char_type* __high) const;
+      do_toupper(char_type* __lo, const char_type* __hi) const;
 
       virtual char_type 
       do_tolower(char_type) const;
 
       virtual const char_type*
-      do_tolower(char_type* __low, const char_type* __high) const;
+      do_tolower(char_type* __lo, const char_type* __hi) const;
       
       virtual char_type 
       do_widen(char) const;
 
       virtual const char*
-      do_widen(const char* __low, const char* __high,
-	       char_type* __dest) const;
+      do_widen(const char* __lo, const char* __hi, char_type* __dest) const;
 
       virtual char 
       do_narrow(char_type, char __dfault) const;
 
       virtual const char_type*
-      do_narrow(const char_type* __low, const char_type* __high,
+      do_narrow(const char_type* __lo, const char_type* __hi,
 		 char __dfault, char* __dest) const;
 
     };
