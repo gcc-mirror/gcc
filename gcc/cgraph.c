@@ -239,13 +239,13 @@ cgraph_remove_node (struct cgraph_node *node)
 void
 cgraph_mark_reachable_node (struct cgraph_node *node)
 {
-  if (!node->reachable && DECL_SAVED_TREE (node->decl))
+  if (!node->reachable && node->local.finalized)
     {
+      notice_global_symbol (node->decl);
       node->reachable = 1;
 
       node->next_needed = cgraph_nodes_queue;
       cgraph_nodes_queue = node;
-      notice_global_symbol (node->decl);
 
       /* At the moment frontend automatically emits all nested functions.  */
       if (node->nested)
@@ -486,6 +486,7 @@ cgraph_varpool_finalize_decl (tree decl)
     {
       node->next_needed = cgraph_varpool_nodes_queue;
       cgraph_varpool_nodes_queue = node;
+      notice_global_symbol (decl);
     }
   node->finalized = true;
 

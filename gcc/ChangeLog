@@ -3,6 +3,10 @@ Sun Sep  7 00:22:22 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* toplev.c  (rest_of_decl_compilation):  Do not finalize external
 	virables. 
 
+	* cgraph.c (cgraph_mark_reachable_node): Only enqueue finalized
+	functions.
+	(cgraph_varpool_finalize_decl): Notice global symbol when needed.
+
 Sat Sep  6 23:49:13 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	PR target/12070
