@@ -1,5 +1,9 @@
 2003-11-19  Andreas Krebbel  <krebbel1@de.ibm.com>
 
+	* stmt.c (expand_goto): Memory clobbers added.
+
+2003-11-19  Andreas Krebbel  <krebbel1@de.ibm.com>
+
 	* reload.c (find_reloads): Added missing type casts.
 
 2003-11-19  James E Wilson  <wilson@specifixinc.com>
