@@ -1,3 +1,7 @@
+2000-05-27  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* Make-lang.in (cplib2.ready): Eradicate.
+
 Sat May 27 11:25:46 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* method.c (mangle_expression): Use TREE_CODE_LENGTH.

@@ -178,7 +178,7 @@ vec.o: cc1plus$(exeext) $(srcdir)/cp/vec.cc
 	  -c $(srcdir)/cp/vec.cc -o vec.o
 
 # We want to update cplib2.txt if any of the source files change...
-cplib2.txt: $(CXX_LIB2SRCS) $(CXX_EXTRA_HEADERS) cplib2.ready
+cplib2.txt: $(CXX_LIB2SRCS) $(CXX_EXTRA_HEADERS)
 	case " $(LANGUAGES) " in \
 	*" "[cC]"++ "*) \
 	  echo $(CXX_LIB2FUNCS) > cplib2.new;; \
@@ -187,27 +187,6 @@ cplib2.txt: $(CXX_LIB2SRCS) $(CXX_EXTRA_HEADERS) cplib2.ready
 	esac
 	mv -f cplib2.new cplib2.txt 
 
-# Or if it would be different.
-# Don't try to do write if `.' is not writable;
-# in that case, we're installing from someone else's directory.
-# But go ahead and fail if that directory hasn't been properly built.
-cplib2.ready: $(GCC_PASSES) stmp-int-hdrs $(STMP_FIXPROTO) cc1plus$(exeext)
-	@if [ -r cplib2.txt -a -w . ]; then \
-	  case " $(LANGUAGES) " in \
-	  *" "[cC]"++ "*) \
-	    echo $(CXX_LIB2FUNCS) > cplib2.new;; \
-	  *) \
-	    echo "" > cplib2.new;; \
-	  esac; \
-	  if cmp -s cplib2.new cplib2.txt; then true; else \
-	    touch cplib2.ready; \
-	  fi; \
-	  rm -f cplib2.new; \
-	else true ; \
-	fi
-	@if [ -f cplib2.ready ]; then true; else \
-	  touch cplib2.ready; \
-	fi
 #
 # Install hooks:
 # cc1plus is installed elsewhere as part of $(COMPILERS).
@@ -277,7 +256,7 @@ c++.uninstall:
 c++.mostlyclean:
 	-rm -f cp/*$(objext) $(DEMANGLER_PROG)
 c++.clean:
-	-rm -f cplib2.txt cplib2.ready
+	-rm -f cplib2.txt
 c++.distclean:
 	-rm -f cp/config.status cp/Makefile
 	-rm -f cp/parse.output
