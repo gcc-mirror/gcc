@@ -7882,9 +7882,18 @@ cp_parser_template_id (cp_parser *parser,
    template-name:
      identifier
      operator-function-id
-     conversion-function-id
 
    A defect report has been filed about this issue.
+
+   A conversion-function-id cannot be a template name because they cannot
+   be part of a template-id. In fact, looking at this code:
+
+   a.operator K<int>()
+
+   the conversion-function-id is "operator K<int>", and K<int> is a type-id.
+   It is impossible to call a templated conversion-function-id with an 
+   explicit argument list, since the only allowed template parameter is
+   the type to which it is converting.
 
    If TEMPLATE_KEYWORD_P is true, then we have just seen the
    `template' keyword, in a construction like:
@@ -7922,7 +7931,10 @@ cp_parser_template_name (cp_parser* parser,
       identifier = cp_parser_operator_function_id (parser);
       /* If that didn't work, try a conversion-function-id.  */
       if (!cp_parser_parse_definitely (parser))
-	identifier = cp_parser_conversion_function_id (parser);
+        {
+	  cp_parser_error (parser, "expected template-name");
+	  return error_mark_node;
+        }
     }
   /* Look for the identifier.  */
   else
@@ -8705,6 +8717,12 @@ cp_parser_simple_type_specifier (cp_parser* parser, cp_parser_flags flags,
 
       /* Consume the token.  */
       id = cp_lexer_consume_token (parser->lexer)->value;
+
+      /* There is no valid C++ program where a non-template type is
+	 followed by a "<".  That usually indicates that the user thought
+	 that the type was a template.  */
+      cp_parser_check_for_invalid_template_id (parser, type);
+
       return identifier_p ? id : TYPE_NAME (type);
     }
 

@@ -1,3 +1,11 @@
+2004-01-15  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/8856
+	* parser.c (cp_parser_template_name): Don't try to parse a 
+	conversion-function-id, as it cannot be a template-name.
+	(cp_parser_simple_type_specifier): Check for invalid template-ids
+	even after a built-in type.
+
 2004-01-14  Jan Hubicka  <jh@suse.cz>
 
 	PR c++/12850
