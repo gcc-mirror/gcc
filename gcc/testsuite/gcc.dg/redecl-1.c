@@ -74,7 +74,7 @@ void test5(void)
 
 /* Extern then static, both at file scope.  */
 
-extern int test6(int);		/* { dg-warning "previous" "" { xfail *-*-* } } */
+extern int test6(int);		/* { dg-warning "previous" "" } */
 static int test6(int x)			
 { return x; }			/* { dg-warning "follows non-static" } */
 
@@ -83,7 +83,7 @@ static int test6(int x)
 
 void prime7(void)
 {
-  extern int test7(int);	/* { dg-warning "previous" "" { xfail *-*-* } } */
+  extern int test7(int);	/* { dg-warning "previous" "" } */
 }
 
 static int test7(int x)
@@ -93,7 +93,7 @@ static int test7(int x)
 
 void prime8(void)
 {
-  test8();			/* { dg-warning "previous" "" { xfail *-*-* } } */
+  test8();			/* { dg-warning "previous" "" } */
                                 /* { dg-warning "implicit" "" { target *-*-* } 96 } */
 }
 

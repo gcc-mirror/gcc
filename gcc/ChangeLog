@@ -1,5 +1,16 @@
 2004-01-10  Zack Weinberg  <zack@codesourcery.com>
 
+	* c-decl.c (duplicate_decls): Break apart into...
+	(diagnose_arglist_conflict, validate_proto_after_old_defn)
+	(locate_old_defn, diagnose_mismatched_decls, merge_decls):
+	... these new functions.  Restructure for comprehensibility.
+	Remove various archaic special cases.  Always report the
+	location of the previous declaration when a diagnostic is issued.
+	(redeclaration_error_message): Fold into diagnose_mismatched_decls.
+	(match_builtin_function_types): Delete unnecessary forward declaration.
+
+2004-01-10  Zack Weinberg  <zack@codesourcery.com>
+
 	* genautomata.c (make_automaton, NDFA_to_DFA):
 	Print progress bars with '.' characters instead of '*'.
 	(build_automaton): Change notes to match.

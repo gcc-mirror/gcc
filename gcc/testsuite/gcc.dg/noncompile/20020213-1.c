@@ -24,7 +24,6 @@ int main ()
   return 0;
 }
 
-/* { dg-warning "passing arg 2 of" "2nd incompatible" { target *-*-* } 15 } */
 /* { dg-warning "passing arg 1 of" "1st incompatible" { target *-*-* } 16 } */
 /* { dg-warning "passing arg 2 of" "2nd incompatible" { target *-*-* } 16 } */
 /* { dg-warning "passing arg 1 of" "1st incompatible" { target *-*-* } 18 } */

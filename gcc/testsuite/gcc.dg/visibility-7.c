@@ -5,8 +5,8 @@
 
 extern int 
 __attribute__((visibility ("hidden")))
-xyzzy; /* { dg-warning "previous declaration here" "" } */
+xyzzy; /* { dg-warning "previous declaration" "" } */
 
 int 
 __attribute__((visibility ("protected")))
-xyzzy = 5; /* { dg-warning "visibility attribute ignored" "" } */
+xyzzy = 5; /* { dg-warning "different visibility" "" } */

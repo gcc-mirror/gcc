@@ -1,5 +1,12 @@
 2004-01-10  Zack Weinberg  <zack@codesourcery.com>
 
+	* gcc.dg/Wshadow-1.c, gcc.dg/attr-noinline.c, gcc.dg/decl3.c
+	* gcc.dg/redecl-1.c, gcc.dg/visibility-7.c, gcc.dg/wtr-static-1.c
+	* gcc.dg/noncompile/20020220-1.c, objc.dg/method-1.m:
+	Update dg-error regexps.
+
+2004-01-10  Zack Weinberg  <zack@codesourcery.com>
+
 	* gcc.c-torture/compile/20021123-2.c: Delete; dup of 20021120-1.c.
 	* gcc.c-torture/compile/20021123-3.c: Delete; dup of 20021120-2.c.
 
