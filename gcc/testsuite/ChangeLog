@@ -1,3 +1,8 @@
+2002-05-26  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gcc.dg/cpp/arith-1.c: New semantic tests.
+	* gcc.dg/cpp/if-1.c: Update.
+
 2002-05-24  Ben Elliston  <bje@redhat.com>
 
 	* lib/c-torture.exp (c-torture-execute): Handle multiple sources.
