@@ -1,3 +1,9 @@
+2002-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* cppinit.c (cpp_handle_option) [-dM]: Don't set no_output here...
+	(cpp_post_options): ...but here.  Disable -dD, -dN and -dI when
+	-M -or -MM is in effect.
+
 2002-04-25  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	PR c/5226

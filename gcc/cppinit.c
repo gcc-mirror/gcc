@@ -1440,7 +1440,6 @@ cpp_handle_option (pfile, argc, argv)
  		{
  		case 'M':
 		  CPP_OPTION (pfile, dump_macros) = dump_only;
-		  CPP_OPTION (pfile, no_output) = 1;
 		  break;
 		case 'N':
 		  CPP_OPTION (pfile, dump_macros) = dump_names;
@@ -1721,6 +1720,21 @@ cpp_post_options (pfile)
      preprocessed text.  */
   if (CPP_OPTION (pfile, preprocessed))
     pfile->state.prevent_expansion = 1;
+
+  /* -dM makes no normal output.  This is set here so that -dM -dD
+     works as expected.  */
+  if (CPP_OPTION (pfile, dump_macros) == dump_only)
+    CPP_OPTION (pfile, no_output) = 1;
+
+  /* Disable -dD, -dN and -dI if we should make no normal output
+     (such as with -M). Allow -M -dM since some software relies on
+     this.  */
+  if (CPP_OPTION (pfile, no_output))
+    {
+      if (CPP_OPTION (pfile, dump_macros) != dump_only)
+	CPP_OPTION (pfile, dump_macros) = dump_none;
+      CPP_OPTION (pfile, dump_includes) = 0;
+    }
 
   /* We need to do this after option processing and before
      cpp_start_read, as cppmain.c relies on the options->no_output to
