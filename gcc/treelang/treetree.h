@@ -1,10 +1,8 @@
-/* 
-
-    TREELANG Compiler definitions for interfacing to treetree.c
+/*  TREELANG Compiler definitions for interfacing to treetree.c
     (compiler back end interface).
 
-    Copyright (C) 1986, 87, 89, 92-96, 1997, 1999, 2000, 2001, 2002, 2003, 2004
-    Free Software Foundation, Inc.
+    Copyright (C) 1986, 87, 89, 92-96, 1997, 1999, 2000, 2001, 2002, 2003,
+    2004, 2005 Free Software Foundation, Inc.
 
     This program is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
@@ -28,9 +26,7 @@
     ---------------------------------------------------------------------------
 
     Written by Tim Josling 1999, 2000, 2001, based in part on other
-    parts of the GCC compiler.
-
- */
+    parts of the GCC compiler.  */
 
 tree tree_code_init_parameters (void);
 tree tree_code_add_parameter (tree list, tree proto_exp, tree exp);
@@ -69,5 +65,3 @@ void treelang_parse_file (int debug_flag);
 void push_var_level (void);
 void pop_var_level (void);
 const char* get_string (const char *s, size_t l);
-
-
