@@ -1,5 +1,5 @@
 /* Allocate registers within a basic block, for GNU compiler.
-   Copyright (C) 1987, 1988, 1991, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91, 93, 94, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2034,6 +2034,12 @@ wipe_dead_reg (reg, output_p)
 	    output_p = 1;
 	}
     }
+
+  /* If this register is used in an auto-increment address, then extend its
+     life to after this insn, so that it won't get allocated together with
+     the result of this insn.  */
+  if (! output_p && find_regno_note (this_insn, REG_INC, regno))
+    output_p = 1;
 
   if (regno < FIRST_PSEUDO_REGISTER)
     {
