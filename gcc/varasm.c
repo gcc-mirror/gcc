@@ -2540,38 +2540,35 @@ output_constant_def (exp)
      to see if any of them describes EXP.  If yes, the descriptor records
      the label number already assigned.  */
 
-  if (!output_bytecode)
+  hash = const_hash (exp) % MAX_HASH_TABLE;
+      
+  for (desc = const_hash_table[hash]; desc; desc = desc->next)
+    if (compare_constant (exp, desc))
+      {
+	found = desc->label;
+	break;
+      }
+      
+  if (found == 0)
     {
-      hash = const_hash (exp) % MAX_HASH_TABLE;
-      
-      for (desc = const_hash_table[hash]; desc; desc = desc->next)
-	if (compare_constant (exp, desc))
-	  {
-	    found = desc->label;
-	    break;
-	  }
-      
-      if (found == 0)
-	{
-	  /* No constant equal to EXP is known to have been output.
-	     Make a constant descriptor to enter EXP in the hash table.
-	     Assign the label number and record it in the descriptor for
-	     future calls to this function to find.  */
+      /* No constant equal to EXP is known to have been output.
+	 Make a constant descriptor to enter EXP in the hash table.
+	 Assign the label number and record it in the descriptor for
+	 future calls to this function to find.  */
 	  
-	  /* Create a string containing the label name, in LABEL.  */
-	  ASM_GENERATE_INTERNAL_LABEL (label, "LC", const_labelno);
-	  
-	  desc = record_constant (exp);
-	  desc->next = const_hash_table[hash];
-	  desc->label
-	    = (char *) obstack_copy0 (&permanent_obstack, label, strlen (label));
-	  const_hash_table[hash] = desc;
-	}
-      else
-	{
-	  /* Create a string containing the label name, in LABEL.  */
-	  ASM_GENERATE_INTERNAL_LABEL (label, "LC", const_labelno);
-	}
+      /* Create a string containing the label name, in LABEL.  */
+      ASM_GENERATE_INTERNAL_LABEL (label, "LC", const_labelno);
+
+      desc = record_constant (exp);
+      desc->next = const_hash_table[hash];
+      desc->label
+	= (char *) obstack_copy0 (&permanent_obstack, label, strlen (label));
+      const_hash_table[hash] = desc;
+    }
+  else
+    {
+      /* Create a string containing the label name, in LABEL.  */
+      ASM_GENERATE_INTERNAL_LABEL (label, "LC", const_labelno);
     }
   
   /* We have a symbol name; construct the SYMBOL_REF and the MEM.  */
@@ -2580,17 +2577,15 @@ output_constant_def (exp)
   if (TREE_PERMANENT (exp))
     end_temporary_allocation ();
 
-  if (!output_bytecode)
-    {
-      def = gen_rtx (SYMBOL_REF, Pmode, desc->label);
+  def = gen_rtx (SYMBOL_REF, Pmode, desc->label);
       
-      TREE_CST_RTL (exp)
-	= gen_rtx (MEM, TYPE_MODE (TREE_TYPE (exp)), def);
-      RTX_UNCHANGING_P (TREE_CST_RTL (exp)) = 1;
-      if (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE
-	  || TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE)
-	MEM_IN_STRUCT_P (TREE_CST_RTL (exp)) = 1;
-    }
+  TREE_CST_RTL (exp)
+    = gen_rtx (MEM, TYPE_MODE (TREE_TYPE (exp)), def);
+  RTX_UNCHANGING_P (TREE_CST_RTL (exp)) = 1;
+  if (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE
+      || TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE)
+    MEM_IN_STRUCT_P (TREE_CST_RTL (exp)) = 1;
+
   pop_obstacks ();
 
   /* Optionally set flags or add text to the name to record information
