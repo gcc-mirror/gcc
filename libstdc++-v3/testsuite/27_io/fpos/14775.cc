@@ -38,7 +38,7 @@ void test01()
   __gnu_test::set_file_limit(TWO_GB + 200);
 
   basic_filebuf<char> fb;
-  fb.open("tmp_14775", ios_base::out | ios_base::in | ios_base::trunc);
+  fb.open("14775_tmp", ios_base::out | ios_base::in | ios_base::trunc);
 
   pos_type ret = fb.pubseekoff(TWO_GB + 100, ios_base::beg);
   VERIFY( ret != pos_type(off_type(-1)) );

@@ -72036,7 +72036,7 @@ echo "$as_me: versioning on shared library symbols is $enable_symvers" >&6;}
 # This depends on GLIBCXX_ENABLE_SYMVERS and GLIBCXX_IS_NATIVE.
 
   if $GLIBCXX_IS_NATIVE && test $is_hosted = yes; then
-    # Do checks for memory limit functions.
+    # Do checks for resource limit functions.
 
   setrlimit_have_headers=yes
 
@@ -72248,7 +72248,7 @@ fi
 rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
 
 cat >>confdefs.h <<_ACEOF
-#define HAVE_MEMLIMIT_DATA $glibcxx_mresult
+#define HAVE_LIMIT_DATA $glibcxx_mresult
 _ACEOF
 
 
@@ -72303,7 +72303,7 @@ fi
 rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
 
 cat >>confdefs.h <<_ACEOF
-#define HAVE_MEMLIMIT_RSS $glibcxx_mresult
+#define HAVE_LIMIT_RSS $glibcxx_mresult
 _ACEOF
 
 
@@ -72358,7 +72358,7 @@ fi
 rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
 
 cat >>confdefs.h <<_ACEOF
-#define HAVE_MEMLIMIT_VMEM $glibcxx_mresult
+#define HAVE_LIMIT_VMEM $glibcxx_mresult
 _ACEOF
 
 
@@ -72413,7 +72413,62 @@ fi
 rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
 
 cat >>confdefs.h <<_ACEOF
-#define HAVE_MEMLIMIT_AS $glibcxx_mresult
+#define HAVE_LIMIT_AS $glibcxx_mresult
+_ACEOF
+
+
+
+  cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <unistd.h>
+     #include <sys/time.h>
+     #include <sys/resource.h>
+
+int
+main ()
+{
+ int f = RLIMIT_FSIZE ;
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  glibcxx_mresult=1
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+glibcxx_mresult=0
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_LIMIT_FSIZE $glibcxx_mresult
 _ACEOF
 
 
@@ -72477,19 +72532,19 @@ fi
 
   fi
 
-  echo "$as_me:$LINENO: checking for testsuite memory limit support" >&5
-echo $ECHO_N "checking for testsuite memory limit support... $ECHO_C" >&6
+  echo "$as_me:$LINENO: checking for testsuite resource limits support" >&5
+echo $ECHO_N "checking for testsuite resource limits support... $ECHO_C" >&6
   if test $setrlimit_have_headers = yes && test $ac_setrlimit = yes; then
-    ac_mem_limits=yes
+    ac_res_limits=yes
     cat >>confdefs.h <<\_ACEOF
-#define _GLIBCXX_MEM_LIMITS 1
+#define _GLIBCXX_RES_LIMITS 1
 _ACEOF
 
   else
-    ac_mem_limits=no
+    ac_res_limits=no
   fi
-  echo "$as_me:$LINENO: result: $ac_mem_limits" >&5
-echo "${ECHO_T}$ac_mem_limits" >&6
+  echo "$as_me:$LINENO: result: $ac_res_limits" >&5
+echo "${ECHO_T}$ac_res_limits" >&6
 
 
     # Look for setenv, so that extended locale tests can be performed.

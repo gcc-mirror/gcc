@@ -451,8 +451,8 @@ dnl Check for headers for, and arguments to, the setrlimit() function.
 dnl Used only in testsuite_hooks.h.  Called from GLIBCXX_CONFIGURE_TESTSUITE.
 dnl
 dnl Defines:
-dnl  _GLIBCXX_MEM_LIMITS if we can set artificial limits on memory
-dnl  various HAVE_MEMLIMIT_* for individual limit names
+dnl  _GLIBCXX_RES_LIMITS if we can set artificial resource limits 
+dnl  various HAVE_LIMIT_* for individual limit names
 dnl
 AC_DEFUN([GLIBCXX_CHECK_SETRLIMIT_ancilliary], [
   AC_TRY_COMPILE(
@@ -462,7 +462,7 @@ AC_DEFUN([GLIBCXX_CHECK_SETRLIMIT_ancilliary], [
     ],
     [ int f = RLIMIT_$1 ; ],
     [glibcxx_mresult=1], [glibcxx_mresult=0])
-  AC_DEFINE_UNQUOTED(HAVE_MEMLIMIT_$1, $glibcxx_mresult,
+  AC_DEFINE_UNQUOTED(HAVE_LIMIT_$1, $glibcxx_mresult,
                      [Only used in build directory testsuite_hooks.h.])
 ])
 
@@ -479,6 +479,7 @@ AC_DEFUN([GLIBCXX_CHECK_SETRLIMIT], [
     GLIBCXX_CHECK_SETRLIMIT_ancilliary(RSS)
     GLIBCXX_CHECK_SETRLIMIT_ancilliary(VMEM)
     GLIBCXX_CHECK_SETRLIMIT_ancilliary(AS)
+    GLIBCXX_CHECK_SETRLIMIT_ancilliary(FSIZE)
 
     # Check for rlimit, setrlimit.
     AC_CACHE_VAL(ac_setrlimit, [
@@ -493,14 +494,14 @@ AC_DEFUN([GLIBCXX_CHECK_SETRLIMIT], [
     ])
   fi
 
-  AC_MSG_CHECKING([for testsuite memory limit support])
+  AC_MSG_CHECKING([for testsuite resource limits support])
   if test $setrlimit_have_headers = yes && test $ac_setrlimit = yes; then
-    ac_mem_limits=yes
-    AC_DEFINE(_GLIBCXX_MEM_LIMITS)
+    ac_res_limits=yes
+    AC_DEFINE(_GLIBCXX_RES_LIMITS)
   else
-    ac_mem_limits=no
+    ac_res_limits=no
   fi
-  AC_MSG_RESULT($ac_mem_limits)
+  AC_MSG_RESULT($ac_res_limits)
 ])
 
 
@@ -631,7 +632,7 @@ dnl  baseline_dir
 dnl
 AC_DEFUN([GLIBCXX_CONFIGURE_TESTSUITE], [
   if $GLIBCXX_IS_NATIVE && test $is_hosted = yes; then
-    # Do checks for memory limit functions.
+    # Do checks for resource limit functions.
     GLIBCXX_CHECK_SETRLIMIT
 
     # Look for setenv, so that extended locale tests can be performed.

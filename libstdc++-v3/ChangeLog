@@ -1,3 +1,19 @@
+2004-05-14  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/14775
+	* acconfig.h: Rename _GLIBCXX_MEM_LIMITS to _GLIBCXX_RES_LIMITS.
+	* acinclude.m4 (GLIBCXX_CHECK_SETRLIMIT): Call
+	GLIBCXX_CHECK_SETRLIMIT_ancilliary for FSIZE too, adjust define
+	to _GLIBCXX_RES_LIMITS.
+	(GLIBCXX_CHECK_SETRLIMIT_ancilliary): Rename HAVE_MEMLIMIT_* to
+	HAVE_LIMIT_*.
+	* testsuite/testsuite_hooks.h: Declare set_file_limit.
+	* testsuite/testsuite_hooks.cc: Define it, using getrlimit
+	and setrlimit(RLIMIT_FSIZE).
+	* testsuite/27_io/fpos/14775.cc: New.
+	* config.h.in: Regenerate.
+	* configure: Likewise.
+
 2004-05-13  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/15074	
