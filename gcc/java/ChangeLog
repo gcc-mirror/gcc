@@ -1,4 +1,4 @@
-2001-04-06  Per Bothner  <per@bothner.com>
+2001-04-20  Per Bothner  <per@bothner.com>
 
 	Fixes to compile multiple .class files at once.
 	* decl.c (init_decl_processing):  Don't set CLASS_LOADED_P.

@@ -1306,7 +1306,7 @@ extern tree *type_map;
 #define CLASS_LOADED_P(TYPE) (TYPE_SIZE (TYPE) != NULL_TREE \
 			      && (CLASS_PARSED_P(TYPE) || TYPE_ARRAY_P(TYPE)))
 
-/* True if class TYPE has been parser (first pass). */
+/* True if class TYPE has been parsed (first pass). */
 #define CLASS_PARSED_P(TYPE) TYPE_LANG_FLAG_2 (TYPE)
 
 /* True if class TYPE was defined in Java source code. */
