@@ -1016,6 +1016,9 @@ d_register_operand (operand, mode)
      rtx operand;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
+  if (GET_MODE (operand) != mode && mode != VOIDmode)
+    return 0;
+
   if (GET_CODE (operand) == SUBREG)
     operand = XEXP (operand, 0);
 
@@ -1030,6 +1033,9 @@ hard_addr_reg_operand (operand, mode)
      rtx operand;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
+  if (GET_MODE (operand) != mode && mode != VOIDmode)
+    return 0;
+
   if (GET_CODE (operand) == SUBREG)
     operand = XEXP (operand, 0);
 
@@ -1119,6 +1125,14 @@ symbolic_memory_operand (op, mode)
     default:
       return 0;
     }
+}
+
+int
+m68hc11_eq_compare_operator (op, mode)
+     register rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return GET_CODE (op) == EQ || GET_CODE (op) == NE;
 }
 
 int
