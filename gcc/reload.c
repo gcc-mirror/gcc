@@ -1235,6 +1235,7 @@ combine_reloads ()
     if (reload_in[i] && ! reload_optional[i] && ! reload_nocombine[i]
 	/* Life span of this reload must not extend past main insn.  */
 	&& reload_when_needed[i] != RELOAD_FOR_OUTPUT_RELOAD_ADDRESS
+	&& ! reload_needed_for_multiple[i]
 	&& reload_inmode[i] == reload_outmode[output_reload]
 	&& reload_inc[i] == 0
 	&& reload_reg_rtx[i] == 0
