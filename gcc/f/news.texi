@@ -155,6 +155,11 @@ The following information was last updated on @value{last-update-news}:
 @itemize @bullet
 @ifclear USERVISONLY
 @item
+The @code{TtyNam} intrinsics now set @var{Name} to all spaces (at run time)
+if the system has no @code{ttyname} implementation available.
+
+@ifclear USERVISONLY
+@item
 Upgrade to @code{libf2c} as of 1999-06-18.
 @end ifclear
 @end itemize
