@@ -868,6 +868,7 @@ extension for floating-point constants of type @code{float}.
 @cindex arrays of length zero
 @cindex zero-length arrays
 @cindex length-zero arrays
+@cindex flexible array members
 
 Zero-length arrays are allowed in GNU C.  They are very useful as the
 last element of a structure which is really a header for a variable-length
@@ -907,26 +908,52 @@ zero-length arrays anywhere.  You may encounter problems, however,
 defining structures containing only a zero-length array.  Such usage
 is deprecated, and we recommend using zero-length arrays only in
 places in which flexible array members would be allowed.
+@end itemize
 
-@item
-GCC allows static initialization of the zero-length array if the structure
-is not nested inside another structure.  In addition, for backward
-compatibility with an earlier versions of gcc, we allow a degenerate empty
-initialization when nested inside another structure.  I.e.
+GCC versions before 3.0 allowed zero-length arrays to be statically
+initialized.  In addition to those cases that were useful, it also
+allowed initializations in situations that would corrupt later data.
+Non-empty initialization of zero-length arrays is now deprecated.
+
+Instead GCC allows static initialization of flexible array members.
+This is equivalent to defining a new structure containing the original
+structure followed by an array of sufficient size to contain the data.
+I.e. in the following, @code{f1} is constructed as if it were declared
+like @code{f2}.
 
 @example
-struct bar @{ struct line a; @};
+struct f1 @{
+  int x; int y[];
+@} f1 = @{ 1, @{ 2, 3, 4 @} @};
 
-/* Legal.  */
-struct line x = @{ 4, @{ 'g', 'o', 'o', 'd' @} @};
-
-/* Illegal.  */
-struct bar y = @{ @{ 3, @{ 'b', 'a', 'd' @} @} @};
-
-/* Legal.  */
-struct bar z = @{ @{ 0, @{ @} @} @};
+struct f2 @{
+  struct f1 f1; int data[3];
+@} f2 = @{ @{ 1 @}, @{ 2, 3, 4 @} @};
 @end example
-@end itemize
+
+@noindent
+The convenience of this extension is that @code{f1} has the desired
+type, eliminating the need to consistently refer to @code{f2.f1}.
+
+This has symmetry with normal static arrays, in that an array of
+unknown size is also written with @code{[]}.
+
+Of course, this extension only makes sense if the extra data comes at
+the end of a top-level object, as otherwise we would be overwriting
+data at subsequent offsets.  To avoid undue complication and confusion
+with initialization of deeply nested arrays, we simply disallow any
+non-empty initialization except when the structure is the top-level
+object.  For example:
+
+@example
+struct foo @{ int x; int y[]; @};
+struct bar @{ struct foo z; @};
+
+struct foo a = @{ 1, @{ 2, 3, 4 @} @};        // Legal.
+struct bar b = @{ @{ 1, @{ 2, 3, 4 @} @} @};    // Illegal.
+struct bar c = @{ @{ 1, @{ @} @} @};            // Legal.
+struct foo d[1] = @{ @{ 1 @{ 2, 3, 4 @} @} @};  // Illegal.
+@end example
 
 @node Variable Length
 @section Arrays of Variable Length

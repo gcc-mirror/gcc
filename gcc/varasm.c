@@ -108,7 +108,7 @@ struct varasm_status
   struct pool_constant *x_first_pool, *x_last_pool;
 
   /* Current offset in constant pool (does not include any machine-specific
-     header.  */
+     header).  */
   int x_pool_offset;
 
   /* Chain of all CONST_DOUBLE rtx's constructed for the current function.
@@ -171,7 +171,7 @@ static void mark_constant_pool		PARAMS ((void));
 static void mark_constants		PARAMS ((rtx));
 static int output_addressed_constants	PARAMS ((tree));
 static void output_after_function_constants PARAMS ((void));
-static int array_size_for_constructor	PARAMS ((tree));
+static unsigned HOST_WIDE_INT array_size_for_constructor PARAMS ((tree));
 static void output_constructor		PARAMS ((tree, int));
 #ifdef ASM_WEAKEN_LABEL
 static void remove_from_pending_weak_list	PARAMS ((const char *));
@@ -4446,18 +4446,11 @@ output_constant (exp, size)
    arrays of unspecified length.  VAL must be a CONSTRUCTOR of an array
    type with an unspecified upper bound.  */
 
-static int
+static unsigned HOST_WIDE_INT
 array_size_for_constructor (val)
      tree val;
 {
   tree max_index, i;
-
-  if (!val || TREE_CODE (val) != CONSTRUCTOR
-      || TREE_CODE (TREE_TYPE (val)) != ARRAY_TYPE
-      || TYPE_DOMAIN (TREE_TYPE (val)) == NULL_TREE
-      || TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (val))) != NULL_TREE
-      || TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (val))) == NULL_TREE)
-    abort ();
 
   max_index = NULL_TREE;
   for (i = CONSTRUCTOR_ELTS (val); i ; i = TREE_CHAIN (i))
@@ -4470,20 +4463,17 @@ array_size_for_constructor (val)
 	max_index = index;
     }
 
-  /* ??? I'm fairly certain if there were no elements, we shouldn't have
-     created the constructor in the first place.  */
   if (max_index == NULL_TREE)
-    abort ();
+    return 0;
 
   /* Compute the total number of array elements.  */
-  i = fold (build (MINUS_EXPR, TREE_TYPE (max_index), max_index, 
-		   TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (val)))));
-  i = fold (build (PLUS_EXPR, TREE_TYPE (i), i,
-		   convert (TREE_TYPE (i), integer_one_node)));
+  i = size_binop (MINUS_EXPR, convert (sizetype, max_index), 
+		  convert (sizetype,
+			   TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (val)))));
+  i = size_binop (PLUS_EXPR, i, convert (sizetype, integer_one_node));
 
   /* Multiply by the array element unit size to find number of bytes.  */
-  i = fold (build (MULT_EXPR, TREE_TYPE (max_index), i,
-		   TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (val)))));
+  i = size_binop (MULT_EXPR, i, TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (val))));
 
   return tree_low_cst (i, 1);
 }
@@ -4607,18 +4597,30 @@ output_constructor (exp, size)
 	  /* Determine size this element should occupy.  */
 	  if (field)
 	    {
-	      /* If the last field is an array with an unspecified upper
-		 bound, the initializer determines the size.  */
-	      if (TREE_CHAIN (field) == 0
-		  && TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE
-		  && TYPE_DOMAIN (TREE_TYPE (field)) != 0
-		  && TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (field))) == 0)
+	      fieldsize = 0;
+
+	      /* If this is an array with an unspecified upper bound,
+		 the initializer determines the size.  */
+	      /* ??? This ought to only checked if DECL_SIZE_UNIT is NULL,
+		 but we cannot do this until the deprecated support for
+		 initializing zero-length array members is removed.  */
+	      if (TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE
+		  && TYPE_DOMAIN (TREE_TYPE (field))
+		  && ! TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (field))))
+		{
 		  fieldsize = array_size_for_constructor (val);
-	      else if (DECL_SIZE_UNIT (field)
-		  && host_integerp (DECL_SIZE_UNIT (field), 1))
-		fieldsize = tree_low_cst (DECL_SIZE_UNIT (field), 1);
-	      else
-		fieldsize = 0;
+		  /* Given a non-empty initialization, this field had
+		     better be last.  */
+		  if (fieldsize != 0 && TREE_CHAIN (field) != NULL_TREE)
+		    abort ();
+		}
+	      else if (DECL_SIZE_UNIT (field))
+		{
+		  /* ??? This can't be right.  If the decl size overflows
+		     a host integer we will silently emit no data.  */
+		  if (host_integerp (DECL_SIZE_UNIT (field), 1))
+		    fieldsize = tree_low_cst (DECL_SIZE_UNIT (field), 1);
+		}
 	    }
 	  else
 	    fieldsize = int_size_in_bytes (TREE_TYPE (type));
