@@ -150,6 +150,18 @@ $ if DO_DEBUG.eq.1 then LDFLAGS :='LDFLAGS'/debug
 $!
 $if DO_LINK.eq.1 then goto compile_cc1
 $!
+$! Build alloca if necessary (in 'LIBS for use with VAXC)
+$!
+$ if f$locate("alloca.obj",f$edit(LIBS,"lowercase")).ge.f$length(LIBS) then -
+	goto skip_alloca
+$ if f$search("alloca.obj").nes."" then -  !does .obj exist? is it up to date?
+    if f$cvtime(f$file_attributes("alloca.obj","RDT")).gts.-
+       f$cvtime(f$file_attributes("alloca.c","RDT")) then  goto skip_alloca
+$set verify
+$ 'CC 'CFLAGS /define="STACK_DIRECTION=(-1)" alloca.c
+$!'f$verify(0)
+$skip_alloca:
+$!
 $if DO_BC.eq.1 
 $	THEN 
 $	call compile bi_all.opt ""
@@ -169,18 +181,6 @@ $!
 $!
 $if DO_INDEPENDENT.eq.1 
 $	THEN 
-$!
-$! Build alloca if necessary (in 'LIBS for use with VAXC)
-$!
-$ if f$locate("alloca.obj",f$edit(LIBS,"lowercase")).ge.f$length(LIBS) then -
-	goto skip_alloca
-$ if f$search("alloca.obj").nes."" then -  !does .obj exist? is it up to date?
-    if f$cvtime(f$file_attributes("alloca.obj","RDT")).gts.-
-       f$cvtime(f$file_attributes("alloca.c","RDT")) then  goto skip_alloca
-$set verify
-$ 'CC 'CFLAGS /define="STACK_DIRECTION=(-1)" alloca.c
-$!'f$verify(0)
-$skip_alloca:
 $!
 $! First build a couple of header files from the machine description
 $! These are used by many of the source modules, so we build them now.
@@ -359,10 +359,6 @@ $! name of the insn-* file to generate.  The second argument contains a
 $! list of any other object modules which must be linked to the gen*.c
 $! program.
 $!
-$! If a previous version of insn-* exists, it is compared to the new one,
-$! and if it has not changed, then the new one is discarded.  This is
-$! done so that make like programs do not get thrown off.
-$!
 $generate:
 $subroutine
 $if f$extract(0,5,p1).nes."INSN-"
@@ -385,12 +381,8 @@ $endsubroutine
 $!
 $! This subroutine generates the bc-* files.  The first argument is the
 $! name of the bc-* file to generate.  The second argument contains a 
-$! list of any other object modules which must be linked to the gen*.c
+$! list of any other object modules which must be linked to the bi*.c
 $! program.
-$!
-$! If a previous version of bc-* exists, it is compared to the new one,
-$! and if it has not changed, then the new one is discarded.  This is
-$! done so that make like programs do not get thrown off.
 $!
 $bc_generate:
 $subroutine
