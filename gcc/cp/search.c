@@ -1,6 +1,6 @@
 /* Breadth-first and depth-first routines for
    searching multiple-inheritance lattice for GNU C++.
-   Copyright (C) 1987, 89, 92-97, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 89, 92-97, 1998, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -95,7 +95,6 @@ static void expand_upcast_fixups
 static void fixup_virtual_upcast_offsets
 	PROTO((tree, tree, int, int, tree, tree, tree, tree,
 	       tree *));
-static tree unmarkedp PROTO((tree, void *));
 static tree marked_vtable_pathp PROTO((tree, void *));
 static tree unmarked_vtable_pathp PROTO((tree, void *));
 static tree marked_new_vtablep PROTO((tree, void *));
@@ -152,7 +151,6 @@ static void setup_class_bindings PROTO ((tree, int));
 static int template_self_reference_p PROTO ((tree, tree));
 static void fixup_all_virtual_upcast_offsets PROTO ((tree, tree));
 static tree dfs_mark_primary_bases PROTO((tree, void *));
-static tree dfs_unmark_primary_bases PROTO((tree, void *));
 
 /* Allocate a level of searching.  */
 
@@ -777,7 +775,7 @@ shared_marked_p (binfo, data)
      void *data;
 {
   binfo = canonical_binfo (binfo);
-  return markedp (binfo, data) ? binfo : NULL_TREE;
+  return markedp (binfo, data);
 }
 
 /* If BINFO is not marked, return a canonical version of BINFO.
@@ -789,7 +787,7 @@ shared_unmarked_p (binfo, data)
      void *data;
 {
   binfo = canonical_binfo (binfo);
-  return unmarkedp (binfo, data) ? binfo : NULL_TREE;
+  return unmarkedp (binfo, data);
 }
 
 /* Called from access_in_type via dfs_walk.  Calculate the access to
@@ -2124,65 +2122,15 @@ dfs_mark_primary_bases (binfo, data)
   return NULL_TREE;
 }
 
-/* Called via dfs_walk from mark_primary_bases.  */
-
-tree
-dfs_mark_primary_bases_queue_p (binfo, data)
-     tree binfo;
-     void *data ATTRIBUTE_UNUSED;
-{
-  /* Don't walk into virtual baseclasses that are not primary 
-     bases.  */
-  if (TREE_VIA_VIRTUAL (binfo))
-    {
-      tree derived_class;
-      tree primary_base;
-      
-      derived_class = BINFO_TYPE (BINFO_INHERITANCE_CHAIN (binfo));
-      primary_base = CLASSTYPE_PRIMARY_BINFO (derived_class);
-      if (!primary_base || !same_type_p (BINFO_TYPE (primary_base),
-					 BINFO_TYPE (binfo)))
-	return NULL_TREE;
-    }
-
-  /* But do walk into everything else.  */
-  return binfo;
-}
-
 /* Set BINFO_PRIMARY_MARKED_P for all binfos in the hierarchy
-   dominated by TYPE that are primary bases.  (In addition,
-   BINFO_MARKED is set for all classes in the hierarchy; callers
-   should clear BINFO_MARKED.)  */
+   dominated by BINFO that are primary bases.  */
 
 void
 mark_primary_bases (type)
      tree type;
 {
-  dfs_walk (TYPE_BINFO (type), 
-	    dfs_mark_primary_bases,
-	    dfs_mark_primary_bases_queue_p,
-	    NULL);
-}
-
-/* Called from unmark_primary_bases via dfs_walk.  */
-
-static tree
-dfs_unmark_primary_bases (binfo, data)
-     tree binfo;
-     void *data ATTRIBUTE_UNUSED;
-{
-  CLEAR_BINFO_PRIMARY_MARKED_P (binfo);
-  return NULL_TREE;
-}
-
-/* Clear BINFO_PRIMARY_MARKED_P for all binfo in the hierarchy
-   dominated by TYPE.  */
-
-void
-unmark_primary_bases (type)
-     tree type;
-{
-  dfs_walk (TYPE_BINFO (type), dfs_unmark_primary_bases, NULL, NULL);
+  dfs_walk (TYPE_BINFO (type), dfs_mark_primary_bases, unmarkedp, NULL);
+  dfs_walk (TYPE_BINFO (type), dfs_unmark, markedp, NULL);
 }
 
 /* Called via dfs_walk from dfs_get_pure_virtuals.  */
@@ -2219,8 +2167,8 @@ dfs_get_pure_virtuals (binfo, data)
 	    = tree_cons (NULL_TREE, TREE_VALUE (virtuals),
 			 CLASSTYPE_PURE_VIRTUALS (type));
     }
-
-  CLEAR_BINFO_MARKED (binfo);
+  
+  SET_BINFO_MARKED (binfo);
 
   return NULL_TREE;
 }
@@ -2236,17 +2184,15 @@ get_pure_virtuals (type)
   /* Clear the CLASSTYPE_PURE_VIRTUALS list; whatever is already there
      is going to be overridden.  */
   CLASSTYPE_PURE_VIRTUALS (type) = NULL_TREE;
-  /* Find all the primary bases.  */
-  mark_primary_bases (type);
   /* Now, run through all the bases which are not primary bases, and
      collect the pure virtual functions.  We look at the vtable in
      each class to determine what pure virtual functions are present.
      (A primary base is not interesting because the derived class of
      which it is a primary base will contain vtable entries for the
      pure virtuals in the base class.  */
-  dfs_walk (TYPE_BINFO (type), dfs_get_pure_virtuals, markedp, type);
-  /* Now, clear the BINFO_PRIMARY_MARKED_P bit.  */
-  unmark_primary_bases (type);
+  dfs_walk (TYPE_BINFO (type), dfs_get_pure_virtuals, unmarkedp, type);
+  dfs_walk (TYPE_BINFO (type), dfs_unmark, markedp, 0);
+
   /* Put the pure virtuals in dfs order.  */
   CLASSTYPE_PURE_VIRTUALS (type) = nreverse (CLASSTYPE_PURE_VIRTUALS (type));
 
@@ -2317,14 +2263,15 @@ convert_pointer_to_single_level (to_type, expr)
   return NULL_TREE;
 }
 
-tree markedp (binfo, data) 
+tree 
+markedp (binfo, data) 
      tree binfo;
      void *data ATTRIBUTE_UNUSED;
 { 
   return BINFO_MARKED (binfo) ? binfo : NULL_TREE; 
 }
 
-static tree
+tree
 unmarkedp (binfo, data) 
      tree binfo;
      void *data ATTRIBUTE_UNUSED;
@@ -2413,6 +2360,17 @@ dfs_unmark (binfo, data)
 { 
   CLEAR_BINFO_MARKED (binfo); 
   return NULL_TREE;
+}
+
+/* Clear both BINFO_MARKED and BINFO_VBASE_MARKED.  */
+
+tree
+dfs_vbase_unmark (binfo, data)
+     tree binfo;
+     void *data ATTRIBUTE_UNUSED;
+{
+  CLEAR_BINFO_VBASE_MARKED (binfo);
+  return dfs_unmark (binfo, data);
 }
 
 #if 0
@@ -2973,23 +2931,13 @@ void
 get_vbase_types (type)
      tree type;
 {
-  tree vbase_types;
-  tree vbases;
-  tree binfo;
-
-  binfo = TYPE_BINFO (type);
-  vbase_types = NULL_TREE;
-  dfs_walk (binfo, dfs_get_vbase_types, unmarkedp, &vbase_types);
-  dfs_walk (binfo, dfs_unmark, markedp, 0);
+  CLASSTYPE_VBASECLASSES (type) = NULL_TREE;
+  dfs_walk (TYPE_BINFO (type), dfs_get_vbase_types, unmarkedp,
+	    &CLASSTYPE_VBASECLASSES (type));
   /* Rely upon the reverse dfs ordering from dfs_get_vbase_types, and now
      reverse it so that we get normal dfs ordering.  */
-  vbase_types = nreverse (vbase_types);
-
-  /* unmark marked vbases */
-  for (vbases = vbase_types; vbases; vbases = TREE_CHAIN (vbases))
-    CLEAR_BINFO_VBASE_MARKED (vbases);
-
-  CLASSTYPE_VBASECLASSES (type) = vbase_types;
+  CLASSTYPE_VBASECLASSES (type) = nreverse (CLASSTYPE_VBASECLASSES (type));
+  dfs_walk (TYPE_BINFO (type), dfs_vbase_unmark, markedp, 0);
 }
 
 /* Debug info for C++ classes can get very large; try to avoid

@@ -102,9 +102,9 @@ static void check_for_override PROTO((tree, tree));
 static tree get_class_offset_1 PROTO((tree, tree, tree, tree, tree));
 static tree get_class_offset PROTO((tree, tree, tree, tree));
 static void modify_one_vtable PROTO((tree, tree, tree));
+static tree dfs_modify_vtables_queue_p PROTO((tree, void *));
+static tree dfs_modify_vtables PROTO((tree, void *));
 static void modify_all_vtables PROTO((tree, tree));
-static void modify_all_direct_vtables PROTO((tree, int, tree, tree));
-static void modify_all_indirect_vtables PROTO((tree, int, int, tree, tree));
 static void determine_primary_base PROTO((tree, int *));
 static void finish_struct_methods PROTO((tree));
 static void maybe_warn_about_overly_private_class PROTO ((tree));
@@ -138,7 +138,7 @@ static void fixup_inline_methods PROTO((tree));
 static void set_primary_base PROTO((tree, int, int *));
 static void propagate_binfo_offsets PROTO((tree, tree));
 static void layout_basetypes PROTO((tree));
-static tree dfs_mark_primary_bases_and_set_vbase_offsets PROTO((tree, void *));
+static tree dfs_set_offset_for_vbases PROTO((tree, void *));
 static void layout_virtual_bases PROTO((tree));
 static void remove_base_fields PROTO((tree));
 
@@ -1651,6 +1651,10 @@ determine_primary_base (t, has_virtual_p)
 {
   int i, n_baseclasses = CLASSTYPE_N_BASECLASSES (t);
 
+  /* If there are no baseclasses, there is certainly no primary base.  */
+  if (n_baseclasses == 0)
+    return;
+
   *has_virtual_p = 0;
 
   for (i = 0; i < n_baseclasses; i++)
@@ -1666,7 +1670,9 @@ determine_primary_base (t, has_virtual_p)
 	  if (!CLASSTYPE_HAS_PRIMARY_BASE_P (t))
 	    CLASSTYPE_RTTI (t) = CLASSTYPE_RTTI (basetype);
 
-	  /* A virtual baseclass can't be the primary base.  */
+	  /* A virtual baseclass can't be the primary base under the
+	     old ABI.  And under the new ABI we still prefer a
+	     non-virtual base.  */
 	  if (TREE_VIA_VIRTUAL (base_binfo))
 	    continue;
 
@@ -1698,6 +1704,11 @@ determine_primary_base (t, has_virtual_p)
 
   if (!TYPE_VFIELD (t))
     CLASSTYPE_VFIELD_PARENT (t) = -1;
+
+  /* Now that we know what the primary base class is, we can run
+     through the entire hierarchy marking the primary bases for future
+     reference.  */
+  mark_primary_bases (t);
 }
 
 /* Set memoizing fields and bits of T (and its variants) for later
@@ -2479,29 +2490,63 @@ modify_one_vtable (binfo, t, fndecl)
     }
 }
 
-/* These are the ones that are not through virtual base classes.  */
+/* Called from modify_all_vtables via dfs_walk.  */
+
+static tree
+dfs_modify_vtables_queue_p (binfo, data)
+     tree binfo;
+     void *data;
+{
+  tree list = (tree) data;
+
+  if (TREE_VIA_VIRTUAL (binfo))
+    binfo = BINFO_FOR_VBASE (BINFO_TYPE (binfo), TREE_PURPOSE (list));
+
+  return (TREE_ADDRESSABLE (list) 
+	  ? markedp (binfo, NULL) 
+	  : unmarkedp (binfo, NULL));
+}
+
+/* Called from modify_all_vtables via dfs_walk.  */
+
+static tree
+dfs_modify_vtables (binfo, data)
+     tree binfo;
+     void *data;
+{
+  if (/* There's no need to modify the vtable for a primary base;
+	 we're not going to use that vtable anyhow.  */
+      !BINFO_PRIMARY_MARKED_P (binfo)
+      /* Similarly, a base without a vtable needs no modification.  */
+      && CLASSTYPE_VFIELDS (BINFO_TYPE (binfo)))
+    {
+      tree list = (tree) data;
+
+      if (TREE_VIA_VIRTUAL (binfo))
+	binfo = BINFO_FOR_VBASE (BINFO_TYPE (binfo), TREE_PURPOSE (list));
+      modify_one_vtable (binfo, TREE_PURPOSE (list), TREE_VALUE (list)); 
+    }
+
+  SET_BINFO_MARKED (binfo);
+
+  return NULL_TREE;
+}
 
 static void
-modify_all_direct_vtables (binfo, do_self, t, fndecl)
-     tree binfo;
-     int do_self;
-     tree t, fndecl;
+modify_all_vtables (t, fndecl)
+     tree t;
+     tree fndecl;
 {
-  tree binfos = BINFO_BASETYPES (binfo);
-  int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+  tree list;
 
-  /* Should we use something besides CLASSTYPE_VFIELDS? */
-  if (do_self && CLASSTYPE_VFIELDS (BINFO_TYPE (binfo)))
-    modify_one_vtable (binfo, t, fndecl);
-
-  for (i = 0; i < n_baselinks; i++)
-    {
-      tree base_binfo = TREE_VEC_ELT (binfos, i);
-      int is_not_base_vtable
-	= i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
-      if (! TREE_VIA_VIRTUAL (base_binfo))
-	modify_all_direct_vtables (base_binfo, is_not_base_vtable, t, fndecl);
-    }
+  list = build_tree_list (t, fndecl);
+  dfs_walk (TYPE_BINFO (t), dfs_modify_vtables, dfs_modify_vtables_queue_p,
+	    list);
+  /* Let dfs_modify_vtables_queue_p know to check that the mark is
+     present before queueing a base, rather than checking to see that
+     it is *not* present.  */
+  TREE_ADDRESSABLE (list) = 1;
+  dfs_walk (TYPE_BINFO (t), dfs_unmark, dfs_modify_vtables_queue_p, list);
 }
 
 /* Fixup all the delta entries in this one vtable that need updating.  */
@@ -2593,47 +2638,6 @@ fixup_vtable_deltas (binfo, init_self, t)
   /* Should we use something besides CLASSTYPE_VFIELDS? */
   if (init_self && CLASSTYPE_VFIELDS (BINFO_TYPE (binfo)))
     fixup_vtable_deltas1 (binfo, t);
-}
-
-/* These are the ones that are through virtual base classes.  */
-
-static void
-modify_all_indirect_vtables (binfo, do_self, via_virtual, t, fndecl)
-     tree binfo;
-     int do_self, via_virtual;
-     tree t, fndecl;
-{
-  tree binfos = BINFO_BASETYPES (binfo);
-  int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
-
-  /* Should we use something besides CLASSTYPE_VFIELDS? */
-  if (do_self && via_virtual && CLASSTYPE_VFIELDS (BINFO_TYPE (binfo)))
-    modify_one_vtable (binfo, t, fndecl);
-
-  for (i = 0; i < n_baselinks; i++)
-    {
-      tree base_binfo = TREE_VEC_ELT (binfos, i);
-      int is_not_base_vtable
-	= i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
-      if (TREE_VIA_VIRTUAL (base_binfo))
-	{
-	  via_virtual = 1;
-	  base_binfo = BINFO_FOR_VBASE (BINFO_TYPE (base_binfo), t);
-	}
-      modify_all_indirect_vtables (base_binfo, is_not_base_vtable, via_virtual, t, fndecl);
-    }
-}
-
-static void
-modify_all_vtables (t, fndecl)
-     tree t;
-     tree fndecl;
-{
-  /* Do these first, so that we will make use of any non-virtual class's
-     vtable, over a virtual classes vtable.  */
-  modify_all_direct_vtables (TYPE_BINFO (t), 1, t, fndecl);
-  if (TYPE_USES_VIRTUAL_BASECLASSES (t))
-    modify_all_indirect_vtables (TYPE_BINFO (t), 1, 0, t, fndecl);
 }
 
 /* Here, we already know that they match in every respect.
@@ -3765,7 +3769,11 @@ build_base_fields (rec, empty_p)
 	   location information.  */
 	continue;
 
-      if (TREE_VIA_VIRTUAL (base_binfo))
+      /* A primary virtual base class is allocated just like any other
+	 base class, but a non-primary virtual base is allocated
+	 later, in layout_basetypes.  */
+      if (TREE_VIA_VIRTUAL (base_binfo) 
+	  && i != CLASSTYPE_VFIELD_PARENT (rec))
 	continue;
 
       decl = build_lang_decl (FIELD_DECL, NULL_TREE, basetype);
@@ -3997,12 +4005,6 @@ create_vtable_ptr (t, empty_p, has_virtual_p,
      tree *pending_hard_virtuals_p;
 {
   tree fn;
-
-  /* If possible, we reuse the virtual function table pointer from one
-     of our base classes.  */
-  if (CLASSTYPE_N_BASECLASSES (t))
-    /* Remember where we got our vfield from.  */
-    determine_primary_base (t, has_virtual_p);
 
   /* Loop over the virtual functions, adding them to our various
      vtables.  */
@@ -4270,31 +4272,21 @@ remove_base_fields (t)
 /* Called via dfs_walk from layout_virtual_bases.  */
 
 static tree
-dfs_mark_primary_bases_and_set_vbase_offsets (binfo, data)
+dfs_set_offset_for_vbases (binfo, data)
      tree binfo;
      void *data;
 {
-  if (CLASSTYPE_HAS_PRIMARY_BASE_P (BINFO_TYPE (binfo)))
+  /* If this is a primary virtual base that we have not encountered
+     before, give it an offset.  */
+  if (TREE_VIA_VIRTUAL (binfo) 
+      && BINFO_PRIMARY_MARKED_P (binfo)
+      && !BINFO_MARKED (binfo))
     {
-      int i;
-      tree base_binfo;
+      tree vbase;
 
-      i = CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
-      base_binfo = BINFO_BASETYPE (binfo, i);
-      
-      /* If this is a virtual base class, and we've just now
-	 discovered it to be a primary base, then reuse this copy as
-	 the virtual base class for the complete object. */
-      if (TREE_VIA_VIRTUAL (base_binfo)
-	  && !BINFO_PRIMARY_MARKED_P (base_binfo))
-	{
-	  tree vbase;
-
-	  vbase = BINFO_FOR_VBASE (BINFO_TYPE (base_binfo), (tree) data);
-	  BINFO_OFFSET (vbase) = BINFO_OFFSET (base_binfo);
-	}
-
-      SET_BINFO_PRIMARY_MARKED_P (BINFO_BASETYPE (binfo, i));
+      vbase = BINFO_FOR_VBASE (BINFO_TYPE (binfo), (tree) data);
+      BINFO_OFFSET (vbase) = BINFO_OFFSET (binfo);
+      SET_BINFO_VBASE_MARKED (binfo);
     }
 
   SET_BINFO_MARKED (binfo);
@@ -4311,15 +4303,6 @@ layout_virtual_bases (t)
 {
   tree vbase;
   int dsize;
-
-  /* Mark the primary base classes.  Only virtual bases that are not
-     also primary base classes need to be laid out (since otherwise we
-     can just reuse one of the places in the hierarchy where the
-     virtual base already occurs.)  */
-  dfs_walk (TYPE_BINFO (t), 
-	    dfs_mark_primary_bases_and_set_vbase_offsets,
-	    dfs_mark_primary_bases_queue_p, 
-	    t);
 
   /* DSIZE is the size of the class without the virtual bases.  */
   dsize = TREE_INT_CST_LOW (TYPE_SIZE (t));
@@ -4349,20 +4332,7 @@ layout_virtual_bases (t)
 	   take it's address and get something different for each base.  */
 	dsize += MAX (BITS_PER_UNIT,
 		      TREE_INT_CST_LOW (CLASSTYPE_SIZE (basetype)));
-
-	/* Now that we've laid out this virtual base class, some of
-	   the remaining virtual bases might have been implicitly laid
-	   out as well -- they could be primary base classes of
-	   classes in BASETYPE.  */
-	dfs_walk (vbase,
-		  dfs_mark_primary_bases_and_set_vbase_offsets,
-		  dfs_mark_primary_bases_queue_p, 
-		  t);
       }
-
-  /* We're done with the various marks, now, so clear them.  */
-  unmark_primary_bases (t);
-  dfs_walk (TYPE_BINFO (t), dfs_unmark, markedp, 0);
 
   /* Now, make sure that the total size of the type is a multiple of
      its alignment.  */
@@ -4370,6 +4340,11 @@ layout_virtual_bases (t)
   TYPE_SIZE (t) = size_int (dsize);
   TYPE_SIZE_UNIT (t) = size_binop (FLOOR_DIV_EXPR, TYPE_SIZE (t),
 				   size_int (BITS_PER_UNIT));
+
+  /* Run through the hierarchy now, setting up all the BINFO_OFFSETs
+     for those virtual base classes that we did not allocate above.  */
+  dfs_walk (TYPE_BINFO (t), dfs_set_offset_for_vbases, unmarkedp, t);
+  dfs_walk (TYPE_BINFO (t), dfs_vbase_unmark, markedp, NULL);
 }
 
 /* Finish the work of layout_record, now taking virtual bases into account.
@@ -4431,6 +4406,10 @@ layout_class_type (t, empty_p, has_virtual_p,
      tree *pending_virtuals_p;
      tree *pending_hard_virtuals_p;
 {
+  /* If possible, we reuse the virtual function table pointer from one
+     of our base classes.  */
+  determine_primary_base (t, has_virtual_p);
+
   /* Add pointers to all of our virtual base-classes.  */
   TYPE_FIELDS (t) = chainon (build_vbase_pointer_fields (t, empty_p),
 			     TYPE_FIELDS (t));

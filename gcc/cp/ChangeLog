@@ -1,5 +1,37 @@
 2000-01-02  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (CLASSTYPE_VFIELDS): Move definition.
+	(BINFO_PRIMARY_MARKED_P): Use flag 5.
+	(SET_BINFO_PRIMARY_MARKED_P): Likewise.
+	(CLEAR_BINFO_PRIMARY_MARKED_P): Likewise.
+	(unmark_primary_bases): Remove declaration.
+	(unmarkedp): Declare.
+	(dfs_vbase_unmark): Likewise.
+	* class.c (determine_primary_base): Return immediately if there
+	are no base classes.  Call mark_primary_bases here.
+	(modify_all_direct_vtables): Remove.
+	(modify_all_indirect_vtables): Remove.
+	(dfs_modify_vtables_queue_p): New function.	
+	(dfs_modify_vtables): New function.
+	(modify_all_vtables): Use them.
+	(build_base_fields): Build FIELD_DECLs for primary virtual base
+	classes.
+	(create_vtable_ptr): Don't call determine_primary_base here.
+	(dfs_mark_primary_bases_and_set_vbase_offsets): Rename to ...
+	(dfs_set_offset_for_vbases): ... this.
+	(layout_virtual_bases): Use it.
+	(layout_class_type): Call determine_primary_base here.
+	* search.c (unmarkedp): Make it global.
+	(shared_marked_p): Simplify.
+	(shared_unmarked_p): Likewise.
+	(dfs_primary_bases_queue_p): Remove.
+	(dfs_unmark_primary_bases): Likewise.
+	(unmark_primary_bases): Likewise.
+	(mark_primary_bases): Simplify.
+	(get_pure_virtuals): Don't call mark_primary_bases here.
+	(dfs_vbase_unmark): New function.
+	(get_vbase_types): Simplify.
+
 	* class.c (struct base_info): Remove.
 	(determine_primary_base): Take has_virtual_p rather than a
 	base_info as input.  Don't calculate max_has_virtual.
@@ -9,7 +41,7 @@
 	(layout_basetypes): Likewise.
 	(layout_class_type): Remove max_has_virtual_p argument.
 	(finish_struct_1): Remove max_has_virtual.
-	
+
 	* cp-tree.h (dfs_mark_primary_bases_queue_p): New function.
 	(layout_basetypes): Remove.
 	* class.c (propagate_binfo_offsets): Moved here from tree.c.
@@ -145,7 +177,6 @@
 	(build_vtbl_initializer): Likewise.
 	(override_one_vtable): Likewise.
 	(check_methods): Likewise.
-
 	* decl.c (duplicate_decls): Likewise.
 	(redeclaration_error_message): Likewise.
 	(lang_mark_tree): Likewise.
