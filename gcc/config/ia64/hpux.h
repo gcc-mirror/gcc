@@ -176,3 +176,5 @@ do {								\
 #define TARGET_ASM_UNIQUE_SECTION  ia64_rwreloc_unique_section
 #undef  TARGET_ASM_SELECT_RTX_SECTION
 #define TARGET_ASM_SELECT_RTX_SECTION  ia64_rwreloc_select_rtx_section
+#undef  TARGET_SECTION_TYPE_FLAGS
+#define TARGET_SECTION_TYPE_FLAGS  ia64_rwreloc_section_type_flags

@@ -1,5 +1,10 @@
 2003-01-28  Richard Henderson  <rth@redhat.com>
 
+	* config/ia64/ia64.c (ia64_rwreloc_section_type_flags): New.
+	* config/ia64/hpux.h (TARGET_SECTION_TYPE_FLAGS): New.
+
+2003-01-28  Richard Henderson  <rth@redhat.com>
+
 	* cse.c (find_best_addr): Kill !ADDRESS_COST code.
 
 	* config/cris/cris.c (cris_address_cost): Make static.
@@ -25,9 +30,9 @@
 
 2003-01-28  Dale Johannesen  <dalej@apple.com>
 
-        * emit-rtl.c (const_double_htab_hash):  Use mode in the hash.
-        * loop.c (scan_loop):  Move movables on -Os rich-register targets.
-        * config/rs6000/rs6000.md (sibcall*):  Use match_operand for LR.
+	* emit-rtl.c (const_double_htab_hash):  Use mode in the hash.
+	* loop.c (scan_loop):  Move movables on -Os rich-register targets.
+	* config/rs6000/rs6000.md (sibcall*):  Use match_operand for LR.
 
 2003-01-28  Richard Henderson  <rth@redhat.com>
 
@@ -474,13 +479,13 @@ Tue Jan 28 12:15:13 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-01-25  Ulrich Weigand  <uweigand@de.ibm.com>
 
-        * reload.c (maybe_memory_address_p): New function.
-        (find_reloads_address): Use it instead of memory_address_p.
+	* reload.c (maybe_memory_address_p): New function.
+	(find_reloads_address): Use it instead of memory_address_p.
 
 2003-01-25  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* final.c (shorten_branches): Align the address of code label
-        when computing initial lengths and addresses.
+	when computing initial lengths and addresses.
 
 2003-01-25  Kazu Hirata  <kazu@cs.umass.edu>
 
