@@ -1,6 +1,6 @@
 // Components for manipulating sequences of characters -*- C++ -*-
 
-// Copyright (C) 2000, 1999, 1998, 1997 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -42,7 +42,6 @@
 
 namespace std
 {
-
   template<typename _CharT, typename _Traits, typename _Alloc>
     const _CharT 
     basic_string<_CharT, _Traits, _Alloc>::

@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.60 2000/12/21 01:28:57 gdr Exp $
+## $Id: Makefile.am,v 1.61 2000/12/23 07:13:57 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -76,7 +76,7 @@ INCLUDES = \
 
 base_headers = \
 	bits/cpp_type_traits.h bits/char_traits.h bits/codecvt.h \
-	bits/basic_string.h bits/std_string.h  bits/string.tcc \
+	bits/std_string.h bits/basic_string.h bits/basic_string.tcc \
 	bits/generic_shadow.h bits/std_utility.h \
 	bits/std_complex.h \
 	bits/valarray_array.h bits/valarray_array.tcc bits/valarray_meta.h \
