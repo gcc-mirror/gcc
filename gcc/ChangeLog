@@ -1,3 +1,7 @@
+2003-02-28  Richard Henderson  <rth@redhat.com>
+
+	* toplev.c (flag_eliminate_unused_debug_types): Enable by default.
+
 2003-02-28  scott snyder  <snyder@fnal.gov>
 
 	* flags.h: Add flag_eliminate_unused_debug_types.
