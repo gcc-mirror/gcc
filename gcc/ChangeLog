@@ -1,3 +1,12 @@
+2003-12-30  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (allocate_stack_worker):  Use different pattern for pre and
+	post reload expansion.
+	(allocate_stack_worker_1, allocate_stack_worker_rex64): Use
+	match_scratch.
+	(allocate_stack_worder_1_postreload,
+	allocate_stack_worker_rex64_postreload): New.
+
 2003-12-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* builtins.c (expand_builtin_apply_args_1): Add pretend args size
