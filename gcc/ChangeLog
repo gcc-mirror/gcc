@@ -1,5 +1,7 @@
 Fri Feb 23 15:28:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* c-decl.c (set_block): Set NAMES and BLOCKS from BLOCK.
+
 	* varasm.c (output_constant): Recompute CODE after lang-specific fn.
 
 2001-02-23  Jakub Jelinek  <jakub@redhat.com>

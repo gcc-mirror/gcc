@@ -1260,6 +1260,10 @@ set_block (block)
      register tree block;
 {
   current_binding_level->this_block = block;
+  current_binding_level->names = chainon (current_binding_level->names,
+					  BLOCK_VARS (block));
+  current_binding_level->blocks = chainon (current_binding_level->blocks,
+					   BLOCK_SUBBLOCKS (block));
 }
 
 void

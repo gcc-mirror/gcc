@@ -1,3 +1,7 @@
+Fri Feb 23 15:28:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* com.c (set_block): Set NAMES and BLOCKS from BLOCK.
+
 2001-02-19  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* root.texi: Clear DEVELOPMENT.  Update GCC version number to 3.0.
