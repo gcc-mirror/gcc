@@ -1,3 +1,9 @@
+2003-02-18  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9704
+	* class.c (layout_class_type): In the 3.2 ABI, take into account
+	trailing bit fields when computing CLASSTYPE_SIZE_UNIT.
+
 2003-02-18  Matt Austern <austern@apple.com>
 	
 	* cp/cp-lang.c: Change lang hooks so that final_write_globals does

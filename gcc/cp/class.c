@@ -5194,16 +5194,28 @@ layout_class_type (tree t, tree *virtuals_p)
 	}
       else
 	{
+	  tree eoc;
+
+	  /* If the ABI version is not at least two, and the last
+	     field was a bit-field, RLI may not be on a byte
+	     boundary.  In particular, rli_size_unit_so_far might
+	     indicate the last complete byte, while rli_size_so_far
+	     indicates the total number of bits used.  Therefore,
+	     rli_size_so_far, rather than rli_size_unit_so_far, is
+	     used to compute TYPE_SIZE_UNIT.  */
+	  eoc = end_of_class (t, /*include_virtuals_p=*/0);
 	  TYPE_SIZE_UNIT (base_t) 
 	    = size_binop (MAX_EXPR,
-			  rli_size_unit_so_far (rli),
-			  end_of_class (t, /*include_virtuals_p=*/0));
+			  convert (sizetype,
+				   size_binop (CEIL_DIV_EXPR,
+					       rli_size_so_far (rli),
+					       bitsize_int (BITS_PER_UNIT))),
+			  eoc);
 	  TYPE_SIZE (base_t) 
 	    = size_binop (MAX_EXPR,
 			  rli_size_so_far (rli),
 			  size_binop (MULT_EXPR,
-				      convert (bitsizetype,
-					       TYPE_SIZE_UNIT (base_t)),
+				      convert (bitsizetype, eoc),
 				      bitsize_int (BITS_PER_UNIT)));
 	}
       TYPE_ALIGN (base_t) = rli->record_align;

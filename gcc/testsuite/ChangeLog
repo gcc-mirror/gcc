@@ -1,3 +1,8 @@
+2003-02-18  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9704
+	* g++.dg/init/copy5.C: New test.
+	
 2003-02-18  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.dg/pch/pch.exp: Delete $bname.h before copying into it.
