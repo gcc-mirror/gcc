@@ -619,17 +619,17 @@ reload (first, global, dumpfile)
      Record memory equivalents in reg_mem_equiv so they can
      be substituted eventually by altering the REG-rtx's.  */
 
-  reg_equiv_constant = (rtx *) alloca (max_regno * sizeof (rtx));
+  reg_equiv_constant = (rtx *) xmalloc (max_regno * sizeof (rtx));
   bzero ((char *) reg_equiv_constant, max_regno * sizeof (rtx));
-  reg_equiv_memory_loc = (rtx *) alloca (max_regno * sizeof (rtx));
+  reg_equiv_memory_loc = (rtx *) xmalloc (max_regno * sizeof (rtx));
   bzero ((char *) reg_equiv_memory_loc, max_regno * sizeof (rtx));
-  reg_equiv_mem = (rtx *) alloca (max_regno * sizeof (rtx));
+  reg_equiv_mem = (rtx *) xmalloc (max_regno * sizeof (rtx));
   bzero ((char *) reg_equiv_mem, max_regno * sizeof (rtx));
-  reg_equiv_init = (rtx *) alloca (max_regno * sizeof (rtx));
+  reg_equiv_init = (rtx *) xmalloc (max_regno * sizeof (rtx));
   bzero ((char *) reg_equiv_init, max_regno * sizeof (rtx));
-  reg_equiv_address = (rtx *) alloca (max_regno * sizeof (rtx));
+  reg_equiv_address = (rtx *) xmalloc (max_regno * sizeof (rtx));
   bzero ((char *) reg_equiv_address, max_regno * sizeof (rtx));
-  reg_max_ref_width = (int *) alloca (max_regno * sizeof (int));
+  reg_max_ref_width = (int *) xmalloc (max_regno * sizeof (int));
   bzero ((char *) reg_max_ref_width, max_regno * sizeof (int));
 
   if (SMALL_REGISTER_CLASSES)
@@ -799,7 +799,13 @@ reload (first, global, dumpfile)
     {
       free (real_known_ptr);
       free (real_at_ptr);
-      return;
+      free (reg_equiv_constant);
+      free (reg_equiv_memory_loc);
+      free (reg_equiv_mem);
+      free (reg_equiv_init);
+      free (reg_equiv_address);
+      free (reg_max_ref_width);
+      return 0;
     }
 #endif
 
@@ -2175,6 +2181,13 @@ reload (first, global, dumpfile)
   if (scratch_block)
     free (scratch_block);
   scratch_block = 0;
+
+  free (reg_equiv_constant);
+  free (reg_equiv_memory_loc);
+  free (reg_equiv_mem);
+  free (reg_equiv_init);
+  free (reg_equiv_address);
+  free (reg_max_ref_width);
 
   CLEAR_HARD_REG_SET (used_spill_regs);
   for (i = 0; i < n_spills; i++)

@@ -726,7 +726,7 @@ regclass (f, nregs)
 
   init_recog ();
 
-  costs = (struct costs *) alloca (nregs * sizeof (struct costs));
+  costs = (struct costs *) xmalloc (nregs * sizeof (struct costs));
 
 #ifdef FORBIDDEN_INC_DEC_CLASSES
 
@@ -1067,6 +1067,8 @@ regclass (f, nregs)
 	}
     }
 #endif /* REGISTER_CONSTRAINTS */
+
+  free (costs);
 }
 
 #ifdef REGISTER_CONSTRAINTS

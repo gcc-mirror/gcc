@@ -135,7 +135,7 @@ stupid_life_analysis (f, nregs, file)
 
   bzero (regs_ever_live, sizeof regs_ever_live);
 
-  regs_live = (char *) alloca (nregs);
+  regs_live = (char *) xmalloc (nregs);
 
   /* First find the last real insn, and count the number of insns,
      and assign insns their suids.  */
@@ -145,7 +145,7 @@ stupid_life_analysis (f, nregs, file)
       i = INSN_UID (insn);
 
   max_uid = i + 1;
-  uid_suid = (int *) alloca ((i + 1) * sizeof (int));
+  uid_suid = (int *) xmalloc ((i + 1) * sizeof (int));
 
   /* Compute the mapping from uids to suids.
      Suids are numbers assigned to insns, like uids,
@@ -168,19 +168,19 @@ stupid_life_analysis (f, nregs, file)
 
   /* Allocate tables to record info about regs.  */
 
-  reg_where_dead = (int *) alloca (nregs * sizeof (int));
+  reg_where_dead = (int *) xmalloc (nregs * sizeof (int));
   bzero ((char *) reg_where_dead, nregs * sizeof (int));
 
-  reg_where_born = (int *) alloca (nregs * sizeof (int));
+  reg_where_born = (int *) xmalloc (nregs * sizeof (int));
   bzero ((char *) reg_where_born, nregs * sizeof (int));
 
-  reg_order = (int *) alloca (nregs * sizeof (int));
+  reg_order = (int *) xmalloc (nregs * sizeof (int));
   bzero ((char *) reg_order, nregs * sizeof (int));
 
-  regs_change_size = (char *) alloca (nregs * sizeof (char));
+  regs_change_size = (char *) xmalloc (nregs * sizeof (char));
   bzero ((char *) regs_change_size, nregs * sizeof (char));
 
-  regs_crosses_setjmp = (char *) alloca (nregs * sizeof (char));
+  regs_crosses_setjmp = (char *) xmalloc (nregs * sizeof (char));
   bzero ((char *) regs_crosses_setjmp, nregs * sizeof (char));
 
   /* Allocate the reg_renumber array */
@@ -189,7 +189,7 @@ stupid_life_analysis (f, nregs, file)
     reg_renumber[i] = i;
 
   after_insn_hard_regs
-    = (HARD_REG_SET *) alloca (max_suid * sizeof (HARD_REG_SET));
+    = (HARD_REG_SET *) xmalloc (max_suid * sizeof (HARD_REG_SET));
 
   bzero ((char *) after_insn_hard_regs, max_suid * sizeof (HARD_REG_SET));
 
@@ -316,6 +316,15 @@ stupid_life_analysis (f, nregs, file)
 
   if (file)
     dump_flow_info (file);
+
+  free (regs_live);
+  free (uid_suid);
+  free (reg_where_dead);
+  free (reg_where_born);
+  free (reg_order);
+  free (regs_change_size);
+  free (regs_crosses_setjmp);
+  free (after_insn_hard_regs);
 }
 
 /* Comparison function for qsort.
