@@ -1,5 +1,8 @@
 2001-11-14  Tom Tromey  <tromey@redhat.com>
 
+	* java/lang/reflect/Constructor.java (toString): Use more
+	efficient form of Modifier.toString().
+
 	Re-merges with Classpath, from various people:
 	* java/lang/reflect/Modifier.java: Reindented.
 	(toString): Only trim trailing space if text was added to

@@ -75,7 +75,7 @@ public final class Constructor extends AccessibleObject implements Member
       if (parameter_types == null)
 	getType ();
       StringBuffer b = new StringBuffer ();
-      b.append(Modifier.toString(getModifiers()));
+      Modifier.toString(getModifiers(), b);
       b.append(" ");
       Method.appendClassName (b, declaringClass);
       b.append("(");
