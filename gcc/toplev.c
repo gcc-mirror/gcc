@@ -3060,6 +3060,8 @@ rest_of_compilation (decl)
 	  tem = tem2 = 0;
 	  timevar_push (TV_JUMP);
 	  rebuild_jump_labels (insns);
+	  delete_trivially_dead_insns (insns, max_reg_num (), 0);
+	  find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
 	  cleanup_cfg (CLEANUP_EXPENSIVE);
 	  timevar_pop (TV_JUMP);
 
