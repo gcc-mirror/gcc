@@ -466,8 +466,8 @@ lex (pfile, skip_evaluation)
 		&& tok_start[1] == toktab->operator[1])
 		break;
 	  if (toktab->token == ERROR)
-	    cpp_error (pfile, "'%s' not allowed in operand of #if",
-		       tok_start);
+	    cpp_error (pfile, "'%.*s' is not allowed in #if expressions",
+		       (int) (tok_end - tok_start), tok_start);
 	  op.op = toktab->token; 
 	  return op;
 	}
