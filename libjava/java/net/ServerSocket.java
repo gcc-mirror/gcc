@@ -73,6 +73,11 @@ public class ServerSocket
    */
   private SocketImpl impl;
 
+  /**
+   * True if socket is bound.
+   */
+  private boolean bound;
+  
   /*
    * This constructor is only used by java.nio.
    */
@@ -225,6 +230,7 @@ public class ServerSocket
       {
 	impl.bind (tmp.getAddress (), tmp.getPort ());
 	impl.listen(backlog);
+	bound = true;
       }
     catch (IOException exception)
       {
@@ -355,6 +361,7 @@ public class ServerSocket
 	  getChannel().close();
     
 	impl = null;
+	bound = false;
       }
   }
 
@@ -379,16 +386,7 @@ public class ServerSocket
    */
   public boolean isBound()
   {
-    try
-      {
-        Object bindaddr = impl.getOption (SocketOptions.SO_BINDADDR);
-      }
-    catch (SocketException e)
-      {
-        return false;
-      }
-    
-    return true;
+    return bound;
   }
 
   /**
