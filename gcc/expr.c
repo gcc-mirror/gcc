@@ -8063,21 +8063,10 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       return const0_rtx;
 
     case COND_EXPR:
-      /* If it's void, we don't need to worry about computing a value.  */
-      if (VOID_TYPE_P (TREE_TYPE (exp)))
-	{
-	  tree pred = TREE_OPERAND (exp, 0);
-  	  tree then_ = TREE_OPERAND (exp, 1);
-  	  tree else_ = TREE_OPERAND (exp, 2);
-
-	  gcc_assert (TREE_CODE (then_) == GOTO_EXPR
-		      && TREE_CODE (GOTO_DESTINATION (then_)) == LABEL_DECL
-		      && TREE_CODE (else_) == GOTO_EXPR
-		      && TREE_CODE (GOTO_DESTINATION (else_)) == LABEL_DECL);
-
-	  jumpif (pred, label_rtx (GOTO_DESTINATION (then_)));
-	  return expand_expr (else_, const0_rtx, VOIDmode, 0);
-  	}
+      /* A COND_EXPR with its type being VOID_TYPE represents a
+	 conditional jump and is handled in
+	 expand_gimple_cond_expr.  */
+      gcc_assert (!VOID_TYPE_P (TREE_TYPE (exp)));
 
         /* Note that COND_EXPRs whose type is a structure or union
   	 are required to be constructed to contain assignments of
