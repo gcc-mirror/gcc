@@ -2635,8 +2635,12 @@ ediv (a, b, c)
      unsigned EMUSHORT *a, *b, *c;
 {
   unsigned EMUSHORT ai[NI], bi[NI];
-  int i;
+  int i, sign;
   EMULONG lt, lta, ltb;
+
+/* IEEE says if result is not a NaN, the sign is "-" if and only if
+   operands have opposite signs -- but flush -0 to 0 later if not IEEE.  */
+  sign = eisneg(a) ^ eisneg(b);
 
 #ifdef NANS
 /* Return any NaN input. */
@@ -2655,7 +2659,7 @@ ediv (a, b, c)
       || (eisinf (a) && eisinf (b)))
     {
     mtherr ("ediv", INVALID);
-    enan (c, eisneg (a) ^ eisneg (b));
+    enan (c, sign);
     return;
     }
 #endif
@@ -2663,18 +2667,14 @@ ediv (a, b, c)
 #ifdef INFINITY
   if (eisinf (b))
     {
-      if (eisneg (a) ^ eisneg (b))
-	*(c + (NE - 1)) = 0x8000;
-      else
-	*(c + (NE - 1)) = 0;
       einfin (c);
-      return;
+      goto divsign;
     }
 /* Anything else over infinity is zero. */
   if (eisinf (a))
     {
       eclear (c);
-      return;
+      goto divsign;
     }
 #endif
   emovi (a, ai);
@@ -2692,7 +2692,7 @@ ediv (a, b, c)
 	    }
 	}
       eclear (c);
-      return;
+      goto divsign;
     }
  dnzro1:
 
@@ -2706,15 +2706,11 @@ ediv (a, b, c)
 	      goto dnzro2;
 	    }
 	}
-      if (ai[0] == bi[0])
-	*(c + (NE - 1)) = 0;
-      else
-	*(c + (NE - 1)) = 0x8000;
 /* Divide by zero is not an invalid operation.
    It is a divide-by-zero operation!   */
       einfin (c);
       mtherr ("ediv", SING);
-      return;
+      goto divsign;
     }
  dnzro2:
 
@@ -2722,12 +2718,18 @@ ediv (a, b, c)
   /* calculate exponent */
   lt = ltb - lta + EXONE;
   emdnorm (bi, i, 0, lt, 64);
-  /* set the sign */
-  if (ai[0] == bi[0])
-    bi[0] = 0;
-  else
-    bi[0] = 0Xffff;
   emovo (bi, c);
+
+ divsign:
+
+  if (sign
+#ifndef IEEE
+      && (ecmp (c, ezero) != 0)
+#endif
+      )
+     *(c+(NE-1)) |= 0x8000;
+  else
+     *(c+(NE-1)) &= ~0x8000;
 }
 
 /* Multiply e-types A and B, return e-type product C.   */
@@ -2737,8 +2739,12 @@ emul (a, b, c)
      unsigned EMUSHORT *a, *b, *c;
 {
   unsigned EMUSHORT ai[NI], bi[NI];
-  int i, j;
+  int i, j, sign;
   EMULONG lt, lta, ltb;
+
+/* IEEE says if result is not a NaN, the sign is "-" if and only if
+   operands have opposite signs -- but flush -0 to 0 later if not IEEE.  */
+  sign = eisneg(a) ^ eisneg(b);
 
 #ifdef NANS
 /* NaN times anything is the same NaN. */
@@ -2757,7 +2763,7 @@ emul (a, b, c)
       || (eisinf (b) && (ecmp (a, ezero) == 0)))
     {
     mtherr ("emul", INVALID);
-    enan (c, eisneg (a) ^ eisneg (b));
+    enan (c, sign);
     return;
     }
 #endif
@@ -2765,12 +2771,8 @@ emul (a, b, c)
 #ifdef INFINITY
   if (eisinf (a) || eisinf (b))
     {
-      if (eisneg (a) ^ eisneg (b))
-	*(c + (NE - 1)) = 0x8000;
-      else
-	*(c + (NE - 1)) = 0;
       einfin (c);
-      return;
+      goto mulsign;
     }
 #endif
   emovi (a, ai);
@@ -2788,7 +2790,7 @@ emul (a, b, c)
 	    }
 	}
       eclear (c);
-      return;
+      goto mulsign;
     }
  mnzer1:
 
@@ -2803,7 +2805,7 @@ emul (a, b, c)
 	    }
 	}
       eclear (c);
-      return;
+      goto mulsign;
     }
  mnzer2:
 
@@ -2812,12 +2814,18 @@ emul (a, b, c)
   /* calculate exponent */
   lt = lta + ltb - (EXONE - 1);
   emdnorm (bi, j, 0, lt, 64);
-  /* calculate sign of product */
-  if (ai[0] == bi[0])
-    bi[0] = 0;
-  else
-    bi[0] = 0xffff;
   emovo (bi, c);
+
+ mulsign:
+
+  if (sign
+#ifndef IEEE
+      && (ecmp (c, ezero) != 0)
+#endif
+      )
+     *(c+(NE-1)) |= 0x8000;
+  else
+     *(c+(NE-1)) &= ~0x8000;
 }
 
 /* Convert double precision PE to e-type Y.  */
