@@ -1,5 +1,7 @@
 2002-02-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.c-torture/execute/20020206-1.c: New test.
+
 	PR optimization/5429:
 	* gcc.c-torture/compile/20020206-1.c: New test.
 

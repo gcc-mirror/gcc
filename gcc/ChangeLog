@@ -1,3 +1,9 @@
+2002-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/5482:
+	* c-common.c (c_expand_expr) [STMT_EXPR]: If last expression is not
+	EXPR_STMT, but COMPOUND_STMT, recurse into it.
+
 2002-02-06  Richard Henderson  <rth@redhat.com>
 
 	* cfganal.c (keep_with_call_p): Source for fixed_reg dest must
