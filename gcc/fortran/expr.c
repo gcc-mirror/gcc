@@ -618,7 +618,7 @@ gfc_type_convert_binary (gfc_expr * e)
     {
       e->ts = op1->ts;
 
-      /* Special cose for ** operator.  */
+      /* Special case for ** operator.  */
       if (e->operator == INTRINSIC_POWER)
 	goto done;
 
