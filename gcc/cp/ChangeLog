@@ -1,3 +1,13 @@
+Fri Apr 17 00:24:22 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (duplicate_decls): Fix check for when it's safe to free
+	the new decl.
+
+	* pt.c (mangle_class_name_for_template): Don't pass a typedef type
+	to type_as_string.
+	From Mark Mitchell:
+	(unify): Use comptypes to compare type args.
+
 Thu Apr 16 17:47:30 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* pt.c (build_template_parm_index): Add prototype.
