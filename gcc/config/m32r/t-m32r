@@ -1,10 +1,10 @@
 # lib1funcs.asm is currently empty.
 CROSS_LIBGCC1 =
 
-# These are really part of libgcc1, but this will cause them to be
-# built correctly, so...
-
-LIB2FUNCS_EXTRA = fp-bit.c dp-bit.c
+# We want fine grained libraries, so use the new code to build the
+# floating point emulation libraries.
+FPBIT = fp-bit.c
+DPBIT = dp-bit.c
 
 # Turn off the SDA while compiling libgcc2.  There are no headers for it
 # and we want maximal upward compatibility here.

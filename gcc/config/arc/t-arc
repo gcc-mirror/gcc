@@ -7,10 +7,10 @@ LIB1ASMFUNCS = _mulsi3 _umulsidi3 _udivsi3 _divsi3 _umodsi3 _modsi3 _divmod_tool
 # ??? -mmangle-cpu passed by default for now.
 #LIBGCC2_CFLAGS = -g1 -O2 $(LIBGCC2_INCLUDES) $(GCC_CFLAGS) -mmangle-cpu
 
-# These are really part of libgcc1, but this will cause them to be
-# built correctly, so...
-
-LIB2FUNCS_EXTRA = fp-bit.c dp-bit.c
+# We want fine grained libraries, so use the new code to build the
+# floating point emulation libraries.
+FPBIT = fp-bit.c
+DPBIT = dp-bit.c
 
 dp-bit.c: $(srcdir)/config/fp-bit.c
 	echo '#ifndef __big_endian__' > dp-bit.c

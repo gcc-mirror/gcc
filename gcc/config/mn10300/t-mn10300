@@ -1,9 +1,6 @@
 LIBGCC1=libgcc1.null
 CROSS_LIBGCC1=libgcc1.null
 
-# These are really part of libgcc1, but this will cause them to be
-# built correctly, so...
-
 # We want fine grained libraries, so use the new code to build the
 # floating point emulation libraries.
 FPBIT = fp-bit.c
