@@ -5067,11 +5067,11 @@ machine_dependent_reorg (first_insn)
 		  rtx pat = PATTERN (next);
 		  rtx src = SET_SRC (pat);
 		  rtx t = XEXP (src,0);
+		  enum machine_mode mode = GET_MODE (XEXP (pattern, 0));
 
-		  if (avr_simplify_comparision_p (GET_MODE (XEXP (pattern,0)),
-						  GET_CODE (t), x))
+		  if (avr_simplify_comparision_p (mode, GET_CODE (t), x))
 		    {
-		      XEXP (pattern,1) = GEN_INT (INTVAL (x)+1);
+		      XEXP (pattern, 1) = gen_int_mode (INTVAL (x) + 1, mode);
 		      PUT_CODE (t, avr_normalize_condition (GET_CODE (t)));
 		      INSN_CODE (next) = -1;
 		      INSN_CODE (insn) = -1;
