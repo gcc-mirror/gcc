@@ -3,7 +3,8 @@ C      (ANSI X3.9-1978 Section 13.5.9.1)
 C
 C Origin: David Billinghurst <David.Billinghurst@riotinto.com>
 C
-C { dg-do run }
+C Scratch files aren't implemented for mmixware: stubs will fail at run time.
+C { dg-do run { xfail mmix-knuth-mmixware } }
       integer i,j
 
       open(unit=10,status='SCRATCH')
