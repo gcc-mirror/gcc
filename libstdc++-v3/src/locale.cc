@@ -148,25 +148,6 @@ namespace std
     0
   };
 
-  locale::~locale() throw()
-  { _M_impl->_M_remove_reference(); }
-
-  void
-  locale::_M_coalesce(const locale& __base, const locale& __add, 
-		      category __cat)
-  {
-    __cat = _S_normalize_category(__cat);  
-    _M_impl = new _Impl(*__base._M_impl, 1);  
-
-    try 
-      { _M_impl->_M_replace_categories(__add._M_impl, __cat); }
-    catch (...) 
-      { 
-	_M_impl->_M_remove_reference(); 
-	__throw_exception_again;
-      }
-  }
-
   locale::locale() throw()
   { 
     _S_initialize(); 
@@ -178,6 +159,7 @@ namespace std
 
   // This is used to initialize global and classic locales, and
   // assumes that the _Impl objects are constructed correctly.
+  // The lack of a reference increment is intentional.
   locale::locale(_Impl* __ip) throw() : _M_impl(__ip)
   { }
 
@@ -309,6 +291,9 @@ namespace std
   locale::locale(const locale& __base, const locale& __add, category __cat)
   { _M_coalesce(__base, __add, __cat); }
 
+  locale::~locale() throw()
+  { _M_impl->_M_remove_reference(); }
+
   bool
   locale::operator==(const locale& __rhs) const throw()
   {
@@ -381,7 +366,7 @@ namespace std
 	try 
 	  {
 	    // 26 Standard facets, 2 references.
-	    // One reference for _M_classic, one for _M_global
+	    // One reference for _S_classic, one for _S_global
 	    _S_classic = new (&c_locale_impl) _Impl(0, 2, true);
 	    _S_global = _S_classic; 	    
 	    new (&c_locale) locale(_S_classic);
@@ -397,6 +382,22 @@ namespace std
 	  }
       }
     return c_locale;
+  }
+
+  void
+  locale::_M_coalesce(const locale& __base, const locale& __add, 
+		      category __cat)
+  {
+    __cat = _S_normalize_category(__cat);  
+    _M_impl = new _Impl(*__base._M_impl, 1);  
+
+    try 
+      { _M_impl->_M_replace_categories(__add._M_impl, __cat); }
+    catch (...) 
+      { 
+	_M_impl->_M_remove_reference(); 
+	__throw_exception_again;
+      }
   }
 
   locale::category

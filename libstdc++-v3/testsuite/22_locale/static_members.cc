@@ -23,8 +23,7 @@
 #include <cwchar> // for mbstate_t
 #include <locale>
 #include <iostream>
-//#include <testsuite_hooks.h>
-#define VERIFY(x) test &= x
+#include <testsuite_hooks.h>
 
 typedef std::codecvt<char, char, std::mbstate_t> ccodecvt;
 class gnu_codecvt: public ccodecvt { }; 
@@ -32,12 +31,11 @@ class gnu_codecvt: public ccodecvt { };
 void test01()
 {
   using namespace std;
-
   bool test = true;
+
   string str1, str2;
 
   // Construct a locale object with the C facet.
-  const locale loc_env("");
   const locale loc01 = locale::classic();
 
   // Construct a locale object with the specialized facet.
@@ -54,13 +52,13 @@ void test01()
   // global
   locale loc03;
   VERIFY ( loc03 == loc01);
-  locale loc04 = locale::global(loc02);
+  locale global_orig = locale::global(loc02);
   locale loc05;
   VERIFY (loc05 != loc03);
   VERIFY (loc05 == loc02);
 
-  // Reset global locale.
-  locale::global(loc_env);
+  // Reset global settings.
+  locale::global(global_orig);
 }
 
 // Sanity check locale::global(loc) and setlocale.
@@ -77,20 +75,102 @@ void test02()
 
   // Get underlying current locale and environment settings.
   const string lc_all_orig = std::setlocale(LC_ALL, NULL);
-  const locale loc_orig("");
+  const locale env_orig("");
 
   // setlocale to en_PH
   string lc_all_ph = std::setlocale(LC_ALL, ph.c_str());
 
   const locale loc_env("");
-  VERIFY( loc_env == loc_orig );
+  VERIFY( loc_env == env_orig );
 
-  locale::global(loc_mx);
+  locale global_orig = locale::global(loc_mx);
   string lc_all_mx = std::setlocale(LC_ALL, NULL);
   VERIFY( lc_all_mx == mx.c_str() );
 
-  // Restore global info.
-  locale::global(loc_orig);
+  // Restore global settings.
+  locale::global(global_orig);
+}
+
+// Static counter for use in checking ctors/dtors.
+static std::size_t counter;
+
+class surf : public std::locale::facet
+{
+public:
+  static std::locale::id 	       	id;
+  surf(size_t refs = 0): std::locale::facet(refs) { ++counter; }
+  ~surf() { --counter; }
+};
+
+std::locale::id surf::id;
+
+typedef surf facet_type;
+
+// Verify lifetimes of global objects.
+void test03()
+{
+  using namespace std;
+  bool test = true;
+
+  string name;
+  locale global_orig;
+  // 1: Destroyed when out of scope.
+  {
+    {
+      {
+	VERIFY( counter == 0 );
+	{
+	  locale loc01(locale::classic(), new facet_type);
+	  VERIFY( counter == 1 );
+	  global_orig = locale::global(loc01);
+	  name = loc01.name();
+	}
+	VERIFY( counter == 1 );
+	locale loc02 = locale();
+	// Weak, but it's something...
+	VERIFY( loc02.name() == name );
+      }
+      VERIFY( counter == 1 );
+      // NB: loc03 should be a copy of the previous global locale.
+      locale loc03 = locale::global(global_orig);
+      VERIFY( counter == 1 );
+      VERIFY( loc03.name() == name );
+    }
+    VERIFY( counter == 0 );
+    locale loc04 = locale();
+    VERIFY( loc04 == global_orig );
+  }
+
+  // 2: Not destroyed when out of scope, deliberately leaked.
+  {
+    {
+      {
+	VERIFY( counter == 0 );
+	{
+	  locale loc01(locale::classic(), new facet_type(1));
+	  VERIFY( counter == 1 );
+	  global_orig = locale::global(loc01);
+	  name = loc01.name();
+	}
+	VERIFY( counter == 1 );
+	locale loc02 = locale();
+	// Weak, but it's something...
+	VERIFY( loc02.name() == name );
+      }
+      VERIFY( counter == 1 );
+      // NB: loc03 should be a copy of the previous global locale.
+      locale loc03 = locale::global(global_orig);
+      VERIFY( counter == 1 );
+      VERIFY( loc03.name() == name );
+    }
+    VERIFY( counter == 1 );
+    locale loc04 = locale();
+    VERIFY( loc04 == global_orig );
+  }
+  VERIFY( counter == 1 );
+
+  // Restore global settings.
+  locale::global(global_orig);
 }
 
 int main ()
@@ -98,5 +178,6 @@ int main ()
   test01();
   test02();
 
+  test03();
   return 0;
 }
