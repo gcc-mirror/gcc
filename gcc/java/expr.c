@@ -1523,6 +1523,7 @@ build_field_ref (tree self_value, tree self_class, tree name)
 	  tree field_offset = 
 	    build (ARRAY_REF, integer_type_node, TYPE_OTABLE_DECL (output_class), 
 		   otable_index);
+	  field_offset = fold (convert (sizetype, field_offset));
 	  tree address 
 	    = fold (build (PLUS_EXPR, 
 			   build_pointer_type (TREE_TYPE (field_decl)),
