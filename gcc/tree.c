@@ -2053,7 +2053,7 @@ tree
 substitute_placeholder_in_expr (tree exp, tree obj)
 {
   enum tree_code code = TREE_CODE (exp);
-  tree op0, op1, op2;
+  tree op0, op1, op2, op3;
 
   /* If this is a PLACEHOLDER_EXPR, see if we find a corresponding type
      in the chain of OBJ.  */
@@ -2150,6 +2150,19 @@ substitute_placeholder_in_expr (tree exp, tree obj)
 	      return exp;
 	    else
 	      return fold (build3 (code, TREE_TYPE (exp), op0, op1, op2));
+
+	  case 4:
+	    op0 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TREE_OPERAND (exp, 0), obj);
+	    op1 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TREE_OPERAND (exp, 1), obj);
+	    op2 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TREE_OPERAND (exp, 2), obj);
+	    op3 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TREE_OPERAND (exp, 3), obj);
+
+	    if (op0 == TREE_OPERAND (exp, 0) && op1 == TREE_OPERAND (exp, 1)
+		&& op2 == TREE_OPERAND (exp, 2)
+		&& op3 == TREE_OPERAND (exp, 3))
+	      return exp;
+	    else
+	      return fold (build4 (code, TREE_TYPE (exp), op0, op1, op2, op3));
 
 	  default:
 	    abort ();
