@@ -1,5 +1,11 @@
 2002-03-13  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/sparc/sparc.h (INITIAL_FRAME_POINTER_OFFSET): Remove.
+	(ELIMINABLE_REGS): Add sfp->sp.
+	(INITIAL_ELIMINATION_OFFSET): Compute sfp->sp offset too.
+
+2002-03-13  Jakub Jelinek  <jakub@redhat.com>
+
 	PR optimization/5892
 	* config/ia64/ia64.c (rotate_one_bundle): Update current packet.
 
