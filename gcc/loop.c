@@ -3849,7 +3849,6 @@ count_one_set (struct loop_regs *regs, rtx insn, rtx x, rtx *last_set)
       rtx dest = SET_DEST (x);
       while (GET_CODE (dest) == SUBREG
 	     || GET_CODE (dest) == ZERO_EXTRACT
-	     || GET_CODE (dest) == SIGN_EXTRACT
 	     || GET_CODE (dest) == STRICT_LOW_PART)
 	dest = XEXP (dest, 0);
       if (REG_P (dest))
@@ -7595,9 +7594,8 @@ basic_induction_var (const struct loop *loop, rtx x, enum machine_mode mode,
 					dest_reg, insn,
 					inc_val, mult_val, location);
 
-	  while (GET_CODE (dest) == SIGN_EXTRACT
+	  while (GET_CODE (dest) == SUBREG
 		 || GET_CODE (dest) == ZERO_EXTRACT
-		 || GET_CODE (dest) == SUBREG
 		 || GET_CODE (dest) == STRICT_LOW_PART)
 	    dest = XEXP (dest, 0);
 	  if (dest == x)

@@ -2132,9 +2132,6 @@ for insn attributes.  @xref{Insn Attributes}.
 @cindex bit-fields
 
 Special expression codes exist to represent bit-field instructions.
-These types of expressions are lvalues in RTL; they may appear
-on the left side of an assignment, indicating insertion of a value
-into the specified bit-field.
 
 @table @code
 @findex sign_extract
@@ -2158,11 +2155,18 @@ in the @code{insv} or @code{extv} pattern.
 The mode @var{m} is the same as the mode that would be used for
 @var{loc} if it were a register.
 
+A @code{sign_extract} can not appear as an lvalue, or part thereof,
+in RTL.
+
 @findex zero_extract
 @item (zero_extract:@var{m} @var{loc} @var{size} @var{pos})
 Like @code{sign_extract} but refers to an unsigned or zero-extended
 bit-field.  The same sequence of bits are extracted, but they
 are filled to an entire word with zeros instead of by sign-extension.
+
+Unlike @code{sign_extract}, this type of expressions can be lvalues
+in RTL; they may appear on the left side of an assignment, indicating
+insertion of a value into the specified bit-field.
 @end table
 
 @node Vector Operations
@@ -2365,10 +2369,15 @@ rest of the register receives an undefined value.  Likewise, if
 the mode of the register, the rest of the register can be changed in
 an undefined way.
 
-If @var{lval} is a @code{strict_low_part} or @code{zero_extract}
-of a @code{subreg}, then the part of the register specified by the
-machine mode of the @code{subreg} is given the value @var{x} and
-the rest of the register is not changed.
+If @var{lval} is a @code{strict_low_part} of a subreg, then the part
+of the register specified by the machine mode of the @code{subreg} is
+given the value @var{x} and the rest of the register is not changed.
+
+If @var{lval} is a @code{zero_extract}, then the referenced part of
+the bit-field (a memory or register reference) specified by the
+@code{zero_extract} is given the value @var{x} and the rest of the
+bit-field is not changed.  Note that @code{sign_extract} can not
+appear in @var{lval}.
 
 If @var{lval} is @code{(cc0)}, it has no machine mode, and @var{x} may
 be either a @code{compare} expression or a value that may have any mode.

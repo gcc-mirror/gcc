@@ -1366,7 +1366,6 @@ mems_conflict_for_gcse_p (rtx dest, rtx setter ATTRIBUTE_UNUSED,
 {
   while (GET_CODE (dest) == SUBREG
 	 || GET_CODE (dest) == ZERO_EXTRACT
-	 || GET_CODE (dest) == SIGN_EXTRACT
 	 || GET_CODE (dest) == STRICT_LOW_PART)
     dest = XEXP (dest, 0);
 
@@ -2002,7 +2001,6 @@ canon_list_insert (rtx dest ATTRIBUTE_UNUSED, rtx unused1 ATTRIBUTE_UNUSED,
 
   while (GET_CODE (dest) == SUBREG
       || GET_CODE (dest) == ZERO_EXTRACT
-      || GET_CODE (dest) == SIGN_EXTRACT
       || GET_CODE (dest) == STRICT_LOW_PART)
     dest = XEXP (dest, 0);
 
@@ -2390,7 +2388,6 @@ mark_set (rtx pat, rtx insn)
 
   while (GET_CODE (dest) == SUBREG
 	 || GET_CODE (dest) == ZERO_EXTRACT
-	 || GET_CODE (dest) == SIGN_EXTRACT
 	 || GET_CODE (dest) == STRICT_LOW_PART)
     dest = XEXP (dest, 0);
 
@@ -2739,8 +2736,7 @@ try_replace_reg (rtx from, rtx to, rtx insn)
 	 have a note, and have no special SET, add a REG_EQUAL note to not
 	 lose information.  */
       if (!success && note == 0 && set != 0
-	  && GET_CODE (XEXP (set, 0)) != ZERO_EXTRACT
-	  && GET_CODE (XEXP (set, 0)) != SIGN_EXTRACT)
+	  && GET_CODE (SET_DEST (set)) != ZERO_EXTRACT)
 	note = set_unique_reg_note (insn, REG_EQUAL, copy_rtx (src));
     }
 
@@ -5960,8 +5956,7 @@ store_killed_in_insn (rtx x, rtx x_regs, rtx insn, int after)
       rtx pat = PATTERN (insn);
       rtx dest = SET_DEST (pat);
 
-      if (GET_CODE (dest) == SIGN_EXTRACT
-	  || GET_CODE (dest) == ZERO_EXTRACT)
+      if (GET_CODE (dest) == ZERO_EXTRACT)
 	dest = XEXP (dest, 0);
 
       /* Check for memory stores to aliased objects.  */

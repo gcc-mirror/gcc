@@ -1075,8 +1075,7 @@ set_noop_p (rtx set)
   if (MEM_P (dst) && MEM_P (src))
     return rtx_equal_p (dst, src) && !side_effects_p (dst);
 
-  if (GET_CODE (dst) == SIGN_EXTRACT
-      || GET_CODE (dst) == ZERO_EXTRACT)
+  if (GET_CODE (dst) == ZERO_EXTRACT)
     return rtx_equal_p (XEXP (dst, 0), src)
 	   && ! BYTES_BIG_ENDIAN && XEXP (dst, 2) == const0_rtx
 	   && !side_effects_p (src);
@@ -1405,7 +1404,6 @@ note_stores (rtx x, void (*fun) (rtx, rtx, void *), void *data)
 	      && (!REG_P (SUBREG_REG (dest))
 		  || REGNO (SUBREG_REG (dest)) >= FIRST_PSEUDO_REGISTER))
 	     || GET_CODE (dest) == ZERO_EXTRACT
-	     || GET_CODE (dest) == SIGN_EXTRACT
 	     || GET_CODE (dest) == STRICT_LOW_PART)
 	dest = XEXP (dest, 0);
 
@@ -1514,8 +1512,8 @@ note_uses (rtx *pbody, void (*fun) (rtx *, void *), void *data)
    This will be true if X is (cc0) or if X is a register and
    X dies in INSN or because INSN entirely sets X.
 
-   "Entirely set" means set directly and not through a SUBREG,
-   ZERO_EXTRACT or SIGN_EXTRACT, so no trace of the old contents remains.
+   "Entirely set" means set directly and not through a SUBREG, or
+   ZERO_EXTRACT, so no trace of the old contents remains.
    Likewise, REG_INC does not count.
 
    REG may be a hard or pseudo reg.  Renumbering is not taken into account,

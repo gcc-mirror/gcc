@@ -6734,7 +6734,6 @@ find_equiv_reg (rtx goal, rtx insn, enum reg_class class, int other,
 	      rtx dest = SET_DEST (pat);
 	      while (GET_CODE (dest) == SUBREG
 		     || GET_CODE (dest) == ZERO_EXTRACT
-		     || GET_CODE (dest) == SIGN_EXTRACT
 		     || GET_CODE (dest) == STRICT_LOW_PART)
 		dest = XEXP (dest, 0);
 	      if (REG_P (dest))
@@ -6778,7 +6777,6 @@ find_equiv_reg (rtx goal, rtx insn, enum reg_class class, int other,
 		      rtx dest = SET_DEST (v1);
 		      while (GET_CODE (dest) == SUBREG
 			     || GET_CODE (dest) == ZERO_EXTRACT
-			     || GET_CODE (dest) == SIGN_EXTRACT
 			     || GET_CODE (dest) == STRICT_LOW_PART)
 			dest = XEXP (dest, 0);
 		      if (REG_P (dest))

@@ -107,8 +107,8 @@ These are linked into a variety of lists; namely reg-def, reg-use,
 the reg-def lists contain all the refs that define a given register
 while the insn-use lists contain all the refs used by an insn.
 
-Note that the reg-def and reg-use chains are generally short (except for the
-hard registers) and thus it is much faster to search these chains
+Note that the reg-def and reg-use chains are generally short (except for
+the hard registers) and thus it is much faster to search these chains
 rather than searching the def or use bitmaps.
 
 If the insns are in SSA form then the reg-def and use-def lists
@@ -166,10 +166,13 @@ generates a use of reg 41 then a def of reg 41 (both marked read/write),
 even though reg 41 is decremented before it is used for the memory
 address in this second example.
 
-A set to a REG inside a ZERO_EXTRACT, SIGN_EXTRACT, or SUBREG invokes
-a read-modify write operation.  We generate both a use and a def
-and again mark them read/write.
-*/
+A set to a REG inside a ZERO_EXTRACT, or a set to a non-paradoxical SUBREG
+for which the number of word_mode units covered by the outer mode is
+smaller than that covered by the inner mode, invokes a read-modify-write.
+operation.  We generate both a use and a def and again mark them
+read/write.
+Paradoxical subreg writes don't leave a trace of the old content, so they
+are write-only operations.  */
 
 #include "config.h"
 #include "system.h"
@@ -858,8 +861,10 @@ df_ref_record (struct df *df, rtx reg, rtx *loc, rtx insn,
 }
 
 
-/* Return nonzero if writes to paradoxical SUBREGs, or SUBREGs which
-   are too narrow, are read-modify-write.  */
+/* A set to a non-paradoxical SUBREG for which the number of word_mode units
+   covered by the outer mode is smaller than that covered by the inner mode,
+   is a read-modify-write operation.
+   This function returns true iff the SUBREG X is such a SUBREG.  */
 bool
 read_modify_subreg_p (rtx x)
 {
@@ -868,7 +873,6 @@ read_modify_subreg_p (rtx x)
     return false;
   isize = GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)));
   osize = GET_MODE_SIZE (GET_MODE (x));
-  /* Paradoxical subreg writes don't leave a trace of the old content.  */
   return (isize > osize && isize > UNITS_PER_WORD);
 }
 
@@ -909,7 +913,6 @@ df_def_record_1 (struct df *df, rtx x, basic_block bb, rtx insn)
      be handy for the reg allocator.  */
   while (GET_CODE (dst) == STRICT_LOW_PART
 	 || GET_CODE (dst) == ZERO_EXTRACT
-	 || GET_CODE (dst) == SIGN_EXTRACT
 	 || ((df->flags & DF_FOR_REGALLOC) == 0
              && read_modify_subreg_p (dst)))
     {

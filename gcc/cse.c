@@ -4865,7 +4865,7 @@ cse_insn (rtx insn, rtx libcall_insn)
       else
 	SET_SRC (sets[i].rtl) = new;
 
-      if (GET_CODE (dest) == ZERO_EXTRACT || GET_CODE (dest) == SIGN_EXTRACT)
+      if (GET_CODE (dest) == ZERO_EXTRACT)
 	{
 	  validate_change (insn, &XEXP (dest, 1),
 			   canon_reg (XEXP (dest, 1), insn), 1);
@@ -4873,9 +4873,9 @@ cse_insn (rtx insn, rtx libcall_insn)
 			   canon_reg (XEXP (dest, 2), insn), 1);
 	}
 
-      while (GET_CODE (dest) == SUBREG || GET_CODE (dest) == STRICT_LOW_PART
+      while (GET_CODE (dest) == SUBREG
 	     || GET_CODE (dest) == ZERO_EXTRACT
-	     || GET_CODE (dest) == SIGN_EXTRACT)
+	     || GET_CODE (dest) == STRICT_LOW_PART)
 	dest = XEXP (dest, 0);
 
       if (MEM_P (dest))
@@ -4972,8 +4972,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 	 causes later instructions to be mis-optimized.  */
       /* If storing a constant in a bitfield, pre-truncate the constant
 	 so we will be able to record it later.  */
-      if (GET_CODE (SET_DEST (sets[i].rtl)) == ZERO_EXTRACT
-	  || GET_CODE (SET_DEST (sets[i].rtl)) == SIGN_EXTRACT)
+      if (GET_CODE (SET_DEST (sets[i].rtl)) == ZERO_EXTRACT)
 	{
 	  rtx width = XEXP (SET_DEST (sets[i].rtl), 1);
 
@@ -5629,11 +5628,9 @@ cse_insn (rtx insn, rtx libcall_insn)
       /* Now deal with the destination.  */
       do_not_record = 0;
 
-      /* Look within any SIGN_EXTRACT or ZERO_EXTRACT
-	 to the MEM or REG within it.  */
-      while (GET_CODE (dest) == SIGN_EXTRACT
+      /* Look within any ZERO_EXTRACT to the MEM or REG within it.  */
+      while (GET_CODE (dest) == SUBREG
 	     || GET_CODE (dest) == ZERO_EXTRACT
-	     || GET_CODE (dest) == SUBREG
 	     || GET_CODE (dest) == STRICT_LOW_PART)
 	dest = XEXP (dest, 0);
 
@@ -5661,8 +5658,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 	 because the value in it after the store
 	 may not equal what was stored, due to truncation.  */
 
-      if (GET_CODE (SET_DEST (sets[i].rtl)) == ZERO_EXTRACT
-	  || GET_CODE (SET_DEST (sets[i].rtl)) == SIGN_EXTRACT)
+      if (GET_CODE (SET_DEST (sets[i].rtl)) == ZERO_EXTRACT)
 	{
 	  rtx width = XEXP (SET_DEST (sets[i].rtl), 1);
 

@@ -570,7 +570,6 @@ find_mem_conflicts (rtx dest, rtx setter ATTRIBUTE_UNUSED,
 
   while (GET_CODE (dest) == SUBREG
 	 || GET_CODE (dest) == ZERO_EXTRACT
-	 || GET_CODE (dest) == SIGN_EXTRACT
 	 || GET_CODE (dest) == STRICT_LOW_PART)
     dest = XEXP (dest, 0);
 

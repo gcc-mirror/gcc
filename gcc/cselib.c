@@ -1148,8 +1148,9 @@ cselib_invalidate_mem (rtx mem_rtx)
 void
 cselib_invalidate_rtx (rtx dest)
 {
-  while (GET_CODE (dest) == STRICT_LOW_PART || GET_CODE (dest) == SIGN_EXTRACT
-	 || GET_CODE (dest) == ZERO_EXTRACT || GET_CODE (dest) == SUBREG)
+  while (GET_CODE (dest) == SUBREG
+	 || GET_CODE (dest) == ZERO_EXTRACT
+	 || GET_CODE (dest) == STRICT_LOW_PART)
     dest = XEXP (dest, 0);
 
   if (REG_P (dest))

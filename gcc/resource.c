@@ -299,13 +299,12 @@ mark_referenced_resources (rtx x, struct resources *res,
     case SET:
       /* Usually, the first operand of SET is set, not referenced.  But
 	 registers used to access memory are referenced.  SET_DEST is
-	 also referenced if it is a ZERO_EXTRACT or SIGN_EXTRACT.  */
+	 also referenced if it is a ZERO_EXTRACT.  */
 
       mark_referenced_resources (SET_SRC (x), res, 0);
 
       x = SET_DEST (x);
-      if (GET_CODE (x) == SIGN_EXTRACT
-	  || GET_CODE (x) == ZERO_EXTRACT
+      if (GET_CODE (x) == ZERO_EXTRACT
 	  || GET_CODE (x) == STRICT_LOW_PART)
 	mark_referenced_resources (x, res, 0);
       else if (GET_CODE (x) == SUBREG)

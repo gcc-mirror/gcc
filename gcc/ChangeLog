@@ -1,3 +1,42 @@
+2005-01-05  Steven Bosscher  <stevenb@suse.de>
+
+	* combine.c (expand_compound_operation)  <ZERO_EXTRACT>: Add
+	comment that we fall through after case.
+	(mark_used_regs_combine): Don't expect a SIGN_EXTRACT in a SET_DEST.
+	(distribute_links): Likewise.
+	* cse.c (cse_insn): Likewise.
+	* cselib.c (cselib_invalidate_mem): Likewise.
+	* df.c: Update comments at the top of the file.
+	(read_modify_subreg_p): Update comments here too.
+	(df_def_record_1): Don't expect a SIGN_EXTRACT in a SET_DEST.
+	* flow.c (mark_set_1): Likewise.
+	(mark_used_regs): Likewise.
+	* gcse.c (mems_conflict_for_gcse_p): Likewise.
+	(canon_list_insert): Likewise.
+	(mark_set): Likewise.
+	(try_replace_reg): Likewise.
+	(store_killed_in_insn): Likewise.
+	* loop.c (count_one_set): Likewise.
+	(basic_induction_var): Likewise.
+	* postreload-gcse.c (find_mem_conflicts): Likewise.
+	* postreload.c (reload_combine_note_store): Likewise.
+	(move2add_note_store): Likewise.
+	* reload.c (find_equiv_reg): Likewise.
+	(mark_referenced_resources): Likewise.
+	* rtlanal.c (set_noop_p): Likewise.
+	(note_stores): Likewise.
+	(note_uses): Likewise.
+	* sched-deps.c (sched_analyze_1): Likewise.
+	* sched-rgn.c (check_live_1): Likewise.
+	(update_live_1): Likewise.
+	* config/i860/i860.c: Likewise.
+
+	* rtl.dec (SIGN_EXTRACT): Document that this cannot appear as
+	an lvalue.
+	(ZERO_EXTRACT): Mention that this one can be an lvalue.
+
+	* doc/rtl.texi: Update documentation for bit-fields and SET.
+
 2005-01-05  Roger Sayle  <roger@eyesopen.com>
 
 	* ifcvt.c (find_if_case_1): Revert 2005-01-04 change.
