@@ -1520,7 +1520,7 @@ arm_rtx_costs (x, code, outer_code)
 	  int j;
 	  /* Tune as appropriate */ 
 	  int booth_unit_size = ((tune_flags & FL_FAST_MULT) ? 8 : 2);
-
+	  
 	  for (j = 0; i && j < 32; j += booth_unit_size)
 	    {
 	      i >>= booth_unit_size;

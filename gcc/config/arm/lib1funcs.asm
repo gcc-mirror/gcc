@@ -43,6 +43,10 @@ Boston, MA 02111-1307, USA.  */
 #define RETCOND
 #endif
 
+#ifndef __USER_LABEL_PREFIX__
+#error  __USER_LABEL_PREFIX__ not defined
+#endif
+
 #ifdef __elf__
 #define __PLT__ (PLT)
 #define TYPE(x) .type SYM(x),function
@@ -51,10 +55,6 @@ Boston, MA 02111-1307, USA.  */
 #define __PLT__
 #define TYPE(x)
 #define SIZE(x)
-#endif
-
-#ifndef __USER_LABEL_PREFIX__
-#define __USER_LABEL_PREFIX__ _
 #endif
 
 /* ANSI concatenation macros.  */
@@ -78,7 +78,7 @@ lr		.req	r14
 pc		.req	r15
 	
 	.text
-	.globl	SYM(__udivsi3)
+	.globl	SYM (__udivsi3)
 	TYPE 	(__udivsi3)
 	.align	0
 
@@ -156,8 +156,8 @@ lr		.req	r14
 pc		.req	r15
 	
 	.text
-	.globl SYM (__umodsi3)
-	TYPE  (__umodsi3)
+	.globl	SYM (__umodsi3)
+	TYPE	(__umodsi3)
 	.align 0
 
 SYM (__umodsi3):
@@ -246,8 +246,8 @@ lr		.req	r14
 pc		.req	r15
 	
 	.text
-	.globl SYM (__divsi3)
-	TYPE   (__divsi3)
+	.globl	SYM (__divsi3)
+	TYPE	(__divsi3)
 	.align 0
 
 SYM (__divsi3):
@@ -331,8 +331,8 @@ lr		.req	r14
 pc		.req	r15
 	
 	.text
-	.globl SYM (__modsi3)
-	TYPE   (__modsi3)
+	.globl	SYM (__modsi3)
+	TYPE	(__modsi3)
 	.align 0
 
 SYM (__modsi3):
@@ -422,8 +422,8 @@ Ldiv0:
 
 #ifdef L_dvmd_tls
 
-	.globl SYM (__div0)
-	TYPE   (__div0)
+	.globl	SYM (__div0)
+	TYPE	(__div0)
 	.align 0
 SYM (__div0):
 	RET	pc, lr
@@ -439,8 +439,8 @@ SYM (__div0):
 	
 #define SIGFPE	8			@ cant use <asm/signal.h> as it
 					@ contains too much C rubbish
-	.globl SYM (__div0)
-	TYPE   (__div0)
+	.globl	SYM (__div0)
+	TYPE	(__div0)
 	.align 0
 SYM (__div0):
 	stmfd	sp!, {r1, lr}
@@ -472,10 +472,13 @@ SYM (__div0):
 	.code 16
 .macro call_via register
 	.globl	SYM (_call_via_\register)
+	TYPE	(_call_via_\register)
 	.thumb_func
 SYM (_call_via_\register):
 	bx	\register
 	nop
+
+	SIZE	(_call_via_\register)
 .endm
 
 	call_via r0
@@ -513,6 +516,7 @@ SYM (_call_via_\register):
 	.align 0
 
 	.code   32
+	.globl _arm_return
 _arm_return:		
 	ldmia 	r13!, {r12}
 	bx 	r12
@@ -521,6 +525,7 @@ _arm_return:
 .macro interwork register					
 	.code   16
 	.globl	SYM (_interwork_call_via_\register)
+	TYPE	(_interwork_call_via_\register)
 	.thumb_func
 SYM (_interwork_call_via_\register):
 	bx 	pc
@@ -533,6 +538,8 @@ SYM (_interwork_call_via_\register):
 	stmeqdb	r13!, {lr}
 	adreq	lr, _arm_return
 	bx	\register
+
+	SIZE	(_interwork_call_via_\register)
 .endm
 	
 	interwork r0
@@ -549,6 +556,25 @@ SYM (_interwork_call_via_\register):
 	interwork fp
 	interwork ip
 	interwork sp
-	interwork lr
-		
+	
+	/* The lr case has to be handled a little differently...*/
+	.code 16
+	.globl	SYM (_interwork_call_via_lr)
+	TYPE	(_interwork_call_via_lr)
+	.thumb_func
+SYM (_interwork_call_via_lr):
+	bx 	pc
+	nop
+	
+	.code 32
+	.globl .Lchange_lr
+.Lchange_lr:
+	tst	lr, #1
+	stmeqdb	r13!, {lr}
+	mov	ip, lr
+	adreq	lr, _arm_return
+	bx	ip
+	
+	SIZE	(_interwork_call_via_lr)
+	
 #endif /* L_interwork_call_via_rX */
