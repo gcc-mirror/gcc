@@ -1,3 +1,13 @@
+2000-03-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (revert_static_member_fn): Change prototype.
+	* decl.c (grokfndecl): Adjust call to revert_static_member_fn.
+	(grok_op_properties): Likewise.
+	(start_function): Likewise.
+	(revert_static_member_fn): Simplify.
+	* pt.c (check_explicit_specialization): Adjust call to
+	revert_static_member_fn.
+
 2000-03-11  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (scope_kind): New type.
