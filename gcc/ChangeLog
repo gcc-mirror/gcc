@@ -1,3 +1,8 @@
+Wed Aug 25 11:18:39 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* toplev.c (rest_of_compilation): Use decl_printable_name when opening
+ 	gcse dump file.
+
 Wed Aug 25 10:57:12 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/telf.h (ASM_WEAKEN_LABEL): Define.
