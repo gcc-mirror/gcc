@@ -1,3 +1,9 @@
+2004-06-17  Corinna Vinschen  <vinschen@redhat.com>
+
+	* configure.in: Don't build Cygwin native newlib if winsup
+	directory is missing.  Emit warning instead.
+	* configure: Regenerate.
+
 2004-06-09  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.tpl (touch-stage[+id+]): New.

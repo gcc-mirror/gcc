@@ -585,8 +585,13 @@ case "${target}" in
   *-*-cygwin*)
     target_configdirs="$target_configdirs target-libtermcap target-winsup"
     noconfigdirs="$noconfigdirs target-gperf target-libgloss ${libgcj}"
-    # always build newlib.
-    skipdirs=`echo " ${skipdirs} " | sed -e 's/ target-newlib / /'`
+    # always build newlib if winsup directory is present.
+    if test -d winsup
+    then
+      skipdirs=`echo " ${skipdirs} " | sed -e 's/ target-newlib / /'`
+    else
+      echo "Warning: winsup is missing so newlib can't be built."
+    fi
 
     # Can't build gdb for Cygwin if not native.
     case "${host}" in
