@@ -2187,7 +2187,7 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
 
   i = fn_type_unification (tmpl, explicit_targs, targs,
 			   args_without_in_chrg,
-			   return_type, strict, -1);
+			   return_type, strict);
 
   if (i != 0)
     return NULL;
