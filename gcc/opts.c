@@ -139,6 +139,7 @@ static void complain_wrong_lang (const char *, const struct cl_option *,
 static void handle_options (unsigned int, const char **, unsigned int);
 static void wrap_help (const char *help, const char *item, int item_width);
 static void print_help (void);
+static void print_filtered_help (unsigned int flag);
 
 /* Perform a binary search to find which option the command-line INPUT
    matches.  Returns its index in the option array, and N_OPTS
@@ -1485,16 +1486,45 @@ fast_math_flags_set_p (void)
 static void
 print_help (void)
 {
-  size_t i, len;
+  size_t i;
 
-  puts (_("\nThe following options are language-independent:\n"));
+  puts (_("The following options are language-independent:\n"));
+
+  print_filtered_help (CL_COMMON);
+
+  for (i = 0; lang_names[i]; i++)
+    {
+      printf (_("\nThe %s front end recognizes the following options:\n"),
+	      lang_names[i]);
+      print_filtered_help (1U << i);
+    }
+
+  puts ( "\n" );
+  display_help ();
+}
+
+/* Print help for a specific front-end, etc.  */
+static void
+print_filtered_help (unsigned int flag)
+{
+  size_t i, len;
+  unsigned int filter;
+
+  /* Don't print COMMON options twice.  */
+  filter = flag;
+  if (flag != CL_COMMON)
+    filter |= CL_COMMON;
 
   for (i = 0; i < cl_options_count; i++)
     {
-      const char *help = cl_options[i].help;
+      const char *help;
       const char *opt, *tab;
 
+      if ((cl_options[i].flags & filter) != flag)
+	continue;
+
       /* During transition, ignore switches with no help.  */
+      help = cl_options[i].help;
       if (!help)
 	continue;
 
@@ -1516,9 +1546,6 @@ print_help (void)
 
       wrap_help (help, opt, len);
     }
-
-  puts ( "\n" );
-  display_help ();
 }
 
 /* Output ITEM, of length ITEM_WIDTH, in the left column, followed by

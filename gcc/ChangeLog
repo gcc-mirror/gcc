@@ -1,3 +1,12 @@
+2003-07-15  Neil Booth  <neil@daikokuya.co.uk>
+
+	* c-opts.c (print_help): Remove.
+	(c_common_handle_option): Don't handle --help.
+	* c.opt: Document some options.
+	(--help): Remove.
+	* opts.c (print_filtered_help): New.
+	(print_help): Use it.
+
 2003-07-14  Geoffrey Keating  <geoffk@apple.com>
 
 	* c-common.c (c_common_type_for_mode): Handle V4DFmode.

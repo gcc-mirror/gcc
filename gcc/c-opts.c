@@ -99,7 +99,6 @@ static size_t include_cursor;
 static bool permit_fortran_options;
 
 static void set_Wimplicit (int);
-static void print_help (void);
 static void handle_OPT_d (const char *);
 static void set_std_cxx98 (int);
 static void set_std_c89 (int, int);
@@ -253,10 +252,6 @@ c_common_handle_option (size_t scode, const char *arg, int value)
     {
     default:
       result = permit_fortran_options;
-      break;
-
-    case OPT__help:
-      print_help ();
       break;
 
     case OPT__output_pch_:
@@ -1537,92 +1532,4 @@ handle_OPT_d (const char *arg)
 	flag_dump_includes = 1;
 	break;
       }
-}
-
-/* Handle --help output.  */
-static void
-print_help (void)
-{
-  /* To keep the lines from getting too long for some compilers, limit
-     to about 500 characters (6 lines) per chunk.  */
-  fputs (_("\
-Switches:\n\
-  -include <file>           Include the contents of <file> before other files\n\
-  -imacros <file>           Accept definition of macros in <file>\n\
-  -iprefix <path>           Specify <path> as a prefix for next two options\n\
-  -iwithprefix <dir>        Add <dir> to the end of the system include path\n\
-  -iwithprefixbefore <dir>  Add <dir> to the end of the main include path\n\
-  -isystem <dir>            Add <dir> to the start of the system include path\n\
-"), stdout);
-  fputs (_("\
-  -idirafter <dir>          Add <dir> to the end of the system include path\n\
-  -I <dir>                  Add <dir> to the end of the main include path\n\
-  -I-                       Fine-grained include path control; see info docs\n\
-  -nostdinc                 Do not search system include directories\n\
-                             (dirs specified with -isystem will still be used)\n\
-  -nostdinc++               Do not search system include directories for C++\n\
-  -o <file>                 Put output into <file>\n\
-"), stdout);
-  fputs (_("\
-  -trigraphs                Support ISO C trigraphs\n\
-  -std=<std name>           Specify the conformance standard; one of:\n\
-                            gnu89, gnu99, c89, c99, iso9899:1990,\n\
-                            iso9899:199409, iso9899:1999, c++98\n\
-  -w                        Inhibit warning messages\n\
-  -W[no-]trigraphs          Warn if trigraphs are encountered\n\
-  -W[no-]comment{s}         Warn if one comment starts inside another\n\
-"), stdout);
-  fputs (_("\
-  -W[no-]traditional        Warn about features not present in traditional C\n\
-  -W[no-]undef              Warn if an undefined macro is used by #if\n\
-  -W[no-]import             Warn about the use of the #import directive\n\
-"), stdout);
-  fputs (_("\
-  -W[no-]error              Treat all warnings as errors\n\
-  -W[no-]system-headers     Do not suppress warnings from system headers\n\
-  -W[no-]all                Enable most preprocessor warnings\n\
-"), stdout);
-  fputs (_("\
-  -M                        Generate make dependencies\n\
-  -MM                       As -M, but ignore system header files\n\
-  -MD                       Generate make dependencies and compile\n\
-  -MMD                      As -MD, but ignore system header files\n\
-  -MF <file>                Write dependency output to the given file\n\
-  -MG                       Treat missing header file as generated files\n\
-"), stdout);
-  fputs (_("\
-  -MP			    Generate phony targets for all headers\n\
-  -MQ <target>              Add a MAKE-quoted target\n\
-  -MT <target>              Add an unquoted target\n\
-"), stdout);
-  fputs (_("\
-  -D<macro>                 Define a <macro> with string '1' as its value\n\
-  -D<macro>=<val>           Define a <macro> with <val> as its value\n\
-  -A<question>=<answer>     Assert the <answer> to <question>\n\
-  -A-<question>=<answer>    Disable the <answer> to <question>\n\
-  -U<macro>                 Undefine <macro> \n\
-  -v                        Display the version number\n\
-"), stdout);
-  fputs (_("\
-  -H                        Print the name of header files as they are used\n\
-  -C                        Do not discard comments\n\
-  -dM                       Display a list of macro definitions active at end\n\
-  -dD                       Preserve macro definitions in output\n\
-  -dN                       As -dD except that only the names are preserved\n\
-  -dI                       Include #include directives in the output\n\
-"), stdout);
-  fputs (_("\
-  -f[no-]preprocessed       Treat the input file as already preprocessed\n\
-  -ftabstop=<number>        Distance between tab stops for column reporting\n\
-  -ftarget-charset=<c>      Convert all strings and character constants\n\
-                            to character set <c>\n\
-  -ftarget-wide-charset=<c> Convert all wide strings and character constants\n\
-                            to character set <c>\n\
-"), stdout);
-  fputs (_("\
-  -isysroot <dir>           Set <dir> to be the system root directory\n\
-  -P                        Do not generate #line directives\n\
-  -remap                    Remap file names when including files\n\
-  --help                    Display this information\n\
-"), stdout);
 }

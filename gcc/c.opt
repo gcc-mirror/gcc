@@ -67,71 +67,86 @@ C++
 Language
 ObjC++
 
--help
-C ObjC C++ ObjC++
-
 -output-pch=
 C ObjC C++ ObjC++ Joined Separate
 
 A
 C ObjC C++ ObjC++ Joined Separate
+-A<question>=<answer>	Assert the <answer> to <question>.  Putting '-' before <question> disables the <answer> to <question>
 
 C
 C ObjC C++ ObjC++
+Do not discard comments
 
 CC
 C ObjC C++ ObjC++
+Do not discard comments in macro expansions
 
 D
 C ObjC C++ ObjC++ Joined Separate
+-D<macro>[=<val>]	Define a <macro> with <val> as its value.  If just <macro> is given, <val> is taken to be 1
 
 E
 C ObjC C++ ObjC++
 
 H
 C ObjC C++ ObjC++
+Print the name of header files as they are used
 
 I
 C ObjC C++ ObjC++ Joined Separate
+-I <dir>	Add <dir> to the end of the main include path.  -I- gives more include path control; see info documentation
 
 M
 C ObjC C++ ObjC++
+Generate make dependencies
 
 MD
 C ObjC C++ ObjC++ Separate
+Generate make dependencies and compile
 
 MF
 C ObjC C++ ObjC++ Joined Separate
+-MF <file>	Write dependency output to the given file
 
 MG
 C ObjC C++ ObjC++
+Treat missing header files as generated files
 
 MM
 C ObjC C++ ObjC++
+Like -M but ignore system header files
 
 MMD
 C ObjC C++ ObjC++ Separate
+Like -MD but ignore system header files
 
 MP
 C ObjC C++ ObjC++
+Generate phony targets for all headers
 
 MQ
 C ObjC C++ ObjC++ Joined Separate
+-MQ <target>	Add a MAKE-quoted target
 
 MT
 C ObjC C++ ObjC++ Joined Separate
+-MT <target>	Add an unquoted target
 
 P
 C ObjC C++ ObjC++
+Do not generate #line directives
 
 U
 C ObjC C++ ObjC++ Joined Separate
+-U<macro>	Undefine <macro>
 
 Wabi
 C++ ObjC++
 
 Wall
 C ObjC C++ ObjC++
+Enable most preprocessor warnings
 
 Wbad-function-cast
 C ObjC
@@ -144,9 +159,11 @@ C ObjC C++ ObjC++
 
 Wcomment
 C ObjC C++ ObjC++
+Warn about possibly nested block comments, and C++ comments spanning more than one physical line
 
 Wcomments
 C ObjC C++ ObjC++
+Synonym for -Wcomment
 
 Wconversion
 C ObjC C++ ObjC++
@@ -165,9 +182,11 @@ C++ ObjC++
 
 Wendif-labels
 C ObjC C++ ObjC++
+Warn about stray tokens after #elif and #endif
 
 Werror
 C ObjC C++ ObjC++
+; Documented in common.opt
 
 Werror-implicit-function-declaration
 C ObjC RejectNegative
@@ -207,6 +226,7 @@ C ObjC
 
 Wimport
 C ObjC C++ ObjC++
+Warn about uses of the #import directive
 
 Winvalid-offsetof
 C++ ObjC++
@@ -294,24 +314,29 @@ C++ ObjC++
 
 Wsystem-headers
 C ObjC C++ ObjC++
+Do not suppress warnings from system headers
 
 Wtraditional
 C ObjC
+Warn about features not present in traditional C
 
 Wtrigraphs
 C ObjC C++ ObjC++
+Warn if trigraphs are encountered that might affect the meaning of the program
 
 Wundeclared-selector
 ObjC ObjC++
 
 Wundef
 C ObjC C++ ObjC++
+Warn if an undefined macro is used in an #if directive
 
 Wunknown-pragmas
 C ObjC C++ ObjC++
 
 Wunused-macros
 C ObjC C++ ObjC++
+Warn about macros defined in the main file that are not used
 
 Wwrite-strings
 C ObjC C++ ObjC++
@@ -321,6 +346,7 @@ C ObjC C++ ObjC++
 
 d
 C ObjC C++ ObjC++ Joined
+; Documented in common.opt.  FIXME - what about -dI, -dD, -dN and -dD?
 
 fabi-version=
 C++ ObjC++ Joined UInteger
@@ -363,6 +389,7 @@ C++ ObjC++
 
 fdollars-in-identifiers
 C ObjC C++ ObjC++
+Permit '$' as an identifier character
 
 fdump-
 C ObjC C++ ObjC++ Joined RejectNegative
@@ -378,6 +405,7 @@ C++ ObjC++
 
 fexec-charset=
 C ObjC C++ ObjC++ Joined RejectNegative
+-fexec-charset=<cset>	Convert all strings and character constants to character set <cset>
 
 fexternal-templates
 C++ ObjC++
@@ -459,6 +487,7 @@ C++ ObjC++
 
 fpreprocessed
 C ObjC C++ ObjC++
+Treat the input file as already preprocessed
 
 frepo
 C++ ObjC++
@@ -495,6 +524,7 @@ C++ ObjC++
 
 ftabstop=
 C ObjC C++ ObjC++ Joined RejectNegative UInteger
+-ftabstop=<number>	Distance between tab stops for column reporting
 
 ftemplate-depth-
 C++ ObjC++ Joined RejectNegative UInteger 
@@ -522,6 +552,7 @@ C++ ObjC++
 
 fwide-exec-charset=
 C ObjC C++ ObjC++ Joined RejectNegative
+-fwide-exec-charset=<cset>	Convert all wide strings and character constants to character set <cset>
 
 fxref
 C++ ObjC++
@@ -531,104 +562,137 @@ ObjC ObjC++
 
 idirafter
 C ObjC C++ ObjC++ Joined Separate
+-idirafter <dir>	Add <dir> to the end of the system include path
 
 imacros
 C ObjC C++ ObjC++ Joined Separate
+-imacros <file>	Accept definition of macros in <file>
 
 include
 C ObjC C++ ObjC++ Joined Separate
+-include <file>	Include the contents of <file> before other files
 
 iprefix
 C ObjC C++ ObjC++ Joined Separate
+-iprefix <path>	Specify <path> as a prefix for next two options
 
 isysroot
 C ObjC C++ ObjC++ Joined Separate
+-isysroot <dir>	Set <dir> to be the system root directory
 
 isystem
 C ObjC C++ ObjC++ Joined Separate
+-isystem <dir>	Add <dir> to the start of the system include path
 
 iwithprefix
 C ObjC C++ ObjC++ Joined Separate
+-iwithprefix <dir>	Add <dir> to the end of the system include path
 
 iwithprefixbefore
 C ObjC C++ ObjC++ Joined Separate
+-iwithprefixbefore <dir>	Add <dir> to the end of the main include path
 
 lang-asm
 C
+For internal use only
 
 lang-objc
 C ObjC C++ ObjC++
+For internal use only
 
 nostdinc
 C ObjC C++ ObjC++
+Do not search standard system include directories (those specified with -isystem will still be used)
 
 nostdinc++
-C ObjC C++ ObjC++
+C++ ObjC++
+Do not search standard system include directories for C++
 
 o
 C ObjC C++ ObjC++ Joined Separate
+; Documented in common.opt
 
 pedantic
 C ObjC C++ ObjC++
+; Documented in common.opt
 
 pedantic-errors
 C ObjC C++ ObjC++
+; Documented in common.opt
 
 print-objc-runtime-info
 ObjC ObjC++
 
 remap
 C ObjC C++ ObjC++
+Remap file names when including files
 
 std=c++98
 C++ ObjC++
+Conform to the ISO 1998 C++ standard
 
 std=c89
 C ObjC
+Conform to the ISO 1990 C standard
 
 std=c99
 C ObjC
+Conform to the ISO 1999 C standard
 
 std=c9x
 C ObjC
+Deprecated in favor of -std=c99
 
 std=gnu++98
 C++ ObjC++
+Conform to the ISO 1998 C++ standard with GNU extensions
 
 std=gnu89
 C ObjC
+Conform to the ISO 1990 C standard with GNU extensions
 
 std=gnu99
 C ObjC
+Conform to the ISO 1999 C standard with GNU extensions
 
 std=gnu9x
 C ObjC
+Deprecated in favor of -std=gnu99
 
 std=iso9899:1990
 C ObjC
+Deprecated in favor of -std=c89
 
 std=iso9899:199409
 C ObjC
+Conform to the ISO 1990 C standard as amended in 1994
 
 std=iso9899:1999
 C ObjC
+Deprecated in favor of -std=c99
 
 std=iso9899:199x
 C ObjC
+Deprecated in favor of -std=c99
 
 traditional-cpp
 C ObjC C++ ObjC++
+Enable traditional preprocessing
 
 trigraphs
 C ObjC C++ ObjC++
+-trigraphs	Support ISO C trigraphs
 
 undef
 C ObjC C++ ObjC++
+Do not predefine system-specific and GCC-specific macros
 
 v
 C ObjC C++ ObjC++
+Enable verbose output
 
 w
 C ObjC C++ ObjC++
+; Documented in common.opt
 
 ; This comment is to ensure we retain the blank line above.
