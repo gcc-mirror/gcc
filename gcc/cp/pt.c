@@ -6732,6 +6732,22 @@ tsubst_function_type (tree t,
   return_type = tsubst (TREE_TYPE (t), args, complain, in_decl);
   if (return_type == error_mark_node)
     return error_mark_node;
+  /* The standard does not presently indicate that creation of a
+     function type with an invalid return type is a deduction failure.
+     However, that is clearly analagous to creating an array of "void"
+     or a reference to a reference.  This is core issue #486.  */ 
+  if (TREE_CODE (return_type) == ARRAY_TYPE
+      || TREE_CODE (return_type) == FUNCTION_TYPE)
+    {
+      if (complain & tf_error)
+	{
+	  if (TREE_CODE (return_type) == ARRAY_TYPE)
+	    error ("function returning an array");
+	  else
+	    error ("function returning a function");
+	}
+      return error_mark_node;
+    }
 
   /* Substitute the argument types.  */
   arg_types = tsubst_arg_types (TYPE_ARG_TYPES (t), args,
