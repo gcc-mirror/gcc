@@ -1,3 +1,11 @@
+2004-12-02  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* tree.c (is_attribute_p): Split out to ..
+	(is_attribute_with_length_p): Here.  Use IDENTIFIER_LENGTH instead
+	of strlen and compare the string lengths before calling strcmp.
+	(lookup_attribute): Call is_attribute_with_length_p instead of
+	is_attribute_p.
+
 2004-12-02  Devang Patel  <dpatel@apple.com>
 
 	* config/darwin.h (TARGET_OPTION_TRANSLATE_TABLE): Add -gfull and -gused.
