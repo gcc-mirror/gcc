@@ -3470,7 +3470,7 @@
   "*
 {
   if (TARGET_FAST_INDIRECT_CALLS)
-    return \"blr 0,%%r2\;bv,n 0(%r0)\;ldo 4(%%r2),%%r2\";
+    return \"ble 0(%%sr4,%r0)\;copy %%r31,%%r2\";
 
   /* Yuk!  bl may not be able to reach $$dyncall.  */
   if (TARGET_PORTABLE_RUNTIME || TARGET_MILLICODE_LONG_CALLS)
@@ -3569,7 +3569,7 @@
   "*
 {
   if (TARGET_FAST_INDIRECT_CALLS)
-    return \"blr 0,%%r2\;bv,n 0(%r1)\;ldo 4(%%r2),%%r2\";
+    return \"ble 0(%%sr4,%r1)\;copy %%r31,%%r2\";
 
   /* Yuk!  bl may not be able to reach $$dyncall.  */
   if (TARGET_PORTABLE_RUNTIME || TARGET_MILLICODE_LONG_CALLS)
