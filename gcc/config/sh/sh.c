@@ -3949,29 +3949,11 @@ sh_expand_prologue ()
      that already happens to be at the function start into the prologue.  */
   if (target_flags != save_flags)
     emit_insn (gen_toggle_sz ());
-  if (flag_pic && (current_function_uses_pic_offset_table
-		   || regs_ever_live[PIC_OFFSET_TABLE_REGNUM]))
-    {
-      if ((live_regs_mask & (1 << PIC_OFFSET_TABLE_REGNUM)) != 0)
-	abort ();
-      d += UNITS_PER_WORD;
-      live_regs_mask |= (1 << PIC_OFFSET_TABLE_REGNUM);
-    }
+    
   push_regs (live_regs_mask, live_regs_mask2);
 
-  if (flag_pic && (current_function_uses_pic_offset_table
-		   || regs_ever_live[PIC_OFFSET_TABLE_REGNUM]))
-    {
-      rtx insn = get_last_insn ();
-      rtx insn_end = emit_insn (gen_GOTaddr2picreg ());
-      while (insn != insn_end)
-	{
-	  insn = NEXT_INSN (insn);
-	  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD,
-						const0_rtx,
-						REG_NOTES (insn));
-	}
-    }
+  if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
+    emit_insn (gen_GOTaddr2picreg ());
 
   if (target_flags != save_flags)
     emit_insn (gen_toggle_sz ());
@@ -3996,14 +3978,6 @@ sh_expand_epilogue ()
   int frame_size;
 
   live_regs_mask = calc_live_regs (&d, &live_regs_mask2);
-
-  if (flag_pic && current_function_uses_pic_offset_table)
-    {
-      if ((live_regs_mask & (1 << PIC_OFFSET_TABLE_REGNUM)) != 0)
-	abort ();
-      live_regs_mask |= (1 << PIC_OFFSET_TABLE_REGNUM);
-      d += UNITS_PER_WORD;
-    }
 
   frame_size = rounded_frame_size (d);
 
@@ -4435,11 +4409,6 @@ initial_elimination_offset (from, to)
 
   int live_regs_mask, live_regs_mask2;
   live_regs_mask = calc_live_regs (&regs_saved, &live_regs_mask2);
-  if (flag_pic && current_function_uses_pic_offset_table)
-    {
-      regs_saved++;
-      live_regs_mask |= (1 << PIC_OFFSET_TABLE_REGNUM);
-    }
   total_auto_space = rounded_frame_size (regs_saved);
   target_flags = save_flags;
 
