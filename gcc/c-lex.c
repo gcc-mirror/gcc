@@ -481,6 +481,15 @@ check_newline ()
 	      && getc (finput) == 'a'
 	      && ((c = getc (finput)) == ' ' || c == '\t' || c == '\n'))
 	    {
+#ifdef HANDLE_SYSV_PRAGMA
+	      c = handle_sysv_pragma (finput, c);
+	      if (c >= 0)
+		;
+	      else if (nextchar >= 0)
+		c = nextchar, nextchar = -1;
+	      else
+		c = getc (finput);
+#endif /* HANDLE_SYSV_PRAGMA */
 #ifdef HANDLE_PRAGMA
 	      HANDLE_PRAGMA (finput);
 #endif /* HANDLE_PRAGMA */
@@ -728,6 +737,45 @@ linenum:
   while ((c = getc (finput)) != EOF && c != '\n');
   return c;
 }
+
+#ifdef HANDLE_SYSV_PRAGMA
+
+/* Handle a #pragma directive.  INPUT is the current input stream,
+   and C is a character to reread.
+   Returns a character for the caller to reread,
+   or -1 meaning there isn't one.  */
+
+/* This function has to be in this file, in order to get at
+   the token types.  */
+
+int
+handle_sysv_pragma (input, c)
+     FILE *input;
+     int c;
+{
+  while (c == ' ' || c == '\t')
+    c = getc (input);
+  if (c == '\n' || c == EOF)
+    {
+      handle_pragma_token (0, 0);
+      return c;
+    }
+  ungetc (c, input);
+  switch (yylex ())
+    {
+    case IDENTIFIER:
+    case TYPENAME:
+    case STRING:
+    case CONSTANT:
+      handle_pragma_token (token_buffer, yylval.ttype);
+      break;
+    default:
+      handle_pragma_token (token_buffer, 0);
+    }
+  return -1;
+}
+
+#endif /* HANDLE_SYSV_PRAGMA */
 
 #define isalnum(char) ((char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') || (char >= '0' && char <= '9'))
 #define isdigit(char) (char >= '0' && char <= '9')
