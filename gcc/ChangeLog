@@ -1,3 +1,8 @@
+2001-01-03  Alexandre Oliva  <aoliva@redhat.com>
+
+	* combine.c (simplify_shift_const): Even if we're sign-extracting,
+	don't discard an ASHIFTRT if we're shifting in a wider mode.
+
 2000-01-02  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* toplev.c (rest_of_compilation): Don't print basic block information

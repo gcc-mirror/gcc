@@ -1,6 +1,6 @@
 /* Optimize by combining instructions for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -9130,9 +9130,14 @@ simplify_shift_const (x, code, result_mode, varop, input_count)
 	  break;
 
 	case ASHIFTRT:
-	  /* If we are extracting just the sign bit of an arithmetic right
-	     shift, that shift is not needed.  */
-	  if (code == LSHIFTRT && count == GET_MODE_BITSIZE (result_mode) - 1)
+	  /* If we are extracting just the sign bit of an arithmetic
+	     right shift, that shift is not needed.  However, the sign
+	     bit of a wider mode may be different from what would be
+	     interpreted as the sign bit in a narrower mode, so, if
+	     the result is narrower, don't discard the shift.  */
+	  if (code == LSHIFTRT && count == GET_MODE_BITSIZE (result_mode) - 1
+	      && (GET_MODE_BITSIZE (result_mode)
+		  >= GET_MODE_BITSIZE (GET_MODE (varop))))
 	    {
 	      varop = XEXP (varop, 0);
 	      continue;
