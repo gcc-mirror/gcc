@@ -298,10 +298,7 @@ static void notice_stack_pointer_modification PROTO ((rtx, rtx));
 
 /* Find basic blocks of the current function.
    F is the first insn of the function and NREGS the number of register numbers
-   in use.
-   LIVE_REACHABLE_P is non-zero if the caller needs all live blocks to
-   be reachable.  This turns on a kludge that causes the control flow
-   information to be inaccurate and not suitable for passes like GCSE.  */
+   in use.  */
 
 void
 find_basic_blocks (f, nregs, file)
@@ -437,10 +434,7 @@ static rtx nonlocal_label_list;
 
    NONLOCAL_LABELS is a list of non-local labels in the function.
    Blocks that are otherwise unreachable may be reachable with a non-local
-   goto.
-   LIVE_REACHABLE_P is non-zero if the caller needs all live blocks to
-   be reachable.  This turns on a kludge that causes the control flow
-   information to be inaccurate and not suitable for passes like GCSE.  */
+   goto.  */
 
 static void
 find_basic_blocks_1 (f, nonlocal_labels)
