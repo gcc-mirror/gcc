@@ -1997,12 +1997,11 @@ If you wish to use pa-risc 2.0 architecture support, you must use either
 the HP assembler, gas/binutils 2.11 or a recent
 @uref{ftp://sources.redhat.com/pub/binutils/snapshots,,snapshot of gas}.
 
-There are three default scheduling models for instructions.  They
-are PROCESSOR_700, PROCESSOR_7100 and PROCESSOR_8000.  They are selected
-based on the the pa-risc architecture specified for the target machine
-when configuring.  PROCESSOR_8000 is the default model.  PROCESSOR_700
-and PROCESSOR_7100 are selected by specifying either @samp{hppa1.0} or
-@samp{hppa1.1}, respectively.
+There are two default scheduling models for instructions.  These are
+PROCESSOR_7100LC and PROCESSOR_8000.  They are selected from the pa-risc
+architecture specified for the target machine when configuring.
+PROCESSOR_8000 is the default.  PROCESSOR_7100LC is selected when
+the target is a @samp{hppa1*} machine.
 
 The PROCESSOR_8000 model is not well suited to older processors.  Thus,
 it is important to completely specify the machine architecture when
