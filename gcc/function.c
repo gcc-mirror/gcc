@@ -2192,6 +2192,8 @@ optimize_bit_field (body, insn, equiv_mem)
 	     and then for which byte of the word is wanted.  */
 
 	  register int offset = INTVAL (XEXP (bitfield, 2));
+	  rtx insns;
+
 	  /* Adjust OFFSET to count bits from low-address byte.  */
 #if BITS_BIG_ENDIAN != BYTES_BIG_ENDIAN
 	  offset = (GET_MODE_BITSIZE (GET_MODE (XEXP (bitfield, 0)))
@@ -2210,8 +2212,12 @@ optimize_bit_field (body, insn, equiv_mem)
 #endif
 	    }
 
-	  memref = change_address (memref, mode, 
+	  start_sequence ();
+	  memref = change_address (memref, mode,
 				   plus_constant (XEXP (memref, 0), offset));
+	  insns = get_insns ();
+	  end_sequence ();
+	  emit_insns_before (insns, insn);
 
 	  /* Store this memory reference where
 	     we found the bit field reference.  */
@@ -5064,7 +5070,9 @@ expand_function_end (filename, line, end_bindings)
      on a machine that fails to restore the registers.  */
   if (NON_SAVING_SETJMP && current_function_calls_setjmp)
     {
-      setjmp_protect (DECL_INITIAL (current_function_decl));
+      if (DECL_INITIAL (current_function_decl) != error_mark_node)
+	setjmp_protect (DECL_INITIAL (current_function_decl));
+
       setjmp_protect_args ();
     }
 #endif
