@@ -348,14 +348,16 @@ static void append_innerclasses_attribute_entry PARAMS ((struct jcf_partial *, t
    write next, and we assume enoygh space has been allocated. */
 
 #ifdef ENABLE_CHECKING
-int
+static int CHECK_PUT PARAMS ((void *, struct jcf_partial *, int));
+
+static int
 CHECK_PUT(ptr, state, i)
      void *ptr;
      struct jcf_partial *state;
      int i;
 {
-  if (ptr < state->chunk->data
-      || (char*)ptr + i > state->chunk->data + state->chunk->size)
+  if ((unsigned char *)ptr < state->chunk->data
+      || (unsigned char*)ptr + i > state->chunk->data + state->chunk->size)
     fatal ("internal error - CHECK_PUT failed");
   return 0;
 }
@@ -402,7 +404,9 @@ alloc_chunk (last, data, size, work)
 }
 
 #ifdef ENABLE_CHECKING
-int
+static int CHECK_OP PARAMS ((struct jcf_partial *));
+
+static int
 CHECK_OP(struct jcf_partial *state)
 {
   if (state->bytecode.ptr > state->bytecode.limit)
