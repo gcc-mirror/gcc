@@ -1138,8 +1138,6 @@ lookup_field (type, component, indirect)
       top = TYPE_LANG_SPECIFIC (type)->len;
       while (top - bot > 1)
 	{
-	  HOST_WIDE_INT cmp;
-
 	  half = (top - bot + 1) >> 1;
 	  field = field_array[bot+half];
 
@@ -1167,10 +1165,9 @@ lookup_field (type, component, indirect)
 	      continue;
 	    }
 
-	  cmp = (HOST_WIDE_INT) DECL_NAME (field) - (HOST_WIDE_INT) component;
-	  if (cmp == 0)
+	  if (DECL_NAME (field) == component)
 	    break;
-	  if (cmp < 0)
+	  if (DECL_NAME (field) < component)
 	    bot += half;
 	  else
 	    top = bot + half;
