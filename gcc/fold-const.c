@@ -8727,7 +8727,7 @@ fold_binary (tree expr)
       /* If this is a comparison of two exprs that look like an
 	 ARRAY_REF of the same object, then we can fold this to a
 	 comparison of the two offsets.  */
-      if (COMPARISON_CLASS_P (t))
+      if (TREE_CODE_CLASS (code) == tcc_comparison)
 	{
 	  tree base0, offset0, base1, offset1;
 

@@ -4,6 +4,8 @@
 	(fold_rtx): Call fold_rtx_subreg and fold_rtx_mem to handle
 	SUBREG and MEM, respectively.
 
+	* fold-const.c (fold_binary): Use code instead of t.
+
 2005-03-06  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* fold-const.c (fold_binary): Avoid directly using the original
