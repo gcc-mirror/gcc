@@ -327,7 +327,11 @@ fcc_reg_operand (op, mode)
      Fail instead of calling abort in this case.  */
   if (GET_CODE (op) != REG)
     return 0;
+
   if (mode != VOIDmode && mode != GET_MODE (op))
+    return 0;
+  if (mode == VOIDmode
+      && (GET_MODE (op) != CCFPmode && GET_MODE (op) != CCFPEmode))
     return 0;
 
 #if 0	/* ??? ==> 1 when %fcc0-3 are pseudos first.  See gen_compare_reg().  */
@@ -347,7 +351,15 @@ icc_or_fcc_reg_operand (op, mode)
      enum machine_mode mode;
 {
   if (GET_CODE (op) == REG && REGNO (op) == SPARC_ICC_REG)
-    return 1;
+    {
+      if (mode != VOIDmode && mode != GET_MODE (op))
+	return 0;
+      if (mode == VOIDmode
+	  && GET_MODE (op) != CCmode && GET_MODE (op) != CCXmode)
+	return 0;
+      return 1;
+    }
+
   return fcc_reg_operand (op, mode);
 }
 
@@ -987,7 +999,7 @@ gen_v9_scc (compare_code, operands)
 	{
 	  emit_insn (gen_rtx (SET, VOIDmode, operands[0], sparc_compare_op0));
 	  emit_insn (gen_rtx (SET, VOIDmode, operands[0],
-			      gen_rtx (IF_THEN_ELSE, VOIDmode,
+			      gen_rtx (IF_THEN_ELSE, DImode,
 				       gen_rtx (compare_code, DImode,
 						sparc_compare_op0, const0_rtx),
 				       const1_rtx,
@@ -1006,7 +1018,7 @@ gen_v9_scc (compare_code, operands)
 	  temp = sparc_compare_op0;
 	}
       emit_insn (gen_rtx (SET, VOIDmode, operands[0],
-			  gen_rtx (IF_THEN_ELSE, VOIDmode,
+			  gen_rtx (IF_THEN_ELSE, GET_MODE (operands[0]),
 				   gen_rtx (compare_code, DImode,
 					    temp, const0_rtx),
 				   const1_rtx,
@@ -1028,14 +1040,14 @@ gen_v9_scc (compare_code, operands)
 	  default :
 	    abort ();
 	}
-	emit_insn (gen_rtx (SET, VOIDmode, operands[0], const0_rtx));
-	emit_insn (gen_rtx (SET, VOIDmode, operands[0],
-			    gen_rtx (IF_THEN_ELSE, VOIDmode,
-				     gen_rtx (compare_code,
-					      GET_MODE (operands[1]),
-					      operands[1], const0_rtx),
-					      const1_rtx, operands[0])));
-	return 1;
+      emit_insn (gen_rtx (SET, VOIDmode, operands[0], const0_rtx));
+      emit_insn (gen_rtx (SET, VOIDmode, operands[0],
+			  gen_rtx (IF_THEN_ELSE, GET_MODE (operands[0]),
+				   gen_rtx (compare_code,
+					    GET_MODE (operands[1]),
+					    operands[1], const0_rtx),
+				    const1_rtx, operands[0])));
+      return 1;
     }
 }
 
@@ -3884,6 +3896,23 @@ print_operand (file, x, code)
 	 I.e., T (%o0) => %o3.  */
       fputs (reg_names[REGNO (x)+3], file);
       return;
+    case 'x':
+      /* Print a condition code register.  */
+      if (REGNO (x) == SPARC_ICC_REG)
+	{
+	  /* We don't handle CC[X]_NOOVmode because they're not supposed
+	     to occur here.  */
+	  if (GET_MODE (x) == CCmode)
+	    fputs ("%icc", file);
+	  else if (GET_MODE (x) == CCXmode)
+	    fputs ("%xcc", file);
+	  else
+	    abort ();
+	}
+      else
+	/* %fccN register */
+	fputs (reg_names[REGNO (x)], file);
+      return;
     case 'm':
       /* Print the operand's address only.  */
       output_address (XEXP (x, 0));
@@ -3920,37 +3949,53 @@ print_operand (file, x, code)
 	}
       return;
 
-      /* This is used by the conditional move instructions.  */
+      /* These are used by the conditional move instructions.  */
+    case 'c' :
     case 'C':
-      switch (GET_CODE (x))
-	{
-	case NE: fputs ("ne", file); break;
-	case EQ: fputs ("e", file); break;
-	case GE: fputs ("ge", file); break;
-	case GT: fputs ("g", file); break;
-	case LE: fputs ("le", file); break;
-	case LT: fputs ("l", file); break;
-	case GEU: fputs ("geu", file); break;
-	case GTU: fputs ("gu", file); break;
-	case LEU: fputs ("leu", file); break;
-	case LTU: fputs ("lu", file); break;
-	default: output_operand_lossage ("Invalid %%C operand");
-	}
-      return;
+      {
+	enum rtx_code rc = (code == 'c'
+			    ? reverse_condition (GET_CODE (x))
+			    : GET_CODE (x));
+	switch (rc)
+	  {
+	  case NE: fputs ("ne", file); break;
+	  case EQ: fputs ("e", file); break;
+	  case GE: fputs ("ge", file); break;
+	  case GT: fputs ("g", file); break;
+	  case LE: fputs ("le", file); break;
+	  case LT: fputs ("l", file); break;
+	  case GEU: fputs ("geu", file); break;
+	  case GTU: fputs ("gu", file); break;
+	  case LEU: fputs ("leu", file); break;
+	  case LTU: fputs ("lu", file); break;
+	  default: output_operand_lossage (code == 'c'
+					   ? "Invalid %%c operand"
+					   : "Invalid %%C operand");
+	  }
+	return;
+      }
 
-      /* This is used by the movr instruction pattern.  */
+      /* These are used by the movr instruction pattern.  */
+    case 'd':
     case 'D':
-      switch (GET_CODE (x))
-	{
-	case NE: fputs ("ne", file); break;
-	case EQ: fputs ("e", file); break;
-	case GE: fputs ("gez", file); break;
-	case LT: fputs ("lz", file); break;
-	case LE: fputs ("lez", file); break;
-	case GT: fputs ("gz", file); break;
-	default: output_operand_lossage ("Invalid %%D operand");
-	}
-      return;
+      {
+	enum rtx_code rc = (code == 'd'
+			    ? reverse_condition (GET_CODE (x))
+			    : GET_CODE (x));
+	switch (rc)
+	  {
+	  case NE: fputs ("ne", file); break;
+	  case EQ: fputs ("e", file); break;
+	  case GE: fputs ("gez", file); break;
+	  case LT: fputs ("lz", file); break;
+	  case LE: fputs ("lez", file); break;
+	  case GT: fputs ("gz", file); break;
+	  default: output_operand_lossage (code == 'd'
+					   ? "Invalid %%d operand"
+					   : "Invalid %%D operand");
+	  }
+	return;
+      }
 
     case 'b':
       {

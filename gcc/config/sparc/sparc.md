@@ -2388,16 +2388,83 @@
 
 ;; We can handle larger constants here for some flavors, but for now we play
 ;; it safe and only allow those constants supported by all flavours.
+;; Note that emit_conditional_move canonicalizes operands 2,3 so that operand
+;; 3 contains the constant if one is present, but we handle either for
+;; generality (sparc.c puts a constant in operand 2).
 
-(define_expand "movsicc"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(if_then_else (match_operand 1 "comparison_operator" "")
-		      (match_operand:SI 2 "arith10_operand" "")
-		      (match_operand:SI 3 "register_operand" "")))]
-  "TARGET_ARCH64"
+(define_expand "movqicc"
+  [(set (match_operand:QI 0 "register_operand" "")
+	(if_then_else:QI (match_operand 1 "comparison_operator" "")
+			 (match_operand:QI 2 "arith10_operand" "")
+			 (match_operand:QI 3 "arith10_operand" "")))]
+  "TARGET_V9"
   "
 {
   enum rtx_code code = GET_CODE (operands[1]);
+
+  if (GET_MODE (sparc_compare_op0) == DImode
+      && ! TARGET_ARCH64)
+    FAIL;
+
+  if (sparc_compare_op1 == const0_rtx
+      && GET_CODE (sparc_compare_op0) == REG
+      && GET_MODE (sparc_compare_op0) == DImode
+      && v9_regcmp_p (code))
+    {
+      operands[1] = gen_rtx (code, DImode,
+			     sparc_compare_op0, sparc_compare_op1);
+    }
+  else
+    {
+      rtx cc_reg = gen_compare_reg (code,
+				    sparc_compare_op0, sparc_compare_op1);
+      operands[1] = gen_rtx (code, GET_MODE (cc_reg), cc_reg, const0_rtx);
+    }
+}")
+
+(define_expand "movhicc"
+  [(set (match_operand:HI 0 "register_operand" "")
+	(if_then_else:HI (match_operand 1 "comparison_operator" "")
+			 (match_operand:HI 2 "arith10_operand" "")
+			 (match_operand:HI 3 "arith10_operand" "")))]
+  "TARGET_V9"
+  "
+{
+  enum rtx_code code = GET_CODE (operands[1]);
+
+  if (GET_MODE (sparc_compare_op0) == DImode
+      && ! TARGET_ARCH64)
+    FAIL;
+
+  if (sparc_compare_op1 == const0_rtx
+      && GET_CODE (sparc_compare_op0) == REG
+      && GET_MODE (sparc_compare_op0) == DImode
+      && v9_regcmp_p (code))
+    {
+      operands[1] = gen_rtx (code, DImode,
+			     sparc_compare_op0, sparc_compare_op1);
+    }
+  else
+    {
+      rtx cc_reg = gen_compare_reg (code,
+				    sparc_compare_op0, sparc_compare_op1);
+      operands[1] = gen_rtx (code, GET_MODE (cc_reg), cc_reg, const0_rtx);
+    }
+}")
+
+(define_expand "movsicc"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(if_then_else:SI (match_operand 1 "comparison_operator" "")
+			 (match_operand:SI 2 "arith10_operand" "")
+			 (match_operand:SI 3 "arith10_operand" "")))]
+  "TARGET_V9"
+  "
+{
+  enum rtx_code code = GET_CODE (operands[1]);
+
+  if (GET_MODE (sparc_compare_op0) == DImode
+      && ! TARGET_ARCH64)
+    FAIL;
 
   if (sparc_compare_op1 == const0_rtx
       && GET_CODE (sparc_compare_op0) == REG
@@ -2417,9 +2484,9 @@
 
 (define_expand "movdicc"
   [(set (match_operand:DI 0 "register_operand" "")
-	(if_then_else (match_operand 1 "comparison_operator" "")
-		      (match_operand:DI 2 "arith10_operand" "")
-		      (match_operand:DI 3 "register_operand" "")))]
+	(if_then_else:DI (match_operand 1 "comparison_operator" "")
+			 (match_operand:DI 2 "arith10_double_operand" "")
+			 (match_operand:DI 3 "arith10_double_operand" "")))]
   "TARGET_ARCH64"
   "
 {
@@ -2443,13 +2510,17 @@
 
 (define_expand "movsfcc"
   [(set (match_operand:SF 0 "register_operand" "")
-	(if_then_else (match_operand 1 "comparison_operator" "")
-		      (match_operand:SF 2 "register_operand" "")
-		      (match_operand:SF 3 "register_operand" "")))]
-  "TARGET_ARCH64"
+	(if_then_else:SF (match_operand 1 "comparison_operator" "")
+			 (match_operand:SF 2 "register_operand" "")
+			 (match_operand:SF 3 "register_operand" "")))]
+  "TARGET_V9 && TARGET_FPU"
   "
 {
   enum rtx_code code = GET_CODE (operands[1]);
+
+  if (GET_MODE (sparc_compare_op0) == DImode
+      && ! TARGET_ARCH64)
+    FAIL;
 
   if (sparc_compare_op1 == const0_rtx
       && GET_CODE (sparc_compare_op0) == REG
@@ -2469,13 +2540,17 @@
 
 (define_expand "movdfcc"
   [(set (match_operand:DF 0 "register_operand" "")
-	(if_then_else (match_operand 1 "comparison_operator" "")
-		      (match_operand:DF 2 "register_operand" "")
-		      (match_operand:DF 3 "register_operand" "")))]
-  "TARGET_ARCH64"
+	(if_then_else:DF (match_operand 1 "comparison_operator" "")
+			 (match_operand:DF 2 "register_operand" "")
+			 (match_operand:DF 3 "register_operand" "")))]
+  "TARGET_V9 && TARGET_FPU"
   "
 {
   enum rtx_code code = GET_CODE (operands[1]);
+
+  if (GET_MODE (sparc_compare_op0) == DImode
+      && ! TARGET_ARCH64)
+    FAIL;
 
   if (sparc_compare_op1 == const0_rtx
       && GET_CODE (sparc_compare_op0) == REG
@@ -2495,13 +2570,17 @@
 
 (define_expand "movtfcc"
   [(set (match_operand:TF 0 "register_operand" "")
-	(if_then_else (match_operand 1 "comparison_operator" "")
-		      (match_operand:TF 2 "register_operand" "")
-		      (match_operand:TF 3 "register_operand" "")))]
-  "TARGET_ARCH64"
+	(if_then_else:TF (match_operand 1 "comparison_operator" "")
+			 (match_operand:TF 2 "register_operand" "")
+			 (match_operand:TF 3 "register_operand" "")))]
+  "TARGET_V9 && TARGET_FPU"
   "
 {
   enum rtx_code code = GET_CODE (operands[1]);
+
+  if (GET_MODE (sparc_compare_op0) == DImode
+      && ! TARGET_ARCH64)
+    FAIL;
 
   if (sparc_compare_op1 == const0_rtx
       && GET_CODE (sparc_compare_op0) == REG
@@ -2519,271 +2598,188 @@
     }
 }")
 
-/* Conditional move define_insns.  */
+;; Conditional move define_insns.
+
+(define_insn "*movqi_cc_sp64"
+  [(set (match_operand:QI 0 "register_operand" "=r,r")
+	(if_then_else:QI (match_operator 1 "comparison_operator"
+				[(match_operand 2 "icc_or_fcc_reg_operand" "X,X")
+				 (const_int 0)])
+		      (match_operand:QI 3 "arith11_operand" "ri,0")
+		      (match_operand:QI 4 "arith11_operand" "0,ri")))]
+  "TARGET_V9"
+  "@
+   mov%C1 %x2,%3,%0
+   mov%c1 %x2,%4,%0"
+  [(set_attr "type" "cmove")])
+
+(define_insn "*movhi_cc_sp64"
+  [(set (match_operand:HI 0 "register_operand" "=r,r")
+	(if_then_else:HI (match_operator 1 "comparison_operator"
+				[(match_operand 2 "icc_or_fcc_reg_operand" "X,X")
+				 (const_int 0)])
+		      (match_operand:HI 3 "arith11_operand" "ri,0")
+		      (match_operand:HI 4 "arith11_operand" "0,ri")))]
+  "TARGET_V9"
+  "@
+   mov%C1 %x2,%3,%0
+   mov%c1 %x2,%4,%0"
+  [(set_attr "type" "cmove")])
 
 (define_insn "*movsi_cc_sp64"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(if_then_else (match_operator 1 "comparison_operator"
-				      [(reg:CC 100) (const_int 0)])
-		      (match_operand:SI 2 "arith11_operand" "ri")
-		      (match_operand:SI 3 "register_operand" "0")))]
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(if_then_else:SI (match_operator 1 "comparison_operator"
+				[(match_operand 2 "icc_or_fcc_reg_operand" "X,X")
+				 (const_int 0)])
+		      (match_operand:SI 3 "arith11_operand" "ri,0")
+		      (match_operand:SI 4 "arith11_operand" "0,ri")))]
   "TARGET_V9"
-  "mov%C1 %%icc,%2,%0"
+  "@
+   mov%C1 %x2,%3,%0
+   mov%c1 %x2,%4,%0"
   [(set_attr "type" "cmove")])
 
 (define_insn "*movdi_cc_sp64"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(if_then_else (match_operator 1 "comparison_operator"
-				      [(reg:CC 100) (const_int 0)])
-		      (match_operand:DI 2 "arith11_double_operand" "rHI")
-		      (match_operand:DI 3 "register_operand" "0")))]
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+	(if_then_else:DI (match_operator 1 "comparison_operator"
+				[(match_operand 2 "icc_or_fcc_reg_operand" "X,X")
+				 (const_int 0)])
+		      (match_operand:DI 3 "arith11_double_operand" "rHI,0")
+		      (match_operand:DI 4 "arith11_double_operand" "0,rHI")))]
   "TARGET_ARCH64"
-  "mov%C1 %%icc,%2,%0"
-  [(set_attr "type" "cmove")])
-
-(define_insn "*movsi_ccx_sp64"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(if_then_else (match_operator 1 "comparison_operator"
-				      [(reg:CCX 100) (const_int 0)])
-		      (match_operand:SI 2 "arith11_operand" "ri")
-		      (match_operand:SI 3 "register_operand" "0")))]
-  "TARGET_ARCH64"
-  "mov%C1 %%xcc,%2,%0"
-  [(set_attr "type" "cmove")])
-
-(define_insn "*movdi_ccx_sp64"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(if_then_else (match_operator 1 "comparison_operator"
-				      [(reg:CCX 100) (const_int 0)])
-		      (match_operand:DI 2 "arith11_double_operand" "rHI")
-		      (match_operand:DI 3 "register_operand" "0")))]
-  "TARGET_ARCH64"
-  "mov%C1 %%xcc,%2,%0"
-  [(set_attr "type" "cmove")])
-
-(define_insn "*movsi_ccfp_sp64"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(if_then_else (match_operator 1 "comparison_operator"
-				[(match_operand:CCFP 2 "fcc_reg_operand" "c")
-				 (const_int 0)])
-		      (match_operand:SI 3 "arith11_operand" "ri")
-		      (match_operand:SI 4 "register_operand" "0")))]
-  "TARGET_V9"
-  "mov%C1 %2,%3,%0"
-  [(set_attr "type" "cmove")])
-
-(define_insn "*movsi_ccfpe_sp64"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(if_then_else (match_operator 1 "comparison_operator"
-				[(match_operand:CCFPE 2 "fcc_reg_operand" "c")
-				 (const_int 0)])
-		      (match_operand:SI 3 "arith11_operand" "ri")
-		      (match_operand:SI 4 "register_operand" "0")))]
-  "TARGET_V9"
-  "mov%C1 %2,%3,%0"
-  [(set_attr "type" "cmove")])
-
-(define_insn "*movdi_ccfp_sp64"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(if_then_else (match_operator 1 "comparison_operator"
-				[(match_operand:CCFP 2 "fcc_reg_operand" "c")
-				 (const_int 0)])
-		      (match_operand:DI 3 "arith11_double_operand" "rHI")
-		      (match_operand:DI 4 "register_operand" "0")))]
-  "TARGET_ARCH64"
-  "mov%C1 %2,%3,%0"
-  [(set_attr "type" "cmove")])
-
-(define_insn "*movdi_ccfpe_sp64"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(if_then_else (match_operator 1 "comparison_operator"
-				[(match_operand:CCFPE 2 "fcc_reg_operand" "c")
-				 (const_int 0)])
-		      (match_operand:DI 3 "arith11_double_operand" "rHI")
-		      (match_operand:DI 4 "register_operand" "0")))]
-  "TARGET_ARCH64"
-  "mov%C1 %2,%3,%0"
-  [(set_attr "type" "cmove")])
-
-(define_insn "*movsi_cc_reg_sp64"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(if_then_else (match_operator 1 "v9_regcmp_op"
-				[(match_operand:DI 2 "register_operand" "r")
-				 (const_int 0)])
-		      (match_operand:SI 3 "arith10_operand" "ri")
-		      (match_operand:SI 4 "register_operand" "0")))]
-  "TARGET_ARCH64"
-  "movr%D1 %2,%r3,%0"
-  [(set_attr "type" "cmove")])
-
-(define_insn "*movdi_cc_reg_sp64"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(if_then_else (match_operator 1 "v9_regcmp_op"
-				[(match_operand:DI 2 "register_operand" "r")
-				 (const_int 0)])
-		      (match_operand:DI 3 "arith10_double_operand" "ri")
-		      (match_operand:DI 4 "register_operand" "0")))]
-  "TARGET_ARCH64"
-  "movr%D1 %2,%r3,%0"
-  [(set_attr "type" "cmove")])
-
-(define_insn "*movsf_cc_reg_sp64"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(if_then_else (match_operator 1 "v9_regcmp_op"
-				[(match_operand:DI 2 "register_operand" "r")
-				 (const_int 0)])
-		      (match_operand:SF 3 "register_operand" "f")
-		      (match_operand:SF 4 "register_operand" "0")))]
-  "TARGET_ARCH64 && TARGET_FPU"
-  "fmovrs%D1 %2,%3,%0"
-  [(set_attr "type" "cmove")])
-
-(define_insn "*movdf_cc_reg_sp64"
-  [(set (match_operand:DF 0 "register_operand" "=e")
-	(if_then_else (match_operator 1 "v9_regcmp_op"
-				[(match_operand:DI 2 "register_operand" "r")
-				 (const_int 0)])
-		      (match_operand:DF 3 "register_operand" "e")
-		      (match_operand:DF 4 "register_operand" "0")))]
-  "TARGET_ARCH64 && TARGET_FPU"
-  "fmovrd%D1 %2,%3,%0"
-  [(set_attr "type" "cmove")])
-
-(define_insn "*movtf_cc_reg_sp64"
-  [(set (match_operand:TF 0 "register_operand" "=e")
-	(if_then_else (match_operator 1 "v9_regcmp_op"
-				[(match_operand:DI 2 "register_operand" "r")
-				 (const_int 0)])
-		      (match_operand:TF 3 "register_operand" "e")
-		      (match_operand:TF 4 "register_operand" "0")))]
-  "TARGET_ARCH64 && TARGET_FPU"
-  "fmovrq%D1 %2,%3,%0"
-  [(set_attr "type" "cmove")])
-
-(define_insn "*movsf_ccfp_sp64"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(if_then_else (match_operator 1 "comparison_operator"
-				[(match_operand:CCFP 2 "fcc_reg_operand" "c")
-				 (const_int 0)])
-		      (match_operand:SF 3 "register_operand" "f")
-		      (match_operand:SF 4 "register_operand" "0")))]
-  "TARGET_V9 && TARGET_FPU"
-  "fmovs%C1 %2,%3,%0"
-  [(set_attr "type" "cmove")])
-
-(define_insn "*movsf_ccfpe_sp64"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(if_then_else (match_operator 1 "comparison_operator"
-				[(match_operand:CCFPE 2 "fcc_reg_operand" "c")
-				 (const_int 0)])
-		      (match_operand:SF 3 "register_operand" "f")
-		      (match_operand:SF 4 "register_operand" "0")))]
-  "TARGET_V9 && TARGET_FPU"
-  "fmovs%C1 %2,%3,%0"
-  [(set_attr "type" "cmove")])
-
-(define_insn "*movdf_ccfp_sp64"
-  [(set (match_operand:DF 0 "register_operand" "=e")
-	(if_then_else (match_operator 1 "comparison_operator"
-				[(match_operand:CCFP 2 "fcc_reg_operand" "c")
-				 (const_int 0)])
-		      (match_operand:DF 3 "register_operand" "e")
-		      (match_operand:DF 4 "register_operand" "0")))]
-  "TARGET_V9 && TARGET_FPU"
-  "fmovd%C1 %2,%3,%0"
-  [(set_attr "type" "cmove")])
-
-(define_insn "*movdf_ccfpe_sp64"
-  [(set (match_operand:DF 0 "register_operand" "=e")
-	(if_then_else (match_operator 1 "comparison_operator"
-				[(match_operand:CCFPE 2 "fcc_reg_operand" "c")
-				 (const_int 0)])
-		      (match_operand:DF 3 "register_operand" "e")
-		      (match_operand:DF 4 "register_operand" "0")))]
-  "TARGET_V9 && TARGET_FPU"
-  "fmovd%C1 %2,%3,%0"
-  [(set_attr "type" "cmove")])
-
-(define_insn "*movtf_ccfp_sp64"
-  [(set (match_operand:TF 0 "register_operand" "=e")
-	(if_then_else (match_operator 1 "comparison_operator"
-				[(match_operand:CCFP 2 "fcc_reg_operand" "c")
-				 (const_int 0)])
-		      (match_operand:TF 3 "register_operand" "e")
-		      (match_operand:TF 4 "register_operand" "0")))]
-  "TARGET_V9 && TARGET_FPU"
-  "fmovq%C1 %2,%3,%0"
-  [(set_attr "type" "cmove")])
-
-(define_insn "*movtf_ccfpe_sp64"
-  [(set (match_operand:TF 0 "register_operand" "=e")
-	(if_then_else (match_operator 1 "comparison_operator"
-				[(match_operand:CCFPE 2 "fcc_reg_operand" "c")
-				 (const_int 0)])
-		      (match_operand:TF 3 "register_operand" "e")
-		      (match_operand:TF 4 "register_operand" "0")))]
-  "TARGET_V9 && TARGET_FPU"
-  "fmovq%C1 %2,%3,%0"
+  "@
+   mov%C1 %x2,%3,%0
+   mov%c1 %x2,%4,%0"
   [(set_attr "type" "cmove")])
 
 (define_insn "*movsf_cc_sp64"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(if_then_else (match_operator 1 "comparison_operator"
-				      [(reg:CC 100) (const_int 0)])
-		      (match_operand:SF 2 "register_operand" "f")
-		      (match_operand:SF 3 "register_operand" "0")))]
+  [(set (match_operand:SF 0 "register_operand" "=f,f")
+	(if_then_else:SF (match_operator 1 "comparison_operator"
+				[(match_operand 2 "icc_or_fcc_reg_operand" "X,X")
+				 (const_int 0)])
+		      (match_operand:SF 3 "register_operand" "f,0")
+		      (match_operand:SF 4 "register_operand" "0,f")))]
   "TARGET_V9 && TARGET_FPU"
-  "fmovs%C1 %%icc,%2,%0"
+  "@
+   fmovs%C1 %x2,%3,%0
+   fmovs%c1 %x2,%4,%0"
   [(set_attr "type" "cmove")])
 
 (define_insn "*movdf_cc_sp64"
-  [(set (match_operand:DF 0 "register_operand" "=e")
-	(if_then_else (match_operator 1 "comparison_operator"
-				      [(reg:CC 100) (const_int 0)])
-		      (match_operand:DF 2 "register_operand" "e")
-		      (match_operand:DF 3 "register_operand" "0")))]
+  [(set (match_operand:DF 0 "register_operand" "=e,e")
+	(if_then_else:DF (match_operator 1 "comparison_operator"
+				[(match_operand 2 "icc_or_fcc_reg_operand" "X,X")
+				 (const_int 0)])
+		      (match_operand:DF 3 "register_operand" "e,0")
+		      (match_operand:DF 4 "register_operand" "0,e")))]
   "TARGET_V9 && TARGET_FPU"
-  "fmovd%C1 %%icc,%2,%0"
+  "@
+   fmovd%C1 %x2,%3,%0
+   fmovd%c1 %x2,%4,%0"
   [(set_attr "type" "cmove")])
 
 (define_insn "*movtf_cc_sp64"
-  [(set (match_operand:TF 0 "register_operand" "=e")
-	(if_then_else (match_operator 1 "comparison_operator"
-				      [(reg:CC 100) (const_int 0)])
-		      (match_operand:TF 2 "register_operand" "e")
-		      (match_operand:TF 3 "register_operand" "0")))]
+  [(set (match_operand:TF 0 "register_operand" "=e,e")
+	(if_then_else:TF (match_operator 1 "comparison_operator"
+				[(match_operand 2 "icc_or_fcc_reg_operand" "X,X")
+				 (const_int 0)])
+		      (match_operand:TF 3 "register_operand" "e,0")
+		      (match_operand:TF 4 "register_operand" "0,e")))]
   "TARGET_V9 && TARGET_FPU"
-  "fmovq%C1 %%icc,%2,%0"
+  "@
+   fmovq%C1 %x2,%3,%0
+   fmovq%c1 %x2,%4,%0"
   [(set_attr "type" "cmove")])
 
-(define_insn "*movsf_ccx_sp64"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(if_then_else (match_operator 1 "comparison_operator"
-				      [(reg:CCX 100) (const_int 0)])
-		      (match_operand:SF 2 "register_operand" "f")
-		      (match_operand:SF 3 "register_operand" "0")))]
-  "TARGET_ARCH64 && TARGET_FPU"
-  "fmovs%C1 %%xcc,%2,%0"
+(define_insn "*movqi_cc_reg_sp64"
+  [(set (match_operand:QI 0 "register_operand" "=r,r")
+	(if_then_else:QI (match_operator 1 "v9_regcmp_op"
+				[(match_operand:DI 2 "register_operand" "r,r")
+				 (const_int 0)])
+		      (match_operand:QI 3 "arith10_operand" "ri,0")
+		      (match_operand:QI 4 "arith10_operand" "0,ri")))]
+  "TARGET_ARCH64"
+  "@
+   movr%D1 %2,%r3,%0
+   movr%d1 %2,%r4,%0"
   [(set_attr "type" "cmove")])
 
-(define_insn "*movdf_ccx_sp64"
-  [(set (match_operand:DF 0 "register_operand" "=e")
-	(if_then_else (match_operator 1 "comparison_operator"
-				      [(reg:CCX 100) (const_int 0)])
-		      (match_operand:DF 2 "register_operand" "e")
-		      (match_operand:DF 3 "register_operand" "0")))]
-  "TARGET_ARCH64 && TARGET_FPU"
-  "fmovd%C1 %%xcc,%2,%0"
+(define_insn "*movhi_cc_reg_sp64"
+  [(set (match_operand:HI 0 "register_operand" "=r,r")
+	(if_then_else:HI (match_operator 1 "v9_regcmp_op"
+				[(match_operand:DI 2 "register_operand" "r,r")
+				 (const_int 0)])
+		      (match_operand:HI 3 "arith10_operand" "ri,0")
+		      (match_operand:HI 4 "arith10_operand" "0,ri")))]
+  "TARGET_ARCH64"
+  "@
+   movr%D1 %2,%r3,%0
+   movr%d1 %2,%r4,%0"
   [(set_attr "type" "cmove")])
 
-(define_insn "*movtf_ccx_sp64"
-  [(set (match_operand:TF 0 "register_operand" "=e")
-	(if_then_else (match_operator 1 "comparison_operator"
-				      [(reg:CCX 100) (const_int 0)])
-		      (match_operand:TF 2 "register_operand" "e")
-		      (match_operand:TF 3 "register_operand" "0")))]
+(define_insn "*movsi_cc_reg_sp64"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(if_then_else:SI (match_operator 1 "v9_regcmp_op"
+				[(match_operand:DI 2 "register_operand" "r,r")
+				 (const_int 0)])
+		      (match_operand:SI 3 "arith10_operand" "ri,0")
+		      (match_operand:SI 4 "arith10_operand" "0,ri")))]
+  "TARGET_ARCH64"
+  "@
+   movr%D1 %2,%r3,%0
+   movr%d1 %2,%r4,%0"
+  [(set_attr "type" "cmove")])
+
+(define_insn "*movdi_cc_reg_sp64"
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+	(if_then_else:DI (match_operator 1 "v9_regcmp_op"
+				[(match_operand:DI 2 "register_operand" "r,r")
+				 (const_int 0)])
+		      (match_operand:DI 3 "arith10_double_operand" "ri,0")
+		      (match_operand:DI 4 "arith10_double_operand" "0,ri")))]
+  "TARGET_ARCH64"
+  "@
+   movr%D1 %2,%r3,%0
+   movr%d1 %2,%r4,%0"
+  [(set_attr "type" "cmove")])
+
+(define_insn "*movsf_cc_reg_sp64"
+  [(set (match_operand:SF 0 "register_operand" "=f,f")
+	(if_then_else:SF (match_operator 1 "v9_regcmp_op"
+				[(match_operand:DI 2 "register_operand" "r,r")
+				 (const_int 0)])
+		      (match_operand:SF 3 "register_operand" "f,0")
+		      (match_operand:SF 4 "register_operand" "0,f")))]
   "TARGET_ARCH64 && TARGET_FPU"
-  "fmovq%C1 %%xcc,%2,%0"
+  "@
+   fmovrs%D1 %2,%3,%0
+   fmovrs%d1 %2,%4,%0"
+  [(set_attr "type" "cmove")])
+
+(define_insn "*movdf_cc_reg_sp64"
+  [(set (match_operand:DF 0 "register_operand" "=e,e")
+	(if_then_else:DF (match_operator 1 "v9_regcmp_op"
+				[(match_operand:DI 2 "register_operand" "r,r")
+				 (const_int 0)])
+		      (match_operand:DF 3 "register_operand" "e,0")
+		      (match_operand:DF 4 "register_operand" "0,e")))]
+  "TARGET_ARCH64 && TARGET_FPU"
+  "@
+   fmovrd%D1 %2,%3,%0
+   fmovrd%d1 %2,%4,%0"
+  [(set_attr "type" "cmove")])
+
+(define_insn "*movtf_cc_reg_sp64"
+  [(set (match_operand:TF 0 "register_operand" "=e,e")
+	(if_then_else:TF (match_operator 1 "v9_regcmp_op"
+				[(match_operand:DI 2 "register_operand" "r,r")
+				 (const_int 0)])
+		      (match_operand:TF 3 "register_operand" "e,0")
+		      (match_operand:TF 4 "register_operand" "0,e")))]
+  "TARGET_ARCH64 && TARGET_FPU"
+  "@
+   fmovrq%D1 %2,%3,%0
+   fmovrq%d1 %2,%4,%0"
   [(set_attr "type" "cmove")])
 
 ;;- zero extension instructions
