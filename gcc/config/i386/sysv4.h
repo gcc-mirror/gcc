@@ -22,6 +22,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "i386.h"	/* Base i386 target machine definitions */
 #include "att386.h"	/* Use the i386 AT&T assembler syntax */
 #include "svr4.h"	/* Definitions common to all SVR4 targets */
+#include "real.h"
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (i386 System V Release 4)");
@@ -56,6 +57,36 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    is supposed to be defined optionally by user programs--not by default.  */
 #define CPP_PREDEFINES \
   "-Di386 -Dunix -D__svr4__ -Asystem(unix) -Acpu(i386) -Amachine(i386)"
+
+/* If the host and target formats match, output the floats as hex.  */
+#if HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
+#if defined (HOST_WORDS_BIG_ENDIAN) == WORDS_BIG_ENDIAN
+/* This is how to output assembly code to define a `float' constant.
+   We always have to use a .long pseudo-op to do this because the native
+   SVR4 ELF assembler is buggy and it generates incorrect values when we
+   try to use the .float pseudo-op instead.  */
+
+#undef ASM_OUTPUT_FLOAT
+#define ASM_OUTPUT_FLOAT(FILE,VALUE)					\
+do { long value;							\
+     REAL_VALUE_TO_TARGET_SINGLE ((VALUE), value);			\
+     fprintf((FILE), "%s\t0x%x\n", ASM_LONG, value);			\
+   } while (0)
+
+/* This is how to output assembly code to define a `double' constant.
+   We always have to use a pair of .long pseudo-ops to do this because
+   the native SVR4 ELF assembler is buggy and it generates incorrect
+   values when we try to use the the .double pseudo-op instead.  */
+
+#undef ASM_OUTPUT_DOUBLE
+#define ASM_OUTPUT_DOUBLE(FILE,VALUE)					\
+do { long value[2];							\
+     REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), value);			\
+     fprintf((FILE), "%s\t0x%x\n", ASM_LONG, value[0]);			\
+     fprintf((FILE), "%s\t0x%x\n", ASM_LONG, value[1]);			\
+   } while (0)
+#endif /* word order matches */
+#endif /* HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT */
 
 /* Output at beginning of assembler file.  */
 /* The .file command should always begin the output.  */
