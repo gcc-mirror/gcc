@@ -127,7 +127,7 @@ void FN ()							\
 	builtin_define_std ("linux");				\
 	builtin_assert ("system=linux");			\
 	/* The GNU C++ standard library requires this.  */	\
-	if (c_language = clk_cplusplus)				\
+	if (c_language == clk_cplusplus)			\
 	  builtin_define ("_GNU_SOURCE");			\
 								\
       if (mips_abi == ABI_N32)					\
