@@ -5306,8 +5306,7 @@ legitimize_pic_address (rtx orig, rtx reg)
 	{
 	  new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOTPCREL);
 	  new = gen_rtx_CONST (Pmode, new);
-	  new = gen_rtx_MEM (Pmode, new);
-	  MEM_READONLY_P (new) = 1;
+	  new = gen_const_mem (Pmode, new);
 	  set_mem_alias_set (new, ix86_GOT_alias_set ());
 
 	  if (reg == 0)
@@ -5328,8 +5327,7 @@ legitimize_pic_address (rtx orig, rtx reg)
 	  new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOT);
 	  new = gen_rtx_CONST (Pmode, new);
 	  new = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new);
-	  new = gen_rtx_MEM (Pmode, new);
-	  MEM_READONLY_P (new) = 1;
+	  new = gen_const_mem (Pmode, new);
 	  set_mem_alias_set (new, ix86_GOT_alias_set ());
 
 	  if (reg == 0)
@@ -5508,8 +5506,7 @@ legitimize_tls_address (rtx x, enum tls_model model, int for_mov)
       off = gen_rtx_CONST (Pmode, off);
       if (pic)
 	off = gen_rtx_PLUS (Pmode, pic, off);
-      off = gen_rtx_MEM (Pmode, off);
-      MEM_READONLY_P (off) = 1;
+      off = gen_const_mem (Pmode, off);
       set_mem_alias_set (off, ix86_GOT_alias_set ());
 
       if (TARGET_64BIT || TARGET_GNU_TLS)

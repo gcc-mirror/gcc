@@ -686,13 +686,11 @@ ia64_expand_tls_address (enum tls_model tls_kind, rtx op0, rtx op1)
 
       tga_op1 = gen_reg_rtx (Pmode);
       emit_insn (gen_load_ltoff_dtpmod (tga_op1, op1));
-      tga_op1 = gen_rtx_MEM (Pmode, tga_op1);
-      MEM_READONLY_P (tga_op1) = 1;
+      tga_op1 = gen_const_mem (Pmode, tga_op1);
 
       tga_op2 = gen_reg_rtx (Pmode);
       emit_insn (gen_load_ltoff_dtprel (tga_op2, op1));
-      tga_op2 = gen_rtx_MEM (Pmode, tga_op2);
-      MEM_READONLY_P (tga_op2) = 1;
+      tga_op2 = gen_const_mem (Pmode, tga_op2);
 
       tga_ret = emit_library_call_value (gen_tls_get_addr (), NULL_RTX,
 					 LCT_CONST, Pmode, 2, tga_op1,
@@ -715,8 +713,7 @@ ia64_expand_tls_address (enum tls_model tls_kind, rtx op0, rtx op1)
 
       tga_op1 = gen_reg_rtx (Pmode);
       emit_insn (gen_load_ltoff_dtpmod (tga_op1, op1));
-      tga_op1 = gen_rtx_MEM (Pmode, tga_op1);
-      MEM_READONLY_P (tga_op1) = 1;
+      tga_op1 = gen_const_mem (Pmode, tga_op1);
 
       tga_op2 = const0_rtx;
 
@@ -746,8 +743,7 @@ ia64_expand_tls_address (enum tls_model tls_kind, rtx op0, rtx op1)
     case TLS_MODEL_INITIAL_EXEC:
       tmp = gen_reg_rtx (Pmode);
       emit_insn (gen_load_ltoff_tprel (tmp, op1));
-      tmp = gen_rtx_MEM (Pmode, tmp);
-      MEM_READONLY_P (tmp) = 1;
+      tmp = gen_const_mem (Pmode, tmp);
       tmp = force_reg (Pmode, tmp);
 
       if (!register_operand (op0, Pmode))

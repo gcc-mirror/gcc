@@ -2979,9 +2979,8 @@ force_const_mem (enum machine_mode mode, rtx x)
   *slot = desc;
 
   /* Construct the MEM.  */
-  desc->mem = def = gen_rtx_MEM (mode, symbol);
+  desc->mem = def = gen_const_mem (mode, symbol);
   set_mem_attributes (def, lang_hooks.types.type_for_mode (mode, 0), 1);
-  MEM_READONLY_P (def) = 1;
 
   /* If we're dropping a label to the constant pool, make sure we
      don't delete it.  */

@@ -1,3 +1,31 @@
+2004-08-18  Richard Henderson  <rth@redhat.com>
+
+	* emit-rtl.c (gen_const_mem): New.
+	* rtl.h (gen_const_mem): Declare.
+	* expr.c (do_tablejump): Use it.
+	* varasm.c (force_const_mem): Likewise.
+	* config/darwin.c (machopic_indirect_data_reference): Likewise.
+	(machopic_legitimize_pic_address): Likewise.
+	* config/arm/arm.c (legitimize_pic_address): Likewise.
+	* config/i386/i386.c (legitimize_pic_address): Likewise.
+	(legitimize_tls_address): Likewise.
+	* config/ia64/ia64.c (ia64_expand_tls_address): Likewise.
+	* config/ia64/ia64.md (load_fptr): Likewise.
+	* config/m32r/m32r.c (m32r_legitimize_pic_address): Likewise.
+	* config/pa/pa.c (legitimize_pic_address): Likewise.
+	* config/rs6000/rs6000.c (rs6000_legitimize_tls_address): Likewise.
+	(rs6000_emit_move): Likewise.
+	* config/s390/s390.c (legitimize_pic_address): Likewise.
+	(legitimize_tls_address): Likewise.
+	* config/s390/s390.md (casesi): Likewise.
+	* config/sh/sh.c (sh_reorg): Likewise.
+	* config/sparc/sparc.c (legitimize_pic_address): Likewise.
+	* config/v850/v850.md (casesi): Likewise.
+
+	* config/darwin.c (machopic_indirect_call_target): Set MEM_NOTRAP_P.
+	* config/sh/sh.c (prepare_move_operands): Remove incorrect
+	use of MEM_READONLY_P.
+
 2004-08-18  Steven Bosscher  <stevenb@suse.de>
 
 	* Makefile.in (OBJS-common): Add postreload-gcse.c.

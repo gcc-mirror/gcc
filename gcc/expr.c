@@ -8737,9 +8737,7 @@ do_tablejump (rtx index, enum machine_mode mode, rtx range, rtx table_label,
 #endif
     index = memory_address_noforce (CASE_VECTOR_MODE, index);
   temp = gen_reg_rtx (CASE_VECTOR_MODE);
-  vector = gen_rtx_MEM (CASE_VECTOR_MODE, index);
-  MEM_READONLY_P (vector) = 1;
-  MEM_NOTRAP_P (vector) = 1;
+  vector = gen_const_mem (CASE_VECTOR_MODE, index);
   convert_move (temp, vector, 0);
 
   emit_jump_insn (gen_tablejump (temp, table_label));

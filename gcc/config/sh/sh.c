@@ -1042,7 +1042,6 @@ prepare_move_operands (rtx operands[], enum machine_mode mode)
 	      emit_insn (gen_load_gbr (tmp2));
 	      tmp = gen_reg_rtx (Pmode);
 	      emit_insn (gen_symTPOFF2reg (tmp, op1));
-	      MEM_READONLY_P (tmp) = 1;
 
 	      if (register_operand (op0, Pmode))
 		op1 = op0;
@@ -4398,9 +4397,8 @@ sh_reorg (void)
 		  else
 		    {
 		      lab = add_constant (src, mode, 0);
-		      newsrc = gen_rtx_MEM (mode,
-					    gen_rtx_LABEL_REF (VOIDmode, lab));
-		      MEM_READONLY_P (newsrc) = 1;
+		      newsrc = gen_rtx_LABEL_REF (VOIDmode, lab);
+		      newsrc = gen_const_mem (mode, newsrc);
 		    }
 		  *patp = gen_rtx_SET (VOIDmode, dst, newsrc);
 		  INSN_CODE (scan) = -1;

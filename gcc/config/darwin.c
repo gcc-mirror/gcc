@@ -386,10 +386,9 @@ machopic_indirect_data_reference (rtx orig, rtx reg)
 		 (Pmode, 
 		  machopic_indirection_name (orig, /*stub_p=*/false)));
 
-     SYMBOL_REF_DECL (ptr_ref) = SYMBOL_REF_DECL (orig);
+      SYMBOL_REF_DECL (ptr_ref) = SYMBOL_REF_DECL (orig);
 
-      ptr_ref = gen_rtx_MEM (Pmode, ptr_ref);
-      MEM_READONLY_P (ptr_ref) = 1;
+      ptr_ref = gen_const_mem (Pmode, ptr_ref);
 
       return ptr_ref;
     }
@@ -474,6 +473,7 @@ machopic_indirect_call_target (rtx target)
       XEXP (target, 0) = gen_rtx_SYMBOL_REF (mode, stub_name);
       SYMBOL_REF_DECL (XEXP (target, 0)) = decl;
       MEM_READONLY_P (target) = 1;
+      MEM_NOTRAP_P (target) = 1;
     }
 
   return target;
@@ -536,9 +536,8 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 	      emit_insn (mode == DImode
 			 ? gen_macho_high_di (temp_reg, asym)
 			 : gen_macho_high (temp_reg, asym));
-	      mem = gen_rtx_MEM (GET_MODE (orig),
-				 gen_rtx_LO_SUM (Pmode, temp_reg, asym));
-	      MEM_READONLY_P (mem) = 1;
+	      mem = gen_const_mem (GET_MODE (orig),
+				   gen_rtx_LO_SUM (Pmode, temp_reg, asym));
 	      emit_insn (gen_rtx_SET (VOIDmode, reg, mem));
 #else
 	      /* Some other CPU -- WriteMe! but right now there are no other platform that can use dynamic-no-pic  */
@@ -568,10 +567,9 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 
 	      emit_insn (gen_rtx_SET (Pmode, hi_sum_reg, sum));
 
-	      mem = gen_rtx_MEM (GET_MODE (orig),
-				 gen_rtx_LO_SUM (Pmode, 
-						 hi_sum_reg, offset));
-	      MEM_READONLY_P (mem) = 1;
+	      mem = gen_const_mem (GET_MODE (orig),
+				  gen_rtx_LO_SUM (Pmode, 
+						  hi_sum_reg, offset));
 	      insn = emit_insn (gen_rtx_SET (VOIDmode, reg, mem));
 	      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, pic_ref, 
 						    REG_NOTES (insn));
@@ -618,8 +616,7 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 
 #if !defined (TARGET_TOC)
 	  emit_move_insn (reg, pic_ref);
-	  pic_ref = gen_rtx_MEM (GET_MODE (orig), reg);
-	  MEM_READONLY_P (pic_ref) = 1;
+	  pic_ref = gen_const_mem (GET_MODE (orig), reg);
 #endif
 	}
       else

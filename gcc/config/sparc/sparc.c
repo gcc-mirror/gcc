@@ -3805,11 +3805,10 @@ legitimize_pic_address (rtx orig, enum machine_mode mode ATTRIBUTE_UNUSED,
       else
 	address = orig;
 
-      pic_ref = gen_rtx_MEM (Pmode,
-			     gen_rtx_PLUS (Pmode,
-					   pic_offset_table_rtx, address));
+      pic_ref = gen_const_mem (Pmode,
+			       gen_rtx_PLUS (Pmode,
+					     pic_offset_table_rtx, address));
       current_function_uses_pic_offset_table = 1;
-      MEM_READONLY_P (pic_ref) = 1;
       insn = emit_move_insn (reg, pic_ref);
       /* Put a REG_EQUAL note on this insn, so that it can be optimized
 	 by loop.  */

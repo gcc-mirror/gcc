@@ -2921,10 +2921,9 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 	pic_ref = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, address);
       else
 	{
-	  pic_ref = gen_rtx_MEM (Pmode,
-				 gen_rtx_PLUS (Pmode, pic_offset_table_rtx,
-					       address));
-	  MEM_READONLY_P (pic_ref) = 1;
+	  pic_ref = gen_const_mem (Pmode,
+				   gen_rtx_PLUS (Pmode, pic_offset_table_rtx,
+					         address));
 	}
 
       insn = emit_move_insn (reg, pic_ref);
