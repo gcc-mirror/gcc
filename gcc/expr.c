@@ -4366,7 +4366,8 @@ expand_expr (exp, target, tmode, modifier)
 	  tree old_list = placeholder_list;
 
 	  for (object = TREE_PURPOSE (placeholder_list);
-	       TREE_TYPE (object) != type
+	       (TYPE_MAIN_VARIANT (TREE_TYPE (object))
+		!= TYPE_MAIN_VARIANT (type))
 	       && (TREE_CODE_CLASS (TREE_CODE (object)) == 'r'
 		   || TREE_CODE_CLASS (TREE_CODE (object)) == '1'
 		   || TREE_CODE_CLASS (TREE_CODE (object)) == '2'
@@ -4374,7 +4375,9 @@ expand_expr (exp, target, tmode, modifier)
 	       object = TREE_OPERAND (object, 0))
 	    ;
 
-	  if (object && TREE_TYPE (object) == type)
+	  if (object != 0
+	      && (TYPE_MAIN_VARIANT (TREE_TYPE (object))
+		  == TYPE_MAIN_VARIANT (type)))
 	    {
 	      /* Expand this object skipping the list entries before
 		 it was found in case it is also a PLACEHOLDER_EXPR.
