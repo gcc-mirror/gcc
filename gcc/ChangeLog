@@ -1,3 +1,7 @@
+2003-07-29  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* mkinstalldirs: Import autoconf 2.57 / automake 1.7 version.
+
 2003-07-29  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-decl.c (last_function_parm_vars, current_function_parm_vars):
