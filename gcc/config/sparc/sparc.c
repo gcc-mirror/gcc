@@ -189,6 +189,10 @@ sparc_override_options ()
     error ("bad value (%s) for -mcpu= switch", sparc_cpu_string);
 
   if ((sparc_cpu == CPU_V9 || sparc_cpu == CPU_ULTRASPARC)
+      && ! SPARC_V9)
+    error ("sparc64 is not supported by this configuration");
+
+  if ((sparc_cpu == CPU_V9 || sparc_cpu == CPU_ULTRASPARC)
       && TARGET_ARCH32)
     target_flags |= MASK_DEPRECATED_V8_INSNS;
 
