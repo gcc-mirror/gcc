@@ -2294,7 +2294,10 @@ optimize_bit_field_compare (code, compare_type, lhs, rhs)
 #endif
 
   /* Make the mask to be used against the extracted field.  */
-  mask = convert (unsigned_type, build_int_2 (~0, ~0));
+  mask = build_int_2 (~0, ~0);
+  TREE_TYPE (mask) = unsigned_type;
+  force_fit_type (mask);
+  mask = convert (unsigned_type, mask);
   mask = const_binop (LSHIFT_EXPR, mask, size_int (lnbitsize - lbitsize), 0);
   mask = const_binop (RSHIFT_EXPR, mask,
 		      size_int (lnbitsize - lbitsize - lbitpos), 0);
@@ -2451,13 +2454,15 @@ all_ones_mask_p (mask, size)
 {
   tree type = TREE_TYPE (mask);
   int precision = TYPE_PRECISION (type);
+  tree tmask;
 
+  tmask = build_int_2 (~0, ~0);
+  TREE_TYPE (tmask) = signed_type (type);
+  force_fit_type (tmask);
   return
     operand_equal_p (mask, 
 		     const_binop (RSHIFT_EXPR,
-				  const_binop (LSHIFT_EXPR,
-					       convert (signed_type (type),
-							build_int_2 (~0, ~0)),
+				  const_binop (LSHIFT_EXPR, tmask,
 					       size_int (precision - size), 0),
 				  size_int (precision - size), 0),
 		     0);
