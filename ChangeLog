@@ -1,4 +1,10 @@
 2003-05-21  DJ Delorie  <dj@redhat.com>
+	
+	* Makefile.tpl (configure-target-libiberty): Depend only on gcc, not
+	newlib or libgloss.
+	* Makefile.in: Regenerate.
+
+2003-05-21  DJ Delorie  <dj@redhat.com>
 
 	* Makefile.tpl: Add missing empty maybe-check-gcc target.
 	* Makefile.in: Regenerate.
