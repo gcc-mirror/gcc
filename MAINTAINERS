@@ -46,7 +46,7 @@ c4x port		Michael Hayes		m.hayes@elec.canterbury.ac.nz
 cris port		Hans-Peter Nilsson	hp@axis.com
 fr30 port		Nick Clifton		nickc@redhat.com
 h8 port			Jeff Law		law@redhat.com
-h8 port			Kazu Hirata		kazu@hxi.com
+h8 port			Kazu Hirata		kazu@cs.umass.edu
 hppa port		Jeff Law		law@redhat.com
 hppa port		Dave Anglin		dave.anglin@nrc.ca
 i386 port		Richard Henderson	rth@redhat.com
