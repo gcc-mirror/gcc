@@ -37,5 +37,5 @@
 #if 099 /* { dg-error "digits beyond the radix" "decimal in octal constant" } */
 #endif
 
-#if 0xfffffffffffffffff /* { dg-error "integer constant out of range" "range error" } */
+#if 0xfffffffffffffffff /* { dg-error "integer constant" "range error" } */
 #endif

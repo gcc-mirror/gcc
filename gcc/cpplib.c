@@ -1652,6 +1652,8 @@ _cpp_test_assertion (pfile, value)
   if (node)
     *value = (node->type == NT_ASSERTION &&
 	      (answer == 0 || *find_answer (node, answer) != 0));
+  else if (pfile->cur_token[-1].type == CPP_EOF)
+    _cpp_backup_tokens (pfile, 1);
 
   /* We don't commit the memory for the answer - it's temporary only.  */
   return node == 0;

@@ -1,3 +1,22 @@
+2002-05-26  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppexp.c (possible_sum_sign, integer_overflow, left_shift,
+	right_shift): Remove.
+	(cpp_num, cpp_num_part, PART_PRECISION, HALF_MASK, LOW_PART,
+	HIGH_PART): New.
+	(struct op): Use cpp_num.
+	(num_zerop, num_eq, num_positive, num_greater_freq, num_trim,
+	num_part_mul, num_unary_op, num_binary_op, num_negate,
+	num_bitwise_op, num_inequality_op, num_equality_op, num_mul,
+	num_div_op, num_lshift, num_rshift, append_digit): New.
+	(interpret_number, parse_defined, eval_token, reduce): Update
+	for two-integer arithmetic.
+	(binary_handler): New typedef.
+	(optab): Update.
+	(COMPARE, EQUALITY, BITWISE, MINMAX, UNARY, SHIFT): Delete.
+	(_cpp_parse_expr, reduce): Update to handle two-integers.
+	* cpplib.c (_cpp_test_assertion): Back up on CPP_EOF.
+
 2002-05-26  Marek Michalkiewicz  <marekm@amelek.gda.pl>
 
 	* config/avr/avr.c (avr_asm_only_p): New variable.
