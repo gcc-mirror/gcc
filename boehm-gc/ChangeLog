@@ -1,5 +1,8 @@
 1999-11-04  Tom Tromey  <tromey@cygnus.com>
 
+	* Makefile.in: Rebuilt.
+	* Makefile.am (libgcjgc_la_SOURCES): Removed quick_threads.c.
+
 	* misc.c (GC_init_inner): Don't call GC_init_linuxppc().
 	(GC_thr_init): Don't declare.
 
