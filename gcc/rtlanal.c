@@ -690,6 +690,38 @@ single_set (insn)
   
   return 0;
 }
+
+/* Given an INSN, return nonzero if it has more than one SET, else return
+   zero.  */
+
+rtx
+multiple_sets (insn)
+     rtx insn;
+{
+  rtx found;
+  int i;
+  
+  /* INSN must be an insn.  */
+  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+    return 0;
+
+  /* Only a PARALLEL can have multiple SETs.  */
+  if (GET_CODE (PATTERN (insn)) == PARALLEL)
+    {
+      for (i = 0, found = 0; i < XVECLEN (PATTERN (insn), 0); i++)
+	if (GET_CODE (XVECEXP (PATTERN (insn), 0, i)) == SET)
+	  {
+	    /* If we have already found a SET, then return now.  */
+	    if (found)
+	      return 1;
+	    else
+	      found = 1;
+	  }
+    }
+  
+  /* Either zero or one SET.  */
+  return 0;
+}
 
 /* Return the last thing that X was assigned from before *PINSN.  Verify that
    the object is not modified up to VALID_TO.  If it was, if we hit

@@ -739,9 +739,16 @@ global_conflicts ()
 
 	      /* If INSN has multiple outputs, then any reg that dies here
 		 and is used inside of an output
-		 must conflict with the other outputs.  */
+		 must conflict with the other outputs.
 
-	      if (GET_CODE (PATTERN (insn)) == PARALLEL && !single_set (insn))
+		 It is unsafe to use !single_set here since it will ignore an
+		 unused output.  Just because an output is unused does not mean
+		 the compiler can assume the side effect will not occur.
+		 Consider if REG appears in the address of an output and we
+		 reload the output.  If we allocate REG to the same hard
+		 register as an unused output we could set the hard register
+		 before the output reload insn.  */
+	      if (GET_CODE (PATTERN (insn)) == PARALLEL && multiple_sets (insn))
 		for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
 		  if (REG_NOTE_KIND (link) == REG_DEAD)
 		    {
