@@ -1,3 +1,8 @@
+2001-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* recog.c (validate_replace_rtx_1): Instead of aborting just make
+	sure the change won't be validated.
+
 Wed Apr  4 00:45:38 EDT 2001  John Wehle  (john@feith.com)
 
 	* rtl.h (set_noop_p): Declare.
