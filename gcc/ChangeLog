@@ -1,3 +1,9 @@
+2003-08-22  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/iq2000/iq2000.c: Follow spelling conventions.
+	* config/iq2000/iq2000.h: Likewise.
+	* config/mn10300/mn10300.c: Likewise.
+
 2003-08-22  Jason Eckhardt  <jle@rice.edu>
 
 	* config/i860/i860.c (output_move_double): Don't set latehalf

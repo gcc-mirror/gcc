@@ -695,7 +695,7 @@ expand_prologue ()
 #define SIZE_FMOV_SP(S,N) (SIZE_FMOV_SP_ ((unsigned HOST_WIDE_INT)(S), (N)))
 
       /* Consider alternative save_sp_merge only if we don't need the
-	 frame pointer and size is non-zero.  */
+	 frame pointer and size is nonzero.  */
       if (! frame_pointer_needed && size)
 	{
 	  /* Insn: add -(size + 4 * num_regs_to_save), sp.  */
@@ -750,7 +750,7 @@ expand_prologue ()
 	}
 
       /* Consider alternative save_a0_merge only if we don't need a
-	 frame pointer, size is non-zero and the user hasn't
+	 frame pointer, size is nonzero and the user hasn't
 	 changed the calling conventions of a0.  */
       if (! frame_pointer_needed && size
 	  && call_used_regs[FIRST_ADDRESS_REGNUM]
@@ -1855,7 +1855,7 @@ legitimize_pic_address (orig, reg)
 }
 
 /* Return zero if X references a SYMBOL_REF or LABEL_REF whose symbol
-   isn't protected by a PIC unspec; non-zero otherwise.  */
+   isn't protected by a PIC unspec; nonzero otherwise.  */
 int
 legitimate_pic_operand_p (x)
      rtx x;

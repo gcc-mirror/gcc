@@ -420,7 +420,7 @@ iq2000_reg_mode_ok_for_base_p (rtx reg,
 }
 
 /* Return a nonzero value if XINSN is a legitimate address for a
-   memory operand of the indicated MODE.  STRICT is non-zero if this
+   memory operand of the indicated MODE.  STRICT is nonzero if this
    function is called during reload.  */
 
 int
@@ -1195,7 +1195,7 @@ gen_conditional_branch (rtx operands[], enum rtx_code test_code)
 	  test_code = NE;
 	}
       else if (GET_CODE (cmp1) == CONST_INT && INTVAL (cmp1) != 0)
-	/* We don't want to build a comparison against a non-zero
+	/* We don't want to build a comparison against a nonzero
 	   constant.  */
 	cmp1 = force_reg (mode, cmp1);
 
@@ -2525,7 +2525,7 @@ iq2000_can_use_return_insn (void)
   return compute_frame_size (get_frame_size ()) == 0;
 }
 
-/* Returns non-zero if X contains a SYMBOL_REF.  */
+/* Returns nonzero if X contains a SYMBOL_REF.  */
 
 static int
 symbolic_expression_p (rtx x)
@@ -2679,11 +2679,11 @@ iq2000_adjust_insn_length (rtx insn, int length)
    INSN is the branch instruction.  OPERANDS[0] is the condition.
    OPERANDS[1] is the target of the branch.  OPERANDS[2] is the target
    of the first operand to the condition.  If TWO_OPERANDS_P is
-   non-zero the comparison takes two operands; OPERANDS[3] will be the
+   nonzero the comparison takes two operands; OPERANDS[3] will be the
    second operand.
 
-   If INVERTED_P is non-zero we are to branch if the condition does
-   not hold.  If FLOAT_P is non-zero this is a floating-point comparison.
+   If INVERTED_P is nonzero we are to branch if the condition does
+   not hold.  If FLOAT_P is nonzero this is a floating-point comparison.
 
    LENGTH is the length (in bytes) of the sequence we are to generate.
    That tells us whether to generate a simple conditional branch, or a
@@ -2696,7 +2696,7 @@ iq2000_output_conditional_branch (rtx insn, rtx *operands, int two_operands_p,
   static char buffer[200];
   /* The kind of comparison we are doing.  */
   enum rtx_code code = GET_CODE (operands[0]);
-  /* Non-zero if the opcode for the comparison needs a `z' indicating
+  /* Nonzero if the opcode for the comparison needs a `z' indicating
      that it is a comparision against zero.  */
   int need_z_p;
   /* A string to use in the assembly output to represent the first
@@ -2721,7 +2721,7 @@ iq2000_output_conditional_branch (rtx insn, rtx *operands, int two_operands_p,
 	 subtract B from A and then look at the sign bit.  But, if we
 	 are doing an unsigned comparison, and B is zero, we don't
 	 have to do the subtraction.  Instead, we can just check to
-	 see if A is non-zero.  Thus, we change the CODE here to
+	 see if A is nonzero.  Thus, we change the CODE here to
 	 reflect the simpler comparison operation.  */
       switch (code)
 	{
