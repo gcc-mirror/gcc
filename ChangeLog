@@ -1,5 +1,10 @@
 2004-06-22  Paolo Bonzini  <bonzini@gnu.org>
 
+	* Makefile.tpl (HOST_EXPORTS): Fix pasto.
+	* Makefile.in: Regenerate.
+
+2004-06-22  Paolo Bonzini  <bonzini@gnu.org>
+
 	* Makefile.tpl (configure-build-[+module+],
 	configure-[+module+], configure-target-[+module+]): Pass
 	[+extra_configure_args+].
