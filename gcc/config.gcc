@@ -670,6 +670,11 @@ h8300-*-rtems*)
 	fi
 	float_format=i32
 	;;
+h8300-*-elf*)
+	tmake_file="h8300/t-h8300 h8300/t-elf"
+	tm_file="h8300/h8300.h h8300/elf.h"
+	float_format=i32
+	;;
 h8300-*-*)
 	float_format=i32
 	;;
