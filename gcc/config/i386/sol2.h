@@ -64,3 +64,18 @@ Boston, MA 02111-1307, USA.  */
 
 /* The Solaris assembler does not support .quad.  Do not use it.  */
 #undef ASM_QUAD
+
+/* The Solaris assembler wants a .local for non-exported aliases.  */
+#define ASM_OUTPUT_DEF_FROM_DECLS(FILE, DECL, TARGET)	\
+  do {							\
+    const char *declname =				\
+      IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));	\
+    ASM_OUTPUT_DEF ((FILE), declname,			\
+		    IDENTIFIER_POINTER (TARGET));	\
+    if (! TREE_PUBLIC (DECL))				\
+      {							\
+	fprintf ((FILE), "%s", LOCAL_ASM_OP);		\
+	assemble_name ((FILE), declname);		\
+	fprintf ((FILE), "\n");				\
+      }							\
+  } while (0)

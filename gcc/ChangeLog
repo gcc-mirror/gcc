@@ -1,3 +1,8 @@
+2004-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/15178
+	* config/i386/sol2.h (ASM_OUTPUT_DEF_FROM_DECLS): Define.
+
 2004-06-14  Paul Brook  <paul@codesourcery.com>
 
 	* dwarf2out.c (output_call_frame_info): Support dwarf3 cie entries.
