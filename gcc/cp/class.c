@@ -1381,6 +1381,10 @@ handle_using_decl (using_decl, t, method_vec, fields)
 		     OVL_CURRENT (TREE_VEC_ELT (method_vec, i)));
 	return;
       }
+
+  if (! DECL_LANG_SPECIFIC (fdecl))
+    /* We don't currently handle DECL_ACCESS for TYPE_DECLs; just return.  */
+    return;
   
   for (tmp = fields; tmp; tmp = TREE_CHAIN (tmp))
     if (DECL_NAME (tmp) == name)
