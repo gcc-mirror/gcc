@@ -1,5 +1,5 @@
 /* C Compatible Compiler Preprocessor (CCCP)
-   Copyright (C) 1986, 87, 89, 92, 93, 94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1986, 87, 89, 92-95, 1996 Free Software Foundation, Inc.
    Written by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
 
@@ -7046,10 +7046,12 @@ do_xifdef (buf, limit, op, keyword)
   } else {
     HASHNODE *hp;
 
-    if (pedantic && buf[0] >= '0' && buf[0] <= '9')
-      pedwarn ("`#%s' argument starts with a digit", keyword->name);
-    else if (end != limit && !traditional)
-      pedwarn ("garbage at end of `#%s' argument", keyword->name);
+    if (! traditional) {
+      if (isdigit (buf[0]))
+	pedwarn ("`#%s' argument starts with a digit", keyword->name);
+      else if (end != limit)
+	pedwarn ("garbage at end of `#%s' argument", keyword->name);
+    }
 
     hp = lookup (buf, end-buf, -1);
 
