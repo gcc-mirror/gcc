@@ -2369,9 +2369,9 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
      something.  */
   if (compute_mode != mode)
     {
-      adjusted_op0 = op0 = convert_to_mode (compute_mode, op0, unsignedp);
+      adjusted_op0 = op0 = convert_modes (compute_mode, mode, op0, unsignedp);
       can_clobber_op0 = 1;
-      op1 = convert_to_mode (compute_mode, op1, unsignedp);
+      op1 = convert_modes (compute_mode, mode, op1, unsignedp);
     }
 
   /* If we are computing the remainder and one of the operands is a volatile
@@ -2887,7 +2887,7 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
       if (GET_MODE_SIZE (target_mode) > GET_MODE_SIZE (mode))
 	{
 	  op0 = protect_from_queue (op0, 0);
-	  op0 = convert_to_mode (target_mode, op0, 0);
+	  op0 = convert_modes (target_mode, mode, op0, 0);
 	  mode = target_mode;
 	}
 
@@ -3127,9 +3127,9 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
 	tem = expand_unop (mode, ffs_optab, op0, subtarget, 1);
       else if (GET_MODE_SIZE (mode) < UNITS_PER_WORD)
 	{
-	  mode = word_mode;
 	  op0 = protect_from_queue (op0, 0);
-	  tem = convert_to_mode (mode, op0, 1);
+	  tem = convert_to_mode (word_mode, mode, op0, 1);
+	  mode = word_mode;
 	}
 
       if (tem != 0)
