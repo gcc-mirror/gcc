@@ -3,6 +3,9 @@
 	* tree-data-ref.c (free_data_refs): Free each data_reference
 	object.
 
+	* tree-ssa-dom.c (thread_across_edge): Speed up by avoiding a
+	call to is_gimple_min_invariant if we know the result.
+
 2004-12-10  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-alias.c (setup_pointers_and_addressables): Remove

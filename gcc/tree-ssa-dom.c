@@ -745,12 +745,12 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
 	     otherwise look it up in the hash tables.  */
 	  cached_lhs = local_fold (COND_EXPR_COND (dummy_cond));
 	  if (! is_gimple_min_invariant (cached_lhs))
-	    cached_lhs = lookup_avail_expr (dummy_cond, false);
- 	  if (!cached_lhs || ! is_gimple_min_invariant (cached_lhs))
 	    {
-	      cached_lhs = simplify_cond_and_lookup_avail_expr (dummy_cond,
-								NULL,
-								false);
+	      cached_lhs = lookup_avail_expr (dummy_cond, false);
+	      if (!cached_lhs || ! is_gimple_min_invariant (cached_lhs))
+		cached_lhs = simplify_cond_and_lookup_avail_expr (dummy_cond,
+								  NULL,
+								  false);
 	    }
 	}
       /* We can have conditionals which just test the state of a
