@@ -1,8 +1,6 @@
 #  GNU Objective C Runtime Makefile
 #  Copyright (C) 1993 Free Software Foundation, Inc.
 #
-#  Author: Kresten Krab Thorup
-#
 #  This file is part of GNU CC.
 #
 #  GNU CC is free software; you can redistribute it and/or modify it under the
@@ -16,19 +14,21 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  GNU CC; see the file COPYING.  If not, write to the Free Software
-#  Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
-#
-# This makefile is run by the parent dir's makefile.
-# thisdir1=`pwd`; \
-# srcdir1=`cd $(srcdir); pwd`; \
-# cd objc; \
-# $(MAKE) $(MAKEFLAGS) -f $$srcdir1/objc/Makefile libobjc.a \
-#   srcdir=$$srcdir1 tooldir=$(tooldir) AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" \
-#   GCC_FOR_TARGET="$$thisdir1/xgcc -B$$thisdir1/" \
-#   GCC_CFLAGS="$(GCC_CFLAGS)"
-# Two targets are used by ../Makefile: `all' and `mostlyclean'.
+#  Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+
+#  This makefile is run by the parent dir's makefile.
+#  thisdir1=`pwd`; \
+#  srcdir1=`cd $(srcdir); pwd`; \
+#  cd objc; \
+#  $(MAKE) $(MAKEFLAGS) -f $$srcdir1/objc/Makefile libobjc.a \
+#    srcdir=$$srcdir1 tooldir=$(tooldir) AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" \
+#    GCC_FOR_TARGET="$$thisdir1/xgcc -B$$thisdir1/" \
+#    GCC_CFLAGS="$(GCC_CFLAGS)" incinstalldir=$$thisdir1/include
+#  Two targets are used by ../Makefile: `all' and `mostlyclean'.
 
 .SUFFIXES: .m
+
+OPTIMIZE= -O
 
 VPATH = $(srcdir)/objc
 
@@ -39,10 +39,11 @@ AR_FLAGS = rc
 SUBDIR_INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/config
 
 .c.o:
-	$(GCC_FOR_TARGET) -c $(GCC_CFLAGS) $(SUBDIR_INCLUDES) $<
+	$(GCC_FOR_TARGET) $(OPTIMIZE) -c $(GCC_CFLAGS) $(SUBDIR_INCLUDES) $<
 
 .m.o:
-	$(GCC_FOR_TARGET) -c $(GCC_CFLAGS) $(SUBDIR_INCLUDES) $<
+	$(GCC_FOR_TARGET) $(OPTIMIZE)  -fgnu-runtime \
+		-c $(GCC_CFLAGS) $(SUBDIR_INCLUDES) $<
 
 # If we were not invoked from the parent dir,
 # invoke make in the parent dir and have reinvoke this makefile.
@@ -50,48 +51,42 @@ SUBDIR_INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/config
 all:
 	cd ..; $(MAKE) sublibobjc.a
 
-OBJS = hash.o sarray.o objc-class.o objc-msg.o objc-init.o objc-archive.o \
-	objc-sel.o objc-object.o objc-misc.o Object.o Protocol.o
+OBJC_O = hash.o sarray.o objc-class.o objc-msg.o objc-init.o objc-archive.o \
+         objc-sel.o objc-object.o objc-misc.o Object.o Protocol.o
 
-all: libobjc.a
-
-runtime.h: hash.h list.h sarray.h objc.h objc-api.h
-
-Object.m: Object.h
-
-Object.h: objc.h objc-api.h 
-
-sarray.c: sarray.h
-
-hash.c: hash.h
-
-objc-class.c: runtime.h
-
-objc-msg.c: runtime.h
-
-objc-init.c: runtime.h
-
-objc-sel.c: runtime.h
-
-objc-object.c: runtime.h
-
-objc-class.o: objc-class.c
-
-objc-msg.o: objc-msg.c
-
-objc-init.o: objc-init.c
-
-objc-sel.o: objc-sel.c
-
-objc-object.o: objc-object.c
-
-libobjc.a: $(OBJS)
+libobjc.a: $(OBJC_O)
 	-rm -f libobjc.a
-	$(AR) rc libobjc.a $(OBJS)
+	$(AR) rc libobjc.a $(OBJC_O)
 # ranlib is run in the parent directory's makefile.
 
+OBJC_H = hash.h list.h sarray.h objc.h \
+         objc-api.h objc-archive.h cache.h \
+	 Object.h Protocol.h mutex.h
+
+# copy objc headers to installation include directory
+copy-headers: $(OBJC_H)
+	-rm -fr $(incinstalldir)/objc
+	mkdir $(incinstalldir)/objc
+	for file in $(OBJC_H); do \
+	  realfile=$(srcdir)/objc/$$file; \
+	  cp $$realfile $(incinstalldir)/objc; \
+	  chmod a+r $(incinstalldir)/objc; \
+	done
+
+objc-msg.o: objc-msg.c fflags
+	$(GCC_FOR_TARGET) `cat fflags` -c $(GCC_CFLAGS) $(SUBDIR_INCLUDES) $<
+
+## Next to are for heuristics on forwarding mechanism... 
+_forward: _forward.c
+	$(GCC_FOR_TARGET) -c $(GCC_CFLAGS) $(SUBDIR_INCLUDES) $<
+	$(GCC_FOR_TARGET) ./_forward.o -o _forward
+
+fflags: _forward
+	-rm -f fflags
+	-./_forward > fflags
+
 mostlyclean:
-	-rm -f $(OBJS) libobjc.a
+	-rm -f *.o libobjc.a _forward fflags
 clean: mostlyclean
 distclean: mostlyclean
 extraclean: mostlyclean
