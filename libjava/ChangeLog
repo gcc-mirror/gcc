@@ -1,7 +1,18 @@
+2001-03-06  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/util/TreeSet.java (writeObject): Use a for-loop instead of
+	Iterator.hasNext().
+
+2001-03-05  Jochen Hoenicke  <jochen@gnu.org>
+
+	* java/util/TreeMap.java (writeObject): Use defaultWriteObject()
+	instead of the new JDK1.2 API.  This is simpler and makes 
+	back-porting the classes to JDK1.1 trivial.
+	(readObject): likewise.
+	
 2001-03-01  Per Bothner  <per@bothner.com>
 
 	Changes merged from Kawa's gnu.math.
-	* java/math/BigInteger.java 
 	* gnu/gcj/math/MPN.java (rshift0): New method handles zero shift count.
 	(rshift(int[],int[],int,int):  Removed - not needed.
 	(gcd):  Use rshift0 rather than rshift.
