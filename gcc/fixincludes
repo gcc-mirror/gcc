@@ -1137,6 +1137,24 @@ if [ -r ${LIB}/$file ]; then
   fi
 fi
 
+# Remove erroneous parentheses in sym.h on Alpha OSF/1.
+file=sym.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file
+  sed -e 's/#ifndef(__mips64)/#ifndef __mips64/' \
+    ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  fi
+fi
+
 # These two files on SunOS 4 are included by other files
 # in the same directory, using "...".  So we must make sure they exist
 # in the same directory as the other fixed files.
