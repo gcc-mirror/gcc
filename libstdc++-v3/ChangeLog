@@ -1,3 +1,10 @@
+2004-10-03  Roger Sayle  <roger@eyesopen.com>
+
+	* config/locale/generic/c_locale.cc (__convert_to_v): Use
+	_GLIBCXX_HAVE_STRTOF instead _GLIBCXX_USE_C99 to check for strtof.
+	Likewise, use _GLIBCXX_HAVE_STRTOLD instead of _GLIBCXX_USE_C99
+	to check for presence of strtold.
+
 2004-10-02  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/std/std_sstream.h (basic_stringbuf(ios_base::openmode)):
