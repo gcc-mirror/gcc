@@ -93,7 +93,6 @@
   "efdctuiz %0,%1"
   [(set_attr "type" "fp")])
 
-;; FIXME: fix expander.
 (define_insn "spe_extendsfdf2"
   [(set (match_operand:DF 0 "gpc_reg_operand" "=r")
 	(float_extend:DF (match_operand:SF 1 "gpc_reg_operand" "r")))]
@@ -115,7 +114,6 @@
   "efsctsiz %0,%1"
   [(set_attr "type" "fp")])
 
-;; FIXME: fix expander.
 (define_insn "spe_fix_truncdfsi2"
   [(set (match_operand:SI 0 "gpc_reg_operand" "=r")
 	(fix:SI (match_operand:DF 1 "gpc_reg_operand" "r")))]
@@ -130,7 +128,6 @@
   "efscfui %0,%1"
   [(set_attr "type" "fp")])
 
-;; FIXME: fix expander.
 (define_insn "spe_floatunssidf2"
   [(set (match_operand:DF 0 "gpc_reg_operand" "=r")
         (unsigned_float:DF (match_operand:SI 1 "gpc_reg_operand" "r")))]
@@ -145,7 +142,6 @@
   "efscfsi %0,%1"
   [(set_attr "type" "fp")])
 
-;; FIXME: fix expander.
 (define_insn "spe_floatsidf2"
   [(set (match_operand:DF 0 "gpc_reg_operand" "=r")
 	(float:DF (match_operand:SI 1 "gpc_reg_operand" "r")))]
