@@ -63,6 +63,10 @@ CLEAN_JUNK = $(LIBS)
 .PHONY: libs
 libs: $(LIBS)
 
+# The "pic" subdir must be created before we can put any object
+# files into it.
+$(OBJS): stamp-picdir
+
 stdlist: $(IO_DIR)/iostream.list $(OBJS) $(SUBLIBS) $(LIBIBERTY_DIR)/libiberty.a
 	-rm -f tlist
 	touch tlist
