@@ -34,7 +34,7 @@ You should have received a copy of the GNU General Public License along with
 #include "typedstream.h"
 
 #define __objc_fatal(format, args...) \
- { fprintf(stderr, "archining: "); \
+ { fprintf(stderr, "archiving: "); \
    fprintf(stderr, format, ## args); \
    fprintf(stderr, "\n"); abort(); }
 
@@ -854,7 +854,7 @@ objc_sizeof_type(const char* type)
     break;
 
   default:
-    fprintf(stderr, "objc_write_type: cannot parse typespec: %s\n", type);
+    fprintf(stderr, "objc_sizeof_type: cannot parse typespec: %s\n", type);
     abort();
   }
 }
@@ -892,7 +892,7 @@ __objc_skip_type (const char* type)
     break;
 
   default:
-    fprintf(stderr, "objc_read_types: cannot parse typespec: %s\n", type);
+    fprintf(stderr, "__objc_skip_type: cannot parse typespec: %s\n", type);
     abort();
   }
 }
@@ -949,11 +949,11 @@ objc_write_type(TypedStream* stream, const char* type, const void* data)
     break;
 
   case _C_CHARPTR:
-    return objc_write_string (stream, (char*)data, strlen((char*)data));
+    return objc_write_string (stream, *(char**)data, strlen(*(char**)data));
     break;
 
   case _C_ATOM:
-    return objc_write_string_atomic (stream, (char*)data, strlen((char*)data));
+    return objc_write_string_atomic (stream, *(char**)data, strlen(*(char**)data));
     break;
 
   case _C_ARY_B:
@@ -1034,7 +1034,7 @@ objc_read_type(TypedStream* stream, const char* type, void* data)
     break; 
 
   default:
-    fprintf(stderr, "objc_write_type: cannot parse typespec: %s\n", type);
+    fprintf(stderr, "objc_read_type: cannot parse typespec: %s\n", type);
     abort();
   }
 }
@@ -1103,15 +1103,15 @@ objc_write_types (TypedStream* stream, const char* type, ...)
 
       case _C_CHARPTR:
 	{
-	  char* str = va_arg(args, char*);
-	  res = objc_write_string (stream, str, strlen(str));
+	  char** str = va_arg(args, char**);
+	  res = objc_write_string (stream, *str, strlen(*str));
 	}
 	break;
 
       case _C_ATOM:
 	{
-	  char* str = va_arg(args, char*);
-	  res = objc_write_string_atomic (stream, str, strlen(str));
+	  char** str = va_arg(args, char**);
+	  res = objc_write_string_atomic (stream, *str, strlen(*str));
 	}
 	break;
 
@@ -1128,7 +1128,7 @@ objc_write_types (TypedStream* stream, const char* type, ...)
 	break; 
 	
       default:
-	fprintf(stderr, "objc_write_type: cannot parse typespec: %s\n", type);
+	fprintf(stderr, "objc_write_types: cannot parse typespec: %s\n", type);
 	abort();
       }
     }
@@ -1213,7 +1213,7 @@ objc_read_types(TypedStream* stream, const char* type, ...)
 	break; 
 	
       default:
-	fprintf(stderr, "objc_read_type: cannot parse typespec: %s\n", type);
+	fprintf(stderr, "objc_read_types: cannot parse typespec: %s\n", type);
 	abort();
       }
     }
