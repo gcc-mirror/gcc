@@ -136,9 +136,9 @@ _fatal_insn_not_found (insn, file, line, function)
      const char *function;
 {
   if (INSN_CODE (insn) < 0)
-    _fatal_insn ("Unrecognizable insn:", insn, file, line, function);
+    _fatal_insn ("unrecognizable insn:", insn, file, line, function);
   else
-    _fatal_insn ("Insn does not satisfy its constraints:",
+    _fatal_insn ("insn does not satisfy its constraints:",
 		insn, file, line, function);
 }
 

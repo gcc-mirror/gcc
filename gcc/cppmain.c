@@ -118,7 +118,7 @@ do_preprocessing (argc, argv)
 
   if (argi < argc)
     {
-      cpp_fatal (pfile, "Invalid option %s", argv[argi]);
+      cpp_fatal (pfile, "invalid option %s", argv[argi]);
       return;
     }
 

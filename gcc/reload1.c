@@ -1888,13 +1888,13 @@ spill_failure (insn, class)
 {
   static const char *const reg_class_names[] = REG_CLASS_NAMES;
   if (asm_noperands (PATTERN (insn)) >= 0)
-    error_for_asm (insn, "Can't find a register in class `%s' while reloading `asm'",
+    error_for_asm (insn, "can't find a register in class `%s' while reloading `asm'",
 		   reg_class_names[class]);
   else
     {
-      error ("Unable to find a register to spill in class `%s'",
+      error ("unable to find a register to spill in class `%s'",
 	     reg_class_names[class]);
-      fatal_insn ("This is the insn:", insn);
+      fatal_insn ("this is the insn:", insn);
     }
 }
 
@@ -5036,7 +5036,7 @@ failed_reload (insn, r)
 {
   if (asm_noperands (PATTERN (insn)) < 0)
     /* It's the compiler's fault.  */
-    fatal_insn ("Could not find a spill register", insn);
+    fatal_insn ("could not find a spill register", insn);
 
   /* It's the user's fault; the operand's mode and constraint
      don't match.  Disable this reload so we don't crash in final.  */

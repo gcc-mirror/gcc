@@ -1621,13 +1621,13 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 	      if (TREE_CHAIN (t) == 0
 		  && TYPE_MAIN_VARIANT (type) != void_type_node)
 		{
-		  error ("A parameter list with an ellipsis can't match an empty parameter name list declaration");
+		  error ("a parameter list with an ellipsis can't match an empty parameter name list declaration");
 		  break;
 		}
 
 	      if (simple_type_promotes_to (type) != NULL_TREE)
 		{
-		  error ("An argument type that has a default promotion can't match an empty parameter name list declaration");
+		  error ("an argument type that has a default promotion can't match an empty parameter name list declaration");
 		  break;
 		}
 	    }
@@ -3765,7 +3765,7 @@ push_parm_decl (parm)
       olddecl = lookup_name (DECL_NAME (decl));
       if (pedantic && olddecl != 0 && TREE_CODE (olddecl) == TYPE_DECL)
 	pedwarn_with_decl (decl,
-			   "ANSI C forbids parameter `%s' shadowing typedef");
+			   "ISO C forbids parameter `%s' shadowing typedef");
     }
 #endif
 

@@ -1801,7 +1801,7 @@ ifobjc
 		    $$ = get_class_ivars (interface);
 		  else
 		    {
-		      error ("Cannot find interface declaration for `%s'",
+		      error ("cannot find interface declaration for `%s'",
 			     IDENTIFIER_POINTER ($3));
 		      $$ = NULL_TREE;
 		    }

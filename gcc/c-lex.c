@@ -297,7 +297,7 @@ cb_file_change (pfile, new_map)
 	{
 	  warning_with_file_and_line
 	    (input_filename, lineno,
-	     "This file contains more '%c's than '%c's",
+	     "this file contains more '%c's than '%c's",
 	     indent_level > input_file_stack->indent_level ? '{' : '}',
 	     indent_level > input_file_stack->indent_level ? '}' : '{');
 	}

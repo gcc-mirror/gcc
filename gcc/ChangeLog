@@ -1,3 +1,56 @@
+2001-12-02  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-decl.c (duplicate_decls, push_parm_decl): Remove leading
+	capital from diagnostics.
+	* c-lex.c (cb_file_change): Similarly.
+	* c-parse.in : Similarly.
+	* cfgrtl.c (verify_flow_info): Similarly.
+	* collect2.c: Similarly.
+	* cppfiles.c (find_include_file): Similarly.
+	* cppinit.c (cpp_handle_option): Similarly.
+	* cpplex.c (cpp_spell_token): Similarly.
+	* cppmain.c (do_preprocessing): Similarly.
+	* gcc.c (translate_options, process_command, do_spec1,
+	main, pfatal_execute): Similarly.
+	* genattr.c (main): Similarly.
+	* genattrtab.c (check_attr_test, operate_exp, simplify_test_exp,
+	write_test_expr, main): Similarly.
+	* gencodes.c (main): Similarly.
+	* genconfig.c (main): Similarly.
+	* genconstants.c (main): Similarly.
+	* genemit.c (main): Similarly.
+	* genextract.c (main): Similarly.
+	* genflags.c (main): Similarly.
+	* genopinit.c (main): Similarly.
+	* genoutput.c (process_template, main): Similarly.
+	* genpeep.c (main): Similarly.
+	* genrecog.c (main): Similarly.
+	* gensupport.c (is_predicable, identify_predicable_attribute,
+	alter_predicate_for_insn, init_md_reader_args, main): Similarly.
+	* ggc-page.c (alloc_anon): Similarly.
+	* mips-tfile.c (add_string, add_procedure, add_file, read_line,
+	parse_begin, parse_bend, parse_def, parse_end, parse_file,
+	parse_stabs_common, parse_stabs, write_varray, write_object,
+	read_seek, copy_object, main, error): Similarly.
+	* profile.c (compute_branch_probabilities): Similarly.
+	* reg-stack.c (check_asm_stack_operands): Similarly.
+	* reload.c (find_reloads): Similarly.
+	* reload1.c (spill_failure, failed_reload): Similarly.
+	* rtl-error.c (_fatal_insn_not_found): Similarly.
+	* toplev.c (read_integral_parameter, crash_signal,
+	decode_f_option, set_target_switch, parse_options_and_default_flags)
+	: Similarly.
+	* tradcif.y (parse_number, yylex): Similarly.
+	* tradcpp.c (main, fancy_abort): Similarly.
+	* tree.c (tree_check_failed): Similarly.
+	* varray.c (varray_check_failed): Similarly.
+	* xcoffout.c (xcoff_output_standard_types): Similarly.
+objc:
+	* objc-act.c (get_object_ref, lookup_and_install_protocols,
+	build_objc_string_object, objc_declare_alias, build_ivar_chain,
+	finish_message_expr, build_protocol_expr, is_public,
+	start_class): Similarly.
+
 2001-12-01  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-decl.c (duplicate_decls, parmlist_tags_warning): Remove

@@ -772,7 +772,7 @@ is_admissible_throw_operand (expr)
             conversion.  */
   else if (CLASS_TYPE_P (type) && CLASSTYPE_PURE_VIRTUALS (type))
     {
-      cp_error ("Expression '%E' of abstract class type '%T' cannot be used in throw-expression", expr, type);
+      cp_error ("expression '%E' of abstract class type '%T' cannot be used in throw-expression", expr, type);
       return false;
     }
 

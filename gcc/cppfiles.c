@@ -548,7 +548,7 @@ find_include_file (pfile, header, type)
 
   if (path == NULL)
     {
-      cpp_error (pfile, "No include path in which to find %s", fname);
+      cpp_error (pfile, "no include path in which to find %s", fname);
       return NO_INCLUDE_PATH;
     }
 

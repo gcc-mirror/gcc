@@ -1582,7 +1582,7 @@ read_integral_parameter (p, pname, defval)
   if (*endp != 0)
     {
       if (pname != 0)
-	error ("Invalid option `%s'", pname);
+	error ("invalid option `%s'", pname);
       return defval;
     }
 
@@ -1728,7 +1728,7 @@ static void
 crash_signal (signo)
      int signo;
 {
-  internal_error ("Internal error: %s", strsignal (signo));
+  internal_error ("internal error: %s", strsignal (signo));
 }
 
 /* Strip off a legitimate source ending from the input string NAME of
@@ -3887,7 +3887,7 @@ decode_f_option (arg)
         diagnostic_prefixing_rule (global_dc)
           = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
       else
-	error ("Unrecognized option `%s'", arg - 2);
+	error ("unrecognized option `%s'", arg - 2);
     }
   else if (!strcmp (arg, "no-stack-limit"))
     stack_limit_rtx = NULL_RTX;
@@ -4353,7 +4353,7 @@ set_target_switch (name)
 #endif
 
   if (!valid_target_option)
-    error ("Invalid option `%s'", name);
+    error ("invalid option `%s'", name);
 }
 
 /* Print version information to FILE.
@@ -4771,17 +4771,17 @@ parse_options_and_default_flags (argc, argv)
 	    {
 	      if (extra_warnings)
 		{
-		  warning ("Ignoring command line option '%s'", argv[i]);
+		  warning ("ignoring command line option '%s'", argv[i]);
 		  if (lang)
 		    warning
-		      ("(It is valid for %s but not the selected language)",
+		      ("(it is valid for %s but not the selected language)",
 		       lang);
 		}
 	    }
 	  else if (argv[i][0] == '-' && argv[i][1] == 'g')
 	    warning ("`%s': unknown or unsupported -g option", &argv[i][2]);
 	  else
-	    error ("Unrecognized option `%s'", argv[i]);
+	    error ("unrecognized option `%s'", argv[i]);
 
 	  i++;
 	}

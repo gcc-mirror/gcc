@@ -1,3 +1,10 @@
+2001-12-02  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* call.c (build_java_interface_fn_ref): Similarly.
+	* except.c (is_admissible_throw_operand): Similarly.
+	* init.c (build_java_class_ref): Similarly.
+	* xref.c (open_xref_file): Similarly.
+
 2001-12-01  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* class.c (finish_struct): Remove trailing periods from messages.

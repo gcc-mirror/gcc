@@ -674,7 +674,7 @@ check_asm_stack_operands (insn)
       {
 	if (reg_class_size[(int) recog_op_alt[i][alt].class] != 1)
 	  {
-	    error_for_asm (insn, "Output constraint %d must specify a single register", i);
+	    error_for_asm (insn, "output constraint %d must specify a single register", i);
 	    malformed_asm = 1;
 	  }
         else
@@ -684,7 +684,7 @@ check_asm_stack_operands (insn)
 	    for (j = 0; j < n_clobbers; j++)
 	      if (REGNO (recog_data.operand[i]) == REGNO (clobber_reg[j]))
 		{
-		  error_for_asm (insn, "Output constraint %d cannot be specified together with \"%s\" clobber",
+		  error_for_asm (insn, "output constraint %d cannot be specified together with \"%s\" clobber",
 				 i, reg_names [REGNO (clobber_reg[j])]);
 		  malformed_asm = 1;
 		  break;
@@ -707,7 +707,7 @@ check_asm_stack_operands (insn)
 
   if (i != LAST_STACK_REG + 1)
     {
-      error_for_asm (insn, "Output regs must be grouped at top of stack");
+      error_for_asm (insn, "output regs must be grouped at top of stack");
       malformed_asm = 1;
     }
 
@@ -744,7 +744,7 @@ check_asm_stack_operands (insn)
   if (i != LAST_STACK_REG + 1)
     {
       error_for_asm (insn,
-		     "Implicitly popped regs must be grouped at top of stack");
+		     "implicitly popped regs must be grouped at top of stack");
       malformed_asm = 1;
     }
 
@@ -763,7 +763,7 @@ check_asm_stack_operands (insn)
 	  if (operands_match_p (recog_data.operand[j], recog_data.operand[i]))
 	    {
 	      error_for_asm (insn,
-			     "Output operand %d must use `&' constraint", j);
+			     "output operand %d must use `&' constraint", j);
 	      malformed_asm = 1;
 	    }
       }

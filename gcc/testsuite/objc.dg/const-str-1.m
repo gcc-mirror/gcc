@@ -4,7 +4,7 @@
 
 int foo()
 {
-  baz(@"hiya");  /* { dg-error "Cannot find interface declaration" } */
+  baz(@"hiya");  /* { dg-error "annot find interface declaration" } */
 }
 
 @interface NXConstantString

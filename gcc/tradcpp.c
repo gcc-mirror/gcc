@@ -550,7 +550,7 @@ main (argc, argv)
   for (i = 1; i < argc; i++) {
     if (argv[i][0] != '-') {
       if (out_fname != NULL)
-	fatal ("Usage: %s [switches] input output", argv[0]);
+	fatal ("usage: %s [switches] input output", argv[0]);
       else if (in_fname != NULL)
 	out_fname = argv[i];
       else
@@ -582,7 +582,7 @@ main (argc, argv)
 	if (!strcmp (argv[i], "-include"))
 	  {
 	    if (i + 1 == argc)
-	      fatal ("Filename missing after -i option");
+	      fatal ("filename missing after -i option");
 	    else
 	      pend[i].type = PD_FILE, pend[i].arg = argv[i + 1], i++;
 	  }
@@ -598,9 +598,9 @@ main (argc, argv)
 
       case 'o':
 	if (out_fname != NULL)
-	  fatal ("Output filename specified twice");
+	  fatal ("output filename specified twice");
 	if (i + 1 == argc)
-	  fatal ("Filename missing after -o option");
+	  fatal ("filename missing after -o option");
 	out_fname = argv[++i];
 	if (!strcmp (out_fname, "-"))
 	  out_fname = "";
@@ -659,7 +659,7 @@ main (argc, argv)
 	    int quoted = argv[i][2] == 'Q';
 
 	    if (*tgt == '\0' && i + 1 == argc)
-	      fatal ("Target missing after %s option", argv[i]);
+	      fatal ("target missing after %s option", argv[i]);
 	    else
 	      {
 		if (*tgt == '\0')
@@ -673,7 +673,7 @@ main (argc, argv)
 	    if (*p)
 	      deps_file = p;
 	    else if (i + 1 == argc)
-	      fatal ("Filename missing after %s option", argv[i]);
+	      fatal ("filename missing after %s option", argv[i]);
 	    else
 	      deps_file = argv[++i];
 	  }
@@ -698,7 +698,7 @@ main (argc, argv)
 	  if (argv[i][2] != 0)
 	    p = argv[i] + 2;
 	  else if (i + 1 == argc)
-	    fatal ("Macro name missing after -%c option", c);
+	    fatal ("macro name missing after -%c option", c);
 	  else
 	    p = argv[++i];
 
@@ -749,7 +749,7 @@ main (argc, argv)
 	    if (argv[i][1] == 'I' && argv[i][2] != 0)
 	      dirtmp->fname = argv[i] + 2;
 	    else if (i + 1 == argc)
-	      fatal ("Directory name missing after -I option");
+	      fatal ("directory name missing after -I option");
 	    else
 	      dirtmp->fname = argv[++i];
 	    if (strlen (dirtmp->fname) > max_include_len)
@@ -776,7 +776,7 @@ main (argc, argv)
 	}	/* else fall through into error */
 
       default:
-	fatal ("Invalid option `%s'", argv[i]);
+	fatal ("invalid option `%s'", argv[i]);
       }
     }
   }
@@ -4743,7 +4743,7 @@ fancy_abort (line, func)
      int line;
      const char *func;
 {
-  fatal ("Internal error in %s, at tradcpp.c:%d\n\
+  fatal ("internal error in %s, at tradcpp.c:%d\n\
 Please submit a full bug report.\n\
 See %s for instructions.", func, line, GCCBUGURL);
 }

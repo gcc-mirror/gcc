@@ -167,7 +167,7 @@ xcoff_output_standard_types (syms)
 /* Print an error message for unrecognized stab codes.  */
 
 #define UNKNOWN_STAB(STR)	\
-  internal_error ("No sclass for %s stab (0x%x)\n", STR, stab)
+  internal_error ("no sclass for %s stab (0x%x)\n", STR, stab)
 
 /* Conversion routine from BSD stabs to AIX storage classes.  */
 

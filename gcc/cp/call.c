@@ -4398,7 +4398,7 @@ build_java_interface_fn_ref (fn, instance)
   if (!iface_ref || TREE_CODE (iface_ref) != VAR_DECL
       || DECL_CONTEXT (iface_ref) != iface)
     {
-      cp_error ("Could not find class$ field in java interface type `%T'", 
+      cp_error ("could not find class$ field in java interface type `%T'", 
 		iface);
       return error_mark_node;
     }

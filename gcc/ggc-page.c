@@ -518,7 +518,7 @@ alloc_anon (pref, size)
 
   if (page == (char *) MAP_FAILED)
     {
-      perror ("Virtual memory exhausted");
+      perror ("virtual memory exhausted");
       exit (FATAL_EXIT_CODE);
     }
 
