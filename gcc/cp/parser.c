@@ -2230,7 +2230,17 @@ cp_parser_scope_through_which_access_occurs (decl,
   if (!TYPE_P (scope))
     return NULL_TREE;
   /* Figure out the type through which DECL is being accessed.  */
-  if (object_type && DERIVED_FROM_P (scope, object_type))
+  if (object_type 
+      /* OBJECT_TYPE might not be a class type; consider:
+
+	   class A { typedef int I; };
+	   I *p;
+	   p->A::I::~I();
+
+         In this case, we will have "A::I" as the DECL, but "I" as the
+	 OBJECT_TYPE.  */
+      && CLASS_TYPE_P (object_type)
+      && DERIVED_FROM_P (scope, object_type))
     /* If we are processing a `->' or `.' expression, use the type of the
        left-hand side.  */
     qualifying_type = object_type;
