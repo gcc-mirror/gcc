@@ -1,3 +1,7 @@
+1998-11-11  Tom Tromey  <tromey@cygnus.com>
+
+	* jcf-dump.c (main): Correctly recognize `--'-style long options.
+
 Tue Nov 10 12:34:03 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (is_compiled_class): Call safe_layout_class for class
