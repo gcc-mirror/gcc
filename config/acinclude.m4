@@ -959,8 +959,15 @@ if test x"${no_tcl}" = x ; then
     dnl next check if it came with Tcl configuration file in the source tree
     if test x"${ac_cv_c_tclconfig}" = x ; then
         for i in $dirlist; do
+            dnl need to test both unix and win directories, since 
+            dnl cygwin's tkConfig.sh could be in either directory depending
+            dnl on the cygwin port of tcl.
             if test -f $srcdir/$i/unix/tclConfig.sh ; then
                 ac_cv_c_tclconfig=`(cd $srcdir/$i/unix; pwd)`
+	        break
+            fi
+            if test -f $srcdir/$i/win/tclConfig.sh ; then
+                ac_cv_c_tclconfig=`(cd $srcdir/$i/win; pwd)`
 	        break
             fi
         done
@@ -978,8 +985,15 @@ if test x"${no_tcl}" = x ; then
         dnl find the exact Tcl dir. We do it this way, cause there
         dnl might be multiple version of Tcl, and we want the most recent one.
         for i in `ls -dr $tclconfpath/tcl* 2>/dev/null ` ; do
+            dnl need to test both unix and win directories, since 
+            dnl cygwin's tclConfig.sh could be in either directory depending
+            dnl on the cygwin port of tcl.
             if test -f $i/unix/tclConfig.sh ; then
                 ac_cv_c_tclconfig=`(cd $i/unix; pwd)`
+                break
+            fi
+            if test -f $i/win/tclConfig.sh ; then
+                ac_cv_c_tclconfig=`(cd $i/win; pwd)`
                 break
             fi
         done
@@ -1178,7 +1192,14 @@ if test x"${no_tk}" = x ; then
     dnl next check if it came with Tk configuration file in the source tree
     if test x"${ac_cv_c_tkconfig}" = x ; then
         for i in $dirlist; do
+            dnl need to test both unix and win directories, since 
+            dnl cygwin's tkConfig.sh could be in either directory depending
+            dnl on the cygwin port of tk.
             if test -f $srcdir/$i/unix/tkConfig.sh ; then
+                ac_cv_c_tkconfig=`(cd $srcdir/$i/unix; pwd)`
+	        break
+            fi
+            if test -f $srcdir/$i/win/tkConfig.sh ; then
                 ac_cv_c_tkconfig=`(cd $srcdir/$i/unix; pwd)`
 	        break
             fi
@@ -1197,8 +1218,15 @@ if test x"${no_tk}" = x ; then
         dnl find the exact Tk dir. We do it this way, cause there
         dnl might be multiple version of Tk, and we want the most recent one.
         for i in `ls -dr $tkconfpath/tk* 2>/dev/null ` ; do
+            dnl need to test both unix and win directories, since 
+            dnl cygwin's tkConfig.sh could be in either directory depending
+            dnl on the cygwin port of tk.
             if test -f $i/unix/tkConfig.sh ; then
                 ac_cv_c_tkconfig=`(cd $i/unix; pwd)`
+                break
+            fi
+            if test -f $i/win/tkConfig.sh ; then
+                ac_cv_c_tkconfig=`(cd $i/win; pwd)`
                 break
             fi
         done
