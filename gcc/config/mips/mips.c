@@ -2673,7 +2673,12 @@ output_block_move (insn, operands, num_regs, move_type)
   /* If we are given global or static addresses, and we would be
      emitting a few instructions, try to save time by using a
      temporary register for the pointer.  */
-  if (num_regs > 2 && (bytes > 2*align || move_type != BLOCK_MOVE_NORMAL))
+  /* ??? The SGI Irix6 assembler fails when a SYMBOL_REF is used in
+     an ldl/ldr instruction pair.  We play it safe, and always move
+     constant addresses into registers when generating N32/N64 code, just
+     in case we might emit an unaligned load instruction.  */
+  if (num_regs > 2 && (bytes > 2*align || move_type != BLOCK_MOVE_NORMAL
+		       || mips_abi == ABI_N32 || mips_abi == ABI_64))
     {
       if (CONSTANT_P (src_reg))
 	{
@@ -2768,7 +2773,6 @@ output_block_move (insn, operands, num_regs, move_type)
 	  bytes -= 8;
 	}
 
-      /* ??? Fails because of a MIPS assembler bug?  */
       else if (TARGET_64BIT && bytes >= 8)
 	{
 	  if (BYTES_BIG_ENDIAN)
