@@ -353,7 +353,6 @@ static void rs6000_xcoff_file_end (void);
 #if TARGET_MACHO
 static bool rs6000_binds_local_p (tree);
 #endif
-static int rs6000_use_dfa_pipeline_interface (void);
 static int rs6000_variable_issue (FILE *, int, rtx, int);
 static bool rs6000_rtx_costs (rtx, int, int, int *);
 static int rs6000_adjust_cost (rtx, rtx, rtx, int);
@@ -570,7 +569,7 @@ static const char alt_reg_names[][8] =
 #define TARGET_ASM_FUNCTION_EPILOGUE rs6000_output_function_epilogue
 
 #undef  TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE 
-#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE rs6000_use_dfa_pipeline_interface
+#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE hook_int_void_1
 #undef  TARGET_SCHED_VARIABLE_ISSUE
 #define TARGET_SCHED_VARIABLE_ISSUE rs6000_variable_issue
 
@@ -8825,6 +8824,26 @@ includes_rldicr_lshift_p (rtx shiftop, rtx andop)
     return 0;
 }
 
+/* Return 1 if operands will generate a valid arguments to rlwimi
+instruction for insert with right shift in 64-bit mode.  The mask may
+not start on the first bit or stop on the last bit because wrap-around
+effects of instruction do not correspond to semantics of RTL insn.  */
+
+int
+insvdi_rshift_rlwimi_p (rtx sizeop, rtx startop, rtx shiftop)
+{
+  if (INTVAL (startop) < 64
+      && INTVAL (startop) > 32
+      && (INTVAL (sizeop) + INTVAL (startop) < 64)
+      && (INTVAL (sizeop) + INTVAL (startop) > 33)
+      && (INTVAL (sizeop) + INTVAL (startop) + INTVAL (shiftop) < 96)
+      && (INTVAL (sizeop) + INTVAL (startop) + INTVAL (shiftop) >= 64)
+      && (64 - (INTVAL (shiftop) & 63)) >= INTVAL (sizeop))
+    return 1;
+
+  return 0;
+}
+
 /* Return 1 if REGNO (reg1) == REGNO (reg2) - 1 making them candidates
    for lfq and stfq insns iff the registers are hard registers.   */
 
@@ -14179,12 +14198,6 @@ output_function_profiler (FILE *file, int labelno)
 }
 
 
-static int
-rs6000_use_dfa_pipeline_interface (void)
-{
-  return 1;
-}
-
 /* Power4 load update and store update instructions are cracked into a
    load or store and an integer insn which are executed in the same cycle.
    Branches have their own dispatch slot which does not count against the

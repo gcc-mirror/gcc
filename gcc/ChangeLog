@@ -1,3 +1,12 @@
+2004-06-23  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_use_dfa_pipeline_interface): Delete.
+	(TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE): Redefine a hook_int_void_1.
+	(insvdi_rshift_rlwimi_p): New function.
+	* config/rs6000/rs6000.md (insvdi_internal2/3): New patterns.
+	(extendsfdf2): Convert to define_insn_and_split.
+	* config/rs6000/rs6000-protos.h (insvdi_rshift_rlwimi_p): Prototype.
+
 2004-06-23  Andrew Pinski  <apinski@apple.com>
 
 	* c-typeck.c (composite_type, <case ARRAY_TYPE>): Abort if we have

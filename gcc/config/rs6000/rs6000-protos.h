@@ -101,6 +101,7 @@ extern int includes_lshift_p (rtx, rtx);
 extern int includes_rshift_p (rtx, rtx);
 extern int includes_rldic_lshift_p (rtx, rtx);
 extern int includes_rldicr_lshift_p (rtx, rtx);
+extern int insvdi_rshift_rlwimi_p (rtx, rtx, rtx);
 extern int registers_ok_for_quad_peep (rtx, rtx);
 extern int mems_ok_for_quad_peep (rtx, rtx);
 extern bool gpr_or_gpr_p (rtx, rtx);
