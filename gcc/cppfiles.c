@@ -326,7 +326,7 @@ stack_include_file (pfile, inc)
     }
 
   /* Push a buffer.  */
-  fp = cpp_push_buffer (pfile, inc->buffer, len, BUF_FILE, inc->name);
+  fp = cpp_push_buffer (pfile, inc->buffer, len, BUF_FILE, inc->name, 0);
   fp->inc = inc;
   fp->inc->refcnt++;
   fp->sysp = sysp;

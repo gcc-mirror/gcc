@@ -59,7 +59,7 @@ objc-parse.o : $(srcdir)/objc/objc-parse.c \
    $(CONFIG_H) $(TREE_H) $(srcdir)/toplev.h $(srcdir)/ggc.h \
    $(srcdir)/c-lex.h $(srcdir)/c-tree.h $(srcdir)/c-common.h \
    $(srcdir)/input.h $(srcdir)/flags.h $(srcdir)/output.h \
-   $(srcdir)/objc/objc-act.h $(SYSTEM_H) cpplib.h
+   $(srcdir)/objc/objc-act.h $(SYSTEM_H) $(CPPLIB_H)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -I$(srcdir)/objc \
 	-c $(srcdir)/objc/objc-parse.c $(OUTPUT_OPTION)
 

@@ -1010,18 +1010,14 @@ cpp_sys_macro_p (pfile)
 /* Read each token in, until EOF.  Directives are transparently
    processed.  */
 void
-cpp_scan_buffer_nooutput (pfile, all_buffers)
+cpp_scan_nooutput (pfile)
      cpp_reader *pfile;
-     int all_buffers;
 {
   cpp_token token;
-  cpp_buffer *buffer = all_buffers ? 0: pfile->buffer->prev;
 
   do
-    do
-      cpp_get_token (pfile, &token);
-    while (token.type != CPP_EOF);
-  while (cpp_pop_buffer (pfile) != buffer);
+    cpp_get_token (pfile, &token);
+  while (token.type != CPP_EOF);
 }
 
 /* Lookahead handling.  */

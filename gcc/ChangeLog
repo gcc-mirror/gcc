@@ -1,3 +1,30 @@
+2001-08-04  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
+
+	* Makefile.in (CPPLIB_H): New, so that dependencies on cpplib.h
+	are also on line-map.h.
+	* cppfiles.c (stack_include_file): Update.
+	* cpphash.h (struct cpp_buffer): New member return_at_eof.
+	(_cpp_pop_buffer): New.
+	* cppinit.c (cpp_destroy, cpp_finish): Update.
+	(do_includes): Mark each buffer to return at EOF.
+	* cpplex.c (_cpp_lex_token): Pop buffers at EOF.  Continue or
+	return as requested.
+	* cpplib.c (run_directive, do_line, cpp_push_buffer): Update.
+	(cpp_pop_buffer): Rename _cpp_pop_buffer.  Stop skipping.
+	* cpplib.h (cpp_pop_buffer): Remove.
+	(cpp_scan_buffer_nooutput): Rename cpp_scan_nooutput.
+	* cppmacro.c (cpp_scan_buffer_nooutput): Similarly.  No need to pop
+	buffers.
+	* cppmain.c (scan_buffer): Rename scan_translation_unit.  No need
+	to pop buffers.
+	(do_preprocessing): Update.
+	* fix-header.c (read_scan_file): Update.  No need to pop buffers.
+	* c-parse.in (_yylex): Similarly.
+	* scan-decls.c (scan_decls): Similarly.
+	* line-map.h: Update comments.
+
+	* objc/Make-lang.in (objc-act.o): Update dependencies.
+
 2001-08-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* config/m68hc11/m68hc11.md ("cmphi_1", "cmpqi_1"): Allow memory 

@@ -1,3 +1,7 @@
+2001-08-04  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
+
+	* cp/spew.c (read_token): No need to pop buffers.
+
 2001-08-02  Stan Shebs  <shebs@apple.com>
 
 	* cp-tree.h (FNADDR_FROM_VTABLE_ENTRY): Remove, no longer used.

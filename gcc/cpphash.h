@@ -226,6 +226,11 @@ struct cpp_buffer
      include files has been calculated and stored in "dir" below.  */
   unsigned char search_cached;
 
+  /* At EOF, a buffer is automatically popped.  If RETURN_AT_EOF is
+     true, a CPP_EOF token is then returned.  Otherwise, the next
+     token from the enclosing buffer is returned.  */
+  bool return_at_eof;
+
   /* Buffer type.  */
   ENUM_BITFIELD (cpp_buffer_type) type : 8;
 
@@ -441,6 +446,7 @@ extern void _cpp_do__Pragma	PARAMS ((cpp_reader *));
 extern void _cpp_init_directives PARAMS ((cpp_reader *));
 extern void _cpp_init_internal_pragmas PARAMS ((cpp_reader *));
 extern void _cpp_do_file_change PARAMS ((cpp_reader *, enum lc_reason));
+extern void _cpp_pop_buffer PARAMS ((cpp_reader *));
 
 /* Utility routines and macros.  */
 #define DSC(str) (const U_CHAR *)str, sizeof str - 1

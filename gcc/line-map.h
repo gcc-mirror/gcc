@@ -25,7 +25,9 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 /* The logical line FROM_LINE maps to physical source file TO_FILE at
    line TO_LINE, and subsequently one-to-one until the next line_map
-   structure in the set.  */
+   structure in the set.  INCLUDED_FROM is an index into the set that
+   gives the line mapping at whose end the current one was included.
+   File(s) at the bottom of the include stack have this set to -1.  */
 struct line_map
 {
   const char *to_file;
@@ -34,7 +36,7 @@ struct line_map
   int included_from;
 };
 
-/* Contains a sequence of chronological line_map structures.  */
+/* A set of chronological line_map structures.  */
 struct line_maps
 {
   struct line_map *maps;
@@ -75,6 +77,7 @@ extern struct line_map *lookup_line
    of the #include, or other directive, that caused a map change.  */
 #define LAST_SOURCE_LINE(MAP) SOURCE_LINE (MAP, (MAP)[1].from_line - 1)
 
+/* Non-zero if the map is at the bottom of the include stack.  */
 #define MAIN_FILE_P(MAP) ((MAP)->included_from < 0)
 
 #endif /* !GCC_LINE_MAP_H  */
