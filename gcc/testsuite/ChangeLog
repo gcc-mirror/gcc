@@ -1,3 +1,8 @@
+2002-04-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.c-torture/execute/20010122-1.x: New file.  XFAIL this test
+	for mips*-sgi-irix6*.
+
 2002-04-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/20020415-1.c: New test.
