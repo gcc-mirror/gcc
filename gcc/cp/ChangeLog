@@ -1,3 +1,10 @@
+Mon Aug 17 10:40:18 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* cp-tree.h (set_identifier_local_value): Provide prototype.
+
+	* decl2.c (do_namespace_alias): Remove unused variables `binding'
+	and `old'.
+
 Fri Aug 14 16:42:27 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* Makefile.in: Rename BBISON to BISON so that it can be properly
