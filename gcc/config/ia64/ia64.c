@@ -5706,16 +5706,12 @@ ia64_sched_reorder (dump, sched_verbose, ready, pn_ready, reorder_type)
 		schedule_stop (sched_verbose ? dump : NULL);
 		sched_data.last_was_stop = 1;
 		maybe_rotate (sched_verbose ? dump : NULL);
-		if (dump)
-		  fprintf (dump, "// UNKNOWN insn; group barrier needed.\n");
 	      }
 	    else if (GET_CODE (PATTERN (insn)) == ASM_INPUT
 		     || asm_noperands (PATTERN (insn)) >= 0)
 	      {
 		/* It must be an asm of some kind.  */
 		cycle_end_fill_slots (sched_verbose ? dump : NULL);
-		if (dump)
-		  fprintf (dump, "// UNKNOWN (asm).\n");
 	      }
 	    return 1;
 	  }
