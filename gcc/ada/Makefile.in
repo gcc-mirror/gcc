@@ -82,6 +82,9 @@ T_CFLAGS =
 X_CPPFLAGS =
 T_CPPFLAGS =
 
+X_ADA_CFLAGS =
+T_ADA_CFLAGS =
+
 X_ADAFLAGS =
 T_ADAFLAGS =
 
@@ -126,8 +129,11 @@ GNATLIBFLAGS = -gnatpg
 GNATLIBCFLAGS = -g -O2
 GNATLIBCFLAGS_FOR_C = $(GNATLIBCFLAGS) $(TARGET_LIBGCC2_CFLAGS) -fexceptions \
 	-DIN_RTS
-ALL_ADAFLAGS = $(CFLAGS) $(ADA_CFLAGS) $(ADAFLAGS)
-MOST_ADAFLAGS = $(CFLAGS) $(ADA_CFLAGS) $(SOME_ADAFLAGS)
+ALL_ADA_CFLAGS = $(X_ADA_CFLAGS) $(T_ADA_CFLAGS) $(ADA_CFLAGS)
+ALL_ADAFLAGS = $(CFLAGS) $(ALL_ADA_CFLAGS) $(X_ADAFLAGS) $(T_ADAFLAGS) \
+	$(ADAFLAGS)
+MOST_ADAFLAGS = $(CFLAGS) $(ALL_ADA_CFLAGS) $(X_ADAFLAGS) $(T_ADAFLAGS) \
+	$(SOME_ADAFLAGS)
 THREAD_KIND = native
 THREADSLIB =
 GMEM_LIB =
@@ -276,7 +282,7 @@ ADA_INCLUDES_FOR_SUBDIR = -I. -I$(fsrcdir)
 
 # Always use -I$(srcdir)/config when compiling.
 .c.o:
-	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+	$(CC) -c $(ALL_CFLAGS) $(ALL_ADA_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 .adb.o:
 	$(ADAC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $<
 .ads.o:
@@ -2293,21 +2299,21 @@ mkdir.o   : mkdir.c
 sysdep.o  : sysdep.c
 
 cio.o     : cio.c 
-	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) $(RT_FLAGS) \
+	$(CC) -c $(ALL_CFLAGS) $(ALL_ADA_CFLAGS) $(RT_FLAGS) \
 	         $(ALL_CPPFLAGS) $(INCLUDES) $< 
 
 init.o    : init.c ada.h types.h raise.h
-	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) $(RT_FLAGS) \
+	$(CC) -c $(ALL_CFLAGS) $(ALL_ADA_CFLAGS) $(RT_FLAGS) \
 	         $(ALL_CPPFLAGS) $(INCLUDES) $< 
 
 raise.o   : raise.c raise.h
-	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) $(RT_FLAGS) \
+	$(CC) -c $(ALL_CFLAGS) $(ALL_ADA_CFLAGS) $(RT_FLAGS) \
 		 $(ALL_CPPFLAGS) $(INCLUDES) $< 
 
 # Need to keep the frame pointer in this file to pop the stack properly on
 # some targets.
 tracebak.o  : tracebak.c
-	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	$(CC) -c $(ALL_CFLAGS) $(ALL_ADA_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	      -fno-omit-frame-pointer $< 
 
 cuintp.o : cuintp.c $(CONFIG_H) $(TREE_H) ada.h types.h uintp.h atree.h \
@@ -2347,7 +2353,7 @@ utils2.o : utils2.c $(CONFIG_H) $(TREE_H) $(srcdir)/../flags.h ada.h types.h \
 # Rule to compile prefix.o for the run-time.
 
 prefix.o : $(srcdir)/../prefix.c
-	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) $(RT_FLAGS) \
+	$(CC) -c $(ALL_CFLAGS) $(ALL_ADA_CFLAGS) $(RT_FLAGS) \
 	      $(ALL_CPPFLAGS) $(INCLUDES) -I$(srcdir)/../.. -I../.. \
 	      -DPREFIX=\"$(prefix)\" $< 
 

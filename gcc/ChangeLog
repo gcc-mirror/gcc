@@ -1,3 +1,7 @@
+2001-05-02  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa/x-ada (ADA_CFLAGS): Rename to X_ADA_CFLAGS.
+
 2002-05-02  Catherine Moore  <clm@redhat.com>
 
 	* config/v850/v850.h (TRAMPOLINE_TEMPLATE): Change r5 to r20.
