@@ -5059,7 +5059,7 @@ finish_struct_1 (tree t)
   check_bases_and_members (t);
 
   /* Find the key method */
-    if (TYPE_CONTAINS_VPTR_P (t))
+  if (TYPE_CONTAINS_VPTR_P (t))
     {
       CLASSTYPE_KEY_METHOD (t) = key_method (t);
 
