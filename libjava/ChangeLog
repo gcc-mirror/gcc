@@ -1,5 +1,25 @@
 2002-11-21  Michael Koch <konqueror@gmx.de>
 
+	* java/nio/channels/AsynchronousCloseException.java,
+	java/nio/channels/CancelledKeyException.java,
+	java/nio/channels/ClosedByInterruptException.java,
+	java/nio/channels/ConnectionPendingException.java,
+	java/nio/channels/FileLockInterruptionException.java,
+	java/nio/channels/IllegalSelectorException.java,
+	java/nio/channels/NoConnectionPendingException.java,
+	java/nio/channels/NonReadableChannelException.java,
+	java/nio/channels/NonWritableChannelException.java,
+	java/nio/channels/NotYetBoundException.java,
+	java/nio/channels/NotYetConnectedException.java,
+	java/nio/channels/OverlappingFileLockException.java,
+	java/nio/channels/UnresolvedAddressException.java,
+	java/nio/channels/UnsupportedAddressTypeException.java:
+	New files.
+	* Makefile.am (ordinary_java_source_files): Added new files.
+	* Makefile.in: Regenerated.
+
+2002-11-21  Michael Koch <konqueror@gmx.de>
+
 	* include/posix.h
 	(_Jv_socket): New method.
 	(_Jv_connect): New method.
