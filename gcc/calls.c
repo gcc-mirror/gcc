@@ -124,8 +124,8 @@ int stack_arg_under_construction;
 
 static int calls_function	PROTO((tree, int));
 static int calls_function_1	PROTO((tree, int));
-static void emit_call_1		PROTO((rtx, tree, tree, int, int, rtx, rtx, int,
-				       rtx, int));
+static void emit_call_1		PROTO((rtx, tree, tree, int, int, rtx, rtx,
+				       int, rtx, int));
 static void store_one_arg	PROTO ((struct arg_data *, rtx, int, int,
 					tree, int));
 
@@ -338,8 +338,8 @@ prepare_call_address (funexp, fndecl, call_fusage, reg_parm_seen)
 
 static void
 emit_call_1 (funexp, fndecl, funtype, stack_size, struct_value_size, 
-             next_arg_reg,
-	     valreg, old_inhibit_defer_pop, call_fusage, is_const)
+             next_arg_reg, valreg, old_inhibit_defer_pop, call_fusage,
+	     is_const)
      rtx funexp;
      tree fndecl;
      tree funtype;
