@@ -1,4 +1,4 @@
-/* { dg-do assemble {target *mips*-*-* } } */
+/* { dg-do compile { target mips*-*-* } } */
 
 register unsigned int cp0count asm ("$c0r1");
 
