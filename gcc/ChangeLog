@@ -1,3 +1,8 @@
+2004-03-09  Andrew Pinski  <apinski@apple.com>
+
+	* c-typeck.c (tagged_types_tu_compatible_p):
+	Fix typo.
+
 2004-03-09  Roger Sayle  <roger@eyesopen.com>
 
 	* simplify-rtx.c (simplify_const_relational_operation): New function
