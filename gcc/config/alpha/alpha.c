@@ -9121,7 +9121,7 @@ alpha_need_linkage (name, is_local)
 	}
     }
   else
-    alpha_links = splay_tree_new_ggc ((splay_tree_compare_fn) strcmp);
+    alpha_links_tree = splay_tree_new_ggc ((splay_tree_compare_fn) strcmp);
 
   al = (struct alpha_links *) ggc_alloc (sizeof (struct alpha_links));
   name = ggc_strdup (name);
