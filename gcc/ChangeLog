@@ -1,3 +1,9 @@
+2004-05-27  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/t-linux (SHLIB_MAPFILES): Use sh specific
+	libgcc-std.ver.
+	* config/sh/libgcc-std.ver: New file.
+
 2004-05-27  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* except.c: Revert change of 2004-05-26.
