@@ -1,7 +1,14 @@
+2001-12-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/335
+	* init.c (resolve_offset_ref): Copy cv qualifiers of this pointer
+	for non-reference fields.
+	* typeck.c (require_complete_type): Use resolve_offset_ref).
+
 2001-12-26  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/196
-	* cp/parse.y (bad_parm): Better diagnostic when given a SCOPE_REF.
+	* parse.y (bad_parm): Better diagnostic when given a SCOPE_REF.
 
 2001-12-24  Nathan Sidwell  <nathan@codesourcery.com>
 

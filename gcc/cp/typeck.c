@@ -114,15 +114,7 @@ require_complete_type (value)
       && current_class_ref != 0
       && TREE_OPERAND (value, 0) == current_class_ref)
     {
-      tree base, member = TREE_OPERAND (value, 1);
-      tree basetype = TYPE_OFFSET_BASETYPE (type);
-      
-      my_friendly_assert (TREE_CODE (member) == FIELD_DECL, 305);
-      basetype = lookup_base (current_class_type, basetype, ba_check, NULL);
-      base = build_base_path (PLUS_EXPR, current_class_ptr, basetype, 1);
-      
-      value = build (COMPONENT_REF, TREE_TYPE (member),
-		     build_indirect_ref (base, NULL), member);
+      value = resolve_offset_ref (value);
       return require_complete_type (value);
     }
 
