@@ -70,7 +70,7 @@ private boolean modal;
 /**
   * @serial Indicates whether or not this dialog box is resizable.
   */
-private boolean resizable;
+private boolean resizable = true;
 
 /**
   * @serial The title string for this dialog box, which can be
@@ -91,7 +91,7 @@ private String title;
 
 /**
   * Initializes a new instance of <code>Dialog</code> with the specified
-  * parent, that is not resizable and not modal, and which has no title.
+  * parent, that is resizable and not modal, and which has no title.
   *
   * @param parent The parent frame of this dialog box.
   *
@@ -109,7 +109,7 @@ Dialog(Frame parent)
 
 /**
   * Initializes a new instance of <code>Dialog</code> with the specified
-  * parent and modality, that is not resizable and which has no title.
+  * parent and modality, that is resizable and which has no title.
   *
   * @param parent The parent frame of this dialog box.
   * @param modal <true> if this dialog box is modal, <code>false</code>
@@ -129,7 +129,7 @@ Dialog(Frame parent, boolean modal)
 
 /**
   * Initializes a new instance of <code>Dialog</code> with the specified
-  * parent, that is not resizable and not modal, and which has the specified
+  * parent, that is resizable and not modal, and which has the specified
   * title.
   *
   * @param parent The parent frame of this dialog box.
@@ -149,7 +149,7 @@ Dialog(Frame parent, String title)
 
 /**
   * Initializes a new instance of <code>Dialog</code> with the specified,
-  * parent, title, and modality, that is not resizable.
+  * parent, title, and modality, that is resizable.
   *
   * @param parent The parent frame of this dialog box.
   * @param title The title string for this dialog box.
@@ -168,7 +168,7 @@ Dialog(Frame parent, String title, boolean modal)
 /**
  * Initializes a new instance of <code>Dialog</code> with the specified,
  * parent, title, modality and <code>GraphicsConfiguration</code>,
- * that is not resizable.
+ * that is resizable.
  *
  * @param parent The parent frame of this dialog box.
  * @param title The title string for this dialog box.
@@ -189,14 +189,14 @@ Dialog (Frame parent, String title, boolean modal, GraphicsConfiguration gc)
 
   this.title = title;
   this.modal = modal;
-  resizable = false;
+  visible = false;
 
   setLayout(new BorderLayout());
 }
 
 /**
  * Initializes a new instance of <code>Dialog</code> with the specified,
- * parent, that is not resizable.
+ * parent, that is resizable.
  *
  * @exception IllegalArgumentException If parent is null. This exception is
  * always thrown when GraphicsEnvironment.isHeadless() returns true.
@@ -211,7 +211,7 @@ Dialog (Dialog owner)
 
 /**
  * Initializes a new instance of <code>Dialog</code> with the specified,
- * parent and title, that is not resizable.
+ * parent and title, that is resizable.
  *
  * @exception IllegalArgumentException If parent is null. This exception is
  * always thrown when GraphicsEnvironment.isHeadless() returns true.
@@ -226,7 +226,7 @@ Dialog (Dialog owner, String title)
 
 /**
  * Initializes a new instance of <code>Dialog</code> with the specified,
- * parent, title and modality, that is not resizable.
+ * parent, title and modality, that is resizable.
  *
  * @exception IllegalArgumentException If parent is null. This exception is
  * always thrown when GraphicsEnvironment.isHeadless() returns true.
@@ -242,7 +242,7 @@ Dialog (Dialog owner, String title, boolean modal)
 /**
  * Initializes a new instance of <code>Dialog</code> with the specified,
  * parent, title, modality and <code>GraphicsConfiguration</code>,
- * that is not resizable.
+ * that is resizable.
  *
  * @exception IllegalArgumentException If parent is null, the
  * GraphicsConfiguration is not a screen device or
@@ -255,10 +255,10 @@ Dialog (Dialog parent, String title, boolean modal, GraphicsConfiguration gc)
 {
   super (parent, parent.getGraphicsConfiguration ());
   
-  this.modal = modal;
   this.title = title;
-  resizable = false;
-  
+  this.modal = modal;
+  visible = false;
+
   setLayout (new BorderLayout ());
 }
 

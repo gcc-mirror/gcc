@@ -84,6 +84,7 @@ public class GtkFramePeer extends GtkWindowPeer
     args.add ("allow_shrink", frame.isResizable ());
     args.add ("allow_grow", frame.isResizable ());
   }
+
   public void setIconImage (Image image) 
   {
       /* TODO: Waiting on Toolkit Image routines */
