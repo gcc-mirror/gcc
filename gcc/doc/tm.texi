@@ -181,6 +181,25 @@ that the other specs are easier to write.
 
 Do not define this macro if it does not need to do anything.
 
+@findex OPTION_DEFAULT_SPECS
+@item OPTION_DEFAULT_SPECS
+A list of specs used to support configure-time default options (i.e.@:
+@option{--with} options) in the driver.  It should be a suitable initializer
+for an array of structures, each containing two strings, without the
+outermost pair of surrounding braces.
+
+The first item in the pair is the name of the default.  This must match
+the code in @file{config.gcc} for the target.  The second item is a spec
+to apply if a default with this name was specified.  The string
+@samp{%(VALUE)} in the spec will be replaced by the value of the default
+everywhere it occurs.
+
+The driver will apply these specs to its own command line between loading
+default @file{specs} files and processing @code{DRIVER_SELF_SPECS}, using
+the same mechanism as @code{DRIVER_SELF_SPECS}.
+
+Do not define this macro if it does not need to do anything.
+
 @findex CPP_SPEC
 @item CPP_SPEC
 A C string constant that tells the GCC driver program options to

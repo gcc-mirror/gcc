@@ -325,6 +325,7 @@ static char *save_string	PARAMS ((const char *, int));
 static void set_collect_gcc_options PARAMS ((void));
 static int do_spec_1		PARAMS ((const char *, int, const char *));
 static int do_spec_2		PARAMS ((const char *));
+static void do_option_spec	PARAMS ((const char *, const char *));
 static void do_self_spec	PARAMS ((const char *));
 static const char *find_file	PARAMS ((const char *));
 static int is_directory		PARAMS ((const char *, const char *, int));
@@ -803,6 +804,19 @@ static const char *const multilib_defaults_raw[] = MULTILIB_DEFAULTS;
 #endif
 
 static const char *const driver_self_specs[] = { DRIVER_SELF_SPECS };
+
+#ifndef OPTION_DEFAULT_SPECS
+#define OPTION_DEFAULT_SPECS { "", "" }
+#endif
+
+struct default_spec
+{
+  const char *name;
+  const char *spec;
+};
+
+static const struct default_spec
+  option_default_specs[] = { OPTION_DEFAULT_SPECS };
 
 struct user_specs
 {
@@ -4257,6 +4271,57 @@ do_spec_2 (spec)
    of the switches/n_switches array.  */
 
 static void
+do_option_spec (name, spec)
+     const char *name;
+     const char *spec;
+{
+  unsigned int i, value_count, value_len;
+  const char *p, *q, *value;
+  char *tmp_spec, *tmp_spec_p;
+
+  if (configure_default_options[0].name == NULL)
+    return;
+
+  for (i = 0; i < ARRAY_SIZE (configure_default_options); i++)
+    if (strcmp (configure_default_options[i].name, name) == 0)
+      break;
+  if (i == ARRAY_SIZE (configure_default_options))
+    return;
+
+  value = configure_default_options[i].value;
+  value_len = strlen (value);
+
+  /* Compute the size of the final spec.  */
+  value_count = 0;
+  p = spec;
+  while ((p = strstr (p, "%(VALUE)")) != NULL)
+    {
+      p ++;
+      value_count ++;
+    }
+
+  /* Replace each %(VALUE) by the specified value.  */
+  tmp_spec = alloca (strlen (spec) + 1
+		     + value_count * (value_len - strlen ("%(VALUE)")));
+  tmp_spec_p = tmp_spec;
+  q = spec;
+  while ((p = strstr (q, "%(VALUE)")) != NULL)
+    {
+      memcpy (tmp_spec_p, q, p - q);
+      tmp_spec_p = tmp_spec_p + (p - q);
+      memcpy (tmp_spec_p, value, value_len);
+      tmp_spec_p += value_len;
+      q = p + strlen ("%(VALUE)");
+    }
+  strcpy (tmp_spec_p, q);
+
+  do_self_spec (tmp_spec);
+}
+
+/* Process the given spec string and add any new options to the end
+   of the switches/n_switches array.  */
+
+static void
 do_self_spec (spec)
      const char *spec;
 {
@@ -6035,6 +6100,12 @@ main (argc, argv)
   strcat (specs_file, "specs");
   if (access (specs_file, R_OK) == 0)
     read_specs (specs_file, TRUE);
+
+  /* Process any configure-time defaults specified for the command line
+     options, via OPTION_DEFAULT_SPECS.  */
+  for (i = 0; i < ARRAY_SIZE (option_default_specs); i++)
+    do_option_spec (option_default_specs[i].name,
+		    option_default_specs[i].spec);
 
   /* Process DRIVER_SELF_SPECS, adding any new options to the end
      of the command line.  */

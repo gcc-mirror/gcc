@@ -407,6 +407,16 @@ extern enum processor_type rs6000_cpu;
    SUBTARGET_OPTIONS							\
 }
 
+/* Support for a compile-time default CPU, et cetera.  The rules are:
+   --with-cpu is ignored if -mcpu is specified.
+   --with-tune is ignored if -mtune is specified.
+   --with-float is ignored if -mhard-float or -msoft-float are
+    specified.  */
+#define OPTION_DEFAULT_SPECS \
+  {"cpu", "%{!mcpu=*:-mcpu=%(VALUE)}" }, \
+  {"tune", "%{!mtune=*:-mtune=%(VALUE)}" }, \
+  {"float", "%{!msoft-float:%{!mhard-float:-m%(VALUE)-float}}" }
+
 /* rs6000_select[0] is reserved for the default cpu defined via --with-cpu */
 struct rs6000_cpu_select
 {

@@ -483,6 +483,12 @@ extern int x86_prefetch_sse;
 #define OPTIMIZATION_OPTIONS(LEVEL, SIZE) \
   optimization_options ((LEVEL), (SIZE))
 
+/* Support for configure-time defaults of some command line options.  */
+#define OPTION_DEFAULT_SPECS \
+  {"arch", "%{!march=*:-march=%(VALUE)}"}, \
+  {"tune", "%{!mtune=*:%{!mcpu=*:-mtune=%(VALUE)}}" }, \
+  {"cpu", "%{!mtune=*:%{!mcpu=*:-mtune=%(VALUE)}}" }
+
 /* Specs for the compiler proper */
 
 #ifndef CC1_CPU_SPEC
