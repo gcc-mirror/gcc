@@ -25,19 +25,19 @@
 ## The global associative array lib_env contains the totality
 ## of options necessary to run testcases; the meanings of which are
 ## as follows:
-##    lib_env(CXX)       The compiler used to run testcases.
-##    lib_env(CXXFLAGS)  Special flags passed to the compiler.
-##    lib_env(INCLUDES)  Includes options to pass to the compiler.
-##    lib_env(LDFLAGS)   Additional library flags.
-##    lib_env(LIBTOOL)   Path to the `libtool' script.
-##    lib_env(SRC_DIR)   Where V3 master source lives.
-##    lib_env(BUILD_DIR) Where V3 is built.
-##    lib_env(static)    Flags to pass to the linker to build a 
-##                       statically linked executable.
-##    lib_env(shared)    Flags to pass to the linker to build a 
-##                       dynamically linked executable.
+##    lib_env(CXX)       	The compiler used to run testcases.
+##    lib_env(CXXFLAGS)  	Special flags passed to the compiler.
+##    lib_env(INCLUDES)  	Includes options to pass to the compiler.
+##    lib_env(LDFLAGS)   	Additional library flags.
+##    lib_env(LIBTOOL)   	Path to the `libtool' script.
+##    lib_env(SRC_DIR)   	Where V3 master source lives.
+##    lib_env(BUILD_DIR) 	Where V3 is built.
+##    lib_env(static)    	Flags to pass to the linker to build a 
+##                       	statically linked executable.
+##    lib_env(shared)    	Flags to pass to the linker to build a 
+##                       	dynamically linked executable.
 ##    lib_env(testcase_options) Options specified by current testcase.
-##                       These are specified through the @xxx@-keywords.
+##                       	These are specified through the @xxx@-keywords.
 
 
 load_lib dg.exp
@@ -52,7 +52,7 @@ proc libstdc++-dg-init { args } {
     # By default, we assume we want to run program images.
     set dg-do-what-default run
 
-    # Get out the source and the build directories.
+    # Get the source and the build directories.
     set src-dir [lookfor_file $srcdir libstdc++-v3]
     set build-dir [lookfor_file $outdir libstdc++-v3]
 
@@ -61,15 +61,16 @@ proc libstdc++-dg-init { args } {
     
     # mkcheck.in used to output these information.
     set output [remote_exec host $lib_env(CXX) -v]
-    if { [lindex $output 0] == 0 } {
-	set output [lindex $output 1]
-	regexp "gcc version.*$" $output version
-	regsub "\n+" $version "" version
-	clone_output "Compiler: $version"
-	clone_output "Compiler flags: $lib_env(CXXFLAGS)"
-    } else {
-	perror "Cannot determine compiler version: [lindex $output 1]"
-    }
+# XXX don't try clever formatting hacks at the moment
+#    if { [lindex $output 0] == 0 } {
+#	set output [lindex $output 1]
+#	regexp "gcc version.*$" $output version
+#	regsub "\n+" $version "" version
+#	clone_output "Compiler: $version"
+#	clone_output "Compiler flags: $lib_env(CXXFLAGS)"
+#    } else {
+#	perror "Cannot determine compiler version: [lindex $output 1]"
+#    }
 }
 
 ## dg.exp callback.  Called from dg-test to run PROGRAM.
@@ -241,7 +242,7 @@ proc libstdc++-setup-flags {src-dir build-dir} {
 	set lib_env(shared) ""
 
 	set lib_env(LIBTOOL) "$lib_env(BUILD_DIR)/libtool"
-	set lib_env(FLAGS) "$lib_env(CXX) -B$lib_env(BUILD_DIR)/ \
+	set lib_env(FLAGS) "$lib_env(CXX) \
 		$lib_env(INCLUDES) $lib_env(CXXFLAGS)"
     } else {
 	perror "$output"
@@ -304,7 +305,7 @@ proc libstdc++-process-options { testfile } {
 }
 
 ###
-### The following is an abominal hack, non-recomandable software practice.
+### The following is an abominable hack, non-commendable software practice.
 ### This is supposed to be a very-very short term solution.
 ### Please, do not add any piece of code without my approval.
 ### -- Gaby

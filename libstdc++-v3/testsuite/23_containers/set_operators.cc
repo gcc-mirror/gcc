@@ -1,6 +1,6 @@
 // 2000-09-07 bgarcia@laurelnetworks.com
 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,7 +25,6 @@
 
 // map and set
 // libstdc++/86: map & set iterator comparisons are not type-safe
-// XXX this is XFAIL for the time being, ie this should not compile
 int main(void)
 {
   bool test = true;
@@ -35,8 +34,9 @@ int main(void)
   
   std::set<unsigned int>::iterator itr(setByIndex.begin());
   
-  test &= itr != setByName.end(); // XXX - notice, it's not setByIndex!!
-  test &= itr == setByName.end(); // XXX - notice, it's not setByIndex!!
+  // NB: it's not setByIndex!!
+  test &= itr != setByName.end();  // ERROR - *  XFAIL *-*-*
+  test &= itr == setByName.end();  // ERROR - *  XFAIL *-*-*
 
   return 0;
 }

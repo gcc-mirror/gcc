@@ -108,6 +108,9 @@ case ${query} in
                 -I${SRC_DIR}/include/std  -I${SRC_DIR}/include/$C_DIR
 	        -I${SRC_DIR}/libsupc++ -I${SRC_DIR}/libio 
 		-I${SRC_DIR}/testsuite"
+      if test x@xcompiling@ == x1; then
+        INCLUDES="${INCLUDES} -I${SRC_DIR}/../newlib/libc/include"
+      fi
       ;;
 esac
 
@@ -124,12 +127,12 @@ esac
 
 # LIB_PATH == where to find the C++ build libraries for libtool's use
 # GCC_LIB_PATH == where to find the gcc build libraries for libtool's use
-# CXX == the full pathname of the compiler
+# CXX == how to invoke the compiler
 case ${query} in
     --built-library)
       LIB_PATH=${BUILD_DIR}/src
       GCC_LIB_PATH=${BUILD_DIR}/../../gcc
-      CXX="${BUILD_DIR}/../../gcc/g++"
+      CXX="${BUILD_DIR}/../../gcc/g++ -B${BUILD_DIR}/../../gcc/"
       ;;
     --installed-library)
       LIB_PATH=${PREFIX_DIR}/lib
@@ -138,11 +141,11 @@ case ${query} in
       ;;
 esac
 
-# gcc compiler flags (maybe use glibcpp_cxxflags from configure.target,
-# but that's really meant for building the library itself, not using it)
+# CXXFLAGS == run the testsuite with any special configuration
+# flags from the library build.
 CXXFLAGS="-ggdb3 -DDEBUG_ASSERT @SECTION_FLAGS@ @SECTION_LDFLAGS@"
 
-# LIBS == any extra needed -l switches, etc (may need more libs, lose lose)
+# LIBS == any extra may needed -L switches
 case ${query} in
     --built-library)
       LIBS="${LIB_PATH}/libstdc++.la -no-install -rpath ${GCC_LIB_PATH}"

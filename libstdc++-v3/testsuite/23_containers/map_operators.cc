@@ -1,6 +1,6 @@
 // 2000-09-07 bgarcia@laurelnetworks.com
 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,28 +37,27 @@ void test01()
   mapByIndex.insert(std::pair<unsigned, int>(6, 5));
   
   std::map<unsigned, int>::iterator itr(mapByIndex.begin());
-  
-  test &= itr != mapByName.end(); // XXX - notice, it's not mapByIndex!!
-  test &= itr == mapByName.end(); // XXX - notice, it's not mapByIndex!!
 
-  return 0;
+  // NB: notice, it's not mapByIndex!!
+  test &= itr != mapByName.end();  // ERROR - *  XFAIL *-*-*
+  test &= itr == mapByName.end();  // ERROR - *  XFAIL *-*-*
 }
 
 // http://gcc.gnu.org/ml/libstdc++/2000-11/msg00093.html
 void test02()
 {
-    typedef std::map<int,const int> MapInt;
-
-    MapInt m;
-
-    for (unsigned i=0;i<10;++i)
-        m.insert(MapInt::value_type(i,i));
-
-    for (MapInt::const_iterator i=m.begin();i!=m.end();++i)
-        std::cerr << i->second << ' ';
-
-    for (MapInt::const_iterator i=m.begin();m.end()!=i;++i)
-        std::cerr << i->second << ' ';
+  typedef std::map<int,const int> MapInt;
+  
+  MapInt m;
+  
+  for (unsigned i=0;i<10;++i)
+    m.insert(MapInt::value_type(i,i));
+  
+  for (MapInt::const_iterator i=m.begin();i!=m.end();++i)
+    std::cerr << i->second << ' ';
+  
+  for (MapInt::const_iterator i=m.begin();m.end()!=i;++i)
+    std::cerr << i->second << ' ';
 }
 
 int main()

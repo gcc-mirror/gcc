@@ -25,3 +25,4 @@ libstdc++-dg-init
 libstdc++_runtest [glob -nocomplain $srcdir/*]
 dg-finish
 
+

@@ -61,11 +61,6 @@ set `../tests_flags ${query} $*` || exit 1
 BUILD_DIR=$1; SRC_DIR=$2; PREFIX_DIR=$3; CXX=$4; CXXFLAGS=$5; INCLUDES=$6; LIBS=$7;
 IFS=$saved_ifs
 
-# Build libtoolized surrogates to compile and run testcases.  Also,
-# adjust CXX so that the newly built compiler can find headers.
-if [ x$WHICH = x0 ] ; then
-    CXX="$CXX -B`dirname $CXX`/"
-fi
 LIBTOOL="$BUILD_DIR/libtool"
 LTEXE="$LIBTOOL --mode=execute"
 LTCXX="$LIBTOOL --tag=CXX --mode=link $CXX $CXXFLAGS $INCLUDES $LIBS"
@@ -104,6 +99,7 @@ MAX_MEM_USAGE=16384
 
 # Remove old executables.
 rm -rf "$TEST_DIR"/*exe
+rm -rf "$TEST_DIR"/compile.out
 
 # Remove old core files (which now get left in cwd, not $TEST_DIR).
 rm -rf ./*core*
@@ -324,7 +320,9 @@ test_file()
     # time_t's (no more overhead than grabbing two date(1)'s).
     compiler_invocation="$LTCXX $S_FLAG $SRC_NAME -o $EXENAME"
     COMP_TIME_START=$($TIMER_COMMAND)
+    echo $SRC_NAME >> compile.out
     $compiler_invocation >> compile.out 2>&1
+    echo "" >> compile.out
     COMP_TIME_END=$($TIMER_COMMAND)
 
     if [ $COMP_TIME_START -lt $COMP_TIME_END ]; then
@@ -334,7 +332,7 @@ test_file()
     fi
 
     if [ -f $EXENAME ]; then
-        rm compile.out
+#        rm compile.out
         size_command TEXT
         size_command DATA
         size_command SIZE
@@ -372,8 +370,8 @@ test_file()
     else
         # the file did not compile/link.
         printf "\n" >> $LOG_FILE
-        `cat compile.out >> $LOG_FILE` 
-        rm compile.out
+#        `cat compile.out >> $LOG_FILE` 
+#        rm compile.out
         RESULT="-b"
         TEXT="0"
         DATA="0"
