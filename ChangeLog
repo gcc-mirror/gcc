@@ -1,3 +1,8 @@
+2003-01-23  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.in: Make rda native-only.
+	* configure: Regenerate.
+
 2003-01-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* MAINTAINERS: Move myself from GNATS-only-accounts to
