@@ -1,3 +1,10 @@
+2004-03-02  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	PR bootstrap/14348
+	Backport
+	2003-10-20  Joseph S. Myers  <jsm@polyomino.org.uk>
+	* objc/hash.h (hash_string): Don't use a cast as an lvalue.
+
 2004-02-14  Release Manager
 
 	* GCC 3.3.3 Released.
