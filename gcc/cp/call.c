@@ -5050,11 +5050,21 @@ joust (cand1, cand2, warn)
       if (comp != winner)
 	{
 	  struct z_candidate *w, *l;
+	  tree convn;
 	  if (winner == 1)
 	    w = cand1, l = cand2;
 	  else
 	    w = cand2, l = cand1;
-	  if (warn)
+	  if (DECL_CONTEXT (cand1->fn) == DECL_CONTEXT (cand2->fn)
+	      && ! DECL_CONSTRUCTOR_P (cand1->fn)
+	      && ! DECL_CONSTRUCTOR_P (cand2->fn)
+	      && (convn = standard_conversion
+		  (TREE_TYPE (TREE_TYPE (l->fn)),
+		   TREE_TYPE (TREE_TYPE (w->fn)), NULL_TREE))
+	      && TREE_CODE (convn) == QUAL_CONV)
+	    /* Don't complain about `operator char *()' beating
+	       `operator const char *() const'.  */;
+	  else if (warn)
 	    {
 	      tree source = source_type (TREE_VEC_ELT (w->convs, 0));
 	      if (! DECL_CONSTRUCTOR_P (w->fn))
