@@ -2140,8 +2140,8 @@ check_hidden_convs (tree binfo, int virtual_depth, int virtualness,
 /* Helper for lookup_conversions_r.  PARENT_CONVS is a list of lists
    of conversion functions, the first slot will be for the current
    binfo, if MY_CONVS is non-NULL.  CHILD_CONVS is the list of lists
-   of conversion functions from childen of the current binfo,
-   concatenated with conversions from elsewhere in the heirarchy --
+   of conversion functions from children of the current binfo,
+   concatenated with conversions from elsewhere in the hierarchy --
    that list begins with OTHER_CONVS.  Return a single list of lists
    containing only conversions from the current binfo and its
    children.  */

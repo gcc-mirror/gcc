@@ -207,7 +207,7 @@ complete_type_check_abstract (tree type)
       pat = prev;
 
       /* Go through the list, and call abstract_virtuals_error for each
-	element: it will issue a diagostic if the type is abstract.  */
+	element: it will issue a diagnostic if the type is abstract.  */
       while (pat)
 	{
 	  gcc_assert (type == pat->type);

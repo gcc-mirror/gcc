@@ -1,3 +1,9 @@
+2004-09-10  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* class.c, cp-tree.h, decl.c, decl2.c, mangle.c,
+	name-lookup.h, parser.c, search.c, semantics.c, typeck2.c: Fix
+	comment typos.
+
 2004-09-09  Ziemowit Laski  <zlaski@apple.com>
 
 	* typeck.c (build_c_cast): Preserve the cast if casting

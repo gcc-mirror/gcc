@@ -4226,7 +4226,7 @@ cp_parser_postfix_open_square_expression (cp_parser *parser,
      If we are in an integral constant expression context, then we might
      could accept any constant expression; hard to say without analysis.
      Rather than open the barn door too wide right away, allow only integer
-     constant expresions here.  */
+     constant expressions here.  */
   if (for_offsetof)
     index = cp_parser_constant_expression (parser, false, NULL);
   else

@@ -1427,7 +1427,7 @@ duplicate_decls (tree newdecl, tree olddecl)
          A namespace-name or namespace-alias shall not be declared as
 	 the name of any other entity in the same declarative region.
 	 A namespace-name defined at global scope shall not be
-	 declared as the name of any other entity in any glogal scope
+	 declared as the name of any other entity in any global scope
 	 of the program.  */
       error ("declaration of `namespace %D' conflicts with", newdecl);
       cp_error_at ("previous declaration of `namespace %D' here", olddecl);
@@ -5763,7 +5763,7 @@ set_linkage_for_static_data_member (tree decl)
   TREE_STATIC (decl) = 1;
   /* For non-template classes, static data members are always put
      out in exactly those files where they are defined, just as
-     with ordinarly namespace-scope variables.  */
+     with ordinary namespace-scope variables.  */
   if (!processing_template_decl)
     DECL_INTERFACE_KNOWN (decl) = 1;
 }
@@ -6145,7 +6145,7 @@ get_scope_of_declarator (const cp_declarator *declarator)
       && TREE_CODE (declarator->u.id.name) == SCOPE_REF)
     return TREE_OPERAND (declarator->u.id.name, 0);
 
-  /* Otherwise, the declarator is not a quablified name; the entity will
+  /* Otherwise, the declarator is not a qualified name; the entity will
      be declared in the current scope.  */
   return NULL_TREE;
 }
@@ -6257,7 +6257,7 @@ check_special_function_return_type (special_function_kind sfk,
       if (type)
 	error ("return type specification for destructor invalid");
       /* We can't use the proper return type here because we run into
-	 problems with abiguous bases and covariant returns.
+	 problems with ambiguous bases and covariant returns.
 	 Java classes are left unchanged because (void *) isn't a valid
 	 Java type, and we don't want to change the Java ABI.  */
       if (targetm.cxx.cdtor_returns_this () && !TYPE_FOR_JAVA (optype))
@@ -9109,8 +9109,8 @@ xref_basetypes (tree ref, tree base_list)
 {
   tree *basep;
   tree binfo, base_binfo;
-  unsigned max_vbases = 0; /* Maxium direct & indirect virtual bases. */
-  unsigned max_bases = 0;  /* Maxium direct bases.  */
+  unsigned max_vbases = 0; /* Maximum direct & indirect virtual bases. */
+  unsigned max_bases = 0;  /* Maximum direct bases.  */
   int i;
   tree default_access;
   tree igo_prev; /* Track Inheritance Graph Order.  */
@@ -9232,7 +9232,7 @@ xref_basetypes (tree ref, tree base_list)
       if (CLASS_TYPE_P (basetype) && !dependent_type_p (basetype))
 	{
 	  base_binfo = TYPE_BINFO (basetype);
-	  /* The orignal basetype could have been a typedef'd type.  */
+	  /* The original basetype could have been a typedef'd type.  */
 	  basetype = BINFO_TYPE (base_binfo);
 
 	  /* Inherit flags from the base.  */
@@ -9431,7 +9431,7 @@ finish_enum (tree enumtype)
      narrower than their underlying type are suitably zero or sign
      extended to fill their mode.  g++ doesn't make these guarantees.
      Until the middle-end can represent such paradoxical types, we
-     set the TYPE_PRECISON to the width of the underlying type.  */
+     set the TYPE_PRECISION to the width of the underlying type.  */
   TYPE_PRECISION (enumtype) = TYPE_PRECISION (underlying_type);
 
   set_min_and_max_values_for_integral_type (enumtype, precision, unsignedp);

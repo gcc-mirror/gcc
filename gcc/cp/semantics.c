@@ -1348,7 +1348,7 @@ check_accessibility_of_qualified_id (tree decl,
   tree scope;
   tree qualifying_type = NULL_TREE;
 
-  /* If we're not checking, return imediately.  */
+  /* If we're not checking, return immediately.  */
   if (deferred_access_no_check)
     return;
   
