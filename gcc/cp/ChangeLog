@@ -1,3 +1,13 @@
+Sun Mar 15 12:26:02 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* cp-tree.h (struct lang_decl_flags): Add needs_final_overrider.
+	(DECL_NEEDS_FINAL_OVERRIDER_P): New macro.
+	* class.c (override_one_vtable): Set DECL_NEEDS_FINAL_OVERRIDER_P.
+	* decl.c (duplicate_decls): Propagate it.
+	* typeck2.c (abstract_virtuals_error): Use two loops to emit
+	abstract virtual functions and virtual functions which need a
+	final overrider separately.
+	
 Thu Mar 12 09:39:40 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* lang-specs.h: Properly put brackets around array elements in initializer.
