@@ -11,13 +11,13 @@
 	* mips.c (gen_int_relational): Likewise.
 	* ns32k.c (ns32k_reg_class_contents, regclass_map): Likewise.
 	* ns32k.h (ns32k_reg_class_contents, regclass_map): Likewise.
-	* pdp11.c (pdp11_assemble_integer): Likewise.
+	* pdp11.c (move_costs): Likewise.
 	* pj.h (INITIALIZE_TRAMPOLINE): Likewise.
 	* s390.c (s390_branch_condition_mnemonic, regclass_map):
 	Likewise.
 	* s390.h (regclass_map): Likewise.
 	* sh.c (shift_amounts): Likewise.
-	* sh.md (rot_tab): Likewise.
+	* sh.md (rotlsi3): Likewise.
 
 2002-03-09  Geoffrey Keating  <geoffk@redhat.com>
 
