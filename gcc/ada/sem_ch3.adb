@@ -1604,6 +1604,11 @@ package body Sem_Ch3 is
          if not Is_Constrained (T) then
             null;
 
+         elsif Nkind (E) = N_Raise_Constraint_Error then
+            --  Aggregate is statically illegal. Place back in declaration.
+            Set_Expression (N, E);
+            Set_No_Initialization (N, False);
+
          elsif T = Etype (E) then
             null;
 
