@@ -3242,7 +3242,8 @@ extern int rtx_equal_function_value_matters;
    : FP_MODE_NONE)
 
 #define MODE_AFTER(MODE, INSN)                  \
-     (recog_memoized (INSN) >= 0                \
+     (TARGET_HITACHI				\
+      && recog_memoized (INSN) >= 0		\
       && get_attr_fp_set (INSN) != FP_SET_NONE  \
       ? get_attr_fp_set (INSN)                  \
       : (MODE))

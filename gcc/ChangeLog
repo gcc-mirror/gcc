@@ -1,3 +1,14 @@
+2003-11-07  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh-protos.h (sh_pch_valid_p): Declare.
+	* sh.c ("intl.h"): Include.
+	(TARGET_PCH_VALID_P): Override.
+	(sh_target_switches): New variable.
+	(target_switches): Define.
+	(sh_pch_valid_p): New function.
+
+	* sh.h (MODE_AFTER): Don't change mode unless TARGET_HITACHI.
+
 2003-11-07  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (x86_64_sign_extended_value):  Return false from tls variables.

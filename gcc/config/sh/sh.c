@@ -48,6 +48,7 @@ Boston, MA 02111-1307, USA.  */
 #include "basic-block.h"
 #include "ra.h"
 #include "cfglayout.h"
+#include "intl.h"
 
 int code_for_indirect_jump_scratch = CODE_FOR_indirect_jump_scratch;
 
@@ -348,6 +349,9 @@ static tree sh_build_builtin_va_list (void);
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST sh_build_builtin_va_list
+
+#undef TARGET_PCH_VALID_P
+#define TARGET_PCH_VALID_P sh_pch_valid_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -6836,6 +6840,90 @@ sh_cfun_interrupt_handler_p (void)
   return (lookup_attribute ("interrupt_handler",
 			    DECL_ATTRIBUTES (current_function_decl))
 	  != NULL_TREE);
+}
+
+/* ??? target_switches in toplev.c is static, hence we have to duplicate it.  */
+static const struct
+{
+  const char *const name;
+  const int value;
+  const char *const description;
+}
+sh_target_switches[] = TARGET_SWITCHES;
+#define target_switches sh_target_switches
+
+/* Like default_pch_valid_p, but take flag_mask into account.  */
+const char *
+sh_pch_valid_p (const void *data_p, size_t len)
+{
+  const char *data = (const char *)data_p;
+  const char *flag_that_differs = NULL;
+  size_t i;
+  int old_flags;
+  int flag_mask
+    = (SH1_BIT | SH2_BIT | SH3_BIT | SH_E_BIT | HARD_SH4_BIT | FPU_SINGLE_BIT
+       | SH4_BIT | HITACHI_BIT | LITTLE_ENDIAN_BIT);
+  
+  /* -fpic and -fpie also usually make a PCH invalid.  */
+  if (data[0] != flag_pic)
+    return _("created and used with different settings of -fpic");
+  if (data[1] != flag_pie)
+    return _("created and used with different settings of -fpie");
+  data += 2;
+
+  /* Check target_flags.  */
+  memcpy (&old_flags, data, sizeof (target_flags));
+  if (((old_flags ^ target_flags) & flag_mask) != 0)
+    {
+      for (i = 0; i < ARRAY_SIZE (target_switches); i++)
+	{
+	  int bits;
+
+	  bits = target_switches[i].value;
+	  if (bits < 0)
+	    bits = -bits;
+	  bits &= flag_mask;
+	  if ((target_flags & bits) != (old_flags & bits))
+	    {
+	      flag_that_differs = target_switches[i].name;
+	      goto make_message;
+	    }
+	}
+      abort ();
+    }
+  data += sizeof (target_flags);
+  len -= sizeof (target_flags);
+  
+  /* Check string options.  */
+#ifdef TARGET_OPTIONS
+  for (i = 0; i < ARRAY_SIZE (target_options); i++)
+    {
+      const char *str = *target_options[i].variable;
+      size_t l;
+      if (! str)
+	str = "";
+      l = strlen (str) + 1;
+      if (len < l || memcmp (data, str, l) != 0)
+	{
+	  flag_that_differs = target_options[i].prefix;
+	  goto make_message;
+	}
+      data += l;
+      len -= l;
+    }
+#endif
+
+  return NULL;
+  
+ make_message:
+  {
+    char *r;
+    asprintf (&r, _("created and used with differing settings of `-m%s'"),
+		  flag_that_differs);
+    if (r == NULL)
+      return _("out of memory");
+    return r;
+  }
 }
 
 /* Predicates used by the templates.  */
