@@ -4,7 +4,7 @@
 	* Makefile.am (libffi_la_LDFLAGS): Use -version-info for soname.
 	* Makefile.in: Regenerate.
 
-2005-06-15  Paolo Bonzini  <bonzini@gnu.org>
+2004-06-15  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.am: Remove useless multilib rules.
 	* Makefile.in: Regenerate.
@@ -12,7 +12,7 @@
 	* configure.ac: Remove useless multilib configury.
 	* configure: Regenerate.
 
-2005-06-15  Paolo Bonzini  <bonzini@gnu.org>
+2004-06-15  Paolo Bonzini  <bonzini@gnu.org>
 
 	* .cvsignore: New file.
 

@@ -27,7 +27,7 @@
 
 	* testsuite/ext/rope/3.cc: New.
 
-2005-06-15  Paolo Bonzini  <bonzini@gnu.org>
+2004-06-15  Paolo Bonzini  <bonzini@gnu.org>
 
 	* acinclude.m4: Remove useless multilib configury.
 	* Makefile.am: Remove useless multilib rules.

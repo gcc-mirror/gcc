@@ -1,4 +1,4 @@
-2005-06-15  Paolo Bonzini  <bonzini@gnu.org>
+2004-06-15  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure.ac: New name of configure.in.  Update
 	AC_INIT, AC_CONFIG_SRCDIR, AC_CONFIG_HEADERS, AC_CONFIG_FILES,
@@ -10,7 +10,7 @@
 	* Makefile.am: Remove useless multilib rules.
 	* Makefile.in: Regenerate.
 
-2005-06-15  Paolo Bonzini  <bonzini@gnu.org>
+2004-06-15  Paolo Bonzini  <bonzini@gnu.org>
 
 	* .cvsignore: New file.
 

@@ -2586,7 +2586,7 @@
 	* config/m68k/m68k.md: Add 'U,U' alternative to ColdFire variants of
 	movsi,movhi,movqi insn patterns.
 
-2005-05-28  Andrew Pinski  <pinskia@physics.uc.edu>
+2004-05-28  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* c-semantics.c (emit_local_var): Remove code for DECL_INITIAL.
 
@@ -9276,7 +9276,7 @@
 	* config/rs6000/rs6000.c (rs6000_output_dwarf_dtprel): New.
 	* config/rs6000/rs6000.h (ASM_OUTPUT_DWARF_DTPREL): Define.
 
-2003-03-12  Andrew Pinski  <apinski@apple.com>
+2004-03-12  Andrew Pinski  <apinski@apple.com>
 
 	* config/rs6000/host-darwin.c (darwin_rs6000_gt_pch_use_address):
 	Use ret instead of result. Use addr instead of base.
@@ -10393,7 +10393,7 @@
 	(ASM_LONGDOUBLE): Likewise.
 	* config/sparc/pbd.h (ASM_INT_OP): Delete.
 
-2003-03-03  Richard Henderson  <rth@redhat.com>
+2004-03-03  Richard Henderson  <rth@redhat.com>
 
 	PR opt/13862
 	* cselib.c (cselib_record_sets): Don't record multiple sets in
@@ -11395,7 +11395,7 @@
 	quals, just return it.
 	* tree.h: Declare it.
 
-2003-02-24  Sanjiv Kumar Gupta  <sanjivg@noida.hcltech.com>
+2004-02-24  Sanjiv Kumar Gupta  <sanjivg@noida.hcltech.com>
 
 	* target-def.h (TARGET_SCHED_INIT_GLOBAL,
 	TARGET_SCHED_FINISH_GLOBAL): New macros.
@@ -11906,7 +11906,7 @@
 	(-fno-const-strings): Don't mention -fwritable-strings.
 	* doc/trouble.texi: Don't mention -fwritable-strings.
 
-2003-02-23  Nathanael Nerode  <neroden@gcc.gnu.org>
+2004-02-23  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* doc/install.texi: Update for switch of boehm-gc to autoconf 2.57.
 
@@ -12366,7 +12366,7 @@
 	expressions's address over BIGGEST_ALIGNMENT in bytes, not
 	in bits.
 
-2003-02-18  Matt Austern  <austern@apple.com>
+2004-02-18  Matt Austern  <austern@apple.com>
 
 	* gcc.c (LIBGCC_SPEC): If REAL_LIBGCC_SPEC is defined, and
 	LIBGCC_SPEC isn't, set LIBGCC_SPEC to REAL_LIBGCC_SPEC.
@@ -15122,7 +15122,7 @@
 	* configure.ac: Disable __cxa_atexit if not supported.
 	* configure: Regenerate.
 
-2003-01-30  Daniel Berlin  <dberlin@dberlin.org>
+2004-01-30  Daniel Berlin  <dberlin@dberlin.org>
 
 	* ggc-zone.c (ggc_free): New function.
 
@@ -15361,7 +15361,7 @@
 	* cfghooks.c (split_block): Set probability and count of the
 	new edge.
 
-2005-01-29  Josef Zlomek  <zlomekj@suse.cz>
+2004-01-29  Josef Zlomek  <zlomekj@suse.cz>
 
 	* dwarf2out.c (struct die_struct): Added field decl_id.
 	(decl_die_table): Changed to hash table.
@@ -16139,7 +16139,7 @@
 
 	* config/c4x/c4x.h (LEGITIMIZE_RELOAD_ADDRESS):  Handle symref.
 
-2003-04-25  Chris Demetriou  <cgd@broadcom.com>
+2004-01-25  Chris Demetriou  <cgd@broadcom.com>
 
 	* config/mips/mips.h (ISA_HAS_HILO_INTERLOCKS): MIPS32, MIPS32r2,
 	and MIPS64 have HI/LO interlocks.  Update comment.
@@ -16527,7 +16527,7 @@
 	introduced by 2004-01-20's Jan Hubicka's copy_insn change.
 	(sh_handle_sp_switch_attribute): Remove warning.
 
-2003-11-30  Jan Hubicka  <jh@suse.cz>
+2004-01-23  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_emit_restore_regs_using_mov):  Deal with large offsets.
 

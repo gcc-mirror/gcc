@@ -1,4 +1,4 @@
-2005-06-16  Paolo Bonzini  <bonzini@gnu.org>
+2004-06-16  Paolo Bonzini  <bonzini@gnu.org>
 
 	* boehm-gc/configure.ac: New name of configure.in.
 	Remove useless multilib stuff.  Change uses of
@@ -10,7 +10,7 @@
 	* boehm-gc/configure: Regenerate.
 	* boehm-gc/Makefile.in: Regenerate.
 
-2005-06-15  Paolo Bonzini  <bonzini@gnu.org>
+2004-06-15  Paolo Bonzini  <bonzini@gnu.org>
 
 	* .cvsignore: New file.
 
