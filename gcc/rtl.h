@@ -48,7 +48,7 @@ enum rtx_code  {
 				   NUM_RTX_CODE.
 				   Assumes default enum value assignment.  */
 
-#define NUM_RTX_CODE ((int)LAST_AND_UNUSED_RTX_CODE)
+#define NUM_RTX_CODE ((int) LAST_AND_UNUSED_RTX_CODE)
 				/* The cast here, saves many elsewhere.  */
 
 extern const unsigned char rtx_length[NUM_RTX_CODE];
@@ -1706,7 +1706,7 @@ extern rtx gen_lowpart_SUBREG PARAMS ((enum machine_mode, rtx));
        && (REGNUM) <= LAST_VIRTUAL_REGISTER))
 
 /* REGNUM never really appearing in the INSN stream.  */
-#define INVALID_REGNUM			(~(unsigned int)0)
+#define INVALID_REGNUM			(~(unsigned int) 0)
 
 extern rtx find_next_ref		PARAMS ((rtx, rtx));
 

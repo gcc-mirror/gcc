@@ -367,7 +367,7 @@ estimate_probability (loops_info)
 		  predict_edge
 		    (e, PRED_LOOP_EXIT,
 		     (REG_BR_PROB_BASE
-		      - predictor_info [(int)PRED_LOOP_EXIT].hitrate)
+		      - predictor_info [(int) PRED_LOOP_EXIT].hitrate)
 		     / exits);
 	  }
     }

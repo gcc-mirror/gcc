@@ -1,6 +1,6 @@
 /* Output sdb-format symbol table information from GNU compiler.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001  Free Software Foundation, Inc.
+   2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -150,7 +150,7 @@ static void sdbout_global_decl		PARAMS ((tree));
 #define PUT_SDB_INT_VAL(a) \
  do {									\
    fputs ("\t.val\t", asm_out_file);		       			\
-   fprintf (asm_out_file, HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT)(a));	\
+   fprintf (asm_out_file, HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT) (a)); \
    fprintf (asm_out_file, "%s", SDB_DELIM);				\
  } while (0)
 
@@ -186,7 +186,7 @@ do { fprintf (asm_out_file, "\t.def\t");	\
 #define PUT_SDB_SIZE(a) \
  do {									\
    fputs ("\t.size\t", asm_out_file);					\
-   fprintf (asm_out_file, HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT)(a));	\
+   fprintf (asm_out_file, HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT) (a)); \
    fprintf (asm_out_file, "%s", SDB_DELIM);				\
  } while(0)
 #endif
@@ -381,9 +381,9 @@ gen_fake_label ()
    PREV is the number describing the target, value or element type.
    DT_type describes how to transform that type.  */
 #define PUSH_DERIVED_LEVEL(DT_type,PREV)		\
-  ((((PREV) & ~(int)N_BTMASK) << (int)N_TSHIFT)		\
-   | ((int)DT_type << (int)N_BTSHFT)			\
-   | ((PREV) & (int)N_BTMASK))
+  ((((PREV) & ~(int) N_BTMASK) << (int) N_TSHIFT)		\
+   | ((int) DT_type << (int) N_BTSHFT)			\
+   | ((PREV) & (int) N_BTMASK))
 
 /* Number of elements used in sdb_dims.  */
 static int sdb_n_dims = 0;

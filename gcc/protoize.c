@@ -1,6 +1,6 @@
 /* Protoize program - Original version by Ron Guilmette (rfg@segfault.us.com).
    Copyright (C) 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2467,20 +2467,20 @@ reverse_def_dec_list (hp)
 {
   file_info *file_p = hp->fip;
   def_dec_info *prev = NULL;
-  def_dec_info *current = (def_dec_info *)file_p->defs_decs;
+  def_dec_info *current = (def_dec_info *) file_p->defs_decs;
 
   if (!current)
     return;        		/* no list to reverse */
 
   prev = current;
-  if (! (current = (def_dec_info *)current->next_in_file))
+  if (! (current = (def_dec_info *) current->next_in_file))
     return;        		/* can't reverse a single list element */
 
   prev->next_in_file = NULL;
 
   while (current)
     {
-      def_dec_info *next = (def_dec_info *)current->next_in_file;
+      def_dec_info *next = (def_dec_info *) current->next_in_file;
 
       current->next_in_file = prev;
       prev = current;
@@ -2825,7 +2825,7 @@ connect_defs_and_decs (hp)
       for (dd_p2 = dd_p->next_for_func; dd_p2; dd_p2 = dd_p2->next_for_func)
         if (!dd_p2->is_func_def && dd_p2->is_static
          && !dd_p2->definition && (dd_p2->file == dd_p->file))
-          ((NONCONST def_dec_info *)dd_p2)->definition = dd_p->definition;
+          ((NONCONST def_dec_info *) dd_p2)->definition = dd_p->definition;
       }
 
   /* Convert any dummy (-1) definitions we created in the step above back to
@@ -3460,7 +3460,7 @@ find_rightmost_formals_list (clean_text_p)
          by an alphabetic character, while others *cannot* validly be followed
          by such characters.  */
 
-      if ((ch == '{') || ISALPHA ((unsigned char)ch))
+      if ((ch == '{') || ISALPHA ((unsigned char) ch))
         break;
 
       /* At this point, we have found a right paren, but we know that it is
@@ -3806,7 +3806,7 @@ edit_fn_definition (def_dec_p, clean_text_p)
             have_newlines |= (*scan_orig == '\n');
             /* Leave identical whitespace alone.  */
             if (!ISSPACE ((const unsigned char)*scan_orig))
-              *((NONCONST char *)scan_orig) = ' '; /* identical - so whiteout */
+              *((NONCONST char *) scan_orig) = ' '; /* identical - so whiteout */
           }
         else
           have_flotsam = 1;
@@ -3877,7 +3877,7 @@ do_cleaning (new_clean_text_base, new_clean_text_limit)
             while (scan_p[1] != '\'' || scan_p[0] == '\\')
               {
                 if (scan_p[0] == '\\'
-		    && !ISSPACE ((const unsigned char)scan_p[1]))
+		    && !ISSPACE ((const unsigned char) scan_p[1]))
                   scan_p[1] = ' ';
                 if (!ISSPACE ((const unsigned char)*scan_p))
                   *scan_p = ' ';
@@ -3892,7 +3892,7 @@ do_cleaning (new_clean_text_base, new_clean_text_limit)
             while (scan_p[1] != '"' || scan_p[0] == '\\')
               {
                 if (scan_p[0] == '\\'
-		    && !ISSPACE ((const unsigned char)scan_p[1]))
+		    && !ISSPACE ((const unsigned char) scan_p[1]))
                   scan_p[1] = ' ';
                 if (!ISSPACE ((const unsigned char)*scan_p))
                   *scan_p = ' ';
