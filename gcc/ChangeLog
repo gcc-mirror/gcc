@@ -1,3 +1,11 @@
+2004-02-19  Aldy Hernandez  <aldyh@redhat.com>
+ 
+        * config/rs6000/spe.md (spe_fixunssfsi2): Rename to
+        spe_fixuns_truncsfsi2.
+ 
+        * config/rs6000/rs6000.md (fixunssfsi2): Rename to
+        fixuns_truncsfsi2.
+
 2004-02-19  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/ia64.h (HARD_REGNO_CALLER_SAVE_MODE): New macro.
