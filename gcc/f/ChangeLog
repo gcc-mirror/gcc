@@ -1,3 +1,7 @@
+2002-12-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* intdoc.in: Fix typos.
+
 2002-12-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* g77.texi: Fix typos.
