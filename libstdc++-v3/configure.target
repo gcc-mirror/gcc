@@ -108,6 +108,9 @@ case "${target_os}" in
   hpux*)
     os_include_dir="config/os/hpux"
     ;;
+  qnx6.[12]*)
+    os_include_dir="config/os/qnx/qnx6.1"
+    ;;
   *)
     os_include_dir="config/os/generic"
     ;;
