@@ -120,7 +120,8 @@ namespace std
   inline slice_array<_Tp>&
   slice_array<_Tp>::operator=(const slice_array<_Tp>& __a)
   {
-    __valarray_copy(_M_array, _M_sz, _M_stride, __a._M_array, __a._M_stride);
+    __valarray_copy(__a._M_array, __a._M_sz, __a._M_stride,
+		    _M_array, _M_stride);
     return *this;
   }
 
