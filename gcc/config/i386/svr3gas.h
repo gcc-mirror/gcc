@@ -37,8 +37,8 @@ Boston, MA 02111-1307, USA.  */
    Since a frame pointer will be required in such a function, it is OK
    that the stack pointer is not restored.  */
 
-#undef FRAME_POINTER_REQUIRED
-#define FRAME_POINTER_REQUIRED \
+#undef SUBTARGET_FRAME_POINTER_REQUIRED
+#define SUBTARGET_FRAME_POINTER_REQUIRED \
   (current_function_calls_setjmp || current_function_calls_longjmp)
 
 /* Modify ASM_OUTPUT_LOCAL slightly to test -msvr3-shlib, adapted to gas  */

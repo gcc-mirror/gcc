@@ -852,7 +852,16 @@ extern int ix86_arch;
    Zero means the frame pointer need not be set up (and parms
    may be accessed via the stack pointer) in functions that seem suitable.
    This is computed in `reload', in reload1.c.  */
-#define FRAME_POINTER_REQUIRED (TARGET_OMIT_LEAF_FRAME_POINTER && !leaf_function_p ()) 	
+#define FRAME_POINTER_REQUIRED  ix86_frame_pointer_required ()
+
+/* Override this in other tm.h files to cope with various OS losage
+   requiring a frame pointer.  */
+#ifndef SUBTARGET_FRAME_POINTER_REQUIRED
+#define SUBTARGET_FRAME_POINTER_REQUIRED 0
+#endif
+
+/* Make sure we can access arbitrary call frames.  */
+#define SETUP_FRAME_ADDRESSES()  ix86_setup_frame_addresses ()
 
 /* Base register for access to arguments of the function.  */
 #define ARG_POINTER_REGNUM 16

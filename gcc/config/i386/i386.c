@@ -331,6 +331,7 @@ struct rtx_def *ix86_compare_op1 = NULL_RTX;
 struct machine_function
 {
   rtx stack_locals[(int) MAX_MACHINE_MODE][MAX_386_STACK_LOCALS];
+  int accesses_prev_frame;
 };
 
 #define ix86_stack_locals (cfun->machine->stack_locals)
@@ -1699,6 +1700,40 @@ ix86_can_use_return_insn_p ()
 
   tsize = ix86_compute_frame_size (get_frame_size (), &nregs, NULL, NULL);
   return tsize == 0 && nregs == 0;
+}
+
+/* Value should be nonzero if functions must have frame pointers.
+   Zero means the frame pointer need not be set up (and parms may
+   be accessed via the stack pointer) in functions that seem suitable.  */
+
+int
+ix86_frame_pointer_required ()
+{
+  /* If we accessed previous frames, then the generated code expects
+     to be able to access the saved ebp value in our frame.  */
+  if (cfun->machine->accesses_prev_frame)
+    return 1;
+  
+  /* Several x86 os'es need a frame pointer for other reasons,
+     usually pertaining to setjmp.  */
+  if (SUBTARGET_FRAME_POINTER_REQUIRED)
+    return 1;
+
+  /* In override_options, TARGET_OMIT_LEAF_FRAME_POINTER turns off
+     the frame pointer by default.  Turn it back on now if we've not
+     got a leaf function.  */
+  if (TARGET_OMIT_LEAF_FRAME_POINTER && ! leaf_function_p ())
+    return 1;
+
+  return 0;
+}
+
+/* Record that the current function accesses previous call frames.  */
+
+void
+ix86_setup_frame_addresses ()
+{
+  cfun->machine->accesses_prev_frame = 1;
 }
 
 static char pic_label_name[32];

@@ -25,6 +25,8 @@ extern void order_regs_for_local_alloc PARAMS ((void));
 extern void optimization_options PARAMS ((int, int));
 
 extern int ix86_can_use_return_insn_p PARAMS ((void));
+extern int ix86_frame_pointer_required PARAMS ((void));
+extern void ix86_setup_frame_addresses PARAMS ((void));
 
 extern void ix86_asm_file_end PARAMS ((FILE *));
 extern void load_pic_register PARAMS ((void));
