@@ -1,3 +1,12 @@
+2004-11-27  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips-protos.h (function_arg_boundary): Declare.
+	* config/mips/mips.h (PARM_BOUNDARY): Simplify definition.
+	(STACK_BOUNDARY, MIPS_STACK_ALIGN): Likewise.
+	(FUNCTION_ARG_BOUNDARY): Use new function_arg_boundary function.
+	* config/mips/mips.c (function_arg_boundary): New function.
+	Impose a maximum alignment of STACK_BOUNDARY.
+
 2004-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/17825

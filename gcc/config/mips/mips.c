@@ -3326,6 +3326,23 @@ function_arg_partial_nregs (const CUMULATIVE_ARGS *cum,
 }
 
 
+/* Implement FUNCTION_ARG_BOUNDARY.  Every parameter gets at least
+   PARM_BOUNDARY bits of alignment, but will be given anything up
+   to STACK_BOUNDARY bits if the type requires it.  */
+
+int
+function_arg_boundary (enum machine_mode mode, tree type)
+{
+  unsigned int alignment;
+
+  alignment = type ? TYPE_ALIGN (type) : GET_MODE_ALIGNMENT (mode);
+  if (alignment < PARM_BOUNDARY)
+    alignment = PARM_BOUNDARY;
+  if (alignment > STACK_BOUNDARY)
+    alignment = STACK_BOUNDARY;
+  return alignment;
+}
+
 /* Return true if FUNCTION_ARG_PADDING (MODE, TYPE) should return
    upward rather than downward.  In other words, return true if the
    first byte of the stack slot has useful data, false if the last
