@@ -1005,7 +1005,7 @@ update_equiv_regs ()
 	  reg_equiv[regno].loop_depth = loop_depth;
 
 	  /* Don't mess with things live during setjmp.  */
-	  if (REG_LIVE_LENGTH (regno) >= 0)
+	  if (REG_LIVE_LENGTH (regno) >= 0 && optimize)
 	    {
 	      /* Note that the statement below does not affect the priority
 		 in local-alloc!  */
