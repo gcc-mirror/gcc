@@ -1,3 +1,9 @@
+2002-04-16  Paolo Carlini  <pcarlini@unitus.it>
+
+	* c-parse.in (poplevel, compstmt_start,
+	compstmt_primary_start): Add ending ';', in accordance
+	with POSIX.
+
 2002-04-16  Richard Henderson  <rth@redhat.com>
 
 	* config.gcc (sparcv9-solaris): Configure for 64-bit default.

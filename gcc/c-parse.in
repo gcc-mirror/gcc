@@ -2063,6 +2063,7 @@ end ifobjc
 
 poplevel:  /* empty */
                 { $$ = add_scope_stmt (/*begin_p=*/0, /*partial_p=*/0); }
+        ;
 
 /* Start and end blocks created for the new scopes of C99.  */
 c99_block_start: /* empty */
@@ -2133,7 +2134,8 @@ compstmt_or_error:
 	;
 
 compstmt_start: '{' { compstmt_count++;
-                      $$ = c_begin_compound_stmt (); } 
+                      $$ = c_begin_compound_stmt (); }
+        ;
 
 compstmt_nostart: '}'
 		{ $$ = convert (void_type_node, integer_zero_node); }
@@ -2165,6 +2167,7 @@ compstmt_primary_start:
 		  compstmt_count++;
 		  $$ = add_stmt (build_stmt (COMPOUND_STMT, last_tree));
 		}
+        ;
 
 compstmt: compstmt_start compstmt_nostart
 		{ RECHAIN_STMTS ($1, COMPOUND_BODY ($1)); 
