@@ -2544,7 +2544,7 @@ simplify_subreg (outermode, op, innermode, byte)
 	  || ! rtx_equal_function_value_matters)
       && REGNO (op) < FIRST_PSEUDO_REGISTER
 #ifdef CANNOT_CHANGE_MODE_CLASS
-      && ! (REG_CANNOT_CHANGE_MODE_P (REGNO (op), outermode, innermode)
+      && ! (REG_CANNOT_CHANGE_MODE_P (REGNO (op), innermode, outermode)
 	    && GET_MODE_CLASS (innermode) != MODE_COMPLEX_INT
 	    && GET_MODE_CLASS (innermode) != MODE_COMPLEX_FLOAT)
 #endif

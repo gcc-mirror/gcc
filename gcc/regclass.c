@@ -2633,14 +2633,15 @@ cannot_change_mode_set_regs (used, from, regno)
      unsigned int regno;
 {
   enum machine_mode to;
-  enum reg_class class;
 
   for (to = VOIDmode; to < MAX_MACHINE_MODE; ++to)
     if (REGNO_REG_SET_P (&subregs_of_mode[to], regno))
       {
-        class = CANNOT_CHANGE_MODE_CLASS (from, to);
-        if (class != NO_REGS)
-          IOR_HARD_REG_SET (*used, reg_class_contents [(int) class]);
+	int i;
+	for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+          if (! TEST_HARD_REG_BIT (*used, i)
+	      && REG_CANNOT_CHANGE_MODE_P (from, to, i))
+	    SET_HARD_REG_BIT (*used, i);
       }
 }
 
@@ -2657,8 +2658,7 @@ invalid_mode_change_p (regno, class, from_mode)
 
   for (to_mode = 0; to_mode < NUM_MACHINE_MODES; ++to_mode)
     if (REGNO_REG_SET_P (&subregs_of_mode[(int) to_mode], regno)
-	&& reg_classes_intersect_p 
-	     (class, CANNOT_CHANGE_MODE_CLASS (from_mode, to_mode)))
+	&& CANNOT_CHANGE_MODE_CLASS (from_mode, to_mode, class))
       return 1;
   return 0;
 }

@@ -869,8 +869,9 @@ enum reg_class {
 
 /* Return the class of registers that cannot change mode from FROM to TO.  */
 
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO) \
-  (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO) ? FLOAT_REGS : NO_REGS)
+#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)		\
+  (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO)			\
+   ? reg_classes_intersect_p (FLOAT_REGS, CLASS) : 0)
 
 /* Define the cost of moving between registers of various classes.  Moving
    between FLOAT_REGS and anything else except float regs is expensive. 

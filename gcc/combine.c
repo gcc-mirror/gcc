@@ -5238,8 +5238,8 @@ simplify_set (x)
 #ifdef CANNOT_CHANGE_MODE_CLASS
       && ! (GET_CODE (dest) == REG && REGNO (dest) < FIRST_PSEUDO_REGISTER
 	    && REG_CANNOT_CHANGE_MODE_P (REGNO (dest),
-					 GET_MODE (src), 
-					 GET_MODE (SUBREG_REG (src))))
+					 GET_MODE (SUBREG_REG (src)), 
+					 GET_MODE (src)))
 #endif
       && (GET_CODE (dest) == REG
 	  || (GET_CODE (dest) == SUBREG

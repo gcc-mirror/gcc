@@ -976,9 +976,7 @@ push_reload (in, out, inloc, outloc, class,
   if (in != 0 && GET_CODE (in) == SUBREG
       && (subreg_lowpart_p (in) || strict_low)
 #ifdef CANNOT_CHANGE_MODE_CLASS
-      && !reg_classes_intersect_p 
-	   (class, CANNOT_CHANGE_MODE_CLASS (GET_MODE (SUBREG_REG (in)),
-					     inmode))
+      && !CANNOT_CHANGE_MODE_CLASS (GET_MODE (SUBREG_REG (in)), inmode, class)
 #endif
       && (CONSTANT_P (SUBREG_REG (in))
 	  || GET_CODE (SUBREG_REG (in)) == PLUS
@@ -1088,9 +1086,7 @@ push_reload (in, out, inloc, outloc, class,
   if (out != 0 && GET_CODE (out) == SUBREG
       && (subreg_lowpart_p (out) || strict_low)
 #ifdef CANNOT_CHANGE_MODE_CLASS
-      && !reg_classes_intersect_p 
-	    (class, CANNOT_CHANGE_MODE_CLASS (GET_MODE (SUBREG_REG (out)),
-					      outmode))
+      && !CANNOT_CHANGE_MODE_CLASS (GET_MODE (SUBREG_REG (out)), outmode, class)
 #endif
       && (CONSTANT_P (SUBREG_REG (out))
 	  || strict_low

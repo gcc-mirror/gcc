@@ -10153,7 +10153,6 @@ ix86_expand_int_addcc (operands)
   rtx compare_op;
   rtx val = const0_rtx;
   bool fpcmp = false;
-  rtx pat, clob;
   enum machine_mode mode = GET_MODE (operands[0]);
 
   if (operands[3] != const1_rtx

@@ -1,3 +1,32 @@
+Sat Feb  1 00:28:30 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* loop.c (emit_prefetch_instructions):  Do conversion at right place in
+	RTL chain.
+
+	* combine.c (simplify_set): Reverse order of ragumetns to
+	REG_CANNOT_CHANGE_MODE_P
+	* df.c (df_def_record_1): Likewise.
+	* recog.c (register_operand): Likewise.
+	* simplify-rtx.c (simplify_subreg): Likewise.
+	* hard-reg-set.h (REG_CANNOT_CHANGE_MODE_P): Update use of
+	CANNOT_CHANGE_MODE_CLASS.
+	* regclass.c (cannot_change_mode_set_regs, invalid_mode_change_p):
+	Likewise.
+	* reload.c (push_reload): Likewise.
+	* alpha.h (CANNOT_CHANGE_MODE_CLASS): Update definition.
+	* ia64.h (CANNOT_CHANGE_MODE_CLASS): Update definition.
+	* mips.h (CANNOT_CHANGE_MODE_CLASS): Update definition.
+	* mips-protos.h (mips_cannot_change_mode_class): Update prototype.
+	* mips.c (mips_cannot_change_mode_class): Update.
+	* pa64-regs.h (CANNOT_CHANGE_MODE_CLASS): Update definition.
+	* rs6000.h (CANNOT_CHANGE_MODE_CLASS): Update definition.
+	* s390.h (CANNOT_CHANGE_MODE_CLASS): Update definition.
+	* sh.h (CANNOT_CHANGE_MODE_CLASS): Update definition.
+	* sh-protos.h (sh_cannot_change_mode_class): Update prototype.
+	* sh.c (sh_cannot_change_mode_class): Update.
+	* i386.h (CANNOT_CHANGE_MODE_CLASS): New.
+	* tm.texi (CANNOT_CHANGE_MODE_CLASS): Update documentation.
+
 2003-01-31  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/darwin.h (LINK_COMMAND_SPEC): Update for Nathan's recent
