@@ -1721,6 +1721,10 @@ yylex ()
 		  pedwarn ("ANSI C forbids newline in character constant");
 		lineno++;
 	      }
+#ifdef MAP_CHARACTER
+	    else
+	      c = MAP_CHARACTER (c);
+#endif
 
 	    num_chars++;
 	    if (num_chars > maxtoken - 4)
