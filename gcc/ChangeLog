@@ -1,3 +1,12 @@
+2001-07-11  Timothy Wall  <twall@redhat.com>
+
+        * config.gcc: Add configuration for AIX5/IA64.
+        * config/ia64/aix.h: New.  AIX5/IA64-specific configuration.
+        * config/ia64/crt[in].asm: New.  Generic static ctor/dtor
+	support prefix/suffix code.
+        * config/ia64/t-aix: New.  Makefile fragment.
+        * config/ia64/unwind-aix.c: New.  Unwind table entry lookup.
+
 2001-07-11  Kazu Hirata  <kazu@hxi.com>
 
 	* recog.c (validate_change): Fix a comment typo.
