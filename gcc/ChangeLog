@@ -1,3 +1,7 @@
+2003-11-30  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (ix86_emit_restore_regs_using_mov):  Deal with large offsets.
+
 2004-01-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (scan_record_type): New function.
