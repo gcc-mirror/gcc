@@ -2205,7 +2205,6 @@ cpp_get_token (pfile)
 	      if (opts->cplusplus && PEEKN (1) == '*')
 		{
 		  /* In C++, there's a ->* operator.  */
-		op3:
 		  token = CPP_OTHER;
 		  pfile->only_seen_white = 0;
 		  CPP_RESERVE (pfile, 4);

@@ -1,3 +1,17 @@
+Wed Aug  4 16:39:24 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (expand_builtin_memcmp, expand_builtin_strcmp): Wrap
+	prototypes in macro HAVE_cmpstrsi.
+
+	* cpplib.c (cpp_get_token): Remove unused label `op3'.
+
+	* emit-rtl.c (operand_subword): Remove unused variable
+	`bits_per_word'.
+
+	* rtl.c (shallow_copy_rtx): Remove unused variable `format_ptr'.
+
+	* tree.c (chainon): Wrap variable `t2' in macro ENABLE_CHECKING.
+
 Wed Aug  4 13:29:23 1999  Zack Weinberg  <zack@bitmover.com>
 
 	* cpphash.c (macroexpand): Delete leading whitespace when arg

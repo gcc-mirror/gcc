@@ -495,7 +495,6 @@ shallow_copy_rtx (orig)
      rtx orig;
 {
   register int i;
-  register char *format_ptr;
   register RTX_CODE code = GET_CODE (orig);
   register rtx copy = rtx_alloc (code);
 

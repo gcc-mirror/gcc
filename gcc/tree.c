@@ -1950,7 +1950,9 @@ chainon (op1, op2)
   if (op1)
     {
       register tree t1;
+#ifdef ENABLE_CHECKING
       register tree t2;
+#endif
 
       for (t1 = op1; TREE_CHAIN (t1); t1 = TREE_CHAIN (t1))
 	;
