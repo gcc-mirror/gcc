@@ -393,9 +393,9 @@ do {							\
 
 /* By default, target has a 80387, uses IEEE compatible arithmetic,
    and returns float values in the 387 and needs stack probes */
-#undef TARGET_SUBTARGET_DEFAULT
+#undef TARGET_DEFAULT
 
-#define TARGET_SUBTARGET_DEFAULT \
+#define TARGET_DEFAULT \
    (MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS | MASK_STACK_PROBE) 
 
 /* This is how to output an assembler line
