@@ -398,11 +398,12 @@ check_newline ()
 	    {
 #ifdef HANDLE_SYSV_PRAGMA
 	      return handle_sysv_pragma (finput, c);
-#endif /* HANDLE_SYSV_PRAGMA */
+#else /* !HANDLE_SYSV_PRAGMA */
 #ifdef HANDLE_PRAGMA
 	      HANDLE_PRAGMA (finput);
 #endif /* HANDLE_PRAGMA */
 	      goto skipline;
+#endif /* !HANDLE_SYSV_PRAGMA */
 	    }
 	}
 
