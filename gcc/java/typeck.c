@@ -589,6 +589,8 @@ get_type_from_signature (tree signature)
   return type;
 }
 
+/* Ignore signature and always return null.  Used by has_method. */
+
 static tree
 build_null_signature (type)
      tree type ATTRIBUTE_UNUSED;
