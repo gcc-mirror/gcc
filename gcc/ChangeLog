@@ -1,3 +1,8 @@
+Thu Mar 11 12:19:46 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* tree.c (build_type_attribute_variant): Push to obstack of
+	ttype around type_hash_canon call.
+
 Thu Mar  4 10:03:12 1999  Vasco Pedro  <vp@di.fct.unl.pt>
 
 	* fold-const.c (merge_ranges): In not in0, but in1, handle
