@@ -3149,8 +3149,12 @@ typedef enum tsubst_flags_t {
 				   (make_typename_type use) */
   tf_ptrmem_ok = 1 << 5,     /* pointers to member ok (internal
 				instantiate_type use) */
-  tf_parsing = 1 << 6	     /* called from parser
+  tf_parsing = 1 << 6,	     /* called from parser
 				(make_typename_type use) */
+  tf_conv = 1 << 8,          /* We are determining what kind of
+				conversion might be permissible, not
+				actually performing the
+				conversion.  */
 } tsubst_flags_t;
 
 /* The kind of checking we can do looking in a class hierarchy.  */

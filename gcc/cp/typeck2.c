@@ -279,7 +279,8 @@ retry:
       break;
     
     default:
-      abort ();
+      (*p_msg) ("invalid use of incomplete type");
+      break;
     }
 }
 
