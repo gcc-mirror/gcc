@@ -950,8 +950,7 @@ namespace std {
     return __ret;
   };
   
-  ctype<wchar_t>::
-  ~ctype() { }
+  ctype<wchar_t>::~ctype() { }
 
   // NB: These ctype<wchar_t> methods are not configuration-specific,
   // unlike the ctype<char> bits.
