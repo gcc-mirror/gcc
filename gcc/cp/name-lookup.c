@@ -105,7 +105,7 @@ binding_table_free (binding_table table)
         {
           binding_entry entry = temp;
           temp = entry->chain;
-          entry->chain = NULL; // just be sure
+          entry->chain = NULL; 
           binding_entry_free (entry);
         }
       table->chain[i] = temp;
