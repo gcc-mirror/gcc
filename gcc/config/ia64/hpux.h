@@ -101,9 +101,6 @@ do {							\
 
 #define JMP_BUF_SIZE  (8 * 76)
 
-#undef BITS_BIG_ENDIAN
-#define BITS_BIG_ENDIAN 1
-
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_DWARF2_ASM | MASK_BIG_ENDIAN | MASK_ILP32)
 
