@@ -1,3 +1,8 @@
+2005-01-26  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	Backport from mainline:
+	* gcc.dg/20041216-1.c: New test.
+
 2005-01-24  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/compile/20050113-1.c: XFAIL on SPARC.

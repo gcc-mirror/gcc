@@ -2447,6 +2447,37 @@ dbxout_symbol_location (tree decl, tree type, const char *suffix, rtx home)
 
 	  letter = decl_function_context (decl) ? 'V' : 'S';
 
+	  /* Some ports can transform a symbol ref into a label ref,
+	     because the symbol ref is too far away and has to be
+	     dumped into a constant pool.  Alternatively, the symbol
+	     in the constant pool might be referenced by a different
+	     symbol.  */
+	  if (GET_CODE (current_sym_addr) == SYMBOL_REF
+	      && CONSTANT_POOL_ADDRESS_P (current_sym_addr))
+	    {
+	      bool marked;
+	      rtx tmp = get_pool_constant_mark (current_sym_addr, &marked);
+
+	      if (GET_CODE (tmp) == SYMBOL_REF)
+		{
+		  current_sym_addr = tmp;
+		  if (CONSTANT_POOL_ADDRESS_P (current_sym_addr))
+		    get_pool_constant_mark (current_sym_addr, &marked);
+		  else
+		    marked = true;
+		}
+	      else if (GET_CODE (tmp) == LABEL_REF)
+		{
+		  current_sym_addr = tmp;
+		  marked = true;
+		}
+
+	      /* If all references to the constant pool were optimized
+		 out, we just ignore the symbol.  */
+	      if (!marked)
+		return 0;
+	    }
+
 	  /* This should be the same condition as in assemble_variable, but
 	     we don't have access to dont_output_data here.  So, instead,
 	     we rely on the fact that error_mark_node initializers always
@@ -2461,37 +2492,6 @@ dbxout_symbol_location (tree decl, tree type, const char *suffix, rtx home)
 	    current_sym_code = DBX_STATIC_CONST_VAR_CODE;
 	  else
 	    {
-	      /* Some ports can transform a symbol ref into a label ref,
-		 because the symbol ref is too far away and has to be
-		 dumped into a constant pool.  Alternatively, the symbol
-		 in the constant pool might be referenced by a different
-		 symbol.  */
-	      if (GET_CODE (current_sym_addr) == SYMBOL_REF
-		  && CONSTANT_POOL_ADDRESS_P (current_sym_addr))
-		{
-		  bool marked;
-		  rtx tmp = get_pool_constant_mark (current_sym_addr, &marked);
-
-		  if (GET_CODE (tmp) == SYMBOL_REF)
-		    {
-		      current_sym_addr = tmp;
-		      if (CONSTANT_POOL_ADDRESS_P (current_sym_addr))
-		        get_pool_constant_mark (current_sym_addr, &marked);
-		      else
-			marked = true;
-		    }
-		  else if (GET_CODE (tmp) == LABEL_REF)
-		    {
-		      current_sym_addr = tmp;
-		      marked = true;
-		    }
-
-		   /* If all references to the constant pool were optimized
-		      out, we just ignore the symbol.  */
-		  if (!marked)
-		    return 0;
-		}
-
 	      /* Ultrix `as' seems to need this.  */
 #ifdef DBX_STATIC_STAB_DATA_SECTION
 	      data_section ();

@@ -1,3 +1,9 @@
+2005-01-26  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	Backport from mainline:
+	* dbxout.c (dbxout_symbol_location): Resolve constant pool references
+	even for variables with NULL DECL_INITIAL.
+
 2005-01-25  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/19393
