@@ -1,3 +1,8 @@
+2003-10-03  Roger Sayle  <roger@eyesopen.com>
+
+	PR optimization/9325, PR java/6391
+	* gcc.c-torture/execute/20031003-1.c: New test case.
+
 2003-10-02  Mark Mitchell  <mark@codesourcery.com>
 
 	PR optimization/12180

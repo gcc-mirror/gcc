@@ -1,3 +1,16 @@
+2003-10-03  Roger Sayle  <roger@eyesopen.com>
+
+	PR optimization/9325, PR java/6391
+	* fold-const.c (fold_convert): For floating point to integer
+	conversions, return the maximum/minimum representable integer
+	value if the real constant overflows the destination type.
+	* tree.c (real_value_from_int_cst): Allow the type to be NULL,
+	meaning don't truncate the result to a floating point mode.
+	Simplify the logic by calling real_from_integer directly.
+	* simplify-rtx.c (simplify_unary_operation):  Implement the
+	same semantics for folding floating point to integer conversions
+	in RTL.
+
 2003-10-03  Chris Demetriou  <cgd@broadcom.com>
 
 	* config/mips/mips.c (mips_emit_prefetch): Restructure

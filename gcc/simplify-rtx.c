@@ -775,19 +775,99 @@ simplify_unary_operation (enum rtx_code code, enum machine_mode mode,
   else if (GET_CODE (trueop) == CONST_DOUBLE
 	   && GET_MODE_CLASS (GET_MODE (trueop)) == MODE_FLOAT
 	   && GET_MODE_CLASS (mode) == MODE_INT
-	   && width <= HOST_BITS_PER_WIDE_INT && width > 0)
+	   && width <= 2*HOST_BITS_PER_WIDE_INT && width > 0)
     {
-      HOST_WIDE_INT i;
-      REAL_VALUE_TYPE d;
-      REAL_VALUE_FROM_CONST_DOUBLE (d, trueop);
+      /* Although the overflow semantics of RTL's FIX and UNSIGNED_FIX
+	 operators are intentionally left unspecified (to ease implemention
+	 by target backends), for consistency, this routine implements the
+	 same semantics for constant folding as used by the middle-end.  */
+
+      HOST_WIDE_INT xh, xl, th, tl;
+      REAL_VALUE_TYPE x, t;
+      REAL_VALUE_FROM_CONST_DOUBLE (x, trueop);
       switch (code)
 	{
-	case FIX:		i = REAL_VALUE_FIX (d);		  break;
-	case UNSIGNED_FIX:	i = REAL_VALUE_UNSIGNED_FIX (d);  break;
+	case FIX:
+	  if (REAL_VALUE_ISNAN (x))
+	    return const0_rtx;
+
+	  /* Test against the signed upper bound.  */
+	  if (width > HOST_BITS_PER_WIDE_INT)
+	    {
+	      th = ((unsigned HOST_WIDE_INT) 1
+		    << (width - HOST_BITS_PER_WIDE_INT - 1)) - 1;
+	      tl = -1;
+	    }
+	  else
+	    {
+	      th = 0;
+	      tl = ((unsigned HOST_WIDE_INT) 1 << (width - 1)) - 1;
+	    }
+	  real_from_integer (&t, VOIDmode, tl, th, 0);
+	  if (REAL_VALUES_LESS (t, x))
+	    {
+	      xh = th;
+	      xl = tl;
+	      break;
+	    }
+
+	  /* Test against the signed lower bound.  */
+	  if (width > HOST_BITS_PER_WIDE_INT)
+	    {
+	      th = (HOST_WIDE_INT) -1 << (width - HOST_BITS_PER_WIDE_INT - 1);
+	      tl = 0;
+	    }
+	  else
+	    {
+	      th = -1;
+	      tl = (HOST_WIDE_INT) -1 << (width - 1);
+	    }
+	  real_from_integer (&t, VOIDmode, tl, th, 0);
+	  if (REAL_VALUES_LESS (x, t))
+	    {
+	      xh = th;
+	      xl = tl;
+	      break;
+	    }
+	  REAL_VALUE_TO_INT (&xl, &xh, x);
+	  break;
+
+	case UNSIGNED_FIX:
+	  if (REAL_VALUE_ISNAN (x) || REAL_VALUE_NEGATIVE (x))
+	    return const0_rtx;
+
+	  /* Test against the unsigned upper bound.  */
+	  if (width == 2*HOST_BITS_PER_WIDE_INT)
+	    {
+	      th = -1;
+	      tl = -1;
+	    }
+	  else if (width >= HOST_BITS_PER_WIDE_INT)
+	    {
+	      th = ((unsigned HOST_WIDE_INT) 1
+		    << (width - HOST_BITS_PER_WIDE_INT)) - 1;
+	      tl = -1;
+	    }
+	  else
+	    {
+	      th = 0;
+	      tl = ((unsigned HOST_WIDE_INT) 1 << width) - 1;
+	    }
+	  real_from_integer (&t, VOIDmode, tl, th, 1);
+	  if (REAL_VALUES_LESS (t, x))
+	    {
+	      xh = th;
+	      xl = tl;
+	      break;
+	    }
+
+	  REAL_VALUE_TO_INT (&xl, &xh, x);
+	  break;
+
 	default:
 	  abort ();
 	}
-      return gen_int_mode (i, mode);
+      return immed_double_const (xl, xh, mode);
     }
 
   /* This was formerly used only for non-IEEE float.
