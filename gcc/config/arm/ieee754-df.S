@@ -511,7 +511,7 @@ ARM_FUNC_ALIAS aeabi_l2d floatdidf
 	addne	r2, r2, #3
 	movs	ip, ip, lsr #3
 	addne	r2, r2, #3
-	add	r2, r2, ip
+	add	r2, r2, ip, lsr #3
 
 	rsb	r3, r2, #32
 	mov	ip, xl, lsl r3
