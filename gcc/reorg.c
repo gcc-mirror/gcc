@@ -3237,9 +3237,11 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 	 but it doesn't seem worth it.  It might also be a good idea to try
 	 to swap the two insns.  That might do better.
 
-	 We can't do this if the next insn modifies our source, because that
-	 would make the replacement into the insn invalid.  This also
-	 prevents updating the contents of a PRE_INC.  */
+	 We can't do this if the next insn modifies our destination, because
+	 that would make the replacement into the insn invalid.  We also can't
+	 do this if it modifies our source, because it might be an earlyclobber
+	 operand.  This latter test also prevents updating the contents of
+	 a PRE_INC.  */
 
       if (GET_CODE (trial) == INSN && GET_CODE (pat) == SET
 	  && GET_CODE (SET_SRC (pat)) == REG
@@ -3250,6 +3252,7 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 	  if (next && GET_CODE (next) == INSN
 	      && GET_CODE (PATTERN (next)) != USE
 	      && ! reg_set_p (SET_DEST (pat), next)
+	      && ! reg_set_p (SET_SRC (pat), next)
 	      && reg_referenced_p (SET_DEST (pat), PATTERN (next)))
 	    validate_replace_rtx (SET_DEST (pat), SET_SRC (pat), next);
 	}
