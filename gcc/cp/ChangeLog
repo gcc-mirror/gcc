@@ -1,3 +1,9 @@
+2003-08-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cp-tree.h (build_function_call_real): Remove unused parameter.
+	* typeck.c (build_function_call_real): Likewise.  Caller changed.
+	* decl.c (binding_table_reverse_maybe_remap): Initialize variable.
+
 2003-08-19  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	PR c++/5293

@@ -1,3 +1,9 @@
+2003-08-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* stmt.c (expand_asm_operands): Avoid string concatenation.
+	* tree.c (default_flag_random_seed): Avoid ISO C definition.
+	* varasm.c (output_constant_def): Delete unused variable.
+
 2003-08-18  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	PR c/11207

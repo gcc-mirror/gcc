@@ -2641,9 +2641,9 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
 }
 
 tree
-build_function_call_real (function, params, require_complete, flags)
+build_function_call_real (function, params, flags)
      tree function, params;
-     int require_complete, flags;
+     int flags;
 {
   register tree fntype, fndecl;
   register tree coerced_params;
@@ -2757,7 +2757,7 @@ tree
 build_function_call (function, params)
      tree function, params;
 {
-  return build_function_call_real (function, params, 1, LOOKUP_NORMAL);
+  return build_function_call_real (function, params, LOOKUP_NORMAL);
 }
 
 /* Convert the actual parameter expressions in the list VALUES

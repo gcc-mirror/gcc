@@ -4351,7 +4351,7 @@ const char *flag_random_seed;
 /* Set up a default flag_random_seed value, if there wasn't one already.  */
 
 void
-default_flag_random_seed (void)
+default_flag_random_seed ()
 {
   unsigned HOST_WIDE_INT value;
   char *new_random_seed;

@@ -4405,7 +4405,7 @@ extern tree build_x_indirect_ref		PARAMS ((tree, const char *));
 extern tree build_indirect_ref			PARAMS ((tree, const char *));
 extern tree build_array_ref			PARAMS ((tree, tree));
 extern tree get_member_function_from_ptrfunc	PARAMS ((tree *, tree));
-extern tree build_function_call_real		PARAMS ((tree, tree, int, int));
+extern tree build_function_call_real		PARAMS ((tree, tree, int));
 extern tree build_function_call_maybe		PARAMS ((tree, tree));
 extern tree convert_arguments			PARAMS ((tree, tree, tree, int));
 extern tree build_x_binary_op			PARAMS ((enum tree_code, tree, tree));

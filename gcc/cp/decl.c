@@ -461,7 +461,7 @@ binding_table_reverse_maybe_remap (binding_table table, tree type, tree name)
 {
   const size_t chain_count = table->chain_count;
   binding_entry entry = NULL;
-  binding_entry *p;
+  binding_entry *p = NULL;
   size_t i;
 
   for (i = 0; i < chain_count && entry == NULL; ++i)
