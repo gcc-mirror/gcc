@@ -553,7 +553,7 @@ update_inlined_to_pointers (struct cgraph_node *node,
       if (e->callee->global.inlined_to)
 	{
 	  e->callee->global.inlined_to = inlined_to;
-	  update_inlined_to_pointers (e->callee, node);
+	  update_inlined_to_pointers (e->callee, inlined_to);
 	}
     }
 }
@@ -653,15 +653,9 @@ tree_rest_of_compilation (tree fndecl, bool nested_p)
 	    cgraph_remove_edge (node->callees);
 	  node->callees = saved_node->callees;
 	  saved_node->callees = NULL;
+	  update_inlined_to_pointers (node, node);
 	  for (e = node->callees; e; e = e->next_callee)
-	    {
-	      if (e->callee->global.inlined_to)
-		{
-		  e->callee->global.inlined_to = node;
-		  update_inlined_to_pointers (e->callee, node);
-		}
-	      e->caller = node;
-	    }
+	    e->caller = node;
 	  cgraph_remove_node (saved_node);
 	}
     }
