@@ -115,7 +115,7 @@ void *_Jv_AllocArray (jsize size, jclass cl) __attribute__((__malloc__));
 /* Allocate space that is known to be pointer-free.  */
 void *_Jv_AllocBytes (jsize size) __attribute__((__malloc__));
 /* Explicitly throw an out-of-memory exception.	*/
-void _Jv_ThrowNoMemory();
+void _Jv_ThrowNoMemory() __attribute__((__noreturn__));
 /* Allocate an object with a single pointer.  The first word is reserved
    for the GC, and the second word is the traced pointer.  */
 void *_Jv_AllocTraceOne (jsize size /* incl. reserved slot */);
