@@ -1,3 +1,7 @@
+2003-12-05  Peter Gerwinski <peter@gerwinski.de>
+
+        * tree.def (PLACEHOLDER_EXPR): Clarify commentary.
+
 2003-12-05  Steven Bosscher  <stevenb@suse.de>
 
 	* config/d30v/d30v-protos.h , config/d30v/d30v.c,

@@ -509,7 +509,8 @@ DEFTREECODE (CLEANUP_POINT_EXPR, "cleanup_point_expr", 'e', 1)
    some field in an object of the type contains a value that is used in
    the computation of another field's offset or size and/or the size of
    the type.  The positions and/or sizes of fields can vary from object
-   to object of the same type.
+   to object of the same type or even for one and the same object within
+   its scope.
 
    Record types with discriminants in Ada or schema types in Pascal are
    examples of such types.  This mechanism is also used to create "fat
@@ -533,7 +534,16 @@ DEFTREECODE (CLEANUP_POINT_EXPR, "cleanup_point_expr", 'e', 1)
    For example, if your type FOO is a RECORD_TYPE with a field BAR,
    and you need the value of <variable>.BAR to calculate TYPE_SIZE
    (FOO), just substitute <variable> above with a PLACEHOLDER_EXPR
-   what contains both the expression we wish to
+   whose TREE_TYPE is FOO.  Then construct your COMPONENT_REF with
+   the PLACEHOLDER_EXPR as the first operand (which has the correct
+   type).  Later, when the size is needed in the program, the back-end
+   will find this PLACEHOLDER_EXPR and generate code to calculate the
+   actual size at run-time.  In the following, we describe how this
+   calculation is done.
+
+   When we wish to evaluate a size or offset, we check whether it
+   contains a PLACEHOLDER_EXPR.  If it does, we construct a
+   WITH_RECORD_EXPR that contains both the expression we wish to
    evaluate and an expression within which the object may be found.
    The latter expression is the object itself in the simple case of an
    Ada record with discriminant, but it can be the array in the case of
