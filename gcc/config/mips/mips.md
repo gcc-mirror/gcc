@@ -8453,7 +8453,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2%/"
 
 (define_insn "exception_receiver"
   [(set (reg:SI 28)
-	(unspec_volatile [(const_int 0)] UNSPEC_EH_RECEIVER))]
+	(unspec_volatile:SI [(const_int 0)] UNSPEC_EH_RECEIVER))]
   "TARGET_ABICALLS && (mips_abi == ABI_32 || mips_abi == ABI_O64)"
   { return mips_restore_gp (operands); }
   [(set_attr "type"   "load")
