@@ -1,3 +1,8 @@
+2004-09-17  Paolo Carlini  <pcarlini@suse.de>
+
+	* src/localename.cc (locale::_Impl::_Impl): Slightly improve
+	the algorithm used to name the categories.
+
 2004-09-13  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (time_get<>::_M_extract_via_format,
