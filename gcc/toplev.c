@@ -1481,7 +1481,9 @@ strip_off_ending (name, len)
     name[len - 4] = 0;
   else if (len > 2 && ! strcmp (".f", name + len - 2))
     name[len - 2] = 0;
-  else if (len > 4 && ! strcmp (".ada", name + len - 4))
+  /* Ada will use extensions like .ada, .adb, and .ads, so just test
+     for "ad".  */
+  else if (len > 4 && ! strncmp (".ad", name + len - 4, 3))
     name[len - 4] = 0;
   else if (len > 4 && ! strcmp (".atr", name + len - 4))
     name[len - 4] = 0;
