@@ -8740,6 +8740,14 @@ reload_cse_regs_1 (first)
 	    reload_cse_invalidate_mem (callmem);
 	}
 
+      
+      /* Forget all the register values at a volatile asm.  */
+      if (GET_CODE (insn) == INSN
+	  && GET_CODE (PATTERN (insn)) == ASM_OPERANDS
+	  && MEM_VOLATILE_P (PATTERN (insn)))
+	for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	  reg_values[i] = 0;
+
       body = PATTERN (insn);
       if (GET_CODE (body) == SET)
 	{

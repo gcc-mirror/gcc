@@ -1,5 +1,13 @@
 Thu Apr  8 19:20:18 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* cse.c (flush_hash_table): New function.
+	(cse_insn): Flush the hash table when we encounter a volatile asm.
+	(cse_basic_block): Use flush_hash_table instead of doing it
+	inline.
+
+	* reload1.c (reload_cse_regs_1): Flush known register values if
+	we encounter a volatile asm.
+
 	* loop.c (strength_reduce): Re-enable Joern's loop improvements.
 
 Thu Apr  8 09:37:40 1999  Nick Clifton  <nickc@cygnus.com>
