@@ -1627,9 +1627,9 @@ static bool
 var_finalized_p (tree var)
 {
   if (flag_unit_at_a_time)
-    return TREE_ASM_WRITTEN (var);
-  else
     return cgraph_varpool_node (var)->finalized;
+  else
+    return TREE_ASM_WRITTEN (var);
 }
 
 /* If necessary, write out the vtables for the dynamic class CTYPE.

@@ -1,3 +1,7 @@
+2003-09-11  David Edelsohn  <edelsohn@gnu.org>
+
+	* decl2.c (var_finalized_p): Swap arms of conditional.
+
 2003-09-10  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/11788
