@@ -66,6 +66,11 @@ package java.text;
 public final class CollationKey implements Comparable
 {
   /**
+   * This is the <code>Collator</code> this object was created from.
+   */
+  private Collator collator;
+
+  /**
    * This is the <code>String</code> this object represents.
    */
   private String originalText;
@@ -75,9 +80,10 @@ public final class CollationKey implements Comparable
    */
   private int[] key;
 
-  CollationKey (CollationElementIterator iter, String originalText,
-		int strength)
+  CollationKey(Collator collator, CollationElementIterator iter,
+	       String originalText, int strength)
   {
+    this.collator = collator;
     this.originalText = originalText;
 
     // Compute size of required array.
@@ -153,12 +159,14 @@ public final class CollationKey implements Comparable
 
     CollationKey ck = (CollationKey) obj;
 
-    if (key.length != ck.key.length)
+    if (ck.collator != collator)
       return false;
 
-    for (int i = 0; i < key.length; ++i)
-      if (key[i] != ck.key[i])
-	return false;
+    if (!ck.getSourceString ().equals (getSourceString ()))
+      return false;
+
+    if (!ck.toByteArray ().equals (toByteArray ()))
+      return false;
 
     return true;
   }

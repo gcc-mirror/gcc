@@ -152,13 +152,12 @@ public class RuleBasedCollator extends Collator
     String key;
     char relation;
 
-    CollationElement (String key, char relation)
+    CollationElement(String key, char relation)
     {
       this.key = key;
       this.relation = relation;
     }
-
-  } // inner class CollationElement
+  }
 
   // True if we are using French-style accent ordering.
   private boolean frenchAccents;
@@ -188,21 +187,21 @@ public class RuleBasedCollator extends Collator
    */
   public RuleBasedCollator(String rules) throws ParseException
   {
-    if (rules.equals (""))
-      throw new ParseException ("empty rule set", 0);
+    if (rules.equals(""))
+      throw new ParseException("empty rule set", 0);
     
     this.rules = rules;
-    this.frenchAccents = false;
 
     // We keep each rule in order in a vector.  At the end we traverse
     // the vector and compute collation values from it.
     int insertion_index = 0;
     Vector vec = new Vector ();
 
-    StringBuffer argument = new StringBuffer ();
-
+    int index;
+    StringBuffer argument = new StringBuffer();
     int len = rules.length();
-    for (int index = 0; index < len; ++index)
+
+    for (index = 0; index < len; ++index)
       {
 	char c = rules.charAt(index);
 
@@ -339,7 +338,7 @@ public class RuleBasedCollator extends Collator
 	return cei.lookahead;
       }
 
-    int save = cei.index;
+    int save = cei.textIndex;
     int max = cei.text.length();
     String s = null;
 
@@ -368,7 +367,7 @@ public class RuleBasedCollator extends Collator
       }
 
     // Update state.
-    cei.index = i;
+    cei.textIndex = i;
 
     if (obj == null)
       {
@@ -490,10 +489,12 @@ public class RuleBasedCollator extends Collator
    */
   public CollationElementIterator getCollationElementIterator(String source)
   {
-    StringBuffer expand = new StringBuffer (source.length());
-    int max = source.length();
-    for (int i = 0; i < max; ++i)
-      decomposeCharacter (source.charAt(i), expand);
+    int len = source.length();
+    StringBuffer expand = new StringBuffer(len);
+    
+    for (int index = 0; index < len; ++index)
+      decomposeCharacter(source.charAt(index), expand);
+    
     return new CollationElementIterator(this, expand.toString());
   }
 
@@ -508,11 +509,13 @@ public class RuleBasedCollator extends Collator
    */
   public CollationElementIterator getCollationElementIterator(CharacterIterator source)
   {
-    StringBuffer expand = new StringBuffer();
-    for (char c = source.first ();
+    StringBuffer expand = new StringBuffer("");
+    
+    // Right now we assume that we will read from the beginning of the string.
+    for (char c = source.first();
 	 c != CharacterIterator.DONE;
-	 c = source.next ())
-      decomposeCharacter (c, expand);
+	 c = source.next())
+      decomposeCharacter(c, expand);
 
     return new CollationElementIterator(this, expand.toString());
   }
@@ -530,7 +533,7 @@ public class RuleBasedCollator extends Collator
    */
   public CollationKey getCollationKey(String source)
   {
-    return new CollationKey(getCollationElementIterator(source), source,
+    return new CollationKey(this, getCollationElementIterator(source), source,
 			    strength);
   }
 
