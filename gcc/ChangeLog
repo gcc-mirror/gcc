@@ -1,3 +1,9 @@
+Mon May 22 13:14:03 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* final.c (final_scan_insn, case NOTE_INSN_FUNCTION_BEG): Remove
+	dangling "else" that causes "break" to be conditional.
+	Also remove unneeded code at start.
+
 Mon May 22 17:31:35 2000  Philippe De Muyter  <phdm@macqel.be>
 
 	* m68k/m68k.h (STORE_FLAG_VALUE): Macro set to (-1), not -1.
