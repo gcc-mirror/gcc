@@ -666,6 +666,7 @@ assign_stack_temp_for_type (mode, size, keep, type)
 {
   unsigned int align;
   struct temp_slot *p, *best_p = 0;
+  rtx slot;
 
   /* If SIZE is -1 it means that somebody tried to allocate a temporary
      of a variable size.  */
@@ -811,29 +812,26 @@ assign_stack_temp_for_type (mode, size, keep, type)
       p->keep = keep;
     }
 
-  /* We may be reusing an old slot, so clear any MEM flags that may have been
-     set from before.  */
-  RTX_UNCHANGING_P (p->slot) = 0;
-  MEM_IN_STRUCT_P (p->slot) = 0;
-  MEM_SCALAR_P (p->slot) = 0;
-  MEM_VOLATILE_P (p->slot) = 0;
-  set_mem_alias_set (p->slot, 0);
+
+  /* Create a new MEM rtx to avoid clobbering MEM flags of old slots.  */
+  slot = gen_rtx_MEM (mode, XEXP (p->slot, 0));
+  stack_slot_list = gen_rtx_EXPR_LIST (VOIDmode, slot, stack_slot_list);
 
   /* If we know the alias set for the memory that will be used, use
      it.  If there's no TYPE, then we don't know anything about the
      alias set for the memory.  */
-  set_mem_alias_set (p->slot, type ? get_alias_set (type) : 0);
-  set_mem_align (p->slot, align);
+  set_mem_alias_set (slot, type ? get_alias_set (type) : 0);
+  set_mem_align (slot, align);
 
   /* If a type is specified, set the relevant flags.  */
   if (type != 0)
     {
-      RTX_UNCHANGING_P (p->slot) = TYPE_READONLY (type);
-      MEM_VOLATILE_P (p->slot) = TYPE_VOLATILE (type);
-      MEM_SET_IN_STRUCT_P (p->slot, AGGREGATE_TYPE_P (type));
+      RTX_UNCHANGING_P (slot) = TYPE_READONLY (type);
+      MEM_VOLATILE_P (slot) = TYPE_VOLATILE (type);
+      MEM_SET_IN_STRUCT_P (slot, AGGREGATE_TYPE_P (type));
     }
 
-  return p->slot;
+  return slot;
 }
 
 /* Allocate a temporary stack slot and record it for possible later
