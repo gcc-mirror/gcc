@@ -95,7 +95,7 @@ foo (int i, unsigned int u, wint_t lc, wchar_t *ls, int *ip, double d,
   scanf ("%4$ld%7$ld%5$d%6$d%3$d%1$d%2$d", ip, ip, ip, lp, ip, ip, lp);
   printf ("%1$d%d", i, i); /* { dg-warning "missing" "mixing $ and non-$ formats" } */
   printf ("%%%1$d%%%2$d", i, i);
-  printf ("%d%2$d", i); /* { dg-warning "type character" "mixing $ and non-$ formats" } */
+  printf ("%d%2$d", i); /* { dg-warning "used after format" "mixing $ and non-$ formats" } */
   printf ("%1$*d", i, i); /* { dg-warning "missing" "mixing $ and non-$ formats" } */
   printf ("%*1$d", i); /* { dg-warning "missing" "mixing $ and non-$ formats" } */
   scanf ("%1$d%d", ip, ip); /* { dg-warning "missing" "mixing $ and non-$ formats" } */
