@@ -140,8 +140,8 @@ extern int target_flags;
 
 /* GDB always assumes the current function's frame begins at the value
    of the stack pointer upon entry to the current function.  Accessing
-   local variables is done using the base of the frame + an offset
-   provided by GCC.
+   local variables and parameters passed on the stack is done using the
+   base of the frame + an offset provided by GCC.
 
    For functions which have frame pointers this method works fine;
    the (frame pointer) == (stack pointer at function entry) and GCC provides
@@ -153,6 +153,10 @@ extern int target_flags;
    the stack pointer at the function's entry.  Yuk!  */
 #define DEBUGGER_AUTO_OFFSET(X) \
   ((GET_CODE (X) == PLUS ? INTVAL (XEXP (X, 1)) : 0) \
+    + (frame_pointer_needed ? 0 : compute_frame_size (get_frame_size (), 0)))
+
+#define DEBUGGER_ARG_OFFSET(OFFSET, X) \
+  ((GET_CODE (X) == PLUS ? OFFSET : 0) \
     + (frame_pointer_needed ? 0 : compute_frame_size (get_frame_size (), 0)))
 
 #if (TARGET_DEFAULT & 1) == 0
