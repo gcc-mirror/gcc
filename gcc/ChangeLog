@@ -1,3 +1,8 @@
+2003-06-23  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* doc/extend.texi: Fix typos.
+	* doc/md.texi: Likewise.
+
 2003-06-23  Roger Sayle  <roger@eyesopen.com>
             Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
