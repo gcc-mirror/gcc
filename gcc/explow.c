@@ -274,19 +274,17 @@ break_out_memory_refs (x)
   if (GET_CODE (x) == MEM
       || (CONSTANT_P (x) && CONSTANT_ADDRESS_P (x)
 	  && GET_MODE (x) != VOIDmode))
-    {
-      register rtx temp = force_reg (GET_MODE (x), x);
-      mark_reg_pointer (temp);
-      x = temp;
-    }
+    x = force_reg (GET_MODE (x), x);
   else if (GET_CODE (x) == PLUS || GET_CODE (x) == MINUS
 	   || GET_CODE (x) == MULT)
     {
       register rtx op0 = break_out_memory_refs (XEXP (x, 0));
       register rtx op1 = break_out_memory_refs (XEXP (x, 1));
+
       if (op0 != XEXP (x, 0) || op1 != XEXP (x, 1))
 	x = gen_rtx (GET_CODE (x), Pmode, op0, op1);
     }
+
   return x;
 }
 
@@ -434,6 +432,17 @@ memory_address (mode, x)
     }
 
  done:
+
+  /* If we didn't change the address, we are done.  Otherwise, mark
+     a reg as a pointer if we have REG or REG + CONST_INT.  */
+  if (oldx == x)
+    return x;
+  else if (GET_CODE (x) == REG)
+    mark_reg_pointer (x);
+  else if (GET_CODE (x) == PLUS
+	   && GET_CODE (XEXP (x, 0)) == REG
+	   && GET_CODE (XEXP (x, 1)) == CONST_INT)
+    mark_reg_pointer (XEXP (x, 0));
 
   /* OLDX may have been the address on a temporary.  Update the address
      to indicate that X is now used.  */
