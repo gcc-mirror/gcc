@@ -75,17 +75,6 @@ F77_FLAGS_TO_PASS = \
 # you can just change it here if you like.
 F77_INSTALL_FLAG = [ -f f77-install-ok -o -f $(srcdir)/f77-install-ok ]
 
-# This flag is similar to F77_INSTALL_FLAG, but controls whether
-# to install (ovewrite) f2c-related items on this system.  Currently
-# these are `include/f2c.h' and `lib/libf2c.a', though at some point
-# `bin/f2c' itself might be added to the g77 distribution.
-F2C_INSTALL_FLAG = [ -f f2c-install-ok -o -f $(srcdir)/f2c-install-ok ]
-
-# This flag controls whether it is safe to install gcc's libf2c.a
-# even when there's already a lib/libf2c.a installed (which, unless
-# F2C_INSTALL_FLAG is set, will be left alone).
-F2CLIBOK = [ -f f2c-exists-ok -o -f $(srcdir)/f2c-exists-ok ]
-
 # Actual names to use when installing a native compiler.
 F77_INSTALL_NAME = `t='$(program_transform_name)'; echo f77 | sed $$t`
 G77_INSTALL_NAME = `t='$(program_transform_name)'; echo g77 | sed $$t`
@@ -101,11 +90,11 @@ G77_CROSS_NAME = `t='$(program_transform_cross_name)'; echo g77 | sed $$t`
 F77 f77: f771
 
 # Tell GNU make to ignore these if they exist.
-.PHONY: F77 f77 f77-runtime f77-runtime-unsafe f77.all.build f77.all.cross \
-  f77.start.encap f77.rest.encap f77.info f77.dvi maybe-f2c \
-  f77.install-normal install-libf77 install-f2c-all install-f2c-header \
-  install-f2c-lib f77.install-common f77.install-info f77.install-man \
-  f77.uninstall f77.mostlyclean f77.clean f77.distclean f77.extraclean \
+.PHONY: F77 f77 f77.all.build f77.all.cross \
+  f77.start.encap f77.rest.encap f77.info f77.dvi \
+  f77.install-normal install-libf77 \
+  f77.install-common f77.install-info f77.install-man \
+  f77.uninstall f77.mostlyclean f77.clean f77.distclean \
   f77.maintainer-clean f77.realclean f77.stage1 f77.stage2 f77.stage3 \
   f77.stage4 f77.distdir f77.rebuilt
 
@@ -245,99 +234,13 @@ f771: $(P) $(F77_SRCS) $(LIBDEPS) stamp-objlist f/Makefile
 f/Makefile: $(srcdir)/f/Makefile.in $(srcdir)/configure
 	$(SHELL) config.status
 
-# Note that the runtime is built in the top-level directory rather
-# than in f/runtime a la the Cygnus CHILL example; then xgcc -B./ will
-# find it.  Use an absolute name for GCC_FOR_TARGET (so we don't have
-# to keep stage? links around everywhere) unless this value has been
-# overridden from the default "./xgcc -B./", hence the case statement.
-# We depend on GCC_PASSES through f/runtime/Makefile.
-stmp-headers = stmp-headers	# to be overrideable in unsafe version
-# Depend on stmp-headers, not stmp-int-hdrs, since libF77 needs float.h.
-f77-runtime:  f/runtime/Makefile include/f2c.h $(stmp-headers) \
-  f/runtime/libF77/Makefile f/runtime/libI77/Makefile f/runtime/libU77/Makefile
-	case "$(LANGUAGES)" in \
-	*f77*) top=`pwd`; \
-	  cd f/runtime && $(MAKE) \
-	    GCC_FOR_TARGET="`case '$(GCC_FOR_TARGET)' in \
-	     './xgcc -B./') echo $${top}/xgcc -B$${top}/;; \
-	     *) echo '$(GCC_FOR_TARGET)';; esac`" \
-	    GCC_FLAGS="$(GCC_FLAGS)" $(F77_FLAGS_TO_PASS) \
-	    all ;; \
-	esac
-
-# This one doesn't depend on cc1 etc. but f2c.h may not be found,
-# in particular, at present...
-f77-runtime-unsafe:
-	$(MAKE) stmp-headers= GCC_PARTS= f77-runtime
-
-# The configuration of the runtime system relies on an autoconf-type
-# configure, not a Cygnus-type one.  It needs to be run *after* the
-# appropriate (cross-)compiler has been built, thus depend on GCC_PARTS.
-# NB, sh uses the *first* value of $a from `a=fred a=joe prog'.
-stmp-f2c.h: \
-  $(srcdir)/f/runtime/f2c.h.in \
-  $(srcdir)/f/com.h $(srcdir)/f/proj.h \
-  $(srcdir)/f/runtime/Makefile.in \
-  $(srcdir)/f/runtime/libF77/Makefile.in \
-  $(srcdir)/f/runtime/libI77/Makefile.in \
-  $(srcdir)/f/runtime/libU77/Makefile.in \
-  $(srcdir)/f/runtime/configure \
-  $(srcdir)/f/runtime/libU77/configure \
-  $(GCC_PARTS)
-# The make "stage?" in compiler spec. is fully qualified as above
-	rm -f stmp-f2c.h
-	case "$(LANGUAGES)" in \
-	*f77*) top=`pwd`; \
-	src=`cd $(srcdir); pwd`; \
-	  cd f/runtime; \
-	  $(F77_FLAGS_TO_PASS) \
-	  CC="`case '$(GCC_FOR_TARGET)' in \
-	     './xgcc -B./') echo $${top}/xgcc -B$${top}/;; \
-	     *) echo '$(GCC_FOR_TARGET)';; esac`" \
-	  CONFIG_SITE=/dev/null $(SHELL) \
-	  $${src}/f/runtime/configure --srcdir=$${src}/f/runtime ;; \
-	esac
-	case "$(LANGUAGES)" in \
-	*f77*) top=`pwd`; \
-	src=`cd $(srcdir); pwd`; \
-	  cd f/runtime/libU77; \
-	  $(F77_FLAGS_TO_PASS) \
-	  CC="`case '$(GCC_FOR_TARGET)' in \
-	     './xgcc -B./') echo $${top}/xgcc -B$${top}/;; \
-	     *) echo '$(GCC_FOR_TARGET)';; esac`" \
-	  CONFIG_SITE=/dev/null $(SHELL) \
-	  $${src}/f/runtime/libU77/configure --srcdir=$${src}/f/runtime/libU77 ;; \
-	esac
-	touch stmp-f2c.h
-
-# Support parallel build.
-include/f2c.h \
-f/runtime/Makefile \
-f/runtime/libF77/Makefile \
-f/runtime/libI77/Makefile \
-f/runtime/libU77/Makefile: stmp-f2c.h
-
-#For now, omit f2c stuff.  -- burley
-#f2c: stmp-headers f/f2c/Makefile
-#	cd f/f2c; $(MAKE) all
-#
-#f/f2c/Makefile: $(srcdir)/f/f2c/Makefile.in $(GCC_PARTS) \
-#            $(srcdir)/config/$(xmake_file) $(srcdir)/config/$(tmake_file)
-#	top=`pwd`; cd f/f2c; \
-#          $${top}/f/f2c/configure --srcdir=$${top}/f/f2c
 #
 # Build hooks:
 
-# I'm not sure there's a way of getting f2c into here conditionally on
-# the --enable-f2c flag detected by config-lang.in so kluge it with the
-# maybe-f2c target by looking at STAGESTUFF.
-# We need to build the runtime after libgcc.a, so as to avoid a circular
-# dependence on cplib2.ready.  So instead of putting it in LANGUAGES (via
-# the f77 rule), it goes at the end of each all.* build rule.
-f77.all.build: g77$(exeext) maybe-f2c f77-runtime
-f77.all.cross: g77-cross$(exeext) maybe-f2c f77-runtime
-f77.start.encap: g77$(exeext) maybe-f2c
-f77.rest.encap: f77-runtime
+f77.all.build: g77$(exeext)
+f77.all.cross: g77-cross$(exeext)
+f77.start.encap: g77$(exeext)
+f77.rest.encap:
 
 f77.info: f/g77.info
 f77.dvi: f/g77.dvi
@@ -393,69 +296,14 @@ $(srcdir)/f/NEWS: f/news0.texi f/news.texi
 	cd $(srcdir)/f; $(MAKEINFO) -D NEWSONLY --no-header --no-split \
 	  --no-validate news0.texi -o NEWS
 
-$(srcdir)/f/runtime/configure: $(srcdir)/f/runtime/configure.in 
-	cd $(srcdir)/f/runtime && $(MAKE) srcdir=. -f Makefile.in rebuilt
-$(srcdir)/f/runtime/libU77/configure: $(srcdir)/f/runtime/libU77/configure.in
-	cd $(srcdir)/f/runtime && $(MAKE) srcdir=. -f Makefile.in rebuilt
-
 f77.rebuilt: $(srcdir)/f/g77.info $(srcdir)/f/BUGS $(srcdir)/f/INSTALL \
-  $(srcdir)/f/NEWS $(srcdir)/f/runtime/configure \
-  $(srcdir)/f/runtime/libU77/configure
+  $(srcdir)/f/NEWS 
 
-maybe-f2c:
-#For now, omit f2c stuff.  -- burley
-#	case "$(STAGESTUFF)" in *f2c*) $(MAKE) f2c;; esac
 #
 # Install hooks:
 # f771 is installed elsewhere as part of $(COMPILERS).
 
-f77.install-normal: install-libf77 install-f2c-all
-
-# Install the F77 run time library.
-install-libf77: f77-runtime
-# Check for the presence of other versions of the library and includes.
-# Test libf2c.* in case of a shared version, for instance.
-	@if test -z "$(F2CLIBOK)" && \
-	   test -z "$(F2C_INSTALL_FLAG)" && \
-	   test "`echo $(libdir)/libf2c.*`" != "$(libdir)/libf2c.*"; then \
-   echo ; \
-   echo 'You already have a version of libf2c installed as' $(libdir)/libf2c.*; \
-   echo 'To use g77 this must be consistent with the one that will be built.'; \
-   echo 'You should probably delete it and/or install ./libf2c.a in its place.'; \
-   echo 'Resume the "make install" after removing the existing library or'; \
-   echo 'define the make variable F2CLIBOK to avoid this test.'; \
-   echo 'Check also for' $(includedir)/f2c.h 'per INSTALL instructions.'; \
-   echo '(Note that a quick and easy way to resume "make -k install" is to'; \
-   echo 'use "make install-libf77".)'; \
-   exit 1; else true; fi
-	if [ -f libf2c.a ] ; then \
-	  $(INSTALL_DATA) libf2c.a $(libsubdir)/libf2c.a; \
-	  if $(RANLIB_TEST) ; then \
-	    (cd $(libsubdir); $(RANLIB) libf2c.a); else true; fi; \
-	  chmod a-x $(libsubdir)/libf2c.a; \
-	else true; fi
-	if [ -f include/f2c.h ] ; then \
-	  $(INSTALL_DATA) include/f2c.h $(libsubdir)/include/f2c.h; \
-	else true; fi
-
-# Install the f2c-related stuff in the directories
-# where f2c and vanilla ld might look for them.
-
-install-f2c-all: install-f2c-header install-f2c-lib
-
-install-f2c-header:
-	-if test -n "$(F2C_INSTALL_FLAG)" && test -f include/f2c.h; then \
-	  $(INSTALL_DATA) include/f2c.h $(includedir)/f2c.h; \
-	  chmod a+r $(includedir)/f2c.h; \
-	else true; fi
-
-install-f2c-lib:
-	-if test -n "$(F2C_INSTALL_FLAG)" && test -f libf2c.a; then \
-	  $(INSTALL_DATA) libf2c.a $(libdir)/libf2c.a; \
-	  if $(RANLIB_TEST) ; then \
-	    (cd $(libdir); $(RANLIB) libf2c.a); else true; fi; \
-	  chmod a-x $(libdir)/libf2c.a; \
-	else true; fi
+f77.install-normal: install-libf77
 
 # Install the driver program as $(target)-g77
 # and also as either g77 (if native) or $(tooldir)/bin/g77.
@@ -523,11 +371,6 @@ f77.uninstall:
 	-rm -rf $(mandir)/$(G77_INSTALL_NAME)$(manext)
 	-rm -rf $(mandir)/$(G77_CROSS_NAME)$(manext)
 	-rm -rf $(infodir)/g77.info*
-	-rm -rf $(libsubdir)/libf2c.a
-	-if $(F2C_INSTALL_FLAG) ; then \
-	  rm -rf include/f2c.h ; \
-	  rm -rf $(libdir)/libf2c.a ; \
-	fi
 #
 # Clean hooks:
 # A lot of the ancillary files are deleted by the main makefile.
@@ -536,72 +379,27 @@ f77.uninstall:
 f77.mostlyclean:
 	-rm -f f/*$(objext)
 	-rm -f f/fini f/f771 f/stamp-str f/str-*.h f/str-*.j f/intdoc f/ansify f/intdoc.h0
-	-cd f/runtime; $(MAKE) mostlyclean
-	-cd $(srcdir)/f/runtime; $(MAKE) -f Makefile.in mostlyclean
 f77.clean:
 	-rm -f g77.c
-	-cd f/runtime; $(MAKE) clean
-	-cd $(srcdir)/f/runtime; $(MAKE) -f Makefile.in clean
 f77.distclean:
-	-cd f/runtime; $(MAKE) distclean
-	-cd $(srcdir)/f/runtime; $(MAKE) -f Makefile.in distclean
 	-rm -f f/Makefile
-# like gcc's extraclean, which does clean f/ for us, but not f/gbe,
-# f/runtime, f/runtime/libF77, f/runtime/libI77, and f/runtime/libU77,
-# so do those.
-f77.extraclean: f77.distclean
-	-rm -f f/*/=* f/*/"#"* f/*/*~*
-	-rm -f f/*/patch* f/*/*.orig f/*/*.rej
-	-rm -f f/*/*.dvi f/*/*.oaux f/*/*.d f/*/*.[zZ] f/*/*.gz
-	-rm -f f/*/*.tar f/*/*.xtar f/*/*diff f/*/*.diff.* f/*/*.tar.* f/*/*.xtar.* f/*/*diffs
-	-rm -f f/*/*lose f/*/*.s f/*/*.s[0-9] f/*/*.i
-	-rm -f f/*/*/=* f/*/*/"#"* f/*/*/*~*
-	-rm -f f/*/*/patch* f/*/*/*.orig f/*/*/*.rej
-	-rm -f f/*/*/*.dvi f/*/*/*.oaux f/*/*/*.d f/*/*/*.[zZ] f/*/*/*.gz
-	-rm -f f/*/*/*.tar f/*/*/*.xtar f/*/*/*diff f/*/*/*.diff.* f/*/*/*.tar.* f/*/*/*.xtar.* f/*/*/*diffs
-	-rm -f f/*/*/*lose f/*/*/*.s f/*/*/*.s[0-9] f/*/*/*.i
 # realclean is the pre-2.7.0 name for maintainer-clean
 f77.maintainer-clean f77.realclean: f77.distclean
-	-cd f/runtime; $(MAKE) maintainer-clean
-	-cd $(srcdir)/f/runtime; $(MAKE) -f Makefile.in maintainer-clean;; \
 	-rm -f f/g77.info* f/g77.*aux f/TAGS f/BUGS f/INSTALL f/NEWS f/intdoc.texi
 #
 # Stage hooks:
 # The main makefile has already created stage?/f.
 
 G77STAGESTUFF = f/*$(objext) f/fini f/stamp-str f/str-*.h f/str-*.j
-RUNTIMESTAGESTUFF = f/runtime/config.cache f/runtime/config.log \
-  f/runtime/config.status f/runtime/Makefile f/runtime/stamp-lib
-LIBF77STAGESTUFF = f/runtime/libF77/*$(objext) f/runtime/libF77/Makefile
-LIBI77STAGESTUFF = f/runtime/libI77/*$(objext) f/runtime/libI77/Makefile
-LIBU77STAGESTUFF = f/runtime/libU77/*$(objext) f/runtime/libU77/Makefile \
-  f/runtime/libU77/config.cache f/runtime/libU77/config.log \
-  f/runtime/libU77/config.status
 
 f77.stage1: stage1-start
 	-mv $(G77STAGESTUFF) stage1/f
-	-mv $(RUNTIMESTAGESTUFF) stage1/f/runtime
-	-mv $(LIBF77STAGESTUFF) stage1/f/runtime/libF77
-	-mv $(LIBI77STAGESTUFF) stage1/f/runtime/libI77
-	-mv $(LIBU77STAGESTUFF) stage1/f/runtime/libU77
 f77.stage2: stage2-start
 	-mv $(G77STAGESTUFF) stage2/f
-	-mv $(RUNTIMESTAGESTUFF) stage2/f/runtime
-	-mv $(LIBF77STAGESTUFF) stage2/f/runtime/libF77
-	-mv $(LIBI77STAGESTUFF) stage2/f/runtime/libI77
-	-mv $(LIBU77STAGESTUFF) stage2/f/runtime/libU77
 f77.stage3: stage3-start
 	-mv $(G77STAGESTUFF) stage3/f
-	-mv $(RUNTIMESTAGESTUFF) stage3/f/runtime
-	-mv $(LIBF77STAGESTUFF) stage3/f/runtime/libF77
-	-mv $(LIBI77STAGESTUFF) stage3/f/runtime/libI77
-	-mv $(LIBU77STAGESTUFF) stage3/f/runtime/libU77
 f77.stage4: stage4-start
 	-mv $(G77STAGESTUFF) stage4/f
-	-mv $(RUNTIMESTAGESTUFF) stage4/f/runtime
-	-mv $(LIBF77STAGESTUFF) stage4/f/runtime/libF77
-	-mv $(LIBI77STAGESTUFF) stage4/f/runtime/libI77
-	-mv $(LIBU77STAGESTUFF) stage4/f/runtime/libU77
 #
 # Maintenance hooks:
 

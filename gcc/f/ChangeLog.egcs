@@ -1,3 +1,9 @@
+Sun Feb  1 02:26:58 1998  Richard Henderson  <rth@cygnus.com>
+
+	* runtime directory -- moved into "libfc2" in the toplevel
+	directory.
+	* Make-lang.in: Remove all runtime related stuff.
+
 Sun Jan 25 12:32:15 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Make-lang.in (f77.stage1): Depend on stage1-start so parallel
