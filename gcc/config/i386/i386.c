@@ -1819,7 +1819,19 @@ classify_argument (mode, type, classes, bit_offset)
     case SCmode:
       classes[0] = X86_64_SSE_CLASS;
       return 1;
+    case V4SFmode:
+    case V4SImode:
+      classes[0] = X86_64_SSE_CLASS;
+      classes[1] = X86_64_SSEUP_CLASS;
+      return 2;
+    case V2SFmode:
+    case V2SImode:
+    case V4HImode:
+    case V8QImode:
+      classes[0] = X86_64_SSE_CLASS;
+      return 1;
     case BLKmode:
+    case VOIDmode:
       return 0;
     default:
       abort ();
@@ -1932,7 +1944,7 @@ construct_container (mode, type, in_return, nintregs, nsseregs, intreg, sse_regn
 	abort ();
       }
   if (n == 2 && class[0] == X86_64_SSE_CLASS && class[1] == X86_64_SSEUP_CLASS)
-    return gen_rtx_REG (TImode, SSE_REGNO (sse_regno));
+    return gen_rtx_REG (mode, SSE_REGNO (sse_regno));
   if (n == 2
       && class[0] == X86_64_X87_CLASS && class[1] == X86_64_X87UP_CLASS)
     return gen_rtx_REG (TFmode, FIRST_STACK_REG);
@@ -11689,7 +11701,7 @@ ix86_expand_builtin (exp, target, subtarget, mode, ignore)
       return target;
 
     case IX86_BUILTIN_MASKMOVQ:
-      icode = CODE_FOR_mmx_maskmovq;
+      icode = TARGET_64BIT ? CODE_FOR_mmx_maskmovq_rex : CODE_FOR_mmx_maskmovq;
       /* Note the arg order is different from the operand order.  */
       arg1 = TREE_VALUE (arglist);
       arg2 = TREE_VALUE (TREE_CHAIN (arglist));

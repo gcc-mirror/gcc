@@ -1,3 +1,10 @@
+Mon Feb 18 15:07:35 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (classify_argument): Properly classify SSE/MMX modes and VOIDmode.
+	(construct_container): Fix handling of SSE operands.
+	(ix86_expand_builtin): Fix handling of 64bit pointers.
+	(mmx_maskmovq_rex): New pattern.
+
 Mon Feb 18 11:55:55 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* regrename.c (kill_set_value): Handle subregs properly.
