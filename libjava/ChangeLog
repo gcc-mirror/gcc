@@ -1,3 +1,8 @@
+2002-04-17  Adam King <aking@dreammechanics.com>
+
+	* java/io/File.java (normalizePath): Add Win32 support for auto 
+	conversion of a '/' path separator to Win32's '\' separator.
+
 2002-04-16  DJ Delorie  <dj@redhat.com>
 
 	* configure.in: Allow building in $srcdir.
