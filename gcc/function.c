@@ -181,7 +181,7 @@ struct temp_slot
      slot above.  May be an EXPR_LIST if multiple addresses exist.  */
   rtx address;
   /* The alignment (in bits) of the slot.  */
-  int align;
+  unsigned int align;
   /* The size, in units, of the slot.  */
   HOST_WIDE_INT size;
   /* The type of the object in the slot, or zero if it doesn't correspond
