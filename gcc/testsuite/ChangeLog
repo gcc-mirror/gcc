@@ -1,5 +1,15 @@
 2003-07-03  Janis Johnson  <janis187@us.ibm.com>
 
+	* gcc.dg/compat/vector-defs.h: New file.
+	* gcc.dg/compat/vector-setup.h: New file.
+	* gcc.dg/compat/vector-check.h: New file.
+	* gcc.dg/compat/vector-1_main.c: New file.
+	* gcc.dg/compat/vector-1_x.c: New file.
+	* gcc.dg/compat/vector-1_y.c: New file.
+	* gcc.dg/compat/vector-2_main.c: New file.
+	* gcc.dg/compat/vector-2_x.c: New file.
+	* gcc.dg/compat/vector-2_y.c: New file.
+
 	* gcc.dg/compat/fnptr-by-value-1_main.c: New file.
 	* gcc.dg/compat/fnptr-by-value-1_x.c: New file.
 	* gcc.dg/compat/fnptr-by-value-1_y.c: New file.
