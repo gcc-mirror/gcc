@@ -1,3 +1,13 @@
+Mon Sep 28 07:43:34 1998  Mark Mitchell  <mark@markmitchell.com>
+
+	* c-common.c (c_get_alias_set): Tighten slightly for FUNCTION_TYPEs
+	and ARRAY_TYPEs.  Tidy up.  Improve support for type-punning. 
+	* expr.c (store_field): Add alias_set parameter.  Set the
+	MEM_ALIAS_SET accordingly, if the target is a MEM.
+	(expand_assignment): Use it.
+	(store_constructor_field): Pass 0.
+	(expand_expr): Likewise.
+
 Mon Sep 28 07:54:03 1998  Catherine Moore  <clm@cygnus.com>
  
         * flags.h:  Add flag_data_sections.

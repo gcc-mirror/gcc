@@ -168,7 +168,8 @@ static void store_constructor_field PROTO((rtx, int, int, enum machine_mode,
 					   tree, tree, int));
 static void store_constructor	PROTO((tree, rtx, int));
 static rtx store_field		PROTO((rtx, int, int, enum machine_mode, tree,
-				       enum machine_mode, int, int, int));
+				       enum machine_mode, int, int,
+				       int, int));
 static enum memory_use_mode
   get_memory_usage_from_modifier PROTO((enum expand_modifier));
 static tree save_noncopied_parts PROTO((tree, tree));
@@ -3223,7 +3224,8 @@ expand_assignment (to, from, want_value, suggest_reg)
 			    unsignedp,
 			    /* Required alignment of containing datum.  */
 			    alignment,
-			    int_size_in_bytes (TREE_TYPE (tem)));
+			    int_size_in_bytes (TREE_TYPE (tem)),
+			    get_alias_set (to));
       preserve_temp_slots (result);
       free_temp_slots ();
       pop_temp_slots ();
@@ -3805,7 +3807,7 @@ store_constructor_field (target, bitsize, bitpos,
   else
     store_field (target, bitsize, bitpos, mode, exp,
 		 VOIDmode, 0, TYPE_ALIGN (type) / BITS_PER_UNIT,
-		 int_size_in_bytes (type));
+		 int_size_in_bytes (type), 0);
 }
 
 /* Store the value of constructor EXP into the rtx TARGET.
@@ -4385,11 +4387,15 @@ store_constructor (exp, target, cleared)
    In this case, UNSIGNEDP must be nonzero if the value is an unsigned type.
 
    ALIGN is the alignment that TARGET is known to have, measured in bytes.
-   TOTAL_SIZE is the size in bytes of the structure, or -1 if varying.  */
+   TOTAL_SIZE is the size in bytes of the structure, or -1 if varying.  
+
+   ALIAS_SET is the alias set for the destination.  This value will
+   (in general) be different from that for TARGET, since TARGET is a
+   reference to the containing structure.  */
 
 static rtx
 store_field (target, bitsize, bitpos, mode, exp, value_mode,
-	     unsignedp, align, total_size)
+	     unsignedp, align, total_size, alias_set)
      rtx target;
      int bitsize, bitpos;
      enum machine_mode mode;
@@ -4398,6 +4404,7 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
      int unsignedp;
      int align;
      int total_size;
+     int alias_set;
 {
   HOST_WIDE_INT width_mask = 0;
 
@@ -4433,7 +4440,7 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 	emit_move_insn (object, target);
 
       store_field (blk_object, bitsize, bitpos, mode, exp, VOIDmode, 0,
-		   align, total_size);
+		   align, total_size, alias_set);
 
       /* Even though we aren't returning target, we need to
 	 give it the updated value.  */
@@ -4548,6 +4555,7 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 							(bitpos
 							 / BITS_PER_UNIT))));
       MEM_IN_STRUCT_P (to_rtx) = 1;
+      MEM_ALIAS_SET (to_rtx) = alias_set;
 
       return store_expr (exp, to_rtx, value_mode != VOIDmode);
     }
@@ -6614,7 +6622,8 @@ expand_expr (exp, target, tmode, modifier)
 	    store_field (target, GET_MODE_BITSIZE (TYPE_MODE (valtype)), 0,
 			 TYPE_MODE (valtype), TREE_OPERAND (exp, 0),
 			 VOIDmode, 0, 1,
-			 int_size_in_bytes (TREE_TYPE (TREE_OPERAND (exp, 0))));
+			 int_size_in_bytes (TREE_TYPE (TREE_OPERAND (exp, 0))),
+			 0);
 	  else
 	    abort ();
 
