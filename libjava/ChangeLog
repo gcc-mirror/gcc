@@ -1,3 +1,11 @@
+2002-06-15  Nathanael Nerode  <neroden@twcny.rr.com>
+
+	* java/text/ChoiceFormat.java: Update comments from Classpath.
+	* java/text/ParseException.java (serialVersionUID): New
+	field from Classpath.
+	* java/text/ParseException.java: Update formatting & comments
+	from Classpath.
+
 2002-06-15  Tom Tromey  <tromey@redhat.com>
 
 	* java/util/zip/InflaterInputStream.java (read): Loop if data has
