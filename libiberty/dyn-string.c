@@ -50,7 +50,7 @@ Boston, MA 02111-1307, USA.  */
    abort if an allocation fails.  Instead, percolate an error code up
    through the call chain.  */
 
-#ifdef IN_LIBGCC2
+#if defined(IN_LIBGCC2) || defined(IN_GLIBCPP_V3)
 #define RETURN_ON_ALLOCATION_FAILURE
 #endif
 

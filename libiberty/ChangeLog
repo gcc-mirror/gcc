@@ -1,3 +1,10 @@
+2002-04-01  Phil Edwards  <pme@gcc.gnu.org>
+
+	* cp-demangle.c (__cxa_demangle):  Also protect with IN_GLIBCPP_V3.
+	(is_gnu_v3_mangled_ctor, is_gnu_v3_mangled_ctor):  Conditionally
+	not compile if IN_GLIBCPP_V3 defined.
+	* dyn-string.c:  Also allow IN_GLIBCPP_V3 to change allocation scheme.
+
 2002-03-30  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* cp-demangle.c (java_demangle_v3): Don't try to release "demangled" 
