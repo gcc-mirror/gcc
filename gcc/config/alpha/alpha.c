@@ -2381,6 +2381,7 @@ print_operand (file, x, code)
       switch (alpha_fptm)
 	{
 	case ALPHA_FPTM_N:
+	  break;
 	case ALPHA_FPTM_U:
 	  fputs ("v", file);
 	  break;
