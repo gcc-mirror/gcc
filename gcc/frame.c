@@ -1,6 +1,6 @@
 /* Subroutines needed for unwinding stack frames for exception handling.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1997, 1998 Free Software Foundation, Inc.
+/* Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
    Contributed by Jason Merrill <jason@cygnus.com>.
 
 This file is part of GNU CC.
@@ -41,6 +41,15 @@ Boston, MA 02111-1307, USA.  */
 /* fixproto guarantees these system headers exist. */
 #include <stdlib.h>
 #include <unistd.h>
+
+#else
+#include <stddef.h>
+#ifndef malloc
+extern void *malloc (size_t);
+#endif
+#ifndef free
+extern void free (void *);
+#endif
 #endif
 
 #include "defaults.h"

@@ -1,3 +1,11 @@
+Tue Oct  5 15:37:04 1999  Michael Meissner  <meissner@cygnus.com>
+
+	* libgcc2.c (toplevel): If inhibit_libc is defined, declare
+	malloc, free, and atexit.  Don't include stddef.h twice.
+
+	* frame.c (toplevel): If inhibit_libc is defined, declare
+	malloc and free.
+
 Tue Oct  5 12:00:32 1999  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (make_edge): Accept an optional 2D bitmap in which
