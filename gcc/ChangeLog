@@ -1,3 +1,8 @@
+2005-03-31  David Edelsohn  <edelsohn@gnu.org>
+
+	* tree-ssa-loop-im.c (stmt_cost): Add RDIV_EXPR to list of
+	expensive operations.
+
 2005-03-31  Ian Lance Taylor  <ian@airs.com>
 
 	* collect2.c (lderrout): New variable.
