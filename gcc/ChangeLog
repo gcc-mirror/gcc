@@ -1,3 +1,12 @@
+Tue Aug 25 10:57:41 1998  Mark Mitchell  <mark@markmitchell.com>
+
+	* loop.c (n_times_set, n_times_used, may_not_optimize,
+	reg_single_usage): Convert to varrays.  All uses changed.
+	(insert_loop_mem): Return a value.
+	(scan_loop): Tweak AVOID_CC_MODE_COPIES code.
+	(load_mems_and_recount_loop_regs_set): Likewise.  Grow the arrays, if
+	necessary.
+
 Tue Aug 25 23:57:12 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* From Alexandre:
