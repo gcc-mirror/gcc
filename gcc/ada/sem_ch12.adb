@@ -4499,9 +4499,10 @@ package body Sem_Ch12 is
                     Empty, Instantiating => False);
 
                --  Now place the original proper body in the original
-               --  generic unit.
+               --  generic unit. This is a body, not a compilation unit.
 
                Rewrite (N, Proper_Body (Unit (Subunit)));
+               Set_Is_Compilation_Unit (Defining_Entity (N), False);
                Set_Was_Originally_Stub (N);
 
                --  Finally replace the body of the subunit with its copy,
