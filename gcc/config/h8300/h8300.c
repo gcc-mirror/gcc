@@ -1981,7 +1981,7 @@ compute_mov_length (rtx *operands)
 
 		  if (val == (val & 0x00ff) || val == (val & 0xff00))
 		    return 4;
-		  
+
 		  switch (val & 0xffffffff)
 		    {
 		    case 0xffffffff:
@@ -4550,7 +4550,7 @@ h8300_hard_regno_rename_ok (unsigned int old_reg ATTRIBUTE_UNUSED,
       && !regs_ever_live[new_reg])
     return 0;
 
-   return 1;
+  return 1;
 }
 
 /* Perform target dependent optabs initialization.  */
