@@ -10643,7 +10643,9 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 			{
 			  rtx piece = gen_rtx (REG, reg_raw_mode[i], i);
 
-			  if (reg_referenced_p (piece, PATTERN (place))
+			  if ((reg_referenced_p (piece, PATTERN (place))
+			       || (GET_CODE (place) == CALL_INSN
+				   && find_reg_fusage (place, USE, piece)))
 			      && ! dead_or_set_p (place, piece)
 			      && ! reg_bitfield_target_p (piece,
 							  PATTERN (place)))
