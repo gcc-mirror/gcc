@@ -8035,8 +8035,21 @@ reload_cse_noop_set_p (set, insn)
 
 	  for (x = reg_values[sreg]; x; x = XEXP (x, 1))
 	    {
-	      if (XEXP (x, 0) != 0
-		  && reload_cse_regno_equal_p (dreg, XEXP (x, 0), dest_mode))
+	      rtx tmp;
+
+	      if (XEXP (x, 0) == 0)
+		continue;
+
+	      if (dest_mode == GET_MODE (x))
+		tmp = XEXP (x, 0);
+	      else if (GET_MODE_BITSIZE (dest_mode)
+		       < GET_MODE_BITSIZE (GET_MODE (x)))
+		tmp = gen_lowpart_common (dest_mode, XEXP (x, 0));
+	      else
+		continue;
+
+	      if (tmp
+		  && reload_cse_regno_equal_p (dreg, tmp, dest_mode))
 		{
 		  ret = 1;
 		  break;
