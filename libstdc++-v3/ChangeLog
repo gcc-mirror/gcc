@@ -1,4 +1,14 @@
 2003-06-24  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* docs/html/documentation.html: Remove assignment info.
+	* docs/html/17_intro/contribute.html: Edits.
+	* docs/html/17_intro/libstdc++-assign.tx: Remove.
+
+	* docs/html/test.html: Update.
+
+	* README: Update.
+	
+2003-06-24  Benjamin Kosnik  <bkoz@redhat.com>
             Ulrich Drepper  <drepper@redhat.com>
 
 	* testsuite/testsuite_performance.h: Tweak mallinfo.
