@@ -1471,7 +1471,7 @@ probe_stack_range (first, size)
 	addr = convert_memory_address (ptr_mode, addr);
 #endif
 
-      emit_library_call (stack_check_libfunc, 0, VOIDmode, 1, addr,
+      emit_library_call (stack_check_libfunc, LCT_NORMAL, VOIDmode, 1, addr,
 			 ptr_mode);
     }
 

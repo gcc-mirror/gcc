@@ -3193,7 +3193,8 @@ prepare_cmp_insn (px, py, pcomparison, size, pmode, punsignedp, purpose)
       if (unsignedp && ucmp_optab->handlers[(int) mode].libfunc)
 	libfunc = ucmp_optab->handlers[(int) mode].libfunc;
 
-      emit_library_call (libfunc, 1, word_mode, 2, x, mode, y, mode);
+      emit_library_call (libfunc, LCT_CONST_MAKE_BLOCK, word_mode, 2, x, mode,
+			 y, mode);
 
       /* Immediately move the result of the libcall into a pseudo
 	 register so reload doesn't clobber the value if it needs

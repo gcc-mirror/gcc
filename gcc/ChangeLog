@@ -1,5 +1,18 @@
 2001-11-21  Jakub Jelinek  <jakub@redhat.com>
 
+	* explow.c (probe_stack_range): Use LCT_NORMAL as second argument
+	to emit_library_call.
+	* function.c (expand_main_function, expand_function_start,
+	expand_function_end): Likewise.
+	* profile.c (output_func_start_profiler): Likewise.
+	* stmt.c (expand_nl_goto_receivers): Use LCT_NORETURN as
+	second argument to emit_library_call.
+	* optabs.c (prepare_cmp_insn): Use LCT_CONST_MAKE_BLOCK
+	as second argument to emit_library_call.
+	* calls.c (emit_library_call): Update fn_type description.
+
+2001-11-21  Jakub Jelinek  <jakub@redhat.com>
+
 	* c-decl.c (c_expand_deferred_function): Only call c_expand_body
 	if fndecl is still DECL_INLINE and has DECL_RESULT.
 

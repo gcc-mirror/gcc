@@ -4198,10 +4198,12 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
    and machine_modes to convert them to.
    The rtx values should have been passed through protect_from_queue already.
 
-   FN_TYPE will be zero for `normal' calls, one for `const' calls,
-   which will be enclosed in REG_LIBCALL/REG_RETVAL notes, and two for
-   `pure' calls, that are handled like `const' calls with extra
-   (use (memory (scratch)).  */
+   FN_TYPE should be LCT_NORMAL for `normal' calls, LCT_CONST for `const'
+   calls, LCT_PURE for `pure' calls, LCT_CONST_MAKE_BLOCK for `const' calls
+   which should be enclosed in REG_LIBCALL/REG_RETVAL notes,
+   LCT_PURE_MAKE_BLOCK for `purep' calls which should be enclosed in
+   REG_LIBCALL/REG_RETVAL notes with extra (use (memory (scratch)),
+   or other LCT_ value for other types of library calls.  */
 
 void
 emit_library_call VPARAMS((rtx orgfun, enum libcall_type fn_type,
