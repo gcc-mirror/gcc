@@ -3461,9 +3461,8 @@ finish_decl (decl, init, asmspec_tree)
 	}
 
       if (pedantic && TYPE_DOMAIN (type) != 0
-	  && tree_int_cst_lt (TYPE_MAX_VALUE (TYPE_DOMAIN (type)),
-			      integer_zero_node))
-	error_with_decl (decl, "zero-size array `%s'");
+	  && tree_int_cst_sgn (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) <= 0)
+	error_with_decl (decl, "zero or negative size array `%s'");
 
       layout_decl (decl, 0);
     }
@@ -5276,7 +5275,7 @@ finish_struct (t, fieldlist)
 	{
 	  unsigned HOST_WIDE_INT width = TREE_INT_CST_LOW (DECL_INITIAL (x));
 
-	  if (tree_int_cst_lt (DECL_INITIAL (x), integer_zero_node))
+	  if (tree_int_cst_sgn (DECL_INITIAL (x)) < 0)
 	    {
 	      DECL_INITIAL (x) = NULL;
 	      error_with_decl (x, "negative width in bit-field `%s'");
@@ -5622,7 +5621,7 @@ finish_enum (enumtype, values)
   layout_type (enumtype);
 
   /* An enum can have some negative values; then it is signed.  */
-  TREE_UNSIGNED (enumtype) = ! tree_int_cst_lt (minnode, integer_zero_node);
+  TREE_UNSIGNED (enumtype) = tree_int_cst_sgn (minnode) >= 0;
 
   /* Change the type of the enumerators to be the enum type.
      Formerly this was done only for enums that fit in an int,
