@@ -625,7 +625,7 @@ dfs_access_in_type (tree binfo, void *data)
 
   if (context_for_name_lookup (decl) == type)
     {
-      /* If we have desceneded to the scope of DECL, just note the
+      /* If we have descended to the scope of DECL, just note the
 	 appropriate access.  */
       if (TREE_PRIVATE (decl))
 	access = ak_private;
@@ -739,7 +739,7 @@ access_in_type (tree type, tree decl)
   return BINFO_ACCESS (binfo);
 }
 
-/* Called from dfs_accessible_p via dfs_walk.  */
+/* Called from accessible_p via dfs_walk.  */
 
 static tree
 dfs_accessible_queue_p (tree derived, int ix, void *data ATTRIBUTE_UNUSED)
@@ -758,20 +758,17 @@ dfs_accessible_queue_p (tree derived, int ix, void *data ATTRIBUTE_UNUSED)
   return binfo;
 }
 
-/* Called from dfs_accessible_p via dfs_walk.  */
+/* Called from accessible_p via dfs_walk.  */
 
 static tree
-dfs_accessible_p (tree binfo, void *data)
+dfs_accessible_p (tree binfo, void *data ATTRIBUTE_UNUSED)
 {
-  int protected_ok = data != 0;
   access_kind access;
 
   BINFO_MARKED (binfo) = 1;
   access = BINFO_ACCESS (binfo);
-  if (access == ak_public || (access == ak_protected && protected_ok))
-    return binfo;
-  else if (access != ak_none
-	   && is_friend (BINFO_TYPE (binfo), current_scope ()))
+  if (access != ak_none
+      && is_friend (BINFO_TYPE (binfo), current_scope ()))
     return binfo;
 
   return NULL_TREE;
@@ -898,6 +895,7 @@ accessible_p (tree type, tree decl)
 {
   tree binfo;
   tree t;
+  access_kind access;
 
   /* Nonzero if it's OK to access DECL if it has protected
      accessibility in TYPE.  */
@@ -958,18 +956,22 @@ accessible_p (tree type, tree decl)
 
   /* Compute the accessibility of DECL in the class hierarchy
      dominated by type.  */
-  access_in_type (type, decl);
-  /* Walk the hierarchy again, looking for a base class that allows
-     access.  */
-  t = dfs_walk (binfo, dfs_accessible_p, 
-		dfs_accessible_queue_p,
-		protected_ok ? &protected_ok : 0);
-  /* Clear any mark bits.  Note that we have to walk the whole tree
-     here, since we have aborted the previous walk from some point
-     deep in the tree.  */
-  dfs_walk (binfo, dfs_unmark, 0,  0);
+  access = access_in_type (type, decl);
+  if (access == ak_public
+      || (access == ak_protected && protected_ok))
+    return 1;
+  else
+    {
+      /* Walk the hierarchy again, looking for a base class that allows
+	 access.  */
+      t = dfs_walk (binfo, dfs_accessible_p, dfs_accessible_queue_p, 0);
+      /* Clear any mark bits.  Note that we have to walk the whole tree
+	 here, since we have aborted the previous walk from some point
+	 deep in the tree.  */
+      dfs_walk (binfo, dfs_unmark, 0,  0);
 
-  return t != NULL_TREE;
+      return t != NULL_TREE;
+    }
 }
 
 struct lookup_field_info {

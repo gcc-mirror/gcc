@@ -1,5 +1,10 @@
 2003-08-23  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	PR c++/3765
+	* g++.dg/parse/access6.C: New test.
+
+2003-08-23  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	PR c++/641, c++/11876
 	* g++.dg/template/friend22.C: New test.
 	* g++.dg/template/friend23.C: Likewise.
