@@ -25,7 +25,6 @@
 #include <iostream>
 
 // { dg-do compile }
-// { dg-excess-errors "" }
 
 // libstdc++/86: map & set iterator comparisons are not type-safe
 void test01()

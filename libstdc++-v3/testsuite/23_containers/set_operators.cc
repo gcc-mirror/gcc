@@ -24,7 +24,6 @@
 #include <string>
 
 // { dg-do compile }
-// { dg-excess-errors "" }
 
 // libstdc++/86: map & set iterator comparisons are not type-safe
 int main(void)
