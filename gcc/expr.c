@@ -11713,7 +11713,7 @@ bc_expand_component_address (exp)
 
   /* For bitfields also push their offset and size */
   if (DECL_BIT_FIELD (TREE_OPERAND (exp, 1)))
-    bc_push_offset_and_size (bitpos, /* DECL_SIZE_UNIT */ (TREE_OPERAND (exp, 1)));
+    bc_push_offset_and_size (bitpos, TREE_INT_CST_LOW (DECL_SIZE (TREE_OPERAND (exp, 1))));
   else
     if (SIval = bitpos / BITS_PER_UNIT)
       bc_emit_instruction (addconstPSI, SIval);
