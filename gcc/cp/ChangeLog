@@ -1,3 +1,9 @@
+2004-08-01  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* call.c (z_candidate::template_decl): Rename from template.
+	(add_template_candidate_real): Adjust member reference.
+	(joust): Likewise.
+
 2004-07-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (IDENTIFIER_REPO_CHOSEN): Define.
