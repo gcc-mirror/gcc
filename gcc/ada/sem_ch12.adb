@@ -2691,7 +2691,7 @@ package body Sem_Ch12 is
             S := Scope (S);
          end loop;
 
-         --  Find and save all enclosing instances.
+         --  Find and save all enclosing instances
 
          S := Current_Scope;
 
@@ -2709,6 +2709,7 @@ package body Sem_Ch12 is
          --  Remove context of current compilation unit, unless we
          --  are within a nested package instantiation, in which case
          --  the context has been removed previously.
+
          --  If current scope is the body of a child unit, remove context
          --  of spec as well.
 
@@ -2734,6 +2735,7 @@ package body Sem_Ch12 is
                Save_Scope_Stack;
 
                if Is_Child_Unit (S) then
+
                   --  Remove child unit from stack, as well as inner scopes.
                   --  Removing the context of a child unit removes parent
                   --  units as well.
@@ -2765,8 +2767,7 @@ package body Sem_Ch12 is
            ((N, Act_Decl, Expander_Active, Current_Sem_Unit));
          Pop_Scope;
 
-
-         --  Restore context.
+         --  Restore context
 
          Set_Is_Immediately_Visible (Gen_Comp, Vis);
 
@@ -3219,7 +3220,6 @@ package body Sem_Ch12 is
          if Parent_Installed then
             Remove_Parent;
          end if;
-
    end Analyze_Subprogram_Instantiation;
 
    -------------------------

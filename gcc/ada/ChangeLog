@@ -1,3 +1,7 @@
+2001-12-03   <dewar@gnat.com>
+
+	* sem_ch12.adb: Minor reformatting
+
 2001-12-03  Ed Schonberg <schonber@gnat.com>
 
 	* sem_ch12.adb (Inline_Instance_Body): Use Save_Scope_Stack and 
