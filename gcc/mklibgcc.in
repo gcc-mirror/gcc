@@ -137,7 +137,7 @@ case X"$LIBGCC1" in
     done
     ;;
 
-  Xlibgcc.a)
+  Xlibgcc1.a)
     for name in $LIB1FUNCS; do
       out="libgcc/${name}${objext}"
 
