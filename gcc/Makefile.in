@@ -729,7 +729,7 @@ DPBIT_FUNCS = _pack_df _unpack_df _addsub_df _mul_df _div_df \
 CONFIG_H =
 RTL_BASE_H = rtl.h rtl.def gansidecl.h machmode.h machmode.def
 RTL_H = $(RTL_BASE_H) genrtl.h
-TREE_H = tree.h real.h tree.def gansidecl.h machmode.h machmode.def
+TREE_H = tree.h real.h tree.def gansidecl.h machmode.h machmode.def tree-check.h
 BASIC_BLOCK_H = basic-block.h bitmap.h
 DEMANGLE_H = demangle.h gansidecl.h
 RECOG_H = recog.h gansidecl.h
@@ -1364,6 +1364,16 @@ gcc.o: gcc.c $(CONFIG_H) system.h gansidecl.h multilib.h Makefile \
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
   $(DRIVER_DEFINES) \
   -c `echo $(srcdir)/gcc.c | sed 's,^\./,,'`
+
+tree-check.h: s-check ; @true
+s-check : tree.def gencheck $(srcdir)/move-if-change
+	./gencheck > tmp-check.h
+	$(srcdir)/move-if-change tmp-check.h tree-check.h
+	touch s-check
+
+gencheck : gencheck.o tree.h tree.def
+	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
+	 gencheck.o $(HOST_LIBS)
 
 dumpvers: dumpvers.c
 

@@ -1,3 +1,13 @@
+Thu May 21 20:18:13 1998  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+
+	* Makefile.in (TREE_H): Add tree-check.h.
+	(tree-check.h, gencheck): New targets.
+	* gencheck.c: New file.
+	* tree.c (tree_check, tree_class_check): New functions.
+	* tree.h (TREE_CHECK, TREE_CLASS_CHECK): Define.
+	(TYPE_CHECK, DECL_CHECK): Define.
+	Modify all access macros to use generated checking macros.
+
 Wed May 20 23:44:28 EDT 1998  John Wehle  (john@feith.com)
 
 	* acconfig.h (HAVE_GAS_MAX_SKIP_P2ALIGN): New tag.
