@@ -1,5 +1,5 @@
 /* Define control and data flow tables, and regsets.
-   Copyright (C) 1987 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -117,7 +117,7 @@ do {									\
 do {									\
   int i_;								\
   CLEAR_HARD_REG_SET (TO);						\
-  for (i_ = 0; i < FIRST_PSEUDO_REGISTER; i++)				\
+  for (i_ = 0; i_ < FIRST_PSEUDO_REGISTER; i_++)			\
     if (REGNO_REG_SET_P (FROM, i_))					\
       SET_HARD_REG_BIT (TO, i_);					\
 } while (0)
@@ -126,10 +126,10 @@ do {									\
    register number and executing CODE for all registers that are set. */
 #define EXECUTE_IF_SET_IN_REG_SET(REGSET, MIN, REGNUM, CODE)		\
 do {									\
-  register REGSET_ELT_TYPE *scan_rs_ = (REGSET);			\
-  register int i_;							\
+  register int i_ = (MIN) / REGSET_ELT_BITS;				\
   register int shift_ = (MIN) % REGSET_ELT_BITS;			\
-  for (i_ = (MIN) / REGSET_ELT_BITS; i_ < regset_size; i_++)		\
+  register REGSET_ELT_TYPE *scan_rs_ = (REGSET) + i_;			\
+  for ( ; i_ < regset_size; i_++)					\
     {									\
       REGSET_ELT_TYPE word_ = *scan_rs_++;				\
       if (word_)							\
@@ -156,10 +156,10 @@ do {									\
 /* Like EXECUTE_IF_SET_IN_REG_SET, but also clear the register set.  */
 #define EXECUTE_IF_SET_AND_RESET_IN_REG_SET(REGSET, MIN, REGNUM, CODE)	\
 do {									\
-  register REGSET_ELT_TYPE *scan_rs_ = (REGSET);			\
-  register int i_;							\
+  register int i_ = (MIN) / REGSET_ELT_BITS;				\
   register int shift_ = (MIN) % REGSET_ELT_BITS;			\
-  for (i_ = (MIN) / REGSET_ELT_BITS; i_ < regset_size; i_++)		\
+  register REGSET_ELT_TYPE *scan_rs_ = (REGSET) + i_;			\
+  for ( ; i_ < regset_size; i_++)					\
     {									\
       REGSET_ELT_TYPE word_ = *scan_rs_++;				\
       if (word_)							\
@@ -189,11 +189,11 @@ do {									\
    set in both regsets. */
 #define EXECUTE_IF_AND_IN_REG_SET(REGSET1, REGSET2, MIN, REGNUM, CODE)	\
 do {									\
-  register REGSET_ELT_TYPE *scan_rs1_ = (REGSET1);			\
-  register REGSET_ELT_TYPE *scan_rs2_ = (REGSET2);			\
-  register int i_;							\
+  register int i_ = (MIN) / REGSET_ELT_BITS;				\
   register int shift_ = (MIN) % REGSET_ELT_BITS;			\
-  for (i_ = (MIN) / REGSET_ELT_BITS; i_ < regset_size; i_++)		\
+  register REGSET_ELT_TYPE *scan_rs1_ = (REGSET1) + i_;			\
+  register REGSET_ELT_TYPE *scan_rs2_ = (REGSET2) + i_;			\
+  for ( ; i_ < regset_size; i_++)					\
     {									\
       REGSET_ELT_TYPE word_ = *scan_rs1_++ & *scan_rs2_++;		\
       if (word_)							\
