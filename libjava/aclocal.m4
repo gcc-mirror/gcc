@@ -1,6 +1,6 @@
-dnl aclocal.m4 generated automatically by aclocal 1.4-p5
+dnl aclocal.m4 generated automatically by aclocal 1.4
 
-dnl Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
+dnl Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -92,7 +92,50 @@ define([AC_PROG_CC_WORKS],[])
 define([AC_PROG_CXX_WORKS],[])
 
 AC_PROG_CC
-AC_PROG_CXX
+
+# We use the libstdc++-v3 version of LIB_AC_PROG_CXX, that gets
+# glibcpp_CXX cached instead of CXX.  That's because we're passed a
+# different definition of CXX than other directories, since we don't
+# depend on libstdc++-v3 having already been built.
+AC_DEFUN(LIB_AC_PROG_CXX,
+[AC_BEFORE([$0], [AC_PROG_CXXCPP])dnl
+dnl Fool anybody using AC_PROG_CXX.
+AC_PROVIDE([AC_PROG_CXX])
+# Use glibcpp_CXX so that we do not cause CXX to be cached with the
+# flags that come in CXX while configuring libstdc++.  They're different
+# from those used for all other target libraries.  If CXX is set in
+# the environment, respect that here.
+glibcpp_CXX=$CXX
+AC_CHECK_PROGS(glibcpp_CXX, $CCC c++ g++ gcc CC cxx cc++, gcc)
+AC_SUBST(glibcpp_CXX)
+CXX=$glibcpp_CXX
+test -z "$glibcpp_CXX" && AC_MSG_ERROR([no acceptable c++ found in \$PATH])
+
+AC_PROG_CXX_GNU
+
+if test $ac_cv_prog_gxx = yes; then
+  GXX=yes
+dnl Check whether -g works, even if CXXFLAGS is set, in case the package
+dnl plays around with CXXFLAGS (such as to build both debugging and
+dnl normal versions of a library), tasteless as that idea is.
+  ac_test_CXXFLAGS="${CXXFLAGS+set}"
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS=
+  AC_PROG_CXX_G
+  if test "$ac_test_CXXFLAGS" = set; then
+    CXXFLAGS="$ac_save_CXXFLAGS"
+  elif test $ac_cv_prog_cxx_g = yes; then
+    CXXFLAGS="-g -O2"
+  else
+    CXXFLAGS="-O2"
+  fi
+else
+  GXX=
+  test "${CXXFLAGS+set}" = set || CXXFLAGS="-g"
+fi
+])
+
+LIB_AC_PROG_CXX
 
 dnl version is pulled out to make it a bit easier to change using sed.
 version=0.0.7
@@ -265,7 +308,7 @@ AC_DEFUN([AM_LC_MESSAGES],
 dnl Usage:
 dnl AM_INIT_AUTOMAKE(package,version, [no-define])
 
-AC_DEFUN([AM_INIT_AUTOMAKE],
+AC_DEFUN(AM_INIT_AUTOMAKE,
 [AC_REQUIRE([AC_PROG_INSTALL])
 PACKAGE=[$1]
 AC_SUBST(PACKAGE)
@@ -293,7 +336,7 @@ AC_REQUIRE([AC_PROG_MAKE_SET])])
 # Check to make sure that the build environment is sane.
 #
 
-AC_DEFUN([AM_SANITY_CHECK],
+AC_DEFUN(AM_SANITY_CHECK,
 [AC_MSG_CHECKING([whether build environment is sane])
 # Just in case
 sleep 1
@@ -334,7 +377,7 @@ AC_MSG_RESULT(yes)])
 
 dnl AM_MISSING_PROG(NAME, PROGRAM, DIRECTORY)
 dnl The program must properly implement --version.
-AC_DEFUN([AM_MISSING_PROG],
+AC_DEFUN(AM_MISSING_PROG,
 [AC_MSG_CHECKING(for working $2)
 # Run test in a subshell; some versions of sh will print an error if
 # an executable is not found, even if stderr is redirected.
@@ -353,7 +396,7 @@ AC_SUBST($1)])
 
 # serial 1
 
-AC_DEFUN([AM_MAINTAINER_MODE],
+AC_DEFUN(AM_MAINTAINER_MODE,
 [AC_MSG_CHECKING([whether to enable maintainer-specific portions of Makefiles])
   dnl maintainer-mode is disabled by default
   AC_ARG_ENABLE(maintainer-mode,
@@ -370,7 +413,7 @@ AC_DEFUN([AM_MAINTAINER_MODE],
 
 # Define a conditional.
 
-AC_DEFUN([AM_CONDITIONAL],
+AC_DEFUN(AM_CONDITIONAL,
 [AC_SUBST($1_TRUE)
 AC_SUBST($1_FALSE)
 if $2; then
@@ -383,7 +426,7 @@ fi])
 
 # Like AC_CONFIG_HEADER, but automatically create stamp file.
 
-AC_DEFUN([AM_CONFIG_HEADER],
+AC_DEFUN(AM_CONFIG_HEADER,
 [AC_PREREQ([2.12])
 AC_CONFIG_HEADER([$1])
 dnl When config.status generates a header, we must update the stamp-h file.

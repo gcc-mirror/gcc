@@ -80,7 +80,50 @@ define([AC_PROG_CC_WORKS],[])
 define([AC_PROG_CXX_WORKS],[])
 
 AC_PROG_CC
-AC_PROG_CXX
+
+# We use the libstdc++-v3 version of LIB_AC_PROG_CXX, that gets
+# glibcpp_CXX cached instead of CXX.  That's because we're passed a
+# different definition of CXX than other directories, since we don't
+# depend on libstdc++-v3 having already been built.
+AC_DEFUN(LIB_AC_PROG_CXX,
+[AC_BEFORE([$0], [AC_PROG_CXXCPP])dnl
+dnl Fool anybody using AC_PROG_CXX.
+AC_PROVIDE([AC_PROG_CXX])
+# Use glibcpp_CXX so that we do not cause CXX to be cached with the
+# flags that come in CXX while configuring libstdc++.  They're different
+# from those used for all other target libraries.  If CXX is set in
+# the environment, respect that here.
+glibcpp_CXX=$CXX
+AC_CHECK_PROGS(glibcpp_CXX, $CCC c++ g++ gcc CC cxx cc++, gcc)
+AC_SUBST(glibcpp_CXX)
+CXX=$glibcpp_CXX
+test -z "$glibcpp_CXX" && AC_MSG_ERROR([no acceptable c++ found in \$PATH])
+
+AC_PROG_CXX_GNU
+
+if test $ac_cv_prog_gxx = yes; then
+  GXX=yes
+dnl Check whether -g works, even if CXXFLAGS is set, in case the package
+dnl plays around with CXXFLAGS (such as to build both debugging and
+dnl normal versions of a library), tasteless as that idea is.
+  ac_test_CXXFLAGS="${CXXFLAGS+set}"
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS=
+  AC_PROG_CXX_G
+  if test "$ac_test_CXXFLAGS" = set; then
+    CXXFLAGS="$ac_save_CXXFLAGS"
+  elif test $ac_cv_prog_cxx_g = yes; then
+    CXXFLAGS="-g -O2"
+  else
+    CXXFLAGS="-O2"
+  fi
+else
+  GXX=
+  test "${CXXFLAGS+set}" = set || CXXFLAGS="-g"
+fi
+])
+
+LIB_AC_PROG_CXX
 
 dnl version is pulled out to make it a bit easier to change using sed.
 version=0.0.7
