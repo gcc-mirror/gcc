@@ -106,6 +106,9 @@
 /* Define if your assembler supports mfcr field. */
 #undef HAVE_AS_MFCRF
 
+/* Define if your assembler supports the -no-mul-bug-abort option. */
+#undef HAVE_AS_NO_MUL_BUG_ABORT_OPTION
+
 /* Define if your assembler supports offsetable %lo(). */
 #undef HAVE_AS_OFFSETABLE_LO10
 
@@ -543,9 +546,11 @@
 /* Define to `int' if <sys/types.h> doesn't define. */
 #undef gid_t
 
-/* Define as `__inline' if that's what the C compiler calls it, or to nothing
-   if it is not supported. */
+/* Define to `__inline__' or `__inline' if that's what the C compiler
+   calls it, or to nothing if 'inline' is not supported under any name.  */
+#ifndef __cplusplus
 #undef inline
+#endif
 
 /* Define to `int' if <sys/types.h> does not define. */
 #undef pid_t
