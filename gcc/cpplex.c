@@ -1455,7 +1455,7 @@ maybe_macroexpand (pfile, written)
 
   if (!hp)
     return 0;
-  if (hp->type == T_DISABLED)
+  if (hp->disabled || hp->type == T_IDENTITY)
     {
       if (pfile->output_escapes)
 	{
@@ -1479,7 +1479,7 @@ maybe_macroexpand (pfile, written)
     }
 
   /* If macro wants an arglist, verify that a '(' follows.  */
-  if (hp->type == T_MACRO && hp->value.defn->nargs >= 0)
+  if (hp->type == T_FMACRO)
     {
       int macbuf_whitespace = 0;
       int c;

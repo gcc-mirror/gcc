@@ -635,7 +635,7 @@ static const struct builtin builtin_array[] =
   { "__LINE__",			0, T_SPECLINE,		0 },
   { "__INCLUDE_LEVEL__",	0, T_INCLUDE_LEVEL,	0 },
 
-  { "__VERSION__",		0,		 T_MCONST, DUMP|VERS },
+  { "__VERSION__",		0,		 T_XCONST, DUMP|VERS },
   { "__USER_LABEL_PREFIX__",	0,		 T_CONST,  DUMP|ULP  },
   { "__STDC__",			"1",		 T_STDC,   DUMP },
   { "__REGISTER_PREFIX__",	REGISTER_PREFIX, T_CONST,  DUMP },

@@ -1,3 +1,37 @@
+2000-04-23  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpphash.h (struct definition): Move file, line, col members...
+	(struct hashnode): ... here.  Also add 'disabled' flag.
+	(enum node_type): Add T_VOID, T_XCONST, T_FMACRO, and
+	T_IDENTITY.  Remove T_DISABLED.		      
+	Update prototypes.
+
+	* cpphash.c (_cpp_dump_definition): Split out dump_DEFINITION.     
+	(collect_expansion): Split into collect_objlike_expansion and
+	collect_funlike_expansion.				   
+	(_cpp_macroexpand): Split out scan_arguments, stringify, and
+	funlike_macroexpand.
+	(_cpp_compare_defs): Rename compare_defs, make static.
+	(_cpp_make_hashnode): Initialize hp->disabled.	
+	(macro_cleanup): Adjust for new token types.  Clear
+	m->disabled.
+	(_cpp_create_definition): Move code here to determine what     
+	sort of macro it is, and code to check for redefinitions, from
+	do_define.  Implement a few simple cases without creating a   
+	full DEFINITION.
+	(_cpp_macroexpand, special_symbol, _cpp_dump_definition):
+	Handle the simple cases.				 
+	(push_macro_expansion): Set buf->has_escapes and hp->disabled
+	here.
+
+	* cppinit.c (builtin_array): Change MCONST to XCONST
+	everywhere.
+	* cpplex.c (maybe_macroexpand): Handle IDENTITY macros here;
+	fix check for disabled and function-like macros.
+	* cpplib.c (do_define): Move most logic to
+	_cpp_create_definition.
+	(do_undef): Handle new special token types.
+
 Sun Apr 23 14:27:44 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* loop.c (maybe_eliminate_biv_1): Use GET_CODE (x) == CONST_INT instead
@@ -53,31 +87,31 @@ Sat Apr 22 22:35:38 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* Makefile.in (diagnostic.o): Depends on diagnostic.h
 
-        * diagnostic.c: Tweak.  Rationalize the output logic.  Adjust
+	* diagnostic.c: Tweak.  Rationalize the output logic.  Adjust
 	various function prototypes.
-        (diagnostic.h): #include.
-        (struct output_buffer): Move into diagnostic.h.
-        (get_output_prefix): Rename to output_get_prefix.  Export.
-        (init_output_buffer): Export. Break out.  Ajust intialization.
-        (output_space_left, output_append): Export.
-        (output_newline): Rename to output_add_newline.  Export.
+	(diagnostic.h): #include.
+	(struct output_buffer): Move into diagnostic.h.
+	(get_output_prefix): Rename to output_get_prefix.  Export.
+	(init_output_buffer): Export. Break out.  Ajust intialization.
+	(output_space_left, output_append): Export.
+	(output_newline): Rename to output_add_newline.  Export.
 	(output_clear): Nullify additional output_buffer fields.
-        (output_puts): Rename to output_add_string.  Export.
-        (dump_output): Rename to output_flush_on.  Export.
-        (build_location_prefix): Constify return-type.
-        (emit_output_prefix): Rename to output_emit_prefix. Export.
-        (set_real_maximum_length): New function.
-        (output_set_maximum_length): Ditto
-        (output_clear): Ditto.
-        (output_add_character): Ditto.
-        (output_add_integer): Ditto.
-        (output_add_space): Ditto.
-        (output_format): Ditto.
-        (output_printf): Adjust buffer initialization.
-        (vline_wrapper_message_with_location): Ditto.
-        (v_message_with_decl): Ditto.  Adjust call to output_puts
+	(output_puts): Rename to output_add_string.  Export.
+	(dump_output): Rename to output_flush_on.  Export.
+	(build_location_prefix): Constify return-type.
+	(emit_output_prefix): Rename to output_emit_prefix. Export.
+	(set_real_maximum_length): New function.
+	(output_set_maximum_length): Ditto
+	(output_clear): Ditto.
+	(output_add_character): Ditto.
+	(output_add_integer): Ditto.
+	(output_add_space): Ditto.
+	(output_format): Ditto.
+	(output_printf): Adjust buffer initialization.
+	(vline_wrapper_message_with_location): Ditto.
+	(v_message_with_decl): Ditto.  Adjust call to output_puts
 	and get_output_prefix.
-        (default_print_error_function): Adjust buffer intialization.
+	(default_print_error_function): Adjust buffer intialization.
 
 Sat Apr 22 06:45:04 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
