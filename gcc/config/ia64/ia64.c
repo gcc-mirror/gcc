@@ -2400,17 +2400,29 @@ ia64_expand_epilogue (sibcall_p)
   if (! sibcall_p)
     emit_jump_insn (gen_return_internal (gen_rtx_REG (DImode, BR_REG (0))));
   else
-    /* We must emit an alloc to force the input registers to become output
-       registers.  Otherwise, if the callee tries to pass its parameters
-       through to another call without an intervening alloc, then these
-       values get lost.  */
-    /* ??? We don't need to preserve all input registers.  We only need to
-       preserve those input registers used as arguments to the sibling call.
-       It is unclear how to compute that number here.  */
-    emit_insn (gen_alloc (gen_rtx_REG (DImode, GR_REG (2)),
-			  GEN_INT (0), GEN_INT (0),
-			  GEN_INT (current_frame_info.n_input_regs),
-			  GEN_INT (0)));
+    {
+      int fp = GR_REG (2);
+      /* We need a throw away register here, r0 and r1 are reserved, so r2 is the
+	 first available call clobbered register.  If there was a frame_pointer 
+	 register, we may have swapped the names of r2 and HARD_FRAME_POINTER_REGNUM, 
+	 so we have to make sure we're using the string "r2" when emitting
+	 the register name for the assmbler.  */
+      if (current_frame_info.reg_fp && current_frame_info.reg_fp == GR_REG (2))
+	fp = HARD_FRAME_POINTER_REGNUM;
+
+      /* We must emit an alloc to force the input registers to become output
+	 registers.  Otherwise, if the callee tries to pass its parameters
+	 through to another call without an intervening alloc, then these
+	 values get lost.  */
+      /* ??? We don't need to preserve all input registers.  We only need to
+	 preserve those input registers used as arguments to the sibling call.
+	 It is unclear how to compute that number here.  */
+      if (current_frame_info.n_input_regs != 0)
+	emit_insn (gen_alloc (gen_rtx_REG (DImode, fp),
+			      GEN_INT (0), GEN_INT (0),
+			      GEN_INT (current_frame_info.n_input_regs),
+			      GEN_INT (0)));
+    }
 }
 
 /* Return 1 if br.ret can do all the work required to return from a

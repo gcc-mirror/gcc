@@ -1,3 +1,11 @@
+2001-05-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* builtins.c (expand_builtin_longjmp): A longjmp can be a call too.
+	* config/ia64/ia64.md (nonlocal_goto): Reverse label and frame pointer
+	parameters to __ia64_nonlocal_goto. Flag as NO_RETURN.
+	* config/ia64/ia64.c (ia64_expand_epilogue): Make sure we are issuing 
+	"r2" to the assembly file. Only issue allocs with non-zero parameters.
+
 2001-05-22  Richard Henderson  <rth@redhat.com>
 
 	* libgcc2.c: Include hwint.h.

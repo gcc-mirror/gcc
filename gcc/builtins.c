@@ -718,12 +718,17 @@ expand_builtin_longjmp (buf_addr, value)
      __builtin_setjmp target in the same function.  However, we've
      already cautioned the user that these functions are for
      internal exception handling use only.  */
-  for (insn = get_last_insn ();
-       GET_CODE (insn) != JUMP_INSN;
-       insn = PREV_INSN (insn))
-    continue;
-  REG_NOTES (insn) = alloc_EXPR_LIST (REG_NON_LOCAL_GOTO, const0_rtx,
-				      REG_NOTES (insn));
+  for (insn = get_last_insn (); insn; insn = PREV_INSN (insn))
+    {
+      if (GET_CODE (insn) == JUMP_INSN)
+	{
+	  REG_NOTES (insn) = alloc_EXPR_LIST (REG_NON_LOCAL_GOTO, const0_rtx,
+					      REG_NOTES (insn));
+	  break;
+	}
+      else if (GET_CODE (insn) == CALL_INSN)
+        break;
+    }
 }
 
 /* Get a MEM rtx for expression EXP which is the address of an operand
