@@ -2550,10 +2550,7 @@
 	    (match_operand:SI 3 "arm_rhs_operand" "rI,rI")])
 	  (match_operand:SI 1 "s_register_operand" "0,?r")]))
    (clobber (reg:CC CC_REGNUM))]
-  "TARGET_ARM
-   && (GET_CODE (operands[1]) != REG
-       || (REGNO(operands[1]) != FRAME_POINTER_REGNUM
-           && REGNO(operands[1]) != ARG_POINTER_REGNUM))"
+  "TARGET_ARM && !arm_eliminable_register (operands[1])"
   "*
   {
     enum rtx_code code = GET_CODE (operands[4]);
@@ -9330,10 +9327,9 @@
    (set (match_operand:SI 0 "s_register_operand" "=r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   "TARGET_ARM
-   && REGNO (operands[0]) != FRAME_POINTER_REGNUM
-   && REGNO (operands[1]) != FRAME_POINTER_REGNUM
-   && (GET_CODE (operands[2]) != REG
-       || REGNO (operands[2]) != FRAME_POINTER_REGNUM)"
+   && !arm_eliminable_register (operands[0])
+   && !arm_eliminable_register (operands[1])
+   && !arm_eliminable_register (operands[2])"
   "str%?b\\t%3, [%0, %2]!"
   [(set_attr "type" "store1")
    (set_attr "predicable" "yes")]
@@ -9346,10 +9342,9 @@
    (set (match_operand:SI 0 "s_register_operand" "=r")
 	(minus:SI (match_dup 1) (match_dup 2)))]
   "TARGET_ARM
-   && REGNO (operands[0]) != FRAME_POINTER_REGNUM
-   && REGNO (operands[1]) != FRAME_POINTER_REGNUM
-   && (GET_CODE (operands[2]) != REG
-       || REGNO (operands[2]) != FRAME_POINTER_REGNUM)"
+   && !arm_eliminable_register (operands[0])
+   && !arm_eliminable_register (operands[1])
+   && !arm_eliminable_register (operands[2])"
   "str%?b\\t%3, [%0, -%2]!"
   [(set_attr "type" "store1")
    (set_attr "predicable" "yes")]
@@ -9362,10 +9357,9 @@
    (set (match_operand:SI 0 "s_register_operand" "=r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   "TARGET_ARM
-   && REGNO (operands[0]) != FRAME_POINTER_REGNUM
-   && REGNO (operands[1]) != FRAME_POINTER_REGNUM
-   && (GET_CODE (operands[2]) != REG
-       || REGNO (operands[2]) != FRAME_POINTER_REGNUM)"
+   && !arm_eliminable_register (operands[0])
+   && !arm_eliminable_register (operands[1])
+   && !arm_eliminable_register (operands[2])"
   "ldr%?b\\t%3, [%0, %2]!"
   [(set_attr "type" "load_byte")
    (set_attr "predicable" "yes")]
@@ -9378,10 +9372,9 @@
    (set (match_operand:SI 0 "s_register_operand" "=r")
 	(minus:SI (match_dup 1) (match_dup 2)))]
   "TARGET_ARM
-   && REGNO (operands[0]) != FRAME_POINTER_REGNUM
-   && REGNO (operands[1]) != FRAME_POINTER_REGNUM
-   && (GET_CODE (operands[2]) != REG
-       || REGNO (operands[2]) != FRAME_POINTER_REGNUM)"
+   && !arm_eliminable_register (operands[0])
+   && !arm_eliminable_register (operands[1])
+   && !arm_eliminable_register (operands[2])"
   "ldr%?b\\t%3, [%0, -%2]!"
   [(set_attr "type" "load_byte")
    (set_attr "predicable" "yes")]
@@ -9395,10 +9388,9 @@
    (set (match_operand:SI 0 "s_register_operand" "=r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   "TARGET_ARM
-   && REGNO (operands[0]) != FRAME_POINTER_REGNUM
-   && REGNO (operands[1]) != FRAME_POINTER_REGNUM
-   && (GET_CODE (operands[2]) != REG
-       || REGNO (operands[2]) != FRAME_POINTER_REGNUM)"
+   && !arm_eliminable_register (operands[0])
+   && !arm_eliminable_register (operands[1])
+   && !arm_eliminable_register (operands[2])"
   "ldr%?b\\t%3, [%0, %2]!\\t%@ z_extendqisi"
   [(set_attr "type" "load_byte")
    (set_attr "predicable" "yes")]
@@ -9412,10 +9404,9 @@
    (set (match_operand:SI 0 "s_register_operand" "=r")
 	(minus:SI (match_dup 1) (match_dup 2)))]
   "TARGET_ARM
-   && REGNO (operands[0]) != FRAME_POINTER_REGNUM
-   && REGNO (operands[1]) != FRAME_POINTER_REGNUM
-   && (GET_CODE (operands[2]) != REG
-       || REGNO (operands[2]) != FRAME_POINTER_REGNUM)"
+   && !arm_eliminable_register (operands[0])
+   && !arm_eliminable_register (operands[1])
+   && !arm_eliminable_register (operands[2])"
   "ldr%?b\\t%3, [%0, -%2]!\\t%@ z_extendqisi"
   [(set_attr "type" "load_byte")
    (set_attr "predicable" "yes")]
@@ -9428,10 +9419,9 @@
    (set (match_operand:SI 0 "s_register_operand" "=r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   "TARGET_ARM
-   && REGNO (operands[0]) != FRAME_POINTER_REGNUM
-   && REGNO (operands[1]) != FRAME_POINTER_REGNUM
-   && (GET_CODE (operands[2]) != REG
-       || REGNO (operands[2]) != FRAME_POINTER_REGNUM)"
+   && !arm_eliminable_register (operands[0])
+   && !arm_eliminable_register (operands[1])
+   && !arm_eliminable_register (operands[2])"
   "str%?\\t%3, [%0, %2]!"
   [(set_attr "type" "store1")
    (set_attr "predicable" "yes")]
@@ -9444,10 +9434,9 @@
    (set (match_operand:SI 0 "s_register_operand" "=r")
 	(minus:SI (match_dup 1) (match_dup 2)))]
   "TARGET_ARM
-   && REGNO (operands[0]) != FRAME_POINTER_REGNUM
-   && REGNO (operands[1]) != FRAME_POINTER_REGNUM
-   && (GET_CODE (operands[2]) != REG
-       || REGNO (operands[2]) != FRAME_POINTER_REGNUM)"
+   && !arm_eliminable_register (operands[0])
+   && !arm_eliminable_register (operands[1])
+   && !arm_eliminable_register (operands[2])"
   "str%?\\t%3, [%0, -%2]!"
   [(set_attr "type" "store1")
    (set_attr "predicable" "yes")]
@@ -9460,10 +9449,9 @@
    (set (match_operand:SI 0 "s_register_operand" "=r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   "TARGET_ARM
-   && REGNO (operands[0]) != FRAME_POINTER_REGNUM
-   && REGNO (operands[1]) != FRAME_POINTER_REGNUM
-   && (GET_CODE (operands[2]) != REG
-       || REGNO (operands[2]) != FRAME_POINTER_REGNUM)"
+   && !arm_eliminable_register (operands[0])
+   && !arm_eliminable_register (operands[1])
+   && !arm_eliminable_register (operands[2])"
   "ldr%?\\t%3, [%0, %2]!"
   [(set_attr "type" "load1")
    (set_attr "predicable" "yes")]
@@ -9476,10 +9464,9 @@
    (set (match_operand:SI 0 "s_register_operand" "=r")
 	(minus:SI (match_dup 1) (match_dup 2)))]
   "TARGET_ARM
-   && REGNO (operands[0]) != FRAME_POINTER_REGNUM
-   && REGNO (operands[1]) != FRAME_POINTER_REGNUM
-   && (GET_CODE (operands[2]) != REG
-       || REGNO (operands[2]) != FRAME_POINTER_REGNUM)"
+   && !arm_eliminable_register (operands[0])
+   && !arm_eliminable_register (operands[1])
+   && !arm_eliminable_register (operands[2])"
   "ldr%?\\t%3, [%0, -%2]!"
   [(set_attr "type" "load1")
    (set_attr "predicable" "yes")]
@@ -9495,9 +9482,9 @@
 	(plus:SI (match_op_dup 2 [(match_dup 3)	(match_dup 4)])
 		 (match_dup 1)))]
   "TARGET_ARM
-   && REGNO (operands[0]) != FRAME_POINTER_REGNUM
-   && REGNO (operands[1]) != FRAME_POINTER_REGNUM
-   && REGNO (operands[3]) != FRAME_POINTER_REGNUM"
+   && !arm_eliminable_register (operands[0])
+   && !arm_eliminable_register (operands[1])
+   && !arm_eliminable_register (operands[3])"
   "str%?b\\t%5, [%0, %3%S2]!"
   [(set_attr "type" "store1")
    (set_attr "predicable" "yes")]
@@ -9513,9 +9500,9 @@
 	(minus:SI (match_dup 1) (match_op_dup 2 [(match_dup 3)
 						 (match_dup 4)])))]
   "TARGET_ARM
-   && REGNO (operands[0]) != FRAME_POINTER_REGNUM
-   && REGNO (operands[1]) != FRAME_POINTER_REGNUM
-   && REGNO (operands[3]) != FRAME_POINTER_REGNUM"
+   && !arm_eliminable_register (operands[0])
+   && !arm_eliminable_register (operands[1])
+   && !arm_eliminable_register (operands[3])"
   "str%?b\\t%5, [%0, -%3%S2]!"
   [(set_attr "type" "store1")
    (set_attr "predicable" "yes")]
@@ -9531,9 +9518,9 @@
 	(plus:SI (match_op_dup 2 [(match_dup 3)	(match_dup 4)])
 		 (match_dup 1)))]
   "TARGET_ARM
-   && REGNO (operands[0]) != FRAME_POINTER_REGNUM
-   && REGNO (operands[1]) != FRAME_POINTER_REGNUM
-   && REGNO (operands[3]) != FRAME_POINTER_REGNUM"
+   && !arm_eliminable_register (operands[0])
+   && !arm_eliminable_register (operands[1])
+   && !arm_eliminable_register (operands[3])"
   "ldr%?b\\t%5, [%0, %3%S2]!"
   [(set_attr "type" "load_byte")
    (set_attr "predicable" "yes")]
@@ -9549,9 +9536,9 @@
 	(minus:SI (match_dup 1) (match_op_dup 2 [(match_dup 3)
 						 (match_dup 4)])))]
   "TARGET_ARM
-   && REGNO (operands[0]) != FRAME_POINTER_REGNUM
-   && REGNO (operands[1]) != FRAME_POINTER_REGNUM
-   && REGNO (operands[3]) != FRAME_POINTER_REGNUM"
+   && !arm_eliminable_register (operands[0])
+   && !arm_eliminable_register (operands[1])
+   && !arm_eliminable_register (operands[3])"
   "ldr%?b\\t%5, [%0, -%3%S2]!"
   [(set_attr "type" "load_byte")
    (set_attr "predicable" "yes")]
@@ -9567,9 +9554,9 @@
 	(plus:SI (match_op_dup 2 [(match_dup 3)	(match_dup 4)])
 		 (match_dup 1)))]
   "TARGET_ARM
-   && REGNO (operands[0]) != FRAME_POINTER_REGNUM
-   && REGNO (operands[1]) != FRAME_POINTER_REGNUM
-   && REGNO (operands[3]) != FRAME_POINTER_REGNUM"
+   && !arm_eliminable_register (operands[0])
+   && !arm_eliminable_register (operands[1])
+   && !arm_eliminable_register (operands[3])"
   "str%?\\t%5, [%0, %3%S2]!"
   [(set_attr "type" "store1")
    (set_attr "predicable" "yes")]
@@ -9585,9 +9572,9 @@
 	(minus:SI (match_dup 1) (match_op_dup 2 [(match_dup 3)
 						 (match_dup 4)])))]
   "TARGET_ARM
-   && REGNO (operands[0]) != FRAME_POINTER_REGNUM
-   && REGNO (operands[1]) != FRAME_POINTER_REGNUM
-   && REGNO (operands[3]) != FRAME_POINTER_REGNUM"
+   && !arm_eliminable_register (operands[0])
+   && !arm_eliminable_register (operands[1])
+   && !arm_eliminable_register (operands[3])"
   "str%?\\t%5, [%0, -%3%S2]!"
   [(set_attr "type" "store1")
    (set_attr "predicable" "yes")]
@@ -9603,9 +9590,9 @@
 	(plus:SI (match_op_dup 2 [(match_dup 3) (match_dup 4)])
 		 (match_dup 1)))]
   "TARGET_ARM
-   && REGNO (operands[0]) != FRAME_POINTER_REGNUM
-   && REGNO (operands[1]) != FRAME_POINTER_REGNUM
-   && REGNO (operands[3]) != FRAME_POINTER_REGNUM"
+   && !arm_eliminable_register (operands[0])
+   && !arm_eliminable_register (operands[1])
+   && !arm_eliminable_register (operands[3])"
   "ldr%?\\t%5, [%0, %3%S2]!"
   [(set_attr "type" "load1")
    (set_attr "predicable" "yes")]
@@ -9621,9 +9608,9 @@
 	(minus:SI (match_dup 1) (match_op_dup 2 [(match_dup 3)
 						 (match_dup 4)])))]
   "TARGET_ARM
-   && REGNO (operands[0]) != FRAME_POINTER_REGNUM
-   && REGNO (operands[1]) != FRAME_POINTER_REGNUM
-   && REGNO (operands[3]) != FRAME_POINTER_REGNUM"
+   && !arm_eliminable_register (operands[0])
+   && !arm_eliminable_register (operands[1])
+   && !arm_eliminable_register (operands[3])"
   "ldr%?\\t%5, [%0, -%3%S2]!"
   [(set_attr "type" "load1")
    (set_attr "predicable" "yes")])

@@ -1,3 +1,14 @@
+2005-04-01  Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	* arm.md (minmax_arithsi): Reject all eliminable registers, not just
+	the frame and argument pointers.
+	(strqi_preinc, strqi_predec, loadqi_preinc, loadqi_predec): Likewise.
+	(loadqisi_preinc, loadqisi_predec, strsi_preinc): Likewise.
+	(strsi_predec, loadsi_preinc, loadsi_predec): Likewise.
+	(strqi_shiftpreinc, strqi_shiftpredec, loadqi_shiftpreinc): Likewise.
+	(loadqi_shiftpredec, strsi_shiftpreinc, strsi_shiftpredec): Likewise.
+	(loadsi_shiftpreinc, loadsi_shiftpredec): Likewise.
+
 2005-04-01  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* config/i386/cygming.h (SUBTARGET_ATTRIBUTE_TABLE): Define,
