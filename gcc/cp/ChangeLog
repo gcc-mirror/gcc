@@ -1,3 +1,24 @@
+2000-09-12  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* error.c (TFF_PLAIN_IDENTIFIER, TFF_NAMESPACE_SCOPE,
+	TFF_CLASS_SCOPE, TFF_CHASE_NAMESPACE_ALIAS, TFF_CHASE_TYPDEF,
+	TFF_DECL_SPECIFIERS, TFF_CLASS_KEY_OR_ENUM, TFF_RETURN_TYPE,
+	TFF_FUNCTION_DEFAULT_ARGUMENTS, TFF_EXCEPTION_SPECIFICATION,
+	TFF_TEMPLATE_HEADER, TFF_TEMPLATE_DEFAULT_ARGUMENTS, TFF_SCOPE):
+	New macros.
+	(sorry_for_unsupported_tree, print_scope_operator,
+	print_left_paren, print_right_paren, print_left_bracket,
+	print_right_bracket, print_whitespace): Likewise.
+	(aggr_variety): Rename to class_key_or_enum.
+	(print_type): Rename to print_type_id.
+	(print_type_specifier_seq, print_simple_type_specifier,
+	print_elaborated_type_specifier,
+	print_rest_of_abstract_declarator,
+	print_parameter_declaration_clause, print_exception_specification,
+	print_nested_name_specifier, print_template_id,
+	typedef_original_name,  print_template_argument_list_start,
+	print_template_argument_list_end): New functions.
+
 2000-09-11  Gabriel Dos Reis  <gdr@codesourcery.com>
 
         * ir.texi: Add more documentation.
