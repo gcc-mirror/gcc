@@ -1,3 +1,11 @@
+Mon Dec 14 14:09:34 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* reload1.c (reload): Delete REG_RETVAL and REG_LIBCALL notes
+          after completeing reload.
+
+	* rtl.texi: Document that REG_RETVAL and REG_LIBCALL are
+          deleted after reload.
+
 Mon Dec 14 01:39:28 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* rtl.h (multiple_sets): Fix prototype.

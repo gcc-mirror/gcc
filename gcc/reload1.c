@@ -1118,7 +1118,9 @@ reload (first, global, dumpfile)
 
   /* Make a pass over all the insns and delete all USEs which we inserted
      only to tag a REG_EQUAL note on them.  Remove all REG_DEAD and REG_UNUSED
-     notes.  Delete all CLOBBER insns and simplify (subreg (reg)) operands.  */
+     notes.  Delete all CLOBBER insns and simplify (subreg (reg)) operands.
+     Also remove all REG_RETVAL and REG_LIBCALL notes since they are no longer
+     useful or accurate.  */
 
   for (insn = first; insn; insn = NEXT_INSN (insn))
     if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
@@ -1139,7 +1141,9 @@ reload (first, global, dumpfile)
 	while (*pnote != 0)
 	  {
 	    if (REG_NOTE_KIND (*pnote) == REG_DEAD
-		|| REG_NOTE_KIND (*pnote) == REG_UNUSED)
+		|| REG_NOTE_KIND (*pnote) == REG_UNUSED
+		|| REG_NOTE_KIND (*pnote) == REG_RETVAL
+		|| REG_NOTE_KIND (*pnote) == REG_LIBCALL)
 	      *pnote = XEXP (*pnote, 1);
 	    else
 	      pnote = &XEXP (*pnote, 1);

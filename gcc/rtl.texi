@@ -2664,10 +2664,16 @@ delete such sequences whose results are dead.
 A @code{REG_EQUAL} note will also usually be attached to this insn to 
 provide the expression being computed by the sequence.
 
+These notes will be deleted after reload, since they are no longer
+accurate or useful.
+
 @findex REG_LIBCALL
 @item REG_LIBCALL
 This is the inverse of @code{REG_RETVAL}: it is placed on the first
 insn of a multi-insn sequence, and it points to the last one.
+
+These notes are deleted after reload, since they are no longer useful or 
+accurate.
 
 @findex REG_CC_SETTER
 @findex REG_CC_USER
