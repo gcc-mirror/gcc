@@ -1,3 +1,21 @@
+2001-12-17  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* caller-save.c (init_caller_save): Use MODE_BASE_REG_CLASS in
+	preference to BASE_REG_CLASS.
+	* recog.c (preprocess_constraints): Ditto.
+	* regclass.c (record_operand_costs, scan_one_insn, regclass,
+	record_reg_classes, record_address_regs): Ditto.
+	* regrename.c (scan_rtx_address, scan_rtx,
+	replace_oldest_value_addr, replace_oldest_value_mem): Ditto.
+	* reload.c (find_reloads, find_reloads_address,
+	find_reloads_address_1): Ditto.
+	* reload1.c (maybe_fix_stack_asms): Ditto.
+	* defaults.h (MODE_BASE_REG_CLASS): Provide default
+	definition.
+	* doc/tm.texi: Document MODE_BASE_REG_CLASS.
+
+        * config/arm/arm.h (MODE_BASE_REG_CLASS): Define.
+
 2001-12-17  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/install.texi2html: Use -I $SOURCEDIR.
