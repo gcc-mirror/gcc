@@ -1,3 +1,9 @@
+2003-12-19  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/12795
+	* name-lookup.c (pushdecl): Do not treated any functions as being
+	"nested" in C++.
+
 2003-12-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/13371

@@ -562,7 +562,7 @@ pushdecl (tree x)
       if (current_function_decl && x != current_function_decl
 	  /* A local declaration for a function doesn't constitute
              nesting.  */
-	  && !(TREE_CODE (x) == FUNCTION_DECL && !DECL_INITIAL (x))
+	  && TREE_CODE (x) != FUNCTION_DECL
 	  /* A local declaration for an `extern' variable is in the
 	     scope of the current namespace, not the current
 	     function.  */
