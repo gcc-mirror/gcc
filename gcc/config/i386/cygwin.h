@@ -82,7 +82,7 @@ Boston, MA 02111-1307, USA. */
 #define MINGW_LIBS "-L/usr/local/lib/mingw -L/usr/lib/mingw"
 #define MINGW_INCLUDES "%{!nostdinc:-isystem /usr/include/mingw/g++-3 "\
 		       "-isystem /usr/include/mingw/g++ "\
-		       "-isystem /usr/local/include/mingw" \
+		       "-isystem /usr/local/include/mingw " \
 		       "-idirafter /usr/include/mingw}"
 #endif
 

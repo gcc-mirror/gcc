@@ -1,3 +1,8 @@
+2001-10-10  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
+	PR c/4157
+	* config/i386/cygwin.h: Add missing space to MINGW_INCLUDES
+
 2001-10-13  Michael Collison  <collison@dhcp-12-114.townisp.com>
 
 	* config/dsp16xx/dsp16xx.md: Rewrite for more efficient code and 
