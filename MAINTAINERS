@@ -81,7 +81,6 @@ c++ runtime libs	Phil Edwards		pedwards@jaj.com
 c++ runtime libs	Benjamin Kosnik		bkoz@redhat.com
 *synthetic multiply	Torbjorn Granlund	tege@swox.com
 *c-torture		Torbjorn Granlund	tege@swox.com
-*f-torture		Kate Hedstrom		kate@ahab.rutgers.edu
 darwin			Stan Shebs		shebs@apple.com
 sco5, unixware, sco udk	Robert Lipe		robertlipe@usa.net
 fixincludes		Bruce Korb		bkorb@gnu.org
@@ -104,6 +103,8 @@ libiberty		DJ Delorie		dj@redhat.com
 build machinery (*.in)	DJ Delorie		dj@redhat.com
 build machinery (*.in)	Alexandre Oliva		aoliva@redhat.com
 docs co-maintainer	Gerald Pfeifer		pfeifer@dbai.tuwien.ac.at
+Pico-Java port		Steve Chamberlain	sac@transmeta.com
+RTEMS Ports		Joel Sherrill	
 
 Note individuals who maintain parts of the compiler need approval to check
 in changes outside of the parts of the compiler they maintain.
@@ -179,6 +180,22 @@ John Wehle					john@feith.com
 Mark Wielaard					mark@gcc.gnu.org
 Graham Stott					grahams@redhat.com
 Daniel Berlin					dan@cgsoftware.com
-* Indicates folks we need to get Kerberos/ssh accounts ready so they
-can write in the source tree
+Jim Blandy					jimb@redhat.com
+Chandra Chavva					cchavva@redhat.com
+Chris Demetriou					cgd@sibyte.com
+Doug Evans					devans@transmeta.com
+Michael Matz
+Tom Rix						trix@redhat.com
+Richard Stallman				rms@gnu.org
+Graham Stott					grahams@redhat.com
+Michael Tiemann					tiemann@redhat.com
+
+GNATS only accounts
+Peter Bienstman(?)
+Craig Rodrigues(?)
+Benjamin Chelf(?)
+James Dennett(?)
+Mark Galassi(?)
+Jeff Strum(?)
+
 
