@@ -188,6 +188,8 @@ static void add_candidates (tree, tree, tree, bool, tree, tree,
 			    int, struct z_candidate **);
 static conversion *merge_conversion_sequences (conversion *, conversion *);
 static bool magic_varargs_p (tree);
+static tree build_temp (tree, tree, int, void (**)(const char *, ...));
+static void check_constructor_callable (tree, tree);
 
 tree
 build_vfield_ref (tree datum, tree type)
@@ -1190,7 +1192,8 @@ reference_binding (tree rto, tree rfrom, tree expr, int flags)
     {
       conv = build_identity_conv (from, expr);
       conv = direct_reference_binding (rto, conv);
-      conv->u.next->check_copy_constructor_p = true;
+      if (!(flags & LOOKUP_CONSTRUCTOR_CALLABLE))
+	conv->u.next->check_copy_constructor_p = true;
       return conv;
     }
 
@@ -4063,6 +4066,20 @@ enforce_access (tree basetype_path, tree decl)
   return true;
 }
 
+/* Check that a callable constructor to initialize a temporary of
+   TYPE from an EXPR exists.  */
+
+static void
+check_constructor_callable (tree type, tree expr)
+{
+  build_special_member_call (NULL_TREE,
+			     complete_ctor_identifier,
+			     build_tree_list (NULL_TREE, expr), 
+			     TYPE_BINFO (type),
+			     LOOKUP_NORMAL | LOOKUP_ONLYCONVERTING
+			     | LOOKUP_CONSTRUCTOR_CALLABLE);
+}
+
 /* Initialize a temporary of type TYPE with EXPR.  The FLAGS are a
    bitwise or of LOOKUP_* values.  If any errors are warnings are
    generated, set *DIAGNOSTIC_FN to "error" or "warning",
@@ -4074,9 +4091,9 @@ build_temp (tree expr, tree type, int flags,
 	    void (**diagnostic_fn)(const char *, ...))
 {
   int savew, savee;
-
+  
   savew = warningcount, savee = errorcount;
-  expr = build_special_member_call (NULL_TREE, 
+  expr = build_special_member_call (NULL_TREE,
 				    complete_ctor_identifier,
 				    build_tree_list (NULL_TREE, expr), 
 				    TYPE_BINFO (type),
@@ -4209,12 +4226,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	  && TREE_CODE (TREE_TYPE (expr)) != ARRAY_TYPE)
 	expr = decl_constant_value (expr);
       if (convs->check_copy_constructor_p)
-	/* Generate a temporary copy purely to generate the required
-	   diagnostics.  */
-	build_temp
-	  (build_dummy_object
-	   (build_qualified_type (totype, TYPE_QUAL_CONST)),
-	   totype, LOOKUP_NORMAL|LOOKUP_ONLYCONVERTING, &diagnostic_fn);
+	check_constructor_callable (totype, expr);
 	return expr;
     case ck_ambig:
       /* Call build_user_type_conversion again for the error.  */
@@ -4243,12 +4255,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	  /* We are going to bind a reference directly to a base-class
 	     subobject of EXPR.  */
 	  if (convs->check_copy_constructor_p)
-	    /* Generate a temporary copy purely to generate the required
-	       diagnostics.  */
-	    build_temp (build_dummy_object (TREE_TYPE (expr)),
-			TREE_TYPE (expr),
-			LOOKUP_NORMAL|LOOKUP_ONLYCONVERTING,
-			&diagnostic_fn);
+	    check_constructor_callable (TREE_TYPE (expr), expr);
 	  /* Build an expression for `*((base*) &expr)'.  */
 	  expr = build_unary_op (ADDR_EXPR, expr, 0);
 	  expr = perform_implicit_conversion (build_pointer_type (totype), 
@@ -6426,14 +6433,8 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup)
 	 remember that the conversion was required.  */
       if (conv->kind == ck_base && conv->need_temporary_p)
 	{
-	  void (*diagnostic_fn) (const char *, ...);
 	  if (conv->check_copy_constructor_p)
-	    /* Generate a temporary copy purely to generate the required
-	       diagnostics.  */
-	    build_temp (build_dummy_object (TREE_TYPE (expr)),
-			TREE_TYPE (expr),
-			LOOKUP_NORMAL|LOOKUP_ONLYCONVERTING,
-			&diagnostic_fn);
+ 	    check_constructor_callable (TREE_TYPE (expr), expr);
 	  base_conv_type = conv->type;
 	  conv = conv->u.next;
 	}

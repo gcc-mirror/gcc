@@ -1,3 +1,8 @@
+2004-06-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* PR C++/16174
+	* g++.dg/template/ctor4.C: New.
+
 2004-06-27  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/16205
