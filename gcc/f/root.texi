@@ -16,8 +16,8 @@
 @c FSF-G77 indicates this is the FSF (0.5.23 or earlier) version of g77.
 @clear FSF-G77
 
-@set email-general egcs@@egcs.cygnus.com
-@set email-bugs egcs-bugs@@egcs.cygnus.com
+@set email-general gcc@@gcc.gnu.org
+@set email-bugs gcc-bugs@@gcc.gnu.org
 @set path-g77 egcs/gcc/f
 @set path-libf2c egcs/libf2c
 

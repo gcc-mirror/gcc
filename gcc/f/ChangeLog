@@ -1,3 +1,9 @@
+1999-07-17  Alexandre Oliva  <oliva@dcc.unicamp.br>
+        
+	* root.texi: Update e-mail addresses to gcc.gnu.org.
+	* g77spec.c (lang_specific_driver): Updated URL with bug reporting 
+	instructions to gcc.gnu.org.  Removed e-mail address.
+
 Sat Jul 17 11:28:43 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* root.texi, g77install.texi: Switchover to GCC terminology.
