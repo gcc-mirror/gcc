@@ -4579,6 +4579,32 @@ initializer_constant_valid_p (value, endtype)
 
   return 0;
 }
+
+/* If VALUE is a compound expr all of whose expressions are constant, then
+   return its value.  Otherwise, return error_mark_node.
+
+   This is for handling COMPOUND_EXPRs as initializer elements
+   which is allowed with a warning when -pedantic is specified.  */
+
+static tree
+valid_compound_expr_initializer (value, endtype)
+     tree value;
+     tree endtype;
+{
+  if (TREE_CODE (value) == COMPOUND_EXPR)
+    {
+      if (valid_compound_expr_initializer (TREE_OPERAND (value, 0), endtype)
+	  == error_mark_node)
+	return error_mark_node;
+      return valid_compound_expr_initializer (TREE_OPERAND (value, 1),
+					      endtype);
+    }
+  else if (! TREE_CONSTANT (value)
+	   && ! initializer_constant_valid_p (value, endtype))
+    return error_mark_node;
+  else
+    return value;
+}
 
 /* Perform appropriate conversions on the initial value of a variable,
    store it in the declaration DECL,
@@ -4969,7 +4995,25 @@ digest_init (type, init, require_constant, constructor_constant)
 	  && TREE_CODE (inside_init) == VAR_DECL)
 	inside_init = decl_constant_value (inside_init);
 
-      if (require_constant && ! TREE_CONSTANT (inside_init))
+      /* Compound expressions can only occur here if -pedantic or
+	 -pedantic-errors is specified.  In the later case, we always want
+	 an error.  In the former case, we simply want a warning.  */
+      if (require_constant && pedantic
+	  && TREE_CODE (inside_init) == COMPOUND_EXPR)
+	{
+	  inside_init
+	    = valid_compound_expr_initializer (inside_init,
+					       TREE_TYPE (inside_init));
+	  if (inside_init == error_mark_node)
+	    error_init ("initializer element%s is not constant",
+			" for `%s'", NULL);
+	  else
+	    pedwarn_init ("initializer element%s is not constant",
+			  " for `%s'", NULL);
+	  if (flag_pedantic_errors)
+	    inside_init = error_mark_node;
+	}
+      else if (require_constant && ! TREE_CONSTANT (inside_init))
 	{
 	  error_init ("initializer element%s is not constant",
 		      " for `%s'", NULL);
