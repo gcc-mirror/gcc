@@ -1,5 +1,9 @@
 2004-10-28  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* Makefile.in (OBJS-common): Remove duplicates.
+
+2004-10-28  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* lambda-code.c (nestify_update_pending_stmts): Remove.
 	(perfect_nestify): Use flush_pending_stmts instead of
 	nestify_update_pending_stmts.

@@ -912,9 +912,7 @@ OBJS-common = \
  integrate.o intl.o jump.o  langhooks.o lcm.o lists.o local-alloc.o  	   \
  loop.o modulo-sched.o optabs.o options.o opts.o			   \
  params.o postreload.o postreload-gcse.o predict.o			   \
- insn-preds.o integrate.o intl.o jump.o langhooks.o lcm.o lists.o 	   \
- local-alloc.o loop.o modulo-sched.o optabs.o options.o opts.o		   \
- params.o pointer-set.o postreload.o postreload-gcse.o predict.o 	   \
+ insn-preds.o pointer-set.o postreload.o				   \
  print-rtl.o print-tree.o value-prof.o var-tracking.o			   \
  profile.o ra.o ra-build.o ra-colorize.o ra-debug.o ra-rewrite.o	   \
  real.o recog.o reg-stack.o regclass.o regmove.o regrename.o		   \
