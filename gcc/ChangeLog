@@ -1,3 +1,8 @@
+2003-12-04  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.md (addqi3_carry): Use q not r constraints.
+	(subqi3_carry): Likewise.
+
 2003-12-04  J"orn Rennecke <joern.rennecke@superh.com>
 
 	PR optimization/13260
