@@ -1,3 +1,14 @@
+2001-04-28  Andreas Jaeger  <aj@suse.de>
+
+        * md.texi: Use XX-bit instead of XXbit or XX bit where
+        appropriate.
+
+2001-04-28  Andreas Jaeger  <aj@suse.de>
+	    Richard Henderson  <rth@redhat.com>
+
+	* md.texi (Machine Constraints): Fix description of "A" for
+	i386.
+
 2001-04-27  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* collect2.c (main): Add `-L' case to remove duplicate entries.
