@@ -2068,7 +2068,7 @@ compute_frame_size (size, fregs_live)
 	if (fregs_live)
 	  *fregs_live = 1;
 
-	fsize += 4 * (i = 46);
+	fsize += 4 * (i - 46);
 	break;
       }
 
@@ -2422,6 +2422,7 @@ hppa_expand_prologue()
   /* Floating point register store.  */
   if (save_fregs)
     {
+      int found_one = 0;
 
       /* First get the frame or stack pointer to the start of the FP register
 	 save area.  */
@@ -2433,7 +2434,6 @@ hppa_expand_prologue()
       /* Now actually save the FP registers.  */
       for (i = 66; i >= 48; i -= 2)
 	{
-	  int found_one = 0;
 	  if (regs_ever_live[i] || regs_ever_live[i + 1]
 	      || found_one)
 	    {
@@ -2599,9 +2599,9 @@ hppa_expand_epilogue ()
     }
   else
     {
+      int found_one = 0;
       for (i = 18, offset = local_fsize - actual_fsize; i >= 3; i--)
 	{
-	  int found_one = 0;
 	  if (regs_ever_live[i] && ! call_used_regs[i]
 	      || found_one)
 	    {
@@ -2626,6 +2626,8 @@ hppa_expand_epilogue ()
   /* FP register restores.  */
   if (save_fregs)
     {
+      int found_one = 0;
+
       /* Adjust the register to index off of.  */
       if (frame_pointer_needed)
 	set_reg_plus_d (1, FRAME_POINTER_REGNUM, offset);
@@ -2635,7 +2637,6 @@ hppa_expand_epilogue ()
       /* Actually do the restores now.  */
       for (i = 66; i >= 48; i -= 2)
 	{
-	  int found_one = 0;
 	  if (regs_ever_live[i] || regs_ever_live[i + 1])
 	    {
 	      found_one = 1;
