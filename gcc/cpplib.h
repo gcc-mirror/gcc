@@ -485,8 +485,13 @@ struct cpp_hashnode GTY(())
   } GTY ((desc ("0"))) value;
 };
 
-/* Call this first to get a handle to pass to other functions.  */
-extern cpp_reader *cpp_create_reader PARAMS ((enum c_lang));
+/* Call this first to get a handle to pass to other functions.
+
+   If you want cpplib to manage its own hashtable, pass in a NULL
+   pointer.  Otherwise you should pass in an initialized hash table
+   that cpplib will share; this technique is used by the C front
+   ends.  */
+extern cpp_reader *cpp_create_reader PARAMS ((enum c_lang, struct ht *));
 
 /* Call this to change the selected language standard (e.g. because of
    command line options).  */
@@ -518,14 +523,8 @@ extern void cpp_set_callbacks PARAMS ((cpp_reader *, cpp_callbacks *));
    returns the name of the original file; this is the same as the
    input file, except for preprocessed input.  This will generate at
    least one file change callback, and possibly a line change callback
-   too.  If there was an error opening the file, it returns NULL.
-
-   If you want cpplib to manage its own hashtable, pass in a NULL
-   pointer.  Otherwise you should pass in an initialized hash table
-   that cpplib will share; this technique is used by the C front
-   ends.  */
-extern const char *cpp_read_main_file PARAMS ((cpp_reader *, const char *,
-					       struct ht *));
+   too.  If there was an error opening the file, it returns NULL.  */
+extern const char *cpp_read_main_file PARAMS ((cpp_reader *, const char *));
 
 /* Set up built-ins like __FILE__.  */
 extern void cpp_init_builtins PARAMS ((cpp_reader *));
@@ -708,7 +707,8 @@ extern int cpp_included	PARAMS ((cpp_reader *, const char *));
 extern void cpp_make_system_header PARAMS ((cpp_reader *, int, int));
 extern void cpp_simplify_path PARAMS ((char *));
 extern bool cpp_push_include PARAMS ((cpp_reader *, const char *));
-extern void cpp_rename_file PARAMS ((cpp_reader *, const char *));
+extern void cpp_change_file PARAMS ((cpp_reader *, enum lc_reason,
+				     const char *));
 
 /* In cpppch.c */
 struct save_macro_data;

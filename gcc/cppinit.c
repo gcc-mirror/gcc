@@ -132,8 +132,9 @@ init_library ()
 
 /* Initialize a cpp_reader structure.  */
 cpp_reader *
-cpp_create_reader (lang)
+cpp_create_reader (lang, table)
      enum c_lang lang;
+     hash_table *table;
 {
   cpp_reader *pfile;
 
@@ -198,6 +199,8 @@ cpp_create_reader (lang)
   gcc_obstack_init (&pfile->buffer_ob);
 
   _cpp_init_includes (pfile);
+
+  _cpp_init_hashtable (pfile, table);
 
   return pfile;
 }
@@ -429,19 +432,13 @@ cpp_add_dependency_target (pfile, target, quote)
    or stdin if it is the empty string.  Return the original filename
    on success (e.g. foo.i->foo.c), or NULL on failure.  */
 const char *
-cpp_read_main_file (pfile, fname, table)
+cpp_read_main_file (pfile, fname)
      cpp_reader *pfile;
      const char *fname;
-     hash_table *table;
 {
   sanity_checks (pfile);
 
   post_options (pfile);
-
-  /* The front ends don't set up the hash table until they have
-     finished processing the command line options, so initializing the
-     hashtable is deferred until now.  */
-  _cpp_init_hashtable (pfile, table);
 
   /* Mark named operators before handling command line macros.  */
   if (CPP_OPTION (pfile, cplusplus) && CPP_OPTION (pfile, operator_names))

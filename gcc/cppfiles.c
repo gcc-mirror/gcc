@@ -756,14 +756,16 @@ cpp_make_system_header (pfile, syshdr, externc)
 		       SOURCE_LINE (pfile->map, pfile->line), flags);
 }
 
-/* Allow the client to rename the current file.  Used by the front end
-   to achieve pseudo-file names like <built-in>.  */
+/* Allow the client to change the current file.  Used by the front end
+   to achieve pseudo-file names like <built-in>.
+   If REASON is LC_LEAVE, then NEW_NAME must be NULL.  */
 void
-cpp_rename_file (pfile, new_name)
+cpp_change_file (pfile, reason, new_name)
      cpp_reader *pfile;
+     enum lc_reason reason;
      const char *new_name;
 {
-  _cpp_do_file_change (pfile, LC_RENAME, new_name, 1, 0);
+  _cpp_do_file_change (pfile, reason, new_name, 1, 0);
 }
 
 /* Report on all files that might benefit from a multiple include guard.

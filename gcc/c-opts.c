@@ -587,7 +587,8 @@ c_common_init_options (lang)
 #endif
 
   c_language = lang;
-  parse_in = cpp_create_reader (lang == clk_c ? CLK_GNUC89 : CLK_GNUCXX);
+  parse_in = cpp_create_reader (lang == clk_c ? CLK_GNUC89 : CLK_GNUCXX,
+				ident_hash);
   cpp_opts = cpp_get_options (parse_in);
   if (flag_objc)
     cpp_opts->objc = 1;
@@ -1569,7 +1570,7 @@ c_common_post_options (pfilename)
   cpp_get_callbacks (parse_in)->file_change = cb_file_change;
 
   /* NOTE: we use in_fname here, not the one supplied.  */
-  *pfilename = cpp_read_main_file (parse_in, in_fname, ident_hash);
+  *pfilename = cpp_read_main_file (parse_in, in_fname);
 
   saved_lineno = lineno;
   lineno = 0;
@@ -1784,10 +1785,10 @@ finish_options ()
     {
       size_t i;
 
-      cpp_rename_file (parse_in, _("<built-in>"));
+      cpp_change_file (parse_in, LC_RENAME, _("<built-in>"));
       cpp_init_builtins (parse_in);
       c_cpp_builtins (parse_in);
-      cpp_rename_file (parse_in, _("<command line>"));
+      cpp_change_file (parse_in, LC_RENAME, _("<command line>"));
       for (i = 0; i < deferred_count; i++)
 	{
 	  struct deferred_opt *opt = &deferred_opts[i];
@@ -1837,7 +1838,7 @@ push_command_line_include ()
   if (include_cursor == deferred_count)
     {
       /* Restore the line map from <command line>.  */
-      cpp_rename_file (parse_in, main_input_filename);
+      cpp_change_file (parse_in, LC_RENAME, main_input_filename);
       /* -Wunused-macros should only warn about macros defined hereafter.  */
       cpp_opts->warn_unused_macros = warn_unused_macros;
       include_cursor++;

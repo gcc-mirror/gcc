@@ -622,7 +622,7 @@ read_scan_file (in_fname, argc, argv)
 
   obstack_init (&scan_file_obstack);
 
-  scan_in = cpp_create_reader (CLK_GNUC89);
+  scan_in = cpp_create_reader (CLK_GNUC89, NULL);
   cb = cpp_get_callbacks (scan_in);
   cb->file_change = cb_file_change;
 
@@ -632,7 +632,7 @@ read_scan_file (in_fname, argc, argv)
   options->inhibit_warnings = 1;
   options->inhibit_errors = 1;
 
-  if (! cpp_read_main_file (scan_in, in_fname, NULL))
+  if (! cpp_read_main_file (scan_in, in_fname))
     exit (FATAL_EXIT_CODE);
 
   for (i = 0; i < argc; i += strings_processed)
@@ -675,9 +675,9 @@ read_scan_file (in_fname, argc, argv)
 			   true /* stdinc */, false /* cxx_stdinc */,
 			   false /* verbose */);
 
-  cpp_rename_file (scan_in, "<built-in>");
+  cpp_change_file (scan_in, LC_RENAME, "<built-in>");
   cpp_init_builtins (scan_in);
-  cpp_rename_file (scan_in, in_fname);
+  cpp_change_file (scan_in, LC_RENAME, in_fname);
 
   /* We are scanning a system header, so mark it as such.  */
   cpp_make_system_header (scan_in, 1, 0);
