@@ -1,5 +1,28 @@
 2001-06-10  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* acinclude.m4 (GLIBCPP_ENABLE_C99): Add stdio.h checking.
+	Add checking for strtof, _Exit in stdlib.h
+	* aclocal.m4: Regenerate.
+	* configure.in: Regenerate.
+	* include/c_std/bits/std_cstdio.h: Alphabetize lists. 
+	(snprintf): Put C99 functions into __gnu_cxx namespace.
+	(vfscanf): Same.
+	(vscanf): Same.
+	(vsnprintf): Same.
+	(vsscanf): Same.
+	* include/c_std/bits/std_cstdlib.h: Alphabetize lists. Put undefs
+	for C99 functions within _GLIBCPP_USE_C99 guard.
+	(_Exit): Same.
+	(strtof): Same.
+	(strtold): Same.
+	* include/bits/locale_facets.tcc: Check if C99 is enabled.
+	* include/c_std/bits/std_cwchar.h (__gnu_cxx): Put undefs within
+	C99 guard.
+	* include/c_std/bits/cmath.tcc: Formatting tweak.
+	* include/c_std/bits/std_cmath.h: Same.
+	
+2001-06-10  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* include/c_std/bits/std_cstdio.h: Include cstddef for size_t.
 
 2001-06-09  Alexandre Oliva  <aoliva@redhat.com> 

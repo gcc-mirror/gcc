@@ -571,7 +571,7 @@ namespace std
       // Stage 2: convert and store results.
       char* __sanity;
       errno = 0;
-#ifdef _GLIBCPP_HAVE_STRTOF
+#ifdef _GLIBCPP_USE_C99
       float __f = strtof(__xtrc, &__sanity);
 #else
       float __f = static_cast<float>(strtod(__xtrc, &__sanity));
@@ -611,7 +611,7 @@ namespace std
       return __beg;
     }
 
-#if defined(_GLIBCPP_HAVE_STRTOLD) && !defined(__hpux)
+#if defined(_GLIBCPP_USE_C99) && !defined(__hpux)
   template<typename _CharT, typename _InIter>
     _InIter
     num_get<_CharT, _InIter>::
