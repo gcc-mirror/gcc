@@ -742,7 +742,8 @@ scan_loop (loop_start, end, nregs)
 		  && ! side_effects_p (SET_SRC (set))
 		  && ! find_reg_note (p, REG_RETVAL, NULL_RTX)
 #ifdef SMALL_REGISTER_CLASSES
-		  && ! (GET_CODE (SET_SRC (set)) == REG
+		  && ! (SMALL_REGISTER_CLASSES
+			&& GET_CODE (SET_SRC (set)) == REG
 			&& REGNO (SET_SRC (set)) < FIRST_PSEUDO_REGISTER)
 #endif
 		  /* This test is not redundant; SET_SRC (set) might be
@@ -4257,9 +4258,13 @@ valid_initial_value_p (x, insn, call_seen, loop_start)
   /* Don't use call-clobbered registers across a call which clobbers it.  On
      some machines, don't use any hard registers at all.  */
   if (REGNO (x) < FIRST_PSEUDO_REGISTER
-#ifndef SMALL_REGISTER_CLASSES
-      && call_used_regs[REGNO (x)] && call_seen
+      && (
+#ifdef SMALL_REGISTER_CLASSES
+          SMALL_REGISTER_CLASSES
+#else
+	  0
 #endif
+	    || (call_used_regs[REGNO (x)] && call_seen))
       )
     return 0;
 

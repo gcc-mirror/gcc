@@ -1578,27 +1578,30 @@ fixup_var_refs_insns (var, promoted_mode, unsignedp, insn, toplevel)
 		 of the CALL_INSN and see if the next insn uses both that
 		 and VAR.  */
 
-	      if (call_dest != 0 && GET_CODE (insn) == INSN
-		  && reg_mentioned_p (var, PATTERN (insn))
-		  && reg_mentioned_p (call_dest, PATTERN (insn)))
+	      if (SMALL_REGISTER_CLASSES)
 		{
-		  rtx temp = gen_reg_rtx (GET_MODE (call_dest));
+		  if (call_dest != 0 && GET_CODE (insn) == INSN
+		      && reg_mentioned_p (var, PATTERN (insn))
+		      && reg_mentioned_p (call_dest, PATTERN (insn)))
+		    {
+		      rtx temp = gen_reg_rtx (GET_MODE (call_dest));
 
-		  emit_insn_before (gen_move_insn (temp, call_dest), insn);
+		      emit_insn_before (gen_move_insn (temp, call_dest), insn);
 
-		  PATTERN (insn) = replace_rtx (PATTERN (insn),
-						call_dest, temp);
-		}
+		      PATTERN (insn) = replace_rtx (PATTERN (insn),
+						    call_dest, temp);
+		    }
 	      
-	      if (GET_CODE (insn) == CALL_INSN
-		  && GET_CODE (PATTERN (insn)) == SET)
-		call_dest = SET_DEST (PATTERN (insn));
-	      else if (GET_CODE (insn) == CALL_INSN
-		       && GET_CODE (PATTERN (insn)) == PARALLEL
-		       && GET_CODE (XVECEXP (PATTERN (insn), 0, 0)) == SET)
-		call_dest = SET_DEST (XVECEXP (PATTERN (insn), 0, 0));
-	      else
-		call_dest = 0;
+		  if (GET_CODE (insn) == CALL_INSN
+		      && GET_CODE (PATTERN (insn)) == SET)
+		    call_dest = SET_DEST (PATTERN (insn));
+		  else if (GET_CODE (insn) == CALL_INSN
+			   && GET_CODE (PATTERN (insn)) == PARALLEL
+			   && GET_CODE (XVECEXP (PATTERN (insn), 0, 0)) == SET)
+		    call_dest = SET_DEST (XVECEXP (PATTERN (insn), 0, 0));
+		  else
+		    call_dest = 0;
+		}
 #endif
 
 	      /* See if we have to do anything to INSN now that VAR is in
@@ -5163,7 +5166,8 @@ expand_function_start (subr, parms_have_cleanups)
 #ifdef SMALL_REGISTER_CLASSES
       /* Delay copying static chain if it is not a register to avoid
 	 conflicts with regs used for parameters.  */
-      if (GET_CODE (static_chain_incoming_rtx) == REG)
+      if (! SMALL_REGISTER_CLASSES
+	  || GET_CODE (static_chain_incoming_rtx) == REG)
 #endif
         emit_move_insn (last_ptr, static_chain_incoming_rtx);
     }
@@ -5277,7 +5281,7 @@ expand_function_start (subr, parms_have_cleanups)
   /* Copy the static chain now if it wasn't a register.  The delay is to
      avoid conflicts with the parameter passing registers.  */
 
-  if (current_function_needs_context)
+  if (SMALL_REGISTER_CLASSES && current_function_needs_context)
       if (GET_CODE (static_chain_incoming_rtx) != REG)
         emit_move_insn (last_ptr, static_chain_incoming_rtx);
 #endif
@@ -5319,7 +5323,8 @@ expand_function_start (subr, parms_have_cleanups)
 	  /* If the static chain originally came in a register, put it back
 	     there, then move it out in the next insn.  The reason for
 	     this peculiar code is to satisfy function integration.  */
-	  if (GET_CODE (static_chain_incoming_rtx) == REG)
+	  if (SMALL_REGISTER_CLASSES
+	      && GET_CODE (static_chain_incoming_rtx) == REG)
 	    emit_move_insn (static_chain_incoming_rtx, last_ptr);
 #endif
 

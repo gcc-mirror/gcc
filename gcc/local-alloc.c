@@ -715,7 +715,9 @@ optimize_reg_copy_1 (insn, dest, src)
   if (sregno == dregno
 #ifdef SMALL_REGISTER_CLASSES
       /* We don't want to mess with hard regs if register classes are small. */
-      || sregno < FIRST_PSEUDO_REGISTER || dregno < FIRST_PSEUDO_REGISTER
+      || (SMALL_REGISTER_CLASSES
+	  && (sregno < FIRST_PSEUDO_REGISTER
+	      || dregno < FIRST_PSEUDO_REGISTER))
 #endif
       /* We don't see all updates to SP if they are in an auto-inc memory
 	 reference, so we must disallow this optimization on them.  */

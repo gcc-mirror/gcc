@@ -1891,7 +1891,8 @@ canon_hash (x, mode)
 	if (regno < FIRST_PSEUDO_REGISTER
 	    && (global_regs[regno]
 #ifdef SMALL_REGISTER_CLASSES
-		|| (! fixed_regs[regno]
+		|| (SMALL_REGISTER_CLASSES
+		    && ! fixed_regs[regno]
 		    && regno != FRAME_POINTER_REGNUM
 		    && regno != HARD_FRAME_POINTER_REGNUM
 		    && regno != ARG_POINTER_REGNUM
