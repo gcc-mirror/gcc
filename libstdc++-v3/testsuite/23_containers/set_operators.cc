@@ -22,7 +22,7 @@
 
 #include <set>
 #include <string>
-make 
+
 // { dg-do compile }
 // { dg-excess-errors "" }
 
@@ -36,11 +36,9 @@ int main(void)
   
   std::set<unsigned int>::iterator itr(setByIndex.begin());
   
-
   // NB: it's not setByIndex!!
-  test &= itr != setByName.end(); 
-  // { dg-error "no match for" "" { xfail *-*-* } 41 }
-  test &= itr == setByName.end(); 
-  // { dg-error "no match for" "" { xfail *-*-* } 43 }
+  test &= itr != setByName.end(); // { dg-error "no" } 
+  test &= itr == setByName.end(); // { dg-error "no" } 
+
   return 0;
 }
