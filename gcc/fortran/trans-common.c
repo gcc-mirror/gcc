@@ -252,6 +252,8 @@ static tree
 build_equiv_decl (tree union_type, bool is_init)
 {
   tree decl;
+  char name[15];
+  static int serial = 0;
 
   if (is_init)
     {
@@ -260,10 +262,13 @@ build_equiv_decl (tree union_type, bool is_init)
       return decl;
     }
 
-  decl = build_decl (VAR_DECL, NULL, union_type);
+  snprintf (name, sizeof (name), "equiv.%d", serial++);
+  decl = build_decl (VAR_DECL, get_identifier (name), union_type);
   DECL_ARTIFICIAL (decl) = 1;
+  DECL_IGNORED_P (decl) = 1;
 
-  DECL_COMMON (decl) = 1;
+  if (!gfc_can_put_var_on_stack (DECL_SIZE_UNIT (decl)))
+    TREE_STATIC (decl) = 1;
 
   TREE_ADDRESSABLE (decl) = 1;
   TREE_USED (decl) = 1;
