@@ -475,7 +475,7 @@ enum dwarf_calling_convention
     DW_CC_normal = 0x1,
     DW_CC_program = 0x2,
     DW_CC_nocall = 0x3,
-    DW_CC_renesas_sh = 0x40
+    DW_CC_GNU_renesas_sh = 0x40
   };
 
 #define DW_CC_lo_user 0x40
