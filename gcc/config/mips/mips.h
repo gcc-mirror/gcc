@@ -4690,3 +4690,10 @@ do									\
       }									\
   }									\
 while (0)
+
+#define DFMODE_NAN \
+	unsigned short DFbignan[4] = {0x7ff7, 0xffff, 0xffff, 0xffff}; \
+	unsigned short DFlittlenan[4] = {0xffff, 0xffff, 0xffff, 0xfff7}
+#define SFMODE_NAN \
+	unsigned short SFbignan[2] = {0x7fbf, 0xffff}; \
+	unsigned short SFlittlenan[2] = {0xffff, 0xffbf}

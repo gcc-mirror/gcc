@@ -1,4 +1,12 @@
+2002-05-20  H.J. Lu  (hjl@gnu.org)
+
+	Base on suggestions from Zhang Fuxin <fxzhang@ict.ac.cn>:
+
+	* config/mips/mips.h (DFMODE_NAN): Defined.
+	(SFMODE_NAN): Likewise.
+
 2002-05-20  Dale Johannesen  <dalej@apple.com>
+
         * combine.c (cant_combine_insn_p):  Back out my
         previous patch.
 
