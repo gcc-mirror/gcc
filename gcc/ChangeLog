@@ -1,5 +1,10 @@
 2004-08-23  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.md (mfhilo_[sd]i): Redefine using :GPR.  Add mode
+	attribute.
+
+2004-08-23  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.md (length): Don't use mips_fetch_insns for indexed
 	loads and stores.
 	(*lwxc1_<mode>, *ldxc1_<mode>, *swxc1_<mode>, *sdxc1_<mode>): Name
