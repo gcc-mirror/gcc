@@ -1020,7 +1020,7 @@ comptypes (tree t1, tree t2, int strict)
       
       /* We may be dealing with Objective-C instances...  */
       if (TREE_CODE (t1) == RECORD_TYPE
-	  && (retval = objc_comptypes (t1, t2, 0) >= 0))
+	  && ((retval = objc_comptypes (t1, t2, 0)) >= 0))
          return retval;
       /* ...but fall through if we are not.  */
 
