@@ -31,11 +31,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define CPP_SPEC "%{!msoft-float:-D__HAVE_68881__}"
 
-/* If the 68881 is used, link must load libmc.a instead of libc.a */
+/* If the 68881 is used, link must load libmc.a before libc.a.  */
 
-#define LIB_SPEC "%{msoft-float:%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}} \
-%{!msoft-float:%{!p:%{!pg:-lmc}}%{p:-lmc_p}%{pg:-lmc_p}} \
-%{g:-lg}"
+#define LIB_SPEC "%{!msoft-float:%{!p:%{!pg:-lmc}}%{p:-lmc_p}%{pg:-lmc_p}} \
+%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p} %{g:-lg}"
 
 #else
 /* Define __HAVE_68881__ in preprocessor if -m68881 is specified.
