@@ -276,8 +276,8 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 #define NO_BUILTIN_PTRDIFF_TYPE
 #define NO_BUILTIN_SIZE_TYPE
 #endif
-#define PTRDIFF_TYPE (TARGET_ARCH64 ? "long long int" : "int")
-#define SIZE_TYPE (TARGET_ARCH64 ? "long long unsigned int" : "unsigned int")
+#define PTRDIFF_TYPE (TARGET_ARCH64 ? "long int" : "int")
+#define SIZE_TYPE (TARGET_ARCH64 ? "long unsigned int" : "unsigned int")
 
 /* ??? This should be 32 bits for v9 but what can we do?  */
 #define WCHAR_TYPE "short unsigned int"
@@ -1078,18 +1078,24 @@ extern int sparc_mode_class[];
 #define INITIALIZE_PIC initialize_pic ()
 #define FINALIZE_PIC finalize_pic ()
 
+/* Pick a default value we can notice from override_options:
+   !v9: Default is on.
+   v9: Default is off.  */
+
+#define DEFAULT_PCC_STRUCT_RETURN -1
+
 /* Sparc ABI says that quad-precision floats and all structures are returned
    in memory.
    For v9: unions <= 32 bytes in size are returned in int regs,
-   structures up to 32 bytes are returned in int and fp regs.
-   FIXME: wip */
+   structures up to 32 bytes are returned in int and fp regs.  */
 
 #define RETURN_IN_MEMORY(TYPE)				\
 (TARGET_ARCH32						\
  ? (TYPE_MODE (TYPE) == BLKmode				\
     || TYPE_MODE (TYPE) == TFmode			\
     || TYPE_MODE (TYPE) == TCmode)			\
- : TYPE_MODE (TYPE) == BLKmode)
+ : (TYPE_MODE (TYPE) == BLKmode				\
+    && int_size_in_bytes (TYPE) > 32))
 
 /* Functions which return large structures get the address
    to place the wanted value at offset 64 from the frame.
@@ -1449,9 +1455,14 @@ extern char leaf_reg_remap[];
    : (STRUCT_VALUE_OFFSET + UNITS_PER_WORD))
 
 /* When a parameter is passed in a register, stack space is still
-   allocated for it.  */
-/* This only takes into account the int regs.
-   fp regs are handled elsewhere.  */
+   allocated for it.
+   !v9: All 6 possible integer registers have backing store allocated.
+   v9: Only space for the arguments passed is allocated. */
+/* ??? Ideally, we'd use zero here (as the minimum), but zero has special
+   meaning to the backend.  Further, we need to be able to detect if a
+   varargs/unprototyped function is called, as they may want to spill more
+   registers than we've provided space.  Ugly, ugly.  So for now we retain
+   all 6 slots even for v9.  */
 #define REG_PARM_STACK_SPACE(DECL) (6 * UNITS_PER_WORD)
 
 /* Keep the stack pointer constant throughout the function.
@@ -1472,24 +1483,28 @@ extern char leaf_reg_remap[];
 /* Some subroutine macros specific to this machine.
    When !TARGET_FPU, put float return values in the general registers,
    since we don't have any fp registers.  */
-#define BASE_RETURN_VALUE_REG(MODE) \
-  (TARGET_ARCH64 \
-   ? (TARGET_FPU && GET_MODE_CLASS (MODE) == MODE_FLOAT ? 32 : 8) \
+#define BASE_RETURN_VALUE_REG(MODE)					\
+  (TARGET_ARCH64							\
+   ? (TARGET_FPU && FLOAT_MODE_P (MODE) ? 32 : 8)			\
    : (((MODE) == SFmode || (MODE) == DFmode) && TARGET_FPU ? 32 : 8))
-#define BASE_OUTGOING_VALUE_REG(MODE) \
-  (TARGET_ARCH64 \
-   ? (TARGET_FPU && GET_MODE_CLASS (MODE) == MODE_FLOAT ? 32 \
-      : TARGET_FLAT ? 8 : 24) \
+
+#define BASE_OUTGOING_VALUE_REG(MODE)				\
+  (TARGET_ARCH64						\
+   ? (TARGET_FPU && FLOAT_MODE_P (MODE) ? 32			\
+      : TARGET_FLAT ? 8 : 24)					\
    : (((MODE) == SFmode || (MODE) == DFmode) && TARGET_FPU ? 32	\
       : (TARGET_FLAT ? 8 : 24)))
-#define BASE_PASSING_ARG_REG(MODE) \
-  (TARGET_ARCH64 \
-   ? (TARGET_FPU && GET_MODE_CLASS (MODE) == MODE_FLOAT ? 32 : 8) \
+
+#define BASE_PASSING_ARG_REG(MODE)				\
+  (TARGET_ARCH64						\
+   ? (TARGET_FPU && FLOAT_MODE_P (MODE) ? 32 : 8)		\
    : 8)
-#define BASE_INCOMING_ARG_REG(MODE) \
-  (TARGET_ARCH64 \
-   ? (TARGET_FPU && GET_MODE_CLASS (MODE) == MODE_FLOAT ? 32 \
-      : TARGET_FLAT ? 8 : 24) \
+
+/* ??? FIXME -- seems wrong for v9 structure passing... */
+#define BASE_INCOMING_ARG_REG(MODE)				\
+  (TARGET_ARCH64						\
+   ? (TARGET_FPU && FLOAT_MODE_P (MODE) ? 32			\
+      : TARGET_FLAT ? 8 : 24)					\
    : (TARGET_FLAT ? 8 : 24))
 
 /* Define this macro if the target machine has "register windows".  This
@@ -1515,19 +1530,20 @@ extern char leaf_reg_remap[];
 
 /* On SPARC the value is found in the first "output" register.  */
 
-#define FUNCTION_VALUE(VALTYPE, FUNC)  \
-  gen_rtx_REG (TYPE_MODE (VALTYPE), BASE_RETURN_VALUE_REG (TYPE_MODE (VALTYPE)))
+extern struct rtx_def *function_value ();
+#define FUNCTION_VALUE(VALTYPE, FUNC) \
+  function_value ((VALTYPE), TYPE_MODE (VALTYPE), 1)
 
 /* But the called function leaves it in the first "input" register.  */
 
-#define FUNCTION_OUTGOING_VALUE(VALTYPE, FUNC)  \
-  gen_rtx_REG (TYPE_MODE (VALTYPE), BASE_OUTGOING_VALUE_REG (TYPE_MODE (VALTYPE)))
+#define FUNCTION_OUTGOING_VALUE(VALTYPE, FUNC) \
+  function_value ((VALTYPE), TYPE_MODE (VALTYPE), 0)
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
-#define LIBCALL_VALUE(MODE)	\
-  gen_rtx_REG (MODE, BASE_RETURN_VALUE_REG (MODE))
+#define LIBCALL_VALUE(MODE) \
+  function_value (NULL_TREE, (MODE), 1)
 
 /* 1 if N is a possible register number for a function value
    as seen by the caller.

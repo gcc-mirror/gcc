@@ -84,12 +84,6 @@ Boston, MA 02111-1307, USA.  */
 #undef SPARC_DEFAULT_CMODEL
 #define SPARC_DEFAULT_CMODEL CM_MEDANY
 
-#undef SIZE_TYPE
-#define SIZE_TYPE "long long unsigned int"
- 
-#undef PTRDIFF_TYPE
-#define PTRDIFF_TYPE "long long int"
-  
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "long int"
    

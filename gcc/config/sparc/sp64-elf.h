@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for SPARC64, ELF.
-   Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1997, 1998  Free Software Foundation, Inc.
    Contributed by Doug Evans, dje@cygnus.com.
 
 This file is part of GNU CC.
@@ -29,18 +29,18 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (sparc64-elf)")
 
-/* A 64 bit v9 compiler without stack-bias,
-   in a Medium/Anywhere code model environment.
-   There is no stack bias as this configuration is intended for
-   embedded systems.  */
+/* A 64 bit v9 compiler in a Medium/Anywhere code model environment.  */
 
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT \
 (MASK_V9 + MASK_PTR64 + MASK_64BIT + MASK_HARD_QUAD \
- + MASK_APP_REGS + MASK_EPILOGUE + MASK_FPU)
+ + MASK_APP_REGS + MASK_EPILOGUE + MASK_FPU + MASK_STACK_BIAS)
 
 #undef SPARC_DEFAULT_CMODEL
 #define SPARC_DEFAULT_CMODEL CM_EMBMEDANY
+
+#undef CPP_PREDEFINES
+#define CPP_PREDEFINES "-Dsparc -D__ELF__ -Acpu(sparc) -Amachine(sparc)"
 
 /* __svr4__ is used by the C library (FIXME) */
 #undef CPP_SUBTARGET_SPEC
@@ -99,11 +99,6 @@ crtbegin.o%s \
 #undef LONG_DOUBLE_TYPE_SIZE
 #define LONG_DOUBLE_TYPE_SIZE 128
 
-#undef PTRDIFF_TYPE
-#define PTRDIFF_TYPE "long long int"
-#undef SIZE_TYPE
-#define SIZE_TYPE "long long unsigned int"
-
 /* The medium/anywhere code model practically requires us to put jump tables
    in the text section as gcc is unable to distinguish LABEL_REF's of jump
    tables from other label refs (when we need to).  */
@@ -120,7 +115,7 @@ crtbegin.o%s \
 #define DBX_DEBUGGING_INFO
 
 #undef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DWARF_DEBUG
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
 /* Stabs doesn't use this, and it confuses a simulator.  */
 /* ??? Need to see what DWARF needs, if anything.  */
@@ -149,6 +144,9 @@ do {								\
   output_addr_const ((FILE), (RTX));				\
   fputc ('\n', (FILE));						\
 } while (0)
+
+#define ASM_OUTPUT_DWARF2_ADDR_CONST(FILE, ADDR) \
+  fprintf ((FILE), "\t%s\t%s", UNALIGNED_LONGLONG_ASM_OP, (ADDR))
 
 /* ??? Not sure if this should be 4 or 8 bytes.  4 works for now.  */
 #define ASM_OUTPUT_DWARF_REF(FILE, LABEL) \

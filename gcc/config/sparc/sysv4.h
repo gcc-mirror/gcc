@@ -33,6 +33,16 @@ Boston, MA 02111-1307, USA.  */
 
 #include "svr4.h"
 
+/* ??? Put back the SIZE_TYPE/PTRDIFF_TYPE definitions set by sparc.h.
+   Why, exactly, is svr4.h messing with this?  Seems like the chip 
+   would know best.  */
+
+#undef SIZE_TYPE
+#define SIZE_TYPE (TARGET_ARCH64 ? "long unsigned int" : "unsigned int")
+
+#undef PTRDIFF_TYPE
+#define PTRDIFF_TYPE (TARGET_ARCH64 ? "long int" : "int")
+
 /* Undefined some symbols which are defined in "svr4.h" but which are
    appropriate only for typical svr4 systems, but not for the specific
    case of svr4 running on a Sparc.  */
