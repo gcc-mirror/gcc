@@ -726,7 +726,7 @@ attr_rtx VPROTO((enum rtx_code code, ...))
 
 /*VARARGS2*/
 static char *
-attr_printf VPROTO((register int len, register char *fmt, ...))
+attr_printf VPROTO((register int len, char *fmt, ...))
 {
 #ifndef __STDC__
   register int len;
