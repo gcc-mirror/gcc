@@ -1,3 +1,8 @@
+2002-05-29  Hans-Peter Nilsson  <hp@axis.com>
+
+	* doc/md.texi (Patterns): Note pattern condition pitfall
+	for unnamed insn.
+
 2002-05-29  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/sparc/netbsd-elf.c (CPP_SUBTARGET_SPEC64): Remove

@@ -158,7 +158,9 @@ available in a particular run.
 For nameless patterns, the condition is applied only when matching an
 individual insn, and only after the insn has matched the pattern's
 recognition template.  The insn's operands may be found in the vector
-@code{operands}.
+@code{operands}.  For an insn where the condition has once matched, it
+can't be used to control register allocation, for example by excluding
+certain hard registers or hard register combinations.
 
 @item
 The @dfn{output template}: a string that says how to output matching
