@@ -1,6 +1,6 @@
-/* { dg-require-effective-target ilp32 } */
 /* { dg-options "-O2" } */
 /* { dg-do compile } */
+/* { dg-require-effective-target ilp32 } */
 
 /* The problem was we were not striping the long cast here.
    Note this really should be invalid code but not for the

@@ -1,5 +1,8 @@
 2005-01-19  Hans-Peter Nilsson  <hp@axis.com>
 
+	* gcc.dg/asm-a.c: Move dg-require-effective-target to
+	after dg-do.
+
 	PR rtl-optimization/19462
 	* gcc.dg/torture/pr19462-1.c: Remove token xfail marker.
 
