@@ -417,14 +417,12 @@ print_usage (int error_p)
 static void
 print_version (void)
 {
-  unsigned version = GCOV_VERSION;
-
-  fnotice (stdout, "gcov %.4s (GCC %s)\n",
-	   (const char *)&version, version_string);
-  fnotice (stdout, "Copyright (C) 2002 Free Software Foundation, Inc.\n");
+  fnotice (stdout, "gcov (GCC) %s\n", version_string);
+  fnotice (stdout, "Copyright (C) 2003 Free Software Foundation, Inc.\n");
   fnotice (stdout,
-	   "This is free software; see the source for copying conditions.  There is NO\n\
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n");
+	   "This is free software; see the source for copying conditions.\n"
+  	   "There is NO warranty; not even for MERCHANTABILITY or \n"
+	   "FITNESS FOR A PARTICULAR PURPOSE.\n\n");
   exit (SUCCESS_EXIT_CODE);
 }
 
@@ -723,13 +721,10 @@ read_graph_file (void)
   if (version != GCOV_VERSION)
     {
       char v[4], e[4];
-      unsigned required = GCOV_VERSION;
 
-      for (ix = 4; ix--; required >>= 8, version >>= 8)
-	{
-	  v[ix] = version;
-	  e[ix] = required;
-	}
+      GCOV_UNSIGNED2STRING (v, version);
+      GCOV_UNSIGNED2STRING (e, GCOV_VERSION);
+
       fnotice (stderr, "%s:version `%.4s', prefer `%.4s'\n",
 	       bbg_file_name, v, e);
     }
@@ -786,7 +781,7 @@ read_graph_file (void)
 		     bbg_file_name, fn->name);
 	  else
 	    {
-	      unsigned ix, num_blocks = length / 4;
+	      unsigned ix, num_blocks = GCOV_TAG_BLOCKS_NUM (length);
 	      fn->num_blocks = num_blocks;
 
 	      fn->blocks
@@ -798,7 +793,7 @@ read_graph_file (void)
       else if (fn && tag == GCOV_TAG_ARCS)
 	{
 	  unsigned src = gcov_read_unsigned ();
-	  unsigned num_dests = (length - 4) / 8;
+	  unsigned num_dests = GCOV_TAG_ARCS_NUM (length);
 
 	  if (src >= fn->num_blocks || fn->blocks[src].succ)
 	    goto corrupt;
@@ -857,7 +852,7 @@ read_graph_file (void)
 	{
 	  unsigned blockno = gcov_read_unsigned ();
 	  unsigned *line_nos
-	    = (unsigned *)xcalloc ((length - 4) / 4, sizeof (unsigned));
+	    = (unsigned *)xcalloc (length - 1, sizeof (unsigned));
 
 	  if (blockno >= fn->num_blocks || fn->blocks[blockno].u.line.encoding)
 	    goto corrupt;
@@ -991,10 +986,13 @@ read_count_file (void)
   version = gcov_read_unsigned ();
   if (version != GCOV_VERSION)
     {
-      unsigned desired = GCOV_VERSION;
+      char v[4], e[4];
+
+      GCOV_UNSIGNED2STRING (v, version);
+      GCOV_UNSIGNED2STRING (e, GCOV_VERSION);
       
       fnotice (stderr, "%s:version `%.4s', prefer version `%.4s'\n",
-	       da_file_name, (const char *)&version, (const char *)&desired);
+	       da_file_name, v, e);
     }
   tag = gcov_read_unsigned ();
   if (tag != bbg_stamp)
@@ -1045,7 +1043,7 @@ read_count_file (void)
 	}
       else if (tag == GCOV_TAG_FOR_COUNTER (GCOV_COUNTER_ARCS) && fn)
 	{
-	  if (length != 8 * fn->num_counts)
+	  if (length != GCOV_TAG_COUNTER_LENGTH (fn->num_counts))
 	    goto mismatch;
 
 	  if (!fn->counts)

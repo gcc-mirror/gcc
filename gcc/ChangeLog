@@ -1,3 +1,36 @@
+2003-07-10  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcov-io.h: Update documentation.
+	(GCOV_UNSIGNED2STRING): New.
+	(GCOV_TAG_FUNCTION_LENGTH, GCOV_TAG_BLOCKS_LENGTH,
+	GCOV_TAG_ARCS_LENGTH, GCOV_TAG_COUNTER_LENGTH,
+	GCOV_TAG_SUMMARY_LENGTH): Adjust.
+	(GCOV_TAG_BLOCKS_NUM, GCOV_TAG_ARCS_NUM,
+	GCOV_TAG_COUNTER_NUM): New.
+	(GCOV_BLOCK_SIZE): Number of words.
+	(gcov_var): Adjust buffer type.
+	* gcov-io.c (gcov_write_bytes, gcov_read_bytes): Rename to ...
+	(gcov_write_words, gcov_read_words): ... here. Take a 4-byte word
+	count, not byte count.
+	(gcov_open): Adjust overread init.
+	(gcov_allocate, gcov_write_unsigned, gcov_write_counter,
+	gcov_write_string, gcov_write_tag, gcov_write_length,
+	gcov_write_tag_length): Adjust.
+	(gcov_read_unsigned, gcov_read_counter, gcov_read_string): Adjust.
+	(gcov_sync, gcov_seek): Adjust.
+	* gcov-dump.c (print_usage): Show gcc version only.
+	(dump_file): Use GCOV_UNSIGNED2STRING.
+	(tag_blocks, tag_arcs, tag_counters): Use GCOV_TAG_*_NUM macros.
+	* gcov.c (print_version): Show gcc version only.
+	(read_graph_file): Use GCOV_UNSIGNED2STRING. Use
+	GCOV_TAG_*_NUM macros.
+	(read_count_file): Use GCOV_UNSIGNED2STRING. Use
+	GCOV_TAG_COUNTER_LENGTH.
+	* coverage.c (read_counts_file): Use GCOV_UNSIGNED2STRING.
+	Use GCOV_TAG_COUNTER_NUM.
+	* libgcov.c (gcov_version): Use GCOV_UNSIGNED2STRING.
+	(__gcov_merge_single, __gcov_merge_delta): Use GCOV_CHECK.
+
 2003-07-10  Andreas Schwab  <schwab@suse.de>
 
 	* gcov-dump.c (dump_file): Fix missing address operator.

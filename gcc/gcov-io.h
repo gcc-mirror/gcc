@@ -41,8 +41,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    Numbers are recorded in the 32 bit unsigned binary form of the
    endianness of the machine generating the file. 64 bit numbers are
    stored as two 32 bit numbers, the low part first.  Strings are
-   stored as length rounded up to 4 followed by the string and then 1
-   to 4 NUL bytes.  Zero length and NULL strings are simply stored as
+   padded with 1 to 4 NUL bytes, to bring the length up to a multiple
+   of 4. The number of 4 bytes is stored, followed by the padded
+   string. Zero length and NULL strings are simply stored as
    a length of zero (they have no trailing NUL or padding).
 
    	int32:  byte3 byte2 byte1 byte0 | byte0 byte1 byte2 byte3
@@ -89,16 +90,17 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    Records are not nested, but there is a record hierarchy.  Tag
    numbers reflect this hierarchy.  Tags are unique across note and
    data files.  Some record types have a varying amount of data.  The
-   LENGTH is usually used to determine how much data.  The tag value
-   is split into 4 8-bit fields, one for each of four possible levels.
-   The most significant is allocated first.  Unused levels are zero.
-   Active levels are odd-valued, so that the LSB of the level is one.
-   A sub-level incorporates the values of its superlevels.  This
-   formatting allows you to determine the tag hierarchy, without
-   understanding the tags themselves, and is similar to the standard
-   section numbering used in technical documents.  Level values
-   [1..3f] are used for common tags, values [41..9f] for the notes
-   file and [a1..ff] for the data file.
+   LENGTH is the number of 4bytes that follow and is usually used to
+   determine how much data.  The tag value is split into 4 8-bit
+   fields, one for each of four possible levels.  The most significant
+   is allocated first.  Unused levels are zero.  Active levels are
+   odd-valued, so that the LSB of the level is one.  A sub-level
+   incorporates the values of its superlevels.  This formatting allows
+   you to determine the tag hierarchy, without understanding the tags
+   themselves, and is similar to the standard section numbering used
+   in technical documents.  Level values [1..3f] are used for common
+   tags, values [41..9f] for the notes file and [a1..ff] for the data
+   file.
 
    The basic block graph file contains the following records
    	note: unit function-graph*
@@ -252,23 +254,33 @@ typedef HOST_WIDEST_INT gcov_type;
 */
 #include "gcov-iov.h"
 
+/* Convert a magic or version number to a 4 character string.  */
+#define GCOV_UNSIGNED2STRING(ARRAY,VALUE)	\
+  ((ARRAY)[0] = (char)((VALUE) >> 24),		\
+   (ARRAY)[1] = (char)((VALUE) >> 16),		\
+   (ARRAY)[2] = (char)((VALUE) >> 8),		\
+   (ARRAY)[3] = (char)((VALUE) >> 0))
+
 /* The record tags.  Values [1..3f] are for tags which may be in either
    file.  Values [41..9f] for those in the note file and [a1..ff] for
    the data file.  */
 
 #define GCOV_TAG_FUNCTION	 ((gcov_unsigned_t)0x01000000)
-#define GCOV_TAG_FUNCTION_LENGTH (2 * 4)
+#define GCOV_TAG_FUNCTION_LENGTH (2)
 #define GCOV_TAG_BLOCKS		 ((gcov_unsigned_t)0x01410000)
-#define GCOV_TAG_BLOCKS_LENGTH(NUM) ((NUM) * 4)
+#define GCOV_TAG_BLOCKS_LENGTH(NUM) (NUM)
+#define GCOV_TAG_BLOCKS_NUM(LENGTH) (LENGTH)
 #define GCOV_TAG_ARCS		 ((gcov_unsigned_t)0x01430000)
-#define GCOV_TAG_ARCS_LENGTH(NUM)  (1 * 4 + (NUM) * (2 * 4))
+#define GCOV_TAG_ARCS_LENGTH(NUM)  (1 + (NUM) * 2)
+#define GCOV_TAG_ARCS_NUM(LENGTH)  (((LENGTH) - 1) / 2)
 #define GCOV_TAG_LINES		 ((gcov_unsigned_t)0x01450000)
 #define GCOV_TAG_COUNTER_BASE 	 ((gcov_unsigned_t)0x01a10000)
-#define GCOV_TAG_COUNTER_LENGTH(NUM) ((NUM) * 8)
+#define GCOV_TAG_COUNTER_LENGTH(NUM) ((NUM) * 2)
+#define GCOV_TAG_COUNTER_NUM(LENGTH) ((LENGTH) / 2)
 #define GCOV_TAG_OBJECT_SUMMARY  ((gcov_unsigned_t)0xa1000000)
 #define GCOV_TAG_PROGRAM_SUMMARY ((gcov_unsigned_t)0xa3000000)
 #define GCOV_TAG_SUMMARY_LENGTH  \
-	(1 * 4 + GCOV_COUNTERS_SUMMABLE * (2 * 4 + 3 * 8))
+	(1 + GCOV_COUNTERS_SUMMABLE * (2 + 3 * 2))
 
 /* Counters that are collected.  */
 #define GCOV_COUNTER_ARCS 	0  /* Arc transitions.  */
@@ -407,8 +419,8 @@ extern void __gcov_merge_delta (gcov_type *, unsigned);
 
 #if IN_LIBGCOV >= 0
 
-/* Optimum size read from or written to disk.  */
-#define GCOV_BLOCK_SIZE (1 << 12)
+/* Optimum number of gcov_unsigned_t's read from or written to disk.  */
+#define GCOV_BLOCK_SIZE (1 << 10)
 
 GCOV_LINKAGE struct gcov_var
 {
@@ -416,7 +428,7 @@ GCOV_LINKAGE struct gcov_var
   gcov_position_t start;	/* Position of first byte of block */
   unsigned offset;		/* Read/write position within the block.  */
   unsigned length;		/* Read limit in the block.  */
-  unsigned overread;		/* Number of bytes overread.  */
+  unsigned overread;		/* Number of words overread.  */
   int error;			/* < 0 overflow, > 0 disk error.  */
   int mode;	                /* < 0 writing, > 0 reading */
 #if IN_LIBGCOV
@@ -424,13 +436,13 @@ GCOV_LINKAGE struct gcov_var
      fit within this buffer and we always can transfer GCOV_BLOCK_SIZE
      to and from the disk. libgcov never backtracks and only writes 4
      or 8 byte objects.  */
-  char buffer[GCOV_BLOCK_SIZE + 4] __attribute__ ((aligned (4)));
+  gcov_unsigned_t buffer[GCOV_BLOCK_SIZE + 1];
 #else
   int endian;			/* Swap endianness.  */
   /* Holds a variable length block, as the compiler can write
      strings and needs to backtrack.  */
   size_t alloc;
-  char *buffer;
+  gcov_unsigned_t *buffer;
 #endif
 } gcov_var;
 

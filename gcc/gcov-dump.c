@@ -117,16 +117,11 @@ print_usage (void)
 static void
 print_version (void)
 {
-  char v[4];
-  unsigned version = GCOV_VERSION;
-  unsigned ix;
-
-  for (ix = 4; ix--; version >>= 8)
-    v[ix] = version;
-  printf ("gcov %.4s (GCC %s)\n", v, version_string);
-  printf ("Copyright (C) 2002 Free Software Foundation, Inc.\n");
-  printf ("This is free software; see the source for copying conditions.  There is NO\n\
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n");
+  printf ("gcov-dump (GCC) %s\n", version_string);
+  printf ("Copyright (C) 2003 Free Software Foundation, Inc.\n");
+  printf ("This is free software; see the source for copying conditions.\n"
+  	  "There is NO warranty; not even for MERCHANTABILITY or \n"
+	  "FITNESS FOR A PARTICULAR PURPOSE.\n\n");
 }
 
 static void
@@ -158,6 +153,7 @@ dump_file (const char *filename)
     unsigned version;
     const char *type = NULL;
     int endianness = 0;
+    char m[4], v[4];
     
     if ((endianness = gcov_magic (magic, GCOV_DATA_MAGIC)))
       type = "data";
@@ -170,16 +166,17 @@ dump_file (const char *filename)
 	return;
       }
     version = gcov_read_unsigned ();
+    GCOV_UNSIGNED2STRING (v, version);
+    GCOV_UNSIGNED2STRING (m, magic);
     
     printf ("%s:%s:magic `%.4s':version `%.4s'%s\n", filename, type,
- 	    (const char *)&magic, (const char *)&version,
-	    endianness < 0 ? " (swapped endianness)" : "");
+ 	    m, v, endianness < 0 ? " (swapped endianness)" : "");
     if (version != GCOV_VERSION)
       {
-	unsigned expected = GCOV_VERSION;
+	char e[4];
 	
-	printf ("%s:warning:current version is `%.4s'\n", filename,
-		(const char *)&expected);
+	GCOV_UNSIGNED2STRING (e, GCOV_VERSION);
+	printf ("%s:warning:current version is `%.4s'\n", filename, e);
       }
   }
 
@@ -287,7 +284,7 @@ static void
 tag_blocks (const char *filename ATTRIBUTE_UNUSED,
 	    unsigned tag ATTRIBUTE_UNUSED, unsigned length ATTRIBUTE_UNUSED)
 {
-  unsigned n_blocks = length / 4;
+  unsigned n_blocks = GCOV_TAG_BLOCKS_NUM (length);
 
   printf (" %u blocks", n_blocks);
 
@@ -312,7 +309,7 @@ static void
 tag_arcs (const char *filename ATTRIBUTE_UNUSED,
 	  unsigned tag ATTRIBUTE_UNUSED, unsigned length ATTRIBUTE_UNUSED)
 {
-  unsigned n_arcs = (length - 4) / 8;
+  unsigned n_arcs = GCOV_TAG_ARCS_NUM (length);
 
   printf (" %u arcs", n_arcs);
   if (flag_dump_contents)
@@ -386,7 +383,7 @@ tag_counters (const char *filename ATTRIBUTE_UNUSED,
 	      unsigned tag ATTRIBUTE_UNUSED, unsigned length ATTRIBUTE_UNUSED)
 {
   static const char *const counter_names[] = GCOV_COUNTER_NAMES;
-  unsigned n_counts = length / 8;
+  unsigned n_counts = GCOV_TAG_COUNTER_NUM (length);
 
   printf (" %s %u counts",
 	  counter_names[GCOV_COUNTER_FOR_TAG (tag)], n_counts);
