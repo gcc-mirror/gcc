@@ -83,6 +83,8 @@ struct decision
   int elt_zero_int;		/* Required value for XINT (rtl, 0) */
   int test_elt_one_int;		/* Nonzero if should test XINT (rtl, 1) */
   int elt_one_int;		/* Required value for XINT (rtl, 1) */
+  int test_elt_zero_wide;	/* Nonzero if should test XWINT (rtl, 0) */
+  HOST_WIDE_INT elt_zero_wide;	/* Required value for XWINT (rtl, 0) */
   char *tests;			/* If nonzero predicate to call */
   int pred;			/* `preds' index of predicate or -1 */
   char *c_test;			/* Additional test to perform */
@@ -303,8 +305,10 @@ add_to_sequence (pattern, last, position)
   new->veclen = 0;
   new->test_elt_zero_int = 0;
   new->test_elt_one_int = 0;
+  new->test_elt_zero_wide = 0;
   new->elt_zero_int = 0;
   new->elt_one_int = 0;
+  new->elt_zero_wide = 0;
   new->tests = 0;
   new->pred = -1;
   new->c_test = 0;
@@ -500,6 +504,11 @@ add_to_sequence (pattern, last, position)
 	  this->test_elt_one_int = 1;
 	  this->elt_one_int = XINT (pattern, i);
 	}
+      else if (fmt[i] == 'w' && i == 0)
+	{
+	  this->test_elt_zero_wide = 1;
+	  this->elt_zero_wide = XWINT (pattern, i);
+	}
       else if (fmt[i] == 'E')
 	{
 	  register int j;
@@ -549,6 +558,8 @@ not_both_true (d1, d2, toplevel)
 	  && d1->elt_zero_int != d2->elt_zero_int)
       || (d1->test_elt_one_int && d2->test_elt_one_int
 	  && d1->elt_one_int != d2->elt_one_int)
+      || (d1->test_elt_zero_wide && d2->test_elt_zero_wide
+	  && d1->elt_zero_wide != d2->elt_zero_wide)
       || (d1->veclen && d2->veclen && d1->veclen != d2->veclen))
     return 1;
 
@@ -742,6 +753,7 @@ merge_trees (oldh, addh)
 	     would cause an infinite recursion.  */
 	  if (old->tests == 0 && old->test_elt_zero_int == 0
 	      && old->test_elt_one_int == 0 && old->veclen == 0
+	      && old->test_elt_zero_wide == 0
 	      && old->dupno == -1 && old->mode == VOIDmode
 	      && old->code == UNKNOWN
 	      && (old->c_test != 0 || add->c_test != 0))
@@ -751,16 +763,18 @@ merge_trees (oldh, addh)
 		    || (old->pred >= 0 && old->pred == add->pred)
 		    || (old->tests && add->tests
 			&& !strcmp (old->tests, add->tests)))
-	      && old->test_elt_zero_int == add->test_elt_zero_int
-	      && old->elt_zero_int == add->elt_zero_int
-	      && old->test_elt_one_int == add->test_elt_one_int
-	      && old->elt_one_int == add->elt_one_int
-	      && old->veclen == add->veclen
-	      && old->dupno == add->dupno
-	      && old->opno == add->opno
-	      && old->code == add->code
-	      && old->enforce_mode == add->enforce_mode
-	      && old->mode == add->mode)
+		   && old->test_elt_zero_int == add->test_elt_zero_int
+		   && old->elt_zero_int == add->elt_zero_int
+		   && old->test_elt_one_int == add->test_elt_one_int
+		   && old->elt_one_int == add->elt_one_int
+		   && old->test_elt_zero_wide == add->test_elt_zero_wide
+		   && old->elt_zero_wide == add->elt_zero_wide
+		   && old->veclen == add->veclen
+		   && old->dupno == add->dupno
+		   && old->opno == add->opno
+		   && old->code == add->code
+		   && old->enforce_mode == add->enforce_mode
+		   && old->mode == add->mode)
 	    {
 	      /* If the additional test is not the same, split both nodes
 		 into nodes that just contain all things tested before the
@@ -793,6 +807,7 @@ merge_trees (oldh, addh)
 		      split->veclen = 0;
 		      split->test_elt_zero_int = 0;
 		      split->test_elt_one_int = 0;
+		      split->test_elt_zero_wide = 0;
 		      split->tests = 0;
 		      split->pred = -1;
 		    }
@@ -817,6 +832,7 @@ merge_trees (oldh, addh)
 		      split->veclen = 0;
 		      split->test_elt_zero_int = 0;
 		      split->test_elt_one_int = 0;
+		      split->test_elt_zero_wide = 0;
 		      split->tests = 0;
 		      split->pred = -1;
 		    }
@@ -873,7 +889,8 @@ merge_trees (oldh, addh)
       if (best_position == 0)
 	abort ();
 
-      if (old == 0 && position_merit (0, add_mode, add->code) < best_merit)
+      if (old == 0
+	  && position_merit (NULL_PTR, add_mode, add->code) < best_merit)
 	{
 	  add->prev = 0;
 	  add->next = oldh.first;
@@ -964,7 +981,7 @@ write_subroutine (tree, type)
 
   printf ("x%d;\n", max_depth);
   printf ("  %s tem;\n", type == SPLIT ? "rtx" : "int");
-  write_tree (tree, "", 0, 1, type);
+  write_tree (tree, "", NULL_PTR, 1, type);
   printf (" ret0: return %d;\n}\n\n", type == SPLIT ? 0 : -1);
 }
 
@@ -1278,7 +1295,8 @@ write_tree_1 (tree, prevpos, afterward, type)
 
       if ((mode != switch_mode && ! p->ignore_mode)
 	  || (p->code != switch_code && p->code != UNKNOWN && ! p->ignore_code)
-	  || p->test_elt_zero_int || p->test_elt_one_int || p->veclen
+	  || p->test_elt_zero_int || p->test_elt_one_int
+	  || p->test_elt_zero_wide || p->veclen
 	  || p->dupno >= 0 || p->tests || p->num_clobbers_to_add)
 	{
 	  printf ("%sif (", indents[indent]);
@@ -1297,6 +1315,14 @@ write_tree_1 (tree, prevpos, afterward, type)
 	    printf ("XINT (x%d, 0) == %d && ", depth, p->elt_zero_int);
 	  if (p->test_elt_one_int)
 	    printf ("XINT (x%d, 1) == %d && ", depth, p->elt_one_int);
+	  if (p->test_elt_zero_wide)
+	    printf (
+#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
+		    "XWINT (x%d, 0) == %d && ",
+#else
+		    "XWINT (x%d, 0) == %ld && ",
+#endif
+		    depth, p->elt_zero_wide);
 	  if (p->veclen)
 	    printf ("XVECLEN (x%d, 0) == %d && ", depth, p->veclen);
 	  if (p->dupno >= 0)
