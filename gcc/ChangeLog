@@ -1,3 +1,8 @@
+2004-06-21  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.h (ARM_LEGITIMIZE_RELOAD_ADDRESS): Soft-float need
+	not imply FPA.
+
 2004-06-21  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (operand_equal_p): Pass flags in recursive calls for
