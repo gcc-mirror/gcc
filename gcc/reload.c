@@ -2685,11 +2685,18 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	     Don't bother with this if this alternative will accept this
 	     operand.
 
+	     Don't do this for a multiword operand, if
+	     we have to worry about small classes, because making reg groups
+	     harder to allocate is asking for trouble.
+
 	     Don't do this if the preferred class has only one register
 	     because we might otherwise exhaust the class.  */
 
 
 	  if (! win && this_alternative[i] != (int) NO_REGS
+#ifdef SMALL_REGISTER_CLASSES
+	      && GET_MODE_SIZE (operand_mode[i]) <= UNITS_PER_WORD
+#endif
 	      && reg_class_size[(int) preferred_class[i]] > 1)
 	    {
 	      if (! reg_class_subset_p (this_alternative[i],
