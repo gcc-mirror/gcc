@@ -1347,7 +1347,7 @@ package body Exp_Pakd is
 
          --      the "or ..." is omitted if rhs is constant and all 0 bits
 
-         --      rhs is converted to the appropriate type.
+         --      rhs is converted to the appropriate type
 
          --      The result is converted back to the array type, since
          --      otherwise we lose knowledge of the packed nature.
@@ -1545,7 +1545,7 @@ package body Exp_Pakd is
 
          --    Set_nn (Arr'address, Subscr, Bits_nn!(Rhs))
 
-         --  where Subscr is the computed linear subscript.
+         --  where Subscr is the computed linear subscript
 
          declare
             Bits_nn : constant Entity_Id := RTE (Bits_Id (Csiz));
@@ -1556,7 +1556,7 @@ package body Exp_Pakd is
          begin
             if No (Bits_nn) then
 
-               --  Error, most likely High_Integrity_Mode restriction.
+               --  Error, most likely High_Integrity_Mode restriction
 
                return;
             end if;
@@ -1774,7 +1774,7 @@ package body Exp_Pakd is
       --  convert to the base type, since this would be unconstrained, and
       --  hence not have a corresponding packed array type set.
 
-      --  Note that both operands must be modular for this code to be used.
+      --  Note that both operands must be modular for this code to be used
 
       if Is_Modular_Integer_Type (PAT)
            and then
@@ -1916,7 +1916,7 @@ package body Exp_Pakd is
          return;
       end if;
 
-      --  Remaining processing is for the bit-packed case.
+      --  Remaining processing is for the bit-packed case
 
       Obj := Relocate_Node (Prefix (N));
       Convert_To_Actual_Subtype (Obj);
@@ -1967,7 +1967,7 @@ package body Exp_Pakd is
 
          --    Component_Type!(Get_nn (Arr'address, Subscr))
 
-         --  where Subscr is the computed linear subscript.
+         --  where Subscr is the computed linear subscript
 
          declare
             Get_nn : Entity_Id;

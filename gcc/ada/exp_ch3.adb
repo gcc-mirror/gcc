@@ -640,7 +640,7 @@ package body Exp_Ch3 is
       P    : Node_Id;
 
    begin
-      --  Nothing to do if there is no task hierarchy.
+      --  Nothing to do if there is no task hierarchy
 
       if Restriction_Active (No_Task_Hierarchy) then
          return;
@@ -686,7 +686,7 @@ package body Exp_Ch3 is
          end loop;
       end if;
 
-      --  Now define the renaming of the master_id.
+      --  Now define the renaming of the master_id
 
       M_Id :=
         Make_Defining_Identifier (Loc,
@@ -1310,7 +1310,7 @@ package body Exp_Ch3 is
       Decl : Node_Id;
 
    begin
-      --  Nothing to do if there is no task hierarchy.
+      --  Nothing to do if there is no task hierarchy
 
       if Restriction_Active (No_Task_Hierarchy) then
          return;
@@ -2663,7 +2663,7 @@ package body Exp_Ch3 is
                   Expressions => New_List (New_Occurrence_Of (Rnn, Loc))))),
           End_Label  => Empty);
 
-      --  Build exit condition.
+      --  Build exit condition
 
       declare
          F_Ass : constant List_Id := New_List;
@@ -3970,7 +3970,7 @@ package body Exp_Ch3 is
          end loop;
       end if;
 
-      --  Now build an array declaration.
+      --  Now build an array declaration
 
       --    typA : array (Natural range 0 .. num - 1) of ctype :=
       --             (v, v, v, v, v, ....)
@@ -4081,7 +4081,7 @@ package body Exp_Ch3 is
 
          if Enumeration_Rep (Ent) = Last_Repval then
 
-            --  Another special case: for a single literal, Pos is zero.
+            --  Another special case: for a single literal, Pos is zero
 
             Pos_Expr := Make_Integer_Literal (Loc, Uint_0);
 
@@ -4542,7 +4542,7 @@ package body Exp_Ch3 is
 
          if RACW_Seen then
 
-            --  If there are RACWs designating this type, make stubs now.
+            --  If there are RACWs designating this type, make stubs now
 
             Remote_Types_Tagged_Full_View_Encountered (Def_Id);
          end if;
@@ -4574,7 +4574,7 @@ package body Exp_Ch3 is
             begin
                if Scope (Old_C) = Base_Type (Def_Id) then
 
-                  --  The entity is the one in the parent. Create new one.
+                  --  The entity is the one in the parent. Create new one
 
                   New_C := New_Copy (Old_C);
                   Set_Parent (New_C, Parent (Old_C));

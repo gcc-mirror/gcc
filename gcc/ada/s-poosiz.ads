@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---        Copyright (C) 1992,1993,1994 Free Software Foundation, Inc.       --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -66,8 +66,7 @@ pragma Elaborate_Body;
       end record;
 
    function Storage_Size
-     (Pool : Stack_Bounded_Pool)
-      return System.Storage_Elements.Storage_Count;
+     (Pool : Stack_Bounded_Pool) return System.Storage_Elements.Storage_Count;
 
    procedure Allocate
      (Pool         : in out Stack_Bounded_Pool;

@@ -83,7 +83,7 @@ package body Sem_Ch13 is
    --  operational attributes.
 
    function Address_Aliased_Entity (N : Node_Id) return Entity_Id;
-   --  If expression N is of the form E'Address, return E.
+   --  If expression N is of the form E'Address, return E
 
    procedure Mark_Aliased_Address_As_Volatile (N : Node_Id);
    --  This is used for processing of an address representation clause. If
@@ -2131,7 +2131,7 @@ package body Sem_Ch13 is
                        ("component clause previously given#", CC);
 
                   else
-                     --  Update Fbit and Lbit to the actual bit number.
+                     --  Update Fbit and Lbit to the actual bit number
 
                      Fbit := Fbit + UI_From_Int (SSU) * Posit;
                      Lbit := Lbit + UI_From_Int (SSU) * Posit;
@@ -2647,7 +2647,7 @@ package body Sem_Ch13 is
                   return;
                end if;
 
-               --  Otherwise look at the identifier and see if it is OK.
+               --  Otherwise look at the identifier and see if it is OK
 
                if Ekind (Ent) = E_Named_Integer
                     or else
@@ -3206,7 +3206,7 @@ package body Sem_Ch13 is
          raise Program_Error;
       end if;
 
-      --  Fall through with Hi and Lo set. Deal with biased case.
+      --  Fall through with Hi and Lo set. Deal with biased case
 
       if (Biased and then not Is_Fixed_Point_Type (T))
         or else Has_Biased_Representation (T)

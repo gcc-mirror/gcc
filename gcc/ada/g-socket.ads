@@ -502,12 +502,16 @@ package GNAT.Sockets is
    function Get_Host_By_Address
      (Address : Inet_Addr_Type;
       Family  : Family_Type := Family_Inet) return Host_Entry_Type;
-   --  Return host entry structure for the given inet address
+   --  Return host entry structure for the given Inet address.
+   --  Note that no result will be returned if there is no mapping of this
+   --  IP address to a host name in the system tables (host database,
+   --  DNS or otherwise).
 
    function Get_Host_By_Name
      (Name : String) return Host_Entry_Type;
    --  Return host entry structure for the given host name. Here name
-   --  is either a host name, or an IP address.
+   --  is either a host name, or an IP address. If Name is an IP address,
+   --  this is equivalent to Get_Host_By_Address (Inet_Addr (Name)).
 
    function Host_Name return String;
    --  Return the name of the current host
