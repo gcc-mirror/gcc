@@ -2366,6 +2366,12 @@ find_and_verify_loops (f)
 		  }
 	      }
 
+	    /* Make sure that the target of P is within the current loop.  */
+
+	    if (JUMP_LABEL (p)
+		&& uid_loop_num[INSN_UID (JUMP_LABEL (p))] != this_loop_num)
+	      outer_loop = this_loop_num;
+
 	    /* If we stopped on a JUMP_INSN to the next insn after INSN,
 	       we have a block of code to try to move.
 
