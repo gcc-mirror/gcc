@@ -140,7 +140,9 @@ struct obstack *temp_obstack = &obstack2;
 /* Define this so we can link with print-rtl.o to get debug_rtx function.  */
 char **insn_name_ptr = 0;
 
+#ifdef NEED_DECLARATION_FREE
 extern void free ();
+#endif
 extern rtx read_rtx ();
 
 static void fatal ();

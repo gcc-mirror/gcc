@@ -2,7 +2,7 @@
 
    - some flags HAVE_... saying which simple standard instructions are
    available for this machine.
-   Copyright (C) 1987, 1991, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991, 1995, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -37,7 +37,9 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
+#ifdef NEED_DECLARATION_FREE
 extern void free ();
+#endif
 extern rtx read_rtx ();
 
 char *xmalloc ();

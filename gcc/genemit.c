@@ -1,5 +1,5 @@
 /* Generate code from machine description to emit insns as rtl.
-   Copyright (C) 1987, 88, 91, 94, 95, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91, 94, 95, 97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -34,7 +34,9 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
+#ifdef NEED_DECLARATION_FREE
 extern void free ();
+#endif
 extern rtx read_rtx ();
 
 char *xmalloc ();
