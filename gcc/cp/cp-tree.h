@@ -1840,7 +1840,7 @@ struct lang_decl GTY(())
 
 /* Nonzero if NODE is a user-defined conversion operator.  */
 #define DECL_CONV_FN_P(NODE) \
-  (IDENTIFIER_TYPENAME_P (DECL_NAME (NODE)))
+  (DECL_NAME (NODE) && IDENTIFIER_TYPENAME_P (DECL_NAME (NODE)))
 
 /* If FN is a conversion operator, the type to which it converts.
    Otherwise, NULL_TREE.  */

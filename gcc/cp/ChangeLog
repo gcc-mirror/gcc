@@ -1,3 +1,7 @@
+2003-12-10  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (DECL_CONV_FN_P): Check that DECL_NAME is non-NULL.
+
 2003-12-08  Matt Austern  <austern@apple.com>
 
 	PR c/13134
