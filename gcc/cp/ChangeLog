@@ -1,3 +1,16 @@
+2004-08-11  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/16964
+	* parser.c (cp_parser_class_specifier): Robustify.
+
+	PR c++/16904
+	* pt.c (tsubst_copy_and_build): Complain about invalid
+	qualification.
+
+	PR c++/16929
+	* pt.c (tsubst_default_argument): Clear out current_class_ptr and
+	current_class_ref while tsubsting.
+	
 2004-08-10  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/16971

@@ -1,3 +1,14 @@
+2004-08-11  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/16964
+	* g++.dg/parse/error16.C: New test.
+
+	PR c++/16904
+	* g++.dg/template/error14.C: New test.
+
+	PR c++/16929
+	* g++.dg/template/error15.C: New test.
+
 2004-08-11  Devang Patel  <dpatel@apple.com>
 
 	* gcc.dg/darwin-ld-20040809-1.c: New test.
