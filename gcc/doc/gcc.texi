@@ -615,9 +615,6 @@ libraries and debuggers on certain systems.
 
 @itemize @bullet
 @item
-Objective C does not work on the RS/6000.
-
-@item
 G++ does not do name mangling in the same way as other C++
 compilers.  This means that object files compiled with one compiler
 cannot be used with another.
@@ -855,6 +852,29 @@ bug because redefining an @code{extern} variable as @code{static}
 is undefined in ISO C@.
 
 @item
+The @file{libstdc++.a} library in GCC relies on the SVR4 dynamic
+linker semantics which merges global symbols between libraries and
+applications, especially necessary for C++ streams functionality.
+This is not the default behavior of AIX shared libraries and dynamic
+linking.  @file{libstdc++.a} is built on AIX with ``runtime-linking''
+enabled so that symbol merging can occur.  To utilize this feature,
+the application linked with @file{libstdc++.a} must include the
+@option{-Wl,-brtl} flag on the link line.  G++ cannot impose this
+because this option may interfere with the semantics of the user
+program and users may not always use @samp{g++} to link his or her
+application. Applications are not required to use the
+@option{-Wl,-brtl} flag on the link line---the rest of the
+@file{libstdc++.a} library which is not dependent on the symbol
+merging semantics will continue to function correctly.
+
+@item
+An application can interpose its own definition of functions for
+functions invoked by @file{libstdc++.a} with ``runtime-linking''
+enabled on AIX.  To accomplish this the application must be linked
+with ``runtime-linking'' option and the functions explicitly must be
+exported by the application (@option{-Wl,-brtl,-bE:exportfile}).
+
+@item
 AIX on the RS/6000 provides support (NLS) for environments outside of
 the United States.  Compilers and assemblers use NLS to support
 locale-specific representations of various objects including
@@ -870,11 +890,6 @@ Even if you specify @option{-fdollars-in-identifiers},
 you cannot successfully use @samp{$} in identifiers on the RS/6000 due
 to a restriction in the IBM assembler.  GAS supports these
 identifiers.
-
-@item
-On the RS/6000, XLC version 1.3.0.0 will miscompile @file{jump.c}.  XLC
-version 1.3.0.1 or later fixes this problem.  You can obtain XLC-1.3.0.2
-by requesting PTF 421749 from IBM@.
 
 @item
 @opindex mno-serialize-volatile
@@ -1470,6 +1485,11 @@ implemented using the ISO standard @file{stdarg.h} method of
 variable arguments.  Furthermore, calls to functions using @file{stdarg.h}
 variable arguments must have a prototype for the called function
 in scope at the time of the call.
+
+@item
+On AIX and other platforms without weak symbol support, templates
+need to be instantiated explicitly and symbols for static members
+of templates will not be generated.
 @end itemize
 
 @node C++ Misunderstandings
