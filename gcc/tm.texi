@@ -6782,6 +6782,11 @@ value in this case.  Do not define this macro if it would always return
 @code{NIL}.  On machines where this macro is defined, you will normally
 define it as the constant @code{SIGN_EXTEND} or @code{ZERO_EXTEND}.
 
+@findex SHORT_IMMEDIATES_SIGN_EXTEND
+@item SHORT_IMMEDIATES_SIGN_EXTEND
+Define this macro if loading short immediate values into registers sign
+extends.
+
 @findex IMPLICIT_FIX_EXPR
 @item IMPLICIT_FIX_EXPR
 An alias for a tree code that should be used by default for conversion
