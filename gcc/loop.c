@@ -9652,6 +9652,10 @@ insert_loop_mem (mem, data)
 	 CONST_DOUBLE, so there's no need to traverse into this.  */
       return -1;
 
+    case EXPR_LIST:
+      /* We're not interested in any MEMs that only appear in notes.  */
+      return -1;
+
     default:
       /* This is not a MEM.  */
       return 0;

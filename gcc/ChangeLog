@@ -1,3 +1,8 @@
+Fri Dec 17 10:34:16 1999  Richard Earnshaw <rearnsha@arm.com>
+
+	* loop.c (insert_loop_mem): Don't record MEMs from inside 
+	EXPR_LISTs.
+
 Fri Dec 17 12:08:11 MET 1999  Jan Hubicka  <hubicka@freesoftr.cz>
 
 	* regclass.c (regclass): Do not use flowgraph when not optimizing.
