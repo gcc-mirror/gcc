@@ -1146,6 +1146,9 @@ override_options ()
 	       ix86_tls_dialect_string);
     }
 
+  if (profile_flag)
+    target_flags &= ~MASK_OMIT_LEAF_FRAME_POINTER;
+
   /* Keep nonleaf frame pointers.  */
   if (TARGET_OMIT_LEAF_FRAME_POINTER)
     flag_omit_frame_pointer = 1;
@@ -1257,6 +1260,8 @@ optimization_options (level, size)
       flag_pcc_struct_return = 0;
       flag_asynchronous_unwind_tables = 1;
     }
+  if (profile_flag)
+    flag_omit_frame_pointer = 0;
 }
 
 /* Table of valid machine attributes.  */
@@ -1634,7 +1639,7 @@ classify_argument (mode, type, classes, bit_offset)
 		     return 0;
 		   for (i = 0; i < num; i++)
 		     {
-		       int pos = (offset + bit_offset) / 8 / 8;
+		       int pos = (offset + (bit_offset % 64)) / 8 / 8;
 		       classes[i + pos] =
 			 merge_classes (subclasses[i], classes[i + pos]);
 		     }
@@ -1671,7 +1676,7 @@ classify_argument (mode, type, classes, bit_offset)
 		      for (i = 0; i < num; i++)
 			{
 			  int pos =
-			    (int_bit_position (field) + bit_offset) / 8 / 8;
+			    (int_bit_position (field) + (bit_offset % 64)) / 8 / 8;
 			  classes[i + pos] =
 			    merge_classes (subclasses[i], classes[i + pos]);
 			}
@@ -1717,7 +1722,7 @@ classify_argument (mode, type, classes, bit_offset)
 
 		   num = classify_argument (TYPE_MODE (type),
 					    type, subclasses,
-					    (offset + bit_offset) % 256);
+					    (offset + (bit_offset % 64)) % 256);
 		   if (!num)
 		     return 0;
 		   for (i = 0; i < num; i++)
