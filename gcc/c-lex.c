@@ -1762,6 +1762,7 @@ yylex ()
 	    int spec_unsigned = 0;
 	    int spec_long = 0;
 	    int spec_long_long = 0;
+	    int suffix_lu = 0;
 	    int spec_imag = 0;
 	    int warn = 0, i;
 
@@ -1773,6 +1774,8 @@ yylex ()
 		    if (spec_unsigned)
 		      error ("two `u's in integer constant");
 		    spec_unsigned = 1;
+		    if (spec_long)
+		      suffix_lu = 1;
 		  }
 		else if (c == 'l' || c == 'L')
 		  {
@@ -1780,12 +1783,16 @@ yylex ()
 		      {
 			if (spec_long_long)
 			  error ("three `l's in integer constant");
+			else if (suffix_lu)
+			  error ("`LUL' is not a valid integer suffix");
+			else if (c != spec_long)
+			  error ("`Ll' and `lL' are not valid integer suffixes");
 			else if (pedantic && ! flag_isoc99
 				 && ! in_system_header && warn_long_long)
 			  pedwarn ("ANSI C forbids long long integer constants");
 			spec_long_long = 1;
 		      }
-		    spec_long = 1;
+		    spec_long = c;
 		  }
 		else if (c == 'i' || c == 'j' || c == 'I' || c == 'J')
 		  {
