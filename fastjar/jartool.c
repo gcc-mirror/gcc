@@ -843,7 +843,7 @@ int add_to_jar(int fd, const char *new_dir, const char *file){
     }
   }
 
-  if(!strcmp(file, jarfile)){
+  if(jarfile && !strcmp(file, jarfile)){
     if(verbose)
       printf("skipping: %s\n", file);
     return 0;  /* we don't want to add ourselves.. */
@@ -924,7 +924,8 @@ int add_to_jar(int fd, const char *new_dir, const char *file){
     while(!use_explicit_list_only && (de = readdir(dir)) != NULL){
       if(de->d_name[0] == '.')
         continue;
-      if(!strcmp(de->d_name, jarfile)){ /* we don't want to add ourselves.  Believe me */
+      if(jarfile && !strcmp(de->d_name, jarfile)){
+	/* we don't want to add ourselves.  Believe me */
         if(verbose)
           printf("skipping: %s\n", de->d_name);
         continue;
