@@ -469,6 +469,16 @@ reg_or_0_operand (op, mode)
   return 0;
 }
 
+/* Return non-zero only if OP is const1_rtx.  */
+
+int
+const1_operand (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return op == const1_rtx;
+}
+
 /* Nonzero if OP is a floating point value with value 0.0.  */
 
 int

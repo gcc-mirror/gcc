@@ -3018,6 +3018,7 @@ do {									\
 
 #define PREDICATE_CODES							\
 {"reg_or_0_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}},		\
+{"const1_operand", {CONST_INT}},					\
 {"fp_zero_operand", {CONST_DOUBLE}},					\
 {"fp_register_operand", {SUBREG, REG}},					\
 {"intreg_operand", {SUBREG, REG}},					\
