@@ -238,8 +238,8 @@ fix = {
 fix = {
     hackname = dec_intern_asm;
     files    = c_asm.h;
-    sed = "/^[ \t]*float[ \t]*fasm/i\n#ifdef __DECC\n";
-    sed = "/^[ \t]*#[ \t]*pragma[ \t]*intrinsic([ \t]*dasm/a\n"
+    sed = "/^[ \t]*float[ \t]*fasm/i\\\n#ifdef __DECC\n";
+    sed = "/^[ \t]*#[ \t]*pragma[ \t]*intrinsic([ \t]*dasm/a\\\n"
           "#endif\n";
 };
 
