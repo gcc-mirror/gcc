@@ -118,10 +118,10 @@ extern int target_flags;
     { "68020-40", 0407},				\
     { "68030", -01400},				\
     { "68030", 7},				\
-    { "68040", 01000},			\
+    { "68040", 01007},			\
     { "", TARGET_DEFAULT}}
 /* TARGET_DEFAULT is defined in sun*.h and isi.h, etc.  */
-
+++ ss-920808/invoke.texi	Wed Aug 12 14:48:32 1992
 #ifdef SUPPORT_SUN_FPA
 /* Blow away 68881 flag silently on TARGET_FPA (since we can't clear
    any bits in TARGET_SWITCHES above) */
