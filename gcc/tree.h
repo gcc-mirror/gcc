@@ -1340,17 +1340,21 @@ extern tree build_decl_attribute_variant PROTO((tree, tree));
 
 /* Return 1 if an attribute and its arguments are valid for a decl or type.  */
 
-int valid_machine_attribute		PROTO((tree, tree, tree, tree));
+extern int valid_machine_attribute	PROTO((tree, tree, tree, tree));
 
 /* Given a tree node and a string, return non-zero if the tree node is
    a valid attribute name for the string.  */
 
-int is_attribute_p			PROTO((char *, tree));
+extern int is_attribute_p		PROTO((char *, tree));
 
 /* Given an attribute name and a list of attributes, return the list element
    of the attribute or NULL_TREE if not found.  */
 
-tree lookup_attribute			PROTO((char *, tree));
+extern tree lookup_attribute		PROTO((char *, tree));
+
+/* Given two attributes lists, return a list of their union.  */
+
+extern tree merge_attributes		PROTO((tree, tree));
 
 /* Given a type node TYPE, and CONSTP and VOLATILEP, return a type
    for the same kind of data as TYPE describes.
