@@ -1,3 +1,13 @@
+2000-10-03  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* docs/22_locale/howto.html: Add link to proto-documentation on
+	locales.
+	* docs/documentation.html: Rename links for clarity.
+
+	* src/Makefile.am (headers): Remove unistd.h, wrap_unistd.h. Add
+	fcntl.h, iolibio.h, libioP.h, pthread.h, iconv.h. 
+	* src/Makefile.in: Regenerate.
+	
 2000-10-02  Steven King  <sxking@uswest.net>
 
         * mkcshadow: Fixed script to output proper include guard.

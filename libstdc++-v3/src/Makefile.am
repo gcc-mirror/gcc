@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.30 2000/09/14 19:44:03 bkoz Exp $
+## $Id: Makefile.am,v 1.31 2000/10/04 05:06:32 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -165,11 +165,11 @@ headers = \
 	ext/hash_map ext/hash_set ext/rope ext/slist \
 	ext/tree ext/bvector \
 	shadow/assert.h shadow/ctype.h shadow/errno.h shadow/float.h \
-	shadow/libio.h \
+	shadow/fcntl.h shadow/libio.h shadow/iolibio.h shadow/libioP.h \
 	shadow/limits.h shadow/locale.h shadow/math.h shadow/setjmp.h \
 	shadow/signal.h shadow/stdarg.h shadow/stddef.h shadow/stdio.h \
 	shadow/stdlib.h shadow/string.h shadow/time.h \
-	shadow/unistd.h shadow/wchar.h shadow/wctype.h \
+	shadow/pthread.h shadow/iconv.h shadow/wchar.h shadow/wctype.h \
 	shadow/bits/std_cassert.h shadow/bits/std_cctype.h \
 	shadow/bits/std_cerrno.h shadow/bits/std_cfloat.h \
 	shadow/bits/std_climits.h shadow/bits/std_clocale.h \
@@ -179,7 +179,9 @@ headers = \
 	shadow/bits/std_cstdlib.h shadow/bits/std_cstring.h \
 	shadow/bits/std_ctime.h shadow/bits/std_cwchar.h \
 	shadow/bits/std_cwctype.h \
-	shadow/bits/wrap_libio.h shadow/bits/wrap_unistd.h \
+	shadow/bits/wrap_libio.h shadow/bits/wrap_iolibio.h \
+	shadow/bits/wrap_libioP.h shadow/bits/wrap_iconv.h \
+	shadow/bits/wrap_fcntl.h shadow/bits/wrap_pthread.h \
 	shadow/sys/cdefs.h 
 
 std_headers = \
