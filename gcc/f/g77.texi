@@ -14,7 +14,7 @@
 @c %**start of header 
 @setfilename g77.info
 
-@set last-up-date 1998-09-01
+@set last-up-date 1999-02-14
 @set version-g77 0.5.24
 @set email-general egcs@@egcs.cygnus.com
 @set email-bugs egcs-bugs@@egcs.cygnus.com
@@ -1464,8 +1464,12 @@ Suffixes specific to GNU Fortran are listed below.
 information on suffixes recognized by GNU CC.
 
 @table @code
+@cindex .f filename suffix
+@cindex .for filename suffix
+@cindex .FOR filename suffix
 @item @var{file}.f
 @item @var{file}.for
+@item @var{file}.FOR
 Fortran source code that should not be preprocessed.
 
 Such source code cannot contain any preprocessor directives, such
@@ -1482,8 +1486,10 @@ You can force @samp{.f} files to be preprocessed by @samp{cpp} by using
 @cindex programs, cpp
 @cindex .F filename suffix
 @cindex .fpp filename suffix
+@cindex .FPP filename suffix
 @item @var{file}.F
 @item @var{file}.fpp
+@item @var{file}.FPP
 Fortran source code that must be preprocessed (by the C preprocessor
 @code{cpp}, which is part of GNU CC).
 
@@ -3383,6 +3389,14 @@ Fortran, retrieve @uref{ftp://alpha.gnu.org/g77.plan}
 or, if you cannot do that, email
 @email{fortran@@gnu.org} asking for a recent copy of the
 GNU Fortran @file{.plan} file.
+
+@heading In @code{egcs 1.2}:
+@itemize @bullet
+@item
+Source file names with the suffixes @samp{.FOR} and @samp{.FPP}
+now are recognized by @code{g77}
+as if they ended in @samp{.for} and @samp{.fpp}, respectively.
+@end itemize
 
 @heading In @code{egcs} 1.1 (versus 0.5.24):
 @itemize @bullet
@@ -14944,12 +14958,15 @@ A source file containing lines beginning with @code{#define},
 @code{#include}, @code{#if}, and so on is likely one that
 requires preprocessing.
 
-If the file's suffix is @samp{.f} or @samp{.for}, the file
-will normally be compiled @emph{without} preprocessing by @code{g77}.
+If the file's suffix is @samp{.f}, @samp{.for}, or @samp{.FOR},
+the file normally will be compiled @emph{without} preprocessing
+by @code{g77}.
 
-Change the file's suffix from @samp{.f} to @samp{.F} (or, on
-systems with case-insensitive file names, to @samp{.fpp}) or
-from @samp{.for} to @samp{.fpp}.
+Change the file's suffix from @samp{.f} to @samp{.F}
+(or, on systems with case-insensitive file names,
+to @samp{.fpp} or @samp{.FPP}),
+from @samp{.for} to @samp{.fpp},
+or from @samp{.FOR} to @samp{.FPP}.
 @code{g77} compiles files with such names @emph{with}
 preprocessing.
 

@@ -1,7 +1,7 @@
 .\" Copyright (c) 1995-1997 Free Software Foundation              -*-Text-*-
 .\" See section COPYING for conditions for redistribution
 .\" FIXME: no info here on predefines.  Should there be?  extra for F77...
-.TH G77 1 "1998-09-01" "GNU Tools" "GNU Tools"
+.TH G77 1 "1999-02-14" "GNU Tools" "GNU Tools"
 .de BP
 .sp
 .ti \-.2i
@@ -88,14 +88,18 @@ For complete documentation on GNU Fortran, type `\|\c
 
 F77 source files use the suffix `\|\c
 .B .f\c
-\&\|' or `\|\c
+\&\|', `\|\c
 .B .for\c
+\&\|', or `\|\c
+.B .FOR\c
 \&\|'; F77 files to be preprocessed by
 .BR cpp ( 1 )
 use the suffix `\|\c
 .B .F\c
-\&\|' or `\|\c
+\&\|', `\|\c
 .B .fpp\c
+\&\|', or `\|\c
+.B .FPP\c
 \&\|'; Ratfor source files use the suffix `\|\c
 .B .r\c
 \&\|' (though
@@ -250,9 +254,13 @@ file.f    Fortran source file
 .br
 file.for  Fortran source file
 .br
+file.FOR  Fortran source file
+.br
 file.F    preprocessed Fortran source file
 .br
 file.fpp  preprocessed Fortran source file
+.br
+file.FPP  preprocessed Fortran source file
 .br
 file.r    Ratfor source file (ratfor not included)
 .br
