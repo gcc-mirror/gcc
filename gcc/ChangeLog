@@ -1,5 +1,7 @@
 2004-01-13  Jan Hubicka  <jh@suse.cz>
 
+	* c-decl.c (diagnose_mismatched_decls):  Fix warning calls.
+
 	* cgraphunit.c (cgraph_optimize_function):  Always do
 	optimize_inline_calls when there is always_inline callee.
 	(cgraph_decide_inlining): Fix formating.

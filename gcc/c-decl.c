@@ -1175,12 +1175,14 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	{
 	  if (TREE_USED (olddecl))
 	    {
-	      warning ("%J'%D' declared inline after being called");
+	      warning ("%J'%D' declared inline after being called",
+		       olddecl, olddecl);
 	      warned = true;
 	    }
 	  else if (DECL_INITIAL (olddecl))
 	    {
-	      warning ("%J'%D' declared inline after its definition");
+	      warning ("%J'%D' declared inline after its definition",
+		       olddecl, olddecl);
 	      warned = true;
 	    }
 	}
