@@ -119,7 +119,9 @@ struct cgraph_edge GTY(())
   struct cgraph_node *callee;
   struct cgraph_edge *next_caller;
   struct cgraph_edge *next_callee;
-  bool inline_call;
+  /* When NULL, inline this call.  When non-NULL, points to the explanation
+     why function was not inlined.  */
+  const char *inline_failed;
 };
 
 /* The cgraph_varpool data structure.
@@ -181,6 +183,6 @@ void cgraph_create_edges (tree, tree);
 void cgraph_optimize (void);
 void cgraph_mark_needed_node (struct cgraph_node *);
 void cgraph_mark_reachable_node (struct cgraph_node *);
-bool cgraph_inline_p (tree, tree);
+bool cgraph_inline_p (tree, tree, const char **reason);
 
 #endif  /* GCC_CGRAPH_H  */

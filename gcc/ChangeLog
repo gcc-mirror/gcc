@@ -1,3 +1,22 @@
+2004-01-04  Jan Hubicka  <jh@suse.cz>
+
+	* Makefile.in (cgraph.o, cgraphunit.o): Add intl.h dependency.
+	* cgraph.c (create_edge, dump_cgraph): Update to use inline_failed
+	* cgraph.h (cgraph_edge): Replace inline_call by inline_failed
+	(cgraph_inline_p): Add extra argument reason.
+	* cgraphunit.c: Minor formating fixes.
+	cgraph_first_inlined_callee): New functions.
+	(record_call_1): Record builtins too.
+	(cgraph_analyze_function): Update inline_failed messages.
+	(cgraph_mark_functions_to_output, cgraph_expand_function, cgraph_inlined_into,
+	cgraph_inlined_callees, cgraph_estimate_growth): Update to use inline_failed.
+	(cgraph_check_inline_limits): Likewise; Add argument reason.
+	(cgraph_set_inline_failed): New static function.
+	(cgraph_decide_inlining_of_small_function, cgraph_decide_inlining): Set
+	reasons.
+	(cgraph_inline_p): Add new argument reason.
+	* tree-inline.c (expand_call_inline):  Update warning.
+
 2004-01-03  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.ac: Replace AC_INIT, AC_OUTPUT, AC_CANONICAL_SYSTEM
