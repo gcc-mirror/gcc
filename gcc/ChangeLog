@@ -1,3 +1,10 @@
+2004-12-01  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/18763
+	PR tree-opt/18746
+	* tree-ssa-alias.c (init_alias_info): Get statement operands for all
+	the statements if aliases_computed_p is true.
+
 2004-12-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (WERROR): New variable.
