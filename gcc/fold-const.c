@@ -2388,15 +2388,15 @@ optimize_bit_field_compare (code, compare_type, lhs, rhs)
      tree lhs, rhs;
 {
   int lbitpos, lbitsize, rbitpos, rbitsize;
-  int lnbitpos, lnbitsize, rnbitpos, rnbitsize;
+  int lnbitpos, lnbitsize, rnbitpos = 0, rnbitsize = 0;
   tree type = TREE_TYPE (lhs);
   tree signed_type, unsigned_type;
   int const_p = TREE_CODE (rhs) == INTEGER_CST;
-  enum machine_mode lmode, rmode, lnmode, rnmode;
+  enum machine_mode lmode, rmode, lnmode, rnmode = VOIDmode;
   int lunsignedp, runsignedp;
   int lvolatilep = 0, rvolatilep = 0;
   int alignment;
-  tree linner, rinner;
+  tree linner, rinner = NULL_TREE;
   tree mask;
   tree offset;
 
@@ -2784,7 +2784,7 @@ make_range (exp, pin_p, plow, phigh)
      tree *plow, *phigh;
 {
   enum tree_code code;
-  tree arg0, arg1, type;
+  tree arg0, arg1, type = NULL_TREE;
   int in_p, n_in_p;
   tree low, high, n_low, n_high;
 
@@ -3717,7 +3717,7 @@ fold (expr)
   tree t1 = NULL_TREE;
   tree tem;
   tree type = TREE_TYPE (expr);
-  register tree arg0, arg1;
+  register tree arg0 = NULL_TREE, arg1 = NULL_TREE;
   register enum tree_code code = TREE_CODE (t);
   register int kind;
   int invert;
@@ -5114,7 +5114,7 @@ fold (expr)
 	 First, see if one arg is constant; find the constant arg
 	 and the other one.  */
       {
-	tree constop = 0, varop;
+	tree constop = 0, varop = NULL_TREE;
 	int constopnum = -1;
 
 	if (TREE_CONSTANT (arg1))

@@ -331,7 +331,7 @@ layout_record (rec)
   for (field = TYPE_FIELDS (rec); field; field = TREE_CHAIN (field))
     {
       register int known_align = var_size ? var_align : const_size;
-      register int desired_align;
+      register int desired_align = 0;
 
       /* If FIELD is static, then treat it like a separate variable,
 	 not really like a structure field.
@@ -1222,7 +1222,7 @@ get_best_mode (bitsize, bitpos, align, largest_mode, volatilep)
      int volatilep;
 {
   enum machine_mode mode;
-  int unit;
+  int unit = 0;
 
   /* Find the narrowest integer mode that contains the bit field.  */
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;

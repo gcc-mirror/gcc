@@ -1128,7 +1128,7 @@ copy_node (node)
 {
   register tree t;
   register enum tree_code code = TREE_CODE (node);
-  register int length;
+  register int length = 0;
   register int i;
 
   switch (TREE_CODE_CLASS (code))
