@@ -10,6 +10,10 @@
 	* cfglayout.c (choose_inner_scope): Make it static.
 	* rtl.h: Remove the corresponding prototype.
 
+	* cfgloopmanip.c (update_single_exits_after_duplication,
+	unloop): Make them static.
+	* cfgloop.h: Remove the corresponding prototypes.
+
 2004-11-11  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* function.c (expand_function_end): Remove an "if" statement
