@@ -96,9 +96,37 @@ get_ttype_entry (lsda_header_info *info, _Unwind_Word i)
   return reinterpret_cast<const std::type_info *>(ptr);
 }
 
+// Given the thrown type THROW_TYPE, pointer to a variable containing a
+// pointer to the exception object THROWN_PTR_P and a type CATCH_TYPE to
+// compare against, return whether or not there is a match and if so,
+// update *THROWN_PTR_P.
+
+static bool
+get_adjusted_ptr (const std::type_info *catch_type,
+		  const std::type_info *throw_type,
+		  void **thrown_ptr_p)
+{
+  void *thrown_ptr = *thrown_ptr_p;
+
+  // Pointer types need to adjust the actual pointer, not
+  // the pointer to pointer that is the exception object.
+  // This also has the effect of passing pointer types
+  // "by value" through the __cxa_begin_catch return value.
+  if (throw_type->__is_pointer_p ())
+    thrown_ptr = *(void **) thrown_ptr;
+
+  if (catch_type->__do_catch (throw_type, &thrown_ptr, 1))
+    {
+      *thrown_ptr_p = thrown_ptr;
+      return true;
+    }
+
+  return false;
+}
+
 static bool
 check_exception_spec (lsda_header_info *info, const std::type_info *throw_type,
-		      _Unwind_Sword filter_value)
+		      void *thrown_ptr, _Unwind_Sword filter_value)
 {
   const unsigned char *e = info->TType - filter_value - 1;
 
@@ -106,7 +134,6 @@ check_exception_spec (lsda_header_info *info, const std::type_info *throw_type,
     {
       const std::type_info *catch_type;
       _Unwind_Word tmp;
-      void *dummy;
 
       e = read_uleb128 (e, &tmp);
 
@@ -117,7 +144,12 @@ check_exception_spec (lsda_header_info *info, const std::type_info *throw_type,
 
       // Match a ttype entry.
       catch_type = get_ttype_entry (info, tmp);
-      if (catch_type->__do_catch (throw_type, &dummy, 1))
+
+      // ??? There is currently no way to ask the RTTI code about the
+      // relationship between two types without reference to a specific
+      // object.  There should be; then we wouldn't need to mess with
+      // thrown_ptr here.
+      if (get_adjusted_ptr (catch_type, throw_type, &thrown_ptr))
 	return true;
     }
 }
@@ -154,7 +186,7 @@ PERSONALITY_FUNCTION (int version,
   const unsigned char *p;
   _Unwind_Ptr landing_pad, ip;
   int handler_switch_value;
-  void *adjusted_ptr = xh + 1;
+  void *thrown_ptr = xh + 1;
 
   // Interface version check.
   if (version != 1)
@@ -294,7 +326,6 @@ PERSONALITY_FUNCTION (int version,
 	    {
 	      // Positive filter values are handlers.
 	      catch_type = get_ttype_entry (&info, ar_filter);
-	      adjusted_ptr = xh + 1;
 
 	      // Null catch type is a catch-all handler.  We can catch
 	      // foreign exceptions with this.
@@ -308,14 +339,7 @@ PERSONALITY_FUNCTION (int version,
 		}
 	      else if (throw_type)
 		{
-		  // Pointer types need to adjust the actual pointer, not
-		  // the pointer to pointer that is the exception object.
-		  // This also has the effect of passing pointer types
-		  // "by value" through the __cxa_begin_catch return value.
-		  if (throw_type->__is_pointer_p ())
-		    adjusted_ptr = *(void **) adjusted_ptr;
-
-		  if (catch_type->__do_catch (throw_type, &adjusted_ptr, 1))
+		  if (get_adjusted_ptr (catch_type, throw_type, &thrown_ptr))
 		    {
 		      saw_handler = true;
 		      break;
@@ -329,7 +353,8 @@ PERSONALITY_FUNCTION (int version,
 	      // see we can't match because there's no __cxa_exception
 	      // object to stuff bits in for __cxa_call_unexpected to use.
 	      if (throw_type
-		  && ! check_exception_spec (&info, throw_type, ar_filter))
+		  && ! check_exception_spec (&info, throw_type, thrown_ptr,
+					     ar_filter))
 		{
 		  saw_handler = true;
 		  break;
@@ -365,7 +390,7 @@ PERSONALITY_FUNCTION (int version,
           xh->handlerSwitchValue = handler_switch_value;
           xh->actionRecord = action_record;
           xh->languageSpecificData = language_specific_data;
-          xh->adjustedPtr = adjusted_ptr;
+          xh->adjustedPtr = thrown_ptr;
 
           // ??? Completely unknown what this field is supposed to be for.
           // ??? Need to cache TType encoding base for call_unexpected.
@@ -425,6 +450,7 @@ __cxa_call_unexpected (void *exc_obj_in)
       
       __cxa_eh_globals *globals = __cxa_get_globals_fast ();
       __cxa_exception *new_xh = globals->caughtExceptions;
+      void *new_ptr = new_xh + 1;
       
       // We don't quite have enough stuff cached; re-parse the LSDA.
       lsda_header_info info;
@@ -433,13 +459,15 @@ __cxa_call_unexpected (void *exc_obj_in)
       
       // If this new exception meets the exception spec, allow it.
       if (check_exception_spec (&info, new_xh->exceptionType,
-				xh->handlerSwitchValue))
+				new_ptr, xh->handlerSwitchValue))
 	__throw_exception_again;
       
       // If the exception spec allows std::bad_exception, throw that.
+      // We don't have a thrown object to compare against, but since
+      // bad_exception doesn't have virtual bases, that's OK; just pass 0.
 #ifdef __EXCEPTIONS  
       const std::type_info &bad_exc = typeid (std::bad_exception);
-      if (check_exception_spec (&info, &bad_exc, xh->handlerSwitchValue))
+      if (check_exception_spec (&info, &bad_exc, 0, xh->handlerSwitchValue))
 	throw std::bad_exception();
 #endif   
       // Otherwise, die.
