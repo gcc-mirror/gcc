@@ -150,76 +150,79 @@ public class FlowLayout implements LayoutManager, Serializable
    */
   public void layoutContainer (Container parent)
   {
-    int num = parent.getComponentCount ();
-    // This is more efficient than calling getComponents().
-    Component[] comps = parent.component;
-
-    Dimension d = parent.getSize ();
-    Insets ins = parent.getInsets ();
-
-    ComponentOrientation orient = parent.getComponentOrientation ();
-    boolean left_to_right = orient.isLeftToRight ();
-
-    int y = ins.top + vgap;
-    int i = 0;
-    while (i < num)
+    synchronized (parent.getTreeLock ())
       {
-	// Find the components which go in the current row.
-	int new_w = ins.left + hgap + ins.right;
-	int new_h = 0;
-	int j;
-	boolean found_one = false;
-	for (j = i; j < num && ! found_one; ++j)
+	int num = parent.getComponentCount ();
+	// This is more efficient than calling getComponents().
+	Component[] comps = parent.component;
+
+	Dimension d = parent.getSize ();
+	Insets ins = parent.getInsets ();
+
+	ComponentOrientation orient = parent.getComponentOrientation ();
+	boolean left_to_right = orient.isLeftToRight ();
+
+	int y = ins.top + vgap;
+	int i = 0;
+	while (i < num)
 	  {
-	    // Skip invisible items.
-	    if (! comps[i].visible)
-	      continue;
-
-	    Dimension c = comps[i].getPreferredSize ();
-
-	    int next_w = new_w + hgap + c.width;
-	    if (next_w <= d.width || ! found_one)
+	    // Find the components which go in the current row.
+	    int new_w = ins.left + hgap + ins.right;
+	    int new_h = 0;
+	    int j;
+	    boolean found_one = false;
+	    for (j = i; j < num && ! found_one; ++j)
 	      {
-		new_w = next_w;
-		new_h = Math.max (new_h, c.height);
-		found_one = true;
+		// Skip invisible items.
+		if (! comps[i].visible)
+		  continue;
+
+		Dimension c = comps[i].getPreferredSize ();
+
+		int next_w = new_w + hgap + c.width;
+		if (next_w <= d.width || ! found_one)
+		  {
+		    new_w = next_w;
+		    new_h = Math.max (new_h, c.height);
+		    found_one = true;
+		  }
+		else
+		  {
+		    // Must start a new row, and we already found an item
+		    break;
+		  }
 	      }
+
+	    // Set the location of each component for this row.
+	    int x;
+
+	    int myalign = align;
+	    if (align == LEADING)
+	      myalign = left_to_right ? LEFT : RIGHT;
+	    else if (align == TRAILING)
+	      myalign = left_to_right ? RIGHT : LEFT;
+
+	    if (myalign == LEFT)
+	      x = ins.left + hgap;
+	    else if (myalign == CENTER)
+	      x = (d.width - new_w) / 2;
 	    else
+	      x = d.width - new_w;
+
+	    for (int k = i; k < j; ++k)
 	      {
-		// Must start a new row, and we already found an item
-		break;
+		if (comps[k].visible)
+		  {
+		    Dimension c = comps[k].getPreferredSize ();
+		    comps[k].setBounds (x, y, c.width, new_h);
+		    x += c.width + hgap;
+		  }
 	      }
+
+	    // Advance to next row.
+	    i = j;
+	    y += new_h + vgap;
 	  }
-
-	// Set the location of each component for this row.
-	int x;
-
-	int myalign = align;
-	if (align == LEADING)
-	  myalign = left_to_right ? LEFT : RIGHT;
-	else if (align == TRAILING)
-	  myalign = left_to_right ? RIGHT : LEFT;
-
-	if (myalign == LEFT)
-	  x = ins.left + hgap;
-	else if (myalign == CENTER)
-	  x = (d.width - new_w) / 2;
-	else
-	  x = d.width - new_w;
-
-	for (int k = i; k < j; ++k)
-	  {
-	    if (comps[k].visible)
-	      {
-		Dimension c = comps[k].getPreferredSize ();
-		comps[k].setBounds (x, y, c.width, new_h);
-		x += c.width + hgap;
-	      }
-	  }
-
-	// Advance to next row.
-	i = j;
-	y += new_h + vgap;
       }
   }
 
@@ -304,36 +307,39 @@ public class FlowLayout implements LayoutManager, Serializable
   // This method is used to compute the various sizes.
   private Dimension getSize (Container parent, boolean is_min)
   {
-    int w, h, num = parent.getComponentCount ();
-    // This is more efficient than calling getComponents().
-    Component[] comps = parent.component;
-
-    w = 0;
-    h = 0;
-    for (int i = 0; i < num; ++i)
+    synchronized (parent.getTreeLock ())
       {
-	if (! comps[i].visible)
-	  continue;
+	int w, h, num = parent.getComponentCount ();
+	// This is more efficient than calling getComponents().
+	Component[] comps = parent.component;
 
-	// FIXME: can we just directly read the fields in Component?
-	// Or will that not work with subclassing?
-	Dimension d;
+	w = 0;
+	h = 0;
+	for (int i = 0; i < num; ++i)
+	  {
+	    if (! comps[i].visible)
+	      continue;
 
-	if (is_min)
-	  d = comps[i].getMinimumSize ();
-	else
-	  d = comps[i].getPreferredSize ();
+	    // FIXME: can we just directly read the fields in Component?
+	    // Or will that not work with subclassing?
+	    Dimension d;
 
-	w += d.width;
-	h = Math.max (d.height, h);
+	    if (is_min)
+	      d = comps[i].getMinimumSize ();
+	    else
+	      d = comps[i].getPreferredSize ();
+
+	    w += d.width;
+	    h = Math.max (d.height, h);
+	  }
+
+	Insets ins = parent.getInsets ();
+
+	w += (num + 1) * hgap + ins.left + ins.right;
+	h += 2 * vgap + ins.top + ins.bottom;
+
+	return new Dimension (w, h);
       }
-
-    Insets ins = parent.getInsets ();
-
-    w += (num + 1) * hgap + ins.left + ins.right;
-    h += 2 * vgap + ins.top + ins.bottom;
-
-    return new Dimension (w, h);
   }
 
   /**

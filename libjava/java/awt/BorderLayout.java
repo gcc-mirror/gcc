@@ -529,80 +529,83 @@ invalidateLayout(Container parent)
 public void
 layoutContainer(Container target)
 {
-  Insets i = target.getInsets();
-
-  ComponentOrientation orient = target.getComponentOrientation ();
-  boolean left_to_right = orient.isLeftToRight ();
-
-  Component my_north = north;
-  Component my_east = east;
-  Component my_south = south;
-  Component my_west = west;
-
-  // Note that we currently don't handle vertical layouts.  Neither
-  // does JDK 1.3.
-  if (firstLine != null)
-    my_north = firstLine;
-  if (lastLine != null)
-    my_south = lastLine;
-  if (firstItem != null)
+  synchronized (target.getTreeLock ())
     {
-      if (left_to_right)
-	my_west = firstItem;
-      else
-	my_east = firstItem;
+      Insets i = target.getInsets();
+
+      ComponentOrientation orient = target.getComponentOrientation ();
+      boolean left_to_right = orient.isLeftToRight ();
+
+      Component my_north = north;
+      Component my_east = east;
+      Component my_south = south;
+      Component my_west = west;
+
+      // Note that we currently don't handle vertical layouts.  Neither
+      // does JDK 1.3.
+      if (firstLine != null)
+	my_north = firstLine;
+      if (lastLine != null)
+	my_south = lastLine;
+      if (firstItem != null)
+	{
+	  if (left_to_right)
+	    my_west = firstItem;
+	  else
+	    my_east = firstItem;
+	}
+      if (lastItem != null)
+	{
+	  if (left_to_right)
+	    my_east = lastItem;
+	  else
+	    my_west = lastItem;
+	}
+
+      Dimension c = calcCompSize(center, PREF);
+      Dimension n = calcCompSize(my_north, PREF);
+      Dimension s = calcCompSize(my_south, PREF);
+      Dimension e = calcCompSize(my_east, PREF);
+      Dimension w = calcCompSize(my_west, PREF);
+      Dimension t = target.getSize();
+
+      /*
+	<-> hgap     <-> hgap
+	+----------------------------+          }
+	|t                           |          } i.top
+	|  +----------------------+  |  --- y1  }
+	|  |n                     |  |
+	|  +----------------------+  |          } vgap
+	|  +---+ +----------+ +---+  |  --- y2  }        }
+	|  |w  | |c         | |e  |  |                   } hh
+	|  +---+ +----------+ +---+  |          } vgap   }
+	|  +----------------------+  |  --- y3  }
+	|  |s                     |  |
+	|  +----------------------+  |          }
+	|                            |          } i.bottom
+	+----------------------------+          }
+	|x1   |x2          |x3
+	<---------------------->
+	<-->         ww           <-->
+	i.left                    i.right
+      */
+
+      int x1 = i.left;
+      int x2 = x1 + w.width + hgap;
+      int x3 = t.width - i.right - e.width;
+      int ww = t.width - i.right - i.left;
+
+      int y1 = i.top;
+      int y2 = y1 + n.height + vgap;
+      int y3 = t.height - i.bottom - s.height;
+      int hh = y3-y2-vgap;
+
+      setBounds(center, x2, y2, x3-x2-hgap, hh);
+      setBounds(my_north, x1, y1, ww, n.height);
+      setBounds(my_south, x1, y3, ww, s.height);
+      setBounds(my_west, x1, y2, w.width, hh);
+      setBounds(my_east, x3, y2, e.width, hh);
     }
-  if (lastItem != null)
-    {
-      if (left_to_right)
-	my_east = lastItem;
-      else
-	my_west = lastItem;
-    }
-
-  Dimension c = calcCompSize(center, PREF);
-  Dimension n = calcCompSize(my_north, PREF);
-  Dimension s = calcCompSize(my_south, PREF);
-  Dimension e = calcCompSize(my_east, PREF);
-  Dimension w = calcCompSize(my_west, PREF);
-  Dimension t = target.getSize();
-
-    /*
-             <-> hgap     <-> hgap
-      +----------------------------+          }
-      |t                           |          } i.top
-      |  +----------------------+  |  --- y1  }
-      |  |n                     |  |
-      |  +----------------------+  |          } vgap
-      |  +---+ +----------+ +---+  |  --- y2  }        }
-      |  |w  | |c         | |e  |  |                   } hh
-      |  +---+ +----------+ +---+  |          } vgap   }
-      |  +----------------------+  |  --- y3  }
-      |  |s                     |  |
-      |  +----------------------+  |          }
-      |                            |          } i.bottom
-      +----------------------------+          }
-         |x1   |x2          |x3
-         <---------------------->
-      <-->         ww           <-->
-     i.left                    i.right
-    */
-
-  int x1 = i.left;
-  int x2 = x1 + w.width + hgap;
-  int x3 = t.width - i.right - e.width;
-  int ww = t.width - i.right - i.left;
-
-  int y1 = i.top;
-  int y2 = y1 + n.height + vgap;
-  int y3 = t.height - i.bottom - s.height;
-  int hh = y3-y2-vgap;
-
-  setBounds(center, x2, y2, x3-x2-hgap, hh);
-  setBounds(my_north, x1, y1, ww, n.height);
-  setBounds(my_south, x1, y3, ww, s.height);
-  setBounds(my_west, x1, y2, w.width, hh);
-  setBounds(my_east, x3, y2, e.width, hh);
 }
 
 /*************************************************************************/
@@ -648,59 +651,62 @@ calcCompSize(Component comp, int what)
 private Dimension
 calcSize(Container target, int what)
 {
-  Insets ins = target.getInsets();
-
-  ComponentOrientation orient = target.getComponentOrientation ();
-  boolean left_to_right = orient.isLeftToRight ();
-
-  Component my_north = north;
-  Component my_east = east;
-  Component my_south = south;
-  Component my_west = west;
-
-  // Note that we currently don't handle vertical layouts.  Neither
-  // does JDK 1.3.
-  if (firstLine != null)
-    my_north = firstLine;
-  if (lastLine != null)
-    my_south = lastLine;
-  if (firstItem != null)
+  synchronized (target.getTreeLock ())
     {
-      if (left_to_right)
-	my_west = firstItem;
-      else
-	my_east = firstItem;
-    }
-  if (lastItem != null)
-    {
-      if (left_to_right)
-	my_east = lastItem;
-      else
-	my_west = lastItem;
-    }
+      Insets ins = target.getInsets();
+
+      ComponentOrientation orient = target.getComponentOrientation ();
+      boolean left_to_right = orient.isLeftToRight ();
+
+      Component my_north = north;
+      Component my_east = east;
+      Component my_south = south;
+      Component my_west = west;
+
+      // Note that we currently don't handle vertical layouts.  Neither
+      // does JDK 1.3.
+      if (firstLine != null)
+	my_north = firstLine;
+      if (lastLine != null)
+	my_south = lastLine;
+      if (firstItem != null)
+	{
+	  if (left_to_right)
+	    my_west = firstItem;
+	  else
+	    my_east = firstItem;
+	}
+      if (lastItem != null)
+	{
+	  if (left_to_right)
+	    my_east = lastItem;
+	  else
+	    my_west = lastItem;
+	}
       
-  Dimension ndim = calcCompSize(my_north, what);
-  Dimension sdim = calcCompSize(my_south, what);
-  Dimension edim = calcCompSize(my_east, what);
-  Dimension wdim = calcCompSize(my_west, what);
-  Dimension cdim = calcCompSize(center, what);
+      Dimension ndim = calcCompSize(my_north, what);
+      Dimension sdim = calcCompSize(my_south, what);
+      Dimension edim = calcCompSize(my_east, what);
+      Dimension wdim = calcCompSize(my_west, what);
+      Dimension cdim = calcCompSize(center, what);
 
-  int width = edim.width + cdim.width + wdim.width + (hgap * 2);
-  if (ndim.width > width)
-    width = ndim.width;
-  if (sdim.width > width)
-    width = sdim.width;
+      int width = edim.width + cdim.width + wdim.width + (hgap * 2);
+      if (ndim.width > width)
+	width = ndim.width;
+      if (sdim.width > width)
+	width = sdim.width;
 
-  width += (ins.left + ins.right);
+      width += (ins.left + ins.right);
 
-  int height = edim.height;
-  if (cdim.height > height)
-    height = cdim.height;
-  if (wdim.height > height)
-    height = wdim.height;
+      int height = edim.height;
+      if (cdim.height > height)
+	height = cdim.height;
+      if (wdim.height > height)
+	height = wdim.height;
 
-  height += (ndim.height + sdim.height + (vgap * 2) + ins.top + ins.bottom);
+      height += (ndim.height + sdim.height + (vgap * 2) + ins.top + ins.bottom);
 
-  return(new Dimension(width, height));
+      return(new Dimension(width, height));
+    }
 }
 } // class BorderLayout 

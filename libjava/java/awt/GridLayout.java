@@ -153,62 +153,65 @@ public class GridLayout implements LayoutManager, Serializable
    */
   public void layoutContainer (Container parent)
   {
-    int num = parent.ncomponents;
-
-    // There's no point, and handling this would mean adding special
-    // cases.
-    if (num == 0)
-      return;
-
-    // This is more efficient than calling getComponents().
-    Component[] comps = parent.component;
-
-    int real_rows = rows;
-    int real_cols = cols;
-    if (real_rows == 0)
-      real_rows = (num + real_cols - 1) / real_cols;
-    else
-      real_cols = (num + real_rows - 1) / real_rows;
-
-    // We might have less than a single row.  In this case we expand
-    // to fill.
-    if (num < real_cols)
-      real_cols = num;
-
-    Dimension d = parent.getSize ();
-    Insets ins = parent.getInsets ();
-
-    // Compute width and height of each cell in the grid.
-    int tw = d.width - ins.left - ins.right;
-    tw = (tw - (real_cols - 1) * hgap) / real_cols;
-    int th = d.height - ins.top - ins.bottom;
-    th = (th - (real_rows - 1) * vgap) / real_rows;
-
-    // If the cells are too small, still try to do something.
-    if (tw < 0)
-      tw = 1;
-    if (th < 0)
-      th = 1;
-
-    int x = ins.left;
-    int y = ins.top;
-    int i = 0;
-    int recount = 0;
-
-    while (i < num)
+    synchronized (parent.getTreeLock ())
       {
-	comps[i].setBounds (x, y, tw, th);
+	int num = parent.ncomponents;
 
-	++i;
-	++recount;
-	if (recount == real_cols)
-	  {
-	    recount = 0;
-	    y += vgap + th;
-	    x = ins.left;
-	  }
+	// There's no point, and handling this would mean adding special
+	// cases.
+	if (num == 0)
+	  return;
+
+	// This is more efficient than calling getComponents().
+	Component[] comps = parent.component;
+
+	int real_rows = rows;
+	int real_cols = cols;
+	if (real_rows == 0)
+	  real_rows = (num + real_cols - 1) / real_cols;
 	else
-	  x += hgap + tw;
+	  real_cols = (num + real_rows - 1) / real_rows;
+
+	// We might have less than a single row.  In this case we expand
+	// to fill.
+	if (num < real_cols)
+	  real_cols = num;
+
+	Dimension d = parent.getSize ();
+	Insets ins = parent.getInsets ();
+
+	// Compute width and height of each cell in the grid.
+	int tw = d.width - ins.left - ins.right;
+	tw = (tw - (real_cols - 1) * hgap) / real_cols;
+	int th = d.height - ins.top - ins.bottom;
+	th = (th - (real_rows - 1) * vgap) / real_rows;
+
+	// If the cells are too small, still try to do something.
+	if (tw < 0)
+	  tw = 1;
+	if (th < 0)
+	  th = 1;
+
+	int x = ins.left;
+	int y = ins.top;
+	int i = 0;
+	int recount = 0;
+
+	while (i < num)
+	  {
+	    comps[i].setBounds (x, y, tw, th);
+
+	    ++i;
+	    ++recount;
+	    if (recount == real_cols)
+	      {
+		recount = 0;
+		y += vgap + th;
+		x = ins.left;
+	      }
+	    else
+	      x += hgap + tw;
+	  }
       }
   }
 
@@ -301,36 +304,39 @@ public class GridLayout implements LayoutManager, Serializable
   // This method is used to compute the various sizes.
   private Dimension getSize (Container parent, boolean is_min)
   {
-    int w = 0, h = 0, num = parent.ncomponents;
-    // This is more efficient than calling getComponents().
-    Component[] comps = parent.component;
-
-    for (int i = 0; i < num; ++i)
+    synchronized (parent.getTreeLock ())
       {
-	Dimension d;
+	int w = 0, h = 0, num = parent.ncomponents;
+	// This is more efficient than calling getComponents().
+	Component[] comps = parent.component;
 
-	if (is_min)
-	  d = comps[i].getMinimumSize ();
+	for (int i = 0; i < num; ++i)
+	  {
+	    Dimension d;
+
+	    if (is_min)
+	      d = comps[i].getMinimumSize ();
+	    else
+	      d = comps[i].getPreferredSize ();
+
+	    w = Math.max (d.width, w);
+	    h = Math.max (d.height, h);
+	  }
+
+	int real_rows = rows;
+	int real_cols = cols;
+	if (real_rows == 0)
+	  real_rows = (num + real_cols - 1) / real_cols;
 	else
-	  d = comps[i].getPreferredSize ();
+	  real_cols = (num + real_rows - 1) / real_rows;
 
-	w = Math.max (d.width, w);
-	h = Math.max (d.height, h);
+	Insets ins = parent.getInsets ();
+	// We subtract out an extra gap here because the gaps are only
+	// between cells.
+	w = ins.left + ins.right + real_cols * (w + hgap) - hgap;
+	h = ins.top + ins.bottom + real_rows * (h + vgap) - vgap;
+	return new Dimension (w, h);
       }
-
-    int real_rows = rows;
-    int real_cols = cols;
-    if (real_rows == 0)
-      real_rows = (num + real_cols - 1) / real_cols;
-    else
-      real_cols = (num + real_rows - 1) / real_rows;
-
-    Insets ins = parent.getInsets ();
-    // We subtract out an extra gap here because the gaps are only
-    // between cells.
-    w = ins.left + ins.right + real_cols * (w + hgap) - hgap;
-    h = ins.top + ins.bottom + real_rows * (h + vgap) - vgap;
-    return new Dimension (w, h);
   }
 
   /**

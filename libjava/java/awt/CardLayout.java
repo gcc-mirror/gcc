@@ -165,21 +165,24 @@ public class CardLayout implements LayoutManager2, Serializable
    */ 
   public void layoutContainer (Container parent)
   {
-    int width = parent.width;
-    int height = parent.height;
+    synchronized (parent.getTreeLock ())
+      {
+	int width = parent.width;
+	int height = parent.height;
 
-    Insets ins = parent.getInsets ();
+	Insets ins = parent.getInsets ();
 
-    int num = parent.ncomponents;
-    Component[] comps = parent.component;
+	int num = parent.ncomponents;
+	Component[] comps = parent.component;
 
-    int x = ins.left + hgap;
-    int y = ins.top + vgap;
-    width = width - 2 * hgap - ins.left - ins.right;
-    height = height - 2 * vgap - ins.top - ins.bottom;
+	int x = ins.left + hgap;
+	int y = ins.top + vgap;
+	width = width - 2 * hgap - ins.left - ins.right;
+	height = height - 2 * vgap - ins.top - ins.bottom;
 
-    for (int i = 0; i < num; ++i)
-      comps[i].setBounds (x, y, width, height);
+	for (int i = 0; i < num; ++i)
+	  comps[i].setBounds (x, y, width, height);
+      }
   }
 
   /** Get the maximum layout size of the container.
@@ -287,91 +290,97 @@ public class CardLayout implements LayoutManager2, Serializable
   private void gotoComponent (Container parent, int what,
 			      Component target)
   {
-    int num = parent.ncomponents;
-    // This is more efficient than calling getComponents().
-    Component[] comps = parent.component;
-    int choice = -1;
-
-    if (what == FIRST)
-      choice = 0;
-    else if (what == LAST)
-      choice = num - 1;
-    else if (what >= 0)
-      choice = what;
-
-    for (int i = 0; i < num; ++i)
+    synchronized (parent.getTreeLock ())
       {
-	// If TARGET is set then we are looking for a specific
-	// component.
-	if (target != null)
+	int num = parent.ncomponents;
+	// This is more efficient than calling getComponents().
+	Component[] comps = parent.component;
+	int choice = -1;
+
+	if (what == FIRST)
+	  choice = 0;
+	else if (what == LAST)
+	  choice = num - 1;
+	else if (what >= 0)
+	  choice = what;
+
+	for (int i = 0; i < num; ++i)
 	  {
-	    if (target == comps[i])
-	      choice = i;
+	    // If TARGET is set then we are looking for a specific
+	    // component.
+	    if (target != null)
+	      {
+		if (target == comps[i])
+		  choice = i;
+	      }
+
+	    if (comps[i].isVisible ())
+	      {
+		if (what == NEXT)
+		  {
+		    choice = i + 1;
+		    if (choice == num)
+		      choice = 0;
+		  }
+		else if (what == PREV)
+		  {
+		    choice = i - 1;
+		    if (choice < 0)
+		      choice = num - 1;
+		  }
+		else if (choice == i)
+		  {
+		    // Do nothing if we're already looking at the right
+		    // component.
+		    return;
+		  }
+		comps[i].setVisible (false);
+
+		if (choice >= 0)
+		  break;
+	      }
 	  }
 
-	if (comps[i].isVisible ())
-	  {
-	    if (what == NEXT)
-	      {
-		choice = i + 1;
-		if (choice == num)
-		  choice = 0;
-	      }
-	    else if (what == PREV)
-	      {
-		choice = i - 1;
-		if (choice < 0)
-		  choice = num - 1;
-	      }
-	    else if (choice == i)
-	      {
-		// Do nothing if we're already looking at the right
-		// component.
-		return;
-	      }
-	    comps[i].setVisible (false);
-
-	    if (choice >= 0)
-	      break;
-	  }
+	if (choice >= 0 && choice < num)
+	  comps[choice].setVisible (true);
       }
-
-    if (choice >= 0 && choice < num)
-      comps[choice].setVisible (true);
   }
 
   // Compute the size according to WHAT.
   private Dimension getSize (Container parent, int what)
   {
-    int w = 0, h = 0, num = parent.ncomponents;
-    Component[] comps = parent.component;
-
-    for (int i = 0; i < num; ++i)
+    synchronized (parent.getTreeLock ())
       {
-	Dimension d;
+	int w = 0, h = 0, num = parent.ncomponents;
+	Component[] comps = parent.component;
 
-	if (what == MIN)
-	  d = comps[i].getMinimumSize ();
-	else if (what == MAX)
-	  d = comps[i].getMaximumSize ();
-	else
-	  d = comps[i].getPreferredSize ();
+	for (int i = 0; i < num; ++i)
+	  {
+	    Dimension d;
 
-	w = Math.max (d.width, w);
-	h = Math.max (d.height, h);
+	    if (what == MIN)
+	      d = comps[i].getMinimumSize ();
+	    else if (what == MAX)
+	      d = comps[i].getMaximumSize ();
+	    else
+	      d = comps[i].getPreferredSize ();
+
+	    w = Math.max (d.width, w);
+	    h = Math.max (d.height, h);
+	  }
+
+	Insets i = parent.getInsets ();
+	w += 2 * hgap + i.right + i.left;
+	h += 2 * vgap + i.bottom + i.top;
+
+	// Handle overflow.
+	if (w < 0)
+	  w = Integer.MAX_VALUE;
+	if (h < 0)
+	  h = Integer.MAX_VALUE;
+
+	return new Dimension (w, h);
       }
-
-    Insets i = parent.getInsets ();
-    w += 2 * hgap + i.right + i.left;
-    h += 2 * vgap + i.bottom + i.top;
-
-    // Handle overflow.
-    if (w < 0)
-      w = Integer.MAX_VALUE;
-    if (h < 0)
-      h = Integer.MAX_VALUE;
-
-    return new Dimension (w, h);
   }
 
   /**
