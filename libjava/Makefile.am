@@ -634,6 +634,7 @@ java/awt/Paint.java \
 java/awt/PaintContext.java \
 java/awt/Panel.java \
 java/awt/Point.java \
+java/awt/Polygon.java \
 java/awt/PopupMenu.java	\
 java/awt/Rectangle.java	\
 java/awt/RenderingHints.java \
