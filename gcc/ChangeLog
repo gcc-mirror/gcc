@@ -1,3 +1,10 @@
+Wed Apr 24 23:45:37 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* loop.c (load_mems): Don't change the interface of called functions.
+
+	* calls.c (expand_call): Take current_function_pretend_args_size
+	into account when setting argblock for sibcalls.
+
 2002-04-24  Matt Hiller  <hiller@redhat.com>
 
 	* cpplex.c: Remove conditional #undef of MULTIBYTE_CHARS.
