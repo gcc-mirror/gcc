@@ -2403,102 +2403,111 @@ record_constant_1 (exp)
 
   obstack_1grow (&permanent_obstack, (unsigned int) code);
 
-  if (code == INTEGER_CST)
+  switch (code)
     {
+    case INTEGER_CST:
       obstack_1grow (&permanent_obstack, TYPE_PRECISION (TREE_TYPE (exp)));
       strp = (char *) &TREE_INT_CST_LOW (exp);
       len = 2 * sizeof TREE_INT_CST_LOW (exp);
-    }
-  else if (code == REAL_CST)
-    {
+      break;
+
+    case REAL_CST:
       obstack_1grow (&permanent_obstack, TYPE_PRECISION (TREE_TYPE (exp)));
       strp = (char *) &TREE_REAL_CST (exp);
       len = sizeof TREE_REAL_CST (exp);
-    }
-  else if (code == STRING_CST)
-    {
+      break;
+
+    case STRING_CST:
       if (flag_writable_strings)
 	return;
+
       strp = TREE_STRING_POINTER (exp);
       len = TREE_STRING_LENGTH (exp);
       obstack_grow (&permanent_obstack, (char *) &TREE_STRING_LENGTH (exp),
 		    sizeof TREE_STRING_LENGTH (exp));
-    }
-  else if (code == COMPLEX_CST)
-    {
+      break;
+
+    case COMPLEX_CST:
       record_constant_1 (TREE_REALPART (exp));
       record_constant_1 (TREE_IMAGPART (exp));
       return;
-    }
-  else if (code == CONSTRUCTOR && TREE_CODE (TREE_TYPE (exp)) == SET_TYPE)
-    {
-      int nbytes = int_size_in_bytes (TREE_TYPE (exp));
-      obstack_grow (&permanent_obstack, &nbytes, sizeof (nbytes));
-      obstack_blank (&permanent_obstack, nbytes);
-      get_set_constructor_bytes (exp,
-				 (unsigned char *) permanent_obstack.next_free,
-				 nbytes);
-      return;
-    }
-  else if (code == CONSTRUCTOR)
-    {
-      register tree link;
-      int length = list_length (CONSTRUCTOR_ELTS (exp));
-      tree type;
 
-      obstack_grow (&permanent_obstack, (char *) &length, sizeof length);
-
-      /* For record constructors, insist that the types match.
-	 For arrays, just verify both constructors are for arrays.  */
-      if (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE)
-	type = TREE_TYPE (exp);
-      else
-	type = 0;
-      obstack_grow (&permanent_obstack, (char *) &type, sizeof type);
-
-      /* For arrays, insist that the size in bytes match.  */
-      if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE)
+    case CONSTRUCTOR:
+      if (TREE_CODE (TREE_TYPE (exp)) == SET_TYPE)
 	{
-	  int size = int_size_in_bytes (TREE_TYPE (exp));
-	  obstack_grow (&permanent_obstack, (char *) &size, sizeof size);
+	  int nbytes = int_size_in_bytes (TREE_TYPE (exp));
+	  obstack_grow (&permanent_obstack, &nbytes, sizeof (nbytes));
+	  obstack_blank (&permanent_obstack, nbytes);
+	  get_set_constructor_bytes
+	    (exp, (unsigned char *) permanent_obstack.next_free, nbytes);
+	  return;
 	}
-
-      for (link = CONSTRUCTOR_ELTS (exp); link; link = TREE_CHAIN (link))
+      else
 	{
-	  if (TREE_VALUE (link))
-	    record_constant_1 (TREE_VALUE (link));
-	  else
-	    {
-	      tree zero = 0;
+	  register tree link;
+	  int length = list_length (CONSTRUCTOR_ELTS (exp));
+	  tree type;
 
-	      obstack_grow (&permanent_obstack, (char *) &zero, sizeof zero);
+	  obstack_grow (&permanent_obstack, (char *) &length, sizeof length);
+
+	  /* For record constructors, insist that the types match.
+	     For arrays, just verify both constructors are for arrays.  */
+	  if (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE)
+	    type = TREE_TYPE (exp);
+	  else
+	    type = 0;
+	  obstack_grow (&permanent_obstack, (char *) &type, sizeof type);
+
+	  /* For arrays, insist that the size in bytes match.  */
+	  if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE)
+	    {
+	      int size = int_size_in_bytes (TREE_TYPE (exp));
+	      obstack_grow (&permanent_obstack, (char *) &size, sizeof size);
+	    }
+
+	  for (link = CONSTRUCTOR_ELTS (exp); link; link = TREE_CHAIN (link))
+	    {
+	      if (TREE_VALUE (link))
+		record_constant_1 (TREE_VALUE (link));
+	      else
+		{
+		  tree zero = 0;
+
+		  obstack_grow (&permanent_obstack,
+				(char *) &zero, sizeof zero);
+		}
 	    }
 	}
+      return;
 
+    case ADDR_EXPR:
+      {
+	struct addr_const value;
+
+	decode_addr_const (exp, &value);
+	/* Record the offset.  */
+	obstack_grow (&permanent_obstack,
+		      (char *) &value.offset, sizeof value.offset);
+	/* Record the symbol name.  */
+	obstack_grow (&permanent_obstack, XSTR (value.base, 0),
+		      strlen (XSTR (value.base, 0)) + 1);
+      }
       return;
-    }
-  else if (code == ADDR_EXPR)
-    {
-      struct addr_const value;
-      decode_addr_const (exp, &value);
-      /* Record the offset.  */
-      obstack_grow (&permanent_obstack,
-		    (char *) &value.offset, sizeof value.offset);
-      /* Record the symbol name.  */
-      obstack_grow (&permanent_obstack, XSTR (value.base, 0),
-		    strlen (XSTR (value.base, 0)) + 1);
-      return;
-    }
-  else if (code == PLUS_EXPR || code == MINUS_EXPR)
-    {
+
+    case PLUS_EXPR:
+    case MINUS_EXPR:
       record_constant_1 (TREE_OPERAND (exp, 0));
       record_constant_1 (TREE_OPERAND (exp, 1));
       return;
-    }
-  else if (code == NOP_EXPR || code == CONVERT_EXPR)
-    {
+
+    case NOP_EXPR:
+    case CONVERT_EXPR:
+    case NON_LVALUE_EXPR:
       record_constant_1 (TREE_OPERAND (exp, 0));
       return;
+
+    default:
+      abort ();
     }
 
   /* Record constant contents.  */
