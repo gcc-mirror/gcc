@@ -1,3 +1,7 @@
+2003-05-23  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/mips.md (clzsi, clzdi): New patterns.
+
 2003-05-23  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.c (default_compilers): Use -o to specify preprocessor's output
@@ -7,7 +11,7 @@
 2003-05-23  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* fixinc/Makefile.in: Correct description.
-	* fixinc/Makefile.in, fixinc/fixfixes.c, fixinc/fixincl.c, 
+	* fixinc/Makefile.in, fixinc/fixfixes.c, fixinc/fixincl.c,
 	fixinc/fixlib.c, fixinc/fixlib.h, fixinc/fixtests.c,
 	fixinc/genfixes: Replace "GNU CC" with "GCC".
 

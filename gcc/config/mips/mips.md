@@ -3594,6 +3594,31 @@ move\\t%0,%z4\\n\\
    (set_attr "length"	"24")])
 
 
+
+;;
+;;  ...................
+;;
+;;  Count leading zeroes.
+;;
+;;  ...................
+;;
+
+(define_insn "clzsi2"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(clz:SI (match_operand:SI 1 "register_operand" "d")))]
+  "ISA_HAS_CLZ_CLO"
+  "clz\\t%0,%1"
+  [(set_attr "type" "arith")
+   (set_attr "mode" "SI")])
+
+(define_insn "clzdi2"
+  [(set (match_operand:DI 0 "register_operand" "=d")
+	(clz:DI (match_operand:DI 1 "register_operand" "d")))]
+  "ISA_HAS_DCLZ_DCLO"
+  "dclz\\t%0,%1"
+  [(set_attr "type" "arith")
+   (set_attr "mode" "DI")])
+
 ;;
 ;;  ....................
 ;;
