@@ -237,7 +237,7 @@ extern void assemble_start_function	PROTO((tree, char *));
 
 /* Output assembler code associated with defining the size of the
    function.  DECL describes the function.  NAME is the function's name.  */
-extern void assemble_end_function	PROTO((tree, char *));
+extern void assemble_end_function	PROTO((tree, const char *));
 
 /* Assemble everything that is needed for a variable or function declaration.
    Not used for automatic variables, and not used for function definitions.
@@ -262,14 +262,14 @@ extern void assemble_external		PROTO((tree));
 
    NAME should be the name of a global function to be called
    at exit time.  This name is output using assemble_name.  */
-extern void assemble_destructor		PROTO((char *));
+extern void assemble_destructor		PROTO((const char *));
 
 /* Likewise for global constructors.  */
-extern void assemble_constructor	PROTO((char *));
+extern void assemble_constructor	PROTO((const char *));
 
 /* Likewise for entries we want to record for garbage collection.
    Garbage collection is still under development.  */
-extern void assemble_gc_entry		PROTO((char *));
+extern void assemble_gc_entry		PROTO((const char *));
 
 /* Assemble code to leave SIZE bytes of zeros.  */
 extern void assemble_zeros		PROTO((int));
@@ -286,10 +286,10 @@ extern void assemble_external_libcall	PROTO((rtx));
 #endif
 
 /* Declare the label NAME global.  */
-extern void assemble_global		PROTO((char *));
+extern void assemble_global		PROTO((const char *));
 
 /* Assemble a label named NAME.  */
-extern void assemble_label		PROTO((char *));
+extern void assemble_label		PROTO((const char *));
 
 /* Output to FILE a reference to the assembler name of a C-level name NAME.
    If NAME starts with a *, the rest of NAME is output verbatim.
@@ -334,7 +334,7 @@ extern rtx peephole			PROTO((rtx));
 
 #ifdef TREE_CODE
 /* Write all the constants in the constant pool.  */
-extern void output_constant_pool	PROTO((char *, tree));
+extern void output_constant_pool	PROTO((const char *, tree));
 
 /* Return nonzero if VALUE is a valid constant-valued expression
    for use in initializing a static variable; one that can be an

@@ -923,7 +923,7 @@ assemble_asm (string)
 
 void
 assemble_destructor (name)
-     char *name;
+     const char *name;
 {
 #ifdef ASM_OUTPUT_DESTRUCTOR
   ASM_OUTPUT_DESTRUCTOR (asm_out_file, name);
@@ -943,7 +943,7 @@ assemble_destructor (name)
 
 void
 assemble_constructor (name)
-     char *name;
+     const char *name;
 {
 #ifdef ASM_OUTPUT_CONSTRUCTOR
   ASM_OUTPUT_CONSTRUCTOR (asm_out_file, name);
@@ -964,7 +964,7 @@ assemble_constructor (name)
 
 void
 assemble_gc_entry (name)
-     char *name;
+     const char *name;
 {
 #ifdef ASM_OUTPUT_GC_ENTRY
   ASM_OUTPUT_GC_ENTRY (asm_out_file, name);
@@ -1101,7 +1101,7 @@ assemble_start_function (decl, fnname)
 void
 assemble_end_function (decl, fnname)
      tree decl;
-     char *fnname;
+     const char *fnname;
 {
 #ifdef ASM_DECLARE_FUNCTION_SIZE
   ASM_DECLARE_FUNCTION_SIZE (asm_out_file, fnname, decl);
@@ -1759,7 +1759,7 @@ assemble_external_libcall (fun)
 
 void
 assemble_global (name)
-     char *name;
+     const char *name;
 {
   ASM_GLOBALIZE_LABEL (asm_out_file, name);
 }
@@ -1768,7 +1768,7 @@ assemble_global (name)
 
 void
 assemble_label (name)
-     char *name;
+     const char *name;
 {
   ASM_OUTPUT_LABEL (asm_out_file, name);
 }
@@ -3744,7 +3744,7 @@ get_pool_size ()
 
 void
 output_constant_pool (fnname, fndecl)
-  char *fnname ATTRIBUTE_UNUSED;
+  const char *fnname ATTRIBUTE_UNUSED;
   tree fndecl ATTRIBUTE_UNUSED;
 {
   struct pool_constant *pool;

@@ -1,3 +1,13 @@
+Mon Nov  1 14:35:50 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* output.h (assemble_end_function, assemble_destructor,
+	assemble_constructor, assemble_gc_entry, assemble_global,
+	assemble_label, output_constant_pool) Constify a char*.
+
+	* varasm.c (assemble_destructor, assemble_constructor,
+	assemble_gc_entry, assemble_end_function, assemble_global,
+	assemble_label, output_constant_pool): Likewise.
+
 Mon Nov  1 14:22:51 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/thumb.c (thumb_expand_prologue): Add comments
