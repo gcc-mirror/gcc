@@ -2744,8 +2744,8 @@
    (set_attr "length" "1")])
 
 (define_insn "*movsf_const_intreg"
-  [(set (match_operand:SF 0 "register_operand" "=fr")
-        (match_operand:SF 1 "const_double_operand" "F"))]
+  [(set (match_operand:SF 0 "register_operand" "=f,r")
+        (match_operand:SF 1 "const_double_operand" "m,F"))]
   "TARGET_FPU"
   "*
 {
@@ -2912,14 +2912,15 @@
    (set_attr "length" "1")])
 
 (define_insn "*movdf_const_intreg_sp32"
-  [(set (match_operand:DF 0 "register_operand" "=e,r")
-        (match_operand:DF 1 "const_double_operand" "T,F"))]
+  [(set (match_operand:DF 0 "register_operand" "=e,e,r")
+        (match_operand:DF 1 "const_double_operand" "T,o,F"))]
   "TARGET_FPU && ! TARGET_ARCH64"
   "@
    ldd\\t%1, %0
+   #
    #"
   [(set_attr "type" "move")
-   (set_attr "length" "1,2")])
+   (set_attr "length" "1,2,2")])
 
 ;; Now that we redo life analysis with a clean slate after
 ;; instruction splitting for sched2 this can work.

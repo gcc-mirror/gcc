@@ -1,3 +1,8 @@
+Fri Oct 15 01:20:52 1999  Richard Henderson  <rth@cygnus.com>
+
+	* sparc.md (movsf_const_intreg): Revert last constraint change.
+	(movdf_const_intreg_sp32): Likewise.
+
 Fri Oct 15 01:47:51 1999  Vladimir Makarov  <vmakarov@loony.cygnus.com>
 
 	* cse.c: Include hashtab.h instead of splay-tree.h
