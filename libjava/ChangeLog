@@ -1,3 +1,10 @@
+2000-12-17  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/util/ArrayList.java (data): Declare transient.
+	(serialPersistantFields): Removed.
+	(readObject): Use defaultReadObject(), not readFields().
+	(writeObject): Use defaultWriteObject(), not writeFields().
+
 2000-12-17  Jeff Sturm  <jeff.sturm@commerceone.com>
 
 	* java/util/Hashtable.java (put): Remove `last' variable.

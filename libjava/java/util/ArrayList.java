@@ -33,9 +33,6 @@ import java.io.Serializable;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.ObjectInputStream.GetField;
-import java.io.ObjectOutputStream.PutField;
-import java.io.ObjectStreamField;
 
 /**
  * An array-backed implementation of the List interface.  ArrayList
@@ -43,7 +40,7 @@ import java.io.ObjectStreamField;
  * to or removing from the end of a list, checking the size, &c.
  *
  * @author        Jon A. Zeppieri
- * @version       $Id: ArrayList.java,v 1.4 2000/11/22 11:59:59 bryce Exp $
+ * @version       $Id: ArrayList.java,v 1.12 2000/12/17 07:54:39 cbj Exp $
  * @see           java.util.AbstractList
  * @see           java.util.List
  */
@@ -57,11 +54,7 @@ public class ArrayList extends AbstractList
   int size;
 
   /** where the data is stored */
-  Object[] data;
-
-  /** used for serialization -- denotes which fields are serialized */
-  private static final ObjectStreamField[] serialPersistentFields =
-    { new ObjectStreamField("size", int.class) };
+  transient Object[] data;
 
   /** 
    * Construct a new ArrayList with the supplied initial capacity. 
@@ -398,9 +391,8 @@ public class ArrayList extends AbstractList
   {
     int i;
 
-    ObjectOutputStream.PutField fields = out.putFields();
-    fields.put("size", size);
-    out.writeFields();
+    // The 'size' field.
+    out.defaultWriteObject();
 
     // FIXME: Do we really want to serialize unused list entries??
     out.writeInt(data.length);
@@ -414,8 +406,8 @@ public class ArrayList extends AbstractList
     int i;
     int capacity;
 
-    ObjectInputStream.GetField fields = in.readFields();
-    size = fields.get("size", 0);
+    // the `size' field.
+    in.defaultReadObject();
 
     capacity = in.readInt();
     data = new Object[capacity];
