@@ -324,9 +324,66 @@ pack_d ( fp_number_type *  src)
   dst.bits.exp = exp;
   dst.bits.sign = sign;
 #else
+# if defined TFLOAT && defined HALFFRACBITS
+ {
+   halffractype high, low;
+
+   high = (fraction >> (FRACBITS - HALFFRACBITS));
+   high &= (((fractype)1) << HALFFRACBITS) - 1;
+   high |= ((fractype) (exp & ((1 << EXPBITS) - 1))) << HALFFRACBITS;
+   high |= ((fractype) (sign & 1)) << (HALFFRACBITS | EXPBITS);
+
+   low = (halffractype)fraction &
+     ((((halffractype)1) << (FRACBITS - HALFFRACBITS)) - 1);
+
+   if (exp == EXPMAX || exp == 0 || low == 0)
+     low = 0;
+   else
+     {
+       exp -= HALFFRACBITS + 1;
+
+       while (exp > 0
+	      && low < ((halffractype)1 << HALFFRACBITS))
+	 {
+	   low <<= 1;
+	   exp--;
+	 }
+
+       if (exp <= 0)
+	 {
+	   halffractype roundmsb, round;
+
+	   exp = -exp + 1;
+
+	   roundmsb = (1 << (exp - 1));
+	   round = low & ((roundmsb << 1) - 1);
+
+	   low >>= exp;
+	   exp = 0;
+
+	   if (round > roundmsb || (round == roundmsb && (low & 1)))
+	     {
+	       low++;
+	       if (low >= ((halffractype)1 << HALFFRACBITS))
+		 /* We don't shift left, since it has just become the
+		    smallest normal number, whose implicit 1 bit is
+		    now indicated by the non-zero exponent.  */
+		 exp++;
+	     }
+	 }
+
+       low &= ((halffractype)1 << HALFFRACBITS) - 1;
+       low |= ((fractype) (exp & ((1 << EXPBITS) - 1))) << HALFFRACBITS;
+       low |= ((fractype) (sign & 1)) << (HALFFRACBITS | EXPBITS);
+     }
+
+   dst.value_raw = (((fractype) high) << HALFSHIFT) | low;
+ }
+# else
   dst.value_raw = fraction & ((((fractype)1) << FRACBITS) - (fractype)1);
   dst.value_raw |= ((fractype) (exp & ((1 << EXPBITS) - 1))) << FRACBITS;
   dst.value_raw |= ((fractype) (sign & 1)) << (FRACBITS | EXPBITS);
+# endif
 #endif
 
 #if defined(FLOAT_WORD_ORDER_MISMATCH) && !defined(FLOAT)
@@ -383,9 +440,42 @@ unpack_d (FLO_union_type * src, fp_number_type * dst)
   exp = src->bits.exp;
   sign = src->bits.sign;
 #else
+# if defined TFLOAT && defined HALFFRACBITS
+ {
+   halffractype high, low;
+   
+   high = src->value_raw >> HALFSHIFT;
+   low = src->value_raw & (((fractype)1 << HALFSHIFT) - 1);
+
+   fraction = high & ((((fractype)1) << HALFFRACBITS) - 1);
+   fraction <<= FRACBITS - HALFFRACBITS;
+   exp = ((int)(high >> HALFFRACBITS)) & ((1 << EXPBITS) - 1);
+   sign = ((int)(high >> (((HALFFRACBITS + EXPBITS))))) & 1;
+
+   if (exp != EXPMAX && exp != 0 && low != 0)
+     {
+       int lowexp = ((int)(low >> HALFFRACBITS)) & ((1 << EXPBITS) - 1);
+       int shift;
+       fractype xlow;
+
+       xlow = low & ((((fractype)1) << HALFFRACBITS) - 1);
+       if (lowexp)
+	 xlow |= (((halffractype)1) << HALFFRACBITS);
+       else
+	 lowexp = 1;
+       shift = (FRACBITS - HALFFRACBITS) - (exp - lowexp);
+       if (shift > 0)
+	 xlow <<= shift;
+       else if (shift < 0)
+	 xlow >>= -shift;
+       fraction += xlow;
+     }
+ }
+# else
   fraction = src->value_raw & ((((fractype)1) << FRACBITS) - 1);
   exp = ((int)(src->value_raw >> FRACBITS)) & ((1 << EXPBITS) - 1);
   sign = ((int)(src->value_raw >> (FRACBITS + EXPBITS))) & 1;
+# endif
 #endif
 
   dst->sign = sign;
