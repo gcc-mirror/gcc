@@ -3104,8 +3104,20 @@ GCC you first have to install a pre-built compiler, see our
 
 The Solaris 2 @command{/bin/sh} will often fail to configure
 @file{libstdc++-v3}, @file{boehm-gc} or @file{libjava}.  We therefore
-recommend to set @env{CONFIG_SHELL} to @command{/bin/ksh} in your
-environment.
+recommend to use the following sequence of commands to bootstrap and
+install GCC:
+
+@smallexample
+   % CONFIG_SHELL=/bin/ksh
+   % export CONFIG_SHELL
+   % @var{srcdir}/configure [@var{options}] [@var{target}]
+   % gmake bootstrap
+   % gmake install
+@end smallexample
+
+As explained in the @uref{build.html,,build} instructions, we recommend
+to use GNU make, which we call @command{gmake} here to distinguish it
+from Sun make.
 
 Solaris 2 comes with a number of optional OS packages.  Some of these
 are needed to use GCC fully, namely @code{SUNWarc},
@@ -3123,6 +3135,10 @@ Trying to use the linker and other tools in
 @file{/usr/ucb} to install GCC has been observed to cause trouble.
 For example, the linker may hang indefinitely.  The fix is to remove
 @file{/usr/ucb} from your @env{PATH}.
+
+The build process works more smoothly with the legacy Sun tools so, if you
+have @file{/usr/xpg4/bin} in your @env{PATH}, we recommend that you place
+@file{/usr/bin} before @file{/usr/xpg4/bin} for the duration of the build.
 
 All releases of GNU binutils prior to 2.11.2 have known bugs on this
 platform.  We recommend the use of GNU binutils 2.11.2 or the vendor
