@@ -667,7 +667,6 @@ clipper-intergraph-clix*)
 	tm_file="${tm_file} svr3.h clipper/clix.h"
 	xm_file=clipper/xm-clix.h
 	xmake_file=clipper/x-clix
-	extra_headers=va-clipper.h
 	extra_parts="crtbegin.o crtend.o"
 	install_headers_dir=install-headers-cpio
 	;;

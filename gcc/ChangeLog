@@ -1,3 +1,8 @@
+2001-11-17  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
+	PR target/4606
+	* config.gcc: Remove reference to va-clipper.h.
+
 2001-11-17  Christopher Faylor  <cgf@redhat.com>
 	    Corinna Vinschen  <vinschen@redhat.com>
 
