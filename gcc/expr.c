@@ -2337,7 +2337,8 @@ emit_library_call (va_alist)
 }
 
 /* Like emit_library_call except that an extra argument, VALUE,
-   comes second and says where to store the result.  */
+   comes second and says where to store the result.
+   (If VALUE is zero, the result comes in the function value register.)  */
 
 void
 emit_library_call_value (va_alist)
@@ -2392,14 +2393,58 @@ emit_library_call_value (va_alist)
      of the full argument passing conventions to limit complexity here since
      library functions shouldn't have many args.  */
 
-  argvec = (struct arg *) alloca (nargs * sizeof (struct arg));
+  argvec = (struct arg *) alloca ((nargs + 1) * sizeof (struct arg));
 
   INIT_CUMULATIVE_ARGS (args_so_far, NULL_TREE, fun);
 
   args_size.constant = 0;
   args_size.var = 0;
 
-  for (count = 0; count < nargs; count++)
+  count = 0;
+
+  /* If there's a structure value address to be passed,
+     either pass it in the special place, or pass it as an extra argument.  */
+  if (mem_value)
+    {
+      rtx addr = XEXP (mem_value, 0);
+
+      if (! struct_value_rtx)
+	{
+	  nargs++;
+
+	  /* Make sure it is a reasonable operand for a move or push insn.  */
+	  if (GET_CODE (addr) != REG && GET_CODE (addr) != MEM
+	      && ! (CONSTANT_P (addr) && LEGITIMATE_CONSTANT_P (addr)))
+	    addr = force_operand (addr, NULL_RTX);
+
+	  argvec[count].value = addr;
+	  argvec[count].mode = outmode;
+	  argvec[count].partial = 0;
+
+	  argvec[count].reg = FUNCTION_ARG (args_so_far, outmode, NULL_TREE, 1);
+#ifdef FUNCTION_ARG_PARTIAL_NREGS
+	  if (FUNCTION_ARG_PARTIAL_NREGS (args_so_far, outmode, NULL_TREE, 1))
+	    abort ();
+#endif
+
+	  locate_and_pad_parm (outmode, NULL_TREE,
+			       argvec[count].reg && argvec[count].partial == 0,
+			       NULL_TREE, &args_size, &argvec[count].offset,
+			       &argvec[count].size);
+
+
+	  if (argvec[count].reg == 0 || argvec[count].partial != 0
+#ifdef REG_PARM_STACK_SPACE
+	      || 1
+#endif
+	      )
+	    args_size.constant += argvec[count].size.constant;
+
+	  FUNCTION_ARG_ADVANCE (args_so_far, outmode, (tree)0, 1);
+	}
+    }
+
+  for (; count < nargs; count++)
     {
       rtx val = va_arg (p, rtx);
       enum machine_mode mode = va_arg (p, enum machine_mode);
@@ -2559,6 +2604,9 @@ emit_library_call_value (va_alist)
 
   /* Now load any reg parms into their regs.  */
 
+  if (mem_value != 0 && struct_value_rtx != 0)
+    emit_move_insn (struct_value_rtx, addr);
+
   for (count = 0; count < nargs; count++, argnum += inc)
     {
       register enum machine_mode mode = argvec[argnum].mode;
@@ -2571,9 +2619,11 @@ emit_library_call_value (va_alist)
       NO_DEFER_POP;
     }
 
+#if 0
   /* For version 1.37, try deleting this entirely.  */
   if (! no_queue)
     emit_queue ();
+#endif
 
   /* Any regs containing parms remain in use through the call.  */
   start_sequence ();
@@ -2602,13 +2652,18 @@ emit_library_call_value (va_alist)
   OK_DEFER_POP;
 
   /* Copy the value to the right place.  */
-  if (mem_value)
+  if (outmode != VOIDmode)
     {
-      if (value != mem_value)
-	emit_move_insn (value, mem_value);
+      if (mem_value)
+	{
+	  if (value == 0)
+	    value = hard_libcall_value (outmode);
+	  if (value != mem_value)
+	    emit_move_insn (value, mem_value);
+	}
+      else if (value != 0)
+	emit_move_insn (value, hard_libcall_value (outmode));
     }
-  else
-    emit_move_insn (value, hard_libcall_value (outmode));
 }
 
 /* Expand an assignment that stores the value of FROM into TO.
