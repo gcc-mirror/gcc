@@ -3996,7 +3996,7 @@ build_expr_from_tree (t)
       else 
 	{
 	  tree fn = TREE_OPERAND (t, 0);
-	  
+
 	  /* We can get a TEMPLATE_ID_EXPR here on code like:
 
 	       x->f<2>();
@@ -4007,7 +4007,9 @@ build_expr_from_tree (t)
 	     build_expr_from_tree.  So, just use build_expr_from_tree
 	     when we really need it.  */
 	  if (TREE_CODE (fn) == TEMPLATE_ID_EXPR)
-	    fn = build_expr_from_tree (fn);
+	    fn = lookup_template_function
+	      (TREE_OPERAND (fn, 0),
+	       build_expr_from_tree (TREE_OPERAND (fn, 1)));
 
 	  return build_method_call
 	    (build_expr_from_tree (TREE_OPERAND (t, 1)),

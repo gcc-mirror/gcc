@@ -1,3 +1,10 @@
+1999-08-03  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* lex.c (yyprint): Handle PFUNCNAME.
+
+	* decl2.c (build_expr_from_tree, case METHOD_CALL_EXPR): Only
+	build_expr_from_tree on the args of a TEMPLATE_ID_EXPR.
+
 1999-08-03  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* decl.c (start_decl): Set attributes before duplicate_decls call.

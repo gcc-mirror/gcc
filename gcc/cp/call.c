@@ -4146,7 +4146,7 @@ build_new_method_call (instance, name, args, basetype_path, flags)
       name = TREE_OPERAND (name, 0);
       if (TREE_CODE_CLASS (TREE_CODE (name)) == 'd')
 	name = DECL_NAME (name);
-      else 
+      else
 	{
 	  if (TREE_CODE (name) == COMPONENT_REF)
 	    name = TREE_OPERAND (name, 1);

@@ -908,6 +908,7 @@ yyprint (file, yychar, yylval)
     case TYPENAME:
     case TYPESPEC:
     case PTYPENAME:
+    case PFUNCNAME:
     case IDENTIFIER_DEFN:
     case TYPENAME_DEFN:
     case PTYPENAME_DEFN:
