@@ -56,7 +56,7 @@ self=$0
 
 # This function prints its arguments to standard output unless
 # "silent" is set.
-silent=
+unset silent
 chat () {
     if [ -z "$silent" ]; then
         echo "$@"

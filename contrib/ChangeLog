@@ -1,3 +1,7 @@
+2005-03-18  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc_update (silent): Unset instead of initializing to null.
+
 2005-03-18  Andreas Schwab  <schwab@suse.de>
 
 	* gcc_update (apply_patch): Properly quote $1.
