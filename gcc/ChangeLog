@@ -1,3 +1,10 @@
+2003-02-15  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/i386/mingw32.h (LIBGCC_SPEC): Add libmingwex.a.
+	Update copyright.
+	* config/i386/cygwin.h (LIBGCC_SPEC): Add libmingwex.a for
+	-mno-cygwin case.
+
 2003-02-14  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
 
 	PR optimization/7702

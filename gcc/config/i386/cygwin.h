@@ -136,7 +136,8 @@ Boston, MA 02111-1307, USA.  */
    by calling the init function from the prologue.  */
 
 #undef LIBGCC_SPEC
-#define LIBGCC_SPEC "%{mno-cygwin: %{mthreads:-lmingwthrd} -lmingw32} -lgcc %{mno-cygwin:-lmoldname -lmsvcrt}"
+#define LIBGCC_SPEC "%{mno-cygwin: %{mthreads:-lmingwthrd} -lmingw32}	\
+  -lgcc %{mno-cygwin:-lmoldname -lmingwex -lmsvcrt}"
 
 /* This macro defines names of additional specifications to put in the specs
    that can be used in various specifications like CC1_SPEC.  Its definition
