@@ -1850,8 +1850,17 @@ if test x${with_newlib} != xno && echo " ${target_configdirs} " | grep " newlib 
   target_configargs="--with-newlib ${target_configargs}"
 fi
 
+# Different target subdirs use different values of certain variables
+# (notably CXX).  Worse, multilibs use *lots* of different values.
+# Worse yet, autoconf 2.5x makes some of these 'precious', meaning that
+# it doesn't automatically accept command-line overrides of them.
+# This means it's not safe for target subdirs to share a cache file,
+# which is disgusting, but there you have it.  Hopefully this can be
+# fixed in future.  It's still worthwhile to use a cache file for each
+# directory.  I think.
+
 # Pass the appropriate --host, --build, and --cache-file arguments.
-target_configargs="--cache-file=../config.cache --host=${target_alias} --build=${build_alias} ${target_configargs}"
+target_configargs="--cache-file=config.cache --host=${target_alias} --build=${build_alias} ${target_configargs}"
 
 # provide a proper gxx_include_dir.
 # Note, if you change the default, make sure to fix both here and in
