@@ -170,6 +170,9 @@ __extension__ (*({							\
 
 #define va_end(AP)	((void)0)
 
+/* Copy __gnuc_va_list into another variable of this type.  */
+#define __va_copy(dest, src) *(dest) = *(src)
+
 #endif /* __VA_PPC_H__ */
 #endif /* defined (_STDARG_H) || defined (_VARARGS_H) */
 
@@ -222,6 +225,9 @@ typedef char *__gnuc_va_list;
 	    - __va_rounded_size(TYPE)))
 
 #define va_end(AP)	((void)0)
+
+/* Copy __gnuc_va_list into another variable of this type.  */
+#define __va_copy(dest, src) (dest) = (src)
 
 #endif /* defined (_STDARG_H) || defined (_VARARGS_H) */
 #endif /* Windows NT */

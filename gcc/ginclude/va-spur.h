@@ -59,3 +59,6 @@ __extension__ \
 	   (pvar).__pnt += (sizeof(type) + 3) & ~3; \
 	} \
 	__va_result; }))
+
+/* Copy __gnuc_va_list into another variable of this type.  */
+#define __va_copy(dest, src) (dest) = (src)
