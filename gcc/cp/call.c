@@ -4278,6 +4278,15 @@ build_over_call (cand, args, flags)
 	  TREE_USED (arg) = 1;
 
 	  val = build (COMPOUND_EXPR, DECL_CONTEXT (fn), arg, to);
+	  /* Even though the assignment may not actually result in any
+	     code being generated, we do not want to warn about the
+	     assignment having no effect.  That would be confusing to
+	     users who may be performing the assignment as part of a
+	     generic algorithm, for example.
+	     
+	     Ideally, the notions of having side-effects and of being
+	     useless would be orthogonal.  */
+	  TREE_SIDE_EFFECTS (val) = 1;
 	}
       else
 	val = build (MODIFY_EXPR, TREE_TYPE (to), to, arg);

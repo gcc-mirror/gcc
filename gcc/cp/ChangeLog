@@ -1,3 +1,9 @@
+2001-08-13  Mark Mitchell  <mark@codesourcery.com>
+
+	* call.c (build_over_call): Mark COMPOUND_EXPRs generated for
+	empty class assignment as having side-effects to avoid
+	spurious warnings.
+
 2001-08-07  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/3820
