@@ -1,5 +1,9 @@
 2004-01-21  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* optimize.c, typeck2.c: Update copyright.
+
+2004-01-21  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* Make-lang.in, call.c, class.c, decl2.c, except.c, expr.c,
 	init.c, mangle.c, typeck.c: Update copyright.
 
