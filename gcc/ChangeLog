@@ -1,3 +1,10 @@
+2001-05-17  Mark Mitchell  <mark@codesourcery.com>
+
+	* dwarf2out.c (output_comp_unit): Always output a compilation-unit
+	DIE, even if it has no children.
+	(dwarf2out_finish): Always output the line-number table, even if
+	it has no content.
+
 2000-05-18  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.md (movsfcc,movdfcc): Remove NE case.
