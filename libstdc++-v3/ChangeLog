@@ -1,3 +1,10 @@
+2001-02-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* include/bits/istream.tcc: Use ios_base::iostate in place of
+	iostate throughout.  Insert `typename' keyword where necessary.
+	* include/bits/ostream.tcc: Insert `typename' keyword where
+	necessary.
+	
 2001-02-15  Jeffrey Oldham  <oldham@codesourcery.com>
 
         * include/bits/c++config (_GLIBCPP_FULLY_COMPLIANT_HEADERS):
