@@ -280,12 +280,66 @@ static int q_size = 0;
 static int *insn_tick;
 #define INSN_TICK(INSN) (insn_tick[INSN_UID (INSN)])
 
+/* Data structure for keeping track of register information
+   during that register's life.  */
+
+struct sometimes
+{
+  short offset; short bit;
+  short live_length; short calls_crossed;
+};
+
 /* Forward declarations.  */
-static void sched_analyze_2 ();
-static void schedule_block ();
+static rtx canon_rtx			PROTO((rtx));
+static int rtx_equal_for_memref_p	PROTO((rtx, rtx));
+static rtx find_symbolic_term		PROTO((rtx));
+static int memrefs_conflict_p		PROTO((int, rtx, int, rtx,
+					       HOST_WIDE_INT));
+static void add_dependence		PROTO((rtx, rtx, enum reg_note));
+static void remove_dependence		PROTO((rtx, rtx));
+static rtx find_insn_list		PROTO((rtx, rtx));
+static int insn_unit			PROTO((rtx));
+static unsigned int blockage_range	PROTO((int, rtx));
+static void clear_units			PROTO((void));
+static void prepare_unit		PROTO((int));
+static int actual_hazard_this_instance	PROTO((int, int, rtx, int, int));
+static void schedule_unit		PROTO((int, rtx, int));
+static int actual_hazard		PROTO((int, rtx, int, int));
+static int potential_hazard		PROTO((int, rtx, int));
+static int insn_cost			PROTO((rtx, rtx, rtx));
+static int priority			PROTO((rtx));
+static void free_pending_lists		PROTO((void));
+static void add_insn_mem_dependence	PROTO((rtx *, rtx *, rtx, rtx));
+static void flush_pending_lists		PROTO((rtx));
+static void sched_analyze_1		PROTO((rtx, rtx));
+static void sched_analyze_2		PROTO((rtx, rtx));
+static void sched_analyze_insn		PROTO((rtx, rtx));
+static int sched_analyze		PROTO((rtx, rtx));
+static void sched_note_set		PROTO((int, rtx, int));
+static int rank_for_schedule		PROTO((rtx *, rtx *));
+static void swap_sort			PROTO((rtx *, int));
+static void queue_insn			PROTO((rtx, int));
+static int birthing_insn		PROTO((rtx));
+static void adjust_priority		PROTO((rtx));
+static int schedule_insn		PROTO((rtx, rtx *, int, int));
+static int schedule_select		PROTO((rtx *, int, int, FILE *));
+static void create_reg_dead_note	PROTO((rtx, rtx));
+static void attach_deaths		PROTO((rtx, rtx, int));
+static void attach_deaths_insn		PROTO((rtx));
+static rtx unlink_notes			PROTO((rtx, rtx));
+static int new_sometimes_live		PROTO((struct sometimes *, int, int,
+					       int));
+static void finish_sometimes_live	PROTO((struct sometimes *, int));
+static void schedule_block		PROTO((int, FILE *));
+static rtx regno_use_in			PROTO((int, rtx));
+static void split_hard_reg_notes	PROTO((rtx, rtx, rtx, rtx));
+static void new_insn_dead_notes		PROTO((rtx, rtx, rtx, rtx));
+static void update_n_sets		PROTO((rtx, int));
+static void update_flow_info		PROTO((rtx, rtx, rtx, rtx));
 
 /* Main entry point of this file.  */
-void schedule_insns ();
+void schedule_insns	PROTO((FILE *));
+
 #endif /* INSN_SCHEDULING */
 
 #define SIZE_FOR_MODE(X) (GET_MODE_SIZE (GET_MODE (X)))
@@ -817,7 +871,7 @@ output_dependence (mem, x)
    LOG_LINKS of INSN, if not already there.  DEP_TYPE indicates the type
    of dependence that this link represents.  */
 
-void
+static void
 add_dependence (insn, elem, dep_type)
      rtx insn;
      rtx elem;
@@ -885,7 +939,8 @@ add_dependence (insn, elem, dep_type)
 
 /* Remove ELEM wrapped in an INSN_LIST from the LOG_LINKS
    of INSN.  Abort if not found.  */
-void
+
+static void
 remove_dependence (insn, elem)
      rtx insn;
      rtx elem;
@@ -912,7 +967,11 @@ remove_dependence (insn, elem)
 }
 
 #ifndef INSN_SCHEDULING
-void schedule_insns () {}
+void
+schedule_insns (dump_file)
+     FILE *dump_file;
+{
+}
 #else
 #ifndef __GNUC__
 #define __inline
@@ -2835,15 +2894,6 @@ unlink_notes (insn, tail)
   return insn;
 }
 
-/* Data structure for keeping track of register information
-   during that register's life.  */
-
-struct sometimes
-{
-  short offset; short bit;
-  short live_length; short calls_crossed;
-};
-
 /* Constructor for `sometimes' data structure.  */
 
 static int
@@ -3799,7 +3849,7 @@ schedule_block (b, file)
    REGNO, returning the rtx of the reference found if any.  Otherwise,
    returns 0.  */
 
-rtx
+static rtx
 regno_use_in (regno, x)
      int regno;
      rtx x;
