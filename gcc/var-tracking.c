@@ -1361,6 +1361,10 @@ track_expr_p (tree expr)
   if (!decl_rtl)
     return 0;
 
+  /* Do not track decl if is should be ignored for debugging purposes.  */
+  if (DECL_IGNORED_P (expr))
+    return 0;
+
   /* Do not track global variables until we are able to emit correct location
      list for them.  */
   if (TREE_STATIC (expr))
