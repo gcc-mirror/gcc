@@ -2338,6 +2338,19 @@ gfc_match_common (void)
 	      goto cleanup;
 	    }
 
+	  if (sym->value != NULL
+	      && (common_name == NULL || !sym->attr.data))
+	    {
+	      if (common_name == NULL)
+		gfc_error ("Previously initialized symbol '%s' in "
+			   "blank COMMON block at %C", sym->name);
+	      else
+		gfc_error ("Previously initialized symbol '%s' in "
+			   "COMMON block '%s' at %C", sym->name,
+			   common_name->name);
+	      goto cleanup;
+	    }
+
 	  if (gfc_add_in_common (&sym->attr, NULL) == FAILURE)
 	    goto cleanup;
 
@@ -2814,6 +2827,7 @@ static match
 var_element (gfc_data_variable * new)
 {
   match m;
+  gfc_symbol *sym, *t;
 
   memset (new, '\0', sizeof (gfc_data_variable));
 
@@ -2824,14 +2838,27 @@ var_element (gfc_data_variable * new)
   if (m != MATCH_YES)
     return m;
 
-  if (new->expr->symtree->n.sym->value != NULL)
+  sym = new->expr->symtree->n.sym;
+
+  if(sym->value != NULL)
     {
       gfc_error ("Variable '%s' at %C already has an initialization",
-		 new->expr->symtree->n.sym->name);
+		 sym->name);
       return MATCH_ERROR;
     }
 
-  new->expr->symtree->n.sym->attr.data = 1;
+  if (sym->attr.in_common)
+    /* See if sym is in the blank common block.  */
+    for (t = sym->ns->blank_common; t; t = t->common_next)
+      if (sym == t)
+	{
+	  gfc_error ("DATA statement at %C may not initialize variable "
+		     "'%s' from blank COMMON", sym->name);
+	  return MATCH_ERROR;
+	}
+
+  sym->attr.data = 1;
+
   return MATCH_YES;
 }
 

@@ -276,6 +276,15 @@ add_init_expr_to_sym (const char *name, gfc_expr ** initp,
       return FAILURE;
     }
 
+  if (attr.in_common
+      && !attr.data
+      && *initp != NULL)
+    {
+      gfc_error ("Initializer not allowed for COMMON variable '%s' at %C",
+		 sym->name);
+      return FAILURE;
+    }
+
   if (init == NULL)
     {
       /* An initializer is required for PARAMETER declarations.  */
