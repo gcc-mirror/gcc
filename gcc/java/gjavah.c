@@ -1,7 +1,7 @@
 /* Program to write C++-suitable header files from a Java(TM) .class
    file.  This is similar to SUN's javah.
 
-Copyright (C) 1996, 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+Copyright (C) 1996, 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -1151,7 +1151,7 @@ throwable_p (clname)
 
   for (length = 0; clname[length] != ';' && clname[length] != '\0'; ++length)
     ;
-  current = ALLOC (length);
+  current = ALLOC (length + 1);
   for (i = 0; i < length; ++i)
     current[i] = clname[i] == '/' ? '.' : clname[i];
   current[length] = '\0';

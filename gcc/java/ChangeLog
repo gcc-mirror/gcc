@@ -1,3 +1,7 @@
+2003-01-31  Mark Wielaard  <mark@klomp.org>
+
+	* gjavah.c (throwable_p): Allocate 1 more byte for string.
+
 2003-01-30  Tom Tromey  <tromey@redhat.com>
 
 	* jcf-parse.c (read_class): Update identifier's class value if it
