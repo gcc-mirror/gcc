@@ -286,6 +286,8 @@ do { long l[2];						\
   else if (CODE == '+') fprintf (FILE, "(sp)+");			\
   else if (CODE == '@') fprintf (FILE, "(sp)");				\
   else if (CODE == '!') fprintf (FILE, "fpcr");				\
+  else if (CODE == '/')							\
+    ;									\
   else if (GET_CODE (X) == REG)						\
     { if (REGNO (X) < 16 && (CODE == 'y' || CODE == 'x') && GET_MODE (X) == DFmode)	\
         fprintf (FILE, "%s:%s", reg_names[REGNO (X)], reg_names[REGNO (X)+1]); \

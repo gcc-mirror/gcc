@@ -455,6 +455,8 @@ do { long l;					\
   else if (CODE == '!') fprintf (FILE, "%%fpcr");			\
   else if (CODE == '$') { if (TARGET_68040_ONLY) fprintf (FILE, "s"); }	\
   else if (CODE == '&') { if (TARGET_68040_ONLY) fprintf (FILE, "d"); }	\
+  else if (CODE == '/')							\
+    fprintf (FILE, "%%");						\
   else if (GET_CODE (X) == REG)						\
     fprintf (FILE, "%s", reg_names[REGNO (X)]);				\
   else if (GET_CODE (X) == MEM)						\
