@@ -2003,86 +2003,70 @@ rs6000_emit_set_long_const (dest, c1, c2)
     }
   else
     {
-      HOST_WIDE_INT d1, d2, d2_s, d3, d4;
+      HOST_WIDE_INT ud1, ud2, ud3, ud4;
 
-      /* This function is called by rs6000_emit_allocate_stack after reload 
-	 with a dest of r0.  r0 is an invalid register for addsi.  Use an addi 
-	 and a shift instead.  */
-      int regnum = REGNO (dest);
-
-  /* Decompose the entire word */
+      ud1 = c1 & 0xffff;
+      ud2 = (c1 & 0xffff0000) >> 16;
 #if HOST_BITS_PER_WIDE_INT >= 64
-      if (c2 != -(c1 < 0))
-	abort ();
-      d1 = ((c1 & 0xffff) ^ 0x8000) - 0x8000;
-      c1 -= d1;
-      d2 = ((c1 & 0xffffffff) ^ 0x80000000) - 0x80000000;
-      d2_s = d2 >> 16;
-      c1 = (c1 - d2) >> 32;
-      d3 = ((c1 & 0xffff) ^ 0x8000) - 0x8000;
-      c1 -= d3;
-      d4 = ((c1 & 0xffffffff) ^ 0x80000000) - 0x80000000;
-      if (c1 != d4)
-	abort ();
-#else
-      d1 = ((c1 & 0xffff) ^ 0x8000) - 0x8000;
-      c1 -= d1;
-      d2 = ((c1 & 0xffffffff) ^ 0x80000000) - 0x80000000;
-      d2_s = d2 >> 16;
-      if (c1 != d2)
-	abort ();
-      c2 += (d2 < 0);
-      d3 = ((c2 & 0xffff) ^ 0x8000) - 0x8000;
-      c2 -= d3;
-      d4 = ((c2 & 0xffffffff) ^ 0x80000000) - 0x80000000;
-      if (c2 != d4)
-	abort ();
+      c2 = c1 >> 32;
 #endif
+      ud3 = c2 & 0xffff;
+      ud4 = (c2 & 0xffff0000) >> 16;
 
-      /* Construct the high word */
-      if (d4 != 0)
+      if ((ud4 == 0xffff && ud3 == 0xffff && ud2 == 0xffff && (ud1 & 0x8000)) 
+	  || (ud4 == 0 && ud3 == 0 && ud2 == 0 && ! (ud1 & 0x8000)))
 	{
-	  emit_move_insn (dest, GEN_INT (d4));
-	  if (d3 != 0)
-	    emit_move_insn (dest,
-			    gen_rtx_PLUS (DImode, dest, GEN_INT (d3)));
-	}
-      else if (d3 != 0)
-	emit_move_insn (dest, GEN_INT (d3));
-
-      /* Shift it into place */
-      if (d3 != 0 || d4 != 0)
- 	if (regnum == 0 && d2 != 0) 
- 	  emit_move_insn (dest, gen_rtx_ASHIFT (DImode, dest, GEN_INT (16)));
- 	else 
-	  emit_move_insn (dest, gen_rtx_ASHIFT (DImode, dest, GEN_INT (32)));
-
-      /* Add in the low bits.  */
-      if (d2 != 0)
-	{
-	  if (d3 != 0 || d4 != 0)
-	    {
-	      if (regnum == 0)
-		{
-		  emit_move_insn (dest, gen_rtx_PLUS (DImode, dest, 
-						      GEN_INT (d2_s)));
-		  emit_move_insn (dest, gen_rtx_ASHIFT (DImode, dest,  
-							GEN_INT (16)));
-		}
-	      else
-		emit_move_insn (dest, gen_rtx_PLUS (DImode, dest, 
-						    GEN_INT (d2)));
-	    }
+	  if (ud1 & 0x8000)
+	    emit_move_insn (dest, GEN_INT (((ud1  ^ 0x8000) -  0x8000)));
 	  else
-	    emit_move_insn (dest, GEN_INT (d2));
+	    emit_move_insn (dest, GEN_INT (ud1));
 	}
-      if (d1 != 0)
-	if (d2 != 0 || d3 != 0 || d4 != 0)
-	  emit_move_insn (dest, gen_rtx_PLUS (DImode, dest, GEN_INT (d1)));
-	else
-	  emit_move_insn (dest, GEN_INT (d1));
-    }
 
+      else if ((ud4 == 0xffff && ud3 == 0xffff && (ud2 & 0x8000)) 
+	       || (ud4 == 0 && ud3 == 0 && ! (ud2 & 0x8000)))
+	{
+	  if (ud2 & 0x8000)
+	    emit_move_insn (dest, GEN_INT (((ud2 << 16) ^ 0x80000000) 
+					   - 0x80000000));
+	  else
+	    emit_move_insn (dest, GEN_INT (ud2 << 16));
+	  if (ud1 != 0)
+	    emit_move_insn (dest, gen_rtx_IOR (DImode, dest, GEN_INT (ud1)));
+	}
+      else if ((ud4 == 0xffff && (ud3 & 0x8000)) 
+	       || (ud4 == 0 && ! (ud3 & 0x8000)))
+	{
+	  if (ud3 & 0x8000)
+	    emit_move_insn (dest, GEN_INT (((ud3 << 16) ^ 0x80000000) 
+					   - 0x80000000));
+	  else
+	    emit_move_insn (dest, GEN_INT (ud3 << 16));
+
+	  if (ud2 != 0)
+	    emit_move_insn (dest, gen_rtx_IOR (DImode, dest, GEN_INT (ud2)));
+	  emit_move_insn (dest, gen_rtx_ASHIFT (DImode, dest, GEN_INT (16)));
+	  if (ud1 != 0)
+	    emit_move_insn (dest, gen_rtx_IOR (DImode, dest, GEN_INT (ud1)));
+	}
+      else 
+	{
+	  if (ud4 & 0x8000)
+	    emit_move_insn (dest, GEN_INT (((ud4 << 16) ^ 0x80000000) 
+					   - 0x80000000));
+	  else
+	    emit_move_insn (dest, GEN_INT (ud4 << 16));
+
+	  if (ud3 != 0)
+	    emit_move_insn (dest, gen_rtx_IOR (DImode, dest, GEN_INT (ud3)));
+
+	  emit_move_insn (dest, gen_rtx_ASHIFT (DImode, dest, GEN_INT (32)));
+	  if (ud2 != 0)
+	    emit_move_insn (dest, gen_rtx_IOR (DImode, dest, 
+					       GEN_INT (ud2 << 16)));	
+	  if (ud1 != 0)
+	    emit_move_insn (dest, gen_rtx_IOR (DImode, dest, GEN_INT (ud1)));
+	}
+    }
   return dest;
 }
 
