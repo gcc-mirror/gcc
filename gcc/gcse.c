@@ -5294,7 +5294,7 @@ gcse_emit_move_after (src, dest, insn)
   else
     eqv = SET_SRC (set);
 
-  set_unique_reg_note (new, REG_EQUAL, copy_insn_1 (src));
+  set_unique_reg_note (new, REG_EQUAL, copy_insn_1 (eqv));
 
   return new;
 }

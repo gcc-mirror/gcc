@@ -1,3 +1,7 @@
+2002-11-19  Roger Sayle  <roger@eyesopen.com>
+
+	* gcse.c (gcse_emit_move_after): Correct typo in REG_EQUAL note.
+
 2002-11-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (an anonymous pattern): Relax the
