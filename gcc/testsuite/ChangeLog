@@ -3,6 +3,10 @@
 	* gfortran.fortran-torture/execute/power.f90: Test constant integers.
 
 2004-05-18  Andrew Pinski  <pinskia@physics.uc.edu>
+            Jeff Law  <law@redhat.com>
+
+        * gcc.dg/tree-ssa/20040514-2.c: Update expected output.
+        * gcc.dg/tree-ssa/20040518-2.c: New test.
 
 	* gcc.dg/tree-ssa/20040518-1.c: New test.
 
