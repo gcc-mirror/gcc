@@ -1184,6 +1184,7 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
     }
 
   if (VECTOR_MODE_P (mode)
+      && code != VEC_CONCAT
       && GET_CODE (trueop0) == CONST_VECTOR
       && GET_CODE (trueop1) == CONST_VECTOR)
     {

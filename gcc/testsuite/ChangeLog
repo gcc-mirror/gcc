@@ -1,3 +1,7 @@
+2004-11-24  Uros Bizjak <uros@kss-loka.si>
+
+	* gcc.dg/pr18614-1.c: New test.
+
 2004-11-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/setjmp-2.c: New test.
