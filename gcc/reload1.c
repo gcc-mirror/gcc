@@ -7551,6 +7551,12 @@ count_occurrences (x, find)
 
 static rtx *reg_values;
 
+/* This is a preallocated REG rtx which we use as a temporary in
+   reload_cse_invalidate_regno, so that we don't need to allocate a
+   new one each time through a loop in that function.  */
+
+static rtx invalidate_regno_rtx;
+
 /* Invalidate any entries in reg_values which depend on REGNO,
    including those for REGNO itself.  This is called if REGNO is
    changing.  If CLOBBER is true, then always forget anything we
@@ -7605,6 +7611,33 @@ reload_cse_invalidate_regno (regno, mode, clobber)
 		  break;
 		}
 	      XEXP (x, 0) = 0;
+	    }
+	}
+    }
+
+  /* We must look at earlier registers, in case REGNO is part of a
+     multi word value but is not the first register.  If an earlier
+     register has a value in a mode which overlaps REGNO, then we must
+     invalidate that earlier register.  Note that we do not need to
+     check REGNO or later registers (we must not check REGNO itself,
+     because we would incorrectly conclude that there was a conflict).  */
+
+  for (i = 0; i < regno; i++)
+    {
+      rtx x;
+
+      for (x = reg_values[i]; x; x = XEXP (x, 1))
+	{
+	  if (XEXP (x, 0) != 0)
+	    {
+	      PUT_MODE (invalidate_regno_rtx, GET_MODE (XEXP (x, 0)));
+	      REGNO (invalidate_regno_rtx) = i;
+	      if (refers_to_regno_p (regno, endregno, invalidate_regno_rtx,
+				     NULL_PTR))
+		{
+		  reload_cse_invalidate_regno (i, VOIDmode, 1);
+		  break;
+		}
 	    }
 	}
     }
@@ -7799,6 +7832,10 @@ reload_cse_regs (first)
   /* We pass this to reload_cse_invalidate_mem to invalidate all of
      memory for a non-const call instruction.  */
   callmem = gen_rtx (MEM, BLKmode, const0_rtx);
+
+  /* This is used in reload_cse_invalidate_regno to avoid consing a
+     new REG in a loop in that function.  */
+  invalidate_regno_rtx = gen_rtx (REG, VOIDmode, 0);
 
   for (insn = first; insn; insn = NEXT_INSN (insn))
     {
