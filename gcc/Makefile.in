@@ -1893,7 +1893,7 @@ gtyp-gen.h: Makefile
 	echo "NULL};" >> tmp-gtyp.h
 	$(SHELL) $(srcdir)/move-if-change tmp-gtyp.h gtyp-gen.h 
 
-s-gtype: gengtype$(build_exeext)
+s-gtype: gengtype$(build_exeext) $(GTFILES)
 	./gengtype
 	$(STAMP) s-gtype
 

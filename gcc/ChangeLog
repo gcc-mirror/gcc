@@ -1,3 +1,16 @@
+2002-08-05  Geoffrey Keating  <geoffk@redhat.com>
+
+	* attribs.c: Don't include obstack.h.
+	* builtins.c: Likewise.
+	* cfganal.c: Likewise.
+	* cfgbuild.c: Likewise.
+	* cfgcleanup.c: Likewise.
+	* emit-rtl.c: Likewise.
+	* loop.c: Likewise.
+	* stmt.c: Likewise.
+
+	* Makefile.in (s-gtype): Re-add dependency on $(GTFILES).
+
 2002-08-05  Gabriel Dos Reis  <gdr@nerim.net>
 
 	* doc/c-tree.texi (Expression trees): Document VA_ARG_EXPR
