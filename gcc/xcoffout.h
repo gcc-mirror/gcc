@@ -139,12 +139,19 @@ extern char *xcoff_read_only_section_name;
 #define DBX_OUTPUT_MAIN_SOURCE_DIRECTORY(FILE,FILENAME)
 
 /* Write out main source file name using ".file" rather than ".stabs".  */
+/* This is defined as empty, because the assembler gets confused if there
+   is more than one .file directive.  ASM_FILE_START in config/rs6000/rs6000.h
+   is already emitting a .file direcgtory, so don't output one here also.  */
+#if 1
+#define DBX_OUTPUT_MAIN_SOURCE_FILENAME(FILE,FILENAME)
+#else
 #define DBX_OUTPUT_MAIN_SOURCE_FILENAME(FILE,FILENAME) \
   do {						\
     fprintf (FILE, "\t.file\t", FILENAME);	\
     output_quoted_string (FILE, FILENAME);	\
     fprintf (FILE, "\n");			\
   } while (0)
+#endif
 
 #define ABS_OR_RELATIVE_LINENO(LINENO)		\
 ((xcoff_current_include_file			\
