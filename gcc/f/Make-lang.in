@@ -380,7 +380,7 @@ f77.uninstall:
 
 f77.mostlyclean:
 	-rm -f f/*$(objext)
-	-rm -f f/fini f/f771 f/stamp-str f/str-*.h f/str-*.j f/intdoc f/ansify f/intdoc.h0
+	-rm -f f/fini f/f771$(exeext) f/stamp-str f/str-*.h f/str-*.j f/intdoc f/ansify f/intdoc.h0
 f77.clean:
 	-rm -f g77.c
 f77.distclean:
