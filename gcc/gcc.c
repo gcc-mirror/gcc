@@ -3372,7 +3372,8 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		      *x++ = *y++;
 		      *x++ = *y++;
 
-		      if (strncmp (y, "__", 2))
+		      if (*y != '_'
+			  || (*(y+1) != '_' && ! isupper (*(y+1))))
 		        {
 			  /* Stick __ at front of macro name.  */
 			  *x++ = '_';
@@ -3413,7 +3414,8 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		    {
 		      y += 2;
 
-		      if (strncmp (y, "__", 2))
+		      if (*y != '_'
+			  || (*(y+1) != '_' && ! isupper (*(y+1))))
 		        {
 			  /* Stick -D__ at front of macro name.  */
 			  *x++ = '-';
