@@ -79,7 +79,7 @@ static tree c_strlen			PARAMS ((tree));
 static const char *c_getstr		PARAMS ((tree));
 static rtx c_readstr			PARAMS ((const char *,
 						 enum machine_mode));
-static int target_char_cast		PARAMS ((tree, char *)); 
+static int target_char_cast		PARAMS ((tree, char *));
 static rtx get_memory_rtx		PARAMS ((tree));
 static int apply_args_size		PARAMS ((void));
 static int apply_result_size		PARAMS ((void));
@@ -757,7 +757,7 @@ expand_builtin_prefetch (arglist)
        error ("second arg to `__builtin_prefetch' must be a constant");
        arg1 = integer_zero_node;
     }
-  op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0); 
+  op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
   /* Argument 1 must be either zero or one.  */
   if (INTVAL (op1) != 0 && INTVAL (op1) != 1)
     {
@@ -771,7 +771,7 @@ expand_builtin_prefetch (arglist)
       error ("third arg to `__builtin_prefetch' must be a constant");
       arg2 = integer_zero_node;
     }
-  op2 = expand_expr (arg2, NULL_RTX, VOIDmode, 0); 
+  op2 = expand_expr (arg2, NULL_RTX, VOIDmode, 0);
   /* Argument 2 must be 0, 1, 2, or 3.  */
   if (INTVAL (op2) < 0 || INTVAL (op2) > 3)
     {
@@ -858,11 +858,11 @@ static enum machine_mode apply_result_mode[FIRST_PSEUDO_REGISTER];
    used for calling a function.  */
 static int apply_args_reg_offset[FIRST_PSEUDO_REGISTER];
 
-/* Return the offset of register REGNO into the block returned by 
+/* Return the offset of register REGNO into the block returned by
    __builtin_apply_args.  This is not declared static, since it is
    needed in objc-act.c.  */
 
-int 
+int
 apply_args_register_offset (regno)
      int regno;
 {
@@ -1043,7 +1043,7 @@ result_vector (savep, result)
   enum machine_mode mode;
   rtx reg, mem;
   rtx *savevec = (rtx *) alloca (FIRST_PSEUDO_REGISTER * sizeof (rtx));
-  
+
   size = nelts = 0;
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     if ((mode = apply_result_mode[regno]) != VOIDmode)
@@ -1415,7 +1415,7 @@ type_to_class (type)
     default:		   return no_type_class;
     }
 }
-  
+
 /* Expand a call to __builtin_classify_type with arguments found in
    ARGLIST.  */
 
@@ -1462,7 +1462,7 @@ expand_builtin_mathfn (exp, target, subtarget)
      tree exp;
      rtx target, subtarget;
 {
-  optab builtin_optab;  
+  optab builtin_optab;
   rtx op0, insns;
   tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
   tree arglist = TREE_OPERAND (exp, 1);
@@ -1571,7 +1571,7 @@ expand_builtin_mathfn (exp, target, subtarget)
   insns = get_insns ();
   end_sequence ();
   emit_insns (insns);
- 
+
   return target;
 }
 
@@ -1648,7 +1648,7 @@ expand_builtin_strlen (exp, target)
 
       /* Now that we are assured of success, expand the source.  */
       start_sequence ();
-      pat = memory_address (BLKmode, 
+      pat = memory_address (BLKmode,
 			    expand_expr (src, src_reg, ptr_mode, EXPAND_SUM));
       if (pat != src_reg)
 	emit_move_insn (src_reg, pat);
@@ -2045,7 +2045,7 @@ expand_builtin_strncpy (arglist, target, mode)
            side-effects.  */
 	  expand_expr (TREE_VALUE (TREE_CHAIN (arglist)), const0_rtx,
 		       VOIDmode, EXPAND_NORMAL);
-	  /* Return the dst parameter.  */		       
+	  /* Return the dst parameter.  */
 	  return expand_expr (TREE_VALUE (arglist), target, mode,
 			      EXPAND_NORMAL);
 	}
@@ -2079,7 +2079,7 @@ expand_builtin_strncpy (arglist, target, mode)
 			   (PTR) p, dest_align);
 	  return force_operand (XEXP (dest_mem, 0), NULL_RTX);
 	}
-      
+
       /* OK transform into builtin memcpy.  */
       return expand_builtin_memcpy (arglist);
     }
@@ -2126,7 +2126,7 @@ expand_builtin_memset (exp)
 	= get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
       rtx dest_mem, dest_addr, len_rtx;
 
-      /* If DEST is not a pointer type, don't do this 
+      /* If DEST is not a pointer type, don't do this
 	 operation in-line.  */
       if (dest_align == 0)
 	return 0;
@@ -2182,17 +2182,17 @@ expand_builtin_bzero (exp)
 
   dest = TREE_VALUE (arglist);
   size = TREE_VALUE (TREE_CHAIN (arglist));
-  
+
   /* New argument list transforming bzero(ptr x, int y) to
      memset(ptr x, int 0, size_t y).  */
-  
+
   newarglist = build_tree_list (NULL_TREE, convert (sizetype, size));
   newarglist = tree_cons (NULL_TREE, integer_zero_node, newarglist);
   newarglist = tree_cons (NULL_TREE, dest, newarglist);
 
   TREE_OPERAND (exp, 1) = newarglist;
   result = expand_builtin_memset(exp);
-      
+
   /* Always restore the original arguments.  */
   TREE_OPERAND (exp, 1) = arglist;
 
@@ -2324,7 +2324,7 @@ expand_builtin_strcmp (exp, target, mode)
       tree result = fold (build (MINUS_EXPR, integer_type_node, ind1, ind2));
       return expand_expr (result, target, mode, EXPAND_NORMAL);
     }
-  
+
 #ifdef HAVE_cmpstrsi
   if (! HAVE_cmpstrsi)
     return 0;
@@ -2447,7 +2447,7 @@ expand_builtin_strncmp (exp, target, mode)
      lengths, and it doesn't have side effects, then call
      expand_builtin_memcmp() using length MIN(strlen(string)+1, arg3).  */
   if (HAVE_cmpstrsi)
-    { 
+    {
       tree newarglist, len = 0;
 
       /* Perhaps one of the strings is really constant, if so prefer
@@ -2466,10 +2466,10 @@ expand_builtin_strncmp (exp, target, mode)
       /* If we still don't have a length, punt.  */
       if (!len)
 	return 0;
-	
+
       /* Add one to the string length.  */
       len = fold (size_binop (PLUS_EXPR, len, ssize_int (1)));
-        
+
       /* The actual new length parameter is MIN(len,arg3).  */
       len = fold (build (MIN_EXPR, TREE_TYPE (len), len, arg3));
 
@@ -2479,7 +2479,7 @@ expand_builtin_strncmp (exp, target, mode)
       return expand_builtin_memcmp (exp, newarglist, target);
     }
 #endif
-  
+
   return 0;
 }
 
@@ -2549,7 +2549,7 @@ expand_builtin_strncat (arglist, target, mode)
 	  tree newarglist =
 	    tree_cons (NULL_TREE, dst, build_tree_list (NULL_TREE, src)),
 	    fn = built_in_decls[BUILT_IN_STRCAT];
-	  
+
 	  /* If the replacement _DECL isn't initialized, don't do the
 	     transformation.  */
 	  if (!fn)
@@ -2578,14 +2578,14 @@ expand_builtin_strspn (arglist, target, mode)
     {
       tree s1 = TREE_VALUE (arglist), s2 = TREE_VALUE (TREE_CHAIN (arglist));
       const char *p1 = c_getstr (s1), *p2 = c_getstr (s2);
-      
+
       /* If both arguments are constants, evaluate at compile-time.  */
       if (p1 && p2)
         {
 	  const size_t r = strspn (p1, p2);
 	  return expand_expr (size_int (r), target, mode, EXPAND_NORMAL);
 	}
-      
+
       /* If either argument is "", return 0.  */
       if ((p1 && *p1 == '\0') || (p2 && *p2 == '\0'))
         {
@@ -2615,14 +2615,14 @@ expand_builtin_strcspn (arglist, target, mode)
     {
       tree s1 = TREE_VALUE (arglist), s2 = TREE_VALUE (TREE_CHAIN (arglist));
       const char *p1 = c_getstr (s1), *p2 = c_getstr (s2);
-      
+
       /* If both arguments are constants, evaluate at compile-time.  */
       if (p1 && p2)
         {
 	  const size_t r = strcspn (p1, p2);
 	  return expand_expr (size_int (r), target, mode, EXPAND_NORMAL);
 	}
-      
+
       /* If the first argument is "", return 0.  */
       if (p1 && *p1 == '\0')
         {
@@ -2637,7 +2637,7 @@ expand_builtin_strcspn (arglist, target, mode)
         {
 	  tree newarglist = build_tree_list (NULL_TREE, s1),
 	    fn = built_in_decls[BUILT_IN_STRLEN];
-	  
+
 	  /* If the replacement _DECL isn't initialized, don't do the
 	     transformation.  */
 	  if (!fn)
@@ -2711,7 +2711,7 @@ expand_builtin_args_info (exp)
   tree arglist = TREE_OPERAND (exp, 1);
   int nwords = sizeof (CUMULATIVE_ARGS) / sizeof (int);
   int *word_ptr = (int *) &current_function_args_info;
-#if 0	
+#if 0
   /* These are used by the code below that is if 0'ed away */
   int i;
   tree type, elts, result;
@@ -2777,7 +2777,7 @@ expand_builtin_next_arg (arglist)
       tree arg = TREE_VALUE (arglist);
 
       /* Strip off all nops for the sake of the comparison.  This
-	 is not quite the same as STRIP_NOPS.  It does more.  
+	 is not quite the same as STRIP_NOPS.  It does more.
 	 We must also strip off INDIRECT_EXPR for C++ reference
 	 parameters.  */
       while (TREE_CODE (arg) == NOP_EXPR
@@ -2818,10 +2818,10 @@ stabilize_va_list (valist, needs_lvalue)
 	 So fix it.  */
       if (TREE_CODE (TREE_TYPE (valist)) == ARRAY_TYPE)
 	{
- 	  tree p1 = build_pointer_type (TREE_TYPE (va_list_type_node));
- 	  tree p2 = build_pointer_type (va_list_type_node);
+	  tree p1 = build_pointer_type (TREE_TYPE (va_list_type_node));
+	  tree p2 = build_pointer_type (va_list_type_node);
 
- 	  valist = build1 (ADDR_EXPR, p2, valist);
+	  valist = build1 (ADDR_EXPR, p2, valist);
 	  valist = fold (build1 (NOP_EXPR, p1, valist));
 	}
     }
@@ -2833,7 +2833,7 @@ stabilize_va_list (valist, needs_lvalue)
 	{
 	  if (! TREE_SIDE_EFFECTS (valist))
 	    return valist;
-	  
+
 	  pt = build_pointer_type (va_list_type_node);
 	  valist = fold (build1 (ADDR_EXPR, pt, valist));
 	  TREE_SIDE_EFFECTS (valist) = 1;
@@ -2966,7 +2966,7 @@ expand_builtin_va_arg (valist, type)
   have_va_type = TREE_TYPE (valist);
   if (TREE_CODE (want_va_type) == ARRAY_TYPE)
     {
-      /* If va_list is an array type, the argument may have decayed 
+      /* If va_list is an array type, the argument may have decayed
 	 to a pointer type, e.g. by being passed to another function.
          In that case, unwrap both types so that we can compare the
 	 underlying records.  */
@@ -3061,7 +3061,7 @@ expand_builtin_va_end (arglist)
   return const0_rtx;
 }
 
-/* Expand ARGLIST, from a call to __builtin_va_copy.  We do this as a 
+/* Expand ARGLIST, from a call to __builtin_va_copy.  We do this as a
    builtin rather than just as an assignment in stdarg.h because of the
    nastiness of array-type va_list types.  */
 
@@ -3263,7 +3263,7 @@ expand_builtin_fputs (arglist, ignore)
 	const char *p = c_getstr (TREE_VALUE (arglist));
 
 	if (p != NULL)
-	  {      
+	  {
 	    /* New argument list transforming fputs(string, stream) to
 	       fputc(string[0], stream).  */
 	    arglist =
@@ -3278,7 +3278,7 @@ expand_builtin_fputs (arglist, ignore)
     case 1: /* length is greater than 1, call fwrite.  */
       {
 	tree string_arg = TREE_VALUE (arglist);
-      
+
 	/* New argument list transforming fputs(string, stream) to
 	   fwrite(string, 1, len, stream).  */
 	arglist = build_tree_list (NULL_TREE, TREE_VALUE (TREE_CHAIN (arglist)));
@@ -3291,7 +3291,7 @@ expand_builtin_fputs (arglist, ignore)
     default:
       abort();
     }
-  
+
   return expand_expr (build_function_call_expr (fn, arglist),
 		      (ignore ? const0_rtx : NULL_RTX),
 		      VOIDmode, EXPAND_NORMAL);
@@ -3330,7 +3330,7 @@ expand_builtin_expect (arglist, target)
 	 moderately sure to be able to correctly interpret the branch
 	 condition later.  */
       target = force_reg (GET_MODE (target), target);
-  
+
       rtx_c = expand_expr (c, NULL_RTX, GET_MODE (target), EXPAND_NORMAL);
 
       note = emit_note (NULL, NOTE_INSN_EXPECTED_VALUE);
@@ -3482,27 +3482,49 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
   if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
     return (*targetm.expand_builtin) (exp, target, subtarget, mode, ignore);
-  
+
   /* When not optimizing, generate calls to library functions for a certain
      set of builtins.  */
-  if (! optimize && ! CALLED_AS_BUILT_IN (fndecl)
-      && (fcode == BUILT_IN_SIN || fcode == BUILT_IN_COS
-	  || fcode == BUILT_IN_FSQRT || fcode == BUILT_IN_SQRTF
-	  || fcode == BUILT_IN_SQRTL || fcode == BUILT_IN_MEMSET
-	  || fcode == BUILT_IN_MEMCPY || fcode == BUILT_IN_MEMCMP
-	  || fcode == BUILT_IN_BCMP || fcode == BUILT_IN_BZERO
-	  || fcode == BUILT_IN_INDEX || fcode == BUILT_IN_RINDEX
-	  || fcode == BUILT_IN_STRCHR || fcode == BUILT_IN_STRRCHR
-	  || fcode == BUILT_IN_STRLEN || fcode == BUILT_IN_STRCPY
-	  || fcode == BUILT_IN_STRNCPY || fcode == BUILT_IN_STRNCMP
-	  || fcode == BUILT_IN_STRSTR || fcode == BUILT_IN_STRPBRK
-	  || fcode == BUILT_IN_STRCAT || fcode == BUILT_IN_STRNCAT
-	  || fcode == BUILT_IN_STRSPN || fcode == BUILT_IN_STRCSPN
-	  || fcode == BUILT_IN_STRCMP || fcode == BUILT_IN_FFS
-	  || fcode == BUILT_IN_PUTCHAR || fcode == BUILT_IN_PUTS
-	  || fcode == BUILT_IN_PRINTF || fcode == BUILT_IN_FPUTC
-	  || fcode == BUILT_IN_FPUTS || fcode == BUILT_IN_FWRITE))
-    return expand_call (exp, target, ignore);
+  if (!optimize && !CALLED_AS_BUILT_IN (fndecl))
+    switch (fcode)
+      {
+      case BUILT_IN_SIN:
+      case BUILT_IN_COS:
+      case BUILT_IN_FSQRT:
+      case BUILT_IN_SQRTF:
+      case BUILT_IN_SQRTL:
+      case BUILT_IN_MEMSET:
+      case BUILT_IN_MEMCPY:
+      case BUILT_IN_MEMCMP:
+      case BUILT_IN_BCMP:
+      case BUILT_IN_BZERO:
+      case BUILT_IN_INDEX:
+      case BUILT_IN_RINDEX:
+      case BUILT_IN_STRCHR:
+      case BUILT_IN_STRRCHR:
+      case BUILT_IN_STRLEN:
+      case BUILT_IN_STRCPY:
+      case BUILT_IN_STRNCPY:
+      case BUILT_IN_STRNCMP:
+      case BUILT_IN_STRSTR:
+      case BUILT_IN_STRPBRK:
+      case BUILT_IN_STRCAT:
+      case BUILT_IN_STRNCAT:
+      case BUILT_IN_STRSPN:
+      case BUILT_IN_STRCSPN:
+      case BUILT_IN_STRCMP:
+      case BUILT_IN_FFS:
+      case BUILT_IN_PUTCHAR:
+      case BUILT_IN_PUTS:
+      case BUILT_IN_PRINTF:
+      case BUILT_IN_FPUTC:
+      case BUILT_IN_FPUTS:
+      case BUILT_IN_FWRITE:
+        return expand_call (exp, target, ignore);
+
+      default:
+        break;
+    }
 
   switch (fcode)
     {
@@ -3643,49 +3665,49 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       if (target)
 	return target;
       break;
-      
+
     case BUILT_IN_STRNCPY:
       target = expand_builtin_strncpy (arglist, target, mode);
       if (target)
 	return target;
       break;
-      
+
     case BUILT_IN_STRCAT:
       target = expand_builtin_strcat (arglist, target, mode);
       if (target)
 	return target;
       break;
-      
+
     case BUILT_IN_STRNCAT:
       target = expand_builtin_strncat (arglist, target, mode);
       if (target)
 	return target;
       break;
-      
+
     case BUILT_IN_STRSPN:
       target = expand_builtin_strspn (arglist, target, mode);
       if (target)
 	return target;
       break;
-      
+
     case BUILT_IN_STRCSPN:
       target = expand_builtin_strcspn (arglist, target, mode);
       if (target)
 	return target;
       break;
-      
+
     case BUILT_IN_STRSTR:
       target = expand_builtin_strstr (arglist, target, mode);
       if (target)
 	return target;
       break;
-      
+
     case BUILT_IN_STRPBRK:
       target = expand_builtin_strpbrk (arglist, target, mode);
       if (target)
 	return target;
       break;
-      
+
     case BUILT_IN_INDEX:
     case BUILT_IN_STRCHR:
       target = expand_builtin_strchr (arglist, target, mode);
@@ -3795,7 +3817,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       if (target)
 	return target;
       break;
-      
+
       /* Various hooks for the DWARF 2 __throw routine.  */
     case BUILT_IN_UNWIND_INIT:
       expand_builtin_unwind_init ();
