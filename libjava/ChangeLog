@@ -1,3 +1,12 @@
+2002-01-11  Mark Wielaard  <mark@klomp.org>
+
+	* java/net/InetAddress.java (ANY_IF): moved from ServerSocket.
+	* java/net/DatagramSocket.java (DatagramSocket): use ANY_IF from
+	InetAddress.
+	* java/net/MulticastSocket.java (MulticastSocket): Likewise.
+	* java/net/Socket.java: Merge with Classpath.
+	* java/net/ServerSocket.java: Likewise.
+
 2002-01-11  Chris Sears  <cbsears_sf@yahoo.com>
 
 	* interpret.cc (NULLARRAYCHECK): New macro.

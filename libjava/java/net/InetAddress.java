@@ -240,6 +240,10 @@ public final class InetAddress implements java.io.Serializable
     return lookup(host, null, true);
   }
 
+  static final byte[] zeros = {0,0,0,0};
+  /* dummy InetAddress, used to bind socket to any (all) network interfaces */
+  static final InetAddress ANY_IF = new InetAddress(zeros, null);
+    
   private static final byte[] localhostAddress = { 127, 0, 0, 1 };
 
   private static native String getLocalHostname ();
