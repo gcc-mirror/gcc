@@ -24,6 +24,11 @@ Boston, MA 02111-1307, USA.  */
 #include <stdio.h>
 #include <sys/types.h>
 
+static int __fetch_long		PROTO ((long *, char *, int));
+static int __store_long		PROTO ((long, char *, size_t));
+static int __read_long		PROTO ((long *, FILE *, size_t));
+static int __write_long		PROTO ((long, FILE *, size_t));
+
 /* These routines only work for signed values. */
 
 /* Store a portable representation of VALUE in DEST using BYTES*8-1 bits.

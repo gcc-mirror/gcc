@@ -261,8 +261,6 @@ static HARD_REG_SET elim_reg_set;
 static void find_basic_blocks_1		PROTO((rtx, rtx, int));
 static void mark_label_ref		PROTO((rtx, rtx, int));
 static void life_analysis_1		PROTO((rtx, int));
-void allocate_for_life_analysis		PROTO((void));
-void init_regset_vector			PROTO((regset *, int, struct obstack *));
 static void propagate_block		PROTO((regset, rtx, rtx, int, 
 					       regset, int));
 static rtx flow_delete_insn		PROTO((rtx));
