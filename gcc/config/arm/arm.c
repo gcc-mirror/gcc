@@ -356,19 +356,6 @@ arm_override_options ()
 	}
     }
 
-  /* Cope with some redundant flags.  */
-  if (TARGET_6)
-    {
-      warning ("Option '-m6' deprecated.  Use: '-mapcs-32' or -mcpu=<proc>");
-      target_flags |= ARM_FLAG_APCS_32;
-    }
-  
-  if (TARGET_3)
-    {
-      warning ("Option '-m3' deprecated.  Use: '-mapcs-26' or -mcpu=<proc>");
-      target_flags &= ~ARM_FLAG_APCS_32;
-    }
-
   /* Make sure that the processor choice does not conflict with any of the
      other command line choices.  */
   if (TARGET_APCS_32 && !(flags & FL_MODE32))
@@ -1490,18 +1477,16 @@ arm_finalize_pic ()
   l1 = gen_label_rtx ();
 
   global_offset_table = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
-  /* The PC contains 'dot'+8, but the label L1 is on the next
-     instruction, so the offset is only 'dot'+4.  */
-  pic_tmp = plus_constant (gen_rtx_LABEL_REF (Pmode, l1),
-			   GEN_INT (4));
+  /* On the ARM the PC register contains 'dot + 8' at the time of the
+     addition.  */
+  pic_tmp = plus_constant (gen_rtx_LABEL_REF (Pmode, l1), 8);
   pic_tmp2 = gen_rtx_CONST (VOIDmode,
 			    gen_rtx_PLUS (Pmode, global_offset_table, pc_rtx));
 
   pic_rtx = gen_rtx_CONST (Pmode, gen_rtx_MINUS (Pmode, pic_tmp2, pic_tmp));
   
   emit_insn (gen_pic_load_addr (pic_offset_table_rtx, pic_rtx));
-  emit_jump_insn (gen_pic_add_dot_plus_eight(l1, pic_offset_table_rtx));
-  emit_label (l1);
+  emit_insn (gen_pic_add_dot_plus_eight (pic_offset_table_rtx, l1));
 
   seq = gen_sequence ();
   end_sequence ();

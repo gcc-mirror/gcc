@@ -122,9 +122,6 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 /* Set the architecture define -- if -march= is set, then it overrides
    the -mcpu= setting.  */
 #define CPP_CPU_ARCH_SPEC "\
-%{m2:-D__arm2__ -D__ARM_ARCH_2__} \
-%{m3:-D__arm2__ -D__ARM_ARCH_2__} \
-%{m6:-D__arm6__ -D__ARM_ARCH_3__} \
 %{march=arm2:-D__ARM_ARCH_2__} \
 %{march=arm250:-D__ARM_ARCH_2__} \
 %{march=arm3:-D__ARM_ARCH_2__} \
@@ -178,18 +175,15 @@ Unrecognized value in TARGET_CPU_DEFAULT.
  %{mcpu=strongarm:-D__ARM_ARCH_4__} \
  %{mcpu=strongarm110:-D__ARM_ARCH_4__} \
  %{mcpu=strongarm1100:-D__ARM_ARCH_4__} \
- %{!mcpu*:%{!m6:%{!m2:%{!m3:%(cpp_cpu_arch_default)}}}}} \
+ %{!mcpu*:%(cpp_cpu_arch_default)}} \
 "
 
 /* Define __APCS_26__ if the PC also contains the PSR */
-/* This also examines deprecated -m[236] if neither of -mapcs-{26,32} is set,
-   ??? Delete this for 2.9.  */
 #define CPP_APCS_PC_SPEC "\
 %{mapcs-32:%{mapcs-26:%e-mapcs-26 and -mapcs-32 may not be used together} \
  -D__APCS_32__} \
 %{mapcs-26:-D__APCS_26__} \
-%{!mapcs-32: %{!mapcs-26:%{m6:-D__APCS_32__} %{m2:-D__APCS_26__} \
- %{m3:-D__APCS_26__} %{!m6:%{!m3:%{!m2:%(cpp_apcs_pc_default)}}}}} \
+%{!mapcs-32: %{!mapcs-26:%(cpp_apcs_pc_default)}} \
 "
 
 #ifndef CPP_APCS_PC_DEFAULT_SPEC
@@ -217,14 +211,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 /* Default is little endian, which doesn't define anything. */
 #define CPP_ENDIAN_DEFAULT_SPEC ""
 
-/* Translate (for now) the old -m[236] option into the appropriate -mcpu=...
-   and -mapcs-xx equivalents. 
-   ??? Remove support for this style in 2.9.*/
-#define CC1_SPEC "\
-%{m2:-mcpu=arm2 -mapcs-26} \
-%{m3:-mcpu=arm3 -mapcs-26} \
-%{m6:-mcpu=arm6 -mapcs-32} \
-"
+#define CC1_SPEC ""
 
 /* This macro defines names of additional specifications to put in the specs
    that can be used in various specifications like CC1_SPEC.  Its definition
@@ -278,18 +265,12 @@ extern char * target_fp_name;
    case instruction scheduling becomes very uninteresting.  */
 #define ARM_FLAG_FPE          (0x0004)
 
-/* Nonzero if destined for an ARM6xx.  Takes out bits that assume restoration
-   of condition flags when returning from a branch & link (ie. a function) */
-/* ********* DEPRECATED ******** */
-#define ARM_FLAG_ARM6         (0x0008)
-
-/* ********* DEPRECATED ******** */
-#define ARM_FLAG_ARM3         (0x0010)
-
 /* Nonzero if destined for a processor in 32-bit program mode.  Takes out bit
    that assume restoration of the condition flags when returning from a
    branch and link (ie a function).  */
 #define ARM_FLAG_APCS_32      (0x0020)
+
+/* FLAGS 0x0008 and 0x0010 are now spare (used to be arm3/6 selection).  */
 
 /* Nonzero if stack checking should be performed on entry to each function
    which allocates temporary variables on the stack.  */
@@ -331,8 +312,6 @@ function tries to return. */
 #define TARGET_APCS			(target_flags & ARM_FLAG_APCS_FRAME)
 #define TARGET_POKE_FUNCTION_NAME	(target_flags & ARM_FLAG_POKE)
 #define TARGET_FPE			(target_flags & ARM_FLAG_FPE)
-#define TARGET_6			(target_flags & ARM_FLAG_ARM6)
-#define TARGET_3			(target_flags & ARM_FLAG_ARM3)
 #define TARGET_APCS_32			(target_flags & ARM_FLAG_APCS_32)
 #define TARGET_APCS_STACK		(target_flags & ARM_FLAG_APCS_STACK)
 #define TARGET_APCS_FLOAT		(target_flags & ARM_FLAG_APCS_FLOAT)
@@ -368,9 +347,6 @@ function tries to return. */
   {"poke-function-name",	ARM_FLAG_POKE, 		\
      "Store function names in object code" },		\
   {"fpe",			ARM_FLAG_FPE,  "" },	\
-  {"6",				ARM_FLAG_ARM6, "" },	\
-  {"2",				ARM_FLAG_ARM3, "" },	\
-  {"3",				ARM_FLAG_ARM3, "" },	\
   {"apcs-32",			ARM_FLAG_APCS_32, 	\
      "Use the 32bit version of the APCS" },		\
   {"apcs-26",		       -ARM_FLAG_APCS_32, 	\

@@ -1,3 +1,22 @@
+Thu Feb 25 10:44:35 1999  Richard Earnshaw (rearnsha@arm.com)
+
+	* arm.h (TARGET_SWITCHES): Delete deprecated switches -m[236].
+	(TARGET_3, TARGET_6): Delete.
+	(ARM_FLAG_ARM[36]): Delete.
+	(CPP_CPU_ARCH_SPEC): No need to handle -m[236] any more.
+	(CC1_SPEC): Don't expand -m[236] into new equivalents.
+	(CPP_APCS_PC_SPEC): No need to handle -m[236] any more.
+	* arm.c (arm_override_options): Delete warnings about deprecated
+	options -m[236].
+
+	* arm.c (arm_finalize_pic): Build the label into the special pic
+	adjustment insn instead of issuing it separately.
+	* arm.md (pic_add_dot_plus_eight): Rework to contain the label
+	that is needed.
+
+	* arm.md (*zeroextractqi_compare0_scratch): Delete.
+	(*ne_zeroextractsi): New pattern.
+
 Thu Feb 25 18:40:06 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* stmt.c (expand_end_loop): Grok code emitted by
