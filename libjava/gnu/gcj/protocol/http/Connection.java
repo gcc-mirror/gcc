@@ -125,7 +125,7 @@ class Connection extends HttpURLConnection
   // TODO: public boolean usingProxy()
   public boolean usingProxy()
   {
-    throw new InternalError("HttpURLConnection.usingProxy not implemented");
+    return false;
   }
 
   // Override default method in URLConnection.
