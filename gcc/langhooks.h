@@ -104,6 +104,9 @@ struct lang_hooks
   /* Called at the end of compilation, as a finalizer.  */
   void (*finish) PARAMS ((void));
 
+  /* Parses the entire file.  */
+  void (*parse_file) PARAMS ((void));
+
   /* Called immediately after parsing to clear the binding stack.  */
   void (*clear_binding_stack) PARAMS ((void));
 

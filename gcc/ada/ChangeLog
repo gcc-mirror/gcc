@@ -1,3 +1,8 @@
+2002-03-17  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* misc.c (LANG_HOOKS_PARSE_FILE): Redefine.
+	(yyparse): Rename gnat_parse_file.
+
 2002-03-14  Geoffrey Keating  <geoffk@redhat.com>
 
 	Delete all lines containing "$Revision:".

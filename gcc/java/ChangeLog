@@ -1,3 +1,9 @@
+2002-03-17  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* java-tree.h (java_parse_file): New.
+	* jcf-parse.c (yyparse): Rename java_parse_file.
+	* lang.c (LANG_HOOKS_PARSE_FILE): Redefine.
+
 2002-03-16  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* parse.y (craft_constructor): Return the constructor decl.

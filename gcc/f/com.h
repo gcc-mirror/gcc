@@ -265,6 +265,7 @@ tree ffecom_truth_value (tree expr);
 tree ffecom_truth_value_invert (tree expr);
 tree ffecom_type_expr (ffebld expr);
 tree ffecom_which_entrypoint_decl (void);
+void ffe_parse_file ();
 
 /* Define macros. */
 

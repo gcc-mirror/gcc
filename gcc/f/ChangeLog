@@ -1,3 +1,10 @@
+Sun Mar 17 20:57:30 2002  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* com.c (LANG_HOOKS_PARSE_FILE): Redefine.
+	* com.h (ffe_parse_file): New.
+	* parse.c (NAME_OF_STDIN): Remove.
+	(yyparse): Rename ffe_parse_file.
+
 Tue Mar 12 20:23:18 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* com.c (tree_code_type, tree_code_length, tree_code_name):

@@ -913,8 +913,8 @@ predefined_filename_p (node)
   return 0;
 }
 
-int
-yyparse ()
+void
+java_parse_file ()
 {
   int filename_count = 0;
   char *list, *next;
@@ -1054,7 +1054,7 @@ yyparse ()
       resource_filename = IDENTIFIER_POINTER (TREE_VALUE (current_file_list));
       compile_resource_file (resource_name, resource_filename);
 
-      return 0;
+      return;
     }
 
   current_jcf = main_jcf;
@@ -1156,7 +1156,6 @@ yyparse ()
       if (flag_indirect_dispatch)
 	emit_offset_symbol_table ();
     }
-  return 0;
 }
 
 /* Process all class entries found in the zip file.  */

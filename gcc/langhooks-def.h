@@ -68,6 +68,7 @@ void lhd_tree_inlining_end_inlining		PARAMS ((tree));
 #define LANG_HOOKS_IDENTIFIER_SIZE	sizeof (struct lang_identifier)
 #define LANG_HOOKS_INIT			lhd_do_nothing
 #define LANG_HOOKS_FINISH		lhd_do_nothing
+#define LANG_HOOKS_PARSE_FILE		lhd_do_nothing
 #define LANG_HOOKS_CLEAR_BINDING_STACK	lhd_clear_binding_stack
 #define LANG_HOOKS_INIT_OPTIONS		lhd_do_nothing
 #define LANG_HOOKS_DECODE_OPTION	lhd_decode_option
@@ -141,6 +142,7 @@ int lhd_tree_dump_type_quals			PARAMS ((tree));
   LANG_HOOKS_POST_OPTIONS, \
   LANG_HOOKS_INIT, \
   LANG_HOOKS_FINISH, \
+  LANG_HOOKS_PARSE_FILE, \
   LANG_HOOKS_CLEAR_BINDING_STACK, \
   LANG_HOOKS_GET_ALIAS_SET, \
   LANG_HOOKS_EXPAND_CONSTANT, \

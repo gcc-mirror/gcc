@@ -221,6 +221,8 @@ static int dependency_tracking = 0;
 #define LANG_HOOKS_DECODE_OPTION java_decode_option
 #undef LANG_HOOKS_SET_YYDEBUG
 #define LANG_HOOKS_SET_YYDEBUG java_set_yydebug
+#undef LANG_HOOKS_PARSE_FILE
+#define LANG_HOOKS_PARSE_FILE java_parse_file
 #undef LANG_HOOKS_DUP_LANG_SPECIFIC_DECL
 #define LANG_HOOKS_DUP_LANG_SPECIFIC_DECL java_dup_lang_specific_decl
 

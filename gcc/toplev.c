@@ -2106,9 +2106,9 @@ compile_file ()
 
   timevar_push (TV_PARSE);
 
-  /* Call the parser, which parses the entire file
-     (calling rest_of_compilation for each function).  */
-  yyparse ();
+  /* Call the parser, which parses the entire file (calling
+     rest_of_compilation for each function).  */
+  (*lang_hooks.parse_file) ();
 
   /* In case there were missing block closers,
      get us back to the global binding level.  */
@@ -2116,7 +2116,6 @@ compile_file ()
 
   /* Compilation is now finished except for writing
      what's left of the symbol table output.  */
-
   timevar_pop (TV_PARSE);
 
   if (flag_syntax_only)
@@ -2339,7 +2338,7 @@ rest_of_type_compilation (type, toplev)
   timevar_pop (TV_SYMOUT);
 }
 
-/* This is called from finish_function (within yyparse)
+/* This is called from finish_function (within langhooks.parse_file)
    after each top-level definition is parsed.
    It is supposed to compile that function or variable
    and output the assembler code for it.

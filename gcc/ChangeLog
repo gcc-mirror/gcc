@@ -1,3 +1,20 @@
+2002-03-17  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-common.h (yyparse, c_common_parse_file): New.
+	* c-lang.c: Include c-common.h.
+	(LANG_HOOKS_PARSE_FILE): Redefine.
+	* c-lex.c: Include c-common.h.
+	(yyparse): Rename c_common_parse_file.  Call yyparse.
+	* c-parse.in (yyparse): Remove macro.
+	* c-tree.h (yyparse_1): Remove.
+	* langhooks-def.h (LANG_HOOKS_PARSE_FILE): New.
+	(LANG_HOOKS_INITIALIZER): Update.
+	* langhooks.h (struct lang_hoooks): New hook parse_file.
+	* toplev.c (compile_file): Use parse_file hook.
+	* tree.h (yyparse): Remove.
+objc:
+	* objc-lang.c (LANG_HOOKS_PARSE_FILE): Redefine.
+
 2002-03-17  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/mmix.md ("truncdfsf2"): Correct operator is

@@ -2859,8 +2859,6 @@ extern tree fold_builtin		PARAMS ((tree));
 
 /* The language front-end must define these functions.  */
 
-/* Function called with no arguments to parse and compile the input.  */
-extern int yyparse				PARAMS ((void));
 /* Functions for processing symbol declarations.  */
 /* Function to enter a new lexical scope.
    Takes one argument: always zero when called from outside the front end.  */
