@@ -30,6 +30,9 @@ dnl Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_OFF_T
 AC_STRUCT_TM
 
+# mkdir takes a single argument on some systems.
+gcc_AC_FUNC_MKDIR_TAKES_ONE_ARG
+
 dnl Check for type-widths
 gcc_AC_COMPILE_CHECK_SIZEOF(char)
 gcc_AC_COMPILE_CHECK_SIZEOF(short)

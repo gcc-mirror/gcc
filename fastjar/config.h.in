@@ -39,6 +39,10 @@
 /* Version number of package */
 #undef VERSION
 
+/* Define if host mkdir takes a
+single argument. */
+#undef MKDIR_TAKES_ONE_ARG
+
 /* The number of bytes in type char */
 #undef SIZEOF_CHAR
 
