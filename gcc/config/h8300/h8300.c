@@ -3096,6 +3096,14 @@ compute_a_shift_length (insn, operands)
 	{
 	case SHIFT_SPECIAL:
 	  wlength += h8300_asm_insn_count (info.special);
+
+	  /* Every assembly instruction used in SHIFT_SPECIAL case
+	     takes 2 bytes except xor.l, which takes 4 bytes, so if we
+	     see xor.l, we just pretend that xor.l counts as two insns
+	     so that the insn length will be computed correctly.  */
+	  if (strstr (info.special, "xor.l") != NULL)
+	    wlength++;
+
 	  /* Fall through.  */
 
 	case SHIFT_INLINE:
