@@ -294,9 +294,6 @@ optab_for_tree_code (enum tree_code code, tree type)
     case MIN_EXPR:
       return TYPE_UNSIGNED (type) ? umin_optab : smin_optab;
 
-    case REALIGN_STORE_EXPR:
-      return vec_realign_store_optab;
-
     case REALIGN_LOAD_EXPR:
       return vec_realign_load_optab;
 
