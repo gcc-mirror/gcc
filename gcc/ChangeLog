@@ -1,3 +1,20 @@
+2000-10-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* mips.h (REG_CLASS_FROM_LETTER): Cast array arg to unsigned char.
+
+	* sparc.c (load_pic_register): Delete unused varaible.
+
+	* libgcc2.c (__addvsi3): Delete unused variable.
+
+	* libgcc2.h (__absvsi2, __absvdi2, __addvsi3, __addvdi3,
+	__subvsi3, __subvdi3, __mulvsi3, __mulvdi3, __negvsi2,
+	__negvdi2): Prototype.
+
+	* ssa.c (apply_delayed_renames): Avoid undefined operation.
+
+	* toplev.c (display_target_options): Make static to match
+	prototype.  Delete empty declaration.
+
 2000-10-20  Tom Tromey  <tromey@cygnus.com>
 
 	* cppspec.c (DEFAULT_WORD_SWITCH_TAKES_ARG): Added -MF and -MT.

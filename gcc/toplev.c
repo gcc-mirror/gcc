@@ -3894,11 +3894,10 @@ display_help ()
   display_target_options ();
 }
 
-void
+static void
 display_target_options ()
 {
   int undoc,i;
-  unsigned long;
 
   if (ARRAY_SIZE (target_switches) > 1
 #ifdef TARGET_OPTIONS

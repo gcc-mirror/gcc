@@ -1902,7 +1902,7 @@ extern enum reg_class mips_regno_to_class[];
 
 extern enum reg_class mips_char_to_class[];
 
-#define REG_CLASS_FROM_LETTER(C) mips_char_to_class[ (C) ]
+#define REG_CLASS_FROM_LETTER(C) mips_char_to_class[(unsigned char)(C)]
 
 /* The letters I, J, K, L, M, N, O, and P in a register constraint
    string can be used to stand for particular ranges of immediate

@@ -826,8 +826,8 @@ apply_delayed_renames (c)
       if (new_regno >= (int) ssa_definition->num_elements)
 	{
 	  int new_limit = new_regno * 5 / 4;
-	  ssa_definition = VARRAY_GROW (ssa_definition, new_limit);
-	  ssa_uses = VARRAY_GROW (ssa_uses, new_limit);
+	  VARRAY_GROW (ssa_definition, new_limit);
+	  VARRAY_GROW (ssa_uses, new_limit);
 	}
 
       VARRAY_RTX (ssa_definition, new_regno) = r->set_insn;
