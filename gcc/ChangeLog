@@ -1,3 +1,10 @@
+2001-12-01  Geoff Keating  <geoffk@redhat.com>
+
+	* config/rs6000/rs6000.h (LEGITIMATE_LO_SUM_ADDRESS_P): Complex
+	LO_SUM addresses less than word size are not legitimate,
+	because they lead to invalid SUBREGs.
+	* config/rs6000/rs6000.c (rs6000_legitimize_address): Likewise.
+
 2001-12-01  Olivier Hainque <hainque@act-europe.fr>
 
 	* unroll.c (loop_iterations): Give up on jumps with null JUMP_LABEL

@@ -1975,16 +1975,15 @@ typedef struct rs6000_args
 #define LEGITIMATE_INDIRECT_ADDRESS_P(X, STRICT)		\
   (GET_CODE (X) == REG && INT_REG_OK_FOR_BASE_P (X, (STRICT)))
 
-#define LEGITIMATE_LO_SUM_ADDRESS_P(MODE, X, STRICT)		\
-  (TARGET_ELF							\
-   && ! flag_pic && ! TARGET_TOC				\
-   && (MODE) != DImode						\
-   && (MODE) != TImode						\
-   && ! ALTIVEC_VECTOR_MODE (MODE)				\
-   && (TARGET_HARD_FLOAT || (MODE) != DFmode)			\
-   && GET_CODE (X) == LO_SUM					\
-   && GET_CODE (XEXP (X, 0)) == REG				\
-   && INT_REG_OK_FOR_BASE_P (XEXP (X, 0), (STRICT))		\
+#define LEGITIMATE_LO_SUM_ADDRESS_P(MODE, X, STRICT)	\
+  (TARGET_ELF						\
+   && ! flag_pic && ! TARGET_TOC			\
+   && GET_MODE_NUNITS (MODE) == 1			\
+   && (GET_MODE_BITSIZE (MODE) <= 32 			\
+       || (TARGET_HARD_FLOAT && (MODE) != DFmode))	\
+   && GET_CODE (X) == LO_SUM				\
+   && GET_CODE (XEXP (X, 0)) == REG			\
+   && INT_REG_OK_FOR_BASE_P (XEXP (X, 0), (STRICT))	\
    && CONSTANT_P (XEXP (X, 1)))
 
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)			\

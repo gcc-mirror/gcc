@@ -1617,6 +1617,7 @@ rs6000_legitimize_address (x, oldx, mode)
   else if (GET_CODE (x) == PLUS 
 	   && GET_CODE (XEXP (x, 0)) == REG
 	   && GET_CODE (XEXP (x, 1)) != CONST_INT
+	   && GET_MODE_NUNITS (mode) == 1
 	   && (TARGET_HARD_FLOAT || TARGET_POWERPC64 || mode != DFmode)
 	   && (TARGET_POWERPC64 || mode != DImode)
 	   && mode != TImode)
@@ -1640,9 +1641,9 @@ rs6000_legitimize_address (x, oldx, mode)
 	   && GET_CODE (x) != CONST_INT
 	   && GET_CODE (x) != CONST_DOUBLE 
 	   && CONSTANT_P (x)
-	   && (TARGET_HARD_FLOAT || mode != DFmode)
-	   && mode != DImode 
-	   && mode != TImode)
+	   && GET_MODE_NUNITS (mode) == 1
+	   && (GET_MODE_BITSIZE (mode) <= 32
+	       || (TARGET_HARD_FLOAT && mode != DFmode)))
     {
       rtx reg = gen_reg_rtx (Pmode);
       emit_insn (gen_elf_high (reg, (x)));
