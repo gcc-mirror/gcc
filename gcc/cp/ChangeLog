@@ -1,5 +1,9 @@
 2003-06-20  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/10749
+	* parser.c (cp_parser_class_head): See through dependent names
+	when parsing a class-head.
+
 	PR c++/10845
 	* pt.c (try_class_unification): Correct handling of member class
 	templates.
