@@ -1,3 +1,19 @@
+2003-07-26  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.def (DEF_FALLBACK_BUILTIN): Delete.
+	(DEF_EXT_FALLBACK_BUILTIN): Delete.
+	(BUILT_IN_BZERO, BUILT_IN_BCOPY, BUILT_IN_BCMP): Declare using
+	the regular DEF_EXT_LIB_BUILTIN macro.
+	(BUILT_IN_FPUTC, BUILT_IN_FPUTS, BUILT_IN_FWRITE): Declare using
+	the regular DEF_LIB_BUILTIN macro.
+	(BUILT_IN_PUTCHAR_UNLOCKED, BUILT_IN_PUTS_UNLOCKED,
+	BUILT_IN_FPUTC_UNLOCKED, BUILT_IN_FPUTS_UNLOCKED,
+	BUILT_IN_FWRITE_UNLOCKED): Declare using the regular
+	DEF_EXT_LIB_BUILTIN macro.
+
+	* c-decl.c (duplicate_decls): Remove code to handle builtin
+	functions prototyped without an argument list.
+
 2003-07-26  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* config/i386/winnt.c: Revert 2003-07-08 change.
