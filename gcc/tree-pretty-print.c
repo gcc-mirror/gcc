@@ -767,7 +767,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       break;
 
     case COND_EXPR:
-      if (TREE_TYPE (node) == void_type_node)
+      if (TREE_TYPE (node) == NULL || TREE_TYPE (node) == void_type_node)
 	{
 	  pp_string (buffer, "if (");
 	  dump_generic_node (buffer, COND_EXPR_COND (node), spc, flags, false);
@@ -1542,10 +1542,6 @@ print_struct_decl (pretty_printer *buffer, tree node, int spc, int flags)
 	  {
 	    print_declaration (buffer, tmp, spc+2, flags);
 	    pp_newline (buffer);
-	  }
-	else
-	  {
-
 	  }
 	tmp = TREE_CHAIN (tmp);
       }

@@ -6249,10 +6249,34 @@ c_expand_asm_operands (tree string, tree outputs, tree inputs,
   emit_queue ();
 }
 
+/* Generate a goto statement to LABEL.  */
+
+tree
+c_finish_goto_label (tree label)
+{
+  tree decl = lookup_label (label);
+  if (!decl)
+    return NULL_TREE;
+
+  TREE_USED (decl) = 1;
+  return add_stmt (build (GOTO_EXPR, void_type_node, decl));
+}
+
+/* Generate a computed goto statement to EXPR.  */
+
+tree
+c_finish_goto_ptr (tree expr)
+{
+  if (pedantic)
+    pedwarn ("ISO C forbids `goto *expr;'");
+  expr = convert (ptr_type_node, expr);
+  return add_stmt (build (GOTO_EXPR, void_type_node, expr));
+}
+
 /* Generate a C `return' statement.  RETVAL is the expression for what
    to return, or a null pointer for `return;' with no value.  */
 
-void
+tree
 c_finish_return (tree retval)
 {
   tree valtype = TREE_TYPE (TREE_TYPE (current_function_decl));
@@ -6282,7 +6306,7 @@ c_finish_return (tree retval)
 
       current_function_returns_value = 1;
       if (t == error_mark_node)
-	return;
+	return NULL_TREE;
 
       inner = t = convert (TREE_TYPE (res), t);
 
@@ -6340,7 +6364,7 @@ c_finish_return (tree retval)
       retval = build (MODIFY_EXPR, TREE_TYPE (res), res, t);
     }
 
-  add_stmt (build_stmt (RETURN_EXPR, retval));
+  return add_stmt (build_stmt (RETURN_EXPR, retval));
 }
 
 struct c_switch {
@@ -6362,7 +6386,7 @@ struct c_switch {
    during the processing of the body of a function, and we never
    collect at that point.  */
 
-static struct c_switch *switch_stack;
+struct c_switch *c_switch_stack;
 
 /* Start a C switch statement, testing expression EXP.  Return the new
    SWITCH_STMT.  */
@@ -6403,10 +6427,10 @@ c_start_case (tree exp)
   cs = xmalloc (sizeof (*cs));
   cs->switch_stmt = build_stmt (SWITCH_STMT, exp, NULL_TREE, orig_type);
   cs->cases = splay_tree_new (case_compare, NULL, NULL);
-  cs->next = switch_stack;
-  switch_stack = cs;
+  cs->next = c_switch_stack;
+  c_switch_stack = cs;
 
-  return add_stmt (switch_stack->switch_stmt);
+  return add_stmt (cs->switch_stmt);
 }
 
 /* Process a case label.  */
@@ -6416,10 +6440,10 @@ do_case (tree low_value, tree high_value)
 {
   tree label = NULL_TREE;
 
-  if (switch_stack)
+  if (c_switch_stack)
     {
-      label = c_add_case_label (switch_stack->cases,
-				SWITCH_COND (switch_stack->switch_stmt),
+      label = c_add_case_label (c_switch_stack->cases,
+				SWITCH_COND (c_switch_stack->switch_stmt),
 				low_value, high_value);
       if (label == error_mark_node)
 	label = NULL_TREE;
@@ -6437,7 +6461,7 @@ do_case (tree low_value, tree high_value)
 void
 c_finish_case (tree body)
 {
-  struct c_switch *cs = switch_stack;
+  struct c_switch *cs = c_switch_stack;
 
   SWITCH_BODY (cs->switch_stmt) = body;
 
@@ -6445,206 +6469,171 @@ c_finish_case (tree body)
   c_do_switch_warnings (cs->cases, cs->switch_stmt);
 
   /* Pop the stack.  */
-  switch_stack = switch_stack->next;
+  c_switch_stack = cs->next;
   splay_tree_delete (cs->cases);
   free (cs);
 }
 
-/* Keep a stack of if statements.  We record the number of compound
-   statements seen up to the if keyword, as well as the line number
-   and file of the if.  If a potentially ambiguous else is seen, that
-   fact is recorded; the warning is issued when we can be sure that
-   the enclosing if statement does not have an else branch.  */
-typedef struct
-{
-  tree if_stmt;
-  location_t empty_locus;
-  int compstmt_count;
-  int stmt_count;
-  unsigned int needs_warning : 1;
-  unsigned int saw_else : 1;
-} if_elt;
-
-static if_elt *if_stack;
-
-/* Amount of space in the if statement stack.  */
-static int if_stack_space = 0;
-
-/* Stack pointer.  */
-static int if_stack_pointer = 0;
-
-/* Begin an if-statement.  */
+/* Emit an if statement.  IF_LOCUS is the location of the 'if'.  COND,
+   THEN_BLOCK and ELSE_BLOCK are expressions to be used; ELSE_BLOCK
+   may be null.  NESTED_IF is true if THEN_BLOCK contains another IF
+   statement, and was not surrounded with parenthesis.  */
 
 void
-c_begin_if_stmt (void)
+c_finish_if_stmt (location_t if_locus, tree cond, tree then_block,
+		  tree else_block, bool nested_if)
 {
-  tree r;
-  if_elt *elt;
+  tree stmt;
 
-  /* Make sure there is enough space on the stack.  */
-  if (if_stack_space == 0)
+  /* Diagnose an ambiguous else if if-then-else is nested inside if-then.  */
+  if (warn_parentheses && nested_if && else_block == NULL)
     {
-      if_stack_space = 10;
-      if_stack = xmalloc (10 * sizeof (if_elt));
+      tree inner_if = then_block;
+
+      /* We know from the grammer productions that there is an IF nested
+	 within THEN_BLOCK.  Due to labels and c99 conditional declarations,
+	 it might not be exactly THEN_BLOCK, but should be the last
+	 non-container statement within.  */
+      while (1)
+	switch (TREE_CODE (inner_if))
+	  {
+	  case COND_EXPR:
+	    goto found;
+	  case BIND_EXPR:
+	    inner_if = BIND_EXPR_BODY (inner_if);
+	    break;
+	  case STATEMENT_LIST:
+	    inner_if = expr_last (then_block);
+	    break;
+	  case TRY_FINALLY_EXPR:
+	  case TRY_CATCH_EXPR:
+	    inner_if = TREE_OPERAND (inner_if, 0);
+	    break;
+	  default:
+	    abort ();
+	  }
+    found:
+
+      if (COND_EXPR_ELSE (inner_if))
+	 warning ("%Hsuggest explicit braces to avoid ambiguous `else'",
+		  &if_locus);
     }
-  else if (if_stack_space == if_stack_pointer)
+
+  /* Diagnose ";" via the special empty statement node that we create.  */
+  if (extra_warnings)
     {
-      if_stack_space += 10;
-      if_stack = xrealloc (if_stack, if_stack_space * sizeof (if_elt));
+      if (TREE_CODE (then_block) == NOP_EXPR && !TREE_TYPE (then_block))
+	{
+	  if (!else_block)
+	    warning ("%Hempty body in an if-statement",
+		     EXPR_LOCUS (then_block));
+	  then_block = alloc_stmt_list ();
+	}
+      if (else_block
+	  && TREE_CODE (else_block) == NOP_EXPR
+	  && !TREE_TYPE (else_block))
+	{
+	  warning ("%Hempty body in an else-statement",
+		   EXPR_LOCUS (else_block));
+	  else_block = alloc_stmt_list ();
+	}
     }
 
-  r = add_stmt (build_stmt (COND_EXPR, NULL_TREE, NULL_TREE, NULL_TREE));
-
-  /* Record this if statement.  */
-  elt = &if_stack[if_stack_pointer++];
-  memset (elt, 0, sizeof (*elt));
-  elt->if_stmt = r;
+  stmt = build3 (COND_EXPR, NULL_TREE, cond, then_block, else_block);
+  annotate_with_locus (stmt, if_locus);
+  add_stmt (stmt);
 }
 
-/* Record the start of an if-then, and record the start of it
-   for ambiguous else detection.
-
-   COND is the condition for the if-then statement.
-
-   IF_STMT is the statement node that has already been created for
-   this if-then statement.  It is created before parsing the
-   condition to keep line number information accurate.  */
+/* Emit a general-purpose loop construct.  START_LOCUS is the location of
+   the beginning of the loop.  COND is the loop condition.  COND_IS_FIRST
+   is false for DO loops.  INCR is the FOR increment expression.  BODY is
+   the statement controled by the loop.  BLAB is the break label.  CLAB is
+   the continue label.  Everything is allowed to be NULL.  */
 
 void
-c_finish_if_cond (tree cond, int compstmt_count, int stmt_count)
+c_finish_loop (location_t start_locus, tree cond, tree incr, tree body,
+	       tree blab, tree clab, bool cond_is_first)
 {
-  if_elt *elt = &if_stack[if_stack_pointer - 1];
-  elt->compstmt_count = compstmt_count;
-  elt->stmt_count = stmt_count;
-  COND_EXPR_COND (elt->if_stmt) = lang_hooks.truthvalue_conversion (cond);
-}
+  tree entry = NULL, exit = NULL, t;
 
-/* Called after the then-clause for an if-statement is processed.  */
+  /* Force zeros to NULL so that we don't test them.  */
+  if (cond && integer_zerop (cond))
+    cond = NULL;
 
-void
-c_finish_then (tree then_stmt)
-{
-  if_elt *elt = &if_stack[if_stack_pointer - 1];
-  COND_EXPR_THEN (elt->if_stmt) = then_stmt;
-  elt->empty_locus = input_location;
-}
-
-/* Called between the then-clause and the else-clause
-   of an if-then-else.  */
-
-void
-c_begin_else (int stmt_count)
-{
-  if_elt *elt = &if_stack[if_stack_pointer - 1];
-
-  /* An ambiguous else warning must be generated for the enclosing if
-     statement, unless we see an else branch for that one, too.  */
-  if (warn_parentheses
-      && if_stack_pointer > 1
-      && (elt[0].compstmt_count == elt[-1].compstmt_count))
-    elt[-1].needs_warning = 1;
-
-  /* Even if a nested if statement had an else branch, it can't be
-     ambiguous if this one also has an else.  So don't warn in that
-     case.  Also don't warn for any if statements nested in this else.  */
-  elt->needs_warning = 0;
-  elt->compstmt_count--;
-  elt->saw_else = 1;
-  elt->stmt_count = stmt_count;
-}
-
-/* Called after the else-clause for an if-statement is processed.  */
-
-void
-c_finish_else (tree else_stmt)
-{
-  if_elt *elt = &if_stack[if_stack_pointer - 1];
-  COND_EXPR_ELSE (elt->if_stmt) = else_stmt;
-  elt->empty_locus = input_location;
-}
-
-/* Record the end of an if-then.  Optionally warn if a nested
-   if statement had an ambiguous else clause.  */
-
-void
-c_finish_if_stmt (int stmt_count)
-{
-  if_elt *elt = &if_stack[--if_stack_pointer];
-
-  if (elt->needs_warning)
-    warning ("%Hsuggest explicit braces to avoid ambiguous `else'",
-	     EXPR_LOCUS (elt->if_stmt));
-
-  if (extra_warnings && stmt_count == elt->stmt_count)
+  /* Detect do { ... } while (0) and don't generate loop construct.  */
+  if (cond_is_first || cond)
     {
-      if (elt->saw_else)
-	warning ("%Hempty body in an else-statement", &elt->empty_locus);
+      tree top = build1 (LABEL_EXPR, void_type_node, NULL_TREE);
+ 
+      /* If we have an exit condition, then we build an IF with gotos either
+         out of the loop, or to the top of it.  If there's no exit condition,
+         then we just build a jump back to the top.  */
+      exit = build_and_jump (&LABEL_EXPR_LABEL (top));
+ 
+      if (cond)
+        {
+          /* Canonicalize the loop condition to the end.  This means
+             generating a branch to the loop condition.  Reuse the
+             continue label, if possible.  */
+          if (cond_is_first)
+            {
+              if (incr || !clab)
+                {
+                  entry = build1 (LABEL_EXPR, void_type_node, NULL_TREE);
+                  t = build_and_jump (&LABEL_EXPR_LABEL (entry));
+                }
+              else
+                t = build1 (GOTO_EXPR, void_type_node, clab);
+	      annotate_with_locus (t, start_locus);
+              add_stmt (t);
+            }
+ 
+	  t = build_and_jump (&blab);
+          exit = build (COND_EXPR, void_type_node, cond, exit, t);
+          exit = fold (exit);
+	  if (cond_is_first)
+            annotate_with_locus (exit, start_locus);
+	  else
+            annotate_with_locus (exit, input_location);
+        }
+ 
+      add_stmt (top);
+    }
+ 
+  if (body)
+    add_stmt (body);
+  if (clab)
+    add_stmt (build1 (LABEL_EXPR, void_type_node, clab));
+  if (incr)
+    add_stmt (incr);
+  if (entry)
+    add_stmt (entry);
+  if (exit)
+    add_stmt (exit);
+  if (blab)
+    add_stmt (build1 (LABEL_EXPR, void_type_node, blab));
+}
+
+tree
+c_finish_bc_stmt (tree *label_p, bool is_break)
+{
+  tree label = *label_p;
+
+  if (!label)
+    *label_p = label = create_artificial_label ();
+  else if (TREE_CODE (label) != LABEL_DECL)
+    {
+      if (is_break)
+	error ("break statement not within loop or switch");
       else
-	warning ("%Hempty body in an if-statement", &elt->empty_locus);
+        error ("continue statement not within a loop");
+      return NULL_TREE;
     }
-}
-
-/* Begin a while statement.  Returns a newly created WHILE_STMT if
-   appropriate.  */
 
-tree
-c_begin_while_stmt (void)
-{
-  tree r;
-  r = add_stmt (build_stmt (WHILE_STMT, NULL_TREE, NULL_TREE));
-  return r;
+  return add_stmt (build (GOTO_EXPR, void_type_node, label));
 }
 
-void
-c_finish_while_stmt_cond (tree cond, tree while_stmt)
-{
-  WHILE_COND (while_stmt) = (*lang_hooks.truthvalue_conversion) (cond);
-}
-
-void
-c_finish_while_stmt (tree body, tree while_stmt)
-{
-  WHILE_BODY (while_stmt) = body;
-}
-
-/* Create a for statement.  */
-
-tree
-c_begin_for_stmt (void)
-{
-  tree r;
-  r = add_stmt (build_stmt (FOR_STMT, NULL_TREE, NULL_TREE,
-			    NULL_TREE, NULL_TREE));
-  FOR_INIT_STMT (r) = push_stmt_list ();
-  return r;
-}
-
-void
-c_finish_for_stmt_init (tree for_stmt)
-{
-  FOR_INIT_STMT (for_stmt) = pop_stmt_list (FOR_INIT_STMT (for_stmt));
-}
-
-void
-c_finish_for_stmt_cond (tree cond, tree for_stmt)
-{
-  if (cond)
-    FOR_COND (for_stmt) = lang_hooks.truthvalue_conversion (cond);
-}
-
-void
-c_finish_for_stmt_incr (tree expr, tree for_stmt)
-{
-  FOR_EXPR (for_stmt) = expr;
-}
-
-void
-c_finish_for_stmt (tree body, tree for_stmt)
-{
-  FOR_BODY (for_stmt) = body;
-}
-
-/* A helper routine for c_finish_expr_stmt and c_finish_stmt_expr.  */
+/* A helper routine for c_process_expr_stmt and c_finish_stmt_expr.  */
 
 static void
 emit_side_effect_warnings (tree expr)
@@ -6661,13 +6650,14 @@ emit_side_effect_warnings (tree expr)
     warn_if_unused_value (expr, input_location);
 }
 
-/* Emit an expression as a statement.  */
+/* Process an expression as if it were a complete statement.  Emit
+   diagnostics, but do not call ADD_STMT.  */
 
-void
-c_finish_expr_stmt (tree expr)
+tree
+c_process_expr_stmt (tree expr)
 {
   if (!expr)
-    return;
+    return NULL_TREE;
 
   /* Do default conversion if safe and possibly important,
      in case within ({...}).  */
@@ -6696,7 +6686,21 @@ c_finish_expr_stmt (tree expr)
   if (DECL_P (expr) || TREE_CODE_CLASS (TREE_CODE (expr)) == 'c')
     expr = build1 (NOP_EXPR, TREE_TYPE (expr), expr);
 
-  add_stmt (expr);
+  if (EXPR_P (expr))
+    annotate_with_locus (expr, input_location);
+
+  return expr;
+}
+
+/* Emit an expression as a statement.  */
+
+tree
+c_finish_expr_stmt (tree expr)
+{
+  if (expr)
+    return add_stmt (c_process_expr_stmt (expr));
+  else
+    return NULL;
 }
 
 /* Do the opposite and emit a statement as an expression.  To begin,

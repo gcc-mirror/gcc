@@ -2511,12 +2511,16 @@ static enum gimplify_status
 gimplify_cond_expr (tree *expr_p, tree *pre_p, tree target)
 {
   tree expr = *expr_p;
-  tree tmp;
+  tree tmp, type;
   enum gimplify_status ret;
+
+  type = TREE_TYPE (expr);
+  if (!type)
+    TREE_TYPE (expr) = void_type_node;
 
   /* If this COND_EXPR has a value, copy the values into a temporary within
      the arms.  */
-  if (! VOID_TYPE_P (TREE_TYPE (expr)))
+  else if (! VOID_TYPE_P (type))
     {
       if (target)
 	{

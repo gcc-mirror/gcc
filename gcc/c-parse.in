@@ -29,7 +29,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    written by AT&T, but I have never seen it.  */
 
 @@ifc
-%expect 10 /* shift/reduce conflicts, and no reduce/reduce conflicts.  */
+%expect 13 /* shift/reduce conflicts, and no reduce/reduce conflicts.  */
 @@end_ifc
 
 %{
@@ -210,9 +210,10 @@ do {									\
 %type <ttype> any_word
 
 %type <ttype> compstmt compstmt_start compstmt_primary_start
-%type <ttype> do_stmt_start stmt label
+%type <ttype> stmt label stmt_nocomp start_break start_continue
 
 %type <ttype> c99_block_start c99_block_lineno_labeled_stmt
+%type <ttype> if_statement_1 if_statement_2
 %type <ttype> declarator
 %type <ttype> notype_declarator after_type_declarator
 %type <ttype> parm_declarator
@@ -227,7 +228,8 @@ do {									\
 %type <ttype> struct_head union_head enum_head
 %type <ttype> typename absdcl absdcl1 absdcl1_ea absdcl1_noea
 %type <ttype> direct_absdcl1 absdcl_maybe_attribute
-%type <ttype> xexpr parms parm firstparm identifiers
+%type <ttype> condition xexpr for_cond_expr for_incr_expr
+%type <ttype> parms parm firstparm identifiers
 
 %type <ttype> parmlist parmlist_1 parmlist_2
 %type <ttype> parmlist_or_identifiers parmlist_or_identifiers_1
@@ -254,11 +256,6 @@ do {									\
 @@end_ifobjc
 
 %{
-/* Number of statements (loosely speaking) and compound statements
-   seen so far.  */
-static int stmt_count;
-static int compstmt_count;
-
 /* List of types and structure classes of the current declaration.  */
 static GTY(()) tree current_declspecs;
 static GTY(()) tree prefix_attributes;
@@ -2032,8 +2029,7 @@ compstmt_or_error:
 	| error compstmt
 	;
 
-compstmt_start: '{' { compstmt_count++;
-                      $$ = c_begin_compound_stmt (true); }
+compstmt_start: '{' { $$ = c_begin_compound_stmt (true); }
         ;
 
 compstmt_nostart: '}'
@@ -2053,54 +2049,12 @@ compstmt_primary_start:
 			     "only inside a function");
 		      YYERROR;
 		    }
-		  compstmt_count++;
 		  $$ = c_begin_stmt_expr ();
 		}
         ;
 
 compstmt: compstmt_start compstmt_nostart
 		{ $$ = c_end_compound_stmt ($1, true); }
-	;
-
-if_prefix:
-	  /* We must build the if statement node before parsing its
-	     condition so that we get its location pointing to the
-	     line containing the "if", and not the line containing
-	     the close-parenthesis.  */
-          IF
-                { c_begin_if_stmt (); }
-            '(' expr ')'
-		{ c_finish_if_cond ($4, compstmt_count, ++stmt_count); }
-        ;
-
-simple_if:
-	  if_prefix c99_block_lineno_labeled_stmt
-                { c_finish_then ($2); }
-	/* Make sure c_finish_if_stmt is run for each call to
-	   c_begin_if_stmt.  Otherwise a crash is likely.  */
-	| if_prefix error
-	;
-
-/* This is a subroutine of stmt.
-   It is used twice, once for valid DO statements
-   and once for catching errors in parsing the end test.  */
-do_stmt_start:
-	  DO
-		{ stmt_count++;
-		  compstmt_count++;
-		  c_in_iteration_stmt++;
-		  $<ttype>$
-		    = add_stmt (build_stmt (DO_STMT, NULL_TREE,
-					    NULL_TREE));
-		  /* In the event that a parse error prevents
-		     parsing the complete do-statement, set the
-		     condition now.  Otherwise, we can get crashes at
-		     RTL-generation time.  */
-		  DO_COND ($<ttype>$) = error_mark_node; }
-	  c99_block_lineno_labeled_stmt WHILE
-		{ $$ = $<ttype>2;
-		  DO_BODY ($$) = $3;
-		  c_in_iteration_stmt--; }
 	;
 
 /* The forced readahead in here is because we might be at the end of a
@@ -2113,14 +2067,14 @@ save_location:
 		  $$ = input_location; }
 	;
 
-lineno_labeled_stmt:
-	  lineno_stmt
-	| lineno_label lineno_labeled_stmt
+lineno_labels:
+	  /* empty */
+	| lineno_labels lineno_label
 	;
 
-/* Like lineno_labeled_stmt, but a block in C99.  */
+/* A labeled statement.  In C99 it also generates an implicit block.  */
 c99_block_lineno_labeled_stmt:
-	  c99_block_start lineno_labeled_stmt
+	  c99_block_start lineno_labels lineno_stmt
                 { $$ = c_end_compound_stmt ($1, flag_isoc99); }
 	;
 
@@ -2138,74 +2092,91 @@ lineno_stmt:
 		     because (recursively) all of the component statments
 		     should already have line numbers assigned.  */
 		  if ($2 && EXPR_P ($2))
-		    {
-		      SET_EXPR_LOCUS ($2, NULL);
-		      annotate_with_locus ($2, $1);
-		    }
+		    annotate_with_locus ($2, $1);
 		}
 	;
 
 lineno_label:
 	  save_location label
-		{ if ($2)
-		    {
-		      SET_EXPR_LOCUS ($2, NULL);
-		      annotate_with_locus ($2, $1);
-		    }
-		}
+		{ if ($2) annotate_with_locus ($2, $1); }
 	;
 
-select_or_iter_stmt:
-	  simple_if ELSE
-		{ c_begin_else (stmt_count); }
-	  c99_block_lineno_labeled_stmt
-                { c_finish_else ($4); c_finish_if_stmt (stmt_count); }
-	| simple_if %prec IF
-		{ c_finish_if_stmt (stmt_count); }
-	| simple_if ELSE error
-		{ c_finish_if_stmt (stmt_count + 1); }
-       /* We must build the WHILE_STMT node before parsing its
-	  condition so that EXPR_LOCUS refers to the line
-	  containing the "while", and not the line containing
-	  the close-parenthesis.
+condition: save_location expr
+		{ $$ = lang_hooks.truthvalue_conversion ($2);
+		  if (EXPR_P ($$))
+		    annotate_with_locus ($$, $1); }
+	;
 
-	  c_begin_while_stmt returns the WHILE_STMT node, which
-	  we later pass to c_finish_while_stmt_cond to fill
-	  in the condition and other tidbits.  */
-	| WHILE
-                { stmt_count++;
-		  $<ttype>$ = c_begin_while_stmt (); }
-	  '(' expr ')'
-                { c_in_iteration_stmt++;
-		  c_finish_while_stmt_cond ($4, $<ttype>2); }
-	  c99_block_lineno_labeled_stmt
-                { c_in_iteration_stmt--;
-		  c_finish_while_stmt ($7, $<ttype>2); }
-	| do_stmt_start
-	  '(' expr ')' ';'
-                { DO_COND ($1) = lang_hooks.truthvalue_conversion ($3); }
-	| do_stmt_start error
-		{ }
-	| FOR
-		{ $<ttype>$ = c_begin_for_stmt (); }
-	  '(' for_init_stmt
-		{ stmt_count++;
-		  c_finish_for_stmt_init ($<ttype>2); }
-	  xexpr ';'
-                { c_finish_for_stmt_cond ($6, $<ttype>2); }
-	  xexpr ')'
-                { c_in_iteration_stmt++;
-		  c_finish_for_stmt_incr ($9, $<ttype>2); }
-	  c99_block_lineno_labeled_stmt
-                { c_finish_for_stmt ($12, $<ttype>2);
-		  c_in_iteration_stmt--; }
-	| SWITCH '(' expr ')'
-		{ stmt_count++;
-		  $<ttype>$ = c_start_case ($3);
-		  c_in_case_stmt++; }
-	  c99_block_lineno_labeled_stmt
-                { c_finish_case ($6);
-		  c_in_case_stmt--; }
+/* Implement -Wparenthesis by special casing IF statement directly nested
+   within IF statement.  This requires some amount of duplication of the
+   productions under c99_block_lineno_labeled_stmt in order to work out.
+   But it's still likely more maintainable than lots of state outside the
+   parser...  */
+
+if_statement_1:
+	c99_block_start lineno_labels if_statement
+		{ $$ = c_end_compound_stmt ($1, flag_isoc99); }
+	;
+
+if_statement_2:
+	  c99_block_start lineno_labels ';'
+		{ if (extra_warnings)
+		    add_stmt (build (NOP_EXPR, NULL_TREE, NULL_TREE));
+		  $$ = c_end_compound_stmt ($1, flag_isoc99); }
+	| c99_block_lineno_labeled_stmt
+	;
+
+if_statement:
+	  IF c99_block_start save_location '(' condition ')'
+	    if_statement_1 ELSE if_statement_2
+		{ c_finish_if_stmt ($3, $5, $7, $9, true);
+		  add_stmt (c_end_compound_stmt ($2, flag_isoc99)); }
+	| IF c99_block_start save_location '(' condition ')'
+	    if_statement_2 ELSE if_statement_2
+		{ c_finish_if_stmt ($3, $5, $7, $9, false);
+		  add_stmt (c_end_compound_stmt ($2, flag_isoc99)); }
+	| IF c99_block_start save_location '(' condition ')'
+	    if_statement_1				%prec IF
+		{ c_finish_if_stmt ($3, $5, $7, NULL, true);
+		  add_stmt (c_end_compound_stmt ($2, flag_isoc99)); }
+	| IF c99_block_start save_location '(' condition ')'
+	    if_statement_2				%prec IF
+		{ c_finish_if_stmt ($3, $5, $7, NULL, false);
+		  add_stmt (c_end_compound_stmt ($2, flag_isoc99)); }
+	;
+
+start_break: /* empty */
+		{ $$ = c_break_label; c_break_label = NULL; }
+	;
+
+start_continue: /* empty */
+		{ $$ = c_cont_label; c_cont_label = NULL; }
+	;
+
+while_statement:
+	WHILE c99_block_start save_location '(' condition ')'
+	start_break start_continue c99_block_lineno_labeled_stmt
+		{ c_finish_loop ($3, $5, NULL, $9, c_break_label,
+				 c_cont_label, true);
+		  add_stmt (c_end_compound_stmt ($2, flag_isoc99));
+		  c_break_label = $7; c_cont_label = $8; }
+	;
+
+do_statement:
+	DO c99_block_start save_location start_break start_continue
+	c99_block_lineno_labeled_stmt WHILE
+		{ $<ttype>$ = c_break_label; c_break_label = $4; }
+		{ $<ttype>$ = c_cont_label; c_cont_label = $5; }
+	'(' condition ')' ';'
+                { c_finish_loop ($3, $11, NULL, $6, $<ttype>8,
+				 $<ttype>9, false);
+		  add_stmt (c_end_compound_stmt ($2, flag_isoc99)); }
+	;
+
+xexpr:
+	/* empty */
+		{ $$ = NULL_TREE; }
+	| expr
 	;
 
 for_init_stmt:
@@ -2215,64 +2186,82 @@ for_init_stmt:
 		{ check_for_loop_decls (); }
 	;
 
-xexpr:
-	/* empty */
-		{ $$ = NULL_TREE; }
-	| expr
+for_cond_expr: save_location xexpr
+		{ if ($2)
+		    {
+		      $$ = lang_hooks.truthvalue_conversion ($2);
+		      if (EXPR_P ($$))
+			annotate_with_locus ($$, $1);
+		    }
+		  else
+		    $$ = NULL;
+		}
 	;
 
-/* Parse a single real statement, not including any labels.  */
-stmt:
-	  compstmt
-		{ stmt_count++; add_stmt ($1); }
-	| expr ';'
-		{ stmt_count++; c_finish_expr_stmt ($1); }
-	| c99_block_start select_or_iter_stmt
-                { add_stmt (c_end_compound_stmt ($1, flag_isoc99)); }
+for_incr_expr: xexpr
+		{ $$ = c_process_expr_stmt ($1); }
+	;
+
+for_statement:
+	FOR c99_block_start '(' for_init_stmt
+	save_location for_cond_expr ';' for_incr_expr ')'
+	start_break start_continue c99_block_lineno_labeled_stmt
+		{ c_finish_loop ($5, $6, $8, $12, c_break_label,
+				 c_cont_label, true);
+		  add_stmt (c_end_compound_stmt ($2, flag_isoc99));
+		  c_break_label = $10; c_cont_label = $11; }
+	;
+
+switch_statement:
+	SWITCH c99_block_start '(' expr ')'
+		{ $<ttype>$ = c_start_case ($4); }
+	start_break c99_block_lineno_labeled_stmt
+                { c_finish_case ($8);
+		  if (c_break_label)
+		    add_stmt (build (LABEL_EXPR, void_type_node,
+				     c_break_label));
+		  c_break_label = $7;
+		  add_stmt (c_end_compound_stmt ($2, flag_isoc99)); }
+	;
+
+/* Parse a single real statement, not including any labels or compounds.  */
+stmt_nocomp:
+	  expr ';'
+		{ $$ = c_finish_expr_stmt ($1); }
+	| if_statement
+		{ $$ = NULL_TREE; }
+	| while_statement
+		{ $$ = NULL_TREE; }
+	| do_statement
+		{ $$ = NULL_TREE; }
+	| for_statement
+		{ $$ = NULL_TREE; }
+	| switch_statement
+		{ $$ = NULL_TREE; }
 	| BREAK ';'
-	        { stmt_count++;
-		  if (!(c_in_iteration_stmt || c_in_case_stmt))
-		    error ("break statement not within loop or switch");
-		  else
-		    add_stmt (build_break_stmt ()); }
+	        { $$ = c_finish_bc_stmt (&c_break_label, true); }
 	| CONTINUE ';'
-                { stmt_count++;
-		  if (!c_in_iteration_stmt)
-		    error ("continue statement not within a loop");
-		  else
-		    add_stmt (build_continue_stmt ()); }
+                { $$ = c_finish_bc_stmt (&c_cont_label, false); }
 	| RETURN ';'
-                { stmt_count++; c_finish_return (NULL_TREE); }
+                { $$ = c_finish_return (NULL_TREE); }
 	| RETURN expr ';'
-                { stmt_count++; c_finish_return ($2); }
+                { $$ = c_finish_return ($2); }
 	| asm_stmt
 	| GOTO identifier ';'
-		{ tree decl;
-		  stmt_count++;
-		  decl = lookup_label ($2);
-		  if (decl != 0)
-		    {
-		      TREE_USED (decl) = 1;
-		      add_stmt (build_stmt (GOTO_EXPR, decl));
-		    }
-		}
+		{ $$ = c_finish_goto_label ($2); }
 	| GOTO '*' expr ';'
-		{ if (pedantic)
-		    pedwarn ("ISO C forbids `goto *expr;'");
-		  stmt_count++;
-		  $3 = convert (ptr_type_node, $3);
-		  add_stmt (build_stmt (GOTO_EXPR, $3)); }
+		{ $$ = c_finish_goto_ptr ($3); }
 	| ';'
-		{ }
+		{ $$ = NULL_TREE; }
 @@ifobjc
 	| AT_THROW expr ';'
-		{ stmt_count++; objc_build_throw_stmt ($2); }
+		{ $$ = objc_build_throw_stmt ($2); }
 	| AT_THROW ';'
-		{ stmt_count++; objc_build_throw_stmt (NULL_TREE); }
+		{ $$ = objc_build_throw_stmt (NULL_TREE); }
 	| objc_try_catch_stmt
-		{ }
-	| AT_SYNCHRONIZED '(' expr ')' save_location compstmt
-		{ stmt_count++; objc_build_synchronized ($5, $3, $6); }
+		{ $$ = NULL_TREE; }
+	| AT_SYNCHRONIZED save_location '(' expr ')' compstmt
+		{ objc_build_synchronized ($2, $4, $6); $$ = NULL_TREE; }
 	;
 
 objc_catch_prefix:
@@ -2294,7 +2283,7 @@ objc_opt_catch_list:
 
 objc_try_catch_clause:
 	AT_TRY save_location compstmt
-		{ stmt_count++; objc_begin_try_stmt ($2, $3); }
+		{ objc_begin_try_stmt ($2, $3); }
 	objc_opt_catch_list
 	;
 
@@ -2311,22 +2300,25 @@ objc_try_catch_stmt:
 @@end_ifobjc
 	;
 
+/* Parse a single or compound real statement, not including any labels.  */
+stmt:
+	  compstmt
+		{ add_stmt ($1); $$ = NULL_TREE; }
+	| stmt_nocomp
+	;
+
 /* Any kind of label, including jump labels and case labels.
    ANSI C accepts labels only before statements, but we allow them
    also at the end of a compound statement.  */
 
 label:	  CASE expr_no_commas ':'
-                { stmt_count++;
-		  $$ = do_case ($2, NULL_TREE); }
+                { $$ = do_case ($2, NULL_TREE); }
 	| CASE expr_no_commas ELLIPSIS expr_no_commas ':'
-                { stmt_count++;
-		  $$ = do_case ($2, $4); }
+                { $$ = do_case ($2, $4); }
 	| DEFAULT ':'
-                { stmt_count++;
-		  $$ = do_case (NULL_TREE, NULL_TREE); }
+                { $$ = do_case (NULL_TREE, NULL_TREE); }
 	| identifier save_location ':' maybe_attribute
 		{ tree label = define_label ($2, $1);
-		  stmt_count++;
 		  if (label)
 		    {
 		      decl_attributes (&label, $4, 0);
@@ -2367,8 +2359,7 @@ asmdef:
 asm_stmt:
 	ASM_KEYWORD maybe_volatile stop_string_translation
 	        '(' asm_argument ')' start_string_translation ';'
-		{ stmt_count++;
-		  $$ = build_asm_stmt ($2, $5); }
+		{ $$ = build_asm_stmt ($2, $5); }
 	;
 
 asm_argument:
