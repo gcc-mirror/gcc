@@ -102,7 +102,7 @@ struct ehl_map_entry GTY(())
   struct eh_region *region;
 };
 
-static int call_site_base;
+static GTY(()) int call_site_base;
 static GTY ((param_is (union tree_node)))
   htab_t type_to_runtime_map;
 
