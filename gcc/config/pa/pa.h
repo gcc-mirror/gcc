@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for the HP Spectrum.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002 Free Software Foundation, Inc.
+   2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) of Cygnus Support
    and Tim Moore (moore@defmacro.cs.utah.edu) of the Center for
    Software Science at the University of Utah.
@@ -205,6 +205,11 @@ extern int target_flags;
    GAS.  Currently, they are usable for calls within a module but
    not for external calls.  */
 #define TARGET_LONG_PIC_PCREL_CALL 0
+
+/* Define to a C expression evaluating to true to use SOM secondary
+   definition symbols for weak support.  Linker support for secondary
+   definition symbols is buggy prior to HP-UX 11.X.  */
+#define TARGET_SOM_SDEF 0
 
 /* Macro to define tables used to set the flags.  This is a
    list in braces of target switches with each switch being

@@ -89,4 +89,9 @@ typedef long int __padding_type;
 #if !defined(_GLIBCPP_SUPPORTS_WEAK) && defined (__hppa__)
 #define _GLIBCPP_INST_ATOMICITY_LOCK 1
 #endif
+
+/* Don't use pragma weak in gthread headers.  */
+#ifdef __hppa__
+#define _GLIBCPP_GTHREAD_USE_WEAK 0
+#endif
 #endif
