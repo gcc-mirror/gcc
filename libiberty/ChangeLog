@@ -1,3 +1,9 @@
+2000-07-21  Alex Samuel  <samuel@codesourcery.com>
+
+	* cp-demangle.c (demangle_ctor_dtor_name): Remove not-in-charge
+	allocating ctor mangling.
+	(demangle_array_type): Handle empty and non-constant array length.
+
 2000-07-23  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
 
 	* aclocal.m4 (libiberty_AC_DECLARE_ERRNO): New macro.

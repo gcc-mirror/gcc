@@ -1738,7 +1738,6 @@ demangle_special_name (dm)
                    ::= C1  # complete object (in-charge) ctor
                    ::= C2  # base object (not-in-charge) ctor
                    ::= C3  # complete object (in-charge) allocating ctor
-                   ::= C4  # base object (not-in-charge) allocating ctor
                    ::= D0  # deleting (in-charge) dtor
                    ::= D1  # complete object (in-charge) dtor
                    ::= D2  # base object (not-in-charge) dtor  */
@@ -1751,8 +1750,7 @@ demangle_ctor_dtor_name (dm)
   {
     "in-charge",
     "not-in-charge",
-    "in-charge allocating",
-    "not-in-charge allocating"
+    "allocating"
   };
   static const char *const dtor_flavors[] = 
   {
@@ -1770,7 +1768,7 @@ demangle_ctor_dtor_name (dm)
     {
       /* A constructor name.  Consume the C.  */
       advance_char (dm);
-      if (peek_char (dm) < '1' || peek_char (dm) > '4')
+      if (peek_char (dm) < '1' || peek_char (dm) > '3')
 	return "Unrecognized constructor.";
       RETURN_IF_ERROR (result_append_string (dm, dm->last_source_name));
       /* Print the flavor of the constructor if in verbose mode.  */
@@ -2312,23 +2310,43 @@ demangle_class_enum_type (dm, template_p)
 
 /* Demangles and emits an <array-type>.  
 
-    <array-type> ::= A [<dimension number>] _ <element type>  */
+    <array-type> ::= A [<dimension number>] _ <element type>  
+                 ::= A <dimension expression> _ <element type>  */
 
 static status_t
 demangle_array_type (dm)
      demangling_t dm;
 {
-  status_t status;
-  dyn_string_t array_size = dyn_string_new (10);
+  status_t status = STATUS_OK;
+  dyn_string_t array_size = NULL;
+  char peek;
 
-  if (array_size == NULL)
-    return STATUS_ALLOCATION_FAILED;
-
-  status = demangle_char (dm, 'A');
+  RETURN_IF_ERROR (demangle_char (dm, 'A'));
 
   /* Demangle the array size into array_size.  */
-  if (STATUS_NO_ERROR (status))
-    status = demangle_number_literally (dm, array_size, 10, 0);
+  peek = peek_char (dm);
+  if (peek == '_')
+    /* Array bound is omitted.  This is a C99-style VLA.  */
+    ;
+  else if (IS_DIGIT (peek_char (dm))) 
+    {
+      /* It looks like a constant array bound.  */
+      array_size = dyn_string_new (10);
+      if (array_size == NULL)
+	return STATUS_ALLOCATION_FAILED;
+      status = demangle_number_literally (dm, array_size, 10, 0);
+    }
+  else
+    {
+      /* Anything is must be an expression for a nont-constant array
+	 bound.  This happens if the array type occurs in a template
+	 and the array bound references a template parameter.  */
+      RETURN_IF_ERROR (result_push (dm));
+      RETURN_IF_ERROR (demangle_expression (dm));
+      array_size = (dyn_string_t) result_pop (dm);
+    }
+  /* array_size may have been allocated by now, so we can't use
+     RETURN_IF_ERROR until it's been deallocated.  */
 
   /* Demangle the base type of the array.  */
   if (STATUS_NO_ERROR (status))
@@ -2339,11 +2357,12 @@ demangle_array_type (dm)
   /* Emit the array dimension syntax.  */
   if (STATUS_NO_ERROR (status))
     status = result_append_char (dm, '[');
-  if (STATUS_NO_ERROR (status))
+  if (STATUS_NO_ERROR (status) && array_size != NULL)
     status = result_append_string (dm, array_size);
   if (STATUS_NO_ERROR (status))
     status = result_append_char (dm, ']');
-  dyn_string_delete (array_size);
+  if (array_size != NULL)
+    dyn_string_delete (array_size);
   
   RETURN_IF_ERROR (status);
 
