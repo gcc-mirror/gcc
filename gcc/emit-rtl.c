@@ -264,6 +264,22 @@ gen_rtx_CONST_INT (mode, arg)
   return gen_rtx_raw_CONST_INT (mode, arg);
 }
 
+/* CONST_DOUBLEs needs special handling because its length is known
+   only at run-time.  */
+rtx
+gen_rtx_CONST_DOUBLE (mode, arg0, arg1, arg2)
+     enum machine_mode mode;
+     rtx arg0;
+     HOST_WIDE_INT arg1, arg2;
+{
+  rtx r = rtx_alloc (CONST_DOUBLE);
+  PUT_MODE (r, mode);
+  XEXP (r, 0) = arg0;
+  XINT (r, 2) = arg1;
+  XINT (r, 3) = arg2;
+  return r;
+}
+
 rtx
 gen_rtx_REG (mode, regno)
      enum machine_mode mode;
@@ -366,14 +382,30 @@ gen_rtx VPROTO((enum rtx_code code, enum machine_mode mode, ...))
   mode = va_arg (p, enum machine_mode);
 #endif
 
-  if (code == CONST_INT)
-    rt_val = gen_rtx_CONST_INT (mode, va_arg (p, HOST_WIDE_INT));
-  else if (code == REG)
-    rt_val = gen_rtx_REG (mode, va_arg (p, int));
-  else if (code == MEM)
-    rt_val = gen_rtx_MEM (mode, va_arg (p, rtx));
-  else
+  switch (code)
     {
+    case CONST_INT:
+      rt_val = gen_rtx_CONST_INT (mode, va_arg (p, HOST_WIDE_INT));
+      break;
+
+    case CONST_DOUBLE:
+      {
+	rtx arg0 = va_arg (p, rtx);
+	HOST_WIDE_INT arg1 = va_arg (p, HOST_WIDE_INT);
+	HOST_WIDE_INT arg2 = va_arg (p, HOST_WIDE_INT);
+        rt_val = gen_rtx_CONST_DOUBLE (mode, arg0, arg1, arg2);
+      }
+      break;
+
+    case REG:
+      rt_val = gen_rtx_REG (mode, va_arg (p, int));
+      break;
+
+    case MEM:
+      rt_val = gen_rtx_MEM (mode, va_arg (p, rtx));
+      break;
+
+    default:
       rt_val = rtx_alloc (code);	/* Allocate the storage space.  */
       rt_val->mode = mode;		/* Store the machine mode...  */
 
@@ -418,9 +450,11 @@ gen_rtx VPROTO((enum rtx_code code, enum machine_mode mode, ...))
 	      abort ();
 	    }
 	}
+      break;
     }
+
   va_end (p);
-  return rt_val;		/* Return the new RTX...		*/
+  return rt_val;
 }
 
 /* gen_rtvec (n, [rt1, ..., rtn])

@@ -1136,6 +1136,8 @@ extern rtx return_address_pointer_rtx;
    add to this list, modify special_rtx in gengenrtl.c as well.  You
    should also modify gen_rtx to use the special function.  */
 
+extern rtx gen_rtx_CONST_DOUBLE PROTO((enum machine_mode, rtx,
+				       HOST_WIDE_INT, HOST_WIDE_INT));
 extern rtx gen_rtx_CONST_INT PROTO((enum machine_mode, HOST_WIDE_INT));
 extern rtx gen_rtx_REG PROTO((enum machine_mode, int));
 extern rtx gen_rtx_MEM PROTO((enum machine_mode, rtx));

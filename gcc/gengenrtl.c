@@ -1,5 +1,5 @@
 /* Generate code to allocate RTL structures.
-   Copyright (C) 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -52,6 +52,8 @@ static void genlegend PROTO((FILE *));
 static void genheader PROTO((FILE *));
 static void gencode PROTO((FILE *));
 
+/* Decode a format letter into a C type string.  */
+
 static const char *
 type_from_format (c)
      int c;
@@ -84,6 +86,8 @@ type_from_format (c)
     }
 }
 
+/* Decode a format letter into the proper accessor function.  */
+
 static const char *
 accessor_from_format (c)
      int c;
@@ -110,6 +114,8 @@ accessor_from_format (c)
     }
 }
 
+/* Return true if a format character doesn't need normal processing.  */
+
 static int
 special_format (fmt)
      const char *fmt;
@@ -120,14 +126,19 @@ special_format (fmt)
 	  || strchr (fmt, 'n') != 0);
 }
 
+/* Return true if an rtx requires special processing.  */
+
 static int
 special_rtx (idx)
      int idx;
 {
   return (strcmp (defs[idx].enumname, "CONST_INT") == 0
+	  || strcmp (defs[idx].enumname, "CONST_DOUBLE") == 0
 	  || strcmp (defs[idx].enumname, "REG") == 0
 	  || strcmp (defs[idx].enumname, "MEM") == 0);
 }
+
+/* Fill `formats' with all unique format strings.  */
 
 static void
 find_formats ()
@@ -142,13 +153,15 @@ find_formats ()
 	continue;
 
       for (f = formats; *f ; ++f)
-	if (!strcmp(*f, defs[i].format))
+	if (! strcmp (*f, defs[i].format))
 	  break;
 
       if (!*f)
 	*f = defs[i].format;
     }
 }
+
+/* Emit a prototype for the rtx generator for a format.  */
 
 static void
 gendecl (f, format)
@@ -165,6 +178,8 @@ gendecl (f, format)
       fprintf (f, ", %s arg%d", type_from_format (*p), i++);
   fprintf (f, "));\n");
 }
+
+/* Emit a define mapping an rtx code to the generator for its format.  */
 
 static void 
 genmacro (f, idx)
@@ -188,6 +203,8 @@ genmacro (f, idx)
       fprintf (f, ",(arg%d)", i++);
   fprintf (f, ")\n");
 }
+
+/* Emit the implementation for the rtx generator for a format.  */
 
 static void
 gendef (f, format)
@@ -225,13 +242,17 @@ gendef (f, format)
   fprintf (f, "\n  return rt;\n}\n\n");
 }
 
+/* Emit the `do not edit' banner.  */
+
 static void
 genlegend (f)
      FILE *f;
 {
-  fprintf (f, "/* Generated automaticaly by the program `gengenrtl'\n");
-  fprintf (f, "   from the RTL description file `rtl.def' */\n\n");
+  fputs ("/* Generated automaticaly by the program `gengenrtl'\n", f);
+  fputs ("   from the RTL description file `rtl.def' */\n\n", f);
 }
+
+/* Emit "genrtl.h".  */
 
 static void
 genheader (f)
@@ -243,7 +264,7 @@ genheader (f)
   for (fmt = formats; *fmt; ++fmt)
     gendecl (f, *fmt);
 
-  fprintf(f, "\n");
+  fprintf (f, "\n");
 
   for (i = 0; i < NUM_RTX_CODE; i++)
     {
@@ -252,6 +273,8 @@ genheader (f)
       genmacro (f, i);
     }
 }
+
+/* Emit "genrtl.c".  */
 
 static void
 gencode (f)
@@ -268,7 +291,7 @@ gencode (f)
   fputs ("static rtx obstack_alloc_rtx (length)\n", f);
   fputs ("     register int length;\n{\n", f);
   fputs ("  rtx rt = (rtx) obstack_alloc (rtl_obstack, length);\n\n", f);
-  fputs ("  bzero((char *) rt, sizeof(struct rtx_def) - sizeof(rtunion));\n\n", f);
+  fputs ("  memset(rt, 0, sizeof(struct rtx_def) - sizeof(rtunion));\n\n", f);
   fputs ("  return rt;\n}\n\n", f);
 
   for (fmt = formats; *fmt; ++fmt)
@@ -308,22 +331,22 @@ main(argc, argv)
   f = fopen (argv[1], "w");
   if (f == NULL)
     {
-      perror(argv[1]);
+      perror (argv[1]);
       exit (1);
     }
   genlegend (f);
   genheader (f);
-  fclose(f);
+  fclose (f);
 
   f = fopen (argv[2], "w");
   if (f == NULL)
     {
-      perror(argv[2]);
+      perror (argv[2]);
       exit (1);
     }
   genlegend (f);
   gencode (f);
-  fclose(f);
+  fclose (f);
 
   exit (0);
 }

@@ -1,3 +1,13 @@
+Thu Apr  1 17:01:50 1999  Richard Henderson  <rth@cygnus.com>
+
+	Move over patch from Bernd Schmidt from GC branch:
+	* emit-rtl.c (gen_rtx_CONST_DOUBLE): New function.
+	(gen_rtx): Call it.  Tidy cases.
+	* rtl.h (gen_rtx_CONST_DOUBLE): Prototype it.
+	* gengenrtl.c: Add commentary.
+	(special_rtx): Also match CONST_DOUBLE.
+	(gencode): Emit call to memset instead of bzero.
+
 Fri Apr  2 12:58:26 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.md (ashlhi3, lshrhi3, ashrhi3): Force operand 1
