@@ -143,7 +143,5 @@ Boston, MA 02111-1307, USA.  */
     if (!TARGET_64BIT) {				\
       REAL_MODE_FORMAT (XFmode)				\
 	= &ieee_extended_intel_96_round_53_format;	\
-      REAL_MODE_FORMAT (TFmode)				\
-	= &ieee_extended_intel_96_round_53_format;	\
     }							\
   } while (0)
