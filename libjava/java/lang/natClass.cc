@@ -1005,8 +1005,7 @@ _Jv_PrepareConstantTimeTables (jclass klass)
       klass0 = klass0->superclass;
     }
     
-  if (klass->isArray () 
-      || java::lang::reflect::Modifier::isAbstract (klass->accflags))
+  if (java::lang::reflect::Modifier::isAbstract (klass->accflags))
     return;
 
   klass->idt = 
