@@ -1,3 +1,9 @@
+2005-03-19  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/20333
+	* parser.c (cp_parser_postfix_expression) <case RID_TYPENAME>:
+	Check the return value of cp_parser_nested_name_specifier.
+
 2005-03-17  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/20186
