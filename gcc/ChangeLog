@@ -1,3 +1,41 @@
+Fri Oct 17 13:39:56 1997  Doug Evans  <dje@canuck.cygnus.com>
+
+	* sparc/sp64-elf.h (TARGET_DEFAULT): Delete MASK_STACK_BIAS.
+	* sparc/sparc.h (PROMOTE_MODE): Promote small ints if arch64.
+	(PROMOTE_FUNCTION_ARGS,PROMOTE_FUNCTION_RETURN): Define.
+	(SPARC_FIRST_FP_REG, SPARC_FP_REG_P): New macros.
+	(SPARC_{OUTGOING,INCOMING}_INT_ARG_FIRST): New macros.
+	(SPARC_FP_ARG_FIRST): New macro.
+	(CONDITIONAL_REGISTER_USAGE): All v9 fp regs are volatile now.
+	(REG_ALLOC_ORDER,REG_LEAF_ALLOC_ORDER): Reorganize fp regs.
+	(NPARM_REGS): There are 32 fp argument registers now.
+	(FUNCTION_ARG_REGNO_P): Likewise.
+	(FIRST_PARM_OFFSET): Update to new v9 abi.
+	(REG_PARM_STACK_SPACE): Define for arch64.
+	(enum sparc_arg_class): Delete.
+	(sparc_arg_count,sparc_n_named_args): Delete.
+	(struct sparc_args): Redefine and use for arch32 as well as arch64.
+	(GET_SPARC_ARG_CLASS,ROUND_REG,ROUND_ADVANCE): Delete.
+	(FUNCTION_ARG_ADVANCE): Rewrite.
+	(FUNCTION_ARG,FUNCTION_INCOMING_ARG): Rewrite.
+	(FUNCTION_ARG_{PARTIAL_NREGS,PASS_BY_REFERENCE}): Rewrite.
+	(FUNCTION_ARG_CALLEE_COPIES): Delete.
+	(FUNCTION_ARG_{PADDING,BOUNDARY}): Define.
+	(STRICT_ARGUMENT_NAMING): Define.
+	(doublemove_string): Declare.
+	* sparc/sparc.c (sparc_arg_count,sparc_n_named_args): Delete.
+	(single_move_string): Use GEN_INT, and HOST_WIDE_INT.
+	(doublemove_string): New function.
+	(output_move_quad): Clean up some of the arch64 support.
+	(compute_frame_size): Add REG_PARM_STACK_SPACE if arch64.
+	Don't add 8 bytes of reserved space if arch64.
+	(sparc_builtin_saveregs): Combine arch32/arch64 versions.
+	(init_cumulative_args): New function.
+	(function_arg_slotno): New static function.
+	(function_arg,function_arg_partial_nregs): New functions.
+	(function_arg_{pass_by_reference,advance}): New functions.
+	(function_arg_padding): New function.
+
 Fri Oct 17 12:29:48 1997  Christian Iseli  <Christian.Iseli@lslsun.epfl.ch>
 
 	* regclass.c (record_address_regs): Look at REG_OK_FOR_{BASE,INDEX}_P
