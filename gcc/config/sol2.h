@@ -114,8 +114,8 @@ Boston, MA 02111-1307, USA.  */
 #undef STARTFILE_ARCH_SPEC
 #define STARTFILE_ARCH_SPEC STARTFILE_ARCH32_SPEC
 
-#undef LINK_ARCH32_SPEC
-#define LINK_ARCH32_SPEC \
+#undef LINK_ARCH32_SPEC_BASE
+#define LINK_ARCH32_SPEC_BASE \
   "%{G:-G} \
    %{YP,*} \
    %{R*} \
@@ -126,6 +126,9 @@ Boston, MA 02111-1307, USA.  */
    %{!compat-bsd: \
      %{!YP,*:%{p|pg:-Y P,/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
              %{!p:%{!pg:-Y P,/usr/ccs/lib:/usr/lib}}}}"
+
+#undef LINK_ARCH32_SPEC
+#define LINK_ARCH32_SPEC LINK_ARCH32_SPEC_BASE
 
 #undef LINK_ARCH_SPEC
 #define LINK_ARCH_SPEC LINK_ARCH32_SPEC
