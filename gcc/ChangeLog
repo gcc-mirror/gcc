@@ -1,3 +1,8 @@
+2004-01-22  Daniel Jacobowitz  <drow@mvista.com>
+
+	* c-semantics.c (genrtl_while_stmt, genrtl_do_stmt_1)
+	(genrtl_for_stmt): Remove emit_nop calls.
+
 2004-01-22  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/13713

@@ -430,7 +430,6 @@ genrtl_while_stmt (tree t)
 {
   tree cond = WHILE_COND (t);
 
-  emit_nop ();
   emit_line_note (input_location);
   expand_start_loop (1);
   genrtl_do_pushlevel ();
@@ -467,7 +466,6 @@ genrtl_do_stmt_1 (tree cond, tree body)
     }
   else if (integer_nonzerop (cond))
     {
-      emit_nop ();
       emit_line_note (input_location);
       expand_start_loop (1);
 
@@ -478,7 +476,6 @@ genrtl_do_stmt_1 (tree cond, tree body)
     }
   else
     {
-      emit_nop ();
       emit_line_note (input_location);
       expand_start_loop_continue_elsewhere (1);
 
@@ -542,7 +539,6 @@ genrtl_for_stmt (tree t)
   expand_stmt (FOR_INIT_STMT (t));
 
   /* Expand the initialization.  */
-  emit_nop ();
   emit_line_note (input_location);
   if (FOR_EXPR (t))
     expand_start_loop_continue_elsewhere (1);
