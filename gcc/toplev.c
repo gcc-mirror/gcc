@@ -4319,7 +4319,16 @@ rest_of_compilation (decl)
       if (dbr_sched_dump)
 	open_dump_file (".19.dbr", decl_printable_name (decl, 2));
 
-      TIMEVAR (dbr_sched_time, dbr_schedule (insns, rtl_dump_file));
+      TIMEVAR
+	(dbr_sched_time,
+	 {
+           /* ??? Keep the CFG up to date after cross-jumping.  */
+	   find_basic_blocks (insns, max_reg_num (), rtl_dump_file, 1);
+	   count_or_remove_death_notes (NULL, 1);
+	   life_analysis (insns, max_reg_num (), rtl_dump_file, 1);
+
+           dbr_schedule (insns, rtl_dump_file);
+	 });
 
       if (dbr_sched_dump)
 	{
@@ -4332,6 +4341,12 @@ rest_of_compilation (decl)
    if (ggc_p)
      ggc_collect ();
 #endif
+
+  /* Shorten branches.  */
+  TIMEVAR (shorten_branch_time,
+	   {
+	     shorten_branches (get_insns ());
+	   });
 
 #ifdef STACK_REGS
   if (stack_reg_dump)
@@ -4349,12 +4364,6 @@ rest_of_compilation (decl)
    if (ggc_p)
      ggc_collect ();
 #endif
-
-  /* Shorten branches.  */
-  TIMEVAR (shorten_branch_time,
-	   {
-	     shorten_branches (get_insns ());
-	   });
 
   /* Now turn the rtl into assembler code.  */
 

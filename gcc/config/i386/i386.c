@@ -178,8 +178,6 @@ struct machine_function
   rtx stack_locals[(int) MAX_MACHINE_MODE][MAX_386_STACK_LOCALS];
 };
 
-static int pic_label_no = 0;
-
 #define ix86_stack_locals (current_function->machine->stack_locals)
 
 /* which cpu are we scheduling for */
@@ -5180,8 +5178,24 @@ ix86_attr_length_default (insn)
       break;
 
     case TYPE_LEA:
-      len += memory_address_length (SET_SRC (single_set (insn)));
-      goto just_opcode;
+      {
+        /* Irritatingly, single_set doesn't work with REG_UNUSED present,
+	   as we'll get from running life_analysis during reg-stack when
+	   not optimizing.  */
+        rtx set = PATTERN (insn);
+        if (GET_CODE (set) == SET)
+	  ;
+	else if (GET_CODE (set) == PARALLEL
+		 && XVECLEN (set, 0) == 2
+		 && GET_CODE (XVECEXP (set, 0, 0)) == SET
+		 && GET_CODE (XVECEXP (set, 0, 1)) == CLOBBER)
+	  set = XVECEXP (set, 0, 0);
+	else
+	  abort ();
+
+	len += memory_address_length (SET_SRC (set));
+	goto just_opcode;
+      }
 
     case TYPE_OTHER: 
     case TYPE_MULTI:

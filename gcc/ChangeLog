@@ -1,3 +1,22 @@
+Fri Oct 29 14:34:17 1999  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (count_or_remove_death_notes): Equate NULL with the
+	universal set.
+
+	* jump.c, reg-stack.c, toplev.c: Revert Oct 27 change.
+	* toplev.c (rest_of_compilation): Rebuild CFG immediately before
+	dbr_schedule.
+
+	* i386.c (pic_label_no): Delete.
+	(ix86_attr_length_default): Don't use single_set to peek
+	inside a parallel.
+
+	* recog.c (peephole2_optimize): Allow recog_next_insn to index
+	the first insn after bb->end.
+	* i386.md (push mem peeps): Scratch is live after evaluation
+	of the memory.
+	(cmp mem peep): Similarly.
+
 Fri Oct 29 11:50:11 1999  Catherine Moore  <clm@cygnus.com>
 
 	* calls.c (emit_library_call_value): Fix declaration of alignment_pad.

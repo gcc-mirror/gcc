@@ -2730,7 +2730,7 @@ peephole2_optimize (dump_file)
 	 care about subsequent life info; recog_last_allowed_insn to
 	 restrict how far forward we will allow the match to proceed.  */
 
-      recog_last_allowed_insn = bb->end;
+      recog_last_allowed_insn = NEXT_INSN (bb->end);
       for (insn = bb->end; ; insn = prev)
 	{
 	  prev = PREV_INSN (insn);
@@ -2749,7 +2749,7 @@ peephole2_optimize (dump_file)
 		  if (insn == bb->head)
 		    bb->head = NEXT_INSN (prev);
 
-		  recog_last_allowed_insn = prev;
+		  recog_last_allowed_insn = NEXT_INSN (prev);
 		  SET_BIT (blocks, i);
 		  changed = 1;
 		}
