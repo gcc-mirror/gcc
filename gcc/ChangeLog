@@ -1,5 +1,14 @@
 2001-07-06  Richard Henderson  <rth@redhat.com>
 
+	* bitmap.c (bitmap_release_memory): Move adjacent to the
+	allocation functions.
+	(bitmap_first_set_bit, bitmap_last_set_bit): Streamline knowing
+	the implementation.  Binary search for the set bit.
+	(bitmap_union_of_diff): Allocate the temporary on the stack
+	instead of using xmalloc.
+
+2001-07-06  Richard Henderson  <rth@redhat.com>
+
 	* genrecog.c (validate_pattern): Warn for constraints in
 	define_{expand,split,peephole2}.  Remove strict_low_part
 	before looking up match_dup.
