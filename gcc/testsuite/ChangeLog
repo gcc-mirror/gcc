@@ -1,3 +1,7 @@
+2003-05-11  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* g77.f-torture/execute/int8421.f: New test.
+
 2003-05-11  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/10230, c++/10481
