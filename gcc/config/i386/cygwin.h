@@ -578,6 +578,9 @@ extern int i386_pe_dllimport_name_p PARAMS ((const char *));
 #define SET_ASM_OP "\t.set\t"
 #endif
 
+/* Override GCC's relative pathname lookup unless otherwise told
+   by other subtargets.  */
+#ifndef WIN32_NO_ABSOLUTE_INST_DIRS
 #undef MD_STARTFILE_PREFIX
 #define MD_STARTFILE_PREFIX     "/usr/lib/"
 
@@ -590,7 +593,8 @@ extern int i386_pe_dllimport_name_p PARAMS ((const char *));
 #undef SYSTEM_INCLUDE_DIR
 #undef STANDARD_INCLUDE_DIR
 #define STANDARD_INCLUDE_DIR 0
-#endif
+#endif /* not CROSS_COMPILE */
+#endif /* not WIN32_NO_ABSOLUTE_INST_DIRS */
 
 #undef TREE
 

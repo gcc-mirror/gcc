@@ -1,3 +1,15 @@
+2001-10-10  Danny Smith  <danny_r_smith_2001@yahoo.co.nz>
+
+	* config/i386/mingw32.h (WIN32_NO_ABSOLUTE_INST_DIRS): New define.
+	(Thanks to Chris Faylor for suggesting macro name).
+	(CPP_PREDEFINES): Define __MINGW32__ but don't set value; add more
+	WIN32 defines.
+	(STANDARD_INCLUDE_DIR): Remove i386- from directory name.
+	(STANDARD_INCLUDE_COMPONENT): Change to MINGW.
+	(MATH_LIBRARY): Undef before definition.
+	(OUTPUT_QUOTED_STRING): Likewise.
+	* config/i386/cygwin.h: Use WIN32_NO_ABSOLUTE_INST_DIRS.
+
 2001-10-10  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	PR c++/4512
