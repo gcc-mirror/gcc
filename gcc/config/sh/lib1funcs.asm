@@ -2357,9 +2357,10 @@ LOCAL(ia_main_table):
 	.align	2
 	
      /* This function stores 64-bit general-purpose registers back in
-	the stack, starting at @(r1), where the cookie is supposed to
-	have been stored, and loads the address in which each register
-	was stored into itself.  Its execution time is linear on the
+	the stack, and loads the address in which each register
+	was stored into itself.  The lower 32 bits of r17 hold the address
+	to begin storing, and the upper 32 bits of r17 hold the cookie.
+	Its execution time is linear on the
 	number of registers that actually have to be copied, and it is
 	optimized for structures larger than 64 bits, as opposed to
 	invidivual `long long' arguments.  See sh.h for details on the
@@ -2369,136 +2370,136 @@ LOCAL(ia_main_table):
 GLOBAL(GCC_shcompact_incoming_args):
 	ptabs/l	r18, tr0	/* Prepare to return.  */
 	shlri	r17, 32, r0	/* Load the cookie.  */
-	movi	((datalabel LOCAL(ia_main_table) - 31 * 2) >> 16) & 65535, r35
+	movi	((datalabel LOCAL(ia_main_table) - 31 * 2) >> 16) & 65535, r43
 	pt/l	LOCAL(ia_loop), tr1
 	add.l	r17, r63, r17
-	shori	((datalabel LOCAL(ia_main_table) - 31 * 2)) & 65535, r35
+	shori	((datalabel LOCAL(ia_main_table) - 31 * 2)) & 65535, r43
 LOCAL(ia_loop):
-	nsb	r0, r28
-	shlli	r28, 1, r29
-	ldx.w	r35, r29, r30
+	nsb	r0, r36
+	shlli	r36, 1, r37
+	ldx.w	r43, r37, r38
 LOCAL(ia_main_label):
-	ptrel/l	r30, tr2
+	ptrel/l	r38, tr2
 	blink	tr2, r63
 LOCAL(ia_r2_ld):	/* Store r2 and load its address.  */
-	movi	3, r30
-	shlli	r30, 29, r31
-	and	r0, r31, r32
-	andc	r0, r31, r0
+	movi	3, r38
+	shlli	r38, 29, r39
+	and	r0, r39, r40
+	andc	r0, r39, r0
 	stx.q	r17, r63, r2
 	add.l	r17, r63, r2
 	addi.l	r17, 8, r17
-	beq/u	r31, r32, tr1
+	beq/u	r39, r40, tr1
 LOCAL(ia_r3_ld):	/* Store r3 and load its address.  */
-	movi	3, r30
-	shlli	r30, 26, r31
-	and	r0, r31, r32
-	andc	r0, r31, r0
+	movi	3, r38
+	shlli	r38, 26, r39
+	and	r0, r39, r40
+	andc	r0, r39, r0
 	stx.q	r17, r63, r3
 	add.l	r17, r63, r3
 	addi.l	r17, 8, r17
-	beq/u	r31, r32, tr1
+	beq/u	r39, r40, tr1
 LOCAL(ia_r4_ld):	/* Store r4 and load its address.  */
-	movi	3, r30
-	shlli	r30, 23, r31
-	and	r0, r31, r32
-	andc	r0, r31, r0
+	movi	3, r38
+	shlli	r38, 23, r39
+	and	r0, r39, r40
+	andc	r0, r39, r0
 	stx.q	r17, r63, r4
 	add.l	r17, r63, r4
 	addi.l	r17, 8, r17
-	beq/u	r31, r32, tr1
+	beq/u	r39, r40, tr1
 LOCAL(ia_r5_ld):	/* Store r5 and load its address.  */
-	movi	3, r30
-	shlli	r30, 20, r31
-	and	r0, r31, r32
-	andc	r0, r31, r0
+	movi	3, r38
+	shlli	r38, 20, r39
+	and	r0, r39, r40
+	andc	r0, r39, r0
 	stx.q	r17, r63, r5
 	add.l	r17, r63, r5
 	addi.l	r17, 8, r17
-	beq/u	r31, r32, tr1
+	beq/u	r39, r40, tr1
 LOCAL(ia_r6_ld):	/* Store r6 and load its address.  */
-	movi	3, r30
-	shlli	r30, 16, r31
-	and	r0, r31, r32
-	andc	r0, r31, r0
+	movi	3, r38
+	shlli	r38, 16, r39
+	and	r0, r39, r40
+	andc	r0, r39, r0
 	stx.q	r17, r63, r6
 	add.l	r17, r63, r6
 	addi.l	r17, 8, r17
-	beq/u	r31, r32, tr1
+	beq/u	r39, r40, tr1
 LOCAL(ia_r7_ld):	/* Store r7 and load its address.  */
-	movi	3 << 12, r31
-	and	r0, r31, r32
-	andc	r0, r31, r0
+	movi	3 << 12, r39
+	and	r0, r39, r40
+	andc	r0, r39, r0
 	stx.q	r17, r63, r7
 	add.l	r17, r63, r7
 	addi.l	r17, 8, r17
-	beq/u	r31, r32, tr1
+	beq/u	r39, r40, tr1
 LOCAL(ia_r8_ld):	/* Store r8 and load its address.  */
-	movi	3 << 8, r31
-	and	r0, r31, r32
-	andc	r0, r31, r0
+	movi	3 << 8, r39
+	and	r0, r39, r40
+	andc	r0, r39, r0
 	stx.q	r17, r63, r8
 	add.l	r17, r63, r8
 	addi.l	r17, 8, r17
-	beq/u	r31, r32, tr1
+	beq/u	r39, r40, tr1
 LOCAL(ia_r9_ld):	/* Store r9 and load its address.  */
 	stx.q	r17, r63, r9
 	add.l	r17, r63, r9
 	blink	tr0, r63
 LOCAL(ia_r2_push):	/* Push r2 onto the stack.  */
-	movi	1, r30
-	shlli	r30, 29, r31
-	andc	r0, r31, r0
+	movi	1, r38
+	shlli	r38, 29, r39
+	andc	r0, r39, r0
 	stx.q	r17, r63, r2
 	addi.l	r17, 8, r17
 	blink	tr1, r63
 LOCAL(ia_r3_push):	/* Push r3 onto the stack.  */
-	movi	1, r30
-	shlli	r30, 26, r31
-	andc	r0, r31, r0
+	movi	1, r38
+	shlli	r38, 26, r39
+	andc	r0, r39, r0
 	stx.q	r17, r63, r3
 	addi.l	r17, 8, r17
 	blink	tr1, r63
 LOCAL(ia_r4_push):	/* Push r4 onto the stack.  */
-	movi	1, r30
-	shlli	r30, 23, r31
-	andc	r0, r31, r0
+	movi	1, r38
+	shlli	r38, 23, r39
+	andc	r0, r39, r0
 	stx.q	r17, r63, r4
 	addi.l	r17, 8, r17
 	blink	tr1, r63
 LOCAL(ia_r5_push):	/* Push r5 onto the stack.  */
-	movi	1, r30
-	shlli	r30, 20, r31
-	andc	r0, r31, r0
+	movi	1, r38
+	shlli	r38, 20, r39
+	andc	r0, r39, r0
 	stx.q	r17, r63, r5
 	addi.l	r17, 8, r17
 	blink	tr1, r63
 LOCAL(ia_r6_push):	/* Push r6 onto the stack.  */
-	movi	1, r30
-	shlli	r30, 16, r31
-	andc	r0, r31, r0
+	movi	1, r38
+	shlli	r38, 16, r39
+	andc	r0, r39, r0
 	stx.q	r17, r63, r6
 	addi.l	r17, 8, r17
 	blink	tr1, r63
 LOCAL(ia_r7_push):	/* Push r7 onto the stack.  */
-	movi	1 << 12, r31
-	andc	r0, r31, r0
+	movi	1 << 12, r39
+	andc	r0, r39, r0
 	stx.q	r17, r63, r7
 	addi.l	r17, 8, r17
 	blink	tr1, r63
 LOCAL(ia_r8_push):	/* Push r8 onto the stack.  */
-	movi	1 << 8, r31
-	andc	r0, r31, r0
+	movi	1 << 8, r39
+	andc	r0, r39, r0
 	stx.q	r17, r63, r8
 	addi.l	r17, 8, r17
 	blink	tr1, r63
 LOCAL(ia_push_seq):	/* Push a sequence of registers onto the stack.  */
-	andi	r0, 7 << 1, r30
-	movi	(LOCAL(ia_end_of_push_seq) >> 16) & 65535, r32
-	shlli	r30, 2, r31
-	shori	LOCAL(ia_end_of_push_seq) & 65535, r32
-	sub.l	r32, r31, r33
-	ptabs/l	r33, tr2
+	andi	r0, 7 << 1, r38
+	movi	(LOCAL(ia_end_of_push_seq) >> 16) & 65535, r40
+	shlli	r38, 2, r39
+	shori	LOCAL(ia_end_of_push_seq) & 65535, r40
+	sub.l	r40, r39, r41
+	ptabs/l	r41, tr2
 	blink	tr2, r63
 LOCAL(ia_stack_of_push_seq):	 /* Beginning of push sequence.  */
 	stx.q	r17, r63, r3
