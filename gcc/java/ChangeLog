@@ -1,5 +1,31 @@
 1999-12-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* class.c (assume_compiled, assume_compiled_node): Add static
+	prototype.
+	(add_assume_compiled): Use xmalloc/xstrdup, not malloc/strdup.
+
+	* jcf-dump.c (ARRAY_NEW_NUM): Cast long to int in switch.
+
+	* jvgenmain.c (usage): Add static prototype with ATTRIBUTE_NORETURN.
+
+	* parse.h (OBSOLETE_MODIFIER_WARNING): Rename parameter `modifier'
+	to `__modifier' to avoid stringifying it.
+
+	* parse.y (verify_constructor_circularity): Don't call a variadic
+	function with a non-literal format string.
+	(java_check_abstract_methods): Move unreachable code inside
+	`continue' statement.
+	(lookup_method_invoke): Call xstrdup, not strdup.
+
+	* expr.c (expand_java_field_op): Avoid the use of ANSI string
+	concatenation.
+
+	* jcf-parse.c (yyparse): Likewise.
+
+	* jv-scan.c (main): Likewise.
+	
+1999-12-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* parse.h (ABSTRACT_CHECK, JCONSTRUCTOR_CHECK,
 	ERROR_CANT_CONVERT_TO_BOOLEAN, ERROR_CANT_CONVERT_TO_NUMERIC,
 	ERROR_CAST_NEEDED_TO_INTEGRAL): Avoid the use of ANSI string

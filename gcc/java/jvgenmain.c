@@ -79,6 +79,8 @@ gcc_obstack_init (obstack)
 		  (void (*) PROTO((void *))) OBSTACK_CHUNK_FREE);
 }
 
+static void usage (const char *) ATTRIBUTE_NORETURN;
+
 static void
 usage (const char *name)
 {

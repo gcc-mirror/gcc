@@ -138,12 +138,12 @@ extern tree stabilize_reference PROTO ((tree));
 
 /* Pedantic warning on obsolete modifiers. Note: when cl is NULL,
    flags was set artificially, such as for a interface method */
-#define OBSOLETE_MODIFIER_WARNING(cl, flags, modifier, format, arg)          \
+#define OBSOLETE_MODIFIER_WARNING(cl, flags, __modifier, format, arg)        \
   {                                                                          \
-    if (flag_redundant && (cl) && ((flags) & (modifier)))		     \
+    if (flag_redundant && (cl) && ((flags) & (__modifier)))		     \
       parse_warning_context (cl,                                             \
      "Discouraged redundant use of `%s' modifier in declaration of " format, \
-			     java_accstring_lookup (modifier), arg);         \
+			     java_accstring_lookup (__modifier), arg);       \
   }
 
 /* Quickly build a temporary pointer on hypothetical type NAME. */

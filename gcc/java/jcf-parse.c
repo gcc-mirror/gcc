@@ -825,8 +825,7 @@ yyparse ()
 	    {
 	      char *saved_input_filename = input_filename;
 	      input_filename = value;
-	      warning ("source file seen twice on command line and will be "
-		       "compiled only once.");
+	      warning ("source file seen twice on command line and will be compiled only once.");
 	      input_filename = saved_input_filename;
 	    }
 	  else
