@@ -718,11 +718,15 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
   addr_combined_regs
     = (struct induction **) alloca (maxregnum * sizeof (struct induction *));
   bzero ((char *) addr_combined_regs, maxregnum * sizeof (struct induction *));
-  local_regno = (char *) alloca (maxregnum);
-  bzero (local_regno, maxregnum);
+  /* We must limit it to max_reg_before_loop, because only these pseudo
+     registers have valid regno_first_uid info.  Any register created after
+     that is unlikely to be local to the loop anyways.  */
+  local_regno = (char *) alloca (max_reg_before_loop);
+  bzero (local_regno, max_reg_before_loop);
 
   /* Mark all local registers, i.e. the ones which are referenced only
-     inside the loop. */
+     inside the loop.  */
+  if (INSN_UID (copy_end) < max_uid_for_loop)
   {
     int copy_start_luid = INSN_LUID (copy_start);
     int copy_end_luid = INSN_LUID (copy_end);
@@ -732,7 +736,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
     if (GET_CODE (copy_end) == JUMP_INSN)
       copy_end_luid--;
 
-    for (j = FIRST_PSEUDO_REGISTER; j < maxregnum; ++j)
+    for (j = FIRST_PSEUDO_REGISTER; j < max_reg_before_loop; ++j)
       if (regno_first_uid[j] > 0 && regno_first_uid[j] <= max_uid_for_loop
 	  && uid_luid[regno_first_uid[j]] >= copy_start_luid
 	  && regno_last_uid[j] > 0 && regno_last_uid[j] <= max_uid_for_loop
@@ -951,7 +955,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 		if (local_label[j])
 		  map->label_map[j] = gen_label_rtx ();
 
-	      for (j = FIRST_PSEUDO_REGISTER; j < maxregnum; j++)
+	      for (j = FIRST_PSEUDO_REGISTER; j < max_reg_before_loop; j++)
 		if (local_regno[j])
 		  map->reg_map[j] = gen_reg_rtx (GET_MODE (regno_reg_rtx[j]));
 
@@ -1092,7 +1096,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	if (local_label[j])
 	  map->label_map[j] = gen_label_rtx ();
 
-      for (j = FIRST_PSEUDO_REGISTER; j < maxregnum; j++)
+      for (j = FIRST_PSEUDO_REGISTER; j < max_reg_before_loop; j++)
 	if (local_regno[j])
 	  map->reg_map[j] = gen_reg_rtx (GET_MODE (regno_reg_rtx[j]));
 
