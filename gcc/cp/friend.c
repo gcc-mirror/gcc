@@ -36,8 +36,7 @@ Boston, MA 02111-1307, USA.  */
 /* Returns nonzero if SUPPLICANT is a friend of TYPE.  */
 
 int
-is_friend (type, supplicant)
-     tree type, supplicant;
+is_friend (tree type, tree supplicant)
 {
   int declp;
   register tree list;
@@ -131,8 +130,7 @@ is_friend (type, supplicant)
    DECL is the FUNCTION_DECL of the friend being added.  */
 
 void
-add_friend (type, decl)
-     tree type, decl;
+add_friend (tree type, tree decl)
 {
   tree typedecl;
   tree list;
@@ -194,8 +192,7 @@ add_friend (type, decl)
    be in use at the same time!  */
 
 void
-make_friend_class (type, friend_type)
-     tree type, friend_type;
+make_friend_class (tree type, tree friend_type)
 {
   tree classes;
   int is_template_friend;
@@ -324,12 +321,9 @@ make_friend_class (type, friend_type)
    pointed to by `this'.  */
 
 tree
-do_friend (ctype, declarator, decl, parmdecls, attrlist,
-	   flags, quals, funcdef_flag)
-     tree ctype, declarator, decl, parmdecls, attrlist;
-     enum overload_flags flags;
-     tree quals;
-     int funcdef_flag;
+do_friend (tree ctype, tree declarator, tree decl, tree parmdecls,
+	   tree attrlist, enum overload_flags flags, tree quals,
+	   int funcdef_flag)
 {
   int is_friend_template = 0;
 
