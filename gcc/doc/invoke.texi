@@ -8090,19 +8090,56 @@ computers:
 @opindex mtune
 Tune to @var{cpu-type} everything applicable about the generated code, except
 for the ABI and the set of available instructions.  The choices for
-@var{cpu-type} are @samp{i386}, @samp{i486}, @samp{i586}, @samp{i686},
-@samp{pentium}, @samp{pentium-mmx}, @samp{pentiumpro}, @samp{pentium2},
-@samp{pentium3}, @samp{pentium4}, @samp{k6}, @samp{k6-2}, @samp{k6-3},
-@samp{athlon}, @samp{athlon-tbird}, @samp{athlon-4}, @samp{athlon-xp},
-@samp{athlon-mp}, @samp{winchip-c6}, @samp{winchip2}, @samp{k8}, @samp{c3}
-and @samp{c3-2}.
+@var{cpu-type} are:
+@table @emph
+@item i386
+Original Intel's i386 CPU.
+@item i486
+Intel's i486 CPU.  (No scheduling is implemented for this chip.)
+@item i586, pentium
+Intel Pentium CPU with no MMX support.
+@item pentium-mmx
+Intel PentiumMMX CPU based on Pentium core with MMX instruction set support.
+@item i686, pentiumpro
+Intel PentiumPro CPU.
+@item pentium2
+Intel Pentium2 CPU based on PentiumPro core with MMX instruction set support.
+@item pentium3
+Intel Pentium3 CPU based on PentiumPro core with MMX and SSE instruction set
+support.
+@item pentium4
+Intel Pentium4 CPU with MMX, SSE and SSE2 instruction set support.
+@item k6
+AMD K6 CPU with MMX instruction set support.
+@item k6-2, k6-3
+Improved versions of AMD K6 CPU with MMX and 3dNOW! instruction set support.
+@item athlon, athlon-tbird
+AMD Athlon CPU with MMX, 3dNOW!, enhanced 3dNOW! and SSE prefetch instructions
+support.
+@item athlon-4, athlon-xp, athlon-mp
+Improved AMD Athlon CPU with MMX, 3dNOW!, enhanced 3dNOW! and full SSE
+instruction set support.
+@item k8, opteron, athlon64, athlon-fx
+AMD K8 core based CPUs with x86-64 instruction set support.  (This supersets
+MMX, SSE, SSE2, 3dNOW!, enhanced 3dNOW! and 64-bit instruction set extensions.)
+@item winchip-c6
+IDT Winchip C6 CPU, dealt in same way as i486 with additional MMX instruction
+set support.
+@item winchip2
+IDT Winchip2 CPU, dealt in same way as i486 with additional MMX and 3dNOW!
+instruction set support.
+@item c3
+Via C3 CPU with MMX and 3dNOW!  instruction set support.  (No scheduling is
+implemented for this chip.)
+@item c3-2
+Via C3-2 CPU with MMX and SSE instruction set support.  (No scheduling is
+implemented for this chip.)
+@end table.
 
 While picking a specific @var{cpu-type} will schedule things appropriately
 for that particular chip, the compiler will not generate any code that
 does not run on the i386 without the @option{-march=@var{cpu-type}} option
-being used.  @samp{i586} is equivalent to @samp{pentium} and @samp{i686}
-is equivalent to @samp{pentiumpro}.  @samp{k6} and @samp{athlon} are the
-AMD chips as opposed to the Intel ones.
+being used.
 
 @item -march=@var{cpu-type}
 @opindex march
