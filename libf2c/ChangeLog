@@ -1,3 +1,11 @@
+2001-10-20  David Edelsohn  <dje@watson.ibm.com>
+
+	* Makefile.in: Do not include SUBDIRS in objlist.  Create
+	libg2c.so from F2CEXT and SUBDIRS archives.
+	* libF77/Makefile.in: Create archive.
+	* libI77/Makefile.in: Same.
+	* libU77/Makefile.in: Same.
+
 2001-10-05  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* Makefile.in: Move libg2c.so and libg2c.{l}a to

@@ -52,6 +52,8 @@ ALL_CFLAGS = -I. -I$(srcdir) -I$(G2C_H_DIR) -I$(F2C_H_DIR) $(CPPFLAGS) $(DEFS) $
 .c.lo:
 	@LIBTOOL@ --mode=compile $(CC) -c -DSkip_f2c_Undefs $(ALL_CFLAGS) $<
 
+LINK = @LIBTOOL@ --mode=link $(CC) $(ALL_CFLAGS) -o $@
+
 MISC =	F77_aloc.lo VersionF.lo s_rnge.lo abort_.lo getarg_.lo iargc_.lo\
 	getenv_.lo signal_.lo s_stop.lo s_paus.lo system_.lo cabs.lo\
 	derf_.lo derfc_.lo erf_.lo erfc_.lo sig_die.lo exit_.lo setarg.lo setsig.lo
@@ -80,13 +82,15 @@ OBJS = $(MISC) $(POW) $(CX) $(DCX) $(REAL) $(DBL) $(INT) \
 
 all: ../s-libf77 ../libfrtbegin.a
 
-../s-libf77: $(OBJS)
+../s-libf77: ../libF77.la
 	echo timestamp > ../s-libf77
+
+../libF77.la: $(OBJS)
+	$(LINK) $(OBJS)
 
 objlist:
 	objs="`cat ../objlist`" ; for i in $(OBJS) ; do \
-	   x=`echo $$i` ;\
-	   objs="$$objs libF77/$$x" ;\
+	   objs="$$objs libF77/$$i" ;\
 	done ; \
 	echo -n $$objs > ../objlist
 

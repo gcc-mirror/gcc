@@ -51,6 +51,8 @@ ALL_CFLAGS = -I. -I$(srcdir) -I$(G2C_H_DIR) -I$(F2C_H_DIR) $(CPPFLAGS) \
 .c.lo:
 	@LIBTOOL@ --mode=compile $(CC) -c -DSkip_f2c_Undefs -DAllow_TYQUAD $(ALL_CFLAGS) $<
 
+LINK = @LIBTOOL@ --mode=link $(CC) $(ALL_CFLAGS) -o $@
+
 OBJS =	VersionI.lo backspace.lo close.lo dfe.lo dolio.lo due.lo endfile.lo err.lo \
 	fmt.lo fmtlib.lo iio.lo ilnw.lo inquire.lo lread.lo lwrite.lo open.lo \
 	rdfmt.lo rewind.lo rsfe.lo rsli.lo rsne.lo sfe.lo sue.lo typesize.lo uio.lo \
@@ -59,13 +61,15 @@ OBJS =	VersionI.lo backspace.lo close.lo dfe.lo dolio.lo due.lo endfile.lo err.l
 
 all: ../s-libi77
 
-../s-libi77: $(OBJS)
+../s-libi77: ../libI77.la
 	echo timestamp > ../s-libi77
+
+../libI77.la: $(OBJS)
+	$(LINK) $(OBJS)
 
 objlist:
 	objs="`cat ../objlist`" ; for i in $(OBJS) ; do \
-	   x=`echo $$i` ;\
-	   objs="$$objs libI77/$$x" ;\
+	   objs="$$objs libI77/$$i" ;\
 	done ; \
 	echo -n $$objs > ../objlist
 
