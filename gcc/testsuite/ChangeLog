@@ -1,3 +1,10 @@
+2003-12-16  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/13275
+	* g++.dg/other/offsetof2.C: Remove XFAIL.
+	* g++.dg/parse/offsetof1.C: New test.
+	* g++.gd/parse/offsetof2.C: Likewise.
+
 2003-12-16  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	* g++.dg/template/nontype3.C: New test.

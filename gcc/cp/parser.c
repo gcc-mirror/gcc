@@ -1230,6 +1230,9 @@ typedef struct cp_parser GTY(())
      been seen that makes the expression non-constant.  */
   bool non_constant_expression_p;
 
+  /* TRUE if we are parsing the argument to "__offsetof__".  */
+  bool in_offsetof_p;
+
   /* TRUE if local variable names and `this' are forbidden in the
      current context.  */
   bool local_variables_forbidden_p;
@@ -2225,6 +2228,9 @@ cp_parser_new (void)
   parser->allow_non_constant_expression_p = false;
   parser->non_constant_expression_p = false;
 
+  /* We are not parsing offsetof.  */
+  parser->in_offsetof_p = false;
+
   /* Local variable names are not forbidden.  */
   parser->local_variables_forbidden_p = false;
 
@@ -2501,6 +2507,29 @@ cp_parser_primary_expression (cp_parser *parser,
 		parser->non_constant_expression_p = true;
 	      }
 	    return build_x_va_arg (expression, type);
+	  }
+
+	case RID_OFFSETOF:
+	  {
+	    tree expression;
+	    bool saved_in_offsetof_p;
+
+	    /* Consume the "__offsetof__" token.  */
+	    cp_lexer_consume_token (parser->lexer);
+	    /* Consume the opening `('.  */
+	    cp_parser_require (parser, CPP_OPEN_PAREN, "`('");
+	    /* Parse the parenthesized (almost) constant-expression.  */
+	    saved_in_offsetof_p = parser->in_offsetof_p;
+	    parser->in_offsetof_p = true;
+	    expression 
+	      = cp_parser_constant_expression (parser,
+					       /*allow_non_constant_p=*/false,
+					       /*non_constant_p=*/NULL);
+	    parser->in_offsetof_p = saved_in_offsetof_p;
+	    /* Consume the closing ')'.  */
+	    cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'");
+
+	    return expression;
 	  }
 
 	default:
@@ -3394,7 +3423,10 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	   can be used in constant-expressions.  */
 	if (parser->constant_expression_p
 	    && !dependent_type_p (type)
-	    && !INTEGRAL_OR_ENUMERATION_TYPE_P (type))
+	    && !INTEGRAL_OR_ENUMERATION_TYPE_P (type)
+	    /* A cast to pointer or reference type is allowed in the
+	       implementation of "offsetof".  */
+	    && !(parser->in_offsetof_p && POINTER_TYPE_P (type)))
 	  {
 	    if (!parser->allow_non_constant_expression_p)
 	      return (cp_parser_non_constant_expression 
@@ -3854,7 +3886,10 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	       operator.  */
 	    parser->context->object_type = NULL_TREE;
 	    /* These operators may not appear in constant-expressions.  */
-	    if (parser->constant_expression_p)
+	    if (parser->constant_expression_p
+		/* The "->" operator is allowed in the implementation
+		   of "offsetof".  */
+		&& !(parser->in_offsetof_p && token_type == CPP_DEREF))
 	      {
 		if (!parser->allow_non_constant_expression_p)
 		  postfix_expression 
@@ -4259,7 +4294,10 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p)
 	  break;
 
 	case ADDR_EXPR:
-	  non_constant_p = "`&'";
+	  /* The "&" operator is allowed in the implementation of
+	     "offsetof".  */
+	  if (!parser->in_offsetof_p)
+	    non_constant_p = "`&'";
 	  /* Fall through.  */
 	case BIT_NOT_EXPR:
 	  expression = build_x_unary_op (unary_operator, cast_expression);
