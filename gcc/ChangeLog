@@ -1,3 +1,8 @@
+Sat Jul 25 23:29:23 1998  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* Makefile.in (install-info): Only try to update the info
+	directory file if it exists in the first place.
+
 Fri Jul 24 18:58:37 1998  Klaus Espenlaub  <kespenla@student.informatik.uni-ulm.de>
 
         * rs6000.h (ASM_OUTPUT_CONSTRUCTOR, ASM_OUTPUT_DESTRUCTOR): Delete.
