@@ -2011,8 +2011,8 @@ extern struct rtx_def *sparc_builtin_saveregs ();
 #define RETURN_ADDR_IN_PREVIOUS_FRAME
 
 /* This is the offset of the return address to the true next instruction to be
-   executed for normal void functions. */
-#define NORMAL_RETURN_ADDR_OFFSET (8)
+   executed for the current function. */
+#define RETURN_ADDR_OFFSET (8 + 4*(! TARGET_V9 && current_function_returns_struct))
 
 /* The current return address is in %i7.  The return address of anything
    farther back is in the register window save area at [%fp+60].  */
