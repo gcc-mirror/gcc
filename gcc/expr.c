@@ -424,6 +424,19 @@ convert_move (to, from, unsignedp)
   if (to_real != from_real)
     abort ();
 
+  /* If FROM is a SUBREG that indicates that we have already done at least
+     the required extension, strip it.  We don't handle such SUBREGs as
+     TO here.  */
+
+  if (GET_CODE (from) == SUBREG && SUBREG_PROMOTED_VAR_P (from)
+      && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (from)))
+	  >= GET_MODE_SIZE (to_mode))
+      && SUBREG_PROMOTED_UNSIGNED_P (from) == unsignedp)
+    from = gen_lowpart (to_mode, from), from_mode = to_mode;
+
+  if (GET_CODE (to) == SUBREG && SUBREG_PROMOTED_VAR_P (to))
+    abort ();
+
   if (to_mode == from_mode
       || (from_mode == VOIDmode && CONSTANT_P (from)))
     {
@@ -885,6 +898,14 @@ convert_to_mode (mode, x, unsignedp)
      int unsignedp;
 {
   register rtx temp;
+ 
+  /* If FROM is a SUBREG that indicates that we have already done at least
+     the required extension, strip it.  */
+
+  if (GET_CODE (x) == SUBREG && SUBREG_PROMOTED_VAR_P (x)
+      && GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))) >= GET_MODE_SIZE (mode)
+      && SUBREG_PROMOTED_UNSIGNED_P (x) == unsignedp)
+    x = gen_lowpart (mode, x);
 
   if (mode == GET_MODE (x))
     return x;
@@ -2336,6 +2357,17 @@ store_expr (exp, target, suggest_reg)
 	temp = expand_expr (exp, NULL_RTX, GET_MODE (target), 0);
       dont_return_target = 1;
     }
+  else if (GET_CODE (target) == SUBREG && SUBREG_PROMOTED_VAR_P (target))
+    /* If this is an scalar in a register that is stored in a wider mode
+       than the declared mode, compute the result into its declared mode
+       and then convert to the wider mode.  Our value is the computed
+       expression.  */
+    {
+      temp = expand_expr (exp, NULL_RTX, VOIDmode, 0);
+      convert_move (SUBREG_REG (target), temp,
+		    SUBREG_PROMOTED_UNSIGNED_P (target));
+      return temp;
+    }
   else
     {
       temp = expand_expr (exp, target, GET_MODE (target), 0);
@@ -3331,6 +3363,30 @@ expand_expr (exp, target, tmode, modifier)
 	    return change_address (DECL_RTL (exp), VOIDmode,
 				   copy_rtx (XEXP (DECL_RTL (exp), 0)));
 	}
+
+      /* If the mode of DECL_RTL does not match that of the decl, it
+	 must be a promoted value.  We return a SUBREG of the wanted mode,
+	 but mark it so that we know that it was already extended.  */
+
+      if (GET_CODE (DECL_RTL (exp)) == REG
+	  && GET_MODE (DECL_RTL (exp)) != mode)
+	{
+	  enum machine_mode decl_mode = DECL_MODE (exp);
+
+	  /* Get the signedness used for this variable.  Ensure we get the
+	     same mode we got when the variable was declared.  */
+
+	  PROMOTE_MODE (decl_mode, unsignedp, type);
+
+	  if (decl_mode != GET_MODE (DECL_RTL (exp)))
+	    abort ();
+
+	  temp = gen_rtx (SUBREG, mode, DECL_RTL (exp), 0);
+	  SUBREG_PROMOTED_VAR_P (temp) = 1;
+	  SUBREG_PROMOTED_UNSIGNED_P (temp) = unsignedp;
+	  return temp;
+	}
+
       return DECL_RTL (exp);
 
     case INTEGER_CST:
@@ -3401,13 +3457,44 @@ expand_expr (exp, target, tmode, modifier)
 	      = assign_stack_temp (mode,
 				   int_size_in_bytes (TREE_TYPE (exp)), 0);
 	  else
-	    temp = gen_reg_rtx (mode);
+	    {
+	      enum machine_mode var_mode = mode;
+
+	      if (TREE_CODE (type) == INTEGER_TYPE
+		  || TREE_CODE (type) == ENUMERAL_TYPE
+		  || TREE_CODE (type) == BOOLEAN_TYPE
+		  || TREE_CODE (type) == CHAR_TYPE
+		  || TREE_CODE (type) == REAL_TYPE
+		  || TREE_CODE (type) == POINTER_TYPE
+		  || TREE_CODE (type) == OFFSET_TYPE)
+		{
+		  PROMOTE_MODE (var_mode, unsignedp, type);
+		}
+
+	      temp = gen_reg_rtx (var_mode);
+	    }
+
 	  SAVE_EXPR_RTL (exp) = temp;
 	  store_expr (TREE_OPERAND (exp, 0), temp, 0);
 	  if (!optimize && GET_CODE (temp) == REG)
 	    save_expr_regs = gen_rtx (EXPR_LIST, VOIDmode, temp,
 				      save_expr_regs);
 	}
+
+      /* If the mode of SAVE_EXPR_RTL does not match that of the expression, it
+	 must be a promoted value.  We return a SUBREG of the wanted mode,
+	 but mark it so that we know that it was already extended.  Note
+	 that `unsignedp' was modified above in this case.  */
+
+      if (GET_CODE (SAVE_EXPR_RTL (exp)) == REG
+	  && GET_MODE (SAVE_EXPR_RTL (exp)) != mode)
+	{
+	  temp = gen_rtx (SUBREG, mode, SAVE_EXPR_RTL (exp), 0);
+	  SUBREG_PROMOTED_VAR_P (temp) = 1;
+	  SUBREG_PROMOTED_UNSIGNED_P (temp) = unsignedp;
+	  return temp;
+	}
+
       return SAVE_EXPR_RTL (exp);
 
     case EXIT_EXPR:
@@ -4000,8 +4087,8 @@ expand_expr (exp, target, tmode, modifier)
 	  if (GET_CODE (target) == MEM)
 	    /* Store data into beginning of memory target.  */
 	    store_expr (TREE_OPERAND (exp, 0),
-			change_address (target, TYPE_MODE (valtype), 0),
-			NULL_RTX);
+			change_address (target, TYPE_MODE (valtype), 0), 0);
+
 	  else if (GET_CODE (target) == REG)
 	    /* Store this field into a union of the proper type.  */
 	    store_field (target, GET_MODE_BITSIZE (TYPE_MODE (valtype)), 0,
@@ -4014,7 +4101,7 @@ expand_expr (exp, target, tmode, modifier)
 	  /* Return the entire union.  */
 	  return target;
 	}
-      op0 = expand_expr (TREE_OPERAND (exp, 0), 0, mode, modifier);
+      op0 = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, mode, 0);
       if (GET_MODE (op0) == mode || GET_MODE (op0) == VOIDmode)
 	return op0;
       if (modifier == EXPAND_INITIALIZER)
@@ -6024,9 +6111,22 @@ expand_increment (exp, post)
   /* Compute the operands as RTX.
      Note whether OP0 is the actual lvalue or a copy of it:
      I believe it is a copy iff it is a register or subreg
-     and insns were generated in computing it.  */
+     and insns were generated in computing it.   */
+
   temp = get_last_insn ();
   op0 = expand_expr (incremented, NULL_RTX, VOIDmode, 0);
+
+  /* If OP0 is a SUBREG made for a promoted variable, we cannot increment
+     in place but intead must do sign- or zero-extension during assignment,
+     so we copy it into a new register and let the code below use it as
+     a copy.
+
+     Note that we can safely modify this SUBREG since it is know not to be
+     shared (it was made by the expand_expr call above).  */
+
+  if (GET_CODE (op0) == SUBREG && SUBREG_PROMOTED_VAR_P (op0))
+    SUBREG_REG (op0) = copy_to_reg (SUBREG_REG (op0));
+
   op0_is_copy = ((GET_CODE (op0) == SUBREG || GET_CODE (op0) == REG)
 		 && temp != get_last_insn ());
   op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX, VOIDmode, 0);
