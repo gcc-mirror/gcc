@@ -351,10 +351,6 @@
 	the final value by its equivalent before the loop if it is not
 	invariant.
 
-2003-07-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
-
-	* gcc.c-torture/execute/loop-16.c: New test.
-
 2003-07-21  Ben Elliston  <bje@wasabisystems.com>
 
 	* doc/invoke.texi (V850 Options): Spelling fixes.
