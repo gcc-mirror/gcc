@@ -1058,7 +1058,7 @@ cris_target_asm_function_epilogue (file, size)
 	/* Flush previous non-movem:ed registers.  */
 	if (*save_last && file)
 	  fprintf (file, save_last);
-	sprintf (save_last, "\tPop $%s\n");
+	sprintf (save_last, "\tPop $%s\n", reg_names[regno]);
       }
 
   if (last_movem_reg != -1)
@@ -1140,7 +1140,7 @@ cris_target_asm_function_epilogue (file, size)
 	    {
 	      /* The installed EH-return address is in *this* frame, so we
 		 need to pop it before we return.  */
-	      fprintf (file, "\tpop $srp\n", reg_names[CRIS_STACKADJ_REG]);
+	      fprintf (file, "\tpop $srp\n");
 	      fprintf (file, "\tret\n");
 	      fprintf (file, "\tadd.d $%s,$sp\n", reg_names[CRIS_STACKADJ_REG]);
 	    }

@@ -1,3 +1,12 @@
+2001-10-12  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/arit.c: Use __builtin_labs, not abs.
+
+	* config/cris/cris.h (SET_STRIPPABLE_EXECUTABLE): Don't define.
+
+	* config/cris/cris.c (cris_target_asm_function_epilogue): Move
+	misplaced sprintf and fprintf argument.
+
 2001-10-12  Zack Weinberg  <zack@codesourcery.com>
 
 	* ABOUT-NLS, aclocal.m4: Update i18n framework from gettext 0.10.40.

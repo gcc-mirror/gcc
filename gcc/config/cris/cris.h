@@ -1714,31 +1714,7 @@ struct cum_args {int regs;};
 /* (no definitions) */
 
 /* Node: Macros for Initialization */
-
-/* We don't want to use "strip" for anything linked with "-melinux"
-   "-shlib", seen by the linker as "-Ur -d -Bdynamic" in combination.  */
-#define SET_STRIPPABLE_EXECUTABLE(DS, ARGC, ARGV)		\
-  do 								\
-    {								\
-      int i;							\
-      int flags = 0;						\
-      for (i = (ARGC) - 1; i > 0; i--)				\
-	{							\
-	  if (strcmp ((ARGV)[i], "-Ur") == 0)			\
-	    flags |= 1;						\
-	  else if (strcmp ((ARGV)[i], "-d") == 0)		\
-	    flags |= 2;						\
-	  else if (strcmp ((ARGV)[i], "-Bdynamic") == 0)	\
-	    flags |= 4;						\
-								\
-	  if (flags == 7)					\
-	    break;						\
-	}							\
-								\
-      (DS) = (flags != 7);					\
-    }								\
-  while (0)
-
+/* (no definitions) */
 
 /* Node: Instruction Output */
 
