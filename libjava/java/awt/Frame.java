@@ -60,7 +60,7 @@ public class Frame extends Window implements MenuContainer
 
 /**
   * Constant for the default cursor.
-  * Deprecated. replaced by <code>Cursor.DEFAULT_CURSOR</code> instead.
+  * @deprecated Replaced by <code>Cursor.DEFAULT_CURSOR</code> instead.
   */
 public static final int DEFAULT_CURSOR = Cursor.DEFAULT_CURSOR;
 
@@ -390,7 +390,7 @@ getCursorType()
   *
   * @param type The cursor type.
   *
-  * @deprecated.  Use <code>Component.setCursor(Cursor)</code> instead.
+  * @deprecated Use <code>Component.setCursor(Cursor)</code> instead.
   */
 public void
 setCursor(int type)
