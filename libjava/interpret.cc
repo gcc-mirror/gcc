@@ -1,6 +1,6 @@
 // interpret.cc - Code for the interpreter
 
-/* Copyright (C) 1999, 2000, 2001  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001 , 2002 Free Software Foundation
 
    This file is part of libgcj.
 
@@ -187,6 +187,13 @@ static jint get4(unsigned char* loc) {
   do { if ((X)==NULL) throw_null_pointer_exception (); } while (0)
 #endif
 
+#define ARRAYBOUNDSCHECK(array, index)					      \
+  do									      \
+    {									      \
+      if (((unsigned) index) >= (unsigned) (array->length))		      \
+	_Jv_ThrowBadArrayIndex (index);					      \
+    }									      \
+  while (0)
 
 // this method starts the actual running of the method.  It is inlined
 // in three different variants in the static methods run_normal,
@@ -958,10 +965,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	jint index = POPI();
 	jintArray arr = (jintArray) POPA();
 	NULLCHECK (arr);
-	if (index < 0 || index >= arr->length)
-	  {
-	    _Jv_ThrowBadArrayIndex (index);
-	  }
+	ARRAYBOUNDSCHECK (arr, index);
 	PUSHI( elements(arr)[index] );
       }
       NEXT_INSN;
@@ -972,10 +976,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	jint index = POPI();
 	jlongArray arr = (jlongArray) POPA();
 	NULLCHECK (arr);
-	if (index < 0 || index >= arr->length)
-	  {
-	    _Jv_ThrowBadArrayIndex (index);
-	  }
+	ARRAYBOUNDSCHECK (arr, index);
 	PUSHL( elements(arr)[index] );
       }
       NEXT_INSN;
@@ -986,10 +987,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	jint index = POPI();
 	jfloatArray arr = (jfloatArray) POPA();
 	NULLCHECK (arr);
-	if (index < 0 || index >= arr->length)
-	  {
-	    _Jv_ThrowBadArrayIndex (index);
-	  }
+	ARRAYBOUNDSCHECK (arr, index);
 	PUSHF( elements(arr)[index] );
       }
       NEXT_INSN;
@@ -1000,10 +998,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	jint index = POPI();
 	jdoubleArray arr = (jdoubleArray) POPA();
 	NULLCHECK (arr);
-	if (index < 0 || index >= arr->length)
-	  {
-	    _Jv_ThrowBadArrayIndex (index);
-	  }
+	ARRAYBOUNDSCHECK (arr, index);
 	PUSHD( elements(arr)[index] );
       }
       NEXT_INSN;
@@ -1014,10 +1009,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	jint index = POPI();
 	jobjectArray arr = (jobjectArray) POPA();
 	NULLCHECK (arr);
-	if (index < 0 || index >= arr->length)
-	  {
-	    _Jv_ThrowBadArrayIndex (index);
-	  }
+	ARRAYBOUNDSCHECK (arr, index);
 	PUSHA( elements(arr)[index] );
       }
       NEXT_INSN;
@@ -1028,10 +1020,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	jint index = POPI();
 	jbyteArray arr = (jbyteArray) POPA();
 	NULLCHECK (arr);
-	if (index < 0 || index >= arr->length)
-	  {
-	    _Jv_ThrowBadArrayIndex (index);
-	  }
+	ARRAYBOUNDSCHECK (arr, index);
 	PUSHI( elements(arr)[index] );
       }
       NEXT_INSN;
@@ -1042,10 +1031,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	jint index = POPI();
 	jcharArray arr = (jcharArray) POPA();
 	NULLCHECK (arr);
-	if (index < 0 || index >= arr->length)
-	  {
-	    _Jv_ThrowBadArrayIndex (index);
-	  }
+	ARRAYBOUNDSCHECK (arr, index);
 	PUSHI( elements(arr)[index] );
       }
       NEXT_INSN;
@@ -1056,10 +1042,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	jint index = POPI();
 	jshortArray arr = (jshortArray) POPA();
 	NULLCHECK (arr);
-	if (index < 0 || index >= arr->length)
-	  {
-	    _Jv_ThrowBadArrayIndex (index);
-	  }
+	ARRAYBOUNDSCHECK (arr, index);
 	PUSHI( elements(arr)[index] );
       }
       NEXT_INSN;
@@ -1171,10 +1154,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	jint index  = POPI();
 	jintArray arr = (jintArray) POPA();
 	NULLCHECK (arr);
-	if (index < 0 || index >= arr->length)
-	  {
-	    _Jv_ThrowBadArrayIndex (index);
-	  }
+	ARRAYBOUNDSCHECK (arr, index);
 	elements(arr)[index] = value;
       }
       NEXT_INSN;
@@ -1186,10 +1166,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	jint index  = POPI();
 	jlongArray arr = (jlongArray) POPA();
 	NULLCHECK (arr);
-	if (index < 0 || index >= arr->length)
-	  {
-	    _Jv_ThrowBadArrayIndex (index);
-	  }
+	ARRAYBOUNDSCHECK (arr, index);
 	elements(arr)[index] = value;
       }
       NEXT_INSN;
@@ -1201,10 +1178,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	jint index  = POPI();
 	jfloatArray arr = (jfloatArray) POPA();
 	NULLCHECK (arr);
-	if (index < 0 || index >= arr->length)
-	  {
-	    _Jv_ThrowBadArrayIndex (index);
-	  }
+	ARRAYBOUNDSCHECK (arr, index);
 	elements(arr)[index] = value;
       }
       NEXT_INSN;
@@ -1216,10 +1190,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	jint index  = POPI();
 	jdoubleArray arr = (jdoubleArray) POPA();
 	NULLCHECK (arr);
-	if (index < 0 || index >= arr->length)
-	  {
-	    _Jv_ThrowBadArrayIndex (index);
-	  }
+	ARRAYBOUNDSCHECK (arr, index);
 	elements(arr)[index] = value;
       }
       NEXT_INSN;
@@ -1231,10 +1202,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	jint index  = POPI();
 	jobjectArray arr = (jobjectArray) POPA();
 	NULLCHECK (arr);
-	if (index < 0 || index >= arr->length)
-	  {
-	    _Jv_ThrowBadArrayIndex (index);
-	  }
+	ARRAYBOUNDSCHECK (arr, index);
 	_Jv_CheckArrayStore (arr, value);
 	elements(arr)[index] = value;
       }
@@ -1247,10 +1215,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	jint index  = POPI();
 	jbyteArray arr = (jbyteArray) POPA();
 	NULLCHECK (arr);
-	if (index < 0 || index >= arr->length)
-	  {
-	    _Jv_ThrowBadArrayIndex (index);
-	  }
+	ARRAYBOUNDSCHECK (arr, index);
 	elements(arr)[index] = value;
       }
       NEXT_INSN;
@@ -1262,10 +1227,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	jint index  = POPI();
 	jcharArray arr = (jcharArray) POPA();
 	NULLCHECK (arr);
-	if (index < 0 || index >= arr->length)
-	  {
-	    _Jv_ThrowBadArrayIndex (index);
-	  }
+	ARRAYBOUNDSCHECK (arr, index);
 	elements(arr)[index] = value;
       }
       NEXT_INSN;
@@ -1277,10 +1239,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	jint index  = POPI();
 	jshortArray arr = (jshortArray) POPA();
 	NULLCHECK (arr);
-	if (index < 0 || index >= arr->length)
-	  {
-	    _Jv_ThrowBadArrayIndex (index);
-	  }
+	ARRAYBOUNDSCHECK (arr, index);
 	elements(arr)[index] = value;
       }
       NEXT_INSN;
@@ -2229,6 +2188,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       SAVE_PC;
       {
 	__JArray *arr = (__JArray*)POPA();
+	NULLCHECK (arr);
 	PUSHI (arr->length);
       }
       NEXT_INSN;

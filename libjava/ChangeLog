@@ -1,3 +1,12 @@
+2002-01-08  Chris Sears  <cbsears_sf@yahoo.com>
+
+	* interpret.cc (ARRAYBOUNDSCHECK): New macro.
+	(continue1) [insn_iaload, insn_laload, insn_faload, insn_daload,
+	insn_aaload, insn_baload, insn_caload, insn_saload, insn_iastore,
+	insn_lastore, insn_fastore, insn_dastore, insn_aastore,
+	insn_bastore, insn_castore, insn_sastore]: Use it.
+	(continue1) [insn_arraylength]: Check for null array.
+
 2002-01-06 Andreas Tobler <a.tobler@schweiz.ch>
 
 	* configure, include/config.h.in: Rebuilt.
