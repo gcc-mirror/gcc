@@ -1,4 +1,9 @@
-2003-12-16  Fernando Nasser  <fnasser@redhat.com>
+2003-12-17  Fernando Nasser  <fnasser@redhat.com>
+ 
+	* gnu/java/awt/peer/gtk/GtkListPeer.java (handleEvent): Fix generation
+	of ActionEvents for mouse double-clicks.
+
+2003-12-17  Fernando Nasser  <fnasser@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GtkContainerPeer.java (handleEvent): Check for
 	null Graphics pointer returned by FileDialogPeer.
