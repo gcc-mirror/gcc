@@ -685,7 +685,6 @@ struct { char *string; int *variable; int on_value;} W_options[] =
   {"error", &warnings_are_errors, 1},
   {"shadow", &warn_shadow, 1},
   {"switch", &warn_switch, 1},
-  {"return-type", &warn_return_type, 1},
   {"aggregate-return", &warn_aggregate_return, 1},
   {"cast-align", &warn_cast_align, 1},
   {"uninitialized", &warn_uninitialized, 1},
