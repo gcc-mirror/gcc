@@ -81,6 +81,7 @@ extern int target_flags;
 
 /* Ok to use the static base register (and presume it's 0) */
 #define TARGET_SB    ((target_flags & 32) == 0)
+#define TARGET_HIMEM (target_flags & 128)
 
 /* Compile using bitfield insns.  */
 #define TARGET_BITFIELD ((target_flags & 64) == 0)
@@ -106,6 +107,8 @@ extern int target_flags;
     { "nosb", 32},				\
     { "bitfield", -64},				\
     { "nobitfield", 64},			\
+    { "himem", 128},				\
+    { "nohimem", -128},				\
     { "", TARGET_DEFAULT}}
 /* TARGET_DEFAULT is defined in encore.h, pc532.h, etc.  */
 
@@ -114,7 +117,7 @@ extern int target_flags;
 
 #define OVERRIDE_OPTIONS		\
 {					\
-  if (flag_pic) target_flags |= 32;	\
+  if (flag_pic || TARGET_HIMEM) target_flags |= 32;	\
 }
 
 
@@ -910,7 +913,7 @@ __transfer_from_trampoline ()		\
    || (GET_CODE (X) == PLUS						\
        && GET_CODE (XEXP (X, 0)) == REG					\
        && REG_OK_FOR_BASE_P (XEXP (X, 0))				\
-       && (flag_pic ? 							\
+       && ((flag_pic || TARGET_HIMEM) ? 				\
 	     CONSTANT_ADDRESS_NO_LABEL_P (XEXP (X, 1))	 		\
 	   :								\
 	     CONSTANT_ADDRESS_P (XEXP (X, 1))) 				\
@@ -1142,7 +1145,7 @@ while (0)
 #define CONST_COSTS(RTX,CODE,OUTER_CODE) \
   case CONST_INT:						\
     if (INTVAL (RTX) <= 7 && INTVAL (RTX) >= -8) return 0;	\
-    if (INTVAL (RTX) < 0x4000 && INTVAL (RTX) >= -0x4000)	\
+    if (INTVAL (RTX) < 0x2000 && INTVAL (RTX) >= -0x2000)	\
       return 1;							\
   case CONST:							\
   case LABEL_REF:						\
