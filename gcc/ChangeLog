@@ -1,5 +1,9 @@
 Tue Apr 18 14:16:47 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* ggc-common.c: Add missing blanks.
+	* print-tree.c (print_node): Print DECL_OFFSET_ALIGN.
+	* tree.h (DECL_OFFSET_ALIGN): Fix typo in comment.
+
 	* stmt.c (mark_case_node): New function.
 	(mark_case_nesting): Call it.
 

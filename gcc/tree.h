@@ -1109,7 +1109,7 @@ struct tree_type
 #define DECL_SIZE_UNIT(NODE) (DECL_CHECK (NODE)->decl.size_unit)
 /* Holds the alignment required for the datum.  */
 #define DECL_ALIGN(NODE) (DECL_CHECK (NODE)->decl.u1.a.align)
-/* For FIELD_DECLs, holds the alignment that DECL_FEILD_OFFSET has.  */
+/* For FIELD_DECLs, holds the alignment that DECL_FIELD_OFFSET has.  */
 #define DECL_OFFSET_ALIGN(NODE) (FIELD_DECL_CHECK (NODE)->decl.u1.a.off_align)
 /* Holds the machine mode corresponding to the declaration of a variable or
    field.  Always equal to TYPE_MODE (TREE_TYPE (decl)) except for a

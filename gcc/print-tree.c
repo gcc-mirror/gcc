@@ -409,7 +409,11 @@ print_node (file, prefix, node, indent)
 	indent_to (file, indent + 3);
 
       if (TREE_CODE (node) != FUNCTION_DECL)
-	fprintf (file, " align %d", DECL_ALIGN (node));
+	{
+	  fprintf (file, " align %d", DECL_ALIGN (node));
+	  if (TREE_CODE (node) == FIELD_DECL)
+	    fprintf (file, " offset_align %d", DECL_OFFSET_ALIGN (node));
+	}
       else if (DECL_INLINE (node))
 	{
 	  fprintf (file, " frame_size ");
