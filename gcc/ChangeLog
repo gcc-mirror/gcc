@@ -1,5 +1,7 @@
 2003-06-16  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* Makefile.in (install-mkheaders): Use INSTALL_SCRIPT for scripts.
+
 	* tree.h (STMT_CHECK): New macro.
 	Also upper-case argument names on all checking macros and
 	fix some whitespace problems; assume CODE argument does not
