@@ -194,8 +194,9 @@ extern int target_flags;
 
 /* Make strings word-aligned so strcpy from constants will be faster.  */
 #define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
-  (TREE_CODE (EXP) == STRING_CST	\
-   && (ALIGN) < FASTEST_ALIGNMENT ? FASTEST_ALIGNMENT : (ALIGN))
+  ((TREE_CODE (EXP) == STRING_CST	\
+    && (ALIGN) < FASTEST_ALIGNMENT)	\
+   ? FASTEST_ALIGNMENT : (ALIGN))
 
 /* Make arrays of chars word-aligned for the same reasons.  */
 #define DATA_ALIGNMENT(TYPE, ALIGN)		\
@@ -845,12 +846,19 @@ extern int apparent_fsize;
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
 
-#define FUNCTION_PROFILER(FILE, LABELNO)  \
-  fprintf (FILE, "\tsethi %%hi(LP%d),%%o0\n\tcall mcount\n\tor %%lo(LP%d),%%o0,%%o0\n", \
-	   (LABELNO), (LABELNO))
+#define FUNCTION_PROFILER(FILE, LABELNO)  			\
+  do {								\
+    fputs ("\tsethi %hi(", (FILE));				\
+    ASM_OUTPUT_INTERNAL_LABELREF (FILE, "LP", LABELNO);		\
+    fputs ("),%o0\n\tcall mcount\n\tor %lo(", (FILE));		\
+    ASM_OUTPUT_INTERNAL_LABELREF (FILE, "LP", LABELNO);		\
+    fputs ("),%o0,%o0\n", (FILE));				\
+  } while (0)
 
 /* Output assembler code to FILE to initialize this source file's
    basic block profiling info, if that has not already been done.  */
+/* FIXME -- this does not parameterize how it generates labels (like the
+   above FUNCTION_PROFILER).  Broken on Solaris-2.   --gnu@cygnus.com */
 
 #define FUNCTION_BLOCK_PROFILER(FILE, LABELNO)  \
   fprintf (FILE, "\tsethi %%hi(LPBX0),%%o0\n\tld [%%lo(LPBX0)+%%o0],%%o1\n\ttst %%o1\n\tbne LPY%d\n\tadd %%o0,%%lo(LPBX0),%%o0\n\tcall ___bb_init_func\n\tnop\nLPY%d:\n",  \
@@ -1483,11 +1491,20 @@ extern struct rtx_def *legitimize_pic_address ();
 #define ASM_OUTPUT_LABELREF(FILE,NAME)	\
   fprintf (FILE, "_%s", NAME)
 
-/* This is how to output an internal numbered label where
+/* This is how to output a definition of an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.  */
 
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
   fprintf (FILE, "%s%d:\n", PREFIX, NUM)
+
+/* This is how to output a reference to an internal numbered label where
+   PREFIX is the class of label and NUM is the number within the class.  */
+/* FIXME:  This should be used throughout gcc, and documented in the texinfo
+   files.  There is no reason you should have to allocate a buffer and
+   `sprintf' to reference an internal label (as opposed to defining it).  */
+
+#define ASM_OUTPUT_INTERNAL_LABELREF(FILE,PREFIX,NUM)	\
+  fprintf (FILE, "%s%d", PREFIX, NUM)
 
 /* This is how to store into the string LABEL
    the symbol_ref name of an internal numbered label where
