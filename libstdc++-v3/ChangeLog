@@ -2,6 +2,11 @@
 
 	* config/locale/c_locale_gnu.cc: Same errno fixes as generic.
 
+	* ChangeLog-2001: Fix spelling errors...
+	* docs/html/17_intro/RELEASE-NOTES: Update.
+	* docs/html/17_intro/TODO: Update.
+	* README (file): Update.
+	
 2002-01-30  Loren Rittle <ljrittle@acm.org>
 
 	* config/locale/c_locale_generic.cc: Check errno for ERANGE

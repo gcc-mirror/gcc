@@ -38,8 +38,7 @@ It has subdirectories:
 
   include/bits
      Files included by standard headers and by other files in
-     the bits directory.  Includes a set of files bits/std_xxxx.h
-     that implement the standard headers <xxxx>.
+     the bits directory. 
 
   include/backward
      Headers provided for backward compatibility, such as <iostream.h>.
@@ -53,7 +52,7 @@ It has subdirectories:
      Files that are used in constructing the library, but are not
      installed.
 
-  testsuites/17_* to 27_*
+  testsuites/[thread, 17_* to 27_*]
      Test programs are here, and may be used to begin to exercise the 
      library.  Support for "make check" and "make check-install" is
      complete, and runs through all the subdirectories here when this

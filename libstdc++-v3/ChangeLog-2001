@@ -21,7 +21,7 @@
 	* include/ext/stl_hashtable.h:  Likewise.
 	* include/bits/stl_iterator_base_funcs.h:  Move distance() extension...
 	* include/ext/iterator:  to here.  New file.
-	* include/Makefile.am (ext_headers):  Add new file, alphabatize.
+	* include/Makefile.am (ext_headers):  Add new file, alphabetize.
 	* include/Makefile.in:  Regenerate.
 
 2001-12-31  Phil Edwards  <pme@gcc.gnu.org>
@@ -273,7 +273,7 @@
 
 2001-12-14  Benjamin Kosnik  <bkoz@redhat.com>
 
-	Clean up initialization and simplfy caching of underlying "C"
+	Clean up initialization and simplify caching of underlying "C"
 	default locale objects.
 	* src/localename.cc (locale::_Impl::_Impl(string, size_t):
 	Unconditionally create __clocale object for all named locales,

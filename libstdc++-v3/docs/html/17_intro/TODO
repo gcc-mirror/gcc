@@ -1,4 +1,6 @@
-- do doxygen manpages
+- coordinate with "C" library people the "C" compatibility headers.
+
+- do more doxygen manpages
 
 - implement __convert_to_v and __convert_from_v without "C" library
 functions and and LANG environment variable dependencies.
@@ -10,8 +12,6 @@ Figure out a way to use ICU data, like libjava?
 executable speed.
 
 - benchmarking addition to the testsuite that does the above.
-
-- thread testing addition to the testsuite.
 
 - implement symbol versioning for ELF targets.
 
