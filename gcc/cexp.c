@@ -35,12 +35,12 @@
 #include "system.h"
 #include <setjmp.h>
 /* #define YYDEBUG 1 */
+#include "gansidecl.h"
 
 #ifdef MULTIBYTE_CHARS
+#include "mbchar.h"
 #include <locale.h>
-#endif
-
-#include "gansidecl.h"
+#endif /* MULTIBYTE_CHARS */
 
 typedef unsigned char U_CHAR;
 
@@ -187,7 +187,7 @@ static void integer_overflow PROTO((void));
 #define SIGNED (~0)
 #define UNSIGNED 0
 
-#line 251 "cexp.y"
+#line 195 "cexp.y"
 typedef union {
   struct constant {HOST_WIDE_INT value; int signedp;} integer;
   struct name {U_CHAR *address; int length;} name;
@@ -268,10 +268,10 @@ static const short yyrhs[] = {    35,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   281,   291,   292,   299,   304,   307,   309,   312,   316,   318,
-   323,   328,   341,   358,   371,   377,   383,   389,   395,   398,
-   401,   408,   415,   422,   429,   432,   435,   438,   441,   444,
-   447,   450,   452,   455,   458,   460,   462,   470,   472,   485
+   225,   235,   236,   243,   248,   251,   253,   256,   260,   262,
+   267,   272,   285,   302,   315,   321,   327,   333,   339,   342,
+   345,   352,   359,   366,   373,   376,   379,   382,   385,   388,
+   391,   394,   396,   399,   402,   404,   406,   414,   416,   429
 };
 #endif
 
@@ -377,7 +377,7 @@ static const short yycheck[] = {     4,
     26,    27,    23,    24,    25,    26,    27,     0,     9
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/cygnus/latest-940103/share/bison.simple"
+#line 3 "/usr/cygnus/gnupro-98r1/share/bison.simple"
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -570,7 +570,7 @@ __yy_memcpy (char *to, char *from, int count)
 #endif
 #endif
 
-#line 196 "/usr/cygnus/latest-940103/share/bison.simple"
+#line 196 "/usr/cygnus/gnupro-98r1/share/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -875,7 +875,7 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 282 "cexp.y"
+#line 226 "cexp.y"
 {
 		  expression_value = yyvsp[0].integer.value;
 #ifdef TEST_EXP_READER
@@ -884,55 +884,55 @@ case 1:
 		;
     break;}
 case 3:
-#line 293 "cexp.y"
+#line 237 "cexp.y"
 { if (pedantic)
 			    pedwarn ("comma operator in operand of `#if'");
 			  yyval.integer = yyvsp[0].integer; ;
     break;}
 case 4:
-#line 300 "cexp.y"
+#line 244 "cexp.y"
 { yyval.integer.value = - yyvsp[0].integer.value;
 			  yyval.integer.signedp = yyvsp[0].integer.signedp;
 			  if ((yyval.integer.value & yyvsp[0].integer.value & yyval.integer.signedp) < 0)
 			    integer_overflow (); ;
     break;}
 case 5:
-#line 305 "cexp.y"
+#line 249 "cexp.y"
 { yyval.integer.value = ! yyvsp[0].integer.value;
 			  yyval.integer.signedp = SIGNED; ;
     break;}
 case 6:
-#line 308 "cexp.y"
+#line 252 "cexp.y"
 { yyval.integer = yyvsp[0].integer; ;
     break;}
 case 7:
-#line 310 "cexp.y"
+#line 254 "cexp.y"
 { yyval.integer.value = ~ yyvsp[0].integer.value;
 			  yyval.integer.signedp = yyvsp[0].integer.signedp; ;
     break;}
 case 8:
-#line 313 "cexp.y"
+#line 257 "cexp.y"
 { yyval.integer.value = check_assertion (yyvsp[0].name.address, yyvsp[0].name.length,
 						      0, NULL_PTR);
 			  yyval.integer.signedp = SIGNED; ;
     break;}
 case 9:
-#line 317 "cexp.y"
+#line 261 "cexp.y"
 { keyword_parsing = 1; ;
     break;}
 case 10:
-#line 319 "cexp.y"
+#line 263 "cexp.y"
 { yyval.integer.value = check_assertion (yyvsp[-4].name.address, yyvsp[-4].name.length,
 						      1, yyvsp[-1].keywords);
 			  keyword_parsing = 0;
 			  yyval.integer.signedp = SIGNED; ;
     break;}
 case 11:
-#line 324 "cexp.y"
+#line 268 "cexp.y"
 { yyval.integer = yyvsp[-1].integer; ;
     break;}
 case 12:
-#line 329 "cexp.y"
+#line 273 "cexp.y"
 { yyval.integer.signedp = yyvsp[-2].integer.signedp & yyvsp[0].integer.signedp;
 			  if (yyval.integer.signedp)
 			    {
@@ -947,7 +947,7 @@ case 12:
 					* yyvsp[0].integer.value); ;
     break;}
 case 13:
-#line 342 "cexp.y"
+#line 286 "cexp.y"
 { if (yyvsp[0].integer.value == 0)
 			    {
 			      if (!skip_evaluation)
@@ -966,7 +966,7 @@ case 13:
 					/ yyvsp[0].integer.value); ;
     break;}
 case 14:
-#line 359 "cexp.y"
+#line 303 "cexp.y"
 { if (yyvsp[0].integer.value == 0)
 			    {
 			      if (!skip_evaluation)
@@ -981,7 +981,7 @@ case 14:
 					% yyvsp[0].integer.value); ;
     break;}
 case 15:
-#line 372 "cexp.y"
+#line 316 "cexp.y"
 { yyval.integer.value = yyvsp[-2].integer.value + yyvsp[0].integer.value;
 			  yyval.integer.signedp = yyvsp[-2].integer.signedp & yyvsp[0].integer.signedp;
 			  if (overflow_sum_sign (yyvsp[-2].integer.value, yyvsp[0].integer.value,
@@ -989,7 +989,7 @@ case 15:
 			    integer_overflow (); ;
     break;}
 case 16:
-#line 378 "cexp.y"
+#line 322 "cexp.y"
 { yyval.integer.value = yyvsp[-2].integer.value - yyvsp[0].integer.value;
 			  yyval.integer.signedp = yyvsp[-2].integer.signedp & yyvsp[0].integer.signedp;
 			  if (overflow_sum_sign (yyval.integer.value, yyvsp[0].integer.value,
@@ -997,7 +997,7 @@ case 16:
 			    integer_overflow (); ;
     break;}
 case 17:
-#line 384 "cexp.y"
+#line 328 "cexp.y"
 { yyval.integer.signedp = yyvsp[-2].integer.signedp;
 			  if ((yyvsp[0].integer.value & yyvsp[0].integer.signedp) < 0)
 			    yyval.integer.value = right_shift (&yyvsp[-2].integer, -yyvsp[0].integer.value);
@@ -1005,7 +1005,7 @@ case 17:
 			    yyval.integer.value = left_shift (&yyvsp[-2].integer, yyvsp[0].integer.value); ;
     break;}
 case 18:
-#line 390 "cexp.y"
+#line 334 "cexp.y"
 { yyval.integer.signedp = yyvsp[-2].integer.signedp;
 			  if ((yyvsp[0].integer.value & yyvsp[0].integer.signedp) < 0)
 			    yyval.integer.value = left_shift (&yyvsp[-2].integer, -yyvsp[0].integer.value);
@@ -1013,17 +1013,17 @@ case 18:
 			    yyval.integer.value = right_shift (&yyvsp[-2].integer, yyvsp[0].integer.value); ;
     break;}
 case 19:
-#line 396 "cexp.y"
+#line 340 "cexp.y"
 { yyval.integer.value = (yyvsp[-2].integer.value == yyvsp[0].integer.value);
 			  yyval.integer.signedp = SIGNED; ;
     break;}
 case 20:
-#line 399 "cexp.y"
+#line 343 "cexp.y"
 { yyval.integer.value = (yyvsp[-2].integer.value != yyvsp[0].integer.value);
 			  yyval.integer.signedp = SIGNED; ;
     break;}
 case 21:
-#line 402 "cexp.y"
+#line 346 "cexp.y"
 { yyval.integer.signedp = SIGNED;
 			  if (yyvsp[-2].integer.signedp & yyvsp[0].integer.signedp)
 			    yyval.integer.value = yyvsp[-2].integer.value <= yyvsp[0].integer.value;
@@ -1032,7 +1032,7 @@ case 21:
 					<= yyvsp[0].integer.value); ;
     break;}
 case 22:
-#line 409 "cexp.y"
+#line 353 "cexp.y"
 { yyval.integer.signedp = SIGNED;
 			  if (yyvsp[-2].integer.signedp & yyvsp[0].integer.signedp)
 			    yyval.integer.value = yyvsp[-2].integer.value >= yyvsp[0].integer.value;
@@ -1041,7 +1041,7 @@ case 22:
 					>= yyvsp[0].integer.value); ;
     break;}
 case 23:
-#line 416 "cexp.y"
+#line 360 "cexp.y"
 { yyval.integer.signedp = SIGNED;
 			  if (yyvsp[-2].integer.signedp & yyvsp[0].integer.signedp)
 			    yyval.integer.value = yyvsp[-2].integer.value < yyvsp[0].integer.value;
@@ -1050,7 +1050,7 @@ case 23:
 					< yyvsp[0].integer.value); ;
     break;}
 case 24:
-#line 423 "cexp.y"
+#line 367 "cexp.y"
 { yyval.integer.signedp = SIGNED;
 			  if (yyvsp[-2].integer.signedp & yyvsp[0].integer.signedp)
 			    yyval.integer.value = yyvsp[-2].integer.value > yyvsp[0].integer.value;
@@ -1059,64 +1059,64 @@ case 24:
 					> yyvsp[0].integer.value); ;
     break;}
 case 25:
-#line 430 "cexp.y"
+#line 374 "cexp.y"
 { yyval.integer.value = yyvsp[-2].integer.value & yyvsp[0].integer.value;
 			  yyval.integer.signedp = yyvsp[-2].integer.signedp & yyvsp[0].integer.signedp; ;
     break;}
 case 26:
-#line 433 "cexp.y"
+#line 377 "cexp.y"
 { yyval.integer.value = yyvsp[-2].integer.value ^ yyvsp[0].integer.value;
 			  yyval.integer.signedp = yyvsp[-2].integer.signedp & yyvsp[0].integer.signedp; ;
     break;}
 case 27:
-#line 436 "cexp.y"
+#line 380 "cexp.y"
 { yyval.integer.value = yyvsp[-2].integer.value | yyvsp[0].integer.value;
 			  yyval.integer.signedp = yyvsp[-2].integer.signedp & yyvsp[0].integer.signedp; ;
     break;}
 case 28:
-#line 439 "cexp.y"
+#line 383 "cexp.y"
 { skip_evaluation += !yyvsp[-1].integer.value; ;
     break;}
 case 29:
-#line 441 "cexp.y"
+#line 385 "cexp.y"
 { skip_evaluation -= !yyvsp[-3].integer.value;
 			  yyval.integer.value = (yyvsp[-3].integer.value && yyvsp[0].integer.value);
 			  yyval.integer.signedp = SIGNED; ;
     break;}
 case 30:
-#line 445 "cexp.y"
+#line 389 "cexp.y"
 { skip_evaluation += !!yyvsp[-1].integer.value; ;
     break;}
 case 31:
-#line 447 "cexp.y"
+#line 391 "cexp.y"
 { skip_evaluation -= !!yyvsp[-3].integer.value;
 			  yyval.integer.value = (yyvsp[-3].integer.value || yyvsp[0].integer.value);
 			  yyval.integer.signedp = SIGNED; ;
     break;}
 case 32:
-#line 451 "cexp.y"
+#line 395 "cexp.y"
 { skip_evaluation += !yyvsp[-1].integer.value; ;
     break;}
 case 33:
-#line 453 "cexp.y"
+#line 397 "cexp.y"
 { skip_evaluation += !!yyvsp[-4].integer.value - !yyvsp[-4].integer.value; ;
     break;}
 case 34:
-#line 455 "cexp.y"
+#line 399 "cexp.y"
 { skip_evaluation -= !!yyvsp[-6].integer.value;
 			  yyval.integer.value = yyvsp[-6].integer.value ? yyvsp[-3].integer.value : yyvsp[0].integer.value;
 			  yyval.integer.signedp = yyvsp[-3].integer.signedp & yyvsp[0].integer.signedp; ;
     break;}
 case 35:
-#line 459 "cexp.y"
+#line 403 "cexp.y"
 { yyval.integer = yylval.integer; ;
     break;}
 case 36:
-#line 461 "cexp.y"
+#line 405 "cexp.y"
 { yyval.integer = yylval.integer; ;
     break;}
 case 37:
-#line 463 "cexp.y"
+#line 407 "cexp.y"
 { if (warn_undef && !skip_evaluation)
 			    warning ("`%.*s' is not defined",
 				     yyvsp[0].name.length, yyvsp[0].name.address);
@@ -1124,11 +1124,11 @@ case 37:
 			  yyval.integer.signedp = SIGNED; ;
     break;}
 case 38:
-#line 471 "cexp.y"
+#line 415 "cexp.y"
 { yyval.keywords = 0; ;
     break;}
 case 39:
-#line 473 "cexp.y"
+#line 417 "cexp.y"
 { struct arglist *temp;
 			  yyval.keywords = (struct arglist *) xmalloc (sizeof (struct arglist));
 			  yyval.keywords->next = yyvsp[-2].keywords;
@@ -1143,7 +1143,7 @@ case 39:
 			  temp->next->length = 1; ;
     break;}
 case 40:
-#line 486 "cexp.y"
+#line 430 "cexp.y"
 { yyval.keywords = (struct arglist *) xmalloc (sizeof (struct arglist));
 			  yyval.keywords->name = yyvsp[-1].name.address;
 			  yyval.keywords->length = yyvsp[-1].name.length;
@@ -1151,7 +1151,7 @@ case 40:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 498 "/usr/cygnus/latest-940103/share/bison.simple"
+#line 498 "/usr/cygnus/gnupro-98r1/share/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -1347,7 +1347,7 @@ yyerrhandle:
   yystate = yyn;
   goto yynewstate;
 }
-#line 491 "cexp.y"
+#line 435 "cexp.y"
 
 
 /* During parsing of a C expression, the pointer to the next character
@@ -1557,23 +1557,18 @@ yylex ()
     {
       register HOST_WIDE_INT result = 0;
       register int num_chars = 0;
+      int chars_seen = 0;
       unsigned width = MAX_CHAR_TYPE_SIZE;
       int max_chars;
-      char *token_buffer;
-
-      if (wide_flag)
-	{
-	  width = MAX_WCHAR_TYPE_SIZE;
 #ifdef MULTIBYTE_CHARS
-	  max_chars = MB_CUR_MAX;
-#else
-	  max_chars = 1;
+      int longest_char = local_mb_cur_max ();
+      char *token_buffer = (char *) alloca (longest_char);
+      (void) local_mbtowc (NULL_PTR, NULL_PTR, 0);
 #endif
-	}
-      else
-	max_chars = MAX_LONG_TYPE_SIZE / width;
 
-      token_buffer = (char *) alloca (max_chars + 1);
+      max_chars = MAX_LONG_TYPE_SIZE / width;
+      if (wide_flag)
+	width = MAX_WCHAR_TYPE_SIZE;
 
       while (1)
 	{
@@ -1582,44 +1577,96 @@ yylex ()
 	  if (c == '\'' || c == EOF)
 	    break;
 
+	  ++chars_seen;
 	  if (c == '\\')
 	    {
 	      c = parse_escape (&lexptr, mask);
 	    }
+	  else
+	    {
+#ifdef MULTIBYTE_CHARS
+	      wchar_t wc;
+	      int i;
+	      int char_len = -1;
+	      for (i = 1; i <= longest_char; ++i)
+		{
+		  token_buffer[i - 1] = c;
+		  char_len = local_mbtowc (& wc, token_buffer, i);
+		  if (char_len != -1)
+		    break;
+		  c = *lexptr++;
+		}
+	      if (char_len > 1)
+		{
+		  /* mbtowc sometimes needs an extra char before accepting */
+		  if (char_len < i)
+		    lexptr--;
+		  if (! wide_flag)
+		    {
+		      /* Merge character into result; ignore excess chars.  */
+		      for (i = 1; i <= char_len; ++i)
+			{
+			  if (i > max_chars)
+			    break;
+			  if (width < HOST_BITS_PER_INT)
+			    result = (result << width)
+			      | (token_buffer[i - 1]
+				 & ((1 << width) - 1));
+			  else
+			    result = token_buffer[i - 1];
+			}
+		      num_chars += char_len;
+		      continue;
+		    }
+		}
+	      else
+		{
+		  if (char_len == -1)
+		    warning ("Ignoring invalid multibyte character");
+		}
+	      if (wide_flag)
+		c = wc;
+#endif /* ! MULTIBYTE_CHARS */
+	    }
 
-	  num_chars++;
+	  if (wide_flag)
+	    {
+	      if (chars_seen == 1) /* only keep the first one */
+		result = c;
+	      continue;
+	    }
 
 	  /* Merge character into result; ignore excess chars.  */
+	  num_chars++;
 	  if (num_chars <= max_chars)
 	    {
-	      if (width < HOST_BITS_PER_WIDE_INT)
-		result = (result << width) | c;
+	      if (width < HOST_BITS_PER_INT)
+		result = (result << width) | (c & ((1 << width) - 1));
 	      else
 		result = c;
-	      token_buffer[num_chars - 1] = c;
 	    }
 	}
 
-      token_buffer[num_chars] = 0;
-
       if (c != '\'')
 	error ("malformatted character constant");
-      else if (num_chars == 0)
+      else if (chars_seen == 0)
 	error ("empty character constant");
       else if (num_chars > max_chars)
 	{
 	  num_chars = max_chars;
 	  error ("character constant too long");
 	}
-      else if (num_chars != 1 && ! traditional)
+      else if (chars_seen != 1 && ! traditional)
 	warning ("multi-character character constant");
 
       /* If char type is signed, sign-extend the constant.  */
       if (! wide_flag)
 	{
 	  int num_bits = num_chars * width;
-
-	  if (lookup ((U_CHAR *) "__CHAR_UNSIGNED__",
+	  if (num_bits == 0)
+	    /* We already got an error; avoid invalid shift.  */
+	    yylval.integer.value = 0;
+	  else if (lookup ((U_CHAR *) "__CHAR_UNSIGNED__",
 		      sizeof ("__CHAR_UNSIGNED__") - 1, -1)
 	      || ((result >> (num_bits - 1)) & 1) == 0)
 	    yylval.integer.value
@@ -1632,22 +1679,6 @@ yylex ()
 	}
       else
 	{
-#ifdef MULTIBYTE_CHARS
-	  /* Set the initial shift state and convert the next sequence.  */
-	  result = 0;
-	  /* In all locales L'\0' is zero and mbtowc will return zero,
-	     so don't use it.  */
-	  if (num_chars > 1
-	      || (num_chars == 1 && token_buffer[0] != '\0'))
-	    {
-	      wchar_t wc;
-	      (void) mbtowc (NULL_PTR, NULL_PTR, 0);
-	      if (mbtowc (& wc, token_buffer, num_chars) == num_chars)
-		result = wc;
-	      else
-		pedwarn ("Ignoring invalid multibyte character");
-	    }
-#endif
 	  yylval.integer.value = result;
 	}
     }
