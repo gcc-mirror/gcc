@@ -30,3 +30,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /*  The st_ino field of struct stat is always 0.  */
 #define HOST_LACKS_INODE_NUMBERS
+
+/* MSVCRT does not support the "ll" format specifier for printing
+   "long long" values.  Instead, we use "I64".  */
+#define HOST_LONG_LONG_FORMAT "I64"
