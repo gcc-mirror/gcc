@@ -6,6 +6,9 @@
 	* builtin-attrs.def, c-lex.c, c-pragma.h, reg-stack.c,
 	config/mips/vr.h: Update copyright.
 
+	* c-decl.c (c_init_decl_processing): Remove useless calls to
+	build_function_type.
+
 2005-03-13  Andy Hutchinson  <HutchinsonAndy@netscape.net>
 
 	PR target/18251

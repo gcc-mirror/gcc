@@ -2577,7 +2577,6 @@ lookup_name_in_scope (tree name, struct c_scope *scope)
 void
 c_init_decl_processing (void)
 {
-  tree endlink;
   location_t save_loc = input_location;
 
   /* Initialize reserved words for parser.  */
@@ -2613,11 +2612,6 @@ c_init_decl_processing (void)
   /* Even in C99, which has a real boolean type.  */
   pushdecl (build_decl (TYPE_DECL, get_identifier ("_Bool"),
 			boolean_type_node));
-
-  endlink = void_list_node;
-  build_function_type (ptr_type_node, endlink);
-  build_function_type (ptr_type_node,
-		       tree_cons (NULL_TREE, ptr_type_node, endlink));
 
   input_location = save_loc;
 
