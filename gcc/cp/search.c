@@ -116,17 +116,17 @@ static void dfs_get_vbase_types PROTO((tree));
 static void dfs_pushdecls PROTO((tree));
 static void dfs_compress_decls PROTO((tree));
 static void dfs_unuse_fields PROTO((tree));
-static void add_conversions PROTO((tree));
+static tree add_conversions PROTO((tree));
 static tree get_virtuals_named_this PROTO((tree));
-static tree get_virtual_destructor PROTO((tree, int));
-static int tree_has_any_destructor_p PROTO((tree, int));
+static tree get_virtual_destructor PROTO((tree));
+static int tree_has_any_destructor_p PROTO((tree));
 static int covariant_return_p PROTO((tree, tree));
 static struct search_level *push_search_level
 	PROTO((struct stack_level *, struct obstack *));
 static struct search_level *pop_search_level
 	PROTO((struct stack_level *));
-static HOST_WIDE_INT breadth_first_search
-	PROTO((tree, int (*) (tree, int), int (*) (tree, int)));
+static tree breadth_first_search
+	PROTO((tree, tree (*) (tree), int (*) (tree)));
 
 static tree vbase_types;
 static tree vbase_decl_ptr_intermediate, vbase_decl_ptr;
@@ -1605,16 +1605,20 @@ lookup_member (xbasetype, name, protect, want_type)
    QFN, if non-NULL, is a predicate dictating whether the type should
    even be queued.  */
 
-static HOST_WIDE_INT
+static tree
 breadth_first_search (binfo, testfn, qfn)
      tree binfo;
-     int (*testfn) PROTO((tree, int));
-     int (*qfn) PROTO((tree, int));
+     tree (*testfn) PROTO((tree));
+     int (*qfn) PROTO((tree));
 {
   int head = 0, tail = 0;
-  int rval = 0;
+  tree rval = NULL_TREE;
 
   search_stack = push_search_level (search_stack, &search_obstack);
+
+  SET_BINFO_MARKED (binfo);
+  obstack_ptr_grow (&search_obstack, binfo);
+  ++tail;
 
   while (1)
     {
@@ -1628,12 +1632,11 @@ breadth_first_search (binfo, testfn, qfn)
 	  tree base_binfo = TREE_VEC_ELT (binfos, i);
 
 	  if (BINFO_MARKED (base_binfo) == 0
-	      && (qfn == 0 || (*qfn) (binfo, i)))
+	      && (qfn == 0 || (*qfn) (base_binfo)))
 	    {
 	      SET_BINFO_MARKED (base_binfo);
-	      obstack_ptr_grow (&search_obstack, binfo);
-	      obstack_ptr_grow (&search_obstack, (HOST_WIDE_INT) i);
-	      tail += 2;
+	      obstack_ptr_grow (&search_obstack, base_binfo);
+	      ++tail;
 	      if (tail >= search_stack->limit)
 		my_friendly_abort (100);
 	    }
@@ -1646,10 +1649,8 @@ breadth_first_search (binfo, testfn, qfn)
 	}
 
       binfo = search_stack->first[head++];
-      i = (HOST_WIDE_INT) search_stack->first[head++];
-      if ((rval = (*testfn) (binfo, i)))
+      if ((rval = (*testfn) (binfo)))
 	break;
-      binfo = BINFO_BASETYPE (binfo, i);
     }
   {
     tree *tp = search_stack->first;
@@ -1657,8 +1658,7 @@ breadth_first_search (binfo, testfn, qfn)
     while (tp < search_tail)
       {
 	tree binfo = *tp++;
-	int i = (HOST_WIDE_INT)(*tp++);
-	CLEAR_BINFO_MARKED (BINFO_BASETYPE (binfo, i));
+	CLEAR_BINFO_MARKED (binfo);
       }
   }
 
@@ -1667,7 +1667,7 @@ breadth_first_search (binfo, testfn, qfn)
 }
 
 /* Functions to use in breadth first searches.  */
-typedef int (*pfi) PROTO((tree, int));
+typedef tree (*pfi) PROTO((tree));
 
 static tree declarator;
 
@@ -1698,13 +1698,10 @@ get_virtuals_named_this (binfo)
 }
 
 static tree
-get_virtual_destructor (binfo, i)
+get_virtual_destructor (binfo)
      tree binfo;
-     int i;
 {
   tree type = BINFO_TYPE (binfo);
-  if (i >= 0)
-    type = BINFO_TYPE (TREE_VEC_ELT (BINFO_BASETYPES (binfo), i));
   if (TYPE_HAS_DESTRUCTOR (type)
       && DECL_VINDEX (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), 1)))
     return TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), 1);
@@ -1712,13 +1709,10 @@ get_virtual_destructor (binfo, i)
 }
 
 static int
-tree_has_any_destructor_p (binfo, i)
+tree_has_any_destructor_p (binfo)
      tree binfo;
-     int i;
 {
   tree type = BINFO_TYPE (binfo);
-  if (i >= 0)
-    type = BINFO_TYPE (TREE_VEC_ELT (BINFO_BASETYPES (binfo), i));
   return TYPE_NEEDS_DESTRUCTOR (type);
 }
 
@@ -1803,16 +1797,9 @@ get_matching_virtual (binfo, fndecl, dtorp)
      of TYPE, so we must perform first ply of search here.  */
   if (dtorp)
     {
-      if (tree_has_any_destructor_p (binfo, -1))
-	tmp = get_virtual_destructor (binfo, -1);
-
-      if (tmp)
-	return tmp;
-
-      tmp = (tree) breadth_first_search (binfo,
-					 (pfi) get_virtual_destructor,
-					 tree_has_any_destructor_p);
-      return tmp;
+      return breadth_first_search (binfo,
+				   get_virtual_destructor,
+				   tree_has_any_destructor_p);
     }
   else
     {
@@ -3284,7 +3271,7 @@ reinit_search_statistics ()
 #define scratch_tree_cons expr_tree_cons
 
 static tree conversions;
-static void
+static tree
 add_conversions (binfo)
      tree binfo;
 {
@@ -3297,21 +3284,31 @@ add_conversions (binfo)
 
       if (!tmp || ! DECL_CONV_FN_P (OVL_CURRENT (tmp)))
 	break;
-      conversions = scratch_tree_cons (binfo, tmp, conversions);
+
+      /* Make sure we don't already have this conversion.  */
+      if (! IDENTIFIER_MARKED (DECL_NAME (tmp)))
+	{
+	  conversions = scratch_tree_cons (binfo, tmp, conversions);
+	  IDENTIFIER_MARKED (DECL_NAME (tmp)) = 1;
+	}
     }
-  SET_BINFO_MARKED (binfo);
+  return NULL_TREE;
 }
 
 tree
 lookup_conversions (type)
      tree type;
 {
+  tree t;
+
   conversions = NULL_TREE;
+
   if (TYPE_SIZE (type))
-    {
-      dfs_walk (TYPE_BINFO (type), add_conversions, unmarkedp);
-      dfs_walk (TYPE_BINFO (type), dfs_unmark, markedp);
-    }
+    breadth_first_search (TYPE_BINFO (type), add_conversions, 0);
+
+  for (t = conversions; t; t = TREE_CHAIN (t))
+    IDENTIFIER_MARKED (DECL_NAME (TREE_VALUE (t))) = 0;
+
   return conversions;
 }
 

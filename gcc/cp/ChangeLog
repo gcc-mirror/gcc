@@ -1,7 +1,17 @@
 1998-10-29  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* cp-tree.h (IDENTIFIER_MARKED): New macro.
+	* search.c (lookup_conversions): Use breadth_first_search.
+	(add_conversions): Avoid adding two conversions to the same type.
+	(breadth_first_search): Work with base binfos, rather
+	than binfos and base indices.
+	(get_virtual_destructor): Adjust.
+	(tree_has_any_destructor_p): Adjust.
+	(get_matching_virtual): Adjust.
+
 	* pt.c (push_template_decl_real): Generalize check for incorrect
 	number of template parms.
+	(is_member_template_class): #if 0.
 
 1998-10-29  Richard Henderson  <rth@cygnus.com>
 

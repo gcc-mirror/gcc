@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA.  */
       DELETE_EXPR_USE_GLOBAL (in DELETE_EXPR).
       LOOKUP_EXPR_GLOBAL (in LOOKUP_EXPR).
       TREE_NEGATED_INT (in INTEGER_CST).
-      (TREE_MANGLED) (in IDENTIFIER_NODE) (commented-out).
+      IDENTIFIER_MARKED (used by search routines).
    1:  IDENTIFIER_VIRTUAL_P.
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -1036,6 +1036,9 @@ struct lang_type
 #define BINFO_PUSHDECLS_MARKED(NODE) BINFO_VTABLE_PATH_MARKED (NODE)
 #define SET_BINFO_PUSHDECLS_MARKED(NODE) SET_BINFO_VTABLE_PATH_MARKED (NODE)
 #define CLEAR_BINFO_PUSHDECLS_MARKED(NODE) CLEAR_BINFO_VTABLE_PATH_MARKED (NODE)
+
+/* Used by various search routines.  */
+#define IDENTIFIER_MARKED(NODE) TREE_LANG_FLAG_0 (NODE)
 
 /* Accessor macros for the vfield slots in structures.  */
 
@@ -1398,7 +1401,7 @@ struct lang_decl
 /* Nonzero in IDENTIFIER_NODE means that this name is not the name the user
    gave; it's a DECL_NESTED_TYPENAME.  Someone may want to set this on
    mangled function names, too, but it isn't currently.  */
-#define TREE_MANGLED(NODE) (TREE_LANG_FLAG_0 (NODE))
+#define TREE_MANGLED(NODE) (FOO)
 #endif
 
 #if 0				/* UNUSED */
