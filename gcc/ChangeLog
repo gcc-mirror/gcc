@@ -1,3 +1,8 @@
+2002-10-29  Phil Edwards  <pme@gcc.gnu.org>
+
+	* Makefile.in (gnucompare*):  Only record bad comparisons
+	if there really was a bad comparison.
+
 Tue Oct 29 19:32:16 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (CONST_DOUBLE_OK_FOR_LETTER_P): Remove 'H'
