@@ -514,13 +514,14 @@ in the following sections.
 
 @emph{DEC Alpha Options}
 @gccoptlist{
--mfp-regs  -mno-fp-regs  -mno-soft-float  -msoft-float @gol
--malpha-as  -mgas @gol
+-mno-fp-regs  -msoft-float  -malpha-as  -mgas @gol
 -mieee  -mieee-with-inexact  -mieee-conformant @gol
 -mfp-trap-mode=@var{mode}  -mfp-rounding-mode=@var{mode} @gol
 -mtrap-precision=@var{mode}  -mbuild-constants @gol
--mcpu=@var{cpu-type} @gol
--mbwx  -mno-bwx  -mcix  -mno-cix  -mmax  -mno-max @gol
+-mcpu=@var{cpu-type}  -mtune=@var{cpu-type} @gol
+-mbwx  -mmax  -mfix  -mcix @gol
+-mfloat-vax  -mfloat-ieee @gol
+-mexplicit-relocs  -msmall-data  -mlarge-data @gol
 -mmemory-latency=@var{time}}
 
 @emph{DEC Alpha/VMS Options}
@@ -8275,8 +8276,8 @@ Generate code that uses (does not use) the floating-point register set.
 @option{-mno-fp-regs} implies @option{-msoft-float}.  If the floating-point
 register set is not used, floating point operands are passed in integer
 registers as if they were integers and floating-point results are passed
-in $0 instead of $f0.  This is a non-standard calling sequence, so any
-function with a floating-point argument or return value called by code
+in @code{$0} instead of @code{$f0}.  This is a non-standard calling sequence,
+so any function with a floating-point argument or return value called by code
 compiled with @option{-mno-fp-regs} must also be compiled with that
 option.
 
@@ -8419,33 +8420,77 @@ assembler (@option{-malpha-as}) or by the GNU assembler @option{-mgas}.
 @itemx -mno-bwx
 @itemx -mcix
 @itemx -mno-cix
+@itemx -mfix
+@itemx -mno-fix
 @itemx -mmax
 @itemx -mno-max
 @opindex mbwx
 @opindex mno-bwx
 @opindex mcix
 @opindex mno-cix
+@opindex mfix
+@opindex mno-fix
 @opindex mmax
 @opindex mno-max
 Indicate whether GCC should generate code to use the optional BWX,
-CIX, and MAX instruction sets.  The default is to use the instruction sets
-supported by the CPU type specified via @option{-mcpu=} option or that
+CIX, FIX and MAX instruction sets.  The default is to use the instruction
+sets supported by the CPU type specified via @option{-mcpu=} option or that
 of the CPU on which GCC was built if none was specified.
+
+@item -mfloat-vax
+@itemx -mfloat-ieee
+@opindex mfloat-vax
+@opindex mfloat-ieee
+Generate code that uses (does not use) VAX F and G floating point
+arithmetic instead of IEEE single and double precision.
+
+@item -mexplicit-relocs
+@itemx -mno-explicit-relocs
+@opindex mexplicit-relocs
+@opindex mno-explicit-relocs
+Older Alpha assemblers provided no way to generate symbol relocations
+except via assembler macros.  Use of these macros does not allow 
+optimial instruction scheduling.  GNU binutils as of version 2.12
+supports a new syntax that allows the compiler to explicitly mark
+which relocations should apply to which instructions.  This option
+is mostly useful for debugging, as GCC detects the capabilities of
+the assembler when it is built and sets the default accordingly.
+
+@item -msmall-data
+@itemx -mlarge-data
+@opindex msmall-data
+@opindex mlarge-data
+When @option{-mexplicit-relocs} is in effect, static data is 
+accessed via @dfn{gp-relative} relocations.  When @option{-msmall-data}
+is used, objects 8 bytes long or smaller are placed in a @dfn{small data area}
+(the @code{.sdata} and @code{.sbss} sections) and are accessed via
+16-bit relocations off of the @code{$gp} register.  This limits the
+size of the small data area to 64KB, but allows the variables to be
+directly accessed via a single instruction.
+
+The default is @option{-mlarge-data}.  With this option the data area
+is limited to just below 2GB.  Programs that require more than 2GB of
+data must use @code{malloc} or @code{mmap} to allocate the data in the
+heap instead of in the program's data segment.
+
+When generating code for shared libraries, @option{-fpic} implies
+@option{-msmall-data} and @option{-fPIC} implies @option{-mlarge-data}.
 
 @item -mcpu=@var{cpu_type}
 @opindex mcpu
-Set the instruction set, register set, and instruction scheduling
-parameters for machine type @var{cpu_type}.  You can specify either the
-@samp{EV} style name or the corresponding chip number.  GCC
-supports scheduling parameters for the EV4 and EV5 family of processors
-and will choose the default values for the instruction set from
-the processor you specify.  If you do not specify a processor type,
-GCC will default to the processor on which the compiler was built.
+Set the instruction set and instruction scheduling parameters for
+machine type @var{cpu_type}.  You can specify either the @samp{EV}
+style name or the corresponding chip number.  GCC supports scheduling
+parameters for the EV4, EV5 and EV6 family of processors and will
+choose the default values for the instruction set from the processor
+you specify.  If you do not specify a processor type, GCC will default
+to the processor on which the compiler was built.
 
 Supported values for @var{cpu_type} are
 
 @table @samp
 @item ev4
+@item ev45
 @itemx 21064
 Schedules as an EV4 and has no instruction set extensions.
 
@@ -8464,9 +8509,17 @@ Schedules as an EV5 and supports the BWX and MAX extensions.
 
 @item ev6
 @itemx 21264
-Schedules as an EV5 (until Digital releases the scheduling parameters
-for the EV6) and supports the BWX, CIX, and MAX extensions.
+Schedules as an EV6 and supports the BWX, FIX, and MAX extensions.
+
+@item ev67
+@item 21264a
+Schedules as an EV6 and supports the BWX, CIX, FIX, and MAX extensions.
 @end table
+
+@item -mtune=@var{cpu_type}
+@opindex mtune
+Set only the instruction scheduling parameters for machine type
+@var{cpu_type}.  The instruction set is not changed.
 
 @item -mmemory-latency=@var{time}
 @opindex mmemory-latency
