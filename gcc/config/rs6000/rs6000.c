@@ -857,6 +857,11 @@ small_data_operand (op, mode)
 {
   rtx sym_ref, const_part;
 
+#ifdef TARGET_SDATA
+  if (!TARGET_SDATA)
+    return 0;
+#endif
+
   if (DEFAULT_ABI != ABI_V4)
     return 0;
 
@@ -2086,9 +2091,11 @@ print_operand (file, x, code)
 	     we have already done it, we can just use an offset of four.  */
 	  if (GET_CODE (XEXP (x, 0)) == PRE_INC
 	      || GET_CODE (XEXP (x, 0)) == PRE_DEC)
-	    print_operand_address (file, plus_constant (XEXP (XEXP (x, 0), 0), 4));
+	    output_address (plus_constant (XEXP (XEXP (x, 0), 0), 4));
 	  else
-	    print_operand_address (file, plus_constant (XEXP (x, 0), 4));
+	    output_address (plus_constant (XEXP (x, 0), 4));
+	  if (DEFAULT_ABI == ABI_V4 && small_data_operand (x, GET_MODE (x)))
+	    fprintf (file, "@sda21(%s)", reg_names[0]);
 	}
       return;
 			    
@@ -2296,9 +2303,11 @@ print_operand (file, x, code)
 	{
 	  if (GET_CODE (XEXP (x, 0)) == PRE_INC
 	      || GET_CODE (XEXP (x, 0)) == PRE_DEC)
-	    print_operand_address (file, plus_constant (XEXP (XEXP (x, 0), 0), 8));
+	    output_address (plus_constant (XEXP (XEXP (x, 0), 0), 8));
 	  else
-	    print_operand_address (file, plus_constant (XEXP (x, 0), 8));
+	    output_address (plus_constant (XEXP (x, 0), 8));
+	  if (DEFAULT_ABI == ABI_V4 && small_data_operand (x, GET_MODE (x)))
+	    fprintf (file, "@sda21(%s)", reg_names[0]);
 	}
       return;
 			    
@@ -2342,9 +2351,11 @@ print_operand (file, x, code)
 	{
 	  if (GET_CODE (XEXP (x, 0)) == PRE_INC
 	      || GET_CODE (XEXP (x, 0)) == PRE_DEC)
-	    print_operand_address (file, plus_constant (XEXP (XEXP (x, 0), 0), 12));
+	    output_address (plus_constant (XEXP (XEXP (x, 0), 0), 12));
 	  else
-	    print_operand_address (file, plus_constant (XEXP (x, 0), 12));
+	    output_address (plus_constant (XEXP (x, 0), 12));
+	  if (DEFAULT_ABI == ABI_V4 && small_data_operand (x, GET_MODE (x)))
+	    fprintf (file, "@sda21(%s)", reg_names[0]);
 	}
       return;
 			    
@@ -2362,10 +2373,10 @@ print_operand (file, x, code)
 	    fprintf (file, "%d(%d)", - GET_MODE_SIZE (GET_MODE (x)),
 		     REGNO (XEXP (XEXP (x, 0), 0)));
 	  else
-	    print_operand_address (file, XEXP (x, 0));
+	    output_address (XEXP (x, 0));
 	}
       else
-	print_operand_address (file, x);
+	output_addr_const (file, x);
       return;
 
     default:
