@@ -100,7 +100,12 @@ AC_DEFUN(LIB_AC_PROG_CXX,
 [AC_BEFORE([$0], [AC_PROG_CXXCPP])dnl
 dnl Fool anybody using AC_PROG_CXX.
 AC_PROVIDE([AC_PROG_CXX])
-AC_CHECK_PROGS(CXX, $CCC c++ g++ gcc CC cxx cc++, gcc)
+# Use CXX_libstdcxx so that we do not cause CXX to be cached with the
+# flags that come in CXX while configuring libstdc++.  They're different
+# from those used for all other target libraries.
+AC_CHECK_PROGS(CXX_libstdcxx, "$CXX" "$CCC" c++ g++ gcc CC cxx cc++, gcc)
+CXX=$CXX_libstdcxx
+AC_SUBST(CXX)
 test -z "$CXX" && AC_MSG_ERROR([no acceptable c++ found in \$PATH])
 
 AC_PROG_CXX_GNU
