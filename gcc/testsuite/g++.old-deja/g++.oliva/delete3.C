@@ -31,8 +31,9 @@ struct Bar : virtual Foo {
 };
 
 int main() {
-  delete [] new Bar[2];
+  try {
+    delete [] new Bar[2];
+  } catch (...) {
+  }
   abort();
 }
-
-

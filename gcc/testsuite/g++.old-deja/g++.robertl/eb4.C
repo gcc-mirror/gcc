@@ -1,6 +1,6 @@
 // Error: Internal Compiler Error in GCC 2.7.2 and EGCS 1998/05/28 snapshot.
 
-#include <iostream.h>
+#include <iostream>
 
 class some_base
         {
@@ -31,7 +31,7 @@ public:
 
 class some_derived::func(derived_func_args &a)  // ERROR - illegal member syntax
         {
-        cout << a.i << ' ' << a.f << endl;
+        std::cout << a.i << ' ' << a.f << std::endl;
         }
 
 int

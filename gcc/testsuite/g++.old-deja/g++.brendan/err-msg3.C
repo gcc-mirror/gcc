@@ -1,7 +1,7 @@
 // Build don't link: 
 // GROUPS passed error-messages
-#include <fstream.h>
-#include <iomanip.h>
+#include <fstream>
+#include <iomanip>
 
 // This error should not appear:
 // bug.C: In method `test::test(const class test &)':

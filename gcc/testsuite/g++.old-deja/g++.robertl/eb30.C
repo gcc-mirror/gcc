@@ -1,7 +1,7 @@
 // Build don't link:
-#include <fstream.h>
+#include <fstream>
 
-class bifstream : public ifstream {
+class bifstream : public std::ifstream {
 public:
     bifstream();
 //     ~bifstream();
@@ -14,3 +14,6 @@ void load_bin()
     if (!InFile)
         return;
 }
+
+
+

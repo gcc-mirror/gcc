@@ -1,7 +1,7 @@
 // GROUPS passed nested-classes
-#include <iostream.h>
-#include <stdio.h>
-#include <string.h>
+#include <iostream>
+#include <cstdio>
+#include <cstring>
 
 static char output[1024];
 
@@ -32,44 +32,44 @@ public:
 BDDRetrace::Dump&
 BDDRetrace::Dump1::operator<<(char c)
 { char tempout[1024];
-  sprintf (tempout, "%s%s%c", output, "1-", c);
-  strcpy (output, tempout);
+  std::sprintf(tempout, "%s%s%c", output, "1-", c);
+  std::strcpy(output, tempout);
   return *this;
 }
 
 BDDRetrace::Dump&
 BDDRetrace::Dump1::operator<<(int i)
 { char tempout[1024];
-  sprintf (tempout, "%s%s%d", output, "1-", i);
-  strcpy (output, tempout);
+  std::sprintf (tempout, "%s%s%d", output, "1-", i);
+  std::strcpy (output, tempout);
   return *this; }
 
 BDDRetrace::Dump&
 BDDRetrace::Dump1::operator<<(double r)
 { char tempout[1024];
-  sprintf (tempout, "%s%s%1.0f", output, "1-", r);
-  strcpy (output, tempout);
+  std::sprintf (tempout, "%s%s%1.0f", output, "1-", r);
+  std::strcpy (output, tempout);
   return *this; }
 
 BDDRetrace::Dump&
 Dump2::operator<<(char c)
 { char tempout[1024];
-  sprintf (tempout, "%s%s%c", output, "2-", c);
-  strcpy (output, tempout);
+  std::sprintf (tempout, "%s%s%c", output, "2-", c);
+  std::strcpy (output, tempout);
   return *this; }
 
 BDDRetrace::Dump&
 Dump2::operator<<(int i)
 { char tempout[1024];
-  sprintf (tempout, "%s%s%d", output, "2-", i);
-  strcpy (output, tempout);
+  std::sprintf (tempout, "%s%s%d", output, "2-", i);
+  std::strcpy (output, tempout);
   return *this; }
 
 BDDRetrace::Dump&
 Dump2::operator<<(double r)
 { char tempout[1024];
-  sprintf (tempout, "%s%s%1.0f", output, "2-", r);
-  strcpy (output, tempout);
+  std::sprintf (tempout, "%s%s%1.0f", output, "2-", r);
+  std::strcpy (output, tempout);
   return *this; }
 
 int main()
@@ -77,7 +77,7 @@ int main()
     BDDRetrace::Dump1 d1;
     Dump2 d2;
 
-    sprintf (output, " ");
+    std::sprintf (output, " ");
 
     d1 << 'a';
     d1 << 1;
@@ -87,10 +87,10 @@ int main()
     d2 << 1;
     d2 << 1.0;
 
-    if (strcmp (output, " 1-a1-11-12-a2-12-1") == 0)
-      printf ("PASS\n");
+    if (std::strcmp (output, " 1-a1-11-12-a2-12-1") == 0)
+      std::printf ("PASS\n");
     else
-      { printf ("FAIL\n"); return 1; }
+      { std::printf ("FAIL\n"); return 1; }
 
     return 0;
 }

@@ -1,15 +1,15 @@
 // Build don't link: 
 // GROUPS passed nest
-#include <iostream.h>
+#include <iostream>
 
 struct inner {
-  static void f() { cout << "inner::f()\n";}
+  static void f() { std::cout << "inner::f()\n";}
 };
 
 struct outer {
 
   struct inner {
-    static void f() { cout << "outer::inner::f()\n";}
+    static void f() { std::cout << "outer::inner::f()\n";}
   };
 
   static void f() {
@@ -20,6 +20,6 @@ struct outer {
 
 int main() {
   outer::f();
-  cout << endl;
+  std::cout << std::endl;
   return 0;
 }

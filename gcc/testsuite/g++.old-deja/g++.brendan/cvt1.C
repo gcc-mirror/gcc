@@ -1,6 +1,6 @@
 // Build don't link: 
 // GROUPS passed conversions
-#include <iostream.h>
+#include <iostream>
 
 class Thing
 {
@@ -39,6 +39,6 @@ main (int argc, char** argv)
 	Group g (Group::THIS_GROUP) ;
 
 	g += new Thing (Thing::GOOD_THING) ;
-	cout << "Group type is " << (Group::GroupType) g << endl ;
+	std::cout << "Group type is " << (Group::GroupType) g << std::endl ;
 	return 0 ;
 }

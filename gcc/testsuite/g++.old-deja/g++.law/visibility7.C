@@ -5,7 +5,7 @@
 // Date:     Wed, 21 Apr 93 09:42:07 +0100
 // Subject:  /*** BUG REPORT : THE MYTH OF PRIVATE INHERITANCE ***/
 // Message-ID: <9304210842.AA01815@life.ai.mit.edu>
-#include <iostream.h>
+#include <iostream>
 
 class A {
  private:
@@ -64,8 +64,10 @@ int main()
   B* bobject = new B(2, 1);
   C* cobject = new C(bobject);
   cobject->setBValue(8);
-  cout << cobject->getBValue() << endl;
+  std::cout << cobject->getBValue() << std::endl;
   delete bobject;
   delete cobject;
 }
+
+
 

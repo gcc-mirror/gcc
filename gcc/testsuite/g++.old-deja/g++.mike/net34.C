@@ -1,6 +1,6 @@
 // Special g++ Options:
 
-#include <iostream.h>
+#include <iostream>
 
 class foo {
 public:
@@ -25,10 +25,10 @@ class multiple : public bar_1, public bar_2 {
 public:
         multiple(int i1, int i2) : bar_1(i1), bar_2(i2) {}
         void print() {
-                cout << "bar_1::k -> " << bar_1::k << "\n";
-                cout << "bar_2::k -> " << bar_2::k << "\n";
-                cout << "bar_1::get_k() -> " << bar_1::get_k() << "\n";
-                cout << "bar_2::get_k() -> " << bar_2::get_k() << "\n";
+                std::cout << "bar_1::k -> " << bar_1::k << "\n";
+                std::cout << "bar_2::k -> " << bar_2::k << "\n";
+                std::cout << "bar_1::get_k() -> " << bar_1::get_k() << "\n";
+                std::cout << "bar_2::get_k() -> " << bar_2::get_k() << "\n";
         }
 };
 
@@ -36,3 +36,5 @@ int main() {
         multiple m(1,2);
         m.print();
 }
+
+

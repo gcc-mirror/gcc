@@ -4,9 +4,11 @@
 // Also, the template instantiation does not provide the missing
 // friend function, the non-template function does
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <iostream.h>
+#include <cstdio>
+#include <cstdlib>
+#include <iostream>
+
+using namespace std;
 
 template <class T>
 class Vector

@@ -6,7 +6,7 @@
 // Subject: g++ bug
 // Date: Mon, 12 Apr 93 10:47:01 MDT
 
-#include <iostream.h>
+#include <iostream>
 
 class B {
 };
@@ -22,8 +22,9 @@ public:
 main() {
    A a(37);
    //cout << a << endl;
-   cout << (short)a << endl;
+   std::cout << (short)a << std::endl;
 
    return 0;
 }  // main
+
 

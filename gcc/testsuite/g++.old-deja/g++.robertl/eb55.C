@@ -2,11 +2,11 @@
 // Since the constructor is in streambuf.h, additional diagnostics are
 // produced, which are not really supported in the old-deja framework
 
-#include <strstream.h>
+#include <sstream>
 
 void
 t( char* buf )
 {
-  istrstream str = buf;  //ERROR - inaccessible copy constructor
+  std::istrstream str = buf;  //ERROR - inaccessible copy constructor
 }
 

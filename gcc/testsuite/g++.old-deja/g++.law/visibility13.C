@@ -6,10 +6,12 @@
 // Subject:  class, template and their scoping problem
 // Message-ID: <9307130521.AA18312@oahu.cs.ucla.edu>
 
-#include <iostream.h>
-#include <assert.h>
+#include <iostream>
+#include <cassert>
 
 //     ---------------   Array.h  &&  Array.cc   ------------------
+
+using namespace std;
 
 const int ArraySize = 12;
 

@@ -1,6 +1,6 @@
-#include <iostream.h>
-#include <stdlib.h>
-#include <stddef.h>
+#include <iostream>
+#include <cstdlib>
+#include <cstddef>
 #include <new>
 
 int fail = 1;
@@ -14,7 +14,7 @@ void *operator new(size_t size) throw (std::bad_alloc) {
 }
 
 int main() {
-  cout << "";
+  std::cout << "";
   in_main = 1;
   new int;
   return fail;

@@ -3,10 +3,11 @@
 // Special g++ Options: -O -Winline
 // Build don't link:
 
-#include <iomanip.h>
+#include <iomanip>
+#include <iostream>
 
 void
 f()
 {
-  cout << setw(3);
+  std::cout << std::setw(3);
 }

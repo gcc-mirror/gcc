@@ -1,11 +1,11 @@
-#include <fstream.h>
-#include <stdio.h>
+#include <fstream>
+#include <cstdio>
 
 int
 main()
 {
-    printf("If you see this, you don't have a problem!\n");
+    std::printf("If you see this, you don't have a problem!\n");
 #ifdef EXPOSE_BUG
-    ifstream a;
+    std::ifstream a;
 #endif
 }

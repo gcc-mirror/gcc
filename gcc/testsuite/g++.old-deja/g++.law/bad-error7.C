@@ -1,6 +1,6 @@
 // Build don't link: 
 // GROUPS passed bad-errors
-#include <iostream.h>
+#include <iostream>
 
 class ParX
         {
@@ -11,7 +11,7 @@ class ParX
 class X : public ParX
         {
         public:
-                void fn2() { cout << "hi" << endl; }
+                void fn2() { std::cout << "hi" << std::endl; }
         };
 
 int main()
@@ -22,3 +22,9 @@ int main()
 
         (pParX->*p)();
         }
+
+
+
+
+
+

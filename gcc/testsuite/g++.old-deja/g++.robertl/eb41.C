@@ -1,8 +1,8 @@
-#include <iostream.h>
-#include <iterator.h>
+#include <iostream>
+#include <iterator>
 #include <string>
 
-ostream_iterator<std::string> oo(cout);
+std::ostream_iterator<std::string> oo(std::cout);
 
 int main()
 {

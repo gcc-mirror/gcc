@@ -7,11 +7,11 @@
 // Message-ID: <317f1j$o9c@agate.berkeley.edu>
 
 
-#include <iostream.h>
+#include <iostream>
 
 class a {
 protected:
-	virtual void foo() { cout << "Class A\n";}
+	virtual void foo() { std::cout << "Class A\n";}
 };
 
 class b : public virtual a {};
@@ -25,4 +25,5 @@ int main() {
 	c test;
 	test.bar();
 }
+
 

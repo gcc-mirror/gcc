@@ -5,12 +5,12 @@
 // Subject:  An error!
 // Message-ID: <9311160259.AA03353@pi14.arc.umn.edu>
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <assert.h>
-#include <fstream.h>
-#include <iostream.h>
-#include <math.h>
+#include <cstdlib>
+#include <cstdio>
+#include <cassert>
+#include <fstream>
+#include <iostream>
+#include <cmath>
 
 #define ANSI_C
 
@@ -79,7 +79,7 @@ class Vector
 
 	double assign( int, double );
 
-	friend ostream& operator<<( ostream&, const Vector& m );
+	friend std::ostream& operator<<(std::ostream&, const Vector& m );
 	
 	private:
 
@@ -162,10 +162,10 @@ assign( int rownum, double d )
 	assert(r);
 
 	if( rownum > row() || rownum <= 0 ) {
-		cerr << "Warning: trying to assign out of bounds" << endl;
-		cerr << "row " << rownum << endl;
-		cerr << "Vector size " << row() << endl;
-		abort();
+	  std::cerr << "Warning: trying to assign out of bounds" << std::endl;
+	  std::cerr << "row " << rownum << std::endl;
+	  std::cerr << "Vector size " << row() << std::endl;
+	  std::abort();
 	}
 
 	if( r->count == 1 ) {
@@ -232,8 +232,9 @@ VecElem( Vector &vec, int r )
 	: v(vec), row(r)
 {
 	if( r < 1 || r > vec.row() ) {
-		cerr << "Trying to access vector element out of bounds" << endl;
-		abort();
+	  std::cerr << "Trying to access vector element out of bounds";
+	  std::cerr << std::endl;
+	  std::abort();
 	}
 }
 
@@ -268,9 +269,9 @@ int main()
 	int i, j;
 
 	if (makeforms (cen,a,b) != 10)
-	  { printf ("FAIL\n"); return 1; }
+	  { std::printf ("FAIL\n"); return 1; }
 	else
-	  printf ("PASS\n");
+	  std::printf ("PASS\n");
 
 
 }
@@ -280,4 +281,6 @@ makeforms( Vector cen, Vector **a, Vector **b)
 {
 	return 10;
 }
+
+
 

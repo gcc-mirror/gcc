@@ -6,7 +6,7 @@
 // Subject:  More on [g++ 2.1 : overloaded function selection incorrect]
 // Message-ID: <9205212240.AA17934@ndc.com>
 
-#include <iostream.h>
+#include <iostream>
 
 inline int max(int a, int b) {return a > b ? a : b;}; // ERROR - candidate
 inline double max(double a, double b) {return a > b ? a : b;}; // ERROR - candidate
@@ -21,8 +21,8 @@ int main() {
 // about the declaration above
 static void foo(int i, int j, double x, double y) { 
 
-   cout << "Max(int): " << max(i,j) << " Max(double): " <<
+   std::cout << "Max(int): " << max(i,j) << " Max(double): " <<
 max(x,y) << '\n';
-   cout << "Max(int, double): " << max(i, y) << '\n';// ERROR - 
+   std::cout << "Max(int, double): " << max(i, y) << '\n';// ERROR - 
 }
 

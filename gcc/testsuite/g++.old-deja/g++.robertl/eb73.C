@@ -1,7 +1,7 @@
 // Special g++ Options: -O -Wall
 // Depletes VM.
 
-#include <iostream.h>
+#include <iostream>
 #include <list>
 #include <algorithm>
 using namespace std;

@@ -1,7 +1,7 @@
 // Test for obsolete specialization syntax.  Turn off -pedantic.
 // Special g++ Options:
 
-#include <iostream.h>
+#include <iostream>
 #include <typeinfo>
 
 template <typename T>
@@ -13,7 +13,7 @@ public:
 template <typename T>
 void
 A<T>::test(){
-  cerr << "test for " << typeid(*this).name() << endl;
+  std::cerr << "test for " << typeid(*this).name() << std::endl;
 }
 // Specialization declaration
 void                           
@@ -22,7 +22,7 @@ A<double>::test();
 // Specialization definition
 void
 A<double>::test(){
-  cerr << "specialization for " << typeid(*this).name() << endl;
+  std::cerr << "specialization for " << typeid(*this).name() << std::endl;
 }
 
 
@@ -34,4 +34,5 @@ main(){
   ad.test();
   return 0;
 }
+
 

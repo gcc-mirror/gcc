@@ -1,5 +1,5 @@
 // Build don't link:
-#include <complex.h>
+#include <complex>
 template<class T>
 class Vec {
 public:
@@ -8,4 +8,4 @@ public:
     void operator=(const Vec<T> &v) { data = new T; }
     T *data;
 };
-template class Vec<complex<double> >;
+template class Vec<std::complex<double> >;

@@ -1,10 +1,8 @@
 // Build don't link: 
-#include <ctype.h>
-#include <iostream.h>
-// #include <streambuf.h>
-// #include <libio.h>
-#include <strstream.h>
-#include <string.h>
+#include <cctype>
+#include <iostream>
+#include <sstream>
+#include <cstring>
 
 using namespace std;
 
@@ -13,7 +11,8 @@ extern bool foo2 (ostream &out, istream &in);
 bool
 foo1 (ostream &out, const char *in)
 {
-  strstreambuf sb (in, (int) strlen (in));
+  string tmp(in, strlen(in));
+  stringbuf sb (tmp);
   istream fmt (&sb);
   return foo2 (out, fmt);
 }

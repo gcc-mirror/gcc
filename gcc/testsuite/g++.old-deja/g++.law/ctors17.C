@@ -7,9 +7,9 @@
 // Date: Tue, 15 Jun 1993 18:34:14 +0200 (MET DST)
 
 
-#include <fstream.h>
+#include <fstream>
 
-class X : public ifstream { // ERROR - candidate
+class X : public std::ifstream { // ERROR - candidate
     public:
       X(int a, char *b) {} // ERROR - candidate
 };

@@ -1,8 +1,8 @@
 // Test that a throw in B's constructor destroys the A and frees the memory.
 
-#include <stddef.h>
-#include <stdlib.h>
-#include <new.h>
+#include <cstddef>
+#include <cstdlib>
+#include <new>
 
 struct A {
   A();
@@ -35,7 +35,7 @@ void foo (B*) { }
 void* operator new (size_t size) throw (std::bad_alloc)
 {
   ++newed;
-  return (void *) malloc (size);
+  return (void *) std::malloc (size);
 }
 
 void operator delete (void *p) throw ()
@@ -43,3 +43,4 @@ void operator delete (void *p) throw ()
   --newed;
   free (p);
 }
+

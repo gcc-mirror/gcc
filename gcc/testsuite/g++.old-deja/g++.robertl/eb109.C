@@ -1,7 +1,9 @@
 #include<map>
-#include<iostream.h>
+#include<iostream>
 #include<vector>
 #include<string>
+
+using namespace std;
 
 // empty parameter class with a minimal set of operations
 // if there are no weights for edges necessary

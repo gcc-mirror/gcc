@@ -1,4 +1,4 @@
-#include<iostream.h>
+#include<iostream>
 
 int main() {
   try {
@@ -15,3 +15,5 @@ int main() {
   }
   return 0;
 }
+
+

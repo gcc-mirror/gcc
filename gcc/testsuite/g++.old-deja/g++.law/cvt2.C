@@ -1,9 +1,9 @@
 // GROUPS passed conversions
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <iostream.h>
-#include <fstream.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
+#include <fstream>
 
 class cvec {
 public:
@@ -25,18 +25,17 @@ void
 A(const char* s)
 {
         // s still ok here
-        ifstream inf(s);
-	if (strncmp ("aaa", s, 3))
+        std::ifstream inf(s);
+	if (std::strncmp ("aaa", s, 3))
 	  {
-	    printf ("FAIL\n");
-	    exit (1);
+	    std::printf ("FAIL\n");
+	    std::exit (1);
 	  }
 	else
-	  printf ("PASS\n");
+	  std::printf ("PASS\n");
 }
 
 int main()
 {
         A(B("aaa"));
 }
-

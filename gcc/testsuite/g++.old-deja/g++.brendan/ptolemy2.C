@@ -1,5 +1,5 @@
 // GROUPS passed ptolemy-bugs
-#include <iostream.h>
+#include <iostream>
 
 class PTcl {
 public:
@@ -45,19 +45,19 @@ void printargs(char** argv) {
 }
 
 int PTcl::one(int, char** argv) {
-  cout << "FAIL\n";
+  std::cout << "FAIL\n";
 	printargs(argv);
 	return 1;
 }
 
 int PTcl::two(int, char** argv) {
-  cout << "PASS\n";
+  std::cout << "PASS\n";
 	printargs(argv);
 	return 0;
 }
 
 int PTcl::three(int, char** argv) {
-  cout << "FAIL\n";
+  std::cout << "FAIL\n";
 	printargs(argv);
 	return 1;
 }
