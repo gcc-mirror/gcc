@@ -1,3 +1,7 @@
+2004-11-15  Mark Mitchell <mark@codesourcery.com>
+
+	* gcc.dg/format/cmn-err-1.c: Add tests for "%p".
+
 2004-11-15  Nick Clifton  <nickc@redhat.com>
 
 	* g++.dg/opt/strength-reduce.C: Replace 0x7fffffff with
