@@ -13,6 +13,8 @@ details.  */
 #include <config.h>
 #include <platform.h>
 
+#include <stdio.h>
+
 #include <java-interp.h>
 
 #include <jvm.h>
