@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1245,12 +1245,10 @@ package body Bindgen is
       --  The reference stops Ada_Main_Program_Name from being optimized
       --  away by smart linkers, such as the AiX linker.
 
-      if Bind_Main_Program then
-         WBI
-           ("      Ensure_Reference : System.Address := " &
-            "Ada_Main_Program_Name'Address;");
-         WBI ("");
-      end if;
+      WBI
+        ("      Ensure_Reference : System.Address := " &
+         "Ada_Main_Program_Name'Address;");
+      WBI ("");
 
       WBI ("   begin");
 
@@ -1366,12 +1364,10 @@ package body Bindgen is
          --  place). The reference stops Ada_Main_Program_Name from being
          --  optimized away by smart linkers, such as the AiX linker.
 
-         if Bind_Main_Program then
-            WBI
-              ("   char *ensure_reference __attribute__ ((__unused__)) = " &
-               "__gnat_ada_main_program_name;");
-            WBI ("");
-         end if;
+         WBI
+           ("   char *ensure_reference __attribute__ ((__unused__)) = " &
+            "__gnat_ada_main_program_name;");
+         WBI ("");
 
          if ALIs.Table (ALIs.First).Main_Program = Func then
             WBI ("   int result;");
