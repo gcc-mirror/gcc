@@ -1323,7 +1323,7 @@ subreg_realpart_p (rtx x)
     abort ();
 
   return ((unsigned int) SUBREG_BYTE (x)
-	  < GET_MODE_UNIT_SIZE (GET_MODE (SUBREG_REG (x))));
+	  < (unsigned int) GET_MODE_UNIT_SIZE (GET_MODE (SUBREG_REG (x))));
 }
 
 /* Assuming that X is an rtx (e.g., MEM, REG or SUBREG) for a value,
@@ -1391,7 +1391,7 @@ gen_highpart (enum machine_mode mode, rtx x)
   /* This case loses if X is a subreg.  To catch bugs early,
      complain if an invalid MODE is used even in other cases.  */
   if (msize > UNITS_PER_WORD
-      && msize != GET_MODE_UNIT_SIZE (GET_MODE (x)))
+      && msize != (unsigned int) GET_MODE_UNIT_SIZE (GET_MODE (x)))
     abort ();
 
   result = simplify_gen_subreg (mode, x, GET_MODE (x),
