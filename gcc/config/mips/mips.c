@@ -2504,11 +2504,15 @@ function_arg_advance (cum, mode, type, named)
   cum->arg_number++;
   switch (mode)
     {
-    default:
-      error ("Illegal mode given to function_arg_advance");
+    case VOIDmode:
       break;
 
-    case VOIDmode:
+    default:
+      if (GET_MODE_CLASS (mode) != MODE_COMPLEX_INT
+	  && GET_MODE_CLASS (mode) != MODE_COMPLEX_FLOAT)
+	abort ();
+      cum->gp_reg_found = 1;
+      cum->arg_words += (GET_MODE_SIZE (mode) + 3) / 4;
       break;
 
     case BLKmode:
@@ -2563,10 +2567,6 @@ function_arg (cum, mode, type, named)
 
   switch (mode)
     {
-    default:
-      error ("Illegal mode given to function_arg");
-      break;
-
     case SFmode:
       if (cum->gp_reg_found || cum->arg_number >= 2)
 	regbase = GP_ARG_FIRST;
@@ -2585,6 +2585,12 @@ function_arg (cum, mode, type, named)
 		 : FP_ARG_FIRST);
       break;
 
+    default:
+      if (GET_MODE_CLASS (mode) != MODE_COMPLEX_INT
+	  && GET_MODE_CLASS (mode) != MODE_COMPLEX_FLOAT)
+	abort ();
+
+      /* Drops through.  */
     case BLKmode:
       if (type != (tree)0 && TYPE_ALIGN (type) > BITS_PER_WORD)
 	cum->arg_words += (cum->arg_words & 1);
@@ -2658,9 +2664,16 @@ function_arg_partial_nregs (cum, mode, type, named)
      tree type;			/* type of the argument or 0 if lib support */
      int named;			/* != 0 for normal args, == 0 for ... args */
 {
-  if (mode == BLKmode && cum->arg_words < MAX_ARGS_IN_REGISTERS)
+  if ((mode == BLKmode
+       || GET_MODE_CLASS (mode) != MODE_COMPLEX_INT
+       || GET_MODE_CLASS (mode) != MODE_COMPLEX_FLOAT)
+      && cum->arg_words < MAX_ARGS_IN_REGISTERS)
     {
-      int words = (int_size_in_bytes (type) + 3) / 4;
+      int words;
+      if (mode == BLKmode)
+	words = (int_size_in_bytes (type) + 3) / 4;
+      else
+	words = (GET_MODE_SIZE (mode) + 3) / 4;
 
       if (words + cum->arg_words <= MAX_ARGS_IN_REGISTERS)
 	return 0;		/* structure fits in registers */
