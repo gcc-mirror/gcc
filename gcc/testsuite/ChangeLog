@@ -1,3 +1,7 @@
+2001-01-22  David.Billinghurst <David.Billinghurst@riotinto.com>
+
+	* g++.old-deja/g++.ext/attrib5.C: XFAIL cygwin too
+
 2002-01-22  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* gcc.dg/20010207-1.c: Restrict to i?86-*-[eflno]*
