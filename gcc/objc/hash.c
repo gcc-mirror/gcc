@@ -1,25 +1,38 @@
-/* -*-c-*-
- * This file contains the hashing implementation.
- *
- * Copyright (C) 1991 Threaded Technologies Inc.
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published
- * by the Free Software Foundation; either version 1, or any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- * 
- * You should receive a copy of the GNU General Public License 
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- * 
-  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/hash/RCS/hash.c,v 0.11 1992/01/03 02:55:03 dennisg Exp dennisg $
+/* -*-c-*- */
+
+/* Copyright (C) 1989, 1992 Free Software Foundation, Inc.
+
+This file is part of GNU CC.
+
+GNU CC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU CC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU CC; see the file COPYING.  If not, write to
+the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+
+/* As a special exception, if you link this library with files
+   compiled with GCC to produce an executable, this does not cause
+   the resulting executable to be covered by the GNU General Public License.
+   This exception does not however invalidate any other reasons why
+   the executable file might be covered by the GNU General Public License.  */
+
+/* 
+  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/dispatch.common/RCS/hash.c,v 0.12 1992/04/13 11:43:08 dennisg Exp dennisg $
   $Author: dennisg $
-  $Date: 1992/01/03 02:55:03 $
+  $Date: 1992/04/13 11:43:08 $
   $Log: hash.c,v $
+ * Revision 0.12  1992/04/13  11:43:08  dennisg
+ * Check in after array version of run-time works.
+ * Expect more changes as hash version and other changes are made.
+ *
  * Revision 0.11  1992/01/03  02:55:03  dennisg
  * modified to handle new initialization scheme.
  * fixed code structure.
