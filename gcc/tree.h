@@ -2720,6 +2720,7 @@ extern void print_obstack_name		PARAMS ((char *, FILE *,
 #endif
 extern void expand_function_end		PARAMS ((const char *, int, int));
 extern void expand_function_start	PARAMS ((tree, int));
+extern void expand_pending_sizes        PARAMS ((tree));
 
 extern int real_onep			PARAMS ((tree));
 extern int real_twop			PARAMS ((tree));
