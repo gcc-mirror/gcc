@@ -63,6 +63,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "recog.h"
 #include "cfglayout.h"
+#include "params.h"
 #include "sched-int.h"
 #include "target.h"
 
@@ -82,9 +83,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define INSN_REF_COUNT(INSN)	(h_i_d[INSN_UID (INSN)].ref_count)
 #define FED_BY_SPEC_LOAD(insn)	(h_i_d[INSN_UID (insn)].fed_by_spec_load)
 #define IS_LOAD_INSN(insn)	(h_i_d[INSN_UID (insn)].is_load_insn)
-
-#define MAX_RGN_BLOCKS 10
-#define MAX_RGN_INSNS 100
 
 /* nr_inter/spec counts interblock/speculative motion for the function.  */
 static int nr_inter, nr_spec;
@@ -156,7 +154,7 @@ static int *containing_rgn;
 void debug_regions (void);
 static void find_single_block_region (void);
 static void find_rgns (struct edge_list *);
-static int too_large (int, int *, int *);
+static bool too_large (int, int *, int *);
 
 extern void debug_live (int, int);
 
@@ -551,19 +549,18 @@ find_single_block_region (void)
 }
 
 /* Update number of blocks and the estimate for number of insns
-   in the region.  Return 1 if the region is "too large" for interblock
-   scheduling (compile time considerations), otherwise return 0.  */
+   in the region.  Return true if the region is "too large" for interblock
+   scheduling (compile time considerations).  */
 
-static int
+static bool
 too_large (int block, int *num_bbs, int *num_insns)
 {
   (*num_bbs)++;
-  (*num_insns) += (INSN_LUID (BB_END (BASIC_BLOCK (block))) -
-		   INSN_LUID (BB_HEAD (BASIC_BLOCK (block))));
-  if ((*num_bbs > MAX_RGN_BLOCKS) || (*num_insns > MAX_RGN_INSNS))
-    return 1;
-  else
-    return 0;
+  (*num_insns) += (INSN_LUID (BB_END (BASIC_BLOCK (block)))
+		   - INSN_LUID (BB_HEAD (BASIC_BLOCK (block))));
+
+  return ((*num_bbs > PARAM_VALUE (PARAM_MAX_SCHED_REGION_BLOCKS))
+	  || (*num_insns > PARAM_VALUE (PARAM_MAX_SCHED_REGION_INSNS)));
 }
 
 /* Update_loop_relations(blk, hdr): Check if the loop headed by max_hdr[blk]
