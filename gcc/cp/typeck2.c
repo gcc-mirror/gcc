@@ -396,6 +396,7 @@ my_friendly_abort (i)
     error ("Internal compiler error %d.", i);
 
   fatal ("Please submit a full bug report to `egcs-bugs@cygnus.com'.");
+  fatal ("See <URL:http://egcs.cygnus.com/faq.html#bugreport> for details.");
 }
 
 void
