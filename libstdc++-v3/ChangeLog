@@ -1,3 +1,7 @@
+2004-10-07  Phil Edwards  <phil@codesourcery.com>
+
+	* testsuite/lib/libstdc++.exp:  Update list of undefined functions.
+
 2004-10-07  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/list.tcc (operator=): Avoid iterator postincrement.

@@ -29,7 +29,6 @@
 # libstdc++_* callbacks we don't define, but could:
 # ..._option_help           prints additional --help output
 # ..._option_proc (--foo)   process our own options
-# ..._exit                  cleanup routines (do we need any?)
 # ..._init (normal.exp)     called once per test file
 # ..._finish                bracketing function for libstdc++_init
 # ...-dg-prune              removing output text, see top of system dg.exp
@@ -212,6 +211,7 @@ proc libstdc++_init { testfile } {
     libstdc++_maybe_build_wrapper "${objdir}/testglue.o"
 }
 
+# Callback for cleanup routines.
 proc libstdc++_exit { } {
     global gluefile;
 
