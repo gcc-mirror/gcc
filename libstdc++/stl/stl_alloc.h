@@ -61,12 +61,12 @@
 #  define __RESTRICT
 #endif
 
-#if !defined(_PTHREADS) && !defined(_NOTHREADS) \
+#if !defined(__STL_PTHREADS) && !defined(_NOTHREADS) \
  && !defined(__STL_SGI_THREADS) && !defined(__STL_WIN32THREADS)
 #   define _NOTHREADS
 #endif
 
-# ifdef _PTHREADS
+# ifdef __STL_PTHREADS
     // POSIX Threads
     // This is dubious, since this is likely to be a high contention
     // lock.   Performance may not be adequate.
@@ -357,7 +357,7 @@ private:
     static inline void __unlock(volatile unsigned long *);
 # endif
 
-# ifdef _PTHREADS
+# ifdef __STL_PTHREADS
     static pthread_mutex_t __node_allocator_lock;
 # endif
 
@@ -558,7 +558,7 @@ __default_alloc_template<threads, inst>::reallocate(void *p,
     return(result);
 }
 
-#ifdef _PTHREADS
+#ifdef __STL_PTHREADS
     template <bool threads, int inst>
     pthread_mutex_t
     __default_alloc_template<threads, inst>::__node_allocator_lock

@@ -1429,7 +1429,7 @@ rope<charT, Alloc>::rope(size_t n, charT c)
 
 template<class charT, class Alloc> charT rope<charT,Alloc>::empty_c_str[1];
 
-# ifdef _PTHREADS
+# ifdef __STL_PTHREADS
     template<class charT, class Alloc>
     pthread_mutex_t rope<charT,Alloc>::swap_lock = PTHREAD_MUTEX_INITIALIZER;
 # endif

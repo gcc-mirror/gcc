@@ -1,3 +1,15 @@
+Wed Jan 14 16:15:05 1998  H.J. Lu  (hjl@gnu.org)
+			  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* ropeimpl.h: Check __STL_PTHREADS instead of _PTHREADS.
+	* stl_alloc.h: Ditto.
+	* stl_config.h: Ditto.
+	* stl_rope.h: Ditto.
+
+	* stl_config.h: include <_G_config.h> if __GNUG__ is defined.
+	(__STL_PTHREADS): Defined if _PTHREADS is defined or
+	__GLIBC__ >= 2.
+
 Sat Nov  8 00:45:17 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* stl_hash_set.h (swap): Fix typo.
