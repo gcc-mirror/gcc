@@ -921,17 +921,18 @@ dbxout_type_methods (type)
 
 	  if (flag_minimal_debug)
 	    {
+	      char marker;
+
 	      /* We can't optimize a method which uses an anonymous
                  class, because the debugger will not be able to
                  associate the arbitrary class name with the actual
                  class.  */
-	      if (strchr (debug_name,
 #ifndef NO_DOLLAR_IN_LABEL
-			  '$'
+	      marker = '$';
 #else
-			  '.'
+	      marker = '.';
 #endif
-			  ) != NULL)
+	      if (strchr (debug_name, marker) != NULL)
 		show_arg_types = 1;
 	      /* Detect ordinary methods because their mangled names
 		 start with the operation name.  */
