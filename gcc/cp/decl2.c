@@ -4679,7 +4679,10 @@ validate_nonmember_using_decl (decl, scope, name)
 	 member-declaration.  */
       if (TREE_CODE (*scope) != NAMESPACE_DECL)
 	{
-	  cp_error ("`%D' is not a namespace", *scope);
+	  if (TYPE_P (*scope))
+	    cp_error ("`%T' is not a namespace", *scope);
+	  else
+	    cp_error ("`%D' is not a namespace", *scope);
 	  return NULL_TREE;
 	}
     }
