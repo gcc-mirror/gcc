@@ -60,6 +60,9 @@ struct _Jv_Method
   _Jv_Utf8Const *signature;
   unsigned short accflags;
   void *ncode;
+
+  _Jv_Method *getNextMethod ()
+  { return this + 1; }
 };
 
 #define JV_PRIMITIVE_VTABLE ((_Jv_VTable *) -1)
@@ -168,13 +171,19 @@ private:
 
   friend jfieldID JvGetFirstInstanceField (jclass);
   friend jint JvNumInstanceFields (jclass);
+  friend jfieldID JvGetFirstStaticField (jclass);
+  friend jint JvNumStaticFields (jclass);
+
   friend jobject _Jv_AllocObject (jclass, jint);
   friend jobjectArray _Jv_NewObjectArray (jsize, jclass, jobject);
   friend jobject _Jv_NewPrimArray (jclass, jint);
   friend jobject _Jv_JNI_ToReflectedField (_Jv_JNIEnv *, jclass, jfieldID);
   friend jfieldID _Jv_FromReflectedField (java::lang::reflect::Field *);
+
   friend jmethodID _Jv_FromReflectedMethod (java::lang::reflect::Method *);
   friend jmethodID _Jv_FromReflectedConstructor (java::lang::reflect::Constructor *);
+  friend jint JvNumMethods (jclass);
+  friend jmethodID JvGetFirstMethod (jclass);
 
   friend class _Jv_PrimClass;
 
@@ -256,5 +265,18 @@ private:
   // initialization.
   java::lang::Thread *thread;
 };
+
+
+extern inline jint
+JvNumMethods (jclass klass)
+{
+  return klass->method_count;
+}
+
+extern inline jmethodID
+JvGetFirstMethod (jclass klass)
+{
+  return &klass->methods[0];
+}
 
 #endif /* __JAVA_LANG_CLASS_H__ */

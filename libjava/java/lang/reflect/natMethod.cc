@@ -12,6 +12,7 @@ details.  */
 
 #include <gcj/cni.h>
 #include <jvm.h>
+#include <jni.h>
 
 #include <java/lang/reflect/Method.h>
 #include <java/lang/reflect/Constructor.h>
@@ -187,8 +188,8 @@ java::lang::reflect::Method::invoke (jobject obj, jobjectArray args)
       meth = _Jv_LookupDeclaredMethod (k, meth->name, meth->signature);
     }
 
-  return _Jv_CallNonvirtualMethodA (obj, return_type, meth, false,
-				    parameter_types, args);
+  return _Jv_CallAnyMethodA (obj, return_type, meth, false,
+			     parameter_types, args);
 }
 
 jint
@@ -311,22 +312,21 @@ _Jv_GetTypesFromSignature (jmethodID method,
 // functions.  It handles both Methods and Constructors, and it can
 // handle any return type.  In the Constructor case, the `obj'
 // argument is unused and should be NULL; also, the `return_type' is
-// the class that the constructor will construct.
-jobject
-_Jv_CallNonvirtualMethodA (jobject obj,
-			   jclass return_type,
-			   jmethodID meth,
-			   jboolean is_constructor,
-			   JArray<jclass> *parameter_types,
-			   jobjectArray args)
+// the class that the constructor will construct.  RESULT is a pointer
+// to a `jvalue' (see jni.h); for a void method this should be NULL.
+// This function returns an exception (if one was thrown), or NULL if
+// the call went ok.
+jthrowable
+_Jv_CallAnyMethodA (jobject obj,
+		    jclass return_type,
+		    jmethodID meth,
+		    jboolean is_constructor,
+		    JArray<jclass> *parameter_types,
+		    jvalue *args,
+		    jvalue *result)
 {
   JvAssert (! is_constructor || ! obj);
   JvAssert (! is_constructor || ! return_type);
-
-  // FIXME: access checks.
-
-  if (parameter_types->length != args->length)
-    JvThrow (new java::lang::IllegalArgumentException);
 
   // See whether call needs an object as the first argument.  A
   // constructor does need a `this' argument, but it is one we create.
@@ -349,7 +349,6 @@ _Jv_CallNonvirtualMethodA (jobject obj,
 					      * sizeof (ffi_type *));
 
   jclass *paramelts = elements (parameter_types);
-  jobject *argelts = elements (args);
 
   // FIXME: at some point the compiler is going to add extra arguments
   // to some functions.  In particular we are going to do this for
@@ -376,22 +375,11 @@ _Jv_CallNonvirtualMethodA (jobject obj,
 
   for (int arg = 0; i < param_count; ++i, ++arg)
     {
-      jclass k = argelts[arg] ? argelts[arg]->getClass() : NULL;
-      argtypes[i] = get_ffi_type (k);
+      argtypes[i] = get_ffi_type (paramelts[arg]);
       if (paramelts[arg]->isPrimitive())
-	{
-	  if (! argelts[arg]
-	      || ! k
-	      || ! can_widen (k, paramelts[arg]))
-	    JvThrow (new java::lang::IllegalArgumentException);
-	  size += paramelts[arg]->size();
-	}
+	size += paramelts[arg]->size();
       else
-	{
-	  if (argelts[arg] && ! paramelts[arg]->isAssignableFrom (k))
-	    JvThrow (new java::lang::IllegalArgumentException);
-	  size += sizeof (jobject);
-	}
+	size += sizeof (jobject);
     }
 
   ffi_cif cif;
@@ -404,89 +392,162 @@ _Jv_CallNonvirtualMethodA (jobject obj,
   char *p = (char *) alloca (size);
   void **values = (void **) alloca (param_count * sizeof (void *));
 
-#define COPY(Where, What, Type) \
-  do { \
-    Type val = (What); \
-    memcpy ((Where), &val, sizeof (Type)); \
-    values[i] = (Where); \
-    Where += sizeof (Type); \
-  } while (0)
-
   i = 0;
   if (needs_this)
     {
-      COPY (p, obj, jobject);
+      values[i] = p;
+      memcpy (p, &obj, sizeof (jobject));
+      p += sizeof (jobject);
       ++i;
     }
 
   for (int arg = 0; i < param_count; ++i, ++arg)
     {
-      java::lang::Number *num = (java::lang::Number *) argelts[arg];
-      if (paramelts[arg] == JvPrimClass (byte))
-	COPY (p, num->byteValue(), jbyte);
-      else if (paramelts[arg] == JvPrimClass (short))
-	COPY (p, num->shortValue(), jshort);
-      else if (paramelts[arg] == JvPrimClass (int))
-	COPY (p, num->intValue(), jint);
-      else if (paramelts[arg] == JvPrimClass (long))
-	COPY (p, num->longValue(), jlong);
-      else if (paramelts[arg] == JvPrimClass (float))
-	COPY (p, num->floatValue(), jfloat);
-      else if (paramelts[arg] == JvPrimClass (double))
-	COPY (p, num->doubleValue(), jdouble);
-      else if (paramelts[arg] == JvPrimClass (boolean))
-	COPY (p, ((java::lang::Boolean *) argelts[arg])->booleanValue(),
-	      jboolean);
-      else if (paramelts[arg] == JvPrimClass (char))
-	COPY (p, ((java::lang::Character *) argelts[arg])->charValue(), jchar);
+      int tsize;
+      if (paramelts[arg]->isPrimitive())
+	tsize = paramelts[arg]->size();
       else
-	{
-	  JvAssert (! paramelts[arg]->isPrimitive());
-	  COPY (p, argelts[arg], jobject);
-	}
+	tsize = sizeof (jobject);
+
+      // Copy appropriate bits from the jvalue into the ffi array.
+      // FIXME: we could do this copying all in one loop, above, by
+      // over-allocating a bit.
+      values[i] = p;
+      memcpy (p, &args[arg], tsize);
+      p += tsize;
     }
 
   // FIXME: initialize class here.
 
-  // Largest possible value.  Hopefully it is aligned!
-  jdouble ret_value;
   java::lang::Throwable *ex;
   using namespace java::lang;
   using namespace java::lang::reflect;
   ex = Method::hack_trampoline ((gnu::gcj::RawData *) &cif,
 				(gnu::gcj::RawData *) meth->ncode,
-				(gnu::gcj::RawData *) &ret_value,
+				(gnu::gcj::RawData *) result,
 				(gnu::gcj::RawData *) values);
 
   if (ex)
-    JvThrow (new InvocationTargetException (ex));
+    // FIXME: this is wrong for JNI.  But if we just return the
+    // exception, then the non-JNI cases won't be able to distinguish
+    // it from exceptions we might generate ourselves.  Sigh.
+    ex = new InvocationTargetException (ex);
+
+  if (is_constructor)
+    result->l = obj;
+
+  return ex;
+}
+
+// This is another version of _Jv_CallAnyMethodA, but this one does
+// more checking and is used by the reflection (and not JNI) code.
+jobject
+_Jv_CallAnyMethodA (jobject obj,
+		    jclass return_type,
+		    jmethodID meth,
+		    jboolean is_constructor,
+		    JArray<jclass> *parameter_types,
+		    jobjectArray args)
+{
+  // FIXME: access checks.
+
+  if (parameter_types->length != args->length)
+    JvThrow (new java::lang::IllegalArgumentException);
+
+  int param_count = parameter_types->length;
+
+  jclass *paramelts = elements (parameter_types);
+  jobject *argelts = elements (args);
+  jvalue argvals[param_count];
+
+#define COPY(Where, What, Type) \
+  do { \
+    Type val = (What); \
+    memcpy ((Where), &val, sizeof (Type)); \
+  } while (0)
+
+  for (int i = 0; i < param_count; ++i)
+    {
+      jclass k = argelts[i] ? argelts[i]->getClass() : NULL;
+      if (paramelts[i]->isPrimitive())
+	{
+	  if (! argelts[i]
+	      || ! k
+	      || ! can_widen (k, paramelts[i]))
+	    JvThrow (new java::lang::IllegalArgumentException);
+	}
+      else
+	{
+	  if (argelts[i] && ! paramelts[i]->isAssignableFrom (k))
+	    JvThrow (new java::lang::IllegalArgumentException);
+	}
+
+      java::lang::Number *num = (java::lang::Number *) argelts[i];
+      if (paramelts[i] == JvPrimClass (byte))
+	COPY (&argvals[i], num->byteValue(), jbyte);
+      else if (paramelts[i] == JvPrimClass (short))
+	COPY (&argvals[i], num->shortValue(), jshort);
+      else if (paramelts[i] == JvPrimClass (int))
+	COPY (&argvals[i], num->intValue(), jint);
+      else if (paramelts[i] == JvPrimClass (long))
+	COPY (&argvals[i], num->longValue(), jlong);
+      else if (paramelts[i] == JvPrimClass (float))
+	COPY (&argvals[i], num->floatValue(), jfloat);
+      else if (paramelts[i] == JvPrimClass (double))
+	COPY (&argvals[i], num->doubleValue(), jdouble);
+      else if (paramelts[i] == JvPrimClass (boolean))
+	COPY (&argvals[i],
+	      ((java::lang::Boolean *) argelts[i])->booleanValue(),
+	      jboolean);
+      else if (paramelts[i] == JvPrimClass (char))
+	COPY (&argvals[i],
+	      ((java::lang::Character *) argelts[i])->charValue(),
+	      jchar);
+      else
+	{
+	  JvAssert (! paramelts[i]->isPrimitive());
+	  COPY (&argvals[i], argelts[i], jobject);
+	}
+    }
+
+  jvalue ret_value;
+  java::lang::Throwable *ex = _Jv_CallAnyMethodA (obj,
+						  return_type,
+						  meth,
+						  is_constructor,
+						  parameter_types,
+						  argvals,
+						  &ret_value);
+
+  if (ex)
+    JvThrow (ex);
 
   jobject r;
-#define VAL(Wrapper, Type)  (new Wrapper (* (Type *) &ret_value))
+#define VAL(Wrapper, Field)  (new Wrapper (ret_value.Field))
   if (is_constructor)
-    r = obj;
-  else if (return_type == JvPrimClass (byte))
-    r = VAL (java::lang::Byte, jbyte);
+    r = ret_value.l;
+  else  if (return_type == JvPrimClass (byte))
+    r = VAL (java::lang::Byte, b);
   else if (return_type == JvPrimClass (short))
-    r = VAL (java::lang::Short, jshort);
+    r = VAL (java::lang::Short, s);
   else if (return_type == JvPrimClass (int))
-    r = VAL (java::lang::Integer, jint);
+    r = VAL (java::lang::Integer, i);
   else if (return_type == JvPrimClass (long))
-    r = VAL (java::lang::Long, jlong);
+    r = VAL (java::lang::Long, j);
   else if (return_type == JvPrimClass (float))
-    r = VAL (java::lang::Float, jfloat);
+    r = VAL (java::lang::Float, f);
   else if (return_type == JvPrimClass (double))
-    r = VAL (java::lang::Double, jdouble);
+    r = VAL (java::lang::Double, d);
   else if (return_type == JvPrimClass (boolean))
-    r = VAL (java::lang::Boolean, jboolean);
+    r = VAL (java::lang::Boolean, z);
   else if (return_type == JvPrimClass (char))
-    r = VAL (java::lang::Character, jchar);
+    r = VAL (java::lang::Character, c);
   else if (return_type == JvPrimClass (void))
     r = NULL;
   else
     {
       JvAssert (return_type == NULL || ! return_type->isPrimitive());
-      r = * (Object **) &ret_value;
+      r = ret_value.l;
     }
 
   return r;

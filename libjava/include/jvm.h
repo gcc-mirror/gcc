@@ -1,6 +1,6 @@
 // jvm.h - Header file for private implementation information. -*- c++ -*-
 
-/* Copyright (C) 1998, 1999  Red Hat, Inc.
+/* Copyright (C) 1998, 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -166,9 +166,20 @@ extern void _Jv_GetTypesFromSignature (jmethodID method,
 				       jclass declaringClass,
 				       JArray<jclass> **arg_types_out,
 				       jclass *return_type_out);
-extern jobject _Jv_CallNonvirtualMethodA (jobject, jclass,
-					  jmethodID, jboolean,
-					  JArray<jclass> *, jobjectArray);
+
+extern jobject _Jv_CallAnyMethodA (jobject obj, jclass return_type,
+				   jmethodID meth, jboolean is_constructor,
+				   JArray<jclass> *parameter_types,
+				   jobjectArray args);
+
+union jvalue;
+extern jthrowable _Jv_CallAnyMethodA (jobject obj,
+				      jclass return_type,
+				      jmethodID meth,
+				      jboolean is_constructor,
+				      JArray<jclass> *parameter_types,
+				      jvalue *args,
+				      jvalue *result);
 
 extern jobject _Jv_NewMultiArray (jclass, jint ndims, jint* dims)
   __attribute__((__malloc__));

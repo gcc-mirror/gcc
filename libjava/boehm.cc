@@ -1,6 +1,6 @@
 // boehm.cc - interface between libjava and Boehm GC.
 
-/* Copyright (C) 1998, 1999  Red Hat, Inc.
+/* Copyright (C) 1998, 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -256,7 +256,7 @@ _Jv_MarkObj (void *addr, void *msp, void *msl, void * /*env*/)
 		  MAYBE_MARK (w, mark_stack_ptr, mark_stack_limit,
 			      obj, elabel);
 		}
-	      field = field->getNextInstanceField ();
+	      field = field->getNextField ();
 	    }
 	  klass = klass->getSuperclass();
 	}

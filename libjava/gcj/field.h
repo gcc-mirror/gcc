@@ -1,6 +1,6 @@
 // field.h - Header file for fieldID instances.  -*- c++ -*-
 
-/* Copyright (C) 1998, 1999  Red Hat, Inc.
+/* Copyright (C) 1998, 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -30,7 +30,7 @@ struct _Jv_Field
   _Jv_ushort		flags;
 
 #ifdef COMPACT_FIELDS
-  short			nameIndex;  /* ofsfet in class's name table */
+  short			nameIndex;  /* offset in class's name table */
 #else
   _Jv_ushort		bsize;  /* not really needed ... */
 #endif
@@ -51,7 +51,7 @@ struct _Jv_Field
   jobject getObjectField (jobject obj)
   { return *(jobject *)((char *)obj + getOffset ()); }
 
-  jfieldID getNextInstanceField () { return this + 1; }
+  jfieldID getNextField () { return this + 1; }
 
   jboolean isRef () 
     { 
@@ -66,6 +66,12 @@ struct _Jv_Field
 	}
     }
 
+  jclass getClass ()
+  {
+    JvAssert (isResolved ());
+    return type;
+  }
+
   // FIXME - may need to mask off internal flags.
   int getModifiers() { return flags; }
 
@@ -79,6 +85,7 @@ struct _Jv_Field
 };
 
 #ifdef __cplusplus
+
 inline jbyte
 _Jv_GetStaticByteField (jclass, _Jv_Field* field)
 {
@@ -151,6 +158,18 @@ JvNumInstanceFields (jclass klass)
   return klass->field_count - klass->static_field_count;
 }
 
+extern inline jfieldID
+JvGetFirstStaticField (jclass klass)
+{
+  return &(klass->fields[0]);
+}
+
+extern inline jint
+JvNumStaticFields (jclass klass)
+{
+  return klass->static_field_count;
+}
+
 extern inline jboolean
 JvFieldIsRef (jfieldID field)
 {
@@ -164,6 +183,6 @@ JvGetObjectField (jobject obj, _Jv_Field* field)
 }
 #endif /* defined (__GCJ_CNI_H__) */
 
-#endif
+#endif /* __cplusplus */
 
 #endif /* __GCJ_FIELD_H */

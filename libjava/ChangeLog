@@ -1,3 +1,41 @@
+2000-01-21  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/reflect/natConstructor.cc (newInstance): Use
+	_Jv_CallAnyMethodA.
+	* include/jvm.h: Declare _Jv_CallAnyMethodA.
+	* java/lang/reflect/natMethod.cc (_Jv_CallAnyMethodA): Renamed
+	from _Jv_CallNonvirtualMethodA.  Changed interface; overloaded.
+	Include <jni.h>.
+	(COPY): Removed.
+	(invoke): Use _Jv_CallAnyMethodA.
+	(VAL): Redefined.
+	* java/lang/Class.h (Class): Declare JvGetFirstStaticField,
+	JvNumStaticFields, JvNumMethods, and JvGetFirstMethod as friend
+	functions.
+	(struct _Jv_Method): Added getNextMethod method.
+	(JvNumMethods): New function.
+	(JvGetFirstMethod): Likewise.
+	* gcj/field.h (JvGetFirstStaticField): New function.
+	(JvNumStaticFields): Likewise.
+	(getNextField): Renamed from getNextInstanceField.
+	(struct _Jv_Field): New method getClass.
+	* jni.cc: Wrote many new functions.
+	* include/jni.h (JNI_TRUE): Define.
+	(JNI_FALSE): Likewise.
+	(jobject, jclass, jstring, jarray, jthrowable, jobjectArray,
+	jbyteArray, jshortArray, jintArray, jlongArray, jbooleanArray,
+	jcharArray, jfloatArray, jdoubleArray): New typedefs.
+	(jfieldID, jmethodID): Likewise.
+	(JNI_COMMIT, JNI_ABORT): New defines.
+	(JNINativeMethod): New struct.
+	(struct JNINativeInterface): Correctly declared more entries.
+	(class _Jv_JNIEnv): Added `ex' member.
+	(JNI_VERSION_1_1): New define.
+	(JNI_VERSION_1_2): Likewise.
+
+	* boehm.cc (_Jv_MarkObj): Use getNextField, not
+	getNextInstanceField.
+
 2000-01-20  Tom Tromey  <tromey@cygnus.com>
 
 	* resolve.cc (StringClass): Removed.
