@@ -3653,7 +3653,6 @@ toe64 (a, b)
 	  /* Clear the last two bytes of 12-byte Intel format */
 	  *(q+1) = 0;
 	}
-#endif
     }
 #endif
 
