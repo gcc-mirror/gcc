@@ -460,11 +460,15 @@ static const char* nondefault_syscalls_dir = 0; /* Dir to look for
 						   SYSCALLS.c.X in.  */
 #endif /* !defined (UNPROTOIZE) */
 
-/* An index into the compile_params array where we should insert the filename
-   parameter when we are ready to exec the C compiler.  A zero value indicates
+/* An index into the compile_params array where we should insert the source
+   file name when we are ready to exec the C compiler.  A zero value indicates
    that we have not yet called munge_compile_params.  */
 
-static int filename_index = 0;
+static int input_file_name_index = 0;
+
+/* An index into the compile_params array where we should insert the filename
+   for the aux info file, when we run the C compiler.  */
+static int aux_info_file_name_index = 0;
 
 /* Count of command line arguments which were "filename" arguments.  */
 
@@ -1526,7 +1530,7 @@ save_def_or_dec (l, is_syscalls)
        all of these base file names (even if they may be useless later).
        The file_info records for all of these "base" file names (properly)
        act as file_info records for the "original" (i.e. un-included) files
-       which were submitted to gcc for compilation (when the -fgen-aux-info
+       which were submitted to gcc for compilation (when the -aux-info
        option was used).  */
   
     def_dec_p->file = find_file (abspath (invocation_filename, filename), is_syscalls);
@@ -1857,14 +1861,19 @@ save_def_or_dec (l, is_syscalls)
     }
 }
 
-/* Rewrite the options list used to recompile base source files.  All we are
-   really doing here is removing -g, -O, -S, -c, and -o options, and then
-   adding a final group of options like '-fgen-aux-info -S  -o /dev/null'.  */
+/* Set up the vector COMPILE_PARAMS which is the argument list for running GCC.
+   Also set input_file_name_index and aux_info_file_name_index
+   to the indices of the slots where the file names should go.  */
+
+/* We initialize the vector by  removing -g, -O, -S, -c, and -o options,
+   and adding '-aux-info AUXFILE -S  -o /dev/null INFILE' at the end.  */
 
 static void
 munge_compile_params (params_list)
      const char *params_list;
 {
+  /* Build up the contents in a temporary vector
+     that is so big that to has to be big enough.  */
   char **temp_params
     = (char **) alloca ((strlen (params_list) + 6) * sizeof (char *));
   int param_count = 0;
@@ -1906,14 +1915,20 @@ munge_compile_params (params_list)
       if (!*params_list)
         break;
     }
-  temp_params[param_count++] = "-fgen-aux-info";
+  temp_params[param_count++] = "-aux-info";
+
+  /* Leave room for the aux-info file name argument.  */
+  aux_info_file_name_index = param_count;
+  temp_params[param_count++] = NULL;
+
   temp_params[param_count++] = "-S";
   temp_params[param_count++] = "-o";
   temp_params[param_count++] = "/dev/null";
 
-  /* Leave room for the filename argument and a terminating null pointer.  */
-
-  temp_params[filename_index = param_count++] = NULL;
+  /* Leave room for the input file name argument.  */
+  input_file_name_index = param_count;
+  temp_params[param_count++] = NULL;
+  /* Terminate the list.  */
   temp_params[param_count++] = NULL;
 
   /* Make a copy of the compile_params in heap space.  */
@@ -1932,14 +1947,20 @@ gen_aux_info_file (base_filename)
 {
   int child_pid;
 
-  if (!filename_index)
+  if (!input_file_name_index)
     munge_compile_params ("");
 
-  compile_params[filename_index] = shortpath (NULL, base_filename);
+  /* Store the full source file name in the argument vector.  */
+  compile_params[input_file_name_index] = shortpath (NULL, base_filename);
+  /* Add .X to source file name to get aux-info file name.  */
+  compile_params[aux_info_file_name_index]
+    = dupnstr (compile_params[input_file_name_index],
+	       (2 + strlen (compile_params[input_file_name_index])));
+  strcat (compile_params[aux_info_file_name_index], ".X");
 
   if (!quiet_flag)
     fprintf (stderr, "%s: compiling `%s'\n",
-	     pname, compile_params[filename_index]);
+	     pname, compile_params[input_file_name_index]);
 
   if (child_pid = fork ())
     {
