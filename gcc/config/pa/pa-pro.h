@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for PRO.
-   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -16,11 +16,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
-
-#ifndef TARGET_DEFAULT
-/* JUMP_IN_DELAY + PORTABLE_RUNTIME + GAS + NO_SPACE_REGS + SOFT_FLOAT */
-#define TARGET_DEFAULT (4 + 8 + 64 + 128 + 256)
-#endif
 
 /* Global constructor and destructor support.  */
 /* Define the pseudo-ops used to switch to the .ctors and .dtors sections.
@@ -79,27 +74,5 @@ dtors_section ()							\
     fputs ("\n", FILE);						\
   } while (0)
 
-#include "pa/pa.h"
-
-/* Make GCC agree with types.h.  */
-#undef SIZE_TYPE
-#undef PTRDIFF_TYPE
-
-#define SIZE_TYPE "unsigned int"
-#define PTRDIFF_TYPE "int"
-
-/* Like the default, except no -lg.  */
-#undef LIB_SPEC
-#define LIB_SPEC "%{!p:%{!pg:-lc}}%{p: -L/lib/libp/ -lc}%{pg: -L/lib/libp/ -lc}"
-
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dhppa -DPWB -Acpu(hppa) -Amachine(hppa)"
-
-/* hpux8 and later have C++ compatable include files, so do not
-   pretend they are `extern "C"'.  */
-#define NO_IMPLICIT_EXTERN_C
-
-/* We don't want a crt0.o to get linked in automatically, we want the
-   linker script to pull it in.
- */
-#define STARTFILE_SPEC ""
+/* JUMP_IN_DELAY + PORTABLE_RUNTIME + GAS + NO_SPACE_REGS + SOFT_FLOAT */
+#define TARGET_DEFAULT (4 + 8 + 64 + 128 + 256)
