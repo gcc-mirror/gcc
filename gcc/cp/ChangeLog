@@ -8,12 +8,6 @@
 	(dump_function_decl): Don't be too talkative about function return
 	type variety.
 
-1999-09-16  Jason Merrill  <jason@yorick.cygnus.com>
-
-	* decl.c (saved_scope_p): New fn.
-	* class.c (pushclass): Don't clear class_cache_obstack if we have
-	saved scopes.
-
 1999-09-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* lex.c (init_cpp_parse): Call xcalloc, not malloc/bzero.
