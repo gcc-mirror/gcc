@@ -2117,14 +2117,19 @@ substitute_in_type (t, f, r)
       return t;
 
     case REAL_TYPE:
-      if ((TREE_CODE (TYPE_MIN_VALUE (t)) != INTEGER_CST
+      if ((TYPE_MIN_VALUE (t) != 0
+	   && TREE_CODE (TYPE_MIN_VALUE (t)) != REAL_CST
 	   && contains_placeholder_p (TYPE_MIN_VALUE (t)))
-	  || (TREE_CODE (TYPE_MAX_VALUE (t)) != INTEGER_CST
+	  || (TYPE_MAX_VALUE (t) != 0
+	      && TREE_CODE (TYPE_MAX_VALUE (t)) != REAL_CST
 	      && contains_placeholder_p (TYPE_MAX_VALUE (t))))
 	{
-	  t = build_type_copy (t);
-	  TYPE_MIN_VALUE (t) = substitute_in_expr (TYPE_MIN_VALUE (t), f, r);
-	  TYPE_MAX_VALUE (t) = substitute_in_expr (TYPE_MAX_VALUE (t), f, r);
+	  t = copy_type (t);
+
+	  if (TYPE_MIN_VALUE (t))
+	    TYPE_MIN_VALUE (t) = substitute_in_expr (TYPE_MIN_VALUE (t), f, r);
+	  if (TYPE_MAX_VALUE (t))
+	    TYPE_MAX_VALUE (t) = substitute_in_expr (TYPE_MAX_VALUE (t), f, r);
 	}
       return t;
 
