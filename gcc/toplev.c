@@ -2893,9 +2893,10 @@ rest_of_compilation (decl)
 	goto exit_rest_of_compilation;
     }
 
+  init_EXPR_INSN_LIST_cache ();
+
   /* We may have potential sibling or tail recursion sites.  Select one
      (of possibly multiple) methods of performing the call.  */
-  init_EXPR_INSN_LIST_cache ();
   if (flag_optimize_sibling_calls)
     optimize_sibling_and_tail_recursive_calls ();
   
@@ -2962,6 +2963,10 @@ rest_of_compilation (decl)
      of the function.  */
   TIMEVAR (jump_time,
 	   {
+	     /* Turn NOTE_INSN_EXPECTED_VALUE into REG_BR_PROB.  Do this
+		before jump optimization switches branch directions.  */
+	     expected_value_to_br_prob ();
+
 	     reg_scan (insns, max_reg_num (), 0);
 	     jump_optimize (insns, !JUMP_CROSS_JUMP, !JUMP_NOOP_MOVES,
 			    JUMP_AFTER_REGSCAN);

@@ -103,6 +103,7 @@ static rtx expand_builtin_alloca	PARAMS ((tree, rtx));
 static rtx expand_builtin_ffs		PARAMS ((tree, rtx, rtx));
 static rtx expand_builtin_frame_address	PARAMS ((tree));
 static tree stabilize_va_list		PARAMS ((tree, int));
+static rtx expand_builtin_expect	PARAMS ((tree, rtx));
 
 /* Return the alignment in bits of EXP, a pointer valued expression.
    But don't return more than MAX_ALIGN no matter what.
@@ -2306,6 +2307,48 @@ expand_builtin_ffs (arglist, target, subtarget)
     abort ();
   return target;
 }
+
+/* Expand a call to __builtin_expect.  We return our argument and
+   emit a NOTE_INSN_EXPECTED_VALUE note.  */
+
+static rtx
+expand_builtin_expect (arglist, target)
+     tree arglist;
+     rtx target;
+{
+  tree exp, c;
+  rtx note, rtx_c;
+
+  if (arglist == NULL_TREE
+      || TREE_CHAIN (arglist) == NULL_TREE)
+    return const0_rtx;
+  exp = TREE_VALUE (arglist);
+  c = TREE_VALUE (TREE_CHAIN (arglist));
+
+  if (TREE_CODE (c) != INTEGER_CST)
+    {
+      error ("second arg to `__builtin_expect' must be a constant");
+      c = integer_zero_node;
+    }
+
+  target = expand_expr (exp, target, VOIDmode, EXPAND_NORMAL);
+
+  /* Don't bother with expected value notes for integral constants.  */
+  if (GET_CODE (target) != CONST_INT)
+    {
+      /* We do need to force this into a register so that we can be
+	 moderately sure to be able to correctly interpret the branch
+	 condition later.  */
+      target = force_reg (GET_MODE (target), target);
+  
+      rtx_c = expand_expr (c, NULL_RTX, GET_MODE (target), EXPAND_NORMAL);
+
+      note = emit_note (NULL, NOTE_INSN_EXPECTED_VALUE);
+      NOTE_EXPECTED_VALUE (note) = gen_rtx_EQ (VOIDmode, target, rtx_c);
+    }
+
+  return target;
+}
 
 /* Expand an expression EXP that calls a built-in function,
    with result going to TARGET if that's convenient
@@ -2581,6 +2624,8 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       return expand_builtin_va_end (arglist);
     case BUILT_IN_VA_COPY:
       return expand_builtin_va_copy (arglist);
+    case BUILT_IN_EXPECT:
+      return expand_builtin_expect (arglist, target);
 
     default:			/* just do library call, if unknown builtin */
       error ("built-in function `%s' not currently supported",
