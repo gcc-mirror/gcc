@@ -496,7 +496,7 @@ public class Color implements Paint, Serializable
   public int getAlpha()
   {
     // Do not inline getRGB() to value, because of SystemColor.
-    return (getRGB() & ALPHA_MASK) >> 24;
+    return (getRGB() & ALPHA_MASK) >>> 24;
   }
 
   /**
